@@ -33,6 +33,7 @@ OBJ = \
 	obj/fileio.o \
 	obj/fold.o \
 	obj/getchar.o \
+	obj/hashtable.o \
 	obj/main.o \
 	obj/mark.o \
 	obj/memfile.o \

@@ -38,6 +38,7 @@ SRC =	buffer.c						\
 	fileio.c						\
 	fold.c							\
 	getchar.c						\
+	hashtable.c						\
 	main.c							\
 	mark.c							\
 	mbyte.c							\

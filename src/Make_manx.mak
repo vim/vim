@@ -48,6 +48,7 @@ SRC =	buffer.c \
 	fileio.c \
 	fold.c \
 	getchar.c \
+	hashtable.c \
 	main.c \
 	mark.c \
 	memfile.c \
@@ -90,6 +91,7 @@ OBJ =	obj/buffer.o \
 	obj/fileio.o \
 	obj/fold.o \
 	obj/getchar.o \
+	obj/hashtable.o \
 	obj/main.o \
 	obj/mark.o \
 	obj/memfile.o \
@@ -130,6 +132,7 @@ PRO =	proto/buffer.pro \
 	proto/fileio.pro \
 	proto/fold.pro \
 	proto/getchar.pro \
+	proto/hashtable.pro \
 	proto/main.pro \
 	proto/mark.pro \
 	proto/memfile.pro \
@@ -242,6 +245,9 @@ obj/fold.o:	fold.c
 
 obj/getchar.o:	getchar.c
 	$(CCSYM) $@ getchar.c
+
+obj/hashtable.o:	hashtable.c
+	$(CCSYM) $@ hashtable.c
 
 # Don't use $(SYMS) here, because main.c defines EXTERN
 obj/main.o:	main.c option.h globals.h

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 17
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,6 +29,12 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+Hashtable implementation:
+- Use hashtable for variables and syntax keywords.
+
+":grep": display progress (filename, every second or so)
+Can ":grep" made faster somehow?  Do profiling.
 
 Sanity check of eval.c:
 - Go through the code for magic braces.
@@ -104,6 +110,7 @@ PLANNED FOR VERSION 7.0:
 -   REFACTORING: The main() function is very long.  Move parts to separate
     functions, especially loops.  Ideas from Walter Briscoe (2003 Apr 3, 2004
     Feb 9).
+    Move the printing stuff to hardcopy.c.
 -   Improve the interface between the generic GUI code and the system-specific
     code.  Generic code handles text window with scrollbars, system-specific
     code menu, toolbar, etc.
@@ -1576,7 +1583,6 @@ Built-in script language:
 7   Add argument to winwidth() to subtract the space taken by 'foldcolumn',
     signs and/or 'number'.
 8   Add functions:
-	search()		Add optional offset argument.
 	realname()		Get user name (first, last, full)
 				user_fullname() patch by Nikolai Weibull, Nov
 				3 2002
@@ -2417,6 +2423,8 @@ Java:
     like it's done when there is no code.  And there is no automatic wrapping.
     Recognize comments that come after code.  Should insert the comment leader
     when it's "#" or "//".
+    Other way around: when a C command starts with "* 4" the "*" is repeated
+    while it should not.  Use syntax HL comment recognition?
 7   When using "comments=fg:--", Vim inserts three spaces for a new line.
     When hitting a TAB, these spaces could be removed.
 7   The 'n'esting flag doesn't do the indenting of the last (rightmost) item.
@@ -3236,11 +3244,11 @@ Various improvements:
 8   findmatchlimit() should be able to skip comments.  Solves problem of
     matching the '{' in /* if (foo) { */ (Fiveash)
 -   Add more redirecting of Ex commands:
-	:redir @> register  (append)
-	:redir #  bufname
-	:redir #> bufname   (append)
-	:redir =  variable
-	:redir => variable  (append)
+	:redir @r> register  (append)
+	:redir #>  bufname
+	:redir #>> bufname   (append)
+	:redir =>  variable
+	:redir =>> variable  (append)
 -   Setting of options, specifically for a buffer or window, with
     ":set window.option" or ":set buffer.option=val".  Or use ":buffer.set".
     Also: "buffer.map <F1> quit".
