@@ -1540,7 +1540,7 @@ SBPool::create(GuiScrollbar * sb, int orient)//{{{
     }
 
     connect(sb->w, SIGNAL(valueChanged(int)), &mapper, SLOT(map()));
-    mapper.setMapping(sb->w, (int)sb);
+    mapper.setMapping(sb->w, (long)sb);
 }//}}}
 
 

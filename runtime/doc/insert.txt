@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0aa.  Last change: 2004 Dec 21
+*insert.txt*    For Vim version 7.0aa.  Last change: 2005 Jan 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -975,7 +975,7 @@ These two commands will keep on asking for lines, until you type a line
 containing only a ".".  Watch out for lines starting with a backslash, see
 |line-continuation|.
 NOTE: ":append" and ":insert" don't work properly in between ":if" and
-":endif".
+":endif", ":for" and ":endfor", ":while" and ":endwhile".
 
 							*:start* *:startinsert*
 :star[tinsert][!]	Start Insert mode just after executing this command.

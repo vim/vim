@@ -27,5 +27,5 @@ void enter_cleanup __ARGS((cleanup_T *csp));
 void leave_cleanup __ARGS((cleanup_T *csp));
 int cleanup_conditionals __ARGS((struct condstack *cstack, int searched_cond, int inclusive));
 void ex_endfunction __ARGS((exarg_T *eap));
-int has_while_cmd __ARGS((char_u *p));
+int has_loop_cmd __ARGS((char_u *p));
 /* vim: set ft=c : */
