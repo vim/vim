@@ -543,6 +543,31 @@ gui_init()
 	/* Now make sure the shell fits on the screen. */
 	gui_set_shellsize(FALSE, TRUE);
 #endif
+
+#ifdef FEAT_BEVAL
+	/* Always create the Balloon Evaluation area, but disable it when
+	 * 'ballooneval' is off */
+# ifdef FEAT_GUI_GTK
+	balloonEval = gui_mch_create_beval_area(gui.drawarea, NULL,
+						     &general_beval_cb, NULL);
+# else
+#  ifdef FEAT_GUI_MOTIF
+	{
+	    extern Widget	textArea;
+	    balloonEval = gui_mch_create_beval_area(textArea, NULL,
+		    &general_beval_cb, NULL);
+	}
+#  else
+#   ifdef FEAT_GUI_W32
+	balloonEval = gui_mch_create_beval_area(NULL, NULL,
+						     &general_beval_cb, NULL);
+#   endif
+#  endif
+# endif
+	if (!p_beval)
+	    gui_mch_disable_beval_area(balloonEval);
+#endif
+
 #ifdef FEAT_NETBEANS_INTG
 	if (starting == 0 && usingNetbeans)
 	    /* Tell the client that it can start sending commands. */
@@ -2197,8 +2222,14 @@ gui_outstr_nowrap(s, len, flags, fg, bg, back)
 	    /* Draw a composing char on top of the previous char. */
 	    if (comping)
 	    {
+#  if !defined(__APPLE_CC__) && !defined(__MRC__) && !defined(TARGET_API_MAC_CARBON)
 		gui_mch_draw_string(gui.row, scol - cn, s + i, cl,
 						    draw_flags | DRAW_TRANSP);
+#  else
+		/* Carbon ATSUI autodraws composing char over previous char */
+		gui_mch_draw_string(gui.row, scol, s + i, cl,
+						    draw_flags | DRAW_TRANSP);
+#  endif
 		start = i + cl;
 	    }
 	}
