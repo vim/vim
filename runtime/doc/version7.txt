@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Feb 24
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Feb 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -118,6 +118,9 @@ can be used to turn the string back into the variable value.
 
 The |:let| command can now use ":let var += expr" like using ":let var = var +
 expr".  "-=" and ".=" works in a similar way.
+
+With the |:profile| command you can find out where your function or script
+wastes its time.
 
 
 KDE support						*new-KDE*
@@ -534,6 +537,9 @@ When completing buffer names, match with "\(^\|[\/]\)" instead of "^", so that
 
 To count items (pattern matches) without changing the buffer the 'n' flag has
 been added to |:substitute|.  See |count-items|.
+
+The "screen.linux" $TERM name is recognized to set the default for
+'background' to "dark". (Ciaran McCreesh)
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*

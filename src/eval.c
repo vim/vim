@@ -15337,8 +15337,8 @@ ex_function(eap)
     {
 	if (!eap->skip)
 	{
-	    todo = globvarht.ht_used;
-	    for (hi = globvarht.ht_array; todo > 0 && !got_int; ++hi)
+	    todo = func_hashtab.ht_used;
+	    for (hi = func_hashtab.ht_array; todo > 0 && !got_int; ++hi)
 	    {
 		if (!HASHITEM_EMPTY(hi))
 		{

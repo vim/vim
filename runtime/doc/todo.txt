@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Feb 26
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Feb 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,6 +30,32 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Win32 gettimeofday():
+Or use QueryPerformanceCounter() and QueryPerformanceFrequency()
+int gettimeofday (struct timeval *tv, void* tz)
+     {
+     union {
+     LONG_LONG ns100; /*time since 1 Jan 1601 in 100ns units */
+     FILETIME ft;
+     } now;
+    >
+     GetSystemTimeAsFileTime (&now.ft);
+     tv->tv_usec = (long) ((now.ns100 / 10LL) % 1000000LL);
+     tv->tv_sec = (long) ((now.ns100 - 116444736000000000LL) / 10000000LL);
+     return (0);
+     } 
+Or use GetSystemTime().
+Or:
+  unsigned long Ticks = 0;
+  unsigned long Sec =0;
+  unsigned long Usec = 0;
+  Ticks = timeGetTime();
+
+  Sec = Ticks/1000;
+  Usec = (Ticks - (Sec*1000))*1000;
+  tp->tv_sec = Sec;
+  tp->tv_usec = Usec;
+
 Test11 sometimes fails.  Must be a problem with fork() and pipes.
 
 'sw' is sometimes 8 when using :vimgrep.
@@ -44,6 +70,8 @@ Mac unicode patch (Da Woon Jung):
 - typing doesn't work
 - selecting proportional font breaks display
 
+Patch for gettags(). Yegappan Lakshmanan Feb 27
+
 autoload:
 - Add a Vim script in $VIMRUNTIME/tools that takes a file with a list of
   script names and a help file and produces a script that can be sourced to
@@ -55,7 +83,7 @@ autoload:
     helpfile doc/myscript.txt
   For the "helpfile" item ":helptags" is run.
 
-Patch for 'balloonexpr' option.  Sergey Khorev, Feb 26.
+Patch for 'balloonexpr' option.  Sergey Khorev, Feb 26.  Addition Feb 27.
 
 Awaiting response:
 -   Patch for mch_FullName() also in Vim 6.3?  os_mswin.c
