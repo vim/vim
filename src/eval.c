@@ -66,10 +66,22 @@ typedef struct
 typedef struct
 {
     typeval	tv;		/* type and value of the variable */
-    char_u	*v_name;	/* name of variable */
+    char_u	v_name[1];	/* name of variable (actually longer) */
 } var;
 
 typedef var *	VAR;
+
+/*
+ * In a hashtable item "hi_key" points to "v_name" in a variable.
+ * This avoids adding a pointer to the hashtable item.
+ * VAR2HIKEY() converts a var pointer to a hashitem key pointer.
+ * HIKEY2VAR() converts a hashitem key pointer to a var pointer.
+ * HI2VAR() converts a hashitem pointer to a var pointer.
+ */
+static var dumvar;
+#define VAR2HIKEY(v)   ((v)->v_name)
+#define HIKEY2VAR(p)   ((VAR)(p - (dumvar.v_name - (char_u *)&dumvar.tv)))
+#define HI2VAR(hi)       HIKEY2VAR((hi)->hi_key)
 
 /*
  * Structure to hold an item of a list: an internal variable without a name.
@@ -127,9 +139,9 @@ typedef struct dictitem_S dictitem;
  * HI2DI() converts a hashitem pointer to a dictitem pointer.
  */
 static dictitem dumdi;
-#define DI2HIKEY(p) ((p)->di_key)
-#define HIKEY2DI(p) ((dictitem *)(p - (dumdi.di_key - (char_u *)&dumdi.di_tv)))
-#define HI2DI(p)    HIKEY2DI((p)->hi_key)
+#define DI2HIKEY(di) ((di)->di_key)
+#define HIKEY2DI(p)  ((dictitem *)(p - (dumdi.di_key - (char_u *)&dumdi.di_tv)))
+#define HI2DI(hi)     HIKEY2DI((hi)->hi_key)
 
 /*
  * Structure to hold info about a Dictionary.
@@ -208,19 +220,13 @@ static char *e_letwrong = N_("E734: Wrong variable type for %s=");
 /*
  * All user-defined global variables are stored in "variables".
  */
-garray_T	variables = {0, 0, sizeof(var), 4, NULL};
+hashtable	variables;
 
 /*
- * Array to hold an array with variables local to each sourced script.
+ * Array to hold the hashtable with variables local to each sourced script.
  */
-static garray_T	    ga_scripts = {0, 0, sizeof(garray_T), 4, NULL};
-#define SCRIPT_VARS(id) (((garray_T *)ga_scripts.ga_data)[(id) - 1])
-
-
-#define VAR_ENTRY(idx)	(((VAR)(variables.ga_data))[idx])
-#define VAR_GAP_ENTRY(idx, gap)	(((VAR)((gap)->ga_data))[idx])
-#define BVAR_ENTRY(idx)	(((VAR)(curbuf->b_vars.ga_data))[idx])
-#define WVAR_ENTRY(idx)	(((VAR)(curwin->w_vars.ga_data))[idx])
+static garray_T	    ga_scripts = {0, 0, sizeof(hashtable), 4, NULL};
+#define SCRIPT_VARS(id) (((hashtable *)ga_scripts.ga_data)[(id) - 1])
 
 static int echo_attr = 0;   /* attributes used for ":echo" */
 
@@ -273,7 +279,7 @@ struct funccall
     var		a0_var;		/* "a:0" variable */
     var		firstline;	/* "a:firstline" variable */
     var		lastline;	/* "a:lastline" variable */
-    garray_T	l_vars;		/* local function variables */
+    hashtable	l_vars;		/* local function variables */
     typeval	*rettv;		/* return value */
     linenr_T	breakpoint;	/* next line with breakpoint or zero */
     int		dbg_tick;	/* debug_tick when breakpoint was set */
@@ -300,6 +306,16 @@ typedef struct
     char_u	*fd_newkey;	/* new key in "dict" */
     dictitem	*fd_di;		/* Dictionary item used */
 } funcdict;
+
+
+/*
+ * Initialize the global variables.
+ */
+    void
+eval_init()
+{
+    hash_init(&variables);
+}
 
 /*
  * Return the name of the executed function.
@@ -650,7 +666,7 @@ static win_T *find_win_by_nr __ARGS((typeval *vp));
 static pos_T *var2fpos __ARGS((typeval *varp, int lnum));
 static int get_env_len __ARGS((char_u **arg));
 static int get_id_len __ARGS((char_u **arg));
-static int get_func_len __ARGS((char_u **arg, char_u **alias, int evaluate));
+static int get_name_len __ARGS((char_u **arg, char_u **alias, int evaluate));
 static char_u *find_name_end __ARGS((char_u *arg, char_u **expr_start, char_u **expr_end, int incl_br));
 static int eval_isnamec __ARGS((int c));
 static int find_vim_var __ARGS((char_u *name, int len));
@@ -664,10 +680,10 @@ static long get_tv_number __ARGS((typeval *varp));
 static linenr_T get_tv_lnum __ARGS((typeval *argvars));
 static char_u *get_tv_string __ARGS((typeval *varp));
 static char_u *get_tv_string_buf __ARGS((typeval *varp, char_u *buf));
-static VAR find_var __ARGS((char_u *name, int writing));
-static VAR find_var_in_ga __ARGS((garray_T *gap, char_u *varname));
-static garray_T *find_var_ga __ARGS((char_u *name, char_u **varname));
-static void clear_var __ARGS((VAR v));
+static VAR find_var __ARGS((char_u *name, hashtable **htp));
+static VAR find_var_in_ht __ARGS((hashtable *ht, char_u *varname));
+static hashtable *find_var_ht __ARGS((char_u *name, char_u **varname));
+static void delete_var __ARGS((hashtable *ht, hashitem *hi));
 static void list_one_var __ARGS((VAR v, char_u *prefix));
 static void list_vim_var __ARGS((int i));
 static void list_one_var_a __ARGS((char_u *prefix, char_u *name, int type, char_u *string));
@@ -687,16 +703,16 @@ static void func_unref __ARGS((char_u *name));
 static void func_ref __ARGS((char_u *name));
 static void call_user_func __ARGS((ufunc_T *fp, int argcount, typeval *argvars, typeval *rettv, linenr_T firstline, linenr_T lastline, dictvar *selfdict));
 
-#define get_var_string(p)	 get_tv_string(&(p)->tv)
-#define get_var_string_buf(p, b) get_tv_string_buf(&(p)->tv, (b))
-#define get_var_number(p)	 get_tv_number(&((p)->tv))
-
 static char_u * make_expanded_name __ARGS((char_u *in_start,  char_u *expr_start,  char_u *expr_end,  char_u *in_end));
 
 static int ex_let_vars __ARGS((char_u *arg, typeval *tv, int copy, int semicolon, int var_count, char_u *nextchars));
 static char_u *skip_var_list __ARGS((char_u *arg, int *var_count, int *semicolon));
 static char_u *skip_var_one __ARGS((char_u *arg));
-static void list_all_vars __ARGS((void));
+static void list_hashtable_vars __ARGS((hashtable *ht, char_u *prefix));
+static void list_glob_vars __ARGS((void));
+static void list_buf_vars __ARGS((void));
+static void list_win_vars __ARGS((void));
+static void list_vim_vars __ARGS((void));
 static char_u *list_arg_vars __ARGS((exarg_T *eap, char_u *arg));
 static char_u *ex_let_one __ARGS((char_u *arg, typeval *tv, int copy, char_u *endchars, char_u *op));
 static int check_changedtick __ARGS((char_u *arg));
@@ -1238,8 +1254,13 @@ ex_let(eap)
 	    /* ":let var1 var2" */
 	    arg = list_arg_vars(eap, arg);
 	else if (!eap->skip)
+	{
 	    /* ":let" */
-	    list_all_vars();
+	    list_glob_vars();
+	    list_buf_vars();
+	    list_win_vars();
+	    list_vim_vars();
+	}
 	eap->nextcmd = check_nextcmd(arg);
     }
     else
@@ -1433,23 +1454,63 @@ skip_var_one(arg)
     return find_name_end(arg, NULL, NULL, TRUE);
 }
 
+/*
+ * List variables for hashtable "ht" with prefix "prefix".
+ */
     static void
-list_all_vars()
+list_hashtable_vars(ht, prefix)
+    hashtable	*ht;
+    char_u	*prefix;
+{
+    hashitem	*hi;
+    int		todo;
+
+    todo = ht->ht_used;
+    for (hi = ht->ht_array; todo > 0 && !got_int; ++hi)
+    {
+	if (!HASHITEM_EMPTY(hi))
+	{
+	    --todo;
+	    list_one_var(HI2VAR(hi), prefix);
+	}
+    }
+}
+
+/*
+ * List global variables.
+ */
+    static void
+list_glob_vars()
+{
+    list_hashtable_vars(&variables, (char_u *)"");
+}
+
+/*
+ * List buffer variables.
+ */
+    static void
+list_buf_vars()
+{
+    list_hashtable_vars(&curbuf->b_vars, (char_u *)"b:");
+}
+
+/*
+ * List window variables.
+ */
+    static void
+list_win_vars()
+{
+    list_hashtable_vars(&curwin->w_vars, (char_u *)"w:");
+}
+
+/*
+ * List Vim variables.
+ */
+    static void
+list_vim_vars()
 {
     int	i;
 
-    /*
-     * List all variables.
-     */
-    for (i = 0; i < variables.ga_len && !got_int; ++i)
-	if (VAR_ENTRY(i).v_name != NULL)
-	    list_one_var(&VAR_ENTRY(i), (char_u *)"");
-    for (i = 0; i < curbuf->b_vars.ga_len && !got_int; ++i)
-	if (BVAR_ENTRY(i).v_name != NULL)
-	    list_one_var(&BVAR_ENTRY(i), (char_u *)"b:");
-    for (i = 0; i < curwin->w_vars.ga_len && !got_int; ++i)
-	if (WVAR_ENTRY(i).v_name != NULL)
-	    list_one_var(&WVAR_ENTRY(i), (char_u *)"w:");
     for (i = 0; i < VV_LEN && !got_int; ++i)
 	if (vimvars[i].tv.v_type == VAR_NUMBER || vimvars[i].vv_str != NULL)
 	    list_vim_var(i);
@@ -1518,47 +1579,62 @@ list_arg_vars(eap, arg)
 		*name_end = NUL;
 		arg_len = (int)(name_end - arg);
 	    }
-	    i = find_vim_var(arg, arg_len);
-	    if (i >= 0)
-		list_vim_var(i);
-	    else if (STRCMP("b:changedtick", arg) == 0)
+	    if (arg_len == 2 && arg[1] == ':')
 	    {
-		char_u	numbuf[NUMBUFLEN];
-
-		sprintf((char *)numbuf, "%ld",
-					 (long)curbuf->b_changedtick);
-		list_one_var_a((char_u *)"b:", (char_u *)"changedtick",
-						  VAR_NUMBER, numbuf);
+		switch (*arg)
+		{
+		    case 'g': list_glob_vars(); break;
+		    case 'b': list_buf_vars(); break;
+		    case 'w': list_win_vars(); break;
+		    case 'v': list_vim_vars(); break;
+		    default:
+			EMSG2(_("E738: Can't list variables for %s"), arg);
+		}
 	    }
 	    else
 	    {
-		varp = find_var(arg, FALSE);
-		if (varp == NULL)
+		i = find_vim_var(arg, arg_len);
+		if (i >= 0)
+		    list_vim_var(i);
+		else if (STRCMP("b:changedtick", arg) == 0)
 		{
-		    /* Skip further arguments but do continue to
-		     * search for a trailing command. */
-		    EMSG2(_("E106: Unknown variable: \"%s\""), arg);
-		    error = TRUE;
+		    char_u	numbuf[NUMBUFLEN];
+
+		    sprintf((char *)numbuf, "%ld",
+					     (long)curbuf->b_changedtick);
+		    list_one_var_a((char_u *)"b:", (char_u *)"changedtick",
+						      VAR_NUMBER, numbuf);
 		}
 		else
 		{
-		    name = vim_strchr(arg, ':');
-		    if (name != NULL)
+		    varp = find_var(arg, NULL);
+		    if (varp == NULL)
 		    {
-			/* "a:" vars have no name stored, use whole arg */
-			if (arg[0] == 'a' && arg[1] == ':')
-			    c2 = NUL;
-			else
-			{
-			    c2 = *++name;
-			    *name = NUL;
-			}
-			list_one_var(varp, arg);
-			if (c2 != NUL)
-			    *name = c2;
+			/* Skip further arguments but do continue to
+			 * search for a trailing command. */
+			EMSG2(_("E106: Unknown variable: \"%s\""), arg);
+			error = TRUE;
 		    }
 		    else
-			list_one_var(varp, (char_u *)"");
+		    {
+			name = vim_strchr(arg, ':');
+			if (name != NULL)
+			{
+			    /* "a:" vars have no name stored, use whole arg */
+			    if (arg[0] == 'a' && arg[1] == ':')
+				c2 = NUL;
+			    else
+			    {
+				c2 = *++name;
+				*name = NUL;
+			    }
+			    list_one_var(varp, arg);
+			    if (c2 != NUL)
+				*name = c2;
+			}
+			else
+			    list_one_var(varp, (char_u *)"");
+		    }
 		}
 	    }
 	    if (expr_start != NULL)
@@ -1786,7 +1862,7 @@ check_changedtick(arg)
  * wrong; must end in space or cmd separator.
  *
  * Returns a pointer to just after the name, including indexes.
- * When an evaluation error occurs "lp->name" is NULL;
+ * When an evaluation error occurs "lp->ll_name" is NULL;
  * Returns NULL for a parsing error.  Still need to free items in "lp"!
  */
     static char_u *
@@ -1808,6 +1884,7 @@ get_lval(name, rettv, lp, unlet, skip, quiet)
     listitem	*ni;
     char_u	*key = NULL;
     int		len;
+    hashtable	*ht;
 
     /* Clear everything in "lp". */
     vim_memset(lp, 0, sizeof(lval));
@@ -1855,7 +1932,7 @@ get_lval(name, rettv, lp, unlet, skip, quiet)
 
     cc = *p;
     *p = NUL;
-    v = find_var(lp->ll_name, TRUE);
+    v = find_var(lp->ll_name, &ht);
     if (v == NULL && !quiet)
 	EMSG2(_(e_undefvar), lp->ll_name);
     *p = cc;
@@ -2729,13 +2806,24 @@ do_unlet_var(lp, name_end, forceit)
 do_unlet(name)
     char_u	*name;
 {
-    VAR		v;
+    hashtable	*ht;
+    hashitem	*hi;
+    char_u	*varname;
 
-    v = find_var(name, TRUE);
-    if (v != NULL)
+    if (name[0] == 'a' && name[1] == ':')
+	EMSG2(_(e_readonlyvar), name);
+    else
     {
-	clear_var(v);
-	return OK;
+	ht = find_var_ht(name, &varname);
+	if (ht != NULL)
+	{
+	    hi = hash_find(ht, varname);
+	    if (!HASHITEM_EMPTY(hi))
+	    {
+		delete_var(ht, hi);
+		return OK;
+	    }
+	}
     }
     return FAIL;
 }
@@ -2747,12 +2835,21 @@ do_unlet(name)
     void
 del_menutrans_vars()
 {
-    int		i;
+    hashitem	*hi;
+    int		todo;
 
-    for (i = 0; i < variables.ga_len; ++i)
-	if (VAR_ENTRY(i).v_name != NULL
-		&& STRNCMP(VAR_ENTRY(i).v_name, "menutrans_", 10) == 0)
-	    clear_var(&VAR_ENTRY(i));
+    hash_lock(&variables);
+    todo = variables.ht_used;
+    for (hi = variables.ht_array; todo > 0 && !got_int; ++hi)
+    {
+	if (!HASHITEM_EMPTY(hi))
+	{
+	    --todo;
+	    if (STRNCMP(HI2VAR(hi)->v_name, "menutrans_", 10) == 0)
+		delete_var(&variables, hi);
+	}
+    }
+    hash_unlock(&variables);
 }
 #endif
 
@@ -2808,47 +2905,44 @@ get_user_var_name(xp, idx)
     expand_T	*xp;
     int		idx;
 {
-    static int	gidx;
-    static int	bidx;
-    static int	widx;
+    static int	gdone;
+    static int	bdone;
+    static int	wdone;
     static int	vidx;
-    char_u	*name;
+    static hashitem *hi;
 
     if (idx == 0)
-	gidx = bidx = widx = vidx = 0;
-    if (gidx < variables.ga_len)			/* Global variables */
+	gdone = bdone = wdone = vidx = 0;
+    if (gdone < variables.ht_used)			/* Global variables */
     {
-	while ((name = VAR_ENTRY(gidx++).v_name) == NULL
-		&& gidx < variables.ga_len)
-	    /* skip */;
-	if (name != NULL)
-	{
-	    if (STRNCMP("g:", xp->xp_pattern, 2) == 0)
-		return cat_prefix_varname('g', name);
-	    else
-		return name;
-	}
+	if (gdone++ == 0)
+	    hi = variables.ht_array;
+	while (HASHITEM_EMPTY(hi))
+	    ++hi;
+	if (STRNCMP("g:", xp->xp_pattern, 2) == 0)
+	    return cat_prefix_varname('g', hi->hi_key);
+	return hi->hi_key;
     }
-    if (bidx < curbuf->b_vars.ga_len)		/* Current buffer variables */
+    if (bdone < curbuf->b_vars.ht_used)		/* Current buffer variables */
     {
-	while ((name = BVAR_ENTRY(bidx++).v_name) == NULL
-		&& bidx < curbuf->b_vars.ga_len)
-	    /* skip */;
-	if (name != NULL)
-	    return cat_prefix_varname('b', name);
+	if (bdone++ == 0)
+	    hi = curbuf->b_vars.ht_array;
+	while (HASHITEM_EMPTY(hi))
+	    ++hi;
+	return cat_prefix_varname('b', hi->hi_key);
     }
-    if (bidx == curbuf->b_vars.ga_len)
+    if (bdone == curbuf->b_vars.ht_used)
     {
-	++bidx;
+	++bdone;
 	return (char_u *)"b:changedtick";
     }
-    if (widx < curwin->w_vars.ga_len)		/* Current window variables */
+    if (wdone < curwin->w_vars.ht_used)		/* Current window variables */
     {
-	while ((name = WVAR_ENTRY(widx++).v_name) == NULL
-		&& widx < curwin->w_vars.ga_len)
-	    /* skip */;
-	if (name != NULL)
-	    return cat_prefix_varname('w', name);
+	if (bdone++ == 0)
+	    hi = curwin->w_vars.ht_array;
+	while (HASHITEM_EMPTY(hi))
+	    ++hi;
+	return cat_prefix_varname('w', hi->hi_key);
     }
     if (vidx < VV_LEN)				      /* Built-in variables */
 	return cat_prefix_varname('v', (char_u *)vimvars[vidx++].name);
@@ -3732,7 +3826,7 @@ eval7(arg, rettv, evaluate)
 	 * Can also be a curly-braces kind of name: {expr}.
 	 */
 	s = *arg;
-	len = get_func_len(arg, &alias, evaluate);
+	len = get_name_len(arg, &alias, evaluate);
 	if (alias != NULL)
 	    s = alias;
 
@@ -5010,6 +5104,7 @@ dict_free(d)
 	    --todo;
 	}
     }
+    hash_clear(&d->dv_hashtable);
     vim_free(d);
 }
 
@@ -5823,7 +5918,7 @@ deref_func_name(name, lenp)
 
     cc = name[*lenp];
     name[*lenp] = NUL;
-    v = find_var(name, FALSE);
+    v = find_var(name, NULL);
     name[*lenp] = cc;
     if (v != NULL && v->tv.v_type == VAR_FUNC)
     {
@@ -6705,7 +6800,7 @@ f_confirm(argvars, rettv)
 	    def = get_tv_number(&argvars[2]);
 	    if (argvars[3].v_type != VAR_UNKNOWN)
 	    {
-		/* avoid that TOUPPER_ASC calls get_var_string_buf() twice */
+		/* avoid that TOUPPER_ASC calls get_tv_string_buf() twice */
 		c = *get_tv_string_buf(&argvars[3], buf2);
 		switch (TOUPPER_ASC(c))
 		{
@@ -7429,6 +7524,7 @@ filter_map(argvars, rettv, map)
     listitem	*li, *nli;
     listvar	*l = NULL;
     dictitem	*di;
+    hashtable	*ht;
     hashitem	*hi;
     dictvar	*d = NULL;
     typeval	save_val;
@@ -7461,8 +7557,10 @@ filter_map(argvars, rettv, map)
 	save_key = vimvars[VV_KEY].tv;
 	vimvars[VV_KEY].tv.v_type = VAR_STRING;
 
-	todo = d->dv_hashtable.ht_used;
-	for (hi = d->dv_hashtable.ht_array; todo > 0; ++hi)
+	ht = &d->dv_hashtable;
+	hash_lock(ht);
+	todo = ht->ht_used;
+	for (hi = ht->ht_array; todo > 0; ++hi)
 	{
 	    if (!HASHITEM_EMPTY(hi))
 	    {
@@ -7476,6 +7574,7 @@ filter_map(argvars, rettv, map)
 		clear_tv(&vimvars[VV_KEY].tv);
 	    }
 	}
+	hash_unlock(ht);
 
 	clear_tv(&vimvars[VV_KEY].tv);
 	vimvars[VV_KEY].tv = save_key;
@@ -7799,6 +7898,7 @@ f_function(argvars, rettv)
 {
     char_u	*s;
 
+    rettv->vval.v_number = 0;
     s = get_tv_string(&argvars[0]);
     if (s == NULL || *s == NUL || VIM_ISDIGIT(*s))
 	EMSG2(_(e_invarg2), s);
@@ -7893,7 +7993,7 @@ f_getbufvar(argvars, rettv)
 	else
 	{
 	    /* look up the variable */
-	    v = find_var_in_ga(&buf->b_vars, varname);
+	    v = find_var_in_ht(&buf->b_vars, varname);
 	    if (v != NULL)
 		copy_tv(&v->tv, rettv);
 	}
@@ -8417,7 +8517,7 @@ f_getwinvar(argvars, rettv)
 	else
 	{
 	    /* look up the variable */
-	    v = find_var_in_ga(&win->w_vars, varname);
+	    v = find_var_in_ht(&win->w_vars, varname);
 	    if (v != NULL)
 		copy_tv(&v->tv, rettv);
 	}
@@ -12717,14 +12817,15 @@ get_id_len(arg)
 }
 
 /*
- * Get the length of the name of a function.
+ * Get the length of the name of a variable or function.
+ * Only the name is recognized, does not handle ".key" or "[idx]".
  * "arg" is advanced to the first non-white character after the name.
  * Return 0 if something is wrong.
  * If the name contains 'magic' {}'s, expand them and return the
  * expanded name in an allocated string via 'alias' - caller must free.
  */
     static int
-get_func_len(arg, alias, evaluate)
+get_name_len(arg, alias, evaluate)
     char_u	**arg;
     char_u	**alias;
     int		evaluate;
@@ -13089,16 +13190,14 @@ get_var_tv(name, len, rettv)
      * Check for built-in v: variables.
      */
     else if ((i = find_vim_var(name, len)) >= 0)
-    {
 	tv = &vimvars[i].tv;
-    }
 
     /*
      * Check for user-defined variables.
      */
     else
     {
-	v = find_var(name, FALSE);
+	v = find_var(name, NULL);
 	if (v != NULL)
 	    tv = &v->tv;
     }
@@ -13287,8 +13386,8 @@ get_tv_lnum(argvars)
 /*
  * Get the string value of a variable.
  * If it is a Number variable, the number is converted into a string.
- * get_var_string() uses a single, static buffer.  YOU CAN ONLY USE IT ONCE!
- * get_var_string_buf() uses a given buffer.
+ * get_tv_string() uses a single, static buffer.  YOU CAN ONLY USE IT ONCE!
+ * get_tv_string_buf() uses a given buffer.
  * If the String variable has never been set, return an empty string.
  * Never returns NULL;
  */
@@ -13335,22 +13434,24 @@ get_tv_string_buf(varp, buf)
  * Find variable "name" in the list of variables.
  * Return a pointer to it if found, NULL if not found.
  * Careful: "a:0" variables don't have a name.
+ * When "htp" is not NULL we are writing to the variable, set "htp" to the
+ * hashtable used.
  */
     static VAR
-find_var(name, writing)
+find_var(name, htp)
     char_u	*name;
-    int		writing;
+    hashtable	**htp;
 {
     int		i;
     char_u	*varname;
-    garray_T	*gap;
+    hashtable	*ht;
 
     if (name[0] == 'a' && name[1] == ':')
     {
 	/* Function arguments "a:".
 	 * NOTE: We use a typecast, because function arguments don't have a
 	 * name.  The caller must not try to access the name! */
-	if (writing)
+	if (htp != NULL)
 	{
 	    EMSG2(_(e_readonlyvar), name);
 	    return NULL;
@@ -13379,33 +13480,37 @@ find_var(name, writing)
 	return NULL;
     }
 
-    gap = find_var_ga(name, &varname);
-    if (gap == NULL)
+    ht = find_var_ht(name, &varname);
+    if (htp != NULL)
+	*htp = ht;
+    if (ht == NULL)
 	return NULL;
-    return find_var_in_ga(gap, varname);
-}
-
-    static VAR
-find_var_in_ga(gap, varname)
-    garray_T	*gap;
-    char_u	*varname;
-{
-    int	i;
-
-    for (i = gap->ga_len; --i >= 0; )
-	if (VAR_GAP_ENTRY(i, gap).v_name != NULL
-		&& STRCMP(VAR_GAP_ENTRY(i, gap).v_name, varname) == 0)
-	    break;
-    if (i < 0)
-	return NULL;
-    return &VAR_GAP_ENTRY(i, gap);
+    return find_var_in_ht(ht, varname);
 }
 
 /*
- * Find the growarray and start of name without ':' for a variable name.
+ * Find variable "varname" in hashtable "ht".
+ * Returns NULL if not found.
  */
-    static garray_T *
-find_var_ga(name, varname)
+    static VAR
+find_var_in_ht(ht, varname)
+    hashtable	*ht;
+    char_u	*varname;
+{
+    hashitem	*hi;
+
+    hi = hash_find(ht, varname);
+    if (HASHITEM_EMPTY(hi))
+	return NULL;
+    return HI2VAR(hi);
+}
+
+/*
+ * Find the hashtable used for a variable name.
+ * Set "varname" to the start of name without ':'.
+ */
+    static hashtable *
+find_var_ht(name, varname)
     char_u  *name;
     char_u  **varname;
 {
@@ -13444,22 +13549,35 @@ get_var_value(name)
 {
     VAR		v;
 
-    v = find_var(name, FALSE);
+    v = find_var(name, NULL);
     if (v == NULL)
 	return NULL;
-    return get_var_string(v);
+    return get_tv_string(&v->tv);
 }
 
 /*
- * Allocate a new growarry for a sourced script.  It will be used while
+ * Allocate a new hashtable for a sourced script.  It will be used while
  * sourcing this script and when executing functions defined in the script.
  */
     void
 new_script_vars(id)
     scid_T id;
 {
+    int		i;
+    hashtable	*ht;
+
     if (ga_grow(&ga_scripts, (int)(id - ga_scripts.ga_len)) == OK)
     {
+	/* Re-allocating ga_data means that an ht_array pointing to
+	 * ht_smallarray becomes invalid.  We can recognize this: ht_mask is
+	 * at its init value. */
+	for (i = 1; i <= ga_scripts.ga_len; ++i)
+	{
+	    ht = &SCRIPT_VARS(i);
+	    if (ht->ht_mask == HT_INIT_SIZE - 1)
+		ht->ht_array = ht->ht_smallarray;
+	}
+
 	while (ga_scripts.ga_len < id)
 	{
 	    vars_init(&SCRIPT_VARS(ga_scripts.ga_len + 1));
@@ -13469,36 +13587,58 @@ new_script_vars(id)
 }
 
 /*
- * Initialize internal variables for use.
+ * Initialize hashtable with variables for use.
  */
     void
-vars_init(gap)
-    garray_T *gap;
+vars_init(ht)
+    hashtable *ht;
 {
-    ga_init2(gap, (int)sizeof(var), 4);
+    hash_init(ht);
 }
 
 /*
  * Clean up a list of internal variables.
  */
     void
-vars_clear(gap)
-    garray_T *gap;
+vars_clear(ht)
+    hashtable *ht;
 {
-    int	    i;
+    int		todo;
+    hashitem	*hi;
+    VAR		v;
 
-    for (i = gap->ga_len; --i >= 0; )
-	clear_var(&VAR_GAP_ENTRY(i, gap));
-    ga_clear(gap);
+    todo = ht->ht_used;
+    for (hi = ht->ht_array; todo > 0; ++hi)
+    {
+	if (!HASHITEM_EMPTY(hi))
+	{
+	    --todo;
+
+	    /* Free the variable.  Don't remove it from the hashtable,
+	     * ht_array might change then.  hash_clear() takes care of it
+	     * later. */
+	    v = HI2VAR(hi);
+	    clear_tv(&v->tv);
+	    vim_free(v);
+	}
+    }
+    hash_clear(ht);
+    hash_init(ht);
 }
 
+/*
+ * Delete a variable from hashtable "ht" at item "hi".
+ */
     static void
-clear_var(v)
-    VAR	    v;
+delete_var(ht, hi)
+    hashtable	*ht;
+    hashitem	*hi;
 {
-    vim_free(v->v_name);
-    v->v_name = NULL;
+    VAR		v = HI2VAR(hi);
+
+    hash_remove(ht, hi);
     clear_tv(&v->tv);
+    vim_free(v);
 }
 
 /*
@@ -13587,7 +13727,7 @@ set_var(name, tv, copy)
     int		i;
     VAR		v;
     char_u	*varname;
-    garray_T	*gap;
+    hashtable	*ht;
 
     /*
      * Handle setting internal v: variables.
@@ -13635,8 +13775,21 @@ set_var(name, tv, copy)
 	}
     }
 
-    v = find_var(name, TRUE);
-    if (v != NULL)	    /* existing variable, only need to free string */
+    if (name[0] == 'a' && name[1] == ':')
+    {
+	EMSG2(_(e_readonlyvar), name);
+	return;
+    }
+
+    ht = find_var_ht(name, &varname);
+    if (ht == NULL)
+    {
+	EMSG2(_("E461: Illegal variable name: %s"), name);
+	return;
+    }
+
+    v = find_var_in_ht(ht, varname);
+    if (v != NULL)	    /* existing variable, need to clear the value */
     {
 	if (v->tv.v_type != tv->v_type
 		&& !((v->tv.v_type == VAR_STRING
@@ -13651,29 +13804,17 @@ set_var(name, tv, copy)
     }
     else		    /* add a new variable */
     {
-	gap = find_var_ga(name, &varname);
-	if (gap == NULL)    /* illegal name */
+	v = (VAR)alloc((unsigned)(sizeof(var) + STRLEN(varname)));
+	if (v == NULL)
+	    return;
+	STRCPY(v->v_name, varname);
+	if (hash_add(ht, VAR2HIKEY(v)) == FAIL)
 	{
-	    EMSG2(_("E461: Illegal variable name: %s"), name);
+	    vim_free(v);
 	    return;
 	}
-
-	/* Try to use an empty entry */
-	for (i = gap->ga_len; --i >= 0; )
-	    if (VAR_GAP_ENTRY(i, gap).v_name == NULL)
-		break;
-	if (i < 0)	    /* need to allocate more room */
-	{
-	    if (ga_grow(gap, 1) == FAIL)
-		return;
-	    i = gap->ga_len;
-	}
-	v = &VAR_GAP_ENTRY(i, gap);
-	if ((v->v_name = vim_strsave(varname)) == NULL)
-	    return;
-	if (i == gap->ga_len)
-	    ++gap->ga_len;
     }
+
     if (copy || tv->v_type == VAR_NUMBER)
 	copy_tv(tv, &v->tv);
     else
@@ -14358,7 +14499,7 @@ ex_function(eap)
      */
     if (fudi.fd_dict == NULL)
     {
-	v = find_var(name, FALSE);
+	v = find_var(name, NULL);
 	if (v != NULL && v->tv.v_type == VAR_FUNC)
 	{
 	    EMSG2(_("E707: Function name conflicts with variable: %s"), name);
@@ -14463,6 +14604,7 @@ ret_free:
 
 /*
  * Get a function name, translating "<SID>" and "<SNR>".
+ * Also handles a Funcref in a List or Dictionary.
  * Returns the function name in allocated memory, or NULL for failure.
  * flags:
  * TFN_INT:   internal function name OK
@@ -14486,11 +14628,22 @@ trans_function_name(pp, skip, flags, fdp)
 
     if (fdp != NULL)
 	vim_memset(fdp, 0, sizeof(funcdict));
-
-    /* A name starting with "<SID>" or "<SNR>" is local to a script. */
     start = *pp;
+
+    /* Check for hard coded <SNR>: already translated function ID (from a user
+     * command). */
+    if ((*pp)[0] == K_SPECIAL && (*pp)[1] == KS_EXTRA
+						   && (*pp)[2] == (int)KE_SNR)
+    {
+	*pp += 3;
+	len = get_id_len(pp) + 3;
+	return vim_strnsave(start, len);
+    }
+
+    /* A name starting with "<SID>" or "<SNR>" is local to a script.  But
+     * don't skip over "s:", get_lval() needs it for "s:dict.func". */
     lead = eval_fname_script(start);
-    if (lead > 0)
+    if (lead > 2)
 	start += lead;
 
     end = get_lval(start, NULL, &lv, FALSE, skip, flags & TFN_QUIET);
@@ -14500,7 +14653,7 @@ trans_function_name(pp, skip, flags, fdp)
 	    EMSG(_("E129: Function name required"));
 	goto theend;
     }
-    if (end == NULL || (lv.ll_tv != NULL && (lead > 0 || lv.ll_range)))
+    if (end == NULL || (lv.ll_tv != NULL && (lead > 2 || lv.ll_range)))
     {
 	/*
 	 * Report an invalid expression in braces, unless the expression
@@ -14553,7 +14706,11 @@ trans_function_name(pp, skip, flags, fdp)
     if (lv.ll_exp_name != NULL)
 	len = STRLEN(lv.ll_exp_name);
     else
-	len = (int)(end - start);
+    {
+	if (lead == 2)	/* skip over "s:" */
+	    lv.ll_name += 2;
+	len = (int)(end - lv.ll_name);
+    }
 
     /*
      * Copy the function name to allocated memory.
@@ -14590,7 +14747,7 @@ trans_function_name(pp, skip, flags, fdp)
 	    name[0] = K_SPECIAL;
 	    name[1] = KS_EXTRA;
 	    name[2] = (int)KE_SNR;
-	    if (eval_fname_sid(*pp))	/* If it's "<SID>" */
+	    if (lead > 3)	/* If it's "<SID>" */
 		STRCPY(name + 3, sid_buf);
 	}
 	mch_memmove(name + lead, lv.ll_name, (size_t)len);
@@ -14938,26 +15095,26 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
     fc.level = ex_nesting_level;
     fc.a0_var.tv.v_type = VAR_NUMBER;
     fc.a0_var.tv.vval.v_number = argcount - fp->args.ga_len;
-    fc.a0_var.v_name = NULL;
+    fc.a0_var.v_name[0] = NUL;
     current_funccal = &fc;
     fc.firstline.tv.v_type = VAR_NUMBER;
     fc.firstline.tv.vval.v_number = firstline;
-    fc.firstline.v_name = NULL;
+    fc.firstline.v_name[0] = NUL;
     fc.lastline.tv.v_type = VAR_NUMBER;
     fc.lastline.tv.vval.v_number = lastline;
-    fc.lastline.v_name = NULL;
+    fc.lastline.v_name[0] = NUL;
     /* Check if this function has a breakpoint. */
     fc.breakpoint = dbg_find_breakpoint(FALSE, fp->name, (linenr_T)0);
     fc.dbg_tick = debug_tick;
 
-    if (selfdict != NULL && ga_grow(&fc.l_vars, 1) != FAIL)
+    if (selfdict != NULL)
     {
-	VAR	v = &VAR_GAP_ENTRY(0, &fc.l_vars);
+	VAR	v = (VAR)alloc((unsigned)(sizeof(var) + 4));
 
-	/* Set the "self" local variable. */
-	if ((v->v_name = vim_strsave((char_u *)"self")) != NULL)
+	if (v != NULL)
 	{
-	    ++fc.l_vars.ga_len;
+	    STRCPY(v->v_name, "self");
+	    hash_add(&fc.l_vars, VAR2HIKEY(v));
 	    v->tv.v_type = VAR_DICT;
 	    v->tv.vval.v_dict = selfdict;
 	    ++selfdict->dv_refcount;
@@ -15412,9 +15569,9 @@ read_viminfo_varlist(virp, writing)
 write_viminfo_varlist(fp)
     FILE    *fp;
 {
-    garray_T	*gap = &variables;		/* global variable */
+    hashitem	*hi;
     VAR		this_var;
-    int		i;
+    int		todo;
     char	*s;
     char_u	*tofree;
     char_u	numbuf[NUMBUFLEN];
@@ -15423,22 +15580,27 @@ write_viminfo_varlist(fp)
 	return;
 
     fprintf(fp, _("\n# global variables:\n"));
-    for (i = gap->ga_len; --i >= 0; )
+
+    todo = variables.ht_used;
+    for (hi = variables.ht_array; todo > 0; ++hi)
     {
-	this_var = &VAR_GAP_ENTRY(i, gap);
-	if (this_var->v_name != NULL
-		&& var_flavour(this_var->v_name) == VAR_FLAVOUR_VIMINFO)
+	if (!HASHITEM_EMPTY(hi))
 	{
-	    switch (this_var->tv.v_type)
+	    --todo;
+	    this_var = HI2VAR(hi);
+	    if (var_flavour(this_var->v_name) == VAR_FLAVOUR_VIMINFO)
 	    {
-		case VAR_STRING: s = "STR"; break;
-		case VAR_NUMBER: s = "NUM"; break;
-		default: continue;
-	    }
-	    fprintf(fp, "!%s\t%s\t", this_var->v_name, s);
-	    viminfo_writestring(fp, echo_string(&this_var->tv,
+		switch (this_var->tv.v_type)
+		{
+		    case VAR_STRING: s = "STR"; break;
+		    case VAR_NUMBER: s = "NUM"; break;
+		    default: continue;
+		}
+		fprintf(fp, "!%s\t%s\t", this_var->v_name, s);
+		viminfo_writestring(fp, echo_string(&this_var->tv,
 							    &tofree, numbuf));
-	    vim_free(tofree);
+		vim_free(tofree);
+	    }
 	}
     }
 }
@@ -15449,41 +15611,45 @@ write_viminfo_varlist(fp)
 store_session_globals(fd)
     FILE	*fd;
 {
-    garray_T	*gap = &variables;		/* global variable */
+    hashitem	*hi;
     VAR		this_var;
-    int		i;
+    int		todo;
     char_u	*p, *t;
 
-    for (i = gap->ga_len; --i >= 0; )
+    todo = variables.ht_used;
+    for (hi = variables.ht_array; todo > 0; ++hi)
     {
-	this_var = &VAR_GAP_ENTRY(i, gap);
-	if (this_var->v_name != NULL
-		&& (this_var->tv.v_type == VAR_NUMBER
-		    || this_var->tv.v_type == VAR_STRING)
-		&& var_flavour(this_var->v_name) == VAR_FLAVOUR_SESSION)
+	if (!HASHITEM_EMPTY(hi))
 	{
-	    /* Escape special characters with a backslash.  Turn a LF and
-	     * CR into \n and \r. */
-	    p = vim_strsave_escaped(get_var_string(this_var),
-							(char_u *)"\\\"\n\r");
-	    if (p == NULL)	    /* out of memory */
-		continue;
-	    for (t = p; *t != NUL; ++t)
-		if (*t == '\n')
-		    *t = 'n';
-		else if (*t == '\r')
-		    *t = 'r';
-	    if ((fprintf(fd, "let %s = %c%s%c",
-		       this_var->v_name,
-		       (this_var->tv.v_type == VAR_STRING) ? '"' : ' ',
-		       p,
-		       (this_var->tv.v_type == VAR_STRING) ? '"' : ' ') < 0)
-		    || put_eol(fd) == FAIL)
+	    --todo;
+	    this_var = HI2VAR(hi);
+	    if ((this_var->tv.v_type == VAR_NUMBER
+			|| this_var->tv.v_type == VAR_STRING)
+		    && var_flavour(this_var->v_name) == VAR_FLAVOUR_SESSION)
 	    {
+		/* Escape special characters with a backslash.  Turn a LF and
+		 * CR into \n and \r. */
+		p = vim_strsave_escaped(get_tv_string(&this_var->tv),
+							(char_u *)"\\\"\n\r");
+		if (p == NULL)	    /* out of memory */
+		    break;
+		for (t = p; *t != NUL; ++t)
+		    if (*t == '\n')
+			*t = 'n';
+		    else if (*t == '\r')
+			*t = 'r';
+		if ((fprintf(fd, "let %s = %c%s%c",
+			   this_var->v_name,
+			   (this_var->tv.v_type == VAR_STRING) ? '"' : ' ',
+			   p,
+			   (this_var->tv.v_type == VAR_STRING) ? '"' : ' ') < 0)
+			|| put_eol(fd) == FAIL)
+		{
+		    vim_free(p);
+		    return FAIL;
+		}
 		vim_free(p);
-		return FAIL;
 	    }
-	    vim_free(p);
 	}
     }
     return OK;
