@@ -324,6 +324,7 @@ static long list_len __ARGS((listvar *l));
 static int list_equal __ARGS((listvar *l1, listvar *l2, int ic));
 static int tv_equal __ARGS((typeval *tv1, typeval *tv2, int ic));
 static listitem *list_find __ARGS((listvar *l, long n));
+static long list_idx_of_item __ARGS((listvar *l, listitem *item));
 static listitem *list_find_ext __ARGS((listvar *l, long *ip));
 static void list_append __ARGS((listvar *l, listitem *item));
 static int list_append_tv __ARGS((listvar *l, typeval *tv));
@@ -440,6 +441,8 @@ static void f_mapcheck __ARGS((typeval *argvars, typeval *rettv));
 static void f_match __ARGS((typeval *argvars, typeval *rettv));
 static void f_matchend __ARGS((typeval *argvars, typeval *rettv));
 static void f_matchstr __ARGS((typeval *argvars, typeval *rettv));
+static void f_max __ARGS((typeval *argvars, typeval *rettv));
+static void f_min __ARGS((typeval *argvars, typeval *rettv));
 static void f_mode __ARGS((typeval *argvars, typeval *rettv));
 static void f_nextnonblank __ARGS((typeval *argvars, typeval *rettv));
 static void f_nr2char __ARGS((typeval *argvars, typeval *rettv));
@@ -1540,8 +1543,8 @@ ex_let_one(arg, tv, copy, endchars)
 }
 
 /*
- * Set a variable with an index: "name[expr]", "name[expr][expr]", etc.
- * Only works if "name" is an existing List.
+ * Set a variable with an index: "name[expr]", "name[expr:expr]",
+ * "name[expr][expr]", etc.  Only works if "name" is an existing List.
  * "ip" points to the first '['.
  * Returns a pointer to just after the last used ']'; NULL for error.
  */
@@ -1557,9 +1560,15 @@ set_var_idx(name, ip, rettv, copy, endchars)
     int		c1;
     char_u	*p;
     typeval	var1;
+    typeval	var2;
+    int		range = FALSE;
     typeval	*tv;
-    long	n;
-    listitem	*item;
+    long	n1 = 0, n2 = 0;
+    int		empty1, empty2 = FALSE;
+    listitem	*item = NULL;
+    listitem	*ni;
+    listitem	*ri;
+    listvar	*l = NULL;
 
     c1 = *ip;
     *ip = NUL;
@@ -1579,28 +1588,122 @@ set_var_idx(name, ip, rettv, copy, endchars)
 	    p = NULL;
 	    break;
 	}
-	p = skipwhite(p + 1);
-	if (eval1(&p, &var1, TRUE) == FAIL)	/* recursive! */
+	if (range)
 	{
+	    EMSG(_("E708: [:] must come last"));
 	    p = NULL;
 	    break;
 	}
+
+	/* Get the index [expr] or the first index [expr: ]. */
+	p = skipwhite(p + 1);
+	if (*p == ':')
+	    empty1 = TRUE;
+	else
+	{
+	    empty1 = FALSE;
+	    if (eval1(&p, &var1, TRUE) == FAIL)	/* recursive! */
+	    {
+		p = NULL;
+		break;
+	    }
+	}
+
+	/* Optionally get the second index [ :expr]. */
+	if (*p == ':')
+	{
+	    if (rettv->v_type != VAR_LIST || rettv->vval.v_list == NULL)
+	    {
+		EMSG(_("E709: [:] requires a List value"));
+		p = NULL;
+		if (!empty1)
+		    clear_tv(&var1);
+		break;
+	    }
+	    p = skipwhite(p + 1);
+	    if (*p == ']')
+		empty2 = TRUE;
+	    else
+	    {
+		empty2 = FALSE;
+		if (eval1(&p, &var2, TRUE) == FAIL)	/* recursive! */
+		{
+		    p = NULL;
+		    if (!empty1)
+			clear_tv(&var1);
+		    break;
+		}
+	    }
+	    range = TRUE;
+	}
+	else
+	    range = FALSE;
+
 	if (*p != ']')
 	{
 	    EMSG(_(e_missbrac));
-	    clear_tv(&var1);
+	    if (!empty1)
+		clear_tv(&var1);
+	    if (range && !empty2)
+		clear_tv(&var2);
 	    p = NULL;
 	    break;
 	}
-	n = get_tv_number(&var1);
-	clear_tv(&var1);
-	item = list_find(tv->vval.v_list, n);
+
+	/*
+	 * Get the number and item for the only or first index.
+	 */
+	if (empty1)
+	    n1 = 0;
+	else
+	{
+	    n1 = get_tv_number(&var1);
+	    clear_tv(&var1);
+	}
+	l = tv->vval.v_list;
+	item = list_find(l, n1);
 	if (item == NULL)
 	{
-	    EMSGN(_(e_listidx), n);
+	    EMSGN(_(e_listidx), n1);
 	    p = NULL;
+	    if (range && !empty2)
+		clear_tv(&var2);
 	    break;
 	}
+
+	/*
+	 * May need to find the item or absolute index for the second index of
+	 * a range.
+	 * When no index given: "empty2" is TRUE.
+	 * Otherwise "n2" is set to the second index.
+	 */
+	if (range && !empty2)
+	{
+	    n2 = get_tv_number(&var2);
+	    clear_tv(&var2);
+	    if (n2 < 0)
+	    {
+		ni = list_find(l, n2);
+		if (ni == NULL)
+		{
+		    EMSGN(_(e_listidx), n2);
+		    p = NULL;
+		    break;
+		}
+		n2 = list_idx_of_item(l, ni);
+	    }
+
+	    /* Check that n2 isn't before n1. */
+	    if (n1 < 0)
+		n1 = list_idx_of_item(l, item);
+	    if (n2 < n1)
+	    {
+		EMSGN(_(e_listidx), n2);
+		p = NULL;
+		break;
+	    }
+	}
+
 	tv = &item->li_tv;
     }
 
@@ -1611,11 +1714,47 @@ set_var_idx(name, ip, rettv, copy, endchars)
 	    EMSG(_(e_letunexp));
 	    p = NULL;
 	}
+	else if (range)
+	{
+	    /*
+	     * Assign the List values to the list items.
+	     */
+	    for (ri = rettv->vval.v_list->lv_first; ri != NULL; )
+	    {
+		clear_tv(&item->li_tv);
+		copy_tv(&ri->li_tv, &item->li_tv);
+		ri = ri->li_next;
+		if (ri == NULL || (!empty2 && n2 == n1))
+		    break;
+		if (item->li_next == NULL)
+		{
+		    /* Need to add an empty item. */
+		    ni = listitem_alloc();
+		    if (ni == NULL)
+		    {
+			ri = NULL;
+			break;
+		    }
+		    ni->li_tv.v_type = VAR_NUMBER;
+		    ni->li_tv.vval.v_number = 0;
+		    list_append(l, ni);
+		}
+		item = item->li_next;
+		++n1;
+	    }
+	    if (ri != NULL)
+		EMSG(_("E710: List value has more items than target"));
+	    else if (empty2 ? item != NULL && item->li_next != NULL : n1 != n2)
+		EMSG(_("E711: List value has not enough items"));
+	}
 	else
 	{
+	    /*
+	     * Assign the value to the variable or list item.
+	     */
 	    clear_tv(tv);
 	    if (copy)
-		copy_tv(tv, rettv);
+		copy_tv(rettv, tv);
 	    else
 	    {
 		*tv = *rettv;
@@ -3785,6 +3924,28 @@ list_find(l, n)
 }
 
 /*
+ * Locate "item" list "l" and return its index.
+ * Returns -1 when "item" is not in the list.
+ */
+    static long
+list_idx_of_item(l, item)
+    listvar	*l;
+    listitem	*item;
+{
+    long	idx = 0;
+    listitem	*li;
+
+    if (l == NULL)
+	return -1;
+    idx = 0;
+    for (li = l->lv_first; li != NULL && li != item; li = li->li_next)
+	++idx;
+    if (li == NULL)
+	return -1;
+    return idx;;
+}
+
+/*
  * Like list_find(), but also find an item just past the end.
  * "*ip" is the item to find.
  * When found "*ip" is set to zero, when not found "*ip" is non-zero.
@@ -4253,6 +4414,8 @@ static struct fst
     {"match",		2, 4, f_match},
     {"matchend",	2, 4, f_matchend},
     {"matchstr",	2, 4, f_matchstr},
+    {"max",		1, 1, f_max},
+    {"min",		1, 1, f_min},
     {"mode",		0, 0, f_mode},
     {"nextnonblank",	1, 1, f_nextnonblank},
     {"nr2char",		1, 1, f_nr2char},
@@ -8085,6 +8248,67 @@ f_matchstr(argvars, rettv)
     find_some_match(argvars, rettv, 2);
 }
 
+static void max_min __ARGS((typeval *argvars, typeval *rettv, int domax));
+
+    static void
+max_min(argvars, rettv, domax)
+    typeval	*argvars;
+    typeval	*rettv;
+    int		domax;
+{
+    listvar	*l;
+    listitem	*li;
+    long	n = 0;
+    long	i;
+
+    if (argvars[0].v_type == VAR_LIST)
+    {
+	l = argvars[0].vval.v_list;
+	if (l != NULL)
+	{
+	    li = l->lv_first;
+	    if (li != NULL)
+	    {
+		n = get_tv_number(&li->li_tv);
+		while (1)
+		{
+		    li = li->li_next;
+		    if (li == NULL)
+			break;
+		    i = get_tv_number(&li->li_tv);
+		    if (domax ? i > n : i < n)
+			n = i;
+		}
+	    }
+	}
+    }
+    else
+	EMSG(_(e_listreq));
+    rettv->vval.v_number = n;
+}
+
+/*
+ * "max()" function
+ */
+    static void
+f_max(argvars, rettv)
+    typeval	*argvars;
+    typeval	*rettv;
+{
+    max_min(argvars, rettv, TRUE);
+}
+
+/*
+ * "min()" function
+ */
+    static void
+f_min(argvars, rettv)
+    typeval	*argvars;
+    typeval	*rettv;
+{
+    max_min(argvars, rettv, FALSE);
+}
+
 /*
  * "mode()" function
  */
@@ -10247,10 +10471,17 @@ f_type(argvars, rettv)
     typeval	*argvars;
     typeval	*rettv;
 {
-    if (argvars[0].v_type == VAR_NUMBER)
-	rettv->vval.v_number = 0;
-    else
-	rettv->vval.v_number = 1;
+    int n;
+
+    switch (argvars[0].v_type)
+    {
+	case VAR_NUMBER: n = 0; break;
+	case VAR_STRING: n = 1; break;
+	case VAR_FUNC:   n = 2; break;
+	case VAR_LIST:   n = 3; break;
+	default: EMSG2(_(e_intern2), "f_type()"); n = 0; break;
+    }
+    rettv->vval.v_number = n;
 }
 
 /*

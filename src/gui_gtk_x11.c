@@ -6249,25 +6249,12 @@ gui_mch_get_rgb(guicolor_T pixel)
 }
 
 /*
- * Get current y mouse coordinate in text window.
- * Return -1 when unknown.
+ * Get current mouse coordinates in text window.
  */
-    int
-gui_mch_get_mouse_x(void)
+    void
+gui_mch_getmouse(int *x, int *y)
 {
-    int win_x;
-
-    gdk_window_get_pointer(gui.drawarea->window, &win_x, NULL, NULL);
-    return win_x;
-}
-
-    int
-gui_mch_get_mouse_y(void)
-{
-    int win_y;
-
-    gdk_window_get_pointer(gui.drawarea->window, NULL, &win_y, NULL);
-    return win_y;
+    gdk_window_get_pointer(gui.drawarea->window, x, y, NULL);
 }
 
     void

@@ -3276,33 +3276,23 @@ gui_x11_callbacks(textArea, vimForm)
 }
 
 /*
- * Get current y mouse coordinate in text window.
- * Return -1 when unknown.
+ * Get current mouse coordinates in text window.
  */
-    int
-gui_mch_get_mouse_x()
+    void
+gui_mch_getmouse(int *x, int *y)
 {
     int		rootx, rooty, winx, winy;
     Window	root, child;
     unsigned int mask;
 
     if (gui.wid && XQueryPointer(gui.dpy, gui.wid, &root, &child,
-					 &rootx, &rooty, &winx, &winy, &mask))
-	return winx;
-    return -1;
-}
-
-    int
-gui_mch_get_mouse_y()
-{
-    int		rootx, rooty, winx, winy;
-    Window	root, child;
-    unsigned int mask;
-
-    if (gui.wid && XQueryPointer(gui.dpy, gui.wid, &root, &child,
-					 &rootx, &rooty, &winx, &winy, &mask))
-	return winy;
-    return -1;
+					 &rootx, &rooty, &winx, &winy, &mask)) {
+	*x = winx;
+	*y = winy;
+    } else {
+	*x = -1;
+	*y = -1;
+    }
 }
 
     void

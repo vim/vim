@@ -30,8 +30,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Add mouse patch from Marcin Dalecki.
-
 Use 'ignorecase' for ":vimgrep"?
 
 When allocating a new variable, a search is done for an empty entry.  May
@@ -72,6 +70,7 @@ PLANNED FOR VERSION 7.0:
 -   new DATA TYPES:
 	- None?  (or use empty string?)
 	- dictionary
+	    range(start, end, stride) creates a listable dict.
     Add type checking?  See ~/vim/ideas.txt.
 -   Add SPELLCHECKER, with easy to add support for many languages.
     8   Add spell checking.  Use "ispell -a" somehow.
@@ -278,7 +277,7 @@ Awaiting updated patches:
     8   "fg" and "bg" don't work in an xterm.  Get default colors from xterm
 	with an ESC sequence.  Ideas in: ~/vim/patches/vikas.xtermcolors .
     7   Add "DefaultFG" and "DefaultBG" for the colors of the menu. (Marcin
-	Dalecki has a patch for Motif)
+	Dalecki has a patch for Motif and Carbon)
     -   Add possibility to highlight specific columns (for Fortran).  Or put a
 	line in between columns (e.g. for 'textwidth').
 	Patch to add 'hlcolumn' from Vit Stradal, 2004 May 20.
@@ -569,10 +568,8 @@ Athena GUI:
 
 
 Motif GUI:
-8   Popup menu ordering is wrong.
 7   Use XmStringCreateLocalized() instead of XmStringCreateSimple()?
     David Harrison says it's OK (it exists in Motif 1.2).
-8   The texts in the find/replace dialog don't use the right font.
 8   Lesstif: When deleting a menu that's torn off, the torn off menu becomes
     very small instead of disappearing.  When closing it, Vim crashes.
     (Phillipps)
@@ -1069,8 +1066,6 @@ I can't reproduce these (if you can, let me know how!):
 9   NT 4.0 on NTFS file system: Editing ".bashrc" (drag and drop), file
     disappears.  Editing ".xyz" is OK.  Also, drag&drop only works for three
     files. (McCollister)
-8   Motif: Tear-off menu item crashes Vim on some machines.  (Netherton)  It
-    works fine for me, maybe it's a Motif problem.
 
 
 Problems that will (probably) not be solved:
@@ -1334,7 +1329,7 @@ Multi-byte characters:
     For Windows, the charset_pairs[] table could be used.  But how do we know
     if a font exists?
 -   Do keyboard conversion from 'termencoding' to 'encoding' with
-    convert_input() for Mac GUI, RiscOS GUI, BeOS GUI.
+    convert_input() for Mac GUI and RiscOS GUI.
 -   Add mnemonics from RFC1345 longer than two characters.
     Support CTRL-K _{mnemonic}_
 7   In "-- INSERT (lang) --" show the name of the keymap used instead of
@@ -2021,11 +2016,6 @@ GUI:
     things.
 7   Motif: For a confirm() dialog <Enter> should be ignored when no default
     button selected, <Esc> should close the dialog.
--   Motif steals <F10> from us, to pop up menus with the keyboard.  How do we
-    get it back if we want it?  It's already solved for GTK.
--   Paste in Insert mode should not do autowrap etc.  Or maybe this should be
-    changeable with an option?
--   Put a nice picture in the icon (but how do we do that?).
 7   When using a pseudo-tty Vim should behave like some terminal (vt52 looks
     simple enough). Terminal codes to/from shell should be translated.
 -   Would it be useful to be able to quit the GUI and go back to the terminal
