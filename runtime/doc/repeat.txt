@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 7.0aa.  Last change: 2004 Apr 02
+*repeat.txt*    For Vim version 7.0aa.  Last change: 2004 Jun 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -467,6 +467,13 @@ DEFINING BREAKPOINTS
 		Set a breakpoint in a sourced file.  Example: >
 			:breakadd file 43 .vimrc
 
+:breaka[dd] here
+		Set a breakpoint in the current line of the current file.
+		Like doing: >
+			:breakadd file <cursor-line> <current-file>
+<		Note that this only works for commands that are executed when
+		sourcing the file, not for a function defined in that file.
+
 The [lnum] is the line number of the breakpoint.  Vim will stop at or after
 this line.  When omitted line 1 is used.
 
@@ -500,6 +507,9 @@ DELETING BREAKPOINTS
 
 :breakd[el] file [lnum] {name}
 		Delete a breakpoint in a sourced file.
+
+:breakd[el] here
+		Delete a breakpoint at the current line of the current file.
 
 When [lnum] is omitted, the first breakpoint in the function or file is
 deleted.

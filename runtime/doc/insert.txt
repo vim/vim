@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0aa.  Last change: 2004 Jun 16
+*insert.txt*    For Vim version 7.0aa.  Last change: 2004 Jun 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -374,6 +374,11 @@ An example for using CTRL-G u: >
 This redefines the backspace key to start a new undo sequence.  You can now
 undo the effect of the backspace key, without changing what you typed before
 that, with CTRL-O u.
+
+Using CTRL-O splits undo: the text typed before and after it is undone
+separately.  If you want to avoid this (e.g., in a mapping) you might be able
+to use CTRL-R = |i_CTRL-R|.  E.g., to call a function: >
+	:imap <F2> <C-R>=MyFunc()<CR>
 
 When the 'whichwrap' option is set appropriately, the <Left> and <Right>
 keys on the first/last character in the line make the cursor wrap to the

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Jun 20
+*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Jun 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,6 +30,8 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Change for fsync() error in Vim 6 as patch?
+
 For version 7.0:
 -   Include many PATCHES:
     9   Merge in ideas from tutor.txt (Gabriel Zachmann)
@@ -59,7 +61,7 @@ For version 7.0:
 	InsmodLeave	    Taro Muraoka, 2004 Jun 16
     -   Include the kvim patch. http://freenux.org/vim/ (Mickael Marchand)
 	Do not add Qtopia yet, it doesn't work very well.
-	Mickael will update the patch before 21st.
+	update from Mickael 2004 Jun 20.
     8   Unix: When libcall() fails there is no clear error message.  Johannes
 	Zellner has a patch for this.
 	updated patch 2004 June 16.
@@ -88,7 +90,8 @@ For version 7.0:
     7   Completion of network shares, patch by Yasuhiro Matsumoto.
 	Update 2004 Jun 17.
     8   Patches from Peter "Rain Dog" Cucka:
-	- guifont selector (2002 Dec 15)  will send update
+	- guifont selector (2002 Dec 15)
+	  update 2004 Jun 20
     7   Add an option to set the width of the 'number' column.  Eight
 	positions is often more than needed.  Or adjust the width to the
 	length of the file?
@@ -215,11 +218,6 @@ For version 7.0:
     7   Motif: use the menu font consistently.  Patch from Martin Dalecki 2002
 	Jan 11.
     -   Motif: add 3D shading for the menu entries?  Patch from Martin Dalecki.
-    9   When 'autoindent' is set, hitting <CR> twice, while there is text after
-	the cursor, doesn't delete the autoindent in the resulting blank line.
-	(Rich Wales) This is Vi compatible, but it looks like a bug.  Rich has
-	a suggestion for a patch to fix this.
-	e-mail to Rich bounced.
     7   For Visual mode: Command to do a search for the string in the marked
 	area.  Only when fewer than two lines. Use "g/" and "gb".  Patch from
 	Yegappan Lakshmanan.
@@ -260,6 +258,12 @@ For version 7.0:
 	ispell inside Vim).  Gautam Iyer has an example with "aspell".
 	"engspchk" from Charles Campbell is a good way.  Support for
 	approximate-regexps will help (agrep http://www.tgries.de/agrep/).
+	- Charles Campbell asks for method to add "contained" groups to
+	  existing syntax items (to add @Spell).  Add ":syntax contains
+	  {pattern} add=@Spell" command?  A bit like ":syn cluster" but change
+	  the contains list directly for matching syntax items.
+        - Keep wordlist in syntax group, load it only once and use it several
+	  times later.  Sort of global syntax items.
 -   REFACTORING: The main() function is very long.  Move parts to separate
     functions, especially loops.  Ideas from Walter Briscoe (2003 Apr 3, 2004
     Feb 9).
@@ -302,6 +306,11 @@ For version 7.0:
     Especially when using the scrollbar.  Typing a cursor-movement command
     scrolls back to where the cursor is.
 8   Support four composing characters, needed for Hebrew. (Ron Aaron)
+-   Add a few more things to 'diffopt': "horizontal", "vertical",
+    "foldcolumn". (Benji Fisher, 2004 Jun 21)
+-   FileChangedShellPost autocommand event: after (not) reloading a changed
+    file.  Can be used to update statusline oslt.
+-   Displaying size of Visual area: use 24-33 column display.
 
 
 Vi incompatibility:
@@ -1111,6 +1120,8 @@ Problems that will (probably) not be solved:
 -   GTK: When pasting a selection from Vim to xclipboard gvim crashes with a
     ABRT signal.  Probably an error in the file gdkselection.c, the assert
     always fails when XmbTextListToTextProperty() fails. (Tom Allard)
+-   GTK 2: gives an assertion error for every non-builtin icon in the toolbar.
+    This is a GTK 2.4.x bug, fixed in GTK 2.4.2. (Thomas de Grenier de Latour)
 -   When using an xterm that supports the termresponse feature, and the 't_Co'
     termcap option was wrong when Vim started, it will be corrected when the
     termresponse is received.  Since the number of colors changes, the
@@ -2171,6 +2182,9 @@ Command line history:
 
 
 Insert mode:
+9   When 'autoindent' is set, hitting <CR> twice, while there is text after
+    the cursor, doesn't delete the autoindent in the resulting blank line.
+    (Rich Wales) This is Vi compatible, but it looks like a bug.
 8   When using CTRL-O in Insert mode, then executing an insert command
     "a" or "i", should we return to Insert mode after <Esc>? (Eggink)
     Perhaps it can be allowed a single time, to be able to do
@@ -3299,8 +3313,6 @@ Various improvements:
 -   Implement 'redraw' option.
 -   Add special code to 'sections' option to define something else but '{' or
     '}' as the start of a section (e.g. one shiftwidth to the right).
--   Add 'indent' option: Always use this amount of indent when starting a new
-    line and when formatting text.
 -   Use pipes for filtering on Unix.  Requires using fork() to be able to read
     and write at the same time, or some select() mechanism.
 7   Allow using Vim in a pipe: "ls | vim -u xxx.vim - | yyy".  Only needs

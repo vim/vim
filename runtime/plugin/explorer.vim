@@ -1,7 +1,7 @@
 "=============================================================================
 " File: explorer.vim
 " Author: M A Aziz Ahmed (aziz@acorn-networks.com - doesn't work)
-" Last Change:	2004 May 13
+" Last Change:	2004 Jun 22
 " Version: 2.5 + changes
 " Additions by Mark Waggoner (waggoner@aracnet.com) et al.
 "-----------------------------------------------------------------------------
@@ -647,7 +647,7 @@ function! s:ShowDirectory()
     let b:maxFileLen = 0
     0
     /^"=/+1,$g/^/call s:MarkDirs()
-    normal! `t
+    keepjumps normal! `t
     call s:AddFileInfo()
   endif
 
@@ -840,7 +840,7 @@ function! s:AddFileInfo()
   call s:AddSeparators()
 
   " return to start
-  normal! `t
+  keepjumps normal! `t
 
   let &sc = save_sc
 endfunction
@@ -973,7 +973,7 @@ function! s:UpdateHeader()
   " Go back where we came from if possible
   0
   if line("'t") != 0
-    normal! `t
+    keepjumps normal! `t
   endif
 
   let &report=oldRep

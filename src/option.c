@@ -3115,7 +3115,7 @@ set_init_3()
      * "-c" and "\"", but not for DJGPP, because it starts the shell without
      * command.com.  And for Win32 we need to set p_sxq instead.
      */
-    if (strstr((char *)p_sh, "sh") != NULL)
+    if (strstr((char *)gettail(p_sh), "sh") != NULL)
     {
 	int	idx3;
 

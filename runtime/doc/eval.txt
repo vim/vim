@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2004 Jun 20
+*eval.txt*      For Vim version 7.0aa.  Last change: 2004 Jun 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1236,10 +1236,19 @@ eventhandler()						*eventhandler()*
 executable({expr})					*executable()*
 		This function checks if an executable with the name {expr}
 		exists.  {expr} must be the name of the program without any
-		arguments.  executable() uses the normal $PATH.
-		On MS-DOS and MS-Windows the ".exe", ".bat", etc. must be
-		included.  It only checks if the file exists and is not a
-		directory, not if it's really executable.
+		arguments.
+		executable() uses the value of $PATH and/or the normal
+		searchpath for programs.		*PATHEXT*
+		On MS-DOS and MS-Windows the ".exe", ".bat", etc. can
+		optionally be included.  Then the extensions in $PATHEXT are
+		tried.  Thus if "foo.exe" does not exist, "foo.exe.bat" can be
+		found.  If $PATHEXT is not set then ".exe;.com;.bat;.cmd" is
+		used.  A dot by itself can be used in $PATHEXT to try using
+		the name without an extension.  When 'shell' looks like a
+		Unix shell, then the name is also tried without adding an
+		extension.
+		On MS-DOS and MS-Windows it only checks if the file exists and
+		is not a directory, not if it's really executable.
 		The result is a Number:
 			1	exists
 			0	does not exist

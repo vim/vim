@@ -375,6 +375,7 @@ dbg_parsearg(arg)
     char_u	*p = arg;
     char_u	*q;
     struct debuggy *bp;
+    int		here = FALSE;
 
     if (ga_grow(&dbg_breakp, 1) == FAIL)
 	return FAIL;
@@ -385,6 +386,16 @@ dbg_parsearg(arg)
 	bp->dbg_type = DBG_FUNC;
     else if (STRNCMP(p, "file", 4) == 0)
 	bp->dbg_type = DBG_FILE;
+    else if (STRNCMP(p, "here", 4) == 0)
+    {
+	if (curbuf->b_ffname == NULL)
+	{
+	    EMSG(_(e_noname));
+	    return FAIL;
+	}
+	bp->dbg_type = DBG_FILE;
+	here = TRUE;
+    }
     else
     {
 	EMSG2(_(e_invarg2), p);
@@ -393,7 +404,9 @@ dbg_parsearg(arg)
     p = skipwhite(p + 4);
 
     /* Find optional line number. */
-    if (VIM_ISDIGIT(*p))
+    if (here)
+	bp->dbg_lnum = curwin->w_cursor.lnum;
+    else if (VIM_ISDIGIT(*p))
     {
 	bp->dbg_lnum = getdigits(&p);
 	p = skipwhite(p);
@@ -402,7 +415,8 @@ dbg_parsearg(arg)
 	bp->dbg_lnum = 0;
 
     /* Find the function or file name.  Don't accept a function name with (). */
-    if (*p == NUL
+    if ((!here && *p == NUL)
+	    || (here && *p != NUL)
 	    || (bp->dbg_type == DBG_FUNC && strstr((char *)p, "()") != NULL))
     {
 	EMSG2(_(e_invarg2), arg);
@@ -411,6 +425,8 @@ dbg_parsearg(arg)
 
     if (bp->dbg_type == DBG_FUNC)
 	bp->dbg_name = vim_strsave(p);
+    else if (here)
+	bp->dbg_name = vim_strsave(curbuf->b_ffname);
     else
     {
 	/* Expand the file name in the same way as do_source().  This means

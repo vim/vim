@@ -1,4 +1,4 @@
-*usr_05.txt*	For Vim version 7.0aa.  Last change: 2004 Mar 12
+*usr_05.txt*	For Vim version 7.0aa.  Last change: 2004 Jun 24
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -369,8 +369,8 @@ adding.  If it's OK, you can give the new one another name: >
 	mv thefile ~/.vim/ftplugin/stuff_too.vim
 
 The underscore is used to separate the name of the filetype from the rest,
-which can be anything.  If you would use "otherstuff.vim" it wouldn't work, it
-would be loaded for the "otherstuff" filetype.
+which can be anything.  If you use "otherstuff.vim" it wouldn't work, it would
+be loaded for the "otherstuff" filetype.
 
 On MS-DOS you cannot use long filenames.  You would run into trouble if you
 add a second plugin and the filetype has more than six characters.  You can
@@ -505,7 +505,7 @@ before and after the option name.  For example: >
 	:help 'wrap'
 
 In case you have messed up an option value, you can set it back to the
-default by putting a ampersand (&) after the option name.  Example: >
+default by putting an ampersand (&) after the option name.  Example: >
 
 	:set iskeyword&
 
@@ -514,8 +514,8 @@ NOT WRAPPING LINES
 
 Vim normally wraps long lines, so that you can see all of the text.  Sometimes
 it's better to let the text continue right of the window.  Then you need to
-scroll the text left-right to see all of a long line.  Switch wrapping of with
-this command: >
+scroll the text left-right to see all of a long line.  Switch wrapping off
+with this command: >
 
 	:set nowrap
 

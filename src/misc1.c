@@ -4014,7 +4014,8 @@ fullpathcmp(s1, s2, checkname)
 }
 
 /*
- * get the tail of a path: the file name.
+ * Get the tail of a path: the file name.
+ * Fail safe: never returns NULL.
  */
     char_u *
 gettail(fname)

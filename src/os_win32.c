@@ -1521,7 +1521,7 @@ theend:
 
 /*
  * Return TRUE if "name" is in $PATH.
- * TODO: Should also check if it's really executable.
+ * TODO: Should somehow check if it's really executable.
  */
     static int
 executable_exists(char *name)
@@ -2556,7 +2556,43 @@ mch_writable(char_u *name)
     int
 mch_can_exe(char_u *name)
 {
-    return executable_exists((char *)name);
+    char_u	buf[_MAX_PATH];
+    int		len = STRLEN(name);
+    char_u	*p;
+
+    if (len >= _MAX_PATH)	/* safety check */
+	return FALSE;
+
+    /* If there already is an extension try using the name directly.  Also do
+     * this with a Unix-shell like 'shell'. */
+    if (vim_strchr(gettail(name), '.') != NULL
+			       || strstr((char *)gettail(p_sh), "sh") != NULL)
+	if (executable_exists((char *)name))
+	    return TRUE;
+
+    /*
+     * Loop over all extensions in $PATHEXT.
+     */
+    STRNCPY(buf, name, _MAX_PATH);
+    p = mch_getenv("PATHEXT");
+    if (p == NULL)
+	p = (char_u *)".com;.exe;.bat;.cmd";
+    while (*p)
+    {
+	if (p[0] == '.' && (p[1] == NUL || p[1] == ';'))
+	{
+	    /* A single "." means no extension is added. */
+	    buf[len] = NUL;
+	    ++p;
+	    if (*p)
+		++p;
+	}
+	else
+	    copy_option_part(&p, buf + len, _MAX_PATH - len, ";");
+	if (executable_exists((char *)buf))
+	    return TRUE;
+    }
+    return FALSE;
 }
 #endif
 
@@ -4659,14 +4695,14 @@ copy_infostreams(char_u *from, char_u *to)
 		    {
 			streamname[len - 6] = 0;
 			copy_substream(sh, &context, tow, streamname,
-						      (long)sid.Size.LowPart);
+						    (long)sid.Size.u.LowPart);
 		    }
 		}
 
 		/* Advance to the next stream.  We might try seeking too far,
 		 * but BackupSeek() doesn't skip over stream borders, thus
 		 * that's OK. */
-		(void)BackupSeek(sh, sid.Size.LowPart, sid.Size.HighPart,
+		(void)BackupSeek(sh, sid.Size.LowPart, sid.Size.u.HighPart,
 							  &lo, &hi, &context);
 	    }
 

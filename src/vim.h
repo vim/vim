@@ -726,6 +726,7 @@ extern char* (*dyn_libintl_textdomain)(const char* domainname);
 #define REMAP_YES	0	/* allow remapping */
 #define REMAP_NONE	-1	/* no remapping */
 #define REMAP_SCRIPT	-2	/* remap script-local mappings only */
+#define REMAP_SKIP	-3	/* no remapping for first char */
 
 /* Values for mch_call_shell() second argument */
 #define SHELL_FILTER	1	/* filtering text */

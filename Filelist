@@ -204,7 +204,19 @@ SRC_DOS_UNIX =	\
 
 # source files for DOS (also in the extra archive)
 SRC_DOS =	\
-		src/GvimExt \
+		src/GvimExt/*.mak \
+		src/GvimExt/GvimExt.reg \
+		src/GvimExt/Makefile \
+		src/GvimExt/README.txt \
+		src/GvimExt/gvimext.cpp \
+		src/GvimExt/gvimext.def \
+		src/GvimExt/gvimext.h \
+		src/GvimExt/gvimext.inf \
+		src/GvimExt/gvimext.rc \
+		src/GvimExt/gvimext_ming.def \
+		src/GvimExt/gvimext_ming.rc \
+		src/GvimExt/resource.h \
+		src/GvimExt/uninst.bat \
 		README_srcdos.txt \
 		src/INSTALLpc.txt \
 		src/Make_bc3.mak \

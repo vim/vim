@@ -2,7 +2,7 @@
 " Language:	Texinfo (macro package for TeX)
 " Maintainer:	Sandor Kopanyi <sandor.kopanyi@mailbox.hu>
 " URL:		<->
-" Last Change:	2003 May 11
+" Last Change:	2004 Jun 23
 "
 " the file follows the Texinfo manual structure; this file is based
 " on manual for Texinfo version 4.0, 28 September 1999
@@ -351,7 +351,7 @@ syn region texinfoPrmAtCmd matchgroup=texinfoAtCmd start="^@oddheading"   skip="
 syn match  texinfoAtCmd "@refill"
 
 
-syn cluster texinfoAll contains=ALLBUT,{texinfoThisAtCmd,texinfoHFSpecialChar}
+syn cluster texinfoAll contains=ALLBUT,texinfoThisAtCmd,texinfoHFSpecialChar
 syn cluster texinfoReducedAll contains=texinfoSpecialChar,texinfoBrcPrmAtCmd
 "==============================================================================
 " highlighting

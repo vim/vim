@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2004 Jun 07
+*version7.txt*  For Vim version 7.0aa.  Last change: 2004 Jun 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -32,6 +32,20 @@ INCOMPATIBLE CHANGES				*incompatible-7*
 These changes are incompatible with previous releases.  Check this list if you
 run into a problem when upgrading from Vim 6.x to 7.0
 
+":helpgrep" now uses a help window to display a match.
+
+
+Minor incompatibilities:
+
+For filetype detection: For many types, instead of ~/.dir/filename use
+*/.dir/filename, so that it also works for other user's files.
+
+":0verbose" now sets 'verbose' to zero instead of one.
+
+Removed the old and incomplete "VimBuddy" code.
+
+Buffers without a name report "No Name" instead of "No File".  It was
+confusing for buffers with a name and 'buftype' set to "nofile".
 
 ==============================================================================
 NEW FEATURES						*new-7*
@@ -68,9 +82,20 @@ New autocommand events: ~
 
 New Syntax files: ~
 
+Others: ~
+
+Mac: Add the selection type to the clipboard, so that Block, line and
+character selections can be used between two Vims. (Eckehard Berns)
+Also fixes the problem that setting 'clipboard' to "unnamed" breaks using
+"yyp".
 
 ==============================================================================
 IMPROVEMENTS						*improvements-7*
+
+":helpgrep" accepts a language specifier after the pattern: "pat@it".
+
+":breakadd here" and ":breakdel here" can be used to set or delete a
+breakpoint at the cursor.
 
 
 ==============================================================================
@@ -80,5 +105,51 @@ COMPILE TIME CHANGES					*compile-changes-7*
 ==============================================================================
 BUG FIXES						*bug-fixes-7*
 
+When using PostScript printing on MS-DOS the default 'printexpr' used "lpr"
+instead of "copy".  When 'printdevice' was empty the copy command did not
+work.  Use "LPT1" then.
+
+The GTK font dialog uses a font size zero when the font name doesn't include a
+size.  Use a default size of 10.
+
+This example in the documentation didn't work:
+    :e `=foo . ".c" `
+Skip over the expression in `=expr` when looking for comments, |, % and #.
+
+When ":helpgrep" doesn't find anything there is no error message.
+
+"L" and "H" did not take closed folds into account.
+
+Win32: The "-P title" argument stopped at the first title that matched, even
+when it doesn't support MDI.
+
+Mac GUI: CTRL-^ and CTRL-@ did not work.
+
+"2daw" on "word." at the end of a line didn't include the preceding white
+space.
+
+Win32: Using FindExecutable() doesn't work to find a program.  Use
+SearchPath() instead.  For executable() use $PATHEXT when the program searched
+for doesn't have an extension.
+
+When 'virtualedit' is set, moving the cursor up after appending a character
+may move it to a different column.  Was caused by auto-formatting moving the
+cursor and not putting it back where it was.
+
+When indent was added automatically and then moving the cursor, the indent was
+not deleted (like when pressing ESC).  The "I" flag in 'cpoptions' can be used
+to make it work the old way.
+
+When <Space> is mapped to something that starts with a space, typing <Space>
+does not expand abbreviations.  Only disable expanding abbreviations when a
+mapping is not remapped, not when the RHS starts with the LHS.
+
+When opening a command-line window, 'textwidth' gets set to 78 by the Vim
+filetype plugin.  Reset 'textwidth' to 0 to avoid lines are broken.
+
+After using cursor(line, col) moving up/down doesn't keep the same column.
+
+Win32: Borland C before 5.5 requires using ".u." for LowPart and HighPart
+fields. (Walter Briscoe)
 
  vim:tw=78:ts=8:ft=help:norl:

@@ -100,6 +100,7 @@ static int		KeyNoremap = FALSE; /* remapping disabled */
 #define RM_YES		0	/* tb_noremap: remap */
 #define RM_NONE		1	/* tb_noremap: don't remap */
 #define RM_SCRIPT	2	/* tb_noremap: remap local script mappings */
+#define RM_ABBR		4	/* tb_noremap: don't remap, do abbrev. */
 
 /* typebuf.tb_buf has three parts: room in front (for result of mappings), the
  * middle for typeahead and room for new characters (which needs to be 3 *
@@ -896,6 +897,8 @@ init_typebuf()
  *
  * If noremap is REMAP_YES, new string can be mapped again.
  * If noremap is REMAP_NONE, new string cannot be mapped again.
+ * If noremap is REMAP_SKIP, fist char of new string cannot be mapped again,
+ * but abbreviations are allowed.
  * If noremap is REMAP_SCRIPT, new string cannot be mapped again, except for
  *			script-local mappings.
  * If noremap is > 0, that many characters of the new string cannot be mapped.
@@ -993,6 +996,8 @@ ins_typebuf(str, noremap, offset, nottyped, silent)
     /* If noremap == REMAP_SCRIPT: do remap script-local mappings. */
     if (noremap == REMAP_SCRIPT)
 	val = RM_SCRIPT;
+    else if (noremap == REMAP_SKIP)
+	val = RM_ABBR;
     else
 	val = RM_NONE;
 
@@ -1004,7 +1009,9 @@ ins_typebuf(str, noremap, offset, nottyped, silent)
      * If noremap  > 0: "noremap" characters are not remappable, the rest
      *			mappable
      */
-    if (noremap < 0)
+    if (noremap == REMAP_SKIP)
+	nrm = 1;
+    else if (noremap < 0)
 	nrm = addlen;
     else
 	nrm = noremap;
@@ -1856,8 +1863,8 @@ vgetorpeek(advance)
 			    && (no_zero_mapping == 0 || c1 != '0')
 			    && (typebuf.tb_maplen == 0
 				|| (p_remap
-				    && typebuf.tb_noremap[typebuf.tb_off]
-								  != RM_NONE))
+				    && (typebuf.tb_noremap[typebuf.tb_off]
+						    & (RM_NONE|RM_ABBR)) == 0))
 			    && !(p_paste && (State & (INSERT + CMDLINE)))
 			    && !(State == HITRETURN && (c1 == CAR || c1 == ' '))
 			    && State != ASKMORE
@@ -1973,7 +1980,7 @@ vgetorpeek(advance)
 				     * remapped, skip the entry.
 				     */
 				    for (n = mlen; --n >= 0; )
-					if (*s++ == RM_NONE)
+					if (*s++ & (RM_NONE|RM_ABBR))
 					    break;
 				    if (n >= 0)
 					continue;
@@ -2132,7 +2139,8 @@ vgetorpeek(advance)
 							 + typebuf.tb_off, 1);
 				    }
 				    KeyNoremap = (typebuf.tb_noremap[
-						typebuf.tb_off] != REMAP_YES);
+						   typebuf.tb_off]
+						       & (RM_NONE|RM_SCRIPT));
 				    del_typebuf(1, 0);
 				}
 				break;	    /* got character, break for loop */
@@ -2233,7 +2241,8 @@ vgetorpeek(advance)
 			/*
 			 * Insert the 'to' part in the typebuf.tb_buf.
 			 * If 'from' field is the same as the start of the
-			 * 'to' field, don't remap the first character.
+			 * 'to' field, don't remap the first character (but do
+			 * allow abbreviations).
 			 * If m_noremap is set, don't remap the whole 'to'
 			 * part.
 			 */
@@ -2241,8 +2250,8 @@ vgetorpeek(advance)
 				mp->m_noremap != REMAP_YES
 					    ? mp->m_noremap
 					    : STRNCMP(mp->m_str, mp->m_keys,
-							       (size_t)keylen)
-							      ? REMAP_YES : 1,
+							  (size_t)keylen) != 0
+						     ? REMAP_YES : REMAP_SKIP,
 				0, TRUE, cmd_silent || mp->m_silent) == FAIL)
 			{
 			    c = -1;

@@ -129,6 +129,7 @@
 #define CPO_FNAMEW	'F'	/* set file name for ":w file" */
 #define CPO_GOTO1	'g'	/* goto line 1 for ":edit" */
 #define CPO_INTMOD	'i'	/* interrupt a read makes buffer modified */
+#define CPO_INDENT	'I'	/* remove auto-indent more often */
 #define CPO_JOINSP	'j'	/* only use two spaces for join after '.' */
 #define CPO_ENDOFSENT	'J'	/* need two spaces to detect end of sentence */
 #define CPO_KEYCODE	'k'	/* don't recognize raw key code in mappings */
@@ -158,7 +159,7 @@
 #define CPO_STAR	'*'	/* ":*" means ":@" */
 #define CPO_SPECI	'<'	/* don't recognize <> in mappings */
 #define CPO_DEFAULT	"aABceFs"
-#define CPO_ALL		"aAbBcCdDeEfFgijJkKlLmMnoOprRsStuvwWxy$!%*<"
+#define CPO_ALL		"aAbBcCdDeEfFgiIjJkKlLmMnoOprRsStuvwWxy$!%*<"
 
 /* characters for p_ww option: */
 #define WW_ALL		"bshl<>[],~"

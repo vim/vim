@@ -5181,6 +5181,10 @@ ex_window()
 	set_option_value((char_u *)"ft", 0L, (char_u *)"vim", OPT_LOCAL);
     }
 
+    /* Reset 'textwidth' after setting 'filetype' (the Vim filetype plugin
+     * sets 'textwidth' to 78). */
+    curbuf->b_p_tw = 0;
+
     /* Fill the buffer with the history. */
     init_history();
     if (hislen > 0)

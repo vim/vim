@@ -4658,8 +4658,10 @@ stop_insert(end_insert_pos, esc)
 	 * insertion (or moving the cursor), but it's required when appending
 	 * a line and having it end in a space.  But only do it when something
 	 * was actually inserted, otherwise undo won't work. */
-	if (!ins_need_undo)
+	if (!ins_need_undo && has_format_option(FO_AUTO))
 	{
+	    pos_T   tpos = curwin->w_cursor;
+
 	    /* When the cursor is at the end of the line after a space the
 	     * formatting will move it to the following word.  Avoid that by
 	     * moving the cursor onto the space. */
@@ -4669,27 +4671,45 @@ stop_insert(end_insert_pos, esc)
 		dec_cursor();
 		cc = gchar_cursor();
 		if (!vim_iswhite(cc))
-		    inc_cursor();
+		    curwin->w_cursor = tpos;
 	    }
 
 	    auto_format(TRUE, FALSE);
 
-	    if (vim_iswhite(cc) && gchar_cursor() != NUL)
-		inc_cursor();
+	    if (vim_iswhite(cc))
+	    {
+		if (gchar_cursor() != NUL)
+		    inc_cursor();
+#ifdef FEAT_VIRTUALEDIT
+		/* If the cursor is still at the same character, also keep
+		 * the "coladd". */
+		if (gchar_cursor() == NUL
+			&& curwin->w_cursor.lnum == tpos.lnum
+			&& curwin->w_cursor.col == tpos.col)
+		    curwin->w_cursor.coladd = tpos.coladd;
+#endif
+	    }
 	}
 
 	/* If a space was inserted for auto-formatting, remove it now. */
 	check_auto_format(TRUE);
 
 	/* If we just did an auto-indent, remove the white space from the end
-	 * of the line, and put the cursor back.  */
-	if (did_ai && esc)
+	 * of the line, and put the cursor back.
+	 * Do this when ESC was used or moving the cursor up/down. */
+	if (did_ai && (esc || (vim_strchr(p_cpo, CPO_INDENT) == NULL
+			   && curwin->w_cursor.lnum != end_insert_pos->lnum)))
 	{
+	    pos_T	tpos = curwin->w_cursor;
+
+	    curwin->w_cursor = *end_insert_pos;
 	    if (gchar_cursor() == NUL && curwin->w_cursor.col > 0)
 		--curwin->w_cursor.col;
 	    while (cc = gchar_cursor(), vim_iswhite(cc))
 		(void)del_char(TRUE);
-	    if (cc != NUL)
+	    if (curwin->w_cursor.lnum != tpos.lnum)
+		curwin->w_cursor = tpos;
+	    else if (cc != NUL)
 		++curwin->w_cursor.col;	/* put cursor back on the NUL */
 
 #ifdef FEAT_VISUAL

@@ -3965,8 +3965,10 @@ restore_backup:
      * original and the backup file to be lost when halting the system right
      * after writing the file.  That's because only the meta-data is
      * journalled.  Syncing the file slows down the system, but assures it has
-     * been written to disk and we don't lose it. */
-    if (fsync(fd) != 0)
+     * been written to disk and we don't lose it.
+     * For a device do try the fsync() but don't complain if it does not work
+     * (could be a pipe). */
+    if (fsync(fd) != 0 && !device)
     {
 	errmsg = (char_u *)_("E667: Fsync failed");
 	end = 0;

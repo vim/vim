@@ -3784,6 +3784,8 @@ f_cursor(argvars, retvar)
     if (has_mbyte)
 	mb_adjust_cursor();
 #endif
+
+    curwin->w_set_curswant = TRUE;
 }
 
 /*
