@@ -73,19 +73,17 @@ hash_init(ht)
     ht->ht_mask = HT_INIT_SIZE - 1;
 }
 
-#if 0  /* not used */
 /*
- * Free a hash table.  Does not free the items it contains!
+ * Free the array of a hash table.  Does not free the items it contains!
+ * If "ht" is not freed then you should call hash_init() next!
  */
     void
-hash_free(ht)
+hash_clear(ht)
     hashtable *ht;
 {
     if (ht->ht_array != ht->ht_smallarray)
 	vim_free(ht->ht_array);
-    vim_free(ht);
 }
-#endif
 
 /*
  * Find "key" in hashtable "ht".  "key" must not be NULL.
@@ -228,8 +226,8 @@ hash_set(hi, key)
 
 /*
  * Remove item "hi" from  hashtable "ht".  "hi" must have been obtained with
- * hash_lookup() and point to a used empty item.
- * The caller must take care of freeing the item.
+ * hash_lookup() and point to an empty item.
+ * The caller must take care of freeing the item itself.
  */
     void
 hash_remove(ht, hi)
@@ -239,6 +237,31 @@ hash_remove(ht, hi)
     --ht->ht_used;
     hi->hi_key = HI_KEY_REMOVED;
     hash_may_resize(ht);
+}
+
+/*
+ * Lock a hashtable: prevent that ht_array changes.
+ * Don't use this when items are to be added!
+ * Must call hash_unlock() later.
+ */
+    void
+hash_lock(ht)
+    hashtable	*ht;
+{
+    ++ht->ht_locked;
+}
+
+/*
+ * Unlock a hashtable: allow ht_array changes again.
+ * Table will be resized (shrink) when necessary.
+ * This must balance a call to hash_lock().
+ */
+    void
+hash_unlock(ht)
+    hashtable	*ht;
+{
+    --ht->ht_locked;
+    (void)hash_may_resize(ht);
 }
 
 /*
@@ -259,6 +282,10 @@ hash_may_resize(ht)
     long_u	minsize;
     long_u	newmask;
     long_u	perturb;
+
+    /* Don't resize a locked table. */
+    if (ht->ht_locked > 0)
+	return OK;
 
 #ifdef HT_DEBUG
     if (ht->ht_used > ht->ht_filled)
@@ -282,7 +309,7 @@ hash_may_resize(ht)
     if (ht->ht_filled * 3 < oldsize * 2 && ht->ht_used > oldsize / 5)
 	return OK;
 
-    if (ht->ht_used > 10000)
+    if (ht->ht_used > 1000)
 	minsize = ht->ht_used * 2;  /* it's big, don't make too much room */
     else
 	minsize = ht->ht_used * 4;  /* make plenty of room */

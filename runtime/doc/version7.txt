@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jan 17
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jan 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -417,6 +417,14 @@ a bit less dependent on the X11 font management.
 When a register is empty it is not stored in the viminfo file.
 
 Removed the tcltags script, it's obsolete.
+
+":redir @*>" and ":redir @+>" append to the clipboard.  Better check for
+invalid characters after the register name.
+
+":let g:" lists global variables.
+":let b:" lists buffer-local variables.
+":let w:" lists window-local variables.
+":let v:" lists Vim variables.
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*

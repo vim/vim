@@ -2036,13 +2036,16 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :lefta	windows.txt	/*:lefta*
 :leftabove	windows.txt	/*:leftabove*
 :let	eval.txt	/*:let*
+:let+=	eval.txt	/*:let+=*
 :let-$	eval.txt	/*:let-$*
+:let-=	eval.txt	/*:let-=*
 :let-@	eval.txt	/*:let-@*
 :let-environment	eval.txt	/*:let-environment*
 :let-option	eval.txt	/*:let-option*
 :let-register	eval.txt	/*:let-register*
 :let-star	eval.txt	/*:let-star*
 :let-unpack	eval.txt	/*:let-unpack*
+:let.=	eval.txt	/*:let.=*
 :list	various.txt	/*:list*
 :lm	map.txt	/*:lm*
 :lmap	map.txt	/*:lmap*
@@ -3634,6 +3637,7 @@ E732	eval.txt	/*E732*
 E733	eval.txt	/*E733*
 E735	eval.txt	/*E735*
 E736	eval.txt	/*E736*
+E737	eval.txt	/*E737*
 E74	message.txt	/*E74*
 E75	vi_diff.txt	/*E75*
 E76	pattern.txt	/*E76*
@@ -5034,7 +5038,6 @@ hebrew	hebrew.txt	/*hebrew*
 hebrew.txt	hebrew.txt	/*hebrew.txt*
 help	various.txt	/*help*
 help-context	help.txt	/*help-context*
-help-tags	tags	1
 help-translated	various.txt	/*help-translated*
 help-xterm-window	various.txt	/*help-xterm-window*
 help.txt	help.txt	/*help.txt*

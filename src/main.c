@@ -177,6 +177,9 @@ main
 #ifdef FEAT_MBYTE
     (void)mb_init();	/* init mb_bytelen_tab[] to ones */
 #endif
+#ifdef FEAT_EVAL
+    eval_init();	/* init global variables */
+#endif
 
 #ifdef __QNXNTO__
     qnx_init();		/* PhAttach() for clipboard, (and gui) */

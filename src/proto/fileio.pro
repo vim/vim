@@ -23,6 +23,8 @@ void forward_slash __ARGS((char_u *fname));
 void aubuflocal_remove __ARGS((buf_T *buf));
 void do_augroup __ARGS((char_u *arg, int del_group));
 int check_ei __ARGS((void));
+char_u *au_event_disable __ARGS((char *what));
+void au_event_restore __ARGS((char_u *old_ei));
 void do_autocmd __ARGS((char_u *arg, int forceit));
 int do_doautocmd __ARGS((char_u *arg, int do_msg));
 void ex_doautoall __ARGS((exarg_T *eap));

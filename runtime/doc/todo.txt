@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 19
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,10 +30,12 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Hashtable implementation:
-- Use hashtable for variables and syntax keywords.
+Dict member: use dict..foo instead of dict.foo to avoid confusion with string
+concatenation?
 
-":grep": display progress (filename, every second or so)
+Hashtable implementation:
+- Use hashtable for syntax keywords.
+
 Can ":grep" made faster somehow?  Do profiling.
 
 Sanity check of eval.c:

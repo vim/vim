@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 19
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -4413,7 +4413,12 @@ This would call the function "my_func_whizz(parameter)".
 			List item.
 							*E106*
 :let {var-name}	..	List the value of variable {var-name}.  Multiple
-			variable names may be given.
+			variable names may be given.  Special names recognized
+			here:				*E738*
+			  g:	global variables.
+			  b:	local buffer variables.
+			  w:	local window variables.
+			  v:	Vim variables.
 
 :let			List the values of all variables.  The type of the
 			variable is indicated before the value:

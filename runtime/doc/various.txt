@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.0aa.  Last change: 2004 Dec 23
+*various.txt*   For Vim version 7.0aa.  Last change: 2005 Jan 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -387,10 +387,13 @@ N  *+X11*		Unix only: can restore window title |X11|
 :redi[r] @{a-zA-Z}	Redirect messages to register {a-z}.  Append to the
 			contents of the register if its name is given
 			uppercase {A-Z}.  {not in Vi}
+:redi[r] @{a-z}>	Append messages to register {a-z}. {not in Vi}
 
 :redi[r] @*		Redirect messages to the clipboard. {not in Vi}
+:redi[r] @*>		Append messages to the clipboard. {not in Vi}
 
 :redi[r] @"		Redirect messages to the unnamed register. {not in Vi}
+:redi[r] @">		Append messages to the unnamed register. {not in Vi}
 
 :redi[r] END		End redirecting messages.  {not in Vi}
 

@@ -19,13 +19,14 @@ Vim(let):E706: l
 [1, 'as''d', {'a': 1}]
 [4]
 {'1': 99, '3': 33}
-30000 29900 29001 16000 15001
-Vim(let):E716: 15000
-NONE 29999
+3000 2900 2001 1600 1501
+Vim(let):E716: 1500
+NONE 2999
 33=999
 {'33': 999}
 len: 3
 again: 3
 Vim(call):E725: 
-a:function('2')
+g:dict.func-4
+a:function('3')
 Vim(let):E698: 

@@ -1,4 +1,5 @@
 /* eval.c */
+void eval_init __ARGS((void));
 char_u *func_name __ARGS((void *cookie));
 linenr_T *func_breakpoint __ARGS((void *cookie));
 int *func_dbg_tick __ARGS((void *cookie));
@@ -41,8 +42,8 @@ char_u *v_throwpoint __ARGS((char_u *oldval));
 char_u *set_cmdarg __ARGS((exarg_T *eap, char_u *oldarg));
 char_u *get_var_value __ARGS((char_u *name));
 void new_script_vars __ARGS((scid_T id));
-void vars_init __ARGS((garray_T *gap));
-void vars_clear __ARGS((garray_T *gap));
+void vars_init __ARGS((hashtable *ht));
+void vars_clear __ARGS((hashtable *ht));
 void ex_echo __ARGS((exarg_T *eap));
 void ex_echohl __ARGS((exarg_T *eap));
 void ex_execute __ARGS((exarg_T *eap));

@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 7.0aa.  Last change: 2005 Jan 10
+*quickfix.txt*  For Vim version 7.0aa.  Last change: 2005 Jan 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -288,6 +288,8 @@ advantages are:
 - Uses Vim search patterns.  Multi-line patterns can be used.
 - When plugins are enabled: compressed and remote files can be searched.
 	|gzip| |netrw|
+- When 'hidden' is set the files are kept loaded, thus repeating a search is
+  much faster.  Uses a lot of memory though!
 
 
 5.1 using Vim's internal grep
@@ -303,6 +305,8 @@ advantages are:
 			'ignorecase' applies.  To overrule it use |/\c| to
 			ignore case or |/\C| to match case.  'smartcase' is
 			not used.
+			Every second or so the searched file name is displayed
+			to give you an idea of the progress made.
 			Examples: >
 				:vimgrep /an error/ *.c
 				:vimgrep /\<FileName\>/ *.h include/*

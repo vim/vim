@@ -1618,7 +1618,6 @@ ex_listdo(eap)
     int		next_fnum = 0;
 #if defined(FEAT_AUTOCMD) && defined(FEAT_SYN_HL)
     char_u	*save_ei = NULL;
-    char_u	*new_ei;
 #endif
     char_u	*p_shm_save;
 
@@ -1632,22 +1631,9 @@ ex_listdo(eap)
 
 #if defined(FEAT_AUTOCMD) && defined(FEAT_SYN_HL)
     if (eap->cmdidx != CMD_windo)
-    {
-	/* Add "Syntax" to 'eventignore' to skip loading syntax highlighting
-	 * for every buffer loaded into the window.  A considerable speed
-	 * improvement. */
-	save_ei = vim_strsave(p_ei);
-	if (save_ei != NULL)
-	{
-	    new_ei = vim_strnsave(p_ei, (int)STRLEN(p_ei) + 8);
-	    if (new_ei != NULL)
-	    {
-		STRCAT(new_ei, ",Syntax");
-		set_string_option_direct((char_u *)"ei", -1, new_ei, OPT_FREE);
-		vim_free(new_ei);
-	    }
-	}
-    }
+	/* Don't do syntax HL autocommands.  Skipping the syntax file is a
+	 * great speed improvement. */
+	save_ei = au_event_disable(",Syntax");
 #endif
 
     if (eap->cmdidx == CMD_windo
@@ -1755,13 +1741,7 @@ ex_listdo(eap)
     }
 
 #if defined(FEAT_AUTOCMD) && defined(FEAT_SYN_HL)
-    if (save_ei != NULL)
-    {
-	set_string_option_direct((char_u *)"ei", -1, save_ei, OPT_FREE);
-	apply_autocmds(EVENT_SYNTAX, curbuf->b_p_syn,
-					       curbuf->b_fname, TRUE, curbuf);
-	vim_free(save_ei);
-    }
+    au_event_restore(save_ei);
 #endif
 }
 

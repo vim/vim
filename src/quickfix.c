@@ -2269,7 +2269,12 @@ ex_vimgrep(eap)
     int		duplicate_name = FALSE;
     int		using_dummy;
     int		found_match;
-    int		first_match = TRUE;
+    buf_T	*first_match_buf = NULL;
+    time_t	seconds = 0;
+#if defined(FEAT_AUTOCMD) && defined(FEAT_SYN_HL)
+    char_u	*save_ei = NULL;
+    aco_save_T	aco;
+#endif
 
     /* Make 'cpoptions' empty, the 'l' flag should not be used here. */
     save_cpo = p_cpo;
@@ -2330,24 +2335,59 @@ ex_vimgrep(eap)
 	goto theend;
     }
 
+    seconds = (time_t)0;
     for (fi = 0; fi < fcount && !got_int; ++fi)
     {
+	if (time(NULL) > seconds)
+	{
+	    /* Display the file name every second or so. */
+	    seconds = time(NULL);
+	    msg_start();
+	    p = msg_strtrunc(fnames[fi]);
+	    if (p == NULL)
+		msg_outtrans(fnames[fi]);
+	    else
+	    {
+		msg_outtrans(p);
+		vim_free(p);
+	    }
+	    msg_clr_eos();
+	    msg_didout = FALSE;	    /* overwrite this message */
+	    msg_nowait = TRUE;	    /* don't wait for this message */
+	    msg_col = 0;
+	    out_flush();
+	}
+
 	buf = buflist_findname_exp(fnames[fi]);
 	if (buf == NULL || buf->b_ml.ml_mfp == NULL)
 	{
 	    /* Remember that a buffer with this name already exists. */
 	    duplicate_name = (buf != NULL);
+	    using_dummy = TRUE;
+
+#if defined(FEAT_AUTOCMD) && defined(FEAT_SYN_HL)
+	    /* Don't do Filetype autocommands to avoid loading syntax and
+	     * indent scripts, a great speed improvement. */
+	    save_ei = au_event_disable(",Filetype");
+#endif
 
 	    /* Load file into a buffer, so that 'fileencoding' is detected,
 	     * autocommands applied, etc. */
 	    buf = load_dummy_buffer(fnames[fi]);
-	    using_dummy = TRUE;
+
+#if defined(FEAT_AUTOCMD) && defined(FEAT_SYN_HL)
+	    au_event_restore(save_ei);
+#endif
 	}
 	else
 	    /* Use existing, loaded buffer. */
 	    using_dummy = FALSE;
+
 	if (buf == NULL)
-	    smsg((char_u *)_("Cannot open file \"%s\""), fnames[fi]);
+	{
+	    if (!got_int)
+		smsg((char_u *)_("Cannot open file \"%s\""), fnames[fi]);
+	}
 	else
 	{
 	    found_match = FALSE;
@@ -2382,10 +2422,15 @@ ex_vimgrep(eap)
 
 	    if (using_dummy)
 	    {
+		if (found_match && first_match_buf == NULL)
+		    first_match_buf = buf;
 		if (duplicate_name)
+		{
 		    /* Never keep a dummy buffer if there is another buffer
 		     * with the same name. */
 		    wipe_dummy_buffer(buf);
+		    buf = NULL;
+		}
 		else if (!buf_hide(buf))
 		{
 		    /* When not hiding the buffer and no match was found we
@@ -2393,13 +2438,29 @@ ex_vimgrep(eap)
 		     * there was a match and it wasn't the first one: only
 		     * unload the buffer. */
 		    if (!found_match)
+		    {
 			wipe_dummy_buffer(buf);
-		    else if (!first_match)
+			buf = NULL;
+		    }
+		    else if (buf != first_match_buf)
+		    {
 			unload_dummy_buffer(buf);
+			buf = NULL;
+		    }
 		}
+
+#if defined(FEAT_AUTOCMD) && defined(FEAT_SYN_HL)
+		if (buf != NULL)
+		{
+		    /* The buffer is still loaded, the Filetype autocommands
+		     * need to be done now, in that buffer. */
+		    aucmd_prepbuf(&aco, buf);
+		    apply_autocmds(EVENT_FILETYPE, buf->b_p_ft,
+						     buf->b_fname, TRUE, buf);
+		    aucmd_restbuf(&aco);
+		}
+#endif
 	    }
-	    if (found_match)
-		first_match = FALSE;
 	}
     }
 

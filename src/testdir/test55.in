@@ -76,20 +76,20 @@ STARTTEST
 :unlet d[-1]
 :$put =string(d)
 :"
-:" manipulating a big Dictionary
+:" manipulating a big Dictionary (hashtable.c has a border of 1000 entries)
 :let d = {}
-:for i in range(15000)
-: let d[i] = 30000 - i
+:for i in range(1500)
+: let d[i] = 3000 - i
 :endfor
-:$put =d[0] . ' ' . d[100] . ' ' . d[999] . ' ' . d[14000] . ' ' . d[14999]
+:$put =d[0] . ' ' . d[100] . ' ' . d[999] . ' ' . d[1400] . ' ' . d[1499]
 :try
-:  let n = d[15000]
+:  let n = d[1500]
 :catch
-:  $put =v:exception[:14] . v:exception[-5:-1]
+:  $put =v:exception[:14] . v:exception[-4:-1]
 :endtry
 :" lookup each items
-:for i in range(15000)
-: if d[i] != 30000 - i
+:for i in range(1500)
+: if d[i] != 3000 - i
 :  $put =d[i]
 : endif
 :endfor
@@ -99,12 +99,12 @@ STARTTEST
 : let i -= 2
 : unlet d[i]
 :endwhile
-:$put =get(d, 15000 - 100, 'NONE') . ' ' . d[1]
+:$put =get(d, 1500 - 100, 'NONE') . ' ' . d[1]
 :" delete odd items, checking value, one intentionally wrong
 :let d[33] = 999
 :let i = 1
-:while i < 15000
-: if d[i] != 30000 - i
+:while i < 1500
+: if d[i] != 3000 - i
 :  $put =i . '=' . d[i]
 : else
 :  unlet d[i]
@@ -121,14 +121,22 @@ STARTTEST
 :endfunc
 :let dict.data = [1,2,3]
 :call dict.func("len: ")
-:echo dict.func("again: ")
+:let x = dict.func("again: ")
 :try
 :  let Fn = dict.func
 :  call Fn('xxx')
 :catch
 :  $put =v:exception[:15]
 :endtry
-:sleep 5
+:" 
+:" Function in script-local List or Dict
+:let g:dict = {}
+:function g:dict.func() dict
+:  $put ='g:dict.func'.self.foo[1].self.foo[0]('asdf')
+:endfunc
+:let g:dict.foo = ['-', 2, 3]
+:call insert(g:dict.foo, function('strlen'))
+:call g:dict.func()
 :" 
 :" Nasty: remove func from Dict that's being called (works)
 :let d = {1:1}
@@ -148,7 +156,7 @@ STARTTEST
 :endtry
 :"
 :endfun
-:call Test()
+:call Test()  " This may take a while
 :"
 :/^start:/,$wq! test.out
 ENDTEST

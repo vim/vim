@@ -7132,6 +7132,48 @@ check_ei()
     return OK;
 }
 
+# if defined(FEAT_SYN_HL) || defined(PROTO)
+
+/*
+ * Add "what" to 'eventignore' to skip loading syntax highlighting for every
+ * buffer loaded into the window.  "what" must start with a comma.
+ * Returns the old value of 'eventignore' in allocated memory.
+ */
+    char_u *
+au_event_disable(what)
+    char	*what;
+{
+    char_u	*new_ei;
+    char_u	*save_ei;
+
+    save_ei = vim_strsave(p_ei);
+    if (save_ei != NULL)
+    {
+	new_ei = vim_strnsave(p_ei, (int)STRLEN(p_ei) + 8);
+	if (new_ei != NULL)
+	{
+	    STRCAT(new_ei, what);
+	    set_string_option_direct((char_u *)"ei", -1, new_ei, OPT_FREE);
+	    vim_free(new_ei);
+	}
+    }
+    return save_ei;
+}
+
+    void
+au_event_restore(old_ei)
+    char_u	*old_ei;
+{
+    if (old_ei != NULL)
+    {
+	set_string_option_direct((char_u *)"ei", -1, old_ei, OPT_FREE);
+	apply_autocmds(EVENT_SYNTAX, curbuf->b_p_syn,
+					       curbuf->b_fname, TRUE, curbuf);
+	vim_free(old_ei);
+    }
+}
+# endif  /* FEAT_SYN_HL */
+
 /*
  * do_autocmd() -- implements the :autocmd command.  Can be used in the
  *  following ways:

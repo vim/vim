@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.0aa.  Last change: 2005 Jan 07
+*starting.txt*  For Vim version 7.0aa.  Last change: 2005 Jan 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1193,7 +1193,7 @@ This saves the current Session, and starts off the command to load another.
 			When [file] is omitted or is a number from 1 to 9, a
 			name is generated and 'viewdir' prepended.  When last
 			directory name in 'viewdir' does not exist, this
-			directory is created.
+			directory is created.			*E738*
 			An existing file is always overwritten then.  Use
 			|:loadview| to load this view again.
 			When [file] is the name of a file ('viewdir' is not
