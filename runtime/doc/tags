@@ -210,6 +210,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'fkmap'	options.txt	/*'fkmap'*
 'fl'	vi_diff.txt	/*'fl'*
 'flash'	vi_diff.txt	/*'flash'*
+'flp'	options.txt	/*'flp'*
 'fml'	options.txt	/*'fml'*
 'fmr'	options.txt	/*'fmr'*
 'fo'	options.txt	/*'fo'*
@@ -226,6 +227,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'foldnestmax'	options.txt	/*'foldnestmax'*
 'foldopen'	options.txt	/*'foldopen'*
 'foldtext'	options.txt	/*'foldtext'*
+'formatlistpat'	options.txt	/*'formatlistpat'*
 'formatoptions'	options.txt	/*'formatoptions'*
 'formatprg'	options.txt	/*'formatprg'*
 'fp'	options.txt	/*'fp'*
@@ -1723,6 +1725,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :call	eval.txt	/*:call*
 :cat	eval.txt	/*:cat*
 :catch	eval.txt	/*:catch*
+:cb	quickfix.txt	/*:cb*
+:cbuffer	quickfix.txt	/*:cbuffer*
 :cc	quickfix.txt	/*:cc*
 :ccl	quickfix.txt	/*:ccl*
 :cclose	quickfix.txt	/*:cclose*
@@ -3559,6 +3563,7 @@ E678	pattern.txt	/*E678*
 E679	syntax.txt	/*E679*
 E68	pattern.txt	/*E68*
 E680	autocmd.txt	/*E680*
+E681	quickfix.txt	/*E681*
 E69	pattern.txt	/*E69*
 E70	pattern.txt	/*E70*
 E71	pattern.txt	/*E71*

@@ -18,6 +18,7 @@ int can_abandon __ARGS((buf_T *buf, int forceit));
 int check_changed_any __ARGS((int hidden));
 int check_fname __ARGS((void));
 int buf_write_all __ARGS((buf_T *buf, int forceit));
+int get_arglist __ARGS((garray_T *gap, char_u *str));
 void set_arglist __ARGS((char_u *str));
 void check_arg_idx __ARGS((win_T *win));
 void ex_args __ARGS((exarg_T *eap));

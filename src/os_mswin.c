@@ -2908,7 +2908,6 @@ static garray_T reply_list = {0, 0, sizeof(reply_T), 5, 0};
 
 #define REPLY_ITEM(i) ((reply_T *)(reply_list.ga_data) + (i))
 #define REPLY_COUNT (reply_list.ga_len)
-#define REPLY_ROOM (reply_list.ga_room)
 
 /* Flag which is used to wait for a reply */
 static int reply_received = 0;
@@ -2932,7 +2931,6 @@ save_reply(HWND server, char_u *reply, int expr)
 	return FAIL;
 
     ++REPLY_COUNT;
-    --REPLY_ROOM;
     reply_received = 1;
     return OK;
 }
@@ -2976,7 +2974,6 @@ serverGetReply(HWND server, int *expr_res, int remove, int wait)
 		    mch_memmove(rep, rep + 1,
 				     (REPLY_COUNT - i - 1) * sizeof(reply_T));
 		    --REPLY_COUNT;
-		    ++REPLY_ROOM;
 		}
 
 		/* Return the reply to the caller, who takes on responsibility

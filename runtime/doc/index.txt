@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 7.0aa.  Last change: 2004 Dec 23
+*index.txt*     For Vim version 7.0aa.  Last change: 2004 Dec 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1059,6 +1059,7 @@ The commands are sorted on the non-optional part of their name.
 |:cabclear|	:cabc[lear]	clear all abbreviations for Command-line mode
 |:call|		:cal[l]		call a function
 |:catch|	:cat[ch]	part of a :try command
+|:cbuffer|	:cb[uffer]	parse error messages and jump to first error
 |:cc|		:cc		go to specific error
 |:cclose|	:ccl[ose]	close quickfix window
 |:cd|		:cd		change directory

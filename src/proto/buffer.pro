@@ -25,6 +25,7 @@ linenr_T buflist_findlnum __ARGS((buf_T *buf));
 void buflist_list __ARGS((exarg_T *eap));
 int buflist_name_nr __ARGS((int fnum, char_u **fname, linenr_T *lnum));
 int setfname __ARGS((buf_T *buf, char_u *ffname, char_u *sfname, int message));
+void buf_set_name __ARGS((int fnum, char_u *name));
 void buf_name_changed __ARGS((buf_T *buf));
 buf_T *setaltfname __ARGS((char_u *ffname, char_u *sfname, linenr_T lnum));
 char_u *getaltfname __ARGS((int errmsg));

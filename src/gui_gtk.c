@@ -1348,6 +1348,8 @@ gui_mch_browse(int saving,
     return vim_strsave(p);
 }
 
+#if defined(HAVE_GTK2) || defined(PROTO)
+
 /*
  * Put up a directory selector
  * Returns the selected name in allocated memory, or NULL for Cancel.
@@ -1416,6 +1418,7 @@ gui_mch_browsedir(
     return gui_mch_browse(0, title, NULL, NULL, initdir, NULL);
 # endif
 }
+#endif
 
 #endif	/* FEAT_BROWSE */
 

@@ -491,7 +491,6 @@ ex_breakadd(eap)
 	    if (bp->dbg_lnum == 0)	/* default line number is 1 */
 		bp->dbg_lnum = 1;
 	    BREAKP(dbg_breakp.ga_len++).dbg_nr = ++last_breakp;
-	    --dbg_breakp.ga_room;
 	    ++debug_tick;
 	}
     }
@@ -564,7 +563,6 @@ ex_breakdel(eap)
 	vim_free(BREAKP(todel).dbg_name);
 	vim_free(BREAKP(todel).dbg_prog);
 	--dbg_breakp.ga_len;
-	++dbg_breakp.ga_room;
 	if (todel < dbg_breakp.ga_len)
 	    mch_memmove(&BREAKP(todel), &BREAKP(todel + 1),
 		    (dbg_breakp.ga_len - todel) * sizeof(struct debuggy));
@@ -1063,6 +1061,31 @@ do_one_arg(str)
     return str;
 }
 
+/*
+ * Separate the arguments in "str" and return a list of pointers in the
+ * growarray "gap".
+ */
+    int
+get_arglist(gap, str)
+    garray_T	*gap;
+    char_u	*str;
+{
+    ga_init2(gap, (int)sizeof(char_u *), 20);
+    while (*str != NUL)
+    {
+	if (ga_grow(gap, 1) == FAIL)
+	{
+	    ga_clear(gap);
+	    return FAIL;
+	}
+	((char_u **)gap->ga_data)[gap->ga_len++] = str;
+
+	/* Isolate one argument, change it in-place, put a NUL after it. */
+	str = do_one_arg(str);
+    }
+    return OK;
+}
+
 #if defined(FEAT_GUI) || defined(FEAT_CLIENTSERVER) || defined(PROTO)
 /*
  * Redefine the argument list.
@@ -1101,20 +1124,8 @@ do_arglist(str, what, after)
     /*
      * Collect all file name arguments in "new_ga".
      */
-    ga_init2(&new_ga, (int)sizeof(char_u *), 20);
-    while (*str)
-    {
-	if (ga_grow(&new_ga, 1) == FAIL)
-	{
-	    ga_clear(&new_ga);
-	    return FAIL;
-	}
-	((char_u **)new_ga.ga_data)[new_ga.ga_len++] = str;
-	--new_ga.ga_room;
-
-	/* Isolate one argument, change it in-place, put a NUL after it. */
-	str = do_one_arg(str);
-    }
+    if (get_arglist(&new_ga, str) == FAIL)
+	return FAIL;
 
 #ifdef FEAT_LISTCMDS
     if (what == AL_DEL)
@@ -1154,7 +1165,6 @@ do_arglist(str, what, after)
 		    mch_memmove(ARGLIST + match, ARGLIST + match + 1,
 			    (ARGCOUNT - match - 1) * sizeof(aentry_T));
 		    --ALIST(curwin)->al_ga.ga_len;
-		    ++ALIST(curwin)->al_ga.ga_room;
 		    if (curwin->w_arg_idx > match)
 			--curwin->w_arg_idx;
 		    --match;
@@ -1189,7 +1199,7 @@ do_arglist(str, what, after)
 	}
 	else /* what == AL_SET */
 #endif
-	    alist_set(ALIST(curwin), exp_count, exp_files, FALSE);
+	    alist_set(ALIST(curwin), exp_count, exp_files, FALSE, NULL, 0);
     }
 
     alist_check_arg_idx();
@@ -1342,7 +1352,6 @@ ex_args(eap)
 		    AARGLIST(curwin->w_alist)[gap->ga_len].ae_fnum =
 							  GARGLIST[i].ae_fnum;
 		    ++gap->ga_len;
-		    --gap->ga_room;
 		}
     }
 #endif
@@ -1579,7 +1588,6 @@ ex_argdelete(eap)
 	    mch_memmove(ARGLIST + eap->line1 - 1, ARGLIST + eap->line2,
 			(size_t)((ARGCOUNT - eap->line2) * sizeof(aentry_T)));
 	    ALIST(curwin)->al_ga.ga_len -= n;
-	    ALIST(curwin)->al_ga.ga_room += n;
 	    if (curwin->w_arg_idx >= eap->line2)
 		curwin->w_arg_idx -= n;
 	    else if (curwin->w_arg_idx > eap->line1)
@@ -1786,7 +1794,6 @@ alist_add_list(count, files, after)
 	    ARGLIST[after + i].ae_fnum = buflist_add(files[i], BLN_LISTED);
 	}
 	ALIST(curwin)->al_ga.ga_len += count;
-	ALIST(curwin)->al_ga.ga_room -= count;
 	if (curwin->w_arg_idx >= after)
 	    ++curwin->w_arg_idx;
 	return after;
@@ -2365,7 +2372,6 @@ do_source(fname, check_other, is_vimrc)
 	    {
 		SCRIPT_NAME(script_names.ga_len + 1) = NULL;
 		++script_names.ga_len;
-		--script_names.ga_room;
 	    }
 	    SCRIPT_NAME(current_SID) = fname_exp;
 # ifdef UNIX
@@ -2674,12 +2680,14 @@ get_one_sourceline(sp)
 #ifdef USE_CR
 	if (sp->fileformat == EOL_MAC)
 	{
-	    if (fgets_cr((char *)buf + ga.ga_len, ga.ga_room, sp->fp) == NULL)
+	    if (fgets_cr((char *)buf + ga.ga_len, ga.ga_maxlen - ga.ga_len,
+							      sp->fp) == NULL)
 		break;
 	}
 	else
 #endif
-	    if (fgets((char *)buf + ga.ga_len, ga.ga_room, sp->fp) == NULL)
+	    if (fgets((char *)buf + ga.ga_len, ga.ga_maxlen - ga.ga_len,
+							      sp->fp) == NULL)
 		break;
 	len = (int)STRLEN(buf);
 #ifdef USE_CRNL
@@ -2723,11 +2731,10 @@ get_one_sourceline(sp)
 #endif
 
 	have_read = TRUE;
-	ga.ga_room -= len - ga.ga_len;
 	ga.ga_len = len;
 
 	/* If the line was longer than the buffer, read more. */
-	if (ga.ga_room == 1 && buf[len - 1] != '\n')
+	if (ga.ga_maxlen - ga.ga_len == 1 && buf[len - 1] != '\n')
 	    continue;
 
 	if (len >= 1 && buf[len - 1] == '\n')	/* remove trailing NL */
@@ -2749,7 +2756,6 @@ get_one_sourceline(sp)
 		    buf[len - 2] = '\n';
 		    --len;
 		    --ga.ga_len;
-		    ++ga.ga_room;
 		}
 		else	    /* lines like ":map xx yy^M" will have failed */
 		{

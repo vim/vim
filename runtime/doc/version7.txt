@@ -158,6 +158,9 @@ Options: ~
 'wildoptions'		"tagfile" value enables listing the file name of
 			matching tags for CTRL-D command line completion.
 			(based on an idea from Yegappan Lakshmanan)
+'formatlistpat'		pattern to recognize a numbered list for formatting.
+			(idea by Hugo Haas)
+
 
 Ex commands: ~
 
@@ -180,6 +183,8 @@ Win32: The ":winpos" command now also works in the console. (Vipin Aravind)
 
 |:viusage|		Help for Vi commands (Nvi command).
 
+|:cbuffer|		Read error lines from a buffer. (partly by Yegappan
+			Lakshmanan)
 
 New functions: ~
 
@@ -353,6 +358,9 @@ Client-server communication now supports 'encoding'.  When setting 'encoding'
 in a Vim server to "utf-8", and using "vim --remote fname" in a console,
 "fname" is converted from the console encoding to utf-8.  Also allows Vims
 with different 'encoding' settings to exchange messages.
+
+Internal: Changed ga_room into ga_maxlen, so that it doesn't need to be
+incremented/decremented each time.
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*
@@ -581,5 +589,8 @@ message for the next buffer.  Temporarily clear 'shortmess' to avoid that.
 
 Win32: Cannot edit a file starting with # with --remote.  Do escape % and #
 when building the ":drop" command.
+
+A comment or | just after a expresion-backtick argument was not recognized.
+E.g. in :e `="foo"`"comment.
 
  vim:tw=78:ts=8:ft=help:norl:

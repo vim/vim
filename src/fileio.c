@@ -6933,10 +6933,7 @@ au_new_group(name)
 	if (AUGROUP_NAME(i) == NULL)
 	    return AUGROUP_ERROR;
 	if (i == augroups.ga_len)
-	{
 	    ++augroups.ga_len;
-	    --augroups.ga_room;
-	}
     }
 
     return i;

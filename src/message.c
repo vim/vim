@@ -2275,7 +2275,6 @@ mch_errmsg(str)
 #endif
 	--len;		/* don't count the NUL at the end */
 	error_ga.ga_len += len;
-	error_ga.ga_room -= len;
     }
 }
 

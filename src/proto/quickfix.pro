@@ -13,9 +13,12 @@ int bt_nofile __ARGS((buf_T *buf));
 int bt_dontwrite __ARGS((buf_T *buf));
 int bt_dontwrite_msg __ARGS((buf_T *buf));
 int buf_hide __ARGS((buf_T *buf));
+int grep_internal __ARGS((exarg_T *eap));
 void ex_make __ARGS((exarg_T *eap));
 void ex_cc __ARGS((exarg_T *eap));
 void ex_cnext __ARGS((exarg_T *eap));
 void ex_cfile __ARGS((exarg_T *eap));
+void ex_vimgrep __ARGS((exarg_T *eap));
+void ex_cbuffer __ARGS((exarg_T *eap));
 void ex_helpgrep __ARGS((exarg_T *eap));
 /* vim: set ft=c : */

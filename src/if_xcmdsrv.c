@@ -735,7 +735,6 @@ ServerReplyFind(w, op)
 	    ga_init2(&e.strings, 1, 100);
 	    memcpy(p, &e, sizeof(e));
 	    serverReply.ga_len++;
-	    serverReply.ga_room--;
 	}
     }
     else if (p != NULL && op == SROP_Delete)
@@ -743,7 +742,6 @@ ServerReplyFind(w, op)
 	ga_clear(&p->strings);
 	mch_memmove(p, p + 1, (serverReply.ga_len - i - 1) * sizeof(*p));
 	serverReply.ga_len--;
-	serverReply.ga_room++;
     }
 
     return p;
@@ -844,7 +842,6 @@ serverReadReply(dpy, win, str, localLoop)
 	{
 	    s = (char_u *) p->strings.ga_data;
 	    mch_memmove(s, s + len, p->strings.ga_len - len);
-	    p->strings.ga_room += len;
 	    p->strings.ga_len -= len;
 	}
 	else
@@ -1276,7 +1273,6 @@ serverEventProc(dpy, eventPtr)
 		sprintf(reply.ga_data, "%cr%c-s %s%c-r ", 0, 0, serial, 0);
 #endif
 		reply.ga_len = 10 + STRLEN(serial);
-		reply.ga_room -= reply.ga_len;
 	    }
 	    res = NULL;
 	    if (serverName != NULL && STRICMP(name, serverName) == 0)

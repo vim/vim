@@ -692,11 +692,7 @@ codepage_invalid:
     /* When changing 'encoding' while starting up, then convert the command
      * line arguments from the active codepage to 'encoding'. */
     if (starting != 0)
-    {
-	extern void fix_arg_enc(void);
-
 	fix_arg_enc();
-    }
 #endif
 
 #ifdef FEAT_AUTOCMD

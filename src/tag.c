@@ -2174,7 +2174,6 @@ line_read_in:
 			{
 			    ((struct match_found **)(ga_match[mtt].ga_data))
 					       [ga_match[mtt].ga_len++] = mfp;
-			    ga_match[mtt].ga_room--;
 			    ++match_count;
 			}
 			else
@@ -2345,11 +2344,8 @@ found_tagfile_cb(fname)
     char_u	*fname;
 {
     if (ga_grow(&tag_fnames, 1) == OK)
-    {
 	((char_u **)(tag_fnames.ga_data))[tag_fnames.ga_len++] =
 							   vim_strsave(fname);
-	--tag_fnames.ga_room;
-    }
 }
 
 /*

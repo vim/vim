@@ -86,6 +86,7 @@ struct eformat
 				/*   '-' do not include this line */
 };
 
+static int qf_init_ext __ARGS((char_u *efile, buf_T *buf, char_u *errorformat, int newlist, linenr_T lnumfirst, linenr_T lnumlast));
 static void	qf_new_list __ARGS((void));
 static int	qf_add_entry __ARGS((struct qf_line **prevp, char_u *dir, char_u *fname, char_u *mesg, long lnum, int col, int virt_col, int nr, int type, int valid));
 static void	qf_msg __ARGS((void));
@@ -106,7 +107,8 @@ static void	qf_fill_buffer __ARGS((void));
 static char_u	*get_mef_name __ARGS((void));
 
 /*
- * Read the errorfile into memory, line by line, building the error list.
+ * Read the errorfile "efile" into memory, line by line, building the error
+ * list.
  * Return -1 for error, number of errors for success.
  */
     int
@@ -115,6 +117,29 @@ qf_init(efile, errorformat, newlist)
     char_u	    *errorformat;
     int		    newlist;		/* TRUE: start a new error list */
 {
+    if (efile == NULL)
+	return FAIL;
+    return qf_init_ext(efile, curbuf, errorformat, newlist,
+						    (linenr_T)0, (linenr_T)0);
+}
+
+/*
+ * Read the errorfile "efile" into memory, line by line, building the error
+ * list.
+ * Alternative: when "efile" is null read errors from buffer "buf".
+ * Always use 'errorformat' from "buf" if there is a local value.
+ * Then lnumfirst and lnumlast specify the range of lines to use.
+ * Return -1 for error, number of errors for success.
+ */
+    static int
+qf_init_ext(efile, buf, errorformat, newlist, lnumfirst, lnumlast)
+    char_u	    *efile;
+    buf_T	    *buf;
+    char_u	    *errorformat;
+    int		    newlist;		/* TRUE: start a new error list */
+    linenr_T	    lnumfirst;		/* first line number to use */
+    linenr_T	    lnumlast;		/* last line number to use */
+{
     char_u	    *namebuf;
     char_u	    *errmsg;
     char_u	    *fmtstr = NULL;
@@ -122,9 +147,10 @@ qf_init(efile, errorformat, newlist)
     char_u	    use_virt_col = FALSE;
     int		    type = 0;
     int		    valid;
+    linenr_T	    buflnum = lnumfirst;
     long	    lnum = 0L;
     int		    enr = 0;
-    FILE	    *fd;
+    FILE	    *fd = NULL;
     struct qf_line  *qfprev = NULL;	/* init to make SASC shut up */
     char_u	    *efmp;
     struct eformat  *fmt_first = NULL;
@@ -163,15 +189,12 @@ qf_init(efile, errorformat, newlist)
 			{'v', "\\d\\+"}
 		    };
 
-    if (efile == NULL)
-	return FAIL;
-
     namebuf = alloc(CMDBUFFSIZE + 1);
     errmsg = alloc(CMDBUFFSIZE + 1);
     if (namebuf == NULL || errmsg == NULL)
 	goto qf_init_end;
 
-    if ((fd = mch_fopen((char *)efile, "r")) == NULL)
+    if (efile != NULL && (fd = mch_fopen((char *)efile, "r")) == NULL)
     {
 	EMSG2(_(e_openerrf), efile);
 	goto qf_init_end;
@@ -191,8 +214,8 @@ qf_init(efile, errorformat, newlist)
  * regex prog.  Only a few % characters are allowed.
  */
     /* Use the local value of 'errorformat' if it's set. */
-    if (errorformat == p_efm && *curbuf->b_p_efm != NUL)
-	efm = curbuf->b_p_efm;
+    if (errorformat == p_efm && *buf->b_p_efm != NUL)
+	efm = buf->b_p_efm;
     else
 	efm = errorformat;
     /*
@@ -405,8 +428,18 @@ qf_init(efile, errorformat, newlist)
      * Read the lines in the error file one by one.
      * Try to recognize one of the error formats in each line.
      */
-    while (fgets((char *)IObuff, CMDBUFFSIZE - 2, fd) != NULL && !got_int)
+    while (!got_int)
     {
+	/* Get the next line. */
+	if (fd == NULL)
+	{
+	    if (buflnum > lnumlast)
+		break;
+	    STRNCPY(IObuff, ml_get_buf(buf, buflnum++, FALSE), CMDBUFFSIZE - 2);
+	}
+	else if (fgets((char *)IObuff, CMDBUFFSIZE - 2, fd) == NULL)
+	    break;
+
 	IObuff[CMDBUFFSIZE - 2] = NUL;  /* for very long lines */
 	if ((efmp = vim_strrchr(IObuff, '\n')) != NULL)
 	    *efmp = NUL;
@@ -594,7 +627,7 @@ restofline:
 	    goto error2;
 	line_breakcheck();
     }
-    if (!ferror(fd))
+    if (fd == NULL || !ferror(fd))
     {
 	if (qf_lists[qf_curlist].qf_index == 0)	/* no valid entry found */
 	{
@@ -618,7 +651,8 @@ error2:
     if (qf_curlist > 0)
 	--qf_curlist;
 qf_init_ok:
-    fclose(fd);
+    if (fd != NULL)
+	fclose(fd);
     for (fmt_ptr = fmt_first; fmt_ptr != NULL; fmt_ptr = fmt_first)
     {
 	fmt_first = fmt_ptr->next;
@@ -2026,6 +2060,18 @@ buf_hide(buf)
 }
 
 /*
+ * Return TRUE when using ":vimgrep" for ":grep".
+ */
+    int
+grep_internal(eap)
+    exarg_T	*eap;
+{
+    return ((eap->cmdidx == CMD_grep || eap->cmdidx == CMD_grepadd)
+	    && STRCMP("internal",
+			*curbuf->b_p_gp == NUL ? p_gp : curbuf->b_p_gp) == 0);
+}
+
+/*
  * Used for ":make", ":grep" and ":grepadd".
  */
     void
@@ -2035,6 +2081,13 @@ ex_make(eap)
     char_u	*name;
     char_u	*cmd;
     unsigned	len;
+
+    /* Redirect ":grep" to ":vimgrep" if 'grepprg' is "internal". */
+    if (grep_internal(eap))
+    {
+	ex_vimgrep(eap);
+	return;
+    }
 
     autowrite_all();
     name = get_mef_name();
@@ -2075,7 +2128,7 @@ ex_make(eap)
 #endif
 
     if (qf_init(name, eap->cmdidx != CMD_make ? p_gefm : p_efm,
-					      eap->cmdidx != CMD_grepadd) > 0
+					       eap->cmdidx != CMD_grepadd) > 0
 	    && !eap->forceit)
 	qf_jump(0, 0, FALSE);		/* display first error */
 
@@ -2187,6 +2240,171 @@ ex_cfile(eap)
 	set_string_option_direct((char_u *)"ef", -1, eap->arg, OPT_FREE);
     if (qf_init(p_ef, p_efm, TRUE) > 0 && eap->cmdidx == CMD_cfile)
 	qf_jump(0, 0, eap->forceit);		/* display first error */
+}
+
+/*
+ * ":vimgrep {pattern} file(s)"
+ */
+    void
+ex_vimgrep(eap)
+    exarg_T	*eap;
+{
+    regmatch_T	regmatch;
+    char_u	*save_cpo;
+    int         fcount;
+    char_u	**fnames;
+    char_u      *p;
+    int		i;
+    FILE	*fd;
+    int         fi;
+    struct qf_line *prevp = NULL;
+    long	lnum;
+    garray_T	ga;
+
+    /* Make 'cpoptions' empty, the 'l' flag should not be used here. */
+    save_cpo = p_cpo;
+    p_cpo = empty_option;
+
+    /* Get the search pattern */
+    regmatch.regprog = NULL;
+    p = skip_regexp(eap->arg + 1, *eap->arg, TRUE, NULL);
+    if (*p != *eap->arg)
+    {
+	EMSG(_("E682: Invalid search pattern or delimiter"));
+	goto theend;
+    }
+    *p++ = NUL;
+    regmatch.regprog = vim_regcomp(eap->arg + 1, RE_MAGIC);
+    if (regmatch.regprog == NULL)
+	goto theend;
+    regmatch.rm_ic = FALSE;
+
+    p = skipwhite(p);
+    if (*p == NUL)
+    {
+	EMSG(_("E683: File name missing or invalid pattern"));
+	goto theend;
+    }
+
+    if ((eap->cmdidx != CMD_grepadd && eap->cmdidx != CMD_vimgrepadd)
+						|| qf_curlist == qf_listcount)
+	/* make place for a new list */
+	qf_new_list();
+    else if (qf_lists[qf_curlist].qf_count > 0)
+	/* Adding to existing list, find last entry. */
+	for (prevp = qf_lists[qf_curlist].qf_start;
+			    prevp->qf_next != prevp; prevp = prevp->qf_next)
+	    ;
+
+    /* parse the list of arguments */
+    if (get_arglist(&ga, p) == FAIL)
+	goto theend;
+    i = gen_expand_wildcards(ga.ga_len, (char_u **)ga.ga_data,
+				       &fcount, &fnames, EW_FILE|EW_NOTFOUND);
+    ga_clear(&ga);
+    if (i == FAIL)
+	goto theend;
+    if (fcount == 0)
+    {
+	EMSG(_(e_nomatch));
+	goto theend;
+    }
+
+    for (fi = 0; fi < fcount && !got_int; ++fi)
+    {
+	fd = fopen((char *)fnames[fi], "r");
+	if (fd == NULL)
+	    smsg((char_u *)_("Cannot open file \"%s\""), fnames[fi]);
+	else
+	{
+	    lnum = 1;
+	    while (!vim_fgets(IObuff, IOSIZE, fd) && !got_int)
+	    {
+		if (vim_regexec(&regmatch, IObuff, (colnr_T)0))
+		{
+		    int     l = STRLEN(IObuff);
+
+		    /* remove trailing CR, LF, spaces, etc. */
+		    while (l > 0 && IObuff[l - 1] <= ' ')
+			IObuff[--l] = NUL;
+
+		    if (qf_add_entry(&prevp,
+				NULL,       /* dir */
+				fnames[fi],
+				IObuff,
+				lnum,
+				(int)(regmatch.startp[0] - IObuff) + 1,/* col */
+				FALSE,      /* virt_col */
+				0,          /* nr */
+				0,          /* type */
+				TRUE        /* valid */
+				) == FAIL)
+		    {
+			got_int = TRUE;
+			break;
+		    }
+		}
+		++lnum;
+		line_breakcheck();
+	    }
+	    fclose(fd);
+	}
+    }
+
+    FreeWild(fcount, fnames);
+
+    qf_lists[qf_curlist].qf_nonevalid = FALSE;
+    qf_lists[qf_curlist].qf_ptr = qf_lists[qf_curlist].qf_start;
+    qf_lists[qf_curlist].qf_index = 1;
+
+#ifdef FEAT_WINDOWS
+    qf_update_buffer();
+#endif
+
+    /* Jump to first match. */
+    if (qf_lists[qf_curlist].qf_count > 0)
+	qf_jump(0, 0, FALSE);
+
+theend:
+    vim_free(regmatch.regprog);
+
+    /* Only resture 'cpo' when it wasn't set in the mean time. */
+    if (p_cpo == empty_option)
+	p_cpo = save_cpo;
+    else
+	free_string_option(save_cpo);
+}
+
+/*
+ * ":[range]cbuffer [bufnr]" command.
+ */
+    void
+ex_cbuffer(eap)
+    exarg_T   *eap;
+{
+    buf_T	*buf = NULL;
+
+    if (*eap->arg == NUL)
+	buf = curbuf;
+    else if (*skipwhite(skipdigits(eap->arg)) == NUL)
+	buf = buflist_findnr(atoi((char *)eap->arg));
+    if (buf == NULL)
+	EMSG(_(e_invarg));
+    else if (buf->b_ml.ml_mfp == NULL)
+	EMSG(_("E681: Buffer is not loaded"));
+    else
+    {
+	if (eap->addr_count == 0)
+	{
+	    eap->line1 = 1;
+	    eap->line2 = buf->b_ml.ml_line_count;
+	}
+	if (eap->line1 < 1 || eap->line1 > buf->b_ml.ml_line_count
+		|| eap->line2 < 1 || eap->line2 > buf->b_ml.ml_line_count)
+	    EMSG(_(e_invrange));
+	else
+	    qf_init_ext(NULL, buf, p_efm, TRUE, eap->line1, eap->line2);
+    }
 }
 
 /*

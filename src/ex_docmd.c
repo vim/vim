@@ -112,12 +112,14 @@ static char_u	*skip_cmd_arg __ARGS((char_u *p, int rembs));
 static int	getargopt __ARGS((exarg_T *eap));
 #ifndef FEAT_QUICKFIX
 # define ex_make		ex_ni
+# define ex_cbuffer		ex_ni
 # define ex_cc			ex_ni
 # define ex_cnext		ex_ni
 # define ex_cfile		ex_ni
 # define qf_list		ex_ni
 # define qf_age			ex_ni
 # define ex_helpgrep		ex_ni
+# define ex_vimgrep		ex_ni
 #endif
 #if !defined(FEAT_QUICKFIX) || !defined(FEAT_WINDOWS)
 # define ex_cclose		ex_ni
@@ -1469,7 +1471,6 @@ store_while_line(gap, line)
     ((wcmd_T *)(gap->ga_data))[gap->ga_len].line = vim_strsave(line);
     ((wcmd_T *)(gap->ga_data))[gap->ga_len].lnum = sourcing_lnum;
     ++gap->ga_len;
-    --gap->ga_room;
     return OK;
 }
 
@@ -1484,7 +1485,6 @@ free_cmdlines(gap)
     {
 	vim_free(((wcmd_T *)(gap->ga_data))[gap->ga_len - 1].line);
 	--gap->ga_len;
-	++gap->ga_room;
     }
 }
 #endif
@@ -2108,11 +2108,13 @@ do_one_cmd(cmdlinep, sourcing,
 
 #ifdef FEAT_QUICKFIX
     /*
-     * For the :make and :grep commands we insert the 'makeprg'/'grepprg'
+     * For the ":make" and ":grep" commands we insert the 'makeprg'/'grepprg'
      * option here, so things like % get expanded.
+     * Don't do it when ":vimgrep" is used for ":grep".
      */
-    if (ea.cmdidx == CMD_make || ea.cmdidx == CMD_grep
-						  || ea.cmdidx == CMD_grepadd)
+    if ((ea.cmdidx == CMD_make
+			 || ea.cmdidx == CMD_grep || ea.cmdidx == CMD_grepadd)
+	    && !grep_internal(&ea))
     {
 	char_u		*new_cmdline;
 	char_u		*program;
@@ -4200,7 +4202,20 @@ separate_nextcmd(eap)
 {
     char_u	*p;
 
-    for (p = eap->arg; *p; ++p)
+    p = eap->arg;
+#ifdef FEAT_QUICKFIX
+    if (eap->cmdidx == CMD_vimgrep
+	    || eap->cmdidx == CMD_vimgrepadd
+	    || grep_internal(eap))
+    {
+	/* Skip over the pattern. */
+	p = skip_regexp(p + 1, *p, TRUE, NULL);
+	if (*p == *eap->arg)
+	    ++p;
+    }
+#endif
+
+    for ( ; *p; mb_ptr_adv(p))
     {
 	if (*p == Ctrl_V)
 	{
@@ -4218,8 +4233,6 @@ separate_nextcmd(eap)
 	{
 	    p += 2;
 	    (void)skip_expr(&p);
-	    if (*p == '`')
-		++p;
 	}
 #endif
 
@@ -4250,11 +4263,8 @@ separate_nextcmd(eap)
 		break;
 	    }
 	}
-#ifdef FEAT_MBYTE
-	else if (has_mbyte)
-	    p += (*mb_ptr2len_check)(p) - 1; /* skip bytes of multi-byte char */
-#endif
     }
+
     if (!(eap->argt & NOTRLCOM))	/* remove trailing spaces */
 	del_trailing_spaces(eap->arg);
 }
@@ -4780,7 +4790,6 @@ uc_add_command(name, name_len, rep, argt, def, flags, compl, compl_arg, force)
 	mch_memmove(cmd + 1, cmd, (gap->ga_len - i) * sizeof(ucmd_T));
 
 	++gap->ga_len;
-	--gap->ga_room;
 
 	cmd->uc_name = p;
     }
@@ -5292,7 +5301,6 @@ ex_delcommand(eap)
 # endif
 
     --gap->ga_len;
-    ++gap->ga_room;
 
     if (i < gap->ga_len)
 	mch_memmove(cmd, cmd + 1, (gap->ga_len - i) * sizeof(ucmd_T));
@@ -6171,7 +6179,7 @@ handle_drop(filec, filev, split)
     /*
      * Set up the new argument list.
      */
-    alist_set(ALIST(curwin), filec, filev, FALSE);
+    alist_set(ALIST(curwin), filec, filev, FALSE, NULL, 0);
 
     /*
      * Move to the first file.
@@ -6257,11 +6265,16 @@ alist_new()
 #if (!defined(UNIX) && !defined(__EMX__)) || defined(ARCHIE) || defined(PROTO)
 /*
  * Expand the file names in the global argument list.
+ * If "fnum_list" is not NULL, use "fnum_list[fnum_len]" as a list of buffer
+ * numbers to be re-used.
  */
     void
-alist_expand()
+alist_expand(fnum_list, fnum_len)
+    int		*fnum_list;
+    int		fnum_len;
 {
     char_u	**old_arg_files;
+    int		old_arg_count;
     char_u	**new_arg_files;
     int		new_arg_file_count;
     char_u	*save_p_su = p_su;
@@ -6275,14 +6288,16 @@ alist_expand()
     if (old_arg_files != NULL)
     {
 	for (i = 0; i < GARGCOUNT; ++i)
-	    old_arg_files[i] = GARGLIST[i].ae_fname;
-	if (expand_wildcards(GARGCOUNT, old_arg_files,
+	    old_arg_files[i] = vim_strsave(GARGLIST[i].ae_fname);
+	old_arg_count = GARGCOUNT;
+	if (expand_wildcards(old_arg_count, old_arg_files,
 		    &new_arg_file_count, &new_arg_files,
 		    EW_FILE|EW_NOTFOUND|EW_ADDSLASH) == OK
 		&& new_arg_file_count > 0)
 	{
-	    alist_set(&global_alist, new_arg_file_count, new_arg_files, TRUE);
-	    vim_free(old_arg_files);
+	    alist_set(&global_alist, new_arg_file_count, new_arg_files,
+						   TRUE, fnum_list, fnum_len);
+	    FreeWild(old_arg_count, old_arg_files);
 	}
     }
     p_su = save_p_su;
@@ -6294,11 +6309,13 @@ alist_expand()
  * Takes over the allocated files[] and the allocated fnames in it.
  */
     void
-alist_set(al, count, files, use_curbuf)
+alist_set(al, count, files, use_curbuf, fnum_list, fnum_len)
     alist_T	*al;
     int		count;
     char_u	**files;
     int		use_curbuf;
+    int		*fnum_list;
+    int		fnum_len;
 {
     int		i;
 
@@ -6315,6 +6332,12 @@ alist_set(al, count, files, use_curbuf)
 		    vim_free(files[i++]);
 		break;
 	    }
+
+	    /* May set buffer name of a buffer previously used for the
+	     * argument list, so that it's re-used by alist_add. */
+	    if (fnum_list != NULL && i < fnum_len)
+		buf_set_name(fnum_list[i], files[i]);
+
 	    alist_add(al, files[i], use_curbuf ? 2 : 1);
 	    ui_breakcheck();
 	}
@@ -6348,7 +6371,6 @@ alist_add(al, fname, set_fnum)
 	AARGLIST(al)[al->al_ga.ga_len].ae_fnum =
 	    buflist_add(fname, BLN_LISTED | (set_fnum == 2 ? BLN_CURBUF : 0));
     ++al->al_ga.ga_len;
-    --al->al_ga.ga_room;
 }
 
 #if defined(BACKSLASH_IN_FILENAME) || defined(PROTO)

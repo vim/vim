@@ -382,30 +382,36 @@ copy_indent(size, src)
 /*
  * Return the indent of the current line after a number.  Return -1 if no
  * number was found.  Used for 'n' in 'formatoptions': numbered list.
+ * Since a pattern is used it can actually handle more than numbers.
  */
     int
 get_number_indent(lnum)
     linenr_T	lnum;
 {
-    char_u	*line;
-    char_u	*p;
     colnr_T	col;
     pos_T	pos;
+    regmmatch_T	regmatch;
 
     if (lnum > curbuf->b_ml.ml_line_count)
 	return -1;
-    line = ml_get(lnum);
-    p = skipwhite(line);
-    if (!VIM_ISDIGIT(*p))
+    pos.lnum = 0;
+    regmatch.regprog = vim_regcomp(curbuf->b_p_flp, RE_MAGIC);
+    if (regmatch.regprog != NULL)
+    {
+	regmatch.rmm_ic = FALSE;
+	if (vim_regexec_multi(&regmatch, curwin, curbuf, lnum, (colnr_T)0))
+	{
+	    pos.lnum = regmatch.endpos[0].lnum + lnum;
+	    pos.col = regmatch.endpos[0].col;
+#ifdef FEAT_VIRTUALEDIT
+	    pos.coladd = 0;
+#endif
+	}
+	vim_free(regmatch.regprog);
+    }
+
+    if (pos.lnum == 0 || *ml_get_pos(&pos) == NUL)
 	return -1;
-    p = skipdigits(p);
-    if (vim_strchr((char_u *)":.)]}\t ", *p) == NULL)
-	return -1;
-    p = skipwhite(p + 1);
-    if (*p == NUL)
-	return -1;
-    pos.lnum = lnum;
-    pos.col = (colnr_T)(p - line);
     getvcol(curwin, &pos, &col, NULL, NULL);
     return (int)col;
 }
@@ -3804,9 +3810,9 @@ remove_tail_with_ext(p, pend, ext)
     char_u	*newend = pend - len;
 
     if (newend >= p && fnamencmp(newend, ext, len - 1) == 0)
-	while (newend != p && !after_pathsep(newend))
-	    mb_ptr_back(newend);
-    if (newend == p || after_pathsep(newend))
+	while (newend > p && !after_pathsep(p, newend))
+	    mb_ptr_back(p, newend);
+    if (newend == p || after_pathsep(p, newend))
 	return newend;
     return pend;
 }
@@ -8447,7 +8453,6 @@ addfile(gap, f, flags)
 	add_pathsep(p);
 #endif
     ((char_u **)gap->ga_data)[gap->ga_len++] = p;
-    --gap->ga_room;
 }
 #endif /* !NO_EXPANDPATH */
 

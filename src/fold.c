@@ -689,7 +689,6 @@ foldCreate(start, end)
 	    /* Move contained folds to inside new fold. */
 	    mch_memmove(fold_ga.ga_data, fp, sizeof(fold_T) * cont);
 	    fold_ga.ga_len += cont;
-	    fold_ga.ga_room -= cont;
 	    i += cont;
 
 	    /* Adjust line numbers in contained folds to be relative to the
@@ -702,7 +701,6 @@ foldCreate(start, end)
 	    mch_memmove(fp + 1, (fold_T *)gap->ga_data + i,
 				     sizeof(fold_T) * (gap->ga_len - i));
 	gap->ga_len = gap->ga_len + 1 - cont;
-	gap->ga_room = gap->ga_room - 1 + cont;
 
 	/* insert new fold */
 	fp->fd_nested = fold_ga;
@@ -1136,7 +1134,6 @@ cloneFoldGrowArray(from, to)
 	to_p->fd_small = from_p->fd_small;
 	cloneFoldGrowArray(&from_p->fd_nested, &to_p->fd_nested);
 	++to->ga_len;
-	--to->ga_room;
 	++from_p;
 	++to_p;
     }
@@ -1455,7 +1452,6 @@ deleteFoldEntry(gap, idx, recursive)
 	/* recursively delete the contained folds */
 	deleteFoldRecurse(&fp->fd_nested);
 	--gap->ga_len;
-	++gap->ga_room;
 	if (idx < gap->ga_len)
 	    mch_memmove(fp, fp + 1, sizeof(fold_T) * (gap->ga_len - idx));
     }
@@ -1485,7 +1481,6 @@ deleteFoldEntry(gap, idx, recursive)
 	    mch_memmove(fp, nfp, (size_t)(sizeof(fold_T) * moved));
 	    vim_free(nfp);
 	    gap->ga_len += moved - 1;
-	    gap->ga_room -= moved - 1;
 	}
     }
 }
@@ -2762,7 +2757,6 @@ foldInsert(gap, i)
     if (i < gap->ga_len)
 	mch_memmove(fp + 1, fp, sizeof(fold_T) * (gap->ga_len - i));
     ++gap->ga_len;
-    --gap->ga_room;
     ga_init2(&fp->fd_nested, (int)sizeof(fold_T), 10);
     return OK;
 }
@@ -2812,9 +2806,7 @@ foldSplit(gap, i, top, bot)
 						 -= fp[1].fd_top - fp->fd_top;
 	}
 	gap2->ga_len = len;
-	gap2->ga_room -= len;
 	gap1->ga_len -= len;
-	gap1->ga_room += len;
     }
     fp->fd_len = top - fp->fd_top;
     fold_changed = TRUE;
@@ -2931,10 +2923,8 @@ foldMerge(fp1, gap, fp2)
 					= ((fold_T *)gap2->ga_data)[idx];
 	    ((fold_T *)gap1->ga_data)[gap1->ga_len].fd_top += fp1->fd_len;
 	    ++gap1->ga_len;
-	    --gap1->ga_room;
 	}
 	gap2->ga_len = 0;
-	/* fp2->fd_nested.ga_room isn't updated, we delete it below */
     }
 
     fp1->fd_len += fp2->fd_len;

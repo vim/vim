@@ -1525,7 +1525,7 @@ ga_init(gap)
     garray_T *gap;
 {
     gap->ga_data = NULL;
-    gap->ga_room = 0;
+    gap->ga_maxlen = 0;
     gap->ga_len = 0;
 }
 
@@ -1552,7 +1552,7 @@ ga_grow(gap, n)
     size_t	len;
     char_u	*pp;
 
-    if (gap->ga_room < n)
+    if (gap->ga_maxlen - gap->ga_len < n)
     {
 	if (n < gap->ga_growsize)
 	    n = gap->ga_growsize;
@@ -1560,7 +1560,7 @@ ga_grow(gap, n)
 	pp = alloc_clear((unsigned)len);
 	if (pp == NULL)
 	    return FAIL;
-	gap->ga_room = n;
+	gap->ga_maxlen = gap->ga_len + n;
 	if (gap->ga_data != NULL)
 	{
 	    mch_memmove(pp, gap->ga_data,
@@ -1587,7 +1587,6 @@ ga_concat(gap, s)
     {
 	mch_memmove((char *)gap->ga_data + gap->ga_len, s, (size_t)len);
 	gap->ga_len += len;
-	gap->ga_room -= len;
     }
 }
 
@@ -1603,7 +1602,6 @@ ga_append(gap, c)
     {
 	*((char *)gap->ga_data + gap->ga_len) = c;
 	++gap->ga_len;
-	--gap->ga_room;
     }
 }
 
@@ -5224,7 +5222,7 @@ pathcmp(p, q, maxlen)
     int maxlen;
 {
     int		i;
-    const char	*s;
+    const char	*s = NULL;
 
     for (i = 0; maxlen < 0 || i < maxlen; ++i)
     {
@@ -5264,18 +5262,19 @@ pathcmp(p, q, maxlen)
 	    return ((char_u *)p)[i] - ((char_u *)q)[i];	    /* no match */
 	}
     }
+    if (s == NULL)	/* "i" ran into "maxlen" */
+	return 0;
 
     /* ignore a trailing slash, but not "//" or ":/" */
-    if (i >= maxlen
-	    || (s[i + 1] == NUL
-		&& i > 0
-		&& !after_pathsep((char_u *)s, (char_u *)s + i)
+    if (s[i + 1] == NUL
+	    && i > 0
+	    && !after_pathsep((char_u *)s, (char_u *)s + i)
 #ifdef BACKSLASH_IN_FILENAME
-		&& (s[i] == '/' || s[i] == '\\')
+	    && (s[i] == '/' || s[i] == '\\')
 #else
-		&& s[i] == '/'
+	    && s[i] == '/'
 #endif
-	       ))
+       )
 	return 0;   /* match with trailing slash */
     if (s == q)
 	return -1;	    /* no match */

@@ -2230,7 +2230,6 @@ putdigraph(str)
 		dp->char2 = char2;
 		dp->result = n;
 		++user_digraphs.ga_len;
-		--user_digraphs.ga_room;
 	    }
 	}
     }
@@ -2450,10 +2449,7 @@ ex_loadkeymap(eap)
 		vim_free(kp->to);
 	    }
 	    else
-	    {
 		++curbuf->b_kmap_ga.ga_len;
-		--curbuf->b_kmap_ga.ga_room;
-	    }
 	}
 	vim_free(line);
     }

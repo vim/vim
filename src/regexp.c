@@ -726,7 +726,7 @@ re_lookbehind(prog)
 
 /*
  * Skip past regular expression.
- * Stop at end of 'p' of where 'dirc' is found ('/', '?', etc).
+ * Stop at end of 'p' or where 'dirc' is found ('/', '?', etc).
  * Take care of characters with a backslash in front of it.
  * Skip strings inside [ and ].
  * When "newp" is not NULL and "dirc" is '?', make an allocated copy of the
@@ -787,7 +787,8 @@ skip_regexp(startp, dirc, magic, newp)
 }
 
 /*
- * vim_regcomp - compile a regular expression into internal code
+ * vim_regcomp() - compile a regular expression into internal code
+ * Returns the program in allocated space.  Returns NULL for an error.
  *
  * We can't allocate space until we know how big the compiled form will be,
  * but we can't compile it (and thus know how big it is) until we've got a

@@ -2306,7 +2306,6 @@ ex_menutranslate(eap)
 		    tp[menutrans_ga.ga_len].from_noamp = from_noamp;
 		    tp[menutrans_ga.ga_len].to = to;
 		    ++menutrans_ga.ga_len;
-		    --menutrans_ga.ga_room;
 		}
 		else
 		{

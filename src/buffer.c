@@ -1699,6 +1699,7 @@ free_buf_options(buf, free_p_ff)
     clear_string_option(&buf->b_p_kp);
     clear_string_option(&buf->b_p_mps);
     clear_string_option(&buf->b_p_fo);
+    clear_string_option(&buf->b_p_flp);
     clear_string_option(&buf->b_p_isk);
 #ifdef FEAT_KEYMAP
     clear_string_option(&buf->b_p_keymap);
@@ -2538,6 +2539,28 @@ setfname(buf, ffname, sfname, message)
 
     buf_name_changed(buf);
     return OK;
+}
+
+/*
+ * Crude way of changing the name of a buffer.  Use with care!
+ * The name should be relative to the current directory.
+ */
+    void
+buf_set_name(fnum, name)
+    int		fnum;
+    char_u	*name;
+{
+    buf_T	*buf;
+
+    buf = buflist_findnr(fnum);
+    if (buf != NULL)
+    {
+	vim_free(buf->b_sfname);
+	vim_free(buf->b_ffname);
+	buf->b_sfname = vim_strsave(name);
+	buf->b_ffname = FullName_save(buf->b_sfname, FALSE);
+	buf->b_fname = buf->b_sfname;
+    }
 }
 
 /*

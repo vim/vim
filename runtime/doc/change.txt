@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.0aa.  Last change: 2004 Dec 17
+*change.txt*    For Vim version 7.0aa.  Last change: 2004 Dec 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1332,10 +1332,12 @@ a	Automatic formatting of paragraphs.  Every time text is inserted or
 	deleted the paragraph will be reformatted.  See |auto-format|.
 	When the 'c' flag is present this only happens for recognized
 	comments.
-n	When formatting text, recognize numbered lists.  The indent of the
-	text after the number is used for the next line.  The number may
-	optionally be followed by '.', ':', ')', ']' or '}'.  Note that
-	'autoindent' must be set too.  Doesn't work well together with "2".
+n	When formatting text, recognize numbered lists.  This actually uses
+	the 'formatlistpat' option, thus any kind of list can be used.  The
+	indent of the text after the number is used for the next line.  The
+	default is to find a number, optionally be followed by '.', ':', ')',
+	']' or '}'.  Note that 'autoindent' must be set too.  Doesn't work
+	well together with "2".
 	Example: >
 		1. the first item
 		   wraps

@@ -2707,7 +2707,6 @@ expand_by_function(lnum, col, base, matches)
 		    break;
 		((char_u **)ga.ga_data)[ga.ga_len] = vim_strnsave(p, len);
 		++ga.ga_len;
-		--ga.ga_room;
 	    }
 	    if (*pnext != NUL)
 		++pnext;

@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2004 Dec 20
+" Last Change:	2004 Dec 24
 
 " If there already is an option window, jump to that one.
 if bufwinnr("option-window") > 0
@@ -667,6 +667,9 @@ call <SID>OptionL("com")
 call append("$", "formatoptions\tlist of flags that tell how automatic formatting works")
 call append("$", "\t(local to buffer)")
 call <SID>OptionL("fo")
+call append("$", "formatlistpat\tpattern to recognize a numbered list")
+call append("$", "\t(local to buffer)")
+call <SID>OptionL("flp")
 if has("insert_expand")
   call append("$", "complete\tspecifies how Insert mode completion works")
   call append("$", "\t(local to buffer)")

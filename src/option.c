@@ -82,6 +82,7 @@ typedef enum
     , PV_FF
     , PV_FML
     , PV_FMR
+    , PV_FLP
     , PV_FO
     , PV_FT
     , PV_GP
@@ -183,6 +184,7 @@ static char_u	*p_fenc;
 #endif
 static char_u	*p_ff;
 static char_u	*p_fo;
+static char_u	*p_flp;
 #ifdef FEAT_AUTOCMD
 static char_u	*p_ft;
 #endif
@@ -952,6 +954,9 @@ static struct vimoption
     {"formatoptions","fo",  P_STRING|P_ALLOCED|P_VIM|P_FLAGLIST,
 			    (char_u *)&p_fo, PV_FO,
 			    {(char_u *)DFLT_FO_VI, (char_u *)DFLT_FO_VIM}},
+    {"formatlistpat","flp", P_STRING|P_ALLOCED|P_VI_DEF,
+			    (char_u *)&p_flp, PV_FLP,
+			    {(char_u *)"^\\s*\\d\\+[\\]:.)}\\t ]\\s*", (char_u *)0L}},
     {"formatprg",   "fp",   P_STRING|P_EXPAND|P_VI_DEF|P_SECURE,
 			    (char_u *)&p_fp, PV_NONE,
 			    {(char_u *)"", (char_u *)0L}},
@@ -2636,7 +2641,6 @@ set_init_1()
 		    STRCAT(ga.ga_data, p);
 		    add_pathsep(ga.ga_data);
 		    STRCAT(ga.ga_data, "*");
-		    ga.ga_room -= len;
 		    ga.ga_len += len;
 		}
 	    }
@@ -4487,6 +4491,7 @@ check_buf_options(buf)
     check_string_option(&buf->b_p_kp);
     check_string_option(&buf->b_p_mps);
     check_string_option(&buf->b_p_fo);
+    check_string_option(&buf->b_p_flp);
     check_string_option(&buf->b_p_isk);
 #ifdef FEAT_COMMENTS
     check_string_option(&buf->b_p_com);
@@ -8082,6 +8087,7 @@ get_varp(p)
 	case PV_FT:	return (char_u *)&(curbuf->b_p_ft);
 #endif
 	case PV_FO:	return (char_u *)&(curbuf->b_p_fo);
+	case PV_FLP:	return (char_u *)&(curbuf->b_p_flp);
 	case PV_IMI:	return (char_u *)&(curbuf->b_p_iminsert);
 	case PV_IMS:	return (char_u *)&(curbuf->b_p_imsearch);
 	case PV_INF:	return (char_u *)&(curbuf->b_p_inf);
@@ -8404,6 +8410,7 @@ buf_copy_options(buf, flags)
 	    buf->b_p_cms = vim_strsave(p_cms);
 #endif
 	    buf->b_p_fo = vim_strsave(p_fo);
+	    buf->b_p_flp = vim_strsave(p_flp);
 	    buf->b_p_nf = vim_strsave(p_nf);
 	    buf->b_p_mps = vim_strsave(p_mps);
 #ifdef FEAT_SMARTINDENT

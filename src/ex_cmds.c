@@ -5315,7 +5315,6 @@ ex_helptags(eap)
 		    break;
 		((char_u *)ga.ga_data)[ga.ga_len++] = lang[0];
 		((char_u *)ga.ga_data)[ga.ga_len++] = lang[1];
-		ga.ga_room -= 2;
 	    }
 	}
     }
@@ -5425,7 +5424,6 @@ helptags_one(dir, ext, tagfname)
 		sprintf((char *)s, "help-tags\t%s\t1\n", tagfname);
 		((char_u **)ga.ga_data)[ga.ga_len] = s;
 		++ga.ga_len;
-		--ga.ga_room;
 	    }
 	}
     }
@@ -5516,7 +5514,6 @@ helptags_one(dir, ext, tagfname)
 			}
 			((char_u **)ga.ga_data)[ga.ga_len] = s;
 			++ga.ga_len;
-			--ga.ga_room;
 			sprintf((char *)s, "%s\t%s", p1, fname);
 
 			/* find next '*' */

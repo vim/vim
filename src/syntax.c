@@ -1394,10 +1394,7 @@ store_current_state(sp)
 	    if (ga_grow(&sp->sst_union.sst_ga, current_state.ga_len) == FAIL)
 		sp->sst_stacksize = 0;
 	    else
-	    {
 		sp->sst_union.sst_ga.ga_len = current_state.ga_len;
-		sp->sst_union.sst_ga.ga_room -= current_state.ga_len;
-	    }
 	    bp = SYN_STATE_P(&(sp->sst_union.sst_ga));
 	}
 	else
@@ -1454,7 +1451,6 @@ load_current_state(from)
 	    update_si_attr(i);
 	}
 	current_state.ga_len = from->sst_stacksize;
-	current_state.ga_room -= current_state.ga_len;
     }
     current_next_list = from->sst_next_list;
     current_next_flags = from->sst_next_flags;
@@ -2089,7 +2085,6 @@ syn_current_attr(syncing, displaying)
 			{
 			    ((int *)(zero_width_next_ga.ga_data))
 				[zero_width_next_ga.ga_len++] = next_match_idx;
-			    --zero_width_next_ga.ga_room;
 			}
 			next_match_idx = -1;
 		    }
@@ -2579,7 +2574,6 @@ push_current_state(idx)
     vim_memset(&CUR_STATE(current_state.ga_len), 0, sizeof(stateitem_T));
     CUR_STATE(current_state.ga_len).si_idx = idx;
     ++current_state.ga_len;
-    --current_state.ga_room;
     return OK;
 }
 
@@ -2593,7 +2587,6 @@ pop_current_state()
     {
 	unref_extmatch(CUR_STATE(current_state.ga_len - 1).si_extmatch);
 	--current_state.ga_len;
-	++current_state.ga_room;
     }
     /* after the end of a pattern, try matching a keyword or pattern */
     next_match_idx = -1;
@@ -3151,7 +3144,6 @@ syn_remove_pattern(buf, idx)
     mch_memmove(spp, spp + 1,
 		   sizeof(synpat_T) * (buf->b_syn_patterns.ga_len - idx - 1));
     --buf->b_syn_patterns.ga_len;
-    --buf->b_syn_patterns.ga_room;
 }
 
 /*
@@ -4499,7 +4491,6 @@ syn_cmd_match(eap, syncing)
 		curbuf->b_syn_containedin = TRUE;
 	    SYN_ITEMS(curbuf)[idx].sp_next_list = next_list;
 	    ++curbuf->b_syn_patterns.ga_len;
-	    --curbuf->b_syn_patterns.ga_room;
 
 	    /* remember that we found a match for syncing on */
 	    if (flags & (HL_SYNC_HERE|HL_SYNC_THERE))
@@ -4742,7 +4733,6 @@ syn_cmd_region(eap, syncing)
 			SYN_ITEMS(curbuf)[idx].sp_next_list = next_list;
 		    }
 		    ++curbuf->b_syn_patterns.ga_len;
-		    --curbuf->b_syn_patterns.ga_room;
 		    ++idx;
 #ifdef FEAT_FOLDING
 		    if (flags & HL_FOLD)
@@ -5033,7 +5023,6 @@ syn_add_cluster(name)
     SYN_CLSTR(curbuf)[len].scl_name_u = vim_strsave_up(name);
     SYN_CLSTR(curbuf)[len].scl_list = NULL;
     ++curbuf->b_syn_clusters.ga_len;
-    --curbuf->b_syn_clusters.ga_room;
 
     return len + SYNID_CLUSTER;
 }
@@ -7467,7 +7456,6 @@ get_attr_entry(table, aep)
 	gap->ae_u.cterm.bg_color = aep->ae_u.cterm.bg_color;
     }
     ++table->ga_len;
-    --table->ga_room;
     return (table->ga_len - 1 + ATTR_OFF);
 }
 
@@ -7972,7 +7960,6 @@ syn_add_group(name)
     HL_TABLE()[highlight_ga.ga_len].sg_gui_fg = INVALCOLOR;
 #endif
     ++highlight_ga.ga_len;
-    --highlight_ga.ga_room;
 
     return highlight_ga.ga_len;		    /* ID is index plus one */
 }
@@ -7985,7 +7972,6 @@ syn_add_group(name)
 syn_unadd_group()
 {
     --highlight_ga.ga_len;
-    ++highlight_ga.ga_room;
     vim_free(HL_TABLE()[highlight_ga.ga_len].sg_name);
     vim_free(HL_TABLE()[highlight_ga.ga_len].sg_name_u);
 }

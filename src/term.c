@@ -2978,6 +2978,9 @@ check_shellsize()
 	Rows = min_rows();
 }
 
+/*
+ * Invoked just before the screen structures are going to be (re)allocated.
+ */
     void
 win_new_shellsize()
 {

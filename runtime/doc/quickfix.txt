@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 7.0aa.  Last change: 2004 Jun 16
+*quickfix.txt*  For Vim version 7.0aa.  Last change: 2004 Dec 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -104,6 +104,14 @@ The following quickfix commands can be used:
 :cg[etfile][!] [errorfile]
 			Read the error file.  Just like ":cfile" but don't
 			jump to the first error.
+
+						*:cb* *:cbuffer* *E681*
+:cb[uffer] [bufnr]	Read the error list from the current buffer.
+			When [bufnr] is given it must be the number of a
+			loaded buffer.  That buffer will then be used instead
+			of the current buffer.
+			A range can be specified for the lines to be used.
+			Otherwise all lines in the buffer are used.
 
 							*:cl* *:clist*
 :cl[ist] [from] [, [to]]
@@ -266,7 +274,37 @@ If 'shellpipe' is empty, the {errorfile} part will be omitted.  This is useful
 for compilers that write to an errorfile themselves (e.g., Manx's Amiga C).
 
 ==============================================================================
-5. Using :grep						*grep* *lid*
+5. Using :vimgrep and :grep				*grep* *lid*
+
+Vim has two ways to find matches for a pattern: Internal and external.  The
+advantage of the internal grep is that it works on all systems and uses the
+powerful Vim search patterns.  An external grep program can be used when the
+Vim grep does not do what you want.
+
+The internal method may be a bit slower, because files are read into memory.
+The advantage is that line separators and encoding are automatically
+recognized, as if a file is being edited.  And multi-line patterns can be
+used.
+
+
+5.1 using Vim's internal grep
+
+							*:vim* *:vimgrep*
+:vim[grep][!] /{pattern}/ {file} ...
+			Search for {pattern} in the files {file} ... and set
+			the error list to the matches.
+			{pattern} if a Vim search pattern.  Instead of
+			enclosing it in / any character can be used, so long
+			as it does not appear in {pattern}.
+
+						*:vimgrepa* *:vimgrepadd*
+:vimgrepa[dd][!] /{pattern}/ {file} ...
+			Just like ":vimgrep", but instead of making a new list
+			of errors the matches are appended to the current
+			list.
+
+
+5.2 External grep
 
 Vim can interface with "grep" and grep-like programs (such as the GNU
 id-utils) in a similar way to its compiler integration (see |:make| above).
@@ -277,6 +315,9 @@ id-utils) in a similar way to its compiler integration (see |:make| above).
 							    *:gr* *:grep*
 :gr[ep][!] [arguments]	Just like ":make", but use 'grepprg' instead of
 			'makeprg' and 'grepformat' instead of 'errorformat'.
+			When 'grepprg' is "internal" this works like
+			|:vimgrep|.  Note that the pattern needs to be
+			enclosed in separator characters then.
 							*:grepa* *:grepadd*
 :grepa[dd][!] [arguments]
 			Just like ":grep", but instead of making a new list of
@@ -290,7 +331,7 @@ id-utils) in a similar way to its compiler integration (see |:make| above).
 			":grepadd" jumps to the first error, which is not
 			allowed with |:bufdo|.
 
-5.1 Setting up grep
+5.3 Setting up external grep
 
 If you have a standard "grep" program installed, the :grep command may work
 well with the defaults. The syntax is very similar to the standard command: >
@@ -322,7 +363,7 @@ error in |quickfix| mode.  You can then use the |:cnext|, |:clist|, etc.
 commands to see the other matches.
 
 
-5.2 Using :grep with id-utils
+5.4 Using :grep with id-utils
 
 You can set up :grep to work with the GNU id-utils like this: >
 
@@ -336,31 +377,31 @@ works just as you'd expect.
 (provided you remembered to mkid first :)
 
 
-5.3 Browsing source code with :grep
+5.5 Browsing source code with :vimgrep or :grep
 
 Using the stack of error lists that Vim keeps, you can browse your files to
 look for functions and the functions they call.  For example, suppose that you
 have to add an argument to the read_file() function.  You enter this command: >
 
-	:grep read_file *.c
+	:vimgrep /\<read_file\>/ *.c
 
 You use ":cn" to go along the list of matches and add the argument.  At one
 place you have to get the new argument from a higher level function msg(), and
 need to change that one too.  Thus you use: >
 
-	:grep msg *.c
+	:vimgrep /\<msg\>/ *.c
 
 While changing the msg() functions, you find another function that needs to
-get the argument from a higher level.  You can again use ":grep" to find these
-functions.  Once you are finished with one function, you can use >
+get the argument from a higher level.  You can again use ":vimgrep" to find
+these functions.  Once you are finished with one function, you can use >
 
 	:colder
 
 to go back to the previous one.
 
-This works like browsing a tree: ":grep" goes one level deeper, creating a
+This works like browsing a tree: ":vimgrep" goes one level deeper, creating a
 list of branches.  ":colder" goes back to the previous level.  You can mix
-this use of ":grep" and "colder" to browse all the locations in a tree-like
+this use of ":vimgrep" and "colder" to browse all the locations in a tree-like
 way.  If you do this consistently, you will find all locations without the
 need to write down a "todo" list.
 

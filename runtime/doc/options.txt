@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2004 Dec 21
+*options.txt*	For Vim version 7.0aa.  Last change: 2004 Dec 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2728,6 +2728,20 @@ A jump table for the options with a short description can be found at |Q_op|.
 	NOTE: This option is set to the Vi default value when 'compatible' is
 	set and to the Vim default value when 'compatible' is reset.
 
+					*'formatlistpat'* *'flp'*
+'formatlistpat' 'flp'	string (default: "^\s*\d\+[\]:.)}\t ]\s*")
+			local to buffer
+			{not in Vi}
+	A pattern that is used to recognize a list header.  This is used for
+	the "n" flag in 'formatoptions'.
+	The pattern must match exactly the text that will be the indent for
+	the line below it.  You can use |\ze| to mark the end of the match
+	while still checking more characters.  There must be a character
+	following the pattern, when it matches the whole line it is handled
+	like there is no match.
+	The default recognizes a number, followed by an optional punctuation
+	character and white space.
+
 						*'formatprg'* *'fp'*
 'formatprg' 'fp'	string (default "")
 			global
@@ -2795,7 +2809,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When your "grep" accepts the "-H" argument, use this to make ":grep"
 	also work well with a single file: >
 		:set grepprg=grep\ -nH
-<	See also the section |:make_makeprg|, since most of the comments there
+<	Special value: When 'grepprg' is set to "internal" the ":grep" works
+	like ":vimgrep".
+	See also the section |:make_makeprg|, since most of the comments there
 	apply equally to 'grepprg'.
 	For Win32, the default is "findstr /n" if "findstr.exe" can be found,
 	otherwise it's "grep -n".

@@ -55,7 +55,7 @@ typedef struct
 typedef struct growarray
 {
     int	    ga_len;		    /* current number of items used */
-    int	    ga_room;		    /* number of unused items at the end */
+    int	    ga_maxlen;		    /* maximum number of items possible */
     int	    ga_itemsize;	    /* sizeof(item) */
     int	    ga_growsize;	    /* number of items to grow each time */
     void    *ga_data;		    /* pointer to the first item */
@@ -1127,6 +1127,7 @@ struct file_buffer
     char_u	*b_p_ft;	/* 'filetype' */
 #endif
     char_u	*b_p_fo;	/* 'formatoptions' */
+    char_u	*b_p_flp;	/* 'formatlistpat' */
     int		b_p_inf;	/* 'infercase' */
     char_u	*b_p_isk;	/* 'iskeyword' */
 #ifdef FEAT_FIND_ID

@@ -1964,7 +1964,6 @@ getexmodeline(c, dummy, indent)
 			    char_u	*q;
 
 			    --line_ga.ga_len;
-			    ++line_ga.ga_room;
 			    /* compute column that cursor should be in */
 			    v = 0;
 			    q = ((char_u *)line_ga.ga_data);
@@ -1992,7 +1991,6 @@ getexmodeline(c, dummy, indent)
 		    {
 			msg_col = startcol;
 			msg_clr_eos();
-			line_ga.ga_room += line_ga.ga_len;
 			line_ga.ga_len = 0;
 			continue;
 		    }
@@ -2024,7 +2022,6 @@ getexmodeline(c, dummy, indent)
 		    vcol += char2cells(c1);
 		}
 		++line_ga.ga_len;
-		--line_ga.ga_room;
 		escaped = FALSE;
 	    }
 	    windgoto(msg_row, msg_col);
@@ -2036,7 +2033,6 @@ getexmodeline(c, dummy, indent)
 #ifndef NO_COOKED_INPUT
 	{
 	    line_ga.ga_len += len;
-	    line_ga.ga_room -= len;
 	}
 #endif
 	p = (char_u *)(line_ga.ga_data) + line_ga.ga_len;
@@ -4122,7 +4118,6 @@ ExpandUserDefined(xp, regmatch, num_file, file)
 
 	((char_u **)ga.ga_data)[ga.ga_len] = vim_strnsave(s, (int)(e - s));
 	++ga.ga_len;
-	--ga.ga_room;
 
 	*e = keep;
 	if (*e != NUL)
@@ -4179,7 +4174,6 @@ ExpandRTDir(pat, num_file, file, dirname)
 	    ((char_u **)ga.ga_data)[ga.ga_len] =
 					    vim_strnsave(s, (int)(e - s - 4));
 	    ++ga.ga_len;
-	    --ga.ga_room;
 	}
 	if (*e != NUL)
 	    ++e;
@@ -4247,7 +4241,6 @@ globpath(path, file)
 			*cur++ = '\n';
 		    }
 		    ga.ga_len += len;
-		    ga.ga_room -= len;
 		}
 		FreeWild(num_p, p);
 	    }

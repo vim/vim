@@ -415,7 +415,6 @@ str_foldcase(str, len)
     mch_memmove(ga.ga_data, str, (size_t)len);
     GA_CHAR(len) = NUL;
     ga.ga_len = len;
-    ga.ga_room -= len;
 
     /* Make each character lower case. */
     i = 0;
@@ -451,7 +450,6 @@ str_foldcase(str, len)
 			    mch_memmove(GA_PTR(i) + nl, GA_PTR(i) + ol,
 						  STRLEN(GA_PTR(i) + ol) + 1);
 			    ga.ga_len += nl - ol;
-			    ga.ga_room -= nl - ol;
 			}
 		    }
 		    (void)utf_char2bytes(lc, GA_PTR(i));

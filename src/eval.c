@@ -5972,7 +5972,6 @@ f_inputrestore(argvars, retvar)
     if (ga_userinput.ga_len > 0)
     {
 	--ga_userinput.ga_len;
-	++ga_userinput.ga_room;
 	restore_typeahead((tasave_T *)(ga_userinput.ga_data)
 						       + ga_userinput.ga_len);
 	retvar->var_val.var_number = 0; /* OK */
@@ -5999,7 +5998,6 @@ f_inputsave(argvars, retvar)
 	save_typeahead((tasave_T *)(ga_userinput.ga_data)
 						       + ga_userinput.ga_len);
 	++ga_userinput.ga_len;
-	--ga_userinput.ga_room;
 	retvar->var_val.var_number = 0; /* OK */
     }
     else
@@ -8092,7 +8090,6 @@ error:
 	    ga_grow(&ga, cplen);
 	    mch_memmove((char *)ga.ga_data + ga.ga_len, cpstr, (size_t)cplen);
 	    ga.ga_len += cplen;
-	    ga.ga_room -= cplen;
 
 	    instr += inlen;
 	}
@@ -9109,7 +9106,6 @@ new_script_vars(id)
 	{
 	    var_init(&SCRIPT_VARS(ga_scripts.ga_len + 1));
 	    ++ga_scripts.ga_len;
-	    --ga_scripts.ga_room;
 	}
     }
 }
@@ -9269,10 +9265,7 @@ set_var(name, varp)
 	if ((v->var_name = vim_strsave(varname)) == NULL)
 	    return;
 	if (i == gap->ga_len)
-	{
 	    ++gap->ga_len;
-	    --gap->ga_room;
-	}
     }
     copy_var(varp, v);
 }
@@ -9441,12 +9434,8 @@ ex_execute(eap)
 		break;
 	    }
 	    if (ga.ga_len)
-	    {
 		((char_u *)(ga.ga_data))[ga.ga_len++] = ' ';
-		--ga.ga_room;
-	    }
 	    STRCPY((char_u *)(ga.ga_data) + ga.ga_len, p);
-	    ga.ga_room -= len;
 	    ga.ga_len += len;
 	}
 
@@ -9675,7 +9664,6 @@ ex_function(eap)
 	    ((char_u **)(newargs.ga_data))[newargs.ga_len] = arg;
 	    *p = c;
 	    newargs.ga_len++;
-	    newargs.ga_room--;
 	    if (*p == ',')
 		++p;
 	    else
@@ -9829,7 +9817,6 @@ ex_function(eap)
 	    goto erret;
 	((char_u **)(newlines.ga_data))[newlines.ga_len] = theline;
 	newlines.ga_len++;
-	newlines.ga_room--;
     }
 
     /* Don't define the function when skipping commands or when an error was
@@ -11398,7 +11385,6 @@ do_string_sub(str, pat, sub, flags)
 	    (void)vim_regsub(&regmatch, sub, (char_u *)ga.ga_data
 					  + ga.ga_len + i, TRUE, TRUE, FALSE);
 	    ga.ga_len += i + sublen - 1;
-	    ga.ga_room -= i + sublen - 1;
 	    /* avoid getting stuck on a match with an empty string */
 	    if (tail == regmatch.endp[0])
 	    {
@@ -11406,7 +11392,6 @@ do_string_sub(str, pat, sub, flags)
 		    break;
 		*((char_u *)ga.ga_data + ga.ga_len) = *tail++;
 		++ga.ga_len;
-		--ga.ga_room;
 	    }
 	    else
 	    {

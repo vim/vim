@@ -4988,6 +4988,7 @@ fix_arg_enc(void)
     int		i;
     int		idx;
     char_u	*str;
+    int		*fnum_list;
 
     /* Safety checks:
      * - if argument count differs between the wide and non-wide argument
@@ -5002,17 +5003,31 @@ fix_arg_enc(void)
 	    || used_alist_count != GARGCOUNT)
 	return;
 
+    /* Remember the buffer numbers for the arguments. */
+    fnum_list = (int *)alloc((int)sizeof(int) * GARGCOUNT);
+    if (fnum_list == NULL)
+	return;		/* out of memory */
+    for (i = 0; i < GARGCOUNT; ++i)
+	fnum_list[i] = GARGLIST[i].ae_fnum;
+
     /* Clear the argument list.  Make room for the new arguments. */
     alist_clear(&global_alist);
     if (ga_grow(&global_alist.al_ga, used_file_count) == FAIL)
-	return;	    /* out of memory */
+	return;		/* out of memory */
 
     for (i = 0; i < used_file_count; ++i)
     {
 	idx = used_file_indexes[i];
 	str = ucs2_to_enc(ArglistW[idx], NULL);
 	if (str != NULL)
+	{
+	    /* Re-use the old buffer by renaming it.  When not using literal
+	     * names it's done by alist_expand() below. */
+	    if (used_file_literal)
+		buf_set_name(fnum_list[i], str);
+
 	    alist_add(&global_alist, str, used_file_literal ? 2 : 0);
+	}
     }
 
     if (!used_file_literal)
@@ -5022,7 +5037,7 @@ fix_arg_enc(void)
 	 * filename characters but are excluded from 'isfname' to make
 	 * "gf" work on a file name in parenthesis (e.g.: see vim.h). */
 	do_cmdline_cmd((char_u *)":let SaVe_ISF = &isf|set isf+=(,)");
-	alist_expand();
+	alist_expand(fnum_list, used_alist_count);
 	do_cmdline_cmd((char_u *)":let &isf = SaVe_ISF|unlet SaVe_ISF");
     }
 
@@ -5034,5 +5049,7 @@ fix_arg_enc(void)
 	if (GARGCOUNT == 1 && used_file_full_path)
 	    (void)vim_chdirfile(alist_name(&GARGLIST[0]));
     }
+
+    set_alist_count();
 }
 #endif

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Dec 24
+*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Dec 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,6 +30,16 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Python 2.4 breaks uploading with rsync, 2.3 is OK.
+
+-   Use a builtin grep command for ":grep"?  Makes it possible to add the
+    column number.
+    Patch from Yegappan Lakshmanan, Nov 4.
+Don't expand wildcards in pattern (first arg)
+completion for all files after first arg.
+Use a buffer to load the file, so that gzip files can be searched and long
+lines work.
+
 Patch for mch_FullName() also in Vim 6.3?  os_mswin.c
 
 Win32: "gvim -V100" should use dialog with scrollbar.  Using
@@ -50,25 +60,6 @@ Included NetBeans patches (Gordon Prieur, Oct 20)
 
 PLANNED FOR VERSION 7.0:
 
--   Include many PATCHES:
-    -	VimResized	    - When the Vim window has been resized (SIGWINCH)
-	  patch from Yakov Lerner, 2003 July 24.
-    -	Patch for specifying an expression for numbered lists. (Hugo Haas,
-	2004 Aug 7)
-    -	Add the ":cbuffer" command: read list of errors from a buffer instead
-	of from a file. (Yegappan Lakshmanan, Oct 31, but avoid the temp file)
-	Perhaps ":cexpr" could read from a list?
-	Add %b to 'errorformat': buffer number. (Yegappan Lakshmanan / Suresh
-	Govindachar)
--   Use a builtin grep command for ":grep"?  Makes it possible to add the
-    column number.  Can use the code of ":helpgrep".
-    Patch from Yegappan Lakshmanan, Nov 4.  Or use ":grep" and set 'grepprg'
-    to something special?  Could also do both.
-    Also support using "**" in filename, so that a directory tree can be
-    searched.
-    Also see the "minigrep.vim" script on www.vim.org.
-
-
 -   Drop the kvim support?  There is no maintenance and "yzis" is supposed to
     replace it.
 -   In the kvim/KDE source files fix the formatting.
@@ -77,8 +68,6 @@ PLANNED FOR VERSION 7.0:
 -   KDE GUI Input method patch. (Yasuhiro Matsumoto) (upd. Oct 25 2004)
 
 After including patches:
--   Change ga_room into ga_maxlen, so that it doesn't need to be
-    incremented/decremented each time.
 -   For string variables, use length instead of NUL termination?
 	+ can include NUL characters
 	- setline() will have problems with NL vs NUL.
@@ -105,6 +94,8 @@ After including patches:
 -   Improve the interface between the generic GUI code and the system-specific
     code.  Generic code handles text window with scrollbars, system-specific
     code menu, toolbar, etc.
+-   Support using "**" in filename for ":next", ":vimgrep", etc., so that a
+    directory tree can be searched.
 -   Store messages to allow SCROLLING BACK for all commands.  And other "less"
     like commands.
 -   "INTELLISENSE".  First cleanup the Insert-mode completion.
@@ -180,6 +171,11 @@ After including patches:
     "foldcolumn". (Benji Fisher, 2004 Jun 21)
 -   FileChangedShellPost autocommand event: after (not) reloading a changed
     file.  Can be used to update statusline oslt.
+-   VimResized autocmd event: When the Vim window has been resized (SIGWINCH)
+    patch from Yakov Lerner, 2003 July 24.
+	It's not clear that this doesn't cause problems when the executed
+	commands do something like changing 'lines'.  Esp. because the 
+	screen has not yet been allocated with the new size.
 -   Running a shell command from the GUI still has limitations.  Look into how
     the Vim shell project can help: http://vimshell.wana.at
 8   When a file is change outside of Vim and unmodified in Vim there is no
@@ -3067,6 +3063,9 @@ Debug mode:
 Various improvements:
 8   Add ":rename" command: rename the file of the current buffer and rename
     the buffer.  Buffer may be modified.
+-   Perhaps ":cexpr" could read errors from a list?
+    Add %b to 'errorformat': buffer number. (Yegappan Lakshmanan / Suresh
+    Govindachar)
 6   In the quickfix window statusline add the command used to get the list of
     errors, e.g. ":make foo", ":grep something *.c".
 7   Add a ":cstring" command.  Works like ":cfile" but reads from a string
