@@ -20,6 +20,8 @@ int vim_isIDc __ARGS((int c));
 int vim_iswordc __ARGS((int c));
 int vim_iswordp __ARGS((char_u *p));
 int vim_iswordc_buf __ARGS((char_u *p, buf_T *buf));
+void init_spell_chartab __ARGS((void));
+int spell_iswordc __ARGS((char_u *p));
 int vim_isfilec __ARGS((int c));
 int vim_isprintc __ARGS((int c));
 int vim_isprintc_strict __ARGS((int c));

@@ -3874,6 +3874,7 @@ check_scrollbind(topline_diff, leftcol_diff)
 nv_ignore(cap)
     cmdarg_T	*cap;
 {
+    cap->retval |= CA_COMMAND_BUSY;	/* don't call edit() now */
 }
 
 /*
@@ -8675,6 +8676,7 @@ nv_cursorhold(cap)
 {
     apply_autocmds(EVENT_CURSORHOLD, NULL, NULL, FALSE, curbuf);
     did_cursorhold = TRUE;
+    cap->retval |= CA_COMMAND_BUSY;	/* don't call edit() now */
 }
 #endif
 

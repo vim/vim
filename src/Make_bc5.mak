@@ -564,6 +564,7 @@ vimobj =  \
 	$(OBJDIR)\regexp.obj \
 	$(OBJDIR)\screen.obj \
 	$(OBJDIR)\search.obj \
+	$(OBJDIR)\spell.obj \
 	$(OBJDIR)\syntax.obj \
 	$(OBJDIR)\tag.obj \
 	$(OBJDIR)\term.obj \
