@@ -1,4 +1,4 @@
-*os_amiga.txt*  For Vim version 7.0aa.  Last change: 2004 Apr 25
+*os_amiga.txt*  For Vim version 7.0aa.  Last change: 2004 Jun 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -29,6 +29,12 @@ If you do not use digraphs, you can save some memory by recompiling without
 the |+digraphs| feature. If you want to use Vim with other terminals you can
 recompile with the TERMCAP option. Vim compiles with Manx 5.x and SAS 6.x.
 See the makefiles and feature.h.
+
+If you notice Vim crashes on some files when syntax highlighting is on, or
+when using a search pattern with nested wildcards, it might be that the stack
+is too small.  Try increasing the stack size.  In a shell use the Stack
+command before launching Vim.  On the Workbench, select the Vim icon, use the
+workbench "Info" menu and change the Stack field in the form.
 
 If you want to use different colors set the termcap codes:
 	t_mr (for inverted text)

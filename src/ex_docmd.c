@@ -197,7 +197,7 @@ static void	ex_tearoff __ARGS((exarg_T *eap));
 #else
 # define ex_tearoff		ex_ni
 #endif
-#if (defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_GTK)) && defined(FEAT_MENU)
+#if (defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_KDE) || defined(FEAT_GUI_GTK)) && defined(FEAT_MENU)
 static void	ex_popup __ARGS((exarg_T *eap));
 #else
 # define ex_popup		ex_ni
@@ -205,11 +205,11 @@ static void	ex_popup __ARGS((exarg_T *eap));
 #ifndef FEAT_GUI_MSWIN
 # define ex_simalt		ex_ni
 #endif
-#if !defined(FEAT_GUI_MSWIN) && !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_MOTIF)
+#if !defined(FEAT_GUI_MSWIN) && !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_MOTIF) && !defined(FEAT_GUI_KDE)
 # define gui_mch_find_dialog	ex_ni
 # define gui_mch_replace_dialog ex_ni
 #endif
-#ifndef FEAT_GUI_GTK
+#if !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_KDE)
 # define ex_helpfind		ex_ni
 #endif
 #ifndef FEAT_CSCOPE
@@ -258,7 +258,7 @@ static void	ex_wincmd __ARGS((exarg_T *eap));
 #else
 # define ex_wincmd	    ex_ni
 #endif
-#if defined(FEAT_GUI) || defined(UNIX) || defined(VMS)
+#if defined(FEAT_GUI) || defined(UNIX) || defined(VMS) || defined(MSWIN)
 static void	ex_winpos __ARGS((exarg_T *eap));
 #else
 # define ex_winpos	    ex_ni
@@ -6719,7 +6719,7 @@ ex_tearoff(eap)
 }
 #endif
 
-#if (defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_GTK)) && defined(FEAT_MENU)
+#if (defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_KDE) || defined(FEAT_GUI_GTK)) && defined(FEAT_MENU)
     static void
 ex_popup(eap)
     exarg_T	*eap;
@@ -7108,7 +7108,7 @@ ex_wincmd(eap)
 }
 #endif
 
-#if defined(FEAT_GUI) || defined(UNIX) || defined(VMS)
+#if defined(FEAT_GUI) || defined(UNIX) || defined(VMS) || defined(MSWIN)
 /*
  * ":winpos".
  */
@@ -7122,8 +7122,12 @@ ex_winpos(eap)
 
     if (*arg == NUL)
     {
-# ifdef FEAT_GUI
+# if defined(FEAT_GUI) || defined(MSWIN)
+#  ifdef FEAT_GUI
 	if (gui.in_use && gui_mch_get_winpos(&x, &y) != FAIL)
+#  else
+	if (mch_get_winpos(&x, &y) != FAIL)
+#  endif
 	{
 	    sprintf((char *)IObuff, _("Window position: X %d, Y %d"), x, y);
 	    msg(IObuff);
@@ -7154,6 +7158,10 @@ ex_winpos(eap)
 	}
 #  ifdef HAVE_TGETENT
 	else
+#  endif
+# else
+#  ifdef MSWIN
+	    mch_set_winpos(x, y);
 #  endif
 # endif
 # ifdef HAVE_TGETENT

@@ -483,13 +483,14 @@ if the pattern starts with "^" and ends in "$").  A "*" matches any sequence
 of characters.  'ignorecase' is not used, but "\c" can be used in the pattern
 to ignore case |/\c|.  Don't include the () for the function name!
 
-The match for sourced scripts is done against the full file name.  Examples: >
-	breakadd file explorer
-won't match, the path is missing. >
+The match for sourced scripts is done against the full file name.  If no path
+is specified the current directory is used.  Examples: >
+	breakadd file explorer.vim
+matches "explorer.vim" in the current directory. >
 	breakadd file *explorer.vim
-matches ".../plugin/explorer.vim" and ".../plugin/iexplorer.vim". >
+matches ".../plugin/explorer.vim", ".../plugin/iexplorer.vim", etc. >
 	breakadd file */explorer.vim
-matches ".../plugin/explorer.vim" only.
+matches ".../plugin/explorer.vim" and "explorer.vim" in any other directory.
 
 The match for functions is done against the name as it's shown in the output
 of ":function".  For local functions this means that something like "<SNR>99_"

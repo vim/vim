@@ -859,6 +859,10 @@ list_version()
 #	 else
 #	  if defined (MACOS)
     MSG_PUTS(_("with (classic) GUI."));
+#	   else
+#	    ifdef FEAT_GUI_KDE
+    MSG_PUTS(_("with KDE GUI."));
+#          endif
 #	  endif
 #	 endif
 #	endif

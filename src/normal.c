@@ -2357,7 +2357,7 @@ do_mouse(oap, c, dir, count, fixindent)
 	     * NOTE: Ignore right button down and drag mouse events.
 	     * Windows only shows the popup menu on the button up event.
 	     */
-#if defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_PHOTON)
+#if defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_KDE)
 	    if (!is_click)
 		return FALSE;
 #endif
@@ -2365,7 +2365,7 @@ do_mouse(oap, c, dir, count, fixindent)
 	    if (is_click || is_drag)
 		return FALSE;
 #endif
-#if defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_GTK) \
+#if defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_KDE) \
 	    || defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_MSWIN) \
 	    || defined(FEAT_GUI_MAC) || defined(FEAT_GUI_PHOTON)
 	    if (gui.in_use)

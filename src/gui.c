@@ -97,7 +97,7 @@ gui_start()
 
     vim_free(old_term);
 
-#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_X11)
+#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_X11) || defined(FEAT_GUI_KDE)
     if (gui.in_use)
 	/* Display error messages in a dialog now. */
 	display_errors();
@@ -531,7 +531,7 @@ gui_init()
 	/* Our GUI can't do bidi. */
 	p_tbidi = FALSE;
 #endif
-#ifdef FEAT_GUI_GTK
+#if defined FEAT_GUI_GTK || defined FEAT_GUI_KDE
 	/* Give GTK+ a chance to put all widget's into place. */
 	gui_mch_update();
 	/* Now make sure the shell fits on the screen. */
@@ -575,7 +575,7 @@ gui_exit(rc)
     gui_mch_exit(rc);
 }
 
-#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_X11) || defined(FEAT_GUI_MSWIN) \
+#if defined(FEAT_GUI_KDE) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_X11) || defined(FEAT_GUI_MSWIN) \
 	|| defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_MAC) || defined(PROTO)
 /*
  * Called when the GUI shell is closed by the user.  If there are no changed
@@ -1058,7 +1058,7 @@ gui_update_cursor(force, clear_selection)
     void
 gui_position_menu()
 {
-# if !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_MOTIF)
+# if !defined(FEAT_GUI_KDE) && !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_MOTIF)
     if (gui.menu_is_active && gui.in_use)
 	gui_mch_set_menu_pos(0, 0, gui.menu_width, gui.menu_height);
 # endif
@@ -1164,6 +1164,7 @@ gui_get_base_height()
     if (gui.menu_is_active)
 	base_height += gui.menu_height;
 # endif
+#ifndef FEAT_GUI_KDE
 # ifdef FEAT_TOOLBAR
     if (vim_strchr(p_go, GO_TOOLBAR) != NULL)
 #  if defined(FEAT_GUI_MSWIN) && defined(FEAT_TOOLBAR)
@@ -1172,6 +1173,7 @@ gui_get_base_height()
 	base_height += gui.toolbar_height;
 #  endif
 # endif
+#endif
 # ifdef FEAT_FOOTER
     if (vim_strchr(p_go, GO_FOOTER) != NULL)
 	base_height += gui.footer_height;
@@ -1680,7 +1682,7 @@ gui_write(s, len)
      * We need to make sure this is cleared since Athena doesn't tell us when
      * he is done dragging.  Do the same for GTK.
      */
-#if defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_GTK)
+#if defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_KDE)
     gui.dragged_sb = SBAR_NONE;
 #endif
 
@@ -2071,7 +2073,7 @@ gui_outstr_nowrap(s, len, flags, fg, bg, back)
     if (back != 0 && ((draw_flags & DRAW_BOLD) || (highlight_mask & HL_ITALIC)))
 	return FAIL;
 
-#if defined(RISCOS) || defined(HAVE_GTK2)
+#if defined(RISCOS) || defined(HAVE_GTK2) || defined(FEAT_GUI_KDE)
     /* If there's no italic font, then fake it.
      * For GTK2, we don't need a different font for italic style. */
     if (hl_mask_todo & HL_ITALIC)
@@ -2141,7 +2143,7 @@ gui_outstr_nowrap(s, len, flags, fg, bg, back)
 	    /* print the string so far if it's the last character or there is
 	     * a composing character. */
 	    if (i + cl >= len || (comping && i > start) || dowide
-#  if defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK)
+#  if defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK) || defined (FEAT_GUI_KDE)
 		    || (cn > 1
 #   ifdef FEAT_XFONTSET
 			/* No fontset: At least draw char after wide char at
@@ -2173,8 +2175,9 @@ gui_outstr_nowrap(s, len, flags, fg, bg, back)
 		    start += cl;
 		}
 
-#  if defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK)
-		/* No fontset: draw a space to fill the gap after a wide char */
+#  if defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_KDE)
+		/* No fontset: draw a space to fill the gap after a wide char
+		 * */
 		if (cn > 1 && (draw_flags & DRAW_TRANSP) == 0
 #   ifdef FEAT_XFONTSET
 			&& fontset == NOFONTSET
@@ -4056,8 +4059,9 @@ gui_get_color(name)
     if (*name == NUL)
 	return INVALCOLOR;
     t = gui_mch_get_color(name);
+
     if (t == INVALCOLOR
-#if defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK)
+#if defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_KDE)
 	    && gui.in_use
 #endif
 	    )
@@ -4183,7 +4187,6 @@ gui_mouse_moved(x, y)
 	add_to_input_buf(st, 8);
 	st[3] = (char_u)MOUSE_RELEASE;
 	add_to_input_buf(st, 8);
-
 #ifdef FEAT_GUI_GTK
 	/* Need to wake up the main loop */
 	if (gtk_main_level() > 0)
@@ -4301,7 +4304,7 @@ ex_gui(eap)
 }
 
 #if ((defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_W32) \
-	|| defined(FEAT_GUI_PHOTON)) && defined(FEAT_TOOLBAR)) || defined(PROTO)
+	|| defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_KDE)) && defined(FEAT_TOOLBAR)) || defined(PROTO)
 /*
  * This is shared between Athena, Motif and GTK.
  */
@@ -4364,7 +4367,7 @@ gui_find_iconfile(name, buffer, ext)
 # endif
 #endif
 
-#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_X11) || defined(PROTO)
+#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_KDE) || defined(FEAT_GUI_X11) || defined(PROTO)
     void
 display_errors()
 {
@@ -4410,7 +4413,7 @@ no_console_input()
 
 #if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MOTIF) \
 	|| defined(MSWIN_FIND_REPLACE) || defined(FEAT_SUN_WORKSHOP) \
-	|| defined(PROTO)
+	|| defined(PROTO) || defined(FEAT_GUI_KDE)
 /*
  * Update the current window and the screen.
  */
@@ -4428,7 +4431,7 @@ gui_update_screen()
 #endif
 
 #if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MOTIF) \
-	|| defined(MSWIN_FIND_REPLACE) || defined(PROTO)
+	|| defined(MSWIN_FIND_REPLACE) || defined(PROTO) || defined(FEAT_GUI_KDE)
 static void concat_esc __ARGS((garray_T *gap, char_u *text, int what));
 
 /*

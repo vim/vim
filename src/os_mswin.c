@@ -155,12 +155,7 @@ extern char g_szOrigTitle[];
 #ifdef FEAT_GUI
 extern HWND s_hwnd;
 #else
-# if (defined(FEAT_PRINTER) && !defined(FEAT_POSTSCRIPT)) \
-	|| defined(FEAT_CLIENTSERVER) \
-	|| (defined(FEAT_EVAL) && !defined(FEAT_GUI))
-#  define HAVE_GETCONSOLEHWND
 static HWND s_hwnd = 0;	    /* console window handle, set by GetConsoleHwnd() */
-# endif
 #endif
 
 extern int WSInitialized;
@@ -1537,7 +1532,7 @@ Trace(
 
 #endif //_DEBUG
 
-#ifdef HAVE_GETCONSOLEHWND
+#if !defined(FEAT_GUI) || defined(PROTO)
 # if defined(FEAT_TITLE) && defined(WIN3264)
 extern HWND g_hWnd;	/* This is in os_win32.c. */
 # endif
@@ -1579,6 +1574,32 @@ GetConsoleHwnd(void)
     s_hwnd = FindWindow(NULL, pszNewWindowTitle);
 
     SetConsoleTitle(pszOldWindowTitle);
+}
+
+/*
+ * Console implementation of ":winpos".
+ */
+    int
+mch_get_winpos(int *x, int *y)
+{
+    RECT  rect;
+
+    GetConsoleHwnd();
+    GetWindowRect(s_hwnd, &rect);
+    *x = rect.left;
+    *y = rect.top;
+    return OK;
+}
+
+/*
+ * Console implementation of ":winpos x y".
+ */
+    void
+mch_set_winpos(int x, int y)
+{
+    GetConsoleHwnd();
+    SetWindowPos(s_hwnd, NULL, x, y, 0, 0,
+		 SWP_NOZORDER | SWP_NOSIZE | SWP_NOACTIVATE);
 }
 #endif
 

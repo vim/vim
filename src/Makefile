@@ -336,6 +336,7 @@ CClink = $(CC)
 # use it (e.g., want a GTK-only version), then use --enable-gui=gtk.
 #
 # If the selected GUI isn't found, the GUI is disabled automatically
+#CONF_OPT_GUI = --enable-gui=kde
 #CONF_OPT_GUI = --enable-gui=gtk
 #CONF_OPT_GUI = --enable-gui=gtk --disable-gtktest
 #CONF_OPT_GUI = --enable-gui=gtk2
@@ -1041,6 +1042,35 @@ LINKIT = @echo >/dev/null
 # Without a GUI install the normal way.
 NONE_INSTALL = install_normal
 
+### KDE GUI interface.
+KDE_DIR		= $(KDE_PREFIX)
+KDE_INCL	= gui.h
+KDE_SRC		= gui.c pty.c gui_kde.cc gui_kde_x11.cc gui_kde_widget.cc gui_kde_widget_moc.cc kvim_iface_skel.cc
+KDE_OBJ		= objects/gui.o objects/pty.o objects/gui_kde.o objects/gui_kde_x11.o \
+	   		objects/gui_kde_widget.o objects/gui_kde_widget_moc.o \
+			objects/kvim_iface_skel.o
+KDE_DEFS	= -DFEAT_GUI_KDE $(NARROW_PROTO)
+KDE_IPATH	= $(GUI_INC_LOC)
+KDE_LIBS_DIR	= $(GUI_LIB_LOC)
+KDE_LIBS1	=
+KDE_LIBS2	= $(KDE_LIBNAME)
+KDE_INSTALL     = install_normal
+KDE_TARGETS	= installklinks installkdeicons
+KDE_MAN_TARGETS =
+KDE_TESTTARGET = gui
+
+#for KDE rename files to avoid confusion with gvim for GTK
+KVIMNAME	= k$(VIMNAME)
+KVIMTARGET	= $(KVIMNAME)$(LNKEXT)
+KVIEWNAME	= k$(VIEWNAME)
+KVIEWTARGET	= $(KVIEWNAME)$(LNKEXT)
+RKVIMNAME	= r$(KVIMNAME)
+RKVIMTARGET	= $(RKVIMNAME)$(LNKEXT)
+RKVIEWNAME	= r$(KVIEWNAME)
+RKVIEWTARGET	= $(RKVIEWNAME)$(LNKEXT)
+KVIMDIFFNAME	= k$(VIMDIFFNAME)
+KVIMDIFFTARGET	= $(KVIMDIFFNAME)$(LNKEXT)
+
 ### GTK GUI
 GTK_SRC		= gui.c gui_gtk.c gui_gtk_x11.c pty.c gui_gtk_f.c \
 			gui_beval.c
@@ -1170,8 +1200,8 @@ CARBONGUI_MAN_TARGETS =
 CARBONGUI_TESTTARGET =
 
 # All GUI files
-ALL_GUI_SRC  = gui.c gui_gtk.c gui_gtk_f.c gui_motif.c gui_athena.c gui_gtk_x11.c gui_x11.c gui_at_sb.c gui_at_fs.c pty.c
-ALL_GUI_PRO  = gui.pro gui_gtk.pro gui_motif.pro gui_athena.pro gui_gtk_x11.pro gui_x11.pro gui_w16.pro gui_w32.pro gui_amiga.pro gui_photon.pro
+ALL_GUI_SRC  = gui.c gui_gtk.c gui_gtk_f.c gui_motif.c gui_athena.c gui_gtk_x11.c gui_x11.c gui_at_sb.c gui_at_fs.c pty.c gui_kde.cc gui_kde_widget.cc gui_kde_x11.cc gui_kde_widget_moc.cc
+ALL_GUI_PRO  = gui.pro gui_gtk.pro gui_motif.pro gui_athena.pro gui_gtk_x11.pro gui_x11.pro gui_w16.pro gui_w32.pro gui_amiga.pro gui_photon.pro gui_kde.pro gui_kde_x11.pro
 
 # }}}
 
@@ -1307,7 +1337,7 @@ BASIC_SRC = \
 SRC =	$(BASIC_SRC) $(GUI_SRC) $(HANGULIN_SRC) $(PERL_SRC) $(PYTHON_SRC) \
 	$(TCL_SRC) $(RUBY_SRC) $(SNIFF_SRC) $(WORKSHOP_SRC) $(WSDEBUG_SRC)
 
-TAGS_SRC = *.c *.cpp if_perl.xs
+TAGS_SRC = *.c *.cpp *.cc if_perl.xs
 
 EXTRA_SRC = hangulin.c auto/if_perl.c if_perlsfio.c if_python.c if_tcl.c \
 		if_ruby.c if_sniff.c gui_beval.c \
@@ -1800,6 +1830,23 @@ install-languages: languages $(DEST_LANG) $(DEST_KMAP)
 	fi
 
 # install the icons for KDE, if the directory exists and the icon doesn't.
+# doesn't.<=looks strange to install icons to user's directory ;), i add my
+# own install procedure, mikmak
+installkdeicons:
+	mkdir -p $(DESTDIR)$(KDE_DIR)/share/applnk/Editors/
+	mkdir -p $(DESTDIR)$(KDE_DIR)/share/icons/hicolor/32x32/apps/
+	mkdir -p $(DESTDIR)$(KDE_DIR)/share/icons/hicolor/48x48/apps/
+	mkdir -p $(DESTDIR)$(KDE_DIR)/share/icons/hicolor/22x22/actions/
+	mkdir -p $(DESTDIR)$(KDE_DIR)/share/icons/hicolor/16x16/actions/
+	mkdir -p $(DESTDIR)$(KDE_DIR)/share/apps/kvim
+
+	cp ../runtime/KVim.desktop $(DESTDIR)$(KDE_DIR)/share/applnk/Editors/ && chmod 644 $(DESTDIR)$(KDE_DIR)/share/applnk/Editors/KVim.desktop
+	cp ../runtime/kvim32x32.png $(DESTDIR)$(KDE_DIR)/share/icons/hicolor/32x32/apps/kvim.png && chmod 644 $(DESTDIR)$(KDE_DIR)/share/icons/hicolor/32x32/apps/kvim.png
+	cp ../runtime/kvim48x48.png $(DESTDIR)$(KDE_DIR)/share/icons/hicolor/48x48/apps/kvim.png && chmod 644 $(DESTDIR)$(KDE_DIR)/share/icons/hicolor/48x48/apps/kvim.png
+	cp ../runtime/hi16-action-make.png $(DESTDIR)$(KDE_DIR)/share/icons/hicolor/16x16/actions/hi16-action-make.png
+	cp ../runtime/hi22-action-make.png $(DESTDIR)$(KDE_DIR)/share/icons/hicolor/22x22/actions/hi22-action-make.png
+	cp ../runtime/kde-tips $(DESTDIR)$(KDE_DIR)/share/apps/kvim/tips && chmod 644 $(DESTDIR)$(KDE_DIR)/share/apps/kvim/tips
+
 ICON48PATH = $(DESTDIR)$(DATADIR)/icons/hicolor/48x48/apps
 ICON32PATH = $(DESTDIR)$(DATADIR)/icons/locolor/32x32/apps
 ICON16PATH = $(DESTDIR)$(DATADIR)/icons/locolor/16x16/apps
@@ -1848,8 +1895,17 @@ installglinks: $(DEST_BIN)/$(GVIMTARGET) \
 			$(DEST_BIN)/$(EVIEWTARGET) \
 			$(INSTALLGVIMDIFF)
 
+installklinks: $(DEST_BIN)/$(KVIMTARGET) \
+			$(DEST_BIN)/$(KVIEWTARGET) \
+			$(DEST_BIN)/$(RKVIMTARGET) \
+			$(DEST_BIN)/$(RKVIEWTARGET) \
+			$(DEST_BIN)/$(EVIMTARGET) \
+			$(DEST_BIN)/$(EVIEWTARGET) \
+			installkvimdiff
+
 installvimdiff: $(DEST_BIN)/$(VIMDIFFTARGET)
 installgvimdiff: $(DEST_BIN)/$(GVIMDIFFTARGET)
+installkvimdiff: $(DEST_BIN)/$(KVIMDIFFTARGET)
 
 $(DEST_BIN)/$(EXTARGET):
 	cd $(DEST_BIN); ln -s $(VIMTARGET) $(EXTARGET)
@@ -1863,6 +1919,12 @@ $(DEST_BIN)/$(GVIMTARGET):
 $(DEST_BIN)/$(GVIEWTARGET):
 	cd $(DEST_BIN); ln -s $(VIMTARGET) $(GVIEWTARGET)
 
+$(DEST_BIN)/$(KVIMTARGET):
+	cd $(DEST_BIN); ln -s $(VIMTARGET) $(KVIMTARGET)
+
+$(DEST_BIN)/$(KVIEWTARGET):
+	cd $(DEST_BIN); ln -s $(VIMTARGET) $(KVIEWTARGET)
+
 $(DEST_BIN)/$(RVIMTARGET):
 	cd $(DEST_BIN); ln -s $(VIMTARGET) $(RVIMTARGET)
 
@@ -1875,11 +1937,20 @@ $(DEST_BIN)/$(RGVIMTARGET):
 $(DEST_BIN)/$(RGVIEWTARGET):
 	cd $(DEST_BIN); ln -s $(VIMTARGET) $(RGVIEWTARGET)
 
+$(DEST_BIN)/$(RKVIMTARGET):
+	cd $(DEST_BIN); ln -s $(VIMTARGET) $(RKVIMTARGET)
+
+$(DEST_BIN)/$(RKVIEWTARGET):
+	cd $(DEST_BIN); ln -s $(VIMTARGET) $(RKVIEWTARGET)
+
 $(DEST_BIN)/$(VIMDIFFTARGET):
 	cd $(DEST_BIN); ln -s $(VIMTARGET) $(VIMDIFFTARGET)
 
 $(DEST_BIN)/$(GVIMDIFFTARGET):
 	cd $(DEST_BIN); ln -s $(VIMTARGET) $(GVIMDIFFTARGET)
+
+$(DEST_BIN)/$(KVIMDIFFTARGET):
+	cd $(DEST_BIN); ln -s $(VIMTARGET) $(KVIMDIFFTARGET)
 
 $(DEST_BIN)/$(EVIMTARGET):
 	cd $(DEST_BIN); ln -s $(VIMTARGET) $(EVIMTARGET)
@@ -1895,7 +1966,7 @@ installhelplinks: $(GUI_MAN_TARGETS) \
 			$(DEST_MAN)/$(RVIMNAME).1 \
 			$(DEST_MAN)/$(RVIEWNAME).1
 
-installghelplinks: $(DEST_MAN)/$(GVIMNAME).1 \
+installghelplinks installkhelplinks : $(DEST_MAN)/$(GVIMNAME).1 \
 			$(DEST_MAN)/$(GVIEWNAME).1 \
 			$(DEST_MAN)/$(RGVIMNAME).1 \
 			$(DEST_MAN)/$(RGVIEWNAME).1 \
@@ -1939,9 +2010,12 @@ uninstall: uninstall_runtime
 	-rm -f $(DEST_BIN)/xxd$(EXEEXT) $(DEST_MAN)/xxd.1
 	-rm -f $(DEST_BIN)/$(EXTARGET) $(DEST_BIN)/$(VIEWTARGET)
 	-rm -f $(DEST_BIN)/$(GVIMTARGET) $(DEST_BIN)/$(GVIEWTARGET)
+	-rm -f $(DEST_BIN)/$(KVIMTARGET) $(DEST_BIN)/$(KVIEWTARGET)
 	-rm -f $(DEST_BIN)/$(RVIMTARGET) $(DEST_BIN)/$(RVIEWTARGET)
 	-rm -f $(DEST_BIN)/$(RGVIMTARGET) $(DEST_BIN)/$(RGVIEWTARGET)
+	-rm -f $(DEST_BIN)/$(RKVIMTARGET) $(DEST_BIN)/$(RKVIEWTARGET)
 	-rm -f $(DEST_BIN)/$(VIMDIFFTARGET) $(DEST_BIN)/$(GVIMDIFFTARGET)
+	-rm -f $(DEST_BIN)/$(VIMDIFFTARGET) $(DEST_BIN)/$(KVIMDIFFTARGET)
 	-rm -f $(DEST_BIN)/$(EVIMTARGET) $(DEST_BIN)/$(EVIEWTARGET)
 	-rm -f $(DEST_MAN)/$(EXNAME).1 $(DEST_MAN)/$(VIEWNAME).1
 	-rm -f $(DEST_MAN)/$(GVIMNAME).1 $(DEST_MAN)/$(GVIEWNAME).1
@@ -1984,6 +2058,7 @@ clean celan: testclean
 	-rm -f *.o objects/* core $(VIMTARGET).core $(VIMTARGET) xxd/*.o
 	-rm -f $(TOOLS) auto/osdef.h auto/pathdef.c auto/if_perl.c
 	-rm -f conftest* *~ auto/link.sed
+	-rm -f gui_kde_widget_moc.cc kvim_iface_skel.cc *.kidl
 	if test -d $(PODIR); then \
 		cd $(PODIR); $(MAKE) prefix=$(DESTDIR)$(prefix) clean; \
 	fi
@@ -2326,6 +2401,24 @@ objects/workshop.o: workshop.c
 objects/wsdebug.o: wsdebug.c
 	$(CCC) -o $@ wsdebug.c
 
+objects/gui_kde.o: gui_kde.cc
+	$(CCC) -o $@ gui_kde.cc
+
+objects/gui_kde_x11.o: gui_kde_x11.cc
+	$(CCC) -o $@ gui_kde_x11.cc
+
+objects/gui_kde_widget.o: gui_kde_widget.cc
+	$(MOC) -o gui_kde_widget_moc.cc gui_kde_widget.h
+	$(KDE_DIR)/bin/dcopidl kvim_iface.h > kvim_iface.kidl || ( rm -f kvim_iface.kidl ; /bin/false )
+	$(KDE_DIR)/bin/dcopidl2cpp --c++-suffix cc --no-stub kvim_iface.kidl
+	$(CCC) -o $@ gui_kde_widget.cc
+
+objects/gui_kde_widget_moc.o: gui_kde_widget_moc.cc
+	$(CCC) -o $@ gui_kde_widget_moc.cc
+
+objects/kvim_iface_skel.o: kvim_iface_skel.cc
+	$(CCC) -o $@ kvim_iface_skel.cc
+
 objects/netbeans.o: netbeans.c
 	$(CCC) -o $@ netbeans.c
 
@@ -2637,6 +2730,24 @@ objects/pty.o: pty.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h \
  ascii.h keymap.h term.h macros.h structs.h regexp.h gui.h gui_beval.h \
  proto/gui_beval.pro option.h ex_cmds.h proto.h globals.h farsi.h \
  arabic.h
+objects/gui_kde.o: gui_kde.cc gui_kde_widget.h kvim_iface.h vim.h \
+ auto/config.h feature.h os_unix.h auto/osdef.h ascii.h keymap.h \
+ term.h macros.h structs.h regexp.h gui.h option.h ex_cmds.h proto.h \
+ globals.h farsi.h
+objects/gui_kde_widget.o: gui_kde_widget.cc gui_kde_widget.h kvim_iface.h \
+ vim.h auto/config.h feature.h os_unix.h auto/osdef.h ascii.h keymap.h \
+ term.h macros.h structs.h regexp.h gui.h option.h ex_cmds.h proto.h \
+ globals.h farsi.h proto/../../pixmaps/alert.xpm proto/../../pixmaps/error.xpm \
+ proto/../../pixmaps/generic.xpm proto/../../pixmaps/info.xpm \
+ proto/../../pixmaps/quest.xpm
+objects/gui_kde_x11.o: gui_kde_x11.cc gui_kde_widget.h kvim_iface.h vim.h \
+ auto/config.h feature.h os_unix.h auto/osdef.h ascii.h keymap.h \
+ term.h macros.h structs.h regexp.h gui.h option.h ex_cmds.h proto.h \
+ globals.h farsi.h version.h ../runtime/vim32x32.xpm
+objects/gui_kde_widget_moc.o: gui_kde_widget_moc.cc gui_kde_widget.h \
+ kvim_iface.h vim.h auto/config.h feature.h os_unix.h auto/osdef.h \
+ ascii.h keymap.h term.h macros.h structs.h regexp.h gui.h option.h \
+ ex_cmds.h proto.h globals.h
 objects/hangulin.o: hangulin.c vim.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h structs.h regexp.h \
  gui.h gui_beval.h proto/gui_beval.pro option.h ex_cmds.h proto.h \

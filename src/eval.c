@@ -231,6 +231,7 @@ struct vimvar
     {"throwpoint", sizeof("throwpoint") - 1, NULL, VAR_STRING, VV_RO},
     {"register", sizeof("register") - 1, NULL, VAR_STRING, VV_RO},
     {"cmdbang", sizeof("cmdbang") - 1, NULL, VAR_NUMBER, VV_RO},
+    {"insertmode", sizeof("insertmode") - 1, NULL, VAR_STRING, VV_RO},
 };
 
 static int eval0 __ARGS((char_u *arg,  VAR retvar, char_u **nextcmd, int evaluate));
@@ -4876,6 +4877,9 @@ f_has(argvars, retvar)
 #endif
 #ifdef FEAT_GUI_BEOS
 	"gui_beos",
+#endif
+#ifdef FEAT_GUI_KDE
+	"gui_kde",
 #endif
 #ifdef FEAT_GUI_GTK
 	"gui_gtk",

@@ -130,6 +130,7 @@ SRC_UNIX =	\
 		pixmaps/gen-inline-pixbufs.sh \
 		pixmaps/stock_icons.h \
 		src/INSTALL \
+		src/INSTALLkde.txt \
 		src/Makefile \
 		src/auto/configure \
 		src/config.aap.in \
@@ -146,6 +147,11 @@ SRC_UNIX =	\
 		src/gui_gtk_f.c \
 		src/gui_gtk_f.h \
 		src/gui_gtk_x11.c \
+		src/gui_kde.cc \
+		src/gui_kde_widget.cc \
+		src/gui_kde_widget.h \
+		src/gui_kde_x11.cc \
+		src/kvim_iface.h \
 		src/gui_motif.c \
 		src/gui_x11.c \
 		src/hangulin.c \
@@ -164,6 +170,8 @@ SRC_UNIX =	\
 		src/proto/gui_athena.pro \
 		src/proto/gui_gtk.pro \
 		src/proto/gui_gtk_x11.pro \
+		src/proto/gui_kde.pro \
+		src/proto/gui_kde_x11.pro \
 		src/proto/gui_motif.pro \
 		src/proto/gui_x11.pro \
 		src/proto/hangulin.pro \
@@ -504,6 +512,13 @@ RT_SCRIPTS =	\
 # Unix runtime
 RT_UNIX =	\
 		README_unix.txt \
+		runtime/KVim.desktop \
+		runtime/hi16-action-make.png \
+		runtime/hi22-action-make.png \
+		runtime/kde-tips \
+		runtime/kvim32x32.png \
+		runtime/kvim48x48.png \
+		runtime/kvim64x64.png \
 		runtime/vim16x16.png \
 		runtime/vim16x16.xpm \
 		runtime/vim32x32.png \
@@ -630,8 +645,6 @@ EXTRA =		\
 		src/tee/Makefile* \
 		src/tee/tee.c \
 		csdpmi4b.zip \
-		emx.dll \
-		emxlibcs.dll \
 
 # generic language files
 LANG_GEN = \

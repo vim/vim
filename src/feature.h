@@ -689,13 +689,16 @@
  *			always has it).  But only if menus are enabled.
  */
 #if defined(FEAT_NORMAL) && defined(FEAT_MENU) \
-	&& (defined(FEAT_GUI_GTK) \
+	&& (defined(FEAT_GUI_KDE) \
+		|| defined(FEAT_GUI_GTK) \
 		|| defined(FEAT_GUI_MSWIN) \
 		|| ((defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)) \
 			&& defined(HAVE_XPM)) \
 		|| defined(FEAT_GUI_PHOTON))
 # define FEAT_TOOLBAR
 #endif
+
+
 #if defined(FEAT_TOOLBAR) && !defined(FEAT_MENU)
 # define FEAT_MENU
 #endif
@@ -706,7 +709,7 @@
  * BROWSE_CURRBUF	Open file browser in the directory of the current
  *			buffer, instead of the current directory.
  */
-#if defined(FEAT_NORMAL) && (defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_MAC))
+#if defined(FEAT_NORMAL) && (defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_KDE) || defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_MAC))
 # define FEAT_BROWSE
 #endif
 #if defined(FEAT_NORMAL) && defined(FEAT_GUI_MSWIN)
@@ -724,7 +727,8 @@
 	|| defined(FEAT_GUI_GTK) \
 	|| defined(FEAT_GUI_PHOTON) \
 	|| defined(FEAT_GUI_MSWIN) \
-	|| defined(FEAT_GUI_MAC)
+	|| defined(FEAT_GUI_MAC) \
+	|| defined(FEAT_GUI_KDE)
 #  define FEAT_CON_DIALOG
 #  define FEAT_GUI_DIALOG
 # else
@@ -732,13 +736,13 @@
 # endif
 #endif
 #if !defined(FEAT_GUI_DIALOG) && (defined(FEAT_GUI_MOTIF) \
-	|| defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_GTK))
+	|| defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_KDE))
 /* need a dialog to show error messages when starting from the desktop */
 # define FEAT_GUI_DIALOG
 #endif
 #if defined(FEAT_GUI_DIALOG) && \
 	(defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA) \
-	 || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MSWIN) \
+	 || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_KDE)|| defined(FEAT_GUI_MSWIN) \
 	 || defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_MAC))
 # define FEAT_GUI_TEXTDIALOG
 #endif
@@ -931,7 +935,7 @@
  * +X11			Unix only.  Include code for xterm title saving and X
  *			clipboard.  Only works if HAVE_X11 is also defined.
  */
-#if defined(FEAT_NORMAL) || defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)
+#if (defined(FEAT_NORMAL) || defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA))
 # define WANT_X11
 #endif
 
@@ -1057,7 +1061,7 @@
 #  define MCH_CURSOR_SHAPE
 # endif
 # if defined(FEAT_GUI_W32) || defined(FEAT_GUI_W16) || defined(FEAT_GUI_MOTIF) \
-	|| defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_GTK) \
+	|| defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_KDE)\
 	|| defined(FEAT_GUI_PHOTON)
 #  define FEAT_MOUSESHAPE
 # endif

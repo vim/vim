@@ -88,7 +88,8 @@
     || defined(FEAT_GUI_W16) \
     || defined(FEAT_GUI_BEOS) \
     || defined(FEAT_GUI_AMIGA) \
-    || defined(FEAT_GUI_PHOTON)
+    || defined(FEAT_GUI_PHOTON) \
+    || defined(FEAT_GUI_KDE)
 # ifndef FEAT_GUI
 #  define FEAT_GUI
 # endif
@@ -212,7 +213,15 @@
 # define __PARMS(x) __ARGS(x)
 #endif
 
-#if defined(UNIX) && !defined(MACOS_X) /* MACOS_X doesn't yet support osdef.h */
+/* if we're compiling in C++ (currently only KVim), the system
+ * headers must have the correct prototypes or nothing will build.
+ * conversely, our prototypes might clash due to throw() specifiers and
+ * cause compilation failures even though the headers are correct.  for
+ * a concrete example, gcc-3.2 enforces exception specifications, and
+ * glibc-2.2.5 has them in their system headers.
+ */
+#if !defined(__cplusplus) && defined(UNIX) \
+  && !defined(MACOS_X) /* MACOS_X doesn't yet support osdef.h */
 # include "auto/osdef.h"	/* bring missing declarations in */
 #endif
 
@@ -1022,6 +1031,9 @@ enum auto_event
     EVENT_FOCUSGAINED,		/* got the focus */
     EVENT_FOCUSLOST,		/* lost the focus to another app */
     EVENT_GUIENTER,		/* after starting the GUI */
+    EVENT_INSERTCHANGE,		/* when changing Insert/Replace mode */
+    EVENT_INSERTENTER,		/* when entering Insert mode */
+    EVENT_INSERTLEAVE,		/* when leaving Insert mode */
     EVENT_STDINREADPOST,	/* after reading from stdin */
     EVENT_STDINREADPRE,		/* before reading from stdin */
     EVENT_SYNTAX,		/* syntax selected */
@@ -1473,7 +1485,8 @@ int vim_memcmp __ARGS((void *, void *, size_t));
 #define VV_THROWPOINT	30
 #define VV_REG		31
 #define VV_CMDBANG	32
-#define VV_LEN		33	/* number of v: vars */
+#define VV_INSERTMODE	33
+#define VV_LEN		34	/* number of v: vars */
 
 #ifdef FEAT_CLIPBOARD
 
@@ -1572,7 +1585,7 @@ typedef int VimClipboard;	/* This is required for the prototypes. */
  * been seen at that stage.  But it must be before globals.h, where error_ga
  * is declared. */
 #if !defined(FEAT_GUI_W32) && !defined(FEAT_GUI_X11) \
-	&& !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_MAC)
+	&& !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_KDE) && !defined(FEAT_GUI_MAC)
 # define mch_errmsg(str)	fprintf(stderr, "%s", (str))
 # define display_errors()	fflush(stderr)
 # define mch_msg(str)		printf("%s", (str))

@@ -1,4 +1,4 @@
-*usr_27.txt*	For Vim version 7.0aa.  Last change: 2003 Oct 28
+*usr_27.txt*	For Vim version 7.0aa.  Last change: 2004 Jun 26
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -304,9 +304,9 @@ Will match "ab" in "abbb".  Actually, it will never match more than one b,
 because there is no reason to match more.  It requires something else to force
 it to match more than the lower limit.
    The same rules apply to removing "n" and "m".  It's even possible to remove
-both of the, resulting in "\{-}".  This matches the item before it zero or
-more times, as few as possible.  The item by itself always match zero times.
-It is useful when combined with something else.  Example: >
+both of the numbes, resulting in "\{-}".  This matches the item before it zero
+or more times, as few as possible.  The item by itself always matches zero
+times.  It is useful when combined with something else.  Example: >
 
 	/a.\{-}b
 

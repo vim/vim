@@ -447,7 +447,13 @@ dbg_parsearg(arg)
 	vim_free(q);
 	if (p == NULL)
 	    return FAIL;
-	bp->dbg_name = p;
+	if (*p != '*')
+	{
+	    bp->dbg_name = fix_fname(p);
+	    vim_free(p);
+	}
+	else
+	    bp->dbg_name = p;
 #ifdef MACOS_CLASSIC
 	if (bp->dbg_name != NULL)
 	    slash_n_colon_adjust(bp->dbg_name);

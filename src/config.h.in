@@ -312,6 +312,9 @@
 /* Define if you use GTK and want GNOME support. */
 #undef FEAT_GUI_GNOME
 
+/* Define if you use KDE and want KDE Toolbar support. */
+#undef FEAT_KDETOOLBAR
+
 /* Define if GTK+ 2 is available. */
 #undef HAVE_GTK2
 

@@ -259,7 +259,7 @@ main
 	    break;
 # ifdef FEAT_XCLIPBOARD
 	else if (STRICMP(argv[i], "-display") == 0
-#  ifdef FEAT_GUI_GTK
+#  if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_KDE)
 		|| STRICMP(argv[i], "--display") == 0
 #  endif
 		)
@@ -442,7 +442,7 @@ main
 	++initstr;
     }
 
-    if (TOLOWER_ASC(initstr[0]) == 'g')
+    if (TOLOWER_ASC(initstr[0]) == 'g' || initstr[0] == 'k')
     {
 	main_start_gui();
 #ifdef FEAT_GUI
@@ -1087,7 +1087,7 @@ scripterror:
 #ifdef ALWAYS_USE_GUI
     gui.starting = TRUE;
 #else
-# if defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK)
+# if defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_KDE)
     /*
      * Check if the GUI can be started.  Reset gui.starting if not.
      * Don't know about other systems, stay on the safe side and don't check.
@@ -1170,7 +1170,7 @@ scripterror:
      * For GTK we can't be sure, but when started from the desktop it doesn't
      * make sense to try using a terminal.
      */
-#if defined(ALWAYS_USE_GUI) || defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK)
+#if defined(ALWAYS_USE_GUI) || defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_KDE)
     if (gui.starting
 # ifdef FEAT_GUI_GTK
 	    && !isatty(2)
@@ -2613,6 +2613,17 @@ usage()
     main_msg(_("--role <role>\tSet a unique role to identify the main window"));
 # endif
     main_msg(_("--socketid <xid>\tOpen Vim inside another GTK widget"));
+#endif
+#ifdef FEAT_GUI_KDE
+    mch_msg(_("\nArguments recognised by kvim (KDE version):\n"));
+    main_msg(_("-black\t\tUse reverse video"));
+#if QT_VERSION>=300
+    main_msg(_("-tip\t\t\tDisplay the tip dialog on startup"));
+    main_msg(_("-notip\t\tDisable the tip dialog"));
+#endif
+    main_msg(_("-font <font>\t\tUse <font> for normal text (also: -fn)"));
+    main_msg(_("-geometry <geom>\tUse <geom> for initial geometry (also: -geom)"));
+    main_msg(_("--display <display>\tRun vim on <display>"));
 #endif
 #ifdef FEAT_GUI_W32
     main_msg(_("-P <parent title>\tOpen Vim inside parent application"));

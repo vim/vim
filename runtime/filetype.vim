@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2004 Jun 10
+" Last Change:	2004 Jun 27
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -956,6 +956,7 @@ if has("fname_case")
 else
   au BufNewFile,BufRead *.pl			call FTCheck_pl()
 endif
+au BufNewFile,BufRead *.plx			setf perl
 
 fun! FTCheck_pl()
   if exists("g:filetype_pl")

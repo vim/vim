@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.0aa.  Last change: 2004 Apr 20
+*autocmd.txt*   For Vim version 7.0aa.  Last change: 2004 Jun 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -304,7 +304,8 @@ FocusGained			When Vim got input focus.  Only for the GUI
 							*FocusLost*
 FocusLost			When Vim lost input focus.  Only for the GUI
 				version and a few console versions where this
-				can be detected.
+				can be detected.  May also happen when a
+				dialog pops up.
 							*FuncUndefined*
 FuncUndefined			When a user function is used but it isn't
 				defined.  Useful for defining a function only
@@ -467,6 +468,21 @@ VimLeave			Before exiting Vim, just after writing the
 							*EncodingChanged*
 EncodingChanged			Fires off when the 'encoding' option is
 				changed.  Useful to set up fonts, for example.
+							*InsertEnter*
+InsertEnter			When starting Insert mode.  Also for Replace
+				mode and Virtual Replace mode.  The
+				|v:insertmode| variable indicates the mode.
+				Be careful not to move the cursor or do
+				anything else that the user does not expect.
+							*InsertChange*
+InsertChange			When typing <Insert> while in Insert or
+				Replace mode.  The |v:insertmode| variable
+				indicates the new mode.
+				Be careful not to move the cursor or do
+				anything else that the user does not expect.
+							*InsertLeave*
+InsertLeave			When leaving Insert mode.  Also when using
+				CTRL-O |i_CTRL-O|.
 							*FileEncoding*
 FileEncoding			Obsolete.  It still works and is equivalent
 				to |EncodingChanged|.

@@ -88,7 +88,7 @@ that "make shadow" creates won't work.]
 Unix: COMPILING WITH/WITHOUT GUI
 
 These configure arguments can be used to select which GUI to use:
---enable-gui=	gtk, motif, athena or auto
+--enable-gui=	gtk, kde, motif, athena or auto
 --disable-gtk-check
 --disable-motif-check
 --disable-athena-check
@@ -98,19 +98,19 @@ the order of GTK, Motif, then Athena).  If one is found, then is uses it and
 does not proceed to check any of the remaining ones.  Otherwise, it moves on
 to the next one.
 
---enable-{gtk,motif,athena}-check all default to "yes", such that if
+--enable-{gtk,kde,motif,athena}-check all default to "yes", such that if
 --enable-gui is "auto" (which it is by default), GTK, Motif, and Athena will
 be checked for.  If you want to *exclude* a certain check, then you use
---disable-{gtk,motif,athena}-check.
+--disable-{gtk,kde,motif,athena}-check.
 
 For example, if --enable-gui is set to "auto", but you don't want it look for
 Motif, you then also specify --disable-motif-check.  This results in only
 checking for GTK and Athena.
 
 Lastly, if you know which one you want to use, then you can just do
---enable-gui={gtk,motif,athena}.  So if you wanted to only use Motif, then
+--enable-gui={gtk,kde,motif,athena}.  So if you wanted to only use Motif, then
 you'd specify --enable-gui=motif.  Once you specify what you want, the
---enable-{gtk,motif,athena}-check options are ignored.
+--enable-{gtk,kde,motif,athena}-check options are ignored.
 
 For compiling with the GTK+ GUI, you need a recent version of glib and gtk+.
 Configure checks for at least version 1.1.16, but below 2.0.  An older versions
@@ -123,6 +123,9 @@ do not, you may have left-over header files and/or library files from an older
 (and incompatible) version of GTK.  if this is the case, please check
 auto/config.log for any error messages that may give you a hint as to what's
 happening.
+
+For KDE see INSTALLkde.txt.
+
 
 Unix: COMPILING WITH MULTI-BYTE
 

@@ -193,7 +193,7 @@ inoremenu <script> <silent> 20.400 &Edit.&Select\ All<Tab>ggVG	<C-O>:call <SID>S
 cnoremenu <script> <silent> 20.400 &Edit.&Select\ All<Tab>ggVG	<C-U>call <SID>SelectAll()<CR>
 
 an 20.405	 &Edit.-SEP2-				<Nop>
-if has("win32")  || has("win16") || has("gui_gtk") || has("gui_motif")
+if has("win32")  || has("win16") || has("gui_gtk") || has("gui_kde") || has("gui_motif")
   an 20.410	 &Edit.&Find\.\.\.			:promptfind<CR>
   vunmenu	 &Edit.&Find\.\.\.
   vnoremenu	 &Edit.&Find\.\.\.			y:promptfind <C-R>"<CR>
@@ -382,7 +382,7 @@ if has("keymap")
   endif
   unlet s:n
 endif
-if has("win32") || has("win16") || has("gui_gtk") || has("gui_photon")
+if has("win32") || has("win16") || has("gui_gtk") || has("gui_kde") || has("gui_photon")
   an 20.470 &Edit.Select\ Fo&nt\.\.\.	:set guifont=*<CR>
 endif
 

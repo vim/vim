@@ -2874,6 +2874,7 @@ CursorHold	autocmd.txt	/*CursorHold*
 CursorHold-example	windows.txt	/*CursorHold-example*
 CursorIM	mbyte.txt	/*CursorIM*
 D	change.txt	/*D*
+DCOP	gui_x11.txt	/*DCOP*
 DOS	os_dos.txt	/*DOS*
 DOS-format	editing.txt	/*DOS-format*
 DOS-format-write	editing.txt	/*DOS-format-write*
@@ -3583,9 +3584,14 @@ IM-server	mbyte.txt	/*IM-server*
 IME	mbyte.txt	/*IME*
 Insert	insert.txt	/*Insert*
 Insert-mode	insert.txt	/*Insert-mode*
+InsertChange	autocmd.txt	/*InsertChange*
+InsertEnter	autocmd.txt	/*InsertEnter*
+InsertLeave	autocmd.txt	/*InsertLeave*
 J	change.txt	/*J*
 Japanese	mbyte.txt	/*Japanese*
 K	various.txt	/*K*
+KDE	gui_x11.txt	/*KDE*
+KVim	gui_x11.txt	/*KVim*
 Korean	mbyte.txt	/*Korean*
 L	motion.txt	/*L*
 Linux-backspace	options.txt	/*Linux-backspace*
@@ -3634,6 +3640,7 @@ Operator-pending	intro.txt	/*Operator-pending*
 Operator-pending-mode	intro.txt	/*Operator-pending-mode*
 OverTheSpot	mbyte.txt	/*OverTheSpot*
 P	change.txt	/*P*
+PATHEXT	eval.txt	/*PATHEXT*
 Pattern	pattern.txt	/*Pattern*
 Perl	if_perl.txt	/*Perl*
 Posix	intro.txt	/*Posix*
@@ -3908,6 +3915,7 @@ alternate-file	editing.txt	/*alternate-file*
 amiga-window	starting.txt	/*amiga-window*
 ant-syntax	syntax.txt	/*ant-syntax*
 ant.vim	syntax.txt	/*ant.vim*
+antialias	gui_x11.txt	/*antialias*
 ap	motion.txt	/*ap*
 apache-syntax	syntax.txt	/*apache-syntax*
 apache.vim	syntax.txt	/*apache.vim*
@@ -4213,6 +4221,7 @@ cpo-C	options.txt	/*cpo-C*
 cpo-D	options.txt	/*cpo-D*
 cpo-E	options.txt	/*cpo-E*
 cpo-F	options.txt	/*cpo-F*
+cpo-I	options.txt	/*cpo-I*
 cpo-J	options.txt	/*cpo-J*
 cpo-K	options.txt	/*cpo-K*
 cpo-L	options.txt	/*cpo-L*
@@ -4780,6 +4789,7 @@ gui-gtk	gui_x11.txt	/*gui-gtk*
 gui-gtk-socketid	gui_x11.txt	/*gui-gtk-socketid*
 gui-horiz-scroll	gui.txt	/*gui-horiz-scroll*
 gui-init	gui.txt	/*gui-init*
+gui-kde	gui_x11.txt	/*gui-kde*
 gui-mouse	gui.txt	/*gui-mouse*
 gui-mouse-focus	gui.txt	/*gui-mouse-focus*
 gui-mouse-mapping	gui.txt	/*gui-mouse-mapping*
@@ -4811,6 +4821,7 @@ gui-x11	gui_x11.txt	/*gui-x11*
 gui-x11-athena	gui_x11.txt	/*gui-x11-athena*
 gui-x11-compiling	gui_x11.txt	/*gui-x11-compiling*
 gui-x11-gtk	gui_x11.txt	/*gui-x11-gtk*
+gui-x11-kde	gui_x11.txt	/*gui-x11-kde*
 gui-x11-misc	gui_x11.txt	/*gui-x11-misc*
 gui-x11-motif	gui_x11.txt	/*gui-x11-motif*
 gui-x11-neXtaw	gui_x11.txt	/*gui-x11-neXtaw*
@@ -4830,6 +4841,8 @@ gvim	starting.txt	/*gvim*
 gvimdiff	diff.txt	/*gvimdiff*
 gvimrc	gui.txt	/*gvimrc*
 gw	change.txt	/*gw*
+gwgw	change.txt	/*gwgw*
+gww	change.txt	/*gww*
 gzip	pi_gzip.txt	/*gzip*
 gzip-autocmd	pi_gzip.txt	/*gzip-autocmd*
 gzip-example	autocmd.txt	/*gzip-example*
@@ -5097,6 +5110,7 @@ insert_expand	insert.txt	/*insert_expand*
 inserting	insert.txt	/*inserting*
 inserting-ex	insert.txt	/*inserting-ex*
 inserting-file	insert.txt	/*inserting-file*
+insertmode-variable	eval.txt	/*insertmode-variable*
 install	usr_90.txt	/*install*
 install-home	usr_90.txt	/*install-home*
 install-registry	gui_w32.txt	/*install-registry*
@@ -5125,6 +5139,7 @@ jumplist	motion.txt	/*jumplist*
 jumpto-diffs	diff.txt	/*jumpto-diffs*
 k	motion.txt	/*k*
 kcc	uganda.txt	/*kcc*
+kde-toolbar	gui_x11.txt	/*kde-toolbar*
 key-codes	intro.txt	/*key-codes*
 key-codes-changed	version4.txt	/*key-codes-changed*
 key-mapping	map.txt	/*key-mapping*
@@ -5360,23 +5375,32 @@ netbeans-support	netbeans.txt	/*netbeans-support*
 netbeans.txt	netbeans.txt	/*netbeans.txt*
 netrw	pi_netrw.txt	/*netrw*
 netrw-activate	pi_netrw.txt	/*netrw-activate*
+netrw-browse	pi_netrw.txt	/*netrw-browse*
+netrw-browse-var	pi_netrw.txt	/*netrw-browse-var*
 netrw-contents	pi_netrw.txt	/*netrw-contents*
 netrw-credits	pi_netrw.txt	/*netrw-credits*
 netrw-debug	pi_netrw.txt	/*netrw-debug*
+netrw-delete	pi_netrw.txt	/*netrw-delete*
+netrw-dir	pi_netrw.txt	/*netrw-dir*
 netrw-ex	pi_netrw.txt	/*netrw-ex*
 netrw-file	pi_netrw.txt	/*netrw-file*
 netrw-fixup	pi_netrw.txt	/*netrw-fixup*
+netrw-history	pi_netrw.txt	/*netrw-history*
+netrw-list	pi_netrw.txt	/*netrw-list*
+netrw-list-hack	pi_netrw.txt	/*netrw-list-hack*
+netrw-move	pi_netrw.txt	/*netrw-move*
 netrw-netrc	pi_netrw.txt	/*netrw-netrc*
-netrw-new	pi_netrw.txt	/*netrw-new*
-netrw-newstuff	pi_netrw.txt	/*netrw-newstuff*
 netrw-options	pi_netrw.txt	/*netrw-options*
 netrw-passwd	pi_netrw.txt	/*netrw-passwd*
 netrw-protocol	pi_netrw.txt	/*netrw-protocol*
 netrw-ref	pi_netrw.txt	/*netrw-ref*
+netrw-remove	pi_netrw.txt	/*netrw-remove*
+netrw-rename	pi_netrw.txt	/*netrw-rename*
 netrw-transparent	pi_netrw.txt	/*netrw-transparent*
 netrw-uidpass	pi_netrw.txt	/*netrw-uidpass*
 netrw-urls	pi_netrw.txt	/*netrw-urls*
 netrw-var	pi_netrw.txt	/*netrw-var*
+netrw-x	pi_netrw.txt	/*netrw-x*
 netrw-xfer	pi_netrw.txt	/*netrw-xfer*
 netrw.vim	pi_netrw.txt	/*netrw.vim*
 netterm-mouse	options.txt	/*netterm-mouse*
@@ -5545,7 +5569,6 @@ phtml-syntax	syntax.txt	/*phtml-syntax*
 phtml.vim	syntax.txt	/*phtml.vim*
 pi_expl.txt	pi_expl.txt	/*pi_expl.txt*
 pi_gzip.txt	pi_gzip.txt	/*pi_gzip.txt*
-pi_netrw.txt	pi_netrw.txt	/*pi_netrw.txt*
 pi_spec.txt	pi_spec.txt	/*pi_spec.txt*
 plugin	usr_05.txt	/*plugin*
 plugin-details	filetype.txt	/*plugin-details*
@@ -6265,6 +6288,7 @@ v:folddashes	eval.txt	/*v:folddashes*
 v:foldend	eval.txt	/*v:foldend*
 v:foldlevel	eval.txt	/*v:foldlevel*
 v:foldstart	eval.txt	/*v:foldstart*
+v:insertmode	eval.txt	/*v:insertmode*
 v:lang	eval.txt	/*v:lang*
 v:lc_time	eval.txt	/*v:lc_time*
 v:lnum	eval.txt	/*v:lnum*
@@ -6348,6 +6372,7 @@ v_g_CTRL-]	tagsrch.txt	/*v_g_CTRL-]*
 v_gf	editing.txt	/*v_gf*
 v_gq	change.txt	/*v_gq*
 v_gv	visual.txt	/*v_gv*
+v_gw	change.txt	/*v_gw*
 v_i	motion.txt	/*v_i*
 v_i(	motion.txt	/*v_i(*
 v_i)	motion.txt	/*v_i)*
@@ -6409,6 +6434,7 @@ vim-announce	intro.txt	/*vim-announce*
 vim-arguments	starting.txt	/*vim-arguments*
 vim-default-editor	gui_w32.txt	/*vim-default-editor*
 vim-dev	intro.txt	/*vim-dev*
+vim-kpart	gui_x11.txt	/*vim-kpart*
 vim-mac	intro.txt	/*vim-mac*
 vim-modes	intro.txt	/*vim-modes*
 vim-modes-intro	intro.txt	/*vim-modes-intro*
@@ -6429,6 +6455,7 @@ viminfo-file-marks	starting.txt	/*viminfo-file-marks*
 viminfo-file-name	starting.txt	/*viminfo-file-name*
 viminfo-read	starting.txt	/*viminfo-read*
 viminfo-write	starting.txt	/*viminfo-write*
+vimpart	gui_x11.txt	/*vimpart*
 vimrc	starting.txt	/*vimrc*
 vimrc-filetype	usr_05.txt	/*vimrc-filetype*
 vimrc-intro	usr_05.txt	/*vimrc-intro*

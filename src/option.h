@@ -466,7 +466,7 @@ EXTERN char_u	*p_guifontwide;	/* 'guifontwide' */
 # endif
 EXTERN int	p_guipty;	/* 'guipty' */
 #endif
-#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_X11)
+#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_X11) || defined(FEAT_GUI_KDE)
 EXTERN long	p_ghr;		/* 'guiheadroom' */
 #endif
 #ifdef CURSOR_SHAPE
@@ -512,7 +512,7 @@ EXTERN int	p_icon;		/* 'icon' */
 EXTERN char_u	*p_iconstring;	/* 'iconstring' */
 #endif
 EXTERN int	p_ic;		/* 'ignorecase' */
-#if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
+#if defined(FEAT_XIM) && (defined(FEAT_GUI_GTK) || defined(FEAT_GUI_KDE))
 EXTERN char_u	*p_imak;	/* 'imactivatekey' */
 #endif
 #ifdef USE_IM_CONTROL
@@ -773,7 +773,7 @@ static char *(p_ve_values[]) = {"block", "insert", "all", NULL};
 EXTERN long	p_verbose;	/* 'verbose' */
 EXTERN int	p_warn;		/* 'warn' */
 #if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MOTIF) || defined(LINT) \
-	|| defined (FEAT_GUI_GTK) || defined(FEAT_GUI_PHOTON)
+	|| defined (FEAT_GUI_GTK) || defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_KDE)
 #define FEAT_WAK
 EXTERN char_u	*p_wak;		/* 'winaltkeys' */
 #endif

@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2004 Jun 22
+*eval.txt*      For Vim version 7.0aa.  Last change: 2004 Jun 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -678,6 +678,13 @@ v:foldend	Used for 'foldtext': last line of closed fold.
 					*v:foldstart* *foldstart-variable*
 v:foldstart	Used for 'foldtext': first line of closed fold.
 		Read-only. |fold-foldtext|
+
+					*v:insertmode* *insertmode-variable*
+v:insertmode	Used for the |InsertEnter| and |InsertChange| autocommand
+		events.  Values:
+			i	Insert mode
+			r	Replace mode
+			v	Virtual Replace mode
 
 						*v:lang* *lang-variable*
 v:lang		The current locale setting for messages of the runtime
@@ -2765,6 +2772,7 @@ gui_athena		Compiled with Athena GUI.
 gui_beos		Compiled with BeOS GUI.
 gui_gtk			Compiled with GTK+ GUI (any version).
 gui_gtk2		Compiled with GTK+ 2 GUI (gui_gtk is also defined).
+gui_kde			Compiled with KDE GUI |KVim|
 gui_mac			Compiled with Macintosh GUI.
 gui_motif		Compiled with Motif GUI.
 gui_photon		Compiled with Photon GUI.

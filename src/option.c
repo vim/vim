@@ -1019,14 +1019,14 @@ static struct vimoption
 #endif
 				    },
     {"guiheadroom", "ghr",  P_NUM|P_VI_DEF,
-#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_X11)
+#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_X11) || defined(FEAT_GUI_KDE)
 			    (char_u *)&p_ghr, PV_NONE,
 #else
 			    (char_u *)NULL, PV_NONE,
 #endif
 			    {(char_u *)50L, (char_u *)0L}},
     {"guioptions",  "go",   P_STRING|P_VI_DEF|P_RALL|P_FLAGLIST,
-#if defined(FEAT_GUI)
+#if defined(FEAT_GUI) || defined(FEAT_GUI_KDE)
 			    (char_u *)&p_go, PV_NONE,
 # if defined(UNIX) && !defined(MACOS)
 			    {(char_u *)"agimrLtT", (char_u *)0L}
@@ -1112,7 +1112,7 @@ static struct vimoption
 			    (char_u *)&p_ic, PV_NONE,
 			    {(char_u *)FALSE, (char_u *)0L}},
     {"imactivatekey","imak",P_STRING|P_VI_DEF,
-#if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
+#if defined(FEAT_XIM) && (defined(FEAT_GUI_GTK) || defined(FEAT_GUI_KDE))
 			    (char_u *)&p_imak, PV_NONE,
 #else
 			    (char_u *)NULL, PV_NONE,
@@ -4906,7 +4906,7 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
     }
 #endif
 
-#if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
+#if defined(FEAT_XIM) && ( defined(FEAT_GUI_GTK) || defined(FEAT_GUI_KDE) )
     else if (varp == &p_imak)
     {
 	if (gui.in_use && !im_xim_isvalid_imactivate())
@@ -5163,7 +5163,7 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 	if (gui.in_use)
 	{
 	    p = p_guifont;
-# ifdef FEAT_GUI_GTK
+# if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_KDE)
 	    /*
 	     * Put up a font dialog and let the user select a new value.
 	     * If this is cancelled go back to the old value but don't

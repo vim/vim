@@ -20,7 +20,7 @@
  * Machine-dependent routines.
  */
 /* avoid errors in function prototypes */
-# if !defined(FEAT_X11) && !defined(FEAT_GUI_GTK)
+# if !defined(FEAT_X11) && !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_KDE)
 #  define Display int
 #  define Widget int
 # endif
@@ -179,6 +179,10 @@ extern char_u *vimpty_getenv __ARGS((const char_u *string));	/* from pty.c */
 #  endif
 #  ifdef FEAT_GUI_W32
 #   include "gui_w32.pro"
+#  endif
+#  ifdef FEAT_GUI_KDE
+#   include "gui_kde.pro"
+#   include "gui_kde_x11.pro"
 #  endif
 #  ifdef FEAT_GUI_GTK
 #   include "gui_gtk.pro"

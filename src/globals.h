@@ -722,6 +722,10 @@ EXTERN int* (*iconv_errno) (void);
 #endif /* FEAT_MBYTE */
 
 #ifdef FEAT_XIM
+# ifdef FEAT_GUI_KDE
+EXTERN colnr_T		preedit_start_col INIT(= MAXCOL);
+EXTERN char		*draw_feedback INIT(= NULL);
+# endif
 # ifdef FEAT_GUI_GTK
 #  ifdef HAVE_GTK2
 EXTERN GtkIMContext	*xic INIT(= NULL);
@@ -1112,6 +1116,10 @@ EXTERN guint32	gtk_socket_id INIT(= 0);
 EXTERN int	echo_wid_arg INIT(= FALSE);	/* --echo-wid argument */
 #endif
 
+#ifdef FEAT_GUI_KDE
+EXTERN int	echo_wid_arg INIT(= FALSE);
+# endif
+
 #ifdef FEAT_CLIENTSERVER
 EXTERN char_u	*serverName INIT(= NULL);	/* name of the server */
 EXTERN int	received_from_client INIT(= FALSE);	/* received text from
@@ -1321,7 +1329,7 @@ EXTERN char_u e_sandbox[]	INIT(=N_("E48: Not allowed in sandbox"));
 #endif
 EXTERN char_u e_secure[]	INIT(=N_("E523: Not allowed here"));
 #if defined(AMIGA) || defined(MACOS) || defined(MSWIN) || defined(RISCOS) \
-	|| defined(UNIX) || defined(VMS)
+	|| defined(UNIX) || defined(VMS) || defined(OS2)
 EXTERN char_u e_screenmode[]	INIT(=N_("E359: Screen mode setting not supported"));
 #endif
 EXTERN char_u e_scroll[]	INIT(=N_("E49: Invalid scroll size"));

@@ -33,6 +33,8 @@ char_u *ucs2_to_enc __ARGS((short_u *str, int *lenp));
 void clip_mch_request_selection __ARGS((VimClipboard *cbd));
 void clip_mch_set_selection __ARGS((VimClipboard *cbd));
 void DumpPutS __ARGS((const char *psz));
+int mch_get_winpos __ARGS((int *x, int *y));
+void mch_set_winpos __ARGS((int x, int y));
 void mch_print_cleanup __ARGS((void));
 int mch_print_init __ARGS((prt_settings_T *psettings, char_u *jobname, int forceit));
 int mch_print_begin __ARGS((prt_settings_T *psettings));

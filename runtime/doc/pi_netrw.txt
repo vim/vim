@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 6.2.  Last change: Jun 15, 2004
+*pi_netrw.txt  For Vim version 6.2.  Last change: Jun 25, 2004
 
 
 		VIM REFERENCE MANUAL    by Charles E. Campbell, Jr.
@@ -16,7 +16,7 @@
 4.  Transparent File Transfer...........................|netrw-transparent|
 5.  Ex Commands.........................................|netrw-ex|
 6.  Variables and Options...............................|netrw-var|
-7.  Remote Directory Listing............................|netrw-dir|
+7.  Remote Directory Browser............................|netrw-browse|
 8.  Debugging...........................................|netrw-debug|
 9.  History.............................................|netrw-history|
 10. Credits.............................................|netrw-credits|
@@ -493,28 +493,116 @@ from <netrw.vim> itself:
 >
 
 ==============================================================================
-7. Remote Directory Listing				*netrw-dir* *netrw-list*
+7. Remote Directory Browser		*netrw-browse* *netrw-dir* *netrw-list*
+>
+        -------	-----------
+	Command	Explanation
+        -------	-----------
+	 <cr>	Netrw will enter the directory or read the file
+	 <del>	Netrw will attempt to remove the file/directory
+	   D	Netrw will attempt to remove the file(s)/directory(ies)
+	   R	Netrw will attempt to rename the file(s)/directory(ies)
+	   -	Makes Netrw go up one directory
+	   a	Show all of a directory (temporarily ignore g:netrw_list_hide)
+	   o	Enter the file/directory under the cursor in a new browser
+	   	window.  A horizontal split is used.
+	   v	Enter the file/directory under the cursor in a new browser
+	   	window.  A vertical split is used.
+	   x	Apply a function to a file.
+	 <c-l>	Causes Netrw to refresh the directory listing
+	   ?	Causes Netrw to issue help
+<
+							*netrw-browse-var*
+>
+	---			-----------
+	Var			Explanation
+	---			-----------
+	g:netrw_list_cmd	supports listing
+	g:netrw_rm_cmd		supports removing files
+	g:netrw_rmf_cmd		supports removing softlinks to directories
+	g:netrw_rmdir_cmd	supports removing directories
+	g:netrw_winsize		specify initial size of new o/v windows
+	g:netrw_list_hide	comma separated list of patterns for
+				hiding files
+<
+Netrw supports the browsing of directories on remote hosts, including
+generating listing directories, entering directories, editing files
+therein, deleting files/directories, and moving (renaming) files and
+directories.
 
-Netrw supports listing (browsing) directories on remote hosts; simply attempt
-to read a "file" with a trailing slash and it will be interpreted as a
-request to browse a directory:
+To enter the netrw directory browser, simply attempt to read a "file" with a
+trailing slash and it will be interpreted as a request to list a directory:
 
 	vim [protocol]://[user@]hostname/path/
 
-Netrw will modify the command in g:netrw_list to perform the directory listing
-operation.  By default the command is:
+Netrw will modify the command in g:netrw_list_cmd to perform the directory
+listing operation.  By default the command is:
 
-	ssh HOSTNAME ls -Fa
+	ssh HOSTNAME ls -FLa
 
-where the HOSTNAME becomes the hostname as requested by the attempted
-read.  Naturally, the user may override this command with whatever is
+where the HOSTNAME becomes the [user@]hostname as requested by the attempt
+to read.  Naturally, the user may override this command with whatever is
 preferred.  The NetList function which implements remote directory
 browsing expects that directories will be flagged by a trailing slash.
 
 Browsing is simple: move the cursor onto a file or directory of interest.
-Hitting the <cr> (the return key) will select the file or directory.  Directories
-will themselves be listed, and files will be opened using the protocol given
-in the original read request.
+Hitting the <cr> (the return key) will select the file or directory.
+Directories will themselves be listed, and files will be opened using the
+protocol given in the original read request.
+
+						*netrw-delete* *netrw-remove*
+
+Deleting/removing files and directories involves moving the cursor to the
+file/directory to be deleted and pressing "D".  Directories must be empty
+first before they can be successfully removed.  If the directory is a softlink
+to a directory, then netrw will make two requests to remove the directory
+before succeeding.  Netrw will ask for confirmation before doing the
+removal(s).  You may select a range of lines with the "V" command (visual
+selection), and then pressing "D".
+
+The g:netrw_rm_cmd, g:netrw_rmf_cmd, and g:netrw_rmdir_cmd variables are
+used to control the attempts to remove files and directories.  The
+g:netrw_rm_cmd is used with files, and its default value is:
+
+	g:netrw_rm_cmd: ssh HOSTNAME rm
+
+The g:netrw_rmdir_cmd is used with directories.  Its default value is:
+
+	g:netrw_rmdir_cmd: ssh HOSTNAME rmdir
+
+If removing a directory fails with g:netrw_rmdir_cmd, netrw then will attempt
+to remove it again using the g:netrw_rmf_cmd.  Its default value is:
+
+	g:netrw_rmf_cmd: ssh HOSTNAME rm -f
+
+								*netrw-x*
+
+The Netrw executor applies a user-defined function to a file, based on its
+extension.  Of course, the handler function must exist for it to be called.
+>
+	Ex. mypgm.html   x ->  NetrwFileHandler_html("scp://user@host/some/path/mypgm.html")
+<
+See the <NetrwFileHandlers.vim>
+
+						*netrw-move* *netrw-rename*
+
+Renaming/moving files and directories involves moving the cursor to the
+file/directory to be moved (renamed) and pressing "R".  You will then be
+queried for where you want the file/directory to be moved.  You may select a
+range of lines with the "V" command (visual selection), and then pressing "R".
+
+The g:netrw_rename_cmd is used to implement renaming.  By default its
+value is:
+
+	ssh HOSTNAME mv
+
+							*netrw-list-hack*
+For Linux/Unix systems, I suggest looking into
+
+	http://hacks.oreilly.com/pub/h/66
+
+It gives a tip for setting up password-less use of ssh and scp, and discusses
+the associated security issues.
 
 
 ==============================================================================
@@ -551,6 +639,7 @@ which is loaded automatically at startup (assuming :set nocp).
 ==============================================================================
 9. History						*netrw-history*
 
+	v47: * 
 	v46: * now handles remote directory browsing
 	     * g:netrw_silent (if 1) will cause all transfers to be silent'd
 	v45: * made the [user@]hostname:path form a bit more restrictive

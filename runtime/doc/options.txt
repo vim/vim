@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2004 Jun 21
+*options.txt*	For Vim version 7.0aa.  Last change: 2004 Jun 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -468,10 +468,10 @@ short for "example:").
 
 							*modeline-local*
 The options are set like with ":setlocal": The new value only applies to the
-buffer that contains the window.  Although it's possible to set global options
-from a modeline, this is unusual.  If you have two windows open and the files
-in it set the same global option to a different value, the result depends on
-which one was opened last.
+buffer and window that contain the file.  Although it's possible to set global
+options from a modeline, this is unusual.  If you have two windows open and
+the files in it set the same global option to a different value, the result
+depends on which one was opened last.
 
 							*modeline-version*
 If the modeline is only to be used for some versions of Vim, the version
@@ -5436,7 +5436,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|shift-left-right|.
 	What gets inserted (a Tab or spaces) depends on the 'expandtab'
 	option.  Also see |ins-expandtab|.  When 'expandtab' is not set, the
-	number of spaces minimized by using <Tab>s.
+	number of spaces is minimized by using <Tab>s.
 	NOTE: This option is reset when 'compatible' is set.
 
 					*'softtabstop'* *'sts'*
@@ -5480,9 +5480,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 			{not in Vi}
 	When "on" the commands listed below move the cursor to the first
-	blank of the line.  When off the cursor is kept in the same column
+	non-blank of the line.  When off the cursor is kept in the same column
 	(if possible).  This applies to the commands: CTRL-D, CTRL-U, CTRL-B,
-	CTRL-F, "G", "H", "M", "L", , and to the commands "d", "<<" and ">>"
+	CTRL-F, "G", "H", "M", "L", gg, and to the commands "d", "<<" and ">>"
 	with a linewise operator, with "%" with a count and to buffer changing
 	commands (CTRL-^, :bnext, :bNext, etc.).  Also for an Ex command that
 	only has a line number, e.g., ":25" or ":+".

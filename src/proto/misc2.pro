@@ -17,7 +17,9 @@ void check_cursor __ARGS((void));
 void adjust_cursor_col __ARGS((void));
 int leftcol_changed __ARGS((void));
 void vim_mem_profile_dump __ARGS((void));
+#ifndef __cplusplus
 char_u *alloc __ARGS((unsigned size));
+#endif
 char_u *alloc_clear __ARGS((unsigned size));
 char_u *alloc_check __ARGS((unsigned size));
 char_u *lalloc_clear __ARGS((long_u size, int message));

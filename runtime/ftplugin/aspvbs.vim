@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	aspvbs
 " Maintainer:	Dan Sharp <dwsharp at hotmail dot com>
-" Last Changed: 2003 Sep 29
+" Last Changed: 2004 Jun 28
 " URL:		http://mywebpage.netscape.com/sharppeople/vim/ftplugin
 
 if exists("b:did_ftplugin") | finish | endif
@@ -35,15 +35,16 @@ endif
 " thanks to Gontran BAERTS
 if exists("loaded_matchit")
   let s:notend = '\%(\<end\s\+\)\@<!'
+  let b:match_ignorecase = 1
   let b:match_words =
-  \ s:notend . '\<If\>:^\s\+\<Else\>:\<ElseIf\>:\<end\s\+\<if\>,' .
-  \ s:notend . '\<Select\s\+\<Case\>:\<Case\>:\<Case\s\+\<Else\>:\<End\s\+\<Select\>,' .
-  \ '^\s*\<Sub\>:\<End\s\+\<Sub\>,' .
-  \ '^\s*\<Function\>:\<End\s\+\<Function\>,' .
-  \ '\<Class\>:\<End\s\+\<Class\>,' .
-  \ '^\s*\<Do\>:\<Loop\>,' .
-  \ '^\s*\<For\>:\<Next\>,' .
-  \ '\<While\>:\<Wend\>,' .
+  \ s:notend . '\<if\>\%(.\{-}then\s\+\w\)\@!:\<elseif\>:^\s*\<else\>:\<end\s\+\<if\>,' .
+  \ s:notend . '\<select\s\+case\>:\<case\>:\<case\s\+else\>:\<end\s\+select\>,' .
+  \ '^\s*\<sub\>:\<end\s\+sub\>,' .
+  \ '^\s*\<function\>:\<end\s\+function\>,' .
+  \ '\<class\>:\<end\s\+class\>,' .
+  \ '^\s*\<do\>:\<loop\>,' .
+  \ '^\s*\<for\>:\<next\>,' .
+  \ '\<while\>:\<wend\>,' .
   \ s:match_words
 endif
 
@@ -52,7 +53,7 @@ if has("gui_win32")
     let  b:browsefilter="ASP Files (*.asp)\t*.asp\n" . s:browsefilter
 endif
 
-let b:undo_ftplugin = "unlet! b:match_words b:browsefilter | " . s:undo_ftplugin
+let b:undo_ftplugin = "unlet! b:match_words b:match_ignorecase b:browsefilter | " . s:undo_ftplugin
 
 " Restore the saved compatibility options.
 let &cpo = s:save_cpo

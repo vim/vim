@@ -92,6 +92,12 @@
 # if defined(HAVE_LIMITS_H) && !defined(_LIMITS_H)
 #  include <limits.h>		/* for SYS_NMLN (Sinix 5.41 / Unix SysV.4) */
 # endif
+
+/* Define SYS_NMLN ourselves if it still isn't defined (for CrayT3E). */
+# ifndef SYS_NMLN
+#  define SYS_NMLN 32
+# endif
+
 # include <sys/systeminfo.h>	/* for sysinfo */
 #endif
 

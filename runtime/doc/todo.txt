@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Jun 24
+*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Jun 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,35 +30,8 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Change for fsync() error in Vim 6 as patch?
-
 For version 7.0:
 -   Include many PATCHES:
-    9   Merge in ideas from tutor.txt (Gabriel Zachmann)
-	New version 2004 June 16.
-    8   ":winpos" doesn't work.  Patch from Vipin Aravind.
-    8   Add GTK 2.3 file dialog support.  Patch by Grahame Bowland, 2004 Mar 15,
-	but it doesn't use "initdir" or "dflt". (will update patch)
-    8   On Sinix SYS_NMLN isn't defined.  Include patch from Cristiano De
-	Michele.  He no longer has such a machine.
-    8   Add file locking.  Lock a file when starting to edit it with flock() or
-	fcntl().  This patch has advisory file locking while reading/writing
-	the file: ~/vim/patches/kahn_file_locking .
-	Do we still want this?  Andy doesn't have time to work on it.
-    8   Add buffer-local autocommands?  Reduces overhead for autocommands that
-	trigger often (inserting a character, switching mode).
-	    :au Event <buffer> do-something
-	E.g.:
-	    :au BufEnter <buffer> menu enable ...
-	    :au BufLeave <buffer> menu disable ...
-	Patch from Yakov Lerner, including test (2004 Jan 7).
-        He'll send updated patch.
-    Autocommands:
-	VimResized	    - When the Vim window has been resized (SIGWINCH)
-	  patch from Yakov Lerner, 2003 July 24.
-	  He'll write documentation and send updated patch.
-        InsmodEnter
-	InsmodLeave	    Taro Muraoka, 2004 Jun 16
     -   Include the kvim patch. http://freenux.org/vim/ (Mickael Marchand)
 	Do not add Qtopia yet, it doesn't work very well.
 	update from Mickael 2004 Jun 20.
@@ -130,6 +103,20 @@ For version 7.0:
 	'isfname'.  E.g. ":set flipcase=a-zA-Z,xX,23-33:143-153".  The colon to
 	separate the from and to part is optional.
 	Resp: no time now.
+    8   Add GTK 2.3 file dialog support.  Patch by Grahame Bowland, 2004 Mar 15,
+	but it doesn't use "initdir" or "dflt". (will update patch)
+    8   Add buffer-local autocommands?  Reduces overhead for autocommands that
+	trigger often (inserting a character, switching mode).
+	    :au Event <buffer> do-something
+	E.g.:
+	    :au BufEnter <buffer> menu enable ...
+	    :au BufLeave <buffer> menu disable ...
+	Patch from Yakov Lerner, including test (2004 Jan 7).
+        He'll send updated patch.
+    Autocommands:
+	VimResized	    - When the Vim window has been resized (SIGWINCH)
+	  patch from Yakov Lerner, 2003 July 24.
+	  He'll write documentation and send updated patch.
     --- responses above --
     7   Make "5dd" on last-but-one-line not delete anything (Vi compatible).
 	Add flag in 'cpoptions' for this.  When not present, "2dd" in the last
@@ -247,8 +234,11 @@ For version 7.0:
     -   findmatch() should be adjusted for Lisp.  See remark at
 	get_lisp_indent().  Esp. \( and \) should be skipped. (Dorai Sitaram,
 	incomplete patch Mar 18)
+
+
 -   Change ga_room into ga_maxlen, so that it doesn't need to be
     incremented/decremented each time.
+-   For string variables, use length instead of NUL termination.
 -   new DATA TYPES: lists, dictionaries and function references.
 	Check old patch from Robert Webb for array support.
     Add type checking?  See ~/vim/ideas.txt.
@@ -311,6 +301,7 @@ For version 7.0:
 -   FileChangedShellPost autocommand event: after (not) reloading a changed
     file.  Can be used to update statusline oslt.
 -   Displaying size of Visual area: use 24-33 column display.
+-   Mac: Unicode input and display (Eckehard Berns, June 27)
 
 
 Vi incompatibility:
@@ -1577,6 +1568,13 @@ Robustness:
     A long line with a " in it can cause a crash when it runs out of stack
     space (on systems where this isn't caught).  How can we catch this for
     more systems?
+6   Add file locking.  Lock a file when starting to edit it with flock() or
+    fcntl().  This patch has advisory file locking while reading/writing
+    the file for Vim 5.4: ~/vim/patches/kahn_file_locking .
+    The patch is incomplete (needs support for more systems, autoconf).
+    Andy doesn't have time to work on it.
+    Disadvantage: Need to find ways to gracefully handle failure to obtain a
+    lock.  When to release a lock: When buffer is unloaded?
 
 
 Performance:
@@ -2016,8 +2014,8 @@ Autocommands:
     ReplaceEnter    - Entering Replace mode
     CmdEnter	    - Entering Cmdline mode
     VisualEnter	    - Entering Visual mode
+    *Leave	    - Leaving a mode (in pair with the above *Enter)
     CmdUndefined    - Like FuncUndefined but for user commands.
-    *Leave	    - Leaving the mode
     SearchPost	    - After doing a search command (e.g. to do "M")
     PreDirChanged/PostDirChanged
 		    - Before/after ":cd" has been used (for changing the

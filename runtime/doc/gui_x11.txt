@@ -12,8 +12,9 @@ Vim's Graphical User Interface				*gui-x11* *GUI-X11*
 4. Various			|gui-x11-various|
 5. GTK version			|gui-gtk|
 6. GNOME version		|gui-gnome|
-7. Compiling			|gui-x11-compiling|
-8. X11 selection mechanism	|x11-selection|
+7. KDE version                  |gui-kde|
+8. Compiling			|gui-x11-compiling|
+9. X11 selection mechanism	|x11-selection|
 
 Other relevant documentation:
 |gui.txt|	For generic items of the GUI.
@@ -59,7 +60,7 @@ flag in 'guioptions'.  |-f|.
 ==============================================================================
 2. GUI Resources			*gui-resources* *.Xdefaults*
 
-If using the Motif or Athena version of the GUI (not for the GTK+ or Win32
+If using the Motif or Athena version of the GUI (not for the KDE, GTK+ or Win32
 version), a number of X resources are available.  You should use Vim's class
 "Vim" when setting these.  They are as follows:
 
@@ -434,7 +435,61 @@ the WM to identify the window by restoring the window role (using the |--role|
 command line argument).
 
 ==============================================================================
-7. Compiling						*gui-x11-compiling*
+7. KDE version						*gui-kde* *KDE* *KVim*
+
+The KDE version of Vim works with KDE 2.x and KDE 3.x.
+KVim (name code for gui-kde) does not use traditional X settings for its
+configuration.
+Most important difference is the font handling, KVim uses QFont to display the
+text. To set your font use the following syntax :
+>
+  :set guifont=Fixed\ [Misc]/10/-1/5/50/0/0/0/1/0
+<
+the '10' value is the font size, other settings concerns more specific Qt
+options which you should not need to care with.
+The suggested way to choose your font is through the font selection dialog
+available with the command :
+  :set guifont=*
+
+Note: X Font names are not supported any more, so if you use GVim too, you'll
+have to set something like this in your ~/.gvimrc : >
+
+  if has("gui_kde")
+	:set guifont=Fixed\ [Misc]/10/-1/5/50/0/0/0/1/0
+  else if has("gui_gtk")
+	:set guifont=-misc-fixed-medium-r-normal-*-*-100-*-*-c-*-iso10646-1
+  endif
+<
+							*antialias*
+KVim uses antialias for its font, so that the text looks better, to disable
+this you have to refer to Qt's documentation (export QT_XFT=0 for QT 2.x).
+
+KDE provides some other features, like being able to move the menubar and the
+toolbar wherever you want around the text area.
+
+							*kde-toolbar*
+KVim can be used with a KDE-look toolbar instead of Vim's default toolbar. To
+enable this feature you have to run the configure script with the
+--enable-kde-toolbar switch. It may be moved to a runtime option in the
+future.
+
+							*DCOP*
+Since Vim 6.0, the new ClientServer feature has been added, it works fine in
+KVim too. KVim also provides its own communication scheme based on DCOP. This
+is mainly used by the |vimpart| but can freely be used by other applications
+or manually through KDE's DCOP tools. The DCOP servername is synchronized with
+the X11 servername so that it's easier to identify the same KVim through the
+two communication systems.
+
+							*vimpart* *vim-kpart*
+KVim developers are also working on a component to allow embedding of Vim into
+KDE's applications. As of this writing, the component is working and can be
+used in different KDE applications. New KDE applications should support it
+soon. To get more information about this component, refer to
+http://freehackers.org/kvim or to the KDE project.
+
+==============================================================================
+8. Compiling						*gui-x11-compiling*
 
 If using X11, Vim's Makefile will by default first try to find the necessary
 GTK+ files on your system.  If the GTK+ files cannot be found, then the Motif
@@ -489,6 +544,12 @@ menus look a bit better.  Edit the Makefile and look for "XAW_LIB".  The
 scrollbars will remain the same, because Vim has its own, which are already
 3D (in fact, they look more like Motif).
 
+							*gui-x11-kde*
+For Vim-KDE, you need at least Qt(>=2.x) and the corresponding kdelibs.
+To compile, you must use the --with-qt-dir configure flag because QTDIR is not
+automatically detected yet. Giving KDE's directories to the configure script
+may also help in some cases.
+
 							*gui-x11-neXtaw*
 The neXtaw version is mostly like Athena, but uses different widgets.
 
@@ -499,7 +560,7 @@ X11R5 with a library for X11R6 probably doesn't work (although the linking
 won't give an error message, Vim will crash later).
 
 ==============================================================================
-8. X11 selection mechanism				*x11-selection*
+9. X11 selection mechanism				*x11-selection*
 
 If using X11, in either the GUI or an xterm with an X11-aware Vim, then Vim
 provides varied access to the X11 selection and clipboard.  These are accessed

@@ -1222,6 +1222,13 @@ x_error_handler(dpy, error_event)
     Display	*dpy;
     XErrorEvent	*error_event;
 {
+    /* KDE sometimes produces X error that we want to ignore */
+#if defined(FEAT_GUI_KDE)
+    XGetErrorText(dpy, error_event->error_code, (char *)IObuff, IOSIZE);
+    STRCAT(IObuff, "\nVim: Got X error but we continue...\n");
+    fprintf(stderr, IObuff);
+    return 0;
+#else
     XGetErrorText(dpy, error_event->error_code, (char *)IObuff, IOSIZE);
     STRCAT(IObuff, _("\nVim: Got X error\n"));
 
@@ -1231,6 +1238,7 @@ x_error_handler(dpy, error_event)
     preserve_exit();		    /* preserve files and exit */
 
     return 0;		/* NOTREACHED */
+#endif
 }
 
 /*
@@ -1371,7 +1379,7 @@ get_x11_windis()
 	did_set_error_handler = TRUE;
     }
 
-#if defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK)
+#if defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_KDE)
     if (gui.in_use)
     {
 	/*
@@ -1798,7 +1806,10 @@ mch_settitle(title, icon)
      * Note: if "t_TS" is set, title is set with escape sequence rather
      *	     than x11 calls, because the x11 calls don't always work
      */
-
+#ifdef FEAT_GUI_KDE
+    /* dont know why but KDE needs this one as we don't go through the next function... */
+    gui_mch_settitle(title, icon);
+#endif
     if ((type || *T_TS != NUL) && title != NULL)
     {
 	if (oldtitle == NULL

@@ -124,6 +124,8 @@ NARROW_PROTO	= @NARROW_PROTO@
 GUI_X_LIBS	= @GUI_X_LIBS@
 MOTIF_LIBNAME	= @MOTIF_LIBNAME@
 GTK_LIBNAME	= @GTK_LIBNAME@
+KDE_PREFIX	= @KDE_PREFIX@
+MOC             = @MOC@
 
 ### Any OS dependent extra source and object file
 OS_EXTRA_SRC	= @OS_EXTRA_SRC@

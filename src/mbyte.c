@@ -690,6 +690,11 @@ codepage_invalid:
     apply_autocmds(EVENT_ENCODINGCHANGED, NULL, (char_u *)"", FALSE, curbuf);
 #endif
 
+#ifdef FEAT_GUI_KDE
+    if (gui.in_use)
+	gui_mch_update_codec();
+#endif
+
     return NULL;
 }
 
@@ -3976,7 +3981,7 @@ static int	status_area_enabled = TRUE;
 # endif
 #endif
 
-#if defined(FEAT_GUI_GTK) || defined(PROTO)
+#if defined(FEAT_GUI_GTK) || defined(PROTO) || defined(FEAT_GUI_KDE)
 static int	preedit_buf_len = 0;
 static int	xim_can_preediting INIT(= FALSE);	/* XIM in showmode() */
 static int	xim_input_style;
@@ -4112,7 +4117,7 @@ im_set_active(active)
     /* If 'imdisable' is set, XIM is never active. */
     if (p_imdisable)
 	active = FALSE;
-#ifndef FEAT_GUI_GTK
+#if !defined (FEAT_GUI_GTK) && !defined (FEAT_GUI_KDE)
     else if (input_style & XIMPreeditPosition)
 	/* There is a problem in switching XIM off when preediting is used,
 	 * and it is not clear how this can be solved.  For now, keep XIM on
@@ -4386,6 +4391,8 @@ xim_set_preedit()
 	    gdk_ic_set_attr(xic, attr, (GdkICAttributesType)attrmask);
     }
 #else /* FEAT_GUI_GTK */
+# ifdef FEAT_GUI_KDE
+# else
     {
 	XVaNestedList attr_list;
 	XRectangle spot_area;
@@ -4432,6 +4439,7 @@ xim_set_preedit()
 	    XFree(attr_list);
 	}
     }
+# endif /* FEAT_GUI_KDE */
 #endif /* FEAT_GUI_GTK */
 }
 
@@ -4485,6 +4493,8 @@ xim_set_status_area()
     }
 # endif
 #else
+# ifdef FEAT_GUI_KDE
+# else
     {
 	XVaNestedList preedit_list = 0, status_list = 0, list = 0;
 	XRectangle pre_area, status_area;
@@ -4576,6 +4586,7 @@ xim_set_status_area()
 	if (preedit_list)
 	    XFree(preedit_list);
     }
+# endif /* FEAT_GUI_KDE */
 #endif
 }
 
@@ -5350,6 +5361,8 @@ xim_get_status_area_height()
 #ifdef FEAT_GUI_GTK
     if (xim_input_style & (int)GDK_IM_STATUS_AREA)
 	return gui.char_height;
+#elif defined FEAT_GUI_KDE
+#warning FIXME
 #else
     if (status_area_enabled)
 	return gui.char_height;

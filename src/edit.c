@@ -270,6 +270,23 @@ edit(cmdchar, startln, count)
     ins_compl_clear();	    /* clear stuff for CTRL-X mode */
 #endif
 
+#ifdef FEAT_AUTOCMD
+    /*
+     * Trigger InsertEnter autocommands.  Do not do this for "r<CR>" or "grx".
+     */
+    if (cmdchar != 'r' && cmdchar != 'v')
+    {
+	if (cmdchar == 'R')
+	    ptr = (char_u *)"r";
+	else if (cmdchar == 'V')
+	    ptr = (char_u *)"v";
+	else
+	    ptr = (char_u *)"i";
+	set_vim_var_string(VV_INSERTMODE, ptr, 1);
+	apply_autocmds(EVENT_INSERTENTER, NULL, NULL, FALSE, curbuf);
+    }
+#endif
+
 #ifdef FEAT_MOUSE
     /*
      * When doing a paste with the middle mouse button, Insstart is set to
@@ -725,6 +742,12 @@ edit(cmdchar, startln, count)
 		break;
 	    }
 #endif
+#ifdef FEAT_AUTOCMD
+	    set_vim_var_string(VV_INSERTMODE,
+			   (char_u *)((State & REPLACE_FLAG) ? "i" :
+				    replaceState == VREPLACE ? "v" : "r"), 1);
+	    apply_autocmds(EVENT_INSERTCHANGE, NULL, NULL, FALSE, curbuf);
+#endif
 	    if (State & REPLACE_FLAG)
 		State = INSERT | (State & LANGMAP);
 	    else
@@ -859,7 +882,14 @@ doESCkey:
 		o_lnum = curwin->w_cursor.lnum;
 
 	    if (ins_esc(&count, cmdchar))
+	    {
+#ifdef FEAT_AUTOCMD
+		if (cmdchar != 'r' && cmdchar != 'v')
+		    apply_autocmds(EVENT_INSERTLEAVE, NULL, NULL,
+							       FALSE, curbuf);
+#endif
 		return (c == Ctrl_O);
+	    }
 	    continue;
 
 	/*
