@@ -1759,6 +1759,7 @@ vgetorpeek(advance)
     int		nolmaplen;
 #endif
     int		old_wcol, old_wrow;
+    int		wait_tb_len;
 
     /*
      * This function doesn't work very well when called recursively.  This may
@@ -2531,6 +2532,7 @@ vgetorpeek(advance)
 /*
  * get a character: 3. from the user - get it
  */
+		wait_tb_len = typebuf.tb_len;
 		c = inchar(typebuf.tb_buf + typebuf.tb_off + typebuf.tb_len,
 			typebuf.tb_buflen - typebuf.tb_off - typebuf.tb_len - 1,
 			!advance
@@ -2562,7 +2564,7 @@ vgetorpeek(advance)
 		{
 		    if (!advance)
 			break;
-		    if (typebuf.tb_len > 0)	/* timed out */
+		    if (wait_tb_len > 0)	/* timed out */
 		    {
 			timedout = TRUE;
 			continue;
@@ -2798,6 +2800,10 @@ fix_input_buffer(buf, len, script)
 	else
 #endif
 	if (p[0] == NUL || (p[0] == K_SPECIAL && !script
+#ifdef FEAT_AUTOCMD
+		    /* timeout may generate K_CURSORHOLD */
+		    && (i < 2 || p[1] != KS_EXTRA || p[2] != (int)KE_CURSORHOLD)
+#endif
 #if defined(WIN3264) && !defined(FEAT_GUI)
 		    /* Win32 console passes modifiers */
 		    && (i < 2 || p[1] != KS_MODIFIER)
