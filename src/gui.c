@@ -2667,6 +2667,10 @@ gui_wait_for_chars(wtime)
 	    update_screen(VALID);
 	    showruler(FALSE);
 	    setcursor();
+	    /* In case the commands moved the focus to another window
+	     * (temporarily). */
+	    if (need_mouse_correct)
+		gui_mouse_correct();
 
 	    once_already = 1;
 	    retval = 0;

@@ -5675,6 +5675,9 @@ vim_rename(from, to)
 #endif
     struct stat	st;
     long	perm;
+#ifdef HAVE_ACL
+    vim_acl_T	acl;		/* ACL from original file */
+#endif
 
     /*
      * When the names are identical, there is nothing to do.
@@ -5726,6 +5729,10 @@ vim_rename(from, to)
      * Rename() failed, try copying the file.
      */
     perm = mch_getperm(from);
+#ifdef HAVE_ACL
+    /* For systems that support ACL: get the ACL from the original file. */
+    acl = mch_get_acl(from);
+#endif
     fd_in = mch_open((char *)from, O_RDONLY|O_EXTRA, 0);
     if (fd_in == -1)
 	return -1;
@@ -5763,6 +5770,9 @@ vim_rename(from, to)
 	to = from;
     }
     mch_setperm(to, perm);
+#ifdef HAVE_ACL
+    mch_set_acl(to, acl);
+#endif
     if (errmsg != NULL)
     {
 	EMSG2(errmsg, to);

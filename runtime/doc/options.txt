@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Mar 07
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Mar 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5771,7 +5771,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Otherwise the result is taken as flag text and applied to the rules
 	described above.
 
-	Watch out for errors in expressions.  They may render Vim unusable !
+	Watch out for errors in expressions.  They may render Vim unusable!
 	If you are stuck, hold down ':' or 'Q' to get a prompt, then quit and
 	edit your .vimrc or whatever with "vim -u NONE" to get it right.
 

@@ -1053,6 +1053,7 @@ LINKIT = @echo >/dev/null
 #GUI_TARGETS	= $(NONE_TARGETS)
 #GUI_MAN_TARGETS= $(NONE_MAN_TARGETS)
 #GUI_TESTTARGET = $(NONE_TESTTARGET)
+#GUI_BUNDLE	= $(NONE_BUNDLE)
 
 # Without a GUI install the normal way.
 NONE_INSTALL = install_normal
@@ -1072,6 +1073,7 @@ KDE_INSTALL     = install_normal
 KDE_TARGETS	= installglinks installkdeicons
 KDE_MAN_TARGETS = yes
 KDE_TESTTARGET  = gui
+KDE_BUNDLE	=
 
 ### GTK GUI
 GTK_SRC		= gui.c gui_gtk.c gui_gtk_x11.c pty.c gui_gtk_f.c \
@@ -1088,6 +1090,7 @@ GTK_INSTALL     = install_normal
 GTK_TARGETS	= installglinks
 GTK_MAN_TARGETS = yes
 GTK_TESTTARGET  = gui
+GTK_BUNDLE	=
 
 ### Motif GUI
 MOTIF_SRC	= gui.c gui_motif.c gui_x11.c pty.c gui_beval.c \
@@ -1104,6 +1107,7 @@ MOTIF_INSTALL   = install_normal
 MOTIF_TARGETS	= installglinks
 MOTIF_MAN_TARGETS = yes
 MOTIF_TESTTARGET = gui
+MOTIF_BUNDLE	=
 
 ### Athena GUI
 ### Use Xaw3d to make the menus look a little bit nicer
@@ -1133,6 +1137,7 @@ ATHENA_INSTALL  = install_normal
 ATHENA_TARGETS	= installglinks
 ATHENA_MAN_TARGETS = yes
 ATHENA_TESTTARGET = gui
+ATHENA_BUNDLE	=
 
 ### neXtaw GUI
 NEXTAW_LIB = -lneXtaw
@@ -1150,6 +1155,7 @@ NEXTAW_INSTALL  =  install_normal
 NEXTAW_TARGETS	=  installglinks
 NEXTAW_MAN_TARGETS = yes
 NEXTAW_TESTTARGET = gui
+NEXTAW_BUNDLE	=
 
 ### (J)  Sun OpenWindows 3.2 (SunOS 4.1.x) or earlier that produce these ld
 #	 errors:  ld: Undefined symbol
@@ -1174,6 +1180,7 @@ PHOTONGUI_INSTALL = install_normal
 PHOTONGUI_TARGETS = installglinks
 PHOTONGUI_MAN_TARGETS = yes
 PHOTONGUI_TESTTARGET = gui
+PHOTONGUI_BUNDLE =
 
 # CARBON GUI
 CARBONGUI_SRC	= gui.c gui_mac.c
@@ -1189,8 +1196,9 @@ CARBONGUI_INSTALL = install_macosx
 CARBONGUI_TARGETS =
 CARBONGUI_MAN_TARGETS =
 CARBONGUI_TESTTARGET = gui
-CARBONGUI_BUNDLE = $(VIMNAME).app
-CARBONGUI_TESTARG = VIMPROG=../$(CARBONGUI_BUNDLE)/Contents/MacOS/$(VIMTARGET)
+CARBONGUI_BUNDLE = gui_bundle
+APPDIR = $(VIMNAME).app
+CARBONGUI_TESTARG = VIMPROG=../$(APPDIR)/Contents/MacOS/$(VIMTARGET)
 
 # All GUI files
 ALL_GUI_SRC  = gui.c gui_gtk.c gui_gtk_f.c gui_motif.c gui_xmdlg.c gui_xmebw.c gui_athena.c gui_gtk_x11.c gui_x11.c gui_at_sb.c gui_at_fs.c pty.c gui_kde.cc gui_kde_wid.cc gui_kde_x11.cc gui_kde_wid_moc.cc
@@ -1272,6 +1280,7 @@ DEST_PRINT = $(DESTDIR)$(PRINTSUBLOC)
 DEST_MAN_TOP = $(DESTDIR)$(MANDIR)
 DEST_MAN = $(DEST_MAN_TOP)$(MAN1DIR)
 DEST_MAN_IT = $(DEST_MAN_TOP)/it$(MAN1DIR)
+DEST_MAN_RU = $(DEST_MAN_TOP)/ru$(MAN1DIR)
 
 #	     BASIC_SRC: files that are always used
 #	       GUI_SRC: extra GUI files for current configuration
@@ -1789,6 +1798,7 @@ installtools: $(TOOLS) $(DESTDIR)$(exec_prefix) $(DEST_BIN) \
 	chmod $(BINMOD) $(DEST_BIN)/xxd$(EXEEXT)
 	-$(SHELL) ./installman.sh xxd $(DEST_MAN) "" $(INSTALLMANARGS)
 	-$(SHELL) ./installman.sh xxd $(DEST_MAN_IT) "-it" $(INSTALLMANARGS)
+	-$(SHELL) ./installman.sh xxd $(DEST_MAN_RU) "-ru" $(INSTALLMANARGS)
 # install the runtime tools
 	$(INSTALL_DATA_R) $(TOOLSSOURCE)/* $(DEST_TOOLS)
 # When using CVS some CVS directories might have been copied.
@@ -1807,8 +1817,11 @@ installtools: $(TOOLS) $(DESTDIR)$(exec_prefix) $(DEST_BIN) \
 # install the language specific files, if they were unpacked
 install-languages: languages $(DEST_LANG) $(DEST_KMAP)
 	-$(SHELL) ./installman.sh install $(DEST_MAN_IT) "-it" $(INSTALLMANARGS)
+	-$(SHELL) ./installman.sh install $(DEST_MAN_RU) "-ru" $(INSTALLMANARGS)
 	-$(SHELL) ./installml.sh install "$(GUI_MAN_TARGETS)" \
 		$(DEST_MAN_IT) $(INSTALLMLARGS)
+	-$(SHELL) ./installml.sh install "$(GUI_MAN_TARGETS)" \
+		$(DEST_MAN_RU) $(INSTALLMLARGS)
 	if test -n "$(MAKEMO)" -a -f $(PODIR)/Makefile; then \
 	   cd $(PODIR); $(MAKE) prefix=$(DESTDIR)$(prefix) LOCALEDIR=$(DEST_LANG) \
 	   INSTALL_DATA=$(INSTALL_DATA) FILEMOD=$(FILEMOD) install; \
@@ -1955,11 +1968,14 @@ uninstall: uninstall_runtime
 uninstall_runtime:
 	-$(SHELL) ./installman.sh uninstall $(DEST_MAN) "" $(INSTALLMANARGS)
 	-$(SHELL) ./installman.sh uninstall $(DEST_MAN_IT) "-it" $(INSTALLMANARGS)
+	-$(SHELL) ./installman.sh uninstall $(DEST_MAN_RU) "-ru" $(INSTALLMANARGS)
 	-$(SHELL) ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
 		$(DEST_MAN) $(INSTALLMLARGS)
 	-$(SHELL) ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
 		$(DEST_MAN_IT) $(INSTALLMLARGS)
-	-rm -f $(DEST_MAN)/xxd.1 $(DEST_MAN_IT)/xxd.1
+	-$(SHELL) ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
+		$(DEST_MAN_RU) $(INSTALLMLARGS)
+	-rm -f $(DEST_MAN)/xxd.1 $(DEST_MAN_IT)/xxd.1 $(DEST_MAN_RU)/xxd.1
 	-rm -f $(DEST_HELP)/*.txt $(DEST_HELP)/tags $(DEST_HELP)/*.pl
 	-rm -f $(DEST_HELP)/*.??x $(DEST_HELP)/tags-??
 	-rm -f $(SYS_MENU_FILE) $(SYS_SYNMENU_FILE) $(SYS_DELMENU_FILE)
@@ -1992,7 +2008,7 @@ clean celan: testclean
 	-rm -f *.o objects/* core $(VIMTARGET).core $(VIMTARGET) xxd/*.o
 	-rm -f $(TOOLS) auto/osdef.h auto/pathdef.c auto/if_perl.c
 	-rm -f conftest* *~ auto/link.sed
-	-rm -rf $(GUI_BUNDLE)
+	-rm -rf $(APPDIR)
 	-rm -f gui_kde_wid_moc.cc kvim_iface_skel.cc *.kidl
 	if test -d $(PODIR); then \
 		cd $(PODIR); $(MAKE) prefix=$(DESTDIR)$(prefix) clean; \
@@ -2383,7 +2399,6 @@ Makefile:
 ### This installs a runnable Vim.app in $(prefix)
 
 REZ    = /Developer/Tools/Rez
-APPDIR = $(GUI_BUNDLE)
 RESDIR = $(APPDIR)/Contents/Resources
 VERSION = $(VIMMAJOR).$(VIMMINOR)
 
@@ -2402,10 +2417,10 @@ ICONS = $(RESDIR)/$(ICON_APP)
 #ICON_DOCTXT = $(shell if [ -e doc-txt.icns ] ; then echo doc-txt.icns ; else echo ; fi)
 #ICONS = $(addprefix $(RESDIR)/, $(ICON_APP) $(ICON_DOC) $(ICON_DOCTXT))
 
-install_macosx: $(APPDIR)
+install_macosx: gui_bundle
 	$(INSTALL_DATA_R) $(APPDIR) $(DESTDIR)$(prefix)
 
-$(APPDIR): bundle-dir bundle-executable bundle-info bundle-resource \
+gui_bundle: $(APPDIR) bundle-dir bundle-executable bundle-info bundle-resource \
 	bundle-language
 
 bundle-dir: $(APPDIR)/Contents $(VIMTARGET)

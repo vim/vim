@@ -1,9 +1,9 @@
-" Vim syntax file for the D programming language (version 0.95).
+" Vim syntax file for the D programming language (version 0.116).
 "
 " Language:	D
 " Maintainer:	Jason Mills<jmills@cs.mun.ca>
-" Last Change:	2004 Jul 15
-" Version:	0.10
+" Last Change:	2005 Mar 09
+" Version:	0.12
 "
 " Options:
 "   d_comment_strings - set to highlight strings and numbers in comments
@@ -35,6 +35,7 @@ syn keyword dBranch		goto break continue
 syn keyword dRepeat		while for do foreach
 syn keyword dBoolean		true false
 syn keyword dConstant		null
+syn keyword dConstant		__FILE__ __LINE__ __DATE__ __TIME__ __TIMESTAMP__
 syn keyword dTypedef		alias typedef
 syn keyword dStructure		template interface class enum struct union
 syn keyword dOperator		new delete typeof typeid cast align is
@@ -47,7 +48,7 @@ if exists("d_hl_operator_overload")
   syn keyword dOpOverload	opAddAssign opSubAssign opMulAssign opDivAssign
   syn keyword dOpOverload	opModAssign opAndAssign opOrAssign opXorAssign
   syn keyword dOpOverload	opShlAssign opShrAssign opUShrAssign opCatAssign
-  syn keyword dOpOverload	opIndex opIndexAssign opCall opSlice
+  syn keyword dOpOverload	opIndex opIndexAssign opCall opSlice opPos
   syn keyword dOpOverload	opAdd_r opMul_r opAnd_r opOr_r opXor_r 
 endif
 syn keyword dType		ushort int uint long ulong float
@@ -116,9 +117,10 @@ syn sync minlines=25
 "
 syn match dSpecialCharError contained "[^']"
 
-" Escape sequences (oct,specal char,hex,wchar). These are not contained
-" because they are considered string litterals
+" Escape sequences (oct,specal char,hex,wchar, character entities \&xxx;)
+" These are not contained because they are considered string litterals
 syn match dEscSequence	"\\\(\o\{1,3}\|[\"\\'\\?ntbrfva]\|u\x\{4}\|U\x\{8}\|x\x\x\)"
+syn match dEscSequence "\\&[^;& \t]\+;"
 syn match dCharacter	"'[^']*'" contains=dEscSequence,dSpecialCharError
 syn match dCharacter	"'\\''" contains=dEscSequence
 syn match dCharacter	"'[^\\]'"
@@ -126,6 +128,8 @@ syn match dCharacter	"'[^\\]'"
 " Unicode characters
 "
 syn match dUnicode "\\u\d\{4\}"
+
+
 
 " String.
 "
