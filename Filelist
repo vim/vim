@@ -57,6 +57,7 @@ SRC_ALL1 =	\
 		src/screen.c \
 		src/search.c \
 		src/structs.h \
+		src/spell.c \
 		src/syntax.c \
 		src/tag.c \
 		src/term.c \
@@ -112,6 +113,7 @@ SRC_ALL2 =	\
 		src/proto/regexp.pro \
 		src/proto/screen.pro \
 		src/proto/search.pro \
+		src/proto/spell.pro \
 		src/proto/syntax.pro \
 		src/proto/tag.pro \
 		src/proto/term.pro \
