@@ -18,6 +18,16 @@
 # RUBY		define to path to Ruby dir to get Ruby support (not defined)
 #   RUBY_VER	define to version of Ruby being used (16)
 #   DYNAMIC_RUBY no or yes: use yes to load the Ruby DLL dynamically (yes)
+# MZSCHEME	define to path to MzScheme dir to get MZSCHEME support (not defined)
+#   MZSCHEME_VER      define to version of MzScheme being used (209_000)
+#   DYNAMIC_MZSCHEME  no or yes: use yes to load the MzScheme DLLs dynamically (yes)
+#   MZSCHEME_DLLS     path to MzScheme DLLs (libmzgc and libmzsch).
+#                     Is used for DYNAMIC_MZSCHEME=no only.
+#   		      c:/windows/system32 isn't a good idea, copy them to some
+#   		      dir and point MZSCHEME_DLLS to this dir.
+#   		      By default $(MZSCHEME) will be used. You can remove
+#   		      these DLLs from $(MZSCHEME_DLLS) after you
+#   		      built Vim (they are used for dll "static" linking only)
 # GETTEXT	no or yes: set to yes for dynamic gettext support (yes)
 # ICONV		no or yes: set to yes for dynamic iconv support (yes)
 # MBYTE		no or yes: set to yes to include multibyte support (yes)
@@ -186,6 +196,33 @@ DEFINES += -DDYNAMIC_RUBY -DDYNAMIC_RUBY_DLL=\"$(RUBY_INSTALL_NAME).dll\"
 DEFINES += -DDYNAMIC_RUBY_VER=$(RUBY_VER)
 else
 EXTRA_LIBS += $(RUBY)/lib/$(RUBY_INSTALL_NAME).lib
+endif
+endif
+
+##############################
+# DYNAMIC_MZSCHEME=yes works
+# DYNAMIC_MZSCHEME=no works too
+##############################
+ifdef MZSCHEME
+DEFINES += -DFEAT_MZSCHEME
+INCLUDES += -I$(MZSCHEME)/include
+EXTRA_OBJS += $(OUTDIR)/if_mzsch.o
+
+ifndef DYNAMIC_MZSCHEME
+DYNAMIC_MZSCHEME = yes
+endif
+
+ifndef MZSCHEME_VER
+MZSCHEME_VER = 209_000
+endif
+
+ifeq (yes, $(DYNAMIC_MZSCHEME))
+DEFINES += -DDYNAMIC_MZSCHEME -DDYNAMIC_MZSCH_DLL=\"libmzsch$(MZSCHEME_VER).dll\" -DDYNAMIC_MZGC_DLL=\"libmzgc$(MZSCHEME_VER).dll\"
+else
+ifndef MZSCHEME_DLLS
+MZSCHEME_DLLS = $(MZSCHEME)
+endif
+EXTRA_LIBS += -L$(MZSCHEME_DLLS) -lmzsch$(MZSCHEME_VER) -lmzgc$(MZSCHEME_VER)
 endif
 endif
 

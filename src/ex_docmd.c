@@ -1584,7 +1584,7 @@ getline_cookie(getline, cookie)
 /*
  * Avoid optimisation bug in VC++ version 6.0
  */
-# pragma optimize( "g", off )
+ #pragma optimize( "g", off )
 #endif
     static char_u *
 do_one_cmd(cmdlinep, sourcing,
@@ -2611,7 +2611,7 @@ doend:
     return ea.nextcmd;
 }
 #if (_MSC_VER == 1200)
-# pragma optimize( "", on )
+ #pragma optimize( "", on )
 #endif
 
 /*
@@ -7749,7 +7749,7 @@ ex_mkrc(eap)
     /* When using 'viewdir' may have to create the directory. */
     if (using_vdir && !mch_isdir(p_vdir))
 	if (vim_mkdir(p_vdir, 0755) != 0)
-	    EMSG2(_("E738: Cannot create directory: %s"), p_vdir);
+	    EMSG2(_("E739: Cannot create directory: %s"), p_vdir);
 #endif
 
     fd = open_exfile(fname, eap->forceit, WRITEBIN);

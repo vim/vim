@@ -1,7 +1,7 @@
 " ipfilter syntax file
 " Language: ipfilter configuration file
 " Maintainer: Hendrik Scholz <hendrik@scholz.net>
-" Last Change: 2003 May 11
+" Last Change: 2005 Jan 23
 "
 " http://raisdorf.net/files/misc/ipfilter.vim
 "
@@ -18,8 +18,8 @@ elseif exists("b:current_syntax")
 endif
 
 " comments
-syn match ipfComment /#/
-"syn match ipfComment /#.*/
+"syn match ipfComment /#/
+syn match ipfComment /#.*/
 
 syn keyword ipfQuick quick log dup-to
 syn keyword ipfAny all any
@@ -38,6 +38,6 @@ hi def link ipfActionPass	Type
 hi def link ipfActionMisc	Label
 "hi def link ipfQuick		Error
 hi def link ipfQuick		Special
-hi def link ipfAny		Todo
+hi def link ipfAny		Statement
 
 

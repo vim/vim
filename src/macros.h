@@ -249,15 +249,6 @@
 # define CURSOR_BAR_RIGHT (curwin->w_p_rl && (!(State & CMDLINE) || cmdmsg_rl))
 #endif
 
-#ifndef FEAT_LINEBREAK
-/* Without the 'numberwidth' option line numbers are always 7 chars. */
-# define number_width(x) 7
-#endif
-
-#ifndef FEAT_MBYTE
-# define after_pathsep(b, p) vim_ispathsep(*((p) - 1))
-#endif
-
 /*
  * mb_ptr_adv(): advance a pointer to the next character, taking care of
  * multi-byte characters if needed.

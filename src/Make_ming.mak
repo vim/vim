@@ -107,16 +107,26 @@ endif
 # uncomment 'MZSCHEME' if you want a MzScheme-enabled version
 #MZSCHEME=d:/plt
 ifdef MZSCHEME
+ifndef DYNAMIC_MZSCHEME
+DYNAMIC_MZSCHEME=yes
+endif
+
 ifndef MZSCHEME_VER
 MZSCHEME_VER=205_000
 endif
-# the modern MinGW can dynamically link to dlls directly
-# point MZSCHEME_LIBDIR to where you put libmzschXXXXXXX.dll and libgcXXXXXXX.dll
+
+ifeq (no,$(DYNAMIC_MZSCHEME))
+MZSCHEME_LIB = -lmzsch$(MZSCHEME_VER) -lmzgc$(MZSCHEME_VER)
+# the modern MinGW can dynamically link to dlls directly.
+# point MZSCHEME_DLLS to where you put libmzschXXXXXXX.dll and libgcXXXXXXX.dll
 # c:/windows/system32 isn't a good idea, use some other dir;
 # to build you can put them in temp dir)
-ifndef MZSCHEME_LIBDIR
-MZSCHEME_LIBDIR=-L$(MZSCHEME)
+ifndef MZSCHEME_DLLS
+MZSCHEME_DLLS=$(MZSCHEME)
 endif
+MZSCHEME_LIBDIR=-L$(MZSCHEME_DLLS)
+endif
+
 endif
 
 # Python support -- works with the ActiveState python 2.0 release (and others
@@ -270,6 +280,9 @@ endif
 
 ifdef MZSCHEME
 CFLAGS += -I$(MZSCHEME)/include -DFEAT_MZSCHEME -DMZSCHEME_COLLECTS=\"$(MZSCHEME)/collects\"
+ifeq (yes, $(DYNAMIC_MZSCHEME))
+CFLAGS += -DDYNAMIC_MZSCHEME -DDYNAMIC_MZSCH_DLL=\"libmzsch$(MZSCHEME_VER).dll\" -DDYNAMIC_MZGC_DLL=\"libmzgc$(MZSCHEME_VER).dll\"
+endif
 endif
 
 ifdef RUBY
@@ -459,10 +472,6 @@ ifdef PERL
 ifeq (no, $(DYNAMIC_PERL))
 LIB += -lperl$(PERL_VER)
 endif
-endif
-
-ifdef MZSCHEME
-MZSCHEME_LIB = -lmzsch$(MZSCHEME_VER) -lmzgc$(MZSCHEME_VER)
 endif
 
 ifdef TCL

@@ -136,6 +136,7 @@ EXTERN int	msg_scrolled_ign INIT(= FALSE);
 
 EXTERN char_u	*keep_msg INIT(= NULL);	    /* msg to be shown after redraw */
 EXTERN int	keep_msg_attr INIT(= 0);    /* highlight attr for keep_msg */
+EXTERN int	keep_msg_more INIT(= FALSE); /* keep_msg was set by msgmore() */
 EXTERN int	need_fileinfo INIT(= FALSE);/* do fileinfo() after redraw */
 EXTERN int	msg_scroll INIT(= FALSE);   /* msg_start() will scroll */
 EXTERN int	msg_didout INIT(= FALSE);   /* msg_outstr() was used in line */
@@ -1278,7 +1279,7 @@ EXTERN char_u e_libcall[]	INIT(=N_("E364: Library call failed for \"%s()\""));
 #endif
 #if defined(DYNAMIC_PERL) || defined(DYNAMIC_PYTHON) || defined(DYNAMIC_RUBY) \
 	|| defined(DYNAMIC_TCL) || defined(DYNAMIC_ICONV) \
-	|| defined(DYNAMIC_GETTEXT)
+	|| defined(DYNAMIC_GETTEXT) || defined(DYNAMIC_MZSCHEME)
 EXTERN char_u e_loadlib[]	INIT(=N_("E370: Could not load library %s"));
 EXTERN char_u e_loadfunc[]	INIT(=N_("E448: Could not load library function %s"));
 #endif

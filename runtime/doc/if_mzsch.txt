@@ -1,4 +1,4 @@
-*if_mzsch.txt*  For Vim version 7.0aa.  Last change: 2004 Jul 05
+*if_mzsch.txt*  For Vim version 7.0aa.  Last change: 2005 Jan 23
 
 
 		  VIM REFERENCE MANUAL    by Sergey Khorev
@@ -17,6 +17,7 @@ The MzScheme interface is available only if Vim was compiled with the
 |+mzscheme| feature.
 
 Based on the work of Brent Fulgham.
+Dynamic loading added by Sergey Khorev
 
 For downloading MzScheme and other info:
 	http://www.plt-scheme.org/software/mzscheme/
