@@ -1741,7 +1741,12 @@ ex_listdo(eap)
     }
 
 #if defined(FEAT_AUTOCMD) && defined(FEAT_SYN_HL)
-    au_event_restore(save_ei);
+    if (save_ei != NULL)
+    {
+	au_event_restore(save_ei);
+	apply_autocmds(EVENT_SYNTAX, curbuf->b_p_syn,
+					       curbuf->b_fname, TRUE, curbuf);
+    }
 #endif
 }
 
@@ -2644,7 +2649,7 @@ get_one_sourceline(sp)
     int			have_read = FALSE;
 
     /* use a growarray to store the sourced line */
-    ga_init2(&ga, 1, 200);
+    ga_init2(&ga, 1, 250);
 
     /*
      * Loop until there is a finished line (or end-of-file).
@@ -2652,8 +2657,8 @@ get_one_sourceline(sp)
     sourcing_lnum++;
     for (;;)
     {
-	/* make room to read at least 80 (more) characters */
-	if (ga_grow(&ga, 80) == FAIL)
+	/* make room to read at least 120 (more) characters */
+	if (ga_grow(&ga, 120) == FAIL)
 	    break;
 	buf = (char_u *)ga.ga_data;
 
@@ -2669,7 +2674,7 @@ get_one_sourceline(sp)
 	    if (fgets((char *)buf + ga.ga_len, ga.ga_maxlen - ga.ga_len,
 							      sp->fp) == NULL)
 		break;
-	len = (int)STRLEN(buf);
+	len = ga.ga_len + (int)STRLEN(buf + ga.ga_len);
 #ifdef USE_CRNL
 	/* Ignore a trailing CTRL-Z, when in Dos mode.	Only recognize the
 	 * CTRL-Z by its own, or after a NL. */

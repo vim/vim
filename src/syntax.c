@@ -296,6 +296,22 @@ typedef struct state_item
 				       but contained groups */
 
 /*
+ * Struct to reduce the number of arguments to get_syn_options(), it's used
+ * very often.
+ */
+typedef struct
+{
+    int		flags;		/* flags for contained and transpartent */
+    int		keyword;	/* TRUE for ":syn keyword" */
+    int		*sync_idx;	/* syntax item for "grouphere" argument, NULL
+				   if not allowed */
+    char	has_cont_list;	/* TRUE if "cont_list" can be used */
+    short	*cont_list;	/* group IDs for "contains" argument */
+    short	*cont_in_list;	/* group IDs for "containedin" argument */
+    short	*next_list;	/* group IDs for "nextgroup" argument */
+} syn_opt_arg_T;
+
+/*
  * The next possible match in the current line for any pattern is remembered,
  * to avoid having to try for a match in each column.
  * If next_match_idx == -1, not tried (in this line) yet.
@@ -401,7 +417,7 @@ static void syn_clear_keyword __ARGS((int id, hashtab_T *ht));
 static void clear_keywtab __ARGS((hashtab_T *ht));
 static void add_keyword __ARGS((char_u *name, int id, int flags, short *cont_in_list, short *next_list));
 static char_u *get_group_name __ARGS((char_u *arg, char_u **name_end));
-static char_u *get_syn_options __ARGS((char_u *arg, int *flagsp, int keyword, int *sync_idx, short **cont_list, short **cont_in_list, short **next_list));
+static char_u *get_syn_options __ARGS((char_u *arg, syn_opt_arg_T *opt));
 static void syn_cmd_include __ARGS((exarg_T *eap, int syncing));
 static void syn_cmd_keyword __ARGS((exarg_T *eap, int syncing));
 static void syn_cmd_match __ARGS((exarg_T *eap, int syncing));
@@ -3978,21 +3994,19 @@ add_keyword(name, id, flags, cont_in_list, next_list)
     keyentry_T	*kp;
     hashtab_T	*ht;
     hashitem_T	*hi;
-    char_u	*name_ic = name;
+    char_u	*name_ic;
     long_u	hash;
+    char_u	name_folded[MAXKEYWLEN + 1];
 
     if (curbuf->b_syn_ic)
-    {
-	name_ic = str_foldcase(name, (int)STRLEN(name), NULL, 0);
-	if (name_ic == NULL)
-	    name_ic = name;
-    }
+	name_ic = str_foldcase(name, (int)STRLEN(name),
+						 name_folded, MAXKEYWLEN + 1);
+    else
+	name_ic = name;
     kp = (keyentry_T *)alloc((int)(sizeof(keyentry_T) + STRLEN(name_ic)));
     if (kp == NULL)
 	return;
     STRCPY(kp->keyword, name_ic);
-    if (name_ic != name)
-	vim_free(name_ic);
     kp->k_syn.id = id;
     kp->k_syn.inc_tag = current_syn_inc_tag;
     kp->flags = flags;
@@ -4055,168 +4069,154 @@ get_group_name(arg, name_end)
  * Return NULL for any error;
  */
     static char_u *
-get_syn_options(arg, flagsp, keyword, sync_idx, cont_list,
-						      cont_in_list, next_list)
-    char_u	*arg;		/* next argument */
-    int		*flagsp;	/* flags for contained and transpartent */
-    int		keyword;	/* TRUE for ":syn keyword" */
-    int		*sync_idx;	/* syntax item for "grouphere" argument, NULL
-				   if not allowed */
-    short	**cont_list;	/* group IDs for "contains" argument, NULL if
-				   not allowed */
-    short	**cont_in_list;	/* group IDs for "containedin" argument, NULL
-				   if not allowed */
-    short	**next_list;	/* group IDs for "nextgroup" argument */
+get_syn_options(arg, opt)
+    char_u	    *arg;		/* next argument to be checked */
+    syn_opt_arg_T   *opt;		/* various things */
 {
-    int		flags;
     char_u	*gname_start, *gname;
     int		syn_id;
     int		len;
+    char	*p;
     int		i;
     int		fidx;
     static struct flag
     {
 	char	*name;
-	int	len;
-	int	val;
-    } flagtab[] = { {"contained",   9,	HL_CONTAINED},
-		    {"oneline",	    7,	HL_ONELINE},
-		    {"keepend",	    7,	HL_KEEPEND},
-		    {"extend",	    6,	HL_EXTEND},
-		    {"excludenl",   9,	HL_EXCLUDENL},
-		    {"transparent", 11, HL_TRANSP},
-		    {"skipnl",	    6,	HL_SKIPNL},
-		    {"skipwhite",   9,	HL_SKIPWHITE},
-		    {"skipempty",   9,	HL_SKIPEMPTY},
-		    {"grouphere",   9,	HL_SYNC_HERE},
-		    {"groupthere",  10,	HL_SYNC_THERE},
-		    {"display",	    7,	HL_DISPLAY},
-		    {"fold",	    4,	HL_FOLD},
+	int	argtype;
+	int	flags;
+    } flagtab[] = { {"cCoOnNtTaAiInNeEdD",	0,	HL_CONTAINED},
+		    {"oOnNeElLiInNeE",		0,	HL_ONELINE},
+		    {"kKeEeEpPeEnNdD",		0,	HL_KEEPEND},
+		    {"eExXtTeEnNdD",		0,	HL_EXTEND},
+		    {"eExXcClLuUdDeEnNlL",	0,	HL_EXCLUDENL},
+		    {"tTrRaAnNsSpPaArReEnNtT",	0,	HL_TRANSP},
+		    {"sSkKiIpPnNlL",		0,	HL_SKIPNL},
+		    {"sSkKiIpPwWhHiItTeE",	0,	HL_SKIPWHITE},
+		    {"sSkKiIpPeEmMpPtTyY",	0,	HL_SKIPEMPTY},
+		    {"gGrRoOuUpPhHeErReE",	0,	HL_SYNC_HERE},
+		    {"gGrRoOuUpPtThHeErReE",	0,	HL_SYNC_THERE},
+		    {"dDiIsSpPlLaAyY",		0,	HL_DISPLAY},
+		    {"fFoOlLdD",		0,	HL_FOLD},
+		    {"cCoOnNtTaAiInNsS",	1,	0},
+		    {"cCoOnNtTaAiInNeEdDiInN",	2,	0},
+		    {"nNeExXtTgGrRoOuUpP",	3,	0},
 		};
-#define MLEN 12
-    char	lowname[MLEN];
-    int		llen;
+    static char *first_letters = "cCoOkKeEtTsSgGdDfFnN";
 
     if (arg == NULL)		/* already detected error */
 	return NULL;
 
-    flags = *flagsp;
     for (;;)
     {
-	/* STRNICMP() is a bit slow, change arg to lowercase first and use
-	 * STRNCMP() */
-	for (llen = 0; llen < MLEN; ++llen)
-	{
-	    if (!isalpha(arg[llen]))
-		break;
-	    lowname[llen] = TOLOWER_ASC(arg[llen]);
-	}
+	/*
+	 * This is used very often when a large number of keywords is defined.
+	 * Need to skip quickly when no option name is found.
+	 * Also avoid tolower(), it's slow.
+	 */
+	if (strchr(first_letters, *arg) == NULL)
+	    break;
 
 	for (fidx = sizeof(flagtab) / sizeof(struct flag); --fidx >= 0; )
 	{
-	    len = flagtab[fidx].len;
-	    if (len == llen
-		    && STRNCMP(lowname, flagtab[fidx].name, len) == 0
-		    && (ends_excmd(arg[len]) || vim_iswhite(arg[len])))
+	    p = flagtab[fidx].name;
+	    for (i = 0, len = 0; p[i] != NUL; i += 2, ++len)
+		if (arg[len] != p[i] && arg[len] != p[i + 1])
+		    break;
+	    if (p[i] == NUL && (vim_iswhite(arg[len])
+				    || (flagtab[fidx].argtype > 0
+					 ? arg[len] == '='
+					 : ends_excmd(arg[len]))))
 	    {
-		if (keyword
-			&& (flagtab[fidx].val == HL_DISPLAY
-			    || flagtab[fidx].val == HL_FOLD
-			    || flagtab[fidx].val == HL_EXTEND))
-		{
+		if (opt->keyword
+			&& (flagtab[fidx].flags == HL_DISPLAY
+			    || flagtab[fidx].flags == HL_FOLD
+			    || flagtab[fidx].flags == HL_EXTEND))
 		    /* treat "display", "fold" and "extend" as a keyword */
 		    fidx = -1;
-		    break;
-		}
-
-		flags |= flagtab[fidx].val;
-		arg = skipwhite(arg + len);
-
-		if (flagtab[fidx].val == HL_SYNC_HERE
-			|| flagtab[fidx].val == HL_SYNC_THERE)
-		{
-		    if (sync_idx == NULL)
-		    {
-			EMSG(_("E393: group[t]here not accepted here"));
-			return NULL;
-		    }
-		    gname_start = arg;
-		    arg = skiptowhite(arg);
-		    if (gname_start == arg)
-			return NULL;
-		    gname = vim_strnsave(gname_start, (int)(arg - gname_start));
-		    if (gname == NULL)
-			return NULL;
-		    if (STRCMP(gname, "NONE") == 0)
-			*sync_idx = NONE_IDX;
-		    else
-		    {
-			syn_id = syn_name2id(gname);
-			for (i = curbuf->b_syn_patterns.ga_len; --i >= 0; )
-			    if (SYN_ITEMS(curbuf)[i].sp_syn.id == syn_id
-				&& SYN_ITEMS(curbuf)[i].sp_type == SPTYPE_START)
-			    {
-				*sync_idx = i;
-				break;
-			    }
-			if (i < 0)
-			{
-			    EMSG2(_("E394: Didn't find region item for %s"), gname);
-			    vim_free(gname);
-			    return NULL;
-			}
-		    }
-
-		    vim_free(gname);
-		    arg = skipwhite(arg);
-		}
-#ifdef FEAT_FOLDING
-		else if (flagtab[fidx].val == HL_FOLD
-						&& foldmethodIsSyntax(curwin))
-		{
-		    /* Need to update folds later. */
-		    foldUpdateAll(curwin);
-		}
-#endif
 		break;
 	    }
 	}
-	if (fidx >= 0)
-	    continue;
+	if (fidx < 0)	    /* no match found */
+	    break;
 
-	if (llen == 8 && STRNCMP(lowname, "contains", 8) == 0
-		&& (vim_iswhite(arg[8]) || arg[8] == '='))
+	if (flagtab[fidx].argtype == 1)
 	{
-	    if (cont_list == NULL)
+	    if (!opt->has_cont_list)
 	    {
 		EMSG(_("E395: contains argument not accepted here"));
 		return NULL;
 	    }
-	    if (get_id_list(&arg, 8, cont_list) == FAIL)
+	    if (get_id_list(&arg, 8, &opt->cont_list) == FAIL)
 		return NULL;
 	}
-	else if (llen == 11 && STRNCMP(lowname, "containedin", 11) == 0
-		&& (vim_iswhite(arg[11]) || arg[11] == '='))
+	else if (flagtab[fidx].argtype == 2)
 	{
-	    if (cont_in_list == NULL)
+#if 0	    /* cannot happen */
+	    if (opt->cont_in_list == NULL)
 	    {
 		EMSG(_("E396: containedin argument not accepted here"));
 		return NULL;
 	    }
-	    if (get_id_list(&arg, 11, cont_in_list) == FAIL)
+#endif
+	    if (get_id_list(&arg, 11, &opt->cont_in_list) == FAIL)
 		return NULL;
 	}
-	else if (llen == 9 && STRNCMP(lowname, "nextgroup", 9) == 0
-		&& (vim_iswhite(arg[9]) || arg[9] == '='))
+	else if (flagtab[fidx].argtype == 3)
 	{
-	    if (get_id_list(&arg, 9, next_list) == FAIL)
+	    if (get_id_list(&arg, 9, &opt->next_list) == FAIL)
 		return NULL;
 	}
 	else
-	    break;
-    }
+	{
+	    opt->flags |= flagtab[fidx].flags;
+	    arg = skipwhite(arg + len);
 
-    *flagsp = flags;
+	    if (flagtab[fidx].flags == HL_SYNC_HERE
+		    || flagtab[fidx].flags == HL_SYNC_THERE)
+	    {
+		if (opt->sync_idx == NULL)
+		{
+		    EMSG(_("E393: group[t]here not accepted here"));
+		    return NULL;
+		}
+		gname_start = arg;
+		arg = skiptowhite(arg);
+		if (gname_start == arg)
+		    return NULL;
+		gname = vim_strnsave(gname_start, (int)(arg - gname_start));
+		if (gname == NULL)
+		    return NULL;
+		if (STRCMP(gname, "NONE") == 0)
+		    *opt->sync_idx = NONE_IDX;
+		else
+		{
+		    syn_id = syn_name2id(gname);
+		    for (i = curbuf->b_syn_patterns.ga_len; --i >= 0; )
+			if (SYN_ITEMS(curbuf)[i].sp_syn.id == syn_id
+			      && SYN_ITEMS(curbuf)[i].sp_type == SPTYPE_START)
+			{
+			    *opt->sync_idx = i;
+			    break;
+			}
+		    if (i < 0)
+		    {
+			EMSG2(_("E394: Didn't find region item for %s"), gname);
+			vim_free(gname);
+			return NULL;
+		    }
+		}
+
+		vim_free(gname);
+		arg = skipwhite(arg);
+	    }
+#ifdef FEAT_FOLDING
+	    else if (flagtab[fidx].flags == HL_FOLD
+						&& foldmethodIsSyntax(curwin))
+		/* Need to update folds later. */
+		foldUpdateAll(curwin);
+#endif
+	}
+    }
 
     return arg;
 }
@@ -4336,11 +4336,9 @@ syn_cmd_keyword(eap, syncing)
     char_u	*rest;
     char_u	*keyword_copy;
     char_u	*p;
-    char_u	*first_arg;
-    int		round;
-    int		flags = 0;
-    short	*next_list = NULL;
-    short	*cont_in_list = NULL;
+    char_u	*kw;
+    syn_opt_arg_T syn_opt_arg;
+    int		cnt;
 
     rest = get_group_name(arg, &group_name_end);
 
@@ -4352,63 +4350,73 @@ syn_cmd_keyword(eap, syncing)
 	keyword_copy = alloc((unsigned)STRLEN(rest) + 1);
 	if (keyword_copy != NULL)
 	{
+	    syn_opt_arg.flags = 0;
+	    syn_opt_arg.keyword = TRUE;
+	    syn_opt_arg.sync_idx = NULL;
+	    syn_opt_arg.has_cont_list = FALSE;
+	    syn_opt_arg.cont_in_list = NULL;
+	    syn_opt_arg.next_list = NULL;
+
 	    /*
 	     * The options given apply to ALL keywords, so all options must be
 	     * found before keywords can be created.
-	     * round 1: collect the options.
-	     * round 2: create the keywords.
+	     * 1: collect the options and copy the keywords to keyword_copy.
 	     */
-	    first_arg = rest;
-	    for (round = 1; round <= 2; ++round)
+	    cnt = 0;
+	    p = keyword_copy;
+	    for ( ; rest != NULL && !ends_excmd(*rest); rest = skipwhite(rest))
 	    {
-		/*
-		 * Isolate each keyword and add an entry for it.
-		 */
-		for (rest = first_arg; rest != NULL && !ends_excmd(*rest);
-						       rest = skipwhite(rest))
+		rest = get_syn_options(rest, &syn_opt_arg);
+		if (rest == NULL || ends_excmd(*rest))
+		    break;
+		/* Copy the keyword, removing backslashes, and add a NUL. */
+		while (*rest != NUL && !vim_iswhite(*rest))
 		{
-		    rest = get_syn_options(rest, &flags, TRUE, NULL,
-					     NULL, &cont_in_list, &next_list);
-		    if (rest == NULL || ends_excmd(*rest))
-			break;
-		    p = keyword_copy;
-		    while (*rest != 0 && !vim_iswhite(*rest))
-		    {
-			if (*rest == '\\' && rest[1] != NUL)
-			    ++rest;
-			*p++ = *rest++;
-		    }
-		    *p = NUL;
-		    if (round == 2 && !eap->skip)
-		    {
-			for (p = vim_strchr(keyword_copy, '['); ; )
-			{
-			    if (p != NULL)
-				*p = NUL;
-			    add_keyword(keyword_copy, syn_id, flags,
-						     cont_in_list, next_list);
-			    if (p == NULL || p[1] == NUL || p[1] == ']')
-				break;
-#ifdef FEAT_MBYTE
-			    if (has_mbyte)
-			    {
-				int l = (*mb_ptr2len_check)(p + 1);
+		    if (*rest == '\\' && rest[1] != NUL)
+			++rest;
+		    *p++ = *rest++;
+		}
+		*p++ = NUL;
+		++cnt;
+	    }
 
-				mch_memmove(p, p + 1, l);
-				p += l;
-			    }
-			    else
+	    if (!eap->skip)
+	    {
+		/* Adjust flags for use of ":syn include". */
+		syn_incl_toplevel(syn_id, &syn_opt_arg.flags);
+
+		/*
+		 * 2: Add an entry for each keyword.
+		 */
+		for (kw = keyword_copy; --cnt >= 0; kw += STRLEN(kw) + 1)
+		{
+		    for (p = vim_strchr(kw, '['); ; )
+		    {
+			if (p != NULL)
+			    *p = NUL;
+			add_keyword(kw, syn_id, syn_opt_arg.flags,
+						     syn_opt_arg.cont_in_list,
+						       syn_opt_arg.next_list);
+			if (p == NULL || p[1] == NUL || p[1] == ']')
+			    break;
+#ifdef FEAT_MBYTE
+			if (has_mbyte)
+			{
+			    int l = (*mb_ptr2len_check)(p + 1);
+
+			    mch_memmove(p, p + 1, l);
+			    p += l;
+			}
+			else
 #endif
-			    {
-				p[0] = p[1];
-				++p;
-			    }
+			{
+			    p[0] = p[1];
+			    ++p;
 			}
 		    }
 		}
-		if (round == 1)
-		    syn_incl_toplevel(syn_id, &flags);
 	    }
+
 	    vim_free(keyword_copy);
 	}
     }
@@ -4418,8 +4426,8 @@ syn_cmd_keyword(eap, syncing)
     else
 	EMSG2(_(e_invarg2), arg);
 
-    vim_free(cont_in_list);
-    vim_free(next_list);
+    vim_free(syn_opt_arg.cont_in_list);
+    vim_free(syn_opt_arg.next_list);
     redraw_curbuf_later(NOT_VALID);
     syn_stack_free_all(curbuf);		/* Need to recompute all syntax. */
 }
@@ -4440,29 +4448,31 @@ syn_cmd_match(eap, syncing)
     synpat_T	item;		/* the item found in the line */
     int		syn_id;
     int		idx;
-    int		flags = 0;
+    syn_opt_arg_T syn_opt_arg;
     int		sync_idx = 0;
-    short	*cont_list = NULL;
-    short	*cont_in_list = NULL;
-    short	*next_list = NULL;
 
     /* Isolate the group name, check for validity */
     rest = get_group_name(arg, &group_name_end);
 
     /* Get options before the pattern */
-    rest = get_syn_options(rest, &flags, FALSE,
-	   syncing ? &sync_idx : NULL, &cont_list, &cont_in_list, &next_list);
+    syn_opt_arg.flags = 0;
+    syn_opt_arg.keyword = FALSE;
+    syn_opt_arg.sync_idx = syncing ? &sync_idx : NULL;
+    syn_opt_arg.has_cont_list = TRUE;
+    syn_opt_arg.cont_list = NULL;
+    syn_opt_arg.cont_in_list = NULL;
+    syn_opt_arg.next_list = NULL;
+    rest = get_syn_options(rest, &syn_opt_arg);
 
     /* get the pattern. */
     init_syn_patterns();
     vim_memset(&item, 0, sizeof(item));
     rest = get_syn_pattern(rest, &item);
-    if (vim_regcomp_had_eol() && !(flags & HL_EXCLUDENL))
-	flags |= HL_HAS_EOL;
+    if (vim_regcomp_had_eol() && !(syn_opt_arg.flags & HL_EXCLUDENL))
+	syn_opt_arg.flags |= HL_HAS_EOL;
 
     /* Get options after the pattern */
-    rest = get_syn_options(rest, &flags, FALSE,
-	   syncing ? &sync_idx : NULL, &cont_list, &cont_in_list, &next_list);
+    rest = get_syn_options(rest, &syn_opt_arg);
 
     if (rest != NULL)		/* all arguments are valid */
     {
@@ -4476,7 +4486,7 @@ syn_cmd_match(eap, syncing)
 		&& (syn_id = syn_check_group(arg,
 					   (int)(group_name_end - arg))) != 0)
 	{
-	    syn_incl_toplevel(syn_id, &flags);
+	    syn_incl_toplevel(syn_id, &syn_opt_arg.flags);
 	    /*
 	     * Store the pattern in the syn_items list
 	     */
@@ -4486,20 +4496,21 @@ syn_cmd_match(eap, syncing)
 	    SYN_ITEMS(curbuf)[idx].sp_type = SPTYPE_MATCH;
 	    SYN_ITEMS(curbuf)[idx].sp_syn.id = syn_id;
 	    SYN_ITEMS(curbuf)[idx].sp_syn.inc_tag = current_syn_inc_tag;
-	    SYN_ITEMS(curbuf)[idx].sp_flags = flags;
+	    SYN_ITEMS(curbuf)[idx].sp_flags = syn_opt_arg.flags;
 	    SYN_ITEMS(curbuf)[idx].sp_sync_idx = sync_idx;
-	    SYN_ITEMS(curbuf)[idx].sp_cont_list = cont_list;
-	    SYN_ITEMS(curbuf)[idx].sp_syn.cont_in_list = cont_in_list;
-	    if (cont_in_list != NULL)
+	    SYN_ITEMS(curbuf)[idx].sp_cont_list = syn_opt_arg.cont_list;
+	    SYN_ITEMS(curbuf)[idx].sp_syn.cont_in_list =
+						     syn_opt_arg.cont_in_list;
+	    if (syn_opt_arg.cont_in_list != NULL)
 		curbuf->b_syn_containedin = TRUE;
-	    SYN_ITEMS(curbuf)[idx].sp_next_list = next_list;
+	    SYN_ITEMS(curbuf)[idx].sp_next_list = syn_opt_arg.next_list;
 	    ++curbuf->b_syn_patterns.ga_len;
 
 	    /* remember that we found a match for syncing on */
-	    if (flags & (HL_SYNC_HERE|HL_SYNC_THERE))
+	    if (syn_opt_arg.flags & (HL_SYNC_HERE|HL_SYNC_THERE))
 		curbuf->b_syn_sync_flags |= SF_MATCH;
 #ifdef FEAT_FOLDING
-	    if (flags & HL_FOLD)
+	    if (syn_opt_arg.flags & HL_FOLD)
 		++curbuf->b_syn_folditems;
 #endif
 
@@ -4514,9 +4525,9 @@ syn_cmd_match(eap, syncing)
      */
     vim_free(item.sp_prog);
     vim_free(item.sp_pattern);
-    vim_free(cont_list);
-    vim_free(cont_in_list);
-    vim_free(next_list);
+    vim_free(syn_opt_arg.cont_list);
+    vim_free(syn_opt_arg.cont_in_list);
+    vim_free(syn_opt_arg.next_list);
 
     if (rest == NULL)
 	EMSG2(_(e_invarg2), arg);
@@ -4558,10 +4569,7 @@ syn_cmd_region(eap, syncing)
     int			illegal = FALSE;	/* illegal arguments */
     int			success = FALSE;
     int			idx;
-    int			flags = 0;
-    short		*cont_list = NULL;
-    short		*cont_in_list = NULL;
-    short		*next_list = NULL;
+    syn_opt_arg_T	syn_opt_arg;
 
     /* Isolate the group name, check for validity */
     rest = get_group_name(arg, &group_name_end);
@@ -4572,14 +4580,21 @@ syn_cmd_region(eap, syncing)
 
     init_syn_patterns();
 
+    syn_opt_arg.flags = 0;
+    syn_opt_arg.keyword = FALSE;
+    syn_opt_arg.sync_idx = NULL;
+    syn_opt_arg.has_cont_list = TRUE;
+    syn_opt_arg.cont_list = NULL;
+    syn_opt_arg.cont_in_list = NULL;
+    syn_opt_arg.next_list = NULL;
+
     /*
      * get the options, patterns and matchgroup.
      */
     while (rest != NULL && !ends_excmd(*rest))
     {
 	/* Check for option arguments */
-	rest = get_syn_options(rest, &flags, FALSE, NULL,
-				       &cont_list, &cont_in_list, &next_list);
+	rest = get_syn_options(rest, &syn_opt_arg);
 	if (rest == NULL || ends_excmd(*rest))
 	    break;
 
@@ -4674,7 +4689,7 @@ syn_cmd_region(eap, syncing)
 	    rest = get_syn_pattern(rest, ppp->pp_synp);
 	    reg_do_extmatch = 0;
 	    if (item == ITEM_END && vim_regcomp_had_eol()
-						   && !(flags & HL_EXCLUDENL))
+				       && !(syn_opt_arg.flags & HL_EXCLUDENL))
 		ppp->pp_synp->sp_flags |= HL_HAS_EOL;
 	    ppp->pp_matchgroup_id = matchgroup_id;
 	    ++pat_count;
@@ -4707,7 +4722,7 @@ syn_cmd_region(eap, syncing)
 		&& (syn_id = syn_check_group(arg,
 					   (int)(group_name_end - arg))) != 0)
 	{
-	    syn_incl_toplevel(syn_id, &flags);
+	    syn_incl_toplevel(syn_id, &syn_opt_arg.flags);
 	    /*
 	     * Store the start/skip/end in the syn_items list
 	     */
@@ -4721,24 +4736,26 @@ syn_cmd_region(eap, syncing)
 		    SYN_ITEMS(curbuf)[idx].sp_type =
 			    (item == ITEM_START) ? SPTYPE_START :
 			    (item == ITEM_SKIP) ? SPTYPE_SKIP : SPTYPE_END;
-		    SYN_ITEMS(curbuf)[idx].sp_flags |= flags;
+		    SYN_ITEMS(curbuf)[idx].sp_flags |= syn_opt_arg.flags;
 		    SYN_ITEMS(curbuf)[idx].sp_syn.id = syn_id;
 		    SYN_ITEMS(curbuf)[idx].sp_syn.inc_tag = current_syn_inc_tag;
 		    SYN_ITEMS(curbuf)[idx].sp_syn_match_id =
 							ppp->pp_matchgroup_id;
 		    if (item == ITEM_START)
 		    {
-			SYN_ITEMS(curbuf)[idx].sp_cont_list = cont_list;
+			SYN_ITEMS(curbuf)[idx].sp_cont_list =
+							syn_opt_arg.cont_list;
 			SYN_ITEMS(curbuf)[idx].sp_syn.cont_in_list =
-								 cont_in_list;
-			if (cont_in_list != NULL)
+						     syn_opt_arg.cont_in_list;
+			if (syn_opt_arg.cont_in_list != NULL)
 			    curbuf->b_syn_containedin = TRUE;
-			SYN_ITEMS(curbuf)[idx].sp_next_list = next_list;
+			SYN_ITEMS(curbuf)[idx].sp_next_list =
+							syn_opt_arg.next_list;
 		    }
 		    ++curbuf->b_syn_patterns.ga_len;
 		    ++idx;
 #ifdef FEAT_FOLDING
-		    if (flags & HL_FOLD)
+		    if (syn_opt_arg.flags & HL_FOLD)
 			++curbuf->b_syn_folditems;
 #endif
 		}
@@ -4768,9 +4785,9 @@ syn_cmd_region(eap, syncing)
 
     if (!success)
     {
-	vim_free(cont_list);
-	vim_free(cont_in_list);
-	vim_free(next_list);
+	vim_free(syn_opt_arg.cont_list);
+	vim_free(syn_opt_arg.cont_in_list);
+	vim_free(syn_opt_arg.next_list);
 	if (not_enough)
 	    EMSG2(_("E399: Not enough arguments: syntax region %s"), arg);
 	else if (illegal || rest == NULL)

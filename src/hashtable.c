@@ -31,7 +31,7 @@
 
 #if defined(FEAT_EVAL) || defined(FEAT_SYN_HL) || defined(PROTO)
 
-#if 1
+#if 0
 # define HT_DEBUG	/* extra checks for table consistency */
 #endif
 
@@ -360,7 +360,7 @@ hash_may_resize(ht)
     newmask = newsize - 1;
     todo = ht->ht_used;
     for (olditem = oldarray; todo > 0; ++olditem)
-	if (olditem->hi_key != NULL && olditem->hi_key != HI_KEY_REMOVED)
+	if (!HASHITEM_EMPTY(olditem))
 	{
 	    /*
 	     * The algorithm to find the spot to add the item is identical to
