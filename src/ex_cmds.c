@@ -3383,8 +3383,8 @@ ex_z(eap)
 	    break;
 
 	case '=':
-	    start = lnum - bigness / 2 + 1;
-	    end = lnum + bigness / 2 - 1;
+	    start = lnum - (bigness + 1) / 2 + 1;
+	    end = lnum + (bigness + 1) / 2 - 1;
 	    curs = lnum;
 	    minus = 1;
 	    break;
@@ -3396,8 +3396,8 @@ ex_z(eap)
 	    break;
 
 	case '.':
-	    start = lnum - bigness / 2;
-	    end = lnum + bigness / 2;
+	    start = lnum - (bigness + 1) / 2 + 1;
+	    end = lnum + (bigness + 1) / 2 - 1;
 	    curs = end;
 	    break;
 

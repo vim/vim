@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Feb 01
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Feb 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -241,8 +241,10 @@ New functions: ~
 |keys()|		get List of Dictionary keys
 |len()|			number of items in a List or Dictionary
 |map()|			change each List or Dictionary item
+|matchlist()|		list with match and submatches of a pattern in a string
 |max()|			maximum value in a List or Dictionary
 |min()|			minimum value in a List or Dictionary
+|readfile()|		read a file into a list of lines
 |remove()|		remove one or more items from a List or Dictionary
 |repeat()| 		Repeat "expr" "count" times.  (Christophe Poucet)
 |reverse()|		reverse the order of a List
@@ -252,6 +254,7 @@ New functions: ~
 |system()|		Filters {input} through a shell command.
 |tr()|			Translate characters. (Ron Aaron)
 |values()|		get List of Dictionary values
+|writefile()|		write a list of lines into a file
 
 
 New autocommand events: ~
@@ -723,5 +726,13 @@ When 'paste' is set in the GUI the Paste toolbar button doesn't work.  Clear
 'paste' when starting the GUI.
 
 A message about a wrong viminfo line included the trailing NL.
+
+When 'paste' is set in the GUI the toolbar button doesn't work in Insert mode.
+Use ":exe" in menu.vim to avoid duplicating the commands, instead of using a
+mapping.
+
+Treat "mlterm" as an xterm-like terminal. (Seiichi Sato)
+
+":z.4" and ":z=4" didn't work Vi compatible.
 
  vim:tw=78:ts=8:ft=help:norl:

@@ -2469,7 +2469,7 @@ mainerr(n, str)
 #endif
 
     mch_errmsg(longVersion);
-    mch_errmsg("\r\n");
+    mch_errmsg("\n");
     mch_errmsg(_(main_errors[n]));
     if (str != NULL)
     {
@@ -2477,7 +2477,7 @@ mainerr(n, str)
 	mch_errmsg((char *)str);
 	mch_errmsg("\"");
     }
-    mch_errmsg(_("\nMore info with: \"vim -h\"\r\n"));
+    mch_errmsg(_("\nMore info with: \"vim -h\"\n"));
 
     mch_exit(1);
 }

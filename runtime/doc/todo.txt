@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Feb 02
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Feb 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,21 +30,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Sanity check of eval.c:
-- Check use of v_type for VAR_FUNC, VAR_LIST ad VAR_DICT.
-- Go through the code for magic braces.
-- Check list watchers.
-
-Mention rsync command on runtime.php page:
-    rsync -avzcP --delete --exclude="dos" --delete-excluded ftp.nluug.nl::Vim/runtime/ vim63-runtime
-
-When 'paste' is set in the GUI the toolbar button doesn't work in Insert mode.
-Use ":exe" in menu.vim to avoid duplicating the commands, instead of using a
-mapping.
-
-Better way to get temp file for tcltags and vimspell scripts. (javier Pena)
-Possibly leave out code for temp directory.
-
 patch for QuickFixCmdPre and QuickFixCmdPost autocommands. (Ciaran McCreesh,
 2005 Jan 1)
 
@@ -53,6 +38,7 @@ of the text area doesn't cause a horizontal scroll. (Dave Ewart)
 
 New Motif toolbar button from Marcin Dalecki:
 - add remark in version7.txt
+- after ":colors default" all the toolbar icons are the same.
 - check if it works for pixmap loaded from a file.
 
 Explain Lists, Dicts, |:for| etc. in the user manual |usr_41.txt|.
@@ -60,10 +46,6 @@ Add more tests for all List and Dict related functionality.
 
 Awaiting response:
 -   Patch for mch_FullName() also in Vim 6.3?  os_mswin.c
--   Win32: "gvim -V100" should use dialog with scrollbar.  Using
-    gui_mch_dialog() would be good, but need to move display_errors() to after
-    creating the window, so that s_hwnd is valid.
-    How to add a scrollbar to the dialog?
 -   Win32: tearoff menu window should have a scrollbar when it's taller than
     the screen.
 
@@ -74,7 +56,8 @@ PLANNED FOR VERSION 7.0:
 	+ can include NUL characters
 	- setline() will have problems with NL vs NUL.
     Can use list of numbers instead (inefficient though).
-    Also: for strings up to 3 bytes don't allocate memory, VAR_STRINGX.
+    Also: for strings up to 3 bytes don't allocate memory, use v_list itself
+    as a character array?
 -   new DATA TYPES:
 	- None?  (or use empty string?)
     See ~/vim/ideas.txt.
