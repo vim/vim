@@ -2625,7 +2625,12 @@ set_context_for_expression(xp, arg, cmdidx)
 					 ? EXPAND_EXPRESSION : EXPAND_NOTHING;
 	    }
 	    else if (c != ' ')
+	    {
 		xp->xp_context = EXPAND_SETTINGS;
+		if ((c == 'l' || c == 'g') && xp->xp_pattern[2] == ':')
+		    xp->xp_pattern += 2;
+
+	    }
 	}
 	else if (c == '$')
 	{

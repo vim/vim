@@ -105,4 +105,4 @@ fi
 
 exit $errstatus
 
-# vim: set sw=3 :
+# vim: set sw=3 sts=3 :
