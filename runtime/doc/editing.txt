@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.0aa.  Last change: 2004 Oct 09
+*editing.txt*   For Vim version 7.0aa.  Last change: 2004 Oct 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1032,7 +1032,10 @@ Note: When the 'write' option is off, you are not able to write any file.
 			executed like with ":!{cmd}", any '!' is replaced with
 			the previous command |:!|.
 
-The default [range] for the ":w" command is the whole buffer (1,$).
+The default [range] for the ":w" command is the whole buffer (1,$).  If you
+write the whole buffer, it is no longer considered changed.  Also when you
+write it to a different file with ":w somefile"!
+
 If a file name is given with ":w" it becomes the alternate file.  This can be
 used, for example, when the write fails and you want to try again later with
 ":w #".  This can be switched off by removing the 'A' flag from the
