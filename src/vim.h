@@ -1622,7 +1622,11 @@ typedef int VimClipboard;	/* This is required for the prototypes. */
 #endif
 
 #ifdef FEAT_PROFILE
+# ifdef WIN3264
+typedef LARGE_INTEGER proftime_T;
+# else
 typedef struct timeval proftime_T;
+# endif
 #else
 typedef int proftime_T;	    /* dummy for function prototypes */
 #endif
