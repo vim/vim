@@ -683,7 +683,7 @@ mch_nodetype(name)
 mch_early_init()
 {
     /* Turn off all the horrible filename munging in UnixLib. */
-    __riscosify_control = __RISCOSIFY_NO_PROCESS;
+    int __riscosify_control = __RISCOSIFY_NO_PROCESS;
 }
 
     void
@@ -755,7 +755,7 @@ mch_setmouse(on)
 mch_screenmode(arg)
     char_u   *arg;
 {
-    EMSG(_(e_screnmode));
+    EMSG(_(e_screenmode));
     return FAIL;
 }
 
