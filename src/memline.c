@@ -609,6 +609,7 @@ ml_close(buf, del_file)
  * Close all existing memlines and memfiles.
  * Only used when exiting.
  * When 'del_file' is TRUE, delete the memfiles.
+ * But don't delete files that were ":preserve"d when we are POSIX compatible.
  */
     void
 ml_close_all(del_file)
@@ -617,7 +618,8 @@ ml_close_all(del_file)
     buf_T	*buf;
 
     for (buf = firstbuf; buf != NULL; buf = buf->b_next)
-	ml_close(buf, del_file);
+	ml_close(buf, del_file && ((buf->b_flags & BF_PRESERVED) == 0
+				 || vim_strchr(p_cpo, CPO_PRESERVE) == NULL));
 #ifdef TEMPDIRNAMES
     vim_deltempdir();	    /* delete created temp directory */
 #endif

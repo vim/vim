@@ -335,10 +335,10 @@ static int list_append_tv __ARGS((list_T *l, typval_T *tv));
 static int list_insert_tv __ARGS((list_T *l, typval_T *tv, listitem_T *item));
 static int list_extend __ARGS((list_T	*l1, list_T *l2, listitem_T *bef));
 static int list_concat __ARGS((list_T *l1, list_T *l2, typval_T *tv));
-static list_T *list_copy __ARGS((list_T *orig, int deep));
+static list_T *list_copy __ARGS((list_T *orig, int deep, int copyID));
 static void list_remove __ARGS((list_T *l, listitem_T *item, listitem_T *item2));
 static char_u *list2string __ARGS((typval_T *tv));
-static void list_join __ARGS((garray_T *gap, list_T *l, char_u *sep, int echo));
+static int list_join __ARGS((garray_T *gap, list_T *l, char_u *sep, int echo));
 
 static dict_T *dict_alloc __ARGS((void));
 static void dict_unref __ARGS((dict_T *d));
@@ -347,6 +347,7 @@ static dictitem_T *dictitem_alloc __ARGS((char_u *key));
 static dictitem_T *dictitem_copy __ARGS((dictitem_T *org));
 static void dictitem_remove __ARGS((dict_T *dict, dictitem_T *item));
 static void dictitem_free __ARGS((dictitem_T *item));
+static dict_T *dict_copy __ARGS((dict_T *orig, int deep, int copyID));
 static int dict_add __ARGS((dict_T *d, dictitem_T *item));
 static long dict_len __ARGS((dict_T *d));
 static dictitem_T *dict_find __ARGS((dict_T *d, char_u *key, int len));
@@ -361,6 +362,7 @@ static int find_internal_func __ARGS((char_u *name));
 static char_u *deref_func_name __ARGS((char_u *name, int *lenp));
 static int get_func_tv __ARGS((char_u *name, int len, typval_T *rettv, char_u **arg, linenr_T firstline, linenr_T lastline, int *doesrange, int evaluate, dict_T *selfdict));
 static int call_func __ARGS((char_u *name, int len, typval_T *rettv, int argcount, typval_T *argvars, linenr_T firstline, linenr_T lastline, int *doesrange, int evaluate, dict_T *selfdict));
+static void emsg_funcname __ARGS((char *msg, char_u *name));
 
 static void f_add __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_append __ARGS((typval_T *argvars, typval_T *rettv));
@@ -562,7 +564,7 @@ static void set_var __ARGS((char_u *name, typval_T *varp, int copy));
 static int var_check_ro __ARGS((int flags, char_u *name));
 static int tv_check_lock __ARGS((int lock, char_u *name));
 static void copy_tv __ARGS((typval_T *from, typval_T *to));
-static void item_copy __ARGS((typval_T *from, typval_T *to, int deep));
+static int item_copy __ARGS((typval_T *from, typval_T *to, int deep, int copyID));
 static char_u *find_option_end __ARGS((char_u **arg, int *opt_flags));
 static char_u *trans_function_name __ARGS((char_u **pp, int skip, int flags, funcdict_T *fd));
 static int eval_fname_script __ARGS((char_u *p));
@@ -2497,10 +2499,7 @@ ex_call(eap)
 
     if (*startarg != '(')
     {
-	if (*name == K_SPECIAL)
-	    EMSG2(_("E107: Missing braces: <SNR>%s"), name + 3);
-	else
-	    EMSG2(_("E107: Missing braces: %s"), name);
+	EMSG2(_("E107: Missing braces: %s"), eap->arg);
 	goto end;
     }
 
@@ -4961,7 +4960,7 @@ list_concat(l1, l2, tv)
     list_T	*l;
 
     /* make a copy of the first list. */
-    l = list_copy(l1, FALSE);
+    l = list_copy(l1, FALSE, 0);
     if (l == NULL)
 	return FAIL;
     tv->v_type = VAR_LIST;
@@ -4974,12 +4973,14 @@ list_concat(l1, l2, tv)
 /*
  * Make a copy of list "orig".  Shallow if "deep" is FALSE.
  * The refcount of the new list is set to 1.
+ * See item_copy() for "copyID".
  * Returns NULL when out of memory.
  */
     static list_T *
-list_copy(orig, deep)
+list_copy(orig, deep, copyID)
     list_T	*orig;
     int		deep;
+    int		copyID;
 {
     list_T	*copy;
     listitem_T	*item;
@@ -4991,18 +4992,37 @@ list_copy(orig, deep)
     copy = list_alloc();
     if (copy != NULL)
     {
-	for (item = orig->lv_first; item != NULL; item = item->li_next)
+	if (copyID != 0)
+	{
+	    /* Do this before adding the items, because one of the items may
+	     * refer back to this list. */
+	    orig->lv_copyID = copyID;
+	    orig->lv_copylist = copy;
+	}
+	for (item = orig->lv_first; item != NULL && !got_int;
+							 item = item->li_next)
 	{
 	    ni = listitem_alloc();
 	    if (ni == NULL)
 		break;
 	    if (deep)
-		item_copy(&item->li_tv, &ni->li_tv, deep);
+	    {
+		if (item_copy(&item->li_tv, &ni->li_tv, deep, copyID) == FAIL)
+		{
+		    vim_free(ni);
+		    break;
+		}
+	    }
 	    else
 		copy_tv(&item->li_tv, &ni->li_tv);
 	    list_append(copy, ni);
 	}
 	++copy->lv_refcount;
+	if (item != NULL)
+	{
+	    list_unref(copy);
+	    copy = NULL;
+	}
     }
 
     return copy;
@@ -5054,7 +5074,11 @@ list2string(tv)
 	return NULL;
     ga_init2(&ga, (int)sizeof(char), 80);
     ga_append(&ga, '[');
-    list_join(&ga, tv->vval.v_list, (char_u *)", ", FALSE);
+    if (list_join(&ga, tv->vval.v_list, (char_u *)", ", FALSE) == FAIL)
+    {
+	vim_free(ga.ga_data);
+	return NULL;
+    }
     ga_append(&ga, ']');
     ga_append(&ga, NUL);
     return (char_u *)ga.ga_data;
@@ -5063,8 +5087,9 @@ list2string(tv)
 /*
  * Join list "l" into a string in "*gap", using separator "sep".
  * When "echo" is TRUE use String as echoed, otherwise as inside a List.
+ * Return FAIL or OK.
  */
-    static void
+    static int
 list_join(gap, l, sep, echo)
     garray_T	*gap;
     list_T	*l;
@@ -5077,7 +5102,7 @@ list_join(gap, l, sep, echo)
     listitem_T	*item;
     char_u	*s;
 
-    for (item = l->lv_first; item != NULL; item = item->li_next)
+    for (item = l->lv_first; item != NULL && !got_int; item = item->li_next)
     {
 	if (first)
 	    first = FALSE;
@@ -5091,7 +5116,10 @@ list_join(gap, l, sep, echo)
 	if (s != NULL)
 	    ga_concat(gap, s);
 	vim_free(tofree);
+	if (s == NULL)
+	    return FAIL;
     }
+    return OK;
 }
 
 /*
@@ -5108,6 +5136,7 @@ dict_alloc()
 	hash_init(&d->dv_hashtab);
 	d->dv_lock = 0;
 	d->dv_refcount = 0;
+	d->dv_copyID = 0;
     }
     return d;
 }
@@ -5222,12 +5251,14 @@ dictitem_free(item)
 /*
  * Make a copy of dict "d".  Shallow if "deep" is FALSE.
  * The refcount of the new dict is set to 1.
+ * See item_copy() for "copyID".
  * Returns NULL when out of memory.
  */
     static dict_T *
-dict_copy(orig, deep)
+dict_copy(orig, deep, copyID)
     dict_T	*orig;
     int		deep;
+    int		copyID;
 {
     dict_T	*copy;
     dictitem_T	*di;
@@ -5240,8 +5271,13 @@ dict_copy(orig, deep)
     copy = dict_alloc();
     if (copy != NULL)
     {
+	if (copyID != 0)
+	{
+	    orig->dv_copyID = copyID;
+	    orig->dv_copydict = copy;
+	}
 	todo = orig->dv_hashtab.ht_used;
-	for (hi = orig->dv_hashtab.ht_array; todo > 0; ++hi)
+	for (hi = orig->dv_hashtab.ht_array; todo > 0 && !got_int; ++hi)
 	{
 	    if (!HASHITEM_EMPTY(hi))
 	    {
@@ -5251,7 +5287,14 @@ dict_copy(orig, deep)
 		if (di == NULL)
 		    break;
 		if (deep)
-		    item_copy(&HI2DI(hi)->di_tv, &di->di_tv, deep);
+		{
+		    if (item_copy(&HI2DI(hi)->di_tv, &di->di_tv, deep,
+							      copyID) == FAIL)
+		    {
+			vim_free(di);
+			break;
+		    }
+		}
 		else
 		    copy_tv(&HI2DI(hi)->di_tv, &di->di_tv);
 		if (dict_add(copy, di) == FAIL)
@@ -5263,6 +5306,11 @@ dict_copy(orig, deep)
 	}
 
 	++copy->dv_refcount;
+	if (todo > 0)
+	{
+	    dict_unref(copy);
+	    copy = NULL;
+	}
     }
 
     return copy;
@@ -5355,7 +5403,7 @@ dict2string(tv)
     ga_append(&ga, '{');
 
     todo = d->dv_hashtab.ht_used;
-    for (hi = d->dv_hashtab.ht_array; todo > 0; ++hi)
+    for (hi = d->dv_hashtab.ht_array; todo > 0 && !got_int; ++hi)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{
@@ -5377,7 +5425,14 @@ dict2string(tv)
 	    if (s != NULL)
 		ga_concat(&ga, s);
 	    vim_free(tofree);
+	    if (s == NULL)
+		break;
 	}
+    }
+    if (todo > 0)
+    {
+	vim_free(ga.ga_data);
+	return NULL;
     }
 
     ga_append(&ga, '}');
@@ -5721,7 +5776,7 @@ static struct fst
     {"count",		2, 4, f_count},
     {"cscope_connection",0,3, f_cscope_connection},
     {"cursor",		2, 2, f_cursor},
-    {"deepcopy",	1, 1, f_deepcopy},
+    {"deepcopy",	1, 2, f_deepcopy},
     {"delete",		1, 1, f_delete},
     {"did_filetype",	0, 0, f_did_filetype},
     {"diff_filler",	1, 1, f_diff_filler},
@@ -6043,9 +6098,9 @@ get_func_tv(name, len, rettv, arg, firstline, lastline, doesrange,
     else if (!aborting())
     {
 	if (argcount == MAX_FUNC_ARGS)
-	    EMSG2(_("E740: Too many arguments for function %s"), name);
+	    emsg_funcname("E740: Too many arguments for function %s", name);
 	else
-	    EMSG2(_("E116: Invalid arguments for function %s"), name);
+	    emsg_funcname("E116: Invalid arguments for function %s", name);
     }
 
     while (--argcount >= 0)
@@ -6247,21 +6302,21 @@ call_func(name, len, rettv, argcount, argvars, firstline, lastline,
 	switch (error)
 	{
 	    case ERROR_UNKNOWN:
-		    EMSG2(_("E117: Unknown function: %s"), name);
+		    emsg_funcname("E117: Unknown function: %s", name);
 		    break;
 	    case ERROR_TOOMANY:
-		    EMSG2(_(e_toomanyarg), name);
+		    emsg_funcname(e_toomanyarg, name);
 		    break;
 	    case ERROR_TOOFEW:
-		    EMSG2(_("E119: Not enough arguments for function: %s"),
+		    emsg_funcname("E119: Not enough arguments for function: %s",
 									name);
 		    break;
 	    case ERROR_SCRIPT:
-		    EMSG2(_("E120: Using <SID> not in a script context: %s"),
+		    emsg_funcname("E120: Using <SID> not in a script context: %s",
 									name);
 		    break;
 	    case ERROR_DICT:
-		    EMSG2(_("E725: Calling dict function without Dictionary: %s"),
+		    emsg_funcname("E725: Calling dict function without Dictionary: %s",
 									name);
 		    break;
 	}
@@ -6272,6 +6327,25 @@ call_func(name, len, rettv, argcount, argvars, firstline, lastline,
 	vim_free(fname);
 
     return ret;
+}
+
+/*
+ * Give an error message with a function name.  Handle <SNR> things.
+ */
+    static void
+emsg_funcname(msg, name)
+    char	*msg;
+    char_u	*name;
+{
+    char_u	*p;
+
+    if (*name == K_SPECIAL)
+	p = concat_str((char_u *)"<SNR>", name + 3);
+    else
+	p = name;
+    EMSG2(_(msg), p);
+    if (p != name)
+	vim_free(p);
 }
 
 /*********************************************
@@ -6906,7 +6980,7 @@ f_copy(argvars, rettv)
     typval_T	*argvars;
     typval_T	*rettv;
 {
-    item_copy(&argvars[0], rettv, FALSE);
+    item_copy(&argvars[0], rettv, FALSE, 0);
 }
 
 /*
@@ -7052,7 +7126,15 @@ f_deepcopy(argvars, rettv)
     typval_T	*argvars;
     typval_T	*rettv;
 {
-    item_copy(&argvars[0], rettv, TRUE);
+    static int copyID = 0;
+    int		noref = 0;
+
+    if (argvars[1].v_type != VAR_UNKNOWN)
+	noref = get_tv_number(&argvars[1]);
+    if (noref < 0 || noref > 1)
+	EMSG(_(e_invarg));
+    else
+	item_copy(&argvars[0], rettv, TRUE, noref == 0 ? ++copyID : 0);
 }
 
 /*
@@ -10200,7 +10282,7 @@ find_some_match(argvars, rettv, type)
     char_u	*save_cpo;
     long	start = 0;
     long	nth = 1;
-    int		match;
+    int		match = 0;
     list_T	*l = NULL;
     listitem_T	*li = NULL;
     long	idx = 0;
@@ -10275,6 +10357,8 @@ find_some_match(argvars, rettv, type)
 		}
 		vim_free(tofree);
 		str = echo_string(&li->li_tv, &tofree, strbuf);
+		if (str == NULL)
+		    break;
 	    }
 
 	    match = vim_regexec_nl(&regmatch, str, (colnr_T)0);
@@ -11394,7 +11478,7 @@ f_reverse(argvars, rettv)
 	    && !tv_check_lock(l->lv_lock, (char_u *)"reverse()"))
     {
 	li = l->lv_last;
-	l->lv_first = l->lv_last = li;
+	l->lv_first = l->lv_last = NULL;
 	l->lv_len = 0;
 	while (li != NULL)
 	{
@@ -14338,7 +14422,8 @@ set_var(name, tv, copy)
 	}
 	if (function_exists(name))
 	{
-	    EMSG2(_("705: Variable name conflicts with existing function: %s"), name);
+	    EMSG2(_("705: Variable name conflicts with existing function: %s"),
+									name);
 	    return;
 	}
     }
@@ -14520,19 +14605,24 @@ copy_tv(from, to)
 /*
  * Make a copy of an item.
  * Lists and Dictionaries are also copied.  A deep copy if "deep" is set.
+ * For deepcopy() "copyID" is zero for a full copy or the ID for when a
+ * reference to an already copied list/dict can be used.
+ * Returns FAIL or OK.
  */
-    static void
-item_copy(from, to, deep)
+    static int
+item_copy(from, to, deep, copyID)
     typval_T	*from;
     typval_T	*to;
     int		deep;
+    int		copyID;
 {
     static int	recurse = 0;
+    int		ret = OK;
 
     if (recurse >= DICT_MAXNEST)
     {
 	EMSG(_("E698: variable nested too deep for making a copy"));
-	return;
+	return FAIL;
     }
     ++recurse;
 
@@ -14546,17 +14636,41 @@ item_copy(from, to, deep)
 	case VAR_LIST:
 	    to->v_type = VAR_LIST;
 	    to->v_lock = 0;
-	    to->vval.v_list = list_copy(from->vval.v_list, deep);
+	    if (from->vval.v_list == NULL)
+		to->vval.v_list = NULL;
+	    else if (copyID != 0 && from->vval.v_list->lv_copyID == copyID)
+	    {
+		/* use the copy made earlier */
+		to->vval.v_list = from->vval.v_list->lv_copylist;
+		++to->vval.v_list->lv_refcount;
+	    }
+	    else
+		to->vval.v_list = list_copy(from->vval.v_list, deep, copyID);
+	    if (to->vval.v_list == NULL)
+		ret = FAIL;
 	    break;
 	case VAR_DICT:
 	    to->v_type = VAR_DICT;
 	    to->v_lock = 0;
-	    to->vval.v_dict = dict_copy(from->vval.v_dict, deep);
+	    if (from->vval.v_dict == NULL)
+		to->vval.v_dict = NULL;
+	    else if (copyID != 0 && from->vval.v_dict->dv_copyID == copyID)
+	    {
+		/* use the copy made earlier */
+		to->vval.v_dict = from->vval.v_dict->dv_copydict;
+		++to->vval.v_dict->dv_refcount;
+	    }
+	    else
+		to->vval.v_dict = dict_copy(from->vval.v_dict, deep, copyID);
+	    if (to->vval.v_dict == NULL)
+		ret = FAIL;
 	    break;
 	default:
 	    EMSG2(_(e_intern2), "item_copy()");
+	    ret = FAIL;
     }
     --recurse;
+    return ret;
 }
 
 /*
@@ -14604,31 +14718,34 @@ ex_echo(eap)
 	    }
 	    else if (eap->cmdidx == CMD_echo)
 		msg_puts_attr((char_u *)" ", echo_attr);
-	    for (p = echo_string(&rettv, &tofree, numbuf);
-						   *p != NUL && !got_int; ++p)
-		if (*p == '\n' || *p == '\r' || *p == TAB)
+	    p = echo_string(&rettv, &tofree, numbuf);
+	    if (p != NULL)
+		for ( ; *p != NUL && !got_int; ++p)
 		{
-		    if (*p != TAB && needclr)
+		    if (*p == '\n' || *p == '\r' || *p == TAB)
 		    {
-			/* remove any text still there from the command */
-			msg_clr_eos();
-			needclr = FALSE;
-		    }
-		    msg_putchar_attr(*p, echo_attr);
-		}
-		else
-		{
-#ifdef FEAT_MBYTE
-		    if (has_mbyte)
-		    {
-			int i = (*mb_ptr2len_check)(p);
-
-			(void)msg_outtrans_len_attr(p, i, echo_attr);
-			p += i - 1;
+			if (*p != TAB && needclr)
+			{
+			    /* remove any text still there from the command */
+			    msg_clr_eos();
+			    needclr = FALSE;
+			}
+			msg_putchar_attr(*p, echo_attr);
 		    }
 		    else
+		    {
+#ifdef FEAT_MBYTE
+			if (has_mbyte)
+			{
+			    int i = (*mb_ptr2len_check)(p);
+
+			    (void)msg_outtrans_len_attr(p, i, echo_attr);
+			    p += i - 1;
+			}
+			else
 #endif
-			(void)msg_outtrans_len_attr(p, 1, echo_attr);
+			    (void)msg_outtrans_len_attr(p, 1, echo_attr);
+		    }
 		}
 	    vim_free(tofree);
 	}
@@ -14906,7 +15023,7 @@ ex_function(eap)
 		}
 	    }
 	    else
-		EMSG2(_("E123: Undefined function: %s"), name);
+		emsg_funcname("E123: Undefined function: %s", name);
 	}
 	goto ret_free;
     }
@@ -15019,7 +15136,7 @@ ex_function(eap)
 	    if (fudi.fd_dict != NULL && fudi.fd_newkey == NULL)
 		EMSG(_(e_funcdict));
 	    else if (name != NULL && find_func(name) != NULL)
-		EMSG2(_(e_funcexts), name);
+		emsg_funcname(e_funcexts, name);
 	}
 
 	msg_putchar('\n');	    /* don't overwrite the function name */
@@ -15146,7 +15263,8 @@ ex_function(eap)
 	v = find_var(name, NULL);
 	if (v != NULL && v->di_tv.v_type == VAR_FUNC)
 	{
-	    EMSG2(_("E707: Function name conflicts with variable: %s"), name);
+	    emsg_funcname("E707: Function name conflicts with variable: %s",
+									name);
 	    goto erret;
 	}
 
@@ -15155,12 +15273,12 @@ ex_function(eap)
 	{
 	    if (!eap->forceit)
 	    {
-		EMSG2(_(e_funcexts), name);
+		emsg_funcname(e_funcexts, name);
 		goto erret;
 	    }
 	    if (fp->calls > 0)
 	    {
-		EMSG2(_("E127: Cannot redefine function %s: It is in use"),
+		emsg_funcname("E127: Cannot redefine function %s: It is in use",
 									name);
 		goto erret;
 	    }
@@ -16192,14 +16310,14 @@ discard_pending_return(rettv)
 get_return_cmd(rettv)
     void	*rettv;
 {
-    char_u	*s;
+    char_u	*s = NULL;
     char_u	*tofree = NULL;
     char_u	numbuf[NUMBUFLEN];
 
-    if (rettv == NULL)
-	s = (char_u *)"";
-    else
+    if (rettv != NULL)
 	s = echo_string((typval_T *)rettv, &tofree, numbuf);
+    if (s == NULL)
+	s = (char_u *)"";
 
     STRCPY(IObuff, ":return ");
     STRNCPY(IObuff + 8, s, IOSIZE - 8);
@@ -16368,6 +16486,7 @@ write_viminfo_varlist(fp)
     dictitem_T	*this_var;
     int		todo;
     char	*s;
+    char_u	*p;
     char_u	*tofree;
     char_u	numbuf[NUMBUFLEN];
 
@@ -16392,8 +16511,9 @@ write_viminfo_varlist(fp)
 		    default: continue;
 		}
 		fprintf(fp, "!%s\t%s\t", this_var->di_key, s);
-		viminfo_writestring(fp, echo_string(&this_var->di_tv,
-							    &tofree, numbuf));
+		p = echo_string(&this_var->di_tv, &tofree, numbuf);
+		if (p != NULL)
+		    viminfo_writestring(fp, p);
 		vim_free(tofree);
 	    }
 	}

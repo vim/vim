@@ -3250,32 +3250,57 @@ ex_append(eap)
     char_u	*theline;
     int		did_undo = FALSE;
     linenr_T	lnum = eap->line2;
+    int		indent = 0;
+    char_u	*p;
+    int		vcol;
+    int		empty = (curbuf->b_ml.ml_flags & ML_EMPTY);
 
     if (eap->cmdidx != CMD_append)
 	--lnum;
 
+    /* when the buffer is empty append to line 0 and delete the dummy line */
+    if (empty && lnum == 1)
+	lnum = 0;
+
     State = INSERT;		    /* behave like in Insert mode */
     if (curbuf->b_p_iminsert == B_IMODE_LMAP)
 	State |= LANGMAP;
+
     while (1)
     {
 	msg_scroll = TRUE;
 	need_wait_return = FALSE;
+	if (curbuf->b_p_ai && lnum > 0)
+	    indent = get_indent_lnum(lnum);
 	if (eap->getline == NULL)
 	    theline = getcmdline(
 #ifdef FEAT_EVAL
 		    eap->cstack->cs_looplevel > 0 ? -1 :
 #endif
-		    NUL, 0L, 0);
+		    NUL, 0L, indent);
 	else
 	    theline = eap->getline(
 #ifdef FEAT_EVAL
 		    eap->cstack->cs_looplevel > 0 ? -1 :
 #endif
-		    NUL, eap->cookie, 0);
+		    NUL, eap->cookie, indent);
 	lines_left = Rows - 1;
-	if (theline == NULL || (theline[0] == '.' && theline[1] == NUL)
-		|| (!did_undo && u_save(lnum, lnum + 1) == FAIL))
+	if (theline == NULL)
+	    break;
+
+	/* Look for the "." after automatic indent. */
+	vcol = 0;
+	for (p = theline; indent > vcol; ++p)
+	{
+	    if (*p == ' ')
+		++vcol;
+	    else if (*p == TAB)
+		vcol += 8 - vcol % 8;
+	    else
+		break;
+	}
+	if ((p[0] == '.' && p[1] == NUL)
+			     || (!did_undo && u_save(lnum, lnum + 1) == FAIL))
 	{
 	    vim_free(theline);
 	    break;
@@ -3288,6 +3313,12 @@ ex_append(eap)
 	vim_free(theline);
 	++lnum;
 	msg_didout = TRUE;	/* also scroll for empty line */
+
+	if (empty)
+	{
+	    ml_delete(2L, FALSE);
+	    empty = FALSE;
+	}
     }
     State = NORMAL;
 
@@ -3341,14 +3372,22 @@ ex_z(eap)
     exarg_T	*eap;
 {
     char_u	*x;
-    int		bigness = curwin->w_height - 3;
-    char_u	kind;
+    int		bigness;
+    char_u	*kind;
     int		numbered = FALSE;
     int		minus = 0;
     linenr_T	start, end, curs, i;
     int		j;
     linenr_T	lnum = eap->line2;
 
+    /* Vi compatible: ":z!" uses display height, without a count uses
+     * 'scroll' */
+    if (eap->forceit)
+	bigness = curwin->w_height;
+    else if (firstwin == lastwin)
+	bigness = curwin->w_p_scr * 2;
+    else
+	bigness = curwin->w_height - 3;
     if (bigness < 1)
 	bigness = 1;
 
@@ -3359,8 +3398,11 @@ ex_z(eap)
 	++x;
     }
 
-    kind = *x;
-    if (kind == '-' || kind == '+' || kind == '=' || kind == '^' || kind == '.')
+    kind = x;
+    if (*kind == '-' || *kind == '+' || *kind == '='
+					      || *kind == '^' || *kind == '.')
+	++x;
+    while (*x == '-' || *x == '+')
 	++x;
 
     if (*x != 0)
@@ -3371,15 +3413,23 @@ ex_z(eap)
 	    return;
 	}
 	else
+	{
 	    bigness = atoi((char *)x);
+	    p_window = bigness;
+	}
     }
 
-    switch (kind)
+    /* the number of '-' and '+' multiplies the distance */
+    if (*kind == '-' || *kind == '+')
+	for (x = kind + 1; *x == *kind; ++x)
+	    ;
+
+    switch (*kind)
     {
 	case '-':
-	    start = lnum - bigness;
-	    end = lnum;
-	    curs = lnum;
+	    start = lnum - bigness * (x - kind);
+	    end = start + bigness;
+	    curs = end;
 	    break;
 
 	case '=':
@@ -3403,7 +3453,9 @@ ex_z(eap)
 
 	default:  /* '+' */
 	    start = lnum;
-	    end = lnum + bigness;
+	    if (*kind == '+')
+		start += bigness * (x - kind - 1);
+	    end = start + bigness;
 	    curs = end;
 	    break;
     }
@@ -3526,15 +3578,15 @@ do_sub(eap)
     int		which_pat;
     char_u	*cmd;
     int		save_State;
-    linenr_T	first_line = 0;	/* first changed line */
-    linenr_T	last_line= 0;	/* below last changed line AFTER the
+    linenr_T	first_line = 0;		/* first changed line */
+    linenr_T	last_line= 0;		/* below last changed line AFTER the
 					 * change */
     linenr_T	old_line_count = curbuf->b_ml.ml_line_count;
     linenr_T	line2;
-    long	nmatch;		/* number of lines in match */
-    linenr_T	sub_firstlnum;	/* nr of first sub line */
-    char_u	*sub_firstline;	/* allocated copy of first sub line */
-    int		endcolumn;	/* put cursor in last column when done */
+    long	nmatch;			/* number of lines in match */
+    linenr_T	sub_firstlnum;		/* nr of first sub line */
+    char_u	*sub_firstline;		/* allocated copy of first sub line */
+    int		endcolumn = FALSE;	/* cursor in last column when done */
 
     cmd = eap->arg;
     if (!global_busy)
