@@ -3955,6 +3955,7 @@ abel.vim	syntax.txt	/*abel.vim*
 active-buffer	windows.txt	/*active-buffer*
 ada-syntax	syntax.txt	/*ada-syntax*
 ada.vim	syntax.txt	/*ada.vim*
+add()	eval.txt	/*add()*
 add-filetype-plugin	usr_05.txt	/*add-filetype-plugin*
 add-global-plugin	usr_05.txt	/*add-global-plugin*
 add-local-help	usr_05.txt	/*add-local-help*
@@ -4181,6 +4182,7 @@ c_CTRL-^	cmdline.txt	/*c_CTRL-^*
 c_CTRL-_	cmdline.txt	/*c_CTRL-_*
 c_digraph	cmdline.txt	/*c_digraph*
 c_wildchar	cmdline.txt	/*c_wildchar*
+call()	eval.txt	/*call()*
 carriage-return	intro.txt	/*carriage-return*
 case	change.txt	/*case*
 catch-all	eval.txt	/*catch-all*
@@ -4289,6 +4291,7 @@ copy-move	change.txt	/*copy-move*
 copying	uganda.txt	/*copying*
 copyright	uganda.txt	/*copyright*
 count	intro.txt	/*count*
+count()	eval.txt	/*count()*
 count-bytes	tips.txt	/*count-bytes*
 count-items	tips.txt	/*count-items*
 count-variable	eval.txt	/*count-variable*
@@ -4624,6 +4627,7 @@ expr-barbar	eval.txt	/*expr-barbar*
 expr-env	eval.txt	/*expr-env*
 expr-env-expand	eval.txt	/*expr-env-expand*
 expr-function	eval.txt	/*expr-function*
+expr-is	eval.txt	/*expr-is*
 expr-nesting	eval.txt	/*expr-nesting*
 expr-number	eval.txt	/*expr-number*
 expr-option	eval.txt	/*expr-option*
@@ -4647,6 +4651,7 @@ expression	eval.txt	/*expression*
 expression-commands	eval.txt	/*expression-commands*
 expression-syntax	eval.txt	/*expression-syntax*
 exrc	starting.txt	/*exrc*
+extend()	eval.txt	/*extend()*
 extension-removal	cmdline.txt	/*extension-removal*
 extensions-improvements	todo.txt	/*extensions-improvements*
 f	motion.txt	/*f*
@@ -4829,6 +4834,7 @@ g`a	motion.txt	/*g`a*
 ga	various.txt	/*ga*
 gd	pattern.txt	/*gd*
 ge	motion.txt	/*ge*
+get	eval.txt	/*get*
 getbufvar()	eval.txt	/*getbufvar()*
 getchar()	eval.txt	/*getchar()*
 getcharmod()	eval.txt	/*getcharmod()*
@@ -5193,6 +5199,7 @@ indent-expression	indent.txt	/*indent-expression*
 indent.txt	indent.txt	/*indent.txt*
 indentkeys-format	indent.txt	/*indentkeys-format*
 index	index.txt	/*index*
+index()	eval.txt	/*index()*
 index.txt	index.txt	/*index.txt*
 info-message	starting.txt	/*info-message*
 inform-syntax	syntax.txt	/*inform-syntax*
@@ -5891,6 +5898,7 @@ restore-position	tips.txt	/*restore-position*
 restricted-mode	starting.txt	/*restricted-mode*
 retab-example	change.txt	/*retab-example*
 rethrow	eval.txt	/*rethrow*
+reverse()	eval.txt	/*reverse()*
 rexx-syntax	syntax.txt	/*rexx-syntax*
 rexx.vim	syntax.txt	/*rexx.vim*
 rgb.txt	gui_w32.txt	/*rgb.txt*
@@ -6033,6 +6041,7 @@ sniff	if_sniff.txt	/*sniff*
 sniff-commands	if_sniff.txt	/*sniff-commands*
 sniff-compiling	if_sniff.txt	/*sniff-compiling*
 sniff-intro	if_sniff.txt	/*sniff-intro*
+sort()	eval.txt	/*sort()*
 space	intro.txt	/*space*
 spec-customizing	pi_spec.txt	/*spec-customizing*
 spec-how-to-use-it	pi_spec.txt	/*spec-how-to-use-it*
@@ -6069,6 +6078,7 @@ startup-terminal	term.txt	/*startup-terminal*
 static-tag	tagsrch.txt	/*static-tag*
 status-line	windows.txt	/*status-line*
 statusmsg-variable	eval.txt	/*statusmsg-variable*
+str2list()	eval.txt	/*str2list()*
 strftime()	eval.txt	/*strftime()*
 stridx()	eval.txt	/*stridx()*
 string()	eval.txt	/*string()*

@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 06
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -934,8 +934,8 @@ See |function-list| for a list grouped by what the function is used for.
 
 USAGE				RESULT	DESCRIPTION	~
 
+add( {list}, {item})		List	append {item} to List {list}
 append( {lnum}, {string})	Number	append {string} below line {lnum}
-append( {list}, {item})		List	append {item} to List {list}
 argc()				Number	number of files in the argument list
 argidx()			Number	current index in the argument list
 argv( {nr})			String	{nr} entry of the argument list
@@ -982,6 +982,7 @@ foldlevel( {lnum})		Number	fold level at {lnum}
 foldtext( )			String	line displayed for closed fold
 foreground( )			Number	bring the Vim window to the foreground
 function( {name})		Funcref reference to function {name}
+get( {list}, {idx} [, {def}])	any	get item {idx} from {list} or {def}
 getchar( [expr])		Number	get one character from the user
 getcharmod( )			Number	modifiers for the last typed character
 getbufvar( {expr}, {varname})		variable {varname} in buffer {expr}
@@ -1051,6 +1052,7 @@ remove( {list}, {idx} [, {end}])  any	remove items {idx}-{end} from {list}
 rename( {from}, {to})		Number	rename (move) file from {from} to {to}
 repeat( {expr}, {count})	String	repeat {expr} {count} times
 resolve( {filename})		String	get filename a shortcut points to
+reverse( {list})		List	reverse {list} in-place
 search( {pattern} [, {flags}])	Number	search for {pattern}
 searchpair( {start}, {middle}, {end} [, {flags} [, {skip}]])
 				Number	search for other end of start/end pair
@@ -1063,6 +1065,8 @@ setline( {lnum}, {line})	Number	set line {lnum} to {line}
 setreg( {n}, {v}[, {opt}])	Number	set register to value and type
 setwinvar( {nr}, {varname}, {val})	set {varname} in window {nr} to {val}
 simplify( {filename})		String	simplify filename as much as possible
+sort( {list} [, {func}])	List	sort {list}, using {func} to compare
+str2list( {expr} [, {pat}])	List	make List from {pat} separated {expr}
 strftime( {format}[, {time}])	String	time in specified format
 stridx( {haystack}, {needle})	Number	first index of {needle} in {haystack}
 string( {expr})			String	{expr} converted to a String
@@ -1095,19 +1099,25 @@ winnr()				Number	number of current window
 winrestcmd()			String	returns command to restore window sizes
 winwidth( {nr})			Number	width of window {nr}
 
-append({expr1}, {expr2})				*append()*
-		If {expr1} is a List: Append the item {expr2} to List {expr1}.
-		Returns the resulting List. Examples: >
-			:let alist = append([1, 2, 3], item)
-			:call append(mylist, "woodstock")
-<		Note that when {expr2} is a List it is appended as a single
+add({list}, {expr})					*add()*
+		Append the item {expr} to List {list}.  Returns the resulting
+		List. Examples: >
+			:let alist = add([1, 2, 3], item)
+			:call add(mylist, "woodstock")
+<		Note that when {expr} is a List it is appended as a single
 		item.  Use |extend()| to concatenate Lists.
 
-		When {expr1} is not a List: Append the text {expr2} after line
-		{expr1} in the current buffer.  {expr1} can be zero, to insert
-		a line before the first one.  Returns 1 for failure ({expr1}
-		out of range or out of memory), 0 for success.  Example: >
+
+append({lnum}, {expr})					*append()*
+		When {expr} is a List: Append each item of the list as a text
+		line below line {lnum} in the current buffer.
+		Otherwise append the text line {expr} below line {lnum} in the
+		current buffer.
+		{lnum} can be zero, to insert a line before the first one.
+		Returns 1 for failure ({lnum} out of range or out of memory),
+		0 for success.  Example: >
 			:let failed = append(line('$'), "# THE END")
+			:let failed = append(0, ["Chapter 1", "the beginning"])
 <
 							*argc()*
 argc()		The result is the number of files in the argument list of the
@@ -1644,8 +1654,8 @@ extend({list1}, {list2} [, {idx}])			*extend()*
 		Examples: >
 			:echo sort(extend(mylist, [7, 5]))
 			:call extend(mylist, [2, 3], 1)
-<		Use |append()| to concatenate one item to a list.  To
-		concatenate two lists into a new list use the + operator: >
+<		Use |add()| to concatenate one item to a list.  To concatenate
+		two lists into a new list use the + operator: >
 			:let newlist = [1, 2, 3] + [4, 5]
 
 filereadable({file})					*filereadable()*
@@ -1743,10 +1753,30 @@ foreground()	Move the Vim window to the foreground.  Useful when sent from
 		{only in the Win32, Athena, Motif and GTK GUI versions and the
 		Win32 console version}
 
+
 function({name})					*function()*
 		Return a Funcref variable that refers to function {name}.
 		{name} can be a user defined function or an internal function.
 
+
+get({list}, {idx} [, {default}])			*get*
+		Get item {idx} from List {list}.  When this item is not
+		available return {default}.  Return zero when {default} is
+		omitted.
+
+getbufvar({expr}, {varname})				*getbufvar()*
+		The result is the value of option or local buffer variable
+		{varname} in buffer {expr}.  Note that the name without "b:"
+		must be used.
+		This also works for a global or local window option, but it
+		doesn't work for a global or local window variable.
+		For the use of {expr}, see |bufname()| above.
+		When the buffer or variable doesn't exist an empty string is
+		returned, there is no error message.
+		Examples: >
+			:let bufmodified = getbufvar(1, "&mod")
+			:echo "todo myvar = " . getbufvar("todo", "myvar")
+<
 getchar([expr])						*getchar()*
 		Get a single character from the user.  If it is an 8-bit
 		character, the result is a number.  Otherwise a String is
@@ -1798,19 +1828,6 @@ getcharmod()						*getcharmod()*
 		character itself are obtained.  Thus Shift-a results in "A"
 		with no modifier.
 
-getbufvar({expr}, {varname})				*getbufvar()*
-		The result is the value of option or local buffer variable
-		{varname} in buffer {expr}.  Note that the name without "b:"
-		must be used.
-		This also works for a global or local window option, but it
-		doesn't work for a global or local window variable.
-		For the use of {expr}, see |bufname()| above.
-		When the buffer or variable doesn't exist an empty string is
-		returned, there is no error message.
-		Examples: >
-			:let bufmodified = getbufvar(1, "&mod")
-			:echo "todo myvar = " . getbufvar("todo", "myvar")
-<
 getcmdline()						*getcmdline()*
 		Return the current command-line.  Only works when the command
 		line is being edited, thus requires use of |c_CTRL-\_e| or
@@ -1892,8 +1909,9 @@ getftype({fname})					*getftype()*
 		"file" are returned.
 
 							*getline()*
-getline({lnum}) The result is a String, which is line {lnum} from the current
-		buffer.  Example: >
+getline({lnum} [, {end}])
+		Without {end} the result is a String, which is line {lnum}
+		from the current buffer.  Example: >
 			getline(1)
 <		When {lnum} is a String that doesn't start with a
 		digit, line() is called to translate the String into a Number.
@@ -1902,6 +1920,18 @@ getline({lnum}) The result is a String, which is line {lnum} from the current
 <		When {lnum} is smaller than 1 or bigger than the number of
 		lines in the buffer, an empty string is returned.
 
+		When {end} is given the result is a List where each item is a
+		line from the current buffer in the range {lnum} to {end},
+		including line {end}.
+		{end} is used in the same way as {lnum}.
+		Non-existing lines are silently omitted.
+		When {end} is before {lnum} an error is given.
+		Example: >
+			:let start = line('.')
+			:let end = search("^$") - 1
+			:let lines = getline(start, end)
+
+
 getreg([{regname}])					*getreg()*
 		The result is a String, which is the contents of register
 		{regname}. Example: >
@@ -1909,6 +1939,7 @@ getreg([{regname}])					*getreg()*
 <		getreg('=') returns the last evaluated value of the expression
 		register. (For use in maps).
 		If {regname} is not specified, |v:register| is used.
+
 
 getregtype([{regname}])					*getregtype()*
 		The result is a String, which is type of register {regname}.
@@ -1919,6 +1950,7 @@ getregtype([{regname}])					*getregtype()*
 		    0			for an empty or unknown register
 		<CTRL-V> is one character with value 0x16.
 		If {regname} is not specified, |v:register| is used.
+
 
 							*getwinposx()*
 getwinposx()	The result is a Number, which is the X coordinate in pixels of
@@ -2218,7 +2250,7 @@ insert({list}, {item} [, {idx}])			*insert()*
 			:let mylist = insert([2, 3, 5], 1)
 			:call insert(mylist, 4, -1)
 			:call insert(mylist, 6, len(mylist))
-<		The last example can be done simpler with |append()|.
+<		The last example can be done simpler with |add()|.
 		Note that when {item} is a List it is inserted as a single
 		item.  Use |extend()| to concatenate Lists.
 
@@ -2551,8 +2583,7 @@ remote_send({server}, {string} [, {idvar}])
 		 \ echo remote_read(expand("<amatch>"))
 		:echo remote_send("gvim", ":sleep 10 | echo ".
 		 \ 'server2client(expand("<client>"), "HELLO")<CR>')
-
-
+<
 remove({list}, {idx} [, {end}])				*remove()*
 		Without {end}: Remove the item at {idx} from List {list} and
 		return it.
@@ -2583,6 +2614,7 @@ repeat({expr}, {count})					*repeat()*
 			:let longlist = repeat(['a', 'b'], 3)
 <		Results in ['a', 'b', 'a', 'b', 'a', 'b'].
 
+
 resolve({filename})					*resolve()* *E655*
 		On MS-Windows, when {filename} is a shortcut (a .lnk file),
 		returns the path the shortcut points to in a simplified form.
@@ -2595,6 +2627,12 @@ resolve({filename})					*resolve()* *E655*
 		resolve() keeps a leading path component specifying the
 		current directory (provided the result is still a relative
 		path name) and also keeps a trailing path separator.
+
+							*reverse()*
+reverse({list})	Reverse the order of items in {list} in-place.  Returns
+		{list}.
+		If you want a list to remain unmodified make a copy first: >
+			:let revlist = reverse(copy(mylist))
 
 search({pattern} [, {flags}])				*search()*
 		Search for regexp pattern {pattern}.  The search starts at the
@@ -2819,6 +2857,34 @@ simplify({filename})					*simplify()*
 		directory.  In order to resolve all the involved symbolic
 		links before simplifying the path name, use |resolve()|.
 
+
+sort({list} [, {func}])					*sort()*
+		Sort the items in {list} in-place.  Returns {list}.  If you
+		want a list to remain unmodified make a copy first: >
+			:let sortedlist = sort(copy(mylist))
+<		Uses the string representation of each item to sort on.
+		When {func} is given and it is one then case is ignored.
+		When {func} is a Funcref or a function name, this function is
+		called to compare items.  The function is invoked with two
+		items as argument and must return zero if they are equal, 1 if
+		the first one sorts after the second one, -1 if the first one
+		sorts before the second one.  Example: >
+			func MyCompare(i1, i2)
+			   return a:i1 == a:i2 ? 0 : a:i1 > a:i2 ? 1 : -1
+			endfunc
+			let sortedlist = sort(mylist, "MyCompare")
+
+str2list({expr} [, {pattern}])				*str2list()*
+		Make a List out of {expr}.  When {pattern} is omitted each
+		white-separated sequence of characters becomes an item.
+		Otherwise the string is split where {pattern} matches,
+		removing the matched characters.  Empty strings are omitted.
+		Example: >
+			:let words = str2list(getline('.'), '\W\+')
+<		Since empty strings are not added the "\+" isn't required but
+		it makes the function work a bit faster.
+
+
 strftime({format} [, {time}])				*strftime()*
 		The result is a String, which is a formatted date and time, as
 		specified by the {format} string.  The given {time} is used,
@@ -2835,7 +2901,9 @@ strftime({format} [, {time}])				*strftime()*
 		  :echo strftime("%H:%M")	   11:55
 		  :echo strftime("%c", getftime("file.c"))
 						   Show mod time of file.c.
-<
+<		Not available on all systems.  To check use: >
+			:if exists("*strftime")
+
 stridx({haystack}, {needle})				*stridx()*
 		The result is a Number, which gives the index in {haystack} of
 		the first occurrence of the String {needle} in the String

@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Jan 05
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Jan 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1096,6 +1096,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			'hidden' is set or using |:hide|, like using
 			|:bwipeout|
 
+	CAREFUL: when "unload", "delete" or "wipe" is used changes in a buffer
+	are lost without a warning.
 	This option is used together with 'buftype' and 'swapfile' to specify
 	special kinds of buffers.   See |special-buffers|.
 
