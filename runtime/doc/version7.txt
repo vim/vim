@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2004 Jul 11
+*version7.txt*  For Vim version 7.0aa.  Last change: 2004 Jul 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -170,6 +170,10 @@ it. (Johannes Zellner)
 
 Added "nbsp" in 'listchars'. (David Blanchet)
 
+Added the "acwrite" value for the 'buftype' option.  This is for a buffer that
+doesn not have a name that refers to a file and is written with BufWriteCmd
+autocommands.
+
 For lisp indenting and matching parenthesis: (Sergey Khorev)
 - square brackets are recognized properly
 - #\(, #\), #\[ and #\] are recognized as character literals
@@ -240,5 +244,15 @@ ignored.  ":echo '-05' + 0" resulted in 5 instead of -5.
 
 Using "@:" to repeat a command line didn't work when it contains control
 characters.
+
+When using file completion for a user command, it would not expand environment
+variables like for a regular command with a file argument.
+
+'cindent': When the argument of a #define looks like a C++ class the next line
+is indented too much.
+
+When 'comments' includes multi-byte characters inserting the middle part and
+alignment may go wrong.  'cindent' also suffers from this for right-aligned
+items.
 
  vim:tw=78:ts=8:ft=help:norl:

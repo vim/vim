@@ -1,7 +1,8 @@
 " Vim syntax file
-" Language:	Inno Setup File (iss file) and My InnoSetup extension
-" Maintainer:	Dominique Stéphan (dominique@mggen.com)
-" Last change:	2004 July 5
+" Language:             Inno Setup File (iss file) and My InnoSetup extension
+" Maintainer:           Jason Mills (jmills@cs.mun.ca)
+" Previous Maintainer:  Dominique Stéphan (dominique@mggen.com)
+" Last Change:          2004 Jul 13
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -14,37 +15,40 @@ endif
 " shut case off
 syn case ignore
 
+" Preprocessor
+syn region issPreProc start="^\s*#" end="$"
+
 " Section
-syn region issHeader		start="\[" end="\]"
+syn region issHeader            start="\[" end="\]"
 
 " Label in the [Setup] Section
-syn match  issLabel		"^[^=]\+="
+syn match  issLabel             "^[^=]\+="
 
 " URL
-syn match  issURL		"http[s]\=:\/\/.*$"
+syn match  issURL       "http[s]\=:\/\/.*$"
 
-" syn match  issName		"[^: ]\+:"
-syn match  issName		"Name:"
-syn match  issName		"MinVersion:\|OnlyBelowVersion:\|Languages:"
-syn match  issName		"Source:\|DestDir:\|DestName:\|CopyMode:"
-syn match  issName		"Attribs:\|Permissions:\|FontInstall:\|Flags:"
-syn match  issName		"FileName:\|Parameters:\|WorkingDir:\|HotKey:\|Comment:"
-syn match  issName		"IconFilename:\|IconIndex:"
-syn match  issName		"Section:\|Key:\|String:"
-syn match  issName		"Root:\|SubKey:\|ValueType:\|ValueName:\|ValueData:"
-syn match  issName		"RunOnceId:"
-syn match  issName		"Type:"
-syn match  issName		"Components:\|Description:\|GroupDescription:\|Types:\|ExtraDiskSpaceRequired:"
-syn match  issName              "StatusMsg:\|RunOnceId:\|Tasks:"
-syn match  issName              "MessagesFile:\|LicenseFile:\|InfoBeforeFile:\|InfoAfterFile:"
+" syn match  issName    "[^: ]\+:"
+syn match  issName      "Name:"
+syn match  issName      "MinVersion:\|OnlyBelowVersion:\|Languages:"
+syn match  issName      "Source:\|DestDir:\|DestName:\|CopyMode:"
+syn match  issName      "Attribs:\|Permissions:\|FontInstall:\|Flags:"
+syn match  issName      "FileName:\|Parameters:\|WorkingDir:\|HotKey:\|Comment:"
+syn match  issName      "IconFilename:\|IconIndex:"
+syn match  issName      "Section:\|Key:\|String:"
+syn match  issName      "Root:\|SubKey:\|ValueType:\|ValueName:\|ValueData:"
+syn match  issName      "RunOnceId:"
+syn match  issName      "Type:"
+syn match  issName      "Components:\|Description:\|GroupDescription:\|Types:\|ExtraDiskSpaceRequired:"
+syn match  issName      "StatusMsg:\|RunOnceId:\|Tasks:"
+syn match  issName      "MessagesFile:\|LicenseFile:\|InfoBeforeFile:\|InfoAfterFile:"
 
-syn match  issComment		"^;.*$"
+syn match  issComment   "^;.*$"
 
 " folder constant
-syn match  issFolder		"{[^{]*}"
+syn match  issFolder    "{[^{]*}"
 
 " string
-syn region issString	start=+"+  end=+"+ contains=issFolder
+syn region issString    start=+"+  end=+"+ contains=issFolder
 
 " [Dirs]
 syn keyword issDirsFlags deleteafterinstall uninsalwaysuninstall uninsneveruninstall
@@ -104,31 +108,30 @@ if version >= 508 || !exists("did_iss_syntax_inits")
   endif
 
    " The default methods for highlighting.  Can be overridden later
-   HiLink issHeader	Special
-   HiLink issComment	Comment
-   HiLink issLabel	Type
-   HiLink issName	Type
-   HiLink issFolder	Special
-   HiLink issString	String
-   HiLink issValue	String
-   HiLink issURL	Include
+   HiLink issHeader     Special
+   HiLink issComment    Comment
+   HiLink issLabel      Type
+   HiLink issName       Type
+   HiLink issFolder     Special
+   HiLink issString     String
+   HiLink issValue      String
+   HiLink issURL        Include
+   HiLink issPreProc    PreProc 
 
-   HiLink issDirsFlags		Keyword
-   HiLink issFilesCopyMode	Keyword
-   HiLink issFilesAttribs	Keyword
-   HiLink issFilesPermissions	Keyword
-   HiLink issFilesFlags		Keyword
-   HiLink issIconsFlags		Keyword
-   HiLink issINIFlags		Keyword
-   HiLink issRegRootKey		Keyword
-   HiLink issRegValueType	Keyword
-   HiLink issRegFlags		Keyword
-   HiLink issRunFlags		Keyword
-   HiLink issTypesFlags		Keyword
-   HiLink issComponentsFlags	Keyword
-   HiLink issInstallDeleteType	Keyword
-   HiLink issTasksFlags 	Keyword
-
+   HiLink issDirsFlags          Keyword
+   HiLink issFilesCopyMode      Keyword
+   HiLink issFilesAttribs       Keyword
+   HiLink issFilesFlags         Keyword
+   HiLink issIconsFlags         Keyword
+   HiLink issINIFlags           Keyword
+   HiLink issRegRootKey         Keyword
+   HiLink issRegValueType       Keyword
+   HiLink issRegFlags           Keyword
+   HiLink issRunFlags           Keyword
+   HiLink issTypesFlags         Keyword
+   HiLink issComponentsFlags    Keyword
+   HiLink issInstallDeleteType  Keyword
+   HiLink issTasksFlags         Keyword
 
   delcommand HiLink
 endif

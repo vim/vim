@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2004 Jul 05
+*options.txt*	For Vim version 7.0aa.  Last change: 2004 Jul 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1104,6 +1104,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  nofile	buffer which is not related to a file and will not be
 			written
 	  nowrite	buffer which will not be written
+	  acwrite	buffer which will always be written with BufWriteCmd
+	  		autocommands. {not available when compiled without the
+			|+autocmd| feature}
 	  quickfix	quickfix buffer, contains list of errors |:cwindow|
 	  help		help buffer (you are not supposed to set this
 			manually)
@@ -1128,6 +1131,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 	nofile only:	The buffer name is fixed, it is not handled like a
 			file name.  It is not modified in response to a |:cd|
 			command.
+							*E676*
+	"acwrite" implies that the buffer name is not related to a file, like
+	"nofile", but it will be written.  Thus, in contrast to "nofile" and
+	"nowrite", ":w" does work and a modified buffer can't be abandoned
+	without saving.  For writing there must be matching |BufWriteCmd|,
+	|FileWriteCmd| or |FileAppendCmd| autocommands.
 
 						*'casemap'* *'cmp'*
 'casemap' 'cmp'		string	(default: "internal,keepascii")
@@ -3422,14 +3431,16 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not in Vi}
 			{not available when compiled without the
 			|+extra_search| feature}
-	While typing a search command, show immediately where the so far
-	typed pattern matches.  The matched string is highlighted.  If the
-	pattern is invalid or not found, nothing is shown.  The screen will
-	be updated often, this is only useful on fast terminals.  Note that
-	the match will be shown, but the cursor is not actually positioned
-	there.  You still need to finish the search command with <CR> to move
-	the cursor.  The highlighting can be set with the 'i' flag in
-	'highlight'.  See also: 'hlsearch'.
+	While typing a search command, show where the pattern, as it was typed
+	so far, matches.  The matched string is highlighted.  If the pattern
+	is invalid or not found, nothing is shown.  The screen will be updated
+	often, this is only useful on fast terminals.
+	Note that the match will be shown, but the cursor will return to its
+	original position when no match is found and when pressing <Esc>.  You
+	still need to finish the search command with <Enter> to move the
+	cursor to the match.
+	The highlighting can be set with the 'i' flag in 'highlight'.
+	See also: 'hlsearch'.
 	NOTE: This option is reset when 'compatible' is set.
 
 						*'indentexpr'* *'inde'*

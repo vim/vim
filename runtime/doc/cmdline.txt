@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 7.0aa.  Last change: 2004 Jul 01
+*cmdline.txt*   For Vim version 7.0aa.  Last change: 2004 Jul 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -164,6 +164,8 @@ CTRL-R CTRL-A				*c_CTRL-R_CTRL-A* *c_<C-R>_<C-A>*
 				'path' as in |gf|
 			CTRL-W	the Word under the cursor
 			CTRL-A	the WORD under the cursor; see |WORD|
+		When 'incsearch' is set the cursor position of the currently
+		displayed match is used.
 		{not in Vi}
 		CTRL-F and CTRL-P: {only when +file_in_path feature is
 		included}

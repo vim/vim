@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Jul 12
+*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Jul 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,13 +30,15 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Make aap build script work again. Also with mzscheme
+When switching between Aap script and make Vim won't always run.
 
 Mac: Compiling --enable-gui=athena doesn't work.  Try to fix without disabling
-Carbon.  Otherwise adjust configure to disable darwin. (raf)
+Carbon.  Otherwise adjust configure to disable Darwin. (raf)
 
-Mac: "make install" doesn't install.
+Mac: "make install" doesn't install.  Patch from RAF.
 
+UTF-8 in 'comments' causes wrong indent.  Counting bytes instead of char
+width? (Nikolai Weibull)
 
 For version 7.0:
 -   Include many PATCHES:
@@ -282,6 +284,9 @@ For version 7.0:
     line.
 7   Make ":startinsert" command work directly for functions and scripts?
     Also make it possible to append (it's difficult at end of line).
+-   When using 'incsearch" CTRL-R CTRL-W gets the word under the cursor, but
+    the part that already matched is doubled then.  Remove the part of the
+    word that would be doubled.  Make it work line CTRL-N in Insert mode.
 
 Vi incompatibility:
 8   With undo/redo only marks in the changed lines should be changed.  Other
@@ -1995,6 +2000,8 @@ Autocommands:
     CmdEnter	    - Entering Cmdline mode
     VisualEnter	    - Entering Visual mode
     *Leave	    - Leaving a mode (in pair with the above *Enter)
+    VimLeaveCheck    - Before Vim decides to exit, so that it can be cancelled
+		      when exiting isn't a good idea.
     CmdUndefined    - Like FuncUndefined but for user commands.
     SearchPost	    - After doing a search command (e.g. to do "M")
     PreDirChanged/PostDirChanged

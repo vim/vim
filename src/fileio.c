@@ -2720,6 +2720,7 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 	int		buf_fname_f = FALSE;
 	int		buf_fname_s = FALSE;
 	int		did_cmd = FALSE;
+	int		nofile_err = FALSE;
 
 	/*
 	 * Apply PRE aucocommands.
@@ -2742,8 +2743,13 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 	{
 	    if (!(did_cmd = apply_autocmds_exarg(EVENT_FILEAPPENDCMD,
 					 sfname, sfname, FALSE, curbuf, eap)))
-		apply_autocmds_exarg(EVENT_FILEAPPENDPRE,
+	    {
+		if (bt_nofile(curbuf))
+		    nofile_err = TRUE;
+		else
+		    apply_autocmds_exarg(EVENT_FILEAPPENDPRE,
 					  sfname, sfname, FALSE, curbuf, eap);
+	    }
 	}
 	else if (filtering)
 	{
@@ -2754,15 +2760,25 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 	{
 	    if (!(did_cmd = apply_autocmds_exarg(EVENT_BUFWRITECMD,
 					 sfname, sfname, FALSE, curbuf, eap)))
-		apply_autocmds_exarg(EVENT_BUFWRITEPRE,
+	    {
+		if (bt_nofile(curbuf))
+		    nofile_err = TRUE;
+		else
+		    apply_autocmds_exarg(EVENT_BUFWRITEPRE,
 					  sfname, sfname, FALSE, curbuf, eap);
+	    }
 	}
 	else
 	{
 	    if (!(did_cmd = apply_autocmds_exarg(EVENT_FILEWRITECMD,
 					 sfname, sfname, FALSE, curbuf, eap)))
-		apply_autocmds_exarg(EVENT_FILEWRITEPRE,
+	    {
+		if (bt_nofile(curbuf))
+		    nofile_err = TRUE;
+		else
+		    apply_autocmds_exarg(EVENT_FILEWRITEPRE,
 					  sfname, sfname, FALSE, curbuf, eap);
+	    }
 	}
 
 	/* restore curwin/curbuf and a few other things */
@@ -2776,11 +2792,15 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 	 */
 	if (!buf_valid(buf))
 	    buf = NULL;
-	if (buf == NULL || buf->b_ml.ml_mfp == NULL || did_cmd || aborting())
+	if (buf == NULL || buf->b_ml.ml_mfp == NULL
+				       || did_cmd || nofile_err || aborting())
 	{
 	    --no_wait_return;
 	    msg_scroll = msg_save;
-	    if (aborting())
+	    if (nofile_err)
+		EMSG(_("E676: No matching autocommands for acwrite buffer"));
+
+	    if (aborting() || nofile_err)
 		/* An aborting error, interrupt or exception in the
 		 * autocommands. */
 		return FAIL;

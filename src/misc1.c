@@ -992,24 +992,92 @@ open_line(dir, flags, old_indent)
 			for (p = leader + lead_len - 1; p > leader
 						      && vim_iswhite(*p); --p)
 			    ;
-
 			++p;
+
+#ifdef FEAT_MBYTE
+			/* Compute the length of the replaced characters in
+			 * screen characters, not bytes. */
+			{
+			    int	    repl_size = vim_strnsize(lead_repl,
+							       lead_repl_len);
+			    int	    old_size = 0;
+			    char_u  *endp = p;
+			    int	    l;
+
+			    while (old_size < repl_size && p > leader)
+			    {
+				--p;
+				p -= mb_head_off(leader, p);
+				old_size += ptr2cells(p);
+			    }
+			    l = lead_repl_len - (endp - p);
+			    if (l != 0)
+				mch_memmove(endp + l, endp,
+					(size_t)((leader + lead_len) - endp));
+			    lead_len += l;
+			}
+#else
 			if (p < leader + lead_repl_len)
 			    p = leader;
 			else
 			    p -= lead_repl_len;
+#endif
 			mch_memmove(p, lead_repl, (size_t)lead_repl_len);
 			if (p + lead_repl_len > leader + lead_len)
 			    p[lead_repl_len] = NUL;
 
 			/* blank-out any other chars from the old leader. */
 			while (--p >= leader)
+			{
+#ifdef FEAT_MBYTE
+			    int l = mb_head_off(leader, p);
+
+			    if (l > 1)
+			    {
+				p -= l;
+				if (ptr2cells(p) > 1)
+				{
+				    p[1] = ' ';
+				    --l;
+				}
+				mch_memmove(p + 1, p + l + 1,
+				   (size_t)((leader + lead_len) - (p + l + 1)));
+				lead_len -= l;
+				*p = ' ';
+			    }
+			    else
+#endif
 			    if (!vim_iswhite(*p))
 				*p = ' ';
+			}
 		    }
 		    else		    /* left adjusted leader */
 		    {
 			p = skipwhite(leader);
+#ifdef FEAT_MBYTE
+			/* Compute the length of the replaced characters in
+			 * screen characters, not bytes. Move the part that is
+			 * not to be overwritten. */
+			{
+			    int	    repl_size = vim_strnsize(lead_repl,
+							       lead_repl_len);
+			    int	    i;
+			    int	    l;
+
+			    for (i = 0; p[i] != NUL && i < lead_len; i += l)
+			    {
+				l = mb_ptr2len_check(p + i);
+				if (vim_strnsize(p, i + l) > repl_size)
+				    break;
+			    }
+			    if (i != lead_repl_len)
+			    {
+				mch_memmove(p + lead_repl_len, p + i,
+				       (size_t)(lead_len - i - (leader - p)));
+				lead_len += lead_repl_len - i;
+			    }
+			}
+#endif
 			mch_memmove(p, lead_repl, (size_t)lead_repl_len);
 
 			/* Replace any remaining non-white chars in the old
@@ -1026,7 +1094,26 @@ open_line(dir, flags, old_indent)
 						     (leader + lead_len) - p);
 				}
 				else
+				{
+#ifdef FEAT_MBYTE
+				    int	    l = mb_ptr2len_check(p);
+
+				    if (l > 1)
+				    {
+					if (ptr2cells(p) > 1)
+					{
+					    /* Replace a double-wide char with
+					     * two spaces */
+					    --l;
+					    *p++ = ' ';
+					}
+					mch_memmove(p + 1, p + l,
+						     (leader + lead_len) - p);
+					lead_len -= l - 1;
+				    }
+#endif
 				    *p = ' ';
+				}
 			    }
 			*p = NUL;
 		    }
@@ -3789,7 +3876,8 @@ get_env_name(xp, idx)
     /* Borland C++ 5.2 has this in a header file. */
     extern char		**environ;
 # endif
-    static char_u	name[100];
+# define ENVNAMELEN 100
+    static char_u	name[ENVNAMELEN];
     char_u		*str;
     int			n;
 
@@ -3797,7 +3885,7 @@ get_env_name(xp, idx)
     if (str == NULL)
 	return NULL;
 
-    for (n = 0; n < 99; ++n)
+    for (n = 0; n < ENVNAMELEN - 1; ++n)
     {
 	if (str[n] == '=' || str[n] == NUL)
 	    break;
@@ -5064,7 +5152,10 @@ cin_is_cpp_baseclass(line, col)
 
     *col = 0;
 
-    s = cin_skipcomment(line);
+    s = skipwhite(line);
+    if (*s == '#')		/* skip #define FOO x ? (x) : x */
+	return FALSE;
+    s = cin_skipcomment(s);
     if (*s == NUL)
 	return FALSE;
 
@@ -5737,7 +5828,8 @@ get_c_indent()
 		    if (start_off != 0)
 			amount += start_off;
 		    else if (start_align == COM_RIGHT)
-			amount += lead_start_len - lead_middle_len;
+			amount += vim_strsize(lead_start)
+						   - vim_strsize(lead_middle);
 		    break;
 		}
 
@@ -5751,7 +5843,8 @@ get_c_indent()
 		    if (off != 0)
 			amount += off;
 		    else if (align == COM_RIGHT)
-			amount += lead_start_len - lead_middle_len;
+			amount += vim_strsize(lead_start)
+						   - vim_strsize(lead_middle);
 		    done = TRUE;
 		    break;
 		}

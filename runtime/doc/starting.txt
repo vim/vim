@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.0aa.  Last change: 2004 Jun 18
+*starting.txt*  For Vim version 7.0aa.  Last change: 2004 Jul 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -746,7 +746,7 @@ accordingly.  Vim proceeds in this order:
 		    "home:.vimrc"	(for Amiga) (*)
 		    "$VIM/.vimrc"	(for OS/2 and Amiga) (*)
 		    "$HOME/_vimrc"	(for MS-DOS and Win32) (*)
-		    "$VIM\_vimrc"	(for MS-DOS and Win32) (*)
+		    "$VIM/_vimrc"	(for MS-DOS and Win32) (*)
 		Note: For Unix, OS/2 and Amiga, when ".vimrc" does not exist,
 		"_vimrc" is also tried, in case an MS-DOS compatible file
 		system is used.  For MS-DOS and Win32 ".vimrc" is checked

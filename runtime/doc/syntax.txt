@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.0aa.  Last change: 2004 Jul 06
+*syntax.txt*	For Vim version 7.0aa.  Last change: 2004 Jul 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2087,6 +2087,14 @@ Finally, if you do not like to see too many color items around, you can define
 	:let ruby_no_identifiers = 1
 This will prevent highlighting of special identifiers like "ConstantName",
 "$global_var", "@instance_var", "| iterator |", and ":symbol".
+
+
+SCHEME						*scheme.vim* *scheme-syntax*
+
+By default only R5RS keywords are highlighted and properly indented.
+
+MzScheme-specific stuff will be used if b:is_mzscheme or g:is_mzscheme
+variables are defined.
 
 
 SDL						*sdl.vim* *sdl-syntax*

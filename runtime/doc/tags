@@ -1813,6 +1813,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :di	change.txt	/*:di*
 :diffg	diff.txt	/*:diffg*
 :diffget	diff.txt	/*:diffget*
+:diffo	diff.txt	/*:diffo*
+:diffoff	diff.txt	/*:diffoff*
 :diffp	diff.txt	/*:diffp*
 :diffpatch	diff.txt	/*:diffpatch*
 :diffpu	diff.txt	/*:diffpu*
@@ -3527,6 +3529,7 @@ E672	starting.txt	/*E672*
 E673	print.txt	/*E673*
 E674	print.txt	/*E674*
 E675	print.txt	/*E675*
+E676	options.txt	/*E676*
 E68	pattern.txt	/*E68*
 E69	pattern.txt	/*E69*
 E70	pattern.txt	/*E70*
@@ -5424,8 +5427,12 @@ netbeans.txt	netbeans.txt	/*netbeans.txt*
 netrw	pi_netrw.txt	/*netrw*
 netrw--	pi_netrw.txt	/*netrw--*
 netrw-D	pi_netrw.txt	/*netrw-D*
+netrw-H	pi_netrw.txt	/*netrw-H*
+netrw-M	pi_netrw.txt	/*netrw-M*
+netrw-R	pi_netrw.txt	/*netrw-R*
 netrw-activate	pi_netrw.txt	/*netrw-activate*
 netrw-browse	pi_netrw.txt	/*netrw-browse*
+netrw-browse-cmds	pi_netrw.txt	/*netrw-browse-cmds*
 netrw-browse-var	pi_netrw.txt	/*netrw-browse-var*
 netrw-c-l	pi_netrw.txt	/*netrw-c-l*
 netrw-cadaver	pi_netrw.txt	/*netrw-cadaver*
@@ -5439,9 +5446,9 @@ netrw-ex	pi_netrw.txt	/*netrw-ex*
 netrw-file	pi_netrw.txt	/*netrw-file*
 netrw-fixup	pi_netrw.txt	/*netrw-fixup*
 netrw-ftp	pi_netrw.txt	/*netrw-ftp*
-netrw-h	pi_netrw.txt	/*netrw-h*
 netrw-help	pi_netrw.txt	/*netrw-help*
 netrw-history	pi_netrw.txt	/*netrw-history*
+netrw-i	pi_netrw.txt	/*netrw-i*
 netrw-list	pi_netrw.txt	/*netrw-list*
 netrw-list-hack	pi_netrw.txt	/*netrw-list-hack*
 netrw-move	pi_netrw.txt	/*netrw-move*

@@ -1972,13 +1972,15 @@ bt_quickfix(buf)
 }
 
 /*
- * Return TRUE if "buf" is a "nofile" buffer.
+ * Return TRUE if "buf" is a "nofile" or "acwrite" buffer.
+ * This means the buffer name is not a file name.
  */
     int
 bt_nofile(buf)
     buf_T	*buf;
 {
-    return (buf->b_p_bt[0] == 'n' && buf->b_p_bt[2] == 'f');
+    return (buf->b_p_bt[0] == 'n' && buf->b_p_bt[2] == 'f')
+	    || buf->b_p_bt[0] == 'a';
 }
 
 /*

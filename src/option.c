@@ -2475,7 +2475,11 @@ static char *(p_debug_values[]) = {"msg", NULL};
 static char *(p_ead_values[]) = {"both", "ver", "hor", NULL};
 #endif
 #if defined(FEAT_QUICKFIX)
+# ifdef FEAT_AUTOCMD
+static char *(p_buftype_values[]) = {"nofile", "nowrite", "quickfix", "help", "acwrite", NULL};
+# else
 static char *(p_buftype_values[]) = {"nofile", "nowrite", "quickfix", "help", NULL};
+# endif
 static char *(p_bufhidden_values[]) = {"hide", "unload", "delete", "wipe", NULL};
 #endif
 static char *(p_bs_values[]) = {"indent", "eol", "start", NULL};

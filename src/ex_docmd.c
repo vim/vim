@@ -3205,6 +3205,11 @@ set_one_cmd_context(xp, buff)
 	    {
 		xp->xp_context = EXPAND_ENV_VARS;
 		++xp->xp_pattern;
+#if defined(FEAT_USR_CMDS) && defined(FEAT_CMDL_COMPL)
+		/* Avoid that the assignment uses EXPAND_FILES again. */
+		if (compl != EXPAND_USER_DEFINED)
+		    compl = EXPAND_ENV_VARS;
+#endif
 	    }
 	}
     }

@@ -1,10 +1,9 @@
-" Vim syntax file for the D programming language (version 0.90).
+" Vim syntax file for the D programming language (version 0.95).
 "
-" Language:     D
-" Maintainer:   Jason Mills<jmills@cs.mun.ca>
-" URL:
-" Last Change:  2004 May 21
-" Version:      0.8
+" Language:	D
+" Maintainer:	Jason Mills<jmills@cs.mun.ca>
+" Last Change:	2004 Jul 15
+" Version:	0.10
 "
 " Options:
 "   d_comment_strings - set to highlight strings and numbers in comments
@@ -30,39 +29,40 @@ endif
 
 " Keyword definitions
 "
-syn keyword dExternal	     import module extern
-syn keyword dConditional     if else switch
-syn keyword dBranch	     goto break continue
-syn keyword dRepeat	     while for do foreach
-syn keyword dBoolean	     true false
-syn keyword dConstant	     null
-syn keyword dTypedef	     alias typedef
-syn keyword dStructure	     template interface class enum struct union
-syn keyword dOperator	     new delete typeof cast align is
-syn keyword dOperator	     this super
+syn keyword dExternal		import package module extern
+syn keyword dConditional	if else switch
+syn keyword dBranch		goto break continue
+syn keyword dRepeat		while for do foreach
+syn keyword dBoolean		true false
+syn keyword dConstant		null
+syn keyword dTypedef		alias typedef
+syn keyword dStructure		template interface class enum struct union
+syn keyword dOperator		new delete typeof typeid cast align is
+syn keyword dOperator		this super
 if exists("d_hl_operator_overload")
-  syn keyword dOpOverload  opNeg opCom opPostInc opPostDec opAdd opSub opSub_r
-  syn keyword dOpOverload  opMul opDiv opDiv_r opMod opMod_r opAnd opOr opXor
-  syn keyword dOpOverload  opShl opShl_r opShr opShr_r opUShr opUShr_r opCat
-  syn keyword dOpOverload  opCat_r opEquals opEquals opCmp opCmp opCmp opCmp
-  syn keyword dOpOverload  opAddAssign opSubAssign opMulAssign opDivAssign
-  syn keyword dOpOverload  opModAssign opAndAssign opOrAssign opXorAssign
-  syn keyword dOpOverload  opShlAssign opShrAssign opUShrAssign opCatAssign
-  syn keyword dOpOverload  opIndex opCall opSlice
+  syn keyword dOpOverload	opNeg opCom opPostInc opPostDec opAdd opSub opSub_r
+  syn keyword dOpOverload	opMul opDiv opDiv_r opMod opMod_r opAnd opOr opXor
+  syn keyword dOpOverload	opShl opShl_r opShr opShr_r opUShr opUShr_r opCat
+  syn keyword dOpOverload	opCat_r opEquals opEquals opCmp opCmp opCmp opCmp
+  syn keyword dOpOverload	opAddAssign opSubAssign opMulAssign opDivAssign
+  syn keyword dOpOverload	opModAssign opAndAssign opOrAssign opXorAssign
+  syn keyword dOpOverload	opShlAssign opShrAssign opUShrAssign opCatAssign
+  syn keyword dOpOverload	opIndex opIndexAssign opCall opSlice
+  syn keyword dOpOverload	opAdd_r opMul_r opAnd_r opOr_r opXor_r 
 endif
-syn keyword dType	     ushort int uint long ulong float
-syn keyword dType	     void byte ubyte double bit char wchar ucent cent
-syn keyword dType	     short bool dchar
-syn keyword dType	     real ireal ifloat idouble creal cfloat cdouble
-syn keyword dDebug	     deprecated unittest
-syn keyword dExceptions      throw try catch finally
-syn keyword dScopeDecl       public protected private export
-syn keyword dStatement       version debug return with invariant body
-syn keyword dStatement       in out inout asm mixin
-syn keyword dStatement       function delegate
-syn keyword dStorageClass    auto static override final const abstract volatile
-syn keyword dStorageClass    synchronized
-syn keyword dPragma	     pragma
+syn keyword dType		ushort int uint long ulong float
+syn keyword dType		void byte ubyte double bit char wchar ucent cent
+syn keyword dType		short bool dchar
+syn keyword dType		real ireal ifloat idouble creal cfloat cdouble
+syn keyword dDebug		deprecated unittest
+syn keyword dExceptions		throw try catch finally
+syn keyword dScopeDecl		public protected private export
+syn keyword dStatement		version debug return with invariant body
+syn keyword dStatement		in out inout asm mixin
+syn keyword dStatement		function delegate
+syn keyword dStorageClass	auto static override final const abstract volatile
+syn keyword dStorageClass	synchronized
+syn keyword dPragma		pragma
 
 
 " Assert is a statement and a module name.
@@ -81,34 +81,34 @@ syn match dAssert "[^.]\s*\<assert\>"ms=s+1
 " Labels
 "
 " We contain dScopeDecl so public: private: etc. are not highlighted like labels
-syn match   dUserLabel       "^\s*[_$a-zA-Z][_$a-zA-Z0-9_]*\s*:"he=e-1 contains=dLabel,dScopeDecl
-syn keyword dLabel	     case default
+syn match dUserLabel	"^\s*[_$a-zA-Z][_$a-zA-Z0-9_]*\s*:"he=e-1 contains=dLabel,dScopeDecl
+syn keyword dLabel	case default
 
 " Comments
 "
-syn keyword dTodo	      contained TODO FIXME TEMP XXX
-syn match   dCommentStar      contained "^\s*\*[^/]"me=e-1
-syn match   dCommentStar      contained "^\s*\*$"
-syn match   dCommentPlus      contained "^\s*+[^/]"me=e-1
-syn match   dCommentPlus      contained "^\s*+$"
+syn keyword dTodo	contained TODO FIXME TEMP XXX
+syn match dCommentStar	contained "^\s*\*[^/]"me=e-1
+syn match dCommentStar	contained "^\s*\*$"
+syn match dCommentPlus	contained "^\s*+[^/]"me=e-1
+syn match dCommentPlus	contained "^\s*+$"
 if exists("d_comment_strings")
-  syn region  dBlockCommentString   contained  start=+"+ end=+"+ end=+\*/+me=s-1,he=s-1 contains=dCommentStar,dUnicode,dEscSequence,@Spell
-  syn region  dNestedCommentString  contained  start=+"+ end=+"+ end="+"me=s-1,he=s-1 contains=dCommentPlus,dUnicode,dEscSequence,@Spell
-  syn region  dLineCommentString    contained start=+"+  end=+$\|"+ contains=dUnicode,dEscSequence,@Spell
-  syn region  dBlockComment     start="/\*"  end="\*/" contains=dBlockCommentString,dTodo,@Spell
-  syn region  dNestedComment    start="/+"  end="+/" contains=dNestedComment,dNestedCommentString,dTodo,@Spell
-  syn match   dLineComment      "//.*" contains=dLineCommentString,dTodo,@Spell
+  syn region dBlockCommentString	contained start=+"+ end=+"+ end=+\*/+me=s-1,he=s-1 contains=dCommentStar,dUnicode,dEscSequence,@Spell
+  syn region dNestedCommentString	contained start=+"+ end=+"+ end="+"me=s-1,he=s-1 contains=dCommentPlus,dUnicode,dEscSequence,@Spell
+  syn region dLineCommentString		contained start=+"+ end=+$\|"+ contains=dUnicode,dEscSequence,@Spell
+  syn region dBlockComment	start="/\*"  end="\*/" contains=dBlockCommentString,dTodo,@Spell
+  syn region dNestedComment	start="/+"  end="+/" contains=dNestedComment,dNestedCommentString,dTodo,@Spell
+  syn match  dLineComment	"//.*" contains=dLineCommentString,dTodo,@Spell
 else
-  syn region  dBlockComment     start="/\*"  end="\*/" contains=dBlockCommentString,dTodo,@Spell
-  syn region  dNestedComment    start="/+"  end="+/" contains=dNestedComment,dNestedCommentString,dTodo,@Spell
-  syn match   dLineComment      "//.*" contains=dLineCommentString,dTodo,@Spell
+  syn region dBlockComment	start="/\*"  end="\*/" contains=dBlockCommentString,dTodo,@Spell
+  syn region dNestedComment	start="/+"  end="+/" contains=dNestedComment,dNestedCommentString,dTodo,@Spell
+  syn match  dLineComment	"//.*" contains=dLineCommentString,dTodo,@Spell
 endif
 
-hi link dLineCommentString dBlockCommentString
-hi link dBlockCommentString dString
-hi link dNestedCommentString dString
-hi link dCommentStar  dBlockComment
-hi link dCommentPlus  dNestedComment
+hi link dLineCommentString	dBlockCommentString
+hi link dBlockCommentString	dString
+hi link dNestedCommentString	dString
+hi link dCommentStar		dBlockComment
+hi link dCommentPlus		dNestedComment
 
 syn sync minlines=25
 
@@ -118,54 +118,54 @@ syn match dSpecialCharError contained "[^']"
 
 " Escape sequences (oct,specal char,hex,wchar). These are not contained
 " because they are considered string litterals
-syn match dEscSequence "\\\(\o\{1,3}\|[\"\\'\\?ntbrfva]\|u\x\{4}\|U\x\{8}\|x\x\x\)"
-syn match dCharacter  "'[^']*'" contains=dEscSequence,dSpecialCharError
-syn match dCharacter  "'\\''" contains=dEscSequence
-syn match dCharacter  "'[^\\]'"
+syn match dEscSequence	"\\\(\o\{1,3}\|[\"\\'\\?ntbrfva]\|u\x\{4}\|U\x\{8}\|x\x\x\)"
+syn match dCharacter	"'[^']*'" contains=dEscSequence,dSpecialCharError
+syn match dCharacter	"'\\''" contains=dEscSequence
+syn match dCharacter	"'[^\\]'"
 
 " Unicode characters
 "
-syn match   dUnicode "\\u\d\{4\}"
+syn match dUnicode "\\u\d\{4\}"
 
 " String.
 "
-syn region  dString start=+"+ end=+"+ contains=dEscSequence,@Spell
-syn region  dRawString start=+`+ skip=+\\`+ end=+`+ contains=@Spell
-syn region  dRawString start=+r"+ skip=+\\"+ end=+"+ contains=@Spell
-syn region  dHexString start=+x"+ skip=+\\"+ end=+"+
+syn region dString	start=+"+ end=+"+ contains=dEscSequence,@Spell
+syn region dRawString	start=+`+ skip=+\\`+ end=+`+ contains=@Spell
+syn region dRawString	start=+r"+ skip=+\\"+ end=+"+ contains=@Spell
+syn region dHexString	start=+x"+ skip=+\\"+ end=+"+
 
 " Numbers
 "
 syn case ignore
-syn match dInt        display "\<\d[0-9_]*\(u\=l\=\|l\=u\=\)\>"
+syn match dInt		display "\<\d[0-9_]*\(u\=l\=\|l\=u\=\)\>"
 " Hex number
-syn match dHex        display "\<0x[0-9a-f_]\+\(u\=l\=\|l\=u\=\)\>"
-syn match dHex        display "\<\x[0-9a-f_]*h\(u\=l\=\|l\=u\=\)\>"
+syn match dHex		display "\<0x[0-9a-f_]\+\(u\=l\=\|l\=u\=\)\>"
+syn match dHex		display "\<\x[0-9a-f_]*h\(u\=l\=\|l\=u\=\)\>"
 " Flag the first zero of an octal number as something special
-syn match dOctal      display "\<0[0-7_]\+\(u\=l\=\|l\=u\=\)\>" contains=cOctalZero
-syn match dOctalZero  display contained "\<0"
+syn match dOctal	display "\<0[0-7_]\+\(u\=l\=\|l\=u\=\)\>" contains=cOctalZero
+syn match dOctalZero	display contained "\<0"
 
 "floating point without the dot
-syn match dFloat      display "\<\d[0-9_]*\(fi\=\|l\=i\)\>"
+syn match dFloat	display "\<\d[0-9_]*\(fi\=\|l\=i\)\>"
 "floating point number, with dot, optional exponent
-syn match dFloat      display "\<\d[0-9_]*\.[0-9_]*\(e[-+]\=[0-9_]\+\)\=[fl]\=i\="
+syn match dFloat	display "\<\d[0-9_]*\.[0-9_]*\(e[-+]\=[0-9_]\+\)\=[fl]\=i\="
 "floating point number, starting with a dot, optional exponent
-syn match dFloat      display "\(\.[0-9_]\+\)\(e[-+]\=[0-9_]\+\)\=[fl]\=i\=\>"
+syn match dFloat	display "\(\.[0-9_]\+\)\(e[-+]\=[0-9_]\+\)\=[fl]\=i\=\>"
 "floating point number, without dot, with exponent
-"syn match dFloat      display "\<\d\+e[-+]\=\d\+[fl]\=\>"
-syn match dFloat      display "\<\d[0-9_]*e[-+]\=[0-9_]\+[fl]\=\>"
+"syn match dFloat	display "\<\d\+e[-+]\=\d\+[fl]\=\>"
+syn match dFloat	display "\<\d[0-9_]*e[-+]\=[0-9_]\+[fl]\=\>"
 
 "floating point without the dot
-syn match dHexFloat      display "\<0x\x\+\(fi\=\|l\=i\)\>"
+syn match dHexFloat	display "\<0x\x\+\(fi\=\|l\=i\)\>"
 "floating point number, with dot, optional exponent
-syn match dHexFloat      display "\<0x\x\+\.\x*\(p[-+]\=\x\+\)\=[fl]\=i\="
+syn match dHexFloat	display "\<0x\x\+\.\x*\(p[-+]\=\x\+\)\=[fl]\=i\="
 "floating point number, without dot, with exponent
-syn match dHexFloat      display "\<0x\x\+p[-+]\=\x\+[fl]\=\>"
+syn match dHexFloat	display "\<0x\x\+p[-+]\=\x\+[fl]\=\>"
 
 " binary numbers
-syn match dBinary     display "\<0b[01_]\+\>"
+syn match dBinary	display "\<0b[01_]\+\>"
 " flag an octal number with wrong digits
-syn match dOctalError display "0\o*[89]\d*"
+syn match dOctalError	display "0\o*[89]\d*"
 syn case match
 
 " Pragma (preprocessor) support
