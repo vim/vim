@@ -46,11 +46,10 @@
 # define XmNpixmapFile		"pixmapFile"
 #endif
 
-#ifndef LESSTIF_VERSION
 /*
  * Constants for labelLocation.
  */
-
+#ifdef HAVE_XM_JOINSIDET_H
 # include <Xm/JoinSideT.h>
 #else
 # define XmLEFT	    1

@@ -24,14 +24,17 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <assert.h>
+#include <auto/config.h>
 
 #include <Xm/XmP.h>
 #include <Xm/DrawP.h>
-#ifndef LESSTIF_VERSION
+#if defined(HAVE_XM_TRAITP_H) && defined(HAVE_XM_MANAGER_H) \
+    && defined(HAVE_XM_UNHIGHLIGHT_H) && defined(HAVE_XM_XPMP_H)
 # include <Xm/TraitP.h>
 # include <Xm/Manager.h>
 # include <Xm/UnhighlightT.h>
 # include <Xm/XpmP.h>
+# define UNHIGHLIGHTT
 #else
 # include <X11/xpm.h>
 #endif
@@ -523,7 +526,7 @@ draw_unhighlight(XmEnhancedButtonWidget eb)
 
     if (XmIsManager(eb->core.parent))
     {
-#ifndef LESSTIF_VERSION
+#ifdef UNHIGHLIGHTT
 	XmSpecifyUnhighlightTrait UnhighlightT;
 
 	if (((UnhighlightT = (XmSpecifyUnhighlightTrait) XmeTraitGet((XtPointer)

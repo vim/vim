@@ -4873,8 +4873,32 @@ mch_expand_wildcards(num_pat, pat, num_file, file, flags)
 
     /* "unset nonomatch; print -N >" plus two is 29 */
     len = STRLEN(tempname) + 29;
-    for (i = 0; i < num_pat; ++i)	/* count the length of the patterns */
+    for (i = 0; i < num_pat; ++i)
+    {
+	/* Count the length of the patterns in the same way as they are put in
+	 * "command" below. */
+#ifdef USE_SYSTEM
 	len += STRLEN(pat[i]) + 3;	/* add space and two quotes */
+#else
+	++len;				/* add space */
+	for (j = 0; pat[i][j] != NUL; )
+	    if (vim_strchr((char_u *)" '", pat[i][j]) != NULL)
+	    {
+		len += 2;		/* add two quotes */
+		while (pat[i][j] != NUL
+			&& vim_strchr((char_u *)" '", pat[i][j]) != NULL)
+		{
+		    ++len;
+		    ++j;
+		}
+	    }
+	    else
+	    {
+		++len;
+		++j;
+	    }
+#endif
+    }
     command = alloc(len);
     if (command == NULL)
     {

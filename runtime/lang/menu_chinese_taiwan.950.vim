@@ -1,6 +1,6 @@
-" Menu Translations:	Traditional Chinese (for Big5 UNIX/Windows)
-" Translated By:	Hung-Teh, Lin	<piaip@csie.ntu.edu.tw>
-" Last Change:		Thu Apr 24 17:34:50 CST 2003
+" Menu Translations:	Traditional Chinese
+" Translated By:	Hung-Te Lin	<piaip@csie.ntu.edu.tw>
+" Last Change:		2005/01/28 02:51:38
 
 " {{{ Quit when menu translations have already been done.
 if exists("did_menu_trans")
@@ -19,7 +19,8 @@ menutrans &User\ Manual		使用者手冊(&U)
 menutrans &How-to\ links	如何作\.\.\.(&H)
 menutrans &GUI			圖型界面(&G)
 menutrans &Credits		感謝(&C)
-menutrans Co&pying		版權宣告(&P)
+menutrans Co&pying		版權(&P)
+menutrans &Sponsor/Register		贊助/註冊(&S)
 menutrans O&rphans		拯救孤兒(&R)
 " ------------------------------------------------------------------------
 menutrans &Version		程式版本資訊(&V)
@@ -59,7 +60,7 @@ menutrans &Paste<Tab>"+gP		貼上(&P)<Tab>"+gP
 menutrans Put\ &Before<Tab>[p		貼到游標前(&B)<Tab>[p
 menutrans Put\ &After<Tab>]p		貼到游標後(&A)<Tab>]p
 menutrans &Delete<Tab>x			刪除(&D)<Tab>x
-menutrans &Select\ all<Tab>ggVG		全選(&S)<Tab>ggvG
+menutrans &Select\ All<Tab>ggVG		全選(&S)<Tab>ggvG
 " ------------------------------------------------------------------------
 menutrans &Find\.\.\.			尋找(&F)\.\.\.
 menutrans Find\ and\ Rep&lace\.\.\.	尋找並取代(&L)\.\.\.

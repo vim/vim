@@ -119,8 +119,6 @@ ifeq (no,$(DYNAMIC_MZSCHEME))
 MZSCHEME_LIB = -lmzsch$(MZSCHEME_VER) -lmzgc$(MZSCHEME_VER)
 # the modern MinGW can dynamically link to dlls directly.
 # point MZSCHEME_DLLS to where you put libmzschXXXXXXX.dll and libgcXXXXXXX.dll
-# c:/windows/system32 isn't a good idea, use some other dir;
-# to build you can put them in temp dir)
 ifndef MZSCHEME_DLLS
 MZSCHEME_DLLS=$(MZSCHEME)
 endif

@@ -878,6 +878,8 @@ gui_mch_compute_menu_height(id)
 	XtVaSetValues(menuBar, XmNheight, gui.menu_height, NULL);
 }
 
+#ifdef FEAT_TOOLBAR
+
 /*
  * Icons used by the toolbar code.
  */
@@ -950,6 +952,7 @@ get_toolbar_pixmap(menu)
 
     return xpm;
 }
+#endif /* FEAT_TOOLBAR */
 
     void
 gui_mch_add_menu_item(menu, idx)

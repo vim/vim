@@ -318,6 +318,12 @@ gui_init()
 	}
 
 	/*
+	 * Reset 'paste'.  It's useful in the terminal, but not in the GUI.  It
+	 * breaks the Paste toolbar button.
+	 */
+	set_option_value((char_u *)"paste", 0L, NULL, 0);
+
+	/*
 	 * Set up system-wide default menus.
 	 */
 #if defined(SYS_MENU_FILE) && defined(FEAT_MENU)
