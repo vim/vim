@@ -4775,7 +4775,7 @@ only_one_window()
     win_T	*wp;
 
     for (wp = firstwin; wp != NULL; wp = wp->w_next)
-	if (!(wp->w_buffer->b_help
+	if (!((wp->w_buffer->b_help && !curbuf->b_help)
 # ifdef FEAT_QUICKFIX
 		    || wp->w_p_pvw
 # endif
