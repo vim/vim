@@ -1,6 +1,6 @@
 " Vim script language tests
 " Author:	Servatius Brandt <Servatius.Brandt@fujitsu-siemens.com>
-" Last Change:	2005 Jan 11
+" Last Change:	2005 Jan 15
 
 "-------------------------------------------------------------------------------
 " Test environment							    {{{1
@@ -8433,7 +8433,7 @@ if ExtraVim()
     call T(23, '(1 ? 2) + CONT(23)',	'E109',	"Missing ':' after '?'")
     call T(24, '("abc) + CONT(24)',	'E114',	"Missing quote")
     call T(25, "('abc) + CONT(25)",	'E115',	"Missing quote")
-    call T(26, '& + CONT(26)',		'E712', "Using & outside of map()")
+    call T(26, '& + CONT(26)',		'E112', "Option name missing")
     call T(27, '&asdf + CONT(27)',	'E113', "Unknown option")
 
     Xpath 134217728				" X: 134217728

@@ -2936,6 +2936,7 @@ DOS	os_dos.txt	/*DOS*
 DOS-format	editing.txt	/*DOS-format*
 DOS-format-write	editing.txt	/*DOS-format-write*
 DPMI	os_msdos.txt	/*DPMI*
+Dictionaries	eval.txt	/*Dictionaries*
 Digraphs	digraph.txt	/*Digraphs*
 E	motion.txt	/*E*
 E10	message.txt	/*E10*
@@ -4478,6 +4479,7 @@ diW	motion.txt	/*diW*
 dialog	gui_w32.txt	/*dialog*
 dialogs-added	version5.txt	/*dialogs-added*
 dib	motion.txt	/*dib*
+dict-modification	eval.txt	/*dict-modification*
 did_filetype()	eval.txt	/*did_filetype()*
 diff	diff.txt	/*diff*
 diff-diffexpr	diff.txt	/*diff-diffexpr*
@@ -4629,7 +4631,6 @@ expr-!=?	eval.txt	/*expr-!=?*
 expr-!~	eval.txt	/*expr-!~*
 expr-!~#	eval.txt	/*expr-!~#*
 expr-!~?	eval.txt	/*expr-!~?*
-expr-#	eval.txt	/*expr-#*
 expr-%	eval.txt	/*expr-%*
 expr-&&	eval.txt	/*expr-&&*
 expr-'	eval.txt	/*expr-'*
@@ -4658,6 +4659,7 @@ expr->?	eval.txt	/*expr->?*
 expr-[:]	eval.txt	/*expr-[:]*
 expr-[]	eval.txt	/*expr-[]*
 expr-barbar	eval.txt	/*expr-barbar*
+expr-entry	eval.txt	/*expr-entry*
 expr-env	eval.txt	/*expr-env*
 expr-env-expand	eval.txt	/*expr-env-expand*
 expr-function	eval.txt	/*expr-function*
@@ -4999,6 +5001,7 @@ hangul	hangulin.txt	/*hangul*
 hangulin.txt	hangulin.txt	/*hangulin.txt*
 has()	eval.txt	/*has()*
 has-patch	eval.txt	/*has-patch*
+has_key()	eval.txt	/*has_key()*
 haskell-syntax	syntax.txt	/*haskell-syntax*
 haskell.vim	syntax.txt	/*haskell.vim*
 hasmapto()	eval.txt	/*hasmapto()*
@@ -5006,6 +5009,7 @@ hebrew	hebrew.txt	/*hebrew*
 hebrew.txt	hebrew.txt	/*hebrew.txt*
 help	various.txt	/*help*
 help-context	help.txt	/*help-context*
+help-tags	tags	1
 help-translated	various.txt	/*help-translated*
 help-xterm-window	various.txt	/*help-xterm-window*
 help.txt	help.txt	/*help.txt*
@@ -5297,6 +5301,7 @@ key-codes	intro.txt	/*key-codes*
 key-codes-changed	version4.txt	/*key-codes-changed*
 key-mapping	map.txt	/*key-mapping*
 key-notation	intro.txt	/*key-notation*
+key-variable	eval.txt	/*key-variable*
 keycodes	intro.txt	/*keycodes*
 keymap-file-format	mbyte.txt	/*keymap-file-format*
 keymap-hebrew	mbyte.txt	/*keymap-hebrew*
@@ -5313,6 +5318,7 @@ keypad-page-down	intro.txt	/*keypad-page-down*
 keypad-page-up	intro.txt	/*keypad-page-up*
 keypad-plus	intro.txt	/*keypad-plus*
 keypad-point	intro.txt	/*keypad-point*
+keys()	eval.txt	/*keys()*
 known-bugs	todo.txt	/*known-bugs*
 l	motion.txt	/*l*
 l:var	eval.txt	/*l:var*
@@ -5344,6 +5350,7 @@ linewise	motion.txt	/*linewise*
 linewise-register	change.txt	/*linewise-register*
 linewise-visual	visual.txt	/*linewise-visual*
 lispindent()	eval.txt	/*lispindent()*
+list-identity	eval.txt	/*list-identity*
 list-index	eval.txt	/*list-index*
 list-modification	eval.txt	/*list-modification*
 list-repeat	windows.txt	/*list-repeat*
@@ -5895,6 +5902,7 @@ quotes.txt	quotes.txt	/*quotes.txt*
 quotestar	gui.txt	/*quotestar*
 quote~	change.txt	/*quote~*
 r	change.txt	/*r*
+range()	eval.txt	/*range()*
 raw-terminal-mode	term.txt	/*raw-terminal-mode*
 rcp	pi_netrw.txt	/*rcp*
 read-messages	insert.txt	/*read-messages*
@@ -6059,7 +6067,6 @@ sgml-syntax	syntax.txt	/*sgml-syntax*
 sgml.vim	syntax.txt	/*sgml.vim*
 sh-syntax	syntax.txt	/*sh-syntax*
 sh.vim	syntax.txt	/*sh.vim*
-sharp-string	eval.txt	/*sharp-string*
 shell-window	tips.txt	/*shell-window*
 shell_error-variable	eval.txt	/*shell_error-variable*
 shift	intro.txt	/*shift*
@@ -6529,6 +6536,7 @@ v:foldend	eval.txt	/*v:foldend*
 v:foldlevel	eval.txt	/*v:foldlevel*
 v:foldstart	eval.txt	/*v:foldstart*
 v:insertmode	eval.txt	/*v:insertmode*
+v:key	eval.txt	/*v:key*
 v:lang	eval.txt	/*v:lang*
 v:lc_time	eval.txt	/*v:lc_time*
 v:lnum	eval.txt	/*v:lnum*
@@ -6541,6 +6549,7 @@ v:statusmsg	eval.txt	/*v:statusmsg*
 v:termresponse	eval.txt	/*v:termresponse*
 v:this_session	eval.txt	/*v:this_session*
 v:throwpoint	eval.txt	/*v:throwpoint*
+v:val	eval.txt	/*v:val*
 v:var	eval.txt	/*v:var*
 v:version	eval.txt	/*v:version*
 v:warningmsg	eval.txt	/*v:warningmsg*
@@ -6644,6 +6653,7 @@ v_v	visual.txt	/*v_v*
 v_x	change.txt	/*v_x*
 v_y	change.txt	/*v_y*
 v_~	change.txt	/*v_~*
+val-variable	eval.txt	/*val-variable*
 variables	eval.txt	/*variables*
 various	various.txt	/*various*
 various-cmds	various.txt	/*various-cmds*
