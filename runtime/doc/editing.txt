@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.0aa.  Last change: 2004 Dec 29
+*editing.txt*   For Vim version 7.0aa.  Last change: 2005 Jan 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -90,7 +90,7 @@ g CTRL-G		Prints the current position of the cursor in four
 			If the buffer did have a name, that name becomes the
 			|alternate-file| name.  An unlisted buffer is created
 			to hold the old name.
-
+							*:0file*
 :0f[ile][!]		Remove the name of the current buffer.  The optional !
 			avoids truncating the message, as with |:file|.  {not
 			in Vi}
@@ -1328,9 +1328,9 @@ file though, only when the file wasn't changed inside of Vim.
 Note that if a FileChangedShell autocommand is defined you will not get a
 warning message or prompt.  The autocommand is expected to handle this.
 
-There is no warning for a directory (e.g., in the |file-explorer|).  But you
-do get warned if you started editing a new file and it was created as a
-directory later.
+There is no warning for a directory (e.g., with |netrw-browse|).  But you do
+get warned if you started editing a new file and it was created as a directory
+later.
 
 When Vim notices the timestamp of a file has changed, and the file is being
 edited in a buffer but has not changed, Vim checks if the contents of the file
