@@ -1911,7 +1911,7 @@ free_for_info(fi_void)
 {
     forinfo    *fi = (forinfo *)fi_void;
 
-    if (fi->fi_list != NULL)
+    if (fi != NULL && fi->fi_list != NULL)
 	list_rem_watch(fi->fi_list, &fi->fi_lw);
     vim_free(fi);
 }
