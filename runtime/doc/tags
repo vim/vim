@@ -3600,7 +3600,12 @@ E704	eval.txt	/*E704*
 E705	eval.txt	/*E705*
 E706	eval.txt	/*E706*
 E707	eval.txt	/*E707*
+E708	eval.txt	/*E708*
+E709	eval.txt	/*E709*
 E71	pattern.txt	/*E71*
+E710	eval.txt	/*E710*
+E711	eval.txt	/*E711*
+E712	eval.txt	/*E712*
 E72	message.txt	/*E72*
 E73	tagsrch.txt	/*E73*
 E74	message.txt	/*E74*
@@ -4576,6 +4581,7 @@ escape	intro.txt	/*escape*
 escape()	eval.txt	/*escape()*
 escape-bar	version4.txt	/*escape-bar*
 eval	eval.txt	/*eval*
+eval()	eval.txt	/*eval()*
 eval-examples	eval.txt	/*eval-examples*
 eval-sandbox	eval.txt	/*eval-sandbox*
 eval.txt	eval.txt	/*eval.txt*
@@ -4623,6 +4629,7 @@ expr-!=?	eval.txt	/*expr-!=?*
 expr-!~	eval.txt	/*expr-!~*
 expr-!~#	eval.txt	/*expr-!~#*
 expr-!~?	eval.txt	/*expr-!~?*
+expr-#	eval.txt	/*expr-#*
 expr-%	eval.txt	/*expr-%*
 expr-&&	eval.txt	/*expr-&&*
 expr-'	eval.txt	/*expr-'*
@@ -4713,6 +4720,7 @@ filetypedetect-changed	version6.txt	/*filetypedetect-changed*
 filetypes	filetype.txt	/*filetypes*
 filewritable()	eval.txt	/*filewritable()*
 filter	change.txt	/*filter*
+filter()	eval.txt	/*filter()*
 find-manpage	usr_12.txt	/*find-manpage*
 find-replace	usr_10.txt	/*find-replace*
 finddir()	eval.txt	/*finddir()*
@@ -5276,6 +5284,7 @@ java-cinoptions	indent.txt	/*java-cinoptions*
 java-indenting	indent.txt	/*java-indenting*
 java-syntax	syntax.txt	/*java-syntax*
 java.vim	syntax.txt	/*java.vim*
+join()	eval.txt	/*join()*
 jsbterm-mouse	options.txt	/*jsbterm-mouse*
 jtags	tagsrch.txt	/*jtags*
 jump-motions	motion.txt	/*jump-motions*
@@ -5381,6 +5390,7 @@ make-syntax	syntax.txt	/*make-syntax*
 make.vim	syntax.txt	/*make.vim*
 man-plugin	filetype.txt	/*man-plugin*
 manual-copyright	usr_01.txt	/*manual-copyright*
+map()	eval.txt	/*map()*
 map-<SID>	map.txt	/*map-<SID>*
 map-ambiguous	map.txt	/*map-ambiguous*
 map-backtick	tips.txt	/*map-backtick*
@@ -5418,6 +5428,7 @@ match-highlight	pattern.txt	/*match-highlight*
 matchend()	eval.txt	/*matchend()*
 matchit-install	usr_05.txt	/*matchit-install*
 matchstr()	eval.txt	/*matchstr()*
+max()	eval.txt	/*max()*
 mbyte-IME	mbyte.txt	/*mbyte-IME*
 mbyte-XIM	mbyte.txt	/*mbyte-XIM*
 mbyte-conversion	mbyte.txt	/*mbyte-conversion*
@@ -5441,6 +5452,7 @@ message-history	message.txt	/*message-history*
 message.txt	message.txt	/*message.txt*
 messages	message.txt	/*messages*
 meta	intro.txt	/*meta*
+min()	eval.txt	/*min()*
 minimal-features	os_msdos.txt	/*minimal-features*
 missing-commands	vi_diff.txt	/*missing-commands*
 missing-options	vi_diff.txt	/*missing-options*
@@ -6048,6 +6060,7 @@ sgml-syntax	syntax.txt	/*sgml-syntax*
 sgml.vim	syntax.txt	/*sgml.vim*
 sh-syntax	syntax.txt	/*sh-syntax*
 sh.vim	syntax.txt	/*sh.vim*
+sharp-string	eval.txt	/*sharp-string*
 shell-window	tips.txt	/*shell-window*
 shell_error-variable	eval.txt	/*shell_error-variable*
 shift	intro.txt	/*shift*
@@ -6081,6 +6094,7 @@ spec_chglog_prepend	pi_spec.txt	/*spec_chglog_prepend*
 spec_chglog_release_info	pi_spec.txt	/*spec_chglog_release_info*
 special-buffers	windows.txt	/*special-buffers*
 speed-up	tips.txt	/*speed-up*
+split()	eval.txt	/*split()*
 splitfind	windows.txt	/*splitfind*
 splitview	windows.txt	/*splitview*
 sponsor	sponsor.txt	/*sponsor*
@@ -6107,7 +6121,6 @@ startup-terminal	term.txt	/*startup-terminal*
 static-tag	tagsrch.txt	/*static-tag*
 status-line	windows.txt	/*status-line*
 statusmsg-variable	eval.txt	/*statusmsg-variable*
-str2list()	eval.txt	/*str2list()*
 strftime()	eval.txt	/*strftime()*
 stridx()	eval.txt	/*stridx()*
 string()	eval.txt	/*string()*

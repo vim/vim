@@ -5674,7 +5674,8 @@ display_errors()
 /*
  * Get current mouse coordinates in text window.
  */
-void gui_mch_getmouse(int *x, int *y)
+    void
+gui_mch_getmouse(int *x, int *y)
 {
     Point where;
 

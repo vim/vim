@@ -80,6 +80,8 @@ static void	correct_cmdspos __ARGS((int idx, int cells));
 static void	alloc_cmdbuff __ARGS((int len));
 static int	realloc_cmdbuff __ARGS((int len));
 static void	draw_cmdline __ARGS((int start, int len));
+static void	save_cmdline __ARGS((struct cmdline_info *ccp));
+static void	restore_cmdline __ARGS((struct cmdline_info *ccp));
 static int	cmdline_paste __ARGS((int regname, int literally));
 #if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
 static void	redrawcmd_preedit __ARGS((void));
@@ -593,8 +595,8 @@ getcmdline(firstc, count, indent)
 #ifdef FEAT_EVAL
 	    else if (c == 'e')
 	    {
-		struct cmdline_info	    save_ccline;
-		char_u		    *p;
+		struct cmdline_info save_ccline;
+		char_u		    *p = NULL;
 
 		/*
 		 * Replace the command line with the result of an expression.
@@ -605,16 +607,17 @@ getcmdline(firstc, count, indent)
 		    new_cmdpos = 99999;	/* keep it at the end */
 		else
 		    new_cmdpos = ccline.cmdpos;
-		save_ccline = ccline;
-		ccline.cmdbuff = NULL;
-		ccline.cmdprompt = NULL;
+
+		save_cmdline(&save_ccline);
 		c = get_expr_register();
-		ccline = save_ccline;
+		restore_cmdline(&save_ccline);
 		if (c == '=')
 		{
+		    save_cmdline(&save_ccline);
 		    p = get_expr_line();
-		    if (p != NULL
-			     && realloc_cmdbuff((int)STRLEN(p) + 1) == OK)
+		    restore_cmdline(&save_ccline);
+
+		    if (p != NULL && realloc_cmdbuff((int)STRLEN(p) + 1) == OK)
 		    {
 			ccline.cmdlen = STRLEN(p);
 			STRCPY(ccline.cmdbuff, p);
@@ -1031,11 +1034,9 @@ getcmdline(firstc, count, indent)
 		    }
 		    else
 		    {
-			save_ccline = ccline;
-			ccline.cmdbuff = NULL;
-			ccline.cmdprompt = NULL;
+			save_cmdline(&save_ccline);
 			c = get_expr_register();
-			ccline = save_ccline;
+			restore_cmdline(&save_ccline);
 		    }
 		}
 #endif
@@ -1727,7 +1728,13 @@ returncmd:
     ui_cursor_shape();		/* may show different cursor shape */
 #endif
 
-    return ccline.cmdbuff;
+    {
+	char_u *p = ccline.cmdbuff;
+
+	/* Make ccline empty, getcmdline() may try to use it. */
+	ccline.cmdbuff = NULL;
+	return p;
+    }
 }
 
 #if (defined(FEAT_CRYPT) || defined(FEAT_EVAL)) || defined(PROTO)
@@ -1747,12 +1754,11 @@ getcmdline_prompt(firstc, prompt, attr)
     struct cmdline_info	save_ccline;
     int			msg_col_save = msg_col;
 
-    save_ccline = ccline;
-    ccline.cmdbuff = NULL;
+    save_cmdline(&save_ccline);
     ccline.cmdprompt = prompt;
     ccline.cmdattr = attr;
     s = getcmdline(firstc, 1L, 0);
-    ccline = save_ccline;
+    restore_cmdline(&save_ccline);
     /* Restore msg_col, the prompt from input() may have changed it. */
     msg_col = msg_col_save;
 
@@ -2538,6 +2544,40 @@ put_on_cmdline(str, len, redraw)
     return retval;
 }
 
+static struct cmdline_info  prev_ccline;
+static int		    prev_ccline_used = FALSE;
+
+/*
+ * Save ccline, because obtaining the "=" register may execute "normal :cmd"
+ * and overwrite it.  But get_cmdline_str() may need it, thus make it
+ * available globally in prev_ccline.
+ */
+    static void
+save_cmdline(ccp)
+    struct cmdline_info *ccp;
+{
+    if (!prev_ccline_used)
+    {
+	vim_memset(&prev_ccline, 0, sizeof(struct cmdline_info));
+	prev_ccline_used = TRUE;
+    }
+    *ccp = prev_ccline;
+    prev_ccline = ccline;
+    ccline.cmdbuff = NULL;
+    ccline.cmdprompt = NULL;
+}
+
+/*
+ * Resture ccline after it has been saved with save_cmdline().
+ */
+    static void
+restore_cmdline(ccp)
+    struct cmdline_info *ccp;
+{
+    ccline = prev_ccline;
+    prev_ccline = *ccp;
+}
+
 /*
  * paste a yank register into the command line.
  * used by CTRL-R command in command-line mode
@@ -2572,13 +2612,10 @@ cmdline_paste(regname, literally)
     regname = may_get_selection(regname);
 #endif
 
-    /* Need to save and restore ccline, because obtaining the "=" register may
-     * execute "normal :cmd" and overwrite it. */
-    save_ccline = ccline;
-    ccline.cmdbuff = NULL;
-    ccline.cmdprompt = NULL;
+    /* Need to save and restore ccline. */
+    save_cmdline(&save_ccline);
     i = get_spec_reg(regname, &arg, &allocated, TRUE);
-    ccline = save_ccline;
+    restore_cmdline(&save_ccline);
 
     if (i)
     {
@@ -4534,6 +4571,24 @@ get_history_idx(histype)
     return history[histype][hisidx[histype]].hisnum;
 }
 
+static struct cmdline_info *get_ccline_ptr __ARGS((void));
+
+/*
+ * Get pointer to the command line info to use. cmdline_paste() may clear
+ * ccline and put the previous value in prev_ccline.
+ */
+    static struct cmdline_info *
+get_ccline_ptr()
+{
+    if ((State & CMDLINE) == 0)
+	return NULL;
+    if (ccline.cmdbuff != NULL)
+	return &ccline;
+    if (prev_ccline_used && prev_ccline.cmdbuff != NULL)
+	return &prev_ccline;
+    return NULL;
+}
+
 /*
  * Get the current command line in allocated memory.
  * Only works when the command line is being edited.
@@ -4542,9 +4597,11 @@ get_history_idx(histype)
     char_u *
 get_cmdline_str()
 {
-    if (ccline.cmdbuff == NULL || (State & CMDLINE) == 0)
+    struct cmdline_info *p = get_ccline_ptr();
+
+    if (p == NULL)
 	return NULL;
-    return vim_strnsave(ccline.cmdbuff, ccline.cmdlen);
+    return vim_strnsave(p->cmdbuff, p->cmdlen);
 }
 
 /*
@@ -4556,9 +4613,11 @@ get_cmdline_str()
     int
 get_cmdline_pos()
 {
-    if (ccline.cmdbuff == NULL || (State & CMDLINE) == 0)
+    struct cmdline_info *p = get_ccline_ptr();
+
+    if (p == NULL)
 	return -1;
-    return ccline.cmdpos;
+    return p->cmdpos;
 }
 
 /*
@@ -4570,7 +4629,9 @@ get_cmdline_pos()
 set_cmdline_pos(pos)
     int		pos;
 {
-    if (ccline.cmdbuff == NULL || (State & CMDLINE) == 0)
+    struct cmdline_info *p = get_ccline_ptr();
+
+    if (p == NULL)
 	return 1;
 
     /* The position is not set directly but after CTRL-\ e or CTRL-R = has

@@ -1422,7 +1422,7 @@ gui_mch_browsedir(
 
 #endif	/* FEAT_BROWSE */
 
-#if (defined(FEAT_GUI_DIALOG) && !defined(HAVE_GTK2)) || defined(PROTO)
+#if defined(FEAT_GUI_DIALOG) && !defined(HAVE_GTK2)
 
 static char_u *dialog_textfield = NULL;
 static GtkWidget *dialog_textentry;
@@ -1956,7 +1956,7 @@ gui_mch_dialog(	int	type,		/* type of dialog */
 #endif /* FEAT_GUI_DIALOG && !HAVE_GTK2 */
 
 
-#if defined(FEAT_GUI_DIALOG) && defined(HAVE_GTK2)
+#if (defined(FEAT_GUI_DIALOG) && defined(HAVE_GTK2)) || defined(PROTO)
 
     static GtkWidget *
 create_message_dialog(int type, char_u *title, char_u *message)

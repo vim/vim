@@ -4,6 +4,7 @@ int do_cmdline_cmd __ARGS((char_u *cmd));
 int do_cmdline __ARGS((char_u *cmdline, char_u *(*getline)(int, void *, int), void *cookie, int flags));
 int getline_equal __ARGS((char_u *(*getline)(int, void *, int), void *cookie, char_u *(*func)(int, void *, int)));
 void *getline_cookie __ARGS((char_u *(*getline)(int, void *, int), void *cookie));
+int checkforcmd __ARGS((char_u **pp, char *cmd, int len));
 int cmd_exists __ARGS((char_u *name));
 char_u *set_one_cmd_context __ARGS((expand_T *xp, char_u *buff));
 char_u *skip_range __ARGS((char_u *cmd, int *ctx));

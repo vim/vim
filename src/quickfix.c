@@ -2295,7 +2295,7 @@ ex_vimgrep(eap)
     regmatch.regprog = vim_regcomp(s, RE_MAGIC);
     if (regmatch.regprog == NULL)
 	goto theend;
-    regmatch.rmm_ic = FALSE;
+    regmatch.rmm_ic = p_ic;
 
     p = skipwhite(p);
     if (*p == NUL)

@@ -1895,7 +1895,7 @@ gui_mch_mousehide(int hide)
     }
 }
 
-    int
+    void
 gui_mch_getmouse(int *x, int *y)
 {
     PhCursorInfo_t info;

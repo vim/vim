@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 09
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -223,7 +223,7 @@ and a variable name: >
 This works like: >
 	:let var1 = mylist[0]
 	:let var2 = mylist[1]
-	:let rest = mjlist[2:]
+	:let rest = mylist[2:]
 
 Except that there is no error if there are only two items.  "rest" will be an
 empty list then.
@@ -248,6 +248,7 @@ examples: >
 	:call extend(list, [1, 2])	" extend the list with two more items
 	:let i = remove(list, 3)	" remove item 3
 	:let l = remove(list, 3, -1)	" remove items 3 to last item
+	:call filter(list, #& =~ 'x'#)	" remove items with an 'x'
 
 Changing the oder of items in a list: >
 	:call sort(list)		" sort a list alphabetically
@@ -273,6 +274,9 @@ This works like: >
 Note that all items in the list should be of the same type, otherwise this
 results in an error |E706|.  To avoid this |:unlet| the variable at the end of
 the loop.
+
+If all you want to do is modify each item in the list then the |map()|
+function might be a simpler method than a for loop.
 
 Just like the |:let| command, |:for| also accepts a list of variables.  This
 requires the argument to be a list of lists. >
@@ -304,8 +308,10 @@ Functions that are useful with a List: >
 	:let i = index(list, 'x')	" index of first 'x' in list
 	:let lines = getline(1, 10)	" get ten text lines from buffer
 	:call append('$', lines)	" append text lines in buffer
-	:let list = str2list("a b c")	" create list from items in a string
+	:let list = split("a b c")	" create list from items in a string
+	:let string = join(list, ', ')	" create string from list items
 	:let s = string()		" String representation of a list
+	:call map(list, #'>> ' . &#)	" prepend ">> " to each item
 
 
 1.4 More about variables ~
@@ -377,6 +383,7 @@ Expression syntax summary, from least to most significant:
 |expr9|	number			number constant
 	"string"		string constant, backslash is special
 	'string'		string constant
+	#string#		string constant
 	[expr1, ...]		List
 	&option			option value
 	(expr1)			nested expression
@@ -676,13 +683,24 @@ literal-string						*literal-string* *E115*
 Note that single quotes are used.
 
 This string is taken as it is.  No backslashes are removed or have a special
-meaning.  A literal-string cannot contain a single quote.  Use a normal,
-double-quoted string for that.
+meaning.  A literal-string cannot contain a single quote.  Use a double-quoted
+string or sharp-string for that.
 
 Single quoted strings are useful for patterns, so that backslashes do not need
 to be doubled.  These two commands are equivalent: >
 	if a =~ "\\s*"
 	if a =~ '\s*'
+
+
+sharp-string						*sharp-string*
+---------------
+#string#		string constant			*expr-#*
+
+Most characters in the string are taken as-is.  Only the '#' character is
+special: It needs to be double to get one.
+
+Sharp-strings are useful when a string may contain single quotes, double
+quotes and/or backslashes.
 
 
 option						*expr-option* *E112* *E113*
@@ -1146,7 +1164,8 @@ col( {expr})			Number	column nr of cursor or mark
 confirm( {msg} [, {choices} [, {default} [, {type}]]])
 				Number	number of choice picked by user
 copy( {expr})			any	make a shallow copy of {expr}
-count( {list}, {expr} [, {ic}])	 Number	 count how many {expr} are in {list}
+count( {list}, {expr} [, {start} [, {ic}]])
+				Number	 count how many {expr} are in {list}
 cscope_connection( [{num} , {dbpath} [, {prepend}]])
 				Number	checks existence of cscope connection
 cursor( {lnum}, {col})		Number	position cursor at {lnum}, {col}
@@ -1157,13 +1176,17 @@ diff_filler( {lnum})		Number	diff filler lines about {lnum}
 diff_hlID( {lnum}, {col})	Number	diff highlighting at {lnum}/{col}
 empty( {expr})			Number	TRUE if {expr} is empty
 escape( {string}, {chars})	String	escape {chars} in {string} with '\'
+eval( {string})			any	evaluate {string} into its value 
 eventhandler( )			Number	TRUE if inside an event handler
 executable( {expr})		Number	1 if executable {expr} exists
 exists( {expr})			Number	TRUE if {expr} exists
 expand( {expr})			String	expand special keywords in {expr}
 filereadable( {file})		Number	TRUE if {file} is a readable file
+filter( {list}, {expr})		List	remove from {list} where {expr} is 0
+finddir( {name}[, {path}[, {count}]])
+				String	Find directory {name} in {path}
 findfile( {name}[, {path}[, {count}]])
-				String	Find fine {name} in {path}
+				String	Find file {name} in {path}
 filewritable( {file})		Number	TRUE if {file} is a writable file
 fnamemodify( {fname}, {mods})	String	modify file name
 foldclosed( {lnum})		Number	first line of fold at {lnum} if closed
@@ -1203,7 +1226,8 @@ hlID( {name})			Number	syntax ID of highlight group {name}
 hostname()			String	name of the machine Vim is running on
 iconv( {expr}, {from}, {to})	String	convert encoding of {expr}
 indent( {lnum})			Number	indent of line {lnum}
-index( {list}, {expr} [, {ic}]) Number	index in {list} where {expr} appears
+index( {list}, {expr} [, {start} [, {ic}]])
+				Number	index in {list} where {expr} appears
 input( {prompt} [, {text}])	String	get input from the user
 inputdialog( {p} [, {t} [, {c}]]) String  like input() but in a GUI dialog
 inputrestore()			Number	restore typeahead
@@ -1211,6 +1235,7 @@ inputsave()			Number	save and clear typeahead
 inputsecret( {prompt} [, {text}]) String  like input() but hiding the text
 insert( {list}, {item} [, {idx}]) List	insert {item} in {list} [before {idx}]
 isdirectory( {directory})	Number	TRUE if {directory} is a directory
+join( {list} [, {sep}])		String	join {list} items into one String
 len( {expr})			Number	the length of {expr}
 libcall( {lib}, {func}, {arg})	String	call {func} in library {lib} with {arg}
 libcallnr( {lib}, {func}, {arg})  Number  idem, but return a Number
@@ -1218,6 +1243,7 @@ line( {expr})			Number	line nr of cursor, last line or mark
 line2byte( {lnum})		Number	byte count of line {lnum}
 lispindent( {lnum})		Number	Lisp indent for line {lnum}
 localtime()			Number	current time
+map( {list}, {expr})		List	change each item in {list} to {expr}
 maparg( {name}[, {mode}])	String	rhs of mapping {name} in mode {mode}
 mapcheck( {name}[, {mode}])	String	check for mappings matching {name}
 match( {expr}, {pat}[, {start}[, {count}]])
@@ -1258,10 +1284,10 @@ setreg( {n}, {v}[, {opt}])	Number	set register to value and type
 setwinvar( {nr}, {varname}, {val})	set {varname} in window {nr} to {val}
 simplify( {filename})		String	simplify filename as much as possible
 sort( {list} [, {func}])	List	sort {list}, using {func} to compare
-str2list( {expr} [, {pat}])	List	make List from {pat} separated {expr}
+split( {expr} [, {pat}])	List	make List from {pat} separated {expr}
 strftime( {format}[, {time}])	String	time in specified format
 stridx( {haystack}, {needle})	Number	first index of {needle} in {haystack}
-string( {expr})			String	{expr} converted to a String
+string( {expr})			String	String representation of {expr} value
 strlen( {expr})			Number	length of the String {expr}
 strpart( {src}, {start}[, {len}])
 				String	{len} characters of {src} at {start}
@@ -1571,9 +1597,10 @@ copy({expr})	Make a copy of {expr}.  For Numbers and Strings this isn't
 		changing an item changes the contents of both Lists.  Also see
 		|deepcopy()|.
 
-count({list}, {expr} [, {ic}])					*count()*
+count({list}, {expr} [, {start} [, {ic}]])			*count()*
 		Return the number of times an item with value {expr} appears
 		in List {list}.
+		If {start} is given then don't count items with a lower index.
 		When {ic} is given and it's non-zero then case is ignored.
 
 
@@ -1690,7 +1717,13 @@ escape({string}, {chars})				*escape()*
 			:echo escape('c:\program files\vim', ' \')
 <		results in: >
 			c:\\program\ files\\vim
-<
+
+<							*eval()*
+eval({string})	Evaluate {string} and return the result.  Especially useful to
+		turn the result of |string()| back into the original value.
+		This works for Numbers, Strings and composites of them.
+		Also works for Funcrefs that refer to existing functions.
+
 eventhandler()						*eventhandler()*
 		Returns 1 when inside an event handler.  That is that Vim got
 		interrupted while waiting for the user to type a character,
@@ -1845,7 +1878,7 @@ extend({list1}, {list2} [, {idx}])			*extend()*
 		Append {list2} to {list1}.
 		If {idx} is given insert the items of {list2} before item
 		{idx} in {list1}.  When {idx} is zero insert before the first
-		item.  When {idx} is equal to len({list1}) {list2} is
+		item.  When {idx} is equal to len({list1}) then {list2} is
 		appended.
 		{list1} is changed when {list2} is not empty.
 		{list2} remains unchanged.
@@ -1865,6 +1898,23 @@ filereadable({file})					*filereadable()*
 		expression, which is used as a String.
 							*file_readable()*
 		Obsolete name: file_readable().
+
+
+filter({list}, {expr})					*filter()* *E712*
+		For each item in {list} evaluate {expr} and when the result is
+		zero remove the item from the List.
+		Inside {expr} the symbol "&" stands for the existing
+		item.  Example: >
+			:call filter(mylist, #& !~ "OLD"#)
+<		Removes the items where "OLD" appears.
+		Note that {expr} is an expression that evaluates to an
+		expression.  Often it is good to use a |sharp-string| to avoid
+		having to double backslashes.
+		The operation is done in-place.  If you want a list to remain
+		unmodified make a copy first: >
+			:let l = filter(copy(mylist), #& =~ "KEEP"#)
+<		Returns {list}.
+
 
 finddir({name}[, {path}[, {count}]])				*finddir()*
 		Find directory {name} in {path}.
@@ -2036,7 +2086,7 @@ getcmdline()						*getcmdline()*
 			:cmap <F7> <C-\>eescape(getcmdline(), ' \')<CR>
 <		Also see |getcmdpos()| and |setcmdpos()|.
 
-getcmdpos({pos})					*getcmdpos()*
+getcmdpos()						*getcmdpos()*
 		Return the position of the cursor in the command line as a
 		byte count.  The first column is 1.
 		Only works when editing the command line, thus requires use of
@@ -2358,9 +2408,10 @@ indent({lnum})	The result is a Number, which is indent of line {lnum} in the
 		When {lnum} is invalid -1 is returned.
 
 
-index({list}, {expr} [, {ic}])				*index()*
+index({list}, {expr} [, {start} [, {ic}]])			*index()*
 		Return the lowest index in List {list} where the item has a
 		value equal to {expr}.
+		If {start} is given then skip items with a lower index.
 		When {ic} is given and it is non-zero, ignore case.  Otherwise
 		case must match.
 		-1 is returned when {expr} is not found in {list}.
@@ -2460,6 +2511,18 @@ isdirectory({directory})				*isdirectory()*
 		with the name {directory} exists.  If {directory} doesn't
 		exist, or isn't a directory, the result is FALSE.  {directory}
 		is any expression, which is used as a String.
+
+
+join({list} [, {sep}])					*join()*
+		Join the items in {list} together into one String.
+		When {sep} is specified it is put in between the items.  If
+		{sep} is omitted a single space is used.
+		Note that {sep} is not added at the end.  You might want to
+		add it there too: >
+			let lines = join(mylist, "\n") . "\n"
+<		String items are used as-is.  Lists and Dictionaries are
+		converted into a string like with |string()|.
+		The opposite function is |split()|.
 
 							*len()* *E701*
 len({expr})	The result is a Number, which is the length of the argument.
@@ -2568,6 +2631,23 @@ localtime()						*localtime()*
 		Return the current time, measured as seconds since 1st Jan
 		1970.  See also |strftime()| and |getftime()|.
 
+
+map({list}, {expr})					*map()*
+		Replace each item in {list} with the result of evaluating
+		{expr}.
+		Inside {expr} the symbol "&" stands for the existing
+		item.  Example: >
+			:call map(mylist, #"> " . & . " <"#)
+<		This puts "> " before and " <" after each item in "mylist".
+		Note that {expr} is an expression that evaluates to an
+		expression.  Often it is good to use a |sharp-string| to avoid
+		having to double backslashes.
+		The operation is done in-place.  If you want a list to remain
+		unmodified make a copy first: >
+			:let tlist = map(copy(mylist), # & . "\t"#)
+<		Returns {list}.
+
+
 maparg({name}[, {mode}])				*maparg()*
 		Return the rhs of mapping {name} in mode {mode}.  When there
 		is no mapping for {name}, an empty String is returned.
@@ -2617,29 +2697,40 @@ mapcheck({name}[, {mode}])				*mapcheck()*
 		mapping for "_v" or for "_vvv".
 
 match({expr}, {pat}[, {start}[, {count}]])			*match()*
-		The result is a Number, which gives the index (byte offset) in
-		{expr} where {pat} matches.
-		A match at the first character returns zero.
+		When {expr} is a List then this returns the index of the first
+		item where {pat} matches.  Each item is used as a String,
+		Lists and Dictionaries are used as echoed.
+		Otherwise, {expr} is used as a String.  The result is a
+		Number, which gives the index (byte offset) in {expr} where
+		{pat} matches.
+		A match at the first character or List item returns zero.
 		If there is no match -1 is returned.
 		Example: >
-			:echo match("testing", "ing")
-<		results in "4".
-		See |string-match| for how {pat} is used.
+			:echo match("testing", "ing")	" results in 4
+			:echo match([1, 'x'], '\a')	" results in 2
+<		See |string-match| for how {pat} is used.
+
 		When {count} is given use the {count}'th match.  When a match
-		is found the search for the next one starts on character
-		further.  Thus this example results in 1: >
+		is found in a String the search for the next one starts on
+		character further.  Thus this example results in 1: >
 			echo match("testing", "..", 0, 2)
-<		If {start} is given, the search starts from index {start}.
+<		In a List the search continues in the next item.
+
+		If {start} is given, the search starts from byte index
+		{start} in a String or item {start} in a List.
 		The result, however, is still the index counted from the
-		first character. Example: >
+		first character/item. Example: >
 			:echo match("testing", "ing", 2)
 <		result is again "4". >
 			:echo match("testing", "ing", 4)
 <		result is again "4". >
 			:echo match("testing", "t", 2)
 <		result is "3".
-		If {start} < 0, it will be set to 0.
-		If {start} > strlen({expr}) -1 is returned.
+		For a String, if {start} < 0, it will be set to 0.  For a list
+		the index is counted from the end.
+		If {start} is out of range (> strlen({expr} for a String or
+		> len({expr} for a List) -1 is returned.
+
 		See |pattern| for the patterns that are accepted.
 		The 'ignorecase' option is used to set the ignore-caseness of
 		the pattern.  'smartcase' is NOT used.  The matching is always
@@ -2655,6 +2746,7 @@ matchend({expr}, {pat}[, {start}[, {count}]])			*matchend()*
 <		results in "7". >
 			:echo matchend("testing", "ing", 5)
 <		result is "-1".
+		When {expr} is a List the result is equal to match().
 
 matchstr({expr}, {pat}[, {start}[, {count}]])			*matchstr()*
 		Same as match(), but return the matched string.  Example: >
@@ -2666,6 +2758,8 @@ matchstr({expr}, {pat}[, {start}[, {count}]])			*matchstr()*
 <		results in "ing". >
 			:echo matchstr("testing", "ing", 5)
 <		result is "".
+		When {expr} is a List then the matching item is returned.
+		The type isn't changed, it's not necessarily a String.
 
 							*max()*
 max({list})	Return the maximum value of all items in {list}.
@@ -3076,6 +3170,7 @@ sort({list} [, {func}])					*sort()* *E702*
 		want a list to remain unmodified make a copy first: >
 			:let sortedlist = sort(copy(mylist))
 <		Uses the string representation of each item to sort on.
+		Numbers sort after Strings, Lists after Numbers.
 		When {func} is given and it is one then case is ignored.
 		When {func} is a Funcref or a function name, this function is
 		called to compare items.  The function is invoked with two
@@ -3087,15 +3182,16 @@ sort({list} [, {func}])					*sort()* *E702*
 			endfunc
 			let sortedlist = sort(mylist, "MyCompare")
 
-str2list({expr} [, {pattern}])				*str2list()*
+split({expr} [, {pattern}])				*split()*
 		Make a List out of {expr}.  When {pattern} is omitted each
 		white-separated sequence of characters becomes an item.
 		Otherwise the string is split where {pattern} matches,
 		removing the matched characters.  Empty strings are omitted.
 		Example: >
-			:let words = str2list(getline('.'), '\W\+')
+			:let words = split(getline('.'), '\W\+')
 <		Since empty strings are not added the "\+" isn't required but
 		it makes the function work a bit faster.
+		The opposite function is |join()|.
 
 
 strftime({format} [, {time}])				*strftime()*
@@ -3129,14 +3225,15 @@ stridx({haystack}, {needle})				*stridx()*
 		  :echo stridx("Starting point", "start")   -1
 <
 							*string()*
-string({expr})	Return {expr} converted to a String.
+string({expr})	Return {expr} converted to a String.  If {expr} is a Number,
+		String or a composition of them, then the result can be parsed
+		back with |eval()|.
 			{expr} type	result ~
-			String		identical
-			Number		decimal representation
-			Funcref		name of the function
-			List		"[item, item]" form
-		Note that string values are not in quotes, thus the result
-		can't be parsed back to a List.
+			String		#string#
+			Number		123
+			Funcref		function(#name#)
+			List		[item, item]
+		Note that in String values the # character is doubled.
 
 							*strlen()*
 strlen({expr})	The result is a Number, which is the length of the String
