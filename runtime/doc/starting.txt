@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.0aa.  Last change: 2004 Dec 29
+*starting.txt*  For Vim version 7.0aa.  Last change: 2005 Jan 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1264,7 +1264,7 @@ The viminfo file is used to store:
 - The command line history.
 - The search string history.
 - The input-line history.
-- Contents of registers.
+- Contents of non-empty registers.
 - Marks for several files.
 - File marks, pointing to locations in files.
 - Last search/substitute pattern (for 'n' and '&').

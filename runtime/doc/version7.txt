@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jan 01
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jan 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -381,6 +381,8 @@ Included a few improvements for Motif from Martin Dalecki.  Draw label
 contents ourselves to make them handle fonts in a way configurable by Vim and
 a bit less dependent on the X11 font management.
 
+When a register is empty it is not stored in the viminfo file.
+
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*
 
@@ -626,6 +628,9 @@ In Visual mode, when 'bin' and 'eol' set, g CTRL-G counted the last line
 break, resulting in "selected 202 of 201 bytes".
 
 Motif: fonts were not used for dialog components. (Martin Dalecki)
+
+Motif: After using a toolbar button the keyboard focus would be on the toolbar
+(Lesstif problem). (Martin Dalecki)
 
 When using "y<C-V>`x" where mark x is in the first column, the last line was
 not included.

@@ -37,24 +37,64 @@ typedef int	varnumber_T;
 #endif
 
 /*
- * Structure to hold an internal variable.
+ * Structure to hold an internal variable without a name.
  */
 typedef struct
 {
-    char_u	*var_name;	/* name of variable */
-    char	var_type;	/* VAR_NUMBER or VAR_STRING */
+    char	v_type;	/* see below: VAR_NUMBER, VAR_STRING, etc. */
     union
     {
-	varnumber_T	var_number;   /* number value */
-	char_u		*var_string;  /* string value (Careful: can be NULL!) */
-    } var_val;
+	varnumber_T	v_number;	/* number value */
+	char_u		*v_string;	/* string value (can be NULL!) */
+	struct listvar_S *v_list;	/* list value (can be NULL!) */
+    }		vval;
+} typeval;
+
+/* Values for "v_type". */
+#define VAR_UNKNOWN 0
+#define VAR_NUMBER  1	/* "v_number" is used */
+#define VAR_STRING  2	/* "v_string" is used */
+#define VAR_FUNC    3	/* "v_string" is function name */
+#define VAR_LIST    4	/* "v_list" is used */
+
+/*
+ * Structure to hold an internal variable with a name.
+ * The "tv" must come first, so that this can be used as a "typeval" as well.
+ */
+typedef struct
+{
+    typeval	tv;		/* type and value of the variable */
+    char_u	*v_name;	/* name of variable */
 } var;
 
-#define VAR_UNKNOWN 0
-#define VAR_NUMBER  1
-#define VAR_STRING  2
-
 typedef var *	VAR;
+
+/*
+ * Structure to hold an item of a list: an internal variable without a name.
+ */
+struct listitem_S
+{
+    struct listitem_S	*li_next;	/* next item in list */
+    struct listitem_S	*li_prev;	/* previous item in list */
+    typeval		li_tv;		/* type and value of the variable */
+};
+
+typedef struct listitem_S listitem;
+
+/*
+ * Structure to hold the info about a list.
+ */
+struct listvar_S
+{
+    int		lv_refcount;	/* reference count */
+    listitem	*lv_first;	/* first item, NULL if none */
+    listitem	*lv_last;	/* last item, NULL if none */
+};
+
+typedef struct listvar_S listvar;
+
+#define VAR_LIST_MAXNEST 100	/* maximum nesting of lists */
+static char_u *e_listidx = (char_u *)N_("E999: list index out of range: %ld");
 
 /*
  * All user-defined global variables are stored in "variables".
@@ -114,12 +154,12 @@ struct funccall
     int		linenr;		/* next line to be executed */
     int		returned;	/* ":return" used */
     int		argcount;	/* nr of arguments */
-    VAR		argvars;	/* arguments */
+    typeval	*argvars;	/* arguments */
     var		a0_var;		/* "a:0" variable */
     var		firstline;	/* "a:firstline" variable */
     var		lastline;	/* "a:lastline" variable */
     garray_T	l_vars;		/* local function variables */
-    VAR		retvar;		/* return value variable */
+    typeval	*retvar;	/* return value variable */
     linenr_T	breakpoint;	/* next line with breakpoint or zero */
     int		dbg_tick;	/* debug_tick when breakpoint was set */
     int		level;		/* top nesting level of executed function */
@@ -236,190 +276,214 @@ struct vimvar
 };
 
 static int eval0 __ARGS((char_u *arg,  VAR retvar, char_u **nextcmd, int evaluate));
-static int eval1 __ARGS((char_u **arg, VAR retvar, int evaluate));
-static int eval2 __ARGS((char_u **arg, VAR retvar, int evaluate));
-static int eval3 __ARGS((char_u **arg, VAR retvar, int evaluate));
-static int eval4 __ARGS((char_u **arg, VAR retvar, int evaluate));
-static int eval5 __ARGS((char_u **arg, VAR retvar, int evaluate));
-static int eval6 __ARGS((char_u **arg, VAR retvar, int evaluate));
-static int eval7 __ARGS((char_u **arg, VAR retvar, int evaluate));
-static int get_option_var __ARGS((char_u **arg, VAR retvar, int evaluate));
-static int get_string_var __ARGS((char_u **arg, VAR retvar, int evaluate));
-static int get_lit_string_var __ARGS((char_u **arg, VAR retvar, int evaluate));
-static int get_env_var __ARGS((char_u **arg, VAR retvar, int evaluate));
+static int eval1 __ARGS((char_u **arg, typeval *retvar, int evaluate));
+static int eval2 __ARGS((char_u **arg, typeval *retvar, int evaluate));
+static int eval3 __ARGS((char_u **arg, typeval *retvar, int evaluate));
+static int eval4 __ARGS((char_u **arg, typeval *retvar, int evaluate));
+static int eval5 __ARGS((char_u **arg, typeval *retvar, int evaluate));
+static int eval6 __ARGS((char_u **arg, typeval *retvar, int evaluate));
+static int eval7 __ARGS((char_u **arg, typeval *retvar, int evaluate));
+static int eval_index __ARGS((char_u **arg, typeval *retvar, int evaluate));
+static int get_option_vartv __ARGS((char_u **arg, typeval *retvar, int evaluate));
+static int get_string_vartv __ARGS((char_u **arg, typeval *retvar, int evaluate));
+static int get_lit_string_vartv __ARGS((char_u **arg, typeval *retvar, int evaluate));
+static int get_list_vartv __ARGS((char_u **arg, typeval *retvar, int evaluate));
+static listvar *list_alloc __ARGS((void));
+static void list_unref __ARGS((listvar *l));
+static void list_free __ARGS((listvar *l));
+static listitem *listitem_alloc __ARGS((void));
+static void listitem_free __ARGS((listitem *item));
+static long list_len __ARGS((listvar *l));
+static listitem *list_find __ARGS((listvar *l, long n));
+static void list_append __ARGS((listvar *l, listitem *item));
+static int list_append_tv __ARGS((listvar *l, typeval *tv));
+static listvar *list_copy __ARGS((listvar *orig, int deep));
+static listitem *list_getrem __ARGS((listvar *l, long n));
+static char_u *list2string __ARGS((typeval *tv));
+static char_u *tv2string __ARGS((typeval *tv, char_u **tofree));
+static int get_env_vartv __ARGS((char_u **arg, typeval *retvar, int evaluate));
 static int find_internal_func __ARGS((char_u *name));
-static int get_func_var __ARGS((char_u *name, int len, VAR retvar, char_u **arg, linenr_T firstline, linenr_T lastline, int *doesrange, int evaluate));
-static int call_func __ARGS((char_u *name, int len, VAR retvar, int argcount, VAR argvars, linenr_T firstline, linenr_T lastline, int *doesrange, int evaluate));
-static void f_append __ARGS((VAR argvars, VAR retvar));
-static void f_argc __ARGS((VAR argvars, VAR retvar));
-static void f_argidx __ARGS((VAR argvars, VAR retvar));
-static void f_argv __ARGS((VAR argvars, VAR retvar));
-static void f_browse __ARGS((VAR argvars, VAR retvar));
-static void f_browsedir __ARGS((VAR argvars, VAR retvar));
-static buf_T *find_buffer __ARGS((VAR avar));
-static void f_bufexists __ARGS((VAR argvars, VAR retvar));
-static void f_buflisted __ARGS((VAR argvars, VAR retvar));
-static void f_bufloaded __ARGS((VAR argvars, VAR retvar));
-static buf_T *get_buf_var __ARGS((VAR avar));
-static void f_bufname __ARGS((VAR argvars, VAR retvar));
-static void f_bufnr __ARGS((VAR argvars, VAR retvar));
-static void f_bufwinnr __ARGS((VAR argvars, VAR retvar));
-static void f_byte2line __ARGS((VAR argvars, VAR retvar));
-static void f_byteidx __ARGS((VAR argvars, VAR retvar));
-static void f_char2nr __ARGS((VAR argvars, VAR retvar));
-static void f_cindent __ARGS((VAR argvars, VAR retvar));
-static void f_col __ARGS((VAR argvars, VAR retvar));
-static void f_confirm __ARGS((VAR argvars, VAR retvar));
-static void f_cscope_connection __ARGS((VAR argvars, VAR retvar));
-static void f_cursor __ARGS((VAR argsvars, VAR retvar));
-static void f_delete __ARGS((VAR argvars, VAR retvar));
-static void f_did_filetype __ARGS((VAR argvars, VAR retvar));
-static void f_diff_filler __ARGS((VAR argvars, VAR retvar));
-static void f_diff_hlID __ARGS((VAR argvars, VAR retvar));
-static void f_escape __ARGS((VAR argvars, VAR retvar));
-static void f_eventhandler __ARGS((VAR argvars, VAR retvar));
-static void f_executable __ARGS((VAR argvars, VAR retvar));
-static void f_exists __ARGS((VAR argvars, VAR retvar));
-static void f_expand __ARGS((VAR argvars, VAR retvar));
-static void f_filereadable __ARGS((VAR argvars, VAR retvar));
-static void f_filewritable __ARGS((VAR argvars, VAR retvar));
-static void f_finddir __ARGS((VAR argvars, VAR retvar));
-static void f_findfile __ARGS((VAR argvars, VAR retvar));
-static void f_findfilendir __ARGS((VAR argvars, VAR retvar, int dir));
-static void f_fnamemodify __ARGS((VAR argvars, VAR retvar));
-static void f_foldclosed __ARGS((VAR argvars, VAR retvar));
-static void f_foldclosedend __ARGS((VAR argvars, VAR retvar));
-static void foldclosed_both __ARGS((VAR argvars, VAR retvar, int end));
-static void f_foldlevel __ARGS((VAR argvars, VAR retvar));
-static void f_foldtext __ARGS((VAR argvars, VAR retvar));
-static void f_foldtextresult __ARGS((VAR argvars, VAR retvar));
-static void f_foreground __ARGS((VAR argvars, VAR retvar));
-static void f_getbufvar __ARGS((VAR argvars, VAR retvar));
-static void f_getchar __ARGS((VAR argvars, VAR retvar));
-static void f_getcharmod __ARGS((VAR argvars, VAR retvar));
-static void f_getcmdline __ARGS((VAR argvars, VAR retvar));
-static void f_getcmdpos __ARGS((VAR argvars, VAR retvar));
-static void f_getcwd __ARGS((VAR argvars, VAR retvar));
-static void f_getfontname __ARGS((VAR argvars, VAR retvar));
-static void f_getfperm __ARGS((VAR argvars, VAR retvar));
-static void f_getfsize __ARGS((VAR argvars, VAR retvar));
-static void f_getftime __ARGS((VAR argvars, VAR retvar));
-static void f_getftype __ARGS((VAR argvars, VAR retvar));
-static void f_getline __ARGS((VAR argvars, VAR retvar));
-static void f_getreg __ARGS((VAR argvars, VAR retvar));
-static void f_getregtype __ARGS((VAR argvars, VAR retvar));
-static void f_getwinposx __ARGS((VAR argvars, VAR retvar));
-static void f_getwinposy __ARGS((VAR argvars, VAR retvar));
-static void f_getwinvar __ARGS((VAR argvars, VAR retvar));
-static void f_glob __ARGS((VAR argvars, VAR retvar));
-static void f_globpath __ARGS((VAR argvars, VAR retvar));
-static void f_has __ARGS((VAR argvars, VAR retvar));
-static void f_hasmapto __ARGS((VAR argvars, VAR retvar));
-static void f_histadd __ARGS((VAR argvars, VAR retvar));
-static void f_histdel __ARGS((VAR argvars, VAR retvar));
-static void f_histget __ARGS((VAR argvars, VAR retvar));
-static void f_histnr __ARGS((VAR argvars, VAR retvar));
-static void f_hlexists __ARGS((VAR argvars, VAR retvar));
-static void f_hlID __ARGS((VAR argvars, VAR retvar));
-static void f_hostname __ARGS((VAR argvars, VAR retvar));
-static void f_iconv __ARGS((VAR argvars, VAR retvar));
-static void f_indent __ARGS((VAR argvars, VAR retvar));
-static void f_isdirectory __ARGS((VAR argvars, VAR retvar));
-static void f_input __ARGS((VAR argvars, VAR retvar));
-static void f_inputdialog __ARGS((VAR argvars, VAR retvar));
-static void f_inputrestore __ARGS((VAR argvars, VAR retvar));
-static void f_inputsave __ARGS((VAR argvars, VAR retvar));
-static void f_inputsecret __ARGS((VAR argvars, VAR retvar));
-static void f_last_buffer_nr __ARGS((VAR argvars, VAR retvar));
-static void f_libcall __ARGS((VAR argvars, VAR retvar));
-static void f_libcallnr __ARGS((VAR argvars, VAR retvar));
-static void libcall_common __ARGS((VAR argvars, VAR retvar, int type));
-static void f_line __ARGS((VAR argvars, VAR retvar));
-static void f_line2byte __ARGS((VAR argvars, VAR retvar));
-static void f_lispindent __ARGS((VAR argvars, VAR retvar));
-static void f_localtime __ARGS((VAR argvars, VAR retvar));
-static void f_maparg __ARGS((VAR argvars, VAR retvar));
-static void f_mapcheck __ARGS((VAR argvars, VAR retvar));
-static void get_maparg __ARGS((VAR argvars, VAR retvar, int exact));
-static void f_match __ARGS((VAR argvars, VAR retvar));
-static void f_matchend __ARGS((VAR argvars, VAR retvar));
-static void f_matchstr __ARGS((VAR argvars, VAR retvar));
-static void f_mode __ARGS((VAR argvars, VAR retvar));
-static void f_nextnonblank __ARGS((VAR argvars, VAR retvar));
-static void f_nr2char __ARGS((VAR argvars, VAR retvar));
-static void f_prevnonblank __ARGS((VAR argvars, VAR retvar));
-static void f_setbufvar __ARGS((VAR argvars, VAR retvar));
-static void f_setcmdpos __ARGS((VAR argvars, VAR retvar));
-static void f_setwinvar __ARGS((VAR argvars, VAR retvar));
-static void f_rename __ARGS((VAR argvars, VAR retvar));
-static void f_resolve __ARGS((VAR argvars, VAR retvar));
-static void f_search __ARGS((VAR argvars, VAR retvar));
-static void f_searchpair __ARGS((VAR argvars, VAR retvar));
-static int get_search_arg __ARGS((VAR varp, int *flagsp));
-static void f_remote_expr __ARGS((VAR argvars, VAR retvar));
-static void f_remote_foreground __ARGS((VAR argvars, VAR retvar));
-static void f_remote_peek __ARGS((VAR argvars, VAR retvar));
-static void f_remote_read __ARGS((VAR argvars, VAR retvar));
-static void f_remote_send __ARGS((VAR argvars, VAR retvar));
-static void f_repeat __ARGS((VAR argvars, VAR retvar));
-static void f_server2client __ARGS((VAR argvars, VAR retvar));
-static void f_serverlist __ARGS((VAR argvars, VAR retvar));
-static void f_setline __ARGS((VAR argvars, VAR retvar));
-static void f_setreg __ARGS((VAR argvars, VAR retvar));
-static void f_simplify __ARGS((VAR argvars, VAR retvar));
-static void find_some_match __ARGS((VAR argvars, VAR retvar, int start));
-static void f_strftime __ARGS((VAR argvars, VAR retvar));
-static void f_stridx __ARGS((VAR argvars, VAR retvar));
-static void f_strlen __ARGS((VAR argvars, VAR retvar));
-static void f_strpart __ARGS((VAR argvars, VAR retvar));
-static void f_strridx __ARGS((VAR argvars, VAR retvar));
-static void f_strtrans __ARGS((VAR argvars, VAR retvar));
-static void f_synID __ARGS((VAR argvars, VAR retvar));
-static void f_synIDattr __ARGS((VAR argvars, VAR retvar));
-static void f_synIDtrans __ARGS((VAR argvars, VAR retvar));
-static void f_system __ARGS((VAR argvars, VAR retvar));
-static void f_submatch __ARGS((VAR argvars, VAR retvar));
-static void f_substitute __ARGS((VAR argvars, VAR retvar));
-static void f_tempname __ARGS((VAR argvars, VAR retvar));
-static void f_tolower __ARGS((VAR argvars, VAR retvar));
-static void f_toupper __ARGS((VAR argvars, VAR retvar));
-static void f_tr __ARGS((VAR argvars, VAR retvar));
-static void f_type __ARGS((VAR argvars, VAR retvar));
-static void f_virtcol __ARGS((VAR argvars, VAR retvar));
-static void f_visualmode __ARGS((VAR argvars, VAR retvar));
-static void f_winbufnr __ARGS((VAR argvars, VAR retvar));
-static void f_wincol __ARGS((VAR argvars, VAR retvar));
-static void f_winheight __ARGS((VAR argvars, VAR retvar));
-static void f_winline __ARGS((VAR argvars, VAR retvar));
-static void f_winnr __ARGS((VAR argvars, VAR retvar));
-static void f_winrestcmd __ARGS((VAR argvars, VAR retvar));
-static void f_winwidth __ARGS((VAR argvars, VAR retvar));
-static win_T *find_win_by_nr __ARGS((VAR vp));
-static pos_T *var2fpos __ARGS((VAR varp, int lnum));
+static char_u *deref_func_name __ARGS((char_u *name, int *lenp));
+static int get_func_vartv __ARGS((char_u *name, int len, typeval *retvar, char_u **arg, linenr_T firstline, linenr_T lastline, int *doesrange, int evaluate));
+static int call_func __ARGS((char_u *name, int len, typeval *retvar, int argcount, typeval *argvars, linenr_T firstline, linenr_T lastline, int *doesrange, int evaluate));
+static void f_append __ARGS((typeval *argvars, typeval *retvar));
+static void f_argc __ARGS((typeval *argvars, typeval *retvar));
+static void f_argidx __ARGS((typeval *argvars, typeval *retvar));
+static void f_argv __ARGS((typeval *argvars, typeval *retvar));
+static void f_browse __ARGS((typeval *argvars, typeval *retvar));
+static void f_browsedir __ARGS((typeval *argvars, typeval *retvar));
+static buf_T *find_buffer __ARGS((typeval *avar));
+static void f_bufexists __ARGS((typeval *argvars, typeval *retvar));
+static void f_buflisted __ARGS((typeval *argvars, typeval *retvar));
+static void f_bufloaded __ARGS((typeval *argvars, typeval *retvar));
+static buf_T *get_buf_vartv __ARGS((typeval *avar));
+static void f_bufname __ARGS((typeval *argvars, typeval *retvar));
+static void f_bufnr __ARGS((typeval *argvars, typeval *retvar));
+static void f_bufwinnr __ARGS((typeval *argvars, typeval *retvar));
+static void f_byte2line __ARGS((typeval *argvars, typeval *retvar));
+static void f_byteidx __ARGS((typeval *argvars, typeval *retvar));
+static void f_char2nr __ARGS((typeval *argvars, typeval *retvar));
+static void f_cindent __ARGS((typeval *argvars, typeval *retvar));
+static void f_col __ARGS((typeval *argvars, typeval *retvar));
+static void f_confirm __ARGS((typeval *argvars, typeval *retvar));
+static void f_copy __ARGS((typeval *argvars, typeval *retvar));
+static void f_cscope_connection __ARGS((typeval *argvars, typeval *retvar));
+static void f_cursor __ARGS((typeval *argsvars, typeval *retvar));
+static void f_deepcopy __ARGS((typeval *argvars, typeval *retvar));
+static void f_delete __ARGS((typeval *argvars, typeval *retvar));
+static void f_did_filetype __ARGS((typeval *argvars, typeval *retvar));
+static void f_diff_filler __ARGS((typeval *argvars, typeval *retvar));
+static void f_diff_hlID __ARGS((typeval *argvars, typeval *retvar));
+static void f_escape __ARGS((typeval *argvars, typeval *retvar));
+static void f_eventhandler __ARGS((typeval *argvars, typeval *retvar));
+static void f_executable __ARGS((typeval *argvars, typeval *retvar));
+static void f_exists __ARGS((typeval *argvars, typeval *retvar));
+static void f_expand __ARGS((typeval *argvars, typeval *retvar));
+static void f_filereadable __ARGS((typeval *argvars, typeval *retvar));
+static void f_filewritable __ARGS((typeval *argvars, typeval *retvar));
+static void f_finddir __ARGS((typeval *argvars, typeval *retvar));
+static void f_findfile __ARGS((typeval *argvars, typeval *retvar));
+static void f_findfilendir __ARGS((typeval *argvars, typeval *retvar, int dir));
+static void f_fnamemodify __ARGS((typeval *argvars, typeval *retvar));
+static void f_foldclosed __ARGS((typeval *argvars, typeval *retvar));
+static void f_foldclosedend __ARGS((typeval *argvars, typeval *retvar));
+static void foldclosed_both __ARGS((typeval *argvars, typeval *retvar, int end));
+static void f_foldlevel __ARGS((typeval *argvars, typeval *retvar));
+static void f_foldtext __ARGS((typeval *argvars, typeval *retvar));
+static void f_foldtextresult __ARGS((typeval *argvars, typeval *retvar));
+static void f_foreground __ARGS((typeval *argvars, typeval *retvar));
+static void f_function __ARGS((typeval *argvars, typeval *retvar));
+static void f_getbufvar __ARGS((typeval *argvars, typeval *retvar));
+static void f_getchar __ARGS((typeval *argvars, typeval *retvar));
+static void f_getcharmod __ARGS((typeval *argvars, typeval *retvar));
+static void f_getcmdline __ARGS((typeval *argvars, typeval *retvar));
+static void f_getcmdpos __ARGS((typeval *argvars, typeval *retvar));
+static void f_getcwd __ARGS((typeval *argvars, typeval *retvar));
+static void f_getfontname __ARGS((typeval *argvars, typeval *retvar));
+static void f_getfperm __ARGS((typeval *argvars, typeval *retvar));
+static void f_getfsize __ARGS((typeval *argvars, typeval *retvar));
+static void f_getftime __ARGS((typeval *argvars, typeval *retvar));
+static void f_getftype __ARGS((typeval *argvars, typeval *retvar));
+static void f_getline __ARGS((typeval *argvars, typeval *retvar));
+static void f_getreg __ARGS((typeval *argvars, typeval *retvar));
+static void f_getregtype __ARGS((typeval *argvars, typeval *retvar));
+static void f_getwinposx __ARGS((typeval *argvars, typeval *retvar));
+static void f_getwinposy __ARGS((typeval *argvars, typeval *retvar));
+static void f_getwinvar __ARGS((typeval *argvars, typeval *retvar));
+static void f_glob __ARGS((typeval *argvars, typeval *retvar));
+static void f_globpath __ARGS((typeval *argvars, typeval *retvar));
+static void f_has __ARGS((typeval *argvars, typeval *retvar));
+static void f_hasmapto __ARGS((typeval *argvars, typeval *retvar));
+static void f_histadd __ARGS((typeval *argvars, typeval *retvar));
+static void f_histdel __ARGS((typeval *argvars, typeval *retvar));
+static void f_histget __ARGS((typeval *argvars, typeval *retvar));
+static void f_histnr __ARGS((typeval *argvars, typeval *retvar));
+static void f_hlexists __ARGS((typeval *argvars, typeval *retvar));
+static void f_hlID __ARGS((typeval *argvars, typeval *retvar));
+static void f_hostname __ARGS((typeval *argvars, typeval *retvar));
+static void f_iconv __ARGS((typeval *argvars, typeval *retvar));
+static void f_indent __ARGS((typeval *argvars, typeval *retvar));
+static void f_insert __ARGS((typeval *argvars, typeval *retvar));
+static void f_isdirectory __ARGS((typeval *argvars, typeval *retvar));
+static void f_input __ARGS((typeval *argvars, typeval *retvar));
+static void f_inputdialog __ARGS((typeval *argvars, typeval *retvar));
+static void f_inputrestore __ARGS((typeval *argvars, typeval *retvar));
+static void f_inputsave __ARGS((typeval *argvars, typeval *retvar));
+static void f_inputsecret __ARGS((typeval *argvars, typeval *retvar));
+static void f_last_buffer_nr __ARGS((typeval *argvars, typeval *retvar));
+static void f_len __ARGS((typeval *argvars, typeval *retvar));
+static void f_libcall __ARGS((typeval *argvars, typeval *retvar));
+static void f_libcallnr __ARGS((typeval *argvars, typeval *retvar));
+static void libcall_common __ARGS((typeval *argvars, typeval *retvar, int type));
+static void f_line __ARGS((typeval *argvars, typeval *retvar));
+static void f_line2byte __ARGS((typeval *argvars, typeval *retvar));
+static void f_lispindent __ARGS((typeval *argvars, typeval *retvar));
+static void f_localtime __ARGS((typeval *argvars, typeval *retvar));
+static void f_maparg __ARGS((typeval *argvars, typeval *retvar));
+static void f_mapcheck __ARGS((typeval *argvars, typeval *retvar));
+static void get_maparg __ARGS((typeval *argvars, typeval *retvar, int exact));
+static void f_match __ARGS((typeval *argvars, typeval *retvar));
+static void f_matchend __ARGS((typeval *argvars, typeval *retvar));
+static void f_matchstr __ARGS((typeval *argvars, typeval *retvar));
+static void f_mode __ARGS((typeval *argvars, typeval *retvar));
+static void f_nextnonblank __ARGS((typeval *argvars, typeval *retvar));
+static void f_nr2char __ARGS((typeval *argvars, typeval *retvar));
+static void f_prevnonblank __ARGS((typeval *argvars, typeval *retvar));
+static void f_setbufvar __ARGS((typeval *argvars, typeval *retvar));
+static void f_setcmdpos __ARGS((typeval *argvars, typeval *retvar));
+static void f_setwinvar __ARGS((typeval *argvars, typeval *retvar));
+static void f_remove __ARGS((typeval *argvars, typeval *retvar));
+static void f_rename __ARGS((typeval *argvars, typeval *retvar));
+static void f_resolve __ARGS((typeval *argvars, typeval *retvar));
+static void f_search __ARGS((typeval *argvars, typeval *retvar));
+static void f_searchpair __ARGS((typeval *argvars, typeval *retvar));
+static int get_search_arg __ARGS((typeval *varp, int *flagsp));
+static void f_remote_expr __ARGS((typeval *argvars, typeval *retvar));
+static void f_remote_foreground __ARGS((typeval *argvars, typeval *retvar));
+static void f_remote_peek __ARGS((typeval *argvars, typeval *retvar));
+static void f_remote_read __ARGS((typeval *argvars, typeval *retvar));
+static void f_remote_send __ARGS((typeval *argvars, typeval *retvar));
+static void f_repeat __ARGS((typeval *argvars, typeval *retvar));
+static void f_server2client __ARGS((typeval *argvars, typeval *retvar));
+static void f_serverlist __ARGS((typeval *argvars, typeval *retvar));
+static void f_setline __ARGS((typeval *argvars, typeval *retvar));
+static void f_setreg __ARGS((typeval *argvars, typeval *retvar));
+static void f_simplify __ARGS((typeval *argvars, typeval *retvar));
+static void find_some_match __ARGS((typeval *argvars, typeval *retvar, int start));
+static void f_strftime __ARGS((typeval *argvars, typeval *retvar));
+static void f_stridx __ARGS((typeval *argvars, typeval *retvar));
+static void f_string __ARGS((typeval *argvars, typeval *retvar));
+static void f_strlen __ARGS((typeval *argvars, typeval *retvar));
+static void f_strpart __ARGS((typeval *argvars, typeval *retvar));
+static void f_strridx __ARGS((typeval *argvars, typeval *retvar));
+static void f_strtrans __ARGS((typeval *argvars, typeval *retvar));
+static void f_synID __ARGS((typeval *argvars, typeval *retvar));
+static void f_synIDattr __ARGS((typeval *argvars, typeval *retvar));
+static void f_synIDtrans __ARGS((typeval *argvars, typeval *retvar));
+static void f_system __ARGS((typeval *argvars, typeval *retvar));
+static void f_submatch __ARGS((typeval *argvars, typeval *retvar));
+static void f_substitute __ARGS((typeval *argvars, typeval *retvar));
+static void f_tempname __ARGS((typeval *argvars, typeval *retvar));
+static void f_tolower __ARGS((typeval *argvars, typeval *retvar));
+static void f_toupper __ARGS((typeval *argvars, typeval *retvar));
+static void f_tr __ARGS((typeval *argvars, typeval *retvar));
+static void f_type __ARGS((typeval *argvars, typeval *retvar));
+static void f_virtcol __ARGS((typeval *argvars, typeval *retvar));
+static void f_visualmode __ARGS((typeval *argvars, typeval *retvar));
+static void f_winbufnr __ARGS((typeval *argvars, typeval *retvar));
+static void f_wincol __ARGS((typeval *argvars, typeval *retvar));
+static void f_winheight __ARGS((typeval *argvars, typeval *retvar));
+static void f_winline __ARGS((typeval *argvars, typeval *retvar));
+static void f_winnr __ARGS((typeval *argvars, typeval *retvar));
+static void f_winrestcmd __ARGS((typeval *argvars, typeval *retvar));
+static void f_winwidth __ARGS((typeval *argvars, typeval *retvar));
+static win_T *find_win_by_nr __ARGS((typeval *vp));
+static pos_T *var2fpos __ARGS((typeval *varp, int lnum));
 static int get_env_len __ARGS((char_u **arg));
 static int get_id_len __ARGS((char_u **arg));
 static int get_func_len __ARGS((char_u **arg, char_u **alias, int evaluate));
 static char_u *find_name_end __ARGS((char_u *arg, char_u **expr_start, char_u **expr_end));
 static int eval_isnamec __ARGS((int c));
 static int find_vim_var __ARGS((char_u *name, int len));
-static int get_var_var __ARGS((char_u *name, int len, VAR retvar));
+static int get_var_vartv __ARGS((char_u *name, int len, typeval *retvar));
 static VAR alloc_var __ARGS((void));
-static VAR alloc_string_var __ARGS((char_u *string));
-static void free_var __ARGS((VAR varp));
-static void clear_var __ARGS((VAR varp));
-static long get_var_number __ARGS((VAR varp));
-static linenr_T get_var_lnum __ARGS((VAR argvars));
-static char_u *get_var_string __ARGS((VAR varp));
-static char_u *get_var_string_buf __ARGS((VAR varp, char_u *buf));
+static typeval *alloc_vartv __ARGS((void));
+static typeval *alloc_string_vartv __ARGS((char_u *string));
+static void free_vartv __ARGS((typeval *varp));
+static void clear_vartv __ARGS((typeval *varp));
+static long get_vartv_number __ARGS((typeval *varp));
+static linenr_T get_vartv_lnum __ARGS((typeval *argvars));
+static char_u *get_vartv_string __ARGS((typeval *varp));
+static char_u *get_vartv_string_buf __ARGS((typeval *varp, char_u *buf));
 static VAR find_var __ARGS((char_u *name, int writing));
 static VAR find_var_in_ga __ARGS((garray_T *gap, char_u *varname));
 static garray_T *find_var_ga __ARGS((char_u *name, char_u **varname));
-static void var_free_one __ARGS((VAR v));
+static void clear_var __ARGS((VAR v));
 static void list_one_var __ARGS((VAR v, char_u *prefix));
 static void list_vim_var __ARGS((int i));
 static void list_one_var_a __ARGS((char_u *prefix, char_u *name, int type, char_u *string));
-static void set_var __ARGS((char_u *name, VAR varp, int copy));
-static void copy_var __ARGS((VAR from, VAR to));
+static void set_var __ARGS((char_u *name, typeval *varp, int copy));
+static void copy_vartv __ARGS((typeval *from, typeval *to));
 static char_u *find_option_end __ARGS((char_u **arg, int *opt_flags));
 static char_u *trans_function_name __ARGS((char_u **pp, int skip, int internal));
 static int eval_fname_script __ARGS((char_u *p));
@@ -427,7 +491,12 @@ static int eval_fname_sid __ARGS((char_u *p));
 static void list_func_head __ARGS((ufunc_T *fp, int indent));
 static void cat_func_name __ARGS((char_u *buf, ufunc_T *fp));
 static ufunc_T *find_func __ARGS((char_u *name));
-static void call_user_func __ARGS((ufunc_T *fp, int argcount, VAR argvars, VAR retvar, linenr_T firstline, linenr_T lastline));
+static int function_exists __ARGS((char_u *name));
+static void call_user_func __ARGS((ufunc_T *fp, int argcount, typeval *argvars, typeval *retvar, linenr_T firstline, linenr_T lastline));
+
+#define get_var_string(p)	 get_vartv_string(&(p)->tv)
+#define get_var_string_buf(p, b) get_vartv_string_buf(&(p)->tv, (b))
+#define get_var_number(p)	 get_vartv_number(&((p)->tv))
 
 /* Magic braces are always enabled, otherwise Vim scripts would not be
  * portable. */
@@ -446,17 +515,17 @@ set_internal_string_var(name, value)
     char_u	*name;
     char_u	*value;
 {
-    char_u  *val;
-    VAR	    varp;
+    char_u	*val;
+    typeval	*tvp;
 
     val = vim_strsave(value);
     if (val != NULL)
     {
-	varp = alloc_string_var(val);
-	if (varp != NULL)
+	tvp = alloc_string_vartv(val);
+	if (tvp != NULL)
 	{
-	    set_var(name, varp, FALSE);
-	    free_var(varp);
+	    set_var(name, tvp, FALSE);
+	    free_vartv(tvp);
 	}
     }
 }
@@ -575,7 +644,7 @@ eval_to_bool(arg, error, nextcmd, skip)
 	if (!skip)
 	{
 	    retval = (get_var_number(&retvar) != 0);
-	    clear_var(&retvar);
+	    clear_vartv(&retvar.tv);
 	}
     }
     if (skip)
@@ -605,7 +674,7 @@ eval_to_string_skip(arg, nextcmd, skip)
     else
     {
 	retval = vim_strsave(get_var_string(&retvar));
-	clear_var(&retvar);
+	clear_vartv(&retvar.tv);
     }
     if (skip)
 	--emsg_skip;
@@ -621,7 +690,7 @@ eval_to_string_skip(arg, nextcmd, skip)
 skip_expr(pp)
     char_u	**pp;
 {
-    var		retvar;
+    typeval	retvar;
 
     *pp = skipwhite(*pp);
     return eval1(pp, &retvar, FALSE);
@@ -644,7 +713,7 @@ eval_to_string(arg, nextcmd)
     else
     {
 	retval = vim_strsave(get_var_string(&retvar));
-	clear_var(&retvar);
+	clear_vartv(&retvar.tv);
     }
 
     return retval;
@@ -680,7 +749,7 @@ eval_to_string_safe(arg, nextcmd)
 eval_arg_to_string(arg)
     char_u	**arg;
 {
-    var		retvar;
+    typeval	retvar;
     char_u	*retval;
     int		ret;
 
@@ -691,8 +760,8 @@ eval_arg_to_string(arg)
 	retval = NULL;
     else
     {
-	retval = vim_strsave(get_var_string(&retvar));
-	clear_var(&retvar);
+	retval = vim_strsave(get_vartv_string(&retvar));
+	clear_vartv(&retvar);
     }
 
     --emsg_off;
@@ -710,7 +779,7 @@ eval_arg_to_string(arg)
 eval_to_number(expr)
     char_u	*expr;
 {
-    var		retvar;
+    typeval	retvar;
     int		retval;
     char_u	*p = expr;
 
@@ -720,8 +789,8 @@ eval_to_number(expr)
 	retval = -1;
     else
     {
-	retval = get_var_number(&retvar);
-	clear_var(&retvar);
+	retval = get_vartv_number(&retvar);
+	clear_vartv(&retvar);
     }
     --emsg_off;
 
@@ -742,14 +811,14 @@ call_vim_function(func, argc, argv, safe)
 {
     char_u	*retval = NULL;
     var		retvar;
-    VAR		argvars;
+    typeval	*argvars;
     long	n;
     int		len;
     int		i;
     int		doesrange;
     void	*save_funccalp = NULL;
 
-    argvars = (VAR)alloc((unsigned)(argc * sizeof(var)));
+    argvars = (typeval *)alloc((unsigned)(argc * sizeof(typeval)));
     if (argvars == NULL)
 	return NULL;
 
@@ -758,8 +827,8 @@ call_vim_function(func, argc, argv, safe)
 	/* Pass a NULL or empty argument as an empty string */
 	if (argv[i] == NULL || *argv[i] == NUL)
 	{
-	    argvars[i].var_type = VAR_STRING;
-	    argvars[i].var_val.var_string = (char_u *)"";
+	    argvars[i].v_type = VAR_STRING;
+	    argvars[i].vval.v_string = (char_u *)"";
 	    continue;
 	}
 
@@ -767,13 +836,13 @@ call_vim_function(func, argc, argv, safe)
 	vim_str2nr(argv[i], NULL, &len, TRUE, TRUE, &n, NULL);
 	if (len != 0 && len == (int)STRLEN(argv[i]))
 	{
-	    argvars[i].var_type = VAR_NUMBER;
-	    argvars[i].var_val.var_number = n;
+	    argvars[i].v_type = VAR_NUMBER;
+	    argvars[i].vval.v_number = n;
 	}
 	else
 	{
-	    argvars[i].var_type = VAR_STRING;
-	    argvars[i].var_val.var_string = argv[i];
+	    argvars[i].v_type = VAR_STRING;
+	    argvars[i].vval.v_string = argv[i];
 	}
     }
 
@@ -783,13 +852,13 @@ call_vim_function(func, argc, argv, safe)
 	++sandbox;
     }
 
-    retvar.var_type = VAR_UNKNOWN;	/* clear_var() uses this */
-    if (call_func(func, (int)STRLEN(func), &retvar, argc, argvars,
+    retvar.tv.v_type = VAR_UNKNOWN;	/* clear_vartv() uses this */
+    if (call_func(func, (int)STRLEN(func), &retvar.tv, argc, argvars,
 		    curwin->w_cursor.lnum, curwin->w_cursor.lnum,
 		    &doesrange, TRUE) == OK)
 	retval = vim_strsave(get_var_string(&retvar));
 
-    clear_var(&retvar);
+    clear_vartv(&retvar.tv);
     vim_free(argvars);
 
     if (safe)
@@ -844,21 +913,21 @@ eval_foldexpr(arg, cp)
     else
     {
 	/* If the result is a number, just return the number. */
-	if (retvar.var_type == VAR_NUMBER)
-	    retval = retvar.var_val.var_number;
-	else if (retvar.var_type == VAR_UNKNOWN
-		|| retvar.var_val.var_string == NULL)
+	if (retvar.tv.v_type == VAR_NUMBER)
+	    retval = retvar.tv.vval.v_number;
+	else if (retvar.tv.v_type == VAR_UNKNOWN
+		|| retvar.tv.vval.v_string == NULL)
 	    retval = 0;
 	else
 	{
 	    /* If the result is a string, check if there is a non-digit before
 	     * the number. */
-	    s = retvar.var_val.var_string;
+	    s = retvar.tv.vval.v_string;
 	    if (!VIM_ISDIGIT(*s) && *s != '-')
 		*cp = *s++;
 	    retval = atol((char *)s);
 	}
-	clear_var(&retvar);
+	clear_vartv(&retvar.tv);
     }
     --emsg_off;
     --sandbox;
@@ -970,13 +1039,13 @@ ex_let(eap)
 		 * List all variables.
 		 */
 		for (i = 0; i < variables.ga_len && !got_int; ++i)
-		    if (VAR_ENTRY(i).var_name != NULL)
+		    if (VAR_ENTRY(i).v_name != NULL)
 			list_one_var(&VAR_ENTRY(i), (char_u *)"");
 		for (i = 0; i < curbuf->b_vars.ga_len && !got_int; ++i)
-		    if (BVAR_ENTRY(i).var_name != NULL)
+		    if (BVAR_ENTRY(i).v_name != NULL)
 			list_one_var(&BVAR_ENTRY(i), (char_u *)"b:");
 		for (i = 0; i < curwin->w_vars.ga_len && !got_int; ++i)
-		    if (WVAR_ENTRY(i).var_name != NULL)
+		    if (WVAR_ENTRY(i).v_name != NULL)
 			list_one_var(&WVAR_ENTRY(i), (char_u *)"w:");
 		for (i = 0; i < VV_LEN && !got_int; ++i)
 		    if (vimvars[i].type == VAR_NUMBER || vimvars[i].val != NULL)
@@ -1103,7 +1172,7 @@ ex_let(eap)
 	if (eap->skip)
 	{
 	    if (i != FAIL)
-		clear_var(&retvar);
+		clear_vartv(&retvar.tv);
 	    --emsg_skip;
 	}
 	else if (i != FAIL)
@@ -1214,7 +1283,7 @@ ex_let(eap)
 		    }
 		    else
 		    {
-			set_var(temp_string, &retvar, TRUE);
+			set_var(temp_string, &retvar.tv, TRUE);
 			vim_free(temp_string);
 		    }
 		}
@@ -1223,7 +1292,7 @@ ex_let(eap)
 		{
 		    c1 = *p;
 		    *p = NUL;
-		    set_var(arg, &retvar, TRUE);
+		    set_var(arg, &retvar.tv, TRUE);
 		    *p = c1;		/* put char back for error messages */
 		}
 	    }
@@ -1233,7 +1302,7 @@ ex_let(eap)
 		EMSG2(_(e_invarg2), arg);
 	    }
 
-	    clear_var(&retvar);
+	    clear_vartv(&retvar.tv);
 	}
     }
 }
@@ -1350,7 +1419,7 @@ ex_call(eap)
 	name = alias;
 
     startarg = arg;
-    retvar.var_type = VAR_UNKNOWN;	/* clear_var() uses this */
+    retvar.tv.v_type = VAR_UNKNOWN;	/* clear_vartv() uses this */
 
     if (*startarg != '(')
     {
@@ -1379,19 +1448,19 @@ ex_call(eap)
 	    curwin->w_cursor.col = 0;
 	}
 	arg = startarg;
-	if (get_func_var(name, len, &retvar, &arg,
+	if (get_func_vartv(name, len, &retvar.tv, &arg,
 		      eap->line1, eap->line2, &doesrange, !eap->skip) == FAIL)
 	{
 	    failed = TRUE;
 	    break;
 	}
-	clear_var(&retvar);
+	clear_vartv(&retvar.tv);
 	if (doesrange || eap->skip)
 	    break;
 	/* Stop when immediately aborting on error, or when an interrupt
-	 * occurred or an exception was thrown but not caught.  get_func_var()
-	 * returned OK, so that the check for trailing characters below is
-	 * executed. */
+	 * occurred or an exception was thrown but not caught.
+	 * get_func_vartv() returned OK, so that the check for trailing
+	 * characters below is executed. */
 	if (aborting())
 	    break;
     }
@@ -1508,7 +1577,7 @@ do_unlet(name)
     v = find_var(name, TRUE);
     if (v != NULL)
     {
-	var_free_one(v);
+	clear_var(v);
 	return OK;
     }
     return FAIL;
@@ -1524,9 +1593,9 @@ del_menutrans_vars()
     int		i;
 
     for (i = 0; i < variables.ga_len; ++i)
-	if (VAR_ENTRY(i).var_name != NULL
-		&& STRNCMP(VAR_ENTRY(i).var_name, "menutrans_", 10) == 0)
-	    var_free_one(&VAR_ENTRY(i));
+	if (VAR_ENTRY(i).v_name != NULL
+		&& STRNCMP(VAR_ENTRY(i).v_name, "menutrans_", 10) == 0)
+	    clear_var(&VAR_ENTRY(i));
 }
 #endif
 
@@ -1592,7 +1661,7 @@ get_user_var_name(xp, idx)
 	gidx = bidx = widx = vidx = 0;
     if (gidx < variables.ga_len)			/* Global variables */
     {
-	while ((name = VAR_ENTRY(gidx++).var_name) == NULL
+	while ((name = VAR_ENTRY(gidx++).v_name) == NULL
 		&& gidx < variables.ga_len)
 	    /* skip */;
 	if (name != NULL)
@@ -1605,7 +1674,7 @@ get_user_var_name(xp, idx)
     }
     if (bidx < curbuf->b_vars.ga_len)		/* Current buffer variables */
     {
-	while ((name = BVAR_ENTRY(bidx++).var_name) == NULL
+	while ((name = BVAR_ENTRY(bidx++).v_name) == NULL
 		&& bidx < curbuf->b_vars.ga_len)
 	    /* skip */;
 	if (name != NULL)
@@ -1618,7 +1687,7 @@ get_user_var_name(xp, idx)
     }
     if (widx < curwin->w_vars.ga_len)		/* Current window variables */
     {
-	while ((name = WVAR_ENTRY(widx++).var_name) == NULL
+	while ((name = WVAR_ENTRY(widx++).v_name) == NULL
 		&& widx < curwin->w_vars.ga_len)
 	    /* skip */;
 	if (name != NULL)
@@ -1673,11 +1742,11 @@ eval0(arg, retvar, nextcmd, evaluate)
     char_u	*p;
 
     p = skipwhite(arg);
-    ret = eval1(&p, retvar, evaluate);
+    ret = eval1(&p, &retvar->tv, evaluate);
     if (ret == FAIL || !ends_excmd(*p))
     {
 	if (ret != FAIL)
-	    clear_var(retvar);
+	    clear_vartv(&retvar->tv);
 	/*
 	 * Report the invalid expression unless the expression evaluation has
 	 * been cancelled due to an aborting error, an interrupt, or an
@@ -1705,11 +1774,11 @@ eval0(arg, retvar, nextcmd, evaluate)
     static int
 eval1(arg, retvar, evaluate)
     char_u	**arg;
-    VAR		retvar;
+    typeval	*retvar;
     int		evaluate;
 {
     int		result;
-    var		var2;
+    typeval	var2;
 
     /*
      * Get the first variable.
@@ -1722,9 +1791,9 @@ eval1(arg, retvar, evaluate)
 	result = FALSE;
 	if (evaluate)
 	{
-	    if (get_var_number(retvar) != 0)
+	    if (get_vartv_number(retvar) != 0)
 		result = TRUE;
-	    clear_var(retvar);
+	    clear_vartv(retvar);
 	}
 
 	/*
@@ -1741,7 +1810,7 @@ eval1(arg, retvar, evaluate)
 	{
 	    EMSG(_("E109: Missing ':' after '?'"));
 	    if (evaluate && result)
-		clear_var(retvar);
+		clear_vartv(retvar);
 	    return FAIL;
 	}
 
@@ -1752,7 +1821,7 @@ eval1(arg, retvar, evaluate)
 	if (eval1(arg, &var2, evaluate && !result) == FAIL) /* recursive! */
 	{
 	    if (evaluate && result)
-		clear_var(retvar);
+		clear_vartv(retvar);
 	    return FAIL;
 	}
 	if (evaluate && !result)
@@ -1774,10 +1843,10 @@ eval1(arg, retvar, evaluate)
     static int
 eval2(arg, retvar, evaluate)
     char_u	**arg;
-    VAR		retvar;
+    typeval	*retvar;
     int		evaluate;
 {
-    var		var2;
+    typeval	var2;
     long	result;
     int		first;
 
@@ -1796,9 +1865,9 @@ eval2(arg, retvar, evaluate)
     {
 	if (evaluate && first)
 	{
-	    if (get_var_number(retvar) != 0)
+	    if (get_vartv_number(retvar) != 0)
 		result = TRUE;
-	    clear_var(retvar);
+	    clear_vartv(retvar);
 	    first = FALSE;
 	}
 
@@ -1814,14 +1883,14 @@ eval2(arg, retvar, evaluate)
 	 */
 	if (evaluate && !result)
 	{
-	    if (get_var_number(&var2) != 0)
+	    if (get_vartv_number(&var2) != 0)
 		result = TRUE;
-	    clear_var(&var2);
+	    clear_vartv(&var2);
 	}
 	if (evaluate)
 	{
-	    retvar->var_type = VAR_NUMBER;
-	    retvar->var_val.var_number = result;
+	    retvar->v_type = VAR_NUMBER;
+	    retvar->vval.v_number = result;
 	}
     }
 
@@ -1840,10 +1909,10 @@ eval2(arg, retvar, evaluate)
     static int
 eval3(arg, retvar, evaluate)
     char_u	**arg;
-    VAR		retvar;
+    typeval	*retvar;
     int		evaluate;
 {
-    var		var2;
+    typeval	var2;
     long	result;
     int		first;
 
@@ -1862,9 +1931,9 @@ eval3(arg, retvar, evaluate)
     {
 	if (evaluate && first)
 	{
-	    if (get_var_number(retvar) == 0)
+	    if (get_vartv_number(retvar) == 0)
 		result = FALSE;
-	    clear_var(retvar);
+	    clear_vartv(retvar);
 	    first = FALSE;
 	}
 
@@ -1880,14 +1949,14 @@ eval3(arg, retvar, evaluate)
 	 */
 	if (evaluate && result)
 	{
-	    if (get_var_number(&var2) == 0)
+	    if (get_vartv_number(&var2) == 0)
 		result = FALSE;
-	    clear_var(&var2);
+	    clear_vartv(&var2);
 	}
 	if (evaluate)
 	{
-	    retvar->var_type = VAR_NUMBER;
-	    retvar->var_val.var_number = result;
+	    retvar->v_type = VAR_NUMBER;
+	    retvar->vval.v_number = result;
 	}
     }
 
@@ -1913,10 +1982,10 @@ eval3(arg, retvar, evaluate)
     static int
 eval4(arg, retvar, evaluate)
     char_u	**arg;
-    VAR		retvar;
+    typeval	*retvar;
     int		evaluate;
 {
-    var		var2;
+    typeval	var2;
     char_u	*p;
     int		i;
     exptype_T	type = TYPE_UNKNOWN;
@@ -1992,7 +2061,7 @@ eval4(arg, retvar, evaluate)
 	*arg = skipwhite(p + len);
 	if (eval5(arg, &var2, evaluate) == FAIL)
 	{
-	    clear_var(retvar);
+	    clear_vartv(retvar);
 	    return FAIL;
 	}
 
@@ -2002,11 +2071,11 @@ eval4(arg, retvar, evaluate)
 	     * If one of the two variables is a number, compare as a number.
 	     * When using "=~" or "!~", always compare as string.
 	     */
-	    if ((retvar->var_type == VAR_NUMBER || var2.var_type == VAR_NUMBER)
+	    if ((retvar->v_type == VAR_NUMBER || var2.v_type == VAR_NUMBER)
 		    && type != TYPE_MATCH && type != TYPE_NOMATCH)
 	    {
-		n1 = get_var_number(retvar);
-		n2 = get_var_number(&var2);
+		n1 = get_vartv_number(retvar);
+		n2 = get_vartv_number(&var2);
 		switch (type)
 		{
 		    case TYPE_EQUAL:    n1 = (n1 == n2); break;
@@ -2022,8 +2091,8 @@ eval4(arg, retvar, evaluate)
 	    }
 	    else
 	    {
-		s1 = get_var_string_buf(retvar, buf1);
-		s2 = get_var_string_buf(&var2, buf2);
+		s1 = get_vartv_string_buf(retvar, buf1);
+		s2 = get_vartv_string_buf(&var2, buf2);
 		if (type != TYPE_MATCH && type != TYPE_NOMATCH)
 		    i = ic ? MB_STRICMP(s1, s2) : STRCMP(s1, s2);
 		else
@@ -2059,10 +2128,10 @@ eval4(arg, retvar, evaluate)
 		    case TYPE_UNKNOWN:  break;  /* avoid gcc warning */
 		}
 	    }
-	    clear_var(retvar);
-	    clear_var(&var2);
-	    retvar->var_type = VAR_NUMBER;
-	    retvar->var_val.var_number = n1;
+	    clear_vartv(retvar);
+	    clear_vartv(&var2);
+	    retvar->v_type = VAR_NUMBER;
+	    retvar->vval.v_number = n1;
 	}
     }
 
@@ -2083,10 +2152,10 @@ eval4(arg, retvar, evaluate)
     static int
 eval5(arg, retvar, evaluate)
     char_u	**arg;
-    VAR		retvar;
+    typeval	*retvar;
     int		evaluate;
 {
-    var		var2;
+    typeval	var2;
     int		op;
     long	n1, n2;
     char_u	*s1, *s2;
@@ -2114,7 +2183,7 @@ eval5(arg, retvar, evaluate)
 	*arg = skipwhite(*arg + 1);
 	if (eval6(arg, &var2, evaluate) == FAIL)
 	{
-	    clear_var(retvar);
+	    clear_vartv(retvar);
 	    return FAIL;
 	}
 
@@ -2125,8 +2194,8 @@ eval5(arg, retvar, evaluate)
 	     */
 	    if (op == '.')
 	    {
-		s1 = get_var_string_buf(retvar, buf1);
-		s2 = get_var_string_buf(&var2, buf2);
+		s1 = get_vartv_string_buf(retvar, buf1);
+		s2 = get_vartv_string_buf(&var2, buf2);
 		op = (int)STRLEN(s1);
 		p = alloc((unsigned)(op + STRLEN(s2) + 1));
 		if (p != NULL)
@@ -2134,23 +2203,23 @@ eval5(arg, retvar, evaluate)
 		    STRCPY(p, s1);
 		    STRCPY(p + op, s2);
 		}
-		clear_var(retvar);
-		retvar->var_type = VAR_STRING;
-		retvar->var_val.var_string = p;
+		clear_vartv(retvar);
+		retvar->v_type = VAR_STRING;
+		retvar->vval.v_string = p;
 	    }
 	    else
 	    {
-		n1 = get_var_number(retvar);
-		n2 = get_var_number(&var2);
-		clear_var(retvar);
+		n1 = get_vartv_number(retvar);
+		n2 = get_vartv_number(&var2);
+		clear_vartv(retvar);
 		if (op == '+')
 		    n1 = n1 + n2;
 		else
 		    n1 = n1 - n2;
-		retvar->var_type = VAR_NUMBER;
-		retvar->var_val.var_number = n1;
+		retvar->v_type = VAR_NUMBER;
+		retvar->vval.v_number = n1;
 	    }
-	    clear_var(&var2);
+	    clear_vartv(&var2);
 	}
     }
     return OK;
@@ -2170,10 +2239,10 @@ eval5(arg, retvar, evaluate)
     static int
 eval6(arg, retvar, evaluate)
     char_u	**arg;
-    VAR		retvar;
+    typeval	*retvar;
     int		evaluate;
 {
-    var		var2;
+    typeval	var2;
     int		op;
     long	n1, n2;
 
@@ -2194,8 +2263,8 @@ eval6(arg, retvar, evaluate)
 
 	if (evaluate)
 	{
-	    n1 = get_var_number(retvar);
-	    clear_var(retvar);
+	    n1 = get_vartv_number(retvar);
+	    clear_vartv(retvar);
 	}
 	else
 	    n1 = 0;
@@ -2209,8 +2278,8 @@ eval6(arg, retvar, evaluate)
 
 	if (evaluate)
 	{
-	    n2 = get_var_number(&var2);
-	    clear_var(&var2);
+	    n2 = get_vartv_number(&var2);
+	    clear_vartv(&var2);
 
 	    /*
 	     * Compute the result.
@@ -2231,8 +2300,8 @@ eval6(arg, retvar, evaluate)
 		else
 		    n1 = n1 % n2;
 	    }
-	    retvar->var_type = VAR_NUMBER;
-	    retvar->var_val.var_number = n1;
+	    retvar->v_type = VAR_NUMBER;
+	    retvar->vval.v_number = n1;
 	}
     }
 
@@ -2265,10 +2334,9 @@ eval6(arg, retvar, evaluate)
     static int
 eval7(arg, retvar, evaluate)
     char_u	**arg;
-    VAR		retvar;
+    typeval	*retvar;
     int		evaluate;
 {
-    var		var2;
     long	n;
     int		len;
     char_u	*s;
@@ -2278,10 +2346,10 @@ eval7(arg, retvar, evaluate)
     char_u	*alias;
 
     /*
-     * Initialise variable so that clear_var() can't mistake this for a string
-     * and free a string that isn't there.
+     * Initialise variable so that clear_vartv() can't mistake this for a
+     * string and free a string that isn't there.
      */
-    retvar->var_type = VAR_UNKNOWN;
+    retvar->v_type = VAR_UNKNOWN;
 
     /*
      * Skip '!' and '-' characters.  They are handled later.
@@ -2310,33 +2378,39 @@ eval7(arg, retvar, evaluate)
 		*arg += len;
 		if (evaluate)
 		{
-		    retvar->var_type = VAR_NUMBER;
-		    retvar->var_val.var_number = n;
+		    retvar->v_type = VAR_NUMBER;
+		    retvar->vval.v_number = n;
 		}
 		break;
 
     /*
      * String constant: "string".
      */
-    case '"':	ret = get_string_var(arg, retvar, evaluate);
+    case '"':	ret = get_string_vartv(arg, retvar, evaluate);
 		break;
 
     /*
      * Literal string constant: 'string'.
      */
-    case '\'':	ret = get_lit_string_var(arg, retvar, evaluate);
+    case '\'':	ret = get_lit_string_vartv(arg, retvar, evaluate);
+		break;
+
+    /*
+     * List: [expr, expr]
+     */
+    case '[':	ret = get_list_vartv(arg, retvar, evaluate);
 		break;
 
     /*
      * Option value: &name
      */
-    case '&':	ret = get_option_var(arg, retvar, evaluate);
+    case '&':	ret = get_option_vartv(arg, retvar, evaluate);
 		break;
 
     /*
      * Environment variable: $VAR.
      */
-    case '$':	ret = get_env_var(arg, retvar, evaluate);
+    case '$':	ret = get_env_vartv(arg, retvar, evaluate);
 		break;
 
     /*
@@ -2345,8 +2419,8 @@ eval7(arg, retvar, evaluate)
     case '@':	++*arg;
 		if (evaluate)
 		{
-		    retvar->var_type = VAR_STRING;
-		    retvar->var_val.var_string = get_reg_contents(**arg, FALSE);
+		    retvar->v_type = VAR_STRING;
+		    retvar->vval.v_string = get_reg_contents(**arg, FALSE);
 		}
 		if (**arg != NUL)
 		    ++*arg;
@@ -2362,7 +2436,7 @@ eval7(arg, retvar, evaluate)
 		else if (ret == OK)
 		{
 		    EMSG(_("E110: Missing ')'"));
-		    clear_var(retvar);
+		    clear_vartv(retvar);
 		    ret = FAIL;
 		}
 		break;
@@ -2381,7 +2455,12 @@ eval7(arg, retvar, evaluate)
 		{
 		    if (**arg == '(')		/* recursive! */
 		    {
-			ret = get_func_var(s, len, retvar, arg,
+			/* If "s" is the name of a variable of type VAR_FUNC
+			 * use its contents. */
+			s = deref_func_name(s, &len);
+
+			/* Invoke the function. */
+			ret = get_func_vartv(s, len, retvar, arg,
 				  curwin->w_cursor.lnum, curwin->w_cursor.lnum,
 				  &len, evaluate);
 			/* Stop the expression evaluation when immediately
@@ -2390,12 +2469,12 @@ eval7(arg, retvar, evaluate)
 			if (aborting())
 			{
 			    if (ret == OK)
-				clear_var(retvar);
+				clear_vartv(retvar);
 			    ret = FAIL;
 			}
 		    }
 		    else if (evaluate)
-			ret = get_var_var(s, len, retvar);
+			ret = get_var_vartv(s, len, retvar);
 		}
 
 		if (alias != NULL)
@@ -2406,48 +2485,15 @@ eval7(arg, retvar, evaluate)
     *arg = skipwhite(*arg);
 
     /*
-     * Handle expr[expr] subscript.
+     * Handle expr[expr] and expr[expr:expr] subscript.
      */
-    if (**arg == '[' && ret == OK)
+    while (**arg == '[' && ret == OK)
     {
-	/*
-	 * Get the variable from inside the [].
-	 */
-	*arg = skipwhite(*arg + 1);
-	if (eval1(arg, &var2, evaluate) == FAIL)	/* recursive! */
+	if (eval_index(arg, retvar, evaluate) == FAIL)
 	{
-	    clear_var(retvar);
+	    clear_vartv(retvar);
 	    return FAIL;
 	}
-
-	/* Check for the ']'. */
-	if (**arg != ']')
-	{
-	    EMSG(_("E111: Missing ']'"));
-	    clear_var(retvar);
-	    clear_var(&var2);
-	    return FAIL;
-	}
-
-	if (evaluate)
-	{
-	    n = get_var_number(&var2);
-	    clear_var(&var2);
-
-	    /*
-	     * The resulting variable is a string of a single character.
-	     * If the index is too big or negative, the result is empty.
-	     */
-	    s = get_var_string(retvar);
-	    if (n >= (long)STRLEN(s) || n < 0)
-		s = NULL;
-	    else
-		s = vim_strnsave(s + n, 1);
-	    clear_var(retvar);
-	    retvar->var_type = VAR_STRING;
-	    retvar->var_val.var_string = s;
-	}
-	*arg = skipwhite(*arg + 1);	/* skip the ']' */
     }
 
     /*
@@ -2455,7 +2501,7 @@ eval7(arg, retvar, evaluate)
      */
     if (ret == OK && evaluate && end_leader > start_leader)
     {
-	val = get_var_number(retvar);
+	val = get_vartv_number(retvar);
 	while (end_leader > start_leader)
 	{
 	    --end_leader;
@@ -2464,12 +2510,186 @@ eval7(arg, retvar, evaluate)
 	    else if (*end_leader == '-')
 		val = -val;
 	}
-	clear_var(retvar);
-	retvar->var_type = VAR_NUMBER;
-	retvar->var_val.var_number = val;
+	clear_vartv(retvar);
+	retvar->v_type = VAR_NUMBER;
+	retvar->vval.v_number = val;
     }
 
     return ret;
+}
+
+/*
+ * Evaluate an "[expr]" or "[expr:expr]" index.
+ * "*arg" points to the '['.
+ * Returns FAIL or OK. "*arg" is advanced to after the ']'.
+ */
+    static int
+eval_index(arg, retvar, evaluate)
+    char_u	**arg;
+    typeval	*retvar;
+    int		evaluate;
+{
+    int		empty1 = FALSE, empty2 = FALSE;
+    typeval	var1, var2;
+    long	n1, n2 = 0;
+    long	len;
+    int		range;
+    char_u	*s;
+
+    if (retvar->v_type == VAR_FUNC)
+    {
+	EMSG(_("E999: Cannot index a Funcref"));
+	return FAIL;
+    }
+
+    /*
+     * Get the (first) variable from inside the [].
+     */
+    *arg = skipwhite(*arg + 1);
+    if (**arg == ':')
+	empty1 = TRUE;
+    else if (eval1(arg, &var1, evaluate) == FAIL)	/* recursive! */
+	return FAIL;
+
+    /*
+     * Get the second variable from inside the [:].
+     */
+    if (**arg == ':')
+    {
+	range = TRUE;
+	*arg = skipwhite(*arg + 1);
+	if (**arg == ']')
+	    empty2 = TRUE;
+	else if (eval1(arg, &var2, evaluate) == FAIL)	/* recursive! */
+	{
+	    clear_vartv(&var1);
+	    return FAIL;
+	}
+    }
+    else
+	range = FALSE;
+
+    /* Check for the ']'. */
+    if (**arg != ']')
+    {
+	EMSG(_("E111: Missing ']'"));
+	clear_vartv(&var1);
+	if (range)
+	    clear_vartv(&var2);
+	return FAIL;
+    }
+
+    if (evaluate)
+    {
+	if (empty1)
+	    n1 = 0;
+	else
+	{
+	    n1 = get_vartv_number(&var1);
+	    clear_vartv(&var1);
+	}
+	if (range)
+	{
+	    if (empty2)
+		n2 = -1;
+	    else
+	    {
+		n2 = get_vartv_number(&var2);
+		clear_vartv(&var2);
+	    }
+	}
+
+	switch (retvar->v_type)
+	{
+	    case VAR_NUMBER:
+	    case VAR_STRING:
+		s = get_vartv_string(retvar);
+		len = (long)STRLEN(s);
+		if (range)
+		{
+		    /* The resulting variable is a substring.  If the indexes
+		     * are out of range the result is empty. */
+		    if (n1 < 0)
+		    {
+			n1 = len + n1;
+			if (n1 < 0)
+			    n1 = 0;
+		    }
+		    if (n2 < 0)
+			n2 = len + n2;
+		    else if (n2 >= len)
+			n2 = len;
+		    if (n1 >= len || n2 < 0 || n1 > n2)
+			s = NULL;
+		    else
+			s = vim_strnsave(s + n1, (int)(n2 - n1 + 1));
+		}
+		else
+		{
+		    /* The resulting variable is a string of a single
+		     * character.  If the index is too big or negative the
+		     * result is empty. */
+		    if (n1 >= len || n1 < 0)
+			s = NULL;
+		    else
+			s = vim_strnsave(s + n1, 1);
+		}
+		clear_vartv(retvar);
+		retvar->v_type = VAR_STRING;
+		retvar->vval.v_string = s;
+		break;
+
+	    case VAR_LIST:
+		len = list_len(retvar->vval.v_list);
+		if (n1 < 0)
+		    n1 = len + n1;
+		if (!empty1 && (n1 < 0 || n1 >= len))
+		{
+		    EMSGN(_(e_listidx), n1);
+		    return FAIL;
+		}
+		if (range)
+		{
+		    listvar	*l;
+		    listitem	*item;
+
+		    if (n2 < 0)
+			n2 = len + n2;
+		    if (!empty2 && (n2 < 0 || n2 >= len || n2 < n1))
+		    {
+			EMSGN(_(e_listidx), n2);
+			return FAIL;
+		    }
+		    l = list_alloc();
+		    if (l == NULL)
+			return FAIL;
+		    for (item = list_find(retvar->vval.v_list, n1);
+							       n1 <= n2; ++n1)
+		    {
+			if (list_append_tv(l, &item->li_tv) == FAIL)
+			{
+			    list_free(l);
+			    return FAIL;
+			}
+			item = item->li_next;
+		    }
+		    clear_vartv(retvar);
+		    retvar->v_type = VAR_LIST;
+		    retvar->vval.v_list = l;
+		}
+		else
+		{
+		    copy_vartv(&list_find(retvar->vval.v_list, n1)->li_tv,
+								       &var1);
+		    clear_vartv(retvar);
+		    *retvar = var1;
+		}
+		break;
+	}
+    }
+
+    *arg = skipwhite(*arg + 1);	/* skip the ']' */
+    return OK;
 }
 
 /*
@@ -2479,9 +2699,9 @@ eval7(arg, retvar, evaluate)
  * Return OK or FAIL.
  */
     static int
-get_option_var(arg, retvar, evaluate)
+get_option_vartv(arg, retvar, evaluate)
     char_u	**arg;
-    VAR		retvar;		/* when NULL, only check if option exists */
+    typeval	*retvar;	/* when NULL, only check if option exists */
     int		evaluate;
 {
     char_u	*option_end;
@@ -2525,23 +2745,23 @@ get_option_var(arg, retvar, evaluate)
     {
 	if (opt_type == -2)		/* hidden string option */
 	{
-	    retvar->var_type = VAR_STRING;
-	    retvar->var_val.var_string = NULL;
+	    retvar->v_type = VAR_STRING;
+	    retvar->vval.v_string = NULL;
 	}
 	else if (opt_type == -1)	/* hidden number option */
 	{
-	    retvar->var_type = VAR_NUMBER;
-	    retvar->var_val.var_number = 0;
+	    retvar->v_type = VAR_NUMBER;
+	    retvar->vval.v_number = 0;
 	}
 	else if (opt_type == 1)		/* number option */
 	{
-	    retvar->var_type = VAR_NUMBER;
-	    retvar->var_val.var_number = numval;
+	    retvar->v_type = VAR_NUMBER;
+	    retvar->vval.v_number = numval;
 	}
 	else				/* string option */
 	{
-	    retvar->var_type = VAR_STRING;
-	    retvar->var_val.var_string = stringval;
+	    retvar->v_type = VAR_STRING;
+	    retvar->vval.v_string = stringval;
 	}
     }
     else if (working && (opt_type == -2 || opt_type == -1))
@@ -2558,9 +2778,9 @@ get_option_var(arg, retvar, evaluate)
  * Return OK or FAIL.
  */
     static int
-get_string_var(arg, retvar, evaluate)
+get_string_vartv(arg, retvar, evaluate)
     char_u	**arg;
-    VAR		retvar;
+    typeval	*retvar;
     int		evaluate;
 {
     char_u	*p;
@@ -2703,8 +2923,8 @@ get_string_var(arg, retvar, evaluate)
     name[i] = NUL;
     *arg = p + 1;
 
-    retvar->var_type = VAR_STRING;
-    retvar->var_val.var_string = name;
+    retvar->v_type = VAR_STRING;
+    retvar->vval.v_string = name;
 
     return OK;
 }
@@ -2714,9 +2934,9 @@ get_string_var(arg, retvar, evaluate)
  * Return OK or FAIL.
  */
     static int
-get_lit_string_var(arg, retvar, evaluate)
+get_lit_string_vartv(arg, retvar, evaluate)
     char_u	**arg;
-    VAR		retvar;
+    typeval	*retvar;
     int		evaluate;
 {
     char_u	*p;
@@ -2741,13 +2961,373 @@ get_lit_string_var(arg, retvar, evaluate)
 	if (name == NULL)
 	    return FAIL;
 
-	retvar->var_type = VAR_STRING;
-	retvar->var_val.var_string = name;
+	retvar->v_type = VAR_STRING;
+	retvar->vval.v_string = name;
     }
 
     *arg = p + 1;
 
     return OK;
+}
+
+/*
+ * Allocate a variable for a List and fill it from "*arg".
+ * Return OK or FAIL.
+ */
+    static int
+get_list_vartv(arg, retvar, evaluate)
+    char_u	**arg;
+    typeval	*retvar;
+    int		evaluate;
+{
+    listvar	*l = NULL;
+    typeval	tv;
+    listitem	*item;
+
+    if (evaluate)
+    {
+	l = list_alloc();
+	if (l == NULL)
+	    return FAIL;
+    }
+
+    *arg = skipwhite(*arg + 1);
+    while (**arg != ']' && **arg != NUL)
+    {
+	if (eval1(arg, &tv, evaluate) == FAIL)	/* recursive! */
+	    goto failret;
+	if (evaluate)
+	{
+	    item = listitem_alloc();
+	    if (item != NULL)
+	    {
+		item->li_tv = tv;
+		list_append(l, item);
+	    }
+	}
+
+	if (**arg == ']')
+	    break;
+	if (**arg != ',')
+	{
+	    EMSG2(_("E999: Missing comma in list: %s"), *arg);
+	    goto failret;
+	}
+	*arg = skipwhite(*arg + 1);
+    }
+
+    if (**arg != ']')
+    {
+	EMSG2(_("E999: Missing end of list ']': %s"), *arg);
+failret:
+	if (evaluate)
+	    list_free(l);
+	return FAIL;
+    }
+
+    *arg = skipwhite(*arg + 1);
+    if (evaluate)
+    {
+	retvar->v_type = VAR_LIST;
+	retvar->vval.v_list = l;
+	++l->lv_refcount;
+    }
+
+    return OK;
+}
+
+/*
+ * Allocate an empty header for a list.
+ */
+    static listvar *
+list_alloc()
+{
+    return (listvar *)alloc_clear(sizeof(listvar));
+}
+
+/*
+ * Unreference a list: decrement the reference count and free it when it
+ * becomes zero.
+ */
+    static void
+list_unref(l)
+    listvar *l;
+{
+    if (l != NULL && --l->lv_refcount <= 0)
+	list_free(l);
+}
+
+/*
+ * Free a list, including all items it points to.
+ * Ignores the reference count.
+ */
+    static void
+list_free(l)
+    listvar *l;
+{
+    listitem *item;
+    listitem *next;
+
+    for (item = l->lv_first; item != NULL; item = next)
+    {
+	next = item->li_next;
+	listitem_free(item);
+    }
+    vim_free(l);
+}
+
+/*
+ * Allocate a list item.
+ */
+    static listitem *
+listitem_alloc()
+{
+    return (listitem *)alloc(sizeof(listitem));
+}
+
+/*
+ * Free a list item.  Also clears the value;
+ */
+    static void
+listitem_free(item)
+    listitem *item;
+{
+    clear_vartv(&item->li_tv);
+    vim_free(item);
+}
+
+/*
+ * Get the number of items in a list.
+ */
+    static long
+list_len(l)
+    listvar	*l;
+{
+    listitem	*item;
+    long	len = 0;
+
+    if (l == NULL)
+	return 0L;
+    for (item = l->lv_first; item != NULL; item = item->li_next)
+	++len;
+    return len;
+}
+
+/*
+ * Locate item with index "n" in list "l" and return it.
+ * A negative index is counted from the end; -1 is the last item.
+ * Returns NULL when "n" is out of range.
+ */
+    static listitem *
+list_find(l, n)
+    listvar	*l;
+    long	n;
+{
+    listitem	*item;
+    long	idx;
+
+    if (l == NULL)
+	return NULL;
+    if (n < 0)
+    {
+	idx = -1;	/* search from the end */
+	for (item = l->lv_last; item != NULL && idx > n; item = item->li_prev)
+	    --idx;
+    }
+    else
+    {
+	idx = 0;	/* search from the start */
+	for (item = l->lv_first; item != NULL && idx < n; item = item->li_next)
+	    ++idx;
+    }
+    if (idx != n)
+	return NULL;
+    return item;
+}
+
+/*
+ * Append item "item" to the end of list "l".
+ */
+    static void
+list_append(l, item)
+    listvar	*l;
+    listitem	*item;
+{
+    if (l->lv_last == NULL)
+    {
+	/* empty list */
+	l->lv_first = item;
+	l->lv_last = item;
+	item->li_prev = NULL;
+    }
+    else
+    {
+	l->lv_last->li_next = item;
+	item->li_prev = l->lv_last;
+	l->lv_last = item;
+    }
+    item->li_next = NULL;
+}
+
+/*
+ * Append typeval "tv" to the end of list "l".
+ */
+    static int
+list_append_tv(l, tv)
+    listvar	*l;
+    typeval	*tv;
+{
+    listitem	*ni = listitem_alloc();
+
+    if (ni == NULL)
+	return FAIL;
+    copy_vartv(tv, &ni->li_tv);
+    list_append(l, ni);
+    return OK;
+}
+
+/*
+ * Make a copy of list "l".  Shallow if "deep" is FALSE.
+ * The refcount of the new list is set to 1.
+ * Returns NULL when out of memory.
+ */
+    static listvar *
+list_copy(orig, deep)
+    listvar	*orig;
+    int		deep;
+{
+    listvar	*copy;
+    listitem	*item;
+    listitem	*ni;
+    static int	recurse = 0;
+
+    if (orig == NULL)
+	return NULL;
+    if (recurse >= VAR_LIST_MAXNEST)
+    {
+	EMSG(_("E999: List nested too deep for making a copy"));
+	return NULL;
+    }
+    ++recurse;
+
+    copy = list_alloc();
+    if (copy != NULL)
+    {
+	for (item = orig->lv_first; item != NULL; item = item->li_next)
+	{
+	    ni = listitem_alloc();
+	    if (ni == NULL)
+		break;
+	    if (deep && item->li_tv.v_type == VAR_LIST)
+	    {
+		ni->li_tv.v_type = VAR_LIST;
+		ni->li_tv.vval.v_list = list_copy(item->li_tv.vval.v_list,
+									TRUE);
+		if (ni->li_tv.vval.v_list == NULL)
+		{
+		    vim_free(ni);
+		    break;
+		}
+	    }
+	    else
+		copy_vartv(&item->li_tv, &ni->li_tv);
+	    list_append(copy, ni);
+	}
+	++copy->lv_refcount;
+    }
+
+    --recurse;
+    return copy;
+}
+
+/*
+ * Remove item with index "n" from list "l" and return it.
+ * Returns NULL when "n" is out of range.
+ */
+    static listitem *
+list_getrem(l, n)
+    listvar	*l;
+    long	n;
+{
+    listitem	*item;
+
+    item = list_find(l, n);
+    if (item != NULL)
+    {
+	if (item->li_next == NULL)
+	    l->lv_last = item->li_prev;
+	else
+	    item->li_next->li_prev = item->li_prev;
+	if (item->li_prev == NULL)
+	    l->lv_first = item->li_next;
+	else
+	    item->li_prev->li_next = item->li_next;
+    }
+    return item;
+}
+
+/*
+ * Return an allocated string with the string representation of a list.
+ * May return NULL.
+ */
+    static char_u *
+list2string(tv)
+    typeval	*tv;
+{
+    garray_T	ga;
+    listitem	*item;
+    int		first = TRUE;
+    char_u	*tofree;
+    char_u	*s;
+
+    if (tv->vval.v_list == NULL)
+	return NULL;
+    ga_init2(&ga, (int)sizeof(char), 80);
+    ga_append(&ga, '[');
+
+    for (item = tv->vval.v_list->lv_first; item != NULL; item = item->li_next)
+    {
+	if (first)
+	    first = FALSE;
+	else
+	    ga_concat(&ga, (char_u *)", ");
+
+	s = tv2string(&item->li_tv, &tofree);
+	if (s != NULL)
+	    ga_concat(&ga, s);
+	vim_free(tofree);
+    }
+
+    ga_append(&ga, ']');
+    ga_append(&ga, NUL);
+    return (char_u *)ga.ga_data;
+}
+
+/*
+ * Return a string with the string representation of a variable.
+ * If the memory is allocated "tofree" is set to it, otherwise NULL.
+ * Can only be used once before the value is used, it may call
+ * get_var_string().
+ * May return NULL;
+ */
+    static char_u *
+tv2string(tv, tofree)
+    typeval	*tv;
+    char_u	**tofree;
+{
+    switch (tv->v_type)
+    {
+	case VAR_FUNC:
+	    *tofree = NULL;
+	    return tv->vval.v_string;
+	case VAR_LIST:
+	    *tofree = list2string(tv);
+	    return *tofree;
+	default:
+	    break;
+    }
+    *tofree = NULL;
+    return get_vartv_string(tv);
 }
 
 /*
@@ -2757,9 +3337,9 @@ get_lit_string_var(arg, retvar, evaluate)
  * Always return OK.
  */
     static int
-get_env_var(arg, retvar, evaluate)
+get_env_vartv(arg, retvar, evaluate)
     char_u	**arg;
-    VAR		retvar;
+    typeval	*retvar;
     int		evaluate;
 {
     char_u	*string = NULL;
@@ -2792,8 +3372,8 @@ get_env_var(arg, retvar, evaluate)
 	    }
 	    name[len] = cc;
 	}
-	retvar->var_type = VAR_STRING;
-	retvar->var_val.var_string = string;
+	retvar->v_type = VAR_STRING;
+	retvar->vval.v_string = string;
     }
 
     return OK;
@@ -2808,7 +3388,8 @@ static struct fst
     char	*f_name;	/* function name */
     char	f_min_argc;	/* minimal number of arguments */
     char	f_max_argc;	/* maximal number of arguments */
-    void	(*f_func) __ARGS((VAR args, VAR rvar)); /* impl. function */
+    void	(*f_func) __ARGS((typeval *args, typeval *rvar));
+				/* implemenation of function */
 } functions[] =
 {
     {"append",		2, 2, f_append},
@@ -2832,8 +3413,10 @@ static struct fst
     {"cindent",		1, 1, f_cindent},
     {"col",		1, 1, f_col},
     {"confirm",		1, 4, f_confirm},
+    {"copy",		1, 1, f_copy},
     {"cscope_connection",0,3, f_cscope_connection},
     {"cursor",		2, 2, f_cursor},
+    {"deepcopy",	1, 1, f_deepcopy},
     {"delete",		1, 1, f_delete},
     {"did_filetype",	0, 0, f_did_filetype},
     {"diff_filler",	1, 1, f_diff_filler},
@@ -2855,6 +3438,7 @@ static struct fst
     {"foldtext",	0, 0, f_foldtext},
     {"foldtextresult",	1, 1, f_foldtextresult},
     {"foreground",	0, 0, f_foreground},
+    {"function",	1, 1, f_function},
     {"getbufvar",	2, 2, f_getbufvar},
     {"getchar",		0, 1, f_getchar},
     {"getcharmod",	0, 0, f_getcharmod},
@@ -2892,8 +3476,10 @@ static struct fst
     {"inputrestore",	0, 0, f_inputrestore},
     {"inputsave",	0, 0, f_inputsave},
     {"inputsecret",	1, 2, f_inputsecret},
+    {"insert",		2, 3, f_insert},
     {"isdirectory",	1, 1, f_isdirectory},
     {"last_buffer_nr",	0, 0, f_last_buffer_nr},/* obsolete */
+    {"len",		1, 1, f_len},
     {"libcall",		3, 3, f_libcall},
     {"libcallnr",	3, 3, f_libcallnr},
     {"line",		1, 1, f_line},
@@ -2914,6 +3500,7 @@ static struct fst
     {"remote_peek",	1, 2, f_remote_peek},
     {"remote_read",	1, 1, f_remote_read},
     {"remote_send",	2, 3, f_remote_send},
+    {"remove",		2, 2, f_remove},
     {"rename",		2, 2, f_rename},
     {"repeat",		2, 2, f_repeat},
     {"resolve",		1, 1, f_resolve},
@@ -2931,6 +3518,7 @@ static struct fst
     {"strftime",	1, 2, f_strftime},
 #endif
     {"stridx",		2, 2, f_stridx},
+    {"string",		1, 1, f_string},
     {"strlen",		1, 1, f_strlen},
     {"strpart",		2, 3, f_strpart},
     {"strridx",		2, 2, f_strridx},
@@ -3048,14 +3636,44 @@ find_internal_func(name)
 }
 
 /*
+ * Check if "name" is a variable of type VAR_FUNC.  If so, return the function
+ * name it contains, otherwise return "name".
+ */
+    static char_u *
+deref_func_name(name, lenp)
+    char_u	*name;
+    int		*lenp;
+{
+    VAR		v;
+    int		cc;
+
+    cc = name[*lenp];
+    name[*lenp] = NUL;
+    v = find_var(name, FALSE);
+    name[*lenp] = cc;
+    if (v != NULL && v->tv.v_type == VAR_FUNC)
+    {
+	if (v->tv.vval.v_string == NULL)
+	{
+	    *lenp = 0;
+	    return (char_u *)"";	/* just in case */
+	}
+	*lenp = STRLEN(v->tv.vval.v_string);
+	return v->tv.vval.v_string;
+    }
+
+    return name;
+}
+
+/*
  * Allocate a variable for the result of a function.
  * Return OK or FAIL.
  */
     static int
-get_func_var(name, len, retvar, arg, firstline, lastline, doesrange, evaluate)
+get_func_vartv(name, len, retvar, arg, firstline, lastline, doesrange, evaluate)
     char_u	*name;		/* name of the function */
     int		len;		/* length of "name" */
-    VAR		retvar;
+    typeval	*retvar;
     char_u	**arg;		/* argument, pointing to the '(' */
     linenr_T	firstline;	/* first line of range */
     linenr_T	lastline;	/* last line of range */
@@ -3065,7 +3683,7 @@ get_func_var(name, len, retvar, arg, firstline, lastline, doesrange, evaluate)
     char_u	*argp;
     int		ret = OK;
 #define MAX_FUNC_ARGS	20
-    var		argvars[MAX_FUNC_ARGS];	/* vars for arguments */
+    typeval	argvars[MAX_FUNC_ARGS];	/* vars for arguments */
     int		argcount = 0;		/* number of arguments found */
 
     /*
@@ -3077,7 +3695,6 @@ get_func_var(name, len, retvar, arg, firstline, lastline, doesrange, evaluate)
 	argp = skipwhite(argp + 1);	    /* skip the '(' or ',' */
 	if (*argp == ')' || *argp == ',' || *argp == NUL)
 	    break;
-	argvars[argcount].var_name = NULL;  /* the name is not stored */
 	if (eval1(&argp, &argvars[argcount], evaluate) == FAIL)
 	{
 	    ret = FAIL;
@@ -3099,7 +3716,7 @@ get_func_var(name, len, retvar, arg, firstline, lastline, doesrange, evaluate)
 	EMSG2(_("E116: Invalid arguments for function %s"), name);
 
     while (--argcount >= 0)
-	clear_var(&argvars[argcount]);
+	clear_vartv(&argvars[argcount]);
 
     *arg = skipwhite(argp);
     return ret;
@@ -3115,9 +3732,9 @@ call_func(name, len, retvar, argcount, argvars, firstline, lastline,
 							  doesrange, evaluate)
     char_u	*name;		/* name of the function */
     int		len;		/* length of "name" */
-    VAR		retvar;		/* return value goes here */
+    typeval	*retvar;		/* return value goes here */
     int		argcount;	/* number of "argvars" */
-    VAR		argvars;	/* vars for arguments */
+    typeval	*argvars;	/* vars for arguments */
     linenr_T	firstline;	/* first line of range */
     linenr_T	lastline;	/* last line of range */
     int		*doesrange;	/* return: function handled range */
@@ -3195,7 +3812,7 @@ call_func(name, len, retvar, argcount, argvars, firstline, lastline,
     /* execute the function if no errors detected and executing */
     if (evaluate && error == ERROR_NONE)
     {
-	retvar->var_type = VAR_NUMBER;	/* default is number retvar */
+	retvar->v_type = VAR_NUMBER;	/* default is number retvar */
 	error = ERROR_UNKNOWN;
 
 	if (!ASCII_ISLOWER(fname[0]))
@@ -3257,7 +3874,7 @@ call_func(name, len, retvar, argcount, argvars, firstline, lastline,
 		    error = ERROR_TOOMANY;
 		else
 		{
-		    argvars[argcount].var_type = VAR_UNKNOWN;
+		    argvars[argcount].v_type = VAR_UNKNOWN;
 		    functions[i].f_func(argvars, retvar);
 		    error = ERROR_NONE;
 		}
@@ -3298,26 +3915,35 @@ call_func(name, len, retvar, argcount, argvars, firstline, lastline,
 
 /*
  * "append(lnum, string)" function
+ * or "append(list, item)" function
  */
     static void
 f_append(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     long	lnum;
 
-    lnum = get_var_lnum(argvars);
-    retvar->var_val.var_number = 1; /* Default: Failed */
-
-    if (lnum >= 0
-	    && lnum <= curbuf->b_ml.ml_line_count
-	    && u_save(lnum, lnum + 1) == OK)
+    retvar->vval.v_number = 1; /* Default: Failed */
+    if (argvars[0].v_type == VAR_LIST)
     {
-	ml_append(lnum, get_var_string(&argvars[1]), (colnr_T)0, FALSE);
-	if (curwin->w_cursor.lnum > lnum)
-	    ++curwin->w_cursor.lnum;
-	appended_lines_mark(lnum, 1L);
-	retvar->var_val.var_number = 0;
+	if (argvars[0].vval.v_list != NULL
+		&& list_append_tv(argvars[0].vval.v_list, &argvars[1]) == OK)
+	    copy_vartv(&argvars[0], retvar);
+    }
+    else
+    {
+	lnum = get_vartv_lnum(argvars);
+	if (lnum >= 0
+		&& lnum <= curbuf->b_ml.ml_line_count
+		&& u_save(lnum, lnum + 1) == OK)
+	{
+	    ml_append(lnum, get_vartv_string(&argvars[1]), (colnr_T)0, FALSE);
+	    if (curwin->w_cursor.lnum > lnum)
+		++curwin->w_cursor.lnum;
+	    appended_lines_mark(lnum, 1L);
+	    retvar->vval.v_number = 0;
+	}
     }
 }
 
@@ -3327,10 +3953,10 @@ f_append(argvars, retvar)
 /* ARGSUSED */
     static void
 f_argc(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
-    retvar->var_val.var_number = ARGCOUNT;
+    retvar->vval.v_number = ARGCOUNT;
 }
 
 /*
@@ -3339,10 +3965,10 @@ f_argc(argvars, retvar)
 /* ARGSUSED */
     static void
 f_argidx(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
-    retvar->var_val.var_number = curwin->w_arg_idx;
+    retvar->vval.v_number = curwin->w_arg_idx;
 }
 
 /*
@@ -3350,17 +3976,17 @@ f_argidx(argvars, retvar)
  */
     static void
 f_argv(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     int		idx;
 
-    idx = get_var_number(&argvars[0]);
+    idx = get_vartv_number(&argvars[0]);
     if (idx >= 0 && idx < ARGCOUNT)
-	retvar->var_val.var_string = vim_strsave(alist_name(&ARGLIST[idx]));
+	retvar->vval.v_string = vim_strsave(alist_name(&ARGLIST[idx]));
     else
-	retvar->var_val.var_string = NULL;
-    retvar->var_type = VAR_STRING;
+	retvar->vval.v_string = NULL;
+    retvar->v_type = VAR_STRING;
 }
 
 /*
@@ -3369,8 +3995,8 @@ f_argv(argvars, retvar)
 /* ARGSUSED */
     static void
 f_browse(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
 #ifdef FEAT_BROWSE
     int		save;
@@ -3380,18 +4006,18 @@ f_browse(argvars, retvar)
     char_u	buf[NUMBUFLEN];
     char_u	buf2[NUMBUFLEN];
 
-    save = get_var_number(&argvars[0]);
-    title = get_var_string(&argvars[1]);
-    initdir = get_var_string_buf(&argvars[2], buf);
-    defname = get_var_string_buf(&argvars[3], buf2);
+    save = get_vartv_number(&argvars[0]);
+    title = get_vartv_string(&argvars[1]);
+    initdir = get_vartv_string_buf(&argvars[2], buf);
+    defname = get_vartv_string_buf(&argvars[3], buf2);
 
-    retvar->var_val.var_string =
+    retvar->vval.v_string =
 		 do_browse(save ? BROWSE_SAVE : 0,
 				 title, defname, NULL, initdir, NULL, curbuf);
 #else
-    retvar->var_val.var_string = NULL;
+    retvar->vval.v_string = NULL;
 #endif
-    retvar->var_type = VAR_STRING;
+    retvar->v_type = VAR_STRING;
 }
 
 /*
@@ -3400,23 +4026,23 @@ f_browse(argvars, retvar)
 /* ARGSUSED */
     static void
 f_browsedir(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
 #ifdef FEAT_BROWSE
     char_u	*title;
     char_u	*initdir;
     char_u	buf[NUMBUFLEN];
 
-    title = get_var_string(&argvars[0]);
-    initdir = get_var_string_buf(&argvars[1], buf);
+    title = get_vartv_string(&argvars[0]);
+    initdir = get_vartv_string_buf(&argvars[1], buf);
 
-    retvar->var_val.var_string = do_browse(BROWSE_DIR,
+    retvar->vval.v_string = do_browse(BROWSE_DIR,
 				    title, NULL, NULL, initdir, NULL, curbuf);
 #else
-    retvar->var_val.var_string = NULL;
+    retvar->vval.v_string = NULL;
 #endif
-    retvar->var_type = VAR_STRING;
+    retvar->v_type = VAR_STRING;
 }
 
 /*
@@ -3424,15 +4050,15 @@ f_browsedir(argvars, retvar)
  */
     static buf_T *
 find_buffer(avar)
-    VAR		avar;
+    typeval	*avar;
 {
     buf_T	*buf = NULL;
 
-    if (avar->var_type == VAR_NUMBER)
-	buf = buflist_findnr((int)avar->var_val.var_number);
-    else if (avar->var_val.var_string != NULL)
+    if (avar->v_type == VAR_NUMBER)
+	buf = buflist_findnr((int)avar->vval.v_number);
+    else if (avar->vval.v_string != NULL)
     {
-	buf = buflist_findname_exp(avar->var_val.var_string);
+	buf = buflist_findname_exp(avar->vval.v_string);
 	if (buf == NULL)
 	{
 	    /* No full path name match, try a match with a URL or a "nofile"
@@ -3444,7 +4070,7 @@ find_buffer(avar)
 			    || bt_nofile(buf)
 #endif
 			   )
-			&& STRCMP(buf->b_fname, avar->var_val.var_string) == 0)
+			&& STRCMP(buf->b_fname, avar->vval.v_string) == 0)
 		    break;
 	}
     }
@@ -3456,10 +4082,10 @@ find_buffer(avar)
  */
     static void
 f_bufexists(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
-    retvar->var_val.var_number = (find_buffer(&argvars[0]) != NULL);
+    retvar->vval.v_number = (find_buffer(&argvars[0]) != NULL);
 }
 
 /*
@@ -3467,13 +4093,13 @@ f_bufexists(argvars, retvar)
  */
     static void
 f_buflisted(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     buf_T	*buf;
 
     buf = find_buffer(&argvars[0]);
-    retvar->var_val.var_number = (buf != NULL && buf->b_p_bl);
+    retvar->vval.v_number = (buf != NULL && buf->b_p_bl);
 }
 
 /*
@@ -3481,29 +4107,29 @@ f_buflisted(argvars, retvar)
  */
     static void
 f_bufloaded(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     buf_T	*buf;
 
     buf = find_buffer(&argvars[0]);
-    retvar->var_val.var_number = (buf != NULL && buf->b_ml.ml_mfp != NULL);
+    retvar->vval.v_number = (buf != NULL && buf->b_ml.ml_mfp != NULL);
 }
 
 /*
  * Get buffer by number or pattern.
  */
     static buf_T *
-get_buf_var(avar)
-    VAR		avar;
+get_buf_vartv(avar)
+    typeval	*avar;
 {
-    char_u	*name = avar->var_val.var_string;
+    char_u	*name = avar->vval.v_string;
     int		save_magic;
     char_u	*save_cpo;
     buf_T	*buf;
 
-    if (avar->var_type == VAR_NUMBER)
-	return buflist_findnr((int)avar->var_val.var_number);
+    if (avar->v_type == VAR_NUMBER)
+	return buflist_findnr((int)avar->vval.v_number);
     if (name == NULL || *name == NUL)
 	return curbuf;
     if (name[0] == '$' && name[1] == NUL)
@@ -3533,18 +4159,18 @@ get_buf_var(avar)
  */
     static void
 f_bufname(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     buf_T	*buf;
 
     ++emsg_off;
-    buf = get_buf_var(&argvars[0]);
-    retvar->var_type = VAR_STRING;
+    buf = get_buf_vartv(&argvars[0]);
+    retvar->v_type = VAR_STRING;
     if (buf != NULL && buf->b_fname != NULL)
-	retvar->var_val.var_string = vim_strsave(buf->b_fname);
+	retvar->vval.v_string = vim_strsave(buf->b_fname);
     else
-	retvar->var_val.var_string = NULL;
+	retvar->vval.v_string = NULL;
     --emsg_off;
 }
 
@@ -3553,17 +4179,17 @@ f_bufname(argvars, retvar)
  */
     static void
 f_bufnr(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     buf_T	*buf;
 
     ++emsg_off;
-    buf = get_buf_var(&argvars[0]);
+    buf = get_buf_vartv(&argvars[0]);
     if (buf != NULL)
-	retvar->var_val.var_number = buf->b_fnum;
+	retvar->vval.v_number = buf->b_fnum;
     else
-	retvar->var_val.var_number = -1;
+	retvar->vval.v_number = -1;
     --emsg_off;
 }
 
@@ -3572,8 +4198,8 @@ f_bufnr(argvars, retvar)
  */
     static void
 f_bufwinnr(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
 #ifdef FEAT_WINDOWS
     win_T	*wp;
@@ -3582,7 +4208,7 @@ f_bufwinnr(argvars, retvar)
     buf_T	*buf;
 
     ++emsg_off;
-    buf = get_buf_var(&argvars[0]);
+    buf = get_buf_vartv(&argvars[0]);
 #ifdef FEAT_WINDOWS
     for (wp = firstwin; wp; wp = wp->w_next)
     {
@@ -3590,9 +4216,9 @@ f_bufwinnr(argvars, retvar)
 	if (wp->w_buffer == buf)
 	    break;
     }
-    retvar->var_val.var_number = (wp != NULL ? winnr : -1);
+    retvar->vval.v_number = (wp != NULL ? winnr : -1);
 #else
-    retvar->var_val.var_number = (curwin->w_buffer == buf ? 1 : -1);
+    retvar->vval.v_number = (curwin->w_buffer == buf ? 1 : -1);
 #endif
     --emsg_off;
 }
@@ -3603,19 +4229,19 @@ f_bufwinnr(argvars, retvar)
 /*ARGSUSED*/
     static void
 f_byte2line(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
 #ifndef FEAT_BYTEOFF
-    retvar->var_val.var_number = -1;
+    retvar->vval.v_number = -1;
 #else
     long	boff = 0;
 
-    boff = get_var_number(&argvars[0]) - 1;
+    boff = get_vartv_number(&argvars[0]) - 1;
     if (boff < 0)
-	retvar->var_val.var_number = -1;
+	retvar->vval.v_number = -1;
     else
-	retvar->var_val.var_number = ml_find_line_or_offset(curbuf,
+	retvar->vval.v_number = ml_find_line_or_offset(curbuf,
 							  (linenr_T)0, &boff);
 #endif
 }
@@ -3626,8 +4252,8 @@ f_byte2line(argvars, retvar)
 /*ARGSUSED*/
     static void
 f_byteidx(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
 #ifdef FEAT_MBYTE
     char_u	*t;
@@ -3635,9 +4261,9 @@ f_byteidx(argvars, retvar)
     char_u	*str;
     long	idx;
 
-    str = get_var_string(&argvars[0]);
-    idx = get_var_number(&argvars[1]);
-    retvar->var_val.var_number = -1;
+    str = get_vartv_string(&argvars[0]);
+    idx = get_vartv_number(&argvars[1]);
+    retvar->vval.v_number = -1;
     if (idx < 0)
 	return;
 
@@ -3649,10 +4275,10 @@ f_byteidx(argvars, retvar)
 	    return;
 	t += mb_ptr2len_check(t);
     }
-    retvar->var_val.var_number = t - str;
+    retvar->vval.v_number = t - str;
 #else
     if (idx <= STRLEN(str))
-	retvar->var_val.var_number = idx;
+	retvar->vval.v_number = idx;
 #endif
 }
 
@@ -3661,16 +4287,16 @@ f_byteidx(argvars, retvar)
  */
     static void
 f_char2nr(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
 #ifdef FEAT_MBYTE
     if (has_mbyte)
-	retvar->var_val.var_number =
-				  (*mb_ptr2char)(get_var_string(&argvars[0]));
+	retvar->vval.v_number =
+				(*mb_ptr2char)(get_vartv_string(&argvars[0]));
     else
 #endif
-    retvar->var_val.var_number = get_var_string(&argvars[0])[0];
+    retvar->vval.v_number = get_vartv_string(&argvars[0])[0];
 }
 
 /*
@@ -3678,24 +4304,24 @@ f_char2nr(argvars, retvar)
  */
     static void
 f_cindent(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
 #ifdef FEAT_CINDENT
     pos_T	pos;
     linenr_T	lnum;
 
     pos = curwin->w_cursor;
-    lnum = get_var_lnum(argvars);
+    lnum = get_vartv_lnum(argvars);
     if (lnum >= 1 && lnum <= curbuf->b_ml.ml_line_count)
     {
 	curwin->w_cursor.lnum = lnum;
-	retvar->var_val.var_number = get_c_indent();
+	retvar->vval.v_number = get_c_indent();
 	curwin->w_cursor = pos;
     }
     else
 #endif
-	retvar->var_val.var_number = -1;
+	retvar->vval.v_number = -1;
 }
 
 /*
@@ -3703,8 +4329,8 @@ f_cindent(argvars, retvar)
  */
     static void
 f_col(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     colnr_T	col = 0;
     pos_T	*fp;
@@ -3747,7 +4373,7 @@ f_col(argvars, retvar)
 #endif
 	}
     }
-    retvar->var_val.var_number = col;
+    retvar->vval.v_number = col;
 }
 
 /*
@@ -3756,8 +4382,8 @@ f_col(argvars, retvar)
 /*ARGSUSED*/
     static void
 f_confirm(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
     char_u	*message;
@@ -3768,17 +4394,17 @@ f_confirm(argvars, retvar)
     int		type = VIM_GENERIC;
     int		c;
 
-    message = get_var_string(&argvars[0]);
-    if (argvars[1].var_type != VAR_UNKNOWN)
+    message = get_vartv_string(&argvars[0]);
+    if (argvars[1].v_type != VAR_UNKNOWN)
     {
-	buttons = get_var_string_buf(&argvars[1], buf);
-	if (argvars[2].var_type != VAR_UNKNOWN)
+	buttons = get_vartv_string_buf(&argvars[1], buf);
+	if (argvars[2].v_type != VAR_UNKNOWN)
 	{
-	    def = get_var_number(&argvars[2]);
-	    if (argvars[3].var_type != VAR_UNKNOWN)
+	    def = get_vartv_number(&argvars[2]);
+	    if (argvars[3].v_type != VAR_UNKNOWN)
 	    {
 		/* avoid that TOUPPER_ASC calls get_var_string_buf() twice */
-		c = *get_var_string_buf(&argvars[3], buf2);
+		c = *get_vartv_string_buf(&argvars[3], buf2);
 		switch (TOUPPER_ASC(c))
 		{
 		    case 'E': type = VIM_ERROR; break;
@@ -3794,13 +4420,29 @@ f_confirm(argvars, retvar)
     if (buttons == NULL || *buttons == NUL)
 	buttons = (char_u *)_("&Ok");
 
-    retvar->var_val.var_number = do_dialog(type, NULL, message, buttons,
+    retvar->vval.v_number = do_dialog(type, NULL, message, buttons,
 								   def, NULL);
 #else
-    retvar->var_val.var_number = 0;
+    retvar->vval.v_number = 0;
 #endif
 }
 
+/*
+ * "copy()" function
+ */
+    static void
+f_copy(argvars, retvar)
+    typeval	*argvars;
+    typeval	*retvar;
+{
+    if (argvars[0].v_type == VAR_LIST)
+    {
+	retvar->v_type = VAR_LIST;
+	retvar->vval.v_list = list_copy(argvars[0].vval.v_list, FALSE);
+    }
+    else
+	copy_vartv(&argvars[0], retvar);
+}
 
 /*
  * "cscope_connection([{num} , {dbpath} [, {prepend}]])" function
@@ -3810,8 +4452,8 @@ f_confirm(argvars, retvar)
 /*ARGSUSED*/
     static void
 f_cscope_connection(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
 #ifdef FEAT_CSCOPE
     int		num = 0;
@@ -3819,18 +4461,18 @@ f_cscope_connection(argvars, retvar)
     char_u	*prepend = NULL;
     char_u	buf[NUMBUFLEN];
 
-    if (argvars[0].var_type != VAR_UNKNOWN
-	    && argvars[1].var_type != VAR_UNKNOWN)
+    if (argvars[0].v_type != VAR_UNKNOWN
+	    && argvars[1].v_type != VAR_UNKNOWN)
     {
-	num = (int)get_var_number(&argvars[0]);
-	dbpath = get_var_string(&argvars[1]);
-	if (argvars[2].var_type != VAR_UNKNOWN)
-	    prepend = get_var_string_buf(&argvars[2], buf);
+	num = (int)get_vartv_number(&argvars[0]);
+	dbpath = get_vartv_string(&argvars[1]);
+	if (argvars[2].v_type != VAR_UNKNOWN)
+	    prepend = get_vartv_string_buf(&argvars[2], buf);
     }
 
-    retvar->var_val.var_number = cs_connection(num, dbpath, prepend);
+    retvar->vval.v_number = cs_connection(num, dbpath, prepend);
 #else
-    retvar->var_val.var_number = 0;
+    retvar->vval.v_number = 0;
 #endif
 }
 
@@ -3842,15 +4484,15 @@ f_cscope_connection(argvars, retvar)
 /*ARGSUSED*/
     static void
 f_cursor(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     long	line, col;
 
-    line = get_var_lnum(argvars);
+    line = get_vartv_lnum(argvars);
     if (line > 0)
 	curwin->w_cursor.lnum = line;
-    col = get_var_number(&argvars[1]);
+    col = get_vartv_number(&argvars[1]);
     if (col > 0)
 	curwin->w_cursor.col = col - 1;
 #ifdef FEAT_VIRTUALEDIT
@@ -3869,70 +4511,20 @@ f_cursor(argvars, retvar)
 }
 
 /*
- * "libcall()" function
+ * "deepcopy()" function
  */
     static void
-f_libcall(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+f_deepcopy(argvars, retvar)
+    typeval	*argvars;
+    typeval	*retvar;
 {
-    libcall_common(argvars, retvar, VAR_STRING);
-}
-
-/*
- * "libcallnr()" function
- */
-    static void
-f_libcallnr(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
-{
-    libcall_common(argvars, retvar, VAR_NUMBER);
-}
-
-    static void
-libcall_common(argvars, retvar, type)
-    VAR		argvars;
-    VAR		retvar;
-    int		type;
-{
-#ifdef FEAT_LIBCALL
-    char_u		*string_in;
-    char_u		**string_result;
-    int			nr_result;
-#endif
-
-    retvar->var_type = type;
-    if (type == VAR_NUMBER)
-	retvar->var_val.var_number = 0;
-    else
-	retvar->var_val.var_string = NULL;
-
-    if (check_restricted() || check_secure())
-	return;
-
-#ifdef FEAT_LIBCALL
-    /* The first two args must be strings, otherwise its meaningless */
-    if (argvars[0].var_type == VAR_STRING && argvars[1].var_type == VAR_STRING)
+    if (argvars[0].v_type == VAR_LIST)
     {
-	if (argvars[2].var_type == VAR_NUMBER)
-	    string_in = NULL;
-	else
-	    string_in = argvars[2].var_val.var_string;
-	if (type == VAR_NUMBER)
-	    string_result = NULL;
-	else
-	    string_result = &retvar->var_val.var_string;
-	if (mch_libcall(argvars[0].var_val.var_string,
-			     argvars[1].var_val.var_string,
-			     string_in,
-			     argvars[2].var_val.var_number,
-			     string_result,
-			     &nr_result) == OK
-		&& type == VAR_NUMBER)
-	    retvar->var_val.var_number = nr_result;
+	retvar->v_type = VAR_LIST;
+	retvar->vval.v_list = list_copy(argvars[0].vval.v_list, TRUE);
     }
-#endif
+    else
+	copy_vartv(&argvars[0], retvar);
 }
 
 /*
@@ -3940,13 +4532,13 @@ libcall_common(argvars, retvar, type)
  */
     static void
 f_delete(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     if (check_restricted() || check_secure())
-	retvar->var_val.var_number = -1;
+	retvar->vval.v_number = -1;
     else
-	retvar->var_val.var_number = mch_remove(get_var_string(&argvars[0]));
+	retvar->vval.v_number = mch_remove(get_vartv_string(&argvars[0]));
 }
 
 /*
@@ -3955,13 +4547,13 @@ f_delete(argvars, retvar)
 /*ARGSUSED*/
     static void
 f_did_filetype(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
 #ifdef FEAT_AUTOCMD
-    retvar->var_val.var_number = did_filetype;
+    retvar->vval.v_number = did_filetype;
 #else
-    retvar->var_val.var_number = 0;
+    retvar->vval.v_number = 0;
 #endif
 }
 
@@ -3971,11 +4563,11 @@ f_did_filetype(argvars, retvar)
 /*ARGSUSED*/
     static void
 f_diff_filler(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
 #ifdef FEAT_DIFF
-    retvar->var_val.var_number = diff_check_fill(curwin, get_var_lnum(argvars));
+    retvar->vval.v_number = diff_check_fill(curwin, get_vartv_lnum(argvars));
 #endif
 }
 
@@ -3985,11 +4577,11 @@ f_diff_filler(argvars, retvar)
 /*ARGSUSED*/
     static void
 f_diff_hlID(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
 #ifdef FEAT_DIFF
-    linenr_T		lnum = get_var_lnum(argvars);
+    linenr_T		lnum = get_vartv_lnum(argvars);
     static linenr_T	prev_lnum = 0;
     static int		changedtick = 0;
     static int		fnum = 0;
@@ -4028,13 +4620,13 @@ f_diff_hlID(argvars, retvar)
 
     if (hlID == HLF_CHD || hlID == HLF_TXD)
     {
-	col = get_var_number(&argvars[1]) - 1;
+	col = get_vartv_number(&argvars[1]) - 1;
 	if (col >= change_start && col <= change_end)
 	    hlID = HLF_TXD;			/* changed text */
 	else
 	    hlID = HLF_CHD;			/* changed line */
     }
-    retvar->var_val.var_number = hlID == (enum hlf_value)0 ? 0 : (int)hlID;
+    retvar->vval.v_number = hlID == (enum hlf_value)0 ? 0 : (int)hlID;
 #endif
 }
 
@@ -4043,15 +4635,15 @@ f_diff_hlID(argvars, retvar)
  */
     static void
 f_escape(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     char_u	buf[NUMBUFLEN];
 
-    retvar->var_val.var_string =
-	vim_strsave_escaped(get_var_string(&argvars[0]),
-		get_var_string_buf(&argvars[1], buf));
-    retvar->var_type = VAR_STRING;
+    retvar->vval.v_string =
+	vim_strsave_escaped(get_vartv_string(&argvars[0]),
+		get_vartv_string_buf(&argvars[1], buf));
+    retvar->v_type = VAR_STRING;
 }
 
 /*
@@ -4060,10 +4652,10 @@ f_escape(argvars, retvar)
 /*ARGSUSED*/
     static void
 f_eventhandler(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
-    retvar->var_val.var_number = vgetc_busy;
+    retvar->vval.v_number = vgetc_busy;
 }
 
 /*
@@ -4071,10 +4663,10 @@ f_eventhandler(argvars, retvar)
  */
     static void
 f_executable(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
-    retvar->var_val.var_number = mch_can_exe(get_var_string(&argvars[0]));
+    retvar->vval.v_number = mch_can_exe(get_vartv_string(&argvars[0]));
 }
 
 /*
@@ -4082,15 +4674,15 @@ f_executable(argvars, retvar)
  */
     static void
 f_exists(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     char_u	*p;
     char_u	*name;
     int		n = FALSE;
     int		len = 0;
 
-    p = get_var_string(&argvars[0]);
+    p = get_vartv_string(&argvars[0]);
     if (*p == '$')			/* environment variable */
     {
 	/* first try "normal" environment variables (fast) */
@@ -4106,19 +4698,10 @@ f_exists(argvars, retvar)
 	}
     }
     else if (*p == '&' || *p == '+')			/* option */
-	n = (get_option_var(&p, NULL, TRUE) == OK);
+	n = (get_option_vartv(&p, NULL, TRUE) == OK);
     else if (*p == '*')			/* internal or user defined function */
     {
-	++p;
-	p = trans_function_name(&p, FALSE, TRUE);
-	if (p != NULL)
-	{
-	    if (ASCII_ISUPPER(*p) || p[0] == K_SPECIAL)
-		n = (find_func(p) != NULL);
-	    else if (ASCII_ISLOWER(*p))
-		n = (find_internal_func(p) >= 0);
-	    vim_free(p);
-	}
+	n = function_exists(p + 1);
     }
     else if (*p == ':')
     {
@@ -4161,14 +4744,14 @@ f_exists(argvars, retvar)
 	if (len == 0)
 	    len = get_id_len(&p);
 	if (len != 0)
-	    n = (get_var_var(name, len, NULL) == OK);
+	    n = (get_var_vartv(name, len, NULL) == OK);
 
 #ifdef FEAT_MAGIC_BRACES
 	vim_free(temp_string);
 #endif
     }
 
-    retvar->var_val.var_number = n;
+    retvar->vval.v_number = n;
 }
 
 /*
@@ -4176,8 +4759,8 @@ f_exists(argvars, retvar)
  */
     static void
 f_expand(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     char_u	*s;
     int		len;
@@ -4185,23 +4768,23 @@ f_expand(argvars, retvar)
     int		flags = WILD_SILENT|WILD_USE_NL|WILD_LIST_NOTFOUND;
     expand_T	xpc;
 
-    retvar->var_type = VAR_STRING;
-    s = get_var_string(&argvars[0]);
+    retvar->v_type = VAR_STRING;
+    s = get_vartv_string(&argvars[0]);
     if (*s == '%' || *s == '#' || *s == '<')
     {
 	++emsg_off;
-	retvar->var_val.var_string = eval_vars(s, &len, NULL, &errormsg, s);
+	retvar->vval.v_string = eval_vars(s, &len, NULL, &errormsg, s);
 	--emsg_off;
     }
     else
     {
 	/* When the optional second argument is non-zero, don't remove matches
 	 * for 'suffixes' and 'wildignore' */
-	if (argvars[1].var_type != VAR_UNKNOWN && get_var_number(&argvars[1]))
+	if (argvars[1].v_type != VAR_UNKNOWN && get_vartv_number(&argvars[1]))
 	    flags |= WILD_KEEP_ALL;
 	ExpandInit(&xpc);
 	xpc.xp_context = EXPAND_FILES;
-	retvar->var_val.var_string = ExpandOne(&xpc, s, NULL, flags, WILD_ALL);
+	retvar->vval.v_string = ExpandOne(&xpc, s, NULL, flags, WILD_ALL);
 	ExpandCleanup(&xpc);
     }
 }
@@ -4211,14 +4794,14 @@ f_expand(argvars, retvar)
  */
     static void
 f_filereadable(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     FILE	*fd;
     char_u	*p;
     int		n;
 
-    p = get_var_string(&argvars[0]);
+    p = get_vartv_string(&argvars[0]);
     if (*p && !mch_isdir(p) && (fd = mch_fopen((char *)p, "r")) != NULL)
     {
 	n = TRUE;
@@ -4227,7 +4810,7 @@ f_filereadable(argvars, retvar)
     else
 	n = FALSE;
 
-    retvar->var_val.var_number = n;
+    retvar->vval.v_number = n;
 }
 
 /*
@@ -4236,8 +4819,8 @@ f_filereadable(argvars, retvar)
  */
     static void
 f_filewritable(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     char_u	*p;
     int		retval = 0;
@@ -4245,7 +4828,7 @@ f_filewritable(argvars, retvar)
     int		perm = 0;
 #endif
 
-    p = get_var_string(&argvars[0]);
+    p = get_vartv_string(&argvars[0]);
 #if defined(UNIX) || defined(VMS)
     perm = mch_getperm(p);
 #endif
@@ -4266,7 +4849,7 @@ f_filewritable(argvars, retvar)
 	if (mch_isdir(p))
 	    ++retval;
     }
-    retvar->var_val.var_number = retval;
+    retvar->vval.v_number = retval;
 }
 
 /*
@@ -4274,8 +4857,8 @@ f_filewritable(argvars, retvar)
  */
     static void
 f_finddir(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     f_findfilendir(argvars, retvar, TRUE);
 }
@@ -4285,16 +4868,16 @@ f_finddir(argvars, retvar)
  */
     static void
 f_findfile(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     f_findfilendir(argvars, retvar, FALSE);
 }
 
     static void
 f_findfilendir(argvars, retvar, dir)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
     int		dir;
 {
 #ifdef FEAT_SEARCHPATH
@@ -4306,16 +4889,16 @@ f_findfilendir(argvars, retvar, dir)
     int		count = 1;
     int		first = TRUE;
 
-    fname = get_var_string(&argvars[0]);
+    fname = get_vartv_string(&argvars[0]);
 
-    if (argvars[1].var_type != VAR_UNKNOWN)
+    if (argvars[1].v_type != VAR_UNKNOWN)
     {
-	p = get_var_string_buf(&argvars[1], pathbuf);
+	p = get_vartv_string_buf(&argvars[1], pathbuf);
 	if (*p != NUL)
 	    path = p;
 
-	if (argvars[2].var_type != VAR_UNKNOWN)
-	    count = get_var_number(&argvars[2]);
+	if (argvars[2].v_type != VAR_UNKNOWN)
+	    count = get_vartv_number(&argvars[2]);
     }
 
     do
@@ -4327,11 +4910,11 @@ f_findfilendir(argvars, retvar, dir)
 	first = FALSE;
     } while (--count > 0 && fresult != NULL);
 
-    retvar->var_val.var_string = fresult;
+    retvar->vval.v_string = fresult;
 #else
-    retvar->var_val.var_string = NULL;
+    retvar->vval.v_string = NULL;
 #endif
-    retvar->var_type = VAR_STRING;
+    retvar->v_type = VAR_STRING;
 }
 
 /*
@@ -4339,8 +4922,8 @@ f_findfilendir(argvars, retvar, dir)
  */
     static void
 f_fnamemodify(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     char_u	*fname;
     char_u	*mods;
@@ -4349,17 +4932,17 @@ f_fnamemodify(argvars, retvar)
     char_u	*fbuf = NULL;
     char_u	buf[NUMBUFLEN];
 
-    fname = get_var_string(&argvars[0]);
-    mods = get_var_string_buf(&argvars[1], buf);
+    fname = get_vartv_string(&argvars[0]);
+    mods = get_vartv_string_buf(&argvars[1], buf);
     len = (int)STRLEN(fname);
 
     (void)modify_fname(mods, &usedlen, &fname, &fbuf, &len);
 
-    retvar->var_type = VAR_STRING;
+    retvar->v_type = VAR_STRING;
     if (fname == NULL)
-	retvar->var_val.var_string = NULL;
+	retvar->vval.v_string = NULL;
     else
-	retvar->var_val.var_string = vim_strnsave(fname, len);
+	retvar->vval.v_string = vim_strnsave(fname, len);
     vim_free(fbuf);
 }
 
@@ -4368,8 +4951,8 @@ f_fnamemodify(argvars, retvar)
  */
     static void
 f_foldclosed(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     foldclosed_both(argvars, retvar, FALSE);
 }
@@ -4379,8 +4962,8 @@ f_foldclosed(argvars, retvar)
  */
     static void
 f_foldclosedend(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     foldclosed_both(argvars, retvar, TRUE);
 }
@@ -4390,28 +4973,28 @@ f_foldclosedend(argvars, retvar)
  */
     static void
 foldclosed_both(argvars, retvar, end)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
     int		end;
 {
 #ifdef FEAT_FOLDING
     linenr_T	lnum;
     linenr_T	first, last;
 
-    lnum = get_var_lnum(argvars);
+    lnum = get_vartv_lnum(argvars);
     if (lnum >= 1 && lnum <= curbuf->b_ml.ml_line_count)
     {
 	if (hasFoldingWin(curwin, lnum, &first, &last, FALSE, NULL))
 	{
 	    if (end)
-		retvar->var_val.var_number = (varnumber_T)last;
+		retvar->vval.v_number = (varnumber_T)last;
 	    else
-		retvar->var_val.var_number = (varnumber_T)first;
+		retvar->vval.v_number = (varnumber_T)first;
 	    return;
 	}
     }
 #endif
-    retvar->var_val.var_number = -1;
+    retvar->vval.v_number = -1;
 }
 
 /*
@@ -4419,18 +5002,18 @@ foldclosed_both(argvars, retvar, end)
  */
     static void
 f_foldlevel(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
 #ifdef FEAT_FOLDING
     linenr_T	lnum;
 
-    lnum = get_var_lnum(argvars);
+    lnum = get_vartv_lnum(argvars);
     if (lnum >= 1 && lnum <= curbuf->b_ml.ml_line_count)
-	retvar->var_val.var_number = foldLevel(lnum);
+	retvar->vval.v_number = foldLevel(lnum);
     else
 #endif
-	retvar->var_val.var_number = 0;
+	retvar->vval.v_number = 0;
 }
 
 /*
@@ -4439,8 +5022,8 @@ f_foldlevel(argvars, retvar)
 /*ARGSUSED*/
     static void
 f_foldtext(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
 #ifdef FEAT_FOLDING
     linenr_T	lnum;
@@ -4450,8 +5033,8 @@ f_foldtext(argvars, retvar)
     char	*txt;
 #endif
 
-    retvar->var_type = VAR_STRING;
-    retvar->var_val.var_string = NULL;
+    retvar->v_type = VAR_STRING;
+    retvar->vval.v_string = NULL;
 #ifdef FEAT_FOLDING
     if ((linenr_T)vimvars[VV_FOLDSTART].val > 0
 	    && (linenr_T)vimvars[VV_FOLDEND].val <= curbuf->b_ml.ml_line_count
@@ -4494,7 +5077,7 @@ f_foldtext(argvars, retvar)
 	    STRCAT(r, s);
 	    /* remove 'foldmarker' and 'commentstring' */
 	    foldtext_cleanup(r + len);
-	    retvar->var_val.var_string = r;
+	    retvar->vval.v_string = r;
 	}
     }
 #endif
@@ -4506,8 +5089,8 @@ f_foldtext(argvars, retvar)
 /*ARGSUSED*/
     static void
 f_foldtextresult(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
 #ifdef FEAT_FOLDING
     linenr_T	lnum;
@@ -4517,10 +5100,10 @@ f_foldtextresult(argvars, retvar)
     int		fold_count;
 #endif
 
-    retvar->var_type = VAR_STRING;
-    retvar->var_val.var_string = NULL;
+    retvar->v_type = VAR_STRING;
+    retvar->vval.v_string = NULL;
 #ifdef FEAT_FOLDING
-    lnum = get_var_lnum(argvars);
+    lnum = get_vartv_lnum(argvars);
     fold_count = foldedCount(curwin, lnum, &foldinfo);
     if (fold_count > 0)
     {
@@ -4528,7 +5111,7 @@ f_foldtextresult(argvars, retvar)
 							      &foldinfo, buf);
 	if (text == buf)
 	    text = vim_strsave(text);
-	retvar->var_val.var_string = text;
+	retvar->vval.v_string = text;
     }
 #endif
 }
@@ -4539,10 +5122,10 @@ f_foldtextresult(argvars, retvar)
 /*ARGSUSED*/
     static void
 f_foreground(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
-    retvar->var_val.var_number = 0;
+    retvar->vval.v_number = 0;
 #ifdef FEAT_GUI
     if (gui.in_use)
 	gui_mch_set_foreground();
@@ -4554,21 +5137,44 @@ f_foreground(argvars, retvar)
 }
 
 /*
+ * "function()" function
+ */
+/*ARGSUSED*/
+    static void
+f_function(argvars, retvar)
+    typeval	*argvars;
+    typeval	*retvar;
+{
+    char_u	*s;
+
+    s = get_vartv_string(&argvars[0]);
+    if (s == NULL || *s == NUL || isdigit(*s))
+	EMSG2(_(e_invarg2), s);
+    else if (!function_exists(s))
+	EMSG2(_("E999: Unknown function: %s"), s);
+    else
+    {
+	retvar->vval.v_string = vim_strsave(s);
+	retvar->v_type = VAR_FUNC;
+    }
+}
+
+/*
  * "getchar()" function
  */
     static void
 f_getchar(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     varnumber_T		n;
 
     ++no_mapping;
     ++allow_keys;
-    if (argvars[0].var_type == VAR_UNKNOWN)
+    if (argvars[0].v_type == VAR_UNKNOWN)
 	/* getchar(): blocking wait. */
 	n = safe_vgetc();
-    else if (get_var_number(&argvars[0]) == 1)
+    else if (get_vartv_number(&argvars[0]) == 1)
 	/* getchar(1): only check if char avail */
 	n = vpeekc();
     else if (vpeekc() == NUL)
@@ -4580,7 +5186,7 @@ f_getchar(argvars, retvar)
     --no_mapping;
     --allow_keys;
 
-    retvar->var_val.var_number = n;
+    retvar->vval.v_number = n;
     if (IS_SPECIAL(n) || mod_mask != 0)
     {
 	char_u		temp[10];   /* modifier: 3, mbyte-char: 6, NUL: 1 */
@@ -4606,8 +5212,8 @@ f_getchar(argvars, retvar)
 	else
 	    temp[i++] = n;
 	temp[i++] = NUL;
-	retvar->var_type = VAR_STRING;
-	retvar->var_val.var_string = vim_strsave(temp);
+	retvar->v_type = VAR_STRING;
+	retvar->vval.v_string = vim_strsave(temp);
     }
 }
 
@@ -4617,10 +5223,10 @@ f_getchar(argvars, retvar)
 /*ARGSUSED*/
     static void
 f_getcharmod(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
-    retvar->var_val.var_number = mod_mask;
+    retvar->vval.v_number = mod_mask;
 }
 
 /*
@@ -4629,11 +5235,11 @@ f_getcharmod(argvars, retvar)
 /*ARGSUSED*/
     static void
 f_getcmdline(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
-    retvar->var_type = VAR_STRING;
-    retvar->var_val.var_string = get_cmdline_str();
+    retvar->v_type = VAR_STRING;
+    retvar->vval.v_string = get_cmdline_str();
 }
 
 /*
@@ -4642,10 +5248,10 @@ f_getcmdline(argvars, retvar)
 /*ARGSUSED*/
     static void
 f_getcmdpos(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
-    retvar->var_val.var_number = get_cmdline_pos() + 1;
+    retvar->vval.v_number = get_cmdline_pos() + 1;
 }
 
 /*
@@ -4653,8 +5259,8 @@ f_getcmdpos(argvars, retvar)
  */
     static void
 f_getbufvar(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     buf_T	*buf;
     buf_T	*save_curbuf;
@@ -4662,11 +5268,11 @@ f_getbufvar(argvars, retvar)
     VAR		v;
 
     ++emsg_off;
-    buf = get_buf_var(&argvars[0]);
-    varname = get_var_string(&argvars[1]);
+    buf = get_buf_vartv(&argvars[0]);
+    varname = get_vartv_string(&argvars[1]);
 
-    retvar->var_type = VAR_STRING;
-    retvar->var_val.var_string = NULL;
+    retvar->v_type = VAR_STRING;
+    retvar->vval.v_string = NULL;
 
     if (buf != NULL && varname != NULL)
     {
@@ -4676,7 +5282,7 @@ f_getbufvar(argvars, retvar)
 	    save_curbuf = curbuf;
 	    curbuf = buf;
 
-	    get_option_var(&varname, retvar, TRUE);
+	    get_option_vartv(&varname, retvar, TRUE);
 
 	    /* restore previous notion of curbuf */
 	    curbuf = save_curbuf;
@@ -4686,7 +5292,7 @@ f_getbufvar(argvars, retvar)
 	    /* look up the variable */
 	    v = find_var_in_ga(&buf->b_vars, varname);
 	    if (v != NULL)
-		copy_var(v, retvar);
+		copy_vartv(&v->tv, retvar);
 	}
     }
 
@@ -4699,19 +5305,19 @@ f_getbufvar(argvars, retvar)
 /*ARGSUSED*/
     static void
 f_getcwd(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     char_u	cwd[MAXPATHL];
 
-    retvar->var_type = VAR_STRING;
+    retvar->v_type = VAR_STRING;
     if (mch_dirname(cwd, MAXPATHL) == FAIL)
-	retvar->var_val.var_string = NULL;
+	retvar->vval.v_string = NULL;
     else
     {
-	retvar->var_val.var_string = vim_strsave(cwd);
+	retvar->vval.v_string = vim_strsave(cwd);
 #ifdef BACKSLASH_IN_FILENAME
-	slash_adjust(retvar->var_val.var_string);
+	slash_adjust(retvar->vval.v_string);
 #endif
     }
 }
@@ -4722,18 +5328,18 @@ f_getcwd(argvars, retvar)
 /*ARGSUSED*/
     static void
 f_getfontname(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
-    retvar->var_type = VAR_STRING;
-    retvar->var_val.var_string = NULL;
+    retvar->v_type = VAR_STRING;
+    retvar->vval.v_string = NULL;
 #ifdef FEAT_GUI
     if (gui.in_use)
     {
 	GuiFont font;
 	char_u	*name = NULL;
 
-	if (argvars[0].var_type == VAR_UNKNOWN)
+	if (argvars[0].v_type == VAR_UNKNOWN)
 	{
 	    /* Get the "Normal" font.  Either the name saved by
 	     * hl_set_font_name() or from the font ID. */
@@ -4742,15 +5348,15 @@ f_getfontname(argvars, retvar)
 	}
 	else
 	{
-	    name = get_var_string(&argvars[0]);
+	    name = get_vartv_string(&argvars[0]);
 	    if (STRCMP(name, "*") == 0)	    /* don't use font dialog */
 		return;
 	    font = gui_mch_get_font(name, FALSE);
 	    if (font == NOFONT)
 		return;	    /* Invalid font name, return empty string. */
 	}
-	retvar->var_val.var_string = gui_mch_get_fontname(font, name);
-	if (argvars[0].var_type != VAR_UNKNOWN)
+	retvar->vval.v_string = gui_mch_get_fontname(font, name);
+	if (argvars[0].v_type != VAR_UNKNOWN)
 	    gui_mch_free_font(font);
     }
 #endif
@@ -4761,8 +5367,8 @@ f_getfontname(argvars, retvar)
  */
     static void
 f_getfperm(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     char_u	*fname;
     struct stat st;
@@ -4770,9 +5376,9 @@ f_getfperm(argvars, retvar)
     char_u	flags[] = "rwx";
     int		i;
 
-    fname = get_var_string(&argvars[0]);
+    fname = get_vartv_string(&argvars[0]);
 
-    retvar->var_type = VAR_STRING;
+    retvar->v_type = VAR_STRING;
     if (mch_stat((char *)fname, &st) >= 0)
     {
 	perm = vim_strsave((char_u *)"---------");
@@ -4785,7 +5391,7 @@ f_getfperm(argvars, retvar)
 	    }
 	}
     }
-    retvar->var_val.var_string = perm;
+    retvar->vval.v_string = perm;
 }
 
 /*
@@ -4793,25 +5399,25 @@ f_getfperm(argvars, retvar)
  */
     static void
 f_getfsize(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     char_u	*fname;
     struct stat	st;
 
-    fname = get_var_string(&argvars[0]);
+    fname = get_vartv_string(&argvars[0]);
 
-    retvar->var_type = VAR_NUMBER;
+    retvar->v_type = VAR_NUMBER;
 
     if (mch_stat((char *)fname, &st) >= 0)
     {
 	if (mch_isdir(fname))
-	    retvar->var_val.var_number = 0;
+	    retvar->vval.v_number = 0;
 	else
-	    retvar->var_val.var_number = (varnumber_T)st.st_size;
+	    retvar->vval.v_number = (varnumber_T)st.st_size;
     }
     else
-	  retvar->var_val.var_number = -1;
+	  retvar->vval.v_number = -1;
 }
 
 /*
@@ -4819,18 +5425,18 @@ f_getfsize(argvars, retvar)
  */
     static void
 f_getftime(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     char_u	*fname;
     struct stat	st;
 
-    fname = get_var_string(&argvars[0]);
+    fname = get_vartv_string(&argvars[0]);
 
     if (mch_stat((char *)fname, &st) >= 0)
-	retvar->var_val.var_number = (varnumber_T)st.st_mtime;
+	retvar->vval.v_number = (varnumber_T)st.st_mtime;
     else
-	retvar->var_val.var_number = -1;
+	retvar->vval.v_number = -1;
 }
 
 /*
@@ -4838,17 +5444,17 @@ f_getftime(argvars, retvar)
  */
     static void
 f_getftype(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     char_u	*fname;
     struct stat st;
     char_u	*type = NULL;
     char	*t;
 
-    fname = get_var_string(&argvars[0]);
+    fname = get_vartv_string(&argvars[0]);
 
-    retvar->var_type = VAR_STRING;
+    retvar->v_type = VAR_STRING;
     if (mch_lstat((char *)fname, &st) >= 0)
     {
 #ifdef S_ISREG
@@ -4910,7 +5516,7 @@ f_getftype(argvars, retvar)
 #endif
 	type = vim_strsave((char_u *)t);
     }
-    retvar->var_val.var_string = type;
+    retvar->vval.v_string = type;
 }
 
 /*
@@ -4918,22 +5524,22 @@ f_getftype(argvars, retvar)
  */
     static void
 f_getreg(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     char_u	*strregname;
     int		regname;
 
-    if (argvars[0].var_type != VAR_UNKNOWN)
-	strregname = get_var_string(&argvars[0]);
+    if (argvars[0].v_type != VAR_UNKNOWN)
+	strregname = get_vartv_string(&argvars[0]);
     else
 	strregname = vimvars[VV_REG].val;
     regname = (strregname == NULL ? '"' : *strregname);
     if (regname == 0)
 	regname = '"';
 
-    retvar->var_type = VAR_STRING;
-    retvar->var_val.var_string = get_reg_contents(regname, TRUE);
+    retvar->v_type = VAR_STRING;
+    retvar->vval.v_string = get_reg_contents(regname, TRUE);
 }
 
 /*
@@ -4941,16 +5547,16 @@ f_getreg(argvars, retvar)
  */
     static void
 f_getregtype(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     char_u	*strregname;
     int		regname;
     char_u	buf[NUMBUFLEN + 2];
     long	reglen = 0;
 
-    if (argvars[0].var_type != VAR_UNKNOWN)
-	strregname = get_var_string(&argvars[0]);
+    if (argvars[0].v_type != VAR_UNKNOWN)
+	strregname = get_vartv_string(&argvars[0]);
     else
 	/* Default to v:register */
 	strregname = vimvars[VV_REG].val;
@@ -4972,8 +5578,8 @@ f_getregtype(argvars, retvar)
 		break;
 #endif
     }
-    retvar->var_type = VAR_STRING;
-    retvar->var_val.var_string = vim_strsave(buf);
+    retvar->v_type = VAR_STRING;
+    retvar->vval.v_string = vim_strsave(buf);
 }
 
 /*
@@ -4981,21 +5587,21 @@ f_getregtype(argvars, retvar)
  */
     static void
 f_getline(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     linenr_T	lnum;
     char_u	*p;
 
-    lnum = get_var_lnum(argvars);
+    lnum = get_vartv_lnum(argvars);
 
     if (lnum >= 1 && lnum <= curbuf->b_ml.ml_line_count)
 	p = ml_get(lnum);
     else
 	p = (char_u *)"";
 
-    retvar->var_type = VAR_STRING;
-    retvar->var_val.var_string = vim_strsave(p);
+    retvar->v_type = VAR_STRING;
+    retvar->vval.v_string = vim_strsave(p);
 }
 
 /*
@@ -5004,17 +5610,17 @@ f_getline(argvars, retvar)
 /*ARGSUSED*/
     static void
 f_getwinposx(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
-    retvar->var_val.var_number = -1;
+    retvar->vval.v_number = -1;
 #ifdef FEAT_GUI
     if (gui.in_use)
     {
 	int	    x, y;
 
 	if (gui_mch_get_winpos(&x, &y) == OK)
-	    retvar->var_val.var_number = x;
+	    retvar->vval.v_number = x;
     }
 #endif
 }
@@ -5025,17 +5631,17 @@ f_getwinposx(argvars, retvar)
 /*ARGSUSED*/
     static void
 f_getwinposy(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
-    retvar->var_val.var_number = -1;
+    retvar->vval.v_number = -1;
 #ifdef FEAT_GUI
     if (gui.in_use)
     {
 	int	    x, y;
 
 	if (gui_mch_get_winpos(&x, &y) == OK)
-	    retvar->var_val.var_number = y;
+	    retvar->vval.v_number = y;
     }
 #endif
 }
@@ -5045,8 +5651,8 @@ f_getwinposy(argvars, retvar)
  */
     static void
 f_getwinvar(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     win_T	*win, *oldcurwin;
     char_u	*varname;
@@ -5054,10 +5660,10 @@ f_getwinvar(argvars, retvar)
 
     ++emsg_off;
     win = find_win_by_nr(&argvars[0]);
-    varname = get_var_string(&argvars[1]);
+    varname = get_vartv_string(&argvars[1]);
 
-    retvar->var_type = VAR_STRING;
-    retvar->var_val.var_string = NULL;
+    retvar->v_type = VAR_STRING;
+    retvar->vval.v_string = NULL;
 
     if (win != NULL && varname != NULL)
     {
@@ -5067,7 +5673,7 @@ f_getwinvar(argvars, retvar)
 	    oldcurwin = curwin;
 	    curwin = win;
 
-	    get_option_var(&varname, retvar , 1);
+	    get_option_vartv(&varname, retvar, 1);
 
 	    /* restore previous notion of curwin */
 	    curwin = oldcurwin;
@@ -5077,7 +5683,7 @@ f_getwinvar(argvars, retvar)
 	    /* look up the variable */
 	    v = find_var_in_ga(&win->w_vars, varname);
 	    if (v != NULL)
-		copy_var(v, retvar);
+		copy_vartv(&v->tv, retvar);
 	}
     }
 
@@ -5089,15 +5695,15 @@ f_getwinvar(argvars, retvar)
  */
     static void
 f_glob(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     expand_T	xpc;
 
     ExpandInit(&xpc);
     xpc.xp_context = EXPAND_FILES;
-    retvar->var_type = VAR_STRING;
-    retvar->var_val.var_string = ExpandOne(&xpc, get_var_string(&argvars[0]),
+    retvar->v_type = VAR_STRING;
+    retvar->vval.v_string = ExpandOne(&xpc, get_vartv_string(&argvars[0]),
 				     NULL, WILD_USE_NL|WILD_SILENT, WILD_ALL);
     ExpandCleanup(&xpc);
 }
@@ -5107,14 +5713,14 @@ f_glob(argvars, retvar)
  */
     static void
 f_globpath(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     char_u	buf1[NUMBUFLEN];
 
-    retvar->var_type = VAR_STRING;
-    retvar->var_val.var_string = globpath(get_var_string(&argvars[0]),
-				       get_var_string_buf(&argvars[1], buf1));
+    retvar->v_type = VAR_STRING;
+    retvar->vval.v_string = globpath(get_vartv_string(&argvars[0]),
+				     get_vartv_string_buf(&argvars[1], buf1));
 }
 
 /*
@@ -5122,8 +5728,8 @@ f_globpath(argvars, retvar)
  */
     static void
 f_has(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     int		i;
     char_u	*name;
@@ -5551,7 +6157,7 @@ f_has(argvars, retvar)
 	NULL
     };
 
-    name = get_var_string(&argvars[0]);
+    name = get_vartv_string(&argvars[0]);
     for (i = 0; has_list[i] != NULL; ++i)
 	if (STRICMP(name, has_list[i]) == 0)
 	{
@@ -5611,7 +6217,7 @@ f_has(argvars, retvar)
 #endif
     }
 
-    retvar->var_val.var_number = n;
+    retvar->vval.v_number = n;
 }
 
 /*
@@ -5619,23 +6225,23 @@ f_has(argvars, retvar)
  */
     static void
 f_hasmapto(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     char_u	*name;
     char_u	*mode;
     char_u	buf[NUMBUFLEN];
 
-    name = get_var_string(&argvars[0]);
-    if (argvars[1].var_type == VAR_UNKNOWN)
+    name = get_vartv_string(&argvars[0]);
+    if (argvars[1].v_type == VAR_UNKNOWN)
 	mode = (char_u *)"nvo";
     else
-	mode = get_var_string_buf(&argvars[1], buf);
+	mode = get_vartv_string_buf(&argvars[1], buf);
 
     if (map_to_exists(name, mode))
-	retvar->var_val.var_number = TRUE;
+	retvar->vval.v_number = TRUE;
     else
-	retvar->var_val.var_number = FALSE;
+	retvar->vval.v_number = FALSE;
 }
 
 /*
@@ -5644,8 +6250,8 @@ f_hasmapto(argvars, retvar)
 /*ARGSUSED*/
     static void
 f_histadd(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
 #ifdef FEAT_CMDHIST
     int		histype;
@@ -5653,18 +6259,18 @@ f_histadd(argvars, retvar)
     char_u	buf[NUMBUFLEN];
 #endif
 
-    retvar->var_val.var_number = FALSE;
+    retvar->vval.v_number = FALSE;
     if (check_restricted() || check_secure())
 	return;
 #ifdef FEAT_CMDHIST
-    histype = get_histtype(get_var_string(&argvars[0]));
+    histype = get_histtype(get_vartv_string(&argvars[0]));
     if (histype >= 0)
     {
-	str = get_var_string_buf(&argvars[1], buf);
+	str = get_vartv_string_buf(&argvars[1], buf);
 	if (*str != NUL)
 	{
 	    add_to_history(histype, str, FALSE, NUL);
-	    retvar->var_val.var_number = TRUE;
+	    retvar->vval.v_number = TRUE;
 	    return;
 	}
     }
@@ -5677,27 +6283,27 @@ f_histadd(argvars, retvar)
 /*ARGSUSED*/
     static void
 f_histdel(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
 #ifdef FEAT_CMDHIST
     int		n;
     char_u	buf[NUMBUFLEN];
 
-    if (argvars[1].var_type == VAR_UNKNOWN)
+    if (argvars[1].v_type == VAR_UNKNOWN)
 	/* only one argument: clear entire history */
-	n = clr_history(get_histtype(get_var_string(&argvars[0])));
-    else if (argvars[1].var_type == VAR_NUMBER)
+	n = clr_history(get_histtype(get_vartv_string(&argvars[0])));
+    else if (argvars[1].v_type == VAR_NUMBER)
 	/* index given: remove that entry */
-	n = del_history_idx(get_histtype(get_var_string(&argvars[0])),
-					    (int)get_var_number(&argvars[1]));
+	n = del_history_idx(get_histtype(get_vartv_string(&argvars[0])),
+					  (int)get_vartv_number(&argvars[1]));
     else
 	/* string given: remove all matching entries */
-	n = del_history_entry(get_histtype(get_var_string(&argvars[0])),
-					get_var_string_buf(&argvars[1], buf));
-    retvar->var_val.var_number = n;
+	n = del_history_entry(get_histtype(get_vartv_string(&argvars[0])),
+				      get_vartv_string_buf(&argvars[1], buf));
+    retvar->vval.v_number = n;
 #else
-    retvar->var_val.var_number = 0;
+    retvar->vval.v_number = 0;
 #endif
 }
 
@@ -5707,23 +6313,23 @@ f_histdel(argvars, retvar)
 /*ARGSUSED*/
     static void
 f_histget(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
 #ifdef FEAT_CMDHIST
     int		type;
     int		idx;
 
-    type = get_histtype(get_var_string(&argvars[0]));
-    if (argvars[1].var_type == VAR_UNKNOWN)
+    type = get_histtype(get_vartv_string(&argvars[0]));
+    if (argvars[1].v_type == VAR_UNKNOWN)
 	idx = get_history_idx(type);
     else
-	idx = (int)get_var_number(&argvars[1]);
-    retvar->var_val.var_string = vim_strsave(get_history_entry(type, idx));
+	idx = (int)get_vartv_number(&argvars[1]);
+    retvar->vval.v_string = vim_strsave(get_history_entry(type, idx));
 #else
-    retvar->var_val.var_string = NULL;
+    retvar->vval.v_string = NULL;
 #endif
-    retvar->var_type = VAR_STRING;
+    retvar->v_type = VAR_STRING;
 }
 
 /*
@@ -5732,19 +6338,19 @@ f_histget(argvars, retvar)
 /*ARGSUSED*/
     static void
 f_histnr(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     int		i;
 
 #ifdef FEAT_CMDHIST
-    i = get_histtype(get_var_string(&argvars[0]));
+    i = get_histtype(get_vartv_string(&argvars[0]));
     if (i >= HIST_CMD && i < HIST_COUNT)
 	i = get_history_idx(i);
     else
 #endif
 	i = -1;
-    retvar->var_val.var_number = i;
+    retvar->vval.v_number = i;
 }
 
 /*
@@ -5752,10 +6358,10 @@ f_histnr(argvars, retvar)
  */
     static void
 f_hlexists(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
-    retvar->var_val.var_number = highlight_exists(get_var_string(&argvars[0]));
+    retvar->vval.v_number = highlight_exists(get_vartv_string(&argvars[0]));
 }
 
 /*
@@ -5763,10 +6369,10 @@ f_hlexists(argvars, retvar)
  */
     static void
 f_hlID(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
-    retvar->var_val.var_number = syn_name2id(get_var_string(&argvars[0]));
+    retvar->vval.v_number = syn_name2id(get_vartv_string(&argvars[0]));
 }
 
 /*
@@ -5775,14 +6381,14 @@ f_hlID(argvars, retvar)
 /*ARGSUSED*/
     static void
 f_hostname(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     char_u hostname[256];
 
     mch_get_host_name(hostname, 256);
-    retvar->var_type = VAR_STRING;
-    retvar->var_val.var_string = vim_strsave(hostname);
+    retvar->v_type = VAR_STRING;
+    retvar->vval.v_string = vim_strsave(hostname);
 }
 
 /*
@@ -5791,8 +6397,8 @@ f_hostname(argvars, retvar)
 /*ARGSUSED*/
     static void
 f_iconv(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
 #ifdef FEAT_MBYTE
     char_u	buf1[NUMBUFLEN];
@@ -5801,21 +6407,21 @@ f_iconv(argvars, retvar)
     vimconv_T	vimconv;
 #endif
 
-    retvar->var_type = VAR_STRING;
-    retvar->var_val.var_string = NULL;
+    retvar->v_type = VAR_STRING;
+    retvar->vval.v_string = NULL;
 
 #ifdef FEAT_MBYTE
-    str = get_var_string(&argvars[0]);
-    from = enc_canonize(enc_skip(get_var_string_buf(&argvars[1], buf1)));
-    to = enc_canonize(enc_skip(get_var_string_buf(&argvars[2], buf2)));
+    str = get_vartv_string(&argvars[0]);
+    from = enc_canonize(enc_skip(get_vartv_string_buf(&argvars[1], buf1)));
+    to = enc_canonize(enc_skip(get_vartv_string_buf(&argvars[2], buf2)));
     vimconv.vc_type = CONV_NONE;
     convert_setup(&vimconv, from, to);
 
     /* If the encodings are equal, no conversion needed. */
     if (vimconv.vc_type == CONV_NONE)
-	retvar->var_val.var_string = vim_strsave(str);
+	retvar->vval.v_string = vim_strsave(str);
     else
-	retvar->var_val.var_string = string_convert(&vimconv, str, NULL);
+	retvar->vval.v_string = string_convert(&vimconv, str, NULL);
 
     convert_setup(&vimconv, NULL, NULL);
     vim_free(from);
@@ -5828,16 +6434,16 @@ f_iconv(argvars, retvar)
  */
     static void
 f_indent(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     linenr_T	lnum;
 
-    lnum = get_var_lnum(argvars);
+    lnum = get_vartv_lnum(argvars);
     if (lnum >= 1 && lnum <= curbuf->b_ml.ml_line_count)
-	retvar->var_val.var_number = get_indent_lnum(lnum);
+	retvar->vval.v_number = get_indent_lnum(lnum);
     else
-	retvar->var_val.var_number = -1;
+	retvar->vval.v_number = -1;
 }
 
 static int inputsecret_flag = 0;
@@ -5848,22 +6454,22 @@ static int inputsecret_flag = 0;
  */
     static void
 f_input(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
-    char_u	*prompt = get_var_string(&argvars[0]);
+    char_u	*prompt = get_vartv_string(&argvars[0]);
     char_u	*p = NULL;
     int		c;
     char_u	buf[NUMBUFLEN];
     int		cmd_silent_save = cmd_silent;
 
-    retvar->var_type = VAR_STRING;
+    retvar->v_type = VAR_STRING;
 
 #ifdef NO_CONSOLE_INPUT
     /* While starting up, there is no place to enter text. */
     if (no_console_input())
     {
-	retvar->var_val.var_string = NULL;
+	retvar->vval.v_string = NULL;
 	return;
     }
 #endif
@@ -5891,10 +6497,10 @@ f_input(argvars, retvar)
 	cmdline_row = msg_row;
     }
 
-    if (argvars[1].var_type != VAR_UNKNOWN)
-	stuffReadbuffSpec(get_var_string_buf(&argvars[1], buf));
+    if (argvars[1].v_type != VAR_UNKNOWN)
+	stuffReadbuffSpec(get_vartv_string_buf(&argvars[1], buf));
 
-    retvar->var_val.var_string =
+    retvar->vval.v_string =
 		getcmdline_prompt(inputsecret_flag ? NUL : '@', p, echo_attr);
 
     /* since the user typed this, no need to wait for return */
@@ -5908,8 +6514,8 @@ f_input(argvars, retvar)
  */
     static void
 f_inputdialog(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
 #if defined(FEAT_GUI_TEXTDIALOG)
     /* Use a GUI dialog if the GUI is running and 'c' is not in 'guioptions' */
@@ -5918,27 +6524,27 @@ f_inputdialog(argvars, retvar)
 	char_u	*message;
 	char_u	buf[NUMBUFLEN];
 
-	message = get_var_string(&argvars[0]);
-	if (argvars[1].var_type != VAR_UNKNOWN)
+	message = get_vartv_string(&argvars[0]);
+	if (argvars[1].v_type != VAR_UNKNOWN)
 	{
-	    STRNCPY(IObuff, get_var_string_buf(&argvars[1], buf), IOSIZE);
+	    STRNCPY(IObuff, get_vartv_string_buf(&argvars[1], buf), IOSIZE);
 	    IObuff[IOSIZE - 1] = NUL;
 	}
 	else
 	    IObuff[0] = NUL;
 	if (do_dialog(VIM_QUESTION, NULL, message, (char_u *)_("&OK\n&Cancel"),
 							      1, IObuff) == 1)
-	    retvar->var_val.var_string = vim_strsave(IObuff);
+	    retvar->vval.v_string = vim_strsave(IObuff);
 	else
 	{
-	    if (argvars[1].var_type != VAR_UNKNOWN
-					&& argvars[2].var_type != VAR_UNKNOWN)
-		retvar->var_val.var_string = vim_strsave(
-					get_var_string_buf(&argvars[2], buf));
+	    if (argvars[1].v_type != VAR_UNKNOWN
+					&& argvars[2].v_type != VAR_UNKNOWN)
+		retvar->vval.v_string = vim_strsave(
+				      get_vartv_string_buf(&argvars[2], buf));
 	    else
-		retvar->var_val.var_string = NULL;
+		retvar->vval.v_string = NULL;
 	}
-	retvar->var_type = VAR_STRING;
+	retvar->v_type = VAR_STRING;
     }
     else
 #endif
@@ -5953,20 +6559,20 @@ static garray_T	    ga_userinput = {0, 0, sizeof(tasave_T), 4, NULL};
 /*ARGSUSED*/
     static void
 f_inputrestore(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     if (ga_userinput.ga_len > 0)
     {
 	--ga_userinput.ga_len;
 	restore_typeahead((tasave_T *)(ga_userinput.ga_data)
 						       + ga_userinput.ga_len);
-	retvar->var_val.var_number = 0; /* OK */
+	retvar->vval.v_number = 0; /* OK */
     }
     else if (p_verbose > 1)
     {
 	msg((char_u *)_("called inputrestore() more often than inputsave()"));
-	retvar->var_val.var_number = 1; /* Failed */
+	retvar->vval.v_number = 1; /* Failed */
     }
 }
 
@@ -5976,8 +6582,8 @@ f_inputrestore(argvars, retvar)
 /*ARGSUSED*/
     static void
 f_inputsave(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     /* Add an entry to the stack of typehead storage. */
     if (ga_grow(&ga_userinput, 1) == OK)
@@ -5985,10 +6591,10 @@ f_inputsave(argvars, retvar)
 	save_typeahead((tasave_T *)(ga_userinput.ga_data)
 						       + ga_userinput.ga_len);
 	++ga_userinput.ga_len;
-	retvar->var_val.var_number = 0; /* OK */
+	retvar->vval.v_number = 0; /* OK */
     }
     else
-	retvar->var_val.var_number = 1; /* Failed */
+	retvar->vval.v_number = 1; /* Failed */
 }
 
 /*
@@ -5996,8 +6602,8 @@ f_inputsave(argvars, retvar)
  */
     static void
 f_inputsecret(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     ++cmdline_star;
     ++inputsecret_flag;
@@ -6007,14 +6613,79 @@ f_inputsecret(argvars, retvar)
 }
 
 /*
+ * "insert()" function
+ */
+    static void
+f_insert(argvars, retvar)
+    typeval	*argvars;
+    typeval	*retvar;
+{
+    long	before = 0;
+    long	n;
+    listitem	*item;
+    listitem	*ni;
+    listvar	*l;
+
+    if (argvars[0].v_type != VAR_LIST)
+	EMSG(_("E999: First argument of insert() must be a list"));
+    else if ((l = argvars[0].vval.v_list) != NULL)
+    {
+	if (argvars[2].v_type != VAR_UNKNOWN)
+	    before = get_vartv_number(&argvars[2]);
+
+	if (before < 0)
+	{
+	    /* Count from the end: -1 is before last item. */
+	    item = l->lv_last;
+	    for (n = before + 1; n < 0 && item != NULL; ++n)
+		item = item->li_prev;
+	    if (item == NULL)
+		n = 1;	/* report an error, don't append */
+	}
+	else
+	{
+	    /* Can't use list_find() here, we allow one past the end. */
+	    item = l->lv_first;
+	    for (n = before; n > 0 && item != NULL; --n)
+		item = item->li_next;
+	}
+	if (n > 0)
+	    EMSGN(_(e_listidx), before);
+	else
+	{
+	    ni = listitem_alloc();
+	    if (ni != NULL)
+	    {
+		copy_vartv(&argvars[1], &ni->li_tv);
+		if (item == NULL)
+		    /* Append new item at end of list. */
+		    list_append(l, ni);
+		else
+		{
+		    /* Insert new item before existing item. */
+		    ni->li_prev = item->li_prev;
+		    ni->li_next = item;
+		    if (item->li_prev == NULL)
+			l->lv_first = ni;
+		    else
+			item->li_prev->li_next = ni;
+		    item->li_prev = ni;
+		}
+		copy_vartv(&argvars[0], retvar);
+	    }
+	}
+    }
+}
+
+/*
  * "isdirectory()" function
  */
     static void
 f_isdirectory(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
-    retvar->var_val.var_number = mch_isdir(get_var_string(&argvars[0]));
+    retvar->vval.v_number = mch_isdir(get_vartv_string(&argvars[0]));
 }
 
 /*
@@ -6023,8 +6694,8 @@ f_isdirectory(argvars, retvar)
 /*ARGSUSED*/
     static void
 f_last_buffer_nr(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     int		n = 0;
     buf_T	*buf;
@@ -6033,7 +6704,98 @@ f_last_buffer_nr(argvars, retvar)
 	if (n < buf->b_fnum)
 	    n = buf->b_fnum;
 
-    retvar->var_val.var_number = n;
+    retvar->vval.v_number = n;
+}
+
+/*
+ * "len()" function
+ */
+    static void
+f_len(argvars, retvar)
+    typeval	*argvars;
+    typeval	*retvar;
+{
+    switch (argvars[0].v_type)
+    {
+	case VAR_STRING:
+	case VAR_NUMBER:
+	    retvar->vval.v_number = (varnumber_T)STRLEN(
+					       get_vartv_string(&argvars[0]));
+	    break;
+	case VAR_LIST:
+	    retvar->vval.v_number = list_len(argvars[0].vval.v_list);
+	    break;
+	default:
+	    EMSG(_("E999: Invalid type for len()"));
+	    break;
+    }
+}
+
+/*
+ * "libcall()" function
+ */
+    static void
+f_libcall(argvars, retvar)
+    typeval	*argvars;
+    typeval	*retvar;
+{
+    libcall_common(argvars, retvar, VAR_STRING);
+}
+
+/*
+ * "libcallnr()" function
+ */
+    static void
+f_libcallnr(argvars, retvar)
+    typeval	*argvars;
+    typeval	*retvar;
+{
+    libcall_common(argvars, retvar, VAR_NUMBER);
+}
+
+    static void
+libcall_common(argvars, retvar, type)
+    typeval	*argvars;
+    typeval	*retvar;
+    int		type;
+{
+#ifdef FEAT_LIBCALL
+    char_u		*string_in;
+    char_u		**string_result;
+    int			nr_result;
+#endif
+
+    retvar->v_type = type;
+    if (type == VAR_NUMBER)
+	retvar->vval.v_number = 0;
+    else
+	retvar->vval.v_string = NULL;
+
+    if (check_restricted() || check_secure())
+	return;
+
+#ifdef FEAT_LIBCALL
+    /* The first two args must be strings, otherwise its meaningless */
+    if (argvars[0].v_type == VAR_STRING && argvars[1].v_type == VAR_STRING)
+    {
+	if (argvars[2].v_type == VAR_NUMBER)
+	    string_in = NULL;
+	else
+	    string_in = argvars[2].vval.v_string;
+	if (type == VAR_NUMBER)
+	    string_result = NULL;
+	else
+	    string_result = &retvar->vval.v_string;
+	if (mch_libcall(argvars[0].vval.v_string,
+			     argvars[1].vval.v_string,
+			     string_in,
+			     argvars[2].vval.v_number,
+			     string_result,
+			     &nr_result) == OK
+		&& type == VAR_NUMBER)
+	    retvar->vval.v_number = nr_result;
+    }
+#endif
 }
 
 /*
@@ -6041,8 +6803,8 @@ f_last_buffer_nr(argvars, retvar)
  */
     static void
 f_line(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     linenr_T	lnum = 0;
     pos_T	*fp;
@@ -6050,7 +6812,7 @@ f_line(argvars, retvar)
     fp = var2fpos(&argvars[0], TRUE);
     if (fp != NULL)
 	lnum = fp->lnum;
-    retvar->var_val.var_number = lnum;
+    retvar->vval.v_number = lnum;
 }
 
 /*
@@ -6059,21 +6821,21 @@ f_line(argvars, retvar)
 /*ARGSUSED*/
     static void
 f_line2byte(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
 #ifndef FEAT_BYTEOFF
-    retvar->var_val.var_number = -1;
+    retvar->vval.v_number = -1;
 #else
     linenr_T	lnum;
 
-    lnum = get_var_lnum(argvars);
+    lnum = get_vartv_lnum(argvars);
     if (lnum < 1 || lnum > curbuf->b_ml.ml_line_count + 1)
-	retvar->var_val.var_number = -1;
+	retvar->vval.v_number = -1;
     else
-	retvar->var_val.var_number = ml_find_line_or_offset(curbuf, lnum, NULL);
-    if (retvar->var_val.var_number >= 0)
-	++retvar->var_val.var_number;
+	retvar->vval.v_number = ml_find_line_or_offset(curbuf, lnum, NULL);
+    if (retvar->vval.v_number >= 0)
+	++retvar->vval.v_number;
 #endif
 }
 
@@ -6082,24 +6844,24 @@ f_line2byte(argvars, retvar)
  */
     static void
 f_lispindent(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
 #ifdef FEAT_LISP
     pos_T	pos;
     linenr_T	lnum;
 
     pos = curwin->w_cursor;
-    lnum = get_var_lnum(argvars);
+    lnum = get_vartv_lnum(argvars);
     if (lnum >= 1 && lnum <= curbuf->b_ml.ml_line_count)
     {
 	curwin->w_cursor.lnum = lnum;
-	retvar->var_val.var_number = get_lisp_indent();
+	retvar->vval.v_number = get_lisp_indent();
 	curwin->w_cursor = pos;
     }
     else
 #endif
-	retvar->var_val.var_number = -1;
+	retvar->vval.v_number = -1;
 }
 
 /*
@@ -6108,10 +6870,10 @@ f_lispindent(argvars, retvar)
 /*ARGSUSED*/
     static void
 f_localtime(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
-    retvar->var_val.var_number = (varnumber_T)time(NULL);
+    retvar->vval.v_number = (varnumber_T)time(NULL);
 }
 
 /*
@@ -6119,8 +6881,8 @@ f_localtime(argvars, retvar)
  */
     static void
 f_maparg(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     get_maparg(argvars, retvar, TRUE);
 }
@@ -6130,16 +6892,16 @@ f_maparg(argvars, retvar)
  */
     static void
 f_mapcheck(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     get_maparg(argvars, retvar, FALSE);
 }
 
     static void
 get_maparg(argvars, retvar, exact)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
     int		exact;
 {
     char_u	*keys;
@@ -6151,15 +6913,15 @@ get_maparg(argvars, retvar, exact)
     garray_T	ga;
 
     /* return empty string for failure */
-    retvar->var_type = VAR_STRING;
-    retvar->var_val.var_string = NULL;
+    retvar->v_type = VAR_STRING;
+    retvar->vval.v_string = NULL;
 
-    keys = get_var_string(&argvars[0]);
+    keys = get_vartv_string(&argvars[0]);
     if (*keys == NUL)
 	return;
 
-    if (argvars[1].var_type != VAR_UNKNOWN)
-	which = get_var_string_buf(&argvars[1], buf);
+    if (argvars[1].v_type != VAR_UNKNOWN)
+	which = get_vartv_string_buf(&argvars[1], buf);
     else
 	which = (char_u *)"";
     mode = get_map_mode(&which, 0);
@@ -6177,7 +6939,7 @@ get_maparg(argvars, retvar, exact)
 	    ga_concat(&ga, str2special(&rhs, FALSE));
 
 	ga_append(&ga, NUL);
-	retvar->var_val.var_string = (char_u *)ga.ga_data;
+	retvar->vval.v_string = (char_u *)ga.ga_data;
     }
 }
 
@@ -6186,8 +6948,8 @@ get_maparg(argvars, retvar, exact)
  */
     static void
 f_match(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     find_some_match(argvars, retvar, 1);
 }
@@ -6197,8 +6959,8 @@ f_match(argvars, retvar)
  */
     static void
 f_matchend(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     find_some_match(argvars, retvar, 0);
 }
@@ -6208,16 +6970,16 @@ f_matchend(argvars, retvar)
  */
     static void
 f_matchstr(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     find_some_match(argvars, retvar, 2);
 }
 
     static void
 find_some_match(argvars, retvar, type)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
     int		type;
 {
     char_u	*str;
@@ -6234,28 +6996,28 @@ find_some_match(argvars, retvar, type)
     save_cpo = p_cpo;
     p_cpo = (char_u *)"";
 
-    expr = str = get_var_string(&argvars[0]);
-    pat = get_var_string_buf(&argvars[1], patbuf);
+    expr = str = get_vartv_string(&argvars[0]);
+    pat = get_vartv_string_buf(&argvars[1], patbuf);
 
     if (type == 2)
     {
-	retvar->var_type = VAR_STRING;
-	retvar->var_val.var_string = NULL;
+	retvar->v_type = VAR_STRING;
+	retvar->vval.v_string = NULL;
     }
     else
-	retvar->var_val.var_number = -1;
+	retvar->vval.v_number = -1;
 
-    if (argvars[2].var_type != VAR_UNKNOWN)
+    if (argvars[2].v_type != VAR_UNKNOWN)
     {
-	start = get_var_number(&argvars[2]);
+	start = get_vartv_number(&argvars[2]);
 	if (start < 0)
 	    start = 0;
 	if (start > (long)STRLEN(str))
 	    goto theend;
 	str += start;
 
-	if (argvars[3].var_type != VAR_UNKNOWN)
-	    nth = get_var_number(&argvars[3]);
+	if (argvars[3].v_type != VAR_UNKNOWN)
+	    nth = get_vartv_number(&argvars[3]);
     }
 
     regmatch.regprog = vim_regcomp(pat, RE_MAGIC + RE_STRING);
@@ -6279,17 +7041,17 @@ find_some_match(argvars, retvar, type)
 	if (match)
 	{
 	    if (type == 2)
-		retvar->var_val.var_string = vim_strnsave(regmatch.startp[0],
+		retvar->vval.v_string = vim_strnsave(regmatch.startp[0],
 				(int)(regmatch.endp[0] - regmatch.startp[0]));
 	    else
 	    {
 		if (type != 0)
-		    retvar->var_val.var_number =
+		    retvar->vval.v_number =
 				      (varnumber_T)(regmatch.startp[0] - str);
 		else
-		    retvar->var_val.var_number =
+		    retvar->vval.v_number =
 					(varnumber_T)(regmatch.endp[0] - str);
-		retvar->var_val.var_number += str - expr;
+		retvar->vval.v_number += str - expr;
 	    }
 	}
 	vim_free(regmatch.regprog);
@@ -6305,8 +7067,8 @@ theend:
 /*ARGSUSED*/
     static void
 f_mode(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     char_u	buf[2];
 
@@ -6335,8 +7097,8 @@ f_mode(argvars, retvar)
 	buf[0] = 'n';
 
     buf[1] = NUL;
-    retvar->var_val.var_string = vim_strsave(buf);
-    retvar->var_type = VAR_STRING;
+    retvar->vval.v_string = vim_strsave(buf);
+    retvar->v_type = VAR_STRING;
 }
 
 /*
@@ -6344,22 +7106,50 @@ f_mode(argvars, retvar)
  */
     static void
 f_nr2char(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     char_u	buf[NUMBUFLEN];
 
 #ifdef FEAT_MBYTE
     if (has_mbyte)
-	buf[(*mb_char2bytes)((int)get_var_number(&argvars[0]), buf)] = NUL;
+	buf[(*mb_char2bytes)((int)get_vartv_number(&argvars[0]), buf)] = NUL;
     else
 #endif
     {
-	buf[0] = (char_u)get_var_number(&argvars[0]);
+	buf[0] = (char_u)get_vartv_number(&argvars[0]);
 	buf[1] = NUL;
     }
-    retvar->var_type = VAR_STRING;
-    retvar->var_val.var_string = vim_strsave(buf);
+    retvar->v_type = VAR_STRING;
+    retvar->vval.v_string = vim_strsave(buf);
+}
+
+/*
+ * "remove({list}, {idx})" function
+ */
+    static void
+f_remove(argvars, retvar)
+    typeval	*argvars;
+    typeval	*retvar;
+{
+    listvar	*l;
+    listitem	*item;
+    long	idx;
+
+    if (argvars[0].v_type != VAR_LIST)
+	EMSG(_("E999: First argument of remove() must be a list"));
+    else if ((l = argvars[0].vval.v_list) != NULL)
+    {
+	idx = get_vartv_number(&argvars[1]);
+	item = list_getrem(l, idx);
+	if (item == NULL)
+	    EMSGN(_(e_listidx), idx);
+	else
+	{
+	    *retvar = item->li_tv;
+	    vim_free(item);
+	}
+    }
 }
 
 /*
@@ -6367,16 +7157,16 @@ f_nr2char(argvars, retvar)
  */
     static void
 f_rename(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     char_u	buf[NUMBUFLEN];
 
     if (check_restricted() || check_secure())
-	retvar->var_val.var_number = -1;
+	retvar->vval.v_number = -1;
     else
-	retvar->var_val.var_number = vim_rename(get_var_string(&argvars[0]),
-					get_var_string_buf(&argvars[1], buf));
+	retvar->vval.v_number = vim_rename(get_vartv_string(&argvars[0]),
+				      get_vartv_string_buf(&argvars[1], buf));
 }
 
 /*
@@ -6384,21 +7174,21 @@ f_rename(argvars, retvar)
  */
     static void
 f_resolve(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     char_u	*p;
 
-    p = get_var_string(&argvars[0]);
+    p = get_vartv_string(&argvars[0]);
 #ifdef FEAT_SHORTCUT
     {
 	char_u	*v = NULL;
 
 	v = mch_resolve_shortcut(p);
 	if (v != NULL)
-	    retvar->var_val.var_string = v;
+	    retvar->vval.v_string = v;
 	else
-	    retvar->var_val.var_string = vim_strsave(p);
+	    retvar->vval.v_string = vim_strsave(p);
     }
 #else
 # ifdef HAVE_READLINK
@@ -6445,7 +7235,7 @@ f_resolve(argvars, retvar)
 		    vim_free(p);
 		    vim_free(remain);
 		    EMSG(_("E655: Too many symbolic links (cycle?)"));
-		    retvar->var_val.var_string = NULL;
+		    retvar->vval.v_string = NULL;
 		    goto fail;
 		}
 
@@ -6565,19 +7355,19 @@ f_resolve(argvars, retvar)
 		*gettail_sep(p) = NUL;
 	}
 
-	retvar->var_val.var_string = p;
+	retvar->vval.v_string = p;
     }
 # else
-    retvar->var_val.var_string = vim_strsave(p);
+    retvar->vval.v_string = vim_strsave(p);
 # endif
 #endif
 
-    simplify_filename(retvar->var_val.var_string);
+    simplify_filename(retvar->vval.v_string);
 
 #ifdef HAVE_READLINK
 fail:
 #endif
-    retvar->var_type = VAR_STRING;
+    retvar->v_type = VAR_STRING;
 }
 
 /*
@@ -6585,15 +7375,15 @@ fail:
  */
     static void
 f_simplify(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     char_u	*p;
 
-    p = get_var_string(&argvars[0]);
-    retvar->var_val.var_string = vim_strsave(p);
-    simplify_filename(retvar->var_val.var_string);	/* simplify in place */
-    retvar->var_type = VAR_STRING;
+    p = get_vartv_string(&argvars[0]);
+    retvar->vval.v_string = vim_strsave(p);
+    simplify_filename(retvar->vval.v_string);	/* simplify in place */
+    retvar->v_type = VAR_STRING;
 }
 
 #define SP_NOMOVE	1	/* don't move cursor */
@@ -6605,8 +7395,8 @@ f_simplify(argvars, retvar)
  */
     static void
 f_search(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     char_u	*pat;
     pos_T	pos;
@@ -6615,15 +7405,15 @@ f_search(argvars, retvar)
     int		dir;
     int		flags = 0;
 
-    retvar->var_val.var_number = 0;	/* default: FAIL */
+    retvar->vval.v_number = 0;	/* default: FAIL */
 
-    pat = get_var_string(&argvars[0]);
+    pat = get_vartv_string(&argvars[0]);
     dir = get_search_arg(&argvars[1], &flags);	/* may set p_ws */
     if (dir == 0)
 	goto theend;
     if ((flags & ~SP_NOMOVE) != 0)
     {
-	EMSG2(_(e_invarg2), get_var_string(&argvars[1]));
+	EMSG2(_(e_invarg2), get_vartv_string(&argvars[1]));
 	goto theend;
     }
 
@@ -6631,7 +7421,7 @@ f_search(argvars, retvar)
     if (searchit(curwin, curbuf, &pos, dir, pat, 1L,
 					      SEARCH_KEEP, RE_SEARCH) != FAIL)
     {
-	retvar->var_val.var_number = pos.lnum;
+	retvar->vval.v_number = pos.lnum;
 	curwin->w_cursor = pos;
 	/* "/$" will put the cursor after the end of the line, may need to
 	 * correct that here */
@@ -6650,8 +7440,8 @@ theend:
  */
     static void
 f_searchpair(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     char_u	*spat, *mpat, *epat;
     char_u	*skip;
@@ -6672,16 +7462,16 @@ f_searchpair(argvars, retvar)
     int		nest = 1;
     int		err;
 
-    retvar->var_val.var_number = 0;	/* default: FAIL */
+    retvar->vval.v_number = 0;	/* default: FAIL */
 
     /* Make 'cpoptions' empty, the 'l' flag should not be used here. */
     save_cpo = p_cpo;
     p_cpo = (char_u *)"";
 
     /* Get the three pattern arguments: start, middle, end. */
-    spat = get_var_string(&argvars[0]);
-    mpat = get_var_string_buf(&argvars[1], nbuf1);
-    epat = get_var_string_buf(&argvars[2], nbuf2);
+    spat = get_vartv_string(&argvars[0]);
+    mpat = get_vartv_string_buf(&argvars[1], nbuf1);
+    epat = get_vartv_string_buf(&argvars[2], nbuf2);
 
     /* Make two search patterns: start/end (pat2, for in nested pairs) and
      * start/middle/end (pat3, for the top pair). */
@@ -6702,11 +7492,11 @@ f_searchpair(argvars, retvar)
 	goto theend;
 
     /* Optional fifth argument: skip expresion */
-    if (argvars[3].var_type == VAR_UNKNOWN
-	    || argvars[4].var_type == VAR_UNKNOWN)
+    if (argvars[3].v_type == VAR_UNKNOWN
+	    || argvars[4].v_type == VAR_UNKNOWN)
 	skip = (char_u *)"";
     else
-	skip = get_var_string_buf(&argvars[4], nbuf3);
+	skip = get_vartv_string_buf(&argvars[4], nbuf3);
 
     save_cursor = curwin->w_cursor;
     pos = curwin->w_cursor;
@@ -6734,7 +7524,7 @@ f_searchpair(argvars, retvar)
 	    {
 		/* Evaluating {skip} caused an error, break here. */
 		curwin->w_cursor = save_cursor;
-		retvar->var_val.var_number = -1;
+		retvar->vval.v_number = -1;
 		break;
 	    }
 	    if (r)
@@ -6760,9 +7550,9 @@ f_searchpair(argvars, retvar)
 	{
 	    /* Found the match: return matchcount or line number. */
 	    if (flags & SP_RETCOUNT)
-		++retvar->var_val.var_number;
+		++retvar->vval.v_number;
 	    else
-		retvar->var_val.var_number = pos.lnum;
+		retvar->vval.v_number = pos.lnum;
 	    curwin->w_cursor = pos;
 	    if (!(flags & SP_REPEAT))
 		break;
@@ -6771,7 +7561,7 @@ f_searchpair(argvars, retvar)
     }
 
     /* If 'n' flag is used or search failed: restore cursor position. */
-    if ((flags & SP_NOMOVE) || retvar->var_val.var_number == 0)
+    if ((flags & SP_NOMOVE) || retvar->vval.v_number == 0)
 	curwin->w_cursor = save_cursor;
 
 theend:
@@ -6788,7 +7578,7 @@ theend:
  */
     static int
 get_search_arg(varp, flagsp)
-    VAR		varp;
+    typeval	*varp;
     int		*flagsp;
 {
     int		dir = FORWARD;
@@ -6796,9 +7586,9 @@ get_search_arg(varp, flagsp)
     char_u	nbuf[NUMBUFLEN];
     int		mask;
 
-    if (varp->var_type != VAR_UNKNOWN)
+    if (varp->v_type != VAR_UNKNOWN)
     {
-	flags = get_var_string_buf(varp, nbuf);
+	flags = get_vartv_string_buf(varp, nbuf);
 	while (*flags != NUL)
 	{
 	    switch (*flags)
@@ -6836,8 +7626,8 @@ get_search_arg(varp, flagsp)
 /*ARGSUSED*/
     static void
 f_setbufvar(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     buf_T	*buf;
 #ifdef FEAT_AUTOCMD
@@ -6846,14 +7636,14 @@ f_setbufvar(argvars, retvar)
     buf_T	*save_curbuf;
 #endif
     char_u	*varname, *bufvarname;
-    VAR		varp;
+    typeval	*varp;
     char_u	nbuf[NUMBUFLEN];
 
     if (check_restricted() || check_secure())
 	return;
     ++emsg_off;
-    buf = get_buf_var(&argvars[0]);
-    varname = get_var_string(&argvars[1]);
+    buf = get_buf_vartv(&argvars[0]);
+    varname = get_vartv_string(&argvars[1]);
     varp = &argvars[2];
 
     if (buf != NULL && varname != NULL && varp != NULL)
@@ -6869,8 +7659,8 @@ f_setbufvar(argvars, retvar)
 	if (*varname == '&')
 	{
 	    ++varname;
-	    set_option_value(varname, get_var_number(varp),
-				   get_var_string_buf(varp, nbuf), OPT_LOCAL);
+	    set_option_value(varname, get_vartv_number(varp),
+				 get_vartv_string_buf(varp, nbuf), OPT_LOCAL);
 	}
 	else
 	{
@@ -6899,11 +7689,11 @@ f_setbufvar(argvars, retvar)
  */
     static void
 f_setcmdpos(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
-    retvar->var_val.var_number = set_cmdline_pos(
-					(int)get_var_number(&argvars[0]) - 1);
+    retvar->vval.v_number = set_cmdline_pos(
+				      (int)get_vartv_number(&argvars[0]) - 1);
 }
 
 /*
@@ -6911,15 +7701,15 @@ f_setcmdpos(argvars, retvar)
  */
     static void
 f_setline(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     linenr_T	lnum;
     char_u	*line;
 
-    lnum = get_var_lnum(argvars);
-    line = get_var_string(&argvars[1]);
-    retvar->var_val.var_number = 1;		/* FAIL is default */
+    lnum = get_vartv_lnum(argvars);
+    line = get_vartv_string(&argvars[1]);
+    retvar->vval.v_number = 1;		/* FAIL is default */
 
     if (lnum >= 1
 	    && lnum <= curbuf->b_ml.ml_line_count
@@ -6928,7 +7718,7 @@ f_setline(argvars, retvar)
     {
 	changed_bytes(lnum, 0);
 	check_cursor_col();
-	retvar->var_val.var_number = 0;
+	retvar->vval.v_number = 0;
     }
 }
 
@@ -6937,8 +7727,8 @@ f_setline(argvars, retvar)
  */
     static void
 f_setreg(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     int		regname;
     char_u	*strregname;
@@ -6951,8 +7741,8 @@ f_setreg(argvars, retvar)
     yank_type = MAUTO;
     append = FALSE;
 
-    strregname = get_var_string(argvars);
-    retvar->var_val.var_number = 1;		/* FAIL is default */
+    strregname = get_vartv_string(argvars);
+    retvar->vval.v_number = 1;		/* FAIL is default */
 
     regname = (strregname == NULL ? '"' : *strregname);
     if (regname == 0 || regname == '@')
@@ -6960,9 +7750,9 @@ f_setreg(argvars, retvar)
     else if (regname == '=')
 	return;
 
-    if (argvars[2].var_type != VAR_UNKNOWN)
+    if (argvars[2].v_type != VAR_UNKNOWN)
     {
-	for (stropt = get_var_string(&argvars[2]); *stropt != NUL; ++stropt)
+	for (stropt = get_vartv_string(&argvars[2]); *stropt != NUL; ++stropt)
 	    switch (*stropt)
 	    {
 		case 'a': case 'A':	/* append */
@@ -6988,9 +7778,9 @@ f_setreg(argvars, retvar)
 	    }
     }
 
-    write_reg_contents_ex(regname, get_var_string(&argvars[1]), -1,
+    write_reg_contents_ex(regname, get_vartv_string(&argvars[1]), -1,
 						append, yank_type, block_len);
-    retvar->var_val.var_number = 0;
+    retvar->vval.v_number = 0;
 }
 
 
@@ -7000,22 +7790,22 @@ f_setreg(argvars, retvar)
 /*ARGSUSED*/
     static void
 f_setwinvar(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     win_T	*win;
 #ifdef FEAT_WINDOWS
     win_T	*save_curwin;
 #endif
     char_u	*varname, *winvarname;
-    VAR		varp;
+    typeval	*varp;
     char_u	nbuf[NUMBUFLEN];
 
     if (check_restricted() || check_secure())
 	return;
     ++emsg_off;
     win = find_win_by_nr(&argvars[0]);
-    varname = get_var_string(&argvars[1]);
+    varname = get_vartv_string(&argvars[1]);
     varp = &argvars[2];
 
     if (win != NULL && varname != NULL && varp != NULL)
@@ -7030,8 +7820,8 @@ f_setwinvar(argvars, retvar)
 	if (*varname == '&')
 	{
 	    ++varname;
-	    set_option_value(varname, get_var_number(varp),
-				   get_var_string_buf(varp, nbuf), OPT_LOCAL);
+	    set_option_value(varname, get_vartv_number(varp),
+				 get_vartv_string_buf(varp, nbuf), OPT_LOCAL);
 	}
 	else
 	{
@@ -7063,12 +7853,12 @@ f_setwinvar(argvars, retvar)
  */
     static void
 f_nextnonblank(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     linenr_T	lnum;
 
-    for (lnum = get_var_lnum(argvars); ; ++lnum)
+    for (lnum = get_vartv_lnum(argvars); ; ++lnum)
     {
 	if (lnum > curbuf->b_ml.ml_line_count)
 	{
@@ -7078,7 +7868,7 @@ f_nextnonblank(argvars, retvar)
 	if (*skipwhite(ml_get(lnum)) != NUL)
 	    break;
     }
-    retvar->var_val.var_number = lnum;
+    retvar->vval.v_number = lnum;
 }
 
 /*
@@ -7086,18 +7876,18 @@ f_nextnonblank(argvars, retvar)
  */
     static void
 f_prevnonblank(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     linenr_T	lnum;
 
-    lnum = get_var_lnum(argvars);
+    lnum = get_vartv_lnum(argvars);
     if (lnum < 1 || lnum > curbuf->b_ml.ml_line_count)
 	lnum = 0;
     else
 	while (lnum >= 1 && *skipwhite(ml_get(lnum)) == NUL)
 	    --lnum;
-    retvar->var_val.var_number = lnum;
+    retvar->vval.v_number = lnum;
 }
 
 #if defined(FEAT_CLIENTSERVER) && defined(FEAT_X11)
@@ -7135,8 +7925,8 @@ check_connection()
 /*ARGSUSED*/
     static void
 f_serverlist(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     char_u	*r = NULL;
 
@@ -7149,15 +7939,15 @@ f_serverlist(argvars, retvar)
 	r = serverGetVimNames(X_DISPLAY);
 # endif
 #endif
-    retvar->var_type = VAR_STRING;
-    retvar->var_val.var_string = r;
+    retvar->v_type = VAR_STRING;
+    retvar->vval.v_string = r;
 }
 
 /*ARGSUSED*/
     static void
 f_remote_peek(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
 #ifdef FEAT_CLIENTSERVER
     var		v;
@@ -7168,44 +7958,44 @@ f_remote_peek(argvars, retvar)
 
     if (check_restricted() || check_secure())
     {
-	retvar->var_val.var_number = -1;
+	retvar->vval.v_number = -1;
 	return;
     }
 # ifdef WIN32
-    sscanf(get_var_string(&argvars[0]), "%x", &n);
+    sscanf(get_vartv_string(&argvars[0]), "%x", &n);
     if (n == 0)
-	retvar->var_val.var_number = -1;
+	retvar->vval.v_number = -1;
     else
     {
 	s = serverGetReply((HWND)n, FALSE, FALSE, FALSE);
-	retvar->var_val.var_number = (s != NULL);
+	retvar->vval.v_number = (s != NULL);
     }
 # else
-    retvar->var_val.var_number = 0;
+    retvar->vval.v_number = 0;
     if (check_connection() == FAIL)
 	return;
 
-    retvar->var_val.var_number = serverPeekReply(X_DISPLAY,
-			     serverStrToWin(get_var_string(&argvars[0])), &s);
+    retvar->vval.v_number = serverPeekReply(X_DISPLAY,
+			   serverStrToWin(get_vartv_string(&argvars[0])), &s);
 # endif
 
-    if (argvars[1].var_type != VAR_UNKNOWN && retvar->var_val.var_number > 0)
+    if (argvars[1].v_type != VAR_UNKNOWN && retvar->vval.v_number > 0)
     {
-	v.var_type = VAR_STRING;
-	v.var_val.var_string = vim_strsave(s);
-	set_var(get_var_string(&argvars[1]), &v, FALSE);
-	vim_free(v.var_val.var_string);
+	v.tv.v_type = VAR_STRING;
+	v.tv.vval.v_string = vim_strsave(s);
+	set_var(get_vartv_string(&argvars[1]), &v.tv, FALSE);
+	vim_free(v.tv.vval.v_string);
     }
 #else
-    retvar->var_val.var_number = -1;
+    retvar->vval.v_number = -1;
 #endif
 }
 
 /*ARGSUSED*/
     static void
 f_remote_read(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     char_u	*r = NULL;
 
@@ -7216,33 +8006,33 @@ f_remote_read(argvars, retvar)
 	/* The server's HWND is encoded in the 'id' parameter */
 	int		n = 0;
 
-	sscanf(get_var_string(&argvars[0]), "%x", &n);
+	sscanf(get_vartv_string(&argvars[0]), "%x", &n);
 	if (n != 0)
 	    r = serverGetReply((HWND)n, FALSE, TRUE, TRUE);
 	if (r == NULL)
 # else
 	if (check_connection() == FAIL || serverReadReply(X_DISPLAY,
-		  serverStrToWin(get_var_string(&argvars[0])), &r, FALSE) < 0)
+		serverStrToWin(get_vartv_string(&argvars[0])), &r, FALSE) < 0)
 # endif
 	    EMSG(_("E277: Unable to read a server reply"));
     }
 #endif
-    retvar->var_type = VAR_STRING;
-    retvar->var_val.var_string = r;
+    retvar->v_type = VAR_STRING;
+    retvar->vval.v_string = r;
 }
 
 /*ARGSUSED*/
     static void
 f_server2client(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
 #ifdef FEAT_CLIENTSERVER
     char_u	buf[NUMBUFLEN];
-    char_u	*server = get_var_string(&argvars[0]);
-    char_u	*reply = get_var_string_buf(&argvars[1], buf);
+    char_u	*server = get_vartv_string(&argvars[0]);
+    char_u	*reply = get_vartv_string_buf(&argvars[1], buf);
 
-    retvar->var_val.var_number = -1;
+    retvar->vval.v_number = -1;
     if (check_restricted() || check_secure())
 	return;
 # ifdef FEAT_X11
@@ -7255,19 +8045,19 @@ f_server2client(argvars, retvar)
 	EMSG(_("E258: Unable to send to client"));
 	return;
     }
-    retvar->var_val.var_number = 0;
+    retvar->vval.v_number = 0;
 #else
-    retvar->var_val.var_number = -1;
+    retvar->vval.v_number = -1;
 #endif
 }
 
 #ifdef FEAT_CLIENTSERVER
-static void remote_common __ARGS((VAR argvars, VAR retvar, int expr));
+static void remote_common __ARGS((typeval *argvars, typeval *retvar, int expr));
 
     static void
 remote_common(argvars, retvar, expr)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
     int		expr;
 {
     char_u	*server_name;
@@ -7288,8 +8078,8 @@ remote_common(argvars, retvar, expr)
 	return;
 # endif
 
-    server_name = get_var_string(&argvars[0]);
-    keys = get_var_string_buf(&argvars[1], buf);
+    server_name = get_vartv_string(&argvars[0]);
+    keys = get_vartv_string_buf(&argvars[1], buf);
 # ifdef WIN32
     if (serverSendToVim(server_name, keys, &r, &w, expr, TRUE) < 0)
 # else
@@ -7304,18 +8094,18 @@ remote_common(argvars, retvar, expr)
 	return;
     }
 
-    retvar->var_val.var_string = r;
+    retvar->vval.v_string = r;
 
-    if (argvars[2].var_type != VAR_UNKNOWN)
+    if (argvars[2].v_type != VAR_UNKNOWN)
     {
 	var	v;
 	char_u	str[30];
 
 	sprintf((char *)str, "0x%x", (unsigned int)w);
-	v.var_type = VAR_STRING;
-	v.var_val.var_string = vim_strsave(str);
-	set_var(get_var_string(&argvars[2]), &v, FALSE);
-	vim_free(v.var_val.var_string);
+	v.tv.v_type = VAR_STRING;
+	v.tv.vval.v_string = vim_strsave(str);
+	set_var(get_vartv_string(&argvars[2]), &v.tv, FALSE);
+	vim_free(v.tv.vval.v_string);
     }
 }
 #endif
@@ -7326,11 +8116,11 @@ remote_common(argvars, retvar, expr)
 /*ARGSUSED*/
     static void
 f_remote_expr(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
-    retvar->var_type = VAR_STRING;
-    retvar->var_val.var_string = NULL;
+    retvar->v_type = VAR_STRING;
+    retvar->vval.v_string = NULL;
 #ifdef FEAT_CLIENTSERVER
     remote_common(argvars, retvar, TRUE);
 #endif
@@ -7342,11 +8132,11 @@ f_remote_expr(argvars, retvar)
 /*ARGSUSED*/
     static void
 f_remote_send(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
-    retvar->var_type = VAR_STRING;
-    retvar->var_val.var_string = NULL;
+    retvar->v_type = VAR_STRING;
+    retvar->vval.v_string = NULL;
 #ifdef FEAT_CLIENTSERVER
     remote_common(argvars, retvar, FALSE);
 #endif
@@ -7358,21 +8148,21 @@ f_remote_send(argvars, retvar)
 /*ARGSUSED*/
     static void
 f_remote_foreground(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
-    retvar->var_val.var_number = 0;
+    retvar->vval.v_number = 0;
 #ifdef FEAT_CLIENTSERVER
 # ifdef WIN32
     /* On Win32 it's done in this application. */
-    serverForeground(get_var_string(&argvars[0]));
+    serverForeground(get_vartv_string(&argvars[0]));
 # else
     /* Send a foreground() expression to the server. */
-    argvars[1].var_type = VAR_STRING;
-    argvars[1].var_val.var_string = vim_strsave((char_u *)"foreground()");
-    argvars[2].var_type = VAR_UNKNOWN;
+    argvars[1].v_type = VAR_STRING;
+    argvars[1].vval.v_string = vim_strsave((char_u *)"foreground()");
+    argvars[2].v_type = VAR_UNKNOWN;
     remote_common(argvars, retvar, TRUE);
-    vim_free(argvars[1].var_val.var_string);
+    vim_free(argvars[1].vval.v_string);
 # endif
 #endif
 }
@@ -7383,8 +8173,8 @@ f_remote_foreground(argvars, retvar)
 /*ARGSUSED*/
     static void
 f_repeat(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     char_u	*p;
     int		n;
@@ -7393,11 +8183,11 @@ f_repeat(argvars, retvar)
     char_u	*r;
     int		i;
 
-    p = get_var_string(&argvars[0]);
-    n = get_var_number(&argvars[1]);
+    p = get_vartv_string(&argvars[0]);
+    n = get_vartv_number(&argvars[1]);
 
-    retvar->var_type = VAR_STRING;
-    retvar->var_val.var_string = NULL;
+    retvar->v_type = VAR_STRING;
+    retvar->vval.v_string = NULL;
 
     slen = (int)STRLEN(p);
     len = slen * n;
@@ -7413,7 +8203,7 @@ f_repeat(argvars, retvar)
         r[len] = NUL;
     }
 
-    retvar->var_val.var_string = r;
+    retvar->vval.v_string = r;
 }
 
 #ifdef HAVE_STRFTIME
@@ -7422,25 +8212,25 @@ f_repeat(argvars, retvar)
  */
     static void
 f_strftime(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     char_u	result_buf[256];
     struct tm	*curtime;
     time_t	seconds;
     char_u	*p;
 
-    retvar->var_type = VAR_STRING;
+    retvar->v_type = VAR_STRING;
 
-    p = get_var_string(&argvars[0]);
-    if (argvars[1].var_type == VAR_UNKNOWN)
+    p = get_vartv_string(&argvars[0]);
+    if (argvars[1].v_type == VAR_UNKNOWN)
 	seconds = time(NULL);
     else
-	seconds = (time_t)get_var_number(&argvars[1]);
+	seconds = (time_t)get_vartv_number(&argvars[1]);
     curtime = localtime(&seconds);
     /* MSVC returns NULL for an invalid value of seconds. */
     if (curtime == NULL)
-	retvar->var_val.var_string = vim_strsave((char_u *)_("(Invalid)"));
+	retvar->vval.v_string = vim_strsave((char_u *)_("(Invalid)"));
     else
     {
 # ifdef FEAT_MBYTE
@@ -7464,11 +8254,10 @@ f_strftime(argvars, retvar)
 	    vim_free(p);
 	convert_setup(&conv, enc, p_enc);
 	if (conv.vc_type != CONV_NONE)
-	    retvar->var_val.var_string =
-				      string_convert(&conv, result_buf, NULL);
+	    retvar->vval.v_string = string_convert(&conv, result_buf, NULL);
 	else
 # endif
-	    retvar->var_val.var_string = vim_strsave(result_buf);
+	    retvar->vval.v_string = vim_strsave(result_buf);
 
 # ifdef FEAT_MBYTE
 	/* Release conversion descriptors */
@@ -7484,22 +8273,22 @@ f_strftime(argvars, retvar)
  */
     static void
 f_stridx(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     char_u	buf[NUMBUFLEN];
     char_u	*needle;
     char_u	*haystack;
     char_u	*pos;
 
-    needle = get_var_string(&argvars[1]);
-    haystack = get_var_string_buf(&argvars[0], buf);
+    needle = get_vartv_string(&argvars[1]);
+    haystack = get_vartv_string_buf(&argvars[0], buf);
     pos	= (char_u *)strstr((char *)haystack, (char *)needle);
 
     if (pos == NULL)
-	retvar->var_val.var_number = -1;
+	retvar->vval.v_number = -1;
     else
-	retvar->var_val.var_number = (varnumber_T) (pos - haystack);
+	retvar->vval.v_number = (varnumber_T) (pos - haystack);
 }
 
 /*
@@ -7507,8 +8296,8 @@ f_stridx(argvars, retvar)
  */
     static void
 f_strridx(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     char_u	buf[NUMBUFLEN];
     char_u	*needle;
@@ -7516,8 +8305,8 @@ f_strridx(argvars, retvar)
     char_u	*rest;
     char_u	*lastmatch = NULL;
 
-    needle = get_var_string(&argvars[1]);
-    haystack = get_var_string_buf(&argvars[0], buf);
+    needle = get_vartv_string(&argvars[1]);
+    haystack = get_vartv_string_buf(&argvars[0], buf);
     if (*needle == NUL)
 	/* Empty string matches past the end. */
 	lastmatch = haystack + STRLEN(haystack);
@@ -7531,9 +8320,25 @@ f_strridx(argvars, retvar)
 	}
 
     if (lastmatch == NULL)
-	retvar->var_val.var_number = -1;
+	retvar->vval.v_number = -1;
     else
-	retvar->var_val.var_number = (varnumber_T)(lastmatch - haystack);
+	retvar->vval.v_number = (varnumber_T)(lastmatch - haystack);
+}
+
+/*
+ * "string()" function
+ */
+    static void
+f_string(argvars, retvar)
+    typeval	*argvars;
+    typeval	*retvar;
+{
+    char_u	*tofree;
+
+    retvar->v_type = VAR_STRING;
+    retvar->vval.v_string = tv2string(&argvars[0], &tofree);
+    if (tofree == NULL)
+	retvar->vval.v_string = vim_strsave(retvar->vval.v_string);
 }
 
 /*
@@ -7541,10 +8346,11 @@ f_strridx(argvars, retvar)
  */
     static void
 f_strlen(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
-    retvar->var_val.var_number = (varnumber_T) (STRLEN(get_var_string(&argvars[0])));
+    retvar->vval.v_number = (varnumber_T)(STRLEN(
+					      get_vartv_string(&argvars[0])));
 }
 
 /*
@@ -7552,20 +8358,20 @@ f_strlen(argvars, retvar)
  */
     static void
 f_strpart(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     char_u	*p;
     int		n;
     int		len;
     int		slen;
 
-    p = get_var_string(&argvars[0]);
+    p = get_vartv_string(&argvars[0]);
     slen = (int)STRLEN(p);
 
-    n = get_var_number(&argvars[1]);
-    if (argvars[2].var_type != VAR_UNKNOWN)
-	len = get_var_number(&argvars[2]);
+    n = get_vartv_number(&argvars[1]);
+    if (argvars[2].v_type != VAR_UNKNOWN)
+	len = get_vartv_number(&argvars[2]);
     else
 	len = slen - n;	    /* default len: all bytes that are available. */
 
@@ -7585,8 +8391,8 @@ f_strpart(argvars, retvar)
     else if (n + len > slen)
 	len = slen - n;
 
-    retvar->var_type = VAR_STRING;
-    retvar->var_val.var_string = vim_strnsave(p + n, len);
+    retvar->v_type = VAR_STRING;
+    retvar->vval.v_string = vim_strnsave(p + n, len);
 }
 
 /*
@@ -7594,11 +8400,11 @@ f_strpart(argvars, retvar)
  */
     static void
 f_strtrans(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
-    retvar->var_type = VAR_STRING;
-    retvar->var_val.var_string = transstr(get_var_string(&argvars[0]));
+    retvar->v_type = VAR_STRING;
+    retvar->vval.v_string = transstr(get_vartv_string(&argvars[0]));
 }
 
 /*
@@ -7607,8 +8413,8 @@ f_strtrans(argvars, retvar)
 /*ARGSUSED*/
     static void
 f_synID(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     int		id = 0;
 #ifdef FEAT_SYN_HL
@@ -7616,16 +8422,16 @@ f_synID(argvars, retvar)
     long	col;
     int		trans;
 
-    line = get_var_lnum(argvars);
-    col = get_var_number(&argvars[1]) - 1;
-    trans = get_var_number(&argvars[2]);
+    line = get_vartv_lnum(argvars);
+    col = get_vartv_number(&argvars[1]) - 1;
+    trans = get_vartv_number(&argvars[2]);
 
     if (line >= 1 && line <= curbuf->b_ml.ml_line_count
 	    && col >= 0 && col < (long)STRLEN(ml_get(line)))
 	id = syn_get_id(line, col, trans);
 #endif
 
-    retvar->var_val.var_number = id;
+    retvar->vval.v_number = id;
 }
 
 /*
@@ -7634,8 +8440,8 @@ f_synID(argvars, retvar)
 /*ARGSUSED*/
     static void
 f_synIDattr(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     char_u	*p = NULL;
 #ifdef FEAT_SYN_HL
@@ -7645,11 +8451,11 @@ f_synIDattr(argvars, retvar)
     char_u	modebuf[NUMBUFLEN];
     int		modec;
 
-    id = get_var_number(&argvars[0]);
-    what = get_var_string(&argvars[1]);
-    if (argvars[2].var_type != VAR_UNKNOWN)
+    id = get_vartv_number(&argvars[0]);
+    what = get_vartv_string(&argvars[1]);
+    if (argvars[2].v_type != VAR_UNKNOWN)
     {
-	mode = get_var_string_buf(&argvars[2], modebuf);
+	mode = get_vartv_string_buf(&argvars[2], modebuf);
 	modec = TOLOWER_ASC(mode[0]);
 	if (modec != 't' && modec != 'c'
 #ifdef FEAT_GUI
@@ -7712,8 +8518,8 @@ f_synIDattr(argvars, retvar)
     if (p != NULL)
 	p = vim_strsave(p);
 #endif
-    retvar->var_type = VAR_STRING;
-    retvar->var_val.var_string = p;
+    retvar->v_type = VAR_STRING;
+    retvar->vval.v_string = p;
 }
 
 /*
@@ -7722,13 +8528,13 @@ f_synIDattr(argvars, retvar)
 /*ARGSUSED*/
     static void
 f_synIDtrans(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     int		id;
 
 #ifdef FEAT_SYN_HL
-    id = get_var_number(&argvars[0]);
+    id = get_vartv_number(&argvars[0]);
 
     if (id > 0)
 	id = syn_get_final_id(id);
@@ -7736,7 +8542,7 @@ f_synIDtrans(argvars, retvar)
 #endif
 	id = 0;
 
-    retvar->var_val.var_number = id;
+    retvar->vval.v_number = id;
 }
 
 /*
@@ -7744,8 +8550,8 @@ f_synIDtrans(argvars, retvar)
  */
     static void
 f_system(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     char_u	*res = NULL;
     char_u	*p;
@@ -7754,7 +8560,7 @@ f_system(argvars, retvar)
     int		err = FALSE;
     FILE	*fd;
 
-    if (argvars[1].var_type != VAR_UNKNOWN)
+    if (argvars[1].v_type != VAR_UNKNOWN)
     {
 	/*
 	 * Write the string to a temp file, to be used for input of the shell
@@ -7772,7 +8578,7 @@ f_system(argvars, retvar)
 	    EMSG2(_(e_notopen), infile);
 	    goto done;
 	}
-	p = get_var_string_buf(&argvars[1], buf);
+	p = get_vartv_string_buf(&argvars[1], buf);
 	if (fwrite(p, STRLEN(p), 1, fd) != 1)
 	    err = TRUE;
 	if (fclose(fd) != 0)
@@ -7784,7 +8590,7 @@ f_system(argvars, retvar)
 	}
     }
 
-    res = get_cmd_output(get_var_string(&argvars[0]), infile, SHELL_SILENT);
+    res = get_cmd_output(get_vartv_string(&argvars[0]), infile, SHELL_SILENT);
 
 #ifdef USE_CR
     /* translate <CR> into <NL> */
@@ -7823,8 +8629,8 @@ done:
 	mch_remove(infile);
 	vim_free(infile);
     }
-    retvar->var_type = VAR_STRING;
-    retvar->var_val.var_string = res;
+    retvar->v_type = VAR_STRING;
+    retvar->vval.v_string = res;
 }
 
 /*
@@ -7832,11 +8638,11 @@ done:
  */
     static void
 f_submatch(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
-    retvar->var_type = VAR_STRING;
-    retvar->var_val.var_string = reg_submatch((int)get_var_number(&argvars[0]));
+    retvar->v_type = VAR_STRING;
+    retvar->vval.v_string = reg_submatch((int)get_vartv_number(&argvars[0]));
 }
 
 /*
@@ -7844,19 +8650,19 @@ f_submatch(argvars, retvar)
  */
     static void
 f_substitute(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     char_u	patbuf[NUMBUFLEN];
     char_u	subbuf[NUMBUFLEN];
     char_u	flagsbuf[NUMBUFLEN];
 
-    retvar->var_type = VAR_STRING;
-    retvar->var_val.var_string = do_string_sub(
-	    get_var_string(&argvars[0]),
-	    get_var_string_buf(&argvars[1], patbuf),
-	    get_var_string_buf(&argvars[2], subbuf),
-	    get_var_string_buf(&argvars[3], flagsbuf));
+    retvar->v_type = VAR_STRING;
+    retvar->vval.v_string = do_string_sub(
+	    get_vartv_string(&argvars[0]),
+	    get_vartv_string_buf(&argvars[1], patbuf),
+	    get_vartv_string_buf(&argvars[2], subbuf),
+	    get_vartv_string_buf(&argvars[3], flagsbuf));
 }
 
 /*
@@ -7865,13 +8671,13 @@ f_substitute(argvars, retvar)
 /*ARGSUSED*/
     static void
 f_tempname(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     static int	x = 'A';
 
-    retvar->var_type = VAR_STRING;
-    retvar->var_val.var_string = vim_tempname(x);
+    retvar->v_type = VAR_STRING;
+    retvar->vval.v_string = vim_tempname(x);
 
     /* Advance 'x' to use A-Z and 0-9, so that there are at least 34 different
      * names.  Skip 'I' and 'O', they are used for shell redirection. */
@@ -7900,14 +8706,14 @@ f_tempname(argvars, retvar)
  */
     static void
 f_tolower(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     char_u	*p;
 
-    p = vim_strsave(get_var_string(&argvars[0]));
-    retvar->var_type = VAR_STRING;
-    retvar->var_val.var_string = p;
+    p = vim_strsave(get_vartv_string(&argvars[0]));
+    retvar->v_type = VAR_STRING;
+    retvar->vval.v_string = p;
 
     if (p != NULL)
 	while (*p != NUL)
@@ -7943,14 +8749,14 @@ f_tolower(argvars, retvar)
  */
     static void
 f_toupper(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     char_u	*p;
 
-    p = vim_strsave(get_var_string(&argvars[0]));
-    retvar->var_type = VAR_STRING;
-    retvar->var_val.var_string = p;
+    p = vim_strsave(get_vartv_string(&argvars[0]));
+    retvar->v_type = VAR_STRING;
+    retvar->vval.v_string = p;
 
     if (p != NULL)
 	while (*p != NUL)
@@ -7986,8 +8792,8 @@ f_toupper(argvars, retvar)
  */
     static void
 f_tr(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     char_u	*instr;
     char_u	*fromstr;
@@ -8006,13 +8812,13 @@ f_tr(argvars, retvar)
     char_u	buf2[NUMBUFLEN];
     garray_T	ga;
 
-    instr = get_var_string(&argvars[0]);
-    fromstr = get_var_string_buf(&argvars[1], buf);
-    tostr = get_var_string_buf(&argvars[2], buf2);
+    instr = get_vartv_string(&argvars[0]);
+    fromstr = get_vartv_string_buf(&argvars[1], buf);
+    tostr = get_vartv_string_buf(&argvars[2], buf2);
 
     /* Default return value: empty string. */
-    retvar->var_type = VAR_STRING;
-    retvar->var_val.var_string = NULL;
+    retvar->v_type = VAR_STRING;
+    retvar->vval.v_string = NULL;
     ga_init2(&ga, (int)sizeof(char), 80);
 
 #ifdef FEAT_MBYTE
@@ -8095,7 +8901,7 @@ error:
 	}
     }
 
-    retvar->var_val.var_string = ga.ga_data;
+    retvar->vval.v_string = ga.ga_data;
 }
 
 /*
@@ -8103,13 +8909,13 @@ error:
  */
     static void
 f_type(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
-    if (argvars[0].var_type == VAR_NUMBER)
-	retvar->var_val.var_number = 0;
+    if (argvars[0].v_type == VAR_NUMBER)
+	retvar->vval.v_number = 0;
     else
-	retvar->var_val.var_number = 1;
+	retvar->vval.v_number = 1;
 }
 
 /*
@@ -8117,8 +8923,8 @@ f_type(argvars, retvar)
  */
     static void
 f_virtcol(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     colnr_T	vcol = 0;
     pos_T	*fp;
@@ -8130,7 +8936,7 @@ f_virtcol(argvars, retvar)
 	++vcol;
     }
 
-    retvar->var_val.var_number = vcol;
+    retvar->vval.v_number = vcol;
 }
 
 /*
@@ -8139,25 +8945,25 @@ f_virtcol(argvars, retvar)
 /*ARGSUSED*/
     static void
 f_visualmode(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
 #ifdef FEAT_VISUAL
     char_u	str[2];
 
-    retvar->var_type = VAR_STRING;
+    retvar->v_type = VAR_STRING;
     str[0] = curbuf->b_visual_mode_eval;
     str[1] = NUL;
-    retvar->var_val.var_string = vim_strsave(str);
+    retvar->vval.v_string = vim_strsave(str);
 
     /* A non-zero number or non-empty string argument: reset mode. */
-    if ((argvars[0].var_type == VAR_NUMBER
-		&& argvars[0].var_val.var_number != 0)
-	    || (argvars[0].var_type == VAR_STRING
-		&& *get_var_string(&argvars[0]) != NUL))
+    if ((argvars[0].v_type == VAR_NUMBER
+		&& argvars[0].vval.v_number != 0)
+	    || (argvars[0].v_type == VAR_STRING
+		&& *get_vartv_string(&argvars[0]) != NUL))
 	curbuf->b_visual_mode_eval = NUL;
 #else
-    retvar->var_val.var_number = 0; /* return anything, it won't work anyway */
+    retvar->vval.v_number = 0; /* return anything, it won't work anyway */
 #endif
 }
 
@@ -8166,16 +8972,16 @@ f_visualmode(argvars, retvar)
  */
     static void
 f_winbufnr(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     win_T	*wp;
 
     wp = find_win_by_nr(&argvars[0]);
     if (wp == NULL)
-	retvar->var_val.var_number = -1;
+	retvar->vval.v_number = -1;
     else
-	retvar->var_val.var_number = wp->w_buffer->b_fnum;
+	retvar->vval.v_number = wp->w_buffer->b_fnum;
 }
 
 /*
@@ -8184,11 +8990,11 @@ f_winbufnr(argvars, retvar)
 /*ARGSUSED*/
     static void
 f_wincol(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     validate_cursor();
-    retvar->var_val.var_number = curwin->w_wcol + 1;
+    retvar->vval.v_number = curwin->w_wcol + 1;
 }
 
 /*
@@ -8196,16 +9002,16 @@ f_wincol(argvars, retvar)
  */
     static void
 f_winheight(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     win_T	*wp;
 
     wp = find_win_by_nr(&argvars[0]);
     if (wp == NULL)
-	retvar->var_val.var_number = -1;
+	retvar->vval.v_number = -1;
     else
-	retvar->var_val.var_number = wp->w_height;
+	retvar->vval.v_number = wp->w_height;
 }
 
 /*
@@ -8214,11 +9020,11 @@ f_winheight(argvars, retvar)
 /*ARGSUSED*/
     static void
 f_winline(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     validate_cursor();
-    retvar->var_val.var_number = curwin->w_wrow + 1;
+    retvar->vval.v_number = curwin->w_wrow + 1;
 }
 
 /*
@@ -8227,8 +9033,8 @@ f_winline(argvars, retvar)
 /* ARGSUSED */
     static void
 f_winnr(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     int		nr = 1;
 #ifdef FEAT_WINDOWS
@@ -8236,9 +9042,9 @@ f_winnr(argvars, retvar)
     win_T	*twin = curwin;
     char_u	*arg;
 
-    if (argvars[0].var_type != VAR_UNKNOWN)
+    if (argvars[0].v_type != VAR_UNKNOWN)
     {
-	arg = get_var_string(&argvars[0]);
+	arg = get_vartv_string(&argvars[0]);
 	if (STRCMP(arg, "$") == 0)
 	    twin = lastwin;
 	else if (STRCMP(arg, "#") == 0)
@@ -8258,7 +9064,7 @@ f_winnr(argvars, retvar)
 	for (wp = firstwin; wp != twin; wp = wp->w_next)
 	    ++nr;
 #endif
-    retvar->var_val.var_number = nr;
+    retvar->vval.v_number = nr;
 }
 
 /*
@@ -8267,8 +9073,8 @@ f_winnr(argvars, retvar)
 /* ARGSUSED */
     static void
 f_winrestcmd(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
 #ifdef FEAT_WINDOWS
     win_T	*wp;
@@ -8289,11 +9095,11 @@ f_winrestcmd(argvars, retvar)
     }
     ga_append(&ga, NUL);
 
-    retvar->var_val.var_string = ga.ga_data;
+    retvar->vval.v_string = ga.ga_data;
 #else
-    retvar->var_val.var_string = NULL;
+    retvar->vval.v_string = NULL;
 #endif
-    retvar->var_type = VAR_STRING;
+    retvar->v_type = VAR_STRING;
 }
 
 /*
@@ -8301,32 +9107,32 @@ f_winrestcmd(argvars, retvar)
  */
     static void
 f_winwidth(argvars, retvar)
-    VAR		argvars;
-    VAR		retvar;
+    typeval	*argvars;
+    typeval	*retvar;
 {
     win_T	*wp;
 
     wp = find_win_by_nr(&argvars[0]);
     if (wp == NULL)
-	retvar->var_val.var_number = -1;
+	retvar->vval.v_number = -1;
     else
 #ifdef FEAT_VERTSPLIT
-	retvar->var_val.var_number = wp->w_width;
+	retvar->vval.v_number = wp->w_width;
 #else
-	retvar->var_val.var_number = Columns;
+	retvar->vval.v_number = Columns;
 #endif
 }
 
     static win_T *
 find_win_by_nr(vp)
-    VAR		vp;
+    typeval	*vp;
 {
 #ifdef FEAT_WINDOWS
     win_T	*wp;
 #endif
     int		nr;
 
-    nr = get_var_number(vp);
+    nr = get_vartv_number(vp);
 
 #ifdef FEAT_WINDOWS
     if (nr == 0)
@@ -8348,14 +9154,14 @@ find_win_by_nr(vp)
  */
     static pos_T *
 var2fpos(varp, lnum)
-    VAR		varp;
+    typeval	*varp;
     int		lnum;		/* TRUE when $ is last line */
 {
     char_u	*name;
     static pos_T	pos;
     pos_T	*pp;
 
-    name = get_var_string(varp);
+    name = get_vartv_string(varp);
     if (name[0] == '.')		/* cursor */
 	return &curwin->w_cursor;
     if (name[0] == '\'')	/* mark */
@@ -8750,18 +9556,18 @@ set_cmdarg(eap, oldarg)
  * Return OK or FAIL.
  */
     static int
-get_var_var(name, len, retvar)
+get_var_vartv(name, len, retvar)
     char_u	*name;
     int		len;		/* length of "name" */
-    VAR		retvar;		/* NULL when only checking existence */
+    typeval	*retvar;	/* NULL when only checking existence */
 {
     int		ret = OK;
-    int		type = VAR_UNKNOWN;
-    long	number = 1;
-    char_u	*string = NULL;
+    typeval	tv;
     VAR		v;
     int		cc;
     int		i;
+
+    tv.v_type = VAR_UNKNOWN;
 
     /* truncate the name, so that we can use strcmp() */
     cc = name[len];
@@ -8772,8 +9578,8 @@ get_var_var(name, len, retvar)
      */
     if (STRCMP(name, "b:changedtick") == 0)
     {
-	type = VAR_NUMBER;
-	number = curbuf->b_changedtick;
+	tv.v_type = VAR_NUMBER;
+	tv.vval.v_number = curbuf->b_changedtick;
     }
 
     /*
@@ -8781,9 +9587,11 @@ get_var_var(name, len, retvar)
      */
     else if ((i = find_vim_var(name, len)) >= 0)
     {
-	type = vimvars[i].type;
-	number = (long)vimvars[i].val;
-	string = vimvars[i].val;
+	tv.v_type = vimvars[i].type;
+	if (tv.v_type == VAR_NUMBER)
+	    tv.vval.v_number = (long)vimvars[i].val;
+	else
+	    tv.vval.v_string = vimvars[i].val;
     }
 
     /*
@@ -8793,31 +9601,17 @@ get_var_var(name, len, retvar)
     {
 	v = find_var(name, FALSE);
 	if (v != NULL)
-	{
-	    type = v->var_type;
-	    number = v->var_val.var_number;
-	    string = v->var_val.var_string;
-	}
+	    tv = v->tv;
     }
 
-    if (type == VAR_UNKNOWN)
+    if (tv.v_type == VAR_UNKNOWN)
     {
 	if (retvar != NULL)
 	    EMSG2(_("E121: Undefined variable: %s"), name);
 	ret = FAIL;
     }
     else if (retvar != NULL)
-    {
-	retvar->var_type = type;
-	if (type == VAR_NUMBER)
-	    retvar->var_val.var_number = number;
-	else if (type == VAR_STRING)
-	{
-	    if (string != NULL)
-		string = vim_strsave(string);
-	    retvar->var_val.var_string = string;
-	}
-    }
+	copy_vartv(&tv, retvar);
 
     name[len] = cc;
 
@@ -8834,21 +9628,31 @@ alloc_var()
 }
 
 /*
- * Allocate memory for a variable, and assign a string to it.
+ * Allocate memory for a variable type-value, and make it emtpy (0 or NULL
+ * value).
+ */
+    static typeval *
+alloc_vartv()
+{
+    return (typeval *)alloc_clear((unsigned)sizeof(typeval));
+}
+
+/*
+ * Allocate memory for a variable type-value, and assign a string to it.
  * The string "s" must have been allocated, it is consumed.
  * Return NULL for out of memory, the variable otherwise.
  */
-    static VAR
-alloc_string_var(s)
+    static typeval *
+alloc_string_vartv(s)
     char_u	*s;
 {
-    VAR	    retvar;
+    typeval	*retvar;
 
-    retvar = alloc_var();
+    retvar = alloc_vartv();
     if (retvar != NULL)
     {
-	retvar->var_type = VAR_STRING;
-	retvar->var_val.var_string = s;
+	retvar->v_type = VAR_STRING;
+	retvar->vval.v_string = s;
     }
     else
 	vim_free(s);
@@ -8856,17 +9660,26 @@ alloc_string_var(s)
 }
 
 /*
- * Free the memory for a variable.
+ * Free the memory for a variable type-value.
  */
     static void
-free_var(varp)
-    VAR	    varp;
+free_vartv(varp)
+    typeval *varp;
 {
     if (varp != NULL)
     {
-	if (varp->var_type == VAR_STRING)
-	    vim_free(varp->var_val.var_string);
-	vim_free(varp->var_name);
+	switch (varp->v_type)
+	{
+	    case VAR_STRING:
+	    case VAR_FUNC:
+		vim_free(varp->vval.v_string);
+		break;
+	    case VAR_LIST:
+		list_unref(varp->vval.v_list);
+		break;
+	    default:
+		break;
+	}
 	vim_free(varp);
     }
 }
@@ -8875,18 +9688,25 @@ free_var(varp)
  * Free the memory for a variable value and set the value to NULL or 0.
  */
     static void
-clear_var(varp)
-    VAR	    varp;
+clear_vartv(varp)
+    typeval *varp;
 {
     if (varp != NULL)
     {
-	if (varp->var_type == VAR_STRING)
+	switch (varp->v_type)
 	{
-	    vim_free(varp->var_val.var_string);
-	    varp->var_val.var_string = NULL;
+	    case VAR_STRING:
+	    case VAR_FUNC:
+		vim_free(varp->vval.v_string);
+		varp->vval.v_string = NULL;
+		break;
+	    case VAR_LIST:
+		list_unref(varp->vval.v_list);
+		break;
+	    default:
+		varp->vval.v_number = 0;
+		break;
 	}
-	else
-	    varp->var_val.var_number = 0;
     }
 }
 
@@ -8895,39 +9715,47 @@ clear_var(varp)
  * If it is a String variable, uses vim_str2nr().
  */
     static long
-get_var_number(varp)
-    VAR		varp;
+get_vartv_number(varp)
+    typeval	*varp;
 {
-    long	n;
+    long	n = 0L;
 
-    if (varp->var_type == VAR_NUMBER)
-	return (long)(varp->var_val.var_number);
-    else if (varp->var_type == VAR_UNKNOWN || varp->var_val.var_string == NULL)
-	return 0L;
-    else
+    switch (varp->v_type)
     {
-	vim_str2nr(varp->var_val.var_string, NULL, NULL, TRUE, TRUE, &n, NULL);
-	return n;
+	case VAR_NUMBER:
+	    n = (long)(varp->vval.v_number);
+	    break;
+	case VAR_FUNC:
+	    EMSG(_("E999: Using function reference as a number"));
+	    break;
+	case VAR_STRING:
+	    if (varp->vval.v_string != NULL)
+		vim_str2nr(varp->vval.v_string, NULL, NULL,
+							TRUE, TRUE, &n, NULL);
+	    break;
+	default:
+	    break;
     }
+    return n;
 }
 
 /*
  * Get the lnum from the first argument.  Also accepts ".", "$", etc.
  */
     static linenr_T
-get_var_lnum(argvars)
-    VAR		argvars;
+get_vartv_lnum(argvars)
+    typeval	*argvars;
 {
-    var		retvar;
+    typeval	retvar;
     linenr_T	lnum;
 
-    lnum = get_var_number(&argvars[0]);
+    lnum = get_vartv_number(&argvars[0]);
     if (lnum == 0)  /* no valid number, try using line() */
     {
-	retvar.var_type = VAR_NUMBER;
+	retvar.v_type = VAR_NUMBER;
 	f_line(argvars, &retvar);
-	lnum = retvar.var_val.var_number;
-	clear_var(&retvar);
+	lnum = retvar.vval.v_number;
+	clear_vartv(&retvar);
     }
     return lnum;
 }
@@ -8941,33 +9769,45 @@ get_var_lnum(argvars)
  * Never returns NULL;
  */
     static char_u *
-get_var_string(varp)
-    VAR	    varp;
+get_vartv_string(varp)
+    typeval	*varp;
 {
     static char_u   mybuf[NUMBUFLEN];
 
-    return get_var_string_buf(varp, mybuf);
+    return get_vartv_string_buf(varp, mybuf);
 }
 
     static char_u *
-get_var_string_buf(varp, buf)
-    VAR	    varp;
-    char_u  *buf;
+get_vartv_string_buf(varp, buf)
+    typeval	*varp;
+    char_u	*buf;
 {
-    if (varp->var_type == VAR_NUMBER)
+    switch (varp->v_type)
     {
-	sprintf((char *)buf, "%ld", (long)varp->var_val.var_number);
-	return buf;
+	case VAR_NUMBER:
+	    sprintf((char *)buf, "%ld", (long)varp->vval.v_number);
+	    return buf;
+	case VAR_FUNC:
+	    EMSG(_("E99: using Funcref as a String"));
+	    break;
+	case VAR_LIST:
+	    EMSG(_("E99: using List as a String"));
+	    break;
+	case VAR_STRING:
+	    if (varp->vval.v_string != NULL)
+		return varp->vval.v_string;
+	    break;
+	default:
+	    EMSG(_("E999: Internal error: get_vartv_string_buf()"));
+	    break;
     }
-    else if (varp->var_val.var_string == NULL)
-	return (char_u *)"";
-    else
-	return varp->var_val.var_string;
+    return (char_u *)"";
 }
 
 /*
  * Find variable "name" in the list of variables.
  * Return a pointer to it if found, NULL if not found.
+ * Careful: "a:0" variables don't have a name.
  */
     static VAR
 find_var(name, writing)
@@ -8978,9 +9818,11 @@ find_var(name, writing)
     char_u	*varname;
     garray_T	*gap;
 
-    /* Check for function arguments "a:" */
     if (name[0] == 'a' && name[1] == ':')
     {
+	/* Function arguments "a:".
+	 * NOTE: We use a typecast, because function arguments don't have a
+	 * name.  The caller must not try to access the name! */
 	if (writing)
 	{
 	    EMSG2(_(e_readonlyvar), name);
@@ -8997,7 +9839,7 @@ find_var(name, writing)
 	    i += current_funccal->func->args.ga_len;
 	    if (i > current_funccal->argcount)		/* a:999 */
 		return NULL;
-	    return &(current_funccal->argvars[i - 1]);	/* a:1, a:2, etc. */
+	    return (VAR)&(current_funccal->argvars[i - 1]); /* a:1, a:2, etc. */
 	}
 	if (STRCMP(name, "firstline") == 0)
 	    return &(current_funccal->firstline);
@@ -9006,7 +9848,7 @@ find_var(name, writing)
 	for (i = 0; i < current_funccal->func->args.ga_len; ++i)
 	    if (STRCMP(name, ((char_u **)
 			      (current_funccal->func->args.ga_data))[i]) == 0)
-	    return &(current_funccal->argvars[i]);	/* a:name */
+	    return (VAR)&(current_funccal->argvars[i]);	/* a:name */
 	return NULL;
     }
 
@@ -9024,8 +9866,8 @@ find_var_in_ga(gap, varname)
     int	i;
 
     for (i = gap->ga_len; --i >= 0; )
-	if (VAR_GAP_ENTRY(i, gap).var_name != NULL
-		&& STRCMP(VAR_GAP_ENTRY(i, gap).var_name, varname) == 0)
+	if (VAR_GAP_ENTRY(i, gap).v_name != NULL
+		&& STRCMP(VAR_GAP_ENTRY(i, gap).v_name, varname) == 0)
 	    break;
     if (i < 0)
 	return NULL;
@@ -9093,7 +9935,7 @@ new_script_vars(id)
     {
 	while (ga_scripts.ga_len < id)
 	{
-	    var_init(&SCRIPT_VARS(ga_scripts.ga_len + 1));
+	    vars_init(&SCRIPT_VARS(ga_scripts.ga_len + 1));
 	    ++ga_scripts.ga_len;
 	}
     }
@@ -9103,7 +9945,7 @@ new_script_vars(id)
  * Initialize internal variables for use.
  */
     void
-var_init(gap)
+vars_init(gap)
     garray_T *gap;
 {
     ga_init2(gap, (int)sizeof(var), 4);
@@ -9113,25 +9955,23 @@ var_init(gap)
  * Clean up a list of internal variables.
  */
     void
-var_clear(gap)
+vars_clear(gap)
     garray_T *gap;
 {
     int	    i;
 
     for (i = gap->ga_len; --i >= 0; )
-	var_free_one(&VAR_GAP_ENTRY(i, gap));
+	clear_var(&VAR_GAP_ENTRY(i, gap));
     ga_clear(gap);
 }
 
     static void
-var_free_one(v)
+clear_var(v)
     VAR	    v;
 {
-    vim_free(v->var_name);
-    v->var_name = NULL;
-    if (v->var_type == VAR_STRING)
-	vim_free(v->var_val.var_string);
-    v->var_val.var_string = NULL;
+    vim_free(v->v_name);
+    v->v_name = NULL;
+    clear_vartv(&v->tv);
 }
 
 /*
@@ -9142,7 +9982,13 @@ list_one_var(v, prefix)
     VAR		v;
     char_u	*prefix;
 {
-    list_one_var_a(prefix, v->var_name, v->var_type, get_var_string(v));
+    char_u	*tofree;
+    char_u	*s;
+
+    s = tv2string(&v->tv, &tofree);
+    list_one_var_a(prefix, v->v_name, v->tv.v_type,
+						s == NULL ? (char_u *)"" : s);
+    vim_free(tofree);
 }
 
 /*
@@ -9182,9 +10028,21 @@ list_one_var_a(prefix, name, type, string)
     msg_advance(22);
     if (type == VAR_NUMBER)
 	msg_putchar('#');
+    else if (type == VAR_FUNC)
+	msg_putchar('*');
+    else if (type == VAR_LIST)
+    {
+	msg_putchar('[');
+	if (*string == '[')
+	    ++string;
+    }
     else
 	msg_putchar(' ');
+
     msg_outtrans(string);
+
+    if (type == VAR_FUNC)
+	msg_puts((char_u *)"()");
 }
 
 /*
@@ -9195,7 +10053,7 @@ list_one_var_a(prefix, name, type, string)
     static void
 set_var(name, varp, copy)
     char_u	*name;
-    VAR		varp;
+    typeval	*varp;
     int		copy;	    /* make copy of value in "varp" */
 {
     int		i;
@@ -9218,26 +10076,51 @@ set_var(name, varp, copy)
 	    if (vimvars[i].type == VAR_STRING)
 	    {
 		vim_free(vimvars[i].val);
-		if (copy || varp->var_type != VAR_STRING)
-		    vimvars[i].val = vim_strsave(get_var_string(varp));
+		if (copy || varp->v_type != VAR_STRING)
+		    vimvars[i].val = vim_strsave(get_vartv_string(varp));
 		else
 		{
 		    /* Take over the string to avoid an extra alloc/free. */
-		    vimvars[i].val = varp->var_val.var_string;
-		    varp->var_val.var_string = NULL;
+		    vimvars[i].val = varp->vval.v_string;
+		    varp->vval.v_string = NULL;
 		}
 	    }
 	    else
-		vimvars[i].val = (char_u *)get_var_number(varp);
+		vimvars[i].val = (char_u *)get_vartv_number(varp);
 	}
 	return;
+    }
+
+    if (varp->v_type == VAR_FUNC)
+    {
+	if (!(vim_strchr((char_u *)"wbs", name[0]) != NULL && name[1] == ':')
+		&& !ASCII_ISUPPER((name[0] != NUL && name[1] == ':')
+							 ? name[2] : name[0]))
+	{
+	    EMSG2(_("E999: Funcref variable name must start with a capital: %s"), name);
+	    return;
+	}
+	if (function_exists(name))
+	{
+	    EMSG2(_("E999: Variable name conflicts with existing function: %s"), name);
+	    return;
+	}
     }
 
     v = find_var(name, TRUE);
     if (v != NULL)	    /* existing variable, only need to free string */
     {
-	if (v->var_type == VAR_STRING)
-	    vim_free(v->var_val.var_string);
+	if (v->tv.v_type != varp->v_type
+		&& !((v->tv.v_type == VAR_STRING
+			|| v->tv.v_type == VAR_NUMBER)
+		    && (varp->v_type == VAR_STRING
+			|| varp->v_type == VAR_NUMBER)))
+	{
+	    EMSG2(_("E999: Variable type mismatch for: %s"), name);
+	    return;
+	}
+	if (v->tv.v_type == VAR_STRING || v->tv.v_type == VAR_FUNC)
+	    vim_free(v->tv.vval.v_string);
     }
     else		    /* add a new variable */
     {
@@ -9250,7 +10133,7 @@ set_var(name, varp, copy)
 
 	/* Try to use an empty entry */
 	for (i = gap->ga_len; --i >= 0; )
-	    if (VAR_GAP_ENTRY(i, gap).var_name == NULL)
+	    if (VAR_GAP_ENTRY(i, gap).v_name == NULL)
 		break;
 	if (i < 0)	    /* need to allocate more room */
 	{
@@ -9259,30 +10142,57 @@ set_var(name, varp, copy)
 	    i = gap->ga_len;
 	}
 	v = &VAR_GAP_ENTRY(i, gap);
-	if ((v->var_name = vim_strsave(varname)) == NULL)
+	if ((v->v_name = vim_strsave(varname)) == NULL)
 	    return;
 	if (i == gap->ga_len)
 	    ++gap->ga_len;
     }
-    if (copy || varp->var_type != VAR_STRING)
-	copy_var(varp, v);
+    if (copy || (varp->v_type != VAR_STRING && varp->v_type != VAR_FUNC))
+	copy_vartv(varp, &v->tv);
     else
     {
-	v->var_type = varp->var_type;
-	v->var_val.var_string = varp->var_val.var_string;
+	v->tv.v_type = varp->v_type;
+	v->tv.vval.v_string = varp->vval.v_string;
+	varp->vval.v_string = NULL;
     }
 }
 
+/*
+ * Copy the values from typeval "from" to typeval "to".
+ * When needed allocates string or increases reference count.
+ * Does not make a copy of a list!
+ */
     static void
-copy_var(from, to)
-    VAR	from;
-    VAR	to;
+copy_vartv(from, to)
+    typeval *from;
+    typeval *to;
 {
-    to->var_type = from->var_type;
-    if (from->var_type == VAR_STRING)
-	to->var_val.var_string = vim_strsave(get_var_string(from));
-    else
-	to->var_val.var_number = from->var_val.var_number;
+    to->v_type = from->v_type;
+    switch (from->v_type)
+    {
+	case VAR_NUMBER:
+	    to->vval.v_number = from->vval.v_number;
+	    break;
+	case VAR_STRING:
+	case VAR_FUNC:
+	    if (from->vval.v_string == NULL)
+		to->vval.v_string = NULL;
+	    else
+		to->vval.v_string = vim_strsave(from->vval.v_string);
+	    break;
+	case VAR_LIST:
+	    if (from->vval.v_list == NULL)
+		to->vval.v_list = NULL;
+	    else
+	    {
+		to->vval.v_list = from->vval.v_list;
+		++to->vval.v_list->lv_refcount;
+	    }
+	    break;
+	default:
+	    EMSG(_("E999: Internal error: copy_vartv()"));
+	    break;
+    }
 }
 
 /*
@@ -9295,7 +10205,8 @@ ex_echo(eap)
     exarg_T	*eap;
 {
     char_u	*arg = eap->arg;
-    var		retvar;
+    typeval	retvar;
+    char_u	*tofree;
     char_u	*p;
     int		needclr = TRUE;
     int		atstart = TRUE;
@@ -9328,7 +10239,7 @@ ex_echo(eap)
 	    }
 	    else if (eap->cmdidx == CMD_echo)
 		msg_puts_attr((char_u *)" ", echo_attr);
-	    for (p = get_var_string(&retvar); *p != NUL && !got_int; ++p)
+	    for (p = tv2string(&retvar, &tofree); *p != NUL && !got_int; ++p)
 		if (*p == '\n' || *p == '\r' || *p == TAB)
 		{
 		    if (*p != TAB && needclr)
@@ -9353,8 +10264,9 @@ ex_echo(eap)
 #endif
 			(void)msg_outtrans_len_attr(p, 1, echo_attr);
 		}
+	    vim_free(tofree);
 	}
-	clear_var(&retvar);
+	clear_vartv(&retvar);
 	arg = skipwhite(arg);
     }
     eap->nextcmd = check_nextcmd(arg);
@@ -9399,7 +10311,7 @@ ex_execute(eap)
     exarg_T	*eap;
 {
     char_u	*arg = eap->arg;
-    var		retvar;
+    typeval	retvar;
     int		ret = OK;
     char_u	*p;
     garray_T	ga;
@@ -9428,11 +10340,11 @@ ex_execute(eap)
 
 	if (!eap->skip)
 	{
-	    p = get_var_string(&retvar);
+	    p = get_vartv_string(&retvar);
 	    len = (int)STRLEN(p);
 	    if (ga_grow(&ga, len + 2) == FAIL)
 	    {
-		clear_var(&retvar);
+		clear_vartv(&retvar);
 		ret = FAIL;
 		break;
 	    }
@@ -9442,7 +10354,7 @@ ex_execute(eap)
 	    ga.ga_len += len;
 	}
 
-	clear_var(&retvar);
+	clear_vartv(&retvar);
 	arg = skipwhite(arg);
     }
 
@@ -9536,6 +10448,7 @@ ex_function(eap)
     int		nesting;
     char_u	*skip_until = NULL;
     static char_u e_funcexts[] = N_("E122: Function %s already exists, add ! to replace it");
+    VAR		v;
 
     /*
      * ":function" without argument: list functions.
@@ -9830,6 +10743,13 @@ ex_function(eap)
     /*
      * If there are no errors, add the function
      */
+    v = find_var(name, FALSE);
+    if (v != NULL && v->tv.v_type == VAR_FUNC)
+    {
+	EMSG2(_("E999: Function name conflicts with variable: %s"), name);
+	goto erret;
+    }
+
     fp = find_func(name);
     if (fp != NULL)
     {
@@ -10065,6 +10985,28 @@ find_func(name)
     return fp;
 }
 
+/*
+ * Return TRUE if a function "name" exists.
+ */
+    static int
+function_exists(name)
+    char_u *name;
+{
+    char_u  *p = name;
+    int	    n = FALSE;
+
+    p = trans_function_name(&p, FALSE, TRUE);
+    if (p != NULL)
+    {
+	if (ASCII_ISUPPER(*p) || p[0] == K_SPECIAL)
+	    n = (find_func(p) != NULL);
+	else if (ASCII_ISLOWER(*p))
+	    n = (find_internal_func(p) >= 0);
+	vim_free(p);
+    }
+    return n;
+}
+
 #if defined(FEAT_CMDL_COMPL) || defined(PROTO)
 
 /*
@@ -10190,8 +11132,8 @@ ex_delfunction(eap)
 call_user_func(fp, argcount, argvars, retvar, firstline, lastline)
     ufunc_T	*fp;		/* pointer to function */
     int		argcount;	/* nr of args */
-    VAR		argvars;	/* arguments */
-    VAR		retvar;		/* return value */
+    typeval	*argvars;	/* arguments */
+    typeval	*retvar;		/* return value */
     linenr_T	firstline;	/* first line of range */
     linenr_T	lastline;	/* last line of range */
 {
@@ -10207,8 +11149,8 @@ call_user_func(fp, argcount, argvars, retvar, firstline, lastline)
     if (depth >= p_mfd)
     {
 	EMSG(_("E132: Function call depth is higher than 'maxfuncdepth'"));
-	retvar->var_type = VAR_NUMBER;
-	retvar->var_val.var_number = -1;
+	retvar->v_type = VAR_NUMBER;
+	retvar->vval.v_number = -1;
 	return;
     }
     ++depth;
@@ -10216,25 +11158,25 @@ call_user_func(fp, argcount, argvars, retvar, firstline, lastline)
     line_breakcheck();		/* check for CTRL-C hit */
 
     /* set local variables */
-    var_init(&fc.l_vars);
+    vars_init(&fc.l_vars);
     fc.func = fp;
     fc.argcount = argcount;
     fc.argvars = argvars;
     fc.retvar = retvar;
-    retvar->var_val.var_number = 0;
+    retvar->vval.v_number = 0;
     fc.linenr = 0;
     fc.returned = FALSE;
     fc.level = ex_nesting_level;
-    fc.a0_var.var_type = VAR_NUMBER;
-    fc.a0_var.var_val.var_number = argcount - fp->args.ga_len;
-    fc.a0_var.var_name = NULL;
+    fc.a0_var.tv.v_type = VAR_NUMBER;
+    fc.a0_var.tv.vval.v_number = argcount - fp->args.ga_len;
+    fc.a0_var.v_name = NULL;
     current_funccal = &fc;
-    fc.firstline.var_type = VAR_NUMBER;
-    fc.firstline.var_val.var_number = firstline;
-    fc.firstline.var_name = NULL;
-    fc.lastline.var_type = VAR_NUMBER;
-    fc.lastline.var_val.var_number = lastline;
-    fc.lastline.var_name = NULL;
+    fc.firstline.tv.v_type = VAR_NUMBER;
+    fc.firstline.tv.vval.v_number = firstline;
+    fc.firstline.v_name = NULL;
+    fc.lastline.tv.v_type = VAR_NUMBER;
+    fc.lastline.tv.vval.v_number = lastline;
+    fc.lastline.v_name = NULL;
     /* Check if this function has a breakpoint. */
     fc.breakpoint = dbg_find_breakpoint(FALSE, fp->name, (linenr_T)0);
     fc.dbg_tick = debug_tick;
@@ -10270,11 +11212,11 @@ call_user_func(fp, argcount, argvars, retvar, firstline, lastline)
 		{
 		    if (i > 0)
 			msg_puts((char_u *)", ");
-		    if (argvars[i].var_type == VAR_NUMBER)
-			msg_outnum((long)argvars[i].var_val.var_number);
+		    if (argvars[i].v_type == VAR_NUMBER)
+			msg_outnum((long)argvars[i].vval.v_number);
 		    else
 		    {
-			trunc_string(get_var_string(&argvars[i]),
+			trunc_string(get_vartv_string(&argvars[i]),
 							    buf, MSG_BUF_LEN);
 			msg_puts((char_u *)"\"");
 			msg_puts(buf);
@@ -10300,11 +11242,11 @@ call_user_func(fp, argcount, argvars, retvar, firstline, lastline)
     --RedrawingDisabled;
 
     /* when the function was aborted because of an error, return -1 */
-    if ((did_emsg && (fp->flags & FC_ABORT)) || retvar->var_type == VAR_UNKNOWN)
+    if ((did_emsg && (fp->flags & FC_ABORT)) || retvar->v_type == VAR_UNKNOWN)
     {
-	clear_var(retvar);
-	retvar->var_type = VAR_NUMBER;
-	retvar->var_val.var_number = -1;
+	clear_vartv(retvar);
+	retvar->v_type = VAR_NUMBER;
+	retvar->vval.v_number = -1;
     }
 
     /* when being verbose, mention the return value */
@@ -10322,12 +11264,12 @@ call_user_func(fp, argcount, argvars, retvar, firstline, lastline)
 
 	if (aborting())
 	    smsg((char_u *)_("%s aborted"), sn);
-	else if (fc.retvar->var_type == VAR_NUMBER)
+	else if (fc.retvar->v_type == VAR_NUMBER)
 	    smsg((char_u *)_("%s returning #%ld"), sn,
-				       (long)fc.retvar->var_val.var_number);
-	else if (fc.retvar->var_type == VAR_STRING)
+					      (long)fc.retvar->vval.v_number);
+	else if (fc.retvar->v_type == VAR_STRING)
 	{
-	    val = get_var_string(fc.retvar);
+	    val = get_vartv_string(fc.retvar);
 	    if (STRLEN(val) > IOSIZE / 2 - 50)
 		val = val + STRLEN(val) - (IOSIZE / 2 - 50);
 	    smsg((char_u *)_("%s returning \"%s\""), sn, val);
@@ -10355,7 +11297,7 @@ call_user_func(fp, argcount, argvars, retvar, firstline, lastline)
     did_emsg |= save_did_emsg;
     current_funccal = save_fcp;
 
-    var_clear(&fc.l_vars);		/* free all local variables */
+    vars_clear(&fc.l_vars);		/* free all local variables */
     --depth;
 }
 
@@ -10386,7 +11328,7 @@ ex_return(eap)
 	if (!eap->skip)
 	    returning = do_return(eap, FALSE, TRUE, &retvar);
 	else
-	    clear_var(&retvar);
+	    clear_vartv(&retvar.tv);
     }
     /* It's safer to return also on error. */
     else if (!eap->skip)
@@ -10460,7 +11402,7 @@ do_return(eap, reanimate, is_cmd, value)
 	    {
 		/* Store the value of the pending return. */
 		if ((cstack->cs_retvar[idx] = alloc_var()) != NULL)
-		    *(VAR)cstack->cs_retvar[idx] = *(VAR)value;
+		    *(typeval *)cstack->cs_retvar[idx] = *(typeval *)value;
 		else
 		    EMSG(_(e_outofmem));
 	    }
@@ -10472,8 +11414,8 @@ do_return(eap, reanimate, is_cmd, value)
 		/* The pending return value could be overwritten by a ":return"
 		 * without argument in a finally clause; reset the default
 		 * return value. */
-		current_funccal->retvar->var_type = VAR_NUMBER;
-		current_funccal->retvar->var_val.var_number = 0;
+		current_funccal->retvar->v_type = VAR_NUMBER;
+		current_funccal->retvar->vval.v_number = 0;
 	    }
 	}
 	report_make_pending(CSTP_RETURN, value);
@@ -10487,8 +11429,8 @@ do_return(eap, reanimate, is_cmd, value)
 	 * there. */
 	if (!reanimate && value != NULL)
 	{
-	    clear_var(current_funccal->retvar);
-	    *current_funccal->retvar = *(VAR)value;
+	    clear_vartv(current_funccal->retvar);
+	    *current_funccal->retvar = *(typeval *)value;
 	    if (!is_cmd)
 		vim_free(value);
 	}
@@ -10504,9 +11446,9 @@ do_return(eap, reanimate, is_cmd, value)
 discard_pending_return(retvar)
     void	*retvar;
 {
-    /* The variable was copied from one with an undefined var_name.  So we can't
-     * use free_var() to clear and free it. */
-    clear_var((VAR)retvar);
+    /* The variable was copied from one with an undefined v_name.  So we can't
+     * use free_vartv() to clear and free it. */
+    clear_vartv(&((VAR)retvar)->tv);
     vim_free(retvar);
 }
 
@@ -10520,14 +11462,14 @@ get_return_cmd(retvar)
 {
     char_u	*s = IObuff;
 
-    if (retvar == NULL || ((VAR)retvar)->var_type == VAR_UNKNOWN)
+    if (retvar == NULL || ((VAR)retvar)->tv.v_type == VAR_UNKNOWN)
 	s = (char_u *)":return";
-    else if (((VAR)retvar)->var_type == VAR_STRING)
+    else if (((VAR)retvar)->tv.v_type == VAR_STRING)
 	sprintf((char *)IObuff, ":return \"%s\"",
-		((VAR)retvar)->var_val.var_string);
+		((VAR)retvar)->tv.vval.v_string);
     else
 	sprintf((char *)IObuff, ":return %ld",
-		(long)(((VAR)retvar)->var_val.var_number));
+		(long)(((VAR)retvar)->tv.vval.v_number));
     return vim_strsave(s);
 }
 
@@ -10644,7 +11586,7 @@ read_viminfo_varlist(virp, writing)
 {
     char_u	*tab;
     int		is_string = FALSE;
-    VAR		varp = NULL;
+    typeval	*vartvp = NULL;
     char_u	*val;
 
     if (!writing && (find_viminfo_parameter('!') != NULL))
@@ -10665,22 +11607,22 @@ read_viminfo_varlist(virp, writing)
 		    val = viminfo_readstring(virp,
 				       (int)(tab - virp->vir_line + 1), TRUE);
 		    if (val != NULL)
-			varp = alloc_string_var(val);
+			vartvp = alloc_string_vartv(val);
 		}
 		else
 		{
-		    varp = alloc_var();
-		    if (varp != NULL)
+		    vartvp = alloc_vartv();
+		    if (vartvp != NULL)
 		    {
-			varp->var_type = VAR_NUMBER;
-			varp->var_val.var_number = atol((char *)tab + 1);
+			vartvp->v_type = VAR_NUMBER;
+			vartvp->vval.v_number = atol((char *)tab + 1);
 		    }
 		}
 		/* assign the value to the variable */
-		if (varp != NULL)
+		if (vartvp != NULL)
 		{
-		    set_var(virp->vir_line + 1, varp, FALSE);
-		    free_var(varp);
+		    set_var(virp->vir_line + 1, vartvp, FALSE);
+		    free_vartv(vartvp);
 		}
 	    }
 	}
@@ -10707,11 +11649,11 @@ write_viminfo_varlist(fp)
     for (i = gap->ga_len; --i >= 0; )
     {
 	this_var = &VAR_GAP_ENTRY(i, gap);
-	if (this_var->var_name != NULL
-		&& var_flavour(this_var->var_name) == VAR_FLAVOUR_VIMINFO)
+	if (this_var->v_name != NULL
+		&& var_flavour(this_var->v_name) == VAR_FLAVOUR_VIMINFO)
 	{
-	    fprintf(fp, "!%s\t%s\t", this_var->var_name,
-			  (this_var->var_type == VAR_STRING) ? "STR" : "NUM");
+	    fprintf(fp, "!%s\t%s\t", this_var->v_name,
+			  (this_var->tv.v_type == VAR_STRING) ? "STR" : "NUM");
 	    viminfo_writestring(fp, get_var_string(this_var));
 	}
     }
@@ -10731,9 +11673,9 @@ store_session_globals(fd)
     for (i = gap->ga_len; --i >= 0; )
     {
 	this_var = &VAR_GAP_ENTRY(i, gap);
-	if (this_var->var_name != NULL)
+	if (this_var->v_name != NULL)
 	{
-	    if (var_flavour(this_var->var_name) == VAR_FLAVOUR_SESSION)
+	    if (var_flavour(this_var->v_name) == VAR_FLAVOUR_SESSION)
 	    {
 		/* Escapse special characters with a backslash.  Turn a LF and
 		 * CR into \n and \r. */
@@ -10747,10 +11689,10 @@ store_session_globals(fd)
 		    else if (*t == '\r')
 			*t = 'r';
 		if ((fprintf(fd, "let %s = %c%s%c",
-			    this_var->var_name,
-			    (this_var->var_type == VAR_STRING) ? '"' : ' ',
-			    p,
-			    (this_var->var_type == VAR_STRING) ? '"' : ' ') < 0)
+			   this_var->v_name,
+			   (this_var->tv.v_type == VAR_STRING) ? '"' : ' ',
+			   p,
+			   (this_var->tv.v_type == VAR_STRING) ? '"' : ' ') < 0)
 			|| put_eol(fd) == FAIL)
 		{
 		    vim_free(p);

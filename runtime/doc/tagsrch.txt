@@ -1,4 +1,4 @@
-*tagsrch.txt*   For Vim version 7.0aa.  Last change: 2004 Jul 23
+*tagsrch.txt*   For Vim version 7.0aa.  Last change: 2005 Jan 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -60,7 +60,7 @@ tag, you will get the telnet prompt instead.  Most versions of telnet allow
 changing or disabling the default escape key.  See the telnet man page.  You
 can 'telnet -E {Hostname}' to disable the escape character, or 'telnet -e
 {EscapeCharacter} {Hostname}' to specify another escape character.  If
-possible, try to use "rsh" instead of "telnet" to avoid this problem.
+possible, try to use "ssh" instead of "telnet" to avoid this problem.
 
 							*tag-priority*
 When there are multiple matches for a tag, this priority is used:

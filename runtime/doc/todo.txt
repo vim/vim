@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 01
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,10 +30,34 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+List data type:
+- ":let list[expr] = expr"
+- ":let [a, b] = [1, 2]"
+- ":let [a, b; rest] = [1, 2, 3, 4]"
+- "for a in list"
+- "for [a, b] in [[1, 2], [3, 4]]"
+- == (same value) and "is" (same list)
+- add many functions:
+    call(func, list)		call function
+    keys(list)			list of all indexes 0 - len(list)
+    repeat(list, count)		return list concatenated count times
+    concat(list1, list2)	return list1 and list2 concatenated
+    extend(list1, list2)	concatenate list2 to list 1
+    extend(list1, list2, idx)	prepend list2 before idx in list1
+    count(list, item)		nr of times item appears in list
+    index(list, item)		lowest index of item in list
+    pop(list[, idx])		removes item at idx (default: last)
+    pop(list, idx1, idx2)	removes items idx1 to idx2, returns them
+    reverse(list)		reverses order
+    sort(list[, func])		sort; func compares items
+    getval(list, idx[, default])	get value at idx or default
+    file2lines()
+    file2words()
+
 patch for QuickFixCmdPre and QuickFixCmdPost autocommands. (Ciaran McCreesh,
 2005 Jan 1)
 
-New toolbar button from Martin Dalecki:
+New Motif toolbar button from Martin Dalecki:
 - add remark in version7.txt
 - check if it works for pixmap loaded from a file.
 
@@ -60,11 +84,10 @@ PLANNED FOR VERSION 7.0:
 	+ can include NUL characters
 	- setline() will have problems with NL vs NUL.
     Can use list of numbers instead (inefficient though).
+    Also: for strings up to 3 bytes don't allocate memory, VAR_STRINGX.
 -   new DATA TYPES:
 	- None?  (or use empty string?)
-	- list
 	- dictionary
-	- function reference
 	Check old patch from Robert Webb for array support.
     Add type checking?  See ~/vim/ideas.txt.
 -   Add SPELLCHECKER, with easy to add support for many languages.
