@@ -5867,7 +5867,6 @@ struct sign
     int		sn_text_hl;	/* highlight ID for text */
 };
 
-#define MAX_TYPENR 255		/* depends on sattr_T */
 static sign_T	*first_sign = NULL;
 static int	last_sign_typenr = MAX_TYPENR;	/* is decremented */
 

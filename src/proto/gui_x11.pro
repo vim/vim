@@ -27,6 +27,7 @@ int fontset_height2 __ARGS((XFontSet fs));
 guicolor_T gui_mch_get_color __ARGS((char_u *reqname));
 void gui_mch_set_fg_color __ARGS((guicolor_T color));
 void gui_mch_set_bg_color __ARGS((guicolor_T color));
+void gui_mch_set_sp_color __ARGS((guicolor_T color));
 void gui_mch_draw_string __ARGS((int row, int col, char_u *s, int len, int flags));
 int gui_mch_haskey __ARGS((char_u *name));
 int gui_get_x11_windis __ARGS((Window *win, Display **dis));

@@ -2,7 +2,7 @@
 "
 " Language:	Logtalk
 " Maintainer:	Paulo Moura <pmoura@logtalk.org>
-" Last Change:	2004 July 7
+" Last Change:	March 12, 2005
 
 
 " Quit when a syntax file was already loaded:
@@ -69,13 +69,14 @@ syn region	logtalkEntityRel	matchgroup=logtalkEntityRelTag	start="implements("	m
 
 " Logtalk directives
 
+syn region	logtalkDir		matchgroup=logtalkDirTag	start=":- alias("		matchgroup=logtalkDirTag	end=")\."	contains=ALL
 syn region	logtalkDir		matchgroup=logtalkDirTag	start=":- initialization("	matchgroup=logtalkDirTag	end=")\."	contains=ALL
 syn region	logtalkDir		matchgroup=logtalkDirTag	start=":- info("		matchgroup=logtalkDirTag	end=")\."	contains=ALL
-syn region	logtalkDir		matchgroup=logtalkDirTag	start=":- mode("		matchgroup=logtalkDirTag	end=")\."	contains=logtalkOperator,logtalkAtom
+syn region	logtalkDir		matchgroup=logtalkDirTag	start=":- mode("		matchgroup=logtalkDirTag	end=")\."	contains=logtalkOperator, logtalkAtom
 syn region	logtalkDir		matchgroup=logtalkDirTag	start=":- dynamic("		matchgroup=logtalkDirTag	end=")\."	contains=ALL
 syn match	logtalkDirTag		":- dynamic\."
 syn region	logtalkDir		matchgroup=logtalkDirTag	start=":- discontiguous("	matchgroup=logtalkDirTag	end=")\."	contains=ALL
-syn region	logtalkDir		matchgroup=logtalkDirTag	start=":- multifile("	matchgroup=logtalkDirTag	end=")\."	contains=ALL
+syn region	logtalkDir		matchgroup=logtalkDirTag	start=":- multifile("		matchgroup=logtalkDirTag	end=")\."	contains=ALL
 syn region	logtalkDir		matchgroup=logtalkDirTag	start=":- public("		matchgroup=logtalkDirTag	end=")\."	contains=ALL
 syn region	logtalkDir		matchgroup=logtalkDirTag	start=":- protected("		matchgroup=logtalkDirTag	end=")\."	contains=ALL
 syn region	logtalkDir		matchgroup=logtalkDirTag	start=":- private("		matchgroup=logtalkDirTag	end=")\."	contains=ALL
@@ -104,10 +105,9 @@ syn match	logtalkBuiltIn		"\<current_event\ze("
 
 syn match	logtalkBuiltIn		"\<\(current\|set\)_logtalk_flag\ze("
 
-syn match	logtalkBuiltIn		"\<logtalk_\(compile\|load\)\ze("
+syn match	logtalkBuiltIn		"\<logtalk_\(compile\|l\(ibrary_path\|oad\)\)\ze("
 
-syn match	logtalkBuiltIn		"\<forall\ze("
-syn match	logtalkBuiltIn		"\<retractall\ze("
+syn match	logtalkBuiltIn		"\<\(for\|retract\)all\ze("
 
 
 " Logtalk built-in methods
@@ -131,6 +131,7 @@ syn match	logtalkBuiltInMethod	"\<f\(ind\|or\)all\ze("
 syn match	logtalkBuiltInMethod	"\<before\ze("
 syn match	logtalkBuiltInMethod	"\<after\ze("
 
+syn match	logtalkBuiltInMethod	"\<expand_term\ze("
 syn match	logtalkBuiltInMethod	"\<phrase\ze("
 
 
@@ -191,7 +192,7 @@ syn match	logtalkKeyword		"\<copy_term\ze("
 
 " Arithemtic evaluation
 
-syn keyword	logtalkOperator		is
+syn match	logtalkOperator		"\<is\>"
 
 
 " Arithemtic comparison
@@ -327,7 +328,7 @@ syn match	logtalkNumber		"\<0o[0-7]\+\>"
 syn match	logtalkNumber		"\<0x[0-9a-fA-F]\+\>"
 
 
-syn sync ccomment maxlines=50
+syn sync ccomment logtalkBlockComment maxlines=50
 
 
 " Define the default highlighting.

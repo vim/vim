@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Mar 11
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Mar 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,16 +30,21 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+"gq" should always leave the cursor after the formatted text, also when using
+'formatprg'.
+
+More commands like ":argadd" that should not have COUNT?
+
+- Added "undercurl" highlight attribute.  Based on a patch from Marcin Dalecki.
+  Docs for "guisp=Red"
+  Should add another byte for attributes, 200 types is not enough.
+  Implement "undercurl" for printing.
+
 Mac unicode patch (Da Woon Jung):
 - selecting proportional font breaks display
 - UTF-8 text causes display problems.  Font replacement causes this.
 
 Changes to mode bits in mch_open() also in Vim 6.3? (Bjoern Voigt)
-
-Patch for taglist() Yegappan Lakshmanan Feb 27
-- docs: use of ^ and $ in pattern, refer to |tag-regexp|
-	  explain what the fields mean.
-	  use of 'tags' option
 
 autoload:
 - Add a Vim script in $VIMRUNTIME/tools that takes a file with a list of
@@ -61,15 +66,22 @@ Awaiting response:
 PLANNED FOR VERSION 7.0:
 
 -   Add SPELLCHECKER, with easy to add support for many languages.
-    - Do this with syntax highlighting for speed.  And avoids using an
-      external program like ispell or aspell.
+    - Need wordlists for many languages; "language pack"
+    - Commands required:
+	enable/disable spellchecking: 'spell' option (local to win)
+	set spellcheck language (allow English + other lang)
+	    :set langspell=en,du,pl
+	add word to private dict: wrong and OK (in popup menu for evim)
+	    :spell good <word>	    zg
+	    :spell wrong <word>	    zw
+    - Highlighting: SpellBad, SpellRare, SpellDialect
     - "engspchk" from Charles Campbell is a good starting point.
-    - Keep wordlist in syntax group, load it only once and use it several
-      times later.  Sort of global syntax items.
-    - Add "undercurl" highlight attribute.  Set color separately.
-      Patch from Marcin Dalecki. (2004 Dec)
-      Perhaps use "guicurl=Red" instead?
-      If underline and undercurl are both there use undercurl only.
+    - Do not use an external program like ispell or aspell: too slow and
+      doesn't work everywhere.
+    - Check spelling after syntax highlighting.  Also when there is no syntax
+      highlighting!
+    - Keep wordlist globally, load it only once and use it several times
+      later.  Sort of global syntax items.
     - Use wordlists from openoffice (myspell).  Work together with them to
       update the wordlist.  (Adri Verhoef, Aad Nales)
     - Support for approximate-regexps will help (agrep
