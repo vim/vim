@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 7.0aa.  Last change: 2005 Jan 01
+*usr_41.txt*	For Vim version 7.0aa.  Last change: 2005 Jan 17
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -87,6 +87,16 @@ variable.
 	Note:
 	You can try out the examples by yanking the lines from the text here
 	and executing them with :@"
+
+The example was given to explain the commands, but you would really want to
+make such a loop it can be written much more compact: >
+
+	:for i in range(1, 4)
+	:  echo "count is" i
+	:endfor
+
+We won't explain how |:for| and |range()| work right now.  Follow the links if
+you are impatient.
 
 
 THREE KINDS OF NUMBERS
@@ -559,6 +569,49 @@ String manipulation:
 	expand()		expand special keywords
 	type()			type of a variable
 	iconv()			convert text from one encoding to another
+
+List manipulation:
+	get()			get an item without error for wrong index
+	len()			number of items in a List
+	empty()			check if List is empty
+	insert()		insert an item somewhere in a List
+	add()			append an item to a List
+	extend()		append a List to a List
+	remove()		remove one or more items from a List
+	copy()			make a shallow copy of a List
+	deepcopy()		make a full copy of a List
+	filter()		remove selected items from a List
+	map()			change each List item
+	sort()			sort a List
+	reverse()		reverse the order of a List
+	split()			split a String into a List
+	join()			join List items into a String
+	string()		String representation of a List
+	call()			call a function with List as arguments
+	max()			maximum value in a List
+	min()			minimum value in a List
+	count()			count number of times a value appears in a List
+	getline()		get List with buffer lines
+	append()		append List of lines to the buffer
+
+Dictionary manipulation:
+	get()			get an entries without error for wrong key
+	len()			number of entries in a Dictionary
+	has_key()		check whether a key appears in a Dictionary
+	empty()			check if Dictionary is empty
+	remove()		remove an entry from a Dictionary
+	extend()		add entries from one Dictionary to another
+	filter()		remove selected entries from a Dictionary
+	map()			change each Dictionary entry
+	keys()			get List of Dictionary keys
+	values()		get List of Dictionary values
+	items()			get List of Dictionary key-value pairs
+	copy()			make a shallow copy of a Dictionary
+	deepcopy()		make a full copy of a Dictionary
+	string()		String representation of a Dictionary
+	max()			maximum value in a Dictionary
+	min()			minimum value in a Dictionary
+	count()			count number of times a value appears
 
 Working with text in the current buffer:
 	byte2line()		get line number at a specific byte count
