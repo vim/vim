@@ -584,9 +584,6 @@ gui_mch_set_font(GuiFont font)
     SelectFont(s_hdc, gui.currFont);
 }
 
-
-
-
 /*
  * Set the current text foreground color.
  */
@@ -608,6 +605,15 @@ gui_mch_set_bg_color(guicolor_T color)
 
     gui.currBgColor = color;
     SetBkColor(s_hdc, gui.currBgColor);
+}
+
+/*
+ * Set the current text special color.
+ */
+    void
+gui_mch_set_sp_color(guicolor_T color)
+{
+    /* TODO */
 }
 
 

@@ -30,6 +30,7 @@ void gui_mch_new_colors __ARGS((void));
 guicolor_T gui_mch_get_color __ARGS((char_u *name));
 void gui_mch_set_fg_color __ARGS((guicolor_T color));
 void gui_mch_set_bg_color __ARGS((guicolor_T color));
+void gui_mch_set_sp_color __ARGS((guicolor_T color));
 void gui_mch_invert_rectangle __ARGS((int row, int col, int nr, int nc));
 void gui_mch_clear_block __ARGS((int row1, int col1, int row2, int col2));
 void gui_mch_clear_all __ARGS((void));

@@ -1,9 +1,8 @@
 " Vim syntax file
 " Language:    PROLOG
-" Maintainers: Ralph Becket <rwab1@cam.sri.co.uk>,
-"	       Thomas Koehler <jean-luc@picard.franken.de>
-" Last Change: 2003 May 11
-" URL:	       http://jeanluc-picard.de/vim/syntax/prolog.vim
+" Maintainers: Thomas Koehler <jean-luc@picard.franken.de>
+" Last Change: 2005 Mar 14
+" URL:	       http://gott-gehabt/800_wer_wir_sind/thomas/Homepage/Computer/vim/syntax/prolog.vim
 
 " There are two sets of highlighting in here:
 " If the "prolog_highlighting_clean" variable exists, it is rather sparse.
@@ -73,7 +72,7 @@ if !exists("prolog_highlighting_clean")
 
 endif
 
-syn sync ccomment maxlines=50
+syn sync maxlines=50
 
 
 " Define the default highlighting.

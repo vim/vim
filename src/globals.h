@@ -930,6 +930,7 @@ EXTERN char_u	*new_last_cmdline INIT(= NULL);	/* new value for last_cmdline */
 EXTERN char_u	*autocmd_fname INIT(= NULL); /* fname for <afile> on cmdline */
 EXTERN int	autocmd_bufnr INIT(= 0);     /* fnum for <abuf> on cmdline */
 EXTERN char_u	*autocmd_match INIT(= NULL); /* name for <amatch> on cmdline */
+EXTERN int	did_cursorhold INIT(= FALSE); /* set when CursorHold triggered */
 #endif
 
 EXTERN linenr_T	write_no_eol_lnum INIT(= 0); /* non-zero lnum when last line

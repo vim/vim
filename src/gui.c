@@ -29,6 +29,8 @@ static void fill_mouse_coord __ARGS((char_u *p, int col, int row));
 static void gui_do_scrollbar __ARGS((win_T *wp, int which, int enable));
 static colnr_T scroll_line_len __ARGS((linenr_T lnum));
 static void gui_update_horiz_scrollbar __ARGS((int));
+static void gui_set_fg_color __ARGS((char_u *name));
+static void gui_set_bg_color __ARGS((char_u *name));
 static win_T *xy2win __ARGS((int x, int y));
 
 static int can_update_cursor = TRUE; /* can display the cursor */
@@ -1941,6 +1943,7 @@ gui_outstr_nowrap(s, len, flags, fg, bg, back)
     long_u	hl_mask_todo;
     guicolor_T	fg_color;
     guicolor_T	bg_color;
+    guicolor_T	sp_color;
 #if !defined(MSWIN16_FASTTEXT) && !defined(HAVE_GTK2) && !defined(FEAT_GUI_KDE)
     GuiFont	font = NOFONT;
 # ifdef FEAT_XFONTSET
@@ -2050,6 +2053,7 @@ gui_outstr_nowrap(s, len, flags, fg, bg, back)
 	draw_flags |= DRAW_CURSOR;
 	fg_color = fg;
 	bg_color = bg;
+	sp_color = fg;
     }
     else if (aep != NULL)
     {
@@ -2059,9 +2063,15 @@ gui_outstr_nowrap(s, len, flags, fg, bg, back)
 	bg_color = aep->ae_u.gui.bg_color;
 	if (bg_color == INVALCOLOR)
 	    bg_color = gui.back_pixel;
+	sp_color = aep->ae_u.gui.sp_color;
+	if (sp_color == INVALCOLOR)
+	    sp_color = fg_color;
     }
     else
+    {
 	fg_color = gui.norm_pixel;
+	sp_color = fg_color;
+    }
 
     if (highlight_mask & (HL_INVERSE | HL_STANDOUT))
     {
@@ -2081,6 +2091,7 @@ gui_outstr_nowrap(s, len, flags, fg, bg, back)
 	gui_mch_set_bg_color(bg_color);
 #endif
     }
+    gui_mch_set_sp_color(sp_color);
 
     /* Clear the selection if we are about to write over it */
     if (!(flags & GUI_MON_NOCLEAR))
@@ -2119,6 +2130,9 @@ gui_outstr_nowrap(s, len, flags, fg, bg, back)
        )
 	draw_flags |= DRAW_UNDERL;
 #endif
+    /* Do we undercurl the text? */
+    if (hl_mask_todo & HL_UNDERCURL)
+	draw_flags |= DRAW_UNDERC;
 
     /* Do we draw transparantly? */
     if (flags & GUI_MON_TRS_CURSOR)
@@ -2364,7 +2378,7 @@ gui_redraw_block(row1, col1, row2, col2, flags)
     int		old_row, old_col;
     long_u	old_hl_mask;
     int		off;
-    char_u	first_attr;
+    sattr_T	first_attr;
     int		idx, len;
     int		back, nback;
     int		retval = FALSE;
@@ -2588,9 +2602,6 @@ gui_wait_for_chars(wtime)
     long    wtime;
 {
     int	    retval;
-#ifdef FEAT_AUTOCMD
-    static int once_already = 0;
-#endif
 
     /*
      * If we're going to wait a bit, update the menus and mouse shape for the
@@ -2605,19 +2616,9 @@ gui_wait_for_chars(wtime)
 
     gui_mch_update();
     if (input_available())	/* Got char, return immediately */
-    {
-#ifdef FEAT_AUTOCMD
-	once_already = 0;
-#endif
 	return OK;
-    }
     if (wtime == 0)	/* Don't wait for char */
-    {
-#ifdef FEAT_AUTOCMD
-	once_already = 0;
-#endif
 	return FAIL;
-    }
 
     /* Before waiting, flush any output to the screen. */
     gui_mch_flush();
@@ -2629,9 +2630,6 @@ gui_wait_for_chars(wtime)
 	gui_mch_start_blink();
 	retval = gui_mch_wait_for_chars(wtime);
 	gui_mch_stop_blink();
-#ifdef FEAT_AUTOCMD
-	once_already = 0;
-#endif
 	return retval;
     }
 
@@ -2640,53 +2638,36 @@ gui_wait_for_chars(wtime)
      */
     gui_mch_start_blink();
 
-
+    retval = FAIL;
+    /*
+     * We may want to trigger the CursorHold event.  First wait for
+     * 'updatetime' and if nothing is typed within that time put the
+     * K_CURSORHOLD key in the input buffer.
+     */
+    if (gui_mch_wait_for_chars(p_ut) == OK)
+	retval = OK;
 #ifdef FEAT_AUTOCMD
-    /* If there is no character available within 2 seconds (default),
-     * write the autoscript file to disk */
-    if (once_already == 2)
+    else if (!did_cursorhold && has_cursorhold()
+					   && get_real_state() == NORMAL_BUSY)
     {
+	char_u	buf[3];
+
+	/* Put K_CURSORHOLD in the input buffer. */
+	buf[0] = CSI;
+	buf[1] = KS_EXTRA;
+	buf[2] = (int)KE_CURSORHOLD;
+	add_to_input_buf(buf, 3);
+
+	retval = OK;
+    }
+#endif
+
+    if (retval == FAIL)
+    {
+	/* Blocking wait. */
 	updatescript(0);
 	retval = gui_mch_wait_for_chars(-1L);
-	once_already = 0;
     }
-    else if (once_already == 1)
-    {
-	setcursor();
-	once_already = 2;
-	retval = 0;
-    }
-    else
-#endif
-	if (gui_mch_wait_for_chars(p_ut) != OK)
-    {
-#ifdef FEAT_AUTOCMD
-	if (has_cursorhold() && get_real_state() == NORMAL_BUSY)
-	{
-	    apply_autocmds(EVENT_CURSORHOLD, NULL, NULL, FALSE, curbuf);
-	    update_screen(VALID);
-	    showruler(FALSE);
-	    setcursor();
-	    /* In case the commands moved the focus to another window
-	     * (temporarily). */
-	    if (need_mouse_correct)
-		gui_mouse_correct();
-
-	    once_already = 1;
-	    retval = 0;
-	}
-	else
-#endif
-	{
-	    updatescript(0);
-	    retval = gui_mch_wait_for_chars(-1L);
-#ifdef FEAT_AUTOCMD
-	    once_already = 0;
-#endif
-	}
-    }
-    else
-	retval = OK;
 
     gui_mch_stop_blink();
     return retval;
@@ -4067,7 +4048,7 @@ gui_check_colors()
     }
 }
 
-    void
+    static void
 gui_set_fg_color(name)
     char_u	*name;
 {
@@ -4075,7 +4056,7 @@ gui_set_fg_color(name)
     hl_set_fg_color_name(vim_strsave(name));
 }
 
-    void
+    static void
 gui_set_bg_color(name)
     char_u	*name;
 {

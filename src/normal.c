@@ -172,6 +172,9 @@ static void	nv_nbcmd __ARGS((cmdarg_T *cap));
 #ifdef FEAT_DND
 static void	nv_drop __ARGS((cmdarg_T *cap));
 #endif
+#ifdef FEAT_AUTOCMD
+static void	nv_cursorhold __ARGS((cmdarg_T *cap));
+#endif
 
 /*
  * Function to be called for a Normal or Visual mode command.
@@ -433,6 +436,9 @@ static const struct nv_cmd
 #endif
 #ifdef FEAT_DND
     {K_DROP,	nv_drop,	NV_STS,			0},
+#endif
+#ifdef FEAT_AUTOCMD
+    {K_CURSORHOLD, nv_cursorhold, 0,			0},
 #endif
 };
 
@@ -1076,6 +1082,9 @@ getcount:
      */
     if (need_flushbuf)
 	out_flush();
+#endif
+#ifdef FEAT_AUTOCMD
+    did_cursorhold = FALSE;
 #endif
 
     State = NORMAL;
@@ -8652,3 +8661,20 @@ nv_drop(cap)
     do_put('~', BACKWARD, 1L, PUT_CURSEND);
 }
 #endif
+
+#ifdef FEAT_AUTOCMD
+/*
+ * Trigger CursorHold event.
+ * When waiting for a character for 'updatetime' K_CURSORHOLD is put in the
+ * input buffer.  "did_cursorhold" is set to avoid retriggering.
+ */
+/*ARGSUSED*/
+    static void
+nv_cursorhold(cap)
+    cmdarg_T	*cap;
+{
+    apply_autocmds(EVENT_CURSORHOLD, NULL, NULL, FALSE, curbuf);
+    did_cursorhold = TRUE;
+}
+#endif
+

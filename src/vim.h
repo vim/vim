@@ -346,10 +346,15 @@ typedef unsigned long	long_u;
 
 /*
  * The characters and attributes cached for the screen.
- * Currently a single byte.  The attributes may become larger some day.
  */
 #define schar_T	char_u
-#define sattr_T	char_u
+#ifdef FEAT_SYN_HL
+typedef unsigned short sattr_T;
+# define MAX_TYPENR 65535
+#else
+typedef unsigned char sattr_T;
+# define MAX_TYPENR 255
+#endif
 
 /*
  * The u8char_T can hold one decoded UTF-8 character.
@@ -535,8 +540,9 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 #define HL_BOLD			0x02
 #define HL_ITALIC		0x04
 #define HL_UNDERLINE		0x08
-#define HL_STANDOUT		0x10
-#define HL_ALL			0x1f
+#define HL_UNDERCURL		0x10
+#define HL_STANDOUT		0x20
+#define HL_ALL			0x3f
 
 /* special attribute addition: Put message in history */
 #define MSG_HIST		0x1000

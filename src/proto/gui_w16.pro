@@ -61,6 +61,7 @@ void gui_mch_set_scrollbar_thumb __ARGS((scrollbar_T *sb, long val, long size, l
 void gui_mch_set_font __ARGS((GuiFont font));
 void gui_mch_set_fg_color __ARGS((guicolor_T color));
 void gui_mch_set_bg_color __ARGS((guicolor_T color));
+void gui_mch_set_sp_color __ARGS((guicolor_T color));
 void gui_mch_draw_string __ARGS((int row, int col, char_u *text, int len, int flags));
 void gui_mch_flush __ARGS((void));
 void gui_mch_add_menu __ARGS((vimmenu_T *menu, int pos));

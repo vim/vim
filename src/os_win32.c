@@ -1323,9 +1323,6 @@ mch_inchar(
 
     int		len;
     int		c;
-#ifdef FEAT_AUTOCMD
-    static int	once_already = 0;
-#endif
 #define TYPEAHEADLEN 20
     static char_u   typeahead[TYPEAHEADLEN];	/* previously typed bytes. */
     static int	    typeaheadlen = 0;
@@ -1358,40 +1355,29 @@ mch_inchar(
     if (time >= 0)
     {
 	if (!WaitForChar(time))     /* no character available */
-	{
-#ifdef FEAT_AUTOCMD
-	    once_already = 0;
-#endif
 	    return 0;
-	}
     }
     else    /* time == -1, wait forever */
     {
 	mch_set_winsize_now();	/* Allow winsize changes from now on */
 
-#ifdef FEAT_AUTOCMD
-	/* If there is no character available within 2 seconds (default),
-	 * write the autoscript file to disk */
-	if (once_already == 2)
-	    updatescript(0);
-	else if (once_already == 1)
-	{
-	    setcursor();
-	    once_already = 2;
-	    return 0;
-	}
-	else
-#endif
-	    if (!WaitForChar(p_ut))
+	/*
+	 * If there is no character available within 2 seconds (default)
+	 * write the autoscript file to disk.  Or cause the CursorHold event
+	 * to be triggered.
+	 */
+	if (!WaitForChar(p_ut))
 	{
 #ifdef FEAT_AUTOCMD
-	    if (has_cursorhold() && get_real_state() == NORMAL_BUSY)
+	    if (!did_cursorhold && has_cursorhold()
+			    && get_real_state() == NORMAL_BUSY && maxlen >= 3)
 	    {
-		apply_autocmds(EVENT_CURSORHOLD, NULL, NULL, FALSE, curbuf);
-		update_screen(VALID);
-		once_already = 1;
-		return 0;
+		buf[0] = K_SPECIAL;
+		buf[1] = KS_EXTRA;
+		buf[2] = (int)KE_CURSORHOLD;
+		return 3;
 	    }
+	    else
 #endif
 	    updatescript(0);
 	}
@@ -1526,10 +1512,6 @@ mch_inchar(
 	fputs("]\n", fdDump);
 	fflush(fdDump);
     }
-#endif
-
-#ifdef FEAT_AUTOCMD
-    once_already = 0;
 #endif
 
 theend:

@@ -244,6 +244,7 @@ enum key_extra
     , KE_X2RELEASE
 
     , KE_DROP		/* DnD data is available */
+    , KE_CURSORHOLD	/* CursorHold event */
 };
 
 /*
@@ -462,6 +463,8 @@ enum key_extra
 #define K_CMDWIN	TERMCAP2KEY(KS_EXTRA, KE_CMDWIN)
 
 #define K_DROP		TERMCAP2KEY(KS_EXTRA, KE_DROP)
+
+#define K_CURSORHOLD	TERMCAP2KEY(KS_EXTRA, KE_CURSORHOLD)
 
 /* Bits for modifier mask */
 /* 0x01 cannot be used, because the modifier must be 0x02 or higher */

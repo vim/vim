@@ -161,10 +161,11 @@ class VimWidget;
 #define DRAW_TRANSP		0x01	/* draw with transparant bg */
 #define DRAW_BOLD		0x02	/* draw bold text */
 #define DRAW_UNDERL		0x04	/* draw underline text */
+#define DRAW_UNDERC		0x08	/* draw undercurl text */
 #if defined(RISCOS) || defined(HAVE_GTK2) || defined (FEAT_GUI_KDE)
-# define DRAW_ITALIC		0x08	/* draw italic text */
+# define DRAW_ITALIC		0x10	/* draw italic text */
 #endif
-#define DRAW_CURSOR		0x10	/* drawing block cursor (win32) */
+#define DRAW_CURSOR		0x20	/* drawing block cursor (win32) */
 
 /* For our own tearoff menu item */
 #define TEAR_STRING		"-->Detach"
@@ -421,6 +422,7 @@ typedef struct Gui
 # endif
     GdkColor	*fgcolor;	    /* GDK-styled foreground color */
     GdkColor	*bgcolor;	    /* GDK-styled background color */
+    GdkColor	*spcolor;	    /* GDK-styled special color */
 # ifndef HAVE_GTK2
     GuiFont	current_font;
 # endif
@@ -463,6 +465,7 @@ typedef struct Gui
     GuiFont	currFont;	    /* Current font */
     guicolor_T	currFgColor;	    /* Current foreground text color */
     guicolor_T	currBgColor;	    /* Current background text color */
+    guicolor_T	currSpColor;	    /* Current special text color */
 #endif
 
 #ifdef FEAT_GUI_MAC
