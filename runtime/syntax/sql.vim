@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	SQL, PL/SQL (Oracle 8i)
-" Maintainer:	Paul Moore <gustav@morpheus.demon.co.uk>
-" Last Change:	2001 Apr 30
+" Maintainer:	Paul Moore <pf_moore AT yahoo.co.uk>
+" Last Change:	2004 Jul 19
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded

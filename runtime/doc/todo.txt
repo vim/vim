@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Jul 18
+*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Jul 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -36,11 +36,6 @@ Add fix for zh_cn to Vim 6.3?  (Liang)
 For version 7.0:
 -   Include many PATCHES:
     8   Add functions:
-	match({pat}, {string} [,start] [,count]) get index of count'th match
-				Patch by Ilya Sher, 2004 Jun 19
-	find()			find file in 'path' (patch from Johannes
-				Zellner 2001 Dec 20)
-				Update 2004 Jun 16.
 	realname()		Get user name (first, last, full)
 				user_fullname() patch by Nikolai Weibull, Nov
 				3 2002)

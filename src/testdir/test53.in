@@ -1,5 +1,9 @@
 Tests for string text objects. vim: set ft=vim :
 
+Note that the end-of-line moves the cursor to the next test line.
+
+Also test match() and matchstr()
+
 STARTTEST
 :so small.vim
 /^start:/
@@ -11,6 +15,12 @@ da"
 :set quoteescape=+*-
 di`
 $F"va"oha"i"rz
+k:put =matchstr(\"abcd\", \".\", 0, 2) " b
+:put =matchstr(\"abcd\", \"..\", 0, 2) " bc
+:put =matchstr(\"abcd\", \".\", 2, 0) " c (zero and negative -> first match)
+:put =matchstr(\"abcd\", \".\", 0, -1) " a
+:put =match(\"abcd\", \".\", 0, 5) " -1
+:put =match(\"abcd\", \".\", 0, -1) " 0
 :/^start:/,/^end:/wq! test.out
 ENDTEST
 

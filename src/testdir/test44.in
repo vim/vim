@@ -1,4 +1,5 @@
 Tests for regexp with multi-byte encoding and various magic settings.
+Test matchstr() with a count and multi-byte chars.
 
 STARTTEST
 :so mbyte.vim
@@ -21,6 +22,12 @@ x:" Now search for multi-byte with composing char
 x:" find word by change of word class
 /ち\<カヨ\>は
 x:?^1?,$w! test.out
+:e! test.out
+G:put =matchstr(\"אבגד\", \".\", 0, 2) " ב
+:put =matchstr(\"אבגד\", \"..\", 0, 2) " בג
+:put =matchstr(\"אבגד\", \".\", 0, 0) " א
+:put =matchstr(\"אבגד\", \".\", 4, -1) " ג
+:w!
 :qa!
 ENDTEST
 

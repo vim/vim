@@ -279,6 +279,9 @@ static void f_exists __ARGS((VAR argvars, VAR retvar));
 static void f_expand __ARGS((VAR argvars, VAR retvar));
 static void f_filereadable __ARGS((VAR argvars, VAR retvar));
 static void f_filewritable __ARGS((VAR argvars, VAR retvar));
+static void f_finddir __ARGS((VAR argvars, VAR retvar));
+static void f_findfile __ARGS((VAR argvars, VAR retvar));
+static void f_findfilendir __ARGS((VAR argvars, VAR retvar, int dir));
 static void f_fnamemodify __ARGS((VAR argvars, VAR retvar));
 static void f_foldclosed __ARGS((VAR argvars, VAR retvar));
 static void f_foldclosedend __ARGS((VAR argvars, VAR retvar));
@@ -2836,6 +2839,8 @@ static struct fst
     {"file_readable",	1, 1, f_filereadable},	/* obsolete */
     {"filereadable",	1, 1, f_filereadable},
     {"filewritable",	1, 1, f_filewritable},
+    {"finddir",		1, 3, f_finddir},
+    {"findfile",	1, 3, f_findfile},
     {"fnamemodify",	2, 2, f_fnamemodify},
     {"foldclosed",	1, 1, f_foldclosed},
     {"foldclosedend",	1, 1, f_foldclosedend},
@@ -2886,9 +2891,9 @@ static struct fst
     {"localtime",	0, 0, f_localtime},
     {"maparg",		1, 2, f_maparg},
     {"mapcheck",	1, 2, f_mapcheck},
-    {"match",		2, 3, f_match},
-    {"matchend",	2, 3, f_matchend},
-    {"matchstr",	2, 3, f_matchstr},
+    {"match",		2, 4, f_match},
+    {"matchend",	2, 4, f_matchend},
+    {"matchstr",	2, 4, f_matchstr},
     {"mode",		0, 0, f_mode},
     {"nextnonblank",	1, 1, f_nextnonblank},
     {"nr2char",		1, 1, f_nr2char},
@@ -4165,6 +4170,71 @@ f_filewritable(argvars, retvar)
 	    ++retval;
     }
     retvar->var_val.var_number = retval;
+}
+
+/*
+ * "finddir({fname}[, {path}[, {count}]])" function
+ */
+    static void
+f_finddir(argvars, retvar)
+    VAR		argvars;
+    VAR		retvar;
+{
+    f_findfilendir(argvars, retvar, TRUE);
+}
+
+/*
+ * "findfile({fname}[, {path}[, {count}]])" function
+ */
+    static void
+f_findfile(argvars, retvar)
+    VAR		argvars;
+    VAR		retvar;
+{
+    f_findfilendir(argvars, retvar, FALSE);
+}
+
+    static void
+f_findfilendir(argvars, retvar, dir)
+    VAR		argvars;
+    VAR		retvar;
+    int		dir;
+{
+#ifdef FEAT_SEARCHPATH
+    char_u	*fname;
+    char_u	*fresult = NULL;
+    char_u	*path = *curbuf->b_p_path == NUL ? p_path : curbuf->b_p_path;
+    char_u	*p;
+    char_u	pathbuf[NUMBUFLEN];
+    int		count = 1;
+    int		first = TRUE;
+
+    fname = get_var_string(&argvars[0]);
+
+    if (argvars[1].var_type != VAR_UNKNOWN)
+    {
+	p = get_var_string_buf(&argvars[1], pathbuf);
+	if (*p != NUL)
+	    path = p;
+
+	if (argvars[2].var_type != VAR_UNKNOWN)
+	    count = get_var_number(&argvars[2]);
+    }
+
+    do
+    {
+	vim_free(fresult);
+	fresult = find_file_in_path_option(first ? fname : NULL,
+					    first ? (int)STRLEN(fname) : 0,
+					    0, first, path, dir, NULL);
+	first = FALSE;
+    } while (--count > 0 && fresult != NULL);
+
+    retvar->var_val.var_string = fresult;
+#else
+    retvar->var_val.var_string = NULL;
+#endif
+    retvar->var_type = VAR_STRING;
 }
 
 /*
@@ -5858,17 +5928,20 @@ find_some_match(argvars, retvar, type)
     int		type;
 {
     char_u	*str;
+    char_u	*expr;
     char_u	*pat;
     regmatch_T	regmatch;
     char_u	patbuf[NUMBUFLEN];
     char_u	*save_cpo;
     long	start = 0;
+    long	nth = 1;
+    int		match;
 
     /* Make 'cpoptions' empty, the 'l' flag should not be used here. */
     save_cpo = p_cpo;
     p_cpo = (char_u *)"";
 
-    str = get_var_string(&argvars[0]);
+    expr = str = get_var_string(&argvars[0]);
     pat = get_var_string_buf(&argvars[1], patbuf);
 
     if (type == 2)
@@ -5887,13 +5960,30 @@ find_some_match(argvars, retvar, type)
 	if (start > (long)STRLEN(str))
 	    goto theend;
 	str += start;
+
+	if (argvars[3].var_type != VAR_UNKNOWN)
+	    nth = get_var_number(&argvars[3]);
     }
 
     regmatch.regprog = vim_regcomp(pat, RE_MAGIC + RE_STRING);
     if (regmatch.regprog != NULL)
     {
 	regmatch.rm_ic = p_ic;
-	if (vim_regexec_nl(&regmatch, str, (colnr_T)0))
+
+	while (1)
+	{
+	    match = vim_regexec_nl(&regmatch, str, (colnr_T)0);
+	    if (!match || --nth <= 0)
+		break;
+	    /* Advance to just after the match. */
+#ifdef FEAT_MBYTE
+	    str = regmatch.startp[0] + mb_ptr2len_check(regmatch.startp[0]);
+#else
+	    str = regmatch.startp[0] + 1;
+#endif
+	}
+
+	if (match)
 	{
 	    if (type == 2)
 		retvar->var_val.var_string = vim_strnsave(regmatch.startp[0],
@@ -5906,7 +5996,7 @@ find_some_match(argvars, retvar, type)
 		else
 		    retvar->var_val.var_number =
 					(varnumber_T)(regmatch.endp[0] - str);
-		retvar->var_val.var_number += start;
+		retvar->var_val.var_number += str - expr;
 	    }
 	}
 	vim_free(regmatch.regprog);

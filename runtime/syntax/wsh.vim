@@ -1,6 +1,6 @@
 " Vim syntax file
 " Language:	Windows Scripting Host
-" Maintainer:	Paul Moore <gustav@morpheus.demon.co.uk>
+" Maintainer:	Paul Moore <pf_moore AT yahoo.co.uk>
 " Last Change:	Fre, 24 Nov 2000 21:54:09 +0100
 
 " This reuses the XML, VB and JavaScript syntax files. While VB is not

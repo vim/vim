@@ -4065,6 +4065,7 @@ builtin-tools	gui.txt	/*builtin-tools*
 builtin_terms	term.txt	/*builtin_terms*
 byte-count	editing.txt	/*byte-count*
 byte2line()	eval.txt	/*byte2line()*
+byteidx()	eval.txt	/*byteidx()*
 bzip2	pi_gzip.txt	/*bzip2*
 c	change.txt	/*c*
 c-syntax	syntax.txt	/*c-syntax*
@@ -4624,6 +4625,7 @@ filewritable()	eval.txt	/*filewritable()*
 filter	change.txt	/*filter*
 find-manpage	usr_12.txt	/*find-manpage*
 find-replace	usr_10.txt	/*find-replace*
+findfile()	eval.txt	/*findfile()*
 fixed-5.1	version5.txt	/*fixed-5.1*
 fixed-5.2	version5.txt	/*fixed-5.2*
 fixed-5.3	version5.txt	/*fixed-5.3*

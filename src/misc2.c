@@ -3457,10 +3457,6 @@ static ff_stack_T *ff_create_stack_element __ARGS((char_u *, int, int));
 static int ff_path_in_stoplist __ARGS((char_u *, int, char_u **));
 #endif
 
-#ifdef FEAT_SEARCHPATH
-static char_u *find_file_in_path_option __ARGS((char_u *ptr, int len, int options, int first, char_u *path_option, int need_dir, char_u *rel_fname));
-#endif
-
 #if 0
 /*
  * if someone likes findfirst/findnext, here are the functions
@@ -4860,7 +4856,7 @@ find_directory_in_path(ptr, len, options, rel_fname)
 							     TRUE, rel_fname);
 }
 
-    static char_u *
+    char_u *
 find_file_in_path_option(ptr, len, options, first, path_option, need_dir, rel_fname)
     char_u	*ptr;		/* file name */
     int		len;		/* length of file name */

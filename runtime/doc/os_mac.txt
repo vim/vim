@@ -1,4 +1,4 @@
-*os_mac.txt*    For Vim version 7.0aa.  Last change: 2004 Jun 19
+*os_mac.txt*    For Vim version 7.0aa.  Last change: 2004 Jul 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar et al.
@@ -9,7 +9,7 @@
 This file documents the particularities of the Macintosh version of Vim.
 
 NOTE: This file is a bit outdated.  You might find more useful info here:
-	http://macvim.swdev.org/
+	http://macvim.org/
 
 1. Filename Convention		|mac-filename|
 2. .vimrc an .vim files		|mac-vimfile|

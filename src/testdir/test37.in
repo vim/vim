@@ -1,4 +1,4 @@
-Test for 'scrollbind'. <eralston@computer.org>
+Test for 'scrollbind'. <eralston@computer.org>   Do not add a line below!
 STARTTEST
 :so small.vim
 :set noscrollbind

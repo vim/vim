@@ -32,7 +32,7 @@ gui:	nolog $(SCRIPTS) $(SCRIPTS_GUI)
 $(SCRIPTS) $(SCRIPTS_GUI): $(VIMPROG)
 
 clean:
-	-rm -rf *.out *.rej *.orig test.log tiny.vim small.vim mbyte.vim test.ok X* viminfo
+	-rm -rf *.out *.failed *.rej *.orig test.log tiny.vim small.vim mbyte.vim test.ok X* viminfo
 
 test1.out: test1.in
 	-rm -f $*.failed tiny.vim small.vim mbyte.vim test.ok X* viminfo

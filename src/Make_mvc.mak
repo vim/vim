@@ -852,13 +852,17 @@ $(OUTDIR)/dimm_i.obj: $(OUTDIR) dimm_i.c $(INCL)
 
 $(OUTDIR)/glbl_ime.obj:	$(OUTDIR) glbl_ime.cpp  dimm.h $(INCL)
 
+# $CFLAGS may contain backslashes and double quotes, escape them both.
+E0_CFLAGS = $(CFLAGS:\=\\)
+E_CFLAGS = $(E0_CFLAGS:"=\")
+
 auto/pathdef.c: auto
 	@echo creating auto/pathdef.c
 	@echo /* pathdef.c */ > auto\pathdef.c
 	@echo #include "vim.h" >> auto\pathdef.c
 	@echo char_u *default_vim_dir = (char_u *)"$(VIMRCLOC:\=\\)"; >> auto\pathdef.c
 	@echo char_u *default_vimruntime_dir = (char_u *)"$(VIMRUNTIMEDIR:\=\\)"; >> auto\pathdef.c
-	@echo char_u *all_cflags = (char_u *)"$(CC:\=\\) $(CFLAGS:\=\\)"; >> auto\pathdef.c
+	@echo char_u *all_cflags = (char_u *)"$(CC:\=\\) $(E_CFLAGS)"; >> auto\pathdef.c
 	@echo char_u *all_lflags = (char_u *)"$(link:\=\\) $(LINKARGS1:\=\\) $(LINKARGS2:\=\\)"; >> auto\pathdef.c
 	@echo char_u *compiled_user = (char_u *)"$(USERNAME)"; >> auto\pathdef.c
 	@echo char_u *compiled_sys = (char_u *)"$(USERDOMAIN)"; >> auto\pathdef.c

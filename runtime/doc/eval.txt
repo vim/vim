@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2004 Jul 18
+*eval.txt*      For Vim version 7.0aa.  Last change: 2004 Jul 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -831,6 +831,8 @@ executable( {expr})		Number	1 if executable {expr} exists
 exists( {expr})			Number	TRUE if {expr} exists
 expand( {expr})			String	expand special keywords in {expr}
 filereadable( {file})		Number	TRUE if {file} is a readable file
+findfile( {name}[, {path}[, {count}]])
+				String  Find fine {name} in {path}
 filewritable( {file})		Number	TRUE if {file} is a writable file
 fnamemodify( {fname}, {mods})	String	modify file name
 foldclosed( {lnum})		Number  first line of fold at {lnum} if closed
@@ -879,12 +881,12 @@ lispindent( {lnum})		Number  Lisp indent for line {lnum}
 localtime()			Number	current time
 maparg( {name}[, {mode}])	String	rhs of mapping {name} in mode {mode}
 mapcheck( {name}[, {mode}])	String	check for mappings matching {name}
-match( {expr}, {pat}[, {start}])
+match( {expr}, {pat}[, {start}[, {count}]])
 				Number	position where {pat} matches in {expr}
-matchend( {expr}, {pat}[, {start}])
+matchend( {expr}, {pat}[, {start}[, {count}]])
 				Number	position where {pat} ends in {expr}
-matchstr( {expr}, {pat}[, {start}])
-				String	match of {pat} in {expr}
+matchstr( {expr}, {pat}[, {start}[, {count}]])
+				String	{count}'th match of {pat} in {expr}
 mode()				String  current editing mode
 nextnonblank( {lnum})		Number	line nr of non-blank line >= {lnum}
 nr2char( {expr})		String	single char with ASCII value {expr}
@@ -1411,6 +1413,23 @@ filereadable({file})					*filereadable()*
 		expression, which is used as a String.
 							*file_readable()*
 		Obsolete name: file_readable().
+
+finddir({name}[, {path}[, {count}]])				*finddir()*
+		Find directory {name} in {path}.
+		If {path} is omitted or empty then 'path' is used.
+		If the optional {count} is given, find {count}'s occurrence of
+		{name} in {path}.
+		This is quite similar to the ex-command |:find|.
+		When the found directory is below the current directory a
+		relative path is returned.  Otherwise a full path is returned.
+		Example: >
+			:echo findfile("tags.vim", ".;")
+<		Searches from the current directory upwards until it finds
+		the file "tags.vim".
+		{only available when compiled with the +file_in_path feature}
+
+findfile({name}[, {path}[, {count}]])				*findfile()*
+		Just like |finddir()|, but find a file instead of a directory.
 
 filewritable({file})					*filewritable()*
 		The result is a Number, which is 1 when a file with the
@@ -2027,14 +2046,20 @@ mapcheck({name}[, {mode}])				*mapcheck()*
 <		This avoids adding the "_vv" mapping when there already is a
 		mapping for "_v" or for "_vvv".
 
-match({expr}, {pat}[, {start}])				*match()*
+match({expr}, {pat}[, {start}[, {count}]])			*match()*
 		The result is a Number, which gives the index (byte offset) in
-		{expr} where {pat} matches.  A match at the first character
-		returns zero.  If there is no match -1 is returned.  Example: >
+		{expr} where {pat} matches.
+		A match at the first character returns zero.
+		If there is no match -1 is returned.
+		Example: >
 			:echo match("testing", "ing")
 <		results in "4".
 		See |string-match| for how {pat} is used.
-		If {start} is given, the search starts from index {start}.
+		When {count} is given use the {count}'th match.  When a match
+		is found the search for the next one starts on character
+		further.  Thus this example results in 1: >
+			echo match("testing", "..", 0, 2)
+<		If {start} is given, the search starts from index {start}.
 		The result, however, is still the index counted from the
 		first character. Example: >
 			:echo match("testing", "ing", 2)
@@ -2050,7 +2075,7 @@ match({expr}, {pat}[, {start}])				*match()*
 		the pattern.  'smartcase' is NOT used.  The matching is always
 		done like 'magic' is set and 'cpoptions' is empty.
 
-matchend({expr}, {pat}[, {start}])			*matchend()*
+matchend({expr}, {pat}[, {start}[, {count}]])			*matchend()*
 		Same as match(), but return the index of first character after
 		the match.  Example: >
 			:echo matchend("testing", "ing")
@@ -2061,7 +2086,7 @@ matchend({expr}, {pat}[, {start}])			*matchend()*
 			:echo matchend("testing", "ing", 5)
 <		result is "-1".
 
-matchstr({expr}, {pat}[, {start}])			*matchstr()*
+matchstr({expr}, {pat}[, {start}[, {count}]])			*matchstr()*
 		Same as match(), but return the matched string.  Example: >
 			:echo matchstr("testing", "ing")
 <		results in "ing".

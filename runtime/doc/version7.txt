@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2004 Jul 18
+*version7.txt*  For Vim version 7.0aa.  Last change: 2004 Jul 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -123,10 +123,13 @@ Win32: The ":winpos" command now also works in the console. (Vipin Aravind)
 
 New functions: ~
 
+byteidx(expr, nr)	|byteidx()| 	Index of a character. (Ilya Sher)
+finddir(name)		|finddir()|	Find a directory in 'path'.
+findfile(name)		|findfile()|	Find a file in 'path'. (Johannes
+					Zellner)
 repeat(expr, count)	|repeat()| 	Repeat "expr" "count" times.
 					(Christophe Poucet)
 tr(expr, from, to)	|tr()|		Translate characters. (Ron Aaron)
-byteidx(expr, nr)	|byteidx()| 	Index of a character. (Ilya Sher)
 
 
 New autocommand events: ~
@@ -181,6 +184,8 @@ For lisp indenting and matching parenthesis: (Sergey Khorev)
 - square brackets are recognized properly
 - #\(, #\), #\[ and #\] are recognized as character literals
 - Lisp line comments (delimited by semicolon) are recognized
+
+Added the "count" argument to match(), matchend() and matchstr(). (Ilya Sher)
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*

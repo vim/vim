@@ -4251,12 +4251,12 @@ clip_mch_request_selection(cbd)
 {
 
     Handle	textOfClip;
+    int		flavor = 0;
 #ifdef USE_CARBONIZED
     Size	scrapSize;
     ScrapFlavorFlags	scrapFlags;
     ScrapRef    scrap = nil;
     OSStatus	error;
-    int		flavor;
 #else
     long	scrapOffset;
     long	scrapSize;
@@ -4271,7 +4271,6 @@ clip_mch_request_selection(cbd)
     if (error != noErr)
 	return;
 
-    flavor = 0;
     error = GetScrapFlavorFlags(scrap, VIMSCRAPFLAVOR, &scrapFlags);
     if (error == noErr)
     {
@@ -4315,15 +4314,16 @@ clip_mch_request_selection(cbd)
 #else
 	scrapSize = GetScrap(textOfClip, 'TEXT', &scrapOffset);
 #endif
+	scrapSize -= flavor;
 
 	if (flavor)
 	    type = **textOfClip;
 	else
 	    type = (strchr(*textOfClip, '\r') != NULL) ? MLINE : MCHAR;
 
-	tempclip = lalloc(scrapSize+1, TRUE);
-	STRNCPY(tempclip, *textOfClip + flavor, scrapSize - flavor);
-	tempclip[scrapSize - flavor] = 0;
+	tempclip = lalloc(scrapSize + 1, TRUE);
+	STRNCPY(tempclip, *textOfClip + flavor, scrapSize);
+	tempclip[scrapSize] = 0;
 
 	searchCR = (char *)tempclip;
 	while (searchCR != NULL)
