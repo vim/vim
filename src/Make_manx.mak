@@ -67,6 +67,7 @@ SRC =	buffer.c \
 	regexp.c \
 	screen.c \
 	search.c \
+	spell.c \
 	syntax.c \
 	tag.c \
 	term.c \
@@ -110,6 +111,7 @@ OBJ =	obj/buffer.o \
 	obj/regexp.o \
 	obj/screen.o \
 	obj/search.o \
+	obj/spell.o \
 	obj/syntax.o \
 	obj/tag.o \
 	obj/term.o \
@@ -151,6 +153,7 @@ PRO =	proto/buffer.pro \
 	proto/regexp.pro \
 	proto/screen.pro \
 	proto/search.pro \
+	proto/spell.pro \
 	proto/syntax.pro \
 	proto/tag.pro \
 	proto/term.pro \
@@ -305,6 +308,9 @@ obj/screen.o:	screen.c
 
 obj/search.o:	search.c
 	$(CCSYM) $@ search.c
+
+obj/spell.o:	spell.c
+	$(CCSYM) $@ spell.c
 
 obj/syntax.o:	syntax.c
 	$(CCSYM) $@ syntax.c

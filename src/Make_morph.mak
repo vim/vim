@@ -57,6 +57,7 @@ SRC =	buffer.c						\
 	regexp.c						\
 	screen.c						\
 	search.c						\
+	spell.c							\
 	syntax.c						\
 	tag.c							\
 	term.c							\

@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Mar 18
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Mar 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -19,6 +19,7 @@ INCOMPATIBLE CHANGES			|incompatible-7|
 NEW FEATURES				|new-7|
 
 Vim script enhancements			|new-vim-script|
+Spell checking				|new-spell|
 KDE support				|new-KDE|
 Translated manual pages			|new-manpage-trans|
 Internal grep				|new-vimgrep|
@@ -128,6 +129,26 @@ expr".  "-=" and ".=" works in a similar way.
 
 With the |:profile| command you can find out where your function or script
 wastes its time.
+
+
+Spell checking						*new-spell*
+--------------
+
+Spell checking has been integrated in Vim.  There were a few implementations
+with scripts, but they were slow and/or required an external program.
+
+The 'spell' option is used to switch spell checking on or off.
+The 'spelllang' option is used to specify the languages that are accepted.
+
+The "undercurl" highlighting attribute was added to nicely point out spelling
+mistakes in the GUI (based on patch from Marcin Dalecki).
+The "guisp" color can be used to give it a color different from foreground and
+background.
+The number of possible different highlight attributes was raised from about
+220 to over 30000.  This allows for the attributes of spelling to be combined
+with syntax highlighting attributes.
+
+Much more info here: |spell|.
 
 
 KDE support						*new-KDE*
@@ -263,6 +284,8 @@ Options: ~
 			(based on an idea from Yegappan Lakshmanan)
 'formatlistpat'		pattern to recognize a numbered list for formatting.
 			(idea by Hugo Haas)
+'spell'			switch spell checking on/off
+'spelllang'		languages to check spelling for
 
 
 Ex commands: ~
@@ -986,5 +1009,8 @@ to the first line.  That breaks a BufReadPost autocommand that uses g`".
 Don't move the cursor if it's somewhere past the first line.
 
 "gg=G" while 'modifiable' is off was uninterruptable.
+
+When 'encoding' is "sjis" inserting CTRL-V u d800 a few times causes a crash.
+Don't insert a DBCS character with a NUL second byte.
 
  vim:tw=78:ts=8:ft=help:norl:

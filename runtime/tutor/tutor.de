@@ -2,29 +2,25 @@
 =    W i l l k o m m e n   z u m   V I M   T u t o r    -    Version 1.5D     =
 ===============================================================================
 
-   Vim ist ein sehr mächtiger Editor, der viele Befehle bereitstellt;
-   zu viele, um alle in einem Tutor wie diesem zu erklären.
-   Dieser Tutor ist so gestaltet, um genug Befehle vorzustellen, so dass Du
-   die Fähigkeit erlangst, Vim mit Leichtigkeit als einen Allzweck-Editor
-   zu benutzen.
+   Vim ist ein sehr mächtiger Editor, der viele Befehle bereitstellt; zu viele,
+   um alle in einem Tutor wie diesem zu erklären.  Dieser Tutor ist so
+   gestaltet, um genug Befehle vorzustellen, so dass Du die Fähigkeit erlangst,
+   Vim mit Leichtigkeit als einen Allzweck-Editor zu benutzen.
 
    Die Zeit für das Durcharbeiten dieses Tutors beträgt ca. 25-30 Minuten,
    abhängig davon, wie viel Zeit Du mit Experimentieren verbringst.
-
    Die in den Lektionen angewendeten Kommandos werden den Text modifizieren.
-   Erstelle eine Kopie dieser Datei, in der Du üben willst
-   (falls Du "vimtutor.bat" aufgerufen hast, ist dies bereits eine Kopie).
+   Erstelle eine Kopie dieser Datei, in der Du üben willst (falls Du
+   "vimtutor.bat" aufgerufen hast, ist dies bereits eine Kopie).
 
-   Es ist wichtig, sich zu vergegenwärtigen, dass dieser Tutor angelegt ist,
-   um über das Anwenden zu lehren. Das bedeutet, dass Du die Befehle ausführen
+   Es ist wichtig, sich zu vergegenwärtigen, dass dieser Tutor angelegt ist, um
+   über das Anwenden zu lehren. Das bedeutet, dass Du die Befehle ausführen
    musst, um sie richtig zu lernen. Wenn Du nur den Text liest, vergisst Du die
    Befehle!
 
    Jetzt stelle sicher, dass Deine Umstelltaste NICHT gedrückt ist, und
-   betätige die   j   Taste genügend Male, um den Cursor nach unten
-   zu bewegen, so dass Lektion 1.1 den Bildschirm vollkommen ausfüllt.
-
-
+   betätige die   j   Taste genügend Male, um den Cursor nach unten zu bewegen,
+   so dass Lektion 1.1 den Bildschirm vollkommen ausfüllt.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			Lektion 1.1: BEWEGEN DES CURSORS
 

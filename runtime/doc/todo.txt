@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Mar 18
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Mar 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,17 +30,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Fix for executable new file also in 6.3.
-
-Installing manual pages: FreeBSD includes encoding "it.ISO8859-1".  Install in
-"it" and "it.ISO8859-1"?
-Russian manual needs to be in UTF-8 for RedHat, KOI8-R for Gentoo.
-UTF-8 files from Ragosin (18 March).
-
-- Added "undercurl" highlight attribute.  Based on a patch from Marcin Dalecki.
-  Docs for "guisp=Red"
-  Added another byte for attributes, 200 types is not enough.
-
 Mac unicode patch (Da Woon Jung):
 - selecting proportional font breaks display
 - UTF-8 text causes display problems.  Font replacement causes this.
@@ -64,25 +53,20 @@ Awaiting response:
 
 PLANNED FOR VERSION 7.0:
 
--   Add SPELLCHECKER, with easy to add support for many languages.
-    - Highlighting: SpellBad, SpellRare, SpellDialect
-    - Need wordlists for many languages; "language pack"
+-   Add SPELLCHECKER, with support for many languages.
+    - Use "engspchk" from Charles Campbell for ideas.
+    - Only look in @Spell groups or when there isn't such a group.
+    - Don't use vim_iswordc_buf(), always use the same wordchar.
     - Commands required:
-	enable/disable spellchecking: 'spell' option (local to win)
-	set spellcheck language (allow English + other lang)
-	    :set langspell=en,du,pl
 	add word to private dict: wrong and OK (in popup menu for evim)
 	    :spell good <word>	    zg
 	    :spell wrong <word>	    zw
 	[s  move to previous spell error  [S also rare word
 	]s  move to next spell error      ]S also rare word
-    - "engspchk" from Charles Campbell is a good starting point.
-    - Do not use an external program like ispell or aspell: too slow and
-      doesn't work everywhere.
-    - Check spelling after syntax highlighting.  Also when there is no syntax
-      highlighting!
-    - Keep wordlist globally, load it only once and use it several times
-      later.  Sort of global syntax items.
+    - Update option window for 'spell' and 'spelllang'.
+    - Use an external program like ispell or aspell for suggestions to correct
+      the spelling.
+    - Need wordlists for many languages; "language pack"
     - Use wordlists from openoffice (myspell).  Work together with them to
       update the wordlist.  (Adri Verhoef, Aad Nales)
     - Support for approximate-regexps will help (agrep
@@ -96,6 +80,8 @@ PLANNED FOR VERSION 7.0:
     8   Add spell checking.  Use "ispell -a" somehow.
 	~/vim/patches/wm_vim-5_4d.zip  can be used as an example (includes
 	ispell inside Vim).  Gautam Iyer has an example with "aspell".
+    Patch from Marcin Dalecki, uses pipe to aspell.
+
 -   REFACTORING: The main() function is very long.  Move parts to separate
     functions, especially loops.  Ideas from Walter Briscoe (2003 Apr 3, 2004
     Feb 9).
@@ -219,6 +205,8 @@ PLANNED FOR VERSION 7.0:
     with \u, \U, etc.
 
 Adjust src/main.aap for installing manpages like in Makefile.
+
+Win32: Patch for Korean IME. (Yusung, 2005 March 21)
 
 Support ":set syntax=cpp.doxygen"?  Suggested patch by Michael Geddes (9 Aug
 2004).  Should also work for 'filetype'.
@@ -2247,6 +2235,9 @@ Command line completion:
 
 
 Command line history:
+9   Remember which command lines were actually typed and were not loaded from
+    viminfo.  When writing viminfo append only these lines, so that lines from
+    other Vim's are not overwritten.
 -   Add "KeyWasTyped" flag: It's reset before each command and set when a
     character from the keyboard is consumed. Value is used to decide to put a
     command line in history or not. Put line in history if it didn't
