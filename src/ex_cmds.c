@@ -726,13 +726,15 @@ do_bang(addr_count, eap, forceit, do_in, do_out)
 /*
  * do_filter: filter lines through a command given by the user
  *
- * We use temp files and the call_shell() routine here. This would normally
- * be done using pipes on a UNIX machine, but this is more portable to
- * non-unix machines. The call_shell() routine needs to be able
+ * We mostly use temp files and the call_shell() routine here. This would
+ * normally be done using pipes on a UNIX machine, but this is more portable
+ * to non-unix machines. The call_shell() routine needs to be able
  * to deal with redirection somehow, and should handle things like looking
  * at the PATH env. variable, and adding reasonable extensions to the
  * command name given by the user. All reasonable versions of call_shell()
  * do this.
+ * Alternatively, if on Unix and redirecting input or output, but not both,
+ * and the 'shelltemp' option isn't set, use pipes.
  * We use input redirection if do_in is TRUE.
  * We use output redirection if do_out is TRUE.
  */
@@ -752,6 +754,7 @@ do_filter(line1, line2, eap, cmd, do_in, do_out)
 #ifdef FEAT_AUTOCMD
     buf_T	*old_curbuf = curbuf;
 #endif
+    int		shell_flags = 0;
 
     if (*cmd == NUL)	    /* no filter command */
 	return;
@@ -772,27 +775,59 @@ do_filter(line1, line2, eap, cmd, do_in, do_out)
     invalidate_botline();
 
     /*
-     * 1. Form temp file names
-     * 2. Write the lines to a temp file
-     * 3. Run the filter command on the temp file
-     * 4. Read the output of the command into the buffer
-     * 5. Delete the original lines to be filtered
-     * 6. Remove the temp files
+     * When using temp files:
+     * 1. * Form temp file names
+     * 2. * Write the lines to a temp file
+     * 3.   Run the filter command on the temp file
+     * 4. * Read the output of the command into the buffer
+     * 5. * Delete the original lines to be filtered
+     * 6. * Remove the temp files
+     *
+     * When writing the input with a pipe or when catching the output with a
+     * pipe only need to do 3.
      */
 
-    if ((do_in && (itmp = vim_tempname('i')) == NULL)
-	    || (do_out && (otmp = vim_tempname('o')) == NULL))
+    if (do_out)
+	shell_flags |= SHELL_DOOUT;
+
+#if !defined(USE_SYSTEM) && defined(UNIX)
+    if (!do_in && do_out && !p_stmp)
     {
-	EMSG(_(e_notmp));
-	goto filterend;
+	/* Use a pipe to fetch stdout of the command, do not use a temp file. */
+	shell_flags |= SHELL_READ;
+	curwin->w_cursor.lnum = line2;
     }
+    else if (do_in && !do_out && !p_stmp)
+    {
+	/* Use a pipe to write stdin of the command, do not use a temp file. */
+	shell_flags |= SHELL_WRITE;
+	curbuf->b_op_start.lnum = line1;
+	curbuf->b_op_end.lnum = line2;
+    }
+    else if (do_in && do_out && !p_stmp)
+    {
+	/* Use a pipe to write stdin and fetch stdout of the command, do not
+	 * use a temp file. */
+	shell_flags |= SHELL_READ|SHELL_WRITE;
+	curbuf->b_op_start.lnum = line1;
+	curbuf->b_op_end.lnum = line2;
+	curwin->w_cursor.lnum = line2;
+    }
+    else
+#endif
+	if ((do_in && (itmp = vim_tempname('i')) == NULL)
+		|| (do_out && (otmp = vim_tempname('o')) == NULL))
+	{
+	    EMSG(_(e_notmp));
+	    goto filterend;
+	}
 
 /*
  * The writing and reading of temp files will not be shown.
  * Vi also doesn't do this and the messages are not very informative.
  */
     ++no_wait_return;		/* don't call wait_return() while busy */
-    if (do_in && buf_write(curbuf, itmp, NULL, line1, line2, eap,
+    if (itmp != NULL && buf_write(curbuf, itmp, NULL, line1, line2, eap,
 					   FALSE, FALSE, FALSE, TRUE) == FAIL)
     {
 	msg_putchar('\n');		/* keep message from buf_write() */
@@ -828,6 +863,14 @@ do_filter(line1, line2, eap, cmd, do_in, do_out)
     if (!do_out || STRCMP(p_srr, ">") == 0 || !do_in)
 	redraw_later_clear();
 
+    if (do_out)
+    {
+	if (u_save((linenr_T)(line2), (linenr_T)(line2 + 1)) == FAIL)
+	    goto error;
+	redraw_curbuf_later(VALID);
+    }
+    read_linecount = curbuf->b_ml.ml_line_count;
+
     /*
      * When call_shell() fails wait_return() is called to give the user a
      * chance to read the error messages. Otherwise errors are ignored, so you
@@ -837,8 +880,7 @@ do_filter(line1, line2, eap, cmd, do_in, do_out)
      * like ":r !cat" hangs.
      * Pass on the SHELL_DOOUT flag when the output is being redirected.
      */
-    if (call_shell(cmd_buf, SHELL_FILTER | SHELL_COOKED
-						| (do_out ? SHELL_DOOUT : 0)))
+    if (call_shell(cmd_buf, SHELL_FILTER | SHELL_COOKED | shell_flags))
     {
 	redraw_later_clear();
 	wait_return(FALSE);
@@ -856,32 +898,39 @@ do_filter(line1, line2, eap, cmd, do_in, do_out)
 
     if (do_out)
     {
-	if (u_save((linenr_T)(line2), (linenr_T)(line2 + 1)) == FAIL)
-	    goto error;
-	redraw_curbuf_later(VALID);
-	read_linecount = curbuf->b_ml.ml_line_count;
-	if (readfile(otmp, NULL, line2, (linenr_T)0, (linenr_T)MAXLNUM, eap,
-							 READ_FILTER) == FAIL)
+	if (otmp != NULL)
 	{
-#if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
-	    if (!aborting())
-#endif
+	    if (readfile(otmp, NULL, line2, (linenr_T)0, (linenr_T)MAXLNUM,
+						    eap, READ_FILTER) == FAIL)
 	    {
-		msg_putchar('\n');
-		EMSG2(_(e_notread), otmp);
-	    }
-	    goto error;
-	}
-#ifdef FEAT_AUTOCMD
-	if (curbuf != old_curbuf)
-	    goto filterend;
+#if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
+		if (!aborting())
 #endif
+		{
+		    msg_putchar('\n');
+		    EMSG2(_(e_notread), otmp);
+		}
+		goto error;
+	    }
+#ifdef FEAT_AUTOCMD
+	    if (curbuf != old_curbuf)
+		goto filterend;
+#endif
+	}
+
+	read_linecount = curbuf->b_ml.ml_line_count - read_linecount;
+
+	if (shell_flags & SHELL_READ)
+	{
+	    curbuf->b_op_start.lnum = line2 + 1;
+	    curbuf->b_op_end.lnum = curwin->w_cursor.lnum;
+	    appended_lines_mark(line2, read_linecount);
+	}
 
 	if (do_in)
 	{
 	    if (cmdmod.keepmarks || vim_strchr(p_cpo, CPO_REMMARK) == NULL)
 	    {
-		read_linecount = curbuf->b_ml.ml_line_count - read_linecount;
 		if (read_linecount >= linecount)
 		    /* move all marks from old lines to new lines */
 		    mark_adjust(line1, line2, linecount, 0L);
@@ -914,8 +963,8 @@ do_filter(line1, line2, eap, cmd, do_in, do_out)
 	    /*
 	     * Put cursor on last new line for ":r !cmd".
 	     */
-	    curwin->w_cursor.lnum = curbuf->b_op_end.lnum;
 	    linecount = curbuf->b_op_end.lnum - curbuf->b_op_start.lnum + 1;
+	    curwin->w_cursor.lnum = curbuf->b_op_end.lnum;
 	}
 
 	beginline(BL_WHITE | BL_FIX);	    /* cursor on first non-blank */
@@ -1167,9 +1216,13 @@ make_filter_cmd(cmd, itmp, otmp)
 
 #if (defined(UNIX) && !defined(ARCHIE)) || defined(OS2)
     /*
-     * put braces around the command (for concatenated commands)
+     * Put braces around the command (for concatenated commands) when
+     * redirecting input and/or output.
      */
-    sprintf((char *)buf, "(%s)", (char *)cmd);
+    if (itmp != NULL || otmp != NULL)
+	sprintf((char *)buf, "(%s)", (char *)cmd);
+    else
+	STRCPY(buf, cmd);
     if (itmp != NULL)
     {
 	STRCAT(buf, " < ");
@@ -1958,9 +2011,10 @@ do_fixdel(eap)
 }
 
     void
-print_line_no_prefix(lnum, use_number)
+print_line_no_prefix(lnum, use_number, list)
     linenr_T	lnum;
     int		use_number;
+    int		list;
 {
     char_u	numbuf[30];
 
@@ -1969,28 +2023,31 @@ print_line_no_prefix(lnum, use_number)
 	sprintf((char *)numbuf, "%*ld ", number_width(curwin), (long)lnum);
 	msg_puts_attr(numbuf, hl_attr(HLF_N));	/* Highlight line nrs */
     }
-    msg_prt_line(ml_get(lnum));
+    msg_prt_line(ml_get(lnum), list);
 }
 
 /*
  * Print a text line.  Also in silent mode ("ex -s").
  */
     void
-print_line(lnum, use_number)
+print_line(lnum, use_number, list)
     linenr_T	lnum;
     int		use_number;
+    int		list;
 {
     int		save_silent = silent_mode;
 
-    silent_mode = FALSE;
     msg_start();
-    print_line_no_prefix(lnum, use_number);
+    silent_mode = FALSE;
+    info_message = TRUE;	/* use mch_msg(), not mch_errmsg() */
+    print_line_no_prefix(lnum, use_number, list);
     if (save_silent)
     {
 	msg_putchar('\n');
 	cursor_on();		/* msg_start() switches it off */
 	out_flush();
 	silent_mode = save_silent;
+	info_message = FALSE;
     }
 }
 
@@ -3240,6 +3297,8 @@ delbuf_msg(name)
 }
 #endif
 
+static int append_indent = 0;	    /* autoindent for first line */
+
 /*
  * ":insert" and ":append", also used by ":change"
  */
@@ -3254,6 +3313,14 @@ ex_append(eap)
     char_u	*p;
     int		vcol;
     int		empty = (curbuf->b_ml.ml_flags & ML_EMPTY);
+
+    /* the ! flag toggles autoindent */
+    if (eap->forceit)
+	curbuf->b_p_ai = !curbuf->b_p_ai;
+
+    /* First autoindent comes from the line we start on */
+    if (eap->cmdidx != CMD_change && curbuf->b_p_ai && lnum > 0)
+	append_indent = get_indent_lnum(lnum);
 
     if (eap->cmdidx != CMD_append)
 	--lnum;
@@ -3270,14 +3337,31 @@ ex_append(eap)
     {
 	msg_scroll = TRUE;
 	need_wait_return = FALSE;
-	if (curbuf->b_p_ai && lnum > 0)
-	    indent = get_indent_lnum(lnum);
+	if (curbuf->b_p_ai)
+	{
+	    if (append_indent >= 0)
+	    {
+		indent = append_indent;
+		append_indent = -1;
+	    }
+	    else if (lnum > 0)
+		indent = get_indent_lnum(lnum);
+	}
+	ex_keep_indent = FALSE;
 	if (eap->getline == NULL)
-	    theline = getcmdline(
-#ifdef FEAT_EVAL
-		    eap->cstack->cs_looplevel > 0 ? -1 :
-#endif
-		    NUL, 0L, indent);
+	{
+	    /* No getline() function, use the lines that follow. This ends
+	     * when there is no more. */
+	    if (eap->nextcmd == NULL || *eap->nextcmd == NUL)
+		break;
+	    p = vim_strchr(eap->nextcmd, NL);
+	    if (p == NULL)
+		p = eap->nextcmd + STRLEN(eap->nextcmd);
+	    theline = vim_strnsave(eap->nextcmd, (int)(p - eap->nextcmd));
+	    if (*p != NUL)
+		++p;
+	    eap->nextcmd = p;
+	}
 	else
 	    theline = eap->getline(
 #ifdef FEAT_EVAL
@@ -3287,6 +3371,10 @@ ex_append(eap)
 	lines_left = Rows - 1;
 	if (theline == NULL)
 	    break;
+
+	/* Using ^ CTRL-D in getexmodeline() makes us repeat the indent. */
+	if (ex_keep_indent)
+	    append_indent = indent;
 
 	/* Look for the "." after automatic indent. */
 	vcol = 0;
@@ -3306,13 +3394,16 @@ ex_append(eap)
 	    break;
 	}
 
+	/* don't use autoindent if nothing was typed. */
+	if (p[0] == NUL)
+	    theline[0] = NUL;
+
 	did_undo = TRUE;
 	ml_append(lnum, theline, (colnr_T)0, FALSE);
 	appended_lines_mark(lnum, 1L);
 
 	vim_free(theline);
 	++lnum;
-	msg_didout = TRUE;	/* also scroll for empty line */
 
 	if (empty)
 	{
@@ -3321,6 +3412,9 @@ ex_append(eap)
 	}
     }
     State = NORMAL;
+
+    if (eap->forceit)
+	curbuf->b_p_ai = !curbuf->b_p_ai;
 
     /* "start" is set to eap->line2+1 unless that position is invalid (when
      * eap->line2 pointed to the end of the buffer and nothig was appended)
@@ -3354,6 +3448,10 @@ ex_change(eap)
 	    && u_save(eap->line1 - 1, eap->line2 + 1) == FAIL)
 	return;
 
+    /* the ! flag toggles autoindent */
+    if (eap->forceit ? !curbuf->b_p_ai : curbuf->b_p_ai)
+	append_indent = get_indent_lnum(eap->line1);
+
     for (lnum = eap->line2; lnum >= eap->line1; --lnum)
     {
 	if (curbuf->b_ml.ml_flags & ML_EMPTY)	    /* nothing to delete */
@@ -3374,7 +3472,6 @@ ex_z(eap)
     char_u	*x;
     int		bigness;
     char_u	*kind;
-    int		numbered = FALSE;
     int		minus = 0;
     linenr_T	start, end, curs, i;
     int		j;
@@ -3392,12 +3489,6 @@ ex_z(eap)
 	bigness = 1;
 
     x = eap->arg;
-    if (*x == '#')
-    {
-	numbered = TRUE;
-	++x;
-    }
-
     kind = x;
     if (*kind == '-' || *kind == '+' || *kind == '='
 					      || *kind == '^' || *kind == '.')
@@ -3416,6 +3507,8 @@ ex_z(eap)
 	{
 	    bigness = atoi((char *)x);
 	    p_window = bigness;
+	    if (*kind == '=')
+		bigness += 2;
 	}
     }
 
@@ -3454,8 +3547,10 @@ ex_z(eap)
 	default:  /* '+' */
 	    start = lnum;
 	    if (*kind == '+')
-		start += bigness * (x - kind - 1);
-	    end = start + bigness;
+		start += bigness * (x - kind - 1) + 1;
+	    else if (eap->addr_count == 0)
+		++start;
+	    end = start + bigness - 1;
 	    curs = end;
 	    break;
     }
@@ -3479,7 +3574,7 @@ ex_z(eap)
 		msg_putchar('-');
 	}
 
-	print_line(i, numbered);
+	print_line(i, eap->flags & EXFLAG_NR, eap->flags & EXFLAG_LIST);
 
 	if (minus && i == lnum)
 	{
@@ -3568,6 +3663,8 @@ do_sub(eap)
     static int	do_ask = FALSE;		/* ask for confirmation */
     static int	do_error = TRUE;	/* if false, ignore errors */
     static int	do_print = FALSE;	/* print last line with subs. */
+    static int	do_list = FALSE;	/* list last line with subs. */
+    static int	do_number = FALSE;	/* list last line with line nr*/
     static int	do_ic = 0;		/* ignore case flag */
     char_u	*pat = NULL, *sub = NULL;	/* init for GCC */
     int		delimiter;
@@ -3663,8 +3760,22 @@ do_sub(eap)
 
 	if (!eap->skip)
 	{
-	    vim_free(old_sub);
-	    old_sub = vim_strsave(sub);
+	    /* In POSIX vi ":s/pat/%/" uses the previous subst. string. */
+	    if (STRCMP(sub, "%") == 0
+				 && vim_strchr(p_cpo, CPO_SUBPERCENT) != NULL)
+	    {
+		if (old_sub == NULL)	/* there is no previous command */
+		{
+		    EMSG(_(e_nopresub));
+		    return;
+		}
+		sub = old_sub;
+	    }
+	    else
+	    {
+		vim_free(old_sub);
+		old_sub = vim_strsave(sub);
+	    }
 	}
     }
     else if (!eap->skip)	/* use previous pattern and substitution */
@@ -3717,6 +3828,16 @@ do_sub(eap)
 	    which_pat = RE_LAST;
 	else if (*cmd == 'p')
 	    do_print = TRUE;
+	else if (*cmd == '#')
+	{
+	    do_print = TRUE;
+	    do_number = TRUE;
+	}
+	else if (*cmd == 'l')
+	{
+	    do_print = TRUE;
+	    do_list = TRUE;
+	}
 	else if (*cmd == 'i')	    /* ignore case */
 	    do_ic = 'i';
 	else if (*cmd == 'I')	    /* don't ignore case */
@@ -3932,58 +4053,86 @@ do_sub(eap)
 		     */
 		    while (do_ask)
 		    {
+			if (exmode_active)
+			{
+			    char_u	*resp;
+			    colnr_T	sc, ec;
+
+			    print_line_no_prefix(lnum, FALSE, FALSE);
+
+			    getvcol(curwin, &curwin->w_cursor, &sc, NULL, NULL);
+			    curwin->w_cursor.col = regmatch.endpos[0].col - 1;
+			    getvcol(curwin, &curwin->w_cursor, NULL, NULL, &ec);
+			    msg_start();
+			    for (i = 0; i < sc; ++i)
+				msg_putchar(' ');
+			    for ( ; i <= ec; ++i)
+				msg_putchar('^');
+
+			    resp = getexmodeline('?', NULL, 0);
+			    if (resp != NULL)
+			    {
+				i = *resp;
+				vim_free(resp);
+			    }
+			}
+			else
+			{
 #ifdef FEAT_FOLDING
-			int save_p_fen = curwin->w_p_fen;
+			    int save_p_fen = curwin->w_p_fen;
 
-			curwin->w_p_fen = FALSE;
+			    curwin->w_p_fen = FALSE;
 #endif
-			/* Invert the matched string.
-			 * Remove the inversion afterwards. */
-			temp = RedrawingDisabled;
-			RedrawingDisabled = 0;
+			    /* Invert the matched string.
+			     * Remove the inversion afterwards. */
+			    temp = RedrawingDisabled;
+			    RedrawingDisabled = 0;
 
-			search_match_lines = regmatch.endpos[0].lnum;
-			search_match_endcol = regmatch.endpos[0].col;
-			highlight_match = TRUE;
+			    search_match_lines = regmatch.endpos[0].lnum;
+			    search_match_endcol = regmatch.endpos[0].col;
+			    highlight_match = TRUE;
 
-			update_topline();
-			validate_cursor();
-			update_screen(NOT_VALID);
-			highlight_match = FALSE;
-			redraw_later(NOT_VALID);
+			    update_topline();
+			    validate_cursor();
+			    update_screen(NOT_VALID);
+			    highlight_match = FALSE;
+			    redraw_later(NOT_VALID);
 
 #ifdef FEAT_FOLDING
-			curwin->w_p_fen = save_p_fen;
+			    curwin->w_p_fen = save_p_fen;
 #endif
-			if (msg_row == Rows - 1)
-			    msg_didout = FALSE;		/* avoid a scroll-up */
-			msg_starthere();
-			i = msg_scroll;
-			msg_scroll = 0;		/* truncate msg when needed */
-			msg_no_more = TRUE;
-			/* write message same highlighting as for wait_return */
-			smsg_attr(hl_attr(HLF_R),
-			    (char_u *)_("replace with %s (y/n/a/q/l/^E/^Y)?"),
-				sub);
-			msg_no_more = FALSE;
-			msg_scroll = i;
-			showruler(TRUE);
-			windgoto(msg_row, msg_col);
-			RedrawingDisabled = temp;
+			    if (msg_row == Rows - 1)
+				msg_didout = FALSE;	/* avoid a scroll-up */
+			    msg_starthere();
+			    i = msg_scroll;
+			    msg_scroll = 0;		/* truncate msg when
+							   needed */
+			    msg_no_more = TRUE;
+			    /* write message same highlighting as for
+			     * wait_return */
+			    smsg_attr(hl_attr(HLF_R),
+				    (char_u *)_("replace with %s (y/n/a/q/l/^E/^Y)?"), sub);
+			    msg_no_more = FALSE;
+			    msg_scroll = i;
+			    showruler(TRUE);
+			    windgoto(msg_row, msg_col);
+			    RedrawingDisabled = temp;
 
 #ifdef USE_ON_FLY_SCROLL
-			dont_scroll = FALSE;	/* allow scrolling here */
+			    dont_scroll = FALSE; /* allow scrolling here */
 #endif
-			++no_mapping;		/* don't map this key */
-			++allow_keys;		/* allow special keys */
-			i = safe_vgetc();
-			--allow_keys;
-			--no_mapping;
+			    ++no_mapping;	/* don't map this key */
+			    ++allow_keys;	/* allow special keys */
+			    i = safe_vgetc();
+			    --allow_keys;
+			    --no_mapping;
 
-			/* clear the question */
-			msg_didout = FALSE;	/* don't scroll up */
-			msg_col = 0;
-			gotocmdline(TRUE);
+			    /* clear the question */
+			    msg_didout = FALSE;	/* don't scroll up */
+			    msg_col = 0;
+			    gotocmdline(TRUE);
+			}
+
 			need_wait_return = FALSE; /* no hit-return prompt */
 			if (i == 'q' || i == ESC || i == Ctrl_C
 #ifdef UNIX
@@ -4328,7 +4477,7 @@ outofmem:
 	else
 	    global_need_beginline = TRUE;
 	if (do_print)
-	    print_line(curwin->w_cursor.lnum, FALSE);
+	    print_line(curwin->w_cursor.lnum, do_number, do_list);
     }
     else if (!global_busy)
     {

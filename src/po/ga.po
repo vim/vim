@@ -1,0 +1,7170 @@
+# Irish translations for vim.
+# This file is distributed under the same license as the vim package.
+# Kevin Patrick Scannell <scannell@SLU.EDU>, 2005.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: vim 7.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2005-02-13 21:51-0600\n"
+"PO-Revision-Date: 2005-02-14 10:35-0600\n"
+"Last-Translator: Kevin Patrick Scannell <scannell@SLU.EDU>\n"
+"Language-Team: Irish <ga@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=ISO-8859-1\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: buffer.c:102
+msgid "E82: Cannot allocate any buffer, exiting..."
+msgstr "E82: Ní féidir maolán a riar, ag scor..."
+
+#: buffer.c:105
+msgid "E83: Cannot allocate buffer, using other one..."
+msgstr "E83: Ní féidir maolán a riar, ag úsáid cinn eile..."
+
+#: buffer.c:857
+#, c-format
+msgid "E515: No buffers were unloaded"
+msgstr "E515: Ní raibh aon mhaolán díluchtaithe"
+
+#: buffer.c:859
+#, c-format
+msgid "E516: No buffers were deleted"
+msgstr "E516: Ní raibh aon mhaolán scriosta"
+
+#: buffer.c:861
+#, c-format
+msgid "E517: No buffers were wiped out"
+msgstr "E517: Ní raibh aon mhaolán bánaithe"
+
+#: buffer.c:869
+msgid "1 buffer unloaded"
+msgstr "Bhí 1 maolán díluchtaithe"
+
+#: buffer.c:871
+#, c-format
+msgid "%d buffers unloaded"
+msgstr "%d maolán folmhaithe"
+
+#: buffer.c:876
+msgid "1 buffer deleted"
+msgstr "Bhí 1 maolán scriosta"
+
+#: buffer.c:878
+#, c-format
+msgid "%d buffers deleted"
+msgstr "%d maolán scriosta"
+
+#: buffer.c:883
+msgid "1 buffer wiped out"
+msgstr "Bhí 1 maolán bánaithe"
+
+#: buffer.c:885
+#, c-format
+msgid "%d buffers wiped out"
+msgstr "%d maolán bánaithe"
+
+#: buffer.c:946
+msgid "E84: No modified buffer found"
+msgstr "E84: Níor aimsíodh maolán athraithe"
+
+#. back where we started, didn't find anything.
+#: buffer.c:985
+msgid "E85: There is no listed buffer"
+msgstr "E85: Níl aon mhaolán liostaithe ann"
+
+#: buffer.c:997
+#, c-format
+msgid "E86: Buffer %ld does not exist"
+msgstr "E86: Níl a leithéid de mhaolán %ld"
+
+#: buffer.c:1000
+msgid "E87: Cannot go beyond last buffer"
+msgstr "E87: Ní féidir a dhul thar an maolán deireanach"
+
+#: buffer.c:1002
+msgid "E88: Cannot go before first buffer"
+msgstr "E88: Ní féidir a dhul roimh an chéad mhaolán"
+
+#: buffer.c:1044
+#, c-format
+msgid "E89: No write since last change for buffer %ld (add ! to override)"
+msgstr ""
+"E89: Tá maolán %ld athraithe ach nach bhfuil sábháilte ó shin (cuir ! leis "
+"an ordú chun sárú)"
+
+#: buffer.c:1061
+msgid "E90: Cannot unload last buffer"
+msgstr "E90: Ní féidir an maolán deireanach a dhíluchtú"
+
+#: buffer.c:1611
+msgid "W14: Warning: List of file names overflow"
+msgstr "W14: Rabhadh: Róshreabhadh liosta ainmneacha comhaid"
+
+#: buffer.c:1795
+#, c-format
+msgid "E92: Buffer %ld not found"
+msgstr "E92: Maolán %ld gan aimsiú"
+
+#: buffer.c:2058
+#, c-format
+msgid "E93: More than one match for %s"
+msgstr "E93: Níos mó ná teaghrán amháin comhoiriúnaithe le %s"
+
+#: buffer.c:2060
+#, c-format
+msgid "E94: No matching buffer for %s"
+msgstr "E94: Níl aon mhaolán comhoiriúnaithe le %s"
+
+#: buffer.c:2455
+#, c-format
+msgid "line %ld"
+msgstr "líne %ld:"
+
+#: buffer.c:2543
+msgid "E95: Buffer with this name already exists"
+msgstr "E95: Tá maolán ann leis an ainm seo cheana"
+
+#: buffer.c:2860
+msgid " [Modified]"
+msgstr " [Athraithe]"
+
+#: buffer.c:2865
+msgid "[Not edited]"
+msgstr "[Gan eagrú]"
+
+#: buffer.c:2870
+msgid "[New file]"
+msgstr "[Comhad nua]"
+
+#: buffer.c:2871
+msgid "[Read errors]"
+msgstr "[Earráidí léimh]"
+
+#: buffer.c:2873 fileio.c:2099 netbeans.c:3416
+msgid "[readonly]"
+msgstr "[léamh amháin]"
+
+#: buffer.c:2894
+#, c-format
+msgid "1 line --%d%%--"
+msgstr "1 líne --%d%%--"
+
+#: buffer.c:2896
+#, c-format
+msgid "%ld lines --%d%%--"
+msgstr "%ld líne --%d%%--"
+
+#: buffer.c:2903
+#, c-format
+msgid "line %ld of %ld --%d%%-- col "
+msgstr "líne %ld de %ld --%d%%-- col "
+
+#: buffer.c:3011 buffer.c:4732 memline.c:1657
+msgid "[No Name]"
+msgstr "[Gan Ainm]"
+
+#. must be a help buffer
+#: buffer.c:3050
+msgid "help"
+msgstr "cabhair"
+
+#: buffer.c:3601 screen.c:5071
+msgid "[help]"
+msgstr "[cabhair]"
+
+#: buffer.c:3633 screen.c:5077
+msgid "[Preview]"
+msgstr "[Réamhamharc]"
+
+#: buffer.c:3913
+msgid "All"
+msgstr "Uile"
+
+#: buffer.c:3913
+msgid "Bot"
+msgstr "Bun"
+
+#: buffer.c:3915
+msgid "Top"
+msgstr "Barr"
+
+#: buffer.c:4684
+#, c-format
+msgid ""
+"\n"
+"# Buffer list:\n"
+msgstr ""
+"\n"
+"# Liosta maoláin:\n"
+
+#: buffer.c:4719
+msgid "[Error List]"
+msgstr "[Liosta Earráidí]"
+
+#: buffer.c:5045
+msgid ""
+"\n"
+"--- Signs ---"
+msgstr ""
+"\n"
+"--- Comharthaí ---"
+
+#: buffer.c:5064
+#, c-format
+msgid "Signs for %s:"
+msgstr "Comharthaí do %s:"
+
+#: buffer.c:5070
+#, c-format
+msgid "    line=%ld  id=%d  name=%s"
+msgstr "    líne=%ld  id=%d  ainm=%s"
+
+#: diff.c:163
+#, c-format
+msgid "E96: Can not diff more than %ld buffers"
+msgstr "E96: Ní féidir diff a dhéanamh ar níos mó ná %ld maolán"
+
+#: diff.c:737
+msgid "E97: Cannot create diffs"
+msgstr "E97: Ní féidir diffeanna a chruthú"
+
+#: diff.c:843
+msgid "Patch file"
+msgstr "Comhad paiste"
+
+#: diff.c:1146
+msgid "E98: Cannot read diff output"
+msgstr "E98: Ní féidir an t-aschur diff a léamh"
+
+#: diff.c:1896
+msgid "E99: Current buffer is not in diff mode"
+msgstr "E99: Níl an maolán reatha sa mhód diff"
+
+#: diff.c:1908
+msgid "E100: No other buffer in diff mode"
+msgstr "E100: Níl aon mhaolán eile sa mhód diff"
+
+#: diff.c:1916
+msgid "E101: More than two buffers in diff mode, don't know which one to use"
+msgstr ""
+"E101: Tá níos mó ná dhá mhaolán sa mhód diff, níl fhios agam cé acu ba chóir "
+"a úsáid"
+
+#: diff.c:1939
+#, c-format
+msgid "E102: Can't find buffer \"%s\""
+msgstr "E102: Tá maolán \"%s\" gan aimsiú"
+
+#: diff.c:1945
+#, c-format
+msgid "E103: Buffer \"%s\" is not in diff mode"
+msgstr "E103: Níl maolán \"%s\" i mód diff"
+
+#: digraph.c:2200
+msgid "E104: Escape not allowed in digraph"
+msgstr "E104: Ní cheadaítear carachtair éalúcháin i ndéghraf"
+
+#: digraph.c:2384
+msgid "E544: Keymap file not found"
+msgstr "E544: Comhad eochairmhapála gan aimsiú"
+
+#: digraph.c:2411
+msgid "E105: Using :loadkeymap not in a sourced file"
+msgstr "E105: Ag úsáid :loadkeymap ach ní comhad foinsithe é seo"
+
+#: edit.c:41
+msgid " Keyword completion (^N^P)"
+msgstr " Comhlánú d'eochairfhocail (^N^P)"
+
+#. ctrl_x_mode == 0, ^P/^N compl.
+#: edit.c:42
+msgid " ^X mode (^E^Y^L^]^F^I^K^D^U^V^N^P)"
+msgstr " mód ^X (^E^Y^L^]^F^I^K^D^U^V^N^P)"
+
+#. Scroll has it's own msgs, in it's place there is the msg for local
+#. * ctrl_x_mode = 0 (eg continue_status & CONT_LOCAL)  -- Acevedo
+#: edit.c:45
+msgid " Keyword Local completion (^N^P)"
+msgstr " Comhlánú eochairfhocail logánta (^N^P)"
+
+#: edit.c:46
+msgid " Whole line completion (^L^N^P)"
+msgstr " Comhlánú Línte Ina Iomlán (^L^N^P)"
+
+#: edit.c:47
+msgid " File name completion (^F^N^P)"
+msgstr " Comhlánú de na hainmneacha comhaid (^F^N^P)"
+
+#: edit.c:48
+msgid " Tag completion (^]^N^P)"
+msgstr " Comhlánú clibeanna (^]/^N/^P)"
+
+#: edit.c:49
+msgid " Path pattern completion (^N^P)"
+msgstr " Comhlánú Conaire (^N^P)"
+
+#: edit.c:50
+msgid " Definition completion (^D^N^P)"
+msgstr " Comhlánú de na sainmhínithe (^D^N^P)"
+
+#: edit.c:52
+msgid " Dictionary completion (^K^N^P)"
+msgstr " Comhlánú foclóra (^K^N^P)"
+
+#: edit.c:53
+msgid " Thesaurus completion (^T^N^P)"
+msgstr " Comhlánú teasárais (^T^N^P)"
+
+#: edit.c:54
+msgid " Command-line completion (^V^N^P)"
+msgstr " Comhlánú den líne ordaithe (^V^N^P)"
+
+#: edit.c:55
+msgid " User defined completion (^U^N^P)"
+msgstr " Comhlánú saincheaptha (^U^N^P)"
+
+#: edit.c:58
+msgid "Hit end of paragraph"
+msgstr "Sroicheadh críoch an pharagraif"
+
+#: edit.c:994
+msgid "'thesaurus' option is empty"
+msgstr "tá an rogha 'thesaurus' folamh"
+
+#: edit.c:1204
+msgid "'dictionary' option is empty"
+msgstr "tá an rogha 'dictionary' folamh"
+
+#: edit.c:2204
+#, c-format
+msgid "Scanning dictionary: %s"
+msgstr "Foclóir á scanadh: %s"
+
+#: edit.c:2410
+msgid " (insert) Scroll (^E/^Y)"
+msgstr " (ionsáigh) Scrollaigh (^E/^Y)"
+
+#: edit.c:2412
+msgid " (replace) Scroll (^E/^Y)"
+msgstr " (ionadaigh) Scrollaigh (^E/^Y)"
+
+#: edit.c:2813
+#, c-format
+msgid "Scanning: %s"
+msgstr "%s á scanadh"
+
+#: edit.c:2848
+#, c-format
+msgid "Scanning tags."
+msgstr "Clibeanna á scanadh."
+
+#: edit.c:3549
+msgid " Adding"
+msgstr " Méadú"
+
+#. showmode might reset the internal line pointers, so it must
+#. * be called before line = ml_get(), or when this address is no
+#. * longer needed.  -- Acevedo.
+#: edit.c:3598
+msgid "-- Searching..."
+msgstr "-- Ag Cuardach..."
+
+#: edit.c:3654
+msgid "Back at original"
+msgstr "Ar ais ag an mbunáit"
+
+#: edit.c:3659
+msgid "Word from other line"
+msgstr "Focal as líne eile"
+
+#: edit.c:3664
+msgid "The only match"
+msgstr "An t-aon teaghrán amháin comhoiriúnaithe"
+
+#: edit.c:3723
+#, c-format
+msgid "match %d of %d"
+msgstr "comhoiriúnú %d as %d"
+
+#: edit.c:3726
+#, c-format
+msgid "match %d"
+msgstr "comhoiriúnú %d"
+
+#: eval.c:93
+msgid "E18: Unexpected characters in :let"
+msgstr "E18: Carachtair gan choinne i :let"
+
+#: eval.c:94
+#, c-format
+msgid "E684: list index out of range: %ld"
+msgstr "E684: innéacs liosta as raon: %ld"
+
+#: eval.c:95
+#, c-format
+msgid "E121: Undefined variable: %s"
+msgstr "E121: Athróg gan sainmhíniú: %s"
+
+#: eval.c:96
+msgid "E111: Missing ']'"
+msgstr "E111: `]' ar iarraidh"
+
+#: eval.c:97
+#, c-format
+msgid "E686: Argument of %s must be a List"
+msgstr "E686: Ní foláir argóint de %s a bheith Liosta"
+
+#: eval.c:98
+#, c-format
+msgid "E712: Argument of %s must be a List or Dictionaary"
+msgstr "E712: Ní foláir argóint de %s a bheith Liosta nó Foclóir"
+
+#: eval.c:99
+msgid "E713: Cannot use empty key for Dictionary"
+msgstr "E713: Ní féidir eochair fholamh a úsáid le Foclóir"
+
+#: eval.c:100
+msgid "E714: List required"
+msgstr "E714: Tá gá le liosta"
+
+#: eval.c:101
+msgid "E715: Dictionary required"
+msgstr "E715: Tá gá le foclóir"
+
+#: eval.c:102
+#, c-format
+msgid "E118: Too many arguments for function: %s"
+msgstr "E118: An iomarca argóintí d'fheidhm %s"
+
+#: eval.c:103
+#, c-format
+msgid "E716: Key not present in Dictionary: %s"
+msgstr "E716: Níl an eochair seo san Fhoclóir: %s"
+
+#: eval.c:104
+#, c-format
+msgid "E122: Function %s already exists, add ! to replace it"
+msgstr "E122: Tá feidhm %s ann cheana, cuir ! leis an ordú chun é a asáitiú"
+
+#: eval.c:105
+msgid "E717: Dictionary entry already exists"
+msgstr "E717: Tá an iontráil foclóra seo ann cheana"
+
+#: eval.c:106
+msgid "E718: Funcref required"
+msgstr "E718: Tá gá le Funcref"
+
+#: eval.c:107
+msgid "E719: Cannot use [:] with a Dictionary"
+msgstr "E719: Ní féidir [:] a úsáid le foclóir"
+
+#: eval.c:108
+#, c-format
+msgid "E734: Wrong variable type for %s="
+msgstr "E734: Cineál mícheart athróige le haghaidh %s="
+
+#: eval.c:1209
+msgid "E687: Less targets than List items"
+msgstr "E687: Níos lú spriocanna ná míreanna Liosta"
+
+#: eval.c:1214
+msgid "E688: More targets than List items"
+msgstr "E688: Níos mó spriocanna ná míreanna Liosta"
+
+#: eval.c:1300
+msgid "Double ; in list of variables"
+msgstr "; dúblach i liosta na n-athróg"
+
+#: eval.c:1466
+#, c-format
+msgid "E738: Can't list variables for %s"
+msgstr "E738: Ní féidir athróga do %s a thaispeáint"
+
+#: eval.c:1801
+msgid "E689: Can only index a List or Dictionary"
+msgstr "E689: Is féidir Liosta nó Foclóir amháin a innéacsú"
+
+#: eval.c:1807
+msgid "E708: [:] must come last"
+msgstr "E708: caithfidh [:] a bheith ar deireadh"
+
+#: eval.c:1853
+msgid "E709: [:] requires a List value"
+msgstr "E709: ní foláir Liosta a thabhairt le [:]"
+
+#: eval.c:2089
+msgid "E710: List value has more items than target"
+msgstr "E710: Tá níos mó míreanna ag an Liosta ná an sprioc"
+
+#: eval.c:2093
+msgid "E711: List value has not enough items"
+msgstr "E711: Níl go leor míreanna ag an Liosta"
+
+#: eval.c:2287
+msgid "E690: Missing \"in\" after :for"
+msgstr "E690: \"in\" ar iarraidh i ndiaidh :for"
+
+#: eval.c:2502
+#, c-format
+msgid "E107: Missing braces: %s"
+msgstr "E107: Lúibíní slabhracha ar iarraidh: %s"
+
+#: eval.c:2728
+#, c-format
+msgid "E108: No such variable: \"%s\""
+msgstr "E108: Níl a leithéid d'athróg: \"%s\""
+
+#: eval.c:2815
+msgid "E743: variable nested too deep for (un)lock"
+msgstr "E743: athróg neadaithe ródhomhain chun í a (dí)ghlasáil"
+
+#: eval.c:3117
+msgid "E109: Missing ':' after '?'"
+msgstr "E109: ':' ar iarraidh i ndiaidh '?'"
+
+#: eval.c:3409
+msgid "E691: Can only compare List with List"
+msgstr "E691: Is féidir Liosta a chur i gcomparáid le Liosta eile amháin"
+
+#: eval.c:3411
+msgid "E692: Invalid operation for Lists"
+msgstr "E692: Oibríocht neamhbhailí ar Liostaí"
+
+#: eval.c:3438
+msgid "E735: Can only compare Dictionary with Dictionary"
+msgstr "E735: Is féidir Foclóir a chur i gcomparáid le Foclóir eile amháin"
+
+#: eval.c:3440
+msgid "E736: Invalid operation for Dictionary"
+msgstr "E736: Oibríocht neamhbhailí ar Fhoclóir"
+
+#: eval.c:3460
+msgid "E693: Can only compare Funcref with Funcref"
+msgstr "E693: Is féidir Funcref a chur i gcomparáid le Funcref eile amháin"
+
+#: eval.c:3462
+msgid "E694: Invalid operation for Funcrefs"
+msgstr "E694: Oibríocht neamhbhailí ar Funcref"
+
+#: eval.c:3867
+msgid "E110: Missing ')'"
+msgstr "E110: ')' ar iarraidh"
+
+#: eval.c:3974
+msgid "E695: Cannot index a Funcref"
+msgstr "E695: Ní féidir Funcref a innéacsú"
+
+#: eval.c:4213
+#, c-format
+msgid "E112: Option name missing: %s"
+msgstr "E112: Ainm rogha ar iarraidh: %s"
+
+#: eval.c:4231
+#, c-format
+msgid "E113: Unknown option: %s"
+msgstr "E113: Rogha anaithnid: %s"
+
+#: eval.c:4297
+#, c-format
+msgid "E114: Missing quote: %s"
+msgstr "E114: Comhartha athfhriotail ar iarraidh: %s"
+
+#: eval.c:4433
+#, c-format
+msgid "E115: Missing quote: %s"
+msgstr "E115: Comhartha athfhriotail ar iarraidh: %s"
+
+#: eval.c:4512
+#, c-format
+msgid "E696: Missing comma in List: %s"
+msgstr "E696: Camóg ar iarraidh i Liosta: %s"
+
+#: eval.c:4520
+#, c-format
+msgid "E697: Missing end of List ']': %s"
+msgstr "E697: ']' ar iarraidh ag deireadh liosta: %s"
+
+#: eval.c:5492
+#, c-format
+msgid "E720: Missing colon in Dictionary: %s"
+msgstr "E720: Idirstad ar iarraidh i bhFoclóir: %s"
+
+#: eval.c:5515
+msgid "E721: Duplicate key in Dictionary"
+msgstr "E721: Eochair dhúblach i bhFoclóir"
+
+#: eval.c:5535
+#, c-format
+msgid "E722: Missing comma in Dictionary: %s"
+msgstr "E722: Camóg ar iarraidh i bhFoclóir: %s"
+
+#: eval.c:5543
+#, c-format
+msgid "E723: Missing end of Dictionary '}': %s"
+msgstr "E723: '}' ar iarraidh ag deireadh foclóra: %s"
+
+#: eval.c:5579
+msgid "E724: variable nested too deep for displaying"
+msgstr "E724: athróg neadaithe ródhomhain chun í a thaispeáint"
+
+#: eval.c:6811
+msgid "E699: Too many arguments"
+msgstr "E699: An iomarca argóintí"
+
+#. * Yes this is ugly, I don't particularly like it either.  But doing it
+#. * this way has the compelling advantage that translations need not to
+#. * be touched at all.  See below what 'ok' and 'ync' are used for.
+#: eval.c:6966 gui.c:4390 gui_gtk.c:2137 os_mswin.c:602
+msgid "&Ok"
+msgstr "&Ok"
+
+#: eval.c:7542
+#, c-format
+msgid "E737: Key already exists: %s"
+msgstr "E737: Tá eochair ann cheana: %s"
+
+#: eval.c:8022
+#, c-format
+msgid "+-%s%3ld lines: "
+msgstr "+-%s%3ld líne: "
+
+#: eval.c:8111
+#, c-format
+msgid "E700: Unknown function: %s"
+msgstr "E700: Feidhm anaithnid: %s"
+
+#: eval.c:9643
+msgid ""
+"&OK\n"
+"&Cancel"
+msgstr ""
+"&OK\n"
+"&Cealaigh"
+
+#: eval.c:9682
+msgid "called inputrestore() more often than inputsave()"
+msgstr "Glaodh inputrestore() níos minice ná inputsave()"
+
+#: eval.c:9834
+msgid "E745: Range not allowed"
+msgstr "E745: Ní cheadaítear raon"
+
+#: eval.c:10037
+msgid "E701: Invalid type for len()"
+msgstr "E701: Cineál neamhbhailí le haghaidh len()"
+
+#: eval.c:10707
+msgid "E726: Stride is zero"
+msgstr "E726: Is nialas í an chéim"
+
+#: eval.c:10709
+msgid "E727: Start past end"
+msgstr "E727: Tosach thar dheireadh"
+
+#: eval.c:10774 eval.c:13278
+msgid "<empty>"
+msgstr "<folamh>"
+
+#: eval.c:10895
+msgid "E240: No connection to Vim server"
+msgstr "E240: Níl aon nasc le freastalaí Vim"
+
+#: eval.c:10941
+#, c-format
+msgid "E241: Unable to send to %s"
+msgstr "E241: Ní féidir aon rud a sheoladh chuig %s"
+
+#: eval.c:11073
+msgid "E277: Unable to read a server reply"
+msgstr "E277: Ní féidir freagra ón fhreastalaí a léamh"
+
+#: eval.c:11328
+msgid "E655: Too many symbolic links (cycle?)"
+msgstr "E655: An iomarca naisc shiombalacha (timthriall?)"
+
+#: eval.c:11752
+msgid "E258: Unable to send to client"
+msgstr "E258: Ní féidir aon rud a sheoladh chuig an chliant"
+
+#: eval.c:12159
+msgid "E702: Sort compare function failed"
+msgstr "E702: Theip ar fheidhm chomparáide le linn sórtála"
+
+#: eval.c:12278
+msgid "(Invalid)"
+msgstr "(Neamhbhailí)"
+
+#: eval.c:12694
+msgid "E677: Error writing temp file"
+msgstr "E677: Earráid agus comhad sealadach á scríobh"
+
+#: eval.c:14027
+msgid "E703: Using a Funcref as a number"
+msgstr "E703: Funcref á úsáid mar uimhir"
+
+#: eval.c:14035
+msgid "E745: Using a List as a number"
+msgstr "E745: Liosta á úsáid mar uimhir"
+
+#: eval.c:14038
+msgid "E728: Using a Dictionary as a number"
+msgstr "E728: Foclóir á úsáid mar uimhir"
+
+#: eval.c:14096
+msgid "E729: using Funcref as a String"
+msgstr "E729: Funcref á úsáid mar Theaghrán"
+
+#: eval.c:14099
+msgid "E730: using List as a String"
+msgstr "E730: Liosta á úsáid mar Theaghrán"
+
+#: eval.c:14102
+msgid "E731: using Dictionary as a String"
+msgstr "E731: Foclóir á úsáid mar Theaghrán"
+
+#: eval.c:14420
+#, c-format
+msgid "E704: Funcref variable name must start with a capital: %s"
+msgstr "E704: Ní foláir ceannlitir a bheith ar dtús ainm Funcref: %s"
+
+#: eval.c:14425
+#, c-format
+msgid "705: Variable name conflicts with existing function: %s"
+msgstr "705: Tagann ainm athróige salach ar fheidhm atá ann cheana: %s"
+
+#: eval.c:14434
+#, c-format
+msgid "E461: Illegal variable name: %s"
+msgstr "E461: Ainm athróige neamhcheadaithe: %s"
+
+#: eval.c:14451
+#, c-format
+msgid "E706: Variable type mismatch for: %s"
+msgstr "E706: Mímheaitseáil idir cineálacha athróige: %s"
+
+#: eval.c:14540
+#, c-format
+msgid "E741: Value is locked: %s"
+msgstr "E741: Tá an luach faoi ghlas: %s"
+
+#: eval.c:14541 eval.c:14547 os_mswin.c:2187
+msgid "Unknown"
+msgstr "Anaithnid"
+
+#: eval.c:14546
+#, c-format
+msgid "E742: Cannot change value of %s"
+msgstr "E742: Ní féidir an luach de %s a athrú"
+
+#: eval.c:14624
+msgid "E698: variable nested too deep for making a copy"
+msgstr "E698: athróg neadaithe ródhomhain chun í a chóipeáil"
+
+#: eval.c:15039
+#, c-format
+msgid "E124: Missing '(': %s"
+msgstr "E124: '(' ar iarraidh: %s"
+
+#: eval.c:15072
+#, c-format
+msgid "E125: Illegal argument: %s"
+msgstr "E125: Argóint neamhcheadaithe: %s"
+
+#: eval.c:15160
+msgid "E126: Missing :endfunction"
+msgstr "E126: :endfunction ar iarraidh"
+
+#: eval.c:15425
+msgid "E129: Function name required"
+msgstr "E129: Tá ainm feidhme riachtanach"
+
+#: eval.c:15510
+#, c-format
+msgid "E128: Function name must start with a capital or contain a colon: %s"
+msgstr ""
+"E128: Ní foláir ceannlitir a bheith ar dtús ainm feidhme, nó idirstad a "
+"bheith ann: %s"
+
+#: eval.c:15778
+#, c-format
+msgid "E130: Undefined function: %s"
+msgstr "E130: Feidhm gan sainmhíniú: %s"
+
+#: eval.c:15783
+#, c-format
+msgid "E131: Cannot delete function %s: It is in use"
+msgstr "E131: Ní féidir feidhm %s a scriosadh: Tá sé in úsáid faoi láthair"
+
+#: eval.c:15901
+msgid "E132: Function call depth is higher than 'maxfuncdepth'"
+msgstr "E132: Doimhneacht na nglaonna níos mó ná 'maxfuncdepth'"
+
+#. always scroll up, don't overwrite
+#: eval.c:16031
+#, c-format
+msgid "calling %s"
+msgstr "%s á glao"
+
+#: eval.c:16093
+#, c-format
+msgid "%s aborted"
+msgstr "%s tobscortha"
+
+#: eval.c:16095
+#, c-format
+msgid "%s returning #%ld"
+msgstr "%s ag aisfhilleadh #%ld"
+
+#: eval.c:16105
+#, c-format
+msgid "%s returning %s"
+msgstr "%s ag aisfhilleadh %s"
+
+#. always scroll up, don't overwrite
+#: eval.c:16122 ex_cmds2.c:2407
+#, c-format
+msgid "continuing in %s"
+msgstr "ag leanúint i %s"
+
+#: eval.c:16170
+msgid "E133: :return not inside a function"
+msgstr "E133: Ní foláir do :return a bheith isteach i bhfeidhm"
+
+#: eval.c:16496
+#, c-format
+msgid ""
+"\n"
+"# global variables:\n"
+msgstr ""
+"\n"
+"# athróga comhchoiteanna:\n"
+
+#: ex_cmds2.c:92
+msgid "Entering Debug mode.  Type \"cont\" to continue."
+msgstr "Mód dífhabhtaithe á thosú.  Clóscríobh \"cont\" chun leanúint."
+
+#: ex_cmds2.c:96 ex_docmd.c:1019
+#, c-format
+msgid "line %ld: %s"
+msgstr "líne %ld: %s"
+
+#: ex_cmds2.c:98
+#, c-format
+msgid "cmd: %s"
+msgstr "ordú: %s"
+
+#: ex_cmds2.c:290
+#, c-format
+msgid "Breakpoint in \"%s%s\" line %ld"
+msgstr "Brisphointe i \"%s%s\" líne %ld"
+
+#: ex_cmds2.c:560
+#, c-format
+msgid "E161: Breakpoint not found: %s"
+msgstr "E161: Brisphointe gan aimsiú: %s"
+
+#: ex_cmds2.c:585
+msgid "No breakpoints defined"
+msgstr "Níl aon bhrisphointe socraithe"
+
+#: ex_cmds2.c:590
+#, c-format
+msgid "%3d  %s %s  line %ld"
+msgstr "%3d  %s %s  líne %ld"
+
+#: ex_cmds2.c:780 ex_cmds.c:2119
+msgid "Save As"
+msgstr "Sábháil Mar"
+
+#: ex_cmds2.c:805
+#, c-format
+msgid "Save changes to \"%.*s\"?"
+msgstr "Sábháil athruithe ar \"%.*s\"?"
+
+#: ex_cmds2.c:807 ex_docmd.c:9652
+msgid "Untitled"
+msgstr "Gan Teideal"
+
+#: ex_cmds2.c:934
+#, c-format
+msgid "E162: No write since last change for buffer \"%s\""
+msgstr "E162: Tá maolán \"%s\" athraithe ach nach bhfuil sábháilte ó shin"
+
+#: ex_cmds2.c:1005
+msgid "Warning: Entered other buffer unexpectedly (check autocommands)"
+msgstr "Rabhadh: Chuathas i maolán eile go tobann (seiceáil na huathorduithe)"
+
+#: ex_cmds2.c:1424
+msgid "E163: There is only one file to edit"
+msgstr "E163: Níl ach aon chomhad amháin le cur in eagar"
+
+#: ex_cmds2.c:1426
+msgid "E164: Cannot go before first file"
+msgstr "E164: Ní féidir a dhul roimh an chéad chomhad"
+
+#: ex_cmds2.c:1428
+msgid "E165: Cannot go beyond last file"
+msgstr "E165: Ní féidir a dhul thar an gcomhad deireanach"
+
+#: ex_cmds2.c:1841
+#, c-format
+msgid "E666: compiler not supported: %s"
+msgstr "E666: ní ghlactar leis an tiomsaitheoir: %s"
+
+#: ex_cmds2.c:1938
+#, c-format
+msgid "Searching for \"%s\" in \"%s\""
+msgstr "Ag déanamh cuardach ar \"%s\" i \"%s\""
+
+#: ex_cmds2.c:1960
+#, c-format
+msgid "Searching for \"%s\""
+msgstr "Ag déanamh cuardach ar \"%s\""
+
+#: ex_cmds2.c:1982
+#, c-format
+msgid "not found in 'runtimepath': \"%s\""
+msgstr "gan aimsiú i 'runtimepath': \"%s\""
+
+#: ex_cmds2.c:2016
+msgid "Source Vim script"
+msgstr "Foinsigh script Vim"
+
+#: ex_cmds2.c:2206
+#, c-format
+msgid "Cannot source a directory: \"%s\""
+msgstr "Ní féidir an chomhadlann \"%s\" a léamh"
+
+#: ex_cmds2.c:2244
+#, c-format
+msgid "could not source \"%s\""
+msgstr "níorbh fhéidir \"%s\" a léamh"
+
+#: ex_cmds2.c:2246
+#, c-format
+msgid "line %ld: could not source \"%s\""
+msgstr "líne %ld: níorbh fhéidir \"%s\" a fhoinsiú"
+
+#: ex_cmds2.c:2260
+#, c-format
+msgid "sourcing \"%s\""
+msgstr "\"%s\" á fhoinsiú"
+
+#: ex_cmds2.c:2262
+#, c-format
+msgid "line %ld: sourcing \"%s\""
+msgstr "líne %ld: \"%s\" á fhoinsiú"
+
+#: ex_cmds2.c:2405
+#, c-format
+msgid "finished sourcing %s"
+msgstr "deireadh ag foinsiú %s"
+
+#: ex_cmds2.c:2751
+msgid "W15: Warning: Wrong line separator, ^M may be missing"
+msgstr ""
+"W15: Rabhadh: Deighilteoir línte mícheart, is féidir go bhfuil ^M ar iarraidh"
+
+#: ex_cmds2.c:2801
+msgid "E167: :scriptencoding used outside of a sourced file"
+msgstr "E167: ní úsáidtear :scriptencoding ach i gcomhad foinsithe"
+
+#: ex_cmds2.c:2834
+msgid "E168: :finish used outside of a sourced file"
+msgstr "E168: ní úsáidtear :finish ach i gcomhaid foinsithe"
+
+#: ex_cmds2.c:3283
+#, c-format
+msgid "Page %d"
+msgstr "Leathanach %d"
+
+#: ex_cmds2.c:3439
+msgid "No text to be printed"
+msgstr "Níl aon téacs le priontáil"
+
+#: ex_cmds2.c:3517
+#, c-format
+msgid "Printing page %d (%d%%)"
+msgstr "Leathanach %d (%d%%) á phriontáil"
+
+#: ex_cmds2.c:3529
+#, c-format
+msgid " Copy %d of %d"
+msgstr " Cóip %d de %d"
+
+#: ex_cmds2.c:3587
+#, c-format
+msgid "Printed: %s"
+msgstr "Priontáilte: %s"
+
+#: ex_cmds2.c:3594
+#, c-format
+msgid "Printing aborted"
+msgstr "Priontáil tobscortha"
+
+#: ex_cmds2.c:4248
+msgid "E455: Error writing to PostScript output file"
+msgstr "E455: Earráid le linn scríobh chuig aschomhad PostScript"
+
+#: ex_cmds2.c:4708
+#, c-format
+msgid "E624: Can't open file \"%s\""
+msgstr "E624: Ní féidir an comhad \"%s\" a oscailt"
+
+#: ex_cmds2.c:4718 ex_cmds2.c:5592
+#, c-format
+msgid "E457: Can't read PostScript resource file \"%s\""
+msgstr "E457: Ní féidir comhad acmhainne PostScript \"%s\" a léamh"
+
+#: ex_cmds2.c:4734
+#, c-format
+msgid "E618: file \"%s\" is not a PostScript resource file"
+msgstr "E618: Níl comhad \"%s\" ina chomhad acmhainne PostScript"
+
+#: ex_cmds2.c:4752 ex_cmds2.c:4771 ex_cmds2.c:4816
+#, c-format
+msgid "E619: file \"%s\" is not a supported PostScript resource file"
+msgstr "E619: Tá \"%s\" ina chomhad acmhainne PostScript gan tacú"
+
+#: ex_cmds2.c:4835
+#, c-format
+msgid "E621: \"%s\" resource file has wrong version"
+msgstr "E621: Tá an leagan mícheart ar an gcomhad acmhainne \"%s\""
+
+#: ex_cmds2.c:5313
+msgid "E673: Incompatible multi-byte encoding and character set."
+msgstr "E673: Ionchódú agus tacar carachtar ilbhirt neamh-chomhoiriúnach."
+
+#: ex_cmds2.c:5330
+msgid "E674: printmbcharset cannot be empty with multi-byte encoding."
+msgstr ""
+"E674: ní cheadaítear printmbcharset a bheith folamh le hionchódú ilbhirt."
+
+#: ex_cmds2.c:5348
+msgid "E675: No default font specfifed for multi-byte printing."
+msgstr "E675: Níor réamhshocraíodh cló le haghaidh priontála ilbhirt."
+
+#: ex_cmds2.c:5541
+msgid "E324: Can't open PostScript output file"
+msgstr "E324: Ní féidir aschomhad PostScript a oscailt"
+
+#: ex_cmds2.c:5578
+#, c-format
+msgid "E456: Can't open file \"%s\""
+msgstr "E456: Ní féidir an comhad \"%s\" a oscailt"
+
+#: ex_cmds2.c:5709
+msgid "E456: Can't find PostScript resource file \"prolog.ps\""
+msgstr "E456: Comhad acmhainne PostScript \"prolog.ps\" gan aimsiú"
+
+#: ex_cmds2.c:5722
+msgid "E456: Can't find PostScript resource file \"cidfont.ps\""
+msgstr "E456: Comhad acmhainne PostScript \"cidfont.ps\" gan aimsiú"
+
+#: ex_cmds2.c:5760 ex_cmds2.c:5782 ex_cmds2.c:5811
+#, c-format
+msgid "E456: Can't find PostScript resource file \"%s.ps\""
+msgstr "E456: Comhad acmhainne PostScript \"%s.ps\" gan aimsiú"
+
+#: ex_cmds2.c:5798
+#, c-format
+msgid "E620: Unable to convert to print encoding \"%s\""
+msgstr "E620: Ní féidir an t-ionchódú priontála \"%s\" a thiontú"
+
+#: ex_cmds2.c:6052
+msgid "Sending to printer..."
+msgstr "Ag seoladh chuig an phrintéir..."
+
+#: ex_cmds2.c:6056
+msgid "E365: Failed to print PostScript file"
+msgstr "E365: Theip ar phriontáil comhaid PostScript"
+
+#: ex_cmds2.c:6058
+msgid "Print job sent."
+msgstr "Seoladh jab priontála."
+
+#: ex_cmds2.c:6665
+#, c-format
+msgid "Current %slanguage: \"%s\""
+msgstr "%sTeanga faoi láthair: \"%s\""
+
+#: ex_cmds2.c:6676
+#, c-format
+msgid "E197: Cannot set language to \"%s\""
+msgstr "E197: Ní féidir an teanga a shocrú mar \"%s\""
+
+#: ex_cmds.c:92
+#, c-format
+msgid "<%s>%s%s  %d,  Hex %02x,  Octal %03o"
+msgstr "<%s>%s%s  %d,  Heics %02x,  Ocht %03o"
+
+#: ex_cmds.c:118
+#, c-format
+msgid "> %d, Hex %04x, Octal %o"
+msgstr "> %d, Heics %04x, Ocht %o"
+
+#: ex_cmds.c:119
+#, c-format
+msgid "> %d, Hex %08x, Octal %o"
+msgstr "> %d, Heics %08x, Ocht %o"
+
+#: ex_cmds.c:430
+msgid "E134: Move lines into themselves"
+msgstr "E134: Bog línte isteach iontu féin"
+
+#: ex_cmds.c:499
+msgid "1 line moved"
+msgstr "Bogadh 1 líne"
+
+#: ex_cmds.c:501
+#, c-format
+msgid "%ld lines moved"
+msgstr "Bogadh %ld líne"
+
+#: ex_cmds.c:928
+#, c-format
+msgid "%ld lines filtered"
+msgstr "Scagadh %ld líne"
+
+#: ex_cmds.c:956
+msgid "E135: *Filter* Autocommands must not change current buffer"
+msgstr ""
+"E135: Ní cheadaítear uathorduithe scagaire chun an maolán reatha a athrú"
+
+#: ex_cmds.c:1041
+msgid "[No write since last change]\n"
+msgstr "[Athraithe agus nach sábháilte ó shin]\n"
+
+#: ex_cmds.c:1287
+#, c-format
+msgid "%sviminfo: %s in line: "
+msgstr "%sviminfo: %s i líne: "
+
+#: ex_cmds.c:1294
+msgid "E136: viminfo: Too many errors, skipping rest of file"
+msgstr ""
+"E136: viminfo: An iomarca earráidí, ag scipeáil an chuid eile den chomhad"
+
+#: ex_cmds.c:1329
+#, c-format
+msgid "Reading viminfo file \"%s\"%s%s%s"
+msgstr "Comhad viminfo \"%s\"%s%s%s á léamh"
+
+#: ex_cmds.c:1330
+msgid " info"
+msgstr " eolas"
+
+#: ex_cmds.c:1331
+msgid " marks"
+msgstr " marcanna"
+
+#: ex_cmds.c:1332
+msgid " FAILED"
+msgstr " TEIPTHE"
+
+#: ex_cmds.c:1424
+#, c-format
+msgid "E137: Viminfo file is not writable: %s"
+msgstr "E137: Níl an comhad Viminfo inscríofa: %s"
+
+#: ex_cmds.c:1549
+#, c-format
+msgid "E138: Can't write viminfo file %s!"
+msgstr "E138: Ní féidir comhad viminfo %s a scríobh!"
+
+#: ex_cmds.c:1557
+#, c-format
+msgid "Writing viminfo file \"%s\""
+msgstr "Comhad viminfo \"%s\" á scríobh"
+
+#. Write the info:
+#: ex_cmds.c:1655
+#, c-format
+msgid "# This viminfo file was generated by Vim %s.\n"
+msgstr "# Chruthaigh Vim an comhad viminfo seo %s.\n"
+
+#: ex_cmds.c:1657
+#, c-format
+msgid ""
+"# You may edit it if you're careful!\n"
+"\n"
+msgstr ""
+"# Is féidir leat an comhad seo a chur in eagar ach bí cúramach!\n"
+"\n"
+
+#: ex_cmds.c:1659
+#, c-format
+msgid "# Value of 'encoding' when this file was written\n"
+msgstr "# Luach 'encoding' agus an comhad seo á scríobh\n"
+
+#: ex_cmds.c:1758
+msgid "Illegal starting char"
+msgstr "Carachtar neamhcheadaithe tosaigh"
+
+#. Overwriting a file that is loaded in another buffer is not a
+#. * good idea.
+#: ex_cmds.c:2162
+msgid "E139: File is loaded in another buffer"
+msgstr "E139: Tá an comhad luchtaithe i maolán eile"
+
+#: ex_cmds.c:2196
+msgid "Write partial file?"
+msgstr "Scríobh comhad neamhiomlán?"
+
+#: ex_cmds.c:2203
+msgid "E140: Use ! to write partial buffer"
+msgstr "E140: Bain úsáid as ! chun maolán neamhiomlán a scríobh"
+
+#: ex_cmds.c:2320
+#, c-format
+msgid "Overwrite existing file \"%.*s\"?"
+msgstr "Forscríobh comhad \"%.*s\" atá ann cheana?"
+
+#: ex_cmds.c:2391
+#, c-format
+msgid "E141: No file name for buffer %ld"
+msgstr "E141: Níl aon ainm ar mhaolán %ld"
+
+#: ex_cmds.c:2430
+msgid "E142: File not written: Writing is disabled by 'write' option"
+msgstr "E142: Níor scríobhadh an comhad: díchumasaithe leis an rogha 'write'"
+
+#: ex_cmds.c:2450
+#, c-format
+msgid ""
+"'readonly' option is set for \"%.*s\".\n"
+"Do you wish to write anyway?"
+msgstr ""
+"tá an rogha 'readonly' socraithe do \"%.*s\".\n"
+"Ar mhaith leat é a scríobh mar sin féin?"
+
+#: ex_cmds.c:2623
+msgid "Edit File"
+msgstr "Cuir Comhad in Eagar"
+
+#: ex_cmds.c:3236
+#, c-format
+msgid "E143: Autocommands unexpectedly deleted new buffer %s"
+msgstr "E143: Scrios na huathorduithe maolán nua %s go tobann"
+
+#: ex_cmds.c:3412
+msgid "E144: non-numeric argument to :z"
+msgstr "E144: argóint neamhuimhriúil chun :z"
+
+#: ex_cmds.c:3507
+msgid "E145: Shell commands not allowed in rvim"
+msgstr "E145: Ní cheadaítear orduithe blaoisce i rvim"
+
+#: ex_cmds.c:3615
+msgid "E146: Regular expressions can't be delimited by letters"
+msgstr ""
+"E146: Ní cheadaítear litreacha mar theormharcóirí ar shloinn ionadaíochta"
+
+#: ex_cmds.c:3966
+#, c-format
+msgid "replace with %s (y/n/a/q/l/^E/^Y)?"
+msgstr "cuir %s ina ionad (y/n/a/q/l/^E/^Y)?"
+
+#: ex_cmds.c:4365
+msgid "(Interrupted) "
+msgstr "(Idirbhriste) "
+
+#: ex_cmds.c:4369
+msgid "1 substitution"
+msgstr "1 ionadaíocht"
+
+#: ex_cmds.c:4371
+#, c-format
+msgid "%ld substitutions"
+msgstr "%ld ionadaíocht"
+
+#: ex_cmds.c:4374
+msgid " on 1 line"
+msgstr " ar 1 líne"
+
+#: ex_cmds.c:4376
+#, c-format
+msgid " on %ld lines"
+msgstr " ar %ld líne"
+
+#: ex_cmds.c:4427
+msgid "E147: Cannot do :global recursive"
+msgstr "E147: Ní cheadaítear :global go hathchúrsach"
+
+#: ex_cmds.c:4462
+msgid "E148: Regular expression missing from global"
+msgstr "E148: Slonn ionadaíochta ar iarraidh ón domhain"
+
+#: ex_cmds.c:4511
+#, c-format
+msgid "Pattern found in every line: %s"
+msgstr "Aimsíodh an patrún i ngach líne: %s"
+
+#: ex_cmds.c:4596
+#, c-format
+msgid ""
+"\n"
+"# Last Substitute String:\n"
+"$"
+msgstr ""
+"\n"
+"# Teaghrán Ionadach Is Déanaí:\n"
+"$"
+
+#: ex_cmds.c:4697
+msgid "E478: Don't panic!"
+msgstr "E478: Ná téigh i scaoll!"
+
+#: ex_cmds.c:4743
+#, c-format
+msgid "E661: Sorry, no '%s' help for %s"
+msgstr "E661: Tá brón orm, ní aon chabhair '%s' do %s"
+
+#: ex_cmds.c:4746
+#, c-format
+msgid "E149: Sorry, no help for %s"
+msgstr "E149: Tá brón orm, níl aon chabhair do %s"
+
+#: ex_cmds.c:4780
+#, c-format
+msgid "Sorry, help file \"%s\" not found"
+msgstr "Tá brón orm, comhad cabhrach \"%s\" gan aimsiú"
+
+#: ex_cmds.c:5330
+#, c-format
+msgid "E150: Not a directory: %s"
+msgstr "E150: Ní comhadlann é: %s"
+
+#: ex_cmds.c:5470
+#, c-format
+msgid "E152: Cannot open %s for writing"
+msgstr "E152: Ní féidir %s a oscailt chun scríobh ann"
+
+#: ex_cmds.c:5505
+#, c-format
+msgid "E153: Unable to open %s for reading"
+msgstr "E153: Ní féidir %s a oscailt chun é a léamh"
+
+#: ex_cmds.c:5541
+#, c-format
+msgid "E670: Mix of help file encodings within a language: %s"
+msgstr "E670: Ionchóduithe éagsúla do chomhaid chabhracha i dteanga aonair: %s"
+
+#: ex_cmds.c:5619
+#, c-format
+msgid "E154: Duplicate tag \"%s\" in file %s/%s"
+msgstr "E154: Clib dhúblach \"%s\" i gcomhad %s/%s"
+
+#: ex_cmds.c:5735
+#, c-format
+msgid "E160: Unknown sign command: %s"
+msgstr "E160: Ordú anaithnid comhartha: %s"
+
+#: ex_cmds.c:5755
+msgid "E156: Missing sign name"
+msgstr "E156: Ainm comhartha ar iarraidh"
+
+#: ex_cmds.c:5801
+msgid "E612: Too many signs defined"
+msgstr "E612: An iomarca comharthaí sainmhínithe"
+
+#: ex_cmds.c:5869
+#, c-format
+msgid "E239: Invalid sign text: %s"
+msgstr "E239: Téacs neamhbhailí comhartha: %s"
+
+#: ex_cmds.c:5900 ex_cmds.c:6091
+#, c-format
+msgid "E155: Unknown sign: %s"
+msgstr "E155: Comhartha anaithnid: %s"
+
+#: ex_cmds.c:5949
+msgid "E159: Missing sign number"
+msgstr "E159: Uimhir chomhartha ar iarraidh"
+
+#: ex_cmds.c:6031
+#, c-format
+msgid "E158: Invalid buffer name: %s"
+msgstr "E158: Ainm maoláin neamhbhailí: %s"
+
+#: ex_cmds.c:6070
+#, c-format
+msgid "E157: Invalid sign ID: %ld"
+msgstr "E157: ID neamhbhailí comhartha: %ld"
+
+#: ex_cmds.c:6140
+msgid " (NOT FOUND)"
+msgstr " (AR IARRAIDH)"
+
+#: ex_cmds.c:6142
+msgid " (not supported)"
+msgstr " (níl an rogha seo ar fáil)"
+
+#: ex_cmds.c:6241
+msgid "[Deleted]"
+msgstr "[Scriosta]"
+
+#: ex_docmd.c:594
+msgid "Entering Ex mode.  Type \"visual\" to go to Normal mode."
+msgstr "Mód Ex á thosú.  Clóscríobh \"visual\" le haghaidh an ghnáthmhód."
+
+# in FARF -KPS
+#. must be at EOF
+#: ex_docmd.c:638
+msgid "E501: At end-of-file"
+msgstr "E501: Ag an chomhadchríoch"
+
+#: ex_docmd.c:737
+msgid "E169: Command too recursive"
+msgstr "E169: Ordú ró-athchúrsach"
+
+#: ex_docmd.c:1296
+#, c-format
+msgid "E605: Exception not caught: %s"
+msgstr "E605: Eisceacht gan láimhseáil: %s"
+
+#: ex_docmd.c:1384
+msgid "End of sourced file"
+msgstr "Críoch chomhaid foinsithe"
+
+#: ex_docmd.c:1385
+msgid "End of function"
+msgstr "Críoch fheidhme"
+
+#: ex_docmd.c:1974
+msgid "E464: Ambiguous use of user-defined command"
+msgstr "E464: Úsáid athbhríoch d'ordú saincheaptha"
+
+#: ex_docmd.c:1988
+msgid "E492: Not an editor command"
+msgstr "E492: Níl ina ordú eagarthóra"
+
+#: ex_docmd.c:2095
+msgid "E493: Backwards range given"
+msgstr "E493: Raon droim ar ais"
+
+#: ex_docmd.c:2104
+msgid "Backwards range given, OK to swap"
+msgstr "Raon droim ar ais, babhtáil"
+
+#: ex_docmd.c:2229
+msgid "E494: Use w or w>>"
+msgstr "E494: Bain úsáid as w nó w>>"
+
+#: ex_docmd.c:3866
+msgid "E319: Sorry, the command is not available in this version"
+msgstr "E319: Tá brón orm, níl an t-ordú ar fáil sa leagan seo"
+
+#: ex_docmd.c:4123
+msgid "E172: Only one file name allowed"
+msgstr "E172: Ní cheadaítear ach aon ainm comhaid amháin"
+
+#: ex_docmd.c:4711
+msgid "1 more file to edit.  Quit anyway?"
+msgstr "1 comhad le cur in eagar fós.  Scoir mar sin féin?"
+
+#: ex_docmd.c:4714
+#, c-format
+msgid "%d more files to edit.  Quit anyway?"
+msgstr "%d comhad le cur in eagar fós.  Scoir mar sin féin?"
+
+#: ex_docmd.c:4721
+msgid "E173: 1 more file to edit"
+msgstr "E173: 1 comhad le heagrú"
+
+#: ex_docmd.c:4723
+#, c-format
+msgid "E173: %ld more files to edit"
+msgstr "E173: %ld comhad le cur in eagar"
+
+#: ex_docmd.c:4818
+msgid "E174: Command already exists: add ! to replace it"
+msgstr "E174: Tá an t-ordú ann cheana: cuir ! leis chun sárú"
+
+#: ex_docmd.c:4928
+msgid ""
+"\n"
+"    Name        Args Range Complete  Definition"
+msgstr ""
+"\n"
+"    Ainm        Arg  Raon  Iomlán    Sainmhíniú"
+
+#: ex_docmd.c:5017
+msgid "No user-defined commands found"
+msgstr "Níl aon ordú aimsithe atá sainithe ag an úsáideoir"
+
+#: ex_docmd.c:5049
+msgid "E175: No attribute specified"
+msgstr "E175: Níl aon aitreabúid sainithe"
+
+#: ex_docmd.c:5101
+msgid "E176: Invalid number of arguments"
+msgstr "E176: Tá líon na n-argóintí mícheart"
+
+#: ex_docmd.c:5116
+msgid "E177: Count cannot be specified twice"
+msgstr "E177: Ní cheadaítear an t-áireamh a bheith tugtha faoi dhó"
+
+#: ex_docmd.c:5126
+msgid "E178: Invalid default value for count"
+msgstr "E178: Luach réamhshocraithe neamhbhailí ar áireamh"
+
+#: ex_docmd.c:5157
+msgid "E179: argument required for complete"
+msgstr "E179: ní foláir argóint le haghaidh comhlánaithe"
+
+#: ex_docmd.c:5189
+#, c-format
+msgid "E180: Invalid complete value: %s"
+msgstr "E180: Luach iomlán neamhbhailí: %s"
+
+#: ex_docmd.c:5198
+msgid "E468: Completion argument only allowed for custom completion"
+msgstr ""
+"E468: Ní cheadaítear argóint chomhlánaithe ach le comhlánú saincheaptha"
+
+#: ex_docmd.c:5204
+msgid "E467: Custom completion requires a function argument"
+msgstr "E467: Tá gá le hargóint fheidhme le comhlánú saincheaptha"
+
+#: ex_docmd.c:5215
+#, c-format
+msgid "E181: Invalid attribute: %s"
+msgstr "E181: Aitreabúid neamhbhailí: %s"
+
+#: ex_docmd.c:5258
+msgid "E182: Invalid command name"
+msgstr "E182: Ainm neamhbhailí ordaithe"
+
+#: ex_docmd.c:5273
+msgid "E183: User defined commands must start with an uppercase letter"
+msgstr ""
+"E183: Ní foláir ceannlitir a bheith ar dtús orduithe atá sainithe ag an "
+"úsáideoir"
+
+#: ex_docmd.c:5344
+#, c-format
+msgid "E184: No such user-defined command: %s"
+msgstr "E184: Níl a leithéid d'ordú saincheaptha: %s"
+
+#: ex_docmd.c:5804
+#, c-format
+msgid "E185: Cannot find color scheme %s"
+msgstr "E185: Scéim dathanna %s gan aimsiú"
+
+#: ex_docmd.c:5812
+msgid "Greetings, Vim user!"
+msgstr "Dia duit, a úsáideoir Vim!"
+
+#: ex_docmd.c:6558
+msgid "Edit File in new window"
+msgstr "Cuir comhad in eagar i bhfuinneog nua"
+
+#: ex_docmd.c:6874
+msgid "No swap file"
+msgstr "Níl aon chomhad babhtála ann"
+
+#: ex_docmd.c:6978
+msgid "Append File"
+msgstr "Cuir Comhad i nDeireadh"
+
+#: ex_docmd.c:7042
+msgid "E186: No previous directory"
+msgstr "E186: Níl aon chomhadlann roimhe seo"
+
+#: ex_docmd.c:7124
+msgid "E187: Unknown"
+msgstr "E187: Anaithnid"
+
+#: ex_docmd.c:7209
+msgid "E465: :winsize requires two number arguments"
+msgstr "E465: ní foláir dhá argóint uimhriúil le :winsize"
+
+#: ex_docmd.c:7269
+#, c-format
+msgid "Window position: X %d, Y %d"
+msgstr "Suíomh fuinneoige: X %d, Y %d"
+
+#: ex_docmd.c:7274
+msgid "E188: Obtaining window position not implemented for this platform"
+msgstr "E188: Ní féidir suíomh fuinneoige a fháil amach ar an chóras seo"
+
+#: ex_docmd.c:7284
+msgid "E466: :winpos requires two number arguments"
+msgstr "E466: ní foláir dhá argóint uimhriúil le :winpos"
+
+#: ex_docmd.c:7568
+msgid "Save Redirection"
+msgstr "Sábháil Atreorú"
+
+#: ex_docmd.c:7762
+msgid "Save View"
+msgstr "Sábháil an tAmharc"
+
+#: ex_docmd.c:7763
+msgid "Save Session"
+msgstr "Sábháil an Seisiún"
+
+#: ex_docmd.c:7765
+msgid "Save Setup"
+msgstr "Sábháil an Socrú"
+
+#: ex_docmd.c:7778
+#, c-format
+msgid "E739: Cannot create directory: %s"
+msgstr "E739: Ní féidir comhadlann a chruthú: %s"
+
+#: ex_docmd.c:7918
+#, c-format
+msgid "E189: \"%s\" exists (add ! to override)"
+msgstr "E189: Tá \"%s\" ann cheana (cuir ! leis an ordú chun sárú)"
+
+#: ex_docmd.c:7923
+#, c-format
+msgid "E190: Cannot open \"%s\" for writing"
+msgstr "E190: Ní féidir \"%s\" a oscailt chun léamh"
+
+#. set mark
+#: ex_docmd.c:7947
+msgid "E191: Argument must be a letter or forward/backward quote"
+msgstr "E191: Caithfidh an argóint a bheith litir nó comhartha athfhriotal"
+
+#: ex_docmd.c:7988
+msgid "E192: Recursive use of :normal too deep"
+msgstr "E192: athchúrsáil :normal ródhomhain"
+
+#: ex_docmd.c:8537
+msgid "E194: No alternate file name to substitute for '#'"
+msgstr "E194: Níl aon ainm comhaid a chur in ionad '#'"
+
+#: ex_docmd.c:8568
+msgid "E495: no autocommand file name to substitute for \"<afile>\""
+msgstr "E495: níl aon ainm comhaid uathordaithe le cur in ionad \"<afile>\""
+
+#: ex_docmd.c:8576
+msgid "E496: no autocommand buffer number to substitute for \"<abuf>\""
+msgstr "E496: níl aon uimhir mhaolán uathordaithe le cur in ionad \"<abuf>\""
+
+#: ex_docmd.c:8587
+msgid "E497: no autocommand match name to substitute for \"<amatch>\""
+msgstr ""
+"E497: níl aon ainm meaitseála uathordaithe le cur in ionad \"<amatch>\""
+
+#: ex_docmd.c:8597
+msgid "E498: no :source file name to substitute for \"<sfile>\""
+msgstr "E498: níl aon ainm comhaid :source le cur in ionad \"<sfile>\""
+
+#: ex_docmd.c:8638
+#, no-c-format
+msgid "E499: Empty file name for '%' or '#', only works with \":p:h\""
+msgstr ""
+"E499: Ainm comhaid folamh le haghaidh '%' nó '#', oibreoidh sé le \":p:h\" "
+"amháin"
+
+#: ex_docmd.c:8640
+msgid "E500: Evaluates to an empty string"
+msgstr "E500: Meastar é seo mar theaghrán folamh"
+
+#: ex_docmd.c:9634
+msgid "E195: Cannot open viminfo file for reading"
+msgstr "E195: Ní féidir an comhad viminfo a oscailt chun léamh"
+
+#: ex_docmd.c:9807
+msgid "E196: No digraphs in this version"
+msgstr "E196: Ní cheadaítear déghraif sa leagan seo"
+
+#: ex_eval.c:439
+msgid "E608: Cannot :throw exceptions with 'Vim' prefix"
+msgstr "E608: Ní féidir eisceachtaí a :throw le réimír 'Vim'"
+
+#. always scroll up, don't overwrite
+#: ex_eval.c:528
+#, c-format
+msgid "Exception thrown: %s"
+msgstr "Eisceacht ginte: %s"
+
+#: ex_eval.c:575
+#, c-format
+msgid "Exception finished: %s"
+msgstr "Eisceacht curtha i gcrích: %s"
+
+#: ex_eval.c:576
+#, c-format
+msgid "Exception discarded: %s"
+msgstr "Eisceacht curtha i leataobh: %s"
+
+#: ex_eval.c:619 ex_eval.c:663
+#, c-format
+msgid "%s, line %ld"
+msgstr "%s, líne %ld"
+
+#. always scroll up, don't overwrite
+#: ex_eval.c:637
+#, c-format
+msgid "Exception caught: %s"
+msgstr "Láimhseáladh eisceacht: %s"
+
+#: ex_eval.c:712
+#, c-format
+msgid "%s made pending"
+msgstr "%s ar feitheamh anois"
+
+#: ex_eval.c:715
+#, c-format
+msgid "%s resumed"
+msgstr "atosaíodh %s"
+
+#: ex_eval.c:719
+#, c-format
+msgid "%s discarded"
+msgstr "%s curtha i leataobh"
+
+#: ex_eval.c:745
+msgid "Exception"
+msgstr "Eisceacht"
+
+#: ex_eval.c:751
+msgid "Error and interrupt"
+msgstr "Earráid agus idirbhriseadh"
+
+#: ex_eval.c:753 gui.c:4389 gui_xmdlg.c:687 gui_xmdlg.c:809 os_mswin.c:601
+msgid "Error"
+msgstr "Earráid"
+
+#. if (pending & CSTP_INTERRUPT)
+#: ex_eval.c:755
+msgid "Interrupt"
+msgstr "Idirbhriseadh"
+
+#: ex_eval.c:829
+msgid "E579: :if nesting too deep"
+msgstr "E579: :if neadaithe ródhomhain"
+
+#: ex_eval.c:866
+msgid "E580: :endif without :if"
+msgstr "E580: :endif gan :if"
+
+#: ex_eval.c:911
+msgid "E581: :else without :if"
+msgstr "E581: :else gan :if"
+
+#: ex_eval.c:914
+msgid "E582: :elseif without :if"
+msgstr "E582: :elseif gan :if"
+
+#: ex_eval.c:921
+msgid "E583: multiple :else"
+msgstr "E583: :else iomadúla"
+
+#: ex_eval.c:924
+msgid "E584: :elseif after :else"
+msgstr "E584: :elseif i ndiaidh :else"
+
+#: ex_eval.c:991
+msgid "E585: :while/:for nesting too deep"
+msgstr "E585: :while/:for neadaithe ródhomhain"
+
+#: ex_eval.c:1089
+msgid "E586: :continue without :while or :for"
+msgstr "E586: :continue gan :while ná :for"
+
+#: ex_eval.c:1128
+msgid "E587: :break without :while or :for"
+msgstr "E587: :break gan :while ná :for"
+
+#: ex_eval.c:1178
+msgid "E732: Using :endfor with :while"
+msgstr "E732: :endfor á úsáid le :while"
+
+#: ex_eval.c:1180
+msgid "E733: Using :endwhile with :for"
+msgstr "E733: :endwhile á úsáid le :for"
+
+#: ex_eval.c:1351
+msgid "E601: :try nesting too deep"
+msgstr "E601: :try neadaithe ródhomhain"
+
+#: ex_eval.c:1431
+msgid "E603: :catch without :try"
+msgstr "E603: :catch gan :try"
+
+#. Give up for a ":catch" after ":finally" and ignore it.
+#. * Just parse.
+#: ex_eval.c:1450
+msgid "E604: :catch after :finally"
+msgstr "E604: :catch i ndiaidh :finally"
+
+#: ex_eval.c:1584
+msgid "E606: :finally without :try"
+msgstr "E606: :finally gan :try"
+
+#. Give up for a multiple ":finally" and ignore it.
+#: ex_eval.c:1604
+msgid "E607: multiple :finally"
+msgstr "E607: :finally iomadúla"
+
+#: ex_eval.c:1714
+msgid "E602: :endtry without :try"
+msgstr "E602: :endtry gan :try"
+
+#: ex_eval.c:2218
+msgid "E193: :endfunction not inside a function"
+msgstr "E193: Ní foláir do :endfunction a bheith isteach i bhfeidhm"
+
+#: ex_getln.c:3512
+msgid "tagname"
+msgstr "clibainm"
+
+#: ex_getln.c:3515
+msgid " kind file\n"
+msgstr " cineál comhaid\n"
+
+#: ex_getln.c:5006
+msgid "'history' option is zero"
+msgstr "tá an rogha 'history' nialas"
+
+#: ex_getln.c:5277
+#, c-format
+msgid ""
+"\n"
+"# %s History (newest to oldest):\n"
+msgstr ""
+"\n"
+"# %s Stair (is nuaí go dtí is sine):\n"
+
+#: ex_getln.c:5278
+msgid "Command Line"
+msgstr "Ainm Orduithe"
+
+#: ex_getln.c:5279
+msgid "Search String"
+msgstr "Teaghrán Cuardaigh"
+
+#: ex_getln.c:5280
+msgid "Expression"
+msgstr "Slonn"
+
+#: ex_getln.c:5281
+msgid "Input Line"
+msgstr "Líne an Ionchuir"
+
+#: ex_getln.c:5319
+msgid "E198: cmd_pchar beyond the command length"
+msgstr "E198: cmd_pchar os cionn fad an ordaithe"
+
+#: ex_getln.c:5500
+msgid "E199: Active window or buffer deleted"
+msgstr "E199: Scriosadh an fhuinneog reatha nó an maolán reatha"
+
+#: fileio.c:376
+msgid "Illegal file name"
+msgstr "Ainm comhaid neamhcheadaithe"
+
+#: fileio.c:401 fileio.c:541 fileio.c:2929 fileio.c:2970
+msgid "is a directory"
+msgstr "is comhadlann é"
+
+#: fileio.c:403
+msgid "is not a file"
+msgstr "ní comhad é"
+
+#: fileio.c:563 fileio.c:4161
+msgid "[New File]"
+msgstr "[Comhad Nua]"
+
+#: fileio.c:596
+msgid "[Permission Denied]"
+msgstr "[Cead Diúltaithe]"
+
+#: fileio.c:707
+msgid "E200: *ReadPre autocommands made the file unreadable"
+msgstr "E200: Rinne uathorduithe *ReadPre praiseach as an chomhad"
+
+#: fileio.c:709
+msgid "E201: *ReadPre autocommands must not change current buffer"
+msgstr ""
+"E201: Ní cheadaítear uathorduithe *ReadPre chun an maolán reatha a athrú"
+
+#: fileio.c:730
+msgid "Vim: Reading from stdin...\n"
+msgstr "Vim: Ag léamh ón ionchur caighdeánach...\n"
+
+#: fileio.c:736
+msgid "Reading from stdin..."
+msgstr "Ag léamh ón ionchur caighdeánach..."
+
+#. Re-opening the original file failed!
+#: fileio.c:1013
+msgid "E202: Conversion made file unreadable!"
+msgstr "E202: Comhad doléite i ndiaidh an tiontaithe!"
+
+#: fileio.c:2077
+msgid "[fifo/socket]"
+msgstr "[fifo/soicéad]"
+
+# `TITA' ?! -KPS
+#: fileio.c:2084
+msgid "[fifo]"
+msgstr "[fifo]"
+
+#: fileio.c:2091
+msgid "[socket]"
+msgstr "[soicéad]"
+
+#: fileio.c:2099 netbeans.c:3416
+msgid "[RO]"
+msgstr "[L-A]"
+
+#: fileio.c:2109
+msgid "[CR missing]"
+msgstr "[CR ar iarraidh]"
+
+#: fileio.c:2114
+msgid "[NL found]"
+msgstr "[NL aimsithe]"
+
+#: fileio.c:2119
+msgid "[long lines split]"
+msgstr "[línte fada deighilte]"
+
+#: fileio.c:2125 fileio.c:4145
+msgid "[NOT converted]"
+msgstr "[NÍ tiontaithe]"
+
+#: fileio.c:2130 fileio.c:4150
+msgid "[converted]"
+msgstr "[tiontaithe]"
+
+#: fileio.c:2137 fileio.c:4175
+msgid "[crypted]"
+msgstr "[criptithe]"
+
+#: fileio.c:2144
+msgid "[CONVERSION ERROR]"
+msgstr "[EARRÁID TIONTAITHE]"
+
+#: fileio.c:2150
+#, c-format
+msgid "[ILLEGAL BYTE in line %ld]"
+msgstr "[BEART NEAMHCHEADAITHE i líne %ld]"
+
+#: fileio.c:2157
+msgid "[READ ERRORS]"
+msgstr "[EARRÁIDÍ LÉIMH]"
+
+#: fileio.c:2373
+msgid "Can't find temp file for conversion"
+msgstr "Ní féidir comhad sealadach a aimsiú le haghaidh tiontaithe"
+
+#: fileio.c:2380
+msgid "Conversion with 'charconvert' failed"
+msgstr "Theip ar thiontú le 'charconvert'"
+
+#: fileio.c:2383
+msgid "can't read output of 'charconvert'"
+msgstr "ní féidir an t-aschur ó 'charconvert' a léamh"
+
+#: fileio.c:2782
+msgid "E676: No matching autocommands for acwrite buffer"
+msgstr "E676: Níl aon uathordú comhoiriúnaithe le haghaidh maoláin acwrite"
+
+#: fileio.c:2810
+msgid "E203: Autocommands deleted or unloaded buffer to be written"
+msgstr "E203: Scrios nó dhíluchtaigh uathorduithe an maolán le scríobh"
+
+#: fileio.c:2833
+msgid "E204: Autocommand changed number of lines in unexpected way"
+msgstr "E204: D'athraigh uathordú líon na línte gan choinne"
+
+#: fileio.c:2873
+msgid "NetBeans dissallows writes of unmodified buffers"
+msgstr "Ní cheadaíonn NetBeans maoláin gan athrú a bheith scríofa"
+
+#: fileio.c:2881
+msgid "Partial writes disallowed for NetBeans buffers"
+msgstr "Ní cheadaítear maoláin NetBeans a bheith scríofa go neamhiomlán"
+
+#: fileio.c:2935 fileio.c:2953
+msgid "is not a file or writable device"
+msgstr "ní comhad ná gléas inscríofa á"
+
+#: fileio.c:3005 netbeans.c:3479
+msgid "is read-only (add ! to override)"
+msgstr "is léimh-amháin é (cuir ! leis an ordú chun sárú)"
+
+#: fileio.c:3351
+msgid "E506: Can't write to backup file (add ! to override)"
+msgstr ""
+"E506: Ní féidir scríobh a dhéanamh sa chomhad cúltaca (úsáid ! chun sárú)"
+
+#: fileio.c:3363
+msgid "E507: Close error for backup file (add ! to override)"
+msgstr ""
+"E507: Earráid agus comhad cúltaca á dhúnadh (cuir ! leis an ordú chun sárú)"
+
+#: fileio.c:3365
+msgid "E508: Can't read file for backup (add ! to override)"
+msgstr ""
+"E508: Ní féidir an comhad cúltaca a léamh (cuir ! leis an ordú chun sárú)"
+
+#: fileio.c:3381
+msgid "E509: Cannot create backup file (add ! to override)"
+msgstr ""
+"E509: Ní féidir comhad cúltaca a chruthú (cuir ! leis an ordú chun sárú)"
+
+#: fileio.c:3484
+msgid "E510: Can't make backup file (add ! to override)"
+msgstr ""
+"E510: Ní féidir comhad cúltaca a chruthú (cuir ! leis an ordú chun sárú)"
+
+#: fileio.c:3546
+msgid "E460: The resource fork would be lost (add ! to override)"
+msgstr "E460: Chaillfí an forc acmhainne (cuir ! leis an ordú chun sárú)"
+
+#: fileio.c:3656
+msgid "E214: Can't find temp file for writing"
+msgstr "E214: Ní féidir comhad sealadach a aimsiú chun scríobh ann"
+
+#: fileio.c:3674
+msgid "E213: Cannot convert (add ! to write without conversion)"
+msgstr "E213: Ní féidir tiontú (cuir ! leis an ordú chun scríobh gan tiontú)"
+
+#: fileio.c:3709
+msgid "E166: Can't open linked file for writing"
+msgstr "E166: Ní féidir comhad nasctha a oscailt chun scríobh ann"
+
+#: fileio.c:3713
+msgid "E212: Can't open file for writing"
+msgstr "E212: Ní féidir comhad a oscailt chun scríobh ann"
+
+#: fileio.c:3989
+msgid "E667: Fsync failed"
+msgstr "E667: Theip ar fsync"
+
+#: fileio.c:3996
+msgid "E512: Close failed"
+msgstr "E512: Theip ar dúnadh"
+
+#: fileio.c:4067
+msgid "E513: write error, conversion failed (make 'fenc' empty to override)"
+msgstr ""
+"E513: earráid le linn scríobh, theip ar thiontú (úsáid 'fenc' folamh chun "
+"sárú)"
+
+#: fileio.c:4073
+msgid "E514: write error (file system full?)"
+msgstr "E514: earráid le linn scríofa (an bhfuil an córas comhaid lán?)"
+
+#: fileio.c:4140
+msgid " CONVERSION ERROR"
+msgstr " EARRÁID TIONTAITHE"
+
+#: fileio.c:4156
+msgid "[Device]"
+msgstr "[Gléas]"
+
+#: fileio.c:4161
+msgid "[New]"
+msgstr "[Nua]"
+
+#: fileio.c:4183
+msgid " [a]"
+msgstr " [a]"
+
+#: fileio.c:4183
+msgid " appended"
+msgstr " curtha leis"
+
+#: fileio.c:4185
+msgid " [w]"
+msgstr " [w]"
+
+#: fileio.c:4185
+msgid " written"
+msgstr " scríofa"
+
+#: fileio.c:4238
+msgid "E205: Patchmode: can't save original file"
+msgstr "E205: Patchmode: ní féidir an comhad bunúsach a shábháil"
+
+#: fileio.c:4260
+msgid "E206: patchmode: can't touch empty original file"
+msgstr "E206: patchmode: ní féidir an comhad bunúsach folamh a theagmháil"
+
+#: fileio.c:4275
+msgid "E207: Can't delete backup file"
+msgstr "E207: Ní féidir an comhad cúltaca a scriosadh"
+
+#: fileio.c:4339
+msgid ""
+"\n"
+"WARNING: Original file may be lost or damaged\n"
+msgstr ""
+"\n"
+"RABHADH: Is féidir gur caillte nó loite an comhad bunúsach\n"
+
+#: fileio.c:4341
+msgid "don't quit the editor until the file is successfully written!"
+msgstr "ná scoir go dtí go scríobhfaí an comhad!"
+
+#: fileio.c:4430
+msgid "[dos]"
+msgstr "[dos]"
+
+#: fileio.c:4430
+msgid "[dos format]"
+msgstr "[formáid dos]"
+
+#: fileio.c:4437
+msgid "[mac]"
+msgstr "[mac]"
+
+#: fileio.c:4437
+msgid "[mac format]"
+msgstr "[formáid mac]"
+
+#: fileio.c:4444
+msgid "[unix]"
+msgstr "[unix]"
+
+#: fileio.c:4444
+msgid "[unix format]"
+msgstr "[formáid unix]"
+
+#: fileio.c:4471
+msgid "1 line, "
+msgstr "1 líne, "
+
+#: fileio.c:4473
+#, c-format
+msgid "%ld lines, "
+msgstr "%ld líne, "
+
+#: fileio.c:4476
+msgid "1 character"
+msgstr "1 carachtar"
+
+#: fileio.c:4478
+#, c-format
+msgid "%ld characters"
+msgstr "%ld carachtar"
+
+#: fileio.c:4488 netbeans.c:3421
+msgid "[noeol]"
+msgstr "[ganEOL]"
+
+#: fileio.c:4488 netbeans.c:3421
+msgid "[Incomplete last line]"
+msgstr "[Is neamhiomlán an líne dheireanach]"
+
+#. don't overwrite messages here
+#. must give this prompt
+#. don't use emsg() here, don't want to flush the buffers
+#: fileio.c:4507
+msgid "WARNING: The file has been changed since reading it!!!"
+msgstr "RABHADH: Athraíodh an comhad ó léadh é!!!"
+
+#: fileio.c:4509
+msgid "Do you really want to write to it"
+msgstr "An bhfuil tú cinnte gur mhaith leat é a scríobh"
+
+#: fileio.c:5735
+#, c-format
+msgid "E208: Error writing to \"%s\""
+msgstr "E208: Earráid agus \"%s\" á scríobh"
+
+#: fileio.c:5742
+#, c-format
+msgid "E209: Error closing \"%s\""
+msgstr "E209: Earráid agus \"%s\" á dhúnadh"
+
+#: fileio.c:5745
+#, c-format
+msgid "E210: Error reading \"%s\""
+msgstr "E210: Earráid agus \"%s\" á léamh"
+
+#: fileio.c:5982
+msgid "E246: FileChangedShell autocommand deleted buffer"
+msgstr "E246: Scrios uathordú FileChangedShell an maolán"
+
+#: fileio.c:5989
+#, c-format
+msgid "E211: Warning: File \"%s\" no longer available"
+msgstr "E211: Rabhadh: Níl comhad \"%s\" ar fáil feasta"
+
+#: fileio.c:6003
+#, c-format
+msgid ""
+"W12: Warning: File \"%s\" has changed and the buffer was changed in Vim as "
+"well"
+msgstr ""
+"W12: Rabhadh: Athraíodh comhad \"%s\" agus athraíodh an maolán i Vim fosta"
+
+#: fileio.c:6006
+#, c-format
+msgid "W11: Warning: File \"%s\" has changed since editing started"
+msgstr "W11: Rabhadh: Athraíodh comhad \"%s\" ó tosaíodh é a chur in eagar"
+
+#: fileio.c:6008
+#, c-format
+msgid "W16: Warning: Mode of file \"%s\" has changed since editing started"
+msgstr ""
+"W16: Rabhadh: Athraíodh mód an chomhaid \"%s\" ó tosaíodh é a chur in eagar"
+
+#: fileio.c:6018
+#, c-format
+msgid "W13: Warning: File \"%s\" has been created after editing started"
+msgstr "W13: Rabhadh: Cruthaíodh comhad \"%s\" ó tosaíodh é a chur in eagar"
+
+#: fileio.c:6031
+msgid "See \":help W11\" for more info."
+msgstr "Bain triail as \":help W11\" chun tuilleadh eolais a fháil."
+
+#: fileio.c:6045
+msgid "Warning"
+msgstr "Rabhadh"
+
+#: fileio.c:6046
+msgid ""
+"&OK\n"
+"&Load File"
+msgstr ""
+"&OK\n"
+"&Luchtaigh Comhad"
+
+#: fileio.c:6148
+#, c-format
+msgid "E462: Could not prepare for reloading \"%s\""
+msgstr "E462: Ní féidir \"%s\" a ullmhú le haghaidh athluchtaithe"
+
+#: fileio.c:6167
+#, c-format
+msgid "E321: Could not reload \"%s\""
+msgstr "E321: Ní féidir \"%s\" a athluchtú"
+
+#: fileio.c:6762
+msgid "--Deleted--"
+msgstr "--Scriosta--"
+
+#: fileio.c:6909
+#, c-format
+msgid "auto-removing autocommand: %s <buffer=%d>"
+msgstr "ag baint uathordú go huathoibríoch: %s <maolán=%d>"
+
+#. the group doesn't exist
+#: fileio.c:6953
+#, c-format
+msgid "E367: No such group: \"%s\""
+msgstr "E367: Níl a leithéid de ghrúpa: \"%s\""
+
+#: fileio.c:7079
+#, c-format
+msgid "E215: Illegal character after *: %s"
+msgstr "E215: Carachtar neamhcheadaithe i ndiaidh *: %s"
+
+#: fileio.c:7091
+#, c-format
+msgid "E216: No such event: %s"
+msgstr "E216: Níl a leithéid de theagmhas: %s"
+
+#: fileio.c:7093
+#, c-format
+msgid "E216: No such group or event: %s"
+msgstr "E216: Níl a leithéid de ghrúpa nó theagmhas: %s"
+
+#. Highlight title
+#: fileio.c:7291
+msgid ""
+"\n"
+"--- Auto-Commands ---"
+msgstr ""
+"\n"
+"--- Uathorduithe ---"
+
+#: fileio.c:7527
+#, c-format
+msgid "E680: <buffer=%d>: invalid buffer number "
+msgstr "E680: <maolán=%d>: uimhir neamhbhailí mhaoláin "
+
+#: fileio.c:7624
+msgid "E217: Can't execute autocommands for ALL events"
+msgstr "E217: Ní féidir uathorduithe a rith i gcomhair teagmhas UILE"
+
+#: fileio.c:7647
+msgid "No matching autocommands"
+msgstr "Níl aon uathordú comhoiriúnaithe"
+
+#: fileio.c:7968
+msgid "E218: autocommand nesting too deep"
+msgstr "E218: uathordú neadaithe ródhomhain"
+
+#: fileio.c:8267
+#, c-format
+msgid "%s Auto commands for \"%s\""
+msgstr "%s Uathorduithe do \"%s\""
+
+#: fileio.c:8275
+#, c-format
+msgid "Executing %s"
+msgstr "%s á rith"
+
+#. always scroll up, don't overwrite
+#: fileio.c:8343
+#, c-format
+msgid "autocommand %s"
+msgstr "uathordú %s"
+
+#: fileio.c:8938
+msgid "E219: Missing {."
+msgstr "E219: { ar iarraidh."
+
+#: fileio.c:8940
+msgid "E220: Missing }."
+msgstr "E220: } ar iarraidh."
+
+#: fold.c:68
+msgid "E490: No fold found"
+msgstr "E490: Níor aimsíodh aon fhilleadh"
+
+#: fold.c:593
+msgid "E350: Cannot create fold with current 'foldmethod'"
+msgstr "E350: Ní féidir filleadh a chruthú leis an 'foldmethod' reatha"
+
+#: fold.c:595
+msgid "E351: Cannot delete fold with current 'foldmethod'"
+msgstr "E351: Ní féidir filleadh a scriosadh leis an 'foldmethod' reatha"
+
+#: fold.c:1984
+#, c-format
+msgid "+--%3ld lines folded "
+msgstr "+--%3ld líne fillte "
+
+#: getchar.c:249
+msgid "E222: Add to read buffer"
+msgstr "E222: Cuir leis an maolán léite"
+
+#: getchar.c:2234
+msgid "E223: recursive mapping"
+msgstr "E223: mapáil athchúrsach"
+
+#: getchar.c:3114
+#, c-format
+msgid "E224: global abbreviation already exists for %s"
+msgstr "E224: tá giorrúchán comhchoiteann ann cheana le haghaidh %s"
+
+#: getchar.c:3117
+#, c-format
+msgid "E225: global mapping already exists for %s"
+msgstr "E225: tá mapáil chomhchoiteann ann cheana le haghaidh %s"
+
+#: getchar.c:3249
+#, c-format
+msgid "E226: abbreviation already exists for %s"
+msgstr "E226: tá giorrúchán ann cheana le haghaidh %s"
+
+#: getchar.c:3252
+#, c-format
+msgid "E227: mapping already exists for %s"
+msgstr "E227: tá mapáil ann cheana le haghaidh %s"
+
+#: getchar.c:3316
+msgid "No abbreviation found"
+msgstr "Níor aimsíodh aon ghiorrúchán"
+
+#: getchar.c:3318
+msgid "No mapping found"
+msgstr "Níor aimsíodh aon mhapáil"
+
+#: getchar.c:4210
+msgid "E228: makemap: Illegal mode"
+msgstr "E228: makemap: Mód neamhcheadaithe"
+
+#: gui_at_fs.c:300
+msgid "<cannot open> "
+msgstr "<ní féidir a oscailt> "
+
+#: gui_at_fs.c:1136
+#, c-format
+msgid "E616: vim_SelFile: can't get font %s"
+msgstr "E616: vim_SelFile: níl aon fháil ar an chlófhoireann %s"
+
+#: gui_at_fs.c:2781
+msgid "E614: vim_SelFile: can't return to current directory"
+msgstr "E614: vim_SelFile: ní féidir dul ar ais go dtí an chomhadlann reatha"
+
+#: gui_at_fs.c:2801
+msgid "Pathname:"
+msgstr "Conair:"
+
+#: gui_at_fs.c:2807
+msgid "E615: vim_SelFile: can't get current directory"
+msgstr "E615: vim_SelFile: níl an chomhadlann reatha ar fáil"
+
+#: gui_at_fs.c:2815 gui_xmdlg.c:932
+msgid "OK"
+msgstr "OK"
+
+#: gui_at_fs.c:2815 gui_gtk.c:2809 gui_xmdlg.c:941
+msgid "Cancel"
+msgstr "Cealaigh"
+
+#: gui_athena.c:2175 gui_motif.c:2292
+msgid "Vim dialog"
+msgstr "Dialóg Vim"
+
+#: gui_at_sb.c:486
+msgid "Scrollbar Widget: Could not get geometry of thumb pixmap."
+msgstr ""
+"Giuirléid Scrollbharra: Ní féidir céimseata an mhapa picteilíní a fháil."
+
+#: gui_beval.c:101 gui_w32.c:4092
+msgid "E232: Cannot create BalloonEval with both message and callback"
+msgstr ""
+"E232: Ní féidir BalloonEval a chruthú le teachtaireacht agus aisghlaoch araon"
+
+#: gui.c:220
+msgid "E229: Cannot start the GUI"
+msgstr "E229: Ní féidir an GUI a chur ag obair"
+
+#: gui.c:355
+#, c-format
+msgid "E230: Cannot read from \"%s\""
+msgstr "E230: Ní féidir léamh ó \"%s\""
+
+#: gui.c:478
+msgid "E665: Cannot start GUI, no valid font found"
+msgstr ""
+"E665: Ní féidir an GUI a chur ag obair, níl aon chlófhoireann bhailí ann"
+
+#: gui.c:483
+msgid "E231: 'guifontwide' invalid"
+msgstr "E231: 'guifontwide' neamhbhailí"
+
+#: gui.c:553
+msgid "E599: Value of 'imactivatekey' is invalid"
+msgstr "E599: Luach neamhbhailí ar 'imactivatekey'"
+
+#: gui.c:4070
+#, c-format
+msgid "E254: Cannot allocate color %s"
+msgstr "E254: Ní féidir dath %s a riar"
+
+#: gui.c:4598
+msgid "No match at cursor, finding next"
+msgstr "Níl a leithéid ag an chúrsóir, ag cuardach ar an chéad cheann eile"
+
+#: gui_gtk.c:1687
+msgid "Vim dialog..."
+msgstr "Dialóg Vim..."
+
+#: gui_gtk.c:2138 message.c:3000
+msgid ""
+"&Yes\n"
+"&No\n"
+"&Cancel"
+msgstr ""
+"&Tá\n"
+"&Níl\n"
+"&Cealaigh"
+
+#: gui_gtk.c:2346
+msgid "Input _Methods"
+msgstr "_Modhanna ionchuir"
+
+# in OLT --KPS
+#: gui_gtk.c:2612 gui_motif.c:3243
+msgid "VIM - Search and Replace..."
+msgstr "VIM - Cuardaigh agus Athchuir..."
+
+#: gui_gtk.c:2620 gui_motif.c:3245
+msgid "VIM - Search..."
+msgstr "VIM - Cuardaigh..."
+
+#: gui_gtk.c:2652 gui_motif.c:3354
+msgid "Find what:"
+msgstr "Aimsigh:"
+
+#: gui_gtk.c:2670 gui_motif.c:3387
+msgid "Replace with:"
+msgstr "Le cur in ionad:"
+
+#. whole word only button
+#: gui_gtk.c:2702 gui_motif.c:3508
+msgid "Match whole word only"
+msgstr "Focal iomlán amháin"
+
+#. match case button
+#: gui_gtk.c:2713 gui_motif.c:3520
+msgid "Match case"
+msgstr "Meaitseáil an cás"
+
+#: gui_gtk.c:2723 gui_motif.c:3459
+msgid "Direction"
+msgstr "Treo"
+
+#. 'Up' and 'Down' buttons
+#: gui_gtk.c:2735 gui_motif.c:3472
+msgid "Up"
+msgstr "Suas"
+
+#: gui_gtk.c:2739 gui_motif.c:3481
+msgid "Down"
+msgstr "Síos"
+
+#: gui_gtk.c:2761 gui_gtk.c:2763
+msgid "Find Next"
+msgstr "An Chéad Cheann Eile"
+
+#: gui_gtk.c:2780 gui_gtk.c:2782
+msgid "Replace"
+msgstr "Ionadaigh"
+
+#: gui_gtk.c:2793 gui_gtk.c:2795
+msgid "Replace All"
+msgstr "Ionadaigh Uile"
+
+#: gui_gtk_x11.c:2327
+msgid "Vim: Received \"die\" request from session manager\n"
+msgstr "Vim: Fuarthas iarratas \"die\" ó bhainisteoir an tseisiúin\n"
+
+#: gui_gtk_x11.c:3527
+msgid "Vim: Main window unexpectedly destroyed\n"
+msgstr "Vim: Milleadh an príomhfhuinneog gan choinne\n"
+
+#: gui_gtk_x11.c:4147
+msgid "Font Selection"
+msgstr "Roghnú Cló"
+
+#: gui_gtk_x11.c:6104 ui.c:2129
+msgid "Used CUT_BUFFER0 instead of empty selection"
+msgstr "Úsáideadh CUT_BUFFER0 in ionad roghnúcháin folaimh"
+
+#: gui_motif.c:2054
+msgid "&Filter"
+msgstr "&Scagaire"
+
+#: gui_motif.c:2055 gui_motif.c:3322
+msgid "&Cancel"
+msgstr "&Cealaigh"
+
+#: gui_motif.c:2056
+msgid "Directories"
+msgstr "Comhadlanna"
+
+#: gui_motif.c:2057
+msgid "Filter"
+msgstr "Scagaire"
+
+#: gui_motif.c:2058
+msgid "&Help"
+msgstr "&Cabhair"
+
+#: gui_motif.c:2059
+msgid "Files"
+msgstr "Comhaid"
+
+#: gui_motif.c:2060
+msgid "&OK"
+msgstr "&OK"
+
+#: gui_motif.c:2061
+msgid "Selection"
+msgstr "Roghnú"
+
+#: gui_motif.c:3274
+msgid "Find &Next"
+msgstr "An Chéad Chea&nn Eile"
+
+#: gui_motif.c:3289
+msgid "&Replace"
+msgstr "&Ionadaigh"
+
+#: gui_motif.c:3300
+msgid "Replace &All"
+msgstr "Ionadaigh &Uile"
+
+#: gui_motif.c:3311
+msgid "&Undo"
+msgstr "&Cealaigh"
+
+#: gui_riscos.c:952
+#, c-format
+msgid "E610: Can't load Zap font '%s'"
+msgstr "E610: Ní féidir an chlófhoireann Zap '%s' a luchtú"
+
+#: gui_riscos.c:1048
+#, c-format
+msgid "E611: Can't use font %s"
+msgstr "E611: Ní féidir an chlófhoireann %s a úsáid"
+
+#: gui_riscos.c:3272
+msgid ""
+"\n"
+"Sending message to terminate child process.\n"
+msgstr ""
+"\n"
+"Ag seoladh teachtaireachta chun an macphróiseas a stopadh.\n"
+
+#: gui_w32.c:840
+#, c-format
+msgid "E671: Cannot find window title \"%s\""
+msgstr "E671: Ní féidir teideal na fuinneoige \"%s\" a aimsiú"
+
+#: gui_w32.c:848
+#, c-format
+msgid "E243: Argument not supported: \"-%s\"; Use the OLE version."
+msgstr "E243: Argóint gan tacaíocht: \"-%s\"; Bain úsáid as an leagan OLE."
+
+#: gui_w32.c:1098
+msgid "E672: Unable to open window inside MDI application"
+msgstr "E672: Ní féidir fuinneog a oscailt isteach i bhfeidhmchlár MDI"
+
+#: gui_w48.c:2213
+msgid "Find string (use '\\\\' to find  a '\\')"
+msgstr "Aimsigh teaghrán (bain úsáid as '\\\\' chun '\\' a aimsiú)"
+
+#: gui_w48.c:2238
+msgid "Find & Replace (use '\\\\' to find  a '\\')"
+msgstr "Aimsigh & Athchuir (úsáid '\\\\' chun '\\' a aimsiú)"
+
+#. We fake this: Use a filter that doesn't select anything and a default
+#. * file name that won't be used.
+#: gui_w48.c:3044
+msgid "Not Used"
+msgstr "Gan Úsáid"
+
+#: gui_w48.c:3045
+msgid "Directory\t*.nothing\n"
+msgstr "Comhadlann\t*.neamhní\n"
+
+#: gui_x11.c:1537
+msgid "Vim E458: Cannot allocate colormap entry, some colors may be incorrect"
+msgstr ""
+"Vim E458: Ní féidir iontráil dathmhapála a dháileadh, is féidir go mbeidh "
+"dathanna míchearta ann"
+
+#: gui_x11.c:2141
+#, c-format
+msgid "E250: Fonts for the following charsets are missing in fontset %s:"
+msgstr ""
+"E250: Clónna ar iarraidh le haghaidh na dtacar carachtar i dtacar cló %s:"
+
+#: gui_x11.c:2184
+#, c-format
+msgid "E252: Fontset name: %s"
+msgstr "E252: Ainm an tacar cló: %s"
+
+#: gui_x11.c:2185
+#, c-format
+msgid "Font '%s' is not fixed-width"
+msgstr "Ní cló aonleithid é '%s'"
+
+#: gui_x11.c:2204
+#, c-format
+msgid "E253: Fontset name: %s\n"
+msgstr "E253: Ainm an tacar cló: %s\n"
+
+#: gui_x11.c:2205
+#, c-format
+msgid "Font0: %s\n"
+msgstr "Cló0: %s\n"
+
+#: gui_x11.c:2206
+#, c-format
+msgid "Font1: %s\n"
+msgstr "Cló1: %s\n"
+
+#: gui_x11.c:2207
+#, c-format
+msgid "Font%ld width is not twice that of font0\n"
+msgstr "Níl Cló%ld níos leithne faoi dhó ná cló0\n"
+
+#: gui_x11.c:2208
+#, c-format
+msgid "Font0 width: %ld\n"
+msgstr "Leithead Cló0: %ld\n"
+
+#: gui_x11.c:2209
+#, c-format
+msgid ""
+"Font1 width: %ld\n"
+"\n"
+msgstr ""
+"Leithead Cló1: %ld\n"
+"\n"
+
+#: gui_xmdlg.c:688 gui_xmdlg.c:810
+msgid "Invalid font specification"
+msgstr "Sonrú neamhbhailí cló"
+
+#: gui_xmdlg.c:689 gui_xmdlg.c:811
+msgid "&Dismiss"
+msgstr "&Ruaig"
+
+#: gui_xmdlg.c:698
+msgid "no specific match"
+msgstr "níl a leithéid ann"
+
+#: gui_xmdlg.c:910
+msgid "Vim - Font Selector"
+msgstr "Vim - Roghnú Cló"
+
+#: gui_xmdlg.c:979
+msgid "Name:"
+msgstr "Ainm:"
+
+#. create toggle button
+#: gui_xmdlg.c:1019
+msgid "Show size in Points"
+msgstr "Taispeáin méid (Pointí)"
+
+#: gui_xmdlg.c:1038
+msgid "Encoding:"
+msgstr "Ionchódú:"
+
+#: gui_xmdlg.c:1084
+msgid "Font:"
+msgstr "Cló:"
+
+#: gui_xmdlg.c:1117
+msgid "Style:"
+msgstr "Stíl:"
+
+#: gui_xmdlg.c:1149
+msgid "Size:"
+msgstr "Méid:"
+
+#: hangulin.c:610
+msgid "E256: Hangul automata ERROR"
+msgstr "E256: EARRÁID leis na huathoibreáin Hangul"
+
+#: if_cscope.c:77
+msgid "Add a new database"
+msgstr "Bunachar sonraí nua"
+
+#: if_cscope.c:79
+msgid "Query for a pattern"
+msgstr "Iarratas ar phatrún"
+
+#: if_cscope.c:81
+msgid "Show this message"
+msgstr "Taispeáin an teachtaireacht seo"
+
+#: if_cscope.c:83
+msgid "Kill a connection"
+msgstr "Maraigh nasc"
+
+#: if_cscope.c:85
+msgid "Reinit all connections"
+msgstr "Atúsaigh gach nasc"
+
+#: if_cscope.c:87
+msgid "Show connections"
+msgstr "Taispeáin naisc"
+
+#: if_cscope.c:95
+#, c-format
+msgid "E560: Usage: cs[cope] %s"
+msgstr "E560: Úsáid: cs[cope] %s"
+
+#: if_cscope.c:124
+msgid "This cscope command does not support splitting the window.\n"
+msgstr "Ní féidir fuinneoga a scoilteadh leis an ordú seo `cscope'.\n"
+
+#: if_cscope.c:175
+msgid "E562: Usage: cstag <ident>"
+msgstr "E562: Úsáid: cstag <ident>"
+
+#: if_cscope.c:231
+msgid "E257: cstag: tag not found"
+msgstr "E257: cstag: clib gan aimsiú"
+
+#: if_cscope.c:409
+#, c-format
+msgid "E563: stat(%s) error: %d"
+msgstr "E563: earráid stat(%s): %d"
+
+#: if_cscope.c:419
+msgid "E563: stat error"
+msgstr "E563: earráid stat"
+
+#: if_cscope.c:516
+#, c-format
+msgid "E564: %s is not a directory or a valid cscope database"
+msgstr "E564: Níl %s ina comhadlann nó bunachar sonraí cscope bailí"
+
+#: if_cscope.c:534
+#, c-format
+msgid "Added cscope database %s"
+msgstr "Bunachar sonraí nua cscope: %s"
+
+#: if_cscope.c:589
+#, c-format
+msgid "E262: error reading cscope connection %ld"
+msgstr "E262: earráid agus an nasc cscope %ld á léamh"
+
+#: if_cscope.c:694
+msgid "E561: unknown cscope search type"
+msgstr "E561: cineál anaithnid cuardaigh cscope"
+
+#: if_cscope.c:736
+msgid "E566: Could not create cscope pipes"
+msgstr "E566: Níorbh fhéidir píopaí cscope a chruthú"
+
+#: if_cscope.c:753
+msgid "E622: Could not fork for cscope"
+msgstr "E622: Níorbh fhéidir forc a dhéanamh le haghaidh cscope"
+
+#: if_cscope.c:847 if_cscope.c:897
+msgid "cs_create_connection exec failed"
+msgstr "theip ar rith cs_create_connection"
+
+#: if_cscope.c:898
+msgid "E623: Could not spawn cscope process"
+msgstr "E623: Níorbh fhéidir próiseas cscope a sceitheadh"
+
+#: if_cscope.c:911
+msgid "cs_create_connection: fdopen for to_fp failed"
+msgstr "cs_create_connection: theip ar fdopen le haghaidh to_fp"
+
+#: if_cscope.c:913
+msgid "cs_create_connection: fdopen for fr_fp failed"
+msgstr "cs_create_connection: theip ar fdopen le haghaidh fr_fp"
+
+#: if_cscope.c:951
+msgid "E567: no cscope connections"
+msgstr "E567: níl aon nasc cscope ann"
+
+#: if_cscope.c:1025
+#, c-format
+msgid "E259: no matches found for cscope query %s of %s"
+msgstr ""
+"E259: níor aimsíodh aon rud comhoiriúnach leis an iarratas cscope %s de %s"
+
+#: if_cscope.c:1082
+#, c-format
+msgid "E469: invalid cscopequickfix flag %c for %c"
+msgstr "E469: brat neamhbhailí cscopequickfix %c le haghaidh %c"
+
+#: if_cscope.c:1152
+msgid "cscope commands:\n"
+msgstr "Orduithe cscope:\n"
+
+#: if_cscope.c:1155
+#, c-format
+msgid "%-5s: %-30s (Usage: %s)"
+msgstr "%-5s: %-30s (Úsáid: %s)"
+
+#: if_cscope.c:1253
+#, c-format
+msgid "E625: cannot open cscope database: %s"
+msgstr "E625: ní féidir bunachar sonraí cscope a oscailt: %s"
+
+#: if_cscope.c:1271
+msgid "E626: cannot get cscope database information"
+msgstr "E626: ní féidir eolas a fháil faoin bhunachar sonraí cscope"
+
+#: if_cscope.c:1296
+msgid "E568: duplicate cscope database not added"
+msgstr "E568: níor cuireadh bunachar sonraí dúblach cscope leis"
+
+#: if_cscope.c:1307
+msgid "E569: maximum number of cscope connections reached"
+msgstr "E569: ní cheadaítear níos mó ná uasmhéid na nasc cscope"
+
+#: if_cscope.c:1424
+#, c-format
+msgid "E261: cscope connection %s not found"
+msgstr "E261: nasc cscope %s gan aimsiú"
+
+#: if_cscope.c:1458
+#, c-format
+msgid "cscope connection %s closed"
+msgstr "Dúnadh nasc cscope %s"
+
+#. should not reach here
+#: if_cscope.c:1598
+msgid "E570: fatal error in cs_manage_matches"
+msgstr "E570: earráid mharfach i cs_manage_matches"
+
+#: if_cscope.c:1848
+#, c-format
+msgid "Cscope tag: %s"
+msgstr "Clib cscope: %s"
+
+#: if_cscope.c:1870
+msgid ""
+"\n"
+"   #   line"
+msgstr ""
+"\n"
+"   #   líne"
+
+#: if_cscope.c:1872
+msgid "filename / context / line\n"
+msgstr "ainm comhaid / comhthéacs / líne\n"
+
+#: if_cscope.c:1990
+#, c-format
+msgid "E609: Cscope error: %s"
+msgstr "E609: Earráid cscope: %s"
+
+#: if_cscope.c:2176
+msgid "All cscope databases reset"
+msgstr "Athshocraíodh gach bunachar sonraí cscope"
+
+#: if_cscope.c:2244
+msgid "no cscope connections\n"
+msgstr "níl aon nasc cscope\n"
+
+#: if_cscope.c:2248
+msgid " # pid    database name                       prepend path\n"
+msgstr " # pid    ainm bunachair                       conair thosaigh\n"
+
+#: if_mzsch.c:785
+msgid ""
+"???: Sorry, this command is disabled, the MzScheme library could not be "
+"loaded."
+msgstr ""
+"???: Tá brón orm, níl an t-ordú seo le fáil, níorbh fhéidir an leabharlann "
+"MzScheme a luchtú."
+
+#: if_mzsch.c:1222 if_python.c:1084 if_tcl.c:1406
+msgid "invalid expression"
+msgstr "slonn neamhbhailí"
+
+#: if_mzsch.c:1230 if_python.c:1098 if_tcl.c:1411
+msgid "expressions disabled at compile time"
+msgstr "díchumasaíodh sloinn ag am an tiomsaithe"
+
+#: if_mzsch.c:1317
+msgid "hidden option"
+msgstr "rogha fholaithe"
+
+#: if_mzsch.c:1319 if_tcl.c:505
+msgid "unknown option"
+msgstr "rogha anaithnid"
+
+#: if_mzsch.c:1468
+msgid "window index is out of range"
+msgstr "innéacs fuinneoige as raon"
+
+#: if_mzsch.c:1623
+msgid "couldn't open buffer"
+msgstr "ní féidir maolán a oscailt"
+
+#: if_mzsch.c:1888 if_mzsch.c:1914 if_mzsch.c:1989 if_mzsch.c:2038
+#: if_mzsch.c:2147 if_mzsch.c:2190 if_python.c:2311 if_python.c:2345
+#: if_python.c:2400 if_python.c:2468 if_python.c:2590 if_python.c:2642
+#: if_tcl.c:688 if_tcl.c:733 if_tcl.c:807 if_tcl.c:877 if_tcl.c:2003
+msgid "cannot save undo information"
+msgstr "ní féidir eolas cealaithe a shábháil"
+
+#: if_mzsch.c:1893 if_mzsch.c:1997 if_mzsch.c:2051 if_python.c:2313
+#: if_python.c:2407 if_python.c:2479
+msgid "cannot delete line"
+msgstr "ní féidir an líne a scriosadh"
+
+#: if_mzsch.c:1919 if_mzsch.c:2065 if_python.c:2350 if_python.c:2495
+#: if_tcl.c:694 if_tcl.c:2025
+msgid "cannot replace line"
+msgstr "ní féidir an líne a athchur"
+
+#: if_mzsch.c:2079 if_mzsch.c:2152 if_mzsch.c:2199 if_python.c:2513
+#: if_python.c:2592 if_python.c:2650
+msgid "cannot insert line"
+msgstr "ní féidir líne a ionsá"
+
+#: if_mzsch.c:2295 if_python.c:2762
+msgid "string cannot contain newlines"
+msgstr "ní cheadaítear carachtair líne nua sa teaghrán"
+
+#: if_mzsch.c:2378
+msgid "Vim error: ~a"
+msgstr "earráid Vim: ~a"
+
+#: if_mzsch.c:2387
+msgid "Vim error"
+msgstr "earráid Vim"
+
+#: if_mzsch.c:2443
+msgid "buffer is invalid"
+msgstr "maolán neamhbhailí"
+
+#: if_mzsch.c:2452
+msgid "window is invalid"
+msgstr "fuinneog neamhbhailí"
+
+#: if_mzsch.c:2472
+msgid "linenr out of range"
+msgstr "líne-uimhir as raon"
+
+#: if_python.c:438
+msgid ""
+"E263: Sorry, this command is disabled, the Python library could not be "
+"loaded."
+msgstr ""
+"E263: Tá brón orm, níl an t-ordú seo le fáil, níorbh fhéidir an leabharlann "
+"Python a luchtú."
+
+#: if_python.c:504
+msgid "E659: Cannot invoke Python recursively"
+msgstr "E659: Ní féidir Python a rith go hathchúrsach"
+
+#: if_python.c:705
+msgid "can't delete OutputObject attributes"
+msgstr "ní féidir tréithe OutputObject a scriosadh"
+
+#: if_python.c:712
+msgid "softspace must be an integer"
+msgstr "ní foláir softspace a bheith ina shlánuimhir"
+
+#: if_python.c:720
+msgid "invalid attribute"
+msgstr "aitreabúid neamhbhailí"
+
+#: if_python.c:759 if_python.c:773
+msgid "writelines() requires list of strings"
+msgstr "liosta teaghrán ag teastáil ó writelines()"
+
+#: if_python.c:899
+msgid "E264: Python: Error initialising I/O objects"
+msgstr "E264: Python: Earráid agus réada I/A á dtúsú"
+
+#: if_python.c:1111
+msgid "attempt to refer to deleted buffer"
+msgstr "rinneadh iarracht ar mhaolán scriosta a rochtain"
+
+#: if_python.c:1126 if_python.c:1167 if_python.c:1231 if_tcl.c:1218
+msgid "line number out of range"
+msgstr "líne-uimhir as raon"
+
+#: if_python.c:1366
+#, c-format
+msgid "<buffer object (deleted) at %8lX>"
+msgstr "<maolán (scriosta) ag %8lX>"
+
+#: if_python.c:1457 if_tcl.c:840
+msgid "invalid mark name"
+msgstr "ainm neamhbhailí mairc"
+
+#: if_python.c:1737
+msgid "no such buffer"
+msgstr "níl a leithéid de mhaolán ann"
+
+#: if_python.c:1825
+msgid "attempt to refer to deleted window"
+msgstr "rinneadh iarracht ar fhuinneog scriosta a rochtain"
+
+#: if_python.c:1870
+msgid "readonly attribute"
+msgstr "tréith léimh-amháin"
+
+#: if_python.c:1883
+msgid "cursor position outside buffer"
+msgstr "cúrsóir taobh amuigh den mhaolán"
+
+#: if_python.c:1960
+#, c-format
+msgid "<window object (deleted) at %.8lX>"
+msgstr "<fuinneog (scriosta) ag %.8lX>"
+
+#: if_python.c:1972
+#, c-format
+msgid "<window object (unknown) at %.8lX>"
+msgstr "<fuinneog (anaithnid) ag %.8lX>"
+
+#: if_python.c:1974
+#, c-format
+msgid "<window %d>"
+msgstr "<fuinneog %d>"
+
+#: if_python.c:2050
+msgid "no such window"
+msgstr "níl a leithéid d'fhuinneog ann"
+
+#: if_ruby.c:422
+msgid ""
+"E266: Sorry, this command is disabled, the Ruby library could not be loaded."
+msgstr ""
+"E266: Tá brón orm, níl an t-ordú seo le fáil, níorbh fhéidir an leabharlann "
+"Ruby a luchtú."
+
+#: if_ruby.c:485
+#, c-format
+msgid "E273: unknown longjmp status %d"
+msgstr "E273: stádas anaithnid longjmp %d"
+
+#: if_sniff.c:67
+msgid "Toggle implementation/definition"
+msgstr "Scoránaigh feidhmiú/sainmhíniú"
+
+#: if_sniff.c:68
+msgid "Show base class of"
+msgstr "Taispeáin an bunaicme de"
+
+#: if_sniff.c:69
+msgid "Show overridden member function"
+msgstr "Taispeáin ballfheidhm sáraithe"
+
+#: if_sniff.c:70
+msgid "Retrieve from file"
+msgstr "Aisghabh ó chomhad"
+
+#: if_sniff.c:71
+msgid "Retrieve from project"
+msgstr "Aisghabh ó thionscadal"
+
+#: if_sniff.c:73
+msgid "Retrieve from all projects"
+msgstr "Aisghabh ó gach tionscadal"
+
+#: if_sniff.c:74
+msgid "Retrieve"
+msgstr "Aisghabh"
+
+#: if_sniff.c:75
+msgid "Show source of"
+msgstr "Taispeáin foinse"
+
+#: if_sniff.c:76
+msgid "Find symbol"
+msgstr "Aimsigh siombail"
+
+#: if_sniff.c:77
+msgid "Browse class"
+msgstr "Brabhsáil aicme"
+
+#: if_sniff.c:78
+msgid "Show class in hierarchy"
+msgstr "Taispeáin an aicme in ordlathas"
+
+#: if_sniff.c:79
+msgid "Show class in restricted hierarchy"
+msgstr "Taispeáin an aicme in ordlathas srianta"
+
+#: if_sniff.c:80
+msgid "Xref refers to"
+msgstr "Tagraíonn Xref do"
+
+#: if_sniff.c:81
+msgid "Xref referred by"
+msgstr "Xref tagartha ag"
+
+#: if_sniff.c:82
+msgid "Xref has a"
+msgstr "Rud atá ag Xref:"
+
+#: if_sniff.c:83
+msgid "Xref used by"
+msgstr "Xref á úsáid ag"
+
+#: if_sniff.c:84
+msgid "Show docu of"
+msgstr "Taispeáin eolas faoi"
+
+#: if_sniff.c:85
+msgid "Generate docu for"
+msgstr "Gin eolas faoi"
+
+#: if_sniff.c:97
+msgid ""
+"Cannot connect to SNiFF+. Check environment (sniffemacs must be found in "
+"$PATH).\n"
+msgstr ""
+"Ní féidir nasc a dhéanamh le SNiFF+. Seiceáil do chuid athróga "
+"thimpeallachta (ní foláir sniffemacs a chur i $PATH).\n"
+
+#: if_sniff.c:425
+msgid "E274: Sniff: Error during read. Disconnected"
+msgstr "E274: Sniff: Earráid sa léamh. Dínasctha"
+
+#: if_sniff.c:553
+msgid "SNiFF+ is currently "
+msgstr "SNiFF+ stádas faoi láthair: "
+
+#: if_sniff.c:555
+msgid "not "
+msgstr "ní "
+
+#: if_sniff.c:556
+msgid "connected"
+msgstr "nasctha"
+
+#: if_sniff.c:592
+#, c-format
+msgid "E275: Unknown SNiFF+ request: %s"
+msgstr "E275: Iarratas anaithnid SNiFF+: %s"
+
+#: if_sniff.c:605
+msgid "E276: Error connecting to SNiFF+"
+msgstr "E276: Earráid ag nascadh le SNiFF+"
+
+#: if_sniff.c:1009
+msgid "E278: SNiFF+ not connected"
+msgstr "E278: SNiFF+ gan nasc"
+
+#: if_sniff.c:1018
+msgid "E279: Not a SNiFF+ buffer"
+msgstr "E279: Ní maolán SNiFF+ é"
+
+#: if_sniff.c:1083
+msgid "Sniff: Error during write. Disconnected"
+msgstr "Sniff: Earráid sa scríobh. Dínasctha"
+
+#: if_tcl.c:422
+msgid "invalid buffer number"
+msgstr "uimhir mhaoláin neamhbhailí"
+
+#: if_tcl.c:468 if_tcl.c:935 if_tcl.c:1114
+msgid "not implemented yet"
+msgstr "níl ar fáil"
+
+#. ???
+#: if_tcl.c:778
+msgid "cannot set line(s)"
+msgstr "ní féidir lín(t)e a shocrú"
+
+#: if_tcl.c:849
+msgid "mark not set"
+msgstr "marc gan socrú"
+
+#: if_tcl.c:855 if_tcl.c:1070
+#, c-format
+msgid "row %d column %d"
+msgstr "líne %d colún %d"
+
+#: if_tcl.c:885
+msgid "cannot insert/append line"
+msgstr "ní féidir líne a chur ann/leis"
+
+#: if_tcl.c:1272
+msgid "unknown flag: "
+msgstr "bratach anaithnid: "
+
+#: if_tcl.c:1342
+msgid "unknown vimOption"
+msgstr "vimOption anaithnid"
+
+#: if_tcl.c:1427
+msgid "keyboard interrupt"
+msgstr "idirbhriseadh méarchláir"
+
+#: if_tcl.c:1432
+msgid "vim error"
+msgstr "earráid vim"
+
+#: if_tcl.c:1475
+msgid "cannot create buffer/window command: object is being deleted"
+msgstr "ní féidir ordú maoláin/fuinneoige a chruthú: réad á scriosadh"
+
+#: if_tcl.c:1549
+msgid ""
+"cannot register callback command: buffer/window is already being deleted"
+msgstr "ní féidir ordú aisghlaoch a chlárú: maolán/fuinneog á scriosadh cheana"
+
+#. This should never happen.  Famous last word?
+#: if_tcl.c:1566
+msgid ""
+"E280: TCL FATAL ERROR: reflist corrupt!? Please report this to vim-dev@vim."
+"org"
+msgstr ""
+"E280: EARRÁID MHARFACH TCL: liosta truaillithe tagartha!? Seol tuairisc "
+"fhabht chuig <vim-dev@vim.org> le do thoil"
+
+#: if_tcl.c:1567
+msgid "cannot register callback command: buffer/window reference not found"
+msgstr ""
+"ní féidir ordú aisghlaoch a chlárú: tagairt mhaolán/fhuinneoige gan aimsiú"
+
+#: if_tcl.c:1728
+msgid ""
+"E571: Sorry, this command is disabled: the Tcl library could not be loaded."
+msgstr ""
+"E571: Tá brón orm, níl an t-ordú seo le fáil, níorbh fhéidir an leabharlann "
+"Tcl a luchtú."
+
+#: if_tcl.c:1890
+msgid ""
+"E281: TCL ERROR: exit code is not int!? Please report this to vim-dev@vim.org"
+msgstr ""
+"E281: EARRÁID TCL: níl an cód scortha ina shlánuimhir!? Seol tuairisc fhabht "
+"chuig <vim-dev@vim.org> le do thoil"
+
+#: if_tcl.c:2011
+msgid "cannot get line"
+msgstr "ní féidir an líne a fháil"
+
+#: if_xcmdsrv.c:233
+msgid "Unable to register a command server name"
+msgstr "Ní féidir ainm fhreastalaí ordaithe a chlárú"
+
+#: if_xcmdsrv.c:489
+msgid "E248: Failed to send command to the destination program"
+msgstr "E248: Theip ar sheoladh ordú chuig an sprioc-chlár"
+
+#: if_xcmdsrv.c:762
+#, c-format
+msgid "E573: Invalid server id used: %s"
+msgstr "E573: Aitheantas neamhbhailí freastalaí in úsáid: %s"
+
+#: if_xcmdsrv.c:1132
+msgid "E251: VIM instance registry property is badly formed.  Deleted!"
+msgstr "E251: Airí míchumtha sa chlárlann áisc VIM.  Scriosta!"
+
+#: main.c:60
+msgid "Unknown option"
+msgstr "Rogha anaithnid"
+
+#: main.c:62
+msgid "Too many edit arguments"
+msgstr "An iomarca argóintí eagraithe"
+
+#: main.c:64
+msgid "Argument missing after"
+msgstr "Argóint ar iarraidh i ndiaidh"
+
+#: main.c:66
+msgid "Garbage after option"
+msgstr "Dramhaíl i ndiaidh rogha"
+
+#: main.c:68
+msgid "Too many \"+command\", \"-c command\" or \"--cmd command\" arguments"
+msgstr ""
+"An iomarca argóintí den chineál \"+ordú\", \"-c ordú\" nó \"--cmd ordú\""
+
+#: main.c:70
+msgid "Invalid argument for"
+msgstr "Argóint neamhbhailí do"
+
+#: main.c:481
+msgid "This Vim was not compiled with the diff feature."
+msgstr "Níor tiomsaíodh an leagan Vim seo le `diff' ar fáil."
+
+#: main.c:958
+msgid "Attempt to open script file again: \""
+msgstr "Déan iarracht ar oscailt na scripte arís: \""
+
+#: main.c:967
+msgid "Cannot open for reading: \""
+msgstr "Ní féidir é a oscailt chun léamh: \""
+
+#: main.c:1021
+msgid "Cannot open for script output: \""
+msgstr "Ní féidir a oscailt le haghaidh an aschuir scripte: \""
+
+#: main.c:1189
+#, c-format
+msgid "%d files to edit\n"
+msgstr "%d comhad le heagrú\n"
+
+#: main.c:1299
+msgid "Vim: Error: Failure to start gvim from NetBeans\n"
+msgstr "Vim: Earráid: Theip ar thosú gvim ó NetBeans\n"
+
+#: main.c:1304
+msgid "Vim: Warning: Output is not to a terminal\n"
+msgstr "Vim: Rabhadh: Níl an t-aschur ag dul chuig teirminéal\n"
+
+#: main.c:1306
+msgid "Vim: Warning: Input is not from a terminal\n"
+msgstr "Vim: Rabhadh: Níl an t-ionchur ag teacht ó theirminéal\n"
+
+#. just in case..
+#: main.c:1374
+msgid "pre-vimrc command line"
+msgstr "líne na n-orduithe pre-vimrc"
+
+#: main.c:1415
+#, c-format
+msgid "E282: Cannot read from \"%s\""
+msgstr "E282: Ní féidir léamh ó \"%s\""
+
+#: main.c:2501
+msgid ""
+"\n"
+"More info with: \"vim -h\"\n"
+msgstr ""
+"\n"
+"Tuilleadh eolais: \"vim -h\"\n"
+
+#: main.c:2534
+msgid "[file ..]       edit specified file(s)"
+msgstr "[comhad ..]       cuir na comhaid ceaptha in eagar"
+
+#: main.c:2535
+msgid "-               read text from stdin"
+msgstr "-               scríobh téacs ó stdin"
+
+#: main.c:2536
+msgid "-t tag          edit file where tag is defined"
+msgstr "-t tag          cuir an comhad ina bhfuil an chlib in eagar"
+
+#: main.c:2538
+msgid "-q [errorfile]  edit file with first error"
+msgstr "-q [comhadearr] cuir comhad leis an chéad earráid in eagar"
+
+#: main.c:2547
+msgid ""
+"\n"
+"\n"
+"usage:"
+msgstr ""
+"\n"
+"\n"
+"úsáid:"
+
+#: main.c:2550
+msgid " vim [arguments] "
+msgstr " vim [argóintí] "
+
+#: main.c:2554
+msgid ""
+"\n"
+"   or:"
+msgstr ""
+"\n"
+"   nó:"
+
+#: main.c:2557
+msgid "where case is ignored prepend / to make flag upper case"
+msgstr ""
+"nuair nach cásíogair é, cuir / ar tosach brait chun cás uachtair a úsáid"
+
+#: main.c:2560
+msgid ""
+"\n"
+"\n"
+"Arguments:\n"
+msgstr ""
+"\n"
+"\n"
+"Argóintí:\n"
+
+#: main.c:2561
+msgid "--\t\t\tOnly file names after this"
+msgstr "--\t\t\tNí cheadaítear ach ainmneacha comhaid i ndiaidh é seo"
+
+#: main.c:2563
+msgid "--literal\t\tDon't expand wildcards"
+msgstr "--literal\t\tNá leathnaigh saoróga"
+
+#: main.c:2566
+msgid "-register\t\tRegister this gvim for OLE"
+msgstr "-register\t\tCláraigh an gvim seo le haghaidh OLE"
+
+#: main.c:2567
+msgid "-unregister\t\tUnregister gvim for OLE"
+msgstr "-unregister\t\tDíchláraigh an gvim seo le haghaidh OLE"
+
+#: main.c:2570
+msgid "-g\t\t\tRun using GUI (like \"gvim\")"
+msgstr "-g\t\t\tRith agus úsáid an GUI (mar \"gvim\")"
+
+#: main.c:2571
+msgid "-f  or  --nofork\tForeground: Don't fork when starting GUI"
+msgstr "-f  nó  --nofork\tTulra: Ná déan forc agus an GUI á thosú"
+
+#: main.c:2573
+msgid "-v\t\t\tVi mode (like \"vi\")"
+msgstr "-v\t\t\tMód Vi (mar \"vi\")"
+
+#: main.c:2574
+msgid "-e\t\t\tEx mode (like \"ex\")"
+msgstr "-e\t\t\tMód Ex (mar \"ex\")"
+
+#: main.c:2575
+msgid "-s\t\t\tSilent (batch) mode (only for \"ex\")"
+msgstr "-s\t\t\tMód ciúin (baiscphróiseála) (do \"ex\" amháin)"
+
+#: main.c:2577
+msgid "-d\t\t\tDiff mode (like \"vimdiff\")"
+msgstr "-d\t\t\tMód diff (mar \"vimdiff\")"
+
+#: main.c:2579
+msgid "-y\t\t\tEasy mode (like \"evim\", modeless)"
+msgstr "-y\t\t\tMód éasca (mar \"evim\", gan mhóid)"
+
+#: main.c:2580
+msgid "-R\t\t\tReadonly mode (like \"view\")"
+msgstr "-R\t\t\tMód léimh amháin (mar \"view\")"
+
+#: main.c:2581
+msgid "-Z\t\t\tRestricted mode (like \"rvim\")"
+msgstr "-Z\t\t\tMód srianta (mar \"rvim\")"
+
+#: main.c:2582
+msgid "-m\t\t\tModifications (writing files) not allowed"
+msgstr "-m\t\t\tNí cheadaítear athruithe (.i. scríobh na gcomhad)"
+
+#: main.c:2583
+msgid "-M\t\t\tModifications in text not allowed"
+msgstr "-M\t\t\tNí cheadaítear athruithe sa téacs"
+
+#: main.c:2584
+msgid "-b\t\t\tBinary mode"
+msgstr "-b\t\t\tMód dénártha"
+
+#: main.c:2586
+msgid "-l\t\t\tLisp mode"
+msgstr "-l\t\t\tMód Lisp"
+
+#: main.c:2588
+msgid "-C\t\t\tCompatible with Vi: 'compatible'"
+msgstr "-C\t\t\tComhoiriúnach le Vi: 'compatible'"
+
+#: main.c:2589
+msgid "-N\t\t\tNot fully Vi compatible: 'nocompatible'"
+msgstr "-N\t\t\tNí comhoiriúnaithe le Vi go hiomlán: 'nocompatible'"
+
+#: main.c:2590
+msgid "-V[N]\t\tVerbose level"
+msgstr "-V[N]\t\tFoclachas"
+
+#: main.c:2591
+msgid "-D\t\t\tDebugging mode"
+msgstr "-D\t\t\tMód dífhabhtaithe"
+
+#: main.c:2592
+msgid "-n\t\t\tNo swap file, use memory only"
+msgstr "-n\t\t\tNá húsáid comhad babhtála .i. ná húsáid ach an chuimhne"
+
+#: main.c:2593
+msgid "-r\t\t\tList swap files and exit"
+msgstr "-r\t\t\tTaispeáin comhaid bhabhtála agus scoir"
+
+#: main.c:2594
+msgid "-r (with file name)\tRecover crashed session"
+msgstr "-r (le hainm comhaid)\tAthshlánaigh ó chliseadh"
+
+#: main.c:2595
+msgid "-L\t\t\tSame as -r"
+msgstr "-L\t\t\tAr comhbhrí le -r"
+
+#: main.c:2597
+msgid "-f\t\t\tDon't use newcli to open window"
+msgstr "-f\t\t\tNá húsáid newcli chun fuinneog a oscailt"
+
+#: main.c:2598
+msgid "-dev <device>\t\tUse <device> for I/O"
+msgstr "-dev <gléas>\t\tBain úsáid as <gléas> do I/A"
+
+#: main.c:2601
+msgid "-A\t\t\tstart in Arabic mode"
+msgstr "-A\t\t\ttosaigh sa mhód Araibise"
+
+#: main.c:2604
+msgid "-H\t\t\tStart in Hebrew mode"
+msgstr "-H\t\t\tTosaigh sa mhód Eabhraise"
+
+#: main.c:2607
+msgid "-F\t\t\tStart in Farsi mode"
+msgstr "-F\t\t\tTosaigh sa mhód Pheirsise"
+
+#: main.c:2609
+msgid "-T <terminal>\tSet terminal type to <terminal>"
+msgstr "-T <teirminéal>\tSocraigh cineál teirminéal"
+
+#: main.c:2610
+msgid "-u <vimrc>\t\tUse <vimrc> instead of any .vimrc"
+msgstr "-u <vimrc>\t\tÚsáid <vimrc> in ionad aon .vimrc"
+
+#: main.c:2612
+msgid "-U <gvimrc>\t\tUse <gvimrc> instead of any .gvimrc"
+msgstr "-U <gvimrc>\t\tBain úsáid as <gvimrc> in ionad aon .gvimrc"
+
+#: main.c:2614
+msgid "--noplugin\t\tDon't load plugin scripts"
+msgstr "--noplugin\t\tNá luchtaigh breiseáin"
+
+#: main.c:2615
+msgid "-o[N]\t\tOpen N windows (default: one for each file)"
+msgstr "-o[N]\t\tOscail N fuinneog (réamhshocrú: ceann do gach comhad)"
+
+#: main.c:2616
+msgid "-O[N]\t\tLike -o but split vertically"
+msgstr "-O[N]\t\tMar -o, ach roinn go hingearach"
+
+#: main.c:2617
+msgid "+\t\t\tStart at end of file"
+msgstr "+\t\t\tTosaigh ag an chomhadchríoch"
+
+#: main.c:2618
+msgid "+<lnum>\t\tStart at line <lnum>"
+msgstr "+<lnum>\t\tTosaigh ar líne <lnum>"
+
+#: main.c:2620
+msgid "--cmd <command>\tExecute <command> before loading any vimrc file"
+msgstr "--cmd <ordú>\tRith <ordú> roimh aon chomhad vimrc a luchtú"
+
+#: main.c:2622
+msgid "-c <command>\t\tExecute <command> after loading the first file"
+msgstr "-c <ordú>\t\tRith <ordú> i ndiaidh luchtú an chéad chomhad"
+
+#: main.c:2623
+msgid "-S <session>\t\tSource file <session> after loading the first file"
+msgstr ""
+"-S <seisiún>\t\tLéigh comhad <seisiún> i ndiaidh an chéad chomhad á léamh"
+
+#: main.c:2624
+msgid "-s <scriptin>\tRead Normal mode commands from file <scriptin>"
+msgstr "-s <script>\tLéig orduithe gnáthmhóid ón chomhad <script>"
+
+#: main.c:2625
+msgid "-w <scriptout>\tAppend all typed commands to file <scriptout>"
+msgstr "-w <script>\tCuir gach ordú iontráilte leis an gcomhad <script>"
+
+#: main.c:2626
+msgid "-W <scriptout>\tWrite all typed commands to file <scriptout>"
+msgstr "-W <aschur>\tScríobh gach ordú clóscríofa sa chomhad <aschur>"
+
+#: main.c:2628
+msgid "-x\t\t\tEdit encrypted files"
+msgstr "-x\t\t\tCuir comhaid chriptithe in eagar"
+
+#: main.c:2632
+msgid "-display <display>\tConnect vim to this particular X-server"
+msgstr "-display <freastalaí>\tCeangail vim leis an bhfreastalaí-X seo"
+
+#: main.c:2634
+msgid "-X\t\t\tDo not connect to X server"
+msgstr "-X\t\t\tNá naisc leis an bhfreastalaí X"
+
+#: main.c:2637
+msgid "--remote <files>\tEdit <files> in a Vim server if possible"
+msgstr ""
+"--remote <comhaid>\tCuir <comhaid> in eagar le freastalaí Vim más féidir"
+
+#: main.c:2638
+msgid "--remote-silent <files>  Same, don't complain if there is no server"
+msgstr ""
+"--remote-silent <comhaid> Mar an gcéanna, ná déan gearán mura bhfuil "
+"freastalaí ann"
+
+#: main.c:2639
+msgid ""
+"--remote-wait <files>  As --remote but wait for files to have been edited"
+msgstr ""
+"--remote-wait <comhaid>  Mar --remote ach fan leis na comhaid a bheith "
+"curtha in eagar"
+
+#: main.c:2640
+msgid ""
+"--remote-wait-silent <files>  Same, don't complain if there is no server"
+msgstr ""
+"--remote-wait-silent <comhaid>  Mar an gcéanna, ná déan gearán mura bhfuil "
+"freastalaí ann"
+
+#: main.c:2641
+msgid "--remote-send <keys>\tSend <keys> to a Vim server and exit"
+msgstr ""
+"--remote-send <eochracha>\tSeol <eochracha> chuig freastalaí Vim agus scoir"
+
+#: main.c:2642
+msgid "--remote-expr <expr>\tEvaluate <expr> in a Vim server and print result"
+msgstr ""
+"--remote-expr <slonn>\tMeas <slonn> le freastalaí Vim agus taispeáin an "
+"toradh"
+
+#: main.c:2643
+msgid "--serverlist\t\tList available Vim server names and exit"
+msgstr "--serverlist\t\tTaispeáin freastalaithe le fáil agus scoir"
+
+#: main.c:2644
+msgid "--servername <name>\tSend to/become the Vim server <name>"
+msgstr "--servername <ainm>\tSeol chuig/Téigh i do fhreastalaí Vim <ainm>"
+
+#: main.c:2647
+msgid "-i <viminfo>\t\tUse <viminfo> instead of .viminfo"
+msgstr "-i <viminfo>\t\tÚsáid <viminfo> in ionad .viminfo"
+
+#: main.c:2649
+msgid "-h  or  --help\tPrint Help (this message) and exit"
+msgstr "-h  nó  --help\tTaispeáin an chabhair seo agus scoir"
+
+#: main.c:2650
+msgid "--version\t\tPrint version information and exit"
+msgstr "--version\t\tTaispeáin eolas faoin leagan agus scoir"
+
+#: main.c:2654
+msgid ""
+"\n"
+"Arguments recognised by gvim (Motif version):\n"
+msgstr ""
+"\n"
+"Argóintí ar eolas do gvim (leagan Motif):\n"
+
+#: main.c:2658
+msgid ""
+"\n"
+"Arguments recognised by gvim (neXtaw version):\n"
+msgstr ""
+"\n"
+"Argóintí ar eolas do gvim (leagan neXtaw):\n"
+
+#: main.c:2660
+msgid ""
+"\n"
+"Arguments recognised by gvim (Athena version):\n"
+msgstr ""
+"\n"
+"Argóintí ar eolas do gvim (leagan Athena):\n"
+
+#: main.c:2664
+msgid "-display <display>\tRun vim on <display>"
+msgstr "-display <scáileán>\tRith vim ar <scáileán>"
+
+#: main.c:2665
+msgid "-iconic\t\tStart vim iconified"
+msgstr "-iconic\t\tTosaigh vim sa mhód íoslaghdaithe"
+
+#: main.c:2667
+msgid "-name <name>\t\tUse resource as if vim was <name>"
+msgstr "-name <ainm>\t\tÚsáid acmhainn mar a bheadh vim <ainm>"
+
+#: main.c:2668
+msgid "\t\t\t  (Unimplemented)\n"
+msgstr "\t\t\t  (Níl ar fáil)\n"
+
+#: main.c:2670
+msgid "-background <color>\tUse <color> for the background (also: -bg)"
+msgstr "-background <dath>\tBain úsáid as <dath> don chúlra (-bg fosta)"
+
+#: main.c:2671
+msgid "-foreground <color>\tUse <color> for normal text (also: -fg)"
+msgstr "-foreground <dath>\tÚsáid <dath> le haghaidh gnáththéacs (fosta: -fg)"
+
+#: main.c:2672 main.c:2692 main.c:2708
+msgid "-font <font>\t\tUse <font> for normal text (also: -fn)"
+msgstr "-font <cló>\t\tÚsáid <cló> le haghaidh gnáththéacs (fosta: -fn)"
+
+#: main.c:2673
+msgid "-boldfont <font>\tUse <font> for bold text"
+msgstr "-boldfont <cló>\tBain úsáid as <cló> do chló trom"
+
+#: main.c:2674
+msgid "-italicfont <font>\tUse <font> for italic text"
+msgstr "-italicfont <cló>\tÚsáid <cló> le haghaidh téacs iodálach"
+
+#: main.c:2675 main.c:2693 main.c:2709
+msgid "-geometry <geom>\tUse <geom> for initial geometry (also: -geom)"
+msgstr ""
+"-geometry <geoim>\tÚsáid <geoim> le haghaidh na céimseatan tosaigh (fosta: -"
+"geom)"
+
+#: main.c:2676
+msgid "-borderwidth <width>\tUse a border width of <width> (also: -bw)"
+msgstr "-borderwidth <leithead>\tSocraigh <leithead> na himlíne (-bw fosta)"
+
+#: main.c:2677
+msgid "-scrollbarwidth <width>  Use a scrollbar width of <width> (also: -sw)"
+msgstr ""
+"-scrollbarwidth <leithead> Socraigh leithead na scrollbharraí a bheith "
+"<leithead> (fosta: -sw)"
+
+#: main.c:2679
+msgid "-menuheight <height>\tUse a menu bar height of <height> (also: -mh)"
+msgstr ""
+"-menuheight <airde>\tSocraigh airde an bharra roghchláir a bheith <airde> "
+"(fosta: -mh)"
+
+#: main.c:2681 main.c:2694
+msgid "-reverse\t\tUse reverse video (also: -rv)"
+msgstr "-reverse\t\tÚsáid fís aisiompaithe (fosta: -rv)"
+
+#: main.c:2682
+msgid "+reverse\t\tDon't use reverse video (also: +rv)"
+msgstr "+reverse\t\tNá húsáid fís aisiompaithe (fosta: +rv)"
+
+#: main.c:2683
+msgid "-xrm <resource>\tSet the specified resource"
+msgstr "-xrm <acmhainn>\tSocraigh an acmhainn sainithe"
+
+#: main.c:2686
+msgid ""
+"\n"
+"Arguments recognised by gvim (RISC OS version):\n"
+msgstr ""
+"\n"
+"Argóintí ar eolas do gvim (leagan RISC OS):\n"
+
+#: main.c:2687
+msgid "--columns <number>\tInitial width of window in columns"
+msgstr "--columns <uimhir>\tLeithead fuinneoige i dtosach (colúin)"
+
+#: main.c:2688
+msgid "--rows <number>\tInitial height of window in rows"
+msgstr "--rows <uimhir>\tAirde fhuinneoige i dtosach (rónna)"
+
+#: main.c:2691
+msgid ""
+"\n"
+"Arguments recognised by gvim (GTK+ version):\n"
+msgstr ""
+"\n"
+"Argóintí ar eolas do gvim (leagan GTK+):\n"
+
+#: main.c:2695
+msgid "-display <display>\tRun vim on <display> (also: --display)"
+msgstr "-display <scáileán>\tRith vim ar <scáileán> (fosta: --display)"
+
+#: main.c:2697
+msgid "--role <role>\tSet a unique role to identify the main window"
+msgstr "--role <ról>\tSocraigh ról sainiúil chun an phríomhfhuinneog a aithint"
+
+#: main.c:2699
+msgid "--socketid <xid>\tOpen Vim inside another GTK widget"
+msgstr "--socketid <xid>\tOscail Vim isteach i nguirléid GTK eile"
+
+#: main.c:2702
+msgid ""
+"\n"
+"Arguments recognised by kvim (KDE version):\n"
+msgstr ""
+"\n"
+"Argóintí ar eolas do kvim (leagan KDE):\n"
+
+#: main.c:2703
+msgid "-black\t\tUse reverse video"
+msgstr "-black\t\tÚsáid fís aisiompaithe"
+
+#: main.c:2705
+msgid "-tip\t\t\tDisplay the tip dialog on startup"
+msgstr "-tip\t\t\tTaispeáin an dialóg leide ar tosach"
+
+#: main.c:2706
+msgid "-notip\t\tDisable the tip dialog"
+msgstr "-notip\t\tDíchumasaigh an dialóg leide"
+
+#: main.c:2710
+msgid "--display <display>\tRun vim on <display>"
+msgstr "--display <scáileán>\tRith vim ar <scáileán>"
+
+#: main.c:2713
+msgid "-P <parent title>\tOpen Vim inside parent application"
+msgstr "-P <máthairchlár>\tOscail Vim isteach sa mháthairchlár"
+
+#: main.c:2951
+msgid "No display"
+msgstr "Gan taispeáint"
+
+#. Failed to send, abort.
+#: main.c:2966
+msgid ": Send failed.\n"
+msgstr ": Theip ar seoladh.\n"
+
+#. Let vim start normally.
+#: main.c:2972
+msgid ": Send failed. Trying to execute locally\n"
+msgstr ": Theip ar seoladh. Ag baint triail as go logánta\n"
+
+#: main.c:3010 main.c:3031
+#, c-format
+msgid "%d of %d edited"
+msgstr "%d as %d déanta"
+
+#: main.c:3053
+msgid "No display: Send expression failed.\n"
+msgstr "Gan taispeáint: Theip ar sheoladh sloinn.\n"
+
+#: main.c:3065
+msgid ": Send expression failed.\n"
+msgstr ": Theip ar sheoladh sloinn.\n"
+
+#: mark.c:705
+msgid "No marks set"
+msgstr "Níl aon mharc socraithe"
+
+#: mark.c:707
+#, c-format
+msgid "E283: No marks matching \"%s\""
+msgstr "E283: Níl aon mharc comhoiriúnaithe le \"%s\""
+
+#. Highlight title
+#: mark.c:718
+msgid ""
+"\n"
+"mark line  col file/text"
+msgstr ""
+"\n"
+"marc líne  col comhad/téacs"
+
+#. Highlight title
+#: mark.c:841
+msgid ""
+"\n"
+" jump line  col file/text"
+msgstr ""
+"\n"
+" léim líne  col comhad/téacs"
+
+#. Highlight title
+#: mark.c:886
+msgid ""
+"\n"
+"change line  col text"
+msgstr ""
+"\n"
+"athrú  líne  col téacs"
+
+#: mark.c:1362
+#, c-format
+msgid ""
+"\n"
+"# File marks:\n"
+msgstr ""
+"\n"
+"# Marcanna comhaid:\n"
+
+#. Write the jumplist with -'
+#: mark.c:1397
+#, c-format
+msgid ""
+"\n"
+"# Jumplist (newest first):\n"
+msgstr ""
+"\n"
+"# Liosta léimeanna (is nuaí i dtosach):\n"
+
+#: mark.c:1493
+#, c-format
+msgid ""
+"\n"
+"# History of marks within files (newest to oldest):\n"
+msgstr ""
+"\n"
+"# Stair na marcanna i gcomhaid (is nuaí ar dtús):\n"
+
+#: mark.c:1582
+msgid "Missing '>'"
+msgstr "`>' ar iarraidh"
+
+#: mbyte.c:470
+msgid "E543: Not a valid codepage"
+msgstr "E543: Ní códleathanach bailí é"
+
+#: mbyte.c:4509
+msgid "E284: Cannot set IC values"
+msgstr "E284: Ní féidir luachanna IC a shocrú"
+
+#: mbyte.c:4665
+msgid "E285: Failed to create input context"
+msgstr "E285: Theip ar chruthú comhthéacs ionchuir"
+
+#: mbyte.c:4823
+msgid "E286: Failed to open input method"
+msgstr "E286: Theip ar oscailt mhodh ionchuir"
+
+#: mbyte.c:4834
+msgid "E287: Warning: Could not set destroy callback to IM"
+msgstr "E287: Rabhadh: Níorbh fhéidir aisghlaoch scriosta a shocrú le IM"
+
+#: mbyte.c:4840
+msgid "E288: input method doesn't support any style"
+msgstr "E288: Ní thacaíonn an modh ionchuir aon stíl"
+
+#: mbyte.c:4897
+msgid "E289: input method doesn't support my preedit type"
+msgstr "E289: ní thacaíonn an modh ionchuir mo chineál réamheagair"
+
+#: mbyte.c:4971
+msgid "E290: over-the-spot style requires fontset"
+msgstr "E290: tacar cló ag teastáil ó stíl thar-an-spota"
+
+#: mbyte.c:5007
+msgid "E291: Your GTK+ is older than 1.2.3. Status area disabled"
+msgstr ""
+"E291: Tá an GTK+ atá agat níos sine ná leagan 1.2.3. Díchumasaítear an "
+"limistéar stádais"
+
+#: mbyte.c:5314
+msgid "E292: Input Method Server is not running"
+msgstr "E292: Níl an Freastalaí Mhodh Ionchuir ag rith"
+
+#: memfile.c:488
+msgid "E293: block was not locked"
+msgstr "E293: ní raibh an bloc faoi ghlas"
+
+#: memfile.c:1010
+msgid "E294: Seek error in swap file read"
+msgstr "E294: Earráid chuardaigh agus comhad babhtála á léamh"
+
+#: memfile.c:1015
+msgid "E295: Read error in swap file"
+msgstr "E295: Earráid sa léamh i gcomhad babhtála"
+
+#: memfile.c:1067
+msgid "E296: Seek error in swap file write"
+msgstr "E296: Earráid chuardaigh agus comhad babhtála á scríobh"
+
+#: memfile.c:1085
+msgid "E297: Write error in swap file"
+msgstr "E297: Earráid sa scríobh i gcomhad babhtála"
+
+#: memfile.c:1282
+msgid "E300: Swap file already exists (symlink attack?)"
+msgstr "E300: Tá comhad babhtála ann cheana (ionsaí le naisc shiombalacha?)"
+
+#: memline.c:310
+msgid "E298: Didn't get block nr 0?"
+msgstr "E298: Ní bhfuarthas bloc 0?"
+
+#: memline.c:351
+msgid "E298: Didn't get block nr 1?"
+msgstr "E298: Ní bhfuarthas bloc a haon?"
+
+#: memline.c:369
+msgid "E298: Didn't get block nr 2?"
+msgstr "E298: Ní bhfuarthas bloc a dó?"
+
+#. could not (re)open the swap file, what can we do????
+#: memline.c:482
+msgid "E301: Oops, lost the swap file!!!"
+msgstr "E301: Úps, cailleadh an comhad babhtála!!!"
+
+#: memline.c:487
+msgid "E302: Could not rename swap file"
+msgstr "E302: Níorbh fhéidir an comhad babhtála a athainmniú"
+
+#: memline.c:559
+#, c-format
+msgid "E303: Unable to open swap file for \"%s\", recovery impossible"
+msgstr ""
+"E303: Ní féidir comhad babhtála le haghaidh \"%s\" a oscailt, ní féidir "
+"athshlánú"
+
+#: memline.c:670
+msgid "E304: ml_upd_block0(): Didn't get block 0??"
+msgstr "E304: ml_upd_block0(): Ní bhfuarthas bloc 0??"
+
+#: memline.c:872
+#, c-format
+msgid "E305: No swap file found for %s"
+msgstr "E305: Níor aimsíodh comhad babhtála le haghaidh %s"
+
+#: memline.c:882
+msgid "Enter number of swap file to use (0 to quit): "
+msgstr "Iontráil uimhir an chomhaid babhtála le húsáid (0 = scoir): "
+
+#: memline.c:927
+#, c-format
+msgid "E306: Cannot open %s"
+msgstr "E306: Ní féidir %s a oscailt"
+
+#: memline.c:949
+msgid "Unable to read block 0 from "
+msgstr "Ní féidir bloc 0 a léamh ó "
+
+#: memline.c:952
+msgid ""
+"\n"
+"Maybe no changes were made or Vim did not update the swap file."
+msgstr ""
+"\n"
+"B'fhéidir nach raibh aon athrú á dhéanamh, nó tá an comhad\n"
+"babhtála as dáta."
+
+#: memline.c:962 memline.c:979
+msgid " cannot be used with this version of Vim.\n"
+msgstr " níl ar fáil leis an leagan seo de Vim.\n"
+
+#: memline.c:964
+msgid "Use Vim version 3.0.\n"
+msgstr "Bain úsáid as Vim, leagan 3.0.\n"
+
+#: memline.c:970
+#, c-format
+msgid "E307: %s does not look like a Vim swap file"
+msgstr "E307: Níl %s cosúil le comhad babhtála Vim"
+
+#: memline.c:983
+msgid " cannot be used on this computer.\n"
+msgstr " níl ar fáil ar an ríomhaire seo.\n"
+
+#: memline.c:985
+msgid "The file was created on "
+msgstr "Cruthaíodh an comhad seo ar "
+
+#: memline.c:989
+msgid ""
+",\n"
+"or the file has been damaged."
+msgstr ""
+",\n"
+"is é sin nó rinneadh damáiste don chomhad."
+
+#: memline.c:1018
+#, c-format
+msgid "Using swap file \"%s\""
+msgstr "Comhad babhtála \"%s\" á úsáid"
+
+#: memline.c:1024
+#, c-format
+msgid "Original file \"%s\""
+msgstr "Comhad bunúsach \"%s\""
+
+#: memline.c:1037
+msgid "E308: Warning: Original file may have been changed"
+msgstr "E308: Rabhadh: Is féidir gur athraíodh an comhad bunúsach"
+
+#: memline.c:1111
+#, c-format
+msgid "E309: Unable to read block 1 from %s"
+msgstr "E309: Ní féidir bloc a haon a léamh ó %s"
+
+#: memline.c:1115
+msgid "???MANY LINES MISSING"
+msgstr "???GO LEOR LÍNTE AR IARRAIDH"
+
+#: memline.c:1131
+msgid "???LINE COUNT WRONG"
+msgstr "???LÍON MÍCHEART NA LÍNTE"
+
+#: memline.c:1138
+msgid "???EMPTY BLOCK"
+msgstr "???BLOC FOLAMH"
+
+#: memline.c:1164
+msgid "???LINES MISSING"
+msgstr "???LÍNTE AR IARRAIDH"
+
+#: memline.c:1196
+#, c-format
+msgid "E310: Block 1 ID wrong (%s not a .swp file?)"
+msgstr "E310: Aitheantas mícheart ar bhloc a haon (níl %s ina chomhad .swp?)"
+
+#: memline.c:1201
+msgid "???BLOCK MISSING"
+msgstr "???BLOC AR IARRAIDH"
+
+#: memline.c:1217
+msgid "??? from here until ???END lines may be messed up"
+msgstr "??? is féidir go ndearnadh praiseach de línte ó anseo go ???END"
+
+#: memline.c:1233
+msgid "??? from here until ???END lines may have been inserted/deleted"
+msgstr "??? is féidir go bhfuil línte ionsáite/scriosta ó anseo go ???END"
+
+#: memline.c:1253
+msgid "???END"
+msgstr "???DEIREADH"
+
+#: memline.c:1279
+msgid "E311: Recovery Interrupted"
+msgstr "E311: Idirbhriseadh an t-athshlánú"
+
+#: memline.c:1284
+msgid ""
+"E312: Errors detected while recovering; look for lines starting with ???"
+msgstr ""
+"E312: Braitheadh earráidí le linn athshlánaithe; féach ar na línte le ??? ar "
+"tosach"
+
+#: memline.c:1286
+msgid "See \":help E312\" for more information."
+msgstr "Bain triail as \":help E312\" chun tuilleadh eolais a fháil."
+
+#: memline.c:1291
+msgid "Recovery completed. You should check if everything is OK."
+msgstr "Athshlánaíodh. Ba chóir duit gach rud a sheiceáil uair amháin eile."
+
+#: memline.c:1292
+msgid ""
+"\n"
+"(You might want to write out this file under another name\n"
+msgstr ""
+"\n"
+"(B'fhéidir gur mian leat an comhad seo a shábháil de réir ainm eile\n"
+
+#: memline.c:1293
+msgid "and run diff with the original file to check for changes)\n"
+msgstr ""
+"agus déan comparáid leis an chomhad bunúsach (m.sh. le `diff') chun "
+"athruithe a scrúdú)\n"
+
+#: memline.c:1294
+msgid ""
+"Delete the .swp file afterwards.\n"
+"\n"
+msgstr ""
+"Scrios an comhad .swp tar éis sin.\n"
+"\n"
+
+#. use msg() to start the scrolling properly
+#: memline.c:1350
+msgid "Swap files found:"
+msgstr "Comhaid bhabhtála aimsithe:"
+
+#: memline.c:1528
+msgid "   In current directory:\n"
+msgstr "   Sa chomhadlann reatha:\n"
+
+#: memline.c:1530
+msgid "   Using specified name:\n"
+msgstr "   Ag baint úsáid as ainm socraithe:\n"
+
+#: memline.c:1534
+msgid "   In directory "
+msgstr "   Sa chomhadlann "
+
+#: memline.c:1552
+msgid "      -- none --\n"
+msgstr "      -- neamhní --\n"
+
+#: memline.c:1625
+msgid "          owned by: "
+msgstr "          úinéir: "
+
+#: memline.c:1627
+msgid "   dated: "
+msgstr "   dátaithe: "
+
+#: memline.c:1631 memline.c:3837
+msgid "             dated: "
+msgstr "             dátaithe: "
+
+#: memline.c:1647
+msgid "         [from Vim version 3.0]"
+msgstr "         [ó leagan 3.0 Vim]"
+
+#: memline.c:1651
+msgid "         [does not look like a Vim swap file]"
+msgstr "         [ní cosúil le comhad babhtála Vim]"
+
+#: memline.c:1655
+msgid "         file name: "
+msgstr "         ainm comhaid: "
+
+#: memline.c:1661
+msgid ""
+"\n"
+"          modified: "
+msgstr ""
+"\n"
+"          modhnaithe: "
+
+#: memline.c:1662
+msgid "YES"
+msgstr "IS SEA"
+
+#: memline.c:1662
+msgid "no"
+msgstr "ní hea"
+
+#: memline.c:1666
+msgid ""
+"\n"
+"         user name: "
+msgstr ""
+"\n"
+"         úsáideoir: "
+
+#: memline.c:1673
+msgid "   host name: "
+msgstr "   ainm an óstríomhaire: "
+
+#: memline.c:1675
+msgid ""
+"\n"
+"         host name: "
+msgstr ""
+"\n"
+"         óstainm: "
+
+#: memline.c:1681
+msgid ""
+"\n"
+"        process ID: "
+msgstr ""
+"\n"
+"        PID: "
+
+#: memline.c:1687
+msgid " (still running)"
+msgstr " (ag rith fós)"
+
+#: memline.c:1699
+msgid ""
+"\n"
+"         [not usable with this version of Vim]"
+msgstr ""
+"\n"
+"         [ní inúsáidte leis an leagan seo Vim]"
+
+#: memline.c:1702
+msgid ""
+"\n"
+"         [not usable on this computer]"
+msgstr ""
+"\n"
+"         [ní inúsáidte ar an ríomhaire seo]"
+
+#: memline.c:1707
+msgid "         [cannot be read]"
+msgstr "         [ní féidir a léamh]"
+
+#: memline.c:1711
+msgid "         [cannot be opened]"
+msgstr "         [ní féidir oscailt]"
+
+#: memline.c:1901
+msgid "E313: Cannot preserve, there is no swap file"
+msgstr "E313: Ní féidir é a chaomhnú, níl aon chomhad babhtála ann"
+
+#: memline.c:1954
+msgid "File preserved"
+msgstr "Caomhnaíodh an comhad"
+
+#: memline.c:1956
+msgid "E314: Preserve failed"
+msgstr "E314: Theip ar chaomhnú"
+
+#: memline.c:2027
+#, c-format
+msgid "E315: ml_get: invalid lnum: %ld"
+msgstr "E315: ml_get: lnum neamhbhailí: %ld"
+
+#: memline.c:2053
+#, c-format
+msgid "E316: ml_get: cannot find line %ld"
+msgstr "E316: ml_get: líne %ld gan aimsiú"
+
+#: memline.c:2443
+msgid "E317: pointer block id wrong 3"
+msgstr "E317: aitheantas mícheart ar an mbloc pointeora 3"
+
+#: memline.c:2523
+msgid "stack_idx should be 0"
+msgstr "ba chóir do stack_idx a bheith 0"
+
+#: memline.c:2585
+msgid "E318: Updated too many blocks?"
+msgstr "E318: An iomarca bloic nuashonraithe?"
+
+#: memline.c:2767
+msgid "E317: pointer block id wrong 4"
+msgstr "E317: aitheantas mícheart ar an mbloc pointeora 4"
+
+#: memline.c:2794
+msgid "deleted block 1?"
+msgstr "bloc a haon scriosta?"
+
+#: memline.c:2994
+#, c-format
+msgid "E320: Cannot find line %ld"
+msgstr "E320: Líne %ld gan aimsiú"
+
+#: memline.c:3237
+msgid "E317: pointer block id wrong"
+msgstr "E317: aitheantas mícheart ar an mbloc pointeora"
+
+#: memline.c:3253
+msgid "pe_line_count is zero"
+msgstr "is 0 pe_line_count\""
+
+#: memline.c:3282
+#, c-format
+msgid "E322: line number out of range: %ld past the end"
+msgstr "E322: líne-uimhir as raon: %ld thar dheireadh"
+
+#: memline.c:3286
+#, c-format
+msgid "E323: line count wrong in block %ld"
+msgstr "E323: líon mícheart na línte i mbloc %ld"
+
+#: memline.c:3335
+msgid "Stack size increases"
+msgstr "Méadaíonn an chruach"
+
+#: memline.c:3381
+msgid "E317: pointer block id wrong 2"
+msgstr "E317: aitheantas mícheart ar an mbloc pointeora 2"
+
+#: memline.c:3827
+msgid "E325: ATTENTION"
+msgstr "E325: AIRE"
+
+#: memline.c:3828
+msgid ""
+"\n"
+"Found a swap file by the name \""
+msgstr ""
+"\n"
+"Fuarthas comhad babhtála darbh ainm \""
+
+#: memline.c:3832
+msgid "While opening file \""
+msgstr "Agus an comhad seo á oscailt: \""
+
+#: memline.c:3841
+msgid "      NEWER than swap file!\n"
+msgstr "      NÍOS NUAÍ ná comhad babhtála!\n"
+
+#. Some of these messages are long to allow translation to
+#. * other languages.
+#: memline.c:3845
+msgid ""
+"\n"
+"(1) Another program may be editing the same file.\n"
+"    If this is the case, be careful not to end up with two\n"
+"    different instances of the same file when making changes.\n"
+msgstr ""
+"\n"
+"(1) Is féidir go bhfuil clár eile ag rochtain an comhad seo.\n"
+"    Más ea, bí cúramach nach bhfuil dhá leagan den chomhad\n"
+"    céanna.\n"
+
+#: memline.c:3846
+msgid "    Quit, or continue with caution.\n"
+msgstr "    Scoir, nó lean ar aghaidh go hairdeallach.\n"
+
+#: memline.c:3847
+msgid ""
+"\n"
+"(2) An edit session for this file crashed.\n"
+msgstr ""
+"\n"
+"(2) Rinne Vim thobscor agus an comhad seo\n"
+"    idir lámha agat.\n"
+
+#: memline.c:3848
+msgid "    If this is the case, use \":recover\" or \"vim -r "
+msgstr "    Más amhlaidh, bain úsáid as \":recover\" nó \"vim -r "
+
+#: memline.c:3850
+msgid ""
+"\"\n"
+"    to recover the changes (see \":help recovery\").\n"
+msgstr ""
+"\"\n"
+"    chun na hathruithe a fháil ar ais (féach \":help recovery\").\n"
+
+#: memline.c:3851
+msgid "    If you did this already, delete the swap file \""
+msgstr "    Má tá sé seo déanta cheana agat, scrios an comhad babhtála \""
+
+#: memline.c:3853
+msgid ""
+"\"\n"
+"    to avoid this message.\n"
+msgstr ""
+"\"\n"
+"   chun an teachtaireacht seo a sheachaint.\n"
+
+#: memline.c:3867 memline.c:3871
+msgid "Swap file \""
+msgstr "Comhad babhtála \""
+
+#: memline.c:3868 memline.c:3874
+msgid "\" already exists!"
+msgstr "\" tá sé ann cheana!"
+
+#: memline.c:3877
+msgid "VIM - ATTENTION"
+msgstr "VIM - AIRE"
+
+#: memline.c:3879
+msgid "Swap file already exists!"
+msgstr "Tá comhad babhtála ann cheana!"
+
+#: memline.c:3883
+msgid ""
+"&Open Read-Only\n"
+"&Edit anyway\n"
+"&Recover\n"
+"&Quit\n"
+"&Abort"
+msgstr ""
+"&Oscail Léimh-Amháin\n"
+"&Eagraigh mar sin féin\n"
+"&Athshlánaigh\n"
+"&Scoir\n"
+"&Tobscoir"
+
+#: memline.c:3885
+msgid ""
+"&Open Read-Only\n"
+"&Edit anyway\n"
+"&Recover\n"
+"&Quit\n"
+"&Abort\n"
+"&Delete it"
+msgstr ""
+"&Oscail Léimh-Amháin\n"
+"&Eagraigh mar sin féin\n"
+"&Athshlánaigh\n"
+"S&coir\n"
+"&Tobscoir\n"
+"&Scrios é"
+
+#: memline.c:3942
+msgid "E326: Too many swap files found"
+msgstr "E326: Aimsíodh an iomarca comhaid bhabhtála"
+
+#: menu.c:64
+msgid "E327: Part of menu-item path is not sub-menu"
+msgstr "E327: Ní fo-roghchlár í páirt de chonair roghchláir"
+
+#: menu.c:65
+msgid "E328: Menu only exists in another mode"
+msgstr "E328: Níl an roghchlár ar fáil sa mhód seo"
+
+#: menu.c:66
+msgid "E329: No menu of that name"
+msgstr "E329: Níl aon roghchlár ann leis an ainm sin"
+
+#: menu.c:522
+msgid "E330: Menu path must not lead to a sub-menu"
+msgstr "E330: Ní cheadaítear conair roghchláir a threoraíonn go fo-roghchlár"
+
+#: menu.c:561
+msgid "E331: Must not add menu items directly to menu bar"
+msgstr ""
+"E331: Ní cheadaítear míreanna roghchláir a chur le barra roghchláir go "
+"díreach"
+
+#: menu.c:567
+msgid "E332: Separator cannot be part of a menu path"
+msgstr "E332: Ní cheadaítear deighilteoir mar pháirt de chonair roghchláir"
+
+#. Now we have found the matching menu, and we list the mappings
+#. Highlight title
+#: menu.c:1093
+msgid ""
+"\n"
+"--- Menus ---"
+msgstr ""
+"\n"
+"--- Roghchláir ---"
+
+#: menu.c:2011
+msgid "Tear off this menu"
+msgstr "Bain an roghchlár seo"
+
+#: menu.c:2076
+msgid "E333: Menu path must lead to a menu item"
+msgstr "E333: Ní mór conair roghchláir a threorú chun mír roghchláir"
+
+#: menu.c:2096
+#, c-format
+msgid "E334: Menu not found: %s"
+msgstr "E334: Roghchlár gan aimsiú: %s"
+
+#: menu.c:2169
+#, c-format
+msgid "E335: Menu not defined for %s mode"
+msgstr "E335: Níl an roghchlár ar fáil sa mhód %s"
+
+#: menu.c:2208
+msgid "E336: Menu path must lead to a sub-menu"
+msgstr "E336: Ní mór conair roghchláir a threorú chun fo-roghchlár"
+
+#: menu.c:2229
+msgid "E337: Menu not found - check menu names"
+msgstr "E337: Roghchlár gan aimsiú - deimhnigh ainmneacha na roghchlár"
+
+#: message.c:429
+#, c-format
+msgid "Error detected while processing %s:"
+msgstr "Earráid agus %s á phróiseáil:"
+
+#: message.c:454
+#, c-format
+msgid "line %4ld:"
+msgstr "líne %4ld:"
+
+#: message.c:656
+msgid "[string too long]"
+msgstr "[teaghrán rófhada]"
+
+#: message.c:806
+msgid "Messages maintainer: Bram Moolenaar <Bram@vim.org>"
+msgstr ""
+"Cothaitheoir na dteachtaireachtaí: Kevin P. Scannell <scannell@slu.edu>"
+
+#: message.c:1032
+msgid "Interrupt: "
+msgstr "Idirbhriseadh: "
+
+#: message.c:1035
+msgid "Hit ENTER to continue"
+msgstr "Brúigh ENTER le leanúint"
+
+#: message.c:1037
+msgid "Hit ENTER or type command to continue"
+msgstr "Brúigh ENTER nó iontráil ordú le leanúint"
+
+#: message.c:2358
+msgid "-- More --"
+msgstr "-- Tuilleadh --"
+
+#: message.c:2361
+msgid " (RET/BS: line, SPACE/b: page, d/u: half page, q: quit)"
+msgstr " (RET/BS: líne, SPÁS/b: lch, d/u: leathlch, q: scoir)"
+
+#: message.c:2362
+msgid " (RET: line, SPACE: page, d: half page, q: quit)"
+msgstr " (RET: líne, SPÁS: lch, d: leathlch, q: scoir)"
+
+#: message.c:2983 message.c:2998
+msgid "Question"
+msgstr "Ceist"
+
+#: message.c:2985
+msgid ""
+"&Yes\n"
+"&No"
+msgstr ""
+"&Tá\n"
+"&Níl"
+
+#: message.c:3018
+msgid ""
+"&Yes\n"
+"&No\n"
+"Save &All\n"
+"&Discard All\n"
+"&Cancel"
+msgstr ""
+"&Tá\n"
+"&Níl\n"
+"Sábháil &Uile\n"
+"&Dealaigh Uile\n"
+"&Cealaigh"
+
+#: message.c:3059
+msgid "Select Directory dialog"
+msgstr "Dialóg `Roghnaigh Comhadlann'"
+
+#: message.c:3061
+msgid "Save File dialog"
+msgstr "Dialóg `Sábháil Comhad'"
+
+#: message.c:3063
+msgid "Open File dialog"
+msgstr "Dialóg `Oscail Comhad'"
+
+#. TODO: non-GUI file selector here
+#: message.c:3163
+msgid "E338: Sorry, no file browser in console mode"
+msgstr "E338: Níl brabhsálaí comhaid ar fáil sa mhód consóil"
+
+#: misc1.c:2860
+msgid "W10: Warning: Changing a readonly file"
+msgstr "W10: Rabhadh: Comhad léimh-amháin á athrú"
+
+#: misc1.c:3113
+msgid "1 more line"
+msgstr "1 líne eile"
+
+#: misc1.c:3115
+msgid "1 line less"
+msgstr "1 líne níos lú"
+
+#: misc1.c:3120
+#, c-format
+msgid "%ld more lines"
+msgstr "%ld líne eile"
+
+#: misc1.c:3122
+#, c-format
+msgid "%ld fewer lines"
+msgstr "%ld líne níos lú"
+
+#: misc1.c:3125
+msgid " (Interrupted)"
+msgstr " (Idirbhriste)"
+
+#: misc1.c:7746
+msgid "Vim: preserving files...\n"
+msgstr "Vim: comhaid á gcaomhnú...\n"
+
+#. close all memfiles, without deleting
+#: misc1.c:7756
+msgid "Vim: Finished.\n"
+msgstr "Vim: Críochnaithe.\n"
+
+#: misc2.c:690 misc2.c:706
+#, c-format
+msgid "ERROR: "
+msgstr "EARRÁID: "
+
+#: misc2.c:710
+#, c-format
+msgid ""
+"\n"
+"[bytes] total alloc-freed %lu-%lu, in use %lu, peak use %lu\n"
+msgstr ""
+"\n"
+"[beart] iomlán dáilte-saor %lu-%lu, in úsáid %lu, buaic %lu\n"
+
+#: misc2.c:712
+#, c-format
+msgid ""
+"[calls] total re/malloc()'s %lu, total free()'s %lu\n"
+"\n"
+msgstr ""
+"[glaonna] re/malloc(): %lu, free(): %lu\n"
+"\n"
+
+#: misc2.c:767
+msgid "E340: Line is becoming too long"
+msgstr "E340: Tá an líne ag éirí rófhada"
+
+#: misc2.c:811
+#, c-format
+msgid "E341: Internal error: lalloc(%ld, )"
+msgstr "E341: Earráid inmheánach: lalloc(%ld, )"
+
+#: misc2.c:919
+#, c-format
+msgid "E342: Out of memory!  (allocating %lu bytes)"
+msgstr "E342: Cuimhne ídithe!  (%lu beart á ndáileadh)"
+
+#: misc2.c:2555
+#, c-format
+msgid "Calling shell to execute: \"%s\""
+msgstr "An t-ordú seo á rith leis an bhlaosc: \"%s\""
+
+#: misc2.c:2811
+msgid "E545: Missing colon"
+msgstr "E545: Idirstad ar iarraidh"
+
+#: misc2.c:2813 misc2.c:2840
+msgid "E546: Illegal mode"
+msgstr "E546: Mód neamhcheadaithe"
+
+#: misc2.c:2879
+msgid "E547: Illegal mouseshape"
+msgstr "E547: Cruth neamhcheadaithe luiche"
+
+#: misc2.c:2919
+msgid "E548: digit expected"
+msgstr "E548: ag súil le digit"
+
+#: misc2.c:2924
+msgid "E549: Illegal percentage"
+msgstr "E549: Céatadán neamhcheadaithe"
+
+#: misc2.c:3236
+msgid "Enter encryption key: "
+msgstr "Iontráil eochair chriptiúcháin: "
+
+#: misc2.c:3237
+msgid "Enter same key again: "
+msgstr "Iontráil an eochair arís: "
+
+#: misc2.c:3247
+msgid "Keys don't match!"
+msgstr "Níl na heochracha comhoiriúnach le chéile!"
+
+#: misc2.c:3791
+#, c-format
+msgid ""
+"E343: Invalid path: '**[number]' must be at the end of the path or be "
+"followed by '%s'."
+msgstr ""
+"E343: Conair neamhbhailí: ní mór '**[uimhir]' a bheith ag deireadh na "
+"conaire, nó le '%s' ina dhiaidh."
+
+#: misc2.c:5070
+#, c-format
+msgid "E344: Can't find directory \"%s\" in cdpath"
+msgstr "E344: Ní féidir comhadlann \"%s\" a aimsiú sa cdpath"
+
+#: misc2.c:5073
+#, c-format
+msgid "E345: Can't find file \"%s\" in path"
+msgstr "E345: Ní féidir comhad \"%s\" a aimsiú sa chonair"
+
+#: misc2.c:5079
+#, c-format
+msgid "E346: No more directory \"%s\" found in cdpath"
+msgstr "E346: Níl comhadlann \"%s\" sa cdpath a thuilleadh"
+
+#: misc2.c:5082
+#, c-format
+msgid "E347: No more file \"%s\" found in path"
+msgstr "E347: Níl comhad \"%s\" sa chonair a thuilleadh"
+
+#: misc2.c:5322
+msgid "E550: Missing colon"
+msgstr "E550: Idirstad ar iarraidh"
+
+#: misc2.c:5334
+msgid "E551: Illegal component"
+msgstr "E551: Comhpháirt neamhcheadaithe"
+
+#: misc2.c:5342
+msgid "E552: digit expected"
+msgstr "E552: ag súil le digit"
+
+#. Get here when the server can't be found.
+#: netbeans.c:411
+msgid "Cannot connect to Netbeans #2"
+msgstr "Ní féidir nascadh le Netbeans #2"
+
+#: netbeans.c:419
+msgid "Cannot connect to Netbeans"
+msgstr "Ní féidir nascadh le Netbeans"
+
+#: netbeans.c:463
+#, c-format
+msgid "E668: Wrong access mode for NetBeans connection info file: \"%s\""
+msgstr "E668: Mód mícheart rochtana ar an chomhad eolas naisc NetBeans: \"%s\""
+
+#: netbeans.c:762
+msgid "read from Netbeans socket"
+msgstr "léadh ó shoicéad Netbeans"
+
+#: netbeans.c:1682
+#, c-format
+msgid "E658: NetBeans connection lost for buffer %ld"
+msgstr "E658: Cailleadh nasc NetBeans le haghaidh maoláin %ld"
+
+#: netbeans.c:3477
+msgid "E505: "
+msgstr "E505: "
+
+#: normal.c:2993
+msgid "Warning: terminal cannot highlight"
+msgstr "Rabhadh: ní féidir leis an teirminéal aibhsiú"
+
+#: normal.c:3289
+msgid "E348: No string under cursor"
+msgstr "E348: Níl teaghrán faoin chúrsóir"
+
+#: normal.c:3291
+msgid "E349: No identifier under cursor"
+msgstr "E349: Níl aitheantóir faoin chúrsóir"
+
+#: normal.c:4533
+msgid "E352: Cannot erase folds with current 'foldmethod'"
+msgstr "E352: Ní féidir fillteacha a léirscriosadh leis an 'foldmethod' reatha"
+
+#: normal.c:6804
+msgid "E664: changelist is empty"
+msgstr "E664: tá liosta na n-athruithe folamh"
+
+#: normal.c:6806
+msgid "E662: At start of changelist"
+msgstr "E662: Ag tosach liosta na n-athruithe"
+
+#: normal.c:6808
+msgid "E663: At end of changelist"
+msgstr "E663: Ag deireadh liosta na n-athruithe"
+
+#: normal.c:8077
+msgid "Type  :quit<Enter>  to exit Vim"
+msgstr "Clóscríobh  :quit<Enter>  chun Vim a scor"
+
+#: ops.c:291
+#, c-format
+msgid "1 line %sed 1 time"
+msgstr "1 líne %s uair amháin"
+
+#: ops.c:293
+#, c-format
+msgid "1 line %sed %d times"
+msgstr "1 líne %s %d uair"
+
+#: ops.c:298
+#, c-format
+msgid "%ld lines %sed 1 time"
+msgstr "%ld líne %sed uair amháin"
+
+#: ops.c:301
+#, c-format
+msgid "%ld lines %sed %d times"
+msgstr "%ld líne %sed %d uair"
+
+#: ops.c:659
+#, c-format
+msgid "%ld lines to indent... "
+msgstr "%ld líne le heangú... "
+
+#: ops.c:709
+msgid "1 line indented "
+msgstr "eangaíodh 1 líne "
+
+#: ops.c:711
+#, c-format
+msgid "%ld lines indented "
+msgstr "%ld líne eangaithe "
+
+#. must display the prompt
+#: ops.c:1623
+msgid "cannot yank; delete anyway"
+msgstr "ní féidir a sracadh; scrios mar sin féin"
+
+#: ops.c:2213
+msgid "1 line changed"
+msgstr "athraíodh 1 líne"
+
+#: ops.c:2215
+#, c-format
+msgid "%ld lines changed"
+msgstr "%ld líne athraithe"
+
+#: ops.c:2599
+#, c-format
+msgid "freeing %ld lines"
+msgstr "%ld líne á saoradh"
+
+#: ops.c:2881
+msgid "1 line yanked"
+msgstr "sracadh 1 líne"
+
+#: ops.c:2883
+#, c-format
+msgid "%ld lines yanked"
+msgstr "%ld líne sractha"
+
+#: ops.c:3178
+#, c-format
+msgid "E353: Nothing in register %s"
+msgstr "E353: Tabhall folamh %s"
+
+#. Highlight title
+#: ops.c:3735
+msgid ""
+"\n"
+"--- Registers ---"
+msgstr ""
+"\n"
+"--- Tabhaill ---"
+
+#: ops.c:5050
+msgid "Illegal register name"
+msgstr "Ainm neamhcheadaithe tabhaill"
+
+#: ops.c:5138
+#, c-format
+msgid ""
+"\n"
+"# Registers:\n"
+msgstr ""
+"\n"
+"# Tabhaill:\n"
+
+#: ops.c:5194
+#, c-format
+msgid "E574: Unknown register type %d"
+msgstr "E574: Cineál anaithnid tabhaill %d"
+
+#: ops.c:5679
+#, c-format
+msgid "E354: Invalid register name: '%s'"
+msgstr "E354: Ainm neamhbhailí tabhaill: '%s'"
+
+#: ops.c:6068
+#, c-format
+msgid "%ld Cols; "
+msgstr "%ld Colún; "
+
+#: ops.c:6076
+#, c-format
+msgid "Selected %s%ld of %ld Lines; %ld of %ld Words; %ld of %ld Bytes"
+msgstr "Roghnaíodh %s%ld as %ld Líne; %ld as %ld Focal; %ld as %ld Beart"
+
+#: ops.c:6082
+#, c-format
+msgid ""
+"Selected %s%ld of %ld Lines; %ld of %ld Words; %ld of %ld Chars; %ld of %ld "
+"Bytes"
+msgstr ""
+"Roghnaíodh %s%ld as %ld Líne; %ld as %ld Focal; %ld as %ld Carachtar; %ld as "
+"%ld Beart"
+
+#: ops.c:6100
+#, c-format
+msgid "Col %s of %s; Line %ld of %ld; Word %ld of %ld; Byte %ld of %ld"
+msgstr "Col %s as %s; Líne %ld as %ld; Focal %ld as %ld; Beart %ld as %ld"
+
+#: ops.c:6107
+#, c-format
+msgid ""
+"Col %s of %s; Line %ld of %ld; Word %ld of %ld; Char %ld of %ld; Byte %ld of "
+"%ld"
+msgstr ""
+"Col %s as %s; Líne %ld as %ld; Focal %ld as %ld; Carachtar %ld as %ld; Beart "
+"%ld as %ld"
+
+#: ops.c:6119
+#, c-format
+msgid "(+%ld for BOM)"
+msgstr "(+%ld do BOM)"
+
+#: option.c:1692
+msgid "%<%f%h%m%=Page %N"
+msgstr "%<%f%h%m%=Leathanach %N"
+
+#: option.c:2168
+msgid "Thanks for flying Vim"
+msgstr "Go raibh míle maith agat as Vim a úsáid"
+
+#: option.c:3549 option.c:3671
+msgid "E518: Unknown option"
+msgstr "E518: Rogha anaithnid"
+
+#: option.c:3562
+msgid "E519: Option not supported"
+msgstr "E519: Níl an rogha seo ar fáil"
+
+#: option.c:3587
+msgid "E520: Not allowed in a modeline"
+msgstr "E520: Ní cheadaithe i módlíne"
+
+#: option.c:3658
+msgid ""
+"\n"
+"\tLast set from "
+msgstr ""
+"\n"
+"\tSocraithe is déanaí ó "
+
+#: option.c:3797
+msgid "E521: Number required after ="
+msgstr "E521: Ní foláir uimhir i ndiaidh ="
+
+#: option.c:4125 option.c:4773
+msgid "E522: Not found in termcap"
+msgstr "E522: Gan aimsiú sa termcap"
+
+#: option.c:4200
+#, c-format
+msgid "E539: Illegal character <%s>"
+msgstr "E539: Carachtar neamhcheadaithe <%s>"
+
+#: option.c:4765
+msgid "E529: Cannot set 'term' to empty string"
+msgstr "E529: Ní féidir 'term' a shocrú mar theaghrán folamh"
+
+#: option.c:4768
+msgid "E530: Cannot change term in GUI"
+msgstr "E530: Ní féidir 'term' a athrú sa GUI"
+
+#: option.c:4770
+msgid "E531: Use \":gui\" to start the GUI"
+msgstr "E531: Úsáid \":gui\" chun an GUI a chur ag obair"
+
+#: option.c:4799
+msgid "E589: 'backupext' and 'patchmode' are equal"
+msgstr "E589: is ionann iad 'backupext' agus 'patchmode'"
+
+#: option.c:5027
+msgid "E617: Cannot be changed in the GTK+ 2 GUI"
+msgstr "E617: Ní féidir é a athrú sa GUI GTK+ 2"
+
+#: option.c:5185
+msgid "E524: Missing colon"
+msgstr "E524: Idirstad ar iarraidh"
+
+#: option.c:5187
+msgid "E525: Zero length string"
+msgstr "E525: Teaghrán folamh"
+
+#: option.c:5262
+#, c-format
+msgid "E526: Missing number after <%s>"
+msgstr "E526: Uimhir ar iarraidh i ndiaidh <%s>"
+
+#: option.c:5276
+msgid "E527: Missing comma"
+msgstr "E527: Camóg ar iarraidh"
+
+#: option.c:5283
+msgid "E528: Must specify a ' value"
+msgstr "E528: Caithfidh luach ' a shonrú"
+
+#: option.c:5324
+msgid "E595: contains unprintable or wide character"
+msgstr "E595: tá carachtar neamhghrafach nó leathan ann"
+
+#: option.c:5368
+msgid "E596: Invalid font(s)"
+msgstr "E596: Cló(nna) neamhbhailí"
+
+#: option.c:5376
+msgid "E597: can't select fontset"
+msgstr "E597: ní féidir tacar cló a roghnú"
+
+#: option.c:5378
+msgid "E598: Invalid fontset"
+msgstr "E598: Tacar cló neamhbhailí"
+
+#: option.c:5385
+msgid "E533: can't select wide font"
+msgstr "E533: ní féidir cló leathan a roghnú"
+
+#: option.c:5387
+msgid "E534: Invalid wide font"
+msgstr "E534: Cló leathan neamhbhailí"
+
+#: option.c:5664
+#, c-format
+msgid "E535: Illegal character after <%c>"
+msgstr "E535: Carachtar neamhbhailí i ndiaidh <%c>"
+
+#: option.c:5775
+msgid "E536: comma required"
+msgstr "E536: ní foláir camóg"
+
+#: option.c:5785
+#, c-format
+msgid "E537: 'commentstring' must be empty or contain %s"
+msgstr "E537: Ní cheadaítear i 'commentstring' teaghrán neamhfholamh gan %s"
+
+#: option.c:5860
+msgid "E538: No mouse support"
+msgstr "E538: Gan tacaíocht luiche"
+
+#: option.c:6131
+msgid "E540: Unclosed expression sequence"
+msgstr "E540: Seicheamh gan dúnadh"
+
+#: option.c:6135
+msgid "E541: too many items"
+msgstr "E541: an iomarca míreanna"
+
+#: option.c:6137
+msgid "E542: unbalanced groups"
+msgstr "E542: grúpaí neamhchothromaithe"
+
+#: option.c:6377
+msgid "E590: A preview window already exists"
+msgstr "E590: Tá fuinneog réamhamhairc ann cheana"
+
+#: option.c:6624
+msgid "W17: Arabic requires UTF-8, do ':set encoding=utf-8'"
+msgstr ""
+"W17: Tá UTF-8 ag teastáil le haghaidh Araibise, socraigh é le ':set "
+"encoding=utf-8'"
+
+#: option.c:6988
+#, c-format
+msgid "E593: Need at least %d lines"
+msgstr "E593: Tá gá le %d líne ar a laghad"
+
+#: option.c:6998
+#, c-format
+msgid "E594: Need at least %d columns"
+msgstr "E594: Tá gá le %d colún ar a laghad"
+
+#: option.c:7307
+#, c-format
+msgid "E355: Unknown option: %s"
+msgstr "E355: Rogha anaithnid: %s"
+
+#: option.c:7440
+msgid ""
+"\n"
+"--- Terminal codes ---"
+msgstr ""
+"\n"
+"--- Cóid teirminéil ---"
+
+#: option.c:7442
+msgid ""
+"\n"
+"--- Global option values ---"
+msgstr ""
+"\n"
+"--- Luachanna na roghanna comhchoiteann ---"
+
+#: option.c:7444
+msgid ""
+"\n"
+"--- Local option values ---"
+msgstr ""
+"\n"
+"--- Luachanna na roghanna logánta ---"
+
+#: option.c:7446
+msgid ""
+"\n"
+"--- Options ---"
+msgstr ""
+"\n"
+"--- Roghanna ---"
+
+#: option.c:8169
+msgid "E356: get_varp ERROR"
+msgstr "E356: EARRÁID get_varp"
+
+#: option.c:9146
+#, c-format
+msgid "E357: 'langmap': Matching character missing for %s"
+msgstr "E357: 'langmap': Carachtar comhoiriúnach ar iarraidh le haghaidh %s"
+
+#: option.c:9172
+#, c-format
+msgid "E358: 'langmap': Extra characters after semicolon: %s"
+msgstr "E358: 'langmap': Carachtair breise i ndiaidh an idirstad: %s"
+
+#: os_amiga.c:280
+msgid "cannot open "
+msgstr "ní féidir a oscailt: "
+
+#: os_amiga.c:314
+msgid "VIM: Can't open window!\n"
+msgstr "VIM: Ní féidir fuinneog a oscailt!\n"
+
+#: os_amiga.c:338
+msgid "Need Amigados version 2.04 or later\n"
+msgstr "Tá gá le Amigados leagan 2.04 nó níos déanaí\n"
+
+#: os_amiga.c:344
+#, c-format
+msgid "Need %s version %ld\n"
+msgstr "Tá gá le %s, leagan %ld\n"
+
+#: os_amiga.c:416
+msgid "Cannot open NIL:\n"
+msgstr "Ní féidir NIL a oscailt:\n"
+
+#: os_amiga.c:427
+msgid "Cannot create "
+msgstr "Ní féidir a chruthú: "
+
+#: os_amiga.c:905
+#, c-format
+msgid "Vim exiting with %d\n"
+msgstr "Vim á scor le stádas %d\n"
+
+#: os_amiga.c:941
+msgid "cannot change console mode ?!\n"
+msgstr "ní féidir mód consóil a athrú ?!\n"
+
+#: os_amiga.c:1012
+msgid "mch_get_shellsize: not a console??\n"
+msgstr "mch_get_shellsize: ní consól é seo??\n"
+
+#. if Vim opened a window: Executing a shell may cause crashes
+#: os_amiga.c:1161
+msgid "E360: Cannot execute shell with -f option"
+msgstr "E360: Ní féidir blaosc a rith le rogha -f"
+
+#: os_amiga.c:1202 os_amiga.c:1292
+msgid "Cannot execute "
+msgstr "Ní féidir blaosc a rith: "
+
+#: os_amiga.c:1205 os_amiga.c:1302
+msgid "shell "
+msgstr "blaosc "
+
+#: os_amiga.c:1225 os_amiga.c:1327
+msgid " returned\n"
+msgstr " aisfhilleadh\n"
+
+#: os_amiga.c:1468
+msgid "ANCHOR_BUF_SIZE too small."
+msgstr "ANCHOR_BUF_SIZE róbheag."
+
+#: os_amiga.c:1472
+msgid "I/O ERROR"
+msgstr "EARRÁID I/A"
+
+#: os_mswin.c:597
+msgid "...(truncated)"
+msgstr "...(teasctha)"
+
+#: os_mswin.c:714
+msgid "'columns' is not 80, cannot execute external commands"
+msgstr "ní 80 é 'columns', ní féidir orduithe seachtracha a rith"
+
+#: os_mswin.c:2072
+msgid "E237: Printer selection failed"
+msgstr "E237: Theip ar roghnú printéara"
+
+#: os_mswin.c:2112
+#, c-format
+msgid "to %s on %s"
+msgstr "go %s ar %s"
+
+#: os_mswin.c:2127
+#, c-format
+msgid "E613: Unknown printer font: %s"
+msgstr "E613: Clófhoireann anaithnid printéara: %s"
+
+#: os_mswin.c:2176 os_mswin.c:2186
+#, c-format
+msgid "E238: Print error: %s"
+msgstr "E238: Earráid phriontála: %s"
+
+#: os_mswin.c:2214
+#, c-format
+msgid "Printing '%s'"
+msgstr "'%s' á phriontáil"
+
+#: os_mswin.c:3353
+#, c-format
+msgid "E244: Illegal charset name \"%s\" in font name \"%s\""
+msgstr ""
+"E244: Ainm neamhcheadaithe ar thacar carachtar \"%s\" mar pháirt d'ainm cló "
+"\"%s\""
+
+#: os_mswin.c:3363
+#, c-format
+msgid "E245: Illegal char '%c' in font name \"%s\""
+msgstr "E245: Carachtar neamhcheadaithe '%c' mar pháirt d'ainm cló \"%s\""
+
+#: os_riscos.c:1259
+msgid "E366: Invalid 'osfiletype' option - using Text"
+msgstr "E366: Rogha neamhbhailí 'osfiletype' - ag baint úsáid as `Text'"
+
+#: os_unix.c:980
+msgid "Vim: Double signal, exiting\n"
+msgstr "Vim: Comhartha dúbailte, ag scor\n"
+
+#: os_unix.c:986
+#, c-format
+msgid "Vim: Caught deadly signal %s\n"
+msgstr "Vim: Fuarthas comhartha marfach %s\n"
+
+#: os_unix.c:989
+#, c-format
+msgid "Vim: Caught deadly signal\n"
+msgstr "Vim: Fuarthas comhartha marfach\n"
+
+#: os_unix.c:1297
+#, c-format
+msgid "Opening the X display took %ld msec"
+msgstr "Thóg %ld ms chun an scáileán X a oscailt"
+
+#. KDE sometimes produces X error that we want to ignore
+#: os_unix.c:1326
+msgid ""
+"\n"
+"Vim: Got X error but we continue...\n"
+msgstr ""
+"\n"
+"Vim: Fuarthas earráid X ach ar aghaidh linn...\n"
+
+#: os_unix.c:1330
+msgid ""
+"\n"
+"Vim: Got X error\n"
+msgstr ""
+"\n"
+"Vim: Fuarthas earráid ó X\n"
+
+#: os_unix.c:1443
+msgid "Testing the X display failed"
+msgstr "Theip ar thástáil an scáileáin X"
+
+#: os_unix.c:1582
+msgid "Opening the X display timed out"
+msgstr "Oscailt an scáileáin X thar am"
+
+#: os_unix.c:3335 os_unix.c:4016
+msgid ""
+"\n"
+"Cannot execute shell "
+msgstr ""
+"\n"
+"Ní féidir blaosc a rith "
+
+#: os_unix.c:3383
+msgid ""
+"\n"
+"Cannot execute shell sh\n"
+msgstr ""
+"\n"
+"Ní féidir an bhlaosc sh a rith\n"
+
+#: os_unix.c:3387 os_unix.c:4022
+msgid ""
+"\n"
+"shell returned "
+msgstr ""
+"\n"
+"d'aisfhill an bhlaosc "
+
+#: os_unix.c:3522
+msgid ""
+"\n"
+"Cannot create pipes\n"
+msgstr ""
+"\n"
+"Ní féidir píopaí a chruthú\n"
+
+# "fork" not in standard refs/corpus.  Maybe want a "gabhl*" word instead? -KPS
+#: os_unix.c:3537
+msgid ""
+"\n"
+"Cannot fork\n"
+msgstr ""
+"\n"
+"Ní féidir forc a dhéanamh\n"
+
+#: os_unix.c:4029
+msgid ""
+"\n"
+"Command terminated\n"
+msgstr ""
+"\n"
+"Ordú críochnaithe\n"
+
+#: os_unix.c:4316 os_unix.c:4458 os_unix.c:6176
+msgid "XSMP lost ICE connection"
+msgstr "Chaill XSMP an nasc ICE"
+
+#: os_unix.c:5576 os_unix.c:5677
+#, c-format
+msgid "dlerror = \"%s\""
+msgstr "dlerror = \"%s\""
+
+#: os_unix.c:5759
+msgid "Opening the X display failed"
+msgstr "Theip ar oscailt an scáileáin X"
+
+#: os_unix.c:6081
+msgid "XSMP handling save-yourself request"
+msgstr "Iarratas sábháil-do-féin á láimhseáil ag XSMP"
+
+#: os_unix.c:6200
+msgid "XSMP opening connection"
+msgstr "Nasc á oscailt ag XSMP"
+
+#: os_unix.c:6219
+msgid "XSMP ICE connection watch failed"
+msgstr "Theip ar fhaire nasc ICE XSMP"
+
+#: os_unix.c:6239
+#, c-format
+msgid "XSMP SmcOpenConnection failed: %s"
+msgstr "Theip ar XSMP SmcOpenConnection: %s"
+
+#: os_vms_mms.c:59
+msgid "At line"
+msgstr "Ag líne"
+
+#: os_w32exe.c:88
+msgid "Could not load vim32.dll!"
+msgstr "Níorbh fhéidir vim32.dll a luchtú!"
+
+#: os_w32exe.c:88 os_w32exe.c:99
+msgid "VIM Error"
+msgstr "Earráid VIM"
+
+#: os_w32exe.c:98
+msgid "Could not fix up function pointers to the DLL!"
+msgstr "Níorbh fhéidir pointeoirí feidhme a chóiriú i gcomhair an DLL!"
+
+#: os_win16.c:342 os_win32.c:3317
+#, c-format
+msgid "shell returned %d"
+msgstr "d'aisfhill an bhlaosc %d"
+
+#: os_win32.c:2776
+#, c-format
+msgid "Vim: Caught %s event\n"
+msgstr "Vim: Fuarthas teagmhas %s\n"
+
+#: os_win32.c:2778
+msgid "close"
+msgstr "dún"
+
+#: os_win32.c:2780
+msgid "logoff"
+msgstr "logáil amach"
+
+#: os_win32.c:2781
+msgid "shutdown"
+msgstr "múchadh"
+
+#: os_win32.c:3270
+msgid "E371: Command not found"
+msgstr "E371: Ní bhfuarthas an t-ordú"
+
+#: os_win32.c:3283
+msgid ""
+"VIMRUN.EXE not found in your $PATH.\n"
+"External commands will not pause after completion.\n"
+"See  :help win32-vimrun  for more information."
+msgstr ""
+"Níor aimsíodh VIMRUN.EXE i do $PATH.\n"
+"Ní mhoilleoidh orduithe seachtracha agus iad curtha i gcrích.\n"
+"Féach ar  :help win32-vimrun  chun níos mó eolas a fháil."
+
+#: os_win32.c:3286
+msgid "Vim Warning"
+msgstr "Rabhadh Vim"
+
+#: quickfix.c:284
+#, c-format
+msgid "E372: Too many %%%c in format string"
+msgstr "E372: An iomarca %%%c i dteaghrán formáide"
+
+#: quickfix.c:297
+#, c-format
+msgid "E373: Unexpected %%%c in format string"
+msgstr "E373: %%%c gan choinne i dteaghrán formáide"
+
+#: quickfix.c:351
+msgid "E374: Missing ] in format string"
+msgstr "E374: ] ar iarraidh i dteaghrán formáide"
+
+#: quickfix.c:365
+#, c-format
+msgid "E375: Unsupported %%%c in format string"
+msgstr "E375: %%%c gan tacaíocht i dteaghrán formáide"
+
+#: quickfix.c:383
+#, c-format
+msgid "E376: Invalid %%%c in format string prefix"
+msgstr "E376: %%%c neamhbhailí i réimír an teaghráin formáide"
+
+#: quickfix.c:391
+#, c-format
+msgid "E377: Invalid %%%c in format string"
+msgstr "E377: %%%c neamhbhailí i dteaghrán formáide"
+
+#: quickfix.c:417
+msgid "E378: 'errorformat' contains no pattern"
+msgstr "E378: Níl aon phatrún i 'errorformat'"
+
+#: quickfix.c:537
+msgid "E379: Missing or empty directory name"
+msgstr "E379: Ainm comhadlainne ar iarraidh, nó folamh"
+
+#: quickfix.c:1027
+msgid "E553: No more items"
+msgstr "E553: Níl aon mhír eile"
+
+#: quickfix.c:1324
+#, c-format
+msgid "(%d of %d)%s%s: "
+msgstr "(%d as %d)%s%s: "
+
+#: quickfix.c:1326
+msgid " (line deleted)"
+msgstr " (líne scriosta)"
+
+#: quickfix.c:1539
+msgid "E380: At bottom of quickfix stack"
+msgstr "E380: In íochtar na cruaiche quickfix"
+
+#: quickfix.c:1548
+msgid "E381: At top of quickfix stack"
+msgstr "E381: In uachtar na cruaiche quickfix"
+
+#: quickfix.c:1560
+#, c-format
+msgid "error list %d of %d; %d errors"
+msgstr "liosta earráidí %d as %d; %d earráid"
+
+#: quickfix.c:2042
+msgid "E382: Cannot write, 'buftype' option is set"
+msgstr "E382: Ní féidir scríobh, rogha 'buftype' socraithe"
+
+#: quickfix.c:2329
+msgid "E682: Invalid search pattern or delimiter"
+msgstr "E682: Patrún nó teormharcóir neamhbhailí cuardaigh"
+
+#: quickfix.c:2342
+msgid "E683: File name missing or invalid pattern"
+msgstr "E683: Ainm comhaid ar iarraidh, nó patrún neamhbhailí"
+
+#: quickfix.c:2421
+#, c-format
+msgid "Cannot open file \"%s\""
+msgstr "Ní féidir comhad \"%s\" a oscailt"
+
+#: quickfix.c:2697
+msgid "E681: Buffer is not loaded"
+msgstr "E681: Níl an maolán luchtaithe"
+
+#: regexp.c:319
+#, c-format
+msgid "E369: invalid item in %s%%[]"
+msgstr "E369: mír neamhbhailí i %s%%[]"
+
+#: regexp.c:837
+msgid "E339: Pattern too long"
+msgstr "E339: Slonn rófhada"
+
+#: regexp.c:1008
+msgid "E50: Too many \\z("
+msgstr "E50: an iomarca \\z("
+
+#: regexp.c:1019
+#, c-format
+msgid "E51: Too many %s("
+msgstr "E51: an iomarca %s("
+
+#: regexp.c:1076
+msgid "E52: Unmatched \\z("
+msgstr "E52: \\z( corr"
+
+#: regexp.c:1080
+#, c-format
+msgid "E53: Unmatched %s%%("
+msgstr "E53: %s%%( corr"
+
+#: regexp.c:1082
+#, c-format
+msgid "E54: Unmatched %s("
+msgstr "E54: %s( corr"
+
+#: regexp.c:1087
+#, c-format
+msgid "E55: Unmatched %s)"
+msgstr "E55: %s) corr"
+
+#: regexp.c:1257
+#, c-format
+msgid "E56: %s* operand could be empty"
+msgstr "E56: is féidir go bhfuil an t-oibreann %s* folamh"
+
+#: regexp.c:1260
+#, c-format
+msgid "E57: %s+ operand could be empty"
+msgstr "E57: is féidir go bhfuil an t-oibreann %s+ folamh"
+
+#: regexp.c:1315
+#, c-format
+msgid "E59: invalid character after %s@"
+msgstr "E59: carachtar neamhbhailí i ndiaidh %s@"
+
+#: regexp.c:1343
+#, c-format
+msgid "E58: %s{ operand could be empty"
+msgstr "E58: is féidir go bhfuil an t-oibreann %s( folamh"
+
+#: regexp.c:1353
+#, c-format
+msgid "E60: Too many complex %s{...}s"
+msgstr "E60: An iomarca %s{...} coimpléascach"
+
+#: regexp.c:1369
+#, c-format
+msgid "E61: Nested %s*"
+msgstr "E61: %s* neadaithe"
+
+#: regexp.c:1372
+#, c-format
+msgid "E62: Nested %s%c"
+msgstr "E62: %s%c neadaithe"
+
+#: regexp.c:1490
+msgid "E63: invalid use of \\_"
+msgstr "E63: úsáid neamhbhailí de \\_"
+
+#: regexp.c:1535
+#, c-format
+msgid "E64: %s%c follows nothing"
+msgstr "E64: níl aon rud roimh %s%c"
+
+#: regexp.c:1591
+msgid "E65: Illegal back reference"
+msgstr "E65: Cúltagairt neamhbhailí"
+
+#: regexp.c:1604
+msgid "E66: \\z( not allowed here"
+msgstr "E66: ní cheadaítear \\z( anseo"
+
+#: regexp.c:1623
+msgid "E67: \\z1 et al. not allowed here"
+msgstr "E67: ní cheadaítear \\z1 et al. anseo"
+
+#: regexp.c:1634
+msgid "E68: Invalid character after \\z"
+msgstr "E68: Carachtar neamhbhailí i ndiaidh \\z"
+
+#: regexp.c:1683
+#, c-format
+msgid "E69: Missing ] after %s%%["
+msgstr "E69: ] ar iarraidh i ndiaidh %s%%["
+
+#: regexp.c:1699
+#, c-format
+msgid "E70: Empty %s%%[]"
+msgstr "E70: %s%%[] folamh"
+
+#: regexp.c:1744
+#, c-format
+msgid "E678: Invalid character after %s%%[dxouU]"
+msgstr "E678: Carachtar neamhbhailí i ndiaidh %s%%[dxouU]"
+
+#: regexp.c:1795
+#, c-format
+msgid "E71: Invalid character after %s%%"
+msgstr "E71: Carachtar neamhbhailí i ndiaidh %s%%"
+
+#: regexp.c:2728
+#, c-format
+msgid "E554: Syntax error in %s{...}"
+msgstr "E554: Earráid chomhréire i %s{...}"
+
+#: regexp.c:3424
+msgid "External submatches:\n"
+msgstr "Fo-mheaitseáil sheachtrach:\n"
+
+#: screen.c:7981
+msgid " VREPLACE"
+msgstr " V-IONADAIGH"
+
+#: screen.c:7985
+msgid " REPLACE"
+msgstr " ATHCHUR"
+
+#: screen.c:7990
+msgid " REVERSE"
+msgstr " TIONTÚ"
+
+#: screen.c:7992
+msgid " INSERT"
+msgstr " IONSÁ"
+
+#: screen.c:7995
+msgid " (insert)"
+msgstr " (ionsáigh)"
+
+#: screen.c:7997
+msgid " (replace)"
+msgstr " (ionadaigh)"
+
+#: screen.c:7999
+msgid " (vreplace)"
+msgstr " (v-ionadaigh)"
+
+#: screen.c:8002
+msgid " Hebrew"
+msgstr " Eabhrais"
+
+#: screen.c:8013
+msgid " Arabic"
+msgstr " Araibis"
+
+#: screen.c:8016
+msgid " (lang)"
+msgstr " (teanga)"
+
+#: screen.c:8020
+msgid " (paste)"
+msgstr " (greamaigh)"
+
+#: screen.c:8033
+msgid " VISUAL"
+msgstr " RADHARCACH"
+
+#: screen.c:8034
+msgid " VISUAL LINE"
+msgstr " LÍNE RADHARCACH"
+
+#: screen.c:8035
+msgid " VISUAL BLOCK"
+msgstr " BLOC RADHARCACH"
+
+#: screen.c:8036
+msgid " SELECT"
+msgstr " ROGHNÚ"
+
+#: screen.c:8037
+msgid " SELECT LINE"
+msgstr " SELECT LINE"
+
+#: screen.c:8038
+msgid " SELECT BLOCK"
+msgstr " SELECT BLOCK"
+
+#: screen.c:8053 screen.c:8116
+msgid "recording"
+msgstr "ag taifeadadh"
+
+#: search.c:37
+msgid "search hit TOP, continuing at BOTTOM"
+msgstr "Buaileadh an BARR le linn an chuardaigh, ag leanúint ag an CHRÍOCH"
+
+#: search.c:38
+msgid "search hit BOTTOM, continuing at TOP"
+msgstr "Buaileadh an BUN le linn an chuardaigh, ag leanúint ag an BHARR"
+
+#: search.c:525
+#, c-format
+msgid "E383: Invalid search string: %s"
+msgstr "E383: Teaghrán cuardaigh neamhbhailí: %s"
+
+#: search.c:868
+#, c-format
+msgid "E384: search hit TOP without match for: %s"
+msgstr "E384: bhuail an cuardach an BARR gan teaghrán comhoiriúnach le %s"
+
+#: search.c:871
+#, c-format
+msgid "E385: search hit BOTTOM without match for: %s"
+msgstr "E385: bhuail an cuardach an BUN gan teaghrán comhoiriúnach le %s"
+
+#: search.c:1265
+msgid "E386: Expected '?' or '/'  after ';'"
+msgstr "E386: Ag súil le '?' nó '/'  i ndiaidh ';'"
+
+#: search.c:4147
+msgid " (includes previously listed match)"
+msgstr " (tá an teaghrán comhoiriúnaithe roimhe seo san áireamh)"
+
+#. cursor at status line
+#: search.c:4167
+msgid "--- Included files "
+msgstr "--- Comhaid cheanntáisc "
+
+#: search.c:4169
+msgid "not found "
+msgstr "gan aimsiú"
+
+#: search.c:4170
+msgid "in path ---\n"
+msgstr "i gconair ---\n"
+
+#: search.c:4227
+msgid "  (Already listed)"
+msgstr "  (Liostaithe cheana féin)"
+
+#: search.c:4229
+msgid "  NOT FOUND"
+msgstr "  AR IARRAIDH"
+
+#: search.c:4281
+#, c-format
+msgid "Scanning included file: %s"
+msgstr "Comhad ceanntáisc á scanadh: %s"
+
+#: search.c:4499
+msgid "E387: Match is on current line"
+msgstr "E387: Tá an teaghrán comhoiriúnaithe ar an líne reatha"
+
+#: search.c:4642
+msgid "All included files were found"
+msgstr "Aimsíodh gach comhad ceanntáisc"
+
+#: search.c:4644
+msgid "No included files"
+msgstr "Gan comhaid cheanntáisc"
+
+#: search.c:4660
+msgid "E388: Couldn't find definition"
+msgstr "E388: Sainmhíniú gan aimsiú"
+
+#: search.c:4662
+msgid "E389: Couldn't find pattern"
+msgstr "E389: Patrún gan aimsiú"
+
+#: syntax.c:3070
+#, c-format
+msgid "E390: Illegal argument: %s"
+msgstr "E390: Argóint neamhcheadaithe: %s"
+
+#: syntax.c:3247
+#, c-format
+msgid "E391: No such syntax cluster: %s"
+msgstr "E391: Níl a leithéid de mhogall comhréire: %s"
+
+#: syntax.c:3411
+msgid "No Syntax items defined for this buffer"
+msgstr "Níl aon mhír chomhréire sainmhínithe le haghaidh an mhaoláin seo"
+
+#: syntax.c:3419
+msgid "syncing on C-style comments"
+msgstr "ag sioncrónú ar nóta den nós C"
+
+#: syntax.c:3427
+msgid "no syncing"
+msgstr "gan sioncrónú"
+
+#: syntax.c:3430
+msgid "syncing starts "
+msgstr "tosaíonn an sioncrónú "
+
+#: syntax.c:3432 syntax.c:3507
+msgid " lines before top line"
+msgstr " línte roimh an bharr"
+
+#: syntax.c:3437
+msgid ""
+"\n"
+"--- Syntax sync items ---"
+msgstr ""
+"\n"
+"--- Míreanna Comhréire Sionc ---"
+
+#: syntax.c:3442
+msgid ""
+"\n"
+"syncing on items"
+msgstr ""
+"\n"
+"ag sioncrónú ar mhíreanna"
+
+#: syntax.c:3448
+msgid ""
+"\n"
+"--- Syntax items ---"
+msgstr ""
+"\n"
+"--- Míreanna comhréire ---"
+
+#: syntax.c:3471
+#, c-format
+msgid "E392: No such syntax cluster: %s"
+msgstr "E392: Níl a leithéid de mhogall comhréire: %s"
+
+#: syntax.c:3497
+msgid "minimal "
+msgstr "íosta "
+
+#: syntax.c:3504
+msgid "maximal "
+msgstr "uasta "
+
+#: syntax.c:3516
+msgid "; match "
+msgstr "; meaitseáil "
+
+#: syntax.c:3518
+msgid " line breaks"
+msgstr " scoilt idir línte"
+
+#: syntax.c:4146
+msgid "E395: contains argument not accepted here"
+msgstr "E395: tá argóint ann nach nglactar leis anseo"
+
+#: syntax.c:4157
+msgid "E396: containedin argument not accepted here"
+msgstr "E396: ní ghlactar leis an argóint containedin anseo"
+
+#: syntax.c:4179
+msgid "E393: group[t]here not accepted here"
+msgstr "E393: ní ghlactar le group[t]here anseo"
+
+#: syntax.c:4203
+#, c-format
+msgid "E394: Didn't find region item for %s"
+msgstr "E394: Níor aimsíodh mír réigiúin le haghaidh %s"
+
+#: syntax.c:4281
+msgid "E397: Filename required"
+msgstr "E397: Ní foláir ainm comhaid a thabhairt"
+
+#: syntax.c:4633
+#, c-format
+msgid "E398: Missing '=': %s"
+msgstr "E398: '=' ar iarraidh: %s"
+
+#: syntax.c:4792
+#, c-format
+msgid "E399: Not enough arguments: syntax region %s"
+msgstr "E399: Níl go leor argóintí ann: réigiún comhréire %s"
+
+#: syntax.c:5122
+msgid "E400: No cluster specified"
+msgstr "E400: Níor sonraíodh mogall"
+
+#: syntax.c:5159
+#, c-format
+msgid "E401: Pattern delimiter not found: %s"
+msgstr "E401: Teormharcóir patrúin gan aimsiú: %s"
+
+#: syntax.c:5234
+#, c-format
+msgid "E402: Garbage after pattern: %s"
+msgstr "E402: Dramhaíl i ndiaidh patrúin: %s"
+
+#: syntax.c:5324
+msgid "E403: syntax sync: line continuations pattern specified twice"
+msgstr "E403: comhréir sionc: tugadh patrún leanúint líne faoi dhó"
+
+#: syntax.c:5381
+#, c-format
+msgid "E404: Illegal arguments: %s"
+msgstr "Argóintí neamhcheadaithe: %s"
+
+#: syntax.c:5431
+#, c-format
+msgid "E405: Missing equal sign: %s"
+msgstr "E405: Sín chothroime ar iarraidh: %s"
+
+#: syntax.c:5437
+#, c-format
+msgid "E406: Empty argument: %s"
+msgstr "E406: Argóint fholamh: %s"
+
+#: syntax.c:5464
+#, c-format
+msgid "E407: %s not allowed here"
+msgstr "E407: ní cheadaítear %s anseo"
+
+#: syntax.c:5471
+#, c-format
+msgid "E408: %s must be first in contains list"
+msgstr "E408: ní foláir %s a thabhairt ar dtús sa liosta `contains'"
+
+#: syntax.c:5541
+#, c-format
+msgid "E409: Unknown group name: %s"
+msgstr "E409: Ainm anaithnid grúpa: %s"
+
+#: syntax.c:5775
+#, c-format
+msgid "E410: Invalid :syntax subcommand: %s"
+msgstr "E410: Fo-ordú neamhbhailí :syntax: %s"
+
+#: syntax.c:6043
+msgid "E679: recursive loop loading syncolor.vim"
+msgstr "E679: lúb athchúrsach agus syncolor.vim á luchtú"
+
+#: syntax.c:6170
+#, c-format
+msgid "E411: highlight group not found: %s"
+msgstr "E411: Grúpa aibhsithe gan aimsiú: %s"
+
+#: syntax.c:6194
+#, c-format
+msgid "E412: Not enough arguments: \":highlight link %s\""
+msgstr "E412: Easpa argóintí: \":highlight link %s\""
+
+#: syntax.c:6201
+#, c-format
+msgid "E413: Too many arguments: \":highlight link %s\""
+msgstr "E413: An iomarca argóintí: \":highlight link %s\""
+
+#: syntax.c:6221
+msgid "E414: group has settings, highlight link ignored"
+msgstr ""
+"E414: tá socruithe ag an ghrúpa, ag déanamh neamhshuim ar nasc aibhsithe"
+
+#: syntax.c:6350
+#, c-format
+msgid "E415: unexpected equal sign: %s"
+msgstr "E415: sín chothroime gan choinne: %s"
+
+#: syntax.c:6386
+#, c-format
+msgid "E416: missing equal sign: %s"
+msgstr "E416: sín chothroime ar iarraidh: %s"
+
+#: syntax.c:6414
+#, c-format
+msgid "E417: missing argument: %s"
+msgstr "E417: argóint ar iarraidh: %s"
+
+#: syntax.c:6451
+#, c-format
+msgid "E418: Illegal value: %s"
+msgstr "E418: Luach neamhcheadaithe: %s"
+
+#: syntax.c:6570
+msgid "E419: FG color unknown"
+msgstr "E419: Dath anaithnid an chúlra"
+
+#: syntax.c:6581
+msgid "E420: BG color unknown"
+msgstr "E420: Dath anaithnid an tulra"
+
+#: syntax.c:6642
+#, c-format
+msgid "E421: Color name or number not recognized: %s"
+msgstr "E421: Níor aithníodh ainm/uimhir an datha: %s"
+
+#: syntax.c:6848
+#, c-format
+msgid "E422: terminal code too long: %s"
+msgstr "E422: cód teirminéil rófhada: %s"
+
+#: syntax.c:6895
+#, c-format
+msgid "E423: Illegal argument: %s"
+msgstr "E423: Argóint neamhcheadaithe: %s"
+
+#: syntax.c:7424
+msgid "E424: Too many different highlighting attributes in use"
+msgstr "E424: An iomarca tréithe aibhsithe in úsáid"
+
+#: syntax.c:7944
+msgid "E669: Unprintable character in group name"
+msgstr "E669: Carachtar neamhghrafach in ainm grúpa"
+
+#: syntax.c:7952
+msgid "W18: Invalid character in group name"
+msgstr "W18: Carachtar neamhbhailí in ainm grúpa"
+
+#: tag.c:90
+msgid "E555: at bottom of tag stack"
+msgstr "E555: in íochtar na cruaiche clibeanna"
+
+#: tag.c:91
+msgid "E556: at top of tag stack"
+msgstr "E556: in uachtar na cruaiche clibeanna"
+
+#: tag.c:412
+msgid "E425: Cannot go before first matching tag"
+msgstr "E425: Ní féidir a dhul roimh an chéad chlib chomhoiriúnach"
+
+#: tag.c:550
+#, c-format
+msgid "E426: tag not found: %s"
+msgstr "E426: clib gan aimsiú: %s"
+
+#: tag.c:583
+msgid "  # pri kind tag"
+msgstr "  # tos cin clib"
+
+#: tag.c:586
+msgid "file\n"
+msgstr "comhad\n"
+
+#. * Ask to select a tag from the list.
+#. * When using ":silent" assume that <CR> was entered.
+#: tag.c:744
+msgid "Enter nr of choice (<CR> to abort): "
+msgstr "Iontráil uimhir do rogha (<Enter>=tobscor): "
+
+#: tag.c:784
+msgid "E427: There is only one matching tag"
+msgstr "E427: Tá aon chlib chomhoiriúnach amháin"
+
+#: tag.c:786
+msgid "E428: Cannot go beyond last matching tag"
+msgstr "E428: Ní féidir a dhul thar an chlib chomhoiriúnach deireanach"
+
+#: tag.c:810
+#, c-format
+msgid "File \"%s\" does not exist"
+msgstr "Níl a leithéid de chomhad \"%s\" ann"
+
+#. Give an indication of the number of matching tags
+#: tag.c:823
+#, c-format
+msgid "tag %d of %d%s"
+msgstr "clib %d as %d%s"
+
+#: tag.c:826
+msgid " or more"
+msgstr " nó os a chionn"
+
+#: tag.c:828
+msgid "  Using tag with different case!"
+msgstr "  Ag úsáid clib le cás eile!"
+
+#: tag.c:872
+#, c-format
+msgid "E429: File \"%s\" does not exist"
+msgstr "E429: Níl a leithéid de chomhad \"%s\""
+
+#. Highlight title
+#: tag.c:941
+msgid ""
+"\n"
+"  # TO tag         FROM line  in file/text"
+msgstr ""
+"\n"
+"  # Go clib        Ó    líne  i  gcomhad/téacs"
+
+#: tag.c:1363
+#, c-format
+msgid "Searching tags file %s"
+msgstr "Comhad clibeanna %s á chuardach"
+
+#: tag.c:1550
+#, c-format
+msgid "E430: Tag file path truncated for %s\n"
+msgstr "E430: Teascadh conair an chomhaid clibeanna le haghaidh %s\n"
+
+#: tag.c:2202
+#, c-format
+msgid "E431: Format error in tags file \"%s\""
+msgstr "E431: Earráid fhormáide i gcomhad clibeanna \"%s\""
+
+#: tag.c:2206
+#, c-format
+msgid "Before byte %ld"
+msgstr "Roimh bheart %ld"
+
+#: tag.c:2239
+#, c-format
+msgid "E432: Tags file not sorted: %s"
+msgstr "E432: Comhad clibeanna gan sórtáil: %s"
+
+#. never opened any tags file
+#: tag.c:2279
+msgid "E433: No tags file"
+msgstr "E433: Níl aon chomhad clibeanna"
+
+#: tag.c:3020
+msgid "E434: Can't find tag pattern"
+msgstr "E434: Patrún clibe gan aimsiú"
+
+#: tag.c:3031
+msgid "E435: Couldn't find tag, just guessing!"
+msgstr "E435: Clib gan aimsiú, ag tabhairt buille faoi thuairim!"
+
+#: term.c:1772
+msgid "' not known. Available builtin terminals are:"
+msgstr "' anaithnid. Is iad seo na teirminéil insuite:"
+
+#: term.c:1796
+msgid "defaulting to '"
+msgstr "réamhshocrú = '"
+
+#: term.c:2154
+msgid "E557: Cannot open termcap file"
+msgstr "E557: Ní féidir an comhad termcap a oscailt"
+
+#: term.c:2158
+msgid "E558: Terminal entry not found in terminfo"
+msgstr "E558: Iontráil teirminéil gan aimsiú sa terminfo"
+
+#: term.c:2160
+msgid "E559: Terminal entry not found in termcap"
+msgstr "E559: Iontráil teirminéil gan aimsiú sa termcap"
+
+#: term.c:2319
+#, c-format
+msgid "E436: No \"%s\" entry in termcap"
+msgstr "E436: Níl aon iontráil \"%s\" sa termcap"
+
+#: term.c:2793
+msgid "E437: terminal capability \"cm\" required"
+msgstr "E437: tá gá leis an chumas teirminéil \"cm\""
+
+#. Highlight title
+#: term.c:5039
+msgid ""
+"\n"
+"--- Terminal keys ---"
+msgstr ""
+"\n"
+"--- Eochracha teirminéil ---"
+
+#: ui.c:264
+msgid "new shell started\n"
+msgstr "tosaíodh blaosc nua\n"
+
+#: ui.c:1847
+msgid "Vim: Error reading input, exiting...\n"
+msgstr "Vim: Earráid agus an t-inchomhad á léamh; ag scor...\n"
+
+#. must display the prompt
+#: undo.c:413
+msgid "No undo possible; continue anyway"
+msgstr "Ní féidir a chealú; lean ar aghaidh mar sin féin"
+
+#: undo.c:569
+msgid "E438: u_undo: line numbers wrong"
+msgstr "E438: u_undo: líne-uimhreacha míchearta"
+
+#: undo.c:769
+msgid "1 change"
+msgstr "1 athrú"
+
+#: undo.c:771
+#, c-format
+msgid "%ld changes"
+msgstr "%ld athrú"
+
+#: undo.c:824
+msgid "E439: undo list corrupt"
+msgstr "E439: tá an liosta cealaithe truaillithe"
+
+#: undo.c:856
+msgid "E440: undo line missing"
+msgstr "E440: líne chealaithe ar iarraidh"
+
+#. Only MS VC 4.1 and earlier can do Win32s
+#: version.c:717
+msgid ""
+"\n"
+"MS-Windows 16/32 bit GUI version"
+msgstr ""
+"\n"
+"Leagan GUI 16/32 giotán MS-Fuinneoga"
+
+#: version.c:719
+msgid ""
+"\n"
+"MS-Windows 32 bit GUI version"
+msgstr ""
+"\n"
+"Leagan GUI 32 giotán MS-Fuinneoga"
+
+#: version.c:722
+msgid " in Win32s mode"
+msgstr " i mód Win32s"
+
+#: version.c:724
+msgid " with OLE support"
+msgstr " le tacaíocht OLE"
+
+#: version.c:727
+msgid ""
+"\n"
+"MS-Windows 32 bit console version"
+msgstr ""
+"\n"
+"Leagan consóil 32 giotán MS-Fuinneoga"
+
+#: version.c:731
+msgid ""
+"\n"
+"MS-Windows 16 bit version"
+msgstr ""
+"\n"
+"Leagan 16 giotán MS-Fuinneoga"
+
+#: version.c:735
+msgid ""
+"\n"
+"32 bit MS-DOS version"
+msgstr ""
+"\n"
+"Leagan 32 giotán MS-DOS"
+
+#: version.c:737
+msgid ""
+"\n"
+"16 bit MS-DOS version"
+msgstr ""
+"\n"
+"Leagan 16 giotán MS-DOS"
+
+#: version.c:743
+msgid ""
+"\n"
+"MacOS X (unix) version"
+msgstr ""
+"\n"
+"Leagan MacOS X (unix)"
+
+#: version.c:745
+msgid ""
+"\n"
+"MacOS X version"
+msgstr ""
+"\n"
+"Leagan MacOS X"
+
+#: version.c:748
+msgid ""
+"\n"
+"MacOS version"
+msgstr ""
+"\n"
+"Leagan MacOS"
+
+#: version.c:753
+msgid ""
+"\n"
+"RISC OS version"
+msgstr ""
+"\n"
+"Leagan RISC OS"
+
+#: version.c:763
+msgid ""
+"\n"
+"Included patches: "
+msgstr ""
+"\n"
+"Paistí san áireamh: "
+
+#: version.c:789 version.c:1157
+msgid "Modified by "
+msgstr "Athraithe ag "
+
+#: version.c:796
+msgid ""
+"\n"
+"Compiled "
+msgstr ""
+"\n"
+"Tiomsaithe "
+
+#: version.c:799
+msgid "by "
+msgstr "le "
+
+#: version.c:811
+msgid ""
+"\n"
+"Huge version "
+msgstr ""
+"\n"
+"Leagan ollmhór "
+
+#: version.c:814
+msgid ""
+"\n"
+"Big version "
+msgstr ""
+"\n"
+"Leagan mór "
+
+#: version.c:817
+msgid ""
+"\n"
+"Normal version "
+msgstr ""
+"\n"
+"Leagan coitianta "
+
+#: version.c:820
+msgid ""
+"\n"
+"Small version "
+msgstr ""
+"\n"
+"Leagan beag "
+
+#: version.c:822
+msgid ""
+"\n"
+"Tiny version "
+msgstr ""
+"\n"
+"Leagan beag bídeach "
+
+#: version.c:828
+msgid "without GUI."
+msgstr "gan GUI."
+
+#: version.c:833
+msgid "with GTK2-GNOME GUI."
+msgstr "le GUI GTK2-GNOME."
+
+#: version.c:835
+msgid "with GTK-GNOME GUI."
+msgstr "le GUI GTK-GNOME."
+
+#: version.c:839
+msgid "with GTK2 GUI."
+msgstr "le GUI GTK2."
+
+#: version.c:841
+msgid "with GTK GUI."
+msgstr "le GUI GTK."
+
+#: version.c:846
+msgid "with X11-Motif GUI."
+msgstr "le GUI X11-Motif."
+
+#: version.c:850
+msgid "with X11-neXtaw GUI."
+msgstr "le GUI X11-neXtaw."
+
+#: version.c:852
+msgid "with X11-Athena GUI."
+msgstr "le GUI X11-Athena."
+
+#: version.c:856
+msgid "with Photon GUI."
+msgstr "le GUI Photon."
+
+#: version.c:859
+msgid "with GUI."
+msgstr "le GUI."
+
+#: version.c:862
+msgid "with Carbon GUI."
+msgstr "le GUI Carbon."
+
+#: version.c:865
+msgid "with Cocoa GUI."
+msgstr "le GUI Cocoa."
+
+#: version.c:868
+msgid "with (classic) GUI."
+msgstr "le GUI (clasaiceach)."
+
+#: version.c:871
+msgid "with KDE GUI."
+msgstr "le GUI KDE."
+
+#: version.c:882
+msgid "  Features included (+) or not (-):\n"
+msgstr "  Gnéithe san áireamh (+) nó nach bhfuil (-):\n"
+
+#: version.c:894
+msgid "   system vimrc file: \""
+msgstr "   comhad vimrc an chórais: \""
+
+#: version.c:899
+msgid "     user vimrc file: \""
+msgstr "     comhad vimrc úsáideora: \""
+
+#: version.c:904
+msgid " 2nd user vimrc file: \""
+msgstr " dara comhad vimrc úsáideora: \""
+
+#: version.c:909
+msgid " 3rd user vimrc file: \""
+msgstr " tríú comhad vimrc úsáideora: \""
+
+#: version.c:914
+msgid "      user exrc file: \""
+msgstr "      comhad exrc úsáideora: \""
+
+#: version.c:919
+msgid "  2nd user exrc file: \""
+msgstr "  dara comhad úsáideora exrc: \""
+
+#: version.c:925
+msgid "  system gvimrc file: \""
+msgstr "  comhad gvimrc córais: \""
+
+#: version.c:929
+msgid "    user gvimrc file: \""
+msgstr "    comhad gvimrc úsáideora: \""
+
+#: version.c:933
+msgid "2nd user gvimrc file: \""
+msgstr "dara comhad gvimrc úsáideora: \""
+
+#: version.c:938
+msgid "3rd user gvimrc file: \""
+msgstr "tríú comhad gvimrc úsáideora: \""
+
+#: version.c:945
+msgid "    system menu file: \""
+msgstr "    comhad roghchláir an chórais: \""
+
+#: version.c:953
+msgid "  fall-back for $VIM: \""
+msgstr "  rogha thánaisteach do $VIM: \""
+
+#: version.c:959
+msgid " f-b for $VIMRUNTIME: \""
+msgstr " f-b do $VIMRUNTIME: \""
+
+#: version.c:963
+msgid "Compilation: "
+msgstr "Tiomsú: "
+
+#: version.c:969
+msgid "Compiler: "
+msgstr "Tiomsaitheoir: "
+
+#: version.c:974
+msgid "Linking: "
+msgstr "Nascáil: "
+
+#: version.c:979
+msgid "  DEBUG BUILD"
+msgstr "  LEAGAN DÍFHABHTAITHE"
+
+#: version.c:1018
+msgid "VIM - Vi IMproved"
+msgstr "VIM - Vi IMproved"
+
+#: version.c:1020
+msgid "version "
+msgstr "leagan "
+
+#: version.c:1021
+msgid "by Bram Moolenaar et al."
+msgstr "le Bram Moolenaar et al."
+
+#: version.c:1025
+msgid "Vim is open source and freely distributable"
+msgstr "Is saorbhogearraí Vim"
+
+#: version.c:1027
+msgid "Help poor children in Uganda!"
+msgstr "Tabhair cabhair do pháistí bochta in Uganda!"
+
+#: version.c:1028
+msgid "type  :help iccf<Enter>       for information "
+msgstr "clóscríobh  :help iccf<Enter>       chun eolas a fháil "
+
+#: version.c:1030
+msgid "type  :q<Enter>               to exit         "
+msgstr "clóscríobh  :q<Enter>               chun scoir      "
+
+#: version.c:1031
+msgid "type  :help<Enter>  or  <F1>  for on-line help"
+msgstr "clóscríobh  :help<Enter>  nó  <F1>  le haghaidh cabhrach ar líne"
+
+#: version.c:1032
+msgid "type  :help version7<Enter>   for version info"
+msgstr "clóscríobh  :help version7<Enter>   le haghaidh eolais faoin leagan"
+
+#: version.c:1035
+msgid "Running in Vi compatible mode"
+msgstr "Sa mhód comhoiriúnachta Vi"
+
+#: version.c:1036
+msgid "type  :set nocp<Enter>        for Vim defaults"
+msgstr ""
+"clóscríobh  :set nocp<Enter>        chun na réamhshocruithe Vim a thaispeáint"
+
+#: version.c:1037
+msgid "type  :help cp-default<Enter> for info on this"
+msgstr ""
+"clóscríobh  :help cp-default<Enter> chun níos mó eolas faoi seo a fháil"
+
+# don't see where to localize "Help->Orphans"? --kps
+#: version.c:1052
+msgid "menu  Help->Orphans           for information    "
+msgstr "roghchlár  Help->Orphans      chun eolas a fháil "
+
+#: version.c:1054
+msgid "Running modeless, typed text is inserted"
+msgstr "Ag rith gan mhóid, ag ionsá an téacs atá iontráilte"
+
+# same problem --kps
+#: version.c:1055
+msgid "menu  Edit->Global Settings->Toggle Insert Mode  "
+msgstr "roghchlár  Edit->Global Settings->Toggle Insert Mode  "
+
+#: version.c:1056
+msgid "                              for two modes      "
+msgstr "                              do dhá mhód       "
+
+# same problem --kps
+#: version.c:1060
+msgid "menu  Edit->Global Settings->Toggle Vi Compatible"
+msgstr "roghchlár  Edit->Global Settings->Toggle Vi Compatible"
+
+#: version.c:1061
+msgid "                              for Vim defaults   "
+msgstr "                              le haghaidh réamhshocruithe Vim   "
+
+#: version.c:1108
+msgid "Sponsor Vim development!"
+msgstr "Bí i d'urraitheoir Vim!"
+
+#: version.c:1109
+msgid "Become a registered Vim user!"
+msgstr "Bí i d'úsáideoir cláraithe Vim!"
+
+#: version.c:1112
+msgid "type  :help sponsor<Enter>    for information "
+msgstr "clóscríobh  :help sponsor<Enter>        chun eolas a fháil "
+
+#: version.c:1113
+msgid "type  :help register<Enter>   for information "
+msgstr "clóscríobh  :help register<Enter>       chun eolas a fháil "
+
+#: version.c:1115
+msgid "menu  Help->Sponsor/Register  for information    "
+msgstr "roghchlár  Help->Sponsor/Register       chun eolas a fháil "
+
+#: version.c:1125
+msgid "WARNING: Windows 95/98/ME detected"
+msgstr "RABHADH: Braitheadh Windows 95/98/ME"
+
+#: version.c:1128
+msgid "type  :help windows95<Enter>  for info on this"
+msgstr "clóscríobh  :help windows95<Enter>      chun eolas a fháil "
+
+#: window.c:203
+msgid "E441: There is no preview window"
+msgstr "E441: Níl aon fhuinneog réamhamhairc ann"
+
+#: window.c:581
+msgid "E442: Can't split topleft and botright at the same time"
+msgstr "E442: Ní féidir a scoilteadh topleft agus botright san am céanna"
+
+#: window.c:1340
+msgid "E443: Cannot rotate when another window is split"
+msgstr "E443: Ní féidir rothlú nuair atá fuinneog eile scoilte"
+
+#: window.c:1836
+msgid "E444: Cannot close last window"
+msgstr "E444: Ní féidir an fhuinneog dheiridh a dhúnadh"
+
+#: window.c:2571
+msgid "Already only one window"
+msgstr "Níl ach aon fhuinneog amháin ann cheana"
+
+#: window.c:2618
+msgid "E445: Other window contains changes"
+msgstr "E445: Tá athruithe ann san fhuinneog eile"
+
+#: window.c:4528
+msgid "E446: No file name under cursor"
+msgstr "E446: Níl ainm comhaid faoin chúrsóir"
+
+#: window.c:4647
+#, c-format
+msgid "E447: Can't find file \"%s\" in path"
+msgstr "E447: Níl aon fháil ar chomhad \"%s\" sa chonair"
+
+#: if_perl.xs:326 globals.h:1283
+#, c-format
+msgid "E370: Could not load library %s"
+msgstr "E370: Níorbh fhéidir an leabharlann %s a oscailt"
+
+#: if_perl.xs:556
+msgid "Sorry, this command is disabled: the Perl library could not be loaded."
+msgstr ""
+"Tá brón orm, níl an t-ordú seo le fáil, níorbh fhéidir an leabharlann Perl a "
+"luchtú."
+
+#: if_perl.xs:609
+msgid "E299: Perl evaluation forbidden in sandbox without the Safe module"
+msgstr "E299: Ní cheadaítear meas Perl i mbosca gainimh gan an modúl Safe"
+
+#: GvimExt/gvimext.cpp:583
+msgid "Edit with &multiple Vims"
+msgstr "Cuir in eagar le Vimeanna io&madúla"
+
+#: GvimExt/gvimext.cpp:589
+msgid "Edit with single &Vim"
+msgstr "Cuir in eagar le &Vim aonair"
+
+#: GvimExt/gvimext.cpp:598
+msgid "Diff with Vim"
+msgstr "Diff le Vim"
+
+#: GvimExt/gvimext.cpp:611
+msgid "Edit with &Vim"
+msgstr "Cuir in Eagar le &Vim"
+
+#. Now concatenate
+#: GvimExt/gvimext.cpp:633
+msgid "Edit with existing Vim - "
+msgstr "Cuir in Eagar le Vim beo - "
+
+#: GvimExt/gvimext.cpp:746
+msgid "Edits the selected file(s) with Vim"
+msgstr "Cuir an comhad roghnaithe in eagar le Vim"
+
+#: GvimExt/gvimext.cpp:885 GvimExt/gvimext.cpp:966
+msgid "Error creating process: Check if gvim is in your path!"
+msgstr ""
+"Earráid agus próiseas á chruthú: Deimhnigh go bhfuil gvim i do chonair!"
+
+#: GvimExt/gvimext.cpp:886 GvimExt/gvimext.cpp:900 GvimExt/gvimext.cpp:967
+msgid "gvimext.dll error"
+msgstr "earráid gvimext.dll"
+
+#: GvimExt/gvimext.cpp:899
+msgid "Path length too long!"
+msgstr "Conair rófhada!"
+
+#: globals.h:1046
+msgid "--No lines in buffer--"
+msgstr "--Tá an maolán folamh--"
+
+#. * The error messages that can be shared are included here.
+#. * Excluded are errors that are only used once and debugging messages.
+#: globals.h:1237
+msgid "E470: Command aborted"
+msgstr "E470: Ordú tobscortha"
+
+#: globals.h:1238
+msgid "E471: Argument required"
+msgstr "E471: Ní foláir argóint"
+
+#: globals.h:1239
+msgid "E10: \\ should be followed by /, ? or &"
+msgstr "E10: Ba chóir /, ? nó & a chur i ndiaidh \\"
+
+#: globals.h:1241
+msgid "E11: Invalid in command-line window; <CR> executes, CTRL-C quits"
+msgstr ""
+"E11: Neamhbhailí i bhfuinneog líne na n-orduithe; <CR>=rith, CTRL-C=scoir"
+
+#: globals.h:1243
+msgid "E12: Command not allowed from exrc/vimrc in current dir or tag search"
+msgstr ""
+"E12: Ní cheadaítear ordú ó exrc/vimrc sa chomhadlann reatha ná ó chuardach "
+"clibe"
+
+#: globals.h:1245
+msgid "E171: Missing :endif"
+msgstr "E171: :endif ar iarraidh"
+
+#: globals.h:1246
+msgid "E600: Missing :endtry"
+msgstr "E600: :endtry ar iarraidh"
+
+#: globals.h:1247
+msgid "E170: Missing :endwhile"
+msgstr "E170: :endwhile ar iarraidh"
+
+#: globals.h:1248
+msgid "E170: Missing :endfor"
+msgstr "E170: :endfor ar iarraidh"
+
+#: globals.h:1249
+msgid "E588: :endwhile without :while"
+msgstr "E588: :endwhile gan :while"
+
+#: globals.h:1250
+msgid "E588: :endfor without :for"
+msgstr "E588: :endfor gan :for"
+
+#: globals.h:1252
+msgid "E13: File exists (add ! to override)"
+msgstr "E13: Tá comhad ann cheana (cuir ! leis an ordú chun forscríobh)"
+
+#: globals.h:1253
+msgid "E472: Command failed"
+msgstr "E472: Theip ar ordú"
+
+#: globals.h:1255
+#, c-format
+msgid "E234: Unknown fontset: %s"
+msgstr "E234: Tacar cló anaithnid: %s"
+
+#: globals.h:1259
+#, c-format
+msgid "E235: Unknown font: %s"
+msgstr "E235: Clófhoireann anaithnid: %s"
+
+#: globals.h:1262
+#, c-format
+msgid "E236: Font \"%s\" is not fixed-width"
+msgstr "E236: Ní cló aonleithid é \"%s\""
+
+#: globals.h:1264
+msgid "E473: Internal error"
+msgstr "E473: Earráid inmheánach"
+
+#: globals.h:1265
+msgid "Interrupted"
+msgstr "Idirbhriste"
+
+#: globals.h:1266
+msgid "E14: Invalid address"
+msgstr "E14: Drochsheoladh"
+
+#: globals.h:1267
+msgid "E474: Invalid argument"
+msgstr "E474: Argóint neamhbhailí"
+
+#: globals.h:1268
+#, c-format
+msgid "E475: Invalid argument: %s"
+msgstr "E475: Argóint neamhbhailí: %s"
+
+#: globals.h:1270
+#, c-format
+msgid "E15: Invalid expression: %s"
+msgstr "E15: Slonn neamhbhailí: %s"
+
+#: globals.h:1272
+msgid "E16: Invalid range"
+msgstr "E16: Raon neamhbhailí"
+
+#: globals.h:1273
+msgid "E476: Invalid command"
+msgstr "E476: Ordú neamhbhailí"
+
+#: globals.h:1275
+#, c-format
+msgid "E17: \"%s\" is a directory"
+msgstr "E17: is comhadlann \"%s\""
+
+#: globals.h:1278
+#, c-format
+msgid "E364: Library call failed for \"%s()\""
+msgstr "E364: Theip ar ghlao leabharlainne \"%s()\""
+
+#: globals.h:1284
+#, c-format
+msgid "E448: Could not load library function %s"
+msgstr "E448: Ní féidir feidhm %s leabharlainne a luchtú"
+
+#: globals.h:1286
+msgid "E19: Mark has invalid line number"
+msgstr "E19: Tá líne-uimhir neamhbhailí ag an mharc"
+
+#: globals.h:1287
+msgid "E20: Mark not set"
+msgstr "E20: Marc gan socrú"
+
+#: globals.h:1288
+msgid "E21: Cannot make changes, 'modifiable' is off"
+msgstr ""
+"E21: Ní féidir athruithe a chur i bhfeidhm, níl an brat 'modifiable' "
+"socraithe"
+
+#: globals.h:1289
+msgid "E22: Scripts nested too deep"
+msgstr "E22: scripteanna neadaithe ródhomhain"
+
+#: globals.h:1290
+msgid "E23: No alternate file"
+msgstr "E23: Níl aon chomhad malartach"
+
+#: globals.h:1291
+msgid "E24: No such abbreviation"
+msgstr "E24: Níl a leithéid de ghiorrúchán ann"
+
+#: globals.h:1292
+msgid "E477: No ! allowed"
+msgstr "E477: Ní cheadaítear !"
+
+#: globals.h:1294
+msgid "E25: GUI cannot be used: Not enabled at compile time"
+msgstr "E25: Ní féidir an GUI a úsáid: Níor cumasaíodh é agus Vim á thiomsú"
+
+#: globals.h:1297
+msgid "E26: Hebrew cannot be used: Not enabled at compile time\n"
+msgstr ""
+"E26: Níl tacaíocht Eabhraise ar fáil: Níor cumasaíodh é agus Vim á thiomsú\n"
+
+#: globals.h:1300
+msgid "E27: Farsi cannot be used: Not enabled at compile time\n"
+msgstr ""
+"E27: Níl tacaíocht Pheirsise ar fáil: Níor cumasaíodh é agus Vim á thiomsú\n"
+
+#: globals.h:1303
+msgid "E800: Arabic cannot be used: Not enabled at compile time\n"
+msgstr ""
+"E800: Níl tacaíocht Araibise ar fáil: Níor cumasaíodh é agus Vim á thiomsú\n"
+
+#: globals.h:1306
+#, c-format
+msgid "E28: No such highlight group name: %s"
+msgstr "E28: Níl a leithéid d'ainm grúpa aibhsithe: %s"
+
+#: globals.h:1308
+msgid "E29: No inserted text yet"
+msgstr "E29: Níl aon téacs ionsáite go dtí seo"
+
+#: globals.h:1309
+msgid "E30: No previous command line"
+msgstr "E30: Níl aon líne na n-orduithe roimhe seo"
+
+#: globals.h:1310
+msgid "E31: No such mapping"
+msgstr "E31: Níl a leithéid de mhapáil"
+
+#: globals.h:1311
+msgid "E479: No match"
+msgstr "E479: Níl aon rud comhoiriúnach ann"
+
+#: globals.h:1312
+#, c-format
+msgid "E480: No match: %s"
+msgstr "E480: Níl aon rud comhoiriúnach ann: %s"
+
+#: globals.h:1313
+msgid "E32: No file name"
+msgstr "E32: Níl aon ainm comhaid"
+
+#: globals.h:1314
+msgid "E33: No previous substitute regular expression"
+msgstr "E33: Níl aon slonn ionadaíochta roimhe seo"
+
+#: globals.h:1315
+msgid "E34: No previous command"
+msgstr "E34: Níl aon ordú roimhe seo"
+
+#: globals.h:1316
+msgid "E35: No previous regular expression"
+msgstr "E35: Níl aon slonn ionadaíochta roimhe seo"
+
+#: globals.h:1317
+msgid "E481: No range allowed"
+msgstr "E481: Ní cheadaítear raon"
+
+#: globals.h:1319
+msgid "E36: Not enough room"
+msgstr "E36: Níl slí a dhóthain ann"
+
+#: globals.h:1322
+#, c-format
+msgid "E247: no registered server named \"%s\""
+msgstr "E247: níl aon fhreastalaí cláraithe leis an ainm \"%s\""
+
+#: globals.h:1324
+#, c-format
+msgid "E482: Can't create file %s"
+msgstr "E482: Ní féidir comhad %s a chruthú"
+
+#: globals.h:1325
+msgid "E483: Can't get temp file name"
+msgstr "E483: Níl aon fháil ar ainm comhaid sealadach"
+
+#: globals.h:1326
+#, c-format
+msgid "E484: Can't open file %s"
+msgstr "E484: Ní féidir comhad %s a oscailt"
+
+#: globals.h:1327
+#, c-format
+msgid "E485: Can't read file %s"
+msgstr "E485: Ní féidir comhad %s a léamh"
+
+#: globals.h:1328
+msgid "E37: No write since last change (add ! to override)"
+msgstr "E37: Tá athruithe ann gan sábháil (cuir ! leis an ordú chun sárú)"
+
+#: globals.h:1329
+msgid "E38: Null argument"
+msgstr "E38: Argóint nialasach"
+
+#: globals.h:1331
+msgid "E39: Number expected"
+msgstr "E39: Ag súil le huimhir"
+
+#: globals.h:1334
+#, c-format
+msgid "E40: Can't open errorfile %s"
+msgstr "E40: Ní féidir an comhad earráide %s a oscailt"
+
+#: globals.h:1337
+msgid "E233: cannot open display"
+msgstr "E233: ní féidir an scáileán a oscailt"
+
+#: globals.h:1339
+msgid "E41: Out of memory!"
+msgstr "E41: Cuimhne ídithe!"
+
+#: globals.h:1341
+msgid "Pattern not found"
+msgstr "Patrún gan aimsiú"
+
+#: globals.h:1343
+#, c-format
+msgid "E486: Pattern not found: %s"
+msgstr "E486: Patrún gan aimsiú: %s"
+
+#: globals.h:1344
+msgid "E487: Argument must be positive"
+msgstr "E487: Ní foláir argóint dheimhneach"
+
+#: globals.h:1346
+msgid "E459: Cannot go back to previous directory"
+msgstr "E459: Ní féidir a fhilleadh ar an chomhadlann roimhe seo"
+
+#: globals.h:1350
+msgid "E42: No Errors"
+msgstr "E42: Níl Aon Earráid Ann"
+
+#: globals.h:1352
+msgid "E43: Damaged match string"
+msgstr "E43: Teaghrán cuardaigh loite"
+
+#: globals.h:1353
+msgid "E44: Corrupted regexp program"
+msgstr "E44: Clár na sloinn ionadaíochta truaillithe"
+
+#: globals.h:1354
+msgid "E45: 'readonly' option is set (add ! to override)"
+msgstr "E45: tá an rogha 'readonly' socraithe (cuir ! leis an ordú chun sárú)"
+
+#: globals.h:1356
+#, c-format
+msgid "E46: Cannot change read-only variable \"%s\""
+msgstr "E46: Ní féidir athróg léimh-amháin \"%s\" a athrú"
+
+#: globals.h:1357
+#, c-format
+msgid "E46: Cannot set variable in the sandbox: \"%s\""
+msgstr "E46: Ní féidir athróg a shocrú sa bhosca gainimh: \"%s\""
+
+#: globals.h:1360
+msgid "E47: Error while reading errorfile"
+msgstr "E47: Earráid agus comhad earráide á léamh"
+
+#: globals.h:1363
+msgid "E48: Not allowed in sandbox"
+msgstr "E48: Ní cheadaítear é seo i mbosca gainimh"
+
+#: globals.h:1365
+msgid "E523: Not allowed here"
+msgstr "E523: Ní cheadaítear é anseo"
+
+#: globals.h:1368
+msgid "E359: Screen mode setting not supported"
+msgstr "E359: Ní féidir an mód scáileáin a shocrú"
+
+#: globals.h:1370
+msgid "E49: Invalid scroll size"
+msgstr "E49: Méid neamhbhailí scrollaithe"
+
+#: globals.h:1371
+msgid "E91: 'shell' option is empty"
+msgstr "E91: rogha 'shell' folamh"
+
+#: globals.h:1373
+msgid "E255: Couldn't read in sign data!"
+msgstr "E255: Níorbh fhéidir na sonraí comhartha a léamh!"
+
+#: globals.h:1375
+msgid "E72: Close error on swap file"
+msgstr "E72: Earráid agus comhad babhtála á dhúnadh"
+
+#: globals.h:1376
+msgid "E73: tag stack empty"
+msgstr "E73: tá cruach na gclibeanna folamh"
+
+#: globals.h:1377
+msgid "E74: Command too complex"
+msgstr "E74: Ordú róchasta"
+
+#: globals.h:1378
+msgid "E75: Name too long"
+msgstr "E75: Ainm rófhada"
+
+#: globals.h:1379
+msgid "E76: Too many ["
+msgstr "E76: an iomarca ["
+
+#: globals.h:1380
+msgid "E77: Too many file names"
+msgstr "E77: An iomarca ainmneacha comhaid"
+
+#: globals.h:1381
+msgid "E488: Trailing characters"
+msgstr "E488: Carachtair chun deiridh"
+
+#: globals.h:1382
+msgid "E78: Unknown mark"
+msgstr "E78: Marc anaithnid"
+
+#: globals.h:1383
+msgid "E79: Cannot expand wildcards"
+msgstr "E79: Ní féidir saoróga a leathnú"
+
+#: globals.h:1385
+msgid "E591: 'winheight' cannot be smaller than 'winminheight'"
+msgstr "E591: ní cheadaítear 'winheight' a bheith níos lú ná 'winminheight'"
+
+#: globals.h:1387
+msgid "E592: 'winwidth' cannot be smaller than 'winminwidth'"
+msgstr "E592: ní cheadaítear 'winwidth' a bheith níos lú ná 'winminwidth'"
+
+#: globals.h:1390
+msgid "E80: Error while writing"
+msgstr "E80: Earráid agus á scríobh"
+
+#: globals.h:1391
+msgid "Zero count"
+msgstr "Nialas"
+
+#: globals.h:1393
+msgid "E81: Using <SID> not in a script context"
+msgstr "E81: <SID> á úsáid nach i gcomhthéacs scripte"
+
+#: globals.h:1396
+msgid "E449: Invalid expression received"
+msgstr "E449: Fuarthas slonn neamhbhailí"
+
+#: globals.h:1399
+msgid "E463: Region is guarded, cannot modify"
+msgstr "E463: Réigiún cosanta, ní féidir é a athrú"
+
+#: globals.h:1400
+msgid "E744: NetBeans does not allow changes in read-only files"
+msgstr "E744: Ní cheadaíonn NetBeans aon athrú i gcomhaid léimh-amháin"
+
+#: globals.h:1403
+#, c-format
+msgid "E685: Internal error: %s"
+msgstr "E685: Earráid inmheánach: %s"
+
+#: globals.h:1406
+msgid "E361: Crash intercepted; regexp too complex?"
+msgstr "E361: Ceapadh tuairt; slonn ionadaíochta róchasta?"
+
+#: globals.h:1408
+msgid "E363: pattern caused out-of-stack error"
+msgstr "E363: ghin an patrún earráid as-an-chruach"

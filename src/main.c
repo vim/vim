@@ -1185,10 +1185,8 @@ scripterror:
     }
 #endif
 
-    if (GARGCOUNT > 1)
-	printf(_("%d files to edit\n"), GARGCOUNT);
 #ifdef MSWIN
-    else if (GARGCOUNT == 1 && full_path)
+    if (GARGCOUNT == 1 && full_path)
     {
 	/*
 	 * If there is one filename, fully qualified, we have very probably
@@ -1310,7 +1308,12 @@ scripterror:
 	TIME_MSG("Warning delay");
     }
 
-    if (want_full_screen)
+    /* This message comes before term inits, but after setting "silent_mode"
+     * when the input is not a tty. */
+    if (GARGCOUNT > 1 && !silent_mode)
+	printf(_("%d files to edit\n"), GARGCOUNT);
+
+    if (want_full_screen && !silent_mode)
     {
 	termcapinit(term);	/* set terminal name and get terminal
 				   capabilities (will set full_screen) */
@@ -2067,7 +2070,7 @@ scripterror:
     /*
      * Call the main command loop.  This never returns.
      */
-    main_loop(FALSE);
+    main_loop(FALSE, FALSE);
 
     return 0;
 }
@@ -2077,10 +2080,13 @@ scripterror:
  * Main loop: Execute Normal mode commands until exiting Vim.
  * Also used to handle commands in the command-line window, until the window
  * is closed.
+ * Also used to handle ":visual" command after ":global": execute Normal mode
+ * commands, return when entering Ex mode.  "noexmode" is TRUE then.
  */
     void
-main_loop(cmdwin)
-    int		cmdwin;	/* TRUE when working in the command-line window */
+main_loop(cmdwin, noexmode)
+    int		cmdwin;	    /* TRUE when working in the command-line window */
+    int		noexmode;   /* TRUE when return on entering Ex mode */
 {
     oparg_T	oa;	/* operator arguments */
 
@@ -2089,7 +2095,7 @@ main_loop(cmdwin)
      * it, restore the state and continue.  This might not always work
      * properly, but at least we don't exit unexpectedly when the X server
      * exists while Vim is running in a console. */
-    if (!cmdwin && SETJMP(x_jump_env))
+    if (!cmdwin && !noexmode && SETJMP(x_jump_env))
     {
 	State = NORMAL;
 # ifdef FEAT_VISUAL
@@ -2247,7 +2253,11 @@ main_loop(cmdwin)
 	 * Otherwise, get and execute a normal mode command.
 	 */
 	if (exmode_active)
+	{
+	    if (noexmode)   /* End of ":global/path/visual" commands */
+		return;
 	    do_exmode(exmode_active == EXMODE_VIM);
+	}
 	else
 	    normal_cmd(&oa, TRUE);
     }
@@ -2288,6 +2298,12 @@ getout(exitval)
 #endif
 
     exiting = TRUE;
+
+    /* When running in Ex mode an error causes us to exit with a non-zero exit
+     * code.  POSIX requires this, although it's not 100% clear from the
+     * standard. */
+    if (exmode_active)
+	exitval += ex_exitval;
 
     /* Position the cursor on the last screen line, below all the text */
 #ifdef FEAT_GUI

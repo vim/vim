@@ -53,6 +53,7 @@
 #define SBOXOK	      0x80000L	/* allowed in the sandbox */
 #define CMDWIN	     0x100000L	/* allowed in cmdline window */
 #define MODIFY       0x200000L  /* forbidden in non-'modifiable' buffer */
+#define EXFLAGS      0x400000L	/* allow flags after count in argument */
 #define FILES	(XFILE | EXTRA)	/* multiple extra files allowed */
 #define WORD1	(EXTRA | NOSPC)	/* one extra word allowed */
 #define FILE1	(FILES | NOSPC)	/* 1 file allowed, defaults to current file */
@@ -197,7 +198,7 @@ EX(CMD_cc,		"cc",		ex_cc,
 EX(CMD_cclose,		"cclose",	ex_cclose,
 			RANGE|NOTADR|COUNT|TRLBAR),
 EX(CMD_cd,		"cd",		ex_cd,
-			FILE1|TRLBAR|CMDWIN),
+			BANG|FILE1|TRLBAR|CMDWIN),
 EX(CMD_center,		"center",	ex_align,
 			TRLBAR|RANGE|WHOLEFOLD|EXTRA|CMDWIN|MODIFY),
 EX(CMD_cfile,		"cfile",	ex_cfile,
@@ -207,7 +208,7 @@ EX(CMD_cfirst,		"cfirst",	ex_cc,
 EX(CMD_cgetfile,	"cgetfile",	ex_cfile,
 			TRLBAR|FILE1|BANG),
 EX(CMD_chdir,		"chdir",	ex_cd,
-			FILE1|TRLBAR|CMDWIN),
+			BANG|FILE1|TRLBAR|CMDWIN),
 EX(CMD_changes,		"changes",	ex_changes,
 			TRLBAR|CMDWIN),
 EX(CMD_checkpath,	"checkpath",	ex_checkpath,
@@ -453,7 +454,7 @@ EX(CMD_iunabbrev,	"iunabbrev",	ex_abbreviate,
 EX(CMD_iunmenu,		"iunmenu",	ex_menu,
 			EXTRA|TRLBAR|NOTRLCOM|USECTRLV|CMDWIN),
 EX(CMD_join,		"join",		ex_join,
-			BANG|RANGE|WHOLEFOLD|COUNT|TRLBAR|CMDWIN|MODIFY),
+			BANG|RANGE|WHOLEFOLD|COUNT|EXFLAGS|TRLBAR|CMDWIN|MODIFY),
 EX(CMD_jumps,		"jumps",	ex_jumps,
 			TRLBAR|CMDWIN),
 EX(CMD_k,		"k",		ex_mark,
@@ -465,15 +466,15 @@ EX(CMD_keepjumps,	"keepjumps",	ex_wrongmodifier,
 EX(CMD_keepalt,		"keepalt",	ex_wrongmodifier,
 			NEEDARG|EXTRA|NOTRLCOM),
 EX(CMD_list,		"list",		ex_print,
-			RANGE|WHOLEFOLD|COUNT|TRLBAR|CMDWIN),
+			RANGE|WHOLEFOLD|COUNT|EXFLAGS|TRLBAR|CMDWIN),
 EX(CMD_last,		"last",		ex_last,
 			EXTRA|BANG|EDITCMD|ARGOPT|TRLBAR),
 EX(CMD_language,	"language",	ex_language,
 			EXTRA|TRLBAR|CMDWIN),
 EX(CMD_lcd,		"lcd",		ex_cd,
-			FILE1|TRLBAR|CMDWIN),
+			BANG|FILE1|TRLBAR|CMDWIN),
 EX(CMD_lchdir,		"lchdir",	ex_cd,
-			FILE1|TRLBAR|CMDWIN),
+			BANG|FILE1|TRLBAR|CMDWIN),
 EX(CMD_left,		"left",		ex_align,
 			TRLBAR|RANGE|WHOLEFOLD|EXTRA|CMDWIN|MODIFY),
 EX(CMD_leftabove,	"leftabove",	ex_wrongmodifier,
@@ -559,13 +560,13 @@ EX(CMD_noremenu,	"noremenu",	ex_menu,
 EX(CMD_normal,		"normal",	ex_normal,
 			RANGE|BANG|EXTRA|NEEDARG|NOTRLCOM|USECTRLV|SBOXOK|CMDWIN),
 EX(CMD_number,		"number",	ex_print,
-			RANGE|WHOLEFOLD|COUNT|TRLBAR|CMDWIN),
+			RANGE|WHOLEFOLD|COUNT|EXFLAGS|TRLBAR|CMDWIN),
 EX(CMD_nunmap,		"nunmap",	ex_unmap,
 			EXTRA|TRLBAR|NOTRLCOM|USECTRLV|CMDWIN),
 EX(CMD_nunmenu,		"nunmenu",	ex_menu,
 			EXTRA|TRLBAR|NOTRLCOM|USECTRLV|CMDWIN),
-EX(CMD_open,		"open",		ex_ni,
-			TRLBAR),	/* not supported */
+EX(CMD_open,		"open",		ex_open,
+			RANGE|EXTRA),
 EX(CMD_omap,		"omap",		ex_map,
 			EXTRA|TRLBAR|NOTRLCOM|USECTRLV|CMDWIN),
 EX(CMD_omapclear,	"omapclear",	ex_mapclear,
@@ -585,7 +586,7 @@ EX(CMD_ounmap,		"ounmap",	ex_unmap,
 EX(CMD_ounmenu,		"ounmenu",	ex_menu,
 			EXTRA|TRLBAR|NOTRLCOM|USECTRLV|CMDWIN),
 EX(CMD_print,		"print",	ex_print,
-			RANGE|WHOLEFOLD|COUNT|TRLBAR|CMDWIN|SBOXOK),
+			RANGE|WHOLEFOLD|COUNT|EXFLAGS|TRLBAR|CMDWIN|SBOXOK),
 EX(CMD_pclose,		"pclose",	ex_pclose,
 			BANG|TRLBAR),
 EX(CMD_perl,		"perl",		ex_perl,
@@ -907,29 +908,29 @@ EX(CMD_xall,		"xall",		do_wqall,
 EX(CMD_yank,		"yank",		ex_operators,
 			RANGE|WHOLEFOLD|REGSTR|COUNT|TRLBAR|CMDWIN),
 EX(CMD_z,		"z",		ex_z,
-			RANGE|WHOLEFOLD|EXTRA|TRLBAR|CMDWIN),
+			RANGE|WHOLEFOLD|EXTRA|EXFLAGS|TRLBAR|CMDWIN),
 
 /* commands that don't start with a lowercase letter */
 EX(CMD_bang,		"!",		ex_bang,
 			RANGE|WHOLEFOLD|BANG|FILES|CMDWIN),
 EX(CMD_pound,		"#",		ex_print,
-			RANGE|WHOLEFOLD|COUNT|TRLBAR|CMDWIN),
+			RANGE|WHOLEFOLD|COUNT|EXFLAGS|TRLBAR|CMDWIN),
 EX(CMD_and,		"&",		do_sub,
 			RANGE|WHOLEFOLD|EXTRA|CMDWIN|MODIFY),
 EX(CMD_star,		"*",		ex_at,
 			RANGE|WHOLEFOLD|EXTRA|TRLBAR|CMDWIN),
 EX(CMD_lshift,		"<",		ex_operators,
-			RANGE|WHOLEFOLD|COUNT|TRLBAR|CMDWIN|MODIFY),
+			RANGE|WHOLEFOLD|COUNT|EXFLAGS|TRLBAR|CMDWIN|MODIFY),
 EX(CMD_equal,		"=",		ex_equal,
-			RANGE|TRLBAR|DFLALL|CMDWIN),
+			RANGE|TRLBAR|DFLALL|EXFLAGS|CMDWIN),
 EX(CMD_rshift,		">",		ex_operators,
-			RANGE|WHOLEFOLD|COUNT|TRLBAR|CMDWIN|MODIFY),
+			RANGE|WHOLEFOLD|COUNT|EXFLAGS|TRLBAR|CMDWIN|MODIFY),
 EX(CMD_at,		"@",		ex_at,
 			RANGE|WHOLEFOLD|EXTRA|TRLBAR|CMDWIN),
 EX(CMD_Next,		"Next",		ex_previous,
 			EXTRA|RANGE|NOTADR|COUNT|BANG|EDITCMD|ARGOPT|TRLBAR),
 EX(CMD_Print,		"Print",	ex_print,
-			RANGE|WHOLEFOLD|COUNT|TRLBAR|CMDWIN),
+			RANGE|WHOLEFOLD|COUNT|EXFLAGS|TRLBAR|CMDWIN),
 EX(CMD_X,		"X",		ex_X,
 			TRLBAR),
 EX(CMD_tilde,		"~",		do_sub,
@@ -967,6 +968,7 @@ struct exarg
     int		addr_count;	/* the number of addresses given */
     linenr_T	line1;		/* the first line number */
     linenr_T	line2;		/* the second line number or count */
+    int		flags;		/* extra flags after count: EXFLAG_ */
     char_u	*do_ecmd_cmd;	/* +command arg to be used in edited file */
     linenr_T	do_ecmd_lnum;	/* the line number in an edited file */
     int		append;		/* TRUE with ":w >>file" command */
@@ -991,5 +993,10 @@ struct exarg
 
 #define FORCE_BIN 1		/* ":edit ++bin file" */
 #define FORCE_NOBIN 2		/* ":edit ++nobin file" */
+
+/* Values for "flags" */
+#define EXFLAG_LIST	0x01	/* 'l': list */
+#define EXFLAG_NR	0x02	/* '#': number */
+#define EXFLAG_PRINT	0x04	/* 'p': print */
 
 #endif

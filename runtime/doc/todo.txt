@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Feb 12
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Feb 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,52 +30,37 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-"norm! gQ" hangs.  Fixes in ex_getln.c and ex_docmd.c also in Vim 6.3?
+Mac unicode patch (Da Woon Jung):
+- default font is ugly
+- typing doesn't work
+- selecting proportional font breaks display
 
 autoload:
-- Rename directory to from "autoload" to "library"?
-- Also autoload when reading a variable with a long:name that doesn't exist.
-- Example using short script with user command that triggers loading script
-  with functionality.
-- Remark about one script depending on another, recursively.
-- Catch recursive autoloading.
-- Add note in docs about HelpExtractor wrapper script.  Think about a good way
-  that the user doesn't need to run ":helptags" manually.
-
-POSIX compliance:
-- vi test 310 fails; exit code non-zero when any error occurred?
-- vi test 33 fails for unknown reasons
-- ex test 24 fails because test is wrong?
-- ex test 29 fails because exit value is always 0.
-- ex tests 47, 48, 49 fail because .exrc file isn't read in silent mode and
-  $EXINIT isn't used.
-- ex test 57 fails, need to look into this.
-- check ex test output
-- report use of $LINES and $COLUMNS to austin maillist.
-
-Make list of user functions a hashtable.
-
-Docs for using "syntax/{filetype}/*.vim" syntax files.
-
-Include Mac unicode patch (Da Woon Jung).
-
-New Motif toolbar button from Marcin Dalecki:
-- When the mouse pointer is over an Agide button the red becomes black.
-  Something with the way colors are specified in the .xpm file.
-- The pixmap is two pixels smaller than it should be.  The gap is filled
-  with grey instead of the current toolbar background color.
+- Add docs in user manual: one for using one script and FuncUndefined and one
+  for using autoload with two scripts.
+- Add a Vim script in $VIMRUNTIME/tools that takes a file with a list of
+  script names and a help file and produces a script that can be sourced to
+  install the scripts in the user's directories.
+  Use findfile(), so that only file names need to be given:
+    script plugin/myscript.vim
+    script autoload/mylib.vim
+    script autoload/yourlib.vim
+    helpfile doc/myscript.txt
+  For the "helpfile" item ":helptags" is run.
 
 Awaiting response:
 -   Patch for mch_FullName() also in Vim 6.3?  os_mswin.c
 -   Win32: tearoff menu window should have a scrollbar when it's taller than
     the screen.
 
-Patch from Yegappan Lakshmanan for redirecting of Ex commands (Feb 9 10:58):
-Look into how lval struct is kept for a long time.
-	:redir =>  variable
-	:redir =>> variable  (append)
-
 Improvements for Python indent script: Peter Wilson.
+
+Win32: when 'encoding' is "utf-8" getenv() should convert from the active
+codepage to utf-8, putenv() the other way around.  Or use _wgetenv() (but that
+duplicates the environment).
+
+Russian helpfile doesn't show up correctly when 'encoding' is koi8-r.
+(Vassily Ragosin 2005 Feb 16)
 
 
 PLANNED FOR VERSION 7.0:
@@ -165,6 +150,7 @@ PLANNED FOR VERSION 7.0:
 -   Add DEBUGGER INTERFACE.  Implementation for gdb by Xavier de Gaye,
     assisted by Mikolaj Machowski.  Should work like an IDE.  Try to keep it
     generic.  Also found here: http://skawina.eu.org/mikolaj/vimgdb
+    And the idevim plugin/script.
     To be able to start the debugger from inside Vim: For GUI run a program
     with a netbeans connection; for console: start a program that splits the
     terminal, runs the debugger in one window and reconnect Vim I/O to the
@@ -247,6 +233,10 @@ Mathias Michaelis (2004 Sep 6)
 Also place vimtutor.bat in %windir%?
 
 Add gui_mch_browsedir() for Motif, KDE and Mac OS/X.
+
+7   Add a ":cstring" command.  Works like ":cfile" but reads from a string
+    variable.  Also accept a list variable?  Patch from Yegappan Lakshmanan.
+    2005 Feb 17  Now it's ":cexpr".
 
 HTML indenting can be slow, find out why.  Any way to do some kind of
 profiling for Vim script?  At least add a function to get the current time in
@@ -370,7 +360,6 @@ quote. (Nieko Maatjes, 2005 Jan 4)
 Vi incompatibility:
 9   In Ex mode, "u" undoes all changes, not just the last one. (John Cowan)
 8   In Ex mode, an empty file doesn't have a first line, "1p" should fail.
-8   In Ex mode, "1,3" should print three lines.
 8   With undo/redo only marks in the changed lines should be changed.  Other
     marks should be kept.  Vi keeps each mark at the same text, even when it
     is deleted or restored. (Webb)
@@ -554,6 +543,11 @@ Win32 GUI known bugs:
 
 
 Athena and Motif:
+6   New Motif toolbar button from Marcin Dalecki:
+    - When the mouse pointer is over an Agide button the red becomes black.
+      Something with the way colors are specified in the .xpm file.
+    - The pixmap is two pixels smaller than it should be.  The gap is filled
+      with grey instead of the current toolbar background color.
 9   Can configure be changed to disable netbeans if the Xpm library is
     required and it's missing?
 8   When using the resource "Vim*borderwidth 2" the widgets are positioned
@@ -632,6 +626,14 @@ GUI:
     use that code?  Or use console dialog.
 8   When selecting a font with the font dialog and the font is invalid, the
     error message disappears too quick.
+7   More features in the find/replace dialog:
+    - regexp on/off
+    - search in selection/buffer/all buffers/directory
+       when all buffers/directory is used:
+	- filter for file name
+       when directory is used:
+	- subdirectory on/off
+	- top directory browser
 8   gui_check_colors() is not called at the right moment.  Do it much later,
     to avoid problems.
 8   gui_update_cursor() is called for a cursor shape change, even when there
@@ -1594,7 +1596,6 @@ Built-in script language:
 				Return a list instead.
 	sprintf(format, arg, ..) How to prevent a crash???
 	attributes()		return file protection flags "drwxrwxrwx"
-	mkdir(dir)		Create directory
 	copy(from, to)		Copy a file
 	perl(cmd)		call Perl and return string
 	shorten(fname)		shorten a file name, like home_replace()
@@ -2238,13 +2239,10 @@ Command line completion:
     them with the optional part inside [].
 7   Completion of ":map x ": fill in the current mapping, so that it can be
     edited. (Sven Guckes)
-7   Add completion for when entering an expression after CTRL-R= and "=.
-    (Servatius Brandt)
 -   For 'wildmenu': Simplify "../bar" when possible.
 -   When using <Up> in wildmenu mode for a submenu, should go back to the
     current menu, not the first one.  E.g., ":emenu File.Save<Up>".
 8   For ":find" and ":sfind" expand files found in 'path'.
-8   Add cmdline completion for the ":debug" command.
 8   When using backtick expansion, the external command may write a greeting
     message.  Add an option or commands to remove lines that match a regexp?
 7   When listing matches of files, display the common path separately from the
@@ -2260,7 +2258,6 @@ Command line completion:
 -   Add 'wildlongest' option: Key to use to find longest common match for
     command line completion (default CTRL-L), like 'wildchar'. (Cregut)
     Also: when there are several matches, show them line a CTRL-D.
--   Add completion for Environment variables: ":echo $SH<Tab>" -> "$SHELL".
 
 
 Command line history:
@@ -2441,6 +2438,10 @@ Text objects:
 8   Add test script for text object commands "aw", "iW", etc.
 8   Add text object for part of a CamelHumedWord and under_scored_word.
     (Scott Graham)  "ac" and "au"?
+8   Add a text object for any kind of quoting, also with multi-byte
+    characters.  Option to specify what quotes are recognized (default: all)
+    use "aq" and "iq".
+8   Add text object for any kind of parens, also multi-byte ones.
 7   Add text object for current search pattern: "a/" and "i/".  Makes it
     possible to turn text highlighted for 'hlsearch' into a Visual area.
 8   Add "gp" and "gP" commands: insert text and make sure there is a single
@@ -3092,8 +3093,6 @@ Various improvements:
     Govindachar)
 6   In the quickfix window statusline add the command used to get the list of
     errors, e.g. ":make foo", ":grep something *.c".
-7   Add a ":cstring" command.  Works like ":cfile" but reads from a string
-    variable.  Also accept a list variable?
 6   Python interface: add vim.message() function. (Michal Vitecek, 2002 Nov 5)
 7   Support using ":vert" with User commands.  Add expandable items <vert>.
     Do the same for ":browse" and ":confirm"?
@@ -3230,6 +3229,7 @@ Various improvements:
     regexp which triggers auto-formatting (for one line).
     ":set autoformat=\\s$".
 -   Be able to redefine where a sentence stops.  Use a regexp pattern?
+-   Support multi-byte characters for sentences.  Example from Ben Peterson.
 7   Add command "g)" to go to the end of a sentence, "g(" to go back to the
     end of a sentence. (Servatius Brandt)
 -   Be able to redefine where a paragraph starts.  For "[[" where the '{' is
@@ -3241,7 +3241,6 @@ Various improvements:
 8   findmatchlimit() should be able to skip comments.  Solves problem of
     matching the '{' in /* if (foo) { */ (Fiveash)
 -   Add more redirecting of Ex commands:
-	:redir @r> register  (append)
 	:redir #>  bufname
 	:redir #>> bufname   (append)
 -   Give error message when starting :redir: twice or using END when no
@@ -3402,8 +3401,6 @@ Various improvements:
 -   Implement 'redraw' option.
 -   Add special code to 'sections' option to define something else but '{' or
     '}' as the start of a section (e.g. one shiftwidth to the right).
--   Use pipes for filtering on Unix.  Requires using fork() to be able to read
-    and write at the same time, or some select() mechanism.
 7   Allow using Vim in a pipe: "ls | vim -u xxx.vim - | yyy".  Only needs
     implementing ":w" to stdout in the buffer that was read from stdin.
 8   Allow opening an unnamed buffer with ":e !cmd" and ":sp !cmd".  Vile can

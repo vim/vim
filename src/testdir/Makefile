@@ -50,10 +50,13 @@ test1.out: test1.in
 	cp $*.ok test.ok
 	# Sleep a moment to avoid that the xterm title is messed up
 	@-sleep .2
-	$(VIMPROG) -u unix.vim -U NONE --noplugin -s dotest.in $*.in
-	@/bin/sh -c "if diff test.out $*.ok; \
-		then mv -f test.out $*.out; \
-		else echo $* FAILED >>test.log; mv -f test.out $*.failed; \
+	-$(VIMPROG) -u unix.vim -U NONE --noplugin -s dotest.in $*.in
+	@/bin/sh -c "if test -f test.out; then\
+		  if diff test.out $*.ok; \
+		  then mv -f test.out $*.out; \
+		  else echo $* FAILED >>test.log; mv -f test.out $*.failed; \
+		  fi \
+		else echo $* NO OUTPUT >>test.log; \
 		fi"
 	-rm -rf X* test.ok viminfo
 

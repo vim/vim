@@ -148,17 +148,17 @@ typedef struct ufunc ufunc_T;
 
 struct ufunc
 {
-    ufunc_T	*next;		/* next function in list */
-    char_u	*name;		/* name of function; can start with <SNR>123_
-				   (<SNR> is K_SPECIAL KS_EXTRA KE_SNR) */
-    int		varargs;	/* variable nr of arguments */
-    int		flags;
-    int		calls;		/* nr of active calls */
-    garray_T	args;		/* arguments */
-    garray_T	lines;		/* function lines */
-    scid_T	script_ID;	/* ID of script where function was defined,
+    int		uf_varargs;	/* variable nr of arguments */
+    int		uf_flags;
+    int		uf_calls;	/* nr of active calls */
+    garray_T	uf_args;	/* arguments */
+    garray_T	uf_lines;	/* function lines */
+    scid_T	uf_script_ID;	/* ID of script where function was defined,
 				   used for s: variables */
-    int		refcount;	/* for numbered function: reference count */
+    int		uf_refcount;	/* for numbered function: reference count */
+    char_u	uf_name[1];	/* name of function (actually longer); can
+				   start with <SNR>123_ (<SNR> is K_SPECIAL
+				   KS_EXTRA KE_SNR) */
 };
 
 /* function flags */
@@ -167,13 +167,18 @@ struct ufunc
 #define FC_DICT	    4		/* Dict function, uses "self" */
 
 /*
- * All user-defined functions are found in the forward-linked function list.
- * The first function is pointed at by firstfunc.
+ * All user-defined functions are found in this hash table.
  */
-ufunc_T		*firstfunc = NULL;
+hashtab_T	func_hashtab;
 
-#define FUNCARG(fp, j)	((char_u **)(fp->args.ga_data))[j]
-#define FUNCLINE(fp, j)	((char_u **)(fp->lines.ga_data))[j]
+/* From user function to hashitem and back. */
+static ufunc_T dumuf;
+#define UF2HIKEY(fp) ((fp)->uf_name)
+#define HIKEY2UF(p)  ((ufunc_T *)(p - (dumuf.uf_name - (char_u *)&dumuf)))
+#define HI2UF(hi)     HIKEY2UF((hi)->hi_key)
+
+#define FUNCARG(fp, j)	((char_u **)(fp->uf_args.ga_data))[j]
+#define FUNCLINE(fp, j)	((char_u **)(fp->uf_lines.ga_data))[j]
 
 #define MAX_FUNC_ARGS	20	/* maximum number of function arguments */
 #define VAR_SHORT_LEN	20	/* short variable name length */
@@ -475,6 +480,9 @@ static void f_matchlist __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_matchstr __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_max __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_min __ARGS((typval_T *argvars, typval_T *rettv));
+#ifdef vim_mkdir
+static void f_mkdir __ARGS((typval_T *argvars, typval_T *rettv));
+#endif
 static void f_mode __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_nextnonblank __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_nr2char __ARGS((typval_T *argvars, typval_T *rettv));
@@ -554,7 +562,7 @@ static linenr_T get_tv_lnum __ARGS((typval_T *argvars));
 static char_u *get_tv_string __ARGS((typval_T *varp));
 static char_u *get_tv_string_buf __ARGS((typval_T *varp, char_u *buf));
 static dictitem_T *find_var __ARGS((char_u *name, hashtab_T **htp));
-static dictitem_T *find_var_in_ht __ARGS((hashtab_T *ht, char_u *varname));
+static dictitem_T *find_var_in_ht __ARGS((hashtab_T *ht, char_u *varname, int writing));
 static hashtab_T *find_var_ht __ARGS((char_u *name, char_u **varname));
 static void vars_clear_ext __ARGS((hashtab_T *ht, int free_val));
 static void delete_var __ARGS((hashtab_T *ht, hashitem_T *hi));
@@ -574,7 +582,8 @@ static void cat_func_name __ARGS((char_u *buf, ufunc_T *fp));
 static ufunc_T *find_func __ARGS((char_u *name));
 static int function_exists __ARGS((char_u *name));
 static int builtin_function __ARGS((char_u *name));
-static int func_autoload __ARGS((char_u *name));
+static int script_autoload __ARGS((char_u *name));
+static char_u *autoload_name __ARGS((char_u *name));
 static void func_free __ARGS((ufunc_T *fp));
 static void func_unref __ARGS((char_u *name));
 static void func_ref __ARGS((char_u *name));
@@ -605,6 +614,7 @@ static void ex_unletlock __ARGS((exarg_T *eap, char_u *argstart, int deep));
 static int do_unlet_var __ARGS((lval_T *lp, char_u *name_end, int forceit));
 static int do_lock_var __ARGS((lval_T *lp, char_u *name_end, int deep, int lock));
 static void item_lock __ARGS((typval_T *tv, int deep, int lock));
+static int tv_islocked __ARGS((typval_T *tv));
 
 /*
  * Initialize the global and v: variables.
@@ -618,6 +628,7 @@ eval_init()
     init_var_dict(&globvardict, &globvars_var);
     init_var_dict(&vimvardict, &vimvars_var);
     hash_init(&compat_hashtab);
+    hash_init(&func_hashtab);
 
     for (i = 0; i < VV_LEN; ++i)
     {
@@ -646,7 +657,7 @@ eval_init()
 func_name(cookie)
     void *cookie;
 {
-    return ((funccall_T *)cookie)->func->name;
+    return ((funccall_T *)cookie)->func->uf_name;
 }
 
 /*
@@ -714,6 +725,136 @@ set_internal_string_var(name, value)
 	    free_tv(tvp);
 	}
     }
+}
+
+static lval_T	*redir_lval = NULL;
+static char_u	*redir_endp = NULL;
+static char_u	*redir_varname = NULL;
+
+/*
+ * Start recording command output to a variable
+ * Returns OK if successfully completed the setup.  FAIL otherwise.
+ */
+    int
+var_redir_start(name, append)
+    char_u	*name;
+    int		append;		/* append to an existing variable */
+{
+    int		save_emsg;
+    int		err;
+    typval_T	tv;
+
+    /* Make sure a valid variable name is specified */
+    if (!eval_isnamec(*name) || VIM_ISDIGIT(*name))
+    {
+	EMSG(_(e_invarg));
+	return FAIL;
+    }
+
+    redir_varname = vim_strsave(name);
+    if (redir_varname == NULL)
+	return FAIL;
+
+    redir_lval = (lval_T *)alloc_clear((unsigned)sizeof(lval_T));
+    if (redir_lval == NULL)
+    {
+	var_redir_stop();
+	return FAIL;
+    }
+
+    /* Parse the variable name (can be a dict or list entry). */
+    redir_endp = get_lval(redir_varname, NULL, redir_lval, FALSE, FALSE, FALSE);
+    if (redir_endp == NULL || redir_lval->ll_name == NULL || *redir_endp != NUL)
+    {
+	if (redir_endp != NULL && *redir_endp != NUL)
+	    /* Trailing characters are present after the variable name */
+	    EMSG(_(e_trailing));
+	else
+	    EMSG(_(e_invarg));
+	var_redir_stop();
+	return FAIL;
+    }
+
+    /* check if we can write to the variable: set it to or append an empty
+     * string */
+    save_emsg = did_emsg;
+    did_emsg = FALSE;
+    tv.v_type = VAR_STRING;
+    tv.vval.v_string = (char_u *)"";
+    if (append)
+	set_var_lval(redir_lval, redir_endp, &tv, TRUE, (char_u *)".");
+    else
+	set_var_lval(redir_lval, redir_endp, &tv, TRUE, (char_u *)"=");
+    err = did_emsg;
+    did_emsg += save_emsg;
+    if (err)
+    {
+	var_redir_stop();
+	return FAIL;
+    }
+    if (redir_lval->ll_newkey != NULL)
+    {
+	/* Dictionary item was created, don't do it again. */
+	vim_free(redir_lval->ll_newkey);
+	redir_lval->ll_newkey = NULL;
+    }
+
+    return OK;
+}
+
+/*
+ * Append "value[len]" to the variable set by var_redir_start().
+ */
+    void
+var_redir_str(value, len)
+    char_u	*value;
+    int		len;
+{
+    char_u	*val;
+    typval_T	tv;
+    int		save_emsg;
+    int		err;
+
+    if (redir_lval == NULL)
+	return;
+
+    if (len == -1)
+	/* Append the entire string */
+	val = vim_strsave(value);
+    else
+	/* Append only the specified number of characters */
+	val = vim_strnsave(value, len);
+    if (val == NULL)
+	return;
+
+    tv.v_type = VAR_STRING;
+    tv.vval.v_string = val;
+
+    save_emsg = did_emsg;
+    did_emsg = FALSE;
+    set_var_lval(redir_lval, redir_endp, &tv, FALSE, (char_u *)".");
+    err = did_emsg;
+    did_emsg += save_emsg;
+    if (err)
+	var_redir_stop();
+
+    vim_free(tv.vval.v_string);
+}
+
+/*
+ * Stop redirecting command output to a variable.
+ */
+    void
+var_redir_stop()
+{
+    if (redir_lval != NULL)
+    {
+	clear_lval(redir_lval);
+	vim_free(redir_lval);
+	redir_lval = NULL;
+    }
+    vim_free(redir_varname);
+    redir_varname = NULL;
 }
 
 # if defined(FEAT_MBYTE) || defined(PROTO)
@@ -5866,12 +6007,15 @@ static struct fst
     {"matchstr",	2, 4, f_matchstr},
     {"max",		1, 1, f_max},
     {"min",		1, 1, f_min},
+#ifdef vim_mkdir
+    {"mkdir",		1, 3, f_mkdir},
+#endif
     {"mode",		0, 0, f_mode},
     {"nextnonblank",	1, 1, f_nextnonblank},
     {"nr2char",		1, 1, f_nr2char},
     {"prevnonblank",	1, 1, f_prevnonblank},
     {"range",		1, 3, f_range},
-    {"readfile",	1, 2, f_readfile},
+    {"readfile",	1, 3, f_readfile},
     {"remote_expr",	2, 3, f_remote_expr},
     {"remote_foreground", 1, 1, f_remote_foreground},
     {"remote_peek",	1, 2, f_remote_peek},
@@ -6218,7 +6362,7 @@ call_func(name, len, rettv, argcount, argvars, firstline, lastline,
 	    }
 #endif
 	    /* Try loading a package. */
-	    if (fp == NULL && func_autoload(fname) && !aborting())
+	    if (fp == NULL && script_autoload(fname) && !aborting())
 	    {
 		/* loaded a package, search for the function again */
 		fp = find_func(fname);
@@ -6226,13 +6370,13 @@ call_func(name, len, rettv, argcount, argvars, firstline, lastline,
 
 	    if (fp != NULL)
 	    {
-		if (fp->flags & FC_RANGE)
+		if (fp->uf_flags & FC_RANGE)
 		    *doesrange = TRUE;
-		if (argcount < fp->args.ga_len)
+		if (argcount < fp->uf_args.ga_len)
 		    error = ERROR_TOOFEW;
-		else if (!fp->varargs && argcount > fp->args.ga_len)
+		else if (!fp->uf_varargs && argcount > fp->uf_args.ga_len)
 		    error = ERROR_TOOMANY;
-		else if ((fp->flags & FC_DICT) && selfdict == NULL)
+		else if ((fp->uf_flags & FC_DICT) && selfdict == NULL)
 		    error = ERROR_DICT;
 		else
 		{
@@ -6243,12 +6387,12 @@ call_func(name, len, rettv, argcount, argvars, firstline, lastline,
 		     */
 		    save_search_patterns();
 		    saveRedobuff();
-		    ++fp->calls;
+		    ++fp->uf_calls;
 		    call_user_func(fp, argcount, argvars, rettv,
 					       firstline, lastline,
-				     (fp->flags & FC_DICT) ? selfdict : NULL);
-		    if (--fp->calls <= 0 && isdigit(*fp->name)
-							 && fp->refcount <= 0)
+				  (fp->uf_flags & FC_DICT) ? selfdict : NULL);
+		    if (--fp->uf_calls <= 0 && isdigit(*fp->uf_name)
+						      && fp->uf_refcount <= 0)
 			/* Function was unreferenced while being used, free it
 			 * now. */
 			func_free(fp);
@@ -8198,7 +8342,7 @@ f_getbufvar(argvars, rettv)
 	else
 	{
 	    /* look up the variable */
-	    v = find_var_in_ht(&buf->b_vars.dv_hashtab, varname);
+	    v = find_var_in_ht(&buf->b_vars.dv_hashtab, varname, FALSE);
 	    if (v != NULL)
 		copy_tv(&v->di_tv, rettv);
 	}
@@ -8723,7 +8867,7 @@ f_getwinvar(argvars, rettv)
 	else
 	{
 	    /* look up the variable */
-	    v = find_var_in_ht(&win->w_vars.dv_hashtab, varname);
+	    v = find_var_in_ht(&win->w_vars.dv_hashtab, varname, FALSE);
 	    if (v != NULL)
 		copy_tv(&v->di_tv, rettv);
 	}
@@ -8908,6 +9052,9 @@ f_has(argvars, rettv)
 #endif
 #ifdef FEAT_SEARCHPATH
 	"file_in_path",
+#endif
+#if defined(UNIX) && !defined(USE_SYSTEM)
+	"filterpipe",
 #endif
 #ifdef FEAT_FIND_ID
 	"find_in_path",
@@ -9772,8 +9919,6 @@ f_isdirectory(argvars, rettv)
     rettv->vval.v_number = mch_isdir(get_tv_string(&argvars[0]));
 }
 
-static int tv_islocked __ARGS((typval_T *tv));
-
 /*
  * Return TRUE if typeval "tv" is locked: Either tha value is locked itself or
  * it refers to a List or Dictionary that is locked.
@@ -10569,6 +10714,68 @@ f_min(argvars, rettv)
     max_min(argvars, rettv, FALSE);
 }
 
+static int mkdir_recurse __ARGS((char_u *dir, int prot));
+
+/*
+ * Create the directory in which "dir" is located, and higher levels when
+ * needed.
+ */
+    static int
+mkdir_recurse(dir, prot)
+    char_u	*dir;
+    int		prot;
+{
+    char_u	*p;
+    char_u	*updir;
+    int		r = FAIL;
+
+    /* Get end of directory name in "dir".
+     * We're done when it's "/" or "c:/". */
+    p = gettail_sep(dir);
+    if (p <= get_past_head(dir))
+	return OK;
+
+    /* If the directory exists we're done.  Otherwise: create it.*/
+    updir = vim_strnsave(dir, (int)(p - dir));
+    if (updir == NULL)
+	return FAIL;
+    if (mch_isdir(updir))
+	r = OK;
+    else if (mkdir_recurse(updir, prot) == OK)
+	r = vim_mkdir_emsg(updir, prot);
+    vim_free(updir);
+    return r;
+}
+
+#ifdef vim_mkdir
+/*
+ * "mkdir()" function
+ */
+    static void
+f_mkdir(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    char_u	*dir;
+    char_u	buf[NUMBUFLEN];
+    int		prot = 0755;
+
+    rettv->vval.v_number = FAIL;
+    if (check_restricted() || check_secure())
+	return;
+
+    dir = get_tv_string_buf(&argvars[0], buf);
+    if (argvars[1].v_type != VAR_UNKNOWN)
+    {
+	if (argvars[2].v_type != VAR_UNKNOWN)
+	    prot = get_tv_number(&argvars[2]);
+	if (STRCMP(get_tv_string(&argvars[1]), "p") == 0)
+	    mkdir_recurse(dir, prot);
+    }
+    rettv->vval.v_number = vim_mkdir_emsg(dir, prot);
+}
+#endif
+
 /*
  * "mode()" function
  */
@@ -10754,10 +10961,16 @@ f_readfile(argvars, rettv)
     int		prevlen = 0;    /* length of "prev" if not NULL */
     char_u	*s;
     int		len;
+    long	maxline = MAXLNUM;
+    long	cnt = 0;
 
-    if (argvars[1].v_type != VAR_UNKNOWN
-			      && STRCMP(get_tv_string(&argvars[1]), "b") == 0)
-	binary = TRUE;
+    if (argvars[1].v_type != VAR_UNKNOWN)
+    {
+	if (STRCMP(get_tv_string(&argvars[1]), "b") == 0)
+	    binary = TRUE;
+	if (argvars[2].v_type != VAR_UNKNOWN)
+	    maxline = get_tv_number(&argvars[2]);
+    }
 
     l = list_alloc();
     if (l == NULL)
@@ -10776,7 +10989,7 @@ f_readfile(argvars, rettv)
     }
 
     filtd = 0;
-    for (;;)
+    while (cnt < maxline)
     {
 	readlen = fread(buf + filtd, 1, FREAD_SIZE - filtd, fd);
 	buflen = filtd + readlen;
@@ -10825,6 +11038,8 @@ f_readfile(argvars, rettv)
 		li->li_tv.vval.v_string = s;
 		list_append(l, li);
 
+		if (++cnt >= maxline)
+		    break;
 		if (readlen <= 0)
 		    break;
 	    }
@@ -10863,6 +11078,7 @@ f_readfile(argvars, rettv)
 	}
     }
 
+    vim_free(prev);
     fclose(fd);
 }
 
@@ -14132,7 +14348,7 @@ find_var(name, htp)
 	*htp = ht;
     if (ht == NULL)
 	return NULL;
-    return find_var_in_ht(ht, varname);
+    return find_var_in_ht(ht, varname, htp != NULL);
 }
 
 /*
@@ -14140,9 +14356,10 @@ find_var(name, htp)
  * Returns NULL if not found.
  */
     static dictitem_T *
-find_var_in_ht(ht, varname)
+find_var_in_ht(ht, varname, writing)
     hashtab_T	*ht;
     char_u	*varname;
+    int		writing;
 {
     hashitem_T	*hi;
 
@@ -14164,7 +14381,15 @@ find_var_in_ht(ht, varname)
 
     hi = hash_find(ht, varname);
     if (HASHITEM_EMPTY(hi))
-	return NULL;
+    {
+	/* For global variables we may try auto-loading the script.  If it
+	 * worked find the variable again. */
+	if (ht == &globvarht && !writing
+				   && script_autoload(varname) && !aborting())
+	    hi = hash_find(ht, varname);
+	if (HASHITEM_EMPTY(hi))
+	    return NULL;
+    }
     return HI2DI(hi);
 }
 
@@ -14179,8 +14404,8 @@ find_var_ht(name, varname)
 {
     if (name[1] != ':')
     {
-	/* If not "x:name" there must not be any ":" in the name. */
-	if (vim_strchr(name, ':') != NULL)
+	/* The name must not start with a colon. */
+	if (name[0] == ':')
 	    return NULL;
 	*varname = name;
 
@@ -14193,12 +14418,15 @@ find_var_ht(name, varname)
 	return &current_funccal->l_vars.dv_hashtab; /* l: variable */
     }
     *varname = name + 2;
+    if (*name == 'g')				/* global variable */
+	return &globvarht;
+    /* There must be no ':' in the rest of the name, unless g: is used */
+    if (vim_strchr(name + 2, ':') != NULL)
+	return NULL;
     if (*name == 'b')				/* buffer variable */
 	return &curbuf->b_vars.dv_hashtab;
     if (*name == 'w')				/* window variable */
 	return &curwin->w_vars.dv_hashtab;
-    if (*name == 'g')				/* global variable */
-	return &globvarht;
     if (*name == 'v')				/* v: variable */
 	return &vimvarht;
     if (*name == 'a' && current_funccal != NULL) /* function argument */
@@ -14435,7 +14663,7 @@ set_var(name, tv, copy)
 	return;
     }
 
-    v = find_var_in_ht(ht, varname);
+    v = find_var_in_ht(ht, varname, TRUE);
     if (v != NULL)
     {
 	/* existing variable, need to clear the value */
@@ -14932,6 +15160,9 @@ ex_function(eap)
     funcdict_T	fudi;
     static int	func_nr = 0;	    /* number for nameless function */
     int		paren;
+    hashtab_T	*ht;
+    int		todo;
+    hashitem_T	*hi;
 
     /*
      * ":function" without argument: list functions.
@@ -14939,9 +15170,19 @@ ex_function(eap)
     if (ends_excmd(*eap->arg))
     {
 	if (!eap->skip)
-	    for (fp = firstfunc; fp != NULL && !got_int; fp = fp->next)
-		if (!isdigit(*fp->name))
-		    list_func_head(fp, FALSE);
+	{
+	    todo = globvarht.ht_used;
+	    for (hi = globvarht.ht_array; todo > 0 && !got_int; ++hi)
+	    {
+		if (!HASHITEM_EMPTY(hi))
+		{
+		    --todo;
+		    fp = HI2UF(hi);
+		    if (!isdigit(*fp->uf_name))
+			list_func_head(fp, FALSE);
+		}
+	    }
+	}
 	eap->nextcmd = check_nextcmd(eap->arg);
 	return;
     }
@@ -15004,7 +15245,7 @@ ex_function(eap)
 	    if (fp != NULL)
 	    {
 		list_func_head(fp, TRUE);
-		for (j = 0; j < fp->lines.ga_len && !got_int; ++j)
+		for (j = 0; j < fp->uf_lines.ga_len && !got_int; ++j)
 		{
 		    msg_putchar('\n');
 		    msg_outnum((long)(j + 1));
@@ -15012,7 +15253,7 @@ ex_function(eap)
 			msg_putchar(' ');
 		    if (j < 99)
 			msg_putchar(' ');
-		    msg_prt_line(FUNCLINE(fp, j));
+		    msg_prt_line(FUNCLINE(fp, j), FALSE);
 		    out_flush();	/* show a line at a time */
 		    ui_breakcheck();
 		}
@@ -15260,7 +15501,7 @@ ex_function(eap)
      */
     if (fudi.fd_dict == NULL)
     {
-	v = find_var(name, NULL);
+	v = find_var(name, &ht);
 	if (v != NULL && v->di_tv.v_type == VAR_FUNC)
 	{
 	    emsg_funcname("E707: Function name conflicts with variable: %s",
@@ -15276,15 +15517,15 @@ ex_function(eap)
 		emsg_funcname(e_funcexts, name);
 		goto erret;
 	    }
-	    if (fp->calls > 0)
+	    if (fp->uf_calls > 0)
 	    {
 		emsg_funcname("E127: Cannot redefine function %s: It is in use",
 									name);
 		goto erret;
 	    }
 	    /* redefine existing function */
-	    ga_clear_strings(&(fp->args));
-	    ga_clear_strings(&(fp->lines));
+	    ga_clear_strings(&(fp->uf_args));
+	    ga_clear_strings(&(fp->uf_lines));
 	    vim_free(name);
 	    name = NULL;
 	}
@@ -15320,7 +15561,35 @@ ex_function(eap)
 
     if (fp == NULL)
     {
-	fp = (ufunc_T *)alloc((unsigned)sizeof(ufunc_T));
+	if (fudi.fd_dict == NULL && vim_strchr(name, ':') != NULL)
+	{
+	    int	    slen, plen;
+	    char_u  *scriptname;
+
+	    /* Check that the autoload name matches the script name. */
+	    j = FAIL;
+	    if (sourcing_name != NULL)
+	    {
+		scriptname = autoload_name(name);
+		if (scriptname != NULL)
+		{
+		    p = vim_strchr(scriptname, '/');
+		    plen = STRLEN(p);
+		    slen = STRLEN(sourcing_name);
+		    if (slen > plen && fnamecmp(p,
+					    sourcing_name + slen - plen) == 0)
+			j = OK;
+		    vim_free(scriptname);
+		}
+	    }
+	    if (j == FAIL)
+	    {
+		EMSG2(_("E746: Function name does not match script file name: %s"), name);
+		goto erret;
+	    }
+	}
+
+	fp = (ufunc_T *)alloc((unsigned)(sizeof(ufunc_T) + STRLEN(name)));
 	if (fp == NULL)
 	    goto erret;
 
@@ -15347,21 +15616,19 @@ ex_function(eap)
 	    fudi.fd_di->di_tv.v_type = VAR_FUNC;
 	    fudi.fd_di->di_tv.v_lock = 0;
 	    fudi.fd_di->di_tv.vval.v_string = vim_strsave(name);
-	    fp->refcount = 1;
+	    fp->uf_refcount = 1;
 	}
 
 	/* insert the new function in the function list */
-	fp->name = name;
-	name = NULL;
-	fp->next = firstfunc;
-	firstfunc = fp;
+	STRCPY(fp->uf_name, name);
+	hash_add(&func_hashtab, UF2HIKEY(fp));
     }
-    fp->args = newargs;
-    fp->lines = newlines;
-    fp->varargs = varargs;
-    fp->flags = flags;
-    fp->calls = 0;
-    fp->script_ID = current_SID;
+    fp->uf_args = newargs;
+    fp->uf_lines = newlines;
+    fp->uf_varargs = varargs;
+    fp->uf_flags = flags;
+    fp->uf_calls = 0;
+    fp->uf_script_ID = current_SID;
     goto ret_free;
 
 erret:
@@ -15573,21 +15840,21 @@ list_func_head(fp, indent)
     if (indent)
 	MSG_PUTS("   ");
     MSG_PUTS("function ");
-    if (fp->name[0] == K_SPECIAL)
+    if (fp->uf_name[0] == K_SPECIAL)
     {
 	MSG_PUTS_ATTR("<SNR>", hl_attr(HLF_8));
-	msg_puts(fp->name + 3);
+	msg_puts(fp->uf_name + 3);
     }
     else
-	msg_puts(fp->name);
+	msg_puts(fp->uf_name);
     msg_putchar('(');
-    for (j = 0; j < fp->args.ga_len; ++j)
+    for (j = 0; j < fp->uf_args.ga_len; ++j)
     {
 	if (j)
 	    MSG_PUTS(", ");
 	msg_puts(FUNCARG(fp, j));
     }
-    if (fp->varargs)
+    if (fp->uf_varargs)
     {
 	if (j)
 	    MSG_PUTS(", ");
@@ -15604,12 +15871,12 @@ list_func_head(fp, indent)
 find_func(name)
     char_u	*name;
 {
-    ufunc_T	*fp;
+    hashitem_T	*hi;
 
-    for (fp = firstfunc; fp != NULL; fp = fp->next)
-	if (STRCMP(name, fp->name) == 0)
-	    break;
-    return fp;
+    hi = hash_find(&func_hashtab, name);
+    if (!HASHITEM_EMPTY(hi))
+	return HI2UF(hi);
+    return NULL;
 }
 
 /*
@@ -15646,11 +15913,11 @@ builtin_function(name)
 }
 
 /*
- * If "name" has a package name try autoloading the script.
+ * If "name" has a package name try autoloading the script for it.
  * Return TRUE if a package was loaded.
  */
     static int
-func_autoload(name)
+script_autoload(name)
     char_u *name;
 {
     char_u	*p;
@@ -15662,6 +15929,26 @@ func_autoload(name)
     if (p == NULL || p <= name + 2)
 	return FALSE;
 
+    /* Try loading the package from $VIMRUNTIME/autoload/<name>.vim */
+    scriptname = autoload_name(name);
+    if (cmd_runtime(scriptname, FALSE) == OK)
+	ret = TRUE;
+
+    vim_free(scriptname);
+    return ret;
+}
+
+/*
+ * Return the autoload script name for a function or variable name.
+ * Returns NULL when out of memory.
+ */
+    static char_u *
+autoload_name(name)
+    char_u	*name;
+{
+    char_u	*p;
+    char_u	*scriptname;
+
     /* Get the script file name: replace ':' with '/', append ".vim". */
     scriptname = alloc((unsigned)(STRLEN(name) + 14));
     if (scriptname == NULL)
@@ -15672,13 +15959,7 @@ func_autoload(name)
     STRCAT(scriptname, ".vim");
     while ((p = vim_strchr(scriptname, ':')) != NULL)
 	*p = '/';
-
-    /* Try loading the package from $VIMRUNTIME/autoload/<name>.vim */
-    if (cmd_runtime(scriptname, FALSE) == OK)
-	ret = TRUE;
-
-    vim_free(scriptname);
-    return ret;
+    return scriptname;
 }
 
 #if defined(FEAT_CMDL_COMPL) || defined(PROTO)
@@ -15692,24 +15973,33 @@ get_user_func_name(xp, idx)
     expand_T	*xp;
     int		idx;
 {
-    static ufunc_T *fp = NULL;
+    static long_u	done;
+    static hashitem_T	*hi;
+    ufunc_T		*fp;
 
     if (idx == 0)
-	fp = firstfunc;
-    if (fp != NULL)
     {
-	if (STRLEN(fp->name) + 4 >= IOSIZE)
-	    return fp->name;	/* prevents overflow */
+	done = 0;
+	hi = func_hashtab.ht_array;
+    }
+    if (done < func_hashtab.ht_used)
+    {
+	if (done++ > 0)
+	    ++hi;
+	while (HASHITEM_EMPTY(hi))
+	    ++hi;
+	fp = HI2UF(hi);
+
+	if (STRLEN(fp->uf_name) + 4 >= IOSIZE)
+	    return fp->uf_name;	/* prevents overflow */
 
 	cat_func_name(IObuff, fp);
 	if (xp->xp_context != EXPAND_USER_FUNC)
 	{
 	    STRCAT(IObuff, "(");
-	    if (!fp->varargs && fp->args.ga_len == 0)
+	    if (!fp->uf_varargs && fp->uf_args.ga_len == 0)
 		STRCAT(IObuff, ")");
 	}
-
-	fp = fp->next;
 	return IObuff;
     }
     return NULL;
@@ -15727,13 +16017,13 @@ cat_func_name(buf, fp)
     char_u	*buf;
     ufunc_T	*fp;
 {
-    if (fp->name[0] == K_SPECIAL)
+    if (fp->uf_name[0] == K_SPECIAL)
     {
 	STRCPY(buf, "<SNR>");
-	STRCAT(buf, fp->name + 3);
+	STRCAT(buf, fp->uf_name + 3);
     }
     else
-	STRCPY(buf, fp->name);
+	STRCPY(buf, fp->uf_name);
 }
 
 /*
@@ -15778,7 +16068,7 @@ ex_delfunction(eap)
 	    EMSG2(_("E130: Undefined function: %s"), eap->arg);
 	    return;
 	}
-	if (fp->calls > 0)
+	if (fp->uf_calls > 0)
 	{
 	    EMSG2(_("E131: Cannot delete function %s: It is in use"), eap->arg);
 	    return;
@@ -15802,25 +16092,19 @@ ex_delfunction(eap)
 func_free(fp)
     ufunc_T *fp;
 {
-    ufunc_T	*pfp;
+    hashitem_T	*hi;
 
     /* clear this function */
-    vim_free(fp->name);
-    ga_clear_strings(&(fp->args));
-    ga_clear_strings(&(fp->lines));
+    ga_clear_strings(&(fp->uf_args));
+    ga_clear_strings(&(fp->uf_lines));
 
-    /* remove the function from the function list */
-    if (firstfunc == fp)
-	firstfunc = fp->next;
+    /* remove the function from the function hashtable */
+    hi = hash_find(&func_hashtab, UF2HIKEY(fp));
+    if (HASHITEM_EMPTY(hi))
+	EMSG2(_(e_intern2), "func_free()");
     else
-    {
-	for (pfp = firstfunc; pfp != NULL; pfp = pfp->next)
-	    if (pfp->next == fp)
-	    {
-		pfp->next = fp->next;
-		break;
-	    }
-    }
+	hash_remove(&func_hashtab, hi);
+
     vim_free(fp);
 }
 
@@ -15839,11 +16123,11 @@ func_unref(name)
 	fp = find_func(name);
 	if (fp == NULL)
 	    EMSG2(_(e_intern2), "func_unref()");
-	else if (--fp->refcount <= 0)
+	else if (--fp->uf_refcount <= 0)
 	{
 	    /* Only delete it when it's not being used.  Otherwise it's done
-	     * when "calls" becomes zero. */
-	    if (fp->calls == 0)
+	     * when "uf_calls" becomes zero. */
+	    if (fp->uf_calls == 0)
 		func_free(fp);
 	}
     }
@@ -15864,7 +16148,7 @@ func_ref(name)
 	if (fp == NULL)
 	    EMSG2(_(e_intern2), "func_ref()");
 	else
-	    ++fp->refcount;
+	    ++fp->uf_refcount;
     }
 }
 
@@ -15915,7 +16199,7 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
     fc.returned = FALSE;
     fc.level = ex_nesting_level;
     /* Check if this function has a breakpoint. */
-    fc.breakpoint = dbg_find_breakpoint(FALSE, fp->name, (linenr_T)0);
+    fc.breakpoint = dbg_find_breakpoint(FALSE, fp->uf_name, (linenr_T)0);
     fc.dbg_tick = debug_tick;
 
     /*
@@ -15947,7 +16231,7 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
      */
     init_var_dict(&fc.l_avars, &fc.l_avars_var);
     add_nr_var(&fc.l_avars, &fc.fixvar[fixvar_idx++].var, "0",
-				   (varnumber_T)(argcount - fp->args.ga_len));
+				(varnumber_T)(argcount - fp->uf_args.ga_len));
     v = &fc.fixvar[fixvar_idx++].var;
     STRCPY(v->di_key, "000");
     v->di_flags = DI_FLAGS_RO | DI_FLAGS_FIX;
@@ -15969,7 +16253,7 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
 						       (varnumber_T)lastline);
     for (i = 0; i < argcount; ++i)
     {
-	ai = i - fp->args.ga_len;
+	ai = i - fp->uf_args.ga_len;
 	if (ai < 0)
 	    /* named argument a:name */
 	    name = FUNCARG(fp, i);
@@ -16014,7 +16298,7 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
     save_sourcing_lnum = sourcing_lnum;
     sourcing_lnum = 1;
     sourcing_name = alloc((unsigned)((save_sourcing_name == NULL ? 0
-		: STRLEN(save_sourcing_name)) + STRLEN(fp->name) + 13));
+		: STRLEN(save_sourcing_name)) + STRLEN(fp->uf_name) + 13));
     if (sourcing_name != NULL)
     {
 	if (save_sourcing_name != NULL
@@ -16058,7 +16342,7 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
 	}
     }
     save_current_SID = current_SID;
-    current_SID = fp->script_ID;
+    current_SID = fp->uf_script_ID;
     save_did_emsg = did_emsg;
     did_emsg = FALSE;
 
@@ -16069,7 +16353,7 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
     --RedrawingDisabled;
 
     /* when the function was aborted because of an error, return -1 */
-    if ((did_emsg && (fp->flags & FC_ABORT)) || rettv->v_type == VAR_UNKNOWN)
+    if ((did_emsg && (fp->uf_flags & FC_ABORT)) || rettv->v_type == VAR_UNKNOWN)
     {
 	clear_tv(rettv);
 	rettv->v_type = VAR_NUMBER;
@@ -16346,13 +16630,13 @@ get_func_line(c, cookie, indent)
     /* If breakpoints have been added/deleted need to check for it. */
     if (fcp->dbg_tick != debug_tick)
     {
-	fcp->breakpoint = dbg_find_breakpoint(FALSE, fcp->func->name,
+	fcp->breakpoint = dbg_find_breakpoint(FALSE, fcp->func->uf_name,
 							       sourcing_lnum);
 	fcp->dbg_tick = debug_tick;
     }
 
-    gap = &fcp->func->lines;
-    if ((fcp->func->flags & FC_ABORT) && did_emsg && !aborted_in_try())
+    gap = &fcp->func->uf_lines;
+    if ((fcp->func->uf_flags & FC_ABORT) && did_emsg && !aborted_in_try())
 	retval = NULL;
     else if (fcp->returned || fcp->linenr >= gap->ga_len)
 	retval = NULL;
@@ -16365,9 +16649,9 @@ get_func_line(c, cookie, indent)
     /* Did we encounter a breakpoint? */
     if (fcp->breakpoint != 0 && fcp->breakpoint <= sourcing_lnum)
     {
-	dbg_breakpoint(fcp->func->name, sourcing_lnum);
+	dbg_breakpoint(fcp->func->uf_name, sourcing_lnum);
 	/* Find next breakpoint. */
-	fcp->breakpoint = dbg_find_breakpoint(FALSE, fcp->func->name,
+	fcp->breakpoint = dbg_find_breakpoint(FALSE, fcp->func->uf_name,
 							       sourcing_lnum);
 	fcp->dbg_tick = debug_tick;
     }
@@ -16387,7 +16671,7 @@ func_has_ended(cookie)
 
     /* Ignore the "abort" flag if the abortion behavior has been changed due to
      * an error inside a try conditional. */
-    return (((fcp->func->flags & FC_ABORT) && did_emsg && !aborted_in_try())
+    return (((fcp->func->uf_flags & FC_ABORT) && did_emsg && !aborted_in_try())
 	    || fcp->returned);
 }
 
@@ -16398,7 +16682,7 @@ func_has_ended(cookie)
 func_has_abort(cookie)
     void    *cookie;
 {
-    return ((funccall_T *)cookie)->func->flags & FC_ABORT;
+    return ((funccall_T *)cookie)->func->uf_flags & FC_ABORT;
 }
 
 #if defined(FEAT_VIMINFO) || defined(FEAT_SESSION)

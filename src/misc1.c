@@ -3182,6 +3182,14 @@ vim_beep()
 	    out_char(BELL);
 #endif
 	}
+
+	/* When 'verbose' is set and we are sourcing a script or executing a
+	 * function give the user a hint where the beep comes from. */
+	if (vim_strchr(p_debug, 'e') != NULL)
+	{
+	    msg_source(hl_attr(HLF_W));
+	    msg_attr((char_u *)_("Beep!"), hl_attr(HLF_W));
+	}
     }
 }
 

@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.0aa.  Last change: 2005 Feb 11
+*various.txt*   For Vim version 7.0aa.  Last change: 2005 Feb 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -66,33 +66,39 @@ g8			Print the hex values of the bytes used in the
 			{not in Vi}
 
 							*:p* *:pr* *:print*
-:[range]p[rint]		Print [range] lines (default current line).
+:[range]p[rint] [flags]
+			Print [range] lines (default current line).
 			Note: If you are looking for a way to print your text
-			file, you need an external program for that.  In the
-			GUI you can use the File.Print menu entry.
-			(For printing on paper see |:hardcopy|)
+			on paper see |:hardcopy|.  In the GUI you can use the
+			File.Print menu entry.
+			See |ex-flags| for [flags].
 
-:[range]p[rint] {count}
+:[range]p[rint] {count} [flags]
 			Print {count} lines, starting with [range] (default
 			current line |cmdline-ranges|).
+			See |ex-flags| for [flags].
 
 							*:P* *:Print*
-:[range]P[rint] [count]
+:[range]P[rint] [count] [flags]
 			Just as ":print".  Was apparently added to Vi for
 			people that keep the shift key pressed too long...
+			See |ex-flags| for [flags].
 
 							*:l* *:list*
-:[range]l[ist] [count]
+:[range]l[ist] [count] [flags]
 			Same as :print, but display unprintable characters
-			with '^'.
+			with '^' and put $ after the line.
+			See |ex-flags| for [flags].
 
 							*:nu* *:number*
-:[range]nu[mber] [count]
+:[range]nu[mber] [count] [flags]
 			Same as :print, but precede each line with its line
 			number.  (See also 'highlight' option).
+			See |ex-flags| for [flags].
 
 							*:#*
-:[range]# [count]	synonym for :number.
+:[range]# [count] [flags]
+			synonym for :number.
 
 							*:z* *E144*
 :{range}z[+-^.=]{count}	Display several lines of text surrounding the line
@@ -123,11 +129,13 @@ g8			Print the hex values of the bytes used in the
 			{not in all versions of Vi, not with these arguments}
 
 							*:=*
-:=			Print the last line number.
+:= [flags]		Print the last line number.
+			See |ex-flags| for [flags].
 
-:{range}=		Prints the last line number in {range}.  For example,
+:{range}= [flags]	Prints the last line number in {range}.  For example,
 			this prints the current line number: >
 				:.=
+<			See |ex-flags| for [flags].
 
 :norm[al][!] {commands}					*:norm* *:normal*
 			Execute Normal mode commands {commands}.  This makes
@@ -396,6 +404,17 @@ N  *+X11*		Unix only: can restore window title |X11|
 
 :redi[r] @"		Redirect messages to the unnamed register. {not in Vi}
 :redi[r] @">		Append messages to the unnamed register. {not in Vi}
+
+:redi[r] => {var}	Redirect messages to a variable.  If the variable
+			doesn't exist, then it is created.  If the variable
+			exists, then it is initialized to an empty string.
+			Only string variables can be used.  After the
+			redirection starts, if the variable is removed or
+			locked or the variable type is changed, then further
+			command output messages will cause errors. {not in Vi}
+
+:redi[r] =>> {var}	Append messages to an existing variable.  Only string
+			variables can be used. {not in Vi}
 
 :redi[r] END		End redirecting messages.  {not in Vi}
 

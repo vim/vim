@@ -4385,14 +4385,14 @@ ml_updatechunk(buf, line, len, updtype)
 
 /*
  * Find offset for line or line with offset.
- * Find line with offset if line is 0; return remaining offset in offp
- * Find offset of line if line > 0
+ * Find line with offset if "lnum" is 0; return remaining offset in offp
+ * Find offset of line if "lnum" > 0
  * return -1 if information is not available
  */
     long
-ml_find_line_or_offset(buf, line, offp)
+ml_find_line_or_offset(buf, lnum, offp)
     buf_T	*buf;
-    linenr_T	line;
+    linenr_T	lnum;
     long	*offp;
 {
     linenr_T	curline;
@@ -4409,16 +4409,19 @@ ml_find_line_or_offset(buf, line, offp)
     int		ffdos = (get_fileformat(buf) == EOL_DOS);
     int		extra = 0;
 
+    /* take care of cached line first */
+    ml_flush_line(curbuf);
+
     if (buf->b_ml.ml_usedchunks == -1
 	    || buf->b_ml.ml_chunksize == NULL
-	    || line < 0)
+	    || lnum < 0)
 	return -1;
 
     if (offp == NULL)
 	offset = 0;
     else
 	offset = *offp;
-    if (line == 0 && offset <= 0)
+    if (lnum == 0 && offset <= 0)
 	return 1;   /* Not a "find offset" and offset 0 _must_ be in line 1 */
     /*
      * Find the last chunk before the one containing our line. Last chunk is
@@ -4427,8 +4430,8 @@ ml_find_line_or_offset(buf, line, offp)
     curline = 1;
     curix = size = 0;
     while (curix < buf->b_ml.ml_usedchunks - 1
-	    && ((line != 0
-	     && line >= curline + buf->b_ml.ml_chunksize[curix].mlcs_numlines)
+	    && ((lnum != 0
+	     && lnum >= curline + buf->b_ml.ml_chunksize[curix].mlcs_numlines)
 		|| (offset != 0
 	       && offset > size + buf->b_ml.ml_chunksize[curix].mlcs_totalsize
 		      + ffdos * buf->b_ml.ml_chunksize[curix].mlcs_numlines)))
@@ -4440,7 +4443,7 @@ ml_find_line_or_offset(buf, line, offp)
 	curix++;
     }
 
-    while ((line != 0 && curline < line) || (offset != 0 && size < offset))
+    while ((lnum != 0 && curline < lnum) || (offset != 0 && size < offset))
     {
 	if (curline > buf->b_ml.ml_line_count
 		|| (hp = ml_find_line(buf, curline, ML_FIND)) == NULL)
@@ -4454,10 +4457,10 @@ ml_find_line_or_offset(buf, line, offp)
 	else
 	    text_end = ((dp->db_index[idx - 1]) & DB_INDEX_MASK);
 	/* Compute index of last line to use in this MEMLINE */
-	if (line != 0)
+	if (lnum != 0)
 	{
-	    if (curline + (count - idx) >= line)
-		idx += line - curline - 1;
+	    if (curline + (count - idx) >= lnum)
+		idx += lnum - curline - 1;
 	    else
 		idx = count - 1;
 	}
@@ -4497,11 +4500,11 @@ ml_find_line_or_offset(buf, line, offp)
 	curline = buf->b_ml.ml_locked_high + 1;
     }
 
-    if (line != 0)
+    if (lnum != 0)
     {
 	/* Count extra CR characters. */
 	if (ffdos)
-	    size += line - 1;
+	    size += lnum - 1;
 
 	/* Don't count the last line break if 'bin' and 'noeol'. */
 	if (buf->b_p_bin && !buf->b_p_eol)

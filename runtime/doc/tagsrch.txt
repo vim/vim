@@ -1,4 +1,4 @@
-*tagsrch.txt*   For Vim version 7.0aa.  Last change: 2005 Jan 02
+*tagsrch.txt*   For Vim version 7.0aa.  Last change: 2005 Feb 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -744,11 +744,13 @@ CTRL-W i		Open a new window, with the cursor on the first line
 ]D			like "[D", but start at the current cursor position.
 			{not in Vi}
 
-							*:dl* *:dlist*
+							*:dli* *:dlist*
 :[range]dl[ist][!] [/]string[/]
 			Like "[D"  and "]D", but search in [range] lines
 			(default: whole file).
 			See |:search-args| for [/] and [!].  {not in Vi}
+			Note that ":dl" works like ":delete" with the "l"
+			flag.
 
 							*[_CTRL-D*
 [ CTRL-D		Jump to the first macro definition that contains the

@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.0aa.  Last change: 2005 Jan 26
+*syntax.txt*	For Vim version 7.0aa.  Last change: 2005 Feb 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -183,6 +183,11 @@ add a few items or change the highlighting, follow these steps:
 
 That's it.  The next time you edit a C file the Comment color will be
 different.  You don't even have to restart Vim.
+
+If you have multiple files, you can use the filetype as the directory name.
+All the "*.vim" files in this directory will be used, for example:
+	~/.vim/after/syntax/c/one.vim
+	~/.vim/after/syntax/c/two.vim
 
 
 REPLACING AN EXISTING SYNTAX FILE			*mysyntaxfile-replace*
@@ -2577,7 +2582,7 @@ DEFINING KEYWORDS					*:syn-keyword*
   :syntax keyword   Type   contained int long char
   :syntax keyword   Type   int long contained char
   :syntax keyword   Type   int long char contained
-<
+<								*E747*
 	When you have a keyword with an optional tail, like Ex commands in
 	Vim, you can put the optional characters inside [], to define all the
 	variations at once: >
@@ -3504,6 +3509,7 @@ faster.]
 	Without a "groupthere" argument.  Define a region or match that is
 	skipped while searching for a sync point.
 
+    						*syn-sync-linecont*
     :syntax sync linecont {pattern}
 
 	When {pattern} matches in a line, it is considered to continue in

@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Feb 11
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Feb 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -184,7 +184,28 @@ Items that were fixed for both Vi and POSIX compatibilty:
 - Allow "-c{command}" argument, no space between "-c" and {command}.
 - When writing a file with ":w!" don't reset 'readonly' when 'Z' is present in
   'cpoptions'.
-
+- Allow 'l' and '#' flags for ":list", ":print" and ":number".
+- Added the '.' flag to 'cpoptions': ":cd" fails when the buffer is modified.
+- In Ex mode with an empty buffer ":read file" doesn't keep an empty line
+  above or below the new lines.
+- Remove a backslash before a NL for the ":global" command.
+- When ":append", ":insert" or ":change" is used with ":global", get the
+  inserted lines from the command.  Can use backslash-NL to separate lines.
+- Can use ":global /pat/ visual" to execute Normal mode commands at each
+  matched line.  Use "Q" to continue and go to the next line.
+- The |:open| command has been partially implemented.  It stops Ex mode, but
+  redraws the whole screen, not just one line as open mode is supposed to do.
+- Support using a pipe to read the output from and write input to an external
+  command.  Added the 'shelltemp' option and has("filterpipe").
+- In ex silent mode the ":set" command output is displayed.
+- The ":@@" and ":**" give an error message when no register was used before.
+- The search pattern "[]-`]" matches ']', '^', '_' and '`'.
+- Autoindent for ":insert" is using the line below the insert.
+- Autoindent for ":change" is using the first changed line.
+- Editing Ex command lines is not done in cooked mode, because CTRL-D and
+  CTRL-T cannot be handled then.
+- In Ex mode, "1,3" prints three lines.
+- Implemented the 'prompt' option.
 
 
 Various new items					*new-items-7*
@@ -273,6 +294,7 @@ New functions: ~
 |matchlist()|		list with match and submatches of a pattern in a string
 |max()|			maximum value in a List or Dictionary
 |min()|			minimum value in a List or Dictionary
+|mkdir()|		create a directory
 |readfile()|		read a file into a list of lines
 |remove()|		remove one or more items from a List or Dictionary
 |repeat()| 		Repeat "expr" "count" times.  (Christophe Poucet)
@@ -312,6 +334,13 @@ New items in search patterns: ~
 |/\%U| \%U1234abcd	search for character with 8 pos. hex number
 |/\]|  [\U1234abcd]	idem, in a colletion
 			    (The above partly by Ciaran McCreesh)
+|/[=|  [[=a=]]		an equivalence class (only for latin1 characters)
+|/[.|  [[.a.]]		a collation element (only works with single char)
+
+Nesting |/multi| items no longer is an error when an empty match is possible.
+
+It is now possible to use \{0}, it matches the preceding atom zero times.  Not
+useful, just for compatibility.
 
 
 New Syntax/Indent/FTplugin files: ~
@@ -336,6 +365,8 @@ New message translations: ~
 
 The Ukranian messages are now also available in cp1251.
 
+Irish message translations. (Kevin Patrick Scannell)
+
 
 Others: ~
 
@@ -345,6 +376,8 @@ Also fixes the problem that setting 'clipboard' to "unnamed" breaks using
 "yyp".
 
 Mac: GUI font selector. (Peter "Rain Dog" Cucka)
+
+Mac: support for multi-byte characters. (Da Woon Jung)
 
 GUI font selector for Motif. (Marcin Dalecki)
 
@@ -462,7 +495,10 @@ When a register is empty it is not stored in the viminfo file.
 Removed the tcltags script, it's obsolete.
 
 ":redir @*>" and ":redir @+>" append to the clipboard.  Better check for
-invalid characters after the register name.
+invalid characters after the register name. |:redir|
+
+":redir => variable" and ":redir =>> variable" write or append to a variable.
+(Yegappan Lakshmanan) |:redir|
 
 ":let g:" lists global variables.
 ":let b:" lists buffer-local variables.
@@ -474,6 +510,15 @@ searching.  (Yegappan Lakshmanan)
 
 g CTRL-G also shows the number of characters if it differs from the number of
 bytes.
+
+Completion for ":debug" and entering an expression for the '=' register.  Skip
+":" between range and command name. (Peter winters)
+
+CTRL-Q in Insert mode now works like CTRL-V by default.  Previously it was
+ignored.
+
+When "beep" is included in 'debug' a function or script that causes a beep
+will result in a message with the source of the error.
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*
@@ -488,6 +533,9 @@ its final destination. (Raf)
 Mac: Made it possible to compile with Motif, Athena or GTK without tricks and
 still being able to use the MacRoman conversion.  Added the os_mac_conv.c
 file.
+
+When running the tests and one of them fails to produce "test.out" the
+following tests are still executed.  This helps when running out of memory.
 
 ==============================================================================
 BUG FIXES						*bug-fixes-7*
@@ -812,5 +860,12 @@ be Vi compatible.
 When reading commands from a file and stdout goes to a terminal, would still
 request the xterm version.  Vim can't read it, thus the output went to the
 shell and caused trouble there.
+
+When redirecting to a register with an invalid name the redirection would
+still be done (after an error message).  Now reset "redir_reg". (Yegappan
+Lakshmanan)
+
+It was not possible to use a NL after a backslash in Ex mode.  This is
+sometimes used to feed multiple lines to a shell command.
 
  vim:tw=78:ts=8:ft=help:norl:

@@ -58,8 +58,7 @@ ui_write(s, len)
 #endif
 }
 
-#if (defined(FEAT_GUI) && (defined(UNIX) || defined(VMS))) \
-	|| defined(MACOS_X_UNIX) || defined(PROTO)
+#if defined(UNIX) || defined(VMS) || defined(PROTO)
 /*
  * When executing an external program, there may be some typed characters that
  * are not consumed by it.  Give them back to ui_inchar() and they are stored
@@ -1761,6 +1760,7 @@ fill_input_buf(exit_on_error)
 #  if 0
 		)	/* avoid syntax highlight error */
 #  endif
+
 	if (len > 0 || got_int)
 	    break;
 	/*
