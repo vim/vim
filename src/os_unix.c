@@ -4939,7 +4939,12 @@ mch_expand_wildcards(num_pat, pat, num_file, file, flags)
 		    *p++ = '"';
 		}
 		else
-		    *p++ = pat[i][j++];
+		{
+		    /* For a backslash also copy the next character, don't
+		     * want to put quotes around it. */
+		    if ((*p++ = pat[i][j++]) == '\\' && pat[i][j] != NUL)
+			*p++ = pat[i][j++];
+		}
 	    *p = NUL;
 #endif
 	}

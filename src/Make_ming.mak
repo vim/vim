@@ -223,15 +223,18 @@ ifeq ($(CROSS),yes)
 # cross-compiler:
 CC = i586-pc-mingw32msvc-gcc
 DEL = rm
+MKDIR = mkdir -p
 WINDRES = i586-pc-mingw32msvc-windres
 else
 # normal (Windows) compilation:
 CC = gcc
 ifneq (sh.exe, $(SHELL))
 DEL = rm
+MKDIR = mkdir -p
 DIRSLASH = /
 else
 DEL = del
+MKDIR = mkdir
 DIRSLASH = \\
 endif
 WINDRES = windres
@@ -547,7 +550,7 @@ $(OUTDIR)/vimrc.o: $(OUTDIR)/vimres.res
 	$(WINDRES) $(OUTDIR)/vimres.res $(OUTDIR)/vimrc.o
 
 $(OUTDIR):
-	mkdir -p $(OUTDIR)
+	$(MKDIR) $(OUTDIR)
 
 $(OUTDIR)/ex_docmd.o:	ex_docmd.c $(INCL) ex_cmds.h
 	$(CC) -c $(CFLAGS) ex_docmd.c -o $(OUTDIR)/ex_docmd.o
