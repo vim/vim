@@ -1886,11 +1886,6 @@ mch_settitle(title, icon)
     if (gui.in_use)
 	type = 1;
 # endif
-# ifdef FEAT_GUI_BEOS
-    /* TODO: If this means (gui.in_use) why not merge with above? (Dany) */
-    /* we always have a 'window' */
-    type = 1;
-# endif
 #endif
 
     /*
@@ -1920,7 +1915,7 @@ mch_settitle(title, icon)
 # endif
 	    set_x11_title(title);		/* x11 */
 #endif
-#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_BEOS) \
+#if defined(FEAT_GUI_GTK) \
 	|| defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_MAC)
 	else
 	    gui_mch_settitle(title, icon);
@@ -2762,9 +2757,7 @@ mch_exit(r)
     ml_close_all(TRUE);		/* remove all memfiles */
     may_core_dump();
 #ifdef FEAT_GUI
-# ifndef FEAT_GUI_BEOS		/* BeOS always has GUI */
     if (gui.in_use)
-# endif
 	gui_exit(r);
 #endif
 #ifdef __QNX__

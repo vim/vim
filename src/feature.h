@@ -976,7 +976,7 @@
  * +mouse		Any mouse support (any of the above enabled).
  */
 /* OS/2 and Amiga console have no mouse support */
-#if (!defined(AMIGA) && !defined(OS2) && !defined(MACOS)) || defined(FEAT_GUI_AMIGA)
+#if (!defined(AMIGA) && !defined(OS2) && !defined(MACOS))
 # ifdef FEAT_NORMAL
 #  define FEAT_MOUSE_XTERM
 # endif
