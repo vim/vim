@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.0aa.  Last change: 2004 Dec 29
+*map.txt*       For Vim version 7.0aa.  Last change: 2005 Feb 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -972,7 +972,7 @@ argument (-count=N, like the |:Next| command). Possible attributes are:
 	-range=N    A count (default N) which is specified in the line
 		    number position (like |:split|)
 	-count=N    A count (default N) which is specified either in the line
-		    number position, or as an initial argument (like |:Next|)
+		    number position, or as an initial argument (like |:Next|).
 		    Specifying -count (without a default) acts like -count=0
 
 Note that -range=N and -count=N are mutually exclusive - only one should be

@@ -5236,7 +5236,7 @@ invalid_count:
 	}
 	else if (STRNICMP(attr, "count", attrlen) == 0)
 	{
-	    *argt |= (COUNT | ZEROR | NOTADR);
+	    *argt |= (COUNT | ZEROR | RANGE | NOTADR);
 
 	    if (val != NULL)
 	    {
