@@ -76,15 +76,11 @@ static Widget menuBar;
 
 static void scroll_cb __ARGS((Widget w, XtPointer client_data, XtPointer call_data));
 #ifdef FEAT_TOOLBAR
-# if 0
-static void toolbar_enter_cb __ARGS((Widget, XtPointer, XEvent *, Boolean *));
-static void toolbar_leave_cb __ARGS((Widget, XtPointer, XEvent *, Boolean *));
-# endif
 # ifdef FEAT_FOOTER
 static void toolbarbutton_enter_cb __ARGS((Widget, XtPointer, XEvent *, Boolean *));
 static void toolbarbutton_leave_cb __ARGS((Widget, XtPointer, XEvent *, Boolean *));
 # endif
-static void gui_mch_reset_focus __ARGS((void));
+static void reset_focus __ARGS((void));
 #endif
 #ifdef FEAT_FOOTER
 static int gui_mch_compute_footer_height __ARGS((void));
@@ -320,12 +316,6 @@ gui_x11_create_widgets()
 	NULL);
     gui_motif_menu_colors(toolBar);
 
-# if 0	/* these don't work, because of the XmNtraversalOn above. */
-    XtAddEventHandler(toolBar, EnterWindowMask, False,
-	    toolbar_enter_cb, NULL);
-    XtAddEventHandler(toolBar, LeaveWindowMask, False,
-	    toolbar_leave_cb, NULL);
-# endif
 #endif
 
     textAreaForm = XtVaCreateManagedWidget("textAreaForm",
@@ -408,7 +398,7 @@ gui_mch_set_text_area_pos(x, y, w, h)
 {
 #ifdef FEAT_TOOLBAR
     /* Give keyboard focus to the textArea instead of the toolbar. */
-    gui_mch_reset_focus();
+    reset_focus();
 #endif
 }
 
@@ -540,7 +530,7 @@ static void gui_motif_add_actext __ARGS((vimmenu_T *menu));
 static void toggle_tearoff __ARGS((Widget wid));
 static void gui_mch_recurse_tearoffs __ARGS((vimmenu_T *menu));
 #endif
-static void gui_mch_submenu_change __ARGS((vimmenu_T *mp, int colors));
+static void submenu_change __ARGS((vimmenu_T *mp, int colors));
 
 static void do_set_mnemonics __ARGS((int enable));
 static int menu_enabled = TRUE;
@@ -1026,6 +1016,7 @@ gui_mch_add_menu_item(menu, idx)
 	    XtSetArg(args[n], XmNhighlightOnEnter, True); n++;
 	    XtSetArg(args[n], XmNmarginWidth, 0); n++;
 	    XtSetArg(args[n], XmNmarginHeight, 0); n++;
+	    XtSetArg(args[n], XmNtraversalOn, False); n++;
 	    /* Set the label here, so that we can switch between icons/text
 	     * by changing the XmNlabelType resource. */
 	    xms = XmStringCreate((char *)menu->dname, STRING_TAG);
@@ -1053,7 +1044,6 @@ gui_mch_add_menu_item(menu, idx)
 	    {
 		XtAddCallback(menu->id,
 			XmNactivateCallback, gui_x11_menu_cb, menu);
-
 # ifdef FEAT_FOOTER
 		XtAddEventHandler(menu->id, EnterWindowMask, False,
 			toolbarbutton_enter_cb, menu);
@@ -1190,7 +1180,7 @@ gui_mch_new_menu_colors()
     gui_motif_menu_colors(toolBar);
 #endif
 
-    gui_mch_submenu_change(root_menu, TRUE);
+    submenu_change(root_menu, TRUE);
 }
 
     void
@@ -1198,7 +1188,7 @@ gui_mch_new_menu_font()
 {
     if (menuBar == (Widget)0)
 	return;
-    gui_mch_submenu_change(root_menu, FALSE);
+    submenu_change(root_menu, FALSE);
     {
 	Dimension   height;
 	Position w, h;
@@ -1229,7 +1219,7 @@ gui_mch_new_tooltip_font()
 
     menu = gui_find_menu((char_u *)"ToolBar");
     if (menu != NULL)
-	gui_mch_submenu_change(menu, FALSE);
+	submenu_change(menu, FALSE);
 # endif
 }
 
@@ -1244,13 +1234,13 @@ gui_mch_new_tooltip_colors()
 
     toolbar = gui_find_menu((char_u *)"ToolBar");
     if (toolbar != NULL)
-	gui_mch_submenu_change(toolbar, TRUE);
+	submenu_change(toolbar, TRUE);
 # endif
 }
 #endif
 
     static void
-gui_mch_submenu_change(menu, colors)
+submenu_change(menu, colors)
     vimmenu_T	*menu;
     int		colors;		/* TRUE for colors, FALSE for font */
 {
@@ -1330,7 +1320,7 @@ gui_mch_submenu_change(menu, colors)
 	    }
 #endif
 	    /* Set the colors for the children */
-	    gui_mch_submenu_change(mp->children, colors);
+	    submenu_change(mp->children, colors);
 	}
     }
 }
@@ -2800,7 +2790,7 @@ gui_mch_show_toolbar(int showit)
  * input go to the editor window, not the button
  */
     static void
-gui_mch_reset_focus()
+reset_focus()
 {
     if (textArea != NULL)
 	XmProcessTraversal(textArea, XmTRAVERSE_CURRENT);
@@ -2852,34 +2842,6 @@ gui_mch_compute_toolbar_height()
 
     return (int)(height + (borders << 1));
 }
-
-#if 0 /* these are never called. */
-/*
- * The next toolbar enter/leave callbacks make sure the text area gets the
- * keyboard focus when the pointer is not in the toolbar.
- */
-/*ARGSUSED*/
-    static void
-toolbar_enter_cb(w, client_data, event, cont)
-    Widget	w;
-    XtPointer	client_data;
-    XEvent	*event;
-    Boolean	*cont;
-{
-    XmProcessTraversal(toolBar, XmTRAVERSE_CURRENT);
-}
-
-/*ARGSUSED*/
-    static void
-toolbar_leave_cb(w, client_data, event, cont)
-    Widget	w;
-    XtPointer	client_data;
-    XEvent	*event;
-    Boolean	*cont;
-{
-    XmProcessTraversal(textArea, XmTRAVERSE_CURRENT);
-}
-#endif
 
 # ifdef FEAT_FOOTER
 /*
