@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 7.0aa.  Last change: 2004 Dec 29
+*gui.txt*       For Vim version 7.0aa.  Last change: 2005 Jan 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -144,7 +144,7 @@ window Vim is running in with this command: >
 ==============================================================================
 2. Scrollbars						*gui-scrollbars*
 
-There are vertical scrollbars and a horizontal scrollbars.  You may
+There are vertical scrollbars and a horizontal scrollbar.  You may
 configure which ones appear with the 'guioptions' option.
 
 The interface looks like this (with ":set guioptions=mlrb"):
@@ -203,11 +203,11 @@ scrolled as far as possible left and right.  The cursor is moved when
 necessary, it must remain on a visible character (unless 'virtualedit' is
 set).
 
-Computing the length of the longest visible takes quite a bit of computation,
-and it has to be done every time something changes.  If this takes too much
-time or you don't like the cursor jumping to another line, include the 'h'
-flag in 'guioptions'.  Then the scrolling is limited by the text of the
-current cursor line.
+Computing the length of the longest visible line takes quite a bit of
+computation, and it has to be done every time something changes.  If this
+takes too much time or you don't like the cursor jumping to another line,
+include the 'h' flag in 'guioptions'.  Then the scrolling is limited by the
+text of the current cursor line.
 
 							*athena-intellimouse*
 If you have an Intellimouse and an X server that supports using the wheel,

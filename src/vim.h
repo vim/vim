@@ -588,6 +588,7 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 # define OK			1
 #endif
 #define FAIL			0
+#define NOTDONE			2   /* not OK or FAIL but skipped */
 
 /* flags for b_flags */
 #define BF_RECOVERED	0x01	/* buffer has been recovered */

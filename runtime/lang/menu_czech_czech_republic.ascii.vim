@@ -38,7 +38,7 @@ menutrans &Paste<Tab>"+gP		V&lozit<Tab>"+gP
 menutrans Put\ &Before<Tab>[p		Vlozit\ &pred<Tab>[p
 menutrans Put\ &After<Tab>]p		Vlozi&t\ za<Tab>]p
 menutrans &Delete<Tab>x			&Smazat<Tab>x
-menutrans &Select\ all<Tab>ggVG		Vy&brat\ vse<Tab>ggVG
+menutrans &Select\ All<Tab>ggVG		Vy&brat\ vse<Tab>ggVG
 menutrans &Find\.\.\.			&Hledat\.\.\.
 menutrans Find\ and\ Rep&lace\.\.\.	&Nahradit\.\.\.
 menutrans Options\.\.\.			Volb&y\.\.\.
@@ -186,6 +186,7 @@ menutrans &How-to\ links	Ho&wto
 menutrans &GUI			&Graficke\ rozhrani
 menutrans &Credits		&Autori
 menutrans Co&pying		&Licencni\ politika
+menutrans &Sponsor/Register	Sponzorovani/&Registrace
 menutrans &Find\.\.\.		&Hledat\.\.\.
 menutrans O&rphans		O&sirele\ deti
 menutrans &Version		&Verze

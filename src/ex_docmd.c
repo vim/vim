@@ -8084,6 +8084,13 @@ ex_normal(eap)
 ex_startinsert(eap)
     exarg_T	*eap;
 {
+    if (eap->forceit)
+    {
+	coladvance((colnr_T)MAXCOL);
+	curwin->w_curswant = MAXCOL;
+	curwin->w_set_curswant = FALSE;
+    }
+
     /* Ignore the command when already in Insert mode.  Inserting an
      * expression register that invokes a function can do this. */
     if (State & INSERT)
@@ -8091,9 +8098,6 @@ ex_startinsert(eap)
 
     if (eap->forceit)
     {
-	coladvance((colnr_T)MAXCOL);
-	curwin->w_curswant = MAXCOL;
-	curwin->w_set_curswant = FALSE;
 	if (eap->cmdidx == CMD_startinsert)
 	    restart_edit = 'a';
 	else

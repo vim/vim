@@ -1239,7 +1239,6 @@ EXTERN char_u e_endwhile[]	INIT(=N_("E170: Missing :endwhile"));
 EXTERN char_u e_endfor[]	INIT(=N_("E170: Missing :endfor"));
 EXTERN char_u e_while[]		INIT(=N_("E588: :endwhile without :while"));
 EXTERN char_u e_for[]		INIT(=N_("E588: :endfor without :for"));
-EXTERN char_u e_listreq[]	INIT(=N_("E999: List required"));
 #endif
 EXTERN char_u e_exists[]	INIT(=N_("E13: File exists (add ! to override)"));
 EXTERN char_u e_failed[]	INIT(=N_("E472: Command failed"));
@@ -1345,7 +1344,7 @@ EXTERN char_u e_re_damg[]	INIT(=N_("E43: Damaged match string"));
 EXTERN char_u e_re_corr[]	INIT(=N_("E44: Corrupted regexp program"));
 EXTERN char_u e_readonly[]	INIT(=N_("E45: 'readonly' option is set (add ! to override)"));
 #ifdef FEAT_EVAL
-EXTERN char_u e_readonlyvar[]	INIT(=N_("E46: Cannot set read-only variable \"%s\""));
+EXTERN char_u e_readonlyvar[]	INIT(=N_("E46: Cannot change read-only variable \"%s\""));
 EXTERN char_u e_readonlysbx[]	INIT(=N_("E46: Cannot set variable in the sandbox: \"%s\""));
 #endif
 #ifdef FEAT_QUICKFIX
