@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 25
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,9 +30,17 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Searching backwards with \zs gets stuck. (Brett Stahlman, Jan 23)
+Allow space: "call function ()"
 
-netrw plugin: "i" remembers last action but not per window.
+List a:000 must be immutable.
+    lock(list)	    lock(dict)
+    deeplock(list)
+    islocked(list)
+Also unlock(), so that you can pass a list to a function and be sure it's not
+changed?  Then super-lock a:000, can't be unlocked.
+
+":breakadd here" doesn't work. (Johnny Blaze, Jan 26)
+Problem with backslashes in file name?
 
 List data type performance:
 - Cache the length of a List?
@@ -46,12 +54,8 @@ Sanity check of eval.c:
 - Go through the code for magic braces.
 - Check use of v_type for VAR_FUNC, VAR_LIST ad VAR_DICT.
 
-Mention Rsync command on runtime.php page:
+Mention rsync command on runtime.php page:
     rsync -avzcP --delete --exclude="dos" --delete-excluded ftp.nluug.nl::Vim/runtime/ vim63-runtime
-
-netrw plugin:
-- provide :Explore and :Sexplore like the old file explorer?
-- alignment of long listing isn't very good.
 
 Better way to get temp file for tcltags and vimspell scripts. (javier Pena)
 Possibly leave out code for temp directory.
@@ -260,7 +264,12 @@ Also place vimtutor.bat in %windir%?
 Add gui_mch_browsedir() for Motif, KDE and Mac OS/X.
 
 HTML indenting can be slow, find out why.  Any way to do some kind of
-profiling for Vim script?
+profiling for Vim script?  At least add a function to get the current time in
+usec.  reltime([start, [end]])
+    reltime().sec == seconds, reltime().usec = microseconds
+    reltime(start) current time relative to [start]
+	echo timestring(reltime(start), 3)  (3 is nr of digits after dot)
+    reltime(start, end) difference between start and end
 
 Updated Ruby interface. (Ryan Paul)
 

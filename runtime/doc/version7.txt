@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jan 25
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jan 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -6,7 +6,8 @@
 
 Welcome to Vim 7!  A large number of features has been added.  This file
 mentions all the new items, changes to existing features and bug fixes
-compared to Vim 6.x.
+compared to Vim 6.x.  Use this command to see the version you are using: >
+	:version
 
 See |vi_diff.txt| for an overview of differences between Vi and Vim 7.0.
 See |version4.txt| for differences between Vim 3.x and Vim 4.x.
@@ -33,7 +34,13 @@ BUG FIXES				|bug-fixes-7|
 INCOMPATIBLE CHANGES				*incompatible-7*
 
 These changes are incompatible with previous releases.  Check this list if you
-run into a problem when upgrading from Vim 6.x to 7.0
+run into a problem when upgrading from Vim 6.x to 7.0.
+
+A ":write file" command no longer resets the 'modified' flag of the buffer,
+unless the '+' flag is in 'cpoptions' |cpo-+|.  This was illogical, since the
+buffer is still modified compared to the original file.  And when undoing
+all changes the file would actually be marked modified.  It does mean that
+":quit" fails now.
 
 ":helpgrep" now uses a help window to display a match.
 
@@ -44,12 +51,6 @@ double quotes and it is incompatible with some versions of Vi.
 	:edit foo\"888          'foo"888'         	'foo"888'
 	:next foo\"888          'foo888'          	'foo"888'
 	:next a\"b c\"d         'ab cd'           	'a"b' and 'c"d'
-
-A ":write file" command no longer resets the 'modified' flag of the buffer,
-unless the '+' flag is in 'cpoptions' |cpo-+|.  This was illogical, since the
-buffer is still modified compared to the original file.  And when undoing
-all changes the file would actually be marked modified.  It does mean that
-":quit" fails now.
 
 In a |literal-string| a single quote can be doubled to get one.
 ":echo 'a''b'" would result in "a b", but now that two quotes stand for one it
@@ -707,5 +708,9 @@ When doing "1,6d|put" only "fewer lines" was reported.  Now a following "more
 lines" overwrites the message.
 
 Configure could not handle "-Dfoo=long\ long" in the TCL config output.
+
+When searching backwards, using a pattern that matches a newline and uses \zs
+after that, didn't find a match.  Could also get a hang or end up in the right
+column in the wrong line.
 
  vim:tw=78:ts=8:ft=help:norl:
