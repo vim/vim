@@ -32,132 +32,157 @@ STARTTEST
 :e! XXUnix
 :w! test.out
 :e! XXDos
-:w! XXtt
-:!cat XXtt >>test.out
+:w! XXtt01
 :e! XXMac
-:w! XXtt
-:!cat XXtt >>test.out
-:!cat XX1 >>test.out
+:w! XXtt02
 :bwipe XXUnix XXDos XXMac
 :set fileformat=dos
 :e! XXUnix
-:w! XXtt
-:!cat XXtt >>test.out
+:w! XXtt11
 :e! XXDos
-:w! XXtt
-:!cat XXtt >>test.out
+:w! XXtt12
 :e! XXMac
-:w! XXtt
-:!cat XXtt >>test.out
-:!cat XX2 >>test.out
+:w! XXtt13
 :bwipe XXUnix XXDos XXMac
 :set fileformat=mac
 :e! XXUnix
-:w! XXtt
-:!cat XXtt >>test.out
+:w! XXtt21
 :e! XXDos
-:w! XXtt
-:!cat XXtt >>test.out
+:w! XXtt22
 :e! XXMac
-:w! XXtt
-:!cat XXtt >>test.out
-:!cat XX3 >>test.out
+:w! XXtt23
 :bwipe XXUnix XXDos XXMac
 :"
 :" try reading and writing with 'fileformats' set to one format
 :set fileformats=unix
 :e! XXUxDsMc
-:w! XXtt
-:!cat XXtt >>test.out
+:w! XXtt31
 :bwipe XXUxDsMc
 :set fileformats=dos
 :e! XXUxDsMc
-:w! XXtt
-:!cat XXtt >>test.out
+:w! XXtt32
 :bwipe XXUxDsMc
 :set fileformats=mac
 :e! XXUxDsMc
-:w! XXtt
-:!cat XXtt >>test.out
+:w! XXtt33
 :bwipe XXUxDsMc
-:!cat XX4 >>test.out
 :"
 :" try reading and writing with 'fileformats' set to two formats
 :set fileformats=unix,dos
 :e! XXUxDsMc
-:w! XXtt
-:!cat XXtt >>test.out
+:w! XXtt41
 :bwipe XXUxDsMc
 :e! XXUxMac
-:w! XXtt
-:!cat XXtt >>test.out
+:w! XXtt42
 :bwipe XXUxMac
 :e! XXDosMac
-:w! XXtt
-:!cat XXtt >>test.out
+:w! XXtt43
 :bwipe XXDosMac
-:!cat XX5 >>test.out
 :set fileformats=unix,mac
 :e! XXUxDs
-:w! XXtt
-:!cat XXtt >>test.out
+:w! XXtt51
 :bwipe XXUxDs
 :e! XXUxDsMc
-:w! XXtt
-:!cat XXtt >>test.out
+:w! XXtt52
 :bwipe XXUxDsMc
 :e! XXDosMac
-:w! XXtt
-:!cat XXtt >>test.out
+:w! XXtt53
 :bwipe XXDosMac
-:!cat XX6 >>test.out
 :set fileformats=dos,mac
 :e! XXUxDs
-:w! XXtt
-:!cat XXtt >>test.out
+:w! XXtt61
 :bwipe XXUxDs
 :e! XXUxMac
-:w! XXtt
-:!cat XXtt >>test.out
+:w! XXtt62
 :bwipe XXUxMac
 :e! XXUxDsMc
-:w! XXtt
-:!cat XXtt >>test.out
+:w! XXtt63
 :bwipe XXUxDsMc
-:!cat XX7 >>test.out
 :"
 :" try reading and writing with 'fileformats' set to three formats
 :set fileformats=unix,dos,mac
 :e! XXUxDsMc
-:w! XXtt
-:!cat XXtt >>test.out
+:w! XXtt71
 :bwipe XXUxDsMc
-:!cat XX8 >>test.out
 :set fileformats=mac,dos,unix
 :e! XXUxDsMc
-:w! XXtt
-:!cat XXtt >>test.out
+:w! XXtt81
 :bwipe XXUxDsMc
-:!cat XX9 >>test.out
 :" try with 'binary' set
 :set fileformats=mac,unix,dos
 :set binary
 :e! XXUxDsMc
-:w! XXtt
-:!cat XXtt >>test.out
+:w! XXtt91
 :bwipe XXUxDsMc
 :set fileformats=mac
 :e! XXUxDsMc
-:w! XXtt
-:!cat XXtt >>test.out
+:w! XXtt92
 :bwipe XXUxDsMc
 :set fileformats=dos
 :e! XXUxDsMc
-:w! XXtt
-:!cat XXtt >>test.out
-:!cat XX10 >>test.out
-:" add a newline at the end
-:!cat XXUnix >>test.out
+:w! XXtt93
+:"
+:" Append "END" to each file so that we can see what the last written char was.
+:set fileformat=unix nobin
+ggdGaEND:w >>XXtt01
+:w >>XXtt02
+:w >>XXtt11
+:w >>XXtt12
+:w >>XXtt13
+:w >>XXtt21
+:w >>XXtt22
+:w >>XXtt23
+:w >>XXtt31
+:w >>XXtt32
+:w >>XXtt33
+:w >>XXtt41
+:w >>XXtt42
+:w >>XXtt43
+:w >>XXtt51
+:w >>XXtt52
+:w >>XXtt53
+:w >>XXtt61
+:w >>XXtt62
+:w >>XXtt63
+:w >>XXtt71
+:w >>XXtt81
+:w >>XXtt91
+:w >>XXtt92
+:w >>XXtt93
+:"
+:" Concatenate the results.
+:" Make fileformat of test.out the native fileformat.
+:" Add a newline at the end.
+:set binary
+:e! test.out
+:$r XXtt01
+:$r XXtt02
+Go1:$r XXtt11
+:$r XXtt12
+:$r XXtt13
+Go2:$r XXtt21
+:$r XXtt22
+:$r XXtt23
+Go3:$r XXtt31
+:$r XXtt32
+:$r XXtt33
+Go4:$r XXtt41
+:$r XXtt42
+:$r XXtt43
+Go5:$r XXtt51
+:$r XXtt52
+:$r XXtt53
+Go6:$r XXtt61
+:$r XXtt62
+:$r XXtt63
+Go7:$r XXtt71
+Go8:$r XXtt81
+Go9:$r XXtt91
+:$r XXtt92
+:$r XXtt93
+Go10:$r XXUnix
+:set nobinary ff&
+:w
 :qa!
 ENDTEST
 
