@@ -174,10 +174,13 @@
 #define CPO_PARA	'{'	/* "{" is also a paragraph boundary */
 #define CPO_TSIZE	'|'	/* $LINES and $COLUMNS overrule term size */
 #define CPO_PRESERVE	'&'	/* keep swap file after :preserve */
+#define CPO_SUBPERCENT	'/'	/* % in :s string uses previous one */
+#define CPO_BACKSL	'\\'	/* \ is not special in [] */
+#define CPO_CHDIR	'.'	/* don't chdir if buffer is modified */
 /* default values for Vim, Vi and POSIX */
 #define CPO_VIM		"aABceFs"
 #define CPO_VI		"aAbBcCdDeEfFgHiIjJkKlLmMnoOpqrRsStuvwWxXyZ$!%*-+<>"
-#define CPO_ALL		"aAbBcCdDeEfFgHiIjJkKlLmMnoOpqrRsStuvwWxXyZ$!%*-+<>#{|&"
+#define CPO_ALL		"aAbBcCdDeEfFgHiIjJkKlLmMnoOpqrRsStuvwWxXyZ$!%*-+<>#{|&/\\."
 
 /* characters for p_ww option: */
 #define WW_ALL		"bshl<>[],~"
@@ -479,6 +482,7 @@ EXTERN char_u	*p_pfn;		/* 'printfont' */
 EXTERN char_u	*p_popt;	/* 'printoptions' */
 EXTERN char_u	*p_header;	/* 'printheader' */
 #endif
+EXTERN int	p_prompt;	/* 'prompt' */
 #ifdef FEAT_GUI
 EXTERN char_u	*p_guifont;	/* 'guifont' */
 # ifdef FEAT_XFONTSET
@@ -675,6 +679,7 @@ EXTERN char_u	*p_srr;		/* 'shellredir' */
 #ifdef AMIGA
 EXTERN long	p_st;		/* 'shelltype' */
 #endif
+EXTERN int	p_stmp;		/* 'shelltemp' */
 #ifdef BACKSLASH_IN_FILENAME
 EXTERN int	p_ssl;		/* 'shellslash' */
 #endif

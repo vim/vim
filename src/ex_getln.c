@@ -681,16 +681,29 @@ getcmdline(firstc, count, indent)
 	if (c == '\n' || c == '\r' || c == K_KENTER || (c == ESC
 			&& (!KeyTyped || vim_strchr(p_cpo, CPO_ESC) != NULL)))
 	{
-	    gotesc = FALSE;	/* Might have typed ESC previously, don't
-				   truncate the cmdline now. */
-	    if (ccheck_abbr(c + ABBR_OFF))
-		goto cmdline_changed;
-	    if (!cmd_silent)
+	    /* In Ex mode a backslash escapes a newline. */
+	    if (exmode_active
+		    && c != ESC
+		    && ccline.cmdpos > 0
+		    && ccline.cmdpos == ccline.cmdlen
+		    && ccline.cmdbuff[ccline.cmdpos - 1] == '\\')
 	    {
-		windgoto(msg_row, 0);
-		out_flush();
+		if (c == K_KENTER)
+		    c = '\n';
 	    }
-	    break;
+	    else
+	    {
+		gotesc = FALSE;	/* Might have typed ESC previously, don't
+				       truncate the cmdline now. */
+		if (ccheck_abbr(c + ABBR_OFF))
+		    goto cmdline_changed;
+		if (!cmd_silent)
+		{
+		    windgoto(msg_row, 0);
+		    out_flush();
+		}
+		break;
+	    }
 	}
 
 	/*
@@ -1879,25 +1892,24 @@ getexline(c, dummy, indent)
  * Get an Ex command line for Ex mode.
  * In Ex mode we only use the OS supplied line editing features and no
  * mappings or abbreviations.
+ * Returns a string in allocated memory or NULL.
  */
 /* ARGSUSED */
     char_u *
-getexmodeline(c, dummy, indent)
-    int		c;		/* normally ':', NUL for ":append" */
+getexmodeline(promptc, dummy, indent)
+    int		promptc;	/* normally ':', NUL for ":append" and '?' for
+				   :s prompt */
     void	*dummy;		/* cookie not used */
     int		indent;		/* indent for inside conditionals */
 {
-    garray_T		line_ga;
-    int			len;
-    int			off = 0;
-    char_u		*pend;
-    int			finished = FALSE;
-#if defined(FEAT_GUI) || defined(NO_COOKED_INPUT)
-    int			startcol = 0;
-    int			c1;
-    int			escaped = FALSE;	/* CTRL-V typed */
-    int			vcol = 0;
-#endif
+    garray_T	line_ga;
+    char_u	*pend;
+    int		startcol = 0;
+    int		c1;
+    int		escaped = FALSE;	/* CTRL-V typed */
+    int		vcol = 0;
+    char_u	*p;
+    int		prev_char = 0;
 
     /* Switch cursor on now.  This avoids that it happens after the "\n", which
      * confuses the system function that computes tabstops. */
@@ -1905,27 +1917,24 @@ getexmodeline(c, dummy, indent)
 
     /* always start in column 0; write a newline if necessary */
     compute_cmdrow();
-    if (msg_col)
+    if ((msg_col || msg_didout) && promptc != '?')
 	msg_putchar('\n');
-    if (c == ':')
+    if (promptc == ':')
     {
 	/* indent that is only displayed, not in the line itself */
-	msg_putchar(':');
+	if (p_prompt)
+	    msg_putchar(':');
 	while (indent-- > 0)
 	    msg_putchar(' ');
-#if defined(FEAT_GUI) || defined(NO_COOKED_INPUT)
 	startcol = msg_col;
-#endif
     }
 
     ga_init2(&line_ga, 1, 30);
 
     /* autoindent for :insert and :append is in the line itself */
-    if (c <= 0)
+    if (promptc <= 0)
     {
-#if defined(FEAT_GUI) || defined(NO_COOKED_INPUT)
 	vcol = indent;
-#endif
 	while (indent >= 8)
 	{
 	    ga_append(&line_ga, TAB);
@@ -1938,198 +1947,180 @@ getexmodeline(c, dummy, indent)
 	    msg_putchar(' ');
 	}
     }
+    ++no_mapping;
+    ++allow_keys;
 
     /*
      * Get the line, one character at a time.
      */
     got_int = FALSE;
-    while (!got_int && !finished)
+    while (!got_int)
     {
 	if (ga_grow(&line_ga, 40) == FAIL)
 	    break;
 	pend = (char_u *)line_ga.ga_data + line_ga.ga_len;
 
-	/* Get one character (inchar gets a third of maxlen characters!) */
-	len = inchar(pend + off, 3, -1L, 0);
-	if (len < 0)
-	    continue;	    /* end of input script reached */
-	/* for a special character, we need at least three characters */
-	if ((*pend == K_SPECIAL || *pend == CSI) && off + len < 3)
-	{
-	    off += len;
-	    continue;
-	}
-	len += off;
-	off = 0;
+	/* Get one character at a time.  Don't use inchar(), it can't handle
+	 * special characters. */
+	c1 = vgetc();
 
 	/*
-	 * When using the GUI, and for systems that don't have cooked input,
-	 * handle line editing here.
+	 * Handle line editing.
+	 * Previously this was left to the system, putting the terminal in
+	 * cooked mode, but then CTRL-D and CTRL-T can't be used properly.
 	 */
-#if defined(FEAT_GUI) || defined(NO_COOKED_INPUT)
-# ifndef NO_COOKED_INPUT
-	if (gui.in_use)
-# endif
+	if (got_int)
 	{
-	    if (got_int)
+	    msg_putchar('\n');
+	    break;
+	}
+
+	if (!escaped)
+	{
+	    /* CR typed means "enter", which is NL */
+	    if (c1 == '\r')
+		c1 = '\n';
+
+	    if (c1 == BS || c1 == K_BS
+			  || c1 == DEL || c1 == K_DEL || c1 == K_KDEL)
 	    {
-		msg_putchar('\n');
-		break;
+		if (line_ga.ga_len > 0)
+		{
+		    --line_ga.ga_len;
+		    goto redraw;
+		}
+		continue;
 	    }
 
-	    while (len > 0)
+	    if (c1 == Ctrl_U)
 	    {
-		c1 = *pend++;
-		--len;
-		if ((c1 == K_SPECIAL
-#  if !defined(NO_COOKED_INPUT) || defined(FEAT_GUI)
-			    || c1 == CSI
-#  endif
-		    ) && len >= 2)
+		msg_col = startcol;
+		msg_clr_eos();
+		line_ga.ga_len = 0;
+		continue;
+	    }
+
+	    if (c1 == Ctrl_T)
+	    {
+		p = (char_u *)line_ga.ga_data;
+		p[line_ga.ga_len] = NUL;
+		indent = get_indent_str(p, 8);
+		indent += curbuf->b_p_sw - indent % curbuf->b_p_sw;
+add_indent:
+		while (get_indent_str(p, 8) < indent)
 		{
-		    c1 = TO_SPECIAL(pend[0], pend[1]);
-		    pend += 2;
-		    len -= 2;
+		    char_u *s = skipwhite(p);
+
+		    ga_grow(&line_ga, 1);
+		    mch_memmove(s + 1, s, line_ga.ga_len - (s - p) + 1);
+		    *s = ' ';
+		    ++line_ga.ga_len;
 		}
-
-		if (!escaped)
+redraw:
+		/* redraw the line */
+		msg_col = startcol;
+		windgoto(msg_row, msg_col);
+		vcol = 0;
+		for (p = (char_u *)line_ga.ga_data;
+			  p < (char_u *)line_ga.ga_data + line_ga.ga_len; ++p)
 		{
-		    /* CR typed means "enter", which is NL */
-		    if (c1 == '\r')
-			c1 = '\n';
-
-		    if (c1 == BS || c1 == K_BS
-				  || c1 == DEL || c1 == K_DEL || c1 == K_KDEL)
+		    if (*p == TAB)
 		    {
-			if (line_ga.ga_len > 0)
+			do
 			{
-			    int		i, v;
-			    char_u	*q;
-
-			    --line_ga.ga_len;
-			    /* compute column that cursor should be in */
-			    v = 0;
-			    q = ((char_u *)line_ga.ga_data);
-			    for (i = 0; i < line_ga.ga_len; ++i)
-			    {
-				if (*q == TAB)
-				    v += 8 - v % 8;
-				else
-				    v += ptr2cells(q);
-				++q;
-			    }
-			    /* erase characters to position cursor */
-			    while (vcol > v)
-			    {
-				msg_putchar('\b');
-				msg_putchar(' ');
-				msg_putchar('\b');
-				--vcol;
-			    }
-			}
-			continue;
+			    msg_putchar(' ');
+			} while (++vcol % 8);
 		    }
-
-		    if (c1 == Ctrl_U)
+		    else
 		    {
-			msg_col = startcol;
-			msg_clr_eos();
-			line_ga.ga_len = 0;
-			continue;
-		    }
-
-		    if (c1 == Ctrl_T)
-			c1 = TAB;	/* very simplistic... */
-
-		    if (c1 == Ctrl_D)
-		    {
-			char_u	*p;
-
-			/* Delete one shiftwidth. */
-			p = (char_u *)line_ga.ga_data;
-			p[line_ga.ga_len] = NUL;
-			indent = get_indent_str(p, 8);
-			--indent;
-			indent -= indent % 8;
-			while (get_indent_str(p, 8) > indent)
-			{
-			    char_u *s = skipwhite(p);
-
-			    mch_memmove(s - 1, s, line_ga.ga_len - (s - p) + 1);
-			    --line_ga.ga_len;
-			}
-			msg_col = startcol;
-			for (vcol = 0; *p != NUL; ++p)
-			{
-			    if (*p == TAB)
-			    {
-				do
-				{
-				    msg_putchar(' ');
-				} while (++vcol % 8);
-			    }
-			    else
-			    {
-				msg_outtrans_len(p, 1);
-				vcol += char2cells(*p);
-			    }
-			}
-			msg_clr_eos();
-			continue;
-		    }
-
-		    if (c1 == Ctrl_V)
-		    {
-			escaped = TRUE;
-			continue;
+			msg_outtrans_len(p, 1);
+			vcol += char2cells(*p);
 		    }
 		}
+		msg_clr_eos();
+		continue;
+	    }
 
-		if (IS_SPECIAL(c1))
-		    c1 = '?';
-		((char_u *)line_ga.ga_data)[line_ga.ga_len] = c1;
-		if (c1 == '\n')
-		    msg_putchar('\n');
-		else if (c1 == TAB)
+	    if (c1 == Ctrl_D)
+	    {
+		/* Delete one shiftwidth. */
+		p = (char_u *)line_ga.ga_data;
+		if (prev_char == '0' || prev_char == '^')
 		{
-		    /* Don't use chartabsize(), 'ts' can be different */
-		    do
-		    {
-			msg_putchar(' ');
-		    } while (++vcol % 8);
+		    if (prev_char == '^')
+			ex_keep_indent = TRUE;
+		    indent = 0;
+		    p[--line_ga.ga_len] = NUL;
 		}
 		else
 		{
-		    msg_outtrans_len(
-			     ((char_u *)line_ga.ga_data) + line_ga.ga_len, 1);
-		    vcol += char2cells(c1);
+		    p[line_ga.ga_len] = NUL;
+		    indent = get_indent_str(p, 8);
+		    --indent;
+		    indent -= indent % curbuf->b_p_sw;
 		}
-		++line_ga.ga_len;
-		escaped = FALSE;
+		while (get_indent_str(p, 8) > indent)
+		{
+		    char_u *s = skipwhite(p);
+
+		    mch_memmove(s - 1, s, line_ga.ga_len - (s - p) + 1);
+		    --line_ga.ga_len;
+		}
+		goto add_indent;
 	    }
-	    windgoto(msg_row, msg_col);
+
+	    if (c1 == Ctrl_V || c1 == Ctrl_Q)
+	    {
+		escaped = TRUE;
+		continue;
+	    }
+
+	    /* Ignore special key codes: mouse movement, K_IGNORE, etc. */
+	    if (IS_SPECIAL(c1))
+		continue;
 	}
-# ifndef NO_COOKED_INPUT
+
+	if (IS_SPECIAL(c1))
+	    c1 = '?';
+	((char_u *)line_ga.ga_data)[line_ga.ga_len] = c1;
+	prev_char = c1;
+	if (c1 == '\n')
+	    msg_putchar('\n');
+	else if (c1 == TAB)
+	{
+	    /* Don't use chartabsize(), 'ts' can be different */
+	    do
+	    {
+		msg_putchar(' ');
+	    } while (++vcol % 8);
+	}
 	else
-# endif
-#endif
-#ifndef NO_COOKED_INPUT
 	{
-	    line_ga.ga_len += len;
+	    msg_outtrans_len(
+		     ((char_u *)line_ga.ga_data) + line_ga.ga_len, 1);
+	    vcol += char2cells(c1);
 	}
-#endif
+	++line_ga.ga_len;
+	escaped = FALSE;
+
+	windgoto(msg_row, msg_col);
 	pend = (char_u *)(line_ga.ga_data) + line_ga.ga_len;
-	if (line_ga.ga_len && pend[-1] == '\n')
+
+	/* we are done when a NL is entered, but not when it comes after a
+	 * backslash */
+	if (line_ga.ga_len > 0 && pend[-1] == '\n'
+		&& (line_ga.ga_len <= 1 || pend[-2] != '\\'))
 	{
-	    finished = TRUE;
 	    --line_ga.ga_len;
 	    --pend;
 	    *pend = NUL;
+	    break;
 	}
     }
 
-    /* note that cursor has moved, because of the echoed <CR> */
-    screen_down();
+    --no_mapping;
+    --allow_keys;
+
     /* make following messages go to the next line */
     msg_didout = FALSE;
     msg_col = 0;
@@ -3797,10 +3788,10 @@ addstar(fname, len, context)
 set_expand_context(xp)
     expand_T	*xp;
 {
-    /* only expansion for ':' and '>' commands */
+    /* only expansion for ':', '>' and '=' command-lines */
     if (ccline.cmdfirstc != ':'
 #ifdef FEAT_EVAL
-	    && ccline.cmdfirstc != '>'
+	    && ccline.cmdfirstc != '>' && ccline.cmdfirstc != '='
 #endif
 	    )
     {
@@ -3828,8 +3819,16 @@ set_cmd_context(xp, str, len, col)
 	old_char = str[col];
     str[col] = NUL;
     nextcomm = str;
-    while (nextcomm != NULL)
-	nextcomm = set_one_cmd_context(xp, nextcomm);
+
+#ifdef FEAT_EVAL
+    if (ccline.cmdfirstc == '=')
+	/* pass CMD_SIZE because there is no real command */
+	set_context_for_expression(xp, str, CMD_SIZE);
+    else
+#endif
+	while (nextcomm != NULL)
+	    nextcomm = set_one_cmd_context(xp, nextcomm);
+
     str[col] = old_char;
 }
 
@@ -5477,7 +5476,7 @@ ex_window()
      * Call the main loop until <CR> or CTRL-C is typed.
      */
     cmdwin_result = 0;
-    main_loop(TRUE);
+    main_loop(TRUE, FALSE);
 
     RedrawingDisabled = i;
 

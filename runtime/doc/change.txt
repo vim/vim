@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.0aa.  Last change: 2005 Feb 08
+*change.txt*    For Vim version 7.0aa.  Last change: 2005 Feb 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -112,19 +112,22 @@ gJ			Join [count] lines, with a minimum of two lines.
 			Vi}
 
 							*:j* *:join*
-:[range]j[oin][!]	Join [range] lines.  Same as "J", except with [!]
+:[range]j[oin][!] [flags]
+			Join [range] lines.  Same as "J", except with [!]
 			the join does not insert or delete any spaces.
 			If a [range] has equal start and end values, this
 			command does nothing.  The default behavior is to
 			join the current line with the line below it.
 			{not in Vi: !}
+			See |ex-flags| for [flags].
 
-:[range]j[oin][!] {count}
+:[range]j[oin][!] {count} [flags]
 			Join {count} lines, starting with [range] (default:
 			current line |cmdline-ranges|).  Same as "J", except
 			with [!] the join does not insert or delete any
 			spaces.
 			{not in Vi: !}
+			See |ex-flags| for [flags].
 
 These commands delete the <EOL> between lines.  This has the effect of joining
 multiple lines into one line.  You can repeat these commands (except ":j") and
@@ -236,10 +239,12 @@ If you prefer "cw" to include the space after a word, use this mapping: >
 	:map cw dwi
 <
 							*:c* *:ch* *:change*
-:{range}c[hange]	Replace lines of text with some different text.
+:{range}c[hange][!]	Replace lines of text with some different text.
 			Type a line containing only "." to stop replacing.
 			Without {range}, this command changes only the current
 			line.
+			Adding [!] toggles 'autoindent' for the time this
+			command is executed.
 
 ==============================================================================
 3. Simple changes					*simple-change*
@@ -424,12 +429,15 @@ SHIFTING LINES LEFT OR RIGHT				*shift-left-right*
 			lines to [indent] (default 0).  {not in Vi}
 
 							*:>*
-:[range]>		Shift {count} [range] lines one 'shiftwidth' right.
+:[range]> [flags]	Shift {count} [range] lines one 'shiftwidth' right.
 			Repeat '>' for shifting multiple 'shiftwidth's.
+			See |ex-flags| for [flags].
 
-:[range]> {count}	Shift {count} lines one 'shiftwidth' right, starting
+:[range]> {count} [flags]
+			Shift {count} lines one 'shiftwidth' right, starting
 			with [range] (default current line |cmdline-ranges|).
 			Repeat '>' for shifting multiple 'shiftwidth's.
+			See |ex-flags| for [flags].
 
 The ">" and "<" commands are handy for changing the indentation within
 programs.  Use the 'shiftwidth' option to set the size of the white space
@@ -519,7 +527,7 @@ comment (starting with '"') after the ":!" command.
 
 4.2 Substitute						*:substitute*
 							*:s* *:su*
-:[range]s[ubstitute]/{pattern}/{string}/[&][c][e][g][p][r][i][I] [count]
+:[range]s[ubstitute]/{pattern}/{string}/[&][#][c][e][g][p][r][i][I] [count]
 			For each line in [range] replace a match of {pattern}
 			with {string}.
 			For the {pattern} see |pattern|.
@@ -533,8 +541,8 @@ comment (starting with '"') after the ":!" command.
 			Also see |cmdline-ranges|.
 			See |:s_flags| for the flags.
 
-:[range]s[ubstitute] [c][e][g][p][r][i][I] [count]
-:[range]&[&][c][e][g][p][r][i][I] [count]			*:&*
+:[range]s[ubstitute] [#][c][e][g][p][r][i][I] [count]
+:[range]&[&][#][c][e][g][p][r][i][I] [count]			*:&*
 			Repeat last :substitute with same search pattern and
 			substitute string, but without the same flags.  You
 			may add extra flags (see |:s_flags|).
@@ -544,7 +552,7 @@ comment (starting with '"') after the ":!" command.
 			'r' flags isn't required, but in scripts it's a good
 			idea to keep it to avoid confusion.
 
-:[range]~[&][c][e][g][p][r][i][I] [count]			*:~*
+:[range]~[&][#][c][e][g][p][r][i][I] [count]			*:~*
 			Repeat last substitute with same substitute string
 			but with last used search pattern.  This is like
 			":&r".  See |:s_flags| for the flags.
@@ -622,7 +630,10 @@ The flags that you can use for the substitute commands:
 	{not in Vi}
 
 [p]	Print the line containing the last substitute.
-	{not in Vi}
+
+[#]	Like [p] and prepend the line number.
+
+[l]	Like [l] but print the text like |:list|.
 
 [r]	Only useful in combination with ":&" or ":s" without arguments.  ":&r"
 	works the same way as ":~":  When the search pattern is empty, use the
@@ -668,6 +679,9 @@ For the definition of a pattern, see |pattern|.
 When the {string} starts with "\=" it is evaluated as an expression, see
 |sub-replace-expression|.  Otherwise these characters in {string} have a
 special meaning:
+								*:s%*
+When {string} is equal to "%" and '/' is included with the 'cpotions' option,
+then the {string} of the previous substitute command is used. |cpo-/|
 
 magic	nomagic	  action    ~
   &	  \&	  replaced with the whole matched pattern	     *s/\&*

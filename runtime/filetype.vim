@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Jan 27
+" Last Change:	2005 Feb 18
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -511,6 +511,9 @@ au BufNewFile,BufRead *.erl			setf erlang
 
 " Elm Filter Rules file
 au BufNewFile,BufRead filter-rules		setf elmfilt
+
+" ESMTP rc file
+au BufNewFile,BufRead *esmtprc			setf esmtprc
 
 " ESQL-C
 au BufNewFile,BufRead *.ec,*.EC			setf esqlc

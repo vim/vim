@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Feb 11
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Feb 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1484,13 +1484,16 @@ matchstr( {expr}, {pat}[, {start}[, {count}]])
 				String	{count}'th match of {pat} in {expr}
 max({list})			Number	maximum value of items in {list}
 min({list})			Number	minumum value of items in {list}
+mkdir({name} [, {path} [, {prot}]])
+				Number	create directory {name}
 mode()				String	current editing mode
 nextnonblank( {lnum})		Number	line nr of non-blank line >= {lnum}
 nr2char( {expr})		String	single char with ASCII value {expr}
 prevnonblank( {lnum})		Number	line nr of non-blank line <= {lnum}
 range( {expr} [, {max} [, {stride}]])
 				List	items from {expr} to {max}
-readfile({fname} [, {binary}])	List	get list of lines from file {fname}
+readfile({fname} [, {binary} [, {max}]])
+				List	get list of lines from file {fname}
 remote_expr( {server}, {string} [, {idvar}])
 				String	send expression
 remote_foreground( {server})	Number	bring Vim server to the foreground
@@ -3099,6 +3102,19 @@ min({list})	Return the minumum value of all items in {list}.
 		be used as a Number this results in an error.
 		An empty List results in zero.
 
+							*mkdir()* *E749*
+mkdir({name} [, {path} [, {prot}]])
+		Create directory {name}.
+		If {path} is "p" then intermediate directories are created as
+		necessary.  Otherwise it must be "".
+		If {prot} is given it is used to set the protection bits of
+		the new directory.  The default is 0755 (rwxr-xr-x: r/w for
+		the user readable for others).  Use 0700 to make it unreadable
+		for others.
+		This function is not available in the |sandbox|.
+		Not available on all systems.  To check use: >
+			:if exists("*mkdir")
+<
 							*mode()*
 mode()		Return a string that indicates the current mode:
 			n	Normal
@@ -3158,7 +3174,7 @@ range({expr} [, {max} [, {stride}]])				*range()*
 			range(2, -2, -1) 	" [2, 1, 0, -1, -2]
 <
 							*readfile()*
-readfile({fname} [, {binary}])
+readfile({fname} [, {binary} [, {max}]])
 		Read file {fname} and return a List, each line of the file as
 		an item.  Lines broken at NL characters.  Macintosh files
 		separated with CR will result in a single long line (unless a
@@ -3171,9 +3187,16 @@ readfile({fname} [, {binary}])
 		- CR characters that appear before a NL are removed.
 		- Whether the last line ends in a NL or not does not matter.
 		All NUL characters are replaced with a NL character.
-		Note that the whole file is read into memory and there is no
-		recognition of encoding.  Read a file into a buffer if you
-		need to.
+		When {max} is given this specifies the maximum number of lines
+		to be read.  Useful if you only want to check the first ten
+		lines of a file: >
+			:for line in readfile(fname, '', 10)
+			:  if line =~ 'Date' | echo line | endif
+			:endfor
+<		When {max} is zero or negative the result is an empty list.
+		Note that without {max} the whole file is read into memory.
+		Also note that there is no recognition of encoding.  Read a
+		file into a buffer if you need to.
 		When the file can't be opened an error message is given and
 		the result is an empty list.
 		Also see |writefile()|.
@@ -3997,6 +4020,8 @@ extra_search		Compiled with support for |'incsearch'| and
 			|'hlsearch'|
 farsi			Compiled with Farsi support |farsi|.
 file_in_path		Compiled with support for |gf| and |<cfile>|
+filterpipe		When 'shelltemp' is off pipes are used for shell
+			read/write/filter commands
 find_in_path		Compiled with support for include file searches
 			|+find_in_path|.
 fname_case		Case in file names matters (for Amiga, MS-DOS, and
@@ -4374,7 +4399,7 @@ The file "~/vim/bufnetfuncs.vim" should then define functions that start with
 
 
 Using an autoload script ~
-
+							*autoload* *E746*
 Using a script in the "autoload" directory is simpler, but requires using
 exactly the right file name.  A function that can be autoloaded has a name
 like this: >
@@ -4404,9 +4429,24 @@ Vim will look for the file "autoload/foo/bar.vim" in 'runtimepath'.
 The name before the first colon must be at least two characters long,
 otherwise it looks like a scope, such as "s:".
 
+This also works when reading a variable that has not been set yet: >
+
+	:let l = foo:bar:lvar
+
+When assigning a value to such a variable nothing special happens.  This can
+be used to pass settings to the autoload script before it's loaded: >
+
+	:let foo:bar:toggle = 1
+	:call foo:bar:func()
+
 Note that when you make a mistake and call a function that is supposed to be
 defined in an autoload script, but the script doesn't actually define the
 function, the script will be sourced every time you try to call the function.
+And you will get an error message every time.
+
+Also note that if you have two script files, and one calls a function in the
+other and vise versa, before the used function is defined, it won't work.
+Avoid using the autoload functionality at the toplevel.
 
 ==============================================================================
 6. Curly braces names					*curly-braces-names*

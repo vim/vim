@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Feb 10
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Feb 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1745,9 +1745,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 			enables cancelling the mapping by typing <F1><Esc>.
 								*cpo-l*
 		l	Backslash in a [] range in a search pattern is taken
-			literally, only "\]" is special  See |/[]|
+			literally, only "\]", "\^", "\-" and "\\" are special.
+			See |/[]|
 			   'l' included: "/[ \t]"  finds <Space>, '\' and 't'
 			   'l' excluded: "/[ \t]"  finds <Space> and <Tab>
+			Also see |cpo-\|.
 								*cpo-L*
 		L	When the 'list' option is set, 'wrapmargin',
 			'textwidth', 'softtabstop' and Virtual Replace mode
@@ -1895,17 +1897,31 @@ A jump table for the options with a short description can be found at |Q_op|.
 	    contains	behavior	~
 			 					*cpo-#*
 		#	A count before "D", "o" and "O" has no effect.
-								*cpo-{*
-		{	The |{| and |}| commands also stop at a "{" character
-			at the start of a line.
-								*cpo-bar*
-		|	The value of the $LINES and $COLUMNS environment
-			variables overrule the terminal size values obtained
-			with system specific functions.
 								*cpo-&*
 		&	When ":preserve" was used keep the swap file when
 			exiting normally while this buffer is still loaded.
 			This flag is tested when exiting.
+								*cpo-\*
+		\	Backslash in a [] range in a search pattern is taken
+			literally, only "\]" is special  See |/[]|
+			   'l' included: "/[ \t]"  finds <Space>, '\' and 't'
+			   'l' excluded: "/[ \t]"  finds <Space> and <Tab>
+			Also see |cpo-\|.
+								*cpo-/*
+		/	When "%" is used as the replacement string in a |:s|
+			command, use the previous replacement string. |:s%|
+								*cpo-{*
+		{	The |{| and |}| commands also stop at a "{" character
+			at the start of a line.
+								*cpo-.*
+		.	The ":chdir" and ":cd" commands fail if the current
+			buffer is modified, unless ! is used.  Vim doesn't
+			need this, since it remembers the full path of an
+			opened file.
+								*cpo-bar*
+		|	The value of the $LINES and $COLUMNS environment
+			variables overrule the terminal size values obtained
+			with system specific functions.
 
 
 						*'cscopepathcomp'* *'cspc'*
@@ -1972,6 +1988,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When set to "msg", error messages that would otherwise be omitted will
 	be given anyway.  This is useful when debugging 'foldexpr' or
 	'indentexpr'.
+	When set to "beep", a message will be given when otherwise only a beep
+	would be produced.
+	The values can be combined, separated by a comma.
 
 						*'define'* *'def'*
 'define' 'def'		string	(default "^\s*#\s*define")
@@ -4708,6 +4727,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 	List of items that control the format of the output of |:hardcopy|.
 	See |popt-option|.
 
+						*'prompt'* *'noprompt'*
+'prompt'		boolean	(default on)
+			global
+	When on a ":" prompt is used in Ex mode.
+
 						*'quoteescape'* *'qe'*
 'quoteescape' 'qe'	string	(default "\")
 			local to buffer
@@ -5239,6 +5263,22 @@ A jump table for the options with a short description can be found at |Q_op|.
 	separator.  To test if this is so use: >
 		if exists('+shellslash')
 <
+			*'shelltemp'* *'stmp'* *'noshelltemp'* *'nostmp'*
+'shelltemp' 'stmp'	boolean	(Vi default off, Vim default on)
+			global
+			{not in Vi}
+	When on, use temp files for shell commands.  When off use a pipe.
+	When using a pipe is not possible temp files are used anyway.
+	Currently a pipe is only supported on Unix.  You can check it with: >
+		:if has("filterpipe")
+<	The advantage of using a pipe is that nobody can read the temp file
+	and the 'shell' command does not need to support redirection.
+	The advantage of using a temp file is that the file type and encoding
+	can be detected.
+	The |FilterReadPre|, |FilterReadPost| and |FilterWritePre|,
+	|FilterWritePost| autocommands event are not triggered when
+	'shelltemp' is off.
+
 						*'shelltype'* *'st'*
 'shelltype' 'st'	number	(default 0)
 			global
@@ -5288,7 +5328,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|'cindent'|, |>>|, |<<|, etc.
 
 						*'shortmess'* *'shm'*
-'shortmess' 'shm'	string	(Vim default "filnxtToO", Vi default: "")
+'shortmess' 'shm'	string	(Vim default "filnxtToO", Vi default: "",
+							POSIX default: "A")
 			global
 			{not in Vi}
 	This option helps to avoid all the |hit-enter| prompts caused by file

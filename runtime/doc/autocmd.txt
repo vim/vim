@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.0aa.  Last change: 2005 Feb 07
+*autocmd.txt*   For Vim version 7.0aa.  Last change: 2005 Feb 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -204,10 +204,12 @@ FilterReadPre			Before reading a file from a filter command.
 				the current buffer, not the name of the
 				temporary file that is the output of the
 				filter command.
+				Not triggered when 'shelltemp' is off.
 							*FilterReadPost*
 FilterReadPost			After reading a file from a filter command.
 				Vim checks the pattern against the name of
 				the current buffer as with FilterReadPre.
+				Not triggered when 'shelltemp' is off.
 							*FileType*
 FileType			When the 'filetype' option has been set.
 				<afile> can be used for the name of the file
@@ -270,11 +272,13 @@ FilterWritePre			Before writing a file for a filter command or
 				the current buffer, not the name of the
 				temporary file that is the output of the
 				filter command.
+				Not triggered when 'shelltemp' is off.
 							*FilterWritePost*
 FilterWritePost			After writing a file for a filter command or
 				making a diff.
 				Vim checks the pattern against the name of
 				the current buffer as with FilterWritePre.
+				Not triggered when 'shelltemp' is off.
 							*FileChangedShell*
 FileChangedShell		When Vim notices that the modification time of
 				a file has changed since editing started.

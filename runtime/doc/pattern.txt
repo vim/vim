@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 7.0aa.  Last change: 2005 Jan 26
+*pattern.txt*   For Vim version 7.0aa.  Last change: 2005 Feb 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -522,11 +522,6 @@ An atom can be followed by an indication of how many times the atom can be
 matched and in what way.  This is called a multi.  See |/multi| for an
 overview.
 
-It is not possible to use a multi that can match more than one time after an
-atom that can match an empty string.  That's because this could result in an
-endless loop.  If you try it, you will get this error message: >
-	*, \+ or \{ operand could be empty
-<
 						*/star* */\star* *E56*
 *	(use \* when 'magic' is not set)
 	Matches 0 or more of the preceding atom, as many as possible.
@@ -577,7 +572,7 @@ endless loop.  If you try it, you will get this error message: >
 \{-}	matches 0 or more of the preceding atom, as few as possible
 	{Vi does not have any of these}
 
-	n and m are positive decimal numbers
+	n and m are positive decimal numbers or zero
 
 	If a "-" appears immediately after the "{", then a shortest match
 	first algorithm is used (see example below).  In particular, "\{-}" is
@@ -982,6 +977,17 @@ x	A single character, with no special meaning, matches itself
 	  a list of at least one character, each of which is either '-', '.',
 	  '/', alphabetic, numeric, '_' or '~'.
 	  These items only work for 8-bit characters.
+							*/[[=* *[==]*
+	- An equivalence class.  This means that characters are matched that
+	  have almost the same meaning, e.g., when ignoring accents.  The form
+	  is:
+	  	[=a=]
+	  Currrently this is only implemented for latin1.  Also works for the
+	  latin1 characters in utf-8 and latin9.
+							*/[[.* *[..]*
+	- A collation element.  This currently simply accepts a single
+	  character in the form:
+	  	[.a.]
 							  */\]*
 	- To include a literal ']', '^', '-' or '\' in the collection, put a
 	  backslash before it: "[xyz\]]", "[\^xyz]", "[xy\-z]" and "[xyz\\]".

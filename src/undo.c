@@ -41,11 +41,14 @@
  * curbuf->b_u_curhead points to the header of the last undo (the next redo),
  * or is NULL if nothing has been undone.
  *
- * All data is allocated with u_alloc_line(), thus it will be freed as soon as
- * we switch files!
+ * All data is allocated with U_ALLOC_LINE(), it will be freed as soon as the
+ * buffer is unloaded.
  */
 
 #include "vim.h"
+
+/* See below: use malloc()/free() for memory management. */
+#define U_USE_MALLOC 1
 
 static u_entry_T *u_get_headentry __ARGS((void));
 static void u_getbot __ARGS((void));
@@ -53,12 +56,18 @@ static int u_savecommon __ARGS((linenr_T, linenr_T, linenr_T));
 static void u_doit __ARGS((int count));
 static void u_undoredo __ARGS((void));
 static void u_undo_end __ARGS((void));
-static void u_freelist __ARGS((struct u_header *));
+static void u_freelist __ARGS((buf_T *buf, struct u_header *));
 static void u_freeentry __ARGS((u_entry_T *, long));
 
-static char_u *u_blockalloc __ARGS((long_u));
-static void u_free_line __ARGS((char_u *, int keep));
-static char_u *u_alloc_line __ARGS((unsigned));
+#ifdef U_USE_MALLOC
+# define U_FREE_LINE(ptr) vim_free(ptr)
+# define U_ALLOC_LINE(size) lalloc((long_u)((size) + 1), FALSE)
+#else
+static void u_free_line __ARGS((char_u *ptr, int keep));
+static char_u *u_alloc_line __ARGS((unsigned size));
+# define U_FREE_LINE(ptr) u_free_line((ptr), FALSE)
+# define U_ALLOC_LINE(size) u_alloc_line(size)
+#endif
 static char_u *u_save_line __ARGS((linenr_T));
 
 static long	u_newcount, u_oldcount;
@@ -227,13 +236,13 @@ u_savecommon(top, bot, newbot)
 	 * including curbuf->b_u_curhead
 	 */
 	while (curbuf->b_u_curhead != NULL)
-	    u_freelist(curbuf->b_u_newhead);
+	    u_freelist(curbuf, curbuf->b_u_newhead);
 
 	/*
 	 * free headers to keep the size right
 	 */
 	while (curbuf->b_u_numhead > p_ul && curbuf->b_u_oldhead != NULL)
-	    u_freelist(curbuf->b_u_oldhead);
+	    u_freelist(curbuf, curbuf->b_u_oldhead);
 
 	if (p_ul < 0)		/* no undo at all */
 	{
@@ -244,7 +253,7 @@ u_savecommon(top, bot, newbot)
 	/*
 	 * make a new header entry
 	 */
-	uhp = (struct u_header *)u_alloc_line((unsigned)
+	uhp = (struct u_header *)U_ALLOC_LINE((unsigned)
 						     sizeof(struct u_header));
 	if (uhp == NULL)
 	    goto nomem;
@@ -364,7 +373,7 @@ u_savecommon(top, bot, newbot)
     /*
      * add lines in front of entry list
      */
-    uep = (u_entry_T *)u_alloc_line((unsigned)sizeof(u_entry_T));
+    uep = (u_entry_T *)U_ALLOC_LINE((unsigned)sizeof(u_entry_T));
     if (uep == NULL)
 	goto nomem;
 
@@ -384,9 +393,9 @@ u_savecommon(top, bot, newbot)
 	curbuf->b_u_newhead->uh_getbot_entry = uep;
     }
 
-    if (size)
+    if (size > 0)
     {
-	if ((uep->ue_array = (char_u **)u_alloc_line(
+	if ((uep->ue_array = (char_u **)U_ALLOC_LINE(
 				(unsigned)(sizeof(char_u *) * size))) == NULL)
 	{
 	    u_freeentry(uep, 0L);
@@ -609,9 +618,9 @@ u_undoredo()
 	empty_buffer = FALSE;
 
 	/* delete the lines between top and bot and save them in newarray */
-	if (oldsize)
+	if (oldsize > 0)
 	{
-	    if ((newarray = (char_u **)u_alloc_line(
+	    if ((newarray = (char_u **)U_ALLOC_LINE(
 			    (unsigned)(sizeof(char_u *) * oldsize))) == NULL)
 	    {
 		do_outofmem_msg((long_u)(sizeof(char_u *) * oldsize));
@@ -654,9 +663,9 @@ u_undoredo()
 		    ml_replace((linenr_T)1, uep->ue_array[i], TRUE);
 		else
 		    ml_append(lnum, uep->ue_array[i], (colnr_T)0, FALSE);
-		u_free_line(uep->ue_array[i], FALSE);
+		U_FREE_LINE(uep->ue_array[i]);
 	    }
-	    u_free_line((char_u *)uep->ue_array, FALSE);
+	    U_FREE_LINE((char_u *)uep->ue_array);
 	}
 
 	/* adjust marks */
@@ -870,7 +879,8 @@ u_getbot()
  * u_freelist: free one entry list and adjust the pointers
  */
     static void
-u_freelist(uhp)
+u_freelist(buf, uhp)
+    buf_T	    *buf;
     struct u_header *uhp;
 {
     u_entry_T	*uep, *nuep;
@@ -881,21 +891,21 @@ u_freelist(uhp)
 	u_freeentry(uep, uep->ue_size);
     }
 
-    if (curbuf->b_u_curhead == uhp)
-	curbuf->b_u_curhead = NULL;
+    if (buf->b_u_curhead == uhp)
+	buf->b_u_curhead = NULL;
 
     if (uhp->uh_next == NULL)
-	curbuf->b_u_oldhead = uhp->uh_prev;
+	buf->b_u_oldhead = uhp->uh_prev;
     else
 	uhp->uh_next->uh_prev = uhp->uh_prev;
 
     if (uhp->uh_prev == NULL)
-	curbuf->b_u_newhead = uhp->uh_next;
+	buf->b_u_newhead = uhp->uh_next;
     else
 	uhp->uh_prev->uh_next = uhp->uh_next;
 
-    u_free_line((char_u *)uhp, FALSE);
-    --curbuf->b_u_numhead;
+    U_FREE_LINE((char_u *)uhp);
+    --buf->b_u_numhead;
 }
 
 /*
@@ -907,8 +917,8 @@ u_freeentry(uep, n)
     long	    n;
 {
     while (n)
-	u_free_line(uep->ue_array[--n], FALSE);
-    u_free_line((char_u *)uep, FALSE);
+	U_FREE_LINE(uep->ue_array[--n]);
+    U_FREE_LINE((char_u *)uep);
 }
 
 /*
@@ -955,7 +965,7 @@ u_clearline()
 {
     if (curbuf->b_u_line_ptr != NULL)
     {
-	u_free_line(curbuf->b_u_line_ptr, FALSE);
+	U_FREE_LINE(curbuf->b_u_line_ptr);
 	curbuf->b_u_line_ptr = NULL;
 	curbuf->b_u_line_lnum = 0;
     }
@@ -993,7 +1003,7 @@ u_undoline()
     }
     ml_replace(curbuf->b_u_line_lnum, curbuf->b_u_line_ptr, TRUE);
     changed_bytes(curbuf->b_u_line_lnum, 0);
-    u_free_line(curbuf->b_u_line_ptr, FALSE);
+    U_FREE_LINE(curbuf->b_u_line_ptr);
     curbuf->b_u_line_ptr = oldp;
 
     t = curbuf->b_u_line_colnr;
@@ -1004,7 +1014,40 @@ u_undoline()
 }
 
 /*
- * storage allocation for the undo lines and blocks of the current file
+ * There are two implementations of the memory management for undo:
+ * 1. Use the standard malloc()/free() functions.
+ *    This should be fast for allocating memory, but when a buffer is
+ *    abandoned every single allocated chunk must be freed, which may be slow.
+ * 2. Allocate larger blocks of memory and keep track of chunks ourselves.
+ *    This is fast for abandoning, but the use of linked lists is slow for
+ *    finding a free chunk.  Esp. when a lot of lines are changed or deleted.
+ * A bit of profiling showed that the first method is faster, especially when
+ * making a large number of changes, under the condition that malloc()/free()
+ * is implemented efficiently.
+ */
+#ifdef U_USE_MALLOC
+/*
+ * Version of undo memory allocation using malloc()/free()
+ *
+ * U_FREE_LINE() and U_ALLOC_LINE() are macros that invoke vim_free() and
+ * lalloc() directly.
+ */
+
+/*
+ * Free all allocated memory blocks for the buffer 'buf'.
+ */
+    void
+u_blockfree(buf)
+    buf_T	*buf;
+{
+    while (buf->b_u_newhead != NULL)
+	u_freelist(buf, buf->b_u_newhead);
+}
+
+#else
+/*
+ * Storage allocation for the undo lines and blocks of the current file.
+ * Version where Vim keeps track of the available memory.
  */
 
 /*
@@ -1071,6 +1114,8 @@ u_undoline()
 # define M_OFFSET (sizeof(short_u))
 #endif
 
+static char_u *u_blockalloc __ARGS((long_u));
+
 /*
  * Allocate a block of memory and link it in the allocated block list.
  */
@@ -1092,6 +1137,7 @@ u_blockalloc(size)
 	    ;
 	p->mb_next = next;		/* link in block list */
 	p->mb_size = size;
+	p->mb_maxsize = 0;		/* nothing free yet */
 	mp->mb_next = p;
 	p->mb_info.m_next = NULL;	/* clear free list */
 	p->mb_info.m_size = 0;
@@ -1135,6 +1181,7 @@ u_free_line(ptr, keep)
     minfo_T	*mp;
     mblock_T	*nextb;
     mblock_T	*prevb;
+    long_u	maxsize;
 
     if (ptr == NULL || ptr == IObuff)
 	return;	/* illegal address can happen in out-of-memory situations */
@@ -1212,11 +1259,13 @@ u_free_line(ptr, keep)
     }
     else
 	mp->m_next = next;
+    maxsize = mp->m_size;
 
     /* if *curr and *mp are concatenated, join them */
     if (prev != NULL && (char_u *)curr + curr->m_size == (char_u *)mp)
     {
 	curr->m_size += mp->m_size;
+	maxsize = curr->m_size;
 	curr->m_next = mp->m_next;
 	curbuf->b_m_search = prev;
     }
@@ -1244,6 +1293,8 @@ u_free_line(ptr, keep)
 	curbuf->b_mb_current = NULL;
 	curbuf->b_m_search = NULL;
     }
+    else if (curbuf->b_mb_current->mb_maxsize < maxsize)
+	curbuf->b_mb_current->mb_maxsize = maxsize;
 }
 
 /*
@@ -1282,47 +1333,55 @@ u_alloc_line(size)
 	curbuf->b_m_search = &(curbuf->b_block_head.mb_info);
     }
 
-    /* search for space in free list */
-    mprev = curbuf->b_m_search;
+    /* Search for a block with enough space. */
     mbp = curbuf->b_mb_current;
-    mp = curbuf->b_m_search->m_next;
-    if (mp == NULL)
+    while (mbp->mb_maxsize < size_align)
     {
-	if (mbp->mb_next)
+	if (mbp->mb_next != NULL)
 	    mbp = mbp->mb_next;
 	else
 	    mbp = &curbuf->b_block_head;
-	mp = curbuf->b_m_search = &(mbp->mb_info);
-    }
-    while (mp->m_size < size)
-    {
-	if (mp == curbuf->b_m_search)	    /* back where we started in free
-					       chunk list */
+	if (mbp == curbuf->b_mb_current)
 	{
-	    if (mbp->mb_next)
-		mbp = mbp->mb_next;
-	    else
-		mbp = &curbuf->b_block_head;
-	    mp = curbuf->b_m_search = &(mbp->mb_info);
-	    if (mbp == curbuf->b_mb_current)	/* back where we started in
-						   block list */
-	    {
-		int	n = (size_align > (MEMBLOCKSIZE / 4)
-						 ? size_align : MEMBLOCKSIZE);
+	    int	n = (size_align > (MEMBLOCKSIZE / 4)
+					     ? size_align : MEMBLOCKSIZE);
 
-		mp = (minfo_T *)u_blockalloc((long_u)n);
-		if (mp == NULL)
-		    return (NULL);
-		mp->m_size = n;
-		u_free_line((char_u *)mp + M_OFFSET, TRUE);
-		mp = curbuf->b_m_search;
-		mbp = curbuf->b_mb_current;
-	    }
+	    /* Back where we started in block list: need to add a new block
+	     * with enough space. */
+	    mp = (minfo_T *)u_blockalloc((long_u)n);
+	    if (mp == NULL)
+		return (NULL);
+	    mp->m_size = n;
+	    u_free_line((char_u *)mp + M_OFFSET, TRUE);
+	    mbp = curbuf->b_mb_current;
+	    break;
+	}
+    }
+    if (mbp != curbuf->b_mb_current)
+	curbuf->b_m_search = &(mbp->mb_info);
+
+    /* In this block find a chunk with enough space. */
+    mprev = curbuf->b_m_search;
+    mp = curbuf->b_m_search->m_next;
+    while (1)
+    {
+	if (mp == NULL)			    /* at end of the list */
+	    mp = &(mbp->mb_info);	    /* wrap around to begin */
+	if (mp->m_size >= size)
+	    break;
+	if (mp == curbuf->b_m_search)
+	{
+	    /* back where we started in free chunk list: "cannot happen" */
+	    EMSG2(_(e_intern2), "u_alloc_line()");
+	    return NULL;
 	}
 	mprev = mp;
-	if ((mp = mp->m_next) == NULL)	    /* at end of the list */
-	    mp = &(mbp->mb_info);	    /* wrap around to begin */
+	mp = mp->m_next;
     }
+
+    /* when using the largest chunk adjust mb_maxsize */
+    if (mp->m_size >= mbp->mb_maxsize)
+	mbp->mb_maxsize = 0;
 
     /* if the chunk we found is large enough, split it up in two */
     if ((long)mp->m_size - size_align >= (long)(sizeof(minfo_T) + 1))
@@ -1340,11 +1399,18 @@ u_alloc_line(size)
     curbuf->b_m_search = mprev;
     curbuf->b_mb_current = mbp;
 
+    /* If using the largest chunk need to find the new largest chunk */
+    if (mbp->mb_maxsize == 0)
+	for (mp2 = &(mbp->mb_info); mp2 != NULL; mp2 = mp2->m_next)
+	    if (mbp->mb_maxsize < mp2->m_size)
+		mbp->mb_maxsize = mp2->m_size;
+
     mp = (minfo_T *)((char_u *)mp + M_OFFSET);
     *(char_u *)mp = NUL;		    /* set the first byte to NUL */
 
     return ((char_u *)mp);
 }
+#endif
 
 /*
  * u_save_line(): allocate memory with u_alloc_line() and copy line 'lnum'
@@ -1360,7 +1426,7 @@ u_save_line(lnum)
 
     src = ml_get(lnum);
     len = (unsigned)STRLEN(src);
-    if ((dst = u_alloc_line(len)) != NULL)
+    if ((dst = U_ALLOC_LINE(len)) != NULL)
 	mch_memmove(dst, src, (size_t)(len + 1));
     return (dst);
 }

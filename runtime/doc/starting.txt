@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.0aa.  Last change: 2005 Feb 10
+*starting.txt*  For Vim version 7.0aa.  Last change: 2005 Feb 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -263,8 +263,14 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		To be used when Vim is used to execute Ex commands from a file
 		instead of a terminal.  Switches off most prompts and
 		informative messages.  Also warnings and error messages.
-		But ":print" output is displayed.  And when 'verbose' is
-		non-zero messages are printed (for debugging).
+		The output of these commands is displayed (to stdout):
+			:print
+			:list
+			:number
+			:set      to display option values.
+		When 'verbose' is non-zero messages are printed (for
+		debugging, to stderr).
+		'term' and $TERM are not used.
 		If Vim appears to be stuck try typing "qa!<Enter>".  You don't
 		get a prompt thus you can't see Vim is waiting for you to type
 		something.

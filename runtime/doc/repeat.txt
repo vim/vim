@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 7.0aa.  Last change: 2005 Jan 28
+*repeat.txt*    For Vim version 7.0aa.  Last change: 2005 Feb 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -81,6 +81,11 @@ This replaces all occurrences of "pat" with "PAT".  The same can be done with:
 	:%s/pat/PAT/g
 Which is two characters shorter!
 
+A special case is using ":visual" as a command.  This will move to a matching
+line, go to Normal mode to let you execute commands there until you use |Q| to
+return to Ex mode.  This will be repeated for each matching line.  While doing
+this you cannot use ":global".
+
 ==============================================================================
 3. Complex repeats					*complex-repeat*
 
@@ -102,7 +107,7 @@ q			Stops recording.  (Implementation note: The 'q' that
 			expression.  The result of the expression is then
 			executed.  See also |@:|.  {Vi: only named registers}
 
-							*@@*
+							*@@* *E748*
 @@			Repeat the previous @{0-9a-z":*} [count] times.
 
 :[addr]*{0-9a-z".=}						*:@* *:star*

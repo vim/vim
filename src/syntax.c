@@ -4397,8 +4397,19 @@ syn_cmd_keyword(eap, syncing)
 			add_keyword(kw, syn_id, syn_opt_arg.flags,
 						     syn_opt_arg.cont_in_list,
 						       syn_opt_arg.next_list);
-			if (p == NULL || p[1] == NUL || p[1] == ']')
+			if (p == NULL)
 			    break;
+			if (p[1] == NUL)
+			{
+			    EMSG2(_("E747: Missing ']': %s"), kw);
+			    kw = p + 2;		/* skip over the NUL */
+			    break;
+			}
+			if (p[1] == ']')
+			{
+			    kw = p + 1;		/* skip over the "]" */
+			    break;
+			}
 #ifdef FEAT_MBYTE
 			if (has_mbyte)
 			{
@@ -4418,6 +4429,8 @@ syn_cmd_keyword(eap, syncing)
 	    }
 
 	    vim_free(keyword_copy);
+	    vim_free(syn_opt_arg.cont_in_list);
+	    vim_free(syn_opt_arg.next_list);
 	}
     }
 
@@ -4426,8 +4439,6 @@ syn_cmd_keyword(eap, syncing)
     else
 	EMSG2(_(e_invarg2), arg);
 
-    vim_free(syn_opt_arg.cont_in_list);
-    vim_free(syn_opt_arg.next_list);
     redraw_curbuf_later(NOT_VALID);
     syn_stack_free_all(curbuf);		/* Need to recompute all syntax. */
 }

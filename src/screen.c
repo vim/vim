@@ -6847,18 +6847,6 @@ screen_start()
 }
 
 /*
- * Note that the cursor has gone down to the next line, column 0.
- * Used for Ex mode.
- */
-    void
-screen_down()
-{
-    screen_cur_col = 0;
-    if (screen_cur_row < Rows - 1)
-	++screen_cur_row;
-}
-
-/*
  * Move the cursor to position "row","col" in the screen.
  * This tries to find the most efficient way to move, minimizing the number of
  * characters sent to the terminal.

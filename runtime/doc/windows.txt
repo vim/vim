@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 7.0aa.  Last change: 2005 Jan 26
+*windows.txt*   For Vim version 7.0aa.  Last change: 2005 Feb 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -587,7 +587,7 @@ can also get to them with the buffer list commands, like ":bnext".
 		not split.  Also see |++opt| and |+cmd|.
 
 						*:sfir* *:sfirst*
-:sfir[st [++opt] [+cmd]
+:sfir[st] [++opt] [+cmd]
 		Same as ":srewind".
 
 						*:sla* *:slast*

@@ -1723,8 +1723,8 @@ static struct vimoption
 #endif
 			    },
     {"prompt",	    NULL,   P_BOOL|P_VI_DEF,
-			    (char_u *)NULL, PV_NONE,
-			    {(char_u *)FALSE, (char_u *)0L}},
+			    (char_u *)&p_prompt, PV_NONE,
+			    {(char_u *)TRUE, (char_u *)0L}},
     {"quoteescape", "qe",   P_STRING|P_ALLOCED|P_VI_DEF,
 #ifdef FEAT_TEXTOBJ
 			    (char_u *)&p_qe, PV_QE,
@@ -1922,6 +1922,9 @@ static struct vimoption
 			    (char_u *)NULL, PV_NONE,
 #endif
 			    {(char_u *)FALSE, (char_u *)0L}},
+    {"shelltemp",   "stmp", P_BOOL,
+			    (char_u *)&p_stmp, PV_NONE,
+			    {(char_u *)FALSE, (char_u *)TRUE}},
     {"shelltype",   "st",   P_NUM|P_VI_DEF,
 #ifdef AMIGA
 			    (char_u *)&p_st, PV_NONE,
@@ -2501,7 +2504,7 @@ static char *(p_bsdir_values[]) = {"current", "last", "buffer", NULL};
 static char *(p_scbopt_values[]) = {"ver", "hor", "jump", NULL};
 #endif
 static char *(p_swb_values[]) = {"useopen", "split", NULL};
-static char *(p_debug_values[]) = {"msg", NULL};
+static char *(p_debug_values[]) = {"msg", "beep", NULL};
 #ifdef FEAT_VERTSPLIT
 static char *(p_ead_values[]) = {"both", "ver", "hor", NULL};
 #endif
@@ -2593,7 +2596,10 @@ set_init_1()
 
     /* Use POSIX compatibility when $VIM_POSIX is set. */
     if (mch_getenv((char_u *)"VIM_POSIX") != NULL)
+    {
 	set_string_default("cpo", (char_u *)CPO_ALL);
+	set_string_default("shm", (char_u *)"A");
+    }
 
     /*
      * Find default value for 'shell' option.
@@ -2885,6 +2891,23 @@ set_init_1()
 	    vim_setenv("LANG", buf);
 	}
     }
+# else
+#  ifdef MACOS
+    if (mch_getenv((char_u *)"LANG") == NULL)
+    {
+	char	buf[20];
+	if (LocaleRefGetPartString(NULL,
+		    kLocaleLanguageMask | kLocaleLanguageVariantMask |
+		    kLocaleRegionMask | kLocaleRegionVariantMask,
+		    sizeof buf, buf) == noErr && *buf)
+	{
+	    vim_setenv("LANG", buf);
+#   ifdef HAVE_LOCALE_H
+	    setlocale(LC_ALL, "");
+#   endif
+	}
+    }
+#  endif
 # endif
 
     /* enc_locale() will try to find the encoding of the current locale. */
@@ -3093,6 +3116,9 @@ set_init_2()
      * wrong when the window height changes.
      */
     set_number_default("scroll", (long_u)Rows >> 1);
+    idx = findoption((char_u *)"scroll");
+    if (!(options[idx].flags & P_WAS_SET))
+	set_option_default(idx, OPT_LOCAL, p_cp);
     comp_col();
 
     /*
@@ -3423,7 +3449,8 @@ do_set(arg, opt_flags)
     if (*arg == NUL)
     {
 	showoptions(0, opt_flags);
-	return OK;
+	did_show = TRUE;
+	goto theend;
     }
 
     while (*arg != NUL)		/* loop to process all options */
@@ -3446,12 +3473,16 @@ do_set(arg, opt_flags)
 		set_options_default(OPT_FREE | opt_flags);
 	    }
 	    else
+	    {
 		showoptions(1, opt_flags);
+		did_show = TRUE;
+	    }
 	}
 	else if (STRNCMP(arg, "termcap", 7) == 0 && !(opt_flags & OPT_MODELINE))
 	{
 	    showoptions(2, opt_flags);
 	    show_termcodes();
+	    did_show = TRUE;
 	    arg += 7;
 	}
 	else
@@ -4185,6 +4216,19 @@ skip:
 	}
 
 	arg = skipwhite(arg);
+    }
+
+theend:
+    if (silent_mode && did_show)
+    {
+	/* After displaying option values in silent mode. */
+	silent_mode = FALSE;
+	info_message = TRUE;	/* use mch_msg(), not mch_errmsg() */
+	msg_putchar('\n');
+	cursor_on();		/* msg_start() switches it off */
+	out_flush();
+	silent_mode = TRUE;
+	info_message = FALSE;	/* use mch_msg(), not mch_errmsg() */
     }
 
     return OK;
@@ -7547,7 +7591,11 @@ showoneopt(p, opt_flags)
     struct vimoption	*p;
     int			opt_flags;	/* OPT_LOCAL or OPT_GLOBAL */
 {
-    char_u		*varp;
+    char_u	*varp;
+    int		save_silent = silent_mode;
+
+    silent_mode = FALSE;
+    info_message = TRUE;	/* use mch_msg(), not mch_errmsg() */
 
     varp = get_varp_scope(p, opt_flags);
 
@@ -7567,6 +7615,9 @@ showoneopt(p, opt_flags)
 	option_value2string(p, opt_flags);
 	msg_outtrans(NameBuff);
     }
+
+    silent_mode = save_silent;
+    info_message = FALSE;
 }
 
 /*

@@ -91,6 +91,19 @@ static    OSType	_ftype = 'TEXT';
 static EventHandlerUPP mouseWheelHandlerUPP = NULL;
 #endif
 
+#if defined(USE_CARBONIZED) && defined(FEAT_MBYTE)
+# define USE_CARBONKEYHANDLER
+static EventHandlerUPP keyEventHandlerUPP = NULL;
+/* Defined in os_mac_conv.c */
+extern char_u *mac_utf16_to_enc __ARGS((UniChar *from, size_t fromLen, size_t *actualLen));
+extern UniChar *mac_enc_to_utf16 __ARGS((char_u *from, size_t fromLen, size_t *actualLen));
+extern CFStringRef mac_enc_to_cfstring __ARGS((char_u *from, size_t fromLen));
+#endif
+
+#ifdef MACOS_X
+SInt32 gMacSystemVersion;
+#endif
+
 /* Debugging feature: start Vim window OFFSETed */
 #undef USE_OFFSETED_WINDOW
 
@@ -211,6 +224,12 @@ static struct
     FMFontStyle style;
     Boolean isPanelVisible;
 } gFontPanelInfo = { 0, 0, 0, false };
+#endif
+
+#if defined(USE_CARBONIZED) && defined(FEAT_MBYTE)
+# define USE_ATSUI_DRAWING
+ATSUStyle   gFontStyle;
+Boolean	    gIsFontFallbackSet;
 #endif
 
 /*
@@ -503,6 +522,63 @@ points_to_pixels(char_u *str, char_u **end, int vertical)
     *end = str;
     return pixels;
 }
+
+#if defined(USE_CARBONIZED) && defined(FEAT_MBYTE)
+/*
+ * Deletes all traces of any Windows-style mnemonic text (including any
+ * parentheses) from a menu item and returns the cleaned menu item title.
+ * The caller is responsible for releasing the returned string.
+ */
+    static CFStringRef
+menu_title_removing_mnemonic(menu)
+    vimmenu_T	*menu;
+{
+    CFStringRef		name;
+    size_t		menuTitleLen;
+    CFIndex		displayLen;
+    CFRange		mnemonicStart;
+    CFRange		mnemonicEnd;
+    CFMutableStringRef	cleanedName;
+
+    menuTitleLen = STRLEN(menu->dname);
+    name = mac_enc_to_cfstring(menu->dname, menuTitleLen);
+
+    if (name)
+    {
+	/* Simple mnemonic-removal algorithm, assumes single parenthesized
+	 * mnemonic character towards the end of the menu text */
+	mnemonicStart = CFStringFind(name, CFSTR("("), kCFCompareBackwards);
+	displayLen = CFStringGetLength(name);
+
+	if (mnemonicStart.location != kCFNotFound
+		&& (mnemonicStart.location + 2) < displayLen
+		&& CFStringGetCharacterAtIndex(name,
+		       mnemonicStart.location + 1) == (UniChar)menu->mnemonic)
+	{
+	    if (CFStringFindWithOptions(name, CFSTR(")"),
+			CFRangeMake(mnemonicStart.location + 1,
+			    displayLen - mnemonicStart.location - 1),
+			kCFCompareBackwards, &mnemonicEnd) &&
+		    (mnemonicStart.location + 2) == mnemonicEnd.location)
+	    {
+		cleanedName = CFStringCreateMutableCopy(NULL, 0, name);
+		if (cleanedName)
+		{
+		    CFStringDelete(cleanedName,
+			    CFRangeMake(mnemonicStart.location,
+				mnemonicEnd.location + 1 -
+				mnemonicStart.location));
+
+		    CFRelease(name);
+		    name = cleanedName;
+		}
+	    }
+	}
+    }
+
+    return name;
+}
+#endif
 
 /*
  * Convert a list of FSSpec aliases into a list of fullpathname
@@ -1231,20 +1307,19 @@ HandleODocAE(const AppleEvent *theAEvent, AppleEvent *theReply, long refCon)
     /* Select the text if possible */
     if (gotPosition)
     {
-        VIsual_active = TRUE;
-        VIsual_select = FALSE;
-        if (thePosition.lineNum < 0)
+	VIsual_active = TRUE;
+	VIsual_select = FALSE;
+	VIsual = curwin->w_cursor;
+	if (thePosition.lineNum < 0)
 	{
-            VIsual_mode = 'v';
-            VIsual = curwin->w_cursor;
-            goto_byte(thePosition.endRange);
-        }
-        else
+	    VIsual_mode = 'v';
+	    goto_byte(thePosition.endRange);
+	}
+	else
 	{
-            VIsual_mode = 'V';
-            VIsual = curwin->w_cursor;
-            VIsual.col = 0;
-        }
+	    VIsual_mode = 'V';
+	    VIsual.col = 0;
+	}
     }
 #endif
     setcursor();
@@ -1541,25 +1616,47 @@ InstallFontPanelHandler()
  * Fill the buffer pointed to by outName with the name and size
  * of the font currently selected in the Font Panel.
  */
+#define FONT_STYLE_BUFFER_SIZE 32
     static void
 GetFontPanelSelection(char_u* outName)
 {
-    Str255 buf;
-    Boolean isBold = false, isItalic = false;
+    Str255	    buf;
+    ByteCount	    fontNameLen = 0;
+    ATSUFontID	    fid;
+    char_u	    styleString[FONT_STYLE_BUFFER_SIZE];
 
     if (!outName)
 	return;
 
-    (void)FMGetFontFamilyName(gFontPanelInfo.family, buf);
-    p2cstrcpy(outName, buf);
+    if (FMGetFontFamilyName(gFontPanelInfo.family, buf) == noErr)
+    {
+	/* Canonicalize localized font names */
+	if (FMGetFontFromFontFamilyInstance(gFontPanelInfo.family,
+		    gFontPanelInfo.style, &fid, NULL) != noErr)
+	    return;
 
-#if 0 /* TODO: enable when styles are supported in gui_mac_find_font() */
-    isBold = (gFontPanelInfo.style & bold);
-    isItalic = (gFontPanelInfo.style & italic);
-#endif
+	/* Request font name with Mac encoding (otherwise we could
+	 * get an unwanted utf-16 name) */
+	if (ATSUFindFontName(fid, kFontFullName, kFontMacintoshPlatform,
+		    kFontNoScriptCode, kFontNoLanguageCode,
+		    255, outName, &fontNameLen, NULL) != noErr)
+	    return;
 
-    sprintf(&outName[buf[0]], ":h%d%s%s", gFontPanelInfo.size,
-	    (isBold ? ":b" : ""), (isItalic ? ":i" : ""));
+	/* Only encode font size, because style (bold, italic, etc) is
+	 * already part of the font full name */
+	snprintf(styleString, FONT_STYLE_BUFFER_SIZE, ":h%d",
+		gFontPanelInfo.size/*,
+		((gFontPanelInfo.style & bold)!=0 ? ":b" : ""),
+		((gFontPanelInfo.style & italic)!=0 ? ":i" : ""),
+		((gFontPanelInfo.style & underline)!=0 ? ":u" : "")*/);
+
+	if ((fontNameLen + STRLEN(styleString)) < 255)
+	    STRCPY(outName + fontNameLen, styleString);
+    }
+    else
+    {
+	*outName = NULL;
+    }
 }
 #endif
 
@@ -2213,7 +2310,187 @@ gui_mac_doSuspendEvent(event)
 /*
  * Handle the key
  */
+#ifdef USE_CARBONKEYHANDLER
+# define INLINE_KEY_BUFFER_SIZE 80
+    static pascal OSStatus
+gui_mac_doKeyEventCarbon(EventHandlerCallRef nextHandler, EventRef theEvent,
+	void *data)
+{
+    /* Multibyte-friendly key event handler */
+    OSStatus	e = -1;
+    UInt32	actualSize;
+    UniChar	*text;
+    char_u	result[INLINE_KEY_BUFFER_SIZE];
+    short	len = 0;
+    UInt32	key_sym;
+    char	charcode;
+    int		key_char;
+    UInt32	modifiers;
+    size_t	encLen;
+    char_u	*to = NULL;
+    Boolean	isSpecial = FALSE;
+    int		i;
 
+    /* Mask the mouse (as per user setting) */
+    if (p_mh)
+	ObscureCursor();
+
+    do
+    {
+	if (noErr != GetEventParameter(theEvent, kEventParamTextInputSendText,
+		    typeUnicodeText, NULL, 0, &actualSize, NULL))
+	    break;
+
+	text = (UniChar *)alloc(actualSize);
+
+	if (text)
+	{
+	    do
+	    {
+		if (noErr != GetEventParameter(theEvent,
+			    kEventParamTextInputSendText,
+			    typeUnicodeText, NULL, actualSize, NULL, text))
+		    break;
+		EventRef keyEvent;
+		if (noErr != GetEventParameter(theEvent,
+			    kEventParamTextInputSendKeyboardEvent,
+			    typeEventRef, NULL, sizeof(EventRef), NULL, &keyEvent))
+		    break;
+		if (noErr != GetEventParameter(keyEvent,
+			    kEventParamKeyModifiers,
+			    typeUInt32, NULL, sizeof(UInt32), NULL, &modifiers))
+		    break;
+		if (noErr != GetEventParameter(keyEvent,
+			    kEventParamKeyCode,
+			    typeUInt32, NULL, sizeof(UInt32), NULL, &key_sym))
+		    break;
+		if (noErr != GetEventParameter(keyEvent,
+			    kEventParamKeyMacCharCodes,
+			    typeChar, NULL, sizeof(char), NULL, &charcode))
+		    break;
+
+		key_char = charcode;
+
+		if (modifiers & controlKey)
+		{
+		    if ((modifiers & ~(controlKey|shiftKey)) == 0
+			    && (key_char == '2' || key_char == '6'))
+		    {
+			/* CTRL-^ and CTRL-@ don't work in the normal way. */
+			if (key_char == '2')
+			    key_char = Ctrl_AT;
+			else
+			    key_char = Ctrl_HAT;
+
+			text[0] = (UniChar)key_char;
+			modifiers = 0;
+		    }
+		}
+
+		if (modifiers & cmdKey)
+#ifndef USE_CMD_KEY
+		    break;  /* Let system handle Cmd+... */
+#else
+		{
+		    /* Intercept CMD-. */
+		    if (key_char == '.')
+			got_int = TRUE;
+
+		    /* Convert the modifiers */
+		    modifiers = EventModifiers2VimModifiers(modifiers);
+
+		    /* Following code to simplify and consolidate modifiers
+		     * taken liberally from gui_w48.c */
+
+		    key_char = simplify_key(key_char, (int *)&modifiers);
+
+		    /* remove SHIFT for keys that are already shifted, e.g.,
+		     * '(' and '*' */
+		    if (key_char < 0x100 &&
+			    !isalpha(key_char) && isprint(key_char))
+			modifiers &= ~MOD_MASK_SHIFT;
+
+		    /* Interpret META, include SHIFT, etc. */
+		    key_char = extract_modifiers(key_char, (int *)&modifiers);
+		    if (key_char == CSI)
+			key_char = K_CSI;
+
+		    if (modifiers)
+		    {
+			result[len++] = CSI;
+			result[len++] = KS_MODIFIER;
+			result[len++] = modifiers;
+		    }
+
+		    isSpecial = TRUE;
+		}
+#endif
+		else
+		{
+		    /* Find the special key (eg., for cursor keys) */
+		    if (!(actualSize > sizeof(UniChar)) &&
+			    ((text[0] < 0x20) || (text[0] == 0x7f)))
+		    {
+			for (i = 0; special_keys[i].key_sym != (KeySym)0; ++i)
+			    if (special_keys[i].key_sym == key_sym)
+			    {
+				key_char = TO_SPECIAL(special_keys[i].vim_code0,
+					special_keys[i].vim_code1);
+				key_char = simplify_key(key_char,
+					(int *)&modifiers);
+				isSpecial = TRUE;
+				break;
+			    }
+		    }
+		}
+
+		if (isSpecial && IS_SPECIAL(key_char))
+		{
+		    result[len++] = CSI;
+		    result[len++] = K_SECOND(key_char);
+		    result[len++] = K_THIRD(key_char);
+		}
+		else
+		{
+		    encLen = actualSize;
+		    to = mac_utf16_to_enc(text, actualSize, &encLen);
+		}
+
+		if (to)
+		{
+		    /* This is basically add_to_input_buf_csi() */
+		    for (i = 0; i < encLen && len < (INLINE_KEY_BUFFER_SIZE-1); ++i)
+		    {
+			result[len++] = to[i];
+			if (to[i] == CSI)
+			{
+			    result[len++] = KS_EXTRA;
+			    result[len++] = (int)KE_CSI;
+			}
+		    }
+		    vim_free(to);
+		}
+
+		add_to_input_buf(result, len);
+		e = noErr;
+	    }
+	    while (0);
+
+	    vim_free(text);
+	    if (e == noErr)
+	    {
+		/* Fake event to wake up WNE (required to get
+		 * key repeat working */
+		PostEvent(keyUp, 0);
+		return noErr;
+	    }
+	}
+    }
+    while (0);
+
+    return CallNextEventHandler(nextHandler, theEvent);
+}
+#else
     void
 gui_mac_doKeyEvent(EventRecord *theEvent)
 {
@@ -2387,6 +2664,7 @@ gui_mac_doKeyEvent(EventRecord *theEvent)
 
     add_to_input_buf(string, len);
 }
+#endif
 
 /*
  * Handle MouseClick
@@ -2664,11 +2942,12 @@ gui_mac_handle_event(event)
     /* Handle normal event */
     switch (event->what)
     {
+#ifndef USE_CARBONKEYHANDLER
 	case (keyDown):
 	case (autoKey):
 	    gui_mac_doKeyEvent(event);
 	    break;
-
+#endif
 	case (keyUp):
 	    /* We don't care about when the key get release */
 	    break;
@@ -2747,7 +3026,27 @@ gui_mac_find_font(font_name)
     pFontName[0] = STRLEN(font_name);
     *p = c;
 
+    /* Get the font name, minus the style suffix (:h, etc) */
+#if defined(MACOS_X) && defined(USE_CARBONIZED)
+    char_u fontName[256];
+    char_u *styleStart = vim_strchr(font_name, ':');
+    size_t fontNameLen = styleStart ? styleStart - font_name : STRLEN(fontName);
+    vim_strncpy(fontName, font_name, fontNameLen);
+
+    ATSUFontID fontRef;
+    FMFontStyle fontStyle;
+    font_id = 0;
+
+    if (ATSUFindFontFromName(&pFontName[1], pFontName[0], kFontFullName,
+		kFontMacintoshPlatform, kFontNoScriptCode, kFontNoLanguageCode,
+		&fontRef) == noErr)
+    {
+	if (FMGetFontFamilyInstanceFromFont(fontRef, &font_id, &fontStyle) != noErr)
+	    font_id = 0;
+    }
+#else
     GetFNum(pFontName, &font_id);
+#endif
 
     if (font_id == 0)
     {
@@ -2767,7 +3066,17 @@ gui_mac_find_font(font_name)
 	    }
 	}
 	if (changed)
+#if defined(MACOS_X) && defined(USE_CARBONIZED)
+	    if (ATSUFindFontFromName(&pFontName[1], pFontName[0],
+			kFontFullName, kFontNoPlatformCode, kFontNoScriptCode,
+			kFontNoLanguageCode, &fontRef) == noErr)
+	    {
+		if (FMGetFontFamilyInstanceFromFont(fontRef, &font_id, &fontStyle) != noErr)
+		    font_id = 0;
+	    }
+#else
 	    GetFNum(pFontName, &font_id);
+#endif
     }
 
 #else
@@ -2782,7 +3091,12 @@ gui_mac_find_font(font_name)
     {
 	/* Oups, the system font was it the one the user want */
 
+#if defined(MACOS_X) && defined(USE_CARBONIZED)
+	if (FMGetFontFamilyName(systemFont, systemFontname) != noErr)
+	    return NOFONT;
+#else
 	GetFontName(0, systemFontname);
+#endif
 	if (!EqualString(pFontName, systemFontname, false, false))
 	    return NOFONT;
     }
@@ -3079,6 +3393,15 @@ gui_mch_init()
     EventTypeSpec   eventTypeSpec;
     EventHandlerRef mouseWheelHandlerRef;
 #endif
+#ifdef USE_CARBONKEYHANDLER
+    EventHandlerRef keyEventHandlerRef;
+#endif
+
+#ifdef MACOS_X
+    if (Gestalt(gestaltSystemVersion, &gMacSystemVersion) != noErr)
+	gMacSystemVersion = 0x1000; /* Default to minimum sensible value */
+#endif
+
 #if 1
     InitCursor();
 
@@ -3238,9 +3561,24 @@ gui_mch_init()
     }
 #endif
 
-#ifdef FEAT_MBYTE
-    set_option_value((char_u *)"termencoding", 0L, (char_u *)"macroman", 0);
+#ifdef USE_CARBONKEYHANDLER
+    eventTypeSpec.eventClass = kEventClassTextInput;
+    eventTypeSpec.eventKind = kEventUnicodeForKeyEvent;
+    keyEventHandlerUPP = NewEventHandlerUPP(gui_mac_doKeyEventCarbon);
+    if (noErr != InstallApplicationEventHandler(keyEventHandlerUPP, 1,
+		&eventTypeSpec, NULL, &keyEventHandlerRef))
+    {
+	keyEventHandlerRef = NULL;
+	DisposeEventHandlerUPP(keyEventHandlerUPP);
+	keyEventHandlerUPP = NULL;
+    }
 #endif
+
+/*
+#ifdef FEAT_MBYTE
+    set_option_value((char_u *)"encoding", 0L, (char_u *)"utf-8", 0);
+#endif
+*/
 
     /* TODO: Load bitmap if using TOOLBAR */
     return OK;
@@ -3290,9 +3628,19 @@ gui_mch_exit(int rc)
     /* TODO: find out all what is missing here? */
     DisposeRgn(cursorRgn);
 
+#ifdef USE_CARBONKEYHANDLER
+    if (keyEventHandlerUPP)
+	DisposeEventHandlerUPP(keyEventHandlerUPP);
+#endif
+
 #ifdef USE_MOUSEWHEEL
     if (mouseWheelHandlerUPP != NULL)
 	DisposeEventHandlerUPP(mouseWheelHandlerUPP);
+#endif
+
+#ifdef USE_ATSUI_DRAWING
+    if (gFontStyle)
+	ATSUDisposeStyle(gFontStyle);
 #endif
 
     /* Exit to shell? */
@@ -3466,6 +3814,14 @@ gui_mch_init_font(font_name, fontset)
     GuiFont	font;
     char_u	used_font_name[512];
 
+#ifdef USE_ATSUI_DRAWING
+    if (gFontStyle == NULL)
+    {
+	if (ATSUCreateStyle(&gFontStyle) != noErr)
+	    gFontStyle = NULL;
+    }
+#endif
+
     if (font_name == NULL)
     {
 	/* First try to get the suggested font */
@@ -3522,6 +3878,54 @@ gui_mch_init_font(font_name, fontset)
 
     TextSize(font >> 16);
     TextFont(font & 0xFFFF);
+
+#ifdef USE_ATSUI_DRAWING
+    ATSUFontID			fontID;
+    Fixed			fontSize;
+    ATSStyleRenderingOptions	fontOptions;
+
+    if (gFontStyle)
+    {
+	fontID = font & 0xFFFF;
+	fontSize = Long2Fix(font >> 16);
+
+	/* No antialiasing by default (do not attempt to touch antialising
+	 * options on pre-Jaguar) */
+	fontOptions =
+#ifdef MACOS_X
+	    (gMacSystemVersion >= 0x1020) ?
+	    kATSStyleNoAntiAliasing :
+#endif
+	    kATSStyleNoOptions;
+
+	ATSUAttributeTag attribTags[] =
+	{
+	    kATSUFontTag, kATSUSizeTag, kATSUStyleRenderingOptionsTag,
+	    kATSUMaxATSUITagValue+1
+	};
+	ByteCount attribSizes[] =
+	{
+	    sizeof(ATSUFontID), sizeof(Fixed),
+	    sizeof(ATSStyleRenderingOptions), sizeof font
+	};
+	ATSUAttributeValuePtr attribValues[] =
+	{
+	    &fontID, &fontSize, &fontOptions, &font
+	};
+
+	/* Convert font id to ATSUFontID */
+	if (FMGetFontFromFontFamilyInstance(fontID, 0, &fontID, NULL) == noErr)
+	{
+	    if (ATSUSetAttributes(gFontStyle,
+			(sizeof attribTags)/sizeof(ATSUAttributeTag),
+			attribTags, attribSizes, attribValues) != noErr)
+	    {
+		ATSUDisposeStyle(gFontStyle);
+		gFontStyle = NULL;
+	    }
+	}
+    }
+#endif
 
     GetFontInfo(&font_info);
 
@@ -3592,9 +3996,99 @@ gui_mch_get_fontname(font, name)
 gui_mch_set_font(font)
     GuiFont	font;
 {
-    /*
-     * TODO: maybe avoid set again the current font.
-     */
+#ifdef USE_ATSUI_DRAWING
+    GuiFont			currFont;
+    ByteCount			actualFontByteCount;
+    ATSUFontID			fontID;
+    Fixed			fontSize;
+    ATSStyleRenderingOptions	fontOptions;
+
+    if (gFontStyle)
+    {
+	/* Avoid setting same font again */
+	if (ATSUGetAttribute(gFontStyle, kATSUMaxATSUITagValue+1, sizeof font,
+		    &currFont, &actualFontByteCount) == noErr &&
+		actualFontByteCount == (sizeof font))
+	{
+	    if (currFont == font)
+		return;
+	}
+
+	fontID = font & 0xFFFF;
+	fontSize = Long2Fix(font >> 16);
+	/* Respect p_antialias setting only for wide font.
+	 * The reason for doing this at the moment is a bit complicated,
+	 * but it's mainly because a) latin (non-wide) aliased fonts
+	 * look bad in OS X 10.3.x and below (due to a bug in ATS), and
+	 * b) wide multibyte input does not suffer from that problem. */
+	fontOptions =
+#ifdef MACOS_X
+	    (p_antialias && (font == gui.wide_font)) ?
+	    kATSStyleNoOptions : kATSStyleNoAntiAliasing;
+#else
+	    kATSStyleNoOptions;
+#endif
+
+	ATSUAttributeTag attribTags[] =
+	{
+	    kATSUFontTag, kATSUSizeTag, kATSUStyleRenderingOptionsTag,
+	    kATSUMaxATSUITagValue+1
+	};
+	ByteCount attribSizes[] =
+	{
+	    sizeof(ATSUFontID), sizeof(Fixed),
+	    sizeof(ATSStyleRenderingOptions), sizeof font
+	};
+	ATSUAttributeValuePtr attribValues[] =
+	{
+	    &fontID, &fontSize, &fontOptions, &font
+	};
+
+	if (FMGetFontFromFontFamilyInstance(fontID, 0, &fontID, NULL) == noErr)
+	{
+	    if (ATSUSetAttributes(gFontStyle,
+			(sizeof attribTags)/sizeof(ATSUAttributeTag),
+			attribTags, attribSizes, attribValues) != noErr)
+	    {
+#ifndef NDEBUG
+		fprintf(stderr, "couldn't set font style\n");
+#endif
+		ATSUDisposeStyle(gFontStyle);
+		gFontStyle = NULL;
+	    }
+	}
+
+    }
+
+    if (!gIsFontFallbackSet)
+    {
+	/* Setup automatic font substitution. The user's guifontwide
+	 * is tried first, then the system tries other fonts. */
+/*
+	ATSUAttributeTag fallbackTags[] = { kATSULineFontFallbacksTag };
+	ByteCount fallbackSizes[] = { sizeof(ATSUFontFallbacks) };
+	ATSUCreateFontFallbacks(&gFontFallbacks);
+	ATSUSetObjFontFallbacks(gFontFallbacks, );
+*/
+	if (gui.wide_font)
+	{
+	    ATSUFontID fallbackFonts;
+	    gIsFontFallbackSet = TRUE;
+
+	    if (FMGetFontFromFontFamilyInstance(
+			(gui.wide_font & 0xFFFF),
+			0,
+			&fallbackFonts,
+			NULL) == noErr)
+	    {
+		ATSUSetFontFallbacks((sizeof fallbackFonts)/sizeof(ATSUFontID), &fallbackFonts, kATSUSequentialFallbacksPreferred);
+	    }
+/*
+	ATSUAttributeValuePtr fallbackValues[] = { };
+*/
+	}
+    }
+#endif
     TextSize(font >> 16);
     TextFont(font & 0xFFFF);
 }
@@ -3820,9 +4314,17 @@ gui_mch_draw_string(row, col, s, len, flags)
     int		flags;
 {
 #if defined(FEAT_GUI) && defined(MACOS_X)
+#ifndef USE_ATSUI_DRAWING
     SInt32	sys_version;
 #endif
+#endif
 #ifdef FEAT_MBYTE
+#ifdef USE_ATSUI_DRAWING
+    /* ATSUI requires utf-16 strings */
+    UniCharCount utf16_len;
+    UniChar *tofree = mac_enc_to_utf16(s, len, (size_t *)&utf16_len);
+    utf16_len /= sizeof(UniChar);
+#else
     char_u	*tofree = NULL;
 
     if (output_conv.vc_type != CONV_NONE)
@@ -3832,8 +4334,11 @@ gui_mch_draw_string(row, col, s, len, flags)
 	    s = tofree;
     }
 #endif
+#endif
 
 #if defined(FEAT_GUI) && defined(MACOS_X)
+    /* ATSUI automatically antialiases text */
+#ifndef USE_ATSUI_DRAWING
     /*
      * On OS X, try using Quartz-style text antialiasing.
      */
@@ -3845,8 +4350,9 @@ gui_mch_draw_string(row, col, s, len, flags)
 	/* Quartz antialiasing is available only in OS 10.2 and later. */
 	UInt32 qd_flags = (p_antialias ?
 			     kQDUseCGTextRendering | kQDUseCGTextMetrics : 0);
-	(void)SwapQDTextFlags(qd_flags);
+	QDSwapTextFlags(qd_flags);
     }
+#endif
 
     /*
      * When antialiasing we're using srcOr mode, we have to clear the block
@@ -3857,18 +4363,37 @@ gui_mch_draw_string(row, col, s, len, flags)
      * The following is like calling gui_mch_clear_block(row, col, row, col +
      * len - 1), but without setting the bg color to gui.back_pixel.
      */
+#ifdef USE_ATSUI_DRAWING
+    if ((flags & DRAW_TRANSP) == 0)
+#else
     if (((sys_version >= 0x1020 && p_antialias) || p_linespace != 0)
 	    && !(flags & DRAW_TRANSP))
+#endif
     {
 	Rect rc;
 
 	rc.left = FILL_X(col);
 	rc.top = FILL_Y(row);
+#ifdef FEAT_MBYTE
+	/* Multibyte computation taken from gui_w32.c */
+	if (has_mbyte)
+	{
+	    int cell_len = 0;
+	    int n;
+
+	    /* Compute the length in display cells. */
+	    for (n = 0; n < len; n += MB_BYTE2LEN(s[n]))
+		cell_len += (*mb_ptr2cells)(s + n);
+	    rc.right = FILL_X(col + cell_len);
+	}
+	else
+#endif
 	rc.right = FILL_X(col + len) + (col + len == Columns);
 	rc.bottom = FILL_Y(row + 1);
 	EraseRect(&rc);
     }
 
+#ifndef USE_ATSUI_DRAWING
     if (sys_version >= 0x1020 && p_antialias)
     {
 	StyleParameter face;
@@ -3888,6 +4413,7 @@ gui_mch_draw_string(row, col, s, len, flags)
     }
     else
 #endif
+#endif
     {
 	/* Use old-style, non-antialiased QuickDraw text rendering. */
 	TextMode(srcCopy);
@@ -3901,6 +4427,25 @@ gui_mch_draw_string(row, col, s, len, flags)
 	}
 
 	MoveTo(TEXT_X(col), TEXT_Y(row));
+#ifdef USE_ATSUI_DRAWING
+	ATSUTextLayout textLayout;
+
+	if (ATSUCreateTextLayoutWithTextPtr(tofree,
+		    kATSUFromTextBeginning, kATSUToTextEnd,
+		    utf16_len,
+		    (gFontStyle ? 1 : 0), &utf16_len,
+		    (gFontStyle ? &gFontStyle : NULL),
+		    &textLayout) == noErr)
+	{
+	    ATSUSetTransientFontMatching(textLayout, TRUE);
+
+	    ATSUDrawText(textLayout,
+		    kATSUFromTextBeginning, kATSUToTextEnd,
+		    kATSUUseGrafPortPenLoc, kATSUUseGrafPortPenLoc);
+
+	    ATSUDisposeTextLayout(textLayout);
+	}
+#else
 	DrawText((char *)s, 0, len);
 
 
@@ -3916,6 +4461,7 @@ gui_mch_draw_string(row, col, s, len, flags)
 	    MoveTo(FILL_X(col), FILL_Y(row + 1) - 1);
 	    LineTo(FILL_X(col + len) - 1, FILL_Y(row + 1) - 1);
 	}
+#endif
     }
 
 #ifdef FEAT_MBYTE
@@ -4021,14 +4567,16 @@ gui_mch_draw_hollow_cursor(color)
 {
     Rect rc;
 
-    gui_mch_set_fg_color(color);
-
     /*
      * Note: FrameRect() excludes right and bottom of rectangle.
      */
     rc.left = FILL_X(gui.col);
     rc.top = FILL_Y(gui.row);
     rc.right = rc.left + gui.char_width;
+#ifdef FEAT_MBYTE
+    if (mb_lefthalve(gui.row, gui.col))
+	rc.right += gui.char_width;
+#endif
     rc.bottom = rc.top + gui.char_height;
 
     gui_mch_set_fg_color(color);
@@ -4060,7 +4608,8 @@ gui_mch_draw_part_cursor(w, h, color)
 
     gui_mch_set_fg_color(color);
 
-    PaintRect(&rc);
+    FrameRect(&rc);
+//    PaintRect(&rc);
 }
 
 
@@ -4346,11 +4895,11 @@ clip_mch_request_selection(cbd)
 
     if (flavor == 0)
     {
-	error = GetScrapFlavorFlags(scrap, kScrapFlavorTypeText, &scrapFlags);
+	error = GetScrapFlavorFlags(scrap, kScrapFlavorTypeUnicode, &scrapFlags);
 	if (error != noErr)
 	    return;
 
-	error = GetScrapFlavorSize(scrap, kScrapFlavorTypeText, &scrapSize);
+	error = GetScrapFlavorSize(scrap, kScrapFlavorTypeUnicode, &scrapSize);
 	if (error != noErr)
 	    return;
     }
@@ -4374,7 +4923,7 @@ clip_mch_request_selection(cbd)
 	HLock(textOfClip);
 #ifdef USE_CARBONIZED
 	error = GetScrapFlavorData(scrap,
-		flavor ? VIMSCRAPFLAVOR : kScrapFlavorTypeText,
+		flavor ? VIMSCRAPFLAVOR : kScrapFlavorTypeUnicode,
 		&scrapSize, *textOfClip);
 #else
 	scrapSize = GetScrap(textOfClip, 'TEXT', &scrapOffset);
@@ -4387,7 +4936,11 @@ clip_mch_request_selection(cbd)
 	    type = (strchr(*textOfClip, '\r') != NULL) ? MLINE : MCHAR;
 
 	tempclip = lalloc(scrapSize + 1, TRUE);
+#if defined(FEAT_MBYTE) && defined(USE_CARBONIZED)
+	mch_memmove(tempclip, *textOfClip + flavor, scrapSize);
+#else
 	STRNCPY(tempclip, *textOfClip + flavor, scrapSize);
+#endif
 	tempclip[scrapSize] = 0;
 
 	searchCR = (char *)tempclip;
@@ -4400,19 +4953,15 @@ clip_mch_request_selection(cbd)
 
 	}
 
-#ifdef FEAT_MBYTE
-	if (input_conv.vc_type != CONV_NONE)
+#if defined(FEAT_MBYTE) && defined(USE_CARBONIZED)
+	/* Convert from utf-16 (clipboard) */
+	size_t encLen = 0;
+	char_u *to = mac_utf16_to_enc((UniChar *)tempclip, scrapSize, &encLen);
+	if (to)
 	{
-	    char_u	*to;
-	    int		l = scrapSize;
-
-	    to = string_convert(&input_conv, tempclip, &l);
-	    if (to != NULL)
-	    {
-		vim_free(tempclip);
-		tempclip = to;
-		scrapSize = l;
-	    }
+	    scrapSize = encLen;
+	    vim_free(tempclip);
+	    tempclip = to;
 	}
 #endif
 	clip_yank_selection(type, tempclip, scrapSize, cbd);
@@ -4471,19 +5020,14 @@ clip_mch_set_selection(cbd)
 
     type = clip_convert_selection(&str, (long_u *) &scrapSize, cbd);
 
-#ifdef FEAT_MBYTE
-    if (str != NULL && output_conv.vc_type != CONV_NONE)
+#if defined(FEAT_MBYTE) && defined(USE_CARBONIZED)
+    size_t utf16_len = 0;
+    UniChar *to = mac_enc_to_utf16(str, scrapSize, &utf16_len);
+    if (to)
     {
-	char_u	*to;
-	int	l = scrapSize;
-
-	to = string_convert(&output_conv, str, &l);
-	if (to != NULL)
-	{
-	    vim_free(str);
-	    str = to;
-	    scrapSize = l;
-	}
+	scrapSize = utf16_len;
+	vim_free(str);
+	str = (char_u *)to;
     }
 #endif
 
@@ -4504,9 +5048,9 @@ clip_mch_set_selection(cbd)
 
 #ifdef USE_CARBONIZED
 	**textOfClip = type;
-	STRNCPY(*textOfClip + 1, str, scrapSize);
+	mch_memmove(*textOfClip + 1, str, scrapSize);
 	GetCurrentScrap(&scrap);
-	PutScrapFlavor(scrap, kScrapFlavorTypeText, kScrapFlavorMaskNone,
+	PutScrapFlavor(scrap, kScrapFlavorTypeUnicode, kScrapFlavorMaskNone,
 		scrapSize, *textOfClip + 1);
 	PutScrapFlavor(scrap, VIMSCRAPFLAVOR, kScrapFlavorMaskNone,
 		scrapSize + 1, *textOfClip);
@@ -4599,7 +5143,11 @@ gui_mch_add_menu(menu, idx)
      */
     static long	 next_avail_id = 128;
     long	 menu_after_me = 0; /* Default to the end */
+#if defined(USE_CARBONIZED) && defined(FEAT_MBYTE)
+    CFStringRef name;
+#else
     char_u	*name;
+#endif
     short	 index;
     vimmenu_T	*parent = menu->parent;
     vimmenu_T	*brother = menu->next;
@@ -4625,13 +5173,21 @@ gui_mch_add_menu(menu, idx)
 	menu_after_me = hierMenu;
 
     /* Convert the name */
+#if defined(USE_CARBONIZED) && defined(FEAT_MBYTE)
+    name = menu_title_removing_mnemonic(menu);
+#else
     name = C2Pascal_save(menu->dname);
+#endif
     if (name == NULL)
 	return;
 
     /* Create the menu unless it's the help menu */
 #ifdef USE_HELPMENU
+#if defined(USE_CARBONIZED) && defined(FEAT_MBYTE)
+    if (menu->priority == 9999)
+#else
     if (STRNCMP(name, "\4Help", 5) == 0)
+#endif
     {
 	menu->submenu_id = kHMHelpMenuID;
 	menu->submenu_handle = gui.MacOSHelpMenu;
@@ -4644,7 +5200,12 @@ gui_mch_add_menu(menu, idx)
 	 * OSStatus SetMenuTitle(MenuRef, ConstStr255Param title);
 	 */
 	menu->submenu_id = next_avail_id;
+#if defined(USE_CARBONIZED) && defined(FEAT_MBYTE)
+	if (CreateNewMenu(menu->submenu_id, 0, (MenuRef *)&menu->submenu_handle) == noErr)
+	    SetMenuTitleWithCFString((MenuRef)menu->submenu_handle, name);
+#else
 	menu->submenu_handle = NewMenu(menu->submenu_id, name);
+#endif
 	next_avail_id++;
     }
 
@@ -4676,13 +5237,21 @@ gui_mch_add_menu(menu, idx)
 	 * to avoid special character recognition by InsertMenuItem
 	 */
 	InsertMenuItem(parent->submenu_handle, "\p ", idx); /* afterItem */
+#if defined(USE_CARBONIZED) && defined(FEAT_MBYTE)
+	SetMenuItemTextWithCFString(parent->submenu_handle, idx+1, name);
+#else
 	SetMenuItemText(parent->submenu_handle, idx+1, name);
+#endif
 	SetItemCmd(parent->submenu_handle, idx+1, 0x1B);
 	SetItemMark(parent->submenu_handle, idx+1, menu->submenu_id);
 	InsertMenu(menu->submenu_handle, hierMenu);
     }
 
+#if defined(USE_CARBONIZED) && defined(FEAT_MBYTE)
+    CFRelease(name);
+#else
     vim_free(name);
+#endif
 
 #if 0
     /* Done by Vim later on */
@@ -4698,7 +5267,11 @@ gui_mch_add_menu_item(menu, idx)
     vimmenu_T	*menu;
     int		idx;
 {
+#if defined(USE_CARBONIZED) && defined(FEAT_MBYTE)
+    CFStringRef name;
+#else
     char_u	*name;
+#endif
     vimmenu_T	*parent = menu->parent;
     int		menu_inserted;
 
@@ -4710,7 +5283,11 @@ gui_mch_add_menu_item(menu, idx)
        for older OS call GetMenuItemData (menu, item, isCommandID?, data) */
 
     /* Convert the name */
+#if defined(USE_CARBONIZED) && defined(FEAT_MBYTE)
+    name = menu_title_removing_mnemonic(menu);
+#else
     name = C2Pascal_save(menu->dname);
+#endif
 
     /* Where are just a menu item, so no handle, no id */
     menu->submenu_id = 0;
@@ -4796,15 +5373,23 @@ gui_mch_add_menu_item(menu, idx)
     if (!menu_inserted)
 	InsertMenuItem(parent->submenu_handle, "\p ", idx); /* afterItem */
     /* Set the menu item name. */
+#if defined(USE_CARBONIZED) && defined(FEAT_MBYTE)
+    SetMenuItemTextWithCFString(parent->submenu_handle, idx+1, name);
+#else
     SetMenuItemText(parent->submenu_handle, idx+1, name);
+#endif
 
 #if 0
     /* Called by Vim */
     DrawMenuBar();
 #endif
 
+#if defined(USE_CARBONIZED) && defined(FEAT_MBYTE)
+    CFRelease(name);
+#else
     /* TODO: Can name be freed? */
     vim_free(name);
+#endif
 }
 
     void
@@ -5811,17 +6396,33 @@ gui_mch_settitle(title, icon)
     /* TODO: Get vim to make sure maxlen (from p_titlelen) is smaller
      *       that 256. Even better get it to fit nicely in the titlebar.
      */
+#if defined(USE_CARBONIZED) && defined(FEAT_MBYTE)
+    CFStringRef windowTitle;
+    size_t	windowTitleLen;
+#else
     char_u   *pascalTitle;
+#endif
 
     if (title == NULL)		/* nothing to do */
 	return;
 
+#if defined(USE_CARBONIZED) && defined(FEAT_MBYTE)
+    windowTitleLen = STRLEN(title);
+    windowTitle  = mac_enc_to_cfstring(title, windowTitleLen);
+
+    if (windowTitle)
+    {
+	SetWindowTitleWithCFString(gui.VimWindow, windowTitle);
+	CFRelease(windowTitle);
+    }
+#else
     pascalTitle = C2Pascal_save(title);
     if (pascalTitle != NULL)
     {
 	SetWTitle(gui.VimWindow, pascalTitle);
 	vim_free(pascalTitle);
     }
+#endif
 }
 #endif
 

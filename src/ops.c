@@ -1105,10 +1105,20 @@ do_execreg(regname, colon, addcr)
     int		remap;
 
     if (regname == '@')			/* repeat previous one */
+    {
+	if (lastc == NUL)
+	{
+	    EMSG(_("E748: No previously used register"));
+	    return FAIL;
+	}
 	regname = lastc;
+    }
 					/* check for valid regname */
     if (regname == '%' || regname == '#' || !valid_yank_reg(regname, FALSE))
+    {
+	emsg_invreg(regname);
 	return FAIL;
+    }
     lastc = regname;
 
 #ifdef FEAT_CLIPBOARD
@@ -3597,7 +3607,13 @@ error:
 	    else
 		curbuf->b_op_end.col = 0;
 
-	    if (flags & PUT_CURSEND)
+	    if (flags & PUT_CURSLINE)
+	    {
+		/* ":put": put cursor on last inserte line */
+		curwin->w_cursor.lnum = lnum;
+		beginline(BL_WHITE | BL_FIX);
+	    }
+	    else if (flags & PUT_CURSEND)
 	    {
 		/* put cursor after inserted text */
 		if (y_type == MLINE)
@@ -3616,7 +3632,7 @@ error:
 	    }
 	    else if (y_type == MLINE)
 	    {
-		/* put cursor onfirst non-blank in first inserted line */
+		/* put cursor on first non-blank in first inserted line */
 		curwin->w_cursor.col = 0;
 		if (dir == FORWARD)
 		    ++curwin->w_cursor.lnum;
@@ -5676,7 +5692,7 @@ write_reg_contents_ex(name, str, maxlen, must_append, yank_type, block_len)
 
     if (!valid_yank_reg(name, TRUE))	    /* check for valid reg name */
     {
-	EMSG2(_("E354: Invalid register name: '%s'"), transchar(name));
+	emsg_invreg(name);
 	return;
     }
 

@@ -21,6 +21,21 @@ extern char_u *mac_string_convert __ARGS((char_u *ptr, int len, int *lenp, int f
 extern int macroman2enc __ARGS((char_u *ptr, long *sizep, long real_size));
 extern int enc2macroman __ARGS((char_u *from, size_t fromlen, char_u *to, int *tolenp, int maxtolen, char_u *rest, int *restlenp));
 
+extern void	    mac_conv_init __ARGS((void));
+extern void	    mac_conv_cleanup __ARGS((void));
+extern char_u	    *mac_utf16_to_enc __ARGS((UniChar *from, size_t fromLen, size_t *actualLen));
+extern UniChar	    *mac_enc_to_utf16 __ARGS((char_u *from, size_t fromLen, size_t *actualLen));
+extern CFStringRef  mac_enc_to_cfstring __ARGS((char_u *from, size_t fromLen));
+extern char_u	    *mac_precompose_path __ARGS((char_u *decompPath, size_t decompLen, size_t *precompLen));
+
+static char_u	    *mac_utf16_to_utf8 __ARGS((UniChar *from, size_t fromLen, size_t *actualLen));
+static UniChar	    *mac_utf8_to_utf16 __ARGS((char_u *from, size_t fromLen, size_t *actualLen));
+
+/* Converter for composing decomposed HFS+ file paths */
+static TECObjectRef gPathConverter;
+/* Converter used by mac_utf16_to_utf8 */
+static TECObjectRef gUTF16ToUTF8Converter;
+
 /*
  * A Mac version of string_convert_ext() for special cases.
  */
@@ -59,6 +74,8 @@ mac_string_convert(ptr, len, lenp, fail_on_error, from_enc, to_enc, unconvlenp)
 	*unconvlenp = 0;
     cfstr = CFStringCreateWithBytes(NULL, ptr, len, from, 0);
 
+    if(cfstr == NULL)
+	fprintf(stderr, "Encoding failed\n");
     /* When conversion failed, try excluding bytes from the end, helps when
      * there is an incomplete byte sequence.  Only do up to 6 bytes to avoid
      * looping a long time when there really is something unconvertable. */
@@ -70,6 +87,7 @@ mac_string_convert(ptr, len, lenp, fail_on_error, from_enc, to_enc, unconvlenp)
     }
     if (cfstr == NULL)
 	return NULL;
+
     if (to == kCFStringEncodingUTF8)
 	buflen = len * 6 + 1;
     else
@@ -80,6 +98,22 @@ mac_string_convert(ptr, len, lenp, fail_on_error, from_enc, to_enc, unconvlenp)
 	CFRelease(cfstr);
 	return NULL;
     }
+
+#if 0
+    CFRange convertRange = CFRangeMake(0, CFStringGetLength(cfstr));
+    /*  Determine output buffer size */
+    CFStringGetBytes(cfstr, convertRange, to, NULL, FALSE, NULL, 0, (CFIndex *)&buflen);
+    retval = (buflen > 0) ? alloc(buflen) : NULL;
+    if (retval == NULL) {
+	CFRelease(cfstr);
+	return NULL;
+    }
+
+    if (lenp)
+	*lenp = buflen / sizeof(char_u);
+
+    if (!CFStringGetBytes(cfstr, convertRange, to, NULL, FALSE, retval, buflen, NULL))
+#endif
     if (!CFStringGetCString(cfstr, retval, buflen, to))
     {
 	CFRelease(cfstr);
@@ -89,6 +123,7 @@ mac_string_convert(ptr, len, lenp, fail_on_error, from_enc, to_enc, unconvlenp)
 	    return NULL;
 	}
 
+	fprintf(stderr, "Trying char-by-char conversion...\n");
 	/* conversion failed for the whole string, but maybe it will work
 	 * for each character */
 	for (d = retval, in = 0, out = 0; in < len && out < buflen - 1;)
@@ -128,6 +163,7 @@ mac_string_convert(ptr, len, lenp, fail_on_error, from_enc, to_enc, unconvlenp)
     CFRelease(cfstr);
     if (lenp != NULL)
 	*lenp = strlen(retval);
+
     return retval;
 }
 
@@ -230,4 +266,291 @@ enc2macroman(from, fromlen, to, tolenp, maxtolen, rest, restlenp)
     return OK;
 }
 
+/*
+ * Initializes text converters
+ */
+    void
+mac_conv_init()
+{
+    TextEncoding    utf8_encoding;
+    TextEncoding    utf8_hfsplus_encoding;
+    TextEncoding    utf8_canon_encoding;
+    TextEncoding    utf16_encoding;
+
+    utf8_encoding = CreateTextEncoding(kTextEncodingUnicodeDefault,
+	    kTextEncodingDefaultVariant, kUnicodeUTF8Format);
+    utf8_hfsplus_encoding = CreateTextEncoding(kTextEncodingUnicodeDefault,
+	    kUnicodeHFSPlusCompVariant, kUnicodeUTF8Format);
+    utf8_canon_encoding = CreateTextEncoding(kTextEncodingUnicodeDefault,
+	    kUnicodeCanonicalCompVariant, kUnicodeUTF8Format);
+    utf16_encoding = CreateTextEncoding(kTextEncodingUnicodeDefault,
+	    kTextEncodingDefaultVariant, kUnicode16BitFormat);
+
+    if (TECCreateConverter(&gPathConverter, utf8_encoding,
+		utf8_hfsplus_encoding) != noErr)
+	gPathConverter = NULL;
+
+    if (TECCreateConverter(&gUTF16ToUTF8Converter, utf16_encoding,
+		utf8_canon_encoding) != noErr)
+	gUTF16ToUTF8Converter = NULL;
+}
+
+/*
+ * Destroys text converters
+ */
+    void
+mac_conv_cleanup()
+{
+    if (gUTF16ToUTF8Converter)
+    {
+	TECDisposeConverter(gUTF16ToUTF8Converter);
+	gUTF16ToUTF8Converter = NULL;
+    }
+
+    if (gPathConverter)
+    {
+	TECDisposeConverter(gPathConverter);
+	gPathConverter = NULL;
+    }
+}
+
+/*
+ * Conversion from UTF-16 UniChars to 'encoding'
+ */
+    char_u *
+mac_utf16_to_enc(from, fromLen, actualLen)
+    UniChar *from;
+    size_t fromLen;
+    size_t *actualLen;
+{
+    /* Following code borrows somewhat from os_mswin.c */
+    vimconv_T	conv;
+    size_t      utf8_len;
+    char_u      *utf8_str;
+    char_u      *result = NULL;
+
+    /* Convert to utf-8 first, works better with iconv */
+    utf8_len = 0;
+    utf8_str = mac_utf16_to_utf8(from, fromLen, &utf8_len);
+
+    if (utf8_str)
+    {
+	/* We might be called before we have p_enc set up. */
+	conv.vc_type = CONV_NONE;
+
+	/* If encoding (p_enc) is any unicode, it is actually in utf-8 (vim
+	 * internal unicode is always utf-8) so don't convert in such cases */
+
+	if ((enc_canon_props(p_enc) & ENC_UNICODE) == 0)
+	    convert_setup(&conv, (char_u *)"utf-8",
+		    p_enc? p_enc: (char_u *)"macroman");
+	if (conv.vc_type == CONV_NONE)
+	{
+	    /* p_enc is utf-8, so we're done. */
+	    result = utf8_str;
+	}
+	else
+	{
+	    result = string_convert(&conv, utf8_str, (int *)&utf8_len);
+	    vim_free(utf8_str);
+	}
+
+	convert_setup(&conv, NULL, NULL);
+
+	if (actualLen)
+	    *actualLen = utf8_len;
+    }
+    else if (actualLen)
+	*actualLen = 0;
+
+    return result;
+}
+
+/*
+ * Conversion from 'encoding' to UTF-16 UniChars
+ */
+    UniChar *
+mac_enc_to_utf16(from, fromLen, actualLen)
+    char_u *from;
+    size_t fromLen;
+    size_t *actualLen;
+{
+    /* Following code borrows somewhat from os_mswin.c */
+    vimconv_T	conv;
+    size_t      utf8_len;
+    char_u      *utf8_str;
+    UniChar     *result = NULL;
+    Boolean     should_free_utf8 = FALSE;
+
+    do
+    {
+	/* Use MacRoman by default, we might be called before we have p_enc
+	 * set up.  Convert to utf-8 first, works better with iconv().  Does
+	 * nothing if 'encoding' is "utf-8". */
+	conv.vc_type = CONV_NONE;
+	if ((enc_canon_props(p_enc) & ENC_UNICODE) == 0 &&
+		convert_setup(&conv, p_enc ? p_enc : (char_u *)"macroman",
+		    (char_u *)"utf-8") == FAIL)
+	    break;
+
+	if (conv.vc_type != CONV_NONE)
+	{
+	    utf8_len = fromLen;
+	    utf8_str = string_convert(&conv, from, (int *)&utf8_len);
+	    should_free_utf8 = TRUE;
+	}
+	else
+	{
+	    utf8_str = from;
+	    utf8_len = fromLen;
+	}
+
+	if (utf8_str == NULL)
+	    break;
+
+	convert_setup(&conv, NULL, NULL);
+
+	result = mac_utf8_to_utf16(utf8_str, utf8_len, actualLen);
+
+	if (should_free_utf8)
+	    vim_free(utf8_str);
+	return result;
+    }
+    while (0);
+
+    if (actualLen)
+	*actualLen = 0;
+
+    return result;
+}
+
+/*
+ * Converts from UTF-16 UniChars to CFString
+ */
+    CFStringRef
+mac_enc_to_cfstring(from, fromLen)
+    char_u  *from;
+    size_t  fromLen;
+{
+    UniChar	*utf16_str;
+    size_t	utf16_len;
+    CFStringRef	result = NULL;
+
+    utf16_str = mac_enc_to_utf16(from, fromLen, &utf16_len);
+    if (utf16_str)
+    {
+	result = CFStringCreateWithCharacters(NULL, utf16_str, utf16_len/sizeof(UniChar));
+	vim_free(utf16_str);
+    }
+
+    return result;
+}
+
+/*
+ * Converts a decomposed HFS+ UTF-8 path to precomposed UTF-8
+ */
+    char_u *
+mac_precompose_path(decompPath, decompLen, precompLen)
+    char_u  *decompPath;
+    size_t  decompLen;
+    size_t  *precompLen;
+{
+    char_u  *result = NULL;
+    size_t  actualLen = 0;
+
+    if (gPathConverter)
+    {
+	result = alloc(decompLen);
+	if (result)
+	{
+	    if (TECConvertText(gPathConverter, decompPath,
+			decompLen, &decompLen, result,
+			decompLen, &actualLen) != noErr)
+	    {
+		vim_free(result);
+		result = NULL;
+	    }
+	}
+    }
+
+    if (precompLen)
+	*precompLen = actualLen;
+
+    return result;
+}
+
+/*
+ * Converts from UTF-16 UniChars to precomposed UTF-8
+ */
+    char_u *
+mac_utf16_to_utf8(from, fromLen, actualLen)
+    UniChar *from;
+    size_t fromLen;
+    size_t *actualLen;
+{
+    ByteCount		utf8_len;
+    ByteCount		inputRead;
+    char_u		*result;
+
+    if (gUTF16ToUTF8Converter)
+    {
+	result = alloc(fromLen * 6 + 1);
+	if (result && TECConvertText(gUTF16ToUTF8Converter, (ConstTextPtr)from,
+		    fromLen, &inputRead, result,
+		    (fromLen*6+1)*sizeof(char_u), &utf8_len) == noErr)
+	{
+	    TECFlushText(gUTF16ToUTF8Converter, result, (fromLen*6+1)*sizeof(char_u), &inputRead);
+	    utf8_len += inputRead;
+	}
+	else
+	{
+	    vim_free(result);
+	    result = NULL;
+	}
+    }
+    else
+    {
+	result = NULL;
+    }
+
+    if (actualLen)
+	*actualLen = result ? utf8_len : 0;
+
+    return result;
+}
+
+/*
+ * Converts from UTF-8 to UTF-16 UniChars
+ */
+    UniChar *
+mac_utf8_to_utf16(from, fromLen, actualLen)
+    char_u *from;
+    size_t fromLen;
+    size_t *actualLen;
+{
+    CFStringRef  utf8_str;
+    CFRange      convertRange;
+    UniChar      *result = NULL;
+
+    utf8_str = CFStringCreateWithBytes(NULL, from, fromLen,
+	    kCFStringEncodingUTF8, FALSE);
+
+    if (utf8_str == NULL) {
+	if (actualLen)
+	    *actualLen = 0;
+	return NULL;
+    }
+
+    convertRange = CFRangeMake(0, CFStringGetLength(utf8_str));
+    result = (UniChar *)alloc(convertRange.length * sizeof(UniChar));
+
+    CFStringGetCharacters(utf8_str, convertRange, result);
+
+    CFRelease(utf8_str);
+
+    if (actualLen)
+	*actualLen = convertRange.length * sizeof(UniChar);
+
+    return result;
+}
 #endif /* FEAT_MBYTE */

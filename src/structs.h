@@ -307,7 +307,8 @@ struct m_block
 {
     mblock_T	*mb_next;	/* pointer to next allocated block */
     size_t	mb_size;	/* total size of all chunks in this block */
-    minfo_T	mb_info;	/* head of free chuck list for this block */
+    size_t	mb_maxsize;	/* size of largest fee chunk */
+    minfo_T	mb_info;	/* head of free chunk list for this block */
 };
 
 /*
@@ -1211,6 +1212,7 @@ struct file_buffer
     minfo_T	*b_m_search;	/* pointer to chunk before previously
 				   allocated/freed chunk */
     mblock_T	*b_mb_current;	/* block where m_search points in */
+
 #ifdef FEAT_INS_EXPAND
     int		b_scanned;	/* ^N/^P have scanned this buffer */
 #endif

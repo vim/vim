@@ -1590,6 +1590,10 @@ set_termname(term)
     char_u	*error_msg = NULL;
     char_u	*bs_p, *del_p;
 
+    /* In silect mode (ex -s) we don't use the 'term' option. */
+    if (silent_mode)
+	return OK;
+
     detected_8bit = FALSE;		/* reset 8-bit detection */
 
     if (term_is_builtin(term))
@@ -3146,10 +3150,6 @@ settmode(tmode)
 
     if (full_screen)
     {
-	/* In Ex mode, never set to RAW */
-	if (exmode_active == EXMODE_NORMAL)
-	    tmode = TMODE_COOK;
-
 	/*
 	 * When returning after calling a shell we want to really set the
 	 * terminal to raw mode, even though we think it already is, because

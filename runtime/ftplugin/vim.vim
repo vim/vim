@@ -1,7 +1,7 @@
 " Vim filetype plugin
 " Language:	Vim
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2004 Sep 13
+" Last Change:	2005 Feb 14
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -58,4 +58,6 @@ if exists("loaded_matchit")
 endif
 
 let &cpo = cpo_save
-setlocal cpo+=M		" makes \%( match \)
+
+" removed this, because 'cpoptions' is a global option.
+" setlocal cpo+=M		" makes \%( match \)
