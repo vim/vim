@@ -5245,7 +5245,8 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 		{
 		    if (errbuf != NULL)
 		    {
-			sprintf((char *)errbuf, _("E526: Missing number after <%s>"),
+			sprintf((char *)errbuf,
+					 _("E526: Missing number after <%s>"),
 						    transchar_byte(*(s - 1)));
 			errmsg = errbuf;
 		    }
@@ -9382,7 +9383,7 @@ compatible_set()
 
 # if defined(__BORLANDC__) && (__BORLANDC__ < 0x500)
    /* Borland C++ screws up loop optimisation here (negri) */
-#  pragma option -O-l
+  #pragma option -O-l
 # endif
 
 /*
@@ -9403,7 +9404,7 @@ fill_breakat_flags()
 }
 
 # if defined(__BORLANDC__) && (__BORLANDC__ < 0x500)
-#  pragma option -O.l
+  #pragma option -O.l
 # endif
 
 #endif

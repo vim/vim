@@ -867,7 +867,8 @@ gui_gtk_set_mnemonics(int enable)
 	gtk_label_set_text_with_mnemonic(GTK_LABEL(menu->label),
 					 (const char *)name);
 	vim_free(name);
-# elif defined(GTK_USE_ACCEL)
+# else
+#  if defined(GTK_USE_ACCEL)
 	name = translate_mnemonic_tag(menu->name, TRUE);
 	if (name != NULL)
 	{
@@ -889,6 +890,7 @@ gui_gtk_set_mnemonics(int enable)
 	    gtk_label_parse_uline(GTK_LABEL(menu->label), (const char *)name);
 	    vim_free(name);
 	}
+#  endif
 # endif
     }
 }
@@ -1880,7 +1882,7 @@ gui_mch_dialog(	int	type,		/* type of dialog */
 		    "clicked",
 		    accel_group,
 		    accel_key, 0,
-		    0);
+		    (GtkAccelFlags)0);
 	}
 # else
 	(void)gtk_label_parse_uline(GTK_LABEL(label), (const gchar *)p);

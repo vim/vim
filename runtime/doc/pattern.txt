@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 7.0aa.  Last change: 2004 Dec 18
+*pattern.txt*   For Vim version 7.0aa.  Last change: 2005 Jan 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -217,13 +217,17 @@ To clear the last used search pattern: >
 This will not set the pattern to an empty string, because that would match
 everywhere.  The pattern is really cleared, like when starting Vim.
 
-The search usual skips matches that don't move the cursor.  Whether the next
+The search usually skips matches that don't move the cursor.  Whether the next
 match is found at the next character or after the skipped match depends on the
 'c' flag in 'cpoptions'.  See |cpo-c|.
 	   with 'c' flag:   "/..." advances 1 to 3 characters
 	without 'c' flag:   "/..." advances 1 character
 The unpredictability with the 'c' flag is caused by starting the search in the
 first column, skipping matches until one is found past the cursor position.
+
+When searching backwards, searching starts at the start of the line, using the
+'c' flag in 'cpoptions' as described above.  Then the last match before the
+cursor position is used.
 
 In Vi the ":tag" command sets the last search pattern when the tag is searched
 for.  In Vim this is not done, the previous search pattern is still remembered,

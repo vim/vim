@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 20
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -992,6 +992,12 @@ specified by what is prepended:
 |function-argument|  a:	  Function argument (only inside a function).
 |vim-variable|       v:	  Global, predefined by Vim.
 
+The scope name by itself can be used as a Dictionary.  For example, to delete
+all script-local variables: >
+	:for k in keys(s:)
+	:    unlet s:[k]
+	:endfor
+<
 						*buffer-variable* *b:var*
 A variable name that is preceded with "b:" is local to the current buffer.
 Thus you can have several "b:foo" variables, one for each buffer.
@@ -1507,7 +1513,8 @@ simplify( {filename})		String	simplify filename as much as possible
 sort( {list} [, {func}])	List	sort {list}, using {func} to compare
 split( {expr} [, {pat}])	List	make List from {pat} separated {expr}
 strftime( {format}[, {time}])	String	time in specified format
-stridx( {haystack}, {needle})	Number	first index of {needle} in {haystack}
+stridx( {haystack}, {needle}[, {start}])
+				Number	index of {needle} in {haystack}
 string( {expr})			String	String representation of {expr} value
 strlen( {expr})			Number	length of the String {expr}
 strpart( {src}, {start}[, {len}])
@@ -3507,12 +3514,14 @@ strftime({format} [, {time}])				*strftime()*
 <		Not available on all systems.  To check use: >
 			:if exists("*strftime")
 
-stridx({haystack}, {needle})				*stridx()*
-		The result is a Number, which gives the index in {haystack} of
-		the first occurrence of the String {needle} in the String
-		{haystack}. The search is done case-sensitive. For advanced
-		searches use |match()|.
-		If the {needle} does not occur in {haystack} it returns -1.
+stridx({haystack}, {needle} [, {start}])		*stridx()*
+		The result is a Number, which gives the byte index in
+		{haystack} of the first occurrence of the String {needle}.
+		If {start} is specified, the String {needle} is searched from
+		the byte index {start} in the String {haystack}.
+		The search is done case-sensitive.
+		For pattern searches use |match()|. 
+		-1 is returned if the {needle} does not occur in {haystack}.
 		See also |strridx()|. Examples: >
 		  :echo stridx("An Example", "Example")	     3
 		  :echo stridx("Starting point", "Start")    0
@@ -3558,10 +3567,10 @@ strpart({src}, {start}[, {len}])			*strpart()*
 <
 strridx({haystack}, {needle})				*strridx()*
 		The result is a Number, which gives the index in {haystack} of
-		the last occurrence of the String {needle} in the String
-		{haystack}. The search is done case-sensitive. For advanced
-		searches use |match()|.
-		If the {needle} does not occur in {haystack} it returns -1.
+		the last occurrence of the String {needle}.
+		The search is done case-sensitive.
+		For pattern searches use |match()|.
+		-1 is returned if the {needle} does not occur in {haystack}.
 		If the {needle} is empty the length of {haystack} is returned.
 		See also |stridx()|. Examples: >
 		  :echo strridx("an angry armadillo", "an")	     3
@@ -4069,30 +4078,14 @@ instead of "s:" when the mapping is expanded outside of the script.
 			result is a |Funcref| to a numbered function.  The
 			function can only be used with a |Funcref| and will be
 			deleted if there are no more references to it.
-						*function-argument* *a:var*
-			An argument can be defined by giving its name.  In the
-			function this can then be used as "a:name" ("a:" for
-			argument).
-			Up to 20 arguments can be given, separated by commas.
-			Finally, an argument "..." can be specified, which
-			means that more arguments may be following.  In the
-			function they can be used as "a:1", "a:2", etc.  "a:0"
-			is set to the number of extra arguments (which can be
-			0).
-			When not using "...", the number of arguments in a
-			function call must be equal to the number of named
-			arguments.  When using "...", the number of arguments
-			may be larger.
-			It is also possible to define a function without any
-			arguments.  You must still supply the () then.
-			The body of the function follows in the next lines,
-			until the matching |:endfunction|.  It is allowed to
-			define another function inside a function body.
 								*E127* *E122*
 			When a function by this name already exists and [!] is
 			not used an error message is given.  When [!] is used,
 			an existing function is silently replaced.  Unless it
 			is currently being executed, that is an error.
+
+			For the {arguments} see |function-argument|.
+
 						*a:firstline* *a:lastline*
 			When the [range] argument is added, the function is
 			expected to take care of a range itself.  The range is
@@ -4139,7 +4132,26 @@ instead of "s:" when the mapping is expanded outside of the script.
 			nested ":try"s inside the function.  The function
 			returns at the outermost ":endtry".
 
+						*function-argument* *a:var*
+An argument can be defined by giving its name.  In the function this can then
+be used as "a:name" ("a:" for argument).
+						*a:0* *a:1* *a:000* *E740*
+Up to 20 arguments can be given, separated by commas.  After the named
+arguments an argument "..." can be specified, which means that more arguments
+may optionally be following.  In the function the extra arguments can be used
+as "a:1", "a:2", etc.  "a:0" is set to the number of extra arguments (which
+can be 0).  "a:000" is set to a List that contains these arguments.
 
+When not using "...", the number of arguments in a function call must be equal
+to the number of named arguments.  When using "...", the number of arguments
+may be larger.
+
+It is also possible to define a function without any arguments.  You must
+still supply the () then.  The body of the function follows in the next lines,
+until the matching |:endfunction|.  It is allowed to define another function
+inside a function body.
+
+							*local-variables*
 Inside a function variables can be used.  These are local variables, which
 will disappear when the function returns.  Global variables need to be
 accessed with "g:".

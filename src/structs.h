@@ -712,7 +712,7 @@ typedef struct keyentry keyentry_T;
 
 struct keyentry
 {
-    keyentry_T	*next;		/* next keyword in the hash list */
+    keyentry_T	*ke_next;	/* next entry with identical "keyword[]" */
     struct sp_syn k_syn;	/* struct passed to in_id_list() */
     short	*next_list;	/* ID list for next match (if non-zero) */
     short	flags;		/* see syntax.c */
@@ -921,7 +921,7 @@ typedef struct hashitem_S
 {
     long_u	hi_hash;	/* cached hash number of hi_key */
     char_u	*hi_key;
-} hashitem;
+} hashitem_T;
 
 /* The address of "hash_removed" is used as a magic number for hi_key to
  * indicate a removed item. */
@@ -941,10 +941,107 @@ typedef struct hashtable_S
     int		ht_locked;	/* counter for hash_lock() */
     int		ht_error;	/* when set growing failed, can't add more
 				   items before growing works */
-    hashitem	*ht_array;	/* points to the array, allocated when it's
+    hashitem_T	*ht_array;	/* points to the array, allocated when it's
 				   not "ht_smallarray" */
-    hashitem	ht_smallarray[HT_INIT_SIZE];   /* initial array */
-} hashtable;
+    hashitem_T	ht_smallarray[HT_INIT_SIZE];   /* initial array */
+} hashtab_T;
+
+typedef long_u hash_T;		/* Type for hi_hash */
+
+
+#if SIZEOF_INT <= 3		/* use long if int is smaller than 32 bits */
+typedef long	varnumber_T;
+#else
+typedef int	varnumber_T;
+#endif
+
+typedef struct listvar_S list_T;
+typedef struct dictvar_S dict_T;
+
+/*
+ * Structure to hold an internal variable without a name.
+ */
+typedef struct
+{
+    char	v_type;	/* see below: VAR_NUMBER, VAR_STRING, etc. */
+    union
+    {
+	varnumber_T	v_number;	/* number value */
+	char_u		*v_string;	/* string value (can be NULL!) */
+	list_T		*v_list;	/* list value (can be NULL!) */
+	dict_T		*v_dict;	/* dict value (can be NULL!) */
+    }		vval;
+} typval_T;
+
+/* Values for "v_type". */
+#define VAR_UNKNOWN 0
+#define VAR_NUMBER  1	/* "v_number" is used */
+#define VAR_STRING  2	/* "v_string" is used */
+#define VAR_FUNC    3	/* "v_string" is function name */
+#define VAR_LIST    4	/* "v_list" is used */
+#define VAR_DICT    5	/* "v_dict" is used */
+
+/*
+ * Structure to hold an item of a list: an internal variable without a name.
+ */
+typedef struct listitem_S listitem_T;
+
+struct listitem_S
+{
+    listitem_T	*li_next;	/* next item in list */
+    listitem_T	*li_prev;	/* previous item in list */
+    typval_T	li_tv;		/* type and value of the variable */
+};
+
+/*
+ * Struct used by those that are using an item in a list.
+ */
+typedef struct listwatch_S listwatch_T;
+
+struct listwatch_S
+{
+    listitem_T		*lw_item;	/* item being watched */
+    listwatch_T		*lw_next;	/* next watcher */
+};
+
+/*
+ * Structure to hold info about a list.
+ */
+struct listvar_S
+{
+    int		lv_refcount;	/* reference count */
+    listitem_T	*lv_first;	/* first item, NULL if none */
+    listitem_T	*lv_last;	/* last item, NULL if none */
+    listwatch_T	*lv_watch;	/* first watcher, NULL if none */
+};
+
+/*
+ * Structure to hold an item of a Dictionary.
+ * Also used for a variable.
+ * The key is copied into "di_key" to avoid an extra alloc/free for it.
+ */
+struct dictitem_S
+{
+    typval_T	di_tv;		/* type and value of the variable */
+    char_u	di_flags;	/* flags (only used for variable) */
+    char_u	di_key[1];	/* key (actually longer!) */
+};
+
+typedef struct dictitem_S dictitem_T;
+
+#define DI_FLAGS_RO	1 /* "di_flags" value: read-only variable */
+#define DI_FLAGS_RO_SBX 2 /* "di_flags" value: read-only in the sandbox */
+#define DI_FLAGS_FIX	4 /* "di_flags" value: fixed variable, not allocated */
+
+/*
+ * Structure to hold info about a Dictionary.
+ */
+struct dictvar_S
+{
+    int		dv_refcount;	/* reference count */
+    hashtab_T	dv_hashtab;	/* hashtab that refers to the items */
+};
+
 
 /*
  * buffer: structure that holds information about one file
@@ -1259,7 +1356,8 @@ struct file_buffer
 #endif
 
 #ifdef FEAT_EVAL
-    hashtable	b_vars;		/* internal variables, local to buffer */
+    dictitem_T	b_bufvar;	/* variable for "b:" Dictionary */
+    dict_T	b_vars;		/* internal variables, local to buffer */
 #endif
 
     /* When a buffer is created, it starts without a swap file.  b_may_swap is
@@ -1297,8 +1395,8 @@ struct file_buffer
 #endif
 
 #ifdef FEAT_SYN_HL
-    keyentry_T	**b_keywtab;		/* syntax keywords hash table */
-    keyentry_T	**b_keywtab_ic;		/* idem, ignore case */
+    hashtab_T	b_keywtab;		/* syntax keywords hash table */
+    hashtab_T	b_keywtab_ic;		/* idem, ignore case */
     int		b_syn_ic;		/* ignore case for :syn cmds */
     garray_T	b_syn_patterns;		/* table for syntax patterns */
     garray_T	b_syn_clusters;		/* table for syntax clusters */
@@ -1603,7 +1701,8 @@ struct window
 #endif
 
 #ifdef FEAT_EVAL
-    hashtable	w_vars;		/* internal variables, local to window */
+    dictitem_T	w_winvar;	/* variable for "w:" Dictionary */
+    dict_T	w_vars;		/* internal variables, local to window */
 #endif
 
 #if defined(FEAT_RIGHTLEFT) && defined(FEAT_FKMAP)

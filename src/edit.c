@@ -3383,7 +3383,7 @@ ins_complete(c)
 		    temp = complete_col - temp;
 		}
 		if (p_ic)
-		    complete_pat = str_foldcase(tmp_ptr, temp);
+		    complete_pat = str_foldcase(tmp_ptr, temp, NULL, 0);
 		else
 		    complete_pat = vim_strnsave(tmp_ptr, temp);
 		if (complete_pat == NULL)
@@ -3482,7 +3482,7 @@ ins_complete(c)
 	    if (temp < 0)	/* cursor in indent: empty pattern */
 		temp = 0;
 	    if (p_ic)
-		complete_pat = str_foldcase(tmp_ptr, temp);
+		complete_pat = str_foldcase(tmp_ptr, temp, NULL, 0);
 	    else
 		complete_pat = vim_strnsave(tmp_ptr, temp);
 	    if (complete_pat == NULL)
@@ -6111,15 +6111,15 @@ ins_reg()
     ++no_u_sync;
     if (regname == '=')
     {
-#ifdef USE_IM_CONTROL
+# ifdef USE_IM_CONTROL
 	int	im_on = im_get_status();
-#endif
+# endif
 	regname = get_expr_register();
-#ifdef USE_IM_CONTROL
+# ifdef USE_IM_CONTROL
 	/* Restore the Input Method. */
 	if (im_on)
 	    im_set_active(TRUE);
-#endif
+# endif
     }
     if (regname == NUL)
 	need_redraw = TRUE;	/* remove the '"' */
@@ -6141,6 +6141,12 @@ ins_reg()
 	    vim_beep();
 	    need_redraw = TRUE;	/* remove the '"' */
 	}
+	else if (stop_insert_mode)
+	    /* When the '=' register was used and a function was invoked that
+	     * did ":stopinsert" then stuff_empty() returns FALSE but we won't
+	     * insert anything, need to remove the '"' */
+	    need_redraw = TRUE;
+
 #ifdef FEAT_EVAL
     }
     --no_u_sync;
