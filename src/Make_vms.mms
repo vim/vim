@@ -2,7 +2,7 @@
 # Makefile for Vim on OpenVMS
 #
 # Maintainer:   Zoltan Arpadffy <arpadffy@polarhome.com>
-# Last change:  2004 Dec 16
+# Last change:  2005 Jan 19
 #
 # This has script been tested on VMS 6.2 to 7.3 on DEC Alpha, VAX and IA64
 # with MMS and MMK
@@ -274,7 +274,7 @@ ALL_LIBS = $(LIBS) $(GUI_LIB_DIR) $(GUI_LIB) \
 
 SRC =	buffer.c charset.c diff.c digraph.c edit.c eval.c ex_cmds.c ex_cmds2.c \
 	ex_docmd.c ex_eval.c ex_getln.c if_xcmdsrv.c fileio.c fold.c getchar.c \
-	main.c mark.c menu.c mbyte.c memfile.c memline.c message.c misc1.c \
+	hashtable.c, main.c mark.c menu.c mbyte.c memfile.c memline.c message.c misc1.c \
 	misc2.c move.c normal.c ops.c option.c quickfix.c regexp.c search.c \
 	syntax.c tag.c term.c termlib.c ui.c undo.c version.c screen.c \
 	window.c os_unix.c os_vms.c pathdef.c \
@@ -283,7 +283,7 @@ SRC =	buffer.c charset.c diff.c digraph.c edit.c eval.c ex_cmds.c ex_cmds2.c \
 
 OBJ =	buffer.obj charset.obj diff.obj digraph.obj edit.obj eval.obj \
 	ex_cmds.obj ex_cmds2.obj ex_docmd.obj ex_eval.obj ex_getln.obj \
-	if_xcmdsrv.obj fileio.obj fold.obj getchar.obj main.obj mark.obj \
+	if_xcmdsrv.obj fileio.obj fold.obj getchar.obj hashtable.obj main.obj mark.obj \
 	menu.obj memfile.obj memline.obj message.obj misc1.obj misc2.obj \
 	move.obj mbyte.obj normal.obj ops.obj option.obj quickfix.obj \
 	regexp.obj search.obj syntax.obj tag.obj term.obj termlib.obj \
@@ -507,6 +507,10 @@ fold.obj : fold.c vim.h [.auto]config.h feature.h os_unix.h   \
  [.proto]gui_beval.pro option.h ex_cmds.h proto.h globals.h farsi.h \
  arabic.h
 getchar.obj : getchar.c vim.h [.auto]config.h feature.h os_unix.h \
+ ascii.h keymap.h term.h macros.h structs.h regexp.h \
+ gui.h gui_beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
+ globals.h farsi.h arabic.h
+hashtable.obj : hashtable.c vim.h [.auto]config.h feature.h os_unix.h \
  ascii.h keymap.h term.h macros.h structs.h regexp.h \
  gui.h gui_beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
  globals.h farsi.h arabic.h

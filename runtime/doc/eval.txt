@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 17
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -118,11 +118,11 @@ A Funcref can also be used with the |:call| command: >
 	:call dict.init()
 
 The name of the referenced function can be obtained with |string()|. >
-	:let func = string(Myfunc)
+	:let func = string(Fn)
 
 You can use |call()| to invoke a Funcref and use a list variable for the
 arguments: >
-	:let r = call(Myfunc, mylist)
+	:let r = call(Fn, mylist)
 
 
 1.3 Lists ~
@@ -170,6 +170,7 @@ List concatenation ~
 
 Two lists can be concatenated with the "+" operator: >
 	:let longlist = mylist + [5, 6]
+	:let mylist += [7, 8]
 
 To prepend or append an item turn the item into a list by putting [] around
 it.  To change a list in-place see |list-modification| below.
@@ -439,6 +440,9 @@ Merging a Dictionary with another is done with |extend()|: >
 	:call extend(adict, bdict)
 This extends adict with all entries from bdict.  Duplicate keys cause entries
 in adict to be overwritten.  An optional third argument can change this.
+Note that the order of entries in a Dictionary is irrelevant, thus don't
+expect ":echo adict" to show the items from bdict after the older entries in
+adict.
 
 Weeding out entries from a Dictionary can be done with |filter()|: >
 	:call filter(dict 'v:val =~ "x"') 
@@ -2119,7 +2123,7 @@ extend({expr1}, {expr2} [, {expr3}])			*extend()*
 		used to decide what to do:
 		{expr3} = "keep": keep the value of {expr1}
 		{expr3} = "force": use the value of {expr2}
-		{expr3} = "error": give an error message
+		{expr3} = "error": give an error message 		*E737*
 		When {expr3} is omitted then "force" is assumed.
 
 		{expr1} is changed when {expr2} is not empty.  If necessary
@@ -3075,7 +3079,7 @@ nr2char({expr})						*nr2char()*
 <		Note that a NUL character in the file is specified with
 		nr2char(10), because NULs are represented with newline
 		characters.  nr2char(0) is a real NUL and terminates the
-		string, thus isn't very useful.
+		string, thus results in an empty string.
 
 prevnonblank({lnum})					*prevnonblank()*
 		Return the line number of the first line at or above {lnum}
@@ -3230,7 +3234,7 @@ reverse({list})	Reverse the order of items in {list} in-place.  Returns
 
 search({pattern} [, {flags}])				*search()*
 		Search for regexp pattern {pattern}.  The search starts at the
-		cursor position.
+		cursor position (you can use |cursor()| to set it).
 		{flags} is a String, which can contain these character flags:
 		'b'	search backward instead of forward
 		'n'	do Not move the cursor
@@ -4302,6 +4306,7 @@ This would call the function "my_func_whizz(parameter)".
 			When the selected range of items is partly past the
 			end of the list, items will be added.
 
+						*:let+=* *:let-=* *:let.=*
 :let {var} += {expr1}	Like ":let {var} = {var} + {expr1}".
 :let {var} -= {expr1}	Like ":let {var} = {var} - {expr1}".
 :let {var} .= {expr1}	Like ":let {var} = {var} . {expr1}".

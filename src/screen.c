@@ -1924,8 +1924,8 @@ win_draw_end(wp, c1, c2, row, endrow, hl)
 	if (n > 0)
 	{
 	    /* draw the fold column at the right */
-	    if (n > wp->w_width)
-		n = wp->w_width;
+	    if (n > W_WIDTH(wp))
+		n = W_WIDTH(wp);
 	    screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + endrow,
 		    W_ENDCOL(wp) - n, (int)W_ENDCOL(wp),
 		    ' ', ' ', hl_attr(HLF_FC));
@@ -1937,8 +1937,8 @@ win_draw_end(wp, c1, c2, row, endrow, hl)
 	    int nn = n + 2;
 
 	    /* draw the sign column left of the fold column */
-	    if (nn > wp->w_width)
-		nn = wp->w_width;
+	    if (nn > W_WIDTH(wp))
+		nn = W_WIDTH(wp);
 	    screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + endrow,
 		    W_ENDCOL(wp) - nn, (int)W_ENDCOL(wp) - n,
 		    ' ', ' ', hl_attr(HLF_SC));

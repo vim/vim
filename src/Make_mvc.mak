@@ -347,6 +347,7 @@ OBJ = \
 	$(OUTDIR)\fileio.obj \
 	$(OUTDIR)\fold.obj \
 	$(OUTDIR)\getchar.obj \
+	$(OUTDIR)\hashtable.obj \
 	$(OUTDIR)\main.obj \
 	$(OUTDIR)\mark.obj \
 	$(OUTDIR)\mbyte.obj \
@@ -754,6 +755,8 @@ $(OUTDIR)/fold.obj:	$(OUTDIR) fold.c  $(INCL)
 
 $(OUTDIR)/getchar.obj:	$(OUTDIR) getchar.c  $(INCL)
 
+$(OUTDIR)/hashtable.obj:	$(OUTDIR) hashtable.c  $(INCL)
+
 $(OUTDIR)/gui.obj:	$(OUTDIR) gui.c  $(INCL) $(GUI_INCL)
 
 $(OUTDIR)/gui_w32.obj:	$(OUTDIR) gui_w32.c gui_w48.c $(INCL) $(GUI_INCL)
@@ -892,6 +895,7 @@ proto.h: \
 	proto/ex_getln.pro \
 	proto/fileio.pro \
 	proto/getchar.pro \
+	proto/hashtable.pro \
 	proto/main.pro \
 	proto/mark.pro \
 	proto/memfile.pro \

@@ -1,6 +1,6 @@
 " Vim script language tests
 " Author:	Servatius Brandt <Servatius.Brandt@fujitsu-siemens.com>
-" Last Change:	2005 Jan 16
+" Last Change:	2005 Jan 18
 
 "-------------------------------------------------------------------------------
 " Test environment							    {{{1
@@ -8314,6 +8314,7 @@ if ExtraVim()
 	    else
 		let v:errmsg = escape(v:errmsg, '"')
 		Xout "Expr" a:n.": Unexpected message:" v:errmsg
+		Xout "Expected: " . a:enr . ': ' . a:emsg
 		let g:taken = g:taken . "X"
 	    endif
 	endif
@@ -8377,7 +8378,7 @@ if ExtraVim()
 			call MSG(t, 'E15', "Invalid expression")
 		    endif
 		else
-		    if t == 2 || t == 4
+		    if t <= 2 || t == 4 || t == 5 || t == 6 || t == 8
 			call MSG(t, 'E475', 'Invalid argument\>')
 		    else
 			call MSG(t, 'E121', "Undefined variable")

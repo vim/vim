@@ -92,6 +92,7 @@ extern int _stricoll __ARGS((char *a, char *b));
 # ifdef FEAT_HANGULIN
 #  include "hangulin.pro"
 # endif
+# include "hashtable.pro"
 # include "main.pro"
 # include "mark.pro"
 # if !defined MESSAGE_FILE || defined(HAVE_STDARG_H)

@@ -12,7 +12,7 @@ TERMFLAG   = -DUP_BC_PC_EXTERN
 ASMFLAGS   = -throwback -objasm -gcc
 
 OBJS =  o.buffer o.charset o.diff o.digraph o.edit o.eval o.ex_cmds o.ex_cmds2  \
-	o.ex_docmd o.ex_eval o.ex_getln o.fileio o.fold o.getchar o.main o.mark o.mbyte  \
+	o.ex_docmd o.ex_eval o.ex_getln o.fileio o.fold o.getchar o.hashtable o.main o.mark o.mbyte  \
 	o.memfile o.memline o.menu o.message o.misc1 o.misc2 o.move     \
 	o.normal o.ops o.option o.quickfix o.regexp o.screen o.search   \
 	o.syntax o.tag o.term o.termlib o.ui o.undo o.version o.window  \
@@ -64,6 +64,8 @@ o.fileio:	c.fileio
 o.fold:		c.fold
 
 o.getchar:	c.getchar
+
+o.hashtable:	c.hashtable
 
 o.gui:		c.gui
 

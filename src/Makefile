@@ -1298,6 +1298,7 @@ BASIC_SRC = \
 	fileio.c \
 	fold.c \
 	getchar.c \
+	hashtable.c \
 	if_cscope.c \
 	if_xcmdsrv.c \
 	main.c \
@@ -1364,6 +1365,7 @@ OBJ = \
 	objects/fileio.o \
 	objects/fold.o \
 	objects/getchar.o \
+	objects/hashtable.o \
 	$(HANGULIN_OBJ) \
 	objects/if_cscope.o \
 	objects/if_xcmdsrv.o \
@@ -1419,6 +1421,7 @@ PRO_AUTO = \
 	fileio.pro \
 	fold.pro \
 	getchar.pro \
+	hashtable.pro \
 	hangulin.pro \
 	if_cscope.pro \
 	if_xcmdsrv.pro \
@@ -2153,6 +2156,9 @@ objects/fold.o: fold.c
 objects/getchar.o: getchar.c
 	$(CCC) -o $@ getchar.c
 
+objects/hashtable.o: hashtable.c
+	$(CCC) -o $@ hashtable.c
+
 objects/gui.o: gui.c
 	$(CCC) -o $@ gui.c
 
@@ -2489,6 +2495,10 @@ objects/fold.o: fold.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h \
  proto/gui_beval.pro option.h ex_cmds.h proto.h globals.h farsi.h \
  arabic.h
 objects/getchar.o: getchar.c vim.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h macros.h structs.h regexp.h \
+ gui.h gui_beval.h proto/gui_beval.pro option.h ex_cmds.h proto.h \
+ globals.h farsi.h arabic.h
+objects/hashtable.o: hashtable.c vim.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h structs.h regexp.h \
  gui.h gui_beval.h proto/gui_beval.pro option.h ex_cmds.h proto.h \
  globals.h farsi.h arabic.h

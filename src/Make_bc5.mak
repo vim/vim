@@ -546,6 +546,7 @@ vimobj =  \
 	$(OBJDIR)\fileio.obj \
 	$(OBJDIR)\fold.obj \
 	$(OBJDIR)\getchar.obj \
+	$(OBJDIR)\hashtable.obj \
 	$(OBJDIR)\main.obj \
 	$(OBJDIR)\mark.obj \
 	$(OBJDIR)\memfile.obj \

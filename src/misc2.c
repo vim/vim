@@ -1488,7 +1488,7 @@ vim_isspace(x)
 }
 
 /************************************************************************
- * Functions for hanlding growing arrays.
+ * Functions for handling growing arrays.
  */
 
 /*

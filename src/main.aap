@@ -247,6 +247,7 @@ Source =
 	fileio.c
 	fold.c
 	getchar.c
+	hashtable.c
 	if_cscope.c
 	if_xcmdsrv.c
 	main.c

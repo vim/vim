@@ -103,6 +103,7 @@ SRC = \
 	fileio.c \
 	fold.c \
 	getchar.c \
+	hashtable.c \
 	main.c \
 	mark.c \
 	memfile.c \
@@ -144,6 +145,7 @@ OBJ = \
 	fileio.o \
 	fold.o \
 	getchar.o \
+	hashtable.o \
 	main.o \
 	mark.o \
 	memfile.o \
@@ -185,6 +187,7 @@ PRO = \
 	proto/fileio.pro \
 	proto/fold.pro \
 	proto/getchar.pro \
+	proto/hashtable.pro \
 	proto/main.pro \
 	proto/mark.pro \
 	proto/memfile.pro \
@@ -294,6 +297,8 @@ fold.o:			fold.c
 proto/fold.pro:		fold.c
 getchar.o:		getchar.c
 proto/getchar.pro:	getchar.c
+hashtable.o:		hashtable.c
+proto/hashtable.pro:	hashtable.c
 main.o:			main.c
 proto/main.pro:		main.c
 mark.o:			mark.c

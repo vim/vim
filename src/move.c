@@ -871,10 +871,7 @@ validate_cursor_col()
 
 	/* long line wrapping, adjust curwin->w_wrow */
 	if (curwin->w_p_wrap && col >= (colnr_T)W_WIDTH(curwin)
-#ifdef FEAT_VERTSPLIT
-		&& curwin->w_width != 0
-#endif
-		)
+		&& W_WIDTH(curwin) - off + curwin_col_off2() > 0)
 	{
 	    col -= W_WIDTH(curwin);
 	    col = col % (W_WIDTH(curwin) - off + curwin_col_off2());

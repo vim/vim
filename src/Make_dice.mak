@@ -40,6 +40,7 @@ SRC = \
 	fileio.c \
 	fold.c \
 	getchar.c \
+	hashtable.c \
 	main.c \
 	mark.c \
 	memfile.c \
@@ -80,6 +81,7 @@ OBJ =	o/buffer.o \
 	o/fileio.o \
 	o/fold.o \
 	o/getchar.o \
+	o/hashtable.o \
 	o/main.o \
 	o/mark.o \
 	o/memfile.o \
@@ -152,6 +154,8 @@ o/fileio.o:	fileio.c  $(SYMS)
 o/fold.o:	fold.c  $(SYMS)
 
 o/getchar.o: getchar.c	$(SYMS)
+
+o/hashtable.o: hashtable.c	$(SYMS)
 
 o/main.o: main.c $(SYMS)
 

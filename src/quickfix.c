@@ -1775,8 +1775,10 @@ ex_copen(eap)
 	else if (buf != curbuf)
 	    set_curbuf(buf, DOBUF_GOTO);
 
+#ifdef FEAT_VERTSPLIT
 	/* Only set the height when there is no window to the side. */
 	if (curwin->w_width == Columns)
+#endif
 	    win_setheight(height);
 	curwin->w_p_wfh = TRUE;	    /* set 'winfixheight' */
 	if (win_valid(win))
