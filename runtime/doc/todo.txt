@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Dec 31
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,12 +30,15 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-When using ":new" relative cursor position causes first line to disappear.
-(Jens Paulus, Opening a new window)
+patch for QuickFixCmdPre and QuickFixCmdPost autocommands. (Ciaran McCreesh,
+2005 Jan 1)
+
+New toolbar button from Martin Dalecki:
+- add remark in version7.txt
+- check if it works for pixmap loaded from a file.
 
 Awaiting response:
 -   Patch for mch_FullName() also in Vim 6.3?  os_mswin.c
--   patch for MakePre and MakePost autocommands. (Ciaran McCreesh)
 -   Win32: "gvim -V100" should use dialog with scrollbar.  Using
     gui_mch_dialog() would be good, but need to move display_errors() to after
     creating the window, so that s_hwnd is valid.
@@ -64,7 +67,6 @@ PLANNED FOR VERSION 7.0:
 	- function reference
 	Check old patch from Robert Webb for array support.
     Add type checking?  See ~/vim/ideas.txt.
--   Add "{range}execute": execute lines from a buffer.
 -   Add SPELLCHECKER, with easy to add support for many languages.
     8   Add spell checking.  Use "ispell -a" somehow.
 	~/vim/patches/wm_vim-5_4d.zip  can be used as an example (includes
@@ -82,6 +84,7 @@ PLANNED FOR VERSION 7.0:
 	- Patch from Martin Dalecki. (2004 Dec)  Uses ispell
 	  implements "undercurl" attribute.  But how to set its color?
 	  Perhaps use "guicurl=Red" instead?
+	  If underline and undercurl are both there use undercurl only.
 -   REFACTORING: The main() function is very long.  Move parts to separate
     functions, especially loops.  Ideas from Walter Briscoe (2003 Apr 3, 2004
     Feb 9).
@@ -1514,9 +1517,12 @@ Syntax highlighting:
 Built-in script language:
 8   Add referring to key options with "&t_xx".  Both for "echo &t_xx" and
     ":let &t_xx =".  Useful for making portable mappings.
-8   Allow range for ":exec".  Pass it on to the executed command. (Webb)
 8   exists("&&option") tests if 'option' is actually implemented.  Useful for
     'shellslash', for example.
+-   Add "{range}source": execute lines from a buffer.
+    Alternative: Allow range for ":exec", pass it on to the executed command.
+    (Webb)
+    You can already yank lines and use :@" to execute them.
 8   Have a look at VSEL.  Would it be useful to include? (Bigham)
 8   Add ":fungroup" command, to group function definitions together.  When
     encountered, all functions in the group are removed.  Suggest using an

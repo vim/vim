@@ -1286,8 +1286,8 @@ gui_mch_init_check()
     open_app_context();
     if (app_context != NULL)
 	gui.dpy = XtOpenDisplay(app_context, 0, VIM_NAME, VIM_CLASS,
-	    cmdline_options, XtNumber(cmdline_options),
-	    CARDINAL &gui_argc, gui_argv);
+		cmdline_options, XtNumber(cmdline_options),
+		CARDINAL &gui_argc, gui_argv);
 
     if (app_context == NULL || gui.dpy == NULL)
     {
@@ -1565,9 +1565,7 @@ gui_mch_init()
 gui_mch_uninit()
 {
     gui_x11_destroy_widgets();
-#ifndef LESSTIF_VERSION
     XtCloseDisplay(gui.dpy);
-#endif
     gui.dpy = NULL;
     vimShell = (Widget)0;
 }
@@ -1787,6 +1785,9 @@ gui_mch_set_shellsize(width, height, min_width, min_height,
     int		base_width;
     int		base_height;
 {
+#ifdef FEAT_XIM
+    height += xim_get_status_area_height(),
+#endif
     XtVaSetValues(vimShell,
 	XtNwidthInc,	gui.char_width,
 	XtNheightInc,	gui.char_height,
@@ -1797,11 +1798,7 @@ gui_mch_set_shellsize(width, height, min_width, min_height,
 	XtNminWidth,	min_width,
 	XtNminHeight,	min_height,
 	XtNwidth,	width,
-#ifdef FEAT_XIM
-	XtNheight,	height + xim_get_status_area_height(),
-#else
 	XtNheight,	height,
-#endif
 	NULL);
 }
 
@@ -3502,244 +3499,6 @@ mch_set_mouse_shape(shape)
     }
     if (shape != MSHAPE_HIDE)
 	last_shape = shape;
-}
-#endif
-
-#if defined(FEAT_TOOLBAR) || defined(PROTO)
-/*
- * Icons used by the toolbar code.
- */
-#include "../pixmaps/tb_new.xpm"
-#include "../pixmaps/tb_open.xpm"
-#include "../pixmaps/tb_close.xpm"
-#include "../pixmaps/tb_save.xpm"
-#include "../pixmaps/tb_print.xpm"
-#include "../pixmaps/tb_cut.xpm"
-#include "../pixmaps/tb_copy.xpm"
-#include "../pixmaps/tb_paste.xpm"
-#include "../pixmaps/tb_find.xpm"
-#include "../pixmaps/tb_find_next.xpm"
-#include "../pixmaps/tb_find_prev.xpm"
-#include "../pixmaps/tb_find_help.xpm"
-#include "../pixmaps/tb_exit.xpm"
-#include "../pixmaps/tb_undo.xpm"
-#include "../pixmaps/tb_redo.xpm"
-#include "../pixmaps/tb_help.xpm"
-#include "../pixmaps/tb_macro.xpm"
-#include "../pixmaps/tb_make.xpm"
-#include "../pixmaps/tb_save_all.xpm"
-#include "../pixmaps/tb_jump.xpm"
-#include "../pixmaps/tb_ctags.xpm"
-#include "../pixmaps/tb_load_session.xpm"
-#include "../pixmaps/tb_save_session.xpm"
-#include "../pixmaps/tb_new_session.xpm"
-#include "../pixmaps/tb_blank.xpm"
-#include "../pixmaps/tb_maximize.xpm"
-#include "../pixmaps/tb_split.xpm"
-#include "../pixmaps/tb_minimize.xpm"
-#include "../pixmaps/tb_shell.xpm"
-#include "../pixmaps/tb_replace.xpm"
-#include "../pixmaps/tb_vsplit.xpm"
-#include "../pixmaps/tb_maxwidth.xpm"
-#include "../pixmaps/tb_minwidth.xpm"
-
-/*
- * Those are the pixmaps used for the default buttons.
- */
-static char **(built_in_pixmaps[]) =
-{
-    tb_new_xpm,
-    tb_open_xpm,
-    tb_save_xpm,
-    tb_undo_xpm,
-    tb_redo_xpm,
-    tb_cut_xpm,
-    tb_copy_xpm,
-    tb_paste_xpm,
-    tb_print_xpm,
-    tb_help_xpm,
-    tb_find_xpm,
-    tb_save_all_xpm,
-    tb_save_session_xpm,
-    tb_new_session_xpm,
-    tb_load_session_xpm,
-    tb_macro_xpm,
-    tb_replace_xpm,
-    tb_close_xpm,
-    tb_maximize_xpm,
-    tb_minimize_xpm,
-    tb_split_xpm,
-    tb_shell_xpm,
-    tb_find_prev_xpm,
-    tb_find_next_xpm,
-    tb_find_help_xpm,
-    tb_make_xpm,
-    tb_jump_xpm,
-    tb_ctags_xpm,
-    tb_vsplit_xpm,
-    tb_maxwidth_xpm,
-    tb_minwidth_xpm,
-    tb_exit_xpm
-};
-
-static void createXpmImages __ARGS((char_u *path, char **xpm, Pixmap *sen, Pixmap *insen));
-
-/*
- * Allocated a pixmap for toolbar menu "menu".
- * Return in "sen" and "insen".  "insen" can be NULL.
- */
-    void
-get_toolbar_pixmap(menu, sen, insen)
-    vimmenu_T	*menu;
-    Pixmap	*sen;
-    Pixmap	*insen;
-{
-    char_u	buf[MAXPATHL];		/* buffer storing expanded pathname */
-    char	**xpm = NULL;		/* xpm array */
-
-    buf[0] = NUL;			/* start with NULL path */
-
-    if (menu->iconfile != NULL)
-    {
-	/* Use the "icon="  argument. */
-	gui_find_iconfile(menu->iconfile, buf, "xpm");
-	createXpmImages(buf, NULL, sen, insen);
-
-	/* If it failed, try using the menu name. */
-	if (*sen == (Pixmap)0 && gui_find_bitmap(menu->name, buf, "xpm") == OK)
-	    createXpmImages(buf, NULL, sen, insen);
-	if (*sen != (Pixmap)0)
-	    return;
-    }
-
-    if (menu->icon_builtin || gui_find_bitmap(menu->name, buf, "xpm") == FAIL)
-    {
-	if (menu->iconidx >= 0 && menu->iconidx
-		   < (sizeof(built_in_pixmaps) / sizeof(built_in_pixmaps[0])))
-	    xpm = built_in_pixmaps[menu->iconidx];
-	else
-	    xpm = tb_blank_xpm;
-    }
-
-    if (xpm != NULL || buf[0] != NUL)
-	createXpmImages(buf, xpm, sen, insen);
-}
-
-/* Indices for named colors */
-#define BACKGROUND	0
-#define FOREGROUND	1
-#define BOTTOM_SHADOW	2
-#define TOP_SHADOW	3
-#define HIGHLIGHT	4
-
-/*
- * Read an Xpm file, doing color substitutions for the foreground and
- * background colors. If there is an error reading a color xpm file,
- * drop back and read the monochrome file. If successful, create the
- * insensitive Pixmap too.
- */
-    static void
-createXpmImages(path, xpm, sen, insen)
-    char_u	*path;
-    char	**xpm;
-    Pixmap	*sen;
-    Pixmap	*insen;	    /* can be NULL */
-{
-    Window	rootWindow;
-    XpmAttributes attrs;
-    XpmColorSymbol color[5] =
-    {
-	{"none", "none", 0},
-	{"iconColor1", NULL, 0},
-	{"bottomShadowColor", NULL, 0},
-	{"topShadowColor", NULL, 0},
-	{"selectColor", NULL, 0}
-    };
-    int		screenNum;
-    int		status;
-    Pixmap	mask;
-    Pixmap	map;
-
-    gui_mch_get_toolbar_colors(
-	    &color[BACKGROUND].pixel,
-	    &color[FOREGROUND].pixel,
-	    &color[BOTTOM_SHADOW].pixel,
-	    &color[TOP_SHADOW].pixel,
-	    &color[HIGHLIGHT].pixel);
-
-    /* Setup the color subsititution table */
-    attrs.valuemask = XpmColorSymbols;
-    attrs.colorsymbols = color;
-    attrs.numsymbols = 5;
-
-    screenNum = DefaultScreen(gui.dpy);
-    rootWindow = RootWindow(gui.dpy, screenNum);
-
-    /* Create the "sensitive" pixmap */
-    if (xpm != NULL)
-	status = XpmCreatePixmapFromData(gui.dpy, rootWindow, xpm,
-							 &map, &mask, &attrs);
-    else
-	status = XpmReadFileToPixmap(gui.dpy, rootWindow, (char *)path,
-							 &map, &mask, &attrs);
-    if (status == XpmSuccess && map != 0)
-    {
-	XGCValues   gcvalues;
-	GC	    back_gc;
-	GC	    mask_gc;
-
-	/* Need to create new Pixmaps with the mask applied. */
-	gcvalues.foreground = color[BACKGROUND].pixel;
-	back_gc = XCreateGC(gui.dpy, map, GCForeground, &gcvalues);
-	mask_gc = XCreateGC(gui.dpy, map, GCForeground, &gcvalues);
-	XSetClipMask(gui.dpy, mask_gc, mask);
-
-	/* Create the "sensitive" pixmap. */
-	*sen = XCreatePixmap(gui.dpy, rootWindow,
-		 attrs.width, attrs.height,
-		 DefaultDepth(gui.dpy, screenNum));
-	XFillRectangle(gui.dpy, *sen, back_gc, 0, 0,
-		attrs.width, attrs.height);
-	XCopyArea(gui.dpy, map, *sen, mask_gc, 0, 0,
-		attrs.width, attrs.height, 0, 0);
-
-#ifdef FEAT_GUI_MOTIF	/* not used for Athena */
-	if (insen != NULL)
-	{
-	    int		x, y;
-	    int		startX;
-
-	    /* Create the "insensitive" pixmap.  It's a copy of the "sensitive"
-	     * pixmap with half the pixels set to the background color. */
-	    *insen = XCreatePixmap(gui.dpy, rootWindow,
-		    attrs.width, attrs.height,
-		    DefaultDepth(gui.dpy, screenNum));
-	    XCopyArea(gui.dpy, *sen, *insen, back_gc, 0, 0,
-		    attrs.width, attrs.height, 0, 0);
-	    for (y = 0; y < attrs.height; y++)
-	    {
-		if (y % 2 == 0)
-		    startX = 0;
-		else
-		    startX = 1;
-		for (x = startX; x < attrs.width; x += 2)
-		    XDrawPoint(gui.dpy, *insen, back_gc, x, y);
-	    }
-
-	}
-#endif
-	XFreeGC(gui.dpy, back_gc);
-	XFreeGC(gui.dpy, mask_gc);
-	XFreePixmap(gui.dpy, map);
-    }
-    else
-    {
-	*sen = 0;
-	if (insen != NULL)
-	    *insen = 0;
-    }
-
-    XpmFreeAttributes(&attrs);
 }
 #endif
 

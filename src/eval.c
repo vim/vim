@@ -418,7 +418,7 @@ static void var_free_one __ARGS((VAR v));
 static void list_one_var __ARGS((VAR v, char_u *prefix));
 static void list_vim_var __ARGS((int i));
 static void list_one_var_a __ARGS((char_u *prefix, char_u *name, int type, char_u *string));
-static void set_var __ARGS((char_u *name, VAR varp));
+static void set_var __ARGS((char_u *name, VAR varp, int copy));
 static void copy_var __ARGS((VAR from, VAR to));
 static char_u *find_option_end __ARGS((char_u **arg, int *opt_flags));
 static char_u *trans_function_name __ARGS((char_u **pp, int skip, int internal));
@@ -455,7 +455,7 @@ set_internal_string_var(name, value)
 	varp = alloc_string_var(val);
 	if (varp != NULL)
 	{
-	    set_var(name, varp);
+	    set_var(name, varp, FALSE);
 	    free_var(varp);
 	}
     }
@@ -1214,7 +1214,7 @@ ex_let(eap)
 		    }
 		    else
 		    {
-			set_var(temp_string, &retvar);
+			set_var(temp_string, &retvar, TRUE);
 			vim_free(temp_string);
 		    }
 		}
@@ -1223,7 +1223,7 @@ ex_let(eap)
 		{
 		    c1 = *p;
 		    *p = NUL;
-		    set_var(arg, &retvar);
+		    set_var(arg, &retvar, TRUE);
 		    *p = c1;		/* put char back for error messages */
 		}
 	    }
@@ -6879,7 +6879,7 @@ f_setbufvar(argvars, retvar)
 	    {
 		STRCPY(bufvarname, "b:");
 		STRCPY(bufvarname + 2, varname);
-		set_var(bufvarname, varp);
+		set_var(bufvarname, varp, TRUE);
 		vim_free(bufvarname);
 	    }
 	}
@@ -7040,7 +7040,7 @@ f_setwinvar(argvars, retvar)
 	    {
 		STRCPY(winvarname, "w:");
 		STRCPY(winvarname + 2, varname);
-		set_var(winvarname, varp);
+		set_var(winvarname, varp, TRUE);
 		vim_free(winvarname);
 	    }
 	}
@@ -7193,7 +7193,8 @@ f_remote_peek(argvars, retvar)
     {
 	v.var_type = VAR_STRING;
 	v.var_val.var_string = vim_strsave(s);
-	set_var(get_var_string(&argvars[1]), &v);
+	set_var(get_var_string(&argvars[1]), &v, FALSE);
+	vim_free(v.var_val.var_string);
     }
 #else
     retvar->var_val.var_number = -1;
@@ -7313,7 +7314,8 @@ remote_common(argvars, retvar, expr)
 	sprintf((char *)str, "0x%x", (unsigned int)w);
 	v.var_type = VAR_STRING;
 	v.var_val.var_string = vim_strsave(str);
-	set_var(get_var_string(&argvars[2]), &v);
+	set_var(get_var_string(&argvars[2]), &v, FALSE);
+	vim_free(v.var_val.var_string);
     }
 }
 #endif
@@ -9191,9 +9193,10 @@ list_one_var_a(prefix, name, type, string)
  * Otherwise the variable is created.
  */
     static void
-set_var(name, varp)
+set_var(name, varp, copy)
     char_u	*name;
     VAR		varp;
+    int		copy;	    /* make copy of value in "varp" */
 {
     int		i;
     VAR		v;
@@ -9215,10 +9218,17 @@ set_var(name, varp)
 	    if (vimvars[i].type == VAR_STRING)
 	    {
 		vim_free(vimvars[i].val);
-		vimvars[i].val = vim_strsave(get_var_string(varp));
+		if (copy || varp->var_type != VAR_STRING)
+		    vimvars[i].val = vim_strsave(get_var_string(varp));
+		else
+		{
+		    /* Take over the string to avoid an extra alloc/free. */
+		    vimvars[i].val = varp->var_val.var_string;
+		    varp->var_val.var_string = NULL;
+		}
 	    }
 	    else
-		vimvars[i].val = (char_u *)(long)varp->var_val.var_number;
+		vimvars[i].val = (char_u *)get_var_number(varp);
 	}
 	return;
     }
@@ -9254,7 +9264,13 @@ set_var(name, varp)
 	if (i == gap->ga_len)
 	    ++gap->ga_len;
     }
-    copy_var(varp, v);
+    if (copy || varp->var_type != VAR_STRING)
+	copy_var(varp, v);
+    else
+    {
+	v->var_type = varp->var_type;
+	v->var_val.var_string = varp->var_val.var_string;
+    }
 }
 
     static void
@@ -10663,7 +10679,7 @@ read_viminfo_varlist(virp, writing)
 		/* assign the value to the variable */
 		if (varp != NULL)
 		{
-		    set_var(virp->vir_line + 1, varp);
+		    set_var(virp->vir_line + 1, varp, FALSE);
 		    free_var(varp);
 		}
 	    }

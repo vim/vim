@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2004 Dec 31
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jan 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -626,5 +626,14 @@ In Visual mode, when 'bin' and 'eol' set, g CTRL-G counted the last line
 break, resulting in "selected 202 of 201 bytes".
 
 Motif: fonts were not used for dialog components. (Martin Dalecki)
+
+When using "y<C-V>`x" where mark x is in the first column, the last line was
+not included.
+
+Not all test scripts work properly on MS-Windows when checked out from CVS.
+Use a Vim command to fix all fileformats to dos before executing the tests.
+
+When using ":new" and the file fits in the window, lines could still be above
+the window.  Now remove empty lines instead of keeping the relative position.
 
  vim:tw=78:ts=8:ft=help:norl:
