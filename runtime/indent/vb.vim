@@ -8,9 +8,12 @@ if exists("b:did_indent")
 endif
 let b:did_indent = 1
 
+setlocal autoindent
 setlocal indentexpr=VbGetIndent(v:lnum)
 setlocal indentkeys&
 setlocal indentkeys+==~else,=~elseif,=~end,=~wend,=~case,=~next,=~select,=~loop,<:>
+
+let b:undo_indent = "set ai< indentexpr< indentkeys<"
 
 " Only define the function once.
 if exists("*VbGetIndent")

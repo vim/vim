@@ -12,7 +12,7 @@
  *  (C) 2000 by Thomas Capricelli <orzel@freehackers.org>
  *
  *  Please visit http://freehackers.org/kvim for other vim- or
- *  kde-related coding.
+ *  kde-related coding. (URL currently doesn't work...)
  *
  *  $Id$
  *

@@ -5163,10 +5163,19 @@ mch_expand_wildcards(num_pat, pat, num_file, file, flags)
 	    STRCAT(command, pat[i]);
 	    STRCAT(command, "\"");
 #else
+	    int intick = FALSE;
+
 	    p = command + STRLEN(command);
 	    *p++ = ' ';
 	    for (j = 0; pat[i][j] != NUL; )
-		if (vim_strchr((char_u *)" '", pat[i][j]) != NULL)
+	    {
+		if (pat[i][j] == '`')
+		{
+		    intick = !intick;
+		    *p++ = pat[i][j++];
+		}
+		else if (!intick && vim_strchr((char_u *)" '",
+							   pat[i][j]) != NULL)
 		{
 		    *p++ = '"';
 		    while (pat[i][j] != NUL
@@ -5181,6 +5190,7 @@ mch_expand_wildcards(num_pat, pat, num_file, file, flags)
 		    if ((*p++ = pat[i][j++]) == '\\' && pat[i][j] != NUL)
 			*p++ = pat[i][j++];
 		}
+	    }
 	    *p = NUL;
 #endif
 	}

@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	C
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2004 Sep 01
+" Last Change:	2005 Mar 27
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -11,12 +11,10 @@ endif
 " Don't load another plugin for this buffer
 let b:did_ftplugin = 1
 
+" Using line continuation here.
 set cpo-=C
 
-let b:undo_ftplugin = "setl cin< fo< com<"
-	\ . "| if has('vms') | setl isk< | endif"
-
-setlocal cindent
+let b:undo_ftplugin = "setl fo< com< | if has('vms') | setl isk< | endif"
 
 " Set 'formatoptions' to break comment lines but not other lines,
 " and insert the comment leader when hitting <CR> or using "o".

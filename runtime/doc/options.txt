@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Mar 21
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Mar 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -600,10 +600,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not in Vi}
 			{only available when compiled with the |+farsi|
 			feature}
-	When on, the second language is Farsi. In editing mode CTRL-_ toggles
+	When on, the second language is Farsi.  In editing mode CTRL-_ toggles
 	the keyboard map between Farsi and English, when 'allowrevins' set.
 
-	When off, the keyboard map toggles between Hebrew and English. This
+	When off, the keyboard map toggles between Hebrew and English.  This
 	is useful to start the Vim in native mode i.e. English (left-to-right
 	mode) and have default second language Farsi or Hebrew (right-to-left
 	mode).  See |farsi.txt|.
@@ -620,7 +620,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	letters, Cyrillic letters).
 
 	There are currently two possible values:
-	"single":	Use the same width as characters in US-ASCII. This is
+	"single":	Use the same width as characters in US-ASCII.  This is
 			expected by most users.
 	"double":	Use twice the width of ASCII characters.
 
@@ -628,9 +628,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	those characters are solely based on how many octets they take in
 	legacy/traditional CJK encodings.  In those encodings, Euro,
 	Registered sign, Greek/Cyrillic letters are represented by two octets,
-	therefore those fonts have "wide" glyphs for them. This is also
+	therefore those fonts have "wide" glyphs for them.  This is also
 	true of some line drawing characters used to make tables in text
-	file. Therefore, when a CJK font is used for GUI Vim or
+	file.  Therefore, when a CJK font is used for GUI Vim or
 	Vim is running inside a terminal (emulators) that uses a CJK font
 	(or Vim is run inside an xterm invoked with "-cjkwidth" option.),
 	this option should be set to "double" to match the width perceived
@@ -659,7 +659,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			|+netbeans_intg| or |+sun_workshop| feature}
 	When on, Vim will change its value for the current working directory
 	whenever you open a file, switch buffers, delete a buffer or
-	open/close a window. It will change to the directory containing the
+	open/close a window.  It will change to the directory containing the
 	file which was opened or selected.  This option is provided for
 	backward compatibility with the Vim released with Sun ONE Studio 4
 	Enterprise Edition.
@@ -977,7 +977,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	The pattern is used like with |:autocmd|, see |autocmd-patterns|.
 	Watch out for special characters, see |option-backslash|.
 	When $TMPDIR, $TMP or $TEMP is not defined, it is not used for the
-	default value. "/tmp/*" is only used for Unix.
+	default value.  "/tmp/*" is only used for Unix.
 
 						*'balloondelay'* *'bdlay'*
 'balloondelay' 'bdlay'	number	(default: 600)
@@ -1570,8 +1570,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	   6. included files
 
 	As you can see, CTRL-N and CTRL-P can be used to do any 'iskeyword'-
-	based expansion (eg dictionary |i_CTRL-X_CTRL-K|, included patterns
-	|i_CTRL-X_CTRL-I|, tags |i_CTRL-X_CTRL-]| and normal expansions)
+	based expansion (e.g., dictionary |i_CTRL-X_CTRL-K|, included patterns
+	|i_CTRL-X_CTRL-I|, tags |i_CTRL-X_CTRL-]| and normal expansions).
 
 						*'completefunc'* *'cfu'*
 'completefunc' 'cfu'	string	(default: empty)
@@ -1758,7 +1758,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			not after '!' or '?'.  Also see 'joinspaces'.
 								*cpo-J*
 		J	A |sentence| has to be followed by two spaces after
-			the '.', '!' or '?'. A <Tab> is not recognized as
+			the '.', '!' or '?'.  A <Tab> is not recognized as
 			white space.
 								*cpo-k*
 		k	Disable the recognition of raw key codes in
@@ -2163,7 +2163,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  "." is replaced with the path name of the edited file.
 	- For Unix and Win32, if a directory ends in two path separators, the
 	  swap file name will be built from the complete path to the file
-	  with all path separators substituted to percent '%' signs. This will
+	  with all path separators substituted to percent '%' signs.  This will
 	  ensure file name uniqueness in the preserve directory.
 	- Spaces after the comma are ignored, other spaces are considered part
 	  of the directory name.  To have a space at the start of a directory
@@ -2902,7 +2902,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 						      VMS: "SEARCH/NUMBERS ")
 			global or local to buffer |global-local|
 			{not in Vi}
-	Program to use for the |:grep| command. This option may contain '%'
+	Program to use for the |:grep| command.  This option may contain '%'
 	and '#' characters, which are expanded like when used in a command-
 	line.  The placeholder "$*" is allowed to specify where the arguments
 	will be included.  Environment variables are expanded |:set_env|.  See
@@ -3064,7 +3064,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		i   - italic
 		u   - underline
 		s   - strikeout
-		cXX - character set XX. valid charsets are: ANSI, ARABIC,
+		cXX - character set XX.  Valid charsets are: ANSI, ARABIC,
 		      BALTIC, CHINESEBIG5, DEFAULT, EASTEUROPE, GB2312, GREEK,
 		      HANGEUL, HEBREW, JOHAB, MAC, OEM, RUSSIAN, SHIFTJIS,
 		      SYMBOL, THAI, TURKISH, VIETNAMESE ANSI and BALTIC.
@@ -3146,7 +3146,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 						*'guioptions'* *'go'*
 'guioptions' 'go'	string	(default "gmrLtT"   (MS-Windows),
-					 "agimrLtT" (GTK, Motif and Athena)
+					 "agimrLtT" (GTK, Motif and Athena))
 			global
 			{not in Vi}
 			{only available when compiled with GUI enabled}
@@ -3441,7 +3441,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Unix xterm and iris-ansi by default, where 't_IS' is taken from the
 	builtin termcap).
 	When Vim was compiled with HAVE_X11 defined, the original icon will be
-	restored if possible |X11|. See |X11-icon| for changing the icon on
+	restored if possible |X11|.  See |X11-icon| for changing the icon on
 	X11.
 
 						*'iconstring'*
@@ -3576,7 +3576,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Pattern to be used to find an include command.  It is a search
 	pattern, just like for the "/" command (See |pattern|).  The default
 	value is for C programs.  This option is used for the commands "[i",
-	"]I", "[d", etc..  The 'isfname' option is used to recognize the file
+	"]I", "[d", etc.  The 'isfname' option is used to recognize the file
 	name that comes after the matched pattern.  See |option-backslash|
 	about including spaces and backslashes.
 
@@ -3754,7 +3754,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	The characters given by this option are included in identifiers.
 	Identifiers are used in recognizing environment variables and after a
 	match of the 'define' option.  It is also used for "\i" in a
-	|pattern|. See 'isfname' for a description of the format of this
+	|pattern|.  See 'isfname' for a description of the format of this
 	option.
 	Careful: If you change this option, it might break expanding
 	environment variables.  E.g., when '/' is included and Vim tries to
@@ -4336,12 +4336,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 			like in an xterm.
 	   popup	Right mouse button pops up a menu.  The shifted left
 			mouse button extends a selection.  This works like
-			with Microsoft Windows
+			with Microsoft Windows.
 	   popup_setpos Like "popup", but the cursor will be moved to the
 			position where the mouse was clicked, and thus the
 			selected operation will act upon the clicked object.
 			If clicking inside a selection, that selection will
-			be acted upon, ie. no cursor move.  This implies of
+			be acted upon, i.e. no cursor move.  This implies of
 			course, that right clicking outside a selection will
 			end Visual mode.
 	Overview of what button does what for each model:
@@ -4364,7 +4364,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 					*'mouseshape'* *'mouses'* *E547*
 'mouseshape' 'mouses'	string	(default "i:beam,r:beam,s:updown,sd:cross,
-					m:no,ml:up-arrow,v:rightup-arrow"
+					m:no,ml:up-arrow,v:rightup-arrow")
 			global
 			{not in Vi}
 			{only available when compiled with the |+mouseshape|
@@ -4896,7 +4896,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	If 'rulerformat' is set, it will determine the contents of the ruler.
 	Each window has its own ruler.  If a window has a status line, the
 	ruler is shown there.  Otherwise it is shown in the last line of the
-	screen.  If the statusline is given by 'statusline' (ie. not empty),
+	screen.  If the statusline is given by 'statusline' (i.e. not empty),
 	this option takes precedence over 'ruler' and 'rulerformat'
 	If the number of characters displayed is different from the number of
 	bytes in the text (e.g., for a TAB or a multi-byte character), both
@@ -4950,7 +4950,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 						$VIM/vimfiles,
 						$VIMRUNTIME,
 						$VIM/vimfiles/after,
-						sys$login:vimfiles/after"
+						sys$login:vimfiles/after")
 			global
 			{not in Vi}
 	This is a list of directories which will be searched for runtime
@@ -5415,7 +5415,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		on the command-line, "<" will appear in the left most column.
 		Ignored in Ex mode.
 	  T	truncate other messages in the middle if they are too long to
-		fit on the command line. "..." will appear in the middle.
+		fit on the command line.  "..." will appear in the middle.
 		Ignored in Ex mode.
 	  W	don't give "written" or "[w]" when writing a file
 	  A	don't give the "ATTENTION" message when an existing swap file
@@ -5535,7 +5535,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 			{not in Vi}
 	The minimal number of screen columns to keep to the left and to the
-	right of the cursor if 'nowrap' is set. Setting this option to a value
+	right of the cursor if 'nowrap' is set.  Setting this option to a value
 	greater than 0 while having |'sidescroll'| also at a non-zero value
 	makes some context visible in the line you are scrolling in
 	horizontally (except at the end and beginning of the line).  Setting
@@ -5700,9 +5700,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	'laststatus' is 2) is controlling the output of |CTRL-G|.
 
 	field	    meaning ~
-	-	    Left justify the item. The default is right justified
+	-	    Left justify the item.  The default is right justified
 		    when minwid is larger than the length of the item.
-	0	    Leading zeroes in numeric items. Overridden by '-'.
+	0	    Leading zeroes in numeric items.  Overridden by '-'.
 	minwid	    Minimum width of the item, padding as set by '-' & '0'.
 		    Value must be 50 or less.
 	maxwid	    Maximum width of the item.  Truncation occurs with a '<'
@@ -5743,7 +5743,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	      Mnemonic: Offset from start of file (with one added)
 	      {not available when compiled without |+byte_offset| feature}
 	O N   As above, in hexadecimal.
-	N N   Printer page number. (Only works in the 'printheader' option.)
+	N N   Printer page number.  (Only works in the 'printheader' option.)
 	l N   Line number.
 	L N   Number of lines in buffer.
 	c N   Column number.
@@ -5752,7 +5752,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	p N   Percentage through file in lines as in |CTRL-G|.
 	P S   Percentage through file of displayed window.  This is like the
 	      percentage described for 'ruler'.  Always 3 in length.
-	a S   Argument list status as in default title. ({current} of {max})
+	a S   Argument list status as in default title.  ({current} of {max})
 	      Empty if the argument file count is zero or one.
 	{ NF  Evaluate expression between '{' and '}' and substitute result.
 	( -   Start of item group.  Can be used for setting the width and
@@ -5763,7 +5763,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	= -   Separation point between left and right aligned items.
 	      No width fields allowed.
 	* -   Set highlight group to User{N}, where {N} is taken from the
-	      minwid field. eg. %1*.  Restore normal highlight with %* or %0*.
+	      minwid field, e.g. %1*.  Restore normal highlight with %* or %0*.
 	      The difference between User{N} and StatusLine  will be applied
 	      to StatusLineNC for the statusline of non-current windows.
 	      The number N must be between 1 and 9.  See |hl-User1..9|
@@ -5774,10 +5774,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	with a space it is assumed that it wants to separate itself from
 	anything but other flags.  That is: A leading comma is removed if the
 	preceding character stems from plaintext.  A leading space is removed
-	if the preceding character stems from another active flag. This will
+	if the preceding character stems from another active flag.  This will
 	make a nice display when flags are used like in the examples below.
 
-	When all items in a group becomes an empty string (ie. flags that are
+	When all items in a group becomes an empty string (i.e. flags that are
 	not set) and a minwid is not set for the group, the whole group will
 	become empty.  This will make a group like the following disappear
 	completely from the statusline when none of the flags are set. >
@@ -5786,7 +5786,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Beware that an expression is evaluated each and every time the status
 	line is displayed.  The current buffer and current window will be set
 	temporarily to that of the window (and buffer) whose statusline is
-	currently being drawn. The expression will evaluate in this context.
+	currently being drawn.  The expression will evaluate in this context.
 	The variable "actual_curbuf" is set to the 'bufnr()' number of the
 	real current buffer.  The expression is evaluated in the |sandbox|.
 
@@ -5896,7 +5896,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			also used in all buffer related split commands, for
 			example ":sbuffer", ":sbnext", or ":sbrewind".
 	   split	If included, split the current window before loading
-			a buffer. Otherwise: do not split, use current window.
+			a buffer.  Otherwise: do not split, use current window.
 			Supported in |quickfix| commands that display errors.
 
 						*'syntax'* *'syn'*
@@ -6628,7 +6628,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		saved.  When not included, the value of 'history' is used.
 	c	When included, convert the text in the viminfo file from the
 		'encoding' used when writing the file to the current
-		'encoding'. See |viminfo-encoding|.
+		'encoding'.  See |viminfo-encoding|.
 	f	Whether file marks need to be stored.  If zero, file marks ('0
 		to '9, 'A to 'Z) are not stored.  When not present or when
 		non-zero, they are all stored.  '0 is used for the current
@@ -6771,8 +6771,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 			{not in Vi}
 	'wildcharm' works exactly like 'wildchar', except that it is
-	recognized when used inside a macro. You can find "spare" command-line
-	keys suitable for this option by looking at |ex-edit-index|. Normally
+	recognized when used inside a macro.  You can find "spare" command-line
+	keys suitable for this option by looking at |ex-edit-index|.  Normally
 	you'll never actually type 'wildcharm', just use it in mappings that
 	automatically invoke completion mode, e.g.: >
 		:set wcm=<C-Z>
@@ -6862,7 +6862,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	Examples: >
 		:set wildmode=full
-<	Complete first full match, next match, etc. (the default) >
+<	Complete first full match, next match, etc.  (the default) >
 		:set wildmode=longest,full
 <	Complete longest common string, then each full match >
 		:set wildmode=list:full

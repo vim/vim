@@ -100,7 +100,7 @@
  *
  *		       +----------------------+
  *		       V		      |
- * <aa>\+	BRANCH <aa> --> BRANCH --> BACKP BRANCH --> NOTHING --> END
+ * <aa>\+	BRANCH <aa> --> BRANCH --> BACK  BRANCH --> NOTHING --> END
  *		     |	             |	         ^		        ^
  *		     |	             +-----------+		        |
  *		     +--------------------------------------------------+
@@ -229,8 +229,6 @@
 #define RE_COL		205	/* nr cmp  Match column number */
 #define RE_VCOL		206	/* nr cmp  Match virtual column number */
 
-#define BACKP		207	/*	Like BACK but for \+ */
-
 /*
  * Magic characters have a special meaning, they don't match literally.
  * Magic characters are negative.  This separates them from literal characters
@@ -282,8 +280,6 @@ toggle_Magic(x)
  *
  * BACK		Normal "next" pointers all implicitly point forward; BACK
  *		exists to make loop structures possible.
- *
- * BACKP	Like BACK, but used for \+.  Doesn't check for an empty match.
  *
  * STAR,PLUS	'=', and complex '*' and '+', are implemented as circular
  *		BRANCH structures using BACK.  Simple cases (one character
@@ -1452,7 +1448,7 @@ regpiece(flagp)
 		/* Emit x+ as x(&|), where & means "self". */
 		next = regnode(BRANCH); /* Either */
 		regtail(ret, next);
-		regtail(regnode(BACKP), ret);	/* loop back */
+		regtail(regnode(BACK), ret);	/* loop back */
 		regtail(next, regnode(BRANCH)); /* or */
 		regtail(ret, regnode(NOTHING)); /* null. */
 	    }
@@ -2487,7 +2483,7 @@ regtail(p, val)
 	scan = temp;
     }
 
-    if (OP(scan) == BACK || OP(scan) == BACKP)
+    if (OP(scan) == BACK)
 	offset = (int)(scan - val);
     else
 	offset = (int)(val - scan);
@@ -2965,6 +2961,7 @@ static int	need_clear_zsubexpr = FALSE;	/* extmatch subexpressions
 /*
  * Structure used to save the current input state, when it needs to be
  * restored after trying a match.  Used by reg_save() and reg_restore().
+ * Also stores the length of "backpos".
  */
 typedef struct
 {
@@ -2973,6 +2970,7 @@ typedef struct
 	char_u	*ptr;	/* reginput pointer, for single-line regexp */
 	lpos_T	pos;	/* reginput pos, for multi-line regexp */
     } rs_u;
+    int		rs_len;
 } regsave_T;
 
 /* struct to save start/end pointer/position in for \(\) */
@@ -2983,6 +2981,7 @@ typedef struct
 	char_u	*ptr;
 	lpos_T	pos;
     } se_u;
+    int		se_len;
 } save_se_T;
 
 static char_u	*reg_getline __ARGS((linenr_T lnum));
@@ -2993,8 +2992,8 @@ static void	cleanup_subexpr __ARGS((void));
 static void	cleanup_zsubexpr __ARGS((void));
 #endif
 static void	reg_nextline __ARGS((void));
-static void	reg_save __ARGS((regsave_T *save));
-static void	reg_restore __ARGS((regsave_T *save));
+static void	reg_save __ARGS((regsave_T *save, garray_T *gap));
+static void	reg_restore __ARGS((regsave_T *save, garray_T *gap));
 static int	reg_save_equal __ARGS((regsave_T *save));
 static void	save_se_multi __ARGS((save_se_T *savep, lpos_T *posp));
 static void	save_se_one __ARGS((save_se_T *savep, char_u **pp));
@@ -3547,7 +3546,6 @@ typedef struct regitem_S
 {
     regstate_T	rs_state;	/* what we are doing, one of RS_ above */
     char_u	*rs_scan;	/* current node in program */
-    long	rs_startp;	/* start position for BACK (offset) */
     union
     {
 	save_se_T  sesave;
@@ -3556,14 +3554,14 @@ typedef struct regitem_S
     short	rs_no;		/* submatch nr */
 } regitem_T;
 
-static regitem_T *regstack_push __ARGS((garray_T *regstack, regstate_T state, char_u *scan, long startp));
-static void regstack_pop __ARGS((garray_T *regstack, char_u **scan, long *startp));
+static regitem_T *regstack_push __ARGS((garray_T *regstack, regstate_T state, char_u *scan));
+static void regstack_pop __ARGS((garray_T *regstack, char_u **scan));
 
 /* used for BEHIND and NOBEHIND matching */
 typedef struct regbehind_S
 {
-    regsave_T  save_after;
-    regsave_T  save_behind;
+    regsave_T	save_after;
+    regsave_T	save_behind;
 } regbehind_T;
 
 /* used for STAR, PLUS and BRACE_SIMPLE matching */
@@ -3575,6 +3573,14 @@ typedef struct regstar_S
     long	minval;
     long	maxval;
 } regstar_T;
+
+/* used to store input position when a BACK was encountered, so that we now if
+ * we made any progress since the last time. */
+typedef struct backpos_S
+{
+    char_u	*bp_scan;	/* "scan" where BACK was encountered */
+    regsave_T	bp_pos;		/* last input position */
+} backpos_T;
 
 /*
  * regmatch - main matching routine
@@ -3598,7 +3604,8 @@ regmatch(scan)
   char_u	*next;		/* Next node. */
   int		op;
   int		c;
-  garray_T	regstack;
+  garray_T	regstack;	/* stack with regitem_T items, sometimes
+				   preceded by regstar_T or regbehind_T. */
   regitem_T	*rp;
   int		no;
   int		status;		/* one of the RA_ values: */
@@ -3607,18 +3614,17 @@ regmatch(scan)
 #define RA_BREAK	3	/* break inner loop */
 #define RA_MATCH	4	/* successful match */
 #define RA_NOMATCH	5	/* didn't match */
-  long		startp = 0;	/* start position for BACK, offset to
-				   regstack.ga_data */
-#define STARTP2REGS(startp) (regsave_T *)(((char *)regstack.ga_data) + startp)
-#define REGS2STARTP(p)	    (long)((char *)p - (char *)regstack.ga_data)
+  garray_T	backpos;	/* table with backpos_T for BACK */
 
   /* Init the regstack empty.  Use an item size of 1 byte, since we push
    * different things onto it.  Use a large grow size to avoid reallocating
    * it too often. */
   ga_init2(&regstack, 1, 10000);
 
+  ga_init2(&backpos, sizeof(backpos_T), 10);
+
   /*
-   * Repeat until the stack is empty.
+   * Repeat until "regstack" is empty.
    */
   for (;;)
   {
@@ -3635,7 +3641,7 @@ regmatch(scan)
 #endif
 
     /*
-     * Repeat for items that can be matched sequential, without using the
+     * Repeat for items that can be matched sequentially, without using the
      * regstack.
      */
     for (;;)
@@ -4072,13 +4078,42 @@ regmatch(scan)
 	    break;
 
 	  case BACK:
-	    /* When we run into BACK without matching something non-empty, we
-	     * fail. */
-	    if (startp != 0 && reg_save_equal(STARTP2REGS(startp)))
-		status = RA_NOMATCH;
-	    break;
+	    {
+		int		i;
+		backpos_T	*bp;
 
-	  case BACKP:
+		/*
+		 * When we run into BACK we need to check if we don't keep
+		 * looping without matching any input.  The second and later
+		 * times a BACK is encountered it fails if the input is still
+		 * at the same position as the previous time.
+		 * The positions are stored in "backpos" and found by the
+		 * current value of "scan", the position in the RE program.
+		 */
+		bp = (backpos_T *)backpos.ga_data;
+		for (i = 0; i < backpos.ga_len; ++i)
+		    if (bp[i].bp_scan == scan)
+			break;
+		if (i == backpos.ga_len)
+		{
+		    /* First time at this BACK, make room to store the pos. */
+		    if (ga_grow(&backpos, 1) == FAIL)
+			status = RA_FAIL;
+		    else
+		    {
+			/* get "ga_data" again, it may have changed */
+			bp = (backpos_T *)backpos.ga_data;
+			bp[i].bp_scan = scan;
+			++backpos.ga_len;
+		    }
+		}
+		else if (reg_save_equal(&bp[i].bp_pos))
+		    /* Still at same position as last time, fail. */
+		    status = RA_NOMATCH;
+
+		if (status != RA_FAIL && status != RA_NOMATCH)
+		    reg_save(&bp[i].bp_pos, &backpos);
+	    }
 	    break;
 
 	  case MOPEN + 0:   /* Match start: \zs */
@@ -4094,7 +4129,7 @@ regmatch(scan)
 	    {
 		no = op - MOPEN;
 		cleanup_subexpr();
-		rp = regstack_push(&regstack, RS_MOPEN, scan, startp);
+		rp = regstack_push(&regstack, RS_MOPEN, scan);
 		if (rp == NULL)
 		    status = RA_FAIL;
 		else
@@ -4109,7 +4144,7 @@ regmatch(scan)
 
 	  case NOPEN:	    /* \%( */
 	  case NCLOSE:	    /* \) after \%( */
-		if (regstack_push(&regstack, RS_NOPEN, scan, startp) == NULL)
+		if (regstack_push(&regstack, RS_NOPEN, scan) == NULL)
 		    status = RA_FAIL;
 		/* We simply continue and handle the result when done. */
 		break;
@@ -4127,7 +4162,7 @@ regmatch(scan)
 	    {
 		no = op - ZOPEN;
 		cleanup_zsubexpr();
-		rp = regstack_push(&regstack, RS_ZOPEN, scan, startp);
+		rp = regstack_push(&regstack, RS_ZOPEN, scan);
 		if (rp == NULL)
 		    status = RA_FAIL;
 		else
@@ -4154,7 +4189,7 @@ regmatch(scan)
 	    {
 		no = op - MCLOSE;
 		cleanup_subexpr();
-		rp = regstack_push(&regstack, RS_MCLOSE, scan, startp);
+		rp = regstack_push(&regstack, RS_MCLOSE, scan);
 		if (rp == NULL)
 		    status = RA_FAIL;
 		else
@@ -4179,7 +4214,7 @@ regmatch(scan)
 	    {
 		no = op - ZCLOSE;
 		cleanup_zsubexpr();
-		rp = regstack_push(&regstack, RS_ZCLOSE, scan, startp);
+		rp = regstack_push(&regstack, RS_ZCLOSE, scan);
 		if (rp == NULL)
 		    status = RA_FAIL;
 		else
@@ -4355,13 +4390,9 @@ regmatch(scan)
 	    {
 		if (OP(next) != BRANCH) /* No choice. */
 		    next = OPERAND(scan);	/* Avoid recursion. */
-		else if (startp != 0 && OP(OPERAND(scan)) == BACKP
-				       && reg_save_equal(STARTP2REGS(startp)))
-		    /* \+ with something empty before it */
-		    status = RA_NOMATCH;
 		else
 		{
-		    rp = regstack_push(&regstack, RS_BRANCH, scan, startp);
+		    rp = regstack_push(&regstack, RS_BRANCH, scan);
 		    if (rp == NULL)
 			status = RA_FAIL;
 		    else
@@ -4411,14 +4442,13 @@ regmatch(scan)
 		if (brace_count[no] <= (brace_min[no] <= brace_max[no]
 					     ? brace_min[no] : brace_max[no]))
 		{
-		    rp = regstack_push(&regstack, RS_BRCPLX_MORE, scan, startp);
+		    rp = regstack_push(&regstack, RS_BRCPLX_MORE, scan);
 		    if (rp == NULL)
 			status = RA_FAIL;
 		    else
 		    {
 			rp->rs_no = no;
-			reg_save(&rp->rs_un.regsave);
-			startp = REGS2STARTP(&rp->rs_un.regsave);
+			reg_save(&rp->rs_un.regsave, &backpos);
 			next = OPERAND(scan);
 			/* We continue and handle the result when done. */
 		    }
@@ -4431,15 +4461,13 @@ regmatch(scan)
 		    /* Range is the normal way around, use longest match */
 		    if (brace_count[no] <= brace_max[no])
 		    {
-			rp = regstack_push(&regstack, RS_BRCPLX_LONG,
-								scan, startp);
+			rp = regstack_push(&regstack, RS_BRCPLX_LONG, scan);
 			if (rp == NULL)
 			    status = RA_FAIL;
 			else
 			{
 			    rp->rs_no = no;
-			    reg_save(&rp->rs_un.regsave);
-			    startp = REGS2STARTP(&rp->rs_un.regsave);
+			    reg_save(&rp->rs_un.regsave, &backpos);
 			    next = OPERAND(scan);
 			    /* We continue and handle the result when done. */
 			}
@@ -4450,14 +4478,12 @@ regmatch(scan)
 		    /* Range is backwards, use shortest match first */
 		    if (brace_count[no] <= brace_min[no])
 		    {
-			rp = regstack_push(&regstack, RS_BRCPLX_SHORT,
-								scan, startp);
+			rp = regstack_push(&regstack, RS_BRCPLX_SHORT, scan);
 			if (rp == NULL)
 			    status = RA_FAIL;
 			else
 			{
-			    reg_save(&rp->rs_un.regsave);
-			    startp = REGS2STARTP(&rp->rs_un.regsave);
+			    reg_save(&rp->rs_un.regsave, &backpos);
 			    /* We continue and handle the result when done. */
 			}
 		    }
@@ -4533,7 +4559,7 @@ regmatch(scan)
 		    {
 			regstack.ga_len += sizeof(regstar_T);
 			rp = regstack_push(&regstack, rst.minval <= rst.maxval
-				? RS_STAR_LONG : RS_STAR_SHORT, scan, startp);
+					? RS_STAR_LONG : RS_STAR_SHORT, scan);
 			if (rp == NULL)
 			    status = RA_FAIL;
 			else
@@ -4552,13 +4578,13 @@ regmatch(scan)
 	  case NOMATCH:
 	  case MATCH:
 	  case SUBPAT:
-	    rp = regstack_push(&regstack, RS_NOMATCH, scan, startp);
+	    rp = regstack_push(&regstack, RS_NOMATCH, scan);
 	    if (rp == NULL)
 		status = RA_FAIL;
 	    else
 	    {
 		rp->rs_no = op;
-		reg_save(&rp->rs_un.regsave);
+		reg_save(&rp->rs_un.regsave, &backpos);
 		next = OPERAND(scan);
 		/* We continue and handle the result when done. */
 	    }
@@ -4577,13 +4603,13 @@ regmatch(scan)
 	    else
 	    {
 		regstack.ga_len += sizeof(regbehind_T);
-		rp = regstack_push(&regstack, RS_BEHIND1, scan, startp);
+		rp = regstack_push(&regstack, RS_BEHIND1, scan);
 		if (rp == NULL)
 		    status = RA_FAIL;
 		else
 		{
 		    rp->rs_no = op;
-		    reg_save(&rp->rs_un.regsave);
+		    reg_save(&rp->rs_un.regsave, &backpos);
 		    /* First try if what follows matches.  If it does then we
 		     * check the behind match by looping. */
 		}
@@ -4636,7 +4662,7 @@ regmatch(scan)
 
     /*
      * If there is something on the regstack execute the code for the state.
-     * If the state is popped then loop.
+     * If the state is popped then loop and use the older state.
      */
     while (regstack.ga_len > 0 && status != RA_FAIL)
     {
@@ -4645,7 +4671,7 @@ regmatch(scan)
 	{
 	  case RS_NOPEN:
 	    /* Result is passed on as-is, simply pop the state. */
-	    regstack_pop(&regstack, &scan, &startp);
+	    regstack_pop(&regstack, &scan);
 	    break;
 
 	  case RS_MOPEN:
@@ -4653,7 +4679,7 @@ regmatch(scan)
 	    if (status == RA_NOMATCH)
 		restore_se(&rp->rs_un.sesave, &reg_startpos[rp->rs_no],
 						  &reg_startp[rp->rs_no]);
-	    regstack_pop(&regstack, &scan, &startp);
+	    regstack_pop(&regstack, &scan);
 	    break;
 
 #ifdef FEAT_SYN_HL
@@ -4662,7 +4688,7 @@ regmatch(scan)
 	    if (status == RA_NOMATCH)
 		restore_se(&rp->rs_un.sesave, &reg_startzpos[rp->rs_no],
 						 &reg_startzp[rp->rs_no]);
-	    regstack_pop(&regstack, &scan, &startp);
+	    regstack_pop(&regstack, &scan);
 	    break;
 #endif
 
@@ -4671,7 +4697,7 @@ regmatch(scan)
 	    if (status == RA_NOMATCH)
 		restore_se(&rp->rs_un.sesave, &reg_endpos[rp->rs_no],
 						    &reg_endp[rp->rs_no]);
-	    regstack_pop(&regstack, &scan, &startp);
+	    regstack_pop(&regstack, &scan);
 	    break;
 
 #ifdef FEAT_SYN_HL
@@ -4680,34 +4706,33 @@ regmatch(scan)
 	    if (status == RA_NOMATCH)
 		restore_se(&rp->rs_un.sesave, &reg_endzpos[rp->rs_no],
 						   &reg_endzp[rp->rs_no]);
-	    regstack_pop(&regstack, &scan, &startp);
+	    regstack_pop(&regstack, &scan);
 	    break;
 #endif
 
 	  case RS_BRANCH:
 	    if (status == RA_MATCH)
 		/* this branch matched, use it */
-		regstack_pop(&regstack, &scan, &startp);
+		regstack_pop(&regstack, &scan);
 	    else
 	    {
 		if (status != RA_BREAK)
 		{
 		    /* After a non-matching branch: try next one. */
-		    reg_restore(&rp->rs_un.regsave);
+		    reg_restore(&rp->rs_un.regsave, &backpos);
 		    scan = rp->rs_scan;
 		}
 		if (scan == NULL || OP(scan) != BRANCH)
 		{
 		    /* no more branches, didn't find a match */
 		    status = RA_NOMATCH;
-		    regstack_pop(&regstack, &scan, &startp);
+		    regstack_pop(&regstack, &scan);
 		}
 		else
 		{
 		    /* Prepare to try a branch. */
 		    rp->rs_scan = regnext(scan);
-		    reg_save(&rp->rs_un.regsave);
-		    startp = REGS2STARTP(&rp->rs_un.regsave);
+		    reg_save(&rp->rs_un.regsave, &backpos);
 		    scan = OPERAND(scan);
 		}
 	    }
@@ -4717,10 +4742,10 @@ regmatch(scan)
 	    /* Pop the state.  Restore pointers when there is no match. */
 	    if (status == RA_NOMATCH)
 	    {
-		reg_restore(&rp->rs_un.regsave);
+		reg_restore(&rp->rs_un.regsave, &backpos);
 		--brace_count[rp->rs_no];	/* decrement match count */
 	    }
-	    regstack_pop(&regstack, &scan, &startp);
+	    regstack_pop(&regstack, &scan);
 	    break;
 
 	  case RS_BRCPLX_LONG:
@@ -4728,12 +4753,12 @@ regmatch(scan)
 	    if (status == RA_NOMATCH)
 	    {
 		/* There was no match, but we did find enough matches. */
-		reg_restore(&rp->rs_un.regsave);
+		reg_restore(&rp->rs_un.regsave, &backpos);
 		--brace_count[rp->rs_no];
 		/* continue with the items after "\{}" */
 		status = RA_CONT;
 	    }
-	    regstack_pop(&regstack, &scan, &startp);
+	    regstack_pop(&regstack, &scan);
 	    if (status == RA_CONT)
 		scan = regnext(scan);
 	    break;
@@ -4742,8 +4767,8 @@ regmatch(scan)
 	    /* Pop the state.  Restore pointers when there is no match. */
 	    if (status == RA_NOMATCH)
 		/* There was no match, try to match one more item. */
-		reg_restore(&rp->rs_un.regsave);
-	    regstack_pop(&regstack, &scan, &startp);
+		reg_restore(&rp->rs_un.regsave, &backpos);
+	    regstack_pop(&regstack, &scan);
 	    if (status == RA_NOMATCH)
 	    {
 		scan = OPERAND(scan);
@@ -4760,10 +4785,10 @@ regmatch(scan)
 	    else
 	    {
 		status = RA_CONT;
-		if (rp->rs_no != SUBPAT)
-		    reg_restore(&rp->rs_un.regsave);    /* zero-width */
+		if (rp->rs_no != SUBPAT)	/* zero-width */
+		    reg_restore(&rp->rs_un.regsave, &backpos);
 	    }
-	    regstack_pop(&regstack, &scan, &startp);
+	    regstack_pop(&regstack, &scan);
 	    if (status == RA_CONT)
 		scan = regnext(scan);
 	    break;
@@ -4771,7 +4796,7 @@ regmatch(scan)
 	  case RS_BEHIND1:
 	    if (status == RA_NOMATCH)
 	    {
-		regstack_pop(&regstack, &scan, &startp);
+		regstack_pop(&regstack, &scan);
 		regstack.ga_len -= sizeof(regbehind_T);
 	    }
 	    else
@@ -4783,7 +4808,7 @@ regmatch(scan)
 		 * the current position. */
 
 		/* save the position after the found match for next */
-		reg_save(&(((regbehind_T *)rp) - 1)->save_after);
+		reg_save(&(((regbehind_T *)rp) - 1)->save_after, &backpos);
 
 		/* start looking for a match with operand at the current
 		 * postion.  Go back one character until we find the
@@ -4796,7 +4821,7 @@ regmatch(scan)
 
 		rp->rs_state = RS_BEHIND2;
 
-		reg_restore(&rp->rs_un.regsave);
+		reg_restore(&rp->rs_un.regsave, &backpos);
 		scan = OPERAND(rp->rs_scan);
 	    }
 	    break;
@@ -4810,11 +4835,12 @@ regmatch(scan)
 		/* found a match that ends where "next" started */
 		behind_pos = (((regbehind_T *)rp) - 1)->save_behind;
 		if (rp->rs_no == BEHIND)
-		    reg_restore(&(((regbehind_T *)rp) - 1)->save_after);
+		    reg_restore(&(((regbehind_T *)rp) - 1)->save_after,
+								    &backpos);
 		else
 		    /* But we didn't want a match. */
 		    status = RA_NOMATCH;
-		regstack_pop(&regstack, &scan, &startp);
+		regstack_pop(&regstack, &scan);
 		regstack.ga_len -= sizeof(regbehind_T);
 	    }
 	    else
@@ -4834,7 +4860,7 @@ regmatch(scan)
 			    no = FAIL;
 			else
 			{
-			    reg_restore(&rp->rs_un.regsave);
+			    reg_restore(&rp->rs_un.regsave, &backpos);
 			    rp->rs_un.regsave.rs_u.pos.col =
 						 (colnr_T)STRLEN(regline);
 			}
@@ -4852,7 +4878,7 @@ regmatch(scan)
 		if (no == OK)
 		{
 		    /* Advanced, prepare for finding match again. */
-		    reg_restore(&rp->rs_un.regsave);
+		    reg_restore(&rp->rs_un.regsave, &backpos);
 		    scan = OPERAND(rp->rs_scan);
 		}
 		else
@@ -4861,12 +4887,13 @@ regmatch(scan)
 		    behind_pos = (((regbehind_T *)rp) - 1)->save_behind;
 		    if (rp->rs_no == NOBEHIND)
 		    {
-			reg_restore(&(((regbehind_T *)rp) - 1)->save_after);
+			reg_restore(&(((regbehind_T *)rp) - 1)->save_after,
+								    &backpos);
 			status = RA_MATCH;
 		    }
 		    else
 			status = RA_NOMATCH;
-		    regstack_pop(&regstack, &scan, &startp);
+		    regstack_pop(&regstack, &scan);
 		    regstack.ga_len -= sizeof(regbehind_T);
 		}
 	    }
@@ -4879,14 +4906,14 @@ regmatch(scan)
 
 		if (status == RA_MATCH)
 		{
-		    regstack_pop(&regstack, &scan, &startp);
+		    regstack_pop(&regstack, &scan);
 		    regstack.ga_len -= sizeof(regstar_T);
 		    break;
 		}
 
 		/* Tried once already, restore input pointers. */
 		if (status != RA_BREAK)
-		    reg_restore(&rp->rs_un.regsave);
+		    reg_restore(&rp->rs_un.regsave, &backpos);
 
 		/* Repeat until we found a position where it could match. */
 		for (;;)
@@ -4936,7 +4963,7 @@ regmatch(scan)
 		    if (rst->nextb == NUL || *reginput == rst->nextb
 					     || *reginput == rst->nextb_ic)
 		    {
-			reg_save(&rp->rs_un.regsave);
+			reg_save(&rp->rs_un.regsave, &backpos);
 			scan = regnext(rp->rs_scan);
 			status = RA_CONT;
 			break;
@@ -4945,7 +4972,7 @@ regmatch(scan)
 		if (status != RA_CONT)
 		{
 		    /* Failed. */
-		    regstack_pop(&regstack, &scan, &startp);
+		    regstack_pop(&regstack, &scan);
 		    regstack.ga_len -= sizeof(regstar_T);
 		    status = RA_NOMATCH;
 		}
@@ -4996,11 +5023,10 @@ regmatch(scan)
  * Returns pointer to new item.  Returns NULL when out of memory.
  */
     static regitem_T *
-regstack_push(regstack, state, scan, startp)
+regstack_push(regstack, state, scan)
     garray_T	*regstack;
     regstate_T	state;
     char_u	*scan;
-    long	startp;
 {
     regitem_T	*rp;
 
@@ -5015,7 +5041,6 @@ regstack_push(regstack, state, scan, startp)
     rp = (regitem_T *)((char *)regstack->ga_data + regstack->ga_len);
     rp->rs_state = state;
     rp->rs_scan = scan;
-    rp->rs_startp = startp;
 
     regstack->ga_len += sizeof(regitem_T);
     return rp;
@@ -5025,16 +5050,14 @@ regstack_push(regstack, state, scan, startp)
  * Pop an item from the regstack.
  */
     static void
-regstack_pop(regstack, scan, startp)
+regstack_pop(regstack, scan)
     garray_T	*regstack;
     char_u	**scan;
-    long	*startp;
 {
     regitem_T	*rp;
 
     rp = (regitem_T *)((char *)regstack->ga_data + regstack->ga_len) - 1;
     *scan = rp->rs_scan;
-    *startp = rp->rs_startp;
 
     regstack->ga_len -= sizeof(regitem_T);
 }
@@ -5441,7 +5464,7 @@ regnext(p)
     if (offset == 0)
 	return NULL;
 
-    if (OP(p) == BACK || OP(p) == BACKP)
+    if (OP(p) == BACK)
 	return p - offset;
     else
 	return p + offset;
@@ -5526,8 +5549,9 @@ reg_nextline()
  * Save the input line and position in a regsave_T.
  */
     static void
-reg_save(save)
+reg_save(save, gap)
     regsave_T	*save;
+    garray_T	*gap;
 {
     if (REG_MULTI)
     {
@@ -5536,14 +5560,16 @@ reg_save(save)
     }
     else
 	save->rs_u.ptr = reginput;
+    save->rs_len = gap->ga_len;
 }
 
 /*
  * Restore the input line and position from a regsave_T.
  */
     static void
-reg_restore(save)
+reg_restore(save, gap)
     regsave_T	*save;
+    garray_T	*gap;
 {
     if (REG_MULTI)
     {
@@ -5558,6 +5584,7 @@ reg_restore(save)
     }
     else
 	reginput = save->rs_u.ptr;
+    gap->ga_len = save->rs_len;
 }
 
 /*
@@ -5910,9 +5937,6 @@ regprop(op)
 	break;
       case BACK:
 	p = "BACK";
-	break;
-      case BACKP:
-	p = "BACKP";
 	break;
       case END:
 	p = "END";

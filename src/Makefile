@@ -1787,7 +1787,7 @@ installruntime: $(HELPSOURCE)/vim.1 $(DEST_VIM) $(DEST_RT) \
 	cd $(COMPSOURCE); $(INSTALL_DATA) *.vim README.txt $(DEST_COMP)
 	cd $(DEST_COMP); chmod $(HELPMOD) *.vim README.txt
 
-installmacros: $(MACROSOURCE) $(DEST_VIM) $(DEST_RT) $(DEST_MACRO)
+installmacros: $(DEST_VIM) $(DEST_RT) $(DEST_MACRO)
 	$(INSTALL_DATA_R) $(MACROSOURCE)/* $(DEST_MACRO)
 	chmod $(DIRMOD) `find $(DEST_MACRO) -type d -print`
 	chmod $(FILEMOD) `find $(DEST_MACRO) -type f -print`
@@ -1799,14 +1799,14 @@ installmacros: $(MACROSOURCE) $(DEST_VIM) $(DEST_RT) $(DEST_MACRO)
 	      fi
 
 # install the tutor files
-installtutor: $(TUTORSOURCE) $(DEST_VIM) $(DEST_RT) $(DEST_TUTOR)
+installtutor: $(DEST_VIM) $(DEST_RT) $(DEST_TUTOR)
 	$(INSTALL_DATA) vimtutor $(DEST_BIN)/$(VIMNAME)tutor
 	chmod $(SCRIPTMOD) $(DEST_BIN)/$(VIMNAME)tutor
 	-$(INSTALL_DATA) $(TUTORSOURCE)/README* $(TUTORSOURCE)/tutor* $(DEST_TUTOR)
 	chmod $(HELPMOD) $(DEST_TUTOR)/*
 
 # Install the spell files, if they exist.
-installspell: $(SPELLSOURCE) $(DEST_VIM) $(DEST_RT) $(DEST_SPELL)
+installspell: $(DEST_VIM) $(DEST_RT) $(DEST_SPELL)
 	if test -f $(SPELLSOURCE)/en.spl; then \
 	  $(INSTALL_DATA) $(SPELLSOURCE)/*.spl $(DEST_SPELL); \
 	  chmod $(HELPMOD) $(DEST_SPELL)/*.spl; \

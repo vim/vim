@@ -216,7 +216,7 @@ if &filetype == "changelog"
     command! -nargs=0 NewChangelogEntry call s:new_changelog_entry()
   endif
 
-  let b:undo_ftplugin = "setl com< tw< fo< et< ai<"
+  let b:undo_ftplugin = "setl com< tw< fo< et<"
 
   if &textwidth == 0
     setlocal textwidth=78
@@ -224,7 +224,7 @@ if &filetype == "changelog"
   setlocal comments=
   setlocal formatoptions+=t
   setlocal noexpandtab
-  setlocal autoindent
+  " setlocal autoindent     now in indent file
 
   let &cpo = cpo_save
 else

@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Mar 25
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Mar 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -2534,8 +2534,8 @@ getqflist()						*getqflist()*
 				bufname() to get the name
 			lnum	line number in the buffer (first line is 1)
 			col	column number (first column is 1)
-			vcol	non-zero: column number is visual column
-				zero: column number is byte index
+			vcol	non-zero: "col" is visual column
+				zero: "col" is byte index
 			nr	error number
 			text	description of the error
 			type	type of the error, 'E', '1', etc.
@@ -3290,7 +3290,9 @@ readfile({fname} [, {binary} [, {max}]])
 			:for line in readfile(fname, '', 10)
 			:  if line =~ 'Date' | echo line | endif
 			:endfor
-<		When {max} is zero or negative the result is an empty list.
+<		When {max} is negative -{max} lines from the end of the file
+		are returned, or as many as there are.
+		When {max} is zero the result is an empty list.
 		Note that without {max} the whole file is read into memory.
 		Also note that there is no recognition of encoding.  Read a
 		file into a buffer if you need to.
@@ -3600,12 +3602,17 @@ setqflist({list})					*setqflist()*
 
 		    filename	name of a file
 		    lnum	line number in the file
-		    col		column number
 		    pattern	search pattern used to locate the error
+		    col		column number
+		    vcol	when non-zero: "col" is visual column
+		    		when zero: "col" is byte index
+		    nr		error number
 		    text	description of the error
+		    type	single-character error type, 'E', 'W', etc.
 
-		The "col" and "text" entries are optional.  Either "lnum" or
-		"pattern" entry can be used to locate a matching error line.
+		The "col", "vcol", "nr", "type" and "text" entries are
+		optional.  Either "lnum" or "pattern" entry can be used to
+		locate a matching error line.
 		If the "filename" entry is not present or neither the "lnum"
 		or "pattern" entries are present, then the item will not be
 		handled as an error line.

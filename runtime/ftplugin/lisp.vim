@@ -14,7 +14,6 @@ endif
 " Don't load another plugin for this buffer
 let b:did_ftplugin = 1
 
-setl autoindent
 setl comments=:;
 setl define=^\\s*(def\\k*
 setl formatoptions-=t
@@ -25,6 +24,3 @@ setl lisp
 " e.g. insertion of ;;; and ;; on normal "O" or "o" when staying in comment
 setl comments^=:;;;,:;;,sr:#\|,mb:\|,ex:\|#
 setl formatoptions+=croql
-" with smartindent # cause left alignment
-setl nosmartindent
-

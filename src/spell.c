@@ -540,7 +540,7 @@ spell_load_file(fname)
     int		region = REGION_ALL;
     int		wlen;
     winfo_T	*wi;
-    dword_T	*dw, *edw;
+    dword_T	*dw, *edw = NULL;
     nword_T	*nw = NULL;
     int		flags;
     char_u	*save_sourcing_name = sourcing_name;
