@@ -3560,4 +3560,3 @@ gui_mch_browse(saving, title, dflt, ext, initdir, filter)
     }
     return NULL;
 }
-

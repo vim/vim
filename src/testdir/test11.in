@@ -44,6 +44,7 @@ STARTTEST
 :au FilterReadPost  *.out  '[,']s/x/X/g
 :e! test.out                    " Edit the output file
 :23,$!cat
+:23,$s/\r$//                 " remove CR for when sed adds them
 :au! FileReadPre    *.gz   !gzip -d <afile>
 :au  FileReadPre    *.gz   call rename(expand("<afile>:r"), expand("<afile>"))
 :au! FileReadPost   *.gz   '[,']s/l/L/
