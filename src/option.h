@@ -339,8 +339,9 @@ EXTERN char_u	*p_bsk;		/* 'backupskip' */
 #endif
 #ifdef FEAT_BEVAL
 EXTERN long	p_bdlay;	/* 'balloondelay' */
-# if defined(FEAT_SUN_WORKSHOP) || defined(FEAT_NETBEANS_INTG)
 EXTERN int	p_beval;	/* 'ballooneval' */
+# ifdef FEAT_EVAL
+EXTERN char_u	*p_bexpr;
 # endif
 #endif
 #ifdef FEAT_BROWSE
@@ -586,6 +587,7 @@ EXTERN long	p_mfd;		/* 'maxfuncdepth' */
 #endif
 EXTERN long	p_mmd;		/* 'maxmapdepth' */
 EXTERN long	p_mm;		/* 'maxmem' */
+EXTERN long	p_mmp;		/* 'maxmempattern' */
 EXTERN long	p_mmt;		/* 'maxmemtot' */
 #ifdef FEAT_MENU
 EXTERN long	p_mis;		/* 'menuitems' */

@@ -1070,6 +1070,13 @@ EXTERN int      stl_syntax INIT(= 0);
 EXTERN int	no_hlsearch INIT(= FALSE);
 #endif
 
+#ifdef FEAT_BEVAL
+EXTERN BalloonEval	*balloonEval INIT(= NULL);
+EXTERN int bevalServers INIT(= 0);
+# define BEVAL_NETBEANS		0x01
+# define BEVAL_WORKSHOP		0x02
+#endif
+
 #ifdef CURSOR_SHAPE
 /* the table is in misc2.c, because of initializations */
 extern cursorentry_T shape_table[SHAPE_IDX_COUNT];
@@ -1412,12 +1419,7 @@ EXTERN char_u e_nbreadonly[]	INIT(=N_("E744: NetBeans does not allow changes in 
 #if defined(FEAT_EVAL) || defined(FEAT_SYN_HL) || defined(PROTO)
 EXTERN char_u e_intern2[]	INIT(=N_("E685: Internal error: %s"));
 #endif
-#if 0
-#if defined(HAVE_SETJMP_H) || defined(HAVE_TRY_EXCEPT) || defined(__MINGW32__)
-EXTERN char_u e_complex[]	INIT(=N_("E361: Crash intercepted; regexp too complex?"));
-#endif
-#endif
-EXTERN char_u e_outofstack[]	INIT(=N_("E363: pattern caused out-of-stack error"));
+EXTERN char_u e_maxmempat[]	INIT(=N_("E363: pattern uses more memory than 'maxmempattern'"));
 EXTERN char_u e_emptybuf[]	INIT(=N_("E749: empty buffer"));
 
 #ifdef MACOS_X_UNIX

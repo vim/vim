@@ -448,12 +448,14 @@ static struct vimoption
     {"balloondelay","bdlay",P_NUM|P_VI_DEF,
 			    (char_u *)&p_bdlay, PV_NONE,
 			    {(char_u *)600L, (char_u *)0L}},
-#endif
-#if defined(FEAT_BEVAL) && (defined(FEAT_SUN_WORKSHOP) \
-	|| defined(FEAT_NETBEANS_INTG))
     {"ballooneval", "beval",P_BOOL|P_VI_DEF|P_NO_MKRC,
 			    (char_u *)&p_beval, PV_NONE,
-			    {(char_u*)FALSE, (char_u *)0L}},
+			    {(char_u *)FALSE, (char_u *)0L}},
+# ifdef FEAT_EVAL
+    {"balloonexpr", "bexpr",  P_STRING|P_ALLOCED|P_VI_DEF|P_VIM,
+			    (char_u *)&p_bexpr, PV_NONE,
+			    {(char_u *)"", (char_u *)0L}},
+# endif
 #endif
     {"beautify",    "bf",   P_BOOL|P_VI_DEF,
 			    (char_u *)NULL, PV_NONE,
@@ -1479,6 +1481,9 @@ static struct vimoption
     {"maxmem",	    "mm",   P_NUM|P_VI_DEF,
 			    (char_u *)&p_mm, PV_NONE,
 			    {(char_u *)DFLT_MAXMEM, (char_u *)0L}},
+    {"maxmempattern","mmp", P_NUM|P_VI_DEF,
+			    (char_u *)&p_mmp, PV_NONE,
+			    {(char_u *)1000L, (char_u *)0L}},
     {"maxmemtot",   "mmt",  P_NUM|P_VI_DEF,
 			    (char_u *)&p_mmt, PV_NONE,
 			    {(char_u *)DFLT_MAXMEMTOT, (char_u *)0L}},
@@ -5522,10 +5527,14 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
     /* 'ttymouse' */
     else if (varp == &p_ttym)
     {
+	/* Switch the mouse off before changing the escape sequences used for
+	 * that. */
+	mch_setmouse(FALSE);
 	if (opt_strings_flags(p_ttym, p_ttym_values, &ttym_flags, FALSE) != OK)
 	    errmsg = e_invarg;
 	else
 	    check_mouse_termcode();
+	setmouse();	/* may switch it on again */
     }
 #endif
 
@@ -6551,24 +6560,23 @@ set_bool_option(opt_idx, varp, value, opt_flags)
 	p_wiv = (*T_XS != NUL);
     }
 
-#if defined(FEAT_BEVAL) && (defined(FEAT_SUN_WORKSHOP) \
-	|| defined(FEAT_NETBEANS_INTG))
+#ifdef FEAT_BEVAL
     else if ((int *)varp == &p_beval)
     {
-	extern BalloonEval	*balloonEval;
-
 	if (p_beval == TRUE)
 	    gui_mch_enable_beval_area(balloonEval);
 	else
 	    gui_mch_disable_beval_area(balloonEval);
     }
 
+# if defined(FEAT_NETBEANS_INTG) || defined(FEAT_SUN_WORKSHOP)
     else if ((int *)varp == &p_acd)
     {
 	if (p_acd && curbuf->b_ffname != NULL
 				     && vim_chdirfile(curbuf->b_ffname) == OK)
 	    shorten_fnames(TRUE);
     }
+# endif
 #endif
 
 #ifdef FEAT_DIFF

@@ -44,7 +44,7 @@ void term_cursor_shape __ARGS((void));
 void scroll_region_set __ARGS((win_T *wp, int off));
 void scroll_region_reset __ARGS((void));
 void clear_termcodes __ARGS((void));
-void add_termcode __ARGS((char_u *name, char_u *string, int use_8bit));
+void add_termcode __ARGS((char_u *name, char_u *string, int flags));
 char_u *find_termcode __ARGS((char_u *name));
 char_u *get_termcode __ARGS((int i));
 void del_termcode __ARGS((char_u *name));

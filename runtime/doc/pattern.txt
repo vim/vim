@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 7.0aa.  Last change: 2005 Feb 20
+*pattern.txt*   For Vim version 7.0aa.  Last change: 2005 Mar 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -272,7 +272,7 @@ the "*" is under your right hand middle finger (search to the right and down).
 ==============================================================================
 2. The definition of a pattern		*search-pattern* *pattern* *[pattern]*
 					*regular-expression* *regexp* *Pattern*
-					*E76* *E361* *E363* *E383* *E476*
+					*E76* *E383* *E476*
 
 For starters, read chapter 27 of the user manual |usr_27.txt|.
 

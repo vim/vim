@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	TeX
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrOchipS@PcampbellAfamily.Mbiz>
-" Last Change:	Oct 13, 2004
-" Version:	26
+" Last Change:	Mar 02, 2005
+" Version:	27
 " URL:		http://www.erols.com/astronaut/vim/index.html#vimlinks_syntax
 "
 " Notes: {{{1
@@ -53,7 +53,7 @@ if exists("g:tex_tex") && !exists("g:tex_no_error")
  let g:tex_no_error= 1
 endif
 
-" Determine whether or not to use "*.sty" mode
+" Determine whether or not to use "*.sty" mode {{{1
 " The user may override the normal determination by setting
 "   g:tex_stylish to 1      (for    "*.sty" mode)
 "    or to           0 else (normal "*.tex" mode)
@@ -68,6 +68,18 @@ elseif !exists("b:tex_stylish")
   let b:tex_stylish= 0
  endif
 endif
+
+" handle folding {{{1
+if !exists("g:tex_fold_enabled")
+ let g:tex_fold_enabled= 0
+elseif g:tex_fold_enabled && !has("folding")
+ let g:sh_fold_enabled= 0;
+ echomsg "Ignoring g:tex_fold_enabled=".g:tex_fold_enabled."; need to re-compile vim for +fold support"
+endif
+if g:tex_fold_enabled && &fdm == "manual"
+ set fdm=syntax
+endif
+
 
 " (La)TeX keywords: only use the letters a-zA-Z {{{1
 " but _ is the only one that causes problems.
@@ -233,19 +245,9 @@ syn match texSpaceCode		"\\\(math\|cat\|del\|lc\|sf\|uc\)code`"me=e-1 nextgroup=
 syn match texSpaceCodeChar    "`\\\=.\(\^.\)\==\(\d\|\"\x\{1,6}\|`.\)"	contained
 
 " Sections, subsections, etc: {{{1
-if exists("tex_dosynfolds") && has("folding")
- " COMBAK -- this folding doesn't work as expected as yet
- syn region Red	matchgroup=texSection start="\\section\*\=\>"			end="\\\%(sub\)*\%(abstract\|section\|author\|part\|chapter\|paragraph\|subparagraph\)\*\=\>"me=s end="%\s*stopzone\>" fold
-" syn region Red	matchgroup=texSection start="\\section\*\=\>"			end="\ze\\\(sub\)*\(abstract\|section\|author\|part\|chapter\|paragraph\|subparagraph\)\*\=\>" end="%\s*stopzone\>" contains=TOP fold
-" syn region Blue	matchgroup=texSection start="\\subsection\*\=\>"		end="\ze\\\(sub\)*\(abstract\|section\|author\|part\|chapter\|paragraph\|subparagraph\)\*\=\>" contains=TOP fold
-" syn region texSectionZone	matchgroup=texSection start="\\subsubsection\*\=\>"		end="\ze\\\(sub\)*\(abstract\|section\|author\|part\|chapter\|paragraph\|subparagraph\)\*\=\>" contains=TOP fold
-" syn region texSectionZone	matchgroup=texSection start="\\title\*\=\>"			end="\ze\\\(sub\)*\(abstract\|section\|author\|part\|chapter\|paragraph\|subparagraph\)\*\=\>" contains=TOP fold
-" syn region texSectionZone	matchgroup=texSection start="\\author\*\=\>"			end="\ze\\\(sub\)*\(abstract\|section\|author\|part\|chapter\|paragraph\|subparagraph\)\*\=\>" contains=TOP fold
-" syn region texSectionZone	matchgroup=texSection start="\\part\*\=\>"			end="\ze\\\(sub\)*\(abstract\|section\|author\|part\|chapter\|paragraph\|subparagraph\)\*\=\>" contains=TOP fold
-" syn region texSectionZone	matchgroup=texSection start="\\chapter\*\=\>"			end="\ze\\\(sub\)*\(abstract\|section\|author\|part\|chapter\|paragraph\|subparagraph\)\*\=\>" contains=TOP fold
-" syn region texSectionZone	matchgroup=texSection start="\\paragraph\*\=\>"		end="\ze\\\(sub\)*\(abstract\|section\|author\|part\|chapter\|paragraph\|subparagraph\)\*\=\>" contains=TOP fold
-" syn region texSectionZone	matchgroup=texSection start="\\subparagraph\*\=\>"		end="\ze\\\(sub\)*\(abstract\|section\|author\|part\|chapter\|paragraph\|subparagraph\)\*\=\>" contains=TOP fold
-" syn region texSectionZone	matchgroup=texSection start="\\begin\s*{\s*abstract\s*}"	end="\\end\s*{\s*abstract\s*}"  contains=TOP fold
+if g:tex_fold_enabled && has("folding")
+ syn region texSectionZone	matchgroup=texSection start="\\\(sub\)*\(section\|author\|part\|chapter\|paragraph\)\*\=\>"	end="\ze\\\(sub\)*\(section\|author\|part\|chapter\|paragraph\)\*\=\>" end="%\s*stopzone\>"	contains=TOP fold
+ syn region texSectionZone	matchgroup=texSection start="\\begin\s*{\s*abstract\s*}"	end="\\end\s*{\s*abstract\s*}"  contains=TOP fold
 else
  syn match texSection		"\\\(sub\)*section\*\=\>"
  syn match texSection		"\\\(title\|author\|part\|chapter\|paragraph\|subparagraph\)\>"
