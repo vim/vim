@@ -190,12 +190,6 @@ typedef struct syn_pattern
 
 #define SYN_STATE_P(ssp)    ((bufstate_T *)((ssp)->ga_data))
 
-/*
- * Settings for keyword hash table.  It uses a simplistic hash function: add
- * all characters together, modulo KHASH_SIZE.
- */
-#define KHASH_SIZE	512
-#define KHASH_MASK	(KHASH_SIZE - 1)
 #define MAXKEYWLEN	80	    /* maximum length of a keyword */
 
 /*
@@ -250,6 +244,18 @@ static char_u **syn_cmdlinep;
  */
 static int current_syn_inc_tag = 0;
 static int running_syn_inc_tag = 0;
+
+/*
+ * In a hashtable item "hi_key" points to "keyword" in a keyentry.
+ * This avoids adding a pointer to the hashtable item.
+ * KE2HIKEY() converts a var pointer to a hashitem key pointer.
+ * HIKEY2KE() converts a hashitem key pointer to a var pointer.
+ * HI2KE() converts a hashitem pointer to a var pointer.
+ */
+static keyentry_T dumkey;
+#define KE2HIKEY(kp)  ((kp)->keyword)
+#define HIKEY2KE(p)   ((keyentry_T *)((p) - (dumkey.keyword - (char_u *)&dumkey)))
+#define HI2KE(hi)      HIKEY2KE((hi)->hi_key)
 
 /*
  * To reduce the time spent in keepend(), remember at which level in the state
@@ -390,11 +396,10 @@ static void syn_list_one __ARGS((int id, int syncing, int link_only));
 static void syn_list_cluster __ARGS((int id));
 static void put_id_list __ARGS((char_u *name, short *list, int attr));
 static void put_pattern __ARGS((char *s, int c, synpat_T *spp, int attr));
-static int syn_list_keywords __ARGS((int id, keyentry_T **ktabp, int did_header, int attr));
-static void syn_clear_keyword __ARGS((int id, keyentry_T **ktabp));
-static void free_keywtab __ARGS((keyentry_T **ktabp));
+static int syn_list_keywords __ARGS((int id, hashtab_T *ht, int did_header, int attr));
+static void syn_clear_keyword __ARGS((int id, hashtab_T *ht));
+static void clear_keywtab __ARGS((hashtab_T *ht));
 static void add_keyword __ARGS((char_u *name, int id, int flags, short *cont_in_list, short *next_list));
-static int syn_khash __ARGS((char_u *p));
 static char_u *get_group_name __ARGS((char_u *arg, char_u **name_end));
 static char_u *get_syn_options __ARGS((char_u *arg, int *flagsp, int keyword, int *sync_idx, short **cont_list, short **cont_in_list, short **next_list));
 static void syn_cmd_include __ARGS((exarg_T *eap, int syncing));
@@ -1775,8 +1780,8 @@ syn_current_attr(syncing, displaying)
 
     /* Only check for keywords when not syncing and there are some. */
     do_keywords = !syncing
-		    && (syn_buf->b_keywtab != NULL
-			    || syn_buf->b_keywtab_ic != NULL);
+		    && (syn_buf->b_keywtab.ht_used > 0
+			    || syn_buf->b_keywtab_ic.ht_used > 0);
 
     /* Init the list of zero-width matches with a nextlist.  This is used to
      * avoid matching the same item in the same position twice. */
@@ -2950,36 +2955,38 @@ check_keyword_id(line, startcol, endcolp, flagsp, next_listp, cur_si)
     short	**next_listp;	/* return: next_list of matching keyword */
     stateitem_T	*cur_si;	/* item at the top of the stack */
 {
-    keyentry_T	*ktab;
-    char_u	*p;
+    keyentry_T	*kp;
+    char_u	*kwp;
     int		round;
-    int		len;
+    int		kwlen;
     char_u	keyword[MAXKEYWLEN + 1]; /* assume max. keyword len is 80 */
+    hashtab_T	*ht;
+    hashitem_T	*hi;
 
     /* Find first character after the keyword.  First character was already
      * checked. */
-    p = line + startcol;
-    len = 0;
+    kwp = line + startcol;
+    kwlen = 0;
     do
     {
 #ifdef FEAT_MBYTE
 	if (has_mbyte)
-	    len += (*mb_ptr2len_check)(p + len);
+	    kwlen += (*mb_ptr2len_check)(kwp + kwlen);
 	else
 #endif
-	    ++len;
+	    ++kwlen;
     }
-    while (vim_iswordc_buf(p + len, syn_buf));
+    while (vim_iswordc_buf(kwp + kwlen, syn_buf));
 
-    if (len > MAXKEYWLEN)
+    if (kwlen > MAXKEYWLEN)
 	return 0;
 
     /*
      * Must make a copy of the keyword, so we can add a NUL and make it
      * lowercase.
      */
-    STRNCPY(keyword, p, len);
-    keyword[len] = NUL;
+    STRNCPY(keyword, kwp, kwlen);
+    keyword[kwlen] = NUL;
 
     /*
      * Try twice:
@@ -2988,41 +2995,35 @@ check_keyword_id(line, startcol, endcolp, flagsp, next_listp, cur_si)
      */
     for (round = 1; round <= 2; ++round)
     {
-	if ((round == 1 ? syn_buf->b_keywtab : syn_buf->b_keywtab_ic) == NULL)
+	ht = round == 1 ? &syn_buf->b_keywtab : &syn_buf->b_keywtab_ic;
+	if (ht->ht_used == 0)
 	    continue;
-	if (round == 1)	/* match case */
-	    ktab = syn_buf->b_keywtab[syn_khash(keyword)];
-	else /* round == 2, ignore case */
-	{
-	    p = str_foldcase(keyword, (int)STRLEN(keyword));
-	    if (p != NULL)
-	    {
-		STRNCPY(keyword, p, MAXKEYWLEN);
-		keyword[MAXKEYWLEN] = NUL;
-		vim_free(p);
-	    }
-	    ktab = syn_buf->b_keywtab_ic[syn_khash(keyword)];
-	}
+	if (round == 2)	/* ignore case */
+	    (void)str_foldcase(kwp, kwlen, keyword, MAXKEYWLEN + 1);
 
 	/*
-	 * Find keywords that match.
+	 * Find keywords that match.  There can be several with different
+	 * attributes.
 	 * When current_next_list is non-zero accept only that group, otherwise:
 	 *  Accept a not-contained keyword at toplevel.
 	 *  Accept a keyword at other levels only if it is in the contains list.
 	 */
-	for ( ; ktab != NULL; ktab = ktab->next)
-	    if (   STRCMP(keyword, ktab->keyword) == 0
-		&& (current_next_list != 0
-		    ? in_id_list(NULL, current_next_list, &ktab->k_syn, 0)
-		    : (cur_si == NULL
-			? !(ktab->flags & HL_CONTAINED)
-			: in_id_list(cur_si, cur_si->si_cont_list,
-				  &ktab->k_syn, ktab->flags & HL_CONTAINED))))
+	hi = hash_find(ht, keyword);
+	if (!HASHITEM_EMPTY(hi))
+	    for (kp = HI2KE(hi); kp != NULL; kp = kp->ke_next)
 	    {
-		*endcolp = startcol + len;
-		*flagsp = ktab->flags;
-		*next_listp = ktab->next_list;
-		return ktab->k_syn.id;
+		if (current_next_list != 0
+			? in_id_list(NULL, current_next_list, &kp->k_syn, 0)
+			: (cur_si == NULL
+			    ? !(kp->flags & HL_CONTAINED)
+			    : in_id_list(cur_si, cur_si->si_cont_list,
+				      &kp->k_syn, kp->flags & HL_CONTAINED)))
+		{
+		    *endcolp = startcol + kwlen;
+		    *flagsp = kp->flags;
+		    *next_listp = kp->next_list;
+		    return kp->k_syn.id;
+		}
 	    }
     }
     return 0;
@@ -3066,10 +3067,8 @@ syntax_clear(buf)
     curbuf->b_syn_containedin = FALSE;
 
     /* free the keywords */
-    free_keywtab(buf->b_keywtab);
-    buf->b_keywtab = NULL;
-    free_keywtab(buf->b_keywtab_ic);
-    buf->b_keywtab_ic = NULL;
+    clear_keywtab(&buf->b_keywtab);
+    clear_keywtab(&buf->b_keywtab_ic);
 
     /* free the syntax patterns */
     for (i = buf->b_syn_patterns.ga_len; --i >= 0; )
@@ -3277,8 +3276,8 @@ syn_clear_one(id, syncing)
     /* Clear keywords only when not ":syn sync clear group-name" */
     if (!syncing)
     {
-	(void)syn_clear_keyword(id, curbuf->b_keywtab);
-	(void)syn_clear_keyword(id, curbuf->b_keywtab_ic);
+	(void)syn_clear_keyword(id, &curbuf->b_keywtab);
+	(void)syn_clear_keyword(id, &curbuf->b_keywtab_ic);
     }
 
     /* clear the patterns for "id" */
@@ -3552,8 +3551,8 @@ syn_list_one(id, syncing, link_only)
     /* list the keywords for "id" */
     if (!syncing)
     {
-	did_header = syn_list_keywords(id, curbuf->b_keywtab, FALSE, attr);
-	did_header = syn_list_keywords(id, curbuf->b_keywtab_ic,
+	did_header = syn_list_keywords(id, &curbuf->b_keywtab, FALSE, attr);
+	did_header = syn_list_keywords(id, &curbuf->b_keywtab_ic,
 							    did_header, attr);
     }
 
@@ -3787,15 +3786,16 @@ put_pattern(s, c, spp, attr)
  * Return TRUE if the header has been printed.
  */
     static int
-syn_list_keywords(id, ktabp, did_header, attr)
+syn_list_keywords(id, ht, did_header, attr)
     int		id;
-    keyentry_T	**ktabp;
+    hashtab_T	*ht;
     int		did_header;		/* header has already been printed */
     int		attr;
 {
-    int		i;
     int		outlen;
-    keyentry_T	*ktab;
+    hashitem_T	*hi;
+    keyentry_T	*kp;
+    int		todo;
     int		prev_contained = 0;
     short	*prev_next_list = NULL;
     short	*prev_cont_in_list = NULL;
@@ -3803,77 +3803,79 @@ syn_list_keywords(id, ktabp, did_header, attr)
     int		prev_skipwhite = 0;
     int		prev_skipempty = 0;
 
-    if (ktabp == NULL)
-	return did_header;
-
     /*
      * Unfortunately, this list of keywords is not sorted on alphabet but on
      * hash value...
      */
-    for (i = 0; i < KHASH_SIZE; ++i)
+    todo = ht->ht_used;
+    for (hi = ht->ht_array; todo > 0 && !got_int; ++hi)
     {
-	for (ktab = ktabp[i]; ktab != NULL && !got_int; ktab = ktab->next)
+	if (!HASHITEM_EMPTY(hi))
 	{
-	    if (ktab->k_syn.id == id)
+	    --todo;
+	    for (kp = HI2KE(hi); kp != NULL && !got_int; kp = kp->ke_next)
 	    {
-		if (prev_contained != (ktab->flags & HL_CONTAINED)
-			|| prev_skipnl != (ktab->flags & HL_SKIPNL)
-			|| prev_skipwhite != (ktab->flags & HL_SKIPWHITE)
-			|| prev_skipempty != (ktab->flags & HL_SKIPEMPTY)
-			|| prev_cont_in_list != ktab->k_syn.cont_in_list
-			|| prev_next_list != ktab->next_list)
-		    outlen = 9999;
-		else
-		    outlen = (int)STRLEN(ktab->keyword);
-		/* output "contained" and "nextgroup" on each line */
-		if (syn_list_header(did_header, outlen, id))
+		if (kp->k_syn.id == id)
 		{
-		    prev_contained = 0;
-		    prev_next_list = NULL;
-		    prev_cont_in_list = NULL;
-		    prev_skipnl = 0;
-		    prev_skipwhite = 0;
-		    prev_skipempty = 0;
-		}
-		did_header = TRUE;
-		if (prev_contained != (ktab->flags & HL_CONTAINED))
-		{
-		    msg_puts_attr((char_u *)"contained", attr);
-		    msg_putchar(' ');
-		    prev_contained = (ktab->flags & HL_CONTAINED);
-		}
-		if (ktab->k_syn.cont_in_list != prev_cont_in_list)
-		{
-		    put_id_list((char_u *)"containedin",
-					      ktab->k_syn.cont_in_list, attr);
-		    msg_putchar(' ');
-		    prev_cont_in_list = ktab->k_syn.cont_in_list;
-		}
-		if (ktab->next_list != prev_next_list)
-		{
-		    put_id_list((char_u *)"nextgroup", ktab->next_list, attr);
-		    msg_putchar(' ');
-		    prev_next_list = ktab->next_list;
-		    if (ktab->flags & HL_SKIPNL)
+		    if (prev_contained != (kp->flags & HL_CONTAINED)
+			    || prev_skipnl != (kp->flags & HL_SKIPNL)
+			    || prev_skipwhite != (kp->flags & HL_SKIPWHITE)
+			    || prev_skipempty != (kp->flags & HL_SKIPEMPTY)
+			    || prev_cont_in_list != kp->k_syn.cont_in_list
+			    || prev_next_list != kp->next_list)
+			outlen = 9999;
+		    else
+			outlen = (int)STRLEN(kp->keyword);
+		    /* output "contained" and "nextgroup" on each line */
+		    if (syn_list_header(did_header, outlen, id))
 		    {
-			msg_puts_attr((char_u *)"skipnl", attr);
-			msg_putchar(' ');
-			prev_skipnl = (ktab->flags & HL_SKIPNL);
+			prev_contained = 0;
+			prev_next_list = NULL;
+			prev_cont_in_list = NULL;
+			prev_skipnl = 0;
+			prev_skipwhite = 0;
+			prev_skipempty = 0;
 		    }
-		    if (ktab->flags & HL_SKIPWHITE)
+		    did_header = TRUE;
+		    if (prev_contained != (kp->flags & HL_CONTAINED))
 		    {
-			msg_puts_attr((char_u *)"skipwhite", attr);
+			msg_puts_attr((char_u *)"contained", attr);
 			msg_putchar(' ');
-			prev_skipwhite = (ktab->flags & HL_SKIPWHITE);
+			prev_contained = (kp->flags & HL_CONTAINED);
 		    }
-		    if (ktab->flags & HL_SKIPEMPTY)
+		    if (kp->k_syn.cont_in_list != prev_cont_in_list)
 		    {
-			msg_puts_attr((char_u *)"skipempty", attr);
+			put_id_list((char_u *)"containedin",
+						kp->k_syn.cont_in_list, attr);
 			msg_putchar(' ');
-			prev_skipempty = (ktab->flags & HL_SKIPEMPTY);
+			prev_cont_in_list = kp->k_syn.cont_in_list;
 		    }
+		    if (kp->next_list != prev_next_list)
+		    {
+			put_id_list((char_u *)"nextgroup", kp->next_list, attr);
+			msg_putchar(' ');
+			prev_next_list = kp->next_list;
+			if (kp->flags & HL_SKIPNL)
+			{
+			    msg_puts_attr((char_u *)"skipnl", attr);
+			    msg_putchar(' ');
+			    prev_skipnl = (kp->flags & HL_SKIPNL);
+			}
+			if (kp->flags & HL_SKIPWHITE)
+			{
+			    msg_puts_attr((char_u *)"skipwhite", attr);
+			    msg_putchar(' ');
+			    prev_skipwhite = (kp->flags & HL_SKIPWHITE);
+			}
+			if (kp->flags & HL_SKIPEMPTY)
+			{
+			    msg_puts_attr((char_u *)"skipempty", attr);
+			    msg_putchar(' ');
+			    prev_skipempty = (kp->flags & HL_SKIPEMPTY);
+			}
+		    }
+		    msg_outtrans(kp->keyword);
 		}
-		msg_outtrans(ktab->keyword);
 	    }
 	}
     }
@@ -3882,65 +3884,84 @@ syn_list_keywords(id, ktabp, did_header, attr)
 }
 
     static void
-syn_clear_keyword(id, ktabp)
+syn_clear_keyword(id, ht)
     int		id;
-    keyentry_T	**ktabp;
+    hashtab_T	*ht;
 {
-    int		i;
-    keyentry_T	*ktab;
-    keyentry_T	*ktab_prev;
-    keyentry_T	*ktab_next;
+    hashitem_T	*hi;
+    keyentry_T	*kp;
+    keyentry_T	*kp_prev;
+    keyentry_T	*kp_next;
+    int		todo;
 
-    if (ktabp == NULL)	    /* no keywords present */
-	return;
-
-    for (i = 0; i < KHASH_SIZE; ++i)
+    hash_lock(ht);
+    todo = ht->ht_used;
+    for (hi = ht->ht_array; todo > 0; ++hi)
     {
-	ktab_prev = NULL;
-	for (ktab = ktabp[i]; ktab != NULL; )
+	if (!HASHITEM_EMPTY(hi))
 	{
-	    if (ktab->k_syn.id == id)
+	    --todo;
+	    kp_prev = NULL;
+	    for (kp = HI2KE(hi); kp != NULL; )
 	    {
-		ktab_next = ktab->next;
-		if (ktab_prev == NULL)
-		    ktabp[i] = ktab_next;
+		if (kp->k_syn.id == id)
+		{
+		    kp_next = kp->ke_next;
+		    if (kp_prev == NULL)
+		    {
+			if (kp_next == NULL)
+			    hash_remove(ht, hi);
+			else
+			    hi->hi_key = KE2HIKEY(kp_next);
+		    }
+		    else
+			kp_prev->ke_next = kp_next;
+		    vim_free(kp->next_list);
+		    vim_free(kp->k_syn.cont_in_list);
+		    vim_free(kp);
+		    kp = kp_next;
+		}
 		else
-		    ktab_prev->next = ktab_next;
-		vim_free(ktab);
-		ktab = ktab_next;
-	    }
-	    else
-	    {
-		ktab_prev = ktab;
-		ktab = ktab->next;
+		{
+		    kp_prev = kp;
+		    kp = kp->ke_next;
+		}
 	    }
 	}
     }
+    hash_unlock(ht);
 }
 
 /*
- * Recursive function to free() a branch of a kwordtab.
+ * Clear a whole keyword table.
  */
     static void
-free_keywtab(ktabp)
-    keyentry_T	**ktabp;
+clear_keywtab(ht)
+    hashtab_T	*ht;
 {
-    int		i;
-    keyentry_T	*ktab;
-    keyentry_T	*ktab_next;
+    hashitem_T	*hi;
+    int		todo;
+    keyentry_T	*kp;
+    keyentry_T	*kp_next;
 
-    if (ktabp != NULL)
+    todo = ht->ht_used;
+    for (hi = ht->ht_array; todo > 0; ++hi)
     {
-	for (i = 0; i < KHASH_SIZE; ++i)
-	    for (ktab = ktabp[i]; ktab != NULL; ktab = ktab_next)
+	if (!HASHITEM_EMPTY(hi))
+	{
+	    --todo;
+	    kp = HI2KE(hi);
+	    for (kp = HI2KE(hi); kp != NULL; kp = kp_next)
 	    {
-		ktab_next = ktab->next;
-		vim_free(ktab->next_list);
-		vim_free(ktab->k_syn.cont_in_list);
-		vim_free(ktab);
+		kp_next = kp->ke_next;
+		vim_free(kp->next_list);
+		vim_free(kp->k_syn.cont_in_list);
+		vim_free(kp);
 	    }
-	vim_free(ktabp);
+	}
     }
+    hash_clear(ht);
+    hash_init(ht);
 }
 
 /*
@@ -3954,69 +3975,51 @@ add_keyword(name, id, flags, cont_in_list, next_list)
     short	*cont_in_list; /* containedin for this keyword */
     short	*next_list; /* nextgroup for this keyword */
 {
-    keyentry_T	*ktab;
-    keyentry_T	***ktabpp;
-    int		hash;
+    keyentry_T	*kp;
+    hashtab_T	*ht;
+    hashitem_T	*hi;
     char_u	*name_ic = name;
+    long_u	hash;
 
     if (curbuf->b_syn_ic)
     {
-	name_ic = str_foldcase(name, (int)STRLEN(name));
+	name_ic = str_foldcase(name, (int)STRLEN(name), NULL, 0);
 	if (name_ic == NULL)
 	    name_ic = name;
     }
-    ktab = (keyentry_T *)alloc((int)(sizeof(keyentry_T) + STRLEN(name_ic)));
-    if (ktab == NULL)
+    kp = (keyentry_T *)alloc((int)(sizeof(keyentry_T) + STRLEN(name_ic)));
+    if (kp == NULL)
 	return;
-    STRCPY(ktab->keyword, name_ic);
+    STRCPY(kp->keyword, name_ic);
     if (name_ic != name)
 	vim_free(name_ic);
-    ktab->k_syn.id = id;
-    ktab->k_syn.inc_tag = current_syn_inc_tag;
-    ktab->flags = flags;
-    ktab->k_syn.cont_in_list = copy_id_list(cont_in_list);
+    kp->k_syn.id = id;
+    kp->k_syn.inc_tag = current_syn_inc_tag;
+    kp->flags = flags;
+    kp->k_syn.cont_in_list = copy_id_list(cont_in_list);
     if (cont_in_list != NULL)
 	curbuf->b_syn_containedin = TRUE;
-    ktab->next_list = copy_id_list(next_list);
+    kp->next_list = copy_id_list(next_list);
 
     if (curbuf->b_syn_ic)
-	ktabpp = &curbuf->b_keywtab_ic;
+	ht = &curbuf->b_keywtab_ic;
     else
-	ktabpp = &curbuf->b_keywtab;
+	ht = &curbuf->b_keywtab;
 
-    if (*ktabpp == NULL)
+    hash = hash_hash(kp->keyword);
+    hi = hash_lookup(ht, kp->keyword, hash);
+    if (HASHITEM_EMPTY(hi))
     {
-	*ktabpp = (keyentry_T **)alloc_clear(
-				    (int)(sizeof(keyentry_T *) * KHASH_SIZE));
-	if (*ktabpp == NULL)
-	    return;
+	/* new keyword, add to hashtable */
+	kp->ke_next = NULL;
+	hash_add_item(ht, hi, kp->keyword, hash);
     }
-
-    hash = syn_khash(ktab->keyword);
-    ktab->next = (*ktabpp)[hash];
-    (*ktabpp)[hash] = ktab;
-}
-
-/*
- * Compute a hash value for a keyword.  Uses the ElfHash algorithm, which is
- * supposed to have an even distribution (suggested by Charles Campbell).
- */
-    static int
-syn_khash(p)
-    char_u	*p;
-{
-    long_u	hash = 0;
-    long_u	g;
-
-    while (*p != NUL)
+    else
     {
-	hash = (hash << 4) + *p++;	/* clear low 4 bits of hash, add char */
-	g = hash & 0xf0000000L;		/* g has high 4 bits of hash only */
-	if (g != 0)
-	    hash ^= g >> 24;		/* xor g's high 4 bits into hash */
+	/* keyword already exists, prepend to list */
+	kp->ke_next = HI2KE(hi);
+	hi->hi_key = KE2HIKEY(kp);
     }
-
-    return (int)(hash & KHASH_MASK);
 }
 
 /*
@@ -5774,8 +5777,8 @@ syntax_present(buf)
 {
     return (buf->b_syn_patterns.ga_len != 0
 	    || buf->b_syn_clusters.ga_len != 0
-	    || curbuf->b_keywtab != NULL
-	    || curbuf->b_keywtab_ic != NULL);
+	    || curbuf->b_keywtab.ht_used > 0
+	    || curbuf->b_keywtab_ic.ht_used > 0);
 }
 
 #if defined(FEAT_CMDL_COMPL) || defined(PROTO)
