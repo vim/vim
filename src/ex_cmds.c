@@ -3258,13 +3258,13 @@ ex_append(eap)
 	if (eap->getline == NULL)
 	    theline = getcmdline(
 #ifdef FEAT_EVAL
-		    eap->cstack->cs_whilelevel > 0 ? -1 :
+		    eap->cstack->cs_looplevel > 0 ? -1 :
 #endif
 		    NUL, 0L, 0);
 	else
 	    theline = eap->getline(
 #ifdef FEAT_EVAL
-		    eap->cstack->cs_whilelevel > 0 ? -1 :
+		    eap->cstack->cs_looplevel > 0 ? -1 :
 #endif
 		    NUL, eap->cookie, 0);
 	lines_left = Rows - 1;

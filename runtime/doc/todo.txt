@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 04
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,16 +30,16 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-When 'insertmode' is set  CTRL-I 4isometext<Esc> and then some typing hangs
-Vim. (Jens Paulus)
-
-:let completion stops after the first argument.
-
 List data type:
+- When removing items from the condition stack may free cs_fors.
+- don't copy the list, use a list-watcher to adjust the item pointer when it's
+  deleted.
 - "for a in list"
+    Make copy of the list to avoid trouble when it changes.  As one big block?
 - "for [a, b] in [[1, 2], [3, 4]]"
+- support list generator: items are obtained with a function by index.
+    "range(1, 400, 2)" creates one.
 - == (same value) and "is" (same list)
-- store in viminfo: read_viminfo_varlist()
 - add many functions:
     call(func, list)		call function
     keys(list)			list of all indexes 0 - (len(list) - 1)
@@ -56,6 +56,8 @@ List data type:
     getval(list, idx[, default])	get value at idx or default
     file2lines()
     file2words()
+    str2list()			parse string to list in several ways: white
+				separated, [] form, etc.
 Fix the error numbers E999 in eval.c.
 
 Function reference: Define a nameless (numbered) function and assign

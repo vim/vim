@@ -82,13 +82,23 @@ struct listitem_S
 typedef struct listitem_S listitem;
 
 /*
- * Structure to hold the info about a list.
+ * Struct used by those that are using an item in a list.
+ */
+typedef struct listwatch_S
+{
+    listitem		*lw_item;	/* item being watched */
+    struct listwatch_S	*lw_next;	/* next watcher */
+} listwatch;
+
+/*
+ * Structure to hold info about a list.
  */
 struct listvar_S
 {
     int		lv_refcount;	/* reference count */
     listitem	*lv_first;	/* first item, NULL if none */
     listitem	*lv_last;	/* last item, NULL if none */
+    listwatch	*lv_watch;	/* first watcher, NULL if none */
 };
 
 typedef struct listvar_S listvar;
@@ -168,6 +178,18 @@ struct funccall
     int		dbg_tick;	/* debug_tick when breakpoint was set */
     int		level;		/* top nesting level of executed function */
 };
+
+/*
+ * Info used by a ":for" loop.
+ */
+typedef struct forinfo_S
+{
+    int		fi_semicolon;	/* TRUE if ending in '; var]' */
+    int		fi_varcount;	/* nr of variables in the list */
+    listwatch	fi_lw;		/* keep an eye on the item used. */
+    listvar	*fi_list;	/* list being used */
+} forinfo;
+
 
 /*
  * Return the name of the executed function.
@@ -504,10 +526,14 @@ static void call_user_func __ARGS((ufunc_T *fp, int argcount, typeval *argvars, 
 
 static char_u * make_expanded_name __ARGS((char_u *in_start,  char_u *expr_start,  char_u *expr_end,  char_u *in_end));
 
+static int ex_let_vars __ARGS((char_u *arg, typeval *tv, int copy, int semicolon, int var_count, char_u *nextchars));
+static char_u *skip_var_list __ARGS((char_u *arg, int *var_count, int *semicolon));
+static char_u *skip_var_one __ARGS((char_u *arg));
 static void list_all_vars __ARGS((void));
 static char_u *list_arg_vars __ARGS((exarg_T *eap, char_u *arg));
 static char_u *ex_let_one __ARGS((char_u *arg, typeval *tv, int copy, char_u *endchars));
 static char_u *set_var_idx __ARGS((char_u *name, char_u *ip, typeval *rettv, int copy, char_u *endchars));
+static void list_add_watch __ARGS((listvar *l, listwatch *lw));
 
 /*
  * Set an internal variable to a string value. Creates the variable if it does
@@ -1021,14 +1047,16 @@ ex_let(eap)
     int		i;
     int		var_count = 0;
     int		semicolon = 0;
-    listvar	*l;
-    listitem	*item;
 
-    if (*arg != '[')
-	expr = vim_strchr(find_name_end(arg, NULL, NULL, TRUE), '=');
-    if (*arg != '[' && expr == NULL)
+    expr = skip_var_list(arg, &var_count, &semicolon);
+    if (expr == NULL)
+	return;
+    expr = vim_strchr(expr, '=');
+    if (expr == NULL)
     {
-	if (!ends_excmd(*arg))
+	if (*arg == '[')
+	    EMSG(_(e_invarg));
+	else if (!ends_excmd(*arg))
 	    /* ":let var1 var2" */
 	    arg = list_arg_vars(eap, arg);
 	else if (!eap->skip)
@@ -1038,54 +1066,11 @@ ex_let(eap)
     }
     else
     {
-	if (*arg == '[')
-	{
-	    /* ":let [a, b] = expr": find the matching ']' to get to the
-	     * expression. */
-	    while (1)
-	    {
-		arg = skipwhite(arg + 1);
-		if (vim_strchr((char_u *)"$@&", *arg) != NULL)
-		    ++arg;
-		expr = find_name_end(arg, NULL, NULL, TRUE);
-		if (expr == arg)
-		{
-		    EMSG2(_(e_invarg2), arg);
-		    return;
-		}
-		++var_count;
-
-		arg = skipwhite(expr);
-		if (*arg == ']')
-		    break;
-		else if (*arg == ';')
-		{
-		    if (semicolon == 1)
-		    {
-			EMSG(_("Double ; in :let"));
-			return;
-		    }
-		    semicolon = 1;
-		}
-		else if (*arg != ',')
-		{
-		    EMSG2(_(e_invarg2), arg);
-		    return;
-		}
-	    }
-
-	    /* check for '=' after the ']' */
-	    expr = skipwhite(arg + 1);
-	    if (*expr != '=')
-	    {
-		EMSG(_(e_letunexp));
-		return;
-	    }
-	}
+	expr = skipwhite(expr + 1);
 
 	if (eap->skip)
 	    ++emsg_skip;
-	i = eval0(expr + 1, &rettv, &eap->nextcmd, !eap->skip);
+	i = eval0(expr, &rettv, &eap->nextcmd, !eap->skip);
 	if (eap->skip)
 	{
 	    if (i != FAIL)
@@ -1094,70 +1079,169 @@ ex_let(eap)
 	}
 	else if (i != FAIL)
 	{
-	    /* Move "arg" back to the variable name(s). */
-	    arg = eap->arg;
-	    if (*arg != '[')
-	    {
-		/* ":let var = expr" */
-		(void)ex_let_one(arg, &rettv, FALSE, (char_u *)"=");
-	    }
-	    else
-	    {
-		/* ":let [v1, v2] = list" */
-		l = rettv.vval.v_list;
-		if (rettv.v_type != VAR_LIST || l == NULL)
-		    EMSG(_("E999: List required"));
-		else
-		{
-		    i = list_len(l);
-		    if (semicolon == 0 && var_count < i)
-			EMSG(_("E999: Less targets than List items"));
-		    else if (var_count - semicolon > i)
-			EMSG(_("E999: More targets than List items"));
-		    else
-		    {
-			item = l->lv_first;
-			while (*arg != ']')
-			{
-			    arg = skipwhite(arg + 1);
-			    arg = ex_let_one(arg, &item->li_tv,
-						       TRUE, (char_u *)",;]");
-			    item = item->li_next;
-			    if (arg == NULL)
-				break;
-
-			    arg = skipwhite(arg);
-			    if (*arg == ';')
-			    {
-				/* Put the rest of the list (may be empty) in
-				 * the var after ';'. */
-				l = list_alloc();
-				if (l == NULL)
-				    break;
-				while (item != NULL)
-				{
-				    list_append_tv(l, &item->li_tv);
-				    item = item->li_next;
-				}
-				list_unref(rettv.vval.v_list);
-				rettv.vval.v_list = l;
-				l->lv_refcount = 1;
-				(void)ex_let_one(skipwhite(arg + 1), &rettv,
-							 FALSE, (char_u *)"]");
-				break;
-			    }
-			    else if (*arg != ',' && *arg != ']')
-			    {
-				EMSG2(_(e_intern2), "ex_let()");
-				break;
-			    }
-			}
-		    }
-		}
-	    }
+	    (void)ex_let_vars(eap->arg, &rettv, FALSE, semicolon, var_count,
+							       (char_u *)"=");
 	    clear_tv(&rettv);
 	}
     }
+}
+
+/*
+ * Assign the typevalue "tv" to the variable or variables at "arg_start".
+ * Handles both "var" with any type and "[var, var; var]" with a list type.
+ * Returns OK or FAIL;
+ */
+    static int
+ex_let_vars(arg_start, tv, copy, semicolon, var_count, nextchars)
+    char_u	*arg_start;
+    typeval	*tv;
+    int		copy;		/* copy values from "tv", don't move */
+    int		semicolon;	/* from skip_var_list() */
+    int		var_count;	/* from skip_var_list() */
+    char_u	*nextchars;	/* characters that must follow or NULL */
+{
+    char_u	*arg = arg_start;
+    listvar	*l;
+    int		i;
+    listitem	*item;
+    typeval	ltv;
+
+    if (*arg != '[')
+    {
+	/*
+	 * ":let var = expr" or ":for var in list"
+	 */
+	if (ex_let_one(arg, tv, copy, nextchars) == NULL)
+	    return FAIL;
+	return OK;
+    }
+
+    /*
+     * ":let [v1, v2] = list" or ":for [v1, v2] in listlist"
+     */
+    l = tv->vval.v_list;
+    if (tv->v_type != VAR_LIST || l == NULL)
+    {
+	EMSG(_(e_listreq));
+	return FAIL;
+    }
+
+    i = list_len(l);
+    if (semicolon == 0 && var_count < i)
+    {
+	EMSG(_("E999: Less targets than List items"));
+	return FAIL;
+    }
+    if (var_count - semicolon > i)
+    {
+	EMSG(_("E999: More targets than List items"));
+	return FAIL;
+    }
+
+    item = l->lv_first;
+    while (*arg != ']')
+    {
+	arg = skipwhite(arg + 1);
+	arg = ex_let_one(arg, &item->li_tv, TRUE, (char_u *)",;]");
+	item = item->li_next;
+	if (arg == NULL)
+	    return FAIL;
+
+	arg = skipwhite(arg);
+	if (*arg == ';')
+	{
+	    /* Put the rest of the list (may be empty) in the var after ';'.
+	     * Create a new list for this. */
+	    l = list_alloc();
+	    if (l == NULL)
+		return FAIL;
+	    while (item != NULL)
+	    {
+		list_append_tv(l, &item->li_tv);
+		item = item->li_next;
+	    }
+
+	    ltv.v_type = VAR_LIST;
+	    ltv.vval.v_list = l;
+	    l->lv_refcount = 1;
+
+	    arg = ex_let_one(skipwhite(arg + 1), &ltv, FALSE, (char_u *)"]");
+	    clear_tv(&ltv);
+	    if (arg == NULL)
+		return FAIL;
+	    break;
+	}
+	else if (*arg != ',' && *arg != ']')
+	{
+	    EMSG2(_(e_intern2), "ex_let_vars()");
+	    return FAIL;
+	}
+    }
+
+    return OK;
+}
+
+/*
+ * Skip over assignable variable "var" or list of variables "[var, var]".
+ * Used for ":let varvar = expr" and ":for varvar in expr".
+ * For "[var, var]" increment "*var_count" for each variable.
+ * for "[var, var; var]" set "semicolon".
+ * Return NULL for an error.
+ */
+    static char_u *
+skip_var_list(arg, var_count, semicolon)
+    char_u	*arg;
+    int		*var_count;
+    int		*semicolon;
+{
+    char_u	*p, *s;
+
+    if (*arg == '[')
+    {
+	/* "[var, var]": find the matching ']'. */
+	p = arg;
+	while (1)
+	{
+	    p = skipwhite(p + 1);	/* skip whites after '[', ';' or ',' */
+	    s = skip_var_one(p);
+	    if (s == p)
+	    {
+		EMSG2(_(e_invarg2), p);
+		return NULL;
+	    }
+	    ++*var_count;
+
+	    p = skipwhite(s);
+	    if (*p == ']')
+		break;
+	    else if (*p == ';')
+	    {
+		if (*semicolon == 1)
+		{
+		    EMSG(_("Double ; in list of variables"));
+		    return NULL;
+		}
+		*semicolon = 1;
+	    }
+	    else if (*p != ',')
+	    {
+		EMSG2(_(e_invarg2), p);
+		return NULL;
+	    }
+	}
+	return p + 1;
+    }
+    else
+	return skip_var_one(arg);
+}
+
+    static char_u *
+skip_var_one(arg)
+    char_u	*arg;
+{
+    if (vim_strchr((char_u *)"$@&", *arg) != NULL)
+	++arg;
+    return find_name_end(arg, NULL, NULL, TRUE);
 }
 
     static void
@@ -1309,7 +1393,7 @@ ex_let_one(arg, tv, copy, endchars)
     char_u	*arg;		/* points to variable name */
     typeval	*tv;		/* value to assign to variable */
     int		copy;		/* copy value from "tv" */
-    char_u	*endchars;	/* valid chars after variable name */
+    char_u	*endchars;	/* valid chars after variable name  or NULL */
 {
     int		c1;
     char_u	*name;
@@ -1331,7 +1415,8 @@ ex_let_one(arg, tv, copy, endchars)
 	    EMSG2(_(e_invarg2), name - 1);
 	else
 	{
-	    if (vim_strchr(endchars, *skipwhite(arg)) == NULL)
+	    if (endchars != NULL
+			     && vim_strchr(endchars, *skipwhite(arg)) == NULL)
 		EMSG(_(e_letunexp));
 	    else
 	    {
@@ -1360,7 +1445,8 @@ ex_let_one(arg, tv, copy, endchars)
     {
 	/* Find the end of the name. */
 	p = find_option_end(&arg, &opt_flags);
-	if (p == NULL || vim_strchr(endchars, *skipwhite(p)) == NULL)
+	if (p == NULL || (endchars != NULL
+			      && vim_strchr(endchars, *skipwhite(p)) == NULL))
 	    EMSG(_(e_letunexp));
 	else
 	{
@@ -1379,7 +1465,8 @@ ex_let_one(arg, tv, copy, endchars)
     else if (*arg == '@')
     {
 	++arg;
-	if (vim_strchr(endchars, *skipwhite(arg + 1)) == NULL)
+	if (endchars != NULL
+			 && vim_strchr(endchars, *skipwhite(arg + 1)) == NULL)
 	    EMSG(_(e_letunexp));
 	else
 	{
@@ -1415,7 +1502,8 @@ ex_let_one(arg, tv, copy, endchars)
 	}
 	else if (*p == '[')
 	    arg_end = set_var_idx(arg, p, tv, copy, endchars);
-	else if (vim_strchr(endchars, *skipwhite(p)) == NULL)
+	else if (endchars != NULL
+			       && vim_strchr(endchars, *skipwhite(p)) == NULL)
 	    EMSG(_(e_letunexp));
 	else if (STRNCMP(arg, "b:changedtick", 13) == 0
 					    && !eval_isnamec(arg[13]))
@@ -1505,7 +1593,7 @@ set_var_idx(name, ip, rettv, copy, endchars)
 
     if (p != NULL)
     {
-	if (vim_strchr(endchars, *p) == NULL)
+	if (endchars != NULL && vim_strchr(endchars, *p) == NULL)
 	{
 	    EMSG(_(e_letunexp));
 	    p = NULL;
@@ -1525,6 +1613,157 @@ set_var_idx(name, ip, rettv, copy, endchars)
     return p;
 }
 
+/*
+ * Add a watcher to a list.
+ */
+    static void
+list_add_watch(l, lw)
+    listvar	*l;
+    listwatch	*lw;
+{
+    lw->lw_next = l->lv_watch;
+    l->lv_watch = lw;
+}
+
+/*
+ * Remove a watches from a list.
+ * No warning when it isn't found...
+ */
+    static void
+list_rem_watch(l, lwrem)
+    listvar	*l;
+    listwatch	*lwrem;
+{
+    listwatch	*lw, **lwp;
+
+    lwp = &l->lv_watch;
+    for (lw = l->lv_watch; lw != NULL; lw = lw->lw_next)
+    {
+	if (lw == lwrem)
+	{
+	    *lwp = lw->lw_next;
+	    break;
+	}
+	lwp = &lw->lw_next;
+    }
+}
+
+/*
+ * Just before removing an item from a list: advance watchers to the next
+ * item.
+ */
+    static void
+list_fix_watch(l, item)
+    listvar	*l;
+    listitem	*item;
+{
+    listwatch	*lw;
+
+    for (lw = l->lv_watch; lw != NULL; lw = lw->lw_next)
+	if (lw->lw_item == item)
+	    lw->lw_item = item->li_next;
+}
+
+/*
+ * Evaluate the expression used in a ":for var in expr" command.
+ * "arg" points to "var".
+ * Set "*errp" to TRUE for an error, FALSE otherwise;
+ * Return a pointer that holds the info.  Null when there is an error.
+ */
+    void *
+eval_for_line(arg, errp, nextcmdp, skip)
+    char_u	*arg;
+    int		*errp;
+    char_u	**nextcmdp;
+    int		skip;
+{
+    forinfo	*fi;
+    char_u	*expr;
+    typeval	tv;
+    listvar	*l;
+
+    *errp = TRUE;	/* default: there is an error */
+
+    fi = (forinfo *)alloc_clear(sizeof(forinfo));
+    if (fi == NULL)
+	return NULL;
+
+    expr = skip_var_list(arg, &fi->fi_varcount, &fi->fi_semicolon);
+    if (expr == NULL)
+	return fi;
+
+    expr = skipwhite(expr);
+    if (expr[0] != 'i' || expr[1] != 'n' || !vim_iswhite(expr[2]))
+    {
+	EMSG(_("E999: Missing \"in\" after :for"));
+	return fi;
+    }
+
+    if (skip)
+	++emsg_skip;
+    if (eval0(skipwhite(expr + 2), &tv, nextcmdp, !skip) == OK)
+    {
+	*errp = FALSE;
+	if (!skip)
+	{
+	    l = tv.vval.v_list;
+	    if (tv.v_type != VAR_LIST || l == NULL)
+		EMSG(_(e_listreq));
+	    else
+	    {
+		fi->fi_list = l;
+		list_add_watch(l, &fi->fi_lw);
+		fi->fi_lw.lw_item = l->lv_first;
+	    }
+	}
+    }
+    if (skip)
+	--emsg_skip;
+
+    return fi;
+}
+
+/*
+ * Use the first item in a ":for" list.  Advance to the next.
+ * Assign the values to the variable (list).  "arg" points to the first one.
+ * Return TRUE when a valid item was found, FALSE when at end of list or
+ * something wrong.
+ */
+    int
+next_for_item(fi_void, arg)
+    void	*fi_void;
+    char_u	*arg;
+{
+    forinfo    *fi = (forinfo *)fi_void;
+    int		result;
+    listitem	*item;
+
+    item = fi->fi_lw.lw_item;
+    if (item == NULL)
+	result = FALSE;
+    else
+    {
+	fi->fi_lw.lw_item = item->li_next;
+	result = (ex_let_vars(arg, &item->li_tv, TRUE,
+			      fi->fi_semicolon, fi->fi_varcount, NULL) == OK);
+    }
+    return result;
+}
+
+/*
+ * Free the structure used to store info used by ":for".
+ */
+    void
+free_for_info(fi_void)
+    void *fi_void;
+{
+    forinfo    *fi = (forinfo *)fi_void;
+
+    if (fi->fi_list != NULL)
+	list_rem_watch(fi->fi_list, &fi->fi_lw);
+    vim_free(fi);
+}
+
 #if defined(FEAT_CMDL_COMPL) || defined(PROTO)
 
     void
@@ -1535,10 +1774,27 @@ set_context_for_expression(xp, arg, cmdidx)
 {
     int		got_eq = FALSE;
     int		c;
+    char_u	*p;
 
-    xp->xp_context = cmdidx == CMD_let ? EXPAND_USER_VARS
-				       : cmdidx == CMD_call ? EXPAND_FUNCTIONS
-				       : EXPAND_EXPRESSION;
+    if (cmdidx == CMD_let)
+    {
+	xp->xp_context = EXPAND_USER_VARS;
+	if (vim_strchr(arg, '=') == NULL)
+	{
+	    /* ":let var1 var2 ...": find last space. */
+	    for (p = arg + STRLEN(arg); p > arg; )
+	    {
+		xp->xp_pattern = p;
+		p = mb_ptr_back(arg, p);
+		if (vim_iswhite(*p))
+		    break;
+	    }
+	    return;
+	}
+    }
+    else
+	xp->xp_context = cmdidx == CMD_call ? EXPAND_FUNCTIONS
+							  : EXPAND_EXPRESSION;
     while ((xp->xp_pattern = vim_strpbrk(arg,
 				  (char_u *)"\"'+-*/%.=!?~|&$([<>,#")) != NULL)
     {
@@ -1601,7 +1857,9 @@ set_context_for_expression(xp, arg, cmdidx)
 		xp->xp_context = EXPAND_EXPRESSION;
 	}
 	else
-	    xp->xp_context = EXPAND_NOTHING;
+	    /* Doesn't look like something valid, expand as an expression
+	     * anyway. */
+	    xp->xp_context = EXPAND_EXPRESSION;
 	arg = xp->xp_pattern;
 	if (*arg != NUL)
 	    while ((c = *++arg) != NUL && (c == ' ' || c == '\t'))
@@ -3303,7 +3561,7 @@ listitem_alloc()
 }
 
 /*
- * Free a list item.  Also clears the value;
+ * Free a list item.  Also clears the value.  Does not notify watchers.
  */
     static void
 listitem_free(item)
@@ -3471,6 +3729,7 @@ list_getrem(l, n)
     item = list_find(l, n);
     if (item != NULL)
     {
+	list_fix_watch(l, item);	/* notify watchers */
 	if (item->li_next == NULL)
 	    l->lv_last = item->li_prev;
 	else
@@ -11806,8 +12065,7 @@ read_viminfo_varlist(virp, writing)
 {
     char_u	*tab;
     int		is_string = FALSE;
-    typeval	*tvp = NULL;
-    char_u	*val;
+    typeval	tv;
 
     if (!writing && (find_viminfo_parameter('!') != NULL))
     {
@@ -11821,29 +12079,20 @@ read_viminfo_varlist(virp, writing)
 	    tab = vim_strchr(tab, '\t');
 	    if (tab != NULL)
 	    {
-		/* create a typeval to hold the value */
 		if (is_string)
 		{
-		    val = viminfo_readstring(virp,
+		    tv.v_type = VAR_STRING;
+		    tv.vval.v_string = viminfo_readstring(virp,
 				       (int)(tab - virp->vir_line + 1), TRUE);
-		    if (val != NULL)
-			tvp = alloc_string_tv(val);
 		}
 		else
 		{
-		    tvp = alloc_tv();
-		    if (tvp != NULL)
-		    {
-			tvp->v_type = VAR_NUMBER;
-			tvp->vval.v_number = atol((char *)tab + 1);
-		    }
+		    tv.v_type = VAR_NUMBER;
+		    tv.vval.v_number = atol((char *)tab + 1);
 		}
-		/* assign the value to the variable */
-		if (tvp != NULL)
-		{
-		    set_var(virp->vir_line + 1, tvp, FALSE);
-		    free_tv(tvp);
-		}
+		set_var(virp->vir_line + 1, &tv, FALSE);
+		if (is_string)
+		    vim_free(tv.vval.v_string);
 	    }
 	}
     }
@@ -11878,11 +12127,7 @@ write_viminfo_varlist(fp)
 	    {
 		case VAR_STRING: s = "STR"; break;
 		case VAR_NUMBER: s = "NUM"; break;
-		case VAR_LIST:   s = "LST"; break;
-		case VAR_FUNC:   s = "FUN"; break;
-		default:
-		     EMSGN(_("E999: Internal error: write_viminfo_varlist(): %ld"), (long)this_var->tv.v_type);
-		     s = "ERR";
+		default: continue;
 	    }
 	    fprintf(fp, "!%s\t%s\t", this_var->v_name, s);
 	    viminfo_writestring(fp, tv2string(&this_var->tv, &tofree));
@@ -11905,34 +12150,33 @@ store_session_globals(fd)
     for (i = gap->ga_len; --i >= 0; )
     {
 	this_var = &VAR_GAP_ENTRY(i, gap);
-	if (this_var->v_name != NULL)
+	if (this_var->v_name != NULL
+		&& (this_var->tv.v_type == VAR_NUMBER
+		    || this_var->tv.v_type == VAR_STRING)
+		&& var_flavour(this_var->v_name) == VAR_FLAVOUR_SESSION)
 	{
-	    if (var_flavour(this_var->v_name) == VAR_FLAVOUR_SESSION)
-	    {
-		/* Escapse special characters with a backslash.  Turn a LF and
-		 * CR into \n and \r. */
-		p = vim_strsave_escaped(get_var_string(this_var),
+	    /* Escape special characters with a backslash.  Turn a LF and
+	     * CR into \n and \r. */
+	    p = vim_strsave_escaped(get_var_string(this_var),
 							(char_u *)"\\\"\n\r");
-		if (p == NULL)	    /* out of memory */
-		    continue;
-		for (t = p; *t != NUL; ++t)
-		    if (*t == '\n')
-			*t = 'n';
-		    else if (*t == '\r')
-			*t = 'r';
-		if ((fprintf(fd, "let %s = %c%s%c",
-			   this_var->v_name,
-			   (this_var->tv.v_type == VAR_STRING) ? '"' : ' ',
-			   p,
-			   (this_var->tv.v_type == VAR_STRING) ? '"' : ' ') < 0)
-			|| put_eol(fd) == FAIL)
-		{
-		    vim_free(p);
-		    return FAIL;
-		}
+	    if (p == NULL)	    /* out of memory */
+		continue;
+	    for (t = p; *t != NUL; ++t)
+		if (*t == '\n')
+		    *t = 'n';
+		else if (*t == '\r')
+		    *t = 'r';
+	    if ((fprintf(fd, "let %s = %c%s%c",
+		       this_var->v_name,
+		       (this_var->tv.v_type == VAR_STRING) ? '"' : ' ',
+		       p,
+		       (this_var->tv.v_type == VAR_STRING) ? '"' : ' ') < 0)
+		    || put_eol(fd) == FAIL)
+	    {
 		vim_free(p);
+		return FAIL;
 	    }
-
+	    vim_free(p);
 	}
     }
     return OK;
