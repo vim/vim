@@ -1768,6 +1768,7 @@ do_pending_operator(cap, old_col, gui_yank)
 		&& oap->end.col == 0
 #ifdef FEAT_VISUAL
 		&& (!oap->is_VIsual || *p_sel == 'o')
+		&& !oap->block_mode
 #endif
 		&& oap->line_count > 1)
 	{

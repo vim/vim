@@ -454,6 +454,134 @@ gui_x11_destroy_widgets()
 }
 
 #if defined(FEAT_TOOLBAR) || defined(PROTO)
+# include "gui_x11_pm.h"
+# ifdef HAVE_X11_XPM_H
+#  include <X11/xpm.h>
+# endif
+
+static void createXpmImages __ARGS((char_u *path, char **xpm, Pixmap *sen));
+static void get_toolbar_pixmap __ARGS((vimmenu_T *menu, Pixmap *sen));
+
+/*
+ * Allocated a pixmap for toolbar menu "menu".
+ * Return in "sen".
+ */
+    static void
+get_toolbar_pixmap(menu, sen)
+    vimmenu_T	*menu;
+    Pixmap	*sen;
+{
+    char_u	buf[MAXPATHL];		/* buffer storing expanded pathname */
+    char	**xpm = NULL;		/* xpm array */
+
+    buf[0] = NUL;			/* start with NULL path */
+
+    if (menu->iconfile != NULL)
+    {
+	/* Use the "icon="  argument. */
+	gui_find_iconfile(menu->iconfile, buf, "xpm");
+	createXpmImages(buf, NULL, sen);
+
+	/* If it failed, try using the menu name. */
+	if (*sen == (Pixmap)0 && gui_find_bitmap(menu->name, buf, "xpm") == OK)
+	    createXpmImages(buf, NULL, sen);
+	if (*sen != (Pixmap)0)
+	    return;
+    }
+
+    if (menu->icon_builtin || gui_find_bitmap(menu->name, buf, "xpm") == FAIL)
+    {
+	if (menu->iconidx >= 0 && menu->iconidx
+		   < (sizeof(built_in_pixmaps) / sizeof(built_in_pixmaps[0])))
+	    xpm = built_in_pixmaps[menu->iconidx];
+	else
+	    xpm = tb_blank_xpm;
+    }
+
+    if (xpm != NULL || buf[0] != NUL)
+	createXpmImages(buf, xpm, sen);
+}
+
+/*
+ * Read an Xpm file, doing color substitutions for the foreground and
+ * background colors. If there is an error reading a color xpm file,
+ * drop back and read the monochrome file. If successful, create the
+ * insensitive Pixmap too.
+ */
+    static void
+createXpmImages(path, xpm, sen)
+    char_u	*path;
+    char	**xpm;
+    Pixmap	*sen;
+{
+    Window	rootWindow;
+    XpmAttributes attrs;
+    XpmColorSymbol color[5] =
+    {
+	{"none", "none", 0},
+	{"iconColor1", NULL, 0},
+	{"bottomShadowColor", NULL, 0},
+	{"topShadowColor", NULL, 0},
+	{"selectColor", NULL, 0}
+    };
+    int		screenNum;
+    int		status;
+    Pixmap	mask;
+    Pixmap	map;
+
+    gui_mch_get_toolbar_colors(
+	    &color[BACKGROUND].pixel,
+	    &color[FOREGROUND].pixel,
+	    &color[BOTTOM_SHADOW].pixel,
+	    &color[TOP_SHADOW].pixel,
+	    &color[HIGHLIGHT].pixel);
+
+    /* Setup the color subsititution table */
+    attrs.valuemask = XpmColorSymbols;
+    attrs.colorsymbols = color;
+    attrs.numsymbols = 5;
+
+    screenNum = DefaultScreen(gui.dpy);
+    rootWindow = RootWindow(gui.dpy, screenNum);
+
+    /* Create the "sensitive" pixmap */
+    if (xpm != NULL)
+	status = XpmCreatePixmapFromData(gui.dpy, rootWindow, xpm,
+							 &map, &mask, &attrs);
+    else
+	status = XpmReadFileToPixmap(gui.dpy, rootWindow, (char *)path,
+							 &map, &mask, &attrs);
+    if (status == XpmSuccess && map != 0)
+    {
+	XGCValues   gcvalues;
+	GC	    back_gc;
+	GC	    mask_gc;
+
+	/* Need to create new Pixmaps with the mask applied. */
+	gcvalues.foreground = color[BACKGROUND].pixel;
+	back_gc = XCreateGC(gui.dpy, map, GCForeground, &gcvalues);
+	mask_gc = XCreateGC(gui.dpy, map, GCForeground, &gcvalues);
+	XSetClipMask(gui.dpy, mask_gc, mask);
+
+	/* Create the "sensitive" pixmap. */
+	*sen = XCreatePixmap(gui.dpy, rootWindow,
+		 attrs.width, attrs.height,
+		 DefaultDepth(gui.dpy, screenNum));
+	XFillRectangle(gui.dpy, *sen, back_gc, 0, 0,
+		attrs.width, attrs.height);
+	XCopyArea(gui.dpy, map, *sen, mask_gc, 0, 0,
+		attrs.width, attrs.height, 0, 0);
+
+	XFreeGC(gui.dpy, back_gc);
+	XFreeGC(gui.dpy, mask_gc);
+	XFreePixmap(gui.dpy, map);
+    }
+    else
+	*sen = 0;
+
+    XpmFreeAttributes(&attrs);
+}
+
     void
 gui_mch_set_toolbar_pos(x, y, w, h)
     int	    x;
@@ -971,7 +1099,7 @@ gui_mch_submenu_change(menu, colors)
 		if (mp->image != (Pixmap)0)
 		{
 		    XFreePixmap(gui.dpy, mp->image);
-		    get_toolbar_pixmap(mp, &mp->image, NULL);
+		    get_toolbar_pixmap(mp, &mp->image);
 		    if (mp->image != (Pixmap)0)
 			XtVaSetValues(mp->id, XtNbitmap, mp->image, NULL);
 		}
@@ -1071,7 +1199,7 @@ gui_mch_add_menu_item(menu, idx)
 	}
 	else
 	{
-	    get_toolbar_pixmap(menu, &menu->image, NULL);
+	    get_toolbar_pixmap(menu, &menu->image);
 	    XtSetArg(args[n], XtNlabel, menu->dname); n++;
 	    XtSetArg(args[n], XtNinternalHeight, 1); n++;
 	    XtSetArg(args[n], XtNinternalWidth, 1); n++;

@@ -53,9 +53,9 @@
 #	  GETTEXT=[yes or no]  (default is yes)
 #	See http://sourceforge.net/projects/gettext/
 #       PostScript printing: POSTSCRIPT=yes (default is no)
-#       Feature Set: FEATURES=[TINY, SMALL, NORMAL, BIG, or HUGE] (default is BIG)
+#       Feature Set: FEATURES=[TINY, SMALL, NORMAL, BIG, HUGE] (default is BIG)
 #       Version Support: WINVER=[0x0400, 0x0500] (default is 0x0400)
-#       Processor Version: CPUNR=[i386, i486, i586, i686] (default is i386)
+#       Processor Version: CPUNR=[i386, i486, i586, i686, P4] (default is i386)
 #       Optimization: OPTIMIZE=[SPACE, SPEED, MAXSPEED] (default is MAXSPEED)
 #       Netbeans Support: NETBEANS=[yes or no] (default is yes if GUI is yes)
 #       Netbeans Debugging Support: NBDEBUG=[yes or no] (default is no)
@@ -276,6 +276,8 @@ CPUARG = /G4
 CPUARG = /G5
 !elseif "$(CPUNR)" == "i686"
 CPUARG = /G6
+!elseif "$(CPUNR)" == "P4"
+CPUARG = /G7 /arch:SSE2
 !else
 CPUARG =
 !endif
@@ -289,10 +291,10 @@ OPTFLAG = /O2
 !else # MAXSPEED
 OPTFLAG = /Ox
 !endif
-CFLAGS = $(CFLAGS) $(OPTFLAG) -DNDEBUG /Zi $(CPUARG)
+CFLAGS = $(CFLAGS) $(OPTFLAG) -DNDEBUG $(CPUARG)
 RCFLAGS = $(rcflags) $(rcvars) -DNDEBUG
-PDB = /Fd$(OUTDIR)/
-LINK_PDB = /PDB:$(OUTDIR)/
+PDB =
+LINK_PDB =
 ! ifdef USE_MSVCRT
 CFLAGS = $(CFLAGS) -MD
 LIBC = msvcrt.lib
@@ -697,6 +699,11 @@ clean:
 test:
 	cd testdir
 	$(MAKE) /NOLOGO -f Make_dos.mak win32
+	cd ..
+
+testclean:
+	cd testdir
+	$(MAKE) /NOLOGO -f Make_dos.mak clean
 	cd ..
 
 ###########################################################################

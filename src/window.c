@@ -4134,7 +4134,10 @@ win_new_height(wp, height)
     int		height;
 {
     linenr_T	lnum;
+    linenr_T	bot;
     int		sline, line_size;
+    int		space;
+    int		did_below = FALSE;
 #define FRACTION_MULT	16384L
 
     /* Don't want a negative height.  Happens when splitting a tiny window.
@@ -4157,6 +4160,10 @@ win_new_height(wp, height)
 #endif
        )
     {
+	/*
+	 * Find a value for w_topline that shows the cursor at the same
+	 * relative position in the window as before (more or less).
+	 */
 	lnum = wp->w_cursor.lnum;
 	if (lnum < 1)		/* can happen when starting up */
 	    lnum = 1;
@@ -4172,8 +4179,39 @@ win_new_height(wp, height)
 	}
 	else
 	{
-	    while (sline > 0 && lnum > 1)
+	    space = height;
+	    while (lnum > 1)
 	    {
+		space -= line_size;
+		if (space > 0 && sline <= 0 && !did_below)
+		{
+		    /* Try to use "~" lines below the text to avoid that text
+		     * is above the window while there are empty lines.
+		     * Subtract the rows below the cursor from "space" and
+		     * give the rest to "sline". */
+		    did_below = TRUE;
+		    bot = wp->w_cursor.lnum;
+		    while (space > 0)
+		    {
+			if (wp->w_buffer->b_ml.ml_line_count - bot >= space)
+			    space = 0;
+			else
+			{
+#ifdef FEAT_FOLDING
+			    hasFoldingWin(wp, bot, NULL, &bot, TRUE, NULL);
+#endif
+			    if (bot >= wp->w_buffer->b_ml.ml_line_count)
+				break;
+			    ++bot;
+			    space -= plines_win(wp, bot, TRUE);
+			}
+		    }
+		    if (bot == wp->w_buffer->b_ml.ml_line_count && space > 0)
+			sline += space;
+		}
+		if (sline <= 0)
+		    break;
+
 #ifdef FEAT_FOLDING
 		hasFoldingWin(wp, lnum, &lnum, NULL, TRUE, NULL);
 		if (lnum == 1)
@@ -4194,6 +4232,7 @@ win_new_height(wp, height)
 		    line_size = plines_win(wp, lnum, TRUE);
 		sline -= line_size;
 	    }
+
 	    if (sline < 0)
 	    {
 		/*
