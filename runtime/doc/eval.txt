@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 04
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -2774,6 +2774,7 @@ string({expr})	Return {expr} converted to a String.
 			String		identical
 			Number		decimal representation
 			Funcref		name of the function
+			List		"[item, item]" form
 
 							*strlen()*
 strlen({expr})	The result is a Number, which is the length of the String
@@ -3619,29 +3620,69 @@ This would call the function "my_func_whizz(parameter)".
 			as long as {expr1} evaluates to non-zero.
 			When an error is detected from a command inside the
 			loop, execution continues after the "endwhile".
-
+			Example: >
+				:let lnum = 1
+				:while lnum <= line("$")
+				   :call FixLine(lnum)
+				   :let lnum = lnum + 1
+				:endwhile
+<
 			NOTE: The ":append" and ":insert" commands don't work
-			properly inside a ":while" loop.
+			properly inside a :while" and ":for" loop.
 
+:for {var} in {list}					*:for*
+:endfo[r]						*:endfo* *:endfor*
+			Repeat the commands between ":for" and ":endfor" for
+			each item in {list}.  {var} is set to the value of the
+			item.
+			When an error is detected from a command inside the
+			loop, execution continues after the "endfor".
+			A copy of {list} is made, so that it cannot change
+			while executing the commands.  Example (an inefficient
+			way to make a list empty): >
+				:for a in mylist
+				   :call remove(mylist, 0)
+				:endfor
+<			Note that the type of each list item should be
+			identical to avoid errors for the type of {var}
+			changing.  Unlet the variable at the end of the loop
+			to allow multiple item types.
+
+:for {var} in {string}
+:endfo[r]		Like ":for" above, but use each character in {string}
+			as a list item.
+			Composing characters are used as separate characters.
+			A Number is first converted to a String.
+
+:for [{var1}, {var2}, ...] in {listlist}
+:endfo[r]
+			Like ":for" above, but each item in {listlist} must be
+			a list, of which each item is assigned to {var1},
+			{var2}, etc.  Example: >
+				:for [lnum, col] in [[1, 3], [2, 5], [3, 8]]
+				   :echo getline(lnum)[col]
+				:endfor
+<
 						*:continue* *:con* *E586*
-:con[tinue]		When used inside a ":while", jumps back to the
-			":while".  If it is used after a |:try| inside the
-			":while" but before the matching |:finally| (if
-			present), the commands following the ":finally" up to
-			the matching |:endtry| are executed first.  This
-			process applies to all nested ":try"s inside the
-			":while".  The outermost ":endtry" then jumps back to
-			the ":while".
+:con[tinue]		When used inside a ":while" or ":for" loop, jumps back
+			to the start of the loop.
+			If it is used after a |:try| inside the loop but
+			before the matching |:finally| (if present), the
+			commands following the ":finally" up to the matching
+			|:endtry| are executed first.  This process applies to
+			all nested ":try"s inside the loop.  The outermost
+			":endtry" then jumps back to the start of the loop.
 
 						*:break* *:brea* *E587*
-:brea[k]		When used inside a ":while", skips to the command
-			after the matching ":endwhile".  If it is used after
-			a |:try| inside the ":while" but before the matching
-			|:finally| (if present), the commands following the
-			":finally" up to the matching |:endtry| are executed
-			first.  This process applies to all nested ":try"s
-			inside the ":while".  The outermost ":endtry" then
-			jumps to the command after the ":endwhile".
+:brea[k]		When used inside a ":while" or ":for" loop, skips to
+			the command after the matching ":endwhile" or
+			":endfor".
+			If it is used after a |:try| inside the loop but
+			before the matching |:finally| (if present), the
+			commands following the ":finally" up to the matching
+			|:endtry| are executed first.  This process applies to
+			all nested ":try"s inside the loop.  The outermost
+			":endtry" then jumps to the command after the loop.
 
 :try				*:try* *:endt* *:endtry* *E600* *E601* *E602*
 :endt[ry]		Change the error handling for the commands between

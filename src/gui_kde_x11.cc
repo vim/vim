@@ -1210,7 +1210,7 @@ gui_mch_menu_grey(vimmenu_T * menu, int grey)//{{{
 {
     if (!menu || !menu->parent || !menu->parent->widget)
 	return;
-    menu->parent->widget->setItemEnabled((int)menu, !grey);
+    menu->parent->widget->setItemEnabled((long)menu, !grey);
     gui_mch_update();
 }//}}}
 

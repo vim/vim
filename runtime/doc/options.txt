@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2004 Dec 24
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Jan 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5019,7 +5019,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	   folds	manually created folds, opened/closed folds and local
 			fold options
 	   globals	global variables that start with an uppercase letter
-			and contain at least one lowercase letter.
+			and contain at least one lowercase letter.  Only
+			String and Number types are stored.
 	   help		the help window
 	   localoptions	options and mappings local to a window or buffer (not
 			global values for local options)
@@ -6410,7 +6411,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	!	When included, save and restore global variables that start
 		with an uppercase letter, and don't contain a lowercase
 		letter.  Thus "KEEPTHIS and "K_L_M" are stored, but "KeepThis"
-		and "_K_L_M" are not.
+		and "_K_L_M" are not.  Only String and Number types are
+		stored.
 	"	Maximum number of lines saved for each register.  Old name of
 		the '<' item, with the disadvantage that you need to put a
 		backslash before the ", otherwise it will be recognized as the

@@ -6236,9 +6236,11 @@ ins_esc(count, cmdchar)
     {
 	/*
 	 * Don't append the ESC for "r<CR>" and "grx".
+	 * When 'insertmode' is set only CTRL-L stops Insert mode.  Needed for
+	 * when "count" is non-zero.
 	 */
 	if (cmdchar != 'r' && cmdchar != 'v')
-	    AppendToRedobuff(ESC_STR);
+	    AppendToRedobuff(p_im ? (char_u *)"\014" : ESC_STR);
 
 	/*
 	 * Repeating insert may take a long time.  Check for

@@ -5459,7 +5459,7 @@ script_get(eap, cmd)
     {
 	theline = eap->getline(
 #ifdef FEAT_EVAL
-	    eap->cstack->cs_whilelevel > 0 ? -1 :
+	    eap->cstack->cs_looplevel > 0 ? -1 :
 #endif
 	    NUL, eap->cookie, 0);
 

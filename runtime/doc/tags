@@ -1883,6 +1883,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :emenu	gui.txt	/*:emenu*
 :en	eval.txt	/*:en*
 :endf	eval.txt	/*:endf*
+:endfo	eval.txt	/*:endfo*
+:endfor	eval.txt	/*:endfor*
 :endfunction	eval.txt	/*:endfunction*
 :endif	eval.txt	/*:endif*
 :endt	eval.txt	/*:endt*
@@ -1934,6 +1936,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :folddoopen	fold.txt	/*:folddoopen*
 :foldo	fold.txt	/*:foldo*
 :foldopen	fold.txt	/*:foldopen*
+:for	eval.txt	/*:for*
 :fu	eval.txt	/*:fu*
 :function	eval.txt	/*:function*
 :g	repeat.txt	/*:g*
@@ -2039,6 +2042,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :let-option	eval.txt	/*:let-option*
 :let-register	eval.txt	/*:let-register*
 :let-star	eval.txt	/*:let-star*
+:let-unpack	eval.txt	/*:let-unpack*
 :list	various.txt	/*:list*
 :lm	map.txt	/*:lm*
 :lmap	map.txt	/*:lmap*
@@ -5298,6 +5302,7 @@ linewise	motion.txt	/*linewise*
 linewise-register	change.txt	/*linewise-register*
 linewise-visual	visual.txt	/*linewise-visual*
 lispindent()	eval.txt	/*lispindent()*
+list-index	eval.txt	/*list-index*
 list-repeat	windows.txt	/*list-repeat*
 lite-syntax	syntax.txt	/*lite-syntax*
 lite.vim	syntax.txt	/*lite.vim*
@@ -5871,6 +5876,7 @@ remote_foreground()	eval.txt	/*remote_foreground()*
 remote_peek()	eval.txt	/*remote_peek()*
 remote_read()	eval.txt	/*remote_read()*
 remote_send()	eval.txt	/*remote_send()*
+remove()	eval.txt	/*remove()*
 remove-filetype	filetype.txt	/*remove-filetype*
 remove-option-flags	options.txt	/*remove-option-flags*
 rename()	eval.txt	/*rename()*

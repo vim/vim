@@ -595,34 +595,34 @@ struct eslist_elem
 
 struct condstack
 {
-    char	cs_flags[CSTACK_LEN];	/* CSF_ flags */
+    short	cs_flags[CSTACK_LEN];	/* CSF_ flags */
     char	cs_pending[CSTACK_LEN];	/* CSTP_: what's pending in ":finally"*/
     union {
-	void   *cs_pend_rv[CSTACK_LEN];	/* return typeval for pending return */
-	void   *cs_pend_ex[CSTACK_LEN];	/* exception for pending throw */
+	void	*csp_rv[CSTACK_LEN];	/* return typeval for pending return */
+	void	*csp_ex[CSTACK_LEN];	/* exception for pending throw */
     }		cs_pend;
-    int		cs_line[CSTACK_LEN];	/* line number of ":while" line */
+    void	*cs_fors[CSTACK_LEN];	/* info used by ":for" */
+    int		cs_line[CSTACK_LEN];	/* line nr of ":while"/":for" line */
     int		cs_idx;			/* current entry, or -1 if none */
-    int		cs_whilelevel;		/* number of nested ":while"s */
-    int		cs_trylevel;		/* number of nested ":try"s */
+    int		cs_looplevel;		/* nr of nested ":while"s and ":for"s */
+    int		cs_trylevel;		/* nr of nested ":try"s */
     eslist_T	*cs_emsg_silent_list;	/* saved values of "emsg_silent" */
-    char	cs_had_while;		/* just found ":while" */
-    char	cs_had_continue;	/* just found ":continue" */
-    char	cs_had_endwhile;	/* just found ":endwhile" */
-    char	cs_had_finally;		/* just found ":finally" */
+    char	cs_lflags;		/* loop flags: CSL_ flags */
 };
-# define cs_rettv	cs_pend.cs_pend_rv
-# define cs_exception	cs_pend.cs_pend_ex
+# define cs_rettv	cs_pend.csp_rv
+# define cs_exception	cs_pend.csp_ex
 
-# define CSF_TRUE	1	/* condition was TRUE */
-# define CSF_ACTIVE	2	/* current state is active */
-# define CSF_ELSE	4	/* ":else" has been passed */
-# define CSF_WHILE	8	/* is a ":while" */
-# define CSF_TRY	16	/* is a ":try" */
-# define CSF_FINALLY	32	/* ":finally" has been passed */
-# define CSF_THROWN	64	/* exception thrown to this try conditional */
-# define CSF_CAUGHT	128	/* exception caught by this try conditional */
-# define CSF_SILENT	4	/* "emsg_silent" reset by ":try" */
+# define CSF_TRUE	0x0001	/* condition was TRUE */
+# define CSF_ACTIVE	0x0002	/* current state is active */
+# define CSF_ELSE	0x0004	/* ":else" has been passed */
+# define CSF_WHILE	0x0008	/* is a ":while" */
+# define CSF_FOR	0x0010	/* is a ":for" */
+
+# define CSF_TRY	0x0100	/* is a ":try" */
+# define CSF_FINALLY	0x0200	/* ":finally" has been passed */
+# define CSF_THROWN	0x0400	/* exception thrown to this try conditional */
+# define CSF_CAUGHT	0x0800  /* exception caught by this try conditional */
+# define CSF_SILENT	0x1000	/* "emsg_silent" reset by ":try" */
 /* Note that CSF_ELSE is only used when CSF_TRY and CSF_WHILE are unset
  * (an ":if"), and CSF_SILENT is only used when CSF_TRY is set. */
 
@@ -638,6 +638,14 @@ struct condstack
 # define CSTP_CONTINUE	16	/* ":continue" is pending */
 # define CSTP_RETURN	24	/* ":return" is pending */
 # define CSTP_FINISH	32	/* ":finish" is pending */
+
+/*
+ * Flags for the cs_lflags item in struct condstack.
+ */
+# define CSL_HAD_LOOP	 1	/* just found ":while" or ":for" */
+# define CSL_HAD_ENDLOOP 2	/* just found ":endwhile" or ":endfor" */
+# define CSL_HAD_CONT	 4	/* just found ":continue" */
+# define CSL_HAD_FINA	 8	/* just found ":finally" */
 
 /*
  * A list of error messages that can be converted to an exception.  "throw_msg"

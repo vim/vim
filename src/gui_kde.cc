@@ -241,12 +241,12 @@ gui_mch_add_menu(vimmenu_T *menu, int idx)//{{{
     {
 	idx++; // for tearoffs to be first in menus
 	me = new QPopupMenu(parent->widget, QSTR(menu->name));
-	parent->widget->insertItem(QSTR(menu->name), me, (int)me, idx);
+	parent->widget->insertItem(QSTR(menu->name), me, (long)me, idx);
     }
     else
     {
 	me = new QPopupMenu(vmw->menuBar(), QSTR(menu->name));
-	vmw->menuBar()->insertItem(QSTR(menu->name), me, (int)me, idx);
+	vmw->menuBar()->insertItem(QSTR(menu->name), me, (long)me, idx);
     }
 
     me->setCaption((const char *)(menu->dname));
@@ -296,7 +296,7 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)//{{{
 	    return; // failed
 	vmw->toolBar()->insertButton(
 		pix,
-		(int)menu, // id
+		(long)menu, // id
 		true,
 		QSTR(menu->strings[MENU_INDEX_TIP]), // tooltip or text
 		idx);
@@ -311,7 +311,7 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)//{{{
 	parent->widget->insertSeparator();
 	return;
     }
-    parent->widget->insertItem(QSTR(menu->name), (int)menu, idx);
+    parent->widget->insertItem(QSTR(menu->name), (long)menu, idx);
 #endif
 }//}}}
 
@@ -390,12 +390,12 @@ gui_mch_destroy_menu(vimmenu_T *menu)//{{{
 #ifdef FEAT_TOOLBAR
     if (menu->parent && menu_is_toolbar(menu->parent->name))
     {
-	vmw->toolBar()->removeItem((int)menu);
+	vmw->toolBar()->removeItem((long)menu);
 	return;
     }
 #endif
     if (menu->parent)
-	menu->parent->widget->removeItem((int)menu);
+	menu->parent->widget->removeItem((long)menu);
     if (menu->widget)
 	delete menu->widget;
     menu->widget = 0;
