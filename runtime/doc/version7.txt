@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2004 Jun 30
+*version7.txt*  For Vim version 7.0aa.  Last change: 2004 Jul 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -76,9 +76,16 @@ Various new items					*new-items-7*
 
 Normal mode commands: ~
 
+a", a' and a`		New text objects to select quoted strings. |a'|
+i", i' and i'		(Taro Muraoka)
 
 Options: ~
 
+'completefunc'		The name of a function used for user-specified Insert
+			mode completion.  CTRL-X CTRL-U can be used in Insert
+			mode to do any kind of completion.  (Taro Muraoka)
+'quoteescape'		Characters used to escape quotes inside a string.
+			Used for the a", a' and a` text objects. |a'|
 
 Ex commands: ~
 
@@ -94,8 +101,13 @@ InsertEnter		starting Insert or Replace mode
 InsertChange		going from Insert to Replace mode or back
 InsertLeave		leaving Insert or Replace mode
 
+ColorScheme		after loading a color scheme
 
-New Syntax files: ~
+
+New Syntax/Indent/FTplugin files: ~
+
+MuPAD source syntax, indent and ftplugin. (Dave Silvia)
+
 
 Others: ~
 
@@ -117,6 +129,9 @@ breakpoint at the cursor.
 
 The tutor was updated to make it simpler to use and added text to explain a
 few more important commands.  Used ideas from Gabriel Zachmann.
+
+Unix: When libcall() fails obtain an error message with dlerror() and display
+it. (Johannes Zellner)
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*

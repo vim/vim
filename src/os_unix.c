@@ -5391,6 +5391,7 @@ mch_libcall(libname, funcname, argstring, argint, string_result, number_result)
 {
 # if defined(USE_DLOPEN)
     void	*hinstLib;
+    char	*dlerr = NULL;
 # else
     shl_t	hinstLib;
 # endif
@@ -5407,6 +5408,13 @@ mch_libcall(libname, funcname, argstring, argint, string_result, number_result)
 	    | RTLD_LOCAL
 #  endif
 	    );
+    if (hinstLib == NULL)
+    {
+	/* "dlerr" must be used before dlclose() */
+	dlerr = (char *)dlerror();
+	if (dlerr != NULL)
+	    EMSG2(_("dlerror = \"%s\""), dlerr);
+    }
 # else
     hinstLib = shl_load((const char*)libname, BIND_IMMEDIATE|BIND_VERBOSE, 0L);
 # endif
@@ -5423,6 +5431,7 @@ mch_libcall(libname, funcname, argstring, argint, string_result, number_result)
 	if (SETJMP(lc_jump_env) != 0)
 	{
 	    success = FALSE;
+	    dlerr = NULL;
 	    mch_didjmp();
 	}
 	else
@@ -5435,12 +5444,17 @@ mch_libcall(libname, funcname, argstring, argint, string_result, number_result)
 	    {
 # if defined(USE_DLOPEN)
 		ProcAdd = (STRPROCSTR)dlsym(hinstLib, (const char *)funcname);
+		dlerr = (char *)dlerror();
 # else
 		if (shl_findsym(&hinstLib, (const char *)funcname,
 					TYPE_PROCEDURE, (void *)&ProcAdd) < 0)
 		    ProcAdd = NULL;
 # endif
-		if ((success = (ProcAdd != NULL)))
+		if ((success = (ProcAdd != NULL
+# if defined(USE_DLOPEN)
+			    && dlerr == NULL
+# endif
+			    )))
 		{
 		    if (string_result == NULL)
 			retval_int = ((STRPROCINT)ProcAdd)(argstring);
@@ -5452,12 +5466,17 @@ mch_libcall(libname, funcname, argstring, argint, string_result, number_result)
 	    {
 # if defined(USE_DLOPEN)
 		ProcAddI = (INTPROCSTR)dlsym(hinstLib, (const char *)funcname);
+		dlerr = (char *)dlerror();
 # else
 		if (shl_findsym(&hinstLib, (const char *)funcname,
 				       TYPE_PROCEDURE, (void *)&ProcAddI) < 0)
 		    ProcAddI = NULL;
 # endif
-		if ((success = (ProcAddI != NULL)))
+		if ((success = (ProcAddI != NULL
+# if defined(USE_DLOPEN)
+			    && dlerr == NULL
+# endif
+			    )))
 		{
 		    if (string_result == NULL)
 			retval_int = ((INTPROCINT)ProcAddI)(argint);
@@ -5492,8 +5511,12 @@ mch_libcall(libname, funcname, argstring, argint, string_result, number_result)
 #  endif
 # endif
 
-	/* Free the DLL module. */
 # if defined(USE_DLOPEN)
+	/* "dlerr" must be used before dlclose() */
+	if (dlerr != NULL)
+	    EMSG2(_("dlerror = \"%s\""), dlerr);
+
+	/* Free the DLL module. */
 	(void)dlclose(hinstLib);
 # else
 	(void)shl_unload(hinstLib);

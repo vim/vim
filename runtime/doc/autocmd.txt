@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.0aa.  Last change: 2004 Jun 30
+*autocmd.txt*   For Vim version 7.0aa.  Last change: 2004 Jul 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -486,6 +486,8 @@ InsertLeave			When leaving Insert mode.  Also when using
 							*FileEncoding*
 FileEncoding			Obsolete.  It still works and is equivalent
 				to |EncodingChanged|.
+							*ColorScheme*
+ColorScheme			After loading a color scheme. |:colorscheme|
 							*RemoteReply*
 RemoteReply			When a reply from a Vim that functions as
 				server was received |server2client()|.

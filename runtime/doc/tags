@@ -92,6 +92,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'cdpath'	options.txt	/*'cdpath'*
 'cedit'	options.txt	/*'cedit'*
 'cf'	options.txt	/*'cf'*
+'cfu'	options.txt	/*'cfu'*
 'ch'	options.txt	/*'ch'*
 'character'	intro.txt	/*'character'*
 'charconvert'	options.txt	/*'charconvert'*
@@ -116,6 +117,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'commentstring'	options.txt	/*'commentstring'*
 'compatible'	options.txt	/*'compatible'*
 'complete'	options.txt	/*'complete'*
+'completefunc'	options.txt	/*'completefunc'*
 'confirm'	options.txt	/*'confirm'*
 'consk'	options.txt	/*'consk'*
 'conskey'	options.txt	/*'conskey'*
@@ -623,7 +625,9 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'pt'	options.txt	/*'pt'*
 'pvh'	options.txt	/*'pvh'*
 'pvw'	options.txt	/*'pvw'*
+'qe'	options.txt	/*'qe'*
 'quote	motion.txt	/*'quote*
+'quoteescape''	options.txt	/*'quoteescape''*
 'readonly'	options.txt	/*'readonly'*
 'redraw'	vi_diff.txt	/*'redraw'*
 'remap'	options.txt	/*'remap'*
@@ -2866,6 +2870,7 @@ Cmdline	cmdline.txt	/*Cmdline*
 Cmdline-mode	cmdline.txt	/*Cmdline-mode*
 CmdwinEnter	autocmd.txt	/*CmdwinEnter*
 CmdwinLeave	autocmd.txt	/*CmdwinLeave*
+ColorScheme	autocmd.txt	/*ColorScheme*
 Command-line	cmdline.txt	/*Command-line*
 Command-line-mode	cmdline.txt	/*Command-line-mode*
 Contents	quickref.txt	/*Contents*
@@ -3863,6 +3868,7 @@ _vimrc	starting.txt	/*_vimrc*
 `{	motion.txt	/*`{*
 `}	motion.txt	/*`}*
 a	insert.txt	/*a*
+a'	motion.txt	/*a'*
 a(	motion.txt	/*a(*
 a)	motion.txt	/*a)*
 a4	options.txt	/*a4*
@@ -3875,6 +3881,7 @@ aB	motion.txt	/*aB*
 aW	motion.txt	/*aW*
 a[	motion.txt	/*a[*
 a]	motion.txt	/*a]*
+a`	motion.txt	/*a`*
 ab	motion.txt	/*ab*
 abandon	editing.txt	/*abandon*
 abbreviations	map.txt	/*abbreviations*
@@ -3920,6 +3927,7 @@ ap	motion.txt	/*ap*
 apache-syntax	syntax.txt	/*apache-syntax*
 apache.vim	syntax.txt	/*apache.vim*
 append()	eval.txt	/*append()*
+aquote	motion.txt	/*aquote*
 arabic.txt	arabic.txt	/*arabic.txt*
 arabicfonts	arabic.txt	/*arabicfonts*
 arabickeymap	arabic.txt	/*arabickeymap*
@@ -4185,6 +4193,7 @@ compl-current	insert.txt	/*compl-current*
 compl-define	insert.txt	/*compl-define*
 compl-dictionary	insert.txt	/*compl-dictionary*
 compl-filename	insert.txt	/*compl-filename*
+compl-function	insert.txt	/*compl-function*
 compl-generic	insert.txt	/*compl-generic*
 compl-keyword	insert.txt	/*compl-keyword*
 compl-tag	insert.txt	/*compl-tag*
@@ -4950,6 +4959,7 @@ htmlos-syntax	syntax.txt	/*htmlos-syntax*
 htmlos.vim	syntax.txt	/*htmlos.vim*
 http	pi_netrw.txt	/*http*
 i	insert.txt	/*i*
+i'	motion.txt	/*i'*
 i(	motion.txt	/*i(*
 i)	motion.txt	/*i)*
 i<	motion.txt	/*i<*
@@ -5032,9 +5042,11 @@ i_CTRL-X_CTRL-L	insert.txt	/*i_CTRL-X_CTRL-L*
 i_CTRL-X_CTRL-N	insert.txt	/*i_CTRL-X_CTRL-N*
 i_CTRL-X_CTRL-P	insert.txt	/*i_CTRL-X_CTRL-P*
 i_CTRL-X_CTRL-T	insert.txt	/*i_CTRL-X_CTRL-T*
+i_CTRL-X_CTRL-U	insert.txt	/*i_CTRL-X_CTRL-U*
 i_CTRL-X_CTRL-V	insert.txt	/*i_CTRL-X_CTRL-V*
 i_CTRL-X_CTRL-Y	insert.txt	/*i_CTRL-X_CTRL-Y*
 i_CTRL-X_CTRL-]	insert.txt	/*i_CTRL-X_CTRL-]*
+i_CTRL-X_index	index.txt	/*i_CTRL-X_index*
 i_CTRL-Y	insert.txt	/*i_CTRL-Y*
 i_CTRL-Z	options.txt	/*i_CTRL-Z*
 i_CTRL-[	insert.txt	/*i_CTRL-[*
@@ -5049,6 +5061,7 @@ i_^_CTRL-D	insert.txt	/*i_^_CTRL-D*
 i_backspacing	insert.txt	/*i_backspacing*
 i_digraph	digraph.txt	/*i_digraph*
 i_esc	intro.txt	/*i_esc*
+i`	motion.txt	/*i`*
 ia64-syntax	syntax.txt	/*ia64-syntax*
 ia64.vim	syntax.txt	/*ia64.vim*
 ib	motion.txt	/*ib*
@@ -5122,6 +5135,7 @@ internet	intro.txt	/*internet*
 intro	intro.txt	/*intro*
 intro.txt	intro.txt	/*intro.txt*
 ip	motion.txt	/*ip*
+iquote	motion.txt	/*iquote*
 is	motion.txt	/*is*
 isdirectory()	eval.txt	/*isdirectory()*
 iw	motion.txt	/*iw*
@@ -5139,6 +5153,7 @@ jumplist	motion.txt	/*jumplist*
 jumpto-diffs	diff.txt	/*jumpto-diffs*
 k	motion.txt	/*k*
 kcc	uganda.txt	/*kcc*
+kde	gui_x11.txt	/*kde*
 kde-toolbar	gui_x11.txt	/*kde-toolbar*
 key-codes	intro.txt	/*key-codes*
 key-codes-changed	version4.txt	/*key-codes-changed*
@@ -5437,6 +5452,7 @@ new-highlighting	version5.txt	/*new-highlighting*
 new-indent-flex	version6.txt	/*new-indent-flex*
 new-items-6	version6.txt	/*new-items-6*
 new-items-7	version7.txt	/*new-items-7*
+new-kde	version7.txt	/*new-kde*
 new-line-continuation	version5.txt	/*new-line-continuation*
 new-multi-byte	version5.txt	/*new-multi-byte*
 new-multi-lang	version6.txt	/*new-multi-lang*
@@ -6334,6 +6350,7 @@ v_V	visual.txt	/*v_V*
 v_X	change.txt	/*v_X*
 v_Y	change.txt	/*v_Y*
 v_a	motion.txt	/*v_a*
+v_a'	motion.txt	/*v_a'*
 v_a(	motion.txt	/*v_a(*
 v_a)	motion.txt	/*v_a)*
 v_a<	motion.txt	/*v_a<*
@@ -6342,8 +6359,10 @@ v_aB	motion.txt	/*v_aB*
 v_aW	motion.txt	/*v_aW*
 v_a[	motion.txt	/*v_a[*
 v_a]	motion.txt	/*v_a]*
+v_a`	motion.txt	/*v_a`*
 v_ab	motion.txt	/*v_ab*
 v_ap	motion.txt	/*v_ap*
+v_aquote	motion.txt	/*v_aquote*
 v_as	motion.txt	/*v_as*
 v_aw	motion.txt	/*v_aw*
 v_a{	motion.txt	/*v_a{*
@@ -6374,6 +6393,7 @@ v_gq	change.txt	/*v_gq*
 v_gv	visual.txt	/*v_gv*
 v_gw	change.txt	/*v_gw*
 v_i	motion.txt	/*v_i*
+v_i'	motion.txt	/*v_i'*
 v_i(	motion.txt	/*v_i(*
 v_i)	motion.txt	/*v_i)*
 v_i<	motion.txt	/*v_i<*
@@ -6382,8 +6402,10 @@ v_iB	motion.txt	/*v_iB*
 v_iW	motion.txt	/*v_iW*
 v_i[	motion.txt	/*v_i[*
 v_i]	motion.txt	/*v_i]*
+v_i`	motion.txt	/*v_i`*
 v_ib	motion.txt	/*v_ib*
 v_ip	motion.txt	/*v_ip*
+v_iquote	motion.txt	/*v_iquote*
 v_is	motion.txt	/*v_is*
 v_iw	motion.txt	/*v_iw*
 v_i{	motion.txt	/*v_i{*

@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2004 Jun 28
+*options.txt*	For Vim version 7.0aa.  Last change: 2004 Jul 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1514,6 +1514,51 @@ A jump table for the options with a short description can be found at |Q_op|.
 	based expansion (eg dictionary |i_CTRL-X_CTRL-K|, included patterns
 	|i_CTRL-X_CTRL-I|, tags |i_CTRL-X_CTRL-]| and normal expansions)
 
+						*'completefunc'* *'cfu'*
+'completefunc' 'cfu'	string	(default: empty)
+			local to buffer
+			{not in Vi}
+	This option specifies a completion function to be used for CTRL-X
+	CTRL-X.  The function will be invoked with four arguments:
+	   a:line	the text of the current line
+	   a:base	the text with which matches should match
+	   a:col        column in a:line where the cursor is, first column is
+	   		zero
+	   a:findstart  either 1 or 0
+	When the a:findstart argument is 1, the function must return the
+	column of where the completion starts.  It must be a number between
+	zero and "a:col".  This involves looking at the characters in a:line
+	before column a:col and include those characters that could be part of
+	the completed item.
+	When the a:findstart argument is 0 the function must return a string
+	with the matching words, separated by newlines.  When there are no
+	matches return an empty string.
+	An example that completes the names of the months: >
+		fun! CompleteMonths(line, base, col, findstart)
+		  if a:findstart
+		    " locate start column of word
+		    let start = a:col
+		    while start > 0 && a:line[start - 1] =~ '\a'
+		      let start = start - 1
+		    endwhile
+		    return start
+		  else
+		    " find months matching with "a:base"
+		    let res = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec"
+		    if a:base != ''
+		      let res = substitute(res, '\c\<\(\(' . a:base . '.\{-}\>\)\|.\{-}\>\)', '\2', 'g')
+		    endif
+		    let res = substitute(res, ' \+', "\n", 'g')
+		    return res
+		  endif
+		endfun
+		set completefunc=CompleteMonths
+<	Note that a substitute() function is used to reduce the list of
+	possible values and remove the ones that don't match the base.  The
+	part before the "\|" matches the base, the part after it is used
+	when there is no match.  The "\2" in the replacement is empty if the
+	part before the "\|" does not match.
+	
 				*'confirm'* *'cf'* *'noconfirm'* *'nocf'*
 'confirm' 'cf'		boolean (default off)
 			global
@@ -3082,6 +3127,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	hidden although the 'hidden' option is off: When the buffer is
 	modified, 'autowrite' is off or writing is not possible, and the '!'
 	flag was used.  See also |windows.txt|.
+	To only make one buffer hidden use the 'bufhidden' option.
 	This option is set for one command with ":hide {command}" |:hide|.
 	WARNING: It's easy to forget that you have changes in hidden buffers.
 	Think twice when using ":q!" or ":qa!".
@@ -3835,6 +3881,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  precedes:c	Character to show in the first column, when 'wrap'
 			is off and there is text preceding the character
 			visible in the first column.
+	  nbsp:c	Character to show for non-breakable space. Left to
+			blank when omitted.
 
 	The characters ':' and ',' should not be used.  UTF-8 characters can
 	be used when 'encoding' is "utf-8", otherwise only printable
@@ -3842,10 +3890,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	Examples: >
 	    :set lcs=tab:>-,trail:-
-	    :set lcs=tab:>-,eol:<
+	    :set lcs=tab:>-,eol:<,nbsp:%
 	    :set lcs=extends:>,precedes:<
 <	The "NonText" highlighting will be used for "eol", "extends" and
-	"precedes".  "SpecialKey" for "tab" and "trail".
+	"precedes".  "SpecialKey" for "nbsp", "tab" and "trail".
 
 			*'lpl'* *'nolpl'* *'loadplugins'* *'noloadplugins'*
 'loadplugins' 'lpl'	boolean	(default on)
@@ -4652,6 +4700,16 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Example: >
 		:set printoptions=paper:letter,duplex:off
 <
+						*'quoteescape''* *'qe'*
+'quoteescape' 'qe'	string	(default "\")
+			local to buffer
+			{not in Vi}
+	The characters that are used to escape quotes in a string.  Used for
+	objects like a', a" and a` |a'|.
+	When one of the characters in this option is found inside a string,
+	the following character will be skipped.  The default value makes the
+	text "foo\"bar\\" considered to be one string.
+
 				   *'readonly'* *'ro'* *'noreadonly'* *'noro'*
 'readonly' 'ro'		boolean	(default off)
 			local to buffer

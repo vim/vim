@@ -1089,6 +1089,9 @@ struct file_buffer
 #ifdef FEAT_INS_EXPAND
     char_u	*b_p_cpt;	/* 'complete' */
 #endif
+#ifdef FEAT_COMPL_FUNC
+    char_u	*b_p_cfu;	/* 'completefunc' */
+#endif
     int		b_p_eol;	/* 'endofline' */
     int		b_p_et;		/* 'expandtab' */
     int		b_p_et_nobin;	/* b_p_et saved for binary mode */
@@ -1129,6 +1132,9 @@ struct file_buffer
     char_u	*b_p_oft;	/* 'osfiletype' */
 #endif
     int		b_p_pi;		/* 'preserveindent' */
+#ifdef FEAT_TEXTOBJ
+    char_u	*b_p_qe;	/* 'quoteescape' */
+#endif
     int		b_p_ro;		/* 'readonly' */
     long	b_p_sw;		/* 'shiftwidth' */
 #ifndef SHORT_FNAME

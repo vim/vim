@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	TeX
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrOchipS@PcampbellAfamily.Mbiz>
-" Last Change:	Jun 01, 2004
-" Version:	24
+" Last Change:	Jun 15, 2004
+" Version:	25
 " URL:		http://www.erols.com/astronaut/vim/index.html#vimlinks_syntax
 "
 " Notes: {{{1
@@ -91,6 +91,7 @@ if !exists("g:tex_no_error")
 endif
 syn cluster texEnvGroup		contains=texMatcher,texMathDelim,texSpecialChar,texStatement
 syn cluster texMatchGroup	contains=texAccent,texBadMath,texComment,texDefCmd,texDelimiter,texDocType,texInput,texLength,texLigature,texMatcher,texNewCmd,texNewEnv,texOnlyMath,texParen,texRefZone,texSection,texSpecialChar,texStatement,texString,texTypeSize,texTypeStyle,texZone,texInputFile,texOption
+syn cluster texRefGroup		contains=texMatcher,texComment,texDelimiter
 if !exists("tex_no_math")
  syn cluster texMathZones	contains=texMathZoneV,texMathZoneW,texMathZoneX,texMathZoneY,texMathZoneZ
  syn cluster texMatchGroup	add=@texMathZones
@@ -348,13 +349,13 @@ else
 endif
 
 " Tex Reference Zones: {{{1
-syn region texZone		start="@samp{"				end="}\|%stopzone\>"
-syn region texRefZone		matchgroup=texStatement start="\\nocite{"		keepend end="}\|%stopzone\>"  contains=texComment,texDelimiter
-syn region texRefZone		matchgroup=texStatement start="\\bibliography{"		keepend end="}\|%stopzone\>"  contains=texComment,texDelimiter
-syn region texRefZone		matchgroup=texStatement start="\\cite\([tp]\*\=\)\={"	keepend end="}\|%stopzone\>"  contains=texComment,texDelimiter
-syn region texRefZone		matchgroup=texStatement start="\\label{"		keepend end="}\|%stopzone\>"  contains=texComment,texDelimiter
-syn region texRefZone		matchgroup=texStatement start="\\\(page\|eq\)ref{"	keepend end="}\|%stopzone\>"  contains=texComment,texDelimiter
-syn region texRefZone		matchgroup=texStatement start="\\v\=ref{"		keepend end="}\|%stopzone\>"  contains=texComment,texDelimiter
+syn region texZone		matchgroup=texStatement start="@samp{"			end="}\|%stopzone\>"	contains=@texRefGroup
+syn region texRefZone		matchgroup=texStatement start="\\nocite{"		end="}\|%stopzone\>"	contains=@texRefGroup
+syn region texRefZone		matchgroup=texStatement start="\\bibliography{"		end="}\|%stopzone\>"	contains=@texRefGroup
+syn region texRefZone		matchgroup=texStatement start="\\cite\([tp]\*\=\)\={"	end="}\|%stopzone\>"	contains=@texRefGroup
+syn region texRefZone		matchgroup=texStatement start="\\label{"		end="}\|%stopzone\>"	contains=@texRefGroup
+syn region texRefZone		matchgroup=texStatement start="\\\(page\|eq\)ref{"	end="}\|%stopzone\>"	contains=@texRefGroup
+syn region texRefZone		matchgroup=texStatement start="\\v\=ref{"		end="}\|%stopzone\>"	contains=@texRefGroup
 
 " Handle newcommand, newenvironment : {{{1
 syn match  texNewCmd				"\\newcommand\>"			nextgroup=texCmdName skipwhite skipnl

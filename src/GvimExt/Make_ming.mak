@@ -28,8 +28,8 @@ CXXFLAGS := -O2 -mno-cygwin
 WINDRES = i386-mingw32msvc-windres
 endif
 else
-CXX := g++.exe
-WINDRES := windres.exe
+CXX := g++
+WINDRES := windres
 CXXFLAGS := -O2 -mno-cygwin
 endif
 LIBS :=  -luuid

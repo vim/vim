@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 7.0aa.  Last change: 2004 May 05
+*quickref.txt*  For Vim version 7.0aa.  Last change: 2004 Jul 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -630,6 +630,7 @@ Short explanation of each option:		*option-list*
 |'commentstring'| |'cms'|    template for comments; used for fold marker
 |'compatible'|	  |'cp'|     behave Vi-compatible as much as possible
 |'complete'|	  |'cpt'|    specify how Insert mode completion works
+|'completefunc'|  |'cfu'|    function to be used for Insert mode completion
 |'confirm'|	  |'cf'|     ask what to do about unsaved/read-only files
 |'conskey'|	  |'consk'|  get keys directly from console (MS-DOS only)
 |'copyindent'|    |'ci'|     make 'autoindent' use existing indent structure
@@ -779,6 +780,7 @@ Short explanation of each option:		*option-list*
 |'printfont'|	  |'pfn'|    name of the font to be used for :hardcopy
 |'printheader'|   |'pheader'| format of the header used for :hardcopy
 |'printoptions'|  |'popt'|   controls the format of :hardcopy output
+|'quoteescape'|   |'qe'|     escape characters used in a string
 |'readonly'|	  |'ro'|     disallow writing the buffer
 |'remap'|		     allow mappings to work recursively
 |'report'|		     threshold for reporting nr. of lines changed

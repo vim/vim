@@ -287,16 +287,23 @@ DEFINES += -DFEAT_CSCOPE
 endif
 
 ifeq ($(NETBEANS),yes)
+# Only allow NETBEANS for a GUI build.
+ifeq (yes, $(GUI))
 DEFINES += -DFEAT_NETBEANS_INTG
-ifeq ($(DEBUG), yes)
+
+ifeq ($(NBDEBUG), yes)
 DEFINES += -DNBDEBUG
 NBDEBUG_INCL = nbdebug.h
 NBDEBUG_SRC = nbdebug.c
 endif
 endif
+endif
 
 ifdef XPM
+# Only allow XPM for a GUI build.
+ifeq (yes, $(GUI))
 CFLAGS += -DFEAT_XPM_W32 -I $(XPM)/include
+endif
 endif
 
 ifeq ($(DEBUG),yes)
@@ -378,13 +385,19 @@ ifeq ($(CSCOPE),yes)
 OBJ += $(OUTDIR)/if_cscope.o
 endif
 ifeq ($(NETBEANS),yes)
+# Only allow NETBEANS for a GUI build.
+ifeq (yes, $(GUI))
 OBJ += $(OUTDIR)/netbeans.o $(OUTDIR)/gui_beval.o
 LIB += -lwsock32
 endif
+endif
 ifdef XPM
+# Only allow XPM for a GUI build.
+ifeq (yes, $(GUI))
 OBJ += $(OUTDIR)/xpm_w32.o
 # You'll need libXpm.a from http://gnuwin32.sf.net
 LIB += -L $(XPM)/lib -lXpm
+endif
 endif
 
 

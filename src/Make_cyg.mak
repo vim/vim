@@ -1,6 +1,6 @@
 #
 # Makefile for VIM on Win32, using Cygnus gcc
-# Last updated by Dan Sharp.  Last Change: 2004 Apr 23
+# Last updated by Dan Sharp.  Last Change: 2004 Jul 01
 #
 # This compiles Vim as a Windows application.  If you want Vim to run as a
 # Cygwin application use the Makefile (just like on Unix).
@@ -36,6 +36,7 @@
 # OPTIMIZE	SPACE, SPEED, or MAXSPEED: set optimization level (MAXSPEED)
 # NETBEANS	no or yes: to include netbeans interface support (yes when GUI
 #		is yes)
+# NBDEBUG 	no or yes: to include netbeans interface debugging support (no)
 # XPM		define to path to XPM dir to get XPM image support (not defined)
 #>>>>> choose options:
 ifndef GUI
@@ -62,12 +63,14 @@ ifndef IME
 IME = yes
 endif
 
-ifndef CPUNR
-CPUNR = i386
-endif
-
 ifndef ARCH
 ARCH = i386
+endif
+
+ifndef CPUNR
+# Setting -march implicitly sets -mcpu to the same value,
+# so reflect that in the defaults here.
+CPUNR = $(ARCH)
 endif
 
 ifndef WINVER
@@ -293,12 +296,16 @@ EXTRA_OBJS += $(OUTDIR)/if_cscope.o
 endif
 
 ##############################
+ifeq ($(GUI),yes)
+
+##############################
 ifeq (yes, $(NETBEANS))
+# Only allow NETBEANS for a GUI build.
 DEFINES += -DFEAT_NETBEANS_INTG
 EXTRA_OBJS += $(OUTDIR)/netbeans.o $(OUTDIR)/gui_beval.o
 EXTRA_LIBS += -lwsock32
 
-ifeq (yes, $(DEBUG))
+ifeq (yes, $(NBDEBUG))
 DEFINES += -DNBDEBUG
 NBDEBUG_DEP = nbdebug.h nbdebug.c
 endif
@@ -307,6 +314,7 @@ endif
 
 ##############################
 ifdef XPM
+# Only allow XPM for a GUI build.
 DEFINES += -DFEAT_XPM_W32
 INCLUDES += -I$(XPM)/include
 EXTRA_OBJS += $(OUTDIR)/xpm_w32.o
@@ -314,14 +322,6 @@ EXTRA_LIBS += -L$(XPM)/lib -lXpm
 endif
 
 ##############################
-ifeq (yes, $(OLE))
-DEFINES += -DFEAT_OLE
-EXTRA_OBJS += $(OUTDIR)/if_ole.o
-EXTRA_LIBS += -loleaut32 -lstdc++
-endif
-
-##############################
-ifeq ($(GUI),yes)
 EXE = gvim$(DEBUG_SUFFIX).exe
 OUTDIR = gobj$(DEBUG_SUFFIX)
 DEFINES += -DFEAT_GUI_W32 -DFEAT_CLIPBOARD
@@ -331,6 +331,13 @@ else
 EXE = vim$(DEBUG_SUFFIX).exe
 OUTDIR = obj$(DEBUG_SUFFIX)
 LIBS += -luser32 -lgdi32 -lcomdlg32
+endif
+
+##############################
+ifeq (yes, $(OLE))
+DEFINES += -DFEAT_OLE
+EXTRA_OBJS += $(OUTDIR)/if_ole.o
+EXTRA_LIBS += -loleaut32 -lstdc++
 endif
 
 ##############################

@@ -741,6 +741,14 @@ call_vim_function(func, argc, argv, safe)
 
     for (i = 0; i < argc; i++)
     {
+	/* Pass a NULL or empty argument as an empty string */
+	if (argv[i] == NULL || *argv[i] == NUL)
+	{
+	    argvars[i].var_type = VAR_STRING;
+	    argvars[i].var_val.var_string = "";
+	    continue;
+	}
+
 	/* Recognize a number argument, the others must be strings. */
 	vim_str2nr(argv[i], NULL, &len, TRUE, TRUE, &n, NULL);
 	if (len != 0 && len == (int)STRLEN(argv[i]))

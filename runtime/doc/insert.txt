@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0aa.  Last change: 2004 Jun 24
+*insert.txt*    For Vim version 7.0aa.  Last change: 2004 Jul 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -853,6 +853,23 @@ CTRL-X CTRL-V		Guess what kind of item is in front of the cursor and
 			CTRL-V.  This allows mapping a key to do Vim command
 			completion, for example: >
 				:imap <Tab> <C-X><C-V>
+
+User defined completing					*compl-function*
+
+Completion is done by a function that can be defined by the user with the
+'completefunc' option.  See the option for how the function is called and an
+example.
+
+							*i_CTRL-X_CTRL-U*
+CTRL-X CTRL-U		Guess what kind of item is in front of the cursor and
+			find the first match for it.
+	CTRL-U	or
+	CTRL-N		Use the next match.  This match replaces the previous
+			one.
+
+	CTRL-P		Use the previous match.  This match replaces the
+			previous one.
+
 
 Completing keywords from different sources		*compl-generic*
 

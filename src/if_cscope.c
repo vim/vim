@@ -434,14 +434,14 @@ cs_add_common(arg1, arg2, flags)
     char *flags;
 {
     struct stat statbuf;
-    int ret;
-    char *fname = NULL;
-    char *fname2 = NULL;
-    char *ppath = NULL;
-    int i;
+    int		ret;
+    char	*fname = NULL;
+    char	*fname2 = NULL;
+    char	*ppath = NULL;
+    int		i;
 
     /* get the filename (arg1), expand it, and try to stat it */
-    if ((fname = (char *)alloc(MAXPATHL+1)) == NULL)
+    if ((fname = (char *)alloc(MAXPATHL + 1)) == NULL)
 	goto add_err;
 
     expand_env((char_u *)arg1, (char_u *)fname, MAXPATHL);
@@ -459,7 +459,7 @@ staterr:
     {
 	struct stat statbuf2;
 
-	if ((ppath = (char *)alloc(MAXPATHL+1)) == NULL)
+	if ((ppath = (char *)alloc(MAXPATHL + 1)) == NULL)
 	    goto add_err;
 
 	expand_env((char_u *)arg2, (char_u *)ppath, MAXPATHL);

@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 7.0aa.  Last change: 2004 Jun 16
+*index.txt*     For Vim version 7.0aa.  Last change: 2004 Jul 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -89,7 +89,7 @@ tag		char		action	~
 |i_CTRL-V_digit| CTRL-V {number} insert three digit decimal number as a single
 				byte.
 |i_CTRL-W|	CTRL-W		delete word before the cursor
-|i_CTRL-X|	CTRL-X {mode}	enter CTRL-X sub mode, see below
+|i_CTRL-X|	CTRL-X {mode}	enter CTRL-X sub mode, see |i_CTRL-X_index|
 |i_CTRL-Y|	CTRL-Y		insert the character which is above the cursor
 |i_CTRL-Z|	CTRL-Z		when 'insertmode' set: suspend Vim
 |i_<Esc>|	<Esc>		end insert mode (unless 'insertmode' set)
@@ -141,7 +141,7 @@ tag		char		action	~
 |i_<MouseUp>|	<MouseUp>	scroll three lines upwards
 |i_<S-MouseUp>|	<S-MouseUp>	scroll a full page upwards
 
-commands in CTRL-X submode
+commands in CTRL-X submode				*i_CTRL-X_index*
 
 |i_CTRL-X_CTRL-D|	CTRL-X CTRL-D	complete defined identifiers
 |i_CTRL-X_CTRL-E|	CTRL-X CTRL-E	scroll up
@@ -153,6 +153,8 @@ commands in CTRL-X submode
 |i_CTRL-X_CTRL-P|	CTRL-X CTRL-P	previous completion
 |i_CTRL-X_CTRL-T|	CTRL-X CTRL-T	complete identifiers from thesaurus
 |i_CTRL-X_CTRL-Y|	CTRL-X CTRL-Y	scroll down
+|i_CTRL-X_CTRL-U|	CTRL-X CTRL-U	complete with 'completefunc'
+|i_CTRL-X_CTRL-V|	CTRL-X CTRL-V	complete like in : command line
 |i_CTRL-X_CTRL-]|	CTRL-X CTRL-]	complete tags
 {not available when compiled without the +insert_expand feature}
 
@@ -449,6 +451,8 @@ These can be used after an operator or in Visual mode to select an object.
 
 tag		command		   action in Normal mode	~
 ------------------------------------------------------------------------------
+|v_aquote|	a"		   double quoted string
+|v_a'|		a'		   single quoted string
 |v_a(|		a(		   same as ab
 |v_a)|		a)		   same as ab
 |v_a<|		a<		   "a <>" from '<' to the matching '>'
@@ -457,12 +461,15 @@ tag		command		   action in Normal mode	~
 |v_aW|		aW		   "a WORD" (with white space)
 |v_a[|		a[		   "a []" from '[' to the matching ']'
 |v_a]|		a]		   same as a[
+|v_a`|		a`		   string in backticks
 |v_ab|		ab		   "a block" from "[(" to "])" (with braces)
 |v_ap|		ap		   "a paragraph" (with white space)
 |v_as|		as		   "a sentence" (with white space)
 |v_aw|		aw		   "a word" (with white space)
 |v_a{|		a{		   same as aB
 |v_a}|		a}		   same as aB
+|v_iquote|	i"		   double quoted string without the quotes
+|v_i'|		i'		   single quoted string without the quotes
 |v_i(|		i(		   same as ib
 |v_i)|		i)		   same as ib
 |v_i<|		i<		   "inner <>" from '<' to the matching '>'
@@ -471,6 +478,7 @@ tag		command		   action in Normal mode	~
 |v_iW|		iW		   "inner WORD"
 |v_i[|		i[		   "inner []" from '[' to the matching ']'
 |v_i]|		i]		   same as i[
+|v_i`|		i`		   string in backticks without the backticks
 |v_ib|		ib		   "inner block" from "[(" to "])"
 |v_ip|		ip		   "inner paragraph"
 |v_is|		is		   "inner sentence"

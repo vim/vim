@@ -57,6 +57,7 @@
 #       Processor Version: CPUNR=[i386, i486, i586, i686] (default is i386)
 #       Optimization: OPTIMIZE=[SPACE, SPEED, MAXSPEED] (default is MAXSPEED)
 #       Netbeans Support: NETBEANS=[yes or no] (default is yes if GUI is yes)
+#       Netbeans Debugging Support: NBDEBUG=[yes or no] (default is no)
 #       XPM Image Support: XPM=[path to XPM directory]
 #
 # You can combine any of these interfaces
@@ -189,12 +190,15 @@ CSCOPE_DEFS  = -DFEAT_CSCOPE
 NETBEANS = $(GUI)
 !endif
 
+# Only allow NETBEANS and XPM for a GUI build.
+!if "$(GUI)" == "yes"
 !if "$(NETBEANS)" == "yes"
 # NETBEANS - Include support for Netbeans integration
 NETBEANS_PRO	= proto/netbeans.pro
 NETBEANS_OBJ	= $(OBJDIR)/netbeans.obj $(OBJDIR)/gui_beval.obj
 NETBEANS_DEFS	= -DFEAT_NETBEANS_INTG
-!if "$(DEBUG)" == "yes"
+
+!if "$(NBDEBUG)" == "yes"
 NBDEBUG_DEFS	= -DNBDEBUG
 NBDEBUG_INCL	= nbdebug.h
 NBDEBUG_SRC	= nbdebug.c
@@ -209,6 +213,7 @@ XPM_OBJ   = $(OBJDIR)/xpm_w32.obj
 XPM_DEFS  = -DFEAT_XPM_W32
 XPM_LIB   = $(XPM)\lib\libXpm.lib
 XPM_INC	  = -I $(XPM)\include
+!endif
 !endif
 
 !if defined(USE_MSVCRT)

@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.0aa.  Last change: 2004 Jun 16
+*syntax.txt*	For Vim version 7.0aa.  Last change: 2004 Jul 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3495,6 +3495,8 @@ in their own color.
 				:echo g:colors_name
 <			Doesn't work recursively, thus you can't use
 			":colorscheme" in a color scheme script.
+			After the color scheme has been loaded the
+			|ColorScheme| autocommand event is triggered.
 
 :hi[ghlight]		List all the current highlight groups that have
 			attributes set.

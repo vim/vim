@@ -1360,7 +1360,7 @@ options.txt for detailed information.
 
 Contributions specifically for the multi-byte features by:
 	Chi-Deok Hwang <hwang@mizi.co.kr>
-	Nam SungHyun <namsh@lge.com>
+	Nam SungHyun <namsh@kldp.org>
 	K.Nagano <nagano@atese.advantest.co.jp>
 	Taro Muraoka  <koron@tka.att.ne.jp>
 	Yasuhiro Matsumoto <mattn@mail.goo.ne.jp>

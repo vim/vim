@@ -8257,6 +8257,12 @@ nv_object(cap)
 	case 's': /* "as" = a sentence */
 		flag = current_sent(cap->oap, cap->count1, include);
 		break;
+	case '"': /* "a"" = a double quoted string */
+	case '\'': /* "a'" = a single quoted string */
+	case '`': /* "a`" = a backtick quoted string */
+		flag = current_quote(cap->oap, cap->count1, include,
+								  cap->nchar);
+		break;
 #if 0	/* TODO */
 	case 'S': /* "aS" = a section */
 	case 'f': /* "af" = a filename */

@@ -1012,6 +1012,7 @@ enum auto_event
     EVENT_BUFWRITECMD,		/* write buffer using command */
     EVENT_CMDWINENTER,		/* after entering the cmdline window */
     EVENT_CMDWINLEAVE,		/* before leaving the cmdline window */
+    EVENT_COLORSCHEME,		/* after loading a colorscheme */
     EVENT_FILEAPPENDPOST,	/* after appending to a file */
     EVENT_FILEAPPENDPRE,	/* before appending to a file */
     EVENT_FILEAPPENDCMD,	/* appende to a file using command */

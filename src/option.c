@@ -62,6 +62,7 @@ typedef enum
     , PV_CMS
     , PV_COM
     , PV_CPT
+    , PV_CFU
     , PV_DEF
     , PV_DICT
     , PV_DIFF
@@ -109,6 +110,7 @@ typedef enum
     , PV_PATH
     , PV_PI
     , PV_PVW
+    , PV_QE
     , PV_RL
     , PV_RLC
     , PV_RO
@@ -169,6 +171,9 @@ static char_u	*p_cms;
 #ifdef FEAT_INS_EXPAND
 static char_u	*p_cpt;
 #endif
+#ifdef FEAT_COMPL_FUNC
+static char_u	*p_cfu;
+#endif
 static int	p_eol;
 static int	p_et;
 #ifdef FEAT_MBYTE
@@ -205,6 +210,9 @@ static char_u	*p_nf;
 static char_u	*p_oft;
 #endif
 static int	p_pi;
+#ifdef FEAT_TEXTOBJ
+static char_u	*p_qe;
+#endif
 static int	p_ro;
 #ifdef FEAT_SMARTINDENT
 static int	p_si;
@@ -619,6 +627,15 @@ static struct vimoption
 #ifdef FEAT_INS_EXPAND
 			    (char_u *)&p_cpt, PV_CPT,
 			    {(char_u *)".,w,b,u,t,i", (char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)0L, (char_u *)0L}
+#endif
+			    },
+    {"completefunc", "cfu", P_STRING|P_ALLOCED|P_VI_DEF|P_SECURE,
+#ifdef FEAT_COMPL_FUNC
+			    (char_u *)&p_cfu, PV_CFU,
+			    {(char_u *)"", (char_u *)0L}
 #else
 			    (char_u *)NULL, PV_NONE,
 			    {(char_u *)0L, (char_u *)0L}
@@ -1658,6 +1675,15 @@ static struct vimoption
     {"prompt",	    NULL,   P_BOOL|P_VI_DEF,
 			    (char_u *)NULL, PV_NONE,
 			    {(char_u *)FALSE, (char_u *)0L}},
+    {"quoteescape", "qe",   P_STRING|P_ALLOCED|P_VI_DEF,
+#ifdef FEAT_TEXTOBJ
+			    (char_u *)&p_qe, PV_QE,
+			    {(char_u *)"\\", (char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)NULL, (char_u *)0L}
+#endif
+			    },
     {"readonly",    "ro",   P_BOOL|P_VI_DEF|P_RSTAT|P_NOGLOB,
 			    (char_u *)&p_ro, PV_RO,
 			    {(char_u *)FALSE, (char_u *)0L}},
@@ -4375,6 +4401,9 @@ check_buf_options(buf)
     check_string_option(&buf->b_p_cms);
 #endif
     check_string_option(&buf->b_p_nf);
+#ifdef FEAT_TEXTOBJ
+    check_string_option(&buf->b_p_qe);
+#endif
 #ifdef FEAT_SYN_HL
     check_string_option(&buf->b_p_syn);
 #endif
@@ -4396,6 +4425,9 @@ check_buf_options(buf)
 #endif
 #ifdef FEAT_INS_EXPAND
     check_string_option(&buf->b_p_cpt);
+#endif
+#ifdef FEAT_COMPL_FUNC
+    check_string_option(&buf->b_p_cfu);
 #endif
 #ifdef FEAT_KEYMAP
     check_string_option(&buf->b_p_keymap);
@@ -5793,6 +5825,7 @@ set_chars_option(varp)
     {
 	{&lcs_eol,	"eol"},
 	{&lcs_ext,	"extends"},
+	{&lcs_nbsp,	"nbsp"},
 	{&lcs_prec,	"precedes"},
 	{&lcs_tab2,	"tab"},
 	{&lcs_trail,	"trail"},
@@ -7871,6 +7904,9 @@ get_varp(p)
 #ifdef FEAT_INS_EXPAND
 	case PV_CPT:	return (char_u *)&(curbuf->b_p_cpt);
 #endif
+#ifdef FEAT_COMPL_FUNC
+	case PV_CFU:	return (char_u *)&(curbuf->b_p_cfu);
+#endif
 	case PV_EOL:	return (char_u *)&(curbuf->b_p_eol);
 	case PV_ET:	return (char_u *)&(curbuf->b_p_et);
 #ifdef FEAT_MBYTE
@@ -7909,6 +7945,9 @@ get_varp(p)
 	case PV_OFT:	return (char_u *)&(curbuf->b_p_oft);
 #endif
 	case PV_PI:	return (char_u *)&(curbuf->b_p_pi);
+#ifdef FEAT_TEXTOBJ
+	case PV_QE:	return (char_u *)&(curbuf->b_p_qe);
+#endif
 	case PV_RO:	return (char_u *)&(curbuf->b_p_ro);
 #ifdef FEAT_SMARTINDENT
 	case PV_SI:	return (char_u *)&(curbuf->b_p_si);
@@ -8173,6 +8212,9 @@ buf_copy_options(buf, flags)
 #ifdef FEAT_INS_EXPAND
 	    buf->b_p_cpt = vim_strsave(p_cpt);
 #endif
+#ifdef FEAT_COMPL_FUNC
+	    buf->b_p_cfu = vim_strsave(p_cfu);
+#endif
 	    buf->b_p_sts = p_sts;
 	    buf->b_p_sts_nopaste = p_sts_nopaste;
 #ifndef SHORT_FNAME
@@ -8255,6 +8297,9 @@ buf_copy_options(buf, flags)
 #ifdef FEAT_INS_EXPAND
 	    buf->b_p_dict = empty_option;
 	    buf->b_p_tsr = empty_option;
+#endif
+#ifdef FEAT_TEXTOBJ
+	    buf->b_p_qe = vim_strsave(p_qe);
 #endif
 
 	    /*

@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2004 May 04
+" Last Change:	2004 Jul 02
 
 " If there already is an option window, jump to that one.
 if bufwinnr("option-window") > 0
@@ -656,6 +656,9 @@ if has("insert_expand")
   call append("$", "complete\tspecifies how Insert mode completion works")
   call append("$", "\t(local to buffer)")
   call <SID>OptionL("cpt")
+  call append("$", "completefunc\tuser defined function for Insert mode completion")
+  call append("$", "\t(local to buffer)")
+  call <SID>OptionL("cfu")
   call append("$", "dictionary\tlist of dictionary files for keyword completion")
   call append("$", "\t(global or local to buffer)")
   call <SID>OptionG("dict", &dict)
@@ -1006,6 +1009,11 @@ call append("$", "\t(local to buffer)")
 call <SID>OptionL("isk")
 call append("$", "isprint\tspecifies printable characters")
 call <SID>OptionG("isp", &isp)
+if has("textobjects")
+  call append("$", "quoteescape\tspecifies escape characters in a string")
+  call append("$", "\t(local to buffer)")
+  call <SID>OptionL("qe")
+endif
 if has("rightleft")
   call append("$", "rightleft\tdisplay the buffer right-to-left")
   call append("$", "\t(local to window)")

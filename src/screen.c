@@ -3549,6 +3549,28 @@ win_line(wp, lnum, startrow, endrow)
 #endif
 	    ++ptr;
 
+	    /* 'list' : change char 160 to lcs_nbsp. */
+	    if (wp->w_p_list && c == 160 && lcs_nbsp)
+	    {
+		c = lcs_nbsp;
+		if (area_attr == 0 && search_attr == 0)
+		{
+		    n_attr = 1;
+		    extra_attr = hl_attr(HLF_8);
+		    saved_attr2 = char_attr; /* save current attr */
+		}
+#ifdef FEAT_MBYTE
+		mb_c = c;
+		if (enc_utf8 && (*mb_char2len)(c) > 1)
+		{
+		    mb_utf8 = TRUE;
+		    u8c_c1 = u8c_c2 = 0;
+		}
+		else
+		    mb_utf8 = FALSE;
+#endif
+	    }
+
 	    if (extra_check)
 	    {
 #ifdef FEAT_SYN_HL

@@ -76,6 +76,7 @@
 # CSCOPE	no or yes: include support for Cscope interface (yes)
 # NETBEANS	no or yes: include support for Netbeans interface (yes if GUI
 #		is yes)
+# NBDEBUG 	no or yes: include support for debugging Netbeans interface (no)
 # XPM		define to path to XPM dir to get support for loading XPM images.
 
 ### BOR: root of the BC installation
@@ -397,19 +398,6 @@ MBDEFINES = $(MBDEFINES) -DDYNAMIC_GETTEXT
 DEFINES = $(DEFINES) -DFEAT_CSCOPE
 !endif
 
-!if ("$(NETBEANS)"=="yes")
-DEFINES = $(DEFINES) -DFEAT_NETBEANS_INTG
-!if ("$(DEBUG)"=="yes")
-DEFINES = $(DEFINES) -DNBDEBUG
-NBDEBUG_DEP = nbdebug.h nbdebug.c
-!endif
-!endif
-
-!ifdef XPM
-DEFINES = $(DEFINES) -DFEAT_XPM_W32
-INCLUDE = $(XPM)\include;$(INCLUDE)
-!endif
-
 !if ("$(GUI)"=="yes")
 DEFINES = $(DEFINES) -DFEAT_GUI_W32 -DFEAT_CLIPBOARD
 !if ("$(DEBUG)"=="yes")
@@ -427,11 +415,13 @@ STARTUPOBJ = c0w32.obj
 LINK2 = -aa
 RESFILE = vim.res
 !else
+!undef NETBEANS
+!undef XPM
+!undef VIMDLL
 !if ("$(DEBUG)"=="yes")
 TARGET = vimd.exe
 !else
 # for now, anyway: VIMDLL is only for the GUI version
-!undef VIMDLL
 TARGET = vim.exe
 !endif
 !if ($(OSTYPE)==DOS16)
@@ -445,6 +435,21 @@ STARTUPOBJ = c0x32.obj
 LINK2 = -ap -OS -o -P
 !endif
 RESFILE = vim.res
+!endif
+
+!if ("$(NETBEANS)"=="yes")
+DEFINES = $(DEFINES) -DFEAT_NETBEANS_INTG
+!if ("$(NBDEBUG)"=="yes")
+DEFINES = $(DEFINES) -DNBDEBUG
+NBDEBUG_DEP = nbdebug.h nbdebug.c
+!endif
+!endif
+
+!ifdef XPM
+!if ("$(GUI)"=="yes")
+DEFINES = $(DEFINES) -DFEAT_XPM_W32
+INCLUDE = $(XPM)\include;$(INCLUDE)
+!endif
 !endif
 
 !if ("$(USEDLL)"=="yes")

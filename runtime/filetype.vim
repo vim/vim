@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2004 Jun 27
+" Last Change:	2004 Jul 01
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -864,6 +864,9 @@ au BufNewFile,BufRead *.mysql			setf mysql
 
 " M$ Resource files
 au BufNewFile,BufRead *.rc			setf rc
+
+" MuPAD source
+au BufRead,BufNewFile *.mu			setf mupad
 
 " Mush
 au BufNewFile,BufRead *.mush			setf mush

@@ -17,6 +17,20 @@
 5.  Ex Commands.........................................|netrw-ex|
 6.  Variables and Options...............................|netrw-var|
 7.  Remote Directory Browser............................|netrw-browse|
+     ?..........Help....................................|netrw-help|
+     <cr>.......Browsing................................|netrw-cr|
+     <c-l>......Refreshing the Listing..................|netrw-c-l|
+     <del>......Removing Files or Directories...........|netrw-delete|
+     D..........Removing Files or Directories...........|netrw-D|
+     R..........Renaming Files or Directories...........|netrw-R|
+     -..........Going Up................................|netrw--|
+     a..........Hiding Files or Directories.............|netrw-a|
+     h..........Edit File/Directory Hiding..............|netrw-h|
+     o..........Browsing with a Horizontal Split........|netrw-o|
+     r..........Reversing Sorting Order.................|netrw-r|
+     s..........Selecting Sorting Style.................|netrw-s|
+     v..........Browsing with a Vertical Split..........|netrw-v|
+     x..........Customizing Browsing....................|netrw-x|
 8.  Debugging...........................................|netrw-debug|
 9.  History.............................................|netrw-history|
 10. Credits.............................................|netrw-credits|
@@ -414,6 +428,7 @@ variables listed below, and may be modified by the user.
     g:netrw_sftp_cmd   variable   ="sftp" >
     -------------------------------------------------------------------------
 <
+								*netrw-ftp*
 The first two options both help with certain ftp's that give trouble otherwise.
 In order to best understand how to use these options if ftp is giving you
 troubles, a bit of discussion follows on how netrw does ftp reads.
@@ -455,6 +470,11 @@ requested it and the temporary file deleted.
 If your ftp doesn't accept the "user" command and immediately just demands
 a userid, then try putting "let netrw_ftp=1" in your <.vimrc>.
 
+								*netrw-cadaver*
+To handle the SSL certificate dialog for untrusted servers, one may pull
+down the certificate and place it into /usr/ssl/cert.pem.  This operation
+renders the server treatment as "trusted".
+
 							 	*netrw-fixup*
 If your ftp for whatever reason generates unwanted lines (such as AUTH
 messages) you may write a NetReadFixup(tmpfile) function:
@@ -493,24 +513,26 @@ from <netrw.vim> itself:
 >
 
 ==============================================================================
-7. Remote Directory Browser		*netrw-browse* *netrw-dir* *netrw-list*
+7. Remote Directory Browser *netrw-browse* *netrw-dir* *netrw-list* *netrw-help*
 >
-        -------	-----------
 	Command	Explanation
         -------	-----------
+	   ?	Causes Netrw to issue help
 	 <cr>	Netrw will enter the directory or read the file
 	 <del>	Netrw will attempt to remove the file/directory
+	 <c-l>	Causes Netrw to refresh the directory listing
 	   D	Netrw will attempt to remove the file(s)/directory(ies)
 	   R	Netrw will attempt to rename the file(s)/directory(ies)
 	   -	Makes Netrw go up one directory
 	   a	Show all of a directory (temporarily ignore g:netrw_list_hide)
+	   h	Edit file hiding list
 	   o	Enter the file/directory under the cursor in a new browser
 	   	window.  A horizontal split is used.
+	   r	Reverse sorting order
+	   s	Select sorting style: by name, time, or file size
 	   v	Enter the file/directory under the cursor in a new browser
 	   	window.  A vertical split is used.
 	   x	Apply a function to a file.
-	 <c-l>	Causes Netrw to refresh the directory listing
-	   ?	Causes Netrw to issue help
 <
 							*netrw-browse-var*
 >
@@ -524,18 +546,38 @@ from <netrw.vim> itself:
 	g:netrw_winsize		specify initial size of new o/v windows
 	g:netrw_list_hide	comma separated list of patterns for
 				hiding files
+	g:netrw_sort_by		sort by "name", "time", or "size"
+	g:netrw_sort_direction	sorting direction: "normal" or "reverse"
+	g:netrw_sort_sequence	when sorting by name, first sort by the
+				comma-separated pattern sequence
 <
+INTRODUCTION TO REMOTE DIRECTORY BROWSING
+
 Netrw supports the browsing of directories on remote hosts, including
-generating listing directories, entering directories, editing files
-therein, deleting files/directories, and moving (renaming) files and
-directories.
+generating listing directories, entering directories, editing files therein,
+deleting files/directories, and moving (renaming) files and directories.  The
+Netrw browser generally implements the file explorer methods but for remote
+directories, although details (such as pertinent global variable names)
+necessarily differ.
 
 To enter the netrw directory browser, simply attempt to read a "file" with a
 trailing slash and it will be interpreted as a request to list a directory:
 
 	vim [protocol]://[user@]hostname/path/
 
-Netrw will modify the command in g:netrw_list_cmd to perform the directory
+
+REFRESHING THE LISTING					*netrw-c-l*
+
+To refresh the directory listing, press ctrl-l (<c-l>) or hit the <cr>
+when atop the ./ directory entry in the listing.
+
+
+GOING UP						*netrw--*
+
+To go up a directory, press - or his the <cr> when atop the ../ directory
+entry in the listing.
+
+Netrw will modify the command in *g:netrw_list_cmd* to perform the directory
 listing operation.  By default the command is:
 
 	ssh HOSTNAME ls -FLa
@@ -545,58 +587,121 @@ to read.  Naturally, the user may override this command with whatever is
 preferred.  The NetList function which implements remote directory
 browsing expects that directories will be flagged by a trailing slash.
 
+
+BROWSING 						*netrw-cr*
+
 Browsing is simple: move the cursor onto a file or directory of interest.
 Hitting the <cr> (the return key) will select the file or directory.
 Directories will themselves be listed, and files will be opened using the
 protocol given in the original read request.
 
-						*netrw-delete* *netrw-remove*
+
+REMOVING FILES OR DIRECTORIES	*netrw-delete* *netrw-remove* *netrw-D*
 
 Deleting/removing files and directories involves moving the cursor to the
-file/directory to be deleted and pressing "D".  Directories must be empty
-first before they can be successfully removed.  If the directory is a softlink
-to a directory, then netrw will make two requests to remove the directory
-before succeeding.  Netrw will ask for confirmation before doing the
-removal(s).  You may select a range of lines with the "V" command (visual
-selection), and then pressing "D".
+file/directory to be deleted and pressing "D".  Directories must be empty first
+before they can be successfully removed.  If the directory is a softlink to a
+directory, then netrw will make two requests to remove the directory before
+succeeding.  Netrw will ask for confirmation before doing the removal(s).
+You may select a range of lines with the "V" command (visual selection),
+and then pressing "D".
 
-The g:netrw_rm_cmd, g:netrw_rmf_cmd, and g:netrw_rmdir_cmd variables are
-used to control the attempts to remove files and directories.  The
-g:netrw_rm_cmd is used with files, and its default value is:
+							*g:netrw_rm_cmd*
+The g:netrw_rm_cmd, g:netrw_rmf_cmd, and g:netrw_rmdir_cmd variables are used
+to control the attempts to remove files and directories.  The g:netrw_rm_cmd
+is used with files, and its default value is:
 
 	g:netrw_rm_cmd: ssh HOSTNAME rm
 
-The g:netrw_rmdir_cmd is used with directories.  Its default value is:
+							*g:netrw_rmdir_cmd*
+The g:netrw_rmdir_cmd variable is used to support the removal of directories.
+Its default value is:
 
 	g:netrw_rmdir_cmd: ssh HOSTNAME rmdir
 
+							*g:netrw_rmf_cmd*
 If removing a directory fails with g:netrw_rmdir_cmd, netrw then will attempt
-to remove it again using the g:netrw_rmf_cmd.  Its default value is:
+to remove it again using the g:netrw_rmf_cmd variable.  Its default value is:
 
 	g:netrw_rmf_cmd: ssh HOSTNAME rm -f
 
-								*netrw-x*
 
-The Netrw executor applies a user-defined function to a file, based on its
-extension.  Of course, the handler function must exist for it to be called.
->
-	Ex. mypgm.html   x ->  NetrwFileHandler_html("scp://user@host/some/path/mypgm.html")
-<
-See the <NetrwFileHandlers.vim>
-
-						*netrw-move* *netrw-rename*
+RENAMING FILES OR DIRECTORIES			*netrw-move* *netrw-rename*
 
 Renaming/moving files and directories involves moving the cursor to the
 file/directory to be moved (renamed) and pressing "R".  You will then be
 queried for where you want the file/directory to be moved.  You may select a
 range of lines with the "V" command (visual selection), and then pressing "R".
 
-The g:netrw_rename_cmd is used to implement renaming.  By default its
+The g:netrw_rename_cmd variable is used to implement renaming.  By default its
 value is:
 
 	ssh HOSTNAME mv
 
-							*netrw-list-hack*
+
+HIDING FILES OR DIRECTORIES		*g:netrw_a* *g:netrw_list_hide*
+
+The "a" map lets the browser ignore the g:netrw_list_hide variable.  Normally
+the g:netrw_list_hide variable holds a comma separated list of patterns which
+will be hidden (removed) from the directory listing.
+
+
+EDIT FILE OR DIRECTORY HIDING					*netrw-h*
+
+The "h" map brings up a requestor allowing the user to change the
+file/directory hiding list.
+
+
+BROWSING WITH A HORIZONTALLY SPLIT WINDOW			*netrw-o*
+
+Normally one enters a file or directory using the <cr>.  However, the "o"
+map allows one to open a new window to hold the new directory listing or
+file.  A horizontal split is used.  (also see |netrw-v|)
+
+
+SELECTING SORTING STYLE						*netrw-s*
+
+One may select the sorting style by name, time, or (file) size.  The
+"s" map allows one to circulate among the three choices; the directory
+listing will automatically be refreshed to reflect the selected style.
+
+
+REVERSING SORTING ORDER						*netrw-r*
+
+One may toggle between normal and reverse sorting order by pressing the
+"r" key.
+
+
+BROWSING WITH A VERTICALLY SPLIT WINDOW				*netrw-v*
+
+Normally one enters a file or directory using the <cr>.  However, the "v"
+map allows one to open a new window to hold the new directory listing or
+file.  A vertical split is used.  (also see |netrw-o|)
+
+
+CUSTOMIZING BROWSING WITH A USER FUNCTION			*netrw-x*
+
+One may "enter" a file with a special handler, thereby firing up a browser or
+other application, for example, on a file by hitting the "x" key.  Presumably
+one could write handlers that would start OpenOffice programs (oowriter), etc,
+based on the file's extension coupled with the user's hitting the "x" key atop
+the file.
+
+The Netrw executor applies a user-defined function to a file, based on its
+extension.  Of course, the handler function must exist for it to be called!
+>
+ Ex. mypgm.html   x ->
+                  NetrwFileHandler_html("scp://user@host/some/path/mypgm.html")
+<
+See the <plugin/NetrwFileHandlers.vim> for an example of how to handle an html
+file with mozilla.
+
+
+IMPROVING DIRECTORY BROWSING				*netrw-list-hack*
+
+Especially with the remote directory browser, constantly entering the password
+is tedious.
+
 For Linux/Unix systems, I suggest looking into
 
 	http://hacks.oreilly.com/pub/h/66

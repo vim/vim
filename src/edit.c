@@ -30,6 +30,7 @@
 #define CTRL_X_DICTIONARY	(9 + CTRL_X_WANT_IDENT)
 #define CTRL_X_THESAURUS	(10 + CTRL_X_WANT_IDENT)
 #define CTRL_X_CMDLINE		11
+#define CTRL_X_FUNCTION		12
 
 #define CHECK_KEYS_TIME		30
 
@@ -38,7 +39,7 @@
 static char *ctrl_x_msgs[] =
 {
     N_(" Keyword completion (^N^P)"), /* ctrl_x_mode == 0, ^P/^N compl. */
-    N_(" ^X mode (^E^Y^L^]^F^I^K^D^V^N^P)"),
+    N_(" ^X mode (^E^Y^L^]^F^I^K^D^U^V^N^P)"),
     /* Scroll has it's own msgs, in it's place there is the msg for local
      * ctrl_x_mode = 0 (eg continue_status & CONT_LOCAL)  -- Acevedo */
     N_(" Keyword Local completion (^N^P)"),
@@ -50,7 +51,8 @@ static char *ctrl_x_msgs[] =
     NULL,
     N_(" Dictionary completion (^K^N^P)"),
     N_(" Thesaurus completion (^T^N^P)"),
-    N_(" Command-line completion (^V^N^P)")
+    N_(" Command-line completion (^V^N^P)"),
+    N_(" User defined completion (^U^N^P)"),
 };
 
 static char_u e_hitend[] = N_("Hit end of paragraph");
@@ -762,7 +764,7 @@ edit(cmdchar, startln, count)
 #ifdef FEAT_INS_EXPAND
 	/* Enter CTRL-X mode */
 	case Ctrl_X:
-	    /* CTRL-X after CTRL-V CTRL-X doesn't do anything, so that CTRL-X
+	    /* CTRL-X after CTRL-X CTRL-V doesn't do anything, so that CTRL-X
 	     * CTRL-V works like CTRL-N */
 	    if (ctrl_x_mode != CTRL_X_CMDLINE)
 	    {
@@ -1030,6 +1032,12 @@ doESCkey:
 
 	/* delete all inserted text in current line */
 	case Ctrl_U:
+# ifdef FEAT_COMPL_FUNC
+	    /* CTRL-X CTRL-U completes with 'completefunc'. */
+	    if (ctrl_x_mode == CTRL_X_NOT_DEFINED_YET
+					  || ctrl_x_mode == CTRL_X_FUNCTION)
+		goto docomplete;
+# endif
 	    did_backspace = ins_bs(c, BACKSPACE_LINE, &inserted_space);
 	    auto_format(FALSE, TRUE);
 	    inserted_space = FALSE;
@@ -1914,6 +1922,10 @@ vim_is_ctrl_x_key(c)
 	case CTRL_X_CMDLINE:
 	    return (c == Ctrl_V || c == Ctrl_Q || c == Ctrl_P || c == Ctrl_N
 		    || c == Ctrl_X);
+#ifdef FEAT_COMPL_FUNC
+	case CTRL_X_FUNCTION:
+	    return (c == Ctrl_U || c == Ctrl_P || c == Ctrl_N || c == Ctrl_X);
+#endif
     }
     EMSG(_(e_internal));
     return FALSE;
@@ -2416,6 +2428,11 @@ ins_compl_prep(c)
 	    case Ctrl_T:
 		ctrl_x_mode = CTRL_X_THESAURUS;
 		break;
+#ifdef FEAT_COMPL_FUNC
+	    case Ctrl_U:
+		ctrl_x_mode = CTRL_X_FUNCTION;
+		break;
+#endif
 	    case Ctrl_RSB:
 		ctrl_x_mode = CTRL_X_TAGS;
 		break;
@@ -2622,6 +2639,88 @@ ins_compl_next_buf(buf, flag)
     return buf;
 }
 
+#ifdef FEAT_COMPL_FUNC
+static char_u *call_completefunc __ARGS((char_u *line, char_u *base, int col, int preproc));
+static int expand_by_function __ARGS((int lnum, int col, char_u *base, char_u ***matches));
+
+/*
+ * Execute user defined complete function 'completefunc'.
+ * Return NULL if some error occurs.
+ */
+    static char_u *
+call_completefunc(line, base, col, preproc)
+    char_u	*line;
+    char_u	*base;
+    int		col;
+    int		preproc;
+{
+    char_u	colbuf[30];
+    char_u	*args[4];
+
+    /* Return NULL when 'completefunc' isn't set. */
+    if (*curbuf->b_p_cfu == NUL)
+	return NULL;
+
+    sprintf((char *)colbuf, "%d", col + (base ? (int)STRLEN(base) : 0));
+    args[0] = line;
+    args[1] = base;
+    args[2] = colbuf;
+    args[3] = preproc ? "1" : "0";
+    return call_vim_function(curbuf->b_p_cfu, 4, args, FALSE);
+}
+
+/*
+ * Execute user defined complete function 'completefunc', and get candidates
+ * are separeted with "\n".  Return value is number of candidates and array
+ * of candidates as "matches".
+ */
+    static int
+expand_by_function(lnum, col, base, matches)
+    int		lnum;
+    int		col;
+    char_u	*base;
+    char_u	***matches;
+{
+    char_u	*matchstr = NULL;
+
+    /* Execute 'completefunc' and get the result */
+    matchstr = call_completefunc(ml_get_buf(curbuf, lnum, FALSE), base, col, 0);
+
+    /* Parse returned string */
+    if (matchstr != NULL)
+    {
+	garray_T    ga;
+	char_u	    *p, *pnext;
+
+	ga_init2(&ga, (int)sizeof(char*), 8);
+	for (p = matchstr; *p != NUL; p = pnext)
+	{
+	    int len;
+
+	    pnext = vim_strchr(p, '\n');
+	    if (pnext == NULL)
+		pnext = p + STRLEN(p);
+	    len = pnext - p;
+	    if (len > 0)
+	    {
+		if (ga_grow(&ga, 1) == FAIL)
+		    break;
+		((char_u **)ga.ga_data)[ga.ga_len] = vim_strnsave(p, len);
+		++ga.ga_len;
+		--ga.ga_room;
+	    }
+	    if (*pnext != NUL)
+		++pnext;
+	}
+	vim_free(matchstr);
+	if (ga.ga_len > 0)
+	    *matches = (char_u**)ga.ga_data;
+	return ga.ga_len;
+    }
+    return 0;
+}
+#endif /* FEAT_COMPL_FUNC */
+
 /*
  * Get the next expansion(s) for the text starting at the initial curbuf
  * position "ini" and in the direction dir.
@@ -2660,7 +2759,8 @@ ins_compl_get_exp(ini, dir)
 	    ins_buf->b_scanned = 0;
 	found_all = FALSE;
 	ins_buf = curbuf;
-	e_cpt = continue_status & CONT_LOCAL ? (char_u *)"." : curbuf->b_p_cpt;
+	e_cpt = (continue_status & CONT_LOCAL)
+					    ? (char_u *)"." : curbuf->b_p_cpt;
 	last_match_pos = first_match_pos = *ini;
     }
 
@@ -2827,6 +2927,15 @@ ins_compl_get_exp(ini, dir)
 					 &num_matches, &matches) == EXPAND_OK)
 		ins_compl_add_matches(num_matches, matches, dir);
 	    break;
+
+#ifdef FEAT_COMPL_FUNC
+	case CTRL_X_FUNCTION:
+	    num_matches = expand_by_function(first_match_pos.lnum,
+				 first_match_pos.col, complete_pat, &matches);
+	    if (num_matches > 0)
+		ins_compl_add_matches(num_matches, matches, dir);
+	    break;
+#endif
 
 	default:	/* normal ^P/^N and ^X^L */
 	    /*
@@ -3404,6 +3513,36 @@ ins_complete(c)
 	    tmp_ptr = line + temp;
 	    temp = complete_col - temp;
 	}
+#ifdef FEAT_COMPL_FUNC
+	else if (ctrl_x_mode == CTRL_X_FUNCTION)
+	{
+	    /*
+	     * Call user defined function 'completefunc' with line content,
+	     * cursor column number and preproc is 1.  Obtain length of text
+	     * to use for completion.
+	     */
+	    char_u  *lenstr;
+	    int	    keeplen = 0;
+
+	    /* Call 'completefunc' and get pattern length as a string */
+	    lenstr = call_completefunc(line, NULL, complete_col, 1);
+	    if (lenstr == NULL)
+		return FAIL;
+	    keeplen = atoi(lenstr);
+	    vim_free(lenstr);
+	    if (keeplen < 0)
+		return FAIL;
+	    if ((colnr_T)keeplen > complete_col)
+		keeplen = complete_col;
+
+	    /* Setup variables for completion */
+	    tmp_ptr = line + keeplen;
+	    temp = complete_col - keeplen;
+	    complete_pat = vim_strnsave(tmp_ptr, temp);
+	    if (complete_pat == NULL)
+		return FAIL;
+	}
+#endif
 	complete_col = (colnr_T) (tmp_ptr - line);
 
 	if (continue_status & CONT_ADDING)

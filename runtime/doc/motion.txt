@@ -1,4 +1,4 @@
-*motion.txt*    For Vim version 7.0aa.  Last change: 2004 Jun 17
+*motion.txt*    For Vim version 7.0aa.  Last change: 2004 Jul 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -596,6 +596,26 @@ iB			"inner Block", select [count] Blocks, from "[count] [{"
 			to the matching '}', excluding the '{' and '}' (see
 			|[{|).
 			When used in Visual mode it is made characterwise.
+
+a"							*v_aquote* *aquote*
+a'							*v_a'* *a'*
+a`							*v_a`* *a`*
+			"a quoted string".  Selects the text from the previous
+			quote until the next quote.  The 'quoteescape' is used
+			to skip escaped quotes.
+			When the cursor starts on a quote, Vim will figure out
+			which quote pairs form a string by searching from the
+			start of the line.
+			Any trailing or leading white space is included.
+			When used in Visual mode it is made characterwise.
+			Repeating this object in Visual mode another string is
+			included.  A count is currently not used.
+
+i"							*v_iquote* *iquote*
+i'							*v_i'* *i'*
+i`							*v_i`* *i`*
+			Like a", a' and a`, but exclude the quotes and
+			repeating won't extend the Visual selection.
 
 When used after an operator:
 For non-block objects:

@@ -1,4 +1,4 @@
-*gui_x11.txt*   For Vim version 7.0aa.  Last change: 2004 Mar 16
+*gui_x11.txt*   For Vim version 7.0aa.  Last change: 2004 Jul 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -435,7 +435,7 @@ the WM to identify the window by restoring the window role (using the |--role|
 command line argument).
 
 ==============================================================================
-7. KDE version						*gui-kde* *KDE* *KVim*
+7. KDE version					*gui-kde* *kde* *KDE* *KVim*
 
 The KDE version of Vim works with KDE 2.x and KDE 3.x.
 KVim (name code for gui-kde) does not use traditional X settings for its

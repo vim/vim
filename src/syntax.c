@@ -6021,12 +6021,12 @@ init_highlight(both, reset)
 }
 
 /*
- * Load color file "p".
+ * Load color file "name".
  * Return OK for success, FAIL for failure.
  */
     int
-load_colors(p)
-    char_u	*p;
+load_colors(name)
+    char_u	*name;
 {
     char_u	*buf;
     int		retval = FAIL;
@@ -6039,12 +6039,15 @@ load_colors(p)
 	return OK;
 
     recursive = TRUE;
-    buf = alloc((unsigned)(STRLEN(p) + 12));
+    buf = alloc((unsigned)(STRLEN(name) + 12));
     if (buf != NULL)
     {
-	sprintf((char *)buf, "colors/%s.vim", p);
+	sprintf((char *)buf, "colors/%s.vim", name);
 	retval = cmd_runtime(buf, FALSE);
 	vim_free(buf);
+#ifdef FEAT_AUTOCMD
+	apply_autocmds(EVENT_COLORSCHEME, NULL, NULL, FALSE, curbuf);
+#endif
     }
     recursive = FALSE;
 

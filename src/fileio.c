@@ -6628,6 +6628,7 @@ static struct event_name
     {"BufWriteCmd",	EVENT_BUFWRITECMD},
     {"CmdwinEnter",	EVENT_CMDWINENTER},
     {"CmdwinLeave",	EVENT_CMDWINLEAVE},
+    {"ColorScheme",	EVENT_COLORSCHEME},
     {"EncodingChanged",	EVENT_ENCODINGCHANGED},
     {"FileEncoding",	EVENT_ENCODINGCHANGED},
     {"CursorHold",	EVENT_CURSORHOLD},

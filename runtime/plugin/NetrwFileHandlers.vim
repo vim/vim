@@ -1,11 +1,12 @@
 " NetrwFileHandlers: contains various extension-based file handlers for
 "               netrw's browser
 " Author:	Charles E. Campbell, Jr.
-" Date:		Jun 25, 2004
-" Version:	1
+" Date:		Jul 02, 2004
+" Version:	2
 " ---------------------------------------------------------------------
 
-" NetrwFileHandler_html: handles html
+" NetrwFileHandler_html: handles html when the user hits "x" when the
+"                        cursor is atop a *.html file
 fun! NetrwFileHandler_html(webpage)
 "  call Dfunc("NetrwFileHandler_html(".a:webpage.")")
 
@@ -17,8 +18,14 @@ fun! NetrwFileHandler_html(webpage)
   else
    let page= substitute(a:webpage,'^\w\+://\%(\w*@\)\=\(\w\+\)/','http://\1/','e')
   endif
+
+  if executable("mozilla")
 "  call Decho("executing !mozilla ".page)
-  exe "!mozilla ".page
+   exe "!mozilla ".page
+  elseif executable("netscape")
+"  call Decho("executing !netscape ".page)
+   exe "!netscape ".page
+  endif
 
 "  call Dret("NetrwFileHandler_html")
 endfun

@@ -96,6 +96,6 @@ Bug or Comment
 Send comments, patches and suggestions to:
 
 				    Chi-Deok Hwang <hwang@mizi.co.kr>
-				    Nam SungHyun <namsh@lge.com>
+				    Nam SungHyun <namsh@kldp.org>
 
  vim:tw=78:ts=8:ft=help:norl:

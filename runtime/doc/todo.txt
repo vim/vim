@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Jun 30
+*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Jul 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -32,23 +32,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 For version 7.0:
 -   Include many PATCHES:
-    -   Include the kvim patch. http://freenux.org/vim/ (Mickael Marchand)
-	Do not add Qtopia yet, it doesn't work very well.
-	update from Mickael 2004 Jun 20.
-    8   Unix: When libcall() fails there is no clear error message.  Johannes
-	Zellner has a patch for this.
-	updated patch 2004 June 16.
-    7   Add the MzScheme interface.  Patch on http://iamphet.nm.ru/scheme/
-	(Sergey Khorev)
-	Alt URL: http://cyber.miem.edu.ru/~iamphet/scheme/mzvim-0.560.tar.gz
-    8   Add patch from Muraoka Taro (Mar 16) to support input method on Mac?
-	New patch 2004 Jun 16
-    8   Add expression-expansion, so that the user can define his own kind of
-	completion.  Patch from Taro Muraoka, 2003 Aug 26.
-	New patch 2004 Jun 16
-    8   Text objects: Add "a'" and 'a"': a single or double quoted string.
-	(Tim Chase) Patch from Taro Muraoka (2003 Dec 16).
-	New patch 2004 Jun 16
     7   Add "nbsp" in 'listchars'?  Patch from David Blanchet, 2003 Jul 28.
 	again 2004 Jun 16
     8   Add ":n" to fnamemodify(): normalize path, remove "../" when possible.
@@ -173,7 +156,6 @@ For version 7.0:
 				Matsumoto) How to get the messages into the
 				.po files?
 				Update 2004 Jun 17
-	---
 	realname()		Get user name (first, last, full)
 				user_fullname() patch by Nikolai Weibull, Nov
 				3 2002)
@@ -189,6 +171,7 @@ For version 7.0:
 	search()		Add optional offset argument.
 				Add 'n' flag.  (patch from Nikolai Weibull
 				2003 Jan 13)
+	---
 	confirm()		add "flags" argument, with 'v' for vertical
 				layout and 'c' for console dialog. (Haegg)
 				Flemming Madsen has a patch for the 'c' flag
@@ -236,6 +219,8 @@ For version 7.0:
 	incomplete patch Mar 18)
 
 
+-   In the kvim/KDE source files fix the formatting.
+-   KDE version is called "kvim".  Make it "gvim", like the others?
 -   Change ga_room into ga_maxlen, so that it doesn't need to be
     incremented/decremented each time.
 -   For string variables, use length instead of NUL termination.
@@ -302,7 +287,12 @@ For version 7.0:
     file.  Can be used to update statusline oslt.
 -   Displaying size of Visual area: use 24-33 column display.
 -   Mac: Unicode input and display (Eckehard Berns, June 27)
-
+8   Add patch from Muraoka Taro (Mar 16) to support input method on Mac?
+    New patch 2004 Jun 16
+7   Add the MzScheme interface?
+    NO: it changes too much of the code, while hardly anybody will use it.
+    Patch on http://iamphet.nm.ru/scheme/ (Sergey Khorev)
+    Alt URL: http://cyber.miem.edu.ru/~iamphet/scheme/mzvim-0.560.tar.gz
 
 Vi incompatibility:
 8   With undo/redo only marks in the changed lines should be changed.  Other
@@ -393,6 +383,10 @@ GTK+ GUI known bugs:
     It starts working after GTK gvim loses the selection and gains it again.
 7   DND doesn't work with KDE (also with GTK 1).
 
+KDE GUI known bugs:
+-   The default font is ugly.  bold text isn't displayed correctly.
+-   Error messages when starting up.  The "tip of the day" box is empty.
+-   Encoding of menu items needs to be converted. (Yasuhiro Matsumoto)
 
 Win32 GUI known bugs:
 8   On Windows 98 the unicows library is needed to support functions with UCS2

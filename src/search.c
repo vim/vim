@@ -3603,7 +3603,269 @@ extend:
 
     return OK;
 }
+
+static int find_next_quote __ARGS((char_u *top_ptr, int col, int quotechar, char_u *escape));
+static int find_prev_quote __ARGS((char_u *line, int col_start, int quotechar, char_u *escape));
+
+/*
+ * Search quote char from string line[col].
+ * Quote character escaped by one of the characters in "escape" is not counted
+ * as a quote.
+ * Returns column number of "quotechar" or -1 when not found.
+ */
+    static int
+find_next_quote(line, col, quotechar, escape)
+    char_u	*line;
+    int		col;
+    int		quotechar;
+    char_u	*escape;	/* escape characters, can be NULL */
+{
+    int		c;
+
+    while (1)
+    {
+	c = line[col];
+	if (c == NUL)
+	    return -1;
+	else if (escape != NULL && vim_strchr(escape, c))
+	    ++col;
+	else if (c == quotechar)
+	    break;
+#ifdef FEAT_MBYTE
+	if (has_mbyte)
+	    col += (*mb_ptr2len_check)(line + col);
+	else
 #endif
+	    ++col;
+    }
+    return col;
+}
+
+/*
+ * Search backwards in "line" from column "col_start" to find "quotechar".
+ * Quote character escaped by one of the characters in "escape" is not counted
+ * as a quote.
+ * Return the found column or zero.
+ */
+    static int
+find_prev_quote(line, col_start, quotechar, escape)
+    char_u	*line;
+    int		col_start;
+    int		quotechar;
+    char_u	*escape;	/* escape characters, can be NULL */
+{
+    int		n;
+
+    while (col_start > 0)
+    {
+	--col_start;
+#ifdef FEAT_MBYTE
+	col_start -= (*mb_head_off)(line, line + col_start);
+#endif
+	n = 0;
+	if (escape != NULL)
+	    while (col_start - n > 0 && vim_strchr(escape,
+					     line[col_start - n - 1]) != NULL)
+	    ++n;
+	if (n & 1)
+	    col_start -= n;	/* uneven number of escape chars, skip it */
+	else if (line[col_start] == quotechar)
+	    break;
+    }
+    return col_start;
+}
+
+/*
+ * Find quote under the cursor, cursor at end.
+ * Returns TRUE if found, else FALSE.
+ */
+    int
+current_quote(oap, count, include, quotechar)
+    oparg_T	*oap;
+    long	count;
+    int		include;	/* TRUE == include quote char */
+    int		quotechar;	/* Quote character */
+{
+    char_u	*line = ml_get_curline();
+    int		col_end;
+    int		col_start = curwin->w_cursor.col;
+    int		inclusive = FALSE;
+#ifdef FEAT_VISUAL
+    int		vis_empty = TRUE;	/* Visual selection <= 1 char */
+    int		vis_bef_curs = FALSE;	/* Visual starts before cursor */
+
+    /* Correct cursor when 'selection' is exclusive */
+    if (VIsual_active)
+    {
+	if (*p_sel == 'e' && vis_bef_curs)
+	    dec_cursor();
+	vis_empty = equalpos(VIsual, curwin->w_cursor);
+	vis_bef_curs = lt(VIsual, curwin->w_cursor);
+    }
+    if (!vis_empty && line[col_start] == quotechar)
+    {
+	/* Already selecting something and on a quote character.  Find the
+	 * next quoted string. */
+	if (vis_bef_curs)
+	{
+	    /* Assume we are on a closing quote: move to after the next
+	     * opening quote. */
+	    col_start = find_next_quote(line, col_start + 1, quotechar, NULL);
+	    if (col_start < 0)
+		return FALSE;
+	    col_end = find_next_quote(line, col_start + 1, quotechar,
+							      curbuf->b_p_qe);
+	    if (col_end < 0)
+	    {
+		/* We were on a starting quote perhaps? */
+		col_end = col_start;
+		col_start = curwin->w_cursor.col;
+	    }
+	}
+	else
+	{
+	    col_end = find_prev_quote(line, col_start, quotechar, NULL);
+	    if (line[col_end] != quotechar)
+		return FALSE;
+	    col_start = find_prev_quote(line, col_end, quotechar,
+							      curbuf->b_p_qe);
+	    if (line[col_start] != quotechar)
+	    {
+		/* We were on an ending quote perhaps? */
+		col_start = col_end;
+		col_end = curwin->w_cursor.col;
+	    }
+	}
+    }
+    else
+#endif
+
+    if (line[col_start] == quotechar
+#ifdef FEAT_VISUAL
+	    || !vis_empty
+#endif
+	    )
+    {
+	int	first_col = col_start;
+
+#ifdef FEAT_VISUAL
+	if (!vis_empty)
+	{
+	    if (vis_bef_curs)
+		first_col = find_next_quote(line, col_start, quotechar, NULL);
+	    else
+		first_col = find_prev_quote(line, col_start, quotechar, NULL);
+	}
+#endif
+	/* The cursor is on a quote, we don't know if it's the opening or
+	 * closing quote.  Search from the start of the line to find out.
+	 * Also do this when there is a Visual area, a' may leave the cursor
+	 * in between two strings. */
+	col_start = 0;
+	while (1)
+	{
+	    /* Find open quote character. */
+	    col_start = find_next_quote(line, col_start, quotechar, NULL);
+	    if (col_start < 0 || col_start > first_col)
+		return FALSE;
+	    /* Find close quote character. */
+	    col_end = find_next_quote(line, col_start + 1, quotechar,
+							      curbuf->b_p_qe);
+	    if (col_end < 0)
+		return FALSE;
+	    /* If is cursor between start and end quote character, it is
+	     * target text object. */
+	    if (col_start <= first_col && first_col <= col_end)
+		break;
+	    col_start = col_end + 1;
+	}
+    }
+    else
+    {
+	/* Search backward for a starting quote. */
+	col_start = find_prev_quote(line, col_start, quotechar, curbuf->b_p_qe);
+	if (line[col_start] != quotechar)
+	{
+	    /* No quote before the cursor, look after the cursor. */
+	    col_start = find_next_quote(line, col_start, quotechar, NULL);
+	    if (col_start < 0)
+		return FALSE;
+	}
+
+	/* Find close quote character. */
+	col_end = find_next_quote(line, col_start + 1, quotechar,
+							      curbuf->b_p_qe);
+	if (col_end < 0)
+	    return FALSE;
+    }
+
+    /* When "include" is TRUE, include spaces after closing quote or before
+     * the starting quote. */
+    if (include)
+    {
+	if (vim_iswhite(line[col_end + 1]))
+	    while (vim_iswhite(line[col_end + 1]))
+		++col_end;
+	else
+	    while (col_start > 0 && vim_iswhite(line[col_start - 1]))
+		--col_start;
+    }
+
+    /* Set start position */
+    if (!include)
+	++col_start;
+    curwin->w_cursor.col = col_start;
+#ifdef FEAT_VISUAL
+    if (VIsual_active)
+    {
+	if (vis_empty)
+	{
+	    VIsual = curwin->w_cursor;
+	    redraw_curbuf_later(INVERTED);
+	}
+    }
+    else
+#endif
+    {
+	oap->start = curwin->w_cursor;
+	oap->motion_type = MCHAR;
+    }
+
+    /* Set end position. */
+    curwin->w_cursor.col = col_end;
+    if (include && inc_cursor() == 2)
+	inclusive = TRUE;
+#ifdef FEAT_VISUAL
+    if (VIsual_active)
+    {
+	if (vis_empty || vis_bef_curs)
+	{
+	    /* decrement cursor when 'selection' is not exclusive */
+	    if (*p_sel != 'e')
+		dec_cursor();
+	}
+	else
+	{
+	    /* Cursor is at start of Visual area. */
+	    curwin->w_cursor.col = col_start;
+	}
+	if (VIsual_mode == 'V')
+	{
+	    VIsual_mode = 'v';
+	    redraw_cmdline = TRUE;		/* show mode later */
+	}
+    }
+    else
+#endif
+    {
+	/* Set inclusive and other oap's flags. */
+	oap->inclusive = inclusive;
+    }
+
+    return OK;
+}
+
+#endif /* FEAT_TEXTOBJ */
 
 #if defined(FEAT_LISP) || defined(FEAT_CINDENT) || defined(FEAT_TEXTOBJ) \
 	|| defined(PROTO)

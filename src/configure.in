@@ -1251,7 +1251,10 @@ AC_DEFUN(AM_PATH_KDE,
 		  KDE_LIBS="$KDE_PREFIX/lib"
 		fi
 		if test "x$KDE_INCLUDES" = "x"; then
-			KDE_INCLUDES="$KDE_PREFIX/include"
+		  KDE_INCLUDES="$KDE_PREFIX/include"
+		  if test -d "$KDE_INCLUDES/kde"; then
+		    KDE_INCLUDES="$KDE_INCLUDES/kde"
+		  fi
 		fi
 		kde_major_version=`$KDE_CONFIG --version | grep KDE | \
 sed 's/KDE:\ //' | sed 's/\([[0-9]]*\).\([[0-9]]*.*\)/\1/'`
