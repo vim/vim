@@ -106,6 +106,11 @@ static tcl_info tclinfo = { NULL, 0, 0, 0, NULL, NULL };
 #define VIMOUT	((ClientData)1)
 #define VIMERR	((ClientData)2)
 
+/* This appears to be new in Tcl 8.4. */
+#ifndef CONST84
+# define CONST84
+#endif
+
 /*
  *  List of Tcl interpreters who reference a vim window or buffer.
  *  Each buffer and window has it's own list in the tcl_ref struct member.
@@ -384,9 +389,8 @@ buffercmd(dummy, interp, objc, objv)
     buf_T	*buf;
     Tcl_Obj	*resobj;
     int		err, n, idx;
-
     enum {BCMD_EXISTS, BCMD_LIST};
-    static char *bcmdoptions[] =
+    static CONST84 char *bcmdoptions[] =
     {
 	"exists", "list", (char *)0
     };
@@ -533,7 +537,7 @@ bufselfcmd(ref, interp, objc, objv)
 	BUF_GET, BUF_INSERT, BUF_LAST, BUF_MARK, BUF_NAME, BUF_NUMBER,
 	BUF_OPTION, BUF_SET, BUF_WINDOWS
     };
-    static char *bufoptions[] =
+    static CONST84 char *bufoptions[] =
     {
 	"append", "command", "count", "delcmd", "delete", "expr",
 	"get", "insert", "last", "mark", "name", "number",
@@ -966,7 +970,7 @@ winselfcmd(ref, interp, objc, objv)
 	WIN_BUFFER, WIN_COMMAND, WIN_CURSOR, WIN_DELCMD, WIN_EXPR,
 	WIN_HEIGHT, WIN_OPTION
     };
-    static char *winoptions[] =
+    static CONST84 char *winoptions[] =
     {
 	"buffer", "command", "cursor", "delcmd", "expr",
 	"height", "option", (char *)0
@@ -1179,7 +1183,7 @@ tclgetlinenum(interp, obj, valueP, buf)
 
     enum { LN_BEGIN, LN_BOTTOM, LN_END, LN_FIRST, LN_LAST, LN_START, LN_TOP };
 
-    static char *keyw[] =
+    static CONST84 char *keyw[] =
     {
 	"begin", "bottom", "end", "first", "last", "start", "top", (char *)0
     };
@@ -1311,7 +1315,7 @@ tclsetoption(interp, objc, objv, objn)
     Tcl_Obj	*resobj;
 
     enum { OPT_OFF, OPT_ON, OPT_TOGGLE };
-    static char *optkw[] = { "off", "on", "toggle", (char *)0 };
+    static CONST84 char *optkw[] = { "off", "on", "toggle", (char *)0 };
 
     nobjs = objc - objn;
     if (nobjs != 1 && nobjs != 2)
@@ -1905,7 +1909,7 @@ tclexit(error)
     {
 	char *result;
 
-	result = Tcl_GetStringResult(tclinfo.interp);
+	result = (char *)Tcl_GetStringResult(tclinfo.interp);
 	if (error == TCL_OK)
 	{
 	    tclmsg(result);
@@ -2013,7 +2017,7 @@ ex_tcldo(eap)
 	err = Tcl_Eval(tclinfo.interp, script);
 	if (err != TCL_OK)
 	    break;
-	line = Tcl_GetVar(tclinfo.interp, var_line, 0);
+	line = (char *)Tcl_GetVar(tclinfo.interp, var_line, 0);
 	if (line)
 	{
 	    if (ml_replace((linenr_T)rs, (char_u *)line, TRUE) != OK)
@@ -2059,7 +2063,7 @@ tcldelallrefs(ref)
 		err = Tcl_GlobalEvalObj(ref->interp, ref->delcmd);
 		if (err != TCL_OK)
 		{
-		    result = Tcl_GetStringResult(ref->interp);
+		    result = (char *)Tcl_GetStringResult(ref->interp);
 		    if (result)
 			tclerrmsg(result);
 		}

@@ -38,22 +38,19 @@
 /* Magic value for algorithm that walks through the array. */
 #define PERTURB_SHIFT 5
 
-static hashitem *hash_lookup __ARGS((hashtable *ht, char_u *key, long_u hash));
-static int hash_add_item __ARGS((hashtable *ht, hashitem *hi, char_u *key, long_u hash));
-static int hash_may_resize __ARGS((hashtable *ht));
-static long_u hash_hash __ARGS((char_u *key));
+static int hash_may_resize __ARGS((hashtab_T *ht));
 
 #if 0  /* not used */
 /*
  * Create an empty hash table.
  * Returns NULL when out of memory.
  */
-    hashtable *
+    hashtab_T *
 hash_create()
 {
-    hashtable *ht;
+    hashtab_T *ht;
 
-    ht = (hashtable *)alloc(sizeof(hashtable));
+    ht = (hashtab_T *)alloc(sizeof(hashtab_T));
     if (ht != NULL)
 	hash_init(ht);
     return ht;
@@ -65,10 +62,10 @@ hash_create()
  */
     void
 hash_init(ht)
-    hashtable *ht;
+    hashtab_T *ht;
 {
     /* This zeroes all "ht_" entries and all the "hi_key" in "ht_smallarray". */
-    vim_memset(ht, 0, sizeof(hashtable));
+    vim_memset(ht, 0, sizeof(hashtab_T));
     ht->ht_array = ht->ht_smallarray;
     ht->ht_mask = HT_INIT_SIZE - 1;
 }
@@ -79,7 +76,7 @@ hash_init(ht)
  */
     void
 hash_clear(ht)
-    hashtable *ht;
+    hashtab_T *ht;
 {
     if (ht->ht_array != ht->ht_smallarray)
 	vim_free(ht->ht_array);
@@ -93,9 +90,9 @@ hash_clear(ht)
  * WARNING: The returned pointer becomes invalid when the hashtable is changed
  * (adding, setting or removing an item)!
  */
-    hashitem *
+    hashitem_T *
 hash_find(ht, key)
-    hashtable	*ht;
+    hashtab_T	*ht;
     char_u	*key;
 {
     return hash_lookup(ht, key, hash_hash(key));
@@ -104,15 +101,15 @@ hash_find(ht, key)
 /*
  * Like hash_find(), but caller computes "hash".
  */
-    static hashitem *
+    hashitem_T *
 hash_lookup(ht, key, hash)
-    hashtable	*ht;
+    hashtab_T	*ht;
     char_u	*key;
-    long_u	hash;
+    hash_T	hash;
 {
-    long_u	perturb;
-    hashitem	*freeitem;
-    hashitem	*hi;
+    hash_T	perturb;
+    hashitem_T	*freeitem;
+    hashitem_T	*hi;
     int		idx;
 
     /*
@@ -163,11 +160,11 @@ hash_lookup(ht, key, hash)
  */
     int
 hash_add(ht, key)
-    hashtable	*ht;
+    hashtab_T	*ht;
     char_u	*key;
 {
-    long_u	hash = hash_hash(key);
-    hashitem	*hi;
+    hash_T	hash = hash_hash(key);
+    hashitem_T	*hi;
 
     hi = hash_lookup(ht, key, hash);
     if (!HASHITEM_EMPTY(hi))
@@ -184,12 +181,12 @@ hash_add(ht, key)
  * "hi" is invalid after this!
  * Returns OK or FAIL (out of memory).
  */
-    static int
+    int
 hash_add_item(ht, hi, key, hash)
-    hashtable	*ht;
-    hashitem	*hi;
+    hashtab_T	*ht;
+    hashitem_T	*hi;
     char_u	*key;
-    long_u	hash;
+    hash_T	hash;
 {
     /* If resizing failed before and it fails again we can't add an item. */
     if (ht->ht_error && hash_may_resize(ht) == FAIL)
@@ -217,7 +214,7 @@ hash_add_item(ht, hi, key, hash)
  */
     void
 hash_set(hi, key)
-    hashitem	*hi;
+    hashitem_T	*hi;
     char_u	*key;
 {
     hi->hi_key = key;
@@ -231,8 +228,8 @@ hash_set(hi, key)
  */
     void
 hash_remove(ht, hi)
-    hashtable	*ht;
-    hashitem	*hi;
+    hashtab_T	*ht;
+    hashitem_T	*hi;
 {
     --ht->ht_used;
     hi->hi_key = HI_KEY_REMOVED;
@@ -246,7 +243,7 @@ hash_remove(ht, hi)
  */
     void
 hash_lock(ht)
-    hashtable	*ht;
+    hashtab_T	*ht;
 {
     ++ht->ht_locked;
 }
@@ -258,7 +255,7 @@ hash_lock(ht)
  */
     void
 hash_unlock(ht)
-    hashtable	*ht;
+    hashtab_T	*ht;
 {
     --ht->ht_locked;
     (void)hash_may_resize(ht);
@@ -271,17 +268,17 @@ hash_unlock(ht)
  */
     static int
 hash_may_resize(ht)
-    hashtable	*ht;
+    hashtab_T	*ht;
 {
-    hashitem	temparray[HT_INIT_SIZE];
-    hashitem	*oldarray, *newarray;
-    hashitem	*olditem, *newitem;
+    hashitem_T	temparray[HT_INIT_SIZE];
+    hashitem_T	*oldarray, *newarray;
+    hashitem_T	*olditem, *newitem;
     int		newi;
     int		todo;
     long_u	oldsize, newsize;
     long_u	minsize;
     long_u	newmask;
-    long_u	perturb;
+    hash_T	perturb;
 
     /* Don't resize a locked table. */
     if (ht->ht_locked > 0)
@@ -339,7 +336,7 @@ hash_may_resize(ht)
     else
     {
 	/* Allocate an array. */
-	newarray = (hashitem *)alloc((unsigned)(sizeof(hashitem) * newsize));
+	newarray = (hashitem_T *)alloc((unsigned)(sizeof(hashitem_T) * newsize));
 	if (newarray == NULL)
 	{
 	    /* Out of memory.  When there are NULL items still return OK.
@@ -352,7 +349,7 @@ hash_may_resize(ht)
 	}
 	oldarray = ht->ht_array;
     }
-    vim_memset(newarray, 0, (size_t)(sizeof(hashitem) * newsize));
+    vim_memset(newarray, 0, (size_t)(sizeof(hashitem_T) * newsize));
 
     /*
      * Move all the items from the old array to the new one, placing them in
@@ -398,12 +395,12 @@ hash_may_resize(ht)
  * Get the hash number for a key.  Uses the ElfHash algorithm, which is
  * supposed to have an even distribution (suggested by Charles Campbell).
  */
-    static long_u
+    hash_T
 hash_hash(key)
     char_u	*key;
 {
-    long_u	hash = 0;
-    long_u	g;
+    hash_T	hash = 0;
+    hash_T	g;
     char_u	*p = key;
 
     while (*p != NUL)

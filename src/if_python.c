@@ -891,8 +891,8 @@ PythonIO_Init(void)
     /* Fixups... */
     OutputType.ob_type = &PyType_Type;
 
-    PySys_SetObject("stdout", (PyObject *)(&Output));
-    PySys_SetObject("stderr", (PyObject *)(&Error));
+    PySys_SetObject("stdout", (PyObject *)(void *)&Output);
+    PySys_SetObject("stderr", (PyObject *)(void *)&Error);
 
     if (PyErr_Occurred())
     {
@@ -2190,9 +2190,9 @@ PythonMod_Init(void)
     VimError = Py_BuildValue("s", "vim.error");
 
     PyDict_SetItemString(dict, "error", VimError);
-    PyDict_SetItemString(dict, "buffers", (PyObject *)(&TheBufferList));
-    PyDict_SetItemString(dict, "current", (PyObject *)(&TheCurrent));
-    PyDict_SetItemString(dict, "windows", (PyObject *)(&TheWindowList));
+    PyDict_SetItemString(dict, "buffers", (PyObject *)(void *)&TheBufferList);
+    PyDict_SetItemString(dict, "current", (PyObject *)(void *)&TheCurrent);
+    PyDict_SetItemString(dict, "windows", (PyObject *)(void *)&TheWindowList);
 
     if (PyErr_Occurred())
 	return -1;

@@ -3092,8 +3092,13 @@ msgmore(n)
     long pn;
 
     if (global_busy	    /* no messages now, wait until global is finished */
-	    || keep_msg != NULL /* there is a message already, skip this one */
 	    || !messaging())  /* 'lazyredraw' set, don't do messages now */
+	return;
+
+    /* We don't want to overwrite another important message, but do overwrite
+     * a previous "more lines" or "fewer lines" message, so that "5dd" and
+     * then "put" reports the last action. */
+    if (keep_msg != NULL && !keep_msg_more)
 	return;
 
     if (n > 0)
@@ -3123,6 +3128,7 @@ msgmore(n)
 	{
 	    set_keep_msg(msg_buf);
 	    keep_msg_attr = 0;
+	    keep_msg_more = TRUE;
 	}
     }
 }
