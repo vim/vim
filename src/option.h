@@ -162,9 +162,10 @@
 #define CPO_MATCH	'%'
 #define CPO_STAR	'*'	/* ":*" means ":@" */
 #define CPO_PLUS	'+'	/* ":write file" resets 'modified' */
+#define CPO_MINUS	'-'	/* "9-" fails at and before line 9 */
 #define CPO_SPECI	'<'	/* don't recognize <> in mappings */
 #define CPO_DEFAULT	"aABceFs"
-#define CPO_ALL		"aAbBcCdDeEfFgiIjJkKlLmMnoOprRsStuvwWxy$!%*+<"
+#define CPO_ALL		"aAbBcCdDeEfFgiIjJkKlLmMnoOprRsStuvwWxy$!%*-+<"
 
 /* characters for p_ww option: */
 #define WW_ALL		"bshl<>[],~"

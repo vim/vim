@@ -292,13 +292,14 @@ set_pixmap(XmEnhancedButtonWidget eb)
     int		    x;
     int		    y;
     unsigned int    height, width, border, depth;
-    int		    status;
+    int		    status = 0;
     Pixmap	    mask;
     Pixmap	    pix = None;
     Pixmap	    arm_pix = None;
     Pixmap	    ins_pix = None;
     Pixmap	    high_pix = None;
     char	    **data = (char **) eb->enhancedbutton.pixmap_data;
+    char	    *fname = (char *) eb->enhancedbutton.pixmap_file;
     int		    shift;
     GC		    gc;
 
@@ -313,6 +314,7 @@ set_pixmap(XmEnhancedButtonWidget eb)
     root = RootWindow(dpy, scr);
 
     eb->label.pixmap = None;
+
     eb->enhancedbutton.pixmap_depth = 0;
     eb->enhancedbutton.pixmap_width = 0;
     eb->enhancedbutton.pixmap_height = 0;
@@ -320,6 +322,14 @@ set_pixmap(XmEnhancedButtonWidget eb)
     eb->enhancedbutton.armed_pixmap = None;
     eb->enhancedbutton.highlight_pixmap = None;
     eb->enhancedbutton.insensitive_pixmap = None;
+
+    /* We use dynamic colors, get them now. */
+    motif_get_toolbar_colors(
+	    &eb->core.background_pixel,
+	    &eb->primitive.foreground,
+	    &eb->primitive.bottom_shadow_color,
+	    &eb->primitive.top_shadow_color,
+	    &eb->primitive.highlight_color);
 
     /* Setup color subsititution table. */
     color[0].pixel = eb->core.background_pixel;
@@ -337,9 +347,12 @@ set_pixmap(XmEnhancedButtonWidget eb)
     attr.colorsymbols = color;
     attr.numsymbols = XtNumber(color);
 
-    status = XpmCreatePixmapFromData(dpy, root, data, &pix, &mask, &attr);
+    if (fname)
+	status = XpmReadFileToPixmap(dpy, root, fname, &pix, &mask, &attr);
+    if (!fname || status != XpmSuccess)
+	status = XpmCreatePixmapFromData(dpy, root, data, &pix, &mask, &attr);
 
-    /* If somethin failed, we will fill in the default pixmap. */
+    /* If something failed, we will fill in the default pixmap. */
     if (status != XpmSuccess)
 	status = XpmCreatePixmapFromData(dpy, root, blank_xpm, &pix,
 								&mask, &attr);

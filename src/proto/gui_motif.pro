@@ -34,6 +34,7 @@ void gui_mch_enable_footer __ARGS((int showit));
 void gui_mch_set_footer __ARGS((char_u *s));
 void gui_mch_show_toolbar __ARGS((int showit));
 int gui_mch_compute_toolbar_height __ARGS((void));
+void motif_get_toolbar_colors __ARGS((Pixel *bgp, Pixel *fgp, Pixel *bsp, Pixel *tsp, Pixel *hsp));
 void gui_motif_menu_fontlist __ARGS((Widget id));
 void gui_mch_find_dialog __ARGS((exarg_T *eap));
 void gui_mch_replace_dialog __ARGS((exarg_T *eap));

@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Jan 30
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Feb 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1382,7 +1382,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 			{not in Vi}
 	Number of columns of the screen.  Normally this is set by the terminal
-	initialization and does not have to be set by hand.
+	initialization and does not have to be set by hand.  Also see
+	|posix-screen-size|.
 	When Vim is running in the GUI or in a resizable window, setting this
 	option will cause the window size to be changed.  When you only want
 	to use the size for the GUI, put the command in your |gvimrc| file.
@@ -1431,7 +1432,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	to the Vim defaults.  Effectively, this means that when a ".vimrc"
 	file exists, Vim will use the Vim defaults, otherwise it will use the
 	Vi defaults.  (Note: This doesn't happen for the system-wide vimrc
-	file).  Also see |compatible-default|.
+	file).  Also see |compatible-default| and |posix-compliance|.
 	You can also set this option with the "-C" argument, and reset it with
 	"-N".  See |-C| and |-N|.
 	Switching this option off makes the Vim defaults be used for options
@@ -1844,6 +1845,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 			there is one).  This works very well for C programs.
 			This flag is also used for other features, such as
 			C-indenting.
+								*cpo--*
+		-	When included, a vertical movement command fails when
+			it would above the first line or below the last line.
+			Without it the cursor moves to the first or last line,
+			unless it already was in that line.
+			Applies to the commands "-", "k", CTRL-P, "+", "j",
+			CTRL-N and CTRL-J.
 								*cpo-+*
 		+	When included, a ":write file" command will reset the
 			'modified' flag of the buffer, even though the buffer
@@ -2804,7 +2812,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 						      VMS: "SEARCH/NUMBERS ")
 			global or local to buffer |global-local|
 			{not in Vi}
-	Program to use for the ":grep" command. This option may contain '%'
+	Program to use for the |:grep| command. This option may contain '%'
 	and '#' characters, which are expanded like when used in a command-
 	line.  The placeholder "$*" is allowed to specify where the arguments
 	will be included.  Environment variables are expanded |:set_env|.  See
@@ -2812,8 +2820,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When your "grep" accepts the "-H" argument, use this to make ":grep"
 	also work well with a single file: >
 		:set grepprg=grep\ -nH
-<	Special value: When 'grepprg' is set to "internal" the ":grep" works
-	like ":vimgrep".
+<	Special value: When 'grepprg' is set to "internal" the |:grep| command
+	works like |:vimgrep| and |:grepadd| like |:vimgrepadd|.
 	See also the section |:make_makeprg|, since most of the comments there
 	apply equally to 'grepprg'.
 	For Win32, the default is "findstr /n" if "findstr.exe" can be found,
@@ -3882,7 +3890,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 	Number of lines of the Vim window.
 	Normally you don't need to set this.  It is done automatically by the
-	terminal initialization code.
+	terminal initialization code.  Also see |posix-screen-size|.
 	When Vim is running in the GUI or in a resizable window, setting this
 	option will cause the window size to be changed.  When you only want
 	to use the size for the GUI, put the command in your |gvimrc| file.

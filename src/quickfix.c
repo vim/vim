@@ -2083,9 +2083,27 @@ grep_internal(cmdidx)
 ex_make(eap)
     exarg_T	*eap;
 {
-    char_u	*name;
+    char_u	*fname;
     char_u	*cmd;
     unsigned	len;
+#ifdef FEAT_AUTOCMD
+    char_u	*au_name = NULL;
+
+    switch (eap->cmdidx)
+    {
+	case CMD_make: au_name = (char_u *)"make"; break;
+	case CMD_grep: au_name = (char_u *)"grep"; break;
+	case CMD_grepadd: au_name = (char_u *)"grepadd"; break;
+	default: break;
+    }
+    if (au_name != NULL)
+    {
+	apply_autocmds(EVENT_QUICKFIXCMDPRE, au_name,
+					       curbuf->b_fname, TRUE, curbuf);
+	if (did_throw || force_abort)
+	    return;
+    }
+#endif
 
     /* Redirect ":grep" to ":vimgrep" if 'grepprg' is "internal". */
     if (grep_internal(eap->cmdidx))
@@ -2095,24 +2113,24 @@ ex_make(eap)
     }
 
     autowrite_all();
-    name = get_mef_name();
-    if (name == NULL)
+    fname = get_mef_name();
+    if (fname == NULL)
 	return;
-    mch_remove(name);	    /* in case it's not unique */
+    mch_remove(fname);	    /* in case it's not unique */
 
     /*
      * If 'shellpipe' empty: don't redirect to 'errorfile'.
      */
     len = (unsigned)STRLEN(p_shq) * 2 + (unsigned)STRLEN(eap->arg) + 1;
     if (*p_sp != NUL)
-	len += (unsigned)STRLEN(p_sp) + (unsigned)STRLEN(name) + 3;
+	len += (unsigned)STRLEN(p_sp) + (unsigned)STRLEN(fname) + 3;
     cmd = alloc(len);
     if (cmd == NULL)
 	return;
     sprintf((char *)cmd, "%s%s%s", (char *)p_shq, (char *)eap->arg,
 							       (char *)p_shq);
     if (*p_sp != NUL)
-	append_redir(cmd, p_sp, name);
+	append_redir(cmd, p_sp, fname);
     /*
      * Output a newline if there's something else than the :make command that
      * was typed (in which case the cursor is in column 0).
@@ -2132,14 +2150,20 @@ ex_make(eap)
     (void)char_avail();
 #endif
 
-    if (qf_init(name, eap->cmdidx != CMD_make ? p_gefm : p_efm,
+    if (qf_init(fname, eap->cmdidx != CMD_make ? p_gefm : p_efm,
 					       eap->cmdidx != CMD_grepadd) > 0
 	    && !eap->forceit)
 	qf_jump(0, 0, FALSE);		/* display first error */
 
-    mch_remove(name);
-    vim_free(name);
+    mch_remove(fname);
+    vim_free(fname);
     vim_free(cmd);
+
+#ifdef FEAT_AUTOCMD
+    if (au_name != NULL)
+	apply_autocmds(EVENT_QUICKFIXCMDPOST, au_name,
+					       curbuf->b_fname, TRUE, curbuf);
+#endif
 }
 
 /*
@@ -2274,6 +2298,23 @@ ex_vimgrep(eap)
 #if defined(FEAT_AUTOCMD) && defined(FEAT_SYN_HL)
     char_u	*save_ei = NULL;
     aco_save_T	aco;
+#endif
+#ifdef FEAT_AUTOCMD
+    char_u	*au_name =  NULL;
+
+    switch (eap->cmdidx)
+    {
+	case CMD_vimgrep: au_name = (char_u *)"vimgrep"; break;
+	case CMD_vimgrepadd: au_name = (char_u *)"vimgrepadd"; break;
+	default: break;
+    }
+    if (au_name != NULL)
+    {
+	apply_autocmds(EVENT_QUICKFIXCMDPRE, au_name,
+					       curbuf->b_fname, TRUE, curbuf);
+	if (did_throw || force_abort)
+	    return;
+    }
 #endif
 
     /* Make 'cpoptions' empty, the 'l' flag should not be used here. */
@@ -2495,6 +2536,12 @@ jumpend:
 	qf_jump(0, 0, FALSE);
     else
 	EMSG2(_(e_nomatch2), s);
+
+#ifdef FEAT_AUTOCMD
+    if (au_name != NULL)
+	apply_autocmds(EVENT_QUICKFIXCMDPOST, au_name,
+					       curbuf->b_fname, TRUE, curbuf);
+#endif
 
 theend:
     vim_free(regmatch.regprog);

@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.0aa.  Last change: 2005 Jan 26
+*autocmd.txt*   For Vim version 7.0aa.  Last change: 2005 Feb 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -324,6 +324,7 @@ FuncUndefined			When a user function is used but it isn't
 				defined.  Useful for defining a function only
 				when it's used.  Both <amatch> and <afile> are
 				set to the name of the function.
+				See |autoload-functions|.
 							*CursorHold*
 CursorHold			When the user doesn't press a key for the time
 				specified with 'updatetime'.  Not re-triggered
@@ -520,6 +521,20 @@ TermResponse			After the response to |t_RV| is received from
 				the terminal.  The value of |v:termresponse|
 				can be used to do things depending on the
 				terminal version.
+QuickFixCmdPre						*QuickFixCmdPre*
+				Before a quickfix command is run (|:make|,
+				|:grep|, |:grepadd|, |:vimgrep|,
+				|:vimgrepadd|). The pattern is matched against
+				the command being run.  When |:grep| is used
+				but 'grepprg' is set to "internal" it still
+				matches "grep".
+				This command cannot be used to set the
+				'makeprg' and 'grepprg' variables.
+				If this command causes an error, the quickfix
+				command is not executed.
+QuickFixCmdPost						*QuickFixCmdPost*
+				like QuickFixCmdPre, but after a quickfix
+				command is run.
 							*UserGettingBored*
 UserGettingBored		When the user hits CTRL-C.  Just kidding! :-)
 							*User*

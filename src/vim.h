@@ -1074,6 +1074,8 @@ enum auto_event
     EVENT_INSERTCHANGE,		/* when changing Insert/Replace mode */
     EVENT_INSERTENTER,		/* when entering Insert mode */
     EVENT_INSERTLEAVE,		/* when leaving Insert mode */
+    EVENT_QUICKFIXCMDPOST,	/* after :make, :grep etc */
+    EVENT_QUICKFIXCMDPRE,	/* before :make, :grep etc */
     EVENT_STDINREADPOST,	/* after reading from stdin */
     EVENT_STDINREADPRE,		/* before reading from stdin */
     EVENT_SYNTAX,		/* syntax selected */

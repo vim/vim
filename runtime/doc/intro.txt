@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 7.0aa.  Last change: 2004 Dec 16
+*intro.txt*     For Vim version 7.0aa.  Last change: 2005 Feb 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -289,8 +289,7 @@ Vi	"the original".  Without further remarks this is the version
 Posix	From the IEEE standard 1003.2, Part 2: Shell and utilities.
 	Generally known as "Posix".  This is a textual description of
 	how Vi is supposed to work.
-	The version used is a draft from beginning 1996, so all remarks are
-	"expected to comply to" this.  Anything can change though...
+	See |posix-compliance|.
 							*Nvi*
 Nvi	The "New" Vi.  The version of Vi that comes with BSD 4.4 and FreeBSD.
 	Very good compatibility with the original Vi, with a few extensions.
@@ -691,9 +690,9 @@ Q			Switch to "Ex" mode.  This is a bit like typing ":"
 			|vimrc_example.vim| script "Q" works like "gq".
 
 					*gQ*
-gQ			Switch to "Ex" mode, but really behave like typing ":"
-			commands after another.  All command line editing,
-			completion etc. is available.
+gQ			Switch to "Ex" mode like with "Q", but really behave
+			like typing ":" commands after another.  All command
+			line editing, completion etc. is available.
 			Use the ":vi" command |:visual| to exit "Ex" mode.
 			{not in Vi}
 

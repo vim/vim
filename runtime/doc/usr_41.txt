@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 7.0aa.  Last change: 2005 Feb 04
+*usr_41.txt*	For Vim version 7.0aa.  Last change: 2005 Feb 07
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -16,11 +16,12 @@ script.  There are a lot of them, thus this is a long chapter.
 |41.5|	Executing an expression
 |41.6|	Using functions
 |41.7|	Defining a function
-|41.8|	Exceptions
-|41.9|	Various remarks
-|41.10|	Writing a plugin
-|41.11|	Writing a filetype plugin
-|41.12|	Writing a compiler plugin
+|41.8|	Lists and Dictionaries
+|41.9|	Exceptions
+|41.10|	Various remarks
+|41.11|	Writing a plugin
+|41.12|	Writing a filetype plugin
+|41.13|	Writing a compiler plugin
 
      Next chapter: |usr_42.txt|  Add new menus
  Previous chapter: |usr_40.txt|  Make new commands
@@ -42,7 +43,7 @@ Let's start with a simple example: >
 	:let i = 1
 	:while i < 5
 	:  echo "count is" i
-	:  let i = i + 1
+	:  let i += 1
 	:endwhile
 <
 	Note:
@@ -50,8 +51,19 @@ Let's start with a simple example: >
 	them when you type a command.  In a Vim script file they can be left
 	out.  We will use them here anyway to make clear these are colon
 	commands and make them stand out from Normal mode commands.
+	Note:
+	You can try out the examples by yanking the lines from the text here
+	and executing them with :@"
 
-The ":let" command assigns a value to a variable.  The generic form is: >
+The output of the example code is:
+
+	count is 1 ~
+	count is 2 ~
+	count is 3 ~
+	count is 4 ~
+
+In the first line the ":let" command assigns a value to a variable.  The
+generic form is: >
 
 	:let {variable} = {expression}
 
@@ -66,61 +78,52 @@ the number one.
 The statements until the matching ":endwhile" are executed for as long as the
 condition is true.  The condition used here is the expression "i < 5".  This
 is true when the variable i is smaller than five.
-   The ":echo" command prints its arguments.  In this case the string "count
-is" and the value of the variable i.  Since i is one, this will print:
-
-	count is 1 ~
-
-Then there is another ":let i =" command.  The value used is the expression "i
-+ 1".  This adds one to the variable i and assigns the new value to the same
-variable.
-   The output of the example code is:
-
-	count is 1 ~
-	count is 2 ~
-	count is 3 ~
-	count is 4 ~
-
 	Note:
 	If you happen to write a while loop that keeps on running, you can
 	interrupt it by pressing CTRL-C (CTRL-Break on MS-Windows).
-	Note:
-	You can try out the examples by yanking the lines from the text here
-	and executing them with :@"
 
-The example was given to explain the commands, but you would really want to
+The ":echo" command prints its arguments.  In this case the string "count is"
+and the value of the variable i.  Since i is one, this will print:
+
+	count is 1 ~
+
+Then there is the ":let i += 1" command.  This does the same thing as
+":let i = i + 1".  This adds one to the variable i and assigns the new value
+to the same variable.
+
+The example was given to explain the commands, but would you really want to
 make such a loop it can be written much more compact: >
 
 	:for i in range(1, 4)
 	:  echo "count is" i
 	:endfor
 
-We won't explain how |:for| and |range()| work right now.  Follow the links if
-you are impatient.
+We won't explain how |:for| and |range()| work until later.  Follow the links
+if you are impatient.
 
 
 THREE KINDS OF NUMBERS
 
 Numbers can be decimal, hexadecimal or octal.  A hexadecimal number starts
-with "0x" or "0X".  For example "0x1f" is 31.  An octal number starts with a
-zero.  "017" is 15.  Careful: don't put a zero before a decimal number, it
-will be interpreted as an octal number!
+with "0x" or "0X".  For example "0x1f" is decimal 31.  An octal number starts
+with a zero.  "017" is decimal 15.  Careful: don't put a zero before a decimal
+number, it will be interpreted as an octal number!
    The ":echo" command always prints decimal numbers.  Example: >
 
 	:echo 0x7f 036
 <	127 30 ~
 
 A number is made negative with a minus sign.  This also works for hexadecimal
-and octal numbers.   A minus sign is also for subtraction.  Compare this with
-the previous example: >
+and octal numbers.   A minus sign is also used for subtraction.  Compare this
+with the previous example: >
 
 	:echo 0x7f -036
 <	97 ~
 
 White space in an expression is ignored.  However, it's recommended to use it
 for separating items, to make the expression easier to read.  For example, to
-avoid the confusion with a negative number, put a space between the minus sign
-and the following number: >
+avoid the confusion with a negative number above, put a space between the
+minus sign and the following number: >
 
 	:echo 0x7f - 036
 
@@ -151,7 +154,7 @@ example, one script contains this code: >
 	:let s:count = 1
 	:while s:count < 5
 	:  source other.vim
-	:  let s:count = s:count + 1
+	:  let s:count += 1
 	:endwhile
 
 Since "s:count" is local to this script, you can be sure that sourcing the
@@ -202,15 +205,21 @@ exists() checks.  That's not what you want.
    The exclamation mark ! negates a value.  When the value was true, it
 becomes false.  When it was false, it becomes true.  You can read it as "not".
 Thus "if !exists()" can be read as "if not exists()".
-   What Vim calls true is anything that is not zero.  Only zero is false.
+   What Vim calls true is anything that is not zero.  Zero is false.
+   	Note:
+	Vim automatically converts a string to a number when it is looking for
+	a number.  When using a string that doesn't start with a digit the
+	resulting number is zero.  Thus look out for this: >
+		:if "true"
+<	The "true" will be interpreted as a zero, thus as false!
 
 
 STRING VARIABLES AND CONSTANTS
 
 So far only numbers were used for the variable value.  Strings can be used as
-well.  Numbers and strings are the only two types of variables that Vim
-supports.  The type is dynamic, it is set each time when assigning a value to
-the variable with ":let".
+well.  Numbers and strings are the basic types of variables that Vim supports.
+The type is dynamic, it is set each time when assigning a value to the
+variable with ":let".  More about types in |41.8|.
    To assign a string value to a variable, you need to use a string constant.
 There are two types of these.  First the string in double quotes: >
 
@@ -231,9 +240,9 @@ To avoid the need for a backslash, you can use a string in single quotes: >
 	:echo name
 <	"peter" ~
 
-Inside a single-quote string all the characters are as they are.  The drawback
-is that it's impossible to include a single quote.  A backslash is taken
-literally as well, thus you can't use it to change the meaning of the
+Inside a single-quote string all the characters are as they are.  Only the
+single quote itself is special: you need to use two to get one.  A backslash
+is taken literally, thus you can't use it to change the meaning of the
 character after it.
    In double-quote strings it is possible to use special characters.  Here are
 a few useful ones:
@@ -281,7 +290,8 @@ do something and restore the old value.  Example: >
 	:let &ic = save_ic
 
 This makes sure the "The Start" pattern is used with the 'ignorecase' option
-off.  Still, it keeps the value that the user had set.
+off.  Still, it keeps the value that the user had set.  (Another way to do
+this would be to add "\C" to the pattern, see |/\C|.)
 
 
 MATHEMATICS
@@ -387,7 +397,7 @@ ones:
 
 The result is one if the condition is met and zero otherwise.  An example: >
 
-	:if v:version >= 600
+	:if v:version >= 700
 	:  echo "congratulations"
 	:else
 	:  echo "you are using an old version, upgrade!"
@@ -428,8 +438,8 @@ pattern, like what's used for searching.  Example: >
 	:endif
 
 Notice the use of a single-quote string for the pattern.  This is useful,
-because backslashes need to be doubled in a double-quote string and patterns
-tend to contain many backslashes.
+because backslashes would need to be doubled in a double-quote string and
+patterns tend to contain many backslashes.
 
 The 'ignorecase' option is used when comparing strings.  When you don't want
 that, append "#" to match case and "?" to ignore case.  Thus "==?" compares
@@ -463,6 +473,8 @@ Example: >
 
 The ":sleep" command makes Vim take a nap.  The "50m" specifies fifty
 milliseconds.  Another example is ":sleep 4", which sleeps for four seconds.
+
+Even more looping can be done with the ":for" command, see below in |41.8|.
 
 ==============================================================================
 *41.5*	Executing an expression
@@ -503,6 +515,17 @@ This inserts "new text " in the current line.  Notice the use of the special
 key "\<Esc>".  This avoids having to enter a real <Esc> character in your
 script.
 
+If you don't want to execute a string but evaluate it to get its expression
+value, you can use the eval() function: >
+
+	:let optname = "path"
+	:let optval = eval('&' . optname)
+
+A "&" character is prepended to "path", thus the argument to eval() is
+"&path".  The result will then be the value of the 'path' option.
+   The same thing can be done with: >
+	:exe 'let optval = &' . optname
+
 ==============================================================================
 *41.6*	Using functions
 
@@ -526,9 +549,9 @@ A function can be called in an expression.  Example: >
 	:let repl = substitute(line, '\a', "*", "g")
 	:call setline(".", repl)
 
-The getline() function obtains a line from the current file.  Its argument is
-a specification of the line number.  In this case "." is used, which means the
-line where the cursor is.
+The getline() function obtains a line from the current buffer.  Its argument
+is a specification of the line number.  In this case "." is used, which means
+the line where the cursor is.
    The substitute() function does something similar to the ":substitute"
 command.  The first argument is the string on which to perform the
 substitution.  The second argument is the pattern, the third the replacement
@@ -567,7 +590,6 @@ String manipulation:
 	submatch()		get a specific match in a ":substitute"
 	strpart()		get part of a string
 	expand()		expand special keywords
-	type()			type of a variable
 	iconv()			convert text from one encoding to another
 
 List manipulation:
@@ -588,11 +610,10 @@ List manipulation:
 	join()			join List items into a String
 	string()		String representation of a List
 	call()			call a function with List as arguments
+	index()			index of a value in a list
 	max()			maximum value in a List
 	min()			minimum value in a List
 	count()			count number of times a value appears in a List
-	getline()		get List with buffer lines
-	append()		append List of lines to the buffer
 
 Dictionary manipulation:
 	get()			get an entries without error for wrong key
@@ -622,9 +643,9 @@ Working with text in the current buffer:
 	wincol()		window column number of the cursor
 	winline()		window line number of the cursor
 	cursor()		position the cursor at a line/column
-	getline()		get a line from the buffer
+	getline()		get a line or list of lines from the buffer
 	setline()		replace a line in the buffer
-	append()		append {string} below line {lnum}
+	append()		append line or list of lines in the buffer
 	indent()		indent of a specific line
 	cindent()		indent according to C indenting
 	lispindent()		indent according to Lisp indenting
@@ -713,6 +734,7 @@ Vim server:
 	remote_foreground()	move the Vim server window to the foreground
 
 Various:
+	type()			type of a variable
 	mode()			get current editing mode
 	visualmode()		last visual mode used
 	hasmapto()		check if a mapping exists
@@ -790,6 +812,15 @@ The complete function definition is as follows: >
 	:    let smaller = a:num2
 	:  endif
 	:  return smaller
+	:endfunction
+
+For people who like short functions, this does the same thing: >
+
+	:function Min(num1, num2)
+	:  if a:num1 < a:num2
+	:    return a:num1
+	:  endif
+	:  return a:num2
 	:endfunction
 
 A user defined function is called in exactly the same way as a builtin
@@ -879,6 +910,9 @@ This uses the ":echohl" command to specify the highlighting used for the
 following ":echo" command.  ":echohl None" stops it again.  The ":echon"
 command works like ":echo", but doesn't output a line break.
 
+You can also use the a:000 variable, it is a List of all the "..." arguments.
+See |a:000|.
+
 
 LISTING FUNCTIONS
 
@@ -915,8 +949,327 @@ To delete the Show() function: >
 
 You get an error when the function doesn't exist.
 
+
+FUNCTION REFERENCES
+
+Sometimes it can be useful to have a variable point to one function or
+another.  You can do it with the function() function.  It turns the name of a
+function into a reference: >
+
+	:let result = 0		" or 1
+	:function! Right()
+	:  return 'Right!'
+	:endfunc
+	:function! Wrong()
+	:  return 'Wrong!'
+	:endfunc
+	:
+	:if result == 1
+	:  let Afunc = function('Right')
+	:else
+	:  let Afunc = function('Wrong')
+	:endif
+	:echo call(Afunc, [])
+<	Wrong! ~
+
+Note that the name of a variable that holds a function reference must start
+with a capital.  Otherwise it could be confused with the name of a builtin
+function.
+   The way to invoke a function that a variable refers to is with the call()
+function.  Its first argument is the function reference, the second argument
+is a List with arguments.
+
+Function references are most useful in combination with a Dictionary, as is
+explained in the next section.
+
 ==============================================================================
-*41.8*	Exceptions
+*41.8*	Lists and Dictionaries
+
+So far we have used the basic types String and Number.  Vim also supports two
+composite types: List and Dictionary.
+
+A List is an ordered sequence of things.  The things can be any kind of value,
+thus you can make a List of numbers, a List of Lists and even a List of mixed
+items.  To create a List with three strings: >
+
+   	:let alist = ['aap', 'mies', 'noot']
+
+The List items are enclosed in square brackets and separated by commas.  To
+create an empty List: >
+
+   	:let alist = []
+
+You can add items to a List with the add() function: >
+
+   	:let alist = []
+	:call add(alist, 'foo')
+	:call add(alist, 'bar')
+	:echo alist
+<	['foo', 'bar'] ~
+
+List concatenation is done with +: >
+
+	:echo alist + ['foo', 'bar']
+<	['foo', 'bar', 'foo', 'bar'] ~
+
+Or, if you want to extend a List directly: >
+
+   	:let alist = ['one']
+	:call extend(alist, ['two', 'three'])
+	:echo alist
+<	['one', 'two', 'three'] ~
+
+Notice that using add() will have a different effect: >
+
+   	:let alist = ['one']
+	:call add(alist, ['two', 'three'])
+	:echo alist
+<	['one', ['two', 'three']] ~
+
+The second argument of add() is added as a single item.
+
+
+FOR LOOP
+
+One of the nice things you can do with a List is iterate over it: >
+
+	:let alist = ['one', 'two', 'three']
+	:for n in alist
+	:  echo n
+	:endfor
+<	one ~
+	two ~
+	three ~
+
+This will loop over each element in List "alist", assigning the value to
+variable "n".  The generic form of a for loop is: >
+
+	:for {varname} in {listexpression}
+	:  {commands}
+	:endfor
+
+To loop a certain number of times you need a List of a specific length.  The
+range() function creates one for you: >
+
+	:for a in range(3)
+	:  echo a
+	:endfor
+<	0 ~
+	1 ~
+	2 ~
+
+Notice that the first item of the List that range() produces is zero, thus the
+last item is one less than the length of the list.
+   You can also specify the maximum value, the stride and even go backwards: >
+
+	:for a in range(8, 4, -2)
+	:  echo a
+	:endfor
+<	8 ~
+	6 ~
+	4 ~
+
+A more useful example, looping over lines in the buffer: >
+
+        :for line in getline(1, 20)
+        :  if line =~ "Date: "
+        :    echo matchstr(line, 'Date: \zs.*')
+        :  endif
+        :endfor
+
+This looks into lines 1 to 20 (inclusive) and echoes any date found in there.
+
+
+DICTIONARIES
+
+A Dictionary stores key-value pairs.  You can quickly lookup a value if you
+know the key.  A Dictionary is created with curly braces: >
+   	
+	:let uk2nl = {'one': 'een', 'two': 'twee', 'three': 'drie'}
+
+Now you can lookup words by putting the key in square brakets: >
+
+	:echo uk2nl['two']
+<	twee ~
+
+The generic form for defining a Dictionary is: >
+
+	{<key> : <value>, ...}
+
+An empty Dictionary is one without any keys: >
+
+	{}
+
+The possibilities with Dictionaries are numerous.  There are various functions
+for them as well.  For example, you can obtain a list of the keys and loop
+over them: >
+
+	:for key in keys(uk2nl)
+	:  echo key
+	:endfor
+<	three ~
+	one ~
+	two ~
+
+The will notice the items are not ordered.  You can sort the list to get a
+specific order: >
+
+	:for key in sort(keys(uk2nl))
+	:  echo key
+	:endfor
+<	one ~
+	three ~
+	two ~
+
+But you can never get back the order in which items are defined.  For that you
+need to use a List, it stores items in an ordered sequence.
+
+
+DICTIONARY FUNCTIONS
+
+The items in a Dictionary can normally be obtained with an index in square
+brackets: >
+
+	:echo uk2nl['one']
+<	een ~
+
+A method that does the same, but without so many punctuation characters: >
+
+	:echo uk2nl.one
+<	een ~
+
+This only works for a key that is made of ASCII letters, digits and the
+underscore.  You can also assign a new value this way: >
+
+	:let uk2nl.four = 'vier'
+	:echo uk2nl
+<	{'three': 'drie', 'four': 'vier', 'one': 'een', 'two': 'twee'} ~
+
+And now for something special: you can directly define a function and store a
+reference to it in the dictionary: >
+
+	:function uk2nl.translate(line) dict
+	:  return join(map(split(a:line), 'get(self, v:val, "???")'))
+	:endfunction
+
+Let's first try it out: >
+
+	:echo uk2nl.translate('three two five one')
+<	drie twee ??? een ~
+
+The first special thing you notice is the "dict" at the end of the ":function"
+line.  This marks the function as being used from a Dictionary.  The "self"
+local variable will then refer to that Dictionary.
+   Now let's break up the complicated return command: >
+
+	split(a:line)
+
+The split() function takes a string, chops it into white separated words
+and returns a list with these words.  Thus in the example it returns: >
+
+	:echo split('three two five one')
+<	['three', 'two', 'five', 'one'] ~
+
+This list is the first argument to the map() function.  This will go through
+the list, evaluating its second argument with "v:val" set to the value of each
+item.  This is a shortcut to using a for loop.  This command: >
+
+	:let alist = map(split(a:line), 'get(self, v:val, "???")')
+
+Is equivalent to: >
+
+	:let alist = split(a:line)
+	:for idx in range(len(alist))
+	:  let alist[idx] = get(self, alist[idx], "???")
+	:endfor
+
+The get() function checks if a key is present in a Dictionary.  If it is, then
+the value is retrieved.  If it isn't, then the default value is returned, in
+the example it's '???'.  This is a covenient way to handle situations where a
+key may not be present and you don't want an error message.
+
+The join() function does the opposite of split(): it joins together a list of
+words, putting a space in between.
+  This combination of split(), map() and join() is a nice way to filter a line
+of words in a very compact way.
+
+
+OBJECT ORIENTED PROGRAMMING
+
+Now that you can put both values and functions in a Dictionary, you can
+actually use a Dictionary like an object.
+   Above we used a Dictionary for translating Dutch to English.  We might want
+to do the same for other languages.  Let's first make an object (aka
+Dictionary) that has the translate function, but no words to translate: >
+
+	:let transdict = {}
+	:function transdict.translate(line) dict
+	:  return join(map(split(a:line), 'get(self.words, v:val, "???")'))
+	:endfunction
+
+It's slightly different from the function above, using 'self.words' to lookup
+word translations.  But we don't have a self.words.  Thus you could call this
+an abstract class.
+
+Now we can instantiate a Dutch translation object: >
+
+	:let uk2nl = copy(transdict)
+	:let uk2nl.words = {'one': 'een', 'two': 'twee', 'three': 'drie'}
+	:echo uk2nl.translate('three one')
+<	drie een ~
+
+And a German translator: >
+
+	:let uk2de = copy(transdict)
+	:let uk2de.words = {'one': 'ein', 'two': 'zwei', 'three': 'drei'}
+	:echo uk2de.translate('three one')
+<	drei ein ~
+
+You see that the copy() function is used to make a copy of the "transdict"
+Dictionary and then the copy is changed to add the words.  The original
+remains the same, of course.
+
+Now you can go one step further, and use your preferred translator: >
+
+	:if $LANG =~ "de"
+	:  let trans = uk2de
+	:else
+	:  let trans = uk2nl
+	:endif
+	:echo trans.translate('one two three')
+<	een twee drie ~
+
+Here "trans" refers to one of the two objects (Dictionaries).  No copy is
+made.  More about List and Dictionary identity can be found at |list-identity|
+and |dict-identity|.
+
+Now you might use a language that isn't supported.  You can overrule the
+translate() function to do nothing: >
+
+	:let uk2uk = copy(transdict)
+	:function! uk2uk.translate(line)
+	:  return a:line
+	:endfunction
+	:echo uk2uk.translate('three one wladiwostok')
+<	three one wladiwostok ~
+
+Notice that a ! was used to overwrite the existing function reference.  Now
+use "uk2uk" when no recognized language is found: >
+
+	:if $LANG =~ "de"
+	:  let trans = uk2de
+	:elseif $LANG =~ "nl"
+	:  let trans = uk2nl
+	:else
+	:  let trans = uk2uk
+	:endif
+	:echo trans.translate('one two three')
+<	one two three ~
+
+For further reading see |Lists| and |Dictionaries|.
+
+==============================================================================
+*41.9*	Exceptions
 
 Let's start with an example: >
 
@@ -973,7 +1326,7 @@ More information about exception handling can be found in the reference
 manual: |exception-handling|.
 
 ==============================================================================
-*41.9*	Various remarks
+*41.10*	Various remarks
 
 Here is a summary of items that apply to Vim scripts.  They are also mentioned
 elsewhere, but form a nice checklist.
@@ -1131,7 +1484,7 @@ Example: >
 	let XXX_loaded = 1
 
 ==============================================================================
-*41.10*	Writing a plugin				*write-plugin*
+*41.11*	Writing a plugin				*write-plugin*
 
 You can write a Vim script in such a way that many people can use it.  This is
 called a plugin.  Vim users can drop your script in their plugin directory and
@@ -1544,13 +1897,13 @@ hasmapto()		Function to test if the user already defined a mapping
 exists(":Cmd")		Check if a user command already exists.
 
 ==============================================================================
-*41.11*	Writing a filetype plugin	*write-filetype-plugin* *ftplugin*
+*41.12*	Writing a filetype plugin	*write-filetype-plugin* *ftplugin*
 
 A filetype plugin is like a global plugin, except that it sets options and
 defines mappings for the current buffer only.  See |add-filetype-plugin| for
 how this type of plugin is used.
 
-First read the section on global plugins above |41.10|.  All that is said there
+First read the section on global plugins above |41.11|.  All that is said there
 also applies to filetype plugins.  There are a few extras, which are explained
 here.  The essential thing is that a filetype plugin should only have an
 effect on the current buffer.
@@ -1730,7 +2083,7 @@ exists("*s:Func")	Check if a function was already defined.
 Also see |plugin-special|, the special things used for all plugins.
 
 ==============================================================================
-*41.12*	Writing a compiler plugin		*write-compiler-plugin*
+*41.13*	Writing a compiler plugin		*write-compiler-plugin*
 
 A compiler plugin sets options for use with a specific compiler.  The user can
 load it with the |:compiler| command.  The main use is to set the

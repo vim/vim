@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.0aa.  Last change: 2005 Feb 04
+*various.txt*   For Vim version 7.0aa.  Last change: 2005 Feb 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -140,7 +140,8 @@ g8			Print the hex values of the bytes used in the
 			The display isn't updated while ":normal" is busy.
 			This implies that an insert command must be completed
 			(to start Insert mode, see |:startinsert|).  A ":"
-			command must be completed as well.
+			command must be completed as well.  And you can't use
+			"Q" or "gQ" to start Ex mode.
 			{commands} cannot start with a space. Put a 1 (one)
 			before it, 1 space is one space.
 			The 'insertmode' option is ignored for {commands}.

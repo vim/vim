@@ -5829,16 +5829,16 @@ clear_oparg(oap)
     vim_memset(oap, 0, sizeof(oparg_T));
 }
 
-static long	line_count_info __ARGS((char_u *line, long *wc, long limit, int eol_size));
+static long	line_count_info __ARGS((char_u *line, long *wc, long *cc, long limit, int eol_size));
 
 /*
- *  Count the number of characters and "words" in a line.
+ *  Count the number of bytes, characters and "words" in a line.
  *
  *  "Words" are counted by looking for boundaries between non-space and
  *  space characters.  (it seems to produce results that match 'wc'.)
  *
- *  Return value is character count; word count for the line is ADDED
- *  to "*wc".
+ *  Return value is byte count; word count for the line is added to "*wc".
+ *  Char count is added to "*cc".
  *
  *  The function will only examine the first "limit" characters in the
  *  line, stopping if it encounters an end-of-line (NUL byte).  In that
@@ -5846,16 +5846,19 @@ static long	line_count_info __ARGS((char_u *line, long *wc, long limit, int eol_
  *  the size of the EOL character.
  */
     static long
-line_count_info(line, wc, limit, eol_size)
+line_count_info(line, wc, cc, limit, eol_size)
     char_u	*line;
     long	*wc;
+    long	*cc;
     long	limit;
     int		eol_size;
 {
-    long	i, words = 0;
+    long	i;
+    long	words = 0;
+    long	chars = 0;
     int		is_word = 0;
 
-    for (i = 0; line[i] && i < limit; i++)
+    for (i = 0; line[i] && i < limit; )
     {
 	if (is_word)
 	{
@@ -5867,6 +5870,12 @@ line_count_info(line, wc, limit, eol_size)
 	}
 	else if (!vim_isspace(line[i]))
 	    is_word = 1;
+	++chars;
+#ifdef FEAT_MBYTE
+	i += mb_ptr2len_check(line + i);
+#else
+	++i;
+#endif
     }
 
     if (is_word)
@@ -5874,8 +5883,12 @@ line_count_info(line, wc, limit, eol_size)
     *wc += words;
 
     /* Add eol_size if the end of line was reached before hitting limit. */
-    if (!line[i] && i < limit)
+    if (line[i] == NUL && i < limit)
+    {
 	i += eol_size;
+	chars += eol_size;
+    }
+    *cc += chars;
     return i;
 }
 
@@ -5891,12 +5904,14 @@ cursor_pos_info()
     char_u	buf1[20];
     char_u	buf2[20];
     linenr_T	lnum;
+    long	byte_count = 0;
+    long	byte_count_cursor = 0;
     long	char_count = 0;
     long	char_count_cursor = 0;
-    int		eol_size;
-    long	last_check = 100000L;
     long	word_count = 0;
     long	word_count_cursor = 0;
+    int		eol_size;
+    long	last_check = 100000L;
 #ifdef FEAT_VISUAL
     long	line_count_selected = 0;
     pos_T	min_pos, max_pos;
@@ -5956,12 +5971,12 @@ cursor_pos_info()
 	for (lnum = 1; lnum <= curbuf->b_ml.ml_line_count; ++lnum)
 	{
 	    /* Check for a CTRL-C every 100000 characters. */
-	    if (char_count > last_check)
+	    if (byte_count > last_check)
 	    {
 		ui_breakcheck();
 		if (got_int)
 		    return;
-		last_check = char_count + 100000L;
+		last_check = byte_count + 100000L;
 	    }
 
 #ifdef FEAT_VISUAL
@@ -6003,13 +6018,13 @@ cursor_pos_info()
 		}
 		if (s != NULL)
 		{
-		    char_count_cursor += line_count_info(s,
-					   &word_count_cursor, len, eol_size);
+		    byte_count_cursor += line_count_info(s, &word_count_cursor,
+					   &char_count_cursor, len, eol_size);
 		    if (lnum == curbuf->b_ml.ml_line_count
 			    && !curbuf->b_p_eol
 			    && curbuf->b_p_bin
 			    && (long)STRLEN(s) < len)
-			char_count_cursor -= eol_size;
+			byte_count_cursor -= eol_size;
 		}
 	    }
 	    else
@@ -6019,19 +6034,21 @@ cursor_pos_info()
 		if (lnum == curwin->w_cursor.lnum)
 		{
 		    word_count_cursor += word_count;
-		    char_count_cursor = char_count +
-			line_count_info(ml_get(lnum), &word_count_cursor,
+		    char_count_cursor += char_count;
+		    byte_count_cursor = byte_count +
+			line_count_info(ml_get(lnum),
+				&word_count_cursor, &char_count_cursor,
 				  (long)(curwin->w_cursor.col + 1), eol_size);
 		}
 	    }
 	    /* Add to the running totals */
-	    char_count += line_count_info(ml_get(lnum), &word_count,
-						      (long)MAXCOL, eol_size);
+	    byte_count += line_count_info(ml_get(lnum), &word_count,
+					 &char_count, (long)MAXCOL, eol_size);
 	}
 
 	/* Correction for when last line doesn't have an EOL. */
 	if (!curbuf->b_p_eol && curbuf->b_p_bin)
-	    char_count -= eol_size;
+	    byte_count -= eol_size;
 
 #ifdef FEAT_VISUAL
 	if (VIsual_active)
@@ -6046,12 +6063,20 @@ cursor_pos_info()
 	    else
 		buf1[0] = NUL;
 
-	    sprintf((char *)IObuff,
-	    _("Selected %s%ld of %ld Lines; %ld of %ld Words; %ld of %ld Bytes"),
+	    if (char_count_cursor == byte_count_cursor
+		    && char_count == byte_count)
+		sprintf((char *)IObuff, _("Selected %s%ld of %ld Lines; %ld of %ld Words; %ld of %ld Bytes"),
 			buf1, line_count_selected,
 			(long)curbuf->b_ml.ml_line_count,
 			word_count_cursor, word_count,
-			char_count_cursor, char_count);
+			byte_count_cursor, byte_count);
+	    else
+		sprintf((char *)IObuff, _("Selected %s%ld of %ld Lines; %ld of %ld Words; %ld of %ld Chars; %ld of %ld Bytes"),
+			buf1, line_count_selected,
+			(long)curbuf->b_ml.ml_line_count,
+			word_count_cursor, word_count,
+			char_count_cursor, char_count,
+			byte_count_cursor, byte_count);
 	}
 	else
 #endif
@@ -6062,20 +6087,29 @@ cursor_pos_info()
 		    (int)curwin->w_virtcol + 1);
 	    col_print(buf2, (int)STRLEN(p), linetabsize(p));
 
-	    sprintf((char *)IObuff,
-		_("Col %s of %s; Line %ld of %ld; Word %ld of %ld; Byte %ld of %ld"),
+	    if (char_count_cursor == byte_count_cursor
+		    && char_count == byte_count)
+		sprintf((char *)IObuff, _("Col %s of %s; Line %ld of %ld; Word %ld of %ld; Byte %ld of %ld"),
 		    (char *)buf1, (char *)buf2,
 		    (long)curwin->w_cursor.lnum,
 		    (long)curbuf->b_ml.ml_line_count,
 		    word_count_cursor, word_count,
-		    char_count_cursor, char_count);
+		    byte_count_cursor, byte_count);
+	    else
+		sprintf((char *)IObuff, _("Col %s of %s; Line %ld of %ld; Word %ld of %ld; Char %ld of %ld; Byte %ld of %ld"),
+		    (char *)buf1, (char *)buf2,
+		    (long)curwin->w_cursor.lnum,
+		    (long)curbuf->b_ml.ml_line_count,
+		    word_count_cursor, word_count,
+		    char_count_cursor, char_count,
+		    byte_count_cursor, byte_count);
 	}
 
 #ifdef FEAT_MBYTE
-	char_count = bomb_size();
-	if (char_count > 0)
+	byte_count = bomb_size();
+	if (byte_count > 0)
 	    sprintf((char *)IObuff + STRLEN(IObuff), _("(+%ld for BOM)"),
-								  char_count);
+								  byte_count);
 #endif
 	/* Don't shorten this message, the user asked for it. */
 	p = p_shm;

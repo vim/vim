@@ -594,6 +594,14 @@ do_exmode(improved)
     MSG(_("Entering Ex mode.  Type \"visual\" to go to Normal mode."));
     while (exmode_active)
     {
+#ifdef FEAT_EX_EXTRA
+	/* Check for a ":normal" command and no more characters left. */
+	if (ex_normal_busy > 0 && typebuf.tb_len == 0)
+	{
+	    exmode_active = FALSE;
+	    break;
+	}
+#endif
 	msg_scroll = TRUE;
 	need_wait_return = FALSE;
 	ex_pressedreturn = FALSE;

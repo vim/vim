@@ -3222,8 +3222,9 @@ mch_get_shellsize()
 
     /*
      * 2. get size from environment
+     *    When being POSIX compliant this overrules the ioctl() values!
      */
-    if (columns == 0 || rows == 0)
+    if (columns == 0 || rows == 0 || getenv("VIM_POSIX") != NULL)
     {
 	if ((p = (char_u *)getenv("LINES")))
 	    rows = atoi((char *)p);

@@ -2339,11 +2339,12 @@ do_source(fname, check_other, is_vimrc)
 	if (SCRIPT_NAME(current_SID) != NULL
 		&& (
 # ifdef UNIX
-		    /* compare dev/ino when possible, it catches symbolic
-		     * links */
-		    (stat_ok && SCRIPT_DEV(current_SID) != -1)
-			? (SCRIPT_DEV(current_SID) == st.st_dev
-			    && SCRIPT_INO(current_SID) == st.st_ino) :
+		    /* Compare dev/ino when possible, it catches symbolic
+		     * links.  Also compare file names, the inode may change
+		     * when the file was edited. */
+		    ((stat_ok && SCRIPT_DEV(current_SID) != -1)
+			&& (SCRIPT_DEV(current_SID) == st.st_dev
+			    && SCRIPT_INO(current_SID) == st.st_ino)) ||
 # endif
 		fnamecmp(SCRIPT_NAME(current_SID), fname_exp) == 0))
 	    break;

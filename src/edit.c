@@ -5151,7 +5151,9 @@ cursor_up(n, upd_topline)
     if (n > 0)
     {
 	lnum = curwin->w_cursor.lnum;
-	if (lnum <= 1)
+	/* This fails if the cursor is already in the first line or the count
+	 * is larger than the line number and '-' is in 'cpoptions' */
+	if (lnum <= 1 || (n >= lnum && vim_strchr(p_cpo, CPO_MINUS) != NULL))
 	    return FAIL;
 	if (n >= lnum)
 	    lnum = 1;
@@ -5212,7 +5214,11 @@ cursor_down(n, upd_topline)
 	/* Move to last line of fold, will fail if it's the end-of-file. */
 	(void)hasFolding(lnum, NULL, &lnum);
 #endif
-	if (lnum >= curbuf->b_ml.ml_line_count)
+	/* This fails if the cursor is already in the last line or would move
+	 * beyound the last line and '-' is in 'cpoptions' */
+	if (lnum >= curbuf->b_ml.ml_line_count
+		|| (lnum + n > curbuf->b_ml.ml_line_count
+		    && vim_strchr(p_cpo, CPO_MINUS) != NULL))
 	    return FAIL;
 	if (lnum + n >= curbuf->b_ml.ml_line_count)
 	    lnum = curbuf->b_ml.ml_line_count;

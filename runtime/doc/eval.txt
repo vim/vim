@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Feb 05
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Feb 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -15,7 +15,7 @@ done, the features in this document are not available.  See |+eval| and
 1.  Variables			|variables|
     1.1 Variable types
     1.2 Function references		|Funcref|
-    1.3 Lists				|List|
+    1.3 Lists				|Lists|
     1.4 Dictionaries			|Dictionaries|
     1.5 More about variables		|more-variables|
 2.  Expression syntax		|expression-syntax|
@@ -126,7 +126,7 @@ arguments: >
 
 
 1.3 Lists ~
-							*List* *E686*
+							*List* *Lists* *E686*
 A List is an ordered sequence of items.  An item can be of any type.  Items
 can be accessed by their index number.  Items can be added and removed at any
 position in the sequence.
@@ -410,7 +410,7 @@ a List in which each item is a  List with two items, the key and the value: >
 
 
 Dictionary identity ~
-
+							*dict-identity*
 Just like Lists you need to use |copy()| and |deepcopy()| to make a copy of a
 Dictionary.  Otherwise, assignment results in referring to the same
 Dictionary: >
@@ -1362,6 +1362,7 @@ USAGE				RESULT	DESCRIPTION	~
 
 add( {list}, {item})		List	append {item} to List {list}
 append( {lnum}, {string})	Number	append {string} below line {lnum}
+append( {lnum}, {list})		Number	append lines {list} below line {lnum}
 argc()				Number	number of files in the argument list
 argidx()			Number	current index in the argument list
 argv( {nr})			String	{nr} entry of the argument list
@@ -1429,7 +1430,8 @@ getfsize( {fname})		Number	size in bytes of file {fname}
 getfontname( [{name}])		String	name of font being used
 getftime( {fname})		Number	last modification time of file
 getftype( {fname})		String	description of type of file {fname}
-getline( {lnum})		String	line {lnum} from current buffer
+getline( {lnum})		String	line {lnum} of current buffer
+getline( {lnum}, {end})		List	lines {lnum} to {end} of current buffer
 getreg( [{regname}])		String	contents of register
 getregtype( [{regname}])	String	type of register
 getwinposx()			Number	X coord in pixels of GUI Vim window
@@ -4342,15 +4344,63 @@ the caller to set the names.
 The recursiveness of user functions is restricted with the |'maxfuncdepth'|
 option.
 
+
+AUTOMATICALLY LOADING FUNCTIONS ~
 							*autoload-functions*
 When using many or large functions, it's possible to automatically define them
-only when they are used.  Use the FuncUndefined autocommand event with a
-pattern that matches the function(s) to be defined.  Example: >
+only when they are used.  There are two methods: with an autocommand and with
+the "autoload" directory in 'runtimepath'.
+
+
+Using an autocommand ~
+
+The autocommand is useful if you have a plugin that is a long Vim script file.
+You can define the autocommand and quickly quit the script with |:finish|.
+That makes Vim startup faster.  The autocommand should then load the same file
+again, setting a variable to skip the |:finish| command.
+
+Use the FuncUndefined autocommand event with a pattern that matches the
+function(s) to be defined.  Example: >
 
 	:au FuncUndefined BufNet* source ~/vim/bufnetfuncs.vim
 
 The file "~/vim/bufnetfuncs.vim" should then define functions that start with
 "BufNet".  Also see |FuncUndefined|.
+
+
+Using an autoload script ~
+
+Using a script in the "autoload" directory is simpler, but requires using
+exactly the right file name.  A function that can be autoloaded has a name
+like this: >
+
+	:call filename:funcname()
+
+When such a function is called, and it is not defined yet, Vim will search the
+"autoload" directories in 'runtimepath' for a script file called
+"filename.vim".  For example "~/.vim/autoload/filename.vim".  That file should
+then define the function like this: >
+
+	function filename:funcname()
+	   echo "Done!"
+	endfunction
+
+The file name and the name used before the colon in the function must match
+exactly, and the defined function must have the name exactly as it will be
+called.
+
+It is possible to use subdirectories.  Every colon in the function name works
+like a path separator.  Thus when calling a function: >
+
+	:call foo:bar:func()
+
+Vim will look for the file "autoload/foo/bar.vim" in 'runtimepath'.
+
+The name before the first colon must be at least two characters long,
+otherwise it looks like a scope, such as "s:".
+
+Note that the script will be sourced again and again if a function is called
+that looks like it is defined in the autoload script but it isn't.
 
 ==============================================================================
 6. Curly braces names					*curly-braces-names*

@@ -2593,18 +2593,19 @@ set_init_1()
 
     /*
      * Find default value for 'shell' option.
+     * Don't use it if it is empty.
      */
-    if ((p = mch_getenv((char_u *)"SHELL")) != NULL
+    if (((p = mch_getenv((char_u *)"SHELL")) != NULL && *p != NUL)
 #if defined(MSDOS) || defined(MSWIN) || defined(OS2)
 # ifdef __EMX__
-	    || (p = mch_getenv((char_u *)"EMXSHELL")) != NULL
+	    || ((p = mch_getenv((char_u *)"EMXSHELL")) != NULL && *p != NUL)
 # endif
-	    || (p = mch_getenv((char_u *)"COMSPEC")) != NULL
+	    || ((p = mch_getenv((char_u *)"COMSPEC")) != NULL && *p != NUL)
 # ifdef WIN3264
-	    || (p = default_shell()) != NULL
+	    || ((p = default_shell()) != NULL && *p != NUL)
 # endif
 #endif
-       )
+	    )
 	set_string_default("sh", p);
 
 #ifdef FEAT_WILDIGN

@@ -886,7 +886,8 @@ gui_mch_compute_menu_height(id)
 #include "gui_x11_pm.h"
 
 static int check_xpm __ARGS((char_u *path));
-static char **get_toolbar_pixmap __ARGS((vimmenu_T *menu));
+static char **get_toolbar_pixmap __ARGS((vimmenu_T *menu, char **fname));
+static int add_pixmap_args __ARGS((vimmenu_T *menu, Arg *args, int n));
 
 /*
  * Read an Xpm file.  Return OK or FAIL.
@@ -916,16 +917,20 @@ check_xpm(path)
 
 /*
  * Allocated a pixmap for toolbar menu "menu".
+ * When it's to be read from a file, "fname" is set to the file name
+ * (in allocated memory).
  * Return a blank pixmap if it fails.
  */
     static char **
-get_toolbar_pixmap(menu)
+get_toolbar_pixmap(menu, fname)
     vimmenu_T	*menu;
+    char	**fname;
 {
     char_u	buf[MAXPATHL];		/* buffer storing expanded pathname */
     char	**xpm = NULL;		/* xpm array */
     int		res;
 
+    *fname = NULL;
     buf[0] = NUL;			/* start with NULL path */
 
     if (menu->iconfile != NULL)
@@ -938,7 +943,10 @@ get_toolbar_pixmap(menu)
 	if (res == FAIL && gui_find_bitmap(menu->name, buf, "xpm") == OK)
 	    res = check_xpm(buf);
 	if (res == OK)
+	{
+	    *fname = (char *)vim_strsave(buf);
 	    return tb_blank_xpm;
+	}
     }
 
     if (menu->icon_builtin || gui_find_bitmap(menu->name, buf, "xpm") == FAIL)
@@ -951,6 +959,33 @@ get_toolbar_pixmap(menu)
     }
 
     return xpm;
+}
+
+/*
+ * Add arguments for the toolbar pixmap to a menu item.
+ */
+    static int
+add_pixmap_args(menu, args, n)
+    vimmenu_T	*menu;
+    Arg		*args;
+    int		n;
+{
+    vim_free(menu->xpm_fname);
+    menu->xpm = get_toolbar_pixmap(menu, &menu->xpm_fname);
+    if (menu->xpm == NULL)
+    {
+	XtSetArg(args[n], XmNlabelType, XmSTRING); n++;
+    }
+    else
+    {
+	if (menu->xpm_fname != NULL)
+	{
+	    XtSetArg(args[n], XmNpixmapFile, menu->xpm_fname); n++;
+	}
+	XtSetArg(args[n], XmNpixmapData, menu->xpm); n++;
+	XtSetArg(args[n], XmNlabelLocation, XmBOTTOM); n++;
+    }
+    return n;
 }
 #endif /* FEAT_TOOLBAR */
 
@@ -1025,16 +1060,8 @@ gui_mch_add_menu_item(menu, idx)
 	    xms = XmStringCreate((char *)menu->dname, STRING_TAG);
 	    XtSetArg(args[n], XmNlabelString, xms); n++;
 
-	    menu->xpm = get_toolbar_pixmap(menu);
-	    if (menu->xpm == NULL)
-	    {
-		XtSetArg(args[n], XmNlabelType, XmSTRING); n++;
-	    }
-	    else
-	    {
-		XtSetArg(args[n], XmNpixmapData, menu->xpm); n++;
-		XtSetArg(args[n], XmNlabelLocation, XmBOTTOM); n++;
-	    }
+	    n = add_pixmap_args(menu, args, n);
+
 	    type = xmEnhancedButtonWidgetClass;
 	}
 
@@ -1264,16 +1291,7 @@ submenu_change(menu, colors)
 		    int		n = 0;
 		    Arg		args[18];
 
-		    mp->xpm = get_toolbar_pixmap(mp);
-		    if (menu->xpm == NULL)
-		    {
-			XtSetArg(args[n], XmNlabelType, XmSTRING); n++;
-		    }
-		    else
-		    {
-			XtSetArg(args[n], XmNpixmapData, menu->xpm); n++;
-			XtSetArg(args[n], XmNlabelLocation, XmBOTTOM); n++;
-		    }
+		    n = add_pixmap_args(mp, args, n);
 		    XtSetValues(mp->id, args, n);
 		}
 # ifdef FEAT_BEVAL
@@ -2844,6 +2862,23 @@ gui_mch_compute_toolbar_height()
 #endif
 
     return (int)(height + (borders << 1));
+}
+
+    void
+motif_get_toolbar_colors(bgp, fgp, bsp, tsp, hsp)
+    Pixel       *bgp;
+    Pixel       *fgp;
+    Pixel       *bsp;
+    Pixel       *tsp;
+    Pixel       *hsp;
+{
+    XtVaGetValues(toolBar,
+            XmNbackground, bgp,
+            XmNforeground, fgp,
+            XmNbottomShadowColor, bsp,
+            XmNtopShadowColor, tsp,
+            XmNhighlightColor, hsp,
+            NULL);
 }
 
 # ifdef FEAT_FOOTER

@@ -2701,6 +2701,7 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 	int		buf_fname_s = FALSE;
 	int		did_cmd = FALSE;
 	int		nofile_err = FALSE;
+	int		empty_memline = (buf->b_ml.ml_mfp == NULL);
 
 	/*
 	 * Apply PRE aucocommands.
@@ -2772,7 +2773,7 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 	 */
 	if (!buf_valid(buf))
 	    buf = NULL;
-	if (buf == NULL || buf->b_ml.ml_mfp == NULL
+	if (buf == NULL || (buf->b_ml.ml_mfp == NULL && !empty_memline)
 				       || did_cmd || nofile_err || aborting())
 	{
 	    --no_wait_return;
@@ -6650,6 +6651,8 @@ static struct event_name
     {"InsertChange",	EVENT_INSERTCHANGE},
     {"InsertEnter",	EVENT_INSERTENTER},
     {"InsertLeave",	EVENT_INSERTLEAVE},
+    {"QuickFixCmdPost",	EVENT_QUICKFIXCMDPOST},
+    {"QuickFixCmdPre",	EVENT_QUICKFIXCMDPRE},
     {"RemoteReply",	EVENT_REMOTEREPLY},
     {"StdinReadPost",	EVENT_STDINREADPOST},
     {"StdinReadPre",	EVENT_STDINREADPRE},
@@ -8042,9 +8045,12 @@ apply_autocmds_group(event, fname, fname_io, force, group, buf, eap)
     else
     {
 	sfname = vim_strsave(fname);
-	/* Don't try expanding FileType, Syntax or WindowID. */
-	if (event == EVENT_FILETYPE || event == EVENT_SYNTAX
-						|| event == EVENT_REMOTEREPLY)
+	/* Don't try expanding FileType, Syntax, WindowID or QuickFixCmd* */
+	if (event == EVENT_FILETYPE
+		|| event == EVENT_SYNTAX
+		|| event == EVENT_REMOTEREPLY
+		|| event == EVENT_QUICKFIXCMDPRE
+		|| event == EVENT_QUICKFIXCMDPOST)
 	    fname = vim_strsave(fname);
 	else
 	    fname = FullName_save(fname, FALSE);

@@ -2471,7 +2471,8 @@ onepage(dir, count)
     foldAdjustCursor();
 #endif
     cursor_correct();
-    beginline(BL_SOL | BL_FIX);
+    if (retval == OK)
+	beginline(BL_SOL | BL_FIX);
     curwin->w_valid &= ~(VALID_WCOL|VALID_WROW|VALID_VIRTCOL);
 
     /*

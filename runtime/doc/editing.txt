@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.0aa.  Last change: 2005 Jan 26
+*editing.txt*   For Vim version 7.0aa.  Last change: 2005 Feb 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -69,18 +69,21 @@ CTRL-G		or				*CTRL-G* *:f* *:fi* *:file*
 			buffer number is also given.  {not in Vi}
 
 					*g_CTRL-G* *word-count* *byte-count*
-g CTRL-G		Prints the current position of the cursor in four
-			ways: Column, Line, Word and Byte.  If there are
-			characters in the line that take more than one
-			position on the screen (<Tab> or special character),
-			both the "real" column and the screen column are
-			shown, separated with a dash.  See also 'ruler'
-			option.  {not in Vi}
+g CTRL-G		Prints the current position of the cursor in five
+			ways: Column, Line, Word, Character and Byte.  If the
+			number of Characters and Bytes is the same then the
+			Character position is omitted.
+			If there are characters in the line that take more
+			than one position on the screen (<Tab> or special
+			character), both the "real" column and the screen
+			column are shown, separated with a dash.
+			See also 'ruler' option.  {not in Vi}
 
 							*v_g_CTRL-G*
-{Visual}g CTRL-G	Similar to "g CTRL-G", but Word, Line, and Byte counts
-			for the visually selected region are displayed.  In
-			Blockwise mode, Column count is also shown.  (For
+{Visual}g CTRL-G	Similar to "g CTRL-G", but Word, Character, Line, and
+			Byte counts for the visually selected region are
+			displayed.
+			In Blockwise mode, Column count is also shown.  (For
 			{Visual} see |Visual-mode|.)
 			{not in VI}
 

@@ -1531,6 +1531,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 41.10	usr_41.txt	/*41.10*
 41.11	usr_41.txt	/*41.11*
 41.12	usr_41.txt	/*41.12*
+41.13	usr_41.txt	/*41.13*
 41.2	usr_41.txt	/*41.2*
 41.3	usr_41.txt	/*41.3*
 41.4	usr_41.txt	/*41.4*
@@ -3738,6 +3739,7 @@ Korean	mbyte.txt	/*Korean*
 L	motion.txt	/*L*
 Linux-backspace	options.txt	/*Linux-backspace*
 List	eval.txt	/*List*
+Lists	eval.txt	/*Lists*
 M	motion.txt	/*M*
 MDI	starting.txt	/*MDI*
 MS-DOS	os_msdos.txt	/*MS-DOS*
@@ -3833,6 +3835,8 @@ Q_vi	quickref.txt	/*Q_vi*
 Q_vm	quickref.txt	/*Q_vm*
 Q_wi	quickref.txt	/*Q_wi*
 Q_wq	quickref.txt	/*Q_wq*
+QuickFixCmdPost	autocmd.txt	/*QuickFixCmdPost*
+QuickFixCmdPre	autocmd.txt	/*QuickFixCmdPre*
 Quickfix	quickfix.txt	/*Quickfix*
 R	change.txt	/*R*
 RISC-OS	os_risc.txt	/*RISC-OS*
@@ -4378,6 +4382,7 @@ cpo-!	options.txt	/*cpo-!*
 cpo-$	options.txt	/*cpo-$*
 cpo-%	options.txt	/*cpo-%*
 cpo-+	options.txt	/*cpo-+*
+cpo--	options.txt	/*cpo--*
 cpo-<	options.txt	/*cpo-<*
 cpo-A	options.txt	/*cpo-A*
 cpo-B	options.txt	/*cpo-B*
@@ -4524,6 +4529,7 @@ diW	motion.txt	/*diW*
 dialog	gui_w32.txt	/*dialog*
 dialogs-added	version5.txt	/*dialogs-added*
 dib	motion.txt	/*dib*
+dict-identity	eval.txt	/*dict-identity*
 dict-modification	eval.txt	/*dict-modification*
 did_filetype()	eval.txt	/*did_filetype()*
 diff	diff.txt	/*diff*
@@ -5460,6 +5466,7 @@ match()	eval.txt	/*match()*
 match-highlight	pattern.txt	/*match-highlight*
 matchend()	eval.txt	/*matchend()*
 matchit-install	usr_05.txt	/*matchit-install*
+matchlist()	eval.txt	/*matchlist()*
 matchstr()	eval.txt	/*matchstr()*
 max()	eval.txt	/*max()*
 mbyte-IME	mbyte.txt	/*mbyte-IME*
@@ -5830,6 +5837,8 @@ popup-menu	gui.txt	/*popup-menu*
 popup-menu-added	version5.txt	/*popup-menu-added*
 ports-5.2	version5.txt	/*ports-5.2*
 ports-6	version6.txt	/*ports-6*
+posix-compliance	vi_diff.txt	/*posix-compliance*
+posix-screen-size	vi_diff.txt	/*posix-screen-size*
 postscr-syntax	syntax.txt	/*postscr-syntax*
 postscr.vim	syntax.txt	/*postscr.vim*
 postscript-cjk-printing	print.txt	/*postscript-cjk-printing*

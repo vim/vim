@@ -1967,6 +1967,7 @@ struct VimMenu
 #ifdef FEAT_GUI_MOTIF
     int		sensitive;	    /* turn button on/off */
     char	**xpm;		    /* pixmap data */
+    char	*xpm_fname;	    /* file with pixmap data */
 #endif
 #ifdef FEAT_GUI_ATHENA
     Pixmap	image;		    /* Toolbar image */
