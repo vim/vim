@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	Java
 " Maintainer:	Dan Sharp <dwsharp at hotmail dot com>
-" Last Change:  2004 May 16
+" Last Change:  2005 Mar 28
 " URL:		http://mywebpage.netscape.com/sharppeople/vim/ftplugin
 
 if exists("b:did_ftplugin") | finish | endif
@@ -11,19 +11,6 @@ let b:did_ftplugin = 1
 " compatibility mode.
 let s:save_cpo = &cpo
 set cpo-=C
-
-" Go ahead and set this to get decent indenting even if the indent files
-" aren't being used.  For people who really don't want any indentation,
-" let them turn it off.
-if !exists("g:ftplugin_java_no_indent")
-    setlocal cindent
-
-    "---------------------
-    " Correctly indent anonymous classes
-    " From Johannes Zellner <johannes@zellner.org>
-    setlocal cinoptions+=j1
-    "---------------------
-endif
 
 " For filename completion, prefer the .java extension over the .class
 " extension.
@@ -55,7 +42,7 @@ if has("gui_win32")
 endif
 
 " Undo the stuff we changed.
-let b:undo_ftplugin = "setlocal cindent< cinoptions< suffixes< suffixesadd<" .
+let b:undo_ftplugin = "setlocal suffixes< suffixesadd<" .
 		\     " formatoptions< comments< commentstring< path< includeexpr<" .
 		\     " | unlet! b:browsefilter"
 
