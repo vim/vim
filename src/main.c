@@ -2352,6 +2352,10 @@ getout(exitval)
     apply_autocmds(EVENT_VIMLEAVE, NULL, NULL, FALSE, curbuf);
 #endif
 
+#ifdef FEAT_PROFILE
+    profile_dump();
+#endif
+
     if (did_emsg
 #ifdef FEAT_GUI
 	    || (gui.in_use && msg_didany && p_verbose > 0)

@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Feb 21
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Feb 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -961,7 +961,7 @@ variable		internal variable
 See below |internal-variables|.
 
 
-function call		*expr-function* *E116* *E117* *E118* *E119* *E120*
+function call		*expr-function* *E116* *E118* *E119* *E120*
 -------------
 function(expr1, ...)	function call
 See below |functions|.
@@ -1270,6 +1270,10 @@ v:prevcount	The count given for the last but one Normal mode command.
 			:vmap % <Esc>:call MyFilter(v:prevcount)<CR>
 <		Read-only.
 
+					*v:profiling* *profiling-variable*
+v:profiling	Normally zero.  Set to one after using ":profile start".
+		See |profiling|.
+
 					*v:progname* *progname-variable*
 v:progname	Contains the name (with path removed) with which Vim was
 		invoked.  Allows you to do special initialisations for "view",
@@ -1396,6 +1400,7 @@ did_filetype()			Number	TRUE if FileType autocommand event used
 diff_filler( {lnum})		Number	diff filler lines about {lnum}
 diff_hlID( {lnum}, {col})	Number	diff highlighting at {lnum}/{col}
 empty( {expr})			Number	TRUE if {expr} is empty
+errorlist()			List	list of quickfix items
 escape( {string}, {chars})	String	escape {chars} in {string} with '\'
 eval( {string})			any	evaluate {string} into its value 
 eventhandler( )			Number	TRUE if inside an event handler
@@ -1964,6 +1969,28 @@ empty({expr})						*empty()*
 		A Number is empty when its value is zero.
 		For a long List this is much faster then comparing the length
 		with zero.
+
+errorlist()						*errorlist()*
+		Returns a list with all the current quickfix errors.  Each
+		list item is a dictionary with these entries:
+			bufnr	number of buffer that has the file name, use
+				bufname() to get the name
+			lnum	line number in the buffer (first line is 1)
+			col	column number (first column is 1)
+			vcol	non-zero: column number is visual column
+				zero: column number is byte index
+			nr	error number
+			text	description of the error
+			type	type of the error, 'E', '1', etc.
+			valid	non-zero: recognized error message
+
+		Useful application: Find pattern matches in multiple files and
+		do something with them: >
+			:vimgrep /theword/jg *.c
+			:for d in errorlist()
+			:   echo bufname(d.bufnr) ':' d.lnum '=' d.text
+			:endfor
+
 
 escape({string}, {chars})				*escape()*
 		Escape the characters in {chars} that occur in {string} with a
@@ -3031,7 +3058,14 @@ match({expr}, {pat}[, {start}[, {count}]])			*match()*
 			:echo match("testing", "ing")	" results in 4
 			:echo match([1, 'x'], '\a')	" results in 2
 <		See |string-match| for how {pat} is used.
-
+								*strpbrk()*
+		Vim doesn't have a strpbrk() function.  But you can do: >
+			:let sepidx = match(line, '[.,;: \t]')
+<								*strcasestr()*
+		Vim doesn't have a strcasestr() function.  But you can add
+		"\c" to the pattern to ignore case: >
+			:let idx = match(haystack, '\cneedle')
+<
 		When {count} is given use the {count}'th match.  When a match
 		is found in a String the search for the next one starts on
 		character further.  Thus this example results in 1: >
@@ -3063,6 +3097,13 @@ matchend({expr}, {pat}[, {start}[, {count}]])			*matchend()*
 		the match.  Example: >
 			:echo matchend("testing", "ing")
 <		results in "7".
+							*strspn()* *strcspn()*
+		Vim doesn't have a strspn() or strcspn() function, but you can
+		do it with matchend(): >
+			:let span = matchend(line, '[a-zA-Z]')
+			:let span = matchend(line, '[^a-zA-Z]')
+<		Except that -1 is returned when there are no matches.
+
 		The {start}, if given, has the same meaning as for match(). >
 			:echo matchend("testing", "ing", 2)
 <		results in "7". >
@@ -3620,7 +3661,10 @@ stridx({haystack}, {needle} [, {start}])		*stridx()*
 		  :echo stridx("An Example", "Example")	     3
 		  :echo stridx("Starting point", "Start")    0
 		  :echo stridx("Starting point", "start")   -1
-<
+<	  					*strstr()* *strchr()*
+		stridx() works similar to the C function strstr().  When used
+		with a single character it works similar to strchr().
+
 							*string()*
 string({expr})	Return {expr} converted to a String.  If {expr} is a Number,
 		String or a composition of them, then the result can be parsed
@@ -3673,7 +3717,10 @@ strridx({haystack}, {needle} [, {start}])			*strridx()*
 		If the {needle} is empty the length of {haystack} is returned.
 		See also |stridx()|. Examples: >
 		  :echo strridx("an angry armadillo", "an")	     3
-<
+<		  					*strrchr()*
+		When used with a single character it works similar to the C
+		function strrchr().
+
 strtrans({expr})					*strtrans()*
 		The result is a String, which is {expr} with all unprintable
 		characters translated into printable characters |'isprint'|.
@@ -3769,7 +3816,7 @@ system({expr} [, {input}])				*system()* *E677*
 		When {input} is given, this string is written to a file and
 		passed as stdin to the command.  The string is written as-is,
 		you need to take care of using the correct line separators
-		yourself.
+		yourself.  Pipes are not used.
 		Note: newlines in {expr} may cause the command to fail.  The
 		characters in 'shellquote' and 'shellxquote' may also cause
 		trouble.
@@ -4081,6 +4128,7 @@ path_extra		Compiled with up/downwards search in 'path' and 'tags'
 perl			Compiled with Perl interface.
 postscript		Compiled with PostScript file printing.
 printer			Compiled with |:hardcopy| support.
+profile			Compiled with |:profile| support.
 python			Compiled with Python interface.
 qnx			QNX version of Vim.
 quickfix		Compiled with |quickfix| support.
@@ -4384,6 +4432,8 @@ the "autoload" directory in 'runtimepath'.
 
 Using an autocommand ~
 
+This is introduced in the user manual, section |41.14|.
+
 The autocommand is useful if you have a plugin that is a long Vim script file.
 You can define the autocommand and quickly quit the script with |:finish|.
 That makes Vim startup faster.  The autocommand should then load the same file
@@ -4400,6 +4450,8 @@ The file "~/vim/bufnetfuncs.vim" should then define functions that start with
 
 Using an autoload script ~
 							*autoload* *E746*
+This is introduced in the user manual, section |41.15|.
+
 Using a script in the "autoload" directory is simpler, but requires using
 exactly the right file name.  A function that can be autoloaded has a name
 like this: >

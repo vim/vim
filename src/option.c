@@ -2629,18 +2629,20 @@ set_init_1()
 # else
 	static char	*(names[3]) = {"TMPDIR", "TEMP", "TMP"};
 # endif
-	int	len;
-	garray_T ga;
+	int		len;
+	garray_T	ga;
+	int		mustfree;
 
 	ga_init2(&ga, 1, 100);
 	for (n = 0; n < (long)(sizeof(names) / sizeof(char *)); ++n)
 	{
+	    mustfree = FALSE;
 # ifdef UNIX
 	    if (*names[n] == NUL)
 		p = (char_u *)"/tmp";
 	    else
 # endif
-		p = mch_getenv((char_u *)names[n]);
+		p = vim_getenv((char_u *)names[n], &mustfree);
 	    if (p != NULL && *p != NUL)
 	    {
 		/* First time count the NUL, otherwise count the ','. */
@@ -2655,6 +2657,8 @@ set_init_1()
 		    ga.ga_len += len;
 		}
 	    }
+	    if (mustfree)
+		vim_free(p);
 	}
 	if (ga.ga_data != NULL)
 	{
@@ -2705,9 +2709,10 @@ set_init_1()
 	char_u	*buf;
 	int	i;
 	int	j;
+	int	mustfree = FALSE;
 
 	/* Initialize the 'cdpath' option's default value. */
-	cdpath = mch_getenv((char_u *)"CDPATH");
+	cdpath = vim_getenv((char_u *)"CDPATH", &mustfree);
 	if (cdpath != NULL)
 	{
 	    buf = alloc((unsigned)((STRLEN(cdpath) << 1) + 2));
@@ -2731,6 +2736,8 @@ set_init_1()
 		options[opt_idx].def_val[VI_DEFAULT] = buf;
 		options[opt_idx].flags |= P_DEF_ALLOCED;
 	    }
+	    if (mustfree)
+		vim_free(cdpath);
 	}
     }
 #endif
@@ -2961,6 +2968,10 @@ set_init_1()
 		else
 		    p_tenc = empty_option;
 	    }
+# endif
+# if defined(WIN3264) && defined(FEAT_MBYTE)
+	    /* $HOME may have characters in active code page. */
+	    init_homedir();
 # endif
 	}
 	else
@@ -5089,6 +5100,12 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 		convert_setup(&input_conv, p_tenc, p_enc);
 		convert_setup(&output_conv, p_enc, p_tenc);
 	    }
+
+# if defined(WIN3264) && defined(FEAT_MBYTE)
+	    /* $HOME may have characters in active code page. */
+	    if (varp == &p_enc)
+		init_homedir();
+# endif
 	}
     }
 #endif

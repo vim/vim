@@ -380,6 +380,13 @@
 #endif
 
 /*
+ * +profile		Profiling for functions and scripts.
+ */
+#ifdef FEAT_HUGE
+# define FEAT_PROFILE
+#endif
+
+/*
  *			Insert mode completion with 'completefunc'.
  */
 #if defined(FEAT_INS_EXPAND) && defined(FEAT_EVAL)

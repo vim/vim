@@ -421,6 +421,11 @@ static char *(features[]) =
 #else
 	"-printer",
 #endif
+#ifdef FEAT_PROFILE
+	"+profile",
+#else
+	"-profile",
+#endif
 #ifdef FEAT_PYTHON
 # ifdef DYNAMIC_PYTHON
 	"+python/dyn",

@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.0aa.  Last change: 2005 Feb 21
+*change.txt*    For Vim version 7.0aa.  Last change: 2005 Feb 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -527,7 +527,7 @@ comment (starting with '"') after the ":!" command.
 
 4.2 Substitute						*:substitute*
 							*:s* *:su*
-:[range]s[ubstitute]/{pattern}/{string}/[&][#][c][e][g][p][r][i][I] [count]
+:[range]s[ubstitute]/{pattern}/{string}/[flags] [count]
 			For each line in [range] replace a match of {pattern}
 			with {string}.
 			For the {pattern} see |pattern|.
@@ -539,31 +539,31 @@ comment (starting with '"') after the ":!" command.
 			starting with the last line in [range].  When [range]
 			is omitted start in the current line.
 			Also see |cmdline-ranges|.
-			See |:s_flags| for the flags.
+			See |:s_flags| for [flags].
 
-:[range]s[ubstitute] [#][c][e][g][p][r][i][I] [count]
-:[range]&[&][#][c][e][g][p][r][i][I] [count]			*:&*
+:[range]s[ubstitute] [flags] [count]
+:[range]&[&][flags] [count]					*:&*
 			Repeat last :substitute with same search pattern and
 			substitute string, but without the same flags.  You
-			may add extra flags (see |:s_flags|).
+			may add [flags], see |:s_flags|.
 			Note that after ":substitute" the '&' flag can't be
 			used, it's recognized as a pattern separator.
 			The space between ":substitute" and the 'c', 'g' and
 			'r' flags isn't required, but in scripts it's a good
 			idea to keep it to avoid confusion.
 
-:[range]~[&][#][c][e][g][p][r][i][I] [count]			*:~*
+:[range]~[&][flags] [count]					*:~*
 			Repeat last substitute with same substitute string
 			but with last used search pattern.  This is like
-			":&r".  See |:s_flags| for the flags.
+			":&r".  See |:s_flags| for [flags].
 
-						*&*
+								*&*
 &			Synonym for ":s//~/" (repeat last substitute).  Note
 			that the flags are not remembered, thus it might
 			actually work differently.  You can use ":&&" to keep
 			the flags.
 
-						*g&*
+								*g&*
 g&			Synonym for ":%s//~/&" (repeat last substitute on all
 			lines with the same flags).
 			Mnemonic: global substitute. {not in Vi}
@@ -628,6 +628,10 @@ The flags that you can use for the substitute commands:
 [I]	Don't ignore case for the pattern.  The 'ignorecase' and 'smartcase'
 	options are not used.
 	{not in Vi}
+
+[n]	Report the number of matches, do not actually substitute.  The [c]
+	flag is ignored.  The matches are reported as if 'report' is zero.
+	Useful to |count-items|.
 
 [p]	Print the line containing the last substitute.
 

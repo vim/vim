@@ -370,8 +370,12 @@ FILES
        /usr/local/lib/vim/vimrc
                       System wide Vim initializations.
 
+       ~/.vimrc       Your personal Vim initializations.
+
        /usr/local/lib/vim/gvimrc
                       System wide gvim initializations.
+
+       ~/.gvimrc      Your personal gvim initializations.
 
        /usr/local/lib/vim/optwin.vim
                       Script  used  for  the ":options" command, a nice way to

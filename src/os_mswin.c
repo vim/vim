@@ -1346,22 +1346,16 @@ clip_mch_request_selection(VimClipboard *cbd)
 			break;
 	    }
 
-#if defined(FEAT_MBYTE) && defined(WIN3264)
+# if defined(FEAT_MBYTE) && defined(WIN3264)
 	    /* The text is in the active codepage.  Convert to 'encoding',
 	     * going through UCS-2. */
-	    MultiByteToWideChar_alloc(GetACP(), 0, str, str_size,
-						 (LPWSTR *)&to_free, &maxlen);
+	    acp_to_enc(str, str_size, &to_free, &maxlen);
 	    if (to_free != NULL)
 	    {
 		str_size = maxlen;
-		str = ucs2_to_enc((short_u *)to_free, &str_size);
-		if (str != NULL)
-		{
-		    vim_free(to_free);
-		    to_free = str;
-		}
+		str = to_free;
 	    }
-#endif
+# endif
 	}
     }
 #ifdef FEAT_MBYTE
@@ -1397,6 +1391,31 @@ clip_mch_request_selection(VimClipboard *cbd)
     vim_free(to_free);
 #endif
 }
+
+#if (defined(FEAT_MBYTE) && defined(WIN3264)) || defined(PROTO)
+/*
+ * Convert from the active codepage to 'encoding'.
+ * Input is "str[str_size]".
+ * The result is in allocated memory: "out[outlen]".  With terminating NUL.
+ */
+    void
+acp_to_enc(str, str_size, out, outlen)
+    char_u	*str;
+    int		str_size;
+    char_u	**out;
+    int		*outlen;
+
+{
+    LPWSTR	widestr;
+
+    MultiByteToWideChar_alloc(GetACP(), 0, str, str_size, &widestr, outlen);
+    if (widestr != NULL)
+    {
+	*out = ucs2_to_enc((short_u *)widestr, outlen);
+	vim_free(widestr);
+    }
+}
+#endif
 
 /*
  * Send the current selection to the clipboard.

@@ -4051,7 +4051,8 @@ gui_mch_enable_beval_area(beval)
     if (beval == NULL)
 	return;
     TRACE0("gui_mch_enable_beval_area {{{");
-    BevalTimerId = SetTimer(s_textArea, 0, p_bdlay / 2, (TIMERPROC)BevalTimerProc);
+    BevalTimerId = SetTimer(s_textArea, 0, p_bdlay / 2,
+						   (TIMERPROC)BevalTimerProc);
     TRACE0("gui_mch_enable_beval_area }}}");
 }
 

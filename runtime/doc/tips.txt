@@ -1,4 +1,4 @@
-*tips.txt*      For Vim version 7.0aa.  Last change: 2004 Feb 17
+*tips.txt*      For Vim version 7.0aa.  Last change: 2005 Feb 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -201,21 +201,22 @@ abbreviations that correct them.  For example: >
 ==============================================================================
 Counting words, lines, etc.				*count-items*
 
-To count how often any pattern occurs in a buffer, set 'report' to 0, and use
-the substitute command to replace the pattern with itself.  The reported
-number of substitutions is the number of items.  Examples: >
+To count how often any pattern occurs in the current buffer use the substitute
+command and add the 'n' flag to avoid the substitution.  The reported number
+of substitutions is the number of items.  Examples: >
 
-	:set report=0
-	:%s/./&/g		characters
-	:%s/\i\+/&/g		words
-	:%s/^			lines
-	:%s/the/&/g		"the" anywhere
-	:%s/\<the\>/&/g		"the" as a word
+	:%s/./&/gn		characters
+	:%s/\i\+/&/gn		words
+	:%s/^//n		lines
+	:%s/the/&/gn		"the" anywhere
+	:%s/\<the\>/&/gn	"the" as a word
 
 You might want to reset 'hlsearch' or do ":nohlsearch".
+Add the 'e' flag if you don't want an error when there are no matches.
 
-This does not work if the 'modifiable' option is off.  An alternative is using
-|v_g_CTRL-G| in Visual mode.
+An alternative is using |v_g_CTRL-G| in Visual mode.
+
+If you want to find matches in multiple files use |:vimgrep|.
 
 							*count-bytes*
 If you want to count bytes, you can use this:

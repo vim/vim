@@ -31,6 +31,7 @@ void clip_mch_lose_selection __ARGS((VimClipboard *cbd));
 short_u *enc_to_ucs2 __ARGS((char_u *str, int *lenp));
 char_u *ucs2_to_enc __ARGS((short_u *str, int *lenp));
 void clip_mch_request_selection __ARGS((VimClipboard *cbd));
+void acp_to_enc __ARGS((char_u *str, int str_size, char_u **out, int *outlen));
 void clip_mch_set_selection __ARGS((VimClipboard *cbd));
 void DumpPutS __ARGS((const char *psz));
 int mch_get_winpos __ARGS((int *x, int *y));

@@ -1,4 +1,4 @@
-*indent.txt*    For Vim version 7.0aa.  Last change: 2004 Sep 02
+*indent.txt*    For Vim version 7.0aa.  Last change: 2005 Feb 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -483,6 +483,20 @@ autocommand such as >
 
 to get do loops indented in .f90 files and left alone in Fortran files with
 other extensions such as .for.
+
+
+PYTHON							*python-indent*
+
+The amount of indent can be set for the following situations.  The examples
+given are de the defaults.  Note that the variables are set to an expression,
+so that you can change the value of 'shiftwidth' later.
+
+Indent after an open paren: >
+	let g:pyindent_open_paren = '&sw * 2'
+Indent after a nested paren: >
+	let g:pyindent_nested_paren = '&sw'
+Indent for a continuation line: >
+	let g:pyindent_continue = '&sw * 2'
 
 
 VERILOG							*verilog-indent*

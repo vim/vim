@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Feb 21
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Feb 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,14 +30,21 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Test11 sometimes fails.  Must be a problem with fork() and pipes.
+
+'sw' is sometimes 8 when using :vimgrep.
+
+Mingw can use setjmp()?  Move code from os_unix.c to common file, adjust
+#ifdefs.  Try with example from Michaelis.
+
+Russian helpfile doesn't show up correctly when 'encoding' is koi8-r.
+(Vassily Ragosin 2005 Feb 16)
+
 Mac unicode patch (Da Woon Jung):
-- default font is ugly
 - typing doesn't work
 - selecting proportional font breaks display
 
 autoload:
-- Add docs in user manual: one for using one script and FuncUndefined and one
-  for using autoload with two scripts.
 - Add a Vim script in $VIMRUNTIME/tools that takes a file with a list of
   script names and a help file and produces a script that can be sourced to
   install the scripts in the user's directories.
@@ -48,19 +55,12 @@ autoload:
     helpfile doc/myscript.txt
   For the "helpfile" item ":helptags" is run.
 
+Patch for 'balloonexpr' option.  Sergey Khorev, Feb 26.
+
 Awaiting response:
 -   Patch for mch_FullName() also in Vim 6.3?  os_mswin.c
 -   Win32: tearoff menu window should have a scrollbar when it's taller than
     the screen.
-
-Improvements for Python indent script: Peter Wilson.
-
-Win32: when 'encoding' is "utf-8" getenv() should convert from the active
-codepage to utf-8, putenv() the other way around.  Or use _wgetenv() (but that
-duplicates the environment).
-
-Russian helpfile doesn't show up correctly when 'encoding' is koi8-r.
-(Vassily Ragosin 2005 Feb 16)
 
 
 PLANNED FOR VERSION 7.0:
@@ -309,9 +309,6 @@ Awaiting updated patches:
 				layout and 'c' for console dialog. (Haegg)
 				Flemming Madsen has a patch for the 'c' flag
 				(2003 May 13)
-	system({cmd}, {expr})	Filter {expr} through the shell command
-				{cmd} and return the result.
-				(Patch from Yegappan Lakshmanan)
 	raisewin()		raise gvim window (see HierAssist patch for
 				Tcl implementation ~/vim/HierAssist/ )
     7   Add patch from Benoit Cerrina to integrate Vim and Perl functions
@@ -1594,11 +1591,12 @@ Built-in script language:
 	mapname({idx}, mode)	return the name of the idx'th mapping.
 				Patch by Ilya Sher, 2004 Mar 4.
 				Return a list instead.
-	sprintf(format, arg, ..) How to prevent a crash???
+	printf(format, arg, ..) How to prevent a crash???
+	char2hex()		convert char string to hex string.
 	attributes()		return file protection flags "drwxrwxrwx"
-	copy(from, to)		Copy a file
-	perl(cmd)		call Perl and return string
+	filecopy(from, to)	Copy a file
 	shorten(fname)		shorten a file name, like home_replace()
+	perl(cmd)		call Perl and return string
 	input(prompt, complete)	like input() but do specified completion
 	inputrl()		like input() but right-to-left
 	virtualmode()		add argument to obtain whether "$" was used in
@@ -1608,14 +1606,10 @@ Built-in script language:
 	getbufline()		get line from any buffer
 	deletebufline()		delete line in any buffer
 	appendbufline()		append line in any buffer
-	sort()			Sort a newline-separated string.  Also:
-				":sort".
 	libcall()		Allow more than one argument.
 	libcallext()		Like libcall(), but using a callback function
 				to allow the library to execute a command or
 				evaluate an expression.
-	char2hex()		convert char string to hex string.  XX
-	hex2char()		convert hex string to char string. XX
 7   Make bufname("'0") return the buffer name from mark '0.  How to get the
     column and line number?  col("'0") currently returns zero.
 8   argc() returns 0 when using "vim -t tag".  How to detect that no file was
@@ -2440,7 +2434,8 @@ Text objects:
     (Scott Graham)  "ac" and "au"?
 8   Add a text object for any kind of quoting, also with multi-byte
     characters.  Option to specify what quotes are recognized (default: all)
-    use "aq" and "iq".
+    use "aq" and "iq".  Use 'quotepairs' to define pairs of quotes, like
+    'matchpairs'?
 8   Add text object for any kind of parens, also multi-byte ones.
 7   Add text object for current search pattern: "a/" and "i/".  Makes it
     possible to turn text highlighted for 'hlsearch' into a Visual area.

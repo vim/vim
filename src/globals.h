@@ -204,6 +204,9 @@ EXTERN int	ex_nesting_level INIT(= 0);	/* nesting level */
 EXTERN int	debug_break_level INIT(= -1);	/* break below this level */
 EXTERN int	debug_did_msg INIT(= FALSE);	/* did "debug mode" message */
 EXTERN int	debug_tick INIT(= 0);		/* breakpoint change count */
+# ifdef FEAT_PROFILE
+EXTERN int	do_profiling INIT(= 0);		/* ":profile start" used */
+# endif
 
 /*
  * The exception currently being thrown.  Used to pass an exception to
@@ -1406,7 +1409,9 @@ EXTERN char_u e_invexprmsg[]	INIT(=N_("E449: Invalid expression received"));
 EXTERN char_u e_guarded[]	INIT(=N_("E463: Region is guarded, cannot modify"));
 EXTERN char_u e_nbreadonly[]	INIT(=N_("E744: NetBeans does not allow changes in read-only files"));
 #endif
+#if defined(FEAT_EVAL) || defined(FEAT_SYN_HL) || defined(PROTO)
 EXTERN char_u e_intern2[]	INIT(=N_("E685: Internal error: %s"));
+#endif
 #if defined(HAVE_SETJMP_H) || defined(HAVE_TRY_EXCEPT)
 EXTERN char_u e_complex[]	INIT(=N_("E361: Crash intercepted; regexp too complex?"));
 #endif

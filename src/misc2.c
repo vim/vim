@@ -1374,8 +1374,8 @@ vim_stristr(s1, s2)
 
 /*
  * Version of strchr() and strrchr() that handle unsigned char strings
- * with characters above 128 correctly. Also it doesn't return a pointer to
- * the NUL at the end of the string.
+ * with characters from 128 to 255 correctly.  It also doesn't return a
+ * pointer to the NUL at the end of the string.
  */
     char_u  *
 vim_strchr(string, c)
@@ -1431,9 +1431,30 @@ vim_strchr(string, c)
 }
 
 /*
+ * Version of strchr() that only works for bytes and handles unsigned char
+ * strings with characters above 128 correctly. It also doesn't return a
+ * pointer to the NUL at the end of the string.
+ */
+    char_u  *
+vim_strbyte(string, c)
+    char_u	*string;
+    int		c;
+{
+    char_u	*p = string;
+
+    while (*p != NUL)
+    {
+	if (*p == c)
+	    return p;
+	++p;
+    }
+    return NULL;
+}
+
+/*
  * Search for last occurrence of "c" in "string".
  * return NULL if not found.
- * Does not handle multi-byte!
+ * Does not handle multi-byte char for "c"!
  */
     char_u  *
 vim_strrchr(string, c)
@@ -1441,12 +1462,13 @@ vim_strrchr(string, c)
     int		c;
 {
     char_u	*retval = NULL;
+    char_u	*p = string;
 
-    while (*string)
+    while (*p)
     {
-	if (*string == c)
-	    retval = string;
-	mb_ptr_adv(string);
+	if (*p == c)
+	    retval = p;
+	mb_ptr_adv(p);
     }
     return retval;
 }
@@ -2549,6 +2571,9 @@ call_shell(cmd, opt)
 {
     char_u	*ncmd;
     int		retval;
+#ifdef FEAT_PROFILE
+    proftime_T	wait_time;
+#endif
 
     if (p_verbose > 3)
     {
@@ -2557,6 +2582,11 @@ call_shell(cmd, opt)
 	out_char('\n');
 	cursor_on();
     }
+
+#ifdef FEAT_PROFILE
+    if (do_profiling)
+	prof_child_enter(&wait_time);
+#endif
 
     if (*p_sh == NUL)
     {
@@ -2603,6 +2633,10 @@ call_shell(cmd, opt)
 
 #ifdef FEAT_EVAL
     set_vim_var_nr(VV_SHELL_ERROR, (long)retval);
+# ifdef FEAT_PROFILE
+    if (do_profiling)
+	prof_child_exit(&wait_time);
+# endif
 #endif
 
     return retval;

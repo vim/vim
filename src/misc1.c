@@ -3209,6 +3209,10 @@ init_homedir()
 {
     char_u  *var;
 
+    /* In case we are called a second time (when 'encoding' changes). */
+    vim_free(homedir);
+    homedir = NULL;
+
 #ifdef VMS
     var = mch_getenv((char_u *)"SYS$LOGIN");
 #else
@@ -3270,6 +3274,23 @@ init_homedir()
 	    }
 	}
     }
+
+# if defined(FEAT_MBYTE)
+    if (enc_utf8 && var != NULL)
+    {
+	int	len;
+	char_u  *pp;
+
+	/* Convert from active codepage to UTF-8.  Other conversions are
+	 * not done, because they would fail for non-ASCII characters. */
+	acp_to_enc(var, STRLEN(var), &pp, &len);
+	if (pp != NULL)
+	{
+	    homedir = pp;
+	    return;
+	}
+    }
+# endif
 #endif
 
 #if defined(OS2) || defined(MSDOS) || defined(MSWIN)
@@ -3594,7 +3615,25 @@ vim_getenv(name, mustfree)
 	p = NULL;
 
     if (p != NULL)
+    {
+#if defined(FEAT_MBYTE) && defined(WIN3264)
+	if (enc_utf8)
+	{
+	    int	    len;
+	    char_u  *pp;
+
+	    /* Convert from active codepage to UTF-8.  Other conversions are
+	     * not done, because they would fail for non-ASCII characters. */
+	    acp_to_enc(p, STRLEN(p), &pp, &len);
+	    if (pp != NULL)
+	    {
+		p = pp;
+		*mustfree = TRUE;
+	    }
+	}
+#endif
 	return p;
+    }
 
     vimruntime = (STRCMP(name, "VIMRUNTIME") == 0);
     if (!vimruntime && STRCMP(name, "VIM") != 0)
@@ -3620,6 +3659,26 @@ vim_getenv(name, mustfree)
 		*mustfree = TRUE;
 	    else
 		p = mch_getenv((char_u *)"VIM");
+
+#if defined(FEAT_MBYTE) && defined(WIN3264)
+	    if (enc_utf8)
+	    {
+		int	len;
+		char_u  *pp;
+
+		/* Convert from active codepage to UTF-8.  Other conversions
+		 * are not done, because they would fail for non-ASCII
+		 * characters. */
+		acp_to_enc(p, STRLEN(p), &pp, &len);
+		if (pp != NULL)
+		{
+		    if (mustfree)
+			vim_free(p);
+		    p = pp;
+		    *mustfree = TRUE;
+		}
+	    }
+#endif
 	}
     }
 

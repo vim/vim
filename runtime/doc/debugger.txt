@@ -1,4 +1,4 @@
-*debugger.txt*  For Vim version 7.0aa.  Last change: 2005 Jan 29
+*debugger.txt*  For Vim version 7.0aa.  Last change: 2005 Feb 23
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur
@@ -90,8 +90,8 @@ was to allow Sun's Visual WorkShop debugger to display expression evaluations.
 However, the feature was implemented in as general a manner as possible and
 could be used for displaying other information as well.
 
-The Balloon Evaluation has some settable parameters too.  The font list and
-colors can be set via X resources (XmNballoonEvalFontList,
+The Balloon Evaluation has some settable parameters too.  For Motif the font
+list and colors can be set via X resources (XmNballoonEvalFontList,
 XmNballoonEvalBackground, and XmNballoonEvalForeground).
 The 'balloondelay' option sets the delay before an attempt is made to show a
 balloon.

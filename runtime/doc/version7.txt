@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Feb 21
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Feb 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -161,6 +161,9 @@ better portability, handling of different file encodings and using multi-line
 patterns, this also allows grepping in compressed and remote files.
 |:vimgrep|.
 
+If you want to use the search results in a script you can use the
+|errorlist()| function.
+
 
 POSIX compatibility					*new-posix*
 -------------------
@@ -215,6 +218,9 @@ Normal mode commands: ~
 
 a", a' and a`		New text objects to select quoted strings. |a'|
 i", i' and i'		(Taro Muraoka)
+
+CTRL-W <Enter>		In the quickfix window: opens a new window to show the
+			location of the error under the cursor.
 
 Options: ~
 
@@ -272,6 +278,7 @@ New functions: ~
 |count()|		count nr of times a value is in a List or Dictionary
 |deepcopy()|		make a full copy of a List or Dictionary
 |empty()|		check if List or Dictionary is empty
+|errorlist()|		list of quickfix errors
 |extend()|		append one List to another or add items from one
 			Dictionary to another
 |filter()|		remove selected items from a List or Dictionary
@@ -283,7 +290,7 @@ New functions: ~
 |getfontname()| 	Get actual font name being used.
 |getfperm()|		Get file permission string. (Nikolai Weibull)
 |getftype()|		Get type of file. (Nikolai Weibull)
-|getline()|		get List with buffer lines
+|getline()|		With second argument: get List with buffer lines
 |has_key()|		check whether a key appears in a Dictionary
 |insert()|		insert an item somewhere in a List
 |items()|		get List of Dictionary key-value pairs
@@ -366,6 +373,8 @@ New message translations: ~
 The Ukranian messages are now also available in cp1251.
 
 Irish message translations. (Kevin Patrick Scannell)
+
+Vietnamese message translations and menu. (Phan Vinh Thinh)
 
 
 Others: ~
@@ -520,6 +529,12 @@ ignored.
 When "beep" is included in 'debug' a function or script that causes a beep
 will result in a message with the source of the error.
 
+When completing buffer names, match with "\(^\|[\/]\)" instead of "^", so that
+":buf stor<Tab>" finds both "include/storage.h" and "storage/main.c".
+
+To count items (pattern matches) without changing the buffer the 'n' flag has
+been added to |:substitute|.  See |count-items|.
+
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*
 
@@ -604,6 +619,9 @@ is indented too much.
 When 'comments' includes multi-byte characters inserting the middle part and
 alignment may go wrong.  'cindent' also suffers from this for right-aligned
 items.
+
+Win32: when 'encoding' is set to "utf-8" getenv() still returns strings in the
+active codepage.  Convert to utf-8.  Also for $HOME.
 
 The default for 'helplang' was "zh" for both "zh_cn" and "zh_tw".  Now use
 "cn" or "tw" as intended.
@@ -867,5 +885,10 @@ Lakshmanan)
 
 It was not possible to use a NL after a backslash in Ex mode.  This is
 sometimes used to feed multiple lines to a shell command.
+
+When 'cmdheight' is set to 2 in .vimrc and the GUI uses the number of lines
+from the terminal we actually get 3 lines for the cmdline in gvim.
+
+When setting $HOME allocated memory would leak.
 
  vim:tw=78:ts=8:ft=help:norl:

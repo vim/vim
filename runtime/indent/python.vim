@@ -2,7 +2,7 @@
 " Language:		Python
 " Maintainer:		Bram Moolenaar <Bram@vim.org>
 " Original Author:	David Bustos <bustos@caltech.edu>
-" Last Change:		2005 Feb 08
+" Last Change:		2005 Feb 24
 
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")
@@ -22,16 +22,19 @@ if exists("*GetPythonIndent")
   finish
 endif
 
+" Come here when loading the script the first time.
+
 let s:maxoff = 50	" maximum number of lines to look backwards for ()
 
 function GetPythonIndent(lnum)
+ 
   " If this line is explicitly joined: If the previous line was also joined,
   " line it up with that one, otherwise add two 'shiftwidth'
   if getline(a:lnum - 1) =~ '\\$'
     if a:lnum > 1 && getline(a:lnum - 2) =~ '\\$'
       return indent(a:lnum - 1)
     endif
-    return indent(a:lnum - 1) + (&sw * 2)
+    return indent(a:lnum - 1) + (exists("g:pyindent_continue") ? eval(g:pyindent_continue) : (&sw * 2))
   endif
 
   " If the start of the line is in a string don't change the indent.
@@ -84,9 +87,9 @@ function GetPythonIndent(lnum)
 	  \ . " synIDattr(synID(line('.'), col('.'), 1), 'name')"
 	  \ . " =~ '\\(Comment\\|String\\)$'")
       if pp > 0
-	return indent(plnum) + &sw
+	return indent(plnum) + (exists("g:pyindent_nested_paren") ? eval(g:pyindent_nested_paren) : &sw)
       endif
-      return indent(plnum) + (&sw * 2)
+      return indent(plnum) + (exists("g:pyindent_open_paren") ? eval(g:pyindent_open_paren) : (&sw * 2))
     endif
     if plnumstart == p
       return indent(plnum)

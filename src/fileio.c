@@ -7925,6 +7925,9 @@ apply_autocmds_group(event, fname, fname_io, force, group, buf, eap)
     long	save_cmdbang;
 #endif
     static int	filechangeshell_busy = FALSE;
+#ifdef FEAT_PROFILE
+    proftime_T	wait_time;
+#endif
 
     /*
      * Quickly return if there are no autocommands for this event or
@@ -8097,6 +8100,11 @@ apply_autocmds_group(event, fname, fname_io, force, group, buf, eap)
 #ifdef FEAT_EVAL
     save_current_SID = current_SID;
 
+# ifdef FEAT_PROFILE
+    if (do_profiling)
+	prof_child_enter(&wait_time); /* doesn't count for the caller itself */
+# endif
+
     /* Don't use local function variables, if called from a function */
     save_funccalp = save_funccal();
 #endif
@@ -8188,6 +8196,10 @@ apply_autocmds_group(event, fname, fname_io, force, group, buf, eap)
 #ifdef FEAT_EVAL
     current_SID = save_current_SID;
     restore_funccal(save_funccalp);
+# ifdef FEAT_PROFILE
+    if (do_profiling)
+	prof_child_exit(&wait_time);
+# endif
 #endif
     vim_free(fname);
     vim_free(sfname);

@@ -138,6 +138,11 @@ ui_inchar(buf, maxlen, wtime, tb_change_cnt)
     }
 #endif
 
+#ifdef FEAT_PROFILE
+    if (do_profiling && wtime != 0)
+	prof_inchar_enter();
+#endif
+
 #ifdef NO_CONSOLE_INPUT
     /* Don't wait for character input when the window hasn't been opened yet.
      * Do try reading, this works when redirecting stdin from a file.
@@ -150,12 +155,13 @@ ui_inchar(buf, maxlen, wtime, tb_change_cnt)
 # ifndef NO_CONSOLE
 	retval = mch_inchar(buf, maxlen, 10L, tb_change_cnt);
 	if (retval > 0 || typebuf_changed(tb_change_cnt))
-	    return retval;
+	    goto theend;
 # endif
 	if (wtime == -1 && ++count == 1000)
 	    read_error_exit();
 	buf[0] = CAR;
-	return 1;
+	retval = 1;
+	goto theend;
     }
 #endif
 
@@ -186,6 +192,13 @@ ui_inchar(buf, maxlen, wtime, tb_change_cnt)
 
     ctrl_c_interrupts = TRUE;
 
+#ifdef NO_CONSOLE_INPUT
+theend:
+#endif
+#ifdef FEAT_PROFILE
+    if (do_profiling && wtime != 0)
+	prof_inchar_exit();
+#endif
     return retval;
 }
 

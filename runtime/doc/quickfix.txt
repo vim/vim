@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 7.0aa.  Last change: 2005 Feb 06
+*quickfix.txt*  For Vim version 7.0aa.  Last change: 2005 Feb 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -29,6 +29,11 @@ inspired by the quickfix option of the Manx's Aztec C compiler on the Amiga.
 The idea is to save the error messages from the compiler in a file and use Vim
 to jump to the errors one by one.  You can examine each problem and fix it,
 without having to remember all the error messages.
+
+In Vim the quickfix commands are used more generally to find a list of
+positions in files.  For example, |:vimgrep| finds pattern matches.  You can
+use the positions in a script with the |errorlist()| function.  Thus you can
+do a lot more than the edit/compile/fix cycle!
 
 If you are using Manx's Aztec C compiler on the Amiga look here for how to use
 it with Vim: |quickfix-manx|.  If you are using another compiler you should
@@ -170,12 +175,14 @@ height manually (e.g., by dragging the status line above it with the mouse).
 
 In the quickfix window, each line is one error.  The line number is equal to
 the error number.  You can use ":.cc" to jump to the error under the cursor.
-Hitting the <CR> key or double-clicking the mouse on a line has the same
+Hitting the <Enter> key or double-clicking the mouse on a line has the same
 effect.  The file containing the error is opened in the window above the
 quickfix window.  If there already is a window for that file, it is used
 instead.  If the buffer in the used window has changed, and the error is in
 another file, jumping to the error will fail.  You will first have to make
 sure the window contains a buffer which can be abandoned.
+					*CTRL-W_<Enter>* *CTRL-W_<CR>*
+You can use CTRL-W <Enter> to open a new window and jump to the error there.
 
 When the quickfix window has been filled, two autocommand events are
 triggered.  First the 'filetype' option is set to "qf", which triggers the
@@ -303,16 +310,25 @@ advantages are:
 5.1 using Vim's internal grep
 
 					*:vim* *:vimgrep* *E682* *E683*
-:vim[grep][!] /{pattern}/ {file} ...
+:vim[grep][!] /{pattern}/[g][j] {file} ...
 			Search for {pattern} in the files {file} ... and set
 			the error list to the matches.
-			{pattern} if a Vim search pattern.  Instead of
-			enclosing it in / any non-ID character |'isident'|
-			can be used, so long as it does not appear in
-			{pattern}.
-			'ignorecase' applies.  To overrule it use |/\c| to
-			ignore case or |/\C| to match case.  'smartcase' is
-			not used.
+			Without the 'g' flag each line is added only once.
+			With 'g' every match is added.
+
+			{pattern} is a Vim search pattern.  Instead of
+			enclosing it in / any non-ID character (see
+			|'isident'|) can be used, so long as it does not
+			appear in {pattern}.
+			'ignorecase' applies.  To overrule it put |/\c| in the
+			pattern to ignore case or |/\C| to match case.
+			'smartcase' is not used.
+
+			Without the 'j' flag Vim jumps to the first match.
+			With 'j' only the quickfix list is updated.
+			With the [!] any changes in the current buffer are
+			abandoned.
+
 			Every second or so the searched file name is displayed
 			to give you an idea of the progress made.
 			Examples: >
@@ -327,7 +343,8 @@ advantages are:
 				:vimgrep Error *.c
 <
 						*:vimgrepa* *:vimgrepadd*
-:vimgrepa[dd][!] [/]{pattern}[/] {file} ...
+:vimgrepa[dd][!] /{pattern}/[g][j] {file} ...
+:vimgrepa[dd][!] {pattern} {file} ...
 			Just like ":vimgrep", but instead of making a new list
 			of errors the matches are appended to the current
 			list.
@@ -462,7 +479,7 @@ not "b:current_compiler".  What the command actually does is the following:
 - Execute ":runtime! compiler/{name}.vim".  The plugins are expected to set
   options with "CompilerSet" and set the "current_compiler" variable to the
   name of the compiler.
-- Delete the "CompilerSet user command.
+- Delete the "CompilerSet" user command.
 - Set "b:current_compiler" to the value of "current_compiler".
 - Without "!" the old value of "current_compiler" is restored.
 

@@ -1,4 +1,4 @@
-*uganda.txt*    For Vim version 7.0aa.  Last change: 2004 Aug 29
+*uganda.txt*    For Vim version 7.0aa.  Last change: 2005 Feb 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -172,7 +172,7 @@ There is a small clinic at the project, which provides children and their
 family with medical help.  When needed, transport to a hospital is offered.
 Immunization programs are carried out and help is provided when an epidemic is
 breaking out (measles and cholera have been a problem).
-
+							*donate*
 Summer 1994 to summer 1995 I spent a whole year at the centre, working as a
 volunteer.  I have helped to expand the centre and worked in the area of water
 and sanitation.  I learned that the help that the KCC provides really helps.

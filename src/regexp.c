@@ -3265,12 +3265,38 @@ vim_regexec_both(line, col)
 #endif
 	    c = *prog->regmust;
 	s = line + col;
-	while ((s = cstrchr(s, c)) != NULL)
-	{
-	    if (cstrncmp(s, prog->regmust, &prog->regmlen) == 0)
-		break;		/* Found it. */
-	    mb_ptr_adv(s);
-	}
+
+	/*
+	 * This is used very often, esp. for ":global".  Use three versions of
+	 * the loop to avoid overhead of conditions.
+	 */
+	if (!ireg_ic
+#ifdef FEAT_MBYTE
+		&& !has_mbyte
+#endif
+		)
+	    while ((s = vim_strbyte(s, c)) != NULL)
+	    {
+		if (cstrncmp(s, prog->regmust, &prog->regmlen) == 0)
+		    break;		/* Found it. */
+		++s;
+	    }
+#ifdef FEAT_MBYTE
+	else if (!ireg_ic || (!enc_utf8 && mb_char2len(c) > 1))
+	    while ((s = vim_strchr(s, c)) != NULL)
+	    {
+		if (cstrncmp(s, prog->regmust, &prog->regmlen) == 0)
+		    break;		/* Found it. */
+		mb_ptr_adv(s);
+	    }
+#endif
+	else
+	    while ((s = cstrchr(s, c)) != NULL)
+	    {
+		if (cstrncmp(s, prog->regmust, &prog->regmlen) == 0)
+		    break;		/* Found it. */
+		mb_ptr_adv(s);
+	    }
 	if (s == NULL)		/* Not present. */
 	    goto theend;
     }
@@ -3339,8 +3365,16 @@ vim_regexec_both(line, col)
 	{
 	    if (prog->regstart != NUL)
 	    {
-		/* Skip until the char we know it must start with. */
-		s = cstrchr(regline + col, prog->regstart);
+		/* Skip until the char we know it must start with.
+		 * Used often, do some work to avoid call overhead. */
+		if (!ireg_ic
+#ifdef FEAT_MBYTE
+			    && !has_mbyte
+#endif
+			    )
+		    s = vim_strbyte(regline + col, prog->regstart);
+		else
+		    s = cstrchr(regline + col, prog->regstart);
 		if (s == NULL)
 		{
 		    retval = 0;
@@ -3375,7 +3409,8 @@ vim_regexec_both(line, col)
 
 #ifdef HAVE_SETJMP_H
 inner_end:
-    ;
+    if (did_mch_startjmp)
+	mch_endjmp();
 #endif
 #ifdef HAVE_TRY_EXCEPT
     }
@@ -3390,10 +3425,6 @@ inner_end:
 	    EMSG(_(e_complex));
 	retval = 0L;
     }
-#endif
-#ifdef HAVE_SETJMP_H
-    if (did_mch_startjmp)
-	mch_endjmp();
 #endif
 
 theend:

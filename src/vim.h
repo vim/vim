@@ -1533,7 +1533,8 @@ int vim_memcmp __ARGS((void *, void *, size_t));
 #define VV_INSERTMODE	33
 #define VV_VAL		34
 #define VV_KEY		35
-#define VV_LEN		36	/* number of v: vars */
+#define VV_PROFILING	36
+#define VV_LEN		37	/* number of v: vars */
 
 #ifdef FEAT_CLIPBOARD
 
@@ -1618,6 +1619,12 @@ typedef int VimClipboard;	/* This is required for the prototypes. */
 #  define INIT(x) x
 #  define DO_INIT
 # endif
+#endif
+
+#ifdef FEAT_PROFILE
+typedef struct timeval proftime_T;
+#else
+typedef int proftime_T;	    /* dummy for function prototypes */
 #endif
 
 #include "option.h"	    /* option variables and defines */
@@ -1864,5 +1871,9 @@ typedef int VimClipboard;	/* This is required for the prototypes. */
 #ifndef UNIX
 # define handle_signal(x) 0
 #endif
+
+/* flags for skip_vimgrep_pat() */
+#define VGR_GLOBAL	1
+#define VGR_NOJUMP	2
 
 #endif /* VIM__H */

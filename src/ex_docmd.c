@@ -434,6 +434,10 @@ static void	ex_folddo __ARGS((exarg_T *eap));
 # define ex_changes		ex_ni
 #endif
 
+#ifndef FEAT_PROFILE
+# define ex_profile		ex_ni
+#endif
+
 /*
  * Declare cmdnames[].
  */
@@ -728,6 +732,7 @@ do_cmdline(cmdline, getline, cookie, flags)
     void	*cmd_cookie;
     struct loop_cookie cmd_loop_cookie;
     void	*real_cookie;
+    int		getline_is_func;
 #else
 # define cmd_getline getline
 # define cmd_cookie cookie
@@ -772,13 +777,13 @@ do_cmdline(cmdline, getline, cookie, flags)
     real_cookie = getline_cookie(getline, cookie);
 
     /* Inside a function use a higher nesting level. */
-    if (getline_equal(getline, cookie, get_func_line)
-			       && ex_nesting_level == func_level(real_cookie))
+    getline_is_func = getline_equal(getline, cookie, get_func_line);
+    if (getline_is_func && ex_nesting_level == func_level(real_cookie))
 	++ex_nesting_level;
 
     /* Get the function or script name and the address where the next breakpoint
      * line and the debug tick for a function or script are stored. */
-    if (getline_equal(getline, cookie, get_func_line))
+    if (getline_is_func)
     {
 	fname = func_name(real_cookie);
 	breakpoint = func_breakpoint(real_cookie);
@@ -837,13 +842,16 @@ do_cmdline(cmdline, getline, cookie, flags)
     next_cmdline = cmdline;
     do
     {
+#ifdef FEAT_EVAL
+	getline_is_func = getline_equal(getline, cookie, get_func_line);
+#endif
+
 	/* stop skipping cmds for an error msg after all endif/while/for */
 	if (next_cmdline == NULL
 #ifdef FEAT_EVAL
 		&& !force_abort
 		&& cstack.cs_idx < 0
-		&& !(getline_equal(getline, cookie, get_func_line)
-					       && func_has_abort(real_cookie))
+		&& !(getline_is_func && func_has_abort(real_cookie))
 #endif
 							)
 	    did_emsg = FALSE;
@@ -865,12 +873,23 @@ do_cmdline(cmdline, getline, cookie, flags)
 
 	    /* Check if a function has returned or, unless it has an unclosed
 	     * try conditional, aborted. */
-	    if (getline_equal(getline, cookie, get_func_line)
-					       && func_has_ended(real_cookie))
+	    if (getline_is_func)
 	    {
-		retval = FAIL;
-		break;
+# ifdef FEAT_PROFILE
+		if (do_profiling)
+		    func_line_end(real_cookie);
+# endif
+		if (func_has_ended(real_cookie))
+		{
+		    retval = FAIL;
+		    break;
+		}
 	    }
+#ifdef FEAT_PROFILE
+	    else if (do_profiling
+			     && getline_equal(getline, cookie, getsourceline))
+		script_line_end();
+#endif
 
 	    /* Check if a sourced file hit a ":finish" command. */
 	    if (source_finished(getline, cookie))
@@ -903,6 +922,15 @@ do_cmdline(cmdline, getline, cookie, flags)
 							fname, sourcing_lnum);
 		*dbg_tick = debug_tick;
 	    }
+# ifdef FEAT_PROFILE
+	    if (do_profiling)
+	    {
+		if (getline_is_func)
+		    func_line_start(real_cookie);
+		else if (getline_equal(getline, cookie, getsourceline))
+		    script_line_start();
+	    }
+# endif
 	}
 
 	if (cstack.cs_looplevel > 0)
@@ -1839,6 +1867,17 @@ do_one_cmd(cmdlinep, sourcing,
 #endif
 
 #ifdef FEAT_EVAL
+# ifdef FEAT_PROFILE
+    /* Count this line for profiling if ea.skip is FALSE. */
+    if (do_profiling && !ea.skip)
+    {
+	if (getline_equal(getline, cookie, get_func_line))
+	    func_line_exec(getline_cookie(getline, cookie));
+	else if (getline_equal(getline, cookie, getsourceline))
+	    script_line_exec();
+    }
+#endif
+
     /* May go to debug mode.  If this happens and the ">quit" debug command is
      * used, throw an interrupt exception and skip the next command. */
     dbg_check_breakpoint(&ea);
@@ -4006,11 +4045,9 @@ skip_grep_pat(eap)
     if (*p != NUL && (eap->cmdidx == CMD_vimgrep
 		|| eap->cmdidx == CMD_vimgrepadd || grep_internal(eap->cmdidx)))
     {
-	p = skip_vimgrep_pat(p, NULL);
+	p = skip_vimgrep_pat(p, NULL, NULL);
 	if (p == NULL)
 	    p = eap->arg;
-	else if (*p != NUL && !vim_iswhite(*p))
-	    ++p;	/* step past ending separator of /pat/ */
     }
     return p;
 }

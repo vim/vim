@@ -5472,14 +5472,14 @@ nv_down(cap)
 {
 #if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
     /* In a quickfix window a <CR> jumps to the error under the cursor. */
-    if (bt_quickfix(curbuf) && cap->cmdchar == '\r')
+    if (bt_quickfix(curbuf) && cap->cmdchar == CAR)
 	do_cmdline_cmd((char_u *)".cc");
     else
 #endif
     {
 #ifdef FEAT_CMDWIN
 	/* In the cmdline window a <CR> executes the command. */
-	if (cmdwin_type != 0 && cap->cmdchar == '\r')
+	if (cmdwin_type != 0 && cap->cmdchar == CAR)
 	    cmdwin_result = CAR;
 	else
 #endif

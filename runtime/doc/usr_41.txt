@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 7.0aa.  Last change: 2005 Feb 08
+*usr_41.txt*	For Vim version 7.0aa.  Last change: 2005 Feb 23
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -22,6 +22,8 @@ script.  There are a lot of them, thus this is a long chapter.
 |41.11|	Writing a plugin
 |41.12|	Writing a filetype plugin
 |41.13|	Writing a compiler plugin
+|41.14|	Writing a plugin that loads quickly
+|41.15|	Writing library scripts
 
      Next chapter: |usr_42.txt|  Add new menus
  Previous chapter: |usr_40.txt|  Make new commands
@@ -663,6 +665,7 @@ System functions and manipulation of files:
 	executable()		check if an executable program exists
 	filereadable()		check if a file can be read
 	filewritable()		check if a file can be written to
+	mkdir()			create a new directory
 	isdirectory()		check if a directory exists
 	getcwd()		get the current working directory
 	getfsize()		get the size of a file
@@ -742,6 +745,7 @@ Various:
 	maparg()		get rhs of a mapping
 	exists()		check if a variable, function, etc. exists
 	has()			check if a feature is supported in Vim
+	errorlist()		list of quickfix errors
 	cscope_connection()	check if a cscope connection exists
 	did_filetype()		check if a FileType autocommand was used
 	eventhandler()		check if invoked by an event handler
@@ -2127,6 +2131,143 @@ When you write a compiler plugin to overrule settings from a default plugin,
 don't check "current_compiler".  This plugin is supposed to be loaded
 last, thus it should be in a directory at the end of 'runtimepath'.  For Unix
 that could be ~/.vim/after/compiler.
+
+==============================================================================
+*41.14*	Writing a plugin that loads quickly	*write-plugin-quickload*
+
+A plugin may grow and become quite long.  The startup delay may become
+noticable, while you hardly every use the plugin.  Then it's time for a
+quickload plugin.
+
+The basic idea is that the plugin is loaded twice.  The first time user
+commands and mappings are defined that offer the functionality.  The second
+time the functions that implement the functionality are defined.
+
+It may sound surprising that quickload means loading a script twice.  What we
+mean is that it loads quickly the first time, postponing the bulk of the
+script to the second time, which only happens when you actually use it.  When
+you always use the functionality it actually gets slower!
+
+The following example shows how it's done: >
+
+	" Vim global plugin for demonstrating quick loading
+	" Last Change:	2005 Feb 25
+	" Maintainer:	Bram Moolenaar <Bram@vim.org>
+	" License:	This file is placed in the public domain.
+
+	if !exists("s:did_load")
+		command -nargs=* BNRead  call BufNetRead(<f-args>)
+		map <F19> :call BufNetWrite('something')<CR>
+
+		let s:did_load = 1
+		exe 'au FuncUndefined BufNet* source ' . expand('<sfile>')
+		finish
+	endif
+
+	function BufNetRead(...)
+		echo 'BufNetRead(' . string(a:000) . ')'
+		" read functionality here
+	endfunction
+
+	function BufNetWrite(...)
+		echo 'BufNetWrite(' . string(a:000) . ')'
+		" write functionality here
+	endfunction
+
+When the script is first loaded "s:did_load" is not set.  The commands between
+the "if" and "endif" will be executed.  This ends in a |:finish| command, thus
+the rest of the script is not executed.
+
+The second time the script is loaded "s:did_load" exists and the commands
+after the "endif" are executed.  This defines the (possible long)
+BufNetRead() and BufNetWrite() functions.
+
+If you drop this script in your plugin directory Vim will execute it on
+startup.  This is the sequence of events that happens:
+
+1. The "BNRead" command is defined and the <F19> key is mapped when the script
+   is sourced at startup.  A |FuncUndefined| autocommand is defined.  The
+   ":finish" command causes the script to terminate early.
+
+2. The user types the BNRead command or presses the <F19> key.  The
+   BufNetRead() or BufNetWrite() function will be called.
+   
+3. Vim can't find the function and triggers the |FuncUndefined| autocommand
+   event.  Since the pattern "BufNet*" matches the invoked function, the
+   command "source fname" will be executed.  "fname" will be equal to the name
+   of the script, no matter where it is located, because it comes from
+   expanding "<sfile>" (see |expand()|).
+
+4. The script is sourced again, the "s:did_load" variable exists and the
+   functions are defined.
+
+Notice that the functions that are loaded afterwards match the pattern in the
+|FuncUndefined| autocommand.  You must make sure that no other plugin defines
+functions that match this pattern.
+
+==============================================================================
+*41.15*	Writing library scripts			*write-library-script*
+
+Some functionality will be required in several places.  When this becomes more
+than a few lines you will want to put it in one script and use it from many
+scripts.  We will call that one script a library script.
+
+Manually loading a library script is possible, so long as you avoid loading it
+when it's already done.  You can do this with the |exists()| function.
+Example: >
+
+	if !exists('*MyLibFunction')
+	   runtime library/mylibscript.vim
+	endif
+	call MyLibFunction(arg)
+
+Here you need to know that MyLibFunction() is defined in a script
+"library/mylibscript.vim" in one of the directories in 'runtimepath'.
+
+To make this a bit simpler Vim offers the autoload mechanism.  Then the
+example looks like this: >
+
+	call mylib:myfunction(arg)
+
+That's a lot simpler, isn't it?  Vim will recognize the function name and when
+it's not defined search for the script "autoload/mylib.vim" in 'runtimepath'.
+That script must define the "mylib:myfunction()" function.
+
+You can put many other functions in the mylib.vim script, you are free to
+organize your functions in library scripts.  But you must use function names
+where the part before the colon matches the script name.  Otherwise Vim
+would not know what script to load.
+
+If you get really enthousiastic and write lots of library scripts, you may
+want to use subdirectories.  Example: >
+
+	call netlib:ftp:read('somefile')
+
+For Unix the library script used for this could be:
+
+	~/.vim/autoload/netlib/ftp.vim
+
+Where the function is defined like this: >
+
+	function netlib:ftp:read(fname)
+		"  Read the file fname through ftp
+	endfunction
+
+Notice that the name the function is defined with is exactly the same as the
+name used for calling the function.  And the part before the last colon
+exactly matches the subdirectory and script name.
+
+You can use the same mechanism for variables: >
+
+	let weekdays = dutch:weekdays
+
+This will load the script "autoload/dutch.vim", which should contain something
+like: >
+
+	let dutch:weekdays = ['zondag', 'maandag', 'dinsdag', 'woensdag',
+		\ 'donderdag', 'vrijdag', 'zaterdag']
+
+Further reading: |autoload|.
 
 ==============================================================================
 

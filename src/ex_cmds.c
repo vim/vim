@@ -30,7 +30,7 @@ static int check_readonly __ARGS((int *forceit, buf_T *buf));
 #ifdef FEAT_AUTOCMD
 static void delbuf_msg __ARGS((char_u *name));
 #endif
-static int do_sub_msg __ARGS((void));
+static int do_sub_msg __ARGS((int count_only));
 static int
 #ifdef __BORLANDC__
     _RTLENTRYF
@@ -3661,6 +3661,7 @@ do_sub(eap)
     regmmatch_T regmatch;
     static int	do_all = FALSE;		/* do multiple substitutions per line */
     static int	do_ask = FALSE;		/* ask for confirmation */
+    static int	do_count = FALSE;	/* count only */
     static int	do_error = TRUE;	/* if false, ignore errors */
     static int	do_print = FALSE;	/* print last line with subs. */
     static int	do_list = FALSE;	/* list last line with subs. */
@@ -3684,6 +3685,7 @@ do_sub(eap)
     linenr_T	sub_firstlnum;		/* nr of first sub line */
     char_u	*sub_firstline;		/* allocated copy of first sub line */
     int		endcolumn = FALSE;	/* cursor in last column when done */
+    pos_T	old_cursor = curwin->w_cursor;
 
     cmd = eap->arg;
     if (!global_busy)
@@ -3822,6 +3824,8 @@ do_sub(eap)
 	    do_all = !do_all;
 	else if (*cmd == 'c')
 	    do_ask = !do_ask;
+	else if (*cmd == 'n')
+	    do_count = TRUE;
 	else if (*cmd == 'e')
 	    do_error = !do_error;
 	else if (*cmd == 'r')	    /* use last used regexp */
@@ -3846,6 +3850,8 @@ do_sub(eap)
 	    break;
 	++cmd;
     }
+    if (do_count)
+	do_ask = FALSE;
 
     /*
      * check for a trailing count
@@ -4030,8 +4036,25 @@ do_sub(eap)
 		prev_matchcol = matchcol;
 
 		/*
-		 * 2. If do_ask is set, ask for confirmation.
+		 * 2. If do_count is set only increase the counter.
+		 *    If do_ask is set, ask for confirmation.
 		 */
+		if (do_count)
+		{
+		    /* For a multi-line match, put matchcol at the NUL at
+		     * the end of the line and set nmatch to one, so that
+		     * we continue looking for a match on the next line.
+		     * Avoids that ":s/\nB\@=//gc" get stuck. */
+		    if (nmatch > 1)
+		    {
+			matchcol = STRLEN(sub_firstline);
+			nmatch = 1;
+		    }
+		    sub_nsubs++;
+		    did_sub = TRUE;
+		    goto skip;
+		}
+
 		if (do_ask)
 		{
 		    /* change State to CONFIRM, so that the mouse works
@@ -4064,9 +4087,9 @@ do_sub(eap)
 			    curwin->w_cursor.col = regmatch.endpos[0].col - 1;
 			    getvcol(curwin, &curwin->w_cursor, NULL, NULL, &ec);
 			    msg_start();
-			    for (i = 0; i < sc; ++i)
+			    for (i = 0; i < (long)sc; ++i)
 				msg_putchar(' ');
-			    for ( ; i <= ec; ++i)
+			    for ( ; i <= (long)ec; ++i)
 				msg_putchar('^');
 
 			    resp = getexmodeline('?', NULL, 0);
@@ -4458,6 +4481,11 @@ skip:
 
 outofmem:
     vim_free(sub_firstline); /* may have to free allocated copy of the line */
+
+    /* ":s/pat//n" doesn't move the cursor */
+    if (do_count)
+	curwin->w_cursor = old_cursor;
+
     if (sub_nsubs)
     {
 	/* Set the '[ and '] marks. */
@@ -4471,7 +4499,7 @@ outofmem:
 		coladvance((colnr_T)MAXCOL);
 	    else
 		beginline(BL_WHITE | BL_FIX);
-	    if (!do_sub_msg() && do_ask)
+	    if (!do_sub_msg(do_count) && do_ask)
 		MSG("");
 	}
 	else
@@ -4498,7 +4526,8 @@ outofmem:
  * Return TRUE if a message was given.
  */
     static int
-do_sub_msg()
+do_sub_msg(count_only)
+    int	    count_only;		/* used 'n' flag for ":s" */
 {
     /*
      * Only report substitutions when:
@@ -4506,8 +4535,8 @@ do_sub_msg()
      * - command was typed by user, or number of changed lines > 'report'
      * - giving messages is not disabled by 'lazyredraw'
      */
-    if (sub_nsubs > p_report
-	    && (KeyTyped || sub_nlines > 1 || p_report < 1)
+    if (((sub_nsubs > p_report && (KeyTyped || sub_nlines > 1 || p_report < 1))
+		|| count_only)
 	    && messaging())
     {
 	if (got_int)
@@ -4515,9 +4544,10 @@ do_sub_msg()
 	else
 	    msg_buf[0] = NUL;
 	if (sub_nsubs == 1)
-	    STRCAT(msg_buf, _("1 substitution"));
+	    STRCAT(msg_buf, count_only ? _("1 match") : _("1 substitution"));
 	else
-	    sprintf((char *)msg_buf + STRLEN(msg_buf), _("%ld substitutions"),
+	    sprintf((char *)msg_buf + STRLEN(msg_buf),
+		    count_only ? _("%ld matches") : _("%ld substitutions"),
 								   sub_nsubs);
 	if (sub_nlines == 1)
 	    STRCAT(msg_buf, _(" on 1 line"));
@@ -4561,7 +4591,7 @@ ex_global(eap)
     exarg_T	*eap;
 {
     linenr_T	lnum;		/* line number according to old situation */
-    int		ndone;
+    int		ndone = 0;
     int		type;		/* first char of cmd: 'v' or 'g' */
     char_u	*cmd;		/* command argument */
 
@@ -4633,10 +4663,29 @@ ex_global(eap)
 	return;
     }
 
+#ifdef HAVE_SETJMP_H
+    /*
+     * Matching with a regexp may cause a very deep recursive call of
+     * regmatch().  Vim will crash when running out of stack space.
+     * Catch this here if the system supports it.
+     * It's a bit slow, thus do it outside of the loop.
+     */
+    mch_startjmp();
+    if (SETJMP(lc_jump_env) != 0)
+    {
+	mch_didjmp();
+# ifdef SIGHASARG
+	if (lc_signal != SIGINT)
+# endif
+	    EMSG(_(e_complex));
+	got_int = TRUE;
+	goto jumpend;
+    }
+#endif
+
     /*
      * pass 1: set marks for each (not) matching line
      */
-    ndone = 0;
     for (lnum = eap->line1; lnum <= eap->line2 && !got_int; ++lnum)
     {
 	/* a match on this line? */
@@ -4648,6 +4697,11 @@ ex_global(eap)
 	}
 	line_breakcheck();
     }
+
+#ifdef HAVE_SETJMP_H
+jumpend:
+    mch_endjmp();
+#endif
 
     /*
      * pass 2: execute the command for each line that has been marked
@@ -4719,7 +4773,7 @@ global_exe(cmd)
 
     /* If subsitutes done, report number of substitues, otherwise report
      * number of extra or deleted lines. */
-    if (!do_sub_msg())
+    if (!do_sub_msg(FALSE))
 	msgmore(curbuf->b_ml.ml_line_count - old_lcount);
 }
 

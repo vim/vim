@@ -106,6 +106,7 @@ static char *e_funcdict = N_("E717: Dictionary entry already exists");
 static char *e_funcref = N_("E718: Funcref required");
 static char *e_dictrange = N_("E719: Cannot use [:] with a Dictionary");
 static char *e_letwrong = N_("E734: Wrong variable type for %s=");
+static char *e_nofunc = N_("E130: Unknown function: %s");
 
 /*
  * All user-defined global variables are stored in dictionary "globvardict".
@@ -153,6 +154,24 @@ struct ufunc
     int		uf_calls;	/* nr of active calls */
     garray_T	uf_args;	/* arguments */
     garray_T	uf_lines;	/* function lines */
+#ifdef FEAT_PROFILE
+    int		uf_profiling;	/* TRUE when func is being profiled */
+    /* profiling the function as a whole */
+    int		uf_tm_count;	/* nr of calls */
+    proftime_T	uf_tm_total;	/* time spend in function + children */
+    proftime_T	uf_tm_self;	/* time spend in function itself */
+    proftime_T	uf_tm_start;	/* time at function call */
+    proftime_T	uf_tm_children;	/* time spent in children this call */
+    /* profiling the function per line */
+    int		*uf_tml_count;	/* nr of times line was executed */
+    proftime_T	*uf_tml_total;	/* time spend in a line + children */
+    proftime_T	*uf_tml_self;	/* time spend in a line itself */
+    proftime_T	uf_tml_start;	/* start time for current line */
+    proftime_T	uf_tml_children; /* time spent in children for this line */
+    proftime_T	uf_tml_wait;	/* start wait time for current line */
+    int		uf_tml_idx;	/* index of line being timed; -1 if none */
+    int		uf_tml_execed;	/* line being timed was executed */
+#endif
     scid_T	uf_script_ID;	/* ID of script where function was defined,
 				   used for s: variables */
     int		uf_refcount;	/* for numbered function: reference count */
@@ -205,6 +224,9 @@ typedef struct funccall_S
     linenr_T	breakpoint;	/* next line with breakpoint or zero */
     int		dbg_tick;	/* debug_tick when breakpoint was set */
     int		level;		/* top nesting level of executed function */
+#ifdef FEAT_PROFILE
+    proftime_T	prof_child;	/* time spent in a child */
+#endif
 } funccall_T;
 
 /*
@@ -293,6 +315,7 @@ static struct vimvar
     {VV_NAME("insertmode",	 VAR_STRING), VV_RO},
     {VV_NAME("val",		 VAR_UNKNOWN), VV_RO},
     {VV_NAME("key",		 VAR_UNKNOWN), VV_RO},
+    {VV_NAME("profiling",	 VAR_NUMBER), VV_RO},
 };
 
 /* shorthand */
@@ -345,7 +368,6 @@ static void list_remove __ARGS((list_T *l, listitem_T *item, listitem_T *item2))
 static char_u *list2string __ARGS((typval_T *tv));
 static int list_join __ARGS((garray_T *gap, list_T *l, char_u *sep, int echo));
 
-static dict_T *dict_alloc __ARGS((void));
 static void dict_unref __ARGS((dict_T *d));
 static void dict_free __ARGS((dict_T *d));
 static dictitem_T *dictitem_alloc __ARGS((char_u *key));
@@ -399,6 +421,7 @@ static void f_did_filetype __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_diff_filler __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_diff_hlID __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_empty __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_errorlist __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_escape __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_eval __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_eventhandler __ARGS((typval_T *argvars, typval_T *rettv));
@@ -582,6 +605,9 @@ static void cat_func_name __ARGS((char_u *buf, ufunc_T *fp));
 static ufunc_T *find_func __ARGS((char_u *name));
 static int function_exists __ARGS((char_u *name));
 static int builtin_function __ARGS((char_u *name));
+#ifdef FEAT_PROFILE
+static void func_do_profile __ARGS((ufunc_T *fp));
+#endif
 static int script_autoload __ARGS((char_u *name));
 static char_u *autoload_name __ARGS((char_u *name));
 static void func_free __ARGS((ufunc_T *fp));
@@ -1170,19 +1196,59 @@ call_vim_function(func, argc, argv, safe)
     void *
 save_funccal()
 {
-    funccall_T *fc;
+    funccall_T *fc = current_funccal;
 
-    fc = current_funccal;
     current_funccal = NULL;
     return (void *)fc;
 }
 
     void
-restore_funccal(fc)
-    void *fc;
+restore_funccal(vfc)
+    void *vfc;
 {
-    current_funccal = (funccall_T *)fc;
+    funccall_T *fc = (funccall_T *)vfc;
+
+    current_funccal = fc;
 }
+
+#if defined(FEAT_PROFILE) || defined(PROTO)
+/*
+ * Prepare profiling for entering a child or something else that is not
+ * counted for the script/function itself.
+ * Should always be called in pair with prof_child_exit().
+ */
+    void
+prof_child_enter(tm)
+    proftime_T *tm;	/* place to store waittime */
+{
+    funccall_T *fc = current_funccal;
+
+    if (fc != NULL && fc->func->uf_profiling)
+	profile_start(&fc->prof_child);
+    script_prof_save(tm);
+}
+
+/*
+ * Take care of time spent in a child.
+ * Should always be called after prof_child_enter().
+ */
+    void
+prof_child_exit(tm)
+    proftime_T *tm;	/* where waittime was stored */
+{
+    funccall_T *fc = current_funccal;
+
+    if (fc != NULL && fc->func->uf_profiling)
+    {
+	profile_end(&fc->prof_child);
+	profile_sub_wait(tm, &fc->prof_child); /* don't count waiting time */
+	profile_add(&fc->func->uf_tm_children, &fc->prof_child);
+	profile_add(&fc->func->uf_tml_children, &fc->prof_child);
+    }
+    script_prof_restore(tm);
+}
+#endif
+
 
 #ifdef FEAT_FOLDING
 /*
@@ -5020,12 +5086,33 @@ list_append_tv(l, tv)
     list_T	*l;
     typval_T	*tv;
 {
-    listitem_T	*ni = listitem_alloc();
+    listitem_T	*li = listitem_alloc();
 
-    if (ni == NULL)
+    if (li == NULL)
 	return FAIL;
-    copy_tv(tv, &ni->li_tv);
-    list_append(l, ni);
+    copy_tv(tv, &li->li_tv);
+    list_append(l, li);
+    return OK;
+}
+
+/*
+ * Add a dictionary to a list.  Used by errorlist().
+ * Return FAIL when out of memory.
+ */
+    int
+list_append_dict(list, dict)
+    list_T	*list;
+    dict_T	*dict;
+{
+    listitem_T	*li = listitem_alloc();
+
+    if (li == NULL)
+	return FAIL;
+    li->li_tv.v_type = VAR_DICT;
+    li->li_tv.v_lock = 0;
+    li->li_tv.vval.v_dict = dict;
+    list_append(list, li);
+    ++dict->dv_refcount;
     return OK;
 }
 
@@ -5266,7 +5353,7 @@ list_join(gap, l, sep, echo)
 /*
  * Allocate an empty header for a dictionary.
  */
-    static dict_T *
+    dict_T *
 dict_alloc()
 {
     dict_T *d;
@@ -5467,6 +5554,42 @@ dict_add(d, item)
     dictitem_T	*item;
 {
     return hash_add(&d->dv_hashtab, item->di_key);
+}
+
+/*
+ * Add a number or string entry to dictionary "d".
+ * When "str" is NULL use number "nr", otherwise use "str".
+ * Returns FAIL when out of memory and when key already exists.
+ */
+    int
+dict_add_nr_str(d, key, nr, str)
+    dict_T	*d;
+    char	*key;
+    long	nr;
+    char_u	*str;
+{
+    dictitem_T	*item;
+
+    item = dictitem_alloc((char_u *)key);
+    if (item == NULL)
+	return FAIL;
+    item->di_tv.v_lock = 0;
+    if (str == NULL)
+    {
+	item->di_tv.v_type = VAR_NUMBER;
+	item->di_tv.vval.v_number = nr;
+    }
+    else
+    {
+	item->di_tv.v_type = VAR_STRING;
+	item->di_tv.vval.v_string = vim_strsave(str);
+    }
+    if (dict_add(d, item) == FAIL)
+    {
+	dictitem_free(item);
+	return FAIL;
+    }
+    return OK;
 }
 
 /*
@@ -5844,6 +5967,7 @@ get_env_tv(arg, rettv, evaluate)
     int		len;
     int		cc;
     char_u	*name;
+    int		mustfree = FALSE;
 
     ++*arg;
     name = *arg;
@@ -5854,12 +5978,18 @@ get_env_tv(arg, rettv, evaluate)
 	{
 	    cc = name[len];
 	    name[len] = NUL;
-	    /* first try mch_getenv(), fast for normal environment vars */
-	    string = mch_getenv(name);
+	    /* first try vim_getenv(), fast for normal environment vars */
+	    string = vim_getenv(name, &mustfree);
 	    if (string != NULL && *string != NUL)
-		string = vim_strsave(string);
+	    {
+		if (!mustfree)
+		    string = vim_strsave(string);
+	    }
 	    else
 	    {
+		if (mustfree)
+		    vim_free(string);
+
 		/* next try expanding things like $VIM and ${HOME} */
 		string = expand_env_save(name - 1);
 		if (string != NULL && *string == '$')
@@ -5923,6 +6053,7 @@ static struct fst
     {"diff_filler",	1, 1, f_diff_filler},
     {"diff_hlID",	2, 2, f_diff_hlID},
     {"empty",		1, 1, f_empty},
+    {"errorlist",	0, 0, f_errorlist},
     {"escape",		2, 2, f_escape},
     {"eval",		1, 1, f_eval},
     {"eventhandler",	0, 0, f_eventhandler},
@@ -7418,6 +7549,36 @@ f_empty(argvars, rettv)
     }
 
     rettv->vval.v_number = n;
+}
+
+/*
+ * "errorlist()" function
+ */
+/*ARGSUSED*/
+    static void
+f_errorlist(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+#ifdef FEAT_QUICKFIX
+    list_T	*l;
+#endif
+
+    rettv->vval.v_number = FALSE;
+#ifdef FEAT_QUICKFIX
+    l = list_alloc();
+    if (l != NULL)
+    {
+	if (get_errorlist(l) != FAIL)
+	{
+	    rettv->vval.v_list = l;
+	    rettv->v_type = VAR_LIST;
+	    ++l->lv_refcount;
+	}
+	else
+	    list_free(l);
+    }
+#endif
 }
 
 /*
@@ -9211,6 +9372,9 @@ f_has(argvars, rettv)
 #endif
 #ifdef FEAT_PRINTER
 	"printer",
+#endif
+#ifdef FEAT_PROFILE
+	"profile",
 #endif
 #ifdef FEAT_QUICKFIX
 	"quickfix",
@@ -12651,25 +12815,27 @@ f_strridx(argvars, rettv)
     needle = get_tv_string(&argvars[1]);
     haystack = get_tv_string_buf(&argvars[0], buf);
     haystack_len = STRLEN(haystack);
+    if (argvars[2].v_type != VAR_UNKNOWN)
+    {
+	/* Third argument: upper limit for index */
+	end_idx = get_tv_number(&argvars[2]);
+	if (end_idx < 0)
+	{
+	    /* can never find a match */
+	    rettv->vval.v_number = -1;
+	    return;
+	}
+    }
+    else
+	end_idx = haystack_len;
+
     if (*needle == NUL)
+    {
 	/* Empty string matches past the end. */
-	lastmatch = haystack + haystack_len;
+	lastmatch = haystack + end_idx;
+    }
     else
     {
-	if (argvars[2].v_type != VAR_UNKNOWN)
-	{
-	    /* Third argument: upper limit for index */
-	    end_idx = get_tv_number(&argvars[2]);
-	    if (end_idx < 0)
-	    {
-		/* can never find a match */
-		rettv->vval.v_number = -1;
-		return;
-	    }
-	}
-	else
-	    end_idx = haystack_len;
-
 	for (rest = haystack; *rest != '\0'; ++rest)
 	{
 	    rest = (char_u *)strstr((char *)rest, (char *)needle);
@@ -15625,6 +15791,14 @@ ex_function(eap)
     }
     fp->uf_args = newargs;
     fp->uf_lines = newlines;
+#ifdef FEAT_PROFILE
+    fp->uf_tml_count = NULL;
+    fp->uf_tml_total = NULL;
+    fp->uf_tml_self = NULL;
+    fp->uf_profiling = FALSE;
+    if (prof_def_func())
+	func_do_profile(fp);
+#endif
     fp->uf_varargs = varargs;
     fp->uf_flags = flags;
     fp->uf_calls = 0;
@@ -15912,6 +16086,92 @@ builtin_function(name)
     return ASCII_ISLOWER(name[0]) && vim_strchr(name, ':') == NULL;
 }
 
+#if defined(FEAT_PROFILE) || defined(PROTO)
+/*
+ * Start profiling function "fp".
+ */
+    static void
+func_do_profile(fp)
+    ufunc_T	*fp;
+{
+    fp->uf_tm_count = 0;
+    profile_zero(&fp->uf_tm_self);
+    profile_zero(&fp->uf_tm_total);
+    if (fp->uf_tml_count == NULL)
+	fp->uf_tml_count = (int *)alloc_clear((unsigned)
+					 (sizeof(int) * fp->uf_lines.ga_len));
+    if (fp->uf_tml_total == NULL)
+	fp->uf_tml_total = (proftime_T *)alloc_clear((unsigned)
+				  (sizeof(proftime_T) * fp->uf_lines.ga_len));
+    if (fp->uf_tml_self == NULL)
+	fp->uf_tml_self = (proftime_T *)alloc_clear((unsigned)
+				  (sizeof(proftime_T) * fp->uf_lines.ga_len));
+    fp->uf_tml_idx = -1;
+    if (fp->uf_tml_count == NULL || fp->uf_tml_total == NULL
+						   || fp->uf_tml_self == NULL)
+	return;	    /* out of memory */
+
+    fp->uf_profiling = TRUE;
+}
+
+/*
+ * Dump the profiling results for all functions in file "fd".
+ */
+    void
+func_dump_profile(fd)
+    FILE    *fd;
+{
+    hashitem_T	*hi;
+    int		todo;
+    ufunc_T	*fp;
+    int		i;
+
+    todo = func_hashtab.ht_used;
+    for (hi = func_hashtab.ht_array; todo > 0; ++hi)
+    {
+	if (!HASHITEM_EMPTY(hi))
+	{
+	    --todo;
+	    fp = HI2UF(hi);
+	    if (fp->uf_profiling)
+	    {
+		if (fp->uf_name[0] == K_SPECIAL)
+		    fprintf(fd, "FUNCTION  <SNR>%s()\n", fp->uf_name + 3);
+		else
+		    fprintf(fd, "FUNCTION  %s()\n", fp->uf_name);
+		if (fp->uf_tm_count == 1)
+		    fprintf(fd, "Called 1 time\n");
+		else
+		    fprintf(fd, "Called %d times\n", fp->uf_tm_count);
+		fprintf(fd, "Total time: %s\n", profile_msg(&fp->uf_tm_total));
+		fprintf(fd, " Self time: %s\n", profile_msg(&fp->uf_tm_self));
+		fprintf(fd, "\n");
+		fprintf(fd, "count  total (s)   self (s)\n");
+
+		for (i = 0; i < fp->uf_lines.ga_len; ++i)
+		{
+		    if (fp->uf_tml_count[i] > 0)
+		    {
+			fprintf(fd, "%5d ", fp->uf_tml_count[i]);
+			if (profile_equal(&fp->uf_tml_total[i],
+							 &fp->uf_tml_self[i]))
+			    fprintf(fd, "           ");
+			else
+			    fprintf(fd, "%s ",
+					   profile_msg(&fp->uf_tml_total[i]));
+			fprintf(fd, "%s ", profile_msg(&fp->uf_tml_self[i]));
+		    }
+		    else
+			fprintf(fd, "                            ");
+		    fprintf(fd, "%s\n", FUNCLINE(fp, i));
+		}
+		fprintf(fd, "\n");
+	    }
+	}
+    }
+}
+#endif
+
 /*
  * If "name" has a package name try autoloading the script for it.
  * Return TRUE if a package was loaded.
@@ -16065,7 +16325,7 @@ ex_delfunction(eap)
     {
 	if (fp == NULL)
 	{
-	    EMSG2(_("E130: Undefined function: %s"), eap->arg);
+	    EMSG2(_(e_nofunc), eap->arg);
 	    return;
 	}
 	if (fp->uf_calls > 0)
@@ -16097,6 +16357,11 @@ func_free(fp)
     /* clear this function */
     ga_clear_strings(&(fp->uf_args));
     ga_clear_strings(&(fp->uf_lines));
+#ifdef FEAT_PROFILE
+    vim_free(fp->uf_tml_count);
+    vim_free(fp->uf_tml_total);
+    vim_free(fp->uf_tml_self);
+#endif
 
     /* remove the function from the function hashtable */
     hi = hash_find(&func_hashtab, UF2HIKEY(fp));
@@ -16178,6 +16443,9 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
     int		ai;
     char_u	numbuf[NUMBUFLEN];
     char_u	*name;
+#ifdef FEAT_PROFILE
+    proftime_T	wait_start;
+#endif
 
     /* If depth of calling is getting too high, don't execute the function */
     if (depth >= p_mfd)
@@ -16341,6 +16609,22 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
 	    --no_wait_return;
 	}
     }
+#ifdef FEAT_PROFILE
+    if (do_profiling)
+    {
+	if (!fp->uf_profiling && has_profiling(FALSE, fp->uf_name, NULL))
+	    func_do_profile(fp);
+	if (fp->uf_profiling
+		       || (save_fcp != NULL && &save_fcp->func->uf_profiling))
+	{
+	    ++fp->uf_tm_count;
+	    profile_start(&fp->uf_tm_start);
+	    profile_zero(&fp->uf_tm_children);
+	}
+	script_prof_save(&wait_start);
+    }
+#endif
+
     save_current_SID = current_SID;
     current_SID = fp->uf_script_ID;
     save_did_emsg = did_emsg;
@@ -16359,6 +16643,22 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
 	rettv->v_type = VAR_NUMBER;
 	rettv->vval.v_number = -1;
     }
+
+#ifdef FEAT_PROFILE
+    if (fp->uf_profiling || (save_fcp != NULL && &save_fcp->func->uf_profiling))
+    {
+	profile_end(&fp->uf_tm_start);
+	profile_sub_wait(&wait_start, &fp->uf_tm_start);
+	profile_add(&fp->uf_tm_total, &fp->uf_tm_start);
+	profile_add(&fp->uf_tm_self, &fp->uf_tm_start);
+	profile_sub(&fp->uf_tm_self, &fp->uf_tm_children);
+	if (save_fcp != NULL && &save_fcp->func->uf_profiling)
+	{
+	    profile_add(&save_fcp->func->uf_tm_children, &fp->uf_tm_start);
+	    profile_add(&save_fcp->func->uf_tml_children, &fp->uf_tm_start);
+	}
+    }
+#endif
 
     /* when being verbose, mention the return value */
     if (p_verbose >= 12)
@@ -16398,6 +16698,10 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
     sourcing_name = save_sourcing_name;
     sourcing_lnum = save_sourcing_lnum;
     current_SID = save_current_SID;
+#ifdef FEAT_PROFILE
+    if (do_profiling)
+	script_prof_restore(&wait_start);
+#endif
 
     if (p_verbose >= 12 && sourcing_name != NULL)
     {
@@ -16624,19 +16928,24 @@ get_func_line(c, cookie, indent)
     int	    indent;	    /* not used */
 {
     funccall_T	*fcp = (funccall_T *)cookie;
-    char_u		*retval;
-    garray_T		*gap;  /* growarray with function lines */
+    ufunc_T	*fp = fcp->func;
+    char_u	*retval;
+    garray_T	*gap;  /* growarray with function lines */
 
     /* If breakpoints have been added/deleted need to check for it. */
     if (fcp->dbg_tick != debug_tick)
     {
-	fcp->breakpoint = dbg_find_breakpoint(FALSE, fcp->func->uf_name,
+	fcp->breakpoint = dbg_find_breakpoint(FALSE, fp->uf_name,
 							       sourcing_lnum);
 	fcp->dbg_tick = debug_tick;
     }
+#ifdef FEAT_PROFILE
+    if (do_profiling)
+	func_line_end(cookie);
+#endif
 
-    gap = &fcp->func->uf_lines;
-    if ((fcp->func->uf_flags & FC_ABORT) && did_emsg && !aborted_in_try())
+    gap = &fp->uf_lines;
+    if ((fp->uf_flags & FC_ABORT) && did_emsg && !aborted_in_try())
 	retval = NULL;
     else if (fcp->returned || fcp->linenr >= gap->ga_len)
 	retval = NULL;
@@ -16644,20 +16953,89 @@ get_func_line(c, cookie, indent)
     {
 	retval = vim_strsave(((char_u **)(gap->ga_data))[fcp->linenr++]);
 	sourcing_lnum = fcp->linenr;
+#ifdef FEAT_PROFILE
+	if (do_profiling)
+	    func_line_start(cookie);
+#endif
     }
 
     /* Did we encounter a breakpoint? */
     if (fcp->breakpoint != 0 && fcp->breakpoint <= sourcing_lnum)
     {
-	dbg_breakpoint(fcp->func->uf_name, sourcing_lnum);
+	dbg_breakpoint(fp->uf_name, sourcing_lnum);
 	/* Find next breakpoint. */
-	fcp->breakpoint = dbg_find_breakpoint(FALSE, fcp->func->uf_name,
+	fcp->breakpoint = dbg_find_breakpoint(FALSE, fp->uf_name,
 							       sourcing_lnum);
 	fcp->dbg_tick = debug_tick;
     }
 
     return retval;
 }
+
+#if defined(FEAT_PROFILE) || defined(PROTO)
+/*
+ * Called when starting to read a function line.
+ * "sourcing_lnum" must be correct!
+ * When skipping lines it may not actually be executed, but we won't find out
+ * until later and we need to store the time now.
+ */
+    void
+func_line_start(cookie)
+    void    *cookie;
+{
+    funccall_T	*fcp = (funccall_T *)cookie;
+    ufunc_T	*fp = fcp->func;
+
+    if (fp->uf_profiling && sourcing_lnum >= 1
+				      && sourcing_lnum <= fp->uf_lines.ga_len)
+    {
+	fp->uf_tml_idx = sourcing_lnum - 1;
+	fp->uf_tml_execed = FALSE;
+	profile_start(&fp->uf_tml_start);
+	profile_zero(&fp->uf_tml_children);
+	profile_get_wait(&fp->uf_tml_wait);
+    }
+}
+
+/*
+ * Called when actually executing a function line.
+ */
+    void
+func_line_exec(cookie)
+    void    *cookie;
+{
+    funccall_T	*fcp = (funccall_T *)cookie;
+    ufunc_T	*fp = fcp->func;
+
+    if (fp->uf_profiling && fp->uf_tml_idx >= 0)
+	fp->uf_tml_execed = TRUE;
+}
+
+/*
+ * Called when done with a function line.
+ */
+    void
+func_line_end(cookie)
+    void    *cookie;
+{
+    funccall_T	*fcp = (funccall_T *)cookie;
+    ufunc_T	*fp = fcp->func;
+
+    if (fp->uf_profiling && fp->uf_tml_idx >= 0)
+    {
+	if (fp->uf_tml_execed)
+	{
+	    ++fp->uf_tml_count[fp->uf_tml_idx];
+	    profile_end(&fp->uf_tml_start);
+	    profile_sub_wait(&fp->uf_tml_wait, &fp->uf_tml_start);
+	    profile_add(&fp->uf_tml_self[fp->uf_tml_idx], &fp->uf_tml_start);
+	    profile_add(&fp->uf_tml_total[fp->uf_tml_idx], &fp->uf_tml_start);
+	    profile_sub(&fp->uf_tml_self[fp->uf_tml_idx], &fp->uf_tml_children);
+	}
+	fp->uf_tml_idx = -1;
+    }
+}
+#endif
 
 /*
  * Return TRUE if the currently active function should be ended, because a

@@ -1,6 +1,6 @@
 " Vim syntax support file
 " Maintainer: Bram Moolenaar <Bram@vim.org>
-" Last Change: 2004 Dec 14
+" Last Change: 2005 Feb 26
 "	       (modified by David Ne\v{c}as (Yeti) <yeti@physics.muni.cz>)
 "	       (XHTML support by Panagiotis Issaris <takis@lumumba.luc.ac.be>)
 
@@ -400,7 +400,6 @@ while s:lnum <= s:end
   exe "normal! a" . s:new . s:HtmlEndline . "\n\e"
   exe s:orgwin . "wincmd w"
   let s:lnum = s:lnum + 1
-  +
 endwhile
 " Finish with the last line
 exe s:newwin . "wincmd w"
@@ -515,11 +514,13 @@ unlet s:old_et s:old_paste s:old_icon s:old_report s:old_title s:old_search
 unlet s:whatterm s:idlist s:lnum s:end s:fgc s:bgc s:old_magic
 unlet! s:col s:id s:attr s:len s:line s:new s:expandedtab s:numblines
 unlet s:orgwin s:newwin s:orgbufnr
-delfunc s:HtmlColor
-delfunc s:HtmlFormat
-delfunc s:CSS1
-if !exists("html_use_css")
-  delfunc s:HtmlOpening
-  delfunc s:HtmlClosing
+if !v:profiling
+  delfunc s:HtmlColor
+  delfunc s:HtmlFormat
+  delfunc s:CSS1
+  if !exists("html_use_css")
+    delfunc s:HtmlOpening
+    delfunc s:HtmlClosing
+  endif
 endif
 silent! unlet s:diffattr s:difffillchar s:foldfillchar s:HtmlSpace s:HtmlEndline

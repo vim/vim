@@ -1,7 +1,7 @@
 " Vim indent file
 " Language:	Vim script
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2004 Sep 02
+" Last Change:	2005 Feb 25
 
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")
@@ -44,7 +44,7 @@ function GetVimIndent()
     else
       let ind = ind + &sw * 3
     endif
-  elseif getline(lnum) =~ '\(^\||\)\s*\(if\|wh\%[ile]\|try\|cat\%[ch]\|fina\%[lly]\|fu\%[nction]\|el\%[seif]\)\>'
+  elseif getline(lnum) =~ '\(^\||\)\s*\(if\|wh\%[ile]\|for\|try\|cat\%[ch]\|fina\%[lly]\|fu\%[nction]\|el\%[seif]\)\>'
     let ind = ind + &sw
   elseif getline(lnum) =~ '^\s*aug\%[roup]' && getline(lnum) !~ '^\s*aug\%[roup]\s*!\=\s\+END'
     let ind = ind + &sw

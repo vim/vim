@@ -2082,25 +2082,38 @@ ExpandBufnames(pat, num_file, file, options)
     char_u	*p;
     int		attempt;
     regprog_T	*prog;
+    char_u	*patc;
 
     *num_file = 0;		    /* return values in case of FAIL */
     *file = NULL;
 
-    /*
-     * attempt == 1: try match with    '^', match at start
-     * attempt == 2: try match without '^', match anywhere
-     */
-    for (attempt = 1; attempt <= 2; ++attempt)
+    /* Make a copy of "pat" and change "^" to "\(^\|[\/]\)". */
+    if (*pat == '^')
     {
-	if (attempt == 2)
-	{
-	    if (*pat != '^')	    /* there's no '^', no need to try again */
-		break;
-	    ++pat;		    /* skip the '^' */
-	}
-	prog = vim_regcomp(pat, p_magic ? RE_MAGIC : 0);
-	if (prog == NULL)
+	patc = alloc((unsigned)STRLEN(pat) + 11);
+	if (patc == NULL)
 	    return FAIL;
+	STRCPY(patc, "\\(^\\|[\\/]\\)");
+	STRCPY(patc + 11, pat + 1);
+    }
+    else
+	patc = pat;
+
+    /*
+     * attempt == 0: try match with    '\<', match at start of word
+     * attempt == 2: try match without '\<', match anywhere
+     */
+    for (attempt = 0; attempt <= 2; attempt += 2)
+    {
+	if (attempt == 2 && patc == pat)
+	    break;	/* there was no anchor, no need to try again */
+	prog = vim_regcomp(patc + attempt, RE_MAGIC);
+	if (prog == NULL)
+	{
+	    if (patc != pat)
+		vim_free(patc);
+	    return FAIL;
+	}
 
 	/*
 	 * round == 1: Count the matches.
@@ -2136,6 +2149,8 @@ ExpandBufnames(pat, num_file, file, options)
 		if (*file == NULL)
 		{
 		    vim_free(prog);
+		    if (patc != pat)
+			vim_free(patc);
 		    return FAIL;
 		}
 	    }
@@ -2144,6 +2159,9 @@ ExpandBufnames(pat, num_file, file, options)
 	if (count)		/* match(es) found, break here */
 	    break;
     }
+
+    if (patc != pat)
+	vim_free(patc);
 
     *num_file = count;
     return (count == 0 ? FAIL : OK);

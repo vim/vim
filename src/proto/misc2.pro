@@ -40,6 +40,7 @@ void vim_free __ARGS((void *x));
 int vim_stricmp __ARGS((char *s1, char *s2));
 int vim_strnicmp __ARGS((char *s1, char *s2, size_t len));
 char_u *vim_strchr __ARGS((char_u *string, int c));
+char_u *vim_strbyte __ARGS((char_u *string, int c));
 char_u *vim_strrchr __ARGS((char_u *string, int c));
 int vim_isspace __ARGS((int x));
 void ga_clear __ARGS((garray_T *gap));

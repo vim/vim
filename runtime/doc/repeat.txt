@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 7.0aa.  Last change: 2005 Feb 19
+*repeat.txt*    For Vim version 7.0aa.  Last change: 2005 Feb 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -13,6 +13,7 @@ Chapter 26 of the user manual introduces repeating |usr_26.txt|.
 3. Complex repeats	|complex-repeat|
 4. Using Vim scripts	|using-scripts|
 5. Debugging scripts	|debug-scripts|
+6. Profiling		|profiling|
 
 ==============================================================================
 1. Single repeats					*single-repeat*
@@ -483,6 +484,7 @@ DEFINING BREAKPOINTS
 The [lnum] is the line number of the breakpoint.  Vim will stop at or after
 this line.  When omitted line 1 is used.
 
+							*:debug-name*
 {name} is a pattern that is matched with the file or function name.  The
 pattern is like what is used for autocommands.  There must be a full match (as
 if the pattern starts with "^" and ends in "$").  A "*" matches any sequence
@@ -546,5 +548,89 @@ OBSCURE
 :0debugg[reedy]
 		Undo ":debuggreedy": get debug mode commands directly from the
 		user, don't use typeahead for debug commands.
+
+==============================================================================
+6. Profiling						*profile* *profiling*
+
+Profiling means that Vim measures the time that is spend on executing
+functions and/or scripts.  The |+profile| feature is required for this.
+It is only included when Vim was compiled with "huge" features.
+{Vi does not have profiling}
+
+:prof[ile] start {fname}			*:prof* *:profile* *E750*
+		Start profiling, write the output in {fname} upon exit.
+		If {fname} already exists it will be overwritten.
+		The variable |v:profiling| is set to one.
+
+:prof[ile] func {pattern}
+		Profile function that matches the pattern {pattern}.
+		See |:debug-name| for how {pattern} is used.
+
+:prof[ile][!] file {pattern}
+		Profile script file that matches the pattern {pattern}.
+		See |:debug-name| for how {pattern} is used.
+		This only profiles the script itself, not the functions
+		defined in it.
+		When the [!] is added then all functions defined in the script
+		will also be profiled.
+
+
+You must always start with a ":profile start fname" command.  The resulting
+file is written when Vim exits.  Here is an example of the output, with line
+numbers prepended for the explanation:
+
+  1 FUNCTION  Test2() ~
+  2 Called 1 time ~
+  3 Total time:   0.155251 ~
+  4  Self time:   0.002006 ~
+  5  ~
+  6 count  total (s)   self (s) ~
+  7     9              0.000096   for i in range(8) ~
+  8     8   0.153655   0.000410     call Test3() ~
+  9     8              0.000070   endfor ~
+ 10                               " Ask a question ~
+ 11     1              0.001341   echo input("give me an answer: ") ~
+
+The header (lines 1-4) gives the time for the whole function.  The "Total"
+time is the time passed while the function was executing.  The "Self" time is
+the "Total" time reduced by time spent in:
+- other user defined functions
+- sourced scripts
+- executed autocommands
+- external (shell) commands
+
+Lines 7-11 show the time spent in each executed line.  Lines that are not
+executed do not count.  Thus a comment line is never counted.
+
+The Count column shows how many times a line was executed.  Note that the
+"for" command in line 7 is executed one more time as the following lines.
+That is because the line is also executed to detect the end of the loop.
+
+The time Vim spends waiting for user input isn't counted at all.  Thus how
+long you take to respond to the input() prompt is irrelevant.
+
+Profiling should give a good indication of where time is spent, but keep in
+mind there are various things that may clobber the results:
+
+- The accuracy of the time measured depends on the gettimeofday() system
+  function.  It may only be as accurate as 1/100 second, even though the times
+  are displayed in micro seconds.
+
+- Real elapsed time is measured, if other processes are busy they may cause
+  delays at unpredictable moments.  You may want to run the profiling several
+  times and use the lowest results.
+
+- If you have several commands in one line you only get one time.  Split the
+  line to see the time for the individual commands.
+
+- The time of the lines added up is mostly less than the time of the whole
+  function.  There is some overhead in between.
+
+- Functions that are deleted before Vim exits will not produce profiling
+  information.  You can check the |v:profiling| variable if needed: >
+  	:if !v:profiling
+	:   delfunc MyFunc
+	:endif
+<
 
  vim:tw=78:ts=8:ft=help:norl:

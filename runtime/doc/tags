@@ -1539,6 +1539,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 41.11	usr_41.txt	/*41.11*
 41.12	usr_41.txt	/*41.12*
 41.13	usr_41.txt	/*41.13*
+41.14	usr_41.txt	/*41.14*
+41.15	usr_41.txt	/*41.15*
 41.2	usr_41.txt	/*41.2*
 41.3	usr_41.txt	/*41.3*
 41.4	usr_41.txt	/*41.4*
@@ -1824,6 +1826,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :d	change.txt	/*:d*
 :de	change.txt	/*:de*
 :debug	repeat.txt	/*:debug*
+:debug-name	repeat.txt	/*:debug-name*
 :debugg	repeat.txt	/*:debugg*
 :debuggreedy	repeat.txt	/*:debuggreedy*
 :del	change.txt	/*:del*
@@ -2207,6 +2210,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :previous	editing.txt	/*:previous*
 :print	various.txt	/*:print*
 :pro	change.txt	/*:pro*
+:prof	repeat.txt	/*:prof*
+:profile	repeat.txt	/*:profile*
 :promptfind	change.txt	/*:promptfind*
 :promptr	change.txt	/*:promptr*
 :promptrepl	change.txt	/*:promptrepl*
@@ -2860,7 +2865,9 @@ CTRL-W_+	windows.txt	/*CTRL-W_+*
 CTRL-W_-	windows.txt	/*CTRL-W_-*
 CTRL-W_<	windows.txt	/*CTRL-W_<*
 CTRL-W_<BS>	windows.txt	/*CTRL-W_<BS>*
+CTRL-W_<CR>	quickfix.txt	/*CTRL-W_<CR>*
 CTRL-W_<Down>	windows.txt	/*CTRL-W_<Down>*
+CTRL-W_<Enter>	quickfix.txt	/*CTRL-W_<Enter>*
 CTRL-W_<Left>	windows.txt	/*CTRL-W_<Left>*
 CTRL-W_<Right>	windows.txt	/*CTRL-W_<Right>*
 CTRL-W_<Up>	windows.txt	/*CTRL-W_<Up>*
@@ -2977,7 +2984,6 @@ E113	eval.txt	/*E113*
 E114	eval.txt	/*E114*
 E115	eval.txt	/*E115*
 E116	eval.txt	/*E116*
-E117	eval.txt	/*E117*
 E118	eval.txt	/*E118*
 E119	eval.txt	/*E119*
 E12	message.txt	/*E12*
@@ -3667,6 +3673,7 @@ E747	syntax.txt	/*E747*
 E748	repeat.txt	/*E748*
 E749	eval.txt	/*E749*
 E75	vi_diff.txt	/*E75*
+E750	repeat.txt	/*E750*
 E76	pattern.txt	/*E76*
 E77	message.txt	/*E77*
 E78	motion.txt	/*E78*
@@ -4596,6 +4603,7 @@ docbkxml-syntax	syntax.txt	/*docbkxml-syntax*
 docbkxml.vim	syntax.txt	/*docbkxml.vim*
 docbook	syntax.txt	/*docbook*
 documentation-6	version6.txt	/*documentation-6*
+donate	uganda.txt	/*donate*
 dos	os_dos.txt	/*dos*
 dos-:cd	os_dos.txt	/*dos-:cd*
 dos-CTRL-Break	os_dos.txt	/*dos-CTRL-Break*
@@ -4659,6 +4667,7 @@ errorformat-javac	quickfix.txt	/*errorformat-javac*
 errorformat-multi-line	quickfix.txt	/*errorformat-multi-line*
 errorformat-separate-filename	quickfix.txt	/*errorformat-separate-filename*
 errorformats	quickfix.txt	/*errorformats*
+errorlist()	eval.txt	/*errorlist()*
 escape	intro.txt	/*escape*
 escape()	eval.txt	/*escape()*
 escape-bar	version4.txt	/*escape-bar*
@@ -5890,6 +5899,8 @@ print.txt	print.txt	/*print.txt*
 printcap-syntax	syntax.txt	/*printcap-syntax*
 printing	print.txt	/*printing*
 printing-formfeed	print.txt	/*printing-formfeed*
+profile	repeat.txt	/*profile*
+profiling	repeat.txt	/*profiling*
 progname-variable	eval.txt	/*progname-variable*
 progress-syntax	syntax.txt	/*progress-syntax*
 progress.vim	syntax.txt	/*progress.vim*
@@ -5907,6 +5918,7 @@ python-current	if_pyth.txt	/*python-current*
 python-error	if_pyth.txt	/*python-error*
 python-eval	if_pyth.txt	/*python-eval*
 python-examples	if_pyth.txt	/*python-examples*
+python-indent	indent.txt	/*python-indent*
 python-input	if_pyth.txt	/*python-input*
 python-output	if_pyth.txt	/*python-output*
 python-range	if_pyth.txt	/*python-range*
@@ -6200,13 +6212,20 @@ startup-terminal	term.txt	/*startup-terminal*
 static-tag	tagsrch.txt	/*static-tag*
 status-line	windows.txt	/*status-line*
 statusmsg-variable	eval.txt	/*statusmsg-variable*
+strcasestr()	eval.txt	/*strcasestr()*
+strchr()	eval.txt	/*strchr()*
+strcspn()	eval.txt	/*strcspn()*
 strftime()	eval.txt	/*strftime()*
 stridx()	eval.txt	/*stridx()*
 string()	eval.txt	/*string()*
 string-match	eval.txt	/*string-match*
 strlen()	eval.txt	/*strlen()*
 strpart()	eval.txt	/*strpart()*
+strpbrk()	eval.txt	/*strpbrk()*
+strrchr()	eval.txt	/*strrchr()*
 strridx()	eval.txt	/*strridx()*
+strspn()	eval.txt	/*strspn()*
+strstr()	eval.txt	/*strstr()*
 strtrans()	eval.txt	/*strtrans()*
 style-changes	develop.txt	/*style-changes*
 style-examples	develop.txt	/*style-examples*
@@ -6902,8 +6921,10 @@ write-compiler-plugin	usr_41.txt	/*write-compiler-plugin*
 write-device	editing.txt	/*write-device*
 write-fail	editing.txt	/*write-fail*
 write-filetype-plugin	usr_41.txt	/*write-filetype-plugin*
+write-library-script	usr_41.txt	/*write-library-script*
 write-local-help	usr_41.txt	/*write-local-help*
 write-plugin	usr_41.txt	/*write-plugin*
+write-plugin-quickload	usr_41.txt	/*write-plugin-quickload*
 write-quit	editing.txt	/*write-quit*
 write-readonly	editing.txt	/*write-readonly*
 writefile()	eval.txt	/*writefile()*

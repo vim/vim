@@ -3808,7 +3808,7 @@ gui_mch_init_font(font_name, fontset)
 {
     /* TODO: Add support for bold italic underline proportional etc... */
     Str255	suggestedFont = "\pMonaco";
-    int		suggestedSize = 9;
+    int		suggestedSize = 10;
     FontInfo	font_info;
     short	font_id;
     GuiFont	font;

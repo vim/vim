@@ -35,7 +35,7 @@ struct qf_line
     int		     qf_col;	/* column where the error occurred */
     int		     qf_nr;	/* error number */
     char_u	    *qf_text;	/* description of the error */
-    char_u	     qf_virt_col; /* set to TRUE if qf_col is screen column */
+    char_u	     qf_viscol; /* set to TRUE if qf_col is screen column */
     char_u	     qf_cleared;/* set to TRUE if line has been deleted */
     char_u	     qf_type;	/* type of the error (mostly 'E'); 1 for
 				   :helpgrep */
@@ -88,7 +88,7 @@ struct eformat
 
 static int qf_init_ext __ARGS((char_u *efile, buf_T *buf, char_u *errorformat, int newlist, linenr_T lnumfirst, linenr_T lnumlast));
 static void	qf_new_list __ARGS((void));
-static int	qf_add_entry __ARGS((struct qf_line **prevp, char_u *dir, char_u *fname, char_u *mesg, long lnum, int col, int virt_col, int nr, int type, int valid));
+static int	qf_add_entry __ARGS((struct qf_line **prevp, char_u *dir, char_u *fname, char_u *mesg, long lnum, int col, int vis_col, int nr, int type, int valid));
 static void	qf_msg __ARGS((void));
 static void	qf_free __ARGS((int idx));
 static char_u	*qf_types __ARGS((int, int));
@@ -147,7 +147,7 @@ qf_init_ext(efile, buf, errorformat, newlist, lnumfirst, lnumlast)
     char_u	    *errmsg;
     char_u	    *fmtstr = NULL;
     int		    col = 0;
-    char_u	    use_virt_col = FALSE;
+    char_u	    use_viscol = FALSE;
     int		    type = 0;
     int		    valid;
     linenr_T	    buflnum = lnumfirst;
@@ -467,7 +467,7 @@ restofline:
 		errmsg[0] = NUL;
 	    lnum = 0;
 	    col = 0;
-	    use_virt_col = FALSE;
+	    use_viscol = FALSE;
 	    enr = -1;
 	    type = 0;
 	    tail = NULL;
@@ -515,12 +515,12 @@ restofline:
 		{
 		    col = (int)(regmatch.endp[i] - regmatch.startp[i] + 1);
 		    if (*((char_u *)regmatch.startp[i]) != TAB)
-			use_virt_col = TRUE;
+			use_viscol = TRUE;
 		}
 		if ((i = (int)fmt_ptr->addr[8]) > 0)		/* %v */
 		{
 		    col = (int)atol((char *)regmatch.startp[i]);
-		    use_virt_col = TRUE;
+		    use_viscol = TRUE;
 		}
 		break;
 	    }
@@ -578,7 +578,7 @@ restofline:
 		    qfprev->qf_lnum = lnum;
 		if (!qfprev->qf_col)
 		    qfprev->qf_col = col;
-		qfprev->qf_virt_col = use_virt_col;
+		qfprev->qf_viscol = use_viscol;
 		if (!qfprev->qf_fnum)
 		    qfprev->qf_fnum = qf_get_fnum(directory,
 					*namebuf || directory ? namebuf
@@ -623,7 +623,7 @@ restofline:
 			errmsg,
 			lnum,
 			col,
-			use_virt_col,
+			use_viscol,
 			enr,
 			type,
 			valid) == FAIL)
@@ -714,14 +714,14 @@ qf_new_list()
  * Returns OK or FAIL.
  */
     static int
-qf_add_entry(prevp, dir, fname, mesg, lnum, col, virt_col, nr, type, valid)
+qf_add_entry(prevp, dir, fname, mesg, lnum, col, vis_col, nr, type, valid)
     struct qf_line **prevp;	/* pointer to previously added entry or NULL */
     char_u	*dir;		/* optional directory name */
     char_u	*fname;		/* file name or NULL */
     char_u	*mesg;		/* message */
     long	lnum;		/* line number */
     int		col;		/* column */
-    int		virt_col;	/* using virtual column */
+    int		vis_col;	/* using visual column */
     int		nr;		/* error number */
     int		type;		/* type character */
     int		valid;		/* valid entry */
@@ -739,7 +739,7 @@ qf_add_entry(prevp, dir, fname, mesg, lnum, col, virt_col, nr, type, valid)
     }
     qfp->qf_lnum = lnum;
     qfp->qf_col = col;
-    qfp->qf_virt_col = virt_col;
+    qfp->qf_viscol = vis_col;
     qfp->qf_nr = nr;
     if (type != 1 && !vim_isprintc(type)) /* only printable chars allowed */
 	type = 0;
@@ -1285,7 +1285,7 @@ qf_jump(dir, errornr, forceit)
 	if (qf_ptr->qf_col > 0)
 	{
 	    curwin->w_cursor.col = qf_ptr->qf_col - 1;
-	    if (qf_ptr->qf_virt_col == TRUE)
+	    if (qf_ptr->qf_viscol == TRUE)
 	    {
 		/*
 		 * Check each character from the beginning of the error
@@ -2300,6 +2300,8 @@ ex_vimgrep(eap)
 #endif
 #ifdef FEAT_AUTOCMD
     char_u	*au_name =  NULL;
+    int		flags = 0;
+    colnr_T	col;
 
     switch (eap->cmdidx)
     {
@@ -2318,14 +2320,12 @@ ex_vimgrep(eap)
 
     /* Get the search pattern: either white-separated or enclosed in // */
     regmatch.regprog = NULL;
-    p = skip_vimgrep_pat(eap->arg, &s);
+    p = skip_vimgrep_pat(eap->arg, &s, &flags);
     if (p == NULL)
     {
 	EMSG(_("E682: Invalid search pattern or delimiter"));
 	goto theend;
     }
-    if (*p != NUL)
-	*p++ = NUL;
     regmatch.regprog = vim_regcomp(s, RE_MAGIC);
     if (regmatch.regprog == NULL)
 	goto theend;
@@ -2437,10 +2437,13 @@ ex_vimgrep(eap)
 		goto jumpend;
 	    }
 #endif
+	    /* Try for a match in all lines of the buffer. */
 	    for (lnum = 1; lnum <= buf->b_ml.ml_line_count; ++lnum)
 	    {
-		if (vim_regexec_multi(&regmatch, curwin, buf, lnum,
-							      (colnr_T)0) > 0)
+		/* For ":1vimgrep" look for multiple matches. */
+		col = 0;
+		while (vim_regexec_multi(&regmatch, curwin, buf, lnum,
+								     col) > 0)
 		{
 		    if (qf_add_entry(&prevp,
 				NULL,       /* dir */
@@ -2449,7 +2452,7 @@ ex_vimgrep(eap)
 				     regmatch.startpos[0].lnum + lnum, FALSE),
 				regmatch.startpos[0].lnum + lnum,
 				regmatch.startpos[0].col + 1,
-				FALSE,      /* virt_col */
+				FALSE,      /* vis_col */
 				0,          /* nr */
 				0,          /* type */
 				TRUE        /* valid */
@@ -2460,6 +2463,13 @@ ex_vimgrep(eap)
 		    }
 		    else
 			found_match = TRUE;
+		    if ((flags & VGR_GLOBAL) == 0
+					       || regmatch.endpos[0].lnum > 0)
+			break;
+		    col = regmatch.endpos[0].col
+					    + (col == regmatch.endpos[0].col);
+		    if (col > STRLEN(ml_get_buf(buf, lnum, FALSE)))
+			break;
 		}
 		line_breakcheck();
 		if (got_int)
@@ -2485,14 +2495,14 @@ jumpend:
 		{
 		    /* When not hiding the buffer and no match was found we
 		     * don't need to remember the buffer, wipe it out.  If
-		     * there was a match and it wasn't the first one: only
-		     * unload the buffer. */
+		     * there was a match and it wasn't the first one or we
+		     * won't jump there: only unload the buffer. */
 		    if (!found_match)
 		    {
 			wipe_dummy_buffer(buf);
 			buf = NULL;
 		    }
-		    else if (buf != first_match_buf)
+		    else if (buf != first_match_buf || (flags & VGR_NOJUMP))
 		    {
 			unload_dummy_buffer(buf);
 			buf = NULL;
@@ -2528,7 +2538,10 @@ jumpend:
 
     /* Jump to first match. */
     if (qf_lists[qf_curlist].qf_count > 0)
-	qf_jump(0, 0, FALSE);
+    {
+	if ((flags & VGR_NOJUMP) == 0)
+	    qf_jump(0, 0, eap->forceit);
+    }
     else
 	EMSG2(_(e_nomatch2), s);
 
@@ -2543,29 +2556,57 @@ theend:
 }
 
 /*
- * Skip over the pattern argument of ":vimgrep /pat/".
+ * Skip over the pattern argument of ":vimgrep /pat/[g][j]".
  * Put the start of the pattern in "*s", unless "s" is NULL.
- * Return a pointer to the char just past the pattern.
+ * If "flags" is not NULL put the flags in it: VGR_GLOBAL, VGR_NOJUMP.
+ * If "s" is not NULL terminate the pattern with a NUL.
+ * Return a pointer to the char just past the pattern plus flags.
  */
     char_u *
-skip_vimgrep_pat(p, s)
-    char_u *p;
-    char_u **s;
+skip_vimgrep_pat(p, s, flags)
+    char_u  *p;
+    char_u  **s;
+    int	    *flags;
 {
     int		c;
 
     if (vim_isIDc(*p))
     {
+	/* ":vimgrep pattern fname" */
 	if (s != NULL)
 	    *s = p;
-	return skiptowhite(p);
+	p = skiptowhite(p);
+	if (s != NULL && *p != NUL)
+	    *p++ = NUL;
     }
-    if (s != NULL)
-	*s = p + 1;
-    c = *p;
-    p = skip_regexp(p + 1, c, TRUE, NULL);
-    if (*p != c)
-	return NULL;
+    else
+    {
+	/* ":vimgrep /pattern/[g][j] fname" */
+	if (s != NULL)
+	    *s = p + 1;
+	c = *p;
+	p = skip_regexp(p + 1, c, TRUE, NULL);
+	if (*p != c)
+	    return NULL;
+
+	/* Truncate the pattern. */
+	if (s != NULL)
+	    *p = NUL;
+	++p;
+
+	/* Find the flags */
+	while (*p == 'g' || *p == 'j')
+	{
+	    if (flags != NULL)
+	    {
+		if (*p == 'g')
+		    *flags |= VGR_GLOBAL;
+		else
+		    *flags |= VGR_NOJUMP;
+	    }
+	    ++p;
+	}
+    }
     return p;
 }
 
@@ -2666,6 +2707,51 @@ unload_dummy_buffer(buf)
     if (curbuf != buf)		/* safety check */
 	close_buffer(NULL, buf, DOBUF_UNLOAD);
 }
+
+#if defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * Add each quickfix error to list "list" as a dictionary.
+ */
+    int
+get_errorlist(list)
+    list_T	*list;
+{
+    dict_T	    *dict;
+    char_u	    buf[2];
+    struct qf_line  *qfp;
+    int		    i;
+
+    if (qf_curlist >= qf_listcount || qf_lists[qf_curlist].qf_count == 0)
+    {
+	EMSG(_(e_quickfix));
+	return FAIL;
+    }
+
+    qfp = qf_lists[qf_curlist].qf_start;
+    for (i = 1; !got_int && i <= qf_lists[qf_curlist].qf_count; ++i)
+    {
+	if ((dict = dict_alloc()) == NULL)
+	    return FAIL;
+	if (list_append_dict(list, dict) == FAIL)
+	    return FAIL;
+
+	buf[0] = qfp->qf_type;
+	buf[1] = NUL;
+	if ( dict_add_nr_str(dict, "bufnr", (long)qfp->qf_fnum, NULL) == FAIL
+	  || dict_add_nr_str(dict, "lnum",  (long)qfp->qf_lnum, NULL) == FAIL
+	  || dict_add_nr_str(dict, "col",   (long)qfp->qf_col, NULL) == FAIL
+	  || dict_add_nr_str(dict, "vcol",  (long)qfp->qf_viscol, NULL) == FAIL
+	  || dict_add_nr_str(dict, "nr",    (long)qfp->qf_nr, NULL) == FAIL
+	  || dict_add_nr_str(dict, "text",  0L, qfp->qf_text) == FAIL
+	  || dict_add_nr_str(dict, "type",  0L, buf) == FAIL
+	  || dict_add_nr_str(dict, "valid", (long)qfp->qf_valid, NULL) == FAIL)
+	    return FAIL;
+
+	qfp = qfp->qf_next;
+    }
+    return OK;
+}
+#endif
 
 /*
  * ":[range]cbuffer [bufnr]" command.
@@ -2781,7 +2867,7 @@ ex_helpgrep(eap)
 					    lnum,
 					    (int)(regmatch.startp[0] - IObuff)
 								+ 1, /* col */
-					    FALSE,	/* virt_col */
+					    FALSE,	/* vis_col */
 					    0,		/* nr */
 					    1,		/* type */
 					    TRUE	/* valid */
