@@ -1,7 +1,6 @@
 /* vi:set ts=8 sts=4 sw=4:
  *
  * VIM - Vi IMproved		by Bram Moolenaar
- *				GUI/Motif support by Robert Webb
  *
  * Do ":help uganda"  in Vim to read copying and usage conditions.
  * Do ":help credits" in Vim to see a list of people who contributed.
@@ -9,9 +8,12 @@
  */
 
 /*
- * (C) 2001 by Marcin Dalecki <dalecki@evision.ag>
+ * (C) 2001,2005 by Marcin Dalecki <martin@dalecki.de>
  *
  * Implementation of dialogue functions for the Motif GUI variant.
+ *
+ * Note about Lesstif: Apparenty lesstif doesn't get the widget layout right,
+ * when using a dynamic scrollbar policy.
  */
 
 #include <Xm/Form.h>

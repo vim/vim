@@ -32,17 +32,20 @@ SCRIPTS_GUI = test16.out
 
 .SUFFIXES: .in .out
 
-nongui:	$(SCRIPTS16) $(SCRIPTS)
+nongui:	fixff $(SCRIPTS16) $(SCRIPTS)
 	echo ALL DONE
 
-small:	$(SCRIPTS16)
+small:	fixff $(SCRIPTS16)
 	echo ALL DONE
 
-gui:	$(SCRIPTS16) $(SCRIPTS) $(SCRIPTS_GUI)
+gui:	fixff $(SCRIPTS16) $(SCRIPTS) $(SCRIPTS_GUI)
 	echo ALL DONE
 
-win32:	$(SCRIPTS16) $(SCRIPTS) $(SCRIPTS32)
+win32:	fixff $(SCRIPTS16) $(SCRIPTS) $(SCRIPTS32)
 	echo ALL DONE
+
+fixff:
+	-$(VIMPROG) -u dos.vim --noplugin "+argdo set ff=dos|upd" +q *.in *.ok
 
 clean:
 	-del *.out
