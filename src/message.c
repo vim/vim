@@ -520,8 +520,8 @@ emsg(s)
     called_emsg = TRUE;
 
     /*
-     * If "emsg_severe" is TRUE: When an error exception is to be thrown, prefer
-     * this message over previous messages for the same command.
+     * If "emsg_severe" is TRUE: When an error exception is to be thrown,
+     * prefer this message over previous messages for the same command.
      */
 #ifdef FEAT_EVAL
     severe = emsg_severe;
