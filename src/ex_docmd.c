@@ -324,9 +324,11 @@ static void	ex_tag_cmd __ARGS((exarg_T *eap, char_u *name));
 # define ex_endif		ex_ni
 # define ex_else		ex_ni
 # define ex_while		ex_ni
+# define ex_for			ex_ni
 # define ex_continue		ex_ni
 # define ex_break		ex_ni
 # define ex_endwhile		ex_ni
+# define ex_endfor		ex_ni
 # define ex_throw		ex_ni
 # define ex_try			ex_ni
 # define ex_catch		ex_ni
@@ -472,7 +474,7 @@ static char_u dollar_command[2] = {'$', 0};
 
 
 #ifdef FEAT_EVAL
-/* Struct for storing a line inside a while loop */
+/* Struct for storing a line inside a while/for loop */
 typedef struct
 {
     char_u	*line;		/* command line */
@@ -480,11 +482,11 @@ typedef struct
 } wcmd_T;
 
 /*
- * Structure used to store info for line position in a while loop.
+ * Structure used to store info for line position in a while or for loop.
  * This is required, because do_one_cmd() may invoke ex_function(), which
- * reads more lines that may come from the while loop.
+ * reads more lines that may come from the while/for loop.
  */
-struct while_cookie
+struct loop_cookie
 {
     garray_T	*lines_gap;		/* growarray with line info */
     int		current_line;		/* last read line from growarray */
@@ -494,8 +496,8 @@ struct while_cookie
     void	*cookie;
 };
 
-static char_u	*get_while_line __ARGS((int c, void *cookie, int indent));
-static int	store_while_line __ARGS((garray_T *gap, char_u *line));
+static char_u	*get_loop_line __ARGS((int c, void *cookie, int indent));
+static int	store_loop_line __ARGS((garray_T *gap, char_u *line));
 static void	free_cmdlines __ARGS((garray_T *gap));
 
 /* Struct to save a few things while debugging.  Used in do_cmdline() only. */
@@ -686,7 +688,7 @@ do_cmdline(cmdline, getline, cookie, flags)
     int		retval = OK;
 #ifdef FEAT_EVAL
     struct condstack cstack;		/* conditional stack */
-    garray_T	lines_ga;		/* keep lines for ":while" */
+    garray_T	lines_ga;		/* keep lines for ":while"/":for" */
     int		current_line = 0;	/* active line in lines_ga */
     char_u	*fname = NULL;		/* function or script name */
     linenr_T	*breakpoint = NULL;	/* ptr to breakpoint field in cookie */
@@ -699,7 +701,7 @@ do_cmdline(cmdline, getline, cookie, flags)
     /* "getline" and "cookie" passed to do_one_cmd() */
     char_u	*(*cmd_getline) __ARGS((int, void *, int));
     void	*cmd_cookie;
-    struct while_cookie cmd_while_cookie;
+    struct loop_cookie cmd_loop_cookie;
     void	*real_cookie;
 #else
 # define cmd_getline getline
@@ -736,13 +738,10 @@ do_cmdline(cmdline, getline, cookie, flags)
 
 #ifdef FEAT_EVAL
     cstack.cs_idx = -1;
-    cstack.cs_whilelevel = 0;
+    cstack.cs_looplevel = 0;
     cstack.cs_trylevel = 0;
     cstack.cs_emsg_silent_list = NULL;
-    cstack.cs_had_while = FALSE;
-    cstack.cs_had_endwhile = FALSE;
-    cstack.cs_had_continue = FALSE;
-    cstack.cs_had_finally = FALSE;
+    cstack.cs_lflags = 0;
     ga_init2(&lines_ga, (int)sizeof(wcmd_T), 10);
 
     real_cookie = getline_cookie(getline, cookie);
@@ -792,7 +791,7 @@ do_cmdline(cmdline, getline, cookie, flags)
 #endif
     /*
      * "did_emsg" will be set to TRUE when emsg() is used, in which case we
-     * cancel the whole command line, and any if/endif while/endwhile loop.
+     * cancel the whole command line, and any if/endif or loop.
      * If force_abort is set, we cancel everything.
      */
     did_emsg = FALSE;
@@ -806,14 +805,14 @@ do_cmdline(cmdline, getline, cookie, flags)
 
     /*
      * Continue executing command lines:
-     * - when inside an ":if" or ":while"
+     * - when inside an ":if", ":while" or ":for"
      * - for multiple commands on one line, separated with '|'
      * - when repeating until there are no more lines (for ":source")
      */
     next_cmdline = cmdline;
     do
     {
-	/* stop skipping cmds for an error msg after all endifs and endwhiles */
+	/* stop skipping cmds for an error msg after all endif/while/for */
 	if (next_cmdline == NULL
 #ifdef FEAT_EVAL
 		&& !force_abort
@@ -825,14 +824,14 @@ do_cmdline(cmdline, getline, cookie, flags)
 	    did_emsg = FALSE;
 
 	/*
-	 * 1. If repeating a line with ":while", get a line from lines_ga.
+	 * 1. If repeating a line in a loop, get a line from lines_ga.
 	 * 2. If no line given: Get an allocated line with getline().
 	 * 3. If a line is given: Make a copy, so we can mess with it.
 	 */
 
 #ifdef FEAT_EVAL
 	/* 1. If repeating, get a previous line from lines_ga. */
-	if (cstack.cs_whilelevel && current_line < lines_ga.ga_len)
+	if (cstack.cs_looplevel > 0 && current_line < lines_ga.ga_len)
 	{
 	    /* Each '|' separated command is stored separately in lines_ga, to
 	     * be able to jump to it.  Don't use next_cmdline now. */
@@ -881,20 +880,20 @@ do_cmdline(cmdline, getline, cookie, flags)
 	    }
 	}
 
-	if (cstack.cs_whilelevel)
+	if (cstack.cs_looplevel > 0)
 	{
-	    /* Inside a while loop we need to store the lines and use them
+	    /* Inside a while/for loop we need to store the lines and use them
 	     * again.  Pass a different "getline" function to do_one_cmd()
 	     * below, so that it stores lines in or reads them from
 	     * "lines_ga".  Makes it possible to define a function inside a
-	     * while loop. */
-	    cmd_getline = get_while_line;
-	    cmd_cookie = (void *)&cmd_while_cookie;
-	    cmd_while_cookie.lines_gap = &lines_ga;
-	    cmd_while_cookie.current_line = current_line;
-	    cmd_while_cookie.getline = getline;
-	    cmd_while_cookie.cookie = cookie;
-	    cmd_while_cookie.repeating = (current_line < lines_ga.ga_len);
+	     * while/for loop. */
+	    cmd_getline = get_loop_line;
+	    cmd_cookie = (void *)&cmd_loop_cookie;
+	    cmd_loop_cookie.lines_gap = &lines_ga;
+	    cmd_loop_cookie.current_line = current_line;
+	    cmd_loop_cookie.getline = getline;
+	    cmd_loop_cookie.cookie = cookie;
+	    cmd_loop_cookie.repeating = (current_line < lines_ga.ga_len);
 	}
 	else
 	{
@@ -958,15 +957,16 @@ do_cmdline(cmdline, getline, cookie, flags)
 
 #ifdef FEAT_EVAL
 	/*
-	 * Save the current line when inside a ":while", and when the command
-	 * looks like a ":while", because we may need it later.
-	 * When there is a '|' and another command, it is stored separately,
-	 * because we need to be able to jump back to it from an :endwhile.
+	 * Save the current line when inside a ":while" or ":for", and when
+	 * the command looks like a ":while" or ":for", because we may need it
+	 * later.  When there is a '|' and another command, it is stored
+	 * separately, because we need to be able to jump back to it from an
+	 * :endwhile/:endfor.
 	 */
-	if (	   current_line == lines_ga.ga_len
-		&& (cstack.cs_whilelevel || has_while_cmd(next_cmdline)))
+	if (current_line == lines_ga.ga_len
+		&& (cstack.cs_looplevel || has_loop_cmd(next_cmdline)))
 	{
-	    if (store_while_line(&lines_ga, next_cmdline) == FAIL)
+	    if (store_loop_line(&lines_ga, next_cmdline) == FAIL)
 	    {
 		retval = FAIL;
 		break;
@@ -1030,10 +1030,10 @@ do_cmdline(cmdline, getline, cookie, flags)
 	--recursive;
 
 #ifdef FEAT_EVAL
-	if (cmd_cookie == (void *)&cmd_while_cookie)
-	    /* Use "current_line" from "cmd_while_cookie", it may have been
+	if (cmd_cookie == (void *)&cmd_loop_cookie)
+	    /* Use "current_line" from "cmd_loop_cookie", it may have been
 	     * incremented when defining a function. */
-	    current_line = cmd_while_cookie.current_line;
+	    current_line = cmd_loop_cookie.current_line;
 #endif
 
 	if (next_cmdline == NULL)
@@ -1070,36 +1070,38 @@ do_cmdline(cmdline, getline, cookie, flags)
 					      && !func_has_abort(real_cookie))
 	    did_emsg = FALSE;
 
-	if (cstack.cs_whilelevel)
+	if (cstack.cs_looplevel > 0)
 	{
 	    ++current_line;
 
 	    /*
-	     * An ":endwhile" and ":continue" is handled here.
-	     * If we were executing commands, jump back to the ":while".
-	     * If we were not executing commands, decrement whilelevel.
+	     * An ":endwhile", ":endfor" and ":continue" is handled here.
+	     * If we were executing commands, jump back to the ":while" or
+	     * ":for".
+	     * If we were not executing commands, decrement cs_looplevel.
 	     */
-	    if (cstack.cs_had_endwhile || cstack.cs_had_continue)
+	    if (cstack.cs_lflags & (CSL_HAD_CONT | CSL_HAD_ENDLOOP))
 	    {
-		if (cstack.cs_had_endwhile)
-		    cstack.cs_had_endwhile = FALSE;
-		else
-		    cstack.cs_had_continue = FALSE;
+		cstack.cs_lflags &= ~(CSL_HAD_CONT | CSL_HAD_ENDLOOP);
 
-		/* Jump back to the matching ":while".  Be careful not to use
-		 * a cs_line[] from an entry that isn't a ":while": It would
-		 * make "current_line" invalid and can cause a crash. */
+		/* Jump back to the matching ":while" or ":for".  Be careful
+		 * not to use a cs_line[] from an entry that isn't a ":while"
+		 * or ":for": It would make "current_line" invalid and can
+		 * cause a crash. */
 		if (!did_emsg && !got_int && !did_throw
 			&& cstack.cs_idx >= 0
-			&& (cstack.cs_flags[cstack.cs_idx] & CSF_WHILE)
+			&& (cstack.cs_flags[cstack.cs_idx]
+						      & (CSF_WHILE | CSF_FOR))
 			&& cstack.cs_line[cstack.cs_idx] >= 0
 			&& (cstack.cs_flags[cstack.cs_idx] & CSF_ACTIVE))
 		{
 		    current_line = cstack.cs_line[cstack.cs_idx];
-		    cstack.cs_had_while = TRUE;	/* note we jumped there */
+						/* remember we jumped there */
+		    cstack.cs_lflags |= CSL_HAD_LOOP;
 		    line_breakcheck();		/* check if CTRL-C typed */
 
-		    /* Check for the next breakpoint at or after the ":while".*/
+		    /* Check for the next breakpoint at or after the ":while"
+		     * or ":for". */
 		    if (breakpoint != NULL)
 		    {
 			*breakpoint = dbg_find_breakpoint(
@@ -1109,20 +1111,21 @@ do_cmdline(cmdline, getline, cookie, flags)
 			*dbg_tick = debug_tick;
 		    }
 		}
-		else /* can only get here with ":endwhile" */
+		else
 		{
-		    --cstack.cs_whilelevel;
+		    /* can only get here with ":endwhile" or ":endfor" */
+		    --cstack.cs_looplevel;
 		    if (cstack.cs_idx >= 0)
 			--cstack.cs_idx;
 		}
 	    }
 
 	    /*
-	     * For a ":while" we need to remember the line number.
+	     * For a ":while" or ":for" we need to remember the line number.
 	     */
-	    else if (cstack.cs_had_while)
+	    else if (cstack.cs_lflags & CSL_HAD_LOOP)
 	    {
-		cstack.cs_had_while = FALSE;
+		cstack.cs_lflags &= ~CSL_HAD_LOOP;
 		cstack.cs_line[cstack.cs_idx] = current_line - 1;
 	    }
 	}
@@ -1130,7 +1133,7 @@ do_cmdline(cmdline, getline, cookie, flags)
 	/*
 	 * When not inside any ":while" loop, clear remembered lines.
 	 */
-	if (!cstack.cs_whilelevel)
+	if (cstack.cs_looplevel == 0)
 	{
 	    if (lines_ga.ga_len > 0)
 	    {
@@ -1142,17 +1145,17 @@ do_cmdline(cmdline, getline, cookie, flags)
 	}
 
 	/*
-	 * A ":finally" makes did_emsg, got_int, and did_throw pending for being
-	 * restored at the ":endtry".  Reset them here and set the ACTIVE and
-	 * FINALLY flags, so that the finally clause gets executed.  This
-	 * includes the case where a missing ":endif" or ":endwhile" was
-	 * detected by the ":finally" itself.
+	 * A ":finally" makes did_emsg, got_int, and did_throw pending for
+	 * being restored at the ":endtry".  Reset them here and set the
+	 * ACTIVE and FINALLY flags, so that the finally clause gets executed.
+	 * This includes the case where a missing ":endif", ":endwhile" or
+	 * ":endfor" was detected by the ":finally" itself.
 	 */
-	if (cstack.cs_had_finally)
+	if (cstack.cs_lflags & CSL_HAD_FINA)
 	{
-	    cstack.cs_had_finally = FALSE;
-	    report_make_pending(cstack.cs_pending[cstack.cs_idx] &
-		    (CSTP_ERROR | CSTP_INTERRUPT | CSTP_THROW),
+	    cstack.cs_lflags &= ~CSL_HAD_FINA;
+	    report_make_pending(cstack.cs_pending[cstack.cs_idx]
+		    & (CSTP_ERROR | CSTP_INTERRUPT | CSTP_THROW),
 		    did_throw ? (void *)current_exception : NULL);
 	    did_emsg = got_int = did_throw = FALSE;
 	    cstack.cs_flags[cstack.cs_idx] |= CSF_ACTIVE | CSF_FINALLY;
@@ -1183,7 +1186,7 @@ do_cmdline(cmdline, getline, cookie, flags)
      *   conditionals need to be checked for executing finally clauses or
      *   catching an interrupt exception
      * - didn't get an error message or lines are not typed
-     * - there is a command after '|', inside a :if, :while, or :try, or
+     * - there is a command after '|', inside a :if, :while, :for or :try, or
      *   looping for ":source" command or function call.
      */
     while (!((got_int
@@ -1225,6 +1228,8 @@ do_cmdline(cmdline, getline, cookie, flags)
 		EMSG(_(e_endtry));
 	    else if (cstack.cs_flags[cstack.cs_idx] & CSF_WHILE)
 		EMSG(_(e_endwhile));
+	    else if (cstack.cs_flags[cstack.cs_idx] & CSF_FOR)
+		EMSG(_(e_endfor));
 	    else
 		EMSG(_(e_endif));
 	}
@@ -1237,12 +1242,13 @@ do_cmdline(cmdline, getline, cookie, flags)
 	 */
 	do
 	    cstack.cs_idx = cleanup_conditionals(&cstack, 0, TRUE);
-	while (--cstack.cs_idx >= 0);
+	while (--cstack.cs_idx >= 0)
+	    ;
 	trylevel = initial_trylevel;
     }
 
-    /* If a missing ":endtry", ":endwhile", or ":endif" or a memory lack
-     * was reported above and the error message is to be converted to an
+    /* If a missing ":endtry", ":endwhile", ":endfor", or ":endif" or a memory
+     * lack was reported above and the error message is to be converted to an
      * exception, do this now after rewinding the cstack. */
     do_errthrow(&cstack, getline_equal(getline, cookie, get_func_line)
 				  ? (char_u *)"endfunction" : (char_u *)NULL);
@@ -1423,29 +1429,29 @@ do_cmdline(cmdline, getline, cookie, flags)
 
 #ifdef FEAT_EVAL
 /*
- * Obtain a line when inside a ":while" loop.
+ * Obtain a line when inside a ":while" or ":for" loop.
  */
     static char_u *
-get_while_line(c, cookie, indent)
+get_loop_line(c, cookie, indent)
     int		c;
     void	*cookie;
     int		indent;
 {
-    struct while_cookie *cp = (struct while_cookie *)cookie;
+    struct loop_cookie	*cp = (struct loop_cookie *)cookie;
     wcmd_T		*wp;
     char_u		*line;
 
     if (cp->current_line + 1 >= cp->lines_gap->ga_len)
     {
 	if (cp->repeating)
-	    return NULL;	/* trying to read past the ":endwhile" */
+	    return NULL;	/* trying to read past ":endwhile"/":endfor" */
 
-	/* First time inside the ":while": get line normally. */
+	/* First time inside the ":while"/":for": get line normally. */
 	if (cp->getline == NULL)
 	    line = getcmdline(c, 0L, indent);
 	else
 	    line = cp->getline(c, cp->cookie, indent);
-	if (store_while_line(cp->lines_gap, line) == OK)
+	if (store_loop_line(cp->lines_gap, line) == OK)
 	    ++cp->current_line;
 
 	return line;
@@ -1462,7 +1468,7 @@ get_while_line(c, cookie, indent)
  * Store a line in "gap" so that a ":while" loop can execute it again.
  */
     static int
-store_while_line(gap, line)
+store_loop_line(gap, line)
     garray_T	*gap;
     char_u	*line;
 {
@@ -1475,7 +1481,7 @@ store_while_line(gap, line)
 }
 
 /*
- * Free the lines stored for a ":while" loop.
+ * Free the lines stored for a ":while" or ":for" loop.
  */
     static void
 free_cmdlines(gap)
@@ -1490,7 +1496,7 @@ free_cmdlines(gap)
 #endif
 
 /*
- * If "getline" is get_while_line(), return TRUE if the getline it uses equals
+ * If "getline" is get_loop_line(), return TRUE if the getline it uses equals
  * "func".  * Otherwise return TRUE when "getline" equals "func".
  */
 /*ARGSUSED*/
@@ -1502,14 +1508,14 @@ getline_equal(getline, cookie, func)
 {
 #ifdef FEAT_EVAL
     char_u		*(*gp) __ARGS((int, void *, int));
-    struct while_cookie *cp;
+    struct loop_cookie *cp;
 
-    /* When "getline" is "get_while_line()" use the "cookie" to find the
+    /* When "getline" is "get_loop_line()" use the "cookie" to find the
      * function that's orignally used to obtain the lines.  This may be nested
      * several levels. */
     gp = getline;
-    cp = (struct while_cookie *)cookie;
-    while (gp == get_while_line)
+    cp = (struct loop_cookie *)cookie;
+    while (gp == get_loop_line)
     {
 	gp = cp->getline;
 	cp = cp->cookie;
@@ -1522,7 +1528,7 @@ getline_equal(getline, cookie, func)
 
 #if defined(FEAT_EVAL) || defined(FEAT_MBYTE) || defined(PROTO)
 /*
- * If "getline" is get_while_line(), return the cookie used by the original
+ * If "getline" is get_loop_line(), return the cookie used by the original
  * getline function.  Otherwise return "cookie".
  */
 /*ARGSUSED*/
@@ -1533,14 +1539,14 @@ getline_cookie(getline, cookie)
 {
 # ifdef FEAT_EVAL
     char_u		*(*gp) __ARGS((int, void *, int));
-    struct while_cookie *cp;
+    struct loop_cookie *cp;
 
-    /* When "getline" is "get_while_line()" use the "cookie" to find the
+    /* When "getline" is "get_loop_line()" use the "cookie" to find the
      * cookie that's orignally used to obtain the lines.  This may be nested
      * several levels. */
     gp = getline;
-    cp = (struct while_cookie *)cookie;
-    while (gp == get_while_line)
+    cp = (struct loop_cookie *)cookie;
+    while (gp == get_loop_line)
     {
 	gp = cp->getline;
 	cp = cp->cookie;
@@ -2373,6 +2379,8 @@ do_one_cmd(cmdlinep, sourcing,
 	    /* commands that need evaluation */
 	    case CMD_while:
 	    case CMD_endwhile:
+	    case CMD_for:
+	    case CMD_endfor:
 	    case CMD_if:
 	    case CMD_elseif:
 	    case CMD_else:
@@ -3468,6 +3476,7 @@ set_one_cmd_context(xp, buff)
 	case CMD_if:
 	case CMD_elseif:
 	case CMD_while:
+	case CMD_for:
 	case CMD_echo:
 	case CMD_echon:
 	case CMD_execute:
