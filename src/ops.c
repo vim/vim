@@ -5149,7 +5149,13 @@ write_viminfo_registers(fp)
 	if (i == TILDE_REGISTER)
 	    continue;
 #endif
+	/* Skip empty registers. */
 	num_lines = y_regs[i].y_size;
+	if (num_lines == 0
+		|| (num_lines == 1 && y_regs[i].y_type == MCHAR
+					&& STRLEN(y_regs[i].y_array[0]) == 0))
+	    continue;
+
 	if (max_kbyte > 0)
 	{
 	    /* Skip register if there is more text than the maximum size. */

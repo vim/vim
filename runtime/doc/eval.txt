@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2004 Dec 10
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -29,12 +29,15 @@ last chapter below.
 ==============================================================================
 1. Variables						*variables*
 
-There are two types of variables:
+There are three types of variables:
 
-Number		a 32 bit signed number.
-String		a NUL terminated string of 8-bit unsigned characters.
+Number		a 32 bit signed number
+String		a NUL terminated string of 8-bit unsigned characters (bytes)
+Funcref		a reference to a function |Funcref|
+List		an ordered sequence of items |List|
 
-These are converted automatically, depending on how they are used.
+The Number and String types are converted automatically, depending on how they
+are used.
 
 Conversion from a Number to a String is by making the ASCII representation of
 the Number.  Examples: >
@@ -63,6 +66,63 @@ Note that in the command >
 "foo" is converted to 0, which means FALSE.  To test for a non-empty string,
 use strlen(): >
 	:if strlen("foo")
+
+
+Function references ~
+								*Funcref*
+
+A Funcref variable is obtained with the |function()| function.  It can be used
+in an expression to invoke the function it refers to by using it in the place
+of a function name, before the parenthesis around the arguments.  Example: >
+
+	:let Fn = function("MyFunc")
+	:echo Fn()
+
+Note that this doesn't work with |:call|, because its argument is not an
+expression.
+The name of the referenced function can be obtained with |string()|.  A
+Funcref variable must start with a capital, "s:", "w:" or "b:".
+
+
+Lists ~
+								*List*
+A List is an ordered sequence of items.  An item can be of any type.  Items
+can be accessed by their index number.  Items can be added and removed at any
+position in the sequence.
+
+A List is created with a comma separated list of items in square brackets.
+Example: >
+	:let mylist = [1, 'two', 3, "four"]
+
+An item can be any expression.  Using a List for an item creates a
+two-dimensional List: >
+	:let mylist = [[11, 12], [21, 22], [31, 32]]
+
+An extra comma after the last item is ignored.
+
+An item in the List can be accessed by putting the index in square brackets
+after the List: >
+	:let item = mylist[2]		" get the third item: 3
+<
+								*list-index*
+Indexes are zero-based, thus the first item has index zero.  A negative index
+is counted from the end.  Index -1 refers to the last item in the List, -2 to
+the last but one item, etc. >
+	:let last = mylist[-1]		" get the last item: "four"
+
+A part of the List can be obtained by specifying the first and last index,
+separated by a colon in square brackets: >
+	:let smalllist = mylist[2:-1]	" get List [3, "four"]
+
+Omitting the first index is similar to zero.  Omitting the last index is
+similar to -1.  The difference is that there is no error if the items are not
+available. >
+	:let endlist = [2:]		" from item 2 to the end: [3, "four"]
+	:let shortlist = [1:1]		" List with one item: ['two']
+	:let otherlist = [:]		" make a copy
+
+
+More about variables ~
 
 If you need to know the type of a variable or expression, use the |type()|
 function.
@@ -122,11 +182,13 @@ Expression syntax summary, from least to most significant:
 	+ expr7			unary plus
 	expr8
 
-|expr8|	expr9[expr1]		index in String
+|expr8|	expr9[expr1]		byte of a String or item of a List
+	expr9[expr1 : expr2]	substring of a String or sublist of a List
 
 |expr9|	number			number constant
 	"string"		string constant, backslash is special
 	'string'		string constant
+	[expr1, ...]		List
 	&option			option value
 	(expr1)			nested expression
 	variable		internal variable
@@ -134,6 +196,7 @@ Expression syntax summary, from least to most significant:
 	$VAR			environment variable
 	@r			contents of register 'r'
 	function(expr1, ...)	function call
+	Funcref(expr1, ...)	function call with Funcref variable
 	func{ti}on(expr1, ...)	function call with curly braces
 
 
@@ -301,19 +364,59 @@ These three can be repeated and mixed.  Examples:
 
 expr8							*expr8*
 -----
-expr9[expr1]		index in String		*expr-[]* *E111*
+expr9[expr1]		item of String or List		*expr-[]* *E111*
 
-This results in a String that contains the expr1'th single byte from expr9.
-expr9 is used as a String, expr1 as a Number.  Note that this doesn't work for
-multi-byte encodings.
+If expr9 is a Number or String this results in a String that contains the
+expr1'th single byte from expr9.  expr9 is used as a String, expr1 as a
+Number.  Note that this doesn't recognize multi-byte encodings.
 
-Note that index zero gives the first character.  This is like it works in C.
-Careful: text column numbers start with one!  Example, to get the character
-under the cursor: >
+Index zero gives the first character.  This is like it works in C.  Careful:
+text column numbers start with one!  Example, to get the character under the
+cursor: >
 	:let c = getline(line("."))[col(".") - 1]
 
 If the length of the String is less than the index, the result is an empty
-String.
+String.  A negative index always results in an empty string (reason: backwards
+compatibility).  Use [-1:] to get the last byte.
+
+If expr9 is a List then it results the item at index expr1.  See |list-index|
+for possible index values.  If the index is out of range this results in an
+error.  Example: >
+	:let item = mylist[-1]		" get last item
+
+Generally, if a List index is equal to or higher than the length of the List,
+or more negative than the length of the List, this results in an error.
+
+expr9[expr1a : expr1b]	substring or sublist		*expr-[:]*
+
+If expr9 is a Number or String this results in the substring with the bytes
+from expr1a to and including expr1b.  expr9 is used as a String, expr1a and
+expr1b are used as a Number.  Note that this doesn't recognize multi-byte
+encodings.
+
+If expr1a is omitted zero is used.  If expr1b is omitted the length of the
+string minus one is used.
+
+A negative number can be used to measure from the end of the string.  -1 is
+the last character, -2 the last but one, etc.
+
+If an index goes out of range for the string characters are omitted.  If
+expr1b is smaller than expr1a the result is an empty string.
+
+Examples: >
+	:let c = name[-1:]		" last byte of a string
+	:let c = name[-2:-2]		" last but one byte of a string
+	:let s = line(".")[4:]		" from the fifth byte to the end
+	:let s = s[:-3]			" remove last two bytes
+
+If expr9 is a List this results in a new List with the items indicated by the
+indexes expr1a and expr1b.  This works like with a String, as explained just
+above, except that indexes out of range cause an error.  Examples: >
+	:let l = mylist[:3]		" first four items
+	:let l = mylist[4:4]		" List with one item
+	:let l = mylist[:]		" shallow copy of a List
+
+Using expr9[expr1] or expr9[expr1a : expr1b] on a Funcref results in an error.
 
 						*expr9*
 number
@@ -806,50 +909,54 @@ See |function-list| for a list grouped by what the function is used for.
 
 USAGE				RESULT	DESCRIPTION	~
 
-append( {lnum}, {string})	Number  append {string} below line {lnum}
+append( {lnum}, {string})	Number	append {string} below line {lnum}
+append( {list}, {item})		List	append {item} to List {list}
 argc()				Number	number of files in the argument list
-argidx()			Number  current index in the argument list
+argidx()			Number	current index in the argument list
 argv( {nr})			String	{nr} entry of the argument list
 browse( {save}, {title}, {initdir}, {default})
 				String	put up a file requester
 browsedir( {title}, {initdir})  String	put up a directory requester
 bufexists( {expr})		Number	TRUE if buffer {expr} exists
-buflisted( {expr})		Number  TRUE if buffer {expr} is listed
-bufloaded( {expr})		Number  TRUE if buffer {expr} is loaded
+buflisted( {expr})		Number	TRUE if buffer {expr} is listed
+bufloaded( {expr})		Number	TRUE if buffer {expr} is loaded
 bufname( {expr})		String	Name of the buffer {expr}
 bufnr( {expr})			Number	Number of the buffer {expr}
 bufwinnr( {expr})		Number	window number of buffer {expr}
 byte2line( {byte})		Number	line number at byte count {byte}
-byteidx( {expr}, {nr})		Number  byte index of {nr}'th char in {expr}
+byteidx( {expr}, {nr})		Number	byte index of {nr}'th char in {expr}
 char2nr( {expr})		Number	ASCII value of first char in {expr}
-cindent( {lnum})		Number  C indent for line {lnum}
+cindent( {lnum})		Number	C indent for line {lnum}
 col( {expr})			Number	column nr of cursor or mark
 confirm( {msg} [, {choices} [, {default} [, {type}]]])
 				Number	number of choice picked by user
+copy( {expr})			any	make a shallow copy of {expr}
 cscope_connection( [{num} , {dbpath} [, {prepend}]])
 				Number	checks existence of cscope connection
-cursor( {lnum}, {col})		Number  position cursor at {lnum}, {col}
+cursor( {lnum}, {col})		Number	position cursor at {lnum}, {col}
+deepcopy( {expr})		any	make a full copy of {expr}
 delete( {fname})		Number	delete file {fname}
 did_filetype()			Number	TRUE if FileType autocommand event used
-diff_filler( {lnum})		Number  diff filler lines about {lnum}
-diff_hlID( {lnum}, {col})	Number  diff highlighting at {lnum}/{col}
+diff_filler( {lnum})		Number	diff filler lines about {lnum}
+diff_hlID( {lnum}, {col})	Number	diff highlighting at {lnum}/{col}
 escape( {string}, {chars})	String	escape {chars} in {string} with '\'
-eventhandler( )			Number  TRUE if inside an event handler
+eventhandler( )			Number	TRUE if inside an event handler
 executable( {expr})		Number	1 if executable {expr} exists
 exists( {expr})			Number	TRUE if {expr} exists
 expand( {expr})			String	expand special keywords in {expr}
 filereadable( {file})		Number	TRUE if {file} is a readable file
 findfile( {name}[, {path}[, {count}]])
-				String  Find fine {name} in {path}
+				String	Find fine {name} in {path}
 filewritable( {file})		Number	TRUE if {file} is a writable file
 fnamemodify( {fname}, {mods})	String	modify file name
-foldclosed( {lnum})		Number  first line of fold at {lnum} if closed
-foldclosedend( {lnum})		Number  last line of fold at {lnum} if closed
+foldclosed( {lnum})		Number	first line of fold at {lnum} if closed
+foldclosedend( {lnum})		Number	last line of fold at {lnum} if closed
 foldlevel( {lnum})		Number	fold level at {lnum}
-foldtext( )			String  line displayed for closed fold
+foldtext( )			String	line displayed for closed fold
 foreground( )			Number	bring the Vim window to the foreground
-getchar( [expr])		Number  get one character from the user
-getcharmod( )			Number  modifiers for the last typed character
+function( {name})		Funcref reference to function {name}
+getchar( [expr])		Number	get one character from the user
+getcharmod( )			Number	modifiers for the last typed character
 getbufvar( {expr}, {varname})		variable {varname} in buffer {expr}
 getcmdline()			String	return the current command-line
 getcmdpos()			Number	return cursor position in command-line
@@ -860,8 +967,8 @@ getfontname( [{name}])		String	name of font being used
 getftime( {fname})		Number	last modification time of file
 getftype( {fname})		String	description of type of file {fname}
 getline( {lnum})		String	line {lnum} from current buffer
-getreg( [{regname}])		String  contents of register
-getregtype( [{regname}])	String  type of register
+getreg( [{regname}])		String	contents of register
+getregtype( [{regname}])	String	type of register
 getwinposx()			Number	X coord in pixels of GUI Vim window
 getwinposy()			Number	Y coord in pixels of GUI Vim window
 getwinvar( {nr}, {varname})		variable {varname} in window {nr}
@@ -876,19 +983,21 @@ histnr( {history})		Number	highest index of a history
 hlexists( {name})		Number	TRUE if highlight group {name} exists
 hlID( {name})			Number	syntax ID of highlight group {name}
 hostname()			String	name of the machine Vim is running on
-iconv( {expr}, {from}, {to})	String  convert encoding of {expr}
-indent( {lnum})			Number  indent of line {lnum}
+iconv( {expr}, {from}, {to})	String	convert encoding of {expr}
+indent( {lnum})			Number	indent of line {lnum}
 input( {prompt} [, {text}])	String	get input from the user
 inputdialog( {p} [, {t} [, {c}]]) String  like input() but in a GUI dialog
-inputrestore()			Number  restore typeahead
-inputsave()			Number  save and clear typeahead
+inputrestore()			Number	restore typeahead
+inputsave()			Number	save and clear typeahead
 inputsecret( {prompt} [, {text}]) String  like input() but hiding the text
+insert( {list}, {item} [, {idx}]) List	insert {item} in {list} [before {idx}]
 isdirectory( {directory})	Number	TRUE if {directory} is a directory
-libcall( {lib}, {func}, {arg})	String  call {func} in library {lib} with {arg}
+len( {expr})			Number	the length of {expr}
+libcall( {lib}, {func}, {arg})	String	call {func} in library {lib} with {arg}
 libcallnr( {lib}, {func}, {arg})  Number  idem, but return a Number
 line( {expr})			Number	line nr of cursor, last line or mark
 line2byte( {lnum})		Number	byte count of line {lnum}
-lispindent( {lnum})		Number  Lisp indent for line {lnum}
+lispindent( {lnum})		Number	Lisp indent for line {lnum}
 localtime()			Number	current time
 maparg( {name}[, {mode}])	String	rhs of mapping {name} in mode {mode}
 mapcheck( {name}[, {mode}])	String	check for mappings matching {name}
@@ -898,7 +1007,7 @@ matchend( {expr}, {pat}[, {start}[, {count}]])
 				Number	position where {pat} ends in {expr}
 matchstr( {expr}, {pat}[, {start}[, {count}]])
 				String	{count}'th match of {pat} in {expr}
-mode()				String  current editing mode
+mode()				String	current editing mode
 nextnonblank( {lnum})		Number	line nr of non-blank line >= {lnum}
 nr2char( {expr})		String	single char with ASCII value {expr}
 prevnonblank( {lnum})		Number	line nr of non-blank line <= {lnum}
@@ -910,29 +1019,31 @@ remote_peek( {serverid} [, {retvar}])
 remote_read( {serverid})	String	read reply string
 remote_send( {server}, {string} [, {idvar}])
 				String	send key sequence
-rename( {from}, {to})		Number  rename (move) file from {from} to {to}
-repeat( {expr}, {count})	String  repeat {expr} {count} times
-resolve( {filename})		String  get filename a shortcut points to
-search( {pattern} [, {flags}])	Number  search for {pattern}
+remove( {list}, {idx})		any	remove item {idx} from {list}
+rename( {from}, {to})		Number	rename (move) file from {from} to {to}
+repeat( {expr}, {count})	String	repeat {expr} {count} times
+resolve( {filename})		String	get filename a shortcut points to
+search( {pattern} [, {flags}])	Number	search for {pattern}
 searchpair( {start}, {middle}, {end} [, {flags} [, {skip}]])
-				Number  search for other end of start/end pair
+				Number	search for other end of start/end pair
 server2client( {clientid}, {string})
 				Number	send reply string
 serverlist()			String	get a list of available servers
 setbufvar( {expr}, {varname}, {val})	set {varname} in buffer {expr} to {val}
 setcmdpos( {pos})		Number	set cursor position in command-line
 setline( {lnum}, {line})	Number	set line {lnum} to {line}
-setreg( {n}, {v}[, {opt}])	Number  set register to value and type
+setreg( {n}, {v}[, {opt}])	Number	set register to value and type
 setwinvar( {nr}, {varname}, {val})	set {varname} in window {nr} to {val}
-simplify( {filename})		String  simplify filename as much as possible
+simplify( {filename})		String	simplify filename as much as possible
 strftime( {format}[, {time}])	String	time in specified format
 stridx( {haystack}, {needle})	Number	first index of {needle} in {haystack}
+string( {expr})			String	{expr} converted to a String
 strlen( {expr})			Number	length of the String {expr}
 strpart( {src}, {start}[, {len}])
 				String	{len} characters of {src} at {start}
 strridx( {haystack}, {needle})	Number	last index of {needle} in {haystack}
 strtrans( {expr})		String	translate string to make it printable
-submatch( {nr})			String  specific match in ":substitute"
+submatch( {nr})			String	specific match in ":substitute"
 substitute( {expr}, {pat}, {sub}, {flags})
 				String	all {pat} in {expr} replaced with {sub}
 synID( {lnum}, {col}, {trans})	Number	syntax ID at {lnum} and {col}
@@ -953,15 +1064,23 @@ wincol()			Number	window column of the cursor
 winheight( {nr})		Number	height of window {nr}
 winline()			Number	window line of the cursor
 winnr()				Number	number of current window
-winrestcmd()			String  returns command to restore window sizes
+winrestcmd()			String	returns command to restore window sizes
 winwidth( {nr})			Number	width of window {nr}
 
-append({lnum}, {string})				*append()*
-		Append the text {string} after line {lnum} in the current
-		buffer.  {lnum} can be zero, to insert a line before the first
-		one.  Returns 1 for failure ({lnum} out of range) or 0 for
-		success.
+append({expr1}, {expr2})				*append()*
+		If {expr1} is a List: Append the item {expr2} to List {expr1}.
+		Returns the resulting List. Examples: >
+			:let alist = append([1, 2, 3], item)
+			:call append(mylist, "woodstock")
+<		Note that when {expr2} is a List it is appended as a single
+		item.  Use |extend()| to concatenate Lists.
 
+		When {expr1} is not a List: Append the text {expr2} after line
+		{expr1} in the current buffer.  {expr1} can be zero, to insert
+		a line before the first one.  Returns 1 for failure ({expr1}
+		out of range or out of memory), 0 for success.  Example: >
+			:let failed = append(line('$'), "# THE END")
+<
 							*argc()*
 argc()		The result is the number of files in the argument list of the
 		current window.  See |arglist|.
@@ -1205,6 +1324,15 @@ confirm({msg} [, {choices} [, {default} [, {type}]]])
 		don't fit, a vertical layout is used anyway.  For some systems
 		the horizontal layout is always used.
 
+							*copy()*
+copy({expr})	Make a copy of {expr}.  For Numbers and Strings this isn't
+		different from using {expr} directly.
+		When {expr} is a List a shallow copy is created.  This means
+		that the original List can be changed without changing the
+		copy, and vise versa.  But the items are identical, thus
+		changing an item changes the contents of both Lists.  Also see
+		|deepcopy()|.
+
 							*cscope_connection()*
 cscope_connection([{num} , {dbpath} [, {prepend}]])
 		Checks for the existence of a |cscope| connection.  If no
@@ -1257,10 +1385,22 @@ cursor({lnum}, {col})					*cursor()*
 		line.
 		If {col} is zero, the cursor will stay in the current column.
 
-							*delete()*
-delete({fname})	Deletes the file by the name {fname}.  The result is a Number,
+
+deepcopy({expr})					*deepcopy()*
+		Make a copy of {expr}.  For Numbers and Strings this isn't
+		different from using {expr} directly.
+		When {expr} is a List a full copy is created.  This means
+		that the original List can be changed without changing the
+		copy, and vise versa.  When an item is a List, a copy for it
+		is made, recursively.  Thus changing an item in the copy does
+		not change the contents of the original List.
+		Also see |copy()|.
+
+delete({fname})							*delete()*
+		Deletes the file by the name {fname}.  The result is a Number,
 		which is 0 if the file was deleted successfully, and non-zero
 		when the deletion failed.
+		Use |remove()| to delete an item from a List.
 
 							*did_filetype()*
 did_filetype()	Returns non-zero when autocommands are being executed and the
@@ -1544,6 +1684,10 @@ foreground()	Move the Vim window to the foreground.  Useful when sent from
 		|remote_foreground()| instead.
 		{only in the Win32, Athena, Motif and GTK GUI versions and the
 		Win32 console version}
+
+function({name})					*function()*
+		Return a Funcref variable that refers to function {name}.
+		{name} can be a user defined function or an internal function.
 
 getchar([expr])						*getchar()*
 		Get a single character from the user.  If it is an 8-bit
@@ -1995,11 +2139,33 @@ inputsecret({prompt} [, {text}])			*inputsecret()*
 		The result is a String, which is whatever the user actually
 		typed on the command-line in response to the issued prompt.
 
+insert({list}, {item} [, {idx}])			*insert()*
+		Insert {item} at the start of List {list}.
+		If {idx} is specified insert {item} before the item with index
+		{idx}.  If {idx} is zero it goes before the first item, just
+		like omitting {idx}.  A negative {idx} is also possible, see
+		|list-index|.  -1 inserts just before the last item.
+		Returns the resulting List. Examples: >
+			:let mylist = insert([2, 3, 5], 1)
+			:call insert(mylist, 4, -1)
+			:call insert(mylist, 6, len(mylist))
+<		The last example can be done simpler with |append()|.
+		Note that when {item} is a List it is inserted as a single
+		item.  Use |extend()| to concatenate Lists.
+
 isdirectory({directory})				*isdirectory()*
 		The result is a Number, which is non-zero when a directory
 		with the name {directory} exists.  If {directory} doesn't
 		exist, or isn't a directory, the result is FALSE.  {directory}
 		is any expression, which is used as a String.
+
+							*len()*
+len({expr})	The result is a Number, which is the length of the argument.
+		When {expr} is a String or a Number the length in bytes is
+		used, as with |strlen()|.
+		When {expr} is a List the number of items in the List is
+		returned.
+		Otherwise an error is given.
 
 						*libcall()* *E364* *E368*
 libcall({libname}, {funcname}, {argument})
@@ -2318,6 +2484,13 @@ remote_send({server}, {string} [, {idvar}])
 		 \ 'server2client(expand("<client>"), "HELLO")<CR>')
 
 
+remove({list}, {idx})					*remove()*
+		Remove the item at {idx} from List {list} and return it.
+		See |list-index| for possible values of {idx}.
+		Example: >
+			:echo "last item: " . remove(mylist, -1)
+<		Use |delete()| to remove a file.
+
 rename({from}, {to})					*rename()*
 		Rename the file by the name {from} to the name {to}.  This
 		should also work to move files across file systems.  The
@@ -2595,6 +2768,13 @@ stridx({haystack}, {needle})				*stridx()*
 		  :echo stridx("Starting point", "Start")    0
 		  :echo stridx("Starting point", "start")   -1
 <
+							*string()*
+string({expr})	Return {expr} converted to a String.
+			{expr} type	result ~
+			String		identical
+			Number		decimal representation
+			Funcref		name of the function
+
 							*strlen()*
 strlen({expr})	The result is a Number, which is the length of the String
 		{expr} in bytes.  If you want to count the number of
@@ -2603,6 +2783,9 @@ strlen({expr})	The result is a Number, which is the length of the String
 			:let len = strlen(substitute(str, ".", "x", "g"))
 
 <		Composing characters are not counted.
+		If the argument is a Number it is first converted to a String.
+		For other types an error is given.
+		Also see |len()|.
 
 strpart({src}, {start}[, {len}])			*strpart()*
 		The result is a String, which is part of {src}, starting from
@@ -3359,7 +3542,11 @@ This would call the function "my_func_whizz(parameter)".
 :let {var-name}	..	List the value of variable {var-name}.  Several
 			variable names may be given.
 
-:let			List the values of all variables.
+:let			List the values of all variables.  The type of the
+			variable is indicated before the value:
+			    <nothing>	String
+				#	Number
+			    	*	Funcref
 
 							*:unlet* *:unl* *E108*
 :unl[et][!] {var-name} ...

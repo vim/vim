@@ -3632,6 +3632,7 @@ FocusGained	autocmd.txt	/*FocusGained*
 FocusLost	autocmd.txt	/*FocusLost*
 Folding	fold.txt	/*Folding*
 FuncUndefined	autocmd.txt	/*FuncUndefined*
+Funcref	eval.txt	/*Funcref*
 G	motion.txt	/*G*
 GNOME	gui_x11.txt	/*GNOME*
 GTK	gui_x11.txt	/*GTK*
@@ -3658,6 +3659,7 @@ KVim	gui_x11.txt	/*KVim*
 Korean	mbyte.txt	/*Korean*
 L	motion.txt	/*L*
 Linux-backspace	options.txt	/*Linux-backspace*
+List	eval.txt	/*List*
 M	motion.txt	/*M*
 MDI	starting.txt	/*MDI*
 MS-DOS	os_msdos.txt	/*MS-DOS*
@@ -4277,6 +4279,7 @@ conversion-server	mbyte.txt	/*conversion-server*
 convert-to-HTML	syntax.txt	/*convert-to-HTML*
 convert-to-XHTML	syntax.txt	/*convert-to-XHTML*
 convert-to-XML	syntax.txt	/*convert-to-XML*
+copy()	eval.txt	/*copy()*
 copy-diffs	diff.txt	/*copy-diffs*
 copy-move	change.txt	/*copy-move*
 copying	uganda.txt	/*copying*
@@ -4409,6 +4412,7 @@ debugger-integration	debugger.txt	/*debugger-integration*
 debugger-support	debugger.txt	/*debugger-support*
 debugger.txt	debugger.txt	/*debugger.txt*
 dec-mouse	options.txt	/*dec-mouse*
+deepcopy()	eval.txt	/*deepcopy()*
 definition-search	tagsrch.txt	/*definition-search*
 definitions	intro.txt	/*definitions*
 delete()	eval.txt	/*delete()*
@@ -4610,6 +4614,7 @@ expr->=	eval.txt	/*expr->=*
 expr->=#	eval.txt	/*expr->=#*
 expr->=?	eval.txt	/*expr->=?*
 expr->?	eval.txt	/*expr->?*
+expr-[:]	eval.txt	/*expr-[:]*
 expr-[]	eval.txt	/*expr-[]*
 expr-barbar	eval.txt	/*expr-barbar*
 expr-env	eval.txt	/*expr-env*
@@ -4744,6 +4749,7 @@ ftplugin-name	usr_05.txt	/*ftplugin-name*
 ftplugin-overrule	filetype.txt	/*ftplugin-overrule*
 ftplugin-special	usr_41.txt	/*ftplugin-special*
 ftplugins	usr_05.txt	/*ftplugins*
+function()	eval.txt	/*function()*
 function-argument	eval.txt	/*function-argument*
 function-key	intro.txt	/*function-key*
 function-list	usr_41.txt	/*function-list*
@@ -4955,6 +4961,7 @@ hebrew	hebrew.txt	/*hebrew*
 hebrew.txt	hebrew.txt	/*hebrew.txt*
 help	various.txt	/*help*
 help-context	help.txt	/*help-context*
+help-tags	tags	1
 help-translated	various.txt	/*help-translated*
 help-xterm-window	various.txt	/*help-xterm-window*
 help.txt	help.txt	/*help.txt*
@@ -5201,6 +5208,7 @@ ins-special-keys	insert.txt	/*ins-special-keys*
 ins-special-special	insert.txt	/*ins-special-special*
 ins-textwidth	insert.txt	/*ins-textwidth*
 insert	insert.txt	/*insert*
+insert()	eval.txt	/*insert()*
 insert-index	index.txt	/*insert-index*
 insert.txt	insert.txt	/*insert.txt*
 insert_expand	insert.txt	/*insert_expand*
@@ -5271,6 +5279,7 @@ last-position-jump	eval.txt	/*last-position-jump*
 last_buffer_nr()	eval.txt	/*last_buffer_nr()*
 lc_time-variable	eval.txt	/*lc_time-variable*
 left-right-motions	motion.txt	/*left-right-motions*
+len()	eval.txt	/*len()*
 less	various.txt	/*less*
 letter	print.txt	/*letter*
 lex-syntax	syntax.txt	/*lex-syntax*
@@ -6056,6 +6065,7 @@ status-line	windows.txt	/*status-line*
 statusmsg-variable	eval.txt	/*statusmsg-variable*
 strftime()	eval.txt	/*strftime()*
 stridx()	eval.txt	/*stridx()*
+string()	eval.txt	/*string()*
 string-match	eval.txt	/*string-match*
 strlen()	eval.txt	/*strlen()*
 strpart()	eval.txt	/*strpart()*
@@ -6483,6 +6493,7 @@ v_:	cmdline.txt	/*v_:*
 v_<	change.txt	/*v_<*
 v_<BS>	change.txt	/*v_<BS>*
 v_<Del>	change.txt	/*v_<Del>*
+v_<Esc>	visual.txt	/*v_<Esc>*
 v_=	change.txt	/*v_=*
 v_>	change.txt	/*v_>*
 v_C	change.txt	/*v_C*
