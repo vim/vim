@@ -116,6 +116,7 @@ gtk_form_put(GtkForm	*form,
 
     g_return_if_fail(GTK_IS_FORM(form));
 
+    /* LINTED: avoid warning: conversion to 'unsigned long' */
     child = g_new(GtkFormChild, 1);
 
     child->widget = child_widget;

@@ -1509,12 +1509,20 @@ reconfig: scratch clean
 # - Temporarily move the ./configure script to ./configure.save.  Don't
 #   overwrite it, it's probably the result of an aborted autoconf.
 # - Use sed to change ./config.log to auto/config.log in the configure script.
+# Autoconf 2.5x (2.59 at least) produces a few more files that we need to take
+# care of:
+# - configure.lineno: has the line numbers replaced with $LINENO.  That
+#   improves patches a LOT, thus use it instead (until someone says it doesn't
+#   work on some system).
+# - autom4te.cache directory is created and not cleaned up.  Delete it.
+# - Uses ">config.log" instead of "./config.log".
 autoconf:
 	if test ! -f configure.save; then mv configure configure.save; fi
 	autoconf
-	sed -e 's+\./config.log+auto/config.log+' configure > auto/configure
+	sed -e 's+>config.log+>auto/config.log+' -e 's+\./config.log+auto/config.log+' configure > auto/configure
 	chmod 755 auto/configure
 	mv -f configure.save configure
+	-rm -rf autom4te.cache
 	-rm -f auto/config.status auto/config.cache
 
 # Re-execute this Makefile to include the new auto/config.mk produced by
@@ -2063,12 +2071,15 @@ depend:
 		sed -e 's+^\([^ ]*\.o\)+objects/\1+' >> tmp_make; done
 	mv tmp_make Makefile
 
+# Run lint.  Clean up the *.ln files that are sometimes left behind.
 lint:
 	lint $(LINT_OPTIONS) $(LINT_CFLAGS) -DUSE_SNIFF -DHANGUL_INPUT $(LINT_SRC)
+	-rm -f *.ln
 
 # Check dosinst.c with lint.
 lintinstall:
 	lint $(LINT_OPTIONS) -DWIN32 -DUNIX_LINT dosinst.c
+	-rm -f dosinst.ln
 
 ###########################################################################
 

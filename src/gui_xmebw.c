@@ -346,8 +346,8 @@ set_pixmap(XmEnhancedButtonWidget eb)
 
     XGetGeometry(dpy, pix, &root, &x, &y, &width, &height, &border, &depth);
 
-    if (eb->enhancedbutton.label_location == XmTOP
-	    || eb->enhancedbutton.label_location == XmBOTTOM)
+    if (eb->enhancedbutton.label_location == (int)XmTOP
+	    || eb->enhancedbutton.label_location == (int)XmBOTTOM)
 	shift = eb->primitive.shadow_thickness / 2;
     else
 	shift = eb->primitive.shadow_thickness / 2;

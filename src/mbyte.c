@@ -5430,11 +5430,13 @@ xim_get_status_area_height()
 #ifdef FEAT_GUI_GTK
     if (xim_input_style & (int)GDK_IM_STATUS_AREA)
 	return gui.char_height;
-#elif defined FEAT_GUI_KDE
-    /* always return zero? */
 #else
+# if defined FEAT_GUI_KDE
+    /* always return zero? */
+# else
     if (status_area_enabled)
 	return gui.char_height;
+# endif
 #endif
     return 0;
 }

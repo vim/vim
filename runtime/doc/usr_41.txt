@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 7.0aa.  Last change: 2005 Jan 17
+*usr_41.txt*	For Vim version 7.0aa.  Last change: 2005 Jan 25
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -27,7 +27,7 @@ script.  There are a lot of them, thus this is a long chapter.
 Table of contents: |usr_toc.txt|
 
 ==============================================================================
-*41.1*	Introduction					*vim-script-intro*
+*41.1*	Introduction				*vim-script-intro* *script*
 
 Your first experience with Vim scripts is the vimrc file.  Vim reads it when
 it starts up and executes the commands.  You can set options to values you

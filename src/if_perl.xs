@@ -464,7 +464,9 @@ new ## TNAME ## rv(rv, ptr)					\
     return sv_bless(rv, gv_stashpv("VI" #TNAME, TRUE));		\
 }
 
+/* LINTED: avoid warning: cast from pointer to integer of different size */
 newANYrv(win_T, WIN)
+/* LINTED: avoid warning: cast from pointer to integer of different size */
 newANYrv(buf_T, BUF)
 
 /*
@@ -684,8 +686,8 @@ ex_perldo(eap)
     {
     dSP;
     length = strlen((char *)eap->arg);
-    sv = newSV(length + sizeof("sub VIM::perldo {")-1 + 1);
-    sv_setpvn(sv, "sub VIM::perldo {", sizeof("sub VIM::perldo {")-1);
+    sv = newSV(length + sizeof("sub VIM::perldo {") - 1 + 1);
+    sv_setpvn(sv, "sub VIM::perldo {", sizeof("sub VIM::perldo {") - 1);
     sv_catpvn(sv, (char *)eap->arg, length);
     sv_catpvn(sv, "}", 1);
     perl_eval_sv(sv, G_DISCARD | G_NOARGS);
@@ -701,7 +703,7 @@ ex_perldo(eap)
     SAVETMPS;
     for (i = eap->line1; i <= eap->line2; i++)
     {
-	sv_setpv(GvSV(PL_defgv),(char *)ml_get(i));
+	sv_setpv(GvSV(PL_defgv), (char *)ml_get(i));
 	PUSHMARK(sp);
 	perl_call_pv("VIM::perldo", G_SCALAR | G_EVAL);
 	str = SvPV(GvSV(PL_errgv), length);

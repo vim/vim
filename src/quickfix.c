@@ -617,9 +617,9 @@ restofline:
 
 	if (qf_add_entry(&qfprev,
 			directory,
-			*namebuf || directory
+			(*namebuf || directory)
 			    ? namebuf
-			    : currfile && valid ? currfile : NULL,
+			    : ((currfile && valid) ? currfile : (char_u *)NULL),
 			errmsg,
 			lnum,
 			col,
