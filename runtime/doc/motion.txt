@@ -1,4 +1,4 @@
-*motion.txt*    For Vim version 7.0aa.  Last change: 2004 Dec 29
+*motion.txt*    For Vim version 7.0aa.  Last change: 2005 Jan 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -938,7 +938,9 @@ These commands are not marks themselves, but jump to a mark:
 <
 			Note that ":keepjumps" must be used for every command.
 			When invoking a function the commands in that function
-			can still change the jumplist.
+			can still change the jumplist.  Also, for 
+			":keepjumps exe 'command '" the "command" won't keep
+			jumps.  Instead use: ":exe 'keepjumps command'"
 
 ==============================================================================
 8. Jumps					*jump-motions*
