@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jan 26
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jan 31
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -90,6 +90,9 @@ now includes "default" before "latin1".  This means that for files with 8-bit
 encodings the default is to use the encoding specified by the environment, if
 possible.  Previously latin1 would always be used, which is wrong in a
 non-latin1 environment, such as Russian.
+
+Previously Vim would exit when there are two windows, both of them displaying
+a help file, and using ":quit".  Now only the window is closed.
 
 ==============================================================================
 NEW FEATURES						*new-7*
@@ -427,8 +430,8 @@ invalid characters after the register name.
 ":let w:" lists window-local variables.
 ":let v:" lists Vim variables.
 
-The stridx() funcion takes a third argument, where to start searching.
-(Yegappan Lakshmanan)
+The stridx() and strridx() functions take a third argument, where to start
+searching.  (Yegappan Lakshmanan)
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*
@@ -712,5 +715,11 @@ Configure could not handle "-Dfoo=long\ long" in the TCL config output.
 When searching backwards, using a pattern that matches a newline and uses \zs
 after that, didn't find a match.  Could also get a hang or end up in the right
 column in the wrong line.
+
+When $LANG is "sl" for slovenian, the slovak menu was used, since "slovak"
+starts with "sl".
+
+When 'paste' is set in the GUI the Paste toolbar button doesn't work.  Clear
+'paste' when starting the GUI.
 
  vim:tw=78:ts=8:ft=help:norl:
