@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 07
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,9 +30,7 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-List data type:
-- Write docs for using Lists.
-- Fix the error numbers E999 in eval.c.
+Add mouse patch from Marcin Dalecki.
 
 Use 'ignorecase' for ":vimgrep"?
 

@@ -105,11 +105,11 @@ typedef struct listvar_S listvar;
 
 #define VAR_LIST_MAXNEST 100	/* maximum nesting of lists */
 static char *e_letunexp	= N_("E18: Unexpected characters in :let");
-static char *e_listidx = N_("E999: list index out of range: %ld");
+static char *e_listidx = N_("E684: list index out of range: %ld");
 static char *e_undefvar = N_("E121: Undefined variable: %s");
 static char *e_missbrac = N_("E111: Missing ']'");
-static char *e_intern2 = N_("E999: Internal error: %s");
-static char *e_listarg = N_("E999: Argument of %s must be a list");
+static char *e_intern2 = N_("E685: Internal error: %s");
+static char *e_listarg = N_("E686: Argument of %s must be a list");
 
 /*
  * All user-defined global variables are stored in "variables".
@@ -369,6 +369,7 @@ static void f_delete __ARGS((typeval *argvars, typeval *rettv));
 static void f_did_filetype __ARGS((typeval *argvars, typeval *rettv));
 static void f_diff_filler __ARGS((typeval *argvars, typeval *rettv));
 static void f_diff_hlID __ARGS((typeval *argvars, typeval *rettv));
+static void f_empty __ARGS((typeval *argvars, typeval *rettv));
 static void f_escape __ARGS((typeval *argvars, typeval *rettv));
 static void f_eventhandler __ARGS((typeval *argvars, typeval *rettv));
 static void f_executable __ARGS((typeval *argvars, typeval *rettv));
@@ -1141,12 +1142,12 @@ ex_let_vars(arg_start, tv, copy, semicolon, var_count, nextchars)
     i = list_len(l);
     if (semicolon == 0 && var_count < i)
     {
-	EMSG(_("E999: Less targets than List items"));
+	EMSG(_("E687: Less targets than List items"));
 	return FAIL;
     }
     if (var_count - semicolon > i)
     {
-	EMSG(_("E999: More targets than List items"));
+	EMSG(_("E688: More targets than List items"));
 	return FAIL;
     }
 
@@ -1574,7 +1575,7 @@ set_var_idx(name, ip, rettv, copy, endchars)
     {
 	if (tv->v_type != VAR_LIST || tv->vval.v_list == NULL)
 	{
-	    EMSG(_("E999: Can only index a List"));
+	    EMSG(_("E689: Can only index a List"));
 	    p = NULL;
 	    break;
 	}
@@ -1707,7 +1708,7 @@ eval_for_line(arg, errp, nextcmdp, skip)
     expr = skipwhite(expr);
     if (expr[0] != 'i' || expr[1] != 'n' || !vim_iswhite(expr[2]))
     {
-	EMSG(_("E999: Missing \"in\" after :for"));
+	EMSG(_("E690: Missing \"in\" after :for"));
 	return fi;
     }
 
@@ -2587,9 +2588,9 @@ eval4(arg, rettv, evaluate)
 			|| (type != TYPE_EQUAL && type != TYPE_NEQUAL))
 		{
 		    if (rettv->v_type != var2.v_type)
-			EMSG(_("E999: Can only compare List with List"));
+			EMSG(_("E691: Can only compare List with List"));
 		    else
-			EMSG(_("E999: Invalid operation for Lists"));
+			EMSG(_("E692: Invalid operation for Lists"));
 		    clear_tv(rettv);
 		    clear_tv(&var2);
 		    return FAIL;
@@ -2609,9 +2610,9 @@ eval4(arg, rettv, evaluate)
 			|| (type != TYPE_EQUAL && type != TYPE_NEQUAL))
 		{
 		    if (rettv->v_type != var2.v_type)
-			EMSG(_("E999: Can only compare Funcref with Funcref"));
+			EMSG(_("E693: Can only compare Funcref with Funcref"));
 		    else
-			EMSG(_("E999: Invalid operation for Funcrefs"));
+			EMSG(_("E694: Invalid operation for Funcrefs"));
 		    clear_tv(rettv);
 		    clear_tv(&var2);
 		    return FAIL;
@@ -3115,7 +3116,7 @@ eval_index(arg, rettv, evaluate)
 
     if (rettv->v_type == VAR_FUNC)
     {
-	EMSG(_("E999: Cannot index a Funcref"));
+	EMSG(_("E695: Cannot index a Funcref"));
 	return FAIL;
     }
 
@@ -3588,7 +3589,7 @@ get_list_tv(arg, rettv, evaluate)
 	    break;
 	if (**arg != ',')
 	{
-	    EMSG2(_("E999: Missing comma in list: %s"), *arg);
+	    EMSG2(_("E696: Missing comma in list: %s"), *arg);
 	    goto failret;
 	}
 	*arg = skipwhite(*arg + 1);
@@ -3596,7 +3597,7 @@ get_list_tv(arg, rettv, evaluate)
 
     if (**arg != ']')
     {
-	EMSG2(_("E999: Missing end of list ']': %s"), *arg);
+	EMSG2(_("E697: Missing end of list ']': %s"), *arg);
 failret:
 	if (evaluate)
 	    list_free(l);
@@ -3952,7 +3953,7 @@ list_copy(orig, deep)
 	return NULL;
     if (recurse >= VAR_LIST_MAXNEST)
     {
-	EMSG(_("E999: List nested too deep for making a copy"));
+	EMSG(_("E698: List nested too deep for making a copy"));
 	return NULL;
     }
     ++recurse;
@@ -4178,6 +4179,7 @@ static struct fst
     {"did_filetype",	0, 0, f_did_filetype},
     {"diff_filler",	1, 1, f_diff_filler},
     {"diff_hlID",	2, 2, f_diff_hlID},
+    {"empty",		1, 1, f_empty},
     {"escape",		2, 2, f_escape},
     {"eventhandler",	0, 0, f_eventhandler},
     {"executable",	1, 1, f_executable},
@@ -5118,7 +5120,7 @@ f_call(argvars, rettv)
     {
 	if (argc == MAX_FUNC_ARGS)
 	{
-	    EMSG(_("E999: Too many arguments"));
+	    EMSG(_("E699: Too many arguments"));
 	    break;
 	}
 	/* Make a copy of each argument (is this really needed?) */
@@ -5507,6 +5509,38 @@ f_diff_hlID(argvars, rettv)
     }
     rettv->vval.v_number = hlID == (enum hlf_value)0 ? 0 : (int)hlID;
 #endif
+}
+
+/*
+ * "empty({expr})" function
+ */
+    static void
+f_empty(argvars, rettv)
+    typeval	*argvars;
+    typeval	*rettv;
+{
+    int		n;
+
+    switch (argvars[0].v_type)
+    {
+	case VAR_STRING:
+	case VAR_FUNC:
+	    n = argvars[0].vval.v_string == NULL
+					  || *argvars[0].vval.v_string == NUL;
+	    break;
+	case VAR_NUMBER:
+	    n = argvars[0].vval.v_number == 0;
+	    break;
+	case VAR_LIST:
+	    n = argvars[0].vval.v_list == NULL
+				  || argvars[0].vval.v_list->lv_first == NULL;
+	    break;
+	default:
+	    EMSG2(_(e_intern2), "f_empty()");
+	    n = 0;
+    }
+
+    rettv->vval.v_number = n;
 }
 
 /*
@@ -6070,7 +6104,7 @@ f_function(argvars, rettv)
     if (s == NULL || *s == NUL || isdigit(*s))
 	EMSG2(_(e_invarg2), s);
     else if (!function_exists(s))
-	EMSG2(_("E999: Unknown function: %s"), s);
+	EMSG2(_("E700: Unknown function: %s"), s);
     else
     {
 	rettv->vval.v_string = vim_strsave(s);
@@ -7710,7 +7744,7 @@ f_len(argvars, rettv)
 	    rettv->vval.v_number = list_len(argvars[0].vval.v_list);
 	    break;
 	default:
-	    EMSG(_("E999: Invalid type for len()"));
+	    EMSG(_("E701: Invalid type for len()"));
 	    break;
     }
 }
@@ -9413,7 +9447,7 @@ f_sort(argvars, rettv)
 	if (item_compare_func != NULL
 		&& item_compare2((void *)&ptrs[0], (void *)&ptrs[1])
 							 == ITEM_COMPARE_FAIL)
-	    EMSG(_("E999: Sort compare function failed"));
+	    EMSG(_("E702: Sort compare function failed"));
 	else
 	{
 	    /* Sort the array with item pointers. */
@@ -11048,7 +11082,7 @@ get_tv_number(varp)
 	    n = (long)(varp->vval.v_number);
 	    break;
 	case VAR_FUNC:
-	    EMSG(_("E999: Using function reference as a number"));
+	    EMSG(_("E703: Using function reference as a number"));
 	    break;
 	case VAR_STRING:
 	    if (varp->vval.v_string != NULL)
@@ -11420,12 +11454,12 @@ set_var(name, tv, copy)
 		&& !ASCII_ISUPPER((name[0] != NUL && name[1] == ':')
 							 ? name[2] : name[0]))
 	{
-	    EMSG2(_("E999: Funcref variable name must start with a capital: %s"), name);
+	    EMSG2(_("E704: Funcref variable name must start with a capital: %s"), name);
 	    return;
 	}
 	if (function_exists(name))
 	{
-	    EMSG2(_("E999: Variable name conflicts with existing function: %s"), name);
+	    EMSG2(_("705: Variable name conflicts with existing function: %s"), name);
 	    return;
 	}
     }
@@ -11439,7 +11473,7 @@ set_var(name, tv, copy)
 		    && (tv->v_type == VAR_STRING
 			|| tv->v_type == VAR_NUMBER)))
 	{
-	    EMSG2(_("E999: Variable type mismatch for: %s"), name);
+	    EMSG2(_("E706: Variable type mismatch for: %s"), name);
 	    return;
 	}
 	clear_tv(&v->tv);
@@ -12065,7 +12099,7 @@ ex_function(eap)
     v = find_var(name, FALSE);
     if (v != NULL && v->tv.v_type == VAR_FUNC)
     {
-	EMSG2(_("E999: Function name conflicts with variable: %s"), name);
+	EMSG2(_("E707: Function name conflicts with variable: %s"), name);
 	goto erret;
     }
 

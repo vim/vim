@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 7.0aa.  Last change: 2004 Dec 28
+*quickfix.txt*  For Vim version 7.0aa.  Last change: 2005 Jan 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -292,7 +292,7 @@ advantages are:
 
 5.1 using Vim's internal grep
 
-							*:vim* *:vimgrep*
+					*:vim* *:vimgrep* *E682* *E683*
 :vim[grep][!] /{pattern}/ {file} ...
 			Search for {pattern} in the files {file} ... and set
 			the error list to the matches.
