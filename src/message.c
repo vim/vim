@@ -1953,7 +1953,6 @@ msg_puts_attr_len(str, maxlen, attr)
 		    case BS:
 		    case 'k':
 		    case K_UP:
-		    case K_XUP:
 			if (!more_back_used)
 			{
 			    msg_moremsg(TRUE);
@@ -1966,7 +1965,6 @@ msg_puts_attr_len(str, maxlen, attr)
 		    case NL:
 		    case 'j':
 		    case K_DOWN:
-		    case K_XDOWN:
 			lines_left = 1;
 			break;
 		    case ':':		/* start new command line */

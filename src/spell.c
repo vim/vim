@@ -526,7 +526,7 @@ spell_load_file(fname)
 {
     int		fd;
     size_t	len;
-    size_t	l;
+    int		l;
     char_u	*p = NULL, *np;
     sblock_T	*bl = NULL;
     int		bl_used = 0;

@@ -384,17 +384,13 @@ static const struct nv_cmd
     {K_KINS,	nv_edit,	0,			0},
     {K_BS,	nv_ctrlh,	0,			0},
     {K_UP,	nv_up,		NV_SSS|NV_STS,		FALSE},
-    {K_XUP,	nv_up,		NV_SSS|NV_STS,		FALSE},
     {K_S_UP,	nv_page,	NV_SS,			BACKWARD},
     {K_DOWN,	nv_down,	NV_SSS|NV_STS,		FALSE},
-    {K_XDOWN,	nv_down,	NV_SSS|NV_STS,		FALSE},
     {K_S_DOWN,	nv_page,	NV_SS,			FORWARD},
     {K_LEFT,	nv_left,	NV_SSS|NV_STS|NV_RL,	0},
-    {K_XLEFT,	nv_left,	NV_SSS|NV_STS|NV_RL,	0},
     {K_S_LEFT,	nv_bck_word,	NV_SS|NV_RL,		0},
     {K_C_LEFT,	nv_bck_word,	NV_SSS|NV_RL|NV_STS,	1},
     {K_RIGHT,	nv_right,	NV_SSS|NV_STS|NV_RL,	0},
-    {K_XRIGHT,	nv_right,	NV_SSS|NV_STS|NV_RL,	0},
     {K_S_RIGHT,	nv_wordcmd,	NV_SS|NV_RL,		FALSE},
     {K_C_RIGHT,	nv_wordcmd,	NV_SSS|NV_RL|NV_STS,	TRUE},
     {K_PAGEUP,	nv_page,	NV_SSS|NV_STS,		BACKWARD},
@@ -403,12 +399,10 @@ static const struct nv_cmd
     {K_KPAGEDOWN, nv_page,	NV_SSS|NV_STS,		FORWARD},
     {K_END,	nv_end,		NV_SSS|NV_STS,		FALSE},
     {K_KEND,	nv_end,		NV_SSS|NV_STS,		FALSE},
-    {K_XEND,	nv_end,		NV_SSS|NV_STS,		FALSE},
     {K_S_END,	nv_end,		NV_SS,			FALSE},
     {K_C_END,	nv_end,		NV_SSS|NV_STS,		TRUE},
     {K_HOME,	nv_home,	NV_SSS|NV_STS,		0},
     {K_KHOME,	nv_home,	NV_SSS|NV_STS,		0},
-    {K_XHOME,	nv_home,	NV_SSS|NV_STS,		0},
     {K_S_HOME,	nv_home,	NV_SS,			0},
     {K_C_HOME,	nv_goto,	NV_SSS|NV_STS,		FALSE},
     {K_DEL,	nv_abbrev,	0,			0},
@@ -842,12 +836,10 @@ getcount:
 	{
 	    case 'l':	    ca.cmdchar = 'h'; break;
 	    case K_RIGHT:   ca.cmdchar = K_LEFT; break;
-	    case K_XRIGHT:  ca.cmdchar = K_XLEFT; break;
 	    case K_S_RIGHT: ca.cmdchar = K_S_LEFT; break;
 	    case K_C_RIGHT: ca.cmdchar = K_C_LEFT; break;
 	    case 'h':	    ca.cmdchar = 'l'; break;
 	    case K_LEFT:    ca.cmdchar = K_RIGHT; break;
-	    case K_XLEFT:   ca.cmdchar = K_XRIGHT; break;
 	    case K_S_LEFT:  ca.cmdchar = K_S_RIGHT; break;
 	    case K_C_LEFT:  ca.cmdchar = K_C_RIGHT; break;
 	    case '>':	    ca.cmdchar = '<'; break;
@@ -4333,9 +4325,7 @@ nv_zet(cap)
 	    else if (nchar == 'l'
 		    || nchar == 'h'
 		    || nchar == K_LEFT
-		    || nchar == K_XLEFT
-		    || nchar == K_RIGHT
-		    || nchar == K_XRIGHT)
+		    || nchar == K_RIGHT)
 	    {
 		cap->count1 = n ? n * cap->count1 : cap->count1;
 		goto dozet;
@@ -4442,7 +4432,6 @@ dozet:
 		/* "zh" - scroll screen to the right */
     case 'h':
     case K_LEFT:
-    case K_XLEFT:
 		if (!curwin->w_p_wrap)
 		{
 		    if ((colnr_T)cap->count1 > curwin->w_leftcol)
@@ -4460,7 +4449,6 @@ dozet:
 		/* "zl" - scroll screen to the left */
     case 'l':
     case K_RIGHT:
-    case K_XRIGHT:
 		if (!curwin->w_p_wrap)
 		{
 		    /* scroll the window left */
@@ -5353,7 +5341,7 @@ nv_right(cap)
 			    && vim_strchr(p_ww, 's') != NULL)
 			|| (cap->cmdchar == 'l'
 			    && vim_strchr(p_ww, 'l') != NULL)
-			|| ((cap->cmdchar == K_RIGHT || cap->cmdchar == K_XRIGHT)
+			|| (cap->cmdchar == K_RIGHT
 			    && vim_strchr(p_ww, '>') != NULL))
 		    && curwin->w_cursor.lnum < curbuf->b_ml.ml_line_count)
 	    {
@@ -5453,7 +5441,7 @@ nv_left(cap)
 			    && vim_strchr(p_ww, 'b') != NULL)
 			|| (cap->cmdchar == 'h'
 			    && vim_strchr(p_ww, 'h') != NULL)
-			|| ((cap->cmdchar == K_LEFT || cap->cmdchar == K_XLEFT)
+			|| (cap->cmdchar == K_LEFT
 			    && vim_strchr(p_ww, '<') != NULL))
 		    && curwin->w_cursor.lnum > 1)
 	    {
@@ -7261,7 +7249,6 @@ nv_g_cmd(cap)
      */
     case 'j':
     case K_DOWN:
-    case K_XDOWN:
 	/* with 'nowrap' it works just like the normal "j" command; also when
 	 * in a closed fold */
 	if (!curwin->w_p_wrap
@@ -7281,7 +7268,6 @@ nv_g_cmd(cap)
 
     case 'k':
     case K_UP:
-    case K_XUP:
 	/* with 'nowrap' it works just like the normal "k" command; also when
 	 * in a closed fold */
 	if (!curwin->w_p_wrap
@@ -7318,7 +7304,6 @@ nv_g_cmd(cap)
     case 'm':
     case K_HOME:
     case K_KHOME:
-    case K_XHOME:
 	oap->motion_type = MCHAR;
 	oap->inclusive = FALSE;
 	if (curwin->w_p_wrap
@@ -7381,7 +7366,6 @@ nv_g_cmd(cap)
     case '$':
     case K_END:
     case K_KEND:
-    case K_XEND:
 	{
 	    int col_off = curwin_col_off();
 
@@ -7827,6 +7811,8 @@ nv_home(cap)
 	cap->count0 = 1;
 	nv_pipe(cap);
     }
+    ins_at_eol = FALSE;	    /* Don't move cursor past eol (only necessary in a
+			       one-character line). */
 }
 
 /*

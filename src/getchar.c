@@ -1545,35 +1545,67 @@ vgetc()
 	    (void)vgetorpeek(TRUE);
 #endif
 
-	if (c >= FIRST_KEYPAD && c <= LAST_KEYPAD)
+	/* a keypad or special function key was not mapped, use it like
+	 * its ASCII equivalent */
+	switch (c)
 	{
-	    /* a keypad key was not mapped, use it like its ASCII equivalent */
-	    switch (c)
-	    {
-		case K_KPLUS:		c = '+'; break;
-		case K_KMINUS:		c = '-'; break;
-		case K_KDIVIDE:		c = '/'; break;
-		case K_KMULTIPLY:	c = '*'; break;
-		case K_KENTER:		c = CAR; break;
-		case K_KPOINT:
+	    case K_KPLUS:		c = '+'; break;
+	    case K_KMINUS:		c = '-'; break;
+	    case K_KDIVIDE:		c = '/'; break;
+	    case K_KMULTIPLY:	c = '*'; break;
+	    case K_KENTER:		c = CAR; break;
+	    case K_KPOINT:
 #ifdef WIN32
-					/* Can be either '.' or a ',', *
-					 * depending on the type of keypad. */
-					c = MapVirtualKey(VK_DECIMAL, 2); break;
+				    /* Can be either '.' or a ',', *
+				     * depending on the type of keypad. */
+				    c = MapVirtualKey(VK_DECIMAL, 2); break;
 #else
-					c = '.'; break;
+				    c = '.'; break;
 #endif
-		case K_K0:		c = '0'; break;
-		case K_K1:		c = '1'; break;
-		case K_K2:		c = '2'; break;
-		case K_K3:		c = '3'; break;
-		case K_K4:		c = '4'; break;
-		case K_K5:		c = '5'; break;
-		case K_K6:		c = '6'; break;
-		case K_K7:		c = '7'; break;
-		case K_K8:		c = '8'; break;
-		case K_K9:		c = '9'; break;
-	    }
+	    case K_K0:		c = '0'; break;
+	    case K_K1:		c = '1'; break;
+	    case K_K2:		c = '2'; break;
+	    case K_K3:		c = '3'; break;
+	    case K_K4:		c = '4'; break;
+	    case K_K5:		c = '5'; break;
+	    case K_K6:		c = '6'; break;
+	    case K_K7:		c = '7'; break;
+	    case K_K8:		c = '8'; break;
+	    case K_K9:		c = '9'; break;
+
+	    case K_XHOME:
+	    case K_ZHOME:	if (mod_mask == MOD_MASK_SHIFT)
+				{
+				    c = K_S_HOME;
+				    mod_mask = 0;
+				}
+				else if (mod_mask == MOD_MASK_CTRL)
+				{
+				    c = K_C_HOME;
+				    mod_mask = 0;
+				}
+				else
+				    c = K_HOME;
+				break;
+	    case K_XEND:
+	    case K_ZEND:	if (mod_mask == MOD_MASK_SHIFT)
+				{
+				    c = K_S_END;
+				    mod_mask = 0;
+				}
+				else if (mod_mask == MOD_MASK_CTRL)
+				{
+				    c = K_C_END;
+				    mod_mask = 0;
+				}
+				else
+				    c = K_END;
+				break;
+
+	    case K_XUP:		c = K_UP; break;
+	    case K_XDOWN:	c = K_DOWN; break;
+	    case K_XLEFT:	c = K_LEFT; break;
+	    case K_XRIGHT:	c = K_RIGHT; break;
 	}
 
 #ifdef FEAT_MBYTE
