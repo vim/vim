@@ -6016,7 +6016,18 @@ init_highlight(both, reset)
      * If syntax highlighting is enabled load the highlighting for it.
      */
     if (get_var_value((char_u *)"g:syntax_on") != NULL)
-	(void)cmd_runtime((char_u *)"syntax/syncolor.vim", TRUE);
+    {
+	static int	recursive = 0;
+
+	if (recursive >= 5)
+	    EMSG(_("E679: recursive loop loading syncolor.vim"));
+	else
+	{
+	    ++recursive;
+	    (void)cmd_runtime((char_u *)"syntax/syncolor.vim", TRUE);
+	    --recursive;
+	}
+    }
 #endif
 }
 

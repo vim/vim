@@ -117,7 +117,7 @@ endif
 # c:/windows/system32 isn't a good idea, use some other dir;
 # to build you can put them in temp dir)
 ifndef MZSCHEME_LIBDIR
-MZSCHEME_LIBDIR=$(MZSCHEME)
+MZSCHEME_LIBDIR=-L$(MZSCHEME)
 endif
 endif
 
@@ -510,7 +510,7 @@ uninstal.exe: uninstal.c
 	$(CC) $(CFLAGS) -o uninstal.exe uninstal.c $(LIB)
 
 $(TARGET): $(OUTDIR) $(OBJ)
-	$(CC) $(CFLAGS) $(LFLAGS) -o $@ $(OBJ) $(LIB) -lole32 -luuid -L $(MZSCHEME_LIBDIR) $(MZSCHEME_LIB) $(PYTHONLIB) $(RUBYLIB)
+	$(CC) $(CFLAGS) $(LFLAGS) -o $@ $(OBJ) $(LIB) -lole32 -luuid $(MZSCHEME_LIBDIR) $(MZSCHEME_LIB) $(PYTHONLIB) $(RUBYLIB)
 
 upx: exes
 	upx gvim.exe

@@ -11,6 +11,7 @@ int check_mark __ARGS((pos_T *pos));
 void clrallmarks __ARGS((buf_T *buf));
 char_u *fm_getname __ARGS((fmark_T *fmark, int lead_len));
 void do_marks __ARGS((exarg_T *eap));
+void ex_delmarks __ARGS((exarg_T *eap));
 void ex_jumps __ARGS((exarg_T *eap));
 void ex_changes __ARGS((exarg_T *eap));
 void mark_adjust __ARGS((linenr_T line1, linenr_T line2, long amount, long amount_after));

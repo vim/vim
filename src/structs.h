@@ -670,6 +670,17 @@ struct vim_exception
 #define ET_ERROR	1	/* error exception */
 #define ET_INTERRUPT	2	/* interrupt exception triggered by Ctrl-C */
 
+/*
+ * Structure to save the error/interrupt/exception state between calls to
+ * enter_cleanup() and leave_cleanup().  Must be allocated as an automatic
+ * variable by the (common) caller of these functions.
+ */
+typedef struct cleanup_stuff cleanup_T;
+struct cleanup_stuff
+{
+    int pending;		/* error/interrupt/exception state */
+    except_T *exception;	/* exception value */
+};
 
 #ifdef FEAT_SYN_HL
 /* struct passed to in_id_list() */

@@ -565,6 +565,7 @@ buf_freeall(buf, del_buf, wipe_buf)
 #ifdef FEAT_SYN_HL
     syntax_clear(buf);		    /* reset syntax info */
 #endif
+    buf->b_flags &= ~BF_READERR;    /* a read error is no longer relevant */
 }
 
 /*
@@ -670,17 +671,23 @@ goto_buffer(eap, start, dir, count)
 		&& (defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG))
     if (swap_exists_action == SEA_QUIT && *eap->cmd == 's')
     {
-	int	old_got_int = got_int;
+#  if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
+	cleanup_T   cs;
 
-	/* Quitting means closing the split window, nothing else.
-	 * Reset got_int here, because it causes aborting() to return TRUE
-	 * which breaks closing a window. */
-	got_int = FALSE;
+	/* Reset the error/interrupt/exception state here so that
+	 * aborting() returns FALSE when closing a window. */
+	enter_cleanup(&cs);
+#  endif
 
+	/* Quitting means closing the split window, nothing else. */
 	win_close(curwin, TRUE);
-
-	got_int |= old_got_int;
 	swap_exists_action = SEA_NONE;
+
+#  if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
+	/* Restore the error/interrupt/exception state if not discarded by a
+	 * new aborting error, interrupt, or uncaught exception. */
+	leave_cleanup(&cs);
+#  endif
     }
     else
 	handle_swap_exists(old_curbuf);
@@ -697,37 +704,58 @@ goto_buffer(eap, start, dir, count)
 handle_swap_exists(old_curbuf)
     buf_T	*old_curbuf;
 {
-    int		old_got_int = got_int;
-
-    /* Reset got_int here, because it causes aborting() to return TRUE which
-     * breaks closing a buffer. */
-    got_int = FALSE;
+# if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
+    cleanup_T	cs;
+# endif
 
     if (swap_exists_action == SEA_QUIT)
     {
+# if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
+	/* Reset the error/interrupt/exception state here so that
+	 * aborting() returns FALSE when closing a buffer. */
+	enter_cleanup(&cs);
+# endif
+
 	/* User selected Quit at ATTENTION prompt.  Go back to previous
 	 * buffer.  If that buffer is gone or the same as the current one,
 	 * open a new, empty buffer. */
 	swap_exists_action = SEA_NONE;	/* don't want it again */
 	close_buffer(curwin, curbuf, DOBUF_UNLOAD);
 	if (!buf_valid(old_curbuf) || old_curbuf == curbuf)
-	    old_curbuf = buflist_new(NULL, NULL, 1L,
-					 BLN_CURBUF | BLN_LISTED | BLN_FORCE);
+	    old_curbuf = buflist_new(NULL, NULL, 1L, BLN_CURBUF | BLN_LISTED);
 	if (old_curbuf != NULL)
 	    enter_buffer(old_curbuf);
 	/* If "old_curbuf" is NULL we are in big trouble here... */
+
+# if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
+	/* Restore the error/interrupt/exception state if not discarded by a
+	 * new aborting error, interrupt, or uncaught exception. */
+	leave_cleanup(&cs);
+# endif
     }
     else if (swap_exists_action == SEA_RECOVER)
     {
+# if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
+	/* Reset the error/interrupt/exception state here so that
+	 * aborting() returns FALSE when closing a buffer. */
+	enter_cleanup(&cs);
+# endif
+
 	/* User selected Recover at ATTENTION prompt. */
 	msg_scroll = TRUE;
 	ml_recover();
 	MSG_PUTS("\n");	/* don't overwrite the last message */
 	cmdline_row = msg_row;
 	do_modelines(FALSE);
+
+# if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
+	/* Restore the error/interrupt/exception state if not discarded by a
+	 * new aborting error, interrupt, or uncaught exception. */
+	leave_cleanup(&cs);
+# endif
     }
     swap_exists_action = SEA_NONE;
-    got_int |= old_got_int;
+
 }
 #endif
 
@@ -1347,11 +1375,13 @@ enter_buffer(buf)
     /* Make sure the buffer is loaded. */
     if (curbuf->b_ml.ml_mfp == NULL)	/* need to load the file */
     {
+#ifdef FEAT_AUTOCMD
 	/* If there is no filetype, allow for detecting one.  Esp. useful for
 	 * ":ball" used in a autocommand.  If there already is a filetype we
 	 * might prefer to keep it. */
 	if (*curbuf->b_p_ft == NUL)
 	    did_filetype = FALSE;
+#endif
 
 	open_buffer(FALSE, NULL);
     }
@@ -1408,7 +1438,6 @@ enter_buffer(buf)
  * If (flags & BLN_CURBUF) is TRUE, may use current buffer.
  * If (flags & BLN_LISTED) is TRUE, add new buffer to buffer list.
  * If (flags & BLN_DUMMY) is TRUE, don't count it as a real buffer.
- * If (flags & BLN_FORCE) is TRUE, don't abort on an error.
  * This is the ONLY way to create a new buffer.
  */
 static int  top_file_num = 1;		/* highest file number */
@@ -1484,7 +1513,7 @@ buflist_new(ffname, sfname, lnum, flags)
 	    apply_autocmds(EVENT_BUFWIPEOUT, NULL, NULL, FALSE, curbuf);
 # ifdef FEAT_EVAL
 	/* autocmds may abort script processing */
-	if (!(flags & BLN_FORCE) && aborting())
+	if (aborting())
 	    return NULL;
 # endif
 #endif
@@ -1538,7 +1567,7 @@ buflist_new(ffname, sfname, lnum, flags)
 	    return NULL;
 #if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
 	/* autocmds may abort script processing */
-	if (!(flags & BLN_FORCE) && aborting())
+	if (aborting())
 	    return NULL;
 #endif
 	/* buf->b_nwindows = 0; why was this here? */
@@ -1615,7 +1644,7 @@ buflist_new(ffname, sfname, lnum, flags)
 	    apply_autocmds(EVENT_BUFADD, NULL, NULL, FALSE, buf);
 # ifdef FEAT_EVAL
 	/* autocmds may abort script processing */
-	if (!(flags & BLN_FORCE) && aborting())
+	if (aborting())
 	    return NULL;
 # endif
     }
@@ -4262,18 +4291,25 @@ ex_buffer_all(eap)
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
 	    if (swap_exists_action == SEA_QUIT)
 	    {
-		int	old_got_int = got_int;
+# if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
+		cleanup_T   cs;
 
-		/* User selected Quit at ATTENTION prompt; close this window.
-		 * Reset got_int here, because it causes aborting() to return
-		 * TRUE which breaks closing a window. */
-		got_int = FALSE;
+		/* Reset the error/interrupt/exception state here so that
+		 * aborting() returns FALSE when closing a window. */
+		enter_cleanup(&cs);
+# endif
 
+		/* User selected Quit at ATTENTION prompt; close this window. */
 		win_close(curwin, TRUE);
 		--open_wins;
-
-		got_int |= old_got_int;
 		swap_exists_action = SEA_NONE;
+
+# if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
+		/* Restore the error/interrupt/exception state if not
+		 * discarded by a new aborting error, interrupt, or uncaught
+		 * exception. */
+		leave_cleanup(&cs);
+# endif
 	    }
 	    else
 		handle_swap_exists(NULL);

@@ -33,8 +33,8 @@
  * precedence is structured in regular expressions.  Serious changes in
  * regular-expression syntax might require a total rethink.
  *
- * Changes have been made by Tony Andrews, Olaf 'Rhialto' Seibert, Robert Webb
- * and Bram Moolenaar.
+ * Changes have been made by Tony Andrews, Olaf 'Rhialto' Seibert, Robert
+ * Webb, Ciaran McCreesh and Bram Moolenaar.
  * Named character class support added by Walter Briscoe (1998 Jul 01)
  */
 
@@ -376,9 +376,14 @@ static char_u		*reg_prev_sub;
  *  \t	- Tab (TAB).
  *  \e	- Escape (ESC).
  *  \b	- Backspace (Ctrl_H).
+ *  \d  - Character code in decimal, eg \d123
+ *  \o	- Character code in octal, eg \o80
+ *  \x	- Character code in hex, eg \x4a
+ *  \u	- Multibyte character code, eg \u20ac
+ *  \U	- Long multibyte character code, eg \U12345678
  */
 static char_u REGEXP_INRANGE[] = "]^-n\\";
-static char_u REGEXP_ABBR[] = "nrteb";
+static char_u REGEXP_ABBR[] = "nrtebdoxuU";
 
 static int	backslash_trans __ARGS((int c));
 static int	skip_class_name __ARGS((char_u **pp));
@@ -681,6 +686,10 @@ static void	skipchr_keepstart __ARGS((void));
 static int	peekchr __ARGS((void));
 static void	skipchr __ARGS((void));
 static void	ungetchr __ARGS((void));
+static int	gethexchrs __ARGS((int maxinputlen));
+static int	getoctchrs __ARGS((void));
+static int	getdecchrs __ARGS((void));
+static int	coll_get_char __ARGS((void));
 static void	regcomp_start __ARGS((char_u *expr, int flags));
 static char_u	*reg __ARGS((int, int *));
 static char_u	*regbranch __ARGS((int *flagp));
@@ -1722,6 +1731,42 @@ regatom(flagp)
 			      break;
 			  }
 
+		case 'd':   /* %d123 decimal */
+		case 'o':   /* %o123 octal */
+		case 'x':   /* %xab hex 2 */
+		case 'u':   /* %uabcd hex 4 */
+		case 'U':   /* %U1234abcd hex 8 */
+			  {
+			      int i;
+
+			      switch (c)
+			      {
+				  case 'd': i = getdecchrs(); break;
+				  case 'o': i = getoctchrs(); break;
+				  case 'x': i = gethexchrs(2); break;
+				  case 'u': i = gethexchrs(4); break;
+				  case 'U': i = gethexchrs(8); break;
+				  default:  i = -1; break;
+			      }
+
+			      if (i < 0)
+			          EMSG_M_RET_NULL(
+					_("E678: Invalid character after %s%%[dxouU]"),
+					reg_magic == MAGIC_ALL);
+			      ret = regnode(EXACTLY);
+			      if (i == 0)
+				  regc(0x0a);
+			      else
+#ifdef FEAT_MBYTE
+				  regmbc(i);
+#else
+				  regc(i);
+#endif
+			      regc(NUL);
+			      *flagp |= HASWIDTH;
+			      break;
+			  }
+
 		default:
 			  if (VIM_ISDIGIT(c) || c == '<' || c == '>')
 			  {
@@ -1816,6 +1861,11 @@ collection:
 			    else
 #endif
 				endc = *regparse++;
+
+			    /* Handle \o40, \x20 and \u20AC style sequences */
+			    if (endc == '\\' && !cpo_lit)
+				endc = coll_get_char();
+
 			    if (startc > endc)
 				EMSG_RET_NULL(_(e_invrange));
 #ifdef FEAT_MBYTE
@@ -1874,6 +1924,22 @@ collection:
 			    *flagp |= HASNL;
 			    regparse++;
 			    startc = -1;
+			}
+			else if (*regparse == 'd'
+				|| *regparse == 'o'
+				|| *regparse == 'x'
+				|| *regparse == 'u'
+				|| *regparse == 'U')
+			{
+			    startc = coll_get_char();
+			    if (startc == 0)
+				regc(0x0a);
+			    else
+#ifdef FEAT_MBYTE
+				regmbc(startc);
+#else
+				regc(startc);
+#endif
 			}
 			else
 			{
@@ -2514,6 +2580,120 @@ ungetchr()
     /* Backup regparse, so that it's at the same position as before the
      * getchr(). */
     regparse -= prevchr_len;
+}
+
+/*
+ * get and return the value of the hex string immediately after the current
+ * position. Return -1 for invalid, or 0-255 for valid. Position is updated:
+ *     blahblah\%x20asdf
+ *         before-^ ^-after
+ * The parameter controls the maximum number of input characters. This will be
+ * 2 when reading a \%x20 sequence and 4 when reading a \%u20AC sequence.
+ */
+    static int
+gethexchrs(maxinputlen)
+    int		maxinputlen;
+{
+    int		nr = 0;
+    int		c;
+    int		i;
+
+    for (i = 0; i < maxinputlen; ++i)
+    {
+	c = regparse[0];
+	if (!vim_isxdigit(c))
+	    break;
+	nr <<= 4;
+	nr |= hex2nr(c);
+	++regparse;
+    }
+
+    if (i == 0)
+	return -1;
+    return nr;
+}
+
+/*
+ * get and return the value of the decimal string immediately after the
+ * current position. Return -1 for invalid.  Consumes all digits.
+ */
+    static int
+getdecchrs()
+{
+    int		nr = 0;
+    int		c;
+    int		i;
+
+    for (i = 0; ; ++i)
+    {
+	c = regparse[0];
+	if (c < '0' || c > '9')
+	    break;
+	nr *= 10;
+	nr += c - '0';
+	++regparse;
+    }
+
+    if (i == 0)
+	return -1;
+    return nr;
+}
+
+/*
+ * get and return the value of the octal string immediately after the current
+ * position. Return -1 for invalid, or 0-255 for valid. Smart enough to handle
+ * numbers > 377 correctly (for example, 400 is treated as 40) and doesn't
+ * treat 8 or 9 as recognised characters. Position is updated:
+ *     blahblah\%o210asdf
+ *         before-^  ^-after
+ */
+    static int
+getoctchrs()
+{
+    int		nr = 0;
+    int		c;
+    int		i;
+
+    for (i = 0; i < 3 && nr < 040; ++i)
+    {
+	c = regparse[0];
+	if (c < '0' || c > '7')
+	    break;
+	nr <<= 3;
+	nr |= hex2nr(c);
+	++regparse;
+    }
+
+    if (i == 0)
+	return -1;
+    return nr;
+}
+
+/*
+ * Get a number after a backslash that is inside [].
+ * When nothing is recognized return a backslash.
+ */
+    static int
+coll_get_char()
+{
+    int	    nr = -1;
+
+    switch (*regparse++)
+    {
+	case 'd': nr = getdecchrs(); break;
+	case 'o': nr = getoctchrs(); break;
+	case 'x': nr = gethexchrs(2); break;
+	case 'u': nr = gethexchrs(4); break;
+	case 'U': nr = gethexchrs(8); break;
+    }
+    if (nr < 0)
+    {
+	/* If getting the number fails be backwards compatible: the character
+	 * is a backslash. */
+	--regparse;
+	nr = '\\';
+    }
+    return nr;
 }
 
 /*

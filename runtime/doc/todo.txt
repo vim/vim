@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Sep 06
+*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Sep 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,34 +30,40 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Endless loop when "syntax reset" in ~/.vim/after/syntax/syncolor.vim.
+Crash when using ":set background=dark".  Solved!
+Limit init_highlight() to five recursive calls?
+    patch for Vim 6.3 for free_oldval and init_highlight()?
+
+Crash with long line. (Walter Briscoe, Sep 13)
+
+Add fix for appending BOM to 6.3?  Reported by Alex Jakushev.
+
+Win32 console doesn't compile.  Does GetCommandLineW() work for non-GUI?
+(Dave Roberts)  If yes, then move the functions to another file.
+link with kernel32.lib?
+
 Aborting at the ATTENTION prompt causes trouble:
     buffer remains active, nwindows isn't closed (fixed in buffer.c)
     alternate buffer gets "read error" flag.
     ":sbuf" and ":ball" leave an empty window behind.
 Change in handle_swap_exists() also in 6.3?
+Add enter_cleanup() and leave_cleanup() also in 6.3?
+    buffer.c
+    ex_eval.c
+    proto/ex_eval.pro
+    structs.h
+    vim.h
 
 Win32: When the path to a file has Russian characters, ":cd %:p:h" doesn't
 work. (Valery Kondakoff)
 Solved in os_mswin.c.  Add to 6.3?
 
+Valencia: executable("xxd.exe") returns true while "!xxd" doesn't work.
+
 For version 7.0:
+
 -   Include many PATCHES:
-    8   Add functions:
-	setbufline()		set line in any buffer (patch from Yegappan
-				Lakshmanan, 2003 Jan 21)
-	filter()		Patch from Yegappan Lakshmanan, 2004 Jul 11
-    8   Make it possible to delete marks.  Charles Campbell has a patch that
-	does this with the markclear() function (2004 Jan 9).
-	And the ":delmark" command (2004 Feb 9)
-	http://mysite.verizon.net/astronaut/vim/index.html#Patch
-	~/tmp/ptch.delmark.bz2
-	~/tmp/ptch.markclear
-	Implement setmark(markname, lnum [, col [, filename]]) instead?
-	When "lnum" is zero delete the mark.
-	When "filename" has no wildcards and there is no matching buffer, add
-	the buffer (unlisted).
-    Patch for \xnn (Ciaran McCreesh)  2004 Jul 10
-	http://dev.gentoo.org/~ciaranm/patches/vim/vim-7.00a-regexp-numbered-characters-r5.patch
     7   Add 'taglistfiles' option, show file name and type when listing matching
 	tags name with CTRL-D completion.  Patch from Yegappan Lakshmanan.
 	2004 Jul 11
@@ -94,9 +100,9 @@ For version 7.0:
     7   Completion of network shares, patch by Yasuhiro Matsumoto.
 	Update 2004 Sep 6.
 	How does this work?  Missing comments.
-    gettext()		Translate a message.  (Patch from Yasuhiro Matsumoto)
-			Update 2004 Sep 5
-			Missing docs.  Search in 'runtimepath'?
+	gettext()	Translate a message.  (Patch from Yasuhiro Matsumoto)
+			Update 2004 Sep 10
+			More docs.  Search in 'runtimepath'?
 			How to get the messages into the .po files?
     --- did not respond (yet) --
     7   Make "5dd" on last-but-one-line not delete anything (Vi compatible).
@@ -198,6 +204,7 @@ For version 7.0:
 	http://www.vim.org/scripts/script.php?script_id=747
 	http://sourceforge.net/projects/insenvim
 	http://cedet.sourceforge.net/intellisense.shtml (for Emacs)
+	Ivan Villanueva has something for Java.
 -   PERSISTENT UNDO: store undo in a file.
     Support multiple threads.  Show the list of changes in a window to be able
     to select a version.
@@ -262,7 +269,27 @@ Support ":set syntax=cpp.doxygen"?  Suggested patch by Michael Geddes (9 Aug
 2004).  Should also work for 'filetype'.
 
 Patch for 'breakindent' option: repeat indent for wrapped line. (Vaclav
-Smilauer, 2004 Sep 5)
+Smilauer, 2004 Sep 13)
+
+Win32: In 'fileencodings' allow using "acp" for the active codepage.  Useful
+value: "ucs-bom,utf-8,acp,latin1"
+
+For manipulating buffers without opening a new window, support Virtual
+windows.  Example:
+    :virtwin let l = GetBufLine(4, 10)
+    :fun GetBufLine(bufnr, lnum)
+    :  exe "buffer " . a:bufnr
+    :  return getline(lnum)
+    :endfun
+The getline() and setline() functions could work for other buffers, using a
+Virtual window.
+A Virtual window only exists for one command.  There can be several (for
+nested commands).  The window works as if it comes after the last window, size
+is the Vim window size, but it's never displayed.
+
+Win32: In the generated batch files, use $VIMRUNTIME if it's set.  Examples by
+Mathias Michaelis (2004 Sep 6)
+Also place vimtutor.bat in %windir%?
 
 
 Vi incompatibility:
@@ -854,6 +881,7 @@ Macintosh:
       dithering to make grey text?
     - Add a flag in 'printoptions' to add an empty page to make the total
       number even.  "addempty"? (Mike Williams)
+    - Respect 'linebreak'.  Perhaps also 'showbreak'?
     - Should interpreted CTRL-L as a page break.
     - Grey line numbers are not always readable.  Add field in 'printoptions'.
       Default to black when no syntax highlighting.
@@ -1457,6 +1485,13 @@ Built-in script language:
     Packages are loaded automatically when first used, from
     $VIMRUNTIME/packages (or use a search path).
 7   Make globpath() also work with "**" and upwards search. (Brian Medley)
+7   Add the markclear() function to delete a mark in another buffer.  Charles
+    Campbell (2004 Jan 9)
+    http://mysite.verizon.net/astronaut/vim/index.html#Patch
+    Implement setmark(markname, lnum [, col [, filename]]) instead?
+    When "lnum" is zero delete the mark.
+    When "filename" has no wildcards and there is no matching buffer, add
+    the buffer (unlisted).
 7   Pre-parse or compile Vim scripts into a bytecode.
     1. Put the bytecode with the original script, with an ":if
        has('bytecode')" around it, so that it's only used with a Vim that
@@ -2556,8 +2591,8 @@ item stack to allow matching ().  One side is "push X on
     This one is also very slow on "/* some comment */": "^\/\*\(.*[^/]\)*$".
 7   Recognize "[a-z]", "[0-9]", etc. and replace them with the faster "\l" and
     "\d".
-7   Add a way to specify characters as hex, octal or <C-M> form.  Could be
-    \%1ax, \%200o and \%<C-M>.  Also \%1234u for multi-byte chars.
+7   Add a way to specify characters in <C-M> or <Key> form.  Could be
+    \%<C-M>.
 8   Flags that apply to the whole pattern.
     This works for all places where a regexp is used.
     Add "\q" to not store this pattern as the last search pattern?
@@ -2612,11 +2647,6 @@ item stack to allow matching ().  One side is "push X on
     before saving files: "Save modified buffer "/path/file"? (Yes/Hide/No
     Save-all/hide-All/Quit) ".
 -   ":s/pat/foo/3": find 3rd match of "pat", like sed. (Thomas Koehler)
--   Special characters in patterns:
-    Inside []:
-    \012  octal character
-    \0x1a hex character
-    \0<BS> \0<Esc>: special character
 7   When searching with 'n' give message when getting back where the search
     first started. Remember start of search in '/ mark.
 7   Add option that scrolls screen to put cursor in middle of screen after

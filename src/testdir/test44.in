@@ -21,6 +21,12 @@ x:" Now search for multi-byte with composing char
 /ม่
 x:" find word by change of word class
 /ち\<カヨ\>は
+x:" Test \%u, [\u] and friends
+/\%u20ac
+x/[\u4f7f\u5929]\+
+x/\%U12345678
+x/[\U1234abcd\u1234\uabcd]
+x/\%d21879b
 x:?^1?,$w! test.out
 :e! test.out
 G:put =matchstr(\"אבגד\", \".\", 0, 2) " ב
@@ -42,3 +48,8 @@ ENDTEST
 9 หม่x อมx
 a อมx หม่x
 b ちカヨは
+c x ¬€x
+d 天使x
+e ������y
+f ������z
+g a啷bb

@@ -1,4 +1,4 @@
-*pi_netrw.txt  For Vim version 6.2.  Last change: Jul 30, 2004
+*pi_netrw.txt  For Vim version 6.2.  Last change: Sep 10, 2004
 
 
 		VIM REFERENCE MANUAL    by Charles E. Campbell, Jr.
@@ -17,9 +17,10 @@
 5.  Ex Commands.........................................|netrw-ex|
 6.  Variables and Options...............................|netrw-var|
 7.  Directory Browser...................................|netrw-browse|
-8.  Debugging...........................................|netrw-debug|
-9.  History.............................................|netrw-history|
-10. Credits.............................................|netrw-credits|
+8.  Problems and Fixes..................................|netrw-problems|
+9.  Debugging...........................................|netrw-debug|
+10. History.............................................|netrw-history|
+11. Credits.............................................|netrw-credits|
 
 The functionality mentioned here is done via using |standard-plugin|
 techniques.  This plugin is only available if
@@ -114,17 +115,22 @@ in your <.vimrc> file: >
 			  =0 use default ftp		       (uid password)
 			  =1 use alternate ftp method	  (user uid password)
 	g:netrw_ftpmode   ="binary"				    (default)
-			  ="ascii"			     (or your choice)
+			  ="ascii"
 	g:netrw_uid	  (ftp) user-id,      retained on a per-session basis
 	g:netrw_passwd	  (ftp) password,     retained on a per-session basis
-	g:netrw_win95ftp  =0 use unix-style ftp even if win95/win98/winME
-			  =1 use default method to do ftp
+	g:netrw_win95ftp  =1 if using Win95, will remove four trailing blank
+	                     lines that o/s's ftp "provides" on transfers
+			  =0 force normal ftp behavior (no trailing line
+			     removal)
 	g:netrw_cygwin	  =1 assume scp under windows is from cygwin
+	                     Also permits network browsing to use
+			     ls with time and size sorting
 							 (default if windows)
-			  =0 assume scp under windows accepts
-			    windows-style paths		 (default otherwise)
-	g:netrw_use_nt_rcp=0 don't use the rcp of WinNT, Win2000 and WinXP (default)
-			  =1 use the rcp of WinNT,... in binary mode
+			  =0 assume Windows' scp accepts windows-style paths
+			     Network browsing uses dir instead of ls
+			  This option is ignored if you're using unix
+	g:netrw_use_nt_rcp=0 don't use the rcp of WinNT, Win2000 and WinXP
+			  =1 use WinNT's rcp in binary mode         (default)
 
     PATHS							*netrw-path*
 
@@ -167,7 +173,7 @@ transfer/protocol.  Files are read from/written to a temporary file
 clean up.
 
 One may modify any protocol's implementing external application
-by settinbg a variable (ex. scp uses the variable g:netrw_scp_cmd,
+by setting a variable (ex. scp uses the variable g:netrw_scp_cmd,
 which is defaulted to "scp -q").
 
 Ftp, an old protocol, seems to be blessed by numerous implementations.
@@ -529,6 +535,7 @@ from <netrw.vim> itself:
      i..........Long Listing............................|netrw-i|
      <c-l>......Refreshing the Listing..................|netrw-ctrl-l|
      o..........Browsing with a Horizontal Split........|netrw-o|
+     p..........Preview Window..........................|netrw-p|
      q..........Listing Bookmarks.......................|netrw-q|
      r..........Reversing Sorting Order.................|netrw-r|
      R..........Renaming Files or Directories...........|netrw-R|
@@ -542,14 +549,16 @@ QUICK REFERENCE COMMANDS TABLE     			*netrw-browse-cmds*
         -------	-----------
 	Command	Explanation
         -------	-----------
-	   ?	Causes Netrw to issue help
+<          ?	Causes Netrw to issue help
 	 <cr>	Netrw will enter the directory or read the file
 	 <del>	Netrw will attempt to remove the file/directory
 	   d	Make a directory
 	   D	Netrw will attempt to remove the file(s)/directory(ies)
 	   R	Netrw will attempt to rename the file(s)/directory(ies)
 	   -	Makes Netrw go up one directory
-	   a	Show all of a directory (temporarily ignore g:netrw_list_hide)
+	   a	Toggles between normal display,
+	    	hiding (suppress display of files matching g:netrw_list_hide)
+	    	showing (display only files which match g:netrw_list_hide)
 	   c	Make current browsing directory the current directory
 	 <c-h>	Edit file hiding list
 	   i	Toggles between long and short listing
@@ -561,12 +570,18 @@ QUICK REFERENCE COMMANDS TABLE     			*netrw-browse-cmds*
 	   v	Enter the file/directory under the cursor in a new browser
 	   	window.  A vertical split is used.
 	   x	Apply a function to a file.
-<
+
 NETRW BROWSER VARIABLES					*netrw-browse-var*
 >
 	---				-----------
 	Var				Explanation
 	---				-----------
+<	g:netrw_alto			change from above splitting to
+					below splitting by setting this
+					variable (see |netrw-o|)
+	g:netrw_altv			change from left splitting to
+					right splitting by setting this
+					variable (see |netrw-v|)
 	g:netrw_ftp_browse_reject	ftp can produce a number of errors
 					and warnings that can show up as
 					"directories" and "files" in the
@@ -576,6 +591,10 @@ NETRW BROWSER VARIABLES					*netrw-browse-var*
 					browsing directory.  The browsing
 					directory is contained in b:netrw_curdir
 	g:netrw_list_cmd		command for listing remote directories
+	g:netrw_ftp_list_cmd		options for passing along to ftp for
+					directory listing.  Defaults:
+					 unix or g:netrw_cygwin set: : "ls -lF"
+					 otherwise                     "dir"
 	g:netrw_list_hide		comma separated list of patterns for
 					hiding files
 	g:netrw_local_mkdir		command for making a local directory
@@ -593,7 +612,7 @@ NETRW BROWSER VARIABLES					*netrw-browse-var*
 					comma-separated pattern sequence
 	g:netrw_timefmt			specify format string to strftime() (%c)
 	g:netrw_winsize			specify initial size of new o/v windows
-<
+
 INTRODUCTION TO DIRECTORY BROWSING
 
 Netrw supports the browsing of directories on the local system and on remote
@@ -711,10 +730,10 @@ the V (|linewise-visual|).
 
 HIDING FILES OR DIRECTORIES		*g:netrw-a* *g:netrw_list_hide*
 
-The "a" map toggles the netrw vim file browser (both remote and local) between
-displaying hidden files (show-all) versus hiding files.  For files to be
-hidden, the g:netrw_list_hide variable must hold a comma delimited list of
-patterns (ex. \.obj) to be hidden from normal listing.  (see |netrw-h|)
+Netrw's browsing facility allows one to use the hiding list in one of
+three ways: ignore it, hide files which match, and show only those files
+which match.  The g:netrw_list_hide variable holds a comma delimited list
+of patterns (ex. \.obj) which specify the hiding list. (also see |netrw-h|)
 
 
 EDIT FILE OR DIRECTORY HIDING LIST				*netrw-h*
@@ -729,7 +748,20 @@ BROWSING WITH A HORIZONTALLY SPLIT WINDOW			*netrw-o*
 
 Normally one enters a file or directory using the <cr>.  However, the "o" map
 allows one to open a new window to hold the new directory listing or file.  A
-horizontal split is used.  (also see |netrw-v|)
+horizontal split is used.  (for vertical splitting, see |netrw-v|)
+
+Normally, the o key splits the window horizontally with the new window
+and cursor at the top.  To change to splitting the window horizontally
+with the new window and cursor at the bottom, have
+
+	let g:netrw_alto = 1
+
+in your <.vimrc>.
+
+PREVIEW WINDOW
+
+One may use a preview window (currently only for local browsing) by using
+the "p" key when the cursor is atop the desired filename to be previewed.
 
 
 SELECTING SORTING STYLE						*netrw-s*
@@ -764,7 +796,15 @@ BROWSING WITH A VERTICALLY SPLIT WINDOW				*netrw-v*
 
 Normally one enters a file or directory using the <cr>.  However, the "v"
 map allows one to open a new window to hold the new directory listing or
-file.  A vertical split is used.  (also see |netrw-o|)
+file.  A vertical split is used.  (for horizontal splitting, see |netrw-o|)
+
+Normally, the v key splits the window vertically with the new window
+and cursor at the left.  To change to splitting the window vertically
+with the new window and cursor at the right, have
+
+	let g:netrw_altv = 1
+
+in your <.vimrc>.
 
 
 CUSTOMIZING BROWSING WITH A USER FUNCTION			*netrw-x*
@@ -831,7 +871,66 @@ the associated security issues.
 
 
 ==============================================================================
-8. Debugging						*netrw-debug*
+8. Problems and Fixes						*netrw-problems*
+
+	(This section is likely to grow as I get feedback)
+	(also see |netrw-debug|)
+
+	P1. I use windows 95, and my ftp dumps four blank lines at the
+	    end of every read.
+
+		See |netrw-fixup|, and put the following into your
+		<.vimrc> file:
+
+			let g:netrw_win95ftp= 1
+		
+		
+
+	P2. I use windows, and my network browsing with ftp doesn't sort by
+	    time or size
+
+		Windows' ftp has a minimal support for ls (ie. it doesn't
+		accept sorting options).  It doesn't support the -F which
+		gives an explanatory character (ABC/ for "ABC is a directory").
+		Netrw uses dir to get its short and long listings.  If you
+		think your ftp does support a full-up ls, put the following
+		into your <.vimrc>:
+
+			let g:netrw_ftp_list_cmd= "ls -lF"
+
+		Alternatively, if you have cygwin on your Windows box, put
+		into your <.vimrc>:
+
+			let g:netrw_cygwin= 1
+
+	P3. I tried rcp://user@host/ (or protocol other than ftp) and netrw
+	    used ssh!  That wasn't what I asked for...
+
+		Netrw has two methods for browsing remote directories: ssh
+		and ftp.  Unless you specify ftp specifically, ssh is used.
+		When it comes time to do download a file (not just a directory
+		listing), netrw will use the given protocol to do so.
+
+	P4. I would like long listings to be the default.
+
+		let g:netrw_longlist=1
+
+	P5. My times come up oddly in local browsing
+
+		Does your system's strftime() accept the "%c" to yield dates
+		such as "Sun Apr 27 11:49:23 1997"?  If not, do a "man strftime"
+		and find out what option should be used.  Then put it into
+		your <.vimrc>:
+			let g:netrw_timefmt= "%X"  (where X is the option)
+
+	P6. I don't want my current directory changing just because I'm
+	    browsing somewhere.
+
+	    	let g:netrw_keepdir= 1
+	
+
+==============================================================================
+9. Debugging						*netrw-debug*
 
 The <netrw.vim> script is typically available as:
 
@@ -878,8 +977,37 @@ which is loaded automatically at startup (assuming :set nocp).
 		drchipNOSPAM at campbellfamily.biz - NOSPAM
 
 ==============================================================================
-9. History						*netrw-history*
+10. History						*netrw-history*
 
+	v48: * One may use ftp to do remote host file browsing
+	     * (windows and !cygwin) remote browsing with ftp can now use
+	       the "dir" command internally to provide listings
+	     * g:netrw_keepdir now allows one to keep the initial current
+	       directory as the current directory (normally the local
+	       file browser makes the currently viewed directory the
+	       current directory)
+	     * g:netrw_alto and g:netrw_altv now support alternate placement
+	       of windows started with o or v
+	     * Nread ? and Nwrite ?  now uses echomsg (instead of echo) so
+	       :messages can repeat showing the help
+	     * bugfix: avoids problems with partial matches of directory names
+	       to prior buffers with longer names
+	     * one can suppress error messages with g:netrw_quiet
+	     * ctrl-h used instead of <Leader>h for editing hiding list
+	     * one may edit the sorting sequence with the S map
+	     * now allows confirmation of deletion with [y(es) n(o) a(ll) q(uit)]
+	     * the "x" map now handles special file viewing with:
+	       (windows) rundll32 url.dll
+	       (gnome)   gnome-open
+	       (kde)     kfmclient
+	       If none of these are on the executable path, then
+	       NetrwFileHandlers.vim is used.
+	     * directory bookmarking during both local and remote browsing
+	       implemented
+	     * one may view all, use the hiding list to suppress, or use the
+	       hiding list to show-only remote and local file/directory listings
+	     * improved unusual file and directory name handling
+	     * preview window support
 	v47: * now handles local directory browsing.
 	v46: * now handles remote directory browsing
 	     * g:netrw_silent (if 1) will cause all transfers to be silent'd
@@ -912,7 +1040,7 @@ which is loaded automatically at startup (assuming :set nocp).
 
 
 ==============================================================================
-10. Credits						*netrw-credits*
+11. Credits						*netrw-credits*
 
 	Vim editor	by Bram Moolenaar (Thanks, Bram!)
 	dav		support by C Campbell

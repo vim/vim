@@ -1218,11 +1218,16 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 /\%>c	pattern.txt	/*\/\\%>c*
 /\%>l	pattern.txt	/*\/\\%>l*
 /\%>v	pattern.txt	/*\/\\%>v*
+/\%U/	pattern.txt	/*\/\\%U\/*
 /\%[]	pattern.txt	/*\/\\%[]*
 /\%^	pattern.txt	/*\/\\%^*
 /\%c	pattern.txt	/*\/\\%c*
+/\%d	pattern.txt	/*\/\\%d*
 /\%l	pattern.txt	/*\/\\%l*
+/\%o	pattern.txt	/*\/\\%o*
+/\%u	pattern.txt	/*\/\\%u*
 /\%v	pattern.txt	/*\/\\%v*
+/\%x	pattern.txt	/*\/\\%x*
 /\&	pattern.txt	/*\/\\&*
 /\(	pattern.txt	/*\/\\(*
 /\(\)	pattern.txt	/*\/\\(\\)*
@@ -1811,6 +1816,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :delete	change.txt	/*:delete*
 :delf	eval.txt	/*:delf*
 :delfunction	eval.txt	/*:delfunction*
+:delm	motion.txt	/*:delm*
+:delmarks	motion.txt	/*:delmarks*
 :di	change.txt	/*:di*
 :diffg	diff.txt	/*:diffg*
 :diffget	diff.txt	/*:diffget*
@@ -3533,6 +3540,8 @@ E673	print.txt	/*E673*
 E674	print.txt	/*E674*
 E675	print.txt	/*E675*
 E676	options.txt	/*E676*
+E677	eval.txt	/*E677*
+E678	pattern.txt	/*E678*
 E68	pattern.txt	/*E68*
 E69	pattern.txt	/*E69*
 E70	pattern.txt	/*E70*
@@ -5476,6 +5485,7 @@ netrw-o	pi_netrw.txt	/*netrw-o*
 netrw-options	pi_netrw.txt	/*netrw-options*
 netrw-passwd	pi_netrw.txt	/*netrw-passwd*
 netrw-path	pi_netrw.txt	/*netrw-path*
+netrw-problems	pi_netrw.txt	/*netrw-problems*
 netrw-protocol	pi_netrw.txt	/*netrw-protocol*
 netrw-q	pi_netrw.txt	/*netrw-q*
 netrw-r	pi_netrw.txt	/*netrw-r*
@@ -6554,6 +6564,7 @@ vim-announce	intro.txt	/*vim-announce*
 vim-arguments	starting.txt	/*vim-arguments*
 vim-default-editor	gui_w32.txt	/*vim-default-editor*
 vim-dev	intro.txt	/*vim-dev*
+vim-indent	indent.txt	/*vim-indent*
 vim-kpart	gui_x11.txt	/*vim-kpart*
 vim-mac	intro.txt	/*vim-mac*
 vim-modes	intro.txt	/*vim-modes*

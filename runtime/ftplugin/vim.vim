@@ -1,7 +1,7 @@
 " Vim filetype plugin
 " Language:	Vim
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2004 Feb 20
+" Last Change:	2004 Sep 13
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -33,10 +33,10 @@ endif
 setlocal commentstring=\"%s
 
 " Move around functions.
-noremap <silent><buffer> [[ :call search('^\s*fu\%[nction]\>', "bW")<CR>
-noremap <silent><buffer> ]] :call search('^\s*fu\%[nction]\>', "W")<CR>
-noremap <silent><buffer> [] :call search('^\s*endf*\%[unction]\>', "bW")<CR>
-noremap <silent><buffer> ][ :call search('^\s*endf*\%[unction]\>', "W")<CR>
+noremap <silent><buffer> [[ m':call search('^\s*fu\%[nction]\>', "bW")<CR>
+noremap <silent><buffer> ]] m':call search('^\s*fu\%[nction]\>', "W")<CR>
+noremap <silent><buffer> [] m':call search('^\s*endf*\%[unction]\>', "bW")<CR>
+noremap <silent><buffer> ][ m':call search('^\s*endf*\%[unction]\>', "W")<CR>
 
 " Move around comments
 noremap <silent><buffer> ]" :call search('^\(\s*".*\n\)\@<!\(\s*"\)', "W")<CR>

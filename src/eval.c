@@ -2933,7 +2933,7 @@ static struct fst
     {"synID",		3, 3, f_synID},
     {"synIDattr",	2, 3, f_synIDattr},
     {"synIDtrans",	1, 1, f_synIDtrans},
-    {"system",		1, 1, f_system},
+    {"system",		1, 2, f_system},
     {"tempname",	0, 0, f_tempname},
     {"tolower",		1, 1, f_tolower},
     {"toupper",		1, 1, f_toupper},
@@ -7570,16 +7570,52 @@ f_system(argvars, retvar)
     VAR		argvars;
     VAR		retvar;
 {
+    char_u	*res = NULL;
     char_u	*p;
+    char_u	*infile = NULL;
+    char_u	buf[NUMBUFLEN];
+    int		err = FALSE;
+    FILE	*fd;
 
-    p = get_cmd_output(get_var_string(&argvars[0]), SHELL_SILENT);
+    if (argvars[1].var_type != VAR_UNKNOWN)
+    {
+	/*
+	 * Write the string to a temp file, to be used for input of the shell
+	 * command.
+	 */
+	if ((infile = vim_tempname('i')) == NULL)
+	{
+	    EMSG(_(e_notmp));
+	    return;
+	}
+
+	fd = mch_fopen((char *)infile, WRITEBIN);
+	if (fd == NULL)
+	{
+	    EMSG2(_(e_notopen), infile);
+	    goto done;
+	}
+	p = get_var_string_buf(&argvars[1], buf);
+	if (fwrite(p, STRLEN(p), 1, fd) != 1)
+	    err = TRUE;
+	if (fclose(fd) != 0)
+	    err = TRUE;
+	if (err)
+	{
+	    EMSG(_("E677: Error writing temp file"));
+	    goto done;
+	}
+    }
+
+    res = get_cmd_output(get_var_string(&argvars[0]), infile, SHELL_SILENT);
+
 #ifdef USE_CR
     /* translate <CR> into <NL> */
-    if (p != NULL)
+    if (res != NULL)
     {
 	char_u	*s;
 
-	for (s = p; *s; ++s)
+	for (s = res; *s; ++s)
 	{
 	    if (*s == CAR)
 		*s = NL;
@@ -7588,12 +7624,12 @@ f_system(argvars, retvar)
 #else
 # ifdef USE_CRNL
     /* translate <CR><NL> into <NL> */
-    if (p != NULL)
+    if (res != NULL)
     {
 	char_u	*s, *d;
 
-	d = p;
-	for (s = p; *s; ++s)
+	d = res;
+	for (s = res; *s; ++s)
 	{
 	    if (s[0] == CAR && s[1] == NL)
 		++s;
@@ -7603,8 +7639,15 @@ f_system(argvars, retvar)
     }
 # endif
 #endif
+
+done:
+    if (infile != NULL)
+    {
+	mch_remove(infile);
+	vim_free(infile);
+    }
     retvar->var_type = VAR_STRING;
-    retvar->var_val.var_string = p;
+    retvar->var_val.var_string = res;
 }
 
 /*

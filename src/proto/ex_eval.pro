@@ -23,6 +23,8 @@ void ex_try __ARGS((exarg_T *eap));
 void ex_catch __ARGS((exarg_T *eap));
 void ex_finally __ARGS((exarg_T *eap));
 void ex_endtry __ARGS((exarg_T *eap));
+void enter_cleanup __ARGS((cleanup_T *csp));
+void leave_cleanup __ARGS((cleanup_T *csp));
 int cleanup_conditionals __ARGS((struct condstack *cstack, int searched_cond, int inclusive));
 void ex_endfunction __ARGS((exarg_T *eap));
 int has_while_cmd __ARGS((char_u *p));

@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2004 Aug 30
+*eval.txt*      For Vim version 7.0aa.  Last change: 2004 Sep 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -930,7 +930,7 @@ synID( {line}, {col}, {trans})	Number	syntax ID at {line} and {col}
 synIDattr( {synID}, {what} [, {mode}])
 				String	attribute {what} of syntax ID {synID}
 synIDtrans( {synID})		Number	translated syntax ID of {synID}
-system( {expr})			String	output of shell command {expr}
+system( {expr} [, {input}])	String	output of shell command/filter {expr}
 tempname()			String	name for a temporary file
 tolower( {expr})		String	the String {expr} switched to lowercase
 toupper( {expr})		String	the String {expr} switched to uppercase
@@ -1111,7 +1111,7 @@ cindent({lnum})						*cindent()*
 		feature, -1 is returned.
 
 							*col()*
-col({expr})	The result is a Number, which is the column of the file
+col({expr})	The result is a Number, which is the byte index of the column
 		position given with {expr}.  The accepted positions are:
 		    .	    the cursor position
 		    $	    the end of the cursor line (the result is the
@@ -2653,10 +2653,15 @@ synIDtrans({synID})					*synIDtrans()*
 		highlight the character.  Highlight links given with
 		":highlight link" are followed.
 
-							*system()*
-system({expr})	Get the output of the shell command {expr}.  Note: newlines
-		in {expr} may cause the command to fail.  The characters in
-		'shellquote' and 'shellxquote' may also cause trouble.
+system({expr} [, {input}])				*system()* *E677*
+		Get the output of the shell command {expr}.
+		When {input} is given, this string is written to a file and
+		passed as stdin to the command.  The string is written as-is,
+		you need to take care of using the correct line separators
+		yourself.
+		Note: newlines in {expr} may cause the command to fail.  The
+		characters in 'shellquote' and 'shellxquote' may also cause
+		trouble.
 		This is not to be used for interactive commands.
 		The result is a String.  Example: >
 

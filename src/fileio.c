@@ -3832,8 +3832,10 @@ restore_backup:
 #ifdef FEAT_MBYTE
     /*
      * The BOM is written just after the encryption magic number.
+     * Skip it when appending and the file already existed, the BOM only makes
+     * sense at the start of the file.
      */
-    if (buf->b_p_bomb && !write_bin)
+    if (buf->b_p_bomb && !write_bin && (!append || perm < 0))
     {
 	write_info.bw_len = make_bom(buffer, fenc);
 	if (write_info.bw_len > 0)

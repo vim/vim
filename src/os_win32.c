@@ -3926,10 +3926,10 @@ mch_write(
 	else if (s[0] == ESC && len >= 3-1 && s[1] == '|')
 	{
 #ifdef MCH_WRITE_DUMP
-	    char_u* old_s = s;
+	    char_u  *old_s = s;
 #endif
-	    char_u* p;
-	    int arg1 = 0, arg2 = 0;
+	    char_u  *p;
+	    int	    arg1 = 0, arg2 = 0;
 
 	    switch (s[2])
 	    {

@@ -2868,6 +2868,21 @@ set_init_1()
 	    options[opt_idx].def_val[VI_DEFAULT] = p_enc;
 	    options[opt_idx].flags |= P_DEF_ALLOCED;
 
+#if defined(MSDOS) || defined(MSWIN) || defined(OS2) || defined(MACOS) \
+		|| defined(VMS)
+	    if (STRCMP(p_enc, "latin1") == 0
+# ifdef FEAT_MBYTE
+		    || enc_utf8
+# endif
+		    )
+	    {
+		/* Adjust the default for 'isprint' to match latin1. */
+		set_string_option_direct((char_u *)"isp", -1,
+					     (char_u *)"@,161-255", OPT_FREE);
+		(void)init_chartab();
+	    }
+#endif
+
 # if defined(WIN3264) && !defined(FEAT_GUI)
 	    /* Win32 console: When GetACP() returns a different value from
 	     * GetConsoleCP() set 'termencoding'. */
@@ -4673,6 +4688,7 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
     char_u	*s, *p;
     int		did_chartab = FALSE;
     char_u	**gvarp;
+    int		free_oldval = (options[opt_idx].flags & P_ALLOCED);
 
     /* Get the global option to compare with, otherwise we would have to check
      * two values for all local options. */
@@ -5818,8 +5834,10 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 #endif
 	/*
 	 * Free string options that are in allocated memory.
+	 * Use "free_oldval", because recursiveness may change the flags under
+	 * our fingers (esp. init_highlight()).
 	 */
-	if (options[opt_idx].flags & P_ALLOCED)
+	if (free_oldval)
 	    free_string_option(oldval);
 	if (new_value_alloced)
 	    options[opt_idx].flags |= P_ALLOCED;

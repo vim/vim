@@ -1078,8 +1078,11 @@ getcount:
 	goto normal_end;
     }
 
-    msg_didout = FALSE;	    /* don't scroll screen up for normal command */
-    msg_col = 0;
+    if (ca.cmdchar != K_IGNORE)
+    {
+	msg_didout = FALSE;    /* don't scroll screen up for normal command */
+	msg_col = 0;
+    }
 
 #ifdef FEAT_VISUAL
     old_pos = curwin->w_cursor;		/* remember where cursor was */

@@ -1820,6 +1820,151 @@ ex_endtry(eap)
 }
 
 /*
+ * Function to be called before a failed command invokes a sequence of
+ * autocommands for cleanup.  (Failure means here that a call to emsg() has
+ * been made, an interrupt occurred, or there is an uncaught exception from a
+ * previous autocommand execution of the same command.)  This function works a
+ * bit like ex_finally() except that there was not actually an extra try block
+ * around the part that failed and an error or interrupt has not (yet) been
+ * converted to an exception.  This function saves the
+ * error/interrupt/exception state and prepares for the call to do_cmdline()
+ * that is going to be made for the cleanup autocommand execution.
+ *
+ * Stores the pending error/interrupt/exception state in the cleanup_T
+ * structure pointed to by "csp", which has to be passed as an argument to
+ * leave_cleanup() after the autocommand execution has finished.
+ */
+    void
+enter_cleanup(csp)
+    cleanup_T	*csp;
+{
+    int		pending = CSTP_NONE;
+
+    /*
+     * Postpone did_emsg, got_int, did_throw.  The pending values will be
+     * restored by leave_cleanup() except if there was an aborting error,
+     * interrupt, or uncaught exception after this function ends.
+     */
+    if (did_emsg || got_int || did_throw || need_rethrow)
+    {
+	csp->pending = (did_emsg     ? CSTP_ERROR     : 0)
+		     | (got_int      ? CSTP_INTERRUPT : 0)
+		     | (did_throw    ? CSTP_THROW     : 0)
+		     | (need_rethrow ? CSTP_THROW     : 0);
+
+	/* If we are currently throwing an exception (did_throw), save it as
+	 * well.  On an error not yet converted to an exception, update
+	 * "force_abort" and reset "cause_abort" (as do_errthrow() would do).
+	 * This is needed for the do_cmdline() call that is going to be made
+	 * for autocommand execution.  We need not save *msg_list because
+	 * there is an extra instance for every call of do_cmdline(), anyway.
+	 */
+	if (did_throw || need_rethrow)
+	    csp->exception = current_exception;
+	else
+	{
+	    csp->exception = NULL;
+	    if (did_emsg)
+	    {
+		force_abort |= cause_abort;
+		cause_abort = FALSE;
+	    }
+	}
+	did_emsg = got_int = did_throw = need_rethrow = FALSE;
+
+	/* Report if required by the 'verbose' option or when debugging.  */
+	report_make_pending(pending, csp->exception);
+    }
+    else
+    {
+	csp->pending = CSTP_NONE;
+	csp->exception = NULL;
+    }
+}
+
+/*
+ * Function to be called after a failed command invoked a sequence of
+ * autocommands for cleanup.  It is a bit like ex_endtry() except that there
+ * was not actually an extra try block around the part that failed and an
+ * error or interrupt had not (yet) been converted to an exception when the
+ * cleanup autocommand sequence was invoked.  This function has to be called
+ * with the address of the cleanup_T structure filled by enter_cleanup() as an
+ * argument; it restores the error/interrupt/exception state saved by that
+ * function - except there was an aborting error, an interrupt or an uncaught
+ * exception during execution of the cleanup autocommands.  In the latter
+ * case, the saved error/interrupt/ exception state is discarded.
+ */
+    void
+leave_cleanup(csp)
+    cleanup_T	*csp;
+{
+    int		pending = csp->pending;
+
+    if (pending == CSTP_NONE)	/* nothing to do */
+	return;
+
+    /* If there was an aborting error, an interrupt, or an uncaught exception
+     * after the corresponding call to enter_cleanup(), discard what has been
+     * made pending by it.  Report this to the user if required by the
+     * 'verbose' option or when debugging. */
+    if (aborting() || need_rethrow)
+    {
+	if (pending & CSTP_THROW)
+	    /* Cancel the pending exception (includes report). */
+	    discard_exception((except_T *)csp->exception, FALSE);
+	else
+	    report_discard_pending(pending, NULL);
+
+	/* If an error was about to be converted to an exception when
+	 * enter_cleanup() was called, free the message list. */
+	free_msglist(*msg_list);
+	*msg_list = NULL;
+    }
+
+    /*
+     * If there was no new error, interrupt, or throw between the calls
+     * to enter_cleanup() and leave_cleanup(), restore the pending
+     * error/interrupt/exception state.
+     */
+    else
+    {
+	/*
+	 * If there was an exception being thrown when enter_cleanup() was
+	 * called, we need to rethrow it.  Make it the exception currently
+	 * being thrown.
+	 */
+	if (pending & CSTP_THROW)
+	    current_exception = csp->exception;
+
+	/*
+	 * If an error was about to be converted to an exception when
+	 * enter_cleanup() was called, let "cause_abort" take the part of
+	 * "force_abort" (as done by cause_errthrow()).
+	 */
+	else if (pending & CSTP_ERROR)
+	{
+	    cause_abort = force_abort;
+	    force_abort = FALSE;
+	}
+
+	/*
+	 * Restore the pending values of did_emsg, got_int, and did_throw.
+	 */
+	if (pending & CSTP_ERROR)
+	    did_emsg = TRUE;
+	if (pending & CSTP_INTERRUPT)
+	    got_int = TRUE;
+	if (pending & CSTP_THROW)
+	    need_rethrow = TRUE;    /* did_throw will be set by do_one_cmd() */
+
+	/* Report if required by the 'verbose' option or when debugging. */
+	report_resume_pending(pending,
+		(pending & CSTP_THROW) ? (void *)current_exception : NULL);
+    }
+}
+
+
+/*
  * Make conditionals inactive and discard what's pending in finally clauses
  * until the conditional type searched for or a try conditional not in its
  * finally clause is reached.  If this is in an active catch clause, finish the

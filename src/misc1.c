@@ -8352,7 +8352,8 @@ expand_backtick(gap, pat, flags)
 	buffer = eval_to_string(cmd + 1, &p);
     else
 #endif
-	buffer = get_cmd_output(cmd, (flags & EW_SILENT) ? SHELL_SILENT : 0);
+	buffer = get_cmd_output(cmd, NULL,
+				      (flags & EW_SILENT) ? SHELL_SILENT : 0);
     vim_free(cmd);
     if (buffer == NULL)
 	return 0;
@@ -8451,8 +8452,9 @@ addfile(gap, f, flags)
  * Returns an allocated string, or NULL for error.
  */
     char_u *
-get_cmd_output(cmd, flags)
+get_cmd_output(cmd, infile, flags)
     char_u	*cmd;
+    char_u	*infile;	/* optional input file name */
     int		flags;		/* can be SHELL_SILENT */
 {
     char_u	*tempname;
@@ -8473,7 +8475,7 @@ get_cmd_output(cmd, flags)
     }
 
     /* Add the redirection stuff */
-    command = make_filter_cmd(cmd, NULL, tempname);
+    command = make_filter_cmd(cmd, infile, tempname);
     if (command == NULL)
 	goto done;
 

@@ -1,4 +1,4 @@
-*usr_01.txt*	For Vim version 7.0aa.  Last change: 2004 May 01
+*usr_01.txt*	For Vim version 7.0aa.  Last change: 2004 Sep 09
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -104,10 +104,12 @@ Instead of reading the text (boring!) you can use the vimtutor to learn your
 first Vim commands.  This is a 30 minute tutorial that teaches the most basic
 Vim functionality hands-on.
 
-On Unix and MS-Windows, if Vim has been properly installed, you can start it
-from the shell:
+On Unix, if Vim has been properly installed, you can start it from the shell:
 >
 	vimtutor
+
+On MS-Windows you can find it in the Program/Vim menu.  Or execute
+vimtutor.bat in the $VIMRUNTIME directory.
 
 This will make a copy of the tutor file, so that you can edit it without
 the risk of damaging the original.

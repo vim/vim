@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.0aa.  Last change: 2004 Sep 01
+*syntax.txt*	For Vim version 7.0aa.  Last change: 2004 Sep 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4013,6 +4013,11 @@ For Unix you can use the file ~/.vim/after/syntax/syncolor.vim.  Example: >
 	else
 	  highlight comment ctermfg=green guifg=green
 	endif
+
+								*E679*
+Do make sure this syncolor.vim script does not use a "syntax on", set the
+'background' option or uses a "colorscheme" command, because it results in an
+endless loop.
 
 Note that when a color scheme is used, there might be some confusion whether
 your defined colors are to be used or the colors from the scheme.  This

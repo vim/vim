@@ -6679,10 +6679,24 @@ do_exedit(eap, old_curwin)
 		need_hide = (curbufIsChanged() && curbuf->b_nwindows <= 1);
 		if (!need_hide || P_HID(curbuf))
 		{
+# if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
+		    cleanup_T   cs;
+
+		    /* Reset the error/interrupt/exception state here so that
+		     * aborting() returns FALSE when closing a window. */
+		    enter_cleanup(&cs);
+# endif
 # ifdef FEAT_GUI
 		    need_mouse_correct = TRUE;
 # endif
 		    win_close(curwin, !need_hide && !P_HID(curbuf));
+
+# if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
+		    /* Restore the error/interrupt/exception state if not
+		     * discarded by a new aborting error, interrupt, or
+		     * uncaught exception. */
+		    leave_cleanup(&cs);
+# endif
 		}
 	    }
 #endif

@@ -753,7 +753,6 @@ extern char* (*dyn_libintl_textdomain)(const char* domainname);
 #define BLN_CURBUF	1	/* May re-use curbuf for new buffer */
 #define BLN_LISTED	2	/* Put new buffer in buffer list */
 #define BLN_DUMMY	4	/* Allocating dummy buffer */
-#define BLN_FORCE	8	/* Don't abort on error */
 
 /* Values for in_cinkeys() */
 #define KEY_OPEN_FORW	0x101

@@ -1,4 +1,4 @@
-*motion.txt*    For Vim version 7.0aa.  Last change: 2004 Jul 25
+*motion.txt*    For Vim version 7.0aa.  Last change: 2004 Sep 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -731,6 +731,24 @@ g'{mark}  g`{mark}
 			motion command).  For example: >
 				:marks aB
 <			to list marks 'a' and 'B'.  {not in Vi}
+
+							*:delm* *:delmarks*
+:delm[arks] {marks} 	Delete the specified marks.  Marks that can be deleted
+			include A-Z and 0-9.  You cannot delete the ' mark.
+			They can be specified by giving the list of mark
+			names, or with a range, separated with a dash.  Spaces
+			are ignored.  Examples: >
+			   :delmarks a	      deletes mark a
+			   :delmarks a b 1    deletes marks a, b and 1
+			   :delmarks Aa       deletes marks A and a
+			   :delmarks p-z      deletes marks in the range p to z
+			   :delmarks ^.[]     deletes marks ^ . [ ]
+			   :delmarks \"	      deletes mark "
+<			{not in Vi}
+
+:delm[arks]!		Delete all marks for the current buffer, but not marks
+			A-Z or 0-9.
+			{not in Vi}
 
 A mark is not visible in any way.  It is just a position in the file that is
 remembered.  Do not confuse marks with named registers, they are totally

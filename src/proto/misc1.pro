@@ -81,7 +81,7 @@ int expand_wildcards __ARGS((int num_pat, char_u **pat, int *num_file, char_u **
 int match_suffix __ARGS((char_u *fname));
 int gen_expand_wildcards __ARGS((int num_pat, char_u **pat, int *num_file, char_u ***file, int flags));
 void addfile __ARGS((garray_T *gap, char_u *f, int flags));
-char_u *get_cmd_output __ARGS((char_u *cmd, int flags));
+char_u *get_cmd_output __ARGS((char_u *cmd, char_u *infile, int flags));
 void FreeWild __ARGS((int count, char_u **files));
 int goto_im __ARGS((void));
 /* vim: set ft=c : */

@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2004 Aug 30
+" Last Change:	2004 Sep 11
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -99,6 +99,9 @@ au BufNewFile,BufRead *.a65			setf a65
 " Applix ELF
 au BufNewFile,BufRead *.am
 	\ if expand("<afile>") !~? 'Makefile.am\>' | setf elf | endif
+
+" ALSA configuration
+au BufNewFile,BufRead ~/.asoundrc,/usr/share/alsa/alsa.conf,/etc/asound.conf	setf alsaconf
 
 " Arc Macro Language
 au BufNewFile,BufRead *.aml			setf aml

@@ -1,15 +1,15 @@
 " NetrwFileHandlers: contains various extension-based file handlers for
 "                    netrw's browsers' x command ("eXecute launcher")
 " Author:	Charles E. Campbell, Jr.
-" Date:		Aug 27, 2004
-" Version:	2
+" Date:		Aug 31, 2004
+" Version:	3a	NOT RELEASED
 
 " ---------------------------------------------------------------------
 " Prevent Reloading: {{{1
 if exists("g:loaded_netrwfilehandlers") || &cp
  finish
 endif
-let g:loaded_netrwfilehandlers= "v2"
+let g:loaded_netrwfilehandlers= "v3a"
 
 " ---------------------------------------------------------------------
 " NetrwFileHandler_html: handles html when the user hits "x" when the {{{1
@@ -245,6 +245,7 @@ fun! NetrwFileHandler_ps(ps)
   elseif executable("gswin32")
    exe "silent! !gswin32 \"".a:ps.'"'
    redraw!
+  else
 "   call Dret("NetrwFileHandler_ps 0")
    return 0
   endif
@@ -252,6 +253,61 @@ fun! NetrwFileHandler_ps(ps)
 "  call Dret("NetrwFileHandler_ps 1")
   return 1
 endfun
+
+" ---------------------------------------------------------------------
+" NetrwFileHandler_eps: handles encapsulated PostScript files {{{1
+fun! NetrwFileHandler_eps(eps)
+"  call Dfunc("NetrwFileHandler_ps()")
+  if executable("gs")
+   exe "silent! !gs ".a:eps
+   redraw!
+  elseif executable("ghostscript")
+   exe "silent! !ghostscript ".a:eps
+   redraw!
+  elseif executable("ghostscript")
+   exe "silent! !ghostscript ".a:eps
+   redraw!
+  elseif executable("gswin32")
+   exe "silent! !gswin32 \"".a:eps.'"'
+   redraw!
+  else
+"   call Dret("NetrwFileHandler_ps 0")
+   return 0
+  endif
+endfun
+
+" ---------------------------------------------------------------------
+" NetrwFileHandler_fig: handles xfig files {{{1
+fun! NetrwFileHandler_fig(fig)
+"  call Dfunc("NetrwFileHandler_fig()")
+  if executable("xfig")
+   exe "silent! !xfig ".a:fig
+   redraw!
+  else
+"   call Dret("NetrwFileHandler_fig 0")
+   return 0
+  endif
+
+"  call Dret("NetrwFileHandler_fig 1")
+  return 1
+endfun
+
+" ---------------------------------------------------------------------
+" NetrwFileHandler_obj: handles tgif's obj files {{{1
+fun! NetrwFileHandler_obj(obj)
+"  call Dfunc("NetrwFileHandler_obj()")
+  if has("unix") && executable("tgif")
+   exe "silent! !tgif ".a:obj
+   redraw!
+  else
+"   call Dret("NetrwFileHandler_obj 0")
+   return 0
+  endif
+
+"  call Dret("NetrwFileHandler_obj 1")
+  return 1
+endfun
+
 
 " ---------------------------------------------------------------------
 "  vim: ts=4 fdm=marker

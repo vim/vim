@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 7.0aa.  Last change: 2004 Jul 24
+*pattern.txt*   For Vim version 7.0aa.  Last change: 2004 Sep 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -431,7 +431,7 @@ Character classes {not in Vi}:				*/character-classes*
 	x	x	a character with no special meaning matches itself
 
 |/[]|	[]	\[]	any character specified inside the []
-|/\%[]| \%[]	\%[]	a list of optionally matched atoms
+|/\%[]| \%[]	\%[]	a sequence of optionally matched atoms
 
 |/\c|	\c	\c	ignore case
 |/\C|	\C	\C	match case
@@ -442,6 +442,12 @@ Character classes {not in Vi}:				*/character-classes*
 |/\Z|	\Z	\Z	ignore differences in Unicode "combining characters".
 			Useful when searching voweled Hebrew or Arabic text.
 
+|/\%d|	\%d	\%d	match specified decimal character (eg \%d123
+|/\%x|	\%x	\%x	match specified hex character (eg \%x2a)
+|/\%o|	\%o	\%o	match specified octal character (eg \%o040)
+|/\%u|	\%u	\%u	match specified multibyte character (eg \%u20ac)
+|/\%U|	\%U	\%U	match specified large multibyte character (eg
+			\%U12345678)
 
 Example			matches ~
 \<\I\i*		or
@@ -988,6 +994,11 @@ x	A single character, with no special meaning, matches itself
 		\t	<Tab>
 		\r	<CR>	(NOT end-of-line!)
 		\b	<BS>
+		\d123	decimal number of character
+		\o40	octal number of character up to 0377
+		\x20	hexadecimal number of character up to 0xff
+		\u20AC	hex. number of multibyte character up to 0xffff
+		\U1234	hex. number of multibyte character up to 0xffffffff
 	  NOTE: The other backslash codes mentioned above do not work inside
 	  []!
 	- Matching with a collection can be slow, because each character in
@@ -996,7 +1007,7 @@ x	A single character, with no special meaning, matches itself
 	  much faster than "[0-9]" and matches the same characters.
 
 						*/\%[]* *E69* *E70* *E369*
-\%[]	A list of optionally matched atoms.  This always matches.
+\%[]	A sequence of optionally matched atoms.  This always matches.
 	It matches as much of the list of atoms it contains as possible.  Thus
 	it stops at the first atom that doesn't match.  For example: >
 		/r\%[ead]
@@ -1011,6 +1022,17 @@ x	A single character, with no special meaning, matches itself
 <	Matches the words "r", "re", "ro", "rea", "roa", "read" and "road".
 	{not available when compiled without the +syntax feature}
 
+				*/\%d* */\%x* */\%o* */\%u* */\%U/* *E678*
+
+\%d123	Matches the character specified with a decimal number.  Must be
+	followed by a non-digit.
+\%o40	Matches the character specified with an octal number up to 0377.
+	Numbers below 040 must be followed by a non-octal digit or a non-digit.
+\%x2a	Matches the character specified with up to two hexadecimal characters.
+\%u20AC	Matches the character specified with up to four hexadecimal
+	characters.
+\%U1234abcd	Matches the character specified with up to eight hexadecimal
+	characters.
 
 ==============================================================================
 7. Ignoring case in a pattern					*/ignorecase*

@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2004 Sep 06
+*version7.txt*  For Vim version 7.0aa.  Last change: 2004 Sep 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -122,6 +122,8 @@ Win32: The ":winpos" command now also works in the console. (Vipin Aravind)
 
 |:keepalt|		Do not change the alternate file.
 
+|:delmarks|		Delete marks.
+
 
 New functions: ~
 
@@ -135,6 +137,8 @@ getftype(fname)		|getftype()|	Get type of file. (Nikolai Weibull)
 repeat(expr, count)	|repeat()| 	Repeat "expr" "count" times.
 					(Christophe Poucet)
 tr(expr, from, to)	|tr()|		Translate characters. (Ron Aaron)
+system(cmd, input)	|system()|	Filters {input} through a shell
+					command.
 
 
 New autocommand events: ~
@@ -144,6 +148,20 @@ New autocommand events: ~
 |InsertLeave|		leaving Insert or Replace mode
 
 |ColorScheme|		after loading a color scheme
+
+
+New items in search patterns: ~
+|/\%d| \%d123		search for character with decimal number
+|/\]|  [\d123]		idem, in a colletion
+|/\%o| \%o103		search for character with octal number
+|/\]|  [\o1o3]		idem, in a colletion
+|/\%x| \%x1a		search for character with 2 pos. hex number
+|/\]|  [\x1a]		idem, in a colletion
+|/\%u| \%u12ab		search for character with 4 pos. hex number
+|/\]|  [\u12ab]		idem, in a colletion
+|/\%U| \%U1234abcd	search for character with 8 pos. hex number
+|/\]|  [\U1234abcd]	idem, in a colletion
+			    (The above partly by Ciaran McCreesh)
 
 
 New Syntax/Indent/FTplugin files: ~
@@ -347,5 +365,12 @@ and global options remain unmodified.
 Win32: When 'encoding' is set to "utf-8" in the vimrc file, files from the
 command line with non-ASCII characters are not used correctly.  Recode the
 file names when 'encoding' is set, using the Unicode command line.
+
+Win32 console: When the default for 'encoding' ends up to be "latin1", the
+default value of 'isprint' was wrong.
+
+When an error message is given while waiting for a character (e.g., when an
+xterm reports the number of colors), the hit-enter prompt overwrote the last
+line.  Don't reset msg_didout in normal_cmd() for K_IGNORE.
 
  vim:tw=78:ts=8:ft=help:norl:

@@ -654,7 +654,7 @@ mch_can_exe(name)
     if (buf == NULL)
 	return -1;
     sprintf((char *)buf, "which %s", name);
-    p = get_cmd_output(buf, SHELL_SILENT);
+    p = get_cmd_output(buf, NULL, SHELL_SILENT);
     vim_free(buf);
     if (p == NULL)
 	return -1;

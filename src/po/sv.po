@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim 6.2\n"
 "POT-Creation-Date: 2004-01-30 11:57+0100\n"
-"PO-Revision-Date: 2004-04-24 21:54+0200\n"
+"PO-Revision-Date: 2004-09-07 17:10%z\n"
 "Last-Translator: Johan Svedberg <johan@svedberg.pp.se>\n"
 "Language-Team: Swedish <sv@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -1357,7 +1357,7 @@ msgstr "E192: Rekursiv användning av :normal för djup"
 
 #: ex_docmd.c:8033
 msgid "E194: No alternate file name to substitute for '#'"
-msgstr "E194: Inget alternativt filnamn att byta ut '#' med"
+msgstr "E194: Inget alternativt filnamn att ersätta '#' med"
 
 #: ex_docmd.c:8064
 msgid "E495: no autocommand file name to substitute for \"<afile>\""
@@ -1369,11 +1369,11 @@ msgstr "E496: inget autokommando-buffernummer att ersätta \"<abuf>\" med"
 
 #: ex_docmd.c:8083
 msgid "E497: no autocommand match name to substitute for \"<amatch>\""
-msgstr "E497: inget autokommando-träffnamn att byta ut \"<amatch>\" med"
+msgstr "E497: inget autokommando-träffnamn att ersätta \"<amatch>\" med"
 
 #: ex_docmd.c:8093
 msgid "E498: no :source file name to substitute for \"<sfile>\""
-msgstr "E498: inget :source-filnamn att byta ut \"<sfile>\" med"
+msgstr "E498: inget :source-filnamn att ersätta \"<sfile>\" med"
 
 #: ex_docmd.c:8134
 #, no-c-format
@@ -3263,7 +3263,7 @@ msgstr "-foreground <färg>\tAnvänd <färg> för vanlig text (även: -fg)"
 
 #: main.c:2533 main.c:2553
 msgid "-font <font>\t\tUse <font> for normal text (also: -fn)"
-msgstr "-font <typsnitt>\t\tAnvänd <typsnitt> för vanlig text (även: -fn)"
+msgstr "-font <typsnitt>\tAnvänd <typsnitt> för vanlig text (även: -fn)"
 
 #: main.c:2534
 msgid "-boldfont <font>\tUse <font> for bold text"
@@ -6314,7 +6314,7 @@ msgstr "E32: Inget filnamn"
 
 #: globals.h:1240
 msgid "E33: No previous substitute regular expression"
-msgstr "E33: Inget tidigare utbytningsreguljäruttryck"
+msgstr "E33: Inget tidigare reguljärt uttryck för ersättning"
 
 #: globals.h:1241
 msgid "E34: No previous command"

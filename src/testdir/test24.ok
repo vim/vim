@@ -5,3 +5,15 @@ test text test text
 test text test text
 test text test text
 test text test text
+test text test text  x61
+test text test text  x60-x64
+test text test text  x78 5
+test text test text  o143
+test text test text  o140-o144
+test text test text  o41 7
+test text test text  \%x42
+test text test text  \%o103
+test text test text  [\x00]
+test text test text  [\x00-\x10]
+test text test text  [\x-z]
+test text test text  [\u-z]

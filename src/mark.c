@@ -743,6 +743,91 @@ show_one_mark(c, arg, p, name, current)
     }
 }
 
+/*
+ * ":delmarks[!] [marks]"
+ */
+    void
+ex_delmarks(eap)
+    exarg_T *eap;
+{
+    char_u	*p;
+    int		from, to;
+    int		i;
+    int		lower;
+    int		digit;
+    int		n;
+
+    if (*eap->arg == NUL && eap->forceit)
+	/* clear all marks */
+	clrallmarks(curbuf);
+    else if (eap->forceit)
+	EMSG(_(e_invarg));
+    else if (*eap->arg == NUL)
+	EMSG(_(e_argreq));
+    else
+    {
+	/* clear specified marks only */
+	for (p = eap->arg; *p != NUL; ++p)
+	{
+	    lower = ASCII_ISLOWER(*p);
+	    digit = VIM_ISDIGIT(*p);
+	    if (lower || digit || ASCII_ISUPPER(*p))
+	    {
+		if (p[1] == '-')
+		{
+		    /* clear range of marks */
+		    from = *p;
+		    to = p[2];
+		    if (!(lower ? ASCII_ISLOWER(p[2])
+				: (digit ? VIM_ISDIGIT(p[2])
+				    : ASCII_ISUPPER(p[2])))
+			    || to < from)
+		    {
+			EMSG2(_(e_invarg2), p);
+			return;
+		    }
+		    p += 2;
+		}
+		else
+		    /* clear one lower case mark */
+		    from = to = *p;
+
+		for (i = from; i <= to; ++i)
+		{
+		    if (lower)
+			curbuf->b_namedm[i - 'a'].lnum = 0;
+		    else
+		    {
+			if (digit)
+			    n = i - '0' + NMARKS;
+			else
+			    n = i - 'A';
+			namedfm[n].fmark.mark.lnum = 0;
+			vim_free(namedfm[n].fname);
+			namedfm[n].fname = NULL;
+		    }
+		}
+	    }
+	    else
+		switch (*p)
+		{
+		    case '"': curbuf->b_last_cursor.lnum = 0; break;
+		    case '^': curbuf->b_last_insert.lnum = 0; break;
+		    case '.': curbuf->b_last_change.lnum = 0; break;
+		    case '[': curbuf->b_op_start.lnum    = 0; break;
+		    case ']': curbuf->b_op_end.lnum      = 0; break;
+#ifdef FEAT_VISUAL
+		    case '<': curbuf->b_visual_start.lnum = 0; break;
+		    case '>': curbuf->b_visual_end.lnum   = 0; break;
+#endif
+		    case ' ': break;
+		    default:  EMSG2(_(e_invarg2), p);
+			      return;
+		}
+	}
+    }
+}
+
 #if defined(FEAT_JUMPLIST) || defined(PROTO)
 /*
  * print the jumplist

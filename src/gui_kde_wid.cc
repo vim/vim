@@ -154,9 +154,9 @@ void gui_keypress(QKeyEvent *e);
     int
 gui_mch_haskey(char_u * name)//{{{
 {
-    for (int i=0; special_keys[i].qtkey != 0; i++)
-	if (name[0] == special_keys[i].code0 &&
-		name[1] == special_keys[i].code1)
+    for (int i = 0; special_keys[i].qtkey != 0; i++)
+	if (name[0] == special_keys[i].code0
+					  && name[1] == special_keys[i].code1)
 	    return OK;
     return FAIL;
 }//}}}
@@ -164,20 +164,20 @@ gui_mch_haskey(char_u * name)//{{{
 /*
  * custom Frame for drawing ...
  */
-void VimWidget::paintEvent( QPaintEvent *e)//{{{
+void VimWidget::paintEvent(QPaintEvent *e)//{{{
 {
     QRect r = e->rect();
-    gui_redraw(r.x(), r.y(), r.width(), r.height() );
+    gui_redraw(r.x(), r.y(), r.width(), r.height());
 }//}}}
 
 void VimWidget::draw_string(int x, int y, QString s, int len, int flags)//{{{
 {
-    gui.current_font->setBold( flags & DRAW_BOLD );
-    gui.current_font->setUnderline( flags & DRAW_UNDERL );
+    gui.current_font->setBold(flags & DRAW_BOLD);
+    gui.current_font->setUnderline(flags & DRAW_UNDERL);
     gui.current_font->setItalic(flags & DRAW_ITALIC);
-    painter->setBackgroundMode( flags & DRAW_TRANSP ? Qt::TransparentMode : Qt::OpaqueMode);
-    painter->setFont( *(gui.current_font) );
-    painter->drawText( x, y, s, len);
+    painter->setBackgroundMode(flags & DRAW_TRANSP ? Qt::TransparentMode : Qt::OpaqueMode);
+    painter->setFont(*(gui.current_font));
+    painter->drawText(x, y, s, len);
 }//}}}
 
 void VimWidget::mousePressEvent(QMouseEvent *event)//{{{
@@ -1165,36 +1165,9 @@ void VimMainWindow::showAboutApplication()//{{{
 	    I18N_NOOP("NetBSD configure/compilation fixes")
 	    );
     aboutData->setLicenseText(
-"KVim as an extension of Vim follows Vim license : \n\
-Vim is Charityware.  You can use and copy it as much as you like, but you are\n\
-encouraged to make a donation to orphans in Uganda.  Please read the file\n\
-runtime/doc/uganda.txt for details.\n\
-\n\
-There are no restrictions on distributing an unmodified copy of Vim.  Parts of\n\
-Vim may also be distributed, but this text must always be included.  You are\n\
-allowed to include executables that you made from the unmodified Vim sources,\n\
-your own usage examples and Vim scripts.\n\
-\n\
-If you distribute a modified version of Vim, you are encouraged to send the\n\
-maintainer a copy, including the source code.  Or make it available to the\n\
-maintainer through ftp; let him know where it can be found.  If the number of\n\
-changes is small (e.g., a modified Makefile) e-mailing the diffs will do.\n\
-When the maintainer asks for it (in any way) you must make your changes,\n\
-including source code, available to him.\n\
-\n\
-The maintainer reserves the right to include any changes in the official\n\
-version of Vim.  This is negotiable.  You are not allowed to distribute a\n\
-modified version of Vim when you are not willing to make the source code\n\
-available to the maintainer.\n\
-\n\
-The current maintainer is Bram Moolenaar <Bram@vim.org>.  If this changes, it\n\
-will be announced in appropriate places (most likely www.vim.org and\n\
-comp.editors).  When it is completely impossible to contact the maintainer,\n\
-the obligation to send him modified source code ceases.\n\
-\n\
-It is not allowed to remove these restrictions from the distribution of the\n\
-Vim sources or parts of it.  These restrictions may also be used for previous\n\
-Vim releases instead of the text that was included with it.");
+"KVim as an extension of Vim follows Vim license.\n\
+You can read it with \":help license\"\n\
+Or read the file $VIMRUNTIME/doc/uganda.txt.");
 
     KAboutApplication *about = new KAboutApplication(aboutData);
     about->show();

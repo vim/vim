@@ -1,6 +1,6 @@
 " Vim tutor support file
 " Author: Eduardo F. Amatria <eferna1@platea.pntic.mec.es>
-" Last Change:	2004 Jun 03
+" Last Change:	2004 Sep 06
 
 " This small source file is used for detecting if a translation of the
 " tutor file exist, i.e., a tutor.xx file, where xx is the language.
@@ -70,8 +70,12 @@ if s:ext =~? '\.zh'
 endif
 
 " The Polish tutor is available in two encodings, guess which one to use.
-if s:ext =~? '\.pl' && &enc =~ 1250
-  let s:ext = ".pl.cp1250"
+if s:ext =~? '\.pl'
+  if &enc =~ 1250
+    let s:ext = ".pl.cp1250"
+  elseif &enc =~ "utf-8$"
+    let s:ext = ".pl.utf-8"
+  endif
 endif
 
 " The Greek tutor is available in two encodings, guess which one to use

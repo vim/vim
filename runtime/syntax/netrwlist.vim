@@ -1,7 +1,7 @@
 " Language   : Netrw Remote-Directory Listing Syntax
 " Maintainer : Charles E. Campbell, Jr.
-" Last change: Aug 20, 2004
-" Version    : 4
+" Last change: Sep 08, 2004
+" Version    : 5
 " ---------------------------------------------------------------------
 
 " Syntax Clearing: {{{1
@@ -18,7 +18,7 @@ syn match  netrwDir				"^.*/\%(\t\|$\)"	contains=netrwClassify
 syn match  netrwClassify			"[*=|@/]\%(\t\|$\)"
 syn match  netrwSymLink				"^.*@\%(\t\|$\)"	contains=netrwClassify
 syn match  netrwComment				'".*\%(\t\|$\)'		contains=@NetrwGroup
-syn match  netrwHide				'^"\s*Hiding:'		skipwhite nextgroup=netrwHidePat
+syn match  netrwHide				'^"\s*\(Hid\|Show\)ing:' skipwhite nextgroup=netrwHidePat
 syn match  netrwSlash	contained		"/"
 syn match  netrwHidePat	contained		"[^,]\+"		skipwhite nextgroup=netrwHideSep
 syn match  netrwHideSep	contained transparent	","			skipwhite nextgroup=netrwHidePat
