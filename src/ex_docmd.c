@@ -1244,8 +1244,8 @@ do_cmdline(cmdline, getline, cookie, flags)
 	{
 	    int idx = cleanup_conditionals(&cstack, 0, TRUE);
 
-	    if (idx == cstack.cs_idx)
-		--idx;	    /* remove at least one */
+	    if (idx >= 0)
+		--idx;	    /* remove try block not in its finally clause */
 	    rewind_conditionals(&cstack, idx, CSF_WHILE | CSF_FOR,
 							&cstack.cs_looplevel);
 	}
