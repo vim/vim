@@ -712,10 +712,10 @@ do_cmdline(cmdline, getline, cookie, flags)
 #ifdef FEAT_EVAL
     /* For every pair of do_cmdline()/do_one_cmd() calls, use an extra memory
      * location for storing error messages to be converted to an exception.
-     * This ensures that the do_errthrow() call in do_one_cmd() does not combine
-     * the messages stored by an earlier invocation of do_one_cmd() with the
-     * command name of the later one.  This would happen when BufWritePost
-     * autocommands are executed after a write error. */
+     * This ensures that the do_errthrow() call in do_one_cmd() does not
+     * combine the messages stored by an earlier invocation of do_one_cmd()
+     * with the command name of the later one.  This would happen when
+     * BufWritePost autocommands are executed after a write error. */
     saved_msg_list = msg_list;
     msg_list = &private_msg_list;
     private_msg_list = NULL;

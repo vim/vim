@@ -55,7 +55,7 @@
 #       PostScript printing: POSTSCRIPT=yes (default is no)
 #       Feature Set: FEATURES=[TINY, SMALL, NORMAL, BIG, HUGE] (default is BIG)
 #       Version Support: WINVER=[0x0400, 0x0500] (default is 0x0400)
-#       Processor Version: CPUNR=[i386, i486, i586, i686, P4] (default is i386)
+#       Processor Version: CPUNR=[i386, i486, i586, i686, pentium4] (default is i386)
 #       Optimization: OPTIMIZE=[SPACE, SPEED, MAXSPEED] (default is MAXSPEED)
 #       Netbeans Support: NETBEANS=[yes or no] (default is yes if GUI is yes)
 #       Netbeans Debugging Support: NBDEBUG=[yes or no] (default is no)
@@ -276,7 +276,7 @@ CPUARG = /G4
 CPUARG = /G5
 !elseif "$(CPUNR)" == "i686"
 CPUARG = /G6
-!elseif "$(CPUNR)" == "P4"
+!elseif "$(CPUNR)" == "pentium4"
 CPUARG = /G7 /arch:SSE2
 !else
 CPUARG =

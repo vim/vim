@@ -1,6 +1,6 @@
 #
 # Makefile for VIM on Win32, using Cygnus gcc
-# Last updated by Dan Sharp.  Last Change: 2004 Dec 17
+# Last updated by Dan Sharp.  Last Change: 2005 Jan 08
 #
 # This compiles Vim as a Windows application.  If you want Vim to run as a
 # Cygwin application use the Makefile (just like on Unix).
@@ -430,13 +430,24 @@ tags:
 clean:
 	-$(DEL) $(OUTDIR)$(DIRSLASH)*.o
 	-rmdir $(OUTDIR)
-	-$(DEL) *.exe
+	-$(DEL) $(EXE) vimrun.exe install.exe uninstal.exe
 ifdef PERL
 	-$(DEL) if_perl.c
 endif
 	-$(DEL) pathdef.c
 	$(MAKE) -C xxd -f Make_cyg.mak clean
 	$(MAKE) -C GvimExt -f Make_ming.mak clean
+
+distclean: clean
+	-$(DEL) obj$(DIRSLASH)*.o
+	-rmdir obj
+	-$(DEL) gobj$(DIRSLASH)*.o
+	-rmdir gobj
+	-$(DEL) objd$(DIRSLASH)*.o
+	-rmdir objd
+	-$(DEL) gobjd$(DIRSLASH)*.o
+	-rmdir gobjd
+	-$(DEL) *.exe
 
 ###########################################################################
 
@@ -456,8 +467,9 @@ $(OUTDIR)/if_ole.o:	if_ole.cpp $(INCL)
 	$(CC) -c $(CFLAGS) -D__IID_DEFINED__ if_ole.cpp -o $(OUTDIR)/if_ole.o
 
 if_perl.c: if_perl.xs typemap
-	perl $(PERL)/lib/ExtUtils/xsubpp -prototypes -typemap \
-	     $(PERL)/lib/ExtUtils/typemap if_perl.xs > $@
+	$(PERL)/bin/perl `cygpath -d $(PERL)/lib/ExtUtils/xsubpp` \
+		-prototypes -typemap \
+		`cygpath -d $(PERL)/lib/ExtUtils/typemap` if_perl.xs > $@
 
 $(OUTDIR)/if_perl.o:	if_perl.c $(INCL)
 ifeq (yes, $(USEDLL))

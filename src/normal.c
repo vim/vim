@@ -8411,6 +8411,7 @@ nv_put(cap)
 #ifdef FEAT_VISUAL
     int		regname = 0;
     void	*reg1 = NULL, *reg2 = NULL;
+    int		empty = FALSE;
 #endif
     int		dir;
     int		flags = 0;
@@ -8467,6 +8468,7 @@ nv_put(cap)
 	    cap->oap->regname = NUL;
 	    nv_operator(cap);
 	    do_pending_operator(cap, 0, FALSE);
+	    empty = (curbuf->b_ml.ml_flags & ML_EMPTY);
 
 	    /* delete PUT_LINE_BACKWARD; */
 	    cap->oap->regname = regname;
@@ -8504,6 +8506,10 @@ nv_put(cap)
 	/* If a register was saved, put it back now. */
 	if (reg2 != NULL)
 	    put_register(regname, reg2);
+	/* When all lines were selected and deleted do_put() leaves an empty
+	 * line that needs to delete now. */
+	if (empty && *ml_get(curbuf->b_ml.ml_line_count) == NUL)
+	    ml_delete(curbuf->b_ml.ml_line_count, TRUE);
 #endif
 	auto_format(FALSE, TRUE);
     }
