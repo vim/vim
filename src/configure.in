@@ -686,17 +686,21 @@ AC_MSG_RESULT($enable_tclinterp)
 
 if test "$enable_tclinterp" = "yes"; then
 
-  dnl on FreeBSD tclsh is a silly script, look for tclsh8.0 or tclsh8.2
+  dnl on FreeBSD tclsh is a silly script, look for tclsh8.[420]
   AC_MSG_CHECKING(--with-tclsh argument)
   AC_ARG_WITH(tclsh, [  --with-tclsh=PATH       which tclsh to use (default: tclsh8.0)],
 	tclsh_name="$withval"; AC_MSG_RESULT($tclsh_name),
-	tclsh_name="tclsh8.0"; AC_MSG_RESULT(no))
+	tclsh_name="tclsh8.4"; AC_MSG_RESULT(no))
   AC_PATH_PROG(vi_cv_path_tcl, $tclsh_name)
   AC_SUBST(vi_cv_path_tcl)
 
-  dnl when no specific version specified, also try 8.2
-  if test "X$vi_cv_path_tcl" = "X" -a $tclsh_name = "tclsh8.0"; then
+  dnl when no specific version specified, also try 8.2 and 8.0
+  if test "X$vi_cv_path_tcl" = "X" -a $tclsh_name = "tclsh8.4"; then
     tclsh_name="tclsh8.2"
+    AC_PATH_PROG(vi_cv_path_tcl, $tclsh_name)
+  fi
+  if test "X$vi_cv_path_tcl" = "X" -a $tclsh_name = "tclsh8.2"; then
+    tclsh_name="tclsh8.0"
     AC_PATH_PROG(vi_cv_path_tcl, $tclsh_name)
   fi
   dnl still didn't find it, try without version number
@@ -744,8 +748,8 @@ if test "$enable_tclinterp" = "yes"; then
 	    dnl use eval, because tcl 8.2 includes ${TCL_DBGX}
 	    TCL_LIBS=`eval echo "$TCL_LIB_SPEC $TCL_LIBS"`
 	    dnl Use $TCL_DEFS for -D_THREAD_SAFE et al.  But only use the
-	    dnl "-D_ABC" items.
-	    TCL_DEFS=`echo $TCL_DEFS | tr ' ' '\012' | sed -e '/^-[[^D]]/d' -e '/-D[[^_]]/d' -e 's/-D_/ -D_/' | tr -d '\012'`
+	    dnl "-D_ABC" items.  Watch out for -DFOO=long\ long.
+	    TCL_DEFS=`echo $TCL_DEFS | sed -e 's/\ /\X/' | tr ' ' '\012' | sed -e '/^-[[^D]]/d' -e '/-D[[^_]]/d' -e 's/-D_/ -D_/' | tr -d '\012'`
 	    break
 	  fi
 	done
@@ -1502,6 +1506,7 @@ dnl			GUI_LIB_LOC="`echo $GUI_LIB_LOC\ | sed 's% -L/usr/lib%%'`"
 
                        AC_LANG_SAVE
                        AC_LANG_CPLUSPLUS
+		       AC_PROG_CXX
                        ac_save_LIBS="$LIBS"
                        LIBS="$GUI_LIB_LOC"
                        ac_save_CXXFLAGS="$CXXFLAGS"
@@ -2230,8 +2235,18 @@ AC_CHECK_HEADERS(stdarg.h stdlib.h string.h sys/select.h sys/utsname.h \
 	sys/resource.h sys/systeminfo.h locale.h \
 	sys/stream.h sys/ptem.h termios.h libc.h sys/statfs.h \
 	poll.h sys/poll.h pwd.h utime.h sys/param.h libintl.h \
-	libgen.h util/debug.h util/msg18n.h frame.h pthread_np.h \
+	libgen.h util/debug.h util/msg18n.h frame.h \
 	sys/acl.h sys/access.h sys/sysctl.h sys/sysinfo.h wchar.h)
+
+dnl pthread_np.h may exist but can only be used after including pthread.h
+AC_MSG_CHECKING([for pthread_np.h])
+AC_TRY_COMPILE([
+#include <pthread.h>
+#include <pthread_np.h>],
+		      [int i; i = 0;],
+	      AC_MSG_RESULT(yes)
+		      AC_DEFINE(HAVE_PTHREAD_NP_H),
+	      AC_MSG_RESULT(no))
 
 dnl On Mac OS X strings.h exists but produces a warning message :-(
 if test "x$MACOSX" != "xyes"; then

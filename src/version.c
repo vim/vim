@@ -372,7 +372,11 @@ static char *(features[]) =
 	"-multi_lang",
 #endif
 #ifdef FEAT_MZSCHEME
+# ifdef DYNAMIC_MZSCHEME
+	"+mzscheme/dyn",
+# else
 	"+mzscheme",
+# endif
 #else
 	"-mzscheme",
 #endif
