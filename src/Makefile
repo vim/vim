@@ -1055,9 +1055,9 @@ LINKIT = @echo >/dev/null
 NONE_INSTALL = install_normal
 
 ### KDE GUI interface.
-KDE_SRC		= gui.c pty.c gui_kde.cc gui_kde_x11.cc gui_kde_widget.cc gui_kde_widget_moc.cc kvim_iface_skel.cc
+KDE_SRC		= gui.c pty.c gui_kde.cc gui_kde_x11.cc gui_kde_wid.cc gui_kde_wid_moc.cc kvim_iface_skel.cc
 KDE_OBJ		= objects/gui.o objects/pty.o objects/gui_kde.o objects/gui_kde_x11.o \
-			objects/gui_kde_widget.o objects/gui_kde_widget_moc.o \
+			objects/gui_kde_wid.o objects/gui_kde_wid_moc.o \
 			objects/kvim_iface_skel.o
 KDE_DEFS	= -DFEAT_GUI_KDE $(NARROW_PROTO)
 KDE_IPATH	= $(GUI_INC_LOC)
@@ -1201,7 +1201,7 @@ CARBONGUI_BUNDLE = $(VIMNAME).app
 CARBONGUI_TESTARG = VIMPROG=../$(CARBONGUI_BUNDLE)/Contents/MacOS/$(VIMTARGET)
 
 # All GUI files
-ALL_GUI_SRC  = gui.c gui_gtk.c gui_gtk_f.c gui_motif.c gui_athena.c gui_gtk_x11.c gui_x11.c gui_at_sb.c gui_at_fs.c pty.c gui_kde.cc gui_kde_widget.cc gui_kde_x11.cc gui_kde_widget_moc.cc
+ALL_GUI_SRC  = gui.c gui_gtk.c gui_gtk_f.c gui_motif.c gui_athena.c gui_gtk_x11.c gui_x11.c gui_at_sb.c gui_at_fs.c pty.c gui_kde.cc gui_kde_wid.cc gui_kde_x11.cc gui_kde_wid_moc.cc
 ALL_GUI_PRO  = gui.pro gui_gtk.pro gui_motif.pro gui_athena.pro gui_gtk_x11.pro gui_x11.pro gui_w16.pro gui_w32.pro gui_amiga.pro gui_photon.pro gui_kde.pro gui_kde_x11.pro
 
 # }}}
@@ -2038,7 +2038,7 @@ clean celan: testclean
 	-rm -f $(TOOLS) auto/osdef.h auto/pathdef.c auto/if_perl.c
 	-rm -f conftest* *~ auto/link.sed
 	-rm -rf $(GUI_BUNDLE)
-	-rm -f gui_kde_widget_moc.cc kvim_iface_skel.cc *.kidl
+	-rm -f gui_kde_wid_moc.cc kvim_iface_skel.cc *.kidl
 	if test -d $(PODIR); then \
 		cd $(PODIR); $(MAKE) prefix=$(DESTDIR)$(prefix) clean; \
 	fi
@@ -2393,17 +2393,17 @@ objects/gui_kde.o: gui_kde.cc
 objects/gui_kde_x11.o: gui_kde_x11.cc
 	$(CCC) -o $@ gui_kde_x11.cc
 
-objects/gui_kde_widget.o: gui_kde_widget.cc
-	$(MOC) -o gui_kde_widget_moc.cc gui_kde_widget.h
+objects/gui_kde_wid.o: gui_kde_wid.cc
+	$(MOC) -o gui_kde_wid_moc.cc gui_kde_wid.h
 	$(KDE_DIR)/bin/dcopidl kvim_iface.h > kvim_iface.kidl || ( rm -f kvim_iface.kidl ; /bin/false )
 	$(KDE_DIR)/bin/dcopidl2cpp --c++-suffix cc --no-stub kvim_iface.kidl
-	$(CCC) -o $@ gui_kde_widget.cc
+	$(CCC) -o $@ gui_kde_wid.cc
 
-gui_kde_widget_moc.cc: objects/gui_kde_widget.o
-objects/gui_kde_widget_moc.o: gui_kde_widget_moc.cc
-	$(CCC) -o $@ gui_kde_widget_moc.cc
+gui_kde_wid_moc.cc: objects/gui_kde_wid.o
+objects/gui_kde_wid_moc.o: gui_kde_wid_moc.cc
+	$(CCC) -o $@ gui_kde_wid_moc.cc
 
-kvim_iface_skel.cc: objects/gui_kde_widget.o
+kvim_iface_skel.cc: objects/gui_kde_wid.o
 objects/kvim_iface_skel.o: kvim_iface_skel.cc
 	$(CCC) -o $@ kvim_iface_skel.cc
 
@@ -2716,21 +2716,21 @@ objects/pty.o: pty.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h \
  ascii.h keymap.h term.h macros.h structs.h regexp.h gui.h gui_beval.h \
  proto/gui_beval.pro option.h ex_cmds.h proto.h globals.h farsi.h \
  arabic.h
-objects/gui_kde.o: gui_kde.cc gui_kde_widget.h kvim_iface.h vim.h \
+objects/gui_kde.o: gui_kde.cc gui_kde_wid.h kvim_iface.h vim.h \
  auto/config.h feature.h os_unix.h auto/osdef.h ascii.h keymap.h \
  term.h macros.h structs.h regexp.h gui.h option.h ex_cmds.h proto.h \
  globals.h farsi.h
-objects/gui_kde_widget.o: gui_kde_widget.cc gui_kde_widget.h kvim_iface.h \
+objects/gui_kde_wid.o: gui_kde_wid.cc gui_kde_wid.h kvim_iface.h \
  vim.h auto/config.h feature.h os_unix.h auto/osdef.h ascii.h keymap.h \
  term.h macros.h structs.h regexp.h gui.h option.h ex_cmds.h proto.h \
  globals.h farsi.h proto/../../pixmaps/alert.xpm proto/../../pixmaps/error.xpm \
  proto/../../pixmaps/generic.xpm proto/../../pixmaps/info.xpm \
  proto/../../pixmaps/quest.xpm
-objects/gui_kde_x11.o: gui_kde_x11.cc gui_kde_widget.h kvim_iface.h vim.h \
+objects/gui_kde_x11.o: gui_kde_x11.cc gui_kde_wid.h kvim_iface.h vim.h \
  auto/config.h feature.h os_unix.h auto/osdef.h ascii.h keymap.h \
  term.h macros.h structs.h regexp.h gui.h option.h ex_cmds.h proto.h \
  globals.h farsi.h version.h ../runtime/vim32x32.xpm
-objects/gui_kde_widget_moc.o: gui_kde_widget_moc.cc gui_kde_widget.h \
+objects/gui_kde_wid_moc.o: gui_kde_wid_moc.cc gui_kde_wid.h \
  kvim_iface.h vim.h auto/config.h feature.h os_unix.h auto/osdef.h \
  ascii.h keymap.h term.h macros.h structs.h regexp.h gui.h option.h \
  ex_cmds.h proto.h globals.h

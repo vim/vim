@@ -1337,6 +1337,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 /atom	pattern.txt	/*\/atom*
 /bar	pattern.txt	/*\/bar*
 /branch	pattern.txt	/*\/branch*
+/character-classes	pattern.txt	/*\/character-classes*
 /collection	pattern.txt	/*\/collection*
 /concat	pattern.txt	/*\/concat*
 /dyn	various.txt	/*\/dyn*
@@ -3570,6 +3571,7 @@ EncodingChanged	autocmd.txt	/*EncodingChanged*
 Eterm	syntax.txt	/*Eterm*
 Ex	intro.txt	/*Ex*
 Ex-mode	intro.txt	/*Ex-mode*
+Exuberant_ctags	tagsrch.txt	/*Exuberant_ctags*
 F	motion.txt	/*F*
 FAQ	intro.txt	/*FAQ*
 Farsi	farsi.txt	/*Farsi*
@@ -4518,6 +4520,7 @@ except-syntax-error	eval.txt	/*except-syntax-error*
 exception-handling	eval.txt	/*exception-handling*
 exception-variable	eval.txt	/*exception-variable*
 exclusive	motion.txt	/*exclusive*
+exclusive-linewise	motion.txt	/*exclusive-linewise*
 executable()	eval.txt	/*executable()*
 execute-menus	gui.txt	/*execute-menus*
 exim	starting.txt	/*exim*
@@ -4625,6 +4628,7 @@ filewritable()	eval.txt	/*filewritable()*
 filter	change.txt	/*filter*
 find-manpage	usr_12.txt	/*find-manpage*
 find-replace	usr_10.txt	/*find-replace*
+finddir()	eval.txt	/*finddir()*
 findfile()	eval.txt	/*findfile()*
 fixed-5.1	version5.txt	/*fixed-5.1*
 fixed-5.2	version5.txt	/*fixed-5.2*
@@ -4773,8 +4777,10 @@ getcharmod()	eval.txt	/*getcharmod()*
 getcmdline()	eval.txt	/*getcmdline()*
 getcmdpos()	eval.txt	/*getcmdpos()*
 getcwd()	eval.txt	/*getcwd()*
+getfperm()	eval.txt	/*getfperm()*
 getfsize()	eval.txt	/*getfsize()*
 getftime()	eval.txt	/*getftime()*
+getftype()	eval.txt	/*getftype()*
 getline()	eval.txt	/*getline()*
 getreg()	eval.txt	/*getreg()*
 getregtype()	eval.txt	/*getregtype()*

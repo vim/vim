@@ -3606,8 +3606,7 @@ vim_findfile_init(path, filename, stopdirs, level, free_visited, need_dir,
     }
 
     /* Store information on starting dir now if path is relative.
-     * If path is absolute, we do that later.
-     */
+     * If path is absolute, we do that later.  */
     if (path[0] == '.'
 	    && (vim_ispathsep(path[1]) || path[1] == NUL)
 	    && (!tagfile || vim_strchr(p_cpo, CPO_DOTTAG) == NULL)
@@ -3886,7 +3885,7 @@ vim_findfile_cleanup(ctx)
  * Return a pointer to an allocated file name or NULL if nothing found.
  * To get all matching files call this function until you get NULL.
  *
- * If the passed search_context is NULL, it the returns NULL.
+ * If the passed search_context is NULL, NULL is returned.
  *
  * The search algorithm is depth first. To change this replace the
  * stack with a list (don't forget to leave partly searched directories on the

@@ -3806,6 +3806,7 @@ static struct prt_ps_font_S prt_ps_courier_font =
     {"Courier", "Courier-Bold", "Courier-Oblique", "Courier-BoldOblique"}
 };
 
+#ifdef FEAT_MBYTE
 /* Generic font metrics for multi-byte fonts */
 static struct prt_ps_font_S prt_ps_mb_font =
 {
@@ -3814,6 +3815,7 @@ static struct prt_ps_font_S prt_ps_mb_font =
     -250, 805,
     {NULL, NULL, NULL, NULL}
 };
+#endif
 
 /* Pointer to current font set being used */
 static struct prt_ps_font_S* prt_ps_font;
@@ -3822,8 +3824,8 @@ static struct prt_ps_font_S* prt_ps_font;
  * building CID font name */
 struct prt_ps_encoding_S
 {
-    char_u	*encoding;
-    char_u	*cmap_encoding;
+    char	*encoding;
+    char	*cmap_encoding;
     int		needs_charset;
 };
 
@@ -3833,6 +3835,8 @@ struct prt_ps_charset_S
     char	*cmap_charset;
     int		has_charset;
 };
+
+#ifdef FEAT_MBYTE
 
 #define CS_JIS_C_1978   (0x01)
 #define CS_JIS_X_1983   (0x02)
@@ -4017,6 +4021,7 @@ static struct prt_ps_mbfont_S prt_ps_mbfonts[] =
         "KS_X_1992"
     }
 };
+#endif /* FEAT_MBYTE */
 
 struct prt_ps_resource_S
 {
@@ -4076,7 +4081,7 @@ static char *prt_resource_types[] =
 
 struct prt_dsc_comment_S
 {
-    char_u	*string;
+    char	*string;
     int		len;
     int		type;
 };
@@ -4092,11 +4097,11 @@ struct prt_dsc_line_S
 #define SIZEOF_CSTR(s)      (sizeof(s) - 1)
 struct prt_dsc_comment_S prt_dsc_table[] =
 {
-    {PRT_DSC_TITLE,       SIZEOF_CSTR(PRT_DSC_TITLE),       PRT_DSC_TITLE_TYPE},
+    {PRT_DSC_TITLE,       SIZEOF_CSTR(PRT_DSC_TITLE),     PRT_DSC_TITLE_TYPE},
     {PRT_DSC_VERSION,     SIZEOF_CSTR(PRT_DSC_VERSION),
-                                                        PRT_DSC_VERSION_TYPE},
+							PRT_DSC_VERSION_TYPE},
     {PRT_DSC_ENDCOMMENTS, SIZEOF_CSTR(PRT_DSC_ENDCOMMENTS),
-                                                    PRT_DSC_ENDCOMMENTS_TYPE}
+						     PRT_DSC_ENDCOMMENTS_TYPE}
 };
 
 static void prt_write_file_raw_len __ARGS((char_u *buffer, int bytes));
@@ -4135,6 +4140,7 @@ static int prt_resfile_skip_nonws __ARGS((int offset));
 static int prt_resfile_skip_ws __ARGS((int offset));
 static int prt_next_dsc __ARGS((struct prt_dsc_line_S *p_dsc_line));
 #ifdef FEAT_MBYTE
+static int prt_build_cid_fontname __ARGS((int font, char_u *name, int name_len));
 static void prt_def_cidfont __ARGS((char *new_name, int height, char *cidfont));
 static int prt_match_encoding __ARGS((char *p_encoding, struct prt_ps_mbfont_S *p_cmap, struct prt_ps_encoding_S **pp_mbenc));
 static int prt_match_charset __ARGS((char *p_charset, struct prt_ps_mbfont_S *p_cmap, struct prt_ps_charset_S **pp_mbchar));
@@ -5097,15 +5103,16 @@ prt_get_cpl()
     return (int)((prt_right_margin - prt_left_margin) / prt_char_width);
 }
 
+#ifdef FEAT_MBYTE
     static int
 prt_build_cid_fontname(font, name, name_len)
     int     font;
-    char    *name;
+    char_u  *name;
     int     name_len;
 {
     char    *fontname;
 
-    fontname = alloc(name_len + 1);
+    fontname = (char *)alloc(name_len + 1);
     if (fontname == NULL)
         return FALSE;
     STRNCPY(fontname, name, name_len);
@@ -5114,6 +5121,7 @@ prt_build_cid_fontname(font, name, name_len)
 
     return TRUE;
 }
+#endif
 
 /*
  * Get number of lines of text that fit on a page (excluding the header).
@@ -5152,13 +5160,13 @@ prt_get_lpp()
 #ifdef FEAT_MBYTE
     static int
 prt_match_encoding(p_encoding, p_cmap, pp_mbenc)
-    char    *p_encoding;
-    struct prt_ps_mbfont_S *p_cmap;
-    struct prt_ps_encoding_S **pp_mbenc;
+    char			*p_encoding;
+    struct prt_ps_mbfont_S	*p_cmap;
+    struct prt_ps_encoding_S	**pp_mbenc;
 {
-    int     mbenc;
-    int     enc_len;
-    struct prt_ps_encoding_S *p_mbenc;
+    int				mbenc;
+    int				enc_len;
+    struct prt_ps_encoding_S	*p_mbenc;
 
     *pp_mbenc = NULL;
     /* Look for recognised encoding */
@@ -5178,12 +5186,12 @@ prt_match_encoding(p_encoding, p_cmap, pp_mbenc)
 
     static int
 prt_match_charset(p_charset, p_cmap, pp_mbchar)
-    char    *p_charset;
-    struct prt_ps_mbfont_S *p_cmap;
+    char		    *p_charset;
+    struct prt_ps_mbfont_S  *p_cmap;
     struct prt_ps_charset_S **pp_mbchar;
 {
-    int     mbchar;
-    int     char_len;
+    int			    mbchar;
+    int			    char_len;
     struct prt_ps_charset_S *p_mbchar;
 
     /* Look for recognised character set, using default if one is not given */
@@ -5226,7 +5234,7 @@ mch_print_init(psettings, jobname, forceit)
     char_u	*p_encoding;
     struct prt_ps_encoding_S *p_mbenc;
     struct prt_ps_encoding_S *p_mbenc_first;
-    struct prt_ps_charset_S *p_mbchar;
+    struct prt_ps_charset_S  *p_mbchar;
 #endif
 
 #if 0
@@ -5262,11 +5270,13 @@ mch_print_init(psettings, jobname, forceit)
     p_mbenc_first = NULL;
     p_mbchar = NULL;
     for (cmap = 0; cmap < NUM_ELEMENTS(prt_ps_mbfonts); cmap++)
-        if (prt_match_encoding(p_encoding, &prt_ps_mbfonts[cmap], &p_mbenc))
+        if (prt_match_encoding((char *)p_encoding, &prt_ps_mbfonts[cmap],
+								    &p_mbenc))
         {
             if (p_mbenc_first == NULL)
                 p_mbenc_first = p_mbenc;
-            if (prt_match_charset(p_pmcs, &prt_ps_mbfonts[cmap], &p_mbchar))
+            if (prt_match_charset((char *)p_pmcs, &prt_ps_mbfonts[cmap],
+								   &p_mbchar))
                 break;
         }
 
@@ -5343,8 +5353,8 @@ mch_print_init(psettings, jobname, forceit)
                 return FALSE;
         if (mbfont_opts[OPT_MBFONT_BOLDOBLIQUE].present)
             if (!prt_build_cid_fontname(PRT_PS_FONT_BOLDOBLIQUE,
-                                        mbfont_opts[OPT_MBFONT_BOLDOBLIQUE].string,
-                                        mbfont_opts[OPT_MBFONT_BOLDOBLIQUE].strlen))
+				   mbfont_opts[OPT_MBFONT_BOLDOBLIQUE].string,
+				  mbfont_opts[OPT_MBFONT_BOLDOBLIQUE].strlen))
                 return FALSE;
 
         /* Check if need to use Courier for ASCII code range, and if so pick up
@@ -5555,8 +5565,8 @@ prt_add_resource(resource)
 	EMSG2(_("E456: Can't open file \"%s\""), resource->filename);
 	return FALSE;
     }
-    prt_dsc_resources("BeginResource",
-                        prt_resource_types[resource->type], resource->title);
+    prt_dsc_resources("BeginResource", prt_resource_types[resource->type],
+						     (char *)resource->title);
 
     prt_dsc_textline("BeginDocument", (char *)resource->filename);
 
@@ -5602,7 +5612,7 @@ mch_print_begin(psettings)
     double      bottom;
     struct prt_ps_resource_S res_prolog;
     struct prt_ps_resource_S res_encoding;
-    char_u      buffer[256];
+    char	buffer[256];
     char_u      *p_encoding;
 #ifdef FEAT_MBYTE
     struct prt_ps_resource_S res_cidfont;
@@ -5614,7 +5624,7 @@ mch_print_begin(psettings)
      */
     prt_dsc_start();
     prt_dsc_textline("Title", (char *)psettings->jobname);
-    if (!get_user_name(buffer, 256))
+    if (!get_user_name((char_u *)buffer, 256))
         STRCPY(buffer, "Unknown");
     prt_dsc_textline("For", buffer);
     prt_dsc_textline("Creator", VIM_VERSION_LONG);
@@ -5757,7 +5767,7 @@ mch_print_begin(psettings)
             if (!prt_find_resource(prt_ascii_encoding, &res_encoding))
             {
                 EMSG2(_("E456: Can't find PostScript resource file \"%s.ps\""),
-                      prt_ascii_encoding);
+							  prt_ascii_encoding);
                 return FALSE;
             }
             if (!prt_open_resource(&res_encoding))
@@ -5786,7 +5796,7 @@ mch_print_begin(psettings)
         if (!prt_find_resource(prt_cmap, &res_cmap))
         {
             EMSG2(_("E456: Can't find PostScript resource file \"%s.ps\""),
-                  prt_cmap);
+								    prt_cmap);
             return FALSE;
         }
         if (!prt_open_resource(&res_cmap))
@@ -5911,7 +5921,7 @@ mch_print_begin(psettings)
         /* When using Courier for ASCII range when printing multi-byte, need to
          * pick up ASCII encoding to use with it. */
         if (prt_use_courier)
-            p_encoding = prt_ascii_encoding;
+            p_encoding = (char_u *)prt_ascii_encoding;
 #endif
         prt_dsc_resources("IncludeResource", "font",
                           prt_ps_courier_font.ps_fontname[PRT_PS_FONT_ROMAN]);
@@ -6015,7 +6025,7 @@ mch_print_end(psettings)
 
     /* Write CTRL-D to close serial communication link if used.
      * NOTHING MUST BE WRITTEN AFTER THIS! */
-    prt_write_file(IF_EB("\004", "\067"));
+    prt_write_file((char_u *)IF_EB("\004", "\067"));
 
     if (!prt_file_error && psettings->outfile == NULL
 					&& !got_int && !psettings->user_abort)
@@ -6274,7 +6284,7 @@ mch_print_text_out(p, len)
          */
         do
         {
-           ch = prt_hexchar[(*p) >> 4];
+           ch = prt_hexchar[(unsigned)(*p) >> 4];
            ga_append(&prt_ps_buffer, ch);
            ch = prt_hexchar[(*p) & 0xf];
            ga_append(&prt_ps_buffer, ch);

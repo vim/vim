@@ -29,7 +29,7 @@
 #include <qmessagebox.h>
 #include <qiconset.h>
 #include <qtextcodec.h>
-#include "gui_kde_widget.h"
+#include "gui_kde_wid.h"
 
 extern "C" {
 #include "vim.h"

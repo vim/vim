@@ -1,4 +1,4 @@
-*tagsrch.txt*   For Vim version 7.0aa.  Last change: 2004 Apr 29
+*tagsrch.txt*   For Vim version 7.0aa.  Last change: 2004 Jul 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -468,6 +468,7 @@ a tag for each "#defined" macro, typedefs, enums, etc.
 Some programs that generate tags files:
 ctags			As found on most Unix systems.  Only supports C.  Only
 			does the basic work.
+							*Exuberant_ctags*
 exuberant ctags		This a very good one.  It works for C, C++, Java,
 			Fortran, Eiffel and others.  It can generate tags for
 			many items.  See http://ctags.sourceforge.net.

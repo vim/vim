@@ -2641,7 +2641,7 @@ ins_compl_next_buf(buf, flag)
 
 #ifdef FEAT_COMPL_FUNC
 static char_u *call_completefunc __ARGS((char_u *line, char_u *base, int col, int preproc));
-static int expand_by_function __ARGS((int lnum, int col, char_u *base, char_u ***matches));
+static int expand_by_function __ARGS((linenr_T lnum, int col, char_u *base, char_u ***matches));
 
 /*
  * Execute user defined complete function 'completefunc'.
@@ -2665,7 +2665,7 @@ call_completefunc(line, base, col, preproc)
     args[0] = line;
     args[1] = base;
     args[2] = colbuf;
-    args[3] = preproc ? "1" : "0";
+    args[3] = (char_u *)(preproc ? "1" : "0");
     return call_vim_function(curbuf->b_p_cfu, 4, args, FALSE);
 }
 
@@ -2676,7 +2676,7 @@ call_completefunc(line, base, col, preproc)
  */
     static int
 expand_by_function(lnum, col, base, matches)
-    int		lnum;
+    linenr_T	lnum;
     int		col;
     char_u	*base;
     char_u	***matches;
@@ -3528,7 +3528,7 @@ ins_complete(c)
 	    lenstr = call_completefunc(line, NULL, complete_col, 1);
 	    if (lenstr == NULL)
 		return FAIL;
-	    keeplen = atoi(lenstr);
+	    keeplen = atoi((char *)lenstr);
 	    vim_free(lenstr);
 	    if (keeplen < 0)
 		return FAIL;

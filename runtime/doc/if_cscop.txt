@@ -1,4 +1,4 @@
-*if_cscop.txt*  For Vim version 7.0aa.  Last change: 2004 Jan 17
+*if_cscop.txt*  For Vim version 7.0aa.  Last change: 2004 Jul 23
 
 
 		  VIM REFERENCE MANUAL    by Andy Kahn
@@ -334,6 +334,9 @@ Additionally Cscope support works for Win32.  For more information and a
 cscope version for Win32 see:
 
 	http://iamphet.nm.ru/cscope/index.html
+
+The DJGPP-built version from http://cscope.sourceforge.net is known to not
+work with Vim.
 
 There are a couple of hard-coded limitations:
 

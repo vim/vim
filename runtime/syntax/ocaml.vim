@@ -2,12 +2,12 @@
 " Language:     OCaml
 " Filenames:    *.ml *.mli *.mll *.mly
 " Maintainers:  Markus Mottl      <markus@oefai.at>
-"		Karl-Heinz Sylla  <Karl-Heinz.Sylla@gmd.de>
-"		Issac Trotts	  <<ijtrotts@ucdavis.edu>
-" URL:		http://www.oefai.at/~markus/vim/syntax/ocaml.vim
-" Last Change:	2003 May 04
-"		2002 Oct 24 - Small fix for "module type" (MM)
-"		2002 Jun 16 - Added "&&", "<" and ">" as operators (MM)
+"               Karl-Heinz Sylla  <Karl-Heinz.Sylla@gmd.de>
+"               Issac Trotts      <ijtrotts@ucdavis.edu>
+" URL:          http://www.oefai.at/~markus/vim/syntax/ocaml.vim
+" Last Change:  2004 Jul 26
+"               2003 Jan 19 - Added keyword "require" for scripting (MM)
+"               2002 Oct 30 - New variable "ocaml_revised" (MM)
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -24,7 +24,7 @@ syn case match
 syn match    ocamlComment   "^#!.*"
 
 " Scripting directives
-syn match    ocamlScript "^#\<\(quit\|labels\|warnings\|directory\|cd\|load\|use\|install_printer\|remove_printer\|trace\|untrace\|untrace_all\|print_depth\|print_length\)\>"
+syn match    ocamlScript "^#\<\(quit\|labels\|warnings\|directory\|cd\|load\|use\|install_printer\|remove_printer\|require\|trace\|untrace\|untrace_all\|print_depth\|print_length\)\>"
 
 " lowercase identifier - the standard way to match
 syn match    ocamlLCIdentifier /\<\(\l\|_\)\(\w\|'\)*\>/
@@ -163,7 +163,7 @@ else
   syn match    ocamlKeyChar  "!"
 endif
 
-syn keyword  ocamlType     array bool char exn float format int
+syn keyword  ocamlType     array bool char exn float format format4 int
 syn keyword  ocamlType     list option string unit
 
 syn keyword  ocamlOperator asr lor lsl lsr lxor mod not

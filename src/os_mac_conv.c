@@ -16,6 +16,7 @@
 #define NO_X11_INCLUDES
 #include "vim.h"
 
+#ifdef FEAT_MBYTE
 extern char_u *mac_string_convert __ARGS((char_u *ptr, int len, int *lenp, int fail_on_error, int from, int to, int *unconvlenp));
 extern int macroman2enc __ARGS((char_u *ptr, long *sizep, long real_size));
 extern int enc2macroman __ARGS((char_u *from, size_t fromlen, char_u *to, int *tolenp, int maxtolen, char_u *rest, int *restlenp));
@@ -228,3 +229,5 @@ enc2macroman(from, fromlen, to, tolenp, maxtolen, rest, restlenp)
     *tolenp = l;
     return OK;
 }
+
+#endif /* FEAT_MBYTE */

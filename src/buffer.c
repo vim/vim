@@ -216,6 +216,12 @@ open_buffer(read_stdin, eap)
 #endif
 	curbuf->b_flags |= BF_READERR;
 
+#ifdef FEAT_FOLDING
+    /* Need to update automatic folding.  Do this before the autocommands,
+     * they may use the fold info. */
+    foldUpdateAll(curwin);
+#endif
+
 #ifdef FEAT_AUTOCMD
     /* need to set w_topline, unless some autocommand already did that. */
     if (!(curwin->w_valid & VALID_TOPLINE))
@@ -262,11 +268,6 @@ open_buffer(read_stdin, eap)
 	}
 #endif
     }
-
-#ifdef FEAT_FOLDING
-    /* Need to update automatic folding. */
-    foldUpdateAll(curwin);
-#endif
 
     return retval;
 }
@@ -408,8 +409,7 @@ close_buffer(win, buf, action)
     if (!buf_valid(buf))
 	return;
 # ifdef FEAT_EVAL
-    /* Autocommands may abort script processing. */
-    if (aborting())
+    if (aborting())	    /* autocmds may abort script processing */
 	return;
 # endif
 
@@ -538,7 +538,8 @@ buf_freeall(buf, del_buf, wipe_buf)
 	    return;
     }
 # ifdef FEAT_EVAL
-    if (aborting())	    /* autocmds may abort script processing */
+    /* autocmds may abort script processing */
+    if (aborting())
 	return;
 # endif
 
@@ -669,8 +670,16 @@ goto_buffer(eap, start, dir, count)
 		&& (defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG))
     if (swap_exists_action == SEA_QUIT && *eap->cmd == 's')
     {
-	/* Quitting means closing the split window, nothing else. */
+	int	old_got_int = got_int;
+
+	/* Quitting means closing the split window, nothing else.
+	 * Reset got_int here, because it causes aborting() to return TRUE
+	 * which breaks closing a window. */
+	got_int = FALSE;
+
 	win_close(curwin, TRUE);
+
+	got_int |= old_got_int;
 	swap_exists_action = SEA_NONE;
     }
     else
@@ -688,6 +697,12 @@ goto_buffer(eap, start, dir, count)
 handle_swap_exists(old_curbuf)
     buf_T	*old_curbuf;
 {
+    int		old_got_int = got_int;
+
+    /* Reset got_int here, because it causes aborting() to return TRUE which
+     * breaks closing a buffer. */
+    got_int = FALSE;
+
     if (swap_exists_action == SEA_QUIT)
     {
 	/* User selected Quit at ATTENTION prompt.  Go back to previous
@@ -712,6 +727,7 @@ handle_swap_exists(old_curbuf)
 	do_modelines();
     }
     swap_exists_action = SEA_NONE;
+    got_int |= old_got_int;
 }
 #endif
 
@@ -4226,26 +4242,28 @@ ex_buffer_all(eap)
 #endif
 	    set_curbuf(buf, DOBUF_GOTO);
 #ifdef FEAT_AUTOCMD
-# ifdef FEAT_EVAL
-	    /* Autocommands deleted the buffer or aborted script
-	     * processing!!! */
-	    if (!buf_valid(buf) || aborting())
-# else
 	    if (!buf_valid(buf))	/* autocommands deleted the buffer!!! */
-# endif
 	    {
-#if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
+# if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
 		swap_exists_action = SEA_NONE;
-#endif
+# endif
 		break;
 	    }
 #endif
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
 	    if (swap_exists_action == SEA_QUIT)
 	    {
-		/* User selected Quit at ATTENTION prompt; close this window. */
+		int	old_got_int = got_int;
+
+		/* User selected Quit at ATTENTION prompt; close this window.
+		 * Reset got_int here, because it causes aborting() to return
+		 * TRUE which breaks closing a window. */
+		got_int = FALSE;
+
 		win_close(curwin, TRUE);
 		--open_wins;
+
+		got_int |= old_got_int;
 		swap_exists_action = SEA_NONE;
 	    }
 	    else
@@ -4259,6 +4277,11 @@ ex_buffer_all(eap)
 	    (void)vgetc();	/* only break the file loading, not the rest */
 	    break;
 	}
+#ifdef FEAT_EVAL
+	/* Autocommands deleted the buffer or aborted script processing!!! */
+	if (aborting())
+	    break;
+#endif
     }
 #ifdef FEAT_AUTOCMD
     --autocmd_no_enter;

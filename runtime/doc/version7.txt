@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2004 Jul 19
+*version7.txt*  For Vim version 7.0aa.  Last change: 2004 Jul 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -127,6 +127,9 @@ byteidx(expr, nr)	|byteidx()| 	Index of a character. (Ilya Sher)
 finddir(name)		|finddir()|	Find a directory in 'path'.
 findfile(name)		|findfile()|	Find a file in 'path'. (Johannes
 					Zellner)
+getfperm(fname)		|getfperm()|	Get file permission string. (Nikolai
+					Weibull)
+getftype(fname)		|getftype()|	Get type of file. (Nikolai Weibull)
 repeat(expr, count)	|repeat()| 	Repeat "expr" "count" times.
 					(Christophe Poucet)
 tr(expr, from, to)	|tr()|		Translate characters. (Ron Aaron)
@@ -186,6 +189,11 @@ For lisp indenting and matching parenthesis: (Sergey Khorev)
 - Lisp line comments (delimited by semicolon) are recognized
 
 Added the "count" argument to match(), matchend() and matchstr(). (Ilya Sher)
+
+winnr() takes an optional "$" and "#" arguments.  (Nikolai Weibull, Yegappan
+Lakshmanan)
+
+Added 'n' flag to search(): don't move the cursor. (Nikolai Weibull)
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*
@@ -271,5 +279,14 @@ items.
 
 The default for 'helplang' was "zh" for both "zh_cn" and "zh_tw".  Now use
 "cn" or "tw" as intended.
+
+When 'bin' is set and 'eol' is not set then line2byte() added the line break
+after the last line while it's not there.
+
+Using foldlevel() in a WinEnter autocommand may not work.  Noticed when
+resizing the GUI shell upon startup.
+
+Python: Using buffer.append(f.readlines()) didn't work.  Allow appending a
+string with a trailing newline.  The newline is ignored.
 
  vim:tw=78:ts=8:ft=help:norl:

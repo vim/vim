@@ -148,8 +148,8 @@ SRC_UNIX =	\
 		src/gui_gtk_f.h \
 		src/gui_gtk_x11.c \
 		src/gui_kde.cc \
-		src/gui_kde_widget.cc \
-		src/gui_kde_widget.h \
+		src/gui_kde_wid.cc \
+		src/gui_kde_wid.h \
 		src/gui_kde_x11.cc \
 		src/kvim_iface.h \
 		src/gui_motif.c \
@@ -365,7 +365,7 @@ SRC_MAC =	\
 		src/os_mac.sit.hqx \
 		src/os_mac_conv.c \
 		src/os_macosx.c \
-		src/os_mac.pbproj/project.pbxproj
+		src/os_mac.pbproj/project.pbxproj \
 		src/proto/gui_mac.pro \
 		src/proto/os_mac.pro \
 

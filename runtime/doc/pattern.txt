@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 7.0aa.  Last change: 2004 May 09
+*pattern.txt*   For Vim version 7.0aa.  Last change: 2004 Jul 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -382,7 +382,7 @@ More explanation and examples below, follow the links.
 |/\%c|	\%23c	\%23c	in column 23 |/zero-width|
 |/\%v|	\%23v	\%23v	in virtual column 23 |/zero-width|
 
-Character classes {not in Vi}:
+Character classes {not in Vi}:				*/character-classes*
 |/\i|	\i	\i	identifier character (see 'isident' option)
 |/\I|	\I	\I	like "\i", but excluding digits
 |/\k|	\k	\k	keyword character (see 'iskeyword' option)

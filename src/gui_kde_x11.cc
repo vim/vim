@@ -45,7 +45,7 @@
 #include <qfont.h>
 
 
-#include "gui_kde_widget.h"
+#include "gui_kde_wid.h"
 
 
 extern "C" {

@@ -119,8 +119,8 @@
  *       ~/Library/Vim or ~/Library/Preferences/org.vim.vim/ ? (Dany)
  */
 /* When compiled under MacOS X (including CARBON version)
- * we use the Unix File path style */
-#if defined(TARGET_API_MAC_OSX) && TARGET_API_MAC_OSX
+ * we use the Unix File path style.  Also when UNIX is defined. */
+#if defined(UNIX) || (defined(TARGET_API_MAC_OSX) && TARGET_API_MAC_OSX)
 # undef COLON_AS_PATHSEP
 # define USE_UNIXFILENAME
 #else
@@ -140,14 +140,16 @@
 #define CASE_INSENSITIVE_FILENAME   /* ignore case when comparing file names */
 #define SPACE_IN_FILENAME
 #define BREAKCHECK_SKIP	   32	    /* call mch_breakcheck() each time, it's
-				       quite fast. Did I forgot to update the comment */
+				       quite fast. Did I forgot to update the
+				       comment */
 
 
-#undef  USE_FNAME_CASE	    /* So that :e os_Mac.c, :w, save back the file as os_mac.c */
+#undef  USE_FNAME_CASE		/* So that :e os_Mac.c, :w, save back the file
+				   as os_mac.c */
 #define BINARY_FILE_IO
 #define EOL_DEFAULT EOL_MAC
-#ifndef MACOS_X_UNIX	    /* I hope that switching these two lines */
-# define USE_CR		    /* does what I want -- BNF */
+#ifndef MACOS_X_UNIX		/* I hope that switching these two lines */
+# define USE_CR			/* does what I want -- BNF */
 # define NO_CONSOLE		/* don't include console mode */
 #endif
 #define HAVE_AVAIL_MEM

@@ -4338,8 +4338,17 @@ ml_find_line_or_offset(buf, line, offp)
 	curline = buf->b_ml.ml_locked_high + 1;
     }
 
-    if (ffdos)
-	size += line - 1;
+    if (line != 0)
+    {
+	/* Count extra CR characters. */
+	if (ffdos)
+	    size += line - 1;
+
+	/* Don't count the last line break if 'bin' and 'noeol'. */
+	if (buf->b_p_bin && !buf->b_p_eol)
+	    size -= ffdos + 1;
+    }
+
     return size;
 }
 

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Jul 19
+*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Jul 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,27 +30,18 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Add fix for zh_cn to Vim 6.3?  (Liang)
+Aborting at the ATTENTION prompt causes trouble:
+    buffer remains active, nwindows isn't closed (fixed in buffer.c)
+    alternate buffer gets "read error" flag.
+    ":sbuf" and ":ball" leave an empty window behind.
+Change in handle_swap_exists() also in 6.3?
 
 
 For version 7.0:
 -   Include many PATCHES:
     8   Add functions:
-	realname()		Get user name (first, last, full)
-				user_fullname() patch by Nikolai Weibull, Nov
-				3 2002)
-	getfperm()		file permissions, in form "rwxrwxrwx"
-				(patch from Nikolai Weibull 2003 Jan 13)
-	getftype()		"file", "dir", "link", "other"?
-				(patch from Nikolai Weibull 2003 Jan 13)
 	setbufline()		set line in any buffer (patch from Yegappan
 				Lakshmanan, 2003 Jan 21)
-	winnr("$")		Get number of windows.  (patch from Nikolai
-				Weibull 2003 Jan 13) (another patch from
-				Yegappan Lakshmanan, 2004 Jul 11)
-	search()		Add optional offset argument.
-				Add 'n' flag.  (patch from Nikolai Weibull
-				2003 Jan 13)
 	filter()		Patch from Yegappan Lakshmanan, 2004 Jul 11
     8   Make it possible to delete marks.  Charles Campbell has a patch that
 	does this with the markclear() function (2004 Jan 9).
@@ -63,6 +54,7 @@ For version 7.0:
 	When "filename" has no wildcards and there is no matching buffer, add
 	the buffer (unlisted).
     Patch for \xnn (Ciaran McCreesh)  2004 Jul 10
+	http://dev.gentoo.org/~ciaranm/patches/vim/vim-7.00a-regexp-numbered-characters-r5.patch
     7   Add 'taglistfiles' option, show file name and type when listing matching
 	tags name with CTRL-D completion.  Patch from Yegappan Lakshmanan.
 	2004 Jul 11
@@ -72,6 +64,15 @@ For version 7.0:
     8   Make 'statusline' local, so that each window can have a different
 	value.  But should it also be local to a buffer? (Yegappan Lakshmanan
 	has a patch, 2004 Jul 11)
+    8   Add buffer-local autocommands?  Reduces overhead for autocommands that
+	trigger often (inserting a character, switching mode).
+	    :au Event <buffer> do-something
+	E.g.:
+	    :au BufEnter <buffer> menu enable ...
+	    :au BufLeave <buffer> menu disable ...
+	Patch from Yakov Lerner, including test (2004 Jan 7).
+	VimResized	    - When the Vim window has been resized (SIGWINCH)
+	  patch from Yakov Lerner, 2003 July 24.
     --- awaiting updated patch ---
     7   Add patch from Wall for this one ( ~/Mail/oldmail/wall/in.00019 ):
 	'flipcase' variable: upper/lowercase pairs.
@@ -84,18 +85,7 @@ For version 7.0:
     8   Add ":n" to fnamemodify(): normalize path, remove "../" when possible.
 	Aric Blumer has a patch for this.
 	He will update the patch for 6.3.
-    8   Add buffer-local autocommands?  Reduces overhead for autocommands that
-	trigger often (inserting a character, switching mode).
-	    :au Event <buffer> do-something
-	E.g.:
-	    :au BufEnter <buffer> menu enable ...
-	    :au BufLeave <buffer> menu disable ...
-	Patch from Yakov Lerner, including test (2004 Jan 7).
-        He'll send updated patch.
     Autocommands:
-	VimResized	    - When the Vim window has been resized (SIGWINCH)
-	  patch from Yakov Lerner, 2003 July 24.
-	  He'll write documentation and send updated patch.
     7   Completion of network shares, patch by Yasuhiro Matsumoto.
 	Update 2004 Jun 17.
 	How does this work?  Missing comments.
@@ -1458,6 +1448,14 @@ Built-in script language:
 7   Add argument to winwidth() to subtract the space taken by 'foldcolumn',
     signs and/or 'number'.
 8   Add functions:
+	search()		Add optional offset argument.
+	realname()		Get user name (first, last, full)
+				user_fullname() patch by Nikolai Weibull, Nov
+				3 2002
+				Only add this when also implemented for
+				non-Unix systems, otherwise a shell cmd could
+				be used.
+				get_user_name() gets login name.
 	menuprop({name}, {idx}, {what})
 				Get menu property of menu {name} item {idx}.
 				menuprop("", 1, "name") returns "File".
@@ -3196,6 +3194,7 @@ Various improvements:
     column number.  Can use the code of ":helpgrep".
     Also support using "**" in filename, so that a directory tree can be
     searched.
+    Also see the "minigrep.vim" script on www.vim.org.
 -   Change ":fixdel" into option 'fixdel', t_del will be adjusted each time
     t_bs is set? (Webb)
 -   "gc": goto character, move absolute character positions forward, also

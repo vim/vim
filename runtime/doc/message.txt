@@ -1,4 +1,4 @@
-*message.txt*   For Vim version 7.0aa.  Last change: 2004 Jan 17
+*message.txt*   For Vim version 7.0aa.  Last change: 2004 Jul 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -643,6 +643,7 @@ and |+X11| features.
 A command line started with a backslash or the range of a command contained a
 backslash in a wrong place.  This is often caused by command-line continuation
 being disabled.  Remove the 'C' flag from the 'cpoptions' option to enable it.
+Or use ":set nocp".
 
 							*E471*  >
   Argument required

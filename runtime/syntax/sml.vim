@@ -1,12 +1,12 @@
 " Vim syntax file
 " Language:     SML
 " Filenames:    *.sml *.sig
-" Maintainers:	Markus Mottl		<markus@oefai.at>
-"		Fabrizio Zeno Cornelli	<zeno@filibusta.crema.unimi.it>
-" URL:		http://www.ai.univie.ac.at/~markus/vim/syntax/sml.vim
-" Last Change:	2003 May 11
-"		2001 Nov 20 - Fixed small highlighting bug with modules (MM)
-"		2001 Aug 29 - Fixed small highlighting bug  (MM)
+" Maintainers:  Markus Mottl            <markus@oefai.at>
+"               Fabrizio Zeno Cornelli  <zeno@filibusta.crema.unimi.it>
+" URL:          http://www.oefai.at/~markus/vim/syntax/sml.vim
+" Last Change:  2004 Jul 26
+"               2001 Nov 20 - Fixed small highlighting bug with modules (MM)
+"               2001 Aug 29 - Fixed small highlighting bug  (MM)
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded

@@ -1239,7 +1239,7 @@ msgstr "E173: 1 файл ожидает редактирования."
 #: ex_docmd.c:4584
 #, c-format
 msgid "E173: %ld more files to edit"
-msgstr "E173: Есть неотредактированные файлы (%d)."
+msgstr "E173: Есть неотредактированные файлы (%ld)."
 
 #: ex_docmd.c:4679
 msgid "E174: Command already exists: add ! to replace it"
@@ -2446,7 +2446,7 @@ msgstr "Добавлена база данных cscope %s"
 #: if_cscope.c:589
 #, c-format
 msgid "E262: error reading cscope connection %ld"
-msgstr "E262: ошибка получения информации от соединения cscope %d"
+msgstr "E262: ошибка получения информации от соединения cscope %ld"
 
 #: if_cscope.c:694
 msgid "E561: unknown cscope search type"
@@ -2524,7 +2524,7 @@ msgstr "E261: соединение с cscope %s не обнаружено"
 #: if_cscope.c:1458
 #, c-format
 msgid "cscope connection %s closed"
-msgstr "соединение с cscope закрыто"
+msgstr "соединение с cscope %s закрыто"
 
 #. should not reach here
 #: if_cscope.c:1598

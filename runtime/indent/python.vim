@@ -2,7 +2,7 @@
 " Language:	Python
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
 " Original Author:	David Bustos <bustos@caltech.edu>
-" Last Change:	2004 Jun 15
+" Last Change:	2004 Jul 25
 
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")
@@ -99,15 +99,36 @@ function GetPythonIndent(lnum)
   " Use syntax highlighting attributes when possible.
   let pline = getline(plnum)
   let pline_len = strlen(pline)
-  let col = 0
-  while col < pline_len
-    if pline[col] == '#' && (!has('syntax_items')
-	    \ || synIDattr(synID(plnum, col + 1, 1), "name") =~ "Comment$")
-      let pline = strpart(pline, 0, col)
-      break
+  if has('syntax_items')
+    " If the last character in the line is a comment, do a binary search for
+    " the start of the comment.  synID() is slow, a linear search would take
+    " too long on a long line.
+    if synIDattr(synID(plnum, pline_len, 1), "name") =~ "Comment$"
+      let min = 1
+      let max = pline_len
+      while min < max
+	let col = (min + max) / 2
+	if synIDattr(synID(plnum, col, 1), "name") =~ "Comment$"
+	  let max = col
+	else
+	  let min = col + 1
+	endif
+      endwhile
+      echomsg min
+      let pline = strpart(pline, 0, min - 1)
+      echomsg pline  
+      sleep 1
     endif
-    let col = col + 1
-  endwhile
+  else
+    let col = 0
+    while col < pline_len
+      if pline[col] == '#'
+	let pline = strpart(pline, 0, col)
+	break
+      endif
+      let col = col + 1
+    endwhile
+  endif
 
   " If the previous line ended with a colon, indent this line
   if pline =~ ':\s*$'

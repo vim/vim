@@ -43,10 +43,11 @@
 #include <kmenubar.h>
 #include <ktoolbar.h>
 #include <kstandarddirs.h>
-#include "gui_kde_widget.h"
+#include "gui_kde_wid.h"
 #include <qxembed.h>
 
-extern "C" {
+extern "C"
+{
 #include "version.h"
 }
 
@@ -187,25 +188,19 @@ void VimWidget::mousePressEvent(QMouseEvent *event)//{{{
     ButtonState buttons = event->button();
 
     //Look at button states
-    if(buttons & QMouseEvent::LeftButton) {
-	button|=MOUSE_LEFT;
-    }
-    if(buttons & QMouseEvent::RightButton) {
-	button|=MOUSE_RIGHT;
-    }
-    if(buttons & QMouseEvent::MidButton) {
-	button|=MOUSE_MIDDLE;
-    }
+    if (buttons & QMouseEvent::LeftButton)
+	button |= MOUSE_LEFT;
+    if (buttons & QMouseEvent::RightButton)
+	button |= MOUSE_RIGHT;
+    if (buttons & QMouseEvent::MidButton)
+	button |= MOUSE_MIDDLE;
     //Look for keyboard modifiers
-    if(state & QMouseEvent::ShiftButton) {
-	modifiers|=MOUSE_SHIFT;
-    }
-    if(state & QMouseEvent::ControlButton){
-	modifiers|=MOUSE_CTRL;
-    }
-    if(state & QMouseEvent::AltButton){
-	modifiers|=MOUSE_ALT;
-    }
+    if (state & QMouseEvent::ShiftButton)
+	modifiers |= MOUSE_SHIFT;
+    if (state & QMouseEvent::ControlButton)
+	modifiers |= MOUSE_CTRL;
+    if (state & QMouseEvent::AltButton)
+	modifiers |= MOUSE_ALT;
     gui_send_mouse_event(button,event->x(),event->y(),FALSE,modifiers);
 #if QT_VERSION>=300
     QByteArray params;
@@ -254,11 +249,11 @@ void VimMainWindow::wheelEvent (QWheelEvent *event)//{{{
 	button|=MOUSE_4;
     else button|=MOUSE_5;
 
-    if(state & ShiftButton)
+    if (state & ShiftButton)
 	modifiers|=MOUSE_SHIFT;
-    if(state & ControlButton)
+    if (state & ControlButton)
 	modifiers|=MOUSE_CTRL;
-    if(state & AltButton)
+    if (state & AltButton)
 	modifiers|=MOUSE_ALT;
 
     gui_send_mouse_event(button,event->x(),event->y(),FALSE,modifiers);
@@ -279,19 +274,19 @@ void VimWidget::mouseDoubleClickEvent(QMouseEvent *event)//{{{
     int button=0;
 
     //Look at button states
-    if(buttons & LeftButton)
+    if (buttons & LeftButton)
 	button|=MOUSE_LEFT;
-    if(buttons & RightButton)
+    if (buttons & RightButton)
 	button|=MOUSE_RIGHT;
-    if(buttons & MidButton)
+    if (buttons & MidButton)
 	button|=MOUSE_MIDDLE;
 
     //Look for keyboard modifiers
-    if(state & ShiftButton)
+    if (state & ShiftButton)
 	modifiers|=MOUSE_SHIFT;
-    if(state & ControlButton)
+    if (state & ControlButton)
 	modifiers|=MOUSE_CTRL;
-    if(state & AltButton)
+    if (state & AltButton)
 	modifiers|=MOUSE_ALT;
 
     gui_send_mouse_event(button,event->x(),event->y(),TRUE,modifiers);
@@ -313,15 +308,15 @@ void VimWidget::mouseMoveEvent(QMouseEvent *event){//{{{
 
     //Look at button states
     //warning: we use state here, this is important !
-    if(state & QMouseEvent::LeftButton || state & QMouseEvent::RightButton || state & QMouseEvent::MidButton)
+    if (state & QMouseEvent::LeftButton || state & QMouseEvent::RightButton || state & QMouseEvent::MidButton)
 	button|=MOUSE_DRAG;
 
     //Look for keyboard modifiers
-    if(state & ShiftButton)
+    if (state & ShiftButton)
 	modifiers|=MOUSE_SHIFT;
-    if(state & ControlButton)
+    if (state & ControlButton)
 	modifiers|=MOUSE_CTRL;
-    if(state & AltButton)
+    if (state & AltButton)
 	modifiers|=MOUSE_ALT;
     if (button!=MOUSE_DRAG)
 	gui_mouse_moved(event->x(),event->y());
@@ -335,11 +330,11 @@ void VimWidget::mouseReleaseEvent(QMouseEvent *event)//{{{
     int modifiers=0;
 
     //Look for keyboard modifiers
-    if(state & ShiftButton)
+    if (state & ShiftButton)
 	modifiers|=MOUSE_SHIFT;
-    if(state & ControlButton)
+    if (state & ControlButton)
 	modifiers|=MOUSE_CTRL;
-    if(state & AltButton)
+    if (state & AltButton)
 	modifiers|=MOUSE_ALT;
 
     gui_send_mouse_event(MOUSE_RELEASE,event->x(),event->y(),FALSE,modifiers);
@@ -454,21 +449,25 @@ void VimWidget::dropEvent (QDropEvent *e) // {{{
 
     /* Count how many items there may be and normalize delimiters. */
 
-    if (QUriDrag::decode(e, urls)) {
+    if (QUriDrag::decode(e, urls))
+    {
 	n = urls.count();
         fnames = (char_u **)lalloc((n+1) * sizeof(char_u *), TRUE);
 	nfiles = 0;
 #if QT_VERSION>=300
 	QPtrListIterator<char> it(urls);
-	for( ; it.current(); ++it ) {
+	for (; it.current(); ++it )
+	{
 	    KURL u(*it);
 #else
-	    for (i=0;i<urls.count();++i) {
+	    for (i=0;i<urls.count();++i)
+	    {
 		KURL u(urls.at(i));
 #endif
 		if ( !u.isLocalFile() )
 		    url = TRUE;
-		else {
+		else
+		{
 		    fnames[nfiles] = (char_u *)strdup((const char *)u.path());
 		    ++nfiles;
 		}
@@ -488,7 +487,9 @@ void VimWidget::dropEvent (QDropEvent *e) // {{{
 			    redo_dirs = TRUE;
 			}
 		    }
-		} else {
+		}
+		else
+		{
 		    /* Ignore any directories */
 		    for (i = 0; i < nfiles; ++i)
 		    {
@@ -505,7 +506,9 @@ void VimWidget::dropEvent (QDropEvent *e) // {{{
 		    /* Shift held down, change to first file's directory */
 		    if (fnames[0] != NULL && vim_chdirfile(fnames[0]) == OK)
 			redo_dirs = TRUE;
-		} else {
+		}
+		else
+		{
 		    char_u	dirname[MAXPATHL];
 		    char_u	*s;
 		    if (mch_dirname(dirname, MAXPATHL) == OK)
@@ -561,7 +564,8 @@ void gui_keypress(QKeyEvent *e) { // {{{
 
     // ignore certain keys
     if (key == Qt::Key_Shift || key == Qt::Key_Alt || key == Qt::Key_Control || key == Qt::Key_Meta
-	    || key == Qt::Key_CapsLock || key == Qt::Key_NumLock || key == Qt::Key_ScrollLock ) {
+	    || key == Qt::Key_CapsLock || key == Qt::Key_NumLock || key == Qt::Key_ScrollLock )
+    {
 	e->ignore();
 	return;
     }
@@ -591,13 +595,13 @@ void gui_keypress(QKeyEvent *e) { // {{{
 
 
     // change shift-tab (backtab) into S_TAB
-    if ( key == Qt::Key_BackTab && state & Qt::ShiftButton) {
+    if ( key == Qt::Key_BackTab && state & Qt::ShiftButton)
 	key = Qt::Key_Tab;
-    }
 
     // Change C-@ and C-2 in NUL ? Gtk does this
     if ( (key == Qt::Key_2 || key == Qt::Key_At)
-	    && state & Qt::ControlButton ) {
+	    && state & Qt::ControlButton )
+    {
 	string[0] = NUL;
 	len = 1;
     }
@@ -639,7 +643,8 @@ void gui_keypress(QKeyEvent *e) { // {{{
     if (len == 0 || key == Qt::Key_BackSpace || key == Qt::Key_Delete)
     {
 	while (special_keys[i].qtkey != 0 && special_keys[i].qtkey != key ) i++;
-	if (special_keys[i].qtkey != 0) {
+	if (special_keys[i].qtkey != 0)
+	{
 		string[0] = CSI;
 		string[1] = special_keys[i].code0;
 		string[2] = special_keys[i].code1;
@@ -648,7 +653,8 @@ void gui_keypress(QKeyEvent *e) { // {{{
 /*
 	for (i = 0; special_keys[i].qtkey != 0 ; i++)
 	{
-	    if (special_keys[i].qtkey == key ) {
+	    if (special_keys[i].qtkey == key )
+	    {
 		string[0] = CSI;
 		string[1] = special_keys[i].code0;
 		string[2] = special_keys[i].code1;
@@ -658,7 +664,8 @@ void gui_keypress(QKeyEvent *e) { // {{{
 	}*/
     }
 
-    if (len == 0)   {
+    if (len == 0)
+    {
 	//no need to dump that, that's a QT problem, we can't do anything
 	//dbf("Unrecognised Key : %X %s", key, e->text().latin1());
 	e->ignore();
@@ -669,7 +676,8 @@ void gui_keypress(QKeyEvent *e) { // {{{
     /* Special keys (and a few others) may have modifiers */
     if (len == -3 || key == Qt::Key_Space || key == Qt::Key_Tab ||
 	    key == Qt::Key_Return || key == Qt::Key_Enter ||
-	    key == Qt::Key_Escape) {
+	    key == Qt::Key_Escape)
+    {
 
 	modifiers = 0;
 	if (state & Qt::ShiftButton) modifiers |= MOD_MASK_SHIFT;
@@ -689,18 +697,22 @@ void gui_keypress(QKeyEvent *e) { // {{{
 	key = simplify_key(key, &modifiers);
 	if (key == CSI) key=K_CSI;
 
-	if (IS_SPECIAL(key)) {
+	if (IS_SPECIAL(key))
+	{
 	    string[0] = CSI;
 	    string[1] = K_SECOND(key);
 	    string[2] = K_THIRD(key);
 	    len = 3;
-	} else {
+	}
+	else
+	{
 	    string[0] = key;
 	    len = 1;
 	}
 
 
-	if (modifiers!=0) {
+	if (modifiers!=0)
+	{
 	    uchar string2[10];
 	    string2[0] = CSI;
 	    string2[1] = KS_MODIFIER;
@@ -718,9 +730,9 @@ void gui_keypress(QKeyEvent *e) { // {{{
     }
 
     add_to_input_buf(string, len);
-    if (p_mh) {
+    if (p_mh)
 	gui_mch_mousehide(TRUE);
-    }
+
     //DCOP Embedding stuff
     //if we are here then the user has type something in the window, thus we can easily imagine that :
     // 1 - text has changed (emit textChanged())
@@ -744,21 +756,24 @@ void gui_keypress(QKeyEvent *e) { // {{{
 #ifdef FEAT_CLIENTSERVER
 void VimWidget::serverActivate(WId id) //{{{
 {
-    if (serverName == NULL && serverDelayedStartName != NULL) {
+    if (serverName == NULL && serverDelayedStartName != NULL)
+    {
 	commWindow = id;
 	(void)serverRegisterName(qt_xdisplay(), serverDelayedStartName);
-    } else {
-	serverChangeRegisteredWindow( qt_xdisplay(), id );
     }
+    else
+	serverChangeRegisteredWindow( qt_xdisplay(), id);
 }//}}}
 #endif
 
 #ifdef FEAT_XIM
-void VimWidget::imStartEvent(QIMEvent *e) {
+void VimWidget::imStartEvent(QIMEvent *e)
+{
     e->accept();
 }
 
-void VimWidget::imEndEvent(QIMEvent *e) {
+void VimWidget::imEndEvent(QIMEvent *e)
+{
     uchar string[256];
 
     QCString unistring = vmw->codec->fromUnicode(e->text());
@@ -771,7 +786,8 @@ void VimWidget::imEndEvent(QIMEvent *e) {
     e->accept();
 }
 
-void VimWidget::imComposeEvent(QIMEvent *e) {
+void VimWidget::imComposeEvent(QIMEvent *e)
+{
     //i should do something here, displaying the text somewhere ... (status area ?)
     e->accept();
 }
@@ -851,7 +867,8 @@ void VimWidget::start_cursor_blinking()//{{{
     if (blink_timer.isActive()) blink_timer.stop();
 
     /* Only switch blinking on if none of the times is zero */
-    if (blink_wait_time && blink_on_time && blink_off_time && gui.in_focus) {
+    if (blink_wait_time && blink_on_time && blink_off_time && gui.in_focus)
+    {
 	blink_state = BLINK_ON;
 	gui_update_cursor(TRUE, FALSE);
 	// The first blink appears after wait_time
@@ -861,12 +878,15 @@ void VimWidget::start_cursor_blinking()//{{{
 
 void VimWidget::blink_cursor()//{{{
 {
-    if (blink_state == BLINK_ON) {
+    if (blink_state == BLINK_ON)
+    {
 	// set cursor off
 	gui_undraw_cursor();
 	blink_state = BLINK_OFF;
 	blink_timer.start( blink_off_time, true);
-    } else {
+    }
+    else
+    {
 	// set cursor on
 	gui_update_cursor(TRUE, FALSE);
 	blink_state = BLINK_ON;
@@ -926,7 +946,8 @@ void VimWidget::flash()//{{{
 #ifdef FEAT_CLIENTSERVER
     oldFilter = qt_set_x11_event_filter( kvim_x11_event_filter );
 #endif
-    if (echo_wid_arg== 1) {
+    if (echo_wid_arg== 1)
+    {
 	fprintf(stderr, "WID: %ld\n", (long)winId());
 	fflush(stderr);
     }
@@ -988,26 +1009,23 @@ void VimMainWindow::menu_activated(int dx)//{{{
 
 
 void VimMainWindow::clipboard_selection_update(){//{{{
-    if(kapp->clipboard()->ownsSelection()) {
+    if (kapp->clipboard()->ownsSelection())
 	clip_own_selection(&clip_star);
-    } else {
+    else
 	clip_lose_selection(&clip_star);
-    }
 }//}}}
 
 void VimMainWindow::clipboard_data_update(){//{{{
 #if QT_VERSION>=300
-    if (kapp->clipboard()->ownsClipboard()) {
+    if (kapp->clipboard()->ownsClipboard())
 	clip_own_selection(&clip_plus);
-    } else {
+    else
 	clip_lose_selection(&clip_plus);
-    }
 #else
-    if (kapp->clipboard()->ownsSelection()) {
+    if (kapp->clipboard()->ownsSelection())
 	clip_own_selection(&clip_star);
-    } else {
+    else
 	clip_lose_selection(&clip_star);
-    }
 #endif
 }//}}}
 
@@ -1182,17 +1200,20 @@ Vim releases instead of the text that was included with it.");
     about->show();
 }//}}}
 
-void VimMainWindow::showTipOfTheDay() {
+void VimMainWindow::showTipOfTheDay()
+{
 #if QT_VERSION>=300
     KTipDialog::showTip (vmw,QString::null,true);
 #endif
 }
 
-void VimMainWindow::buffersToolbar() {
+void VimMainWindow::buffersToolbar()
+{
 
 }
 
-void VimMainWindow::showBugReport() {
+void VimMainWindow::showBugReport()
+{
     KBugReport *bug= new KBugReport(this,true);
     bug->show();
 }
@@ -1217,7 +1238,8 @@ VimDialog::VimDialog (int type,		/* type of dialog *///{{{
      * Create Icon
      */
     char ** icon_data;
-    switch (type) {
+    switch (type)
+    {
 	case VIM_GENERIC:
 	    icon_data = generic_xpm;
 	    break;
@@ -1255,25 +1277,29 @@ VimDialog::VimDialog (int type,		/* type of dialog *///{{{
     hly1->addWidget( icon );
     hly1->addWidget( text );
     QHBoxLayout * hly3 = new QHBoxLayout ( vly , 5);
-    if (textfield!=NULL) {
+    if (textfield!=NULL)
+    {
 	entry = new QLineEdit((const char *)textfield,this);
 	entry->setText((const char *)textfield);
 	hly3->addWidget( entry );
 	ret=textfield;
-    } else entry=NULL;
+    }
+    else
+	entry=NULL;
 
     QHBoxLayout * hly2 = new QHBoxLayout( vly, 15);
     QString s;
     QPushButton * pushButton = 0L;
-    for( int i=0; i<butNb; i++) {
+    for (int i=0; i<butNb; i++)
+    {
 	s = buttonText[i];
 	pushButton = new QPushButton(s, this );
-	if (s.find('&') != -1) {
-	    pushButton->setAccel( s.at(s.find('&')+1).latin1() );
-	}
+	if (s.find('&') != -1)
+	    pushButton->setAccel(s.at(s.find('&')+1).latin1());
 
 	hly2->addWidget( pushButton );
-	if (i == def_but-1) {
+	if (i == def_but-1)
+	{
 	    pushButton->setDefault( true );
 	    pushButton->setAutoDefault( true );
 	    setResult( i+1 );
@@ -1288,12 +1314,16 @@ VimDialog::VimDialog (int type,		/* type of dialog *///{{{
     vly->activate();
 }//}}}
 
-void VimDialog::done(int r) {
-    if (entry!=NULL) {
-        if (r) {
+void VimDialog::done(int r)
+{
+    if (entry!=NULL)
+    {
+        if (r)
+	{
 	   QCString unistring=vmw->codec->fromUnicode(entry->text());
 	   STRCPY(ret,(const char*)unistring);
-	} else
+	}
+	else
 	    *ret=NUL;
     }
     QDialog::done(r);
@@ -1311,7 +1341,8 @@ SBPool::SBPool(void)//{{{
 
 void SBPool::create(GuiScrollbar * sb, int orient)//{{{
 {
-    switch(orient) {
+    switch(orient)
+    {
 	case SBAR_HORIZ:
 	    sb->w = new QScrollBar(QScrollBar::Horizontal, vmw);
 	    break;
@@ -1349,9 +1380,8 @@ static int kvim_x11_event_filter( XEvent* e)//{{{
     if (e->xproperty.type == PropertyNotify
 	    && e->xproperty.atom == commProperty
 	    && e->xproperty.window == commWindow
-	    && e->xproperty.state == PropertyNewValue ) {
+	    && e->xproperty.state == PropertyNewValue)
 	serverEventProc(qt_xdisplay(), e);
-    }
 
     if (oldFilter) return oldFilter( e );
     return FALSE;
@@ -1381,29 +1411,31 @@ bool KVimUtils::fromString(QFont *f, QString descrip)
    QStringList l(QStringList::split(',', descrip));
 
     int count = l.count();
-    if (count != 10 && count != 9) {
+    if (count != 10 && count != 9)
         return FALSE;
-    }
 
     f->setFamily(l[0]);
     f->setPointSize(l[1].toInt());
-    if ( count == 9 ) {
-        f->setStyleHint((QFont::StyleHint) l[2].toInt());
-        f->setWeight(l[3].toInt());
-        f->setItalic(l[4].toInt());
-        f->setUnderline(l[5].toInt());
-        f->setStrikeOut(l[6].toInt());
-        f->setFixedPitch(l[7].toInt());
-        f->setRawMode(l[8].toInt());
-    } else {
-        f->setPixelSize(l[2].toInt());
-        f->setStyleHint((QFont::StyleHint) l[3].toInt());
-        f->setWeight(l[4].toInt());
-        f->setItalic(l[5].toInt());
-        f->setUnderline(l[6].toInt());
-        f->setStrikeOut(l[7].toInt());
-        f->setFixedPitch(l[8].toInt());
-        f->setRawMode(l[9].toInt());
+    if ( count == 9 )
+    {
+	f->setStyleHint((QFont::StyleHint) l[2].toInt());
+	f->setWeight(l[3].toInt());
+	f->setItalic(l[4].toInt());
+	f->setUnderline(l[5].toInt());
+	f->setStrikeOut(l[6].toInt());
+	f->setFixedPitch(l[7].toInt());
+	f->setRawMode(l[8].toInt());
+    }
+    else
+    {
+	f->setPixelSize(l[2].toInt());
+	f->setStyleHint((QFont::StyleHint) l[3].toInt());
+	f->setWeight(l[4].toInt());
+	f->setItalic(l[5].toInt());
+	f->setUnderline(l[6].toInt());
+	f->setStrikeOut(l[7].toInt());
+	f->setFixedPitch(l[8].toInt());
+	f->setRawMode(l[9].toInt());
     }
     return TRUE;
 }

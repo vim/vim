@@ -2731,6 +2731,7 @@ StringToLine(PyObject *obj)
     char *save;
     int len;
     int i;
+    char *p;
 
     if (obj == NULL || !PyString_Check(obj))
     {
@@ -2741,14 +2742,22 @@ StringToLine(PyObject *obj)
     str = PyString_AsString(obj);
     len = PyString_Size(obj);
 
-    /* Error checking: String must not contain newlines, as we
+    /*
+     * Error checking: String must not contain newlines, as we
      * are replacing a single line, and we must replace it with
      * a single line.
+     * A trailing newline is removed, so that append(f.readlines()) works.
      */
-    if (memchr(str, '\n', len))
+    p = memchr(str, '\n', len);
+    if (p != NULL)
     {
-	PyErr_SetVim(_("string cannot contain newlines"));
-	return NULL;
+	if (p == str + len - 1)
+	    --len;
+	else
+	{
+	    PyErr_SetVim(_("string cannot contain newlines"));
+	    return NULL;
+	}
     }
 
     /* Create a copy of the string, with internal nulls replaced by

@@ -1,4 +1,4 @@
-*if_pyth.txt*   For Vim version 7.0aa.  Last change: 2004 Feb 28
+*if_pyth.txt*   For Vim version 7.0aa.  Last change: 2004 Jul 25
 
 
 		  VIM REFERENCE MANUAL    by Paul Moore
@@ -91,23 +91,23 @@ module before using it: >
 	:python import vim
 
 Overview >
-	print "Hello"			# displays a message
-	vim.command(cmd)		# execute an ex command
-	w = vim.windows[n]		# gets window "n"
-	cw = vim.current.window		# gets the current window
-	b = vim.buffers[n]		# gets buffer "n"
-	cb = vim.current.buffer		# gets the current buffer
-	w.height = lines		# sets the window height
-	w.cursor = (row, col)		# sets the window cursor position
-	pos = w.cursor			# gets a tuple (row, col)
-	name = b.name			# gets the buffer file name
-	line = b[n]			# gets a line from the buffer
-	lines = b[n:m]			# gets a list of lines
-	num = len(b)			# gets the number of lines
-	b[n] = str			# sets a line in the buffer
-	b[n:m] = [str1, str2, str3]	# sets a number of lines at once
-	del b[n]			# deletes a line
-	del b[n:m]			# deletes a number of lines
+	:py print "Hello"		# displays a message
+	:py vim.command(cmd)		# execute an ex command
+	:py w = vim.windows[n]		# gets window "n"
+	:py cw = vim.current.window	# gets the current window
+	:py b = vim.buffers[n]		# gets buffer "n"
+	:py cb = vim.current.buffer	# gets the current buffer
+	:py w.height = lines		# sets the window height
+	:py w.cursor = (row, col)	# sets the window cursor position
+	:py pos = w.cursor		# gets a tuple (row, col)
+	:py name = b.name		# gets the buffer file name
+	:py line = b[n]			# gets a line from the buffer
+	:py lines = b[n:m]		# gets a list of lines
+	:py num = len(b)		# gets the number of lines
+	:py b[n] = str			# sets a line in the buffer
+	:py b[n:m] = [str1, str2, str3]	# sets a number of lines at once
+	:py del b[n]			# deletes a line
+	:py del b[n:m]			# deletes a number of lines
 
 
 Methods of the "vim" module
@@ -115,8 +115,8 @@ Methods of the "vim" module
 vim.command(str)					*python-command*
 	Executes the vim (ex-mode) command str. Returns None.
 	Examples: >
-		vim.command("set tw=72")
-		vim.command("%s/aaa/bbb/g")
+	    :py vim.command("set tw=72")
+	    :py vim.command("%s/aaa/bbb/g")
 <	The following definition executes Normal mode commands: >
 		def normal(str):
 			vim.command("normal "+str)
@@ -126,15 +126,15 @@ vim.command(str)					*python-command*
 <								*E659*
 	The ":python" command cannot be used recursively with Python 2.2 and
 	older.  This only works with Python 2.3 and later: >
-		:python vim.command("python print 'Hello again Python'")
+	    :py vim.command("python print 'Hello again Python'")
 
 vim.eval(str)						*python-eval*
 	Evaluates the expression str using the vim internal expression
 	evaluator (see |expression|). Returns the expression result as a
 	string.
 	Examples: >
-		text_width = vim.eval("&tw")
-		str = vim.eval("12+12")		# NB result is a string! Use
+	    :py text_width = vim.eval("&tw")
+	    :py str = vim.eval("12+12")		# NB result is a string! Use
 						# string.atoi() to convert to
 						# a number.
 
@@ -158,18 +158,18 @@ Constants of the "vim" module
 vim.buffers						*python-buffers*
 	A sequence object providing access to the list of vim buffers. The
 	object supports the following operations: >
-		b = vim.buffers[i]	# Indexing (read-only)
-		b in vim.buffers	# Membership test
-		n = len(vim.buffers)	# Number of elements
-		for b in vim.buffers:	# Sequential access
+	    :py b = vim.buffers[i]	# Indexing (read-only)
+	    :py b in vim.buffers	# Membership test
+	    :py n = len(vim.buffers)	# Number of elements
+	    :py for b in vim.buffers:	# Sequential access
 <
 vim.windows						*python-windows*
 	A sequence object providing access to the list of vim windows. The
 	object supports the following operations: >
-		w = vim.windows[i]	# Indexing (read-only)
-		w in vim.windows	# Membership test
-		n = len(vim.windows)	# Number of elements
-		for w in vim.windows:	# Sequential access
+	    :py w = vim.windows[i]	# Indexing (read-only)
+	    :py w in vim.windows	# Membership test
+	    :py n = len(vim.windows)	# Number of elements
+	    :py for w in vim.windows:	# Sequential access
 <
 vim.current						*python-current*
 	An object providing access (via specific attributes) to various
@@ -236,17 +236,21 @@ The buffer object methods are:
 			represents the part of the given buffer between line
 			numbers s and e |inclusive|.
 
+Note that when adding a line it must not contain a line break character '\n'.
+A trailing '\n' is allowed and ignored, so that you can do: >
+	:py b.append(f.readlines())
+
 Examples (assume b is the current buffer) >
-	print b.name		# write the buffer file name
-	b[0] = "hello!!!"	# replace the top line
-	b[:] = None		# delete the whole buffer
-	del b[:]		# delete the whole buffer (same as above)
-	b[0:0] = [ "a line" ]	# add a line at the top
-	del b[2]		# delete a line (the third)
-	b.append("bottom")	# add a line at the bottom
-	n = len(b)		# number of lines
-	(row,col) = b.mark('a') # named mark
-	r = b.range(1,5)	# a sub-range of the buffer
+	:py print b.name		# write the buffer file name
+	:py b[0] = "hello!!!"		# replace the top line
+	:py b[:] = None			# delete the whole buffer
+	:py del b[:]			# delete the whole buffer
+	:py b[0:0] = [ "a line" ]	# add a line at the top
+	:py del b[2]			# delete a line (the third)
+	:py b.append("bottom")		# add a line at the bottom
+	:py n = len(b)			# number of lines
+	:py (row,col) = b.mark('a')	# named mark
+	:py r = b.range(1,5)		# a sub-range of the buffer
 
 ==============================================================================
 4. Range objects					*python-range*

@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2004 Jul 15
+*options.txt*	For Vim version 7.0aa.  Last change: 2004 Jul 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3924,7 +3924,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	NOTE: To avoid portability problems with using patterns, always keep
 	this option at the default "on".  Only switch it off when working with
 	old Vi scripts.  In any other situation write patterns that work when
-	'magic' is on.
+	'magic' is on.  Include "\M" when you want to |/\M|.
 
 						*'makeef'* *'mef'*
 'makeef' 'mef'		string	(default: "")

@@ -1,4 +1,4 @@
-*diff.txt*      For Vim version 7.0aa.  Last change: 2004 Jul 11
+*diff.txt*      For Vim version 7.0aa.  Last change: 2004 Jul 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -343,6 +343,10 @@ get an error message.  Possible causes:
 -  You are using 'diffexpr' and it doesn't work.
 If it's not clear what the problem is set the 'verbose' option to see more
 messages.
+
+The self-installing Vim includes a diff program.  If you don't have it you
+might want to download a diff.exe.  For example from
+http://jlb.twu.net/code/unixkit.php.
 
 
 USING PATCHES					*diff-patchexpr*

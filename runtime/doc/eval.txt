@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2004 Jul 19
+*eval.txt*      For Vim version 7.0aa.  Last change: 2004 Jul 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -846,8 +846,10 @@ getbufvar( {expr}, {varname})		variable {varname} in buffer {expr}
 getcmdline()			String	return the current command-line
 getcmdpos()			Number	return cursor position in command-line
 getcwd()			String	the current working directory
-getfsize( {fname})		Number	size in bytes of file
+getfperm( {fname})		String	file permissions of file {fname}
+getfsize( {fname})		Number	size in bytes of file {fname}
 getftime( {fname})		Number	last modification time of file
+getftype( {fname})		String	description of type of file {fname}
 getline( {lnum})		String	line {lnum} from current buffer
 getreg( [{regname}])		String  contents of register
 getregtype( [{regname}])	String  type of register
@@ -1580,12 +1582,46 @@ getfsize({fname})					*getfsize()*
 		If {fname} is a directory, 0 is returned.
 		If the file {fname} can't be found, -1 is returned.
 
+getfperm({fname})					*getfperm()*
+		The result is a String, which is the read, write, and execute
+		permissions of the given file {fname}.
+		If {fname} does not exist or its directory cannot be read, an
+		empty string is returned.
+		The result is of the form "rwxrwxrwx", where each group of
+		"rwx" flags represent, in turn, the permissions of the owner
+		of the file, the group the file belongs to, and other users.
+		If a user does not have a given permission the flag for this
+		is replaced with the string "-".  Example: >
+			:echo getfperm("/etc/passwd")
+<		This will hopefully (from a security point of view) display
+		the string "rw-r--r--" or even "rw-------".
+  
 getftime({fname})					*getftime()*
 		The result is a Number, which is the last modification time of
 		the given file {fname}.  The value is measured as seconds
 		since 1st Jan 1970, and may be passed to strftime().  See also
 		|localtime()| and |strftime()|.
 		If the file {fname} can't be found -1 is returned.
+
+getftype({fname})					*getftype()*
+		The result is a String, which is a description of the kind of
+		file of the given file {fname}.
+		If {fname} does not exist an empty string is returned.
+		Here is a table over different kinds of files and their
+		results:
+			Normal file		"file"
+			Directory		"dir"
+			Symbolic link		"link"
+			Block device		"bdev"
+			Character device	"cdev"
+			Socket			"socket"
+			FIFO			"fifo"
+			All other		"other"
+		Example: >
+			getftype("/home")
+<		Note that a type such as "link" will only be returned on
+		systems that support it.  On some systems only "dir" and
+		"file" are returned.
 
 							*getline()*
 getline({lnum}) The result is a String, which is line {lnum} from the current
@@ -2246,14 +2282,16 @@ search({pattern} [, {flags}])				*search()*
 		cursor position.
 		{flags} is a String, which can contain these character flags:
 		'b'	search backward instead of forward
+		'n'	do Not move the cursor
 		'w'	wrap around the end of the file
 		'W'	don't wrap around the end of the file
 		If neither 'w' or 'W' is given, the 'wrapscan' option applies.
 
-		When a match has been found its line number is returned, and
-		the cursor will be positioned at the match.  If there is no
-		match a 0 is returned and the cursor doesn't move.  No error
-		message is given.
+		When a match has been found its line number is returned.
+		The cursor will be positioned at the match, unless the 'n'
+		flag is used).
+		If there is no match a 0 is returned and the cursor doesn't
+		move.  No error message is given.
 
 		Example (goes over all files in the argument list): >
 		    :let n = 1
@@ -2747,9 +2785,15 @@ winline()	The result is a Number, which is the screen line of the cursor
 		the window.  The first line is one.
 
 							*winnr()*
-winnr()		The result is a Number, which is the number of the current
-		window.  The top window has number 1.  The number can be used
-		with |CTRL-W_w| and ":wincmd w" |:wincmd|.
+winnr([{arg}])	The result is a Number, which is the number of the current
+		window.  The top window has number 1.
+		When the optional argument is "$", the number of the
+		last window is returnd (the window count).
+		When the optional argument is "#", the number of the last
+		accessed window is returned (where |CTRL-W_p| goes to).
+		If there is no previous window 0 is returned.
+		The number can be used with |CTRL-W_w| and ":wincmd w"
+		|:wincmd|.
 
 							*winrestcmd()*
 winrestcmd()	Returns a sequence of |:resize| commands that should restore

@@ -295,8 +295,10 @@ static void f_getcharmod __ARGS((VAR argvars, VAR retvar));
 static void f_getcmdline __ARGS((VAR argvars, VAR retvar));
 static void f_getcmdpos __ARGS((VAR argvars, VAR retvar));
 static void f_getcwd __ARGS((VAR argvars, VAR retvar));
+static void f_getfperm __ARGS((VAR argvars, VAR retvar));
 static void f_getfsize __ARGS((VAR argvars, VAR retvar));
 static void f_getftime __ARGS((VAR argvars, VAR retvar));
+static void f_getftype __ARGS((VAR argvars, VAR retvar));
 static void f_getline __ARGS((VAR argvars, VAR retvar));
 static void f_getreg __ARGS((VAR argvars, VAR retvar));
 static void f_getregtype __ARGS((VAR argvars, VAR retvar));
@@ -751,7 +753,7 @@ call_vim_function(func, argc, argv, safe)
 	if (argv[i] == NULL || *argv[i] == NUL)
 	{
 	    argvars[i].var_type = VAR_STRING;
-	    argvars[i].var_val.var_string = "";
+	    argvars[i].var_val.var_string = (char_u *)"";
 	    continue;
 	}
 
@@ -2853,8 +2855,10 @@ static struct fst
     {"getcmdline",	0, 0, f_getcmdline},
     {"getcmdpos",	0, 0, f_getcmdpos},
     {"getcwd",		0, 0, f_getcwd},
+    {"getfperm",	1, 1, f_getfperm},
     {"getfsize",	1, 1, f_getfsize},
     {"getftime",	1, 1, f_getftime},
+    {"getftype",	1, 1, f_getftype},
     {"getline",		1, 1, f_getline},
     {"getreg",		0, 1, f_getreg},
     {"getregtype",	0, 1, f_getregtype},
@@ -2941,7 +2945,7 @@ static struct fst
     {"wincol",		0, 0, f_wincol},
     {"winheight",	1, 1, f_winheight},
     {"winline",		0, 0, f_winline},
-    {"winnr",		0, 0, f_winnr},
+    {"winnr",		0, 1, f_winnr},
     {"winrestcmd",	0, 0, f_winrestcmd},
     {"winwidth",	1, 1, f_winwidth},
 };
@@ -4578,6 +4582,38 @@ f_getcwd(argvars, retvar)
 }
 
 /*
+ * "getfperm({fname})" function
+ */
+    static void
+f_getfperm(argvars, retvar)
+    VAR		argvars;
+    VAR		retvar;
+{
+    char_u	*fname;
+    struct stat st;
+    char_u	*perm = NULL;
+    char_u	flags[] = "rwx";
+    int		i;
+
+    fname = get_var_string(&argvars[0]);
+
+    retvar->var_type = VAR_STRING;
+    if (mch_stat((char *)fname, &st) >= 0)
+    {
+	perm = vim_strsave((char_u *)"---------");
+	if (perm != NULL)
+	{
+	    for (i = 0; i < 9; i++)
+	    {
+		if (st.st_mode & (1 << (8 - i)))
+		    perm[i] = flags[i % 3];
+	    }
+	}
+    }
+    retvar->var_val.var_string = perm;
+}
+
+/*
  * "getfsize({fname})" function
  */
     static void
@@ -4620,6 +4656,86 @@ f_getftime(argvars, retvar)
 	retvar->var_val.var_number = (varnumber_T)st.st_mtime;
     else
 	retvar->var_val.var_number = -1;
+}
+
+/*
+ * "getftype({fname})" function
+ */
+    static void
+f_getftype(argvars, retvar)
+    VAR		argvars;
+    VAR		retvar;
+{
+    char_u	*fname;
+    struct stat st;
+    char_u	*type = NULL;
+    char	*t;
+
+    fname = get_var_string(&argvars[0]);
+
+    retvar->var_type = VAR_STRING;
+    if (mch_lstat((char *)fname, &st) >= 0)
+    {
+#ifdef S_ISREG
+	if (S_ISREG(st.st_mode))
+	    t = "file";
+	else if (S_ISDIR(st.st_mode))
+	    t = "dir";
+# ifdef S_ISLNK
+	else if (S_ISLNK(st.st_mode))
+	    t = "link";
+# endif
+# ifdef S_ISBLK
+	else if (S_ISBLK(st.st_mode))
+	    t = "bdev";
+# endif
+# ifdef S_ISCHR
+	else if (S_ISCHR(st.st_mode))
+	    t = "cdev";
+# endif
+# ifdef S_ISFIFO
+	else if (S_ISFIFO(st.st_mode))
+	    t = "fifo";
+# endif
+# ifdef S_ISSOCK
+	else if (S_ISSOCK(st.st_mode))
+	    t = "fifo";
+# endif
+	else
+	    t = "other";
+#else
+# ifdef S_IFMT
+	switch (st.st_mode & S_IFMT)
+	{
+	    case S_IFREG: t = "file"; break;
+	    case S_IFDIR: t = "dir"; break;
+#  ifdef S_IFLNK
+	    case S_IFLNK: t = "link"; break;
+#  endif
+#  ifdef S_IFBLK
+	    case S_IFBLK: t = "bdev"; break;
+#  endif
+#  ifdef S_IFCHR
+	    case S_IFCHR: t = "cdev"; break;
+#  endif
+#  ifdef S_IFIFO
+	    case S_IFIFO: t = "fifo"; break;
+#  endif
+#  ifdef S_IFSOCK
+	    case S_IFSOCK: t = "socket"; break;
+#  endif
+	    default: t = "other";
+	}
+# else
+	if (mch_isdir(fname))
+	    t = "dir";
+	else
+	    t = "file";
+# endif
+#endif
+	type = vim_strsave((char_u *)t);
+    }
+    retvar->var_val.var_string = type;
 }
 
 /*
@@ -6305,6 +6421,10 @@ f_simplify(argvars, retvar)
     retvar->var_type = VAR_STRING;
 }
 
+#define SP_NOMOVE	1	/* don't move cursor */
+#define SP_REPEAT	2	/* repeat to find outer pair */
+#define SP_RETCOUNT	4	/* return matchcount */
+
 /*
  * "search()" function
  */
@@ -6315,13 +6435,24 @@ f_search(argvars, retvar)
 {
     char_u	*pat;
     pos_T	pos;
+    pos_T	save_cursor;
     int		save_p_ws = p_ws;
     int		dir;
+    int		flags = 0;
+
+    retvar->var_val.var_number = 0;	/* default: FAIL */
 
     pat = get_var_string(&argvars[0]);
-    dir = get_search_arg(&argvars[1], NULL);	/* may set p_ws */
+    dir = get_search_arg(&argvars[1], &flags);	/* may set p_ws */
+    if (dir == 0)
+	goto theend;
+    if ((flags & ~SP_NOMOVE) != 0)
+    {
+	EMSG2(_(e_invarg2), get_var_string(&argvars[1]));
+	goto theend;
+    }
 
-    pos = curwin->w_cursor;
+    pos = save_cursor = curwin->w_cursor;
     if (searchit(curwin, curbuf, &pos, dir, pat, 1L,
 					      SEARCH_KEEP, RE_SEARCH) != FAIL)
     {
@@ -6331,14 +6462,13 @@ f_search(argvars, retvar)
 	 * correct that here */
 	check_cursor();
     }
-    else
-	retvar->var_val.var_number = 0;
+
+    /* If 'n' flag is used: restore cursor position. */
+    if (flags & SP_NOMOVE)
+	curwin->w_cursor = save_cursor;
+theend:
     p_ws = save_p_ws;
 }
-
-#define SP_NOMOVE	1	/* don't move cursor */
-#define SP_REPEAT	2	/* repeat to find outer pair */
-#define SP_RETCOUNT	4	/* return matchcount */
 
 /*
  * "searchpair()" function
@@ -6393,6 +6523,8 @@ f_searchpair(argvars, retvar)
 
     /* Handle the optional fourth argument: flags */
     dir = get_search_arg(&argvars[3], &flags); /* may set p_ws */
+    if (dir == 0)
+	goto theend;
 
     /* Optional fifth argument: skip expresion */
     if (argvars[3].var_type == VAR_UNKNOWN
@@ -6474,6 +6606,11 @@ theend:
     p_cpo = save_cpo;
 }
 
+/*
+ * Get flags for a search function.
+ * Possibly sets "p_ws".
+ * Returns BACKWARD, FORWARD or zero (for an error).
+ */
     static int
 get_search_arg(varp, flagsp)
     VAR		varp;
@@ -6482,24 +6619,37 @@ get_search_arg(varp, flagsp)
     int		dir = FORWARD;
     char_u	*flags;
     char_u	nbuf[NUMBUFLEN];
+    int		mask;
 
     if (varp->var_type != VAR_UNKNOWN)
     {
 	flags = get_var_string_buf(varp, nbuf);
-	if (vim_strchr(flags, 'b') != NULL)
-	    dir = BACKWARD;
-	if (vim_strchr(flags, 'w') != NULL)
-	    p_ws = TRUE;
-	if (vim_strchr(flags, 'W') != NULL)
-	    p_ws = FALSE;
-	if (flagsp != NULL)
+	while (*flags != NUL)
 	{
-	    if (vim_strchr(flags, 'n') != NULL)
-		*flagsp |= SP_NOMOVE;
-	    if (vim_strchr(flags, 'r') != NULL)
-		*flagsp |= SP_REPEAT;
-	    if (vim_strchr(flags, 'm') != NULL)
-		*flagsp |= SP_RETCOUNT;
+	    switch (*flags)
+	    {
+		case 'b': dir = BACKWARD; break;
+		case 'w': p_ws = TRUE; break;
+		case 'W': p_ws = FALSE; break;
+		default:  mask = 0;
+			  if (flagsp != NULL)
+			     switch (*flags)
+			     {
+				 case 'n': mask = SP_NOMOVE; break;
+				 case 'r': mask = SP_REPEAT; break;
+				 case 'm': mask = SP_RETCOUNT; break;
+			     }
+			  if (mask == 0)
+			  {
+			      EMSG2(_(e_invarg2), flags);
+			      dir = 0;
+			  }
+			  else
+			      *flagsp |= mask;
+	    }
+	    if (dir == 0)
+		break;
+	    ++flags;
 	}
     }
     return dir;
@@ -7648,7 +7798,9 @@ f_tr(argvars, retvar)
 	/* not multi-byte: fromstr and tostr must be the same length */
 	if (STRLEN(fromstr) != STRLEN(tostr))
 	{
+#ifdef FEAT_MBYTE
 error:
+#endif
 	    EMSG2(_(e_invarg2), fromstr);
 	    ga_clear(&ga);
 	    return;
@@ -7859,9 +8011,30 @@ f_winnr(argvars, retvar)
     int		nr = 1;
 #ifdef FEAT_WINDOWS
     win_T	*wp;
+    win_T	*twin = curwin;
+    char_u	*arg;
 
-    for (wp = firstwin; wp != curwin; wp = wp->w_next)
-	++nr;
+    if (argvars[0].var_type != VAR_UNKNOWN)
+    {
+	arg = get_var_string(&argvars[0]);
+	if (STRCMP(arg, "$") == 0)
+	    twin = lastwin;
+	else if (STRCMP(arg, "#") == 0)
+	{
+	    twin = prevwin;
+	    if (prevwin == NULL)
+		nr = 0;
+	}
+	else
+	{
+	    EMSG2(_(e_invexpr2), arg);
+	    nr = 0;
+	}
+    }
+
+    if (nr > 0)
+	for (wp = firstwin; wp != twin; wp = wp->w_next)
+	    ++nr;
 #endif
     retvar->var_val.var_number = nr;
 }

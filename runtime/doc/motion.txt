@@ -1,4 +1,4 @@
-*motion.txt*    For Vim version 7.0aa.  Last change: 2004 Jul 02
+*motion.txt*    For Vim version 7.0aa.  Last change: 2004 Jul 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -83,6 +83,7 @@ are however, two general exceptions:
    end of the motion is moved to the end of the previous line and the motion
    becomes inclusive.  Example: "}" moves to the first line after a paragraph,
    but "d}" will not include that line.
+						*exclusive-linewise*
 2. If the motion is exclusive, the end of the motion is in column 1 and the
    start of the motion was at or before the first non-blank in the line, the
    motion becomes linewise.  Example: If a paragraph begins with some blanks
@@ -424,20 +425,24 @@ between Vi and Vim.
 
 							*]]*
 ]]			[count] sections forward or to the next '{' in the
-			first column.  When used after an operator, then the
-			'}' in the first column.  |linewise|
+			first column.  When used after an operator, then also
+			stops below a '}' in the first column.  |exclusive|
+			Note that |exclusive-linewise| often applies.
 
 							*][*
 ][			[count] sections forward or to the next '}' in the
-			first column.  |linewise|
+			first column.  |exclusive|
+			Note that |exclusive-linewise| often applies.
 
 							*[[*
 [[			[count] sections backward or to the previous '{' in
-			the first column.  |linewise|
+			the first column.  |exclusive|
+			Note that |exclusive-linewise| often applies.
 
 							*[]*
 []			[count] sections backward or to the previous '}' in
-			the first column.  |linewise|
+			the first column.  |exclusive|
+			Note that |exclusive-linewise| often applies.
 
 These commands move over three kinds of text objects.
 

@@ -1,12 +1,12 @@
 " Vim indent file
-" Language:	OCaml
-" Maintainers:	Jean-Francois Yuen  <jfyuen@ifrance.com>
-"		Mike Leary	    <leary@nwlink.com>
-"		Markus Mottl	    <markus@oefai.at>
-" URL:		http://www.oefai.at/~markus/vim/indent/ocaml.vim
-" Last Change:	2003 Apr 14
-"		2003 Mar 05 - Added '{<' and some fixes (JY)
-"		2002 Nov 06 - Some fixes (JY)
+" Language:     OCaml
+" Maintainers:  Jean-Francois Yuen  <jfyuen@happycoders.org>
+"               Mike Leary          <leary@nwlink.com>
+"               Markus Mottl        <markus@oefai.at>
+" URL:          http://www.oefai.at/~markus/vim/indent/ocaml.vim
+" Last Change:  2004 Apr 11 - Added indent for 'class' (JY)
+"               2003 Sep 16 - Added 'private' as keyword (JY)
+"               2003 Mar 29 - Fixed bug with 'if' and 'else' (JY)
 
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")
@@ -16,7 +16,7 @@ let b:did_indent = 1
 
 setlocal expandtab
 setlocal indentexpr=GetOCamlIndent()
-setlocal indentkeys+=0=and,0=constraint,0=done,0=else,0=end,0=exception,0=external,0=if,0=in,0=include,0=inherit,0=initializer,0=let,0=method,0=open,0=then,0=type,0=val,0=with,0=;;,0=>\],0=\|\],0=\|,0=*),0=>},0},0\],0)
+setlocal indentkeys+=0=and,0=class,0=constraint,0=done,0=else,0=end,0=exception,0=external,0=if,0=in,0=include,0=inherit,0=initializer,0=let,0=method,0=open,0=then,0=type,0=val,0=with,0;;,0>\],0\|\],0>},0\|,0},0\],0)
 setlocal nolisp
 setlocal nosmartindent
 setlocal textwidth=80
@@ -33,14 +33,13 @@ if exists("*GetOCamlIndent")
 endif
 
 " Define some patterns:
-let s:beflet = '^\s*\(initializer\|method\|try\)\|\(\<\(begin\|do\|else\|in\|then\|try\)\|->\|;\|(\)\s*$'
+let s:beflet = '^\s*\(initializer\|method\|try\)\|\(\<\(begin\|do\|else\|in\|then\|try\)\|->\|<-\|=\|;\|(\)\s*$'
 let s:letpat = '^\s*\(let\|type\|module\|class\|open\|exception\|val\|include\|external\)\>'
 let s:letlim = '\(\<\(sig\|struct\)\|;;\)\s*$'
 let s:lim = '^\s*\(exception\|external\|include\|let\|module\|open\|type\|val\)\>'
 let s:module = '\<\%(begin\|sig\|struct\|object\)\>'
 let s:obj = '^\s*\(constraint\|inherit\|initializer\|method\|val\)\>\|\<\(object\|object\s*(.*)\)\s*$'
-let s:type = '^\s*\%(let\|type\)\>.*='
-let s:val = '^\s*\(val\|external\)\>.*:'
+let s:type = '^\s*\%(class\|let\|type\)\>.*='
 
 " Skipping pattern, for comments
 function s:SkipPattern(lnum, pat)
@@ -75,7 +74,7 @@ endfunction
 " Indent 'let'
 function s:FindLet(pstart, pmid, pend)
   call search(a:pend, 'bW')
-  return indent(searchpair(a:pstart, a:pmid, a:pend, 'bWn', 'synIDattr(synID(line("."), col("."), 0), "name") =~? "string\\|comment" || getline(".") =~ "^\\s*let\\>.*=.*\\<in\\s*$" || getline(prevnonblank(".") - 1) =~ "^\\s*let\\>.*=\\s*$\\|" . s:beflet'))
+  return indent(searchpair(a:pstart, a:pmid, a:pend, 'bWn', 'synIDattr(synID(line("."), col("."), 0), "name") =~? "string\\|comment" || getline(".") =~ "^\\s*let\\>.*=.*\\<in\\s*$" || getline(prevnonblank(".") - 1) =~ s:beflet'))
 endfunction
 
 function GetOCamlIndent()
@@ -97,8 +96,7 @@ function GetOCamlIndent()
 
   let line = getline(v:lnum)
 
-  " Indent if current line begins with 'end'
-  " for 'sig', 'struct', 'object' and 'begin':
+  " Indent if current line begins with 'end':
   if line =~ '^\s*end\>'
     return s:FindPair(s:module, '','\<end\>')
 
@@ -118,27 +116,25 @@ function GetOCamlIndent()
   elseif line =~ '^\s*)'
     return s:FindPair('(', '',')')
 
-  " Indent if current line begins with 'let'
-  " and last line does not begin with 'let' or end with 'in' or ';;':
+  " Indent if current line begins with 'let':
   elseif line =~ '^\s*let\>'
     if lline !~ s:lim . '\|' . s:letlim . '\|' . s:beflet
       return s:FindLet(s:type, '','\<let\s*$')
     else return ind
     endif
 
-  " Indent if current line begins with 'type'
-  " and last line does not end with 'and' or ';;':
-  elseif line =~ '^\s*type\>'
+  " Indent if current line begins with 'class' or 'type':
+  elseif line =~ '^\s*\(class\|type\)\>'
     if lline !~ s:lim . '\|\<and\s*$\|' . s:letlim
-      return s:FindLet(s:type, '','\<type\s*$')
+      return s:FindLet(s:type, '','\<\(class\|type\)\s*$')
     else return ind
     endif
 
   " Indent for pattern matching:
   elseif line =~ '^\s*|'
-    if lline !~ '^\s*\(|\|\(match\|with\|type\)\>\)\|\<\(function\|parser\|with\)\s*$'
+    if lline !~ '^\s*\(|[^\]]\|\(match\|type\|with\)\>\)\|\<\(function\|parser\|private\|with\)\s*$'
       call search('|', 'bW')
-      return indent(searchpair('^\s*\(type\|match\)\>\|\<\(with\|function\|parser\)\s*$', '', '|', 'bWn', 'synIDattr(synID(line("."), col("."), 0), "name") =~? "string\\|comment" || getline(".") =~ "\\[|\\||\\]" && getline(".") !~ "^\\s*|.*->"'))
+      return indent(searchpair('^\s*\(match\|type\)\>\|\<\(function\|parser\|private\|with\)\s*$', '', '^\s*|', 'bWn', 'synIDattr(synID(line("."), col("."), 0), "name") =~? "string\\|comment" || getline(".") !~ "^\\s*|.*->"'))
     else return ind
     endif
 
@@ -149,41 +145,35 @@ function GetOCamlIndent()
     else return ind
     endif
 
-  " Indent if current line begins with 'in' and previous
-  " line does not start with 'let' or 'and':
+  " Indent if current line begins with 'in':
   elseif line =~ '^\s*in\>'
     if lline !~ '^\s*\(let\|and\)\>'
       return s:FindPair('\<let\>', '', '\<in\>')
     else return ind
     endif
 
-  " Indent if current line begins with 'else'
-  " and previous line does not start with 'if', 'then' or 'else':
+  " Indent if current line begins with 'else':
   elseif line =~ '^\s*else\>'
-    if lline !~ '^\s*\(if\|else\|then\)\>'
+    if lline !~ '^\s*\(if\|then\)\>'
       return s:FindPair('\<if\>', '', '\<else\>')
     else return ind
     endif
 
-  " Indent if current line begins with 'then'
-  " and previous line does not start with 'if', 'then' or 'else':
+  " Indent if current line begins with 'then':
   elseif line =~ '^\s*then\>'
-    if lline !~ '^\s*\(if\|else\|then\)\>'
+    if lline !~ '^\s*\(if\|else\)\>'
       return s:FindPair('\<if\>', '', '\<then\>')
     else return ind
     endif
 
-  " Subtract a 'shiftwidth' if current line begins with 'and' and previous
-  " line does not start with 'let', 'and' or 'type' or end with 'end'
-  " (for classes):
+  " Indent if current line begins with 'and':
   elseif line =~ '^\s*and\>'
     if lline !~ '^\s*\(and\|let\|type\)\>\|\<end\s*$'
       return ind - &sw
     else return ind
     endif
 
-  " Indent if current line begins with 'with'
-  " and previous line does not start with 'match' or 'try':
+  " Indent if current line begins with 'with':
   elseif line =~ '^\s*with\>'
     if lline !~ '^\s*\(match\|try\)\>'
       return s:FindPair('\<\%(match\|try\)\>', '','\<with\>')
@@ -193,35 +183,35 @@ function GetOCamlIndent()
   " Indent if current line begins with 'exception':
   elseif line =~ '^\s*exception\>'
     if lline !~ s:lim . '\|' . s:letlim
-      return indent(search(s:val . '\|^\s*\(external\|include\|open\|type\)\>', 'bW'))
+      return indent(search('^\s*\(\(external\|include\|open\|type\)\>\|val\>.*:\)', 'bW'))
     else return ind
     endif
 
   " Indent if current line begins with 'external':
   elseif line =~ '^\s*external\>'
     if lline !~ s:lim . '\|' . s:letlim
-      return indent(search(s:val . '\|^\s*\(exception\|include\|open\|type\)\>', 'bW'))
+      return indent(search('^\s*\(\(exception\|external\|include\|open\|type\)\>\|val\>.*:\)', 'bW'))
     else return ind
     endif
 
   " Indent if current line begins with 'include':
   elseif line =~ '^\s*include\>'
     if lline !~ s:lim . '\|' . s:letlim
-      return indent(search(s:val . '\|^\s*\(exception\|external\|open\|type\)\>', 'bW'))
+      return indent(search('^\s*\(\(exception\|external\|open\|type\)\>\|val\>.*:\)', 'bW'))
     else return ind
     endif
 
   " Indent if current line begins with 'open':
   elseif line =~ '^\s*open\>'
     if lline !~ s:lim . '\|' . s:letlim
-      return indent(search(s:val . '\|^\s*\(exception\|external\|include\|type\)\>', 'bW'))
+      return indent(search('^\s*\(\(exception\|external\|include\|type\)\>\|val\>.*:\)', 'bW'))
     else return ind
     endif
 
   " Indent if current line begins with 'val':
   elseif line =~ '^\s*val\>'
     if lline !~ '^\s*\(exception\|external\|include\|open\)\>\|' . s:obj . '\|' . s:letlim
-      return indent(search(s:val . '\|^\s*\(exception\|include\|initializer\|method\|open\|type\)\>', 'bW'))
+      return indent(search('^\s*\(\(exception\|include\|initializer\|method\|open\|type\|val\)\>\|external\>.*:\)', 'bW'))
     else return ind
     endif
 
@@ -253,15 +243,10 @@ function GetOCamlIndent()
     else return ind
     endif
 
-  " Indent back to normal after comments:
-  elseif line =~ '^\s*\*)'
-    call search('\*)', 'bW')
-    return indent(searchpair('(\*', '', '\*)', 'bWn', 'synIDattr(synID(line("."), col("."), 0), "name") =~? "string"'))
-
   endif
 
   " Add a 'shiftwidth' after lines ending with:
-  if lline =~ '\(:\|=\|->\|<-\|(\|\[\|{\|{<\|\[|\|\[<\|\<\(begin\|struct\|sig\|functor\|initializer\|object\|try\|do\|if\|then\|else\|fun\|function\|parser\)\|\<object\s*(.*)\)\s*$'
+  if lline =~ '\(:\|=\|->\|<-\|(\|\[\|{\|{<\|\[|\|\[<\|\<\(begin\|do\|else\|fun\|function\|functor\|if\|initializer\|object\|parser\|private\|sig\|struct\|then\|try\)\|\<object\s*(.*)\)\s*$'
     let ind = ind + &sw
 
   " Back to normal indent after lines ending with ';;':

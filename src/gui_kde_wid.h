@@ -96,14 +96,14 @@ public:
 	void disable_mzscheme_threads();
 #endif
 	void flash();
-	
+
 	/** DCOP */
 	void execNormal(QString command);
 	void execInsert(QString command);
 	void execRaw(QString command);
 	void execCmd(QString command);
 	QString eval(QString expr);
-	
+
 	bool wait_done;
 	BlinkState blink_state;
 	QPainter *painter;
@@ -134,7 +134,7 @@ protected:
 
 	/* wait for input */
 	QTimer	wait_timer;
-	
+
 #ifdef FEAT_MZSCHEME
 	int	mzscheme_timer_id;
 #endif

@@ -3760,10 +3760,11 @@ find_prev_quote(line, col_start, quotechar, escape)
  * Find quote under the cursor, cursor at end.
  * Returns TRUE if found, else FALSE.
  */
+/*ARGSUSED*/
     int
 current_quote(oap, count, include, quotechar)
     oparg_T	*oap;
-    long	count;
+    long	count;		/* not used */
     int		include;	/* TRUE == include quote char */
     int		quotechar;	/* Quote character */
 {

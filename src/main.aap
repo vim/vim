@@ -100,9 +100,9 @@ prefix = `os.path.expanduser(prefix)`
 	GUI_TESTTARGET	= gui
     KDE
         GUI_SRC		= gui.c pty.c gui_kde.cc gui_kde_x11.cc
-                            gui_kde_widget_moc.cc
+                            gui_kde_wid_moc.cc
                             kvim_iface_skel.cc
-        GUI_OBJ		= $BDIR/gui_kde_widget.o
+        GUI_OBJ		= $BDIR/gui_kde_wid.o
         GUI_DEFS	= -DFEAT_GUI_KDE $NARROW_PROTO
         GUI_IPATH	= $GUI_INC_LOC
         GUI_LIBS_DIR	= $GUI_LIB_LOC
@@ -218,7 +218,7 @@ test check:
 testclean {virtual}:
     :del {force} testdir/*.out testdir/test.log
 
-CLEANFILES += gui_kde_widget_moc.cc kvim_iface_skel.cc *.kidl
+CLEANFILES += gui_kde_wid_moc.cc kvim_iface_skel.cc *.kidl
 
 # When no fetch target exists we are not a child of the ../main.aap recipe,
 # Use ../main.aap to do the fetching.
@@ -356,18 +356,18 @@ auto/if_perl.c: if_perl.xs
 	:sys $PERL $PERLLIB/ExtUtils/xsubpp -prototypes -typemap \
 	    $PERLLIB/ExtUtils/typemap if_perl.xs >> $target
 
-$BDIR/gui_kde_widget.o: gui_kde_widget.cc
-        :sys $MOC -o gui_kde_widget_moc.cc gui_kde_widget.h
+$BDIR/gui_kde_wid.o: gui_kde_wid.cc
+        :sys $MOC -o gui_kde_wid_moc.cc gui_kde_wid.h
         @try:
             :sys $KDE_PREFIX/bin/dcopidl kvim_iface.h > kvim_iface.kidl
         @except:
             :del {f} kvim_iface.kidl
         :sys $KDE_PREFIX/bin/dcopidl2cpp --c++-suffix cc --no-stub kvim_iface.kidl
-        :do compile gui_kde_widget.cc
+        :do compile gui_kde_wid.cc
 
-gui_kde_widget_moc.cc: $BDIR/gui_kde_widget.o
+gui_kde_wid_moc.cc: $BDIR/gui_kde_wid.o
 
-kvim_iface_skel.cc: $BDIR/gui_kde_widget.o
+kvim_iface_skel.cc: $BDIR/gui_kde_wid.o
 
 
 auto/osdef.h: auto/config.h osdef.sh osdef1.h.in osdef2.h.in
