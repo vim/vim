@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 11
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,12 +30,41 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Fixes in ex_getln.c also in Vim 6.3.
+"daw" doesn't delete white space before single word in line. (Jens Paulus)
+
+Dictionary:
+- filter() for dictionaries: :call filter(dict, '& =~ "bla.*"')
+    & for key, &v for value?
+- functions:
+	len(dict)		nr of items
+	copy(dict)		make a copy
+	deepcopy(dict)		make a copy recursively
+	has_key(dict, key)   	whether key is present
+	getval(dict, key [, default])
+	extend(dict1, dict2)	add items from dict2 to dict1
+- Using "self" in function with "dict" attribute.  Also allow l:self.
+    Such a function must be called from a dictionary entry.
+  Third argument of call() passes dictionary:
+	:let res = call(function("DictFunc"), arglist, mydict)
+- Define nameless function: ":function dict.key(arg)"
+- ":delfunc dict.key".
+- ":unlet dict.key" "unlet list[idx]"
+
+Mention Rsync command on runtime.php page:
+    rsync -avzcP --delete --exclude="dos" --delete-excluded ftp.nluug.nl::Vim/runtime/ vim63-runtime
 
 List type:
+- Make second index in list[i:j] exclusive, like Python?
+    Marcus Aurelius: yes
 - Add List functions to version7.txt.
 - Add List functions to overview of funtions in user manual.
 - Explain Lists in the user manual?
+
+Add +=, -= and .= assignments.
+
+netrw plugin:
+- provide :Explore and :Sexplore like the old file explorer?
+- alignment of long listing isn't very good.
 
 Better way to get temp file for tcltags and vimspell scripts. (javier Pena)
 Possibly leave out code for temp directory.
@@ -124,6 +153,10 @@ PLANNED FOR VERSION 7.0:
     - Check Readline for its completion interface.
     - Use ctags for other languages.  Writing a file could trigger running
       ctags, merging the tags of the changed file.
+    Also see "Visual Assist" http://www.wholetomato.com/products:
+    - Put the list of choices right under the place where they would be
+      inserted.
+    - Pre-expand abbreviations, show which abbrevs would match?
 -   UNDO TREE: keep all states of the text, don't delete undo info.
     When making a change, instead of clearing any future undo (thus redo)
     info, make a new branch.
@@ -144,6 +177,7 @@ PLANNED FOR VERSION 7.0:
     extension: ".filename.un~" (like swapfile but "un~" instead of "swp").
 7   Support WINDOW TABS.  Works like several pages, each with their own
     split windows.  Patch for GTK 1.2 passed on by Christian Michon, 2004 Jan 6.
+    Don't forget to provide an "X" to close a tab.
     Also for the console!
     In Emacs these are called frames.  Could also call them "pages".
     Use "1gt" - "99gt" to switch to a tab?
@@ -243,6 +277,10 @@ List data type performance:
 - Cache the length of a List?
 - Cache the last used index?
 - Use blocks of items, so that finding an item by index is faster?
+
+Dictionary data type performance:
+- Use a hash to locate items
+
 
 Awaiting updated patches:
     --- awaiting updated patch ---

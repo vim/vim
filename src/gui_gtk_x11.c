@@ -4240,7 +4240,7 @@ gui_mch_font_dialog(char_u *oldval)
 		GTK_FONT_SELECTION_DIALOG(dialog), (const char *)oldname);
 
 	if (oldname != oldval)
-	    vim_free(oldval);
+	    vim_free(oldname);
     }
 
     response = gtk_dialog_run(GTK_DIALOG(dialog));

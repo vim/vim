@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jan 11
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jan 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -51,6 +51,10 @@ buffer is still modified compared to the original file.  And when undoing
 all changes the file would actually be marked modified.  It does mean that
 ":quit" fails now.
 
+In a |literal-string| a single quote can be doubled to get one.
+":echo 'a''b'" would result in "a b", but now that two quotes stand for one it
+results in "a'b".
+
 
 Minor incompatibilities:
 
@@ -76,9 +80,9 @@ Win32: The effect of the <F10> key depended on 'winaltkeys'.  Now it depends
 on whether <F10> has been mapped or not.  This allows mapping <F10> without
 changing 'winaltkeys'.
 
-When using CTRL-A on "08" it became "018", which is illogical.  Now it becomes
-"9".  The leading zero(s) is(are) removed to avoid the number becoming octal
-after incrementing "009" to "010".
+When 'octal' is in 'nrformats' and using CTRL-A on "08" it became "018", which
+is illogical.  Now it becomes "9".  The leading zero(s) is(are) removed to
+avoid the number becoming octal after incrementing "009" to "010".
 
 When 'encoding' is set to a Unicode encoding, the value for 'fileencodings'
 now includes "default" before "latin1".  This means that for files with 8-bit
@@ -105,10 +109,6 @@ The Dictionary is NOT IMPLEMENTED YET!
 The |string()| function can be used to get a string representation of a
 variable.  Works for Numbers, Strings and composites of them.  Then |eval()|
 can be used to turn the string back into the variable value.
-
-The |sharp-string| has been added as a convenient way to put an expression in
-a string.  Examples: >
-	:let l = filter(mylist, # & =~ '^\A'#)
 
 
 KDE support						*new-KDE*
@@ -392,6 +392,8 @@ a bit less dependent on the X11 font management.
 
 When a register is empty it is not stored in the viminfo file.
 
+Removed the tcltags script, it's obsolete.
+
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*
 
@@ -661,5 +663,8 @@ When using ":startinsert" or ":startreplace" when already in Insert mode
 mode. (Peter Winters)
 
 "2daw" didn't work at end of file if the last word is a single character.
+
+Completion for ":next a'<Tab>" put a backslash before single quote, but it was
+not removed when editing a file.  Now halve backslashes in save_patterns().
 
  vim:tw=78:ts=8:ft=help:norl:
