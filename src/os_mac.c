@@ -1301,27 +1301,27 @@ mch_copy_file_attribute(from, to)
     char_u *from;
     char_u *to;
 {
-    FSSpec  frFSSpec;
-    FSSpec  toFSSpec;
-    FInfo   fndrInfo;
-     Str255	name;
-     ResType	type;
-     ResType	sink;
-     Handle	resource;
-     short	idxTypes;
-     short    nbTypes;
-     short	idxResources;
-     short	nbResources;
-     short	ID;
-    short frRFid;
-    short toRFid;
-    short attrs_orig;
-    short attrs_copy;
-    short temp;
+    FSSpec	frFSSpec;
+    FSSpec	toFSSpec;
+    FInfo	fndrInfo;
+    Str255	name;
+    ResType	type;
+    ResType	sink;
+    Handle	resource;
+    short	idxTypes;
+    short	nbTypes;
+    short	idxResources;
+    short	nbResources;
+    short	ID;
+    short	frRFid;
+    short	toRFid;
+    short	attrs_orig;
+    short	attrs_copy;
+    short	temp;
 
     /* TODO: Handle error */
-    (void) GetFSSpecFromPath (from, &frFSSpec);
-    (void) GetFSSpecFromPath (to  , &toFSSpec);
+    (void)GetFSSpecFromPath(from, &frFSSpec);
+    (void)GetFSSpecFromPath(to  , &toFSSpec);
 
     /* Copy resource fork */
     temp = 0;
@@ -1332,51 +1332,51 @@ mch_copy_file_attribute(from, to)
      if (frRFid != -1)
      {
 	 FSpCreateResFile(&toFSSpec, 'TEXT', UNKNOWN_CREATOR, 0);
-	 toRFid = FSpOpenResFile (&toFSSpec, fsRdWrPerm);
+	 toRFid = FSpOpenResFile(&toFSSpec, fsRdWrPerm);
 
-	 UseResFile (frRFid);
+	 UseResFile(frRFid);
 
 	 nbTypes = Count1Types();
 
 	 for (idxTypes = 1; idxTypes <= nbTypes; idxTypes++)
 	 {
-	   Get1IndType (&type, idxTypes);
-	   nbResources = Count1Resources(type);
+	     Get1IndType(&type, idxTypes);
+	     nbResources = Count1Resources(type);
 
-	   for (idxResources = 1; idxResources <= nbResources; idxResources++)
-	   {
-	     attrs_orig = 0; /* in case GetRes fails */
-	     attrs_copy = 0; /* in case GetRes fails */
-	     resource = Get1IndResource(type, idxResources);
-	     GetResInfo (resource, &ID, &sink, name);
-	     HLock (resource);
-	     attrs_orig = GetResAttrs (resource);
-	     DetachResource (resource);
+	     for (idxResources = 1; idxResources <= nbResources; idxResources++)
+	     {
+		 attrs_orig = 0; /* in case GetRes fails */
+		 attrs_copy = 0; /* in case GetRes fails */
+		 resource = Get1IndResource(type, idxResources);
+		 GetResInfo(resource, &ID, &sink, name);
+		 HLock(resource);
+		 attrs_orig = GetResAttrs(resource);
+		 DetachResource(resource);
 
 
-	     UseResFile (toRFid);
-	     AddResource (resource, type, ID, name);
-	     attrs_copy = GetResAttrs (resource);
-	     attrs_copy = (attrs_copy & 0x2) | (attrs_orig & 0xFD);
-	     SetResAttrs (resource, attrs_copy);
-	     WriteResource (resource);
-	     UpdateResFile (toRFid);
+		 UseResFile(toRFid);
+		 AddResource(resource, type, ID, name);
+		 attrs_copy = GetResAttrs(resource);
+		 attrs_copy = (attrs_copy & 0x2) | (attrs_orig & 0xFD);
+		 SetResAttrs(resource, attrs_copy);
+		 WriteResource(resource);
+		 UpdateResFile(toRFid);
 
-	     temp = GetResAttrs (resource);
+		 temp = GetResAttrs(resource);
 
-	     /*SetResAttrs (resource, 0);*/
-	     HUnlock(resource);
-	     ReleaseResource (resource);
-	     UseResFile (frRFid);
+		 /*SetResAttrs (resource, 0);*/
+		 HUnlock(resource);
+		 ReleaseResource(resource);
+		 UseResFile(frRFid);
 	     }
 	 }
-	CloseResFile (toRFid);
-	CloseResFile (frRFid);
-    }
+	 CloseResFile(toRFid);
+	 CloseResFile(frRFid);
+     }
 #endif
     /* Copy Finder Info */
-    (void) FSpGetFInfo (&frFSSpec, &fndrInfo);
-    (void) FSpSetFInfo (&toFSSpec, &fndrInfo);
+    (void)FSpGetFInfo(&frFSSpec, &fndrInfo);
+    (void)FSpSetFInfo(&toFSSpec, &fndrInfo);
 
     return (temp == attrs_copy);
 }
@@ -1386,13 +1386,13 @@ mch_has_resource_fork (file)
     char_u *file;
 {
     FSSpec  fileFSSpec;
-    short fileRFid;
+    short   fileRFid;
 
     /* TODO: Handle error */
-    (void) GetFSSpecFromPath (file, &fileFSSpec);
-    fileRFid = FSpOpenResFile (&fileFSSpec, fsCurPerm);
+    (void)GetFSSpecFromPath(file, &fileFSSpec);
+    fileRFid = FSpOpenResFile(&fileFSSpec, fsCurPerm);
     if (fileRFid != -1)
-	CloseResFile (fileRFid);
+	CloseResFile(fileRFid);
 
     return (fileRFid != -1);
 }

@@ -3738,6 +3738,7 @@ do_sub(eap)
 	    unsigned	len, needed_len;
 	    long	nmatch_tl = 0;	/* nr of lines matched below lnum */
 	    int		do_again;	/* do it again after joining lines */
+	    int		skip_match = FALSE;
 
 	    /*
 	     * The new text is build up step by step, to avoid too much
@@ -3822,7 +3823,12 @@ do_sub(eap)
 			&& regmatch.endpos[0].lnum == 0
 			&& matchcol == regmatch.endpos[0].col)
 		{
-		    ++matchcol; /* search for a match at next column */
+		    if (sub_firstline[matchcol] == NUL)
+			/* We already were at the end of the line.  Don't look
+			 * for a match in this line again. */
+			skip_match = TRUE;
+		    else
+			++matchcol; /* search for a match at next column */
 		    goto skip;
 		}
 
@@ -4114,9 +4120,12 @@ skip:
 		/* We already know that we did the last subst when we are at
 		 * the end of the line, except that a pattern like
 		 * "bar\|\nfoo" may match at the NUL. */
-		lastone = ((sub_firstline[matchcol] == NUL && nmatch <= 1
-					   && !re_multiline(regmatch.regprog))
-			     || got_int || got_quit || !(do_all || do_again));
+		lastone = (skip_match
+			|| got_int
+			|| got_quit
+			|| !(do_all || do_again)
+			|| (sub_firstline[matchcol] == NUL && nmatch <= 1
+					 && !re_multiline(regmatch.regprog)));
 		nmatch = -1;
 
 		/*

@@ -370,6 +370,7 @@ static void f_substitute __ARGS((VAR argvars, VAR retvar));
 static void f_tempname __ARGS((VAR argvars, VAR retvar));
 static void f_tolower __ARGS((VAR argvars, VAR retvar));
 static void f_toupper __ARGS((VAR argvars, VAR retvar));
+static void f_tr __ARGS((VAR argvars, VAR retvar));
 static void f_type __ARGS((VAR argvars, VAR retvar));
 static void f_virtcol __ARGS((VAR argvars, VAR retvar));
 static void f_visualmode __ARGS((VAR argvars, VAR retvar));
@@ -2923,6 +2924,7 @@ static struct fst
     {"tempname",	0, 0, f_tempname},
     {"tolower",		1, 1, f_tolower},
     {"toupper",		1, 1, f_toupper},
+    {"tr",		3, 3, f_tr},
     {"type",		1, 1, f_type},
     {"virtcol",		1, 1, f_virtcol},
     {"visualmode",	0, 1, f_visualmode},
@@ -7435,6 +7437,122 @@ f_toupper(argvars, retvar)
 		p++;
 	    }
 	}
+}
+
+/*
+ * "tr(string, fromstr, tostr)" function
+ */
+    static void
+f_tr(argvars, retvar)
+    VAR		argvars;
+    VAR		retvar;
+{
+    char_u	*instr;
+    char_u	*fromstr;
+    char_u	*tostr;
+    char_u	*p;
+#ifdef FEAT_MBYTE
+    int	        inlen;
+    int	        fromlen;
+    int	        tolen;
+    int		idx;
+    char_u	*cpstr;
+    int		cplen;
+    int		first = TRUE;
+#endif
+    char_u	buf[NUMBUFLEN];
+    char_u	buf2[NUMBUFLEN];
+    garray_T	ga;
+
+    instr = get_var_string(&argvars[0]);
+    fromstr = get_var_string_buf(&argvars[1], buf);
+    tostr = get_var_string_buf(&argvars[2], buf2);
+
+    /* Default return value: empty string. */
+    retvar->var_type = VAR_STRING;
+    retvar->var_val.var_string = NULL;
+    ga_init2(&ga, (int)sizeof(char), 80);
+
+#ifdef FEAT_MBYTE
+    if (!has_mbyte)
+#endif
+	/* not multi-byte: fromstr and tostr must be the same length */
+	if (STRLEN(fromstr) != STRLEN(tostr))
+	{
+error:
+	    EMSG2(_(e_invarg2), fromstr);
+	    ga_clear(&ga);
+	    return;
+	}
+
+    /* fromstr and tostr have to contain the same number of chars */
+    while (*instr != NUL)
+    {
+#ifdef FEAT_MBYTE
+	if (has_mbyte)
+	{
+	    inlen = mb_ptr2len_check(instr);
+	    cpstr = instr;
+	    cplen = inlen;
+	    idx = 0;
+	    for (p = fromstr; *p != NUL; p += fromlen)
+	    {
+		fromlen = mb_ptr2len_check(p);
+		if (fromlen == inlen && STRNCMP(instr, p, inlen) == 0)
+		{
+		    for (p = tostr; *p != NUL; p += tolen)
+		    {
+			tolen = mb_ptr2len_check(p);
+			if (idx-- == 0)
+			{
+			    cplen = tolen;
+			    cpstr = p;
+			    break;
+			}
+		    }
+		    if (*p == NUL)	/* tostr is shorter than fromstr */
+			goto error;
+		    break;
+		}
+		++idx;
+	    }
+
+	    if (first && cpstr == instr)
+	    {
+		/* Check that fromstr and tostr have the same number of
+		 * (multi-byte) characters.  Done only once when a character
+		 * of instr doesn't appear in fromstr. */
+		first = FALSE;
+		for (p = tostr; *p != NUL; p += tolen)
+		{
+		    tolen = mb_ptr2len_check(p);
+		    --idx;
+		}
+		if (idx != 0)
+		    goto error;
+	    }
+
+	    ga_grow(&ga, cplen);
+	    mch_memmove(ga.ga_data + ga.ga_len, cpstr, (size_t)cplen);
+	    ga.ga_len += cplen;
+	    ga.ga_room -= cplen;
+
+	    instr += inlen;
+	}
+	else
+#endif
+	{
+	    /* When not using multi-byte chars we can do it faster. */
+	    p = vim_strchr(fromstr, *instr);
+	    if (p != NULL)
+		ga_append(&ga, tostr[p - fromstr]);
+	    else
+		ga_append(&ga, *instr);
+	    ++instr;
+	}
+    }
+
+    retvar->var_val.var_string = ga.ga_data;
 }
 
 /*

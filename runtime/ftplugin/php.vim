@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	php
 " Maintainer:	Dan Sharp <dwsharp at hotmail dot com>
-" Last Changed: 2003 Sep 29
+" Last Changed: 2004 Jul 08
 " URL:		http://mywebpage.netscape.com/sharppeople/vim/ftplugin
 
 if exists("b:did_ftplugin") | finish | endif
@@ -13,7 +13,7 @@ set cpo-=C
 
 " Define some defaults in case the included ftplugins don't set them.
 let s:undo_ftplugin = ""
-let s:browsefilter = "HTML Files (*.html, *.htm)\t*.htm*\n" .
+let s:browsefilter = "HTML Files (*.html, *.htm)\t*.html;*.htm\n" .
 	    \	     "All Files (*.*)\t*.*\n"
 let s:match_words = ""
 

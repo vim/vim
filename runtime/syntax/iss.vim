@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Inno Setup File (iss file) and My InnoSetup extension
 " Maintainer:	Dominique Stéphan (dominique@mggen.com)
-" Last change:	2003 May 11
+" Last change:	2004 July 5
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -25,16 +25,18 @@ syn match  issURL		"http[s]\=:\/\/.*$"
 
 " syn match  issName		"[^: ]\+:"
 syn match  issName		"Name:"
-syn match  issName		"MinVersion:\|OnlyBelowVersion:"
+syn match  issName		"MinVersion:\|OnlyBelowVersion:\|Languages:"
 syn match  issName		"Source:\|DestDir:\|DestName:\|CopyMode:"
-syn match  issName		"Attribs:\|FontInstall:\|Flags:"
-syn match  issName		"FileName:\|Parameters:\|WorkingDir:\|Comment:"
+syn match  issName		"Attribs:\|Permissions:\|FontInstall:\|Flags:"
+syn match  issName		"FileName:\|Parameters:\|WorkingDir:\|HotKey:\|Comment:"
 syn match  issName		"IconFilename:\|IconIndex:"
 syn match  issName		"Section:\|Key:\|String:"
 syn match  issName		"Root:\|SubKey:\|ValueType:\|ValueName:\|ValueData:"
 syn match  issName		"RunOnceId:"
 syn match  issName		"Type:"
-syn match  issName		"Components:\|Description:\|GroupDescription\|Types:"
+syn match  issName		"Components:\|Description:\|GroupDescription:\|Types:\|ExtraDiskSpaceRequired:"
+syn match  issName              "StatusMsg:\|RunOnceId:\|Tasks:"
+syn match  issName              "MessagesFile:\|LicenseFile:\|InfoBeforeFile:\|InfoAfterFile:"
 
 syn match  issComment		"^;.*$"
 
@@ -48,15 +50,19 @@ syn region issString	start=+"+  end=+"+ contains=issFolder
 syn keyword issDirsFlags deleteafterinstall uninsalwaysuninstall uninsneveruninstall
 
 " [Files]
-syn keyword issFilesCopyMode normal onlyifdoesntexist alwaysoverwrite alwaysskipifsameorolder
+syn keyword issFilesCopyMode normal onlyifdoesntexist alwaysoverwrite alwaysskipifsameorolder dontcopy
 syn keyword issFilesAttribs readonly hidden system
-syn keyword issFilesFlags comparetimestampalso confirmoverwrite deleteafterinstall
-syn keyword issFilesFlags external fontisnttruetype isreadme overwritereadonly
-syn keyword issFilesFlags regserver regtypelib restartreplace
-syn keyword issFilesFlags sharedfile skipifsourcedoesntexist uninsneveruninstall
+syn keyword issFilesPermissions full modify readexec
+syn keyword issFilesFlags allowunsafefiles comparetimestampalso confirmoverwrite deleteafterinstall
+syn keyword issFilesFlags dontcopy dontverifychecksum external fontisnttruetype ignoreversion 
+syn keyword issFilesFlags isreadme onlyifdestfileexists onlyifdoesntexist overwritereadonly 
+syn keyword issFilesFlags promptifolder recursesubdirs regserver regtypelib restartreplace
+syn keyword issFilesFlags sharedfile skipifsourcedoesntexist sortfilesbyextension touch 
+syn keyword issFilesFlags uninsremovereadonly uninsrestartdelete uninsneveruninstall
 
 " [Icons]
-syn keyword issIconsFlags createonlyiffileexists runminimized uninsneveruninstall useapppaths
+syn keyword issIconsFlags closeonexit createonlyiffileexists dontcloseonexit 
+syn keyword issIconsFlags runmaximized runminimized uninsneveruninstall useapppaths
 
 " [INI]
 syn keyword issINIFlags createkeyifdoesntexist uninsdeleteentry uninsdeletesection uninsdeletesectionifempty
@@ -64,21 +70,26 @@ syn keyword issINIFlags createkeyifdoesntexist uninsdeleteentry uninsdeletesecti
 " [Registry]
 syn keyword issRegRootKey   HKCR HKCU HKLM HKU HKCC
 syn keyword issRegValueType none string expandsz multisz dword binary
-syn keyword issRegFlags createvalueifdoesntexist deletekey deletevalue preservestringtype
-syn keyword issRegFlags uninsclearvalue uninsdeletekey uninsdeletekeyifempty uninsdeletevalue
+syn keyword issRegFlags createvalueifdoesntexist deletekey deletevalue dontcreatekey 
+syn keyword issRegFlags preservestringtype noerror uninsclearvalue 
+syn keyword issRegFlags uninsdeletekey uninsdeletekeyifempty uninsdeletevalue
 
 " [Run] and [UninstallRun]
-syn keyword issRunFlags nowait shellexec skipifdoesntexist runminimized waituntilidle
-syn keyword issRunFlags postinstall unchecked showcheckbox
+syn keyword issRunFlags hidewizard nowait postinstall runhidden runmaximized
+syn keyword issRunFlags runminimized shellexec skipifdoesntexist skipifnotsilent 
+syn keyword issRunFlags skipifsilent unchecked waituntilidle
 
 " [Types]
 syn keyword issTypesFlags iscustom
 
 " [Components]
-syn keyword issComponentsFlags fixed restart disablenouninstallwarning
+syn keyword issComponentsFlags dontinheritcheck exclusive fixed restart disablenouninstallwarning
 
 " [UninstallDelete] and [InstallDelete]
 syn keyword issInstallDeleteType files filesandordirs dirifempty
+
+" [Tasks]
+syn keyword issTasksFlags checkedonce dontinheritcheck exclusive restart unchecked 
 
 
 " Define the default highlighting.
@@ -105,6 +116,7 @@ if version >= 508 || !exists("did_iss_syntax_inits")
    HiLink issDirsFlags		Keyword
    HiLink issFilesCopyMode	Keyword
    HiLink issFilesAttribs	Keyword
+   HiLink issFilesPermissions	Keyword
    HiLink issFilesFlags		Keyword
    HiLink issIconsFlags		Keyword
    HiLink issINIFlags		Keyword
@@ -115,6 +127,7 @@ if version >= 508 || !exists("did_iss_syntax_inits")
    HiLink issTypesFlags		Keyword
    HiLink issComponentsFlags	Keyword
    HiLink issInstallDeleteType	Keyword
+   HiLink issTasksFlags 	Keyword
 
 
   delcommand HiLink

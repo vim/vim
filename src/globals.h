@@ -1102,6 +1102,30 @@ EXTERN option_table_T printer_opts[OPT_PRINT_NUM_OPTIONS]
 # define PRT_UNIT_MM	2
 # define PRT_UNIT_POINT	3
 # define PRT_UNIT_NAMES {"pc", "in", "mm", "pt"}
+
+# ifdef FEAT_MBYTE
+# define OPT_MBFONT_USECOURIER  0
+# define OPT_MBFONT_ASCII       1
+# define OPT_MBFONT_REGULAR     2
+# define OPT_MBFONT_BOLD        3
+# define OPT_MBFONT_OBLIQUE     4
+# define OPT_MBFONT_BOLDOBLIQUE 5
+# define OPT_MBFONT_NUM_OPTIONS 6
+#
+EXTERN option_table_T mbfont_opts[OPT_MBFONT_NUM_OPTIONS]
+#  ifdef DO_INIT
+ =
+{
+    {"c",	FALSE, 0, NULL, 0, FALSE},
+    {"a",	FALSE, 0, NULL, 0, FALSE},
+    {"r",	FALSE, 0, NULL, 0, FALSE},
+    {"b",	FALSE, 0, NULL, 0, FALSE},
+    {"i",	FALSE, 0, NULL, 0, FALSE},
+    {"o",	FALSE, 0, NULL, 0, FALSE},
+}
+#  endif
+;
+# endif
 #endif
 
 #ifdef FEAT_XCLIPBOARD

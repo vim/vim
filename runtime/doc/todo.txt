@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Jul 05
+*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Jul 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,78 +30,21 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+:syn sync ccomment asdf gives a warning without a line number.
+
+@: doesn't work if cmdline has a ^M, requires using ^V. (Tim Chase)
+
+Mac: Compiling --enable-gui=athena doesn't work.  Try to fix without disabling
+Carbon.  Otherwise adjust configure to disable darwin. (raf)
+
+Mac: "make install" doesn't install.
+
+Make aap build script work again.
+
+
 For version 7.0:
 -   Include many PATCHES:
-    8   ":hardcopy":
-	- support printing multi-byte characters.  Patch from Motonobu
-	  Ichimura.  New (better) patch from Mike Williams (2004 Jan 20)
-	  Updated patch: http://www.eandem.co.uk/mrw/vim/special/index.html
-    7   Add patch from Wall for this one ( ~/Mail/oldmail/wall/in.00019 ):
-	'flipcase' variable: upper/lowercase pairs.
-	Insert comma's between pairs and allow a range, make it look like
-	'isfname'.  E.g. ":set flipcase=a-zA-Z,xX,23-33:143-153".  The colon to
-	separate the from and to part is optional.
-	Resp: no time now.
-    8   Add GTK 2.3 file dialog support.  Patch by Grahame Bowland, 2004 Mar 15,
-	but it doesn't use "initdir" or "dflt". (will update patch)
-    8   Add ":n" to fnamemodify(): normalize path, remove "../" when possible.
-	Aric Blumer has a patch for this.
-	He will update the patch for 6.3.
-    8   Add buffer-local autocommands?  Reduces overhead for autocommands that
-	trigger often (inserting a character, switching mode).
-	    :au Event <buffer> do-something
-	E.g.:
-	    :au BufEnter <buffer> menu enable ...
-	    :au BufLeave <buffer> menu disable ...
-	Patch from Yakov Lerner, including test (2004 Jan 7).
-        He'll send updated patch.
-    Autocommands:
-	VimResized	    - When the Vim window has been resized (SIGWINCH)
-	  patch from Yakov Lerner, 2003 July 24.
-	  He'll write documentation and send updated patch.
-    7   Completion of network shares, patch by Yasuhiro Matsumoto.
-	Update 2004 Jun 17.
-	How does this work?  Missing comments.
-    gettext()		Translate a message.  (Patch from Yasuhiro Matsumoto)
-			Update 2004 Jun 17
-			Missing docs.  Search in 'runtimepath'?
-			How to get the messages into the .po files?
-    8   Make it possible to delete marks.  Charles Campbell has a patch that
-	does this with the markclear() function (2004 Jan 9).
-	And the ":delmark" command (2004 Feb 9)
-	http://mysite.verizon.net/astronaut/vim/index.html#Patch
-	~/tmp/ptch.delmark.bz2
-	~/tmp/ptch.markclear
-	Implement setmark(markname, lnum, col [, filename]) instead?
-    --- responses above --
-    7   Make "5dd" on last-but-one-line not delete anything (Vi compatible).
-	Add flag in 'cpoptions' for this.  When not present, "2dd" in the last
-	line should delete the last line.  Patch from greenx 2002 Apr 11.
-    8   Accelerators don't work in a dialog.  Include patch from Martin Dalecki
-	(Jan 3, tested by David Harrison).  Should work with Alt-o then.
-    7   Use accelerators for the Motif file selection dialog.  Patch from
-	Martin Dalecki 2002 Jan 11.
-    8   Add a few more command names to the menus.  Patch from Jiri Brezina
-	(28 feb 2002).
-    7   ATTENTION dialog choices are more logical when "Delete it' appears
-	before "Quit".  Patch by Robert Webb, 2004 May 3.
-    -   Include flipcase patch: ~/vim/patches/wall.flipcase2 ?  Make it work
-	for multi-byte characters.
-    -   Win32: add options to print dialog.  Patch from Vipin Aravind.
-    -   Patch to add highlighting for whitespace. (Tom Schumm, 2003 Jul 5)
-	use the patch that keeps using HLF_8 if HLF_WS has not
-	been given values.
-	Add section in help files for these highlight groups?
-    8   "fg" and "bg" don't work in an xterm.  Get default colors from xterm
-	with an ESC sequence.  Ideas in: ~/vim/patches/vikas.xtermcolors .
-    7   Add "DefaultFG" and "DefaultBG" for the colors of the menu. (Martin
-	Dalecki has a patch for Motif)
-    -   Add possibility to highlight specific columns (for Fortran).  Or put a
-	line in between columns (e.g. for 'textwidth').
-	Patch to add 'hlcolumn' from Vit Stradal, 2004 May 20.
     8   Add functions:
-	tr(expr, from, to)	translate chars (Patch from Ron Aaron, Apr 8
-				2004)
 	strrep()		Repeat a string (patch from Christophe Poucet,
 				2003 Sep 12, also contains XX)
 				Alt: repeat(expr, count) werkt ook voor lists.
@@ -140,7 +83,75 @@ For version 7.0:
 	search()		Add optional offset argument.
 				Add 'n' flag.  (patch from Nikolai Weibull
 				2003 Jan 13)
-	---
+    8   Make it possible to delete marks.  Charles Campbell has a patch that
+	does this with the markclear() function (2004 Jan 9).
+	And the ":delmark" command (2004 Feb 9)
+	http://mysite.verizon.net/astronaut/vim/index.html#Patch
+	~/tmp/ptch.delmark.bz2
+	~/tmp/ptch.markclear
+	Implement setmark(markname, lnum [, col [, filename]]) instead?
+	When "lnum" is zero delete the mark.
+	When "filename" has no wildcards and there is no matching buffer, add
+	the buffer (unlisted).
+    Patch for \xnn (Ciaran McCreesh)  2004 Jul 7
+    --- awaiting updated patch ---
+    7   Add patch from Wall for this one ( ~/Mail/oldmail/wall/in.00019 ):
+	'flipcase' variable: upper/lowercase pairs.
+	Insert comma's between pairs and allow a range, make it look like
+	'isfname'.  E.g. ":set flipcase=a-zA-Z,xX,23-33:143-153".  The colon to
+	separate the from and to part is optional.
+	Resp: no time now.
+    8   Add GTK 2.3 file dialog support.  Patch by Grahame Bowland, 2004 Mar 15,
+	but it doesn't use "initdir" or "dflt". (will update patch)
+    8   Add ":n" to fnamemodify(): normalize path, remove "../" when possible.
+	Aric Blumer has a patch for this.
+	He will update the patch for 6.3.
+    8   Add buffer-local autocommands?  Reduces overhead for autocommands that
+	trigger often (inserting a character, switching mode).
+	    :au Event <buffer> do-something
+	E.g.:
+	    :au BufEnter <buffer> menu enable ...
+	    :au BufLeave <buffer> menu disable ...
+	Patch from Yakov Lerner, including test (2004 Jan 7).
+        He'll send updated patch.
+    Autocommands:
+	VimResized	    - When the Vim window has been resized (SIGWINCH)
+	  patch from Yakov Lerner, 2003 July 24.
+	  He'll write documentation and send updated patch.
+    7   Completion of network shares, patch by Yasuhiro Matsumoto.
+	Update 2004 Jun 17.
+	How does this work?  Missing comments.
+    gettext()		Translate a message.  (Patch from Yasuhiro Matsumoto)
+			Update 2004 Jun 17
+			Missing docs.  Search in 'runtimepath'?
+			How to get the messages into the .po files?
+    --- did not respond (yet) --
+    7   Make "5dd" on last-but-one-line not delete anything (Vi compatible).
+	Add flag in 'cpoptions' for this.  When not present, "2dd" in the last
+	line should delete the last line.  Patch from greenx 2002 Apr 11.
+    8   Accelerators don't work in a dialog.  Include patch from Martin Dalecki
+	(Jan 3, tested by David Harrison).  Should work with Alt-o then.
+    7   Use accelerators for the Motif file selection dialog.  Patch from
+	Martin Dalecki 2002 Jan 11.
+    8   Add a few more command names to the menus.  Patch from Jiri Brezina
+	(28 feb 2002).
+    7   ATTENTION dialog choices are more logical when "Delete it' appears
+	before "Quit".  Patch by Robert Webb, 2004 May 3.
+    -   Include flipcase patch: ~/vim/patches/wall.flipcase2 ?  Make it work
+	for multi-byte characters.
+    -   Win32: add options to print dialog.  Patch from Vipin Aravind.
+    -   Patch to add highlighting for whitespace. (Tom Schumm, 2003 Jul 5)
+	use the patch that keeps using HLF_8 if HLF_WS has not
+	been given values.
+	Add section in help files for these highlight groups?
+    8   "fg" and "bg" don't work in an xterm.  Get default colors from xterm
+	with an ESC sequence.  Ideas in: ~/vim/patches/vikas.xtermcolors .
+    7   Add "DefaultFG" and "DefaultBG" for the colors of the menu. (Martin
+	Dalecki has a patch for Motif)
+    -   Add possibility to highlight specific columns (for Fortran).  Or put a
+	line in between columns (e.g. for 'textwidth').
+	Patch to add 'hlcolumn' from Vit Stradal, 2004 May 20.
+    8   Add functions:
 	confirm()		add "flags" argument, with 'v' for vertical
 				layout and 'c' for console dialog. (Haegg)
 				Flemming Madsen has a patch for the 'c' flag

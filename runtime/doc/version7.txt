@@ -79,6 +79,13 @@ The MzScheme interpreter is supported. |MzScheme|
 The |:mzscheme| command can be used to execute MzScheme commands.
 The |:mzfile| command can be used to execute an MzScheme script file.
 
+Printing multi-byte text				*new-print-multi-byte*
+------------------
+
+The |:hardcopy| command now supports printing multi-byte characters.
+The 'printmbcharset' and 'printmbfont' options are used for this.
+Also see |postscript-cjk-printing|.  (Mike Williams)
+
 
 Various new items					*new-items-7*
 -----------------
@@ -98,27 +105,31 @@ Options: ~
 'numberwidth'		Minimal width of the space used for the 'number'
 			option. (Emmanuel Renieris)
 'mzquantum'		Time in msec to schedule MzScheme threads.
+'printmbcharset'	CJK character set to be used for :hardcopy
+'printmbfont'		font names to be used for CJK output of :hardcopy
 
 
 Ex commands: ~
 
 Win32: The ":winpos" command now also works in the console. (Vipin Aravind)
 
-:startreplace		Start Replace mode. (Charles Campbell)
+|:startreplace|		Start Replace mode. (Charles Campbell)
 
-:0file			Removes the name of the buffer. (Charles Campbell)
+|:0file|		Removes the name of the buffer. (Charles Campbell)
 
 
 New functions: ~
 
+tr(expr, from, to)	|tr()| Translate characters. (Ron Aaron)
+
 
 New autocommand events: ~
 
-InsertEnter		starting Insert or Replace mode
-InsertChange		going from Insert to Replace mode or back
-InsertLeave		leaving Insert or Replace mode
+|InsertEnter|		starting Insert or Replace mode
+|InsertChange|		going from Insert to Replace mode or back
+|InsertLeave|		leaving Insert or Replace mode
 
-ColorScheme		after loading a color scheme
+|ColorScheme|		after loading a color scheme
 
 
 New Syntax/Indent/FTplugin files: ~
@@ -142,6 +153,8 @@ Deleting and renaming files is possible.  (Charles Campbell)
 IMPROVEMENTS						*improvements-7*
 
 ":helpgrep" accepts a language specifier after the pattern: "pat@it".
+
+Move the help for printing to a separate help file.  It's quite a lot now.
 
 ":breakadd here" and ":breakdel here" can be used to set or delete a
 breakpoint at the cursor.

@@ -1678,6 +1678,24 @@ static struct vimoption
 			    {(char_u *)NULL, (char_u *)0L}
 #endif
 			    },
+   {"printmbcharset", "pmbcs",  P_STRING|P_VI_DEF,
+#if defined(FEAT_POSTSCRIPT) && defined(FEAT_MBYTE)
+			    (char_u *)&p_pmcs, PV_NONE,
+			    {(char_u *)"", (char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)NULL, (char_u *)0L}
+#endif
+			    },
+    {"printmbfont", "pmbfn",  P_STRING|P_VI_DEF,
+#if defined(FEAT_POSTSCRIPT) && defined(FEAT_MBYTE)
+			    (char_u *)&p_pmfn, PV_NONE,
+			    {(char_u *)"", (char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)NULL, (char_u *)0L}
+#endif
+			    },
     {"printoptions", "popt", P_STRING|P_VI_DEF|P_COMMA|P_NODUP,
 #ifdef FEAT_PRINTER
 			    (char_u *)&p_popt, PV_NONE,
@@ -5283,6 +5301,11 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 #ifdef FEAT_PRINTER
     else if (varp == &p_popt)
 	errmsg = parse_list_options(p_popt, printer_opts, OPT_PRINT_NUM_OPTIONS);
+
+# ifdef FEAT_MBYTE
+    else if (varp == &p_pmfn)
+	errmsg = parse_list_options(p_pmfn, mbfont_opts, OPT_MBFONT_NUM_OPTIONS);
+# endif
 #endif
 
 #ifdef FEAT_LANGMAP

@@ -1,7 +1,5 @@
+VIMTUTOR(1)                                                        VIMTUTOR(1)
 
-
-
-VIMTUTOR(1)                                           VIMTUTOR(1)
 
 
 NAME
@@ -11,18 +9,17 @@ SYNOPSIS
        vimtutor [language]
 
 DESCRIPTION
-       Vimtutor  starts  the Vim tutor.  It copies the tutor file
-       first, so that it can be  modified  without  changing  the
-       original file.
+       Vimtutor starts the Vim tutor.  It copies the tutor file first, so that
+       it can be modified without changing the original file.
 
-       The Vimtutor is useful for people that want to learn their
-       first Vim commands.
+       The Vimtutor is useful for people that want to learn  their  first  Vim
+       commands.
 
-       The optional [language] argument is the two-letter name of
-       a language, like "it" or "es".  If the [language] argument
-       is missing, the language of the  current  locale  will  be
-       used.   If  a tutor in this language is available, it will
-       be used.  Otherwise the English version will be used.
+       The  optional [language] argument is the two-letter name of a language,
+       like "it" or "es".  If the [language] argument is missing, the language
+       of  the  current  locale  will be used.  If a tutor in this language is
+       available, it will be used.  Otherwise  the  English  version  will  be
+       used.
 
        Vim is always started in Vi compatible mode.
 
@@ -31,36 +28,19 @@ FILES
                       The Vimtutor text file(s).
 
        /usr/local/lib/vim/tutor/tutor.vim
-                      The Vim script used to  copy  the  Vimtutor
-                      text file.
+                      The Vim script used to copy the Vimtutor text file.
 
 AUTHOR
-       The  Vimtutor  was originally written for Vi by Michael C.
-       Pierce and Robert K. Ware, Colorado School of Mines  using
-       ideas  supplied  by  Charles Smith, Colorado State Univer-
-       sity.  E-mail: bware@mines.colorado.edu.
-       It was modified for Vim by Bram Moolenaar.  For the  names
-       of the translators see the tutor files.
+       The  Vimtutor  was  originally  written for Vi by Michael C. Pierce and
+       Robert K. Ware, Colorado  School  of  Mines  using  ideas  supplied  by
+       Charles  Smith,  Colorado  State  University.  E-mail: bware@mines.col-
+       orado.edu.
+       It was modified for Vim by Bram Moolenaar.  For the names of the trans-
+       lators see the tutor files.
 
 SEE ALSO
        vim(1)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                           2001 April 2                         1
-
-
+                                 2001 April 2                      VIMTUTOR(1)

@@ -1,4 +1,4 @@
-*mbyte.txt*     For Vim version 7.0aa.  Last change: 2004 Jun 16
+*mbyte.txt*     For Vim version 7.0aa.  Last change: 2004 Jul 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar et al.
@@ -742,6 +742,8 @@ is suitable for complex input, such as CJK.
   Traditional and Simplified Chinese characters.  And it can accept other
   locale if you make a correct input table.  Xcin can be found at:
   http://xcin.linux.org.tw/
+  Others are scim: http://scim.freedesktop.org/ and fcitx:
+  http://www.fcitx.org/ 
 
 - Conversion Server
 							*conversion-server*

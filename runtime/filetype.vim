@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2004 Jul 01
+" Last Change:	2004 Jul 06
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -205,13 +205,20 @@ endfun
 au BufNewFile,BufRead *.vbs,*.dsm,*.ctl		setf vb
 
 " Batch file for MSDOS.
-au BufNewFile,BufRead *.bat,*.btm,*.sys		setf dosbatch
+au BufNewFile,BufRead *.bat,*.sys		setf dosbatch
 " *.cmd is close to a Batch file, but on OS/2 Rexx files also use *.cmd.
 au BufNewFile,BufRead *.cmd
 	\ if getline(1) =~ '^/\*' | setf rexx | else | setf dosbatch | endif
 
 " Batch file for 4DOS
-au BufNewFile,BufRead *.btm			setf btm
+au BufNewFile,BufRead *.btm			call <SID>FTbtm()
+fun! <SID>FTbtm()
+  if exists("g:dosbatch_syntax_for_btm") && g:dosbatch_syntax_for_btm
+    setf dosbatch
+  else
+    setf btm
+  endif
+endfun
 
 " BC calculator
 au BufNewFile,BufRead *.bc			setf bc

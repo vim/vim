@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.0aa.  Last change: 2004 Jul 01
+*syntax.txt*	For Vim version 7.0aa.  Last change: 2004 Jul 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -812,10 +812,19 @@ is controlled by the variable dosbatch_cmdextversion.  For Windows NT
 this should have the value 1, and for Windows 2000 it should be 2.
 Select the version you want with the following line: >
 
-  :let dosbatch_cmdextversion = 1
+   :let dosbatch_cmdextversion = 1
 
 If this variable is not defined it defaults to a value of 2 to support
 Windows 2000.
+
+A second option covers whether *.btm files should be detected as type
+"dosbatch" (MS-DOS batch files) or type "btm" (4DOS batch files). The latter
+is used by default. You may select the former with the following line: >
+
+   :let g:dosbatch_syntax_for_btm = 1
+
+If this variable is undefined or zero, btm syntax is selected.
+
 
 
 DTD						*dtd.vim* *dtd-syntax*

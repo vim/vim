@@ -451,6 +451,10 @@ EXTERN char_u	*p_pdev;	/* 'printdevice' */
 # ifdef FEAT_POSTSCRIPT
 EXTERN char_u	*p_penc;	/* 'printencoding' */
 EXTERN char_u	*p_pexpr;	/* 'printexpr' */
+#   ifdef FEAT_MBYTE
+EXTERN char_u	*p_pmfn;	/* 'printmbfont' */
+EXTERN char_u	*p_pmcs;	/* 'printmbcharset' */
+#   endif
 # endif
 EXTERN char_u	*p_pfn;		/* 'printfont' */
 EXTERN char_u	*p_popt;	/* 'printoptions' */

@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	config
 " Maintainer:	Dan Sharp <dwsharp at hotmail dot com>
-" Last Changed: 2003 Sep 29
+" Last Changed: 2004 Jul 08
 " URL:		http://mywebpage.netscape.com/sharppeople/vim/ftplugin
 
 if exists("b:did_ftplugin") | finish | endif
@@ -30,7 +30,7 @@ endif
 
 " Change the :browse e filter to primarily show configure-related files.
 if has("gui_win32")
-    let  b:browsefilter="Configure Scripts (configure.*)\tconfigure.*\n" .
+    let  b:browsefilter="Configure Scripts (configure.*, config.*)\tconfigure*;config.*\n" .
 		\	s:browsefilter
 endif
 

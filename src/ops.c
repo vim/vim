@@ -94,13 +94,10 @@ struct block_def
 static void shift_block __ARGS((oparg_T *oap, int amount));
 static void block_insert __ARGS((oparg_T *oap, char_u *s, int b_insert, struct block_def*bdp));
 #endif
-static void	get_yank_register __ARGS((int regname, int writing));
 static int	stuff_yank __ARGS((int, char_u *));
 static void	put_reedit_in_typebuf __ARGS((void));
 static int	put_in_typebuf __ARGS((char_u *s, int colon));
 static void	stuffescaped __ARGS((char_u *arg, int literally));
-static int	get_spec_reg __ARGS((int regname, char_u **argp, int *allocated, int errmsg));
-static void	cmdline_paste_str __ARGS((char_u *s, int literally));
 #ifdef FEAT_MBYTE
 static void	mb_adjust_opend __ARGS((oparg_T *oap));
 #endif
@@ -820,7 +817,7 @@ valid_yank_reg(regname, writing)
  * If regname is 0 and writing, use register 0
  * If regname is 0 and reading, use previous register
  */
-    static void
+    void
 get_yank_register(regname, writing)
     int	    regname;
     int	    writing;
@@ -864,14 +861,12 @@ get_yank_register(regname, writing)
 	y_previous = y_current;
 }
 
-#ifdef FEAT_CLIPBOARD
+#if defined(FEAT_CLIPBOARD) || defined(PROTO)
 /*
  * When "regname" is a clipboard register, obtain the selection.  If it's not
  * available return zero, otherwise return "regname".
  */
-static int may_get_selection __ARGS((int regname));
-
-    static int
+    int
 may_get_selection(regname)
     int regname;
 {
@@ -1347,7 +1342,7 @@ stuffescaped(arg, literally)
 /*
  * If "regname" is a special register, return a pointer to its value.
  */
-    static int
+    int
 get_spec_reg(regname, argp, allocated, errmsg)
     int		regname;
     char_u	**argp;
@@ -1426,47 +1421,20 @@ get_spec_reg(regname, argp, allocated, errmsg)
 }
 
 /*
- * paste a yank register into the command line.
- * used by CTRL-R command in command-line mode
+ * Paste a yank register into the command line.
+ * Only for non-special registers.
+ * Used by CTRL-R command in command-line mode
  * insert_reg() can't be used here, because special characters from the
  * register contents will be interpreted as commands.
  *
  * return FAIL for failure, OK otherwise
  */
     int
-cmdline_paste(regname, literally)
+cmdline_paste_reg(regname, literally)
     int regname;
     int literally;	/* Insert text literally instead of "as typed" */
 {
     long	i;
-    char_u	*arg;
-    int		allocated;
-
-    /* check for valid regname; also accept special characters for CTRL-R in
-     * the command line */
-    if (regname != Ctrl_F && regname != Ctrl_P && regname != Ctrl_W
-	    && regname != Ctrl_A && !valid_yank_reg(regname, FALSE))
-	return FAIL;
-
-    /* A register containing CTRL-R can cause an endless loop.  Allow using
-     * CTRL-C to break the loop. */
-    line_breakcheck();
-    if (got_int)
-	return FAIL;
-
-#ifdef FEAT_CLIPBOARD
-    regname = may_get_selection(regname);
-#endif
-
-    if (get_spec_reg(regname, &arg, &allocated, TRUE))
-    {
-	if (arg == NULL)
-	    return FAIL;
-	cmdline_paste_str(arg, literally);
-	if (allocated)
-	    vim_free(arg);
-	return OK;
-    }
 
     get_yank_register(regname, FALSE);
     if (y_current->y_array == NULL)
@@ -1487,46 +1455,6 @@ cmdline_paste(regname, literally)
 	    return FAIL;
     }
     return OK;
-}
-
-/*
- * Put a string on the command line.
- * When "literally" is TRUE, insert literally.
- * When "literally" is FALSE, insert as typed, but don't leave the command
- * line.
- */
-    static void
-cmdline_paste_str(s, literally)
-    char_u	*s;
-    int		literally;
-{
-    int		c, cv;
-
-    if (literally)
-	put_on_cmdline(s, -1, TRUE);
-    else
-	while (*s != NUL)
-	{
-	    cv = *s;
-	    if (cv == Ctrl_V && s[1])
-		++s;
-#ifdef FEAT_MBYTE
-	    if (has_mbyte)
-	    {
-		c = mb_ptr2char(s);
-		s += mb_char2len(c);
-	    }
-	    else
-#endif
-		c = *s++;
-	    if (cv == Ctrl_V || c == ESC || c == Ctrl_C || c == CAR || c == NL
-#ifdef UNIX
-		    || c == intr_char
-#endif
-		    || (c == Ctrl_BSL && *s == Ctrl_N))
-		stuffcharReadbuff(Ctrl_V);
-	    stuffcharReadbuff(c);
-	}
 }
 
 #if defined(FEAT_CLIPBOARD) || defined(PROTO)

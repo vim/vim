@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	html
 " Maintainer:	Dan Sharp <dwsharp at hotmail dot com>
-" Last Changed: 2004 May 11
+" Last Changed: 2004 Jul 08
 " URL:		http://mywebpage.netscape.com/sharppeople/vim/ftplugin
 
 if exists("b:did_ftplugin") | finish | endif
@@ -26,7 +26,7 @@ endif
 
 " Change the :browse e filter to primarily show HTML-related files.
 if has("gui_win32")
-    let  b:browsefilter="HTML Files (*.html,*.htm)\t*.htm*\n" .
+    let  b:browsefilter="HTML Files (*.html,*.htm)\t*.htm;*.html\n" .
 		\	"JavaScript Files (*.js)\t*.js\n" .
 		\	"Cascading StyleSheets (*.css)\t*.css\n" .
 		\	"All Files (*.*)\t*.*\n"

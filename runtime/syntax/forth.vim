@@ -1,9 +1,9 @@
 " Vim syntax file
 " Language:    FORTH
 " Maintainer:  Christian V. J. Brüssow <cvjb@cvjb.de>
-" Last Change: Son 22 Jun 2003 20:42:55 CEST
+" Last Change: Di 06 Jul 2004 18:40:33 CEST
 " Filenames:   *.fs,*.ft
-" URL:	       http://www.cvjb.de/comp/vim/forth.vim
+" URL:         http://www.cvjb.de/comp/vim/forth.vim
 
 " $Id$
 
@@ -13,12 +13,16 @@
 
 " Many Thanks to...
 "
+" 2004-07-06:
+" Changed "syn sync ccomment maxlines=200" line: splitted it into two separate
+" lines.
+"
 " 2003-05-10:
 " Andrew Gaul <andrew at gaul.org> send me a patch for
 " forthOperators.
 "
 " 2003-04-03:
-" Ron Aaron <ron at ronware.org> made updates for an
+" Ron Aaron <ronaharon at yahoo.com> made updates for an
 " improved Win32Forth support.
 "
 " 2002-04-22:
@@ -46,7 +50,8 @@ elseif exists("b:current_syntax")
 endif
 
 " Synchronization method
-syn sync ccomment maxlines=200
+syn sync ccomment
+syn sync maxlines=200
 
 " I use gforth, so I set this to case ignore
 syn case ignore
@@ -189,10 +194,10 @@ syn match forthInclude '^needs\s\+'
 " For version 5.8 and later: only when an item doesn't have highlighting yet
 if version >= 508 || !exists("did_forth_syn_inits")
     if version < 508
-	let did_forth_syn_inits = 1
-	command -nargs=+ HiLink hi link <args>
+        let did_forth_syn_inits = 1
+        command -nargs=+ HiLink hi link <args>
     else
-	command -nargs=+ HiLink hi def link <args>
+        command -nargs=+ HiLink hi def link <args>
     endif
 
     " The default methods for highlighting. Can be overriden later.

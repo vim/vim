@@ -9,6 +9,7 @@ colnr_T cmdline_getvcol_cursor __ARGS((void));
 void putcmdline __ARGS((int c, int shift));
 void unputcmdline __ARGS((void));
 int put_on_cmdline __ARGS((char_u *str, int len, int redraw));
+void cmdline_paste_str __ARGS((char_u *s, int literally));
 void redrawcmdline __ARGS((void));
 void redrawcmd __ARGS((void));
 void compute_cmdrow __ARGS((void));

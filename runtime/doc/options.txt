@@ -4511,52 +4511,17 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not in Vi}
 			{only available when compiled with the |+printer|
 			feature}
-	This defines the name of the printer to be used when the |:hardcopy|
-	command is issued with a bang (!) to skip the printer selection
-	dialog.  On Win32, it should be the printer name exactly as it appears
-	in the standard printer dialog.
-	If the option is empty, then vim will use the system default printer
-	for ":hardcopy!"
+	The name of the printer to be used for |:hardcopy|.
+	See |pdev-option|.
 
-					*'printencoding'* *'penc'* *E620*
-'printencoding' 'penc'	String	(default empty, except for:
-					Windows, OS/2: cp1252,
-					Macintosh: mac-roman,
-					VMS: dec-mcs,
-					HPUX: hp-roman8,
-					EBCDIC: ebcdic-uk)
+						*'printencoding'* *'penc'*
+'printencoding' 'penc'	String	(default empty, except for some systems)
 			global
 			{not in Vi}
 			{only available when compiled with the |+printer|
 			and |+postscript| features}
-	Sets the character encoding used when printing.  This option tells VIM
-	which print character encoding file from the "print" directory in
-	'runtimepath' to use.
-
-	This option will accept any value from |encoding-names|.  Any
-	recognized names are converted to VIM standard names - see 'encoding'
-	for more details.  Names not recognized by VIM will just be converted
-	to lower case and underscores replaced with '-' signs.
-
-	If 'printencoding' is empty or VIM cannot find the file then it will
-	use 'encoding' (if VIM is compiled with |+multi_byte| and it is set an
-	8-bit encoding) to find the print character encoding file.  If VIM is
-	unable to find a character encoding file then it will use the "latin1"
-	print character encoding file.
-
-	When 'encoding' is set to a multi-byte encoding, VIM will try to
-	convert characters to the printing encoding for printing (if
-	'printencoding' is empty then the conversion will be to latin1).
-	Conversion to a printing encoding other than latin1 will require VIM
-	to be compiled with the |+iconv| feature.  If no conversion is
-	possible then printing will fail.  Any characters that cannot be
-	converted will be replaced with upside down question marks.
-
-	Four print character encoding files are provided to support default
-	Mac, VMS, HPUX, and EBCDIC character encodings and are used by default
-	on these platforms.  Code page 1252 print character encoding is used
-	by default on Windows and OS/2 platforms.
-
+	Sets the character encoding used when printing.
+	See |penc-option|.
 
 						*'printexpr'* *'pexpr'*
 'printexpr' 'pexpr'	String	(default: see below)
@@ -4564,69 +4529,17 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not in Vi}
 			{only available when compiled with the |+printer|
 			and |+postscript| features}
-	Expression that is evaluated to print the PostScript produced with
-	":hardcopy".
-	The file name to be printed is in |v:fname_in|.
-	The arguments to the ":hardcopy" command are in |v:cmdarg|.
-	The expression must take care of deleting the file after printing it.
-	When there is an error, the expression must return a non-zero number.
-	If there is no error, return zero or an empty string.
-	The default for non MS-Windows or VMS systems is to simply use "lpr"
-	to print the file: >
+	Expression used to print the PostScript produced with |:hardcopy|.
+	See |pexpr-option|.
 
-	    system('lpr' . (&printdevice == '' ? '' : ' -P' . &printdevice)
-		. ' ' . v:fname_in) . delete(v:fname_in) + v:shell_error
-<
-	On MS-Dos, MS-Windows and OS/2 machines the default is to copy the
-	file to the currently specified printdevice: >
-
-	    system('copy' . ' ' . v:fname_in . (&printdevice == ''
-			? ' LPT1:' : (' \"' . &printdevice . '\"')))
-			. delete(v:fname_in)
-<
-	On VMS machines the default is to send the file to either the default
-	or currently specified printdevice: >
-
-	    system('print' . (&printdevice == '' ? '' : ' /queue=' .
-			&printdevice) . ' ' . v:fname_in) . delete(v:fname_in)
-<
-	If you change this option, using a function is an easy way to avoid
-	having to escape all the spaces.  Example: >
-
-		:set printexpr=PrintFile(v:fname_in)
-		:function PrintFile(fname)
-		:  call system("ghostview " . a:fname)
-		:  call delete(a:fname)
-		:  return v:shell_error
-		:endfunc
-
-<	Be aware that some print programs return control before they have read
-	the file.  If you delete the file too soon it will not be printed.
-	These programs usually offer an option to have them remove the file
-	when printing is done.
-								*E365*
-	If evaluating the expression fails or it results in a non-zero number,
-	you get an error message.  In that case Vim will delete the
-	file.  In the default value for non-MS-Windows a trick is used: Adding
-	"v:shell_error" will result in a non-zero number when the system()
-	call fails.
-	This option cannot be set from a |modeline| or in the |sandbox|, for
-	security reasons.
-
-						*'printfont'* *'pfn'* *E613*
+						*'printfont'* *'pfn'*
 'printfont' 'pfn'	string	(default "courier")
 			global
 			{not in Vi}
 			{only available when compiled with the |+printer|
 			feature}
-	This is the name of the font that will be used for the |:hardcopy|
-	command's output.  It has the same format as the 'guifont' option,
-	except that only one font may be named, and the special "guifont=*"
-	syntax is not available.
-	In the Win32 GUI version this specifies a font name with its extra
-	attributes, as with the 'guifont' option.
-	For other systems, only ":h11" is recognized, where "11" is the point
-	size of the font.  When omitted, the point size is 10.
+	The name of the font that will be used for |:hardcopy|.
+	See |pfn-option|.
 
 						*'printheader'* *'pheader'*
 'printheader' 'pheader'  string  (default "%<%f%h%m%=Page %N")
@@ -4634,100 +4547,35 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not in Vi}
 			{only available when compiled with the |+printer|
 			feature}
-	This defines the format of the header produced in |:hardcopy| output.
-	The option is defined in the same way as the 'statusline' option.
-	If Vim has not been compiled with the |+statusline| feature, this
-	option has no effect and a simple default header is used, which shows
-	the page number.
+	The format of the header produced in |:hardcopy| output.
+	See |pheader-option|.
+
+						*'printmbcharset'* *'pmbcs'*
+'printmbcharset' 'pmbcs'  string (default "")
+			global
+			{not in Vi}
+			{only available when compiled with the |+printer|
+			and |+multi_byte| features}
+	The CJK character set to be used for CJK output from |:hardcopy|.
+	See |pmbcs-option|.
+
+						*'printmbfont'* *'pmbfn'*
+'printmbfont' 'pmbfn'	string (default "")
+			global
+			{not in Vi}
+			{only available when compiled with the |+printer|
+			and |+multi_byte| features}
+	List of font names to be used for CJK output from |:hardcopy|.
+	See |pmbfn-option|.
 
 						*'printoptions'* *'popt'*
 'printoptions' 'popt' string (default "")
 			global
 			{not in Vi}
 			{only available when compiled with |+printer| feature}
-	This is a comma-separated list of items that control the format of
-	the output of |:hardcopy|:
+	List of items that control the format of the output of |:hardcopy|.
+	See |popt-option|.
 
-	  left:{spec}		left margin (default: 10pc)
-	  right:{spec}		right margin (default: 5pc)
-	  top:{spec}		top margin (default: 5pc)
-	  bottom:{spec}		bottom margin (default: 5pc)
-				{spec} is a number followed by "in" for
-				inches, "pt" for points (1 point is 1/72 of an
-				inch), "mm" for millimeters or "pc" for a
-				percentage of the media size.
-				Weird example:
-				    left:2in,top:30pt,right:16mm,bottom:3pc
-				If the unit is not recognized there is no
-				error and the default value is used.
-
-	  header:{nr}		Number of lines to reserve for the header.
-				Only the first line is actually filled, thus
-				when {nr} is 2 there is one empty line.  The
-				header is formatted according to
-				'printheader'.
-	  header:0		Do not print a header.
-	  header:2  (default)	Use two lines for the header
-
-	  syntax:n		Do not use syntax highlighting.  This is
-				faster and thus useful when printing large
-				files.
-	  syntax:y		Do syntax highlighting.
-	  syntax:a  (default)	Use syntax highlighting if the printer appears
-				to be able to print color or grey.
-
-	  number:y		Include line numbers in the printed output.
-	  number:n  (default)	No line numbers.
-
-	  wrap:y    (default)	Wrap long lines.
-	  wrap:n		Truncate long lines.
-
-	  duplex:off		Print on one side.
-	  duplex:long (default)	Print on both sides (when possible), bind on
-				long side.
-	  duplex:short		Print on both sides (when possible), bind on
-				short side.
-
-	  collate:y  (default)	Collating: 1 2 3, 1 2 3, 1 2 3
-	  collate:n		No collating: 1 1 1, 2 2 2, 3 3 3
-
-	  jobsplit:n (default)	Do all copies in one print job
-	  jobsplit:y		Do each copy as a separate print job.  Useful
-				when doing N-up postprocessing.
-
-	  portrait:y (default)	Orientation is portrait.
-	  portrait:n		Orientation is landscape.
-							*a4* *letter*
-	  paper:A4   (default)	Paper size: A4
-	  paper:{name}		Paper size from this table:
-				{name}	    size in cm	     size in inch ~
-				10x14	    25.4  x 35.57    10    x 14
-				A3	    29.7  x 42	     11.69 x 16.54
-				A4	    21	  x 29.7      8.27 x 11.69
-				A5	    14.8  x 21	      5.83 x  8.27
-				B4	    25	  x 35.3     10.12 x 14.33
-				B5	    17.6  x 25	      7.17 x 10.12
-				executive   18.42 x 26.67     7.25 x 10.5
-				folio	    21	  x 33	      8.27 x 13
-				ledger	    43.13 x 27.96    17    x 11
-				legal	    21.59 x 35.57     8.5  x 14
-				letter	    21.59 x 27.96     8.5  x 11
-				quarto	    21.59 x 27.5      8.5  x 10.83
-				statement   13.97 x 21.59     5.5  x  8.5
-				tabloid     27.96 x 43.13    11    x 17
-
-	  formfeed:n (default)	Treat form feed characters (0x0c) as a normal
-				print character.
-	  formfeed:y		When a form feed character is encountered,
-				continue printing of the current line at the
-				beginning of the first line on a new page.
-
-	The item indicated with (default) is used when the item is not
-	present.  The values are not always used, especially when using a
-	dialog to select the printer and options.
-	Example: >
-		:set printoptions=paper:letter,duplex:off
-<
 						*'quoteescape''* *'qe'*
 'quoteescape' 'qe'	string	(default "\")
 			local to buffer

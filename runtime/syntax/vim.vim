@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	Vim 6.3 script
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrOchipS@PcampbellAfamily.Mbiz>
-" Last Change:	Jul 01, 2004
-" Version:	6.3-05
+" Last Change:	Jul 09, 2004
+" Version:	6.3-07
 " Automatically generated keyword lists: {{{1
 
 " Quit when a syntax file was already loaded {{{2
@@ -106,7 +106,7 @@ syn keyword vimAugroupKey contained	aug[roup]
 
 " Functions : Tag is provided for those who wish to highlight tagged functions {{{2
 " =========
-syn cluster vimFuncList	contains=vimFuncKey,Tag,vimFuncSID
+syn cluster vimFuncList	contains=vimCommand,vimFuncKey,Tag,vimFuncSID
 syn cluster vimFuncBodyList	contains=vimIsCommand,vimFunction,vimFunctionError,vimFuncBody,vimLineComment,vimSpecFile,vimOper,vimNumber,vimComment,vimString,vimSubst,vimMark,vimRegister,vimAddress,vimFilter,vimCmplxRepeat,vimComment,vimLet,vimSet,vimAutoCmd,vimRegion,vimSynLine,vimNotation,vimCtrlChar,vimFuncVar,vimContinue
 if !exists("g:vimsyntax_noerror")
  syn match   vimFunctionError	"\<fu\%[nction]!\=\s\+\zs\U\i\{-}\ze\s*("                	contains=vimFuncKey,vimFuncBlank nextgroup=vimFuncBody
@@ -183,11 +183,10 @@ syn match vimEnvvar	"\${\I\i*}"
 " In-String Specials: {{{2
 " Try to catch strings, if nothing else matches (therefore it must precede the others!)
 "  vimEscapeBrace handles ["]  []"] (ie. "s don't terminate string inside [])
-syn region vimEscapeBrace	oneline contained transparent	start="[^\\]\(\\\\\)*\[\^\=\]\=" skip="\\\\\|\\\]" end="\]"me=e-1
+syn region vimEscapeBrace	oneline   contained transparent start="[^\\]\(\\\\\)*\[\^\=\]\=" skip="\\\\\|\\\]" end="\]"me=e-1
 syn match  vimPatSepErr	contained	"\\)"
 syn match  vimPatSep	contained	"\\|"
-syn region vimPatSepZone	oneline contained transparent matchgroup=vimPatSep start="\\%\=(" skip="\\\\" end="\\)"	contains=@vimStringGroup
-syn region vimPatSepZone	oneline contained matchgroup=vimPatSep start="\\%\=(" skip="\\\\" end="\\)"	contains=@vimStringGroup
+syn region vimPatSepZone	oneline   contained   matchgroup=vimPatSep start="\\%\=(" skip="\\\\" end="\\)\|[^\]['"]"	contains=@vimStringGroup
 syn region vimPatRegion	contained transparent matchgroup=vimPatSep start="\\[z%]\=(" end="\\)"	contains=@vimSubstList oneline
 syn match  vimNotPatSep	contained	"\\\\"
 syn cluster vimStringGroup	contains=vimEscapeBrace,vimPatSep,vimNotPatSep,vimPatSepErr,vimPatSepZone
@@ -310,7 +309,7 @@ syn case match
 
 " User Function Highlighting (following Gautam Iyer's suggestion) {{{2
 " ==========================
-syn match vimFunc		"\%([sS]:\|<[sS][iI][dD]>\)\=\I\i*\ze\s*("	contains=vimUserFunc,vimFuncName,vimCommand,vimNotFunc
+syn match vimFunc		"\%([sS]:\|<[sS][iI][dD]>\)\=\I\i*\ze\s*("	contains=vimFuncName,vimUserFunc,vimCommand,vimNotFunc,vimExecute
 syn match vimUserFunc contained	"\%([sS]:\|<[sS][iI][dD]>\)\i\+\|\<\u\i*\>\|\<if\>"	contains=vimNotation,vimCommand
 syn match vimNotFunc  contained	"\<[aiAIrR]("
 
@@ -504,6 +503,16 @@ if (has("tcl") || g:vimembedscript) && filereadable(expand("<sfile>:p:h")."/tcl.
  syn region vimTclRegion matchgroup=vimScriptDelim start=+tc[l]\=\s*<<\s*$+ end=+\.$+ contains=@vimTclScript
 endif
 
+" [-- mzscheme --] {{{3
+if (has("mzscheme") || g:vimembedscript) && filereadable(expand("<sfile>:p:h")."/scheme.vim")
+ unlet! b:current_syntax
+ let iskKeep= &isk
+ syn include @vimMzSchemeScript <sfile>:p:h/scheme.vim
+ let &isk= iskKeep
+ syn region vimMzSchemeRegion matchgroup=vimScriptDelim start=+mz\%[scheme]\s*<<\s*\z(.*\)$+ end=+^\z1$+ contains=@vimMzSchemeScript
+ syn region vimMzSchemeRegion matchgroup=vimScriptDelim start=+mz\%[scheme]\s*<<\s*$+ end=+\.$+ contains=@vimMzSchemeScript
+endif
+
 " Synchronize (speed) {{{2
 "============
 if exists("g:vim_minlines")
@@ -531,7 +540,7 @@ if !exists("g:vimsyntax_noerror")
  hi def link vimErrSetting	vimError
  hi def link vimFTError	vimError
  hi def link vimFunctionError	vimError
- hi def link VimFunc         	vimError
+ hi def link vimFunc         	vimError
  hi def link vimHiAttribList	vimError
  hi def link vimHiCtermError	vimError
  hi def link vimHiKeyError	vimError

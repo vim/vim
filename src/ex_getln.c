@@ -80,6 +80,7 @@ static void	correct_cmdspos __ARGS((int idx, int cells));
 static void	alloc_cmdbuff __ARGS((int len));
 static int	realloc_cmdbuff __ARGS((int len));
 static void	draw_cmdline __ARGS((int start, int len));
+static int	cmdline_paste __ARGS((int regname, int literally));
 #if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
 static void	redrawcmd_preedit __ARGS((void));
 #endif
@@ -2534,6 +2535,102 @@ put_on_cmdline(str, len, redraw)
     if (redraw)
 	msg_check();
     return retval;
+}
+
+/*
+ * paste a yank register into the command line.
+ * used by CTRL-R command in command-line mode
+ * insert_reg() can't be used here, because special characters from the
+ * register contents will be interpreted as commands.
+ *
+ * return FAIL for failure, OK otherwise
+ */
+    static int
+cmdline_paste(regname, literally)
+    int regname;
+    int literally;	/* Insert text literally instead of "as typed" */
+{
+    long		i;
+    char_u		*arg;
+    int			allocated;
+    struct cmdline_info	save_ccline;
+
+    /* check for valid regname; also accept special characters for CTRL-R in
+     * the command line */
+    if (regname != Ctrl_F && regname != Ctrl_P && regname != Ctrl_W
+	    && regname != Ctrl_A && !valid_yank_reg(regname, FALSE))
+	return FAIL;
+
+    /* A register containing CTRL-R can cause an endless loop.  Allow using
+     * CTRL-C to break the loop. */
+    line_breakcheck();
+    if (got_int)
+	return FAIL;
+
+#ifdef FEAT_CLIPBOARD
+    regname = may_get_selection(regname);
+#endif
+
+    /* Need to save and restore ccline, because obtaining the "=" register may
+     * execute "normal :cmd" and overwrite it. */
+    save_ccline = ccline;
+    ccline.cmdbuff = NULL;
+    ccline.cmdprompt = NULL;
+    i = get_spec_reg(regname, &arg, &allocated, TRUE);
+    ccline = save_ccline;
+
+    if (i)
+    {
+	/* Got the value of a special register in "arg". */
+	if (arg == NULL)
+	    return FAIL;
+	cmdline_paste_str(arg, literally);
+	if (allocated)
+	    vim_free(arg);
+	return OK;
+    }
+
+    return cmdline_paste_reg(regname, literally);
+}
+
+/*
+ * Put a string on the command line.
+ * When "literally" is TRUE, insert literally.
+ * When "literally" is FALSE, insert as typed, but don't leave the command
+ * line.
+ */
+    void
+cmdline_paste_str(s, literally)
+    char_u	*s;
+    int		literally;
+{
+    int		c, cv;
+
+    if (literally)
+	put_on_cmdline(s, -1, TRUE);
+    else
+	while (*s != NUL)
+	{
+	    cv = *s;
+	    if (cv == Ctrl_V && s[1])
+		++s;
+#ifdef FEAT_MBYTE
+	    if (has_mbyte)
+	    {
+		c = mb_ptr2char(s);
+		s += mb_char2len(c);
+	    }
+	    else
+#endif
+		c = *s++;
+	    if (cv == Ctrl_V || c == ESC || c == Ctrl_C || c == CAR || c == NL
+#ifdef UNIX
+		    || c == intr_char
+#endif
+		    || (c == Ctrl_BSL && *s == Ctrl_N))
+		stuffcharReadbuff(Ctrl_V);
+	    stuffcharReadbuff(c);
+	}
 }
 
 #ifdef FEAT_WILDMENU

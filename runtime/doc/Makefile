@@ -71,6 +71,7 @@ DOCS = \
 	pi_gzip.txt \
 	pi_netrw.txt \
 	pi_spec.txt \
+	print.txt \
 	quickfix.txt \
 	quickref.txt \
 	quotes.txt \
@@ -126,6 +127,7 @@ DOCS = \
 	version4.txt \
 	version5.txt \
 	version6.txt \
+	version7.txt \
 	vi_diff.txt \
 	visual.txt \
 	windows.txt \
@@ -189,6 +191,7 @@ HTMLS = \
 	pi_gzip.html \
 	pi_netrw.html \
 	pi_spec.html \
+	print.html \
 	quickfix.html \
 	quickref.html \
 	quotes.html \
@@ -245,6 +248,7 @@ HTMLS = \
 	version4.html \
 	version5.html \
 	version6.html \
+	version7.html \
 	vi_diff.html \
 	visual.html \
 	windows.html \

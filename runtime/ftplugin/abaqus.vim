@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:     Abaqus finite element input file (www.abaqus.com)
 " Maintainer:   Carl Osterwisch <osterwischc@asme.org>
-" Last Change:  2004 May
+" Last Change:  2004 Jul 06
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin") | finish | endif
@@ -26,6 +26,10 @@ setlocal include=\\<\\cINPUT\\s*=
 
 " Remove characters up to the first = when evaluating filenames
 setlocal includeexpr=substitute(v:fname,'.\\{-}=','','')
+
+" Remove comma from valid filename characters since it is used to
+" separate keyword parameters
+setlocal isfname-=,
 
 " Define format of comment lines (see 'formatoptions' for uses)
 setlocal comments=:**

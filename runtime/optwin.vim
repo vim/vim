@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2004 Jul 03
+" Last Change:	2004 Jul 05
 
 " If there already is an option window, jump to that one.
 if bufwinnr("option-window") > 0
@@ -563,18 +563,28 @@ endif
 
 if has("printer")
   call <SID>Header("printing")
+  call append("$", "printoptions\tlist of items that control the format of :hardcopy output")
+  call <SID>OptionG("popt", &popt)
   call append("$", "printdevice\tname of the printer to be used for :hardcopy")
   call <SID>OptionG("pdev", &pdev)
-  call append("$", "printencoding\tencoding used to print the PostScript file for :hardcopy")
-  call <SID>OptionG("penc", &penc)
-  call append("$", "printexpr\texpression used to print the PostScript file for :hardcopy")
-  call <SID>OptionG("pexpr", &pexpr)
+  if has("postscript")
+    call append("$", "printexpr\texpression used to print the PostScript file for :hardcopy")
+    call <SID>OptionG("pexpr", &pexpr)
+  endif
   call append("$", "printfont\tname of the font to be used for :hardcopy")
   call <SID>OptionG("pfn", &pfn)
   call append("$", "printheader\tformat of the header used for :hardcopy")
   call <SID>OptionG("pheader", &pheader)
-  call append("$", "printoptions\tlist of items that control the format of :hardcopy output")
-  call <SID>OptionG("popt", &popt)
+  if has("postscript")
+    call append("$", "printencoding\tencoding used to print the PostScript file for :hardcopy")
+    call <SID>OptionG("penc", &penc)
+  endif
+  if has("multi_byte")
+    call append("$", "printmbcharset\tthe CJK character set to be used for CJK output from :hardcopy")
+    call <SID>OptionG("pmbcs", &pmbcs)
+    call append("$", "printmbfont\tlist of font names to be used for CJK output from :hardcopy")
+    call <SID>OptionG("pmbfn", &pmbfn)
+  endif
 endif
 
 call <SID>Header("messages and info")

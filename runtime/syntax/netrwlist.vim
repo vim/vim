@@ -1,6 +1,6 @@
 " Language   : Netrw Remote-Directory Listing Syntax
 " Maintainer : Charles E. Campbell, Jr.
-" Last change: Jun 25, 2004
+" Last change: Jul 06, 2004
 " Version    : 2
 
 " Syntax Clearing: {{{1
@@ -11,18 +11,18 @@ elseif exists("b:current_syntax")
 endif
 
 " Directory List Syntax Highlighting: {{{1
-syn match netrwDir				"^.*/$"			contains=netrwClassify
-syn match netrwClassify 			"[*=|@/]$"
-syn match netrwSlash contained			"/"
-syn match netrwSymLink				"^.*@$"			contains=netrwClassify
-syn match netrwComment				'".*$'			contains=netrwHide,netrwSortBy,netrwSortSeq
+syn match netrwDir				"^.*/\%(\t\|$\)"	contains=netrwClassify
+syn match netrwClassify				"[*=|@/]\%(\t\|$\)"
+syn match netrwSymLink				"^.*@\%(\t\|$\)"	contains=netrwClassify
+syn match netrwComment				'".*\%(\t\|$\)'		contains=netrwHide,netrwSortBy,netrwSortSeq
 syn match netrwHide				'^"\s*Hiding:'		skipwhite nextgroup=netrwHidePat
-syn match netrwHidePat contained		"[^,]\+"		skipwhite nextgroup=netrwHideSep
-syn match netrwHideSep contained transparent	","			skipwhite nextgroup=netrwHidePat
-syn match netrwSortBy  contained transparent	"Sorted by"		skipwhite nextgroup=netrwList
-syn match netrwSortSeq contained transparent	"Sort sequence:"	skipwhite nextgroup=netrwList
-syn match netrwList    contained		".*$"	contains=netrwComma
-syn match netrwComma	contained	","
+syn match netrwSlash	contained			"/"
+syn match netrwHidePat	contained		"[^,]\+"		skipwhite nextgroup=netrwHideSep
+syn match netrwHideSep	contained transparent	","			skipwhite nextgroup=netrwHidePat
+syn match netrwSortBy	contained transparent	"Sorted by"		skipwhite nextgroup=netrwList
+syn match netrwSortSeq	contained transparent	"Sort sequence:"	skipwhite nextgroup=netrwList
+syn match netrwList	contained		".*$"			contains=netrwComma
+syn match netrwComma	contained		","
 
 " Highlighting Links: {{{1
 if !exists("did_drchip_dbg_syntax")

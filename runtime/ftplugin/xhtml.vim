@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	xhtml
 " Maintainer:	Dan Sharp <dwsharp at hotmail dot com>
-" Last Changed: 2004 May 11
+" Last Changed: 2004 Jul 08
 " URL:		http://mywebpage.netscape.com/sharppeople/vim/ftplugin
 
 if exists("b:did_ftplugin") | finish | endif
@@ -13,7 +13,7 @@ set cpo-=C
 
 " Define some defaults in case the included ftplugins don't set them.
 let s:undo_ftplugin = ""
-let s:browsefilter = "HTML Files (*.html, *.htm)\t*.htm*\n" .
+let s:browsefilter = "HTML Files (*.html, *.htm)\t*.html;*.htm\n" .
 	    \	     "XML Files (*.xml)\t*.xml\n" .
 	    \	     "All Files (*.*)\t*.*\n"
 let s:match_words = ""
@@ -56,7 +56,7 @@ endif
 
 " Change the :browse e filter to primarily show tcsh-related files.
 if has("gui_win32")
-    let  b:browsefilter=s:browsefilter
+    let  b:browsefilter="XHTML files (*.xhtml, *.xhtm)\t*.xhtml;*.xhtm\n" . s:browsefilter
 endif
 
 " Undo the stuff we changed.

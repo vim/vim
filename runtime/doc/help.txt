@@ -129,6 +129,7 @@ Advanced editing ~
 |fold.txt|	hide (fold) ranges of lines
 
 Special issues ~
+|print.txt|	printing
 |remote.txt|	using Vim as a server or client
 |term.txt|	using different terminals and mice
 |digraph.txt|	list of available digraphs

@@ -21,17 +21,6 @@
  * 3. I don't use K&R-style functions. Anyway, MzScheme headers are ANSI.
  */
 
-/* TODO
- * way to catch Vim errors (incl. verbose messages)
- * libmzscheme.dll dynamic loading
- * macros to pass modifiers (e.g. (browse edit))
- * opportunity to use shared mzscheme libraries on Unix
- * event on-change-mode
- * Scheme-driven coloring
- * global exn-handler
- * embed Read-Eval-Print-Loop
- */
-
 #include "vim.h"
 #include "if_mzsch.h"
 
@@ -44,7 +33,6 @@ typedef struct
     Scheme_Type	    tag;
     Scheme_Env	    *env;
     buf_T	    *buf;
-    Scheme_Object   *text_objects;
 } vim_mz_buffer;
 
 #define INVALID_BUFFER_VALUE ((buf_T *)(-1))
@@ -2077,20 +2065,6 @@ win_T *get_valid_window(void *obj)
     return win;
 }
 
-#if 0
-    int
-mzvim_bufferp(Scheme_Object *obj)
-{
-    return SCHEME_VIMBUFFERP(obj);
-}
-
-    int
-mzvim_windowp(Scheme_Object *obj)
-{
-    return SCHEME_VIMWINDOWP(obj);
-}
-#endif
-
     int
 mzthreads_allowed(void)
 {
@@ -2214,14 +2188,6 @@ get_vim_curr_window(void)
     else
 	return (vim_mz_window *)curwin->mzscheme_ref;
 }
-
-#if 0
-    char *
-mzscheme_version(void)
-{
-    return scheme_version();
-}
-#endif
 
     static void
 make_modules(Scheme_Env *env)

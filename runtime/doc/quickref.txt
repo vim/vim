@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 7.0aa.  Last change: 2004 Jul 04
+*quickref.txt*  For Vim version 7.0aa.  Last change: 2004 Jul 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -782,6 +782,8 @@ Short explanation of each option:		*option-list*
 |'printexpr'|     |'pexpr'|  expression used to print PostScript for :hardcopy
 |'printfont'|	  |'pfn'|    name of the font to be used for :hardcopy
 |'printheader'|   |'pheader'| format of the header used for :hardcopy
+|'printmbcharset'| |'pmbcs'| CJK character set to be used for :hardcopy
+|'printmbfont'|   |'pmbfn'|  font names to be used for CJK output of :hardcopy
 |'printoptions'|  |'popt'|   controls the format of :hardcopy output
 |'quoteescape'|   |'qe'|     escape characters used in a string
 |'readonly'|	  |'ro'|     disallow writing the buffer
