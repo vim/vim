@@ -3145,12 +3145,7 @@ set_one_cmd_context(xp, buff)
 		    return NULL;    /* It's a comment */
 		}
 	    }
-#ifdef FEAT_MBYTE
-	    if (has_mbyte)
-		p += (*mb_ptr2len_check)(p);
-	    else
-#endif
-		++p;
+	    mb_ptr_adv(p);
 	}
     }
 
@@ -3203,12 +3198,7 @@ set_one_cmd_context(xp, buff)
 		}
 		in_quote = !in_quote;
 	    }
-#ifdef FEAT_MBYTE
-	    if (has_mbyte)
-		p += (*mb_ptr2len_check)(p);
-	    else
-#endif
-		++p;
+	    mb_ptr_adv(p);
 	}
 
 	/*
@@ -4312,12 +4302,7 @@ skip_cmd_arg(p, rembs)
 	    else
 		++p;
 	}
-#ifdef FEAT_MBYTE
-	if (has_mbyte)
-	    p += (*mb_ptr2len_check)(p);
-	else
-#endif
-	    ++p;
+	mb_ptr_adv(p);
     }
     return p;
 }

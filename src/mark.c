@@ -630,15 +630,11 @@ mark_line(mp, lead_len)
 	return NULL;
     /* Truncate the line to fit it in the window */
     len = 0;
-    for (p = s; *p != NUL; ++p)
+    for (p = s; *p != NUL; mb_ptr_adv(p))
     {
 	len += ptr2cells(p);
 	if (len >= Columns - lead_len)
 	    break;
-#ifdef FEAT_MBYTE
-	if (has_mbyte)
-	    p += (*mb_ptr2len_check)(p) - 1;
-#endif
     }
     *p = NUL;
     return s;

@@ -497,14 +497,7 @@ skip_anyof(p)
 	    {
 		++p;
 		if (*p != ']' && *p != NUL)
-		{
-#ifdef FEAT_MBYTE
-		    if (has_mbyte)
-			p += (*mb_ptr2len_check)(p);
-		    else
-#endif
-			++p;
-		}
+		    mb_ptr_adv(p);
 	    }
 	else if (*p == '\\'
 		&& (vim_strchr(REGEXP_INRANGE, p[1]) != NULL
@@ -755,7 +748,7 @@ skip_regexp(startp, dirc, magic, newp)
     else
 	mymagic = MAGIC_OFF;
 
-    for (; p[0] != NUL; ++p)
+    for (; p[0] != NUL; mb_ptr_adv(p))
     {
 	if (p[0] == dirc)	/* found end of regexp */
 	    break;
@@ -789,10 +782,6 @@ skip_regexp(startp, dirc, magic, newp)
 	    else if (*p == 'V')
 		mymagic = MAGIC_NONE;
 	}
-#ifdef FEAT_MBYTE
-	else if (has_mbyte)
-	    p += (*mb_ptr2len_check)(p) - 1;
-#endif
     }
     return p;
 }
@@ -2935,7 +2924,8 @@ vim_regexec(rmp, line, col)
     return (vim_regexec_both(line, col) != 0);
 }
 
-#if defined(FEAT_MODIFY_FNAME) || defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_MODIFY_FNAME) || defined(FEAT_EVAL) \
+	|| defined(FIND_REPLACE_DIALOG) || defined(PROTO)
 /*
  * Like vim_regexec(), but consider a "\n" in "line" to be a line break.
  */
@@ -3105,12 +3095,7 @@ vim_regexec_both(line, col)
 	{
 	    if (cstrncmp(s, prog->regmust, &prog->regmlen) == 0)
 		break;		/* Found it. */
-#ifdef FEAT_MBYTE
-	    if (has_mbyte)
-		s += (*mb_ptr2len_check)(s);
-	    else
-#endif
-		++s;
+	    mb_ptr_adv(s);
 	}
 	if (s == NULL)		/* Not present. */
 	    goto theend;
@@ -3338,20 +3323,7 @@ regtry(prog, col)
 }
 
 #ifdef FEAT_MBYTE
-/* multi-byte: advance reginput with a function */
-# define ADVANCE_REGINPUT() advance_reginput()
-
-static void advance_reginput __ARGS((void));
 static int reg_prev_class __ARGS((void));
-
-    static void
-advance_reginput()
-{
-    if (has_mbyte)
-	reginput += (*mb_ptr2len_check)(reginput);
-    else
-	++reginput;
-}
 
 /*
  * Get class of previous character.
@@ -3365,10 +3337,8 @@ reg_prev_class()
     return -1;
 }
 
-#else
-/* No multi-byte: It's too simple to make a function for. */
-# define ADVANCE_REGINPUT() ++reginput
 #endif
+#define ADVANCE_REGINPUT() mb_ptr_adv(reginput)
 
 /*
  * The arguments from BRACE_LIMITS are stored here.  They are actually local
@@ -4270,13 +4240,7 @@ regmatch(scan)
 				return FALSE;
 			}
 			else
-			{
-			    --reginput;
-#ifdef FEAT_MBYTE
-			    if (has_mbyte)
-				reginput -= (*mb_head_off)(regline, reginput);
-#endif
-			}
+			    mb_ptr_back(regline, reginput);
 		    }
 		}
 		else
@@ -4466,12 +4430,6 @@ regmatch(scan)
     return FALSE;
 }
 
-#ifdef FEAT_MBYTE
-# define ADVANCE_P(x) if (has_mbyte) x += (*mb_ptr2len_check)(x); else ++x
-#else
-# define ADVANCE_P(x) ++x
-#endif
-
 /*
  * regrepeat - repeatedly match something simple, return how many.
  * Advances reginput (and reglnum) to just after the matched chars.
@@ -4500,7 +4458,7 @@ regrepeat(p, maxcount)
 	    while (*scan != NUL && count < maxcount)
 	    {
 		++count;
-		ADVANCE_P(scan);
+		mb_ptr_adv(scan);
 	    }
 	    if (!WITH_NL(OP(p)) || reglnum == reg_maxline || count == maxcount)
 		break;
@@ -4522,7 +4480,7 @@ regrepeat(p, maxcount)
 	{
 	    if (vim_isIDc(*scan) && (testval || !VIM_ISDIGIT(*scan)))
 	    {
-		ADVANCE_P(scan);
+		mb_ptr_adv(scan);
 	    }
 	    else if (*scan == NUL)
 	    {
@@ -4551,7 +4509,7 @@ regrepeat(p, maxcount)
 	{
 	    if (vim_iswordp(scan) && (testval || !VIM_ISDIGIT(*scan)))
 	    {
-		ADVANCE_P(scan);
+		mb_ptr_adv(scan);
 	    }
 	    else if (*scan == NUL)
 	    {
@@ -4580,7 +4538,7 @@ regrepeat(p, maxcount)
 	{
 	    if (vim_isfilec(*scan) && (testval || !VIM_ISDIGIT(*scan)))
 	    {
-		ADVANCE_P(scan);
+		mb_ptr_adv(scan);
 	    }
 	    else if (*scan == NUL)
 	    {
@@ -4618,7 +4576,7 @@ regrepeat(p, maxcount)
 	    }
 	    else if (ptr2cells(scan) == 1 && (testval || !VIM_ISDIGIT(*scan)))
 	    {
-		ADVANCE_P(scan);
+		mb_ptr_adv(scan);
 	    }
 	    else if (reg_line_lbr && *scan == '\n' && WITH_NL(OP(p)))
 		++scan;
@@ -5975,7 +5933,7 @@ vim_regsub_both(source, dest, copy, magic, backslash)
 	    eval_result = eval_to_string(source + 2, NULL);
 	    if (eval_result != NULL)
 	    {
-		for (s = eval_result; *s != NUL; ++s)
+		for (s = eval_result; *s != NUL; mb_ptr_adv(s))
 		{
 		    /* Change NL to CR, so that it becomes a line break.
 		     * Skip over a backslashed character. */
@@ -5983,10 +5941,6 @@ vim_regsub_both(source, dest, copy, magic, backslash)
 			*s = CAR;
 		    else if (*s == '\\' && s[1] != NUL)
 			++s;
-#ifdef FEAT_MBYTE
-		    if (has_mbyte)
-			s += (*mb_ptr2len_check)(s) - 1;
-#endif
 		}
 
 		dst += STRLEN(eval_result);

@@ -4792,6 +4792,7 @@ gui_mch_get_font(char_u *name, int report_error)
     return font;
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Return the name of font "font" in allocated memory.
  */
@@ -4799,7 +4800,7 @@ gui_mch_get_font(char_u *name, int report_error)
     char_u *
 gui_mch_get_fontname(GuiFont font, char_u *name)
 {
-#ifdef HAVE_GTK2
+# ifdef HAVE_GTK2
     if (font != NOFONT)
     {
 	char	*name = pango_font_description_to_string(font);
@@ -4812,13 +4813,14 @@ gui_mch_get_fontname(GuiFont font, char_u *name)
 	    return s;
 	}
     }
-#else
+# else
     /* Don't know how to get the name, return what we got. */
     if (name != NULL)
 	return vim_strsave(name);
-#endif
+# endif
     return NULL;
 }
+#endif
 
 #if !defined(HAVE_GTK2) || defined(PROTO)
 /*

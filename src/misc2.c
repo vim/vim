@@ -200,12 +200,7 @@ coladvance2(pos, addspaces, finetune, wcol)
 	    /* Count a tab for what it's worth (if list mode not on) */
 #ifdef FEAT_LINEBREAK
 	    csize = win_lbr_chartabsize(curwin, ptr, col, &head);
-# ifdef FEAT_MBYTE
-	    if (has_mbyte)
-		ptr += (*mb_ptr2len_check)(ptr);
-	    else
-# endif
-		++ptr;
+	    mb_ptr_adv(ptr);
 #else
 	    csize = lbr_chartabsize_adv(&ptr, col);
 #endif
@@ -1451,12 +1446,7 @@ vim_strrchr(string, c)
     {
 	if (*string == c)
 	    retval = string;
-#ifdef FEAT_MBYTE
-	if (has_mbyte)
-	    string += (*mb_ptr2len_check)(string);
-	else
-#endif
-	    ++string;
+	mb_ptr_adv(string);
     }
     return retval;
 }
@@ -1479,12 +1469,7 @@ vim_strpbrk(s, charset)
     {
 	if (vim_strchr(charset, *s) != NULL)
 	    return s;
-#ifdef FEAT_MBYTE
-	if (has_mbyte)
-	    s += (*mb_ptr2len_check)(s);
-	else
-#endif
-	    ++s;
+	mb_ptr_adv(s);
     }
     return NULL;
 }
@@ -2645,6 +2630,46 @@ get_real_state()
     return State;
 }
 
+#if defined(FEAT_MBYTE) || defined(PROTO)
+/*
+ * Return TRUE if "p" points to just after a path separator.
+ * Take care of multi-byte characters.
+ * "b" must point to the start of the file name
+ */
+    int
+after_pathsep(b, p)
+    char_u	*b;
+    char_u	*p;
+{
+    return vim_ispathsep(p[-1])
+			     && (!has_mbyte || (*mb_head_off)(b, p - 1) == 0);
+}
+#endif
+
+/*
+ * Return TRUE if file names "f1" and "f2" are in the same directory.
+ * "f1" may be a short name, "f2" must be a full path.
+ */
+    int
+same_directory(f1, f2)
+    char_u	*f1;
+    char_u	*f2;
+{
+    char_u	ffname[MAXPATHL];
+    char_u	*t1;
+    char_u	*t2;
+
+    /* safety check */
+    if (f1 == NULL || f2 == NULL)
+	return FALSE;
+
+    (void)vim_FullName(f1, ffname, MAXPATHL, FALSE);
+    t1 = gettail_sep(ffname);
+    t2 = gettail_sep(f2);
+    return (t1 - ffname == t2 - f2
+	     && pathcmp((char *)ffname, (char *)f2, (int)(t1 - ffname)) == 0);
+}
+
 #if defined(FEAT_SESSION) || defined(MSWIN) || defined(FEAT_GUI_MAC) \
 	|| ((defined(FEAT_GUI_GTK) || defined(FEAT_GUI_KDE)) \
 			&& ( defined(FEAT_WINDOWS) || defined(FEAT_DND)) ) \
@@ -2659,18 +2684,12 @@ get_real_state()
 vim_chdirfile(fname)
     char_u	*fname;
 {
-    char_u	temp_string[MAXPATHL];
-    char_u	*p;
-    char_u	*t;
+    char_u	dir[MAXPATHL];
 
-    STRCPY(temp_string, fname);
-    p = get_past_head(temp_string);
-    t = gettail(temp_string);
-    while (t > p && vim_ispathsep(t[-1]))
-	--t;
-    *t = NUL; /* chop off end of string */
-
-    return mch_chdir((char *)temp_string) == 0 ? OK : FAIL;
+    STRNCPY(dir, fname, MAXPATHL);
+    dir[MAXPATHL - 1] = NUL;
+    *gettail_sep(dir) = NUL;
+    return mch_chdir((char *)dir) == 0 ? OK : FAIL;
 }
 #endif
 
@@ -5196,16 +5215,18 @@ sort_strings(files, count)
 #if !defined(NO_EXPANDPATH) || defined(PROTO)
 /*
  * Compare path "p[]" to "q[]".
+ * If "maxlen" >= 0 compare "p[maxlen]" to "q[maxlen]"
  * Return value like strcmp(p, q), but consider path separators.
  */
     int
-pathcmp(p, q)
+pathcmp(p, q, maxlen)
     const char *p, *q;
+    int maxlen;
 {
     int		i;
     const char	*s;
 
-    for (i = 0; ; ++i)
+    for (i = 0; maxlen < 0 || i < maxlen; ++i)
     {
 	/* End of "p": check if "q" also ends or just has a slash. */
 	if (p[i] == NUL)
@@ -5245,13 +5266,16 @@ pathcmp(p, q)
     }
 
     /* ignore a trailing slash, but not "//" or ":/" */
-    if (s[i + 1] == NUL && i > 0 && !vim_ispathsep(s[i - 1])
+    if (i >= maxlen
+	    || (s[i + 1] == NUL
+		&& i > 0
+		&& !after_pathsep((char_u *)s, (char_u *)s + i)
 #ifdef BACKSLASH_IN_FILENAME
-	    && (s[i] == '/' || s[i] == '\\')
+		&& (s[i] == '/' || s[i] == '\\')
 #else
-	    && s[i] == '/'
+		&& s[i] == '/'
 #endif
-       )
+	       ))
 	return 0;   /* match with trailing slash */
     if (s == q)
 	return -1;	    /* no match */

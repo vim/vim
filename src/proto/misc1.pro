@@ -55,6 +55,7 @@ void home_replace __ARGS((buf_T *buf, char_u *src, char_u *dst, int dstlen, int 
 char_u *home_replace_save __ARGS((buf_T *buf, char_u *src));
 int fullpathcmp __ARGS((char_u *s1, char_u *s2, int checkname));
 char_u *gettail __ARGS((char_u *fname));
+char_u *gettail_sep __ARGS((char_u *fname));
 char_u *getnextcomp __ARGS((char_u *fname));
 char_u *get_past_head __ARGS((char_u *path));
 int vim_ispathsep __ARGS((int c));

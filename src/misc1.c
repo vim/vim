@@ -1006,8 +1006,7 @@ open_line(dir, flags, old_indent)
 
 			    while (old_size < repl_size && p > leader)
 			    {
-				--p;
-				p -= mb_head_off(leader, p);
+				mb_ptr_back(leader, p);
 				old_size += ptr2cells(p);
 			    }
 			    l = lead_repl_len - (endp - p);
@@ -1741,12 +1740,7 @@ plines_win_col(wp, lnum, column)
     while (*s != NUL && --column >= 0)
     {
 	col += win_lbr_chartabsize(wp, s, (colnr_T)col, NULL);
-#ifdef FEAT_MBYTE
-	if (has_mbyte)
-	    s += (*mb_ptr2len_check)(s);
-	else
-#endif
-	    ++s;
+	mb_ptr_adv(s);
     }
 
     /*
@@ -2451,7 +2445,7 @@ changed()
 	    }
 	}
 	curbuf->b_changed = TRUE;
-	ml_setdirty(curbuf, TRUE);
+	ml_setflags(curbuf);
 #ifdef FEAT_WINDOWS
 	check_status(curbuf);
 #endif
@@ -2788,7 +2782,7 @@ unchanged(buf, ff)
     if (buf->b_changed || (ff && file_ff_differs(buf)))
     {
 	buf->b_changed = 0;
-	ml_setdirty(buf, FALSE);
+	ml_setflags(buf);
 	if (ff)
 	    save_file_ff(buf);
 #ifdef FEAT_WINDOWS
@@ -3520,15 +3514,16 @@ expand_env_esc(src, dst, dstlen, esc)
 	    {
 		STRCPY(dst, var);
 		dstlen -= (int)STRLEN(var);
-		dst += STRLEN(var);
+		c = STRLEN(var);
 		/* if var[] ends in a path separator and tail[] starts
 		 * with it, skip a character */
-		if (*var != NUL && vim_ispathsep(dst[-1])
+		if (*var != NUL && after_pathsep(dst, dst + c)
 #if defined(BACKSLASH_IN_FILENAME) || defined(AMIGA)
 			&& dst[-1] != ':'
 #endif
 			&& vim_ispathsep(*tail))
 		    ++tail;
+		dst += c;
 		src = tail;
 		copy_char = FALSE;
 	    }
@@ -3667,7 +3662,7 @@ vim_getenv(name, mustfree)
 #ifndef MACOS_CLASSIC
 	    /* With MacOS path (with  colons) the final colon is required */
 	    /* to avoid confusion between absoulute and relative path */
-	    if (pend > p && vim_ispathsep(*(pend - 1)))
+	    if (pend > p && after_pathsep(p, pend))
 		--pend;
 #endif
 
@@ -3789,7 +3784,7 @@ remove_tail(p, pend, name)
 
     if (newend >= p
 	    && fnamencmp(newend, name, len - 1) == 0
-	    && (newend == p || vim_ispathsep(*(newend - 1))))
+	    && (newend == p || after_pathsep(p, newend)))
 	return newend;
     return pend;
 }
@@ -3809,9 +3804,9 @@ remove_tail_with_ext(p, pend, ext)
     char_u	*newend = pend - len;
 
     if (newend >= p && fnamencmp(newend, ext, len - 1) == 0)
-	while (newend != p && !vim_ispathsep(*(newend - 1)))
-	    --newend;
-    if (newend == p || vim_ispathsep(*(newend - 1)))
+	while (newend != p && !after_pathsep(newend))
+	    mb_ptr_back(newend);
+    if (newend == p || after_pathsep(newend))
 	return newend;
     return pend;
 }
@@ -4122,14 +4117,32 @@ gettail(fname)
     {
 	if (vim_ispathsep(*p2))
 	    p1 = p2 + 1;
-#ifdef FEAT_MBYTE
-	if (has_mbyte)
-	    p2 += (*mb_ptr2len_check)(p2);
-	else
-#endif
-	    ++p2;
+	mb_ptr_adv(p2);
     }
     return p1;
+}
+
+/*
+ * Get pointer to tail of "fname", including path separators.  Putting a NUL
+ * here leaves the directory name.  Takes care of "c:/" and "//".
+ * Always returns a valid pointer.
+ */
+    char_u *
+gettail_sep(fname)
+    char_u	*fname;
+{
+    char_u	*p;
+    char_u	*t;
+
+    p = get_past_head(fname);	/* don't remove the '/' from "c:/file" */
+    t = gettail(fname);
+    while (t > p && after_pathsep(fname, t))
+	--t;
+#ifdef VMS
+    /* path separator is part of the path */
+    ++t;
+#endif
+    return t;
 }
 
 /*
@@ -4140,18 +4153,12 @@ getnextcomp(fname)
     char_u *fname;
 {
     while (*fname && !vim_ispathsep(*fname))
-	++fname;
+	mb_ptr_adv(fname);
     if (*fname)
 	++fname;
     return fname;
 }
 
-#if defined(FEAT_MODIFY_FNAME) || defined(FEAT_EVAL) \
-	|| defined(FEAT_SESSION) || defined(MSWIN) \
-	|| ((defined(FEAT_GUI_GTK) || defined(FEAT_GUI_KDE)) \
-			    && (defined(FEAT_WINDOWS) || defined(FEAT_DND))) \
-	|| defined(FEAT_SUN_WORKSHOP) || defined(FEAT_NETBEANS_INTG) \
-	|| defined(PROTO)
 /*
  * Get a pointer to one character past the head of a path name.
  * Unix: after "/"; DOS: after "c:\"; Amiga: after "disk:/"; Mac: no head.
@@ -4185,7 +4192,6 @@ get_past_head(path)
 
     return retval;
 }
-#endif
 
 /*
  * return TRUE if 'c' is a path separator.
@@ -4299,7 +4305,7 @@ concat_fnames(fname1, fname2, sep)
 add_pathsep(p)
     char_u	*p;
 {
-    if (*p != NUL && !vim_ispathsep(*(p + STRLEN(p) - 1)))
+    if (*p != NUL && !after_pathsep(p, p + STRLEN(p)))
 	STRCAT(p, PATHSEPSTR);
 }
 
@@ -7653,9 +7659,10 @@ get_lisp_indent()
     void
 prepare_to_exit()
 {
-#if defined(UNIX)
-    /* Ignore SIGHUP, because a dropped connection may make Vim exit and then
-     * get a SIGHUP while exiting, which causes various reentrent problems. */
+#if defined(SIGHUP) && defined(SIG_IGN)
+    /* Ignore SIGHUP, because a dropped connection causes a read error, which
+     * makes Vim exit and then handling SIGHUP causes various reentrance
+     * problems. */
     signal(SIGHUP, SIG_IGN);
 #endif
 
@@ -7904,7 +7911,7 @@ static int expand_backtick __ARGS((garray_T *gap, char_u *pat, int flags));
     static int _cdecl
 pstrcmp(const void *a, const void *b)
 {
-    return (pathcmp(*(char **)a, *(char **)b));
+    return (pathcmp(*(char **)a, *(char **)b, -1));
 }
 
 # ifndef WIN3264

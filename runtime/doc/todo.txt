@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Dec 11
+*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Dec 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,21 +30,18 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-":e <cfile>" does not expand ~/file, very confusing compared to ":e ~/file".
+Win32: Cannot edit a file starting with # with --remote. (Giuseppe Bilotta,
+Oct 6 2004)
 
-When no termcap/termlib library is found, check that compiling Vim works in
-configure.  Give an clear error message ("install termcap or ncurses-dev
-package") when it doesn't.
+Add Makefile code to install *-it.1 manual pages in .../man/it/man1/*.1
 
-When doing ":w file" 'modified' is reset, but "u" sets it, while the file is
-actually unchanged.  Don't reset 'modified' when 'nocp' is set.
+Win32: "gvim -V100" should use dialog with scrollbar.  Using
+gui_mch_dialog() would be good, but need to move display_errors() to after
+creating the window, so that s_hwnd is valid.
+How to add a scrollbar to the dialog?
 
-Win32: "gvim -V100" should use dialog with scrollbar.
-
-Using CTRL-A on "08" should not work like octal. (Matthew Duggan)
-
-Cursor onder laatste regel na ":g/pat/s//>" commando waardoor regels niet meer
-wrappen. (Adri Verhoef, Dec 1)
+Win32: tearoff menu window should have a scrollbar when it's taller than the
+screen.
 
 Included NetBeans patches (Gordon Prieur, Oct 20)
     See two messages for list of changed files.  Additionally:
@@ -57,6 +54,8 @@ Included NetBeans patches (Gordon Prieur, Oct 20)
 For version 7.0:
 
 -   Include many PATCHES:
+    -	Patch for 'breakindent' option: repeat indent for wrapped line. (Vaclav
+	Smilauer, 2004 Sep 13, fix Oct 31)
     7   Add 'taglistfiles' option, show file name and type when listing matching
 	tags name with CTRL-D completion.  Patch from Yegappan Lakshmanan.
 	2004 Jul 11
@@ -189,16 +188,19 @@ For version 7.0:
     Also see the "minigrep.vim" script on www.vim.org.
 
 
--   Edit same file on Unix and from MS-Windows: no warning for swap file.
 -   Drop the kvim support?  There is no maintenance and "yzis" is supposed to
     replace it.
 -   In the kvim/KDE source files fix the formatting.
 -   KDE version is called "kvim".  Make it "gvim", like the others?
 -   Better configure check for KDE include files from Dan Sharp.
 -   KDE GUI Input method patch. (Yasuhiro Matsumoto) (upd. Oct 25 2004)
+
+After including patches:
 -   Change ga_room into ga_maxlen, so that it doesn't need to be
     incremented/decremented each time.
--   For string variables, use length instead of NUL termination.
+-   For string variables, use length instead of NUL termination?
+	+ can include NUL characters
+	- setline() will have problems with NL vs NUL.
 -   new DATA TYPES: lists, dictionaries and function references.
 	Check old patch from Robert Webb for array support.
     Add type checking?  See ~/vim/ideas.txt.
@@ -258,11 +260,6 @@ For version 7.0:
     before some time/date can be flushed. 'undopersist' gives maximum time to
     keep undo: "3h", "1d", "2w", "1y", etc.  For the file use dot and
     extension: ".filename.un~" (like swapfile but "un~" instead of "swp").
-7   SWAP FILE CHANGE: When a dos format file was edited with ":e ++ff=unix",
-    Vim is killed and trying to recover the file, 'ff' will be dos.  Same for
-    non-default fileencoding.  (Miroslaw Dobrzanski-Neumann, Jul 17)
-    Should store the values in block 0 of the swap file, but that is an
-    incompatible change.
 7   Support WINDOW TABS.  Works like several pages, each with their own
     split windows.  Patch for GTK 1.2 passed on by Christian Michon, 2004 Jan 6.
     Also for the console!
@@ -285,6 +282,10 @@ For version 7.0:
     - make it possible to have 'defineAnnoType' also handle terminal colors.
     - send 'balloonText' events for the cursor position (using CursorHold ?)
       in terminal mode.
+-   ECLIPSE plugin.  Problem is: the interface is very complicated.  Need to
+    implement part in Java and then connect to Vim.  Some hints from Alexandru
+    Roman, 2004 Dec 15.  Should then also work with Oracle Jdeveloper, see JSR
+    198 standard http://www.jcp.org/en/jsr/detail?id=198.
 -   STICKY CURSOR: Add a way of scrolling that leaves the cursor where it is.
     Especially when using the scrollbar.  Typing a cursor-movement command
     scrolls back to where the cursor is.
@@ -324,24 +325,8 @@ For version 7.0:
 -   "onemore" flag in 'virtualedit': move cursor past end of line.  Patch by
     Mattias Flodin (2004 Jul 30)
 
-Win32: When setting 'encoding' in a Vim server to "utf-8", and using "vim
---remote russian" in a console, "russian" should be converted from the console
-encoding to utf-8.  Send all remote messages in utf-8?  Only on Win32?
-
 Support ":set syntax=cpp.doxygen"?  Suggested patch by Michael Geddes (9 Aug
 2004).  Should also work for 'filetype'.
-
-Patch for 'breakindent' option: repeat indent for wrapped line. (Vaclav
-Smilauer, 2004 Sep 13, fix Oct 31)
-
-":bufdo g/something/p" has the last match overwritten by the file info.
-Example by Cesar Andalou (Nov 3).
-
-Win32: In 'fileencodings' allow using "acp" for the active codepage.  Useful
-value: "ucs-bom,utf-8,acp,latin1"
-
-Win32: Cannot edit a file starting with # with --remote. (Giuseppe Bilotta,
-Oct 6 2004)
 
 For manipulating buffers without opening a new window, support Virtual
 windows.  Example:
@@ -360,19 +345,13 @@ Win32: In the generated batch files, use $VIMRUNTIME if it's set.  Examples by
 Mathias Michaelis (2004 Sep 6)
 Also place vimtutor.bat in %windir%?
 
-Support ":enew filename" to edit a new buffer with a name.  It's like "enew |
-file filename" but without setting the alternate file to a buffer without a
-name. (Charles Campbell)
-
 Add gui_mch_browsedir() for Motif, KDE and Mac OS/X.
-
-Add Makefile code to install *-it.1 manual pages in .../man/it/man1/*.1
 
 HTML indenting can be slow, find out why.  Any way to do some kind of
 profiling for Vim script?
 
 Mac: problem with Xcode, Vim doesn't continue until the next click.
-Apparently hanges in handle_drop().  A PostEvent() avoids it. (Da Woon Jung)
+Apparently hangs in handle_drop().  A PostEvent() avoids it. (Da Woon Jung)
 
 
 Vi incompatibility:
@@ -943,11 +922,6 @@ Macintosh:
     swap file.  Then using ":write" (without making any changes) doesn't give
     a warning either.  Should check for an existing swap file without creating
     one.
-7   On MS-DOS or MS-Windows, when editing the same file over a network, the
-    drive letter is different, thus an existing swap file doesn't generate a
-    warning.  Use some flag to indicate the swap file is in the same directory
-    as the original file?  Could make b0_fname[] start with a special
-    character like ">".
 7   When 'showbreak' is set, the amount of space a Tab occupies changes.
     Should work like 'showbreak' is inserted without changing the Tabs.
 7   When there is a "help.txt" window in a session file, restoring that
@@ -977,10 +951,6 @@ Macintosh:
 9   dosinst.c: The DJGPP version can't uninstall the Uninstall registry key on
     Windows NT.  How to install a .inf file on Windows NT and how to detect
     that Windows NT is being used?
-8   When opening the same file on Unix and on MS-Windows, there is no
-    ATTENTION message, because the path in the swap file is different.  Using
-    a relative path name will cause no ATTENTION for Vim 5.8.
-    Somehow add a flag that the swap file is in the same dir as the file?
 8   When 'virtualedit' is "block,insert" and encoding is "utf-8", selecting a
     block of one double-wide character, then "d" deletes only half of it.
 8   When 'virtualedit' is set, should "I" in blockwise visual mode also insert
@@ -2658,12 +2628,14 @@ Incsearch:
 Searching:
 8   Add a mechanism for recursiveness: "\(([^()]*\@@[^()]*)\)\@r".  \@@ stands
     for "go recursive here" and \@r marks the recursive atom.
-item stack to allow matching ().  One side is "push X on
+7   Add an item stack to allow matching ().  One side is "push X on
     the stack if previous atom matched".  Other side is "match with top of
     stack, pop it when it matches".  Use "\@pX" and "\@m"?
 	Example: \((\@p).\{-}\@m\)*
 7   Add an option to accept a match at the cursor position.  Also for
     search(). (Brett)
+7   Add a flag to "/pat/" to discard an error.  Useful to continue a mapping
+    when a search fails.  Could be "/pat/E" (e is already used for an offset).
 7   Add pattern item to use properties of Unicode characters.  In Perl it's
     "\p{L}" for a letter.  See Regular Expression Pocket Reference.
 8   Would it be possible to allow ":23,45/pat/flags" to search for "pat" in
@@ -2828,9 +2800,6 @@ Swap (.swp) files:
     twice (e.g. when using quickfix).  Also try to make the name of the backup
     file the same as the actual file?
     Use the code for resolve()?
-7   Store the options 'fileencoding', 'fileformat', etc. in the swapfile,
-    because they change what will be written to the file.  Requires adding
-    another block to the swapfile.
 7   When using 64 bit inode numbers, also store the top 32 bits.  Add another
     field for this, using part of bo_fname[], to keep it compatible.
 7   When editing a file on removable media, should put swap file somewhere
@@ -3153,8 +3122,6 @@ Various improvements:
 7   Add ModeMsgVisual, ModeMsgInsert, etc. so that each mode message can be
     highlighted differently.
 8   Allow using "**" as a wildcard in commands like ":next" and ":args".
-8   Provide a way to avoid wildcard expansion.  Use double quotes, like in the
-    shell?  :edit "my[file].txt"  (currently works if there is no "myf.txt")
 7   Add a message area for the user.  Set some option to reserve space (above
     the command line?).  Use an ":echouser" command to display the message
     (truncated to fit in the space).

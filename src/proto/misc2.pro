@@ -66,6 +66,8 @@ void set_fileformat __ARGS((int t, int opt_flags));
 int default_fileformat __ARGS((void));
 int call_shell __ARGS((char_u *cmd, int opt));
 int get_real_state __ARGS((void));
+int after_pathsep __ARGS((char_u *b, char_u *p));
+int same_directory __ARGS((char_u *f1, char_u *f2));
 int vim_chdirfile __ARGS((char_u *fname));
 int illegal_slash __ARGS((char *name));
 char_u *parse_shape_opt __ARGS((int what));
@@ -86,7 +88,7 @@ char_u *find_file_in_path_option __ARGS((char_u *ptr, int len, int options, int 
 int vim_chdir __ARGS((char_u *new_dir));
 int get_user_name __ARGS((char_u *buf, int len));
 void sort_strings __ARGS((char_u **files, int count));
-int pathcmp __ARGS((const char *p, const char *q));
+int pathcmp __ARGS((const char *p, const char *q, int maxlen));
 char_u *parse_list_options __ARGS((char_u *option_str, option_table_T *table, int table_size));
 void msg_str __ARGS((char_u *s, char_u *arg));
 /* vim: set ft=c : */

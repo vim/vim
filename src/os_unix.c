@@ -2189,12 +2189,7 @@ slash_adjust(p)
     {
 	if (*p == psepcN)
 	    *p = psepc;
-#ifdef FEAT_MBYTE
-	if (has_mbyte)
-	    p += (*mb_ptr2len_check)(p);
-	else
-#endif
-	    ++p;
+	mb_ptr_adv(p);
     }
 }
 #endif
@@ -4513,7 +4508,7 @@ RealWaitForChar(fd, msec, check_for_gpm)
 pstrcmp(a, b)
     const void *a, *b;
 {
-    return (pathcmp(*(char **)a, *(char **)b));
+    return (pathcmp(*(char **)a, *(char **)b, -1));
 }
 
 /*
@@ -4794,10 +4789,10 @@ mch_expand_wildcards(num_pat, pat, num_file, file, flags)
 		    if (((*file)[*num_file] = alloc(len + 2)) != NULL)
 		    {
 			STRCPY((*file)[*num_file], p);
-			if (!vim_ispathsep((*file)[*num_file][len - 1]))
+			if (!after_pathsep((*file)[*num_file] + len))
 			{
 			    (*file)[*num_file][len] = psepc;
-			    (*file)[*num_file][len + 1] = 0;
+			    (*file)[*num_file][len + 1] = NUL;
 			}
 		    }
 		}
@@ -5259,7 +5254,7 @@ save_patterns(num_pat, pat, num_file, file)
 mch_has_exp_wildcard(p)
     char_u  *p;
 {
-    for ( ; *p; ++p)
+    for ( ; *p; mb_ptr_adv(p))
     {
 #ifndef OS2
 	if (*p == '\\' && p[1] != NUL)
@@ -5278,10 +5273,6 @@ mch_has_exp_wildcard(p)
 #endif
 						, *p) != NULL)
 	    return TRUE;
-#ifdef FEAT_MBYTE
-	if (has_mbyte)
-	    p += (*mb_ptr2len_check)(p) - 1;
-#endif
     }
     return FALSE;
 }
@@ -5294,7 +5285,7 @@ mch_has_exp_wildcard(p)
 mch_has_wildcard(p)
     char_u  *p;
 {
-    for ( ; *p; ++p)
+    for ( ; *p; mb_ptr_adv(p))
     {
 #ifndef OS2
 	if (*p == '\\' && p[1] != NUL)
@@ -5318,10 +5309,6 @@ mch_has_wildcard(p)
 						, *p) != NULL
 		|| (*p == '~' && p[1] != NUL))
 	    return TRUE;
-#ifdef FEAT_MBYTE
-	if (has_mbyte)
-	    p += (*mb_ptr2len_check)(p) - 1;
-#endif
     }
     return FALSE;
 }

@@ -2952,12 +2952,7 @@ vcol2col(wp, lnum, vcol)
     {
 	++col;
 	count += win_lbr_chartabsize(wp, ptr, count, NULL);
-# ifdef FEAT_MBYTE
-	if (has_mbyte)
-	    ptr += (*mb_ptr2len_check)(ptr);
-	else
-# endif
-	    ++ptr;
+	mb_ptr_adv(ptr);
     }
     return col;
 }

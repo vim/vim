@@ -1700,12 +1700,7 @@ slash_adjust(char_u *p)
 	{
 	    if (*p == '\\')
 		*p = '/';
-#ifdef FEAT_MBYTE
-	    if (has_mbyte)
-		p += (*mb_ptr2len_check)(p);
-	    else
-#endif
-		++p;
+	    mb_ptr_adv(p);
 	}
     else
 #endif
@@ -1713,12 +1708,7 @@ slash_adjust(char_u *p)
     {
 	if (*p == psepcN)
 	    *p = psepc;
-#ifdef FEAT_MBYTE
-	if (has_mbyte)
-	    p += (*mb_ptr2len_check)(p);
-	else
-#endif
-	    ++p;
+	mb_ptr_adv(p);
     }
 }
 
@@ -2034,15 +2024,11 @@ mch_breakcheck(void)
     int
 mch_has_exp_wildcard(char_u *p)
 {
-    for ( ; *p; ++p)
+    for ( ; *p; mb_ptr_adv(p))
     {
 	if (vim_strchr((char_u *)"?*[", *p) != NULL
 		|| (*p == '~' && p[1] != NUL))
 	    return TRUE;
-#ifdef FEAT_MBYTE
-	if (has_mbyte)
-	    p += (*mb_ptr2len_check)(p) - 1;
-#endif
     }
     return FALSE;
 }
@@ -2054,7 +2040,7 @@ mch_has_exp_wildcard(char_u *p)
     int
 mch_has_wildcard(char_u *p)
 {
-    for ( ; *p; ++p)
+    for ( ; *p; mb_ptr_adv(p))
     {
 	if (vim_strchr((char_u *)
 #  ifdef VIM_BACKTICK
@@ -2065,10 +2051,6 @@ mch_has_wildcard(char_u *p)
 						, *p) != NULL
 		|| (*p == '~' && p[1] != NUL))
 	    return TRUE;
-#ifdef FEAT_MBYTE
-	if (has_mbyte)
-	    p += (*mb_ptr2len_check)(p) - 1;
-#endif
     }
     return FALSE;
 }
@@ -2138,7 +2120,7 @@ mch_rename(const char *OldFile, const char *NewFile)
 	 * filena~1.txt.  If we rename filena~1.txt to filena~1.txt~
 	 * (i.e., we're making a backup while writing it), the SFN
 	 * for filena~1.txt~ will be filena~1.txt, by default, which
-	 * will cause all sorts of problems later in buf_write.  So, we
+	 * will cause all sorts of problems later in buf_write().  So, we
 	 * create an empty file called filena~1.txt and the system will have
 	 * to find some other SFN for filena~1.txt~, such as filena~2.txt
 	 */

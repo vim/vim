@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2004 Dec 09
+*options.txt*	For Vim version 7.0aa.  Last change: 2004 Dec 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1841,6 +1841,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 			there is one).  This works very well for C programs.
 			This flag is also used for other features, such as
 			C-indenting.
+								*cpo-+*
+		+	When included, a ":write file" command will reset the
+			'modified' flag of the buffer, even though the buffer
+			itself may still be different from its file.
 			 					cpo-star*
 		*	Use ":*" in the same way as ":@".  When not included,
 			":*" is an alias for ":'<,'>", select the Visual area.
@@ -2127,7 +2131,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	with.  See |encoding-names| for the possible values.
 
 	NOTE: Changing this option will not change the encoding of the
-	existing text in Vim.  It may cause multi-byte text to become invalid.
+	existing text in Vim.  It may cause non-ASCII text to become invalid.
 	It should normally be kept at its default value, or set when Vim
 	starts up.  See |multibyte|.
 
@@ -2338,8 +2342,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	old short name was 'fe', which is no longer used.
 
 					*'fileencodings'* *'fencs'*
-'fileencodings' 'fencs'	string (default: "ucs-bom", "ucs-bom,utf-8,latin1"
-				    when 'encoding' is set to a Unicode value)
+'fileencodings' 'fencs'	string (default: "ucs-bom",
+				    "ucs-bom,utf-8,default,latin1" when
+				    'encoding' is set to a Unicode value)
 			global
 			{only available when compiled with the |+multi_byte|
 			feature}
@@ -2373,6 +2378,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	An entry for an 8-bit encoding (e.g., "latin1") should be the last,
 	because Vim cannot detect an error, thus the encoding is always
 	accepted.
+	The special value "default" can be used for the encoding from the
+	environment.  This is the default value for 'encoding'.  It is useful
+	when 'encoding' is set to "utf-8" and your environment uses a
+	non-latin1 encoding, such as Russian.
 	WRONG VALUES:			WHAT'S WRONG:
 		latin1,utf-8		"latin1" will always be used
 		utf-8,ucs-bom,latin1	BOM won't be recognized in an utf-8

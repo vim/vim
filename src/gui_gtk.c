@@ -2014,7 +2014,7 @@ split_button_string(char_u *button_string, int *n_buttons)
     if (array != NULL)
     {
 	array[count++] = (char *)button_string;
-	for (p = button_string; *p != NUL; ++p)
+	for (p = button_string; *p != NUL; mb_ptr_adv(p))
 	{
 	    if (*p == DLG_BUTTON_SEP)
 	    {
@@ -2023,10 +2023,6 @@ split_button_string(char_u *button_string, int *n_buttons)
 	    }
 	    else if (*p == DLG_HOTKEY_CHAR)
 		*p = '_';
-#ifdef FEAT_MBYTE
-	    else if (has_mbyte)
-		p += (*mb_ptr2len_check)(p) - 1;
-#endif
 	}
 	array[count] = NULL; /* currently not relied upon, but doesn't hurt */
     }

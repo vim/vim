@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.0aa.  Last change: 2004 Sep 17
+*autocmd.txt*   For Vim version 7.0aa.  Last change: 2004 Dec 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -230,8 +230,10 @@ BufWritePost			After writing the whole buffer to a file
 							*BufWriteCmd*
 BufWriteCmd			Before writing the whole buffer to a file.
 				Should do the writing of the file and reset
-				'modified' if successful.  The buffer contents
-				should not be changed.  |Cmd-event|
+				'modified' if successful, unless '+' is in
+				'cpo' and writing to another file |cpo-+|.
+				The buffer contents should not be changed.
+				|Cmd-event|
 							*FileWritePre*
 FileWritePre			Before writing to a file, when not writing the
 				whole buffer.  Use the '[ and '] marks for the

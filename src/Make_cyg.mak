@@ -1,6 +1,6 @@
 #
 # Makefile for VIM on Win32, using Cygnus gcc
-# Last updated by Dan Sharp.  Last Change: 2004 Jul 01
+# Last updated by Dan Sharp.  Last Change: 2004 Dec 17
 #
 # This compiles Vim as a Windows application.  If you want Vim to run as a
 # Cygwin application use the Makefile (just like on Unix).
@@ -25,7 +25,7 @@
 #   DYNAMIC_IME no or yes: set to yes to load imm32.dll dynamically (yes)
 # OLE		no or yes: set to yes to make OLE gvim (no)
 # DEBUG		no or yes: set to yes if you wish a DEBUGging build (no)
-# CPUNR		i386 through pentium4: select -mcpu argument to compile with (i386)
+# CPUNR		No longer supported, use ARCH.
 # ARCH		i386 through pentium4: select -march argument to compile with (i386)
 # USEDLL	no or yes: set to yes to use the Runtime library DLL (no)
 #		For USEDLL=yes the cygwin1.dll is required to run Vim.
@@ -67,12 +67,6 @@ ifndef ARCH
 ARCH = i386
 endif
 
-ifndef CPUNR
-# Setting -march implicitly sets -mcpu to the same value,
-# so reflect that in the defaults here.
-CPUNR = $(ARCH)
-endif
-
 ifndef WINVER
 WINVER = 0x0400
 endif
@@ -96,7 +90,7 @@ endif
 
 DEFINES = -DWIN32 -DHAVE_PATHDEF -DFEAT_$(FEATURES) \
 	  -DWINVER=$(WINVER) -D_WIN32_WINNT=$(WINVER)
-INCLUDES = -mcpu=$(CPUNR) -march=$(ARCH) -Iproto
+INCLUDES = -march=$(ARCH) -Iproto
 
 #>>>>> name of the compiler and linker, name of lib directory
 CC = gcc
@@ -260,7 +254,7 @@ ifeq ($(OPTIMIZE), SIZE)
 OPTFLAG = -Os
 else
 ifeq ($(OPTIMIZE), MAXSPEED)
-OPTFLAG = -O3 -fomit-frame-pointer -freg-struct-return -malign-double
+OPTFLAG = -O3 -fomit-frame-pointer -freg-struct-return
 else
 OPTFLAG = -O2
 endif
@@ -428,7 +422,7 @@ uninstal.exe: uninstal.c
 	$(CC) $(CFLAGS) -o uninstal.exe uninstal.c $(LIBS)
 
 $(OUTDIR):
-	mkdir $(OUTDIR)
+	mkdir -p $(OUTDIR)
 
 tags:
 	command /c ctags *.c $(INCL)

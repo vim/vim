@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2004 Dec 11
+*version7.txt*  For Vim version 7.0aa.  Last change: 2004 Dec 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -36,6 +36,20 @@ run into a problem when upgrading from Vim 6.x to 7.0
 
 ":helpgrep" now uses a help window to display a match.
 
+In an argument list double quotes could be used to include spaces in a file
+name.  This caused a difference between ":edit" and ":next" for escaping
+double quotes and it is incompatible with some versions of Vi.
+	Command			Vim 6.x	file name	Vim 7.x file name ~
+	:edit foo\"888          'foo"888'         	'foo"888'
+	:next foo\"888          'foo888'          	'foo"888'
+	:next a\"b c\"d         'ab cd'           	'a"b' and 'c"d'
+
+A ":write file" command no longer resets the 'modified' flag of the buffer,
+unless the '+' flag is in 'cpoptions' |cpo-+|.  This was illogical, since the
+buffer is still modified compared to the original file.  And when undoing
+all changes the file would actually be marked modified.  It does mean that
+":quit" fails now.
+
 
 Minor incompatibilities:
 
@@ -60,6 +74,16 @@ Diff mode now is also converted as it is displayed.
 Win32: The effect of the <F10> key depended on 'winaltkeys'.  Now it depends
 on whether <F10> has been mapped or not.  This allows mapping <F10> without
 changing 'winaltkeys'.
+
+When using CTRL-A on "08" it became "018", which is illogical.  Now it becomes
+"9".  The leading zero(s) is(are) removed to avoid the number becoming octal
+after incrementing "009" to "010".
+
+When 'encoding' is set to a Unicode encoding, the value for 'fileencodings'
+now includes "default" before "latin1".  This means that for files with 8-bit
+encodings the default is to use the encoding specified by the environment, if
+possible.  Previously latin1 would always be used, which is wrong in a
+non-latin1 environment, such as Russian.
 
 ==============================================================================
 NEW FEATURES						*new-7*
@@ -303,6 +327,18 @@ When foldtext() finds no text after removing the comment leader, use the
 second line of the fold.  Helps for C-style /* */ comments where the first
 line is just "/*".
 
+When editing the same file from two systems (e.g., Unix and MS-Windows) there
+mostly was no warning for an existing swap file, because the name of the
+edited file differs (e.g., y:\dir\file vs /home/me/dir/file).  Added a flag to
+the swap file to indicate it is in the same directory as the edited file.  The
+used path then doesn't matter and the check for editing the same file is much
+more reliable.
+
+Client-server communication now supports 'encoding'.  When setting 'encoding'
+in a Vim server to "utf-8", and using "vim --remote fname" in a console,
+"fname" is converted from the console encoding to utf-8.  Also allows Vims
+with different 'encoding' settings to exchange messages.
+
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*
 
@@ -505,5 +541,27 @@ handle.  Added handle_signal().
 When using "set laststatus=2 cmdheight=2" in the .gvimrc you may only get one
 line for the cmdline. (Christian Robinson)  Invoke command_height() after the
 GUI has started up.
+
+When completing a file name on the command line backslashes are required for
+white space.  Was only done for a space, not for a Tab.
+
+When configure could not find a terminal library, compiling continued for a
+long time before reporting the problem.  Added a configure check for tgetent()
+being found in a library.
+
+When the cursor is on the first char of the last line a ":g/pat/s///" command
+may cause the cursor to be displayed below the text.
+
+Win32: Editing a file with non-ASCII characters doesn't work when 'encoding'
+is "utf-8".  use _wfullpath() instead of _fullpath(). (Yu-sung Moon)
+
+When recovering the 'fileformat' and 'fileencoding' were taken from the
+original file instead of from the swapfile.  When the file didn't exist, was
+empty or the option was changed (e.g., with ":e ++fenc=cp123 file") it could
+be wrong.  Now store 'fileformat' and 'fileencoding' in the swapfile and use
+the values when recovering.
+
+":bufdo g/something/p" overwrites each last printed text line with the file
+message for the next buffer.  Temporarily clear 'shortmess' to avoid that.
 
  vim:tw=78:ts=8:ft=help:norl:

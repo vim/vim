@@ -2976,22 +2976,13 @@ maketitle()
 		    off += 2;
 #endif
 		/* remove the file name */
-		p = gettail(buf + off);
+		p = gettail_sep(buf + off);
 		if (p == buf + off)
-		{
 		    /* must be a help buffer */
 		    STRCPY(buf + off, _("help"));
-		}
 		else
-		{
-		    while (p > buf + off + 1 && vim_ispathsep(p[-1]))
-			--p;
-#ifdef VMS
-		    /* path separator is part of the path */
-		    ++p;
-#endif
 		    *p = NUL;
-		}
+
 		/* translate unprintable chars */
 		p = transstr(buf + off);
 		STRNCPY(buf + off, p, IOSIZE - off);

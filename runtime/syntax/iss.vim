@@ -2,7 +2,12 @@
 " Language:             Inno Setup File (iss file) and My InnoSetup extension
 " Maintainer:           Jason Mills (jmills@cs.mun.ca)
 " Previous Maintainer:  Dominique Stéphan (dominique@mggen.com)
-" Last Change:          2004 Jul 13
+" Last Change:          2004 Dec 14
+"
+" Todo:
+"  - The paramter String: is matched as flag string (because of case ignore).
+"  - Pascal scripting syntax is not recognized.
+"  - Embedded double quotes confuse string matches. e.g. "asfd""asfa"
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -19,36 +24,37 @@ syn case ignore
 syn region issPreProc start="^\s*#" end="$"
 
 " Section
-syn region issHeader            start="\[" end="\]"
+syn region issSection	start="\[" end="\]"
 
 " Label in the [Setup] Section
-syn match  issLabel             "^[^=]\+="
+syn match  issDirective	"^[^=]\+="
 
 " URL
-syn match  issURL       "http[s]\=:\/\/.*$"
+syn match  issURL	"http[s]\=:\/\/.*$"
 
-" syn match  issName    "[^: ]\+:"
-syn match  issName      "Name:"
-syn match  issName      "MinVersion:\|OnlyBelowVersion:\|Languages:"
-syn match  issName      "Source:\|DestDir:\|DestName:\|CopyMode:"
-syn match  issName      "Attribs:\|Permissions:\|FontInstall:\|Flags:"
-syn match  issName      "FileName:\|Parameters:\|WorkingDir:\|HotKey:\|Comment:"
-syn match  issName      "IconFilename:\|IconIndex:"
-syn match  issName      "Section:\|Key:\|String:"
-syn match  issName      "Root:\|SubKey:\|ValueType:\|ValueName:\|ValueData:"
-syn match  issName      "RunOnceId:"
-syn match  issName      "Type:"
-syn match  issName      "Components:\|Description:\|GroupDescription:\|Types:\|ExtraDiskSpaceRequired:"
-syn match  issName      "StatusMsg:\|RunOnceId:\|Tasks:"
-syn match  issName      "MessagesFile:\|LicenseFile:\|InfoBeforeFile:\|InfoAfterFile:"
+" Parameters used for any section.
+" syn match  issParam"[^: ]\+:"
+syn match  issParam	"Name:"
+syn match  issParam	"MinVersion:\|OnlyBelowVersion:\|Languages:"
+syn match  issParam	"Source:\|DestDir:\|DestName:\|CopyMode:"
+syn match  issParam	"Attribs:\|Permissions:\|FontInstall:\|Flags:"
+syn match  issParam	"FileName:\|Parameters:\|WorkingDir:\|HotKey:\|Comment:"
+syn match  issParam	"IconFilename:\|IconIndex:"
+syn match  issParam	"Section:\|Key:\|String:"
+syn match  issParam	"Root:\|SubKey:\|ValueType:\|ValueName:\|ValueData:"
+syn match  issParam	"RunOnceId:"
+syn match  issParam	"Type:\|Excludes:"
+syn match  issParam	"Components:\|Description:\|GroupDescription:\|Types:\|ExtraDiskSpaceRequired:"
+syn match  issParam	"StatusMsg:\|RunOnceId:\|Tasks:"
+syn match  issParam	"MessagesFile:\|LicenseFile:\|InfoBeforeFile:\|InfoAfterFile:"
 
-syn match  issComment   "^;.*$"
+syn match  issComment	"^\s*;.*$"
 
 " folder constant
-syn match  issFolder    "{[^{]*}"
+syn match  issFolder	"{[^{]*}"
 
 " string
-syn region issString    start=+"+  end=+"+ contains=issFolder
+syn region issString	start=+"+ end=+"+ contains=issFolder
 
 " [Dirs]
 syn keyword issDirsFlags deleteafterinstall uninsalwaysuninstall uninsneveruninstall
@@ -63,6 +69,8 @@ syn keyword issFilesFlags isreadme onlyifdestfileexists onlyifdoesntexist overwr
 syn keyword issFilesFlags promptifolder recursesubdirs regserver regtypelib restartreplace
 syn keyword issFilesFlags sharedfile skipifsourcedoesntexist sortfilesbyextension touch 
 syn keyword issFilesFlags uninsremovereadonly uninsrestartdelete uninsneveruninstall
+syn keyword issFilesFlags replacesameversion nocompression noencryption noregerror
+
 
 " [Icons]
 syn keyword issIconsFlags closeonexit createonlyiffileexists dontcloseonexit 
@@ -108,30 +116,30 @@ if version >= 508 || !exists("did_iss_syntax_inits")
   endif
 
    " The default methods for highlighting.  Can be overridden later
-   HiLink issHeader     Special
-   HiLink issComment    Comment
-   HiLink issLabel      Type
-   HiLink issName       Type
-   HiLink issFolder     Special
-   HiLink issString     String
-   HiLink issValue      String
-   HiLink issURL        Include
-   HiLink issPreProc    PreProc 
+   HiLink issSection	Special
+   HiLink issComment	Comment
+   HiLink issDirective	Type
+   HiLink issParam	Type
+   HiLink issFolder	Special
+   HiLink issString	String
+   HiLink issURL	Include
+   HiLink issPreProc	PreProc 
 
-   HiLink issDirsFlags          Keyword
-   HiLink issFilesCopyMode      Keyword
-   HiLink issFilesAttribs       Keyword
-   HiLink issFilesFlags         Keyword
-   HiLink issIconsFlags         Keyword
-   HiLink issINIFlags           Keyword
-   HiLink issRegRootKey         Keyword
-   HiLink issRegValueType       Keyword
-   HiLink issRegFlags           Keyword
-   HiLink issRunFlags           Keyword
-   HiLink issTypesFlags         Keyword
-   HiLink issComponentsFlags    Keyword
-   HiLink issInstallDeleteType  Keyword
-   HiLink issTasksFlags         Keyword
+   HiLink issDirsFlags		Keyword
+   HiLink issFilesCopyMode	Keyword
+   HiLink issFilesAttribs	Keyword
+   HiLink issFilesPermissions	Keyword
+   HiLink issFilesFlags		Keyword
+   HiLink issIconsFlags		Keyword
+   HiLink issINIFlags		Keyword
+   HiLink issRegRootKey		Keyword
+   HiLink issRegValueType	Keyword
+   HiLink issRegFlags		Keyword
+   HiLink issRunFlags		Keyword
+   HiLink issTypesFlags		Keyword
+   HiLink issComponentsFlags	Keyword
+   HiLink issInstallDeleteType	Keyword
+   HiLink issTasksFlags		Keyword
 
   delcommand HiLink
 endif

@@ -1,6 +1,6 @@
 " Vim syntax support file
 " Maintainer: Bram Moolenaar <Bram@vim.org>
-" Last Change: 2004 Oct 15
+" Last Change: 2004 Dec 14
 "	       (modified by David Ne\v{c}as (Yeti) <yeti@physics.muni.cz>)
 "	       (XHTML support by Panagiotis Issaris <takis@lumumba.luc.ac.be>)
 
@@ -211,7 +211,11 @@ let s:old_magic = &magic
 set magic
 
 if exists("use_xhtml")
-  exe "normal! a<?xml version=\"1.0\"?>\n\e"
+  if s:html_encoding != ""
+    exe "normal!  a<?xml version=\"1.0\" encoding=\"" . s:html_encoding . "\"?>\n\e"
+  else
+    exe "normal! a<?xml version=\"1.0\"?>\n\e"
+  endif
   let s:tag_close = '/>'
 else
   let s:tag_close = '>'
@@ -230,8 +234,8 @@ endif
 
 " HTML header, with the title and generator ;-). Left free space for the CSS,
 " to be filled at the end.
-exe "normal! a<html>\n<head>\n<title>\e"
-exe "normal! a" . expand("%:p:~") . "</title>\n\e"
+exe "normal! a<html>\n\e"
+exe "normal! a<head>\n<title>" . expand("%:p:~") . "</title>\n\e"
 exe "normal! a<meta name=\"Generator\" content=\"Vim/" . v:version/100 . "." . v:version %100 . '"' . s:tag_close . "\n\e"
 if s:html_encoding != ""
   exe "normal! a<meta http-equiv=\"content-type\" content=\"text/html; charset=" . s:html_encoding . '"' . s:tag_close . "\n\e"
@@ -477,11 +481,19 @@ while s:idlist != ""
 endwhile
 
 " Add hyperlinks
-%s+\(http://\S\{-}\)\(\([.,;:}]\=\(\s\|$\)\)\|[\\"'<>]\|&gt;\|&lt;\|&quot;\)+<A HREF="\1">\1</A>\2+ge
+%s+\(https\=://\S\{-}\)\(\([.,;:}]\=\(\s\|$\)\)\|[\\"'<>]\|&gt;\|&lt;\|&quot;\)+<a href="\1">\1</a>\2+ge
 
 " The DTD
 if exists("html_use_css")
-  exe "normal! gg0i<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\">\n\e"
+  if exists("use_xhtml")
+    exe "normal! gg$a\n<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\e"
+  else
+    exe "normal! gg0i<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\">\n\e"
+  endif
+endif
+
+if exists("use_xhtml") 
+  exe "normal! gg/<html/e\na xmlns=\"http://www.w3.org/1999/xhtml\"\e"
 endif
 
 " Cleanup

@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.0aa.  Last change: 2004 Nov 30
+*change.txt*    For Vim version 7.0aa.  Last change: 2004 Dec 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -351,7 +351,8 @@ The CTRL-A and CTRL-X commands work for (signed) decimal numbers, unsigned
 octal and hexadecimal numbers and alphabetic characters.  This depends on the
 'nrformats' option.
 - When 'nrformats' includes "octal", Vim considers numbers starting with a '0'
-  to be octal.  Other numbers are decimal and may have a preceding minus sign.
+  to be octal, unless the number includes a '8' or '9'.  Other numbers are
+  decimal and may have a preceding minus sign.
   If the cursor is on a number, the commands apply to that number; otherwise
   Vim uses the number to the right of the cursor.
 - When 'nrformats' includes "hex", Vim assumes numbers starting with '0x' or
@@ -365,9 +366,13 @@ octal and hexadecimal numbers and alphabetic characters.  This depends on the
 For numbers with leading zeros (including all octal and hexadecimal numbers),
 Vim preserves the number of characters in the number when possible.  CTRL-A on
 "0077" results in "0100", CTRL-X on "0x100" results in "0x0ff".
+There is one exception: When a number that starts with a zero is found not to
+be octal (it contains a '8' or '9'), but 'nrformats' does include "octal",
+leading zeros are removed to avoid that the result may be recognized as an
+octal number.
 
 Note that when 'nrformats' includes "octal", decimal numbers with leading
-zeros are impossible because they are indistinguishable from octal numbers.
+zeros cause mistakes, because they can be confused with octal numbers.
 
 The CTRL-A command is very useful in a macro.  Example: Use the following
 steps to make a numbered list.

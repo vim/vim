@@ -2356,8 +2356,12 @@ AC_ARG_WITH(tlib, [  --with-tlib=library     terminal library to be used ],)
 if test -n "$with_tlib"; then
   AC_MSG_RESULT($with_tlib)
   LIBS="$LIBS -l$with_tlib"
+  AC_MSG_CHECKING(for linking with $with_tlib library)
+  AC_TRY_LINK([], [], AC_MSG_RESULT(OK), AC_MSG_ERROR(FAILED))
+  dnl Need to check for tgetent() below.
+  olibs="$LIBS"
 else
-  AC_MSG_RESULT([automatic terminal library selection])
+  AC_MSG_RESULT([empty: automatic terminal library selection])
   dnl  On HP-UX 10.10 termcap or termlib should be used instead of
   dnl  curses, because curses is much slower.
   dnl  Newer versions of ncurses are preferred over anything.
@@ -2386,10 +2390,23 @@ main() {char *s; s=(char *)tgoto("%p1%d", 0, 1); exit(0); }],
       LIBS="$olibs"
     fi
   done
+  if test "x$olibs" = "x$LIBS"; then
+    AC_MSG_RESULT(no terminal library found)
+  fi
 fi
-if test "x$olibs" != "x$LIBS"; then
-  AC_MSG_CHECKING(whether we talk terminfo)
-  AC_TRY_RUN([
+
+if test "x$olibs" = "x$LIBS"; then
+  AC_MSG_CHECKING([for tgetent()])
+  AC_TRY_LINK([], 
+      [char s[10000]; int res = tgetent(s, "thisterminaldoesnotexist");],
+	AC_MSG_RESULT(yes),
+	AC_MSG_ERROR([NOT FOUND!
+      You need to install a terminal library; for example ncurses.
+      Or specify the name of the library with --with-tlib.]))
+fi
+
+AC_MSG_CHECKING(whether we talk terminfo)
+AC_TRY_RUN([
 #ifdef HAVE_TERMCAP_H
 # include <termcap.h>
 #endif
@@ -2398,9 +2415,6 @@ main()
 	  AC_MSG_RESULT([no -- we are in termcap land]),
 	  AC_MSG_RESULT([yes -- terminfo spoken here]); AC_DEFINE(TERMINFO),
 	  AC_MSG_ERROR(failed to compile test program.))
-else
-  AC_MSG_RESULT(none found)
-fi
 
 if test "x$olibs" != "x$LIBS"; then
   AC_MSG_CHECKING(what tgetent() returns for an unknown terminal)

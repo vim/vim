@@ -22,6 +22,7 @@ int get_option_value __ARGS((char_u *name, long *numval, char_u **stringval, int
 void set_option_value __ARGS((char_u *name, long number, char_u *string, int opt_flags));
 char_u *get_term_code __ARGS((char_u *tname));
 char_u *get_highlight_default __ARGS((void));
+char_u *get_encoding_default __ARGS((void));
 int makeset __ARGS((FILE *fd, int opt_flags, int local_only));
 int makefoldset __ARGS((FILE *fd));
 void clear_termoptions __ARGS((void));

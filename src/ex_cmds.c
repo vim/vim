@@ -3599,12 +3599,7 @@ do_sub(eap)
 	    }
 	    if (cmd[0] == '\\' && cmd[1] != 0)	/* skip escaped characters */
 		++cmd;
-#ifdef FEAT_MBYTE
-	    if (has_mbyte)
-		cmd += (*mb_ptr2len_check)(cmd);
-	    else
-#endif
-		++cmd;
+	    mb_ptr_adv(cmd);
 	}
 
 	if (!eap->skip)
@@ -4497,6 +4492,10 @@ global_exe(cmd)
 	beginline(BL_WHITE | BL_FIX);
     else
 	check_cursor();	/* cursor may be beyond the end of the line */
+
+    /* the cursor may not have moved in the text but a change in a previous
+     * line may move it on the screen */
+    changed_line_abv_curs();
 
     /* If it looks like no message was written, allow overwriting the
      * command with the report for number of changes. */

@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 7.0aa.  Last change: 2004 Nov 18
+*intro.txt*     For Vim version 7.0aa.  Last change: 2004 Dec 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -278,7 +278,7 @@ the ideas from all these people: They keep Vim alive!
 
 
 In this documentation there are several references to other versions of Vi:
-							*Vi*
+							*Vi* *vi*
 Vi	"the original".  Without further remarks this is the version
 	of Vi that appeared in Sun OS 4.x.  ":version" returns
 	"Version 3.7, 6/7/85".  Sometimes other versions are referred

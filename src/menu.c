@@ -146,12 +146,7 @@ ex_menu(eap)
 	{
 	    if (*arg == '\\')
 		mch_memmove(arg, arg + 1, STRLEN(arg));
-#ifdef FEAT_MBYTE
-	    if (has_mbyte)
-		arg += (*mb_ptr2len_check)(arg);
-	    else
-#endif
-		++arg;
+	    mb_ptr_adv(arg);
 	}
 	if (*arg != NUL)
 	{
@@ -681,17 +676,13 @@ add_menu_path(menu_path, menuarg, pri_tab, call_data
 
 		    STRCPY(tearpath, menu_path);
 		    idx = (int)(next_name - path_name - 1);
-		    for (s = tearpath; *s && s < tearpath + idx; ++s)
+		    for (s = tearpath; *s && s < tearpath + idx; mb_ptr_adv(s))
 		    {
 			if ((*s == '\\' || *s == Ctrl_V) && s[1])
 			{
 			    ++idx;
 			    ++s;
 			}
-#  ifdef FEAT_MBYTE
-			if (has_mbyte)
-			    s += (*mb_ptr2len_check)(s) - 1;
-#  endif
 		    }
 		    tearpath[idx] = NUL;
 		    gui_add_tearoff(tearpath, pri_tab, pri_idx);
@@ -1410,7 +1401,7 @@ menu_name_skip(name)
 {
     char_u  *p;
 
-    for (p = name; *p && *p != '.'; p++)
+    for (p = name; *p && *p != '.'; mb_ptr_adv(p))
     {
 	if (*p == '\\' || *p == Ctrl_V)
 	{
@@ -1418,10 +1409,6 @@ menu_name_skip(name)
 	    if (*p == NUL)
 		break;
 	}
-#ifdef FEAT_MBYTE
-	if (has_mbyte)
-	    p += (*mb_ptr2len_check)(p) - 1;	/* skip multibyte char */
-#endif
     }
     if (*p)
 	*p++ = NUL;

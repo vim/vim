@@ -819,12 +819,7 @@ win_linetabsize(wp, p, len)
     for (s = p; *s != NUL && (len == MAXCOL || s < p + len); )
     {
 	col += win_lbr_chartabsize(wp, s, col, NULL);
-#ifdef FEAT_MBYTE
-	if (has_mbyte)
-	    s += (*mb_ptr2len_check)(s);
-	else
-#endif
-	    ++s;
+	mb_ptr_adv(s);
     }
     return (int)col;
 }
@@ -967,12 +962,7 @@ lbr_chartabsize_adv(s, col)
     int		retval;
 
     retval = lbr_chartabsize(*s, col);
-#ifdef FEAT_MBYTE
-    if (has_mbyte)
-	*s += (*mb_ptr2len_check)(*s);
-    else
-#endif
-	++*s;
+    mb_ptr_adv(*s);
     return retval;
 }
 
@@ -1054,12 +1044,7 @@ win_lbr_chartabsize(wp, s, col, headp)
 	for (;;)
 	{
 	    ps = s;
-# ifdef FEAT_MBYTE
-	    if (has_mbyte)
-		s += (*mb_ptr2len_check)(s);
-	    else
-# endif
-		++s;
+	    mb_ptr_adv(s);
 	    c = *s;
 	    if (!(c != NUL
 		    && (vim_isbreak(c)
@@ -1263,12 +1248,7 @@ getvcol(wp, pos, start, cursor, end)
 		break;
 
 	    vcol += incr;
-#ifdef FEAT_MBYTE
-	    if (has_mbyte)
-		ptr += (*mb_ptr2len_check)(ptr);
-	    else
-#endif
-		++ptr;
+	    mb_ptr_adv(ptr);
 	}
     }
     else
@@ -1289,12 +1269,7 @@ getvcol(wp, pos, start, cursor, end)
 		break;
 
 	    vcol += incr;
-#ifdef FEAT_MBYTE
-	    if (has_mbyte)
-		ptr += (*mb_ptr2len_check)(ptr);
-	    else
-#endif
-		++ptr;
+	    mb_ptr_adv(ptr);
 	}
     }
     if (start != NULL)
@@ -1571,6 +1546,7 @@ vim_str2nr(start, hexp, len, dooct, dohex, nptr, unptr)
     int		    hex = 0;		/* default is decimal */
     int		    negative = FALSE;
     unsigned long   un = 0;
+    int		    n;
 
     if (ptr[0] == '-')
     {
@@ -1578,17 +1554,29 @@ vim_str2nr(start, hexp, len, dooct, dohex, nptr, unptr)
 	++ptr;
     }
 
-    if (ptr[0] == '0')			/* could be hex or octal */
+    /* Recognize hex and octal. */
+    if (ptr[0] == '0' && ptr[1] != '8' && ptr[1] != '9')
     {
 	hex = ptr[1];
 	if (dohex && (hex == 'X' || hex == 'x') && vim_isxdigit(ptr[2]))
 	    ptr += 2;			/* hexadecimal */
 	else
 	{
-	    if (dooct && VIM_ISDIGIT(hex))
-		hex = '0';		/* octal */
-	    else
-		hex = 0;		/* 0 by itself is decimal */
+	    hex = 0;			/* default is decimal */
+	    if (dooct)
+	    {
+		/* Don't interpret "0", "08" or "0129" as octal. */
+		for (n = 1; VIM_ISDIGIT(ptr[n]); ++n)
+		{
+		    if (ptr[n] > '7')
+		    {
+			hex = 0;	/* can't be octal */
+			break;
+		    }
+		    if (ptr[n] > '0')
+			hex = '0';	/* assume octal */
+		}
+	    }
 	}
     }
 

@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 7.0aa.  Last change: 2004 Sep 07
+*pattern.txt*   For Vim version 7.0aa.  Last change: 2004 Dec 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -153,6 +153,7 @@ The offset gives the cursor position relative to the found match:
     s[-num]	[num] characters to the left of the start of the match
     b[+num]	[num] identical to s[+num] above (mnemonic: begin)
     b[-num]	[num] identical to s[-num] above (mnemonic: begin)
+    ;{pattern}  perform another searcn, see |//;|
 
 If a '-' or '+' is given but [num] is omitted, a count of one will be used.
 When including an offset with 'e', the search becomes inclusive (the

@@ -125,9 +125,10 @@ struct data_block
 #define INDEX_SIZE  (sizeof(unsigned))	    /* size of one db_index entry */
 #define HEADER_SIZE (sizeof(DATA_BL) - INDEX_SIZE)  /* size of data block header */
 
-#define B0_FNAME_SIZE	900
-#define B0_UNAME_SIZE	40
-#define B0_HNAME_SIZE	40
+#define B0_FNAME_SIZE_ORG	900	/* what it was in older versions */
+#define B0_FNAME_SIZE		898
+#define B0_UNAME_SIZE		40
+#define B0_HNAME_SIZE		40
 /*
  * Restrict the numbers to 32 bits, otherwise most compilers will complain.
  * This won't detect a 64 bit machine that only swaps a byte in the top 32
@@ -160,13 +161,39 @@ struct block0
     char_u	b0_pid[4];	/* process id of creator (or 0) */
     char_u	b0_uname[B0_UNAME_SIZE]; /* name of user (uid if no name) */
     char_u	b0_hname[B0_HNAME_SIZE]; /* host name (if it has a name) */
-    char_u	b0_fname[B0_FNAME_SIZE]; /* name of file being edited */
+    char_u	b0_fname[B0_FNAME_SIZE_ORG]; /* name of file being edited */
     long	b0_magic_long;	/* check for byte order of long */
     int		b0_magic_int;	/* check for byte order of int */
     short	b0_magic_short;	/* check for byte order of short */
     char_u	b0_magic_char;	/* check for last char */
 };
-#define   b0_dirty b0_fname[B0_FNAME_SIZE-1]
+
+/*
+ * Note: b0_fname and b0_flags are put at the end of the file name.  For very
+ * long file names in older versions of Vim they are invalid.
+ * The 'fileencoding' comes before b0_flags, with a NUL in front.  But only
+ * when there is room, for very long file names it's omitted.
+ */
+#define B0_DIRTY	0x55
+#define b0_dirty	b0_fname[B0_FNAME_SIZE_ORG-1]
+
+/*
+ * The b0_flags field is new in Vim 7.0.
+ */
+#define b0_flags	b0_fname[B0_FNAME_SIZE_ORG-2]
+
+/* The lowest two bits contain the fileformat.  Zero means it's not set
+ * (compatible with Vim 6.x), otherwise it's EOL_UNIX + 1, EOL_DOS + 1 or
+ * EOL_MAC + 1. */
+#define B0_FF_MASK	3
+
+/* Swap file is in directory of edited file.  Used to find the file from
+ * different mount points. */
+#define B0_SAME_DIR	4
+
+/* The 'fileencoding' is at the end of b0_fname[], with a NUL in front of it.
+ * When empty there is only the NUL. */
+#define B0_HAS_FENC	8
 
 #define STACK_INCR	5	/* nr of entries added to ml_stack at a time */
 
@@ -187,7 +214,12 @@ static linenr_T	lowest_marked = 0;
 #define ML_FLUSH	0x02	    /* flush locked block */
 #define ML_SIMPLE(x)	(x & 0x10)  /* DEL, INS or FIND */
 
+static void ml_upd_block0 __ARGS((buf_T *buf, int setfname));
 static void set_b0_fname __ARGS((ZERO_BL *, buf_T *buf));
+static void set_b0_dir_flag __ARGS((ZERO_BL *b0p, buf_T *buf));
+#ifdef FEAT_MBYTE
+static void add_b0_fenc __ARGS((ZERO_BL *b0p, buf_T *buf));
+#endif
 static time_t swapfile_info __ARGS((char_u *));
 static int recov_file_names __ARGS((char_u **, char_u *, int prepend_dot));
 static int ml_append_int __ARGS((buf_T *, linenr_T, char_u *, colnr_T, int, int));
@@ -282,7 +314,8 @@ ml_open()
 
     b0p->b0_id[0] = BLOCK0_ID0;
     b0p->b0_id[1] = BLOCK0_ID1;
-    b0p->b0_dirty = curbuf->b_changed ? 0x55 : 0;
+    b0p->b0_dirty = curbuf->b_changed ? B0_DIRTY : 0;
+    b0p->b0_flags = get_fileformat(curbuf) + 1;
     b0p->b0_magic_long = (long)B0_MAGIC_LONG;
     b0p->b0_magic_int = (int)B0_MAGIC_INT;
     b0p->b0_magic_short = (short)B0_MAGIC_SHORT;
@@ -433,6 +466,7 @@ ml_setname(buf)
 #else
 	    mf_set_ffname(mfp);
 #endif
+	    ml_upd_block0(buf, FALSE);
 	    break;
 	}
 	vim_free(fname);	    /* this fname didn't work, try another */
@@ -507,6 +541,8 @@ ml_open_file(buf)
 	     */
 	    mf_fullname(mfp);
 #endif
+	    ml_upd_block0(buf, FALSE);
+
 	    /* Flush block zero, so others can read it */
 	    if (mf_sync(mfp, MFS_ZERO) == OK)
 		break;
@@ -608,19 +644,34 @@ ml_close_notmod()
 ml_timestamp(buf)
     buf_T	*buf;
 {
+    ml_upd_block0(buf, TRUE);
+}
+
+/*
+ * Update the timestamp or the B0_SAME_DIR flag of the .swp file.
+ */
+    static void
+ml_upd_block0(buf, setfname)
+    buf_T	*buf;
+    int		setfname;
+{
     memfile_T	*mfp;
     bhdr_T	*hp;
     ZERO_BL	*b0p;
 
     mfp = buf->b_ml.ml_mfp;
-
     if (mfp == NULL || (hp = mf_get(mfp, (blocknr_T)0, 1)) == NULL)
 	return;
     b0p = (ZERO_BL *)(hp->bh_data);
     if (b0p->b0_id[0] != BLOCK0_ID0 || b0p->b0_id[1] != BLOCK0_ID1)
-	EMSG(_("E304: ml_timestamp: Didn't get block 0??"));
+	EMSG(_("E304: ml_upd_block0(): Didn't get block 0??"));
     else
-	set_b0_fname(b0p, buf);
+    {
+	if (setfname)
+	    set_b0_fname(b0p, buf);
+	else
+	    set_b0_dir_flag(b0p, buf);
+    }
     mf_put(mfp, hp, TRUE, FALSE);
 }
 
@@ -641,9 +692,14 @@ set_b0_fname(b0p, buf)
     else
     {
 #if defined(MSDOS) || defined(MSWIN) || defined(AMIGA) || defined(RISCOS)
-	/* systems that cannot translate "~user" back into a path: copy the
-	 * file name unmodified */
+	/* Systems that cannot translate "~user" back into a path: copy the
+	 * file name unmodified.  Do use slashes instead of backslashes for
+	 * portability. */
 	STRNCPY(b0p->b0_fname, buf->b_ffname, B0_FNAME_SIZE);
+	b0p->b0_fname[B0_FNAME_SIZE - 1] = NUL;
+# ifdef BACKSLASH_IN_FILENAME
+	forward_slash(b0p->b0_fname);
+# endif
 #else
 	size_t	flen, ulen;
 	char_u	uname[B0_UNAME_SIZE];
@@ -662,7 +718,10 @@ set_b0_fname(b0p, buf)
 	    /* If there is no user name or it is too long, don't use "~/" */
 	    if (get_user_name(uname, B0_UNAME_SIZE) == FAIL
 			 || (ulen = STRLEN(uname)) + flen > B0_FNAME_SIZE - 1)
+	    {
 		STRNCPY(b0p->b0_fname, buf->b_ffname, B0_FNAME_SIZE);
+		b0p->b0_fname[B0_FNAME_SIZE - 1] = NUL;
+	    }
 	    else
 	    {
 		mch_memmove(b0p->b0_fname + ulen + 1, b0p->b0_fname + 1, flen);
@@ -691,7 +750,54 @@ set_b0_fname(b0p, buf)
 	    buf->b_orig_mode = 0;
 	}
     }
+
+#ifdef FEAT_MBYTE
+    /* Also add the 'fileencoding' if there is room. */
+    add_b0_fenc(b0p, curbuf);
+#endif
 }
+
+/*
+ * Update the B0_SAME_DIR flag of the swap file.  It's set if the file and the
+ * swapfile for "buf" are in the same directory.
+ * This is fail safe: if we are not sure the directories are equal the flag is
+ * not set.
+ */
+    static void
+set_b0_dir_flag(b0p, buf)
+    ZERO_BL	*b0p;
+    buf_T	*buf;
+{
+    if (same_directory(buf->b_ml.ml_mfp->mf_fname, buf->b_ffname))
+	b0p->b0_flags |= B0_SAME_DIR;
+    else
+	b0p->b0_flags &= ~B0_SAME_DIR;
+}
+
+#ifdef FEAT_MBYTE
+/*
+ * When there is room, add the 'fileencoding' to block zero.
+ */
+    static void
+add_b0_fenc(b0p, buf)
+    ZERO_BL	*b0p;
+    buf_T	*buf;
+{
+    int		n;
+
+    n = STRLEN(buf->b_p_fenc);
+    if (STRLEN(b0p->b0_fname) + n + 1 > B0_FNAME_SIZE)
+	b0p->b0_flags &= ~B0_HAS_FENC;
+    else
+    {
+	mch_memmove((char *)b0p->b0_fname + B0_FNAME_SIZE - n,
+					    (char *)buf->b_p_fenc, (size_t)n);
+	*(b0p->b0_fname + B0_FNAME_SIZE - n - 1) = NUL;
+	b0p->b0_flags |= B0_HAS_FENC;
+    }
+}
+#endif
+
 
 /*
  * try to recover curbuf from the .swp file
@@ -704,6 +810,8 @@ ml_recover()
     char_u	*fname;
     bhdr_T	*hp = NULL;
     ZERO_BL	*b0p;
+    int		b0_ff;
+    char_u	*b0_fenc = NULL;
     PTR_BL	*pp;
     DATA_BL	*dp;
     infoptr_T	*ip;
@@ -926,6 +1034,17 @@ ml_recover()
 	EMSG(_("E308: Warning: Original file may have been changed"));
     }
     out_flush();
+
+    /* Get the 'fileformat' and 'fileencoding' from block zero. */
+    b0_ff = (b0p->b0_flags & B0_FF_MASK);
+    if (b0p->b0_flags & B0_HAS_FENC)
+    {
+	for (p = b0p->b0_fname + B0_FNAME_SIZE;
+				       p > b0p->b0_fname && p[-1] != NUL; --p)
+	    ;
+	b0_fenc = vim_strnsave(p, b0p->b0_fname + B0_FNAME_SIZE - p);
+    }
+
     mf_put(mfp, hp, FALSE, FALSE);	/* release block 0 */
     hp = NULL;
 
@@ -947,6 +1066,16 @@ ml_recover()
 	while (!(curbuf->b_ml.ml_flags & ML_EMPTY))
 	    ml_delete((linenr_T)1, FALSE);
     }
+
+    /* Use the 'fileformat' and 'fileencoding' as stored in the swap file. */
+    if (b0_ff != 0)
+	set_fileformat(b0_ff - 1, OPT_LOCAL);
+    if (b0_fenc != NULL)
+    {
+	set_option_value((char_u *)"fenc", 0L, b0_fenc, OPT_LOCAL);
+	vim_free(b0_fenc);
+    }
+    unchanged(curbuf, TRUE);
 
     bnum = 1;		/* start with block 1 */
     page_count = 1;	/* which is 1 page */
@@ -1295,7 +1424,7 @@ recover_names(fname, list, nr)
 	    {
 #if defined(UNIX) || defined(WIN3264)
 		p = dir_name + STRLEN(dir_name);
-		if (vim_ispathsep(p[-1]) && p[-1] == p[-2])
+		if (after_pathsep(dir_name, p) && p[-1] == p[-2])
 		{
 		    /* Ends with '//', Use Full path for swap name */
 		    tail = make_percent_swname(dir_name, *fname);
@@ -1441,7 +1570,7 @@ make_percent_swname(dir, name)
     char_u	*dir;
     char_u	*name;
 {
-    char_u *d, *s, *f, *p;
+    char_u *d, *s, *f;
 
     f = fix_fname(name != NULL ? name : (char_u *) "");
     d = NULL;
@@ -1450,9 +1579,10 @@ make_percent_swname(dir, name)
 	s = alloc((unsigned)(STRLEN(f) + 1));
 	if (s != NULL)
 	{
-	    for (d = s, p = f; *p; p++, d++)
-		*d = vim_ispathsep(*p) ? '%' : *p;
-	    *d = 0;
+	    STRCPY(s, f);
+	    for (d = s; *d != NUL; mb_ptr_adv(d))
+		if (vim_ispathsep(*d))
+		    *d = '%';
 	    d = concat_fnames(dir, s, TRUE);
 	    vim_free(s);
 	}
@@ -3266,7 +3396,7 @@ makeswapname(buf, dir_name)
 
 #if defined(UNIX) || defined(WIN3264)  /* Need _very_ long file names */
     s = dir_name + STRLEN(dir_name);
-    if (vim_ispathsep(s[-1]) && s[-1] == s[-2])
+    if (after_pathsep(dir_name, s) && s[-1] == s[-2])
     {			       /* Ends with '//', Use Full path */
 	r = NULL;
 	if ((s = make_percent_swname(dir_name, buf->b_fname)) != NULL)
@@ -3617,18 +3747,33 @@ findswapname(buf, dirp, old_fname)
 		    if (read(fd, (char *)&b0, sizeof(b0)) == sizeof(b0))
 		    {
 			/*
-			 * The name in the swap file may be "~user/path/file".
-			 * Expand it first.
+			 * If the swapfile has the same directory as the
+			 * buffer don't compare the directory names, they can
+			 * have a different mountpoint.
 			 */
-			expand_env(b0.b0_fname, NameBuff, MAXPATHL);
+			if (b0.b0_flags & B0_SAME_DIR)
+			{
+			    if (fnamecmp(gettail(buf->b_ffname),
+						   gettail(b0.b0_fname)) != 0
+				    || !same_directory(fname, buf->b_ffname))
+				differ = TRUE;
+			}
+			else
+			{
+			    /*
+			     * The name in the swap file may be
+			     * "~user/path/file".  Expand it first.
+			     */
+			    expand_env(b0.b0_fname, NameBuff, MAXPATHL);
 #ifdef CHECK_INODE
-			if (fnamecmp_ino(buf->b_ffname, NameBuff,
-						     char_to_long(b0.b0_ino)))
-			    differ = TRUE;
+			    if (fnamecmp_ino(buf->b_ffname, NameBuff,
+					char_to_long(b0.b0_ino)))
+				differ = TRUE;
 #else
-			if (fnamecmp(NameBuff, buf->b_ffname) != 0)
-			    differ = TRUE;
+			    if (fnamecmp(NameBuff, buf->b_ffname) != 0)
+				differ = TRUE;
 #endif
+			}
 		    }
 		    close(fd);
 		}
@@ -3956,10 +4101,15 @@ char_to_long(s)
     return retval;
 }
 
+/*
+ * Set the flags in the first block of the swap file:
+ * - file is modified or not: buf->b_changed
+ * - 'fileformat'
+ * - 'fileencoding'
+ */
     void
-ml_setdirty(buf, flag)
+ml_setflags(buf)
     buf_T	*buf;
-    int		flag;
 {
     bhdr_T	*hp;
     ZERO_BL	*b0p;
@@ -3971,7 +4121,12 @@ ml_setdirty(buf, flag)
 	if (hp->bh_bnum == 0)
 	{
 	    b0p = (ZERO_BL *)(hp->bh_data);
-	    b0p->b0_dirty = flag ? 0x55 : 0;
+	    b0p->b0_dirty = buf->b_changed ? B0_DIRTY : 0;
+	    b0p->b0_flags = (b0p->b0_flags & ~B0_FF_MASK)
+						  | (get_fileformat(buf) + 1);
+#ifdef FEAT_MBYTE
+	    add_b0_fenc(b0p, buf);
+#endif
 	    hp->bh_flags |= BH_DIRTY;
 	    mf_sync(buf->b_ml.ml_mfp, MFS_ZERO);
 	    break;

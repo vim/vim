@@ -31,9 +31,7 @@ GUI=yes
 # FEATURES=[TINY | SMALL  | NORMAL | BIG | HUGE]
 # set to TINY to make minimal version (few features)
 FEATURES=BIG
-# set to one of i386, i486, i586, i686 as the *target* processor
-CPUNR=i686
-# set to same choices as 'CPUNR', but will prevent running on 'lower' cpus:
+# set to one of i386, i486, i586, i686 as the minimum target processor
 ARCH=i386
 # set to yes to cross-compile from unix; no=native Windows
 CROSS=no
@@ -242,7 +240,7 @@ endif
 #>>>>> end of choices
 ###########################################################################
 
-CFLAGS = -Iproto $(DEFINES) -pipe -w -march=$(ARCH) -mcpu=$(CPUNR) -Wall
+CFLAGS = -Iproto $(DEFINES) -pipe -w -march=$(ARCH) -Wall
 
 ifdef GETTEXT
 DEFINES +=-DHAVE_GETTEXT -DHAVE_LOCALE_H
@@ -334,7 +332,7 @@ CFLAGS += -Os
 else
 ifeq ($(OPTIMIZE), MAXSPEED)
 CFLAGS += -O3
-CFLAGS += -fomit-frame-pointer -freg-struct-return -malign-double
+CFLAGS += -fomit-frame-pointer -freg-struct-return
 else  # SPEED
 CFLAGS += -O2
 endif
@@ -549,7 +547,7 @@ $(OUTDIR)/vimrc.o: $(OUTDIR)/vimres.res
 	$(WINDRES) $(OUTDIR)/vimres.res $(OUTDIR)/vimrc.o
 
 $(OUTDIR):
-	mkdir $(OUTDIR)
+	mkdir -p $(OUTDIR)
 
 $(OUTDIR)/ex_docmd.o:	ex_docmd.c $(INCL) ex_cmds.h
 	$(CC) -c $(CFLAGS) ex_docmd.c -o $(OUTDIR)/ex_docmd.o

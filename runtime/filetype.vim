@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2004 Nov 18
+" Last Change:	2004 Dec 17
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -893,6 +893,9 @@ au BufNewFile,BufRead .muttrc*,*/.mutt/muttrc*,Muttrc	setf muttrc
 " Natural
 au BufNewFile,BufRead *.NS[ACGLMNPS]		setf natural
 
+" Netrc
+au BufNewFile,BufRead .netrc			setf netrc
+
 " Novell netware batch files
 au BufNewFile,BufRead *.ncf			setf ncf
 
@@ -1485,6 +1488,9 @@ au BufNewFile,BufRead *.stp			setf stp
 
 " Standard ML
 au BufNewFile,BufRead *.sml			setf sml
+
+" Sudoers
+au BufNewFile,BufRead /etc/sudoers,sudoers.tmp	setf sudoers
 
 " Tads (or Nroff)
 au BufNewFile,BufRead *.t

@@ -320,12 +320,12 @@
 # endif
 #endif
 #ifdef BACKSLASH_IN_FILENAME
-# define PATH_ESC_CHARS ((char_u *)" *?[{`%#")
+# define PATH_ESC_CHARS ((char_u *)" \t*?[{`%#")
 #else
 # ifdef COLON_AS_PATHSEP
-#  define PATH_ESC_CHARS ((char_u *)" *?[{`$%#/")
+#  define PATH_ESC_CHARS ((char_u *)" \t*?[{`$%#/")
 # else
-#  define PATH_ESC_CHARS ((char_u *)" *?[{`$\\%#'\"|")
+#  define PATH_ESC_CHARS ((char_u *)" \t*?[{`$\\%#'\"|")
 # endif
 #endif
 

@@ -1,4 +1,4 @@
-*os_mac.txt*    For Vim version 7.0aa.  Last change: 2004 Jul 19
+*os_mac.txt*    For Vim version 7.0aa.  Last change: 2004 Dec 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar et al.
@@ -70,6 +70,12 @@ files.
 Q: I can't enter non-ASCII character in Apple Terminal.
 A: Under Window Settings, Emulation, make sure that "Escape non-ASCII
    characters" is not checked.
+
+Q: How do I start the GUI from the command line?
+A: Assuming that Vim.app is located in /Applications:
+	open /Applications/Vim.app
+   Or:
+   	/Applications/Vim.app/Contents/MacOS/Vim -g  {arguments}
 
 ==============================================================================
 4. Mac Lack						*mac-lack*

@@ -1,6 +1,6 @@
 " Script to define the syntax menu in synmenu.vim
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2004 Nov 20
+" Last Change:	2004 Dec 17
 
 " This is used by "make menu" in the src directory.
 edit <sfile>:p:h/synmenu.vim
@@ -407,6 +407,7 @@ SynMenu Sh-S.Standard\ ML:sml
 SynMenu Sh-S.Stored\ Procedures:stp
 SynMenu Sh-S.Strace:strace
 SynMenu Sh-S.Subversion\ commit:svn
+SynMenu Sh-S.Sudoers:sudoers
 
 SynMenu TUV.TADS:tads
 SynMenu TUV.Tags:tags

@@ -299,7 +299,7 @@ mac_expandpath(
 pstrcmp(a, b)
     const void *a, *b;
 {
-    return (pathcmp(*(char **)a, *(char **)b));
+    return (pathcmp(*(char **)a, *(char **)b, -1));
 }
 
     static int
@@ -1008,12 +1008,7 @@ slash_adjust(p)
     {
 	if (*p == '/')
 	    *p = ':';
-#ifdef FEAT_MBYTE
-	if (has_mbyte)
-	    p += (*mb_ptr2len_check)(p);
-	else
-#endif
-	    ++p;
+	mb_ptr_adv(p);
     }
 #endif
 }
@@ -1207,16 +1202,12 @@ mch_call_shell(cmd, options)
 mch_has_exp_wildcard(p)
     char_u	*p;
 {
-    for ( ; *p; ++p)
+    for ( ; *p; mb_ptr_adv(p))
     {
 	if (*p == '\\' && p[1] != NUL)
 	    ++p;
 	else if (vim_strchr((char_u *)WILDCHAR_LIST, *p) != NULL)
 	    return TRUE;
-#ifdef FEAT_MBYTE
-	if (has_mbyte)
-	    p += (*mb_ptr2len_check)(p) - 1;
-#endif
     }
     return FALSE;
 }

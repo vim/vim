@@ -2571,7 +2571,7 @@ get_string_var(arg, retvar, evaluate)
     /*
      * Find the end of the string, skipping backslashed characters.
      */
-    for (p = *arg + 1; *p && *p != '"'; ++p)
+    for (p = *arg + 1; *p && *p != '"'; mb_ptr_adv(p))
     {
 	if (*p == '\\' && p[1] != NUL)
 	{
@@ -2581,10 +2581,6 @@ get_string_var(arg, retvar, evaluate)
 	    if (*p == '<')
 		extra += 2;
 	}
-#ifdef FEAT_MBYTE
-	if (has_mbyte)
-	    p += (*mb_ptr2len_check)(p) - 1;
-#endif
     }
 
     if (*p != '"')
@@ -4736,6 +4732,7 @@ f_getcwd(argvars, retvar)
 /*
  * "getfontname()" function
  */
+/*ARGSUSED*/
     static void
 f_getfontname(argvars, retvar)
     VAR		argvars;
@@ -6437,7 +6434,7 @@ f_resolve(argvars, retvar)
 	    is_relative_to_current = TRUE;
 
 	len = STRLEN(p);
-	if (len > 0 && vim_ispathsep(p[len-1]))
+	if (len > 0 && after_pathsep(p, p + len))
 	    has_trailing_pathsep = TRUE;
 
 	q = getnextcomp(p);
@@ -6579,10 +6576,8 @@ f_resolve(argvars, retvar)
 	if (!has_trailing_pathsep)
 	{
 	    q = p + STRLEN(p);
-	    while ((q > p + 2 || (q == p + 2 && !vim_ispathsep(*p)))
-		   && vim_ispathsep(q[-1]))
-		--q;
-	    *q = NUL;
+	    if (after_pathsep(p, q))
+		*gettail_sep(p) = NUL;
 	}
 
 	retvar->var_val.var_string = p;
@@ -10854,7 +10849,7 @@ shortpath_for_invalid_fname(fname, bufp, fnamelen)
     plen = len2;
 
     l = 0;
-    if (vim_ispathsep(*s))
+    if (after_pathsep(pbuf2, s + 1))
     {
 	--s;
 	++slen;
@@ -10864,7 +10859,7 @@ shortpath_for_invalid_fname(fname, bufp, fnamelen)
     do
     {
 	/* Go back one path-seperator */
-	while (s > pbuf2 && !vim_ispathsep(*s))
+	while (s > pbuf2 && !after_pathsep(pbuf2, s + 1))
 	{
 	    --s;
 	    ++slen;
@@ -10936,7 +10931,7 @@ shortpath_for_partial(fnamep, bufp, fnamelen)
      * of the path to return.
      */
     sepcount = 0;
-    for (p = *fnamep + *fnamelen - 1; p >= *fnamep; --p)
+    for (p = *fnamep; p < *fnamep + *fnamelen; mb_ptr_adv(p))
 	if (vim_ispathsep(*p))
 	    ++sepcount;
 
@@ -10965,6 +10960,11 @@ shortpath_for_partial(fnamep, bufp, fnamelen)
 
     /* Count the paths backward to find the beginning of the desired string. */
     for (p = tfname + len - 1; p >= tfname; --p)
+    {
+#ifdef FEAT_MBYTE
+	if (has_mbyte)
+	    p -= mb_head_off(tfname, p);
+#endif
 	if (vim_ispathsep(*p))
 	{
 	    if (sepcount == 0 || (hasTilde && sepcount == 1))
@@ -10972,6 +10972,7 @@ shortpath_for_partial(fnamep, bufp, fnamelen)
 	    else
 		sepcount --;
 	}
+    }
     if (hasTilde)
     {
 	--p;
@@ -11047,7 +11048,7 @@ repeat:
 	}
 
 	/* When "/." or "/.." is used: force expansion to get rid of it. */
-	for (p = *fnamep; *p != NUL; ++p)
+	for (p = *fnamep; *p != NUL; mb_ptr_adv(p))
 	{
 	    if (vim_ispathsep(*p)
 		    && p[1] == '.'
@@ -11155,15 +11156,15 @@ repeat:
 	valid |= VALID_HEAD;
 	*usedlen += 2;
 	s = get_past_head(*fnamep);
-	while (tail > s && vim_ispathsep(tail[-1]))
+	while (tail > s && after_pathsep(s, tail))
 	    --tail;
 	*fnamelen = (int)(tail - *fnamep);
 #ifdef VMS
 	if (*fnamelen > 0)
 	    *fnamelen += 1; /* the path separator is part of the path */
 #endif
-	while (tail > s && !vim_ispathsep(tail[-1]))
-	    --tail;
+	while (tail > s && !after_pathsep(s, tail))
+	    mb_ptr_back(*fnamep, tail);
     }
 
     /* ":8" - shortname  */

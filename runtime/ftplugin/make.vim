@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	Make
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2003 May 04
+" Last Change:	2004 Dec 17
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -23,3 +23,6 @@ setlocal com=sO:#\ -,mO:#\ \ ,b:#
 
 " Set 'commentstring' to put the marker after a #.
 setlocal commentstring=#\ %s
+
+" Including files.
+let &l:include = '^\s*include'

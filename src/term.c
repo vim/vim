@@ -3400,6 +3400,7 @@ cursor_off()
     }
 }
 
+#if defined(CURSOR_SHAPE) || defined(PROTO)
 /*
  * Set cursor shape to match Insert mode.
  */
@@ -3424,6 +3425,7 @@ term_cursor_shape()
 	showing_insert_mode = FALSE;
     }
 }
+#endif
 
 /*
  * Set scrolling region for window 'wp'.

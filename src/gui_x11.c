@@ -1992,6 +1992,7 @@ gui_mch_get_font(name, giveErrorIfMissing)
  * Return the name of font "font" in allocated memory.
  * Don't know how to get the actual name, thus use the provided name.
  */
+/*ARGSUSED*/
     char_u *
 gui_mch_get_fontname(font, name)
     GuiFont font;

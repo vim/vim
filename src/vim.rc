@@ -9,25 +9,13 @@
 //   Icon and version information for the Win32 version of Vim
 //   Must be in DOS format <CR><NL>!
 
-#ifdef __MINGW32__
-# include <windows.h>
-# ifndef VS_FFI_FILEFLAGSMASK
-#  define VS_FFI_FILEFLAGSMASK    0x0000003FL
-# endif
-# ifndef VOS__WINDOWS32
-#  define VOS__WINDOWS32	  0x00000004L
-# endif
-#else
-# include <winver.h>
-#endif
+#include <winver.h>
 #include "version.h"
 #include "gui_w32_rc.h"
-#if defined(__BORLANDC__) || defined(__CYGWIN32__)
+#if defined(__BORLANDC__) || defined(__CYGWIN32__) || defined(__MINGW32__)
 # include <winresrc.h>
 #else
-# ifndef __MINGW32__
-#  include <winres.h>
-# endif
+# include <winres.h>
 #endif
 
 //

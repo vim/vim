@@ -25,7 +25,7 @@ void ml_setmarked __ARGS((linenr_T lnum));
 linenr_T ml_firstmarked __ARGS((void));
 void ml_clearmarked __ARGS((void));
 char_u *get_file_in_dir __ARGS((char_u *fname, char_u *dname));
-void ml_setdirty __ARGS((buf_T *buf, int flag));
+void ml_setflags __ARGS((buf_T *buf));
 long ml_find_line_or_offset __ARGS((buf_T *buf, linenr_T line, long *offp));
 void goto_byte __ARGS((long cnt));
 /* vim: set ft=c : */

@@ -2562,7 +2562,7 @@ gui_mch_dialog(
 	type = 0;
 
     /* allocate some memory for dialog template */
-    /* TODO should compute this really*/
+    /* TODO should compute this really */
     pdlgtemplate = p = (PWORD)LocalAlloc(LPTR, DLG_ALLOC_SIZE);
 
     if (p == NULL)

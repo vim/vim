@@ -40,8 +40,8 @@ extern "C" {
 #undef mputs
 
 #if 1
-#define dbf( format, args... ) { printf( "%s" " : " format "\n" , __FUNCTION__ , ## args ); fflush(stdout); }
-#define db()       { printf( "%s\n", __FUNCTION__ );fflush(stdout); }
+#define dbf(format, args...) { printf("%s" " : " format "\n" , __FUNCTION__ , ## args ); fflush(stdout); }
+#define db()       { printf("%s\n", __FUNCTION__ );fflush(stdout); }
 #else
 #define dbf(format, args... )
 #define db()
@@ -165,163 +165,184 @@ const char *kdeicons[] = {
 /*
  * creates a blank pixmap using tb_blank
  */
-	QPixmap
+    QPixmap
 pixmap_create_from_xpm(char **xpm)//{{{
 {
-	return(QPixmap((const char **)xpm));
+    return (QPixmap((const char **)xpm));
 }//}}}
 
 /*
  * creates a pixmap by using a built-in number
  */
-	QPixmap
+    QPixmap
 pixmap_create_by_num(int pixmap_num)//{{{
 {
 #ifdef FEAT_KDETOOLBAR
-	if (pixmap_num >= 0 && (unsigned)pixmap_num < (sizeof(kdeicons)
-				/ sizeof(kdeicons[0])) - 1) {
+    if (pixmap_num >= 0 && (unsigned)pixmap_num < (sizeof(kdeicons)
+						   / sizeof(kdeicons[0])) - 1)
+    {
 
-		KIconLoader *il = kapp->iconLoader(); //new KIconLoader();
-		QString icon;
-		icon=QString(kdeicons[pixmap_num]);
-		return il->loadIcon(icon,KIcon::MainToolbar);
-	}
-	return QPixmap();
+	KIconLoader *il = kapp->iconLoader(); //new KIconLoader();
+	QString icon;
+	icon = QString(kdeicons[pixmap_num]);
+	return il->loadIcon(icon, KIcon::MainToolbar);
+    }
+    return QPixmap();
 #else
-	if (pixmap_num >= 0 && (unsigned)pixmap_num < (sizeof(built_in_pixmaps)
-				/ sizeof(built_in_pixmaps[0])) - 1)
-		return pixmap_create_from_xpm(built_in_pixmaps[pixmap_num]);
-	else return QPixmap();
+    if (pixmap_num >= 0 && (unsigned)pixmap_num < (sizeof(built_in_pixmaps)
+					   / sizeof(built_in_pixmaps[0])) - 1)
+	return pixmap_create_from_xpm(built_in_pixmaps[pixmap_num]);
+    else
+	return QPixmap();
 #endif
 }//}}}
 
 /*
  * Creates a pixmap by using the pixmap "name" found in 'runtimepath'/bitmaps/
  */
-	QPixmap
+    QPixmap
 pixmap_create_by_dir(char_u *name)//{{{
 {
-	char_u full_pathname[MAXPATHL + 1];
+    char_u full_pathname[MAXPATHL + 1];
 
-	if (gui_find_bitmap(name, full_pathname, "xpm") == OK) {
-		return QPixmap((const char *)full_pathname);
-	}
-	else return QPixmap();
+    if (gui_find_bitmap(name, full_pathname, "xpm") == OK)
+    {
+	return QPixmap((const char *)full_pathname);
+    }
+    else
+	return QPixmap();
 }//}}}
 
 
-	QPixmap
+    QPixmap
 pixmap_create_from_file(char_u *file)
 {
-	return QPixmap((const char*)file);
+    return QPixmap((const char *)file);
 }
 #endif
 
-	void
+    void
 gui_mch_add_menu(vimmenu_T * menu, int idx)//{{{
 {
 #ifdef FEAT_MENU
-	QPopupMenu *me;
-	vimmenu_T *parent = menu->parent;
+    QPopupMenu *me;
+    vimmenu_T *parent = menu->parent;
 
-	if (menu_is_popup(menu->name)) {
-		menu->widget = new QPopupMenu(vmw , (const char *) menu->name);
-		QObject::connect( menu->widget, SIGNAL(activated(int)), vmw, SLOT(menu_activated(int)) );
-		return;
-	}
+    if (menu_is_popup(menu->name))
+    {
+	menu->widget = new QPopupMenu(vmw , (const char *)menu->name);
+	QObject::connect(menu->widget, SIGNAL(activated(int)), vmw,
+						   SLOT(menu_activated(int)));
+	return;
+    }
 
-	if (!menu_is_menubar(menu->name))
-		return;
+    if (!menu_is_menubar(menu->name))
+	return;
 
-	if (parent) {
-		idx++; // for tearoffs to be first in menus
-		me = new QPopupMenu(parent->widget, (const char *) menu->name);
-		parent->widget->insertItem( QString((const char *)menu->name), me, (int)me, idx);
-	} else {
-		me = new QPopupMenu(vmw->menuBar() , (const char *) menu->name);
-		vmw->menuBar()->insertItem( QString((const char *)menu->name), me , (int) me, idx);
-	}
+    if (parent)
+    {
+	idx++; // for tearoffs to be first in menus
+	me = new QPopupMenu(parent->widget, (const char *)menu->name);
+	parent->widget->insertItem(QString((const char *)menu->name), me,
+								(int)me, idx);
+    }
+    else
+    {
+	me = new QPopupMenu(vmw->menuBar() , (const char *)menu->name);
+	vmw->menuBar()->insertItem(QString((const char *)menu->name), me,
+								(int)me, idx);
+    }
 
-	me->setCaption((const char*)( menu->dname  ));
-	if (vmw->have_tearoff) me->insertTearOffHandle(0,0);
-	QObject::connect( me, SIGNAL(activated(int)), vmw, SLOT(menu_activated(int)) );
-	menu->widget = me;
+    me->setCaption((const char *)(menu->dname));
+    if (vmw->have_tearoff)
+	me->insertTearOffHandle(0, 0);
+    QObject::connect(me, SIGNAL(activated(int)), vmw,
+						   SLOT(menu_activated(int)));
+    menu->widget = me;
 #endif
 }//}}}
 
 
-	void
+    void
 gui_mch_add_menu_item(vimmenu_T * menu, int idx)//{{{
 {
 #ifdef FEAT_MENU
-	vimmenu_T *parent = menu->parent;
+    vimmenu_T *parent = menu->parent;
 #ifdef FEAT_TOOLBAR
-	if (menu_is_toolbar(parent->name)) {
-		QPixmap pix;
-		if ( menu_is_separator(menu->name) )
-		{
-			vmw->toolBar()->insertSeparator();
-			return;
-		}
-		if (menu->iconfile != NULL) {
-			pix = pixmap_create_from_file(menu->iconfile);
-		}
-		if (!menu->icon_builtin) {
-			pix = pixmap_create_by_dir(menu->name);
-		}
-		if (pix.isNull() && menu->iconidx >= 0) {
-			pix = pixmap_create_by_num(menu->iconidx);
-		}
-#ifndef FEAT_KDETOOLBAR
-		if (pix.isNull()) {
-			pix = pixmap_create_from_xpm(tb_blank_xpm);
-		}
-#endif
-		if (pix.isNull()) return; // failed
-		vmw->toolBar()->insertButton (
-				pix,
-				(int) menu , // id
-				true,
-				(char *) (menu->strings[MENU_INDEX_TIP]) , // tooltip or text
-				idx
-				);
-		menu->parent=parent;
-		return;
+    if (menu_is_toolbar(parent->name))
+    {
+	QPixmap pix;
+
+	if (menu_is_separator(menu->name))
+	{
+	    vmw->toolBar()->insertSeparator();
+	    return;
 	}
+	if (menu->iconfile != NULL)
+	{
+	    pix = pixmap_create_from_file(menu->iconfile);
+	}
+	if (!menu->icon_builtin)
+	{
+	    pix = pixmap_create_by_dir(menu->name);
+	}
+	if (pix.isNull() && menu->iconidx >= 0)
+	{
+	    pix = pixmap_create_by_num(menu->iconidx);
+	}
+#ifndef FEAT_KDETOOLBAR
+	if (pix.isNull())
+	{
+	    pix = pixmap_create_from_xpm(tb_blank_xpm);
+	}
+#endif
+	if (pix.isNull())
+	    return; // failed
+	vmw->toolBar()->insertButton(
+		pix,
+		(int)menu, // id
+		true,
+		(char *)(menu->strings[MENU_INDEX_TIP]), // tooltip or text
+		idx);
+	menu->parent=parent;
+	return;
+    }
 #endif // FEAT_TOOLBAR
 
-	idx++;
-	if ( menu_is_separator(menu->name) ) {
-		parent->widget->insertSeparator();
-		return;
-	}
-	parent->widget->insertItem(QString((const char *)menu->name), (int)menu, idx );
+    idx++;
+    if (menu_is_separator(menu->name))
+    {
+	parent->widget->insertSeparator();
+	return;
+    }
+    parent->widget->insertItem(QString((const char *)menu->name), (int)menu, idx);
 #endif
 }//}}}
 
 
-	void
+    void
 gui_mch_set_text_area_pos(int x, int y, int w, int h)//{{{
 {
-	int X = 0;
-	int Y = 0;
-	if (vmw->menuBar()->isVisible() && vmw->menuBar()->isEnabled()
-#if QT_VERSION>=300
-		       	&& !vmw->menuBar()->isTopLevelMenu()
-#endif
-			)
-		Y += vmw->menuBar()->height();
-#ifdef FEAT_TOOLBAR
-	if (vmw->toolBar()->isVisible() && vmw->toolBar()->isEnabled() &&
-			vmw->toolBar()->barPos()==KToolBar::Top)
-		Y += vmw->toolBar()->height();
+    int X = 0;
+    int Y = 0;
 
-	if (vmw->toolBar()->isVisible() && vmw->toolBar()->isEnabled() &&
-			vmw->toolBar()->barPos()==KToolBar::Left)
-		X += vmw->toolBar()->width();
+    if (vmw->menuBar()->isVisible() && vmw->menuBar()->isEnabled()
+#if QT_VERSION>=300
+	    && !vmw->menuBar()->isTopLevelMenu()
+#endif
+       )
+	Y += vmw->menuBar()->height();
+#ifdef FEAT_TOOLBAR
+    if (vmw->toolBar()->isVisible() && vmw->toolBar()->isEnabled()
+				   && vmw->toolBar()->barPos()==KToolBar::Top)
+	Y += vmw->toolBar()->height();
+
+    if (vmw->toolBar()->isVisible() && vmw->toolBar()->isEnabled()
+				  && vmw->toolBar()->barPos()==KToolBar::Left)
+	X += vmw->toolBar()->width();
 #endif // FEAT_TOOLBAR
 
-	gui.w->setGeometry(x+X,y+Y,w,h);
+    gui.w->setGeometry(x + X, y + Y, w, h);
 }//}}}
 
 
@@ -329,24 +350,29 @@ gui_mch_set_text_area_pos(int x, int y, int w, int h)//{{{
 /*
  * Enable or disable mnemonics for the toplevel menus.
  */
-	void
+    void
 gui_gtk_set_mnemonics(int enable)//{{{ // TO BE REMOVED
 {
 }//}}}
 
-	void
+    void
 toggle_tearoffs(vimmenu_T *menu, int enable)//{{{
 {
-	while (menu != NULL) {
-		if (!menu_is_popup(menu->name)) {
-			if (menu->widget != 0) {
-				if (enable) menu->widget->insertTearOffHandle(0,0);
-				else menu->widget->removeItem(0);
-			}
-			toggle_tearoffs(menu->children, enable);
-		}
-		menu = menu->next;
+    while (menu != NULL)
+    {
+	if (!menu_is_popup(menu->name))
+	{
+	    if (menu->widget != 0)
+	    {
+		if (enable)
+		    menu->widget->insertTearOffHandle(0,0);
+		else
+		    menu->widget->removeItem(0);
+	    }
+	    toggle_tearoffs(menu->children, enable);
 	}
+	menu = menu->next;
+    }
 }//}}}
 
 	void
@@ -362,20 +388,21 @@ gui_mch_toggle_tearoffs(int enable)//{{{
 /*
  * Destroy the machine specific menu widget.
  */
-	void
+    void
 gui_mch_destroy_menu(vimmenu_T * menu)//{{{
 {
 #ifdef FEAT_TOOLBAR
-	if (menu->parent && menu_is_toolbar(menu->parent->name)) {
-		vmw->toolBar()->removeItem( (int) menu );
-		return;
-	}
+    if (menu->parent && menu_is_toolbar(menu->parent->name))
+    {
+	vmw->toolBar()->removeItem((int)menu);
+	return;
+    }
 #endif
-	if (menu->parent)
-		menu->parent->widget->removeItem((int)menu);
-	if (menu->widget)
-		delete menu->widget;
-	menu->widget = 0;
+    if (menu->parent)
+	menu->parent->widget->removeItem((int)menu);
+    if (menu->widget)
+	delete menu->widget;
+    menu->widget = 0;
 }//}}}
 #endif /* FEAT_MENU */
 
@@ -384,68 +411,78 @@ gui_mch_destroy_menu(vimmenu_T * menu)//{{{
  * Scrollbar stuff.
  */
 
-	void
-gui_mch_set_scrollbar_thumb(scrollbar_T * sb, long val, long size, long max)//{{{
+    void
+gui_mch_set_scrollbar_thumb(scrollbar_T *sb, long val, long size, long max)//{{{
 {
-	if (!sb->w) return;
+    if (!sb->w)
+	return;
 
-	sb->w->setRange(0, max+1-size);
-	sb->w->setValue(val);
+    sb->w->setRange(0, max + 1 - size);
+    sb->w->setValue(val);
 
-	sb->w->setLineStep(1);
-	sb->w->setPageStep(size);
+    sb->w->setLineStep(1);
+    sb->w->setPageStep(size);
 }//}}}
 
-	void
-gui_mch_set_scrollbar_pos(scrollbar_T * sb, int x, int y, int w, int h)//{{{
+    void
+gui_mch_set_scrollbar_pos(scrollbar_T *sb, int x, int y, int w, int h)//{{{
 {
-	if (!sb->w) return;
-	//we add the menubar and toolbar height/width
-	int X = 0;
-	int Y = 0;
+    if (!sb->w)
+	return;
+    //we add the menubar and toolbar height/width
+    int X = 0;
+    int Y = 0;
 
-	if (vmw->menuBar()->isVisible() && vmw->menuBar()->isEnabled()
+    if (vmw->menuBar()->isVisible() && vmw->menuBar()->isEnabled()
 #if QT_VERSION>=300
-		       	&& !vmw->menuBar()->isTopLevelMenu()
+					  && !vmw->menuBar()->isTopLevelMenu()
 #endif
-			)
-		Y += vmw->menuBar()->height();
+       )
+	Y += vmw->menuBar()->height();
 #ifdef FEAT_TOOLBAR
-	if (vmw->toolBar()->isVisible() && vmw->toolBar()->isEnabled() &&
-			vmw->toolBar()->barPos()==KToolBar::Top)
-		Y += vmw->toolBar()->height();
+    if (vmw->toolBar()->isVisible() && vmw->toolBar()->isEnabled()
+				   && vmw->toolBar()->barPos()==KToolBar::Top)
+	Y += vmw->toolBar()->height();
 
-	if (vmw->toolBar()->isVisible() && vmw->toolBar()->isEnabled() &&
-			vmw->toolBar()->barPos()==KToolBar::Left)
-		X += vmw->toolBar()->width();
+    if (vmw->toolBar()->isVisible() && vmw->toolBar()->isEnabled()
+				  && vmw->toolBar()->barPos()==KToolBar::Left)
+	X += vmw->toolBar()->width();
 #endif //FEAT_TOOLBAR
-	if (sb->w->orientation() == Qt::Vertical) {
-		bool leftscroll=gui.which_scrollbars[SBAR_LEFT];
-		bool rightscroll=gui.which_scrollbars[SBAR_RIGHT];
-		if (x<20)  leftscroll=true;
-		else rightscroll=true;
-		if (x<20) sb->w->setGeometry(X,y+Y,w,h);
-		else sb->w->setGeometry(vmw->width()-w-1+X, y+Y,w,h);
-	} else {
-		sb->w->setGeometry(x+X,y+Y,w,h);
-	}
+    if (sb->w->orientation() == Qt::Vertical)
+    {
+	bool leftscroll=gui.which_scrollbars[SBAR_LEFT];
+	bool rightscroll=gui.which_scrollbars[SBAR_RIGHT];
+
+	if (x < 20)
+	    leftscroll = true;
+	else
+	    rightscroll = true;
+	if (x < 20)
+	    sb->w->setGeometry(X, y+Y, w, h);
+	else
+	    sb->w->setGeometry(vmw->width() - w - 1 + X, y + Y, w, h);
+    }
+    else
+    {
+	sb->w->setGeometry(x + X, y + Y, w, h);
+    }
 }//}}}
 
 /* SBAR_VERT or SBAR_HORIZ */
-	void
-gui_mch_create_scrollbar(scrollbar_T * sb, int orient)//{{{
+    void
+gui_mch_create_scrollbar(scrollbar_T *sb, int orient)//{{{
 {
-	sbpool->create(sb,orient);
-	if (orient==SBAR_VERT)
-		gui.scrollbar_width = sb->w->sizeHint().width();
-	else
-		gui.scrollbar_height = sb->w->sizeHint().height();
+    sbpool->create(sb,orient);
+    if (orient == SBAR_VERT)
+	gui.scrollbar_width = sb->w->sizeHint().width();
+    else
+	gui.scrollbar_height = sb->w->sizeHint().height();
 }//}}}
 
-	void
+    void
 gui_mch_destroy_scrollbar(scrollbar_T * sb)//{{{
 {
-	sbpool->destroy(sb);
+    sbpool->destroy(sb);
 }//}}}
 
 #if defined(FEAT_BROWSE) || defined(PROTO)
@@ -464,7 +501,7 @@ gui_mch_destroy_scrollbar(scrollbar_T * sb)//{{{
  * filter			not used (file name filter)
  */
 /*ARGSUSED*/
-char_u *
+    char_u *
 gui_mch_browse(int saving,//{{{
 		char_u * title,
 		char_u * dflt,
@@ -472,36 +509,37 @@ gui_mch_browse(int saving,//{{{
 		char_u * initdir,
 		char_u * filter)
 {
-	char * filt_glob;
+    char *filt_glob;
 
-	if (filter != (char_u *) 0x0 )
-	{
-		filter = vim_strsave(filter);
-		strtok((char *) filter, "(");
-		filt_glob = strtok(0L, ")");
-	}
-	else
-		filt_glob = (char *) filter;
+    if (filter != (char_u *)0x0)
+    {
+	filter = vim_strsave(filter);
+	strtok((char *)filter, "(");
+	filt_glob = strtok(0L, ")");
+    }
+    else
+	filt_glob = (char *)filter;
 
-	gui_mch_mousehide(FALSE);
+    gui_mch_mousehide(FALSE);
 
-	QString s;
-	if (!saving)
-		s = KFileDialog::getOpenFileName( (char *) initdir, (char *) filt_glob, vmw, (char *) title );
-	else
-		s = KFileDialog::getSaveFileName( );
+    QString s;
+    if (!saving)
+	s = KFileDialog::getOpenFileName((char *)initdir, (char *)filt_glob,
+							  vmw, (char *)title);
+    else
+	s = KFileDialog::getSaveFileName();
 
-	if (filter)
-		vim_free(filter);
+    if (filter)
+	vim_free(filter);
 
-	if (s.isNull())
-		return NULL;
-	QCString unistring = vmw->codec->fromUnicode(s);
-	char_u * s2 = (char_u *)(const char*)unistring;
-	if (s2)
-		s2 = vim_strsave( s2 );
+    if (s.isNull())
+	return NULL;
+    QCString unistring = vmw->codec->fromUnicode(s);
+    char_u *s2 = (char_u *)(const char *)unistring;
+    if (s2)
+	s2 = vim_strsave(s2);
 
-	return s2;
+    return s2;
 }//}}}
 
 #endif	/* FEAT_BROWSE */
@@ -511,9 +549,9 @@ gui_mch_browse(int saving,//{{{
 /* ARGSUSED */
     int
 gui_mch_dialog(int type,		/* type of dialog *///{{{
-		char_u * title,		/* title of dialog */
-		char_u * message,	/* message text */
-		char_u * buttons,	/* names of buttons */
+		char_u *title,		/* title of dialog */
+		char_u *message,	/* message text */
+		char_u *buttons,	/* names of buttons */
 		int def_but,		/* default button */
 		char_u *textfield)
 {
@@ -546,8 +584,8 @@ gui_make_popup (char_u *pathname)//{{{
 
 
 /* Find and Replace implementations */
-	void
-gui_mch_find_dialog(exarg_T * eap)//{{{
+    void
+gui_mch_find_dialog(exarg_T *eap)//{{{
 {
     // char_u* entry_text;
     //int exact_word=FALSE;
@@ -555,8 +593,9 @@ gui_mch_find_dialog(exarg_T * eap)//{{{
 
     vmw->finddlg->setCaseSensitive(true);
 
-    /*    if (entry_text!=NULL) {
-	  vmw->finddlg->setText(QString((char*)entry_text));
+    /*    if (entry_text!=NULL)
+     *    {
+	  vmw->finddlg->setText(QString((char *)entry_text));
     // exact match should go there, hopefully KDE old KEdFind/KEdReplace will be replaced in KDE 4 as pple wanted KDE 3's Find/Replace to be kept
     }*/ // Don't use it, KDE keeps old search in memory and vim give \\Csearch, which is difficult to handle
     //   vim_free(entry_text);
@@ -564,25 +603,26 @@ gui_mch_find_dialog(exarg_T * eap)//{{{
     vmw->finddlg->show();
 }//}}}
 
-	void
-gui_mch_replace_dialog(exarg_T * eap)//{{{
+    void
+gui_mch_replace_dialog(exarg_T *eap)//{{{
 {
-	//  char_u* entry_text;
-	//int exact_word=FALSE;
+    //  char_u* entry_text;
+    //int exact_word=FALSE;
 
-	//    entry_text = get_find_dialog_text(eap->arg,&exact_word);
+    //    entry_text = get_find_dialog_text(eap->arg,&exact_word);
 
-	/*    if (entry_text!=NULL) {
-	      vmw->repldlg->setText(QString((char*)entry_text));
-	// exact match should go there, hopefully KDE old KEdFind/KEdReplace will be replaced in KDE 4 as pple wanted KDE 3's Find/Replace to be kept
-	}*/
-	//vim_free(entry_text);
+    /*    if (entry_text!=NULL)
+     *    {
+     vmw->repldlg->setText(QString((char *)entry_text));
+    // exact match should go there, hopefully KDE old KEdFind/KEdReplace will be replaced in KDE 4 as pple wanted KDE 3's Find/Replace to be kept
+    }*/
+    //vim_free(entry_text);
 
-	vmw->repldlg->show();
+    vmw->repldlg->show();
 }//}}}
 
-	void
+    void
 ex_helpfind(exarg_T *eap)//{{{
 {
-	do_cmdline_cmd((char_u *)"emenu ToolBar.FindHelp");
+    do_cmdline_cmd((char_u *)"emenu ToolBar.FindHelp");
 }//}}}

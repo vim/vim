@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.0aa.  Last change: 2004 Oct 12
+*editing.txt*   For Vim version 7.0aa.  Last change: 2004 Dec 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -8,21 +8,22 @@ Editing files						*edit-files*
 
 1.  Introduction		|edit-intro|
 2.  Editing a file		|edit-a-file|
-3.  Dialogs			|edit-dialogs|
-4.  The current directory	|current-directory|
-5.  The argument list		|argument-list|
-6.  Writing			|writing|
-7.  Writing and quitting	|write-quit|
+3.  The argument list		|argument-list|
+4.  Writing			|writing|
+5.  Writing and quitting	|write-quit|
+6.  Dialogs			|edit-dialogs|
+7.  The current directory	|current-directory|
 8.  Editing binary files	|edit-binary|
 9.  Encryption			|encryption|
 10. Timestamps			|timestamps|
+11. File Searching		|file-searching|
 
 ==============================================================================
 1. Introduction						*edit-intro*
 
 Editing a file with Vim means:
 
-1. reading the file into the internal buffer
+1. reading the file into a buffer
 2. changing the buffer with editor commands
 3. writing the buffer into a file
 
@@ -30,12 +31,13 @@ Editing a file with Vim means:
 As long as you don't write the buffer, the original file remains unchanged.
 If you start editing a file (read a file into the buffer), the file name is
 remembered as the "current file name".  This is also known as the name of the
-current buffer.
+current buffer.  It can be used with "%" on the command line |:_%|.
 
 							*alternate-file*
 If there already was a current file name, then that one becomes the alternate
-file name.  It can later be used with "#" on the command line |:_#|.  However,
-the alternate file name is not changed when |:keepalt| is used.
+file name.  It can be used with "#" on the command line |:_#| and you can use
+the |CTRL-^| command to toggle between the current and the alternate file.
+However, the alternate file name is not changed when |:keepalt| is used.
 
 							*:keepalt* *:keepa*
 :keepalt {cmd}		Execute {cmd} while keeping the current alternate file
@@ -43,12 +45,13 @@ the alternate file name is not changed when |:keepalt| is used.
 			with a function) may still set the alternate file
 			name.  {not in Vi}
 
-All file names are remembered in the file list.  When you enter a file name,
+All file names are remembered in the buffer list.  When you enter a file name,
 for editing (e.g., with ":e filename") or writing (e.g., with (:w file name"),
-the file name is added to the list.  You can use this list to remember which
-files you edited and to quickly switch from one file to another with the
-CTRL-^ command (e.g., to copy text).  First type the number of the file and
-then hit CTRL-^.  {Vi: only one alternate file name}
+the file name is added to the list.  You can use the buffer list to remember
+which files you edited and to quickly switch from one file to another (e.g.,
+to copy text) with the |CTRL-^| command.  First type the number of the file
+and then hit CTRL-^.  {Vi: only one alternate file name is remembered}
+
 
 CTRL-G		or				*CTRL-G* *:f* *:fi* *:file*
 :f[ile]			Prints the current file name (as typed), the
@@ -215,11 +218,10 @@ If you want to keep the changed buffer without saving it, switch on the
 			{Vi: no ++opt}
 
 :e[dit] [++opt] [+cmd] #[count]
-			Edit the [count]th alternate file name (as shown by
-			:files).  This command does the same as
-			[count] CTRL-^.  But ":e #" doesn't work if the
-			alternate buffer doesn't have a file name, while
-			CTRL-^ still works then.
+			Edit the [count]th buffer (as shown by |:files|).
+			This command does the same as [count] CTRL-^.  But ":e
+			#" doesn't work if the alternate buffer doesn't have a
+			file name, while CTRL-^ still works then.
 			Also see |++opt| and |+cmd|.
 			{Vi: no ++opt}
 
@@ -268,16 +270,22 @@ If you want to keep the changed buffer without saving it, switch on the
 			'readonly' option for this buffer.  {not in Vi}
 
 							*CTRL-^* *CTRL-6*
-[count]CTRL-^		Edit [count]th alternate file (equivalent to ":e
-			#[count]").  Without count this gets you to the
-			previously edited file.  This is a quick way to toggle
-			between two (or more) files.
+CTRL-^			Edit the alternate file (equivalent to ":e #").
+			Mostly the alternate file is the previously edited
+			file.  This is a quick way to toggle between two
+			files.
 			If the 'autowrite' or 'autowriteall' option is on and
 			the buffer was changed, write it.
 			Mostly the ^ character is positioned on the 6 key,
 			pressing CTRL and 6 then gets you what we call CTRL-^.
 			But on some non-US keyboards CTRL-^ is produced in
 			another way.
+
+{count}CTRL-^		Edit [count]th file in the buffer list (equivalent to
+			":e #[count]").  This is a quick way to switch between
+			files.
+			See |CTRL-^| above for further details.
+			{not in Vi}
 
 [count]]f						*]f* *[f*
 [count][f		Same as "gf".  Deprecated.
@@ -335,11 +343,12 @@ current file name.
 Note for systems other than Unix and MS-DOS: When using a command that
 accepts a single file name (like ":edit file") spaces in the file name are
 allowed, but trailing spaces are ignored.  This is useful on systems that
-allow file names with embedded spaces (like the Amiga).  Example: The command
-":e   Long File Name " will edit the file "Long File Name".  When using a
-command that accepts more than one file name (like ":next file1 file2")
-embedded spaces must be escaped with a backslash.
+allow file names with embedded spaces (like MS-Windows and the Amiga).
+Example: The command ":e   Long File Name " will edit the file "Long File
+Name".  When using a command that accepts more than one file name (like ":next
+file1 file2") embedded spaces must be escaped with a backslash.
 
+							*wildcard*
 Wildcards in {file} are expanded.  Which wildcards are supported depends on
 the system.  These are the common ones:
 	*	matches anything, including nothing
@@ -351,7 +360,8 @@ as a wildcard when "[" is in the 'isfname' option.  A simple way to avoid this
 is to use "path\[[]abc]".  Then the file "path[abc]" literally.
 
 					*backtick-expansion* *`-expansion*
-On Unix you can also use backticks in the file name, for example: >
+On Unix and a few other systems you can also use backticks in the file name,
+for example: >
 	:e `find . -name ver\\*.c -print`
 The backslashes before the star are required to prevent "ver*.c" to be
 expanded by the shell before executing the find program.
@@ -360,12 +370,11 @@ backticks must be around the whole item.  It is not possible to have text
 directly before the first or just after the last backtick.
 
 							*`=*
-You can have the backticks expanded as a Vim expression, instead of
-an external command, by using the syntax `={expr}` e.g.: >
-	:let foo='bar'
-	:e `=foo . ".c" `
-This will edit "bar.c".  The expression can contain just about anything, thus
-this can also be used to avoid the special meaning of '"', '|', '%' and '#'.
+You can have the backticks expanded as a Vim expression, instead of an
+external command, by using the syntax `={expr}` e.g.: >
+	:e `=tempname()`
+The expression can contain just about anything, thus this can also be used to
+avoid the special meaning of '"', '|', '%' and '#'.
 
 							*++opt* *[++opt]*
 The [++opt] argument can be used to force the value of 'fileformat' or
@@ -470,241 +479,17 @@ You can encrypt files that are written by setting the 'key' option.  This
 provides some security against others reading your files. |encryption|
 
 
-File Searching						*file-searching*
-
-{not available when compiled without the |+path_extra| feature}
-
-The file searching is currently used for the 'path', 'cdpath' and 'tags'
-options.  There are three different types of searching:
-
-1) Downward search:
-   Downward search uses the wildcards '*', '**' and possibly others
-   supported by your operating system. '*' and '**' are handled inside Vim, so
-   they work on all operating systems.
-
-   The usage of '*' is quite simple: It matches 0 or more characters.
-
-   '**' is more sophisticated:
-      - It ONLY matches directories.
-      - It matches up to 30  directories deep, so you can use it to search an
-	entire directory tree
-      - The maximum number of levels matched can be given by appending a number
-	to '**'.
-	Thus '/usr/**2' can match: >
-		/usr
-		/usr/include
-		/usr/include/sys
-		/usr/include/g++
-		/usr/lib
-		/usr/lib/X11
-		....
-<	It does NOT match '/usr/include/g++/std' as this would be three
-	levels.
-	The allowed number range is 0 ('**0' is removed) to 255.
-	If the given number is smaller than 0 it defaults to 30, if it's
-	bigger than 255 it defaults to 255.
-      - '**' can only be at the end of the path or be followed by a path
-	separator or by a number and a path separator.
-
-   You can combine '*' and '**' in any order: >
-	/usr/**/sys/*
-	/usr/*/sys/**
-	/usr/**2/sys/*
-
-2) Upward search:
-   Here you can give a directory and then search the directory tree upward for
-   a file. You could give stop-directories to limit the upward search. The
-   stop-directories are appended to the path (for the 'path' option) or to
-   the filename (for the 'tags' option) with a ';'. If you want several
-   stop-directories separate them with ';'. If you want no stop-directory
-   ("search upward till the root directory) just use ';'. >
-	/usr/include/sys;/usr
-<   will search in: >
-	   /usr/include/sys
-	   /usr/include
-	   /usr
-<
-   If you use a relative path the upward search is started in Vim's current
-   directory or in the directory of the current file (if the relative path
-   starts with './' and 'd' is not included in 'cpoptions').
-
-   If Vim's current path is /u/user_x/work/release and you do >
-	:set path=include;/u/user_x
-<  and then search for a file with |gf| the file is searched in: >
-	/u/user_x/work/release/include
-	/u/user_x/work/include
-	/u/user_x/include
-
-3) Combined up/downward search
-   If Vim's current path is /u/user_x/work/release and you do >
-	set path=**;/u/user_x
-<  and then search for a file with |gf| the file is searched in: >
-	/u/user_x/work/release/**
-	/u/user_x/work/**
-	/u/user_x/**
-<
-   BE CAREFUL! This might consume a lot of time, as the search of
-   '/u/user_x/**' includes '/u/user_x/work/**' and
-   '/u/user_x/work/release/**'.  So '/u/user_x/work/release/**' is searched
-   three and '/u/user_x/work/**' is searched two times.
-
-   In the above example you might want to set path to: >
-	:set path=**,/u/user_x/**
-<   This searches: >
-	/u/user_x/work/release/**
-	/u/user_x/**
-<   This searches the same directories, but in a different order.
-
 ==============================================================================
-3. Dialogs						*edit-dialogs*
-
-							*:confirm* *:conf*
-:conf[irm] {command}	Execute {command}, and use a dialog when an
-			operation has to be confirmed.  Can be used on the
-			":q", ":qa" and ":w" commands (the latter to over-ride
-			a read-only setting).
-
-Examples: >
-  :confirm w foo
-<	Will ask for confirmation when "foo" already exists. >
-  :confirm q
-<	Will ask for confirmation when there are changes. >
-  :confirm qa
-<	If any modified, unsaved buffers exist, you will be prompted to save
-	or abandon each one.  There are also choices to "save all" or "abandon
-	all".
-
-If you want to always use ":confirm", set the 'confirm' option.
-
-			*:browse* *:bro* *E338* *E614* *E615* *E616* *E578*
-:bro[wse] {command}	Open a file selection dialog for an argument to
-			{command}.  At present this works for |:e|, |:w|,
-			|:r|, |:saveas|, |:sp|, |:mkexrc|, |:mkvimrc| and
-			|:mksession|.
-			{only in Win32, Athena, Motif, GTK and Mac GUI}
-			When ":browse" is not possible you get an error
-			message.  If the |+browse| feature is missing or the
-			{command} doesn't support browsing, the {command} is
-			executed without a dialog.
-			":browse set" works like |:options|.
-
-The syntax is best shown via some examples: >
-	:browse e $vim/foo
-<		Open the browser in the $vim/foo directory, and edit the
-		file chosen. >
-	:browse e
-<		Open the browser in the directory specified with 'browsedir',
-		and edit the file chosen. >
-	:browse w
-<		Open the browser in the directory of the current buffer,
-		with the current buffer filename as default, and save the
-		buffer under the filename chosen. >
-	:browse w C:/bar
-<		Open the browser in the C:/bar directory, with the current
-		buffer filename as default, and save the buffer under the
-		filename chosen.
-Also see the |'browsedir'| option.
-For versions of Vim where browsing is not supported, the command is executed
-unmodified.
-
-							*browsefilter*
-For MS Windows, you can modify the filters that are used in the browse dialog.
-By setting the g:browsefilter or b:browsefilter variables, you can change the
-filters globally or locally to the buffer.  The variable is set to a string in
-the format "{filter label}\t{pattern};{pattern}\n" where {filter label} is the
-text that appears in the "Files of Type" comboBox, and {pattern} is the
-pattern which filters the filenames.  Several patterns can be given, separated
-by ';'.
-
-For Motif the same format is used, but only the very first pattern is actually
-used (Motif only offers one pattern, but you can edit it).
-
-For example, to have only Vim files in the dialog, you could use the following
-command: >
-
-     let g:browsefilter="Vim Scripts\t*.vim\nVim Startup Files\t*vimrc\n"
-
-You can override the filter setting on a per-buffer basis by setting the
-b:browsefilter variable.  You would most likely set b:browsefilter in a
-filetype plugin, so that the browse dialog would contain entries related to
-the type of file you are currently editing.  Disadvantage: This makes it
-difficult to start editing a file of a different type.  To overcome this, you
-may want to add "All Files\t*.*\n" as the final filter, so that the user can
-still access any desired file.
-
-==============================================================================
-4. The current directory				*current-directory*
-
-You may use the |:cd| and |:lcd| commands to change to another directory, so
-you will not have to type that directory name in front of the file names.  It
-also makes a difference for executing external commands, e.g. ":!ls".
-
-							*:cd* *E472*
-:cd			On non-Unix systems: Print the current directory
-			name.  On Unix systems: Change the current directory
-			to the home directory.  Use |:pwd| to print the
-			current directory on all systems.
-
-:cd {path}		Change the current directory to {path}.
-			If {path} is relative, it is searched for in the
-			directories listed in |'cdpath'|.
-			Does not change the meaning of an already opened file,
-			because its full path name is remembered.  Files from
-			the |arglist| may change though!
-			On MS-DOS this also changes the active drive.
-			To change to the directory of the current file: >
-				:cd %:h
-<
-							*:cd-* *E186*
-:cd -			Change to the previous current directory (before the
-			previous ":cd {path}" command). {not in Vi}
-
-							*:chd* *:chdir*
-:chd[ir] [path]		Same as |:cd|.
-
-							*:lc* *:lcd*
-:lc[d] {path}		Like |:cd|, but only set the current directory for the
-			current window.  The current directory for other
-			windows is not changed. {not in Vi}
-
-							*:lch* *:lchdir*
-:lch[dir]		Same as |:lcd|. {not in Vi}
-
-							*:pw* *:pwd* *E187*
-:pw[d]			Print the current directory name.  {Vi: no pwd}
-			Also see |getcwd()|.
-
-So long as no |:lcd| command has been used, all windows share the same current
-directory.  Using a command to jump to another window doesn't change anything
-for the current directory.
-When a |:lcd| command has been used for a window, the specified directory
-becomes the current directory for that window.  Windows where the |:lcd|
-command has not been used stick to the global current directory.  When jumping
-to another window the current directory will become the last specified local
-current directory.  If none was specified, the global current directory is
-used.
-When a |:cd| command is used, the current window will lose his local current
-directory and will use the global current directory from now on.
-
-After using |:cd| the full path name will be used for reading and writing
-files.  On some networked file systems this may cause problems.  The result of
-using the full path name is that the file names currently in use will remain
-referring to the same file.  Example: If you have a file a:test and a
-directory a:vim the commands ":e test" ":cd vim" ":w" will overwrite the file
-a:test and not write a:vim/test.  But if you do ":w test" the file a:vim/test
-will be written, because you gave a new file name and did not refer to a
-filename before the ":cd".
-
-==============================================================================
-5. The argument list				*argument-list* *arglist*
+3. The argument list				*argument-list* *arglist*
 
 If you give more than one file name when starting Vim, this list is remembered
 as the argument list.  You can jump to each file in this list.
 
 Do not confuse this with the buffer list, which you can see with the
 |:buffers| command.  The argument list was already present in Vi, the buffer
-list is new in Vim.  A file name in the argument list will also be present in
-the buffer list (unless it was deleted with ":bdel").
+list is new in Vim.  Every file name in the argument list will also be present
+in the buffer list (unless it was deleted with |:bdel| or |:bwipe|).  But it's
+common that names in the buffer list are not in the argument list.
 
 This subject is introduced in section |07.2| of the user manual.
 
@@ -894,11 +679,17 @@ positioned at the first non-blank in the line, otherwise the last know column
 is used.  If there is no last known cursor position the cursor will be in the
 first line (the last line in Ex mode).
 
+							*{arglist}*
 The wildcards in the argument list are expanded and the file names are sorted.
 Thus you can use the command "vim *.c" to edit all the C files.  From within
-Vim the command ":n *.c" does the same.  On Unix you can also use backticks,
-for example: >
-	:n `find . -name \\*.c -print`
+Vim the command ":n *.c" does the same.
+
+White space is used to separate file names.  Put a backslash before a space or
+Tab to include it in a file name.  E.g., to edit the single file "foo bar": >
+	:next foo\ bar
+
+On Unix and a few other systems you can also use backticks, for example: >
+	:next `find . -name \\*.c -print`
 The backslashes before the star are required to prevent "*.c" to be expanded
 by the shell before executing the find program.
 
@@ -988,7 +779,7 @@ flag is used for the ":substitute" command to avoid an error for files where
 "my_foo" isn't used.  ":update" writes the file only if changes were made.
 
 ==============================================================================
-6. Writing					*writing* *save-file*
+4. Writing					*writing* *save-file*
 
 Note: When the 'write' option is off, you are not able to write any file.
 
@@ -1173,7 +964,7 @@ For MS-DOS and MS-Windows the device is detected by its name:
 The names can be in upper- or lowercase.
 
 ==============================================================================
-7. Writing and quitting					*write-quit*
+5. Writing and quitting					*write-quit*
 
 							*:q* *:quit*
 :q[uit]			Quit the current window.  Quit Vim if this is the last
@@ -1264,6 +1055,146 @@ MULTIPLE WINDOWS AND BUFFERS				*window-exit*
 		and exit Vim.  If there are buffers without a file name or
 		which cannot be written for another reason, Vim will not quit.
 		{not in Vi}
+
+==============================================================================
+6. Dialogs						*edit-dialogs*
+
+							*:confirm* *:conf*
+:conf[irm] {command}	Execute {command}, and use a dialog when an
+			operation has to be confirmed.  Can be used on the
+			":q", ":qa" and ":w" commands (the latter to over-ride
+			a read-only setting).
+
+Examples: >
+  :confirm w foo
+<	Will ask for confirmation when "foo" already exists. >
+  :confirm q
+<	Will ask for confirmation when there are changes. >
+  :confirm qa
+<	If any modified, unsaved buffers exist, you will be prompted to save
+	or abandon each one.  There are also choices to "save all" or "abandon
+	all".
+
+If you want to always use ":confirm", set the 'confirm' option.
+
+			*:browse* *:bro* *E338* *E614* *E615* *E616* *E578*
+:bro[wse] {command}	Open a file selection dialog for an argument to
+			{command}.  At present this works for |:e|, |:w|,
+			|:r|, |:saveas|, |:sp|, |:mkexrc|, |:mkvimrc| and
+			|:mksession|.
+			{only in Win32, Athena, Motif, GTK and Mac GUI}
+			When ":browse" is not possible you get an error
+			message.  If the |+browse| feature is missing or the
+			{command} doesn't support browsing, the {command} is
+			executed without a dialog.
+			":browse set" works like |:options|.
+
+The syntax is best shown via some examples: >
+	:browse e $vim/foo
+<		Open the browser in the $vim/foo directory, and edit the
+		file chosen. >
+	:browse e
+<		Open the browser in the directory specified with 'browsedir',
+		and edit the file chosen. >
+	:browse w
+<		Open the browser in the directory of the current buffer,
+		with the current buffer filename as default, and save the
+		buffer under the filename chosen. >
+	:browse w C:/bar
+<		Open the browser in the C:/bar directory, with the current
+		buffer filename as default, and save the buffer under the
+		filename chosen.
+Also see the |'browsedir'| option.
+For versions of Vim where browsing is not supported, the command is executed
+unmodified.
+
+							*browsefilter*
+For MS Windows, you can modify the filters that are used in the browse dialog.
+By setting the g:browsefilter or b:browsefilter variables, you can change the
+filters globally or locally to the buffer.  The variable is set to a string in
+the format "{filter label}\t{pattern};{pattern}\n" where {filter label} is the
+text that appears in the "Files of Type" comboBox, and {pattern} is the
+pattern which filters the filenames.  Several patterns can be given, separated
+by ';'.
+
+For Motif the same format is used, but only the very first pattern is actually
+used (Motif only offers one pattern, but you can edit it).
+
+For example, to have only Vim files in the dialog, you could use the following
+command: >
+
+     let g:browsefilter="Vim Scripts\t*.vim\nVim Startup Files\t*vimrc\n"
+
+You can override the filter setting on a per-buffer basis by setting the
+b:browsefilter variable.  You would most likely set b:browsefilter in a
+filetype plugin, so that the browse dialog would contain entries related to
+the type of file you are currently editing.  Disadvantage: This makes it
+difficult to start editing a file of a different type.  To overcome this, you
+may want to add "All Files\t*.*\n" as the final filter, so that the user can
+still access any desired file.
+
+==============================================================================
+7. The current directory				*current-directory*
+
+You may use the |:cd| and |:lcd| commands to change to another directory, so
+you will not have to type that directory name in front of the file names.  It
+also makes a difference for executing external commands, e.g. ":!ls".
+
+							*:cd* *E472*
+:cd			On non-Unix systems: Print the current directory
+			name.  On Unix systems: Change the current directory
+			to the home directory.  Use |:pwd| to print the
+			current directory on all systems.
+
+:cd {path}		Change the current directory to {path}.
+			If {path} is relative, it is searched for in the
+			directories listed in |'cdpath'|.
+			Does not change the meaning of an already opened file,
+			because its full path name is remembered.  Files from
+			the |arglist| may change though!
+			On MS-DOS this also changes the active drive.
+			To change to the directory of the current file: >
+				:cd %:h
+<
+							*:cd-* *E186*
+:cd -			Change to the previous current directory (before the
+			previous ":cd {path}" command). {not in Vi}
+
+							*:chd* *:chdir*
+:chd[ir] [path]		Same as |:cd|.
+
+							*:lc* *:lcd*
+:lc[d] {path}		Like |:cd|, but only set the current directory for the
+			current window.  The current directory for other
+			windows is not changed. {not in Vi}
+
+							*:lch* *:lchdir*
+:lch[dir]		Same as |:lcd|. {not in Vi}
+
+							*:pw* *:pwd* *E187*
+:pw[d]			Print the current directory name.  {Vi: no pwd}
+			Also see |getcwd()|.
+
+So long as no |:lcd| command has been used, all windows share the same current
+directory.  Using a command to jump to another window doesn't change anything
+for the current directory.
+When a |:lcd| command has been used for a window, the specified directory
+becomes the current directory for that window.  Windows where the |:lcd|
+command has not been used stick to the global current directory.  When jumping
+to another window the current directory will become the last specified local
+current directory.  If none was specified, the global current directory is
+used.
+When a |:cd| command is used, the current window will lose his local current
+directory and will use the global current directory from now on.
+
+After using |:cd| the full path name will be used for reading and writing
+files.  On some networked file systems this may cause problems.  The result of
+using the full path name is that the file names currently in use will remain
+referring to the same file.  Example: If you have a file a:test and a
+directory a:vim the commands ":e test" ":cd vim" ":w" will overwrite the file
+a:test and not write a:vim/test.  But if you do ":w test" the file a:vim/test
+will be written, because you gave a new file name and did not refer to a
+filename before the ":cd".
 
 ==============================================================================
 8. Editing binary files					*edit-binary*
@@ -1453,6 +1384,92 @@ differences (the "diff" program can be used for this).
 It is also possible that you modified the file yourself, from another edit
 session or with another command (e.g., a filter command).  Then you will know
 which version of the file you want to keep.
+
+==============================================================================
+11. File Searching					*file-searching*
+
+{not available when compiled without the |+path_extra| feature}
+
+The file searching is currently used for the 'path', 'cdpath' and 'tags'
+options.  There are three different types of searching:
+
+1) Downward search:
+   Downward search uses the wildcards '*', '**' and possibly others
+   supported by your operating system. '*' and '**' are handled inside Vim, so
+   they work on all operating systems.
+
+   The usage of '*' is quite simple: It matches 0 or more characters.
+
+   '**' is more sophisticated:
+      - It ONLY matches directories.
+      - It matches up to 30  directories deep, so you can use it to search an
+	entire directory tree
+      - The maximum number of levels matched can be given by appending a number
+	to '**'.
+	Thus '/usr/**2' can match: >
+		/usr
+		/usr/include
+		/usr/include/sys
+		/usr/include/g++
+		/usr/lib
+		/usr/lib/X11
+		....
+<	It does NOT match '/usr/include/g++/std' as this would be three
+	levels.
+	The allowed number range is 0 ('**0' is removed) to 255.
+	If the given number is smaller than 0 it defaults to 30, if it's
+	bigger than 255 it defaults to 255.
+      - '**' can only be at the end of the path or be followed by a path
+	separator or by a number and a path separator.
+
+   You can combine '*' and '**' in any order: >
+	/usr/**/sys/*
+	/usr/*/sys/**
+	/usr/**2/sys/*
+
+2) Upward search:
+   Here you can give a directory and then search the directory tree upward for
+   a file. You could give stop-directories to limit the upward search. The
+   stop-directories are appended to the path (for the 'path' option) or to
+   the filename (for the 'tags' option) with a ';'. If you want several
+   stop-directories separate them with ';'. If you want no stop-directory
+   ("search upward till the root directory) just use ';'. >
+	/usr/include/sys;/usr
+<   will search in: >
+	   /usr/include/sys
+	   /usr/include
+	   /usr
+<
+   If you use a relative path the upward search is started in Vim's current
+   directory or in the directory of the current file (if the relative path
+   starts with './' and 'd' is not included in 'cpoptions').
+
+   If Vim's current path is /u/user_x/work/release and you do >
+	:set path=include;/u/user_x
+<  and then search for a file with |gf| the file is searched in: >
+	/u/user_x/work/release/include
+	/u/user_x/work/include
+	/u/user_x/include
+
+3) Combined up/downward search
+   If Vim's current path is /u/user_x/work/release and you do >
+	set path=**;/u/user_x
+<  and then search for a file with |gf| the file is searched in: >
+	/u/user_x/work/release/**
+	/u/user_x/work/**
+	/u/user_x/**
+<
+   BE CAREFUL! This might consume a lot of time, as the search of
+   '/u/user_x/**' includes '/u/user_x/work/**' and
+   '/u/user_x/work/release/**'.  So '/u/user_x/work/release/**' is searched
+   three and '/u/user_x/work/**' is searched two times.
+
+   In the above example you might want to set path to: >
+	:set path=**,/u/user_x/**
+<   This searches: >
+	/u/user_x/work/release/**
+	/u/user_x/**
+<   This searches the same directories, but in a different order.
 
 
  vim:tw=78:ts=8:ft=help:norl:

@@ -1,4 +1,4 @@
-*mbyte.txt*     For Vim version 7.0aa.  Last change: 2004 Jul 05
+*mbyte.txt*     For Vim version 7.0aa.  Last change: 2004 Dec 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar et al.
@@ -328,6 +328,8 @@ u   unicode	same as ucs-2
 u   ucs2be	same as ucs-2 (big endian)
 u   ucs-2be	same as ucs-2 (big endian)
 u   ucs-4be	same as ucs-4 (big endian)
+    default     stands for the default value of 'encoding', depends on the
+    		environment
 
 For the UCS codes the byte order matters.  This is tricky, use UTF-8 whenever
 you can.  The default is to use big-endian (most significant byte comes

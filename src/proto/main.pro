@@ -9,6 +9,7 @@ void time_pop __ARGS((void *tp));
 void time_msg __ARGS((char *msg, void *tv_start));
 void server_to_input_buf __ARGS((char_u *str));
 char_u *eval_client_expr_to_string __ARGS((char_u *expr));
+char_u *serverConvert __ARGS((char_u *client_enc, char_u *data, char_u **tofree));
 int toF_TyA __ARGS((int c));
 int fkmap __ARGS((int c));
 void conv_to_pvim __ARGS((void));

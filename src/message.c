@@ -2897,12 +2897,7 @@ msg_show_console_dialog(message, buttons, dfltbutton)
 	    }
 
 	    /* advance to the next character */
-#ifdef FEAT_MBYTE
-	    if (has_mbyte)
-		r += (*mb_ptr2len_check)(r);
-	    else
-#endif
-		++r;
+	    mb_ptr_adv(r);
 	}
 
 	if (copy)
@@ -2910,12 +2905,7 @@ msg_show_console_dialog(message, buttons, dfltbutton)
 	    *msgp++ = ':';
 	    *msgp++ = ' ';
 	    *msgp = NUL;
-#ifdef FEAT_MBYTE
-	    if (has_mbyte)
-		hotkp += (*mb_ptr2len_check)(hotkp);
-	    else
-#endif
-		++hotkp;
+	    mb_ptr_adv(hotkp);
 	    *hotkp = NUL;
 	}
 	else
@@ -3148,11 +3138,8 @@ do_browse(flags, title, dflt, ext, initdir, filter, buf)
 	    if (fname != NULL && *fname != NUL && !mch_isdir(fname))
 	    {
 		/* Remove the file name. */
-		char_u	    *s = get_past_head(fname);
-		char_u	    *tail = gettail(fname);
+		char_u	    *tail = gettail_sep(fname);
 
-		while (tail > s && vim_ispathsep(tail[-1]))
-		    --tail;
 		if (tail == fname)
 		    *tail++ = '.';	/* use current dir */
 		*tail = NUL;

@@ -58,5 +58,5 @@ void serverForeground __ARGS((char_u *name));
 char_u *serverGetReply __ARGS((HWND server, int *expr_res, int remove, int wait));
 void serverProcessPendingMessages __ARGS((void));
 char *charset_id2name __ARGS((int id));
-int get_logfont __ARGS((LOGFONT *lf, char_u *name, HDC printer_dc));
+int get_logfont __ARGS((LOGFONT *lf, char_u *name, HDC printer_dc, int verbose));
 /* vim: set ft=c : */

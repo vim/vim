@@ -364,9 +364,9 @@ mch_can_restore_icon()
 
 
 /*
- * Get absolute file name into buffer 'buf' of length 'len' bytes,
- * turning all '/'s into '\\'s and getting the correct case of each
- * component of the file name.  Append a backslash to a directory name.
+ * Get absolute file name into buffer "buf" of length "len" bytes,
+ * turning all '/'s into '\\'s and getting the correct case of each component
+ * of the file name.  Append a (back)slash to a directory name.
  * When 'shellslash' set do it the other way around.
  * Return OK or FAIL.
  */
@@ -384,19 +384,55 @@ mch_FullName(
 	nResult = mch_dirname(buf, len);
     else
 #endif
-	if (_fullpath(buf, fname, len - 1) == NULL)
     {
-	STRNCPY(buf, fname, len);   /* failed, use the relative path name */
-	buf[len - 1] = NUL;
-#ifndef USE_FNAME_CASE
-	slash_adjust(buf);
+	if (enc_codepage >= 0 && (int)GetACP() != enc_codepage
+# ifdef __BORLANDC__
+		/* Wide functions of Borland C 5.5 do not work on Windows 98. */
+		&& g_PlatformId == VER_PLATFORM_WIN32_NT
+# endif
+	   )
+	{
+	    WCHAR	*wname;
+	    WCHAR	wbuf[MAX_PATH];
+	    char_u	*cname = NULL;
+
+	    /* Use the wide function:
+	     * - convert the fname from 'encoding' to UCS2.
+	     * - invoke _wfullpath()
+	     * - convert the result from UCS2 to 'encoding'.
+	     */
+	    wname = enc_to_ucs2(fname, NULL);
+	    if (wname != NULL && _wfullpath(wbuf, wname, MAX_PATH - 1) != NULL)
+	    {
+		cname = ucs2_to_enc((short_u *)wbuf, NULL);
+		if (cname != NULL)
+		{
+		    STRNCPY(buf, cname, len);
+		    buf[len - 1] = NUL;
+		    nResult = OK;
+		}
+	    }
+	    vim_free(wname);
+	    vim_free(cname);
+	}
+#ifdef FEAT_MBYTE
+	if (nResult == FAIL)	    /* fall back to non-wide function */
 #endif
+	{
+	    if (_fullpath(buf, fname, len - 1) == NULL)
+	    {
+		STRNCPY(buf, fname, len);   /* failed, use relative path name */
+		buf[len - 1] = NUL;
+	    }
+	    else
+		nResult = OK;
+	}
     }
-    else
-	nResult = OK;
 
 #ifdef USE_FNAME_CASE
     fname_case(buf, len);
+#else
+    slash_adjust(buf);
 #endif
 
     return nResult;
@@ -420,7 +456,7 @@ mch_isFullName(char_u *fname)
     if (mch_FullName(fname, szName, _MAX_PATH, FALSE) == FAIL)
 	return FALSE;
 
-    return pathcmp(fname, szName) == 0;
+    return pathcmp(fname, szName, -1) == 0;
 }
 
 /*
@@ -441,12 +477,7 @@ slash_adjust(p)
 	{
 	    if (*p == psepcN)
 		*p = psepc;
-#ifdef FEAT_MBYTE
-	    if (has_mbyte)
-		p += (*mb_ptr2len_check)(p);
-	    else
-#endif
-		++p;
+	    mb_ptr_adv(p);
 	}
 }
 
@@ -464,11 +495,7 @@ vim_stat(const char *name, struct stat *stp)
     buf[_MAX_PATH] = NUL;
     p = buf + strlen(buf);
     if (p > buf)
-	--p;
-#ifdef FEAT_MBYTE
-    if (p > buf && has_mbyte)
-	p -= (*mb_head_off)(buf, p);
-#endif
+	mb_ptr_back(buf, p);
     if (p > buf && (*p == '\\' || *p == '/') && p[-1] != ':')
 	*p = NUL;
 #ifdef FEAT_MBYTE
@@ -588,15 +615,11 @@ display_errors()
     int
 mch_has_exp_wildcard(char_u *p)
 {
-    for ( ; *p; ++p)
+    for ( ; *p; mb_ptr_adv(p))
     {
 	if (vim_strchr((char_u *)"?*[", *p) != NULL
 		|| (*p == '~' && p[1] != NUL))
 	    return TRUE;
-#ifdef FEAT_MBYTE
-	if (has_mbyte)
-	    p += (*mb_ptr2len_check)(p) - 1;
-#endif
     }
     return FALSE;
 }
@@ -608,7 +631,7 @@ mch_has_exp_wildcard(char_u *p)
     int
 mch_has_wildcard(char_u *p)
 {
-    for ( ; *p; ++p)
+    for ( ; *p; mb_ptr_adv(p))
     {
 	if (vim_strchr((char_u *)
 #  ifdef VIM_BACKTICK
@@ -619,10 +642,6 @@ mch_has_wildcard(char_u *p)
 						, *p) != NULL
 		|| (*p == '~' && p[1] != NUL))
 	    return TRUE;
-#ifdef FEAT_MBYTE
-	if (has_mbyte)
-	    p += (*mb_ptr2len_check)(p) - 1;
-#endif
     }
     return FALSE;
 }
@@ -2420,6 +2439,7 @@ HWND message_window = 0;	    /* window that's handling messsages */
 #define COPYDATA_EXPR		10
 #define COPYDATA_RESULT		11
 #define COPYDATA_ERROR_RESULT	12
+#define COPYDATA_ENCODING	20
 
 /* This is a structure containing a server HWND and its name. */
 struct server_id
@@ -2427,6 +2447,25 @@ struct server_id
     HWND hwnd;
     char_u *name;
 };
+
+/* Last received 'encoding' that the client uses. */
+static char_u	*client_enc = NULL;
+
+/*
+ * Tell the other side what encoding we are using.
+ * Errors are ignored.
+ */
+    static void
+serverSendEnc(HWND target)
+{
+    COPYDATASTRUCT data;
+
+    data.dwData = COPYDATA_ENCODING;
+    data.cbData = STRLEN(p_enc) + 1;
+    data.lpData = p_enc;
+    (void)SendMessage(target, WM_COPYDATA, (WPARAM)message_window,
+							     (LPARAM)(&data));
+}
 
 /*
  * Clean up on exit. This destroys the hidden message window.
@@ -2463,6 +2502,9 @@ Messaging_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     {
 	/* This is a message from another Vim. The dwData member of the
 	 * COPYDATASTRUCT determines the type of message:
+	 *   COPYDATA_ENCODING:
+	 *	The encoding that the client uses. Following messages will
+	 *	use this encoding, convert if needed.
 	 *   COPYDATA_KEYS:
 	 *	A key sequence. We are a server, and a client wants these keys
 	 *	adding to the input queue.
@@ -2485,16 +2527,26 @@ Messaging_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	char_u		*res;
 	char_u		winstr[30];
 	int		retval;
+	char_u		*str;
+	char_u		*tofree;
 
 	switch (data->dwData)
 	{
+	case COPYDATA_ENCODING:
+	    /* Remember the encoding that the client uses. */
+	    vim_free(client_enc);
+	    client_enc = enc_canonize((char_u *)data->lpData);
+	    return 1;
+
 	case COPYDATA_KEYS:
 	    /* Remember who sent this, for <client> */
 	    clientWindow = sender;
 
 	    /* Add the received keys to the input buffer.  The loop waiting
 	     * for the user to do something should check the input buffer. */
-	    server_to_input_buf((char_u *)(data->lpData));
+	    str = serverConvert(client_enc, (char_u *)data->lpData, &tofree);
+	    server_to_input_buf(str);
+	    vim_free(tofree);
 
 # ifdef FEAT_GUI
 	    /* Wake up the main GUI loop. */
@@ -2507,7 +2559,10 @@ Messaging_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	    /* Remember who sent this, for <client> */
 	    clientWindow = sender;
 
-	    res = eval_client_expr_to_string(data->lpData);
+	    str = serverConvert(client_enc, (char_u *)data->lpData, &tofree);
+	    res = eval_client_expr_to_string(str);
+	    vim_free(tofree);
+
 	    if (res == NULL)
 	    {
 		res = vim_strsave(_(e_invexprmsg));
@@ -2518,6 +2573,7 @@ Messaging_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	    reply.lpData = res;
 	    reply.cbData = STRLEN(res) + 1;
 
+	    serverSendEnc(sender);
 	    retval = SendMessage(sender, WM_COPYDATA, (WPARAM)message_window,
 							    (LPARAM)(&reply));
 	    vim_free(res);
@@ -2528,15 +2584,20 @@ Messaging_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case COPYDATA_ERROR_RESULT:
 	    if (data->lpData != NULL)
 	    {
-		save_reply(sender, data->lpData,
+		str = serverConvert(client_enc, (char_u *)data->lpData,
+								     &tofree);
+		if (tofree == NULL)
+		    str = vim_strsave(str);
+		if (save_reply(sender, str,
 			   (data->dwData == COPYDATA_REPLY ?  0 :
 			   (data->dwData == COPYDATA_RESULT ? 1 :
-							      2)));
+							      2))) == FAIL)
+		    vim_free(str);
 #ifdef FEAT_AUTOCMD
-		if (data->dwData == COPYDATA_REPLY)
+		else if (data->dwData == COPYDATA_REPLY)
 		{
 		    sprintf((char *)winstr, "0x%x", (unsigned)sender);
-		    apply_autocmds(EVENT_REMOTEREPLY, winstr, data->lpData,
+		    apply_autocmds(EVENT_REMOTEREPLY, winstr, str,
 								TRUE, curbuf);
 		}
 #endif
@@ -2762,6 +2823,7 @@ serverSendReply(name, reply)
     data.cbData = STRLEN(reply) + 1;
     data.lpData = reply;
 
+    serverSendEnc(target);
     if (SendMessage(target, WM_COPYDATA, (WPARAM)message_window,
 							     (LPARAM)(&data)))
 	return 0;
@@ -2797,6 +2859,7 @@ serverSendToVim(name, cmd, result, ptarget, asExpr, silent)
     data.cbData = STRLEN(cmd) + 1;
     data.lpData = cmd;
 
+    serverSendEnc(target);
     if (SendMessage(target, WM_COPYDATA, (WPARAM)message_window,
 							(LPARAM)(&data)) == 0)
 	return -1;
@@ -2850,6 +2913,9 @@ static garray_T reply_list = {0, 0, sizeof(reply_T), 5, 0};
 /* Flag which is used to wait for a reply */
 static int reply_received = 0;
 
+/*
+ * Store a reply.  "reply" must be allocated memory (or NULL).
+ */
     static int
 save_reply(HWND server, char_u *reply, int expr)
 {
@@ -2860,7 +2926,7 @@ save_reply(HWND server, char_u *reply, int expr)
 
     rep = REPLY_ITEM(REPLY_COUNT);
     rep->server = server;
-    rep->reply = vim_strsave(reply);
+    rep->reply = reply;
     rep->expr_result = expr;
     if (rep->reply == NULL)
 	return FAIL;

@@ -1014,28 +1014,34 @@ buf_write_all(buf, forceit)
  * Code to handle the argument list.
  */
 
+static char_u	*do_one_arg __ARGS((char_u *str));
+static int	do_arglist __ARGS((char_u *str, int what, int after));
+static void	alist_check_arg_idx __ARGS((void));
+static int	editing_arg_idx __ARGS((win_T *win));
+#ifdef FEAT_LISTCMDS
+static int	alist_add_list __ARGS((int count, char_u **files, int after));
+#endif
+#define AL_SET	1
+#define AL_ADD	2
+#define AL_DEL	3
+
 /*
- * Isolate one argument, taking quotes and backticks.
- * Changes the argument in-place, puts a NUL after it.
- * Quotes are removed, backticks remain.
+ * Isolate one argument, taking backticks.
+ * Changes the argument in-place, puts a NUL after it.  Backticks remain.
  * Return a pointer to the start of the next argument.
  */
-    char_u *
+    static char_u *
 do_one_arg(str)
     char_u *str;
 {
     char_u	*p;
-    int		inquote;
     int		inbacktick;
 
-    inquote = FALSE;
     inbacktick = FALSE;
     for (p = str; *str; ++str)
     {
-	/*
-	 * for MSDOS et.al. a backslash is part of a file name.
-	 * Only skip ", space and tab.
-	 */
+	/* When the backslash is used for escaping the special meaning of a
+	 * character we need to keep it until wildcard expansion. */
 	if (rem_backslash(str))
 	{
 	    *p++ = *str++;
@@ -1043,15 +1049,12 @@ do_one_arg(str)
 	}
 	else
 	{
-	    /* An item ends at a space not in quotes or backticks */
-	    if (!inquote && !inbacktick && vim_isspace(*str))
+	    /* An item ends at a space not in backticks */
+	    if (!inbacktick && vim_isspace(*str))
 		break;
-	    if (!inquote && *str == '`')
+	    if (*str == '`')
 		inbacktick ^= TRUE;
-	    if (!inbacktick && *str == '"')
-		inquote ^= TRUE;
-	    else
-		*p++ = *str;
+	    *p++ = *str;
 	}
     }
     str = skipwhite(str);
@@ -1059,16 +1062,6 @@ do_one_arg(str)
 
     return str;
 }
-
-static int do_arglist __ARGS((char_u *str, int what, int after));
-static void alist_check_arg_idx __ARGS((void));
-static int editing_arg_idx __ARGS((win_T *win));
-#ifdef FEAT_LISTCMDS
-static int alist_add_list __ARGS((int count, char_u **files, int after));
-#endif
-#define AL_SET	1
-#define AL_ADD	2
-#define AL_DEL	3
 
 #if defined(FEAT_GUI) || defined(FEAT_CLIENTSERVER) || defined(PROTO)
 /*
@@ -1619,6 +1612,7 @@ ex_listdo(eap)
     char_u	*save_ei = NULL;
     char_u	*new_ei;
 #endif
+    char_u	*p_shm_save;
 
 #ifndef FEAT_WINDOWS
     if (eap->cmdidx == CMD_windo)
@@ -1674,7 +1668,15 @@ ex_listdo(eap)
 		/* Don't call do_argfile() when already there, it will try
 		 * reloading the file. */
 		if (curwin->w_arg_idx != i || !editing_arg_idx(curwin))
+		{
+		    /* Clear 'shm' to avoid that the file message overwrites
+		     * any output from the command. */
+		    p_shm_save = vim_strsave(p_shm);
+		    set_option_value((char_u *)"shm", 0L, (char_u *)"", 0);
 		    do_argfile(eap, i);
+		    set_option_value((char_u *)"shm", 0L, p_shm_save, 0);
+		    vim_free(p_shm_save);
+		}
 		if (curwin->w_arg_idx != i)
 		    break;
 		++i;
@@ -1717,7 +1719,15 @@ ex_listdo(eap)
 			break;
 		if (buf == NULL)
 		    break;
+
+		/* Go to the next buffer.  Clear 'shm' to avoid that the file
+		 * message overwrites any output from the command. */
+		p_shm_save = vim_strsave(p_shm);
+		set_option_value((char_u *)"shm", 0L, (char_u *)"", 0);
 		goto_buffer(eap, DOBUF_FIRST, FORWARD, next_fnum);
+		set_option_value((char_u *)"shm", 0L, p_shm_save, 0);
+		vim_free(p_shm_save);
+
 		/* If autocommands took us elsewhere, quit here */
 		if (curbuf->b_fnum != next_fnum)
 		    break;

@@ -2779,11 +2779,8 @@ win_line(wp, lnum, startrow, endrow)
 	    vcol += c;
 #ifdef FEAT_MBYTE
 	    prev_ptr = ptr;
-	    if (has_mbyte)
-		ptr += (*mb_ptr2len_check)(ptr);
-	    else
 #endif
-		++ptr;
+	    mb_ptr_adv(ptr);
 	}
 
 #ifdef FEAT_VIRTUALEDIT
@@ -3640,7 +3637,9 @@ win_line(wp, lnum, startrow, endrow)
 			&& ((wp->w_p_list && lcs_eol > 0)
 			    || ((fromcol >= 0 || fromcol_prev >= 0)
 				&& tocol > vcol
+#ifdef FEAT_VISUAL
 				&& VIsual_mode != Ctrl_V
+#endif
 				&& (
 # ifdef FEAT_RIGHTLEFT
 				    wp->w_p_rl ? (col >= 0) :
@@ -4772,16 +4771,8 @@ status_match_len(xp, s)
 #endif
 		)
 	    ++s;
-#ifdef FEAT_MBYTE
-	if (has_mbyte)
-	{
-	    len += ptr2cells(s);
-	    s += (*mb_ptr2len_check)(s);
-	}
-	else
-#endif
-	    len += ptr2cells(s++);
-
+	len += ptr2cells(s++);
+	mb_ptr_adv(s);
     }
 
     return len;
@@ -4827,7 +4818,12 @@ win_redr_status_matches(xp, num_matches, matches, match, showtail)
     if (matches == NULL)	/* interrupted completion? */
 	return;
 
-    buf = alloc((unsigned)Columns + 1);
+#ifdef FEAT_MBYTE
+    if (has_mbyte)
+	buf = alloc((unsigned)Columns * MB_MAXBYTES + 1);
+    else
+#endif
+	buf = alloc((unsigned)Columns + 1);
     if (buf == NULL)
 	return;
 

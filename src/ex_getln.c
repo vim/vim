@@ -494,6 +494,10 @@ getcmdline(firstc, count, indent)
 		i = (int)(xpc.xp_pattern - ccline.cmdbuff);
 		while (--j > i)
 		{
+#ifdef FEAT_MBYTE
+		    if (has_mbyte)
+			j -= (*mb_head_off)(ccline.cmdbuff, ccline.cmdbuff + j);
+#endif
 		    if (vim_ispathsep(ccline.cmdbuff[j]))
 		    {
 			found = TRUE;
@@ -3490,12 +3494,7 @@ sm_gettail(s)
 	    t = p;
 	    had_sep = FALSE;
 	}
-#ifdef FEAT_MBYTE
-	if (has_mbyte)
-	    p += (*mb_ptr2len_check)(p);
-	else
-#endif
-	    ++p;
+	mb_ptr_adv(p);
     }
     return t;
 }
@@ -4173,7 +4172,7 @@ ExpandRTDir(pat, num_file, file, dirname)
 	    break;
 	if (e - 4 > s && STRNICMP(e - 4, ".vim", 4) == 0)
 	{
-	    for (s = e - 4; s > all; --s)
+	    for (s = e - 4; s > all; mb_ptr_back(all, s))
 		if (*s == '\n' || vim_ispathsep(*s))
 		    break;
 	    ++s;

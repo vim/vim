@@ -4722,7 +4722,7 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
      * separator (slash and/or backslash), wildcards and characters that are
      * often illegal in a file name. */
     else if ((options[opt_idx].flags & P_NFNAME)
-				   && vim_strpbrk(*varp, "/\\*?[|<>") != NULL)
+			 && vim_strpbrk(*varp, (char_u *)"/\\*?[|<>") != NULL)
     {
 	errmsg = e_invarg;
     }
@@ -4951,11 +4951,15 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 		/* No comma allowed in 'fileencoding'; catches confusing it
 		 * with 'fileencodings'. */
 		errmsg = e_invarg;
-# ifdef FEAT_TITLE
 	    else
+	    {
+# ifdef FEAT_TITLE
 		/* May show a "+" in the title now. */
 		need_maketitle = TRUE;
 # endif
+		/* Add 'fileencoding' to the swap file. */
+		ml_setflags(curbuf);
+	    }
 	}
 	if (errmsg == NULL)
 	{
@@ -5075,6 +5079,8 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 #ifdef FEAT_TITLE
 	    need_maketitle = TRUE;
 #endif
+	    /* update flag in swap file */
+	    ml_setflags(curbuf);
 	}
     }
 
@@ -5275,12 +5281,7 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 	{
 	    if (ptr2cells(s) != 1)
 		errmsg = (char_u *)N_("E595: contains unprintable or wide character");
-# ifdef FEAT_MBYTE
-	    if (has_mbyte)
-		s += (*mb_ptr2len_check)(s);
-	    else
-# endif
-		++s;
+	    mb_ptr_adv(s);
 	}
     }
 #endif
@@ -7313,6 +7314,19 @@ get_highlight_default()
     return (char_u *)NULL;
 }
 
+#if defined(FEAT_MBYTE) || defined(PROTO)
+    char_u *
+get_encoding_default()
+{
+    int i;
+
+    i = findoption((char_u *)"enc");
+    if (i >= 0)
+	return options[i].def_val[VI_DEFAULT];
+    return (char_u *)NULL;
+}
+#endif
+
 /*
  * Translate a string like "t_xx", "<t_xx>" or "<S-Tab>" to a key number.
  */
@@ -8902,20 +8916,13 @@ ExpandOldSetting(num_file, file)
 #ifdef BACKSLASH_IN_FILENAME
     /* For MS-Windows et al. we don't double backslashes at the start and
      * before a file name character. */
-    for (var = buf; *var != NUL; )
-    {
+    for (var = buf; *var != NUL; mb_ptr_adv(var))
 	if (var[0] == '\\' && var[1] == '\\'
 		&& expand_option_idx >= 0
 		&& (options[expand_option_idx].flags & P_EXPAND)
 		&& vim_isfilec(var[2])
 		&& (var[2] != '\\' || (var == buf && var[4] != '\\')))
 	    mch_memmove(var, var + 1, STRLEN(var));
-#ifdef FEAT_MBYTE
-	else if (has_mbyte)
-	    var += (*mb_ptr2len_check)(var) - 1;
-#endif
-	++var;
-    }
 #endif
 
     *file[0] = buf;
@@ -9025,13 +9032,11 @@ langmap_set()
 
     for (p = p_langmap; p[0] != NUL; )
     {
-	for (p2 = p; p2[0] != NUL && p2[0] != ',' && p2[0] != ';'; ++p2)
+	for (p2 = p; p2[0] != NUL && p2[0] != ',' && p2[0] != ';';
+							       mb_ptr_adv(p2))
 	{
 	    if (p2[0] == '\\' && p2[1] != NUL)
 		++p2;
-#ifdef FEAT_MBYTE
-	    p2 += (*mb_ptr2len_check)(p2) - 1;
-#endif
 	}
 	if (p2[0] == ';')
 	    ++p2;	    /* abcd;ABCD form, p2 points to A */
@@ -9048,11 +9053,7 @@ langmap_set()
 #endif
 	    if (p2 == NULL)
 	    {
-#ifdef FEAT_MBYTE
-		p += (*mb_ptr2len_check)(p);
-#else
-		++p;
-#endif
+		mb_ptr_adv(p);
 		if (p[0] == '\\')
 		    ++p;
 #ifdef FEAT_MBYTE
@@ -9080,11 +9081,7 @@ langmap_set()
 	    langmap_mapchar[from & 255] = to;
 
 	    /* Advance to next pair */
-#ifdef FEAT_MBYTE
-	    p += (*mb_ptr2len_check)(p);
-#else
-	    ++p;
-#endif
+	    mb_ptr_adv(p);
 	    if (p2 == NULL)
 	    {
 		if (p[0] == ',')
@@ -9095,11 +9092,7 @@ langmap_set()
 	    }
 	    else
 	    {
-#ifdef FEAT_MBYTE
-		p2 += (*mb_ptr2len_check)(p2);
-#else
-		++p2;
-#endif
+		mb_ptr_adv(p2);
 		if (*p == ';')
 		{
 		    p = p2;

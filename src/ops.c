@@ -2488,7 +2488,7 @@ op_change(oap)
 
 #ifdef FEAT_VISUALEXTRA
     /*
-     * In Visual block mode, handle copying the next text to all lines of the
+     * In Visual block mode, handle copying the new text to all lines of the
      * block.
      */
     if (oap->block_mode && oap->start.lnum != oap->end.lnum)
@@ -3946,13 +3946,12 @@ do_join(insert_space)
 #ifdef FEAT_MBYTE
 	if (has_mbyte)
 	{
-	    next = curr + currsize - 1;
-	    next -= (*mb_head_off)(curr, next);
+	    next = curr + currsize;
+	    mb_ptr_back(curr, next);
 	    endcurr1 = (*mb_ptr2char)(next);
 	    if (next > curr)
 	    {
-		--next;
-		next -= (*mb_head_off)(curr, next);
+		mb_ptr_back(curr, next);
 		endcurr2 = (*mb_ptr2char)(next);
 	    }
 	}
@@ -4614,12 +4613,7 @@ block_prep(oap, bdp, lnum, is_del)
 	}
 #endif
 	prev_pstart = pstart;
-#ifdef FEAT_MBYTE
-	if (has_mbyte)
-	    pstart += (*mb_ptr2len_check)(pstart);
-	else
-#endif
-	    ++pstart;
+	mb_ptr_adv(pstart);
     }
     bdp->start_char_vcols = incr;
     if (bdp->start_vcol < oap->start_vcol)	/* line too short */
@@ -4994,10 +4988,12 @@ do_addsub(command, Prenum1)
 	length -= (int)STRLEN(buf2);
 
 	/*
-	 * adjust number of zeros to the new number of digits, so the
-	 * total length of the number remains the same
+	 * Adjust number of zeros to the new number of digits, so the
+	 * total length of the number remains the same.
+	 * Don't do this when
+	 * the result may look like an octal number.
 	 */
-	if (firstdigit == '0')
+	if (firstdigit == '0' && !(dooct && hex == 0))
 	    while (length-- > 0)
 		*ptr++ = '0';
 	*ptr = NUL;

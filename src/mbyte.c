@@ -680,7 +680,7 @@ codepage_invalid:
     /* When using Unicode, set default for 'fileencodings'. */
     if (enc_utf8 && !option_was_set((char_u *)"fencs"))
 	set_string_option_direct((char_u *)"fencs", -1,
-				 (char_u *)"ucs-bom,utf-8,latin1", OPT_FREE);
+			  (char_u *)"ucs-bom,utf-8,default,latin1", OPT_FREE);
 #if defined(HAVE_BIND_TEXTDOMAIN_CODESET) && defined(FEAT_GETTEXT)
     /* GNU gettext 0.10.37 supports this feature: set the codeset used for
      * translated messages independently from the current locale. */
@@ -2590,7 +2590,7 @@ mb_prevptr(line, p)
     char_u *p;
 {
     if (p > line)
-	p = p - (*mb_head_off)(line, p - 1) - 1;
+	mb_ptr_back(line, p);
     return p;
 }
 
@@ -2745,6 +2745,17 @@ enc_canonize(enc)
     char_u	*r;
     char_u	*p, *s;
     int		i;
+
+# ifdef FEAT_MBYTE
+    if (STRCMP(enc, "default") == 0)
+    {
+	/* Use the default encoding as it's found by set_init_1(). */
+	r = get_encoding_default();
+	if (r == NULL)
+	    r = (char_u *)"latin1";
+	return vim_strsave(r);
+    }
+# endif
 
     /* copy "enc" to allocted memory, with room for two '-' */
     r = alloc((unsigned)(STRLEN(enc) + 3));

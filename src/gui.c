@@ -3852,12 +3852,7 @@ scroll_line_len(lnum)
 	for (;;)
 	{
 	    w = chartabsize(p, col);
-#ifdef FEAT_MBYTE
-	    if (has_mbyte)
-		p += (*mb_ptr2len_check)(p);
-	    else
-#endif
-		++p;
+	    mb_ptr_adv(p);
 	    if (*p == NUL)		/* don't count the last character */
 		break;
 	    col += w;

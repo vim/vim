@@ -29,7 +29,7 @@ Summary:
 ren Make_bc3.mak Makefile; make      16 bit, Borland C++ and Turbo C++
 ren Make_tcc.mak Makefile; make	     16 bit, Turbo C
 make -f Make_djg.mak		     32 bit, DJGPP 2.0
-make -f Make_bc5.mak		     32 bit, Borland C++ 5.0 (edit it to
+make -f Make_bc5.mak		     32 bit, Borland C++ 5.x (edit it to
 					     define DOS)
 
 Warning: Be sure to use the right make.exe.  Microsoft C make doesn't work;
@@ -58,9 +58,11 @@ warning (about an argument to signal()).
 Make_bc5.mak is for those that have Borland C++ 5.0 or later.  At the top of
 the file, there are some variables you can change to make either a 32-bit
 Windows exe (GUI or console mode), or a 16-bit MS-DOS version.
+NOTE: multi-byte support is broken in the Borland libraries, not everything
+will work properly!  Esp. handling multi-byte file names.
 
-If you get all kinds of strange error messages when compiling, try adding <CR>
-characters at the end of each line.
+If you get all kinds of strange error messages when compiling, try adding
+changing the file format from "unix" to "dos".
 
 
 2. Win32 (Windows NT and Windows 95)

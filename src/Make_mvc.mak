@@ -637,7 +637,7 @@ $(VIM): $(OUTDIR) $(OBJ) $(GUI_OBJ) $(OLE_OBJ) $(OLE_IDL) $(MZSCHEME_OBJ) $(PERL
 $(VIM).exe: $(VIM)
 
 $(OUTDIR):
-	if not exist $(OUTDIR)/nul    mkdir $(OUTDIR)
+	if not exist $(OUTDIR)/nul  mkdir $(OUTDIR)
 
 install.exe: dosinst.c
 	$(CC) /nologo -DNDEBUG -DWIN32 dosinst.c kernel32.lib shell32.lib ole32.lib advapi32.lib uuid.lib

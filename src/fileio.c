@@ -370,13 +370,8 @@ readfile(fname, sfname, from, lines_to_skip, lines_to_read, eap, flags)
      */
     if (fname != NULL && *fname != NUL)
     {
-	p = fname + STRLEN(fname) - 1;
-	if ((vim_ispathsep(*p)
-#ifdef FEAT_MBYTE
-		    /* Do not use a multi-byte char as path separator. */
-		    && (!has_mbyte || (*mb_head_off)(fname, p) == 0)
-#endif
-	    ) || STRLEN(fname) >= MAXPATHL)
+	p = fname + STRLEN(fname);
+	if (after_pathsep(fname, p) || STRLEN(fname) >= MAXPATHL)
 	{
 	    filemess(curbuf, fname, (char_u *)_("Illegal file name"), 0);
 	    msg_end();
@@ -2801,7 +2796,8 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 		    ml_timestamp(buf);
 		    buf->b_flags &= ~BF_WRITE_MASK;
 		}
-		if (reset_changed && buf->b_changed)
+		if (reset_changed && buf->b_changed
+			&& (overwriting || vim_strchr(p_cpo, CPO_PLUS) != NULL))
 		    /* Buffer still changed, the autocommands didn't work
 		     * properly. */
 		    return FAIL;
@@ -3526,7 +3522,7 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
      * the original file.
      * Don't do this if there is a backup file and we are exiting.
      */
-    if (reset_changed && !newfile && !otherfile(ffname)
+    if (reset_changed && !newfile && overwriting
 					      && !(exiting && backup != NULL))
     {
 	ml_preserve(buf, FALSE);
@@ -4192,11 +4188,14 @@ restore_backup:
 	keep_msg_attr = 0;
     }
 
+    /* When written everything correctly: reset 'modified'.  Unless not
+     * writing to the original file and '+' is not in 'cpoptions'. */
     if (reset_changed && whole
 #ifdef FEAT_MBYTE
 	    && !write_info.bw_conv_error
 #endif
-	    )		/* when written everything correctly */
+	    && (overwriting || vim_strchr(p_cpo, CPO_PLUS) != NULL)
+	    )
     {
 	unchanged(buf, TRUE);
 	u_unchanged(buf);
@@ -5383,7 +5382,7 @@ buf_modname(shortname, fname, ext, prepend_dot)
 	    vim_free(retval);
 	    return NULL;
 	}
-	if (!vim_ispathsep(retval[fnamelen - 1]))
+	if (!after_pathsep(retval, retval + fnamelen))
 	{
 	    retval[fnamelen++] = PATHSEP;
 	    retval[fnamelen] = NUL;
@@ -5410,7 +5409,7 @@ buf_modname(shortname, fname, ext, prepend_dot)
      * Then truncate what is after the '/', '\' or ':' to 8 characters for
      * MSDOS and 26 characters for AMIGA, a lot more for UNIX.
      */
-    for (ptr = retval + fnamelen; ptr >= retval; ptr--)
+    for (ptr = retval + fnamelen; ptr >= retval; mb_ptr_back(retval, ptr))
     {
 #ifndef RISCOS
 	if (*ext == '.'

@@ -2228,11 +2228,12 @@ main_loop(cmdwin)
 getout_preserve_modified(exitval)
     int		exitval;
 {
-#if defined(UNIX)
-    /* Ignore SIGHUP, because a dropped connection may make Vim exit and then
-     * get a SIGHUP while exiting, which causes various reentrent problems. */
+# if defined(SIGHUP) && defined(SIG_IGN)
+    /* Ignore SIGHUP, because a dropped connection causes a read error, which
+     * makes Vim exit and then handling SIGHUP causes various reentrance
+     * problems. */
     signal(SIGHUP, SIG_IGN);
-#endif
+# endif
 
     ml_close_notmod();		    /* close all not-modified buffers */
     ml_sync_all(FALSE, FALSE);	    /* preserve all swap files */
@@ -3217,6 +3218,42 @@ eval_client_expr_to_string(expr)
     redir_off = save_ro;
     --emsg_skip;
 
+    return res;
+}
+
+/*
+ * If conversion is needed, convert "data" from "client_enc" to 'encoding' and
+ * return an allocated string.  Otherwise return "data".
+ * "*tofree" is set to the result when it needs to be freed later.
+ */
+/*ARGSUSED*/
+    char_u *
+serverConvert(client_enc, data, tofree)
+    char_u *client_enc;
+    char_u *data;
+    char_u **tofree;
+{
+    char_u	*res = data;
+
+    *tofree = NULL;
+# ifdef FEAT_MBYTE
+    if (client_enc != NULL && p_enc != NULL)
+    {
+	vimconv_T	vimconv;
+
+	vimconv.vc_type = CONV_NONE;
+	if (convert_setup(&vimconv, client_enc, p_enc) != FAIL
+					      && vimconv.vc_type != CONV_NONE)
+	{
+	    res = string_convert(&vimconv, data, NULL);
+	    if (res == NULL)
+		res = data;
+	    else
+		*tofree = res;
+	}
+	convert_setup(&vimconv, NULL, NULL);
+    }
+# endif
     return res;
 }
 

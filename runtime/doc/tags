@@ -6579,6 +6579,7 @@ version4.txt	version4.txt	/*version4.txt*
 version5.txt	version5.txt	/*version5.txt*
 version6.txt	version6.txt	/*version6.txt*
 version7.txt	version7.txt	/*version7.txt*
+vi	intro.txt	/*vi*
 vi-differences	vi_diff.txt	/*vi-differences*
 vi:	options.txt	/*vi:*
 vi_diff.txt	vi_diff.txt	/*vi_diff.txt*
@@ -6655,6 +6656,7 @@ w:var	eval.txt	/*w:var*
 warningmsg-variable	eval.txt	/*warningmsg-variable*
 white-space	pattern.txt	/*white-space*
 whitespace	pattern.txt	/*whitespace*
+wildcard	editing.txt	/*wildcard*
 win16-!start	gui_w16.txt	/*win16-!start*
 win16-clipboard	gui_w16.txt	/*win16-clipboard*
 win16-colors	gui_w16.txt	/*win16-colors*
@@ -6828,6 +6830,7 @@ zz	scroll.txt	/*zz*
 {	motion.txt	/*{*
 {Visual}	intro.txt	/*{Visual}*
 {address}	cmdline.txt	/*{address}*
+{arglist}	editing.txt	/*{arglist}*
 {char1-char2}	intro.txt	/*{char1-char2}*
 {event}	autocmd.txt	/*{event}*
 {file}	editing.txt	/*{file}*

@@ -4345,9 +4345,9 @@ mch_rename(
      * filename.asc.txt by its SFN, filena~1.txt.  If we rename filena~1.txt
      * to filena~1.txt~ (i.e., we're making a backup while writing it), the
      * SFN for filena~1.txt~ will be filena~1.txt, by default, which will
-     * cause all sorts of problems later in buf_write.  So, we create an empty
-     * file called filena~1.txt and the system will have to find some other
-     * SFN for filena~1.txt~, such as filena~2.txt
+     * cause all sorts of problems later in buf_write().  So, we create an
+     * empty file called filena~1.txt and the system will have to find some
+     * other SFN for filena~1.txt~, such as filena~2.txt
      */
     if ((hf = CreateFile(pszOldFile, GENERIC_WRITE, 0, NULL, CREATE_NEW,
 		    FILE_ATTRIBUTE_NORMAL, NULL)) == INVALID_HANDLE_VALUE)
@@ -4538,15 +4538,12 @@ getout:
     int
 mch_open(char *name, int flags, int mode)
 {
+    /* _wopen() does not work with Borland C 5.5: creates a read-only file. */
+# ifndef __BORLANDC__
     WCHAR	*wn;
     int		f;
 
-    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage
-# ifdef __BORLANDC__
-	    /* Wide functions of Borland C 5.5 do not work on Windows 98. */
-	    && g_PlatformId == VER_PLATFORM_WIN32_NT
-# endif
-       )
+    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
     {
 	wn = enc_to_ucs2(name, NULL);
 	if (wn != NULL)
@@ -4560,6 +4557,7 @@ mch_open(char *name, int flags, int mode)
 	     * the _wopen() fails for missing wide functions. */
 	}
     }
+# endif
 
     return open(name, flags, mode);
 }

@@ -1501,7 +1501,7 @@ sortcmp(a, b)
     char *s = *(char **)a;
     char *t = *(char **)b;
 
-    return pathcmp(s, t);
+    return pathcmp(s, t, -1);
 }
 
 /*
@@ -1511,16 +1511,12 @@ sortcmp(a, b)
 mch_has_exp_wildcard(p)
     char_u *p;
 {
-    for ( ; *p; ++p)
+    for ( ; *p; mb_ptr_adv(p))
     {
 	if (*p == '\\' && p[1] != NUL)
 	    ++p;
 	else if (vim_strchr((char_u *)"*?[(#", *p) != NULL)
 	    return TRUE;
-#ifdef FEAT_MBYTE
-	if (has_mbyte)
-	    p += (*mb_ptr2len_check)(p) - 1;
-#endif
     }
     return FALSE;
 }
@@ -1529,7 +1525,7 @@ mch_has_exp_wildcard(p)
 mch_has_wildcard(p)
     char_u *p;
 {
-    for ( ; *p; ++p)
+    for ( ; *p; mb_ptr_adv(p))
     {
 	if (*p == '\\' && p[1] != NUL)
 	    ++p;
@@ -1543,10 +1539,6 @@ mch_has_wildcard(p)
 						, *p) != NULL
 		    || (*p == '~' && p[1] != NUL))
 		return TRUE;
-#ifdef FEAT_MBYTE
-	if (has_mbyte)
-	    p += (*mb_ptr2len_check)(p) - 1;
-#endif
     }
     return FALSE;
 }

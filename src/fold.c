@@ -2070,12 +2070,7 @@ foldtext_cleanup(str)
 	}
 	else
 	{
-#ifdef FEAT_MBYTE
-	    if (has_mbyte)
-		s += (*mb_ptr2len_check)(s);
-	    else
-#endif
-		++s;
+	    mb_ptr_adv(s);
 	}
     }
 }

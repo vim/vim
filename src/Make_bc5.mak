@@ -53,6 +53,9 @@
 #		of Ruby will cause a compile error on these systems.
 #   DYNAMIC_RUBY no or yes: use yes to load the Ruby DLL dynamically (no)
 # MBYTE		no or yes: set to yes for multi-byte support (yes)
+#               NOTE: multi-byte support is broken in the Borland libraries,
+#               not everything will work properly!  Esp. handling multi-byte
+#               file names.
 # IME		no or yes: set to yes for multi-byte IME support (yes)
 #   DYNAMIC_IME no or yes: set to yes to load imm32.dll dynamically (yes)
 # GETTEXT	no or yes: set to yes for multi-language support (yes)
