@@ -94,7 +94,6 @@ nbdebug_log_init(
 		} else {
 			nb_dlevel = NB_TRACE;	/* default level */
 		}
-		/* XSetErrorHandler(errorHandler); */
 	}
 
 }    /* end nbdebug_log_init */
@@ -126,7 +125,7 @@ nbdbg(
 {
 	va_list		 ap;
 
-	if (nb_debug != NULL) {
+	if (nb_debug != NULL && nb_dlevel & NB_TRACE) {
 		va_start(ap, fmt);
 		vfprintf(nb_debug, fmt, ap);
 		va_end(ap);
@@ -134,6 +133,23 @@ nbdbg(
 	}
 
 }    /* end nbdbg */
+
+
+void
+nbprt(
+	char		*fmt,
+	...)
+{
+	va_list		 ap;
+
+	if (nb_debug != NULL && nb_dlevel & NB_PRINT) {
+		va_start(ap, fmt);
+		vfprintf(nb_debug, fmt, ap);
+		va_end(ap);
+		fflush(nb_debug);
+	}
+
+}    /* end nbprt */
 
 
 static int

@@ -1,4 +1,4 @@
-*if_cscop.txt*  For Vim version 7.0aa.  Last change: 2004 Jul 23
+*if_cscop.txt*  For Vim version 7.0aa.  Last change: 2004 Oct 21
 
 
 		  VIM REFERENCE MANUAL    by Andy Kahn
@@ -245,8 +245,9 @@ results. This is a list of comma-separated values. Each item consists of
 '-' implies previous results clearance, '0' or command absence - don't use
 quickfix. Search is performed from start until first command occurrence.
 The default value is "" (don't use quickfix anyway). The following value
-seems to be useful: "s-,c-,d-,i-,t-,e-".
-
+seems to be useful: >
+	:set cscopequickfix=s-,c-,d-,i-,t-,e-
+<
 							*cscopetag* *cst*
 If 'cscopetag' set, the commands ":tag" and CTRL-] as well as "vim -t" will
 always use |:cstag| instead of the default :tag behavior.  Effectively, by

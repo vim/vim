@@ -61,9 +61,7 @@ static char_u *check_for_cryptkey __ARGS((char_u *cryptkey, char_u *ptr, long *s
 #ifdef UNIX
 static void set_file_time __ARGS((char_u *fname, time_t atime, time_t mtime));
 #endif
-static void msg_add_fname __ARGS((buf_T *, char_u *));
 static int msg_add_fileformat __ARGS((int eol_type));
-static void msg_add_lines __ARGS((int, long, long));
 static void msg_add_eol __ARGS((void));
 static int check_mtime __ARGS((buf_T *buf, struct stat *s));
 static int time_differs __ARGS((long t1, long t2));
@@ -2867,7 +2865,9 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 	     */
 	    if (buf->b_changed || isNetbeansModified(buf))
 	    {
-		netbeans_save_buffer(buf);
+		--no_wait_return;		/* may wait for return now */
+		msg_scroll = msg_save;
+		netbeans_save_buffer(buf);	/* no error checking... */
 		return retval;
 	    }
 	    else
@@ -4403,7 +4403,7 @@ nofail:
 /*
  * Put file name into IObuff with quotes.
  */
-    static void
+    void
 msg_add_fname(buf, fname)
     buf_T	*buf;
     char_u	*fname;
@@ -4450,7 +4450,7 @@ msg_add_fileformat(eol_type)
 /*
  * Append line and character count to IObuff.
  */
-    static void
+    void
 msg_add_lines(insert_space, lnum, nchars)
     int	    insert_space;
     long    lnum;
@@ -5918,6 +5918,9 @@ buf_check_timestamp(buf, focus)
 	    || buf->b_saving
 #ifdef FEAT_AUTOCMD
 	    || busy
+#endif
+#ifdef FEAT_NETBEANS_INTG
+	    || isNetbeansBuffer(buf)
 #endif
 	    )
 	return 0;

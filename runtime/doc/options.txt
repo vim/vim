@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2004 Oct 08
+*options.txt*	For Vim version 7.0aa.  Last change: 2004 Oct 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -918,7 +918,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  impossible!).  Writing may fail because of this.
 	- A directory "." means to put the backup file in the same directory
 	  as the edited file.
-	- A directory starting with "./" (or ".\" for MS-DOS et.al.) means to
+	- A directory starting with "./" (or ".\" for MS-DOS et al.) means to
 	  put the backup file relative to where the edited file is.  The
 	  leading "." is replaced with the path name of the edited file.
 	  ("." inside a directory name has no special meaning).
@@ -2046,7 +2046,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  the edited file.  On Unix, a dot is prepended to the file name, so
 	  it doesn't show in a directory listing.  On MS-Windows the "hidden"
 	  attribute is set and a dot prepended if possible.
-	- A directory starting with "./" (or ".\" for MS-DOS et.al.) means to
+	- A directory starting with "./" (or ".\" for MS-DOS et al.) means to
 	  put the swap file relative to where the edited file is.  The leading
 	  "." is replaced with the path name of the edited file.
 	- For Unix and Win32, if a directory ends in two path separators, the
@@ -2187,10 +2187,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 			{not in Vi}
 	When on, all the windows are automatically made the same size after
-	splitting or closing a window.  When off, splitting a window will
-	reduce the size of the current window and leave the other windows the
-	same.  When closing a window the extra lines are given to the window
-	next to it (depending on 'splitbelow' and 'splitright').
+	splitting or closing a window.  This also happens the moment the
+	option is switched on.  When off, splitting a window will reduce the
+	size of the current window and leave the other windows the same.  When
+	closing a window the extra lines are given to the window next to it
+	(depending on 'splitbelow' and 'splitright').
 	When mixing vertically and horizontally split windows, a minimal size
 	is computed and some windows may be larger if there is room.  The
 	'eadirection' option tells in which direction the size is affected.

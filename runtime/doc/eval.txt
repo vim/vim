@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2004 Oct 11
+*eval.txt*      For Vim version 7.0aa.  Last change: 2004 Oct 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -2977,6 +2977,7 @@ multi_byte_ime		Compiled with support for IME input method.
 multi_lang		Compiled with support for multiple languages.
 mzscheme		Compiled with MzScheme interface |mzscheme|.
 netbeans_intg		Compiled with support for |netbeans|.
+netbeans_enabled	Compiled with support for |netbeans| and it's used.
 ole			Compiled with OLE automation support for Win32.
 os2			OS/2 version of Vim.
 osfiletype		Compiled with support for osfiletypes |+osfiletype|

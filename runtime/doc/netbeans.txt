@@ -417,6 +417,12 @@ guard off len
 initDone	Mark the buffer as ready for use.  Implicitly makes the buffer
 		the current buffer.  Fires the BufReadPost autocommand event.
 
+insertDone
+		Sent by NetBeans to tell vim an initial file insert is done.
+		This triggers a read message being printed. Prior to version
+		2.3, no read messages were displayed after opening a file.
+		New in version 2.3.
+
 moveAnnoToFront serNum
 		Not implemented.
 
@@ -450,6 +456,12 @@ save		Save the buffer when it was modified.  The other side of the
 		- 'buftype' disallows writing
 		New in version 2.2.
 
+saveDone
+		Sent by NetBeans to tell vim a save is done. This triggers
+		a save message being printed. Prior to version 2.3, no save
+		messages were displayed after a save.
+		New in version 2.3.
+
 setAsUser	Not implemented.
 
 setBufferNumber pathname
@@ -473,6 +485,7 @@ setExitDelay seconds
 		This delay is used to give the IDE a chance to handle things
 		before really exiting.  The default delay is two seconds.
 		New in version 2.1.
+		Obsolete in version 2.3.
 
 setFullName pathname
 		Set the file name to be used for a buffer to "pathname", a
@@ -490,7 +503,14 @@ setModified modified
 		When the boolean argument "modified" is "T" mark the buffer as
 		modified, when it is "F" mark it as unmodified.
 
-setReadOnly	Not implemented.
+setModtime time
+		Update a buffers modification time after NetBeans saves the
+		file.
+		New in version 2.3.
+
+setReadOnly
+		Passed by NetBeans to tell vim a file is readonly.
+		Implemented in verion 2.3.
 
 setStyle	Not implemented.
 
@@ -508,7 +528,11 @@ showBalloon text
 		disappear when the mouse is moved more than a few pixels.
 		New in version 2.1.
 
-specialKeys	Not implemented.
+specialKeys
+		Map a set of keys (mostly function keys) to be passed back
+		to NetBeans for processing. This lets NetBeans hotkeys be
+		used from vim.
+		Implemented in version 2.3.
 
 startAtomic	Begin an atomic operation.  The screen will not be updated
 		until "endAtomic" is given.
@@ -619,6 +643,11 @@ buttonRelease button lnum col
 		separator line. If col is less than 1 the button release was
 		in the sign area.
 		New in version 2.2.
+
+disconnect
+		Tell NetBeans that vim is exiting and not to try and read or
+		write more commands.
+		New in version 2.3.
 
 fileClosed	Not implemented.
 

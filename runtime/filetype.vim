@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2004 Oct 02
+" Last Change:	2004 Oct 14
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -1519,6 +1519,9 @@ au BufNewFile,BufRead .tidyrc,tidyrc		setf tidy
 
 " TF mud client
 au BufNewFile,BufRead *.tf,.tfrc,tfrc		setf tf
+
+" TPP - Text Presentation Program
+au BufNewFile,BufReadPost *.tpp			setf tpp
 
 " TSS - Geometry
 au BufNewFile,BufReadPost *.tssgm		setf tssgm

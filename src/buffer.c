@@ -1413,6 +1413,12 @@ enter_buffer(buf)
 #endif
 	scroll_cursor_halfway(FALSE);	/* redisplay at correct position */
 
+#ifdef FEAT_NETBEANS_INTG
+    /* Send fileOpened event because we've changed buffers. */
+    if (usingNetbeans && isNetbeansBuffer(curbuf))
+	netbeans_file_activated(curbuf);
+#endif
+
 #if defined(FEAT_NETBEANS_INTG) || defined(FEAT_SUN_WORKSHOP)
     /* Change directories when the acd option is set on. */
     if (p_acd && curbuf->b_ffname != NULL

@@ -6342,8 +6342,10 @@ nv_replace(cap)
 	    {
 		colnr_T start = (colnr_T)(curwin->w_cursor.col - cap->count1);
 
+		netbeans_removed(curbuf, curwin->w_cursor.lnum, start,
+							    (long)cap->count1);
 		netbeans_inserted(curbuf, curwin->w_cursor.lnum, start,
-			     (int)cap->count1, &ptr[start], (int)cap->count1);
+					       &ptr[start], (int)cap->count1);
 	    }
 #endif
 
@@ -6538,8 +6540,10 @@ n_swapchar(cap)
 		    {
 			ptr = ml_get(pos.lnum);
 			count = STRLEN(ptr) - pos.col;
+			netbeans_removed(curbuf, pos.lnum, pos.col,
+								 (long)count);
 			netbeans_inserted(curbuf, pos.lnum, pos.col,
-						 count, &ptr[pos.col], count);
+							&ptr[pos.col], count);
 		    }
 		    pos.col = 0;
 		    pos.lnum++;
@@ -6563,8 +6567,8 @@ n_swapchar(cap)
     {
 	ptr = ml_get(pos.lnum);
 	count = curwin->w_cursor.col - pos.col;
-	netbeans_inserted(curbuf, pos.lnum, pos.col,
-						 count, &ptr[pos.col], count);
+	netbeans_removed(curbuf, pos.lnum, pos.col, (long)count);
+	netbeans_inserted(curbuf, pos.lnum, pos.col, &ptr[pos.col], count);
     }
 #endif
 

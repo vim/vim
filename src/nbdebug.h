@@ -24,10 +24,12 @@
 #endif
 
 #define nbdebug(a) nbdbg##a
+#define nbprint(a) nbprt##a
 
 #define NB_TRACE		0x00000001
 #define NB_TRACE_VERBOSE	0x00000002
 #define NB_TRACE_COLONCMD	0x00000004
+#define NB_PRINT		0x00000008
 #define NB_DEBUG_ALL		0xffffffff
 
 #define NBDLEVEL(flags)		(nb_debug != NULL && (nb_dlevel & (flags)))
@@ -43,6 +45,7 @@ typedef enum {
 
 
 void		 nbdbg(char *, ...);
+void		 nbprt(char *, ...);
 void		 nbtrace(char *, ...);
 
 void nbdebug_wait __ARGS((u_int wait_flags, char *wait_var, u_int wait_secs));
@@ -58,7 +61,7 @@ extern u_int	 nb_dlevel;		/* nb_debug verbosity level */
 #endif
 
 /*
- * The following 2 stubs are needed because a macro cannot be used because of
+ * The following 3 stubs are needed because a macro cannot be used because of
  * the variable number of arguments.
  */
 
@@ -69,6 +72,12 @@ nbdbg(
 {
 }
 
+void
+nbprt(
+	char		*fmt,
+	...)
+{
+}
 
 void
 nbtrace(

@@ -1,16 +1,16 @@
 /* netbeans.c */
-void netbeans_Xt_connect __ARGS((void *context));
-void netbeans_gtk_connect __ARGS((void));
-void netbeans_w32_connect __ARGS((void));
 void messageFromNetbeansW32 __ARGS((void));
 int isNetbeansBuffer __ARGS((buf_T *bufp));
 int isNetbeansModified __ARGS((buf_T *bufp));
 void netbeans_end __ARGS((void));
+void ex_nbkey __ARGS((exarg_T *eap));
 void netbeans_startup_done __ARGS((void));
+void netbeans_send_disconnect __ARGS((void));
 void netbeans_frame_moved __ARGS((int new_x, int new_y));
-void netbeans_file_opened __ARGS((char *filename));
+void netbeans_file_activated __ARGS((buf_T *bufp));
+void netbeans_file_opened __ARGS((buf_T *bufp));
 void netbeans_file_closed __ARGS((buf_T *bufp));
-void netbeans_inserted __ARGS((buf_T *bufp, linenr_T linenr, colnr_T col, int oldlen, char_u *txt, int newlen));
+void netbeans_inserted __ARGS((buf_T *bufp, linenr_T linenr, colnr_T col, char_u *txt, int newlen));
 void netbeans_removed __ARGS((buf_T *bufp, linenr_T linenr, colnr_T col, long len));
 void netbeans_unmodified __ARGS((buf_T *bufp));
 void netbeans_button_release __ARGS((int button));

@@ -185,10 +185,18 @@ u_savecommon(top, bot, newbot)
      * Netbeans defines areas that cannot be modified.  Bail out here when
      * trying to change text in a guarded area.
      */
-    if (usingNetbeans && netbeans_is_guarded(top, bot))
+    if (usingNetbeans)
     {
-	EMSG(_(e_guarded));
-	return FAIL;
+	if (netbeans_is_guarded(top, bot))
+	{
+	    EMSG(_(e_guarded));
+	    return FAIL;
+	}
+	if (curbuf->b_p_ro)
+	{
+	    EMSG(_(e_nbreadonly));
+	    return FAIL;
+	}
     }
 #endif
 
@@ -693,6 +701,10 @@ u_undoredo()
     if (old_flags & UH_CHANGED)
 	changed();
     else
+#ifdef FEAT_NETBEANS_INTG
+	/* per netbeans undo rules, keep it as modified */
+	if (!isNetbeansModified(curbuf))
+#endif
 	unchanged(curbuf, FALSE);
 
     /*

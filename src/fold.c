@@ -1925,7 +1925,6 @@ get_foldtext(wp, lnum, lnume, foldinfo, buf)
 	win_T	*save_curwin;
 	int	level;
 	char_u	*p;
-	int	len;
 
 	/* Set "v:foldstart" and "v:foldend". */
 	set_vim_var_nr(VV_FOLDSTART, lnum);
@@ -1959,6 +1958,8 @@ get_foldtext(wp, lnum, lnume, foldinfo, buf)
 	    for (p = text; *p != NUL; ++p)
 	    {
 # ifdef FEAT_MBYTE
+		int	len;
+
 		if (has_mbyte && (len = (*mb_ptr2len_check)(p)) > 1)
 		{
 		    if (!vim_isprintc((*mb_ptr2char)(p)))

@@ -7478,6 +7478,15 @@ ins_tab()
 		    for (temp = i; --temp >= 0; )
 			replace_join(repl_off);
 	    }
+#ifdef FEAT_NETBEANS_INTG
+	    if (usingNetbeans)
+	    {
+		netbeans_removed(curbuf, fpos.lnum, cursor->col,
+							       (long)(i + 1));
+		netbeans_inserted(curbuf, fpos.lnum, cursor->col,
+							   (char_u *)"\t", 1);
+	    }
+#endif
 	    cursor->col -= i;
 
 #ifdef FEAT_VREPLACE

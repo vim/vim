@@ -1784,6 +1784,7 @@ typedef int VimClipboard;	/* This is required for the prototypes. */
 # include "nbdebug.h"
 #else
 # define nbdebug(a)
+# define nbprint(a)
 #endif
 
 #ifdef IN_PERL_FILE

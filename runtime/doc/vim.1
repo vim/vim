@@ -392,7 +392,7 @@ If the {scriptout} file exists, characters are appended.
 Like -w, but an existing file is overwritten.
 .TP
 -x
-Use encryption when writing files.   Will prompt for a crypt key.
+Use encryption when writing files.  Will prompt for a crypt key.
 .TP
 -X
 Don't connect to the X server.  Shortens startup time in a terminal, but the
@@ -415,14 +415,14 @@ Arguments after this will be handled as a file name.
 This can be used to edit a filename that starts with a '-'.
 .TP
 --echo-wid
-GTK GUI only: Echo the Window ID on stdout
+GTK GUI only: Echo the Window ID on stdout.
 .TP
 --help
 Give a help message and exit, just like "-h".
 .TP
 --literal
-Take file name arguments literally, do not expand wildcards.  Not needed on
-Unix, the shell expand wildcards.
+Take file name arguments literally, do not expand wildcards.  This has no
+effect on Unix where the shell expands wildcards.
 .TP
 --noplugin
 Skip loading plugins.  Implied by -u NONE.

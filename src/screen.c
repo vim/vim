@@ -2019,7 +2019,6 @@ fold_line(wp, fold_count, foldinfo, lnum, row)
     pos_T	*top, *bot;
     linenr_T	lnume = lnum + fold_count - 1;
     int		len;
-    char_u	*p;
     char_u	*text;
     int		fdc;
     int		col;
@@ -2154,6 +2153,7 @@ fold_line(wp, fold_count, foldinfo, lnum, row)
 	int	u8c, u8c_c1, u8c_c2;
 	int	idx;
 	int	c_len;
+	char_u	*p;
 # ifdef FEAT_ARABIC
 	int	prev_c = 0;		/* previous Arabic character */
 	int	prev_c1 = 0;		/* first composing char for prev_c */

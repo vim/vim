@@ -1,4 +1,4 @@
-*fold.txt*      For Vim version 7.0aa.  Last change: 2004 Jun 14
+*fold.txt*      For Vim version 7.0aa.  Last change: 2004 Oct 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -190,11 +190,11 @@ and the level given by the marker:
 3. if a marker with a lower fold level is found, all folds up to and including
    this level end and a fold with the specified level starts.
 
-The number indicates the fold level.  A zero cannot be used.
-You can use "}}}" with a digit to indicate the level of the fold that
-ends.  The fold level of the following line will be one less than the
-indicated level.  Note that Vim doesn't look back to the level of the matching
-marker (that would take too much time).  Example: >
+The number indicates the fold level.  A zero cannot be used (a marker with
+level zero is ignored).  You can use "}}}" with a digit to indicate the level
+of the fold that ends.  The fold level of the following line will be one less
+than the indicated level.  Note that Vim doesn't look back to the level of the
+matching marker (that would take too much time).  Example: >
 
 	{{{1
 	fold level here is 1

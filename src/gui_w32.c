@@ -1224,10 +1224,6 @@ gui_mch_init(void)
     s_findrep_struct.wFindWhatLen = MSWIN_FR_BUFSIZE;
     s_findrep_struct.wReplaceWithLen = MSWIN_FR_BUFSIZE;
 #endif
-#ifdef FEAT_NETBEANS_INTG
-    if (usingNetbeans)
-	netbeans_w32_connect();
-#endif
 
     return OK;
 }

@@ -2132,8 +2132,10 @@ op_tilde(oap)
 	    {
 		char_u *ptr = ml_get_buf(curbuf, pos.lnum, FALSE);
 
+		netbeans_removed(curbuf, pos.lnum, bd.textcol,
+							    (long)bd.textlen);
 		netbeans_inserted(curbuf, pos.lnum, bd.textcol,
-				    bd.textlen, &ptr[bd.textcol], bd.textlen);
+				    &ptr[bd.textcol], bd.textlen);
 	    }
 # endif
 	}
@@ -2175,15 +2177,17 @@ op_tilde(oap)
 		{
 		    ptr = ml_get_buf(curbuf, pos.lnum, FALSE);
 		    count = STRLEN(ptr) - pos.col;
+		    netbeans_removed(curbuf, pos.lnum, pos.col, (long)count);
 		    netbeans_inserted(curbuf, pos.lnum, pos.col,
-						 count, &ptr[pos.col], count);
+						 &ptr[pos.col], count);
 		    pos.col = 0;
 		    pos.lnum++;
 		}
 		ptr = ml_get_buf(curbuf, pos.lnum, FALSE);
 		count = oap->end.col - pos.col + 1;
+		netbeans_removed(curbuf, pos.lnum, pos.col, (long)count);
 		netbeans_inserted(curbuf, pos.lnum, pos.col,
-						 count, &ptr[pos.col], count);
+						 &ptr[pos.col], count);
 	    }
 #endif
 	}

@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 7.0aa.  Last change: 2004 Jan 09
+*term.txt*      For Vim version 7.0aa.  Last change: 2004 Oct 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -372,9 +372,13 @@ If your terminal supports both inversion and standout mode, you can see two
 different modes.  If your terminal supports only one of the modes, both will
 look the same.
 
+							*keypad-comma*
 The keypad keys, when they are not mapped, behave like the equivalent normal
-key.
-							*xterm-codes*
+key.  There is one exception: if you have a comma on the keypad instead of a
+decimal point, Vim will use a dot anyway.  Use these mappings to fix that: >
+	:noremap <kPoint> ,
+	:noremap! <kPoint> ,
+<							*xterm-codes*
 There is a special trick to obtain the key codes which currently only works
 for xterm.  When |t_RV| is defined and a response is received which indicates
 an xterm with patchlevel 141 or higher, Vim uses special escape sequences to

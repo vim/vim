@@ -2892,6 +2892,7 @@ nextwild(xp, type, options)
     vim_free(p2);
 
     redrawcmd();
+    cursorcmd();
 
     /* When expanding a ":map" command and no matches are found, assume that
      * the key is supposed to be inserted literally */

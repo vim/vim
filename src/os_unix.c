@@ -959,6 +959,12 @@ deathtrap SIGDEFARG(sigarg)
 #endif
     preserve_exit();		    /* preserve files and exit */
 
+#ifdef NBDEBUG
+    reset_signals();
+    may_core_dump();
+    abort();
+#endif
+
     SIGRETURN;
 }
 
@@ -2704,6 +2710,10 @@ mch_exit(r)
 	return;
 #endif
 
+#ifdef FEAT_NETBEANS_INTG
+    if (usingNetbeans)
+	netbeans_send_disconnect();
+#endif
     exit(r);
 }
 

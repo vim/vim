@@ -5223,6 +5223,7 @@ keymap-file-format	mbyte.txt	/*keymap-file-format*
 keymap-hebrew	mbyte.txt	/*keymap-hebrew*
 keypad-0	intro.txt	/*keypad-0*
 keypad-9	intro.txt	/*keypad-9*
+keypad-comma	term.txt	/*keypad-comma*
 keypad-divide	intro.txt	/*keypad-divide*
 keypad-end	intro.txt	/*keypad-end*
 keypad-enter	intro.txt	/*keypad-enter*

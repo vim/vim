@@ -1389,6 +1389,7 @@ EXTERN char_u e_invexprmsg[]	INIT(=N_("E449: Invalid expression received"));
 #endif
 #ifdef FEAT_NETBEANS_INTG
 EXTERN char_u e_guarded[]	INIT(=N_("E463: Region is guarded, cannot modify"));
+EXTERN char_u e_nbreadonly[]	INIT(=N_("E680: NetBeans does not allow changes in read-only files"));
 #endif
 #ifdef MACOS_X_UNIX
 EXTERN short disallow_gui	INIT(= FALSE);

@@ -1,13 +1,16 @@
 " Vim syntax file
 " Language:	Pascal
-" Version: 2.7
-" Last Change:	2003 May 11
+" Version: 2.8
+" Last Change:	2004/10/17 17:47:30
 " Maintainer:  Xavier Crégut <xavier.cregut@enseeiht.fr>
 " Previous Maintainer:	Mario Eusebio <bio@dq.fct.unl.pt>
 
-" Contributors: Tim Chase <tchase@csc.com>, Stas Grabois <stsi@vtrails.com>,
+" Contributors: Tim Chase <tchase@csc.com>,
+"	Stas Grabois <stsi@vtrails.com>,
 "	Mazen NEIFER <mazen.neifer.2001@supaero.fr>,
-"	Klaus Hast <Klaus.Hast@arcor.net>
+"	Klaus Hast <Klaus.Hast@arcor.net>,
+"	Austin Ziegler <austin@halostatue.ca>,
+"	Markus Koenig <markus@stber-koenig.de>
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -34,7 +37,20 @@ syn keyword pascalType		array boolean char integer file pointer real set
 syn keyword pascalType		string text variant
 
 
-syn keyword pascalTodo contained	TODO
+    " 20011222az: Added new items.
+syn keyword pascalTodo contained	TODO FIXME XXX DEBUG NOTE
+
+    " 20010723az: When wanted, highlight the trailing whitespace -- this is
+    " based on c_space_errors; to enable, use "pascal_space_errors".
+if exists("pascal_space_errors")
+    if !exists("pascal_no_trail_space_error")
+        syn match pascalSpaceError "\s\+$"
+    endif
+    if !exists("pascal_no_tab_space_error")
+        syn match pascalSpaceError " \+\t"me=e-1
+    endif
+endif
+
 
 
 " String
@@ -93,8 +109,7 @@ if exists("pascal_no_tabs")
   syn match pascalShowTab "\t"
 endif
 
-syn region pascalComment	start="(\*"  end="\*)" contains=pascalTodo
-syn region pascalComment	start="{"  end="}" contains=pascalTodo
+syn region pascalComment	start="(\*\|{"  end="\*)\|}" contains=pascalTodo,pascalSpaceError
 
 
 if !exists("pascal_no_functions")
@@ -113,7 +128,7 @@ if !exists("pascal_no_functions")
 
   if exists("pascal_traditional")
     " These functions do not seem to be defined in Turbo Pascal
-    syn keyword pascalFunction	Get Page Put
+    syn keyword pascalFunction	Get Page Put 
   endif
 
   " ordinal functions
@@ -129,9 +144,9 @@ if !exists("pascal_traditional")
   syn keyword pascalStatement	constructor destructor implementation inherited
   syn keyword pascalStatement	interface unit uses
   syn keyword pascalModifier	absolute assembler external far forward inline
-  syn keyword pascalModifier	interrupt near virtual
-  syn keyword pascalAcces	private public
-  syn keyword pascalStruct	object
+  syn keyword pascalModifier	interrupt near virtual 
+  syn keyword pascalAcces	private public 
+  syn keyword pascalStruct	object 
   syn keyword pascalOperator	shl shr xor
 
   syn region pascalPreProc	start="(\*\$"  end="\*)" contains=pascalTodo
@@ -151,7 +166,7 @@ if !exists("pascal_traditional")
   endif
 
   if exists("pascal_fpc")
-    syn region pascalComment	start="//" end="$"
+    syn region pascalComment        start="//" end="$" contains=pascalTodo,pascalSpaceError
     syn keyword pascalStatement	fail otherwise operator
     syn keyword pascalDirective	popstack
     syn keyword pascalPredefined self
@@ -165,7 +180,7 @@ if !exists("pascal_traditional")
   endif
 
   if exists("pascal_delphi")
-    syn region pascalComment	start="//"  end="$" contains=pascalTodo
+    syn region pascalComment	start="//"  end="$" contains=pascalTodo,pascalSpaceError
     syn keyword pascalType	SmallInt Int64
     syn keyword pascalType	Real48 Currency
     syn keyword pascalType	AnsiChar WideChar
@@ -176,7 +191,7 @@ if !exists("pascal_traditional")
     syn keyword pascalStruct	class dispinterface
     syn keyword pascalException	try except raise at on finally
     syn keyword pascalStatement	out
-    syn keyword pascalStatement	library package
+    syn keyword pascalStatement	library package 
     syn keyword pascalStatement	initialization finalization uses exports
     syn keyword pascalStatement	property out resourcestring threadvar
     syn keyword pascalModifier	contains
@@ -248,7 +263,7 @@ if !exists("pascal_traditional")
     syn keyword pascalConstant LightCyan LightRed LightMagenta Yellow White
     syn keyword pascalConstant Blink ScreenWidth ScreenHeight bw40
     syn keyword pascalConstant co40 bw80 co80 mono
-    syn keyword pascalPredefined TextChar
+    syn keyword pascalPredefined TextChar 
 
     " DOS unit
     syn keyword pascalFunction	AddDisk DiskFree DiskSize DosExitCode DosVersion
@@ -333,6 +348,7 @@ if version >= 508 || !exists("did_pascal_syn_inits")
   HiLink pascalPredefined	pascalStatement
   HiLink pascalPreProc		PreProc
   HiLink pascalRepeat		Repeat
+  HiLink pascalSpaceError	Error
   HiLink pascalStatement	Statement
   HiLink pascalString		String
   HiLink pascalStringEscape	Special
