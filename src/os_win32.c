@@ -23,6 +23,10 @@
 #include <io.h>
 #include "vim.h"
 
+#ifdef FEAT_MZSCHEME
+# include "if_mzsch.h"
+#endif
+
 #ifdef HAVE_FCNTL_H
 # include <fcntl.h>
 #endif
@@ -1097,6 +1101,9 @@ WaitForChar(long msec)
      */
     for (;;)
     {
+#ifdef FEAT_MZSCHEME
+	mzvim_check_threads();
+#endif
 #ifdef FEAT_CLIENTSERVER
 	serverProcessPendingMessages();
 #endif
@@ -1119,14 +1126,20 @@ WaitForChar(long msec)
 	}
 	if (msec != 0)
 	{
+	    DWORD dwWaitTime = dwEndTime - dwNow;
+
+#ifdef FEAT_MZSCHEME
+	    if (mzthreads_allowed() && p_mzq > 0
+				    && (msec < 0 || (long)dwWaitTime > p_mzq))
+		dwWaitTime = p_mzq; /* don't wait longer than 'mzquantum' */
+#endif
 #ifdef FEAT_CLIENTSERVER
 	    /* Wait for either an event on the console input or a message in
 	     * the client-server window. */
 	    if (MsgWaitForMultipleObjects(1, &g_hConIn, FALSE,
-			  dwEndTime - dwNow, QS_SENDMESSAGE) != WAIT_OBJECT_0)
+				 dwWaitTime, QS_SENDMESSAGE) != WAIT_OBJECT_0)
 #else
-	    if (WaitForSingleObject(g_hConIn, dwEndTime - dwNow)
-							     != WAIT_OBJECT_0)
+	    if (WaitForSingleObject(g_hConIn, dwWaitTime) != WAIT_OBJECT_0)
 #endif
 		    continue;
 	}
@@ -4106,9 +4119,26 @@ mch_delay(
 {
 #ifdef FEAT_GUI_W32
     Sleep((int)msec);	    /* never wait for input */
-#else
+#else /* Console */
     if (ignoreinput)
-	Sleep((int)msec);
+# ifdef FEAT_MZSCHEME
+	if (mzthreads_allowed() && p_mzq > 0 && msec > p_mzq)
+	{
+	    int towait = p_mzq;
+
+	    /* if msec is large enough, wait by portions in p_mzq */
+	    while (msec > 0)
+	    {
+		mzvim_check_threads();
+		if (msec < towait)
+		    towait = msec;
+		Sleep(towait);
+		msec -= towait;
+	    }
+	}
+	else
+# endif
+	    Sleep((int)msec);
     else
 	WaitForChar(msec);
 #endif

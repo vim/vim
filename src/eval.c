@@ -4987,6 +4987,9 @@ f_has(argvars, retvar)
 #ifdef FEAT_MULTI_LANG
 	"multi_lang",
 #endif
+#ifdef FEAT_MZSCHEME
+	"mzscheme",
+#endif
 #ifdef FEAT_OLE
 	"ole",
 #endif
@@ -9109,6 +9112,8 @@ ex_function(eap)
 				    && (!ASCII_ISALPHA(p[2]) || p[2] == 'l'))
 			|| (p[0] == 'r' && p[1] == 'u' && p[2] == 'b'
 				    && (!ASCII_ISALPHA(p[3]) || p[3] == 'y'))
+			|| (p[0] == 'm' && p[1] == 'z'
+				    && (!ASCII_ISALPHA(p[2]) || p[2] == 's'))
 			))
 	    {
 		/* ":python <<" continues until a dot, like ":append" */

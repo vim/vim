@@ -2277,6 +2277,9 @@ getout(exitval)
 	windgoto((int)Rows - 1, 0);
 #endif
 
+#ifdef FEAT_MZSCHEME
+    mzscheme_end();
+#endif
 #ifdef FEAT_TCL
     tcl_end();
 #endif

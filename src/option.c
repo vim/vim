@@ -1538,6 +1538,13 @@ static struct vimoption
     {"mousetime",   "mouset",	P_NUM|P_VI_DEF,
 			    (char_u *)&p_mouset, PV_NONE,
 			    {(char_u *)500L, (char_u *)0L}},
+    {"mzquantum",  "mzq",   P_NUM,
+#ifdef FEAT_MZSCHEME
+			    (char_u *)&p_mzq, PV_NONE,
+#else
+			    (char_u *)NULL, PV_NONE,
+#endif
+			    {(char_u *)100L, (char_u *)100L}},
     {"novice",	    NULL,   P_BOOL|P_VI_DEF,
 			    (char_u *)NULL, PV_NONE,
 			    {(char_u *)FALSE, (char_u *)0L}},
@@ -6807,6 +6814,10 @@ set_num_option(opt_idx, varp, value, errbuf, opt_flags)
 	if (p_uc && !old_value)
 	    ml_open_files();
     }
+#if defined(FEAT_MZSCHEME) && defined(FEAT_GUI)
+    else if (pp == &p_mzq)
+	mzvim_reset_timer();
+#endif
 
     /* sync undo before 'undolevels' changes */
     else if (pp == &p_ul)
@@ -7081,7 +7092,7 @@ findoption(arg)
     return opt_idx;
 }
 
-#if defined(FEAT_EVAL) || defined(FEAT_TCL)
+#if defined(FEAT_EVAL) || defined(FEAT_TCL) || defined(FEAT_MZSCHEME)
 /*
  * Get the value for an option.
  *

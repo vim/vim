@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 7.0aa.  Last change: 2004 Jul 03
+*quickref.txt*  For Vim version 7.0aa.  Last change: 2004 Jul 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -255,6 +255,7 @@ These only work when 'wrap' is off:
 |o|	N  o	open a new line below the current line, append text (N times)
 |O|	N  O	open a new line above the current line, append text (N times)
 |:startinsert|  :star[tinsert][!]  start Insert mode, append when [!] used
+|:startreplace| :startr[eplace][!]  start Replace mode, at EOL when [!] used
 
 in Visual block mode:
 |v_b_I|    I	insert the same text in front of all the selected lines
@@ -762,6 +763,7 @@ Short explanation of each option:		*option-list*
 |'mousemodel'|	  |'mousem'| changes meaning of mouse buttons
 |'mouseshape'|	  |'mouses'| shape of the mouse pointer in different modes
 |'mousetime'|	  |'mouset'| max time between mouse double-click
+|'mzquantum'|	  |'mzq'|    the interval between polls for MzScheme threads
 |'nrformats'|	  |'nf'|     number formats recognized for CTRL-A command
 |'number'|	  |'nu'|     print the line number in front of each line
 |'numberwidth'|	  |'nuw'|    number of columns used for the line number

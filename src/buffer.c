@@ -575,6 +575,9 @@ free_buffer(buf)
     buf_T	*buf;
 {
     free_buffer_stuff(buf, TRUE);
+#ifdef FEAT_MZSCHEME
+    mzscheme_buffer_free(buf);
+#endif
 #ifdef FEAT_PERL
     perl_buf_free(buf);
 #endif

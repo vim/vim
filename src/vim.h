@@ -15,6 +15,7 @@
     defined(FEAT_PYTHON) || \
     defined(FEAT_RUBY) || \
     defined(FEAT_TCL) || \
+    defined(FEAT_MZSCHEME) || \
     defined(DYNAMIC_GETTEXT) || \
     defined(DYNAMIC_ICONV) || \
     defined(DYNAMIC_IME) || \

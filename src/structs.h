@@ -1209,12 +1209,16 @@ struct file_buffer
     int		b_shortname;	/* this file has an 8.3 file name */
 #endif
 
+#ifdef FEAT_MZSCHEME
+    void	*mzscheme_ref;	/* The MzScheme reference to this buffer */
+#endif
+
 #ifdef FEAT_PERL
     void	*perl_private;
 #endif
 
 #ifdef FEAT_PYTHON
-    void	*python_ref;	/* The Python value referring to this buffer */
+    void	*python_ref;	/* The Python reference to this buffer */
 #endif
 
 #ifdef FEAT_TCL
@@ -1589,6 +1593,11 @@ struct window
     linenr_T	w_nrwidth_line_count;	/* line count when ml_nrwidth_width
 					 * was computed. */
     int		w_nrwidth_width;	/* nr of chars to print line count. */
+#endif
+
+
+#ifdef FEAT_MZSCHEME
+    void	    *mzscheme_ref;	/* The MzScheme value referring to this window */
 #endif
 
 #ifdef FEAT_PERL

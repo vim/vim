@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0aa.  Last change: 2004 Jul 02
+*insert.txt*    For Vim version 7.0aa.  Last change: 2004 Jul 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -991,6 +991,19 @@ NOTE: ":append" and ":insert" don't work properly in between ":if" and
 			typing <Esc> in Insert mode.
 			Can be used in an autocommand, example: >
 				:au BufEnter scratch stopinsert
+<
+					*replacing-ex* *:startreplace*
+:startr[eplace][!]	Start Replace mode just after executing this command.
+			Works just like typing "R" in Normal mode.  When the
+			! is included it acts just like "$R" had been typed
+			(ie. begin replace mode at the end-of-line).  Other-
+			wise replacement begins at the cursor position.
+			Note that when using this command in a function or
+			script that the replacement will only start after
+			the function or script is finished.
+			{not in Vi}
+			{not available when compiled without the +ex_extra
+			feature}
 
 ==============================================================================
 10. Inserting a file					*inserting-file*

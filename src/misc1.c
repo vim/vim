@@ -7377,11 +7377,13 @@ lisp_match(p)
  * - it doesn't know about comments starting with a semicolon
  * - it incorrectly interprets '(' as a character literal
  * All this messes up get_lisp_indent in some rare cases.
+ * Update from Sergey Khorev:
+ * I tried to fix the first two issues.
  */
     int
 get_lisp_indent()
 {
-    pos_T	*pos, realpos;
+    pos_T	*pos, realpos, paren;
     int		amount;
     char_u	*that;
     colnr_T	col;
@@ -7395,7 +7397,16 @@ get_lisp_indent()
     realpos = curwin->w_cursor;
     curwin->w_cursor.col = 0;
 
-    if ((pos = findmatch(NULL, '(')) != NULL)
+    if ((pos = findmatch(NULL, '(')) == NULL)
+	pos = findmatch(NULL, '[');
+    else
+    {
+	paren = *pos;
+	pos = findmatch(NULL, '[');
+	if (pos == NULL || ltp(pos, &paren))
+	    pos = &paren;
+    }
+    if (pos != NULL)
     {
 	/* Extra trick: Take the indent of the first previous non-white
 	 * line that is at the same () level. */
@@ -7426,9 +7437,9 @@ get_lisp_indent()
 		    while (*that && (*that != '"' || *(that - 1) == '\\'))
 			++that;
 		}
-		if (*that == '(')
+		if (*that == '(' || *that == '[')
 		    ++parencount;
-		else if (*that == ')')
+		else if (*that == ')' || *that == ']')
 		    --parencount;
 	    }
 	    if (parencount == 0)
@@ -7465,7 +7476,8 @@ get_lisp_indent()
 		 *   (...))	      of	   (...))
 		 */
 
-		if (!vi_lisp && *that == '(' && lisp_match(that + 1))
+		if (!vi_lisp && (*that == '(' || *that == '[')
+						      && lisp_match(that + 1))
 		    amount += 2;
 		else
 		{
@@ -7483,7 +7495,7 @@ get_lisp_indent()
 		    {
 			/* test *that != '(' to accomodate first let/do
 			 * argument if it is more than one line */
-			if (!vi_lisp && *that != '(')
+			if (!vi_lisp && *that != '(' && *that != '[')
 			    firsttry++;
 
 			parencount = 0;
@@ -7499,16 +7511,18 @@ get_lisp_indent()
 				    && (!vim_iswhite(*that)
 					|| quotecount
 					|| parencount)
-				    && (!(*that == '('
+				    && (!((*that == '(' || *that == '[')
 					    && !quotecount
 					    && !parencount
 					    && vi_lisp)))
 			    {
 				if (*that == '"')
 				    quotecount = !quotecount;
-				if (*that == '(' && !quotecount)
+				if ((*that == '(' || *that == '[')
+							       && !quotecount)
 				    ++parencount;
-				if (*that == ')' && !quotecount)
+				if ((*that == ')' || *that == ']')
+							       && !quotecount)
 				    --parencount;
 				if (*that == '\\' && *(that+1) != NUL)
 				    amount += lbr_chartabsize_adv(&that,
@@ -7530,7 +7544,7 @@ get_lisp_indent()
 	}
     }
     else
-	amount = 0;	/* no matching '(' found, use zero indent */
+	amount = 0;	/* no matching '(' or '[' found, use zero indent */
 
     curwin->w_cursor = realpos;
 

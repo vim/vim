@@ -1,4 +1,4 @@
-*help.txt*	For Vim version 7.0aa.  Last change: 2004 May 04
+*help.txt*	For Vim version 7.0aa.  Last change: 2004 Jul 05
 
 			VIM - main help file
 									 k
@@ -148,7 +148,8 @@ GUI ~
 |gui_x11.txt|	X11 GUI
 
 Interfaces ~
-|if_cscop.txt|	using cscope with Vim
+|if_cscop.txt|	using Cscope with Vim
+|if_mzsch.txt|	MzScheme interface
 |if_perl.txt|	Perl interface
 |if_pyth.txt|	Python interface
 |if_sniff.txt|	SNiFF+ interface
@@ -187,6 +188,12 @@ Standard plugins ~
 |pi_expl.txt|	File explorer
 
 LOCAL ADDITIONS:				*local-additions*
+|engspchk.txt|	English Spelling Checker   (v57)	May 25, 2004
+|example.txt|	Example for a locally added help file
+|matchit.txt|   Extended "%" matching
+|test.txt|	Testing the hélp cömmånd nôw
+|typecorr.txt|	Plugin for correcting typing mistakes
+|helpp.txt|	Dummy line to avoid an error message
 
 ------------------------------------------------------------------------------
 *bars*		Bars example

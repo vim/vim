@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.0aa.  Last change: 2004 Jun 17
+*editing.txt*   For Vim version 7.0aa.  Last change: 2004 Jul 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -48,6 +48,9 @@ CTRL-G		or				*CTRL-G* *:f* *:fi* *:file*
 			make this message shorter.  {Vi does not include
 			column number}
 
+:f[ile]!		like |:file|, but don't truncate the name even when
+			'shortmess' indicates this.
+
 {count}CTRL-G		Like CTRL-G, but prints the current file name with
 			full path.  If the count is higher than 1 the current
 			buffer number is also given.  {not in Vi}
@@ -69,7 +72,12 @@ g CTRL-G		Prints the current position of the cursor in four
 			{not in VI}
 
 							*:file_f*
-:f[ile] {name}		Sets the current file name to {name}.
+:f[ile][!] {name}	Sets the current file name to {name}.  The optional !
+			avoids truncating the message, as with |:file|.
+
+:0f[ile][!]		Remove the name of the current buffer.  The optional !
+			avoids truncating the message, as with |:file|.  {not
+			in Vi}
 
 :buffers
 :files

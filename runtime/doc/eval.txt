@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2004 Jun 30
+*eval.txt*      For Vim version 7.0aa.  Last change: 2004 Jul 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -2808,6 +2808,7 @@ mouse_xterm		Compiled with support for xterm mouse.
 multi_byte		Compiled with support for editing Korean et al.
 multi_byte_ime		Compiled with support for IME input method.
 multi_lang		Compiled with support for multiple languages.
+mzscheme		Compiled with MzScheme interface |mzscheme|.
 netbeans_intg		Compiled with support for |netbeans|.
 ole			Compiled with OLE automation support for Win32.
 os2			OS/2 version of Vim.

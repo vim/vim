@@ -128,7 +128,7 @@ static int	getargopt __ARGS((exarg_T *eap));
 static int	check_more __ARGS((int, int));
 static linenr_T get_address __ARGS((char_u **, int skip, int to_other_file));
 #if !defined(FEAT_PERL) || !defined(FEAT_PYTHON) || !defined(FEAT_TCL) \
-	|| !defined(FEAT_RUBY)
+	|| !defined(FEAT_RUBY) || !defined(FEAT_MZSCHEME)
 static void	ex_script_ni __ARGS((exarg_T *eap));
 #endif
 static char_u	*invalid_range __ARGS((exarg_T *eap));
@@ -219,6 +219,10 @@ static void	ex_popup __ARGS((exarg_T *eap));
 #endif
 #ifndef FEAT_SYN_HL
 # define ex_syntax		ex_ni
+#endif
+#ifndef FEAT_MZSCHEME
+# define ex_mzscheme		ex_script_ni
+# define ex_mzfile		ex_ni
 #endif
 #ifndef FEAT_PERL
 # define ex_perl		ex_script_ni
@@ -2389,6 +2393,7 @@ do_one_cmd(cmdlinep, sourcing,
 	    case CMD_let:
 	    case CMD_lockmarks:
 	    case CMD_match:
+	    case CMD_mzscheme:
 	    case CMD_perl:
 	    case CMD_psearch:
 	    case CMD_python:
@@ -3807,7 +3812,7 @@ ex_ni(eap)
 }
 
 #if !defined(FEAT_PERL) || !defined(FEAT_PYTHON) || !defined(FEAT_TCL) \
-	|| !defined(FEAT_RUBY)
+	|| !defined(FEAT_RUBY) || !defined(FEAT_MZSCHEME)
 /*
  * Function called for script command which is Not Implemented.  NI!
  * Skips over ":perl <<EOF" constructs.
@@ -7980,7 +7985,7 @@ ex_normal(eap)
 }
 
 /*
- * ":startinsert"
+ * ":startinsert" and ":startreplace"
  */
     static void
 ex_startinsert(eap)
@@ -7991,11 +7996,17 @@ ex_startinsert(eap)
 	coladvance((colnr_T)MAXCOL);
 	curwin->w_curswant = MAXCOL;
 	curwin->w_set_curswant = FALSE;
-	restart_edit = 'a';
+	if (eap->cmdidx == CMD_startinsert)
+	    restart_edit = 'a';
+	else
+	    restart_edit = 'R';
     }
     else
     {
-	restart_edit = 'i';
+	if (eap->cmdidx == CMD_startinsert)
+	    restart_edit = 'i';
+	else
+	    restart_edit = 'R';
 	curwin->w_curswant = 0;	    /* avoid MAXCOL */
     }
 }

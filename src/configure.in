@@ -20,7 +20,7 @@ AC_PROG_AWK	dnl required for "make html" in ../doc
 dnl Don't strip if we don't have it
 AC_CHECK_PROG(STRIP, strip, strip, :)
 
-dnl Check for extention of executables
+dnl Check for extension of executables
 AC_EXEEXT
 
 dnl Set default value for CFLAGS if none is defined or it's empty
@@ -291,6 +291,90 @@ if test "$enable_xsmp" = "yes"; then
 else
   AC_MSG_RESULT(yes)
 fi
+
+dnl Check for MzScheme feature.
+AC_MSG_CHECKING(--enable-mzschemeinterp argument)
+AC_ARG_ENABLE(mzschemeinterp,
+	[  --enable-mzschemeinterp   Include MzScheme interpreter.], ,
+	[enable_mzschemeinterp="no"])
+AC_MSG_RESULT($enable_mzschemeinterp)
+
+if test "$enable_mzschemeinterp" = "yes"; then
+  dnl -- find the mzscheme executable
+  AC_SUBST(vi_cv_path_mzscheme)
+
+  AC_MSG_CHECKING(--with-plthome argument)
+  AC_ARG_WITH(plthome,
+  	[  --with-plthome=PLTHOME   Use PLTHOME.],
+        with_plthome="$withval"; AC_MSG_RESULT($with_plthome),
+	with_plthome="";AC_MSG_RESULT("no"))
+
+  if test "X$with_plthome" != "X"; then
+       vi_cv_path_mzscheme_pfx="$with_plthome"
+  else
+    AC_MSG_CHECKING(PLTHOME environment var)
+    if test "X$PLTHOME" != "X"; then
+	AC_MSG_RESULT("$PLTHOME")
+        vi_cv_path_mzscheme_pfx="$PLTHOME"
+    else
+	AC_MSG_RESULT("not set")
+	dnl -- try to find MzScheme executable
+        AC_PATH_PROG(vi_cv_path_mzscheme, mzscheme)
+
+	dnl resolve symbolic link, the executable is often elsewhere and there
+	dnl are no links for the include files.
+        if test "X$vi_cv_path_mzscheme" != "X"; then
+	  lsout=`ls -l $vi_cv_path_mzscheme`
+	  if echo "$lsout" | grep -e '->' >/dev/null 2>/dev/null; then
+	    vi_cv_path_mzscheme=`echo "$lsout" | sed 's/.*-> \(.*\)/\1/'`
+	  fi
+	fi
+
+        if test "X$vi_cv_path_mzscheme" != "X"; then
+            dnl -- find where MzScheme thinks it was installed
+            AC_CACHE_CHECK(MzScheme install prefix,vi_cv_path_mzscheme_pfx,
+            [ vi_cv_path_mzscheme_pfx=`
+      	    ${vi_cv_path_mzscheme} -evm \
+            "(display (simplify-path		\
+              (build-path (call-with-values	\
+      	        (lambda () (split-path (find-system-path (quote exec-file)))) \
+      	        (lambda (base name must-be-dir?) base)) (quote up))))"` ])
+	    dnl Remove a trailing slash.
+	    vi_cv_path_mzscheme_pfx=`echo "$vi_cv_path_mzscheme_pfx" | sed 's+/$++'`
+        fi
+    fi
+  fi
+
+  if test "X$vi_cv_path_mzscheme_pfx" != "X"; then
+    AC_MSG_CHECKING(if scheme.h can be found in $vi_cv_path_mzscheme_pfx/include)
+    if test -f $vi_cv_path_mzscheme_pfx/include/scheme.h; then
+      AC_MSG_RESULT("yes")
+    else
+      AC_MSG_RESULT("no")
+      vi_cv_path_mzscheme_pfx=
+    fi
+  fi
+
+  if test "X$vi_cv_path_mzscheme_pfx" != "X"; then
+    if test -f "${vi_cv_path_mzscheme_pfx}/lib/libmzgc.a"; then
+      MZSCHEME_LIBS="${vi_cv_path_mzscheme_pfx}/lib/libmzgc.a ${vi_cv_path_mzscheme_pfx}/lib/libmzscheme.a"
+    else
+      MZSCHEME_LIBS="-L${vi_cv_path_mzscheme_pfx}/lib -lmzgc -lmzscheme"
+    fi
+    MZSCHEME_CFLAGS="-I${vi_cv_path_mzscheme_pfx}/include   \
+      -DMZSCHEME_COLLECTS='\"${vi_cv_path_mzscheme_pfx}/collects\"'"
+    MZSCHEME_SRC="if_mzsch.c"
+    MZSCHEME_OBJ="objects/if_mzsch.o"
+    MZSCHEME_PRO="if_mzsch.pro"
+    AC_DEFINE(FEAT_MZSCHEME)
+  fi
+  AC_SUBST(MZSCHEME_SRC)
+  AC_SUBST(MZSCHEME_OBJ)
+  AC_SUBST(MZSCHEME_PRO)
+  AC_SUBST(MZSCHEME_LIBS)
+  AC_SUBST(MZSCHEME_CFLAGS)
+fi
+
 
 AC_MSG_CHECKING(--enable-perlinterp argument)
 AC_ARG_ENABLE(perlinterp,
@@ -1187,18 +1271,18 @@ AC_ARG_WITH(qt-dir,
 						 ])
 
 if test "x$ROOTQT" = "x"; then
-	if test -z "$QTDIR"; then
-	    dnl Find the Qt directory by looking for the "moc" program.
-	    dnl It's better than nothing.
-	    AC_PATH_PROG(MOC, moc, no)
-	    if text"x$MOC" = "x"; then
-		AC_MSG_ERROR(could not find Qt directory)
-	    else
-	      ROOTQT=`echo $MOC | sed 's+/bin/moc++'`
-	    fi
-	else
-		ROOTQT="$QTDIR"
-	fi
+  if test -z "$QTDIR"; then
+    dnl Find the Qt directory by looking for the "moc" program.
+    dnl It's better than nothing.
+    AC_PATH_PROG(MOC, moc, no)
+    if test "x$MOC" = "xno"; then
+      AC_MSG_ERROR(could not find Qt directory)
+    else
+      ROOTQT=`echo $MOC | sed 's+/bin/moc++'`
+    fi
+  else
+    ROOTQT="$QTDIR"
+  fi
 fi
 MOC="$ROOTQT"/bin/moc
 QT_INCLUDES="$ROOTQT"/include
@@ -1238,6 +1322,23 @@ dnl so, first, look up at the kde-config script
 dnl ------------------
 
 if test -z "$SKIP_KDE"; then
+AC_DEFUN([AC_FIND_FILE],
+[
+  $3=NO
+  for i in $2;
+    do
+      for j in $1;
+      do
+       echo "configure: __oline__: $i/$j" >&AC_FD_CC
+       if test -r "$i/$j"; then
+         echo "taking that" >&AC_FD_CC
+         $3=$i
+         break 2
+       fi
+      done
+    done
+])
+
 AC_DEFUN(AM_PATH_KDE,
 [
 	if test "X$KDE_CONFIG" != "X"; then
@@ -1247,7 +1348,7 @@ AC_DEFUN(AM_PATH_KDE,
 	  if test "$KDE_CONFIG" = "no" ; then
 		no_kde=yes
 	  else
-		KDE_PREFIX=`$KDE_CONFIG $kde_config_args --prefix`
+		KDE_PREFIX=`$KDE_CONFIG --prefix`
 		if test "x$KDE_LIBS" = "x"; then
 		  KDE_LIBS="$KDE_PREFIX/lib"
 		fi
@@ -1261,12 +1362,12 @@ AC_DEFUN(AM_PATH_KDE,
 sed 's/KDE:\ //' | sed 's/\([[0-9]]*\).\([[0-9]]*.*\)/\1/'`
 		kde_minor_version=`$KDE_CONFIG --version | grep KDE | \
 sed 's/KDE:\ //' | sed 's/\([[0-9]]*\).\([[0-9]]*.*\)/\2/'`
-	
+
 		qt_major_version=`$KDE_CONFIG --version | grep Qt | sed -e \
 's/Qt:\ //' | sed 's/\([[0-9]]*\).\([[0-9]]*.*\)/\1/'`
 		qt_minor_version=`$KDE_CONFIG --version | grep Qt | sed -e \
 's/Qt:\ //' | sed 's/\([[0-9]]*\).\([[0-9]]*.*\)/\2/'`
-	
+
 		dnl maybe in a near future we'll get these ones : QT_PREFIX, QT_LIBS,
 		dnl QT_INCLUDES
 		dnl but for now we need configure options to get them ...
@@ -1297,6 +1398,7 @@ else
   KDE_LIBS=""
   ifelse([$3], , :, [$3])
 fi
+
 AC_SUBST(KDE_LIBS)
 AC_SUBST(KDE_INCLUDES)
 AC_SUBST(KDE_PREFIX)
@@ -1339,7 +1441,6 @@ else
 fi
 
 if test "x$kde_config_prefix" != "x" ; then
-	kde_config_args=""
 	KDE_CONFIG=$kde_config_prefix/bin/kde-config
 fi
 
@@ -1391,6 +1492,47 @@ if test "X$KDE_CONFIG" != "X" ; then
 dnl			GUI_LIB_LOC="`echo $GUI_LIB_LOC\ | sed 's% -L/usr/lib%%'`"
 
 			AC_MSG_RESULT(found $qt_major_version.$qt_minor_version in $ROOTQT)
+
+                       dnl now check the results ...
+                       dnl find the Qt's headers ?
+                       AC_FIND_FILE(qstyle.h,$QT_INCLUDES,qt_incdir)
+                       if test "x$qt_incdir" = "xNO"; then
+                               AC_MSG_ERROR(Could not find Qt headers in $QT_INCLUDES)
+                       fi
+                       AC_FIND_FILE(kapplication.h,$KDE_INCLUDES,kde_incdir)
+                       if test "x$kde_incdir" = "xNO"; then
+                               AC_MSG_ERROR(Could not find KDE headers in $KDE_INCLUDES)
+                       fi
+
+                       AC_LANG_SAVE
+                       AC_LANG_CPLUSPLUS
+                       ac_save_LIBS="$LIBS"
+                       LIBS="$GUI_LIB_LOC"
+                       ac_save_CXXFLAGS="$CXXFLAGS"
+                       CXXFLAGS="$CXXFLAGS $GUI_INC_LOC"
+                       AC_MSG_CHECKING(whether Qt libraries are usable)
+                       AC_TRY_LINK(
+                           [#include <qapplication.h>],
+                           [
+                           int argc;
+                           char** argv;
+                           QApplication app(argc, argv);]
+                           ,AC_MSG_RESULT(yes),AC_MSG_RESULT(no);AC_MSG_ERROR(Qt fails to link a simple application, check your installation and settings))
+
+                       AC_MSG_CHECKING(whether KDE libraries are usable)
+                       AC_TRY_LINK(
+                           [#include <kapplication.h>],
+                           [
+                           int argc;
+                           char** argv;
+                           KApplication app(argc, argv);]
+                           ,AC_MSG_RESULT(yes),AC_MSG_RESULT(no);AC_MSG_ERROR(KDE fails to link a simple application, check your installation and settings))
+
+                       LIBS="$ac_save_LIBS"
+                       CXXFLAGS="$ac_save_CXXFLAGS"
+                       AC_LANG_RESTORE
+
+
 			SKIP_GTK=YES
 			SKIP_ATHENA=YES
 			SKIP_MOTIF=YES
@@ -1816,7 +1958,7 @@ if test -z "$SKIP_MOTIF"; then
     gui_libs="`echo $x_libraries|sed 's%/[^/][^/]*$%%'` `echo "$gui_XXX" | sed s/XXX/lib/g` `echo "$GUI_INC_LOC" | sed s/include/lib/` $GUI_LIB_LOC"
     GUI_LIB_LOC=
     for try in $gui_libs; do
-      for libtry in "$try"/libXm.a "$try"/libXm.so* "$try"/libXm.sl; do
+      for libtry in "$try"/libXm.a "$try"/libXm.so* "$try"/libXm.sl "$try"/libXm.dylib; do
 	if test -f "$libtry"; then
 	  GUI_LIB_LOC=$try
 	fi

@@ -19,6 +19,7 @@
 #	  DYNAMIC_IME=[yes or no]  (to load the imm32.dll dynamically, default
 #	  is yes)
 #	Global IME support: GIME=yes (requires GUI=yes)
+#	MzScheme interface: MZSCHEME=[Path to MzScheme directory], MZSCHEME_VER=[version, 205_000, ...]
 #	Perl interface:
 #	  PERL=[Path to Perl directory]
 #	  DYNAMIC_PERL=yes (to load the Perl DLL dynamically)
@@ -115,6 +116,9 @@ OBJDIR = .\ObjC
 !endif
 !if "$(OLE)" == "yes"
 OBJDIR = $(OBJDIR)O
+!endif
+!ifdef MZSCHEME
+OBJDIR = $(OBJDIR)Z
 !endif
 !if "$(DEBUG)" == "yes"
 OBJDIR = $(OBJDIR)d
@@ -487,6 +491,17 @@ PYTHON_LIB = $(PYTHON)\libs\python$(PYTHON_VER).lib
 !endif
 !endif
 
+# MzScheme interface
+!ifdef MZSCHEME
+!message MzScheme requested - root dir is "$(MZSCHEME)"
+!ifndef MZSCHEME_VER
+MZSCHEME_VER = 205_000
+!endif
+CFLAGS = $(CFLAGS) -DFEAT_MZSCHEME -I $(MZSCHEME)\include
+MZSCHEME_OBJ = $(OUTDIR)\if_mzsch.obj
+MZSCHEME_LIB = $(MZSCHEME)\lib\msvc\libmzgc$(MZSCHEME_VER).lib $(MZSCHEME)\lib\msvc\libmzsch$(MZSCHEME_VER).lib
+!endif
+
 # Perl interface
 !ifdef PERL
 !ifndef PERL_VER
@@ -607,15 +622,15 @@ conflags = $(conflags) /map /mapinfo:lines
 
 LINKARGS1 = $(linkdebug) $(conflags) /nodefaultlib:libc
 LINKARGS2 = $(CON_LIB) $(GUI_LIB) $(LIBC) $(OLE_LIB)  user32.lib $(SNIFF_LIB) \
-		$(PERL_LIB) $(PYTHON_LIB) $(RUBY_LIB) $(TCL_LIB) \
+		$(MZSCHEME_LIB) $(PERL_LIB) $(PYTHON_LIB) $(RUBY_LIB) $(TCL_LIB) \
 		$(NETBEANS_LIB) $(XPM_LIB) $(LINK_PDB)
 
 all:	$(VIM) vimrun.exe install.exe uninstal.exe xxd/xxd.exe GvimExt/gvimext.dll
 
-$(VIM): $(OUTDIR) $(OBJ) $(GUI_OBJ) $(OLE_OBJ) $(OLE_IDL) $(PERL_OBJ) $(PYTHON_OBJ) $(RUBY_OBJ) $(TCL_OBJ) $(SNIFF_OBJ) $(CSCOPE_OBJ) $(NETBEANS_OBJ) $(XPM_OBJ) version.c version.h
+$(VIM): $(OUTDIR) $(OBJ) $(GUI_OBJ) $(OLE_OBJ) $(OLE_IDL) $(MZSCHEME_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(RUBY_OBJ) $(TCL_OBJ) $(SNIFF_OBJ) $(CSCOPE_OBJ) $(NETBEANS_OBJ) $(XPM_OBJ) version.c version.h
 	$(CC) $(CFLAGS)  version.c /Fo$(OUTDIR)/version.obj $(PDB)
 	$(link) $(LINKARGS1) -out:$*.exe $(OBJ) $(GUI_OBJ) $(OLE_OBJ) \
-		$(PERL_OBJ) $(PYTHON_OBJ) $(RUBY_OBJ) $(TCL_OBJ) $(SNIFF_OBJ) \
+		$(MZSCHEME_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(RUBY_OBJ) $(TCL_OBJ) $(SNIFF_OBJ) \
 		$(CSCOPE_OBJ) $(NETBEANS_OBJ) $(XPM_OBJ) \
 		$(OUTDIR)\version.obj $(LINKARGS2)
 
@@ -747,6 +762,9 @@ $(OUTDIR)/if_perl.obj: $(OUTDIR) if_perl.c  $(INCL)
 $(OUTDIR)/if_perlsfio.obj: $(OUTDIR) if_perlsfio.c  $(INCL)
 	$(CC) $(CFLAGS) $(PERL_INC) if_perlsfio.c /Fo$(OUTDIR)/if_perlsfio.obj $(PDB)
 
+$(OUTDIR)/if_mzsch.obj: $(OUTDIR) if_mzsch.c  $(INCL)
+	$(CC) $(CFLAGS) $(PERL_INC) if_mzsch.c /Fo$(OUTDIR)/if_mzsch.obj $(PDB) -DMZSCHEME_COLLECTS=\"$(MZSCHEME:\=\\)\\collects\"
+
 $(OUTDIR)/if_python.obj: $(OUTDIR) if_python.c  $(INCL)
 	$(CC) $(CFLAGS) $(PYTHON_INC) if_python.c /Fo$(OUTDIR)/if_python.obj $(PDB)
 
@@ -840,7 +858,7 @@ auto/pathdef.c: auto
 	@echo #include "vim.h" >> auto\pathdef.c
 	@echo char_u *default_vim_dir = (char_u *)"$(VIMRCLOC:\=\\)"; >> auto\pathdef.c
 	@echo char_u *default_vimruntime_dir = (char_u *)"$(VIMRUNTIMEDIR:\=\\)"; >> auto\pathdef.c
-	@echo char_u *all_cflags = (char_u *)"$(CC:\=\\) $(CFLAGS)"; >> auto\pathdef.c
+	@echo char_u *all_cflags = (char_u *)"$(CC:\=\\) $(CFLAGS:\=\\)"; >> auto\pathdef.c
 	@echo char_u *all_lflags = (char_u *)"$(link:\=\\) $(LINKARGS1:\=\\) $(LINKARGS2:\=\\)"; >> auto\pathdef.c
 	@echo char_u *compiled_user = (char_u *)"$(USERNAME)"; >> auto\pathdef.c
 	@echo char_u *compiled_sys = (char_u *)"$(USERDOMAIN)"; >> auto\pathdef.c

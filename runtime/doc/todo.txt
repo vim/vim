@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Jul 03
+*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Jul 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,31 +30,9 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Docs for 'numberwidth'.  index.  optwin.vim
-
 For version 7.0:
 -   Include many PATCHES:
-    7   Be able to call a function while passing on a variable number of
-	arguments:
-	    :function Foo(abc, ...)
-	    :  call Bar(a:abc, a:*)
-	Charles Campbell has a patch for this
-	He lost the patch himself.
-    7   Make ":startinsert" command work directly for functions and scripts?
-	Also make it possible to append (it's difficult at end of line).
-	And add ":startreplace" (patch by Charles Campbell, 2004 Jan 9,
-	http://www.erols.com/astronaut/vim/index.html#Patch)
-	Update 2004 June 18
-    8   Add patch from Charles Campbell to have ":0file!" remove the name of
-	the current buffer. (2003 June 17)
-	Lost the patch himself.
-    8   Make it possible to delete marks.  Charles Campbell has a patch that
-	does this with the markclear() function (2004 Jan 9).  And the
-	":delmark" command (2004 Feb 9)
-	Update 2004 June 18
     8   ":hardcopy":
-	- Patch to append CTRL-D to PostScript output (Mike Williams, 2004 Jun
-	  14)
 	- support printing multi-byte characters.  Patch from Motonobu
 	  Ichimura.  New (better) patch from Mike Williams (2004 Jan 20)
 	  Updated patch: http://www.eandem.co.uk/mrw/vim/special/index.html
@@ -88,6 +66,13 @@ For version 7.0:
 			Update 2004 Jun 17
 			Missing docs.  Search in 'runtimepath'?
 			How to get the messages into the .po files?
+    8   Make it possible to delete marks.  Charles Campbell has a patch that
+	does this with the markclear() function (2004 Jan 9).
+	And the ":delmark" command (2004 Feb 9)
+	http://mysite.verizon.net/astronaut/vim/index.html#Patch
+	~/tmp/ptch.delmark.bz2
+	~/tmp/ptch.markclear
+	Implement setmark(markname, lnum, col [, filename]) instead?
     --- responses above --
     7   Make "5dd" on last-but-one-line not delete anything (Vi compatible).
 	Add flag in 'cpoptions' for this.  When not present, "2dd" in the last
@@ -206,6 +191,7 @@ For version 7.0:
 -   In the kvim/KDE source files fix the formatting.
 -   KDE version is called "kvim".  Make it "gvim", like the others?
 -   Better configure check for KDE include files from Dan Sharp.
+-   KDE Input method patch. (Yasuhiro Matsumoto)
 -   Change ga_room into ga_maxlen, so that it doesn't need to be
     incremented/decremented each time.
 -   For string variables, use length instead of NUL termination.
@@ -274,8 +260,6 @@ For version 7.0:
 -   Mac: Unicode input and display (Eckehard Berns, June 27)
 8   Add patch from Muraoka Taro (Mar 16) to support input method on Mac?
     New patch 2004 Jun 16
-7   Add the MzScheme interface?  New patch 2004 Jul 2. (Sergey Khorev)
-    Also fix a few Lisp problems.
 9   Add cursor-column highlighting.  Enable it with 'cursorcolumn' option,
     set highlighting with "CursorColumn" group.  Useful for aligning text.
     Also cursor-row highlighting.  Patch from Yasuhiro Matsumoto for
@@ -283,6 +267,8 @@ For version 7.0:
     instead.
     Alternative: when 'number' is set highlight the number of the current
     line.
+7   Make ":startinsert" command work directly for functions and scripts?
+    Also make it possible to append (it's difficult at end of line).
 
 Vi incompatibility:
 8   With undo/redo only marks in the changed lines should be changed.  Other

@@ -1101,6 +1101,7 @@
 /*
  * These features can only be included by using a configure argument.  See the
  * Makefile for a line to uncomment.
+ * +mzscheme		MzScheme interface: "--enable-mzscheme"
  * +perl		Perl interface: "--enable-perlinterp"
  * +python		Python interface: "--enable-pythoninterp"
  * +tcl			TCL interface: "--enable-tclinterp"

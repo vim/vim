@@ -3106,6 +3106,10 @@ win_free(wp)
 {
     int		i;
 
+#ifdef FEAT_MZSCHEME
+    mzscheme_window_free(wp);
+#endif
+
 #ifdef FEAT_PERL
     perl_win_free(wp);
 #endif

@@ -1998,7 +1998,18 @@ ex_file(eap)
     char_u	*fname, *sfname, *xfname;
     buf_T	*buf;
 
-    if (*eap->arg != NUL)
+    /* ":0file" removes the file name.  Check for illegal uses ":3file",
+     * "0file name", etc. */
+    if (eap->addr_count > 0
+	    && (*eap->arg != NUL
+		|| eap->line2 > 0
+		|| eap->addr_count > 1))
+    {
+	EMSG(_(e_invarg));
+	return;
+    }
+
+    if (*eap->arg != NUL || eap->addr_count == 1)
     {
 #ifdef FEAT_AUTOCMD
 	buf = curbuf;

@@ -106,6 +106,21 @@ PERLLIB=$(PERL)/lib
 PERLLIBS=$(PERLLIB)/Core
 endif
 
+# uncomment 'MZSCHEME' if you want a MzScheme-enabled version
+#MZSCHEME=d:/plt
+ifdef MZSCHEME
+ifndef MZSCHEME_VER
+MZSCHEME_VER=205_000
+endif
+# the modern MinGW can dynamically link to dlls directly
+# point MZSCHEME_LIBDIR to where you put libmzschXXXXXXX.dll and libgcXXXXXXX.dll
+# c:/windows/system32 isn't a good idea, use some other dir;
+# to build you can put them in temp dir)
+ifndef MZSCHEME_LIBDIR
+MZSCHEME_LIBDIR=$(MZSCHEME)
+endif
+endif
+
 # Python support -- works with the ActiveState python 2.0 release (and others
 # too, probably)
 #
@@ -252,6 +267,10 @@ CFLAGS += -DDYNAMIC_PERL -DDYNAMIC_PERL_DLL=\"perl$(PERL_VER).dll\"
 endif
 endif
 
+ifdef MZSCHEME
+CFLAGS += -I$(MZSCHEME)/include -DFEAT_MZSCHEME -DMZSCHEME_COLLECTS=\"$(MZSCHEME)/collects\"
+endif
+
 ifdef RUBY
 CFLAGS += -DFEAT_RUBY $(RUBYINC)
 ifeq (yes, $(DYNAMIC_RUBY))
@@ -372,6 +391,10 @@ OBJ = \
 ifdef PERL
 OBJ += $(OUTDIR)/if_perl.o
 endif
+ifdef MZSCHEME
+OBJ += $(OUTDIR)/if_mzsch.o
+MZSCHEME_INCL = if_mzsch.h
+endif
 ifdef PYTHON
 OBJ += $(OUTDIR)/if_python.o
 endif
@@ -401,15 +424,19 @@ endif
 endif
 
 
+ifdef MZSCHEME
+MZSCHEME_SUFFIX = Z
+endif
+
 ifeq ($(GUI),yes)
 TARGET := gvim$(DEBUG_SUFFIX).exe
 DEFINES += $(DEF_GUI)
 OBJ += $(GUIOBJ)
 LFLAGS += -mwindows
-OUTDIR = gobj$(DEBUG_SUFFIX)
+OUTDIR = gobj$(DEBUG_SUFFIX)$(MZSCHEME_SUFFIX)
 else
 TARGET := vim$(DEBUG_SUFFIX).exe
-OUTDIR = obj$(DEBUG_SUFFIX)
+OUTDIR = obj$(DEBUG_SUFFIX)$(MZSCHEME_SUFFIX)
 endif
 
 ifdef GETTEXT
@@ -430,6 +457,10 @@ ifdef PERL
 ifeq (no, $(DYNAMIC_PERL))
 LIB += -lperl$(PERL_VER)
 endif
+endif
+
+ifdef MZSCHEME
+MZSCHEME_LIB = -lmzsch$(MZSCHEME_VER) -lmzgc$(MZSCHEME_VER)
 endif
 
 ifdef TCL
@@ -479,7 +510,7 @@ uninstal.exe: uninstal.c
 	$(CC) $(CFLAGS) -o uninstal.exe uninstal.c $(LIB)
 
 $(TARGET): $(OUTDIR) $(OBJ)
-	$(CC) $(CFLAGS) $(LFLAGS) -o $@ $(OBJ) $(LIB) -lole32 -luuid $(PYTHONLIB) $(RUBYLIB)
+	$(CC) $(CFLAGS) $(LFLAGS) -o $@ $(OBJ) $(LIB) -lole32 -luuid -L $(MZSCHEME_LIBDIR) $(MZSCHEME_LIB) $(PYTHONLIB) $(RUBYLIB)
 
 upx: exes
 	upx gvim.exe

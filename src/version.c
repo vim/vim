@@ -370,6 +370,11 @@ static char *(features[]) =
 #else
 	"-multi_lang",
 #endif
+#ifdef FEAT_MZSCHEME
+	"+mzscheme",
+#else
+	"-mzscheme",
+#endif
 #ifdef FEAT_NETBEANS_INTG
 	"+netbeans_intg",
 #else

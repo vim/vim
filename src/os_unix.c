@@ -31,6 +31,10 @@
 
 #include "vim.h"
 
+#ifdef FEAT_MZSCHEME
+# include "if_mzsch.h"
+#endif
+
 #ifdef HAVE_FCNTL_H
 # include <fcntl.h>
 #endif
@@ -260,7 +264,8 @@ static struct signalinfo
 #ifdef SIGVTALRM
     {SIGVTALRM,	    "VTALRM",	TRUE},
 #endif
-#ifdef SIGPROF
+#if defined(SIGPROF) && !defined(FEAT_MZSCHEME)
+    /* MzScheme uses SIGPROF for its own needs */
     {SIGPROF,	    "PROF",	TRUE},
 #endif
 #ifdef SIGXCPU
@@ -520,6 +525,9 @@ mch_delay(msec, ignoreinput)
     int		ignoreinput;
 {
     int		old_tmode;
+#ifdef FEAT_MZSCHEME
+    long	total = msec; /* remember original value */
+#endif
 
     if (ignoreinput)
     {
@@ -534,6 +542,16 @@ mch_delay(msec, ignoreinput)
 	 * Prefer nanosleep(), some versions of usleep() can only sleep up to
 	 * one second.
 	 */
+#ifdef FEAT_MZSCHEME
+	do
+	{
+	    /* if total is large enough, wait by portions in p_mzq */
+	    if (total > p_mzq)
+		msec = p_mzq;
+	    else
+		msec = total;
+	    total -= msec;
+#endif
 #ifdef HAVE_NANOSLEEP
 	{
 	    struct timespec ts;
@@ -572,6 +590,10 @@ mch_delay(msec, ignoreinput)
 #  endif /* HAVE_SELECT */
 # endif /* HAVE_NANOSLEEP */
 #endif /* HAVE_USLEEP */
+#ifdef FEAT_MZSCHEME
+	}
+	while (total > 0);
+#endif
 
 	settmode(old_tmode);
     }
@@ -4066,7 +4088,7 @@ RealWaitForChar(fd, msec, check_for_gpm)
     int		*check_for_gpm;
 {
     int		ret;
-#if defined(FEAT_XCLIPBOARD) || defined(USE_XSMP)
+#if defined(FEAT_XCLIPBOARD) || defined(USE_XSMP) || defined(FEAT_MZSCHEME)
     static int	busy = FALSE;
 
     /* May retry getting characters after an event was handled. */
@@ -4081,12 +4103,18 @@ RealWaitForChar(fd, msec, check_for_gpm)
     if (msec > 0 && (
 #  ifdef FEAT_XCLIPBOARD
 	    xterm_Shell != (Widget)0
-#   ifdef USE_XSMP
+#   if defined(USE_XSMP) || defined(FEAT_MZSCHEME)
 	    ||
 #   endif
 #  endif
 #  ifdef USE_XSMP
 	    xsmp_icefd != -1
+#   ifdef FEAT_MZSCHEME
+	    ||
+#   endif
+#  endif
+#  ifdef FEAT_MZSCHEME
+	(mzthreads_allowed() && p_mzq > 0)
 #  endif
 	    ))
 	gettimeofday(&start_tv, NULL);
@@ -4104,6 +4132,9 @@ RealWaitForChar(fd, msec, check_for_gpm)
     {
 #ifdef MAY_LOOP
 	int		finished = TRUE; /* default is to 'loop' just once */
+# ifdef FEAT_MZSCHEME
+	int		mzquantum_used = FALSE;
+# endif
 #endif
 #ifndef HAVE_SELECT
 	struct pollfd   fds[5];
@@ -4117,7 +4148,16 @@ RealWaitForChar(fd, msec, check_for_gpm)
 # ifdef USE_XSMP
 	int		xsmp_idx = -1;
 # endif
+	int		towait = (int)msec;
 
+# ifdef FEAT_MZSCHEME
+	mzvim_check_threads();
+	if (mzthreads_allowed() && p_mzq > 0 && (msec < 0 || msec > p_mzq))
+	{
+	    towait = (int)p_mzq;    /* don't wait longer than 'mzquantum' */
+	    mzquantum_used = TRUE;
+	}
+# endif
 	fds[0].fd = fd;
 	fds[0].events = POLLIN;
 	nfd = 1;
@@ -4159,7 +4199,12 @@ RealWaitForChar(fd, msec, check_for_gpm)
 	}
 # endif
 
-	ret = poll(fds, nfd, (int)msec);
+	ret = poll(fds, nfd, towait);
+# ifdef FEAT_MZSCHEME
+	if (ret == 0 && mzquantum_used)
+	    /* MzThreads scheduling is required and timeout occured */
+	    finished = FALSE;
+# endif
 
 # ifdef FEAT_SNIFF
 	if (ret < 0)
@@ -4203,8 +4248,7 @@ RealWaitForChar(fd, msec, check_for_gpm)
 		xsmp_close();
 	    }
 	    if (--ret == 0)
-		/* Try again */
-		finished = FALSE;
+		finished = FALSE;	/* Try again */
 	}
 # endif
 
@@ -4212,9 +4256,19 @@ RealWaitForChar(fd, msec, check_for_gpm)
 #else /* HAVE_SELECT */
 
 	struct timeval  tv;
+	struct timeval	*tvp;
 	fd_set		rfds, efds;
 	int		maxfd;
+	long		towait = msec;
 
+# ifdef FEAT_MZSCHEME
+	mzvim_check_threads();
+	if (mzthreads_allowed() && p_mzq > 0 && (msec < 0 || msec > p_mzq))
+	{
+	    towait = p_mzq;	/* don't wait longer than 'mzquantum' */
+	    mzquantum_used = TRUE;
+	}
+# endif
 # ifdef __EMX__
 	/* don't check for incoming chars if not in raw mode, because select()
 	 * always returns TRUE then (in some version of emx.dll) */
@@ -4222,11 +4276,14 @@ RealWaitForChar(fd, msec, check_for_gpm)
 	    return 0;
 # endif
 
-	if (msec >= 0)
+	if (towait >= 0)
 	{
-	    tv.tv_sec = msec / 1000;
-	    tv.tv_usec = (msec % 1000) * (1000000/1000);
+	    tv.tv_sec = towait / 1000;
+	    tv.tv_usec = (towait % 1000) * (1000000/1000);
+	    tvp = &tv;
 	}
+	else
+	    tvp = NULL;
 
 	/*
 	 * Select on ready for reading and exceptional condition (end of file).
@@ -4281,7 +4338,12 @@ RealWaitForChar(fd, msec, check_for_gpm)
 	 * required. Should not be used */
 	ret = 0;
 # else
-	ret = select(maxfd + 1, &rfds, NULL, &efds, (msec >= 0) ? &tv : NULL);
+	ret = select(maxfd + 1, &rfds, NULL, &efds, tvp);
+# endif
+# ifdef FEAT_MZSCHEME
+	if (ret == 0 && mzquantum_used)
+	    /* loop if MzThreads must be scheduled and timeout occured */
+	    finished = FALSE;
 # endif
 
 # ifdef FEAT_SNIFF

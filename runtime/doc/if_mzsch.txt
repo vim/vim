@@ -1,0 +1,219 @@
+*if_mzsch.txt*  For Vim version 7.0aa.  Last change: 2004 Jul 05
+
+
+		  VIM REFERENCE MANUAL    by Sergey Khorev
+
+
+The MzScheme Interface to Vim				*mzscheme* *MzScheme*
+
+1. Commands				|mzscheme-commands|
+2. Examples				|mzscheme-examples|
+3. Threads				|mzscheme-threads|
+4. The Vim access procedures		|mzscheme-vim|
+
+{Vi does not have any of these commands}
+
+The MzScheme interface is available only if Vim was compiled with the
+|+mzscheme| feature.
+
+Based on the work of Brent Fulgham.
+
+For downloading MzScheme and other info:
+	http://www.plt-scheme.org/software/mzscheme/
+
+==============================================================================
+1. Commands						*mzscheme-commands*
+
+							*:mzscheme* *:mz*
+:[range]mz[scheme] {stmt}
+			Execute MzScheme statement {stmt}.  {not in Vi}
+
+:[range]mz[scheme] << {endmarker}
+{script}
+{endmarker}
+			Execute inlined MzScheme script {script}.
+			Note: This command doesn't work if the MzScheme
+			feature wasn't compiled in.  To avoid errors, see
+			|script-here|.
+
+							*:mzfile* *:mzf*
+:[range]mzf[ile] {file}	Execute the MzScheme script in {file}.  {not in Vi}
+			All statements are executed in the namespace of the
+                        buffer that was current during :mzfile start.
+			If you want to access other namespaces, use
+			'parameterize'.
+
+All of these commands do essentially the same thing - they execute a piece of
+MzScheme code, with the "current range" set to the given line
+range.
+
+In the case of :mzscheme, the code to execute is in the command-line.
+In the case of :mzfile, the code to execute is the contents of the given file.
+
+Each buffer has its own MzScheme namespace. Global namespace is bound to
+the `global-namespace' value from the 'vimext' module.
+MzScheme interface defines exception exn:vim, derived from exn.
+It is raised for various Vim errors.
+
+During compilation, the MzScheme interface will remember the current MzScheme
+collection path. If you want to specify additional paths use the
+'current-library-collection-paths' parameter. E.g., to cons the user-local
+MzScheme collection path: >
+    :mz << EOF
+    (current-library-collection-paths
+	(cons
+	    (build-path (find-system-path 'addon-dir) (version) "collects")
+	    (current-library-collection-paths)))
+    EOF
+<
+
+All functionality is provided through module vimext.
+
+The exn:vim is available without explicit import.
+
+To avoid clashes with MzScheme, consider using prefix when requiring module,
+e.g.: >
+	:mzscheme (require (prefix vim- vimext))
+<
+All the examples below assume this naming scheme.  Note that you need to do
+this again for every buffer.
+
+The auto-instantiation can be achieved with autocommands, e.g. you can put
+something like this in your .vimrc: >
+    au VimEnter,BufNew,BufNewFile,BufAdd,BufReadPre *
+	\:mz (require (prefix vim- vimext)
+<
+
+The global namespace just instantiated this module with the prefix "vimext:".
+
+==============================================================================
+2. Examples						*mzscheme-examples*
+>
+	:mzscheme (display "Hello")
+	:mzscheme (vim-set-buff-line 10 "This is line #10")
+<
+Inline script usage: >
+	function! <SID>SetFirstLine()
+	    :mz << EOF
+	    (display "!!!")
+	    (vim-set-buff-line 1 "This is line #1")
+	    (vim-beep)
+	    EOF
+	endfunction
+
+	nmap <F9> :call <SID>SetFirstLine() <CR>
+<
+File execution: >
+	:mzfile supascript.scm
+<
+Accessing the current buffer namespace from an MzScheme program running in
+another buffer within |:mzfile|-executed script : >
+	; Move to the window below
+	(vim-command "wincmd j")
+	; execute in the context of buffer, to which window belongs
+	; assume that buffer has 'textstring' defined
+	(parameterize ((current-namespace
+			(vim-get-buff-namespace (vim-curr-buff))))
+	 (eval '(vim-set-buff-line 1 textstring)))
+<
+
+==============================================================================
+3. Threads						*mzscheme-threads*
+
+The MzScheme interface supports threads. They are independent from OS threads,
+thus scheduling is required. The option 'mzquantum' determines how often
+Vim should poll for available MzScheme threads.
+NOTE
+Thread scheduling in the console version of Vim is less reliable than in the
+GUI version.
+
+==============================================================================
+5. VIM Functions					*mzscheme-vim*
+
+							*mzscheme-vimext*
+The 'vimext' module provides access to procedures defined in the MzScheme
+interface.
+
+Common
+------
+    (command {command-string})	    Perform the vim ":Ex" style command.
+    (eval {expr-string})	    Evaluate the vim command string.
+				    NOTE clashes with MzScheme eval
+    (range-start)		    Start/End of the range passed with
+    (range-end)			    the Scheme command.
+    (beep)			    beep
+    (get-option {option-name} [buffer-or-window]) Get Vim option value (either
+				    local or global, see set-option).
+    (set-option {string} [buffer-or-window])
+				    Set a Vim option. String must have option
+				    setting form (like optname=optval, or
+				    optname+=optval, etc.) When called with
+				    {buffer} or {window} the local option will
+				    be set. The symbol 'global can be passed
+				    as {buffer-or-window}. Then |:setglobal|
+				    will be used.
+    global-namespace		    The MzScheme main namespace.
+
+Buffers							 *mzscheme-buffer*
+-------
+    (buff? {object})		    Is object a buffer?
+    (buff-valid? {object})	    Is object a valid buffer? (i.e.
+				    corresponds to the real Vim buffer)
+    (get-buff-line {linenr} [buffer])
+				    Get line from a buffer.
+    (set-buff-line {linenr} {string} [buffer])
+				    Set a line in a buffer. If {string} is #f,
+				    the line gets deleted.  The [buffer]
+                                    argument is optional. If omitted, the
+                                    current buffer will be used.
+    (get-buff-line-list {start} {end} [buffer])
+				    Get a list of lines in a buffer. {Start}
+				    and {end} are 1-based. {Start} is
+				    inclusive, {end} - exclusive.
+    (set-buff-line-list {start} {end} {string-list} [buffer])
+				    Set a list of lines in a buffer. If
+				    string-list is #f or null, the lines get
+				    deleted. If a list is shorter than
+				    {end}-{start} the remaining lines will
+				    be deleted.
+    (get-buff-name [buffer])	    Get a buffer's text name.
+    (get-buff-num [buffer])	    Get a buffer's number.
+    (get-buff-size [buffer])	    Get buffer line count.
+    (insert-buff-line-list {linenr} {string/string-list} [buffer])
+				    Insert a list of lines into a buffer after
+				    {linenr}. If {linenr} is 0, lines will be
+				    inserted at start.
+    (curr-buff)			    Get the current buffer. Use procedures
+				    from `vimcmd' module to change it.
+    (buff-count)		    Get count of total buffers in the editor.
+    (get-next-buff [buffer])	    Get next buffer.
+    (get-prev-buff [buffer])	    Get previous buffer. Return #f when there
+				    are no more buffers.
+    (open-buff {filename})	    Open a new buffer (for file "name")
+    (get-buff-by-name {buffername}) Get a buffer by its filename or #f
+					if there is no such buffer.
+    (get-buff-by-num {buffernum})   Get a buffer by its number (return #f if
+				    there is no buffer with this number).
+    (get-buff-namespace [buffer])   Get buffer namespace.
+
+Windows							    *mzscheme-window*
+------
+    (win? {object})		    Is object a window?
+    (win-valid? {object})	    Is object a valid window (i.e. corresponds
+				    to the real Vim window)?
+    (curr-win)			    Get the current window.
+    (win-count)			    Get count of windows.
+    (get-win-num [window])	    Get window number.
+    (get-win-by-num {windownum})    Get window by its number.
+    (get-win-buffer	[window])   Get the buffer for a given window.
+    (get-win-height [window])
+    (set-win-height {height} [window])  Get/Set height of window.
+    (get-win-width [window])
+    (set-win-width {width} [window])Get/Set width of window.
+    (get-win-list [buffer])	    Get list of windows for a buffer.
+    (get-cursor [window])	    Get cursor position in a window as
+				    a pair (linenr . column).
+    (set-cursor (line . col) [window])  Set cursor position.
+
+======================================================================
+  vim:tw=78:ts=8:sts=4:ft=help:norl:

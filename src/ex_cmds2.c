@@ -3811,8 +3811,9 @@ struct prt_ps_resource_S
  *
  * VIM      Prolog
  * 6.2      1.3
+ * 7.0      1.4
  */
-#define PRT_PROLOG_VERSION  ((char_u *)"1.3")
+#define PRT_PROLOG_VERSION  ((char_u *)"1.4")
 
 /* String versions of PS resource types - indexed by constants above so don't
  * re-order!
@@ -5115,6 +5116,10 @@ mch_print_end(psettings)
     prt_dsc_ints("Pages", 1, &prt_page_num);
 
     prt_dsc_noarg("EOF");
+
+    /* Write CTRL-D to close serial communication link if used.
+     * NOTHING MUST BE WRITTEN AFTER THIS! */
+    prt_write_file(IF_EB("\004", "\067"));
 
     if (!prt_file_error && psettings->outfile == NULL
 					&& !got_int && !psettings->user_abort)

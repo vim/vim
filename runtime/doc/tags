@@ -377,6 +377,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'mousetime'	options.txt	/*'mousetime'*
 'mp'	options.txt	/*'mp'*
 'mps'	options.txt	/*'mps'*
+'mzq'	options.txt	/*'mzq'*
+'mzquantum'	options.txt	/*'mzquantum'*
 'nf'	options.txt	/*'nf'*
 'noacd'	options.txt	/*'noacd'*
 'noai'	options.txt	/*'noai'*
@@ -1038,6 +1040,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 +multi_byte	various.txt	/*+multi_byte*
 +multi_byte_ime	various.txt	/*+multi_byte_ime*
 +multi_lang	various.txt	/*+multi_lang*
++mzscheme	various.txt	/*+mzscheme*
 +netbeans_intg	various.txt	/*+netbeans_intg*
 +ole	various.txt	/*+ole*
 +osfiletype	various.txt	/*+osfiletype*
@@ -2076,6 +2079,10 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :mod	term.txt	/*:mod*
 :mode	term.txt	/*:mode*
 :move	change.txt	/*:move*
+:mz	if_mzsch.txt	/*:mz*
+:mzf	if_mzsch.txt	/*:mzf*
+:mzfile	if_mzsch.txt	/*:mzfile*
+:mzscheme	if_mzsch.txt	/*:mzscheme*
 :n	editing.txt	/*:n*
 :ne	editing.txt	/*:ne*
 :new	windows.txt	/*:new*
@@ -2338,6 +2345,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :star	repeat.txt	/*:star*
 :start	insert.txt	/*:start*
 :startinsert	insert.txt	/*:startinsert*
+:startreplace	insert.txt	/*:startreplace*
 :stj	tagsrch.txt	/*:stj*
 :stjump	tagsrch.txt	/*:stjump*
 :stop	starting.txt	/*:stop*
@@ -3617,6 +3625,7 @@ Mark	motion.txt	/*Mark*
 MiNT	os_mint.txt	/*MiNT*
 MorphOS	os_amiga.txt	/*MorphOS*
 Motif	gui_x11.txt	/*Motif*
+MzScheme	if_mzsch.txt	/*MzScheme*
 N	pattern.txt	/*N*
 N%	motion.txt	/*N%*
 N:	cmdline.txt	/*N:*
@@ -5080,6 +5089,7 @@ iconize	starting.txt	/*iconize*
 iconv()	eval.txt	/*iconv()*
 ident-search	tips.txt	/*ident-search*
 if_cscop.txt	if_cscop.txt	/*if_cscop.txt*
+if_mzsch.txt	if_mzsch.txt	/*if_mzsch.txt*
 if_ole.txt	if_ole.txt	/*if_ole.txt*
 if_perl.txt	if_perl.txt	/*if_perl.txt*
 if_pyth.txt	if_pyth.txt	/*if_pyth.txt*
@@ -5371,6 +5381,14 @@ myscriptsfile	syntax.txt	/*myscriptsfile*
 mysyntaxfile	syntax.txt	/*mysyntaxfile*
 mysyntaxfile-add	syntax.txt	/*mysyntaxfile-add*
 mysyntaxfile-replace	syntax.txt	/*mysyntaxfile-replace*
+mzscheme	if_mzsch.txt	/*mzscheme*
+mzscheme-buffer	if_mzsch.txt	/*mzscheme-buffer*
+mzscheme-commands	if_mzsch.txt	/*mzscheme-commands*
+mzscheme-examples	if_mzsch.txt	/*mzscheme-examples*
+mzscheme-threads	if_mzsch.txt	/*mzscheme-threads*
+mzscheme-vim	if_mzsch.txt	/*mzscheme-vim*
+mzscheme-vimext	if_mzsch.txt	/*mzscheme-vimext*
+mzscheme-window	if_mzsch.txt	/*mzscheme-window*
 n	pattern.txt	/*n*
 nasm-syntax	syntax.txt	/*nasm-syntax*
 nasm.vim	syntax.txt	/*nasm.vim*
@@ -5746,6 +5764,7 @@ rename-files	tips.txt	/*rename-files*
 repeat.txt	repeat.txt	/*repeat.txt*
 repeating	repeat.txt	/*repeating*
 replacing	change.txt	/*replacing*
+replacing-ex	insert.txt	/*replacing-ex*
 resolve()	eval.txt	/*resolve()*
 restore-position	tips.txt	/*restore-position*
 restricted-mode	starting.txt	/*restricted-mode*

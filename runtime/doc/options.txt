@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2004 Jul 03
+*options.txt*	For Vim version 7.0aa.  Last change: 2004 Jul 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1558,7 +1558,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	part before the "\|" matches the base, the part after it is used
 	when there is no match.  The "\2" in the replacement is empty if the
 	part before the "\|" does not match.
-	
+
 				*'confirm'* *'cf'* *'noconfirm'* *'nocf'*
 'confirm' 'cf'		boolean (default off)
 			global
@@ -4235,6 +4235,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 	time in msec between two mouse clicks for the second click to be
 	recognized as a multi click.
 
+						    *'mzquantum'* *'mzq'*
+'mzquantum' 'mzq'	number	(default 100)
+			global
+			{not in Vi}
+			{not available when compiled without the |+mzscheme|
+			feature}
+	The number of milliseconds between polls for MzScheme threads.
+	Negative or zero value means no thread scheduling.
+
 							*'nrformats'* *'nf'*
 'nrformats' 'nf'	string	(default "octal,hex")
 			local to buffer
@@ -4269,6 +4278,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'numberwidth'* *'nuw'*
 'numberwidth' 'nuw'	number	(Vim default: 4  Vi default: 8)
 			local to window
+			{not in Vi}
+			{only available when compiled with the |+linebreak|
+			feature}
 	Minimal number of columns to use for the line number.  Only relevant
 	when the 'number' option is set.
 	Since one space is always between the number and the text, there is

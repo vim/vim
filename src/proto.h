@@ -146,6 +146,10 @@ void qsort __ARGS((void *base, size_t elm_count, size_t elm_size, int (*cmp)(con
 # include "version.pro"
 # include "window.pro"
 
+# ifdef FEAT_MZSCHEME
+#  include "if_mzsch.pro"
+# endif
+
 # ifdef FEAT_PYTHON
 #  include "if_python.pro"
 # endif

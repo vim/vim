@@ -306,6 +306,7 @@ N  *+mouse_xterm*	Unix only: xterm mouse handling |xterm-mouse|
 B  *+multi_byte*	Korean and other languages |multibyte|
    *+multi_byte_ime*	Win32 input method for multibyte chars |multibyte-ime|
 N  *+multi_lang*	non-English language support |multi-lang|
+m  *+mzscheme*		Mzscheme interface |mzscheme|
 m  *+netbeans_intg*	|netbeans|
 m  *+ole*		Win32 GUI only: |ole-interface|
    *+osfiletype*	Support for the 'osfiletype' option and filetype

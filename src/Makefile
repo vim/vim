@@ -354,7 +354,7 @@ CClink = $(CC)
 # Darwin.  None of the Mac specific options or files will be used.
 #CONF_OPT_DARWIN = --disable-darwin
 
-# PERL - For creating Vim with Perl interface
+# PERL
 # Uncomment this when you want to include the Perl interface.
 # The Perl option sometimes causes problems, because it adds extra flags
 # to the command line.	If you see strange flags during compilation, check in
@@ -365,19 +365,27 @@ CClink = $(CC)
 # This requires at least "small" features, "tiny" doesn't work.
 #CONF_OPT_PERL = --enable-perlinterp
 
-# PYTHON - For creating Vim with Python interface
+# PYTHON
 # Uncomment this when you want to include the Python interface.
 #CONF_OPT_PYTHON = --enable-pythoninterp
 
-# TCL - For creating Vim with Tcl interface
+# TCL
 # Uncomment this when you want to include the Tcl interface.
 #CONF_OPT_TCL = --enable-tclinterp
 
-# RUBY - For creating Vim with Ruby interface
+# RUBY
 # Uncomment this when you want to include the Ruby interface.
 #CONF_OPT_RUBY = --enable-rubyinterp
 
-# CSCOPE - For creating Vim with Cscope interface
+# MZSCHEME
+# Uncomment this when you want to include the MzScheme interface.
+#CONF_OPT_MZSCHEME = --enable-mzschemeinterp
+# PLT/mrscheme/drscheme Home dir; the PLTHOME environment variable also works
+#CONF_OPT_PLTHOME  = --with-plthome=/usr/local/plt
+#CONF_OPT_PLTHOME  = --with-plthome=/usr/local/drscheme
+#CONF_OPT_PLTHOME  = --with-plthome=/home/me/mz
+
+# CSCOPE
 # Uncomment this when you want to include the Cscope interface.
 #CONF_OPT_CSCOPE = --enable-cscope
 
@@ -1047,7 +1055,7 @@ KDE_DIR		= $(KDE_PREFIX)
 KDE_INCL	= gui.h
 KDE_SRC		= gui.c pty.c gui_kde.cc gui_kde_x11.cc gui_kde_widget.cc gui_kde_widget_moc.cc kvim_iface_skel.cc
 KDE_OBJ		= objects/gui.o objects/pty.o objects/gui_kde.o objects/gui_kde_x11.o \
-	   		objects/gui_kde_widget.o objects/gui_kde_widget_moc.o \
+			objects/gui_kde_widget.o objects/gui_kde_widget_moc.o \
 			objects/kvim_iface_skel.o
 KDE_DEFS	= -DFEAT_GUI_KDE $(NARROW_PROTO)
 KDE_IPATH	= $(GUI_INC_LOC)
@@ -1245,7 +1253,7 @@ SHELL = /bin/sh
 .SUFFIXES: .cc .c .o .pro
 
 PRE_DEFS = -Iproto $(DEFS) $(GUI_DEFS) $(GUI_IPATH) $(CPPFLAGS) $(EXTRA_IPATHS)
-POST_DEFS = $(X_CFLAGS) $(PERL_CFLAGS) $(PYTHON_CFLAGS) $(TCL_CFLAGS) $(RUBY_CFLAGS) $(EXTRA_DEFS)
+POST_DEFS = $(X_CFLAGS) $(MZSCHEME_CFLAGS) $(PERL_CFLAGS) $(PYTHON_CFLAGS) $(TCL_CFLAGS) $(RUBY_CFLAGS) $(EXTRA_DEFS)
 
 ALL_CFLAGS = $(PRE_DEFS) $(CFLAGS) $(PROFILE_CFLAGS) $(POST_DEFS)
 
@@ -1256,7 +1264,7 @@ DEPEND_CFLAGS = -DPROTO -DDEPEND -DFEAT_GUI $(LINT_CFLAGS)
 PFLAGS = $(PROTO_FLAGS) -DPROTO $(LINT_CFLAGS)
 
 ALL_LIB_DIRS = $(GUI_LIBS_DIR) $(X_LIBS_DIR)
-ALL_LIBS = $(GUI_LIBS1) $(GUI_X_LIBS) $(GUI_LIBS2) $(X_PRE_LIBS) $(X_LIBS) $(X_EXTRA_LIBS) $(LIBS) $(EXTRA_LIBS) $(PERL_LIBS) $(PYTHON_LIBS) $(TCL_LIBS) $(RUBY_LIBS) $(PROFILE_LIBS)
+ALL_LIBS = $(GUI_LIBS1) $(GUI_X_LIBS) $(GUI_LIBS2) $(X_PRE_LIBS) $(X_LIBS) $(X_EXTRA_LIBS) $(LIBS) $(EXTRA_LIBS) $(MZSCHEME_LIBS) $(PERL_LIBS) $(PYTHON_LIBS) $(TCL_LIBS) $(RUBY_LIBS) $(PROFILE_LIBS)
 
 # abbreviations
 DEST_BIN = $(DESTDIR)$(BINDIR)
@@ -1334,14 +1342,15 @@ BASIC_SRC = \
 	window.c \
 	$(OS_EXTRA_SRC)
 
-SRC =	$(BASIC_SRC) $(GUI_SRC) $(HANGULIN_SRC) $(PERL_SRC) $(PYTHON_SRC) \
-	$(TCL_SRC) $(RUBY_SRC) $(SNIFF_SRC) $(WORKSHOP_SRC) $(WSDEBUG_SRC)
+SRC =	$(BASIC_SRC) $(GUI_SRC) $(HANGULIN_SRC) $(MZSCHEME_SRC) \
+	$(PERL_SRC) $(PYTHON_SRC) $(TCL_SRC) $(RUBY_SRC) \
+	$(SNIFF_SRC) $(WORKSHOP_SRC) $(WSDEBUG_SRC)
 
 TAGS_SRC = *.c *.cpp *.cc if_perl.xs
 
-EXTRA_SRC = hangulin.c auto/if_perl.c if_perlsfio.c if_python.c if_tcl.c \
-		if_ruby.c if_sniff.c gui_beval.c \
-		workshop.c wsdebug.c integration.c netbeans.c
+EXTRA_SRC = hangulin.c if_mzsch.c auto/if_perl.c if_perlsfio.c \
+	    if_python.c if_tcl.c if_ruby.c if_sniff.c gui_beval.c \
+	    workshop.c wsdebug.c integration.c netbeans.c
 
 # All sources, also the ones that are not configured
 ALL_SRC = $(BASIC_SRC) $(ALL_GUI_SRC) $(EXTRA_SRC)
@@ -1399,6 +1408,7 @@ OBJ = \
 	objects/undo.o \
 	objects/window.o \
 	$(GUI_OBJ) \
+	$(MZSCHEME_OBJ) \
 	$(PERL_OBJ) \
 	$(PYTHON_OBJ) \
 	$(TCL_OBJ) \
@@ -1488,7 +1498,7 @@ config auto/config.mk: auto/configure config.mk.in config.h.in
 		$(CONF_OPT_OUTPUT) $(CONF_OPT_GPM) $(CONF_OPT_WORKSHOP) \
 		$(CONF_OPT_SNIFF) $(CONF_OPT_FEAT) $(CONF_TERM_LIB) \
 		$(CONF_OPT_COMPBY) $(CONF_OPT_ACL)  $(CONF_OPT_NETBEANS) \
-		$(CONF_ARGS)
+		$(CONF_ARGS) $(CONF_OPT_MZSCHEME) $(CONF_OPT_PLTHOME)
 
 # Use "make reconfig" to rerun configure without cached values.
 # When config.h changes, most things will be recompiled automatically.
@@ -2281,6 +2291,9 @@ objects/if_cscope.o: if_cscope.c
 objects/if_xcmdsrv.o: if_xcmdsrv.c
 	$(CCC) -o $@ if_xcmdsrv.c
 
+objects/if_mzsch.o: if_mzsch.c
+	$(CCC) -o $@ if_mzsch.c
+
 objects/if_perl.o: auto/if_perl.c
 	$(CCC) -o $@ auto/if_perl.c
 
@@ -2754,6 +2767,10 @@ objects/gui_kde_widget_moc.o: gui_kde_widget_moc.cc gui_kde_widget.h \
  ascii.h keymap.h term.h macros.h structs.h regexp.h gui.h option.h \
  ex_cmds.h proto.h globals.h
 objects/hangulin.o: hangulin.c vim.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h macros.h structs.h regexp.h \
+ gui.h gui_beval.h proto/gui_beval.pro option.h ex_cmds.h proto.h \
+ globals.h farsi.h arabic.h
+objects/if_mzsch.o: if_mzsch.c vim.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h structs.h regexp.h \
  gui.h gui_beval.h proto/gui_beval.pro option.h ex_cmds.h proto.h \
  globals.h farsi.h arabic.h

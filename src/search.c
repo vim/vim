@@ -1558,6 +1558,10 @@ findmatchlimit(oap, initc, flags, maxtravel)
     int		match_escaped = 0;	/* search for escaped match */
     int		dir;			/* Direction to search */
     int		comment_col = MAXCOL;   /* start of / / comment */
+#ifdef FEAT_LISP
+    int		lispcomm = FALSE;	/* inside of Lisp-style comment */
+    int		lisp = curbuf->b_p_lisp; /* engage Lisp-specific hacks ;) */
+#endif
 
     pos = curwin->w_cursor;
     linep = ml_get(pos.lnum);
@@ -1822,8 +1826,16 @@ findmatchlimit(oap, initc, flags, maxtravel)
     do_quotes = -1;
     start_in_quotes = MAYBE;
     /* backward search: Check if this line contains a single-line comment */
-    if (backwards && comment_dir)
+    if ((backwards && comment_dir)
+#ifdef FEAT_LISP
+	    || lisp
+#endif
+	    )
 	comment_col = check_linecomment(linep);
+#ifdef FEAT_LISP
+    if (lisp && comment_col != MAXCOL && pos.col > (colnr_T)comment_col)
+	lispcomm = TRUE;    /* find match inside this comment */
+#endif
     while (!got_int)
     {
 	/*
@@ -1832,6 +1844,11 @@ findmatchlimit(oap, initc, flags, maxtravel)
 	 */
 	if (backwards)
 	{
+#ifdef FEAT_LISP
+	    /* char to match is inside of comment, don't search outside */
+	    if (lispcomm && pos.col < (colnr_T)comment_col)
+		break;
+#endif
 	    if (pos.col == 0)		/* at start of line, go to prev. one */
 	    {
 		if (pos.lnum == 1)	/* start of file */
@@ -1847,8 +1864,17 @@ findmatchlimit(oap, initc, flags, maxtravel)
 		line_breakcheck();
 
 		/* Check if this line contains a single-line comment */
-		if (comment_dir)
+		if (comment_dir
+#ifdef FEAT_LISP
+			|| lisp
+#endif
+			)
 		    comment_col = check_linecomment(linep);
+#ifdef FEAT_LISP
+		/* skip comment */
+		if (lisp && comment_col != MAXCOL)
+		    pos.col = comment_col;
+#endif
 	    }
 	    else
 	    {
@@ -1861,9 +1887,22 @@ findmatchlimit(oap, initc, flags, maxtravel)
 	}
 	else				/* forward search */
 	{
-	    if (linep[pos.col] == NUL)	/* at end of line, go to next one */
+	    if (linep[pos.col] == NUL
+		    /* at end of line, go to next one */
+#ifdef FEAT_LISP
+		    /* don't search for match in comment */
+		    || (lisp && comment_col != MAXCOL
+					   && pos.col == (colnr_T)comment_col)
+#endif
+		    )
 	    {
-		if (pos.lnum == curbuf->b_ml.ml_line_count) /* end of file */
+		if (pos.lnum == curbuf->b_ml.ml_line_count  /* end of file */
+#ifdef FEAT_LISP
+			/* line is exhausted and comment with it,
+			 * don't search for match in code */
+			 || lispcomm
+#endif
+			 )
 		    break;
 		++pos.lnum;
 
@@ -1874,6 +1913,10 @@ findmatchlimit(oap, initc, flags, maxtravel)
 		pos.col = 0;
 		do_quotes = -1;
 		line_breakcheck();
+#ifdef FEAT_LISP
+		if (lisp)   /* find comment pos in new line */
+		    comment_col = check_linecomment(linep);
+#endif
 	    }
 	    else
 	    {
@@ -2094,11 +2137,15 @@ findmatchlimit(oap, initc, flags, maxtravel)
 
 	default:
 #ifdef FEAT_LISP
-	    /* For Lisp skip over backslashed (), {} and []. */
+	    /*
+	     * For Lisp skip over backslashed (), {} and [].
+	     * (actually, we skip #\( et al)
+	     */
 	    if (curbuf->b_p_lisp
 		    && vim_strchr((char_u *)"(){}[]", c) != NULL
-		    && pos.col > 0
-		    && check_prevcol(linep, pos.col, '\\', NULL))
+		    && pos.col > 1
+		    && check_prevcol(linep, pos.col, '\\', NULL)
+		    && check_prevcol(linep, pos.col - 1, '#', NULL))
 		break;
 #endif
 
@@ -2151,6 +2198,40 @@ check_linecomment(line)
     char_u  *p;
 
     p = line;
+#ifdef FEAT_LISP
+    /* skip Lispish one-line comments */
+    if (curbuf->b_p_lisp)
+    {
+	if (vim_strchr(p, ';') != NULL) /* there may be comments */
+	{
+	    int instr = FALSE;	/* inside of string */
+
+	    p = line;		/* scan from start */
+	    while ((p = vim_strpbrk(p, "\";")) != NULL)
+	    {
+		if (*p == '"')
+		{
+		    if (instr)
+		    {
+			if (*(p - 1) != '\\') /* skip escaped quote */
+			    instr = FALSE;
+		    }
+		    else if (p == line || ((p - line) >= 2
+				      /* skip #\" form */
+				      && *(p - 1) != '\\' && *(p - 2) != '#'))
+			instr = TRUE;
+		}
+		else if (!instr && ((p - line) < 2
+				    || (*(p - 1) != '\\' && *(p - 2) != '#')))
+		    break;	/* found! */
+		++p;
+	    }
+	}
+	else
+	    p = NULL;
+    }
+    else
+#endif
     while ((p = vim_strchr(p, '/')) != NULL)
     {
 	if (p[1] == '/')

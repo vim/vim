@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 7.0aa.  Last change: 2004 Jul 02
+*index.txt*     For Vim version 7.0aa.  Last change: 2004 Jul 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1352,6 +1352,7 @@ The commands are sorted on the non-optional part of their name.
 |:stop|		:st[op]		suspend the editor or escape to a shell
 |:stag|		:sta[g]		split window and jump to a tag
 |:startinsert|	:star[tinsert]	start Insert mode
+|:startreplace|	:startr[eplace]	start Replace mode
 |:stopinsert||	:stopi[nsert]	stop Insert mode
 |:stjump|	:stj[ump]	do ":tjump" and split window
 |:stselect|	:sts[elect]	do ":tselect" and split window
