@@ -1,4 +1,4 @@
-*netbeans.txt*  For Vim version 7.0aa.  Last change: 2004 Jun 16
+*netbeans.txt*  For Vim version 7.0aa.  Last change: 2005 Jan 31
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur
@@ -16,7 +16,8 @@ NetBeans ExternalEditor Integration Features		*netbeans*
 8.  Messages					|netbeans-messages|
 9.  Running Vim from NetBeans			|netbeans-run|
 10. NetBeans protocol				|netbeans-protocol|
-11. Known problems				|netbeans-problems|
+11. NetBeans commands				|netbeans-commands|
+12. Known problems				|netbeans-problems|
 
 {Vi does not have any of these features}
 {only available when compiled with the |+netbeans_intg| feature}
@@ -197,6 +198,14 @@ NetBeans connection lost for this buffer
 		for saving changes to this file and NetBeans will no longer
 		know of these changes.
 
+							*E744*
+NetBeans does not allow changes in read-only files
+		Vim normally allows changes to a read-only file and only
+		enforces the read-only rule if you try to write the file.
+		However, NetBeans does not let you make changes to a file
+		which is read-only and becomes confused if vim does this.
+		So vim does not allow modifications to files when run with
+		NetBeans.
 ==============================================================================
 9. Running Vim from NetBeans				*netbeans-run*
 
@@ -755,7 +764,18 @@ DETACH		IDE -> editor: break the connection without exiting the
 REJECT		Not used.
 
 ==============================================================================
-11. Known problems					*netbeans-problems*
+11. NetBeans Commands					*netbeans-commands*
+
+							*:nbkey*
+:nbkey key			Pass the key to NetBeans for processing
+
+Pass the key to NetBeans for hot-key processing. You should not need to use
+this command directly. However, NetBeans passes a list of hot-keys to Vim at
+startup and when one of these keys is pressed, this command is generated to
+send the key press back to NetBeans.
+
+==============================================================================
+12. Known problems					*netbeans-problems*
 
 NUL bytes are not possible.  For editor -> IDE they will appear as NL
 characters.  For IDE -> editor they cannot be inserted.

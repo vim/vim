@@ -1397,7 +1397,7 @@ EXTERN char_u e_invexprmsg[]	INIT(=N_("E449: Invalid expression received"));
 #endif
 #ifdef FEAT_NETBEANS_INTG
 EXTERN char_u e_guarded[]	INIT(=N_("E463: Region is guarded, cannot modify"));
-EXTERN char_u e_nbreadonly[]	INIT(=N_("E680: NetBeans does not allow changes in read-only files"));
+EXTERN char_u e_nbreadonly[]	INIT(=N_("E744: NetBeans does not allow changes in read-only files"));
 #endif
 #if defined(FEAT_EVAL) || defined(FEAT_SYN_HL)
 EXTERN char_u e_intern2[]	INIT(=N_("E685: Internal error: %s"));

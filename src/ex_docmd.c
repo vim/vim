@@ -336,6 +336,8 @@ static void	ex_tag_cmd __ARGS((exarg_T *eap, char_u *name));
 # define ex_endfunction		ex_ni
 # define ex_let			ex_ni
 # define ex_unlet		ex_ni
+# define ex_lockvar		ex_ni
+# define ex_unlockvar		ex_ni
 # define ex_function		ex_ni
 # define ex_delfunction		ex_ni
 # define ex_return		ex_ni

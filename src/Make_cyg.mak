@@ -1,6 +1,8 @@
 #
 # Makefile for VIM on Win32, using Cygnus gcc
-# Last updated by Dan Sharp.  Last Change: 2005 Jan 19
+# Last updated by Dan Sharp.  Last Change: 2005 Jan 29
+#
+# Also read INSTALLpc.txt!
 #
 # This compiles Vim as a Windows application.  If you want Vim to run as a
 # Cygwin application use the Makefile (just like on Unix).
@@ -21,13 +23,7 @@
 # MZSCHEME	define to path to MzScheme dir to get MZSCHEME support (not defined)
 #   MZSCHEME_VER      define to version of MzScheme being used (209_000)
 #   DYNAMIC_MZSCHEME  no or yes: use yes to load the MzScheme DLLs dynamically (yes)
-#   MZSCHEME_DLLS     path to MzScheme DLLs (libmzgc and libmzsch).
-#                     Is used for DYNAMIC_MZSCHEME=no only.
-#   		      c:/windows/system32 isn't a good idea, copy them to some
-#   		      dir and point MZSCHEME_DLLS to this dir.
-#   		      By default $(MZSCHEME) will be used. You can remove
-#   		      these DLLs from $(MZSCHEME_DLLS) after you
-#   		      built Vim (they are used for dll "static" linking only)
+#   MZSCHEME_DLLS     path to MzScheme DLLs (libmzgc and libmzsch), for "static" build.
 # GETTEXT	no or yes: set to yes for dynamic gettext support (yes)
 # ICONV		no or yes: set to yes for dynamic iconv support (yes)
 # MBYTE		no or yes: set to yes to include multibyte support (yes)

@@ -20,6 +20,7 @@ Contents:
 5. Using Mingw
 6. Cross compiling for Win32 from a Linux machine
 7. Building with Python support
+8. Building with MzScheme support
 
 
 1. MS-DOS
@@ -310,3 +311,38 @@ Now just do:
    make -f Make_ming.mak gvim.exe
 
 and you will end up with a Python-enabled, Win32 version.  Enjoy!
+
+8. Building with MzScheme support
+=================================================
+
+(written by Sergey Khorev <sergey.khorev@gmail.com>)
+
+Vim with MzScheme (http://www.plt-scheme.org/software/mzscheme) support can
+be built with either MSVC, or MinGW, or Cygwin. Supported versions are 205 and
+above (including 299 and 30x series).
+
+The MSVC build is quite straightforward. Simply invoke (in one line)
+nmake -fMake_mvc.mak MZSCHEME=<Path-to-MzScheme>
+    [MZSCHEME_VER=<MzScheme-version>] [DYNAMIC_MZSCHEME=<yes or no>]
+where <MzScheme-version> is the last seven characters from MzScheme dll name
+(libmzschXXXXXXX.dll).
+If DYNAMIC_MZSCHEME=yes, resulting executable will not depend on MzScheme
+DLL's, but will load them in runtime on demand.
+
+Building dynamic MzScheme support on MinGW and Cygwin is similar. Take into
+account that <Path-to-MzScheme> should contain slashes rather than backslashes
+(e.g. d:/Develop/MzScheme)
+
+"Static" MzScheme support (Vim executable will depend on MzScheme DLLs
+explicitly) on MinGW and Cygwin requires additional step.
+
+libmzschXXXXXXX.dll and libmzgcXXXXXXX.dll should be copied from
+%WINDOWS%\System32 to other location (either build directory, some temporary
+dir or even MzScheme home).
+
+Pass that path as MZSCHEME_DLLS parameter for Make. E.g.,
+make -fMake_cyg.mak MZSCHEME=d:/Develop/MzScheme MZSCHEME_VER=209_000
+    MZSCHEME_DLLS=c:/Temp DYNAMIC_MZSCHEME=no
+
+After successful build these dlls can be freely removed, leaving them in
+%WINDOWS%\System32 only.

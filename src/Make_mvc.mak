@@ -19,7 +19,10 @@
 #	  DYNAMIC_IME=[yes or no]  (to load the imm32.dll dynamically, default
 #	  is yes)
 #	Global IME support: GIME=yes (requires GUI=yes)
-#	MzScheme interface: MZSCHEME=[Path to MzScheme directory], MZSCHEME_VER=[version, 205_000, ...]
+#	MzScheme interface:
+#	  MZSCHEME=[Path to MzScheme directory]
+#	  DYNAMIC_MZSCHEME=yes (to load the MzScheme DLLs dynamically)
+#	  MZSCHEME_VER=[version, 205_000, ...]
 #	Perl interface:
 #	  PERL=[Path to Perl directory]
 #	  DYNAMIC_PERL=yes (to load the Perl DLL dynamically)
