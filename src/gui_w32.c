@@ -991,13 +991,10 @@ gui_mch_init(void)
     ATOM	atom;
 #endif
 
-    /* Display any pending error messages */
-    display_errors();
-
     /* Return here if the window was already opened (happens when
      * gui_mch_dialog() is called early). */
     if (s_hwnd != NULL)
-	return OK;
+	goto theend;
 
     /*
      * Load the tearoff bitmap
@@ -1223,6 +1220,10 @@ gui_mch_init(void)
     s_findrep_struct.wFindWhatLen = MSWIN_FR_BUFSIZE;
     s_findrep_struct.wReplaceWithLen = MSWIN_FR_BUFSIZE;
 #endif
+
+theend:
+    /* Display any pending error messages */
+    display_errors();
 
     return OK;
 }
@@ -2540,6 +2541,8 @@ gui_mch_dialog(
     int		fontHeight;
     int		textWidth, minButtonWidth, messageWidth;
     int		maxDialogWidth;
+    int		maxDialogHeight;
+    int		scroll_flag = 0;
     int		vertical;
     int		dlgPaddingX;
     int		dlgPaddingY;
@@ -2554,9 +2557,14 @@ gui_mch_dialog(
 	return dfltbutton;   /* return default option */
 #endif
 
+#if 0
     /* If there is no window yet, open it. */
     if (s_hwnd == NULL && gui_mch_init() == FAIL)
 	return dfltbutton;
+#else
+    if (s_hwnd == NULL)
+	get_dialog_font_metrics();
+#endif
 
     if ((type < 0) || (type > VIM_LAST_TYPE))
 	type = 0;
@@ -2639,10 +2647,14 @@ gui_mch_dialog(
     if (maxDialogWidth < DLG_MIN_MAX_WIDTH)
 	maxDialogWidth = DLG_MIN_MAX_WIDTH;
 
+    maxDialogHeight = rect.bottom - rect.top - GetSystemMetrics(SM_CXFRAME) * 2;
+    if (maxDialogHeight < DLG_MIN_MAX_HEIGHT)
+	maxDialogHeight = DLG_MIN_MAX_HEIGHT;
+
     /* Set dlgwidth to width of message */
     pstart = message;
     messageWidth = 0;
-    msgheight = 0;
+    msgheight = fontHeight;
     do
     {
 	pend = vim_strchr(pstart, DLG_BUTTON_SEP);
@@ -2650,14 +2662,33 @@ gui_mch_dialog(
 	    pend = pstart + STRLEN(pstart);	/* Last line of message. */
 	msgheight += fontHeight;
 	textWidth = GetTextWidth(hdc, pstart, (int)(pend - pstart));
-	if (textWidth > messageWidth)
+	if (textWidth >= maxDialogWidth)
+	{
+	    /* Line will wrap.  This doesn't work correctly, because the wrap
+	     * happens at a word boundary! */
+	    messageWidth = maxDialogWidth;
+	    while (textWidth >= maxDialogWidth)
+	    {
+		msgheight += fontHeight;
+		textWidth -= maxDialogWidth;
+	    }
+	}
+	else if (textWidth > messageWidth)
 	    messageWidth = textWidth;
 	pstart = pend + 1;
     } while (*pend != NUL);
-    dlgwidth = messageWidth;
+
+    messageWidth += 10;		/* roundoff space */
+
+    /* Restrict the size to a maximum.  Causes a scrollbar to show up. */
+    if (msgheight > maxDialogHeight)
+    {
+	msgheight = maxDialogHeight;
+	scroll_flag = WS_VSCROLL;
+    }
 
     /* Add width of icon to dlgwidth, and some space */
-    dlgwidth += DLG_ICON_WIDTH + 3 * dlgPaddingX;
+    dlgwidth = messageWidth + DLG_ICON_WIDTH + 3 * dlgPaddingX;
 
     if (msgheight < DLG_ICON_HEIGHT)
 	msgheight = DLG_ICON_HEIGHT;
@@ -2839,6 +2870,7 @@ gui_mch_dialog(
 	    DLG_NONBUTTON_CONTROL + 0, (WORD)0x0082,
 	    dlg_icons[type]);
 
+#if 0
     /* Dialog message */
     p = add_dialog_element(p, SS_LEFT,
 	    PixelToDialogX(2 * dlgPaddingX + DLG_ICON_WIDTH),
@@ -2846,6 +2878,15 @@ gui_mch_dialog(
 	    (WORD)(PixelToDialogX(messageWidth) + 1),
 	    PixelToDialogY(msgheight),
 	    DLG_NONBUTTON_CONTROL + 1, (WORD)0x0082, message);
+#else
+    /* Dialog message */
+    p = add_dialog_element(p, ES_LEFT|scroll_flag|ES_MULTILINE|ES_READONLY,
+	    PixelToDialogX(2 * dlgPaddingX + DLG_ICON_WIDTH),
+	    PixelToDialogY(dlgPaddingY),
+	    (WORD)(PixelToDialogX(messageWidth) + 1),
+	    PixelToDialogY(msgheight),
+	    DLG_NONBUTTON_CONTROL + 1, (WORD)0x0081, message);
+#endif
 
     /* Edit box */
     if (textfield != NULL)

@@ -726,7 +726,7 @@ re_lookbehind(prog)
 
 /*
  * Skip past regular expression.
- * Stop at end of 'p' or where 'dirc' is found ('/', '?', etc).
+ * Stop at end of "startp" or where "dirc" is found ('/', '?', etc).
  * Take care of characters with a backslash in front of it.
  * Skip strings inside [ and ].
  * When "newp" is not NULL and "dirc" is '?', make an allocated copy of the
@@ -3010,33 +3010,12 @@ vim_regexec_both(line, col)
 #ifdef HAVE_SETJMP_H
     char_u	*line;
     colnr_T	col;
+    int		did_mch_startjmp = FALSE;
 #endif
 
     reg_tofree = NULL;
 
-#ifdef HAVE_TRY_EXCEPT
-    __try
-    {
-#endif
-
 #ifdef HAVE_SETJMP_H
-    /*
-     * Matching with a regexp may cause a very deep recursive call of
-     * regmatch().  Vim will crash when running out of stack space.  Catch
-     * this here if the system supports it.
-     */
-    mch_startjmp();
-    if (SETJMP(lc_jump_env) != 0)
-    {
-	mch_didjmp();
-# ifdef SIGHASARG
-	if (lc_signal != SIGINT)
-# endif
-	    EMSG(_("E361: Crash intercepted; regexp too complex?"));
-	retval = 0L;
-	goto theend;
-    }
-
     /* Trick to avoid "might be clobbered by `longjmp'" warning from gcc. */
     line = line_arg;
     col = col_arg;
@@ -3101,6 +3080,36 @@ vim_regexec_both(line, col)
 	if (s == NULL)		/* Not present. */
 	    goto theend;
     }
+
+#ifdef HAVE_TRY_EXCEPT
+    __try
+    {
+#endif
+
+#ifdef HAVE_SETJMP_H
+    /*
+     * Matching with a regexp may cause a very deep recursive call of
+     * regmatch().  Vim will crash when running out of stack space.  Catch
+     * this here if the system supports it.
+     * It's a bit slow, do it after the check for "regmust".
+     * Don't do it if the caller already set it up.
+     */
+    if (!lc_active)
+    {
+	did_mch_startjmp = TRUE;
+	mch_startjmp();
+	if (SETJMP(lc_jump_env) != 0)
+	{
+	    mch_didjmp();
+# ifdef SIGHASARG
+	    if (lc_signal != SIGINT)
+# endif
+		EMSG(_(e_complex));
+	    retval = 0L;
+	    goto inner_end;
+	}
+    }
+#endif
 
     regline = line;
     reglnum = 0;
@@ -3168,8 +3177,12 @@ vim_regexec_both(line, col)
     }
 
     if (out_of_stack)
-	EMSG(_("E363: pattern caused out-of-stack error"));
+	EMSG(_(e_outofstack));
 
+#ifdef HAVE_SETJMP_H
+inner_end:
+    ;
+#endif
 #ifdef HAVE_TRY_EXCEPT
     }
     __except(EXCEPTION_EXECUTE_HANDLER)
@@ -3177,20 +3190,21 @@ vim_regexec_both(line, col)
 	if (GetExceptionCode() == EXCEPTION_STACK_OVERFLOW)
 	{
 	    RESETSTKOFLW();
-	    EMSG(_("E363: pattern caused out-of-stack error"));
+	    EMSG(_(e_outofstack));
 	}
 	else
-	    EMSG(_("E361: Crash intercepted; regexp too complex?"));
+	    EMSG(_(e_complex));
 	retval = 0L;
     }
+#endif
+#ifdef HAVE_SETJMP_H
+    if (did_mch_startjmp)
+	mch_endjmp();
 #endif
 
 theend:
     /* Didn't find a match. */
     vim_free(reg_tofree);
-#ifdef HAVE_SETJMP_H
-    mch_endjmp();
-#endif
     return retval;
 }
 

@@ -6585,7 +6585,7 @@ typedef struct AutoPat
     char_u	    *pat;		/* pattern as typed (NULL when pattern
 					   has been removed) */
     int		    patlen;		/* strlen() of pat */
-    char_u	    *reg_pat;		/* pattern converted to regexp */
+    regprog_T	    *reg_prog;		/* compiled regprog for pattern */
     char	    allow_dirs;		/* Pattern may match whole path */
     char	    last;		/* last pattern for apply_autocmds() */
     AutoCmd	    *cmds;		/* list of commands to do */
@@ -6865,7 +6865,7 @@ au_cleanup()
 	    if (ap->pat == NULL)
 	    {
 		*prev_ap = ap->next;
-		vim_free(ap->reg_pat);
+		vim_free(ap->reg_prog);
 		vim_free(ap);
 	    }
 	    else
@@ -7167,8 +7167,6 @@ au_event_restore(old_ei)
     if (old_ei != NULL)
     {
 	set_string_option_direct((char_u *)"ei", -1, old_ei, OPT_FREE);
-	apply_autocmds(EVENT_SYNTAX, curbuf->b_p_syn,
-					       curbuf->b_fname, TRUE, curbuf);
 	vim_free(old_ei);
     }
 }
@@ -7542,15 +7540,20 @@ do_autocmd_event(event, pat, nested, cmd, forceit, group)
 		if (is_buflocal)
 		{
 		    ap->buflocal_nr = buflocal_nr;
-		    ap->reg_pat = NULL;
+		    ap->reg_prog = NULL;
 		}
 		else
 		{
+		    char_u	*reg_pat;
+
 		    ap->buflocal_nr = 0;
-		    ap->reg_pat = file_pat_to_reg_pat(pat, endpat,
+		    reg_pat = file_pat_to_reg_pat(pat, endpat,
 							 &ap->allow_dirs, TRUE);
-		    if (ap->reg_pat == NULL)
+		    if (reg_pat != NULL)
+			ap->reg_prog = vim_regcomp(reg_pat, RE_MAGIC);
+		    if (reg_pat == NULL || ap->reg_prog == NULL)
 		    {
+			vim_free(reg_pat);
 			vim_free(ap->pat);
 			vim_free(ap);
 			return FAIL;
@@ -8250,8 +8253,8 @@ auto_next_pat(apc, stop_at_last)
 	{
 	    /* execution-condition */
 	    if (ap->buflocal_nr == 0
-		    ? (match_file_pat(ap->reg_pat, apc->fname, apc->sfname,
-						   apc->tail, ap->allow_dirs))
+		    ? (match_file_pat(NULL, ap->reg_prog, apc->fname,
+				      apc->sfname, apc->tail, ap->allow_dirs))
 		    : ap->buflocal_nr == apc->arg_bufnr)
 	    {
 		name = event_nr2name(apc->event);
@@ -8381,8 +8384,8 @@ has_autocmd(event, sfname, buf)
     for (ap = first_autopat[(int)event]; ap != NULL; ap = ap->next)
 	if (ap->pat != NULL && ap->cmds != NULL
             && (ap->buflocal_nr == 0
-		? match_file_pat(ap->reg_pat, fname, sfname, tail,
-							       ap->allow_dirs)
+		? match_file_pat(NULL, ap->reg_prog,
+					  fname, sfname, tail, ap->allow_dirs)
                 : buf != NULL && ap->buflocal_nr == buf->b_fnum
 	   ))
 	{
@@ -8549,13 +8552,16 @@ au_exists(name, name_end, pattern)
 
 #if defined(FEAT_AUTOCMD) || defined(FEAT_WILDIGN) || defined(PROTO)
 /*
- * Try matching a filename with a pattern.
+ * Try matching a filename with a "pattern" ("prog" is NULL), or use the
+ * precompiled regprog "prog" ("pattern" is NULL).  That avoids calling
+ * vim_regcomp() often.
  * Used for autocommands and 'wildignore'.
  * Returns TRUE if there is a match, FALSE otherwise.
  */
     int
-match_file_pat(pattern, fname, sfname, tail, allow_dirs)
+match_file_pat(pattern, prog, fname, sfname, tail, allow_dirs)
     char_u	*pattern;		/* pattern to match with */
+    regprog_T	*prog;			/* pre-compiled regprog or NULL */
     char_u	*fname;			/* full path of file name */
     char_u	*sfname;		/* short file name or NULL */
     char_u	*tail;			/* tail of path */
@@ -8610,7 +8616,12 @@ match_file_pat(pattern, fname, sfname, tail, allow_dirs)
     }
     else
 #endif
-	regmatch.regprog = vim_regcomp(pattern, RE_MAGIC);
+    {
+	if (prog != NULL)
+	    regmatch.regprog = prog;
+	else
+	    regmatch.regprog = vim_regcomp(pattern, RE_MAGIC);
+    }
 
     /*
      * Try for a match with the pattern with:
@@ -8633,7 +8644,8 @@ match_file_pat(pattern, fname, sfname, tail, allow_dirs)
 		 || (!allow_dirs && vim_regexec(&regmatch, tail, (colnr_T)0)))))
 	result = TRUE;
 
-    vim_free(regmatch.regprog);
+    if (prog == NULL)
+	vim_free(regmatch.regprog);
     return result;
 }
 #endif
@@ -8667,7 +8679,8 @@ match_file_list(list, sfname, ffname)
 	regpat = file_pat_to_reg_pat(buf, NULL, &allow_dirs, FALSE);
 	if (regpat == NULL)
 	    break;
-	match = match_file_pat(regpat, ffname, sfname, tail, (int)allow_dirs);
+	match = match_file_pat(regpat, NULL, ffname, sfname,
+						       tail, (int)allow_dirs);
 	vim_free(regpat);
 	if (match)
 	    return TRUE;

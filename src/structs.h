@@ -1015,9 +1015,12 @@ struct listwatch_S
 struct listvar_S
 {
     int		lv_refcount;	/* reference count */
+    int		lv_len;		/* number of items */
     listitem_T	*lv_first;	/* first item, NULL if none */
     listitem_T	*lv_last;	/* last item, NULL if none */
     listwatch_T	*lv_watch;	/* first watcher, NULL if none */
+    int		lv_idx;		/* cached index of an item */
+    listitem_T	*lv_idx_item;	/* when not NULL item at index "lv_idx" */
     char	lv_lock;	/* zero, VAR_LOCKED, VAR_FIXED */
 };
 

@@ -595,10 +595,15 @@ display_errors()
 #endif
 		    STRCPY(s, _("...(truncated)"));
 		}
+
+		(void)gui_mch_dialog(VIM_ERROR, (char_u *)_("Error"),
+					      p, (char_u *)_("&Ok"), 1, NULL);
+#if 0
 #ifdef WIN3264
 		MessageBox(NULL, p, "Vim", MB_TASKMODAL|MB_SETFOREGROUND);
 #else
 		MessageBox(NULL, p, "Vim", MB_TASKMODAL);
+#endif
 #endif
 		break;
 	    }

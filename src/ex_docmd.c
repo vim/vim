@@ -3180,13 +3180,7 @@ set_one_cmd_context(xp, buff)
 	p++;
     xp->xp_pattern = p;
 
-    if ((argt & XFILE)
-#ifdef FEAT_QUICKFIX
-	    || cmdidx == CMD_vimgrep
-	    || cmdidx == CMD_vimgrepadd
-	    || grep_internal(cmdidx)
-#endif
-       )
+    if (argt & XFILE)
     {
 	int in_quote = FALSE;
 	char_u *bow = NULL;	/* Beginning of word */
@@ -3919,6 +3913,32 @@ correct_range(eap)
     }
 }
 
+#ifdef FEAT_QUICKFIX
+static char_u	*skip_grep_pat __ARGS((exarg_T *eap));
+
+/*
+ * For a ":vimgrep" or ":vimgrepadd" command return a pointer past the
+ * pattern.  Otherwise return eap->arg.
+ */
+    static char_u *
+skip_grep_pat(eap)
+    exarg_T	*eap;
+{
+    char_u	*p = eap->arg;
+
+    if (*p != NUL && (eap->cmdidx == CMD_vimgrep
+		|| eap->cmdidx == CMD_vimgrepadd || grep_internal(eap->cmdidx)))
+    {
+	p = skip_vimgrep_pat(p, NULL);
+	if (p == NULL)
+	    p = eap->arg;
+	else if (*p != NUL && !vim_iswhite(*p))
+	    ++p;	/* step past ending separator of /pat/ */
+    }
+    return p;
+}
+#endif
+
 /*
  * Expand file name in Ex command argument.
  * Return FAIL for failure, OK otherwise.
@@ -3935,13 +3955,20 @@ expand_filename(eap, cmdlinep, errormsgp)
     char_u	*p;
     int		n;
 
+#ifdef FEAT_QUICKFIX
+    /* Skip a regexp pattern for ":vimgrep[add] pat file..." */
+    p = skip_grep_pat(eap);
+#else
+    p = eap->arg;
+#endif
+
     /*
      * Decide to expand wildcards *before* replacing '%', '#', etc.  If
      * the file name contains a wildcard it should not cause expanding.
      * (it will be expanded anyway if there is a wildcard before replacing).
      */
-    has_wildcards = mch_has_wildcard(eap->arg);
-    for (p = eap->arg; *p; )
+    has_wildcards = mch_has_wildcard(p);
+    while (*p != NUL)
     {
 #ifdef FEAT_EVAL
 	/* Skip over `=expr`, wildcards in it are not expanded. */
@@ -4225,22 +4252,10 @@ separate_nextcmd(eap)
 {
     char_u	*p;
 
-    p = eap->arg;
 #ifdef FEAT_QUICKFIX
-    if (*p != NUL && (eap->cmdidx == CMD_vimgrep
-		|| eap->cmdidx == CMD_vimgrepadd
-		|| grep_internal(eap->cmdidx)))
-    {
-	/* Skip over the pattern. */
-	if (vim_isIDc(*p))
-	    p = skiptowhite(p);
-	else
-	{
-	    p = skip_regexp(p + 1, *p, TRUE, NULL);
-	    if (*p == *eap->arg)
-		++p;
-	}
-    }
+    p = skip_grep_pat(eap);
+#else
+    p = eap->arg;
 #endif
 
     for ( ; *p; mb_ptr_adv(p))

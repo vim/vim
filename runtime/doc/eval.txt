@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 31
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Feb 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -80,8 +80,8 @@ Note that in the command >
 "foo" is converted to 0, which means FALSE.  To test for a non-empty string,
 use strlen(): >
 	:if strlen("foo")
-<						*E728* *E729* *E730* *E731*
-List and Funcref types are not automatically converted.
+<				*E745* *E728* *E703* *E729* *E730* *E731*
+List, Dictionary and Funcref types are not automatically converted.
 
 								*E706*
 You will get an error if you try to change the type of a variable.  You need
@@ -93,7 +93,7 @@ equivalent though.  Consider this sequence of commands: >
 
 
 1.2 Function references ~
-					*Funcref* *E695* *E703* *E718*
+					*Funcref* *E695* *E718*
 A Funcref variable is obtained with the |function()| function.  It can be used
 in an expression in the place of a function name, before the parenthesis
 around the arguments, to invoke the function it refers to.  Example: >
@@ -1560,11 +1560,11 @@ add({list}, {expr})					*add()*
 
 
 append({lnum}, {expr})					*append()*
-		When {expr} is a List: Append each item of the list as a text
+		When {expr} is a List: Append each item of the List as a text
 		line below line {lnum} in the current buffer.
-		Otherwise append the text line {expr} below line {lnum} in the
-		current buffer.
-		{lnum} can be zero, to insert a line before the first one.
+		Otherwise append {expr} as one text line below line {lnum} in
+		the current buffer.
+		{lnum} can be zero to insert a line before the first one.
 		Returns 1 for failure ({lnum} out of range or out of memory),
 		0 for success.  Example: >
 			:let failed = append(line('$'), "# THE END")
@@ -2683,7 +2683,8 @@ indent({lnum})	The result is a Number, which is indent of line {lnum} in the
 index({list}, {expr} [, {start} [, {ic}]])			*index()*
 		Return the lowest index in List {list} where the item has a
 		value equal to {expr}.
-		If {start} is given then skip items with a lower index.
+		If {start} is given then start looking at the item with index
+		{start} (may be negative for an item relative to the end).
 		When {ic} is given and it is non-zero, ignore case.  Otherwise
 		case must match.
 		-1 is returned when {expr} is not found in {list}.
@@ -3762,15 +3763,17 @@ tr({src}, {fromstr}, {tostr})				*tr()*
 
 							*type()*
 type({expr})	The result is a Number, depending on the type of {expr}:
-			Number:  0
-			String:  1
-			Funcref: 2
-			List:    3
-		To avoid the magic numbers it can be used this way: >
+			Number:	    0
+			String:	    1
+			Funcref:    2
+			List:	    3
+			Dictionary: 4
+		To avoid the magic numbers it should be used this way: >
 			:if type(myvar) == type(0)
 			:if type(myvar) == type("")
 			:if type(myvar) == type(function("tr"))
 			:if type(myvar) == type([])
+			:if type(myvar) == type({})
 
 values({dict})						*values()*
 		Return a List with all the values of {dict}.  The List is in
@@ -4358,7 +4361,7 @@ This would call the function "my_func_whizz(parameter)".
 			When the selected range of items is partly past the
 			end of the list, items will be added.
 
-						*:let+=* *:let-=* *:let.=*
+					*:let+=* *:let-=* *:let.=* *E734*
 :let {var} += {expr1}	Like ":let {var} = {var} + {expr1}".
 :let {var} -= {expr1}	Like ":let {var} = {var} - {expr1}".
 :let {var} .= {expr1}	Like ":let {var} = {var} . {expr1}".

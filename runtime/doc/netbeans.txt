@@ -560,6 +560,9 @@ stopCaretListen
 stopDocumentListen
 		Mark the buffer to stop reporting changes to the IDE.
 		Opposite of startDocumentListen.
+		NOTE: if "netbeansBuffer" was used to mark this buffer as a
+		NetBeans buffer, then the buffer is deleted in Vim.  This is
+		for compatibility with Sun Studio 10.
 
 unguard off len
 		Opposite of "guard", remove guarding for a text area.

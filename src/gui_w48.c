@@ -61,6 +61,7 @@
 #define DLG_FONT_NAME		"MS Sans Serif"
 #define DLG_FONT_POINT_SIZE	8
 #define DLG_MIN_MAX_WIDTH	400
+#define DLG_MIN_MAX_HEIGHT	400
 
 #define DLG_NONBUTTON_CONTROL	5000	/* First ID of non-button controls */
 

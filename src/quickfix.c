@@ -2256,12 +2256,12 @@ ex_vimgrep(eap)
 {
     regmmatch_T	regmatch;
     char_u	*save_cpo;
-    int         fcount;
+    int		fcount;
     char_u	**fnames;
-    char_u      *s;
-    char_u      *p;
+    char_u	*s;
+    char_u	*p;
     int		i;
-    int         fi;
+    int		fi;
     struct qf_line *prevp = NULL;
     long	lnum;
     garray_T	ga;
@@ -2282,20 +2282,11 @@ ex_vimgrep(eap)
 
     /* Get the search pattern: either white-separated or enclosed in // */
     regmatch.regprog = NULL;
-    if (vim_isIDc(*eap->arg))
+    p = skip_vimgrep_pat(eap->arg, &s);
+    if (p == NULL)
     {
-	s = eap->arg;
-	p = skiptowhite(s);
-    }
-    else
-    {
-	s = eap->arg + 1;
-	p = skip_regexp(s, *eap->arg, TRUE, NULL);
-	if (*p != *eap->arg)
-	{
-	    EMSG(_("E682: Invalid search pattern or delimiter"));
-	    goto theend;
-	}
+	EMSG(_("E682: Invalid search pattern or delimiter"));
+	goto theend;
     }
     if (*p != NUL)
 	*p++ = NUL;
@@ -2391,6 +2382,25 @@ ex_vimgrep(eap)
 	else
 	{
 	    found_match = FALSE;
+#ifdef HAVE_SETJMP_H
+	    /*
+	     * Matching with a regexp may cause a very deep recursive call of
+	     * regmatch().  Vim will crash when running out of stack space.
+	     * Catch this here if the system supports it.
+	     * It's a bit slow, thus do it outside of the loop.
+	     */
+	    mch_startjmp();
+	    if (SETJMP(lc_jump_env) != 0)
+	    {
+		mch_didjmp();
+# ifdef SIGHASARG
+		if (lc_signal != SIGINT)
+# endif
+		    EMSG(_(e_complex));
+		got_int = TRUE;
+		goto jumpend;
+	    }
+#endif
 	    for (lnum = 1; lnum <= buf->b_ml.ml_line_count; ++lnum)
 	    {
 		if (vim_regexec_multi(&regmatch, curwin, buf, lnum,
@@ -2419,6 +2429,10 @@ ex_vimgrep(eap)
 		if (got_int)
 		    break;
 	    }
+#ifdef HAVE_SETJMP_H
+jumpend:
+	    mch_endjmp();
+#endif
 
 	    if (using_dummy)
 	    {
@@ -2453,10 +2467,12 @@ ex_vimgrep(eap)
 		if (buf != NULL)
 		{
 		    /* The buffer is still loaded, the Filetype autocommands
-		     * need to be done now, in that buffer. */
+		     * need to be done now, in that buffer.  And then the
+		     * modelines (again). */
 		    aucmd_prepbuf(&aco, buf);
 		    apply_autocmds(EVENT_FILETYPE, buf->b_p_ft,
 						     buf->b_fname, TRUE, buf);
+		    do_modelines(FALSE);
 		    aucmd_restbuf(&aco);
 		}
 #endif
@@ -2488,6 +2504,33 @@ theend:
 	p_cpo = save_cpo;
     else
 	free_string_option(save_cpo);
+}
+
+/*
+ * Skip over the pattern argument of ":vimgrep /pat/".
+ * Put the start of the pattern in "*s", unless "s" is NULL.
+ * Return a pointer to the char just past the pattern.
+ */
+    char_u *
+skip_vimgrep_pat(p, s)
+    char_u *p;
+    char_u **s;
+{
+    int		c;
+
+    if (vim_isIDc(*p))
+    {
+	if (s != NULL)
+	    *s = p;
+	return skiptowhite(p);
+    }
+    if (s != NULL)
+	*s = p + 1;
+    c = *p;
+    p = skip_regexp(p + 1, c, TRUE, NULL);
+    if (*p != c)
+	return NULL;
+    return p;
 }
 
 /*
