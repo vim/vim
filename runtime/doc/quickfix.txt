@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 7.0aa.  Last change: 2004 Dec 27
+*quickfix.txt*  For Vim version 7.0aa.  Last change: 2004 Dec 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -281,10 +281,13 @@ advantage of the internal grep is that it works on all systems and uses the
 powerful Vim search patterns.  An external grep program can be used when the
 Vim grep does not do what you want.
 
-The internal method may be a bit slower, because files are read into memory.
-The advantage is that line separators and encoding are automatically
-recognized, as if a file is being edited.  And multi-line patterns can be
-used.
+The internal method will be slower, because files are read into memory.  The
+advantages are:
+- Line separators and encoding are automatically recognized, as if a file is
+  being edited.
+- Uses Vim search patterns.  Multi-line patterns can be used.
+- When plugins are enabled: compressed and remote files can be searched.
+	|gzip| |netrw|
 
 
 5.1 using Vim's internal grep
@@ -294,11 +297,22 @@ used.
 			Search for {pattern} in the files {file} ... and set
 			the error list to the matches.
 			{pattern} if a Vim search pattern.  Instead of
-			enclosing it in / any character can be used, so long
-			as it does not appear in {pattern}.
+			enclosing it in / any non-ID character |'isident'|
+			can be used, so long as it does not appear in
+			{pattern}.
+			Examples: >
+				:vimgrep /an error/ *.c
+				:vimgrep /\<FileName\>/ *.h include/*
 
+:vim[grep][!] {pattern} {file} ...
+			Like above, but instead of enclosing the pattern in a
+			non-ID character use a white-separated pattern.  The
+			pattern must start with an ID character.
+			Example: >
+				:vimgrep Error *.c
+<
 						*:vimgrepa* *:vimgrepadd*
-:vimgrepa[dd][!] /{pattern}/ {file} ...
+:vimgrepa[dd][!] [/]{pattern}[/] {file} ...
 			Just like ":vimgrep", but instead of making a new list
 			of errors the matches are appended to the current
 			list.

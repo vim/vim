@@ -141,7 +141,8 @@ main
     int		full_path = FALSE;
 #endif
 #ifdef FEAT_CLIENTSERVER
-    char_u	*serverStr = NULL;
+    char_u	*serverStr = NULL;	/* remote server command */
+    char_u	*serverStrEnc = NULL;	/* encoding of serverStr */
     char_u	*serverName_arg = NULL;	/* cmdline arg for server name */
     int		serverArg = FALSE;	/* TRUE when argument for a server */
     char_u	*servername = NULL;	/* allocated name for our server */
@@ -378,10 +379,16 @@ main
 
 	/*
 	 * When a command server argument was found, execute it.  This may
-	 * exit Vim when it was successful.
+	 * exit Vim when it was successful.  Otherwise it's executed further
+	 * on.  Remember the encoding used here in "serverStrEnc".
 	 */
 	if (serverArg)
+	{
 	    cmdsrv_main(&argc, argv, serverName_arg, &serverStr);
+# ifdef FEAT_MBYTE
+	    serverStrEnc = vim_strsave(p_enc);
+# endif
+	}
 
 	/* If we're still running, get the name to register ourselves.
 	 * On Win32 can register right now, for X11 need to setup the
@@ -1662,7 +1669,10 @@ scripterror:
      * else we would have exited above).
      */
     if (serverStr != NULL)
-	server_to_input_buf(serverStr);
+    {
+	server_to_input_buf(serverConvert(serverStrEnc, serverStr, &p));
+	vim_free(p);
+    }
 #endif
 
     /*

@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2004 Dec 24
+*version7.txt*  For Vim version 7.0aa.  Last change: 2004 Dec 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -20,6 +20,7 @@ NEW FEATURES				|new-7|
 New data types				|new-data-types|
 KDE support				|new-KDE|
 Translated manual pages			|new-manpage-trans|
+Internal grep				|new-vimgrep|
 Various new items			|new-items-7|
 
 IMPROVEMENTS				|improvements-7|
@@ -131,6 +132,16 @@ The manual page of Vim and associated programs is now also available in
 Italian (translated by Antonio Colombo).  More languages will follow.
 
 The Unix Makefile installs the Italian manual pages in .../man/it/man1/.
+
+
+Internal grep						*new-vimgrep*
+-------------
+
+The ":vimgrep" command can be used to search for a pattern in a list of files.
+This is like the ":grep" command, but no external program is used.  Besides
+better portability, handling of different file encodings and using multi-line
+patterns, this also allows grepping in compressed and remote files.
+|:vimgrep|.
 
 
 Various new items					*new-items-7*

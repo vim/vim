@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Dec 27
+*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Dec 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,48 +30,37 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Python 2.4 breaks uploading with rsync, 2.3 is OK.
+Go through patches from Martin Dalecki.  /tmp/dalecki/README
 
--   Use a builtin grep command for ":grep"?  Makes it possible to add the
-    column number.
-    Patch from Yegappan Lakshmanan, Nov 4.
-Don't expand wildcards in pattern (first arg)
-completion for all files after first arg.
-Use a buffer to load the file, so that gzip files can be searched and long
-lines work.
+Awaiting response:
+-   Patch for mch_FullName() also in Vim 6.3?  os_mswin.c
+-   Win32: "gvim -V100" should use dialog with scrollbar.  Using
+    gui_mch_dialog() would be good, but need to move display_errors() to after
+    creating the window, so that s_hwnd is valid.
+    How to add a scrollbar to the dialog?
+-   Win32: tearoff menu window should have a scrollbar when it's taller than
+    the screen.
+-   Included NetBeans patches (Gordon Prieur, Oct 20)
+	See two messages for list of changed files.  Additionally:
+	    doc/eval.txt
+	Docs for message E680.
+	Docs for ":nbkey".
+	Asked Gordon to send the differences again, some parts apparently are
+	missing.
+-   Browsefilter support for KDE. (Dan Sharp, 2004 July)
+-   Better configure check for KDE include files from Dan Sharp.
 
-Patch for mch_FullName() also in Vim 6.3?  os_mswin.c
-
-Win32: "gvim -V100" should use dialog with scrollbar.  Using
-gui_mch_dialog() would be good, but need to move display_errors() to after
-creating the window, so that s_hwnd is valid.
-How to add a scrollbar to the dialog?
-
-Win32: tearoff menu window should have a scrollbar when it's taller than the
-screen.
-
-Included NetBeans patches (Gordon Prieur, Oct 20)
-    See two messages for list of changed files.  Additionally:
-	doc/eval.txt
-    Docs for message E680.
-    Docs for ":nbkey".
-    Asked Gordon to send the differences again, some parts apparently are
-    missing.
 
 PLANNED FOR VERSION 7.0:
 
--   Drop the kvim support?  There is no maintenance and "yzis" is supposed to
-    replace it.
--   In the kvim/KDE source files fix the formatting.
--   KDE version is called "kvim".  Make it "gvim", like the others?
--   Better configure check for KDE include files from Dan Sharp.
--   KDE GUI Input method patch. (Yasuhiro Matsumoto) (upd. Oct 25 2004)
-
-After including patches:
 -   For string variables, use length instead of NUL termination?
 	+ can include NUL characters
 	- setline() will have problems with NL vs NUL.
--   new DATA TYPES: lists, dictionaries and function references.
+-   new DATA TYPES:
+	- None?  (or use empty string?)
+	- list
+	- dictionary
+	- function reference
 	Check old patch from Robert Webb for array support.
     Add type checking?  See ~/vim/ideas.txt.
 -   Add SPELLCHECKER, with easy to add support for many languages.
@@ -427,8 +416,9 @@ GTK+ GUI known bugs:
 7   DND doesn't work with KDE (also with GTK 1).
 
 KDE GUI known bugs:
--   The default font is ugly.  bold text isn't displayed correctly.
-    (bold characters are half the width of normal characters)
+-   There is no active maintenance and "yzis" is supposed to replace it.
+-   With the default 'guifont' value bold text differs in size from normal
+    text, causing the display to be messed up.
 -   Error messages when starting up.  The "tip of the day" box is empty.
 -   Encoding of menu items needs to be converted. (Yasuhiro Matsumoto)
 

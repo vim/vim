@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.0aa.  Last change: 2004 Jul 13
+*starting.txt*  For Vim version 7.0aa.  Last change: 2004 Dec 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -423,8 +423,8 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 							*-U* *E230*
 -U {gvimrc}	The file "gvimrc" is read for initializations when the GUI
 		starts.  Other GUI initializations are skipped. When {gvimrc}
-		is equal to "NONE", no file is read for initializations at
-		all.
+		is equal to "NONE", no file is read for GUI initializations at
+		all.  |gui-init|
 		Exception: Reading the system-wide menu file is always done.
 		{not in Vi}
 

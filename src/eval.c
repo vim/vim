@@ -3427,25 +3427,12 @@ find_buffer(avar)
     VAR		avar;
 {
     buf_T	*buf = NULL;
-    char_u	*name;
 
     if (avar->var_type == VAR_NUMBER)
 	buf = buflist_findnr((int)avar->var_val.var_number);
     else if (avar->var_val.var_string != NULL)
     {
-	/* First make the name into a full path name */
-	name = FullName_save(avar->var_val.var_string,
-#ifdef UNIX
-		TRUE	    /* force expansion, get rid of symbolic links */
-#else
-		FALSE
-#endif
-		);
-	if (name != NULL)
-	{
-	    buf = buflist_findname(name);
-	    vim_free(name);
-	}
+	buf = buflist_findname_exp(avar->var_val.var_string);
 	if (buf == NULL)
 	{
 	    /* No full path name match, try a match with a URL or a "nofile"

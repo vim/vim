@@ -1,4 +1,4 @@
-*usr_05.txt*	For Vim version 7.0aa.  Last change: 2004 Aug 27
+*usr_05.txt*	For Vim version 7.0aa.  Last change: 2004 Dec 29
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -150,12 +150,11 @@ it worked before Vim 5.0.  Otherwise the "Q" command starts Ex mode, but you
 will not need it.
 
 >
-	vnoremap p <Esc>:let current_reg = @"<CR>gvs<C-R>=current_reg<CR><Esc>
+	vnoremap _g y:exe "grep /" . escape(@", '\\/') . "/ *.c *.h"<CR>
 
-This is a complicated mapping.  It will not be explained how it works here.
-What it does is to make "p" in Visual mode overwrite the selected text with
-the previously yanked text.  You can see that mappings can be used to do quite
-complicated things.  Still, it is just a sequence of commands that are
+This mapping yanks the visually selected text and searches for it in C files.
+This is a complicated mapping.  You can see that mappings can be used to do
+quite complicated things.  Still, it is just a sequence of commands that are
 executed like you typed them.
 
 >

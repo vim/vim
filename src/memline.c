@@ -425,7 +425,8 @@ ml_setname(buf)
     {
 	if (*dirp == NUL)	    /* tried all directories, fail */
 	    break;
-	fname = findswapname(buf, &dirp, mfp->mf_fname); /* alloc's fname */
+	fname = findswapname(buf, &dirp, mfp->mf_fname);
+						    /* alloc's fname */
 	if (fname == NULL)	    /* no file name found for this dir */
 	    continue;
 
@@ -529,7 +530,7 @@ ml_open_file(buf)
 	/* There is a small chance that between chosing the swap file name and
 	 * creating it, another Vim creates the file.  In that case the
 	 * creation will fail and we will use another directory. */
-	fname = findswapname(buf, &dirp, NULL);	/* allocates fname */
+	fname = findswapname(buf, &dirp, NULL); /* allocates fname */
 	if (fname == NULL)
 	    continue;
 	if (mf_open_file(mfp, fname) == OK)	/* consumes fname! */
@@ -3731,7 +3732,8 @@ findswapname(buf, dirp, old_fname)
 	     * viewing a help file or when the path of the file is different
 	     * (happens when all .swp files are in one directory).
 	     */
-	    if (!recoverymode && buf->b_fname != NULL && !buf->b_help)
+	    if (!recoverymode && buf->b_fname != NULL
+				&& !buf->b_help && !(buf->b_flags & BF_DUMMY))
 	    {
 		int		fd;
 		struct block0	b0;
