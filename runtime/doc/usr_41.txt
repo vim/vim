@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 7.0aa.  Last change: 2005 Feb 23
+*usr_41.txt*	For Vim version 7.0aa.  Last change: 2005 Mar 15
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -758,6 +758,7 @@ Various:
 	getreg()		get contents of a register
 	getregtype()		get type of a register
 	setreg()		set contents and type of a register
+	taglist()		get list of matching tags
 
 ==============================================================================
 *41.7*	Defining a function

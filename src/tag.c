@@ -3547,14 +3547,20 @@ static int add_tag_field __ARGS((dict_T *dict, char *field_name, char_u *start, 
 add_tag_field(dict, field_name, start, end)
     dict_T  *dict;
     char    *field_name;
-    char_u  *start;
-    char_u  *end;
+    char_u  *start;		/* start of the value */
+    char_u  *end;		/* after the value; can be NULL */
 {
     char_u	buf[MAXPATHL];
     int		len = 0;
 
     if (start != NULL)
     {
+	if (end == NULL)
+	{
+	    end = start + STRLEN(start);
+	    while (end > start && (end[-1] == '\r' || end[-1] == '\n'))
+		--end;
+	}
 	len = end - start;
 	if (len > sizeof(buf) - 1)
 	    len = sizeof(buf) - 1;
