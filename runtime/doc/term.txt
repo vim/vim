@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 7.0aa.  Last change: 2005 Mar 05
+*term.txt*      For Vim version 7.0aa.  Last change: 2005 Mar 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -272,6 +272,8 @@ OUTPUT CODES
 	t_ts	set window title start (to status line)		*t_ts* *'t_ts'*
 	t_ue	underline end					*t_ue* *'t_ue'*
 	t_us	underline mode					*t_us* *'t_us'*
+	t_Ce	undercurl end					*t_Ce* *'t_Ce'*
+	t_Cs	undercurl mode					*t_Cs* *'t_Cs'*
 	t_ut	clearing uses the current background color	*t_ut* *'t_ut'*
 	t_vb	visual bell					*t_vb* *'t_vb'*
 	t_ve	cursor visible					*t_ve* *'t_ve'*
