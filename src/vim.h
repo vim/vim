@@ -87,8 +87,6 @@
     || defined(FEAT_GUI_MAC) \
     || defined(FEAT_GUI_W32) \
     || defined(FEAT_GUI_W16) \
-    || defined(FEAT_GUI_BEOS) \
-    || defined(FEAT_GUI_AMIGA) \
     || defined(FEAT_GUI_PHOTON) \
     || defined(FEAT_GUI_KDE)
 # if !defined(FEAT_GUI) && !defined(NO_X11_INCLUDES)
@@ -1587,9 +1585,6 @@ typedef struct VimClipboard
 # ifdef MSWIN
     int_u	format;		/* Vim's own special clipboard format */
     int_u	format_raw;	/* Vim's raw text clipboard format */
-# endif
-# ifdef FEAT_GUI_BEOS
-				/* no clipboard at the moment */
 # endif
 } VimClipboard;
 #else
