@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Mar 08
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Mar 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,11 +30,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
--   Patch from Steve Wall (2005 Mar 3) for dec locator mode with xterm 
-    above column 223.
-    Doesn't work: may send wrong escape sequence to terminal, because mouse
-    type already changed when calling mch_setmouse(FALSE).
-
 Mac unicode patch (Da Woon Jung):
 - selecting proportional font breaks display
 - UTF-8 text causes display problems.  Font replacement causes this.
@@ -57,8 +52,6 @@ autoload:
     helpfile doc/myscript.txt
   For the "helpfile" item ":helptags" is run.
 
-Patch for "paranoid mode" by Kevin Collins, March 7.  Needs more work.
-
 Awaiting response:
 -   Patch for mch_FullName() also in Vim 6.3?  os_mswin.c
 -   Win32: tearoff menu window should have a scrollbar when it's taller than
@@ -68,23 +61,28 @@ Awaiting response:
 PLANNED FOR VERSION 7.0:
 
 -   Add SPELLCHECKER, with easy to add support for many languages.
+    - Do this with syntax highlighting for speed.  And avoids using an
+      external program like ispell or aspell.
+    - "engspchk" from Charles Campbell is a good starting point.
+    - Keep wordlist in syntax group, load it only once and use it several
+      times later.  Sort of global syntax items.
+    - Add "undercurl" highlight attribute.  Set color separately.
+      Patch from Marcin Dalecki. (2004 Dec)
+      Perhaps use "guicurl=Red" instead?
+      If underline and undercurl are both there use undercurl only.
+    - Use wordlists from openoffice (myspell).  Work together with them to
+      update the wordlist.  (Adri Verhoef, Aad Nales)
+    - Support for approximate-regexps will help (agrep
+      http://www.tgries.de/agrep/).
+    - Charles Campbell asks for method to add "contained" groups to
+      existing syntax items (to add @Spell).
+      Add ":syntax contains {pattern} add=@Spell" command?  A bit like ":syn
+      cluster" but change the contains list directly for matching syntax
+      items.
+    Alternatives using ispell or aspell:
     8   Add spell checking.  Use "ispell -a" somehow.
 	~/vim/patches/wm_vim-5_4d.zip  can be used as an example (includes
 	ispell inside Vim).  Gautam Iyer has an example with "aspell".
-	"engspchk" from Charles Campbell is a good way.  Support for
-	approximate-regexps will help (agrep http://www.tgries.de/agrep/).
-	- Charles Campbell asks for method to add "contained" groups to
-	  existing syntax items (to add @Spell).  Add ":syntax contains
-	  {pattern} add=@Spell" command?  A bit like ":syn cluster" but change
-	  the contains list directly for matching syntax items.
-        - Keep wordlist in syntax group, load it only once and use it several
-	  times later.  Sort of global syntax items.
-	- Use wordlists from openoffice (myspell).  Work together with them to
-	  update the wordlist.  (Adri Verhoef, Aad Nales)
-	- Patch from Marcin Dalecki. (2004 Dec)  Uses ispell
-	  implements "undercurl" attribute.  But how to set its color?
-	  Perhaps use "guicurl=Red" instead?
-	  If underline and undercurl are both there use undercurl only.
 -   REFACTORING: The main() function is very long.  Move parts to separate
     functions, especially loops.  Ideas from Walter Briscoe (2003 Apr 3, 2004
     Feb 9).
@@ -332,6 +330,8 @@ Awaiting updated patches:
         Win32: the text to replace with isn't remembered.
     -	For GUI Find/Replace dialog support using a regexp.  Patch for Motif
 	and GTK by degreneir (nov 10 and nov 18).
+
+Patch for "paranoid mode" by Kevin Collins, March 7.  Needs much more work.
 
 Check if file explorer can handle directory names and links with a single
 quote. (Nieko Maatjes, 2005 Jan 4)

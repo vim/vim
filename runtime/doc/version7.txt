@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Mar 08
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Mar 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -157,9 +157,13 @@ Translated manual pages					*new-manpage-trans*
 -----------------------
 
 The manual page of Vim and associated programs is now also available in
-Italian (translated by Antonio Colombo).  More languages will follow.
+several other languages.
+
+Italian - translated by Antonio Colombo
+Russian - translated by Vassily Ragosin
 
 The Unix Makefile installs the Italian manual pages in .../man/it/man1/.
+Other languages in similar places.
 
 
 Internal grep						*new-vimgrep*
@@ -944,5 +948,15 @@ indirectly invokes ":normal".
 
 Diff mode failed when $DIFF_OPTIONS was set in the environment.  Unset it
 before invoking "diff".
+
+When renaming a file is done by making a copy (accross file systems), set the
+permissions and ACL of the copy to those of the original file.
+
+Completion didn't work after ":argdo", ":windo" and ":bufdo".  Also for ":set
+&l:opt" and ":set &g:opt". (Peter Winters)
+
+When setting 'ttymouse' to "dec" in an xterm that supports the DEC mouse
+locator it doesn't work.  Now switch off the mouse before selecting another
+mouse model.
 
  vim:tw=78:ts=8:ft=help:norl:
