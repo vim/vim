@@ -116,6 +116,12 @@ static dictitem_T	globvars_var;
 #define globvarht globvardict.dv_hashtab
 
 /*
+ * Old Vim variables such as "v:version" are also available without the "v:".
+ * Also in functions.  We need a special hashtable for them.
+ */
+hashtab_T		compat_hashtab;
+
+/*
  * Array to hold the hashtab with variables local to each sourced script.
  * Each item holds a variable (nameless) that points to the dict_T.
  */
@@ -213,7 +219,7 @@ typedef struct
 typedef struct
 {
     dict_T	*fd_dict;	/* Dictionary used */
-    char_u	*fd_newkey;	/* new key in "dict" */
+    char_u	*fd_newkey;	/* new key in "dict" in allocated memory */
     dictitem_T	*fd_di;		/* Dictionary item used */
 } funcdict_T;
 
@@ -599,6 +605,7 @@ eval_init()
 
     init_var_dict(&globvardict, &globvars_var);
     init_var_dict(&vimvardict, &vimvars_var);
+    hash_init(&compat_hashtab);
 
     for (i = 0; i < VV_LEN; ++i)
     {
@@ -613,8 +620,8 @@ eval_init()
 	/* add to v: scope dict */
 	hash_add(&vimvarht, p->vv_di.di_key);
 	if (p->vv_flags & VV_COMPAT)
-	    /* add to g: scope dict */
-	    hash_add(&globvardict.dv_hashtab, p->vv_di.di_key);
+	    /* add to compat scope dict */
+	    hash_add(&compat_hashtab, p->vv_di.di_key);
     }
 }
 
@@ -2548,7 +2555,9 @@ ex_call(eap)
     len = STRLEN(tofree);
     name = deref_func_name(tofree, &len);
 
-    startarg = arg;
+    /* Skip white space to allow ":call func ()".  Not good, but required for
+     * backward compatibility. */
+    startarg = skipwhite(arg);
     rettv.v_type = VAR_UNKNOWN;	/* clear_tv() uses this */
 
     if (*startarg != '(')
@@ -2815,12 +2824,12 @@ get_user_var_name(xp, idx)
     expand_T	*xp;
     int		idx;
 {
-    static int	gdone;
-    static int	bdone;
-    static int	wdone;
-    static int	vidx;
-    static hashitem_T *hi;
-    hashtab_T	*ht;
+    static long_u	gdone;
+    static long_u	bdone;
+    static long_u	wdone;
+    static int		vidx;
+    static hashitem_T	*hi;
+    hashtab_T		*ht;
 
     if (idx == 0)
 	gdone = bdone = wdone = vidx = 0;
@@ -2830,6 +2839,8 @@ get_user_var_name(xp, idx)
     {
 	if (gdone++ == 0)
 	    hi = globvarht.ht_array;
+	else
+	    ++hi;
 	while (HASHITEM_EMPTY(hi))
 	    ++hi;
 	if (STRNCMP("g:", xp->xp_pattern, 2) == 0)
@@ -2843,6 +2854,8 @@ get_user_var_name(xp, idx)
     {
 	if (bdone++ == 0)
 	    hi = ht->ht_array;
+	else
+	    ++hi;
 	while (HASHITEM_EMPTY(hi))
 	    ++hi;
 	return cat_prefix_varname('b', hi->hi_key);
@@ -2859,6 +2872,8 @@ get_user_var_name(xp, idx)
     {
 	if (bdone++ == 0)
 	    hi = ht->ht_array;
+	else
+	    ++hi;
 	while (HASHITEM_EMPTY(hi))
 	    ++hi;
 	return cat_prefix_varname('w', hi->hi_key);
@@ -5717,7 +5732,7 @@ static struct fst
     {"string",		1, 1, f_string},
     {"strlen",		1, 1, f_strlen},
     {"strpart",		2, 3, f_strpart},
-    {"strridx",		2, 2, f_strridx},
+    {"strridx",		2, 3, f_strridx},
     {"strtrans",	1, 1, f_strtrans},
     {"submatch",	1, 1, f_submatch},
     {"substitute",	4, 4, f_substitute},
@@ -11791,9 +11806,10 @@ f_stridx(argvars, rettv)
     if (argvars[2].v_type != VAR_UNKNOWN)
     {
 	start_idx = get_tv_number(&argvars[2]);
-	if (start_idx < 0 || start_idx >= (int)STRLEN(haystack))
+	if (start_idx >= (int)STRLEN(haystack))
 	    return;
-	haystack += start_idx;
+	if (start_idx >= 0)
+	    haystack += start_idx;
     }
 
     pos	= (char_u *)strstr((char *)haystack, (char *)needle);
@@ -11885,20 +11901,38 @@ f_strridx(argvars, rettv)
     char_u	*haystack;
     char_u	*rest;
     char_u	*lastmatch = NULL;
+    int		haystack_len, end_idx;
 
     needle = get_tv_string(&argvars[1]);
     haystack = get_tv_string_buf(&argvars[0], buf);
+    haystack_len = STRLEN(haystack);
     if (*needle == NUL)
 	/* Empty string matches past the end. */
-	lastmatch = haystack + STRLEN(haystack);
+	lastmatch = haystack + haystack_len;
     else
+    {
+	if (argvars[2].v_type != VAR_UNKNOWN)
+	{
+	    /* Third argument: upper limit for index */
+	    end_idx = get_tv_number(&argvars[2]);
+	    if (end_idx < 0)
+	    {
+		/* can never find a match */
+		rettv->vval.v_number = -1;
+		return;
+	    }
+	}
+	else
+	    end_idx = haystack_len;
+
 	for (rest = haystack; *rest != '\0'; ++rest)
 	{
 	    rest = (char_u *)strstr((char *)rest, (char *)needle);
-	    if (rest == NULL)
+	    if (rest == NULL || rest > haystack + end_idx)
 		break;
 	    lastmatch = rest;
 	}
+    }
 
     if (lastmatch == NULL)
 	rettv->vval.v_number = -1;
@@ -13408,6 +13442,11 @@ find_var_ht(name, varname)
 	if (vim_strchr(name, ':') != NULL)
 	    return NULL;
 	*varname = name;
+
+	/* "version" is "v:version" in all scopes */
+	if (!HASHITEM_EMPTY(hash_find(&compat_hashtab, name)))
+	    return &compat_hashtab;
+
 	if (current_funccal == NULL)
 	    return &globvarht;			/* global variable */
 	return &current_funccal->l_vars.dv_hashtab; /* l: variable */
