@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jan 05
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jan 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -646,5 +646,9 @@ When using ":new" and the file fits in the window, lines could still be above
 the window.  Now remove empty lines instead of keeping the relative position.
 
 Cmdline completion didn't work after ":let var1 var<Tab>".
+
+When using ":startinsert" or ":startreplace" when already in Insert mode
+(possible when using CTRL-R =), pressing Esc would directly restart Insert
+mode. (Peter Winters)
 
  vim:tw=78:ts=8:ft=help:norl:

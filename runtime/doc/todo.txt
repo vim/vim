@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 08
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -31,6 +31,17 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 -------------------- Known bugs and current work -----------------------
 
 Use 'ignorecase' for ":vimgrep"?
+
+List:
+- map() function:     map(list, 'some . & . thing')?
+- filter() function:  filter(list, '& !~ "^\\s*$"')?
+- searchlist() function: like index() but with a regexp.
+- Make string() work so that a list can be parsed back?
+- Add List functions to version7.txt.
+- Add List functions to overview of funtions in user manual.
+- Explain Lists in the user manual?
+
+Better way to get temp file for tcltags and vimspell scripts. (javier Pena)
 
 When allocating a new variable, a search is done for an empty entry.  May
 waste a lot of time if there isn't one.  Keep an index of available entry,
