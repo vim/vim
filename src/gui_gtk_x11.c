@@ -2969,7 +2969,9 @@ gui_mch_init(void)
     gui.border_width = 2;
     gui.scrollbar_width = SB_DEFAULT_WIDTH;
     gui.scrollbar_height = SB_DEFAULT_WIDTH;
+    /* LINTED: avoid warning: conversion to 'unsigned long' */
     gui.fgcolor = g_new0(GdkColor, 1);
+    /* LINTED: avoid warning: conversion to 'unsigned long' */
     gui.bgcolor = g_new0(GdkColor, 1);
 
     /* Initialise atoms */
@@ -4078,6 +4080,7 @@ gui_mch_adjust_charsize(void)
 
     gui.char_height = (ascent + descent + PANGO_SCALE - 1) / PANGO_SCALE
 		      + p_linespace;
+    /* LINTED: avoid warning: bitwise operation on signed value */
     gui.char_ascent = PANGO_PIXELS(ascent + p_linespace * PANGO_SCALE / 2);
 
 #else /* !HAVE_GTK2 */
@@ -6350,9 +6353,9 @@ mch_set_mouse_shape(int shape)
 	    id = mshape_ids[shape];
 # ifdef HAVE_GTK_MULTIHEAD
 	c = gdk_cursor_new_for_display(
-		gtk_widget_get_display(gui.drawarea), id);
+		gtk_widget_get_display(gui.drawarea), (GdkCursorType)id);
 # else
-	c = gdk_cursor_new(id);
+	c = gdk_cursor_new((GdkCursorType)id);
 # endif
 	gdk_window_set_cursor(gui.drawarea->window, c);
 	gdk_cursor_destroy(c); /* Unref, actually.  Bloody GTK+ 1. */

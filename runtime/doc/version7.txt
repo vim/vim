@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jan 20
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jan 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -426,6 +426,9 @@ invalid characters after the register name.
 ":let w:" lists window-local variables.
 ":let v:" lists Vim variables.
 
+The stridx() funcion takes a third argument, where to start searching.
+(Yegappan Lakshmanan)
+
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*
 
@@ -699,5 +702,10 @@ mode. (Peter Winters)
 Completion for ":next a'<Tab>" put a backslash before single quote, but it was
 not removed when editing a file.  Now halve backslashes in save_patterns().
 Also fix expanding a file name with the shell that contains "\'".
+
+When doing "1,6d|put" only "fewer lines" was reported.  Now a following "more
+lines" overwrites the message.
+
+Configure could not handle "-Dfoo=long\ long" in the TCL config output.
 
  vim:tw=78:ts=8:ft=help:norl:

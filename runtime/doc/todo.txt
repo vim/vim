@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 21
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,16 +30,21 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Dict member: use dict..foo instead of dict.foo to avoid confusion with string
-concatenation?
+Searching backwards with \zs gets stuck. (Brett Stahlman, Jan 23)
 
-Hashtable implementation:
-- Use hashtable for syntax keywords.
+netrw plugin: "i" remembers last action but not per window.
+
+List data type performance:
+- Cache the length of a List?
+- Cache the last used index?
+- Use blocks of items, so that finding an item by index is faster?
 
 Can ":grep" made faster somehow?  Do profiling.
+":vimgrep pat %" doesn't work.
 
 Sanity check of eval.c:
 - Go through the code for magic braces.
+- Check use of v_type for VAR_FUNC, VAR_LIST ad VAR_DICT.
 
 Mention Rsync command on runtime.php page:
     rsync -avzcP --delete --exclude="dos" --delete-excluded ftp.nluug.nl::Vim/runtime/ vim63-runtime
@@ -51,18 +56,18 @@ netrw plugin:
 Better way to get temp file for tcltags and vimspell scripts. (javier Pena)
 Possibly leave out code for temp directory.
 
-When allocating a new variable, a search is done for an empty entry.  May
-waste a lot of time if there isn't one.  Keep an index of available entry,
-none available, or unknown.
-
 patch for QuickFixCmdPre and QuickFixCmdPost autocommands. (Ciaran McCreesh,
 2005 Jan 1)
+
+When 'nowrap' is set and selecting text with the mouse, moving the mouse right
+of the text area doesn't cause a horizontal scroll. (Dave Ewart)
 
 New Motif toolbar button from Marcin Dalecki:
 - add remark in version7.txt
 - check if it works for pixmap loaded from a file.
 
 Explain Lists, Dicts, |:for| etc. in the user manual |usr_41.txt|.
+Add more tests for all List and Dict related functionality.
 
 Awaiting response:
 -   Patch for mch_FullName() also in Vim 6.3?  os_mswin.c
@@ -256,14 +261,6 @@ Add gui_mch_browsedir() for Motif, KDE and Mac OS/X.
 
 HTML indenting can be slow, find out why.  Any way to do some kind of
 profiling for Vim script?
-
-List data type performance:
-- Cache the length of a List?
-- Cache the last used index?
-- Use blocks of items, so that finding an item by index is faster?
-
-Dictionary data type performance:
-- Use a hash to locate items
 
 Updated Ruby interface. (Ryan Paul)
 
@@ -1409,9 +1406,6 @@ Syntax highlighting:
 8   Make conversion to HTML faster (Write it in C or pre-compile the script).
 9   There is still a redraw bug somewhere.  Probably because a cached state is
     used in a wrong way.  I can't reproduce it...
-7   Make syntax keyword table configurable.  Set number of bits used with
-    ":syn clear [hashbits]", so that we don't need to reallocate the table.
-    minimal 4 bits, maximal 16. (Campbell)
 7   Be able to change only the background highlighting.  Useful for Diff* and
     Search highlighting.
 8   Allow the user to add items to the Syntax menu sorted, without having to
@@ -1421,9 +1415,6 @@ Syntax highlighting:
 8   Add a "keepend-contained" argument: Don't change the end of an item this
     one is contained in.  Like "keepend" but specified on the contained item,
     instead of the containing item.
-8   For keywords, allow to define the size of the hash table with ":syn
-    clear".  Change KHASH_ defines into variables stored in buffer struct.
-    Use something else than linear linked list from the hash table. (Campbell)
 8   cpp.vim: In C++ it's allowed to use {} inside ().
 8   Some syntax files set 'iskeyword'.  When switching to another filetype
     this isn't reset.  Add a special keyword definition for the syntax rules?
