@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 05
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -169,7 +169,10 @@ Expression syntax summary, from least to most significant:
 	etc.			As above, append ? for ignoring case, # for
 				matching case
 
-|expr5|	expr6 +	 expr6 ..	number addition
+	expr5 is expr5		same List instance
+	expr5 isnot expr5	different List instance
+
+|expr5|	expr6 +	 expr6 ..	number addition or list concatenation
 	expr6 -	 expr6 ..	number subtraction
 	expr6 .	 expr6 ..	string concatenation
 
@@ -282,6 +285,7 @@ if it evaluates to true.
 			*expr-<#*  *expr-<=#* *expr-=~#* *expr-!~#*
 			*expr-==?* *expr-!=?* *expr->?*  *expr->=?*
 			*expr-<?*  *expr-<=?* *expr-=~?* *expr-!~?*
+			*expr-is*
 		use 'ignorecase'    match case	   ignore case ~
 equal			==		==#		==?
 not equal		!=		!=#		!=?
@@ -291,11 +295,27 @@ smaller than		<		<#		<?
 smaller than or equal	<=		<=#		<=?
 regexp matches		=~		=~#		=~?
 regexp doesn't match	!~		!~#		!~?
+same instance		is
+different instance	isnot
 
 Examples:
 "abc" ==# "Abc"	  evaluates to 0
 "abc" ==? "Abc"	  evaluates to 1
 "abc" == "Abc"	  evaluates to 1 if 'ignorecase' is set, 0 otherwise
+
+A List can only be compared with a List and only "equal", "not equal" and "is"
+can be used.  This compares the values of the list, recursively.  Ignoring
+case means case is ignored when comparing item values.
+
+A Funcref can only be compared with a Funcref and only "equal" and "not equal"
+can be used.  Case is never ignored.
+
+When using "is" or "isnot" with a List this checks if the expressions are
+referring to the same List instance.  A copy of a List is different from the
+original List.  When using "is" without a List it is equivalent to using
+"equal", using "isnot" equivalent to using "not equal".  Except that a
+different type means the values are different.  "4 == '4'" is true, "4 is '4'"
+is false.
 
 When comparing a String with a Number, the String is converted to a Number,
 and the comparison is done on Numbers.  This means that "0 == 'x'" is TRUE,
@@ -326,13 +346,16 @@ can be matched like an ordinary character.  Examples:
 
 expr5 and expr6						*expr5* *expr6*
 ---------------
-expr6 +	 expr6 ..	number addition		*expr-+*
-expr6 -	 expr6 ..	number subtraction	*expr--*
-expr6 .	 expr6 ..	string concatenation	*expr-.*
+expr6 +	 expr6 ..	Number addition or List concatenation	*expr-+*
+expr6 -	 expr6 ..	Number subtraction			*expr--*
+expr6 .	 expr6 ..	String concatenation			*expr-.*
 
-expr7 *	 expr7 ..	number multiplication	*expr-star*
-expr7 /	 expr7 ..	number division		*expr-/*
-expr7 %	 expr7 ..	number modulo		*expr-%*
+For Lists only "+" is possible and then both expr6 must be a list.  The result
+is a new list with the two lists Concatenated.
+
+expr7 *	 expr7 ..	number multiplication			*expr-star*
+expr7 /	 expr7 ..	number division				*expr-/*
+expr7 %	 expr7 ..	number modulo				*expr-%*
 
 For all, except ".", Strings are converted to Numbers.
 
@@ -342,6 +365,8 @@ Note the difference between "+" and ".":
 
 When the righthand side of '/' is zero, the result is 0x7fffffff.
 When the righthand side of '%' is zero, the result is 0.
+
+None of these work for Funcrefs.
 
 
 expr7							*expr7*
@@ -925,12 +950,14 @@ bufnr( {expr})			Number	Number of the buffer {expr}
 bufwinnr( {expr})		Number	window number of buffer {expr}
 byte2line( {byte})		Number	line number at byte count {byte}
 byteidx( {expr}, {nr})		Number	byte index of {nr}'th char in {expr}
+call( {func}, {arglist})	any	call {func} with arguments {arglist}
 char2nr( {expr})		Number	ASCII value of first char in {expr}
 cindent( {lnum})		Number	C indent for line {lnum}
 col( {expr})			Number	column nr of cursor or mark
 confirm( {msg} [, {choices} [, {default} [, {type}]]])
 				Number	number of choice picked by user
 copy( {expr})			any	make a shallow copy of {expr}
+count( {list}, {expr} [, {ic}])	 Number	 count how many {expr} are in {list}
 cscope_connection( [{num} , {dbpath} [, {prepend}]])
 				Number	checks existence of cscope connection
 cursor( {lnum}, {col})		Number	position cursor at {lnum}, {col}
@@ -985,6 +1012,7 @@ hlID( {name})			Number	syntax ID of highlight group {name}
 hostname()			String	name of the machine Vim is running on
 iconv( {expr}, {from}, {to})	String	convert encoding of {expr}
 indent( {lnum})			Number	indent of line {lnum}
+index( {list}, {expr} [, {ic}]) Number	index in {list} where {expr} appears
 input( {prompt} [, {text}])	String	get input from the user
 inputdialog( {p} [, {t} [, {c}]]) String  like input() but in a GUI dialog
 inputrestore()			Number	restore typeahead
@@ -1019,7 +1047,7 @@ remote_peek( {serverid} [, {retvar}])
 remote_read( {serverid})	String	read reply string
 remote_send( {server}, {string} [, {idvar}])
 				String	send key sequence
-remove( {list}, {idx})		any	remove item {idx} from {list}
+remove( {list}, {idx} [, {end}])  any	remove items {idx}-{end} from {list}
 rename( {from}, {to})		Number	rename (move) file from {from} to {to}
 repeat( {expr}, {count})	String	repeat {expr} {count} times
 resolve( {filename})		String	get filename a shortcut points to
@@ -1235,6 +1263,13 @@ byteidx({expr}, {nr})					*byteidx()*
 		If there are exactly {nr} characters the length of the string
 		is returned.
 
+call({func}, {arglist})					*call()*
+		Call function {func} with the items in List {arglist} as
+		arguments.
+		{func} can either be a Funcref or the name of a function.
+		a:firstline and a:lastline are set to the cursor line.
+		Returns the return value of the called function.
+
 char2nr({expr})						*char2nr()*
 		Return number value of the first char in {expr}.  Examples: >
 			char2nr(" ")		returns 32
@@ -1332,6 +1367,12 @@ copy({expr})	Make a copy of {expr}.  For Numbers and Strings this isn't
 		copy, and vise versa.  But the items are identical, thus
 		changing an item changes the contents of both Lists.  Also see
 		|deepcopy()|.
+
+count({list}, {expr} [, {ic}])					*count()*
+		Return the number of times an item with value {expr} appears
+		in List {list}.
+		When {ic} is given and it's non-zero then case is ignored.
+
 
 							*cscope_connection()*
 cscope_connection([{num} , {dbpath} [, {prepend}]])
@@ -1589,6 +1630,23 @@ expand({expr} [, {flag}])				*expand()*
 
 		See |glob()| for finding existing files.  See |system()| for
 		getting the raw output of an external command.
+
+extend({list1}, {list2} [, {idx}])			*extend()*
+		Append {list2} to {list1}.
+		If {idx} is given insert the items of {list2} before item
+		{idx} in {list1}.  When {idx} is zero insert before the first
+		item.  When {idx} is equal to len({list1}) {list2} is
+		appended.
+		{list1} is changed when {list2} is not empty.
+		{list2} remains unchanged.
+		{list1} and {list2} must be Lists.
+		Returns {list1}.
+		Examples: >
+			:echo sort(extend(mylist, [7, 5]))
+			:call extend(mylist, [2, 3], 1)
+<		Use |append()| to concatenate one item to a list.  To
+		concatenate two lists into a new list use the + operator: >
+			:let newlist = [1, 2, 3] + [4, 5]
 
 filereadable({file})					*filereadable()*
 		The result is a Number, which is TRUE when a file with the
@@ -2067,6 +2125,17 @@ indent({lnum})	The result is a Number, which is indent of line {lnum} in the
 		|getline()|.
 		When {lnum} is invalid -1 is returned.
 
+
+index({list}, {expr} [, {ic}])				*index()*
+		Return the lowest index in List {list} where the item has a
+		value equal to {expr}.
+		When {ic} is given and it is non-zero, ignore case.  Otherwise
+		case must match.
+		-1 is returned when {expr} is not found in {list}.
+		Example: >
+			:let idx = index(words, "the")
+
+
 input({prompt} [, {text}])				*input()*
 		The result is a String, which is whatever the user typed on
 		the command-line.  The parameter is either a prompt string, or
@@ -2484,11 +2553,17 @@ remote_send({server}, {string} [, {idvar}])
 		 \ 'server2client(expand("<client>"), "HELLO")<CR>')
 
 
-remove({list}, {idx})					*remove()*
-		Remove the item at {idx} from List {list} and return it.
-		See |list-index| for possible values of {idx}.
+remove({list}, {idx} [, {end}])				*remove()*
+		Without {end}: Remove the item at {idx} from List {list} and
+		return it.
+		With {end}: Remove items from {idx} to {end} (inclusive) and
+		return a list with these items.  When {idx} points to the same
+		item as {end} a list with one item is returned.  When {end}
+		points to an item before {idx} this is an error.
+		See |list-index| for possible values of {idx} and {end}.
 		Example: >
 			:echo "last item: " . remove(mylist, -1)
+			:call remove(mylist, 0, 9)
 <		Use |delete()| to remove a file.
 
 rename({from}, {to})					*rename()*
@@ -2503,6 +2578,10 @@ repeat({expr}, {count})					*repeat()*
 		result.  Example: >
 			:let seperator = repeat('-', 80)
 <		When {count} is zero or negative the result is empty.
+		When {expr} is a list the result is {expr} concatenated
+		{count} times. Example: >
+			:let longlist = repeat(['a', 'b'], 3)
+<		Results in ['a', 'b', 'a', 'b', 'a', 'b'].
 
 resolve({filename})					*resolve()* *E655*
 		On MS-Windows, when {filename} is a shortcut (a .lnk file),
@@ -3633,14 +3712,20 @@ This would call the function "my_func_whizz(parameter)".
 :for {var} in {list}					*:for*
 :endfo[r]						*:endfo* *:endfor*
 			Repeat the commands between ":for" and ":endfor" for
-			each item in {list}.  {var} is set to the value of the
-			item.
-			When an error is detected from a command inside the
+			each item in {list}.  variable {var} is set to the
+			value of each item.
+			When an error is detected for a command inside the
 			loop, execution continues after the "endfor".
-			A copy of {list} is made, so that it cannot change
-			while executing the commands.  Example (an inefficient
-			way to make a list empty): >
-				:for a in mylist
+			Changing {list} affects what items are used.  Make a
+			copy if this is unwanted: >
+				:for item in copy(mylist)
+<			When not making a copy, Vim stores a reference to the
+			next item in the list, before executing the commands
+			with the current item.  Thus the current item can be
+			removed without effect.  Removing any later item means
+			it will not be found.  Thus the following example
+			works (an inefficient way to make a list empty): >
+				:for item in mylist
 				   :call remove(mylist, 0)
 				:endfor
 <			Note that the type of each list item should be

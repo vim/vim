@@ -601,7 +601,7 @@ struct condstack
 	void	*csp_rv[CSTACK_LEN];	/* return typeval for pending return */
 	void	*csp_ex[CSTACK_LEN];	/* exception for pending throw */
     }		cs_pend;
-    void	*cs_fors[CSTACK_LEN];	/* info used by ":for" */
+    void	*cs_forinfo[CSTACK_LEN]; /* info used by ":for" */
     int		cs_line[CSTACK_LEN];	/* line nr of ":while"/":for" line */
     int		cs_idx;			/* current entry, or -1 if none */
     int		cs_looplevel;		/* nr of nested ":while"s and ":for"s */
@@ -612,6 +612,8 @@ struct condstack
 # define cs_rettv	cs_pend.csp_rv
 # define cs_exception	cs_pend.csp_ex
 
+/* There is no CSF_IF, the lack of CSF_WHILE, CSF_FOR and CSF_TRY means ":if"
+ * was used. */
 # define CSF_TRUE	0x0001	/* condition was TRUE */
 # define CSF_ACTIVE	0x0002	/* current state is active */
 # define CSF_ELSE	0x0004	/* ":else" has been passed */

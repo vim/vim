@@ -18,8 +18,6 @@
 static void	free_msglist __ARGS((struct msglist *l));
 static int	throw_exception __ARGS((void *, int, char_u *));
 static char_u	*get_end_emsg __ARGS((struct condstack *cstack));
-static void	rewind_conditionals __ARGS((struct condstack *,
-							    int, int, int *));
 
 /*
  * Exception handling terms:
@@ -863,8 +861,8 @@ ex_endif(eap)
 {
     did_endif = TRUE;
     if (eap->cstack->cs_idx < 0
-	    || (eap->cstack->cs_flags[eap->cstack->cs_idx] &
-		(CSF_WHILE | CSF_FOR | CSF_TRY)))
+	    || (eap->cstack->cs_flags[eap->cstack->cs_idx]
+					   & (CSF_WHILE | CSF_FOR | CSF_TRY)))
 	eap->errmsg = (char_u *)N_("E580: :endif without :if");
     else
     {
@@ -1031,14 +1029,14 @@ ex_while(eap)
 	    {
 		/* Jumping here from a ":continue" or ":endfor": use the
 		 * previously evaluated list. */
-		fi = cstack->cs_fors[cstack->cs_idx];
+		fi = cstack->cs_forinfo[cstack->cs_idx];
 		error = FALSE;
 	    }
 	    else
 	    {
 		/* Evaluate the argument and get the info in a structure. */
 		fi = eval_for_line(eap->arg, &error, &eap->nextcmd, skip);
-		cstack->cs_fors[cstack->cs_idx] = fi;
+		cstack->cs_forinfo[cstack->cs_idx] = fi;
 	    }
 
 	    /* use the element at the start of the list and advance */
@@ -1050,7 +1048,7 @@ ex_while(eap)
 	    if (!result)
 	    {
 		free_for_info(fi);
-		cstack->cs_fors[cstack->cs_idx] = NULL;
+		cstack->cs_forinfo[cstack->cs_idx] = NULL;
 	    }
 	}
 
@@ -1098,8 +1096,7 @@ ex_continue(eap)
 	idx = cleanup_conditionals(cstack, CSF_WHILE | CSF_FOR, FALSE);
 	if ((cstack->cs_flags[idx] & (CSF_WHILE | CSF_FOR)))
 	{
-	    if (cstack->cs_idx > idx)
-		rewind_conditionals(cstack, idx, CSF_TRY, &cstack->cs_trylevel);
+	    rewind_conditionals(cstack, idx, CSF_TRY, &cstack->cs_trylevel);
 
 	    /*
 	     * Set CSL_HAD_CONT, so do_cmdline() will jump back to the
@@ -1448,7 +1445,7 @@ ex_catch(eap)
 	    eap->errmsg = (char_u *)N_("E604: :catch after :finally");
 	    give_up = TRUE;
 	}
-	else if (cstack->cs_idx > idx)
+	else
 	    rewind_conditionals(cstack, idx, CSF_WHILE | CSF_FOR,
 						       &cstack->cs_looplevel);
     }
@@ -1602,8 +1599,7 @@ ex_finally(eap)
 	    eap->errmsg = (char_u *)N_("E607: multiple :finally");
 	    return;
 	}
-	if (cstack->cs_idx > idx)
-	    rewind_conditionals(cstack, idx, CSF_WHILE | CSF_FOR,
+	rewind_conditionals(cstack, idx, CSF_WHILE | CSF_FOR,
 						       &cstack->cs_looplevel);
 
 	/*
@@ -1678,8 +1674,8 @@ ex_finally(eap)
 		 * exception.  When emsg() is called for a missing ":endif" or
 		 * a missing ":endwhile"/":endfor" detected here, the
 		 * exception will be discarded. */
-		if (did_throw && cstack->cs_exception[cstack->cs_idx] !=
-							    current_exception)
+		if (did_throw && cstack->cs_exception[cstack->cs_idx]
+							 != current_exception)
 		    EMSG(_(e_internal));
 	    }
 
@@ -2033,8 +2029,9 @@ leave_cleanup(csp)
 /*
  * Make conditionals inactive and discard what's pending in finally clauses
  * until the conditional type searched for or a try conditional not in its
- * finally clause is reached.  If this is in an active catch clause, finish the
- * caught exception.  Return the cstack index where the search stopped.
+ * finally clause is reached.  If this is in an active catch clause, finish
+ * the caught exception.
+ * Return the cstack index where the search stopped.
  * Values used for "searched_cond" are (CSF_WHILE | CSF_FOR) or CSF_TRY or 0,
  * the latter meaning the innermost try conditional not in its finally clause.
  * "inclusive" tells whether the conditional searched for should be made
@@ -2186,8 +2183,9 @@ get_end_emsg(cstack)
  * "cond_level" specify a conditional type and the address of a level variable
  * which is to be decremented with each skipped conditional of the specified
  * type.
+ * Also free "for info" structures where needed.
  */
-    static void
+    void
 rewind_conditionals(cstack, idx, cond_type, cond_level)
     struct condstack   *cstack;
     int		idx;
@@ -2198,6 +2196,8 @@ rewind_conditionals(cstack, idx, cond_type, cond_level)
     {
 	if (cstack->cs_flags[cstack->cs_idx] & cond_type)
 	    --*cond_level;
+	if (cstack->cs_flags[cstack->cs_idx] & CSF_FOR)
+	    free_for_info(cstack->cs_forinfo[cstack->cs_idx]);
 	--cstack->cs_idx;
     }
 }
