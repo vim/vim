@@ -130,6 +130,51 @@ struct dictvar_S
 
 typedef struct dictvar_S dictvar;
 
+/*
+ * Structure returned by get_lval() and used by set_var_lval().
+ * For a plain name:
+ *	"name"	    points to the variable name.
+ *	"exp_name"  is NULL.
+ *	"tv"	    is NULL
+ * For a magic braces name:
+ *	"name"	    points to the expanded variable name.
+ *	"exp_name"  is non-NULL, to be freed later.
+ *	"tv"	    is NULL
+ * For an index in a list:
+ *	"name"	    points to the (expanded) variable name.
+ *	"exp_name"  NULL or non-NULL, to be freed later.
+ *	"tv"	    points to the (first) list item value
+ *	"li"	    points to the (first) list item
+ *	"range", "n1", "n2" and "empty2" indicate what items are used.
+ * For an existing Dict item:
+ *	"name"	    points to the (expanded) variable name.
+ *	"exp_name"  NULL or non-NULL, to be freed later.
+ *	"tv"	    points to the dict item value
+ *	"newkey"    is NULL
+ * For a non-existing Dict item:
+ *	"name"	    points to the (expanded) variable name.
+ *	"exp_name"  NULL or non-NULL, to be freed later.
+ *	"tv"	    points to the Dictionary typeval
+ *	"newkey"    is the key for the new item.
+ */
+typedef struct lval_S
+{
+    char_u	*ll_name;	/* start of variable name (can be NULL) */
+    char_u	*ll_exp_name;	/* NULL or expanded name in allocated memory. */
+    typeval	*ll_tv;		/* Typeval of item being used.  If "newkey"
+				   isn't NULL it's the Dict to which to add
+				   the item. */
+    listitem	*ll_li;		/* The list item or NULL. */
+    listvar	*ll_list;	/* The list or NULL. */
+    int		ll_range;	/* TRUE when a [i:j] range was used */
+    long	ll_n1;		/* First index for list */
+    long	ll_n2;		/* Second index for list range */
+    int		ll_empty2;	/* Second index is empty: [i:] */
+    char_u	*ll_newkey;	/* New key for Dict in alloc. mem or NULL. */
+    dictitem	*ll_di;		/* The dictitem or NULL */
+    dictitem	**ll_pdi;	/* field that points to found dictitem */
+} lval;
+
 
 static char *e_letunexp	= N_("E18: Unexpected characters in :let");
 static char *e_listidx = N_("E684: list index out of range: %ld");
@@ -361,6 +406,7 @@ static void list_unref __ARGS((listvar *l));
 static void list_free __ARGS((listvar *l));
 static listitem *listitem_alloc __ARGS((void));
 static void listitem_free __ARGS((listitem *item));
+static void listitem_remove __ARGS((listvar *l, listitem *item));
 static long list_len __ARGS((listvar *l));
 static int list_equal __ARGS((listvar *l1, listvar *l2, int ic));
 static int tv_equal __ARGS((typeval *tv1, typeval *tv2, int ic));
@@ -374,7 +420,7 @@ static int list_insert_tv __ARGS((listvar *l, typeval *tv, listitem *item));
 static int list_extend __ARGS((listvar	*l1, listvar *l2, listitem *bef));
 static int list_concat __ARGS((listvar *l1, listvar *l2, typeval *tv));
 static listvar *list_copy __ARGS((listvar *orig, int deep));
-static void list_getrem __ARGS((listvar *l, listitem *item, listitem *item2));
+static void list_remove __ARGS((listvar *l, listitem *item, listitem *item2));
 static char_u *list2string __ARGS((typeval *tv));
 static void list_join __ARGS((garray_T *gap, listvar *l, char_u *sep, int echo));
 
@@ -385,7 +431,7 @@ static dictitem *dictitem_alloc __ARGS((void));
 static dictitem *dictitem_copy __ARGS((dictitem *org));
 static void dictitem_free __ARGS((dictitem *item));
 static void dict_add __ARGS((dictvar *d, dictitem *item));
-static dictitem *dict_find __ARGS((dictvar *d, char_u *key, int len));
+static dictitem *dict_find __ARGS((dictvar *d, char_u *key, int len, dictitem ***pdi));
 static char_u *dict2string __ARGS((typeval *tv));
 static int get_dict_tv __ARGS((char_u **arg, typeval *rettv, int evaluate));
 
@@ -594,7 +640,7 @@ static void set_var __ARGS((char_u *name, typeval *varp, int copy));
 static void copy_tv __ARGS((typeval *from, typeval *to));
 static void item_copy __ARGS((typeval *from, typeval *to, int deep));
 static char_u *find_option_end __ARGS((char_u **arg, int *opt_flags));
-static char_u *trans_function_name __ARGS((char_u **pp, int skip, int internal));
+static char_u *trans_function_name __ARGS((char_u **pp, int skip, int exists));
 static int eval_fname_script __ARGS((char_u *p));
 static int eval_fname_sid __ARGS((char_u *p));
 static void list_func_head __ARGS((ufunc_T *fp, int indent));
@@ -616,11 +662,13 @@ static void list_all_vars __ARGS((void));
 static char_u *list_arg_vars __ARGS((exarg_T *eap, char_u *arg));
 static char_u *ex_let_one __ARGS((char_u *arg, typeval *tv, int copy, char_u *endchars));
 static int check_changedtick __ARGS((char_u *arg));
-static char_u *set_var_idx __ARGS((char_u *name, char_u *ip, typeval *rettv, int copy, char_u *endchars));
+static char_u *get_lval __ARGS((char_u *name, typeval *rettv, lval *lp, int unlet, int skip, int quiet));
+static void clear_lval __ARGS((lval *lp));
+static void set_var_lval __ARGS((lval *lp, char_u *endp, typeval *rettv, int copy));
 static void list_add_watch __ARGS((listvar *l, listwatch *lw));
 static void list_rem_watch __ARGS((listvar *l, listwatch *lwrem));
 static void list_fix_watch __ARGS((listvar *l, listitem *item));
-static int do_unlet_var __ARGS((char_u *name, int forceit));
+static int do_unlet_var __ARGS((lval *lp, char_u *name_end, int forceit));
 
 /*
  * Set an internal variable to a string value. Creates the variable if it does
@@ -1565,43 +1613,24 @@ ex_let_one(arg, tv, copy, endchars)
 
     /*
      * ":let var = expr": Set internal variable.
+     * ":let {expr} = expr": Idem, name made with curly braces
      */
     else if ((eval_isnamec(*arg) && !VIM_ISDIGIT(*arg)) || *arg == '{')
     {
-	char_u  *exp_name = NULL;
-	char_u	*expr_start, *expr_end;
+	lval	lv;
 
-	/* Find the end of the name. */
-	p = find_name_end(arg, &expr_start, &expr_end, FALSE);
-	if (expr_start != NULL)
+	p = get_lval(arg, tv, &lv, FALSE, FALSE, FALSE);
+	if (p != NULL && lv.ll_name != NULL)
 	{
-	    exp_name = make_expanded_name(arg, expr_start, expr_end, p);
-	    arg = exp_name;
+	    if (endchars != NULL && vim_strchr(endchars, *skipwhite(p)) == NULL)
+		EMSG(_(e_letunexp));
+	    else
+	    {
+		set_var_lval(&lv, p, tv, copy);
+		arg_end = p;
+	    }
 	}
-
-	if (arg == NULL)
-	{
-	    /* Report an invalid expression in braces, unless the
-	     * expression evaluation has been cancelled due to an
-	     * aborting error, an interrupt, or an exception. */
-	    if (!aborting())
-		EMSG2(_(e_invarg2), arg);
-	}
-	else if (*p == '[' || *p == '.')
-	    arg_end = set_var_idx(arg, p, tv, copy, endchars);
-	else if (endchars != NULL
-			       && vim_strchr(endchars, *skipwhite(p)) == NULL)
-	    EMSG(_(e_letunexp));
-	else if (!check_changedtick(arg))
-	{
-	    c1 = *p;
-	    *p = NUL;
-	    set_var(arg, tv, copy);
-	    *p = c1;
-	    arg_end = p;
-	}
-
-	vim_free(exp_name);
+	clear_lval(&lv);
     }
 
     else
@@ -1626,62 +1655,112 @@ check_changedtick(arg)
 }
 
 /*
- * Set a variable with an index: "name[expr]", "name[expr:expr]",
- * "name[expr][expr]", "name.key", "name.key[expr]" etc.
- * Only works if "name" is an existing List or Dictionary.
- * "ip" points to the first '['.
- * Returns a pointer to just after the last used ']'; NULL for error.
+ * Get an lval: variable, Dict item or List item that can be assigned a value
+ * to: "name", "na{me}", "name[expr]", "name[expr:expr]", "name[expr][expr]",
+ * "name.key", "name.key[expr]" etc.
+ * Indexing only works if "name" is an existing List or Dictionary.
+ * "name" points to the start of the name.
+ * If "rettv" is not NULL it points to the value to be assigned.
+ * "unlet" is TRUE for ":unlet": slightly different behavior when something is
+ * wrong; must end in space or cmd separator.
+ *
+ * Returns a pointer to just after the name, including indexes.
+ * When an evaluation error occurs "lp->name" is NULL;
+ * Returns NULL for a parsing error.  Still need to free items in "lp"!
  */
     static char_u *
-set_var_idx(name, ip, rettv, copy, endchars)
+get_lval(name, rettv, lp, unlet, skip, quiet)
     char_u	*name;
-    char_u	*ip;
     typeval	*rettv;
-    int		copy;
-    char_u	*endchars;
+    lval	*lp;
+    int		unlet;
+    int		skip;
+    int		quiet;	    /* don't give error messages */
 {
-    VAR		v;
-    int		c1;
     char_u	*p;
+    char_u	*expr_start, *expr_end;
+    int		cc;
+    VAR		v;
     typeval	var1;
     typeval	var2;
-    int		range = FALSE;
-    typeval	*tv;
-    long	n1 = 0, n2 = 0;
-    int		empty1 = FALSE, empty2 = FALSE;
-    listitem	*li = NULL;
+    int		empty1 = FALSE;
     listitem	*ni;
-    listitem	*ri;
-    listvar	*l = NULL;
-    dictitem	*di;
     char_u	*key = NULL;
-    char_u	*newkey = NULL;
     int		len;
 
-    c1 = *ip;
-    *ip = NUL;
-    v = find_var(name, TRUE);
-    if (v == NULL)
-	EMSG2(_(e_undefvar), name);
-    *ip = c1;
+    /* Clear everything in "lp". */
+    vim_memset(lp, 0, sizeof(lval));
+
+    if (skip)
+    {
+	/* When skipping just find the end of the name. */
+	lp->ll_name = name;
+	return find_name_end(name, NULL, NULL, TRUE);
+    }
+
+    /* Find the end of the name. */
+    p = find_name_end(name, &expr_start, &expr_end, FALSE);
+    if (expr_start != NULL)
+    {
+	/* Don't expand the name when we already know there is an error. */
+	if (unlet && !vim_iswhite(*p) && !ends_excmd(*p)
+						    && *p != '[' && *p != '.')
+	{
+	    EMSG(_(e_trailing));
+	    return NULL;
+	}
+
+	lp->ll_exp_name = make_expanded_name(name, expr_start, expr_end, p);
+	if (lp->ll_exp_name == NULL)
+	{
+	    /* Report an invalid expression in braces, unless the
+	     * expression evaluation has been cancelled due to an
+	     * aborting error, an interrupt, or an exception. */
+	    if (!aborting() && !quiet)
+	    {
+		if (unlet)
+		    emsg_severe = TRUE;
+		EMSG2(_(e_invarg2), name);
+		return NULL;
+	    }
+	}
+	lp->ll_name = lp->ll_exp_name;
+    }
+    else
+	lp->ll_name = name;
+
+    /* Without [idx] or .key we are done. */
+    if ((*p != '[' && *p != '.') || lp->ll_name == NULL)
+	return p;
+
+    cc = *p;
+    *p = NUL;
+    v = find_var(lp->ll_name, TRUE);
+    if (v == NULL && !quiet)
+	EMSG2(_(e_undefvar), lp->ll_name);
+    *p = cc;
     if (v == NULL)
 	return NULL;
 
-    tv = &v->tv;
-    for (p = ip; *p == '[' || (*p == '.' && tv->v_type == VAR_DICT); )
+    /*
+     * Loop until no more [idx] or .key is following.
+     */
+    lp->ll_tv = &v->tv;
+    while (*p == '[' || (*p == '.' && lp->ll_tv->v_type == VAR_DICT))
     {
-	if (!(tv->v_type == VAR_LIST && tv->vval.v_list != NULL)
-		&& !(tv->v_type == VAR_DICT && tv->vval.v_dict != NULL))
+	if (!(lp->ll_tv->v_type == VAR_LIST && lp->ll_tv->vval.v_list != NULL)
+		&& !(lp->ll_tv->v_type == VAR_DICT
+					   && lp->ll_tv->vval.v_dict != NULL))
 	{
-	    EMSG(_("E689: Can only index a List or Dictionary"));
-	    p = NULL;
-	    break;
+	    if (!quiet)
+		EMSG(_("E689: Can only index a List or Dictionary"));
+	    return NULL;
 	}
-	if (range)
+	if (lp->ll_range)
 	{
-	    EMSG(_("E708: [:] must come last"));
-	    p = NULL;
-	    break;
+	    if (!quiet)
+		EMSG(_("E708: [:] must come last"));
+	    return NULL;
 	}
 
 	len = -1;
@@ -1692,9 +1771,9 @@ set_var_idx(name, ip, rettv, copy, endchars)
 		;
 	    if (len == 0)
 	    {
-		EMSG(_(e_emptykey));
-		p = NULL;
-		break;
+		if (!quiet)
+		    EMSG(_(e_emptykey));
+		return NULL;
 	    }
 	    p = key + len;
 	}
@@ -1708,103 +1787,103 @@ set_var_idx(name, ip, rettv, copy, endchars)
 	    {
 		empty1 = FALSE;
 		if (eval1(&p, &var1, TRUE) == FAIL)	/* recursive! */
-		{
-		    p = NULL;
-		    break;
-		}
+		    return NULL;
 	    }
 
 	    /* Optionally get the second index [ :expr]. */
 	    if (*p == ':')
 	    {
-		if (tv->v_type == VAR_DICT)
+		if (lp->ll_tv->v_type == VAR_DICT)
 		{
-		    EMSG(_("E999: Cannot use [:] with a Dictionary"));
-		    p = NULL;
+		    if (!quiet)
+			EMSG(_("E999: Cannot use [:] with a Dictionary"));
 		    if (!empty1)
 			clear_tv(&var1);
-		    break;
+		    return NULL;
 		}
-		if (rettv->v_type != VAR_LIST || rettv->vval.v_list == NULL)
+		if (rettv != NULL && (rettv->v_type != VAR_LIST
+					       || rettv->vval.v_list == NULL))
 		{
-		    EMSG(_("E709: [:] requires a List value"));
-		    p = NULL;
+		    if (!quiet)
+			EMSG(_("E709: [:] requires a List value"));
 		    if (!empty1)
 			clear_tv(&var1);
-		    break;
+		    return NULL;
 		}
 		p = skipwhite(p + 1);
 		if (*p == ']')
-		    empty2 = TRUE;
+		    lp->ll_empty2 = TRUE;
 		else
 		{
-		    empty2 = FALSE;
+		    lp->ll_empty2 = FALSE;
 		    if (eval1(&p, &var2, TRUE) == FAIL)	/* recursive! */
 		    {
-			p = NULL;
 			if (!empty1)
 			    clear_tv(&var1);
-			break;
+			return NULL;
 		    }
 		}
-		range = TRUE;
+		lp->ll_range = TRUE;
 	    }
 	    else
-		range = FALSE;
+		lp->ll_range = FALSE;
 
 	    if (*p != ']')
 	    {
-		EMSG(_(e_missbrac));
+		if (!quiet)
+		    EMSG(_(e_missbrac));
 		if (!empty1)
 		    clear_tv(&var1);
-		if (range && !empty2)
+		if (lp->ll_range && !lp->ll_empty2)
 		    clear_tv(&var2);
-		p = NULL;
-		break;
+		return NULL;
 	    }
 
 	    /* Skip to past ']'. */
 	    ++p;
 	}
 
-	if (tv->v_type == VAR_DICT)
+	if (lp->ll_tv->v_type == VAR_DICT)
 	{
 	    if (len == -1)
 	    {
+		/* "[key]": get key from "var1" */
 		key = get_tv_string(&var1);
 		if (*key == NUL)
 		{
-		    EMSG(_(e_emptykey));
+		    if (!quiet)
+			EMSG(_(e_emptykey));
 		    clear_tv(&var1);
-		    p = NULL;
-		    break;
+		    return NULL;
 		}
 	    }
-	    di = dict_find(tv->vval.v_dict, key, len);
-	    if (di == NULL)
+	    lp->ll_di = dict_find(lp->ll_tv->vval.v_dict, key, len,
+								 &lp->ll_pdi);
+	    if (lp->ll_di == NULL)
 	    {
 		/* Key does not exist in dict: may need toadd it. */
-		if (*p == '[' || *p == '.')
+		if (*p == '[' || *p == '.' || unlet)
 		{
-		    EMSG2(_("E999: Key does not exist in Dictionary: %s"), key);
-		    p = NULL;
+		    if (!quiet)
+			EMSG2(_("E999: Key does not exist in Dictionary: %s"),
+									 key);
 		    if (len == -1)
 			clear_tv(&var1);
-		    break;
+		    return NULL;
 		}
 		if (len == -1)
-		    newkey = vim_strsave(key);
+		    lp->ll_newkey = vim_strsave(key);
 		else
-		    newkey = vim_strnsave(key, len);
+		    lp->ll_newkey = vim_strnsave(key, len);
 		if (len == -1)
 		    clear_tv(&var1);
-		if (newkey == NULL)
+		if (lp->ll_newkey == NULL)
 		    p = NULL;
 		break;
 	    }
 	    if (len == -1)
 		clear_tv(&var1);
-	    tv = &di->di_tv;
+	    lp->ll_tv = &lp->ll_di->di_tv;
 	}
 	else
 	{
@@ -1812,137 +1891,164 @@ set_var_idx(name, ip, rettv, copy, endchars)
 	     * Get the number and item for the only or first index of the List.
 	     */
 	    if (empty1)
-		n1 = 0;
+		lp->ll_n1 = 0;
 	    else
 	    {
-		n1 = get_tv_number(&var1);
+		lp->ll_n1 = get_tv_number(&var1);
 		clear_tv(&var1);
 	    }
-	    l = tv->vval.v_list;
-	    li = list_find(l, n1);
-	    if (li == NULL)
+	    lp->ll_list = lp->ll_tv->vval.v_list;
+	    lp->ll_li = list_find(lp->ll_list, lp->ll_n1);
+	    if (lp->ll_li == NULL)
 	    {
-		EMSGN(_(e_listidx), n1);
-		p = NULL;
-		if (range && !empty2)
+		if (!quiet)
+		    EMSGN(_(e_listidx), lp->ll_n1);
+		if (lp->ll_range && !lp->ll_empty2)
 		    clear_tv(&var2);
-		break;
+		return NULL;
 	    }
 
 	    /*
 	     * May need to find the item or absolute index for the second
 	     * index of a range.
-	     * When no index given: "empty2" is TRUE.
-	     * Otherwise "n2" is set to the second index.
+	     * When no index given: "lp->ll_empty2" is TRUE.
+	     * Otherwise "lp->ll_n2" is set to the second index.
 	     */
-	    if (range && !empty2)
+	    if (lp->ll_range && !lp->ll_empty2)
 	    {
-		n2 = get_tv_number(&var2);
+		lp->ll_n2 = get_tv_number(&var2);
 		clear_tv(&var2);
-		if (n2 < 0)
+		if (lp->ll_n2 < 0)
 		{
-		    ni = list_find(l, n2);
+		    ni = list_find(lp->ll_list, lp->ll_n2);
 		    if (ni == NULL)
 		    {
-			EMSGN(_(e_listidx), n2);
-			p = NULL;
-			break;
+			if (!quiet)
+			    EMSGN(_(e_listidx), lp->ll_n2);
+			return NULL;
 		    }
-		    n2 = list_idx_of_item(l, ni);
+		    lp->ll_n2 = list_idx_of_item(lp->ll_list, ni);
 		}
 
-		/* Check that n2 isn't before n1. */
-		if (n1 < 0)
-		    n1 = list_idx_of_item(l, li);
-		if (n2 < n1)
+		/* Check that lp->ll_n2 isn't before lp->ll_n1. */
+		if (lp->ll_n1 < 0)
+		    lp->ll_n1 = list_idx_of_item(lp->ll_list, lp->ll_li);
+		if (lp->ll_n2 < lp->ll_n1)
 		{
-		    EMSGN(_(e_listidx), n2);
-		    p = NULL;
-		    break;
+		    if (!quiet)
+			EMSGN(_(e_listidx), lp->ll_n2);
+		    return NULL;
 		}
 	    }
 
-	    tv = &li->li_tv;
+	    lp->ll_tv = &lp->ll_li->li_tv;
 	}
     }
 
-    if (p != NULL)
+    return p;
+}
+
+/*
+ * Clear an "lval" that was filled by get_lval().
+ */
+    static void
+clear_lval(lp)
+    lval	*lp;
+{
+    vim_free(lp->ll_exp_name);
+    vim_free(lp->ll_newkey);
+}
+
+/*
+ * Set a variable that was parsed by get_lval().
+ * "endp" points to just after the parsed name.
+ */
+    static void
+set_var_lval(lp, endp, rettv, copy)
+    lval	*lp;
+    char_u	*endp;
+    typeval	*rettv;
+    int		copy;
+{
+    int		cc;
+    listitem	*ni;
+    listitem	*ri;
+    dictitem	*di;
+
+    if (lp->ll_tv == NULL)
     {
-	p = skipwhite(p);
-	if (endchars != NULL && vim_strchr(endchars, *p) == NULL)
+	if (!check_changedtick(lp->ll_name))
 	{
-	    EMSG(_(e_letunexp));
-	    p = NULL;
+	    cc = *endp;
+	    *endp = NUL;
+	    set_var(lp->ll_name, rettv, copy);
+	    *endp = cc;
 	}
-	else if (range)
+    }
+    else if (lp->ll_range)
+    {
+	/*
+	 * Assign the List values to the list items.
+	 */
+	for (ri = rettv->vval.v_list->lv_first; ri != NULL; )
 	{
-	    /*
-	     * Assign the List values to the list items.
-	     */
-	    for (ri = rettv->vval.v_list->lv_first; ri != NULL; )
+	    clear_tv(&lp->ll_li->li_tv);
+	    copy_tv(&ri->li_tv, &lp->ll_li->li_tv);
+	    ri = ri->li_next;
+	    if (ri == NULL || (!lp->ll_empty2 && lp->ll_n2 == lp->ll_n1))
+		break;
+	    if (lp->ll_li->li_next == NULL)
 	    {
-		clear_tv(&li->li_tv);
-		copy_tv(&ri->li_tv, &li->li_tv);
-		ri = ri->li_next;
-		if (ri == NULL || (!empty2 && n2 == n1))
-		    break;
-		if (li->li_next == NULL)
+		/* Need to add an empty item. */
+		ni = listitem_alloc();
+		if (ni == NULL)
 		{
-		    /* Need to add an empty item. */
-		    ni = listitem_alloc();
-		    if (ni == NULL)
-		    {
-			ri = NULL;
-			break;
-		    }
-		    ni->li_tv.v_type = VAR_NUMBER;
-		    ni->li_tv.vval.v_number = 0;
-		    list_append(l, ni);
+		    ri = NULL;
+		    break;
 		}
-		li = li->li_next;
-		++n1;
+		ni->li_tv.v_type = VAR_NUMBER;
+		ni->li_tv.vval.v_number = 0;
+		list_append(lp->ll_list, ni);
 	    }
-	    if (ri != NULL)
-		EMSG(_("E710: List value has more items than target"));
-	    else if (empty2 ? li != NULL && li->li_next != NULL : n1 != n2)
-		EMSG(_("E711: List value has not enough items"));
+	    lp->ll_li = lp->ll_li->li_next;
+	    ++lp->ll_n1;
+	}
+	if (ri != NULL)
+	    EMSG(_("E710: List value has more items than target"));
+	else if (lp->ll_empty2 ? (lp->ll_li != NULL && lp->ll_li->li_next != NULL)
+		: lp->ll_n1 != lp->ll_n2)
+	    EMSG(_("E711: List value has not enough items"));
+    }
+    else
+    {
+	/*
+	 * Assign to a List or Dictionary item.
+	 */
+	if (lp->ll_newkey != NULL)
+	{
+	    /* Need to add an item to the Dictionary. */
+	    di = dictitem_alloc();
+	    if (di == NULL)
+		return;
+	    di->di_key = lp->ll_newkey;
+	    lp->ll_newkey = NULL;
+	    dict_add(lp->ll_tv->vval.v_dict, di);
+	    lp->ll_tv = &di->di_tv;
 	}
 	else
-	{
-	    if (newkey != NULL)
-	    {
-		/* Need to add the item to the dictionary. */
-		di = dictitem_alloc();
-		if (di == NULL)
-		    p = NULL;
-		else
-		{
-		    di->di_key = newkey;
-		    newkey = NULL;
-		    dict_add(tv->vval.v_dict, di);
-		    tv = &di->di_tv;
-		}
-	    }
-	    else
-		clear_tv(tv);
+	    clear_tv(lp->ll_tv);
 
-	    /*
-	     * Assign the value to the variable or list item.
-	     */
-	    if (p != NULL)
-	    {
-		if (copy)
-		    copy_tv(rettv, tv);
-		else
-		{
-		    *tv = *rettv;
-		    init_tv(rettv);
-		}
-	    }
+	/*
+	 * Assign the value to the variable or list item.
+	 */
+	if (copy)
+	    copy_tv(rettv, lp->ll_tv);
+	else
+	{
+	    *lp->ll_tv = *rettv;
+	    init_tv(rettv);
 	}
     }
-    vim_free(newkey);
-    return p;
 }
 
 /*
@@ -2302,81 +2408,97 @@ ex_unlet(eap)
 {
     char_u	*arg = eap->arg;
     char_u	*name_end;
-    char_u	cc;
-    char_u	*expr_start;
-    char_u	*expr_end;
     int		error = FALSE;
 
     do
     {
-	/* Find the end of the name. */
-	name_end = find_name_end(arg, &expr_start, &expr_end, TRUE);
+	lval	lv;
 
-	if (!vim_iswhite(*name_end) && !ends_excmd(*name_end))
+	/* Parse the name and find the end. */
+	name_end = get_lval(arg, NULL, &lv, TRUE, eap->skip || error, FALSE);
+	if (lv.ll_name == NULL)
+	    error = TRUE;	    /* error but continue parsing */
+	if (name_end == NULL || (!vim_iswhite(*name_end)
+						   && !ends_excmd(*name_end)))
 	{
-	    emsg_severe = TRUE;
-	    EMSG(_(e_trailing));
+	    if (name_end != NULL)
+	    {
+		emsg_severe = TRUE;
+		EMSG(_(e_trailing));
+	    }
+	    if (!(eap->skip || error))
+		clear_lval(&lv);
 	    break;
 	}
 
 	if (!error && !eap->skip)
-	{
-	    if (expr_start != NULL)
-	    {
-		char_u  *temp_string;
+	    if (do_unlet_var(&lv, name_end, eap->forceit) == FAIL)
+		error = TRUE;
 
-		temp_string = make_expanded_name(arg, expr_start,
-							 expr_end, name_end);
-		if (temp_string == NULL)
-		{
-		    /*
-		     * Report an invalid expression in braces, unless the
-		     * expression evaluation has been cancelled due to an
-		     * aborting error, an interrupt, or an exception.
-		     */
-		    if (!aborting())
-		    {
-			emsg_severe = TRUE;
-			EMSG2(_(e_invarg2), arg);
-			break;
-		    }
-		    error = TRUE;
-		}
-		else
-		{
-		    if (do_unlet_var(temp_string, eap->forceit) == FAIL)
-			error = TRUE;
-		    vim_free(temp_string);
-		}
-	    }
-	    else
-	    {
-		cc = *name_end;
-		*name_end = NUL;
-		if (do_unlet_var(arg, eap->forceit) == FAIL)
-		    error = TRUE;
-		*name_end = cc;
-	    }
-	}
+	if (!eap->skip)
+	    clear_lval(&lv);
+
 	arg = skipwhite(name_end);
     } while (!ends_excmd(*arg));
 
     eap->nextcmd = check_nextcmd(arg);
 }
 
+
     static int
-do_unlet_var(name, forceit)
-    char_u	*name;
+do_unlet_var(lp, name_end, forceit)
+    lval	*lp;
+    char_u	*name_end;
     int		forceit;
 {
-    if (check_changedtick(name))
-	return FAIL;
-    if (do_unlet(name) == FAIL && !forceit)
+    int		ret = OK;
+    int		cc;
+
+    if (lp->ll_tv == NULL)
     {
-	EMSG2(_("E108: No such variable: \"%s\""), name);
-	return FAIL;
+	cc = *name_end;
+	*name_end = NUL;
+
+	/* Normal name or expanded name. */
+	if (check_changedtick(lp->ll_name))
+	    ret = FAIL;
+	else if (do_unlet(lp->ll_name) == FAIL && !forceit)
+	{
+	    EMSG2(_("E108: No such variable: \"%s\""), lp->ll_name);
+	    ret = FAIL;
+	}
+	*name_end = cc;
     }
-    return OK;
+    else if (lp->ll_range)
+    {
+	listitem    *li;
+
+	/* Delete a range of List items. */
+	while (lp->ll_li != NULL && (lp->ll_empty2 || lp->ll_n2 >= lp->ll_n1))
+	{
+	    li = lp->ll_li->li_next;
+	    listitem_remove(lp->ll_list, lp->ll_li);
+	    lp->ll_li = li;
+	    ++lp->ll_n1;
+	}
+    }
+    else
+    {
+	clear_tv(lp->ll_tv);
+	if (lp->ll_list != NULL)
+	{
+	    /* unlet a List item. */
+	    listitem_remove(lp->ll_list, lp->ll_li);
+	}
+	else
+	{
+	    /* unlet a Dictionary item. */
+	    *lp->ll_pdi = lp->ll_di->di_next;
+	    dictitem_free(lp->ll_di);
+	}
+    }
+
+    return ret;
 }
 
 /*
@@ -3679,7 +3801,7 @@ eval_index(arg, rettv, evaluate)
 			}
 		    }
 
-		    item = dict_find(rettv->vval.v_dict, key, (int)len);
+		    item = dict_find(rettv->vval.v_dict, key, (int)len, NULL);
 
 		    if (item == NULL)
 			EMSG2(_("E999: Key not found in Dictionary: %s"), key);
@@ -4110,6 +4232,18 @@ listitem_free(item)
 }
 
 /*
+ * Remove a list item from a List and free it.  Also clears the value.
+ */
+    static void
+listitem_remove(l, item)
+    listvar  *l;
+    listitem *item;
+{
+    list_remove(l, item, item);
+    listitem_free(item);
+}
+
+/*
  * Get the number of items in a list.
  */
     static long
@@ -4449,9 +4583,10 @@ list_copy(orig, deep)
 
 /*
  * Remove items "item" to "item2" from list "l".
+ * Does not free the listitem or the value!
  */
     static void
-list_getrem(l, item, item2)
+list_remove(l, item, item2)
     listvar	*l;
     listitem	*item;
     listitem	*item2;
@@ -4687,7 +4822,7 @@ dict_set_item(d, type, key, val)
     dictitem	*di;
     char_u	*dkey;
 
-    di = dict_find(d, (char_u *)key, -1);
+    di = dict_find(d, (char_u *)key, -1, NULL);
     if (di == NULL)
     {
 	dkey = vim_strsave((char_u *)key);
@@ -4743,21 +4878,29 @@ dict_len(d)
 /*
  * Find item "key[len]" in Dictionary "d".
  * If "len" is negative use strlen(key).
+ * Sets "*pdi" to pointer to found item, unless "pdi" is NULL.
  * Returns NULL when not found.
  */
     static dictitem *
-dict_find(d, key, len)
+dict_find(d, key, len, pdi)
     dictvar	*d;
     char_u	*key;
     int		len;
+    dictitem	***pdi;
 {
     static dictitem *di;
 
+    if (pdi != NULL)
+	*pdi = &d->dv_first;
     for (di = d->dv_first; di != NULL; di = di->di_next)
+    {
 	if (len < 0
 		? STRCMP(di->di_key, key) == 0
 		: STRNCMP(di->di_key, key, len) == 0 && di->di_key[len] == NUL)
 	    return di;
+	if (pdi != NULL)
+	    *pdi = &di->di_next;
+    }
     return NULL;
 }
 
@@ -4875,7 +5018,7 @@ get_dict_tv(arg, rettv, evaluate)
 	}
 	if (evaluate)
 	{
-	    item = dict_find(d, key, -1);
+	    item = dict_find(d, key, -1, NULL);
 	    if (item != NULL)
 	    {
 		EMSG(_("E999: Duplicate key in Dictionary"));
@@ -5017,7 +5160,7 @@ string_quote(str, function)
     char_u	*str;
     int		function;
 {
-    unsigned	len = function ? 13 : 3;
+    unsigned	len = STRLEN(str) + (function ? 13 : 3);
     char_u	*p, *r, *s;
 
     for (p = str; *p != NUL; mb_ptr_adv(p))
@@ -6822,7 +6965,7 @@ f_extend(argvars, rettv)
 	     * first dict. */
 	    for (d2i = d2->dv_first; d2i != NULL; d2i = d2i->di_next)
 	    {
-		d1i = dict_find(d1, d2i->di_key, -1);
+		d1i = dict_find(d1, d2i->di_key, -1, NULL);
 		if (d1i == NULL)
 		{
 		    d1i = dictitem_copy(d2i);
@@ -7029,10 +7172,7 @@ filter_map(argvars, rettv, map)
 	    if (filter_map_one(&li->li_tv, expr, map, &rem) == FAIL)
 		break;
 	    if (!map && rem)
-	    {
-		clear_tv(&li->li_tv);
-		list_getrem(l, li, li);
-	    }
+		listitem_remove(l, li);
 	}
     }
 
@@ -7382,7 +7522,7 @@ f_get(argvars, rettv)
     {
 	if ((d = argvars[0].vval.v_dict) != NULL)
 	{
-	    di = dict_find(d, get_tv_string(&argvars[1]), -1);
+	    di = dict_find(d, get_tv_string(&argvars[1]), -1, NULL);
 	    if (di != NULL)
 		tv = &di->di_tv;
 	}
@@ -8515,7 +8655,7 @@ f_has_key(argvars, rettv)
 	return;
 
     rettv->vval.v_number = dict_find(argvars[0].vval.v_dict,
-				      get_tv_string(&argvars[1]), -1) != NULL;
+				get_tv_string(&argvars[1]), -1, NULL) != NULL;
 }
 
 /*
@@ -10107,7 +10247,7 @@ f_remove(argvars, rettv)
 	    if (argvars[2].v_type == VAR_UNKNOWN)
 	    {
 		/* Remove one item, return its value. */
-		list_getrem(l, item, item);
+		list_remove(l, item, item);
 		*rettv = item->li_tv;
 		vim_free(item);
 	    }
@@ -10126,7 +10266,7 @@ f_remove(argvars, rettv)
 			EMSG(_(e_invrange));
 		    else
 		    {
-			list_getrem(l, item, item2);
+			list_remove(l, item, item2);
 			l = list_alloc();
 			if (l != NULL)
 			{
@@ -13611,7 +13751,7 @@ ex_function(eap)
 		}
 	    }
 	    else
-		EMSG2(_("E123: Undefined function: %s"), eap->arg);
+		EMSG2(_("E123: Undefined function: %s"), name);
 	}
 	goto erret_name;
     }
@@ -13901,25 +14041,135 @@ erret_name:
  * Advances "pp" to just after the function name (if no error).
  */
     static char_u *
-trans_function_name(pp, skip, internal)
+trans_function_name(pp, skip, exists)
     char_u	**pp;
     int		skip;		/* only find the end, don't evaluate */
-    int		internal;	/* TRUE if internal function name OK */
+    int		exists;		/* TRUE for exists(): internal function name
+				   OK and be quiet. */
 {
-    char_u	*name;
+    char_u	*name = NULL;
     char_u	*start;
     char_u	*end;
     int		lead;
     char_u	sid_buf[20];
-    char_u	*temp_string = NULL;
-    char_u	*expr_start, *expr_end;
     int		len;
+#if 0
+    char_u	*expr_start, *expr_end;
+    char_u	*temp_string = NULL;
+#else
+    lval	lv;
+#endif
 
     /* A name starting with "<SID>" or "<SNR>" is local to a script. */
     start = *pp;
     lead = eval_fname_script(start);
     if (lead > 0)
 	start += lead;
+
+#if 1
+    end = get_lval(start, NULL, &lv, FALSE, skip, exists);
+    if (end == start)
+    {
+	if (!skip)
+	    EMSG(_("E129: Function name required"));
+	goto theend;
+    }
+    if (end == NULL || (lv.ll_tv != NULL && (lead > 0 || lv.ll_range)))
+    {
+	/*
+	 * Report an invalid expression in braces, unless the expression
+	 * evaluation has been cancelled due to an aborting error, an
+	 * interrupt, or an exception.
+	 */
+	if (!aborting())
+	{
+	    if (end != NULL)
+		EMSG2(_(e_invarg2), start);
+	}
+	else
+	    *pp = find_name_end(start, NULL, NULL, TRUE);
+	goto theend;
+    }
+
+    if (lv.ll_tv != NULL)
+    {
+	/* TODO: When defining a function accept a Dict here. */
+	if (lv.ll_tv->v_type == VAR_FUNC && lv.ll_tv->vval.v_string != NULL)
+	{
+	    name = vim_strsave(lv.ll_tv->vval.v_string);
+	    *pp = end;
+	}
+	else
+	{
+	    if (!skip && !exists)
+		EMSG(_("E999: Funcref required"));
+	    name = NULL;
+	}
+	goto theend;
+    }
+
+    if (lv.ll_name == NULL)
+    {
+	/* Error found, but continue after the function name. */
+	*pp = end;
+	goto theend;
+    }
+
+    if (lv.ll_exp_name != NULL)
+	len = STRLEN(lv.ll_exp_name);
+    else
+	len = (int)(end - start);
+
+    /*
+     * Copy the function name to allocated memory.
+     * Accept <SID>name() inside a script, translate into <SNR>123_name().
+     * Accept <SNR>123_name() outside a script.
+     */
+    if (skip)
+	lead = 0;	/* do nothing */
+    else if (lead > 0)
+    {
+	lead = 3;
+	if (eval_fname_sid(*pp))	/* If it's "<SID>" */
+	{
+	    if (current_SID <= 0)
+	    {
+		EMSG(_(e_usingsid));
+		goto theend;
+	    }
+	    sprintf((char *)sid_buf, "%ld_", (long)current_SID);
+	    lead += (int)STRLEN(sid_buf);
+	}
+    }
+    else if (!exists && !ASCII_ISUPPER(*lv.ll_name))
+    {
+	EMSG2(_("E128: Function name must start with a capital: %s"),
+								  lv.ll_name);
+	goto theend;
+    }
+    name = alloc((unsigned)(len + lead + 1));
+    if (name != NULL)
+    {
+	if (lead > 0)
+	{
+	    name[0] = K_SPECIAL;
+	    name[1] = KS_EXTRA;
+	    name[2] = (int)KE_SNR;
+	    if (eval_fname_sid(*pp))	/* If it's "<SID>" */
+		STRCPY(name + 3, sid_buf);
+	}
+	mch_memmove(name + lead, lv.ll_name, (size_t)len);
+	name[len + lead] = NUL;
+    }
+    *pp = end;
+
+theend:
+    clear_lval(&lv);
+    return name;
+#endif
+
+#if 0
+
     end = find_name_end(start, &expr_start, &expr_end, FALSE);
     if (end == start)
     {
@@ -13971,7 +14221,7 @@ trans_function_name(pp, skip, internal)
 	    lead += (int)STRLEN(sid_buf);
 	}
     }
-    else if (!internal && !ASCII_ISUPPER(*start))
+    else if (!exists && !ASCII_ISUPPER(*start))
     {
 	EMSG2(_("E128: Function name must start with a capital: %s"), start);
 	return NULL;
@@ -13994,6 +14244,7 @@ trans_function_name(pp, skip, internal)
 
     vim_free(temp_string);
     return name;
+#endif
 }
 
 /*
