@@ -488,6 +488,57 @@ gui_mch_destroy_scrollbar(scrollbar_T *sb)//{{{
  */
 
 /*
+ * Convert the Vim-style filter specification 's' to the KDE-style
+ * filter specification.
+ *      Vim-style:      {label}\t{pattern1};{pattern2}\n
+ *      KDE-style:      {pattern1} {pattern2}|{label}\n
+ *
+ * The newly constructed filter is returned in allocated memory and
+ * must be freed by the calling program.
+ */
+    static char *
+convert_filter(char_u *s)
+{
+    char	*res;
+    unsigned	i;
+    unsigned	pattern_len;
+    char	*filter_label;
+    char	*filter_pattern;
+
+    // The conversion generates a string of equal length to the original
+    // pattern, so allocate enough memory to hold the original string.
+    res = new char[STRLEN(s) + 1];
+    s = vim_strsave(s);
+    if (res != NULL && s != NULL)
+    {
+	// Make sure the first byte is a NUL so that strcat()
+	// will append at the beginning of the string.
+	res[0] = '\0';
+	filter_label = strtok((char *) s, "\t");
+	while (filter_label != NULL)
+	{
+	    filter_pattern = strtok( 0L, "\n");
+	    if (filter_pattern != NULL)
+	    {
+		pattern_len = (unsigned) STRLEN(filter_pattern);
+		for (i = 0; i < pattern_len; ++i)
+		    if (filter_pattern[i] == ';')
+			filter_pattern[i] = ' ';
+
+		strcat(res, filter_pattern);
+		strcat(res, "|");
+		strcat(res, filter_label);
+		strcat(res, "\n");
+	    }
+	    filter_label = strtok(0L, "\t");
+	}
+    }
+    if (s)
+	vim_free(s);
+    return res;
+}
+
+/*
  * Put up a file requester.
  * Returns the selected name in allocated memory, or NULL for Cancel.
  * saving,			select file to write
@@ -508,14 +559,7 @@ gui_mch_browse(int saving,//{{{
 {
     char *filt_glob;
 
-    if (filter != (char_u *)0x0)
-    {
-	filter = vim_strsave(filter);
-	strtok((char *)filter, "(");
-	filt_glob = strtok(0L, ")");
-    }
-    else
-	filt_glob = (char *)filter;
+    filt_glob = convert_filter(filter);
 
     gui_mch_mousehide(FALSE);
 
@@ -526,8 +570,8 @@ gui_mch_browse(int saving,//{{{
     else
 	s = KFileDialog::getSaveFileName();
 
-    if (filter)
-	vim_free(filter);
+    if (filt_glob)
+	delete filt_glob;
 
     if (s.isNull())
 	return NULL;

@@ -2001,6 +2001,7 @@ foldtext_cleanup(str)
     char_u	*cms_end;	/* last part of the comment or NULL */
     int		cms_elen = 0;	/* length of cms_end */
     char_u	*s;
+    char_u	*p;
     int		len;
     int		did1 = FALSE;
     int		did2 = FALSE;
@@ -2033,25 +2034,34 @@ foldtext_cleanup(str)
     {
 	len = 0;
 	if (STRNCMP(s, curwin->w_p_fmr, foldstartmarkerlen) == 0)
-	{
 	    len = foldstartmarkerlen;
-	    if (VIM_ISDIGIT(s[len]))
-		++len;
-	}
 	else if (STRNCMP(s, foldendmarker, foldendmarkerlen) == 0)
-	{
 	    len = foldendmarkerlen;
+	if (len > 0)
+	{
 	    if (VIM_ISDIGIT(s[len]))
 		++len;
+
+	    /* May remove 'commentstring' start.  Useful when it's a double
+	     * quote and we already removed a double quote. */
+	    for (p = s; p > str && vim_iswhite(p[-1]); --p)
+		;
+	    if (p >= str + cms_slen
+			   && STRNCMP(p - cms_slen, cms_start, cms_slen) == 0)
+	    {
+		len += (s - p) + cms_slen;
+		s = p - cms_slen;
+	    }
 	}
 	else if (cms_end != NULL)
 	{
-	    if (!did1 && STRNCMP(s, cms_start, cms_slen) == 0)
+	    if (!did1 && cms_slen > 0 && STRNCMP(s, cms_start, cms_slen) == 0)
 	    {
 		len = cms_slen;
 		did1 = TRUE;
 	    }
-	    else if (!did2 && STRNCMP(s, cms_end, cms_elen) == 0)
+	    else if (!did2 && cms_elen > 0
+					&& STRNCMP(s, cms_end, cms_elen) == 0)
 	    {
 		len = cms_elen;
 		did2 = TRUE;

@@ -5958,6 +5958,9 @@ cursor_pos_info()
 	    if (VIsual_active
 		    && lnum >= min_pos.lnum && lnum <= max_pos.lnum)
 	    {
+		char_u	    *s = NULL;
+		long	    len = 0L;
+
 		switch (VIsual_mode)
 		{
 		    case Ctrl_V:
@@ -5968,12 +5971,12 @@ cursor_pos_info()
 # ifdef FEAT_VIRTUALEDIT
 			virtual_op = MAYBE;
 # endif
-			char_count_cursor += line_count_info(bd.textstart,
-				&word_count_cursor, (long)bd.textlen, eol_size);
+			s = bd.textstart;
+			len = (long)bd.textlen;
 			break;
 		    case 'V':
-			char_count_cursor += line_count_info(ml_get(lnum),
-				&word_count_cursor, (long)MAXCOL, eol_size);
+			s = ml_get(lnum);
+			len = MAXCOL;
 			break;
 		    case 'v':
 			{
@@ -5982,11 +5985,20 @@ cursor_pos_info()
 			    colnr_T end_col = (lnum == max_pos.lnum)
 				      ? max_pos.col - start_col + 1 : MAXCOL;
 
-			    char_count_cursor +=
-				line_count_info(ml_get(lnum) + start_col,
-				 &word_count_cursor, (long)end_col, eol_size);
+			    s = ml_get(lnum) + start_col;
+			    len = end_col;
 			}
 			break;
+		}
+		if (s != NULL)
+		{
+		    char_count_cursor += line_count_info(s,
+					   &word_count_cursor, len, eol_size);
+		    if (lnum == curbuf->b_ml.ml_line_count
+			    && !curbuf->b_p_eol
+			    && curbuf->b_p_bin
+			    && STRLEN(s) < len)
+			char_count_cursor -= eol_size;
 		}
 	    }
 	    else

@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2004 Dec 17
+" Last Change:	2004 Dec 31
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -236,7 +236,7 @@ au BufNewFile,BufRead *.bdf			setf bdf
 au BufNewFile,BufRead *.bib			setf bib
 
 " BIND configuration
-au BufNewFile,BufRead named.conf		setf named
+au BufNewFile,BufRead named.conf,rndc.conf	setf named
 
 " BIND zone
 au BufNewFile,BufRead named.root		setf bindzone
@@ -1748,7 +1748,7 @@ au BufNewFile,BufRead *termcap*
 au BufNewFile,BufRead *vimrc*			setf vim
 
 " Subversion commit file
-au BufNewFile,BufRead svn-commit.*.tmp		setf svn
+au BufNewFile,BufRead svn-commit*.tmp		setf svn
 
 " X resources file
 au BufNewFile,BufRead Xresources*,*/app-defaults/*,*/Xresources/* setf xdefaults

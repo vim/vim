@@ -6548,10 +6548,12 @@ get_mess_lang()
 }
 #endif
 
-#if !defined(LC_MESSAGES) \
-    && (((defined(HAVE_LOCALE_H) || defined(X_LOCALE)) \
-		&& (defined(FEAT_GETTEXT) || defined(FEAT_MBYTE))) \
-	    || defined(FEAT_EVAL))
+/* Complicated #if; matches with where get_mess_env() is used below. */
+#if (defined(FEAT_EVAL) && !((defined(HAVE_LOCALE_H) || defined(X_LOCALE)) \
+	    && defined(LC_MESSAGES))) \
+	|| ((defined(HAVE_LOCALE_H) || defined(X_LOCALE)) \
+		&& (defined(FEAT_GETTEXT) || defined(FEAT_MBYTE)) \
+		&& !defined(LC_MESSAGES))
 static char_u *get_mess_env __ARGS((void));
 
 /*

@@ -3,7 +3,7 @@
 " Language:    SPEC: Build/install scripts for Linux RPM packages
 " Maintainer:  Donovan Rebbechi elflord@pegasus.rutgers.edu
 " URL:	       http://pegasus.rutgers.edu/~elflord/vim/syntax/spec.vim
-" Last Change: Tue Oct  3 17:35:15 BRST 2000 <aurelio@conectiva.com.br>
+" Last Change: Fri Dec 3 11:54 EST 2004 Martin Dalecki
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -82,8 +82,8 @@ syn keyword specMacroNameLocal contained _arch _binary_payload _bindir _build _b
 "   Scripts, Files and Changelog
 
 "One line macros - valid in all ScriptAreas
-"tip: remember do include new itens on specScriptArea's skip section
-syn region specSectionMacroArea oneline matchgroup=specSectionMacro start='^%\(define\|patch\d*\|setup\|configure\|GNUconfigure\|find_lang\|makeinstall\)\>' end='$' contains=specCommandOpts,specMacroIdentifier
+"tip: remember do include new items on specScriptArea's skip section
+syn region specSectionMacroArea oneline matchgroup=specSectionMacro start='^%\(define\|patch\d*\|setup\|configure\|GNUconfigure\|find_lang\|makeinstall\|include\)\>' end='$' contains=specCommandOpts,specMacroIdentifier
 syn region specSectionMacroBracketArea oneline matchgroup=specSectionMacro start='^%{\(configure\|GNUconfigure\|find_lang\|makeinstall\)}' end='$' contains=specCommandOpts,specMacroIdentifier
 
 "%% Files Section %%

@@ -3,6 +3,7 @@ void gui_x11_create_widgets __ARGS((void));
 void gui_x11_destroy_widgets __ARGS((void));
 void gui_mch_set_text_area_pos __ARGS((int x, int y, int w, int h));
 void gui_x11_set_back_color __ARGS((void));
+void manage_centered __ARGS((Widget dialog_child));
 XmFontList gui_motif_create_fontlist __ARGS((XFontStruct *font));
 XmFontList gui_motif_fontset2fontlist __ARGS((XFontSet *fontset));
 void gui_mch_enable_menu __ARGS((int flag));
@@ -34,6 +35,8 @@ void gui_mch_set_footer __ARGS((char_u *s));
 void gui_mch_show_toolbar __ARGS((int showit));
 int gui_mch_compute_toolbar_height __ARGS((void));
 void gui_mch_get_toolbar_colors __ARGS((Pixel *bgp, Pixel *fgp, Pixel *bsp, Pixel *tsp, Pixel *hsp));
+void gui_motif_menu_fontlist __ARGS((Widget id));
 void gui_mch_find_dialog __ARGS((exarg_T *eap));
 void gui_mch_replace_dialog __ARGS((exarg_T *eap));
+void gui_motif_synch_fonts __ARGS((void));
 /* vim: set ft=c : */

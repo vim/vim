@@ -2367,6 +2367,7 @@ findsent(dir, count)
     int		startlnum;
     int		noskip = FALSE;	    /* do not skip blanks */
     int		cpo_J;
+    int		found_dot;
 
     pos = curwin->w_cursor;
     if (dir == FORWARD)
@@ -2404,9 +2405,17 @@ findsent(dir, count)
 	    decl(&pos);
 
 	/* go back to the previous non-blank char */
+	found_dot = FALSE;
 	while ((c = gchar_pos(&pos)) == ' ' || c == '\t' ||
 	     (dir == BACKWARD && vim_strchr((char_u *)".!?)]\"'", c) != NULL))
 	{
+	    if (vim_strchr((char_u *)".!?", c) != NULL)
+	    {
+		/* Only skip over a '.', '!' and '?' once. */
+		if (found_dot)
+		    break;
+		found_dot = TRUE;
+	    }
 	    if (decl(&pos) == -1)
 		break;
 	    /* when going forward: Stop in front of empty line */
@@ -3315,7 +3324,7 @@ extend:
 	if (start_blank)
 	    --ncount;
     }
-    if (ncount)
+    if (ncount > 0)
 	findsent_forward(ncount, TRUE);
     else
 	decl(&curwin->w_cursor);

@@ -153,6 +153,7 @@ SRC_UNIX =	\
 		src/gui_kde_x11.cc \
 		src/kvim_iface.h \
 		src/gui_motif.c \
+		src/gui_xmdlg.c \
 		src/gui_x11.c \
 		src/hangulin.c \
 		src/if_xcmdsrv.c \
@@ -175,6 +176,7 @@ SRC_UNIX =	\
 		src/proto/gui_kde.pro \
 		src/proto/gui_kde_x11.pro \
 		src/proto/gui_motif.pro \
+		src/proto/gui_xmdlg.pro \
 		src/proto/gui_x11.pro \
 		src/proto/hangulin.pro \
 		src/proto/if_xcmdsrv.pro \
