@@ -3594,6 +3594,7 @@ expand_env_esc(src, dst, dstlen, esc)
 /*
  * Vim's version of getenv().
  * Special handling of $HOME, $VIM and $VIMRUNTIME.
+ * Also does ACP to 'enc' conversion for Win32.
  */
     char_u *
 vim_getenv(name, mustfree)
