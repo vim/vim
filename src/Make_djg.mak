@@ -52,6 +52,7 @@ OBJ = \
 	obj/regexp.o \
 	obj/screen.o \
 	obj/search.o \
+	obj/spell.o \
 	obj/syntax.o \
 	obj/tag.o \
 	obj/term.o \

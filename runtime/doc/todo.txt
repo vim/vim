@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Mar 20
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Mar 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,6 +30,12 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Problem with hang in setmouse() -> update_mouseshape() (Froloff)
+    - check for termcap_active in option.c
+    - add gui.starting in misc2.c
+
+":e" causes a scroll (in spell.c).
+
 Mac unicode patch (Da Woon Jung):
 - selecting proportional font breaks display
 - UTF-8 text causes display problems.  Font replacement causes this.
@@ -50,13 +56,17 @@ Awaiting response:
 -   Win32: tearoff menu window should have a scrollbar when it's taller than
     the screen.
 
+When on a line with a single character, "A CTRL-O <Home>" puts cursor back
+after end-of-line. (Peter Winters)  Make "o_eol" global and reset it when
+moving cursor?
+
 
 PLANNED FOR VERSION 7.0:
 
 -   Add SPELLCHECKER, with support for many languages.
     - Use "engspchk" from Charles Campbell for ideas.
-    - Only look in @Spell groups or when there isn't such a group.
-    - Don't use vim_iswordc_buf(), always use the same wordchar.
+    - Alternative: use aspell library.
+    - Implement 's addition.
     - Commands required:
 	add word to private dict: wrong and OK (in popup menu for evim)
 	    :spell good <word>	    zg
@@ -69,8 +79,8 @@ PLANNED FOR VERSION 7.0:
     - Need wordlists for many languages; "language pack"
     - Use wordlists from openoffice (myspell).  Work together with them to
       update the wordlist.  (Adri Verhoef, Aad Nales)
-    - Support for approximate-regexps will help (agrep
-      http://www.tgries.de/agrep/).
+    - Support for approximate-regexps will help with finding similar words
+      (agrep http://www.tgries.de/agrep/).
     - Charles Campbell asks for method to add "contained" groups to
       existing syntax items (to add @Spell).
       Add ":syntax contains {pattern} add=@Spell" command?  A bit like ":syn
@@ -106,6 +116,7 @@ PLANNED FOR VERSION 7.0:
       Vim-script list.
     - For interpreted languages, use the interpreter to obtain information.
       Should work for Java (Eclipse does this), Python, Tcl, etc.
+      Richard Emberson mentioned working on an interface to Java.
     - Check Readline for its completion interface.
     - Use ctags for other languages.  Writing a file could trigger running
       ctags, merging the tags of the changed file.
