@@ -3090,7 +3090,8 @@ win_alloc(after)
 	}
 #endif
 #ifdef FEAT_EVAL
-	vars_init(&newwin->w_vars);	    /* init internal variables */
+	/* init w: variables */
+	init_var_dict(&newwin->w_vars, &newwin->w_winvar);
 #endif
 #ifdef FEAT_FOLDING
 	foldInitWin(newwin);
@@ -3134,7 +3135,7 @@ win_free(wp)
     clear_winopt(&wp->w_allbuf_opt);
 
 #ifdef FEAT_EVAL
-    vars_clear(&wp->w_vars);	    /* free all internal variables */
+    vars_clear(&wp->w_vars.dv_hashtab);	    /* free all w: variables */
 #endif
 
     if (prevwin == wp)
