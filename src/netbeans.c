@@ -204,7 +204,7 @@ netbeans_disconnect(void)
 }
 #endif /* FEAT_GUI_GTK */
 
-#ifdef FEAT_GUI_W32
+#if defined(FEAT_GUI_W32) || defined(PROTO)
     void
 netbeans_w32_connect(void)
 {
@@ -1682,13 +1682,14 @@ nb_do_cmd(
 				&& !buf->bufp->b_netbeans_file)
 		    EMSGN(_("E658: NetBeans connection lost for buffer %ld"),
 							   buf->bufp->b_fnum);
+#if 0		/* This breaks Agide. */
 		else
 		{
 		    do_bufdel(DOBUF_DEL, (char_u *)"", 1, buf->bufp->b_fnum,
 				buf->bufp->b_fnum, TRUE);
-		    /* add_to_input_buf((char_u *)"\f", 1); */
 		    vim_memset(buf, 0, sizeof(nbbuf_T));
 		}
+#endif
 	    }
 /* =====================================================================*/
 	}
@@ -1942,7 +1943,6 @@ nb_do_cmd(
 	    /* Quit a hit-return or more prompt. */
 	    if (State == HITRETURN || State == ASKMORE)
 	    {
-		/* add_to_input_buf((char_u *)"\003", 1); */
 #ifdef FEAT_GUI_GTK
 		if (gtk_main_level() > 0)
 		    gtk_main_quit();
@@ -2312,7 +2312,6 @@ nb_do_cmd(
      * and it may no longer be necessary. If its not needed then needupdate
      * and doupdate can also be removed.
      */
-
     if (buf != NULL && buf->initDone && doupdate)
     {
 	update_screen(NOT_VALID);
@@ -2323,7 +2322,6 @@ nb_do_cmd(
 	/* Quit a hit-return or more prompt. */
 	if (State == HITRETURN || State == ASKMORE)
 	{
-	    /* add_to_input_buf((char_u *)"\003", 1);*/
 #ifdef FEAT_GUI_GTK
 	    if (gtk_main_level() > 0)
 		gtk_main_quit();
@@ -2958,7 +2956,8 @@ netbeans_keystring(int key, char *keyName)
 	nbdebug(("EVT: %s", buf));
 	nb_send(buf, "netbeans_keycommand");
 
-	postpone_keycommand(key);
+	if (key > 0)
+	    postpone_keycommand(key);
 	return;
     }
 
