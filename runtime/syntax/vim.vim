@@ -2,7 +2,7 @@
 " Language:	Vim 7.0 script
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrOchipS@PcampbellAfamily.Mbiz>
 " Last Change:	February 22, 2005
-" Version:	7.0-07
+" Version:	7.0-08
 " Automatically generated keyword lists: {{{1
 
 " Quit when a syntax file was already loaded {{{2
@@ -245,7 +245,7 @@ syn match  vimFilter contained	"^!.\{-}\(|\|$\)"		contains=vimSpecFile
 syn match  vimFilter contained	"\A!.\{-}\(|\|$\)"ms=s+1	contains=vimSpecFile
 
 " Complex repeats (:h complex-repeat) {{{2
-syn match  vimCmplxRepeat	'[^a-zA-Z_/\\()]q[0-9a-zA-Z"]'lc=1
+"syn match  vimCmplxRepeat	'[^a-zA-Z_/\\()]q[0-9a-zA-Z"]'lc=1
 syn match  vimCmplxRepeat	'@[0-9a-z".=@:]\ze\($\|[^a-zA-Z]\)'
 
 " Set command and associated set-options (vimOptions) with comment {{{2

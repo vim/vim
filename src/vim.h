@@ -1534,7 +1534,9 @@ int vim_memcmp __ARGS((void *, void *, size_t));
 #define VV_VAL		34
 #define VV_KEY		35
 #define VV_PROFILING	36
-#define VV_LEN		37	/* number of v: vars */
+#define VV_FCS_REASON	37
+#define VV_FCS_CHOICE	38
+#define VV_LEN		39	/* number of v: vars */
 
 #ifdef FEAT_CLIPBOARD
 

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Feb 28
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Mar 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,17 +30,25 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+-   Steve Wall has a patch (2005 Mar 3) for adding function keys up to 37,
+    with modifiers.
+    Still need to recognize modifiers in "ESC O 5 F".  "ESC O * F"?
+":map <C-S-End> lll" has no effect.
+
 Mingw code to catch out-of-stack error doesn't work.  See MINGW_TRY in
 regexp.c.  Try with example from Michaelis.
 
-Russian helpfile doesn't show up correctly when 'encoding' is koi8-r.
-(Vassily Ragosin 2005 Feb 16)
-
 Mac unicode patch (Da Woon Jung):
-- typing doesn't work
 - selecting proportional font breaks display
+- UTF-8 text causes display problems.  Character width wrong?
 
 Patch for gettags(). Yegappan Lakshmanan Feb 27
+- docs: use of ^ and $ in pattern, refer to |tag-regexp|
+	  explain what the fields mean.
+	  use of 'tags' option
+
+-   Patch from Steve Wall (2005 Mar 3) for xterm mouse positioning above
+    column 223.
 
 autoload:
 - Add a Vim script in $VIMRUNTIME/tools that takes a file with a list of
@@ -54,6 +62,8 @@ autoload:
   For the "helpfile" item ":helptags" is run.
 
 Patch for 'balloonexpr' option.  Sergey Khorev, Feb 26.  Addition Feb 27.
+
+Patch for "paranoid mode" by Kevin Collins, March 3.
 
 Awaiting response:
 -   Patch for mch_FullName() also in Vim 6.3?  os_mswin.c
@@ -181,10 +191,6 @@ PLANNED FOR VERSION 7.0:
 	screen has not yet been allocated with the new size.
 -   Running a shell command from the GUI still has limitations.  Look into how
     the Vim shell project can help: http://vimshell.wana.at
-8   When a file is change outside of Vim and unmodified in Vim there is no
-    simple way to automatically reload the file.  Either add an option for
-    this or make it simple to have the FileChangedShell invoke the normal
-    action, telling it what to do.
 -   Displaying size of Visual area: use 24-33 column display.
     When selecting multiple lines, up to about a screenfull, also count the
     characters.
@@ -258,12 +264,6 @@ Updated Ruby interface. (Ryan Paul)
 
 Awaiting updated patches:
     --- awaiting updated patch ---
-    7   Add patch from Wall for this one ( ~/Mail/oldmail/wall/in.00019 ):
-	'flipcase' variable: upper/lowercase pairs.
-	Insert comma's between pairs and allow a range, make it look like
-	'isfname'.  E.g. ":set flipcase=a-zA-Z,xX,23-33:143-153".  The colon to
-	separate the from and to part is optional.
-	Resp: no time now.
     8   Add GTK 2.3 file dialog support.  Patch by Grahame Bowland, 2004 Mar
 	15, but it doesn't use "initdir" or "dflt". (will update patch)
     8   Add ":n" to fnamemodify(): normalize path, remove "../" when possible.
@@ -323,12 +323,6 @@ Awaiting updated patches:
 	done for filetype detection.  Patch from Walter Briscoe, 2003 Jul 1.
     7   Add a "-@ filelist" argument: read file names from a file. (David
 	Kotchan has a patch for it)
-    8   Add term entries for function keys on xterm with alt and ctrl (new in
-	pl 94).  E.g., Control adds ";5" in "<Esc>[20;5~".  Find a generic way
-	to prepend a modifier in console mode, to avoid having to specify each
-	individual modified key.
-	Steve Wall has a patch (2002 Mar 12) for adding function keys up to 37,
-	with modifiers.
     8   Include a connection to an external program through a pipe?  See
 	patches from Felbinger for a mathematica interface.
 	Or use emacs server kind of thing?

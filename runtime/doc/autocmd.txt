@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.0aa.  Last change: 2005 Feb 21
+*autocmd.txt*   For Vim version 7.0aa.  Last change: 2005 Mar 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -286,7 +286,7 @@ FileChangedShell		When Vim notices that the modification time of
 				change. |timestamp|
 				Mostly triggered after executing a shell
 				command, but also with a |:checktime| command
-				or when Vim regains input focus.
+				or when Gvim regains input focus.
 				This autocommand is triggered for each changed
 				file.  It is not used when 'autoread' is set
 				and the buffer was not changed.  If a
@@ -294,6 +294,9 @@ FileChangedShell		When Vim notices that the modification time of
 				warning message and prompt is not given.
 				This is useful for reloading related buffers
 				which are affected by a single command.
+				The |v:fcs_reason| variable is set to indicate
+				what happened and |v:fcs_choice| can be used
+				to tell Vim what to do next.
 				NOTE: When this autocommand is executed, the
 				current buffer "%" may be different from the
 				buffer that was changed "<afile>".

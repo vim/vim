@@ -1644,6 +1644,7 @@ static struct modmasktable
 } mod_mask_table[] =
 {
     {MOD_MASK_ALT,		MOD_MASK_ALT,		(char_u)'M'},
+    {MOD_MASK_META,		MOD_MASK_META,		(char_u)'T'},
     {MOD_MASK_CTRL,		MOD_MASK_CTRL,		(char_u)'C'},
     {MOD_MASK_SHIFT,		MOD_MASK_SHIFT,		(char_u)'S'},
     {MOD_MASK_MULTI_CLICK,	MOD_MASK_2CLICK,	(char_u)'2'},

@@ -1331,7 +1331,8 @@ retry:
 
 		/*
 		 * If there is conversion error or not enough room try using
-		 * another conversion.
+		 * another conversion.  Except for when there is no
+		 * alternative (help files).
 		 */
 		while ((iconv(iconv_fd, (void *)&fromp, &from_size,
 							       &top, &to_size)
@@ -2753,7 +2754,7 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 	    if (!(did_cmd = apply_autocmds_exarg(EVENT_BUFWRITECMD,
 					 sfname, sfname, FALSE, curbuf, eap)))
 	    {
-		if (bt_nofile(curbuf))
+		if (overwriting && bt_nofile(curbuf))
 		    nofile_err = TRUE;
 		else
 		    apply_autocmds_exarg(EVENT_BUFWRITEPRE,
@@ -2765,7 +2766,7 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 	    if (!(did_cmd = apply_autocmds_exarg(EVENT_FILEWRITECMD,
 					 sfname, sfname, FALSE, curbuf, eap)))
 	    {
-		if (bt_nofile(curbuf))
+		if (overwriting && bt_nofile(curbuf))
 		    nofile_err = TRUE;
 		else
 		    apply_autocmds_exarg(EVENT_FILEWRITEPRE,
@@ -5917,7 +5918,10 @@ buf_check_timestamp(buf, focus)
 #endif
 #ifdef FEAT_AUTOCMD
     static int	busy = FALSE;
+    int		n;
+    char_u	*s;
 #endif
+    char	*reason;
 
     /* If there is no file name, the buffer is not loaded, 'buftype' is
      * set, we are in the middle of a save or being called recursively: ignore
@@ -5975,15 +5979,26 @@ buf_check_timestamp(buf, focus)
 	    reload = TRUE;
 	else
 	{
-#ifdef FEAT_AUTOCMD
-	    int n;
+	    if (stat_res < 0)
+		reason = "deleted";
+	    else if (bufIsChanged(buf))
+		reason = "conflict";
+	    else if (orig_size != buf->b_orig_size || buf_contents_changed(buf))
+		reason = "changed";
+	    else if (orig_mode != buf->b_orig_mode)
+		reason = "mode";
+	    else
+		reason = "time";
 
+#ifdef FEAT_AUTOCMD
 	    /*
 	     * Only give the warning if there are no FileChangedShell
 	     * autocommands.
 	     * Avoid being called recursively by setting "busy".
 	     */
 	    busy = TRUE;
+	    set_vim_var_string(VV_FCS_REASON, (char_u *)reason, -1);
+	    set_vim_var_string(VV_FCS_CHOICE, (char_u *)"", -1);
 	    n = apply_autocmds(EVENT_FILECHANGEDSHELL,
 				      buf->b_fname, buf->b_fname, FALSE, buf);
 	    busy = FALSE;
@@ -5991,13 +6006,19 @@ buf_check_timestamp(buf, focus)
 	    {
 		if (!buf_valid(buf))
 		    EMSG(_("E246: FileChangedShell autocommand deleted buffer"));
-		return 2;
+		s = get_vim_var_str(VV_FCS_CHOICE);
+		if (STRCMP(s, "reload") == 0 && *reason != 'd')
+		    reload = TRUE;
+		else if (STRCMP(s, "ask") == 0)
+		    n = FALSE;
+		else
+		    return 2;
 	    }
-	    else
+	    if (!n)
 #endif
 	    {
-		if (stat_res < 0)
-		    mesg = _("E211: Warning: File \"%s\" no longer available");
+		if (*reason == 'd')
+		    mesg = _("E211: File \"%s\" no longer available");
 		else
 		{
 		    helpmesg = TRUE;
@@ -6010,13 +6031,22 @@ buf_check_timestamp(buf, focus)
 		     * checked out of CVS).  Always warn when the buffer was
 		     * changed.
 		     */
-		    if (bufIsChanged(buf))
+		    if (reason[2] == 'n')
+		    {
 			mesg = _("W12: Warning: File \"%s\" has changed and the buffer was changed in Vim as well");
-		    else if (orig_size != buf->b_orig_size
-			    || buf_contents_changed(buf))
+			mesg2 = _("See \":help W12\" for more info.");
+		    }
+		    else if (reason[1] == 'h')
+		    {
 			mesg = _("W11: Warning: File \"%s\" has changed since editing started");
-		    else if (orig_mode != buf->b_orig_mode)
+			mesg2 = _("See \":help W11\" for more info.");
+		    }
+		    else if (*reason == 'm')
+		    {
 			mesg = _("W16: Warning: Mode of file \"%s\" has changed since editing started");
+			mesg2 = _("See \":help W16\" for more info.");
+		    }
+		    /* Else: only timestamp changed, ignored */
 		}
 	    }
 	}
@@ -6038,9 +6068,7 @@ buf_check_timestamp(buf, focus)
 	path = home_replace_save(buf, buf->b_fname);
 	if (path != NULL)
 	{
-	    if (helpmesg)
-		mesg2 = _("See \":help W11\" for more info.");
-	    else
+	    if (!helpmesg)
 		mesg2 = "";
 	    tbuf = alloc((unsigned)(STRLEN(path) + STRLEN(mesg)
 							+ STRLEN(mesg2) + 2));

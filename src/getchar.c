@@ -1483,10 +1483,14 @@ vgetc()
 #endif
 	   )
 	{
+	    int	    save_allow_keys = allow_keys;
+
 	    ++no_mapping;
+	    allow_keys = 0;		/* make sure BS is not found */
 	    c2 = vgetorpeek(TRUE);	/* no mapping for these chars */
 	    c = vgetorpeek(TRUE);
 	    --no_mapping;
+	    allow_keys = save_allow_keys;
 	    if (c2 == KS_MODIFIER)
 	    {
 		mod_mask = c;

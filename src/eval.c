@@ -316,6 +316,8 @@ static struct vimvar
     {VV_NAME("val",		 VAR_UNKNOWN), VV_RO},
     {VV_NAME("key",		 VAR_UNKNOWN), VV_RO},
     {VV_NAME("profiling",	 VAR_NUMBER), VV_RO},
+    {VV_NAME("fcs_reason",	 VAR_STRING), VV_RO},
+    {VV_NAME("fcs_choice",	 VAR_STRING), 0},
 };
 
 /* shorthand */
@@ -549,6 +551,7 @@ static void f_synID __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_synIDattr __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_synIDtrans __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_system __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_taglist __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_tempname __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_tolower __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_toupper __ARGS((typval_T *argvars, typval_T *rettv));
@@ -6196,6 +6199,7 @@ static struct fst
     {"synIDattr",	2, 3, f_synIDattr},
     {"synIDtrans",	1, 1, f_synIDtrans},
     {"system",		1, 2, f_system},
+    {"taglist",		1, 1, f_taglist},
     {"tempname",	0, 0, f_tempname},
     {"tolower",		1, 1, f_tolower},
     {"toupper",		1, 1, f_toupper},
@@ -13134,6 +13138,35 @@ done:
 }
 
 /*
+ * "gettags()" function
+ */
+    static void
+f_taglist(argvars, rettv)
+    typval_T  *argvars;
+    typval_T  *rettv;
+{
+    char_u  *tag_pattern;
+    list_T  *l;
+
+    tag_pattern = get_tv_string(&argvars[0]);
+
+    rettv->vval.v_number = FALSE;
+
+    l = list_alloc();
+    if (l != NULL)
+    {
+	if (get_tags(l, tag_pattern) != FAIL)
+	{
+	    rettv->vval.v_list = l;
+	    rettv->v_type = VAR_LIST;
+	    ++l->lv_refcount;
+	}
+	else
+	    list_free(l);
+    }
+}
+
+/*
  * "tempname()" function
  */
 /*ARGSUSED*/
@@ -14010,7 +14043,7 @@ set_vim_var_nr(idx, val)
 }
 
 /*
- * Get number v: variable value;
+ * Get number v: variable value.
  */
     long
 get_vim_var_nr(idx)
@@ -14018,6 +14051,18 @@ get_vim_var_nr(idx)
 {
     return vimvars[idx].vv_nr;
 }
+
+#if defined(FEAT_AUTOCMD) || defined(PROTO)
+/*
+ * Get string v: variable value.  Uses a static buffer, can only be used once.
+ */
+    char_u *
+get_vim_var_str(idx)
+    int		idx;
+{
+    return get_tv_string(&vimvars[idx].vv_tv);
+}
+#endif
 
 /*
  * Set v:count, v:count1 and v:prevcount.

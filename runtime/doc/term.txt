@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 7.0aa.  Last change: 2004 Dec 07
+*term.txt*      For Vim version 7.0aa.  Last change: 2005 Mar 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -146,7 +146,7 @@ sequence of bytes.
 
 				*vt100-function-keys* *xterm-function-keys*
 An xterm can send function keys F1 to F4 in two modes: vt100 compatible or
-not.  Because Vim cannot know what the xterm is sending, both types of keys
+not.  Because Vim may not know what the xterm is sending, both types of keys
 are recognized.  The same happens for the <Home> and <End> keys.
 			normal			vt100 ~
 	<F1>	t_k1	<Esc>[11~	<xF1>	<Esc>OP	    *<xF1>-xterm*
@@ -167,6 +167,18 @@ recognizes most of them.  Use ":set termcap" to check which are supported and
 what the codes are.  Mostly these are not in a termcap, they are only
 supported by the builtin_xterm termcap.
 
+							*xterm-modifier-keys*
+Newer versions of xterm support Alt and Ctrl for most function keys.  To avoid
+having to add all combinations of Alt, Ctrl and Shift for every key a special
+sequence is recognized at the end of a termcap entry: ";*X".  The "X" can be
+any character, often '~' is used.  The ";*" stands for an optional modifier
+argument.  ";2" is Shift, ";3" is Alt, ";5" is Ctrl and ";9" is Meta (when
+it's different from Alt).  They can be combined.  Examples: >
+	:set <F8>=^[[19;*~
+	:set <Home>=^[[1;*H
+Another speciality about these codes is that they are not overwritten by
+another code.  That is to avoid that the codes obtained from xterm directly
+|t_RV| overwrite them.
 							*xterm-scroll-region*
 The default termcap entry for xterm on Sun and other platforms does not
 contain the entry for scroll regions.  Add ":cs=\E[%i%d;%dr:" to the xterm

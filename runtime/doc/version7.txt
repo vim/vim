@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Feb 27
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Mar 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -412,6 +412,9 @@ Autocommands can be defined local to a buffer.  This means they will also work
 when the buffer does not have a name or no specific name.  See
 |autocmd-buflocal|.  (Yakov Lerner)
 
+For xterm most combinations of modifiers with function keys are recognized.
+|xterm-modifier-keys|
+
 ==============================================================================
 IMPROVEMENTS						*improvements-7*
 
@@ -539,7 +542,11 @@ To count items (pattern matches) without changing the buffer the 'n' flag has
 been added to |:substitute|.  See |count-items|.
 
 The "screen.linux" $TERM name is recognized to set the default for
-'background' to "dark". (Ciaran McCreesh)
+'background' to "dark". (Ciaran McCreesh)  Also for "cygwin".
+
+The |FileChangedShell| autocommand event can now use the |v:fcs_reason|
+variable that specifies what triggered the event.  |v:fcs_choice| can be used
+to reload the buffer or ask the user what to do.
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*
@@ -896,5 +903,10 @@ When 'cmdheight' is set to 2 in .vimrc and the GUI uses the number of lines
 from the terminal we actually get 3 lines for the cmdline in gvim.
 
 When setting $HOME allocated memory would leak.
+
+Win32: bold characters may sometimes write in another character cell.  Use
+unicodepdy[] as for UTF-8. (Taro Muraoka)
+
+":w fname" didn't work for files with 'buftype' set to "nofile".
 
  vim:tw=78:ts=8:ft=help:norl:

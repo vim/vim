@@ -325,7 +325,7 @@ SRC_DOS =	\
 
 # source files for DOS without CR/LF translation (also in the extra archive)
 SRC_DOS_BIN =	\
-		src/VisVim/Res \
+		src/VisVim/Res/*.bmp \
 		src/tearoff.bmp \
 		src/tools.bmp \
 		src/tools16.bmp \

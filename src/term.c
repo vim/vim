@@ -931,10 +931,6 @@ struct builtin_term builtin_termcaps[] =
 # endif
 
 # if defined(UNIX) || defined(ALL_BUILTIN_TCAPS) || defined(SOME_BUILTIN_TCAPS) || defined(__EMX__)
-/*
- * The xterm termcap is missing F14 and F15, because they send the same
- * codes as the undo and help key, although they don't work on all keyboards.
- */
     {(int)KS_NAME,	"xterm"},
     {(int)KS_CE,	IF_EB("\033[K", ESC_STR "[K")},
     {(int)KS_AL,	IF_EB("\033[L", ESC_STR "[L")},
@@ -1013,65 +1009,75 @@ struct builtin_term builtin_termcaps[] =
     {K_XF2,		IF_EB("\033OQ", ESC_STR "OQ")},
     {K_XF3,		IF_EB("\033OR", ESC_STR "OR")},
     {K_XF4,		IF_EB("\033OS", ESC_STR "OS")},
-    {K_F1,		IF_EB("\033[11~", ESC_STR "[11~")},
-    {K_F2,		IF_EB("\033[12~", ESC_STR "[12~")},
-    {K_F3,		IF_EB("\033[13~", ESC_STR "[13~")},
-    {K_F4,		IF_EB("\033[14~", ESC_STR "[14~")},
-    {K_F5,		IF_EB("\033[15~", ESC_STR "[15~")},
-    {K_F6,		IF_EB("\033[17~", ESC_STR "[17~")},
-    {K_F7,		IF_EB("\033[18~", ESC_STR "[18~")},
-    {K_F8,		IF_EB("\033[19~", ESC_STR "[19~")},
-    {K_F9,		IF_EB("\033[20~", ESC_STR "[20~")},
-    {K_F10,		IF_EB("\033[21~", ESC_STR "[21~")},
-    {K_F11,		IF_EB("\033[23~", ESC_STR "[23~")},
-    {K_F12,		IF_EB("\033[24~", ESC_STR "[24~")},
+    {K_F1,		IF_EB("\033[11;*~", ESC_STR "[11;*~")},
+    {K_F2,		IF_EB("\033[12;*~", ESC_STR "[12;*~")},
+    {K_F3,		IF_EB("\033[13;*~", ESC_STR "[13;*~")},
+    {K_F4,		IF_EB("\033[14;*~", ESC_STR "[14;*~")},
+    {K_F5,		IF_EB("\033[15;*~", ESC_STR "[15;*~")},
+    {K_F6,		IF_EB("\033[17;*~", ESC_STR "[17;*~")},
+    {K_F7,		IF_EB("\033[18;*~", ESC_STR "[18;*~")},
+    {K_F8,		IF_EB("\033[19;*~", ESC_STR "[19;*~")},
+    {K_F9,		IF_EB("\033[20;*~", ESC_STR "[20;*~")},
+    {K_F10,		IF_EB("\033[21;*~", ESC_STR "[21;*~")},
+    {K_F11,		IF_EB("\033[23;*~", ESC_STR "[23;*~")},
+    {K_F12,		IF_EB("\033[24;*~", ESC_STR "[24;*~")},
     {K_S_XF1,		IF_EB("\033O2P", ESC_STR "O2P")},
     {K_S_XF2,		IF_EB("\033O2Q", ESC_STR "O2Q")},
     {K_S_XF3,		IF_EB("\033O2R", ESC_STR "O2R")},
     {K_S_XF4,		IF_EB("\033O2S", ESC_STR "O2S")},
-    {K_S_F1,		IF_EB("\033[11;2~", ESC_STR "[11;2~")},
-    {K_S_F2,		IF_EB("\033[12;2~", ESC_STR "[12;2~")},
-    {K_S_F3,		IF_EB("\033[13;2~", ESC_STR "[13;2~")},
-    {K_S_F4,		IF_EB("\033[14;2~", ESC_STR "[14;2~")},
-    {K_S_F5,		IF_EB("\033[15;2~", ESC_STR "[15;2~")},
-    {K_S_F6,		IF_EB("\033[17;2~", ESC_STR "[17;2~")},
-    {K_S_F7,		IF_EB("\033[18;2~", ESC_STR "[18;2~")},
-    {K_S_F8,		IF_EB("\033[19;2~", ESC_STR "[19;2~")},
-    {K_S_F9,		IF_EB("\033[20;2~", ESC_STR "[20;2~")},
-    {K_S_F10,		IF_EB("\033[21;2~", ESC_STR "[21;2~")},
-    {K_S_F11,		IF_EB("\033[23;2~", ESC_STR "[23;2~")},
-    {K_S_F12,		IF_EB("\033[24;2~", ESC_STR "[24;2~")},
     {K_S_TAB,		IF_EB("\033[Z", ESC_STR "[Z")},
-    {K_HELP,		IF_EB("\033[28~", ESC_STR "[28~")},
-    {K_UNDO,		IF_EB("\033[26~", ESC_STR "[26~")},
-    {K_INS,		IF_EB("\033[2~", ESC_STR "[2~")},
-    {K_HOME,		IF_EB("\033[7~", ESC_STR "[7~")},
+    {K_HELP,		IF_EB("\033[28;*~", ESC_STR "[28;*~")},
+    {K_UNDO,		IF_EB("\033[26;*~", ESC_STR "[26;*~")},
+    {K_INS,		IF_EB("\033[2;*~", ESC_STR "[2;*~")},
+    {K_HOME,		IF_EB("\033[1;*H", ESC_STR "[1;*H")},
     {K_S_HOME,		IF_EB("\033O2H", ESC_STR "O2H")},
     {K_C_HOME,		IF_EB("\033O5H", ESC_STR "O5H")},
-    {K_KHOME,		IF_EB("\033[1~", ESC_STR "[1~")},
+    {K_KHOME,		IF_EB("\033[7;*~", ESC_STR "[7;*~")},
     {K_XHOME,		IF_EB("\033OH", ESC_STR "OH")},	/* alternate Home */
-    {K_END,		IF_EB("\033[8~", ESC_STR "[8~")},
+    {K_END,		IF_EB("\033[1;*F", ESC_STR "[1;*F")},
     {K_S_END,		IF_EB("\033O2F", ESC_STR "O2F")},
     {K_C_END,		IF_EB("\033O5F", ESC_STR "O5F")},
-    {K_KEND,		IF_EB("\033[4~", ESC_STR "[4~")},
+    {K_KEND,		IF_EB("\033[4;*~", ESC_STR "[4;*~")},
     {K_XEND,		IF_EB("\033OF", ESC_STR "OF")},	/* alternate End */
-    {K_PAGEUP,		IF_EB("\033[5~", ESC_STR "[5~")},
-    {K_PAGEDOWN,	IF_EB("\033[6~", ESC_STR "[6~")},
+    {K_PAGEUP,		IF_EB("\033[5;*~", ESC_STR "[5;*~")},
+    {K_PAGEDOWN,	IF_EB("\033[6;*~", ESC_STR "[6;*~")},
     {K_KPLUS,		IF_EB("\033Ok", ESC_STR "Ok")},	/* keypad plus */
     {K_KMINUS,		IF_EB("\033Om", ESC_STR "Om")},	/* keypad minus */
     {K_KDIVIDE,		IF_EB("\033Oo", ESC_STR "Oo")},	/* keypad / */
     {K_KMULTIPLY,	IF_EB("\033Oj", ESC_STR "Oj")},	/* keypad * */
     {K_KENTER,		IF_EB("\033OM", ESC_STR "OM")},	/* keypad Enter */
-    {K_KDEL,		IF_EB("\033[3~", ESC_STR "[3~")},	/* keypad Del */
+    {K_KPOINT,		IF_EB("\033On", ESC_STR "On")},	/* keypad . */
+    {K_KDEL,		IF_EB("\033[3;*~", ESC_STR "[3;*~")},	/* keypad Del */
 
     {BT_EXTRA_KEYS,   ""},
-    {TERMCAP2KEY('k', '0'), IF_EB("\033[10~", ESC_STR "[10~")},	/* F0 */
-    {TERMCAP2KEY('F', '3'), IF_EB("\033[25~", ESC_STR "[25~")},	/* F13 */
-    {TERMCAP2KEY('F', '6'), IF_EB("\033[29~", ESC_STR "[29~")},	/* F16 */
-    {TERMCAP2KEY('F', '7'), IF_EB("\033[31~", ESC_STR "[31~")},	/* F17 */
-    {TERMCAP2KEY('F', '8'), IF_EB("\033[32~", ESC_STR "[32~")},	/* F18 */
-    {TERMCAP2KEY('F', '9'), IF_EB("\033[33~", ESC_STR "[33~")},	/* F19 */
-    {TERMCAP2KEY('F', 'A'), IF_EB("\033[34~", ESC_STR "[34~")},	/* F20 */
+    {TERMCAP2KEY('k', '0'), IF_EB("\033[10;*~", ESC_STR "[10;*~")}, /* F0 */
+    {TERMCAP2KEY('F', '3'), IF_EB("\033[25;*~", ESC_STR "[25;*~")}, /* F13 */
+    /* F14 and F15 are missing, because they send the same codes as the undo
+     * and help key, although they don't work on all keyboards. */
+    {TERMCAP2KEY('F', '6'), IF_EB("\033[29;*~", ESC_STR "[29;*~")}, /* F16 */
+    {TERMCAP2KEY('F', '7'), IF_EB("\033[31;*~", ESC_STR "[31;*~")}, /* F17 */
+    {TERMCAP2KEY('F', '8'), IF_EB("\033[32;*~", ESC_STR "[32;*~")}, /* F18 */
+    {TERMCAP2KEY('F', '9'), IF_EB("\033[33;*~", ESC_STR "[33;*~")}, /* F19 */
+    {TERMCAP2KEY('F', 'A'), IF_EB("\033[34;*~", ESC_STR "[34;*~")}, /* F20 */
+
+    {TERMCAP2KEY('F', 'B'), IF_EB("\033[42;*~", ESC_STR "[42;*~")}, /* F21 */
+    {TERMCAP2KEY('F', 'C'), IF_EB("\033[43;*~", ESC_STR "[43;*~")}, /* F22 */
+    {TERMCAP2KEY('F', 'D'), IF_EB("\033[44;*~", ESC_STR "[44;*~")}, /* F23 */
+    {TERMCAP2KEY('F', 'E'), IF_EB("\033[45;*~", ESC_STR "[45;*~")}, /* F24 */
+    {TERMCAP2KEY('F', 'F'), IF_EB("\033[46;*~", ESC_STR "[46;*~")}, /* F25 */
+    {TERMCAP2KEY('F', 'G'), IF_EB("\033[47;*~", ESC_STR "[47;*~")}, /* F26 */
+    {TERMCAP2KEY('F', 'H'), IF_EB("\033[48;*~", ESC_STR "[48;*~")}, /* F27 */
+    {TERMCAP2KEY('F', 'I'), IF_EB("\033[49;*~", ESC_STR "[49;*~")}, /* F28 */
+    {TERMCAP2KEY('F', 'J'), IF_EB("\033[50;*~", ESC_STR "[50;*~")}, /* F29 */
+    {TERMCAP2KEY('F', 'K'), IF_EB("\033[51;*~", ESC_STR "[51;*~")}, /* F30 */
+
+    {TERMCAP2KEY('F', 'L'), IF_EB("\033[52;*~", ESC_STR "[52;*~")}, /* F31 */
+    {TERMCAP2KEY('F', 'M'), IF_EB("\033[53;*~", ESC_STR "[53;*~")}, /* F32 */
+    {TERMCAP2KEY('F', 'N'), IF_EB("\033[54;*~", ESC_STR "[54;*~")}, /* F33 */
+    {TERMCAP2KEY('F', 'O'), IF_EB("\033[55;*~", ESC_STR "[55;*~")}, /* F34 */
+    {TERMCAP2KEY('F', 'P'), IF_EB("\033[56;*~", ESC_STR "[56;*~")}, /* F35 */
+    {TERMCAP2KEY('F', 'Q'), IF_EB("\033[57;*~", ESC_STR "[57;*~")}, /* F36 */
+    {TERMCAP2KEY('F', 'R'), IF_EB("\033[58;*~", ESC_STR "[58;*~")}, /* F37 */
 # endif
 
 # if defined(UNIX) || defined(ALL_BUILTIN_TCAPS)
@@ -1564,6 +1570,10 @@ static char *(key_names[]) =
     "#2", "#4", "%i", "*7",
     "k1", "k2", "k3", "k4", "k5", "k6",
     "k7", "k8", "k9", "k;", "F1", "F2",
+    "F3", "F4", "F5", "F6", "F7", "F8",
+    "F9", "FA", "FB", "FC", "FD", "FE",
+    "FF", "FG", "FH", "FI", "FJ", "FK",
+    "FL", "FM", "FN", "FO", "FP", "FQ", "FR",
     "%1", "&8", "kb", "kI", "kD", "kh",
     "@7", "kP", "kN", "K1", "K3", "K4", "K5", "kB",
     NULL
@@ -2996,7 +3006,7 @@ win_new_shellsize()
     if (old_Rows != Rows)
     {
 	/* if 'window' uses the whole screen, keep it using that */
-	if (p_window == old_Rows - 1)
+	if (p_window == old_Rows - 1 || old_Rows == 0)
 	    p_window = Rows - 1;
 	old_Rows = Rows;
 	shell_new_rows();	/* update window sizes */
@@ -3481,6 +3491,7 @@ struct termcode
     char_u  name[2];	    /* termcap name of entry */
     char_u  *code;	    /* terminal code (in allocated memory) */
     int	    len;	    /* STRLEN(code) */
+    int	    modlen;	    /* length of part before ";*~". */
 } *termcodes = NULL;
 
 static int  tc_max_len = 0; /* number of entries that termcodes[] can hold */
@@ -3518,6 +3529,7 @@ add_termcode(name, string, use_8bit)
     struct termcode *new_tc;
     int		    i, j;
     char_u	    *s;
+    int		    len;
 
     if (string == NULL || *string == NUL)
     {
@@ -3535,6 +3547,7 @@ add_termcode(name, string, use_8bit)
 	mch_memmove(s, s + 1, STRLEN(s));
 	s[0] = term_7to8bit(string);
     }
+    len = (int)STRLEN(s);
 
     need_gather = TRUE;		/* need to fill termleader[] */
 
@@ -3572,12 +3585,29 @@ add_termcode(name, string, use_8bit)
 		continue;
 	    /*
 	     * Exact match: Replace old code.
+	     * But don't replace ESC[123;*X with another.
 	     */
 	    if (termcodes[i].name[1] == name[1])
 	    {
-		vim_free(termcodes[i].code);
-		--tc_len;
-		break;
+		if (termcodes[i].len >= 4
+			&& STRNCMP(termcodes[i].code + termcodes[i].len - 3,
+								";*", 2) == 0)
+		{
+		    /* if they are equal but for the ";*" don't add it */
+		    if (len == termcodes[i].len - 2
+			    && STRNCMP(s, termcodes[i].code, len - 1) == 0
+			    && s[len - 1] == termcodes[i].code[len + 1])
+		    {
+			vim_free(s);
+			return;
+		    }
+		}
+		else
+		{
+		    vim_free(termcodes[i].code);
+		    --tc_len;
+		    break;
+		}
 	    }
 	}
 	/*
@@ -3591,7 +3621,12 @@ add_termcode(name, string, use_8bit)
     termcodes[i].name[0] = name[0];
     termcodes[i].name[1] = name[1];
     termcodes[i].code = s;
-    termcodes[i].len = (int)STRLEN(s);
+    termcodes[i].len = len;
+    /* recognize special code like "ESC[42;*X" that accepts modifiers */
+    if (len >= 5 && STRNCMP(s + len - 3, ";*", 2) == 0)
+	termcodes[i].modlen = len - 3;
+    else
+	termcodes[i].modlen = 0;
     ++tc_len;
 }
 
@@ -3885,6 +3920,69 @@ check_termcode(max_offset, buf, buflen)
 		    key_name[1] = termcodes[idx].name[1];
 
 		    break;
+		}
+
+		/*
+		 * Check for code with modifier, like xterm uses:
+		 * ESC[123;2X (shift) ESC[123;3X (alt), etc.
+		 */
+		if (termcodes[idx].modlen > 0)
+		{
+		    slen = termcodes[idx].modlen;
+		    if (cpo_koffset && offset && len < slen)
+			continue;
+		    if (STRNCMP(termcodes[idx].code, tp,
+				      (size_t)(slen > len ? len : slen)) == 0)
+		    {
+			int	    n;
+			int	    mod;
+
+			if (len <= slen)	/* got a partial sequence */
+			    return -1;		/* need to get more chars */
+
+			if (tp[slen] == termcodes[idx].code[slen + 2])
+			    ++slen;	/* no modifiers */
+			else if (tp[slen] != ';')
+			    continue;	/* no match */
+			else
+			{
+			    /* Skip over the digits, the final char must
+			     * follow. */
+			    for (j = slen + 1; j < len && isdigit(tp[j]); ++j)
+				;
+			    ++j;
+			    if (len < j)	/* got a partial sequence */
+				return -1;	/* need to get more chars */
+			    if (tp[j - 1] != termcodes[idx].code[slen + 2])
+				continue;
+
+			    /* Match!  Convert modifier bits. */
+			    n = atoi((char *)tp + slen + 1) - 1;
+			    mod = 0x0;
+			    if (n & 1)
+				mod |= MOD_MASK_SHIFT;
+			    if (n & 2)
+				mod |= MOD_MASK_ALT;
+			    if (n & 4)
+				mod |= MOD_MASK_CTRL;
+			    if (n & 8)
+				mod |= MOD_MASK_META;
+
+			    /* Add the modifier codes to our string */
+			    if (mod != 0)
+			    {
+				string[new_slen++] = K_SPECIAL;
+				string[new_slen++] = (int)KS_MODIFIER;
+				string[new_slen++] = mod;
+			    }
+
+			    slen = j;
+			}
+			key_name[0] = termcodes[idx].name[0];
+			key_name[1] = termcodes[idx].name[1];
+
+			break;
+		    }
 		}
 	    }
 	}

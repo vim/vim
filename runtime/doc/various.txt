@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.0aa.  Last change: 2005 Feb 21
+*various.txt*   For Vim version 7.0aa.  Last change: 2005 Mar 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -324,6 +324,7 @@ N  *+path_extra*	Up/downwards search in 'path' and 'tags'
 m  *+perl*		Perl interface |perl|, may have |/dyn|
    *+postscript*	|:hardcopy| writes a PostScript file
 N  *+printer*		|:hardcopy| command
+H  *+profile*		|:profile| command
 m  *+python*		Python interface |python|, may have |/dyn|
 N  *+quickfix*		|:make| and |quickfix| commands
 B  *+rightleft*		Right to left typing |'rightleft'|

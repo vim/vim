@@ -1958,7 +1958,7 @@ gui_mch_draw_string(
 	    ++clen;
 	}
 	ExtTextOutW(s_hdc, TEXT_X(col), TEXT_Y(row),
-			     foptions, pcliprect, unicodebuf, clen, unicodepdy);
+			   foptions, pcliprect, unicodebuf, clen, unicodepdy);
 	len = cells;	/* used for underlining */
     }
     else if ((enc_codepage > 0 && (int)GetACP() != enc_codepage) || enc_latin9)
@@ -1975,8 +1975,26 @@ gui_mch_draw_string(
 			(char *)text, len,
 			(LPWSTR)unicodebuf, unibuflen);
 	    if (len != 0)
+	    {
+		/* Use unicodepdy to make characters fit as we expect, even
+		 * when the font uses different widths (e.g., bold character
+		 * is wider). */
+		if (unicodepdy != NULL)
+		{
+		    int i;
+		    int cw;
+
+		    for (i = 0; i < len; ++i)
+		    {
+			cw = utf_char2cells(unicodebuf[i]);
+			if (cw > 2)
+			    cw = 1;
+			unicodepdy[i] = cw * gui.char_width;
+		    }
+		}
 		ExtTextOutW(s_hdc, TEXT_X(col), TEXT_Y(row),
-			      foptions, pcliprect, unicodebuf, len, NULL);
+			    foptions, pcliprect, unicodebuf, len, unicodepdy);
+	    }
 	}
     }
     else

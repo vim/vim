@@ -4782,6 +4782,8 @@ faq	intro.txt	/*faq*
 farsi	farsi.txt	/*farsi*
 farsi.txt	farsi.txt	/*farsi.txt*
 fasm.vim	syntax.txt	/*fasm.vim*
+fcs_choice-variable	eval.txt	/*fcs_choice-variable*
+fcs_reason-variable	eval.txt	/*fcs_reason-variable*
 feature-list	eval.txt	/*feature-list*
 fetch	pi_netrw.txt	/*fetch*
 file-browser-5.2	version5.txt	/*file-browser-5.2*
@@ -5078,6 +5080,7 @@ hebrew	hebrew.txt	/*hebrew*
 hebrew.txt	hebrew.txt	/*hebrew.txt*
 help	various.txt	/*help*
 help-context	help.txt	/*help-context*
+help-tags	tags	1
 help-translated	various.txt	/*help-translated*
 help-xterm-window	various.txt	/*help-xterm-window*
 help.txt	help.txt	/*help.txt*
@@ -5901,6 +5904,7 @@ printing	print.txt	/*printing*
 printing-formfeed	print.txt	/*printing-formfeed*
 profile	repeat.txt	/*profile*
 profiling	repeat.txt	/*profiling*
+profiling-variable	eval.txt	/*profiling-variable*
 progname-variable	eval.txt	/*progname-variable*
 progress-syntax	syntax.txt	/*progress-syntax*
 progress.vim	syntax.txt	/*progress.vim*
@@ -6620,6 +6624,8 @@ v:ctype	eval.txt	/*v:ctype*
 v:dying	eval.txt	/*v:dying*
 v:errmsg	eval.txt	/*v:errmsg*
 v:exception	eval.txt	/*v:exception*
+v:fcs_choice	eval.txt	/*v:fcs_choice*
+v:fcs_reason	eval.txt	/*v:fcs_reason*
 v:fname_diff	eval.txt	/*v:fname_diff*
 v:fname_in	eval.txt	/*v:fname_in*
 v:fname_new	eval.txt	/*v:fname_new*
@@ -6634,6 +6640,7 @@ v:lang	eval.txt	/*v:lang*
 v:lc_time	eval.txt	/*v:lc_time*
 v:lnum	eval.txt	/*v:lnum*
 v:prevcount	eval.txt	/*v:prevcount*
+v:profiling	eval.txt	/*v:profiling*
 v:progname	eval.txt	/*v:progname*
 v:register	eval.txt	/*v:register*
 v:servername	eval.txt	/*v:servername*

@@ -17,3 +17,6 @@ test text test text  [\x00]
 test text test text  [\x00-\x10]
 test text test text  [\x-z]
 test text test text  [\u-z]
+xx  xx a
+xx aaaaa xx a
+xx aaaaa xx a

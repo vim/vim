@@ -998,6 +998,8 @@ gui_x11_key_hit_cb(w, dud, event, dum)
 	    modifiers |= MOD_MASK_CTRL;
 	if (ev_press->state & Mod1Mask)
 	    modifiers |= MOD_MASK_ALT;
+	if (ev_press->state & Mod4Mask)
+	    modifiers |= MOD_MASK_META;
 
 	/*
 	 * For some keys a shift modifier is translated into another key

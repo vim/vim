@@ -896,6 +896,38 @@ keyval_to_string(unsigned int keyval, unsigned int state, char_u *string)
 }
 #endif /* HAVE_GTK2 */
 
+    static int
+modifiers_gdk2vim(guint state)
+{
+    int modifiers = 0;
+
+    if (state & GDK_SHIFT_MASK)
+	modifiers |= MOD_MASK_SHIFT;
+    if (state & GDK_CONTROL_MASK)
+	modifiers |= MOD_MASK_CTRL;
+    if (state & GDK_MOD1_MASK)
+	modifiers |= MOD_MASK_ALT;
+    if (state & GDK_MOD4_MASK)
+	modifiers |= MOD_MASK_META;
+
+    return modifiers;
+}
+
+    static int
+modifiers_gdk2mouse(guint state)
+{
+    int modifiers = 0;
+
+    if (state & GDK_SHIFT_MASK)
+	modifiers |= MOUSE_SHIFT;
+    if (state & GDK_CONTROL_MASK)
+	modifiers |= MOUSE_CTRL;
+    if (state & GDK_MOD1_MASK)
+	modifiers |= MOUSE_ALT;
+
+    return modifiers;
+}
+
 /*
  * Main keyboard handler:
  */
@@ -1112,13 +1144,7 @@ key_press_event(GtkWidget *widget, GdkEventKey *event, gpointer data)
 #endif
 	    )
     {
-	modifiers = 0;
-	if (state & GDK_SHIFT_MASK)
-	    modifiers |= MOD_MASK_SHIFT;
-	if (state & GDK_CONTROL_MASK)
-	    modifiers |= MOD_MASK_CTRL;
-	if (state & GDK_MOD1_MASK)
-	    modifiers |= MOD_MASK_ALT;
+	modifiers = modifiers_gdk2vim(state);
 
 	/*
 	 * For some keys a shift modifier is translated into another key
@@ -1598,13 +1624,7 @@ process_motion_notify(int x, int y, GdkModifierType state)
     }
 
     /* translate modifier coding between the main engine and GTK */
-    vim_modifiers = 0x0;
-    if (state & GDK_SHIFT_MASK)
-	vim_modifiers |= MOUSE_SHIFT;
-    if (state & GDK_CONTROL_MASK)
-	vim_modifiers |= MOUSE_CTRL;
-    if (state & GDK_MOD1_MASK)
-	vim_modifiers |= MOUSE_ALT;
+    vim_modifiers = modifiers_gdk2mouse(state);
 
     /* inform the editor engine about the occurence of this event */
     gui_send_mouse_event(button, x, y, FALSE, vim_modifiers);
@@ -1796,13 +1816,7 @@ button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 	xim_reset();
 #endif
 
-    vim_modifiers = 0x0;
-    if (event->state & GDK_SHIFT_MASK)
-	vim_modifiers |= MOUSE_SHIFT;
-    if (event->state & GDK_CONTROL_MASK)
-	vim_modifiers |= MOUSE_CTRL;
-    if (event->state & GDK_MOD1_MASK)
-	vim_modifiers |= MOUSE_ALT;
+    vim_modifiers = modifiers_gdk2mouse(event->state);
 
     gui_send_mouse_event(button, x, y, repeated_click, vim_modifiers);
     if (gtk_main_level() > 0)
@@ -1821,7 +1835,7 @@ button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 scroll_event(GtkWidget *widget, GdkEventScroll *event, gpointer data)
 {
     int	    button;
-    int_u   vim_modifiers = 0;
+    int_u   vim_modifiers;
 
     if (gtk_socket_id != 0 && !GTK_WIDGET_HAS_FOCUS(widget))
 	gtk_widget_grab_focus(widget);
@@ -1844,12 +1858,7 @@ scroll_event(GtkWidget *widget, GdkEventScroll *event, gpointer data)
 	xim_reset();
 # endif
 
-    if (event->state & GDK_SHIFT_MASK)
-	vim_modifiers |= MOUSE_SHIFT;
-    if (event->state & GDK_CONTROL_MASK)
-	vim_modifiers |= MOUSE_CTRL;
-    if (event->state & GDK_MOD1_MASK)
-	vim_modifiers |= MOUSE_ALT;
+    vim_modifiers = modifiers_gdk2mouse(event->state);
 
     gui_send_mouse_event(button, (int)event->x, (int)event->y,
 							FALSE, vim_modifiers);
@@ -1881,13 +1890,7 @@ button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
     x = event->x;
     y = event->y;
 
-    vim_modifiers = 0x0;
-    if (event->state & GDK_SHIFT_MASK)
-	vim_modifiers |= MOUSE_SHIFT;
-    if (event->state & GDK_CONTROL_MASK)
-	vim_modifiers |= MOUSE_CTRL;
-    if (event->state & GDK_MOD1_MASK)
-	vim_modifiers |= MOUSE_ALT;
+    vim_modifiers = modifiers_gdk2mouse(event->state);
 
     gui_send_mouse_event(MOUSE_RELEASE, x, y, FALSE, vim_modifiers);
     if (gtk_main_level() > 0)
@@ -2001,16 +2004,11 @@ drag_handle_uri_list(GdkDragContext	*context,
 
     if (fnames != NULL && nfiles > 0)
     {
-	int_u   modifiers = 0;
+	int_u   modifiers;
 
 	gtk_drag_finish(context, TRUE, FALSE, time_); /* accept */
 
-	if (state & GDK_SHIFT_MASK)
-	    modifiers |= MOUSE_SHIFT;
-	if (state & GDK_CONTROL_MASK)
-	    modifiers |= MOUSE_CTRL;
-	if (state & GDK_MOD1_MASK)
-	    modifiers |= MOUSE_ALT;
+	modifiers = modifiers_gdk2mouse(state);
 
 	gui_handle_drop(x, y, modifiers, fnames, nfiles);
     }
@@ -2061,12 +2059,7 @@ drag_handle_text(GdkDragContext	    *context,
     vim_free(tmpbuf);
 # endif
 
-    if (state & GDK_SHIFT_MASK)
-	dropkey[2] |= MOD_MASK_SHIFT;
-    if (state & GDK_CONTROL_MASK)
-	dropkey[2] |= MOD_MASK_CTRL;
-    if (state & GDK_MOD1_MASK)
-	dropkey[2] |= MOD_MASK_ALT;
+    dropkey[2] = modifiers_gdk2vim(state);
 
     if (dropkey[2] != 0)
 	add_to_input_buf(dropkey, (int)sizeof(dropkey));

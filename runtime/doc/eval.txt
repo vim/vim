@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Feb 26
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Mar 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1182,6 +1182,32 @@ v:exception	The value of the exception most recently caught and not
 	:  echo "caught" v:exception
 	:endtry
 <		Output: "caught oops".
+
+					*v:fcs_reason* *fcs_reason-variable*
+v:fcs_reason	The reason why the |FileChangedShell| event was triggered.
+		Can be used in an autocommand to decide what to do and/or what
+		to set v:fcs_choice to.  Possible values:
+			deleted		file no longer exists
+			conflict	file contents, mode or timestamp was
+					changed and buffer is modified
+			changed		file contents has changed
+			mode		mode of file changed
+			time		only file timestamp changed
+
+					*v:fcs_choice* *fcs_choice-variable*
+v:fcs_choice	What should happen after a |FileChangedShell| event was
+		triggered.  Can be used in an autocommand to tell Vim what to
+		do with the affected buffer:
+			reload		Reload the buffer (does not work if
+					the file was deleted).
+			ask		Ask the user what to do, as if there
+					was no autocommand.  Except that when
+					only the timestamp changed nothing
+					will happen.
+			<empty>		Nothing, the autocommand should do
+					everything that needs to be done.
+		The default is empty.  If another (invalid) value is used then
+		Vim behaves like it is empty, there is no warning message.
 
 					*v:fname_in* *fname_in-variable*
 v:fname_in	The name of the input file.  Only valid while evaluating:

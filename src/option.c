@@ -3149,11 +3149,13 @@ set_init_2()
 	 * with a dark background, that can handle color.  Recognized are:
 	 * "linux"	    Linux console
 	 * "screen.linux"   Linux console with screen
+	 * "cygwin"	    Cygwin shell
 	 */
 	idx = findoption((char_u *)"bg");
 	if (!(options[idx].flags & P_WAS_SET)
 		&& (STRCMP(T_NAME, "linux") == 0
-		    || STRCMP(T_NAME, "screen.linux") == 0))
+		    || STRCMP(T_NAME, "screen.linux") == 0
+		    || STRCMP(T_NAME, "cygwin") == 0))
 	{
 	    set_string_option_direct(NULL, idx, (char_u *)"dark", OPT_FREE);
 	    /* don't mark it as set, when starting the GUI it may be changed

@@ -292,7 +292,13 @@ mac_conv_init()
 
     if (TECCreateConverter(&gUTF16ToUTF8Converter, utf16_encoding,
 		utf8_canon_encoding) != noErr)
-	gUTF16ToUTF8Converter = NULL;
+    {
+	/* On pre-10.3, Unicode normalization is not available so
+	 * fall back to non-normalizing converter */
+	if (TECCreateConverter(&gUTF16ToUTF8Converter, utf16_encoding,
+		    utf8_encoding) != noErr)
+	    gUTF16ToUTF8Converter = NULL;
+    }
 }
 
 /*

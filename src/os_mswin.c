@@ -385,6 +385,7 @@ mch_FullName(
     else
 #endif
     {
+#ifdef FEAT_MBYTE
 	if (enc_codepage >= 0 && (int)GetACP() != enc_codepage
 # ifdef __BORLANDC__
 		/* Wide functions of Borland C 5.5 do not work on Windows 98. */
@@ -415,7 +416,6 @@ mch_FullName(
 	    vim_free(wname);
 	    vim_free(cname);
 	}
-#ifdef FEAT_MBYTE
 	if (nResult == FAIL)	    /* fall back to non-wide function */
 #endif
 	{
@@ -2487,8 +2487,13 @@ serverSendEnc(HWND target)
     COPYDATASTRUCT data;
 
     data.dwData = COPYDATA_ENCODING;
+#ifdef FEAT_MBYTE
     data.cbData = STRLEN(p_enc) + 1;
     data.lpData = p_enc;
+#else
+    data.cbData = STRLEN("latin1") + 1;
+    data.lpData = "latin1";
+#endif
     (void)SendMessage(target, WM_COPYDATA, (WPARAM)message_window,
 							     (LPARAM)(&data));
 }

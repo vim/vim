@@ -100,10 +100,10 @@
  *
  *		       +----------------------+
  *		       V		      |
- * <aa>\+	BRANCH <aa> --> BRANCH --> BACK BRANCH --> NOTHING --> END
- *		     |	             |	        ^		       ^
- *		     |	             +----------+		       |
- *		     +-------------------------------------------------+
+ * <aa>\+	BRANCH <aa> --> BRANCH --> BACKP BRANCH --> NOTHING --> END
+ *		     |	             |	         ^		        ^
+ *		     |	             +-----------+		        |
+ *		     +--------------------------------------------------+
  *
  *
  *					+-------------------------+
@@ -229,6 +229,8 @@
 #define RE_COL		205	/* nr cmp  Match column number */
 #define RE_VCOL		206	/* nr cmp  Match virtual column number */
 
+#define BACKP		207	/*	Like BACK but for \+ */
+
 /*
  * Magic characters have a special meaning, they don't match literally.
  * Magic characters are negative.  This separates them from literal characters
@@ -280,6 +282,8 @@ toggle_Magic(x)
  *
  * BACK		Normal "next" pointers all implicitly point forward; BACK
  *		exists to make loop structures possible.
+ *
+ * BACKP	Like BACK, but used for \+.  Doesn't check for an empty match.
  *
  * STAR,PLUS	'=', and complex '*' and '+', are implemented as circular
  *		BRANCH structures using BACK.  Simple cases (one character
@@ -1448,7 +1452,7 @@ regpiece(flagp)
 		/* Emit x+ as x(&|), where & means "self". */
 		next = regnode(BRANCH); /* Either */
 		regtail(ret, next);
-		regtail(regnode(BACK), ret);	/* loop back */
+		regtail(regnode(BACKP), ret);	/* loop back */
 		regtail(next, regnode(BRANCH)); /* or */
 		regtail(ret, regnode(NOTHING)); /* null. */
 	    }
@@ -2483,7 +2487,7 @@ regtail(p, val)
 	scan = temp;
     }
 
-    if (OP(scan) == BACK)
+    if (OP(scan) == BACK || OP(scan) == BACKP)
 	offset = (int)(scan - val);
     else
 	offset = (int)(val - scan);
@@ -4092,6 +4096,9 @@ regmatch(scan, startp)
 		return FALSE;
 	    break;
 
+	  case BACKP:
+	    break;
+
 	  case MOPEN + 0:   /* Match start: \zs */
 	  case MOPEN + 1:   /* \( */
 	  case MOPEN + 2:
@@ -4356,6 +4363,10 @@ regmatch(scan, startp)
 	    {
 		if (OP(next) != BRANCH) /* No choice. */
 		    next = OPERAND(scan);	/* Avoid recursion. */
+		else if (startp != NULL && OP(OPERAND(scan)) == BACKP
+						    && reg_save_equal(startp))
+		    /* \+ with something empty before it */
+		    return FALSE;
 		else
 		{
 		    regsave_T	save;
@@ -5134,7 +5145,7 @@ regnext(p)
     if (offset == 0)
 	return NULL;
 
-    if (OP(p) == BACK)
+    if (OP(p) == BACK || OP(p) == BACKP)
 	return p - offset;
     else
 	return p + offset;
@@ -5603,6 +5614,9 @@ regprop(op)
 	break;
       case BACK:
 	p = "BACK";
+	break;
+      case BACKP:
+	p = "BACKP";
 	break;
       case END:
 	p = "END";

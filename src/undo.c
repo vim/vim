@@ -492,6 +492,8 @@ u_doit(count)
 
     u_newcount = 0;
     u_oldcount = 0;
+    if (curbuf->b_ml.ml_flags & ML_EMPTY)
+	u_oldcount = -1;
     while (count--)
     {
 	if (undo_undoes)
@@ -525,6 +527,8 @@ u_doit(count)
 	    curbuf->b_u_curhead = curbuf->b_u_curhead->uh_prev;
 	}
     }
+    if (curbuf->b_ml.ml_flags & ML_EMPTY)
+	--u_newcount;
     u_undo_end();
 }
 

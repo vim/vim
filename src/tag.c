@@ -3536,3 +3536,128 @@ expand_tags(tagnames, pat, num_file, file)
     return ret;
 }
 #endif
+
+#if defined(FEAT_EVAL) || defined(PROTO)
+static int add_tag_field __ARGS((dict_T *dict, char *field_name, char_u *start, char_u *end));
+
+/*
+ * Add a tag field to the dictionary "dict"
+ */
+    static int
+add_tag_field(dict, field_name, start, end)
+    dict_T  *dict;
+    char    *field_name;
+    char_u  *start;
+    char_u  *end;
+{
+    char_u	buf[MAXPATHL];
+    int		len;
+
+    len = end - start;
+    if (len > sizeof(buf) - 1)
+	len = sizeof(buf) - 1;
+    STRNCPY(buf, start, len);
+    buf[len] = NUL;
+    return dict_add_nr_str(dict, field_name, 0L, buf);
+}
+
+/*
+ * Add the tags matching the specified pattern to the list "list"
+ * as a dictionary
+ */
+    int
+get_tags(list, pat)
+    list_T *list;
+    char_u *pat;
+{
+    int		num_matches, i, ret;
+    char_u	**matches, *p;
+    dict_T	*dict;
+    tagptrs_T	tp;
+    long	is_static;
+    char_u	buf[200];
+    char_u	*bp;
+
+    ret = find_tags(pat, &num_matches, &matches,
+				    TAG_REGEXP | TAG_NOIC, (int)MAXCOL, NULL);
+    if (ret == OK && num_matches > 0)
+    {
+	for (i = 0; i < num_matches; ++i)
+	{
+	    if ((dict = dict_alloc()) == NULL)
+		ret = FAIL;
+	    if (list_append_dict(list, dict) == FAIL)
+		ret = FAIL;
+
+	    parse_match(matches[i], &tp);
+	    is_static = test_for_static(&tp);
+
+	    if (add_tag_field(dict, "name", tp.tagname, tp.tagname_end) == FAIL
+		    || add_tag_field(dict, "filename", tp.fname,
+							 tp.fname_end) == FAIL
+		    || add_tag_field(dict, "cmd", tp.command,
+						       tp.command_end) == FAIL
+		    || add_tag_field(dict, "kind", tp.tagkind,
+						      tp.tagkind_end) == FAIL
+		    || dict_add_nr_str(dict, "static", is_static, NULL) == FAIL)
+		ret = FAIL;
+
+	    bp = buf;
+
+	    if (tp.command_end != NULL)
+	    {
+		for (p = tp.command_end + 3;
+				   *p != NUL && *p != '\n' && *p != '\r'; ++p)
+		{
+		    if (p == tp.tagkind || (p + 5 == tp.tagkind
+					      && STRNCMP(p, "kind:", 5) == 0))
+			/* skip "kind:<kind>" and "<kind>" */
+			p = tp.tagkind_end - 1;
+		    else if (STRNCMP(p, "file:", 5) == 0)
+			/* skip "file:" (static tag) */
+			p += 4;
+		    else if (STRNCMP(p, "struct:", 7) == 0
+			    || STRNCMP(p, "enum:", 5) == 0
+			    || STRNCMP(p, "class:", 6) == 0)
+		    {
+			char_u	*s, *n;
+
+			/* Field we recognize, add as a dict entry. */
+			n = p;
+			if (*n == 's')
+			    p += 7;
+			else if (*n == 'e')
+			    p += 5;
+			else
+			    p += 6;
+			s = p;
+			while (*p != NUL && *p != '\n' && *p != '\r')
+			    ++p;
+			if (add_tag_field(dict,
+				    *n == 's' ? "struct"
+					       : *n == 'e' ? "enum" : "class",
+								s, p) == FAIL)
+			    ret = FAIL;
+			--p;
+		    }
+		    else if ((bp - buf) < sizeof(buf) - 1
+					    && (bp > buf || !vim_iswhite(*p)))
+			/* Field not recognized, add to "extra" dict entry. */
+			*bp++ = *p;
+		}
+
+		if (bp > buf)
+		{
+		    *bp = NUL;
+		    if (dict_add_nr_str(dict, "extra", 0L, buf) == FAIL)
+			ret = FAIL;
+		}
+	    }
+
+	    vim_free(matches[i]);
+	}
+	vim_free(matches);
+    }
+    return ret;
+}
+#endif

@@ -2257,7 +2257,8 @@ do_mouse(oap, c, dir, count, fixindent)
      * multiple clicks and the middle mouse button.
      * Accept shift-leftmouse drags when 'mousemodel' is "popup.*".
      */
-    if ((mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL | MOD_MASK_ALT))
+    if ((mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL | MOD_MASK_ALT
+							     | MOD_MASK_META))
 	    && (!is_click
 		|| (mod_mask & MOD_MASK_MULTI_CLICK)
 		|| which_button == MOUSE_MIDDLE)

@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Feb 23
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Mar 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -6833,9 +6833,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 	Window height.  Do not confuse this with the height of the Vim window,
 	use 'lines' for that.
-	Used for |CTRL-F| and |CTRL-B| when the value is smaller than 'lines'
-	minus one.  The screen will scroll 'window' minus two lines, with a
-	minimum of one.
+	Used for |CTRL-F| and |CTRL-B| when there is only one window and the
+	value is smaller than 'lines' minus one.  The screen will scroll
+	'window' minus two lines, with a minimum of one.
 	When 'window' is equal to 'lines' minus one CTRL-F and CTRL-B scroll
 	in a much smarter way, taking care of wrapping lines.
 	When resizing the Vim window, the value is smaller than 1 or more than

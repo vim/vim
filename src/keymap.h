@@ -458,23 +458,24 @@ enum key_extra
 #define MOD_MASK_SHIFT	    0x02
 #define MOD_MASK_CTRL	    0x04
 #define MOD_MASK_ALT	    0x08	/* aka META */
-#define MOD_MASK_2CLICK	    0x10	/* use MOD_MASK_MULTI_CLICK */
-#define MOD_MASK_3CLICK	    0x20	/* use MOD_MASK_MULTI_CLICK */
-#define MOD_MASK_4CLICK	    0x30	/* use MOD_MASK_MULTI_CLICK */
+#define MOD_MASK_META	    0x10	/* META when it's different from ALT */
+#define MOD_MASK_2CLICK	    0x20	/* use MOD_MASK_MULTI_CLICK */
+#define MOD_MASK_3CLICK	    0x40	/* use MOD_MASK_MULTI_CLICK */
+#define MOD_MASK_4CLICK	    0x60	/* use MOD_MASK_MULTI_CLICK */
 #ifdef MACOS
-# define MOD_MASK_CMD	     0x80
+# define MOD_MASK_CMD	    0x80
 #endif
 
 #define MOD_MASK_MULTI_CLICK	(MOD_MASK_2CLICK|MOD_MASK_3CLICK|MOD_MASK_4CLICK)
 
 /*
  * The length of the longest special key name, including modifiers.
- * Current longest is <M-C-S-4-MiddleRelease> (length includes '<' and '>').
+ * Current longest is <M-C-S-T-4-MiddleRelease> (length includes '<' and '>').
  */
-#define MAX_KEY_NAME_LEN    23
+#define MAX_KEY_NAME_LEN    25
 
 /* Maximum length of a special key event as tokens.  This includes modifiers.
- * The longest event is something like <M-C-S-4-LeftDrag> which would be the
+ * The longest event is something like <M-C-S-T-4-LeftDrag> which would be the
  * following string of tokens:
  *
  * <K_SPECIAL> <KS_MODIFIER> bitmask <K_SPECIAL> <KS_EXTRA> <KT_LEFTDRAG>.
