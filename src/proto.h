@@ -202,17 +202,11 @@ extern char_u *vimpty_getenv __ARGS((const char_u *string));	/* from pty.c */
 extern char *vim_SelFile __ARGS((Widget toplevel, char *prompt, char *init_path, int (*show_entry)(), int x, int y, guicolor_T fg, guicolor_T bg, guicolor_T scroll_fg, guicolor_T scroll_bg));
 #   endif
 #  endif
-#  ifdef FEAT_GUI_BEOS
-#   include "gui_beos.pro"
-#  endif
 #  ifdef FEAT_GUI_MAC
 #   include "gui_mac.pro"
 #  endif
 #  ifdef FEAT_GUI_X11
 #   include "gui_x11.pro"
-#  endif
-#  if defined(FEAT_GUI_AMIGA)
-#    include "gui_amiga.pro"
 #  endif
 #  ifdef RISCOS
 #   include "gui_riscos.pro"
