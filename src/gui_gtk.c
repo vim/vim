@@ -10,7 +10,7 @@
 /*
  * Porting to GTK+ was done by:
  *
- * (C) 1998,1999,2000 by Marcin Dalecki <dalecki@evision.ag>
+ * (C) 1998,1999,2000 by Marcin Dalecki <martin@dalecki.de>
  *
  * With GREAT support and continuous encouragements by Andy Kahn and of
  * course Bram Moolenaar!

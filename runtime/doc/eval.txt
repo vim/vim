@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 03
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -3524,11 +3524,13 @@ This would call the function "my_func_whizz(parameter)".
 
 :let &{option-name} = {expr1}			*:let-option* *:let-star*
 			Set option {option-name} to the result of the
-			expression {expr1}.  The value is always converted to
-			the type of the option.
+			expression {expr1}.  A String or Number value is
+			always converted to the type of the option.
 			For an option local to a window or buffer the effect
 			is just like using the |:set| command: both the local
 			value and the global value is changed.
+			Example: >
+				:let &path = &path . ',/usr/local/include'
 
 :let &l:{option-name} = {expr1}
 			Like above, but only set the local value of an option
@@ -3538,6 +3540,25 @@ This would call the function "my_func_whizz(parameter)".
 			Like above, but only set the global value of an option
 			(if there is one).  Works like |:setglobal|.
 
+:let [{name1}, {name2}, ...] = {expr1}			*:let-unpack*
+			{expr1} must evaluate to a List.  The first item in
+			the list is assigned to {name1}, the second item to
+			{name2}, etc.
+			The number of names must match the number of items in
+			the List.
+			Each name can be one of the items of the ":let"
+			command as mentioned above.
+			Example: >
+				:let [s, item] = GetItem(s)
+
+:let [{name}, ..., ; {lastname}] = {expr1}
+			Like above, but the List may have more items than
+			there are names.  A list of the remaining items is
+			assigned to {lastname}.  If there are no remaining
+			items {lastname} is set to an empty list.
+			Example: >
+				:let [a, b; rest] = ["aval", "bval", 3, 4]
+<
 							*E106*
 :let {var-name}	..	List the value of variable {var-name}.  Several
 			variable names may be given.

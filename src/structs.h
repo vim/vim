@@ -598,7 +598,7 @@ struct condstack
     char	cs_flags[CSTACK_LEN];	/* CSF_ flags */
     char	cs_pending[CSTACK_LEN];	/* CSTP_: what's pending in ":finally"*/
     union {
-	void   *cs_pend_rv[CSTACK_LEN];	/* returnval for pending return */
+	void   *cs_pend_rv[CSTACK_LEN];	/* return typeval for pending return */
 	void   *cs_pend_ex[CSTACK_LEN];	/* exception for pending throw */
     }		cs_pend;
     int		cs_line[CSTACK_LEN];	/* line number of ":while" line */
@@ -611,7 +611,7 @@ struct condstack
     char	cs_had_endwhile;	/* just found ":endwhile" */
     char	cs_had_finally;		/* just found ":finally" */
 };
-# define cs_retvar	cs_pend.cs_pend_rv
+# define cs_rettv	cs_pend.cs_pend_rv
 # define cs_exception	cs_pend.cs_pend_ex
 
 # define CSF_TRUE	1	/* condition was TRUE */
@@ -1827,10 +1827,6 @@ struct VimMenu
     HMENU	submenu_id;	    /* If this is submenu, add children here */
     HWND	tearoff_handle;	    /* hWnd of tearoff if created */
 #endif
-#if FEAT_GUI_BEOS
-    BMenuItem	*id;		    /* Id of menu item */
-    BMenu	*submenu_id;	    /* If this is submenu, add children here */
-#endif
 #ifdef FEAT_GUI_MAC
 /*  MenuHandle	id; */
 /*  short	index;	*/	    /* the item index within the father menu */
@@ -1839,17 +1835,6 @@ struct VimMenu
 				       get throught some tricks) */
     MenuHandle	menu_handle;
     MenuHandle	submenu_handle;
-#endif
-#if defined(FEAT_GUI_AMIGA)
-				    /* only one of these will ever be set, but
-				     * they are used to allow the menu routine
-				     * to easily get a hold of the parent menu
-				     * pointer which is needed by all items to
-				     * form the chain correctly */
-    int		    id;		    /* unused by the amiga, but used in the
-				     * code kept for compatibility */
-    struct Menu	    *menuPtr;
-    struct MenuItem *menuItemPtr;
 #endif
 #ifdef RISCOS
     int		*id;		    /* Not used, but gui.c needs it */

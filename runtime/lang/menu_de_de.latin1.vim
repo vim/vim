@@ -1,6 +1,6 @@
 " Menu Translations:	German / Deutsch
 " Maintainer:		Johannes Zellner <johannes@zellner.org>
-" Originally By:	Marcin Dalecki <dalecki@cs.net.pl>
+" Originally By:	Marcin Dalecki <martin@dalecki.de>
 " Last Change:	Sat, 20 Apr 2002 19:02:42 CEST
 " vim:set foldmethod=marker tabstop=8:
 

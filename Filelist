@@ -342,17 +342,12 @@ SRC_AMI =	\
 		README_amisrc.txt.info \
 		src.info \
 		src/INSTALLami.txt \
-		src/Make_agui.mak \
-		src/Make_aros.mak \
 		src/Make_dice.mak \
 		src/Make_manx.mak \
 		src/Make_morph.mak \
 		src/Make_sas.mak \
-		src/gui_amiga.c \
-		src/gui_amiga.h \
 		src/os_amiga.c \
 		src/os_amiga.h \
-		src/proto/gui_amiga.pro \
 		src/proto/os_amiga.pro \
 		src/testdir/Make_amiga.mak \
 		src/testdir/amiga.vim \
@@ -422,8 +417,6 @@ SRC_EXTRA =	\
 		README_os390.txt \
 		src/Make_mint.mak \
 		src/Make_ro.mak \
-		src/gui_beos.cc \
-		src/gui_beos.h \
 		src/gui_riscos.c \
 		src/gui_riscos.h \
 		src/if_sniff.c \
@@ -436,9 +429,7 @@ SRC_EXTRA =	\
 		src/os_mint.h \
 		src/os_riscos.c \
 		src/os_riscos.h \
-		src/proto/gui_beos.pro \
 		src/proto/gui_riscos.pro \
-		src/proto/os_beos.pro \
 		src/proto/os_riscos.pro \
 		src/os_vms_fix.com \
 		src/toolbar.phi \

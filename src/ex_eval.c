@@ -1601,8 +1601,8 @@ ex_finally(eap)
 		if (cstack->cs_pending[cstack->cs_idx] == CSTP_RETURN)
 		{
 		    report_discard_pending(CSTP_RETURN,
-			    cstack->cs_retvar[cstack->cs_idx]);
-		    discard_pending_return(cstack->cs_retvar[cstack->cs_idx]);
+					   cstack->cs_rettv[cstack->cs_idx]);
+		    discard_pending_return(cstack->cs_rettv[cstack->cs_idx]);
 		}
 		if (pending == CSTP_ERROR && !did_emsg)
 		    pending |= (THROW_ON_ERROR) ? CSTP_THROW : 0;
@@ -1647,7 +1647,7 @@ ex_endtry(eap)
     int		skip;
     int		rethrow = FALSE;
     int		pending = CSTP_NONE;
-    void	*retvar = NULL;
+    void	*rettv = NULL;
     struct condstack	*cstack = eap->cstack;
 
     if (cstack->cs_trylevel <= 0 || cstack->cs_idx < 0)
@@ -1746,7 +1746,7 @@ ex_endtry(eap)
 	    pending = cstack->cs_pending[idx];
 	    cstack->cs_pending[idx] = CSTP_NONE;
 	    if (pending == CSTP_RETURN)
-		retvar = cstack->cs_retvar[idx];
+		rettv = cstack->cs_rettv[idx];
 	    else if (pending & CSTP_THROW)
 		current_exception = cstack->cs_exception[idx];
 	}
@@ -1769,7 +1769,7 @@ ex_endtry(eap)
 	if (!skip)
 	{
 	    report_resume_pending(pending,
-		    (pending == CSTP_RETURN) ? retvar :
+		    (pending == CSTP_RETURN) ? rettv :
 		    (pending & CSTP_THROW) ? (void *)current_exception : NULL);
 	    switch (pending)
 	    {
@@ -1790,7 +1790,7 @@ ex_endtry(eap)
 		    ex_break(eap);
 		    break;
 		case CSTP_RETURN:
-		    do_return(eap, FALSE, FALSE, retvar);
+		    do_return(eap, FALSE, FALSE, rettv);
 		    break;
 		case CSTP_FINISH:
 		    do_finish(eap, FALSE);
@@ -2023,8 +2023,8 @@ cleanup_conditionals(cstack, searched_cond, inclusive)
 
 		    case CSTP_RETURN:
 			report_discard_pending(CSTP_RETURN,
-				cstack->cs_retvar[idx]);
-			discard_pending_return(cstack->cs_retvar[idx]);
+						      cstack->cs_rettv[idx]);
+			discard_pending_return(cstack->cs_rettv[idx]);
 			cstack->cs_pending[idx] = CSTP_NONE;
 			break;
 

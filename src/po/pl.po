@@ -2,7 +2,7 @@
 # Polish Translation for Vim
 #
 # updated 2001 for vim-6.0
-# FIRST AUTHOR Marcin Dalecki <dalecki@cyber.cs.net.pl>, 2000.
+# FIRST AUTHOR Marcin Dalecki <martin@dalecki.de>, 2000.
 # Mikolaj Machowski <mikmach@wp.pl>, 2004.
 #
 msgid ""

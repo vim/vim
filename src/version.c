@@ -848,9 +848,6 @@ list_version()
     MSG_PUTS(_("with X11-Athena GUI."));
 #    endif
 #   else
-#    ifdef FEAT_GUI_BEOS
-    MSG_PUTS(_("with BeOS GUI."));
-#    else
 #     ifdef FEAT_GUI_PHOTON
     MSG_PUTS(_("with Photon GUI."));
 #     else
@@ -873,7 +870,6 @@ list_version()
 #	 endif
 #	endif
 #      endif
-#     endif
 #    endif
 #   endif
 #  endif
