@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 08
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -167,9 +167,9 @@ separated by a colon in square brackets: >
 Omitting the first index is similar to zero.  Omitting the last index is
 similar to -1.  The difference is that there is no error if the items are not
 available. >
-	:let endlist = [2:]		" from item 2 to the end: [3, "four"]
-	:let shortlist = [2:2]		" List with one item: [3]
-	:let otherlist = [:]		" make a copy of the List
+	:let endlist = mylist[2:]	" from item 2 to the end: [3, "four"]
+	:let shortlist = mylist[2:2]	" List with one item: [3]
+	:let otherlist = mylist[:]	" make a copy of the List
 
 
 List identity ~
@@ -236,7 +236,7 @@ To change a specific item of a list use |:let| this way: >
 	:let listlist[0][3] = item
 
 To change part of a list you can specify the first and last item to be
-modified.  The value must mach the range of replaced items: >
+modified.  The value must match the range of replaced items: >
 	:let list[3:5] = [3, 4, 5]
 
 Adding and removing items from a list is done with functions.  Here are a few
