@@ -4460,7 +4460,7 @@ ex_doautocmd(eap)
     exarg_T	*eap;
 {
     (void)do_doautocmd(eap->arg, TRUE);
-    do_modelines();
+    do_modelines(FALSE);
 }
 #endif
 
@@ -6173,11 +6173,10 @@ handle_drop(filec, filev, split)
 }
 #endif
 
-static void alist_clear __ARGS((alist_T *al));
 /*
  * Clear an argument list: free all file names and reset it to zero entries.
  */
-    static void
+    void
 alist_clear(al)
     alist_T	*al;
 {
@@ -6264,8 +6263,8 @@ alist_expand()
 		&& new_arg_file_count > 0)
 	{
 	    alist_set(&global_alist, new_arg_file_count, new_arg_files, TRUE);
+	    vim_free(old_arg_files);
 	}
-	vim_free(old_arg_files);
     }
     p_su = save_p_su;
 }
@@ -6288,7 +6287,18 @@ alist_set(al, count, files, use_curbuf)
     if (ga_grow(&al->al_ga, count) == OK)
     {
 	for (i = 0; i < count; ++i)
+	{
+	    if (got_int)
+	    {
+		/* When adding many buffers this can take a long time.  Allow
+		 * interrupting here. */
+		while (i < count)
+		    vim_free(files[i++]);
+		break;
+	    }
 	    alist_add(al, files[i], use_curbuf ? 2 : 1);
+	    ui_breakcheck();
+	}
 	vim_free(files);
     }
     else
@@ -9582,7 +9592,7 @@ ex_filetype(eap)
 	if (*arg == 'd')
 	{
 	    (void)do_doautocmd((char_u *)"filetypedetect BufRead", TRUE);
-	    do_modelines();
+	    do_modelines(FALSE);
 	}
     }
     else if (STRCMP(arg, "off") == 0)

@@ -3059,6 +3059,11 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags)
 #ifdef FEAT_AUTOCMD
 	else
 	{
+	    /* Read the modelines, but only to set window-local options.  Any
+	     * buffer-local options have already been set and may have been
+	     * changed by the user. */
+	    do_modelines(TRUE);
+
 	    apply_autocmds_retval(EVENT_BUFENTER, NULL, NULL, FALSE, curbuf,
 								    &retval);
 	    apply_autocmds_retval(EVENT_BUFWINENTER, NULL, NULL, FALSE, curbuf,

@@ -56,7 +56,7 @@ uninstall:
 	done
 
 converted: ja.sjis.mo cs.cp1250.mo pl.cp1250.mo sk.cp1250.mo zh_CN.cp936.mo \
-		ru.cp1251.mo
+		ru.cp1251.mo uk.cp1251.mo
 
 # Convert ja.po to create ja.sjis.po.  Requires doubling backslashes in the
 # second byte.  Don't depend on sjiscorr, it should only be compiled when
@@ -99,6 +99,12 @@ ru.cp1251.po: ru.po
 	rm -f ru.cp1251.po
 	iconv -f utf-8 -t cp1251 ru.po | \
 		sed -e 's/charset=utf-8/charset=cp1251/' -e 's/# Original translations/# Generated from ru.po, DO NOT EDIT/' > ru.cp1251.po
+
+# Convert uk.po to create uk.cp1251.po.
+uk.cp1251.po: uk.po
+	rm -f uk.cp1251.po
+	iconv -f koi8-u -t cp1251 uk.po | \
+		sed -e 's/charset=koi8-u/charset=cp1251/' -e 's/# Original translations/# Generated from uk.po, DO NOT EDIT/' > uk.cp1251.po
 
 check:
 	@if test "x" = "x$(prefix)"; then \

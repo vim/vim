@@ -112,7 +112,7 @@ gui_mch_prepare(int *argc, char **argv)// {{{
 		    i--;
 		    continue;
 		}
-	
+
 		if (strcmp(argv[i],"--servername")==0) {
 			argServerName = new QString(argv[i+1]); // to get the serverName now
 		}
@@ -182,7 +182,7 @@ gui_mch_prepare(int *argc, char **argv)// {{{
 		) {
 			gui_argv[gui_argc++] = argv[i];
 		}
-	
+
 
 		//KDE/Qt options with one arg
 		if ( strcmp(argv[i],"--session")==0
@@ -211,7 +211,7 @@ gui_mch_prepare(int *argc, char **argv)// {{{
 			gui_argv[gui_argc++] = argv[i+1];
 			found=2;
 		}
-	
+
 		//remove from the list of argv
 		if (found >= 1 && --*argc>i) {
 			mch_memmove(&argv[i], &argv[i + 1],
@@ -385,7 +385,7 @@ gui_mch_open()//{{{
 #endif
 	if (startfont!=NULL)
 	    gui_mch_init_font((char_u*)startfont->latin1(),0);
-	
+
 	if (startsize!=NULL)
 	    vmw->resize(startsize->width(), startsize->height());
 
@@ -394,7 +394,7 @@ gui_mch_open()//{{{
 	if (kapp->isRestored())
 	    if (KMainWindow::canBeRestored(1))
 		vmw->restore(1);
-	
+
 	vmw->show();
 #if QT_VERSION>=300
 	if (tip==2) KTipDialog::showTip (vmw,QString::null,true);
@@ -559,8 +559,9 @@ gui_mch_init_font(char_u * font_name, int fontset)//{{{
 {
 	QString fontname;
 	GuiFont font=NULL;
-	
-	if (font_name==NULL) {
+
+	if (font_name==NULL)
+	{
 #if 0
 #if QT_VERSION>=300
 		KConfig *base = KGlobal::config();
@@ -568,7 +569,7 @@ gui_mch_init_font(char_u * font_name, int fontset)//{{{
 		KConfigBase *base = KGlobal::config();
 #endif
 		base->setGroup("General");
-		if(!base->hasKey("fixed")) {
+		if (!base->hasKey("fixed")) {
 			KMessageBox::error(KApplication::kApplication()->mainWidget(),"Cannot load default fixed font\n\nConfigure fonts in KDE Control Center.\n(Just click 'Choose...', 'OK' and then 'Apply')");
 			return FAIL;
 		}
@@ -614,11 +615,20 @@ gui_mch_init_font(char_u * font_name, int fontset)//{{{
 	if (fontname.contains('*') && fontname.contains('-'))
 		return FAIL;
 
+	/* Compute the width of the character cell.  Some fonts include
+	 * double-width characters.  Use the width of ASCII characters to find
+	 * out if this is so. */
 	QFontMetrics f(*font);
-	gui.char_width  = f.maxWidth();
+	int width_max = 0;
+	for (char c = 32; c < 127; c++)
+	    if (width_max < f.width((QChar)c))
+		width_max = f.width((QChar)c);
+	if (width_max <= f.maxWidth() / 2)
+	    width_max = f.maxWidth() / 2;
+	gui.char_width  = width_max;
 	gui.char_height = f.height()+p_linespace;
-	gui.char_ascent = f.ascent()+p_linespace/2;
-	
+	gui.char_ascent = f.ascent()+p_linespace;
+
 	//check values, just to make sure and avoid a crash
 	if (gui.char_width<=0) gui.char_width=8;
 	if (gui.char_height<=0) gui.char_height=1;
@@ -778,7 +788,7 @@ gui_mch_mousehide(int hide)//{{{
 {
 	if (hide == gui.pointer_hidden) return;
 	//#ifdef FEAT_MOUSESHAPE
-	//	if( !hide) mch_set_mouse_shape(last_shape);
+	//	if (!hide) mch_set_mouse_shape(last_shape);
 	//#else
 # if (QT_VERSION<300)
 	gui.w->setCursor((hide)?BlankCursor:ArrowCursor);
@@ -1092,7 +1102,7 @@ clip_mch_set_selection(VimClipboard *cbd){//{{{
 	long_u length;
 
 	clip_get_selection(cbd);
-	if(clip_convert_selection(&data,&length,cbd)<0) return;
+	if (clip_convert_selection(&data,&length,cbd)<0) return;
 
 	QString selection((const char *) data);
 	//We must turncate the string because it is not
@@ -1156,7 +1166,7 @@ gui_mch_enable_scrollbar(scrollbar_T * sb, int flag)//{{{
 	if (gui.which_scrollbars[SBAR_LEFT]) width += gui.scrollbar_width;
 	if (gui.which_scrollbars[SBAR_RIGHT]) width += gui.scrollbar_width;
 	if (gui.which_scrollbars[SBAR_BOTTOM]) height += gui.scrollbar_height;
-	
+
 	if (vmw->menuBar()->isVisible() && vmw->menuBar()->isEnabled()
 #if QT_VERSION>=300
 		&& !vmw->menuBar()->isTopLevelMenu()

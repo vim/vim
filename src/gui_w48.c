@@ -3376,6 +3376,16 @@ get_cmd_args(char *prog, char *cmdline, char ***argvp, char **tofree)
 		{
 		    if (pnew != NULL)
 			*pnew++ = *p;
+#ifdef FEAT_MBYTE
+		    /* Can't use mb_* functions, because 'encoding' is not
+		     * initialized yet here. */
+		    if (IsDBCSLeadByte(*p))
+		    {
+			++p;
+			if (pnew != NULL)
+			    *pnew++ = *p;
+		    }
+#endif
 		    ++p;
 		}
 	    }

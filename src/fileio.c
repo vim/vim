@@ -370,15 +370,21 @@ readfile(fname, sfname, from, lines_to_skip, lines_to_read, eap, flags)
      * file may destroy it!  Reported on MS-DOS and Win 95.
      * If the name is too long we might crash further on, quit here.
      */
-    if (fname != NULL
-	    && *fname != NUL
-	    && (vim_ispathsep(*(fname + STRLEN(fname) - 1))
-		|| STRLEN(fname) >= MAXPATHL))
+    if (fname != NULL && *fname != NUL)
     {
-	filemess(curbuf, fname, (char_u *)_("Illegal file name"), 0);
-	msg_end();
-	msg_scroll = msg_save;
-	return FAIL;
+	p = fname + STRLEN(fname) - 1;
+	if ((vim_ispathsep(*p)
+#ifdef FEAT_MBYTE
+		    /* Do not use a multi-byte char as path separator. */
+		    && (!has_mbyte || (*mb_head_off)(fname, p) == 0)
+#endif
+	    ) || STRLEN(fname) >= MAXPATHL)
+	{
+	    filemess(curbuf, fname, (char_u *)_("Illegal file name"), 0);
+	    msg_end();
+	    msg_scroll = msg_save;
+	    return FAIL;
+	}
     }
 
 #ifdef UNIX
@@ -7526,7 +7532,7 @@ ex_doautoall(eap)
 
 	    /* execute the autocommands for this buffer */
 	    retval = do_doautocmd(eap->arg, FALSE);
-	    do_modelines();
+	    do_modelines(FALSE);
 
 	    /* restore the current window */
 	    aucmd_restbuf(&aco);

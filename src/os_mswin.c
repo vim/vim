@@ -443,6 +443,10 @@ vim_stat(const char *name, struct stat *stp)
     p = buf + strlen(buf);
     if (p > buf)
 	--p;
+#ifdef FEAT_MBYTE
+    if (p > buf && has_mbyte)
+	p -= (*mb_head_off)(buf, p);
+#endif
     if (p > buf && (*p == '\\' || *p == '/') && p[-1] != ':')
 	*p = NUL;
 #ifdef FEAT_MBYTE
@@ -623,6 +627,23 @@ mch_chdir(char *path)
 
     if (*path == NUL)		/* drive name only */
 	return 0;
+
+#ifdef FEAT_MBYTE
+    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
+    {
+	WCHAR	*p = enc_to_ucs2(path, NULL);
+	int	n;
+
+	if (p != NULL)
+	{
+	    n = _wchdir(p);
+	    vim_free(p);
+	    if (n == 0)
+		return 0;
+	    /* Retry with non-wide function (for Windows 98). */
+	}
+    }
+#endif
 
     return chdir(path);	       /* let the normal chdir() do the rest */
 }

@@ -3529,6 +3529,12 @@ do_set(arg, opt_flags)
 		goto skip;
 	    }
 
+	    /* Skip all options that are not window-local (used when showing
+	     * an already loaded buffer in a window). */
+	    if ((opt_flags & OPT_WINONLY)
+		    && (opt_idx < 0 || options[opt_idx].var != VAR_WIN))
+		goto skip;
+
 #ifdef HAVE_SANDBOX
 	    /* Disallow changing some options in the sandbox */
 	    if (sandbox > 0 && (flags & P_SECURE))
@@ -4280,7 +4286,8 @@ set_options_bin(oldval, newval, opt_flags)
  * Find the parameter represented by the given character (eg ', :, ", or /),
  * and return its associated value in the 'viminfo' string.
  * Only works for number parameters, not for 'r' or 'n'.
- * If the parameter is not specified in the string, return -1.
+ * If the parameter is not specified in the string or there is no following
+ * number, return -1.
  */
     int
 get_viminfo_parameter(type)
@@ -5149,7 +5156,13 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 		while (*++s && *s != ',')
 		    ;
 	    }
-	    else if (*s == '%' || *s == '!' || *s == 'h' || *s == 'c')
+	    else if (*s == '%')
+	    {
+		/* optional number */
+		while (vim_isdigit(*++s))
+		    ;
+	    }
+	    else if (*s == '!' || *s == 'h' || *s == 'c')
 		++s;		/* no extra chars */
 	    else		/* must have a number */
 	    {

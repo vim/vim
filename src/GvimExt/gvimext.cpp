@@ -595,7 +595,7 @@ STDMETHODIMP CShellExt::QueryContextMenu(HMENU hMenu,
 		    indexMenu++,
 		    MF_STRING|MF_BYPOSITION,
 		    idCmd++,
-		    _("&Diff with Vim"));
+		    _("Diff with Vim"));
 	    m_edit_existing_off = 3;
 	}
 	else

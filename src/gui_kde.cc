@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=0 sw=8:
+/* vi:set ts=8 sts=4 sw=4:
  *
  * VIM - Vi IMproved		by Bram Moolenaar
  *
@@ -371,12 +371,10 @@ gui_mch_destroy_menu(vimmenu_T * menu)//{{{
 		return;
 	}
 #endif
-	if(menu->parent){
-		menu->parent->widget->removeItem((int)menu );
-	}
-	if (menu->widget){
+	if (menu->parent)
+		menu->parent->widget->removeItem((int)menu);
+	if (menu->widget)
 		delete menu->widget;
-	}
 	menu->widget = 0;
 }//}}}
 #endif /* FEAT_MENU */
@@ -475,21 +473,24 @@ gui_mch_browse(int saving,//{{{
 		char_u * filter)
 {
 	char * filt_glob;
-	if (filter != (char_u *) 0x0 ) {
+
+	if (filter != (char_u *) 0x0 )
+	{
 		filter = vim_strsave(filter);
 		strtok((char *) filter, "(");
 		filt_glob = strtok(0L, ")");
-	} else
+	}
+	else
 		filt_glob = (char *) filter;
-	
+
 	gui_mch_mousehide(FALSE);
 
 	QString s;
-	if (! saving)
+	if (!saving)
 		s = KFileDialog::getOpenFileName( (char *) initdir, (char *) filt_glob, vmw, (char *) title );
 	else
 		s = KFileDialog::getSaveFileName( );
-	
+
 	if (filter)
 		vim_free(filter);
 
@@ -508,7 +509,7 @@ gui_mch_browse(int saving,//{{{
 #ifdef FEAT_GUI_DIALOG
 
 /* ARGSUSED */
-int
+    int
 gui_mch_dialog(int type,		/* type of dialog *///{{{
 		char_u * title,		/* title of dialog */
 		char_u * message,	/* message text */
@@ -516,29 +517,29 @@ gui_mch_dialog(int type,		/* type of dialog *///{{{
 		int def_but,		/* default button */
 		char_u *textfield)
 {
-	gui_mch_mousehide(FALSE);
-	VimDialog vd(type, title, message, buttons, def_but,textfield);
-	int ret = vd.exec();
-	return ret;
+    gui_mch_mousehide(FALSE);
+    VimDialog vd(type, title, message, buttons, def_but,textfield);
+    int ret = vd.exec();
+    return ret;
 }//}}}
 
 
 #endif	/* FEAT_GUI_DIALOG */
 
 #if defined(FEAT_MENU) || defined(PROTO)
-	void
+    void
 gui_mch_show_popupmenu(vimmenu_T * menu)//{{{
 {
-	menu->widget->popup(QCursor::pos());
+    menu->widget->popup(QCursor::pos());
 }//}}}
 
 void
-gui_make_popup (char_u *pathname) {//{{{
-	vimmenu_T *menu = gui_find_menu(pathname);
+gui_make_popup (char_u *pathname)//{{{
+{
+    vimmenu_T *menu = gui_find_menu(pathname);
 
-	if (menu != NULL) {
-		menu->widget->popup(QCursor::pos());
-	}
+    if (menu != NULL)
+	menu->widget->popup(QCursor::pos());
 }//}}}
 #endif
 
@@ -548,19 +549,19 @@ gui_make_popup (char_u *pathname) {//{{{
 	void
 gui_mch_find_dialog(exarg_T * eap)//{{{
 {
-	// char_u* entry_text;
-	//int exact_word=FALSE;
-	//    entry_text = get_find_dialog_text(eap->arg,&exact_word);
+    // char_u* entry_text;
+    //int exact_word=FALSE;
+    //    entry_text = get_find_dialog_text(eap->arg,&exact_word);
 
-	vmw->finddlg->setCaseSensitive(true);
+    vmw->finddlg->setCaseSensitive(true);
 
-	/*    if(entry_text!=NULL) {
-	      vmw->finddlg->setText(QString((char*)entry_text));
-	// exact match should go there, hopefully KDE old KEdFind/KEdReplace will be replaced in KDE 4 as pple wanted KDE 3's Find/Replace to be kept
-	}*/ // Don't use it, KDE keeps old search in memory and vim give \\Csearch, which is difficult to handle
-	//   vim_free(entry_text);
+    /*    if (entry_text!=NULL) {
+	  vmw->finddlg->setText(QString((char*)entry_text));
+    // exact match should go there, hopefully KDE old KEdFind/KEdReplace will be replaced in KDE 4 as pple wanted KDE 3's Find/Replace to be kept
+    }*/ // Don't use it, KDE keeps old search in memory and vim give \\Csearch, which is difficult to handle
+    //   vim_free(entry_text);
 
-	vmw->finddlg->show();
+    vmw->finddlg->show();
 }//}}}
 
 	void
@@ -571,7 +572,7 @@ gui_mch_replace_dialog(exarg_T * eap)//{{{
 
 	//    entry_text = get_find_dialog_text(eap->arg,&exact_word);
 
-	/*    if(entry_text!=NULL) {
+	/*    if (entry_text!=NULL) {
 	      vmw->repldlg->setText(QString((char*)entry_text));
 	// exact match should go there, hopefully KDE old KEdFind/KEdReplace will be replaced in KDE 4 as pple wanted KDE 3's Find/Replace to be kept
 	}*/

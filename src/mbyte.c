@@ -426,6 +426,9 @@ mb_init()
     vimconv_T	vimconv;
     char_u	*p;
 #endif
+#ifdef WIN32
+    int		prev_enc_utf8 = enc_utf8;
+#endif
 
     if (p_enc == NULL)
     {
@@ -682,6 +685,17 @@ codepage_invalid:
      * translated messages independently from the current locale. */
     (void)bind_textdomain_codeset(VIMPACKAGE,
 					  enc_utf8 ? "utf-8" : (char *)p_enc);
+#endif
+
+#ifdef WIN32
+    /* When changing 'encoding' while starting up, then convert the command
+     * line arguments from the active codepage to 'encoding'. */
+    if (starting != 0)
+    {
+	extern void fix_arg_enc(void);
+
+	fix_arg_enc();
+    }
 #endif
 
 #ifdef FEAT_AUTOCMD

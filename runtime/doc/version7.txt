@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2004 Sep 01
+*version7.txt*  For Vim version 7.0aa.  Last change: 2004 Sep 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -154,6 +154,13 @@ ABAB/4 syntax file. (Marius van Wyk)
 
 SQL-Informix syntax file. (Dean L Hill)
 
+PHP compiler plugin. (Doug Kearns)
+
+
+New message translations: ~
+
+The Ukranian messages are now also available in cp1251.
+
 
 Others: ~
 
@@ -215,6 +222,9 @@ VMS: In the usage message mention that a slash can be used to make a flag
 upper case.  Add color support to the builtin vt320 terminal codes.
 (Zoltan Arpadffy)
 
+For the '%' item in 'viminfo', allow a number to set a maximum for the number
+of buffers.
+
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*
 
@@ -262,10 +272,6 @@ cursor and not putting it back where it was.
 When indent was added automatically and then moving the cursor, the indent was
 not deleted (like when pressing ESC).  The "I" flag in 'cpoptions' can be used
 to make it work the old way.
-
-When <Space> is mapped to something that starts with a space, typing <Space>
-does not expand abbreviations.  Only disable expanding abbreviations when a
-mapping is not remapped, not when the RHS starts with the LHS.
 
 When opening a command-line window, 'textwidth' gets set to 78 by the Vim
 filetype plugin.  Reset 'textwidth' to 0 to avoid lines are broken.
@@ -329,5 +335,17 @@ detected.  Reset did_filetype in enter_buffer().
 
 When using ":argdo" and the window already was at the first argument index,
 but not actually editing it, the current buffer would be used instead.
+
+When ":next dir/*" includes many matches, adding the names to the argument
+list may take an awful lot of time and can't be interrupted.  Allow
+interrupting this.
+
+When editing a file that was already loaded in a buffer, modelines were not
+used.  Now window-local options in the modeline are set.  Buffer-local options
+and global options remain unmodified.
+
+Win32: When 'encoding' is set to "utf-8" in the vimrc file, files from the
+command line with non-ASCII characters are not used correctly.  Recode the
+file names when 'encoding' is set, using the Unicode command line.
 
  vim:tw=78:ts=8:ft=help:norl:

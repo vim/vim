@@ -21,6 +21,7 @@ char_u *get_user_cmd_nargs __ARGS((expand_T *xp, int idx));
 char_u *get_user_cmd_complete __ARGS((expand_T *xp, int idx));
 void not_exiting __ARGS((void));
 void handle_drop __ARGS((int filec, char_u **filev, int split));
+void alist_clear __ARGS((alist_T *al));
 void alist_init __ARGS((alist_T *al));
 void alist_unlink __ARGS((alist_T *al));
 void alist_new __ARGS((void));

@@ -985,6 +985,7 @@ extern char* (*dyn_libintl_textdomain)(const char* domainname);
 #define OPT_GLOBAL	2	/* use global value */
 #define OPT_LOCAL	4	/* use local value */
 #define OPT_MODELINE	8	/* option in modeline */
+#define OPT_WINONLY	16	/* only set window-local options */
 
 /* Magic chars used in confirm dialog strings */
 #define DLG_BUTTON_SEP	'\n'

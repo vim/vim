@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2004 Aug 30
+*options.txt*	For Vim version 7.0aa.  Last change: 2004 Sep 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -472,6 +472,11 @@ buffer and window that contain the file.  Although it's possible to set global
 options from a modeline, this is unusual.  If you have two windows open and
 the files in it set the same global option to a different value, the result
 depends on which one was opened last.
+
+When editing a file that was already loaded, only the window-local options
+from the modeline are used.  Thus if you manually changed a buffer-local
+option after opening the file, it won't be changed if you edit the same buffer
+in another window.  But window-local options will be set.
 
 							*modeline-version*
 If the modeline is only to be used for some versions of Vim, the version
@@ -6352,6 +6357,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 		buffer list is restored from the viminfo file.  Buffers
 		without a file name and buffers for help files are not written
 		to the viminfo file.
+		When followed by a number, the number specifies the maximum
+		number of buffers that are stored.  Without a number all
+		buffers are stored.
 	'	Maximum number of previously edited files for which the marks
 		are remembered.  This parameter must always be included when
 		'viminfo' is non-empty.

@@ -1065,6 +1065,16 @@ scripterror:
 		    2		/* add buffer number now and use curbuf */
 #endif
 		    );
+
+#if defined(FEAT_MBYTE) && defined(WIN32)
+	    {
+		extern void used_file_arg(char *, int, int);
+
+		/* Remember this argument has been added to the argument list.
+		 * Needed when 'encoding' is changed. */
+		used_file_arg(argv[0], literal, full_path);
+	    }
+#endif
 	}
 
 	/*
@@ -1133,6 +1143,17 @@ scripterror:
 #endif
 	fname = alist_name(&GARGLIST[0]);
     }
+
+#if defined(WIN32) && defined(FEAT_MBYTE)
+    {
+	extern void set_alist_count(void);
+
+	/* Remember the number of entries in the argument list.  If it changes
+	 * we don't react on setting 'encoding'. */
+	set_alist_count();
+    }
+#endif
+
     if (GARGCOUNT > 1)
 	printf(_("%d files to edit\n"), GARGCOUNT);
 #ifdef MSWIN
@@ -1756,7 +1777,7 @@ scripterror:
 	ml_recover();
 	if (curbuf->b_ml.ml_mfp == NULL) /* failed */
 	    getout(1);
-	do_modelines();			/* do modelines */
+	do_modelines(FALSE);		/* do modelines */
     }
     else
     {

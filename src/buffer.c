@@ -252,7 +252,7 @@ open_buffer(read_stdin, eap)
 	    /* Go to the buffer that was opened. */
 	    aucmd_prepbuf(&aco, old_curbuf);
 #endif
-	    do_modelines();
+	    do_modelines(FALSE);
 	    curbuf->b_flags &= ~(BF_CHECK_RO | BF_NEVERLOADED);
 
 #ifdef FEAT_AUTOCMD
@@ -724,7 +724,7 @@ handle_swap_exists(old_curbuf)
 	ml_recover();
 	MSG_PUTS("\n");	/* don't overwrite the last message */
 	cmdline_row = msg_row;
-	do_modelines();
+	do_modelines(FALSE);
     }
     swap_exists_action = SEA_NONE;
     got_int |= old_got_int;
@@ -4338,14 +4338,15 @@ ex_buffer_all(eap)
  *
  * Returns immediately if the "ml" option isn't set.
  */
-static int  chk_modeline __ARGS((linenr_T));
+static int  chk_modeline __ARGS((linenr_T, int));
 
     void
-do_modelines()
+do_modelines(win_only)
+    int		win_only;	    /* Only do window-local options. */
 {
-    linenr_T	    lnum;
-    int		    nmlines;
-    static int	    entered = 0;
+    linenr_T	lnum;
+    int		nmlines;
+    static int	entered = 0;
 
     if (!curbuf->b_p_ml || (nmlines = (int)p_mls) == 0)
 	return;
@@ -4358,12 +4359,12 @@ do_modelines()
     ++entered;
     for (lnum = 1; lnum <= curbuf->b_ml.ml_line_count && lnum <= nmlines;
 								       ++lnum)
-	if (chk_modeline(lnum) == FAIL)
+	if (chk_modeline(lnum, win_only) == FAIL)
 	    nmlines = 0;
 
     for (lnum = curbuf->b_ml.ml_line_count; lnum > 0 && lnum > nmlines
 		       && lnum > curbuf->b_ml.ml_line_count - nmlines; --lnum)
-	if (chk_modeline(lnum) == FAIL)
+	if (chk_modeline(lnum, win_only) == FAIL)
 	    nmlines = 0;
     --entered;
 }
@@ -4375,8 +4376,9 @@ do_modelines()
  * Return FAIL if an error encountered.
  */
     static int
-chk_modeline(lnum)
+chk_modeline(lnum, win_only)
     linenr_T	lnum;
+    int		win_only;	    /* Only do window-local options. */
 {
     char_u	*s;
     char_u	*e;
@@ -4473,7 +4475,8 @@ chk_modeline(lnum)
 		save_SID = current_SID;
 		current_SID = SID_MODELINE;
 #endif
-		retval = do_set(s, OPT_MODELINE | OPT_LOCAL);
+		retval = do_set(s, OPT_MODELINE | OPT_LOCAL
+					      | (win_only ? OPT_WINONLY : 0));
 #ifdef FEAT_EVAL
 		current_SID = save_SID;
 #endif
@@ -4558,9 +4561,13 @@ write_viminfo_bufferlist(fp)
     win_T	*win;
 #endif
     char_u	*line;
+    int		max_buffers;
 
     if (find_viminfo_parameter('%') == NULL)
 	return;
+
+    /* Without a number -1 is returned: do all buffers. */
+    max_buffers = get_viminfo_parameter('%');
 
     /* Allocate room for the file name, lnum and col. */
     line = alloc(MAXPATHL + 30);
@@ -4585,6 +4592,8 @@ write_viminfo_bufferlist(fp)
 		|| removable(buf->b_ffname))
 	    continue;
 
+	if (max_buffers-- == 0)
+	    break;
 	putc('%', fp);
 	home_replace(NULL, buf->b_ffname, line, MAXPATHL, TRUE);
 	sprintf((char *)line + STRLEN(line), "\t%ld\t%d",

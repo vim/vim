@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Aug 31
+*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Sep 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,37 +30,15 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Multi-byte char in file name causes trouble for opening, "send to" menu and
-writing.  Patches from Taro Muraoka:
-    ~/Mail/oldmail/muraoka/in.00575
-    ~/Mail/oldmail/muraoka/in.00577
-
-Is there a limit on the buffer list in the viminfo file?
-":n ~/.trashcan/bogus*" fills it.
-
-When gvim is started from the context menu the xxd menu entries don't work
-(Valencia).  xxd.exe is not in $VIMRUNTIME.
-
 Aborting at the ATTENTION prompt causes trouble:
     buffer remains active, nwindows isn't closed (fixed in buffer.c)
     alternate buffer gets "read error" flag.
     ":sbuf" and ":ball" leave an empty window behind.
 Change in handle_swap_exists() also in 6.3?
 
-Add remap-abbreviation solution to Vim 6.3?  It's about adding REMAP_SKIP and
-RM_ABBR in getchar.c.
-
-Added ga_append() here: (also to 6.3?)
-    script_get(eap, cmd)
-    gui_do_findrepl(flags, find_text, repl_text, down)
-    serverGetVimNames(dpy)  if_xcmdsrv.c, os_mswin.c
-
 Win32: When the path to a file has Russian characters, ":cd %:p:h" doesn't
 work. (Valery Kondakoff)
-
-Win32: When an argument is typed in a console in the active codepage, and
-'encoding' is "utf-8", detect this from illegal characters.  Convert from
-console or active codepage to utf-8 then.
+Solved in os_mswin.c.  Add to 6.3?
 
 For version 7.0:
 -   Include many PATCHES:
@@ -114,10 +92,10 @@ For version 7.0:
 	He will update the patch for 6.3.
     Autocommands:
     7   Completion of network shares, patch by Yasuhiro Matsumoto.
-	Update 2004 Jun 17.
+	Update 2004 Sep 6.
 	How does this work?  Missing comments.
     gettext()		Translate a message.  (Patch from Yasuhiro Matsumoto)
-			Update 2004 Jun 17
+			Update 2004 Sep 5
 			Missing docs.  Search in 'runtimepath'?
 			How to get the messages into the .po files?
     --- did not respond (yet) --
@@ -219,6 +197,7 @@ For version 7.0:
 -   "INTELLISENSE".  First cleanup the Insert-mode completion.
 	http://www.vim.org/scripts/script.php?script_id=747
 	http://sourceforge.net/projects/insenvim
+	http://cedet.sourceforge.net/intellisense.shtml (for Emacs)
 -   PERSISTENT UNDO: store undo in a file.
     Support multiple threads.  Show the list of changes in a window to be able
     to select a version.
@@ -283,10 +262,13 @@ Support ":set syntax=cpp.doxygen"?  Suggested patch by Michael Geddes (9 Aug
 2004).  Should also work for 'filetype'.
 
 Patch for 'breakindent' option: repeat indent for wrapped line. (Vaclav
-Smilauer, 2004 Aug 17)
+Smilauer, 2004 Sep 5)
 
 
 Vi incompatibility:
+9   In Ex mode, "u" undoes all changes, not just the last one. (John Cowan)
+8   In Ex mode, an empty file doesn't have a first line, "1p" should fail.
+8   In Ex mode, "1,3" should print three lines.
 8   With undo/redo only marks in the changed lines should be changed.  Other
     marks should be kept.  Vi keeps each mark at the same text, even when it
     is deleted or restored. (Webb)
@@ -2996,7 +2978,9 @@ Debug mode:
 8   Add breakpoints for setting an option
 8   Add breakpoints for assigning to a variable.
 7   Add a watchpoint in the debug mode: An expression that breaks execution
-    when evaluating to non-zero.
+    when evaluating to non-zero.  Add the "watchadd expr" command, stop when
+    the value of the expression changes.  ":watchdel" deletes an item,
+    ":watchlist" lists the items. (Charles Campbell)
 7   Store the history from debug mode in viminfo.
 7   Make the debug mode history available with histget() et al.
 

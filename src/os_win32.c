@@ -2207,7 +2207,6 @@ mch_exit(int r)
 }
 #endif /* !FEAT_GUI_W32 */
 
-
 /*
  * Do we have an interactive window?
  */
