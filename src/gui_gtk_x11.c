@@ -2966,6 +2966,8 @@ gui_mch_init(void)
     gui.fgcolor = g_new0(GdkColor, 1);
     /* LINTED: avoid warning: conversion to 'unsigned long' */
     gui.bgcolor = g_new0(GdkColor, 1);
+    /* LINTED: avoid warning: conversion to 'unsigned long' */
+    gui.spcolor = g_new0(GdkColor, 1);
 
     /* Initialise atoms */
 #ifdef FEAT_MBYTE
@@ -4984,6 +4986,15 @@ gui_mch_set_bg_color(guicolor_T color)
     gui.bgcolor->pixel = (unsigned long)color;
 }
 
+/*
+ * Set the current text special color.
+ */
+    void
+gui_mch_set_sp_color(guicolor_T color)
+{
+    gui.spcolor->pixel = (unsigned long)color;
+}
+
 #ifdef HAVE_GTK2
 /*
  * Function-like convenience macro for the sake of efficiency.
@@ -5162,6 +5173,42 @@ draw_glyph_string(int row, int col, int num_cells, int flags,
 }
 
 #endif /* HAVE_GTK2 */
+
+/*
+ * Draw underline and undercurl at the bottom of the character cell.
+ */
+    static void
+draw_under(int flags, int row, int col, int cells)
+{
+    int			i;
+    int			offset;
+    const static int	val[8] = {1, 0, 0, 0, 1, 2, 2, 2 };
+    int			y = FILL_Y(row + 1) - 1;
+
+    /* Undercurl: draw curl at the bottom of the character cell. */
+    if (flags & DRAW_UNDERC)
+    {
+	gdk_gc_set_foreground(gui.text_gc, gui.spcolor);
+	for (i = FILL_X(col); i < FILL_X(col + cells); ++i)
+	{
+	    offset = val[i % 8];
+	    gdk_draw_point(gui.drawarea->window, gui.text_gc, i, y - offset);
+	}
+	gdk_gc_set_foreground(gui.text_gc, gui.fgcolor);
+    }
+
+    /* Underline: draw a line at the bottom of the character cell. */
+    if (flags & DRAW_UNDERL)
+    {
+	/* When p_linespace is 0, overwrite the bottom row of pixels.
+	 * Otherwise put the line just below the character. */
+	if (p_linespace > 1)
+	    y -= p_linespace - 1;
+	gdk_draw_line(gui.drawarea->window, gui.text_gc,
+		      FILL_X(col), y,
+		      FILL_X(col + cells) - 1, y);
+    }
+}
 
 #if defined(HAVE_GTK2) || defined(PROTO)
     int
@@ -5413,13 +5460,8 @@ not_ascii:
     }
 
 skipitall:
-    if (flags & DRAW_UNDERL)
-	gdk_draw_line(gui.drawarea->window,
-		      gui.text_gc,
-		      FILL_X(col),
-		      FILL_Y(row + 1) - 1,
-		      FILL_X(col + column_offset) - 1,
-		      FILL_Y(row + 1) - 1);
+    /* Draw underline and undercurl. */
+    draw_under(flags, row, col, column_offset);
 
     pango_glyph_string_free(glyphs);
     vim_free(conv_buf);
@@ -5544,12 +5586,8 @@ gui_mch_draw_string(int row, int col, char_u *s, int len, int flags)
 		      TEXT_X(col) + 1, TEXT_Y(row),
 		      (const gchar *)text, textlen);
 
-    if (flags & DRAW_UNDERL)
-    {
-	gdk_draw_line(gui.drawarea->window,
-		      gui.text_gc, FILL_X(col),
-	FILL_Y(row + 1) - 1, FILL_X(col + width) - 1, FILL_Y(row + 1) - 1);
-    }
+    /* Draw underline and undercurl. */
+    draw_under(flags, row, col, width);
 }
 #endif /* !HAVE_GTK2 */
 
