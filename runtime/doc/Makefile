@@ -68,7 +68,6 @@ DOCS = \
 	os_vms.txt \
 	os_win32.txt \
 	pattern.txt \
-	pi_expl.txt \
 	pi_gzip.txt \
 	pi_netrw.txt \
 	pi_spec.txt \
@@ -189,7 +188,6 @@ HTMLS = \
 	os_vms.html \
 	os_win32.html \
 	pattern.html \
-	pi_expl.html \
 	pi_gzip.html \
 	pi_netrw.html \
 	pi_spec.html \
