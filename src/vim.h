@@ -1526,7 +1526,9 @@ int vim_memcmp __ARGS((void *, void *, size_t));
 #define VV_REG		31
 #define VV_CMDBANG	32
 #define VV_INSERTMODE	33
-#define VV_LEN		34	/* number of v: vars */
+#define VV_VAL		34
+#define VV_KEY		35
+#define VV_LEN		36	/* number of v: vars */
 
 #ifdef FEAT_CLIPBOARD
 
