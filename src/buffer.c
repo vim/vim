@@ -608,7 +608,7 @@ free_buffer_stuff(buf, free_options)
 	free_buf_options(buf, TRUE);
     }
 #ifdef FEAT_EVAL
-    var_clear(&buf->b_vars);		/* free all internal variables */
+    vars_clear(&buf->b_vars);		/* free all internal variables */
 #endif
 #ifdef FEAT_USR_CMDS
     uc_clear(&buf->b_ucmds);		/* clear local user commands */
@@ -1626,7 +1626,7 @@ buflist_new(ffname, sfname, lnum, flags)
     buf->b_wininfo->wi_win = curwin;
 
 #ifdef FEAT_EVAL
-    var_init(&buf->b_vars);		/* init internal variables */
+    vars_init(&buf->b_vars);		/* init internal variables */
 #endif
 
     buf->b_fname = buf->b_sfname;
