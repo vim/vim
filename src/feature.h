@@ -382,7 +382,7 @@
 /*
  * +profile		Profiling for functions and scripts.
  */
-#ifdef FEAT_HUGE
+#if defined(FEAT_HUGE) && defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
 # define FEAT_PROFILE
 #endif
 
