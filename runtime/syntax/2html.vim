@@ -1,6 +1,6 @@
 " Vim syntax support file
 " Maintainer: Bram Moolenaar <Bram@vim.org>
-" Last Change: 2004 Oct 10
+" Last Change: 2004 Oct 12
 "	       (modified by David Ne\v{c}as (Yeti) <yeti@physics.muni.cz>)
 "	       (XHTML support by Panagiotis Issaris <takis@lumumba.luc.ac.be>)
 
@@ -251,20 +251,67 @@ if has('folding')
   unlet s:c
 endif
 
+" For diff filler lines
+if has('diff')
+  if s:numblines
+    let s:fillerline = strpart('        ', 0, strlen(line("$"))) . ' '
+  else
+    let s:fillerline = ''
+  endif
+  let s:fillchar = &fillchars[matchend(&fillchars, 'diff:')]
+  if s:fillchar == ''
+    let s:fillchar = '-'
+  endif
+  while strlen(s:fillerline) < &columns
+      let s:fillerline = s:fillerline . s:fillchar
+  endwhile
+endif
 
 while s:lnum <= s:end
 
+  " If there are filler lines for diff mode, show these above the line.
+  let s:filler = diff_filler(s:lnum)
+  if s:filler > 0
+    let s:n = s:filler
+    while s:n > 0
+      if s:n > 2 && s:n < s:filler && !exists("html_whole_filler")
+	let s:new = strpart(s:fillerline, 0, 3) . " " . s:filler . " inserted lines "
+	let s:new = s:new . strpart(s:fillerline, strlen(s:new))
+	let s:n = 2
+      else
+	let s:new = s:fillerline
+      endif
+      let s:id_name = "DiffDelete"
+      let s:id = hlID(s:id_name)
+      let s:new = '<span class="' . s:id_name . '">' . s:new . '</span>'
+      " Add the class to class list if it's not there yet
+      if stridx(s:idlist, "," . s:id . ",") == -1
+	let s:idlist = s:idlist . s:id . ","
+      endif
+
+      exe s:newwin . "wincmd w"
+      exe "normal! a" . strtrans(s:new) . "\n\e"
+      exe s:orgwin . "wincmd w"
+      let s:n = s:n - 1
+    endwhile
+    unlet s:n
+  endif
+  unlet s:filler
+
+  " Start the line with the line number.
+  if s:numblines
+    let s:new = strpart('        ', 0, strlen(line("$")) - strlen(s:lnum)) . s:lnum . ' '
+  else
+    let s:new = ""
+  endif
+
   " Get the current line
   let s:line = getline(s:lnum)
-  let s:new = ""
 
   if has('folding') && foldclosed(s:lnum) > -1
     "
     " This is the beginning of a folded block
     "
-    if s:numblines
-      let s:new = strpart('        ', 0, strlen(line("$")) - strlen(s:lnum)) . s:lnum . ' '
-    endif
     let s:line = foldtextresult(s:lnum)
 
     let s:new = s:new . s:line
@@ -293,18 +340,34 @@ while s:lnum <= s:end
     let s:len = strlen(s:line)
 
     if s:numblines
-      let s:new = '<span class="lnr">' . strpart('        ', 0, strlen(line("$")) - strlen(s:lnum)) . s:lnum . '</span>  '
+      let s:new = '<span class="lnr">' . s:new . '</span>  '
     endif
+
+    " Get the diff attribute, if any.
+    let s:diffattr = diff_hlID(s:lnum, 1)
 
     " Loop over each character in the line
     let s:col = 1
     while s:col <= s:len
       let s:startcol = s:col " The start column for processing text
-      let s:id = synID(s:lnum, s:col, 1)
-      let s:col = s:col + 1
-      " Speed loop (it's small - that's the trick)
-      " Go along till we find a change in synID
-      while s:col <= s:len && s:id == synID(s:lnum, s:col, 1) | let s:col = s:col + 1 | endwhile
+      if s:diffattr
+	let s:id = diff_hlID(s:lnum, s:col)
+	let s:col = s:col + 1
+	" Speed loop (it's small - that's the trick)
+	" Go along till we find a change in hlID
+	while s:col <= s:len && s:id == diff_hlID(s:lnum, s:col) | let s:col = s:col + 1 | endwhile
+	while s:len < &columns
+	  " Add spaces at the end to mark the changed line.
+	  let s:line = s:line . ' '
+	  let s:len = s:len + 1
+	endwhile
+      else
+	let s:id = synID(s:lnum, s:col, 1)
+	let s:col = s:col + 1
+	" Speed loop (it's small - that's the trick)
+	" Go along till we find a change in synID
+	while s:col <= s:len && s:id == synID(s:lnum, s:col, 1) | let s:col = s:col + 1 | endwhile
+      endif
 
       " Output the text with the same synID, with class set to {s:id_name}
       let s:id = synIDtrans(s:id)
@@ -457,3 +520,4 @@ if !exists("html_use_css")
   delfunc s:HtmlOpening
   delfunc s:HtmlClosing
 endif
+silent! unlet s:htmlfoldtext s:fillerline s:diffattr

@@ -2271,7 +2271,7 @@ echo "configure:2266: checking Tcl version" >&5
       echo $ac_n "checking for location of Tcl include""... $ac_c" 1>&6
 echo "configure:2273: checking for location of Tcl include" >&5
       if test "x$MACOSX" != "xyes"; then
-	tclinc="$tclloc/include $tclloc/include/tcl $tclloc/include/tcl$tclver /usr/local/include"
+	tclinc="$tclloc/include $tclloc/include/tcl $tclloc/include/tcl$tclver /usr/local/include /usr/include"
       else
 		tclinc="/System/Library/Frameworks/Tcl.framework/Headers"
       fi

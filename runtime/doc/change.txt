@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.0aa.  Last change: 2004 Sep 16
+*change.txt*    For Vim version 7.0aa.  Last change: 2004 Oct 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -13,6 +13,10 @@ commands with the "." command.
 2. Delete and insert		|delete-insert|
 3. Simple changes		|simple-change|		*changing*
 4. Complex changes		|complex-change|
+   4.1 Filter commands		   |filter|
+   4.2 Substitute		   |:substitute|
+   4.3 Search and replace	   |search-replace|
+   4.4 Changing tabs		   |change-tabs|
 5. Copying and moving text	|copy-move|
 6. Formatting text		|formatting|
 
@@ -449,7 +453,19 @@ For example: >
 ==============================================================================
 4. Complex changes					*complex-change*
 
-							*!* *filter*
+4.1 Filter commands 					*filter*
+
+A filter is a program that accepts text at standard input, changes it in some
+way, and sends it to standard output.  You can use the commands below to send
+some text through a filter, so that it is replace by the filter output.
+Examples of filters are "sort", which sorts lines alphabetically, and
+"indent", which formats C program files (you need a version of indent that
+works like a filter; not all versions do).  The 'shell' option specifies the
+shell Vim uses to execute the filter command (See also the 'shelltype'
+option).  You can repeat filter commands with ".".  Vim does not recognize a
+comment (starting with '"') after the ":!" command.
+
+							*!*
 !{motion}{filter}	Filter {motion} text lines through the external
 			program {filter}.
 
@@ -492,17 +508,9 @@ For example: >
 {Visual}=		Filter the highlighted lines like with ={motion}.
 			{not in Vi}
 
-A filter is a program that accepts text at standard input, changes it in some
-way, and sends it to standard output.  You can use the commands above to send
-some text through a filter.  Examples of filters are "sort", which sorts lines
-alphabetically, and "indent", which formats C program files (you need a
-version of indent that works like a filter; not all versions do).  The 'shell'
-option specifies the shell Vim uses to execute the filter command (See also
-the 'shelltype' option).  You can repeat filter commands with ".".  Vim does
-not recognize a comment (starting with '"') after the ":!" command.
 
-
-						*:s* *:su* *:substitute*
+4.2 Substitute						*:substitute*
+							*:s* *:su*
 :[range]s[ubstitute]/{pattern}/{string}/[&][c][e][g][p][r][i][I] [count]
 			For each line in [range] replace a match of {pattern}
 			with {string}.
@@ -741,7 +749,9 @@ Example: >
 This replaces an end-of-line with a new line containing the value of $HOME.
 
 
-						*:pro* *:promptfind*
+4.3 Search and replace					*search-replace*
+
+							*:pro* *:promptfind*
 :promptf[ind] [string]
 			Put up a Search dialog.  When [string] is given, it is
 			used as the initial search string.
@@ -753,6 +763,8 @@ This replaces an end-of-line with a new line containing the value of $HOME.
 			given, it is used as the initial search string.
 			{only for Win32, Motif and GTK GUI}
 
+
+4.4 Changing tabs					*change-tabs*
 							*:ret* *:retab*
 :[range]ret[ab][!] [new_tabstop]
 			Replace all sequences of white-space containing a

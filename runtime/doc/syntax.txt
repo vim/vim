@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.0aa.  Last change: 2004 Oct 10
+*syntax.txt*	For Vim version 7.0aa.  Last change: 2004 Oct 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -420,6 +420,16 @@ To go back to the automatic mechanism, delete the g:html_use_encoding
 variable: >
    :unlet html_use_encoding
 <
+Closed folds are kept as they are displayed.  If you don't want closed folds
+in the HTML use the |zR| command before converting.
+
+For diff mode a sequence of more than 3 filler lines is displayed as three
+lines with the middle line mentioning the total number of inserted lines.  If
+you prefer to see all the inserted lines use: >
+    :let html_whole_filler = 1
+And to go back to displaying up to three lines again: >
+    :unlet html_whole_filler
+
 					    *convert-to-XML* *convert-to-XHTML*
 An alternative is to have the script generate XHTML (XML compliant HTML).  To
 do this set the "use_xhtml" variable: >

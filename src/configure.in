@@ -713,7 +713,7 @@ if test "$enable_tclinterp" = "yes"; then
 
       AC_MSG_CHECKING(for location of Tcl include)
       if test "x$MACOSX" != "xyes"; then
-	tclinc="$tclloc/include $tclloc/include/tcl $tclloc/include/tcl$tclver /usr/local/include"
+	tclinc="$tclloc/include $tclloc/include/tcl $tclloc/include/tcl$tclver /usr/local/include /usr/include"
       else
 	dnl For Mac OS X 10.3, use the OS-provided framework location
 	tclinc="/System/Library/Frameworks/Tcl.framework/Headers"

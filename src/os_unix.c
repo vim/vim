@@ -1535,13 +1535,7 @@ get_x11_windis()
 get_x11_title(test_only)
     int		test_only;
 {
-    int		retval;
-
-    retval = get_x11_thing(TRUE, test_only);
-
-    /* could not get old title: oldtitle == NULL */
-
-    return retval;
+    return get_x11_thing(TRUE, test_only);
 }
 
 /*
@@ -1829,7 +1823,8 @@ mch_settitle(title, icon)
      *	     than x11 calls, because the x11 calls don't always work
      */
 #ifdef FEAT_GUI_KDE
-    /* dont know why but KDE needs this one as we don't go through the next function... */
+    /* dont know why but KDE needs this one as we don't go through the next
+     * function... */
     gui_mch_settitle(title, icon);
 #endif
     if ((type || *T_TS != NUL) && title != NULL)

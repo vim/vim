@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Oct 10
+*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Oct 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,9 +29,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
-
-Folding support for 2html. (Carl Osterwisch, Oct 4)
-Now diff output!
 
 Aborting at the ATTENTION prompt causes trouble:
     buffer remains active, nwindows isn't closed (fixed in buffer.c)
@@ -196,6 +193,10 @@ For version 7.0:
 	Also: when the environment variable exists, use it.  If it doesn't
 	exist, set it.  Requires good names: $VIM_USER_VIMRC  $VIM_USER_DIR
 
+xterm title: After setting a title, obtaining the title still may result in
+the old one.  Sometimes happens with the test scripts.  Setting the title is
+done with an ESC sequence, obtaining the old title with an X library call.
+Invoking XFlush() before getting the title doesn't help.
 
 -   In the kvim/KDE source files fix the formatting.
 -   KDE version is called "kvim".  Make it "gvim", like the others?
@@ -359,6 +360,8 @@ file filename" but without setting the alternate file to a buffer without a
 name. (Charles Campbell)
 
 Add gui_mch_browsedir() for Motif, KDE and Mac OS/X.
+
+Translated manual pages: Install German one in /usr/local/man/de/man1/vim.1
 
 
 Vi incompatibility:
@@ -1281,9 +1284,6 @@ Folding:
     commands skip over a closed fold.
 8   "H" and "L" count buffer lines instead of window lines. (Servatius Brandt)
 8   Add a way to add fold-plugins.  Johannes Zellner has one for VB.
-7   When using 2html.vim, also reproduce folds as you can see them.  When
-    someone doesn't want the folds he can disable them before converting.
-    First attempt by Carl Osterwisch, 2004 May 10.
 7   When using manual folding, the undo command should also restore folds.
 -   Allow completely hiding a closed fold.  Require showing a character in
     'foldcolumn' to avoid the missing line goes unnoticed.

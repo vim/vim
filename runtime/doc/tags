@@ -4161,6 +4161,7 @@ cc	change.txt	/*cc*
 ch-syntax	syntax.txt	/*ch-syntax*
 ch.vim	syntax.txt	/*ch.vim*
 change-list-jumps	motion.txt	/*change-list-jumps*
+change-tabs	change.txt	/*change-tabs*
 change.txt	change.txt	/*change.txt*
 changed-5.1	version5.txt	/*changed-5.1*
 changed-5.2	version5.txt	/*changed-5.2*
@@ -4417,6 +4418,8 @@ diff-mode	diff.txt	/*diff-mode*
 diff-options	diff.txt	/*diff-options*
 diff-patchexpr	diff.txt	/*diff-patchexpr*
 diff.txt	diff.txt	/*diff.txt*
+diff_filler()	eval.txt	/*diff_filler()*
+diff_hlID()	eval.txt	/*diff_hlID()*
 digraph-arg	change.txt	/*digraph-arg*
 digraph-encoding	digraph.txt	/*digraph-encoding*
 digraph-table	digraph.txt	/*digraph-table*
@@ -4691,6 +4694,7 @@ foldlevel()	eval.txt	/*foldlevel()*
 foldlevel-variable	eval.txt	/*foldlevel-variable*
 foldstart-variable	eval.txt	/*foldstart-variable*
 foldtext()	eval.txt	/*foldtext()*
+foldtextresult()	eval.txt	/*foldtextresult()*
 font-sizes	gui_x11.txt	/*font-sizes*
 fontset	mbyte.txt	/*fontset*
 foreground()	eval.txt	/*foreground()*
@@ -5935,6 +5939,7 @@ search-commands	pattern.txt	/*search-commands*
 search-offset	pattern.txt	/*search-offset*
 search-pattern	pattern.txt	/*search-pattern*
 search-range	pattern.txt	/*search-range*
+search-replace	change.txt	/*search-replace*
 searchpair()	eval.txt	/*searchpair()*
 section	motion.txt	/*section*
 sed-syntax	syntax.txt	/*sed-syntax*

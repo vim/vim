@@ -274,6 +274,8 @@ static void f_cscope_connection __ARGS((VAR argvars, VAR retvar));
 static void f_cursor __ARGS((VAR argsvars, VAR retvar));
 static void f_delete __ARGS((VAR argvars, VAR retvar));
 static void f_did_filetype __ARGS((VAR argvars, VAR retvar));
+static void f_diff_filler __ARGS((VAR argvars, VAR retvar));
+static void f_diff_hlID __ARGS((VAR argvars, VAR retvar));
 static void f_escape __ARGS((VAR argvars, VAR retvar));
 static void f_eventhandler __ARGS((VAR argvars, VAR retvar));
 static void f_executable __ARGS((VAR argvars, VAR retvar));
@@ -2837,6 +2839,8 @@ static struct fst
     {"cursor",		2, 2, f_cursor},
     {"delete",		1, 1, f_delete},
     {"did_filetype",	0, 0, f_did_filetype},
+    {"diff_filler",	1, 1, f_diff_filler},
+    {"diff_hlID",	2, 2, f_diff_hlID},
     {"escape",		2, 2, f_escape},
     {"eventhandler",	0, 0, f_eventhandler},
     {"executable",	1, 1, f_executable},
@@ -3973,6 +3977,79 @@ f_did_filetype(argvars, retvar)
     retvar->var_val.var_number = did_filetype;
 #else
     retvar->var_val.var_number = 0;
+#endif
+}
+
+/*
+ * "diff_filler()" function
+ */
+/*ARGSUSED*/
+    static void
+f_diff_filler(argvars, retvar)
+    VAR		argvars;
+    VAR		retvar;
+{
+#ifdef FEAT_DIFF
+    retvar->var_val.var_number = diff_check_fill(curwin, get_var_lnum(argvars));
+#endif
+}
+
+/*
+ * "diff_hlID()" function
+ */
+/*ARGSUSED*/
+    static void
+f_diff_hlID(argvars, retvar)
+    VAR		argvars;
+    VAR		retvar;
+{
+#ifdef FEAT_DIFF
+    linenr_T		lnum = get_var_lnum(argvars);
+    static linenr_T	prev_lnum = 0;
+    static int		changedtick = 0;
+    static int		fnum = 0;
+    static int		change_start = 0;
+    static int		change_end = 0;
+    static enum hlf_value hlID = 0;
+    int			filler_lines;
+    int			col;
+
+    if (lnum != prev_lnum
+	    || changedtick != curbuf->b_changedtick
+	    || fnum != curbuf->b_fnum)
+    {
+	/* New line, buffer, change: need to get the values. */
+	filler_lines = diff_check(curwin, lnum);
+	if (filler_lines < 0)
+	{
+	    if (filler_lines == -1)
+	    {
+		change_start = MAXCOL;
+		change_end = -1;
+		if (diff_find_change(curwin, lnum, &change_start, &change_end))
+		    hlID = HLF_ADD;	/* added line */
+		else
+		    hlID = HLF_CHD;	/* changed line */
+	    }
+	    else
+		hlID = HLF_ADD;	/* added line */
+	}
+	else
+	    hlID = (enum hlf_value)0;
+	prev_lnum = lnum;
+	changedtick = curbuf->b_changedtick;
+	fnum = curbuf->b_fnum;
+    }
+
+    if (hlID == HLF_CHD || hlID == HLF_TXD)
+    {
+	col = get_var_number(&argvars[1]) - 1;
+	if (col >= change_start && col <= change_end)
+	    hlID = HLF_TXD;			/* changed text */
+	else
+	    hlID = HLF_CHD;			/* changed line */
+    }
+    retvar->var_val.var_number = hlID == (enum hlf_value)0 ? 0 : (int)hlID;
 #endif
 }
 

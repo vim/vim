@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2004 Oct 11
+*version7.txt*  For Vim version 7.0aa.  Last change: 2004 Oct 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -54,6 +54,7 @@ isn't set.  This avoids creating buffers without a name that are not useful.
 The "2html.vim" script now converts closed folds to HTML.  This means the HTML
 looks like its displayed, with the same folds open and closed.  Use "zR" if no
 folds should appear in the HTML. (partly by Carl Osterwisch)
+Diff mode now is also converted as it is displayed.
 
 ==============================================================================
 NEW FEATURES						*new-7*
@@ -185,6 +186,11 @@ ABAB/4 syntax file. (Marius van Wyk)
 SQL-Informix syntax file. (Dean L Hill)
 
 PHP compiler plugin. (Doug Kearns)
+
+
+New Keymaps: ~
+
+Sinhala (Sri Lanka) (Harshula Jayasuriya)
 
 
 New message translations: ~

@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2004 Oct 10
+*eval.txt*      For Vim version 7.0aa.  Last change: 2004 Oct 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -831,6 +831,8 @@ cscope_connection( [{num} , {dbpath} [, {prepend}]])
 cursor( {lnum}, {col})		Number  position cursor at {lnum}, {col}
 delete( {fname})		Number	delete file {fname}
 did_filetype()			Number	TRUE if FileType autocommand event used
+diff_filler( {lnum})		Number  diff filler lines about {lnum}
+diff_hlID( {lnum}, {col})	Number  diff highlighting at {lnum}/{col}
 escape( {string}, {chars})	String	escape {chars} in {string} with '\'
 eventhandler( )			Number  TRUE if inside an event handler
 executable( {expr})		Number	1 if executable {expr} exists
@@ -932,7 +934,7 @@ strtrans( {expr})		String	translate string to make it printable
 submatch( {nr})			String  specific match in ":substitute"
 substitute( {expr}, {pat}, {sub}, {flags})
 				String	all {pat} in {expr} replaced with {sub}
-synID( {line}, {col}, {trans})	Number	syntax ID at {line} and {col}
+synID( {lnum}, {col}, {trans})	Number	syntax ID at {lnum} and {col}
 synIDattr( {synID}, {what} [, {mode}])
 				String	attribute {what} of syntax ID {synID}
 synIDtrans( {synID})		Number	translated syntax ID of {synID}
@@ -1269,6 +1271,26 @@ did_filetype()	Returns non-zero when autocommands are being executed and the
 		current buffer.  This allows an autocommand that starts
 		editing another buffer to set 'filetype' and load a syntax
 		file.
+
+diff_filler({lnum})					*diff_filler()*
+		Returns the number of filler lines above line {lnum}.
+		These are the lines that were inserted at this point in
+		another diff'ed window.  These filler lines are shown in the
+		display but don't exist in the buffer.
+		{lnum} is used like with |getline()|.  Thus "." is the current
+		line, "'m" mark m, etc.
+		Returns 0 if the current window is not in diff mode.
+
+diff_hlID({lnum}, {col})				*diff_hlID()*
+		Returns the highlight ID for diff mode at line {lnum} column
+		{col} (byte index).  When the current line does not have a
+		diff change zero is returned.
+		{lnum} is used like with |getline()|.  Thus "." is the current
+		line, "'m" mark m, etc.
+		{col} is 1 for the leftmost column, {lnum} is 1 for the first
+		line.
+		The highlight ID can be used with |synIDattr()| to obtain
+		syntax information about the highlighting.
 
 escape({string}, {chars})				*escape()*
 		Escape the characters in {chars} that occur in {string} with a
@@ -2630,12 +2652,12 @@ substitute({expr}, {pat}, {sub}, {flags})		*substitute()*
 			:echo substitute("testing", ".*", "\\U\\0", "")
 <		results in "TESTING".
 
-synID({line}, {col}, {trans})				*synID()*
+synID({lnum}, {col}, {trans})				*synID()*
 		The result is a Number, which is the syntax ID at the position
-		{line} and {col} in the current window.
+		{lnum} and {col} in the current window.
 		The syntax ID can be used with |synIDattr()| and
 		|synIDtrans()| to obtain syntax information about text.
-		{col} is 1 for the leftmost column, {line} is 1 for the first
+		{col} is 1 for the leftmost column, {lnum} is 1 for the first
 		line.
 		When {trans} is non-zero, transparent items are reduced to the
 		item that they reveal.  This is useful when wanting to know
