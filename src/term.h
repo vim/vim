@@ -47,8 +47,10 @@ enum SpecialKey
     KS_SO,	/* standout mode */
     KS_CZH,	/* italic mode start */
     KS_CZR,	/* italic mode end */
-    KS_UE,	/* exit underscore mode */
-    KS_US,	/* underscore mode */
+    KS_UE,	/* exit underscore (underline) mode */
+    KS_US,	/* underscore (underline) mode */
+    KS_UCE,	/* exit undercurl mode */
+    KS_UCS,	/* undercurl mode */
     KS_MS,	/* save to move cur in reverse mode */
     KS_CM,	/* cursor motion */
     KS_SR,	/* scroll reverse (backward) */
@@ -122,8 +124,10 @@ extern char_u *(term_strings[]);    /* current terminal strings */
 #define T_SO	(term_str(KS_SO))	/* standout mode */
 #define T_CZH	(term_str(KS_CZH))	/* italic mode start */
 #define T_CZR	(term_str(KS_CZR))	/* italic mode end */
-#define T_UE	(term_str(KS_UE))	/* exit underscore mode */
-#define T_US	(term_str(KS_US))	/* underscore mode */
+#define T_UE	(term_str(KS_UE))	/* exit underscore (underline) mode */
+#define T_US	(term_str(KS_US))	/* underscore (underline) mode */
+#define T_UCE	(term_str(KS_UCE))	/* exit undercurl mode */
+#define T_UCS	(term_str(KS_UCS))	/* undercurl mode */
 #define T_MS	(term_str(KS_MS))	/* save to move cur in reverse mode */
 #define T_CM	(term_str(KS_CM))	/* cursor motion */
 #define T_SR	(term_str(KS_SR))	/* scroll reverse (backward) */
