@@ -178,6 +178,313 @@ static int eval_in_namespace(void *, Scheme_Closed_Prim *, Scheme_Env *,
 		Scheme_Object **ret);
 static void make_modules(Scheme_Env *);
 
+#ifdef DYNAMIC_MZSCHEME
+
+static Scheme_Object *dll_scheme_eof;
+static Scheme_Object *dll_scheme_false;
+static Scheme_Object *dll_scheme_void;
+static Scheme_Object *dll_scheme_null;
+static Scheme_Object *dll_scheme_true;
+
+static Scheme_Thread **dll_scheme_current_thread_ptr;
+
+static void (**dll_scheme_console_printf_ptr)(char *str, ...);
+static void (**dll_scheme_console_output_ptr)(char *str, long len);
+static void (**dll_scheme_notify_multithread_ptr)(int on);
+
+static void *(*dll_GC_malloc)(size_t size_in_bytes);
+static void *(*dll_GC_malloc_atomic)(size_t size_in_bytes);
+static Scheme_Env *(*dll_scheme_basic_env)(void);
+static void (*dll_scheme_check_threads)(void);
+static void (*dll_scheme_register_static)(void *ptr, long size);
+static void (*dll_scheme_set_stack_base)(void *base, int no_auto_statics);
+static void (*dll_scheme_add_global)(const char *name, Scheme_Object *val,
+	Scheme_Env *env);
+static void (*dll_scheme_add_global_symbol)(Scheme_Object *name,
+	Scheme_Object *val, Scheme_Env *env);
+static Scheme_Object *(*dll_scheme_apply)(Scheme_Object *rator, int num_rands,
+	Scheme_Object **rands);
+static Scheme_Object *(*dll_scheme_builtin_value)(const char *name);
+static void (*dll_scheme_close_input_port)(Scheme_Object *port);
+static void (*dll_scheme_count_lines)(Scheme_Object *port);
+static Scheme_Object *(*dll_scheme_current_continuation_marks)(void);
+static void (*dll_scheme_display)(Scheme_Object *obj, Scheme_Object *port);
+static char *(*dll_scheme_display_to_string)(Scheme_Object *obj, long *len);
+static Scheme_Object *(*dll_scheme_do_eval)(Scheme_Object *obj,
+	int _num_rands, Scheme_Object **rands, int val);
+static void (*dll_scheme_dont_gc_ptr)(void *p);
+static Scheme_Object *(*dll_scheme_eval)(Scheme_Object *obj, Scheme_Env *env);
+static Scheme_Object *(*dll_scheme_eval_string)(const char *str,
+	Scheme_Env *env);
+static Scheme_Object *(*dll_scheme_eval_string_all)(const char *str, 
+	Scheme_Env *env, int all);
+static void (*dll_scheme_finish_primitive_module)(Scheme_Env *env);
+static char *(*dll_scheme_format)(char *format, int flen, int argc,
+	Scheme_Object **argv, long *rlen);
+static void (*dll_scheme_gc_ptr_ok)(void *p);
+static char *(*dll_scheme_get_sized_string_output)(Scheme_Object *,
+	long *len);
+static Scheme_Object *(*dll_scheme_intern_symbol)(const char *name);
+static Scheme_Object *(*dll_scheme_lookup_global)(Scheme_Object *symbol,
+	Scheme_Env *env);
+static Scheme_Object *(*dll_scheme_make_closed_prim_w_arity)
+    (Scheme_Closed_Prim *prim, void *data, const char *name, mzshort mina,
+     mzshort maxa);
+static Scheme_Object *(*dll_scheme_make_integer_value)(long i);
+static Scheme_Object *(*dll_scheme_make_namespace)(int argc,
+	Scheme_Object *argv[]);
+static Scheme_Object *(*dll_scheme_make_pair)(Scheme_Object *car, 
+	Scheme_Object *cdr);
+static Scheme_Object *(*dll_scheme_make_string)(const char *chars);
+static Scheme_Object *(*dll_scheme_make_string_output_port)();
+static Scheme_Object *(*dll_scheme_make_struct_instance)(Scheme_Object *stype,
+	int argc, Scheme_Object **argv);
+static Scheme_Object **(*dll_scheme_make_struct_names)(Scheme_Object *base,
+	Scheme_Object *field_names, int flags, int *count_out);
+static Scheme_Object *(*dll_scheme_make_struct_type)(Scheme_Object *base,
+	Scheme_Object *parent, Scheme_Object *inspector, int num_fields,
+	int num_uninit_fields, Scheme_Object *uninit_val,
+	Scheme_Object *properties);
+static Scheme_Object **(*dll_scheme_make_struct_values)(
+	Scheme_Object *struct_type, Scheme_Object **names, int count,
+	int flags);
+static Scheme_Type (*dll_scheme_make_type)(const char *name);
+static Scheme_Object *(*dll_scheme_make_vector)(int size,
+	Scheme_Object *fill);
+static void *(*dll_scheme_malloc_fail_ok)(void *(*f)(size_t), size_t);
+static Scheme_Object *(*dll_scheme_open_input_file)(const char *name,
+	const char *who);
+static Scheme_Env *(*dll_scheme_primitive_module)(Scheme_Object *name,
+	Scheme_Env *for_env);
+static int (*dll_scheme_proper_list_length)(Scheme_Object *list);
+static void (*dll_scheme_raise)(Scheme_Object *exn);
+static Scheme_Object *(*dll_scheme_read)(Scheme_Object *port);
+static void (*dll_scheme_signal_error)(const char *msg, ...);
+static void (*dll_scheme_wrong_type)(const char *name, const char *expected,
+	int which, int argc, Scheme_Object **argv);
+
+/* arrays are imported directly */
+# define scheme_eof dll_scheme_eof
+# define scheme_false dll_scheme_false
+# define scheme_void dll_scheme_void
+# define scheme_null dll_scheme_null
+# define scheme_true dll_scheme_true
+
+/* pointers are GetProceAddress'ed as pointers to pointer */
+# define scheme_current_thread (*dll_scheme_current_thread_ptr)
+# define scheme_console_printf (*dll_scheme_console_printf_ptr)
+# define scheme_console_output (*dll_scheme_console_output_ptr)
+# define scheme_notify_multithread (*dll_scheme_notify_multithread_ptr)
+
+/* and functions in a usual way */
+# define GC_malloc dll_GC_malloc
+# define GC_malloc_atomic dll_GC_malloc_atomic
+
+# define scheme_add_global dll_scheme_add_global
+# define scheme_add_global_symbol dll_scheme_add_global_symbol
+# define scheme_apply dll_scheme_apply
+# define scheme_basic_env dll_scheme_basic_env
+# define scheme_builtin_value dll_scheme_builtin_value
+# define scheme_check_threads dll_scheme_check_threads
+# define scheme_close_input_port dll_scheme_close_input_port
+# define scheme_count_lines dll_scheme_count_lines
+# define scheme_current_continuation_marks \
+    dll_scheme_current_continuation_marks
+# define scheme_display dll_scheme_display
+# define scheme_display_to_string dll_scheme_display_to_string
+# define scheme_do_eval dll_scheme_do_eval
+# define scheme_dont_gc_ptr dll_scheme_dont_gc_ptr
+# define scheme_eval dll_scheme_eval
+# define scheme_eval_string dll_scheme_eval_string
+# define scheme_eval_string_all dll_scheme_eval_string_all
+# define scheme_finish_primitive_module dll_scheme_finish_primitive_module
+# define scheme_format dll_scheme_format
+# define scheme_gc_ptr_ok dll_scheme_gc_ptr_ok
+# define scheme_get_sized_string_output dll_scheme_get_sized_string_output
+# define scheme_intern_symbol dll_scheme_intern_symbol
+# define scheme_lookup_global dll_scheme_lookup_global
+# define scheme_make_closed_prim_w_arity dll_scheme_make_closed_prim_w_arity
+# define scheme_make_integer_value dll_scheme_make_integer_value
+# define scheme_make_namespace dll_scheme_make_namespace
+# define scheme_make_pair dll_scheme_make_pair
+# define scheme_make_string dll_scheme_make_string
+# define scheme_make_string_output_port dll_scheme_make_string_output_port
+# define scheme_make_struct_instance dll_scheme_make_struct_instance
+# define scheme_make_struct_names dll_scheme_make_struct_names
+# define scheme_make_struct_type dll_scheme_make_struct_type
+# define scheme_make_struct_values dll_scheme_make_struct_values
+# define scheme_make_type dll_scheme_make_type
+# define scheme_make_vector dll_scheme_make_vector
+# define scheme_malloc_fail_ok dll_scheme_malloc_fail_ok
+# define scheme_open_input_file dll_scheme_open_input_file
+# define scheme_primitive_module dll_scheme_primitive_module
+# define scheme_proper_list_length dll_scheme_proper_list_length
+# define scheme_raise dll_scheme_raise
+# define scheme_read dll_scheme_read
+# define scheme_register_static dll_scheme_register_static
+# define scheme_set_stack_base dll_scheme_set_stack_base
+# define scheme_signal_error dll_scheme_signal_error
+# define scheme_wrong_type dll_scheme_wrong_type
+
+typedef struct
+{
+    char    *name;
+    void    **ptr;
+} Thunk_Info;
+
+static Thunk_Info mzgc_imports[] = {
+    {"GC_malloc", (void **)&dll_GC_malloc},
+    {"GC_malloc_atomic", (void **)&dll_GC_malloc_atomic},
+    {NULL, NULL}};
+
+static Thunk_Info mzsch_imports[] = {
+    {"scheme_eof", (void **)&dll_scheme_eof},
+    {"scheme_false", (void **)&dll_scheme_false},
+    {"scheme_void", (void **)&dll_scheme_void},
+    {"scheme_null", (void **)&dll_scheme_null},
+    {"scheme_true", (void **)&dll_scheme_true},
+    {"scheme_current_thread", (void **)&dll_scheme_current_thread_ptr},
+    {"scheme_console_printf", (void **)&dll_scheme_console_printf_ptr},
+    {"scheme_console_output", (void **)&dll_scheme_console_output_ptr},
+    {"scheme_notify_multithread", 
+	(void **)&dll_scheme_notify_multithread_ptr},
+    {"scheme_add_global", (void **)&dll_scheme_add_global},
+    {"scheme_add_global_symbol", (void **)&dll_scheme_add_global_symbol},
+    {"scheme_apply", (void **)&dll_scheme_apply},
+    {"scheme_basic_env", (void **)&dll_scheme_basic_env},
+    {"scheme_builtin_value", (void **)&dll_scheme_builtin_value},
+    {"scheme_check_threads", (void **)&dll_scheme_check_threads},
+    {"scheme_close_input_port", (void **)&dll_scheme_close_input_port},
+    {"scheme_count_lines", (void **)&dll_scheme_count_lines},
+    {"scheme_current_continuation_marks", 
+	(void **)&dll_scheme_current_continuation_marks},
+    {"scheme_display", (void **)&dll_scheme_display},
+    {"scheme_display_to_string", (void **)&dll_scheme_display_to_string},
+    {"scheme_do_eval", (void **)&dll_scheme_do_eval},
+    {"scheme_dont_gc_ptr", (void **)&dll_scheme_dont_gc_ptr},
+    {"scheme_eval", (void **)&dll_scheme_eval},
+    {"scheme_eval_string", (void **)&dll_scheme_eval_string},
+    {"scheme_eval_string_all", (void **)&dll_scheme_eval_string_all},
+    {"scheme_finish_primitive_module", 
+	(void **)&dll_scheme_finish_primitive_module},
+    {"scheme_format", (void **)&dll_scheme_format},
+    {"scheme_gc_ptr_ok", (void **)&dll_scheme_gc_ptr_ok},
+    {"scheme_get_sized_string_output", 
+	(void **)&dll_scheme_get_sized_string_output},
+    {"scheme_intern_symbol", (void **)&dll_scheme_intern_symbol},
+    {"scheme_lookup_global", (void **)&dll_scheme_lookup_global},
+    {"scheme_make_closed_prim_w_arity", 
+	(void **)&dll_scheme_make_closed_prim_w_arity},
+    {"scheme_make_integer_value", (void **)&dll_scheme_make_integer_value},
+    {"scheme_make_namespace", (void **)&dll_scheme_make_namespace},
+    {"scheme_make_pair", (void **)&dll_scheme_make_pair},
+    {"scheme_make_string", (void **)&dll_scheme_make_string},
+    {"scheme_make_string_output_port", 
+	(void **)&dll_scheme_make_string_output_port},
+    {"scheme_make_struct_instance", 
+	(void **)&dll_scheme_make_struct_instance},
+    {"scheme_make_struct_names", (void **)&dll_scheme_make_struct_names},
+    {"scheme_make_struct_type", (void **)&dll_scheme_make_struct_type},
+    {"scheme_make_struct_values", (void **)&dll_scheme_make_struct_values},
+    {"scheme_make_type", (void **)&dll_scheme_make_type},
+    {"scheme_make_vector", (void **)&dll_scheme_make_vector},
+    {"scheme_malloc_fail_ok", (void **)&dll_scheme_malloc_fail_ok},
+    {"scheme_open_input_file", (void **)&dll_scheme_open_input_file},
+    {"scheme_primitive_module", (void **)&dll_scheme_primitive_module},
+    {"scheme_proper_list_length", (void **)&dll_scheme_proper_list_length},
+    {"scheme_raise", (void **)&dll_scheme_raise},
+    {"scheme_read", (void **)&dll_scheme_read},
+    {"scheme_register_static", (void **)&dll_scheme_register_static},
+    {"scheme_set_stack_base", (void **)&dll_scheme_set_stack_base},
+    {"scheme_signal_error", (void **)&dll_scheme_signal_error},
+    {"scheme_wrong_type", (void **)&dll_scheme_wrong_type},
+    {NULL, NULL}};
+
+static HINSTANCE hMzGC = 0;
+static HINSTANCE hMzSch = 0;
+
+static void dynamic_mzscheme_end(void);
+static int mzscheme_runtime_link_init(char *sch_dll, char *gc_dll,
+	int verbose);
+
+    static int
+mzscheme_runtime_link_init(char *sch_dll, char *gc_dll, int verbose)
+{
+    Thunk_Info *thunk = NULL;
+
+    if (hMzGC && hMzSch)
+	return OK;
+    hMzSch = LoadLibrary(sch_dll);
+    hMzGC = LoadLibrary(gc_dll);
+
+    if (!hMzSch)
+    {
+	if (verbose)
+	    EMSG2(_(e_loadlib), sch_dll);
+	return FAIL;
+    }
+
+    if (!hMzGC)
+    {
+	if (verbose)
+	    EMSG2(_(e_loadlib), gc_dll);
+	return FAIL;
+    }
+
+    for (thunk = mzsch_imports; thunk->name; thunk++)
+    {
+	if ((*thunk->ptr = 
+		    (void *)GetProcAddress(hMzSch, thunk->name)) == NULL)
+	{
+	    FreeLibrary(hMzSch);
+	    hMzSch = 0;
+	    FreeLibrary(hMzGC);
+	    hMzGC = 0;
+	    if (verbose)
+		EMSG2(_(e_loadfunc), thunk->name);
+	    return FAIL;
+	}
+    }
+    for (thunk = mzgc_imports; thunk->name; thunk++)
+    {
+	if ((*thunk->ptr = 
+		    (void *)GetProcAddress(hMzGC, thunk->name)) == NULL)
+	{
+	    FreeLibrary(hMzSch);
+	    hMzSch = 0;
+	    FreeLibrary(hMzGC);
+	    hMzGC = 0;
+	    if (verbose)
+		EMSG2(_(e_loadfunc), thunk->name);
+	    return FAIL;
+	}
+    }
+    return OK;
+}
+
+    int
+mzscheme_enabled(int verbose)
+{
+    return mzscheme_runtime_link_init(
+	    DYNAMIC_MZSCH_DLL, DYNAMIC_MZGC_DLL, verbose) == OK;
+}
+
+    static void
+dynamic_mzscheme_end(void)
+{
+    if (hMzSch)
+    {
+	FreeLibrary(hMzSch);
+	hMzSch = 0;
+    }
+    if (hMzGC)
+    {
+	FreeLibrary(hMzGC);
+	hMzGC = 0;
+    }
+}
+#endif /* DYNAMIC_MZSCHEME */
+
 /*
  *========================================================================
  *  1. MzScheme interpreter startup
@@ -341,15 +648,12 @@ notify_multithread(int on)
 #endif
 }
 
-    int
-mzscheme_enabled(int verbose)
-{
-    return initialized;
-}
-
     void
 mzscheme_end(void)
 {
+#ifdef DYNAMIC_MZSCHEME
+    dynamic_mzscheme_end();
+#endif
 }
 
     static void
@@ -407,6 +711,13 @@ mzscheme_init(void)
     if (!initialized)
     {
 	do_require = TRUE;
+#ifdef DYNAMIC_MZSCHEME
+	if (!mzscheme_enabled(TRUE))
+	{
+	    EMSG(_("???: Sorry, this command is disabled, the MzScheme library could not be loaded."));
+	    return -1;
+	}
+#endif
         startup_mzscheme();
 
 	if (mzscheme_io_init())

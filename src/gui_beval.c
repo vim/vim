@@ -371,6 +371,7 @@ addEventHandler(GtkWidget *target, BalloonEval *beval)
     static void
 removeEventHandler(BalloonEval *beval)
 {
+    /* LINTED: avoid warning: dubious operation on enum */
     gtk_signal_disconnect_by_func((GtkObject*)(beval->target),
 				  GTK_SIGNAL_FUNC(target_event_cb),
 				  beval);
@@ -378,6 +379,7 @@ removeEventHandler(BalloonEval *beval)
     if (gtk_socket_id == 0 && gui.mainwin != NULL
 	    && gtk_widget_is_ancestor(beval->target, gui.mainwin))
     {
+	/* LINTED: avoid warning: dubious operation on enum */
 	gtk_signal_disconnect_by_func((GtkObject*)(gui.mainwin),
 				      GTK_SIGNAL_FUNC(mainwin_event_cb),
 				      beval);
