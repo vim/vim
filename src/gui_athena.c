@@ -42,7 +42,7 @@
 extern Widget vimShell;
 
 static Widget vimForm = (Widget)0;
-static Widget textArea = (Widget)0;
+Widget textArea = (Widget)0;
 #ifdef FEAT_MENU
 static Widget menuBar = (Widget)0;
 static XtIntervalId timer = 0;	    /* 0 = expired, otherwise active */
