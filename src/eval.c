@@ -191,6 +191,8 @@ typedef struct forinfo_S
     listvar	*fi_list;	/* list being used */
 } forinfo;
 
+/* used for map() */
+static typeval amp_tv;
 
 /*
  * Return the name of the executed function.
@@ -314,6 +316,7 @@ static int eval_index __ARGS((char_u **arg, typeval *rettv, int evaluate));
 static int get_option_tv __ARGS((char_u **arg, typeval *rettv, int evaluate));
 static int get_string_tv __ARGS((char_u **arg, typeval *rettv, int evaluate));
 static int get_lit_string_tv __ARGS((char_u **arg, typeval *rettv, int evaluate));
+static int get_sharp_string_tv __ARGS((char_u **arg, typeval *rettv, int evaluate));
 static int get_list_tv __ARGS((char_u **arg, typeval *rettv, int evaluate));
 static listvar *list_alloc __ARGS((void));
 static void list_unref __ARGS((listvar *l));
@@ -323,6 +326,7 @@ static void listitem_free __ARGS((listitem *item));
 static long list_len __ARGS((listvar *l));
 static int list_equal __ARGS((listvar *l1, listvar *l2, int ic));
 static int tv_equal __ARGS((typeval *tv1, typeval *tv2, int ic));
+static int string_isa_number __ARGS((char_u *s));
 static listitem *list_find __ARGS((listvar *l, long n));
 static long list_idx_of_item __ARGS((listvar *l, listitem *item));
 static listitem *list_find_ext __ARGS((listvar *l, long *ip));
@@ -334,7 +338,11 @@ static int list_concat __ARGS((listvar *l1, listvar *l2, typeval *tv));
 static listvar *list_copy __ARGS((listvar *orig, int deep));
 static void list_getrem __ARGS((listvar *l, listitem *item, listitem *item2));
 static char_u *list2string __ARGS((typeval *tv));
+static void list_join __ARGS((garray_T *gap, listvar *l, char_u *sep, int echo));
+
+static char_u *echo_string __ARGS((typeval *tv, char_u **tofree, char_u *numbuf));
 static char_u *tv2string __ARGS((typeval *tv, char_u **tofree, char_u *numbuf));
+static char_u *string_quote __ARGS((char_u *str, int function));
 static int get_env_tv __ARGS((char_u **arg, typeval *rettv, int evaluate));
 static int find_internal_func __ARGS((char_u *name));
 static char_u *deref_func_name __ARGS((char_u *name, int *lenp));
@@ -372,6 +380,7 @@ static void f_diff_filler __ARGS((typeval *argvars, typeval *rettv));
 static void f_diff_hlID __ARGS((typeval *argvars, typeval *rettv));
 static void f_empty __ARGS((typeval *argvars, typeval *rettv));
 static void f_escape __ARGS((typeval *argvars, typeval *rettv));
+static void f_eval __ARGS((typeval *argvars, typeval *rettv));
 static void f_eventhandler __ARGS((typeval *argvars, typeval *rettv));
 static void f_executable __ARGS((typeval *argvars, typeval *rettv));
 static void f_exists __ARGS((typeval *argvars, typeval *rettv));
@@ -379,6 +388,7 @@ static void f_expand __ARGS((typeval *argvars, typeval *rettv));
 static void f_extend __ARGS((typeval *argvars, typeval *rettv));
 static void f_filereadable __ARGS((typeval *argvars, typeval *rettv));
 static void f_filewritable __ARGS((typeval *argvars, typeval *rettv));
+static void f_filter __ARGS((typeval *argvars, typeval *rettv));
 static void f_finddir __ARGS((typeval *argvars, typeval *rettv));
 static void f_findfile __ARGS((typeval *argvars, typeval *rettv));
 static void f_fnamemodify __ARGS((typeval *argvars, typeval *rettv));
@@ -428,6 +438,7 @@ static void f_inputsave __ARGS((typeval *argvars, typeval *rettv));
 static void f_inputsecret __ARGS((typeval *argvars, typeval *rettv));
 static void f_insert __ARGS((typeval *argvars, typeval *rettv));
 static void f_isdirectory __ARGS((typeval *argvars, typeval *rettv));
+static void f_join __ARGS((typeval *argvars, typeval *rettv));
 static void f_last_buffer_nr __ARGS((typeval *argvars, typeval *rettv));
 static void f_len __ARGS((typeval *argvars, typeval *rettv));
 static void f_libcall __ARGS((typeval *argvars, typeval *rettv));
@@ -436,6 +447,7 @@ static void f_line __ARGS((typeval *argvars, typeval *rettv));
 static void f_line2byte __ARGS((typeval *argvars, typeval *rettv));
 static void f_lispindent __ARGS((typeval *argvars, typeval *rettv));
 static void f_localtime __ARGS((typeval *argvars, typeval *rettv));
+static void f_map __ARGS((typeval *argvars, typeval *rettv));
 static void f_maparg __ARGS((typeval *argvars, typeval *rettv));
 static void f_mapcheck __ARGS((typeval *argvars, typeval *rettv));
 static void f_match __ARGS((typeval *argvars, typeval *rettv));
@@ -468,7 +480,7 @@ static void f_setreg __ARGS((typeval *argvars, typeval *rettv));
 static void f_setwinvar __ARGS((typeval *argvars, typeval *rettv));
 static void f_simplify __ARGS((typeval *argvars, typeval *rettv));
 static void f_sort __ARGS((typeval *argvars, typeval *rettv));
-static void f_str2list __ARGS((typeval *argvars, typeval *rettv));
+static void f_split __ARGS((typeval *argvars, typeval *rettv));
 #ifdef HAVE_STRFTIME
 static void f_strftime __ARGS((typeval *argvars, typeval *rettv));
 #endif
@@ -517,6 +529,7 @@ static long get_tv_number __ARGS((typeval *varp));
 static linenr_T get_tv_lnum __ARGS((typeval *argvars));
 static char_u *get_tv_string __ARGS((typeval *varp));
 static char_u *get_tv_string_buf __ARGS((typeval *varp, char_u *buf));
+static int get_amp_tv __ARGS((typeval *rettv));
 static VAR find_var __ARGS((char_u *name, int writing));
 static VAR find_var_in_ga __ARGS((garray_T *gap, char_u *varname));
 static garray_T *find_var_ga __ARGS((char_u *name, char_u **varname));
@@ -824,7 +837,7 @@ eval_to_number(expr)
 {
     typeval	rettv;
     int		retval;
-    char_u	*p = expr;
+    char_u	*p = skipwhite(expr);
 
     ++emsg_off;
 
@@ -1995,6 +2008,13 @@ set_context_for_expression(xp, arg, cmdidx)
 		    /* skip */ ;
 		xp->xp_context = EXPAND_NOTHING;
 	    }
+	    else if (c == '#')	    /* sharp string */
+	    {
+		/* Trick: ## is like stopping and starting a sharp string. */
+		while ((c = *++xp->xp_pattern) != NUL && c != '#')
+		    /* skip */ ;
+		xp->xp_context = EXPAND_NOTHING;
+	    }
 	    else if (c == '|')
 	    {
 		if (xp->xp_pattern[1] == '|')
@@ -3113,15 +3133,28 @@ eval7(arg, rettv, evaluate)
 		break;
 
     /*
+     * Sharp string constant: #str##ing#.
+     */
+    case '#':	ret = get_sharp_string_tv(arg, rettv, evaluate);
+		break;
+
+    /*
      * List: [expr, expr]
      */
     case '[':	ret = get_list_tv(arg, rettv, evaluate);
 		break;
 
     /*
-     * Option value: &name
+     * Option value: &name  or map() item "&".
      */
-    case '&':	ret = get_option_tv(arg, rettv, evaluate);
+    case '&':	if (!ASCII_ISALPHA(*(*arg + 1)))
+		{
+		    *arg = skipwhite(*arg + 1);
+		    if (evaluate)
+			ret = get_amp_tv(rettv);
+		}
+		else
+		    ret = get_option_tv(arg, rettv, evaluate);
 		break;
 
     /*
@@ -3509,7 +3542,7 @@ get_string_tv(arg, rettv, evaluate)
     /*
      * Find the end of the string, skipping backslashed characters.
      */
-    for (p = *arg + 1; *p && *p != '"'; mb_ptr_adv(p))
+    for (p = *arg + 1; *p != NUL && *p != '"'; mb_ptr_adv(p))
     {
 	if (*p == '\\' && p[1] != NUL)
 	{
@@ -3543,7 +3576,7 @@ get_string_tv(arg, rettv, evaluate)
 	return FAIL;
 
     i = 0;
-    for (p = *arg + 1; *p && *p != '"'; ++p)
+    for (p = *arg + 1; *p != NUL && *p != '"'; ++p)
     {
 	if (*p == '\\')
 	{
@@ -3684,6 +3717,86 @@ get_lit_string_tv(arg, rettv, evaluate)
     }
 
     *arg = p + 1;
+
+    return OK;
+}
+
+/*
+ * Allocate a variable for a #string# constant.
+ * Return OK or FAIL.
+ */
+    static int
+get_sharp_string_tv(arg, rettv, evaluate)
+    char_u	**arg;
+    typeval	*rettv;
+    int		evaluate;
+{
+    char_u	*p;
+    char_u	*str;
+    int		i;
+    int		reduce = 0;
+
+    /*
+     * Find the end of the string, skipping ##.
+     */
+    for (p = *arg + 1; *p != NUL; mb_ptr_adv(p))
+    {
+	if (*p == '#')
+	{
+	    if (p[1] != '#')
+		break;
+	    ++reduce;
+	    ++p;
+	}
+    }
+
+    if (*p != '#')
+    {
+	EMSG2(_("E999: Missing #: %s"), *arg);
+	return FAIL;
+    }
+
+    /* If only parsing, set *arg and return here */
+    if (!evaluate)
+    {
+	*arg = p + 1;
+	return OK;
+    }
+
+    /*
+     * Copy the string into allocated memory, handling ## to # reduction.
+     */
+    str = alloc((unsigned)((p - *arg) - reduce));
+    if (str == NULL)
+	return FAIL;
+
+    i = 0;
+    for (p = *arg + 1; *p != NUL; ++p)
+    {
+	if (*p == '#')
+	{
+	    if (p[1] != '#')
+		break;
+	    ++p;
+	}
+	str[i++] = *p;
+
+#ifdef FEAT_MBYTE
+	/* For a multi-byte character copy the bytes after the first one. */
+	if (has_mbyte)
+	{
+	    int	l = (*mb_ptr2len_check)(p);
+
+	    while (--l > 0)
+		str[i++] = *++p;
+	}
+#endif
+    }
+    str[i] = NUL;
+    *arg = p + 1;
+
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = str;
 
     return OK;
 }
@@ -3879,6 +3992,13 @@ tv_equal(tv1, tv2, ic)
     }
     else if (tv1->v_type == VAR_NUMBER || tv2->v_type == VAR_NUMBER)
     {
+	/* "4" is equal to 4.  But don't consider 'a' and zero to be equal.
+	 * Don't consider "4x" to be equal to 4. */
+	if ((tv1->v_type == VAR_STRING
+				    && !string_isa_number(tv1->vval.v_string))
+		|| (tv2->v_type == VAR_STRING
+				   && !string_isa_number(tv2->vval.v_string)))
+	    return FALSE;
 	if (get_tv_number(tv1) != get_tv_number(tv2))
 	    return FALSE;
     }
@@ -3889,6 +4009,19 @@ tv_equal(tv1, tv2, ic)
 				       get_tv_string_buf(tv2, buf2)) != 0)
 	return FALSE;
     return TRUE;
+}
+
+/*
+ * Return TRUE if "tv" is a number without other non-white characters.
+ */
+    static int
+string_isa_number(s)
+    char_u	*s;
+{
+    int		len;
+
+    vim_str2nr(s, NULL, &len, TRUE, TRUE, NULL, NULL);
+    return len > 0 && *skipwhite(s + len) == NUL;
 }
 
 /*
@@ -4187,43 +4320,60 @@ list2string(tv)
     typeval	*tv;
 {
     garray_T	ga;
-    listitem	*item;
-    int		first = TRUE;
-    char_u	*tofree;
-    char_u	*s;
-    char_u	numbuf[NUMBUFLEN];
 
     if (tv->vval.v_list == NULL)
 	return NULL;
     ga_init2(&ga, (int)sizeof(char), 80);
     ga_append(&ga, '[');
-
-    for (item = tv->vval.v_list->lv_first; item != NULL; item = item->li_next)
-    {
-	if (first)
-	    first = FALSE;
-	else
-	    ga_concat(&ga, (char_u *)", ");
-
-	s = tv2string(&item->li_tv, &tofree, numbuf);
-	if (s != NULL)
-	    ga_concat(&ga, s);
-	vim_free(tofree);
-    }
-
+    list_join(&ga, tv->vval.v_list, (char_u *)", ", FALSE);
     ga_append(&ga, ']');
     ga_append(&ga, NUL);
     return (char_u *)ga.ga_data;
 }
 
 /*
+ * Join list "l" into a string in "*gap", using separator "sep".
+ * When "echo" is TRUE use String as echoed, otherwise as inside a List.
+ */
+    static void
+list_join(gap, l, sep, echo)
+    garray_T	*gap;
+    listvar	*l;
+    char_u	*sep;
+    int		echo;
+{
+    int		first = TRUE;
+    char_u	*tofree;
+    char_u	numbuf[NUMBUFLEN];
+    listitem	*item;
+    char_u	*s;
+
+    for (item = l->lv_first; item != NULL; item = item->li_next)
+    {
+	if (first)
+	    first = FALSE;
+	else
+	    ga_concat(gap, sep);
+
+	if (echo)
+	    s = echo_string(&item->li_tv, &tofree, numbuf);
+	else
+	    s = tv2string(&item->li_tv, &tofree, numbuf);
+	if (s != NULL)
+	    ga_concat(gap, s);
+	vim_free(tofree);
+    }
+}
+
+/*
  * Return a string with the string representation of a variable.
  * If the memory is allocated "tofree" is set to it, otherwise NULL.
  * "numbuf" is used for a number.
+ * Does not put quotes around strings, as ":echo" displays values.
  * May return NULL;
  */
     static char_u *
-tv2string(tv, tofree, numbuf)
+echo_string(tv, tofree, numbuf)
     typeval	*tv;
     char_u	**tofree;
     char_u	*numbuf;
@@ -4240,10 +4390,92 @@ tv2string(tv, tofree, numbuf)
 	case VAR_NUMBER:
 	    break;
 	default:
+	    EMSG2(_(e_intern2), "echo_string()");
+    }
+    *tofree = NULL;
+    return get_tv_string_buf(tv, numbuf);
+}
+
+/*
+ * Return a string with the string representation of a variable.
+ * If the memory is allocated "tofree" is set to it, otherwise NULL.
+ * "numbuf" is used for a number.
+ * Puts quotes around strings, so that they can be parsed back by eval().
+ * May return NULL;
+ */
+    static char_u *
+tv2string(tv, tofree, numbuf)
+    typeval	*tv;
+    char_u	**tofree;
+    char_u	*numbuf;
+{
+    switch (tv->v_type)
+    {
+	case VAR_NUMBER:
+	    break;
+	case VAR_FUNC:
+	    *tofree = string_quote(tv->vval.v_string, TRUE);
+	    return *tofree;
+	case VAR_STRING:
+	    *tofree = string_quote(tv->vval.v_string, FALSE);
+	    return *tofree;
+	case VAR_LIST:
+	    *tofree = list2string(tv);
+	    return *tofree;
+	default:
 	    EMSG2(_(e_intern2), "tv2string()");
     }
     *tofree = NULL;
     return get_tv_string_buf(tv, numbuf);
+}
+
+/*
+ * Return a string in # quotes, doubling # characters.
+ * If "function" is TRUE make it function(#string#).
+ */
+    static char_u *
+string_quote(str, function)
+    char_u	*str;
+    int		function;
+{
+    unsigned	len = function ? 13 : 3;
+    char_u	*p, *r, *s;
+
+    for (p = str; *p != NUL; mb_ptr_adv(p))
+	if (*p == '#')
+	    ++len;
+    s = r = alloc(len);
+    if (r != NULL)
+    {
+	if (function)
+	{
+	    STRCPY(r, "function(#");
+	    r += 10;
+	}
+	else
+	    *r++ = '#';
+	for (p = str; *p != NUL; ++p)
+	{
+	    if (*p == '#')
+		*r++ = '#';
+	    *r++ = *p;
+#ifdef FEAT_MBYTE
+	    /* For a multi-byte character copy the bytes after the first one. */
+	    if (has_mbyte)
+	    {
+		int	l = (*mb_ptr2len_check)(p);
+
+		while (--l > 0)
+		    *r++ = *++p;
+	    }
+#endif
+	}
+	*r++ = '#';
+	if (function)
+	    *r++ = ')';
+	*r++ = NUL;
+    }
+    return s;
 }
 
 /*
@@ -4332,7 +4564,7 @@ static struct fst
     {"col",		1, 1, f_col},
     {"confirm",		1, 4, f_confirm},
     {"copy",		1, 1, f_copy},
-    {"count",		2, 3, f_count},
+    {"count",		2, 4, f_count},
     {"cscope_connection",0,3, f_cscope_connection},
     {"cursor",		2, 2, f_cursor},
     {"deepcopy",	1, 1, f_deepcopy},
@@ -4342,6 +4574,7 @@ static struct fst
     {"diff_hlID",	2, 2, f_diff_hlID},
     {"empty",		1, 1, f_empty},
     {"escape",		2, 2, f_escape},
+    {"eval",		1, 1, f_eval},
     {"eventhandler",	0, 0, f_eventhandler},
     {"executable",	1, 1, f_executable},
     {"exists",		1, 1, f_exists},
@@ -4350,6 +4583,7 @@ static struct fst
     {"file_readable",	1, 1, f_filereadable},	/* obsolete */
     {"filereadable",	1, 1, f_filereadable},
     {"filewritable",	1, 1, f_filewritable},
+    {"filter",		2, 2, f_filter},
     {"finddir",		1, 3, f_finddir},
     {"findfile",	1, 3, f_findfile},
     {"fnamemodify",	2, 2, f_fnamemodify},
@@ -4393,7 +4627,7 @@ static struct fst
     {"hostname",	0, 0, f_hostname},
     {"iconv",		3, 3, f_iconv},
     {"indent",		1, 1, f_indent},
-    {"index",		2, 3, f_index},
+    {"index",		2, 4, f_index},
     {"input",		1, 2, f_input},
     {"inputdialog",	1, 3, f_inputdialog},
     {"inputrestore",	0, 0, f_inputrestore},
@@ -4401,6 +4635,7 @@ static struct fst
     {"inputsecret",	1, 2, f_inputsecret},
     {"insert",		2, 3, f_insert},
     {"isdirectory",	1, 1, f_isdirectory},
+    {"join",		1, 2, f_join},
     {"last_buffer_nr",	0, 0, f_last_buffer_nr},/* obsolete */
     {"len",		1, 1, f_len},
     {"libcall",		3, 3, f_libcall},
@@ -4409,6 +4644,7 @@ static struct fst
     {"line2byte",	1, 1, f_line2byte},
     {"lispindent",	1, 1, f_lispindent},
     {"localtime",	0, 0, f_localtime},
+    {"map",		2, 2, f_map},
     {"maparg",		1, 2, f_maparg},
     {"mapcheck",	1, 2, f_mapcheck},
     {"match",		2, 4, f_match},
@@ -4441,7 +4677,7 @@ static struct fst
     {"setwinvar",	3, 3, f_setwinvar},
     {"simplify",	1, 1, f_simplify},
     {"sort",		1, 2, f_sort},
-    {"str2list",	1, 2, f_str2list},
+    {"split",		1, 2, f_split},
 #ifdef HAVE_STRFTIME
     {"strftime",	1, 2, f_strftime},
 #endif
@@ -5477,11 +5713,18 @@ f_count(argvars, rettv)
 	EMSG(_(e_listreq));
     else if (argvars[0].vval.v_list != NULL)
     {
+	li = argvars[0].vval.v_list->lv_first;
 	if (argvars[2].v_type != VAR_UNKNOWN)
-	    ic = get_tv_number(&argvars[2]);
-
-	for (li = argvars[0].vval.v_list->lv_first; li != NULL;
+	{
+	    for (n = get_tv_number(&argvars[2]); n > 0 && li != NULL;
 							     li = li->li_next)
+		--n;
+	    if (argvars[3].v_type != VAR_UNKNOWN)
+		ic = get_tv_number(&argvars[3]);
+	}
+
+	n = 0;
+	for ( ; li != NULL; li = li->li_next)
 	    if (tv_equal(&li->li_tv, &argvars[1], ic))
 		++n;
     }
@@ -5720,6 +5963,26 @@ f_escape(argvars, rettv)
 	vim_strsave_escaped(get_tv_string(&argvars[0]),
 		get_tv_string_buf(&argvars[1], buf));
     rettv->v_type = VAR_STRING;
+}
+
+/*
+ * "eval()" function
+ */
+/*ARGSUSED*/
+    static void
+f_eval(argvars, rettv)
+    typeval	*argvars;
+    typeval	*rettv;
+{
+    char_u	*s;
+
+    s = get_tv_string(&argvars[0]);
+    s = skipwhite(s);
+
+    if (eval1(&s, rettv, TRUE) == FAIL)
+	rettv->vval.v_number = 0;
+    else if (*s != NUL)
+	EMSG(_(e_trailing));
 }
 
 /*
@@ -6009,6 +6272,77 @@ findfilendir(argvars, rettv, dir)
     rettv->v_type = VAR_STRING;
 }
 
+static void filter_map __ARGS((typeval *argvars, typeval *rettv, int map));
+
+/*
+ * Implementation of map() and filter().
+ */
+    static void
+filter_map(argvars, rettv, map)
+    typeval	*argvars;
+    typeval	*rettv;
+    int		map;
+{
+    char_u	buf[NUMBUFLEN];
+    char_u	*expr, *s;
+    listitem	*li, *nli;
+    listvar	*l;
+
+    rettv->vval.v_number = 0;
+    if (argvars[0].v_type != VAR_LIST)
+	EMSG(_(e_listreq));
+    else if ((l = argvars[0].vval.v_list) != NULL)
+    {
+	expr = skipwhite(get_tv_string_buf(&argvars[1], buf));
+	for (li = l->lv_first; li != NULL; li = nli)
+	{
+	    copy_tv(&li->li_tv, &amp_tv);
+	    s = expr;
+	    if (eval1(&s, rettv, TRUE) == FAIL)
+		break;
+	    if (*s != NUL)  /* check for trailing chars after expr */
+	    {
+		EMSG2(_(e_invexpr2), s);
+		break;
+	    }
+	    nli = li->li_next;
+	    if (map)
+	    {
+		/* map(): replace the list item value */
+		clear_tv(&li->li_tv);
+		li->li_tv = *rettv;
+	    }
+	    else
+	    {
+		/* filter(): when expr is zero remove the item */
+		if (get_tv_number(rettv) == 0)
+		{
+		    list_getrem(l, li, li);
+		    clear_tv(&li->li_tv);
+		}
+		clear_tv(rettv);
+	    }
+	    clear_tv(&amp_tv);
+	}
+
+	clear_tv(&amp_tv);
+	amp_tv.v_type = VAR_UNKNOWN;
+
+	copy_tv(&argvars[0], rettv);
+    }
+}
+
+/*
+ * "filter()" function
+ */
+    static void
+f_filter(argvars, rettv)
+    typeval	*argvars;
+    typeval	*rettv;
+{
+    filter_map(argvars, rettv, FALSE);
+}
+
 /*
  * "finddir({fname}[, {path}[, {count}]])" function
  */
@@ -6264,7 +6598,7 @@ f_function(argvars, rettv)
     char_u	*s;
 
     s = get_tv_string(&argvars[0]);
-    if (s == NULL || *s == NUL || isdigit(*s))
+    if (s == NULL || *s == NUL || VIM_ISDIGIT(*s))
 	EMSG2(_(e_invarg2), s);
     else if (!function_exists(s))
 	EMSG2(_("E700: Unknown function: %s"), s);
@@ -7636,6 +7970,7 @@ f_index(argvars, rettv)
     listvar	*l;
     listitem	*item;
     long	idx = 0;
+    long	min_idx = 0;
     int		ic = FALSE;
 
     rettv->vval.v_number = -1;
@@ -7648,10 +7983,14 @@ f_index(argvars, rettv)
     if (l != NULL)
     {
 	if (argvars[2].v_type != VAR_UNKNOWN)
-	    ic = get_tv_number(&argvars[2]);
+	{
+	    min_idx = get_tv_number(&argvars[2]);
+	    if (argvars[3].v_type != VAR_UNKNOWN)
+		ic = get_tv_number(&argvars[3]);
+	}
 
 	for (item = l->lv_first; item != NULL; item = item->li_next, ++idx)
-	    if (tv_equal(&item->li_tv, &argvars[1], ic))
+	    if (idx >= min_idx && tv_equal(&item->li_tv, &argvars[1], ic))
 	    {
 		rettv->vval.v_number = idx;
 		break;
@@ -7867,6 +8206,38 @@ f_isdirectory(argvars, rettv)
     typeval	*rettv;
 {
     rettv->vval.v_number = mch_isdir(get_tv_string(&argvars[0]));
+}
+
+/*
+ * "join()" function
+ */
+    static void
+f_join(argvars, rettv)
+    typeval	*argvars;
+    typeval	*rettv;
+{
+    garray_T	ga;
+    char_u	*sep;
+
+    rettv->vval.v_number = 0;
+    if (argvars[0].v_type != VAR_LIST)
+    {
+	EMSG(_(e_listreq));
+	return;
+    }
+    if (argvars[0].vval.v_list == NULL)
+	return;
+    if (argvars[1].v_type == VAR_UNKNOWN)
+	sep = (char_u *)" ";
+    else
+	sep = get_tv_string(&argvars[1]);
+
+    ga_init2(&ga, (int)sizeof(char), 80);
+    list_join(&ga, argvars[0].vval.v_list, sep, TRUE);
+    ga_append(&ga, NUL);
+
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = (char_u *)ga.ga_data;
 }
 
 /*
@@ -8107,6 +8478,17 @@ get_maparg(argvars, rettv, exact)
 }
 
 /*
+ * "map()" function
+ */
+    static void
+f_map(argvars, rettv)
+    typeval	*argvars;
+    typeval	*rettv;
+{
+    filter_map(argvars, rettv, TRUE);
+}
+
+/*
  * "maparg()" function
  */
     static void
@@ -8136,22 +8518,24 @@ find_some_match(argvars, rettv, type)
     typeval	*rettv;
     int		type;
 {
-    char_u	*str;
-    char_u	*expr;
+    char_u	*str = NULL;
+    char_u	*expr = NULL;
     char_u	*pat;
     regmatch_T	regmatch;
     char_u	patbuf[NUMBUFLEN];
+    char_u	strbuf[NUMBUFLEN];
     char_u	*save_cpo;
     long	start = 0;
     long	nth = 1;
     int		match;
+    listvar	*l = NULL;
+    listitem	*li = NULL;
+    long	idx = 0;
+    char_u	*tofree;
 
     /* Make 'cpoptions' empty, the 'l' flag should not be used here. */
     save_cpo = p_cpo;
     p_cpo = (char_u *)"";
-
-    expr = str = get_tv_string(&argvars[0]);
-    pat = get_tv_string_buf(&argvars[1], patbuf);
 
     if (type == 2)
     {
@@ -8161,14 +8545,44 @@ find_some_match(argvars, rettv, type)
     else
 	rettv->vval.v_number = -1;
 
+    if (argvars[0].v_type == VAR_LIST)
+    {
+	if ((l = argvars[0].vval.v_list) == NULL)
+	    goto theend;
+	li = l->lv_first;
+    }
+    else
+	expr = str = get_tv_string(&argvars[0]);
+
+    pat = get_tv_string_buf(&argvars[1], patbuf);
+
     if (argvars[2].v_type != VAR_UNKNOWN)
     {
 	start = get_tv_number(&argvars[2]);
-	if (start < 0)
-	    start = 0;
-	if (start > (long)STRLEN(str))
-	    goto theend;
-	str += start;
+	if (l != NULL)
+	{
+	    li = list_find(l, start);
+	    if (li == NULL)
+		goto theend;
+	    if (start < 0)
+	    {
+		listitem *ni;
+
+		/* Need to compute the index. */
+		for (ni = li; ni->li_prev != NULL; ni = ni->li_prev)
+		    ++idx;
+	    }
+	    else
+		idx = start;
+	}
+	else
+	{
+	    if (start < 0)
+		start = 0;
+	    if (start > (long)STRLEN(str))
+		goto theend;
+	    str += start;
+	}
 
 	if (argvars[3].v_type != VAR_UNKNOWN)
 	    nth = get_tv_number(&argvars[3]);
@@ -8181,22 +8595,53 @@ find_some_match(argvars, rettv, type)
 
 	while (1)
 	{
+	    if (l != NULL)
+	    {
+		if (li == NULL)
+		{
+		    match = FALSE;
+		    break;
+		}
+		str = echo_string(&li->li_tv, &tofree, strbuf);
+	    }
+
 	    match = vim_regexec_nl(&regmatch, str, (colnr_T)0);
-	    if (!match || --nth <= 0)
+
+	    if (l != NULL)
+		vim_free(tofree);
+	    if (match && --nth <= 0)
 		break;
+	    if (l == NULL && !match)
+		break;
+
 	    /* Advance to just after the match. */
+	    if (l != NULL)
+	    {
+		li = li->li_next;
+		++idx;
+	    }
+	    else
+	    {
 #ifdef FEAT_MBYTE
-	    str = regmatch.startp[0] + mb_ptr2len_check(regmatch.startp[0]);
+		str = regmatch.startp[0] + mb_ptr2len_check(regmatch.startp[0]);
 #else
-	    str = regmatch.startp[0] + 1;
+		str = regmatch.startp[0] + 1;
 #endif
+	    }
 	}
 
 	if (match)
 	{
 	    if (type == 2)
-		rettv->vval.v_string = vim_strnsave(regmatch.startp[0],
+	    {
+		if (l != NULL)
+		    copy_tv(&li->li_tv, rettv);
+		else
+		    rettv->vval.v_string = vim_strnsave(regmatch.startp[0],
 				(int)(regmatch.endp[0] - regmatch.startp[0]));
+	    }
+	    else if (l != NULL)
+		rettv->vval.v_number = idx;
 	    else
 	    {
 		if (type != 0)
@@ -9689,7 +10134,7 @@ f_sort(argvars, rettv)
 }
 
     static void
-f_str2list(argvars, rettv)
+f_split(argvars, rettv)
     typeval	*argvars;
     typeval	*rettv;
 {
@@ -11313,12 +11758,15 @@ get_tv_number(varp)
 	    n = (long)(varp->vval.v_number);
 	    break;
 	case VAR_FUNC:
-	    EMSG(_("E703: Using function reference as a number"));
+	    EMSG(_("E703: Using a Funcref as a number"));
 	    break;
 	case VAR_STRING:
 	    if (varp->vval.v_string != NULL)
 		vim_str2nr(varp->vval.v_string, NULL, NULL,
 							TRUE, TRUE, &n, NULL);
+	    break;
+	case VAR_LIST:
+	    EMSG(_("E703: Using a List as a number"));
 	    break;
 	default:
 	    break;
@@ -11389,6 +11837,22 @@ get_tv_string_buf(varp, buf)
 	    break;
     }
     return (char_u *)"";
+}
+
+/*
+ * Get value for "&", as used in map() and filter().
+ */
+    static int
+get_amp_tv(rettv)
+    typeval	*rettv;
+{
+    if (amp_tv.v_type == VAR_UNKNOWN)
+    {
+	EMSG(_("E712: Using & outside of map() or filter()"));
+	return FAIL;
+    }
+    copy_tv(&amp_tv, rettv);
+    return OK;
 }
 
 /*
@@ -11573,7 +12037,7 @@ list_one_var(v, prefix)
     char_u	*s;
     char_u	numbuf[NUMBUFLEN];
 
-    s = tv2string(&v->tv, &tofree, numbuf);
+    s = echo_string(&v->tv, &tofree, numbuf);
     list_one_var_a(prefix, v->v_name, v->tv.v_type,
 						s == NULL ? (char_u *)"" : s);
     vim_free(tofree);
@@ -11826,7 +12290,7 @@ ex_echo(eap)
 	    }
 	    else if (eap->cmdidx == CMD_echo)
 		msg_puts_attr((char_u *)" ", echo_attr);
-	    for (p = tv2string(&rettv, &tofree, numbuf);
+	    for (p = echo_string(&rettv, &tofree, numbuf);
 						   *p != NUL && !got_int; ++p)
 		if (*p == '\n' || *p == '\r' || *p == TAB)
 		{
@@ -12249,25 +12713,28 @@ ex_function(eap)
 	    for (p = theline; vim_iswhite(*p) || *p == ':'; ++p)
 		;
 
-	    /* Check for "endfunction" (should be more strict...). */
-	    if (STRNCMP(p, "endf", 4) == 0 && nesting-- == 0)
+	    /* Check for "endfunction". */
+	    if (checkforcmd(&p, "endfunction", 4) && nesting-- == 0)
 	    {
 		vim_free(theline);
 		break;
 	    }
 
-	    /* Increase indent inside "if", "while", and "try", decrease
+	    /* Increase indent inside "if", "while", "for" and "try", decrease
 	     * at "end". */
 	    if (indent > 2 && STRNCMP(p, "end", 3) == 0)
 		indent -= 2;
-	    else if (STRNCMP(p, "if", 2) == 0 || STRNCMP(p, "wh", 2) == 0
+	    else if (STRNCMP(p, "if", 2) == 0
+		    || STRNCMP(p, "wh", 2) == 0
+		    || STRNCMP(p, "for", 3) == 0
 		    || STRNCMP(p, "try", 3) == 0)
 		indent += 2;
 
 	    /* Check for defining a function inside this function. */
-	    if (STRNCMP(p, "fu", 2) == 0)
+	    if (checkforcmd(&p, "function", 2))
 	    {
-		p = skipwhite(skiptowhite(p));
+		if (*p == '!')
+		    p = skipwhite(p + 1);
 		p += eval_fname_script(p);
 		if (ASCII_ISALPHA(*p))
 		{
@@ -13042,7 +13509,7 @@ get_return_cmd(rettv)
     if (rettv == NULL)
 	s = (char_u *)"";
     else
-	s = tv2string((typeval *)rettv, &tofree, numbuf);
+	s = echo_string((typeval *)rettv, &tofree, numbuf);
 
     STRCPY(IObuff, ":return ");
     STRNCPY(IObuff + 8, s, IOSIZE - 8);
@@ -13231,7 +13698,8 @@ write_viminfo_varlist(fp)
 		default: continue;
 	    }
 	    fprintf(fp, "!%s\t%s\t", this_var->v_name, s);
-	    viminfo_writestring(fp, tv2string(&this_var->tv, &tofree, numbuf));
+	    viminfo_writestring(fp, echo_string(&this_var->tv,
+							    &tofree, numbuf));
 	    vim_free(tofree);
 	}
     }

@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 7.0aa.  Last change: 2005 Jan 08
+*quickfix.txt*  For Vim version 7.0aa.  Last change: 2005 Jan 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -300,6 +300,9 @@ advantages are:
 			enclosing it in / any non-ID character |'isident'|
 			can be used, so long as it does not appear in
 			{pattern}.
+			'ignorecase' applies.  To overrule it use |/\c| to
+			ignore case or |/\C| to match case.  'smartcase' is
+			not used.
 			Examples: >
 				:vimgrep /an error/ *.c
 				:vimgrep /\<FileName\>/ *.h include/*

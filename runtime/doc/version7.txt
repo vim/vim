@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jan 09
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jan 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -94,13 +94,21 @@ New data types						*new-data-types*
 
 In Vim scripts the following types have been added:
 
-	list		ordered list of items
-	dictionary	associative array of items
-	function	reference to a function
+	List		ordered list of items |List|
+	Dictionary	associative array of items |Dictionary|
+	Funcref		reference to a function |Funcref|
 
 Many functions and commands have been added to support the new types.
 
-NOT IMPLEMENTED YET!
+The Dictionary is NOT IMPLEMENTED YET!
+
+The |string()| function can be used to get a string representation of a
+variable.  Works for Numbers, Strings and composites of them.  Then |eval()|
+can be used to turn the string back into the variable value.
+
+The |sharp-string| has been added as a convenient way to put an expression in
+a string.  Examples: >
+	:let l = filter(mylist, # & =~ '^\A'#)
 
 
 KDE support						*new-KDE*
@@ -116,6 +124,7 @@ MzScheme interface					*new-MzScheme*
 The MzScheme interpreter is supported. |MzScheme|
 The |:mzscheme| command can be used to execute MzScheme commands.
 The |:mzfile| command can be used to execute an MzScheme script file.
+
 
 Printing multi-byte text				*new-print-multi-byte*
 ------------------
@@ -650,5 +659,7 @@ Cmdline completion didn't work after ":let var1 var<Tab>".
 When using ":startinsert" or ":startreplace" when already in Insert mode
 (possible when using CTRL-R =), pressing Esc would directly restart Insert
 mode. (Peter Winters)
+
+"2daw" didn't work at end of file if the last word is a single character.
 
  vim:tw=78:ts=8:ft=help:norl:
