@@ -7509,27 +7509,28 @@ ex_redir(eap)
 {
     char	*mode;
     char_u	*fname;
+    char_u	*arg = eap->arg;
 
     if (STRICMP(eap->arg, "END") == 0)
 	close_redir();
     else
     {
-	if (*eap->arg == '>')
+	if (*arg == '>')
 	{
-	    ++eap->arg;
-	    if (*eap->arg == '>')
+	    ++arg;
+	    if (*arg == '>')
 	    {
-		++eap->arg;
+		++arg;
 		mode = "a";
 	    }
 	    else
 		mode = "w";
-	    eap->arg = skipwhite(eap->arg);
+	    arg = skipwhite(arg);
 
 	    close_redir();
 
 	    /* Expand environment variables and "~/". */
-	    fname = expand_env_save(eap->arg);
+	    fname = expand_env_save(arg);
 	    if (fname == NULL)
 		return;
 #ifdef FEAT_BROWSE
@@ -7552,30 +7553,34 @@ ex_redir(eap)
 	    vim_free(fname);
 	}
 #ifdef FEAT_EVAL
-	else if (*eap->arg == '@')
+	else if (*arg == '@')
 	{
 	    /* redirect to a register a-z (resp. A-Z for appending) */
 	    close_redir();
-	    ++eap->arg;
-	    if (ASCII_ISALPHA(*eap->arg)
+	    ++arg;
+	    if (ASCII_ISALPHA(*arg)
 # ifdef FEAT_CLIPBOARD
-		    || *eap->arg == '*'
+		    || *arg == '*'
 # endif
-		    || *eap->arg == '"')
+		    || *arg == '"')
 	    {
-		redir_reg = *eap->arg;
-		if (islower(redir_reg)
+		redir_reg = *arg++;
+		if (*arg == '>')
+		    ++arg;
+		else if (*arg == NUL && (islower(redir_reg)
 # ifdef FEAT_CLIPBOARD
-			|| redir_reg == '*'
+			    || redir_reg == '*'
 # endif
-			|| redir_reg == '"')
+			    || redir_reg == '"'))
 		{
 		    /* make register empty */
 		    write_reg_contents(redir_reg, (char_u *)"", -1, FALSE);
 		}
+		if (*arg != NUL)
+		    EMSG2(_(e_invarg2), eap->arg);
 	    }
 	    else
-		EMSG(_(e_invarg));
+		EMSG2(_(e_invarg2), eap->arg);
 	}
 #endif
 
@@ -7584,7 +7589,7 @@ ex_redir(eap)
 	/* TODO: redirect to an internal variable */
 
 	else
-	    EMSG(_(e_invarg));
+	    EMSG2(_(e_invarg2), eap->arg);
     }
 }
 
@@ -7743,7 +7748,8 @@ ex_mkrc(eap)
 #if defined(FEAT_SESSION) && defined(vim_mkdir)
     /* When using 'viewdir' may have to create the directory. */
     if (using_vdir && !mch_isdir(p_vdir))
-	vim_mkdir(p_vdir, 0755); /* ignore errors, open_exfile() will fail */
+	if (vim_mkdir(p_vdir, 0755) != 0)
+	    EMSG2(_("E738: Cannot create directory: %s"), p_vdir);
 #endif
 
     fd = open_exfile(fname, eap->forceit, WRITEBIN);

@@ -280,9 +280,11 @@ EXTERN scid_T	current_SID INIT(= 0);	    /* ID of script being sourced or
 					       current function. */
 #endif
 
+#if defined(FEAT_EVAL) || defined(FEAT_SYN_HL)
 /* Magic number used for hashitem "hi_key" value indicating a deleted item.
  * Only the address is used. */
 EXTERN char_u	hash_removed;
+#endif
 
 
 EXTERN int	scroll_region INIT(= FALSE); /* term supports scroll region */
@@ -1396,7 +1398,9 @@ EXTERN char_u e_invexprmsg[]	INIT(=N_("E449: Invalid expression received"));
 EXTERN char_u e_guarded[]	INIT(=N_("E463: Region is guarded, cannot modify"));
 EXTERN char_u e_nbreadonly[]	INIT(=N_("E680: NetBeans does not allow changes in read-only files"));
 #endif
+#if defined(FEAT_EVAL) || defined(FEAT_SYN_HL)
 EXTERN char_u e_intern2[]	INIT(=N_("E685: Internal error: %s"));
+#endif
 
 
 #ifdef MACOS_X_UNIX
