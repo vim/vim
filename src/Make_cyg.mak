@@ -1,6 +1,6 @@
 #
 # Makefile for VIM on Win32, using Cygnus gcc
-# Last updated by Dan Sharp.  Last Change: 2005 Jan 08
+# Last updated by Dan Sharp.  Last Change: 2005 Jan 16
 #
 # This compiles Vim as a Windows application.  If you want Vim to run as a
 # Cygwin application use the Makefile (just like on Unix).
@@ -337,9 +337,11 @@ endif
 ##############################
 ifneq (sh.exe, $(SHELL))
 DEL = rm
+MKDIR = mkdir -p
 DIRSLASH = /
 else
 DEL = del
+MKDIR = mkdir
 DIRSLASH = \\
 endif
 
@@ -422,7 +424,7 @@ uninstal.exe: uninstal.c
 	$(CC) $(CFLAGS) -o uninstal.exe uninstal.c $(LIBS)
 
 $(OUTDIR):
-	mkdir -p $(OUTDIR)
+	$(MKDIR) $(OUTDIR)
 
 tags:
 	command /c ctags *.c $(INCL)
