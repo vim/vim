@@ -1,4 +1,4 @@
-*pi_netrw.txt  For Vim version 6.2.  Last change: Jun 25, 2004
+*pi_netrw.txt  For Vim version 6.2.  Last change: Jul 26, 2004
 
 
 		VIM REFERENCE MANUAL    by Charles E. Campbell, Jr.
@@ -503,22 +503,22 @@ from <netrw.vim> itself:
      ?..........Help....................................|netrw-help|
      <cr>.......Browsing................................|netrw-cr|
      <c-l>......Refreshing the Listing..................|netrw-c-l|
-     <del>......Removing Files or Directories...........|netrw-delete|
-     D..........Removing Files or Directories...........|netrw-D|
-     \H.........Edit File/Directory Hiding List.........|netrw-H|
-     \M.........Make A New Directory....................|netrw-M|
-     R..........Renaming Files or Directories...........|netrw-R|
+     <del>......Deleting Files or Directories...........|netrw-delete|
      -..........Going Up................................|netrw--|
      a..........Hiding Files or Directories.............|netrw-a|
+     D..........Deleting Files or Directories...........|netrw-D|
+     \h.........Edit File/Directory Hiding List.........|netrw-h|
      i..........Long Listing............................|netrw-i|
+     \m.........Make A New Directory....................|netrw-m|
      o..........Browsing with a Horizontal Split........|netrw-o|
      r..........Reversing Sorting Order.................|netrw-r|
+     R..........Renaming Files or Directories...........|netrw-R|
      s..........Selecting Sorting Style.................|netrw-s|
      v..........Browsing with a Vertical Split..........|netrw-v|
      x..........Customizing Browsing....................|netrw-x|
-     				*netrw-browse-cmds*
+
+QUICK REFERENCE COMMANDS TABLE     			*netrw-browse-cmds*
 >
-			Quick Reference Commands Table
         -------	-----------
 	Command	Explanation
         -------	-----------
@@ -530,8 +530,9 @@ from <netrw.vim> itself:
 	   R	Netrw will attempt to rename the file(s)/directory(ies)
 	   -	Makes Netrw go up one directory
 	   a	Show all of a directory (temporarily ignore g:netrw_list_hide)
-	   h	Edit file hiding list
+	  \h	Edit file hiding list
 	   i	Toggles between long and short listing
+	  \m	Make a directory
 	   o	Enter the file/directory under the cursor in a new browser
 	   	window.  A horizontal split is used.
 	   r	Reverse sorting order
@@ -540,7 +541,7 @@ from <netrw.vim> itself:
 	   	window.  A vertical split is used.
 	   x	Apply a function to a file.
 <
-							*netrw-browse-var*
+NETRW BROWSER VARIABLES					*netrw-browse-var*
 >
 	---			-----------
 	Var			Explanation
@@ -556,6 +557,7 @@ from <netrw.vim> itself:
 	g:netrw_rm_cmd		supports removing files
 	g:netrw_rmdir_cmd	supports removing directories
 	g:netrw_rmf_cmd		supports removing softlinks to directories
+	g:netrw_hide		if true, the hiding list is used
 	g:netrw_sort_by		sort by "name", "time", or "size"
 	g:netrw_sort_direction	sorting direction: "normal" or "reverse"
 	g:netrw_sort_sequence	when sorting by name, first sort by the
@@ -577,6 +579,8 @@ trailing slash and it will be interpreted as a request to list a directory:
 
 	vim [protocol]://[user@]hostname/path/
 
+To get no-password directory listings, scp, ssh interaction, etc, see
+|netrw-list-hack|.
 
 REFRESHING THE LISTING					*netrw-c-l*
 
@@ -615,18 +619,18 @@ directories or displays the filename, file size (in bytes), and the
 time and date of last modification for local directories.
 
 
-MAKING A NEW DIRECTORY						*netrw-M*
+MAKING A NEW DIRECTORY						*netrw-m*
 
-Actually <Leader>M, where the <Leader> is, by default, the backslash.
+Actually <Leader>m, where the <Leader> is, by default, the backslash.
 
-With the "<Leader>M" map one may make a new directory either remotely (which
+With the "<Leader>m" map one may make a new directory either remotely (which
 depends on the global variable g:netrw_mkdir_cmd) or locally (which depends on
 the global variable g:netrw_local_mkdir).  Netrw will issue a request for the
 new directory's name.  A bare <CR> at that point will abort the making of the
 directory.  Attempts to make a local directory that already exists (as either
 a file or a directory) will be detected, reported on, and ignored.
 
-REMOVING FILES OR DIRECTORIES	*netrw-delete* *netrw-remove*	*netrw-D*
+DELETING FILES OR DIRECTORIES			*netrw-delete* *netrw-D*
 
 Deleting/removing files and directories involves moving the cursor to the
 file/directory to be deleted and pressing "D".  Directories must be empty first
@@ -668,30 +672,32 @@ value is:
 
 	ssh HOSTNAME mv
 
+One may rename a block of files and directories by selecting them with
+the V (|linewise-visual|).
 
-HIDING FILES OR DIRECTORIES		*g:netrw_a* *g:netrw_list_hide*
+HIDING FILES OR DIRECTORIES		*g:netrw-a* *g:netrw_list_hide*
 
-The "a" map lets the browser ignore the g:netrw_list_hide variable.  Normally
-the g:netrw_list_hide variable holds a comma separated list of patterns which
-will be hidden (removed) from the directory listing.  Mnemonically, the
-"a" stands for show All.
+The "a" map toggles the netrw vim file browser (both remote and local) between
+displaying hidden files (show-all) versus hiding files.  For files to be
+hidden, the g:netrw_list_hide variable must hold a comma delimited list of
+patterns (ex. \.obj) to be hidden from normal listing.  (see |netrw-h|)
 
 
-EDIT FILE OR DIRECTORY HIDING LIST				*netrw-H*
+EDIT FILE OR DIRECTORY HIDING LIST				*netrw-h*
 
-Actually <Leader>H, where the <Leader> is, by default, the backslash.
+Actually <Leader>h, where the <Leader> is, by default, the backslash.
 
-The "<Leader>H" map brings up a requestor allowing the user to change the
-file/directory hiding list.  The hiding list consists of one or more
-patterns delimited by commas.  Files and/or directories satisfying
-these patterns will be hidden (ie. not shown).
+The "<Leader>h" map brings up a requestor allowing the user to change the
+file/directory hiding list.  The hiding list consists of one or more patterns
+delimited by commas.  Files and/or directories satisfying these patterns will
+be hidden (ie. not shown).
 
 
 BROWSING WITH A HORIZONTALLY SPLIT WINDOW			*netrw-o*
 
-Normally one enters a file or directory using the <cr>.  However, the "o"
-map allows one to open a new window to hold the new directory listing or
-file.  A horizontal split is used.  (also see |netrw-v|)
+Normally one enters a file or directory using the <cr>.  However, the "o" map
+allows one to open a new window to hold the new directory listing or file.  A
+horizontal split is used.  (also see |netrw-v|)
 
 
 SELECTING SORTING STYLE						*netrw-s*
@@ -779,7 +785,7 @@ which is loaded automatically at startup (assuming :set nocp).
 ==============================================================================
 9. History						*netrw-history*
 
-	v47: * 
+	v47: * now handles local directory browsing.
 	v46: * now handles remote directory browsing
 	     * g:netrw_silent (if 1) will cause all transfers to be silent'd
 	v45: * made the [user@]hostname:path form a bit more restrictive

@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2004 Jul 25
+*version7.txt*  For Vim version 7.0aa.  Last change: 2004 Jul 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -288,5 +288,9 @@ resizing the GUI shell upon startup.
 
 Python: Using buffer.append(f.readlines()) didn't work.  Allow appending a
 string with a trailing newline.  The newline is ignored.
+
+When using the ":saveas f2" command for buffer "f1", the Buffers menu would
+contain "f2" twice, one of them leading to "f1".  Also trigger the BufFilePre
+and BufFilePost events for the alternate buffer that gets the old name.
 
  vim:tw=78:ts=8:ft=help:norl:

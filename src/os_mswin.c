@@ -2689,6 +2689,7 @@ serverGetVimNames(void)
     ga_init2(&ga, 1, 100);
 
     EnumWindows(enumWindowsGetNames, (LPARAM)(&ga));
+    ga_append(&ga, NUL);
 
     return ga.ga_data;
 }

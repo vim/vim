@@ -2203,6 +2203,7 @@ do_write(eap)
 	    buf_T	*was_curbuf = curbuf;
 
 	    apply_autocmds(EVENT_BUFFILEPRE, NULL, NULL, FALSE, curbuf);
+	    apply_autocmds(EVENT_BUFFILEPRE, NULL, NULL, FALSE, alt_buf);
 # ifdef FEAT_EVAL
 	    if (curbuf != was_curbuf || aborting())
 # else
@@ -2231,6 +2232,7 @@ do_write(eap)
 	    buf_name_changed(curbuf);
 #ifdef FEAT_AUTOCMD
 	    apply_autocmds(EVENT_BUFFILEPOST, NULL, NULL, FALSE, curbuf);
+	    apply_autocmds(EVENT_BUFFILEPOST, NULL, NULL, FALSE, alt_buf);
 	    if (!alt_buf->b_p_bl)
 	    {
 		alt_buf->b_p_bl = TRUE;

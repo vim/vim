@@ -683,6 +683,7 @@ serverGetVimNames(dpy)
     }
     if (regProp != empty_prop)
 	XFree(regProp);
+    ga_append(&ga, NUL);
     return ga.ga_data;
 }
 
@@ -1258,7 +1259,7 @@ serverEventProc(dpy, eventPtr)
 		    ga_append(&reply, 0);
 		    ga_concat(&reply, (char_u *)"-c 1");
 		}
-		ga_append(&reply, 0);
+		ga_append(&reply, NUL);
 		(void)AppendPropCarefully(dpy, resWindow, commProperty,
 					   reply.ga_data, reply.ga_len);
 	    }
@@ -1363,7 +1364,7 @@ serverEventProc(dpy, eventPtr)
 	    if ((r = ServerReplyFind(win, SROP_Add)) != NULL)
 	    {
 		ga_concat(&(r->strings), str);
-		ga_append(&(r->strings), 0);
+		ga_append(&(r->strings), NUL);
 	    }
 #ifdef FEAT_AUTOCMD
 	    sprintf((char *)winstr, "0x%x", (unsigned int)win);

@@ -4586,12 +4586,14 @@ gui_do_findrepl(flags, find_text, repl_text, down)
 	ga_concat(&ga, (char_u *)"/");
 	concat_esc(&ga, repl_text, '/');	/* escape slashes */
 	ga_concat(&ga, (char_u *)"/g");
+	ga_append(&ga, NUL);
 	do_cmdline_cmd(ga.ga_data);
     }
     else
     {
 	/* Search for the next match. */
 	i = msg_scroll;
+	ga_append(&ga, NUL);
 	do_search(NULL, down ? '/' : '?', ga.ga_data, 1L,
 						    SEARCH_MSG + SEARCH_MARK);
 	msg_scroll = i;	    /* don't let an error message set msg_scroll */

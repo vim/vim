@@ -1193,9 +1193,9 @@ ex_throw(eap)
 }
 
 /*
- * Throw the current exception through the specified cstack.  Common routine for
- * ":throw" (user exception) and error and interrupt exceptions.  Also used for
- * rethrowing an uncaught exception.
+ * Throw the current exception through the specified cstack.  Common routine
+ * for ":throw" (user exception) and error and interrupt exceptions.  Also
+ * used for rethrowing an uncaught exception.
  */
     void
 do_throw(cstack)
@@ -1210,8 +1210,8 @@ do_throw(cstack)
      * conditional itself, so that its ACTIVE flag can be tested below.  But
      * if a previous error or interrupt has not been converted to an exception,
      * inactivate the try conditional, too, as if the conversion had been done,
-     * and reset the did_emsg or got_int flag, so this won't happen again at the
-     * next surrounding try conditional.
+     * and reset the did_emsg or got_int flag, so this won't happen again at
+     * the next surrounding try conditional.
      */
     if (did_emsg && !THROW_ON_ERROR)
     {
@@ -1228,16 +1228,16 @@ do_throw(cstack)
     {
 	/*
 	 * If this try conditional is active and we are before its first
-	 * ":catch", set THROWN so that the ":catch" commands will check whether
-	 * the exception matches.  When the exception came from any of the
-	 * catch clauses, it will be made pending at the ":finally" (if present)
-	 * and rethrown at the ":endtry".  This will also happen if the try
-	 * conditional is inactive.  This is the case when we are throwing an
-	 * exception due to an error or interrupt on the way from a preceding
-	 * ":continue", ":break", ":return", ":finish", error or interrupt (not
-	 * converted to an exception) to the finally clause or from a preceding
-	 * throw of a user or error or interrupt exception to the matching catch
-	 * clause or the finally clause.
+	 * ":catch", set THROWN so that the ":catch" commands will check
+	 * whether the exception matches.  When the exception came from any of
+	 * the catch clauses, it will be made pending at the ":finally" (if
+	 * present) and rethrown at the ":endtry".  This will also happen if
+	 * the try conditional is inactive.  This is the case when we are
+	 * throwing an exception due to an error or interrupt on the way from
+	 * a preceding ":continue", ":break", ":return", ":finish", error or
+	 * interrupt (not converted to an exception) to the finally clause or
+	 * from a preceding throw of a user or error or interrupt exception to
+	 * the matching catch clause or the finally clause.
 	 */
 	if (!(cstack->cs_flags[idx] & CSF_CAUGHT))
 	{
@@ -1253,8 +1253,8 @@ do_throw(cstack)
 	cstack->cs_exception[idx] = current_exception;
     }
 #if 0
-    /* TODO: Add optimization below.  Not yet done because of interface problems
-     * to eval.c and ex_cmds2.c. (Servatius) */
+    /* TODO: Add optimization below.  Not yet done because of interface
+     * problems to eval.c and ex_cmds2.c. (Servatius) */
     else
     {
 	/*

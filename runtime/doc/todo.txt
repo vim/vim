@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Jul 26
+*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Jul 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -35,6 +35,14 @@ Aborting at the ATTENTION prompt causes trouble:
     alternate buffer gets "read error" flag.
     ":sbuf" and ":ball" leave an empty window behind.
 Change in handle_swap_exists() also in 6.3?
+
+Add remap-abbreviation solution to Vim 6.3?  It's about adding REMAP_SKIP and
+RM_ABBR in getchar.c.
+
+Added ga_append() here: (also to 6.3?)
+    script_get(eap, cmd)
+    gui_do_findrepl(flags, find_text, repl_text, down)
+    serverGetVimNames(dpy)  if_xcmdsrv.c, os_mswin.c
 
 
 For version 7.0:
@@ -3093,6 +3101,8 @@ Various improvements:
     paragraphs).  Complements the '2' flag.  Use '>' flag when larger indent
     starts a new paragraph, use '<' flag when smaller indent starts a new
     paragraph.	Both start a new paragraph on any indent change.
+7   Add a way to define an item list with a pattern in 'formatoptions'.  The
+    'n' flag doesn't work for "6.3" or "6a.".
 8   Add 'formatexpr' option: Used for formatting operator "gq" instead of the
     builtin formatting or 'formatprg'.
 8   Allow using a trailing space to signal a paragraph that continues on the

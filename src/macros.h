@@ -159,7 +159,6 @@
 #  define mch_fopen(n, p)	fopen((n), (p))
 # endif
 # define mch_fstat(n, p)	fstat((n), (p))
-# define mch_lstat(n, p)	lstat((n), (p))
 # ifdef MSWIN	/* has it's own mch_stat() function */
 #  define mch_stat(n, p)	vim_stat((n), (p))
 # else
@@ -171,6 +170,12 @@
 #   define mch_stat(n, p)	stat((n), (p))
 #  endif
 # endif
+#endif
+
+#ifdef HAVE_LSTAT
+# define mch_lstat(n, p)	lstat((n), (p))
+#else
+# define mch_lstat(n, p)	mch_stat((n), (p))
 #endif
 
 #ifdef MACOS_CLASSIC

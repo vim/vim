@@ -8065,6 +8065,7 @@ f_winrestcmd(argvars, retvar)
 # endif
 	++winnr;
     }
+    ga_append(&ga, NUL);
 
     retvar->var_val.var_string = ga.ga_data;
 #else

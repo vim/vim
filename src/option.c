@@ -5312,11 +5312,13 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 
 #ifdef FEAT_PRINTER
     else if (varp == &p_popt)
-	errmsg = parse_list_options(p_popt, printer_opts, OPT_PRINT_NUM_OPTIONS);
+	errmsg = parse_list_options(p_popt, printer_opts,
+						       OPT_PRINT_NUM_OPTIONS);
 
 # if defined(FEAT_MBYTE) && defined(FEAT_POSTSCRIPT)
     else if (varp == &p_pmfn)
-	errmsg = parse_list_options(p_pmfn, mbfont_opts, OPT_MBFONT_NUM_OPTIONS);
+	errmsg = parse_list_options(p_pmfn, mbfont_opts,
+						      OPT_MBFONT_NUM_OPTIONS);
 # endif
 #endif
 

@@ -1,8 +1,8 @@
 " NetrwFileHandlers: contains various extension-based file handlers for
-"                    netrw's browsers' x command
+"                    netrw's browsers' x command ("eXecute launcher")
 " Author:	Charles E. Campbell, Jr.
-" Date:		Jul 06, 2004
-" Version:	3
+" Date:		Jul 09, 2004
+" Version:	1
 " ---------------------------------------------------------------------
 
 " NetrwFileHandler_html: handles html when the user hits "x" when the
@@ -105,7 +105,7 @@ fun! NetrwFileHandler_pnm(pnmfile)
 endfun
 
 " ---------------------------------------------------------------------
-" NetrwFileHandler_bmp:
+" NetrwFileHandler_bmp: visualize bmp files
 fun! NetrwFileHandler_bmp(bmpfile)
 "  call Dfunc("NetrwFileHandler_bmp(bmpfile<".a:bmpfile.">)")
 
@@ -119,6 +119,87 @@ fun! NetrwFileHandler_bmp(bmpfile)
   endif
 
 "  call Dret("NetrwFileHandler_bmp 1")
+  return 1
+endfun
+
+" ---------------------------------------------------------------------
+" NetrwFileHandler_pdf: visualize pdf files
+fun! NetrwFileHandler_pdf(pdf)
+  " call Dfunc("NetrwFileHandler_pdf(pdf<".a:pdf.">)")
+  if executable("gs")
+   exe "silent! !gs ".a:pdf
+  else
+   " call Dret("NetrwFileHandler_pdf 0")
+   return 0
+  endif
+
+  " call Dret("NetrwFileHandler_pdf 1")
+  return 1
+endfun
+
+" ---------------------------------------------------------------------
+" NetrwFileHandler_sxw: visualize sxw files
+fun! NetrwFileHandler_sxw(sxw)
+  " call Dfunc("NetrwFileHandler_sxw(sxw<".a:sxw.">)")
+  if executable("gs")
+   exe "silent! !gs ".a:sxw
+  else
+   " call Dret("NetrwFileHandler_sxw 0")
+   return 0
+  endif
+
+  " call Dret("NetrwFileHandler_sxw 1")
+  return 1
+endfun
+
+" ---------------------------------------------------------------------
+" NetrwFileHandler_doc: visualize doc files
+fun! NetrwFileHandler_doc(doc)
+  " call Dfunc("NetrwFileHandler_doc(doc<".a:doc.">)")
+
+  if executable("oowriter")
+   exe "silent! !oowriter ".a:doc
+   redraw!
+  else
+   " call Dret("NetrwFileHandler_doc 0")
+   return 0
+  endif
+
+  " call Dret("NetrwFileHandler_doc 1")
+  return 1
+endfun
+
+" ---------------------------------------------------------------------
+" NetrwFileHandler_sxw: visualize sxw files
+fun! NetrwFileHandler_sxw(sxw)
+  " call Dfunc("NetrwFileHandler_sxw(sxw<".a:sxw.">)")
+
+  if executable("oowriter")
+   exe "silent! !oowriter ".a:sxw
+   redraw!
+  else
+   " call Dret("NetrwFileHandler_sxw 0")
+   return 0
+  endif
+
+  " call Dret("NetrwFileHandler_sxw 1")
+  return 1
+endfun
+
+" ---------------------------------------------------------------------
+" NetrwFileHandler_xls: visualize xls files
+fun! NetrwFileHandler_xls(xls)
+  " call Dfunc("NetrwFileHandler_xls(xls<".a:xls.">)")
+
+  if executable("oocalc")
+   exe "silent! !oocalc ".a:xls
+   redraw!
+  else
+   " call Dret("NetrwFileHandler_xls 0")
+   return 0
+  endif
+
+  " call Dret("NetrwFileHandler_xls 1")
   return 1
 endfun
 

@@ -1,7 +1,12 @@
 " Set options and add mapping such that Vim behaves a lot like MS-Windows
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2004 May 26
+" Last change:	2004 Jul 27
+
+" bail out if this isn't wanted (mrsvim.vim uses this).
+if exists("g:skip_loading_mswin") && g:skip_loading_mswin
+  finish
+endif
 
 " set the 'cpoptions' to its Vim default
 if 1	" only do this when compiled with expression evaluation
