@@ -17,8 +17,7 @@ short gui_mch_get_mac_menu_item_index __ARGS((vimmenu_T *menu, vimmenu_T *parent
 void gui_mch_set_blinking __ARGS((long wait, long on, long off));
 void gui_mch_stop_blink __ARGS((void));
 void gui_mch_start_blink __ARGS((void));
-int gui_mch_get_mouse_x __ARGS((void));
-int gui_mch_get_mouse_y __ARGS((void));
+void gui_mch_getmouse __ARGS((int *x, int *y));
 void gui_mch_setmouse __ARGS((int x, int y));
 void gui_mch_prepare __ARGS((int *argc, char **argv));
 int gui_mch_init_check __ARGS((void));

@@ -3026,7 +3026,9 @@ get_shape_idx(mouse)
     if (mouse && (State == HITRETURN || State == ASKMORE))
     {
 # ifdef FEAT_GUI
-	if (Y_2_ROW(gui_mch_get_mouse_y()) == Rows - 1)
+	int x, y;
+	gui_mch_getmouse(&x, &y);
+	if (Y_2_ROW(y) == Rows - 1)
 	    return SHAPE_IDX_MOREL;
 # endif
 	return SHAPE_IDX_MORE;

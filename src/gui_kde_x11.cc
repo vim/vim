@@ -1303,19 +1303,13 @@ gui_mch_get_rgb(guicolor_T pixel)//{{{
 }//}}}
 
 /*
- * Get current y mouse coordinate in text window.
- * Return -1 when unknown.
+ * Get current mouse coordinates in text window.
  */
-    int
-gui_mch_get_mouse_x(void)//{{{
+    void
+gui_mch_getmouse(int *x, int *y)//{{{
 {
-    return vmw->mapFromGlobal(QCursor::pos()).x();
-}//}}}
-
-    int
-gui_mch_get_mouse_y(void)//{{{
-{
-    return vmw->mapFromGlobal(QCursor::pos()).y();
+    *x = vmw->mapFromGlobal(QCursor::pos()).x();
+    *y = vmw->mapFromGlobal(QCursor::pos()).y();
 }//}}}
 
     void

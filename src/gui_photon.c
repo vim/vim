@@ -1896,29 +1896,18 @@ gui_mch_mousehide(int hide)
 }
 
     int
-gui_mch_get_mouse_x(void)
+gui_mch_getmouse(int *x, int *y)
 {
     PhCursorInfo_t info;
-    short x, y;
+    short ix, iy;
 
     /* FIXME: does this return the correct position,
      * with respect to the border? */
     PhQueryCursor( PhInputGroup( NULL ), &info );
-    PtGetAbsPosition( gui.vimTextArea , &x, &y );
+    PtGetAbsPosition( gui.vimTextArea , &ix, &iy );
 
-    return( info.pos.x - x );
-}
-
-    int
-gui_mch_get_mouse_y(void)
-{
-    PhCursorInfo_t info;
-    short x, y;
-
-    PhQueryCursor( PhInputGroup( NULL ), &info );
-    PtGetAbsPosition( gui.vimTextArea , &x, &y );
-    /* TODO: Add border offset? */
-    return( info.pos.y - y );
+    *x = info.pos.x - ix;
+    *y = info.pos.y - iy;
 }
 
     void

@@ -5672,27 +5672,16 @@ display_errors()
 #endif
 
 /*
- * Get current y mouse coordinate in text window.
- * Return -1 when unknown.
+ * Get current mouse coordinates in text window.
  */
-    int
-gui_mch_get_mouse_x()
+void gui_mch_getmouse(int *x, int *y)
 {
     Point where;
 
     GetMouse(&where);
 
-    return (where.h);
-}
-
-    int
-gui_mch_get_mouse_y()
-{
-    Point where;
-
-    GetMouse(&where);
-
-    return (where.v);
+    *x = where.h;
+    *y = where.v;
 }
 
     void

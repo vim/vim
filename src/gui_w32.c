@@ -3184,6 +3184,8 @@ gui_mch_tearoff(
     int		nameLen;
     int		padding0, padding1, padding2 = 0;
     int		sepPadding=0;
+    int		x;
+    int		y;
 #ifdef USE_SYSMENU_FONT
     LOGFONT	lfSysmenu;
     int		use_lfSysmenu = FALSE;
@@ -3304,12 +3306,13 @@ gui_mch_tearoff(
     *p++ = HIWORD(lExtendedStyle);
     pnumitems = p;	/* save where the number of items must be stored */
     *p++ = 0;		// NumberOfItems(will change later)
+    gui_mch_getmouse(&x, &y);
     if (initX == 0xffffL)
-	*p++ = PixelToDialogX(gui_mch_get_mouse_x()); // x
+	*p++ = PixelToDialogX(x); // x
     else
 	*p++ = PixelToDialogX(initX); // x
     if (initY == 0xffffL)
-	*p++ = PixelToDialogY(gui_mch_get_mouse_y()); // y
+	*p++ = PixelToDialogY(y); // y
     else
 	*p++ = PixelToDialogY(initY); // y
     *p++ = PixelToDialogX(dlgwidth);    // cx

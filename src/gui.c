@@ -4201,22 +4201,22 @@ gui_mouse_correct()
     win_T	*wp = NULL;
 
     need_mouse_correct = FALSE;
-    if (gui.in_use && p_mousef)
+
+    if (!(gui.in_use && p_mousef))
+	return;
+
+    gui_mch_getmouse(&x, &y);
+    /* Don't move the mouse when it's left or right of the Vim window */
+    if (x < 0 || x > Columns * gui.char_width)
+	return;
+    if (y >= 0)
+	wp = xy2win(x, y);
+    if (wp != curwin && wp != NULL)	/* If in other than current window */
     {
-	x = gui_mch_get_mouse_x();
-	/* Don't move the mouse when it's left or right of the Vim window */
-	if (x < 0 || x > Columns * gui.char_width)
-	    return;
-	y = gui_mch_get_mouse_y();
-	if (y >= 0)
-	    wp = xy2win(x, y);
-	if (wp != curwin && wp != NULL)	/* If in other than current window */
-	{
-	    validate_cline_row();
-	    gui_mch_setmouse((int)W_ENDCOL(curwin) * gui.char_width - 3,
-			 (W_WINROW(curwin) + curwin->w_wrow) * gui.char_height
+	validate_cline_row();
+	gui_mch_setmouse((int)W_ENDCOL(curwin) * gui.char_width - 3,
+		(W_WINROW(curwin) + curwin->w_wrow) * gui.char_height
 						     + (gui.char_height) / 2);
-	}
     }
 }
 

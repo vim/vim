@@ -2411,33 +2411,18 @@ gui_mch_destroy_scrollbar(scrollbar_T *sb)
 #endif
 
 /*
- * Get current x mouse coordinate in text window.
- * Return -1 when unknown.
+ * Get current mouse coordinates in text window.
  */
-    int
-gui_mch_get_mouse_x(void)
+    void
+gui_mch_get_mouse_(int *x, int *y)
 {
     RECT rct;
     POINT mp;
 
     (void)GetWindowRect(s_textArea, &rct);
     (void)GetCursorPos((LPPOINT)&mp);
-    return (int)(mp.x - rct.left);
-}
-
-/*
- * Get current y mouse coordinate in text window.
- * Return -1 when unknown.
- */
-    int
-gui_mch_get_mouse_y(void)
-{
-    RECT rct;
-    POINT mp;
-
-    (void)GetWindowRect(s_textArea, &rct);
-    (void)GetCursorPos((LPPOINT)&mp);
-    return (int)(mp.y - rct.top);
+    *x = (int)(mp.x - rct.left);
+    *y = (int)(mp.y - rct.top);
 }
 
 /*

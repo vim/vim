@@ -3014,40 +3014,26 @@ gui_mch_set_scrollbar_colors(scrollbar_T *sb)
 }
 
 /*
- * Get current x mouse coordinate in text window.
+ * Get current mouse coordinates in text window.
  * Note: (0,0) is the bottom left corner, positive y is UP.
- * Return -1 when unknown.
  */
-    int
-gui_mch_get_mouse_x()
+    void
+gui_mch_getmouse(x, y)
+    int *x;
+    int *y;
 {
     int left;
-    int block[10];
-
-    block[0] = gui.window_handle;
-    swi(Wimp_GetWindowState, 0, block);
-    left = block[1];
-
-    swi(Wimp_GetPointerInfo, 0, block);
-    return block[0] - left;
-}
-
-/*
- * Get current y mouse coordinate in text window.
- * Return -1 when unknown.
- */
-    int
-gui_mch_get_mouse_y()
-{
     int top;
     int block[10];
 
     block[0] = gui.window_handle;
     swi(Wimp_GetWindowState, 0, block);
+    left = block[1];
     top = block[4];
 
     swi(Wimp_GetPointerInfo, 0, block);
-    return top - block[1];
+    *x = block[0] - left;
+    *y = top - block[1];
 }
 
 /* MouseTo(x, y) */
