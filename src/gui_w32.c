@@ -1400,6 +1400,15 @@ gui_mch_set_bg_color(guicolor_T color)
     gui.currBgColor = color;
 }
 
+/*
+ * Set the current text special color.
+ */
+    void
+gui_mch_set_sp_color(guicolor_T color)
+{
+    gui.currSpColor = color;
+}
+
 #if defined(FEAT_MBYTE) && defined(FEAT_MBYTE_IME)
 /*
  * Multi-byte handling, originally by Sung-Hoon Baek.
@@ -2013,6 +2022,7 @@ gui_mch_draw_string(
 			 foptions, pcliprect, (char *)text, len, padding);
     }
 
+    /* Underline */
     if (flags & DRAW_UNDERL)
     {
 	hpen = CreatePen(PS_SOLID, 1, gui.currFgColor);
@@ -2028,6 +2038,21 @@ gui_mch_draw_string(
 	/* Note: LineTo() excludes the last pixel in the line. */
 	LineTo(s_hdc, FILL_X(col + len), y);
 	DeleteObject(SelectObject(s_hdc, old_pen));
+    }
+
+    /* Undercurl */
+    if (flags & DRAW_UNDERC)
+    {
+	int			x;
+	int			offset;
+	const static int	val[8] = {1, 0, 0, 0, 1, 2, 2, 2 };
+
+	y = FILL_Y(row + 1) - 1;
+	for (x = FILL_X(col); x < FILL_X(col + len); ++x)
+	{
+	    offset = val[x % 8];
+	    SetPixel(s_hdc, x, y - offset, gui.currSpColor);
+	}
     }
 }
 
@@ -4045,7 +4070,7 @@ BevalTimerProc(hwnd, uMsg, idEvent, dwTime)
 	cur_beval->x = pt.x;
 	cur_beval->y = pt.y;
 
-	TRACE0("BevalTimerProc: sending request");
+	// TRACE0("BevalTimerProc: sending request");
 
 	if (cur_beval->msgCB != NULL)
 	    (*cur_beval->msgCB)(cur_beval, 0);
@@ -4056,22 +4081,22 @@ BevalTimerProc(hwnd, uMsg, idEvent, dwTime)
 gui_mch_disable_beval_area(beval)
     BalloonEval	*beval;
 {
-    TRACE0("gui_mch_disable_beval_area {{{");
+    // TRACE0("gui_mch_disable_beval_area {{{");
     KillTimer(s_textArea, BevalTimerId);
-    TRACE0("gui_mch_disable_beval_area }}}");
+    // TRACE0("gui_mch_disable_beval_area }}}");
 }
 
     void
 gui_mch_enable_beval_area(beval)
     BalloonEval	*beval;
 {
-    TRACE0("gui_mch_enable_beval_area |||");
+    // TRACE0("gui_mch_enable_beval_area |||");
     if (beval == NULL)
 	return;
-    TRACE0("gui_mch_enable_beval_area {{{");
+    // TRACE0("gui_mch_enable_beval_area {{{");
     BevalTimerId = SetTimer(s_textArea, 0, p_bdlay / 2,
 						   (TIMERPROC)BevalTimerProc);
-    TRACE0("gui_mch_enable_beval_area }}}");
+    // TRACE0("gui_mch_enable_beval_area }}}");
 }
 
     void
@@ -4080,7 +4105,7 @@ gui_mch_post_balloon(beval, mesg)
     char_u	*mesg;
 {
     POINT   pt;
-    TRACE0("gui_mch_post_balloon {{{");
+    // TRACE0("gui_mch_post_balloon {{{");
     if (beval->showState == ShS_SHOWING)
 	return;
     GetCursorPos(&pt);
@@ -4093,7 +4118,7 @@ gui_mch_post_balloon(beval, mesg)
 	beval->showState = ShS_SHOWING;
 	make_tooltip(beval, mesg, pt);
     }
-    TRACE0("gui_mch_post_balloon }}}");
+    // TRACE0("gui_mch_post_balloon }}}");
 }
 
     BalloonEval *
@@ -4148,15 +4173,15 @@ Handle_WM_Notify(hwnd, pnmh)
     {
 	if (pnmh->code == TTN_SHOW)
 	{
-	    TRACE0("TTN_SHOW {{{");
-	    TRACE0("TTN_SHOW }}}");
+	    // TRACE0("TTN_SHOW {{{");
+	    // TRACE0("TTN_SHOW }}}");
 	}
 	else if (pnmh->code == TTN_POP) /* Before tooltip disappear */
 	{
-	    TRACE0("TTN_POP {{{");
+	    // TRACE0("TTN_POP {{{");
 	    delete_tooltip(cur_beval);
 	    gui_mch_enable_beval_area(cur_beval);
-	    TRACE0("TTN_POP }}}");
+	    // TRACE0("TTN_POP }}}");
 
 	    cur_beval->showState = ShS_NEUTRAL;
 	}

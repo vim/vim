@@ -2888,7 +2888,18 @@ op_yank(oap, deleting, mess)
 	    /* redisplay now, so message is not deleted */
 	    update_topline_redraw();
 	    if (yanklines == 1)
-		MSG(_("1 line yanked"));
+	    {
+#ifdef FEAT_VISUAL
+		if (oap->block_mode)
+		    MSG(_("block of 1 line yanked"));
+		else
+#endif
+		    MSG(_("1 line yanked"));
+	    }
+#ifdef FEAT_VISUAL
+	    else if (oap->block_mode)
+		smsg((char_u *)_("block of %ld lines yanked"), yanklines);
+#endif
 	    else
 		smsg((char_u *)_("%ld lines yanked"), yanklines);
 	}

@@ -1,4 +1,4 @@
-*usr_10.txt*	For Vim version 7.0aa.  Last change: 2004 Mar 12
+*usr_10.txt*	For Vim version 7.0aa.  Last change: 2005 Mar 15
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -437,7 +437,8 @@ If the string you insert contains a newline, the "I" acts just like a Normal
 insert command and affects only the first line of the block.
 
 The "A" command works the same way, except that it appends after the right
-side of the block.
+side of the block.  And it does insert text in a short line.  Thus you can
+make a choice whether you do or don't want to append text to a short line.
    There is one special case for "A": Select a Visual block and then use "$"
 to make the block extend to the end of each line.  Using "A" now will append
 the text to the end of each line.

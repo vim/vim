@@ -767,7 +767,9 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 't_AL'	term.txt	/*'t_AL'*
 't_CS'	term.txt	/*'t_CS'*
 't_CV'	term.txt	/*'t_CV'*
+'t_Ce'	term.txt	/*'t_Ce'*
 't_Co'	term.txt	/*'t_Co'*
+'t_Cs'	term.txt	/*'t_Cs'*
 't_DL'	term.txt	/*'t_DL'*
 't_EI'	term.txt	/*'t_EI'*
 't_F1'	term.txt	/*'t_F1'*
@@ -5093,6 +5095,7 @@ hebrew	hebrew.txt	/*hebrew*
 hebrew.txt	hebrew.txt	/*hebrew.txt*
 help	various.txt	/*help*
 help-context	help.txt	/*help-context*
+help-tags	tags	1
 help-translated	various.txt	/*help-translated*
 help-xterm-window	various.txt	/*help-xterm-window*
 help.txt	help.txt	/*help.txt*
@@ -5112,6 +5115,7 @@ highlight-groups	syntax.txt	/*highlight-groups*
 highlight-gui	syntax.txt	/*highlight-gui*
 highlight-guibg	syntax.txt	/*highlight-guibg*
 highlight-guifg	syntax.txt	/*highlight-guifg*
+highlight-guisp	syntax.txt	/*highlight-guisp*
 highlight-start	syntax.txt	/*highlight-start*
 highlight-stop	syntax.txt	/*highlight-stop*
 highlight-term	syntax.txt	/*highlight-term*
@@ -6297,7 +6301,9 @@ t_AF	term.txt	/*t_AF*
 t_AL	term.txt	/*t_AL*
 t_CS	term.txt	/*t_CS*
 t_CV	term.txt	/*t_CV*
+t_Ce	term.txt	/*t_Ce*
 t_Co	term.txt	/*t_Co*
+t_Cs	term.txt	/*t_Cs*
 t_DL	term.txt	/*t_DL*
 t_EI	term.txt	/*t_EI*
 t_F1	term.txt	/*t_F1*

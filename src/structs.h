@@ -778,6 +778,7 @@ typedef struct attr_entry
 	{
 	    guicolor_T	    fg_color;	/* foreground color handle */
 	    guicolor_T	    bg_color;	/* background color handle */
+	    guicolor_T	    sp_color;	/* special color handle */
 	    GuiFont	    font;	/* font handle */
 #  ifdef FEAT_XFONTSET
 	    GuiFontset	    fontset;	/* fontset handle */
@@ -2055,6 +2056,7 @@ typedef struct
     int		bold;
     int		italic;
     int		underline;
+    int		undercurl;
 } prt_text_attr_T;
 
 /*

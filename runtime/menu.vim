@@ -2,7 +2,7 @@
 " You can also use this as a start for your own set of menus.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Feb 24
+" Last Change:	2005 Mar 15
 
 " Note that ":an" (short for ":anoremenu") is often used to make a menu work
 " in all modes and avoid side effects from mappings defined by the user.
@@ -56,9 +56,9 @@ if exists("v:lang") || &langmenu != ""
       let s:lang = substitute(s:lang, '\.[^.]*', "", "")
       exe "runtime! lang/menu_" . s:lang . "[^a-z]*vim"
 
-      if !exists("did_menu_trans") && strlen($LANG) > 1
+      if !exists("did_menu_trans") && strlen($LANG) > 1 && s:lang !~ '^en_us'
 	" On windows locale names are complicated, try using $LANG, it might
-	" have been set by set_init_1().
+	" have been set by set_init_1().  But don't do this for "en" or "en_us".
 	" But don't match "slovak" when $LANG is "sl".
 	exe "runtime! lang/menu_" . tolower($LANG) . "[^a-z]*vim"
       endif
@@ -854,27 +854,12 @@ if has("toolbar")
 
   if !has("gui_athena")
     an 1.95   ToolBar.-sep3-		<Nop>
-    an 1.100  ToolBar.Find		:promptfind<CR>
-    vunmenu   ToolBar.Find
-    vnoremenu ToolBar.Find		y:promptfind <C-R>"<CR>
-    an 1.110  ToolBar.FindNext		n
-    an 1.120  ToolBar.FindPrev		N
-    an 1.130  ToolBar.Replace		:promptrepl<CR>
+    an 1.100  ToolBar.Replace		:promptrepl<CR>
     vunmenu   ToolBar.Replace
     vnoremenu ToolBar.Replace		y:promptrepl <C-R>"<CR>
+    an 1.110  ToolBar.FindNext		n
+    an 1.120  ToolBar.FindPrev		N
   endif
-
-if 0	" disabled; These are in the Windows menu
-  an 1.135 ToolBar.-sep4-		<Nop>
-  an 1.140 ToolBar.New			<C-W>n
-  an 1.150 ToolBar.WinSplit		<C-W>s
-  an 1.160 ToolBar.WinMax		:resize 200<CR>
-  an 1.170 ToolBar.WinMin		:resize 1<CR>
-  an 1.180 ToolBar.WinVSplit		<C-W>v
-  an 1.190 ToolBar.WinMaxWidth		<C-W>500>
-  an 1.200 ToolBar.WinMinWidth		<C-W>1\|
-  an 1.210 ToolBar.WinClose		:close<CR>
-endif
 
   an 1.215 ToolBar.-sep5-		<Nop>
   an <silent> 1.220 ToolBar.LoadSesn	:call <SID>LoadVimSesn()<CR>
@@ -910,21 +895,11 @@ else
     tmenu ToolBar.FindPrev	Find Previous
     tmenu ToolBar.Replace		Find / Replace...
   endif
- if 0	" disabled; These are in the Windows menu
-  tmenu ToolBar.New		New Window
-  tmenu ToolBar.WinSplit	Split Window
-  tmenu ToolBar.WinMax		Maximise Window
-  tmenu ToolBar.WinMin		Minimise Window
-  tmenu ToolBar.WinVSplit	Split Window Vertically
-  tmenu ToolBar.WinMaxWidth	Maximise Window Width
-  tmenu ToolBar.WinMinWidth	Minimise Window Width
-  tmenu ToolBar.WinClose	Close Window
- endif
-  tmenu ToolBar.LoadSesn	Load session
+  tmenu ToolBar.LoadSesn	Chose a session to load
   tmenu ToolBar.SaveSesn	Save current session
-  tmenu ToolBar.RunScript	Run a Vim Script
-  tmenu ToolBar.Make		Make current project
-  tmenu ToolBar.RunCtags	Build tags in current directory tree
+  tmenu ToolBar.RunScript	Chose a Vim Script to run
+  tmenu ToolBar.Make		Make current project (:make)
+  tmenu ToolBar.RunCtags	Build tags in current directory tree (!ctags -R .)
   tmenu ToolBar.TagJump		Jump to tag under cursor
   tmenu ToolBar.Help		Vim Help
   tmenu ToolBar.FindHelp	Search Vim Help

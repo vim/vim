@@ -3125,11 +3125,11 @@ getsourceline(c, cookie, indent)
 	line = sp->nextline;
 	sp->nextline = NULL;
 	++sourcing_lnum;
-#ifdef FEAT_PROFILE
-	if (do_profiling)
-	    script_line_start();
-#endif
     }
+#ifdef FEAT_PROFILE
+    if (line != NULL && do_profiling)
+	script_line_start();
+#endif
 
     /* Only concatenate lines starting with a \ when 'cpoptions' doesn't
      * contain the 'C' flag. */
@@ -3684,7 +3684,7 @@ prt_get_term_color(colorindex)
     static void
 prt_get_attr(hl_id, pattr, modec)
     int			hl_id;
-    prt_text_attr_T*	pattr;
+    prt_text_attr_T	*pattr;
     int			modec;
 {
     int     colorindex;
@@ -3695,6 +3695,7 @@ prt_get_attr(hl_id, pattr, modec)
     pattr->bold = (highlight_has_attr(hl_id, HL_BOLD, modec) != NULL);
     pattr->italic = (highlight_has_attr(hl_id, HL_ITALIC, modec) != NULL);
     pattr->underline = (highlight_has_attr(hl_id, HL_UNDERLINE, modec) != NULL);
+    pattr->undercurl = (highlight_has_attr(hl_id, HL_UNDERCURL, modec) != NULL);
 
 # ifdef FEAT_GUI
     if (gui.in_use)

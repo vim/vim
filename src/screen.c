@@ -5870,7 +5870,8 @@ screen_start_highlight(attr)
 		out_str(T_MD);
 	    if ((attr & HL_STANDOUT) && T_SO != NULL)	/* standout */
 		out_str(T_SO);
-	    if ((attr & HL_UNDERLINE) && T_US != NULL)	/* underline */
+	    if ((attr & (HL_UNDERLINE | HL_UNDERCURL)) && T_US != NULL)
+						   /* underline or undercurl */
 		out_str(T_US);
 	    if ((attr & HL_ITALIC) && T_CZH != NULL)	/* italic */
 		out_str(T_CZH);
@@ -5965,7 +5966,7 @@ screen_stop_highlight()
 		else
 		    out_str(T_SE);
 	    }
-	    if (screen_attr & HL_UNDERLINE)
+	    if (screen_attr & (HL_UNDERLINE | HL_UNDERCURL))
 	    {
 		if (STRCMP(T_UE, T_ME) == 0)
 		    do_ME = TRUE;
@@ -6856,7 +6857,7 @@ windgoto(row, col)
     int	    row;
     int	    col;
 {
-    char_u	    *p;
+    sattr_T	    *p;
     int		    i;
     int		    plan;
     int		    cost;

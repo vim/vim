@@ -182,6 +182,8 @@ struct builtin_term builtin_termcaps[] =
     {(int)KS_SO,	IF_EB("\033|16h", ESC_STR "|16h")}, /* HL_STANDOUT */
     {(int)KS_UE,	IF_EB("\033|8H", ESC_STR "|8H")},   /* HL_UNDERLINE */
     {(int)KS_US,	IF_EB("\033|8h", ESC_STR "|8h")},   /* HL_UNDERLINE */
+    {(int)KS_UCE,	IF_EB("\033|8C", ESC_STR "|8C")},   /* HL_UNDERCURL */
+    {(int)KS_UCS,	IF_EB("\033|8c", ESC_STR "|8c")},   /* HL_UNDERCURL */
     {(int)KS_CZR,	IF_EB("\033|4H", ESC_STR "|4H")},   /* HL_ITALIC */
     {(int)KS_CZH,	IF_EB("\033|4h", ESC_STR "|4h")},   /* HL_ITALIC */
     {(int)KS_VB,	IF_EB("\033|f", ESC_STR "|f")},
@@ -195,7 +197,7 @@ struct builtin_term builtin_termcaps[] =
     {(int)KS_CM,	IF_EB("\033|%d;%dM", ESC_STR "|%d;%dM")},
 # endif
 	/* there are no key sequences here, the GUI sequences are recognized
-	 * in check_termcodes() */
+	 * in check_termcode() */
 #endif
 
 #ifndef NO_BUILTIN_TCAPS
@@ -1248,6 +1250,8 @@ struct builtin_term builtin_termcaps[] =
     {(int)KS_SO,	"[SO]"},
     {(int)KS_UE,	"[UE]"},
     {(int)KS_US,	"[US]"},
+    {(int)KS_UCE,	"[UCE]"},
+    {(int)KS_UCS,	"[UCS]"},
     {(int)KS_MS,	"[MS]"},
     {(int)KS_UT,	"[UT]"},
 #  ifdef TERMINFO
@@ -1644,7 +1648,8 @@ set_termname(term)
 				{KS_VS, "vs"}, {KS_ME, "me"}, {KS_MR, "mr"},
 				{KS_MD, "md"}, {KS_SE, "se"}, {KS_SO, "so"},
 				{KS_CZH,"ZH"}, {KS_CZR,"ZR"}, {KS_UE, "ue"},
-				{KS_US, "us"}, {KS_CM, "cm"}, {KS_SR, "sr"},
+				{KS_US, "us"}, {KS_UCE, "Ce"}, {KS_UCS, "Cs"},
+				{KS_CM, "cm"}, {KS_SR, "sr"},
 				{KS_CRI,"RI"}, {KS_VB, "vb"}, {KS_KS, "ks"},
 				{KS_KE, "ke"}, {KS_TI, "ti"}, {KS_TE, "te"},
 				{KS_BC, "bc"}, {KS_CSB,"Sb"}, {KS_CSF,"Sf"},

@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Mar 10
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Mar 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3356,6 +3356,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		b	bold		(termcap entry "md" and "me")
 		s	standout	(termcap entry "so" and "se")
 		u	underline	(termcap entry "us" and "ue")
+		c	undercurl	(termcap entry "Cs" and "Ce")
 		n	no highlighting
 		-	no highlighting
 		:	use a highlight group

@@ -2114,6 +2114,11 @@ gui_mch_set_bg_color(guicolor_T color)
 }
 
     void
+gui_mch_set_sp_color(guicolor_T color)
+{
+}
+
+    void
 gui_mch_invert_rectangle(int row, int col, int nr, int nc)
 {
     PhRect_t rect;

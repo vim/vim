@@ -840,6 +840,15 @@ gui_mch_set_bg_color(guicolor_T color)//{{{
 }//}}}
 
 /*
+ * Set the current text special color.
+ */
+    void
+gui_mch_set_sp_color(guicolor_T color)//{{{
+{
+    /* TODO */
+}//}}}
+
+/*
  * Use the blank mouse pointer or not.
  *
  * hide: TRUE = use blank ptr, FALSE = use parent ptr
