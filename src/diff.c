@@ -794,6 +794,10 @@ diff_file(tmp_orig, tmp_new, tmp_diff)
 				+ STRLEN(tmp_diff) + STRLEN(p_srr) + 27));
 	if (cmd != NULL)
 	{
+	    /* We don't want $DIFF_OPTIONS to get in the way. */
+	    if (getenv("DIFF_OPTIONS"))
+		vim_setenv((char_u *)"DIFF_OPTIONS", (char_u *)"");
+
 	    /* Build the diff command and execute it.  Always use -a, binary
 	     * differences are of no use.  Ignore errors, diff returns
 	     * non-zero when differences have been found. */
