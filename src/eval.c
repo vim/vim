@@ -318,6 +318,11 @@ static struct vimvar
     {VV_NAME("profiling",	 VAR_NUMBER), VV_RO},
     {VV_NAME("fcs_reason",	 VAR_STRING), VV_RO},
     {VV_NAME("fcs_choice",	 VAR_STRING), 0},
+    {VV_NAME("beval_bufnr",	 VAR_NUMBER), VV_RO},
+    {VV_NAME("beval_winnr",	 VAR_NUMBER), VV_RO},
+    {VV_NAME("beval_lnum",	 VAR_NUMBER), VV_RO},
+    {VV_NAME("beval_col",	 VAR_NUMBER), VV_RO},
+    {VV_NAME("beval_text",	 VAR_STRING), VV_RO},
 };
 
 /* shorthand */
@@ -13138,7 +13143,7 @@ done:
 }
 
 /*
- * "gettags()" function
+ * "taglist()" function
  */
     static void
 f_taglist(argvars, rettv)

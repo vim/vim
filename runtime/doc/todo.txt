@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Mar 06
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Mar 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -35,14 +35,11 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
     Doesn't work: may send wrong escape sequence to terminal, because mouse
     type already changed when calling mch_setmouse(FALSE).
 
-Remove code for out-of-stack checks.
-Verify non-recursive regmatch() is OK with example from Michaelis.
-
 Mac unicode patch (Da Woon Jung):
 - selecting proportional font breaks display
-- UTF-8 text causes display problems.  Character width wrong?
+- UTF-8 text causes display problems.  Font replacement causes this.
 
-Patch for gettags(). Yegappan Lakshmanan Feb 27
+Patch for taglist() Yegappan Lakshmanan Feb 27
 - docs: use of ^ and $ in pattern, refer to |tag-regexp|
 	  explain what the fields mean.
 	  use of 'tags' option
@@ -58,9 +55,7 @@ autoload:
     helpfile doc/myscript.txt
   For the "helpfile" item ":helptags" is run.
 
-Patch for 'balloonexpr' option.  Sergey Khorev, Feb 26.  Addition Feb 27.
-
-Patch for "paranoid mode" by Kevin Collins, March 3.  Later updated.
+Patch for "paranoid mode" by Kevin Collins, March 7.  Needs more work.
 
 Awaiting response:
 -   Patch for mch_FullName() also in Vim 6.3?  os_mswin.c
@@ -70,9 +65,6 @@ Awaiting response:
 
 PLANNED FOR VERSION 7.0:
 
--   new DATA TYPES:
-	- None?  (or use empty string?)
-    See ~/vim/ideas.txt.
 -   Add SPELLCHECKER, with easy to add support for many languages.
     8   Add spell checking.  Use "ispell -a" somehow.
 	~/vim/patches/wm_vim-5_4d.zip  can be used as an example (includes

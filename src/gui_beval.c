@@ -12,7 +12,68 @@
 
 #if defined(FEAT_BEVAL) || defined(PROTO)
 
-/* on Win32 only gui_mch_get_beval_info is required */
+/*
+ * Common code, invoked when the mouse is resting for a moment.
+ */
+/*ARGSUSED*/
+    void
+general_beval_cb(beval, state)
+    BalloonEval *beval;
+    int state;
+{
+    win_T	*wp;
+    int		col;
+    linenr_T	lnum;
+    char_u	*text;
+    static char_u  *result = NULL;
+    long	winnr = 0;
+    win_T	*cw;
+
+
+    /* Don't do anything when 'ballooneval' is off, messages scrolled the
+     * windows up or we have no beval area. */
+    if (!p_beval || balloonEval == NULL || msg_scrolled > 0)
+	return;
+
+#ifdef FEAT_EVAL
+    if (*p_bexpr != NUL
+	    && get_beval_info(balloonEval, TRUE, &wp, &lnum, &text, &col) == OK)
+    {
+	/* Convert window pointer to number. */
+	for (cw = firstwin; cw != wp; cw = cw->w_next)
+	    ++winnr;
+
+	set_vim_var_nr(VV_BEVAL_BUFNR, (long)wp->w_buffer->b_fnum);
+	set_vim_var_nr(VV_BEVAL_WINNR, winnr);
+	set_vim_var_nr(VV_BEVAL_LNUM, (long)lnum);
+	set_vim_var_nr(VV_BEVAL_COL, (long)(col + 1));
+	set_vim_var_string(VV_BEVAL_TEXT, text, -1);
+	vim_free(text);
+
+	++sandbox;
+	vim_free(result);
+	result = eval_to_string(p_bexpr, NULL);
+	--sandbox;
+
+	set_vim_var_string(VV_BEVAL_TEXT, NULL, -1);
+	if (result != NULL && result[0] != NUL)
+	{
+	    gui_mch_post_balloon(beval, result);
+	    return;
+	}
+    }
+#endif
+#ifdef FEAT_NETBEANS_INTG
+    if (bevalServers & BEVAL_NETBEANS)
+	netbeans_beval_cb(beval, state);
+#endif
+#ifdef FEAT_SUN_WORKSHOP
+    if (bevalServers & BEVAL_WORKSHOP)
+	workshop_beval_cb(beval, state);
+#endif
+}
+
+/* on Win32 only get_beval_info() is required */
 #if !defined(FEAT_GUI_W32) || defined(PROTO)
 
 #ifdef FEAT_GUI_GTK
@@ -199,26 +260,29 @@ gui_mch_currently_showing_beval()
 #endif
 #endif /* !FEAT_GUI_W32 */
 
-#if defined(FEAT_SUN_WORKSHOP) || defined(FEAT_NETBEANS_INTG) || defined(PROTO)
+#if defined(FEAT_SUN_WORKSHOP) || defined(FEAT_NETBEANS_INTG) \
+    || defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Get the text and position to be evaluated for "beval".
- * When "usingNetbeans" is set the returned text is in allocated memory.
+ * If "getword" is true the returned text is not the whole line but the
+ * relevant word in allocated memory.
  * Returns OK or FAIL.
  */
     int
-gui_mch_get_beval_info(beval, filename, line, text, idx)
+get_beval_info(beval, getword, winp, lnump, textp, colp)
     BalloonEval	*beval;
-    char_u     **filename;
-    int		*line;
-    char_u     **text;
-    int		*idx;
+    int		getword;
+    win_T	**winp;
+    linenr_T	*lnump;
+    char_u	**textp;
+    int		*colp;
 {
     win_T	*wp;
     int		row, col;
     char_u	*lbuf;
     linenr_T	lnum;
 
-    *text = NULL;
+    *textp = NULL;
     row = Y_2_ROW(beval->y);
     col = X_2_COL(beval->x);
     wp = mouse_find_win(&row, &col);
@@ -233,8 +297,7 @@ gui_mch_get_beval_info(beval, filename, line, text, idx)
 	    if (col <= win_linetabsize(wp, lbuf, (colnr_T)MAXCOL))
 	    {
 		/* Not past end of line. */
-# ifdef FEAT_NETBEANS_INTG
-		if (usingNetbeans)
+		if (getword)
 		{
 		    /* For Netbeans we get the relevant part of the line
 		     * instead of the whole line. */
@@ -290,11 +353,11 @@ gui_mch_get_beval_info(beval, filename, line, text, idx)
 			lbuf = vim_strnsave(lbuf, len);
 		    }
 		}
-# endif
-		*filename = wp->w_buffer->b_ffname;
-		*line = (int)lnum;
-		*text = lbuf;
-		*idx = col;
+
+		*winp = wp;
+		*lnump = lnum;
+		*textp = lbuf;
+		*colp = col;
 		beval->ts = wp->w_buffer->b_p_ts;
 		return OK;
 	    }

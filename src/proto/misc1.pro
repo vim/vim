@@ -87,7 +87,4 @@ void addfile __ARGS((garray_T *gap, char_u *f, int flags));
 char_u *get_cmd_output __ARGS((char_u *cmd, char_u *infile, int flags));
 void FreeWild __ARGS((int count, char_u **files));
 int goto_im __ARGS((void));
-void mch_startjmp __ARGS((void));
-void mch_endjmp __ARGS((void));
-void mch_didjmp __ARGS((void));
 /* vim: set ft=c : */

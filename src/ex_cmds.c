@@ -4663,28 +4663,6 @@ ex_global(eap)
 	return;
     }
 
-#if 0
-#ifdef HAVE_SETJMP_H
-    /*
-     * Matching with a regexp may cause a very deep recursive call of
-     * regmatch().  Vim will crash when running out of stack space.
-     * Catch this here if the system supports it.
-     * It's a bit slow, thus do it outside of the loop.
-     */
-    mch_startjmp();
-    if (SETJMP(lc_jump_env) != 0)
-    {
-	mch_didjmp();
-# ifdef SIGHASARG
-	if (lc_signal != SIGINT)
-# endif
-	    EMSG(_(e_complex));
-	got_int = TRUE;
-	goto jumpend;
-    }
-#endif
-#endif
-
     /*
      * pass 1: set marks for each (not) matching line
      */
@@ -4699,13 +4677,6 @@ ex_global(eap)
 	}
 	line_breakcheck();
     }
-
-#if 0
-#ifdef HAVE_SETJMP_H
-jumpend:
-    mch_endjmp();
-#endif
-#endif
 
     /*
      * pass 2: execute the command for each line that has been marked

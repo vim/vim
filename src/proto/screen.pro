@@ -32,7 +32,6 @@ void screenalloc __ARGS((int clear));
 void screenclear __ARGS((void));
 int can_clear __ARGS((char_u *p));
 void screen_start __ARGS((void));
-void screen_down __ARGS((void));
 void windgoto __ARGS((int row, int col));
 void setcursor __ARGS((void));
 int win_ins_lines __ARGS((win_T *wp, int row, int line_count, int invalid, int mayclear));
