@@ -119,9 +119,6 @@ mch_inchar(buf, maxlen, time, tb_change_cnt)
 {
     int	    len;
     long    utime;
-#ifdef FEAT_AUTOCMD
-    static int	once_already = 0;
-#endif
 
     if (time >= 0)
     {
@@ -130,43 +127,28 @@ mch_inchar(buf, maxlen, time, tb_change_cnt)
 	else
 	    utime = time * 1000L;   /* convert from milli to micro secs */
 	if (WaitForChar(raw_in, utime) == 0)	/* no character available */
-	{
-#ifdef FEAT_AUTOCMD
-	    once_already = 0;
-#endif
 	    return 0;
-	}
     }
     else    /* time == -1 */
     {
-#ifdef FEAT_AUTOCMD
-	if (once_already == 2)
-	    updatescript(0);
-	else if (once_already == 1)
-	{
-	    setcursor();
-	    once_already = 2;
-	    return 0;
-	}
-	else
-#endif
 	/*
 	 * If there is no character available within 2 seconds (default)
-	 * write the autoscript file to disk
+	 * write the autoscript file to disk.  Or cause the CursorHold event
+	 * to be triggered.
 	 */
-	    if (WaitForChar(raw_in, p_ut * 1000L) == 0)
+	if (WaitForChar(raw_in, p_ut * 1000L) == 0)
 	{
 #ifdef FEAT_AUTOCMD
-	    if (has_cursorhold() && get_real_state() == NORMAL_BUSY)
+	    if (!did_cursorhold && has_cursorhold()
+			    && get_real_state() == NORMAL_BUSY && maxlen >= 3)
 	    {
-		apply_autocmds(EVENT_CURSORHOLD, NULL, NULL, FALSE, curbuf);
-		update_screen(VALID);
-		once_already = 1;
-		return 0;
+		buf[0] = K_SPECIAL;
+		buf[1] = KS_EXTRA;
+		buf[2] = (int)KE_CURSORHOLD;
+		return 3;
 	    }
-	    else
 #endif
-		updatescript(0);
+	    updatescript(0);
 	}
     }
 
@@ -179,9 +161,6 @@ mch_inchar(buf, maxlen, time, tb_change_cnt)
 #  endif
 	if (len > 0)
 	{
-#ifdef FEAT_AUTOCMD
-	    once_already = 0;
-#endif
 #ifdef FEAT_MBYTE
 	    /* Convert from 'termencoding' to 'encoding'. */
 	    if (input_conv.vc_type != CONV_NONE)

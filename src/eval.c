@@ -13024,8 +13024,13 @@ f_synIDattr(argvars, rettv)
 		p = highlight_has_attr(id, HL_STANDOUT, modec);
 		break;
 
-	case 'u':					/* underline */
-		p = highlight_has_attr(id, HL_UNDERLINE, modec);
+	case 'u':
+		if (STRLEN(what) <= 5 || TOLOWER_ASC(what[5]) != 'c')
+							/* underline */
+		    p = highlight_has_attr(id, HL_UNDERLINE, modec);
+		else
+							/* undercurl */
+		    p = highlight_has_attr(id, HL_UNDERCURL, modec);
 		break;
     }
 
