@@ -1,4 +1,4 @@
-/* gui_kde.c */
+/* gui_kde.cc */
 void gui_mch_add_menu __ARGS((vimmenu_T *menu, int idx));
 void gui_mch_add_menu_item __ARGS((vimmenu_T *menu, int idx));
 void gui_mch_set_text_area_pos __ARGS((int x, int y, int w, int h));
@@ -16,4 +16,4 @@ void gui_mch_find_dialog __ARGS((exarg_T *eap));
 void gui_mch_replace_dialog __ARGS((exarg_T *eap));
 void ex_helpfind __ARGS((exarg_T *eap));
 void gui_make_popup __ARGS((char_u *path_name));
-/* vim: set ft=c : */
+/* vim: set ft=cpp : */

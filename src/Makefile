@@ -1202,7 +1202,7 @@ CARBONGUI_TESTARG = VIMPROG=../$(CARBONGUI_BUNDLE)/Contents/MacOS/$(VIMTARGET)
 
 # All GUI files
 ALL_GUI_SRC  = gui.c gui_gtk.c gui_gtk_f.c gui_motif.c gui_athena.c gui_gtk_x11.c gui_x11.c gui_at_sb.c gui_at_fs.c pty.c gui_kde.cc gui_kde_wid.cc gui_kde_x11.cc gui_kde_wid_moc.cc
-ALL_GUI_PRO  = gui.pro gui_gtk.pro gui_motif.pro gui_athena.pro gui_gtk_x11.pro gui_x11.pro gui_w16.pro gui_w32.pro gui_amiga.pro gui_photon.pro gui_kde.pro gui_kde_x11.pro
+ALL_GUI_PRO  = gui.pro gui_gtk.pro gui_motif.pro gui_athena.pro gui_gtk_x11.pro gui_x11.pro gui_w16.pro gui_w32.pro gui_amiga.pro gui_photon.pro
 
 # }}}
 

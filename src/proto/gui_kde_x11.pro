@@ -1,4 +1,4 @@
-/* gui_kde_x11.c */
+/* gui_kde_x11.cc */
 void gui_mch_prepare __ARGS((int *argc, char **argv));
 void gui_mch_set_blinking __ARGS((long waittime, long on, long off));
 void gui_mch_stop_blink __ARGS((void));
@@ -59,4 +59,4 @@ void mch_set_mouse_shape __ARGS((int shape));
 char_u *gui_mch_font_dialog __ARGS((char_u *oldval));
 void gui_mch_settitle __ARGS((char_u *title,char_u *icon));
 void gui_mch_update_codec __ARGS((void));
-/* vim: set ft=c : */
+/* vim: set ft=cpp : */

@@ -47,6 +47,7 @@ int dbcs_screen_head_off __ARGS((char_u *base, char_u *p));
 int utf_head_off __ARGS((char_u *base, char_u *p));
 int mb_off_next __ARGS((char_u *base, char_u *p));
 int mb_tail_off __ARGS((char_u *base, char_u *p));
+int utf_valid_string __ARGS((char_u *s, char_u *end));
 int dbcs_screen_tail_off __ARGS((char_u *base, char_u *p));
 void mb_adjust_cursor __ARGS((void));
 void mb_adjustpos __ARGS((pos_T *lp));

@@ -1715,7 +1715,8 @@ typedef int VimClipboard;	/* This is required for the prototypes. */
 # define ENC_2WORD	0x100	    /* Unicode: UTF-16 */
 
 # define ENC_LATIN1	0x200	    /* Latin1 */
-# define ENC_MACROMAN	0x400	    /* Mac Roman (not Macro Man! :-) */
+# define ENC_LATIN9	0x400	    /* Latin9 */
+# define ENC_MACROMAN	0x800	    /* Mac Roman (not Macro Man! :-) */
 #endif
 
 #ifdef FEAT_MBYTE

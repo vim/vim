@@ -92,6 +92,7 @@ FILE* fdDump = NULL;
 #define WINAPI
 #define WINBASEAPI
 typedef char * LPCSTR;
+typedef char * LPWSTR;
 typedef int ACCESS_MASK;
 typedef int BOOL;
 typedef int COLORREF;
@@ -301,19 +302,19 @@ dyn_libintl_end()
 }
 
     static char *
-null_libintl_gettext(const char* msgid)
+null_libintl_gettext(const char *msgid)
 {
     return (char*)msgid;
 }
 
     static char *
-null_libintl_bindtextdomain(const char* domainname, const char* dirname)
+null_libintl_bindtextdomain(const char *domainname, const char *dirname)
 {
     return NULL;
 }
 
     static char *
-null_libintl_textdomain(const char* domainname)
+null_libintl_textdomain(const char *domainname)
 {
     return NULL;
 }
@@ -530,7 +531,7 @@ const static struct
     __stdcall
 #endif
 win32_kbd_patch_key(
-    KEY_EVENT_RECORD* pker)
+    KEY_EVENT_RECORD *pker)
 {
     UINT uMods = pker->dwControlKeyState;
     static int s_iIsDead = 0;
@@ -734,8 +735,7 @@ decode_key_event(
  */
 # ifdef FEAT_GUI_W32
     void
-mch_setmouse(
-    int on)
+mch_setmouse(int on)
 {
 }
 # else
@@ -749,8 +749,7 @@ static int g_yMouse;		    /* mouse y coordinate */
  * Enable or disable mouse input
  */
     void
-mch_setmouse(
-    int on)
+mch_setmouse(int on)
 {
     DWORD cmodein;
 
@@ -798,7 +797,7 @@ mch_setmouse(
  */
     static BOOL
 decode_mouse_event(
-    MOUSE_EVENT_RECORD* pmer)
+    MOUSE_EVENT_RECORD *pmer)
 {
     static int s_nOldButton = -1;
     static int s_nOldMouseClick = -1;
@@ -1214,7 +1213,7 @@ WaitForChar(long msec)
  * return non-zero if a character is available
  */
     int
-mch_char_avail()
+mch_char_avail(void)
 {
     return WaitForChar(0L);
 }
@@ -1579,7 +1578,7 @@ executable_exists(char *name)
  * GUI version of mch_init().
  */
     void
-mch_init()
+mch_init(void)
 {
 #ifndef __MINGW32__
     extern int _fmode;
@@ -1746,10 +1745,10 @@ FitConsoleWindow(
 
 typedef struct ConsoleBufferStruct
 {
-    BOOL IsValid;
-    CONSOLE_SCREEN_BUFFER_INFO Info;
-    PCHAR_INFO Buffer;
-    COORD BufferSize;
+    BOOL			IsValid;
+    CONSOLE_SCREEN_BUFFER_INFO	Info;
+    PCHAR_INFO			Buffer;
+    COORD			BufferSize;
 } ConsoleBuffer;
 
 /*
@@ -1853,8 +1852,8 @@ SaveConsoleBuffer(
  */
     static BOOL
 RestoreConsoleBuffer(
-    ConsoleBuffer *cb,
-    BOOL RestoreScreen)
+    ConsoleBuffer   *cb,
+    BOOL	    RestoreScreen)
 {
     COORD BufferCoord;
     SMALL_RECT WriteRegion;
@@ -1949,23 +1948,19 @@ static BOOL g_fCanChangeIcon = FALSE;
  */
     static BOOL
 GetConsoleIcon(
-    HWND hWnd,
-    HICON *phIconSmall,
-    HICON *phIcon)
+    HWND	hWnd,
+    HICON	*phIconSmall,
+    HICON	*phIcon)
 {
     if (hWnd == NULL)
 	return FALSE;
 
     if (phIconSmall != NULL)
-    {
-	*phIconSmall = (HICON) SendMessage(hWnd, WM_GETICON,
-			    (WPARAM) ICON_SMALL, (LPARAM) 0);
-    }
+	*phIconSmall = (HICON)SendMessage(hWnd, WM_GETICON,
+					       (WPARAM)ICON_SMALL, (LPARAM)0);
     if (phIcon != NULL)
-    {
-	*phIcon = (HICON) SendMessage(hWnd, WM_GETICON,
-			    (WPARAM) ICON_BIG, (LPARAM) 0);
-    }
+	*phIcon = (HICON)SendMessage(hWnd, WM_GETICON,
+						 (WPARAM)ICON_BIG, (LPARAM)0);
     return TRUE;
 }
 
@@ -1979,26 +1974,22 @@ GetConsoleIcon(
  */
     static BOOL
 SetConsoleIcon(
-    HWND hWnd,
-    HICON hIconSmall,
-    HICON hIcon)
+    HWND    hWnd,
+    HICON   hIconSmall,
+    HICON   hIcon)
 {
-    HICON hPrevIconSmall;
-    HICON hPrevIcon;
+    HICON   hPrevIconSmall;
+    HICON   hPrevIcon;
 
     if (hWnd == NULL)
 	return FALSE;
 
     if (hIconSmall != NULL)
-    {
-	hPrevIconSmall = (HICON) SendMessage(hWnd, WM_SETICON,
-			    (WPARAM) ICON_SMALL, (LPARAM) hIconSmall);
-    }
+	hPrevIconSmall = (HICON)SendMessage(hWnd, WM_SETICON,
+				      (WPARAM)ICON_SMALL, (LPARAM)hIconSmall);
     if (hIcon != NULL)
-    {
-	hPrevIcon = (HICON) SendMessage(hWnd, WM_SETICON,
-			    (WPARAM) ICON_BIG, (LPARAM) hIcon);
-    }
+	hPrevIcon = (HICON)SendMessage(hWnd, WM_SETICON,
+					     (WPARAM)ICON_BIG,(LPARAM) hIcon);
     return TRUE;
 }
 
@@ -2059,7 +2050,7 @@ static DWORD g_cmodeout = 0;
  * non-GUI version of mch_init().
  */
     void
-mch_init()
+mch_init(void)
 {
 #ifndef FEAT_RESTORE_ORIG_SCREEN
     CONSOLE_SCREEN_BUFFER_INFO csbi;
@@ -2341,8 +2332,8 @@ fname_case(
  */
     int
 mch_get_user_name(
-    char_u *s,
-    int len)
+    char_u  *s,
+    int	    len)
 {
     char szUserName[MAX_COMPUTERNAME_LENGTH + 1];
     DWORD cch = sizeof szUserName;
@@ -2379,7 +2370,7 @@ mch_get_host_name(
  * return process ID
  */
     long
-mch_get_pid()
+mch_get_pid(void)
 {
     return (long)GetCurrentProcessId();
 }
@@ -2429,8 +2420,7 @@ mch_dirname(
  * else FILE_ATTRIBUTE_* defined in winnt.h
  */
     long
-mch_getperm(
-    char_u *name)
+mch_getperm(char_u *name)
 {
 #ifdef FEAT_MBYTE
     if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
@@ -2457,8 +2447,8 @@ mch_getperm(
  */
     int
 mch_setperm(
-    char_u *name,
-    long perm)
+    char_u  *name,
+    long    perm)
 {
     perm |= FILE_ATTRIBUTE_ARCHIVE;	/* file has changed, set archive bit */
 #ifdef FEAT_MBYTE
@@ -2656,8 +2646,7 @@ struct my_acl
  * Return NULL if the ACL is not available for whatever reason.
  */
     vim_acl_T
-mch_get_acl(fname)
-    char_u	*fname;
+mch_get_acl(char_u *fname)
 {
 #ifndef HAVE_ACL
     return (vim_acl_T)NULL;
@@ -2701,9 +2690,7 @@ mch_get_acl(fname)
  * This must only be called with "acl" equal to what mch_get_acl() returned.
  */
     void
-mch_set_acl(fname, acl)
-    char_u	*fname;
-    vim_acl_T	acl;
+mch_set_acl(char_u *fname, vim_acl_T acl)
 {
 #ifdef HAVE_ACL
     struct my_acl   *p = (struct my_acl *)acl;
@@ -2726,8 +2713,7 @@ mch_set_acl(fname, acl)
 }
 
     void
-mch_free_acl(acl)
-    vim_acl_T	acl;
+mch_free_acl(vim_acl_T acl)
 {
 #ifdef HAVE_ACL
     struct my_acl   *p = (struct my_acl *)acl;
@@ -2791,8 +2777,7 @@ handler_routine(
  * set the tty in (raw) ? "raw" : "cooked" mode
  */
     void
-mch_settmode(
-    int tmode)
+mch_settmode(int tmode)
 {
     DWORD cmodein;
     DWORD cmodeout;
@@ -2840,7 +2825,7 @@ mch_settmode(
  * Return OK when size could be determined, FAIL otherwise.
  */
     int
-mch_get_shellsize()
+mch_get_shellsize(void)
 {
     CONSOLE_SCREEN_BUFFER_INFO csbi;
 
@@ -2873,9 +2858,9 @@ mch_get_shellsize()
  */
     static void
 ResizeConBufAndWindow(
-    HANDLE hConsole,
-    int xSize,
-    int ySize)
+    HANDLE  hConsole,
+    int	    xSize,
+    int	    ySize)
 {
     CONSOLE_SCREEN_BUFFER_INFO csbi;	/* hold current console buffer info */
     SMALL_RECT	    srWindowRect;	/* hold the new console size */
@@ -2955,7 +2940,7 @@ ResizeConBufAndWindow(
  * Set the console window to `Rows' * `Columns'
  */
     void
-mch_set_shellsize()
+mch_set_shellsize(void)
 {
     COORD coordScreen;
 
@@ -2984,7 +2969,7 @@ mch_set_shellsize()
  * Rows and/or Columns has changed.
  */
     void
-mch_new_shellsize()
+mch_new_shellsize(void)
 {
     set_scroll_region(0, 0, Columns - 1, Rows - 1);
 }
@@ -2994,7 +2979,7 @@ mch_new_shellsize()
  * Called when started up, to set the winsize that was delayed.
  */
     void
-mch_set_winsize_now()
+mch_set_winsize_now(void)
 {
     if (suppress_winsize == 2)
     {
@@ -3134,8 +3119,8 @@ mch_system(char *cmd, int options)
  */
     int
 mch_call_shell(
-    char_u *cmd,
-    int options)	/* SHELL_*, see vim.h */
+    char_u  *cmd,
+    int	    options)	/* SHELL_*, see vim.h */
 {
     int		x = 0;
     int		tmode = cur_tmode;
@@ -3510,8 +3495,7 @@ clear_to_end_of_line(void)
  * Scroll the scroll region up by `cLines' lines
  */
     static void
-scroll(
-    unsigned cLines)
+scroll(unsigned cLines)
 {
     COORD oldcoord = g_coord;
 
@@ -3549,8 +3533,7 @@ set_scroll_region(
  * Insert `cLines' lines at the current cursor position
  */
     static void
-insert_lines(
-    unsigned cLines)
+insert_lines(unsigned cLines)
 {
     SMALL_RECT	    source;
     COORD	    dest;
@@ -3591,8 +3574,7 @@ insert_lines(
  * Delete `cLines' lines at the current cursor position
  */
     static void
-delete_lines(
-    unsigned cLines)
+delete_lines(unsigned cLines)
 {
     SMALL_RECT	    source;
     COORD	    dest;
@@ -3655,8 +3637,7 @@ gotoxy(
  * See ../doc/os_win32.txt for the numbers.
  */
     static void
-textattr(
-    WORD wAttr)
+textattr(WORD wAttr)
 {
     g_attrCurrent = wAttr;
 
@@ -3665,8 +3646,7 @@ textattr(
 
 
     static void
-textcolor(
-    WORD wAttr)
+textcolor(WORD wAttr)
 {
     g_attrCurrent = (g_attrCurrent & 0xf0) + wAttr;
 
@@ -3675,8 +3655,7 @@ textcolor(
 
 
     static void
-textbackground(
-    WORD wAttr)
+textbackground(WORD wAttr)
 {
     g_attrCurrent = (g_attrCurrent & 0x0f) + (wAttr << 4);
 
@@ -3688,7 +3667,7 @@ textbackground(
  * restore the default text attribute (whatever we started with)
  */
     static void
-normvideo()
+normvideo(void)
 {
     textattr(g_attrDefault);
 }
@@ -3711,7 +3690,7 @@ standout(void)
  * Turn off standout mode
  */
     static void
-standend()
+standend(void)
 {
     if (g_attrPreStandout)
     {
@@ -3725,7 +3704,7 @@ standend()
  * Set normal fg/bg color, based on T_ME.  Called whem t_me has been set.
  */
     void
-mch_set_normal_colors()
+mch_set_normal_colors(void)
 {
     char_u	*p;
     int		n;
@@ -3749,7 +3728,7 @@ mch_set_normal_colors()
  * visual bell: flash the screen
  */
     static void
-visual_bell()
+visual_bell(void)
 {
     COORD   coordOrigin = {0, 0};
     WORD    attrFlash = ~g_attrCurrent & 0xff;
@@ -3775,8 +3754,7 @@ visual_bell()
  * Make the cursor visible or invisible
  */
     static void
-cursor_visible(
-    BOOL fVisible)
+cursor_visible(BOOL fVisible)
 {
     s_cursor_visible = fVisible;
 #ifdef MCH_CURSOR_SHAPE
@@ -4178,7 +4156,7 @@ mch_remove(char_u *name)
  * check for an "interrupt signal": CTRL-break or CTRL-C
  */
     void
-mch_breakcheck()
+mch_breakcheck(void)
 {
 #ifndef FEAT_GUI_W32	    /* never used */
     if (g_fCtrlCPressed || g_fCBrkPressed)
@@ -4195,8 +4173,7 @@ mch_breakcheck()
  * Return sum of available physical and page file memory.
  */
     long_u
-mch_avail_mem(
-    int special)
+mch_avail_mem(int special)
 {
     MEMORYSTATUS	ms;
 
@@ -4382,7 +4359,7 @@ mch_rename(
  * Get the default shell for the current hardware platform
  */
     char *
-default_shell()
+default_shell(void)
 {
     char* psz = NULL;
 
@@ -4867,5 +4844,177 @@ myresetstkoflw(void)
 
     return 1;
 }
+#endif
 
+
+#if defined(FEAT_MBYTE) || defined(PROTO)
+/*
+ * The command line arguments in UCS2
+ */
+static DWORD	nArgsW = 0;
+static LPWSTR	*ArglistW = NULL;
+static int	global_argc = 0;
+static char	**global_argv;
+
+static int	used_file_argc = 0;	/* last argument in global_argv[] used
+					   for the argument list. */
+static int	*used_file_indexes = NULL; /* indexes in global_argv[] for
+					      command line arguments added to
+					      the argument list */
+static int	used_file_count = 0;	/* nr of entries in used_file_indexes */
+static int	used_file_literal = FALSE;  /* take file names literally */
+static int	used_file_full_path = FALSE;  /* file name was full path */
+static int	used_alist_count = 0;
+
+
+/*
+ * Get the command line arguments.  Unicode version.
+ * Returns argc.  Zero when something fails.
+ */
+    int
+get_cmd_argsW(char ***argvp)
+{
+    char	**argv = NULL;
+    int		argc = 0;
+    int		i;
+
+    ArglistW = CommandLineToArgvW(GetCommandLineW(), &nArgsW);
+    if (ArglistW != NULL)
+    {
+	argv = malloc((nArgsW + 1) * sizeof(char *));
+	if (argv != NULL)
+	{
+	    argc = nArgsW;
+	    argv[argc] = NULL;
+	    for (i = 0; i < argc; ++i)
+	    {
+		int	len;
+
+		/* Convert each Unicode argument to the current codepage. */
+		WideCharToMultiByte_alloc(GetACP(), 0,
+				ArglistW[i], wcslen(ArglistW[i]) + 1,
+				(LPSTR *)&argv[i], &len, 0, 0);
+		if (argv[i] == NULL)
+		{
+		    /* Out of memory, clear everything. */
+		    while (i > 0)
+			free(argv[--i]);
+		    free(argv);
+		    argc = 0;
+		}
+	    }
+	}
+    }
+
+    global_argc = argc;
+    global_argv = argv;
+    if (argc > 0)
+	used_file_indexes = malloc(argc * sizeof(int));
+
+    if (argvp != NULL)
+	*argvp = argv;
+    return argc;
+}
+
+    void
+free_cmd_argsW(void)
+{
+    if (ArglistW != NULL)
+    {
+	GlobalFree(ArglistW);
+	ArglistW = NULL;
+    }
+}
+
+/*
+ * Remember "name" is an argument that was added to the argument list.
+ * This avoids that we have to re-parse the argument list when fix_arg_enc()
+ * is called.
+ */
+    void
+used_file_arg(char *name, int literal, int full_path)
+{
+    int		i;
+
+    if (used_file_indexes == NULL)
+	return;
+    for (i = used_file_argc + 1; i < global_argc; ++i)
+	if (STRCMP(global_argv[i], name) == 0)
+	{
+	    used_file_argc = i;
+	    used_file_indexes[used_file_count++] = i;
+	    break;
+	}
+    used_file_literal = literal;
+    used_file_full_path = full_path;
+}
+
+/*
+ * Remember the length of the argument list as it was.  If it changes then we
+ * leave it alone when 'encoding' is set.
+ */
+    void
+set_alist_count(void)
+{
+    used_alist_count = GARGCOUNT;
+}
+
+/*
+ * Fix the encoding of the command line arguments.  Invoked when 'encoding'
+ * has been changed while starting up.  Use the UCS-2 command line arguments
+ * and convert them to 'encoding'.
+ */
+    void
+fix_arg_enc(void)
+{
+    int		i;
+    int		idx;
+    char_u	*str;
+
+    /* Safety checks:
+     * - if argument count differs between the wide and non-wide argument
+     *   list, something must be wrong.
+     * - the file name arguments must have been located.
+     * - the length of the argument list wasn't changed by the user.
+     */
+    if (global_argc != (int)nArgsW
+	    || ArglistW == NULL
+	    || used_file_indexes == NULL
+	    || used_file_count == 0
+	    || used_alist_count != GARGCOUNT)
+	return;
+
+    /* Clear the argument list.  Make room for the new arguments. */
+    alist_clear(&global_alist);
+    if (ga_grow(&global_alist.al_ga, used_file_count) == FAIL)
+	return;	    /* out of memory */
+
+    for (i = 0; i < used_file_count; ++i)
+    {
+	idx = used_file_indexes[i];
+	str = ucs2_to_enc(ArglistW[idx], NULL);
+	if (str != NULL)
+	    alist_add(&global_alist, str, used_file_literal ? 2 : 0);
+    }
+
+    if (!used_file_literal)
+    {
+	/* Now expand wildcards in the arguments. */
+	/* Temporarily add '(' and ')' to 'isfname'.  These are valid
+	 * filename characters but are excluded from 'isfname' to make
+	 * "gf" work on a file name in parenthesis (e.g.: see vim.h). */
+	do_cmdline_cmd((char_u *)":let SaVe_ISF = &isf|set isf+=(,)");
+	alist_expand();
+	do_cmdline_cmd((char_u *)":let &isf = SaVe_ISF|unlet SaVe_ISF");
+    }
+
+    /* If wildcard expansion failed, we are editing the first file of the
+     * arglist and there is no file name: Edit the first argument now. */
+    if (curwin->w_arg_idx == 0 && curbuf->b_fname == NULL)
+    {
+	do_cmdline_cmd((char_u *)":rewind");
+	if (GARGCOUNT == 1 && used_file_full_path)
+	    (void)vim_chdirfile(alist_name(&GARGLIST[0]));
+    }
+}
 #endif

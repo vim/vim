@@ -1,7 +1,7 @@
 " netrw.vim: Handles file transfer and remote directory listing across a network
-" Last Change:	Sep 10, 2004
+" Last Change:	Sep 14, 2004
 " Maintainer:	Charles E. Campbell, Jr. PhD   <drchipNOSPAM at campbellfamily.biz>
-" Version:	48
+" Version:	51a	NOT RELEASED
 " License:	Vim License  (see vim's :help license)
 "
 "  But be doers of the Word, and not only hearers, deluding your own selves
@@ -14,7 +14,7 @@
 if exists("g:loaded_netrw") || &cp
   finish
 endif
-let g:loaded_netrw  = "v48"
+let g:loaded_netrw  = "v51a"
 let s:save_cpo      = &cpo
 let loaded_explorer = 1
 set cpo&vim
@@ -115,7 +115,7 @@ if !exists("g:netrw_hide")
  let g:netrw_hide= 1
 endif
 if !exists("g:netrw_ftp_browse_reject")
- let g:netrw_ftp_browse_reject='^total\s\+\d\+$\|^Trying\s\+\d\+.*$\|^KERBEROS_V\d rejected\|^Security extensions not'
+ let g:netrw_ftp_browse_reject='^total\s\+\d\+$\|^Trying\s\+\d\+.*$\|^KERBEROS_V\d rejected\|^Security extensions not\|No such file\|: connect to address [0-9a-fA-F:]*: No route to host$'
 endif
 if !exists("g:netrw_keepdir")
  let g:netrw_keepdir= 1
@@ -139,6 +139,9 @@ if !exists("g:netrw_alto")
 endif
 if !exists("g:netrw_altv")
  let g:netrw_altv= 0
+endif
+if !exists("g:netrw_maxfilenamelen")
+ let g:netrw_maxfilenamelen= 32
 endif
 
 " BufEnter event ignored by decho when following variable is true
@@ -211,9 +214,11 @@ if version >= 600
    au BufReadCmd  file:///*		exe "silent doau BufReadPre ".expand("<afile>")|exe 'e /'.substitute(expand("<afile>"),"file:/*","","")|exe "silent doau BufReadPost ".expand("<afile>")
    au BufReadCmd  file://localhost/*	exe "silent doau BufReadPre ".expand("<afile>")|exe 'e /'.substitute(expand("<afile>"),"file:/*","","")|exe "silent doau BufReadPost ".expand("<afile>")
   endif
-  au BufReadCmd  ftp://*,rcp://*,scp://*,http://*,dav://*,rsync://*,sftp://*	exe "silent doau BufReadPre ".expand("<afile>")|exe "Nread 0r ".expand("<afile>")|exe "silent doau BufReadPost ".expand("<afile>")
-  au FileReadCmd ftp://*,rcp://*,scp://*,http://*,dav://*,rsync://*,sftp://*	exe "silent doau BufReadPre ".expand("<afile>")|exe "Nread "   .expand("<afile>")|exe "silent doau BufReadPost ".expand("<afile>")
-  au BufWriteCmd ftp://*,rcp://*,scp://*,dav://*,rsync://*,sftp://*    		exe "silent doau BufWritePre ".expand("<afile>")|exe "Nwrite " .expand("<afile>")|exe "silent doau BufWritePost ".expand("<afile>")
+  au BufReadCmd   ftp://*,rcp://*,scp://*,http://*,dav://*,rsync://*,sftp://*	exe "silent doau BufReadPre ".expand("<afile>")|exe "Nread 0r ".expand("<afile>")|exe "silent doau BufReadPost ".expand("<afile>")
+  au FileReadCmd  ftp://*,rcp://*,scp://*,http://*,dav://*,rsync://*,sftp://*	exe "silent doau BufReadPre ".expand("<afile>")|exe "Nread "   .expand("<afile>")|exe "silent doau BufReadPost ".expand("<afile>")
+  au BufWriteCmd  ftp://*,rcp://*,scp://*,dav://*,rsync://*,sftp://*    	exe "silent doau BufWritePre ".expand("<afile>")|exe "Nwrite " .expand("<afile>")|exe "silent doau BufWritePost ".expand("<afile>")
+  au FileWriteCmd ftp://*,rcp://*,scp://*,dav://*,rsync://*,sftp://*    	exe "silent doau BufWritePre ".expand("<afile>")|exe "'[,']Nwrite " .expand("<afile>")|exe "silent doau BufWritePost ".expand("<afile>")
+"  au FileWriteCmd ftp://*,rcp://*,scp://*,dav://*,rsync://*,sftp://*    	if exists("vcount")|call Decho("vcount=".vcount)|else|call Decho("no vcount")|endif
  augroup END
 endif
 
@@ -1025,7 +1030,8 @@ fun! <SID>NetBrowse(dirname)
 "  call Dfunc("NetBrowse(dirname<".a:dirname.">) longlist=".g:netrw_longlist)
 
   " sanity check
-  if exists("b:netrw_method") && b:netrw_method =~ '[23]'
+  if exists("b:netrw_method") && b:netrw_method =~ '[235]'
+"   call Decho("b:netrw_method=".b:netrw_method)
    if !executable("ftp")
     if !exists("g:netrw_quiet")
      echoerr "***netrw*** this system doesn't support remote directory listing via ftp"
@@ -1066,11 +1072,13 @@ fun! <SID>NetBrowse(dirname)
 "  call Decho("set up path   <".path   .">")
 "  call Decho("set up fname  <".fname  .">")
 
-  if method == "ftp"
+  if method == "ftp" || method == "http"
+   let method  = "ftp"
    let listcmd = g:netrw_ftp_list_cmd
   else
    let listcmd = substitute(g:netrw_list_cmd,'\<HOSTNAME\>',user.machine,'')
   endif
+
   if exists("b:netrw_method")
 "   call Decho("setting s:netrw_method<".b:netrw_method.">")
    let s:netrw_method= b:netrw_method
@@ -1144,11 +1152,12 @@ fun! <SID>NetBrowse(dirname)
   endif
 
   " rename file to reflect where its from
-  setlocal ts=32 bt=nofile bh=wipe nobl
+  setlocal bt=nofile bh=wipe nobl noswf
+  exe "setlocal ts=".g:netrw_maxfilenamelen
 "  call Decho("exe file ".escape(bufname,s:netrw_cd_escape))
   exe 'file '.escape(bufname,s:netrw_cd_escape)
 "  call Decho("renaming file to bufname<".bufname.">")
-  setlocal bt=nowrite bh=hide nobl
+  setlocal bh=hide nobl
 
   " set up buffer-local mappings
 "  call Decho("set up buffer-local mappings")
@@ -1338,7 +1347,6 @@ fun! <SID>NetBrowseChgDir(dirname,newdir)
    else
     " strip off a directory name from dirname
     let dirname= substitute(dirname,'^\(.*/\)[^/]\+/','\1','')
-  exe "silent! keepjumps ".curline.",$d"
    endif
 "   call Decho("go up one dir: dirname<".dirname."> trailer<".trailer.">")
 
@@ -1573,7 +1581,7 @@ fun! <SID>NetBrowseX(fname,remote)
 
   if a:remote == 1
    let eikeep= &ei
-   set ei=all bh=delete bt=nofile
+   set ei=all bh=delete bt=nofile noswf
    exe "norm! \<c-o>"
    let &ei= eikeep
    redraw!
@@ -1601,15 +1609,13 @@ fun! NetBrowseFtpCmd(path,cmd)
   exe "silent! keepjumps ".curline.",$d"
 
    ".........................................
-  if s:netrw_method == 2
+  if s:netrw_method == 2 || s:netrw_method == 5
    " ftp + <.netrc>:  Method #2
    if a:path != ""
     put ='cd '.a:path
    endif
    exe "put ='".a:cmd."'"
-
-
-"    redraw!|call inputsave()|call input("Pausing...")|call inputrestore() "Decho
+"    redraw!|call inputsave()|call input("Pausing...")|call inputrestore()
    if exists("g:netrw_port") && g:netrw_port != ""
 "    call Decho("exe ".g:netrw_silentxfer.curline.",$!".g:netrw_ftp_cmd." -i ".g:netrw_machine." ".g:netrw_port)
     exe g:netrw_silentxfer.curline.",$!".g:netrw_ftp_cmd." -i ".g:netrw_machine." ".g:netrw_port
@@ -1875,36 +1881,35 @@ fun! <SID>NetBookmarkDir(chg,curdir)
 
   if a:chg == 0
    " bookmark the current directory
-   let s:netrw_bookmarkdir_{v:count}= a:curdir
-   if !exists("s:bookmarkmax")
-    let s:bookmarkmax= v:count
-   elseif v:count > s:bookmarkmax
-    let s:bookmarkmax= v:count
+   let g:NETRW_BOOKMARKDIR_{v:count}= a:curdir
+   if !exists("g:NETRW_BOOKMARKMAX")
+    let g:NETRW_BOOKMARKMAX= v:count
+   elseif v:count > g:NETRW_BOOKMARKMAX
+    let g:NETRW_BOOKMARKMAX= v:count
    endif
 
   elseif a:chg == 1
    " change to the bookmarked directory
-   if exists("s:netrw_bookmarkdir_{v:count}")
-    exe "e ".s:netrw_bookmarkdir_{v:count}
+   if exists("g:NETRW_BOOKMARKDIR_{v:count}")
+    exe "e ".g:NETRW_BOOKMARKDIR_{v:count}
    else
     echomsg "Sorry, bookmark#".v:count." doesn't exist!"
    endif
 
-  elseif exists("s:bookmarkmax")
+  elseif exists("g:NETRW_BOOKMARKMAX")
    " list bookmarks
-"   call Decho("list bookmarks [0,".s:bookmarkmax."]")
+"   call Decho("list bookmarks [0,".g:NETRW_BOOKMARKMAX."]")
    let cnt= 0
-   while cnt <= s:bookmarkmax
-    if exists("s:netrw_bookmarkdir_{cnt}")
-     echo "Netrw Bookmark#".cnt.": ".s:netrw_bookmarkdir_{cnt}
-"     call Decho("Netrw Bookmark#".cnt.": ".s:netrw_bookmarkdir_{cnt})
+   while cnt <= g:NETRW_BOOKMARKMAX
+    if exists("g:NETRW_BOOKMARKDIR_{cnt}")
+     echo "Netrw Bookmark#".cnt.": ".g:NETRW_BOOKMARKDIR_{cnt}
+"     call Decho("Netrw Bookmark#".cnt.": ".g:NETRW_BOOKMARKDIR_{cnt})
     endif
     let cnt= cnt + 1
    endwhile
   endif
 "  call Dret("NetBookmarkDir")
 endfun
-
 
 " ---------------------------------------------------------------------
 "  Browsing Support For Local Directories And Files:    {{{1
@@ -1972,20 +1977,32 @@ fun! <SID>LocalBrowse(dirname)
     endif
    endif
 "   call Decho("buffer already exists, but needs re-listing (buf#".dirnamenr.")")
+"   call Decho("buffer name<".bufname("%")."> dirname<".dirname.">")
    setlocal ma
    keepjumps %d
-   if expand("%:p") != dirname
+   if expand("%") != dirname
+    " set standard browser options on buffer
+    setlocal bt=nofile bh=hide nobl noswf
+    exe "setlocal ts=".g:netrw_maxfilenamelen
     exe 'silent! file '.escape(dirname,s:netrw_cd_escape)
-"    call Decho("renamed file to<".escape(dirname,' #').">")
+"    call Decho("renamed buffer to<".escape(dirname,s:netrw_cd_escape).">")
+"    call Decho("yielding actual bufname<".bufname("%").">")
    endif
   else
 "   call Decho("generate new buffer named<".escape(dirname,' #').">")
    silent! enew!
+   " set standard browser options on buffer
+   setlocal bt=nofile bh=hide nobl noswf
+   exe "setlocal ts=".g:netrw_maxfilenamelen
    exe 'silent! file '.substitute(escape(dirname,s:netrw_cd_escape),'/$','','e')
-"   call Decho("renamed file to<".escape(dirname,s:netrw_cd_escape).">")
+"   call Decho("renamed buffer to<".substitute(escape(dirname,s:netrw_cd_escape),'/$','','e').">")
+"   call Decho("yielding actual bufname<".bufname("%").">")
   endif
-  " set standard browser options on buffer
-  setlocal ts=32 bt=nowrite bh=hide nobl
+  if bufname("#") == "" && bufnr("#") != -1
+   " the file command produces a lot of [No File] buffers
+"   call Decho("wiping out nofile buffer#".bufnr("#"))
+   exe bufnr("#")."bwipe"
+  endif
 
   " set up all the maps
 "  call Decho("Setting up local browser maps")
@@ -2076,7 +2093,7 @@ fun! <SID>LocalBrowse(dirname)
   setlocal noma nomod
   if g:netrw_keepdir | exe 'keepjumps cd '.netrw_origdir | endif
 
-"  call Dret("LocalBrowse : file<".expand("%:p").">")
+"  call Dret("LocalBrowse : file<".expand("%:p")."> bufname<".bufname("%").">")
 endfun
 
 " ---------------------------------------------------------------------
@@ -2123,7 +2140,7 @@ fun! LocalBrowseList(dirname)
     let filelist = substitute(filelist,'^.\{-}\n\(.*\)$','\1','e')
    else
     let file     = filelist
-    let filelist= ""
+    let filelist = ""
    endif
    let pfile= file
    if isdirectory(file)

@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 7.0aa.  Last change: 2004 Aug 28
+*usr_41.txt*	For Vim version 7.0aa.  Last change: 2004 Oct 06
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -218,9 +218,9 @@ To avoid the need for a backslash, you can use a string in single quotes: >
 	:echo name
 <	"peter" ~
 
-Inside a single-quote string all the characters are taken literally.  The
-drawback is that it's impossible to include a single quote.  A backslash is
-taken literally as well, thus you can't use it to change the meaning of the
+Inside a single-quote string all the characters are as they are.  The drawback
+is that it's impossible to include a single quote.  A backslash is taken
+literally as well, thus you can't use it to change the meaning of the
 character after it.
    In double-quote strings it is possible to use special characters.  Here are
 a few useful ones:

@@ -749,6 +749,10 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)
 
 	    text    = CONVERT_TO_UTF8(menu->dname);
 	    tooltip = CONVERT_TO_UTF8(menu->strings[MENU_INDEX_TIP]);
+	    if (tooltip != NULL && !utf_valid_string(tooltip, NULL))
+		/* Invalid text, can happen when 'encoding' is changed.  Avoid
+		 * a nasty GTK error message, skip the tooltip. */
+		CONVERT_TO_UTF8_FREE(tooltip);
 
 	    menu->id = gtk_toolbar_insert_item(
 		    toolbar,
@@ -993,6 +997,8 @@ gui_mch_menu_set_tip(vimmenu_T *menu)
 
 # ifdef HAVE_GTK2
 	tooltip = CONVERT_TO_UTF8(menu->strings[MENU_INDEX_TIP]);
+	if (tooltip == NULL || utf_valid_string(tooltip, NULL))
+	    /* Only set the tooltip when it's valid utf-8. */
 # else
 	tooltip = menu->strings[MENU_INDEX_TIP];
 # endif

@@ -630,7 +630,7 @@ STDMETHODIMP CShellExt::QueryContextMenu(HMENU hMenu,
 	    *pos = 0;
 	}
 	// Now concatenate
-	strncpy(temp, _("Edit with existing Vim - &"), MAX_PATH - 1);
+	strncpy(temp, _("Edit with existing Vim - "), MAX_PATH - 1);
 	strncat(temp, title, MAX_PATH - 1);
 	InsertMenu(hMenu,
 		indexMenu++,

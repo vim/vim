@@ -216,7 +216,7 @@ enc_canon_table[] =
 #define IDX_ISO_14	13
     {"iso-8859-14",	ENC_8BIT,		0},
 #define IDX_ISO_15	14
-    {"iso-8859-15",	ENC_8BIT,		0},
+    {"iso-8859-15",	ENC_8BIT + ENC_LATIN9,	0},
 #define IDX_KOI8_R	15
     {"koi8-r",		ENC_8BIT,		0},
 #define IDX_KOI8_U	16
@@ -534,6 +534,7 @@ codepage_invalid:
 
 #ifdef WIN3264
     enc_codepage = encname2codepage(p_enc);
+    enc_latin9 = (STRCMP(p_enc, "iso-8859-15") == 0);
 #endif
 
     /*
@@ -2485,6 +2486,36 @@ mb_tail_off(base, p)
     /* Return 1 when on the lead byte, 0 when on the tail byte. */
     return 1 - dbcs_head_off(base, p);
 }
+
+#if defined(HAVE_GTK2) || defined(PROTO)
+/*
+ * Return TRUE if string "s" is a valid utf-8 string.
+ * When "end" is NULL stop at the first NUL.
+ * When "end" is positive stop there.
+ */
+    int
+utf_valid_string(s, end)
+    char_u	*s;
+    char_u	*end;
+{
+    int		l;
+    char_u	*p = s;
+
+    while (end == NULL ? *p != NUL : p < end)
+    {
+	if ((*p & 0xc0) == 0x80)
+	    return FALSE;	/* invalid lead byte */
+	l = utf8len_tab[*p];
+	if (end != NULL && p + l > end)
+	    return FALSE;	/* incomplete byte sequence */
+	++p;
+	while (--l > 0)
+	    if ((*p++ & 0xc0) != 0x80)
+		return FALSE;	/* invalid trail byte */
+    }
+    return TRUE;
+}
+#endif
 
 #if defined(FEAT_GUI) || defined(PROTO)
 /*
@@ -5453,10 +5484,21 @@ convert_setup(vcp, from, to)
 	vcp->vc_type = CONV_TO_UTF8;
 	vcp->vc_factor = 2;	/* up to twice as long */
     }
+    else if ((from_prop & ENC_LATIN9) && (to_prop & ENC_UNICODE))
+    {
+	/* Internal latin9 -> utf-8 conversion. */
+	vcp->vc_type = CONV_9_TO_UTF8;
+	vcp->vc_factor = 3;	/* up to three as long (euro sign) */
+    }
     else if ((from_prop & ENC_UNICODE) && (to_prop & ENC_LATIN1))
     {
 	/* Internal utf-8 -> latin1 conversion. */
 	vcp->vc_type = CONV_TO_LATIN1;
+    }
+    else if ((from_prop & ENC_UNICODE) && (to_prop & ENC_LATIN9))
+    {
+	/* Internal utf-8 -> latin9 conversion. */
+	vcp->vc_type = CONV_TO_LATIN9;
     }
 #ifdef WIN3264
     /* Win32-specific codepage <-> codepage conversion without iconv. */
@@ -5622,12 +5664,13 @@ string_convert_ext(vcp, ptr, lenp, unconvlenp)
 	    d = retval;
 	    for (i = 0; i < len; ++i)
 	    {
-		if (ptr[i] < 0x80)
-		    *d++ = ptr[i];
+		c = ptr[i];
+		if (c < 0x80)
+		    *d++ = c;
 		else
 		{
-		    *d++ = 0xc0 + ((unsigned)ptr[i] >> 6);
-		    *d++ = 0x80 + (ptr[i] & 0x3f);
+		    *d++ = 0xc0 + ((unsigned)c >> 6);
+		    *d++ = 0x80 + (c & 0x3f);
 		}
 	    }
 	    *d = NUL;
@@ -5635,7 +5678,34 @@ string_convert_ext(vcp, ptr, lenp, unconvlenp)
 		*lenp = (int)(d - retval);
 	    break;
 
+	case CONV_9_TO_UTF8:	/* latin9 to utf-8 conversion */
+	    retval = alloc(len * 3 + 1);
+	    if (retval == NULL)
+		break;
+	    d = retval;
+	    for (i = 0; i < len; ++i)
+	    {
+		c = ptr[i];
+		switch (c)
+		{
+		    case 0xa4: c = 0x20ac; break;   /* euro */
+		    case 0xa6: c = 0x0160; break;   /* S hat */
+		    case 0xa8: c = 0x0161; break;   /* S -hat */
+		    case 0xb4: c = 0x017d; break;   /* Z hat */
+		    case 0xb8: c = 0x017e; break;   /* Z -hat */
+		    case 0xbc: c = 0x0152; break;   /* OE */
+		    case 0xbd: c = 0x0153; break;   /* oe */
+		    case 0xbe: c = 0x0178; break;   /* Y */
+		}
+		d += utf_char2bytes(c, d);
+	    }
+	    *d = NUL;
+	    if (lenp != NULL)
+		*lenp = (int)(d - retval);
+	    break;
+
 	case CONV_TO_LATIN1:	/* utf-8 to latin1 conversion */
+	case CONV_TO_LATIN9:	/* utf-8 to latin9 conversion */
 	    retval = alloc(len + 1);
 	    if (retval == NULL)
 		break;
@@ -5658,6 +5728,26 @@ string_convert_ext(vcp, ptr, lenp, unconvlenp)
 		else
 		{
 		    c = utf_ptr2char(ptr + i);
+		    if (vcp->vc_type == CONV_TO_LATIN9)
+			switch (c)
+			{
+			    case 0x20ac: c = 0xa4; break;   /* euro */
+			    case 0x0160: c = 0xa6; break;   /* S hat */
+			    case 0x0161: c = 0xa8; break;   /* S -hat */
+			    case 0x017d: c = 0xb4; break;   /* Z hat */
+			    case 0x017e: c = 0xb8; break;   /* Z -hat */
+			    case 0x0152: c = 0xbc; break;   /* OE */
+			    case 0x0153: c = 0xbd; break;   /* oe */
+			    case 0x0178: c = 0xbe; break;   /* Y */
+			    case 0xa4:
+			    case 0xa6:
+			    case 0xa8:
+			    case 0xb4:
+			    case 0xb8:
+			    case 0xbc:
+			    case 0xbd:
+			    case 0xbe: c = 0x100; break; /* not in latin9 */
+			}
 		    if (!utf_iscomposing(c))	/* skip composing chars */
 		    {
 			if (c < 0x100)

@@ -392,6 +392,8 @@ ex_menu(eap)
 	    map_to = (char_u *)"";
 	    map_buf = NULL;
 	}
+	else if (modes & MENU_TIP_MODE)
+	    map_buf = NULL;	/* Menu tips are plain text. */
 	else
 	    map_to = replace_termcodes(map_to, &map_buf, FALSE, TRUE);
 	menuarg.modes = modes;

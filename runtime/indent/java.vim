@@ -1,7 +1,7 @@
 " Vim indent file
 " Language:	Java
-" Maintainer:	Toby Allsopp <toby.allsopp@peace.com>
-" Last Change:	2003 Oct 21
+" Maintainer:	Toby Allsopp <toby.allsopp@peace.com> (resigned)
+" Last Change:	2004 Oct 05
 
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")

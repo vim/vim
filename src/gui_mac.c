@@ -2200,6 +2200,7 @@ gui_mac_doKeyEvent(EventRecord *theEvent)
     KeySym		key_sym;
     int			key_char;
     int			modifiers;
+    int			simplify = FALSE;
 
     /* Mask the mouse (as per user setting) */
     if (p_mh)
@@ -2253,7 +2254,7 @@ gui_mac_doKeyEvent(EventRecord *theEvent)
 
     /* Handle special keys. */
 #if 0
-    /* Why have this been removed? */
+    /* Why has this been removed? */
     if	(!(theEvent->modifiers & (cmdKey | controlKey | rightControlKey)))
 #endif
     {
@@ -2270,11 +2271,14 @@ gui_mac_doKeyEvent(EventRecord *theEvent)
 # endif
 			key_char = TO_SPECIAL(special_keys[i].vim_code0,
 						special_keys[i].vim_code1);
-		    key_char = simplify_key(key_char,&modifiers);
+		    simplify = TRUE;
 		    break;
 		}
     }
 
+    /* For some keys the modifier is included in the char itself. */
+    if (simplify || key_char == TAB || key_char == ' ')
+	key_char = simplify_key(key_char, &modifiers);
 
     /* Add the modifier to the input bu if needed */
     /* Do not want SHIFT-A or CTRL-A with modifier */

@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2004 Sep 13
+*eval.txt*      For Vim version 7.0aa.  Last change: 2004 Oct 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -125,8 +125,8 @@ Expression syntax summary, from least to most significant:
 |expr8|	expr9[expr1]		index in String
 
 |expr9|	number			number constant
-	"string"		string constant
-	'string'		literal string constant
+	"string"		string constant, backslash is special
+	'string'		string constant
 	&option			option value
 	(expr1)			nested expression
 	variable		internal variable
@@ -355,13 +355,18 @@ Note that "\000" and "\x00" force the end of the string.
 
 literal-string						*literal-string* *E115*
 ---------------
-'string'		literal string constant		*expr-'*
+'string'		string constant			*expr-'*
 
 Note that single quotes are used.
 
-This string is taken literally.  No backslashes are removed or have a special
-meaning.  A literal-string cannot contain a single quote.  Use a normal string
-for that.
+This string is taken as it is.  No backslashes are removed or have a special
+meaning.  A literal-string cannot contain a single quote.  Use a normal,
+double-quoted string for that.
+
+Single quoted strings are useful for patterns, so that backslashes do not need
+to be doubled.  These two commands are equivalent: >
+	if a =~ "\\s*"
+	if a =~ '\s*'
 
 
 option						*expr-option* *E112* *E113*

@@ -5239,6 +5239,14 @@ not_ascii:
 	int		last_glyph_rbearing;
 	int		cells = 0;  /* cells occupied by current cluster */
 
+	/* Safety check: pango crashes when invoked with invalid utf-8
+	 * characters. */
+	if (!utf_valid_string(s, s + len))
+	{
+	    column_offset = len;
+	    goto skipitall;
+	}
+
 	/* original width of the current cluster */
 	cluster_width = PANGO_SCALE * gui.char_width;
 
@@ -5372,6 +5380,7 @@ not_ascii:
 	pango_attr_list_unref(attr_list);
     }
 
+skipitall:
     if (flags & DRAW_UNDERL)
 	gdk_draw_line(gui.drawarea->window,
 		      gui.text_gc,

@@ -1,7 +1,7 @@
 " Vim support file to detect file types in scripts
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2004 Sep 02
+" Last change:	2004 Oct 02
 
 " This file is called by an autocommand for every file that has just been
 " loaded into a buffer.  It checks if the type of file can be recognized by
@@ -57,14 +57,14 @@ if s:line1 =~ "^#!"
     " csh scripts
   elseif s:name =~ '^csh\>'
     if exists("g:filetype_csh")
-      let &ft = g:filetype_csh
+      call SetFileTypeShell(g:filetype_csh)
     else
-      set ft=csh
+      call SetFileTypeShell("csh")
     endif
 
     " tcsh scripts
   elseif s:name =~ '^tcsh\>'
-    set ft=tcsh
+    call SetFileTypeShell("tcsh")
 
     " Z shell scripts
   elseif s:name =~ '^zsh\>'

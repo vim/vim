@@ -4066,7 +4066,7 @@ restore_backup:
 	{
 #ifdef FEAT_MBYTE
 	    if (write_info.bw_conv_error)
-		errmsg = (char_u *)_("E513: write error, conversion failed");
+		errmsg = (char_u *)_("E513: write error, conversion failed (make 'fenc' empty to override)");
 	    else
 #endif
 		if (got_int)

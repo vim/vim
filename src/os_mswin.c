@@ -267,6 +267,10 @@ mch_early_init(void)
     AnsiUpperBuff(toupper_tab, 256);
     AnsiLowerBuff(tolower_tab, 256);
 #endif
+
+#if defined(FEAT_MBYTE) && !defined(FEAT_GUI)
+    (void)get_cmd_argsW(NULL);
+#endif
 }
 
 
@@ -298,7 +302,25 @@ mch_settitle(
     gui_mch_settitle(title, icon);
 # else
     if (title != NULL)
+    {
+#  ifdef FEAT_MBYTE
+	if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
+	{
+	    /* Convert the title from 'encoding' to the active codepage. */
+	    WCHAR	*wp = enc_to_ucs2(title, NULL);
+	    int	n;
+
+	    if (wp != NULL)
+	    {
+		n = SetConsoleTitleW(wp);
+		vim_free(wp);
+		if (n != 0 || GetLastError() != ERROR_CALL_NOT_IMPLEMENTED)
+		    return;
+	    }
+	}
+#  endif
 	SetConsoleTitle(title);
+    }
 # endif
 }
 

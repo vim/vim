@@ -1,6 +1,6 @@
 " Vim syntax file
 " Language:	PCCTS
-" Maintainer:	Scott Bigham <dsb@cs.duke.edu>
+" Maintainer:	Scott Bigham <dsb@killerbunnies.org>
 " Last Change:	10 Aug 1999
 
 " For version 5.x: Clear all syntax items

@@ -3542,6 +3542,7 @@ E675	print.txt	/*E675*
 E676	options.txt	/*E676*
 E677	eval.txt	/*E677*
 E678	pattern.txt	/*E678*
+E679	syntax.txt	/*E679*
 E68	pattern.txt	/*E68*
 E69	pattern.txt	/*E69*
 E70	pattern.txt	/*E70*
@@ -4414,6 +4415,7 @@ diff-options	diff.txt	/*diff-options*
 diff-patchexpr	diff.txt	/*diff-patchexpr*
 diff.txt	diff.txt	/*diff.txt*
 digraph-arg	change.txt	/*digraph-arg*
+digraph-encoding	digraph.txt	/*digraph-encoding*
 digraph-table	digraph.txt	/*digraph-table*
 digraph.txt	digraph.txt	/*digraph.txt*
 digraphs	digraph.txt	/*digraphs*
@@ -4920,7 +4922,6 @@ hebrew	hebrew.txt	/*hebrew*
 hebrew.txt	hebrew.txt	/*hebrew.txt*
 help	various.txt	/*help*
 help-context	help.txt	/*help-context*
-help-tags	tags	1
 help-translated	various.txt	/*help-translated*
 help-xterm-window	various.txt	/*help-xterm-window*
 help.txt	help.txt	/*help.txt*
@@ -5454,6 +5455,8 @@ netrw-R	pi_netrw.txt	/*netrw-R*
 netrw-S	pi_netrw.txt	/*netrw-S*
 netrw-activate	pi_netrw.txt	/*netrw-activate*
 netrw-b	pi_netrw.txt	/*netrw-b*
+netrw-bookmark	pi_netrw.txt	/*netrw-bookmark*
+netrw-bookmarks	pi_netrw.txt	/*netrw-bookmarks*
 netrw-browse	pi_netrw.txt	/*netrw-browse*
 netrw-browse-cmds	pi_netrw.txt	/*netrw-browse-cmds*
 netrw-browse-var	pi_netrw.txt	/*netrw-browse-var*
@@ -5463,6 +5466,7 @@ netrw-contents	pi_netrw.txt	/*netrw-contents*
 netrw-cr	pi_netrw.txt	/*netrw-cr*
 netrw-credits	pi_netrw.txt	/*netrw-credits*
 netrw-ctrl-l	pi_netrw.txt	/*netrw-ctrl-l*
+netrw-curdir	pi_netrw.txt	/*netrw-curdir*
 netrw-d	pi_netrw.txt	/*netrw-d*
 netrw-debug	pi_netrw.txt	/*netrw-debug*
 netrw-delete	pi_netrw.txt	/*netrw-delete*

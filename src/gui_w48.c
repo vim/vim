@@ -3277,6 +3277,7 @@ _OnScroll(
     return 0;
 }
 
+
 /*
  * Get command line arguments.
  * Use "prog" as the name of the program and "cmdline" as the arguments.
@@ -3298,6 +3299,14 @@ get_cmd_args(char *prog, char *cmdline, char ***argvp, char **tofree)
     int		argc;
     char	**argv = NULL;
     int		round;
+
+#ifdef FEAT_MBYTE
+    /* Try using the Unicode version first, it takes care of conversion when
+     * 'encoding' is changed. */
+    argc = get_cmd_argsW(&argv);
+    if (argc != 0)
+	goto done;
+#endif
 
     /* Handle the program name.  Remove the ".exe" extension, and find the 1st
      * non-space. */
@@ -3405,8 +3414,9 @@ get_cmd_args(char *prog, char *cmdline, char ***argvp, char **tofree)
 	}
     }
 
-    argv[argc] = NULL;		/* NULL-terminated list */
+done:
 
+    argv[argc] = NULL;		/* NULL-terminated list */
     *argvp = argv;
     return argc;
 }

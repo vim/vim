@@ -1709,6 +1709,33 @@ im_get_status()
 }
 #endif
 
+#ifdef FEAT_MBYTE
+/*
+ * Convert latin9 text to ucs-2.
+ */
+    static void
+latin9_to_ucs(char_u *text, int len, WCHAR *unicodebuf)
+{
+    int		c;
+
+    while (len-- >= 0)
+    {
+	c = *text++;
+	switch (c)
+	{
+	    case 0xa4: c = 0x20ac; break;   /* euro */
+	    case 0xa6: c = 0x0160; break;   /* S hat */
+	    case 0xa8: c = 0x0161; break;   /* S -hat */
+	    case 0xb4: c = 0x017d; break;   /* Z hat */
+	    case 0xb8: c = 0x017e; break;   /* Z -hat */
+	    case 0xbc: c = 0x0152; break;   /* OE */
+	    case 0xbd: c = 0x0153; break;   /* oe */
+	    case 0xbe: c = 0x0178; break;   /* Y */
+	}
+	*unicodebuf++ = c;
+    }
+}
+#endif
 
 #ifdef FEAT_RIGHTLEFT
 /*
@@ -1907,7 +1934,9 @@ gui_mch_draw_string(
     /* Check if the Unicode buffer exists and is big enough.  Create it
      * with the same lengt as the multi-byte string, the number of wide
      * characters is always equal or smaller. */
-    if ((enc_utf8 || (enc_codepage > 0 && (int)GetACP() != enc_codepage))
+    if ((enc_utf8
+		|| (enc_codepage > 0 && (int)GetACP() != enc_codepage)
+		|| enc_latin9)
 	    && (unicodebuf == NULL || len > unibuflen))
     {
 	vim_free(unicodebuf);
@@ -1950,13 +1979,16 @@ gui_mch_draw_string(
 			     foptions, pcliprect, unicodebuf, clen, unicodepdy);
 	len = cells;	/* used for underlining */
     }
-    else if (enc_codepage > 0 && (int)GetACP() != enc_codepage)
+    else if ((enc_codepage > 0 && (int)GetACP() != enc_codepage) || enc_latin9)
     {
 	/* If we want to display codepage data, and the current CP is not the
 	 * ANSI one, we need to go via Unicode. */
 	if (unicodebuf != NULL)
 	{
-	    len = MultiByteToWideChar(enc_codepage,
+	    if (enc_latin9)
+		latin9_to_ucs(text, len, unicodebuf);
+	    else
+		len = MultiByteToWideChar(enc_codepage,
 			MB_PRECOMPOSED,
 			(char *)text, len,
 			(LPWSTR)unicodebuf, unibuflen);

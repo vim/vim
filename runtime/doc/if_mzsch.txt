@@ -79,9 +79,33 @@ All the examples below assume this naming scheme.  Note that you need to do
 this again for every buffer.
 
 The auto-instantiation can be achieved with autocommands, e.g. you can put
-something like this in your .vimrc: >
-    au VimEnter,BufNew,BufNewFile,BufAdd,BufReadPre *
-	\:mz (require (prefix vim- vimext)
+something like this in your .vimrc (EOFs should not have indentation): >
+    function s:MzRequire()
+	if has("mzscheme")
+	    :mz << EOF
+	    (require (prefix vim- vimext))
+	    (let ((buf (vim-get-buff-by-name (vim-eval "expand(\"<afile>\")"))))
+	      (when (and buf (not (eq? buf (vim-curr-buff))))
+		(parameterize ((current-namespace (vim-get-buff-namespace buf)))
+		  (namespace-attach-module vim-global-namespace 'vimext)
+		  (namespace-require '(prefix vim vimext)))))
+    EOF
+	endif
+    endfunction
+
+    function s:MzStartup()
+	if has("mzscheme")
+	    au BufNew,BufNewFile,BufAdd,BufReadPre * :call s:MzRequire()
+	    :mz << EOF
+	    (current-library-collection-paths
+		(cons
+		    (build-path (find-system-path 'addon-dir) (version) "collects")
+		    (current-library-collection-paths)))
+    EOF
+	endif
+    endfunction
+
+    call s:MzStartup()
 <
 
 The global namespace just instantiated this module with the prefix "vimext:".

@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2004 Sep 11
+" Last Change:	2004 Oct 02
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -1339,22 +1339,41 @@ fun! SetFileTypeSH(name)
       unlet b:is_bash
     endif
   endif
-  setf sh
+  call SetFileTypeShell("sh")
+endfun
+
+" For shell-like file types, check for an "exec" command hidden in a comment,
+" as used for Tcl.
+fun! SetFileTypeShell(name)
+  let l = 2
+  while l < 20 && l < line("$") && getline(l) =~ '^\s*\(#\|$\)'
+    " Skip empty and comment lines.
+    let l = l + 1
+  endwhile
+  if l < line("$") && getline(l) =~ '\s*exec\s' && getline(l - 1) =~ '^\s*#.*\\$'
+    " Found an "exec" line after a comment with continuation
+    let n = substitute(getline(l),'\s*exec\s\+\([^ ]*/\)\=', '', '')
+    if n =~ '\<tclsh\|\<wish'
+      setf tcl
+      return
+    endif
+  endif
+  exe "setf " . a:name
 endfun
 
 " tcsh scripts
-au BufNewFile,BufRead .tcshrc*,*.tcsh,tcsh.tcshrc,tcsh.login	setf tcsh
+au BufNewFile,BufRead .tcshrc*,*.tcsh,tcsh.tcshrc,tcsh.login	call SetFileTypeShell("tcsh")
 
 " csh scripts, but might also be tcsh scripts (on some systems csh is tcsh)
 au BufNewFile,BufRead .login*,.cshrc*,csh.cshrc,csh.login,csh.logout,*.csh,.alias  call SetFileTypeCSH()
 
 fun! SetFileTypeCSH()
   if exists("g:filetype_csh")
-    exe "setf " . g:filetype_csh
+    call SetFileTypeShell(g:filetype_csh)
   elseif &shell =~ "tcsh"
-    setf tcsh
+    call SetFileTypeShell("tcsh")
   else
-    setf csh
+    call SetFileTypeShell("csh")
   endif
 endfun
 

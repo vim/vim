@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Perl POD format
-" Maintainer:	Scott Bigham <dsb@cs.duke.edu>
-" Last Change:	2001 May 09
+" Maintainer:	Scott Bigham <dsb@killerbunnies.org>
+" Last Change:	2004 Oct 05
 
 " To add embedded POD documentation highlighting to your syntax file, add
 " the commands:
@@ -25,7 +25,7 @@ elseif exists("b:current_syntax")
 endif
 
 " POD commands
-syn match podCommand	"^=head[12]"	nextgroup=podCmdText
+syn match podCommand	"^=head[1234]"	nextgroup=podCmdText
 syn match podCommand	"^=item"	nextgroup=podCmdText
 syn match podCommand	"^=over"	nextgroup=podOverIndent skipwhite
 syn match podCommand	"^=back"
@@ -52,7 +52,11 @@ syn match podSpecial	"\(\<\|&\)\I\i*\(::\I\i*\)*([^)]*)"
 syn match podSpecial	"[$@%]\I\i*\(::\I\i*\)*\>"
 
 " Special formatting sequences
-syn region podFormat	start="[IBSCLFXEZ]<" end=">" oneline contains=podFormat
+syn region podFormat	start="[IBSCLFX]<[^<]"me=e-1 end=">" oneline contains=podFormat
+syn match  podFormat	"Z<>"
+syn match  podFormat	"E<\(\d\+\|\I\i*\)>" contains=podEscape,podEscape2
+syn match  podEscape	"\I\i*>"me=e-1 contained
+syn match  podEscape2	"\d\+>"me=e-1 contained
 
 " Define the default highlighting.
 " For version 5.7 and earlier: only when not done already
@@ -72,6 +76,8 @@ if version >= 508 || !exists("did_pod_syntax_inits")
   HiLink podFormat		Identifier
   HiLink podVerbatimLine	PreProc
   HiLink podSpecial		Identifier
+  HiLink podEscape		String
+  HiLink podEscape2		Number
 
   delcommand HiLink
 endif

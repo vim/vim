@@ -677,6 +677,7 @@ EXTERN int	enc_utf8 INIT(= FALSE);		/* UTF-8 encoded Unicode */
 /* Codepage nr of 'encoding'.  Negative means it's not been set yet, zero
  * means 'encoding' is not a valid codepage. */
 EXTERN int	enc_codepage INIT(= -1);
+EXTERN int	enc_latin9 INIT(= FALSE);	/* 'encoding' is latin9 */
 # endif
 EXTERN int	has_mbyte INIT(= 0);		/* any multi-byte encoding */
 

@@ -1,9 +1,11 @@
 " Vim indent file
 " Language:	Eiffel
-" Maintainer:	David Clarke <gadicath@dishevelled.net>
+" Maintainer:	Jocelyn Fiat <eiffel@djoce.net>
+" Previous-Maintainer:	David Clarke <gadicath@dishevelled.net>
 " $Date$
 " $Revision$
-" URL: http://gadicath.webhop.net/other/eiffel.vim
+" URL: http://www.djoce.net/page/vim/
+" Last Change:	2004 Sep 14
 
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")
@@ -20,8 +22,6 @@ setlocal comments=:--
 setlocal indentkeys+==end,=else,=ensure,=require,=check,=loop,=until
 setlocal indentkeys+==creation,=feature,=inherit,=class,=is,=redefine,=rename,=variant
 setlocal indentkeys+==invariant,=do,=local,=export
-setlocal sw=3
-setlocal tw=78
 
 " Define some stuff
 " keywords grouped by indenting
@@ -96,7 +96,7 @@ function GetEiffelIndent()
 
   " set indent of zero end statements that are at an indent of 3, this should
   " only ever be the class's end.
-  if getline(v:lnum) =~ '^\s*end\>' && ind == 3
+  if getline(v:lnum) =~ '^\s*end\>' && ind == &sw
     let ind = 0
   endif
 

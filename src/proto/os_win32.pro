@@ -45,4 +45,9 @@ int mch_open __ARGS((char *name, int flags, int mode));
 FILE *mch_fopen __ARGS((char *name, char *mode));
 int mch_copy_file_attribute __ARGS((char_u *from, char_u *to));
 int myresetstkoflw __ARGS((void));
+int get_cmd_argsW __ARGS((char ***argvp));
+void free_cmd_argsW __ARGS((void));
+void used_file_arg __ARGS((char *name, int literal, int full_path));
+void set_alist_count __ARGS((void));
+void fix_arg_enc __ARGS((void));
 /* vim: set ft=c : */

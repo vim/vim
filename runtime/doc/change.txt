@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.0aa.  Last change: 2004 Jun 16
+*change.txt*    For Vim version 7.0aa.  Last change: 2004 Sep 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -659,7 +659,7 @@ magic	nomagic	  action    ~
       \0	  replaced with the whole matched pattern	   *\0* *s/\0*
       \1	  replaced with the matched pattern in the first
 		  pair of ()					     *s/\1*
-      \2	  replaced with the matched pattern in the first
+      \2	  replaced with the matched pattern in the second
 		  pair of ()					     *s/\2*
       ..	  ..						     *s/\3*
       \9	  replaced with the matched pattern in the ninth

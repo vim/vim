@@ -2,7 +2,7 @@
 " Language:	samba configuration files (smb.conf)
 " Maintainer:	Rafael Garcia-Suarez <rgarciasuarez@free.fr>
 " URL:		http://rgarciasuarez.free.fr/vim/syntax/samba.vim
-" Last change:	2002 May 06
+" Last change:	2004 September 21
 
 " Don't forget to run your config file through testparm(1)!
 
@@ -17,8 +17,8 @@ endif
 syn case ignore
 
 syn match sambaParameter /^[a-zA-Z \t]\+=/ contains=sambaKeyword
-syn match sambaSection /^\s*\[[a-zA-Z0-9_\-. ]\+\]/
-syn match sambaMacro /%[SPugUGHvhmLMNpRdaIT]/
+syn match sambaSection /^\s*\[[a-zA-Z0-9_\-.$ ]\+\]/
+syn match sambaMacro /%[SPugUGHvhmLMNpRdaITD]/
 syn match sambaMacro /%$([a-zA-Z0-9_]\+)/
 syn match sambaComment /^\s*[;#].*/
 syn match sambaContinue /\\$/
@@ -91,6 +91,18 @@ syn keyword sambaKeyword contained unreadable
 syn keyword sambaKeyword contained acls allocate bytes count csc devmode
 syn keyword sambaKeyword contained disable dn egd entropy enum extensions mmap
 syn keyword sambaKeyword contained policy spin spoolss
+
+" Since Samba 3.0.2
+syn keyword sambaKeyword contained abort afs algorithmic backend
+syn keyword sambaKeyword contained charset cups defer display
+syn keyword sambaKeyword contained enable idmap kerberos lookups
+syn keyword sambaKeyword contained methods modules nested NIS ntlm NTLMv2
+syn keyword sambaKeyword contained objects paranoid partners passdb
+syn keyword sambaKeyword contained plaintext prefix primary private
+syn keyword sambaKeyword contained profile quota realm replication
+syn keyword sambaKeyword contained reported rid schannel sendfile sharing
+syn keyword sambaKeyword contained shutdown signing special spnego
+syn keyword sambaKeyword contained store unknown unwriteable
 
 " Define the default highlighting.
 " For version 5.7 and earlier: only when not done already

@@ -2,7 +2,7 @@
 " You can also use this as a start for your own set of menus.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2004 May 26
+" Last Change:	2004 Sep 16
 
 " Note that ":an" (short for ":anoremenu") is often used to make a menu work
 " in all modes and avoid side effects from mappings defined by the user.
@@ -382,7 +382,7 @@ if has("keymap")
   endif
   unlet s:n
 endif
-if has("win32") || has("win16") || has("gui_gtk") || has("gui_kde") || has("gui_photon")
+if has("win32") || has("win16") || has("gui_gtk") || has("gui_kde") || has("gui_photon") || has("gui_mac")
   an 20.470 &Edit.Select\ Fo&nt\.\.\.	:set guifont=*<CR>
 endif
 

@@ -194,7 +194,6 @@ if exists("b:is_mzscheme") || exists("is_mzscheme")
     syn keyword schemeExtSyntax error raise opt-lambda define-values unit unit/sig define-signature 
     syn keyword schemeExtSyntax invoke-unit/sig define-values/invoke-unit/sig compound-unit/sig import export
     syn keyword schemeExtSyntax link syntax quasisyntax unsyntax with-syntax
-    hi def link schemeExtSyntax Type
 
     syn keyword schemeExtFunc format system-type current-extension-compiler current-extension-linker
     syn keyword schemeExtFunc use-standard-linker use-standard-compiler
@@ -217,7 +216,6 @@ if exists("b:is_mzscheme") || exists("is_mzscheme")
     syn keyword schemeExtFunc exn:special-comment? exn:syntax? exn:thread? exn:user? exn:variable? exn:application:mismatch?
     " Command-line parsing
     syn keyword schemeExtFunc command-line current-command-line-arguments once-any help-labels multi once-each 
-    hi def link schemeExtFunc PreProc
 
     " syntax quoting, unquoting and quasiquotation
     syn region schemeUnquote matchgroup=Delimiter start="#," end=![ \t\[\]()";]!me=e-1 contains=ALL
@@ -228,6 +226,37 @@ if exists("b:is_mzscheme") || exists("is_mzscheme")
     syn region schemeUnquote matchgroup=Delimiter start="#,@\[" end="\]" contains=ALL
     syn region schemeQuoted matchgroup=Delimiter start="#['`]" end=![ \t()\[\]";]!me=e-1 contains=ALL
     syn region schemeQuoted matchgroup=Delimiter start="#['`](" matchgroup=Delimiter end=")" contains=ALL
+endif
+
+
+if exists("b:is_chicken") || exists("is_chicken")
+    syn match schemeOther oneline    "##[-a-z!$%&*/:<=>?^_~0-9+.@#%]\+"
+    syn match schemeExtSyntax oneline    "#:[-a-z!$%&*/:<=>?^_~0-9+.@#%]\+"
+
+    syn keyword schemeExtSyntax unit uses declare hide foreign-declare foreign-parse foreign-parse/spec
+    syn keyword schemeExtSyntax foreign-lambda foreign-lambda* 
+    syn keyword schemeExtSyntax let-optionals let-optionals* define-foreign-variable
+    syn keyword schemeExtFunc ##core#inline ##sys#error ##sys#update-errno
+
+    " here-string
+    syn region schemeString start=+#<<\s*\z(.*\)+ end=+^\z1$+
+ 
+    if filereadable(expand("<sfile>:p:h")."/cpp.vim")
+	unlet! b:current_syntax
+	syn include @ChickenC <sfile>:p:h/cpp.vim
+	syn region ChickenC matchgroup=schemeOther start=+(\@<=foreign-declare "+ end=+")\@=+ contains=@ChickenC
+	syn region ChickenC matchgroup=schemeComment start=+foreign-declare\s*#<<\z(.*\)$+hs=s+15 end=+^\z1$+ contains=@ChickenC
+	syn region ChickenC matchgroup=schemeOther start=+(\@<=foreign-parse "+ end=+")\@=+ contains=@ChickenC
+	syn region ChickenC matchgroup=schemeComment start=+foreign-parse\s*#<<\z(.*\)$+hs=s+13 end=+^\z1$+ contains=@ChickenC
+	syn region ChickenC matchgroup=schemeOther start=+(\@<=foreign-parse/spec "+ end=+")\@=+ contains=@ChickenC
+	syn region ChickenC matchgroup=schemeComment start=+foreign-parse/spec\s*#<<\z(.*\)$+hs=s+18 end=+^\z1$+ contains=@ChickenC
+	syn region ChickenC matchgroup=schemeComment start=+#>+ end=+<#+ contains=@ChickenC
+	syn region ChickenC matchgroup=schemeComment start=+#>?+ end=+<#+ contains=@ChickenC
+	syn region ChickenC matchgroup=schemeComment start=+#>!+ end=+<#+ contains=@ChickenC
+	syn region ChickenC matchgroup=schemeComment start=+#>\$+ end=+<#+ contains=@ChickenC
+	syn region ChickenC matchgroup=schemeComment start=+#>%+ end=+<#+ contains=@ChickenC
+    endif
+
 endif
 
 " Synchronization and the wrapping up...
@@ -255,12 +284,14 @@ if version >= 508 || !exists("did_scheme_syntax_inits")
   HiLink schemeBoolean		Boolean
 
   HiLink schemeDelimiter	Delimiter
-  HiLink schemeConstant	Constant
+  HiLink schemeConstant		Constant
 
   HiLink schemeComment		Comment
   HiLink schemeMultilineComment	Comment
   HiLink schemeError		Error
 
+  HiLink schemeExtSyntax	Type
+  HiLink schemeExtFunc		PreProc
   delcommand HiLink
 endif
 

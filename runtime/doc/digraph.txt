@@ -1,4 +1,4 @@
-*digraph.txt*   For Vim version 7.0aa.  Last change: 2001 Sep 03
+*digraph.txt*   For Vim version 7.0aa.  Last change: 2004 Oct 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -28,7 +28,8 @@ An alternative is using the 'keymap' option.
 							*E104* *E39*
 :dig[raphs] {char1}{char2} {number} ...
 			Add digraph {char1}{char2} to the list.  {number} is
-			the decimal representation of the character.
+			the decimal representation of the character.  Normally
+			it is the Unicode character, see |digraph-encoding|.
 			Example: >
 	:digr e: 235 a: 228
 <			Avoid defining a digraph with '_' (underscore) as the
@@ -48,7 +49,24 @@ In the middle of each column is the resulting character.  This may be mangled
 if you look at it on a system that does not support digraphs or if you print
 this file.
 
-The decimal number is the number of the character.
+							*digraph-encoding*
+The decimal number normally is the Unicode number of the character.  Note that
+the meaning doesn't change when 'encoding' changes.  The character will be
+converted from Unicode to 'encoding' when needed.  This does require the
+conversion to be available, it might fail.
+
+When Vim was compiled without the +multi_byte feature, you need to specify the
+character in the encoding given with 'encoding'.  You might want to use
+something like this: >
+
+	if has("multi_byte")
+		digraph oe 339
+	elseif &encoding == "iso-8859-15"
+		digraph oe 189
+	endif
+
+This defines the "oe" digraph for a character that is number 339 in Unicode
+and 189 in latin9 (iso-8859-15).
 
 ==============================================================================
 2. Using digraphs					*digraphs-use*
@@ -142,6 +160,9 @@ Example: a: is ä  and o: is ö
 These are the RFC1345 digraphs for the one-byte characters.  See the output of
 ":digraphs" for the others.  The characters above 255 are only available when
 Vim was compiled with the |+multi_byte| feature.
+
+Exception: RFC1345 doesn't specify the euro sign.  In Vim the digraph =e was
+added for this.
 							*digraph-table*
 char  digraph	hex	dec	official name ~
 ^@	NU	0x00	  0	NULL (NUL)

@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.0aa.  Last change: 2004 Sep 13
+*syntax.txt*	For Vim version 7.0aa.  Last change: 2004 Sep 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1799,7 +1799,7 @@ If you do not want complex things like '@{${"foo"}}' to be parsed: >
 
 	:let perl_no_extended_vars = 1
 
-{In Vim 6.x it was the other way around: "perl_extended_vars" enabled it.)
+(In Vim 6.x it was the other way around: "perl_extended_vars" enabled it.)
 
 The coloring strings can be changed. By default strings and qq friends will be
 highlighted like the first line. If you set the variable

@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2004 Sep 13
+*version7.txt*  For Vim version 7.0aa.  Last change: 2004 Oct 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -243,6 +243,12 @@ upper case.  Add color support to the builtin vt320 terminal codes.
 For the '%' item in 'viminfo', allow a number to set a maximum for the number
 of buffers.
 
+When a file looks like a shell script, check for an "exec" command that starts
+the tcl interpreter. (suggested by Alexios Zavras)
+
+Support conversion between utf-8 and latin9 (iso-8859-15) internally, so that
+digraphs still work when iconv is not available.
+
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*
 
@@ -372,5 +378,22 @@ default value of 'isprint' was wrong.
 When an error message is given while waiting for a character (e.g., when an
 xterm reports the number of colors), the hit-enter prompt overwrote the last
 line.  Don't reset msg_didout in normal_cmd() for K_IGNORE.
+
+Mac GUI: Shift-Tab didn't work.
+
+When defining tooltip text, don't translate terminal codes, since it's not
+going to be used like a command.
+
+GTK 2: Check the tooltip text for valid utf-8 characters to avoid getting a
+GTK error.  Invalid characters may appear when 'encoding' is changed.
+
+GTK 2: Add a safety check for invalid utf-8 sequences, they can crash pango.
+
+Win32: When 'encoding' is changed while starting up, use the Unicode command
+line to convert the file arguments to 'encoding'.  Both for the GUI and the
+console version.
+
+Win32 GUI: latin9 text (iso-8859-15) was not displayed correctly, because
+there is no codepage for latin9.  Do our own conversion from latin9 to UCS2.
 
  vim:tw=78:ts=8:ft=help:norl:

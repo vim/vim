@@ -854,16 +854,18 @@ typedef struct
 
 #define CONV_NONE		0
 #define CONV_TO_UTF8		1
-#define CONV_TO_LATIN1		2
-#define CONV_ICONV		3
+#define CONV_9_TO_UTF8		2
+#define CONV_TO_LATIN1		3
+#define CONV_TO_LATIN9		4
+#define CONV_ICONV		5
 #ifdef WIN3264
-# define CONV_CODEPAGE		4	/* codepage -> codepage */
+# define CONV_CODEPAGE		10	/* codepage -> codepage */
 #endif
 #ifdef MACOS_X
-# define CONV_MAC_LATIN1	5
-# define CONV_LATIN1_MAC	6
-# define CONV_MAC_UTF8		7
-# define CONV_UTF8_MAC		8
+# define CONV_MAC_LATIN1	20
+# define CONV_LATIN1_MAC	21
+# define CONV_MAC_UTF8		22
+# define CONV_UTF8_MAC		23
 #endif
 
 /*

@@ -1124,6 +1124,7 @@ qf_jump(dir, errornr, forceit)
 # endif
 	    if (win_split(0, n) == FAIL)
 		goto theend;
+	    opened_window = TRUE;	/* close it when fail */
 
 	    if (curwin->w_height < p_hh)
 		win_setheight((int)p_hh);
@@ -1137,7 +1138,7 @@ qf_jump(dir, errornr, forceit)
      * If currently in the quickfix window, find another window to show the
      * file in.
      */
-    if (bt_quickfix(curbuf))
+    if (bt_quickfix(curbuf) && !opened_window)
     {
 	/*
 	 * If there is no file specified, we don't know where to go.

@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.0aa.  Last change: 2004 Aug 30
+*autocmd.txt*   For Vim version 7.0aa.  Last change: 2004 Sep 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -234,22 +234,26 @@ BufWriteCmd			Before writing the whole buffer to a file.
 				should not be changed.  |Cmd-event|
 							*FileWritePre*
 FileWritePre			Before writing to a file, when not writing the
-				whole buffer.
+				whole buffer.  Use the '[ and '] marks for the
+				range of lines.
 							*FileWritePost*
 FileWritePost			After writing to a file, when not writing the
 				whole buffer.
 							*FileWriteCmd*
 FileWriteCmd			Before writing to a file, when not writing the
 				whole buffer.  Should do the writing to the
-				file.  Should not change the buffer.
+				file.  Should not change the buffer.  Use the
+				'[ and '] marks for the range of lines.
 				|Cmd-event|
 							*FileAppendPre*
-FileAppendPre			Before appending to a file.
+FileAppendPre			Before appending to a file.  Use the '[ and ']
+				marks for the range of lines.
 							*FileAppendPost*
 FileAppendPost			After appending to a file.
 							*FileAppendCmd*
 FileAppendCmd			Before appending to a file.  Should do the
-				appending to the file. |Cmd-event|
+				appending to the file.  Use the '[ and ']
+				marks for the range of lines.|Cmd-event|
 							*FilterWritePre*
 FilterWritePre			Before writing a file for a filter command or
 				making a diff.
@@ -738,8 +742,9 @@ The '[ and '] marks have a special position:
   the new lines will be inserted.
 - Before the *ReadPost event the '[ mark is set to the first line that was
   just read, the '] mark to the last line.
-- Before executing the *WritePre and *AppendPre autocommands the '[ mark is
-  set to the first line that will be written, the '] mark to the last line.
+- Before executing the *WriteCmd, *WritePre and *AppendPre autocommands the '[
+  mark is set to the first line that will be written, the '] mark to the last
+  line.
 Careful: '[ and '] change when using commands that change the buffer.
 
 In commands which expect a file name, you can use "<afile>" for the file name

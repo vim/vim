@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2004 Sep 04
+*options.txt*	For Vim version 7.0aa.  Last change: 2004 Oct 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -953,6 +953,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 	accidentally overwriting existing files with a backup file.  You might
 	prefer using ".bak", but make sure that you don't have files with
 	".bak" that you want to keep.
+
+	If you like to keep a lot of backups, you could use a BufWritePre
+	autocommand to change 'backupext' just before writing the file to
+	include a timestamp. >
+		:au BufWritePre * let &bex = '-' . strftime("%Y%b%d%X") . '~'
+<	Use 'backupdir' to put the backup in a different directory.
 
 						*'backupskip'* *'bsk'*
 'backupskip' 'bsk'	string	(default: "/tmp/*,$TMPDIR/*,$TMP/*,$TEMP/*")

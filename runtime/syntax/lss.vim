@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Lynx 2.7.1 style file
-" Maintainer:	Scott Bigham <dsb@cs.duke.edu>
-" Last Change:	2001 May 09
+" Maintainer:	Scott Bigham <dsb@killerbunnies.org>
+" Last Change:	2004 Oct 06
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
