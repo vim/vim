@@ -194,6 +194,7 @@ extern char_u *vimpty_getenv __ARGS((const char_u *string));	/* from pty.c */
 #  endif
 #  ifdef FEAT_GUI_MOTIF
 #   include "gui_motif.pro"
+#   include "gui_xmdlg.pro"
 #  endif
 #  ifdef FEAT_GUI_ATHENA
 #   include "gui_athena.pro"

@@ -107,9 +107,9 @@ coladvance(wcol)
 
     if (wcol == MAXCOL || rc == FAIL)
 	curwin->w_valid &= ~VALID_VIRTCOL;
-    else
+    else if (*ml_get_cursor() != TAB)
     {
-	/* Virtcol is valid */
+	/* Virtcol is valid when not on a TAB */
 	curwin->w_valid |= VALID_VIRTCOL;
 	curwin->w_virtcol = wcol;
     }

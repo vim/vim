@@ -1238,6 +1238,7 @@ gui_mch_get_font(char_u *name, int giveErrorIfMissing)
     return NULL;
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Return the name of font "font" in allocated memory.
  * We always use the default font.
@@ -1247,6 +1248,7 @@ gui_mch_get_fontname(GuiFont font, char_u *name)
 {
     return vim_strsave((char_u *)"default");
 }
+#endif
 
     void
 gui_mch_set_font(GuiFont font)

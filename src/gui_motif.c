@@ -93,9 +93,6 @@ static void attachDump(Widget, char *);
 
 static void gui_motif_menu_colors __ARGS((Widget id));
 static void gui_motif_scroll_colors __ARGS((Widget id));
-#ifdef FEAT_MENU
-static void gui_motif_menu_fontlist __ARGS((Widget id));
-#endif
 
 #if (XmVersion >= 1002)
 # define STRING_TAG  XmFONTLIST_DEFAULT_TAG
@@ -125,10 +122,104 @@ scroll_cb(w, client_data, call_data)
     gui_drag_scrollbar(sb, value, dragging);
 }
 
-
 /*
  * End of call-back routines
  */
+
+#ifndef LESSTIF_VERSION
+/*
+ * Implement three dimensional shading of insensitive labels.
+ * By Martin Dalecki.
+ */
+
+#include <Xm/XmP.h>
+#include <Xm/LabelP.h>
+
+static XtExposeProc old_label_expose = NULL;
+
+static void label_expose __ARGS((Widget _w, XEvent *_event, Region _region));
+
+    static void
+label_expose(_w, _event, _region)
+    Widget	_w;
+    XEvent	*_event;
+    Region	_region;
+{
+    GC		    insensitiveGC;
+    XmLabelWidget   lw = (XmLabelWidget)_w;
+    unsigned char   label_type = XmSTRING;
+
+    XtVaGetValues(_w, XmNlabelType, &label_type, (XtPointer)0);
+
+    if (XtIsSensitive(_w) || label_type != XmSTRING)
+	(*old_label_expose)(_w, _event, _region);
+    else
+    {
+	XGCValues   values;
+	XtGCMask    mask;
+	XtGCMask    dynamic;
+	XFontStruct *fs;
+
+	_XmFontListGetDefaultFont(lw->label.font, &fs);
+
+	/* FIXME: we should be doing the whole drawing ourself here. */
+	insensitiveGC = lw->label.insensitive_GC;
+
+	mask = GCForeground | GCBackground | GCGraphicsExposures;
+	dynamic = GCClipMask | GCClipXOrigin | GCClipYOrigin;
+	values.graphics_exposures = False;
+
+	if (fs != 0)
+	{
+	    mask |= GCFont;
+	    values.font = fs->fid;
+	}
+
+	if (lw->primitive.top_shadow_pixmap != None
+		&& lw->primitive.top_shadow_pixmap != XmUNSPECIFIED_PIXMAP)
+	{
+	    mask |= GCFillStyle | GCTile;
+	    values.fill_style = FillTiled;
+	    values.tile = lw->primitive.top_shadow_pixmap;
+	}
+
+	lw->label.TextRect.x += 1;
+	lw->label.TextRect.y += 1;
+	if (lw->label._acc_text != 0)
+	{
+	    lw->label.acc_TextRect.x += 1;
+	    lw->label.acc_TextRect.y += 1;
+	}
+
+	values.foreground = lw->primitive.top_shadow_color;
+	values.background = lw->core.background_pixel;
+
+	lw->label.insensitive_GC =
+		      XtAllocateGC((Widget) lw, 0, mask, &values, dynamic, 0);
+	(*old_label_expose)(_w, _event, _region);
+	XtReleaseGC(_w, lw->label.insensitive_GC);
+
+	lw->label.TextRect.x -= 1;
+	lw->label.TextRect.y -= 1;
+	if (lw->label._acc_text != 0)
+	{
+	    lw->label.acc_TextRect.x -= 1;
+	    lw->label.acc_TextRect.y -= 1;
+	}
+
+	values.foreground = lw->primitive.bottom_shadow_color;
+	values.background = lw->core.background_pixel;
+
+	lw->label.insensitive_GC =
+		      XtAllocateGC((Widget) lw, 0, mask, &values, dynamic, 0);
+	(*old_label_expose)(_w, _event, _region);
+	XtReleaseGC(_w, lw->label.insensitive_GC);
+
+	lw->label.insensitive_GC = insensitiveGC;
+    }
+}
+#endif
+
 
 /*
  * Create all the motif widgets necessary.
@@ -136,6 +227,17 @@ scroll_cb(w, client_data, call_data)
     void
 gui_x11_create_widgets()
 {
+#ifndef LESSTIF_VERSION
+    /*
+     * Install the 3D shade effect drawing routines.
+     */
+    if (old_label_expose == NULL)
+    {
+	old_label_expose = xmLabelWidgetClass->core_class.expose;
+	xmLabelWidgetClass->core_class.expose = label_expose;
+    }
+#endif
+
     /*
      * Start out by adding the configured border width into the border offset
      */
@@ -329,9 +431,7 @@ gui_x11_set_back_color()
  * Manage dialog centered on pointer. This could be used by the Athena code as
  * well.
  */
-static void manage_centered __ARGS((Widget dialog_child));
-
-static void
+    void
 manage_centered(dialog_child)
     Widget dialog_child;
 {
@@ -855,16 +955,15 @@ gui_mch_add_menu_item(menu, idx)
 	    xms = XmStringCreate((char *)menu->dname, STRING_TAG);
 	    XtSetArg(args[n], XmNlabelString, xms); n++;
 
-#ifndef FEAT_SUN_WORKSHOP
-
 	    /* Without shadows one can't sense whatever the button has been
 	     * pressed or not! However we wan't to save a bit of space...
+	     * Need the highlightThickness to see the focus.
 	     */
-	    XtSetArg(args[n], XmNhighlightThickness, 0); n++;
+	    XtSetArg(args[n], XmNhighlightThickness, 1); n++;
 	    XtSetArg(args[n], XmNhighlightOnEnter, True); n++;
 	    XtSetArg(args[n], XmNmarginWidth, 0); n++;
 	    XtSetArg(args[n], XmNmarginHeight, 0); n++;
-#endif
+
 	    if (menu->image == 0)
 	    {
 		XtSetArg(args[n], XmNlabelType, XmSTRING); n++;
@@ -1384,7 +1483,6 @@ gui_mch_create_scrollbar(sb, orient)
     int		n;
 
     n = 0;
-    XtSetArg(args[n], XmNshadowThickness, 1); n++;
     XtSetArg(args[n], XmNminimum, 0); n++;
     XtSetArg(args[n], XmNorientation,
 	    (orient == SBAR_VERT) ? XmVERTICAL : XmHORIZONTAL); n++;
@@ -1484,6 +1582,219 @@ gui_x11_get_wid()
     return(XtWindow(textArea));
 }
 
+/*
+ * Look for a widget in the widget tree w, with a mnemonic matching keycode.
+ * When one is found, simulate a button press on that widget and give it the
+ * keyboard focus.  If the mnemonic is on a label, look in the userData field
+ * of the label to see if it points to another widget, and give that the focus.
+ */
+    static void
+do_mnemonic(Widget w, unsigned int keycode)
+{
+    WidgetList	    children;
+    int		    numChildren, i;
+    Boolean	    isMenu;
+    KeySym	    mnemonic = '\0';
+    char	    mneString[2];
+    Widget	    userData;
+    unsigned char   rowColType;
+
+    if (XtIsComposite(w))
+    {
+	if (XtClass(w) == xmRowColumnWidgetClass)
+	{
+	    XtVaGetValues(w, XmNrowColumnType, &rowColType, 0);
+	    isMenu = (rowColType != (unsigned char)XmWORK_AREA);
+	}
+	else
+	    isMenu = False;
+	if (!isMenu)
+	{
+	    XtVaGetValues(w, XmNchildren, &children, XmNnumChildren,
+			  &numChildren, 0);
+	    for (i = 0; i < numChildren; i++)
+		do_mnemonic(children[i], keycode);
+	}
+    }
+    else
+    {
+	XtVaGetValues(w, XmNmnemonic, &mnemonic, 0);
+	if (mnemonic != '\0')
+	{
+	    mneString[0] = mnemonic;
+	    mneString[1] = '\0';
+	    if (XKeysymToKeycode(XtDisplay(XtParent(w)),
+				       XStringToKeysym(mneString)) == keycode)
+	    {
+		if (XtClass(w) == xmLabelWidgetClass
+			|| XtClass(w) == xmLabelGadgetClass)
+		{
+		    XtVaGetValues(w, XmNuserData, &userData, 0);
+		    if (userData != NULL && XtIsWidget(userData))
+			XmProcessTraversal(userData, XmTRAVERSE_CURRENT);
+		}
+		else
+		{
+		    XKeyPressedEvent keyEvent;
+
+		    XmProcessTraversal(w, XmTRAVERSE_CURRENT);
+
+		    memset((char *) &keyEvent, 0, sizeof(XKeyPressedEvent));
+		    keyEvent.type = KeyPress;
+		    keyEvent.serial = 1;
+		    keyEvent.send_event = True;
+		    keyEvent.display = XtDisplay(w);
+		    keyEvent.window = XtWindow(w);
+		    XtCallActionProc(w, "Activate", (XEvent *) & keyEvent,
+								     NULL, 0);
+		}
+	    }
+	}
+    }
+}
+
+/*
+ * Callback routine for dialog mnemonic processing.
+ */
+/*ARGSUSED*/
+    static void
+mnemonic_event(Widget w, XtPointer call_data, XKeyEvent *event)
+{
+    do_mnemonic(w, event->keycode);
+}
+
+
+/*
+ * Search the widget tree under w for widgets with mnemonics.  When found, add
+ * a passive grab to the dialog widget for the mnemonic character, thus
+ * directing mnemonic events to the dialog widget.
+ */
+    static void
+add_mnemonic_grabs(Widget dialog, Widget w)
+{
+    char	    mneString[2];
+    WidgetList	    children;
+    int		    numChildren, i;
+    Boolean	    isMenu;
+    KeySym	    mnemonic = '\0';
+    unsigned char   rowColType;
+
+    if (XtIsComposite(w))
+    {
+	if (XtClass(w) == xmRowColumnWidgetClass)
+	{
+	    XtVaGetValues(w, XmNrowColumnType, &rowColType, 0);
+	    isMenu = (rowColType != (unsigned char)XmWORK_AREA);
+	}
+	else
+	    isMenu = False;
+	if (!isMenu)
+	{
+	    XtVaGetValues(w, XmNchildren, &children, XmNnumChildren,
+							     &numChildren, 0);
+	    for (i = 0; i < numChildren; i++)
+		add_mnemonic_grabs(dialog, children[i]);
+	}
+    }
+    else
+    {
+	XtVaGetValues(w, XmNmnemonic, &mnemonic, 0);
+	if (mnemonic != '\0')
+	{
+	    mneString[0] = mnemonic;
+	    mneString[1] = '\0';
+	    XtGrabKey(dialog, XKeysymToKeycode(XtDisplay(dialog),
+						  XStringToKeysym(mneString)),
+		    Mod1Mask, True, GrabModeAsync, GrabModeAsync);
+	}
+    }
+}
+
+/*
+ * Add a handler for mnemonics in a dialog.  Motif itself only handles
+ * mnemonics in menus. Mnemonics added or changed after this call will be
+ * ignored.
+ *
+ * To add a mnemonic to a text field or list, set the XmNmnemonic resource on
+ * the appropriate label and set the XmNuserData resource of the label to the
+ * widget to get the focus when the mnemonic is typed.
+ */
+    static void
+activate_dialog_mnemonics(Widget dialog)
+{
+    if (!dialog)
+	return;
+
+    XtAddEventHandler(dialog, KeyPressMask, False,
+			   (XtEventHandler) mnemonic_event, (XtPointer) NULL);
+    add_mnemonic_grabs(dialog, dialog);
+}
+
+/*
+ * Removes the event handler and key-grabs for dialog mnemonic handling.
+ */
+    static void
+suppress_dialog_mnemonics(Widget dialog)
+{
+    if (!dialog)
+	return;
+
+    XtUngrabKey(dialog, AnyKey, Mod1Mask);
+    XtRemoveEventHandler(dialog, KeyPressMask, False,
+			   (XtEventHandler) mnemonic_event, (XtPointer) NULL);
+}
+
+#if defined(FEAT_BROWSE) || defined(FEAT_GUI_DIALOG)
+static void set_fontlist __ARGS((Widget wg));
+
+/*
+ * Use the 'guifont' or 'guifontset' as a fontlist for a dialog widget.
+ */
+    static void
+set_fontlist(id)
+    Widget id;
+{
+    XmFontList fl;
+
+#ifdef FONTSET_ALWAYS
+    if (gui.fontset != NOFONTSET) {
+	fl = gui_motif_fontset2fontlist((XFontSet *)&gui.fontset);
+	if (fl != NULL)
+	{
+	    if (XtIsManaged(id))
+	    {
+		XtUnmanageChild(id);
+		XtVaSetValues(id, XmNfontList, fl, NULL);
+		/* We should force the widget to recalculate it's
+		 * geometry now. */
+		XtManageChild(id);
+	    }
+	    else
+		XtVaSetValues(id, XmNfontList, fl, NULL);
+	    XmFontListFree(fl);
+	}
+    }
+#else
+    if (gui.norm_font != NOFONT) {
+	fl = gui_motif_create_fontlist((XFontStruct *)gui.norm_font);
+	if (fl != NULL)
+	{
+	    if (XtIsManaged(id))
+	    {
+		XtUnmanageChild(id);
+		XtVaSetValues(id, XmNfontList, fl, NULL);
+		/* We should force the widget to recalculate it's
+		 * geometry now. */
+		XtManageChild(id);
+	    }
+	    else
+		XtVaSetValues(id, XmNfontList, fl, NULL);
+	    XmFontListFree(fl);
+	}
+    }
+#endif
+}
+#endif
 
 #if defined(FEAT_BROWSE) || defined(PROTO)
 
@@ -1517,29 +1828,67 @@ static void DialogAcceptCB __ARGS((Widget, XtPointer, XtPointer));
  * - equalize the messages between different GUI implementations as far as
  * possible.
  */
-static void set_predefined_label __ARGS((Widget parent, String name, char * new_label));
+static void set_predefined_label __ARGS((Widget parent, String name, char *new_label));
 
 static void
 set_predefined_label(parent, name, new_label)
-    Widget parent;
-    String name;
-    char * new_label;
+    Widget  parent;
+    String  name;
+    char    *new_label;
 {
-    XmString str;
-    Widget w;
+    XmString	str;
+    Widget	w;
+    char_u	*p, *next;
+    KeySym	mnemonic = NUL;
 
     w = XtNameToWidget(parent, name);
 
     if (!w)
 	return;
 
-    str = XmStringCreate(new_label, STRING_TAG);
-
-    if (str)
+    p = vim_strsave((char_u *)new_label);
+    if (p == NULL)
+	return;
+    for (next = p; *next; ++next)
     {
-	XtVaSetValues(w, XmNlabelString, str, NULL);
+	if (*next == DLG_HOTKEY_CHAR)
+	{
+	    int len = STRLEN(next);
+
+	    if (len > 0)
+	    {
+		mch_memmove(next, next + 1, len);
+		mnemonic = next[0];
+	    }
+	}
+    }
+
+    str = XmStringCreate((char *)p, STRING_TAG);
+    vim_free(p);
+
+    if (str != NULL)
+    {
+	XtVaSetValues(w,
+		XmNlabelString, str,
+		XmNmnemonic, mnemonic,
+		NULL);
 	XmStringFree(str);
     }
+    gui_motif_menu_fontlist(w);
+}
+
+static void
+set_predefined_fontlist(parent, name)
+    Widget parent;
+    String name;
+{
+    Widget w;
+    w = XtNameToWidget(parent, name);
+
+    if (!w)
+	return;
+
+    set_fontlist(w);
 }
 
 /*
@@ -1561,7 +1910,12 @@ gui_mch_browse(saving, title, dflt, ext, initdir, filter)
     char_u	*pattern;
     char_u	*tofree = NULL;
 
-    dialog_wgt = XmCreateFileSelectionDialog(vimShell, (char *)title, NULL, 0);
+    /* There a difference between the resource name and value, Therefore, we
+     * avoid to (ab-)use the (maybe internationalized!) dialog title as a
+     * dialog name.
+     */
+
+    dialog_wgt = XmCreateFileSelectionDialog(vimShell, "browseDialog", NULL, 0);
 
     if (initdir == NULL || *initdir == NUL)
     {
@@ -1614,14 +1968,20 @@ gui_mch_browse(saving, title, dflt, ext, initdir, filter)
 	    XmNdialogTitle, XmRString, (char *)title, STRLEN(title) + 1,
 	NULL);
 
-    set_predefined_label(dialog_wgt, "Apply", _("Filter"));
-    set_predefined_label(dialog_wgt, "Cancel", _("Cancel"));
+    set_predefined_label(dialog_wgt, "Apply", _("&Filter"));
+    set_predefined_label(dialog_wgt, "Cancel", _("&Cancel"));
     set_predefined_label(dialog_wgt, "Dir", _("Directories"));
     set_predefined_label(dialog_wgt, "FilterLabel", _("Filter"));
-    set_predefined_label(dialog_wgt, "Help", _("Help"));
+    set_predefined_label(dialog_wgt, "Help", _("&Help"));
     set_predefined_label(dialog_wgt, "Items", _("Files"));
-    set_predefined_label(dialog_wgt, "OK", _("OK"));
+    set_predefined_label(dialog_wgt, "OK", _("&OK"));
     set_predefined_label(dialog_wgt, "Selection", _("Selection"));
+
+    /* This is to save us from silly external settings using not fixed with
+     * fonts for file selection.
+     */
+    set_predefined_fontlist(dialog_wgt, "DirListSW.DirList");
+    set_predefined_fontlist(dialog_wgt, "ItemsListSW.ItemsList");
 
     gui_motif_menu_colors(dialog_wgt);
     if (gui.scroll_bg_pixel != INVALCOLOR)
@@ -1634,6 +1994,7 @@ gui_mch_browse(saving, title, dflt, ext, initdir, filter)
 					(unsigned char)XmDIALOG_HELP_BUTTON));
 
     manage_centered(dialog_wgt);
+    activate_dialog_mnemonics(dialog_wgt);
 
     /* sit in a loop until the dialog box has gone away */
     do
@@ -1642,6 +2003,7 @@ gui_mch_browse(saving, title, dflt, ext, initdir, filter)
 	    (XtInputMask)XtIMAll);
     } while (XtIsManaged(dialog_wgt));
 
+    suppress_dialog_mnemonics(dialog_wgt);
     XtDestroyWidget(dialog_wgt);
     vim_free(tofree);
 
@@ -1746,31 +2108,6 @@ butproc(w, client_data, call_data)
     dialogStatus = (int)(long)client_data + 1;
 }
 
-static void gui_motif_set_fontlist __ARGS((Widget wg));
-
-/*
- * Use the 'guifont' or 'guifontset' as a fontlist for a dialog widget.
- */
-    static void
-gui_motif_set_fontlist(wg)
-    Widget wg;
-{
-    XmFontList fl;
-
-    fl =
-#ifdef FEAT_XFONTSET
-	    gui.fontset != NOFONTSET ?
-		    gui_motif_fontset2fontlist((XFontSet *)&gui.fontset)
-				     :
-#endif
-		    gui_motif_create_fontlist((XFontStruct *)gui.norm_font);
-    if (fl != NULL)
-    {
-	XtVaSetValues(wg, XmNfontList, fl, NULL);
-	XmFontListFree(fl);
-    }
-}
-
 #ifdef HAVE_XPM
 
 static Widget create_pixmap_label(Widget parent, String name, char **data, ArgList args, Cardinal arg);
@@ -1853,6 +2190,7 @@ gui_mch_dialog(type, title, message, button_names, dfltbutton, textfield)
     XtAppContext	app;
     XmString		label;
     int			butcount;
+    Widget		w;
     Widget		dialogform = NULL;
     Widget		form = NULL;
     Widget		dialogtextfield = NULL;
@@ -1913,10 +2251,20 @@ gui_mch_dialog(type, title, message, button_names, dfltbutton, textfield)
     p = buts;
     for (butcount = 0; *p; ++butcount)
     {
+	KeySym mnemonic = NUL;
+
 	for (next = p; *next; ++next)
 	{
 	    if (*next == DLG_HOTKEY_CHAR)
-		mch_memmove(next, next + 1, STRLEN(next));
+	    {
+		int len = STRLEN(next);
+
+		if (len > 0)
+		{
+		    mch_memmove(next, next + 1, len);
+		    mnemonic = next[0];
+		}
+	    }
 	    if (*next == DLG_BUTTON_SEP)
 	    {
 		*next++ = NUL;
@@ -1930,12 +2278,14 @@ gui_mch_dialog(type, title, message, button_names, dfltbutton, textfield)
 	buttons[butcount] = XtVaCreateManagedWidget("button",
 		xmPushButtonWidgetClass, dialogform,
 		XmNlabelString, label,
+		XmNmnemonic, mnemonic,
 		XmNbottomAttachment, XmATTACH_FORM,
 		XmNbottomOffset, 4,
 		XmNshowAsDefault, butcount == dfltbutton - 1,
 		XmNdefaultButtonShadowThickness, 1,
 		NULL);
 	XmStringFree(label);
+	gui_motif_menu_fontlist(buttons[butcount]);
 
 	/* Layout properly. */
 
@@ -2041,7 +2391,7 @@ gui_mch_dialog(type, title, message, button_names, dfltbutton, textfield)
 		    XmNbottomAttachment, XmATTACH_FORM,
 		    NULL);
 
-	gui_motif_set_fontlist(dialogtextfield);
+	set_fontlist(dialogtextfield);
 	XmTextFieldSetString(dialogtextfield, (char *)textfield);
 	XtManageChild(dialogtextfield);
 	XtAddEventHandler(dialogtextfield, KeyPressMask, False,
@@ -2093,13 +2443,19 @@ gui_mch_dialog(type, title, message, button_names, dfltbutton, textfield)
     XtManageChild(dialogpixmap);
 #endif
 
-    /* Create the dialog message. */
-    label = XmStringLtoRCreate((char *)message, STRING_TAG);
+    /* Create the dialog message.
+     * Since LessTif is apparently having problems with the creation of
+     * properly localized string, we use LtoR here. The symptom is that the
+     * string sill not show properly in multiple lines as it does in native
+     * Motif.
+     */
+    label = XmStringCreateLtoR((char *)message, STRING_TAG);
     if (label == NULL)
 	return -1;
-    (void)XtVaCreateManagedWidget("dialogMessage",
+    w = XtVaCreateManagedWidget("dialogMessage",
 				xmLabelGadgetClass, form,
 				XmNlabelString, label,
+				XmNalignment, XmALIGNMENT_BEGINNING,
 				XmNtopAttachment, XmATTACH_FORM,
 				XmNtopOffset, 8,
 #ifdef HAVE_XPM
@@ -2115,6 +2471,7 @@ gui_mch_dialog(type, title, message, button_names, dfltbutton, textfield)
 				XmNbottomOffset, 8,
 				NULL);
     XmStringFree(label);
+    set_fontlist(w);
 
     if (textfield != NULL)
     {
@@ -2149,6 +2506,7 @@ gui_mch_dialog(type, title, message, button_names, dfltbutton, textfield)
 									NULL);
 
     manage_centered(dialogform);
+    activate_dialog_mnemonics(dialogform);
 
     if (textfield != NULL && *textfield != NUL)
     {
@@ -2185,6 +2543,7 @@ gui_mch_dialog(type, title, message, button_names, dfltbutton, textfield)
 	}
     }
 
+    suppress_dialog_mnemonics(dialogform);
     XtDestroyWidget(dialogform);
 
     return dialogStatus;
@@ -2246,8 +2605,11 @@ gui_mch_set_footer(s)
     XmString	xms;
 
     xms = XmStringCreate((char *)s, STRING_TAG);
-    XtVaSetValues(footer, XmNlabelString, xms, NULL);
-    XmStringFree(xms);
+    if (xms != NULL)
+    {
+	XtVaSetValues(footer, XmNlabelString, xms, NULL);
+	XmStringFree(xms);
+    }
 }
 
 #endif
@@ -2522,14 +2884,15 @@ gui_motif_scroll_colors(id)
 	XtVaSetValues(id, XmNforeground, gui.scroll_fg_pixel, NULL);
 }
 
-#ifdef FEAT_MENU
 /*
  * Set the fontlist for Widget "id" to use gui.menu_fontset or gui.menu_font.
  */
-    static void
+/*ARGSUSED*/
+    void
 gui_motif_menu_fontlist(id)
     Widget  id;
 {
+#ifdef FEAT_MENU
 #ifdef FONTSET_ALWAYS
     if (gui.menu_fontset != NOFONTSET)
     {
@@ -2573,9 +2936,9 @@ gui_motif_menu_fontlist(id)
 	}
     }
 #endif
+#endif
 }
 
-#endif
 
 /*
  * We don't create it twice for the sake of speed.
@@ -2617,8 +2980,10 @@ find_replace_destroy_callback(w, client_data, call_data)
 {
     SharedFindReplace *cd = (SharedFindReplace *)client_data;
 
-    if (cd != NULL)
+    if (cd != NULL) {
+       /* suppress_dialog_mnemonics(cd->dialog); */
 	cd->dialog = (Widget)0;
+    }
 }
 
 /*ARGSUSED*/
@@ -2719,6 +3084,48 @@ find_replace_keypress(w, frdp, event)
 }
 
     static void
+set_label(w, label)
+    Widget w;
+    char_u *label;
+{
+    XmString	str;
+    char_u	*p, *next;
+    KeySym	mnemonic = NUL;
+
+    if (!w)
+	return;
+
+    p = vim_strsave(label);
+    if (p == NULL)
+	return;
+    for (next = p; *next; ++next)
+    {
+	if (*next == DLG_HOTKEY_CHAR)
+	{
+	    int len = STRLEN(next);
+
+	    if (len > 0)
+	    {
+		mch_memmove(next, next + 1, len);
+		mnemonic = next[0];
+	    }
+	}
+    }
+
+    str = XmStringCreateSimple((char *)p);
+    vim_free(p);
+    if (str)
+    {
+	XtVaSetValues(w,
+		XmNlabelString, str,
+		XmNmnemonic, mnemonic,
+		NULL);
+	XmStringFree(str);
+    }
+    gui_motif_menu_fontlist(w);
+}
+
+    static void
 find_replace_dialog_create(arg, do_replace)
     char_u	*arg;
     int		do_replace;
@@ -2746,6 +3153,8 @@ find_replace_dialog_create(arg, do_replace)
     /* If the dialog already exists, just raise it. */
     if (frdp->dialog)
     {
+	gui_motif_synch_fonts();
+
 	/* If the window is already up, just pop it to the top */
 	if (XtIsManaged(frdp->dialog))
 	    XMapRaised(XtDisplay(frdp->dialog),
@@ -2789,16 +3198,14 @@ find_replace_dialog_create(arg, do_replace)
 	    XmNbottomOffset, 4,
 	    NULL);
 
-    str = XmStringCreateSimple(_("Find Next"));
     frdp->find = XtVaCreateManagedWidget("findButton",
 	    xmPushButtonWidgetClass, button_form,
-	    XmNlabelString, str,
 	    XmNsensitive, True,
 	    XmNtopAttachment, XmATTACH_FORM,
 	    XmNleftAttachment, XmATTACH_FORM,
 	    XmNrightAttachment, XmATTACH_FORM,
 	    NULL);
-    XmStringFree(str);
+    set_label(frdp->find, _("Find &Next"));
 
     XtAddCallback(frdp->find, XmNactivateCallback,
 	    find_replace_callback,
@@ -2806,57 +3213,50 @@ find_replace_dialog_create(arg, do_replace)
 
     if (do_replace)
     {
-	str = XmStringCreateSimple(_("Replace"));
 	frdp->replace = XtVaCreateManagedWidget("replaceButton",
 		xmPushButtonWidgetClass, button_form,
-		XmNlabelString, str,
 		XmNtopAttachment, XmATTACH_WIDGET,
 		XmNtopWidget, frdp->find,
 		XmNleftAttachment, XmATTACH_FORM,
 		XmNrightAttachment, XmATTACH_FORM,
 		NULL);
-	XmStringFree(str);
+	set_label(frdp->replace, _("&Replace"));
 	XtAddCallback(frdp->replace, XmNactivateCallback,
 		find_replace_callback, (XtPointer)FRD_REPLACE);
 
-	str = XmStringCreateSimple(_("Replace All"));
 	frdp->all = XtVaCreateManagedWidget("replaceAllButton",
 		xmPushButtonWidgetClass, button_form,
-		XmNlabelString, str,
 		XmNtopAttachment, XmATTACH_WIDGET,
 		XmNtopWidget, frdp->replace,
 		XmNleftAttachment, XmATTACH_FORM,
 		XmNrightAttachment, XmATTACH_FORM,
 		NULL);
-	XmStringFree(str);
+	set_label(frdp->all, _("Replace &All"));
 	XtAddCallback(frdp->all, XmNactivateCallback,
 		find_replace_callback, (XtPointer)FRD_REPLACEALL);
 
-	str = XmStringCreateSimple(_("Undo"));
 	frdp->undo = XtVaCreateManagedWidget("undoButton",
 		xmPushButtonWidgetClass, button_form,
-		XmNlabelString, str,
 		XmNtopAttachment, XmATTACH_WIDGET,
 		XmNtopWidget, frdp->all,
 		XmNleftAttachment, XmATTACH_FORM,
 		XmNrightAttachment, XmATTACH_FORM,
 		NULL);
-	XmStringFree(str);
+	set_label(frdp->undo, _("&Undo"));
 	XtAddCallback(frdp->undo, XmNactivateCallback,
 		find_replace_callback, (XtPointer)FRD_UNDO);
     }
 
-    str = XmStringCreateSimple(_("Cancel"));
     frdp->cancel = XtVaCreateManagedWidget("closeButton",
 	    xmPushButtonWidgetClass, button_form,
-	    XmNlabelString, str,
 	    XmNleftAttachment, XmATTACH_FORM,
 	    XmNrightAttachment, XmATTACH_FORM,
 	    XmNbottomAttachment, XmATTACH_FORM,
 	    NULL);
-    XmStringFree(str);
+    set_label(frdp->cancel, _("&Cancel"));
     XtAddCallback(frdp->cancel, XmNactivateCallback,
 	    find_replace_dismiss_callback, frdp);
+    gui_motif_menu_fontlist(frdp->cancel);
 
     XtManageChild(button_form);
 
@@ -2894,6 +3294,7 @@ find_replace_dialog_create(arg, do_replace)
 		XmNtopOffset, 4,
 		NULL);
 	XmStringFree(str);
+	gui_motif_menu_fontlist(label_what);
 
 	frdp->what = XtVaCreateManagedWidget("whatText",
 		xmTextFieldWidgetClass, input_form,
@@ -2928,6 +3329,7 @@ find_replace_dialog_create(arg, do_replace)
 		    XmNbottomAttachment, XmATTACH_FORM,
 		    NULL);
 	    XmStringFree(str);
+	    gui_motif_menu_fontlist(label_with);
 
 	    /*
 	     * Make the entry activation only change the input focus onto the
@@ -2975,6 +3377,7 @@ find_replace_dialog_create(arg, do_replace)
 
     {
 	Widget radio_box;
+	Widget w;
 
 	frame = XtVaCreateWidget("directionFrame",
 		xmFrameWidgetClass, frdp->dialog,
@@ -2988,13 +3391,14 @@ find_replace_dialog_create(arg, do_replace)
 		NULL);
 
 	str = XmStringCreateSimple(_("Direction"));
-	(void)XtVaCreateManagedWidget("directionFrameLabel",
+	w = XtVaCreateManagedWidget("directionFrameLabel",
 		xmLabelGadgetClass, frame,
 		XmNlabelString, str,
 		XmNchildHorizontalAlignment, XmALIGNMENT_BEGINNING,
 		XmNchildType, XmFRAME_TITLE_CHILD,
 		NULL);
 	XmStringFree(str);
+	gui_motif_menu_fontlist(w);
 
 	radio_box = XmCreateRadioBox(frame, "radioBox",
 		(ArgList)NULL, 0);
@@ -3006,6 +3410,7 @@ find_replace_dialog_create(arg, do_replace)
 		XmNset, False,
 		NULL);
 	XmStringFree(str);
+	gui_motif_menu_fontlist(frdp->up);
 
 	str = XmStringCreateSimple(_("Down"));
 	frdp->down = XtVaCreateManagedWidget("downRadioButton",
@@ -3014,6 +3419,7 @@ find_replace_dialog_create(arg, do_replace)
 		XmNset, True,
 		NULL);
 	XmStringFree(str);
+	gui_motif_menu_fontlist(frdp->down);
 
 	XtManageChild(radio_box);
 	XtManageChild(frame);
@@ -3057,6 +3463,8 @@ find_replace_dialog_create(arg, do_replace)
 	    XmNset, mcase,
 	    NULL);
     XmStringFree(str);
+    gui_motif_menu_fontlist(frdp->wword);
+    gui_motif_menu_fontlist(frdp->mcase);
 
     XtManageChild(toggle_form);
 
@@ -3064,7 +3472,10 @@ find_replace_dialog_create(arg, do_replace)
 	XmTextFieldSetString(frdp->what, (char *)entry_text);
     vim_free(entry_text);
 
-    XtManageChild(frdp->dialog);
+    gui_motif_synch_fonts();
+
+    manage_centered(frdp->dialog);
+    activate_dialog_mnemonics(frdp->dialog);
     XmProcessTraversal(frdp->what, XmTRAVERSE_CURRENT);
 }
 
@@ -3087,4 +3498,41 @@ gui_mch_replace_dialog(eap)
 	return;
 
     find_replace_dialog_create(eap->arg, TRUE);
+}
+
+/*
+ * Synchronize all gui elements, which are dependant upon the
+ * main text font used. Those are in esp. the find/replace dialogs.
+ * If you don't understand why this should be needed, please try to
+ * search for "piê¶æ" in iso8859-2.
+ */
+    void
+gui_motif_synch_fonts(void)
+{
+    SharedFindReplace *frdp;
+    int		    do_replace;
+    XFontStruct	    *font;
+    XmFontList	    font_list;
+
+    /* FIXME: Unless we find out how to create a XmFontList from a XFontSet,
+     * we just give up here on font synchronization. */
+    font = (XFontStruct *)gui.norm_font;
+    if (font == NULL)
+	return;
+
+    font_list = gui_motif_create_fontlist(font);
+
+    /* OK this loop is a bit tricky... */
+    for (do_replace = 0; do_replace <= 1; ++do_replace)
+    {
+	frdp = (do_replace) ? (&repl_widgets) : (&find_widgets);
+	if (frdp->dialog)
+	{
+	    XtVaSetValues(frdp->what, XmNfontList, font_list, NULL);
+	    if (do_replace)
+		XtVaSetValues(frdp->with, XmNfontList, font_list, NULL);
+	}
+    }
+
+    XmFontListFree(font_list);
 }

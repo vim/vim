@@ -15,10 +15,10 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <fcntl.h>
+#include <sys/types.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <errno.h>
-#include <sys/types.h>
 #include <sys/socket.h>
 #ifdef HAVE_LIBGEN_H
 # include <libgen.h>

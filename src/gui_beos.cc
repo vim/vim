@@ -2396,6 +2396,7 @@ error:
     return (GuiFont)font;
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Return the name of font "font" in allocated memory.
  */
@@ -2404,6 +2405,7 @@ gui_mch_get_fontname(GuiFont font, char_u *name)
 {
     return vim_strsave(((VimFont *)font)->name);
 }
+#endif
 
 /*
  * Set the current text font.

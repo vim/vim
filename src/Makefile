@@ -1089,9 +1089,11 @@ GTK_MAN_TARGETS = yes
 GTK_TESTTARGET  = gui
 
 ### Motif GUI
-MOTIF_SRC	= gui.c gui_motif.c gui_x11.c pty.c gui_beval.c
+MOTIF_SRC	= gui.c gui_motif.c gui_x11.c pty.c gui_beval.c \
+		  	gui_xmdlg.c
 MOTIF_OBJ	= objects/gui.o objects/gui_motif.o objects/gui_x11.o \
-			objects/pty.o objects/gui_beval.o
+			objects/pty.o objects/gui_beval.o \
+			objects/gui_xmdlg.o
 MOTIF_DEFS	= -DFEAT_GUI_MOTIF $(NARROW_PROTO)
 MOTIF_IPATH	= $(GUI_INC_LOC)
 MOTIF_LIBS_DIR	= $(GUI_LIB_LOC)
@@ -1203,8 +1205,8 @@ CARBONGUI_BUNDLE = $(VIMNAME).app
 CARBONGUI_TESTARG = VIMPROG=../$(CARBONGUI_BUNDLE)/Contents/MacOS/$(VIMTARGET)
 
 # All GUI files
-ALL_GUI_SRC  = gui.c gui_gtk.c gui_gtk_f.c gui_motif.c gui_athena.c gui_gtk_x11.c gui_x11.c gui_at_sb.c gui_at_fs.c pty.c gui_kde.cc gui_kde_wid.cc gui_kde_x11.cc gui_kde_wid_moc.cc
-ALL_GUI_PRO  = gui.pro gui_gtk.pro gui_motif.pro gui_athena.pro gui_gtk_x11.pro gui_x11.pro gui_w16.pro gui_w32.pro gui_amiga.pro gui_photon.pro
+ALL_GUI_SRC  = gui.c gui_gtk.c gui_gtk_f.c gui_motif.c gui_xmdlg.c gui_athena.c gui_gtk_x11.c gui_x11.c gui_at_sb.c gui_at_fs.c pty.c gui_kde.cc gui_kde_wid.cc gui_kde_x11.cc gui_kde_wid_moc.cc
+ALL_GUI_PRO  = gui.pro gui_gtk.pro gui_motif.pro gui_xmdlg.pro gui_athena.pro gui_gtk_x11.pro gui_x11.pro gui_w16.pro gui_w32.pro gui_amiga.pro gui_photon.pro
 
 # }}}
 
@@ -2193,6 +2195,9 @@ objects/gui_gtk_x11.o: gui_gtk_x11.c
 
 objects/gui_motif.o: gui_motif.c
 	$(CCC) -o $@ gui_motif.c
+
+objects/gui_xmdlg.o: gui_xmdlg.c
+	$(CCC) -o $@ gui_xmdlg.c
 
 objects/gui_x11.o: gui_x11.c
 	$(CCC) -o $@ gui_x11.c

@@ -1249,6 +1249,7 @@ gui_mch_get_font(
     return font;
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Return the name of font "font" in allocated memory.
  * Don't know how to get the actual name, thus use the provided name.
@@ -1262,6 +1263,7 @@ gui_mch_get_fontname(font, name)
 	return NULL;
     return vim_strsave(name);
 }
+#endif
 
     void
 gui_mch_free_font(GuiFont font)
