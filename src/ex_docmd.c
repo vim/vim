@@ -1114,9 +1114,9 @@ do_cmdline(cmdline, getline, cookie, flags)
 		else
 		{
 		    /* can only get here with ":endwhile" or ":endfor" */
-		    --cstack.cs_looplevel;
 		    if (cstack.cs_idx >= 0)
-			--cstack.cs_idx;
+			rewind_conditionals(&cstack, cstack.cs_idx - 1,
+				   CSF_WHILE | CSF_FOR, &cstack.cs_looplevel);
 		}
 	    }
 
@@ -1239,11 +1239,18 @@ do_cmdline(cmdline, getline, cookie, flags)
 	 * ":endtry" in a sourced file or executed function.  If the try
 	 * conditional is in its finally clause, ignore anything pending.
 	 * If it is in a catch clause, finish the caught exception.
+	 * Also cleanup any "cs_forinfo" structures.
 	 */
 	do
-	    cstack.cs_idx = cleanup_conditionals(&cstack, 0, TRUE);
-	while (--cstack.cs_idx >= 0)
-	    ;
+	{
+	    int idx = cleanup_conditionals(&cstack, 0, TRUE);
+
+	    if (idx == cstack.cs_idx)
+		--idx;	    /* remove at least one */
+	    rewind_conditionals(&cstack, idx, CSF_WHILE | CSF_FOR,
+							&cstack.cs_looplevel);
+	}
+	while (cstack.cs_idx >= 0);
 	trylevel = initial_trylevel;
     }
 
