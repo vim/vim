@@ -42,6 +42,8 @@
 # endif
 #endif
 
+#include "gui_xmebw.h"	/* for our Enhanced Button Widget */
+
 #if defined(FEAT_GUI_DIALOG) && defined(HAVE_XPM)
 # include "../pixmaps/alert.xpm"
 # include "../pixmaps/error.xpm"
@@ -126,7 +128,6 @@ scroll_cb(w, client_data, call_data)
  * End of call-back routines
  */
 
-#ifndef LESSTIF_VERSION
 /*
  * Implement three dimensional shading of insensitive labels.
  * By Martin Dalecki.
@@ -147,11 +148,11 @@ label_expose(_w, _event, _region)
 {
     GC		    insensitiveGC;
     XmLabelWidget   lw = (XmLabelWidget)_w;
-    unsigned char   label_type = XmSTRING;
+    unsigned char   label_type = (int)XmSTRING;
 
     XtVaGetValues(_w, XmNlabelType, &label_type, (XtPointer)0);
 
-    if (XtIsSensitive(_w) || label_type != XmSTRING)
+    if (XtIsSensitive(_w) || label_type != (int)XmSTRING)
 	(*old_label_expose)(_w, _event, _region);
     else
     {
@@ -194,8 +195,8 @@ label_expose(_w, _event, _region)
 	values.foreground = lw->primitive.top_shadow_color;
 	values.background = lw->core.background_pixel;
 
-	lw->label.insensitive_GC =
-		      XtAllocateGC((Widget) lw, 0, mask, &values, dynamic, 0);
+	lw->label.insensitive_GC = XtAllocateGC((Widget)lw, 0, mask,
+					       &values, dynamic, (XtGCMask)0);
 	(*old_label_expose)(_w, _event, _region);
 	XtReleaseGC(_w, lw->label.insensitive_GC);
 
@@ -210,16 +211,14 @@ label_expose(_w, _event, _region)
 	values.foreground = lw->primitive.bottom_shadow_color;
 	values.background = lw->core.background_pixel;
 
-	lw->label.insensitive_GC =
-		      XtAllocateGC((Widget) lw, 0, mask, &values, dynamic, 0);
+	lw->label.insensitive_GC = XtAllocateGC((Widget) lw, 0, mask,
+					       &values, dynamic, (XtGCMask)0);
 	(*old_label_expose)(_w, _event, _region);
 	XtReleaseGC(_w, lw->label.insensitive_GC);
 
 	lw->label.insensitive_GC = insensitiveGC;
     }
 }
-#endif
-
 
 /*
  * Create all the motif widgets necessary.
@@ -227,7 +226,6 @@ label_expose(_w, _event, _region)
     void
 gui_x11_create_widgets()
 {
-#ifndef LESSTIF_VERSION
     /*
      * Install the 3D shade effect drawing routines.
      */
@@ -236,7 +234,6 @@ gui_x11_create_widgets()
 	old_label_expose = xmLabelWidgetClass->core_class.expose;
 	xmLabelWidgetClass->core_class.expose = label_expose;
     }
-#endif
 
     /*
      * Start out by adding the configured border width into the border offset
@@ -279,6 +276,7 @@ gui_x11_create_widgets()
 	/* Always stick to right hand side. */
 	XtSetArg(al[ac], XmNrightOffset, 0); ac++;
 # endif
+	XtSetArg(al[ac], XmNmarginHeight, 0); ac++;
 	menuBar = XmCreateMenuBar(vimForm, "menuBar", al, ac);
 	XtManageChild(menuBar);
 
@@ -883,13 +881,84 @@ gui_mch_compute_menu_height(id)
      */
     gui.menu_height = maxy + height - 2 * shadow + 2 * margin + 4;
 
-#ifdef LESSTIF_VERSION
     /* Somehow the menu bar doesn't resize automatically.  Set it here,
      * even though this is a catch 22.  Don't do this when starting up,
      * somehow the menu gets very high then. */
     if (gui.shell_created)
 	XtVaSetValues(menuBar, XmNheight, gui.menu_height, NULL);
-#endif
+}
+
+/*
+ * Icons used by the toolbar code.
+ */
+#include "gui_x11_pm.h"
+
+static int check_xpm __ARGS((char_u *path));
+static char **get_toolbar_pixmap __ARGS((vimmenu_T *menu));
+
+/*
+ * Read an Xpm file.  Return OK or FAIL.
+ */
+    static int
+check_xpm(path)
+    char_u	*path;
+{
+    XpmAttributes attrs;
+    int		status;
+    Pixmap	mask;
+    Pixmap	map;
+
+    attrs.valuemask = 0;
+
+    /* Create the "sensitive" pixmap */
+    status = XpmReadFileToPixmap(gui.dpy,
+	    RootWindow(gui.dpy, DefaultScreen(gui.dpy)),
+	    (char *)path, &map, &mask, &attrs);
+    XpmFreeAttributes(&attrs);
+
+    if (status == XpmSuccess)
+	return OK;
+    return FAIL;
+}
+
+
+/*
+ * Allocated a pixmap for toolbar menu "menu".
+ * Return a blank pixmap if it fails.
+ */
+    static char **
+get_toolbar_pixmap(menu)
+    vimmenu_T	*menu;
+{
+    char_u	buf[MAXPATHL];		/* buffer storing expanded pathname */
+    char	**xpm = NULL;		/* xpm array */
+    int		res;
+
+    buf[0] = NUL;			/* start with NULL path */
+
+    if (menu->iconfile != NULL)
+    {
+	/* Use the "icon="  argument. */
+	gui_find_iconfile(menu->iconfile, buf, "xpm");
+	res = check_xpm(buf);
+
+	/* If it failed, try using the menu name. */
+	if (res == FAIL && gui_find_bitmap(menu->name, buf, "xpm") == OK)
+	    res = check_xpm(buf);
+	if (res == OK)
+	    return tb_blank_xpm;
+    }
+
+    if (menu->icon_builtin || gui_find_bitmap(menu->name, buf, "xpm") == FAIL)
+    {
+	if (menu->iconidx >= 0 && menu->iconidx
+		   < (sizeof(built_in_pixmaps) / sizeof(built_in_pixmaps[0])))
+	    xpm = built_in_pixmaps[menu->iconidx];
+	else
+	    xpm = tb_blank_xpm;
+    }
+
+    return xpm;
 }
 
     void
@@ -944,17 +1013,11 @@ gui_mch_add_menu_item(menu, idx)
 	    XtSetArg(args[n], XmNwidth, wid); n++;
 	    XtSetArg(args[n], XmNminWidth, wid); n++;
 	    XtSetArg(args[n], XmNorientation, XmVERTICAL); n++;
-	    XtSetArg(args[n], XmNseparatorType, XmNO_LINE); n++;
+	    XtSetArg(args[n], XmNseparatorType, XmSHADOW_ETCHED_IN); n++;
 #endif
 	}
 	else
 	{
-	    get_toolbar_pixmap(menu, &menu->image, &menu->image_ins);
-	    /* Set the label here, so that we can switch between icons/text
-	     * by changing the XmNlabelType resource. */
-	    xms = XmStringCreate((char *)menu->dname, STRING_TAG);
-	    XtSetArg(args[n], XmNlabelString, xms); n++;
-
 	    /* Without shadows one can't sense whatever the button has been
 	     * pressed or not! However we wan't to save a bit of space...
 	     * Need the highlightThickness to see the focus.
@@ -963,21 +1026,22 @@ gui_mch_add_menu_item(menu, idx)
 	    XtSetArg(args[n], XmNhighlightOnEnter, True); n++;
 	    XtSetArg(args[n], XmNmarginWidth, 0); n++;
 	    XtSetArg(args[n], XmNmarginHeight, 0); n++;
+	    /* Set the label here, so that we can switch between icons/text
+	     * by changing the XmNlabelType resource. */
+	    xms = XmStringCreate((char *)menu->dname, STRING_TAG);
+	    XtSetArg(args[n], XmNlabelString, xms); n++;
 
-	    if (menu->image == 0)
+	    menu->xpm = get_toolbar_pixmap(menu);
+	    if (menu->xpm == NULL)
 	    {
 		XtSetArg(args[n], XmNlabelType, XmSTRING); n++;
-		XtSetArg(args[n], XmNlabelPixmap, 0); n++;
-		XtSetArg(args[n], XmNlabelInsensitivePixmap, 0); n++;
 	    }
 	    else
 	    {
-		XtSetArg(args[n], XmNlabelPixmap, menu->image); n++;
-		XtSetArg(args[n], XmNlabelInsensitivePixmap, menu->image_ins); n++;
-		XtSetArg(args[n], XmNlabelType, XmPIXMAP); n++;
+		XtSetArg(args[n], XmNpixmapData, menu->xpm); n++;
+		XtSetArg(args[n], XmNlabelLocation, XmBOTTOM); n++;
 	    }
-	    type = xmPushButtonWidgetClass;
-	    XtSetArg(args[n], XmNwidth, 80); n++;
+	    type = xmEnhancedButtonWidgetClass;
 	}
 
 	XtSetArg(args[n], XmNpositionIndex, idx); n++;
@@ -985,7 +1049,7 @@ gui_mch_add_menu_item(menu, idx)
 	{
 	    menu->id = XtCreateManagedWidget((char *)menu->dname,
 			type, toolBar, args, n);
-	    if (menu->id != NULL && type == xmPushButtonWidgetClass)
+	    if (menu->id != NULL && type == xmEnhancedButtonWidgetClass)
 	    {
 		XtAddCallback(menu->id,
 			XmNactivateCallback, gui_x11_menu_cb, menu);
@@ -1202,16 +1266,22 @@ gui_mch_submenu_change(menu, colors)
 #ifdef FEAT_TOOLBAR
 		/* For a toolbar item: Free the pixmap and allocate a new one,
 		 * so that the background color is right. */
-		if (mp->image != (Pixmap)0)
+		if (mp->xpm != NULL)
 		{
-		    XFreePixmap(gui.dpy, mp->image);
-		    XFreePixmap(gui.dpy, mp->image_ins);
-		    get_toolbar_pixmap(mp, &mp->image, &mp->image_ins);
-		    if (mp->image != (Pixmap)0)
-			XtVaSetValues(mp->id,
-				XmNlabelPixmap, mp->image,
-				XmNlabelInsensitivePixmap, mp->image_ins,
-				NULL);
+		    int		n = 0;
+		    Arg		args[18];
+
+		    mp->xpm = get_toolbar_pixmap(mp);
+		    if (menu->xpm == NULL)
+		    {
+			XtSetArg(args[n], XmNlabelType, XmSTRING); n++;
+		    }
+		    else
+		    {
+			XtSetArg(args[n], XmNpixmapData, menu->xpm); n++;
+			XtSetArg(args[n], XmNlabelLocation, XmBOTTOM); n++;
+		    }
+		    XtSetValues(mp->id, args, n);
 		}
 # ifdef FEAT_BEVAL
 		/* If we have a tooltip, then we need to change it's font */
@@ -1757,7 +1827,8 @@ set_fontlist(id)
     XmFontList fl;
 
 #ifdef FONTSET_ALWAYS
-    if (gui.fontset != NOFONTSET) {
+    if (gui.fontset != NOFONTSET)
+    {
 	fl = gui_motif_fontset2fontlist((XFontSet *)&gui.fontset);
 	if (fl != NULL)
 	{
@@ -1775,7 +1846,8 @@ set_fontlist(id)
 	}
     }
 #else
-    if (gui.norm_font != NOFONT) {
+    if (gui.norm_font != NOFONT)
+    {
 	fl = gui_motif_create_fontlist((XFontStruct *)gui.norm_font);
 	if (fl != NULL)
 	{
@@ -2672,11 +2744,11 @@ gui_mch_show_toolbar(int showit)
 			    (*action)(cur->tip);
 			if (!menu_is_separator(cur->name))
 			{
-			    if (text == 1 || cur->image == 0)
+			    if (text == 1 || cur->xpm == NULL)
+			    {
 				XtSetArg(args[n], XmNlabelType, XmSTRING);
-			    else
-				XtSetArg(args[n], XmNlabelType, XmPIXMAP);
-			    n++;
+				++n;
+			    }
 			    if (cur->id != NULL)
 			    {
 				XtUnmanageChild(cur->id);
@@ -2737,26 +2809,33 @@ gui_mch_reset_focus()
     int
 gui_mch_compute_toolbar_height()
 {
+    Dimension	borders;
     Dimension	height;		    /* total Toolbar height */
     Dimension	whgt;		    /* height of each widget */
-    Dimension	marginHeight;	    /* XmNmarginHeight of toolBar */
-    Dimension	shadowThickness;    /* thickness of Xtparent(toolBar) */
     WidgetList	children;	    /* list of toolBar's children */
     Cardinal	numChildren;	    /* how many children toolBar has */
     int		i;
 
+    borders = 0;
     height = 0;
-    shadowThickness = 0;
-    marginHeight = 0;
     if (toolBar != (Widget)0 && toolBarFrame != (Widget)0)
     {				    /* get height of XmFrame parent */
+	Dimension	fst;
+	Dimension	fmh;
+	Dimension	tst;
+	Dimension	tmh;
+
 	XtVaGetValues(toolBarFrame,
-		XmNshadowThickness, &shadowThickness,
+		XmNshadowThickness, &fst,
+		XmNmarginHeight, &fmh,
 		NULL);
+	borders += fst + fmh;
 	XtVaGetValues(toolBar,
-		XmNmarginHeight, &marginHeight,
+		XmNshadowThickness, &tst,
+		XmNmarginHeight, &tmh,
 		XmNchildren, &children,
 		XmNnumChildren, &numChildren, NULL);
+	borders += tst + tmh;
 	for (i = 0; i < numChildren; i++)
 	{
 	    whgt = 0;
@@ -2765,8 +2844,13 @@ gui_mch_compute_toolbar_height()
 		height = whgt;
 	}
     }
+#ifdef LESSTIF_VERSION
+    /* Hack: When starting up we get wrong dimensions. */
+    if (height < 10)
+	height = 24;
+#endif
 
-    return (int)(height + (marginHeight << 1) + (shadowThickness << 1));
+    return (int)(height + (borders << 1));
 }
 
 #if 0 /* these are never called. */
@@ -2831,23 +2915,6 @@ toolbarbutton_leave_cb(w, client_data, event, cont)
     gui_mch_set_footer((char_u *) "");
 }
 # endif
-
-    void
-gui_mch_get_toolbar_colors(bgp, fgp, bsp, tsp, hsp)
-    Pixel	*bgp;
-    Pixel	*fgp;
-    Pixel       *bsp;
-    Pixel	*tsp;
-    Pixel	*hsp;
-{
-    XtVaGetValues(toolBar,
-	    XmNbackground, bgp,
-	    XmNforeground, fgp,
-	    XmNbottomShadowColor, bsp,
-	    XmNtopShadowColor, tsp,
-	    XmNhighlightColor, hsp,
-	    NULL);
-}
 #endif
 
 /*
@@ -2980,10 +3047,9 @@ find_replace_destroy_callback(w, client_data, call_data)
 {
     SharedFindReplace *cd = (SharedFindReplace *)client_data;
 
-    if (cd != NULL) {
+    if (cd != NULL)
        /* suppress_dialog_mnemonics(cd->dialog); */
 	cd->dialog = (Widget)0;
-    }
 }
 
 /*ARGSUSED*/

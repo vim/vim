@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 7.0aa.  Last change: 2004 Oct 06
+*usr_41.txt*	For Vim version 7.0aa.  Last change: 2005 Jan 01
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -84,6 +84,9 @@ variable.
 	Note:
 	If you happen to write a while loop that keeps on running, you can
 	interrupt it by pressing CTRL-C (CTRL-Break on MS-Windows).
+	Note:
+	You can try out the examples by yanking the lines from the text here
+	and executing them with :@"
 
 
 THREE KINDS OF NUMBERS
