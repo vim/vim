@@ -244,6 +244,7 @@ LINK32_OBJS= \
 	"$(INTDIR)/regexp.obj" \
 	"$(INTDIR)/screen.obj" \
 	"$(INTDIR)/search.obj" \
+	"$(INTDIR)/spell.obj" \
 	"$(INTDIR)/syntax.obj" \
 	"$(INTDIR)/tag.obj" \
 	"$(INTDIR)/term.obj" \
@@ -604,6 +605,10 @@ SOURCE=.\screen.c
 # Begin Source File
 
 SOURCE=.\search.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\spell.c
 # End Source File
 # Begin Source File
 

@@ -136,6 +136,7 @@ void qsort __ARGS((void *base, size_t elm_count, size_t elm_size, int (*cmp)(con
 # include "regexp.pro"
 # include "screen.pro"
 # include "search.pro"
+# include "spell.pro"
 # include "syntax.pro"
 # include "tag.pro"
 # include "term.pro"

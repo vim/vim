@@ -371,6 +371,7 @@ OBJ = \
 	$(OUTDIR)\regexp.obj \
 	$(OUTDIR)\screen.obj \
 	$(OUTDIR)\search.obj \
+	$(OUTDIR)\spell.obj \
 	$(OUTDIR)\syntax.obj \
 	$(OUTDIR)\tag.obj \
 	$(OUTDIR)\term.obj \
@@ -846,6 +847,8 @@ $(OUTDIR)/screen.obj:	$(OUTDIR) screen.c  $(INCL)
 
 $(OUTDIR)/search.obj:	$(OUTDIR) search.c  $(INCL)
 
+$(OUTDIR)/spell.obj:	$(OUTDIR) spell.c  $(INCL)
+
 $(OUTDIR)/syntax.obj:	$(OUTDIR) syntax.c  $(INCL)
 
 $(OUTDIR)/tag.obj:	$(OUTDIR) tag.c  $(INCL)
@@ -927,6 +930,7 @@ proto.h: \
 	proto/regexp.pro \
 	proto/screen.pro \
 	proto/search.pro \
+	proto/spell.pro \
 	proto/syntax.pro \
 	proto/tag.pro \
 	proto/term.pro \

@@ -1141,13 +1141,16 @@ enum hlf_value
     , HLF_DED	    /* Deleted diff line */
     , HLF_TXD	    /* Text Changed in diff line */
     , HLF_SC	    /* Sign column */
+    , HLF_SPB	    /* SpellBad */
+    , HLF_SPR	    /* SpellRare */
+    , HLF_SPL	    /* SpellLocal */
     , HLF_COUNT	    /* MUST be the last one */
 };
 
 /* the HL_FLAGS must be in the same order as the HLF_ enums! */
 #define HL_FLAGS {'8', '@', 'd', 'e', 'h', 'i', 'l', 'm', 'M', \
 		  'n', 'r', 's', 'S', 'c', 't', 'v', 'V', 'w', 'W', \
-		  'f', 'F', 'A', 'C', 'D', 'T', '>'}
+		  'f', 'F', 'A', 'C', 'D', 'T', '>', 'B', 'R', 'L'}
 
 /*
  * Boolean constants

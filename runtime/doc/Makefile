@@ -84,6 +84,7 @@ DOCS = \
 	sign.txt \
 	sponsor.txt \
 	starting.txt \
+	spell.txt \
 	syntax.txt \
 	tagsrch.txt \
 	term.txt \
@@ -204,6 +205,7 @@ HTMLS = \
 	sign.html \
 	sponsor.html \
 	starting.html \
+	spell.html \
 	syntax.html \
 	tagsrch.html \
 	tags.html \
