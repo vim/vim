@@ -3124,13 +3124,14 @@ current_word(oap, count, include, bigword)
 		return FAIL;
 	    if (include != (cls() == 0))
 	    {
-		if (fwd_word(1L, bigword, TRUE) == FAIL)
+		if (fwd_word(1L, bigword, TRUE) == FAIL && count > 1)
 		    return FAIL;
 		/*
 		 * If end is just past a new-line, we don't want to include
-		 * the first character on the line
+		 * the first character on the line.
+		 * Put cursor on last char of white.
 		 */
-		if (oneleft() == FAIL)	/* put cursor on last char of white */
+		if (oneleft() == FAIL)
 		    inclusive = FALSE;
 	    }
 	    else
