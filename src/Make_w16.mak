@@ -87,6 +87,7 @@ ObjFiles = \
    $(INTDIR)\fileio.obj\
    $(INTDIR)\fold.obj\
    $(INTDIR)\getchar.obj\
+   $(INTDIR)\hashtable.obj\
    $(INTDIR)\gui.obj\
    $(INTDIR)\gui_w16.obj\
    $(INTDIR)\main.obj\
