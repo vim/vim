@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 31
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Feb 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,17 +30,10 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-List data type performance:
-- Cache the length of a List?
-- Cache the last used index?
-- Use blocks of items, so that finding an item by index is faster?
-
-Can ":grep" made faster somehow?  Do profiling.
-":vimgrep pat %" doesn't work.
-
 Sanity check of eval.c:
-- Go through the code for magic braces.
 - Check use of v_type for VAR_FUNC, VAR_LIST ad VAR_DICT.
+- Go through the code for magic braces.
+- Check list watchers.
 
 Mention rsync command on runtime.php page:
     rsync -avzcP --delete --exclude="dos" --delete-excluded ftp.nluug.nl::Vim/runtime/ vim63-runtime
