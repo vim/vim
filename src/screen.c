@@ -6475,10 +6475,6 @@ screenalloc(clear)
 
     win_new_shellsize();    /* fit the windows in the new sized shell */
 
-#ifdef FEAT_GUI_BEOS
-    vim_lock_screen();  /* be safe, put it here */
-#endif
-
     comp_col();		/* recompute columns for shown command and ruler */
 
     /*
@@ -6692,9 +6688,6 @@ screenalloc(clear)
     }
 #endif
 
-#ifdef FEAT_GUI_BEOS
-    vim_unlock_screen();
-#endif
     entered = FALSE;
 }
 
@@ -7526,9 +7519,6 @@ screen_ins_lines(off, row, line_count, end, wp)
 	clip_scroll_selection(-line_count);
 #endif
 
-#ifdef FEAT_GUI_BEOS
-    vim_lock_screen();
-#endif
 #ifdef FEAT_GUI
     /* Don't update the GUI cursor here, ScreenLines[] is invalid until the
      * scrolling is actually carried out. */
@@ -7580,9 +7570,6 @@ screen_ins_lines(off, row, line_count, end, wp)
 		lineinvalid(temp, (int)Columns);
 	}
     }
-#ifdef FEAT_GUI_BEOS
-    vim_unlock_screen();
-#endif
 
     screen_stop_highlight();
     windgoto(cursor_row, 0);
@@ -7754,9 +7741,6 @@ screen_del_lines(off, row, line_count, end, force, wp)
 	clip_scroll_selection(line_count);
 #endif
 
-#ifdef FEAT_GUI_BEOS
-    vim_lock_screen();
-#endif
 #ifdef FEAT_GUI
     /* Don't update the GUI cursor here, ScreenLines[] is invalid until the
      * scrolling is actually carried out. */
@@ -7815,9 +7799,6 @@ screen_del_lines(off, row, line_count, end, force, wp)
 		lineinvalid(temp, (int)Columns);
 	}
     }
-#ifdef FEAT_GUI_BEOS
-    vim_unlock_screen();
-#endif
 
     screen_stop_highlight();
 

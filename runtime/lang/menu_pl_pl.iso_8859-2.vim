@@ -1,6 +1,6 @@
 " Menu Translations:	Polish
 " Maintainer:		Rafal M. Sulejman <rms@poczta.onet.pl>
-" Initial Translation:	Marcin Dalecki <dalecki@cs.net.pl>
+" Initial Translation:	Marcin Dalecki <martin@dalecki.de>
 " Last Change: 5 May  2004
 
 " Quit when menu translations have already been done.

@@ -1091,23 +1091,10 @@ SKIP_MOTIF=YES
 SKIP_ATHENA=YES
 SKIP_NEXTAW=YES
 SKIP_PHOTON=YES
-SKIP_BEOS=YES
 SKIP_CARBON=YES
 GUITYPE=NONE
 
-if test "x$BEOS" = "xyes"; then
-  SKIP_BEOS=
-  case "$enable_gui_canon" in
-    no)		AC_MSG_RESULT(no GUI support)
-		SKIP_BEOS=YES ;;
-    yes|"")	AC_MSG_RESULT(yes - automatic GUI support) ;;
-    auto)	AC_MSG_RESULT(auto - automatic GUI support) ;;
-    beos)	AC_MSG_RESULT(BeOS GUI support) ;;
-    *)		AC_MSG_RESULT([Sorry, $enable_gui GUI is not supported])
-		SKIP_BEOS=YES ;;
-  esac
-
-elif test "x$QNX" = "xyes" -a "x$with_x" = "xno" ; then
+if test "x$QNX" = "xyes" -a "x$with_x" = "xno" ; then
   SKIP_PHOTON=
   case "$enable_gui_canon" in
     no)		AC_MSG_RESULT(no GUI support)
@@ -1574,7 +1561,6 @@ if test "x$MACOSX" = "xyes" -a -z "$SKIP_CARBON" -a "x$CARBON" = "xyes"; then
   SKIP_ATHENA=YES;
   SKIP_NEXTAW=YES;
   SKIP_PHOTON=YES;
-  SKIP_BEOS=YES;
   SKIP_CARBON=YES
 fi
 
@@ -2156,11 +2142,6 @@ fi
 if test "x$GUITYPE:$enable_fontset" = "xKDE:yes"; then
   AC_MSG_RESULT(KDE GUI selected; fontset has been disabled)
   enable_fontset="no"
-fi
-
-dnl There is no test for the BeOS GUI, if it's selected it's used
-if test -z "$SKIP_BEOS"; then
-  GUITYPE=BEOSGUI
 fi
 
 if test -z "$SKIP_PHOTON"; then

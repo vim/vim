@@ -1703,7 +1703,7 @@ GUI:
   is used.  Required for dead key support (and multi-byte input).
 - After a file selection dialog, check that the edited files were not changed
   or deleted.  The Win32 dialog allows deleting and renaming files.
-- Motif and Athena: Added support for "editres". (Martin Dalecki)
+- Motif and Athena: Added support for "editres". (Marcin Dalecki)
 - Motif and Athena: Added "menuFont" to be able to specify a font or fontset
   for the menus.  Can also be set with the "Menu" highlight group.  Useful
   when the locale is different from 'encoding'. (David Harrison)
@@ -1756,7 +1756,7 @@ GTK GUI: (partly by Marcin Dalecki)
 - When dropping a file on Vim, remove extra slashes from the start of the
   path.  Also shorten the file name if possible.
 
-Motif: (Martin Dalecki)
+Motif: (Marcin Dalecki)
 - Made the dialog layout better.
 - Added find and find/replace dialogs.
 - For the menus, change "iso-8859" to "iso_8859", Linux appears to need this.
@@ -3050,7 +3050,7 @@ Win32: Without scrollbars present, the MS mouse scroll wheel didn't work.
 Also handle the scrollbars when they are not visible.
 
 Motif: When there is no right scrollbar, the bottom scrollbar would still
-leave room for it.  (Martin Dalecki)
+leave room for it.  (Marcin Dalecki)
 
 When changing 'guicursor' and the value is invalid, some of the effects would
 still take place.  Now first check for errors and only make the new value
@@ -3136,7 +3136,7 @@ would crash.
 When doing ":view file" and it fails, the current buffer was made read-only.
 
 Motif: For some people the separators in the toolbar disappeared when resizing
-the Vim window. (Martin Dalecki)
+the Vim window. (Marcin Dalecki)
 
 Win32 GUI: when setting 'lines' to a huge number, would not compute the
 available space correctly.  Was counting the menu height twice.
@@ -3187,7 +3187,7 @@ second time it replaced all matches.  Removed the use of ":s///c".
 GTK: Similar problems with the find/replace dialog, moved the code to a common
 function.
 
-X11: Use shared GC's for text. (Martin Dalecki)
+X11: Use shared GC's for text. (Marcin Dalecki)
 
 "]i" found the match under the cursor, instead of the first one below it.
 Same for "]I", "] CTRL-I", "]d", "]D" and "] CTRL-D".
