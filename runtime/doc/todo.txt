@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Mar 07
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Mar 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,6 +38,8 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 Mac unicode patch (Da Woon Jung):
 - selecting proportional font breaks display
 - UTF-8 text causes display problems.  Font replacement causes this.
+
+Changes to mode bits in mch_open() also in Vim 6.3? (Bjoern Voigt)
 
 Patch for taglist() Yegappan Lakshmanan Feb 27
 - docs: use of ^ and $ in pattern, refer to |tag-regexp|

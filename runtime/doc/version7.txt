@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Mar 07
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Mar 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -938,5 +938,11 @@ unicodepdy[] as for UTF-8. (Taro Muraoka)
 
 The method used to locate user commands for completion differed from when they
 are executed.  Abiguous command names were not completed properly.
+
+Incremental search may cause a crash when there is a custom statusline that
+indirectly invokes ":normal".
+
+Diff mode failed when $DIFF_OPTIONS was set in the environment.  Unset it
+before invoking "diff".
 
  vim:tw=78:ts=8:ft=help:norl:
