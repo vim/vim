@@ -571,6 +571,8 @@ static void list_func_head __ARGS((ufunc_T *fp, int indent));
 static void cat_func_name __ARGS((char_u *buf, ufunc_T *fp));
 static ufunc_T *find_func __ARGS((char_u *name));
 static int function_exists __ARGS((char_u *name));
+static int builtin_function __ARGS((char_u *name));
+static int func_autoload __ARGS((char_u *name));
 static void func_free __ARGS((ufunc_T *fp));
 static void func_unref __ARGS((char_u *name));
 static void func_ref __ARGS((char_u *name));
@@ -2495,7 +2497,10 @@ ex_call(eap)
 
     if (*startarg != '(')
     {
-	EMSG2(_("E107: Missing braces: %s"), name);
+	if (*name == K_SPECIAL)
+	    EMSG2(_("E107: Missing braces: <SNR>%s"), name + 3);
+	else
+	    EMSG2(_("E107: Missing braces: %s"), name);
 	goto end;
     }
 
@@ -2984,7 +2989,7 @@ get_user_var_name(xp, idx)
     ht = &curwin->w_vars.dv_hashtab;
     if (wdone < ht->ht_used)
     {
-	if (bdone++ == 0)
+	if (wdone++ == 0)
 	    hi = ht->ht_array;
 	else
 	    ++hi;
@@ -6139,24 +6144,31 @@ call_func(name, len, rettv, argcount, argvars, firstline, lastline,
 	rettv->v_type = VAR_NUMBER;	/* default is number rettv */
 	error = ERROR_UNKNOWN;
 
-	if (!ASCII_ISLOWER(fname[0]))
+	if (!builtin_function(fname))
 	{
 	    /*
 	     * User defined function.
 	     */
 	    fp = find_func(fname);
+
 #ifdef FEAT_AUTOCMD
-	    if (fp == NULL && apply_autocmds(EVENT_FUNCUNDEFINED,
-						    fname, fname, TRUE, NULL)
-#ifdef FEAT_EVAL
-		    && !aborting()
-#endif
-	       )
+	    /* Trigger FuncUndefined event, may load the function. */
+	    if (fp == NULL
+		    && apply_autocmds(EVENT_FUNCUNDEFINED,
+						     fname, fname, TRUE, NULL)
+		    && !aborting())
 	    {
-		/* executed an autocommand, search for function again */
+		/* executed an autocommand, search for the function again */
 		fp = find_func(fname);
 	    }
 #endif
+	    /* Try loading a package. */
+	    if (fp == NULL && func_autoload(fname) && !aborting())
+	    {
+		/* loaded a package, search for the function again */
+		fp = find_func(fname);
+	    }
+
 	    if (fp != NULL)
 	    {
 		if (fp->flags & FC_RANGE)
@@ -15375,10 +15387,9 @@ trans_function_name(pp, skip, flags, fdp)
 	    lead += (int)STRLEN(sid_buf);
 	}
     }
-    else if (!(flags & TFN_INT) && !ASCII_ISUPPER(*lv.ll_name))
+    else if (!(flags & TFN_INT) && builtin_function(lv.ll_name))
     {
-	EMSG2(_("E128: Function name must start with a capital: %s"),
-								  lv.ll_name);
+	EMSG2(_("E128: Function name must start with a capital or contain a colon: %s"), lv.ll_name);
 	goto theend;
     }
     name = alloc((unsigned)(len + lead + 1));
@@ -15496,13 +15507,60 @@ function_exists(name)
     p = trans_function_name(&p, FALSE, TFN_INT|TFN_QUIET, NULL);
     if (p != NULL)
     {
-	if (ASCII_ISUPPER(*p) || p[0] == K_SPECIAL)
-	    n = (find_func(p) != NULL);
-	else if (ASCII_ISLOWER(*p))
+	if (builtin_function(p))
 	    n = (find_internal_func(p) >= 0);
+	else
+	    n = (find_func(p) != NULL);
 	vim_free(p);
     }
     return n;
+}
+
+/*
+ * Return TRUE if "name" looks like a builtin function name: starts with a
+ * lower case letter and doesn't contain a ':'.
+ */
+    static int
+builtin_function(name)
+    char_u *name;
+{
+    return ASCII_ISLOWER(name[0]) && vim_strchr(name, ':') == NULL;
+}
+
+/*
+ * If "name" has a package name try autoloading the script.
+ * Return TRUE if a package was loaded.
+ */
+    static int
+func_autoload(name)
+    char_u *name;
+{
+    char_u	*p;
+    char_u	*scriptname;
+    int		ret = FALSE;
+
+    /* If there is no colon after name[1] there is no package name. */
+    p = vim_strchr(name, ':');
+    if (p == NULL || p <= name + 2)
+	return FALSE;
+
+    /* Get the script file name: replace ':' with '/', append ".vim". */
+    scriptname = alloc((unsigned)(STRLEN(name) + 14));
+    if (scriptname == NULL)
+	return FALSE;
+    STRCPY(scriptname, "autoload/");
+    STRCAT(scriptname, name);
+    *vim_strrchr(scriptname, ':') = NUL;
+    STRCAT(scriptname, ".vim");
+    while ((p = vim_strchr(scriptname, ':')) != NULL)
+	*p = '/';
+
+    /* Try loading the package from $VIMRUNTIME/autoload/<name>.vim */
+    if (cmd_runtime(scriptname, FALSE) == OK)
+	ret = TRUE;
+
+    vim_free(scriptname);
+    return ret;
 }
 
 #if defined(FEAT_CMDL_COMPL) || defined(PROTO)

@@ -3534,6 +3534,7 @@ do_sub(eap)
     long	nmatch;		/* number of lines in match */
     linenr_T	sub_firstlnum;	/* nr of first sub line */
     char_u	*sub_firstline;	/* allocated copy of first sub line */
+    int		endcolumn;	/* put cursor in last column when done */
 
     cmd = eap->arg;
     if (!global_busy)
@@ -3623,6 +3624,10 @@ do_sub(eap)
 	}
 	pat = NULL;		/* search_regcomp() will use previous pattern */
 	sub = old_sub;
+
+	/* Vi compatibility quirk: repeating with ":s" keeps the cursor in the
+	 * last column after using "$". */
+	endcolumn = (curwin->w_curswant == MAXCOL);
     }
 
     /*
@@ -4261,7 +4266,10 @@ outofmem:
 
 	if (!global_busy)
 	{
-	    beginline(BL_WHITE | BL_FIX);
+	    if (endcolumn)
+		coladvance((colnr_T)MAXCOL);
+	    else
+		beginline(BL_WHITE | BL_FIX);
 	    if (!do_sub_msg() && do_ask)
 		MSG("");
 	}

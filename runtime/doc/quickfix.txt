@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 7.0aa.  Last change: 2005 Jan 20
+*quickfix.txt*  For Vim version 7.0aa.  Last change: 2005 Feb 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -131,6 +131,10 @@ deleted for some reason, the message "line changed" is shown to warn you that
 the error location may not be correct.  If you quit Vim and start again the
 marks are lost and the error locations may not be correct anymore.
 
+If vim is built with |+autocmd| support, two autocommands are available for
+running commands before and after a quickfix command (':make', ':grep' and so
+on) is executed. See |QuickFixCmdPre| and |QuickFixCmdPost| for details.
+
 =============================================================================
 2. The error window					*quickfix-window*
 
@@ -220,20 +224,24 @@ lists, use ":cnewer 99" first.
 4. Using :make						*:make_makeprg*
 
 							*:mak* *:make*
-:mak[e][!] [arguments]	1. If the 'autowrite' option is on, write any changed
+:mak[e][!] [arguments]	1. If vim was built with |+autocmd|, all relevant
+			   |QuickFixCmdPre| autocommands are executed.
+			2. If the 'autowrite' option is on, write any changed
 			   buffers
-			2. An errorfile name is made from 'makeef'.  If
+			3. An errorfile name is made from 'makeef'.  If
 			   'makeef' doesn't contain "##", and a file with this
 			   name already exists, it is deleted.
-			3. The program given with the 'makeprg' option is
+			4. The program given with the 'makeprg' option is
 			   started (default "make") with the optional
 			   [arguments] and the output is saved in the
 			   errorfile (for Unix it is also echoed on the
 			   screen).
-			4. The errorfile is read using 'errorformat'.
-			5. If [!] is not given the first error is jumped to.
-			6. The errorfile is deleted.
-			7. You can now move through the errors with commands
+			5. The errorfile is read using 'errorformat'.
+			6. If [!] is not given the first error is jumped to.
+			7. The errorfile is deleted.
+			8. If vim was built with |+autocmd|, all relevant
+			   |QuickFixCmdPost| autocommands are executed.
+			9. You can now move through the errors with commands
 			   like |:cnext| and |:cprevious|, see above.
 			This command does not accept a comment, any "
 			characters are considered part of the arguments.
