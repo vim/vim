@@ -3336,11 +3336,14 @@ set_one_cmd_context(xp, buff)
 	    xp->xp_pattern = arg;
 	    break;
 
-	/* Command modifiers: return the argument. */
+	/* Command modifiers: return the argument.
+	 * Also for commands with an argument that is a command. */
 	case CMD_aboveleft:
+	case CMD_argdo:
 	case CMD_belowright:
 	case CMD_botright:
 	case CMD_browse:
+	case CMD_bufdo:
 	case CMD_confirm:
 	case CMD_debug:
 	case CMD_folddoclosed:
@@ -3352,10 +3355,12 @@ set_one_cmd_context(xp, buff)
 	case CMD_leftabove:
 	case CMD_lockmarks:
 	case CMD_rightbelow:
+	case CMD_sandbox:
 	case CMD_silent:
 	case CMD_topleft:
 	case CMD_verbose:
 	case CMD_vertical:
+	case CMD_windo:
 	    return arg;
 
 #ifdef FEAT_SEARCH_EXTRA
