@@ -35,6 +35,7 @@ void cloneFoldGrowArray __ARGS((garray_T *from, garray_T *to));
 void deleteFoldRecurse __ARGS((garray_T *gap));
 void foldMarkAdjust __ARGS((win_T *wp, linenr_T line1, linenr_T line2, long amount, long amount_after));
 int getDeepestNesting __ARGS((void));
+char_u *get_foldtext __ARGS((win_T *wp, linenr_T lnum, linenr_T lnume, foldinfo_T *foldinfo, char_u *buf));
 void foldtext_cleanup __ARGS((char_u *str));
 int put_folds __ARGS((FILE *fd, win_T *wp));
 /* vim: set ft=c : */

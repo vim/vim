@@ -1346,6 +1346,7 @@ EXTERN char_u e_re_corr[]	INIT(=N_("E44: Corrupted regexp program"));
 EXTERN char_u e_readonly[]	INIT(=N_("E45: 'readonly' option is set (add ! to override)"));
 #ifdef FEAT_EVAL
 EXTERN char_u e_readonlyvar[]	INIT(=N_("E46: Cannot set read-only variable \"%s\""));
+EXTERN char_u e_readonlysbx[]	INIT(=N_("E46: Cannot set variable in the sandbox: \"%s\""));
 #endif
 #ifdef FEAT_QUICKFIX
 EXTERN char_u e_readerrf[]	INIT(=N_("E47: Error while reading errorfile"));

@@ -1594,6 +1594,9 @@ do_one_cmd(cmdlinep, sourcing,
     int			save_msg_scroll = 0;
     int			did_silent = 0;
     int			did_esilent = 0;
+#ifdef HAVE_SANDBOX
+    int			did_sandbox = FALSE;
+#endif
     cmdmod_T		save_cmdmod;
     int			ni;			/* set when Not Implemented */
 
@@ -1732,7 +1735,16 @@ do_one_cmd(cmdlinep, sourcing,
 #endif
 			continue;
 
-	    case 's':	if (!checkforcmd(&ea.cmd, "silent", 3))
+	    case 's':	if (checkforcmd(&ea.cmd, "sandbox", 3))
+			{
+#ifdef HAVE_SANDBOX
+			    if (!did_sandbox)
+				++sandbox;
+			    did_sandbox = TRUE;
+#endif
+			    continue;
+			}
+			if (!checkforcmd(&ea.cmd, "silent", 3))
 			    break;
 			++did_silent;
 			++msg_silent;
@@ -2565,6 +2577,11 @@ doend:
 	msg_scroll = save_msg_scroll;
     }
 
+#ifdef HAVE_SANDBOX
+    if (did_sandbox)
+	--sandbox;
+#endif
+
     if (ea.nextcmd && *ea.nextcmd == NUL)	/* not really a next command */
 	ea.nextcmd = NULL;
 
@@ -2800,6 +2817,7 @@ cmd_exists(name)
 	{"leftabove", 5},
 	{"lockmarks", 3},
 	{"rightbelow", 6},
+	{"sandbox", 3},
 	{"silent", 3},
 	{"topleft", 2},
 	{"verbose", 4},
@@ -6462,7 +6480,7 @@ ex_splitview(eap)
 #endif
 	    && eap->cmdidx != CMD_new)
     {
-	fname = do_browse(FALSE, (char_u *)_("Edit File in new window"),
+	fname = do_browse(0, (char_u *)_("Edit File in new window"),
 					  eap->arg, NULL, NULL, NULL, curbuf);
 	if (fname == NULL)
 	    goto theend;
@@ -6882,7 +6900,7 @@ ex_read(eap)
 	{
 	    char_u *browseFile;
 
-	    browseFile = do_browse(FALSE, (char_u *)_("Append File"), eap->arg,
+	    browseFile = do_browse(0, (char_u *)_("Append File"), eap->arg,
 						    NULL, NULL, NULL, curbuf);
 	    if (browseFile != NULL)
 	    {
@@ -7470,8 +7488,9 @@ ex_redir(eap)
 	    {
 		char_u	*browseFile;
 
-		browseFile = do_browse(TRUE, (char_u *)_("Save Redirection"),
-		       fname, NULL, NULL, BROWSE_FILTER_ALL_FILES, curbuf);
+		browseFile = do_browse(BROWSE_SAVE,
+			(char_u *)_("Save Redirection"),
+			fname, NULL, NULL, BROWSE_FILTER_ALL_FILES, curbuf);
 		if (browseFile == NULL)
 		    return;		/* operation cancelled */
 		vim_free(fname);
@@ -7658,7 +7677,7 @@ ex_mkrc(eap)
 #ifdef FEAT_BROWSE
     if (cmdmod.browse)
     {
-	browseFile = do_browse(TRUE,
+	browseFile = do_browse(BROWSE_SAVE,
 # ifdef FEAT_SESSION
 		eap->cmdidx == CMD_mkview ? (char_u *)_("Save View") :
 		eap->cmdidx == CMD_mksession ? (char_u *)_("Save Session") :

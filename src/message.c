@@ -813,14 +813,12 @@ ex_messages(eap)
     msg_hist_off = FALSE;
 }
 
-#if defined(FEAT_CON_DIALOG) || defined(PROTO)
-static void msg_end_prompt __ARGS((void));
-
+#if defined(FEAT_CON_DIALOG) || defined(FIND_REPLACE_DIALOG) || defined(PROTO)
 /*
  * Call this after prompting the user.  This will avoid a hit-return message
  * and a delay.
  */
-    static void
+    void
 msg_end_prompt()
 {
     need_wait_return = FALSE;
@@ -3046,8 +3044,8 @@ vim_dialog_yesnoallcancel(type, title, message, dflt)
  * Later this may pop-up a non-GUI file selector (external command?).
  */
     char_u *
-do_browse(saving, title, dflt, ext, initdir, filter, buf)
-    int		saving;		/* write action */
+do_browse(flags, title, dflt, ext, initdir, filter, buf)
+    int		flags;		/* BROWSE_SAVE and BROWSE_DIR */
     char_u	*title;		/* title for the window */
     char_u	*dflt;		/* default file name (may include directory) */
     char_u	*ext;		/* extension added */
@@ -3065,9 +3063,11 @@ do_browse(saving, title, dflt, ext, initdir, filter, buf)
      * flag too!  */
     cmdmod.browse = FALSE;
 
-    if (title == NULL)
+    if (title == NULL || *title == NUL)
     {
-	if (saving)
+	if (flags & BROWSE_DIR)
+	    title = (char_u *)_("Select Directory dialog");
+	else if (flags & BROWSE_SAVE)
 	    title = (char_u *)_("Save File dialog");
 	else
 	    title = (char_u *)_("Open File dialog");
@@ -3097,10 +3097,13 @@ do_browse(saving, title, dflt, ext, initdir, filter, buf)
     if (initdir == NULL || *initdir == NUL)
     {
 	/* When 'browsedir' is a directory, use it */
-	if (mch_isdir(p_bsdir))
+	if (STRCMP(p_bsdir, "last") != 0
+		&& STRCMP(p_bsdir, "buffer") != 0
+		&& STRCMP(p_bsdir, "current") != 0
+		&& mch_isdir(p_bsdir))
 	    initdir = p_bsdir;
 	/* When saving or 'browsedir' is "buffer", use buffer fname */
-	else if ((saving || *p_bsdir == 'b')
+	else if (((flags & BROWSE_SAVE) || *p_bsdir == 'b')
 		&& buf != NULL && buf->b_ffname != NULL)
 	{
 	    if (dflt == NULL || *dflt == NUL)
@@ -3129,7 +3132,36 @@ do_browse(saving, title, dflt, ext, initdir, filter, buf)
 #  endif
 	)
 	    filter = BROWSE_FILTER_DEFAULT;
-	fname = gui_mch_browse(saving, title, dflt, ext, initdir, filter);
+	if (flags & BROWSE_DIR)
+	{
+#  if defined(HAVE_GTK2) || defined(WIN3264)
+	    /* For systems that have a directory dialog. */
+	    fname = gui_mch_browsedir(title, initdir);
+#  else
+	    /* Generic solution for selecting a directory: select a file and
+	     * remove the file name. */
+	    fname = gui_mch_browse(0, title, dflt, ext, initdir, (char_u *)"");
+#  endif
+#  if !defined(HAVE_GTK2)
+	    /* Win32 adds a dummy file name, others return an arbitrary file
+	     * name.  GTK+ 2 returns only the directory, */
+	    if (fname != NULL && *fname != NUL && !mch_isdir(fname))
+	    {
+		/* Remove the file name. */
+		char_u	    *s = get_past_head(fname);
+		char_u	    *tail = gettail(fname);
+
+		while (tail > s && vim_ispathsep(tail[-1]))
+		    --tail;
+		if (tail == fname)
+		    *tail++ = '.';	/* use current dir */
+		*tail = NUL;
+	    }
+#  endif
+	}
+	else
+	    fname = gui_mch_browse(flags & BROWSE_SAVE,
+					   title, dflt, ext, initdir, filter);
 
 	/* We hang around in the dialog for a while, the user might do some
 	 * things to our files.  The Win32 dialog allows deleting or renaming
@@ -3150,7 +3182,7 @@ do_browse(saving, title, dflt, ext, initdir, filter, buf)
     {
 	vim_free(last_dir);
 	last_dir = vim_strsave(fname);
-	if (last_dir != NULL)
+	if (last_dir != NULL && !(flags & BROWSE_DIR))
 	{
 	    *gettail(last_dir) = NUL;
 	    if (*last_dir == NUL)

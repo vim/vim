@@ -1664,6 +1664,8 @@ typedef int VimClipboard;	/* This is required for the prototypes. */
 #  define BROWSE_FILTER_DEFAULT \
 	(char_u *)"All Files (*)\t*\nC source (*.c, *.h)\t*.c;*.h\nC++ source (*.cpp, *.hpp)\t*.cpp;*.hpp\nVim files (*.vim, _vimrc, _gvimrc)\t*.vim;_vimrc;_gvimrc\n"
 # endif
+# define BROWSE_SAVE 1	    /* flag for do_browse() */
+# define BROWSE_DIR 2	    /* flag for do_browse() */
 #endif
 
 /* stop using fastcall for Borland */

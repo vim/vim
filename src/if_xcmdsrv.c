@@ -1021,7 +1021,7 @@ DeleteAnyLingerer(dpy, win)
     char_u	*regProp, *entry = NULL;
     char_u	*p;
     long_u	numItems;
-    Window	wwin;
+    int_u	wwin;
 
     /*
      * Read the registry property.
@@ -1034,8 +1034,8 @@ DeleteAnyLingerer(dpy, win)
     {
 	if (*p != 0)
 	{
-	    sscanf((char *)p, "%x", (int_u *)&wwin);
-	    if (wwin == win)
+	    sscanf((char *)p, "%x", &wwin);
+	    if ((Window)wwin == win)
 	    {
 		int lastHalf;
 

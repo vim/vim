@@ -840,7 +840,7 @@ ex_diffpatch(eap)
 #ifdef FEAT_BROWSE
     if (cmdmod.browse)
     {
-	browseFile = do_browse(FALSE, (char_u *)_("Patch file"),
+	browseFile = do_browse(0, (char_u *)_("Patch file"),
 			 eap->arg, NULL, NULL, BROWSE_FILTER_ALL_FILES, NULL);
 	if (browseFile == NULL)
 	    return;		/* operation cancelled */

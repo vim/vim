@@ -542,8 +542,7 @@ typedef enum
 }
 gui_win_pos_T;
 
-#if defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_KDE) \
-	|| defined(MSWIN_FIND_REPLACE)
+#ifdef FIND_REPLACE_DIALOG
 /*
  * Flags used to distinguish the different contexts in which the
  * find/replace callback may be called.

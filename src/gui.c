@@ -4411,9 +4411,8 @@ no_console_input()
 }
 #endif
 
-#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MOTIF) \
-	|| defined(MSWIN_FIND_REPLACE) || defined(FEAT_SUN_WORKSHOP) \
-	|| defined(PROTO) || defined(FEAT_GUI_KDE)
+#if defined(FIND_REPLACE_DIALOG) || defined(FEAT_SUN_WORKSHOP) \
+	|| defined(PROTO)
 /*
  * Update the current window and the screen.
  */
@@ -4430,8 +4429,7 @@ gui_update_screen()
 }
 #endif
 
-#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MOTIF) \
-	|| defined(MSWIN_FIND_REPLACE) || defined(PROTO) || defined(FEAT_GUI_KDE)
+#if defined(FIND_REPLACE_DIALOG) || defined(PROTO)
 static void concat_esc __ARGS((garray_T *gap, char_u *text, int what));
 
 /*
@@ -4539,28 +4537,10 @@ gui_do_findrepl(flags, find_text, repl_text, down)
     int		i;
     int		type = (flags & FRD_TYPE_MASK);
     char_u	*p;
+    regmatch_T	regmatch;
 
     ga_init2(&ga, 1, 100);
-
-    if (type == FRD_REPLACE)
-    {
-	/* Do the replacement when the text under the cursor matches. */
-	i = STRLEN(find_text);
-	p = ml_get_cursor();
-	if (((flags & FRD_MATCH_CASE)
-		    ? STRNCMP(p, find_text, i) == 0
-		    : STRNICMP(p, find_text, i) == 0)
-		&& u_save_cursor() == OK)
-	{
-	    /* A button was pressed thus undo should be synced. */
-	    if (no_u_sync == 0)
-		u_sync();
-
-	    del_bytes((long)i, FALSE);
-	    ins_str(repl_text);
-	}
-    }
-    else if (type == FRD_REPLACEALL)
+    if (type == FRD_REPLACEALL)
 	ga_concat(&ga, (char_u *)"%s/");
 
     ga_concat(&ga, (char_u *)"\\V");
@@ -4579,21 +4559,56 @@ gui_do_findrepl(flags, find_text, repl_text, down)
 
     if (type == FRD_REPLACEALL)
     {
-	/* A button was pressed, thus undo should be synced. */
-	if (no_u_sync == 0)
-	    u_sync();
-
 	ga_concat(&ga, (char_u *)"/");
 	concat_esc(&ga, repl_text, '/');	/* escape slashes */
 	ga_concat(&ga, (char_u *)"/g");
-	ga_append(&ga, NUL);
+    }
+    ga_append(&ga, NUL);
+
+    if (type == FRD_REPLACE)
+    {
+	/* Do the replacement when the text at the cursor matches.  Thus no
+	 * replacement is done if the cursor was moved! */
+	regmatch.regprog = vim_regcomp(ga.ga_data, RE_MAGIC + RE_STRING);
+	regmatch.rm_ic = 0;
+	if (regmatch.regprog != NULL)
+	{
+	    p = ml_get_cursor();
+	    if (vim_regexec_nl(&regmatch, p, (colnr_T)0)
+						   && regmatch.startp[0] == p)
+	    {
+		/* Clear the command line to remove any old "No match"
+		 * error. */
+		msg_end_prompt();
+
+		if (u_save_cursor() == OK)
+		{
+		    /* A button was pressed thus undo should be synced. */
+		    if (no_u_sync == 0)
+			u_sync();
+
+		    del_bytes((long)(regmatch.endp[0] - regmatch.startp[0]),
+								       FALSE);
+		    ins_str(repl_text);
+		}
+	    }
+	    else
+		MSG(_("No match at cursor, finding next"));
+	    vim_free(regmatch.regprog);
+	}
+    }
+
+    if (type == FRD_REPLACEALL)
+    {
+	/* A button was pressed, thus undo should be synced. */
+	if (no_u_sync == 0)
+	    u_sync();
 	do_cmdline_cmd(ga.ga_data);
     }
     else
     {
 	/* Search for the next match. */
 	i = msg_scroll;
-	ga_append(&ga, NUL);
 	do_search(NULL, down ? '/' : '?', ga.ga_data, 1L,
 						    SEARCH_MSG + SEARCH_MARK);
 	msg_scroll = i;	    /* don't let an error message set msg_scroll */

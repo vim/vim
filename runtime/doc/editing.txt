@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.0aa.  Last change: 2004 Aug 29
+*editing.txt*   For Vim version 7.0aa.  Last change: 2004 Oct 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -84,6 +84,9 @@ g CTRL-G		Prints the current position of the cursor in four
 							*:file_f*
 :f[ile][!] {name}	Sets the current file name to {name}.  The optional !
 			avoids truncating the message, as with |:file|.
+			If the buffer did have a name, that name becomes the
+			|alternate-file| name.  An unlisted buffer is created
+			to hold the old name.
 
 :0f[ile][!]		Remove the name of the current buffer.  The optional !
 			avoids truncating the message, as with |:file|.  {not

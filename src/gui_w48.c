@@ -2980,6 +2980,18 @@ convert_filter(char_u *s)
 }
 
 /*
+ * Select a directory.
+ */
+    char_u *
+gui_mch_browsedir(char_u *title, char_u *initdir)
+{
+    /* We fake this: Use a filter that doesn't select anything and a default
+     * file name that won't be used. */
+    return gui_mch_browse(0, title, (char_u *)_("Not Used"), NULL,
+			      initdir, (char_u *)_("Directory\t*.nothing\n"));
+}
+
+/*
  * Pop open a file browser and return the file selected, in allocated memory,
  * or NULL if Cancel is hit.
  *  saving  - TRUE if the file will be saved to, FALSE if it will be opened.
