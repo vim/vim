@@ -7342,7 +7342,11 @@ nv_g_cmd(cap)
 	    {
 		i = curwin->w_leftcol + W_WIDTH(curwin) - col_off - 1;
 		coladvance((colnr_T)i);
-		curwin->w_set_curswant = TRUE;
+
+		/* Make sure we stick in this column. */
+		validate_virtcol();
+		curwin->w_curswant = curwin->w_virtcol;
+		curwin->w_set_curswant = FALSE;
 	    }
 	}
 	break;

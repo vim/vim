@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 7.0aa.  Last change: 2004 Jul 14
+*cmdline.txt*   For Vim version 7.0aa.  Last change: 2004 Dec 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -355,6 +355,8 @@ CTRL-D		List names that match the pattern in front of the cursor.
 		When showing file names, directories are highlighted (see
 		'highlight' option).  Names where 'suffixes' matches are moved
 		to the end.
+		The 'wildoptions' option can be set to "tagfile" to list the
+		file of matching tags.
 					*c_CTRL-I* *c_wildchar* *c_<Tab>*
 'wildchar' option
 		A match is done on the pattern in front of the cursor.  The

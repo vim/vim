@@ -3113,13 +3113,13 @@ build_drop_cmd(filec, filev, sendReply)
     for (i = 0; i < filec; i++)
     {
 	/* On Unix the shell has already expanded the wildcards, don't want to
-	 * do it again in the Vim server.  On MS-Windows only need to escape a
-	 * space. */
+	 * do it again in the Vim server.  On MS-Windows only escape
+	 * non-wildcard characters. */
 	p = vim_strsave_escaped((char_u *)filev[i],
 #ifdef UNIX
 		PATH_ESC_CHARS
 #else
-		(char_u *)" "
+		(char_u *)" \t%#"
 #endif
 		);
 	if (p == NULL)

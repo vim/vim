@@ -5216,6 +5216,28 @@ fix_help_buffer()
     }
 }
 
+/*
+ * ":exusage"
+ */
+/*ARGSUSED*/
+    void
+ex_exusage(eap)
+    exarg_T	*eap;
+{
+    do_cmdline_cmd((char_u *)"help ex-cmd-index");
+}
+
+/*
+ * ":viusage"
+ */
+/*ARGSUSED*/
+    void
+ex_viusage(eap)
+    exarg_T	*eap;
+{
+    do_cmdline_cmd((char_u *)"help normal-index");
+}
+
 #if defined(FEAT_EX_EXTRA) || defined(PROTO)
 static void helptags_one __ARGS((char_u *dir, char_u *ext, char_u *lang));
 

@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.0aa.  Last change: 2004 Dec 16
+*autocmd.txt*   For Vim version 7.0aa.  Last change: 2004 Dec 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -14,9 +14,10 @@ For a basic explanation, see section |40.3| in the user manual.
 4.  Listing autocommands	|autocmd-list|
 5.  Events			|autocmd-events|
 6.  Patterns			|autocmd-patterns|
-7.  Groups			|autocmd-groups|
-8.  Executing autocommands	|autocmd-execute|
-9.  Using autocommands		|autocmd-use|
+7.  Buffer-local autocommands	|autocmd-buflocal|
+8.  Groups			|autocmd-groups|
+9.  Executing autocommands	|autocmd-execute|
+10. Using autocommands		|autocmd-use|
 
 {Vi does not have any of these commands}
 {only when the |+autocmd| feature has not been disabled at compile time}
@@ -61,6 +62,9 @@ Note: The ":autocmd" command cannot be followed by another command, since any
 			autocommands, so that the autocommands execute in the
 			order in which they were given.  See |autocmd-nested|
 			for [nested].
+
+The special pattern <buffer> or <buffer=N> defines a buffer-local autocommand.
+See |autocmd-buflocal|.
 
 Note that special characters (e.g., "%", "<cword>") in the ":autocmd"
 arguments are not expanded when the autocommand is defined.  These will be
@@ -147,6 +151,9 @@ with ":augroup"); otherwise, Vim uses the group defined with [group].
 If you provide the [group] argument, Vim lists only the autocommands for
 [group]; otherwise, Vim lists the autocommands for ALL groups.  Note that this
 argument behavior differs from that for defining and removing autocommands.
+
+In order to list buffer-local autocommands, use a pattern in the form <buffer>
+or <buffer=N>.  See |autocmd-buflocal|.
 
 ==============================================================================
 5. Events					*autocmd-events* *E215* *E216*
@@ -553,6 +560,10 @@ two ways:
    both short file name (as you typed it) and the full file name (after
    expanding it to a full path and resolving symbolic links).
 
+The special pattern <buffer> or <buffer=N> is used for buffer-local
+autocommands |autocmd-buflocal|.  This pattern is not matched against the name
+of a buffer.
+
 Examples: >
 	:autocmd BufRead *.txt		set et
 Set the 'et' option for all text files. >
@@ -608,7 +619,7 @@ Note that for all systems the '/' character is used for path separator (even
 MS-DOS and OS/2).  This was done because the backslash is difficult to use
 in a pattern and to make the autocommands portable across different systems.
 
-
+							*autocmd-changes*
 Matching with the pattern is done when an event is triggered.  Changing the
 buffer name in one of the autocommands, or even deleting the buffer, does not
 change which autocommands will be executed.  Example: >
@@ -621,8 +632,62 @@ the current buffer instead.  Vim doesn't take into account that "*.foo"
 doesn't match with that buffer name.  It matches "*.foo" with the name of the
 buffer at the moment the event was triggered.
 
+However, buffer-local autocommands will not be executed for a buffer that has
+been wiped out with |:bwipe|.  After deleting the buffer with |:bdel| the
+buffer actually still exists (it becomes unlisted), thus the autocommands are
+still executed.
+
 ==============================================================================
-7. Groups						*autocmd-groups*
+7. Buffer-local autocommands  	*autocmd-buflocal* *autocmd-buffer-local*
+                                    	*<buffer=N>* *<buffer=abuf>* *E680*
+
+Buffer-local autocommands are attached to a specific buffer.  They are useful
+if the buffer does not have a name and when the name does not match a specific
+pattern.  But it also means they must be explicitly added to each buffer.
+
+Instead of a pattern buffer-local autocommands use one of these forms:
+	<buffer>	current buffer
+	<buffer=99>	buffer number 99
+	<buffer=abuf>	using <abuf> (only when executing autocommands)
+			|<abuf>|
+
+Examples: >
+    :au CursorHold <buffer>  echo 'hold'
+    :au CursorHold <buffer=33>  echo 'hold'
+    :au CursorHold <buffer=abuf>  echo 'hold'
+
+All the commands for autocommands also work with buffer-local autocommands,
+simply use the special string instead of the pattern.  Examples: >
+    :au! * <buffer>     	     " remove buffer-local autotommands for
+                                     " current buffer
+    :au! * <buffer=33>  	     " remove buffer-local autotommands for
+    				     " buffer #33
+    :dobuf :au! CursorHold <buffer>  " remove autocmd for given event for all
+    				     " buffers
+    :au * <buffer>       	     " list buffer-local autocommands for
+    				     " current buffer
+
+Note that when an autocommand is defined for the current buffer, it is stored
+with the buffer number.  Thus it uses the form "<buffer=12>", where 12 is the
+number of the current buffer.  You will see this when listing autocommands,
+for example.
+
+To test for presence of buffer-local autocommands use the |exists()| function
+as follows: >
+    :if exists("#CursorHold#<buffer=12>") | ... | endif
+    :if exists("#CursorHold#<buffer>") | ... | endif    " for current buffer
+
+When a buffer is wiped out its buffer-local autocommands are also gone, of
+course.  Note that when deleting a buffer, e.g., with ":bdel", it is only
+unlisted, the autocommands are still present.  In order to see the removal of
+buffer-local autocommands: >
+    :set verbose=6
+
+It is not possible to define buffer-local autocommands for a non-existent
+buffer.
+
+==============================================================================
+8. Groups						*autocmd-groups*
 
 Autocommands can be put together in a group.  This is useful for removing or
 executing a group of autocommands.  For example, all the autocommands for
@@ -670,7 +735,7 @@ This prevents having the autocommands defined twice (e.g., after sourcing the
 .vimrc file again).
 
 ==============================================================================
-8. Executing autocommands				*autocmd-execute*
+9. Executing autocommands				*autocmd-execute*
 
 Vim can also execute Autocommands non-automatically.  This is useful if you
 have changed autocommands, or when Vim has executed the wrong autocommands
@@ -713,7 +778,7 @@ option will not cause any commands to be executed.
 			options, change highlighting, and things like that.
 
 ==============================================================================
-9. Using autocommands					*autocmd-use*
+10. Using autocommands					*autocmd-use*
 
 For WRITING FILES there are four possible sets of events.  Vim uses only one
 of these sets for a write command:
@@ -925,5 +990,6 @@ effective.  These should be used for the command that reads/writes the file.
 The |v:cmdbang| variable is one when "!" was used, zero otherwise.
 
 See the $VIMRUNTIME/plugin/netrw.vim for examples.
+
 
  vim:tw=78:ts=8:ft=help:norl:

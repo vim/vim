@@ -3174,7 +3174,7 @@ set_one_cmd_context(xp, buff)
 	xp->xp_pattern = skipwhite(arg);
 	for (p = xp->xp_pattern; *p; )
 	{
-	    if (*p == '\\' && p[1])
+	    if (*p == '\\' && p[1] != NUL)
 		++p;
 #ifdef SPACE_IN_FILENAME
 	    else if (vim_iswhite(*p) && (!(argt & NOSPC) || usefilter))
@@ -3440,7 +3440,10 @@ set_one_cmd_context(xp, buff)
 	case CMD_tjump:
 	case CMD_stjump:
 	case CMD_ptjump:
-	    xp->xp_context = EXPAND_TAGS;
+	    if (*p_wop != NUL)
+		xp->xp_context = EXPAND_TAGS_LISTFILES;
+	    else
+		xp->xp_context = EXPAND_TAGS;
 	    xp->xp_pattern = arg;
 	    break;
 	case CMD_augroup:

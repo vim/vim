@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2004 Dec 19
+*version7.txt*  For Vim version 7.0aa.  Last change: 2004 Dec 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -130,6 +130,8 @@ Translated manual pages					*new-manpage-trans*
 The manual page of Vim and associated programs is now also available in
 Italian (translated by Antonio Colombo).  More languages will follow.
 
+The Unix Makefile installs the Italian manual pages in .../man/it/man1/.
+
 
 Various new items					*new-items-7*
 -----------------
@@ -153,7 +155,9 @@ Options: ~
 'printmbfont'		font names to be used for CJK output of :hardcopy
 'fsync'			Whether fsync() is called after writing a file.
 			(Ciaran McCreesh)
-
+'wildoptions'		"tagfile" value enables listing the file name of
+			matching tags for CTRL-D command line completion.
+			(based on an idea from Yegappan Lakshmanan)
 
 Ex commands: ~
 
@@ -171,6 +175,10 @@ Win32: The ":winpos" command now also works in the console. (Vipin Aravind)
 |:delmarks|		Delete marks.
 
 |:sandbox|		Command modifier: execute the argument in the sandbox.
+
+|:exusage|		Help for Ex commands (Nvi command).
+
+|:viusage|		Help for Vi commands (Nvi command).
 
 
 New functions: ~
@@ -259,6 +267,10 @@ Added the t_SI and t_EI escape sequences for starting and ending Insert mode.
 To be used to set the cursor shape to a bar or a block.  No default values,
 they are not supported by termcap/terminfo.
 
+Autocommands can be defined local to a buffer.  This means they will also work
+when the buffer does not have a name or no specific name.  See
+|autocmd-buflocal|.  (Yakov Lerner)
+
 ==============================================================================
 IMPROVEMENTS						*improvements-7*
 
@@ -309,6 +321,9 @@ upper case.  Add color support to the builtin vt320 terminal codes.
 
 For the '%' item in 'viminfo', allow a number to set a maximum for the number
 of buffers.
+
+The 'statusline' option can be local to the window, so that each window can
+have a different value.  (partly by Yegappan Lakshmanan)
 
 When a file looks like a shell script, check for an "exec" command that starts
 the tcl interpreter. (suggested by Alexios Zavras)
@@ -563,5 +578,8 @@ the values when recovering.
 
 ":bufdo g/something/p" overwrites each last printed text line with the file
 message for the next buffer.  Temporarily clear 'shortmess' to avoid that.
+
+Win32: Cannot edit a file starting with # with --remote.  Do escape % and #
+when building the ":drop" command.
 
  vim:tw=78:ts=8:ft=help:norl:

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Dec 19
+*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Dec 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,10 +30,7 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Win32: Cannot edit a file starting with # with --remote. (Giuseppe Bilotta,
-Oct 6 2004)
-
-Add Makefile code to install *-it.1 manual pages in .../man/it/man1/*.1
+Patch for mch_FullName() also in Vim 6.3?  os_mswin.c
 
 Win32: "gvim -V100" should use dialog with scrollbar.  Using
 gui_mch_dialog() would be good, but need to move display_errors() to after
@@ -51,134 +48,18 @@ Included NetBeans patches (Gordon Prieur, Oct 20)
     Asked Gordon to send the differences again, some parts apparently are
     missing.
 
-For version 7.0:
+PLANNED FOR VERSION 7.0:
 
 -   Include many PATCHES:
-    -	Patch for 'breakindent' option: repeat indent for wrapped line. (Vaclav
-	Smilauer, 2004 Sep 13, fix Oct 31)
-    7   Add 'taglistfiles' option, show file name and type when listing matching
-	tags name with CTRL-D completion.  Patch from Yegappan Lakshmanan.
-	2004 Jul 11
-    7   For Visual mode: Command to do a search for the string in the marked
-	area.  Only when fewer than two lines. Use "g/" and "gb".  Patch from
-	Yegappan Lakshmanan. 2004 Jul 11
-	When more than two lines: perform a search in the Visual area only.
-    8   Make 'statusline' local, so that each window can have a different
-	value.  But should it also be local to a buffer? (Yegappan Lakshmanan
-	has a patch, 2004 Jul 11)
-    8   Add buffer-local autocommands?  Reduces overhead for autocommands that
-	trigger often (inserting a character, switching mode).
-	    :au Event <buffer> do-something
-	E.g.:
-	    :au BufEnter <buffer> menu enable ...
-	    :au BufLeave <buffer> menu disable ...
-	Patch from Yakov Lerner, including test (2004 Jan 7).
-	VimResized	    - When the Vim window has been resized (SIGWINCH)
+    -	VimResized	    - When the Vim window has been resized (SIGWINCH)
 	  patch from Yakov Lerner, 2003 July 24.
-	Patch for specifying an expression for numbered lists. (Hugo Haas,
+    -	Patch for specifying an expression for numbered lists. (Hugo Haas,
 	2004 Aug 7)
-    --- awaiting updated patch ---
-    7   Add patch from Wall for this one ( ~/Mail/oldmail/wall/in.00019 ):
-	'flipcase' variable: upper/lowercase pairs.
-	Insert comma's between pairs and allow a range, make it look like
-	'isfname'.  E.g. ":set flipcase=a-zA-Z,xX,23-33:143-153".  The colon to
-	separate the from and to part is optional.
-	Resp: no time now.
-    8   Add GTK 2.3 file dialog support.  Patch by Grahame Bowland, 2004 Mar 15,
-	but it doesn't use "initdir" or "dflt". (will update patch)
-    8   Add ":n" to fnamemodify(): normalize path, remove "../" when possible.
-	Aric Blumer has a patch for this.
-	He will update the patch for 6.3.
-    Autocommands:
-    7   Completion of network shares, patch by Yasuhiro Matsumoto.
-	Update 2004 Sep 6.
-	How does this work?  Missing comments.
-	gettext()	Translate a message.  (Patch from Yasuhiro Matsumoto)
-			Update 2004 Sep 10
-			More docs.  Search in 'runtimepath'?
-			How to get the messages into the .po files?
-    --- did not respond (yet) --
-    7   Make "5dd" on last-but-one-line not delete anything (Vi compatible).
-	Add flag in 'cpoptions' for this.  When not present, "2dd" in the last
-	line should delete the last line.  Patch from greenx 2002 Apr 11.
-    8   Accelerators don't work in a dialog.  Include patch from Martin Dalecki
-	(Jan 3, tested by David Harrison).  Should work with Alt-o then.
-    7   Use accelerators for the Motif file selection dialog.  Patch from
-	Martin Dalecki 2002 Jan 11.
-    8   Add a few more command names to the menus.  Patch from Jiri Brezina
-	(28 feb 2002).
-    7   ATTENTION dialog choices are more logical when "Delete it' appears
-	before "Quit".  Patch by Robert Webb, 2004 May 3.
-    -   Include flipcase patch: ~/vim/patches/wall.flipcase2 ?  Make it work
-	for multi-byte characters.
-    -   Win32: add options to print dialog.  Patch from Vipin Aravind.
-    -   Patch to add highlighting for whitespace. (Tom Schumm, 2003 Jul 5)
-	use the patch that keeps using HLF_8 if HLF_WS has not
-	been given values.
-	Add section in help files for these highlight groups?
-    8   "fg" and "bg" don't work in an xterm.  Get default colors from xterm
-	with an ESC sequence.  Ideas in: ~/vim/patches/vikas.xtermcolors .
-    7   Add "DefaultFG" and "DefaultBG" for the colors of the menu. (Martin
-	Dalecki has a patch for Motif)
-    -   Add possibility to highlight specific columns (for Fortran).  Or put a
-	line in between columns (e.g. for 'textwidth').
-	Patch to add 'hlcolumn' from Vit Stradal, 2004 May 20.
-    8   Add functions:
-	confirm()		add "flags" argument, with 'v' for vertical
-				layout and 'c' for console dialog. (Haegg)
-				Flemming Madsen has a patch for the 'c' flag
-				(2003 May 13)
-	system({cmd}, {expr})	Filter {expr} through the shell command
-				{cmd} and return the result.
-				(Patch from Yegappan Lakshmanan)
-	raisewin()		raise gvim window (see HierAssist patch for
-				Tcl implementation ~/vim/HierAssist/ )
-    7   Add patch from Benoit Cerrina to integrate Vim and Perl functions
-	better.  Now also works for Ruby (2001 Nov 10)
-    -   Patch from Herculano de Lima Einloft Neto for better formatting of the
-	quickfix window (2004 dec 2)
-    7   Motif: use the menu font consistently.  Patch from Martin Dalecki 2002
-	Jan 11.
-    -   Motif: add 3D shading for the menu entries?  Patch from Martin Dalecki.
-    7   When 'rightleft' is set, the search pattern should be displayed right
-	to left as well?  See patch of Dec 26. (Nadim Shaikli)
-    8   Lock all used memory so that it doesn't get swapped to disk (uncrypted).
-	Patch by Jason Holt, 2003 May 23.
-    7   Support a stronger encryption.  Jason Holt implemented AES (May 6 2003).
-    7   Add ! register, for shell commands. (patch from Grenie)
-    8   In the gzip plugin, also recognize *.gz.orig, *.gz.bak, etc.  Like it's
-	done for filetype detection.  Patch from Walter Briscoe, 2003 Jul 1.
-    7   Add a "-@ filelist" argument: read file names from a file. (David
-	Kotchan has a patch for it)
-    8   Add term entries for function keys on xterm with alt and ctrl (new in
-	pl 94).  E.g., Control adds ";5" in "<Esc>[20;5~".  Find a generic way
-	to prepend a modifier in console mode, to avoid having to specify each
-	individual modified key.
-	Steve Wall has a patch (2002 Mar 12) for adding function keys up to 37,
-	with modifiers.
-    8   Include a connection to an external program through a pipe?  See
-	patches from Felbinger for a mathematica interface.
-	Or use emacs server kind of thing?
-    7   Add ":justify" command.  Patch from Vit Stradal 2002 Nov 25.
-    -   findmatch() should be adjusted for Lisp.  See remark at
-	get_lisp_indent().  Esp. \( and \) should be skipped. (Dorai Sitaram,
-	incomplete patch Mar 18)
-    -	Set user variables to the names of the actually used user vimrc file,
-	the first directory looked for user plugins/syntax files.
-	$MYVIMRC for .vimrc, $MYGVIMRC for .gvimrc, $MYRUNTIME/plugin for
-	runtime files?
-	Also: when the environment variable exists, use it.  If it doesn't
-	exist, set it.  Requires good names: $VIM_USER_VIMRC  $VIM_USER_DIR
     -	Add the ":cbuffer" command: read list of errors from a buffer instead
 	of from a file. (Yegappan Lakshmanan, Oct 31, but avoid the temp file)
 	Perhaps ":cexpr" could read from a list?
 	Add %b to 'errorformat': buffer number. (Yegappan Lakshmanan / Suresh
 	Govindachar)
-    -	The Replace dialog takes "\r" literal, unless "replace all" is used.
-	Need to escape backslashes.
-        Win32: the text to replace with isn't remembered.
-    -	For GUI Find/Replace dialog support using a regexp.  Patch for Motif
-	and GTK by degreneir (nov 10 and nov 18).
 -   Use a builtin grep command for ":grep"?  Makes it possible to add the
     column number.  Can use the code of ":helpgrep".
     Patch from Yegappan Lakshmanan, Nov 4.  Or use ":grep" and set 'grepprg'
@@ -324,6 +205,8 @@ After including patches:
 -   Add Lua interface? (Wolfgang Oertl)
 -   "onemore" flag in 'virtualedit': move cursor past end of line.  Patch by
     Mattias Flodin (2004 Jul 30)
+-   In a :s command multi-byte characters should also be upper/lower cased
+    with \u, \U, etc.
 
 Support ":set syntax=cpp.doxygen"?  Suggested patch by Michael Geddes (9 Aug
 2004).  Should also work for 'filetype'.
@@ -353,6 +236,107 @@ profiling for Vim script?
 Mac: problem with Xcode, Vim doesn't continue until the next click.
 Apparently hangs in handle_drop().  A PostEvent() avoids it. (Da Woon Jung)
 
+Awaiting updated patches:
+    --- awaiting updated patch ---
+    7   Add patch from Wall for this one ( ~/Mail/oldmail/wall/in.00019 ):
+	'flipcase' variable: upper/lowercase pairs.
+	Insert comma's between pairs and allow a range, make it look like
+	'isfname'.  E.g. ":set flipcase=a-zA-Z,xX,23-33:143-153".  The colon to
+	separate the from and to part is optional.
+	Resp: no time now.
+    8   Add GTK 2.3 file dialog support.  Patch by Grahame Bowland, 2004 Mar
+	15, but it doesn't use "initdir" or "dflt". (will update patch)
+    8   Add ":n" to fnamemodify(): normalize path, remove "../" when possible.
+	Aric Blumer has a patch for this.
+	He will update the patch for 6.3.
+    Autocommands:
+    7   Completion of network shares, patch by Yasuhiro Matsumoto.
+	Update 2004 Sep 6.
+	How does this work?  Missing comments.
+	gettext()	Translate a message.  (Patch from Yasuhiro Matsumoto)
+			Update 2004 Sep 10
+			More docs.  Search in 'runtimepath'?
+			How to get the messages into the .po files?
+    --- did not respond (yet) --
+    -	Patch for 'breakindent' option: repeat indent for wrapped line. (Vaclav
+	Smilauer, 2004 Sep 13, fix Oct 31)
+	Asked for improvements 2004 Dec 20.
+    7   Make "5dd" on last-but-one-line not delete anything (Vi compatible).
+	Add flag in 'cpoptions' for this.  When not present, "2dd" in the last
+	line should delete the last line.  Patch from greenx 2002 Apr 11.
+    8   Accelerators don't work in a dialog.  Include patch from Martin Dalecki
+	(Jan 3, tested by David Harrison).  Should work with Alt-o then.
+    7   Use accelerators for the Motif file selection dialog.  Patch from
+	Martin Dalecki 2002 Jan 11.
+    8   Add a few more command names to the menus.  Patch from Jiri Brezina
+	(28 feb 2002).
+    7   ATTENTION dialog choices are more logical when "Delete it' appears
+	before "Quit".  Patch by Robert Webb, 2004 May 3.
+    -   Include flipcase patch: ~/vim/patches/wall.flipcase2 ?  Make it work
+	for multi-byte characters.
+    -   Win32: add options to print dialog.  Patch from Vipin Aravind.
+    -   Patch to add highlighting for whitespace. (Tom Schumm, 2003 Jul 5)
+	use the patch that keeps using HLF_8 if HLF_WS has not
+	been given values.
+	Add section in help files for these highlight groups?
+    8   "fg" and "bg" don't work in an xterm.  Get default colors from xterm
+	with an ESC sequence.  Ideas in: ~/vim/patches/vikas.xtermcolors .
+    7   Add "DefaultFG" and "DefaultBG" for the colors of the menu. (Martin
+	Dalecki has a patch for Motif)
+    -   Add possibility to highlight specific columns (for Fortran).  Or put a
+	line in between columns (e.g. for 'textwidth').
+	Patch to add 'hlcolumn' from Vit Stradal, 2004 May 20.
+    8   Add functions:
+	confirm()		add "flags" argument, with 'v' for vertical
+				layout and 'c' for console dialog. (Haegg)
+				Flemming Madsen has a patch for the 'c' flag
+				(2003 May 13)
+	system({cmd}, {expr})	Filter {expr} through the shell command
+				{cmd} and return the result.
+				(Patch from Yegappan Lakshmanan)
+	raisewin()		raise gvim window (see HierAssist patch for
+				Tcl implementation ~/vim/HierAssist/ )
+    7   Add patch from Benoit Cerrina to integrate Vim and Perl functions
+	better.  Now also works for Ruby (2001 Nov 10)
+    -   Patch from Herculano de Lima Einloft Neto for better formatting of the
+	quickfix window (2004 dec 2)
+    7   Motif: use the menu font consistently.  Patch from Martin Dalecki 2002
+	Jan 11.
+    -   Motif: add 3D shading for the menu entries?  Patch from Martin Dalecki.
+    7   When 'rightleft' is set, the search pattern should be displayed right
+	to left as well?  See patch of Dec 26. (Nadim Shaikli)
+    8   Lock all used memory so that it doesn't get swapped to disk (uncrypted).
+	Patch by Jason Holt, 2003 May 23.
+    7   Support a stronger encryption.  Jason Holt implemented AES (May 6 2003).
+    7   Add ! register, for shell commands. (patch from Grenie)
+    8   In the gzip plugin, also recognize *.gz.orig, *.gz.bak, etc.  Like it's
+	done for filetype detection.  Patch from Walter Briscoe, 2003 Jul 1.
+    7   Add a "-@ filelist" argument: read file names from a file. (David
+	Kotchan has a patch for it)
+    8   Add term entries for function keys on xterm with alt and ctrl (new in
+	pl 94).  E.g., Control adds ";5" in "<Esc>[20;5~".  Find a generic way
+	to prepend a modifier in console mode, to avoid having to specify each
+	individual modified key.
+	Steve Wall has a patch (2002 Mar 12) for adding function keys up to 37,
+	with modifiers.
+    8   Include a connection to an external program through a pipe?  See
+	patches from Felbinger for a mathematica interface.
+	Or use emacs server kind of thing?
+    7   Add ":justify" command.  Patch from Vit Stradal 2002 Nov 25.
+    -   findmatch() should be adjusted for Lisp.  See remark at
+	get_lisp_indent().  Esp. \( and \) should be skipped. (Dorai Sitaram,
+	incomplete patch Mar 18)
+    -	Set user variables to the names of the actually used user vimrc file,
+	the first directory looked for user plugins/syntax files.
+	$MYVIMRC for .vimrc, $MYGVIMRC for .gvimrc, $MYRUNTIME/plugin for
+	runtime files?
+	Also: when the environment variable exists, use it.  If it doesn't
+	exist, set it.  Requires good names: $VIM_USER_VIMRC  $VIM_USER_DIR
+    -	The Replace dialog takes "\r" literal, unless "replace all" is used.
+	Need to escape backslashes.
+        Win32: the text to replace with isn't remembered.
+    -	For GUI Find/Replace dialog support using a regexp.  Patch for Motif
+	and GTK by degreneir (nov 10 and nov 18).
 
 Vi incompatibility:
 9   In Ex mode, "u" undoes all changes, not just the last one. (John Cowan)
@@ -1267,6 +1251,7 @@ Diff mode:
 Folding:
     (commands still available: zg zG zI zJ zK zp zP zq zQ zV zw zW zy zY;
     secondary: zB zS zT zZ)
+8   Add "z/" and "z?" for searching in not folded text only.
 8   Add different highlighting for a fold line depending on the fold level.
     (Noel Henson)
 8   When a closed fold is displayed open because of 'foldminlines', the
@@ -2053,9 +2038,10 @@ VMS:
 
 
 Autocommands:
-9   Make sure that side effects of autocommands are handled correctly.  Don't
-    execute autocommands when a buffer or window is halfway some changes.
-    Move all apply_autocmds() calls to a higher level where needed.
+7   For autocommand events that trigger multiple times per buffer (e.g.,
+    CursorHold), go through the list once and cache the result for a specific
+    buffer.  Invalidate the cache when adding/deleting autocommands or
+    changing the buffer name.
 8   Add ScriptReadCmd event: used to load remote Vim scripts, e.g.
     "vim -u http://mach/path/vimrc".
 8   Use another option than 'updatetime' for the CursorHold event.  The two
@@ -2626,6 +2612,8 @@ Incsearch:
 
 
 Searching:
+7   Add "g/" and "gb" to search for a pattern in the Visually selected text?
+    "g?" is already used for rot13.
 8   Add a mechanism for recursiveness: "\(([^()]*\@@[^()]*)\)\@r".  \@@ stands
     for "go recursive here" and \@r marks the recursive atom.
 7   Add an item stack to allow matching ().  One side is "push X on

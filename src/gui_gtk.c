@@ -2014,15 +2014,17 @@ split_button_string(char_u *button_string, int *n_buttons)
     if (array != NULL)
     {
 	array[count++] = (char *)button_string;
-	for (p = button_string; *p != NUL; mb_ptr_adv(p))
+	for (p = button_string; *p != NUL; )
 	{
 	    if (*p == DLG_BUTTON_SEP)
 	    {
-		*p = NUL;
-		array[count++] = (char *)p + 1;
+		*p++ = NUL;
+		array[count++] = (char *)p;
 	    }
 	    else if (*p == DLG_HOTKEY_CHAR)
-		*p = '_';
+		*p++ = '_';
+	    else
+		mb_ptr_adv(p);
 	}
 	array[count] = NULL; /* currently not relied upon, but doesn't hurt */
     }

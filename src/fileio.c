@@ -6590,6 +6590,7 @@ typedef struct AutoPat
     char	    last;		/* last pattern for apply_autocmds() */
     AutoCmd	    *cmds;		/* list of commands to do */
     struct AutoPat  *next;		/* next AutoPat in AutoPat list */
+    int		    buflocal_nr;	/* !=0 for buffer-local AutoPat */
 } AutoPat;
 
 static struct event_name
@@ -6686,7 +6687,12 @@ typedef struct AutoPatCmd
     char_u	*sfname;	/* sfname to match with */
     char_u	*tail;		/* tail of fname */
     EVENT_T	event;		/* current event */
+    int		arg_bufnr;	/* initially equal to <abuf>, set to zero when
+				   buf is deleted */
+    struct AutoPatCmd   *next;	/* chain of active apc-s for auto-invalidation*/
 } AutoPatCmd;
+
+AutoPatCmd *active_apc_list = NULL;	/* stack of active autocommands */
 
 /*
  * augroups stores a list of autocmd group names.
@@ -6720,6 +6726,7 @@ static int do_autocmd_event __ARGS((EVENT_T event, char_u *pat, int nested, char
 static char_u *getnextac __ARGS((int c, void *cookie, int indent));
 static int apply_autocmds_group __ARGS((EVENT_T event, char_u *fname, char_u *fname_io, int force, int group, buf_T *buf, exarg_T *eap));
 static void auto_next_pat __ARGS((AutoPatCmd *apc, int stop_at_last));
+
 
 static EVENT_T	last_event;
 static int	last_group;
@@ -6795,6 +6802,7 @@ au_remove_pat(ap)
 {
     vim_free(ap->pat);
     ap->pat = NULL;
+    ap->buflocal_nr = -1;
     au_need_clean = TRUE;
 }
 
@@ -6866,6 +6874,39 @@ au_cleanup()
     }
 
     au_need_clean = FALSE;
+}
+
+/*
+ * Called when buffer is freed, to remove/invalidate related buffer-local
+ * autocmds.
+ */
+    void
+aubuflocal_remove(buf)
+    buf_T	*buf;
+{
+    AutoPat	*ap;
+    EVENT_T	event;
+    AutoPatCmd	*apc;
+
+    /* invalidate currently executing autocommands */
+    for (apc = active_apc_list; apc; apc = apc->next)
+	if (buf->b_fnum == apc->arg_bufnr)
+	    apc->arg_bufnr = 0;
+
+    /* invalidate buflocals looping through events */
+    for (event = (EVENT_T)0; (int)event < (int)NUM_EVENTS;
+					    event = (EVENT_T)((int)event + 1))
+	/* loop over all autocommand patterns */
+	for (ap = first_autopat[(int)event]; ap != NULL; ap = ap->next)
+	    if (ap->buflocal_nr == buf->b_fnum)
+	    {
+		au_remove_pat(ap);
+		if (p_verbose >= 6)
+		    smsg((char_u *)
+			    _("auto-removing autocommand: %s <buffer=%d>"),
+					   event_nr2name(event), buf->b_fnum);
+	    }
+    au_cleanup();
 }
 
 /*
@@ -7292,6 +7333,9 @@ do_autocmd_event(event, pat, nested, cmd, forceit, group)
     int		findgroup;
     int		allgroups;
     int		patlen;
+    int	        is_buflocal;
+    int		buflocal_nr;
+    char_u	buflocal_pat[25];	/* for "<buffer=X>" */
 
     if (group == AUGROUP_ALL)
 	findgroup = current_augroup;
@@ -7339,6 +7383,39 @@ do_autocmd_event(event, pat, nested, cmd, forceit, group)
 	patlen = (int)(endpat - pat);
 
 	/*
+	 * detect special <buflocal[=X]> buffer-local patterns
+	 */
+	is_buflocal = FALSE;
+	buflocal_nr = 0;
+
+	if (patlen >= 7 && STRNCMP(pat, "<buffer", 7) == 0
+						    && pat[patlen - 1] == '>')
+	{
+	    /* Error will be printed only for addition. printing and removing
+	     * will proceed silently. */
+	    is_buflocal = TRUE;
+	    if (patlen == 8)
+		buflocal_nr = curbuf->b_fnum;
+	    else if (patlen > 9 && pat[7] == '=')
+	    {
+		/* <buffer=abuf> */
+		if (patlen == 13 && STRNICMP(pat, "<buffer=abuf>", 13))
+		    buflocal_nr = autocmd_bufnr;
+		/* <buffer=123> */
+		else if (skipdigits(pat + 8) == pat + patlen - 1)
+		    buflocal_nr = atoi((char *)pat + 8);
+	    }
+	}
+
+	if (is_buflocal)
+	{
+	    /* normalize pat into standard "<buffer>#N" form */
+	    sprintf((char *)buflocal_pat, "<buffer=%d>", buflocal_nr);
+	    pat = buflocal_pat;			/* can modify pat and patlen */
+	    patlen = STRLEN(buflocal_pat);	/*   but not endpat */
+	}
+
+	/*
 	 * Find AutoPat entries with this pattern.
 	 */
 	prev_ap = &first_autopat[(int)event];
@@ -7351,7 +7428,9 @@ do_autocmd_event(event, pat, nested, cmd, forceit, group)
 		 *   not specified and it's the current group, or a group was
 		 *   not specified and we are listing
 		 * - the length of the pattern matches
-		 * - the pattern matches
+		 * - the pattern matches.
+		 * For <buffer[=X]>, this condition works because we normalize
+		 * all buffer-local patterns.
 		 */
 		if ((allgroups || ap->group == findgroup)
 			&& ap->patlen == patlen
@@ -7374,7 +7453,7 @@ do_autocmd_event(event, pat, nested, cmd, forceit, group)
 		    }
 
 		    /*
-		     * Show autocmd's for this autopat
+		     * Show autocmd's for this autopat, or buflocals <buffer=X>
 		     */
 		    else if (*cmd == NUL)
 			show_autocmd(ap, event);
@@ -7401,6 +7480,15 @@ do_autocmd_event(event, pat, nested, cmd, forceit, group)
 	     */
 	    if (ap == NULL)
 	    {
+		/* refuse to add buffer-local ap if buffer number is invalid */
+		if (is_buflocal && (buflocal_nr == 0
+				      || buflist_findnr(buflocal_nr) == NULL))
+		{
+		    EMSGN(_("E680: <buffer=%d>: invalid buffer number "),
+								 buflocal_nr);
+		    return FAIL;
+		}
+
 		ap = (AutoPat *)alloc((unsigned)sizeof(AutoPat));
 		if (ap == NULL)
 		    return FAIL;
@@ -7411,13 +7499,23 @@ do_autocmd_event(event, pat, nested, cmd, forceit, group)
 		    vim_free(ap);
 		    return FAIL;
 		}
-		ap->reg_pat = file_pat_to_reg_pat(pat, endpat,
-						       &ap->allow_dirs, TRUE);
-		if (ap->reg_pat == NULL)
+
+		if (is_buflocal)
 		{
-		    vim_free(ap->pat);
-		    vim_free(ap);
-		    return FAIL;
+		    ap->buflocal_nr = buflocal_nr;
+		    ap->reg_pat = NULL;
+		}
+		else
+		{
+		    ap->buflocal_nr = 0;
+		    ap->reg_pat = file_pat_to_reg_pat(pat, endpat,
+							 &ap->allow_dirs, TRUE);
+		    if (ap->reg_pat == NULL)
+		    {
+			vim_free(ap->pat);
+			vim_free(ap);
+			return FAIL;
+		    }
 		}
 		ap->cmds = NULL;
 		*prev_ap = ap;
@@ -7786,14 +7884,14 @@ apply_autocmds_group(event, fname, fname_io, force, group, buf, eap)
      * autocommands are blocked.
      */
     if (first_autopat[(int)event] == NULL || autocmd_block > 0)
-	return retval;
+	goto BYPASS_AU;
 
     /*
      * When autocommands are busy, new autocommands are only executed when
      * explicitly enabled with the "nested" flag.
      */
     if (autocmd_busy && !(force || autocmd_nested))
-	return retval;
+	goto BYPASS_AU;
 
 #ifdef FEAT_EVAL
     /*
@@ -7801,20 +7899,20 @@ apply_autocmds_group(event, fname, fname_io, force, group, buf, eap)
      * occurred or an exception was thrown but not caught.
      */
     if (aborting())
-	return retval;
+	goto BYPASS_AU;
 #endif
 
     /*
      * FileChangedShell never nests, because it can create an endless loop.
      */
     if (filechangeshell_busy && event == EVENT_FILECHANGEDSHELL)
-	return retval;
+	goto BYPASS_AU;
 
     /*
      * Ignore events in 'eventignore'.
      */
     if (event_ignored(event))
-	return retval;
+	goto BYPASS_AU;
 
     /*
      * Allow nesting of autocommands, but restrict the depth, because it's
@@ -7823,7 +7921,7 @@ apply_autocmds_group(event, fname, fname_io, force, group, buf, eap)
     if (nesting == 10)
     {
 	EMSG(_("E218: autocommand nesting too deep"));
-	return retval;
+	goto BYPASS_AU;
     }
 
     /*
@@ -7834,7 +7932,7 @@ apply_autocmds_group(event, fname, fname_io, force, group, buf, eap)
 		&& (event == EVENT_WINENTER || event == EVENT_BUFENTER))
 	    || (autocmd_no_leave
 		&& (event == EVENT_WINLEAVE || event == EVENT_BUFLEAVE)))
-	return retval;
+	goto BYPASS_AU;
 
     /*
      * Save the autocmd_* variables and info about the current buffer.
@@ -7904,7 +8002,7 @@ apply_autocmds_group(event, fname, fname_io, force, group, buf, eap)
 	sfname = vim_strsave(fname);
 	/* Don't try expanding FileType, Syntax or WindowID. */
 	if (event == EVENT_FILETYPE || event == EVENT_SYNTAX
-		|| event == EVENT_REMOTEREPLY)
+						|| event == EVENT_REMOTEREPLY)
 	    fname = vim_strsave(fname);
 	else
 	    fname = FullName_save(fname, FALSE);
@@ -7912,7 +8010,8 @@ apply_autocmds_group(event, fname, fname_io, force, group, buf, eap)
     if (fname == NULL)	    /* out of memory */
     {
 	vim_free(sfname);
-	return FALSE;
+	retval = FALSE;
+	goto BYPASS_AU;
     }
 
 #ifdef BACKSLASH_IN_FILENAME
@@ -7983,11 +8082,17 @@ apply_autocmds_group(event, fname, fname_io, force, group, buf, eap)
     patcmd.sfname = sfname;
     patcmd.tail = tail;
     patcmd.event = event;
+    patcmd.arg_bufnr = autocmd_bufnr;
+    patcmd.next = NULL;
     auto_next_pat(&patcmd, FALSE);
 
     /* found one, start executing the autocommands */
     if (patcmd.curpat != NULL)
     {
+	/* add to active_apc_list */
+	patcmd.next = active_apc_list;
+	active_apc_list = &patcmd;
+
 #ifdef FEAT_EVAL
 	/* set v:cmdarg (only when there is a matching pattern) */
 	save_cmdbang = get_vim_var_nr(VV_CMDBANG);
@@ -8015,6 +8120,9 @@ apply_autocmds_group(event, fname, fname_io, force, group, buf, eap)
 	    set_vim_var_nr(VV_CMDBANG, save_cmdbang);
 	}
 #endif
+	/* delete from active_apc_list */
+	if (active_apc_list == &patcmd)	    /* just in case */
+	    active_apc_list = patcmd.next;
     }
 
     --RedrawingDisabled;
@@ -8065,6 +8173,13 @@ apply_autocmds_group(event, fname, fname_io, force, group, buf, eap)
     }
 
     au_cleanup();	/* may really delete removed patterns/commands now */
+
+BYPASS_AU:
+    /* When wiping out a buffer make sure all its buffer-local autocommands
+     * are deleted. */
+    if (event == EVENT_BUFWIPEOUT && buf != NULL)
+	aubuflocal_remove(buf);
+
     return retval;
 }
 
@@ -8089,12 +8204,16 @@ auto_next_pat(apc, stop_at_last)
 	apc->curpat = NULL;
 
 	/* only use a pattern when it has not been removed, has commands and
-	 * the group matches */
+	 * the group matches. For buffer-local autocommands only check the
+	 * buffer number. */
 	if (ap->pat != NULL && ap->cmds != NULL
 		&& (apc->group == AUGROUP_ALL || apc->group == ap->group))
 	{
-	    if (match_file_pat(ap->reg_pat, apc->fname, apc->sfname, apc->tail,
-							      ap->allow_dirs))
+	    /* execution-condition */
+	    if (ap->buflocal_nr == 0
+		    ? (match_file_pat(ap->reg_pat, apc->fname, apc->sfname,
+						   apc->tail, ap->allow_dirs))
+		    : ap->buflocal_nr == apc->arg_bufnr)
 	    {
 		name = event_nr2name(apc->event);
 		s = _("%s Auto commands for \"%s\"");
@@ -8191,11 +8310,14 @@ getnextac(c, cookie, indent)
 
 /*
  * Return TRUE if there is a matching autocommand for "fname".
+ * To account for buffer-local autocommands, function needs to know
+ * in which buffer the file will be opened.
  */
     int
-has_autocmd(event, sfname)
+has_autocmd(event, sfname, buf)
     EVENT_T	event;
     char_u	*sfname;
+    buf_T       *buf;
 {
     AutoPat	*ap;
     char_u	*fname;
@@ -8219,8 +8341,11 @@ has_autocmd(event, sfname)
 
     for (ap = first_autopat[(int)event]; ap != NULL; ap = ap->next)
 	if (ap->pat != NULL && ap->cmds != NULL
-		&& match_file_pat(ap->reg_pat, fname, sfname, tail,
-							      ap->allow_dirs))
+            && (ap->buflocal_nr == 0
+		? match_file_pat(ap->reg_pat, fname, sfname, tail,
+							       ap->allow_dirs)
+                : buf != NULL && ap->buflocal_nr == buf->b_fnum
+	   ))
 	{
 	    retval = TRUE;
 	    break;
@@ -8327,7 +8452,9 @@ get_event_name(xp, idx)
 
 /*
  * Return TRUE if an autocommand is defined for "event" and "pattern".
- * "pattern" can be NULL to accept any pattern.
+ * "pattern" can be NULL to accept any pattern. Buffer-local patterns
+ * <buffer> or <buffer=N> are accepted.
+ * Used for exists("#Event#pat")
  */
     int
 au_exists(name, name_end, pattern)
@@ -8339,6 +8466,7 @@ au_exists(name, name_end, pattern)
     char_u	*p;
     EVENT_T	event;
     AutoPat	*ap;
+    buf_T	*buflocal_buf = NULL;
 
     /* find the index (enum) for the event name */
     event_name = vim_strnsave(name, (int)(name_end - name));
@@ -8360,15 +8488,24 @@ au_exists(name, name_end, pattern)
     if (pattern == NULL)
 	return TRUE;
 
+    /* if pattern is "<buffer>", special handling is needed which uses curbuf */
+    /* for pattern "<buffer=N>, fnamecmp() will work fine */
+    if (STRICMP(pattern, "<buffer>") == 0)
+	buflocal_buf = curbuf;
+
     /* Check if there is an autocommand with the given pattern. */
     for ( ; ap != NULL; ap = ap->next)
-	/* only use a pattern when it has not been removed and has commands */
+	/* only use a pattern when it has not been removed and has commands. */
+	/* For buffer-local autocommands, fnamecmp() works fine. */
 	if (ap->pat != NULL && ap->cmds != NULL
-					   && fnamecmp(ap->pat, pattern) == 0)
+	    && (buflocal_buf == NULL
+		 ? fnamecmp(ap->pat, pattern) == 0
+		 : ap->buflocal_nr == buflocal_buf->b_fnum))
 	    return TRUE;
 
     return FALSE;
 }
+
 #endif	/* FEAT_AUTOCMD */
 
 #if defined(FEAT_AUTOCMD) || defined(FEAT_WILDIGN) || defined(PROTO)

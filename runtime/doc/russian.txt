@@ -1,4 +1,4 @@
-*russian.txt*   For Vim version 7.0aa.  Last change: 2004 Jun 09
+*russian.txt*   For Vim version 7.0aa.  Last change: 2004 Dec 22
 
 
 		  VIM REFERENCE MANUAL    by Vassily Ragosin
@@ -69,15 +69,6 @@ In order to use the Russian documentation, make sure you have set the
    and Win32 console window title appearing in a wrong codepage. This problem
    is related to a bug in GNU gettext library and may be fixed in the future
    releases of gettext.
-
--- When using the Win32 console version of Vim you may experience a problem
-   with many Cyrillic glyphs being replaced by whitespaces for some unknown
-   reason.  Sergey Khorev suggested a registry hack to avoid this:
-
-   REGEDIT4
-
-   [HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Nls\CodePage]
-   "1252"="c_1251.nls"
 
 ===============================================================================
  vim:tw=78:ts=8:ft=help:norl:

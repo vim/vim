@@ -42,6 +42,8 @@ char_u *check_help_lang __ARGS((char_u *arg));
 int help_heuristic __ARGS((char_u *matched_string, int offset, int wrong_case));
 int find_help_tags __ARGS((char_u *arg, int *num_matches, char_u ***matches, int keep_lang));
 void fix_help_buffer __ARGS((void));
+void ex_exusage __ARGS((exarg_T *eap));
+void ex_viusage __ARGS((exarg_T *eap));
 void ex_helptags __ARGS((exarg_T *eap));
 void ex_sign __ARGS((exarg_T *eap));
 void sign_gui_started __ARGS((void));

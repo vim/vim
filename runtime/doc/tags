@@ -948,6 +948,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'wildignore'	options.txt	/*'wildignore'*
 'wildmenu'	options.txt	/*'wildmenu'*
 'wildmode'	options.txt	/*'wildmode'*
+'wildoptions'	options.txt	/*'wildoptions'*
 'wim'	options.txt	/*'wim'*
 'winaltkeys'	options.txt	/*'winaltkeys'*
 'window'	vi_diff.txt	/*'window'*
@@ -962,6 +963,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'wmh'	options.txt	/*'wmh'*
 'wmnu'	options.txt	/*'wmnu'*
 'wmw'	options.txt	/*'wmw'*
+'wop'	options.txt	/*'wop'*
 'wrap'	options.txt	/*'wrap'*
 'wrapmargin'	options.txt	/*'wrapmargin'*
 'wrapscan'	options.txt	/*'wrapscan'*
@@ -1892,6 +1894,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :execute	eval.txt	/*:execute*
 :exi	editing.txt	/*:exi*
 :exit	editing.txt	/*:exit*
+:exu	various.txt	/*:exu*
+:exusage	various.txt	/*:exusage*
 :f	editing.txt	/*:f*
 :fi	editing.txt	/*:fi*
 :file	editing.txt	/*:file*
@@ -2514,6 +2518,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :view	editing.txt	/*:view*
 :visual	editing.txt	/*:visual*
 :visual_example	visual.txt	/*:visual_example*
+:viu	various.txt	/*:viu*
+:viusage	various.txt	/*:viusage*
 :vm	map.txt	/*:vm*
 :vmap	map.txt	/*:vmap*
 :vmap_l	map.txt	/*:vmap_l*
@@ -2698,6 +2704,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 <amatch>	cmdline.txt	/*<amatch>*
 <args>	map.txt	/*<args>*
 <bang>	map.txt	/*<bang>*
+<buffer=N>	autocmd.txt	/*<buffer=N>*
+<buffer=abuf>	autocmd.txt	/*<buffer=abuf>*
 <cfile>	cmdline.txt	/*<cfile>*
 <character>	intro.txt	/*<character>*
 <count>	map.txt	/*<count>*
@@ -3550,6 +3558,7 @@ E677	eval.txt	/*E677*
 E678	pattern.txt	/*E678*
 E679	syntax.txt	/*E679*
 E68	pattern.txt	/*E68*
+E680	autocmd.txt	/*E680*
 E69	pattern.txt	/*E69*
 E70	pattern.txt	/*E70*
 E71	pattern.txt	/*E71*
@@ -3995,6 +4004,9 @@ auto-format	change.txt	/*auto-format*
 auto-setting	options.txt	/*auto-setting*
 auto-shortname	editing.txt	/*auto-shortname*
 autocmd-<>	tips.txt	/*autocmd-<>*
+autocmd-buffer-local	autocmd.txt	/*autocmd-buffer-local*
+autocmd-buflocal	autocmd.txt	/*autocmd-buflocal*
+autocmd-changes	autocmd.txt	/*autocmd-changes*
 autocmd-define	autocmd.txt	/*autocmd-define*
 autocmd-events	autocmd.txt	/*autocmd-events*
 autocmd-execute	autocmd.txt	/*autocmd-execute*
@@ -4269,6 +4281,7 @@ cp-default	version5.txt	/*cp-default*
 cpo-!	options.txt	/*cpo-!*
 cpo-$	options.txt	/*cpo-$*
 cpo-%	options.txt	/*cpo-%*
+cpo-+	options.txt	/*cpo-+*
 cpo-<	options.txt	/*cpo-<*
 cpo-A	options.txt	/*cpo-A*
 cpo-B	options.txt	/*cpo-B*

@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2004 Dec 19
+*options.txt*	For Vim version 7.0aa.  Last change: 2004 Dec 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -291,10 +291,11 @@ For buffer-local and window-local options:
 
 Global options with a local value			*global-local*
 
-Options are global when you mostly use one value for all buffers.  For some
-global options it's useful to sometimes have a different local value.  You can
-set the local value with ":setlocal".  That buffer will then use the local
-value, while other buffers continue using the global value.
+Options are global when you mostly use one value for all buffers and windows.
+For some global options it's useful to sometimes have a different local value.
+You can set the local value with ":setlocal".  That buffer or window will then
+use the local value, while other buffers and windows continue using the global
+value.
 
 For example, you have two windows, both on C source code.  They use the global
 'makeprg' option.  If you do this in one of the two windows: >
@@ -5486,7 +5487,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 			   *'statusline'* *'stl'* *E540* *E541* *E542*
 'statusline' 'stl'	string	(default empty)
-			global
+			global or local to window |global-local|
 			{not in Vi}
 			{not available when compiled without the |+statusline|
 			feature}
@@ -6669,6 +6670,21 @@ A jump table for the options with a short description can be found at |Q_op|.
 <	List all matches without completing, then each full match >
 		:set wildmode=longest,list
 <	Complete longest common string, then list alternatives.
+
+						*'wildoptions'* *'wop'*
+'wildoptions' 'wop'	string	(default "")
+			global
+			{not in Vi}
+			{not available when compiled without the |+wildignore|
+			feature}
+	A list of words that change how command line completion is done.
+	Currently only one word is allowed:
+	  tagfile	When using CTRL-D to list matching tags, the kind of
+	   		tag and the file of the tag is listed.  Only one match
+			is displayed per line.  Often used tag kinds are:
+				d	#define
+				f	function
+	Also see |cmdline-completion|.
 
 						*'winaltkeys'* *'wak'*
 'winaltkeys' 'wak'	string	(default "menu")

@@ -189,6 +189,10 @@ typedef struct
 #endif
     long	wo_scr;
 #define w_p_scr w_onebuf_opt.wo_scr	/* 'scroll' */
+#ifdef FEAT_STL_OPT
+    char_u	*wo_stl;
+#define w_p_stl w_onebuf_opt.wo_stl	/* 'statusline' */
+#endif
 #ifdef FEAT_SCROLLBIND
     int		wo_scb;
 # define w_p_scb w_onebuf_opt.wo_scb	/* 'scrollbind' */

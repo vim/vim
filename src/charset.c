@@ -816,11 +816,8 @@ win_linetabsize(wp, p, len)
     colnr_T	col = 0;
     char_u	*s;
 
-    for (s = p; *s != NUL && (len == MAXCOL || s < p + len); )
-    {
+    for (s = p; *s != NUL && (len == MAXCOL || s < p + len); mb_ptr_adv(s))
 	col += win_lbr_chartabsize(wp, s, col, NULL);
-	mb_ptr_adv(s);
-    }
     return (int)col;
 }
 

@@ -118,6 +118,7 @@ typedef enum
     , PV_SCBIND
     , PV_SCROLL
     , PV_SI
+    , PV_STL
     , PV_SN
     , PV_STS
     , PV_SUA
@@ -2024,7 +2025,7 @@ static struct vimoption
 			    {(char_u *)TRUE, (char_u *)0L}},
     {"statusline"  ,"stl",  P_STRING|P_VI_DEF|P_ALLOCED|P_RSTAT,
 #ifdef FEAT_STL_OPT
-			    (char_u *)&p_stl, PV_NONE,
+			    (char_u *)&p_stl, OPT_BOTH(PV_STL),
 #else
 			    (char_u *)NULL, PV_NONE,
 #endif
@@ -2315,6 +2316,15 @@ static struct vimoption
     {"wildmode",    "wim",  P_STRING|P_VI_DEF|P_COMMA|P_NODUP,
 			    (char_u *)&p_wim, PV_NONE,
 			    {(char_u *)"full", (char_u *)0L}},
+    {"wildoptions", "wop",  P_STRING|P_VI_DEF,
+#ifdef FEAT_CMDL_COMPL
+			    (char_u *)&p_wop, PV_NONE,
+			    {(char_u *)"", (char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)NULL, (char_u *)0L}
+#endif
+			    },
     {"winaltkeys",  "wak",  P_STRING|P_VI_DEF,
 #ifdef FEAT_WAK
 			    (char_u *)&p_wak, PV_NONE,
@@ -2465,6 +2475,9 @@ static char *(p_ambw_values[]) = {"single", "double", NULL};
 static char *(p_bg_values[]) = {"light", "dark", NULL};
 static char *(p_nf_values[]) = {"octal", "hex", "alpha", NULL};
 static char *(p_ff_values[]) = {FF_UNIX, FF_DOS, FF_MAC, NULL};
+#ifdef FEAT_CMDL_COMPL
+static char *(p_wop_values[]) = {"tagfile", NULL};
+#endif
 #ifdef FEAT_WAK
 static char *(p_wak_values[]) = {"yes", "menu", "no", NULL};
 #endif
@@ -4909,6 +4922,15 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 	    errmsg = e_invarg;
     }
 
+#ifdef FEAT_CMDL_COMPL
+    /* 'wildoptions' */
+    else if (varp == &p_wop)
+    {
+	if (check_opt_strings(p_wop, p_wop_values, TRUE) != OK)
+	    errmsg = e_invarg;
+    }
+#endif
+
 #ifdef FEAT_WAK
     /* 'winaltkeys' */
     else if (varp == &p_wak)
@@ -5563,7 +5585,7 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 
 #ifdef FEAT_STL_OPT
     /* 'statusline' or 'rulerformat' */
-    else if (varp == &p_stl || varp == &p_ruf)
+    else if (gvarp == &p_stl || varp == &p_ruf)
     {
 	int wid;
 
@@ -5583,7 +5605,7 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 	}
 	else
 	    errmsg = check_stl_option(s);
-	if (varp == &(p_ruf) && errmsg == NULL)
+	if (varp == &p_ruf && errmsg == NULL)
 	    comp_col();
     }
 #endif
@@ -7915,6 +7937,9 @@ get_varp_scope(p, opt_flags)
 	    case OPT_BOTH(PV_DICT): return (char_u *)&(curbuf->b_p_dict);
 	    case OPT_BOTH(PV_TSR):  return (char_u *)&(curbuf->b_p_tsr);
 #endif
+#ifdef FEAT_STL_OPT
+	    case OPT_BOTH(PV_STL):  return (char_u *)&(curwin->w_p_stl);
+#endif
 	}
 	return NULL; /* "cannot happen" */
     }
@@ -7966,6 +7991,10 @@ get_varp(p)
 				    ? (char_u *)&(curbuf->b_p_mp) : p->var;
 	case OPT_BOTH(PV_EFM):	return *curbuf->b_p_efm != NUL
 				    ? (char_u *)&(curbuf->b_p_efm) : p->var;
+#endif
+#ifdef FEAT_STL_OPT
+	case OPT_BOTH(PV_STL):  return *curwin->w_p_stl != NUL
+				    ? (char_u *)&(curwin->w_p_stl) : p->var;
 #endif
 
 #ifdef FEAT_ARABIC
@@ -8168,6 +8197,9 @@ copy_winopt(from, to)
     to->wo_rl  = from->wo_rl;
     to->wo_rlc = vim_strsave(from->wo_rlc);
 #endif
+#ifdef FEAT_STL_OPT
+    to->wo_stl = vim_strsave(from->wo_stl);
+#endif
     to->wo_wrap = from->wo_wrap;
 #ifdef FEAT_LINEBREAK
     to->wo_lbr = from->wo_lbr;
@@ -8226,6 +8258,9 @@ check_winopt(wop)
 #ifdef FEAT_RIGHTLEFT
     check_string_option(&wop->wo_rlc);
 #endif
+#ifdef FEAT_STL_OPT
+    check_string_option(&wop->wo_stl);
+#endif
 }
 
 /*
@@ -8247,6 +8282,9 @@ clear_winopt(wop)
 #endif
 #ifdef FEAT_RIGHTLEFT
     clear_string_option(&wop->wo_rlc);
+#endif
+#ifdef FEAT_STL_OPT
+    clear_string_option(&wop->wo_stl);
 #endif
 }
 

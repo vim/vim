@@ -700,7 +700,7 @@ updateWindow(wp)
 	    || p_ru
 # endif
 # ifdef FEAT_STL_OPT
-	    || *p_stl
+	    || *p_stl != NUL || *wp->w_p_stl != NUL
 # endif
 	    )
 	win_redr_status(wp);
@@ -5040,7 +5040,7 @@ win_redr_status(wp)
 	wp->w_redr_status = TRUE;
     }
 #ifdef FEAT_STL_OPT
-    else if (*p_stl)
+    else if (*p_stl != NUL || *wp->w_p_stl != NUL)
     {
 	/* redraw custom status line */
 	win_redr_custom(wp, FALSE);
@@ -5276,7 +5276,10 @@ win_redr_custom(wp, Ruler)
     row = W_WINROW(wp) + wp->w_height;
     fillchar = fillchar_status(&attr, wp == curwin);
     maxwidth = W_WIDTH(wp);
-    p = p_stl;
+    if (*wp->w_p_stl != NUL)
+	p = wp->w_p_stl;
+    else
+	p = p_stl;
     if (Ruler)
     {
 	p = p_ruf;
@@ -8214,7 +8217,7 @@ showruler(always)
     if (!always && !redrawing())
 	return;
 #if defined(FEAT_STL_OPT) && defined(FEAT_WINDOWS)
-    if (*p_stl && curwin->w_status_height)
+    if ((*p_stl != NUL || *curwin->w_p_stl != NUL) && curwin->w_status_height)
 	win_redr_custom(curwin, FALSE);
     else
 #endif

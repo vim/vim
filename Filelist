@@ -159,6 +159,8 @@ SRC_UNIX =	\
 		src/integration.c \
 		src/integration.h \
 		src/link.sh \
+		src/installman.sh \
+		src/installml.sh \
 		src/mkinstalldirs \
 		src/os_unix.c \
 		src/os_unix.h \
@@ -449,7 +451,6 @@ RT_ALL =	\
 		runtime/doc/vimdiff.1 \
 		runtime/doc/vimtutor.1 \
 		runtime/doc/xxd.1 \
-		runtime/doc/*-it.1 \
 		runtime/ftoff.vim \
 		runtime/gvimrc_example.vim \
 		runtime/macros/README.txt \
@@ -660,6 +661,7 @@ EXTRA =		\
 # generic language files
 LANG_GEN = \
 		README_lang.txt \
+		runtime/doc/*-it.1 \
 		runtime/lang/README.txt \
 		runtime/lang/menu_*.vim \
 		runtime/keymap/README.txt \

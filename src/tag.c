@@ -2862,7 +2862,7 @@ jumpto_tag(lbuf, forceit, keep_help)
      */
     if (mch_getperm(fname) < 0
 #ifdef FEAT_AUTOCMD
-	    && !has_autocmd(EVENT_BUFREADCMD, fname)
+	    && !has_autocmd(EVENT_BUFREADCMD, fname, NULL)
 #endif
        )
     {

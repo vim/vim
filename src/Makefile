@@ -122,7 +122,7 @@
 #		make installruntime	only installs the Vim help and
 #							runtime files
 #		make installlinks	only installs the Vim binary links
-#		make installhelplinks	only installs the Vim manpage links
+#		make installmanlinks	only installs the Vim manpage links
 #		make installmacros	only installs the Vim macros
 #		make installtutor	only installs the Vim tutor
 #		make installtools	only installs xxd
@@ -848,8 +848,8 @@ TOOLS = xxd/xxd$(EXEEXT)
 #		directories.  This directory must exist.
 #DESTDIR  = ~/pkg/vim
 
-### Location of man pages
-MANSUBDIR = $(MANDIR)/man1
+### Directory of the man pages
+MAN1DIR = /man1
 
 ### Vim version (adjusted by a script)
 VIMMAJOR = 7
@@ -1067,7 +1067,7 @@ KDE_LIBS1	=
 KDE_LIBS2	=
 KDE_INSTALL     = install_normal
 KDE_TARGETS	= installglinks installkdeicons
-KDE_MAN_TARGETS = installghelplinks
+KDE_MAN_TARGETS = yes
 KDE_TESTTARGET  = gui
 
 ### GTK GUI
@@ -1083,7 +1083,7 @@ GTK_LIBS1	=
 GTK_LIBS2	= $(GTK_LIBNAME)
 GTK_INSTALL     = install_normal
 GTK_TARGETS	= installglinks
-GTK_MAN_TARGETS = installghelplinks
+GTK_MAN_TARGETS = yes
 GTK_TESTTARGET  = gui
 
 ### Motif GUI
@@ -1097,7 +1097,7 @@ MOTIF_LIBS1	=
 MOTIF_LIBS2	= $(MOTIF_LIBNAME) -lXt
 MOTIF_INSTALL   = install_normal
 MOTIF_TARGETS	= installglinks
-MOTIF_MAN_TARGETS = installghelplinks
+MOTIF_MAN_TARGETS = yes
 MOTIF_TESTTARGET = gui
 
 ### Athena GUI
@@ -1126,7 +1126,7 @@ ATHENA_LIBS1	= $(XAW_LIB)
 ATHENA_LIBS2	= -lXt
 ATHENA_INSTALL  = install_normal
 ATHENA_TARGETS	= installglinks
-ATHENA_MAN_TARGETS = installghelplinks
+ATHENA_MAN_TARGETS = yes
 ATHENA_TESTTARGET = gui
 
 ### neXtaw GUI
@@ -1143,7 +1143,7 @@ NEXTAW_LIBS1	= $(NEXTAW_LIB)
 NEXTAW_LIBS2	= -lXt
 NEXTAW_INSTALL  =  install_normal
 NEXTAW_TARGETS	=  installglinks
-NEXTAW_MAN_TARGETS = installghelplinks
+NEXTAW_MAN_TARGETS = yes
 NEXTAW_TESTTARGET = gui
 
 ### (J)  Sun OpenWindows 3.2 (SunOS 4.1.x) or earlier that produce these ld
@@ -1167,7 +1167,7 @@ BEOSGUI_LIBS1	= -lbe -lroot
 BEOSGUI_LIBS2	=
 BEOSGUI_INSTALL = install_normal
 BEOSGUI_TARGETS	= installglinks
-BEOSGUI_MAN_TARGETS = installghelplinks
+BEOSGUI_MAN_TARGETS = yes
 BEOSGUI_TESTTARGET = gui
 
 # PHOTON GUI
@@ -1180,7 +1180,7 @@ PHOTONGUI_LIBS1	= -lph -lphexlib
 PHOTONGUI_LIBS2	=
 PHOTONGUI_INSTALL = install_normal
 PHOTONGUI_TARGETS = installglinks
-PHOTONGUI_MAN_TARGETS = installghelplinks
+PHOTONGUI_MAN_TARGETS = yes
 PHOTONGUI_TESTTARGET = gui
 
 # CARBON GUI
@@ -1277,7 +1277,9 @@ DEST_TOOLS = $(DESTDIR)$(TOOLSSUBLOC)
 DEST_TUTOR = $(DESTDIR)$(TUTORSUBLOC)
 DEST_SCRIPT = $(DESTDIR)$(SCRIPTLOC)
 DEST_PRINT = $(DESTDIR)$(PRINTSUBLOC)
-DEST_MAN = $(DESTDIR)$(MANSUBDIR)
+DEST_MAN_TOP = $(DESTDIR)$(MANDIR)
+DEST_MAN = $(DEST_MAN_TOP)$(MAN1DIR)
+DEST_MAN_IT = $(DEST_MAN_TOP)/it$(MAN1DIR)
 
 #	     BASIC_SRC: files that are always used
 #	       GUI_SRC: extra GUI files for current configuration
@@ -1661,7 +1663,7 @@ install: $(GUI_INSTALL)
 
 install_normal: installvim installtools install-languages install-icons
 
-installvim: installvimbin installruntime installlinks installhelplinks installmacros installtutor
+installvim: installvimbin installruntime installlinks installmanlinks installmacros installtutor
 
 installvimbin: $(VIMTARGET) $(DESTDIR)$(exec_prefix) $(DEST_BIN)
 	-if test -f $(DEST_BIN)/$(VIMTARGET); then \
@@ -1674,37 +1676,16 @@ installvimbin: $(VIMTARGET) $(DESTDIR)$(exec_prefix) $(DEST_BIN)
 # may create a link to the new executable from /usr/bin/vi
 	-$(LINKIT)
 
-# install the help files; first adjust the contents for the location
-installruntime: $(HELPSOURCE)/vim.1 $(DEST_MAN) $(DEST_VIM) $(DEST_RT) \
+# Long list of arguments for the shell script that installs the manual pages
+# for one language.
+INSTALLMANARGS = $(VIMLOC) $(SCRIPTLOC) $(VIMRCLOC) $(HELPSOURCE) $(MANMOD) \
+		$(VIMNAME) $(VIMDIFFNAME) $(EVIMNAME)
+
+# install the help files; first adjust the contents for the final location
+installruntime: $(HELPSOURCE)/vim.1 $(DEST_VIM) $(DEST_RT) \
 		$(DEST_HELP) $(DEST_PRINT) $(DEST_COL) $(DEST_SYN) $(DEST_IND) \
 		$(DEST_FTP) $(DEST_PLUG) $(DEST_TUTOR) $(DEST_COMP)
-	@echo generating $(DEST_MAN)/$(VIMNAME).1
-	@sed -e s+/usr/local/lib/vim+$(VIMLOC)+ \
-		-e s+$(VIMLOC)/doc+$(HELPSUBLOC)+ \
-		-e s+$(VIMLOC)/syntax+$(SYNSUBLOC)+ \
-		-e s+$(VIMLOC)/tutor+$(TUTORSUBLOC)+ \
-		-e s+$(VIMLOC)/vimrc+$(VIMRCLOC)/vimrc+ \
-		-e s+$(VIMLOC)/gvimrc+$(VIMRCLOC)/gvimrc+ \
-		-e s+$(VIMLOC)/menu.vim+$(SCRIPTLOC)/menu.vim+ \
-		-e s+$(VIMLOC)/bugreport.vim+$(SCRIPTLOC)/bugreport.vim+ \
-		-e s+$(VIMLOC)/filetype.vim+$(SCRIPTLOC)/filetype.vim+ \
-		-e s+$(VIMLOC)/ftoff.vim+$(SCRIPTLOC)/ftoff.vim+ \
-		-e s+$(VIMLOC)/scripts.vim+$(SCRIPTLOC)/scripts.vim+ \
-		-e s+$(VIMLOC)/optwin.vim+$(SCRIPTLOC)/optwin.vim+ \
-		-e 's+$(VIMLOC)/\*.ps+$(SCRIPTLOC)/\*.ps+' \
-		$(HELPSOURCE)/vim.1 > $(DEST_MAN)/$(VIMNAME).1
-	chmod $(MANMOD) $(DEST_MAN)/$(VIMNAME).1
-	@echo generating $(DEST_MAN)/$(VIMNAME)tutor.1
-	@sed -e s+/usr/local/lib/vim+$(VIMLOC)+ \
-		-e s+$(VIMLOC)/tutor+$(TUTORSUBLOC)+ \
-		$(HELPSOURCE)/vimtutor.1 > $(DEST_MAN)/$(VIMNAME)tutor.1
-	chmod $(MANMOD) $(DEST_MAN)/$(VIMNAME)tutor.1
-	$(INSTALL_DATA)  $(HELPSOURCE)/vimdiff.1 $(DEST_MAN)/$(VIMDIFFNAME).1
-	chmod $(MANMOD) $(DEST_MAN)/$(VIMDIFFNAME).1
-	@echo generating $(DEST_MAN)/$(EVIMNAME).1
-	@sed -e s+/usr/local/lib/vim+$(SCRIPTLOC)+ \
-		$(HELPSOURCE)/evim.1 > $(DEST_MAN)/$(EVIMNAME).1
-	chmod $(MANMOD) $(DEST_MAN)/$(EVIMNAME).1
+	-$(SHELL) ./installman.sh install $(DEST_MAN) "" $(INSTALLMANARGS)
 	@echo generating help tags
 # Generate the help tags with ":helptags" to handle all languages.
 	-@cd $(HELPSOURCE); $(MAKE) VIMEXE=$(DEST_BIN)/$(VIMTARGET) vimtags
@@ -1794,7 +1775,7 @@ installtutor: $(TUTORSOURCE) $(DEST_VIM) $(DEST_RT) $(DEST_TUTOR)
 	chmod $(HELPMOD) $(DEST_TUTOR)/*
 
 # install helper program xxd
-installtools: $(TOOLS) $(DESTDIR)$(exec_prefix) $(DEST_BIN) $(DEST_MAN) \
+installtools: $(TOOLS) $(DESTDIR)$(exec_prefix) $(DEST_BIN) \
 		$(TOOLSSOURCE) $(DEST_VIM) $(DEST_RT) $(DEST_TOOLS)
 	if test -f $(DEST_BIN)/xxd$(EXEEXT); then \
 	  mv -f $(DEST_BIN)/xxd$(EXEEXT) $(DEST_BIN)/xxd.rm; \
@@ -1803,8 +1784,8 @@ installtools: $(TOOLS) $(DESTDIR)$(exec_prefix) $(DEST_BIN) $(DEST_MAN) \
 	$(INSTALL_PROG) xxd/xxd$(EXEEXT) $(DEST_BIN)
 	$(STRIP) $(DEST_BIN)/xxd$(EXEEXT)
 	chmod $(BINMOD) $(DEST_BIN)/xxd$(EXEEXT)
-	$(INSTALL_DATA) $(HELPSOURCE)/xxd.1 $(DEST_MAN)
-	chmod $(MANMOD) $(DEST_MAN)/xxd.1
+	-$(SHELL) ./installman.sh xxd $(DEST_MAN) "" $(INSTALLMANARGS)
+	-$(SHELL) ./installman.sh xxd $(DEST_MAN_IT) "-it" $(INSTALLMANARGS)
 # install the runtime tools
 	$(INSTALL_DATA_R) $(TOOLSSOURCE)/* $(DEST_TOOLS)
 # When using CVS some CVS directories might have been copied.
@@ -1822,6 +1803,9 @@ installtools: $(TOOLS) $(DESTDIR)$(exec_prefix) $(DEST_BIN) $(DEST_MAN) \
 
 # install the language specific files, if they were unpacked
 install-languages: languages $(DEST_LANG) $(DEST_KMAP)
+	-$(SHELL) ./installman.sh install $(DEST_MAN_IT) "-it" $(INSTALLMANARGS)
+	-$(SHELL) ./installml.sh install "$(GUI_MAN_TARGETS)" \
+		$(DEST_MAN_IT) $(INSTALLMLARGS)
 	if test -n "$(MAKEMO)" -a -f $(PODIR)/Makefile; then \
 	   cd $(PODIR); $(MAKE) prefix=$(DESTDIR)$(prefix) LOCALEDIR=$(DEST_LANG) \
 	   INSTALL_DATA=$(INSTALL_DATA) FILEMOD=$(FILEMOD) install; \
@@ -1877,7 +1861,8 @@ $(HELPSOURCE)/vim.1 $(MACROSOURCE) $(TOOLSSOURCE):
 	@echo You need to unpack the runtime archive before running "make install".
 	test -f error
 
-$(DESTDIR)$(exec_prefix) $(DEST_BIN) $(DEST_MAN) $(DEST_VIM) $(DEST_RT) $(DEST_HELP) \
+$(DESTDIR)$(exec_prefix) $(DEST_BIN) \
+		$(DEST_VIM) $(DEST_RT) $(DEST_HELP) \
 		$(DEST_PRINT) $(DEST_COL) $(DEST_SYN) $(DEST_IND) $(DEST_FTP) \
 		$(DEST_LANG) $(DEST_KMAP) $(DEST_COMP) \
 		$(DEST_MACRO) $(DEST_TOOLS) $(DEST_TUTOR) $(DEST_PLUG):
@@ -1942,69 +1927,36 @@ $(DEST_BIN)/$(EVIEWTARGET):
 
 # create links for the manual pages with various names to vim.	This is only
 # done when the links (or manpages with the same name) don't exist yet.
-installhelplinks: $(GUI_MAN_TARGETS) \
-			$(DEST_MAN)/$(EXNAME).1 \
-			$(DEST_MAN)/$(VIEWNAME).1 \
-			$(DEST_MAN)/$(RVIMNAME).1 \
-			$(DEST_MAN)/$(RVIEWNAME).1
 
-installghelplinks: $(DEST_MAN)/$(GVIMNAME).1 \
-			$(DEST_MAN)/$(GVIEWNAME).1 \
-			$(DEST_MAN)/$(RGVIMNAME).1 \
-			$(DEST_MAN)/$(RGVIEWNAME).1 \
-			$(DEST_MAN)/$(GVIMDIFFNAME).1 \
-			$(DEST_MAN)/$(EVIEWNAME).1
+INSTALLMLARGS = $(VIMNAME) $(VIMDIFFNAME) $(EVIMNAME) \
+		$(EXNAME) $(VIEWNAME) $(RVIMNAME) $(RVIEWNAME) \
+		$(GVIMNAME) $(GVIEWNAME) $(RGVIMNAME) $(RGVIEWNAME) \
+		$(GVIMDIFFNAME) $(EVIEWNAME)
 
-$(DEST_MAN)/$(EXNAME).1:
-	cd $(DEST_MAN); ln -s $(VIMNAME).1 $(EXNAME).1
-
-$(DEST_MAN)/$(VIEWNAME).1:
-	cd $(DEST_MAN); ln -s $(VIMNAME).1 $(VIEWNAME).1
-
-$(DEST_MAN)/$(GVIMNAME).1:
-	cd $(DEST_MAN); ln -s $(VIMNAME).1 $(GVIMNAME).1
-
-$(DEST_MAN)/$(GVIEWNAME).1:
-	cd $(DEST_MAN); ln -s $(VIMNAME).1 $(GVIEWNAME).1
-
-$(DEST_MAN)/$(RVIMNAME).1:
-	cd $(DEST_MAN); ln -s $(VIMNAME).1 $(RVIMNAME).1
-
-$(DEST_MAN)/$(RVIEWNAME).1:
-	cd $(DEST_MAN); ln -s $(VIMNAME).1 $(RVIEWNAME).1
-
-$(DEST_MAN)/$(RGVIMNAME).1:
-	cd $(DEST_MAN); ln -s $(VIMNAME).1 $(RGVIMNAME).1
-
-$(DEST_MAN)/$(RGVIEWNAME).1:
-	cd $(DEST_MAN); ln -s $(VIMNAME).1 $(RGVIEWNAME).1
-
-$(DEST_MAN)/$(GVIMDIFFNAME).1:
-	cd $(DEST_MAN); ln -s $(VIMDIFFNAME).1 $(GVIMDIFFNAME).1
-
-$(DEST_MAN)/$(EVIEWNAME).1:
-	cd $(DEST_MAN); ln -s $(EVIMNAME).1 $(EVIEWNAME).1
+installmanlinks: 
+	-$(SHELL) ./installml.sh install "$(GUI_MAN_TARGETS)" \
+		$(DEST_MAN) $(INSTALLMLARGS)
 
 uninstall: uninstall_runtime
 	-rm -f $(DEST_BIN)/$(VIMTARGET)
-	-rm -f $(DEST_MAN)/$(VIMNAME).1 $(DEST_MAN)/$(VIMNAME)tutor.1
 	-rm -f $(DEST_BIN)/vimtutor
-	-rm -f $(DEST_BIN)/xxd$(EXEEXT) $(DEST_MAN)/xxd.1
 	-rm -f $(DEST_BIN)/$(EXTARGET) $(DEST_BIN)/$(VIEWTARGET)
 	-rm -f $(DEST_BIN)/$(GVIMTARGET) $(DEST_BIN)/$(GVIEWTARGET)
 	-rm -f $(DEST_BIN)/$(RVIMTARGET) $(DEST_BIN)/$(RVIEWTARGET)
 	-rm -f $(DEST_BIN)/$(RGVIMTARGET) $(DEST_BIN)/$(RGVIEWTARGET)
 	-rm -f $(DEST_BIN)/$(VIMDIFFTARGET) $(DEST_BIN)/$(GVIMDIFFTARGET)
 	-rm -f $(DEST_BIN)/$(EVIMTARGET) $(DEST_BIN)/$(EVIEWTARGET)
-	-rm -f $(DEST_MAN)/$(EXNAME).1 $(DEST_MAN)/$(VIEWNAME).1
-	-rm -f $(DEST_MAN)/$(GVIMNAME).1 $(DEST_MAN)/$(GVIEWNAME).1
-	-rm -f $(DEST_MAN)/$(RVIMNAME).1 $(DEST_MAN)/$(RVIEWNAME).1
-	-rm -f $(DEST_MAN)/$(RGVIMNAME).1 $(DEST_MAN)/$(RGVIEWNAME).1
-	-rm -f $(DEST_MAN)/$(VIMDIFFNAME).1 $(DEST_MAN)/$(GVIMDIFFNAME).1
-	-rm -f $(DEST_MAN)/$(EVIMNAME).1 $(DEST_MAN)/$(EVIEWNAME).1
+	-rm -f $(DEST_BIN)/xxd$(EXEEXT)
 
 # Note: the "rmdir" will fail if any files were added after "make install"
 uninstall_runtime:
+	-$(SHELL) ./installman.sh uninstall $(DEST_MAN) "" $(INSTALLMANARGS)
+	-$(SHELL) ./installman.sh uninstall $(DEST_MAN_IT) "-it" $(INSTALLMANARGS)
+	-$(SHELL) ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
+		$(DEST_MAN) $(INSTALLMLARGS)
+	-$(SHELL) ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
+		$(DEST_MAN_IT) $(INSTALLMLARGS)
+	-rm -f $(DEST_MAN)/xxd.1 $(DEST_MAN_IT)/xxd.1
 	-rm -f $(DEST_HELP)/*.txt $(DEST_HELP)/tags $(DEST_HELP)/*.pl
 	-rm -f $(DEST_HELP)/*.??x $(DEST_HELP)/tags-??
 	-rm -f $(SYS_MENU_FILE) $(SYS_SYNMENU_FILE) $(SYS_DELMENU_FILE)

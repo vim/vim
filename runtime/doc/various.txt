@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.0aa.  Last change: 2004 Jul 05
+*various.txt*   For Vim version 7.0aa.  Last change: 2004 Dec 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -595,6 +595,13 @@ g CTRL-A		Only when Vim was compiled with MEM_PROFILING defined
 			compresses the help files).
 			{not in Vi}
 
+							*:exu* *:exusage*
+:exu[sage]		Show help on Ex commands.  Added to simulate the Nvi
+			command. {not in Vi}
+
+							*:viu* *:viusage*
+:viu[sage]		Show help on Normal mode commands.  Added to simulate
+			the Nvi command. {not in Vi}
 
 When no argument is given to |:help| the file given with the 'helpfile' option
 will be opened.  Otherwise the specified tag is searched for in all "doc/tags"

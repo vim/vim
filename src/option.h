@@ -785,6 +785,9 @@ static char *(p_ve_values[]) = {"block", "insert", "all", NULL};
 #endif
 EXTERN long	p_verbose;	/* 'verbose' */
 EXTERN int	p_warn;		/* 'warn' */
+#ifdef FEAT_CMDL_COMPL
+EXTERN char_u	*p_wop;		/* 'wildoptions' */
+#endif
 #if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MOTIF) || defined(LINT) \
 	|| defined (FEAT_GUI_GTK) || defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_KDE)
 #define FEAT_WAK

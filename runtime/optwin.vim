@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2004 Dec 09
+" Last Change:	2004 Dec 20
 
 " If there already is an option window, jump to that one.
 if bufwinnr("option-window") > 0
@@ -925,6 +925,10 @@ call append("$", "wildcharm\tlike 'wildchar' but can also be used in a mapping")
 call append("$", " \tset wcm=" . &wcm)
 call append("$", "wildmode\tspecifies how command line completion works")
 call <SID>OptionG("wim", &wim)
+if has("wildoptions")
+  call append("$", "wildoptions\tempty or \"tagfile\" to list file name of matching tags")
+  call <SID>OptionG("wop", &wop)
+endif
 call append("$", "suffixes\tlist of file name extensions that have a lower priority")
 call <SID>OptionG("su", &su)
 if has("file_in_path")
