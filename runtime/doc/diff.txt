@@ -1,4 +1,4 @@
-*diff.txt*      For Vim version 7.0aa.  Last change: 2004 May 01
+*diff.txt*      For Vim version 7.0aa.  Last change: 2004 Jul 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -83,7 +83,7 @@ While already in Vim you can start diff mode in three ways.
 
 							*:difft* *:diffthis*
 :diffthis	Make the current window part of the diff windows.  This sets
-		the option like for "vimdiff".
+		the options like for "vimdiff".
 
 :diffpatch {patchfile}					*:diffp* *:diffpatch*
 		Use the current buffer, patch it with the diff found in
@@ -109,10 +109,22 @@ There can be up to four buffers with 'diff' set.
 
 Since the option values are remembered with the buffer, you can edit another
 file for a moment and come back to the same file and be in diff mode again.
-If you don't want diff mode, reset the 'diff' option.  And you probably want
-to get rid of the fold column: >
 
-	:set nodiff foldcolumn=0
+							*:diffo* *:diffoff*
+:diffoff	Switch off diff mode for the current window.
+
+:diffoff!	Switch off diff mode for all windows.
+
+The ":diffoff" command resets the relevant options to their default value.
+This may be different from what the values were before diff mode was started,
+the old values are not remembered.
+
+	'diff'		off
+	'scrollbind'	off
+	'scrollopt'	without "hor"
+	'wrap'		on
+	'foldmethod'	"manual"
+	'foldcolumn'	0
 
 ==============================================================================
 2. Viewing diffs						*view-diffs*

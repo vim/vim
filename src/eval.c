@@ -7533,7 +7533,7 @@ error:
 	    }
 
 	    ga_grow(&ga, cplen);
-	    mch_memmove(ga.ga_data + ga.ga_len, cpstr, (size_t)cplen);
+	    mch_memmove((char *)ga.ga_data + ga.ga_len, cpstr, (size_t)cplen);
 	    ga.ga_len += cplen;
 	    ga.ga_room -= cplen;
 

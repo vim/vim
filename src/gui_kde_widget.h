@@ -91,6 +91,10 @@ public:
 #ifdef FEAT_CLIENTSERVER
 	void serverActivate(WId id);
 #endif
+#ifdef FEAT_MZSCHEME
+	void enable_mzscheme_threads();
+	void disable_mzscheme_threads();
+#endif
 	void flash();
 	
 	/** DCOP */
@@ -120,6 +124,9 @@ protected:
 	virtual void imEndEvent ( QIMEvent * );
 	virtual void imComposeEvent ( QIMEvent * );
 #endif
+#ifdef FEAT_MZSCHEME
+	virtual void timerEvent( QTimerEvent * );
+#endif
 
 	/* cursor blinking stuff */
 	QTimer blink_timer;
@@ -127,6 +134,10 @@ protected:
 
 	/* wait for input */
 	QTimer	wait_timer;
+	
+#ifdef FEAT_MZSCHEME
+	int	mzscheme_timer_id;
+#endif
 
 public slots:
 	void    blink_cursor();

@@ -1127,7 +1127,12 @@ do_execreg(regname, colon, addcr)
 	}
 	vim_free(new_last_cmdline); /* don't keep the cmdline containing @: */
 	new_last_cmdline = NULL;
-	retval = put_in_typebuf(last_cmdline, TRUE);
+	/* Escape all control characters with a CTRL-V */
+	p = vim_strsave_escaped_ext(last_cmdline,
+		"\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037", Ctrl_V, FALSE);
+	if (p != NULL)
+	    retval = put_in_typebuf(p, TRUE);
+	vim_free(p);
     }
 #endif
 #ifdef FEAT_EVAL

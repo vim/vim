@@ -1081,6 +1081,12 @@
 # define CURSOR_SHAPE
 #endif
 
+#if defined(FEAT_MZSCHEME) && (defined(FEAT_GUI_W32) || defined(FEAT_GUI_GTK)    \
+	|| defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)	\
+	|| defined(FEAT_GUI_MAC) || defined(FEAT_GUI_KDE))
+# define MZSCHEME_GUI_THREADS
+#endif
+
 /*
  * +ARP			Amiga only. Use arp.library, DOS 2.0 is not required.
  */

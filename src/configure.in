@@ -360,6 +360,11 @@ if test "$enable_mzschemeinterp" = "yes"; then
       MZSCHEME_LIBS="${vi_cv_path_mzscheme_pfx}/lib/libmzgc.a ${vi_cv_path_mzscheme_pfx}/lib/libmzscheme.a"
     else
       MZSCHEME_LIBS="-L${vi_cv_path_mzscheme_pfx}/lib -lmzgc -lmzscheme"
+      if test "$GCC" = yes; then
+	dnl Make Vim remember the path to the library.  For when it's not in
+	dnl $LD_LIBRARY_PATH.
+        MZSCHEME_LIBS="$MZSCHEME_LIBS -Wl,-rpath -Wl,${vi_cv_path_mzscheme_pfx}/lib"
+      fi
     fi
     MZSCHEME_CFLAGS="-I${vi_cv_path_mzscheme_pfx}/include   \
       -DMZSCHEME_COLLECTS='\"${vi_cv_path_mzscheme_pfx}/collects\"'"

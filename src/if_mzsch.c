@@ -208,10 +208,6 @@ static long range_end;
 
 /* MzScheme threads scheduling stuff */
 static int mz_threads_allow = 0;
-#ifdef FEAT_GUI
-static void setup_timer(void);
-static void remove_timer(void);
-#endif
 
 #if defined(FEAT_GUI_W32)
 static void CALLBACK timer_proc(HWND, UINT, UINT, DWORD);
@@ -226,6 +222,8 @@ static XtIntervalId timer_id = (XtIntervalId)0;
 pascal void timer_proc(EventLoopTimerRef, void *);
 static EventLoopTimerRef timer_id = NULL;
 static EventLoopTimerUPP timerUPP;
+#elif defined(FEAT_GUI_KDE)
+static int timer_id = 0;
 #endif
 
 #ifndef FEAT_GUI_W32 /* Win32 console and Unix */
@@ -248,7 +246,10 @@ mzvim_check_threads(void)
 }
 #endif
 
-#ifdef FEAT_GUI
+#ifdef MZSCHEME_GUI_THREADS
+static void setup_timer(void);
+static void remove_timer(void);
+
 /* timers are presented in GUI only */
 # if defined(FEAT_GUI_W32)
     static void CALLBACK
@@ -264,6 +265,9 @@ timer_proc(XtPointer timed_out, XtIntervalId *interval_id)
 # elif defined(FEAT_GUI_MAC)
     pascal void
 timer_proc(EventLoopTimerRef theTimer, void *userData)
+#elif defined(FEAT_GUI_KDE)
+    void
+timer_proc(void)
 # endif
 {
     scheme_check_threads();
@@ -290,6 +294,9 @@ setup_timer(void)
     timerUPP = NewEventLoopTimerUPP(timer_proc);
     InstallEventLoopTimer(GetMainEventLoop(), p_mzq * kEventDurationMillisecond,
 		p_mzq * kEventDurationMillisecond, timerUPP, NULL, &timer_id);
+#elif defined(FEAT_GUI_KDE)
+    mzscheme_kde_start_timer();
+    timer_id = 1;   /* just signal that timer was started */
 # endif
 }
 
@@ -305,6 +312,8 @@ remove_timer(void)
 # elif defined(FEAT_GUI_MAC)
     RemoveEventLoopTimer(timer_id);
     DisposeEventLoopTimerUPP(timerUPP);
+#elif defined(FEAT_GUI_KDE)
+    mzscheme_kde_stop_timer();
 # endif
     timer_id = 0;
 }
@@ -318,13 +327,13 @@ mzvim_reset_timer(void)
 	setup_timer();
 }
 
-#endif
+#endif /* MZSCHEME_GUI_THREADS */
 
     static void
 notify_multithread(int on)
 {
     mz_threads_allow = on;
-#ifdef FEAT_GUI
+#ifdef MZSCHEME_GUI_THREADS
     if (on && timer_id == 0 && p_mzq > 0 && gui.in_use)
 	setup_timer();
     if (!on && timer_id != 0)

@@ -7918,6 +7918,7 @@ syn_add_group(name)
 	{
 	    /* This is an error, but since there previously was no check only
 	     * give a warning. */
+	    msg_source(hl_attr(HLF_W));
 	    MSG(_("W18: Invalid character in group name"));
 	    break;
 	}

@@ -851,10 +851,14 @@ TOOLS = xxd/xxd$(EXEEXT)
 ### Location of man pages
 MANSUBDIR = $(MANDIR)/man1
 
+### Vim version (adjusted by a script)
+VIMMAJOR = 7
+VIMMINOR = 0aa
+
 ### Location of Vim files (should not need to be changed, and  {{{1
 ### some things might not work when they are changed!)
 VIMDIR = /vim
-VIMRTDIR = /vim70aa
+VIMRTDIR = /vim$(VIMMAJOR)$(VIMMINOR)
 HELPSUBDIR = /doc
 COLSUBDIR = /colors
 SYNSUBDIR = /syntax
@@ -1051,33 +1055,20 @@ LINKIT = @echo >/dev/null
 NONE_INSTALL = install_normal
 
 ### KDE GUI interface.
-KDE_DIR		= $(KDE_PREFIX)
-KDE_INCL	= gui.h
 KDE_SRC		= gui.c pty.c gui_kde.cc gui_kde_x11.cc gui_kde_widget.cc gui_kde_widget_moc.cc kvim_iface_skel.cc
 KDE_OBJ		= objects/gui.o objects/pty.o objects/gui_kde.o objects/gui_kde_x11.o \
 			objects/gui_kde_widget.o objects/gui_kde_widget_moc.o \
 			objects/kvim_iface_skel.o
 KDE_DEFS	= -DFEAT_GUI_KDE $(NARROW_PROTO)
 KDE_IPATH	= $(GUI_INC_LOC)
-KDE_LIBS_DIR	= $(GUI_LIB_LOC)
+KDE_LIBS_DIR	= $(GUI_LIB_LOC)	# Includes the libraries themselves
+KDE_DIR		= $(KDE_PREFIX)
 KDE_LIBS1	=
-KDE_LIBS2	= $(KDE_LIBNAME)
+KDE_LIBS2	=
 KDE_INSTALL     = install_normal
-KDE_TARGETS	= installklinks installkdeicons
-KDE_MAN_TARGETS =
-KDE_TESTTARGET = gui
-
-#for KDE rename files to avoid confusion with gvim for GTK
-KVIMNAME	= k$(VIMNAME)
-KVIMTARGET	= $(KVIMNAME)$(LNKEXT)
-KVIEWNAME	= k$(VIEWNAME)
-KVIEWTARGET	= $(KVIEWNAME)$(LNKEXT)
-RKVIMNAME	= r$(KVIMNAME)
-RKVIMTARGET	= $(RKVIMNAME)$(LNKEXT)
-RKVIEWNAME	= r$(KVIEWNAME)
-RKVIEWTARGET	= $(RKVIEWNAME)$(LNKEXT)
-KVIMDIFFNAME	= k$(VIMDIFFNAME)
-KVIMDIFFTARGET	= $(KVIMDIFFNAME)$(LNKEXT)
+KDE_TARGETS	= installglinks installkdeicons
+KDE_MAN_TARGETS = installghelplinks
+KDE_TESTTARGET  = gui
 
 ### GTK GUI
 GTK_SRC		= gui.c gui_gtk.c gui_gtk_x11.c pty.c gui_gtk_f.c \
@@ -1093,7 +1084,7 @@ GTK_LIBS2	= $(GTK_LIBNAME)
 GTK_INSTALL     = install_normal
 GTK_TARGETS	= installglinks
 GTK_MAN_TARGETS = installghelplinks
-GTK_TESTTARGET = gui
+GTK_TESTTARGET  = gui
 
 ### Motif GUI
 MOTIF_SRC	= gui.c gui_motif.c gui_x11.c pty.c gui_beval.c
@@ -1842,9 +1833,8 @@ install-languages: languages $(DEST_LANG) $(DEST_KMAP)
 	   chmod $(FILEMOD) $(DEST_KMAP)/README.txt $(DEST_KMAP)/*.vim; \
 	fi
 
-# install the icons for KDE, if the directory exists and the icon doesn't.
-# doesn't.<=looks strange to install icons to user's directory ;), i add my
-# own install procedure, mikmak
+# Install the icons for the KDE GUI.  This differs from the KDE icons for
+# other GUIs.
 installkdeicons:
 	mkdir -p $(DESTDIR)$(KDE_DIR)/share/applnk/Editors/
 	mkdir -p $(DESTDIR)$(KDE_DIR)/share/icons/hicolor/32x32/apps/
@@ -1860,6 +1850,7 @@ installkdeicons:
 	cp ../runtime/hi22-action-make.png $(DESTDIR)$(KDE_DIR)/share/icons/hicolor/22x22/actions/hi22-action-make.png
 	cp ../runtime/kde-tips $(DESTDIR)$(KDE_DIR)/share/apps/kvim/tips && chmod 644 $(DESTDIR)$(KDE_DIR)/share/apps/kvim/tips
 
+# install the icons for KDE, if the directory exists and the icon doesn't.
 ICON48PATH = $(DESTDIR)$(DATADIR)/icons/hicolor/48x48/apps
 ICON32PATH = $(DESTDIR)$(DATADIR)/icons/locolor/32x32/apps
 ICON16PATH = $(DESTDIR)$(DATADIR)/icons/locolor/16x16/apps
@@ -1908,17 +1899,8 @@ installglinks: $(DEST_BIN)/$(GVIMTARGET) \
 			$(DEST_BIN)/$(EVIEWTARGET) \
 			$(INSTALLGVIMDIFF)
 
-installklinks: $(DEST_BIN)/$(KVIMTARGET) \
-			$(DEST_BIN)/$(KVIEWTARGET) \
-			$(DEST_BIN)/$(RKVIMTARGET) \
-			$(DEST_BIN)/$(RKVIEWTARGET) \
-			$(DEST_BIN)/$(EVIMTARGET) \
-			$(DEST_BIN)/$(EVIEWTARGET) \
-			installkvimdiff
-
 installvimdiff: $(DEST_BIN)/$(VIMDIFFTARGET)
 installgvimdiff: $(DEST_BIN)/$(GVIMDIFFTARGET)
-installkvimdiff: $(DEST_BIN)/$(KVIMDIFFTARGET)
 
 $(DEST_BIN)/$(EXTARGET):
 	cd $(DEST_BIN); ln -s $(VIMTARGET) $(EXTARGET)
@@ -1932,12 +1914,6 @@ $(DEST_BIN)/$(GVIMTARGET):
 $(DEST_BIN)/$(GVIEWTARGET):
 	cd $(DEST_BIN); ln -s $(VIMTARGET) $(GVIEWTARGET)
 
-$(DEST_BIN)/$(KVIMTARGET):
-	cd $(DEST_BIN); ln -s $(VIMTARGET) $(KVIMTARGET)
-
-$(DEST_BIN)/$(KVIEWTARGET):
-	cd $(DEST_BIN); ln -s $(VIMTARGET) $(KVIEWTARGET)
-
 $(DEST_BIN)/$(RVIMTARGET):
 	cd $(DEST_BIN); ln -s $(VIMTARGET) $(RVIMTARGET)
 
@@ -1950,20 +1926,11 @@ $(DEST_BIN)/$(RGVIMTARGET):
 $(DEST_BIN)/$(RGVIEWTARGET):
 	cd $(DEST_BIN); ln -s $(VIMTARGET) $(RGVIEWTARGET)
 
-$(DEST_BIN)/$(RKVIMTARGET):
-	cd $(DEST_BIN); ln -s $(VIMTARGET) $(RKVIMTARGET)
-
-$(DEST_BIN)/$(RKVIEWTARGET):
-	cd $(DEST_BIN); ln -s $(VIMTARGET) $(RKVIEWTARGET)
-
 $(DEST_BIN)/$(VIMDIFFTARGET):
 	cd $(DEST_BIN); ln -s $(VIMTARGET) $(VIMDIFFTARGET)
 
 $(DEST_BIN)/$(GVIMDIFFTARGET):
 	cd $(DEST_BIN); ln -s $(VIMTARGET) $(GVIMDIFFTARGET)
-
-$(DEST_BIN)/$(KVIMDIFFTARGET):
-	cd $(DEST_BIN); ln -s $(VIMTARGET) $(KVIMDIFFTARGET)
 
 $(DEST_BIN)/$(EVIMTARGET):
 	cd $(DEST_BIN); ln -s $(VIMTARGET) $(EVIMTARGET)
@@ -1979,7 +1946,7 @@ installhelplinks: $(GUI_MAN_TARGETS) \
 			$(DEST_MAN)/$(RVIMNAME).1 \
 			$(DEST_MAN)/$(RVIEWNAME).1
 
-installghelplinks installkhelplinks : $(DEST_MAN)/$(GVIMNAME).1 \
+installghelplinks: $(DEST_MAN)/$(GVIMNAME).1 \
 			$(DEST_MAN)/$(GVIEWNAME).1 \
 			$(DEST_MAN)/$(RGVIMNAME).1 \
 			$(DEST_MAN)/$(RGVIEWNAME).1 \
@@ -2023,12 +1990,9 @@ uninstall: uninstall_runtime
 	-rm -f $(DEST_BIN)/xxd$(EXEEXT) $(DEST_MAN)/xxd.1
 	-rm -f $(DEST_BIN)/$(EXTARGET) $(DEST_BIN)/$(VIEWTARGET)
 	-rm -f $(DEST_BIN)/$(GVIMTARGET) $(DEST_BIN)/$(GVIEWTARGET)
-	-rm -f $(DEST_BIN)/$(KVIMTARGET) $(DEST_BIN)/$(KVIEWTARGET)
 	-rm -f $(DEST_BIN)/$(RVIMTARGET) $(DEST_BIN)/$(RVIEWTARGET)
 	-rm -f $(DEST_BIN)/$(RGVIMTARGET) $(DEST_BIN)/$(RGVIEWTARGET)
-	-rm -f $(DEST_BIN)/$(RKVIMTARGET) $(DEST_BIN)/$(RKVIEWTARGET)
 	-rm -f $(DEST_BIN)/$(VIMDIFFTARGET) $(DEST_BIN)/$(GVIMDIFFTARGET)
-	-rm -f $(DEST_BIN)/$(VIMDIFFTARGET) $(DEST_BIN)/$(KVIMDIFFTARGET)
 	-rm -f $(DEST_BIN)/$(EVIMTARGET) $(DEST_BIN)/$(EVIEWTARGET)
 	-rm -f $(DEST_MAN)/$(EXNAME).1 $(DEST_MAN)/$(VIEWNAME).1
 	-rm -f $(DEST_MAN)/$(GVIMNAME).1 $(DEST_MAN)/$(GVIEWNAME).1
@@ -2453,7 +2417,7 @@ APPDIR = $(VIMNAME).app
 RESDIR = $(APPDIR)/Contents/Resources
 # FIXME: i'm sure someone else can do something clever with grep
 # sed and version.h here
-VERSION = 7.0aa
+VERSION = $(VIMMAJOR).$(VIMMINOR)
 
 ### Common flags
 M4FLAGSX = $(M4FLAGS) -DAPP_EXE=$(VIMNAME) -DAPP_NAME=$(VIMNAME) \

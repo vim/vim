@@ -20,8 +20,9 @@
 #endif
 
 static void reset_last_sourcing __ARGS((void));
-static char_u *get_emsg_source __ARGS((int other));
-static char_u *get_emsg_lnum __ARGS((int other));
+static int other_sourcing_name __ARGS((void));
+static char_u *get_emsg_source __ARGS((void));
+static char_u *get_emsg_lnum __ARGS((void));
 static void add_msg_hist __ARGS((char_u *s, int len, int attr));
 static void hit_return_msg __ARGS((void));
 static void msg_home_replace_attr __ARGS((char_u *fname, int attr));
@@ -399,17 +400,31 @@ reset_last_sourcing()
 }
 
 /*
+ * Return TRUE if "sourcing_name" differs from "last_sourcing_name".
+ */
+    static int
+other_sourcing_name()
+{
+    if (sourcing_name != NULL)
+    {
+	if (last_sourcing_name != NULL)
+	    return STRCMP(sourcing_name, last_sourcing_name) != 0;
+	return TRUE;
+    }
+    return FALSE;
+}
+
+/*
  * Get the message about the source, as used for an error message.
  * Returns an allocated string with room for one more character.
  * Returns NULL when no message is to be given.
  */
     static char_u *
-get_emsg_source(other)
-    int		other;	/* TRUE when "sourcing_name" differs from last time */
+get_emsg_source()
 {
     char_u	*Buf, *p;
 
-    if (sourcing_name != NULL && other)
+    if (sourcing_name != NULL && other_sourcing_name())
     {
 	p = (char_u *)_("Error detected while processing %s:");
 	Buf = alloc((unsigned)(STRLEN(sourcing_name) + STRLEN(p)));
@@ -426,15 +441,14 @@ get_emsg_source(other)
  * Returns NULL when no message is to be given.
  */
     static char_u *
-get_emsg_lnum(other)
-    int		other;	/* TRUE when "sourcing_name" differs from last time */
+get_emsg_lnum()
 {
     char_u	*Buf, *p;
 
     /* lnum is 0 when executing a command from the command line
      * argument, we don't want a line number then */
     if (sourcing_name != NULL
-	    && (other || sourcing_lnum != last_sourcing_lnum)
+	    && (other_sourcing_name() || sourcing_lnum != last_sourcing_lnum)
 	    && sourcing_lnum != 0)
     {
 	p = (char_u *)_("line %4ld:");
@@ -444,6 +458,44 @@ get_emsg_lnum(other)
 	return Buf;
     }
     return NULL;
+}
+
+/*
+ * Display name and line number for the source of an error.
+ * Remember the file name and line number, so that for the next error the info
+ * is only displayed if it changed.
+ */
+    void
+msg_source(attr)
+    int		attr;
+{
+    char_u	*p;
+
+    ++no_wait_return;
+    p = get_emsg_source();
+    if (p != NULL)
+    {
+	msg_attr(p, attr);
+	vim_free(p);
+    }
+    p = get_emsg_lnum();
+    if (p != NULL)
+    {
+	msg_attr(p, hl_attr(HLF_N));
+	vim_free(p);
+	last_sourcing_lnum = sourcing_lnum;  /* only once for each line */
+    }
+
+    /* remember the last sourcing name printed, also when it's empty */
+    if (sourcing_name == NULL || other_sourcing_name)
+    {
+	vim_free(last_sourcing_name);
+	if (sourcing_name == NULL)
+	    last_sourcing_name = NULL;
+	else
+	    last_sourcing_name = vim_strsave(sourcing_name);
+    }
+    --no_wait_return;
 }
 
 /*
@@ -459,7 +511,6 @@ emsg(s)
     char_u	*s;
 {
     int		attr;
-    int		other_sourcing_name;
     char_u	*p;
 #ifdef FEAT_EVAL
     int		ignore = FALSE;
@@ -489,16 +540,6 @@ emsg(s)
 	    )
 	return TRUE;
 
-    if (sourcing_name != NULL)
-    {
-	if (last_sourcing_name != NULL)
-	    other_sourcing_name = STRCMP(sourcing_name, last_sourcing_name);
-	else
-	    other_sourcing_name = TRUE;
-    }
-    else
-	other_sourcing_name = FALSE;
-
     if (!emsg_off)
     {
 #ifdef FEAT_EVAL
@@ -527,14 +568,14 @@ emsg(s)
 	if (emsg_silent != 0)
 	{
 	    msg_start();
-	    p = get_emsg_source(other_sourcing_name);
+	    p = get_emsg_source();
 	    if (p != NULL)
 	    {
 		STRCAT(p, "\n");
 		redir_write(p, -1);
 		vim_free(p);
 	    }
-	    p = get_emsg_lnum(other_sourcing_name);
+	    p = get_emsg_lnum();
 	    if (p != NULL)
 	    {
 		STRCAT(p, "\n");
@@ -571,36 +612,12 @@ emsg(s)
     /*
      * Display name and line number for the source of the error.
      */
-    ++no_wait_return;
-    p = get_emsg_source(other_sourcing_name);
-    if (p != NULL)
-    {
-	msg_attr(p, attr);
-	vim_free(p);
-    }
-    p = get_emsg_lnum(other_sourcing_name);
-    if (p != NULL)
-    {
-	msg_attr(p, hl_attr(HLF_N));
-	vim_free(p);
-	last_sourcing_lnum = sourcing_lnum;  /* only once for each line */
-    }
-    --no_wait_return;
-
-    /* remember the last sourcing name printed, also when it's empty */
-    if (sourcing_name == NULL || other_sourcing_name)
-    {
-	vim_free(last_sourcing_name);
-	if (sourcing_name == NULL)
-	    last_sourcing_name = NULL;
-	else
-	    last_sourcing_name = vim_strsave(sourcing_name);
-    }
-    msg_nowait = FALSE;			/* wait for this msg */
+    msg_source(attr);
 
     /*
      * Display the error message itself.
      */
+    msg_nowait = FALSE;			/* wait for this msg */
     return msg_attr(s, attr);
 }
 

@@ -1546,7 +1546,7 @@ vim_isblankline(lbuf)
 
 /*
  * Convert a string into a long and/or unsigned long, taking care of
- * hexadecimal and octal numbers.
+ * hexadecimal and octal numbers.  Accepts a '-' sign.
  * If "hexp" is not NULL, returns a flag to indicate the type of the number:
  *  0	    decimal
  *  '0'	    octal
@@ -1570,7 +1570,6 @@ vim_str2nr(start, hexp, len, dooct, dohex, nptr, unptr)
     char_u	    *ptr = start;
     int		    hex = 0;		/* default is decimal */
     int		    negative = FALSE;
-    long	    n = 0;
     unsigned long   un = 0;
 
     if (ptr[0] == '-')
@@ -1603,7 +1602,6 @@ vim_str2nr(start, hexp, len, dooct, dohex, nptr, unptr)
 	    /* octal */
 	    while ('0' <= *ptr && *ptr <= '7')
 	    {
-		n = 8 * n + (long)(*ptr - '0');
 		un = 8 * un + (unsigned long)(*ptr - '0');
 		++ptr;
 	    }
@@ -1613,7 +1611,6 @@ vim_str2nr(start, hexp, len, dooct, dohex, nptr, unptr)
 	    /* hex */
 	    while (vim_isxdigit(*ptr))
 	    {
-		n = 16 * n + (long)hex2nr(*ptr);
 		un = 16 * un + (unsigned long)hex2nr(*ptr);
 		++ptr;
 	    }
@@ -1624,21 +1621,22 @@ vim_str2nr(start, hexp, len, dooct, dohex, nptr, unptr)
 	/* decimal */
 	while (VIM_ISDIGIT(*ptr))
 	{
-	    n = 10 * n + (long)(*ptr - '0');
 	    un = 10 * un + (unsigned long)(*ptr - '0');
 	    ++ptr;
 	}
     }
-
-    if (!hex && negative)   /* account for leading '-' for decimal numbers */
-	n = -n;
 
     if (hexp != NULL)
 	*hexp = hex;
     if (len != NULL)
 	*len = (int)(ptr - start);
     if (nptr != NULL)
-	*nptr = n;
+    {
+	if (negative)   /* account for leading '-' for decimal numbers */
+	    *nptr = -(long)un;
+	else
+	    *nptr = (long)un;
+    }
     if (unptr != NULL)
 	*unptr = un;
 }

@@ -959,30 +959,6 @@ vim_strnsave(string, len)
     return p;
 }
 
-#if 0	/* not used */
-/*
- * like vim_strnsave(), but remove backslashes from the string.
- */
-    char_u *
-vim_strnsave_esc(string, len)
-    char_u	*string;
-    int		len;
-{
-    char_u *p1, *p2;
-
-    p1 = alloc((unsigned) (len + 1));
-    if (p1 != NULL)
-    {
-	STRNCPY(p1, string, len);
-	p1[len] = NUL;
-	for (p2 = p1; *p2; ++p2)
-	    if (*p2 == '\\' && *(p2 + 1) != NUL)
-		STRCPY(p2, p2 + 1);
-    }
-    return p1;
-}
-#endif
-
 /*
  * Same as vim_strsave(), but any characters found in esc_chars are preceded
  * by a backslash.
@@ -992,17 +968,19 @@ vim_strsave_escaped(string, esc_chars)
     char_u	*string;
     char_u	*esc_chars;
 {
-    return vim_strsave_escaped_ext(string, esc_chars, FALSE);
+    return vim_strsave_escaped_ext(string, esc_chars, '\\', FALSE);
 }
 
 /*
  * Same as vim_strsave_escaped(), but when "bsl" is TRUE also escape
  * characters where rem_backslash() would remove the backslash.
+ * Escape the characters with "cc".
  */
     char_u *
-vim_strsave_escaped_ext(string, esc_chars, bsl)
+vim_strsave_escaped_ext(string, esc_chars, cc, bsl)
     char_u	*string;
     char_u	*esc_chars;
+    int		cc;
     int		bsl;
 {
     char_u	*p;
@@ -1048,7 +1026,7 @@ vim_strsave_escaped_ext(string, esc_chars, bsl)
 	    }
 #endif
 	    if (vim_strchr(esc_chars, *p) != NULL || (bsl && rem_backslash(p)))
-		*p2++ = '\\';
+		*p2++ = cc;
 	    *p2++ = *p;
 	}
 	*p2 = NUL;

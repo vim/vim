@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 7.0aa.  Last change: 2004 Jul 05
+*quickref.txt*  For Vim version 7.0aa.  Last change: 2004 Jul 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -18,10 +18,10 @@
 |Q_sc|	Scrolling			|Q_ce|	Ex: Command-line editing
 |Q_in|	insert: Inserting text		|Q_ra|	Ex: Ranges
 |Q_ai|	insert: Keys			|Q_ex|	Ex: Special characters
-|Q_ss|	insert: Special keys		|Q_ed|	Editing a file
-|Q_di|	insert: Digraphs		|Q_fl|	Using the argument list
-|Q_si|	insert: Special inserts		|Q_wq|	Writing and quitting
-|Q_de|	change: Deleting text		|Q_st|	Starting VIM
+|Q_ss|	insert: Special keys		|Q_st|	Starting VIM
+|Q_di|	insert: Digraphs		|Q_ed|	Editing a file
+|Q_si|	insert: Special inserts		|Q_fl|	Using the argument list
+|Q_de|	change: Deleting text		|Q_wq|	Writing and quitting
 |Q_cm|	change: Copying and moving	|Q_ac|	Automatic commands
 |Q_ch|	change: Changing text		|Q_wi|	Multi-window commands
 |Q_co|	change: Complex			|Q_bu|	Buffer list commands
@@ -1046,6 +1046,55 @@ Context-sensitive completion on the command-line:
 		|::e|	    :e		extension
 		|::s|	    :s/{pat}/{repl}/	substitute {pat} with {repl}
 ------------------------------------------------------------------------------
+*Q_st*		Starting VIM
+
+|-vim|	   vim [options]		start editing with an empty buffer
+|-file|	   vim [options] {file} ..	start editing one or more files
+|--|	   vim [options] -		read file from stdin
+|-tag|	   vim [options] -t {tag}	edit the file associated with {tag}
+|-qf|	   vim [options] -q [fname]	start editing in QuickFix mode,
+					   display the first error
+
+	Most useful Vim arguments (for full list see |startup-options|)
+
+|-gui|	-g		    start GUI (also allows other options)
+
+|-+|	+[num]		    put the cursor at line [num] (default: last line)
+|-+c|	+{command}	    execute {command} after loading the file
+|-+/|	+/{pat} {file} ..   put the cursor at the first occurrence of {pat}
+|-v|	-v		    Vi mode, start ex in Normal mode
+|-e|	-e		    Ex mode, start vim in Ex mode
+|-R|	-R		    Read-only mode, implies -n
+|-m|	-m		    modifications not allowed (resets 'write' option)
+|-d|	-d		    diff mode |diff|
+|-b|	-b		    binary mode
+|-l|	-l		    lisp mode
+|-A|	-A		    Arabic mode ('arabic' is set)
+|-F|	-F		    Farsi mode ('fkmap' and 'rightleft' are set)
+|-H|	-H		    Hebrew mode ('hkmap' and 'rightleft' are set)
+|-V|	-V		    Verbose, give informative messages
+|-C|	-C		    Compatible, set the 'compatible' option
+|-N|	-N		    Nocompatible, reset the 'compatible' option
+|-r|	-r		    give list of swap files
+|-r|	-r {file} ..	    recover aborted edit session
+|-n|	-n		    do not create a swap file
+|-o|	-o [num]	    open [num] windows (default: one for each file)
+|-f|	-f		    GUI: foreground process, don't fork
+			    Amiga: do not restart VIM to open a window (for
+				e.g., mail)
+|-s|	-s {scriptin}	    first read commands from the file {scriptin}
+|-w|	-w {scriptout}	    write typed chars to file {scriptout} (append)
+|-W|	-W {scriptout}	    write typed chars to file {scriptout} (overwrite)
+|-T|	-T {terminal}	    set terminal name
+|-d|	-d {device}	    Amiga: open {device} to be used as a console
+|-u|	-u {vimrc}	    read inits from {vimrc} instead of other inits
+|-U|	-U {gvimrc}	    idem, for when starting the GUI
+|-i|	-i {viminfo}	    read info from {viminfo} instead of other files
+|---|	--		    end of options, other arguments are file names
+|--help|    --help	    show list of arguments and exit
+|--version| --version	    show version info and exit
+|--|	-		    Read file from stdin.
+------------------------------------------------------------------------------
 *Q_ed*		Editing a file
 
 	   Without !: Fail if changes has been made to the current buffer.
@@ -1121,54 +1170,6 @@ Context-sensitive completion on the command-line:
 |:stop|	  :st[op][!]		Suspend VIM or start new shell. If 'aw' option
 				   is set and [!] not given write the buffer.
 |CTRL-Z|     CTRL-Z		Same as ":stop"
-------------------------------------------------------------------------------
-*Q_st*		Starting VIM
-
-|-vim|	   vim [options]		start editing with an empty buffer
-|-file|	   vim [options] {file} ..	start editing one or more files
-|--|	   vim [options] -		read file from stdin
-|-tag|	   vim [options] -t {tag}	edit the file associated with {tag}
-|-qf|	   vim [options] -q [fname]	start editing in QuickFix mode,
-					   display the first error
-
-	Vim arguments:
-
-|-gui|	-g		    start GUI (also allows other options)
-
-|-+|	+[num]		    put the cursor at line [num] (default: last line)
-|-+c|	+{command}	    execute {command} after loading the file
-|-+/|	+/{pat} {file} ..   put the cursor at the first occurrence of {pat}
-|-v|	-v		    Vi mode, start ex in Normal mode
-|-e|	-e		    Ex mode, start vim in Ex mode
-|-R|	-R		    Read-only mode, implies -n
-|-m|	-m		    modifications not allowed (resets 'write' option)
-|-b|	-b		    binary mode
-|-l|	-l		    lisp mode
-|-A|	-A		    Arabic mode ('arabic' is set)
-|-F|	-F		    Farsi mode ('fkmap' and 'rightleft' are set)
-|-H|	-H		    Hebrew mode ('hkmap' and 'rightleft' are set)
-|-V|	-V		    Verbose, give informative messages
-|-C|	-C		    Compatible, set the 'compatible' option
-|-N|	-N		    Nocompatible, reset the 'compatible' option
-|-r|	-r		    give list of swap files
-|-r|	-r {file} ..	    recover aborted edit session
-|-n|	-n		    do not create a swap file
-|-o|	-o [num]	    open [num] windows (default: one for each file)
-|-f|	-f		    GUI: foreground process, don't fork
-			    Amiga: do not restart VIM to open a window (for
-				e.g., mail)
-|-s|	-s {scriptin}	    first read commands from the file {scriptin}
-|-w|	-w {scriptout}	    write typed chars to file {scriptout} (append)
-|-W|	-W {scriptout}	    write typed chars to file {scriptout} (overwrite)
-|-T|	-T {terminal}	    set terminal name
-|-d|	-d {device}	    Amiga: open {device} to be used as a console
-|-u|	-u {vimrc}	    read inits from {vimrc} instead of other inits
-|-U|	-U {gvimrc}	    idem, for when starting the GUI
-|-i|	-i {viminfo}	    read info from {viminfo} instead of other files
-|---|	--		    end of options, other arguments are file names
-|--help|    --help	    show list of arguments and exit
-|--version| --version	    show version info and exit
-|--|	-		    Read file from stdin.
 ------------------------------------------------------------------------------
 *Q_ac*		Automatic Commands
 

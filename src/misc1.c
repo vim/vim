@@ -2770,6 +2770,7 @@ change_warning(col)
 	msg_start();
 	if (msg_row == Rows - 1)
 	    msg_col = col;
+	msg_source(hl_attr(HLF_W));
 	MSG_PUTS_ATTR(_("W10: Warning: Changing a readonly file"),
 						   hl_attr(HLF_W) | MSG_HIST);
 	msg_clr_eos();

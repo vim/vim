@@ -45,7 +45,7 @@
 
     # The configure script uses the directory where it's located, use a link.
     configure.aap:  {buildcheck=}
-	:sys ln -s auto/configure.aap configure.aap
+	:symlink {f} auto/configure.aap configure.aap
 
     # Dependency: run configure.aap to update config.h and config.aap in the
     # "auto" directory.
@@ -89,8 +89,7 @@ prefix = `os.path.expanduser(prefix)`
     GTK
 	GUI_SRC		= gui.c gui_gtk.c gui_gtk_x11.c pty.c gui_beval.c
 			    gui_gtk_f.c
-	GUI_OBJ		$= $BDIR/gui.o $BDIR/gui_gtk.o $BDIR/gui_gtk_x11.o
-			    $BDIR/pty.o $BDIR/gui_gtk_f.o
+	GUI_OBJ		=
 	GUI_DEFS	= -DFEAT_GUI_GTK $NARROW_PROTO
 	GUI_IPATH	= $GUI_INC_LOC
 	GUI_LIBS_DIR	= $GUI_LIB_LOC
@@ -99,10 +98,23 @@ prefix = `os.path.expanduser(prefix)`
 	GUI_TARGETS	= installglinks
 	GUI_MAN_TARGETS	= installghelplinks
 	GUI_TESTTARGET	= gui
+    KDE
+        GUI_SRC		= gui.c pty.c gui_kde.cc gui_kde_x11.cc
+                            gui_kde_widget_moc.cc
+                            kvim_iface_skel.cc
+        GUI_OBJ		= $BDIR/gui_kde_widget.o
+        GUI_DEFS	= -DFEAT_GUI_KDE $NARROW_PROTO
+        GUI_IPATH	= $GUI_INC_LOC
+        GUI_LIBS_DIR	= $GUI_LIB_LOC
+        GUI_LIBS1	=
+        GUI_LIBS2	=
+	GUI_TARGETS	= installglinks installkdeicons
+	GUI_MAN_TARGETS	= installghelplinks
+        GUI_TESTTARGET  = gui
+
     MOTIF
 	GUI_SRC		= gui.c gui_motif.c gui_x11.c pty.c gui_beval.c
-	GUI_OBJ		$= $BDIR/gui.o $BDIR/gui_motif.o $BDIR/gui_x11.o
-			    $BDIR/pty.o $BDIR/gui_beval.o
+	GUI_OBJ		=
 	GUI_DEFS	= -DFEAT_GUI_MOTIF $NARROW_PROTO
 	GUI_IPATH	= $GUI_INC_LOC
 	GUI_LIBS_DIR	= $GUI_LIB_LOC
@@ -116,9 +128,7 @@ prefix = `os.path.expanduser(prefix)`
 	XAW_LIB		?= -lXaw
 	GUI_SRC		=  gui.c gui_athena.c gui_x11.c pty.c gui_beval.c \
 			    gui_at_sb.c gui_at_fs.c
-	GUI_OBJ		$= $BDIR/gui.o $BDIR/gui_athena.o $BDIR/gui_x11.o \
-			    $BDIR/pty.o $BDIR/gui_beval.o \
-			    $BDIR/gui_at_sb.o $BDIR/gui_at_fs.o
+	GUI_OBJ		=
 	GUI_DEFS	= -DFEAT_GUI_ATHENA $NARROW_PROTO
 	GUI_IPATH	= $GUI_INC_LOC
 	GUI_LIBS_DIR	= $GUI_LIB_LOC
@@ -132,8 +142,7 @@ prefix = `os.path.expanduser(prefix)`
 	XAW_LIB		?= -lXaw
 	GUI_SRC		=  gui.c gui_athena.c gui_x11.c pty.c gui_beval.c
 			    gui_at_fs.c
-	GUI_OBJ		$= $BDIR/gui.o $BDIR/gui_athena.o $BDIR/gui_x11.o
-			    $BDIR/pty.o $BDIR/gui_beval.o $BDIR/gui_at_fs.o
+	GUI_OBJ		=
 	GUI_DEFS	= -DFEAT_GUI_ATHENA -DFEAT_GUI_NEXTAW $NARROW_PROTO
 	GUI_IPATH	= $GUI_INC_LOC
 	GUI_LIBS_DIR	= $GUI_LIB_LOC
@@ -144,7 +153,7 @@ prefix = `os.path.expanduser(prefix)`
 	GUI_TESTTARGET	= gui
     BEOSGUI
 	GUI_SRC		= gui.c gui_beos.cc pty.c
-	GUI_OBJ		= $BDIR/gui.o $BDIR/gui_beos.o  $BDIR/pty.o
+	GUI_OBJ		=
 	GUI_DEFS	= -DFEAT_GUI_BEOS
 	GUI_IPATH	=
 	GUI_LIBS_DIR	=
@@ -155,7 +164,7 @@ prefix = `os.path.expanduser(prefix)`
 	GUI_TESTTARGET	= gui
     PHOTONGUI
 	GUI_SRC		= gui.c gui_photon.c pty.c
-	GUI_OBJ		= $BDIR/gui.o $BDIR/gui_photon.o $BDIR/pty.o
+	GUI_OBJ		=
 	GUI_DEFS	= -DFEAT_GUI_PHOTON
 	GUI_IPATH	=
 	GUI_LIBS_DIR	=
@@ -178,13 +187,15 @@ prefix = `os.path.expanduser(prefix)`
 
 
 PRE_DEFS = -Iproto -I. $DEFS $GUI_DEFS $GUI_IPATH $CPPFLAGS $?(EXTRA_IPATHS)
-POST_DEFS = $X_CFLAGS $PERL_CFLAGS $PYTHON_CFLAGS $TCL_CFLAGS $RUBY_CFLAGS $?(EXTRA_DEFS)
+POST_DEFS = $X_CFLAGS $MZSCHEME_CFLAGS $PERL_CFLAGS $PYTHON_CFLAGS $TCL_CFLAGS $RUBY_CFLAGS $?(EXTRA_DEFS)
 CFLAGS = $PRE_DEFS $CONF_CFLAGS $?(PROFILE_CFLAGS) $POST_DEFS
 CPPFLAGS =
+# Need C++ flags for KDE
+CXXFLAGS = $CFLAGS
 
 ALL_LIB_DIRS = $GUI_LIBS_DIR $X_LIBS_DIR
 LDFLAGS = $ALL_LIB_DIRS $CONF_LDFLAGS
-LIBS = $GUI_LIBS1 $GUI_X_LIBS $GUI_LIBS2 $X_PRE_LIBS $X_LIBS $X_EXTRA_LIBS $CONF_LIBS $?(EXTRA_LIBS) $PERL_LIBS $PYTHON_LIBS $TCL_LIBS $RUBY_LIBS $?(PROFILE_LIBS)
+LIBS = $GUI_LIBS1 $GUI_X_LIBS $GUI_LIBS2 $X_PRE_LIBS $X_LIBS $X_EXTRA_LIBS $CONF_LIBS $?(EXTRA_LIBS) $MZSCHEME_LIBS $PERL_LIBS $PYTHON_LIBS $TCL_LIBS $RUBY_LIBS $?(PROFILE_LIBS)
 
 Target = $VIMNAME
 
@@ -207,6 +218,7 @@ test check:
 testclean {virtual}:
     :del {force} testdir/*.out testdir/test.log
 
+CLEANFILES += gui_kde_widget_moc.cc kvim_iface_skel.cc *.kidl
 
 # When no fetch target exists we are not a child of the ../main.aap recipe,
 # Use ../main.aap to do the fetching.
@@ -265,6 +277,7 @@ Source =
 	$OS_EXTRA_SRC
 	$GUI_SRC
 	$HANGULIN_SRC
+        $MZSCHEME_SRC
 	$PERL_SRC
 	$NETBEANS_SRC
 	$PYTHON_SRC
@@ -272,6 +285,9 @@ Source =
 	$RUBY_SRC
 	$SNIFF_SRC
 	$WORKSHOP_SRC
+
+Objects =
+	$GUI_OBJ
 
 # TODO: make is still used for subdirectories, need to write a recipe.
 MAKE ?= make
@@ -294,7 +310,7 @@ SRCPATH += auto
     declare my_prog
 :attr {filetype = my_prog} $Target
 
-:program $Target : $Source
+:program $Target : $Source $Objects
 
 :action build my_prog object
 	version_obj = `src2obj("version.c")`
@@ -340,6 +356,20 @@ auto/if_perl.c: if_perl.xs
 	:sys $PERL $PERLLIB/ExtUtils/xsubpp -prototypes -typemap \
 	    $PERLLIB/ExtUtils/typemap if_perl.xs >> $target
 
+$BDIR/gui_kde_widget.o: gui_kde_widget.cc
+        :sys $MOC -o gui_kde_widget_moc.cc gui_kde_widget.h
+        @try:
+            :sys $KDE_PREFIX/bin/dcopidl kvim_iface.h > kvim_iface.kidl
+        @except:
+            :del {f} kvim_iface.kidl
+        :sys $KDE_PREFIX/bin/dcopidl2cpp --c++-suffix cc --no-stub kvim_iface.kidl
+        :do compile gui_kde_widget.cc
+
+gui_kde_widget_moc.cc: $BDIR/gui_kde_widget.o
+
+kvim_iface_skel.cc: $BDIR/gui_kde_widget.o
+
+
 auto/osdef.h: auto/config.h osdef.sh osdef1.h.in osdef2.h.in
 	:sys CC="$CC $CFLAGS" srcdir=$srcdir sh $srcdir/osdef.sh
 
@@ -353,12 +383,15 @@ auto/pathdef.c: auto/config.aap
 	:print >> $target $#include "vim.h"
 	:print >> $target char_u *default_vim_dir = (char_u *)"$VIMRCLOC";
 	:print >> $target char_u *default_vimruntime_dir = (char_u *)"$?VIMRUNTIMEDIR";
-	:print >> $target char_u *all_cflags = (char_u *)"$CC -c -I$srcdir $CFLAGS";
+	v = $CC -c -I$srcdir $CFLAGS
+        @v = string.replace(v, '"', '\\"')
+	:print >> $target char_u *all_cflags = (char_u *)"$v";
 	linkcmd = $CC $LDFLAGS -o $VIMTARGET $LIBS
 	link_sed = $BDIR/link.sed
 	@if os.path.exists(link_sed):
 	    # filter $linkcmd through $BDIR/link.sed
 	    :print $linkcmd | :syseval sed -f $link_sed | :eval re.sub("\n", "", stdin) | :assign linkcmd
+        @linkcmd = string.replace(linkcmd, '"', '\\"')
 	:print >> $target char_u *all_lflags = (char_u *)"$linkcmd";
 	@if _no.get("COMPILEDBY"):
 	    who = $COMPILEDBY
@@ -832,6 +865,20 @@ install-languages {virtual}{force}: languages $DEST_LANG $DEST_KMAP
 	@if os.path.exists(_no.KMAPSOURCE):
 	   :copy $KMAPSOURCE/README.txt $KMAPSOURCE/*.vim $DEST_KMAP
 	   :chmod $FILEMOD $DEST_KMAP/*.vim
+
+# Install the icons for the KDE GUI.  This differs from the KDE icons for
+# other GUIs.
+installkdeicons:
+        :copy {mkdir} ../runtime/KVim.desktop $DESTDIR$KDE_PREFIX/share/applnk/Editors/
+        :chmod 644 $DESTDIR$KDE_PREFIX/share/applnk/Editors/KVim.desktop
+        :copy {mkdir} ../runtime/kvim32x32.png $DESTDIR$KDE_PREFIX/share/icons/hicolor/32x32/apps/gvim.png
+        :chmod 644 $DESTDIR$KDE_PREFIX/share/icons/hicolor/32x32/apps/gvim.png
+        :copy {mkdir} ../runtime/kvim48x48.png $DESTDIR$KDE_PREFIX/share/icons/hicolor/48x48/apps/gvim.png
+        :chmod 644 $DESTDIR$KDE_PREFIX/share/icons/hicolor/48x48/apps/gvim.png
+        :copy {mkdir} ../runtime/hi16-action-make.png $DESTDIR$KDE_PREFIX/share/icons/hicolor/16x16/actions/hi16-action-make.png
+        :copy {mkdir} ../runtime/hi22-action-make.png $DESTDIR$KDE_PREFIX/share/icons/hicolor/22x22/actions/hi22-action-make.png
+        :copy {mkdir} ../runtime/kde-tips $DESTDIR$KDE_PREFIX/share/apps/gvim/tips
+        :chmod 644 $DESTDIR$KDE_PREFIX/share/apps/kvim/tips
 
 # install the icons for KDE, if the directory exists and the icon doesn't.
 ICON48PATH = $DESTDIR$DATADIR/icons/hicolor/48x48/apps

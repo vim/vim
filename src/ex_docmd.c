@@ -363,6 +363,7 @@ static void	ex_setfiletype  __ARGS((exarg_T *eap));
 # define ex_setfiletype		ex_ni
 #endif
 #ifndef FEAT_DIFF
+# define ex_diffoff		ex_ni
 # define ex_diffpatch		ex_ni
 # define ex_diffgetput		ex_ni
 # define ex_diffsplit		ex_ni

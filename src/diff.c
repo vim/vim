@@ -117,6 +117,30 @@ diff_buf_delete(buf)
 }
 
 /*
+ * Check if the current buffer should be added to or removed from the list of
+ * diff buffers.
+ */
+    void
+diff_buf_adjust(win)
+    win_T	*win;
+{
+    win_T	*wp;
+
+    if (!win->w_p_diff)
+    {
+	/* When there is no window showing a diff for this buffer, remove
+	 * it from the diffs. */
+	for (wp = firstwin; wp != NULL; wp = wp->w_next)
+	    if (wp->w_buffer == win->w_buffer && wp->w_p_diff)
+		break;
+	if (wp == NULL)
+	    diff_buf_delete(win->w_buffer);
+    }
+    else
+	diff_buf_add(win->w_buffer);
+}
+
+/*
  * Add a buffer to make diffs for.
  */
     void
@@ -1030,7 +1054,8 @@ diff_win_options(wp, addbuf)
 	wp->w_p_fen = TRUE;
 	wp->w_p_fdl = 0;
 	foldUpdateAll(wp);
-	changed_window_setting(); /* make sure topline is not halfway a fold */
+	/* make sure topline is not halfway a fold */
+	changed_window_setting_win(wp);
     }
 # endif
 #ifdef FEAT_SCROLLBIND
@@ -1041,6 +1066,55 @@ diff_win_options(wp, addbuf)
     if (addbuf)
 	diff_buf_add(wp->w_buffer);
     redraw_win_later(wp, NOT_VALID);
+}
+
+/*
+ * Set options not to show diffs.  For the current window or all windows.
+ */
+    void
+ex_diffoff(eap)
+    exarg_T	*eap;
+{
+    win_T	*wp;
+    win_T	*old_curwin = curwin;
+#ifdef FEAT_SCROLLBIND
+    int		diffwin = FALSE;
+#endif
+
+    for (wp = firstwin; wp != NULL; wp = wp->w_next)
+    {
+	if (wp == curwin || eap->forceit)
+	{
+	    /* Set 'diff', 'scrollbind' off and 'wrap' on. */
+	    wp->w_p_diff = FALSE;
+	    wp->w_p_scb = FALSE;
+	    wp->w_p_wrap = TRUE;
+#ifdef FEAT_FOLDING
+	    curwin = wp;
+	    curbuf = curwin->w_buffer;
+	    set_string_option_direct((char_u *)"fdm", -1,
+				      (char_u *)"manual", OPT_LOCAL|OPT_FREE);
+	    curwin = old_curwin;
+	    curbuf = curwin->w_buffer;
+	    wp->w_p_fdc = 0;
+	    wp->w_p_fen = FALSE;
+	    wp->w_p_fdl = 0;
+	    foldUpdateAll(wp);
+	    /* make sure topline is not halfway a fold */
+	    changed_window_setting_win(wp);
+#endif
+	    diff_buf_adjust(wp);
+	}
+#ifdef FEAT_SCROLLBIND
+	diffwin |= wp->w_p_diff;
+#endif
+    }
+
+#ifdef FEAT_SCROLLBIND
+    /* Remove "hor" from from 'scrollopt' if there are no diff windows left. */
+    if (!diffwin && vim_strchr(p_sbo, 'h') != NULL)
+	do_cmdline_cmd((char_u *)"set sbo-=hor");
+#endif
 }
 
 /*

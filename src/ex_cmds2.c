@@ -1002,7 +1002,10 @@ buf_write_all(buf, forceit)
 						  FALSE, forceit, TRUE, FALSE));
 #ifdef FEAT_AUTOCMD
     if (curbuf != old_curbuf)
+    {
+	msg_source(hl_attr(HLF_W));
 	MSG(_("Warning: Entered other buffer unexpectedly (check autocommands)"));
+    }
 #endif
     return retval;
 }
@@ -2730,7 +2733,10 @@ get_one_sourceline(sp)
 		else	    /* lines like ":map xx yy^M" will have failed */
 		{
 		    if (!sp->error)
+		    {
+			msg_source(hl_attr(HLF_W));
 			EMSG(_("W15: Warning: Wrong line separator, ^M may be missing"));
+		    }
 		    sp->error = TRUE;
 		    sp->fileformat = EOL_UNIX;
 		}

@@ -4,6 +4,7 @@ int msg_attr __ARGS((char_u *s, int attr));
 int msg_attr_keep __ARGS((char_u *s, int attr, int keep));
 char_u *msg_strtrunc __ARGS((char_u *s));
 void trunc_string __ARGS((char_u *s, char_u *buf, int room));
+void msg_source __ARGS((int attr));
 int emsg __ARGS((char_u *s));
 int emsg2 __ARGS((char_u *s, char_u *a1));
 int emsg3 __ARGS((char_u *s, char_u *a1, char_u *a2));

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Jul 09
+*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Jul 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,16 +30,12 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-:syn sync ccomment asdf gives a warning without a line number.
-
-@: doesn't work if cmdline has a ^M, requires using ^V. (Tim Chase)
+Make aap build script work again. Also with mzscheme
 
 Mac: Compiling --enable-gui=athena doesn't work.  Try to fix without disabling
 Carbon.  Otherwise adjust configure to disable darwin. (raf)
 
 Mac: "make install" doesn't install.
-
-Make aap build script work again.
 
 
 For version 7.0:
@@ -79,10 +75,11 @@ For version 7.0:
 				Lakshmanan, 2003 Jan 21)
 	winnr("$")		Get number of windows.  (patch from Nikolai
 				Weibull 2003 Jan 13) (another patch from
-				Yegappan Lakshmanan, 2003 Aug 31)
+				Yegappan Lakshmanan, 2004 Jul 11)
 	search()		Add optional offset argument.
 				Add 'n' flag.  (patch from Nikolai Weibull
 				2003 Jan 13)
+	filter()		Patch from Yegappan Lakshmanan, 2004 Jul 11
     8   Make it possible to delete marks.  Charles Campbell has a patch that
 	does this with the markclear() function (2004 Jan 9).
 	And the ":delmark" command (2004 Feb 9)
@@ -93,7 +90,16 @@ For version 7.0:
 	When "lnum" is zero delete the mark.
 	When "filename" has no wildcards and there is no matching buffer, add
 	the buffer (unlisted).
-    Patch for \xnn (Ciaran McCreesh)  2004 Jul 7
+    Patch for \xnn (Ciaran McCreesh)  2004 Jul 10
+    7   Add 'taglistfiles' option, show file name and type when listing matching
+	tags name with CTRL-D completion.  Patch from Yegappan Lakshmanan.
+	2004 Jul 11
+    7   For Visual mode: Command to do a search for the string in the marked
+	area.  Only when fewer than two lines. Use "g/" and "gb".  Patch from
+	Yegappan Lakshmanan. 2004 Jul 11
+    8   Make 'statusline' local, so that each window can have a different
+	value.  But should it also be local to a buffer? (Yegappan Lakshmanan
+	has a patch, 2004 Jul 11)
     --- awaiting updated patch ---
     7   Add patch from Wall for this one ( ~/Mail/oldmail/wall/in.00019 ):
 	'flipcase' variable: upper/lowercase pairs.
@@ -163,23 +169,15 @@ For version 7.0:
 				Tcl implementation ~/vim/HierAssist/ )
     7   Add patch from Benoit Cerrina to integrate Vim and Perl functions
 	better.  Now also works for Ruby (2001 Nov 10)
-    7   Add 'taglistfiles' option, show file name and type when listing matching
-	tags name with CTRL-D completion.  Patch from Yegappan Lakshmanan.
     7   Motif: use the menu font consistently.  Patch from Martin Dalecki 2002
 	Jan 11.
     -   Motif: add 3D shading for the menu entries?  Patch from Martin Dalecki.
-    7   For Visual mode: Command to do a search for the string in the marked
-	area.  Only when fewer than two lines. Use "g/" and "gb".  Patch from
-	Yegappan Lakshmanan.
     7   When 'rightleft' is set, the search pattern should be displayed right
 	to left as well?  See patch of Dec 26. (Nadim Shaikli)
     8   Lock all used memory so that it doesn't get swapped to disk (uncrypted).
 	Patch by Jason Holt, 2003 May 23.
     7   Support a stronger encryption.  Jason Holt implemented AES (May 6 2003).
     7   Add ! register, for shell commands. (patch from Grenie)
-    8   Make 'statusline' local, so that each window can have a different
-	value.  But should it also be local to a buffer? (Yegappan Lakshmanan
-	has a patch, 2002 feb 15)
     8   In the gzip plugin, also recognize *.gz.orig, *.gz.bak, etc.  Like it's
 	done for filetype detection.  Patch from Walter Briscoe, 2003 Jul 1.
     7   Add a "-@ filelist" argument: read file names from a file. (David
@@ -267,6 +265,10 @@ For version 7.0:
     "foldcolumn". (Benji Fisher, 2004 Jun 21)
 -   FileChangedShellPost autocommand event: after (not) reloading a changed
     file.  Can be used to update statusline oslt.
+8   When a file is change outside of Vim and unmodified in Vim there is no
+    simple way to automatically reload the file.  Either add an option for
+    this or make it simple to have the FileChangedShell invoke the normal
+    action, telling it what to do.
 -   Displaying size of Visual area: use 24-33 column display.
 -   Mac: Unicode input and display (Eckehard Berns, June 27)
 8   Add patch from Muraoka Taro (Mar 16) to support input method on Mac?
@@ -729,7 +731,7 @@ Macintosh:
 8   When an ":edit" is inside a try command and the ATTENTION prompt is used,
     the :catch commands are always executed, also when the file is edited
     normally.  Should reset did_emsg and undo side effects.  Also make sure
-    the ATTENTION message shows up.
+    the ATTENTION message shows up.  Servatius Brandt works on this.
 9   When using ":e ++enc=foo file" and the file is already loaded with
     'fileencoding' set to "bar", then do_ecmd() uses that buffer, even though
     the fileencoding differs.  Reload the buffer in this situation?  Need to
@@ -772,8 +774,6 @@ Macintosh:
     ":buf foo<Tab>" doesn't find the second one. (George V. Reilly)
 7   Output for ":scriptnames" and ":breaklist" should shorten the file names:
     use "~/" when possible.
-8   After using diff mode, ":set nodiff" doesn't restore the old foldmethod.
-    (Thomas S. Urban)
 7   mb_off2cells() doesn't work correctly on the tail byte of a double-byte
     character. (Yasuhiro Matsumoto)  It should return 1 when used on a tail
     byte, like for utf-8.  Store second byte of double-byte in ScreenLines2[]
@@ -1173,7 +1173,6 @@ User Friendlier:
 
 
 Diff mode:
-8   Add a command to stop diff mode: ":set nodiff fdc = 0 noscrollbind"
 8   Use diff mode to show the changes made in a buffer (compared to the file).
     Use an unnamed buffer, like doing:
 	new | set bt=nofile | r # | 0d_ | diffthis | wincmd p | diffthis

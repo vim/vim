@@ -5302,7 +5302,7 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
     else if (varp == &p_popt)
 	errmsg = parse_list_options(p_popt, printer_opts, OPT_PRINT_NUM_OPTIONS);
 
-# ifdef FEAT_MBYTE
+# if defined(FEAT_MBYTE) && defined(FEAT_POSTSCRIPT)
     else if (varp == &p_pmfn)
 	errmsg = parse_list_options(p_pmfn, mbfont_opts, OPT_MBFONT_NUM_OPTIONS);
 # endif
@@ -6399,24 +6399,12 @@ set_bool_option(opt_idx, varp, value, opt_flags)
     /* 'diff' */
     else if ((int *)varp == &curwin->w_p_diff)
     {
-	win_T	*wp;
-
-	if (!curwin->w_p_diff)
-	{
-	    /* When there is no window showing a diff for this buffer, remove
-	     * it from the diffs. */
-	    for (wp = firstwin; wp != NULL; wp = wp->w_next)
-		if (wp->w_buffer == curwin->w_buffer && wp->w_p_diff)
-		    break;
-	    if (wp == NULL)
-		diff_buf_delete(curwin->w_buffer);
-	}
-	else
-	    diff_buf_add(curwin->w_buffer);
-#ifdef FEAT_FOLDING
+	/* May add or remove the buffer from the list of diff buffers. */
+	diff_buf_adjust(curwin);
+# ifdef FEAT_FOLDING
 	if (foldmethodIsDiff(curwin))
 	    foldUpdateAll(curwin);
-#endif
+# endif
     }
 #endif
 
@@ -6521,8 +6509,11 @@ set_bool_option(opt_idx, varp, value, opt_flags)
 	    /* Arabic requires a utf-8 encoding, inform the user if its not
 	     * set. */
 	    if (STRCMP(p_enc, "utf-8") != 0)
+	    {
+		msg_source(hl_attr(HLF_W));
 		MSG_ATTR(_("W17: Arabic requires UTF-8, do ':set encoding=utf-8'"),
 			hl_attr(HLF_W));
+	    }
 
 # ifdef FEAT_MBYTE
 	    /* set 'delcombine' */
@@ -6837,7 +6828,7 @@ set_num_option(opt_idx, varp, value, errbuf, opt_flags)
 	if (p_uc && !old_value)
 	    ml_open_files();
     }
-#if defined(FEAT_MZSCHEME) && defined(FEAT_GUI)
+#ifdef MZSCHEME_GUI_THREADS
     else if (pp == &p_mzq)
 	mzvim_reset_timer();
 #endif

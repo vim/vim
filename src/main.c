@@ -3055,7 +3055,7 @@ build_drop_cmd(filec, filev, sendReply)
 	mainerr_arg_missing((char_u *)filev[-1]);
     if (mch_dirname(cwd, MAXPATHL) != OK)
 	return NULL;
-    if ((p = vim_strsave_escaped_ext(cwd, PATH_ESC_CHARS, TRUE)) == NULL)
+    if ((p = vim_strsave_escaped_ext(cwd, PATH_ESC_CHARS, '\\', TRUE)) == NULL)
 	return NULL;
     ga_init2(&ga, 1, 100);
     ga_concat(&ga, (char_u *)"<C-\\><C-N>:cd ");

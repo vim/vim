@@ -254,6 +254,19 @@ gui_mch_start_blink()//{{{
 	gui.w->start_cursor_blinking();
 }//}}}
 
+#ifdef FEAT_MZSCHEME
+	void
+mzscheme_kde_start_timer()//{{{
+{
+	gui.w->enable_mzscheme_threads();
+}//}}}
+	void
+mzscheme_kde_stop_timer()//{{{
+{
+	gui.w->disable_mzscheme_threads();
+}//}}}
+#endif
+
 /*
  * Check if the GUI can be started.  Called before gvimrc is sourced.
  * Return OK or FAIL.

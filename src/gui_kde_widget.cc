@@ -352,6 +352,9 @@ void VimWidget::mouseReleaseEvent(QMouseEvent *event)//{{{
     VimWidget::VimWidget( QWidget *parent, const char *name, WFlags f )//{{{
 :QWidget(parent, name, f)
     ,DCOPObject("KVim")
+#ifdef FEAT_MZSCHEME
+    ,mzscheme_timer_id(-1)
+#endif
 {
     //to be able to show/hide the cursor when moving the mouse
     setMouseTracking(true);
@@ -880,6 +883,24 @@ void VimWidget::stop_cursor_blinking()//{{{
 
     blink_state = BLINK_NONE;
 }//}}}
+
+#ifdef FEAT_MZSCHEME
+void VimWidget::timerEvent( QTimerEvent * evnt)//{{{
+{
+    if (evnt->timerId() == mzscheme_timer_id)
+	timer_proc();
+}//}}}
+
+void VimWidget::enable_mzscheme_threads()//{{{
+{
+    mzscheme_timer_id = startTimer(p_mzq);
+}//}}}
+
+void VimWidget::disable_mzscheme_threads()//{{{
+{
+    killTimer(mzscheme_timer_id);
+}//}}}
+#endif
 
 void VimWidget::flash()//{{{
 {

@@ -17,9 +17,7 @@ void check_cursor __ARGS((void));
 void adjust_cursor_col __ARGS((void));
 int leftcol_changed __ARGS((void));
 void vim_mem_profile_dump __ARGS((void));
-#ifndef __cplusplus
 char_u *alloc __ARGS((unsigned size));
-#endif
 char_u *alloc_clear __ARGS((unsigned size));
 char_u *alloc_check __ARGS((unsigned size));
 char_u *lalloc_clear __ARGS((long_u size, int message));
@@ -29,7 +27,7 @@ void do_outofmem_msg __ARGS((long_u size));
 char_u *vim_strsave __ARGS((char_u *string));
 char_u *vim_strnsave __ARGS((char_u *string, int len));
 char_u *vim_strsave_escaped __ARGS((char_u *string, char_u *esc_chars));
-char_u *vim_strsave_escaped_ext __ARGS((char_u *string, char_u *esc_chars, int bsl));
+char_u *vim_strsave_escaped_ext __ARGS((char_u *string, char_u *esc_chars, int cc, int bsl));
 char_u *vim_strsave_up __ARGS((char_u *string));
 char_u *vim_strnsave_up __ARGS((char_u *string, int len));
 void vim_strup __ARGS((char_u *p));
