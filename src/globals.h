@@ -63,7 +63,7 @@ EXTERN int	screen_Columns INIT(= 0);   /* actual size of ScreenLines[] */
 
 /*
  * When vgetc() is called, it sets mod_mask to the set of modifiers that are
- * held down based on the KSMOD_* symbols that are read first.
+ * held down based on the MOD_MASK_* symbols that are read first.
  */
 EXTERN int	mod_mask INIT(= 0x0);		/* current key modifiers */
 
@@ -806,6 +806,8 @@ EXTERN int	arrow_used;		/* Normally FALSE, set to TRUE after
 					 * hitting cursor key in insert mode.
 					 * Used by vgetorpeek() to decide when
 					 * to call u_sync() */
+EXTERN int	ins_at_eol INIT(= FALSE); /* put cursor after eol when
+					   restarting edit after CTRL-O */
 #ifdef FEAT_INS_EXPAND
 EXTERN char_u	*edit_submode INIT(= NULL); /* msg for CTRL-X submode */
 EXTERN char_u	*edit_submode_pre INIT(= NULL); /* prepended to edit_submode */

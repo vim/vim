@@ -48,7 +48,7 @@ menutrans &Paste<Tab>"+gP		붙이기(&P)<Tab>"+gP
 menutrans Put\ &Before<Tab>[p		앞에\ 붙이기(&B)<Tab>[p
 menutrans Put\ &After<Tab>]p		뒤에\ 붙이기(&A)<Tab>]p
 menutrans &Delete<Tab>x			지우기(&D)<Tab>x
-menutrans &Select\ all<Tab>ggVG		모두\ 고르기(&S)<Tab>ggVG
+menutrans &Select\ All<Tab>ggVG		모두\ 고르기(&S)<Tab>ggVG
 menutrans &Find\.\.\.			찾기(&F)\.\.\.
 menutrans Find\ and\ Rep&lace\.\.\.	찾아서\ 바꾸기(&l)\.\.\.
 menutrans Settings\ &Window		설정\ 창(&W)
@@ -229,7 +229,7 @@ endif
 
 " Syntax menu
 menutrans &Syntax		문법(&S)
-menutrans &Show\ individual\ choices  모든\ 선택가능한\ 항목\ 보기(&S)
+menutrans &Show\ filetypes\ in\ menu	모든\ 선택가능한\ 항목\ 보기(&S)
 menutrans Set\ '&syntax'\ only	'syntax'만\ 설정(&s)
 menutrans Set\ '&filetype'\ too	'filetype'도\ 설정(&f)
 menutrans &Off			끄기(&O)

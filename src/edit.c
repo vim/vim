@@ -244,7 +244,6 @@ edit(cmdchar, startln, count)
     int		lastc;
     colnr_T	mincol;
     static linenr_T o_lnum = 0;
-    static int	o_eol = FALSE;
     int		i;
     int		did_backspace = TRUE;	    /* previous char was backspace */
 #ifdef FEAT_CINDENT
@@ -426,7 +425,7 @@ edit(cmdchar, startln, count)
 	 */
 	validate_virtcol();
 	update_curswant();
-	if (((o_eol && curwin->w_cursor.lnum == o_lnum)
+	if (((ins_at_eol && curwin->w_cursor.lnum == o_lnum)
 		    || curwin->w_curswant > curwin->w_virtcol)
 		&& *(ptr = ml_get_curline() + curwin->w_cursor.col) != NUL)
 	{
@@ -441,7 +440,7 @@ edit(cmdchar, startln, count)
 	    }
 #endif
 	}
-	o_eol = FALSE;
+	ins_at_eol = FALSE;
     }
     else
 	arrow_used = FALSE;
@@ -713,11 +712,9 @@ edit(cmdchar, startln, count)
 	    switch (c)
 	    {
 		case K_LEFT:	c = K_RIGHT; break;
-		case K_XLEFT:	c = K_XRIGHT; break;
 		case K_S_LEFT:	c = K_S_RIGHT; break;
 		case K_C_LEFT:	c = K_C_RIGHT; break;
 		case K_RIGHT:	c = K_LEFT; break;
-		case K_XRIGHT:	c = K_XLEFT; break;
 		case K_S_RIGHT: c = K_S_LEFT; break;
 		case K_C_RIGHT: c = K_C_LEFT; break;
 	    }
@@ -816,10 +813,10 @@ edit(cmdchar, startln, count)
 		restart_edit = 'I';
 #ifdef FEAT_VIRTUALEDIT
 	    if (virtual_active())
-		o_eol = FALSE;	    /* cursor always keeps its column */
+		ins_at_eol = FALSE;	/* cursor always keeps its column */
 	    else
 #endif
-		o_eol = (gchar_cursor() == NUL);
+		ins_at_eol = (gchar_cursor() == NUL);
 	    goto doESCkey;
 
 #ifdef FEAT_SNIFF
@@ -888,7 +885,7 @@ doESCkey:
 #endif
 	    /* Always update o_lnum, so that a "CTRL-O ." that adds a line
 	     * still puts the cursor back after the inserted text. */
-	    if (o_eol && gchar_cursor() == NUL)
+	    if (ins_at_eol && gchar_cursor() == NUL)
 		o_lnum = curwin->w_cursor.lnum;
 
 	    if (ins_esc(&count, cmdchar))
@@ -1098,7 +1095,6 @@ doESCkey:
 
 	case K_HOME:
 	case K_KHOME:
-	case K_XHOME:
 	case K_S_HOME:
 	case K_C_HOME:
 	    ins_home(c);
@@ -1106,14 +1102,12 @@ doESCkey:
 
 	case K_END:
 	case K_KEND:
-	case K_XEND:
 	case K_S_END:
 	case K_C_END:
 	    ins_end(c);
 	    break;
 
 	case K_LEFT:
-	case K_XLEFT:
 	    if (mod_mask & (MOD_MASK_SHIFT|MOD_MASK_CTRL))
 		ins_s_left();
 	    else
@@ -1126,7 +1120,6 @@ doESCkey:
 	    break;
 
 	case K_RIGHT:
-	case K_XRIGHT:
 	    if (mod_mask & (MOD_MASK_SHIFT|MOD_MASK_CTRL))
 		ins_s_right();
 	    else
@@ -1139,7 +1132,6 @@ doESCkey:
 	    break;
 
 	case K_UP:
-	case K_XUP:
 	    if (mod_mask & MOD_MASK_SHIFT)
 		ins_pageup();
 	    else
@@ -1153,7 +1145,6 @@ doESCkey:
 	    break;
 
 	case K_DOWN:
-	case K_XDOWN:
 	    if (mod_mask & MOD_MASK_SHIFT)
 		ins_pagedown();
 	    else
@@ -6243,14 +6234,12 @@ ins_ctrl_g()
     {
 	/* CTRL-G k and CTRL-G <Up>: cursor up to Insstart.col */
 	case K_UP:
-	case K_XUP:
 	case Ctrl_K:
 	case 'k': ins_up(TRUE);
 		  break;
 
 	/* CTRL-G j and CTRL-G <Down>: cursor down to Insstart.col */
 	case K_DOWN:
-	case K_XDOWN:
 	case Ctrl_J:
 	case 'j': ins_down(TRUE);
 		  break;
@@ -6473,17 +6462,11 @@ ins_start_select(c)
 	switch (c)
 	{
 	    case K_KHOME:
-	    case K_XHOME:
 	    case K_KEND:
-	    case K_XEND:
 	    case K_PAGEUP:
 	    case K_KPAGEUP:
 	    case K_PAGEDOWN:
 	    case K_KPAGEDOWN:
-	    case K_XLEFT:
-	    case K_XRIGHT:
-	    case K_XUP:
-	    case K_XDOWN:
 # ifdef MACOS
 	    case K_LEFT:
 	    case K_RIGHT:

@@ -39,6 +39,8 @@ char_u *get_user_var_name __ARGS((expand_T *xp, int idx));
 int list_append_dict __ARGS((list_T *list, dict_T *dict));
 dict_T *dict_alloc __ARGS((void));
 int dict_add_nr_str __ARGS((dict_T *d, char *key, long nr, char_u *str));
+char_u *get_dict_string __ARGS((dict_T *d, char_u *key));
+long get_dict_number __ARGS((dict_T *d, char_u *key));
 char_u *get_function_name __ARGS((expand_T *xp, int idx));
 char_u *get_expr_name __ARGS((expand_T *xp, int idx));
 void set_vim_var_nr __ARGS((int idx, long val));

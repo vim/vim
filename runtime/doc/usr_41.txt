@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 7.0aa.  Last change: 2005 Mar 15
+*usr_41.txt*	For Vim version 7.0aa.  Last change: 2005 Mar 25
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -723,7 +723,7 @@ Interactive:
 	input()			get a line from the user
 	inputsecret()		get a line from the user without showing it
 	inputdialog()		get a line from the user in a dialog
-	inputresave		save and clear typeahead
+	inputsave()		save and clear typeahead
 	inputrestore()		restore typeahead
 
 Vim server:
@@ -745,7 +745,7 @@ Various:
 	maparg()		get rhs of a mapping
 	exists()		check if a variable, function, etc. exists
 	has()			check if a feature is supported in Vim
-	errorlist()		list of quickfix errors
+	getqflist()		list of quickfix errors
 	cscope_connection()	check if a cscope connection exists
 	did_filetype()		check if a FileType autocommand was used
 	eventhandler()		check if invoked by an event handler
@@ -757,6 +757,7 @@ Various:
 	libcallnr()		idem, returning a number
 	getreg()		get contents of a register
 	getregtype()		get type of a register
+	setqflist()		create a quickfix list
 	setreg()		set contents and type of a register
 	taglist()		get list of matching tags
 

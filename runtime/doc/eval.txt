@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Mar 17
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Mar 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1452,7 +1452,6 @@ did_filetype()			Number	TRUE if FileType autocommand event used
 diff_filler( {lnum})		Number	diff filler lines about {lnum}
 diff_hlID( {lnum}, {col})	Number	diff highlighting at {lnum}/{col}
 empty( {expr})			Number	TRUE if {expr} is empty
-errorlist()			List	list of quickfix items
 escape( {string}, {chars})	String	escape {chars} in {string} with '\'
 eval( {string})			any	evaluate {string} into its value
 eventhandler( )			Number	TRUE if inside an event handler
@@ -1489,6 +1488,7 @@ getftime( {fname})		Number	last modification time of file
 getftype( {fname})		String	description of type of file {fname}
 getline( {lnum})		String	line {lnum} of current buffer
 getline( {lnum}, {end})		List	lines {lnum} to {end} of current buffer
+getqflist()			List	list of quickfix items
 getreg( [{regname}])		String	contents of register
 getregtype( [{regname}])	String	type of register
 getwinposx()			Number	X coord in pixels of GUI Vim window
@@ -1574,6 +1574,7 @@ serverlist()			String	get a list of available servers
 setbufvar( {expr}, {varname}, {val})	set {varname} in buffer {expr} to {val}
 setcmdpos( {pos})		Number	set cursor position in command-line
 setline( {lnum}, {line})	Number	set line {lnum} to {line}
+setqflist( {list} )		Number	set list of quickfix items using {list}
 setreg( {n}, {v}[, {opt}])	Number	set register to value and type
 setwinvar( {nr}, {varname}, {val})	set {varname} in window {nr} to {val}
 simplify( {filename})		String	simplify filename as much as possible
@@ -2022,28 +2023,6 @@ empty({expr})						*empty()*
 		A Number is empty when its value is zero.
 		For a long List this is much faster then comparing the length
 		with zero.
-
-errorlist()						*errorlist()*
-		Returns a list with all the current quickfix errors.  Each
-		list item is a dictionary with these entries:
-			bufnr	number of buffer that has the file name, use
-				bufname() to get the name
-			lnum	line number in the buffer (first line is 1)
-			col	column number (first column is 1)
-			vcol	non-zero: column number is visual column
-				zero: column number is byte index
-			nr	error number
-			text	description of the error
-			type	type of the error, 'E', '1', etc.
-			valid	non-zero: recognized error message
-
-		Useful application: Find pattern matches in multiple files and
-		do something with them: >
-			:vimgrep /theword/jg *.c
-			:for d in errorlist()
-			:   echo bufname(d.bufnr) ':' d.lnum '=' d.text
-			:endfor
-
 
 escape({string}, {chars})				*escape()*
 		Escape the characters in {chars} that occur in {string} with a
@@ -2546,6 +2525,28 @@ getline({lnum} [, {end}])
 			:let start = line('.')
 			:let end = search("^$") - 1
 			:let lines = getline(start, end)
+
+
+getqflist()						*getqflist()*
+		Returns a list with all the current quickfix errors.  Each
+		list item is a dictionary with these entries:
+			bufnr	number of buffer that has the file name, use
+				bufname() to get the name
+			lnum	line number in the buffer (first line is 1)
+			col	column number (first column is 1)
+			vcol	non-zero: column number is visual column
+				zero: column number is byte index
+			nr	error number
+			text	description of the error
+			type	type of the error, 'E', '1', etc.
+			valid	non-zero: recognized error message
+
+		Useful application: Find pattern matches in multiple files and
+		do something with them: >
+			:vimgrep /theword/jg *.c
+			:for d in getqflist()
+			:   echo bufname(d.bufnr) ':' d.lnum '=' d.text
+			:endfor
 
 
 getreg([{regname}])					*getreg()*
@@ -3589,6 +3590,34 @@ setline({lnum}, {line})					*setline()*
 		{lnum} is invalid) 1 is returned.  Example: >
 			:call setline(5, strftime("%c"))
 <		Note: The '[ and '] marks are not set.
+
+
+setqflist({list})					*setqflist()*
+		Creates a quickfix list using the items in {list}.  Each item
+		in {list} is a dictionary.  Non-dictionary items in {list} are
+		ignored.  Each dictionary item can contain the following
+		entries:
+
+		    filename	name of a file
+		    lnum	line number in the file
+		    col		column number
+		    pattern	search pattern used to locate the error
+		    text	description of the error
+
+		The "col" and "text" entries are optional.  Either "lnum" or
+		"pattern" entry can be used to locate a matching error line.
+		If the "filename" entry is not present or neither the "lnum"
+		or "pattern" entries are present, then the item will not be
+		handled as an error line.
+		If both "pattern" and "lnum" are present then "pattern" will
+		be used.
+
+		Returns zero for success, -1 for failure.
+
+		This function can be used to create a quickfix list
+		independent of the 'errorformat' setting.  Use a command like
+		":cc 1" to jump to the first position.
+
 
 							*setreg()*
 setreg({regname}, {value} [,{options}])

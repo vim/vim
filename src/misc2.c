@@ -1843,9 +1843,11 @@ static struct key_name_entry
     {K_HOME,		(char_u *)"Home"},
     {K_KHOME,		(char_u *)"kHome"},
     {K_XHOME,		(char_u *)"xHome"},
+    {K_ZHOME,		(char_u *)"zHome"},
     {K_END,		(char_u *)"End"},
     {K_KEND,		(char_u *)"kEnd"},
     {K_XEND,		(char_u *)"xEnd"},
+    {K_ZEND,		(char_u *)"zEnd"},
     {K_PAGEUP,		(char_u *)"PageUp"},
     {K_PAGEDOWN,	(char_u *)"PageDown"},
     {K_KPAGEUP,		(char_u *)"kPageUp"},
@@ -1999,8 +2001,6 @@ simplify_key(key, modifiers)
 
 /*
  * Change <xHome> to <Home>, <xUp> to <Up>, etc.
- * "kp" must point to an array that holds the two characters that represent a
- * special key.
  */
     int
 handle_x_keys(key)
@@ -2013,7 +2013,9 @@ handle_x_keys(key)
 	case K_XLEFT:	return K_LEFT;
 	case K_XRIGHT:	return K_RIGHT;
 	case K_XHOME:	return K_HOME;
+	case K_ZHOME:	return K_HOME;
 	case K_XEND:	return K_END;
+	case K_ZEND:	return K_END;
 	case K_XF1:	return K_F1;
 	case K_XF2:	return K_F2;
 	case K_XF3:	return K_F3;

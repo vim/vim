@@ -326,11 +326,9 @@ getcmdline(firstc, count, indent)
 		switch (c)
 		{
 		    case K_RIGHT:   c = K_LEFT; break;
-		    case K_XRIGHT:  c = K_XLEFT; break;
 		    case K_S_RIGHT: c = K_S_LEFT; break;
 		    case K_C_RIGHT: c = K_C_LEFT; break;
 		    case K_LEFT:    c = K_RIGHT; break;
-		    case K_XLEFT:   c = K_XRIGHT; break;
 		    case K_S_LEFT:  c = K_S_RIGHT; break;
 		    case K_C_LEFT:  c = K_C_RIGHT; break;
 		}
@@ -363,10 +361,10 @@ getcmdline(firstc, count, indent)
 	 * list */
 	if (lookfor != NULL
 		&& c != K_S_DOWN && c != K_S_UP
-		&& c != K_DOWN && c != K_UP && c != K_XDOWN && c != K_XUP
+		&& c != K_DOWN && c != K_UP
 		&& c != K_PAGEDOWN && c != K_PAGEUP
 		&& c != K_KPAGEDOWN && c != K_KPAGEUP
-		&& c != K_LEFT && c != K_RIGHT && c != K_XLEFT && c != K_XRIGHT
+		&& c != K_LEFT && c != K_RIGHT
 		&& (xpc.xp_numfiles > 0 || (c != Ctrl_P && c != Ctrl_N)))
 	{
 	    vim_free(lookfor);
@@ -384,9 +382,9 @@ getcmdline(firstc, count, indent)
 	/* Special translations for 'wildmenu' */
 	if (did_wild_list && p_wmnu)
 	{
-	    if (c == K_LEFT || c == K_XLEFT)
+	    if (c == K_LEFT)
 		c = Ctrl_P;
-	    else if (c == K_RIGHT || c == K_XRIGHT)
+	    else if (c == K_RIGHT)
 		c = Ctrl_N;
 	}
 	/* Hitting CR after "emenu Name.": complete submenu */
@@ -407,8 +405,7 @@ getcmdline(firstc, count, indent)
 	    (void)ExpandOne(&xpc, NULL, NULL, 0, WILD_FREE);
 	    did_wild_list = FALSE;
 #ifdef FEAT_WILDMENU
-	    if (!p_wmnu || (c != K_UP && c != K_DOWN
-					       && c != K_XUP && c != K_XDOWN))
+	    if (!p_wmnu || (c != K_UP && c != K_DOWN))
 #endif
 		xpc.xp_context = EXPAND_NOTHING;
 	    wim_index = 0;
@@ -455,10 +452,9 @@ getcmdline(firstc, count, indent)
 	if (xpc.xp_context == EXPAND_MENUNAMES && p_wmnu)
 	{
 	    /* Hitting <Down> after "emenu Name.": complete submenu */
-	    if (ccline.cmdbuff[ccline.cmdpos - 1] == '.'
-					     && (c == K_DOWN || c == K_XDOWN))
+	    if (ccline.cmdbuff[ccline.cmdpos - 1] == '.' && c == K_DOWN)
 		c = p_wc;
-	    else if (c == K_UP || c == K_XUP)
+	    else if (c == K_UP)
 	    {
 		/* Hitting <Up>: Remove one submenu name in front of the
 		 * cursor */
@@ -505,15 +501,14 @@ getcmdline(firstc, count, indent)
 	    upseg[4] = NUL;
 
 	    if (ccline.cmdbuff[ccline.cmdpos - 1] == PATHSEP
-		    && (c == K_DOWN || c == K_XDOWN)
+		    && c == K_DOWN
 		    && (ccline.cmdbuff[ccline.cmdpos - 2] != '.'
 			|| ccline.cmdbuff[ccline.cmdpos - 3] != '.'))
 	    {
 		/* go down a directory */
 		c = p_wc;
 	    }
-	    else if (STRNCMP(xpc.xp_pattern, upseg + 1, 3) == 0
-					     && (c == K_DOWN || c == K_XDOWN))
+	    else if (STRNCMP(xpc.xp_pattern, upseg + 1, 3) == 0 && c == K_DOWN)
 	    {
 		/* If in a direct ancestor, strip off one ../ to go down */
 		int found = FALSE;
@@ -541,7 +536,7 @@ getcmdline(firstc, count, indent)
 		    c = p_wc;
 		}
 	    }
-	    else if (c == K_UP || c == K_XUP)
+	    else if (c == K_UP)
 	    {
 		/* go up a directory */
 		int found = FALSE;
@@ -1107,7 +1102,6 @@ getcmdline(firstc, count, indent)
 		continue;	/* don't do incremental search now */
 
 	case K_RIGHT:
-	case K_XRIGHT:
 	case K_S_RIGHT:
 	case K_C_RIGHT:
 		do
@@ -1136,7 +1130,6 @@ getcmdline(firstc, count, indent)
 		goto cmdline_not_changed;
 
 	case K_LEFT:
-	case K_XLEFT:
 	case K_S_LEFT:
 	case K_C_LEFT:
 		do
@@ -1296,7 +1289,6 @@ getcmdline(firstc, count, indent)
 	case Ctrl_B:	    /* begin of command line */
 	case K_HOME:
 	case K_KHOME:
-	case K_XHOME:
 	case K_S_HOME:
 	case K_C_HOME:
 		ccline.cmdpos = 0;
@@ -1306,7 +1298,6 @@ getcmdline(firstc, count, indent)
 	case Ctrl_E:	    /* end of command line */
 	case K_END:
 	case K_KEND:
-	case K_XEND:
 	case K_S_END:
 	case K_C_END:
 		ccline.cmdpos = ccline.cmdlen;
@@ -1335,9 +1326,7 @@ getcmdline(firstc, count, indent)
 
 #ifdef FEAT_CMDHIST
 	case K_UP:
-	case K_XUP:
 	case K_DOWN:
-	case K_XDOWN:
 	case K_S_UP:
 	case K_S_DOWN:
 	case K_PAGEUP:
@@ -1361,7 +1350,7 @@ getcmdline(firstc, count, indent)
 		for (;;)
 		{
 		    /* one step backwards */
-		    if (c == K_UP || c == K_XUP || c == K_S_UP || c == Ctrl_P
+		    if (c == K_UP|| c == K_S_UP || c == Ctrl_P
 			    || c == K_PAGEUP || c == K_KPAGEUP)
 		    {
 			if (hiscnt == hislen)	/* first time */
@@ -1398,7 +1387,7 @@ getcmdline(firstc, count, indent)
 			hiscnt = i;
 			break;
 		    }
-		    if ((c != K_UP && c != K_DOWN && c != K_XUP && c != K_XDOWN)
+		    if ((c != K_UP && c != K_DOWN)
 			    || hiscnt == i
 			    || STRNCMP(history[histype][hiscnt].hisstr,
 						    lookfor, (size_t)j) == 0)

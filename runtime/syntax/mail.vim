@@ -2,7 +2,7 @@
 " Language:		Mail file
 " Previous Maintainer:	Felix von Leitner <leitner@math.fu-berlin.de>
 " Maintainer:		Gautam Iyer <gautam@math.uchicago.edu>
-" Last Change:		Thu 10 Feb 2005 09:46:26 AM CST
+" Last Change:		2005 Mar 23
 
 " Quit when a syntax file was already loaded
 if exists("b:current_syntax")
@@ -36,14 +36,14 @@ syn match	mailHeaderKey	contained "\v(^(\> ?)*)@<=date:"
 syn match	mailSubject	contained "\v(^(\> ?)*)@<=subject:.*$"
 
 " Anything in the header between < and > is an email address
-syn match	mailHeaderEmail	contained "<.\{-}>"
+syn match	mailHeaderEmail	contained "<.\{-}>" contains=@NoSpell
 
 " Mail Signatures. (Begin with "-- ", end with change in quote level)
 syn region	mailSignature	keepend contains=@mailLinks,@mailQuoteExps start="^\z(\(> \?\)*\)-- $" end="^\z1$" end="^\z1\@!"me=s-1 end="^\z1\(> \?\)\+"me=s-1
 
 " URLs start with a known protocol or www,web,w3.
-syn match mailURL `\v<(((https?|ftp|gopher)://|(mailto|file|news):)[^' 	<>"]+|(www|web|w3)[a-z0-9_-]*\.[a-z0-9._-]+\.[^' 	<>"]+)[a-z0-9/]`
-syn match mailEmail "\v[_=a-z\./+0-9-]+\@[a-z0-9._-]+\a{2}"
+syn match mailURL `\v<(((https?|ftp|gopher)://|(mailto|file|news):)[^' 	<>"]+|(www|web|w3)[a-z0-9_-]*\.[a-z0-9._-]+\.[^' 	<>"]+)[a-z0-9/]` contains=@NoSpell
+syn match mailEmail "\v[_=a-z\./+0-9-]+\@[a-z0-9._-]+\a{2}" contains=@NoSpell
 
 " Make sure quote markers in regions (header / signature) have correct color
 syn match mailQuoteExp1	contained "\v^(\> ?)"

@@ -24,22 +24,24 @@ struct dir_stack_T
 static struct dir_stack_T   *dir_stack = NULL;
 
 /*
- * for each error the next struct is allocated and linked in a list
+ * For each error the next struct is allocated and linked in a list.
  */
-struct qf_line
+typedef struct qfline_S qfline_T;
+struct qfline_S
 {
-    struct qf_line  *qf_next;	/* pointer to next error in the list */
-    struct qf_line  *qf_prev;	/* pointer to previous error in the list */
-    linenr_T	     qf_lnum;	/* line number where the error occurred */
-    int		     qf_fnum;	/* file number for the line */
-    int		     qf_col;	/* column where the error occurred */
-    int		     qf_nr;	/* error number */
-    char_u	    *qf_text;	/* description of the error */
-    char_u	     qf_viscol; /* set to TRUE if qf_col is screen column */
-    char_u	     qf_cleared;/* set to TRUE if line has been deleted */
-    char_u	     qf_type;	/* type of the error (mostly 'E'); 1 for
+    qfline_T	*qf_next;	/* pointer to next error in the list */
+    qfline_T	*qf_prev;	/* pointer to previous error in the list */
+    linenr_T	qf_lnum;	/* line number where the error occurred */
+    int		qf_fnum;	/* file number for the line */
+    int		qf_col;		/* column where the error occurred */
+    int		qf_nr;		/* error number */
+    char_u	*qf_pattern;	/* search pattern for the error */
+    char_u	*qf_text;	/* description of the error */
+    char_u	qf_viscol;	/* set to TRUE if qf_col is screen column */
+    char_u	qf_cleared;	/* set to TRUE if line has been deleted */
+    char_u	qf_type;	/* type of the error (mostly 'E'); 1 for
 				   :helpgrep */
-    char_u	     qf_valid;	/* valid error message detected */
+    char_u	qf_valid;	/* valid error message detected */
 };
 
 /*
@@ -49,17 +51,17 @@ struct qf_line
 
 struct qf_list
 {
-    struct qf_line *qf_start;	/* pointer to the first error */
-    struct qf_line *qf_ptr;	/* pointer to the current error */
-    int  qf_count;		/* number of errors (0 means no error list) */
-    int  qf_index;		/* current index in the error list */
-    int  qf_nonevalid;		/* TRUE if not a single valid entry found */
+    qfline_T	*qf_start;	/* pointer to the first error */
+    qfline_T	*qf_ptr;	/* pointer to the current error */
+    int		qf_count;	/* number of errors (0 means no error list) */
+    int		qf_index;	/* current index in the error list */
+    int		qf_nonevalid;	/* TRUE if not a single valid entry found */
 } qf_lists[LISTCOUNT];
 
 static int	qf_curlist = 0;	/* current error list */
 static int	qf_listcount = 0;   /* current number of lists */
 
-#define FMT_PATTERNS 9		/* maximum number of % recognized */
+#define FMT_PATTERNS 10		/* maximum number of % recognized */
 
 /*
  * Structure used to hold the info of one part of 'errorformat'
@@ -88,7 +90,7 @@ struct eformat
 
 static int qf_init_ext __ARGS((char_u *efile, buf_T *buf, char_u *errorformat, int newlist, linenr_T lnumfirst, linenr_T lnumlast));
 static void	qf_new_list __ARGS((void));
-static int	qf_add_entry __ARGS((struct qf_line **prevp, char_u *dir, char_u *fname, char_u *mesg, long lnum, int col, int vis_col, int nr, int type, int valid));
+static int	qf_add_entry __ARGS((qfline_T **prevp, char_u *dir, char_u *fname, char_u *mesg, long lnum, int col, int vis_col, char_u *pattern, int nr, int type, int valid));
 static void	qf_msg __ARGS((void));
 static void	qf_free __ARGS((int idx));
 static char_u	*qf_types __ARGS((int, int));
@@ -145,6 +147,7 @@ qf_init_ext(efile, buf, errorformat, newlist, lnumfirst, lnumlast)
 {
     char_u	    *namebuf;
     char_u	    *errmsg;
+    char_u	    *pattern;
     char_u	    *fmtstr = NULL;
     int		    col = 0;
     char_u	    use_viscol = FALSE;
@@ -154,7 +157,7 @@ qf_init_ext(efile, buf, errorformat, newlist, lnumfirst, lnumlast)
     long	    lnum = 0L;
     int		    enr = 0;
     FILE	    *fd = NULL;
-    struct qf_line  *qfprev = NULL;	/* init to make SASC shut up */
+    qfline_T	    *qfprev = NULL;	/* init to make SASC shut up */
     char_u	    *efmp;
     struct eformat  *fmt_first = NULL;
     struct eformat  *fmt_last = NULL;
@@ -189,12 +192,14 @@ qf_init_ext(efile, buf, errorformat, newlist, lnumfirst, lnumlast)
 			{'m', ".\\+"},
 			{'r', ".*"},
 			{'p', "[- .]*"},
-			{'v', "\\d\\+"}
+			{'v', "\\d\\+"},
+			{'s', ".\\+"}
 		    };
 
     namebuf = alloc(CMDBUFFSIZE + 1);
     errmsg = alloc(CMDBUFFSIZE + 1);
-    if (namebuf == NULL || errmsg == NULL)
+    pattern = alloc(CMDBUFFSIZE + 1);
+    if (namebuf == NULL || errmsg == NULL || pattern == NULL)
 	goto qf_init_end;
 
     if (efile != NULL && (fd = mch_fopen((char *)efile, "r")) == NULL)
@@ -463,6 +468,7 @@ restofline:
 	    if (multiscan && vim_strchr((char_u *)"OPQ", idx) == NULL)
 		continue;
 	    namebuf[0] = NUL;
+	    pattern[0] = NUL;
 	    if (!multiscan)
 		errmsg[0] = NUL;
 	    lnum = 0;
@@ -521,6 +527,17 @@ restofline:
 		{
 		    col = (int)atol((char *)regmatch.startp[i]);
 		    use_viscol = TRUE;
+		}
+		if ((i = (int)fmt_ptr->addr[9]) > 0)		/* %s */
+		{
+		    len = (int)(regmatch.endp[i] - regmatch.startp[i]);
+		    if (len > CMDBUFFSIZE - 5)
+			len = CMDBUFFSIZE - 5;
+		    STRCPY(pattern, "^\\V");
+		    STRNCAT(pattern, regmatch.startp[i], len);
+		    pattern[len + 3] = '\\';
+		    pattern[len + 4] = '$';
+		    pattern[len + 5] = NUL;
 		}
 		break;
 	    }
@@ -624,6 +641,7 @@ restofline:
 			lnum,
 			col,
 			use_viscol,
+			pattern,
 			enr,
 			type,
 			valid) == FAIL)
@@ -667,6 +685,7 @@ qf_init_ok:
 qf_init_end:
     vim_free(namebuf);
     vim_free(errmsg);
+    vim_free(pattern);
     vim_free(fmtstr);
 
 #ifdef FEAT_WINDOWS
@@ -714,22 +733,23 @@ qf_new_list()
  * Returns OK or FAIL.
  */
     static int
-qf_add_entry(prevp, dir, fname, mesg, lnum, col, vis_col, nr, type, valid)
-    struct qf_line **prevp;	/* pointer to previously added entry or NULL */
+qf_add_entry(prevp, dir, fname, mesg, lnum, col, vis_col, pattern, nr, type,
+	     valid)
+    qfline_T	**prevp;	/* pointer to previously added entry or NULL */
     char_u	*dir;		/* optional directory name */
     char_u	*fname;		/* file name or NULL */
     char_u	*mesg;		/* message */
     long	lnum;		/* line number */
     int		col;		/* column */
     int		vis_col;	/* using visual column */
+    char_u	*pattern;	/* search pattern */
     int		nr;		/* error number */
     int		type;		/* type character */
     int		valid;		/* valid entry */
 {
-    struct qf_line *qfp;
+    qfline_T	*qfp;
 
-    if ((qfp = (struct qf_line *)alloc((unsigned)sizeof(struct qf_line)))
-								      == NULL)
+    if ((qfp = (qfline_T *)alloc((unsigned)sizeof(qfline_T))) == NULL)
 	return FAIL;
     qfp->qf_fnum = qf_get_fnum(dir, fname);
     if ((qfp->qf_text = vim_strsave(mesg)) == NULL)
@@ -740,6 +760,14 @@ qf_add_entry(prevp, dir, fname, mesg, lnum, col, vis_col, nr, type, valid)
     qfp->qf_lnum = lnum;
     qfp->qf_col = col;
     qfp->qf_viscol = vis_col;
+    if (pattern == NULL || *pattern == NUL)
+	qfp->qf_pattern = NULL;
+    else if ((qfp->qf_pattern = vim_strsave(pattern)) == NULL)
+    {
+	vim_free(qfp->qf_text);
+	vim_free(qfp);
+	return FAIL;
+    }
     qfp->qf_nr = nr;
     if (type != 1 && !vim_isprintc(type)) /* only printable chars allowed */
 	type = 0;
@@ -1018,8 +1046,8 @@ qf_jump(dir, errornr, forceit)
     int		errornr;
     int		forceit;
 {
-    struct qf_line	*qf_ptr;
-    struct qf_line	*old_qf_ptr;
+    qfline_T		*qf_ptr;
+    qfline_T		*old_qf_ptr;
     int			qf_index;
     int			old_qf_fnum;
     int			old_qf_index;
@@ -1272,46 +1300,59 @@ qf_jump(dir, errornr, forceit)
 	if (curbuf == old_curbuf)
 	    setpcmark();
 
-	/*
-	 * Go to line with error, unless qf_lnum is 0.
-	 */
-	i = qf_ptr->qf_lnum;
-	if (i > 0)
+	if (qf_ptr->qf_pattern == NULL)
 	{
-	    if (i > curbuf->b_ml.ml_line_count)
-		i = curbuf->b_ml.ml_line_count;
-	    curwin->w_cursor.lnum = i;
-	}
-	if (qf_ptr->qf_col > 0)
-	{
-	    curwin->w_cursor.col = qf_ptr->qf_col - 1;
-	    if (qf_ptr->qf_viscol == TRUE)
+	    /*
+	     * Go to line with error, unless qf_lnum is 0.
+	     */
+	    i = qf_ptr->qf_lnum;
+	    if (i > 0)
 	    {
-		/*
-		 * Check each character from the beginning of the error
-		 * line up to the error column.  For each tab character
-		 * found, reduce the error column value by the length of
-		 * a tab character.
-		 */
-		line = ml_get_curline();
-		screen_col = 0;
-		for (char_col = 0; char_col < curwin->w_cursor.col; ++char_col)
-		{
-		    if (*line == NUL)
-			break;
-		    if (*line++ == '\t')
-		    {
-			curwin->w_cursor.col -= 7 - (screen_col % 8);
-			screen_col += 8 - (screen_col % 8);
-		    }
-		    else
-			++screen_col;
-		}
+		if (i > curbuf->b_ml.ml_line_count)
+		    i = curbuf->b_ml.ml_line_count;
+		curwin->w_cursor.lnum = i;
 	    }
-	    check_cursor();
+	    if (qf_ptr->qf_col > 0)
+	    {
+		curwin->w_cursor.col = qf_ptr->qf_col - 1;
+		if (qf_ptr->qf_viscol == TRUE)
+		{
+		    /*
+		     * Check each character from the beginning of the error
+		     * line up to the error column.  For each tab character
+		     * found, reduce the error column value by the length of
+		     * a tab character.
+		     */
+		    line = ml_get_curline();
+		    screen_col = 0;
+		    for (char_col = 0; char_col < curwin->w_cursor.col; ++char_col)
+		    {
+			if (*line == NUL)
+			    break;
+			if (*line++ == '\t')
+			{
+			    curwin->w_cursor.col -= 7 - (screen_col % 8);
+			    screen_col += 8 - (screen_col % 8);
+			}
+			else
+			    ++screen_col;
+		    }
+		}
+		check_cursor();
+	    }
+	    else
+		beginline(BL_WHITE | BL_FIX);
 	}
 	else
-	    beginline(BL_WHITE | BL_FIX);
+	{
+	    pos_T save_cursor;
+
+	    /* Move the cursor to the first line in the buffer */
+	    save_cursor = curwin->w_cursor;
+	    curwin->w_cursor.lnum = 0;
+	    if (!do_search(NULL, '/', qf_ptr->qf_pattern, (long)1, SEARCH_KEEP))
+		curwin->w_cursor = save_cursor;
+	}
 
 #ifdef FEAT_FOLDING
 	if ((fdo_flags & FDO_QUICKFIX) && old_KeyTyped)
@@ -1383,16 +1424,16 @@ theend:
 qf_list(eap)
     exarg_T	*eap;
 {
-    buf_T		*buf;
-    char_u		*fname;
-    struct qf_line	*qfp;
-    int			i;
-    int			idx1 = 1;
-    int			idx2 = -1;
-    int			need_return = TRUE;
-    int			last_printed = 1;
-    char_u		*arg = eap->arg;
-    int			all = eap->forceit;	/* if not :cl!, only show
+    buf_T	*buf;
+    char_u	*fname;
+    qfline_T	*qfp;
+    int		i;
+    int		idx1 = 1;
+    int		idx2 = -1;
+    int		need_return = TRUE;
+    int		last_printed = 1;
+    char_u	*arg = eap->arg;
+    int		all = eap->forceit;	/* if not :cl!, only show
 						   recognised errors */
 
     if (qf_curlist >= qf_listcount || qf_lists[qf_curlist].qf_count == 0)
@@ -1447,9 +1488,17 @@ qf_list(eap)
 		else
 		    sprintf((char *)IObuff, ":%ld col %d",
 						   qfp->qf_lnum, qfp->qf_col);
-		sprintf((char *)IObuff + STRLEN(IObuff), "%s: ",
+		sprintf((char *)IObuff + STRLEN(IObuff), "%s:",
 				  (char *)qf_types(qfp->qf_type, qfp->qf_nr));
 		msg_puts_attr(IObuff, hl_attr(HLF_N));
+		if (qfp->qf_pattern != NULL)
+		{
+		    qf_fmt_text(qfp->qf_pattern, IObuff, IOSIZE);
+		    STRCAT(IObuff, ":");
+		    msg_puts(IObuff);
+		}
+		msg_puts((char_u *)" ");
+
 		/* Remove newlines and leading whitespace from the text.
 		 * For an unrecognized line keep the indent, the compiler may
 		 * mark a word with ^^^^. */
@@ -1571,12 +1620,13 @@ qf_msg()
 qf_free(idx)
     int		idx;
 {
-    struct qf_line *qfp;
+    qfline_T	*qfp;
 
     while (qf_lists[idx].qf_count)
     {
 	qfp = qf_lists[idx].qf_start->qf_next;
 	vim_free(qf_lists[idx].qf_start->qf_text);
+	vim_free(qf_lists[idx].qf_start->qf_pattern);
 	vim_free(qf_lists[idx].qf_start);
 	qf_lists[idx].qf_start = qfp;
 	--qf_lists[idx].qf_count;
@@ -1593,9 +1643,9 @@ qf_mark_adjust(line1, line2, amount, amount_after)
     long	amount;
     long	amount_after;
 {
-    int			i;
-    struct qf_line	*qfp;
-    int			idx;
+    int		i;
+    qfline_T	*qfp;
+    int		idx;
 
     for (idx = 0; idx < qf_listcount; ++idx)
 	if (qf_lists[idx].qf_count)
@@ -1912,11 +1962,11 @@ qf_update_buffer()
     static void
 qf_fill_buffer()
 {
-    linenr_T		lnum;
-    struct qf_line	*qfp;
-    buf_T		*errbuf;
-    int			len;
-    int			old_KeyTyped = KeyTyped;
+    linenr_T	lnum;
+    qfline_T	*qfp;
+    buf_T	*errbuf;
+    int		len;
+    int		old_KeyTyped = KeyTyped;
 
     /* delete all existing lines */
     while ((curbuf->b_ml.ml_flags & ML_EMPTY) == 0)
@@ -1956,6 +2006,11 @@ qf_fill_buffer()
 
 		sprintf((char *)IObuff + len, "%s",
 				  (char *)qf_types(qfp->qf_type, qfp->qf_nr));
+		len += (int)STRLEN(IObuff + len);
+	    }
+	    else if (qfp->qf_pattern != NULL)
+	    {
+		qf_fmt_text(qfp->qf_pattern, IObuff + len, IOSIZE - len);
 		len += (int)STRLEN(IObuff + len);
 	    }
 	    IObuff[len++] = '|';
@@ -2285,7 +2340,7 @@ ex_vimgrep(eap)
     char_u	*p;
     int		i;
     int		fi;
-    struct qf_line *prevp = NULL;
+    qfline_T	*prevp = NULL;
     long	lnum;
     garray_T	ga;
     buf_T	*buf;
@@ -2434,6 +2489,7 @@ ex_vimgrep(eap)
 				regmatch.startpos[0].lnum + lnum,
 				regmatch.startpos[0].col + 1,
 				FALSE,      /* vis_col */
+				NULL,	    /* search pattern */
 				0,          /* nr */
 				0,          /* type */
 				TRUE        /* valid */
@@ -2696,10 +2752,10 @@ unload_dummy_buffer(buf)
 get_errorlist(list)
     list_T	*list;
 {
-    dict_T	    *dict;
-    char_u	    buf[2];
-    struct qf_line  *qfp;
-    int		    i;
+    dict_T	*dict;
+    char_u	buf[2];
+    qfline_T	*qfp;
+    int		i;
 
     if (qf_curlist >= qf_listcount || qf_lists[qf_curlist].qf_count == 0)
     {
@@ -2722,6 +2778,7 @@ get_errorlist(list)
 	  || dict_add_nr_str(dict, "col",   (long)qfp->qf_col, NULL) == FAIL
 	  || dict_add_nr_str(dict, "vcol",  (long)qfp->qf_viscol, NULL) == FAIL
 	  || dict_add_nr_str(dict, "nr",    (long)qfp->qf_nr, NULL) == FAIL
+	  || dict_add_nr_str(dict, "pattern",  0L, qfp->qf_pattern) == FAIL
 	  || dict_add_nr_str(dict, "text",  0L, qfp->qf_text) == FAIL
 	  || dict_add_nr_str(dict, "type",  0L, buf) == FAIL
 	  || dict_add_nr_str(dict, "valid", (long)qfp->qf_valid, NULL) == FAIL)
@@ -2730,6 +2787,86 @@ get_errorlist(list)
 	qfp = qfp->qf_next;
     }
     return OK;
+}
+
+/*
+ * Populate the quickfix list with the items supplied in the list
+ * of dictionaries.
+ */
+    int
+set_errorlist(list)
+    list_T	*list;
+{
+    listitem_T	*li;
+    dict_T	*d;
+    char_u	*filename, *pattern, *text, *type;
+    long	lnum;
+    int		col, nr;
+    int		vcol;
+    qfline_T	*prevp = NULL;
+    int		valid, status;
+    int		retval = OK;
+
+    /* make place for a new list */
+    qf_new_list();
+
+    for (li = list->lv_first; li != NULL; li = li->li_next)
+    {
+	if (li->li_tv.v_type != VAR_DICT)
+	    continue; /* Skip non-dict items */
+
+	d = li->li_tv.vval.v_dict;
+	if (d == NULL)
+	    continue;
+
+	filename = get_dict_string(d, (char_u *)"filename");
+	lnum = get_dict_number(d, (char_u *)"lnum");
+	col = get_dict_number(d, (char_u *)"col");
+	vcol = get_dict_number(d, (char_u *)"vcol");
+	nr = get_dict_number(d, (char_u *)"nr");
+	type = get_dict_string(d, (char_u *)"type");
+	pattern = get_dict_string(d, (char_u *)"pattern");
+	text = get_dict_string(d, (char_u *)"text");
+	if (text == NULL)
+	    text = vim_strsave((char_u *)"");
+
+	valid = TRUE;
+	if (filename == NULL || (lnum == 0 && pattern == NULL))
+	    valid = FALSE;
+
+	status =  qf_add_entry(&prevp,
+			       NULL,	    /* dir */
+			       filename,
+			       text,
+			       lnum,
+			       col,
+			       vcol,	    /* vis_col */
+			       pattern,	    /* search pattern */
+			       nr,
+			       type == NULL ? NUL : *type,
+			       valid);
+
+	vim_free(filename);
+	vim_free(pattern);
+	vim_free(text);
+	vim_free(type);
+
+	if (status == FAIL)
+	{
+	    retval = FAIL;
+	    break;
+	}
+    }
+
+    qf_lists[qf_curlist].qf_nonevalid = FALSE;
+    qf_lists[qf_curlist].qf_ptr = qf_lists[qf_curlist].qf_start;
+    qf_lists[qf_curlist].qf_index = 1;
+
+#ifdef FEAT_WINDOWS
+    qf_update_buffer();
+#endif
+
+    return retval;
 }
 #endif
 
@@ -2779,7 +2916,7 @@ ex_helpgrep(eap)
     char_u	**fnames;
     FILE	*fd;
     int		fi;
-    struct qf_line *prevp = NULL;
+    qfline_T	*prevp = NULL;
     long	lnum;
 #ifdef FEAT_MULTI_LANG
     char_u	*lang;
@@ -2848,6 +2985,7 @@ ex_helpgrep(eap)
 					    (int)(regmatch.startp[0] - IObuff)
 								+ 1, /* col */
 					    FALSE,	/* vis_col */
+					    NULL,	/* search pattern */
 					    0,		/* nr */
 					    1,		/* type */
 					    TRUE	/* valid */

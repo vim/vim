@@ -2337,7 +2337,7 @@ fold_line(wp, fold_count, foldinfo, lnum, row)
 		    else
 			len = W_WIDTH(wp) - txtcol;
 		    RL_MEMSET(wp->w_old_cursor_fcol + txtcol, hl_attr(HLF_V),
-						 len - wp->w_old_cursor_fcol);
+					    len - (int)wp->w_old_cursor_fcol);
 		}
 	    }
 	    else
@@ -3591,6 +3591,9 @@ win_line(wp, lnum, startrow, endrow)
 		 * @Spell cluster. */
 		if (has_spell && v >= word_end)
 		{
+		    spell_attr = 0;
+		    if (area_attr == 0 && search_attr == 0)
+			char_attr = syntax_attr;
 		    if (!has_syntax || can_spell)
 		    {
 			char_u	*prev_ptr = ptr - (
@@ -3599,7 +3602,6 @@ win_line(wp, lnum, startrow, endrow)
 # endif
 									    1);
 
-			spell_attr = 0;
 			iswordc = spell_iswordc(prev_ptr);
 			if (iswordc && !prev_iswordc)
 			{
@@ -3620,8 +3622,6 @@ win_line(wp, lnum, startrow, endrow)
 			}
 			prev_iswordc = iswordc;
 		    }
-		    else
-			spell_attr = 0;
 		}
 		if (spell_attr != 0)
 		    char_attr = hl_combine_attr(char_attr, spell_attr);

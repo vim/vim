@@ -1030,13 +1030,15 @@ struct builtin_term builtin_termcaps[] =
     {K_HOME,		IF_EB("\033[1;*H", ESC_STR "[1;*H")},
     /* {K_S_HOME,		IF_EB("\033O2H", ESC_STR "O2H")}, */
     /* {K_C_HOME,		IF_EB("\033O5H", ESC_STR "O5H")}, */
-    {K_KHOME,		IF_EB("\033[7;*~", ESC_STR "[7;*~")},
+    {K_KHOME,		IF_EB("\033[1;*~", ESC_STR "[1;*~")},
     {K_XHOME,		IF_EB("\033O*H", ESC_STR "O*H")},	/* other Home */
+    {K_ZHOME,		IF_EB("\033[7;*~", ESC_STR "[7;*~")},	/* other Home */
     {K_END,		IF_EB("\033[1;*F", ESC_STR "[1;*F")},
     /* {K_S_END,		IF_EB("\033O2F", ESC_STR "O2F")}, */
     /* {K_C_END,		IF_EB("\033O5F", ESC_STR "O5F")}, */
     {K_KEND,		IF_EB("\033[4;*~", ESC_STR "[4;*~")},
     {K_XEND,		IF_EB("\033O*F", ESC_STR "O*F")},	/* other End */
+    {K_ZEND,		IF_EB("\033[8;*~", ESC_STR "[8;*~")},
     {K_PAGEUP,		IF_EB("\033[5;*~", ESC_STR "[5;*~")},
     {K_PAGEDOWN,	IF_EB("\033[6;*~", ESC_STR "[6;*~")},
     {K_KPLUS,		IF_EB("\033O*k", ESC_STR "O*k")},	/* keypad plus */
@@ -1340,11 +1342,13 @@ struct builtin_term builtin_termcaps[] =
     {K_C_HOME,		"[C-HOME]"},
     {K_KHOME,		"[KHOME]"},
     {K_XHOME,		"[XHOME]"},
+    {K_ZHOME,		"[ZHOME]"},
     {K_END,		"[END]"},
     {K_S_END,		"[C-END]"},
     {K_C_END,		"[C-END]"},
     {K_KEND,		"[KEND]"},
     {K_XEND,		"[XEND]"},
+    {K_ZEND,		"[ZEND]"},
     {K_PAGEUP,		"[PAGEUP]"},
     {K_PAGEDOWN,	"[PAGEDOWN]"},
     {K_KPAGEUP,		"[KPAGEUP]"},

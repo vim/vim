@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Vim spell file
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Mar 22
+" Last Change:	2005 Mar 24
 
 " Quit when a syntax file was already loaded
 if exists("b:current_syntax")
@@ -11,7 +11,7 @@ endif
 syn match vimspellError		".*"
 syn match vimspellRegion	"^---$"
 syn match vimspellRegion	"^\(-\l\l\)\+$"
-syn match vimspellOK		"^!\=[>+]\=[[:alpha:]]\S*"
+syn match vimspellOK		"^!\=[>+]\=[[:alpha:]].*"
 syn match vimspellOK		"^!\=+\S*"
 syn match vimspellError		"\s\+$"
 syn match vimspellOK		"^$"

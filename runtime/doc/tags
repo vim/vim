@@ -4689,7 +4689,6 @@ errorformat-javac	quickfix.txt	/*errorformat-javac*
 errorformat-multi-line	quickfix.txt	/*errorformat-multi-line*
 errorformat-separate-filename	quickfix.txt	/*errorformat-separate-filename*
 errorformats	quickfix.txt	/*errorformats*
-errorlist()	eval.txt	/*errorlist()*
 escape	intro.txt	/*escape*
 escape()	eval.txt	/*escape()*
 escape-bar	version4.txt	/*escape-bar*
@@ -4977,6 +4976,7 @@ getfsize()	eval.txt	/*getfsize()*
 getftime()	eval.txt	/*getftime()*
 getftype()	eval.txt	/*getftype()*
 getline()	eval.txt	/*getline()*
+getqflist()	eval.txt	/*getqflist()*
 getreg()	eval.txt	/*getreg()*
 getregtype()	eval.txt	/*getregtype()*
 getwinposx()	eval.txt	/*getwinposx()*
@@ -6175,6 +6175,7 @@ set-option	options.txt	/*set-option*
 setbufvar()	eval.txt	/*setbufvar()*
 setcmdpos()	eval.txt	/*setcmdpos()*
 setline()	eval.txt	/*setline()*
+setqflist()	eval.txt	/*setqflist()*
 setreg()	eval.txt	/*setreg()*
 setting-guifont	gui.txt	/*setting-guifont*
 setwinvar()	eval.txt	/*setwinvar()*

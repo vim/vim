@@ -206,7 +206,9 @@ enum key_extra
     , KE_XF3
     , KE_XF4
     , KE_XEND		/* extra (vt100) end key for xterm */
+    , KE_ZEND		/* extra (vt100) end key for xterm */
     , KE_XHOME		/* extra (vt100) home key for xterm */
+    , KE_ZHOME		/* extra (vt100) home key for xterm */
     , KE_XUP		/* extra vt100 cursor keys for xterm */
     , KE_XDOWN
     , KE_XLEFT
@@ -381,9 +383,11 @@ enum key_extra
 #define K_HOME		TERMCAP2KEY('k', 'h')
 #define K_KHOME		TERMCAP2KEY('K', '1')	/* keypad home (upper left) */
 #define K_XHOME		TERMCAP2KEY(KS_EXTRA, KE_XHOME)
+#define K_ZHOME		TERMCAP2KEY(KS_EXTRA, KE_ZHOME)
 #define K_END		TERMCAP2KEY('@', '7')
 #define K_KEND		TERMCAP2KEY('K', '4')	/* keypad end (lower left) */
 #define K_XEND		TERMCAP2KEY(KS_EXTRA, KE_XEND)
+#define K_ZEND		TERMCAP2KEY(KS_EXTRA, KE_ZEND)
 #define K_PAGEUP	TERMCAP2KEY('k', 'P')
 #define K_PAGEDOWN	TERMCAP2KEY('k', 'N')
 #define K_KPAGEUP	TERMCAP2KEY('K', '3')	/* keypad pageup (upper R.) */
@@ -406,13 +410,6 @@ enum key_extra
 #define K_K7		TERMCAP2KEY('K', 'J')	/* keypad 7 */
 #define K_K8		TERMCAP2KEY('K', 'K')	/* keypad 8 */
 #define K_K9		TERMCAP2KEY('K', 'L')	/* keypad 9 */
-
-/*
- * These are used to recognize a keypad key that does have an ASCII equivalent.
- * Since the values are negative, it's the other way around.
- */
-#define FIRST_KEYPAD	K_K9
-#define LAST_KEYPAD	K_KPLUS
 
 #define K_MOUSE		TERMCAP2KEY(KS_MOUSE, KE_FILLER)
 #define K_MENU		TERMCAP2KEY(KS_MENU, KE_FILLER)
