@@ -3638,7 +3638,10 @@ E733	eval.txt	/*E733*
 E735	eval.txt	/*E735*
 E736	eval.txt	/*E736*
 E737	eval.txt	/*E737*
+E738	eval.txt	/*E738*
+E739	starting.txt	/*E739*
 E74	message.txt	/*E74*
+E740	eval.txt	/*E740*
 E75	vi_diff.txt	/*E75*
 E76	pattern.txt	/*E76*
 E77	message.txt	/*E77*
@@ -3998,6 +4001,9 @@ a'	motion.txt	/*a'*
 a(	motion.txt	/*a(*
 a)	motion.txt	/*a)*
 a4	print.txt	/*a4*
+a:0	eval.txt	/*a:0*
+a:000	eval.txt	/*a:000*
+a:1	eval.txt	/*a:1*
 a:firstline	eval.txt	/*a:firstline*
 a:lastline	eval.txt	/*a:lastline*
 a:var	eval.txt	/*a:var*
@@ -5038,6 +5044,7 @@ hebrew	hebrew.txt	/*hebrew*
 hebrew.txt	hebrew.txt	/*hebrew.txt*
 help	various.txt	/*help*
 help-context	help.txt	/*help-context*
+help-tags	tags	1
 help-translated	various.txt	/*help-translated*
 help-xterm-window	various.txt	/*help-xterm-window*
 help.txt	help.txt	/*help.txt*
@@ -5392,6 +5399,7 @@ local-additions	help.txt	/*local-additions*
 local-function	eval.txt	/*local-function*
 local-options	options.txt	/*local-options*
 local-variable	eval.txt	/*local-variable*
+local-variables	eval.txt	/*local-variables*
 locale	mbyte.txt	/*locale*
 locale-name	mbyte.txt	/*locale-name*
 localtime()	eval.txt	/*localtime()*
@@ -6047,6 +6055,7 @@ save-settings	starting.txt	/*save-settings*
 scheme-syntax	syntax.txt	/*scheme-syntax*
 scheme.vim	syntax.txt	/*scheme.vim*
 scp	pi_netrw.txt	/*scp*
+script	usr_41.txt	/*script*
 script-here	if_perl.txt	/*script-here*
 script-local	map.txt	/*script-local*
 script-variable	eval.txt	/*script-variable*

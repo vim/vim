@@ -235,7 +235,7 @@ gui_mch_prepare(int *argc, char **argv)// {{{
 	    i--;
 	}
     }
-    KCmdLineArgs::init(gui_argc, gui_argv, "kvim",
+    KCmdLineArgs::init(gui_argc, gui_argv, argv[0], I18N_NOOP("KVim"),
 			      I18N_NOOP("Vim inside KDE"), VIM_VERSION_SHORT);
 }// }}}
 
@@ -1408,5 +1408,5 @@ gui_mch_adjust_charsize ()//{{{
     void
 gui_mch_set_foreground ()//{{{
 {
-    KWin::setActiveWindow(vmw->winId());
+    KWin::activateWindow(vmw->winId());
 }//}}}
