@@ -3628,7 +3628,6 @@ vim_getenv(name, mustfree)
 	    if (pp != NULL)
 	    {
 		p = pp;
-		p[len] = NUL;
 		*mustfree = TRUE;
 	    }
 	}

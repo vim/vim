@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.0aa.  Last change: 2005 Mar 04
+*various.txt*   For Vim version 7.0aa.  Last change: 2005 Mar 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -250,7 +250,9 @@ g8			Print the hex values of the bytes used in the
    *+ARP*		Amiga only: ARP support included
 B  *+arabic*		|Arabic| language support
 N  *+autocmd*		|:autocmd|, automatic commands
-m  *+balloon_eval*	|balloon-eval| support
+m  *+balloon_eval*	|balloon-eval| support. Included when compiling with
+			supported GUI (Motif, GTK, GUI) and either
+			Netbeans/Sun Workshop integration or |+eval| feature.
 N  *+browse*		|:browse| command
 N  *+builtin_terms*	some terminals builtin |builtin-terms|
 B  *++builtin_terms*	maximal terminals builtin |builtin-terms|
