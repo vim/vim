@@ -557,14 +557,6 @@ emsg(s)
 	else
 	    flush_buffers(FALSE);	/* flush internal buffers */
 	did_emsg = TRUE;		/* flag for DoOneCmd() */
-
-#ifdef VIMBUDDY
-	if (sourcing_name == NULL)
-	{
-	    VimBuddyText(s, 2);
-	    return TRUE;
-	}
-#endif
     }
 
     emsg_on_display = TRUE;	/* remember there is an error message */
@@ -2574,12 +2566,10 @@ give_warning(message, hl)
 
     /* Don't want a hit-enter prompt here. */
     ++no_wait_return;
+
 #ifdef FEAT_EVAL
     set_vim_var_string(VV_WARNINGMSG, message, -1);
 #endif
-#ifdef VIMBUDDY
-    VimBuddyText(message, 1);
-#else
     vim_free(keep_msg);
     keep_msg = NULL;
     if (hl)
@@ -2591,7 +2581,7 @@ give_warning(message, hl)
     msg_didout = FALSE;	    /* overwrite this message */
     msg_nowait = TRUE;	    /* don't wait for this message */
     msg_col = 0;
-#endif
+
     --no_wait_return;
 }
 

@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.0aa.  Last change: 2004 Jun 09
+*syntax.txt*	For Vim version 7.0aa.  Last change: 2004 Jun 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1348,7 +1348,7 @@ definitions in java.vim or by creating your own java.vim which includes the
 original one and then adds the code to highlight functions.
 
 In java 1.1 the functions System.out.println() and System.err.println() should
-only be used for debugging. Therefor it is possible to highlight debugging
+only be used for debugging.  Therefore it is possible to highlight debugging
 statements differently. To do this you must add the following definition in
 your startup file: >
 	:let java_highlight_debug=1

@@ -2657,8 +2657,8 @@ set_init_1()
 #ifdef FEAT_POSTSCRIPT
     /* 'printexpr' must be allocated to be able to evaluate it. */
     set_string_default("pexpr",
-# ifdef MSWIN
-	    (char_u *)"system('copy' . ' ' . v:fname_in . ' \"' . &printdevice . '\"') . delete(v:fname_in)"
+# if defined(MSWIN) || defined(MSDOS) || defined(OS2)
+	    (char_u *)"system('copy' . ' ' . v:fname_in . (&printdevice == '' ? ' LPT1:' : (' \"' . &printdevice . '\"'))) . delete(v:fname_in)"
 # else
 #  ifdef VMS
 	    (char_u *)"system('print/delete' . (&printdevice == '' ? '' : ' /queue=' . &printdevice) . ' ' . v:fname_in)"

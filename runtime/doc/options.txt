@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2004 Jun 08
+*options.txt*	For Vim version 7.0aa.  Last change: 2004 Jun 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2795,31 +2795,42 @@ A jump table for the options with a short description can be found at |Q_op|.
 	the font cannot be found you will get an error message.  To try other
 	font names a list can be specified, font names separated with commas.
 	The first valid font is used.
+
 	When 'guifontset' is not empty, 'guifont' is not used.
+
 	Spaces after a comma are ignored.  To include a comma in a font name
 	precede it with a backslash.  Setting an option requires an extra
 	backslash before a space and a backslash.  See also
 	|option-backslash|.  For example: >
 	    :set guifont=Screen15,\ 7x13,font\\,with\\,commas
-<	will make vim try to use the font "Screen15" first, and if it fails it
+<	will make Vim try to use the font "Screen15" first, and if it fails it
 	will try to use "7x13" and then "font,with,commas" instead.
+
+	If none of the fonts can be loaded, Vim will keep the current setting.
+	If an empty font list is given, Vim will try using other resource
+	settings (for X, it will use the Vim.font resource), and finally it
+	will try some builtin default which should always be there ("7x13" in
+	the case of X).  The font names given should be "normal" fonts.  Vim
+	will try to find the related bold and italic fonts.
+
+	For Win32, GTK and Photon only: >
+	    :set guifont=*
+<	will bring up a font requester, where you can pick the font you want.
+
+	The font name depends on the GUI used.  See |setting-guifont| for a
+	way to set 'guifont' for various systems.
+
 	For the GTK+ 2 GUI the font name looks like this: >
 	    :set guifont=Andale\ Mono\ 11
 <	That's all.  XLFDs are no longer accepted.
 								*E236*
 	Note that the fonts must be mono-spaced (all characters have the same
-	width).
+	width).  An exception is GTK 2: all fonts are accepted, but
+	mono-spaced fonts look best.
+
 	To preview a font on X11, you might be able to use the "xfontsel"
 	program.  The "xlsfonts" program gives a list of all available fonts.
-	For Win32, GTK and Photon only: >
-	    :set guifont=*
-<	will bring up a font requester, where you can pick the font you want.
-	If none of the fonts can be loaded, vim will keep the current setting.
-	If an empty font list is given, vim will try using other resource
-	settings (for X, it will use the Vim.font resource), and finally it
-	will try some builtin default which should always be there ("7x13" in
-	the case of X).  The font names given should be "normal" fonts.  Vim
-	will try to find the related bold and italic fonts.
+
 	For the Win32 GUI					*E244* *E245*
 	- takes these options in the font name:
 		hXX - height is XX (points, can be floating-point)
@@ -2913,7 +2924,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 			{not in Vi}
 			{only available when compiled with GUI enabled}
-	This option only has an effect in the GUI version of vim.  It is a
+	This option only has an effect in the GUI version of Vim.  It is a
 	sequence of letters which describes what components and options of the
 	GUI should be used.
 	To avoid problems with flags that are added in the future, use the
@@ -4484,10 +4495,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 	    system('lpr' . (&printdevice == '' ? '' : ' -P' . &printdevice)
 		. ' ' . v:fname_in) . delete(v:fname_in) + v:shell_error
 <
-	On MS-Windows machines the default is to copy the file to the
-	currently specified printdevice: >
+	On MS-Dos, MS-Windows and OS/2 machines the default is to copy the
+	file to the currently specified printdevice: >
 
-	    system('copy' . ' ' . v:fname_in . ' "' . &printdevice . '"')
+	    system('copy' . ' ' . v:fname_in . (&printdevice == ''
+			? ' LPT1:' : (' \"' . &printdevice . '\"')))
 			. delete(v:fname_in)
 <
 	On VMS machines the default is to send the file to either the default

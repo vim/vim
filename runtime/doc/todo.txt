@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Jun 13
+*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Jun 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,22 +30,241 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-GTK2: font dialog uses font size zero when 'guifont' is "Courier".  Patch from
-Yasuhiro Matsumoto, 2004 June 8.
+This example doesn't work:
+    :e `=foo . ".c" `
+Inside `` don't use " as the start of a comment.
+Also don't expand % or #.
 
-Python indent: # aser: still adds extra indent.
+Corrections for docs from A3.  Skip ones already done.
 
 
 For version 7.0:
 -   Include many PATCHES:
+    9   Win32 GuI: The print dialog uses a font which doesn't display multi-byte
+	messages.  Include patch from Vipin Aravind?  Update from Yasuhiro
+	Matsumoto.
+    8   ":winpos" doesn't work.  Patch from Vipin Aravind.
+    8   Add GTK 2.3 file dialog support.  Patch by Grahame Bowland, 2004 Mar 15,
+	but it doesn't use "initdir" or "dflt". (will update patch)
+    8   On Sinix SYS_NMLN isn't defined.  Include patch from Cristiano De
+	Michele.  He no longer has such a machine.
+    8   Add file locking.  Lock a file when starting to edit it with flock() or
+	fcntl().  This patch has advisory file locking while reading/writing
+	the file: ~/vim/patches/kahn_file_locking .
+	Do we still want this/
+    8   Add buffer-local autocommands?  Reduces overhead for autocommands that
+	trigger often (inserting a character, switching mode).
+	    :au Event <buffer> do-something
+	E.g.:
+	    :au BufEnter <buffer> menu enable ...
+	    :au BufLeave <buffer> menu disable ...
+	Patch from Yakov Lerner, including test (2004 Jan 7).
+        He'll send updated patch.
+    Autocommands:
+	VimResized	    - When the Vim window has been resized (SIGWINCH)
+	  patch from Yakov Lerner, 2003 July 24.
+	  He'll write documentation and send updated patch.
     -   Include the kvim patch. http://freenux.org/vim/ (Mickael Marchand)
 	Do not add Qtopia yet, it doesn't work very well.
+	Mickael will update the patch before 21st.
+    --- responses above
+    7   Make "5dd" on last-but-one-line not delete anything (Vi compatible).
+	Add flag in 'cpoptions' for this.  When not present, "2dd" in the last
+	line should delete the last line.  Patch from greenx 2002 Apr 11.
+    8   Accelerators don't work in a dialog.  Include patch from Martin Dalecki
+	(Jan 3, tested by David Harrison).  Should work with Alt-o then.
+    7   Use accelerators for the Motif file selection dialog.  Patch from
+	Martin Dalecki 2002 Jan 11.
+    8   Add a few more command names to the menus.  Patch from Jiri Brezina
+	(28 feb 2002).
+    8   Patch to add 'transparency' option.  Disadvantage: it's slow. (Eckehard
+	Berns, 2004 May 9) http://ecki.to/vim-icns/TransBack.diff
+    8   Patches from "Rain Dog" Cucka:
+	- guifont selector (2002 Dec 15)
+	- scrollbar (2002 Dec 8)
+	- Quartz fonts (2002 Dec 8)
+    7   ATTENTION dialog choices are more logical when "Delete it' appears
+	before "Quit".  Patch by Robert Webb, 2004 May 3.
+    8   Unix: When libcall() fails there is no clear error message.  Johannes
+	Zellner has a patch for this.
+    8   ":hardcopy":
+	- Patch to append CTRL-D to PostScript output (Mike Williams, 2004 Jun
+	  14)
+	- support printing multi-byte characters.  Patch from Motonobu
+	  Ichimura.  New (better) patch from Mike Williams (2004 Jan 20)
+    9   Merge in ideas from ~/vim/patches/tutor.txt (Gabriel Zachmann)
+    8   Add patch from Muraoka Taro (Mar 16) to support input method on Mac?
+    -   Include flipcase patch: ~/vim/patches/wall.flipcase2 ?  Make it work
+	for multi-byte characters.
+    7   Add patch from Wall for this one ( ~/Mail/oldmail/wall/in.00019 ):
+	'flipcase' variable: upper/lowercase pairs.
+	Insert comma's between pairs and allow a range, make it look like
+	'isfname'.  E.g. ":set flipcase=a-zA-Z,xX,23-33:143-153".  The colon to
+	separate the from and to part is optional.
+    -   Win32: add options to print dialog.  Patch from Vipin Aravind.
+    -   Patch to add highlighting for whitespace. (Tom Schumm, 2003 Jul 5)
+	use the patch that keeps using HLF_8 if HLF_WS has not
+	been given values.
+	Add section in help files for these highlight groups?
+    8   "fg" and "bg" don't work in an xterm.  Get default colors from xterm
+	with an ESC sequence.  Ideas in: ~/vim/patches/vikas.xtermcolors .
+    7   Add "DefaultFG" and "DefaultBG" for the colors of the menu. (Martin
+	Dalecki has a patch for Motif)
+    -   Add possibility to highlight specific columns (for Fortran).  Or put a
+	line in between columns (e.g. for 'textwidth').
+	Patch to add 'hlcolumn' from Vit Stradal, 2004 May 20.
+    9   Add cursor-column highlighting.  Enable it with 'cursorcolumn' option,
+	set highlighting with "CursorColumn" group.  Useful for aligning text.
+	Also cursor-row highlighting.  Patch from Yasuhiro Matsumoto for
+	underlining the cursor line, 2004 Mar 24.
+	Alternatie: when 'number' is set highlight the number of the current
+	line.
+    7   Be able to call a function while passing on a variable number of
+	arguments:
+	    :function Foo(abc, ...)
+	    :  call Bar(a:abc, a:*)
+	Charles Campbell has a patch for this
+    8   Add ":n" to fnamemodify(): normalize path, remove "../" when possible.
+	Aric Blumer has a patch for this.
+    8   Add functions:
+	tr(expr, from, to)	translate chars (Patch from Ron Aaron, Apr 8
+				2004)
+	strrep()		Repeat a string (patch from Christophe Poucet,
+				2003 Sep 12, also contains XX)
+				Alt: repeat(expr, count) werkt ook voor lists.
+	mousex() mousey()	get position of mouse pointer (patch by Ross
+				Presser)
+				He will send a new patch.
+				Is this really useful?
+	---
+	multibyteidx(string, idx) Byte index in multi-byte character.
+				Patch by Ilya Sher, 2004 Feb 25
+	menuprop({name}, {idx}, {what})
+				Get menu property of menu {name} item {idx}.
+				menuprop("", 1, "name") returns "File".
+				menuprop("File", 1, "n") returns "nmenu
+				File.Open..." argument.
+				Patch by Ilya Sher, 2004 Apr 22
+	mapname({idx}, mode)	return the name of the idx'th mapping.
+				Patch by Ilya Sher, 2004 Mar 4.
+	match({pat}, {string} [,start] [,count]) get index of count'th match
+				Patch by Ilya Sher, 2004 Mar 31
+	find()			find file in 'path' (patch from Johannes
+				Zellner 2001 Dec 20)
+	realname()		Get user name (first, last, full)
+				user_fullname() patch by Nikolai Weibull, Nov
+				3 2002)
+	getfperm()		file permissions, in form "rwxrwxrwx"
+				(patch from Nikolai Weibull 2003 Jan 13)
+	getftype()		"file", "dir", "link", "other"?
+				(patch from Nikolai Weibull 2003 Jan 13)
+	setbufline()		set line in any buffer (patch from Yegappan
+				Lakshmanan, 2003 Jan 21)
+	winnr("$")		Get number of windows.  (patch from Nikolai
+				Weibull 2003 Jan 13) (another patch from
+				Yegappan Lakshmanan, 2003 Aug 31)
+	search()		Add optional offset argument.
+				Add 'n' flag.  (patch from Nikolai Weibull
+				2003 Jan 13)
+	confirm()		add "flags" argument, with 'v' for vertical
+				layout and 'c' for console dialog. (Haegg)
+				Flemming Madsen has a patch for the 'c' flag
+				(2003 May 13)
+	system({cmd}, {expr})	Filter {expr} through the shell command
+				{cmd} and return the result.
+				(Patch from Yegappan Lakshmanan)
+	raisewin()		raise gvim window (see HierAssist patch for
+				Tcl implementation ~/vim/HierAssist/ )
+	gettext()		Translate a message.  (Patch from Yasuhiro
+				Matsumoto) How to get the messages into the
+				.po files?
+    7   Add "nbsp" in 'listchars'?  Patch from David Blanchet, 2003 Jul 28.
+    7   Add patch from Benoit Cerrina to integrate Vim and Perl functions
+	better.  Now also works for Ruby (2001 Nov 10)
+    7   Add 'taglistfiles' option, show file name and type when listing matching
+	tags name with CTRL-D completion.  Patch from Yegappan Lakshmanan.
+    7   Motif: use the menu font consistently.  Patch from Martin Dalecki 2002
+	Jan 11.
+    -   Motif: add 3D shading for the menu entries?  Patch from Martin Dalecki.
+    8   Add expression-expansion, so that the user can define his own kind of
+	completion.  Patch from Taro Muraoka, 2003 Aug 26.
+    7   Completion of network shares, patch by Yasuhiro Matsumoto.
+    9   When 'autoindent' is set, hitting <CR> twice, while there is text after
+	the cursor, doesn't delete the autoindent in the resulting blank line.
+	(Rich Wales) This is Vi compatible, but it looks like a bug.  Rich has
+	a suggestion for a patch to fix this.
+	e-mail to Rich bounced.
+    7   Make ":startinsert" command work directly for functions and scripts?
+	Also make it possible to append (it's difficult at end of line).
+	And add ":startreplace" (patch by Charles Campbell, 2004 Jan 9,
+	http://www.erols.com/astronaut/vim/index.html#Patch)
+    8   Text objects: Add "a'" and 'a"': a single or double quoted string.
+	(Tim Chase) Patch from Taro Muraoka (2003 Dec 16).
+    7   For Visual mode: Command to do a search for the string in the marked
+	area.  Only when fewer than two lines. Use "g/" and "gb".  Patch from
+	Yegappan Lakshmanan.
+    7   When 'rightleft' is set, the search pattern should be displayed right
+	to left as well?  See patch of Dec 26. (Nadim Shaikli)
+    8   Add patch from Charles Campbell to have ":0file!" remove the name of
+	the current buffer. (2003 June 17)
+    8   Make it possible to delete marks.  Charles Campbell has a patch that
+	does this with the markclear() function (2004 Jan 9).  And the
+	":delmark" command (2004 Feb 9)
+    7   Win32: Add patch for 5-button mouse. (Michael Geddes 2001 Nov 26)
+    8   Lock all used memory so that it doesn't get swapped to disk (uncrypted).
+	Patch by Jason Holt, 2003 May 23.
+    7   Support a stronger encryption.  Jason Holt implemented AES (May 6 2003).
+    7   Add ! register, for shell commands. (patch from Grenie)
+    7   Add the MzScheme interface.  Patch on http://iamphet.nm.ru/scheme/
+	(Sergey Khorev)
+    8   Make 'statusline' local, so that each window can have a different
+	value.  But should it also be local to a buffer? (Yegappan Lakshmanan
+	has a patch, 2002 feb 15)
+    8   In the gzip plugin, also recognize *.gz.orig, *.gz.bak, etc.  Like it's
+	done for filetype detection.  Patch from Walter Briscoe, 2003 Jul 1.
+    7   Add a "-@ filelist" argument: read file names from a file. (David
+	Kotchan has a patch for it)
+    8   Add term entries for function keys on xterm with alt and ctrl (new in
+	pl 94).  E.g., Control adds ";5" in "<Esc>[20;5~".  Find a generic way
+	to prepend a modifier in console mode, to avoid having to specify each
+	individual modified key.
+	Steve Wall has a patch (2002 Mar 12) for adding function keys up to 37,
+	with modifiers.
+    8   Include a connection to an external program through a pipe?  See
+	patches from Felbinger for a mathematica interface.
+	Or use emacs server kind of thing?
+    7   Add an option to set the width of the 'number' column.  Eight
+	positions is often more than needed.  Or adjust the width to the
+	length of the file?
+	Add patch that adds 'numberlen' option. (James Harvey)
+	Other patch with min and max from Emmanuel Renieris (2002 Jul 24)
+	Other patch without an option by Gilles Roy (2002 Jul 25)
+    7   Add ":justify" command.  Patch from Vit Stradal 2002 Nov 25.
+    -   findmatch() should be adjusted for Lisp.  See remark at
+	get_lisp_indent().  Esp. \( and \) should be skipped. (Dorai Sitaram,
+	incomplete patch Mar 18)
+    8   Sorting of filenames for completion is wrong on systems that ignore
+	case of filenames.  Add 'ignorefncase' option.  When set, case in
+	filenames is ignored for sorting them. Patch by Mike Williams:
+	~/vim/patches/ignorefncase.  Also change what matches?  Or use another
+	option name.
+-   Change ga_room into ga_maxlen, so that it doesn't need to be
+    incremented/decremented each time.
 -   new DATA TYPES: lists, dictionaries and function references.
+	Check old patch from Robert Webb for array support.
     Add type checking?  See ~/vim/ideas.txt.
 -   Add SPELLCHECKER, with easy to add support for many languages.
+    8   Add spell checking.  Use "ispell -a" somehow.
+	~/vim/patches/wm_vim-5_4d.zip  can be used as an example (includes
+	ispell inside Vim).  Gautam Iyer has an example with "aspell".
+	"engspchk" from Charles Campbell is a good way.  Support for
+	approximate-regexps will help (agrep http://www.tgries.de/agrep/).
 -   REFACTORING: The main() function is very long.  Move parts to separate
     functions, especially loops.  Ideas from Walter Briscoe (2003 Apr 3, 2004
     Feb 9).
+-   Improve the interface between the generic GUI code and the system-specific
+    code.  Generic code handles text window with scrollbars, system-specific
+    code menu, toolbar, etc.
 -   Store messages to allow SCROLLING BACK for all commands.  And other "less"
     like commands.
 -   "INTELLISENSE".  First cleanup the Insert-mode completion.
@@ -81,6 +300,7 @@ For version 7.0:
 -   STICKY CURSOR: Add a way of scrolling that leaves the cursor where it is.
     Especially when using the scrollbar.  Typing a cursor-movement command
     scrolls back to where the cursor is.
+8   Support four composing characters, needed for Hebrew. (Ron Aaron)
 
 
 Vi incompatibility:
@@ -135,9 +355,6 @@ Vi incompatibility:
     (Sayre).
 7   Add flag in 'cpoptions' that makes operator (yank, filter) not move the
     cursor, at least when cancelled. (default Vi compatible).
-7   Make "5dd" on last-but-one-line not delete anything (Vi compatible).
-    Add flag in 'cpoptions' for this.  When not present, "2dd" in the last
-    line should delete the last line.  Patch from greenx 2002 Apr 11.
 7   This Vi-trick doesn't work: "Q" to go to Ex mode, then "g/pattern/visual".
     In Vi you can edit in visual mode, and when doing "Q" you jump to the next
     match.  Nvi can do it too.
@@ -210,8 +427,6 @@ Win32 GUI known bugs:
     Put focus event in input buffer and let generic Vim code handle it?
 8   When activating the Vim window with mouse click, don't move cursor to
     mouse position.  Catch WM_MOUSEACTIVATE. (Luevelsmeyer)
-9   The print dialog uses a font which doesn't display multi-byte messages.
-    Include patch from Vipin Aravind?  Update from Yasuhiro Matsumoto.
 8   Win32: When mouse is hidden and in the toolbar, moving it won't make it
     appear. (Sami Salonen)
 8   Windows NT: writing to aux.* makes Vim hang. (Acevedo)
@@ -311,10 +526,6 @@ Athena GUI:
 
 Motif GUI:
 8   Popup menu ordering is wrong.
-8   Accelerators don't work in a dialog.  Include patch from Martin Dalecki
-    (Jan 3, tested by David Harrison).  Should work with Alt-o then.
-7   Use accelerators for the Motif file selection dialog.  Patch from Martin
-    Dalecki 2002 Jan 11.
 7   Use XmStringCreateLocalized() instead of XmStringCreateSimple()?
     David Harrison says it's OK (it exists in Motif 1.2).
 8   The texts in the find/replace dialog don't use the right font.
@@ -344,7 +555,6 @@ GUI:
     doesn't work.
 8   Menu priority for sub-menus for: Amiga, BeOS.
 8   Add menu separators for Amiga, RISCOS.
-8   Add a few more command names.  Patch from Jiri Brezina (28 feb 2002).
 8   Add way to specify the file filter for the browse dialog.  At least for
     browse().
 8   Add dialog for search/replace to other GUIs?  Tk has something for this,
@@ -491,7 +701,6 @@ Win32 console:
     a Netware network drive.  Use same function as for Win32 GUI?
 8   In os_win32.h, HAVE_STRICMP and HAVE_STRNICMP are defined only if __GNUC__
     is not defined.  Shouldn't that be the other way around?
-8   ":winpos" doesn't work.  Patch from Vipin Aravind.
 7   Use SetConsoleCP() and SetConsoleOutputCP() to implement 'termencoding'?
     Avoids that input and output work differently.  Need to be restored when
     exiting.
@@ -516,12 +725,6 @@ Macintosh:
 8   Inputting Unicode characters does not work in the terminal.  They appear
     to arrive as upper and lower bytes. (David Brown, 2004 April 17)
 8   Typing Unicode characters doesn't work at all in the GUI.
-8   Patch to add 'transparency' option.  Disadvantage: it's slow. (Eckehard
-    Berns, 2004 May 9) http://ecki.to/vim-icns/TransBack.diff
-8   Patches from "Rain Dog" Cucka:
-    - guifont selector (2002 Dec 15)
-    - scrollbar (2002 Dec 8)
-    - Quartz fonts (2002 Dec 8)
 9   Problems in Carbon version for OS X: (Benji Fisher)
     - keyboard shortcuts in the menus get lost.
 8   The Vim/About menu doesn't work.
@@ -563,8 +766,6 @@ Macintosh:
     when compiled with Python (threading).
 7   The messages for "vim --help" and "vim --version" don't use
     'termencoding'.
-7   ATTENTION dialog choices are more logical when "Delete it' appears before
-    "Quit".  Patch by Robert Webb, 2004 May 3.
 8   When 'scrollbind' is set, a window won't scroll horizontally if the cursor
     line is too short.  Add a word in 'scrollopt' to allow moving the cursor
     to longer line that is visible.  A similar thing is done for the GUI when
@@ -651,8 +852,6 @@ Macintosh:
 9   The "Error detected while processing modelines" message should have an
     error number.
 7   The message in bt_dontwrite_msg() could be clearer.
-8   Unix: When libcall() fails there is no clear error message.  Johannes
-    Zellner has a patch for this.
 8   The script ID that is stored with an option and displayed with ":verbose
     set" isn't reset when the option is set internally.  For example when
     'foldlevel' is set from 'foldlevelstart'.
@@ -678,13 +877,10 @@ Macintosh:
 8   When using CTRL-D after ":help", restrict the number of matches to a
     thousand, otherwise using CTRL-D without an argument takes too long.
 8   ":hardcopy":
-    - Patch to append CTRL-D to PostScript output (Mike Williams, 2004 Jun 11)
     - Using the cterm_color[] table is wrong when t_colors is > 16.
     - Need to handle unprintable characters.
     - Win32: On a B&W printer syntax highlighting isn't visible.  Perform
       dithering to make grey text?
-    - support printing multi-byte characters.  Patch from Motonobu Ichimura.
-      New (better) patch from Mike Williams (2004 Jan 20)
     - Add a flag in 'printoptions' to add an empty page to make the total
       number even.  "addempty"? (Mike Williams)
     - Should interpreted CTRL-L as a page break.
@@ -817,7 +1013,6 @@ Macintosh:
     it. (Lohner)  Try out with "vt100" entry, cm replaced with cX.
 7   When an include file starts with "../", the check for already visiting
     this file doesn't work.  Need to simplify the file name.
-8   On Sinix SYS_NMLN isn't defined.  Include patch from Cristiano De Michele.
 7   The names and comments for the arguments of do_browse() are confusing.
     "dflt" isn't the default file name when "initdir" is not NULL and
     "initdir" is the default path to be used.
@@ -927,7 +1122,6 @@ Problems that will (probably) not be solved:
 
 Documentation:
 8   Extend usr_27.txt a bit. (Adam Seyfarth)
-9   Merge in ideas from ~/vim/patches/tutor.txt (Gabriel Zachmann)
 7   Add a section on debugging scripts in the user manual.
 9   Make the Reference Manual more precise.  For each command mention:
     - change to cursor position and curswant
@@ -989,9 +1183,6 @@ User Friendlier:
     disabling it.  Be careful that tear-offs don't disappear (keep one empty
     item?).
     Alternative: use BufEnter and BufLeave autocommands.
-8   Add file locking.  Lock a file when starting to edit it with flock() or
-    fcntl().  This patch has advisory file locking while reading/writing the
-    file: ~/vim/patches/kahn_file_locking .
 8   make a vimtutor script for Amiga and other systems.
 7   Add the arguments for configure to the ":version" output?
 
@@ -1065,14 +1256,10 @@ Multi-byte characters:
     so that the user can fix the problem.
 8   Add configure option to be able to disable using the iconv library. (Udo
     Schweigert)
-8   Add patch from Muraoka Taro (Mar 16) to support input method on Mac?
 9   'aleph' should be set to 1488 for Unicode. (Zvi Har'El)
 8   Should add test for using various commands with multi-byte characters.
--   Include flipcase patch: ~/vim/patches/wall.flipcase2 ?  Make it work for
-    multi-byte characters.
 8   'infercase' doesn't work with multi-byte characters.
 8   toupper() function doesn't handle byte count changes.
-8   Support four composing characters, needed for Hebrew. (Ron Aaron)
 8   "ga" should show all composing characters, also if there are more than 2.
 7   When searching, should order of composing characters be ignored?
 8   Should implement 'delcombine' for command line editing.
@@ -1122,7 +1309,6 @@ Printing:
 -   Win32: when 'printfont' is empty use 'guifont'.
 -   Unix: Use some dialog box to do the obvious settings (paper size, printer
     name, portrait/landscape, etc).
--   Win32: add options to print dialog.  Patch from Vipin Aravind.
 -   PostScript: only works for 7-bit ASCII and EBCDIC.  Should support
     different 'encoding' values somehow.
 -   Allow specifying the paper size, instead of using a standard size.  Same
@@ -1133,10 +1319,6 @@ Printing:
 
 
 Syntax highlighting:
--   Patch to add highlighting for whitespace. (Tom Schumm, 2003 Jul 5)
-    use the patch that keeps using HLF_8 if HLF_WS has not
-    been given values.
-    Add section in help files for these highlight groups?
 8   Make ":syn off" use 'runtimepath' instead of $VIMRUNTIME. (Gary Johnson)
     Should do the same for ":syn on" and ":syn manual".
 8   Support "containedin" argument for ":syn include", so that the defined
@@ -1184,8 +1366,6 @@ Syntax highlighting:
     re-insert the [] if possible.
 8   Make it possible to use color of text for Visual highlight group (like for
     the Cursor).
-8   "fg" and "bg" don't work in an xterm.  Get default colors from xterm with
-    an ESC sequence.  Ideas in: ~/vim/patches/vikas.xtermcolors .
 8   Make it possible to only highlight a sub-expression of a match.  Like
     using "\1" in a ":s" command.
 8   Support for deleting syntax items:
@@ -1204,8 +1384,6 @@ Syntax highlighting:
     character.  For Visual mode. (xterm-selection already does this).
 8   Highlight non-printable characters with "SpecialChar", linked to
     "Special".  Display them with the digraph characters, if possible.
-7   Add "DefaultFG" and "DefaultBG" for the colors of the menu. (Martin
-    Dalecki has a patch for Motif)
 8   Highlight the clipboard-selection with a highlight group.
 8   Be able to reset highlighting to its original (default) values.
 7   Be able to write current highlighting to a file as commands, similar to
@@ -1236,11 +1414,6 @@ Syntax highlighting:
 7   CTRL-] checks the highlight group for finding out what the tag is.
 7   Add an explanation how a list of words can be used to highlight misspelled
     words.
-8   Add spell checking.  Use "ispell -a" somehow.
-    ~/vim/patches/wm_vim-5_4d.zip  can be used as an example (includes ispell
-    inside Vim).  Gautam Iyer has an example with "aspell".  "engspchk" from
-    Charles Campbell is a good way.  Support for approximate-regexps will help
-    (agrep http://www.tgries.de/agrep/).
 7   Command line completion for ":find" should search in 'path'.
 8   Add more command line completion for :syntax.
 8   Add more command line completion for :highlight.
@@ -1267,9 +1440,6 @@ Syntax highlighting:
 -   Make it possible to add "contains" items for all items in a group.	Useful
     when extending an already existing syntax file.
 -   Add line-continuation pattern for non-syncing items too?
--   Add possibility to highlight specific columns (for Fortran).  Or put a
-    line in between columns (e.g. for 'textwidth').
-    Patch to add 'hlcolumn' from Vit Stradal, 2004 May 20.
 -   Add possibility to highlight the whole line, including the right margin
     (for comment blocks).
 -   Add 'hlmatch' option: List of flags:
@@ -1303,11 +1473,6 @@ Built-in script language:
 8   Allow range for ":exec".  Pass it on to the executed command. (Webb)
 8   exists("&&option") tests if 'option' is actually implemented.  Useful for
     'shellslash', for example.
-7   Be able to call a function while passing on a variable number of
-    arguments:
-	:function Foo(abc, ...)
-	:  call Bar(a:abc, a:*)
-    Charles Campbell has a patch for this
 8   Have a look at VSEL.  Would it be useful to include? (Bigham)
 8   Add ":fungroup" command, to group function definitions together.  When
     encountered, all functions in the group are removed.  Suggest using an
@@ -1329,26 +1494,10 @@ Built-in script language:
        file belongs to a sourced script?
 7   Add "n" flag to search() function, just like searchpair(). (Alexey
     Marinichev)
-8   Add ":n" to fnamemodify(): normalize path, remove "../" when possible.
-    Aric Blumer has a patch for this.
 7   Add argument to winwidth() to subtract the space taken by 'foldcolumn',
     signs and/or 'number'.
 8   Add functions:
-	multibyteidx(string, idx) Byte index in multi-byte character.
-				Patch by Ilya Sher, 2004 Feb 25
-	menuprop({name}, {idx}, {what})
-				Get menu property of menu {name} item {idx}.
-				menuprop("", 1, "name") returns "File".
-				menuprop("File", 1, "n") returns "nmenu
-				File.Open..." argument.
-				Patch by Ilya Sher, 2004 Apr 22
-	mapname({idx}, mode)	return the name of the idx'th mapping.
-				Patch by Ilya Sher, 2004 Mar 4.
-	match({pat}, {string} [,start] [,count]) get index of count'th match
-				Patch by Ilya Sher, 2004 Mar 31
 	sprintf(format, arg, ..) How to prevent a crash???
-	mousex() mousey()	get position of mouse pointer (patch by Ross
-				Presser)
 	attributes()		return file protection flags "drwxrwxrwx"
 	mkdir(dir)		Create directory
 	copy(from, to)		Copy a file
@@ -1360,48 +1509,15 @@ Built-in script language:
 				Visual block mode.
 	tagtype(tag)		get type of tag (also checks if it exists)
 	getacp()		Win32: get codepage (Glenn Maynard)
-	tr(expr, from, to)	translate chars (Patch from Ron Aaron, Apr 8
-				2004)
-	find()			find file in 'path' (patch from Johannes
-				Zellner 2001 Dec 20)
-	realname()		Get user name (first, last, full)
-				user_fullname() patch by Nikolai Weibull, Nov
-				3 2002)
-	getfperm()		file permissions, in form "rwxrwxrwx"
-				(patch from Nikolai Weibull 2003 Jan 13)
-	getftype()		"file", "dir", "link", "other"?
-				(patch from Nikolai Weibull 2003 Jan 13)
-	setbufline()		set line in any buffer (patch from Yegappan
-				Lakshmanan, 2003 Jan 21)
 	getbufline()		get line from any buffer
 	deletebufline()		delete line in any buffer
 	appendbufline()		append line in any buffer
-	winnr("$")		Get number of windows.  (patch from Nikolai
-				Weibull 2003 Jan 13) (another patch from
-				Yegappan Lakshmanan, 2003 Aug 31)
-	search()		Add optional offset argument.
-				Add 'n' flag.  (patch from Nikolai Weibull
-				2003 Jan 13)
 	sort()			Sort a newline-separated string.  Also:
 				":sort".
 	libcall()		Allow more than one argument.
 	libcallext()		Like libcall(), but using a callback function
 				to allow the library to execute a command or
 				evaluate an expression.
-	confirm()		add "flags" argument, with 'v' for vertical
-				layout and 'c' for console dialog. (Haegg)
-				Flemming Madsen has a patch for the 'c' flag
-				(2003 May 13)
-	system({cmd}, {expr})	Filter {expr} through the shell command
-				{cmd} and return the result.
-				(Patch from Yegappan Lakshmanan)
-	raisewin()		raise gvim window (see HierAssist patch for
-				Tcl implementation ~/vim/HierAssist/ )
-	gettext()		Translate a message.  (Patch from Yasuhiro
-				Matsumoto) How to get the messages into the
-				.po files?
-	strrep()		Repeat a string (patch from Christophe Poucet,
-				2003 Sep 12, also contains XX)
 	char2hex()		convert char string to hex string.  XX
 	hex2char()		convert hex string to char string. XX
 7   Make bufname("'0") return the buffer name from mark '0.  How to get the
@@ -1440,12 +1556,6 @@ Built-in script language:
 7   Automatically load a function from a file when it is called.  Need an
     option for the search path. (Sekera)
 7   Persistent variables: "p:var"; stored in viminfo file and sessions files.
-7   Include support for arrays?  Patch from Robert Webb.
-    This is restricted to fixed-size arrays indexed by number.  Better: Use
-    associative arrays: a[5] = 3, a["some"] = 'x'. Implement by translating
-    into ordinary variables: a[5] is "-a-5", a["some"] is "a-some", a[5][6] is
-    "a-5-6".  But how to do array assignment and concatenation?
-    Alternative: use dictionaries, like Python.
 
 
 Robustness:
@@ -1617,7 +1727,6 @@ Screen updating:
     an event handler where ":normal" can't be used.  Also useful when
     'lazyredraw' is set in a mapping.
 7   Make 'list' and 'linebreak' work together.
-7   Add "nbsp" in 'listchars'?  Patch from David Blanchet, 2003 Jul 28.
 
 
 Scrolling:
@@ -1655,8 +1764,6 @@ Autoconf:
 
 Perl interface:
 8   Rename typemap file to something else?
-7   Add patch from Benoit Cerrina to integrate Vim and Perl functions better.
-    Now also works for Ruby (2001 Nov 10)
 7   Make buffers accessed as Perl arrays. (Clark)
 7   Make it possible to compile with non-ANSI C?
 6   Tcl/Tk has the "load" command: load a shared library (.so or .dll).
@@ -1710,8 +1817,6 @@ Tags:
 7   Better support for jumping to where a function or variable is used.  Use
     the id-utils, with a connection to "gid" (Emacs can do it too).  Add
     ":idselect", which uses an "ID" database (made by "mkid") like "tselect".
-7   Add 'taglistfiles' option, show file name and type when listing matching
-    tags name with CTRL-D completion.  Patch from Yegappan Lakshmanan.
 
 
 Security:
@@ -1758,8 +1863,6 @@ Win32 GUI:
 
 
 GUI:
-8   Add GTK 2.3 file dialog support.  Patch by Grahame Bowland, 2004 Mar 15,
-    but it doesn't use "initdir" or "dflt".
 8   Make inputdialog() work for Photon, Amiga, RiscOS.
 -   <C--> cannot be mapped.  Should be possible to recognize this as a
     normal "-" with the Ctrl modifier.
@@ -1781,8 +1884,6 @@ GUI:
     explicit.  There are too many #ifdefs in gui.c.
     If possible, separate the Vim code completely from the GUI code, to allow
     running them in separate processes.
-8   Support a background bitmap.  Useful for marking a column.  Patch from
-    Heather Downs (GTK) and Vince Negri (Win32).
 7   X11: Support cursorColor resource and "-cr" argument.
 8   X11 (and others): CTRL-; is not different from ';'.  Set the modifier mask
     to include CTRL for keys where CTRL produces the same ASCII code.
@@ -1793,8 +1894,6 @@ GUI:
 8   Selecting font names in X11 is difficult, make a script or something to
     select one.  Martin Dalecki has a font selector for Motif, but it needs a
     bit more work.
-7   Motif: use the menu font consistently.  Patch from Martin Dalecki 2002 Jan
-    11.
 8   Visual highlighting should keep the same font (bold, italic, etc.).
 8   Add flag to 'guioptions' to not put anything in the clipboard at all?
 8   Should support a way to use keys that we don't recognize yet.  Add a
@@ -1838,7 +1937,6 @@ GUI:
     button selected, <Esc> should close the dialog.
 -   Motif steals <F10> from us, to pop up menus with the keyboard.  How do we
     get it back if we want it?
--   Motif: add 3D shading for the menu entries?  Patch from Martin Dalecki.
 -   Paste in Insert mode should not do autowrap etc.  Or maybe this should be
     changeable with an option?
 -   Put a nice picture in the icon (but how do we do that?).
@@ -1898,13 +1996,6 @@ Autocommands:
 8   When editing "tt.gz", which is in DOS format, 'fileformat' stays at
     "unix", thus writing the file changes it.  Somehow detect that the read
     command used dos fileformat.  Same for 'fileencoding'.
-8   Add buffer-local autocommands?  Reduces overhead for autocommands that
-    trigger often (inserting a character, switching mode).
-	:au Event <buffer> do-something
-    E.g.:
-	:au BufEnter <buffer> menu enable ...
-	:au BufLeave <buffer> menu disable ...
-    Patch from Yakov Lerner, including test (2004 Jan 7).
 -   Add events to autocommands:
     Error	    - When an error happens
     NormalEnter	    - Entering Normal mode
@@ -1937,8 +2028,6 @@ Autocommands:
 		      that marks can be updated.  HierAssist has patch to add
 		      BufChangePre, BufChangePost and RevertBuf. (Shah)
     WinResized	    - When a window has been resized
-    VimResized	    - When the Vim window has been resized (SIGWINCH)
-		      patch from Yakov Lerner, 2003 July 24.
 -   Add autocommand to be executed every so many seconds?  For writing the
     file now and then ('autosave').
 				  *'autosave'* *'as'* *'noautosave'* *'noas'*
@@ -1961,8 +2050,6 @@ Insert mode completion/expansion:
 8   Add option to set different behavior for Insert mode completion:
     - ignore/match case
     - different characters than 'iskeyword'
-8   Add expression-expansion, so that the user can define his own kind of
-    completion.  Patch from Taro Muraoka, 2003 Aug 26.
 8   Add a command to undo the completion, go back to the original text.
 8   Use the class information in the tags file to do context-sensitive
     completion.  After "foo." complete all member functions/variables of
@@ -2045,7 +2132,6 @@ Command line completion:
     file name, so it can be edited.  Also with modifiers, such as "%:h".
 8   When completing command names, either sort them on the long name, or list
     them with the optional part inside [].
-7   Completion of network shares, patch by Yasuhiro Matsumoto.
 7   Completion of ":map x ": fill in the current mapping, so that it can be
     edited. (Sven Guckes)
 7   Add completion for when entering an expression after CTRL-R= and "=.
@@ -2083,10 +2169,6 @@ Command line history:
 
 
 Insert mode:
-9   When 'autoindent' is set, hitting <CR> twice, while there is text after
-    the cursor, doesn't delete the autoindent in the resulting blank line.
-    (Rich Wales) This is Vi compatible, but it looks like a bug.  Rich has a
-    suggestion for a patch to fix this.
 8   When using CTRL-O in Insert mode, then executing an insert command
     "a" or "i", should we return to Insert mode after <Esc>? (Eggink)
     Perhaps it can be allowed a single time, to be able to do
@@ -2094,10 +2176,6 @@ Insert mode:
     ":map <F2> 5aabc<Esc>" works only once from Insert mode.
 7   Use CTRL-G <count> to repeat what follows.  Useful for inserting a
     character multiple times or repeating CTRL-Y.
-7   Make ":startinsert" command work directly for functions and scripts?
-    Also make it possible to append (it's difficult at end of line).
-    And add ":startreplace" (patch by Charles Campbell, 2004 Jan 9,
-    http://www.erols.com/astronaut/vim/index.html#Patch)
 7   Use 'matchpairs' for 'showmatch': When inserting a character check if it
     appears in the rhs of 'matchpairs'.
 -   In Insert mode (and command line editing?): Allow undo of the last typed
@@ -2261,8 +2339,6 @@ Text objects:
     deletes the current and previous sentence. (Jens Paulus)
 7   Add "g{" and "g}" to move to the first/last character of a paragraph
     (instead of the line just before/after a paragraph as with "{" and "}").
-8   Add "a'" and 'a"': a single or double quoted string. (Tim Chase)
-    Patch from Taro Muraoka (2003 Dec 16).
 6   Ignore comment leaders for objects.  Make "das" work in reply-email.
 5   Make it possible to use syntax group matches as a text object.  For
     example, define a "ccItem" group, then do "da<ccItem>" to delete one.
@@ -2308,7 +2384,7 @@ Visual mode:
 7   CTRL-V :s should substitute only in the block, not to whole lines. (David
     Young is working on this)
 7   Filtering a block should only apply to the block, not to the whole lines.
-    When the number of lines is increased, add lines. When decreased, padd with
+    When the number of lines is increased, add lines. When decreased, pad with
     spaces or delete? Use ":`<,`>" on the command line.
 8   After filtering the Visual area, make "gv" select the filtered text?
     Currently "gv" only selects a single line, not useful.
@@ -2323,9 +2399,6 @@ Visual mode:
     the right column, and then use up/down movements to select the line,
     without changing the column.
 6   ":left" and ":right" should work in Visual block mode.
-7   For Visual mode: Command to do a search for the string in the marked area.
-    Only when fewer than two lines. Use "g/" and "gb".  Patch from Yegappan
-    Lakshmanan.
 7   CTRL-I and CTRL-O should work in Visual mode, but only jump to marks in the
     current buffer.
 7   CTRL-A and CTRL-X should increase/decrease all numbers in the Visual area.
@@ -2460,8 +2533,6 @@ item stack to allow matching ().  One side is "push X on
     search(). (Brett)
 7   Add pattern item to use properties of Unicode characters.  In Perl it's
     "\p{L}" for a letter.  See Regular Expression Pocket Reference.
-7   When 'rightleft' is set, the search pattern should be displayed right to
-    left as well?  See patch of Dec 26. (Nadim Shaikli)
 8   Would it be possible to allow ":23,45/pat/flags" to search for "pat" in
     lines 23 to 45?  Or does this conflict with Ex range syntax?
 8   Allow identical pairs in 'matchpairs'.  Restrict the search to the current
@@ -2590,8 +2661,6 @@ Undo:
 
 
 Buffer list:
-8   Add patch from Charles Campbell to have ":0file!" remove the name of the
-    current buffer. (2003 June 17)
 7   Command to execute a command in another buffer: ":inbuf {bufname} {cmd}".
     Also for other windows: ":inwin {winnr} {cmd}".  How to make sure that
     this works properly for all commands, and still be able to return to the
@@ -2769,9 +2838,6 @@ Marks:
     to jump to the mark (in current window or new window).  Start it with
     ":browse marks"?
 6   Add a menu that lists the Marks like ":marks". (Amerige)
-8   Make it possible to delete marks.  Charles Campbell has a patch that does
-    this with the markclear() function (2004 Jan 9).  And the ":delmark"
-    command (2004 Feb 9)
 7   For ":jumps", ":tags" and ":marks", for not loaded buffers, remember the
     text at the mark.  Highlight the column with the mark.
 7   Highlight each mark in some way (With "Mark" highlight group).
@@ -2855,7 +2921,6 @@ Substitute:
 
 
 Mouse support:
-7   Win32: Add patch for 5-button mouse. (Michael Geddes 2001 Nov 26)
 8   Add 'o' flag to 'mouse'?
 7   Be able to set a 'mouseshape' for the popup menu.
 8   Add 'mouse' flag, which sets a behavior like Visual mode, but automatic
@@ -2872,9 +2937,6 @@ Mouse support:
 Crypt and security:
 8   Also crypt the swapfile, each block separately.  Change mf_write() and
     mf_read().  How to get b_p_key to these functions?
-7   Support a stronger encryption.  Jason Holt implemented AES (May 6 2003).
-8   Lock all used memory so that it doesn't get swapped to disk (uncrypted).
-    Patch by Jason Holt, 2003 May 23.
 
 
 Argument list:
@@ -2904,7 +2966,7 @@ Registers:
 	to position of previous deleted (to swap foo and bar in " + foo")
 8   Should be able to yank and delete into the "/ register.
     How to take care of the flags (offset, magic)?
-7   Add ! register, for shell commands. (patch from Grenie)
+
 
 Debug mode:
 7   Add something to enable debugging when a remote message is received.
@@ -2919,8 +2981,6 @@ Debug mode:
 Various improvements:
 8   Add ":rename" command: rename the file of the current buffer and rename
     the buffer.  Buffer may be modified.
-7   Add the MzScheme interface.  Patch on http://iamphet.nm.ru/scheme/
-    (Sergey Khorev)
 6   In the quickfix window statusline add the command used to get the list of
     errors, e.g. ":make foo", ":grep something *.c".
 6   Python interface: add vim.message() function. (Michal Vitecek, 2002 Nov 5)
@@ -2933,13 +2993,8 @@ Various improvements:
     to manipulate text without changing the window layout.
 8   Add a command to revert to the saved version of file; undo or redo until
     all changes are gone.
-8   Make 'statusline' local, so that each window can have a different value.
-    But should it also be local to a buffer? (Yegappan Lakshmanan has a patch,
-    2002 feb 15)
 7   Add a ":cpfile", go in the other direction as ":cnfile".
 6   "vim -q -" should read the list of errors from stdin. (Gautam Mudunuri)
-8   In the gzip plugin, also recognize *.gz.orig, *.gz.bak, etc.  Like it's
-    done for filetype detection.  Patch from Walter Briscoe, 2003 Jul 1.
 8   Add "--remote-fail": When contacting the server fails, exit Vim.
     Add "--remote-self": When contacting the server fails, do it in this Vim.
     Overrules the default of "--remote-send" to fail and "--remote" to do it
@@ -2953,16 +3008,8 @@ Various improvements:
     CR characters.  For example, for "dos" files remove CR characters at the
     end of the line, so that a file with mixed line endings is cleaned up.
     To just not display the CR characters: Add a flag to 'display'?
-7   Add a "-@ filelist" argument: read file names from a file. (David Kotchan
-    has a patch for it)
 7   Some compilers give error messages in which the file name does not have a
     path.  Be able to specify that 'path' is used for these files.
-8   Add term entries for function keys on xterm with alt and ctrl (new in pl
-    94).  E.g., Control adds ";5" in "<Esc>[20;5~".  Find a generic way to
-    prepend a modifier in console mode, to avoid having to specify each
-    individual modified key.
-    Steve Wall has a patch (2002 Mar 12) for adding function keys up to 37,
-    with modifiers.
 7   Xterm sends <Esc>O3F for <M-End>.  Similarly for other <M-Home>, <M-Left>,
     etc.  Combinations of Alt, Ctrl and Shift are also possible.  Recognize
     these to avoid inserting the raw byte sequence, handle like the key
@@ -2984,26 +3031,13 @@ Various improvements:
 8   Support printing on Unix.  Can use "lpansi.c" as an example. (Bookout)
 8   Add put command that replaces the text under it.  Esp. for blockwise
     Visual mode.
-7   Enhance termreponse stuff: Add t_CV(?): pattern of term response, use
+7   Enhance termresponse stuff: Add t_CV(?): pattern of term response, use
     regexp: "\e\[[>?][0-9;]*c", but only check just after sending t_RV.
 7   Add "g|" command: move to N'th column from the left margin (after wrapping
     and applying 'leftcol').  Works as "|" like what "g0" is to "0".
-7   Add patch from Wall for this one ( ~/Mail/oldmail/wall/in.00019 ):
-    'flipcase' variable: upper/lowercase pairs.
-    Insert comma's between pairs and allow a range, make it look like
-    'isfname'.  E.g. ":set flipcase=a-zA-Z,xX,23-33:143-153".  The colon to
-    separate the from and to part is optional.
 7   Support setting 'equalprg' to a user function name.
-9   Add cursor-column highlighting.  Enable it with 'cursorcolumn' option, set
-    highlighting with "CursorColumn" group.  Useful for aligning text.
-    Also cursor-row highlighting.
-    Patch from Yasuhiro Matsumoto for underlining the cursor line, 2004 Mar 24.
-    Alternatie: when 'number' is set highlight the number of the current line.
 7   Highlight the characters after the end-of-line differently.
 7   When 'whichwrap' contains "l", "$dl" should join lines?
-8   Include a connection to an external program through a pipe?  See patches
-    from Felbinger for a mathematica interface.
-    Or use emacs server kind of thing?
 8   Add an argument to configure to use $CFLAGS and not modify it? (Mooney)
 8   Enabling features is a mix of configure arguments and defines in
     feature.h.  How to make this consistent?  Feature.h is required for
@@ -3043,11 +3077,6 @@ Various improvements:
 7   Add a history of recently accessed buffer.	Maybe make "2 CTRL-^" jump to
     the 2nd previously visited buffer, "3 CTRL-^" to the third, etc.  Or use
     "3 g CTRL-^" for this?
-7   Add an option to set the width of the 'number' column.  Eight positions is
-    often more than needed.  Or adjust the width to the length of the file?
-    Add patch that adds 'numberlen' option. (James Harvey)
-    Other patch with min and max from Emmanuel Renieris (2002 Jul 24)
-    Other patch without an option by Gilles Roy (2002 Jul 25)
 -   Add code to disable the CAPS key when going from Insert to Normal mode.
 -   Set date/protection/etc. of the patchfile the same as the original file.
 -   Use growarray for termcodes[] in term.c
@@ -3075,7 +3104,6 @@ Various improvements:
 9   When using ":w <fname>" it's possible that this file is loaded in another
     buffer.  Give a warning right away, don't wait for a shell command.
 -   Make 'smartcase' work even though 'ic' isn't set (Webb).
-7   Add ":justify" command.  Patch from Vit Stradal 2002 Nov 25.
 7   When formatting text, allow to break the line at a number of characters.
     Use an option for this: 'breakchars'?  Useful for formatting Fortran code.
 -   Add flag to 'formatoptions' to be able to format book-style paragraphs
@@ -3101,8 +3129,6 @@ Various improvements:
 -   Make "gq<CR>" work on the last line in the file.  Maybe for every operator?
 8   findmatchlimit() should be able to skip comments.  Solves problem of
     matching the '{' in /* if (foo) { */ (Fiveash)
--   findmatch() should be adjusted for Lisp.  See remark at get_lisp_indent().
-    Esp. \( and \) should be skipped. (Dorai Sitaram, incomplete patch Mar 18)
 -   Add more redirecting of Ex commands:
 	:redir @> register  (append)
 	:redir #  bufname
@@ -3335,11 +3361,6 @@ Various improvements:
 -   Support mapping for replace mode and "r" command (Vi doesn't do this)?
 5   Add 'ignorefilecase' option: Ignore case when expanding file names.
     ":e ma<Tab>" would also find "Makefile" on Unix.
-8   Sorting of filenames for completion is wrong on systems that ignore case
-    of filenames.  Add 'ignorefncase' option.  When set, case in filenames is
-    ignored for sorting them. Patch by Mike Williams:
-    ~/vim/patches/ignorefncase.  Also change what matches?  Or use another
-    option name.
 8   Should be able to compile Vim in another directory, with $(srcdir) set to
     where the sources are. Add $(srcdir) in the Makefile in a lot of places.
     (Netherton)

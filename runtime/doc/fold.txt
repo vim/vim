@@ -1,4 +1,4 @@
-*fold.txt*      For Vim version 7.0aa.  Last change: 2004 May 20
+*fold.txt*      For Vim version 7.0aa.  Last change: 2004 Jun 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -564,7 +564,7 @@ When using an operator, a closed fold is included as a whole.  Thus "dl"
 deletes the whole closed fold under the cursor.
 
 For Ex commands the range is adjusted to always start at the first line of a
-fold and end at the last line of a fold.  Thus this command: >
+closed fold and end at the last line of a closed fold.  Thus this command: >
 	:s/foo/bar/g
 when used with the cursor on a closed fold, will replace "foo" with "bar" in
 all lines of the fold.

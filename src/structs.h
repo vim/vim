@@ -56,7 +56,7 @@ typedef struct growarray
 {
     int	    ga_len;		    /* current number of items used */
     int	    ga_room;		    /* number of unused items at the end */
-    int	    ga_itemsize;	    /* sizeof one item */
+    int	    ga_itemsize;	    /* sizeof(item) */
     int	    ga_growsize;	    /* number of items to grow each time */
     void    *ga_data;		    /* pointer to the first item */
 } garray_T;

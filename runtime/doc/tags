@@ -3844,6 +3844,7 @@ _vimrc	starting.txt	/*_vimrc*
 `.	motion.txt	/*`.*
 `0	motion.txt	/*`0*
 `<	motion.txt	/*`<*
+`=	editing.txt	/*`=*
 `>	motion.txt	/*`>*
 `A	motion.txt	/*`A*
 `[	motion.txt	/*`[*
@@ -4018,6 +4019,7 @@ bufnr()	eval.txt	/*bufnr()*
 bufwinnr()	eval.txt	/*bufwinnr()*
 bug-fixes-5	version5.txt	/*bug-fixes-5*
 bug-fixes-6	version6.txt	/*bug-fixes-6*
+bug-fixes-7	version7.txt	/*bug-fixes-7*
 bug-reports	intro.txt	/*bug-reports*
 bugreport.vim	intro.txt	/*bugreport.vim*
 bugs	intro.txt	/*bugs*
@@ -4166,6 +4168,7 @@ command-mode	intro.txt	/*command-mode*
 compatible-default	starting.txt	/*compatible-default*
 compile-changes-5	version5.txt	/*compile-changes-5*
 compile-changes-6	version6.txt	/*compile-changes-6*
+compile-changes-7	version7.txt	/*compile-changes-7*
 compiler-manx	quickfix.txt	/*compiler-manx*
 compiler-pyunit	quickfix.txt	/*compiler-pyunit*
 compiler-select	quickfix.txt	/*compiler-select*
@@ -5056,12 +5059,14 @@ improved-sessions	version5.txt	/*improved-sessions*
 improved-viminfo	version5.txt	/*improved-viminfo*
 improvements-5	version5.txt	/*improvements-5*
 improvements-6	version6.txt	/*improvements-6*
+improvements-7	version7.txt	/*improvements-7*
 inactive-buffer	windows.txt	/*inactive-buffer*
 include-search	tagsrch.txt	/*include-search*
 inclusive	motion.txt	/*inclusive*
 incomp-small-6	version6.txt	/*incomp-small-6*
 incompatible-5	version5.txt	/*incompatible-5*
 incompatible-6	version6.txt	/*incompatible-6*
+incompatible-7	version7.txt	/*incompatible-7*
 indent()	eval.txt	/*indent()*
 indent-expression	indent.txt	/*indent-expression*
 indent.txt	indent.txt	/*indent.txt*
@@ -5378,6 +5383,7 @@ netterm-mouse	options.txt	/*netterm-mouse*
 network	pi_netrw.txt	/*network*
 new-5	version5.txt	/*new-5*
 new-6	version6.txt	/*new-6*
+new-7	version7.txt	/*new-7*
 new-GTK-GUI	version5.txt	/*new-GTK-GUI*
 new-Select-mode	version5.txt	/*new-Select-mode*
 new-View	version6.txt	/*new-View*
@@ -5387,6 +5393,7 @@ new-cmdwin	version6.txt	/*new-cmdwin*
 new-color-schemes	version6.txt	/*new-color-schemes*
 new-commands	version5.txt	/*new-commands*
 new-commands-5.4	version5.txt	/*new-commands-5.4*
+new-data-types	version7.txt	/*new-data-types*
 new-debug-itf	version6.txt	/*new-debug-itf*
 new-debug-mode	version6.txt	/*new-debug-mode*
 new-diff-mode	version6.txt	/*new-diff-mode*
@@ -5405,6 +5412,7 @@ new-global-values	version6.txt	/*new-global-values*
 new-highlighting	version5.txt	/*new-highlighting*
 new-indent-flex	version6.txt	/*new-indent-flex*
 new-items-6	version6.txt	/*new-items-6*
+new-items-7	version7.txt	/*new-items-7*
 new-line-continuation	version5.txt	/*new-line-continuation*
 new-multi-byte	version5.txt	/*new-multi-byte*
 new-multi-lang	version6.txt	/*new-multi-lang*
@@ -5794,6 +5802,7 @@ setbufvar()	eval.txt	/*setbufvar()*
 setcmdpos()	eval.txt	/*setcmdpos()*
 setline()	eval.txt	/*setline()*
 setreg()	eval.txt	/*setreg()*
+setting-guifont	gui.txt	/*setting-guifont*
 setwinvar()	eval.txt	/*setwinvar()*
 sftp	pi_netrw.txt	/*sftp*
 sgml-syntax	syntax.txt	/*sgml-syntax*
@@ -6387,6 +6396,7 @@ version-variable	eval.txt	/*version-variable*
 version4.txt	version4.txt	/*version4.txt*
 version5.txt	version5.txt	/*version5.txt*
 version6.txt	version6.txt	/*version6.txt*
+version7.txt	version7.txt	/*version7.txt*
 vi-differences	vi_diff.txt	/*vi-differences*
 vi:	options.txt	/*vi:*
 vi_diff.txt	vi_diff.txt	/*vi_diff.txt*

@@ -6060,12 +6060,9 @@ buf_check_timestamp(buf, focus)
 	    }
 	    else
 	    {
-# ifdef VIMBUDDY
-		VimBuddyText(tbuf + 9, 2);
-# else
-#  ifdef FEAT_AUTOCMD
+# ifdef FEAT_AUTOCMD
 		if (!autocmd_busy)
-#  endif
+# endif
 		{
 		    msg_start();
 		    msg_puts_attr(tbuf, hl_attr(HLF_E) + MSG_HIST);
@@ -6077,9 +6074,9 @@ buf_check_timestamp(buf, focus)
 		    if (emsg_silent == 0)
 		    {
 			out_flush();
-#  ifdef FEAT_GUI
+# ifdef FEAT_GUI
 			if (!focus)
-#  endif
+# endif
 			    /* give the user some time to think about it */
 			    ui_delay(1000L, TRUE);
 
@@ -6088,7 +6085,6 @@ buf_check_timestamp(buf, focus)
 		    }
 		}
 		already_warned = TRUE;
-# endif
 	    }
 
 	    vim_free(path);

@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.0aa.  Last change: 2004 May 28
+*starting.txt*  For Vim version 7.0aa.  Last change: 2004 Jun 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1018,6 +1018,11 @@ files are in "/usr/share/vim/vim54".
 Once Vim has done this once, it will set the $VIMRUNTIME environment variable.
 To change it later, use a ":let" command like this: >
 	:let $VIMRUNTIME = "/home/piet/vim/vim54"
+
+In case you need the value of $VIMRUNTIME in a shell (e.g., for a script that
+greps in the help files) you might be able to use this: >
+
+	VIMRUNTIME=`vim -e -T dumb --cmd 'exe "set t_cm=\<C-M>"|echo $VIMRUNTIME|quit' | tr -d '\015' `
 
 ==============================================================================
 6. Suspending						*suspend*

@@ -487,6 +487,62 @@ struct while_cookie
 static char_u	*get_while_line __ARGS((int c, void *cookie, int indent));
 static int	store_while_line __ARGS((garray_T *gap, char_u *line));
 static void	free_cmdlines __ARGS((garray_T *gap));
+
+/* Struct to save a few things while debugging.  Used in do_cmdline() only. */
+struct dbg_stuff
+{
+    int		trylevel;
+    int		force_abort;
+    except_T	*caught_stack;
+    char_u	*vv_exception;
+    char_u	*vv_throwpoint;
+    int		did_emsg;
+    int		got_int;
+    int		did_throw;
+    int		need_rethrow;
+    int		check_cstack;
+    except_T	*current_exception;
+};
+
+static void save_dbg_stuff __ARGS((struct dbg_stuff *dsp));
+static void restore_dbg_stuff __ARGS((struct dbg_stuff *dsp));
+
+    static void
+save_dbg_stuff(dsp)
+    struct dbg_stuff *dsp;
+{
+    dsp->trylevel	= trylevel;		trylevel = 0;
+    dsp->force_abort	= force_abort;		force_abort = FALSE;
+    dsp->caught_stack	= caught_stack;		caught_stack = NULL;
+    dsp->vv_exception	= v_exception(NULL);
+    dsp->vv_throwpoint	= v_throwpoint(NULL);
+
+    /* Necessary for debugging an inactive ":catch", ":finally", ":endtry" */
+    dsp->did_emsg	= did_emsg;		did_emsg     = FALSE;
+    dsp->got_int	= got_int;		got_int	     = FALSE;
+    dsp->did_throw	= did_throw;		did_throw    = FALSE;
+    dsp->need_rethrow	= need_rethrow;		need_rethrow = FALSE;
+    dsp->check_cstack	= check_cstack;		check_cstack = FALSE;
+    dsp->current_exception = current_exception;	current_exception = NULL;
+}
+
+    static void
+restore_dbg_stuff(dsp)
+    struct dbg_stuff *dsp;
+{
+    suppress_errthrow = FALSE;
+    trylevel = dsp->trylevel;
+    force_abort = dsp->force_abort;
+    caught_stack = dsp->caught_stack;
+    (void)v_exception(dsp->vv_exception);
+    (void)v_throwpoint(dsp->vv_throwpoint);
+    did_emsg = dsp->did_emsg;
+    got_int = dsp->got_int;
+    did_throw = dsp->did_throw;
+    need_rethrow = dsp->need_rethrow;
+    check_cstack = dsp->check_cstack;
+    current_exception = dsp->current_exception;
+}
 #endif
 
 
@@ -625,17 +681,7 @@ do_cmdline(cmdline, getline, cookie, flags)
     char_u	*fname = NULL;		/* function or script name */
     linenr_T	*breakpoint = NULL;	/* ptr to breakpoint field in cookie */
     int		*dbg_tick = NULL;	/* ptr to dbg_tick field in cookie */
-    int		saved_trylevel = 0;
-    int		saved_force_abort = 0;
-    except_T	*saved_caught_stack = NULL;
-    char_u	*saved_vv_exception = NULL;
-    char_u	*saved_vv_throwpoint = NULL;
-    int		saved_did_emsg = 0;
-    int		saved_got_int = 0;
-    int		saved_did_throw = 0;
-    int		saved_need_rethrow = 0;
-    int		saved_check_cstack = 0;
-    except_T	*saved_current_exception = NULL;
+    struct dbg_stuff debug_saved;	/* saved things for debug mode */
     int		initial_trylevel;
     struct msglist	**saved_msg_list = NULL;
     struct msglist	*private_msg_list;
@@ -725,21 +771,7 @@ do_cmdline(cmdline, getline, cookie, flags)
      * exception handling (used when debugging).
      */
     else if (flags & DOCMD_EXCRESET)
-    {
-	saved_trylevel		= trylevel;		trylevel = 0;
-	saved_force_abort	= force_abort;		force_abort = FALSE;
-	saved_caught_stack	= caught_stack;		caught_stack = NULL;
-	saved_vv_exception	= v_exception(NULL);
-	saved_vv_throwpoint	= v_throwpoint(NULL);
-	/* Necessary for debugging an inactive ":catch", ":finally", or
-	 * ":endtry": */
-	saved_did_emsg		= did_emsg,		did_emsg     = FALSE;
-	saved_got_int		= got_int,		got_int	     = FALSE;
-	saved_did_throw		= did_throw,		did_throw    = FALSE;
-	saved_need_rethrow	= need_rethrow,		need_rethrow = FALSE;
-	saved_check_cstack	= check_cstack,		check_cstack = FALSE;
-	saved_current_exception = current_exception;	current_exception=NULL;
-    }
+	save_dbg_stuff(&debug_saved);
 
     initial_trylevel = trylevel;
 
@@ -1326,22 +1358,7 @@ do_cmdline(cmdline, getline, cookie, flags)
      * debugger).
      */
     if (flags & DOCMD_EXCRESET)
-    {
-	suppress_errthrow = FALSE;
-	trylevel = saved_trylevel;
-	force_abort = saved_force_abort;
-	caught_stack = saved_caught_stack;
-	(void)v_exception(saved_vv_exception);
-	(void)v_throwpoint(saved_vv_throwpoint);
-	/* Necessary for debugging an inactive ":catch", ":finally", or
-	 * ":endtry": */
-	did_emsg = saved_did_emsg;
-	got_int = saved_got_int;
-	did_throw = saved_did_throw;
-	need_rethrow = saved_need_rethrow;
-	check_cstack = saved_check_cstack;
-	current_exception = saved_current_exception;
-    }
+	restore_dbg_stuff(&debug_saved);
 
     msg_list = saved_msg_list;
 #endif /* FEAT_EVAL */
@@ -1545,8 +1562,7 @@ getline_cookie(getline, cookie)
  */
 #if (_MSC_VER == 1200)
 /*
- * Optimisation bug in VC++ version 6.0
- * TODO: check this is still present after each service pack
+ * Avoid optimisation bug in VC++ version 6.0
  */
 # pragma optimize( "g", off )
 #endif
@@ -1738,8 +1754,9 @@ do_one_cmd(cmdlinep, sourcing,
 			    break;
 			if (verbose_save < 0)
 			    verbose_save = p_verbose;
-			p_verbose = atoi((char *)ea.cmd);
-			if (p_verbose == 0)
+			if (vim_isdigit(*ea.cmd))
+			    p_verbose = atoi((char *)ea.cmd);
+			else
 			    p_verbose = 1;
 			ea.cmd = p;
 			continue;

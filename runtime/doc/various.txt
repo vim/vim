@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.0aa.  Last change: 2004 May 01
+*various.txt*   For Vim version 7.0aa.  Last change: 2004 Jun 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -431,7 +431,8 @@ N  *+X11*		Unix only: can restore window title |X11|
 						*:verb* *:verbose*
 :[count]verb[ose] {command}
 			Execute {command} with 'verbose' set to [count].  If
-			[count] is omitted one is used.
+			[count] is omitted one is used. ":0verbose" can be
+			used to set 'verbose' to zero.
 			The additional use of ":silent" makes messages
 			generated but not displayed.
 			The combination of ":silent" and ":verbose" can be

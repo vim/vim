@@ -2,7 +2,7 @@
 " Language:	Python
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
 " Original Author:	David Bustos <bustos@caltech.edu>
-" Last Change:	2003 Sep 08
+" Last Change:	2004 Jun 15
 
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")
@@ -36,7 +36,7 @@ function GetPythonIndent(lnum)
 
   " If the start of the line is in a string don't change the indent.
   if has('syntax_items')
-	\ && synIDattr(synID(a:lnum, 1, 1), "name") == "pythonString"
+	\ && synIDattr(synID(a:lnum, 1, 1), "name") =~ "String$"
     return -1
   endif
 
@@ -56,7 +56,7 @@ function GetPythonIndent(lnum)
   let parlnum = searchpair('(', '', ')', 'nbW',
 	  \ "line('.') < " . (plnum - s:maxoff) . " ? dummy :"
 	  \ . " synIDattr(synID(line('.'), col('.'), 1), 'name')"
-	  \ . " =~ 'python\\(Comment\\|String\\)'")
+	  \ . " =~ '\\(Comment\\|String\\)$'")
   if parlnum > 0
     let plindent = indent(parlnum)
     let plnumstart = parlnum
@@ -75,14 +75,14 @@ function GetPythonIndent(lnum)
   let p = searchpair('(', '', ')', 'bW',
 	  \ "line('.') < " . (a:lnum - s:maxoff) . " ? dummy :"
 	  \ . " synIDattr(synID(line('.'), col('.'), 1), 'name')"
-	  \ . " =~ 'python\\(Comment\\|String\\)'")
+	  \ . " =~ '\\(Comment\\|String\\)$'")
   if p > 0
     if p == plnum
       " When the start is inside parenthesis, only indent one 'shiftwidth'.
       let pp = searchpair('(', '', ')', 'bW',
 	  \ "line('.') < " . (a:lnum - s:maxoff) . " ? dummy :"
 	  \ . " synIDattr(synID(line('.'), col('.'), 1), 'name')"
-	  \ . " =~ 'python\\(Comment\\|String\\)'")
+	  \ . " =~ '\\(Comment\\|String\\)$'")
       if pp > 0
 	return indent(plnum) + &sw
       endif
@@ -102,7 +102,7 @@ function GetPythonIndent(lnum)
   let col = 0
   while col < pline_len
     if pline[col] == '#' && (!has('syntax_items')
-	    \ || synIDattr(synID(plnum, col + 1, 1), "name") == "pythonComment")
+	    \ || synIDattr(synID(plnum, col + 1, 1), "name") =~ "Comment$")
       let pline = strpart(pline, 0, col)
       break
     endif

@@ -1138,10 +1138,11 @@ do_search(oap, dirc, pat, count, options)
 	/*
 	 * If there is a character offset, subtract it from the current
 	 * position, so we don't get stuck at "?pat?e+2" or "/pat/s-2".
+	 * Skip this if pos.col is near MAXCOL (closed fold).
 	 * This is not done for a line offset, because then we would not be vi
 	 * compatible.
 	 */
-	if (!spats[0].off.line && spats[0].off.off)
+	if (!spats[0].off.line && spats[0].off.off && pos.col < MAXCOL - 2)
 	{
 	    if (spats[0].off.off > 0)
 	    {
@@ -1209,7 +1210,7 @@ do_search(oap, dirc, pat, count, options)
 
 		retval = 2;	    /* pattern found, line offset added */
 	    }
-	    else
+	    else if (pos.col < MAXCOL - 2)	/* just in case */
 	    {
 		/* to the right, check for end of file */
 		if (spats[0].off.off > 0)
@@ -4404,7 +4405,7 @@ read_viminfo_search_pattern(virp, force)
 	if (lp[3] == 'L')
 	    off_line = TRUE;
 	if (lp[4] == 'E')
-	    off_end = TRUE;
+	    off_end = SEARCH_END;
 	lp += 5;
 	off = getdigits(&lp);
     }

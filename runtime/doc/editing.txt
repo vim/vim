@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.0aa.  Last change: 2004 Apr 28
+*editing.txt*   For Vim version 7.0aa.  Last change: 2004 Jun 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -338,6 +338,7 @@ This also works for most other systems, with the restriction that the
 backticks must be around the whole item.  It is not possible to have text
 directly before the first or just after the last backtick.
 
+							*`=*
 You can have the backticks expanded as a Vim expression, instead of
 an external command, by using the syntax `={expr}` e.g. >
 	:let foo='bar'

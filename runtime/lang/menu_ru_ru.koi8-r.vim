@@ -155,11 +155,12 @@ menutrans Fold\ Met&hod					&Метод\ складок
 menutrans Create\ &Fold<Tab>zf				Со&здать\ складку<Tab>zf
 menutrans &Delete\ Fold<Tab>zd				У&далить\ складку<Tab>zd
 menutrans Delete\ &All\ Folds<Tab>zD			Удалить\ вс&е\ складки<Tab>zD
-menutrans Fold\ column\ &width				&Ширина\ колонки\ складок
+menutrans Fold\ col&umn\ width				&Ширина\ колонки\ складок
 ">>>->>>----------- Tools/Folds/Fold Method
 menutrans M&anual					Вру&чную
 menutrans I&ndent					О&тступ
 menutrans E&xpression					&Выражение
+menutrans S&yntax					&Синтаксис
 menutrans Ma&rker					&Маркеры
 ">>>--------------- Tools/Diff
 menutrans &Update					О&бновить
@@ -177,6 +178,7 @@ menutrans &Show\ filetypes\ in\ menu			Показать\ меню\ для\ выбора\ типа\ &файла
 menutrans Set\ '&syntax'\ only				&Изменять\ только\ значение\ 'syntax'
 menutrans Set\ '&filetype'\ too				Изменять\ &также\ значение\ 'filetype'
 menutrans &Off						&Отключить
+menutrans &Manual					Вру&чную
 menutrans A&utomatic					&Автоматически
 menutrans on/off\ for\ &This\ file			Вкл/выкл\ для\ &этого\ файла
 menutrans Co&lor\ test					Проверка\ &цветов
