@@ -776,8 +776,8 @@ messageFromNetbeans(gpointer clientData, gint unused1,
     static void
 nb_parse_cmd(char_u *cmd)
 {
-    char_u	*verb;
-    char_u	*q;
+    char	*verb;
+    char	*q;
     int		bufno;
     int		isfunc = -1;
 
@@ -802,7 +802,7 @@ nb_parse_cmd(char_u *cmd)
 	return;
     }
 
-    bufno = strtol((char *)cmd, (char **)&verb, 10);
+    bufno = strtol((char *)cmd, &verb, 10);
 
     if (*verb != ':')
     {
@@ -833,11 +833,11 @@ nb_parse_cmd(char_u *cmd)
 	return;
     }
 
-    cmdno = strtol((char *)q, (char **)&q, 10);
+    cmdno = strtol(q, &q, 10);
 
-    q = skipwhite(q);
+    q = (char *)skipwhite((char_u *)q);
 
-    if (nb_do_cmd(bufno, verb, isfunc, cmdno, q) == FAIL)
+    if (nb_do_cmd(bufno, (char_u *)verb, isfunc, cmdno, (char_u *)q) == FAIL)
     {
 	nbdebug(("nb_parse_cmd: Command error for \"%s\"\n", cmd));
 	EMSG("E629: bad return from nb_do_cmd");
@@ -1221,6 +1221,7 @@ nb_do_cmd(
     nbbuf_T	*buf = nb_get_buf(bufno);
     static int	skip = 0;
     int		retval = OK;
+    char	*cp;	    /* for when a char pointer is needed */
 
     nbdebug(("%s %d: (%d) %s %s\n", (func) ? "FUN" : "CMD", cmdno, bufno, cmd,
 	STRCMP(cmd, "insert") == 0 ? "<text>" : (char *)args));
@@ -1372,8 +1373,10 @@ nb_do_cmd(
 		if (curbuf != buf->bufp)
 		    set_curbuf(buf->bufp, DOBUF_GOTO);
 		wasChanged = buf->bufp->b_changed;
-		off = strtol((char *)args, (char **)&args, 10);
-		count = strtol((char *)args, (char **)&args, 10);
+		cp = (char *)args;
+		off = strtol(cp, &cp, 10);
+		count = strtol(cp, &cp, 10);
+		args = (char_u *)cp;
 		/* delete "count" chars, starting at "off" */
 		pos = off2pos(buf->bufp, off);
 		if (!pos)
@@ -1457,7 +1460,9 @@ nb_do_cmd(
 	    }
 
 	    /* get offset */
-	    off = strtol((char *)args, (char **)&args, 10);
+	    cp = (char *)args;
+	    off = strtol(cp, &cp, 10);
+	    args = (char_u *)cp;
 
 	    /* get text to be inserted */
 	    args = skipwhite(args);
@@ -1927,7 +1932,9 @@ nb_do_cmd(
 	else if (streq((char *)cmd, "setExitDelay"))
 	{
 	    /* New in version 2.1. */
-	    exit_delay = strtol((char *)args, (char **)&args, 10);
+	    cp = (char *)args;
+	    exit_delay = strtol(cp, &cp, 10);
+	    args = (char_u *)cp;
 /* =====================================================================*/
 	}
 	else if (streq((char *)cmd, "defineAnnoType"))
@@ -1949,7 +1956,9 @@ nb_do_cmd(
 		return FAIL;
 	    }
 
-	    typeNum = strtol((char *)args, (char **)&args, 10);
+	    cp = (char *)args;
+	    typeNum = strtol(cp, &cp, 10);
+	    args = (char_u *)cp;
 	    args = skipwhite(args);
 	    typeName = (char_u *)nb_unquote(args, &args);
 	    args = skipwhite(args + 1);
@@ -1966,14 +1975,18 @@ nb_do_cmd(
 	    else
 	    {
 		use_fg = 1;
-		fg = strtol((char *)args, (char **)&args, 10);
+		cp = (char *)args;
+		fg = strtol(cp, &cp, 10);
+		args = (char_u *)cp;
 	    }
 	    if (STRNCMP(args, "none", 4) == 0)
 		args += 5;
 	    else
 	    {
 		use_bg = 1;
-		bg = strtol((char *)args, (char **)&args, 10);
+		cp = (char *)args;
+		bg = strtol(cp, &cp, 10);
+		args = (char_u *)cp;
 	    }
 	    if (typeName != NULL && tooltip != NULL && glyphFile != NULL)
 		addsigntype(buf, typeNum, typeName, tooltip, glyphFile,
@@ -2007,19 +2020,23 @@ nb_do_cmd(
 
 	    doupdate = 1;
 
-	    serNum = strtol((char *)args, (char **)&args, 10);
+	    cp = (char *)args;
+	    serNum = strtol(cp, &cp, 10);
 
 	    /* Get the typenr specific for this buffer and convert it to
 	     * the global typenumber, as used for the sign name. */
-	    localTypeNum = strtol((char *)args, (char **)&args, 10);
+	    localTypeNum = strtol(cp, &cp, 10);
+	    args = (char_u *)cp;
 	    typeNum = mapsigntype(buf, localTypeNum);
 
 	    pos = get_off_or_lnum(buf->bufp, &args);
 
+	    cp = (char *)args;
 # ifdef NBDEBUG
 	    len =
 # endif
-		strtol((char *)args, (char **)&args, 10);
+		strtol(cp, &cp, 10);
+	    args = (char_u *)cp;
 # ifdef NBDEBUG
 	    if (len != -1)
 	    {
@@ -2055,7 +2072,9 @@ nb_do_cmd(
 		return FAIL;
 	    }
 	    doupdate = 1;
-	    serNum = strtol((char *)args, (char **)&args, 10);
+	    cp = (char *)args;
+	    serNum = strtol(cp, &cp, 10);
+	    args = (char_u *)cp;
 	    coloncmd(":sign unplace %d buffer=%d",
 		     serNum, buf->bufp->b_fnum);
 	    redraw_buf_later(buf->bufp, NOT_VALID);
@@ -2093,8 +2112,10 @@ nb_do_cmd(
 	    }
 	    if (curbuf != buf->bufp)
 		set_curbuf(buf->bufp, DOBUF_GOTO);
-	    off = strtol((char *)args, (char **)&args, 10);
-	    len = strtol((char *)args, 0, 10);
+	    cp = (char *)args;
+	    off = strtol(cp, &cp, 10);
+	    len = strtol(cp, NULL, 10);
+	    args = (char_u *)cp;
 	    pos = off2pos(buf->bufp, off);
 	    doupdate = 1;
 	    if (!pos)
