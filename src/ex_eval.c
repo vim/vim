@@ -1172,11 +1172,16 @@ ex_endwhile(eap)
 	fl =  cstack->cs_flags[cstack->cs_idx];
 	if (!(fl & csf))
 	{
+	    /* If we are in a ":while" or ":for" but used the wrong endloop
+	     * command, do not rewind to the next enclosing ":for"/":while". */
 	    if (fl & CSF_WHILE)
-		eap->errmsg = (char_u *)_("E999: Using :endfor with :while");
+		eap->errmsg = (char_u *)_("E732: Using :endfor with :while");
 	    else if (fl & CSF_FOR)
-		eap->errmsg = (char_u *)_("E999: Using :endwhile with :for");
-	    else if (!(fl & CSF_TRY))
+		eap->errmsg = (char_u *)_("E733: Using :endwhile with :for");
+	}
+	if (!(fl & (CSF_WHILE | CSF_FOR)))
+	{
+	    if (!(fl & CSF_TRY))
 		eap->errmsg = e_endif;
 	    else if (fl & CSF_FINALLY)
 		eap->errmsg = e_endtry;

@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 16
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -35,7 +35,7 @@ done, the features in this document are not available.  See |+eval| and
 1. Variables						*variables*
 
 1.1 Variable types ~
-
+							*E712*
 There are four types of variables:
 
 Number		A 32 bit signed number.
@@ -80,7 +80,7 @@ Note that in the command >
 "foo" is converted to 0, which means FALSE.  To test for a non-empty string,
 use strlen(): >
 	:if strlen("foo")
-
+<						*E728* *E729* *E730* *E731*
 List and Funcref types are not automatically converted.
 
 								*E706*
@@ -93,23 +93,32 @@ equivalent though.  Consider this sequence of commands: >
 
 
 1.2 Function references ~
-						*Funcref* *E695* *E703*
+					*Funcref* *E695* *E703* *E718*
 A Funcref variable is obtained with the |function()| function.  It can be used
-in an expression to invoke the function it refers to by using it in the place
-of a function name, before the parenthesis around the arguments.  Example: >
+in an expression in the place of a function name, before the parenthesis
+around the arguments, to invoke the function it refers to.  Example: >
 
 	:let Fn = function("MyFunc")
 	:echo Fn()
-<
-							*E704* *E705* *E707*
+<							*E704* *E705* *E707*
 A Funcref variable must start with a capital, "s:", "w:" or "b:".  You cannot
 have both a Funcref variable and a function with the same name.
 
-Note that a Funcref cannot be used with the |:call| command, because its
-argument is not an expression.
+A special case is defining a function and directly assigning its Funcref to a
+Dictionary entry.  Example: >
+	:function dict.init() dict
+	:   let self.val = 0
+	:endfunction
+
+The key of the Dictionary can start with a lower case letter.  The actual
+function name is not used here.  Also see |numbered-function|.
+
+A Funcref can also be used with the |:call| command: >
+	:call Fn()
+	:call dict.init()
 
 The name of the referenced function can be obtained with |string()|. >
-	:echo "The function is " . string(Myfunc)
+	:let func = string(Myfunc)
 
 You can use |call()| to invoke a Funcref and use a list variable for the
 arguments: >
@@ -117,7 +126,7 @@ arguments: >
 
 
 1.3 Lists ~
-							*List* *E686* *E712*
+							*List* *E686*
 A List is an ordered sequence of items.  An item can be of any type.  Items
 can be accessed by their index number.  Items can be added and removed at any
 position in the sequence.
@@ -194,32 +203,32 @@ change "bb": >
 	:let bb = aa
 	:call add(aa, 4)
 	:echo bb
-	[1, 2, 3, 4]
+<	[1, 2, 3, 4]
 
 Making a copy of a list is done with the |copy()| function.  Using [:] also
 works, as explained above.  This creates a shallow copy of the list: Changing
 a list item in the list will also change the item in the copied list: >
 	:let aa = [[1, 'a'], 2, 3]
 	:let bb = copy(aa)
-	:let aa = aa + [4]
+	:call add(aa, 4)
 	:let aa[0][1] = 'aaa'
 	:echo aa
-	[[1, aaa], 2, 3, 4]
+<	[[1, aaa], 2, 3, 4] >
 	:echo bb
-	[[1, aaa], 2, 3]
+<	[[1, aaa], 2, 3]
 
 To make a completely independent list use |deepcopy()|.  This also makes a
-copy of the values in the list, recursively.
+copy of the values in the list, recursively.  Up to a hundred levels deep.
 
 The operator "is" can be used to check if two variables refer to the same
-list.  "isnot" does the opposite.  In contrast "==" compares if two lists have
+List.  "isnot" does the opposite.  In contrast "==" compares if two lists have
 the same value. >
 	:let alist = [1, 2, 3]
 	:let blist = [1, 2, 3]
 	:echo alist is blist
-	0
+<	0 >
 	:echo alist == blist
-	1
+<	1
 
 
 List unpack ~
@@ -249,7 +258,7 @@ To change a specific item of a list use |:let| this way: >
 	:let listlist[0][3] = item
 
 To change part of a list you can specify the first and last item to be
-modified.  The value must match the range of replaced items: >
+modified.  The value must at least have the number of items in the range: >
 	:let list[3:5] = [3, 4, 5]
 
 Adding and removing items from a list is done with functions.  Here are a few
@@ -257,15 +266,15 @@ examples: >
 	:call insert(list, 'a')		" prepend item 'a'
 	:call insert(list, 'a', 3)	" insert item 'a' before list[3]
 	:call add(list, "new")		" append String item
-	:call add(list, [1, 2])		" append List as one new item
+	:call add(list, [1, 2])		" append a List as one new item
 	:call extend(list, [1, 2])	" extend the list with two more items
 	:let i = remove(list, 3)	" remove item 3
 	:unlet list[3]			" idem
 	:let l = remove(list, 3, -1)	" remove items 3 to last item
 	:unlet list[3 : ]		" idem
-	:call filter(list, 'v:val =~ "x"')  " remove items with an 'x'
+	:call filter(list, 'v:val !~ "x"')  " remove items with an 'x'
 
-Changing the oder of items in a list: >
+Changing the order of items in a list: >
 	:call sort(list)		" sort a list alphabetically
 	:call reverse(list)		" reverse the order of items
 
@@ -274,24 +283,24 @@ For loop ~
 
 The |:for| loop executes commands for each item in a list.  A variable is set
 to each item in the list in sequence.  Example: >
-	:for i in mylist
-	:   call Doit(i)
+	:for item in mylist
+	:   call Doit(item)
 	:endfor
 
 This works like: >
 	:let index = 0
 	:while index < len(mylist)
-	:   let i = mylist[index]
-	:   :call Doit(i)
+	:   let item = mylist[index]
+	:   :call Doit(item)
 	:   let index = index + 1
 	:endwhile
 
 Note that all items in the list should be of the same type, otherwise this
-results in an error |E706|.  To avoid this |:unlet| the variable at the end of
+results in error |E706|.  To avoid this |:unlet| the variable at the end of
 the loop.
 
 If all you want to do is modify each item in the list then the |map()|
-function might be a simpler method than a for loop.
+function will be a simpler method than a for loop.
 
 Just like the |:let| command, |:for| also accepts a list of variables.  This
 requires the argument to be a list of lists. >
@@ -302,7 +311,7 @@ requires the argument to be a list of lists. >
 This works like a |:let| command is done for each list item.  Again, the types
 must remain the same to avoid an error.
 
-It is also possible to put remaining items in a list: >
+It is also possible to put remaining items in a List variable: >
 	:for [i, j; rest] in listlist
 	:   call Doit(i, j)
 	:   if !empty(rest)
@@ -312,7 +321,7 @@ It is also possible to put remaining items in a list: >
 
 
 List functions ~
-
+						*E714*
 Functions that are useful with a List: >
 	:let r = call(funcname, list)	" call a function with an argument list
 	:if empty(list)			" check if list is empty
@@ -330,24 +339,26 @@ Functions that are useful with a List: >
 
 
 1.4 Dictionaries ~
-							*Dictionaries*
+						*Dictionaries* *Dictionary*
 A Dictionary is an associative array: Each entry has a key and a value.  The
-entry can be located with the key.  The entries are stored without ordering.
+entry can be located with the key.  The entries are stored without a specific
+ordering.
 
 
 Dictionary creation ~
-
+						*E720* *E721* *E722* *E723*
 A Dictionary is created with a comma separated list of entries in curly
-braces.  Each entry has a key and a value, separated by a colon.  Examples: >
+braces.  Each entry has a key and a value, separated by a colon.  Each key can
+only appear once.  Examples: >
 	:let mydict = {1: 'one', 2: 'two', 3: 'three'}
 	:let emptydict = {}
-
+<							*E713* *E716* *E717*
 A key is always a String.  You can use a Number, it will be converted to a
 String automatically.  Thus the String '4' and the number 4 will find the same
-entry.  Note that the String '04' and the Number 04 are different, since 04
-will be converted to the String '4'.
+entry.  Note that the String '04' and the Number 04 are different, since the
+Number will be converted to the String '4'.
 
-A value can be any expression.  Using a Dictionary for an entry creates a
+A value can be any expression.  Using a Dictionary for a value creates a
 nested Dictionary: >
 	:let nestdict = {1: {11: 'a', 12: 'b'}, 2: {21: 'c'}}
 
@@ -360,7 +371,7 @@ The normal way to access an entry is by putting the key in square brackets: >
 	:let val = mydict["one"]
 	:let mydict["four"] = 4
 
-You can add new entries to an existing Dictionary this way.
+You can add new entries to an existing Dictionary this way, unlike Lists.
 
 For keys that consist entirely of letters, digits and underscore the following
 form can be used |expr-entry|: >
@@ -369,7 +380,7 @@ form can be used |expr-entry|: >
 
 Since an entry can be any type, also a List and a Dictionary, the indexing and
 key lookup can be repeated: >
-	:let dict.key[idx].key = 0
+	:echo dict.key[idx].key
 
 
 Dictionary to List conversion ~
@@ -391,7 +402,7 @@ To loop over the values use the |values()| function:  >
 	:endfor
 
 If you want both the key and the value use the |items()| function.  It returns
-a List of Lists with two items: the key and the value: >
+a List in which each item is a  List with two items, the key and the value: >
 	:for entry in items(mydict)
 	:   echo entry[0] . ': ' . entry[1]
 	:endfor
@@ -425,39 +436,52 @@ Three ways to remove the entry with key "aaa" from dict: >
 	:unlet dict['aaa']
 
 Merging a Dictionary with another is done with |extend()|: >
-	:call extend(adict, bdict)	" extend adict with entries from bdict
+	:call extend(adict, bdict)
+This extends adict with all entries from bdict.  Duplicate keys cause entries
+in adict to be overwritten.  An optional third argument can change this.
 
 Weeding out entries from a Dictionary can be done with |filter()|: >
-	:call filter(dict 'v:val =~ "x"')  " remove entries with value 'x'
+	:call filter(dict 'v:val =~ "x"') 
+This removes all entries from "dict" with a value not matching 'x'.
 
 
 Dictionary function ~
-						*Dictionary-function* *self*
+					*Dictionary-function* *self* *E725*
 When a function is defined with the "dict" attribute it can be used in a
 special way with a dictionary.  Example: >
 	:function Mylen() dict
-	:   return len(self) - 4
+	:   return len(self.data)
 	:endfunction
-	:let dict.len = function(Mylen)
-	:let l = dict.len()
+	:let mydict = {'data': [0, 1, 2, 3], 'len': function("Mylen")}
+	:echo mydict.len()
 
 This is like a method in object oriented programming.  The entry in the
 Dictionary is a |Funcref|.  The local variable "self" refers to the dictionary
 the function was invoked from.
 
+It is also possible to add a function without the "dict" attribute as a
+Funcref to a Dictionary, but the "self" variable is not available then.
+
+						*numbered-function*
 To avoid the extra name for the function it can be defined and directly
 assigned to a Dictionary in this way: >
-	:function dict.len() dict
-	:   return len(self) - 4
+	:let mydict = {'data': [0, 1, 2, 3]}
+	:function mydict.len() dict
+	:   return len(self.data)
 	:endfunction
+	:echo mydict.len()
 
-It is also possible to add a Funcref to a Dictionary without the "dict"
-attribute, but the "self" variable is not available then.
+The function will then get a number and the value of dict.len is a |Funcref|
+that references this function.  The function can only be used through a
+|Funcref|.  It will automatically be deleted when there is no |Funcref|
+remaining that refers to it.
+
+It is not necessary to use the "dict" attribute for a numbered function.
 
 
 Functions for Dictionaries ~
-
-Functions that are useful with a Dictionary: >
+							*E715*
+Functions that can be used with a Dictionary: >
 	:if has_key(dict, 'foo')	" TRUE if dict has entry with key "foo"
 	:if empty(dict)			" TRUE if dict is empty
 	:let l = len(dict)		" number of items in dict
@@ -655,6 +679,11 @@ Examples:
 A List can only be compared with a List and only "equal", "not equal" and "is"
 can be used.  This compares the values of the list, recursively.  Ignoring
 case means case is ignored when comparing item values.
+
+							*E735* *E736*
+A Dictionary can only be compared with a Dictionary and only "equal", "not
+equal" and "is" can be used.  This compares the key/values of the Dictionary,
+recursively.  Ignoring case means case is ignored when comparing item values.
 
 							*E693* *E694*
 A Funcref can only be compared with a Funcref and only "equal" and "not equal"
@@ -1856,6 +1885,10 @@ deepcopy({expr})					*deepcopy()* *E698*
 		copy, and vise versa.  When an item is a List, a copy for it
 		is made, recursively.  Thus changing an item in the copy does
 		not change the contents of the original List.
+								*E724*
+		Nesting is possible up to 100 levels.  When there is an item
+		that refers back to a higher level making a deep copy will
+		fail.
 		Also see |copy()|.
 
 delete({fname})							*delete()*
@@ -3052,6 +3085,7 @@ prevnonblank({lnum})					*prevnonblank()*
 		above it, zero is returned.
 		Also see |nextnonblank()|.
 
+							*E726* *E727*
 range({expr} [, {max} [, {stride}]])				*range()*
 		Returns a List with Numbers:
 		- If only {expr} is specified: [0, 1, ..., {expr} - 1]
@@ -4013,11 +4047,24 @@ instead of "s:" when the mapping is expanded outside of the script.
 :fu[nction]		List all functions and their arguments.
 
 :fu[nction] {name}	List function {name}.
-							*E124* *E125*
+			{name} can also be a Dictionary entry that is a
+			Funcref: >
+				:function dict.init
+<							*E124* *E125*
 :fu[nction][!] {name}([arguments]) [range] [abort] [dict]
 			Define a new function by the name {name}.  The name
 			must be made of alphanumeric characters and '_', and
 			must start with a capital or "s:" (see above).
+
+			{name} can also be a Dictionary entry that is a
+			Funcref: >
+				:function dict.init(arg)
+<			"dict" must be an existing dictionary.  The entry
+			"init" is added if it didn't exist yet.  Otherwise [!]
+			is required to overwrite an existing function.  The
+			result is a |Funcref| to a numbered function.  The
+			function can only be used with a |Funcref| and will be
+			deleted if there are no more references to it.
 						*function-argument* *a:var*
 			An argument can be defined by giving its name.  In the
 			function this can then be used as "a:name" ("a:" for
@@ -4049,10 +4096,12 @@ instead of "s:" when the mapping is expanded outside of the script.
 			is excluded, ":{range}call" will call the function for
 			each line in the range, with the cursor on the start
 			of each line.  See |function-range-example|.
+
 			When the [abort] argument is added, the function will
 			abort as soon as an error is detected.
 			The last used search pattern and the redo command "."
 			will not be changed by the function.
+
 			When the [dict] argument is added, the function must
 			be invoked through an entry in a Dictionary.  The
 			local variable "self" will then be set to the
@@ -4064,7 +4113,12 @@ instead of "s:" when the mapping is expanded outside of the script.
 
 					*:delf* *:delfunction* *E130* *E131*
 :delf[unction] {name}	Delete function {name}.
-
+			{name} can also be a Dictionary entry that is a
+			Funcref: >
+				:delfunc dict.init
+<			This will remove the "init" entry from "dict".  The
+			function is deleted if there are no more references to
+			it.
 							*:retu* *:return* *E133*
 :retu[rn] [expr]	Return from a function.  When "[expr]" is given, it is
 			evaluated and returned as the result of the function.
@@ -4238,7 +4292,8 @@ This would call the function "my_func_whizz(parameter)".
 			the index can be repeated.
 			This cannot be used to add an item to a list.
 
-:let {var-name}[{idx1}:{idx2}] = {expr1}	*E708* *E709* *E710* *E711*
+							*E711* *E719*
+:let {var-name}[{idx1}:{idx2}] = {expr1}		*E708* *E709* *E710*
 			Set a sequence of items in a List to the result of the
 			expression {expr1}, which must be a list with the
 			correct number of items.
@@ -4247,9 +4302,20 @@ This would call the function "my_func_whizz(parameter)".
 			When the selected range of items is partly past the
 			end of the list, items will be added.
 
+:let {var} += {expr1}	Like ":let {var} = {var} + {expr1}".
+:let {var} -= {expr1}	Like ":let {var} = {var} - {expr1}".
+:let {var} .= {expr1}	Like ":let {var} = {var} . {expr1}".
+			These fail if {var} was not set yet and when the type
+			of {var} and {expr1} don't fit the operator.
+
+
 :let ${env-name} = {expr1}			*:let-environment* *:let-$*
 			Set environment variable {env-name} to the result of
 			the expression {expr1}.  The type is always String.
+:let ${env-name} .= {expr1}
+			Append {expr1} to the environment variable {env-name}.
+			If the environment variable didn't exist yet this
+			works like "=".
 
 :let @{reg-name} = {expr1}			*:let-register* *:let-@*
 			Write the result of the expression {expr1} in register
@@ -4265,6 +4331,10 @@ This would call the function "my_func_whizz(parameter)".
 <			This is different from searching for an empty string,
 			that would match everywhere.
 
+:let @{reg-name} .= {expr1}
+			Append {expr1} to register {reg-name}.  If the
+			register was empty it's like setting it to {expr1}.
+
 :let &{option-name} = {expr1}			*:let-option* *:let-star*
 			Set option {option-name} to the result of the
 			expression {expr1}.  A String or Number value is
@@ -4275,11 +4345,26 @@ This would call the function "my_func_whizz(parameter)".
 			Example: >
 				:let &path = &path . ',/usr/local/include'
 
+:let &{option-name} .= {expr1}
+			For a string option: Append {expr1} to the value.
+			Does not insert a comma like |:set+=|.
+
+:let &{option-name} += {expr1}
+:let &{option-name} -= {expr1}
+			For a number or boolean option: Add or subtract
+			{expr1}.
+
 :let &l:{option-name} = {expr1}
+:let &l:{option-name} .= {expr1}
+:let &l:{option-name} += {expr1}
+:let &l:{option-name} -= {expr1}
 			Like above, but only set the local value of an option
 			(if there is one).  Works like |:setlocal|.
 
 :let &g:{option-name} = {expr1}
+:let &g:{option-name} .= {expr1}
+:let &g:{option-name} += {expr1}
+:let &g:{option-name} -= {expr1}
 			Like above, but only set the global value of an option
 			(if there is one).  Works like |:setglobal|.
 
@@ -4293,17 +4378,36 @@ This would call the function "my_func_whizz(parameter)".
 			command as mentioned above.
 			Example: >
 				:let [s, item] = GetItem(s)
+<			Detail: {expr1} is evaluated first, then the
+			assignments are done in sequence.  This matters if
+			{name2} depends on {name1}.  Example: >
+				:let x = [0, 1]
+				:let i = 0
+				:let [i, x[i]] = [1, 2]
+				:echo x
+<			The result is [0, 2].
+
+:let [{name1}, {name2}, ...] .= {expr1}
+:let [{name1}, {name2}, ...] += {expr1}
+:let [{name1}, {name2}, ...] -= {expr1}
+			Like above, but append/add/subtract the value for each
+			List item.
 
 :let [{name}, ..., ; {lastname}] = {expr1}
-			Like above, but the List may have more items than
-			there are names.  A list of the remaining items is
-			assigned to {lastname}.  If there are no remaining
-			items {lastname} is set to an empty list.
+			Like |let-unpack| above, but the List may have more
+			items than there are names.  A list of the remaining
+			items is assigned to {lastname}.  If there are no
+			remaining items {lastname} is set to an empty list.
 			Example: >
 				:let [a, b; rest] = ["aval", "bval", 3, 4]
 <
+:let [{name}, ..., ; {lastname}] .= {expr1}
+:let [{name}, ..., ; {lastname}] += {expr1}
+:let [{name}, ..., ; {lastname}] -= {expr1}
+			Like above, but append/add/subtract the value for each
+			List item.
 							*E106*
-:let {var-name}	..	List the value of variable {var-name}.  Several
+:let {var-name}	..	List the value of variable {var-name}.  Multiple
 			variable names may be given.
 
 :let			List the values of all variables.  The type of the
@@ -4363,7 +4467,7 @@ This would call the function "my_func_whizz(parameter)".
 			is no extra ":endif".
 
 :wh[ile] {expr1}			*:while* *:endwhile* *:wh* *:endw*
-							*E170* *E585* *E588*
+						*E170* *E585* *E588* *E733*
 :endw[hile]		Repeat the commands between ":while" and ":endwhile",
 			as long as {expr1} evaluates to non-zero.
 			When an error is detected from a command inside the
@@ -4378,7 +4482,7 @@ This would call the function "my_func_whizz(parameter)".
 			NOTE: The ":append" and ":insert" commands don't work
 			properly inside a ":while" and ":for" loop.
 
-:for {var} in {list}					*:for* *E690*
+:for {var} in {list}					*:for* *E690* *E732*
 :endfo[r]						*:endfo* *:endfor*
 			Repeat the commands between ":for" and ":endfor" for
 			each item in {list}.  variable {var} is set to the
