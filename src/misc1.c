@@ -106,6 +106,7 @@ set_indent(size, flags)
     int		doit = FALSE;
     int		ind_done;
     int		tab_pad;
+    int		retval = FALSE;
 
     /*
      * First check if there is anything to do and compute the number of
@@ -266,12 +267,13 @@ set_indent(size, flags)
 	if (saved_cursor.lnum == curwin->w_cursor.lnum
 				&& saved_cursor.col >= (colnr_T)(p - oldline))
 	    saved_cursor.col += ind_len - (p - oldline);
+	retval = TRUE;
     }
     else
 	vim_free(newline);
 
     curwin->w_cursor.col = ind_len;
-    return TRUE;
+    return retval;
 }
 
 /*

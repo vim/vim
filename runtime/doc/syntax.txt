@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.0aa.  Last change: 2005 Feb 21
+*syntax.txt*	For Vim version 7.0aa.  Last change: 2005 Mar 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3632,6 +3632,7 @@ term={attr-list}			*attr-list* *highlight-term* *E418*
 	following items (in any order):
 		bold
 		underline
+		undercurl	not always available
 		reverse
 		inverse		same as reverse
 		italic
@@ -3640,6 +3641,9 @@ term={attr-list}			*attr-list* *highlight-term* *E418*
 
 	Note that "bold" can be used here and by using a bold font.  They
 	have the same effect.
+	"undercurl" is a curly underline.  When "undercurl" is not possible
+	then "underline" is used.  In general "undercurl" is only available in
+	the GUI.
 
 start={term-list}				*highlight-start* *E422*
 stop={term-list}				*term-list* *highlight-stop*
@@ -3795,8 +3799,10 @@ font={font-name}					*highlight-font*
 
 guifg={color-name}					*highlight-guifg*
 guibg={color-name}					*highlight-guibg*
-	These give the foreground (guifg) and background (guibg) color to
-	use in the GUI.  There are a few special names:
+guisp={color-name}					*highlight-guisp*
+	These give the foreground (guifg), background (guibg) and special
+	(guisp) color to use in the GUI.  "guisp" is used for underline and
+	undercurl.  There are a few special names:
 		NONE		no color (transparent)
 		bg		use normal background color
 		background	use normal background color
@@ -3825,8 +3831,8 @@ guibg={color-name}					*highlight-guibg*
 	You can also specify a color by its Red, Green and Blue values.
 	The format is "#rrggbb", where
 		"rr"	is the Red value
-		"bb"	is the Blue value
 		"gg"	is the Green value
+		"bb"	is the Blue value
 	All values are hexadecimal, range from "00" to "ff".  Examples: >
   :highlight Comment guifg=#11f0c3 guibg=#ff00ff
 <
