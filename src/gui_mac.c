@@ -4305,6 +4305,15 @@ gui_mch_set_bg_color(color)
     RGBBackColor(&TheColor);
 }
 
+/*
+ * Set the current text speail color. TODO
+ */
+    void
+gui_mch_set_sp_color(color)
+    guicolor_T	color;
+{
+}
+
     void
 gui_mch_draw_string(row, col, s, len, flags)
     int		row;

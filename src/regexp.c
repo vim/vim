@@ -4522,7 +4522,7 @@ regmatch(scan)
 		    /* It could match.  Prepare for trying to match what
 		     * follows.  The code is below.  Parameters are stored in
 		     * a regstar_T on the regstack. */
-		    if (((unsigned)regstack.ga_len >> 10) >= p_mmp)
+		    if ((long)((unsigned)regstack.ga_len >> 10) >= p_mmp)
 		    {
 			EMSG(_(e_maxmempat));
 			status = RA_FAIL;
@@ -4567,7 +4567,7 @@ regmatch(scan)
 	  case BEHIND:
 	  case NOBEHIND:
 	    /* Need a bit of room to store extra positions. */
-	    if (((unsigned)regstack.ga_len >> 10) >= p_mmp)
+	    if ((long)((unsigned)regstack.ga_len >> 10) >= p_mmp)
 	    {
 		EMSG(_(e_maxmempat));
 		status = RA_FAIL;
@@ -5004,7 +5004,7 @@ regstack_push(regstack, state, scan, startp)
 {
     regitem_T	*rp;
 
-    if (((unsigned)regstack->ga_len >> 10) >= p_mmp)
+    if ((long)((unsigned)regstack->ga_len >> 10) >= p_mmp)
     {
 	EMSG(_(e_maxmempat));
 	return NULL;

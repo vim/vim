@@ -989,9 +989,6 @@ mch_inchar(
     int		c;
     int		tmp_c;
     static int	nextchar = 0;	    /* may keep character when maxlen == 1 */
-#ifdef FEAT_AUTOCMD
-    static int	once_already = 0;
-#endif
 
     /*
      * if we got a ctrl-C when we were busy, there will be a "^C" somewhere
@@ -1027,38 +1024,26 @@ mch_inchar(
 #ifdef FEAT_MOUSE
 	    show_mouse(FALSE);
 #endif
-#ifdef FEAT_AUTOCMD
-	    once_already = 0;
-#endif
 	    return 0;
 	}
     }
     else    /* time == -1 */
     {
-#ifdef FEAT_AUTOCMD
-	if (once_already == 2)
-	    updatescript(0);
-	else if (once_already == 1)
-	{
-	    setcursor();
-	    once_already = 2;
-	    return 0;
-	}
-	else
-#endif
 	/*
 	 * If there is no character available within 2 seconds (default)
-	 * write the autoscript file to disk
+	 * write the autoscript file to disk.  Or cause the CursorHold event
+	 * to be triggered.
 	 */
-	    if (WaitForChar(p_ut) == 0)
+	if (WaitForChar(p_ut) == 0)
 	{
 #ifdef FEAT_AUTOCMD
-	    if (has_cursorhold() && get_real_state() == NORMAL_BUSY)
+	    if (!did_cursorhold && has_cursorhold()
+			    && get_real_state() == NORMAL_BUSY && maxlen >= 3)
 	    {
-		apply_autocmds(EVENT_CURSORHOLD, NULL, NULL, FALSE, curbuf);
-		update_screen(VALID);
-		once_already = 1;
-		return 0;
+		buf[0] = K_SPECIAL;
+		buf[1] = KS_EXTRA;
+		buf[2] = (int)KE_CURSORHOLD;
+		return 3;
 	    }
 	    else
 #endif
@@ -1194,9 +1179,6 @@ mch_inchar(
 #endif
 
     beep_count = 0;	    /* may beep again now that we got some chars */
-#ifdef FEAT_AUTOCMD
-    once_already = 0;
-#endif
     return len;
 }
 
