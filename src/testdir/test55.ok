@@ -30,3 +30,43 @@ Vim(call):E725:
 g:dict.func-4
 a:function('3')
 Vim(let):E698: 
+depth is 0
+0000-000
+ppppppp
+0000-000
+ppppppp
+0000-000
+ppppppp
+depth is 1
+1000-000
+ppppppF
+0000-000
+ppppppp
+0000-000
+ppppppp
+depth is 2
+1100-100
+ppFppFF
+0000-000
+ppppppp
+0000-000
+ppppppp
+depth is 3
+1110-110
+pFFpFFF
+0010-010
+pFppFpp
+0000-000
+ppppppp
+depth is 4
+1111-111
+FFFFFFF
+0011-011
+FFpFFpp
+0000-000
+ppppppp
+caught a:000
+caught a:000[0]
+caught a:000[2]
+caught a:000[3]
+[1, 2, [3, 9, 5, 6], {'a': 12, '5': 8}]

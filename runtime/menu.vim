@@ -2,7 +2,7 @@
 " You can also use this as a start for your own set of menus.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2004 Dec 04
+" Last Change:	2005 Jan 30
 
 " Note that ":an" (short for ":anoremenu") is often used to make a menu work
 " in all modes and avoid side effects from mappings defined by the user.
@@ -54,12 +54,13 @@ if exists("v:lang") || &langmenu != ""
       " There is no exact match, try matching with a wildcard added
       " (e.g. find menu_de_de.iso_8859-1.vim if s:lang == de_DE).
       let s:lang = substitute(s:lang, '\.[^.]*', "", "")
-      exe "runtime! lang/menu_" . s:lang . "*.vim"
+      exe "runtime! lang/menu_" . s:lang . "[^a-z]*.vim"
 
       if !exists("did_menu_trans") && strlen($LANG) > 1
 	" On windows locale names are complicated, try using $LANG, it might
 	" have been set by set_init_1().
-	exe "runtime! lang/menu_" . tolower($LANG) . "*.vim"
+	" But don't match "slovak" when $LANG is "sl".
+	exe "runtime! lang/menu_" . tolower($LANG) . "[^a-z]*vim"
       endif
     endif
   endif

@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Jan 24
+" Last Change:	2005 Jan 27
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -541,7 +541,7 @@ au BufNewFile,BufRead *.mas,*.master		setf master
 au BufNewFile,BufRead *.fs,*.ft			setf forth
 
 " Fortran
-au BufNewFile,BufRead *.f,*.F,*.for,*.fpp,*.ftn,*.f77,*.F77,*.f90,*.F90,*.f95,*.F95	setf fortran
+au BufNewFile,BufRead *.f,*.F,*.for,*.fpp,*.FPP*.ftn,*.f77,*.F77,*.f90,*.F90,*.f95,*.F95	setf fortran
 
 " FStab
 au BufNewFile,BufRead fstab			setf fstab
@@ -647,14 +647,17 @@ au BufNewFile,BufRead *.odl,*.mof		setf msidl
 " Icewm menu
 au BufNewFile,BufRead */.icewm/menu		setf icemenu
 
-" Inform
-au BufNewFile,BufRead .indent.pro		setf indent
-
 " IDL (Interactive Data Language)
 au BufNewFile,BufRead *.pro			setf idlang
 
 " Inform
+au BufNewFile,BufRead .indent.pro		setf indent
+
+" Inform
 au BufNewFile,BufRead *.inf,*.INF		setf inform
+
+" Ipfilter
+au BufNewFile,BufRead ipf.conf,ipf.rules	setf ipfilter
 
 " Informix 4GL (source - canonical, include file, I4GL+M4 preproc.)
 au BufNewFile,BufRead *.4gl,*.4gh,*.m4gl	setf fgl

@@ -3831,7 +3831,7 @@ gui_mch_destroy_sign(sign)
 #if defined(FEAT_BEVAL) || defined(PROTO)
 
 /* BALLOON-EVAL IMPLEMENTATION FOR WINDOWS.
- *  Added by Sergey Khorev
+ *  Added by Sergey Khorev <sergey.khorev@gmail.com>
  *
  * The only reused thing is gui_beval.h and gui_mch_get_beval_info()
  * from gui_beval.c (note it uses x and y of the BalloonEval struct

@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 27
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 31
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1458,6 +1458,7 @@ inputsave()			Number	save and clear typeahead
 inputsecret( {prompt} [, {text}]) String  like input() but hiding the text
 insert( {list}, {item} [, {idx}]) List	insert {item} in {list} [before {idx}]
 isdirectory( {directory})	Number	TRUE if {directory} is a directory
+islocked( {expr})		Number	TRUE if {expr} is locked
 items( {dict})			List	List of key-value pairs in {dict}
 join( {list} [, {sep}])		String	join {list} items into one String
 keys( {dict})			List	List of keys in {dict}
@@ -2782,6 +2783,19 @@ isdirectory({directory})				*isdirectory()*
 		with the name {directory} exists.  If {directory} doesn't
 		exist, or isn't a directory, the result is FALSE.  {directory}
 		is any expression, which is used as a String.
+
+islocked({expr})					*islocked()*
+		The result is a Number, which is non-zero when {expr} is the
+		name of a locked variable.
+		{expr} must be the name of a variable, List item or Dictionary
+		entry, not the variable itself!  Example: >
+			:let alist = [0, ['a', 'b'], 2, 3]
+			:lockvar 1 alist
+			:echo islocked('alist')		" 1
+			:echo islocked('alist[1]')	" 0
+
+<		When {expr} is a variable that does not exist you get an error
+		message.  Use |exists()| to check for existance.
 
 items({dict})						*items()*
 		Return a List with all the key-value pairs of {dict}.  Each
@@ -4161,7 +4175,14 @@ Up to 20 arguments can be given, separated by commas.  After the named
 arguments an argument "..." can be specified, which means that more arguments
 may optionally be following.  In the function the extra arguments can be used
 as "a:1", "a:2", etc.  "a:0" is set to the number of extra arguments (which
-can be 0).  "a:000" is set to a List that contains these arguments.
+can be 0).  "a:000" is set to a List that contains these arguments.  Note that
+"a:1" is the same as "a:000[0]".
+								*E742*
+The a: scope and the variables in it cannot be changed, they are fixed.
+However, if a List or Dictionary is used, you can changes their contents.
+Thus you can pass a List to a function and have the function add an item to
+it.  If you want to make sure the function cannot change a List or Dictionary
+use |:lockvar|.
 
 When not using "...", the number of arguments in a function call must be equal
 to the number of named arguments.  When using "...", the number of arguments
@@ -4457,10 +4478,11 @@ This would call the function "my_func_whizz(parameter)".
 				#	Number
 			    	*	Funcref
 
-							*:unlet* *:unl* *E108*
-:unl[et][!] {var-name} ...
-			Remove the internal variable {var-name}.  Several
-			variable names can be given, they are all removed.
+
+:unl[et][!] {name} ...					*:unlet* *:unl* *E108*
+			Remove the internal variable {name}.  Several variable
+			names can be given, they are all removed.  The name
+			may also be a List or Dictionary item.
 			With [!] no error message is given for non-existing
 			variables.
 			One or more items from a List can be removed: >
@@ -4469,6 +4491,52 @@ This would call the function "my_func_whizz(parameter)".
 <			One item from a Dictionary can be removed at a time: >
 				:unlet dict['two']
 				:unlet dict.two
+
+:lockv[ar][!] [depth] {name} ...			*:lockvar* *:lockv*
+			Lock the internal variable {name}.  Locking means that
+			it can no longer be changed (until it is unlocked).
+			A locked variable can be deleted: >
+				:lockvar v
+				:let v = 'asdf'		" fails!
+				:unlet v
+<							*E741*
+			If you try to change a locked variable you get an
+			error message: "E741: Value of {name} is locked"
+
+			[depth] is relevant when locking a List or Dictionary.
+			It specifies how deep the locking goes:
+				1	Lock the List or Dictionary itself,
+					cannot add or remove items, but can
+					still change their values.
+				2	Also lock the values, cannot change
+					the items.  If an item is a List or
+					Dictionary, cannot add or remove
+					items, but can still change the
+					values.
+				3	Like 2 but for the List/Dictionary in
+					the List/Dictionary, one level deeper.
+			The default [depth] is 2, thus when {name} is a List
+			or Dictionary the values cannot be changed.
+								*E743*
+			For unlimited depth use [!] and omit [depth].
+			However, there is a maximum depth of 100 to catch
+			loops.
+
+			Note that when two variables refer to the same List
+			and you lock one of them, the List will also be locked
+			when used through the other variable.  Example: >
+				:let l = [0, 1, 2, 3]
+				:let cl = l
+				:lockvar l
+				:let cl[1] = 99		" won't work!
+<			You may want to make a copy of a list to avoid this.
+			See |deepcopy()|.
+
+
+:unlo[ckvar][!] [depth] {name} ...			*:unlockvar* *:unlo*
+			Unlock the internal variable {name}.  Does the
+			opposite of |:lockvar|.
+
 
 :if {expr1}			*:if* *:endif* *:en* *E171* *E579* *E580*
 :en[dif]		Execute the commands until the next matching ":else"

@@ -2,7 +2,7 @@ Tests for List and Dictionary types.     vim: set ft=vim :
 
 STARTTEST
 :so small.vim
-:fun Test()
+:fun Test(...)
 :" Creating List directly with different types
 :let l = [1, 'as''d', [1, 2, function("strlen")], {'a': 1},]
 :$put =string(l)
@@ -27,12 +27,12 @@ STARTTEST
 :let d = {001: 'asd', 'b': [1, 2, function('strlen')], -1: {'a': 1},}
 :$put =string(d) . d.1
 :$put =string(sort(keys(d)))
-:$put =string(values(d))
+:$put =string (values(d))
 :for [key, val] in items(d)
 :  $put =key . ':' . string(val)
 :  unlet key val
 :endfor
-:call extend(d, {3:33, 1:99})
+:call extend  (d, {3:33, 1:99})
 :call extend(d, {'b':'bbb', 'c':'ccc'}, "keep")
 :try
 :  call extend(d, {3:333,4:444}, "error")
@@ -68,8 +68,12 @@ STARTTEST
 :unlet l[2]
 :$put =string(l)
 :let l = range(8)
+:try
 :unlet l[:3]
 :unlet l[1:]
+:catch
+:$put =v:exception
+:endtry
 :$put =string(l)
 :"
 :unlet d.c
@@ -143,7 +147,7 @@ STARTTEST
 :func d.func(a)
 :  return "a:". a:a
 :endfunc
-:$put = d.func(string(remove(d, 'func')))
+:$put =d.func(string(remove(d, 'func')))
 :"
 :" Nasty: deepcopy() dict that refers to itself (fails)
 :let d = {1:1, 2:2}
@@ -155,8 +159,102 @@ STARTTEST
 :  $put =v:exception[:14]
 :endtry
 :"
+:" Locked variables
+:for depth in range(5)
+:  $put ='depth is ' . depth
+:  for u in range(3)
+:    unlet l
+:    let l = [0, [1, [2, 3]], {4: 5, 6: {7: 8}}]
+:    exe "lockvar " . depth . " l"
+:    if u == 1
+:      exe "unlockvar l"
+:    elseif u == 2
+:      exe "unlockvar " . depth . " l"
+:    endif
+:    let ps = islocked("l").islocked("l[1]").islocked("l[1][1]").islocked("l[1][1][0]").'-'.islocked("l[2]").islocked("l[2]['6']").islocked("l[2]['6'][7]")
+:    $put =ps
+:    let ps = ''
+:    try
+:      let l[1][1][0] = 99
+:      let ps .= 'p'
+:    catch
+:      let ps .= 'F'
+:    endtry
+:    try
+:      let l[1][1] = [99]
+:      let ps .= 'p'
+:    catch
+:      let ps .= 'F'
+:    endtry
+:    try
+:      let l[1] = [99]
+:      let ps .= 'p'
+:    catch
+:      let ps .= 'F'
+:    endtry
+:    try
+:      let l[2]['6'][7] = 99
+:      let ps .= 'p'
+:    catch
+:      let ps .= 'F'
+:    endtry
+:    try
+:      let l[2][6] = {99: 99}
+:      let ps .= 'p'
+:    catch
+:      let ps .= 'F'
+:    endtry
+:    try
+:      let l[2] = {99: 99}
+:      let ps .= 'p'
+:    catch
+:      let ps .= 'F'
+:    endtry
+:    try
+:      let l = [99]
+:      let ps .= 'p'
+:    catch
+:      let ps .= 'F'
+:    endtry
+:    $put =ps
+:  endfor
+:endfor
+:"
+:" a:000 function argument
+:" first the tests that should fail
+:try
+:  let a:000 = [1, 2]
+:catch
+:  $put ='caught a:000'
+:endtry
+:try
+:  let a:000[0] = 9
+:catch
+:  $put ='caught a:000[0]'
+:endtry
+:try
+:  let a:000[2] = [9, 10]
+:catch
+:  $put ='caught a:000[2]'
+:endtry
+:try
+:  let a:000[3] = {9: 10}
+:catch
+:  $put ='caught a:000[3]'
+:endtry
+:" now the tests that should pass
+:try
+:  let a:000[2][1] = 9
+:  call extend(a:000[2], [5, 6])
+:  let a:000[3][5] = 8
+:  let a:000[3]['a'] = 12
+:  $put =string(a:000)
+:catch
+:  $put ='caught ' . v:exception
+:endtry
+:"
 :endfun
-:call Test()  " This may take a while
+:call Test(1, 2, [3, 4], {5: 6})  " This may take a while
 :"
 :/^start:/,$wq! test.out
 ENDTEST

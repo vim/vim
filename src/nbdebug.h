@@ -35,7 +35,6 @@
 #define NBDLEVEL(flags)		(nb_debug != NULL && (nb_dlevel & (flags)))
 
 #define NBDEBUG_TRACE	1
-//#define NBDEBUG_SENSE	2
 
 typedef enum {
 		WT_ENV = 1,		/* look for env var if set */

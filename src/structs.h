@@ -963,7 +963,8 @@ typedef struct dictvar_S dict_T;
  */
 typedef struct
 {
-    char	v_type;	/* see below: VAR_NUMBER, VAR_STRING, etc. */
+    char	v_type;	    /* see below: VAR_NUMBER, VAR_STRING, etc. */
+    char	v_lock;	    /* see below: VAR_LOCKED, VAR_FIXED */
     union
     {
 	varnumber_T	v_number;	/* number value */
@@ -980,6 +981,10 @@ typedef struct
 #define VAR_FUNC    3	/* "v_string" is function name */
 #define VAR_LIST    4	/* "v_list" is used */
 #define VAR_DICT    5	/* "v_dict" is used */
+
+/* Values for "v_lock". */
+#define VAR_LOCKED  1	/* locked with lock(), can use unlock() */
+#define VAR_FIXED   2	/* locked forever */
 
 /*
  * Structure to hold an item of a list: an internal variable without a name.
@@ -1013,6 +1018,7 @@ struct listvar_S
     listitem_T	*lv_first;	/* first item, NULL if none */
     listitem_T	*lv_last;	/* last item, NULL if none */
     listwatch_T	*lv_watch;	/* first watcher, NULL if none */
+    char	lv_lock;	/* zero, VAR_LOCKED, VAR_FIXED */
 };
 
 /*
@@ -1032,6 +1038,7 @@ typedef struct dictitem_S dictitem_T;
 #define DI_FLAGS_RO	1 /* "di_flags" value: read-only variable */
 #define DI_FLAGS_RO_SBX 2 /* "di_flags" value: read-only in the sandbox */
 #define DI_FLAGS_FIX	4 /* "di_flags" value: fixed variable, not allocated */
+#define DI_FLAGS_LOCK	8 /* "di_flags" value: locked variable */
 
 /*
  * Structure to hold info about a Dictionary.
@@ -1040,6 +1047,7 @@ struct dictvar_S
 {
     int		dv_refcount;	/* reference count */
     hashtab_T	dv_hashtab;	/* hashtab that refers to the items */
+    char	dv_lock;	/* zero, VAR_LOCKED, VAR_FIXED */
 };
 
 

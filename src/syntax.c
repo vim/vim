@@ -3212,7 +3212,7 @@ syn_cmd_clear(eap, syncing)
 	else
 	{
 	    syntax_clear(curbuf);
-	    do_unlet((char_u *)"b:current_syntax");
+	    do_unlet((char_u *)"b:current_syntax", TRUE);
 	}
     }
     else
@@ -3313,7 +3313,7 @@ syn_cmd_enable(eap, syncing)
 {
     set_internal_string_var((char_u *)"syntax_cmd", (char_u *)"enable");
     syn_cmd_onoff(eap, "syntax");
-    do_unlet((char_u *)"g:syntax_cmd");
+    do_unlet((char_u *)"g:syntax_cmd", TRUE);
 }
 
 /*
@@ -3330,7 +3330,7 @@ syn_cmd_reset(eap, syncing)
     {
 	set_internal_string_var((char_u *)"syntax_cmd", (char_u *)"reset");
 	do_cmdline_cmd((char_u *)"runtime! syntax/syncolor.vim");
-	do_unlet((char_u *)"g:syntax_cmd");
+	do_unlet((char_u *)"g:syntax_cmd", TRUE);
     }
 }
 
@@ -6271,7 +6271,7 @@ do_highlight(line, forceit, init)
 	     */
 #endif
 #ifdef FEAT_EVAL
-	    do_unlet((char_u *)"colors_name");
+	    do_unlet((char_u *)"colors_name", TRUE);
 #endif
 	    restore_cterm_colors();
 

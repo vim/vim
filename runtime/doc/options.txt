@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Jan 26
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Jan 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4402,6 +4402,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	knows about pasting and will mostly do the right thing without 'paste'
 	being set.  The same is true for a terminal where Vim handles the
 	mouse clicks itself.
+	This option is reset when starting the GUI.  Thus if you set it in
+	your .vimrc it will work in a terminal, but not in the GUI.  Setting
+	'paste' in the GUI has side effects: e.g., the Paste toolbar button
+	will no longer work in Insert mode, because it uses a mapping.
 	When the 'paste' option is switched on (also when it was already on):
 		- mapping in Insert mode and Command-line mode is disabled
 		- abbreviations are disabled

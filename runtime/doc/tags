@@ -2059,6 +2059,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :loadview	starting.txt	/*:loadview*
 :loc	motion.txt	/*:loc*
 :lockmarks	motion.txt	/*:lockmarks*
+:lockv	eval.txt	/*:lockv*
+:lockvar	eval.txt	/*:lockvar*
 :ls	windows.txt	/*:ls*
 :lu	map.txt	/*:lu*
 :lunmap	map.txt	/*:lunmap*
@@ -2118,6 +2120,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :mzfile	if_mzsch.txt	/*:mzfile*
 :mzscheme	if_mzsch.txt	/*:mzscheme*
 :n	editing.txt	/*:n*
+:nbkey	netbeans.txt	/*:nbkey*
 :ne	editing.txt	/*:ne*
 :new	windows.txt	/*:new*
 :next	editing.txt	/*:next*
@@ -2505,6 +2508,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :unhide	windows.txt	/*:unhide*
 :unl	eval.txt	/*:unl*
 :unlet	eval.txt	/*:unlet*
+:unlo	eval.txt	/*:unlo*
+:unlockvar	eval.txt	/*:unlockvar*
 :unm	map.txt	/*:unm*
 :unm!	map.txt	/*:unm!*
 :unmap	map.txt	/*:unmap*
@@ -3641,6 +3646,10 @@ E738	eval.txt	/*E738*
 E739	starting.txt	/*E739*
 E74	message.txt	/*E74*
 E740	eval.txt	/*E740*
+E741	eval.txt	/*E741*
+E742	eval.txt	/*E742*
+E743	eval.txt	/*E743*
+E744	netbeans.txt	/*E744*
 E75	vi_diff.txt	/*E75*
 E76	pattern.txt	/*E76*
 E77	message.txt	/*E77*
@@ -5292,6 +5301,7 @@ ip	motion.txt	/*ip*
 iquote	motion.txt	/*iquote*
 is	motion.txt	/*is*
 isdirectory()	eval.txt	/*isdirectory()*
+islocked()	eval.txt	/*islocked()*
 items()	eval.txt	/*items()*
 iw	motion.txt	/*iw*
 i{	motion.txt	/*i{*
@@ -5553,6 +5563,7 @@ nb-terms	netbeans.txt	/*nb-terms*
 ncf-syntax	syntax.txt	/*ncf-syntax*
 ncf.vim	syntax.txt	/*ncf.vim*
 netbeans	netbeans.txt	/*netbeans*
+netbeans-commands	netbeans.txt	/*netbeans-commands*
 netbeans-configure	netbeans.txt	/*netbeans-configure*
 netbeans-download	netbeans.txt	/*netbeans-download*
 netbeans-intro	netbeans.txt	/*netbeans-intro*

@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 7.0aa.  Last change: 2004 Jul 30
+*repeat.txt*    For Vim version 7.0aa.  Last change: 2005 Jan 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -496,6 +496,10 @@ matches ".../plugin/explorer.vim" and "explorer.vim" in any other directory.
 The match for functions is done against the name as it's shown in the output
 of ":function".  For local functions this means that something like "<SNR>99_"
 is prepended.
+
+Note that functions are first loaded and later executed.  When they are loaded
+the "file" breakpoints are checked, when they are executed the "func"
+breakpoints.
 
 
 DELETING BREAKPOINTS

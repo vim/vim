@@ -4165,8 +4165,8 @@ win_line(wp, lnum, startrow, endrow)
 #ifdef FEAT_MBYTE
 		    /* When there is a multi-byte character, just output a
 		     * space to keep it simple. */
-		    if (has_mbyte && mb_off2cells(LineOffset[screen_row - 1]
-						+ (unsigned)Columns - 1) != 1)
+		    if (has_mbyte && MB_BYTE2LEN(ScreenLines[LineOffset[
+					screen_row - 1] + (Columns - 1)]) > 1)
 			out_char(' ');
 		    else
 #endif

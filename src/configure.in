@@ -2120,7 +2120,15 @@ fi
 if test -z "$SKIP_ATHENA" -o -z "$SKIP_NEXTAW" -o -z "$SKIP_MOTIF"; then
   cppflags_save=$CPPFLAGS
   CPPFLAGS="$CPPFLAGS $X_CFLAGS"
-  AC_CHECK_HEADERS(X11/Xmu/Editres.h)
+dnl Xmu/Editres.h may exist but can only be used after including Intrinsic.h
+  AC_MSG_CHECKING([for X11/Xmu/Editres.h])
+  AC_TRY_COMPILE([
+#include <X11/Intrinsic.h>
+#include <X11/Xmu/Editres.h>],
+		      [int i; i = 0;],
+	      AC_MSG_RESULT(yes)
+		      AC_DEFINE(HAVE_X11_XMU_EDITRES_H),
+	      AC_MSG_RESULT(no))
   CPPFLAGS=$cppflags_save
 fi
 
@@ -2128,7 +2136,8 @@ dnl Only use the Xm directory when compiling Motif, don't use it for Athena
 if test -z "$SKIP_MOTIF"; then
   cppflags_save=$CPPFLAGS
   CPPFLAGS="$CPPFLAGS $X_CFLAGS"
-  AC_CHECK_HEADERS(Xm/Xm.h Xm/XpmP.h)
+  AC_CHECK_HEADERS(Xm/Xm.h Xm/XpmP.h Xm/JoinSideT.h Xm/TraitP.h Xm/Manager.h \
+		   Xm/UnhighlightT.h)
   CPPFLAGS=$cppflags_save
 fi
 
