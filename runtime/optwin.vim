@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2004 Dec 24
+" Last Change:	2005 Mar 07
 
 " If there already is an option window, jump to that one.
 if bufwinnr("option-window") > 0
@@ -273,6 +273,8 @@ call append("$", "smartcase\toverride 'ignorecase' when pattern has upper case c
 call <SID>BinOptionG("scs", &scs)
 call append("$", "casemap\tWhat method to use for changing case of letters")
 call <SID>OptionG("cmp", &cmp)
+call append("$", "maxmempattern\tmaximum amount of memory in Kbyte used for pattern matching")
+call append("$", " \tset mmp=" . &mmp)
 call append("$", "define\tpattern for a macro definition line")
 call append("$", "\t(global or local to buffer)")
 call <SID>OptionG("def", &def)
@@ -554,9 +556,11 @@ if has("gui")
   if has("balloon_eval")
     call append("$", "balloondelay\tdelay in milliseconds before a balloon may pop up")
     call append("$", " \tset bdlay=" . &bdlay)
-    if has("sun_workshop")
-      call append("$", "ballooneval\twhether the balloon evaluation is to be used")
-      call <SID>BinOptionG("beval", &beval)
+    call append("$", "ballooneval\twhether the balloon evaluation is to be used")
+    call <SID>BinOptionG("beval", &beval)
+    if has("eval")
+      call append("$", "balloonexpr\texpression to show in balloon eval")
+      call append("$", " \tset bexpr=" . &bexpr)
     endif
   endif
 endif

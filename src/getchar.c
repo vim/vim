@@ -4609,30 +4609,6 @@ static struct initmap
 	{(char_u *)"<D-x> \"*d", VISUAL},
 	{(char_u *)"<Backspace> \"-d", VISUAL},
 #endif
-
-#if 0
-	/* Map extra keys to their normal equivalents. */
-	{(char_u *)"<xF1> <F1>", NORMAL+VISUAL+OP_PENDING},
-	{(char_u *)"<xF1> <F1>", INSERT+CMDLINE},
-	{(char_u *)"<xF2> <F2>", NORMAL+VISUAL+OP_PENDING},
-	{(char_u *)"<xF2> <F2>", INSERT+CMDLINE},
-	{(char_u *)"<xF3> <F3>", NORMAL+VISUAL+OP_PENDING},
-	{(char_u *)"<xF3> <F3>", INSERT+CMDLINE},
-	{(char_u *)"<xF4> <F4>", NORMAL+VISUAL+OP_PENDING},
-	{(char_u *)"<xF4> <F4>", INSERT+CMDLINE},
-	{(char_u *)"<S-xF1> <S-F1>", NORMAL+VISUAL+OP_PENDING},
-	{(char_u *)"<S-xF1> <S-F1>", INSERT+CMDLINE},
-	{(char_u *)"<S-xF2> <S-F2>", NORMAL+VISUAL+OP_PENDING},
-	{(char_u *)"<S-xF2> <S-F2>", INSERT+CMDLINE},
-	{(char_u *)"<S-xF3> <S-F3>", NORMAL+VISUAL+OP_PENDING},
-	{(char_u *)"<S-xF3> <S-F3>", INSERT+CMDLINE},
-	{(char_u *)"<S-xF4> <S-F4>", NORMAL+VISUAL+OP_PENDING},
-	{(char_u *)"<S-xF4> <S-F4>", INSERT+CMDLINE},
-	{(char_u *)"<xEND> <END>", NORMAL+VISUAL+OP_PENDING},
-	{(char_u *)"<xEND> <END>", INSERT+CMDLINE},
-	{(char_u *)"<xHOME> <HOME>", NORMAL+VISUAL+OP_PENDING},
-	{(char_u *)"<xHOME> <HOME>", INSERT+CMDLINE},
-#endif
 };
 #endif
 
@@ -4650,6 +4626,8 @@ init_mappings()
 #endif
 }
 
+#if defined(MSDOS) || defined(MSWIN) || defined(OS2) \
+	|| defined(FEAT_CMDWIN) || defined(MACOS) || defined(PROTO)
 /*
  * Add a mapping "map" for mode "mode".
  * Need to put string in allocated memory, because do_map() will modify it.
@@ -4671,3 +4649,4 @@ add_map(map, mode)
     }
     p_cpo = cpo_save;
 }
+#endif

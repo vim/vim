@@ -202,7 +202,7 @@ NETBEANS = $(GUI)
 !if "$(NETBEANS)" == "yes"
 # NETBEANS - Include support for Netbeans integration
 NETBEANS_PRO	= proto/netbeans.pro
-NETBEANS_OBJ	= $(OBJDIR)/netbeans.obj $(OBJDIR)/gui_beval.obj
+NETBEANS_OBJ	= $(OBJDIR)/netbeans.obj
 NETBEANS_DEFS	= -DFEAT_NETBEANS_INTG
 
 !if "$(NBDEBUG)" == "yes"
@@ -422,6 +422,7 @@ GUI_INCL = \
 	farsi.h \
 	feature.h \
 	globals.h \
+	gui_beval.h \
 	keymap.h \
 	macros.h \
 	option.h \
@@ -429,6 +430,7 @@ GUI_INCL = \
 	os_win32.h
 GUI_OBJ = \
 	$(OUTDIR)\gui.obj \
+	$(OUTDIR)\gui_beval.obj \
 	$(OUTDIR)\gui_w32.obj \
 	$(OUTDIR)\os_w32exe.obj
 GUI_LIB = \
@@ -766,6 +768,8 @@ $(OUTDIR)/getchar.obj:	$(OUTDIR) getchar.c  $(INCL)
 $(OUTDIR)/hashtable.obj:	$(OUTDIR) hashtable.c  $(INCL)
 
 $(OUTDIR)/gui.obj:	$(OUTDIR) gui.c  $(INCL) $(GUI_INCL)
+
+$(OUTDIR)/gui_beval.obj:	$(OUTDIR) gui_beval.c $(INCL) $(GUI_INCL)
 
 $(OUTDIR)/gui_w32.obj:	$(OUTDIR) gui_w32.c gui_w48.c $(INCL) $(GUI_INCL)
 

@@ -3085,7 +3085,7 @@ reset_VIsual()
 }
 #endif /* FEAT_VISUAL */
 
-#if defined(FEAT_NETBEANS_INTG) && defined(FEAT_BEVAL)
+#if defined(FEAT_BEVAL)
 static int find_is_eval_item __ARGS((char_u *ptr, int *colp, int *nbp, int dir));
 
 /*
@@ -3134,6 +3134,7 @@ find_is_eval_item(ptr, colp, bnp, dir)
  * FIND_IDENT:   find an identifier (keyword)
  * FIND_STRING:  find any non-white string
  * FIND_IDENT + FIND_STRING: find any non-white string, identifier preferred.
+ * FIND_EVAL:	 find text useful for C program debugging
  *
  * There are three steps:
  * 1. Search forward for the start of an identifier/string.  Doesn't move if
@@ -3177,7 +3178,7 @@ find_ident_at_pos(wp, lnum, startcol, string, find_type)
     int		prev_class;
     int		prevcol;
 #endif
-#if defined(FEAT_NETBEANS_INTG) && defined(FEAT_BEVAL)
+#if defined(FEAT_BEVAL)
     int		bn = 0;	    /* bracket nesting */
 #endif
 
@@ -3197,7 +3198,7 @@ find_ident_at_pos(wp, lnum, startcol, string, find_type)
 	{
 	    while (ptr[col] != NUL)
 	    {
-# if defined(FEAT_NETBEANS_INTG) && defined(FEAT_BEVAL)
+# if defined(FEAT_BEVAL)
 		/* Stop at a ']' to evaluate "a[x]". */
 		if ((find_type & FIND_EVAL) && ptr[col] == ']')
 		    break;
@@ -3212,13 +3213,13 @@ find_ident_at_pos(wp, lnum, startcol, string, find_type)
 #endif
 	    while (ptr[col] != NUL
 		    && (i == 0 ? !vim_iswordc(ptr[col]) : vim_iswhite(ptr[col]))
-# if defined(FEAT_NETBEANS_INTG) && defined(FEAT_BEVAL)
+# if defined(FEAT_BEVAL)
 		    && (!(find_type & FIND_EVAL) || ptr[col] != ']')
 # endif
 		    )
 		++col;
 
-#if defined(FEAT_NETBEANS_INTG) && defined(FEAT_BEVAL)
+#if defined(FEAT_BEVAL)
 	/* When starting on a ']' count it, so that we include the '['. */
 	bn = ptr[col] == ']';
 #endif
@@ -3230,7 +3231,7 @@ find_ident_at_pos(wp, lnum, startcol, string, find_type)
 	if (has_mbyte)
 	{
 	    /* Remember class of character under cursor. */
-# if defined(FEAT_NETBEANS_INTG) && defined(FEAT_BEVAL)
+# if defined(FEAT_BEVAL)
 	    if ((find_type & FIND_EVAL) && ptr[col] == ']')
 		this_class = mb_get_class((char_u *)"a");
 	    else
@@ -3244,7 +3245,7 @@ find_ident_at_pos(wp, lnum, startcol, string, find_type)
 			&& (i == 0
 			    || prev_class == 0
 			    || (find_type & FIND_IDENT))
-# if defined(FEAT_NETBEANS_INTG) && defined(FEAT_BEVAL)
+# if defined(FEAT_BEVAL)
 			&& (!(find_type & FIND_EVAL)
 			    || prevcol == 0
 			    || !find_is_eval_item(ptr + prevcol, &prevcol,
@@ -3271,7 +3272,7 @@ find_ident_at_pos(wp, lnum, startcol, string, find_type)
 			    : (!vim_iswhite(ptr[col - 1])
 				&& (!(find_type & FIND_IDENT)
 				    || !vim_iswordc(ptr[col - 1]))))
-#if defined(FEAT_NETBEANS_INTG) && defined(FEAT_BEVAL)
+#if defined(FEAT_BEVAL)
 			|| ((find_type & FIND_EVAL)
 			    && col > 1
 			    && find_is_eval_item(ptr + col - 1, &col,
@@ -3308,7 +3309,7 @@ find_ident_at_pos(wp, lnum, startcol, string, find_type)
     /*
      * 3. Find the end if the identifier/string.
      */
-#if defined(FEAT_NETBEANS_INTG) && defined(FEAT_BEVAL)
+#if defined(FEAT_BEVAL)
     bn = 0;
     startcol -= col;
 #endif
@@ -3321,7 +3322,7 @@ find_ident_at_pos(wp, lnum, startcol, string, find_type)
 	while (ptr[col] != NUL
 		&& ((i == 0 ? mb_get_class(ptr + col) == this_class
 			    : mb_get_class(ptr + col) != 0)
-# if defined(FEAT_NETBEANS_INTG) && defined(FEAT_BEVAL)
+# if defined(FEAT_BEVAL)
 		    || ((find_type & FIND_EVAL)
 			&& col <= (int)startcol
 			&& find_is_eval_item(ptr + col, &col, &bn, FORWARD))
@@ -3333,7 +3334,7 @@ find_ident_at_pos(wp, lnum, startcol, string, find_type)
 #endif
 	while ((i == 0 ? vim_iswordc(ptr[col])
 		       : (ptr[col] != NUL && !vim_iswhite(ptr[col])))
-# if defined(FEAT_NETBEANS_INTG) && defined(FEAT_BEVAL)
+# if defined(FEAT_BEVAL)
 		    || ((find_type & FIND_EVAL)
 			&& col <= (int)startcol
 			&& find_is_eval_item(ptr + col, &col, &bn, FORWARD))

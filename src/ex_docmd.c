@@ -288,6 +288,7 @@ static void	ex_mkrc __ARGS((exarg_T *eap));
 static void	ex_mark __ARGS((exarg_T *eap));
 #ifdef FEAT_USR_CMDS
 static char_u	*uc_fun_cmd __ARGS((void));
+static char_u	*find_ucmd __ARGS((exarg_T *eap, char_u *p, int *full, expand_T *xp, int *compl));
 #endif
 #ifdef FEAT_EX_EXTRA
 static void	ex_normal __ARGS((exarg_T *eap));
@@ -2716,8 +2717,9 @@ checkforcmd(pp, cmd, len)
 
 /*
  * Find an Ex command by its name, either built-in or user.
- * Name can be found at eap->cmd.
+ * Start of the name can be found at eap->cmd.
  * Returns pointer to char after the command name.
+ * "full" is set to TRUE if the whole command name matched.
  * Returns NULL for an ambiguous user command.
  */
 /*ARGSUSED*/
@@ -2746,7 +2748,8 @@ find_command(eap, full)
 	++p;
     }
     else if (p[0] == 's'
-	    && ((p[1] == 'c' && p[2] != 's' && p[2] != 'r' && p[3] != 'i' && p[4] != 'p')
+	    && ((p[1] == 'c' && p[2] != 's' && p[2] != 'r'
+						&& p[3] != 'i' && p[4] != 'p')
 		|| p[1] == 'g'
 		|| (p[1] == 'i' && p[2] != 'm' && p[2] != 'l' && p[2] != 'g')
 		|| p[1] == 'I'
@@ -2802,103 +2805,138 @@ find_command(eap, full)
 	/* Look for a user defined command as a last resort */
 	if (eap->cmdidx == CMD_SIZE && *eap->cmd >= 'A' && *eap->cmd <= 'Z')
 	{
-	    ucmd_T	*cmd;
-	    int		j, k, matchlen = 0;
-	    int		found = FALSE, possible = FALSE;
-	    char_u	*cp, *np;	/* Point into typed cmd and test name */
-	    garray_T	*gap;
-	    int		amb_local = FALSE; /* Found ambiguous buffer-local
-					      command, only full match global
-					      is accepted. */
-
-	    /* User defined commands may contain numbers */
+	    /* User defined commands may contain digits. */
 	    while (ASCII_ISALNUM(*p))
 		++p;
-	    len = (int)(p - eap->cmd);
-
-	    /*
-	     * Look for buffer-local user commands first, then global ones.
-	     */
-	    gap = &curbuf->b_ucmds;
-	    for (;;)
-	    {
-		for (j = 0; j < gap->ga_len; ++j)
-		{
-		    cmd = USER_CMD_GA(gap, j);
-		    cp = eap->cmd;
-		    np = cmd->uc_name;
-		    k = 0;
-		    while (k < len && *np != NUL && *cp++ == *np++)
-			k++;
-		    if (k == len || (*np == NUL && vim_isdigit(eap->cmd[k])))
-		    {
-			/* If finding a second match, the command is
-			 * ambiguous.  But not if a buffer-local command
-			 * wasn't a full match and a global command is a full
-			 * match. */
-			if (k == len && found && *np != NUL)
-			{
-			    if (gap == &ucmds)
-				return NULL;
-			    amb_local = TRUE;
-			}
-
-			if (!found || (k == len && *np == NUL))
-			{
-			    /* If we matched up to a digit, then there could
-			     * be another command including the digit that we
-			     * should use instead.
-			     */
-			    if (k == len)
-				found = TRUE;
-			    else
-				possible = TRUE;
-
-			    if (gap == &ucmds)
-				eap->cmdidx = CMD_USER;
-			    else
-				eap->cmdidx = CMD_USER_BUF;
-			    eap->argt = cmd->uc_argt;
-			    eap->useridx = j;
-
-			    /* Do not search for further abbreviations
-			     * if this is an exact match. */
-			    matchlen = k;
-			    if (k == len && *np == NUL)
-			    {
-				if (full != NULL)
-				    *full = TRUE;
-				amb_local = FALSE;
-				break;
-			    }
-			}
-		    }
-		}
-
-		/* Stop if we found a full match or searched all. */
-		if (j < gap->ga_len || gap == &ucmds)
-		    break;
-		gap = &ucmds;
-	    }
-
-	    /* Only found ambiguous matches. */
-	    if (amb_local)
-		return NULL;
-
-	    /* The match we found may be followed immediately by a
-	     * number.  Move *p back to point to it.
-	     */
-	    if (found || possible)
-		p += matchlen - len;
+	    p = find_ucmd(eap, p, full, NULL, NULL);
 	}
 #endif
-
-	if (len == 0)
+	if (p == eap->cmd)
 	    eap->cmdidx = CMD_SIZE;
     }
 
     return p;
 }
+
+#ifdef FEAT_USR_CMDS
+/*
+ * Search for a user command that matches "eap->cmd".
+ * Return cmdidx in "eap->cmdidx", flags in "eap->argt", idx in "eap->useridx".
+ * Return a pointer to just after the command.
+ * Return NULL if there is no matching command.
+ */
+    static char_u *
+find_ucmd(eap, p, full, xp, compl)
+    exarg_T	*eap;
+    char_u	*p;	/* end of the command (possibly including count) */
+    int		*full;	/* set to TRUE for a full match */
+    expand_T	*xp;	/* used for completion, NULL otherwise */
+    int		*compl;	/* completion flags or NULL */
+{
+    int		len = (int)(p - eap->cmd);
+    int		j, k, matchlen = 0;
+    ucmd_T	*uc;
+    int		found = FALSE;
+    int		possible = FALSE;
+    char_u	*cp, *np;	    /* Point into typed cmd and test name */
+    garray_T	*gap;
+    int		amb_local = FALSE;  /* Found ambiguous buffer-local command,
+				       only full match global is accepted. */
+
+    /*
+     * Look for buffer-local user commands first, then global ones.
+     */
+    gap = &curbuf->b_ucmds;
+    for (;;)
+    {
+	for (j = 0; j < gap->ga_len; ++j)
+	{
+	    uc = USER_CMD_GA(gap, j);
+	    cp = eap->cmd;
+	    np = uc->uc_name;
+	    k = 0;
+	    while (k < len && *np != NUL && *cp++ == *np++)
+		k++;
+	    if (k == len || (*np == NUL && vim_isdigit(eap->cmd[k])))
+	    {
+		/* If finding a second match, the command is ambiguous.  But
+		 * not if a buffer-local command wasn't a full match and a
+		 * global command is a full match. */
+		if (k == len && found && *np != NUL)
+		{
+		    if (gap == &ucmds)
+		    {
+			if (xp != NULL)
+			    xp->xp_context = EXPAND_UNSUCCESSFUL;
+			return NULL;
+		    }
+		    amb_local = TRUE;
+		}
+
+		if (!found || (k == len && *np == NUL))
+		{
+		    /* If we matched up to a digit, then there could
+		     * be another command including the digit that we
+		     * should use instead.
+		     */
+		    if (k == len)
+			found = TRUE;
+		    else
+			possible = TRUE;
+
+		    if (gap == &ucmds)
+			eap->cmdidx = CMD_USER;
+		    else
+			eap->cmdidx = CMD_USER_BUF;
+		    eap->argt = uc->uc_argt;
+		    eap->useridx = j;
+
+# ifdef FEAT_CMDL_COMPL
+		    if (compl != NULL)
+			*compl = uc->uc_compl;
+#  ifdef FEAT_EVAL
+		    if (xp != NULL)
+		    {
+			xp->xp_arg = uc->uc_compl_arg;
+			xp->xp_scriptID = uc->uc_scriptID;
+		    }
+#  endif
+# endif
+		    /* Do not search for further abbreviations
+		     * if this is an exact match. */
+		    matchlen = k;
+		    if (k == len && *np == NUL)
+		    {
+			if (full != NULL)
+			    *full = TRUE;
+			amb_local = FALSE;
+			break;
+		    }
+		}
+	    }
+	}
+
+	/* Stop if we found a full match or searched all. */
+	if (j < gap->ga_len || gap == &ucmds)
+	    break;
+	gap = &ucmds;
+    }
+
+    /* Only found ambiguous matches. */
+    if (amb_local)
+    {
+	if (xp != NULL)
+	    xp->xp_context = EXPAND_UNSUCCESSFUL;
+	return NULL;
+    }
+
+    /* The match we found may be followed immediately by a number.  Move "p"
+     * back to point to it. */
+    if (found || possible)
+	return p + (matchlen - len);
+    return p;
+}
+#endif
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 /*
@@ -2971,9 +3009,8 @@ set_one_cmd_context(xp, buff)
 {
     char_u		*p;
     char_u		*cmd, *arg;
-    int			i = 0;
-    cmdidx_T		cmdidx;
-    long_u		argt = 0;
+    int			len = 0;
+    exarg_T		ea;
 #if defined(FEAT_USR_CMDS) && defined(FEAT_CMDL_COMPL)
     int			compl = EXPAND_NOTHING;
 #endif
@@ -2989,6 +3026,7 @@ set_one_cmd_context(xp, buff)
 #if defined(FEAT_USR_CMDS) && defined(FEAT_EVAL) && defined(FEAT_CMDL_COMPL)
     xp->xp_arg = NULL;
 #endif
+    ea.argt = 0;
 
 /*
  * 2. skip comment lines and leading space, colons or bars
@@ -3034,7 +3072,7 @@ set_one_cmd_context(xp, buff)
      */
     if (*cmd == 'k' && cmd[1] != 'e')
     {
-	cmdidx = CMD_k;
+	ea.cmdidx = CMD_k;
 	p = cmd + 1;
     }
     else
@@ -3045,16 +3083,16 @@ set_one_cmd_context(xp, buff)
 	/* check for non-alpha command */
 	if (p == cmd && vim_strchr((char_u *)"@*!=><&~#", *p) != NULL)
 	    ++p;
-	i = (int)(p - cmd);
+	len = (int)(p - cmd);
 
-	if (i == 0)
+	if (len == 0)
 	{
 	    xp->xp_context = EXPAND_UNSUCCESSFUL;
 	    return NULL;
 	}
-	for (cmdidx = (cmdidx_T)0; (int)cmdidx < (int)CMD_SIZE;
-					 cmdidx = (cmdidx_T)((int)cmdidx + 1))
-	    if (STRNCMP(cmdnames[(int)cmdidx].cmd_name, cmd, (size_t)i) == 0)
+	for (ea.cmdidx = (cmdidx_T)0; (int)ea.cmdidx < (int)CMD_SIZE;
+					 ea.cmdidx = (cmdidx_T)((int)ea.cmdidx + 1))
+	    if (STRNCMP(cmdnames[(int)ea.cmdidx].cmd_name, cmd, (size_t)len) == 0)
 		break;
 
 #ifdef FEAT_USR_CMDS
@@ -3062,7 +3100,7 @@ set_one_cmd_context(xp, buff)
 	{
 	    while (ASCII_ISALNUM(*p) || *p == '*')	/* Allow * wild card */
 		++p;
-	    i = (int)(p - cmd);
+	    len = (int)(p - cmd);
 	}
 #endif
     }
@@ -3074,88 +3112,28 @@ set_one_cmd_context(xp, buff)
     if (*p == NUL && ASCII_ISALNUM(p[-1]))
 	return NULL;
 
-    if (cmdidx == CMD_SIZE)
+    if (ea.cmdidx == CMD_SIZE)
     {
 	if (*cmd == 's' && vim_strchr((char_u *)"cgriI", cmd[1]) != NULL)
 	{
-	    cmdidx = CMD_substitute;
+	    ea.cmdidx = CMD_substitute;
 	    p = cmd + 1;
 	}
 #ifdef FEAT_USR_CMDS
 	else if (cmd[0] >= 'A' && cmd[0] <= 'Z')
 	{
-	    /* Look for a user defined command as a last resort */
-	    ucmd_T	*uc;
-	    int		j, k, matchlen = 0;
-	    int		found = FALSE, possible = FALSE;
-	    char_u	*cp, *np;	/* Point into typed cmd and test name */
-	    garray_T	*gap;
-
-	    gap = &curbuf->b_ucmds;
-	    for (;;)
-	    {
-		uc = USER_CMD_GA(gap, 0);
-		for (j = 0; j < gap->ga_len; ++j, ++uc)
-		{
-		    cp = cmd;
-		    np = uc->uc_name;
-		    k = 0;
-		    while (k < i && *np != NUL && *cp++ == *np++)
-			k++;
-		    if (k == i || (*np == NUL && VIM_ISDIGIT(cmd[k])))
-		    {
-			if (k == i && found)
-			{
-			    /* Ambiguous abbreviation */
-			    xp->xp_context = EXPAND_UNSUCCESSFUL;
-			    return NULL;
-			}
-			if (!found)
-			{
-			    /* If we matched up to a digit, then there could
-			     * be another command including the digit that we
-			     * should use instead.
-			     */
-			    if (k == i)
-				found = TRUE;
-			    else
-				possible = TRUE;
-
-			    if (gap == &ucmds)
-				cmdidx = CMD_USER;
-			    else
-				cmdidx = CMD_USER_BUF;
-			    argt = uc->uc_argt;
-#ifdef FEAT_CMDL_COMPL
-			    compl = uc->uc_compl;
-# ifdef FEAT_EVAL
-			    xp->xp_arg = uc->uc_compl_arg;
-			    xp->xp_scriptID = uc->uc_scriptID;
+	    ea.cmd = cmd;
+	    p = find_ucmd(&ea, p, NULL, xp,
+# if defined(FEAT_CMDL_COMPL)
+		    &compl
+# else
+		    NULL
 # endif
-#endif
-			    /* Do not search for further abbreviations
-			     * if this is an exact match
-			     */
-			    matchlen = k;
-			    if (k == i && *np == NUL)
-				break;
-			}
-		    }
-		}
-		if (gap == &ucmds || j < gap->ga_len)
-		    break;
-		gap = &ucmds;
-	    }
-
-	    /* The match we found may be followed immediately by a
-	     * number.  Move *p back to point to it.
-	     */
-	    if (found || possible)
-		p += matchlen - i;
+		    );
 	}
 #endif
     }
-    if (cmdidx == CMD_SIZE)
+    if (ea.cmdidx == CMD_SIZE)
     {
 	/* Not still touching the command and it was an illegal one */
 	xp->xp_context = EXPAND_UNSUCCESSFUL;
@@ -3174,13 +3152,13 @@ set_one_cmd_context(xp, buff)
  * 5. parse arguments
  */
 #ifdef FEAT_USR_CMDS
-    if (!USER_CMDIDX(cmdidx))
+    if (!USER_CMDIDX(ea.cmdidx))
 #endif
-	argt = cmdnames[(int)cmdidx].cmd_argt;
+	ea.argt = cmdnames[(int)ea.cmdidx].cmd_argt;
 
     arg = skipwhite(p);
 
-    if (cmdidx == CMD_write || cmdidx == CMD_update)
+    if (ea.cmdidx == CMD_write || ea.cmdidx == CMD_update)
     {
 	if (*arg == '>')			/* append */
 	{
@@ -3188,14 +3166,14 @@ set_one_cmd_context(xp, buff)
 		++arg;
 	    arg = skipwhite(arg);
 	}
-	else if (*arg == '!' && cmdidx == CMD_write)	/* :w !filter */
+	else if (*arg == '!' && ea.cmdidx == CMD_write)	/* :w !filter */
 	{
 	    ++arg;
 	    usefilter = TRUE;
 	}
     }
 
-    if (cmdidx == CMD_read)
+    if (ea.cmdidx == CMD_read)
     {
 	usefilter = forceit;			/* :r! filter if forced */
 	if (*arg == '!')			/* :r !filter */
@@ -3205,7 +3183,7 @@ set_one_cmd_context(xp, buff)
 	}
     }
 
-    if (cmdidx == CMD_lshift || cmdidx == CMD_rshift)
+    if (ea.cmdidx == CMD_lshift || ea.cmdidx == CMD_rshift)
     {
 	while (*arg == *cmd)	    /* allow any number of '>' or '<' */
 	    ++arg;
@@ -3213,7 +3191,7 @@ set_one_cmd_context(xp, buff)
     }
 
     /* Does command allow "+command"? */
-    if ((argt & EDITCMD) && !usefilter && *arg == '+')
+    if ((ea.argt & EDITCMD) && !usefilter && *arg == '+')
     {
 	/* Check if we're in the +command */
 	p = arg + 1;
@@ -3231,11 +3209,11 @@ set_one_cmd_context(xp, buff)
      * Check for '|' to separate commands and '"' to start comments.
      * Don't do this for ":read !cmd" and ":write !cmd".
      */
-    if ((argt & TRLBAR) && !usefilter)
+    if ((ea.argt & TRLBAR) && !usefilter)
     {
 	p = arg;
 	/* ":redir @" is not the start of a comment */
-	if (cmdidx == CMD_redir && p[0] == '@' && p[1] == '"')
+	if (ea.cmdidx == CMD_redir && p[0] == '@' && p[1] == '"')
 	    p += 2;
 	while (*p)
 	{
@@ -3244,7 +3222,7 @@ set_one_cmd_context(xp, buff)
 		if (p[1] != NUL)
 		    ++p;
 	    }
-	    else if ( (*p == '"' && !(argt & NOTRLCOM))
+	    else if ( (*p == '"' && !(ea.argt & NOTRLCOM))
 		    || *p == '|' || *p == '\n')
 	    {
 		if (*(p - 1) != '\\')
@@ -3259,7 +3237,7 @@ set_one_cmd_context(xp, buff)
     }
 
 						/* no arguments allowed */
-    if (!(argt & EXTRA) && *arg != NUL &&
+    if (!(ea.argt & EXTRA) && *arg != NUL &&
 				    vim_strchr((char_u *)"|\"", *arg) == NULL)
 	return NULL;
 
@@ -3271,7 +3249,7 @@ set_one_cmd_context(xp, buff)
 	p++;
     xp->xp_pattern = p;
 
-    if (argt & XFILE)
+    if (ea.argt & XFILE)
     {
 	int in_quote = FALSE;
 	char_u *bow = NULL;	/* Beginning of word */
@@ -3286,7 +3264,7 @@ set_one_cmd_context(xp, buff)
 	    if (*p == '\\' && p[1] != NUL)
 		++p;
 #ifdef SPACE_IN_FILENAME
-	    else if (vim_iswhite(*p) && (!(argt & NOSPC) || usefilter))
+	    else if (vim_iswhite(*p) && (!(ea.argt & NOSPC) || usefilter))
 #else
 	    else if (vim_iswhite(*p))
 #endif
@@ -3344,7 +3322,7 @@ set_one_cmd_context(xp, buff)
 /*
  * 6. switch on command name
  */
-    switch (cmdidx)
+    switch (ea.cmdidx)
     {
 	case CMD_cd:
 	case CMD_chdir:
@@ -3578,7 +3556,7 @@ set_one_cmd_context(xp, buff)
 	case CMD_echoerr:
 	case CMD_call:
 	case CMD_return:
-	    set_context_for_expression(xp, arg, cmdidx);
+	    set_context_for_expression(xp, arg, ea.cmdidx);
 	    break;
 
 	case CMD_unlet:
@@ -3622,7 +3600,7 @@ set_one_cmd_context(xp, buff)
 	    if (compl != EXPAND_NOTHING)
 	    {
 		/* XFILE: file names are handled above */
-		if (!(argt & XFILE))
+		if (!(ea.argt & XFILE))
 		{
 # ifdef FEAT_MENU
 		    if (compl == EXPAND_MENUS)
@@ -3648,7 +3626,7 @@ set_one_cmd_context(xp, buff)
 	case CMD_imap:	    case CMD_inoremap:
 	case CMD_cmap:	    case CMD_cnoremap:
 	    return set_context_in_map_cmd(xp, cmd, arg, forceit,
-							FALSE, FALSE, cmdidx);
+							FALSE, FALSE, ea.cmdidx);
 	case CMD_unmap:
 	case CMD_nunmap:
 	case CMD_vunmap:
@@ -3656,17 +3634,17 @@ set_one_cmd_context(xp, buff)
 	case CMD_iunmap:
 	case CMD_cunmap:
 	    return set_context_in_map_cmd(xp, cmd, arg, forceit,
-							 FALSE, TRUE, cmdidx);
+							 FALSE, TRUE, ea.cmdidx);
 	case CMD_abbreviate:	case CMD_noreabbrev:
 	case CMD_cabbrev:	case CMD_cnoreabbrev:
 	case CMD_iabbrev:	case CMD_inoreabbrev:
 	    return set_context_in_map_cmd(xp, cmd, arg, forceit,
-							 TRUE, FALSE, cmdidx);
+							 TRUE, FALSE, ea.cmdidx);
 	case CMD_unabbreviate:
 	case CMD_cunabbrev:
 	case CMD_iunabbrev:
 	    return set_context_in_map_cmd(xp, cmd, arg, forceit,
-							  TRUE, TRUE, cmdidx);
+							  TRUE, TRUE, ea.cmdidx);
 #ifdef FEAT_MENU
 	case CMD_menu:	    case CMD_noremenu:	    case CMD_unmenu:
 	case CMD_amenu:	    case CMD_anoremenu:	    case CMD_aunmenu:
