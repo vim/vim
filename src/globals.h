@@ -236,12 +236,11 @@ EXTERN int trylevel INIT(= 0);
 
 /*
  * When "force_abort" is TRUE, always skip commands after an error message,
- * even after the outermost ":endif" or ":endwhile" or for a function whithout
- * the "abort" flag.  It is set to TRUE when "trylevel" is non-zero (and
- * ":silent!" was not used) or an exception is being thrown at the time an
- * error is detected.  It is set to FALSE when "trylevel" gets zero again and
- * there was no error or interrupt or throw.
- *
+ * even after the outermost ":endif", ":endwhile" or ":endfor" or for a
+ * function whithout the "abort" flag.  It is set to TRUE when "trylevel" is
+ * non-zero (and ":silent!" was not used) or an exception is being thrown at
+ * the time an error is detected.  It is set to FALSE when "trylevel" gets
+ * zero again and there was no error or interrupt or throw.
  */
 EXTERN int force_abort INIT(= FALSE);
 
@@ -1237,7 +1236,10 @@ EXTERN char_u e_curdir[]	INIT(=N_("E12: Command not allowed from exrc/vimrc in c
 EXTERN char_u e_endif[]		INIT(=N_("E171: Missing :endif"));
 EXTERN char_u e_endtry[]	INIT(=N_("E600: Missing :endtry"));
 EXTERN char_u e_endwhile[]	INIT(=N_("E170: Missing :endwhile"));
+EXTERN char_u e_endfor[]	INIT(=N_("E170: Missing :endfor"));
 EXTERN char_u e_while[]		INIT(=N_("E588: :endwhile without :while"));
+EXTERN char_u e_for[]		INIT(=N_("E588: :endfor without :for"));
+EXTERN char_u e_listreq[]	INIT(=N_("E999: List required"));
 #endif
 EXTERN char_u e_exists[]	INIT(=N_("E13: File exists (add ! to override)"));
 EXTERN char_u e_failed[]	INIT(=N_("E472: Command failed"));
