@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2004 Dec 09
+*version7.txt*  For Vim version 7.0aa.  Last change: 2004 Dec 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -166,6 +166,7 @@ repeat(expr, count)	|repeat()| 	Repeat "expr" "count" times.
 tr(expr, from, to)	|tr()|		Translate characters. (Ron Aaron)
 system(cmd, input)	|system()|	Filters {input} through a shell
 					command.
+getfontname([name])	|getfontname()| Get actual font name being used.
 
 
 New autocommand events: ~
@@ -222,6 +223,10 @@ Also fixes the problem that setting 'clipboard' to "unnamed" breaks using
 "yyp".
 
 Mac: GUI font selector. (Peter "Rain Dog" Cucka)
+
+Mac: better integration with Xcode.  Post a fake mouse-up event after the odoc
+event and the drag receive handler to work around a stall after Vim loads a
+file.  Fixed an off-by-one line number error. (Da Woon Jung)
 
 The netrw plugin now also supports viewing a directory, when "scp://" is used.
 Deleting and renaming files is possible.  (Charles Campbell)
@@ -494,7 +499,11 @@ After "Y" '[ and '] were not at start/end of the yanked text.
 
 When a telnet connection is dropped Vim preserves files and exits.  While
 doing that a SIGHUP may arrive and disturbe us, thus ignore it. (Scott
-Anderson)  Also postpone SIGHUP until it's safe to handle.  Added
-handle_sighup().
+Anderson)  Also postpone SIGHUP, SIGQUIT and SIGTERM until it's safe to
+handle.  Added handle_signal().
+
+When using "set laststatus=2 cmdheight=2" in the .gvimrc you may only get one
+line for the cmdline. (Christian Robinson)  Invoke command_height() after the
+GUI has started up.
 
  vim:tw=78:ts=8:ft=help:norl:

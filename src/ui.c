@@ -177,11 +177,11 @@ ui_inchar(buf, maxlen, wtime, tb_change_cnt)
     else
 # endif
     {
-	if (wtime == -1)
-	    handle_sighup(SIGHUP_UNBLOCK);  /* allow SIGHUP to kill us */
+	if (wtime == -1 || wtime > 100L)
+	    (void)handle_signal(SIGNAL_UNBLOCK);  /* allow signals to kill us */
 	retval = mch_inchar(buf, maxlen, wtime, tb_change_cnt);
-	if (wtime == -1)
-	    handle_sighup(SIGHUP_BLOCK);    /* block SIGHUP */
+	if (wtime == -1 || wtime > 100L)
+	    (void)handle_signal(SIGNAL_BLOCK);    /* block SIGHUP et al. */
     }
 #endif
 

@@ -300,6 +300,7 @@ static void f_getcharmod __ARGS((VAR argvars, VAR retvar));
 static void f_getcmdline __ARGS((VAR argvars, VAR retvar));
 static void f_getcmdpos __ARGS((VAR argvars, VAR retvar));
 static void f_getcwd __ARGS((VAR argvars, VAR retvar));
+static void f_getfontname __ARGS((VAR argvars, VAR retvar));
 static void f_getfperm __ARGS((VAR argvars, VAR retvar));
 static void f_getfsize __ARGS((VAR argvars, VAR retvar));
 static void f_getftime __ARGS((VAR argvars, VAR retvar));
@@ -2864,6 +2865,7 @@ static struct fst
     {"getcmdline",	0, 0, f_getcmdline},
     {"getcmdpos",	0, 0, f_getcmdpos},
     {"getcwd",		0, 0, f_getcwd},
+    {"getfontname",	0, 1, f_getfontname},
     {"getfperm",	1, 1, f_getfperm},
     {"getfsize",	1, 1, f_getfsize},
     {"getftime",	1, 1, f_getftime},
@@ -4729,6 +4731,45 @@ f_getcwd(argvars, retvar)
 	slash_adjust(retvar->var_val.var_string);
 #endif
     }
+}
+
+/*
+ * "getfontname()" function
+ */
+    static void
+f_getfontname(argvars, retvar)
+    VAR		argvars;
+    VAR		retvar;
+{
+    retvar->var_type = VAR_STRING;
+    retvar->var_val.var_string = NULL;
+#ifdef FEAT_GUI
+    if (gui.in_use)
+    {
+	GuiFont font;
+	char_u	*name = NULL;
+
+	if (argvars[0].var_type == VAR_UNKNOWN)
+	{
+	    /* Get the "Normal" font.  Either the name saved by
+	     * hl_set_font_name() or from the font ID. */
+	    font = gui.norm_font;
+	    name = hl_get_font_name();
+	}
+	else
+	{
+	    name = get_var_string(&argvars[0]);
+	    if (STRCMP(name, "*") == 0)	    /* don't use font dialog */
+		return;
+	    font = gui_mch_get_font(name, FALSE);
+	    if (font == NOFONT)
+		return;	    /* Invalid font name, return empty string. */
+	}
+	retvar->var_val.var_string = gui_mch_get_fontname(font, name);
+	if (argvars[0].var_type != VAR_UNKNOWN)
+	    gui_mch_free_font(font);
+    }
+#endif
 }
 
 /*

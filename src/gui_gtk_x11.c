@@ -2722,7 +2722,7 @@ mainwin_screen_changed_cb(GtkWidget  *widget,
 
     if (gui.norm_font != NULL)
     {
-	gui_mch_init_font(p_guifont, 0);
+	gui_mch_init_font(p_guifont, FALSE);
 	gui_set_shellsize(FALSE, FALSE);
     }
 }
@@ -4790,6 +4790,34 @@ gui_mch_get_font(char_u *name, int report_error)
 #endif
 
     return font;
+}
+
+/*
+ * Return the name of font "font" in allocated memory.
+ */
+/*ARGSUSED*/
+    char_u *
+gui_mch_get_fontname(GuiFont font, char_u *name)
+{
+#ifdef HAVE_GTK2
+    if (font != NOFONT)
+    {
+	char	*name = pango_font_description_to_string(font);
+
+	if (name != NULL)
+	{
+	    char_u	*s = vim_strsave((char_u *)name);
+
+	    g_free(name);
+	    return s;
+	}
+    }
+#else
+    /* Don't know how to get the name, return what we got. */
+    if (name != NULL)
+	return vim_strsave(name);
+#endif
+    return NULL;
 }
 
 #if !defined(HAVE_GTK2) || defined(PROTO)

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Dec 09
+*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Dec 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,16 +30,7 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Add a function to test if a font name actually works.
-
-When using "set laststatus=2 cmdheight=2" in the .gvimrc you only get one line
-for the cmdline. (Christian Robinson)  When the Vim window is resized (e.g.,
-xterm with many lines) it's OK.
-
 ":e <cfile>" does not expand ~/file, very confusing compared to ":e ~/file".
-
-SIGHUP is delayed until waiting for a character.  Can the same thing be done
-for SIGINT?  Then also check when waiting for a short time.
 
 When no termcap/termlib library is found, check that compiling Vim works in
 configure.  Give an clear error message ("install termcap or ncurses-dev
@@ -1354,6 +1345,7 @@ Multi-byte characters:
 8   The quickfix file is read without conversion, thus in 'encoding'.  Add an
     option to specify the encoding of the errorfile and convert it.  Also for
     ":grep" and ":helpgrep".
+    More generic solution: support a filter (e.g., by calling a function).
 8   When a file was converted from 'fileencoding' to 'encoding', a tag search
     should also do this on the search pattern. (Andrzej M. Ostruszka)
 7   When converting a file fails, mention which byte could not be converted,
