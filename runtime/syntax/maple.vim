@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	Maple V (based on release 4)
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrOchipS@PcampbellAfamily.Mbiz>
-" Last Change:	Mar 10, 2004
-" Version:	4
+" Last Change:	Aug 19, 2004
+" Version:	5
 " URL:	http://www.erols.com/astronaut/vim/index.html#vimlinks_syntax
 "
 " Package Function Selection: {{{1
@@ -17,6 +17,9 @@
 "
 " *OR* let mvpkg_all=1
 
+" This syntax file contains all the keywords and top-level packages of Maple 9.5
+" but only the contents of packages of Maple V Release 4, and the top-level
+" routines of Release 4.  <Jacques Carette - carette@mcmaster.ca>
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -70,6 +73,9 @@ if exists("mvpkg_all")
 endif
 
 " Parenthesis/curly/brace sanity checker: {{{1
+syn case match
+
+" parenthesis/curly/brace sanity checker
 syn region mvZone	matchgroup=Delimiter start="(" matchgroup=Delimiter end=")" transparent contains=ALLBUT,mvError,mvBraceError,mvCurlyError
 syn region mvZone	matchgroup=Delimiter start="{" matchgroup=Delimiter end="}" transparent contains=ALLBUT,mvError,mvBraceError,mvParenError
 syn region mvZone	matchgroup=Delimiter start="\[" matchgroup=Delimiter end="]" transparent contains=ALLBUT,mvError,mvCurlyError,mvParenError
@@ -79,21 +85,47 @@ syn match  mvCurlyError	"[)\]]"	contained
 syn match  mvParenError	"[\]}]"	contained
 syn match  mvComma		"[,;:]"
 syn match  mvSemiError	"[;:]"	contained
+syn match  mvDcolon		"::"
 
-" Maple V Packages, circa Release 4: {{{1
-syn keyword mvPackage	DEtools	difforms	group	networks	plots	stats
-syn keyword mvPackage	Galois	finance	inttrans	numapprox	plottools	student
-syn keyword mvPackage	GaussInt	genfunc	liesymm	numtheory	powseries	sumtools
-syn keyword mvPackage	LREtools	geometry	linalg	orthopoly	process	tensor
-syn keyword mvPackage	combinat	grobner	logic	padic	simplex	totorder
-syn keyword mvPackage	combstruct
+" Maple Packages, updated for Maple 9.5
+syn keyword mvPackage	algcurves	ArrayTools	Cache	codegen
+syn keyword mvPackage	CodeGeneration	CodeTools	combinat	combstruct
+syn keyword mvPackage	ContextMenu	CurveFitting	DEtools	diffalg
+syn keyword mvPackage	difforms	DiscreteTransforms	Domains	ExternalCalling
+syn keyword mvPackage	FileTools	finance	GaussInt	genfunc
+syn keyword mvPackage	geom3d	geometry	gfun	Groebner
+syn keyword mvPackage	group	hashmset	IntegerRelations	inttrans
+syn keyword mvPackage	LargeExpressions	LibraryTools	liesymm	linalg
+syn keyword mvPackage	LinearAlgebra	LinearFunctionalSystems	LinearOperators
+syn keyword mvPackage	ListTools	Logic	LREtools	Maplets
+syn keyword mvPackage	MathematicalFunctions	MathML	Matlab
+syn keyword mvPackage	MatrixPolynomialAlgebra	MmaTranslator	networks
+syn keyword mvPackage	numapprox	numtheory	Optimization	OreTools
+syn keyword mvPackage	Ore_algebra	OrthogonalSeries	orthopoly	padic
+syn keyword mvPackage	PDEtools	plots	plottools	PolynomialIdeals
+syn keyword mvPackage	PolynomialTools	powseries	process	QDifferenceEquations
+syn keyword mvPackage	RandomTools	RationalNormalForms	RealDomain	RootFinding
+syn keyword mvPackage	ScientificConstants	ScientificErrorAnalysis	simplex
+syn keyword mvPackage	Slode	SNAP	Sockets	SoftwareMetrics
+syn keyword mvPackage	SolveTools	Spread	stats	StringTools
+syn keyword mvPackage	Student	student	sumtools	SumTools
+syn keyword mvPackage	tensor	TypeTools	Units	VariationalCalculus
+syn keyword mvPackage	VectorCalculus	Worksheet	XMLTools
 
 " Language Support: {{{1
 syn keyword mvTodo	contained	TODO
-syn region  mvString	start=+`+ skip=+``+ end=+`+	keepend	contains=mvTodo
-syn region  mvDelayEval	start=+'+ end=+'+	keepend contains=ALLBUT,mvError,mvBraceError,mvCurlyError,mvParenError,mvSemiError
-syn match   mvVarAssign	"[a-zA-Z_][a-zA-Z_0-9]*[ \t]*:=" contains=mvAssign
-syn match   mvAssign	":="	contained
+if exists("g:mapleversion") && g:mapleversion < 9
+ syn region  mvString	start=+`+ skip=+``+ end=+`+	keepend	contains=mvTodo
+ syn region  mvDelayEval	start=+'+ end=+'+	keepend contains=ALLBUT,mvError,mvBraceError,mvCurlyError,mvParenError,mvSemiError
+ syn match   mvVarAssign	"[a-zA-Z_][a-zA-Z_0-9]*[ \t]*:=" contains=mvAssign
+ syn match   mvAssign	":="	contained
+else
+ syn region  mvName	start=+`+ skip=+``+ end=+`+	keepend	contains=mvTodo
+ syn region  mvString	start=+"+ skip=+""+ end=+"+	keepend
+ syn region  mvDelayEval	start=+'+ end=+'+	keepend contains=ALLBUT,mvError,mvBraceError,mvCurlyError,mvParenError
+ syn match   mvDelim		"[;:]"	display
+ syn match   mvAssign	":="
+endif
 
 " Lower-Priority Operators: {{{1
 syn match mvOper	"\."
@@ -120,14 +152,16 @@ syn match mvNumber	"[-+]\d\+\.\d*e[-+]\=\d\+"	" integer . [integer] e [-+] integ
 syn match mvRange	"\.\."
 
 " Operators: {{{1
-syn keyword mvOper	and not or
+syn keyword mvOper	and not or xor implies union intersect subset minus mod
 syn match   mvOper	"<>\|[<>]=\|[<>]\|="
 syn match   mvOper	"&+\|&-\|&\*\|&\/\|&"
 syn match   mvError	"\.\.\."
 
 " MapleV Statements: ? statement {{{1
+
+" MapleV Statements: ? statement
 " Split into booleans, conditionals, operators, repeat-logic, etc
-syn keyword mvBool	true	false
+syn keyword mvBool	true	false	FAIL
 syn keyword mvCond	elif	else	fi	if	then
 
 syn keyword mvRepeat	by	for	in	to
@@ -136,15 +170,25 @@ syn keyword mvRepeat	do	from	od	while
 syn keyword mvSpecial	NULL
 syn match   mvSpecial	"\[\]\|{}"
 
-syn keyword mvStatement	Order	fail	options	read	save
-syn keyword mvStatement	break	local	point	remember	stop
-syn keyword mvStatement	done	mod	proc	restart	with
-syn keyword mvStatement	end	mods	quit	return
-syn keyword mvStatement	error	next
+if exists("g:mapleversion") && g:mapleversion < 9
+ syn keyword mvStatement	Order	fail	options	read	save
+ syn keyword mvStatement	break	local	point	remember	stop
+ syn keyword mvStatement	done	mod	proc	restart	with
+ syn keyword mvStatement	end	mods	quit	return
+ syn keyword mvStatement	error	next
+else
+ syn keyword mvStatement	option	options	read	save
+ syn keyword mvStatement	break	local	remember	stop
+ syn keyword mvStatement	done	mod	proc	restart
+ syn keyword mvStatement	end	mods	quit	return
+ syn keyword mvStatement	error	next	try	catch
+ syn keyword mvStatement	finally	assuming	global	export
+ syn keyword mvStatement	module	description	use
+endif
 
 " Builtin Constants: ? constants {{{1
 syn keyword mvConstant	Catalan	I	gamma	infinity
-syn keyword mvConstant	FAIL	Pi
+syn keyword mvConstant	Pi
 
 " Comments:  DEBUG, if in a comment, is specially highlighted. {{{1
 syn keyword mvDebug	contained	DEBUG
@@ -552,6 +596,7 @@ if version >= 508 || !exists("did_maplev_syntax_inits")
   HiLink mvPkg_totorder	mvPkgFunc
   HiLink mvRange		mvOper
   HiLink mvSemiError	mvError
+  HiLink mvDelim		Delimiter
 
   " Maple->Standard Links {{{2
   HiLink mvAssign		Delimiter
@@ -561,16 +606,19 @@ if version >= 508 || !exists("did_maplev_syntax_inits")
   HiLink mvCond		Conditional
   HiLink mvConstant		Number
   HiLink mvDelayEval	Label
+  HiLink mvDcolon		Delimiter
   HiLink mvError		Error
   HiLink mvLibrary		Statement
   HiLink mvNumber		Number
   HiLink mvOper		Operator
+  HiLink mvAssign		Delimiter
   HiLink mvPackage		Type
   HiLink mvPkgFunc		Function
   HiLink mvPktOption	Special
   HiLink mvRepeat		Repeat
   HiLink mvSpecial		Special
   HiLink mvStatement	Statement
+  HiLink mvName		String
   HiLink mvString		String
   HiLink mvTodo		Todo
 

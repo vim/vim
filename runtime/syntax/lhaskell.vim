@@ -4,7 +4,7 @@
 "			\begin{code} \end{code} blocks
 " Maintainer:		Haskell Cafe mailinglist <haskell-cafe@haskell.org>
 " Original Author:	Arthur van Leeuwen <arthurvl@cs.uu.nl>
-" Last Change:		2004 May 16
+" Last Change:		2004 Aug 31
 " Version:		1.01
 "
 " Thanks to Ian Lynagh for thoughtful comments on initial versions and
@@ -82,9 +82,12 @@ endif
 if b:lhs_markup == "tex"
     if version < 600
 	source <sfile>:p:h/tex.vim
+	set isk+=_
     else
 	runtime! syntax/tex.vim
 	unlet b:current_syntax
+	" Tex.vim removes "_" from 'iskeyword', but we need it for Haskell.
+	setlocal isk+=_
     endif
 endif
 

@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2004 Jul 06
+" Last Change:	2004 Aug 30
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -62,6 +62,9 @@ endfun
 
 " A-A-P recipe
 au BufNewFile,BufRead *.aap			setf aap
+
+" ABAB/4
+au BufNewFile,BufRead *.abap			setf abap
 
 " ABC music notation
 au BufNewFile,BufRead *.abc			setf abc
@@ -1426,8 +1429,19 @@ au BufNewFile,BufRead *.spy,*.spi		setf spyce
 " Squid
 au BufNewFile,BufRead squid.conf		setf squid
 
-" SQL (all but the first one for Oracle Designer)
-au BufNewFile,BufRead *.sql,*.tyb,*.typ,*.tyc,*.pkb,*.pks	setf sql
+" SQL for Oracle Designer
+au BufNewFile,BufRead *.tyb,*.typ,*.tyc,*.pkb,*.pks	setf sql
+
+" SQL
+au BufNewFile,BufRead *.sql			call SetFileTypeSQL()
+
+fun! SetFileTypeSQL()
+  if exists("g:filetype_sql")
+    exe "setf " . g:filetype_sql
+  else
+    setf sql
+  endif
+endfun
 
 " SQLJ
 au BufNewFile,BufRead *.sqlj			setf sqlj

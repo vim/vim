@@ -1,12 +1,10 @@
 " Vim syntax file
 " Language:	Lua 4.0 and Lua 5.0
-" Maintainer:	Marcus Aurelius Farias <marcuscf@vant.com.br>
-" First Author:	Carlos Augusto Teixeira Mendes <cmendes@inf.puc-rio.br>
-" Last Change:	2003 May 04
+" Maintainer:	Marcus Aurelius Farias <marcus.cf 'at' bol.com.br>
+" First Author:	Carlos Augusto Teixeira Mendes <cmendes 'at' inf puc-rio br>
+" Last Change:	2004 Aug 29
 " Options:	lua_version = 4 or 5 [default]
 "
-" Still has some syncing problems (long [[strings]])...
-
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
 if version < 600
@@ -37,7 +35,7 @@ syn match   luaComment		"\%^#!.*"
 syn region  luaParen		transparent start='(' end=')' contains=ALLBUT,luaError,luaTodo,luaSpecial,luaCond,luaCondElseif,luaCondEnd,luaCondStart,luaBlock,luaRepeatBlock,luaRepeat,luaStatement
 syn match   luaError		")"
 syn match   luaError		"}"
-syn match   luaError		"\<\(end\|else\|elseif\|then\|until\|in\)\>"
+syn match   luaError		"\<\%(end\|else\|elseif\|then\|until\|in\)\>"
 
 
 " Function declaration
@@ -80,7 +78,7 @@ if lua_version > 4
 endif
 
 " Pre processor doesn't exist since Lua 4.0
-" syn match   luaPreProc	  "^\s*$\(debug\|nodebug\|if\|ifnot\|end\|else\|endinput\)\>"
+" syn match   luaPreProc	  "^\s*$\%(debug\|nodebug\|if\|ifnot\|end\|else\|endinput\)\>"
 
 " Strings
 syn match   luaSpecial		contained "\\[\\abfnrtv\'\"[\]]\|\\\d\{,3}"
@@ -92,9 +90,9 @@ syn region  luaString2		matchgroup=luaString start=+\[\[+ end=+\]\]+ contains=lu
 " integer number
 syn match luaNumber		"\<[0-9]\+\>"
 " floating point number, with dot, optional exponent
-syn match luaFloat		"\<[0-9]\+\.[0-9]*\(e[-+]\=[0-9]\+\)\=\>"
+syn match luaFloat		"\<[0-9]\+\.[0-9]*\%(e[-+]\=[0-9]\+\)\=\>"
 " floating point number, starting with a dot, optional exponent
-syn match luaFloat		"\.[0-9]\+\(e[-+]\=[0-9]\+\)\=\>"
+syn match luaFloat		"\.[0-9]\+\%(e[-+]\=[0-9]\+\)\=\>"
 " floating point number, without dot, with exponent
 syn match luaFloat		"\<[0-9]\+e[-+]\=[0-9]\+\>"
 
@@ -129,7 +127,7 @@ else
   syn keyword luaFunc	loadlib loadstring pairs pcall rawequal
   syn keyword luaFunc	require setfenv setmetatable unpack xpcall
   syn keyword luaFunc	LUA_PATH _LOADED _REQUIREDNAME
-" Not sure if all these functions need to be highlighted...
+  " Not sure if all these functions need to be highlighted...
   syn match   luaFunc	/coroutine\.create/
   syn match   luaFunc	/coroutine\.resume/
   syn match   luaFunc	/coroutine\.status/

@@ -2040,7 +2040,7 @@ ex_file(eap)
 	}
 	curbuf->b_flags |= BF_NOTEDITED;
 	buf = buflist_new(fname, xfname, curwin->w_cursor.lnum, 0);
-	if (buf != NULL)
+	if (buf != NULL && !cmdmod.keepalt)
 	    curwin->w_alt_fnum = buf->b_fnum;
 	vim_free(fname);
 	vim_free(sfname);
@@ -2689,7 +2689,8 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags)
 	if (!(flags & ECMD_ADDBUF))
 #endif
 	{
-	    curwin->w_alt_fnum = curbuf->b_fnum;
+	    if (!cmdmod.keepalt)
+		curwin->w_alt_fnum = curbuf->b_fnum;
 	    buflist_altfpos();
 	}
 
@@ -4736,7 +4737,8 @@ ex_help(eap)
 	    alt_fnum = curbuf->b_fnum;
 	    (void)do_ecmd(0, NULL, NULL, NULL, ECMD_LASTL,
 						   ECMD_HIDE + ECMD_SET_HELP);
-	    curwin->w_alt_fnum = alt_fnum;
+	    if (!cmdmod.keepalt)
+		curwin->w_alt_fnum = alt_fnum;
 	    empty_fnum = curbuf->b_fnum;
 	}
     }
@@ -4756,7 +4758,7 @@ ex_help(eap)
     }
 
     /* keep the previous alternate file */
-    if (alt_fnum != 0 && curwin->w_alt_fnum == empty_fnum)
+    if (alt_fnum != 0 && curwin->w_alt_fnum == empty_fnum && !cmdmod.keepalt)
 	curwin->w_alt_fnum = alt_fnum;
 
 erret:

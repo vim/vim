@@ -1,6 +1,6 @@
 " Vim plugin for editing compressed files.
 " Maintainer: Bram Moolenaar <Bram@vim.org>
-" Last Change: 2004 Jan 12
+" Last Change: 2004 Jul 30
 
 " Exit quickly when:
 " - this plugin was already loaded
@@ -71,6 +71,11 @@ fun s:read(cmd)
   execute "silent '[,']w " . tmpe
   " uncompress the temp file: call system("gzip -dn tmp.gz")
   call system(a:cmd . " " . tmpe)
+  if !filereadable(tmp)
+    " uncompress didn't work!  Keep the compressed file then.
+    echoerr "Error: Could not read uncompressed file"
+    return
+  endif
   " delete the compressed lines; remember the line number
   let l = line("'[") - 1
   if exists(":lockmarks")

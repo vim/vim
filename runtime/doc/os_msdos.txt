@@ -1,4 +1,4 @@
-*os_msdos.txt*  For Vim version 7.0aa.  Last change: 2001 Sep 03
+*os_msdos.txt*  For Vim version 7.0aa.  Last change: 2004 Aug 31
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -207,17 +207,23 @@ in such a way that it becomes too long may give unexpected results.
 8. Symbolically linked files			*msdos-linked-files*
 
 When using Vim to edit a symbolically linked file on a unix NFS file server,
-you may run into problems.
-When writing the file, Vim does not "write through" the symlink.  Instead, it
-deletes the symbolic link and creates a new file in its place.
-   On Unix, Vim is prepared for links (symbolic or hard).  A backup copy of
-the original file is made and then the original file is overwritten.  This
-assures that all properties of the file remain the same.  On non-Unix systems,
-the original file is renamed and a new file is written.  Only the protection
-bits are set like the original file.  However, this doesn't work properly when
+you may run into problems.  When writing the file, Vim does not "write
+through" the symlink.  Instead, it deletes the symbolic link and creates a new
+file in its place.
+
+On Unix, Vim is prepared for links (symbolic or hard).  A backup copy of the
+original file is made and then the original file is overwritten.  This assures
+that all properties of the file remain the same.  On non-Unix systems, the
+original file is renamed and a new file is written.  Only the protection bits
+are set like the original file.  However, this doesn't work properly when
 working on an NFS-mounted file system where links and other things exist.  The
 only way to fix this in the current version is not making a backup file, by
 ":set nobackup nowritebackup"	|'writebackup'|
+
+A similar problem occurs when mounting a Unix filesystem through Samba or a
+similar system.  When Vim creates a new file it will get the default user ID
+for the mounted file system.  This may be different from the original user ID.
+To avoid this set the 'backupcopy' option to "yes".
 
 ==============================================================================
 9. Copy/paste in a dos box			*msdos-copy-paste*

@@ -1,4 +1,4 @@
-*uganda.txt*    For Vim version 7.0aa.  Last change: 2004 May 12
+*uganda.txt*    For Vim version 7.0aa.  Last change: 2004 Aug 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -214,7 +214,7 @@ Check the ICCF web site for the latest information!  See |iccf| for the URL.
 USA and Canada: Contact Kibaale Children's Fund (KCF) in Surrey, Canada.  They
 		take care of the Canadian sponsors for the children in
 		Kibaale.  You can send them a one time donation directly.
-		Please send me a note so that know what has been donated
+		Please send me a note so that I know what has been donated
 		because of Vim.  Ask KCF for information about sponsorship.
 			Kibaale Children's Fund c/o Pacific Academy
 			10238-168 Street

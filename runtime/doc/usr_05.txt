@@ -1,4 +1,4 @@
-*usr_05.txt*	For Vim version 7.0aa.  Last change: 2004 Jun 24
+*usr_05.txt*	For Vim version 7.0aa.  Last change: 2004 Aug 27
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -426,6 +426,8 @@ you already have the directory.) >
 	:!mkdir ~/.vim
 	:!mkdir ~/.vim/plugin
 	:!cp $VIMRUNTIME/macros/matchit.vim ~/.vim/plugin
+
+The "cp" command is for Unix, on MS-DOS you can use "copy".
 
 Now create a "doc" directory in one of the directories in 'runtimepath'. >
 

@@ -1,7 +1,7 @@
 " Vim indent file
 " Language:	Vim script
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2003 May 25
+" Last Change:	2004 Sep 02
 
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")
@@ -36,10 +36,14 @@ function GetVimIndent()
 
   " Add a 'shiftwidth' after :if, :while, :try, :catch, :finally, :function
   " and :else.  Add it three times for a line that starts with '\' after
-  " a line that doesn't.
+  " a line that doesn't (or g:vim_indent_cont if it exists).
   let ind = indent(lnum)
   if getline(v:lnum) =~ '^\s*\\' && v:lnum > 1 && getline(lnum) !~ '^\s*\\'
-    let ind = ind + &sw * 3
+    if exists("g:vim_indent_cont")
+      let ind = ind + g:vim_indent_cont
+    else
+      let ind = ind + &sw * 3
+    endif
   elseif getline(lnum) =~ '\(^\||\)\s*\(if\|wh\%[ile]\|try\|cat\%[ch]\|fina\%[lly]\|fu\%[nction]\|el\%[seif]\)\>'
     let ind = ind + &sw
   elseif getline(lnum) =~ '^\s*aug\%[roup]' && getline(lnum) !~ '^\s*aug\%[roup]\s*!\=\s\+END'

@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.0aa.  Last change: 2004 Jul 04
+*editing.txt*   For Vim version 7.0aa.  Last change: 2004 Aug 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -29,16 +29,26 @@ Editing a file with Vim means:
 							*current-file*
 As long as you don't write the buffer, the original file remains unchanged.
 If you start editing a file (read a file into the buffer), the file name is
-remembered as the "current file name".
+remembered as the "current file name".  This is also known as the name of the
+current buffer.
 
 							*alternate-file*
 If there already was a current file name, then that one becomes the alternate
-file name.  All file names are remembered in the file list.  When you enter a
-file name, for editing (e.g., with ":e filename") or writing (e.g., with (:w
-file name"), the file name is added to the list.  You can use this list to
-remember which files you edited and to quickly switch from one file to
-another with the CTRL-^ command (e.g., to copy text).  First type the number
-of the file and then hit CTRL-^.  {Vi: only one alternate file name}
+file name.  It can later be used with "#" on the command line |:_#|.  However,
+the alternate file name is not changed when |:keepalt| is used.
+
+							*:keepalt* *:keepa*
+:keepalt {cmd}		Execute {cmd} while keeping the current alternate file
+			name.  Note that commands invoked indirectly (e.g.,
+			with a function) may still set the alternate file
+			name.  {not in Vi}
+
+All file names are remembered in the file list.  When you enter a file name,
+for editing (e.g., with ":e filename") or writing (e.g., with (:w file name"),
+the file name is added to the list.  You can use this list to remember which
+files you edited and to quickly switch from one file to another with the
+CTRL-^ command (e.g., to copy text).  First type the number of the file and
+then hit CTRL-^.  {Vi: only one alternate file name}
 
 CTRL-G		or				*CTRL-G* *:f* *:fi* *:file*
 :f[ile]			Prints the current file name (as typed), the

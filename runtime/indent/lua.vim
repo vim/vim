@@ -1,11 +1,13 @@
 " Vim indent file
 " Language:	Lua script
-" Maintainer:	Marcus Aurelius Farias <marcuscf@vant.com.br>
-" First Author:	Max Ischenko <mfi@ukr.net>
-" Last Change:	2003 Jan 20
+" Maintainer:	Marcus Aurelius Farias <marcus.cf 'at' bol.com.br>
+" First Author:	Max Ischenko <mfi 'at' ukr.net>
+" Last Change:	2004 Aug 29
 
 " Only define the function once.
-if exists("*GetLuaIndent") | finish | endif
+if exists("*GetLuaIndent")
+  finish
+endif
 
 setlocal indentexpr=GetLuaIndent()
 
@@ -28,21 +30,22 @@ function! GetLuaIndent()
   " function, if, for, while, repeat, else, elseif, '{'
   let ind = indent(lnum)
   let flag = 0
-  if getline(lnum) =~ '^\s*\(function\>\|if\>\|for\>\|while\>\|repeat\>\|else\>\|elseif\>\|do\>\)' || getline(lnum) =~ '{\s*$' || getline(lnum) =~ '\s*=\s*function'
-    let ind = ind + &sw
+  let prevline = getline(lnum)
+  if prevline =~ '^\s*\%(if\>\|for\>\|while\>\|repeat\>\|else\>\|elseif\>\|do\>\)' || prevline =~ '{\s*$' || prevline =~ '\<function\>\s*\%(\k\|[.:]\)\{-}\s*('
+    let ind = ind + &shiftwidth
     let flag = 1
   endif
 
   " Subtract a 'shiftwidth' after lines ending with
   " 'end' when they begin with while, if, for, etc.
-  if flag == 1 && getline(lnum) =~ '\<end\>\|\<until\>'
-    let ind = ind - &sw
+  if flag == 1 && prevline =~ '\<end\>\|\<until\>'
+    let ind = ind - &shiftwidth
   endif
 
   " Subtract a 'shiftwidth' on end, else (and elseif), until and '}'
   " This is the part that requires 'indentkeys'.
-  if getline(v:lnum) =~ '^\s*\(end\|else\|until\|}\)'
-    let ind = ind - &sw
+  if getline(v:lnum) =~ '^\s*\%(end\|else\|until\|}\)'
+    let ind = ind - &shiftwidth
   endif
 
   return ind

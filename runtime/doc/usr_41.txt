@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 7.0aa.  Last change: 2004 May 06
+*usr_41.txt*	For Vim version 7.0aa.  Last change: 2004 Aug 28
 
 		     VIM USER MANUAL - by Bram Moolenaar
 

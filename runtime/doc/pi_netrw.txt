@@ -1,4 +1,4 @@
-*pi_netrw.txt  For Vim version 6.2.  Last change: Jul 26, 2004
+*pi_netrw.txt  For Vim version 6.2.  Last change: Jul 30, 2004
 
 
 		VIM REFERENCE MANUAL    by Charles E. Campbell, Jr.
@@ -16,7 +16,7 @@
 4.  Transparent File Transfer...........................|netrw-transparent|
 5.  Ex Commands.........................................|netrw-ex|
 6.  Variables and Options...............................|netrw-var|
-7.  Remote Directory Browser............................|netrw-browse|
+7.  Directory Browser...................................|netrw-browse|
 8.  Debugging...........................................|netrw-debug|
 9.  History.............................................|netrw-history|
 10. Credits.............................................|netrw-credits|
@@ -62,31 +62,31 @@ in your <.vimrc> file: >
 	    scp:    g:netrw_scp_cmd  = "scp -q"
 	   sftp:   g:netrw_sftp_cmd  = "sftp"
 
-    READING
+    READING					*netrw-read* *netrw-nread*
 	:Nread ?					give help
-	:Nread "machine:file"				uses rcp
-	:Nread "machine file"				uses ftp   with <.netrc>
-	:Nread "machine id password file"		uses ftp
-	:Nread "dav://machine[:port]/file"		uses cadaver
-	:Nread "fetch://[user@]machine/file"		uses fetch
-	:Nread "ftp://[user@]machine[[:#]port]/file"	uses ftp   autodetects <.netrc>
-	:Nread "http://[user@]machine/file"		uses http  uses wget
-	:Nread "rcp://[user@]machine/file"		uses rcp
-	:Nread "rsync://[user@]machine[:port]/file"	uses rsync
-	:Nread "scp://[user@]machine[[:#]port]/file"	uses scp
-	:Nread "sftp://[user@]machine/file"		uses sftp
+	:Nread "machine:path"				uses rcp
+	:Nread "machine path"				uses ftp   with <.netrc>
+	:Nread "machine id password path"		uses ftp
+	:Nread "dav://machine[:port]/path"		uses cadaver
+	:Nread "fetch://[user@]machine/path"		uses fetch
+	:Nread "ftp://[user@]machine[[:#]port]/path"	uses ftp   autodetects <.netrc>
+	:Nread "http://[user@]machine/path"		uses http  uses wget
+	:Nread "rcp://[user@]machine/path"		uses rcp
+	:Nread "rsync://[user@]machine[:port]/path"	uses rsync
+	:Nread "scp://[user@]machine[[:#]port]/path"	uses scp
+	:Nread "sftp://[user@]machine/path"		uses sftp
 
-    WRITING
+    WRITING					*netrw-write* *netrw-nwrite*
 	:Nwrite ?    					give help
-	:Nwrite "machine:file"				uses rcp
-	:Nwrite "machine file"				uses ftp   with <.netrc>
-	:Nwrite "machine id password file"		uses ftp
-	:Nwrite "dav://machine[:port]/file"		uses cadaver
-	:Nwrite "ftp://[user@]machine[[:#]port]/file"	uses ftp   autodetects <.netrc>
-	:Nwrite "rcp://[user@]machine/file"		uses rcp
-	:Nwrite "rsync://[user@]machine[:port]/file"	uses rsync
-	:Nwrite "scp://[user@]machine[[:#]port]/file"	uses scp
-	:Nwrite "sftp://[user@]machine/file"		uses sftp
+	:Nwrite "machine:path"				uses rcp
+	:Nwrite "machine path"				uses ftp   with <.netrc>
+	:Nwrite "machine id password path"		uses ftp
+	:Nwrite "dav://machine[:port]/path"		uses cadaver
+	:Nwrite "ftp://[user@]machine[[:#]port]/path"	uses ftp   autodetects <.netrc>
+	:Nwrite "rcp://[user@]machine/path"		uses rcp
+	:Nwrite "rsync://[user@]machine[:port]/path"	uses rsync
+	:Nwrite "scp://[user@]machine[[:#]port]/path"	uses scp
+	:Nwrite "sftp://[user@]machine/path"		uses sftp
 	http: not supported!
 
     DIRECTORY LISTING
@@ -103,7 +103,7 @@ in your <.vimrc> file: >
 	:call NetUserPass("uid")		-- prompts for password
 	:call NetUserPass("uid","password")	-- sets global uid and password
 
-    VARIABLES
+    VARIABLES						*netrw-variables*
 	b:netrw_lastfile last file Network-read/written retained on
 			  a per-buffer basis		(supports plain :Nw )
 	s:netrw_line	  during Nw/NetWrite, holds current line   number
@@ -125,6 +125,21 @@ in your <.vimrc> file: >
 			    windows-style paths		 (default otherwise)
 	g:netrw_use_nt_rcp=0 don't use the rcp of WinNT, Win2000 and WinXP (default)
 			  =1 use the rcp of WinNT,... in binary mode
+
+    PATHS							*netrw-path*
+
+	Paths to files are generally user-directory relative for most protocols.
+	It is possible that some protocol will make paths relative to some
+	associated directory, however.
+
+		example:  vim scp://user@host/somefile
+		example:  vim scp://user@host/subdir1/subdir2/somefile
+	
+	where "somefile" is the "user"'s home directory.  If you wish to get a
+	file using root-relative paths, use the full path:
+
+		example:  vim scp://user@host//somefile
+		example:  vim scp://user@host//subdir1/subdir2/somefile
 
 
 ==============================================================================
@@ -499,21 +514,26 @@ from <netrw.vim> itself:
 >
 
 ==============================================================================
-7. Remote Directory Browser *netrw-browse* *netrw-dir* *netrw-list* *netrw-help*
+7. Directory Browser	*netrw-browse* *netrw-dir* *netrw-list* *netrw-help*
      ?..........Help....................................|netrw-help|
      <cr>.......Browsing................................|netrw-cr|
-     <c-l>......Refreshing the Listing..................|netrw-c-l|
      <del>......Deleting Files or Directories...........|netrw-delete|
      -..........Going Up................................|netrw--|
      a..........Hiding Files or Directories.............|netrw-a|
+     b..........Bookmarking a Directory.................|netrw-b|
+     B..........Changing to a Bookmarked Directory......|netrw-B|
+     c..........Make Browsing Directory The Current Dir.|netrw-c|
+     d..........Make A New Directory....................|netrw-d|
      D..........Deleting Files or Directories...........|netrw-D|
-     \h.........Edit File/Directory Hiding List.........|netrw-h|
+     <c-h>......Edit File/Directory Hiding List.........|netrw-h|
      i..........Long Listing............................|netrw-i|
-     \m.........Make A New Directory....................|netrw-m|
+     <c-l>......Refreshing the Listing..................|netrw-ctrl-l|
      o..........Browsing with a Horizontal Split........|netrw-o|
+     q..........Listing Bookmarks.......................|netrw-q|
      r..........Reversing Sorting Order.................|netrw-r|
      R..........Renaming Files or Directories...........|netrw-R|
      s..........Selecting Sorting Style.................|netrw-s|
+     S..........Editing the Sorting Sequence............|netrw-S|
      v..........Browsing with a Vertical Split..........|netrw-v|
      x..........Customizing Browsing....................|netrw-x|
 
@@ -525,14 +545,15 @@ QUICK REFERENCE COMMANDS TABLE     			*netrw-browse-cmds*
 	   ?	Causes Netrw to issue help
 	 <cr>	Netrw will enter the directory or read the file
 	 <del>	Netrw will attempt to remove the file/directory
-	 <c-l>	Causes Netrw to refresh the directory listing
+	   d	Make a directory
 	   D	Netrw will attempt to remove the file(s)/directory(ies)
 	   R	Netrw will attempt to rename the file(s)/directory(ies)
 	   -	Makes Netrw go up one directory
 	   a	Show all of a directory (temporarily ignore g:netrw_list_hide)
-	  \h	Edit file hiding list
+	   c	Make current browsing directory the current directory
+	 <c-h>	Edit file hiding list
 	   i	Toggles between long and short listing
-	  \m	Make a directory
+	 <c-l>	Causes Netrw to refresh the directory listing
 	   o	Enter the file/directory under the cursor in a new browser
 	   	window.  A horizontal split is used.
 	   r	Reverse sorting order
@@ -543,49 +564,63 @@ QUICK REFERENCE COMMANDS TABLE     			*netrw-browse-cmds*
 <
 NETRW BROWSER VARIABLES					*netrw-browse-var*
 >
-	---			-----------
-	Var			Explanation
-	---			-----------
-	g:netrw_list_cmd	supports listing
-	g:netrw_list_hide	comma separated list of patterns for
-				hiding files
-	g:netrw_local_mkdir	specify command for making a directory locally
-	g:netrw_local_rmdir	remove directory command          default: rmdir
-	g:netrw_local_rename	rename file/directory command
-				unix-default: rm    win32-default: ren
-	g:netrw_mkdir_cmd	specify command for making a directory remotely
-	g:netrw_rm_cmd		supports removing files
-	g:netrw_rmdir_cmd	supports removing directories
-	g:netrw_rmf_cmd		supports removing softlinks to directories
-	g:netrw_hide		if true, the hiding list is used
-	g:netrw_sort_by		sort by "name", "time", or "size"
-	g:netrw_sort_direction	sorting direction: "normal" or "reverse"
-	g:netrw_sort_sequence	when sorting by name, first sort by the
-				comma-separated pattern sequence
-	g:netrw_timefmt		specify format string to strftime()  default: %c
-	g:netrw_winsize		specify initial size of new o/v windows
+	---				-----------
+	Var				Explanation
+	---				-----------
+	g:netrw_ftp_browse_reject	ftp can produce a number of errors
+					and warnings that can show up as
+					"directories" and "files" in the
+					listing.  This pattern is used to
+					remove such embedded messages.
+	g:netrw_keepdir			keep current directory immune from the
+					browsing directory.  The browsing
+					directory is contained in b:netrw_curdir
+	g:netrw_list_cmd		command for listing remote directories
+	g:netrw_list_hide		comma separated list of patterns for
+					hiding files
+	g:netrw_local_mkdir		command for making a local directory
+	g:netrw_local_rmdir		remove directory command (rmdir)
+	g:netrw_local_rename		rename file/directory command
+					unix-default: rm    win32-default: ren
+	g:netrw_mkdir_cmd		command for making a remote directory
+	g:netrw_rm_cmd			command for removing files
+	g:netrw_rmdir_cmd		command for removing directories
+	g:netrw_rmf_cmd			command for removing softlinks
+	g:netrw_hide			if true, the hiding list is used
+	g:netrw_sort_by			sort by "name", "time", or "size"
+	g:netrw_sort_direction		sorting direction: "normal" or "reverse"
+	g:netrw_sort_sequence		when sorting by name, first sort by the
+					comma-separated pattern sequence
+	g:netrw_timefmt			specify format string to strftime() (%c)
+	g:netrw_winsize			specify initial size of new o/v windows
 <
-INTRODUCTION TO REMOTE DIRECTORY BROWSING
+INTRODUCTION TO DIRECTORY BROWSING
 
-Netrw supports the browsing of directories on remote hosts, including
-generating listing directories, entering directories, editing files therein,
-deleting files/directories, and moving (renaming) files and directories.  The
-Netrw browser generally implements the file explorer methods but for remote
-directories, although details (such as pertinent global variable names)
-necessarily differ.
+Netrw supports the browsing of directories on the local system and on remote
+hosts, including generating listing directories, entering directories, editing
+files therein, deleting files/directories, making new directories, and moving
+(renaming) files and directories.  The Netrw browser generally implements the
+previous explorer maps and commands for remote directories, although details
+(such as pertinent global variable names) necessarily differ.
+
+The Netrw remote file and directory browser handles two protocols: ssh and
+ftp.  The protocol in the url, if it is ftp, will cause netrw to use ftp
+in its remote browsing.  Any other protocol will be used for file transfers,
+but otherwise the ssh protocol will be used to do remote directory browsing.
 
 To enter the netrw directory browser, simply attempt to read a "file" with a
 trailing slash and it will be interpreted as a request to list a directory:
 
 	vim [protocol]://[user@]hostname/path/
 
-To get no-password directory listings, scp, ssh interaction, etc, see
-|netrw-list-hack|.
+If you'd like to avoid entering the password in for directory listings, scp,
+ssh interaction, etc, see |netrw-list-hack|.
 
-REFRESHING THE LISTING					*netrw-c-l*
+REFRESHING THE LISTING					*netrw-ctrl-l*
 
-To refresh the directory listing, press ctrl-l (<c-l>) or hit the <cr>
-when atop the ./ directory entry in the listing.
+To refresh either a local or remote directory listing, press ctrl-l (<c-l>) or
+hit the <cr> when atop the ./ directory entry in the listing.  One may also
+refresh a local directory by using ":e .".
 
 
 GOING UP						*netrw--*
@@ -598,10 +633,10 @@ listing operation.  By default the command is:
 
 	ssh HOSTNAME ls -FLa
 
-where the HOSTNAME becomes the [user@]hostname as requested by the attempt
-to read.  Naturally, the user may override this command with whatever is
-preferred.  The NetList function which implements remote directory
-browsing expects that directories will be flagged by a trailing slash.
+where the HOSTNAME becomes the [user@]hostname as requested by the attempt to
+read.  Naturally, the user may override this command with whatever is
+preferred.  The NetList function which implements remote directory browsing
+expects that directories will be flagged by a trailing slash.
 
 
 BROWSING 							*netrw-cr*
@@ -619,11 +654,9 @@ directories or displays the filename, file size (in bytes), and the
 time and date of last modification for local directories.
 
 
-MAKING A NEW DIRECTORY						*netrw-m*
+MAKING A NEW DIRECTORY						*netrw-d*
 
-Actually <Leader>m, where the <Leader> is, by default, the backslash.
-
-With the "<Leader>m" map one may make a new directory either remotely (which
+With the "d" map one may make a new directory either remotely (which
 depends on the global variable g:netrw_mkdir_cmd) or locally (which depends on
 the global variable g:netrw_local_mkdir).  Netrw will issue a request for the
 new directory's name.  A bare <CR> at that point will abort the making of the
@@ -675,6 +708,7 @@ value is:
 One may rename a block of files and directories by selecting them with
 the V (|linewise-visual|).
 
+
 HIDING FILES OR DIRECTORIES		*g:netrw-a* *g:netrw_list_hide*
 
 The "a" map toggles the netrw vim file browser (both remote and local) between
@@ -685,9 +719,7 @@ patterns (ex. \.obj) to be hidden from normal listing.  (see |netrw-h|)
 
 EDIT FILE OR DIRECTORY HIDING LIST				*netrw-h*
 
-Actually <Leader>h, where the <Leader> is, by default, the backslash.
-
-The "<Leader>h" map brings up a requestor allowing the user to change the
+The "<ctrl-h>" map brings up a requestor allowing the user to change the
 file/directory hiding list.  The hiding list consists of one or more patterns
 delimited by commas.  Files and/or directories satisfying these patterns will
 be hidden (ie. not shown).
@@ -705,6 +737,21 @@ SELECTING SORTING STYLE						*netrw-s*
 One may select the sorting style by name, time, or (file) size.  The
 "s" map allows one to circulate among the three choices; the directory
 listing will automatically be refreshed to reflect the selected style.
+
+
+EDITING THE SORTING SEQUENCE					*netrw-S*
+
+When "Sorted by" is name, one may specify priority via the sorting
+sequence (g:netrw_sort_sequence).  The sorting sequence typically
+prioritizes the name-listing by suffix, although any pattern will do.
+Patterns are delimited by commas.  The default sorting sequence is:
+>
+	/$,*,\.bak$,\.o$,\.h$,\.info$,\.swp$,\.obj$
+<
+The lone * is where all filenames not covered by one of the other
+patterns will end up.  One may change the sorting sequence by modifying
+the g:netrw_sort_sequence variable (either manually or in your <.vimrc>)
+or by using the "S" map.
 
 
 REVERSING SORTING ORDER						*netrw-r*
@@ -738,6 +785,38 @@ See the <plugin/NetrwFileHandlers.vim> for an example of how to handle an html
 file with mozilla.
 
 
+MAKING THE BROWSING DIRECTORY THE CURRENT DIRECTORY		*netrw-c*
+
+By default, g:netrw_keepdir is 0.  This setting means that the current
+directory will track the browsing directory.  However, setting g:netrw_keepdir
+to 1 (say, in your <.vimrc>) will keep the current directory independent
+of the browsing directory.  In that case, in order to make the two
+directories the same, use the "c" map (just type c).
+
+
+BOOKMARKING A DIRECTORY						*netrw-b*
+
+One may easily "bookmark" a directory by using
+
+	{cnt}b
+
+Any count may be used.
+
+
+CHANGING TO A BOOKMARKED DIRECTORY				*netrw-B*
+
+To change directory back to a bookmarked directory, use
+
+	{cnt}B
+
+Any count may be used.
+
+
+LISTING BOOKMARKS						*netrw-q*
+
+Pressing "q" will list the bookmarked directories. (query)
+
+
 IMPROVING DIRECTORY BROWSING				*netrw-list-hack*
 
 Especially with the remote directory browser, constantly entering the password
@@ -767,15 +846,31 @@ which is loaded automatically at startup (assuming :set nocp).
 	   or
 		http://vim.sourceforge.net/scripts/script.php?script_id=120
 
-	   and put it into your local plugin directory
+	   and put it into your local plugin directory.
+	
+	2. <Decho.vim> itself needs the <cecutil.vim> script, so you'll need
+	   to put it into your .vim/plugin, too.  You may obtain it from:
 
-	2. Edit the <netrw.vim> file as follows:
+		http://mysite.verizon.net/astronaut/vim/index.html#VimFuncs
+		as "DrC's Utilities"
 
+	3. Edit the <netrw.vim> file by typing:
+
+		vim netrw.vim
 		:DechoOn
+		:wq
 
-	   (to restore to normal, use  :DechoOff )
+	   To restore to normal non-debugging behavior, edit <netrw.vim>
+	   by typing
 
-	3. Then bring up vim and attempt a transfer.  A set of messages
+		vim netrw.vim
+		:DechoOff
+		:wq
+
+	   This command, provided by <Decho.vim>, will comment out all
+	   Decho-debugging statements (Dfunc(), Dret(), Decho(), Dredir()).
+
+	4. Then bring up vim and attempt a transfer.  A set of messages
 	   should appear concerning the steps that <netrw.vim> took in
 	   attempting to read/write your file over the network.  Please
 	   send that information to <netrw.vim>'s maintainer,

@@ -1,6 +1,6 @@
 " Script to define the syntax menu in synmenu.vim
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2004 May 22
+" Last Change:	2004 Aug 30
 
 " This is used by "make menu" in the src directory.
 edit <sfile>:p:h/synmenu.vim
@@ -49,6 +49,7 @@ fun! <SID>Syn(arg)
 endfun
 
 SynMenu AB.Aap:aap
+SynMenu AB.ABAP/4:abap
 SynMenu AB.Abaqus:abaqus
 SynMenu AB.ABC\ music\ notation:abc
 SynMenu AB.ABEL:abel
@@ -153,7 +154,6 @@ SynMenu DE.Elinks\ config:elinks
 SynMenu DE.Elm\ filter\ rules:elmfilt
 SynMenu DE.Embedix\ Component\ Description:ecd
 SynMenu DE.ERicsson\ LANGuage:erlang
-SynMenu DE.ESQL-C:esqlc
 SynMenu DE.Essbase\ script:csc
 SynMenu DE.Eterm\ config:eterm
 SynMenu DE.Exim\ conf:exim
@@ -306,7 +306,6 @@ SynMenu PQ.Pike:pike
 SynMenu PQ.Pine\ RC:pine
 SynMenu PQ.Pinfo\ RC:pinfo
 SynMenu PQ.PL/M:plm
-SynMenu PQ.PL/SQL:plsql
 SynMenu PQ.PLP:plp
 SynMenu PQ.PO\ (GNU\ gettext):po
 SynMenu PQ.Postfix\ main\ config:pfmain
@@ -392,10 +391,13 @@ SynMenu Sh-S.Spyce:spyce
 SynMenu Sh-S.Speedup:spup
 SynMenu Sh-S.Splint:splint
 SynMenu Sh-S.Squid\ config:squid
+SynMenu Sh-S.SQL.ESQL-C:esqlc
 SynMenu Sh-S.SQL.MySQL:mysql
-SynMenu Sh-S.SQL.SQL:sql
+SynMenu Sh-S.SQL.PL/SQL:plsql
+SynMenu Sh-S.SQL.SQL\ (Oracle):sql
 SynMenu Sh-S.SQL.SQL\ Forms:sqlforms
 SynMenu Sh-S.SQL.SQLJ:sqlj
+SynMenu Sh-S.SQL.SQL-Informix:sqlinformix
 SynMenu Sh-S.SQR:sqr
 SynMenu Sh-S.Ssh.ssh_config:sshconfig
 SynMenu Sh-S.Ssh.sshd_config:sshdconfig

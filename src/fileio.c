@@ -473,6 +473,8 @@ readfile(fname, sfname, from, lines_to_skip, lines_to_read, eap, flags)
 #endif
 #ifdef VMS
 	    curbuf->b_fab_rfm = st.st_fab_rfm;
+	    curbuf->b_fab_rat = st.st_fab_rat;
+	    curbuf->b_fab_mrs = st.st_fab_mrs;
 #endif
 	}
 	else
@@ -2511,6 +2513,11 @@ set_file_time(fname, atime, mtime)
 }
 #endif /* UNIX */
 
+#if defined(VMS) && !defined(MIN)
+/* Older DECC compiler for VAX doesn't define MIN() */
+# define MIN(a, b) ((a) < (b) ? (a) : (b))
+#endif
+
 /*
  * buf_write() - write to file 'fname' lines 'start' through 'end'
  *
@@ -3924,20 +3931,29 @@ restore_backup:
 	 * On VMS there is a problem: newlines get added when writing blocks
 	 * at a time. Fix it by writing a line at a time.
 	 * This is much slower!
-	 * Explanation: Vim can not handle, so far, variable record format.
-	 * With $analize/rms filename you can get the rms file structure, and
-	 * if the Record format filed is variable, CR will be added after
-	 * every written buffer.  In other cases it works without this fix.
-	 * From other side read is about 5 times slower for "variable record
-	 * format" files.
+	 * Explanation: VAX/DECC RTL insists that records in some RMS
+	 * structures end with a newline (carriage return) character, and if
+	 * they don't it adds one.
+	 * With other RMS structures it works perfect without this fix.
 	 */
-	if (buf->b_fab_rfm == FAB$C_VAR)
+	if ((buf->b_fab_rat & (FAB$M_FTN | FAB$M_CR)) != 0)
 	{
-	    write_info.bw_len = len;
-	    if (buf_write_bytes(&write_info) == FAIL)
+	    int b2write;
+
+	    buf->b_fab_mrs = (buf->b_fab_mrs == 0
+		    ? MIN(4096, bufsize)
+		    : MIN(buf->b_fab_mrs, bufsize));
+
+	    b2write = len;
+	    while (b2write > 0)
 	    {
-		end = 0;		/* write error: break loop */
-		break;
+		write_info.bw_len = MIN(b2write, buf->b_fab_mrs);
+		if (buf_write_bytes(&write_info) == FAIL)
+		{
+		    end = 0;
+		    break;
+		}
+		b2write -= MIN(b2write, buf->b_fab_mrs);
 	    }
 	    write_info.bw_len = bufsize;
 	    nchars += len;

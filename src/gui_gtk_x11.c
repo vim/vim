@@ -5845,8 +5845,11 @@ gui_mch_wait_for_chars(long wtime)
 
 	/*
 	 * Loop in GTK+ processing  until a timeout or input occurs.
+	 * Skip this if input is available anyway (can happen in rare
+	 * situations, sort of race condition).
 	 */
-	gtk_main();
+	if (!input_available())
+	    gtk_main();
 
 	/* Got char, return immediately */
 	if (input_available())

@@ -1,4 +1,4 @@
-*message.txt*   For Vim version 7.0aa.  Last change: 2004 Jul 23
+*message.txt*   For Vim version 7.0aa.  Last change: 2004 Aug 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -411,6 +411,12 @@ will either have to write the changed buffer (with |:w|), or use a command to
 abandon the buffer forcefully, e.g., with ":qa!".  Careful, make sure you
 don't throw away changes you really want to keep.  You might have forgotten
 about a buffer, especially when 'hidden' is set.
+
+>
+  [No write since last change]
+
+This appears when executing a shell command while at least one buffer was
+changed.  To avoid the message reset the 'warn' option.
 
 							*E38*  >
   Null argument

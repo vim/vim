@@ -1262,7 +1262,8 @@ set_curbuf(buf, action)
 						     || action == DOBUF_WIPE);
 
     setpcmark();
-    curwin->w_alt_fnum = curbuf->b_fnum; /* remember alternate file */
+    if (!cmdmod.keepalt)
+	curwin->w_alt_fnum = curbuf->b_fnum; /* remember alternate file */
     buflist_altfpos();			 /* remember curpos */
 
 #ifdef FEAT_VISUAL
@@ -1345,7 +1346,15 @@ enter_buffer(buf)
 
     /* Make sure the buffer is loaded. */
     if (curbuf->b_ml.ml_mfp == NULL)	/* need to load the file */
+    {
+	/* If there is no filetype, allow for detecting one.  Esp. useful for
+	 * ":ball" used in a autocommand.  If there already is a filetype we
+	 * might prefer to keep it. */
+	if (*curbuf->b_p_ft == NUL)
+	    did_filetype = FALSE;
+
 	open_buffer(FALSE, NULL);
+    }
     else
     {
 	need_fileinfo = TRUE;		/* display file info after redraw */
@@ -2536,7 +2545,7 @@ setaltfname(ffname, sfname, lnum)
 
     /* Create a buffer.  'buflisted' is not set if it's a new buffer */
     buf = buflist_new(ffname, sfname, lnum, 0);
-    if (buf != NULL)
+    if (buf != NULL && !cmdmod.keepalt)
 	curwin->w_alt_fnum = buf->b_fnum;
     return buf;
 }

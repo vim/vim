@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Jul 28
+*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Aug 31
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,6 +30,17 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Multi-byte char in file name causes trouble for opening, "send to" menu and
+writing.  Patches from Taro Muraoka:
+    ~/Mail/oldmail/muraoka/in.00575
+    ~/Mail/oldmail/muraoka/in.00577
+
+Is there a limit on the buffer list in the viminfo file?
+":n ~/.trashcan/bogus*" fills it.
+
+When gvim is started from the context menu the xxd menu entries don't work
+(Valencia).  xxd.exe is not in $VIMRUNTIME.
+
 Aborting at the ATTENTION prompt causes trouble:
     buffer remains active, nwindows isn't closed (fixed in buffer.c)
     alternate buffer gets "read error" flag.
@@ -44,6 +55,12 @@ Added ga_append() here: (also to 6.3?)
     gui_do_findrepl(flags, find_text, repl_text, down)
     serverGetVimNames(dpy)  if_xcmdsrv.c, os_mswin.c
 
+Win32: When the path to a file has Russian characters, ":cd %:p:h" doesn't
+work. (Valery Kondakoff)
+
+Win32: When an argument is typed in a console in the active codepage, and
+'encoding' is "utf-8", detect this from illegal characters.  Convert from
+console or active codepage to utf-8 then.
 
 For version 7.0:
 -   Include many PATCHES:
@@ -81,6 +98,8 @@ For version 7.0:
 	Patch from Yakov Lerner, including test (2004 Jan 7).
 	VimResized	    - When the Vim window has been resized (SIGWINCH)
 	  patch from Yakov Lerner, 2003 July 24.
+	Patch for specifying an expression for numbered lists. (Hugo Haas,
+	2004 Aug 7)
     --- awaiting updated patch ---
     7   Add patch from Wall for this one ( ~/Mail/oldmail/wall/in.00019 ):
 	'flipcase' variable: upper/lowercase pairs.
@@ -230,7 +249,8 @@ For version 7.0:
 -   STICKY CURSOR: Add a way of scrolling that leaves the cursor where it is.
     Especially when using the scrollbar.  Typing a cursor-movement command
     scrolls back to where the cursor is.
-8   Support four composing characters, needed for Hebrew. (Ron Aaron)
+8   Support four composing/combining characters, needed for Hebrew. (Ron Aaron)
+    Add the 'maxcombining' option to set the nr. of composing characters.
 -   Add a few more things to 'diffopt': "horizontal", "vertical",
     "foldcolumn". (Benji Fisher, 2004 Jun 21)
 -   FileChangedShellPost autocommand event: after (not) reloading a changed
@@ -256,6 +276,14 @@ For version 7.0:
     the part that already matched is doubled then.  Remove the part of the
     word that would be doubled.  Make it work line CTRL-N in Insert mode.
 -   Add Lua interface? (Wolfgang Oertl)
+-   "onemore" flag in 'virtualedit': move cursor past end of line.  Patch by
+    Mattias Flodin (2004 Jul 30)
+
+Support ":set syntax=cpp.doxygen"?  Suggested patch by Michael Geddes (9 Aug
+2004).  Should also work for 'filetype'.
+
+Patch for 'breakindent' option: repeat indent for wrapped line. (Vaclav
+Smilauer, 2004 Aug 17)
 
 
 Vi incompatibility:
@@ -365,6 +393,9 @@ Win32 GUI known bugs:
     "lucida_console:h8").
 6   Win32 GUI: With "-u NONE -U NONE" and doing "CTRL-W v" "CTRL-W o", the ":"
     of ":only" is highlighted like the cursor.  (Lipelis)
+8   When 'encoding' is "utf-8", should use 'guifont' for both normal and wide
+    characters to make Asian languages work.  Win32 fonts contain both
+    type of characters.
 7   When font smoothing is enabled, redrawing can become very slow.  The reason
     appears to be drawing with a transparent background.  Would it be possible
     to use an opaque background in most places?
@@ -1081,6 +1112,8 @@ Problems that will (probably) not be solved:
 						    *extensions-improvements*
 
 Documentation:
+8   List of options should mention whether environment variables are expanded
+    or not.
 8   Extend usr_27.txt a bit. (Adam Seyfarth)
 7   Add a section on debugging scripts in the user manual.
 9   Make the Reference Manual more precise.  For each command mention:
@@ -2973,6 +3006,8 @@ Various improvements:
     the buffer.  Buffer may be modified.
 6   In the quickfix window statusline add the command used to get the list of
     errors, e.g. ":make foo", ":grep something *.c".
+7   Add a ":cstring" command.  Works like ":cfile" but reads from a string
+    variable.  Also accept a list variable?
 6   Python interface: add vim.message() function. (Michal Vitecek, 2002 Nov 5)
 7   Support using ":vert" with User commands.  Add expandable items <vert>.
     Do the same for ":browse" and ":confirm"?

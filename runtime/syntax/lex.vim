@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	Lex
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrOchipS@PcampbellAfamily.Mbiz>
-" Last Change:	Sep 02, 2003
-" Version:	4
+" Last Change:	Jul 28, 2004
+" Version:	5
 " URL:	http://www.erols.com/astronaut/vim/index.html#vimlinks_syntax
 "
 " Option:
@@ -32,19 +32,22 @@ else
   endif
 endif
 
+" --- ========= ---
 " --- Lex stuff ---
+" --- ========= ---
 
 "I'd prefer to use lex.* , but it doesn't handle forward definitions yet
 syn cluster lexListGroup		contains=lexAbbrvBlock,lexAbbrv,lexAbbrv,lexAbbrvRegExp,lexInclude,lexPatBlock,lexPat,lexBrace,lexPatString,lexPatTag,lexPatTag,lexPatComment,lexPatCodeLine,lexMorePat,lexPatSep,lexSlashQuote,lexPatCode,cInParen,cUserLabel,cOctalZero,cCppSkip,cErrInBracket,cErrInParen,cOctalError,cCppOut2,cCommentStartError,cParenError
 syn cluster lexListPatCodeGroup	contains=lexAbbrvBlock,lexAbbrv,lexAbbrv,lexAbbrvRegExp,lexInclude,lexPatBlock,lexPat,lexBrace,lexPatTag,lexPatTag,lexPatComment,lexPatCodeLine,lexMorePat,lexPatSep,lexSlashQuote,cInParen,cUserLabel,cOctalZero,cCppSkip,cErrInBracket,cErrInParen,cOctalError,cCppOut2,cCommentStartError,cParenError
 
 " Abbreviations Section
-syn region lexAbbrvBlock	start="^\([a-zA-Z_]\+\t\|%{\)" end="^%%$"me=e-2	skipnl	nextgroup=lexPatBlock contains=lexAbbrv,lexInclude,lexAbbrvComment
+syn region lexAbbrvBlock	start="^\(\h\+\s\|%{\)" end="^\ze%%$"	skipnl	nextgroup=lexPatBlock contains=lexAbbrv,lexInclude,lexAbbrvComment,lexStartState
 syn match  lexAbbrv		"^\I\i*\s"me=e-1			skipwhite	contained nextgroup=lexAbbrvRegExp
 syn match  lexAbbrv		"^%[sx]"					contained
 syn match  lexAbbrvRegExp	"\s\S.*$"lc=1				contained nextgroup=lexAbbrv,lexInclude
 syn region lexInclude	matchgroup=lexSep	start="^%{" end="%}"	contained	contains=ALLBUT,@lexListGroup
 syn region lexAbbrvComment	start="^\s\+/\*"	end="\*/"			contains=@Spell
+syn region lexStartState	matchgroup=lexAbbrv	start="^%\a\+"	end="$"			contained
 
 "%% : Patterns {Actions}
 syn region lexPatBlock	matchgroup=Todo	start="^%%$" matchgroup=Todo end="^%%$"	skipnl skipwhite contains=lexPat,lexPatTag,lexPatComment
@@ -81,15 +84,16 @@ hi def link lexSlashQuote	lexPat
 hi def link lexBrace	lexPat
 hi def link lexAbbrvComment	lexPatComment
 
-hi def link lexAbbrv	SpecialChar
 hi def link lexAbbrvRegExp	Macro
+hi def link lexAbbrv	SpecialChar
 hi def link lexCFunctions	Function
 hi def link lexMorePat	SpecialChar
-hi def link lexPat		Function
 hi def link lexPatComment	Comment
+hi def link lexPat		Function
 hi def link lexPatString	Function
 hi def link lexPatTag	Special
 hi def link lexSep		Delimiter
+hi def link lexStartState	Statement
 
 let b:current_syntax = "lex"
 

@@ -714,7 +714,7 @@ static struct vimoption
     {"define",	    "def",  P_STRING|P_ALLOCED|P_VI_DEF,
 #ifdef FEAT_FIND_ID
 			    (char_u *)&p_def, OPT_BOTH(PV_DEF),
-			    {(char_u *)"^\\s#\\s*define", (char_u *)0L}
+			    {(char_u *)"^\\s*#\\s*define", (char_u *)0L}
 #else
 			    (char_u *)NULL, PV_NONE,
 			    {(char_u *)NULL, (char_u *)0L}

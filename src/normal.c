@@ -4343,6 +4343,7 @@ dozet:
 	    curwin->w_cursor.lnum = curbuf->b_ml.ml_line_count;
 	else
 	    curwin->w_cursor.lnum = cap->count0;
+	check_cursor_col();
     }
 
     switch (nchar)

@@ -1,4 +1,4 @@
-*if_perl.txt*   For Vim version 7.0aa.  Last change: 2004 May 01
+*if_perl.txt*   For Vim version 7.0aa.  Last change: 2004 Aug 30
 
 
 		  VIM REFERENCE MANUAL    by Sven Verdoolaege
@@ -156,6 +156,8 @@ VIM::Buffers([{bn}...])	With no arguments, returns a list of all the buffers
 			numbers {bn}, returns a list of the buffers matching
 			{bn}, using the same rules as Vim's internal
 			|bufname()| function.
+			WARNING: the list becomes invalid when |:bwipe| is
+			used.  Using it anyway may crash Vim.
 
 							*perl-Windows*
 VIM::Windows([{wn}...])	With no arguments, returns a list of all the windows
@@ -163,6 +165,8 @@ VIM::Windows([{wn}...])	With no arguments, returns a list of all the windows
 			in a scalar context.  For a list of window numbers
 			{wn}, returns a list of the windows with those
 			numbers.
+			WARNING: the list becomes invalid when a window is
+			closed.  Using it anyway may crash Vim.
 
 							*perl-DoCommand*
 VIM::DoCommand({cmd})	Executes Ex command {cmd}.

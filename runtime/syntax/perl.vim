@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Perl
 " Maintainer:	Nick Hibma <n_hibma@van-laarhoven.org>
-" Last Change:	2004 May 16
+" Last Change:	2004 Aug 29
 " Location:	http://www.van-laarhoven.org/vim/syntax/perl.vim
 "
 " Please download most recent version first before mailing
@@ -17,8 +17,8 @@
 " perl syntax highlighting, with defaults given:
 "
 " unlet perl_include_pod
-" unlet perl_want_scope_in_variables
-" unlet perl_extended_vars
+" unlet perl_no_scope_in_variables
+" unlet perl_no_extended_vars
 " unlet perl_string_as_statement
 " unlet perl_no_sync_on_sub
 " unlet perl_no_sync_on_global_var
@@ -147,16 +147,11 @@ syn match  perlVarSlash		 "$/"
 " And plain identifiers
 syn match  perlPackageRef	 "\(\h\w*\)\=\(::\|'\)\I"me=e-1 contained
 
-" To highlight packages in variables as a scope reference - i.e. in $pack::var,
-" pack:: is a scope, just set "perl_want_scope_in_variables"
-" If you *want* complex things like @{${"foo"}} to be processed,
-" just set the variable "perl_extended_vars"...
-
 " FIXME value between {} should be marked as string. is treated as such by Perl.
 " At the moment it is marked as something greyish instead of read. Probably todo
 " with transparency. Or maybe we should handle the bare word in that case. or make it into
 
-if exists("perl_want_scope_in_variables")
+if !exists("perl_no_scope_in_variables")
   syn match  perlVarPlain	"\\\=\([@%$]\|\$#\)\$*\(\I\i*\)\=\(\(::\|'\)\I\i*\)*\>" contains=perlPackageRef nextgroup=perlVarMember,perlVarSimpleMember,perlMethod
   syn match  perlFunctionName	"\\\=&\$*\(\I\i*\)\=\(\(::\|'\)\I\i*\)*\>" contains=perlPackageRef nextgroup=perlVarMember,perlVarSimpleMember
 else
@@ -164,7 +159,7 @@ else
   syn match  perlFunctionName	"\\\=&\$*\(\I\i*\)\=\(\(::\|'\)\I\i*\)*\>" nextgroup=perlVarMember,perlVarSimpleMember
 endif
 
-if exists("perl_extended_vars")
+if !exists("perl_no_extended_vars")
   syn cluster perlExpr		contains=perlStatementScalar,perlStatementRegexp,perlStatementNumeric,perlStatementList,perlStatementHash,perlStatementFiles,perlStatementTime,perlStatementMisc,perlVarPlain,perlVarNotInMatches,perlVarSlash,perlVarBlock,perlShellCommand,perlFloat,perlNumber,perlStringUnexpanded,perlString,perlQQ
   syn region perlVarBlock	matchgroup=perlVarPlain start="\($#\|[@%$]\)\$*{" skip="\\}" end="}" contains=@perlExpr nextgroup=perlVarMember,perlVarSimpleMember
   syn region perlVarBlock	matchgroup=perlVarPlain start="&\$*{" skip="\\}" end="}" contains=@perlExpr
@@ -359,7 +354,7 @@ syn region perlFunction		start="\s*\<sub\>" end="[;{]"he=e-1 contains=perlStatem
 syn keyword perlStatementSub	sub contained
 
 syn match  perlFunctionPrototype	"([^)]*)" contained
-if exists("perl_want_scope_in_variables")
+if !exists("perl_no_scope_in_variables")
    syn match  perlFunctionPRef	"\h\w*::" contained
    syn match  perlFunctionName	"\h\w*[^:]" contained
 else

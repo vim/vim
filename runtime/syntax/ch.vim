@@ -2,7 +2,7 @@
 " Language:     Ch
 " Maintainer:   SoftIntegration, Inc. <info@softintegration.com>
 " URL:		http://www.softintegration.com/download/vim/syntax/ch.vim
-" Last change:	2004 May 16
+" Last change:	2004 Sep 01
 "		Created based on cpp.vim
 "
 " Ch is a C/C++ interpreter with many high level extensions
@@ -26,7 +26,7 @@ endif
 
 " Ch extentions
 
-syn keyword	chStatement	new delete this
+syn keyword	chStatement	new delete this foreach
 syn keyword	chAccess	public private
 syn keyword	chStorageClass	__declspec(global) __declspec(local)
 syn keyword	chStructure	class

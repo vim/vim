@@ -1694,6 +1694,11 @@ do_one_cmd(cmdlinep, sourcing,
 			    cmdmod.keepmarks = TRUE;
 			    continue;
 			}
+			if (checkforcmd(&ea.cmd, "keepalt", 5))
+			{
+			    cmdmod.keepalt = TRUE;
+			    continue;
+			}
 			if (!checkforcmd(&ea.cmd, "keepjumps", 5))
 			    break;
 			cmdmod.keepjumps = TRUE;
@@ -2388,6 +2393,7 @@ do_one_cmd(cmdlinep, sourcing,
 	    case CMD_ilist:
 	    case CMD_isearch:
 	    case CMD_isplit:
+	    case CMD_keepalt:
 	    case CMD_keepjumps:
 	    case CMD_keepmarks:
 	    case CMD_leftabove:
@@ -2788,6 +2794,7 @@ cmd_exists(name)
 	{"browse", 3},
 	{"confirm", 4},
 	{"hide", 3},
+	{"keepalt", 5},
 	{"keepjumps", 5},
 	{"keepmarks", 3},
 	{"leftabove", 5},
@@ -2892,7 +2899,7 @@ set_one_cmd_context(xp, buff)
      * Isolate the command and search for it in the command table.
      * Exceptions:
      * - the 'k' command can directly be followed by any character, but
-     *   do accept "keepmarks" and "keepjumps".
+     *   do accept "keepmarks", "keepalt" and "keepjumps".
      * - the 's' command can be followed directly by 'c', 'g', 'i', 'I' or 'r'
      */
     if (*cmd == 'k' && cmd[1] != 'e')
@@ -3240,6 +3247,7 @@ set_one_cmd_context(xp, buff)
 	case CMD_folddoclosed:
 	case CMD_folddoopen:
 	case CMD_hide:
+	case CMD_keepalt:
 	case CMD_keepjumps:
 	case CMD_keepmarks:
 	case CMD_leftabove:
@@ -6702,7 +6710,8 @@ do_exedit(eap, old_curwin)
 	    && *eap->arg != NUL
 	    && curwin != old_curwin
 	    && win_valid(old_curwin)
-	    && old_curwin->w_buffer != curbuf)
+	    && old_curwin->w_buffer != curbuf
+	    && !cmdmod.keepalt)
 	old_curwin->w_alt_fnum = curbuf->b_fnum;
 #endif
 

@@ -1,4 +1,4 @@
-*filetype.txt*  For Vim version 7.0aa.  Last change: 2004 Jun 24
+*filetype.txt*  For Vim version 7.0aa.  Last change: 2004 Aug 31
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -82,6 +82,9 @@ You can disable it again with: >
 The filetype detection is not switched off then.  But if you do switch off
 filetype detection, the indent files will not be loaded either.
 This actually loads the file "indoff.vim" in 'runtimepath'.
+This disables auto-indenting for files you will open.  It will keep working in
+already opened files.  Reset 'autoindent', 'cindent', 'smartindent' and/or
+'indentexpr' to disable indenting in an opened file.
 
 						*:filetype-off*
 To disable file type detection, use this command: >
@@ -147,7 +150,7 @@ is used.  The default value is set like this: >
 This means that the contents of compressed files are not inspected.
 
 							*new-filetype*
-If a file type that you want to use is not detected yet, there are three ways
+If a file type that you want to use is not detected yet, there are four ways
 to add it.  In any way, it's better not to modify the $VIMRUNTIME/filetype.vim
 file.  It will be overwritten when installing a new version of Vim.
 
@@ -155,7 +158,7 @@ A. If you want to overrule all default file type checks.
    This works by writing one file for each filetype.  The disadvantage is that
    means there can be many files.  The advantage is that you can simply drop
    this file in the right directory to make it work.
-
+							*ftdetect*
    1. Create your user runtime directory.  You would normally use the first
       item of the 'runtimepath' option.  Then create the directory "ftdetect"
       inside it.  Example for Unix: >

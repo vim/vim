@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2004 Jul 25
+*eval.txt*      For Vim version 7.0aa.  Last change: 2004 Aug 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -2231,8 +2231,9 @@ remote_read({serverid})				*remote_read()*
 <
 							*remote_send()* *E241*
 remote_send({server}, {string} [, {idvar}])
-		Send the {string} to {server}.  The string is sent as
-		input keys and the function returns immediately.
+		Send the {string} to {server}.  The string is sent as input
+		keys and the function returns immediately.  At the Vim server
+		the keys are not mapped |:map|.
 		If {idvar} is present, it is taken as the name of a
 		variable and a {serverid} for later use with
 		remote_read() is stored there.
@@ -2558,6 +2559,7 @@ strridx({haystack}, {needle})				*strridx()*
 		{haystack}. The search is done case-sensitive. For advanced
 		searches use |match()|.
 		If the {needle} does not occur in {haystack} it returns -1.
+		If the {needle} is empty the length of {haystack} is returned.
 		See also |stridx()|. Examples: >
 		  :echo strridx("an angry armadillo", "an")	     3
 <

@@ -419,6 +419,7 @@ typedef struct
 # if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
     int		confirm;		/* TRUE to invoke yes/no dialog */
 # endif
+    int		keepalt;		/* TRUE when ":keepalt" was used */
     int		keepmarks;		/* TRUE when ":keepmarks" was used */
     int		keepjumps;		/* TRUE when ":keepjumps" was used */
     int		lockmarks;		/* TRUE when ":lockmarks" was used */
@@ -922,7 +923,9 @@ struct file_buffer
     FSSpec	b_FSSpec;	/* MacOS File Identification */
 #endif
 #ifdef VMS
-    char	b_fab_rfm;	/* Record format */
+    char	 b_fab_rfm;	/* Record format    */
+    char	 b_fab_rat;	/* Record attribute */
+    unsigned int b_fab_mrs;	/* Max record size  */
 #endif
 #ifdef FEAT_SNIFF
     int		b_sniff;	/* file was loaded through Sniff */

@@ -150,11 +150,6 @@ main
     int		literal = FALSE;	/* don't expand file names */
 #endif
 
-# ifdef NBDEBUG
-    nbdebug_log_init("SPRO_GVIM_DEBUG", "SPRO_GVIM_DLEVEL");
-    nbdebug_wait(WT_ENV | WT_WAIT | WT_STOP, "SPRO_GVIM_WAIT", 20);
-# endif
-
     /*
      * Do any system-specific initialisations.  These can NOT use IObuff or
      * NameBuff.  Thus emsg2() cannot be called!
@@ -208,6 +203,13 @@ main
 	mch_exit(0);
 
     TIME_MSG("Allocated generic buffers");
+
+#ifdef NBDEBUG
+    /* Wait a moment for debugging NetBeans.  Must be after allocating
+     * NameBuff. */
+    nbdebug_log_init("SPRO_GVIM_DEBUG", "SPRO_GVIM_DLEVEL");
+    nbdebug_wait(WT_ENV | WT_WAIT | WT_STOP, "SPRO_GVIM_WAIT", 20);
+#endif
 
 #if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
     /*
@@ -2475,6 +2477,9 @@ usage()
 	    break;
 	mch_msg(_("\n   or:"));
     }
+#ifdef VMS
+    mch_msg(_("where case is ignored prepend / to make flag upper case"));
+#endif
 
     mch_msg(_("\n\nArguments:\n"));
     main_msg(_("--\t\t\tOnly file names after this"));

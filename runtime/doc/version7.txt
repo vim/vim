@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2004 Jul 27
+*version7.txt*  For Vim version 7.0aa.  Last change: 2004 Sep 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -120,6 +120,8 @@ Win32: The ":winpos" command now also works in the console. (Vipin Aravind)
 |:diffoff|		Switch off diff mode in the current window or in all
 			windows.
 
+|:keepalt|		Do not change the alternate file.
+
 
 New functions: ~
 
@@ -147,6 +149,10 @@ New autocommand events: ~
 New Syntax/Indent/FTplugin files: ~
 
 MuPAD source syntax, indent and ftplugin. (Dave Silvia)
+
+ABAB/4 syntax file. (Marius van Wyk)
+
+SQL-Informix syntax file. (Dean L Hill)
 
 
 Others: ~
@@ -194,6 +200,20 @@ winnr() takes an optional "$" and "#" arguments.  (Nikolai Weibull, Yegappan
 Lakshmanan)
 
 Added 'n' flag to search(): don't move the cursor. (Nikolai Weibull)
+
+When uncompressing fails in the gzip plugin, give an error message but don't
+delete the raw text.  Helps if the file has a .gz extension but is not
+actually compressed. (Andrew Pimlott)
+
+When C, C++ or IDL syntax is used, may additionally load doxygen syntax.
+Also support setting the filetype to "cdoxygen" for C plus doxygen syntax.
+(Michael Geddes)
+
+The ":registers" command now displays multi-byte characters properly.
+
+VMS: In the usage message mention that a slash can be used to make a flag
+upper case.  Add color support to the builtin vt320 terminal codes.
+(Zoltan Arpadffy)
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*
@@ -292,5 +312,22 @@ string with a trailing newline.  The newline is ignored.
 When using the ":saveas f2" command for buffer "f1", the Buffers menu would
 contain "f2" twice, one of them leading to "f1".  Also trigger the BufFilePre
 and BufFilePost events for the alternate buffer that gets the old name.
+
+strridx() did not work well when the needle is empty. (Ciaran McCreesh)
+
+GTK: Avoid a potential hang in gui_mch_wait_for_chars() when input arrives
+just before it is invoked
+
+VMS: Occasionally CR characters were inserted in the file.  Expansion of
+environment variables was not correct. (Zoltan Arpadffy)
+
+UTF-8: When 'delcombine' is set "dw" only deleted the last combining character
+from the first character of the word.
+
+When using ":sball" in an autocommand only the filetype in one buffer was
+detected.  Reset did_filetype in enter_buffer().
+
+When using ":argdo" and the window already was at the first argument index,
+but not actually editing it, the current buffer would be used instead.
 
  vim:tw=78:ts=8:ft=help:norl:

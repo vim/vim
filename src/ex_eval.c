@@ -1620,16 +1620,16 @@ ex_finally(eap)
 		 * a missing ":endwhile" detected here, the exception will be
 		 * discarded. */
 		if (did_throw && cstack->cs_exception[cstack->cs_idx] !=
-			current_exception)
+							    current_exception)
 		    EMSG(_(e_internal));
 	    }
 
 	    /*
-	     * Set cs_had_finally, so do_cmdline() will reset did_emsg, got_int,
-	     * and did_throw and make the finally clause active.  This will
-	     * happen after emsg() has been called for a missing ":endif" or
-	     * a missing ":endwhile" detected here, so that the following
-	     * finally clause will be executed even then.
+	     * Set cs_had_finally, so do_cmdline() will reset did_emsg,
+	     * got_int, and did_throw and make the finally clause active.
+	     * This will happen after emsg() has been called for a missing
+	     * ":endif" or a missing ":endwhile" detected here, so that the
+	     * following finally clause will be executed even then.
 	     */
 	    cstack->cs_had_finally = TRUE;
 	}

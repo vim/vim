@@ -1062,6 +1062,7 @@ do_one_arg(str)
 
 static int do_arglist __ARGS((char_u *str, int what, int after));
 static void alist_check_arg_idx __ARGS((void));
+static int editing_arg_idx __ARGS((win_T *win));
 #ifdef FEAT_LISTCMDS
 static int alist_add_list __ARGS((int count, char_u **files, int after));
 #endif
@@ -1221,20 +1222,30 @@ alist_check_arg_idx()
 }
 
 /*
+ * Return TRUE if window "win" is editing then file at the current argument
+ * index.
+ */
+    static int
+editing_arg_idx(win)
+    win_T	*win;
+{
+    return !(win->w_arg_idx >= WARGCOUNT(win)
+		|| (win->w_buffer->b_fnum
+				      != WARGLIST(win)[win->w_arg_idx].ae_fnum
+		    && (win->w_buffer->b_ffname == NULL
+			 || !(fullpathcmp(
+				 alist_name(&WARGLIST(win)[win->w_arg_idx]),
+				win->w_buffer->b_ffname, TRUE) & FPC_SAME))));
+}
+
+/*
  * Check if window "win" is editing the w_arg_idx file in its argument list.
  */
     void
 check_arg_idx(win)
     win_T	*win;
 {
-    if (WARGCOUNT(win) > 1
-	    && (win->w_arg_idx >= WARGCOUNT(win)
-		|| (win->w_buffer->b_fnum
-				      != WARGLIST(win)[win->w_arg_idx].ae_fnum
-		    && (win->w_buffer->b_ffname == NULL
-			 || !(fullpathcmp(
-				 alist_name(&WARGLIST(win)[win->w_arg_idx]),
-				win->w_buffer->b_ffname, TRUE) & FPC_SAME)))))
+    if (WARGCOUNT(win) > 1 && !editing_arg_idx(win))
     {
 	/* We are not editing the current entry in the argument list.
 	 * Set "arg_had_last" if we are editing the last one. */
@@ -1662,7 +1673,7 @@ ex_listdo(eap)
 		    break;
 		/* Don't call do_argfile() when already there, it will try
 		 * reloading the file. */
-		if (curwin->w_arg_idx != i)
+		if (curwin->w_arg_idx != i || !editing_arg_idx(curwin))
 		    do_argfile(eap, i);
 		if (curwin->w_arg_idx != i)
 		    break;

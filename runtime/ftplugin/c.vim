@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	C
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2004 May 16
+" Last Change:	2004 Sep 01
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -37,7 +37,7 @@ if has("gui_win32") && !exists("b:browsefilter")
 	  \ "C Header Files (*.h)\t*.h\n" .
 	  \ "C Source Files (*.c)\t*.c\n" .
 	  \ "All Files (*.*)\t*.*\n"
-  elseif &ft == "chscript"
+  elseif &ft == "ch"
     let b:browsefilter = "Ch Source Files (*.ch *.chf)\t*.ch;*.chf\n" .
 	  \ "C Header Files (*.h)\t*.h\n" .
 	  \ "C Source Files (*.c)\t*.c\n" .

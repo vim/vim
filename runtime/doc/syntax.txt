@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.0aa.  Last change: 2004 Jul 15
+*syntax.txt*	For Vim version 7.0aa.  Last change: 2004 Sep 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -664,13 +664,21 @@ an the "after" directory in 'runtimepath'.  For Unix this would be
     syn sync fromstart
     set foldmethod=syntax
 
+CH						*ch.vim* *ch-syntax*
+
+C/C++ interpreter.  Ch has similar syntax highlighting to C and builds upon
+the C syntax file.  See |c.vim| for all the settings that are available for C.
+
+By setting a variable you can tell Vim to use Ch syntax for *.h files, instead
+of C or C++: >
+	:let ch_syntax_for_h = 1
+
 
 CHILL						*chill.vim* *chill-syntax*
 
 Chill syntax highlighting is similar to C.  See |c.vim| for all the settings
 that are available.  Additionally there is:
 
-chill_syntax_for_h	use Ch syntax for *.h files, instead of C or C++
 chill_space_errors	like c_space_errors
 chill_comment_string	like c_comment_strings
 chill_minlines		like c_minlines
@@ -1776,14 +1784,22 @@ If you use POD files or POD segments, you might: >
 
 	:let perl_include_pod = 1
 
-To handle package references in variable and function names differently from
-the rest of the name (like 'PkgName::' in '$PkgName::VarName'): >
+The reduce the complexity of parsing (and increase performance) you can switch
+off two elements in the parsing of variable names and contents. >
 
-	:let perl_want_scope_in_variables = 1
+To handle package references in variable and function names not differently
+from the rest of the name (like 'PkgName::' in '$PkgName::VarName'): >
 
-If you want complex things like '@{${"foo"}}' to be parsed: >
+	:let perl_no_scope_in_variables = 1
 
-	:let perl_extended_vars = 1
+(In Vim 6.x it was the other way around: "perl_want_scope_in_variables"
+enabled it.)
+
+If you do not want complex things like '@{${"foo"}}' to be parsed: >
+
+	:let perl_no_extended_vars = 1
+
+{In Vim 6.x it was the other way around: "perl_extended_vars" enabled it.)
 
 The coloring strings can be changed. By default strings and qq friends will be
 highlighted like the first line. If you set the variable
@@ -1813,7 +1829,11 @@ its attempts in syntax highlighting. >
 
 If you want to use folding with perl, set perl_fold: >
 
-       :let perl_fold = 1
+	:let perl_fold = 1
+
+If you want to fold blocks in if statements, etc. as well set the following: >
+
+	:let perl_fold_blocks = 1
 
 
 PHP3 and PHP4		*php.vim* *php3.vim* *php-syntax* *php3-syntax*
@@ -2262,6 +2282,17 @@ Since especially OPERATION sections tend to become very large due to
 PRESETting variables, syncing may be critical. If your computer is
 fast enough, you can increase minlines and/or maxlines near the end of
 the syntax file.
+
+
+SQL						*sql.vim* *sql-syntax*
+					*sqlinformix.vim* *sqlinformix-syntax*
+
+While there is an ANSI standard for SQL, most database engines add their
+own custom extensions.  Vim currently supports the Oracle and Informix
+dialects of SQL.  Vim assumes "*.sql" files are Oracle SQL by default.
+
+If you want to use the Informix dialect, put this in your startup vimrc: >
+    :let g:filetype_sql = "sqlinformix" 
 
 
 TCSH						*tcsh.vim* *tcsh-syntax*
@@ -3514,6 +3545,8 @@ in their own color.
 			":colorscheme" in a color scheme script.
 			After the color scheme has been loaded the
 			|ColorScheme| autocommand event is triggered.
+			For info about writing a colorscheme file: >
+				:edit $VIMRUNTIME/colors/README.txt
 
 :hi[ghlight]		List all the current highlight groups that have
 			attributes set.

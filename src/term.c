@@ -808,8 +808,20 @@ struct builtin_term builtin_termcaps[] =
     {(int)KS_CDL,	IF_EB("\033[%dM", ESC_STR "[%dM")},
 #  endif
     {(int)KS_CL,	IF_EB("\033[H\033[2J", ESC_STR "[H" ESC_STR_nc "[2J")},
+    {(int)KS_CD,	IF_EB("\033[J", ESC_STR "[J")},
+    {(int)KS_CCO,	"8"},			/* allow 8 colors */
     {(int)KS_ME,	IF_EB("\033[0m", ESC_STR "[0m")},
     {(int)KS_MR,	IF_EB("\033[7m", ESC_STR "[7m")},
+    {(int)KS_MD,        IF_EB("\033[1m", ESC_STR "[1m")},  /* bold mode */
+    {(int)KS_SE,        IF_EB("\033[22m", ESC_STR "[22m")},/* normal mode */
+    {(int)KS_UE,        IF_EB("\033[24m", ESC_STR "[24m")},/* exit underscore mode */
+    {(int)KS_US,        IF_EB("\033[4m", ESC_STR "[4m")},  /* underscore mode */
+    {(int)KS_CZH,       IF_EB("\033[34;43m", ESC_STR "[34;43m" )},  /* italic mode: blue text on yellow */
+    {(int)KS_CZR,       IF_EB("\033[0m", ESC_STR "[0m")},           /* italic mode end */
+    {(int)KS_CAB,       IF_EB("\033[4%dm", ESC_STR "[4%dm" )},      /* set background color (ANSI) */
+    {(int)KS_CAF,       IF_EB("\033[3%dm", ESC_STR "[3%dm" )},      /* set foreground color (ANSI) */
+    {(int)KS_CSB,       IF_EB("\033[102;%dm", ESC_STR "[102;%dm" )},    /* set screen background color */
+    {(int)KS_CSF,       IF_EB("\033[101;%dm", ESC_STR "[101;%dm" )},    /* set screen foreground color */
     {(int)KS_MS,	"y"},
     {(int)KS_UT,	"y"},
     {(int)KS_LE,	"\b"},

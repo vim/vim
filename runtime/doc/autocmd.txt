@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.0aa.  Last change: 2004 Jul 01
+*autocmd.txt*   For Vim version 7.0aa.  Last change: 2004 Aug 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -24,10 +24,10 @@ For a basic explanation, see section |40.3| in the user manual.
 ==============================================================================
 1. Introduction						*autocmd-intro*
 
-You can specify commands to be executed automatically for when reading or
-writing a file, when entering or leaving a buffer or window, and when exiting
-Vim.  For example, you can create an autocommand to set the 'cindent' option
-for files matching *.c.  You can also use autocommands to implement advanced
+You can specify commands to be executed automatically when reading or writing
+a file, when entering or leaving a buffer or window, and when exiting Vim.
+For example, you can create an autocommand to set the 'cindent' option for
+files matching *.c.  You can also use autocommands to implement advanced
 features, such as editing compressed files (see |gzip-example|).  The usual
 place to put autocommands is in your .vimrc or .exrc file.
 

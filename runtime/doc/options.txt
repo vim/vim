@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2004 Jul 24
+*options.txt*	For Vim version 7.0aa.  Last change: 2004 Aug 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -188,7 +188,7 @@ the value "ab", using "set guioptions-=ba" won't work, because the string "ba"
 doesn't appear.
 
 			   *:set_env* *expand-env* *expand-environment-var*
-Environment variables in most string options will be expanded.  If the
+Environment variables in specific string options will be expanded.  If the
 environment variable exists the '$' and the following environment variable
 name is replaced with its value.  If it does not exist the '$' and the name
 are not modified.  Any non-id character (not a letter, digit or '_') may
@@ -2903,6 +2903,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		      BALTIC, CHINESEBIG5, DEFAULT, EASTEUROPE, GB2312, GREEK,
 		      HANGEUL, HEBREW, JOHAB, MAC, OEM, RUSSIAN, SHIFTJIS,
 		      SYMBOL, THAI, TURKISH, VIETNAMESE ANSI and BALTIC.
+		      Normally you would use "cDEFAULT".
 
 	  Use a ':' to separate the options.
 	- A '_' can be used in the place of a space, so you don't need to use
@@ -5730,7 +5731,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Tags in unsorted tags files, and matches with different case will only
 	be found in the retry.
 
-	If a tag file indicates that is is case-fold sorted, the second,
+	If a tag file indicates that it is case-fold sorted, the second,
 	linear search can be avoided for the 'ignorecase' case.  Use a value
 	of '2' in the "!_TAG_FILE_SORTED" line for this.  A tag file can be
 	case-fold sorted with the -f switch to "sort" in most unices, as in

@@ -7341,19 +7341,22 @@ f_strridx(argvars, retvar)
 
     needle = get_var_string(&argvars[1]);
     haystack = get_var_string_buf(&argvars[0], buf);
-    rest = haystack;
-    while (*haystack != '\0')
-    {
-	rest = (char_u *)strstr((char *)rest, (char *)needle);
-	if (rest == NULL)
-	    break;
-	lastmatch = rest++;
-    }
+    if (*needle == NUL)
+	/* Empty string matches past the end. */
+	lastmatch = haystack + STRLEN(haystack);
+    else
+	for (rest = haystack; *rest != '\0'; ++rest)
+	{
+	    rest = (char_u *)strstr((char *)rest, (char *)needle);
+	    if (rest == NULL)
+		break;
+	    lastmatch = rest;
+	}
 
     if (lastmatch == NULL)
 	retvar->var_val.var_number = -1;
     else
-	retvar->var_val.var_number = (varnumber_T) (lastmatch - haystack);
+	retvar->var_val.var_number = (varnumber_T)(lastmatch - haystack);
 }
 
 /*

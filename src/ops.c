@@ -3703,6 +3703,11 @@ ex_display(eap)
     int			name;
     int			attr;
     char_u		*arg = eap->arg;
+#ifdef FEAT_MBYTE
+    int			clen;
+#else
+# define clen 1
+#endif
 
     if (arg != NULL && *arg == NUL)
 	arg = NULL;
@@ -3750,10 +3755,12 @@ ex_display(eap)
 		}
 		for (p = yb->y_array[j]; *p && (n -= ptr2cells(p)) >= 0; ++p)
 		{
-		    msg_outtrans_len(p, 1);
 #ifdef FEAT_MBYTE
-		    if (has_mbyte)
-			p += (*mb_ptr2len_check)(p) - 1;
+		    clen = (*mb_ptr2len_check)(p);
+#endif
+		    msg_outtrans_len(p, clen);
+#ifdef FEAT_MBYTE
+		    p += clen - 1;
 #endif
 		}
 	    }

@@ -1,7 +1,7 @@
 " Vim support file to detect file types in scripts
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2004 Apr 18
+" Last change:	2004 Sep 02
 
 " This file is called by an autocommand for every file that has just been
 " loaded into a buffer.  It checks if the type of file can be recognized by
@@ -50,8 +50,8 @@ if s:line1 =~ "^#!"
     let s:name = substitute(s:line1, '^#!\s*\S*[/\\]\(\i\+\).*', '\1', '')
   endif
 
-  " Bourne-like shell scripts: sh ksh bash bash2
-  if s:name =~ '^\(bash\|bash2\|ksh\|sh\)\>'
+  " Bourne-like shell scripts: bash bash2 ksh ksh93 sh
+  if s:name =~ '^\(bash\d*\|\|ksh\d*\|sh\)\>'
     call SetFileTypeSH(s:line1)	" defined in filetype.vim
 
     " csh scripts
@@ -219,7 +219,7 @@ else
     set ft=rcslog
 
     " CVS commit
-  elseif s:line2 =~ '^CVS:'
+  elseif s:line2 =~ '^CVS:' || getline("$") =~ '^CVS: '
     set ft=cvs
 
     " Send-pr

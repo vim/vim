@@ -1954,9 +1954,9 @@ vim_is_vt300(name)
 {
     if (name == NULL)
 	return FALSE;	       /* actually all ANSI comp. terminals should be here  */
-    return (STRNICMP(name, "vt3", 3) == 0     /* it will cover all from VT100-VT300 */
-	    || STRNICMP(name, "vt2", 3) == 0  /* TODO: from VT340 can hanle colors  */
-	    || STRNICMP(name, "vt1", 3) == 0
+    /* catch VT100 - VT5xx */
+    return ((STRNICMP(name, "vt", 2) == 0
+		&& vim_strchr((char_u *)"12345", name[2]) != NULL)
 	    || STRCMP(name, "builtin_vt320") == 0);
 }
 

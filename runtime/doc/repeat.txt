@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 7.0aa.  Last change: 2004 Jun 22
+*repeat.txt*    For Vim version 7.0aa.  Last change: 2004 Jul 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -20,7 +20,8 @@ Chapter 26 of the user manual introduces repeating |usr_26.txt|.
 							*.*
 .			Repeat last change, with count replaced with [count].
 			Also repeat a yank command, when the 'y' flag is
-			included in 'cpoptions'.
+			included in 'cpoptions'.  Does not repeat a
+			command-line command.
 
 Simple changes can be repeated with the "." command.  Without a count, the
 count of the last change is used.  If you enter a count, it will replace the
