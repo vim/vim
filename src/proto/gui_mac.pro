@@ -39,6 +39,7 @@ void gui_mch_destroy_scrollbar __ARGS((scrollbar_T *sb));
 int gui_mch_adjust_charsize __ARGS((void));
 int gui_mch_init_font __ARGS((char_u *font_name, int fontset));
 GuiFont gui_mch_get_font __ARGS((char_u *name, int giveErrorIfMissing));
+char_u *gui_mch_get_fontname __ARGS((GuiFont font, char_u *name));
 GuiFont gui_mac_find_font __ARGS((char_u *font_name));
 void gui_mch_set_font __ARGS((GuiFont font));
 int gui_mch_same_font __ARGS((GuiFont f1, GuiFont f2));

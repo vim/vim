@@ -232,7 +232,11 @@ static const struct nv_cmd
     {Ctrl_N,	nv_down,	NV_STS,			FALSE},
     {Ctrl_O,	nv_ctrlo,	0,			0},
     {Ctrl_P,	nv_up,		NV_STS,			FALSE},
+#ifdef FEAT_VISUAL
+    {Ctrl_Q,	nv_visual,	0,			FALSE},
+#else
     {Ctrl_Q,	nv_ignore,	0,			0},
+#endif
     {Ctrl_R,	nv_redo,	0,			0},
     {Ctrl_S,	nv_ignore,	0,			0},
     {Ctrl_T,	nv_tagpop,	NV_NCW,			0},
@@ -6852,11 +6856,15 @@ nv_regname(cap)
  * Handle "v", "V" and "CTRL-V" commands.
  * Also for "gh", "gH" and "g^H" commands: Always start Select mode, cap->arg
  * is TRUE.
+ * Handle CTRL-Q just like CTRL-V.
  */
     static void
 nv_visual(cap)
     cmdarg_T	*cap;
 {
+    if (cap->cmdchar == Ctrl_Q)
+	cap->cmdchar = Ctrl_V;
+
     /* 'v', 'V' and CTRL-V can be used while an operator is pending to make it
      * characterwise, linewise, or blockwise. */
     if (cap->oap->op_type != OP_NOP)

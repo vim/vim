@@ -518,6 +518,7 @@ emsg(s)
 #endif
 
     called_emsg = TRUE;
+    ex_exitval = 1;
 
     /*
      * If "emsg_severe" is TRUE: When an error exception is to be thrown,
@@ -533,7 +534,7 @@ emsg(s)
      * If 'debug' is set: do error message anyway, but without side effects.
      * If "emsg_skip" is set: never do error messages.
      */
-    if ((emsg_off > 0 && *p_debug == NUL)
+    if ((emsg_off > 0 && vim_strchr(p_debug, 'm') == NULL)
 #ifdef FEAT_EVAL
 	    || emsg_skip > 0
 #endif
@@ -638,7 +639,7 @@ emsg2(s, a1)
 emsg3(s, a1, a2)
     char_u *s, *a1, *a2;
 {
-    if ((emsg_off > 0 && *p_debug == NUL)
+    if ((emsg_off > 0 && vim_strchr(p_debug, 'm') == NULL)
 #ifdef FEAT_EVAL
 	    || emsg_skip > 0
 #endif
@@ -667,7 +668,7 @@ emsgn(s, n)
     char_u	*s;
     long	n;
 {
-    if ((emsg_off > 0 && *p_debug == NUL)
+    if ((emsg_off > 0 && vim_strchr(p_debug, 'm') == NULL)
 #ifdef FEAT_EVAL
 	    || emsg_skip > 0
 #endif
@@ -675,6 +676,13 @@ emsgn(s, n)
 	return TRUE;		/* no error messages at the moment */
     sprintf((char *)IObuff, (char *)s, n);
     return emsg(IObuff);
+}
+
+    void
+emsg_invreg(name)
+    int	    name;
+{
+    EMSG2(_("E354: Invalid register name: '%s'"), transchar(name));
 }
 
 /*
@@ -1481,8 +1489,9 @@ str2specialbuf(sp, buf, len)
  * print line for :print or :list command
  */
     void
-msg_prt_line(s)
+msg_prt_line(s, list)
     char_u	*s;
+    int		list;
 {
     int		c;
     int		col = 0;
@@ -1497,8 +1506,11 @@ msg_prt_line(s)
     char_u	buf[MB_MAXBYTES + 1];
 #endif
 
+    if (curwin->w_p_list)
+	list = TRUE;
+
     /* find start of trailing whitespace */
-    if (curwin->w_p_list && lcs_trail)
+    if (list && lcs_trail)
     {
 	trail = s + STRLEN(s);
 	while (trail > s && vim_iswhite(trail[-1]))
@@ -1507,7 +1519,7 @@ msg_prt_line(s)
 
     /* output a space for an empty line, otherwise the line will be
      * overwritten */
-    if (*s == NUL && !(curwin->w_p_list && lcs_eol != NUL))
+    if (*s == NUL && !(list && lcs_eol != NUL))
 	msg_putchar(' ');
 
     for (;;)
@@ -1535,11 +1547,11 @@ msg_prt_line(s)
 	{
 	    attr = 0;
 	    c = *s++;
-	    if (c == TAB && (!curwin->w_p_list || lcs_tab1))
+	    if (c == TAB && (!list || lcs_tab1))
 	    {
 		/* tab amount depends on current column */
 		n_extra = curbuf->b_p_ts - col % curbuf->b_p_ts - 1;
-		if (!curwin->w_p_list)
+		if (!list)
 		{
 		    c = ' ';
 		    c_extra = ' ';
@@ -1551,7 +1563,7 @@ msg_prt_line(s)
 		    attr = hl_attr(HLF_8);
 		}
 	    }
-	    else if (c == NUL && curwin->w_p_list && lcs_eol != NUL)
+	    else if (c == NUL && list && lcs_eol != NUL)
 	    {
 		p_extra = (char_u *)"";
 		c_extra = NUL;
@@ -2521,7 +2533,7 @@ redir_write(str, maxlen)
 
     if ((redir_fd != NULL
 #ifdef FEAT_EVAL
-			  || redir_reg
+			  || redir_reg || redir_vname
 #endif
 				       ) && !redir_off)
     {
@@ -2533,6 +2545,8 @@ redir_write(str, maxlen)
 #ifdef FEAT_EVAL
 		if (redir_reg)
 		    write_reg_contents(redir_reg, (char_u *)" ", -1, TRUE);
+		else if (redir_vname)
+		    var_redir_str((char_u *)" ", -1);
 		else if (redir_fd)
 #endif
 		    fputs(" ", redir_fd);
@@ -2543,13 +2557,15 @@ redir_write(str, maxlen)
 #ifdef FEAT_EVAL
 	if (redir_reg)
 	    write_reg_contents(redir_reg, s, maxlen, TRUE);
+	if (redir_vname)
+	    var_redir_str(s, maxlen);
 #endif
 
 	/* Adjust the current column */
 	while (*s != NUL && (maxlen < 0 || (int)(s - str) < maxlen))
 	{
 #ifdef FEAT_EVAL
-	    if (!redir_reg && redir_fd != NULL)
+	    if (!redir_reg && !redir_vname && redir_fd != NULL)
 #endif
 		putc(*s, redir_fd);
 	    if (*s == '\r' || *s == '\n')

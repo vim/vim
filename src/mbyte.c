@@ -2871,12 +2871,16 @@ enc_locale()
 # ifdef HAVE_NL_LANGINFO_CODESET
     if ((s = nl_langinfo(CODESET)) == NULL || *s == NUL)
 # endif
-# if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
+# ifdef MACOS
+	s = "utf-8";
+# else
+#  if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
 	if ((s = setlocale(LC_CTYPE, NULL)) == NULL || *s == NUL)
-# endif
+#  endif
 	    if ((s = getenv("LC_ALL")) == NULL || *s == NUL)
 		if ((s = getenv("LC_CTYPE")) == NULL || *s == NUL)
 		    s = getenv("LANG");
+# endif
 
     if (s == NULL || *s == NUL)
 	return FAIL;
@@ -5578,6 +5582,7 @@ convert_setup(vcp, from, to)
 # endif
     if (vcp->vc_type == CONV_NONE)
 	return FAIL;
+
     return OK;
 }
 

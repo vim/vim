@@ -74,11 +74,12 @@
  * (Here we have one of the subtle syntax dependencies:	an individual BRANCH
  * (as opposed to a collection of them) is never concatenated with anything
  * because of operator precedence).  The "next" pointer of a BRACES_COMPLEX
- * node points to the node after the stuff to be repeated.  The operand of some
- * types of node is a literal string; for others, it is a node leading into a
- * sub-FSM.  In particular, the operand of a BRANCH node is the first node of
- * the branch.	(NB this is *not* a tree structure: the tail of the branch
- * connects to the thing following the set of BRANCHes.)
+ * node points to the node after the stuff to be repeated.
+ * The operand of some types of node is a literal string; for others, it is a
+ * node leading into a sub-FSM.  In particular, the operand of a BRANCH node
+ * is the first node of the branch.
+ * (NB this is *not* a tree structure: the tail of the branch connects to the
+ * thing following the set of BRANCHes.)
  *
  * pattern	is coded like:
  *
@@ -95,6 +96,14 @@
  *		     |	    |		    ^			   ^
  *		     |	    +---------------+			   |
  *		     +---------------------------------------------+
+ *
+ *
+ *		       +----------------------+
+ *		       V		      |
+ * <aa>\+	BRANCH <aa> --> BRANCH --> BACK BRANCH --> NOTHING --> END
+ *		     |	             |	        ^		       ^
+ *		     |	             +----------+		       |
+ *		     +-------------------------------------------------+
  *
  *
  *					+-------------------------+
@@ -386,7 +395,10 @@ static char_u REGEXP_INRANGE[] = "]^-n\\";
 static char_u REGEXP_ABBR[] = "nrtebdoxuU";
 
 static int	backslash_trans __ARGS((int c));
-static int	skip_class_name __ARGS((char_u **pp));
+static int	get_char_class __ARGS((char_u **pp));
+static int	get_equi_class __ARGS((char_u **pp));
+static void	reg_equi_class __ARGS((int c));
+static int	get_coll_element __ARGS((char_u **pp));
 static char_u	*skip_anyof __ARGS((char_u *p));
 static void	init_class_tab __ARGS((void));
 
@@ -408,12 +420,12 @@ backslash_trans(c)
 }
 
 /*
- * Check for a character class name.  "pp" points to the '['.
+ * Check for a character class name "[:name:]".  "pp" points to the '['.
  * Returns one of the CLASS_ items. CLASS_NONE means that no item was
  * recognized.  Otherwise "pp" is advanced to after the item.
  */
     static int
-skip_class_name(pp)
+get_char_class(pp)
     char_u	**pp;
 {
     static const char *(class_names[]) =
@@ -464,55 +476,6 @@ skip_class_name(pp)
 	    }
     }
     return CLASS_NONE;
-}
-
-/*
- * Skip over a "[]" range.
- * "p" must point to the character after the '['.
- * The returned pointer is on the matching ']', or the terminating NUL.
- */
-    static char_u *
-skip_anyof(p)
-    char_u	*p;
-{
-    int		cpo_lit;	/* 'cpoptions' contains 'l' flag */
-#ifdef FEAT_MBYTE
-    int		l;
-#endif
-
-    cpo_lit = (!reg_syn && vim_strchr(p_cpo, CPO_LITERAL) != NULL);
-
-    if (*p == '^')	/* Complement of range. */
-	++p;
-    if (*p == ']' || *p == '-')
-	++p;
-    while (*p != NUL && *p != ']')
-    {
-#ifdef FEAT_MBYTE
-	if (has_mbyte && (l = (*mb_ptr2len_check)(p)) > 1)
-	    p += l;
-	else
-#endif
-	    if (*p == '-')
-	    {
-		++p;
-		if (*p != ']' && *p != NUL)
-		    mb_ptr_adv(p);
-	    }
-	else if (*p == '\\'
-		&& (vim_strchr(REGEXP_INRANGE, p[1]) != NULL
-		    || (!cpo_lit && vim_strchr(REGEXP_ABBR, p[1]) != NULL)))
-	    p += 2;
-	else if (*p == '[')
-	{
-	    if (skip_class_name(&p) == CLASS_NONE)
-		++p; /* It was not a class name */
-	}
-	else
-	    ++p;
-    }
-
-    return p;
 }
 
 /*
@@ -695,6 +658,8 @@ static char_u	*regnext __ARGS((char_u *));
 static void	regc __ARGS((int b));
 #ifdef FEAT_MBYTE
 static void	regmbc __ARGS((int c));
+#else
+# define regmbc(c) regc(c)
 #endif
 static void	reginsert __ARGS((int, char_u *));
 static void	reginsert_limits __ARGS((int, long, long, char_u *));
@@ -722,6 +687,210 @@ re_lookbehind(prog)
     regprog_T *prog;
 {
     return (prog->regflags & RF_LOOKBH);
+}
+
+/*
+ * Check for an equivalence class name "[=a=]".  "pp" points to the '['.
+ * Returns a character representing the class. Zero means that no item was
+ * recognized.  Otherwise "pp" is advanced to after the item.
+ */
+    static int
+get_equi_class(pp)
+    char_u	**pp;
+{
+    int		c;
+    int		l = 1;
+    char_u	*p = *pp;
+
+    if (p[1] == '=')
+    {
+#ifdef FEAT_MBYTE
+	if (has_mbyte)
+	    l = mb_ptr2len_check(p + 2);
+#endif
+	if (p[l + 2] == '=' && p[l + 3] == ']')
+	{
+#ifdef FEAT_MBYTE
+	    if (has_mbyte)
+		c = mb_ptr2char(p + 2);
+	    else
+#endif
+		c = p[2];
+	    *pp += l + 4;
+	    return c;
+	}
+    }
+    return 0;
+}
+
+/*
+ * Produce the bytes for equivalence class "c".
+ * Currently only handles latin1, latin9 and utf-8.
+ */
+    static void
+reg_equi_class(c)
+    int	    c;
+{
+#ifdef FEAT_MBYTE
+    if (enc_utf8 || STRCMP(p_enc, "latin1") == 0
+					      || STRCMP(p_enc, "latin9") == 0)
+#endif
+    {
+	switch (c)
+	{
+	    case 'A': case 'À': case 'Á': case 'Â':
+	    case 'Ã': case 'Ä': case 'Å':
+		      regmbc('A'); regmbc('À'); regmbc('Á'); regmbc('Â');
+		      regmbc('Ã'); regmbc('Ä'); regmbc('Å');
+		      return;
+	    case 'C': case 'Ç':
+		      regmbc('C'); regmbc('Ç');
+		      return;
+	    case 'E': case 'È': case 'É': case 'Ê': case 'Ë':
+		      regmbc('E'); regmbc('È'); regmbc('É'); regmbc('Ê');
+		      regmbc('Ë');
+		      return;
+	    case 'I': case 'Ì': case 'Í': case 'Î': case 'Ï':
+		      regmbc('I'); regmbc('Ì'); regmbc('Í'); regmbc('Î');
+		      regmbc('Ï');
+		      return;
+	    case 'N': case 'Ñ':
+		      regmbc('N'); regmbc('Ñ');
+		      return;
+	    case 'O': case 'Ò': case 'Ó': case 'Ô': case 'Õ': case 'Ö':
+		      regmbc('O'); regmbc('Ò'); regmbc('Ó'); regmbc('Ô');
+		      regmbc('Õ'); regmbc('Ö');
+		      return;
+	    case 'U': case 'Ù': case 'Ú': case 'Û': case 'Ü':
+		      regmbc('U'); regmbc('Ù'); regmbc('Ú'); regmbc('Û');
+		      regmbc('Ü');
+		      return;
+	    case 'Y': case 'Ý':
+		      regmbc('Y'); regmbc('Ý');
+		      return;
+	    case 'a': case 'à': case 'á': case 'â':
+	    case 'ã': case 'ä': case 'å':
+		      regmbc('a'); regmbc('à'); regmbc('á'); regmbc('â');
+		      regmbc('ã'); regmbc('ä'); regmbc('å');
+		      return;
+	    case 'c': case 'ç':
+		      regmbc('c'); regmbc('ç');
+		      return;
+	    case 'e': case 'è': case 'é': case 'ê': case 'ë':
+		      regmbc('e'); regmbc('è'); regmbc('é'); regmbc('ê');
+		      regmbc('ë');
+		      return;
+	    case 'i': case 'ì': case 'í': case 'î': case 'ï':
+		      regmbc('i'); regmbc('ì'); regmbc('í'); regmbc('î');
+		      regmbc('ï');
+		      return;
+	    case 'n': case 'ñ':
+		      regmbc('n'); regmbc('ñ');
+		      return;
+	    case 'o': case 'ò': case 'ó': case 'ô': case 'õ': case 'ö':
+		      regmbc('o'); regmbc('ò'); regmbc('ó'); regmbc('ô');
+		      regmbc('õ'); regmbc('ö');
+		      return;
+	    case 'u': case 'ù': case 'ú': case 'û': case 'ü':
+		      regmbc('u'); regmbc('ù'); regmbc('ú'); regmbc('û');
+		      regmbc('ü');
+		      return;
+	    case 'y': case 'ý': case 'ÿ':
+		      regmbc('y'); regmbc('ý'); regmbc('ÿ');
+		      return;
+	}
+    }
+    regmbc(c);
+}
+
+/*
+ * Check for a collating element "[.a.]".  "pp" points to the '['.
+ * Returns a character. Zero means that no item was recognized.  Otherwise
+ * "pp" is advanced to after the item.
+ * Currently only single characters are recognized!
+ */
+    static int
+get_coll_element(pp)
+    char_u	**pp;
+{
+    int		c;
+    int		l = 1;
+    char_u	*p = *pp;
+
+    if (p[1] == '.')
+    {
+#ifdef FEAT_MBYTE
+	if (has_mbyte)
+	    l = mb_ptr2len_check(p + 2);
+#endif
+	if (p[l + 2] == '.' && p[l + 3] == ']')
+	{
+#ifdef FEAT_MBYTE
+	    if (has_mbyte)
+		c = mb_ptr2char(p + 2);
+	    else
+#endif
+		c = p[2];
+	    *pp += l + 4;
+	    return c;
+	}
+    }
+    return 0;
+}
+
+
+/*
+ * Skip over a "[]" range.
+ * "p" must point to the character after the '['.
+ * The returned pointer is on the matching ']', or the terminating NUL.
+ */
+    static char_u *
+skip_anyof(p)
+    char_u	*p;
+{
+    int		cpo_lit;	/* 'cpoptions' contains 'l' flag */
+    int		cpo_bsl;	/* 'cpoptions' contains '\' flag */
+#ifdef FEAT_MBYTE
+    int		l;
+#endif
+
+    cpo_lit = (!reg_syn && vim_strchr(p_cpo, CPO_LITERAL) != NULL);
+    cpo_bsl = (!reg_syn && vim_strchr(p_cpo, CPO_BACKSL) != NULL);
+
+    if (*p == '^')	/* Complement of range. */
+	++p;
+    if (*p == ']' || *p == '-')
+	++p;
+    while (*p != NUL && *p != ']')
+    {
+#ifdef FEAT_MBYTE
+	if (has_mbyte && (l = (*mb_ptr2len_check)(p)) > 1)
+	    p += l;
+	else
+#endif
+	    if (*p == '-')
+	    {
+		++p;
+		if (*p != ']' && *p != NUL)
+		    mb_ptr_adv(p);
+	    }
+	else if (*p == '\\'
+		&& !cpo_bsl
+		&& (vim_strchr(REGEXP_INRANGE, p[1]) != NULL
+		    || (!cpo_lit && vim_strchr(REGEXP_ABBR, p[1]) != NULL)))
+	    p += 2;
+	else if (*p == '[')
+	{
+	    if (get_char_class(&p) == CLASS_NONE
+		    && get_equi_class(&p) == 0
+		    && get_coll_element(&p) == 0)
+		++p; /* It was not a class name */
+	}
+	else
+	    ++p;
+    }
+
+    return p;
 }
 
 /*
@@ -1251,16 +1420,6 @@ regpiece(flagp)
 	*flagp = flags;
 	return ret;
     }
-    if (!(flags & HASWIDTH) && re_multi_type(op) == MULTI_MULT)
-    {
-	if (op == Magic('*'))
-	    EMSG_M_RET_NULL(_("E56: %s* operand could be empty"),
-						       reg_magic >= MAGIC_ON);
-	if (op == Magic('+'))
-	    EMSG_M_RET_NULL(_("E57: %s+ operand could be empty"),
-						       reg_magic == MAGIC_ALL);
-	/* "\{}" is checked below, it's allowed when there is an upper limit */
-    }
     /* default flags */
     *flagp = (WORST | SPSTART | (flags & (HASNL | HASLOOKBH)));
 
@@ -1338,10 +1497,6 @@ regpiece(flagp)
 	case Magic('{'):
 	    if (!read_limits(&minval, &maxval))
 		return NULL;
-	    if (!(flags & HASWIDTH) && (maxval > minval
-				 ? maxval >= MAX_LIMIT : minval >= MAX_LIMIT))
-		EMSG_M_RET_NULL(_("E58: %s{ operand could be empty"),
-						      reg_magic == MAGIC_ALL);
 	    if (flags & SIMPLE)
 	    {
 		reginsert(BRACE_SIMPLE, ret);
@@ -1391,6 +1546,7 @@ regatom(flagp)
     char_u	    *ret;
     int		    flags;
     int		    cpo_lit;	    /* 'cpoptions' contains 'l' flag */
+    int		    cpo_bsl;	    /* 'cpoptions' contains '\' flag */
     int		    c;
     static char_u   *classchars = (char_u *)".iIkKfFpPsSdDxXoOwWhHaAlLuU";
     static int	    classcodes[] = {ANY, IDENT, SIDENT, KWORD, SKWORD,
@@ -1406,6 +1562,7 @@ regatom(flagp)
 
     *flagp = WORST;		/* Tentatively. */
     cpo_lit = (!reg_syn && vim_strchr(p_cpo, CPO_LITERAL) != NULL);
+    cpo_bsl = (!reg_syn && vim_strchr(p_cpo, CPO_BACKSL) != NULL);
 
     c = getchr();
     switch (c)
@@ -1827,7 +1984,10 @@ collection:
 
 		/* At the start ']' and '-' mean the literal character. */
 		if (*regparse == ']' || *regparse == '-')
+		{
+		    startc = *regparse;
 		    regc(*regparse++);
+		}
 
 		while (*regparse != NUL && *regparse != ']')
 		{
@@ -1845,15 +2005,22 @@ collection:
 			}
 			else
 			{
+			    /* Also accept "a-[.z.]" */
+			    endc = 0;
+			    if (*regparse == '[')
+				endc = get_coll_element(&regparse);
+			    if (endc == 0)
+			    {
 #ifdef FEAT_MBYTE
-			    if (has_mbyte)
-				endc = mb_ptr2char_adv(&regparse);
-			    else
+				if (has_mbyte)
+				    endc = mb_ptr2char_adv(&regparse);
+				else
 #endif
-				endc = *regparse++;
+				    endc = *regparse++;
+			    }
 
 			    /* Handle \o40, \x20 and \u20AC style sequences */
-			    if (endc == '\\' && !cpo_lit)
+			    if (endc == '\\' && !cpo_lit && !cpo_bsl)
 				endc = coll_get_char();
 
 			    if (startc > endc)
@@ -1892,8 +2059,10 @@ collection:
 		     * Only "\]", "\^", "\]" and "\\" are special in Vi.  Vim
 		     * accepts "\t", "\e", etc., but only when the 'l' flag in
 		     * 'cpoptions' is not included.
+		     * Posix doesn't recognize backslash at all.
 		     */
 		    else if (*regparse == '\\'
+			    && !cpo_bsl
 			    && (vim_strchr(REGEXP_INRANGE, regparse[1]) != NULL
 				|| (!cpo_lit
 				    && vim_strchr(REGEXP_ABBR,
@@ -1942,15 +2111,30 @@ collection:
 			int c_class;
 			int cu;
 
-			c_class = skip_class_name(&regparse);
+			c_class = get_char_class(&regparse);
 			startc = -1;
 			/* Characters assumed to be 8 bits! */
 			switch (c_class)
 			{
 			    case CLASS_NONE:
-				/* literal '[', allow [[-x] as a range */
-				startc = *regparse++;
-				regc(startc);
+				c_class = get_equi_class(&regparse);
+				if (c_class != 0)
+				{
+				    /* produce equivalence class */
+				    reg_equi_class(c_class);
+				}
+				else if ((c_class =
+					    get_coll_element(&regparse)) != 0)
+				{
+				    /* produce a collating element */
+				    regmbc(c_class);
+				}
+				else
+				{
+				    /* literal '[', allow [[-x] as a range */
+				    startc = *regparse++;
+				    regc(startc);
+				}
 				break;
 			    case CLASS_ALNUM:
 				for (cu = 1; cu <= 255; cu++)
@@ -2354,6 +2538,8 @@ initchr(str)
     static int
 peekchr()
 {
+    static int	after_slash = FALSE;
+
     if (curchr == -1)
     {
 	switch (curchr = regparse[0])
@@ -2392,10 +2578,16 @@ peekchr()
 		curchr = Magic(curchr);
 	    break;
 	case '*':
-	    /* * is not magic as the very first character, eg "?*ptr" and when
-	     * after '^', eg "/^*ptr" */
-	    if (reg_magic >= MAGIC_ON && !at_start
-				 && !(prev_at_start && prevchr == Magic('^')))
+	    /* * is not magic as the very first character, eg "?*ptr", when
+	     * after '^', eg "/^*ptr" and when after "\(", "\|", "\&".  But
+	     * "\(\*" is not magic, thus must be magic if "after_slash" */
+	    if (reg_magic >= MAGIC_ON
+		    && !at_start
+		    && !(prev_at_start && prevchr == Magic('^'))
+		    && (after_slash
+			|| (prevchr != Magic('(')
+			    && prevchr != Magic('&')
+			    && prevchr != Magic('|'))))
 		curchr = Magic('*');
 	    break;
 	case '^':
@@ -2460,8 +2652,10 @@ peekchr()
 		    prev_at_start = at_start;
 		    at_start = FALSE;	/* be able to say "/\*ptr" */
 		    ++regparse;
+		    ++after_slash;
 		    peekchr();
 		    --regparse;
+		    --after_slash;
 		    curchr = toggle_Magic(curchr);
 		}
 		else if (vim_strchr(REGEXP_ABBR, c))
@@ -2723,7 +2917,7 @@ read_limits(minval, maxval)
 	*maxval = MAX_LIMIT;	    /* It was \{} or \{-} */
     if (*regparse == '\\')
 	regparse++;	/* Allow either \{...} or \{...\} */
-    if (*regparse != '}' || (*maxval == 0 && *minval == 0))
+    if (*regparse != '}')
     {
 	sprintf((char *)IObuff, _("E554: Syntax error in %s{...}"),
 					  reg_magic == MAGIC_ALL ? "" : "\\");
@@ -2815,7 +3009,7 @@ static void	save_se_one __ARGS((save_se_T *savep, char_u **pp));
 	*(pp) = (savep)->se_u.ptr; }
 
 static int	re_num_cmp __ARGS((long_u val, char_u *scan));
-static int	regmatch __ARGS((char_u *prog));
+static int	regmatch __ARGS((char_u *prog, regsave_T *startp));
 static int	regrepeat __ARGS((char_u *p, long maxcount));
 
 #ifdef DEBUG
@@ -3273,7 +3467,7 @@ regtry(prog, col)
 	need_clear_zsubexpr = TRUE;
 #endif
 
-    if (regmatch(prog->program + 1))
+    if (regmatch(prog->program + 1, NULL))
     {
 	cleanup_subexpr();
 	if (REG_MULTI)
@@ -3379,8 +3573,9 @@ static long	bl_maxval;
  * undefined state!
  */
     static int
-regmatch(scan)
+regmatch(scan, startp)
     char_u	*scan;		/* Current node. */
+    regsave_T	*startp;	/* start position for BACK */
 {
     char_u	*next;		/* Next node. */
     int		op;
@@ -3803,6 +3998,10 @@ regmatch(scan)
 	    break;
 
 	  case BACK:
+	    /* When we run into BACK without matching something non-empty, we
+	     * fail. */
+	    if (startp != NULL && reg_save_equal(startp))
+		return FALSE;
 	    break;
 
 	  case MOPEN + 0:   /* Match start: \zs */
@@ -3823,7 +4022,7 @@ regmatch(scan)
 		cleanup_subexpr();
 		save_se(&save, &reg_startpos[no], &reg_startp[no]);
 
-		if (regmatch(next))
+		if (regmatch(next, startp))
 		    return TRUE;
 
 		restore_se(&save, &reg_startpos[no], &reg_startp[no]);
@@ -3833,7 +4032,7 @@ regmatch(scan)
 
 	  case NOPEN:	    /* \%( */
 	  case NCLOSE:	    /* \) after \%( */
-		if (regmatch(next))
+		if (regmatch(next, startp))
 		    return TRUE;
 		return FALSE;
 		/* break; Not Reached */
@@ -3856,7 +4055,7 @@ regmatch(scan)
 		cleanup_zsubexpr();
 		save_se(&save, &reg_startzpos[no], &reg_startzp[no]);
 
-		if (regmatch(next))
+		if (regmatch(next, startp))
 		    return TRUE;
 
 		restore_se(&save, &reg_startzpos[no], &reg_startzp[no]);
@@ -3883,7 +4082,7 @@ regmatch(scan)
 		cleanup_subexpr();
 		save_se(&save, &reg_endpos[no], &reg_endp[no]);
 
-		if (regmatch(next))
+		if (regmatch(next, startp))
 		    return TRUE;
 
 		restore_se(&save, &reg_endpos[no], &reg_endp[no]);
@@ -3909,7 +4108,7 @@ regmatch(scan)
 		cleanup_zsubexpr();
 		save_se(&save, &reg_endzpos[no], &reg_endzp[no]);
 
-		if (regmatch(next))
+		if (regmatch(next, startp))
 		    return TRUE;
 
 		restore_se(&save, &reg_endzpos[no], &reg_endzp[no]);
@@ -4076,7 +4275,7 @@ regmatch(scan)
 		    do
 		    {
 			reg_save(&save);
-			if (regmatch(OPERAND(scan)))
+			if (regmatch(OPERAND(scan), &save))
 			    return TRUE;
 			reg_restore(&save);
 			scan = regnext(scan);
@@ -4134,7 +4333,7 @@ regmatch(scan)
 				    ? brace_min[no] : brace_max[no]))
 		{
 		    reg_save(&save);
-		    if (regmatch(OPERAND(scan)))
+		    if (regmatch(OPERAND(scan), &save))
 			return TRUE;
 		    reg_restore(&save);
 		    --brace_count[no];	/* failed, decrement match count */
@@ -4148,11 +4347,11 @@ regmatch(scan)
 		    if (brace_count[no] <= brace_max[no])
 		    {
 			reg_save(&save);
-			if (regmatch(OPERAND(scan)))
+			if (regmatch(OPERAND(scan), &save))
 			    return TRUE;	/* matched some more times */
 			reg_restore(&save);
 			--brace_count[no];  /* matched just enough times */
-			/* continue with the items after \{} */
+			/* {  continue with the items after \{} */
 		    }
 		}
 		else
@@ -4161,7 +4360,7 @@ regmatch(scan)
 		    if (brace_count[no] <= brace_min[no])
 		    {
 			reg_save(&save);
-			if (regmatch(next))
+			if (regmatch(next, &save))
 			    return TRUE;
 			reg_restore(&save);
 			next = OPERAND(scan);
@@ -4234,7 +4433,7 @@ regmatch(scan)
 						    || *reginput == nextb_ic)
 			{
 			    reg_save(&save);
-			    if (regmatch(next))
+			    if (regmatch(next, startp))
 				return TRUE;
 			    reg_restore(&save);
 			}
@@ -4271,7 +4470,7 @@ regmatch(scan)
 						    || *reginput == nextb_ic)
 			{
 			    reg_save(&save);
-			    if (regmatch(next))
+			    if (regmatch(next, &save))
 				return TRUE;
 			    reg_restore(&save);
 			}
@@ -4295,7 +4494,7 @@ regmatch(scan)
 		/* If the operand matches, we fail.  Otherwise backup and
 		 * continue with the next item. */
 		reg_save(&save);
-		if (regmatch(OPERAND(scan)))
+		if (regmatch(OPERAND(scan), startp))
 		    return FALSE;
 		reg_restore(&save);
 	    }
@@ -4309,7 +4508,7 @@ regmatch(scan)
 		/* If the operand doesn't match, we fail.  Otherwise backup
 		 * and continue with the next item. */
 		reg_save(&save);
-		if (!regmatch(OPERAND(scan)))
+		if (!regmatch(OPERAND(scan), startp))
 		    return FALSE;
 		if (op == MATCH)	    /* zero-width */
 		    reg_restore(&save);
@@ -4331,7 +4530,7 @@ regmatch(scan)
 		 * faster.
 		 */
 		reg_save(&save_start);
-		if (regmatch(next))
+		if (regmatch(next, startp))
 		{
 		    /* save the position after the found match for next */
 		    reg_save(&save_after);
@@ -4347,7 +4546,7 @@ regmatch(scan)
 		    for (;;)
 		    {
 			reg_restore(&save_start);
-			if (regmatch(OPERAND(scan))
+			if (regmatch(OPERAND(scan), startp)
 				&& reg_save_equal(&behind_pos))
 			{
 			    behind_pos = save_behind_pos;

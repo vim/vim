@@ -165,6 +165,7 @@ static int sig_alarm_called;
 #endif
 static RETSIGTYPE deathtrap __ARGS(SIGPROTOARG);
 
+static void catch_int_signal __ARGS((void));
 static void set_signals __ARGS((void));
 static void catch_signals __ARGS((RETSIGTYPE (*func_deadly)(), RETSIGTYPE (*func_other)()));
 #ifndef __EMX__
@@ -175,6 +176,14 @@ static int  have_dollars __ARGS((int, char_u **));
 #ifndef NO_EXPANDPATH
 static int	pstrcmp __ARGS((const void *, const void *));
 static int	unix_expandpath __ARGS((garray_T *gap, char_u *path, int wildoff, int flags));
+# if defined(MACOS_X) && defined(FEAT_MBYTE)
+extern char_u	*mac_precompose_path __ARGS((char_u *decompPath, size_t decompLen, size_t *precompLen));
+# endif
+#endif
+
+#if defined(MACOS_X) && defined(FEAT_MBYTE)
+extern void	mac_conv_init __ARGS((void));
+extern void	mac_conv_cleanup __ARGS((void));
 #endif
 
 #ifndef __EMX__
@@ -1083,6 +1092,10 @@ mch_init()
 
     out_flush();
     set_signals();
+
+#if defined(MACOS_X) && defined(FEAT_MBYTE)
+    mac_conv_init();
+#endif
 }
 
     static void
@@ -1113,11 +1126,8 @@ set_signals()
     signal(SIGPIPE, SIG_IGN);
 #endif
 
-    /*
-     * We want to catch CTRL-C (only works while in Cooked mode).
-     */
 #ifdef SIGINT
-    signal(SIGINT, (RETSIGTYPE (*)())catch_sigint);
+    catch_int_signal();
 #endif
 
     /*
@@ -1148,6 +1158,17 @@ set_signals()
 	signal(SIGHUP, SIG_IGN);
 #endif
 }
+
+#if defined(SIGINT) || defined(PROTO)
+/*
+ * Catch CTRL-C (only works while in Cooked mode).
+ */
+    static void
+catch_int_signal()
+{
+    signal(SIGINT, (RETSIGTYPE (*)())catch_sigint);
+}
+#endif
 
     void
 reset_signals()
@@ -2694,6 +2715,8 @@ static void exit_scroll __ARGS((void));
     static void
 exit_scroll()
 {
+    if (silent_mode)
+	return;
     if (newline_on_exit || msg_didout)
     {
 	if (msg_use_printf())
@@ -2764,6 +2787,11 @@ mch_exit(r)
     if (gui.in_use)
 	gui_exit(r);
 #endif
+
+#if defined(MACOS_X) && defined(FEAT_MBYTE)
+    mac_conv_cleanup();
+#endif
+
 #ifdef __QNX__
     /* A core dump won't be created if the signal handler
      * doesn't return, so we can't call exit() */
@@ -3282,6 +3310,27 @@ mch_new_shellsize()
     /* Nothing to do. */
 }
 
+#ifndef USE_SYSTEM
+static void append_ga_line __ARGS((garray_T *gap));
+
+/*
+ * Append the text in "gap" below the cursor line and clear "gap".
+ */
+    static void
+append_ga_line(gap)
+    garray_T	*gap;
+{
+    /* Remove trailing CR. */
+    if (gap->ga_len > 0
+	    && !curbuf->b_p_bin
+	    && ((char_u *)gap->ga_data)[gap->ga_len - 1] == CAR)
+	--gap->ga_len;
+    ga_append(gap, NUL);
+    ml_append(curwin->w_cursor.lnum++, gap->ga_data, 0, FALSE);
+    gap->ga_len = 0;
+}
+#endif
+
     int
 mch_call_shell(cmd, options)
     char_u	*cmd;
@@ -3398,11 +3447,12 @@ mch_call_shell(cmd, options)
 
 #else /* USE_SYSTEM */	    /* don't use system(), use fork()/exec() */
 
-#define EXEC_FAILED 122	    /* Exit code when shell didn't execute.  Don't use
-			       127, some shell use that already */
+# define EXEC_FAILED 122    /* Exit code when shell didn't execute.  Don't use
+			       127, some shells use that already */
 
     char_u	*newcmd = NULL;
     pid_t	pid;
+    pid_t	wpid = 0;
     pid_t	wait_pid = 0;
 # ifdef HAVE_UNION_WAIT
     union wait	status;
@@ -3415,19 +3465,19 @@ mch_call_shell(cmd, options)
     int		i;
     char_u	*p;
     int		inquote;
-# ifdef FEAT_GUI
     int		pty_master_fd = -1;	    /* for pty's */
+# ifdef FEAT_GUI
     int		pty_slave_fd = -1;
     char	*tty_name;
+# endif
     int		fd_toshell[2];	    /* for pipes */
     int		fd_fromshell[2];
     int		pipe_error = FALSE;
-#  ifdef HAVE_SETENV
+# ifdef HAVE_SETENV
     char	envbuf[50];
-#  else
+# else
     static char	envbuf_Rows[20];
     static char	envbuf_Columns[20];
-#  endif
 # endif
     int		did_settmode = FALSE; /* TRUE when settmode(TMODE_RAW) called */
 
@@ -3480,19 +3530,24 @@ mch_call_shell(cmd, options)
     }
     argv[argc] = NULL;
 
-# ifdef FEAT_GUI
     /*
-     * For the GUI: Try using a pseudo-tty to get the stdin/stdout of the
-     * executed command into the Vim window.  Or use a pipe.
+     * For the GUI, when writing the output into the buffer and when reading
+     * input from the buffer: Try using a pseudo-tty to get the stdin/stdout
+     * of the executed command into the Vim window.  Or use a pipe.
      */
-    if (gui.in_use && show_shell_mess)
+    if ((options & (SHELL_READ|SHELL_WRITE))
+# ifdef FEAT_GUI
+	    || (gui.in_use && show_shell_mess)
+# endif
+		    )
     {
+# ifdef FEAT_GUI
 	/*
 	 * Try to open a master pty.
 	 * If this works, open the slave pty.
 	 * If the slave can't be opened, close the master pty.
 	 */
-	if (p_guipty)
+	if (p_guipty && !(options & (SHELL_READ|SHELL_WRITE)))
 	{
 	    pty_master_fd = OpenPTY(&tty_name);	    /* open pty */
 	    if (pty_master_fd >= 0 && ((pty_slave_fd =
@@ -3506,6 +3561,7 @@ mch_call_shell(cmd, options)
 	 * If not opening a pty or it didn't work, try using pipes.
 	 */
 	if (pty_master_fd < 0)
+# endif
 	{
 	    pipe_error = (pipe(fd_toshell) < 0);
 	    if (!pipe_error)			    /* pipe create OK */
@@ -3526,8 +3582,6 @@ mch_call_shell(cmd, options)
     }
 
     if (!pipe_error)			/* pty or pipe opened or not used */
-# endif
-
     {
 # ifdef __BEOS__
 	beos_cleanup_read_thread();
@@ -3535,15 +3589,20 @@ mch_call_shell(cmd, options)
 	if ((pid = fork()) == -1)	/* maybe we should use vfork() */
 	{
 	    MSG_PUTS(_("\nCannot fork\n"));
+	    if ((options & (SHELL_READ|SHELL_WRITE))
 # ifdef FEAT_GUI
-	    if (gui.in_use && show_shell_mess)
+		|| (gui.in_use && show_shell_mess)
+# endif
+		    )
 	    {
+# ifdef FEAT_GUI
 		if (pty_master_fd >= 0)		/* close the pseudo tty */
 		{
 		    close(pty_master_fd);
 		    close(pty_slave_fd);
 		}
 		else				/* close the pipes */
+# endif
 		{
 		    close(fd_toshell[0]);
 		    close(fd_toshell[1]);
@@ -3551,7 +3610,6 @@ mch_call_shell(cmd, options)
 		    close(fd_fromshell[1]);
 		}
 	    }
-# endif
 	}
 	else if (pid == 0)	/* child */
 	{
@@ -3593,13 +3651,17 @@ mch_call_shell(cmd, options)
 		    close(fd);
 		}
 	    }
+	    else if ((options & (SHELL_READ|SHELL_WRITE))
 # ifdef FEAT_GUI
-	    else if (gui.in_use)
+		    || gui.in_use
+# endif
+		    )
 	    {
 
-#  ifdef HAVE_SETSID
+# ifdef HAVE_SETSID
 		(void)setsid();
-#  endif
+# endif
+# ifdef FEAT_GUI
 		/* push stream discipline modules */
 		if (options & SHELL_COOKED)
 		    SetupSlavePTY(pty_slave_fd);
@@ -3608,8 +3670,9 @@ mch_call_shell(cmd, options)
 		 * unless run by root) */
 		ioctl(pty_slave_fd, TIOCSCTTY, (char *)NULL);
 #  endif
+# endif
 		/* Simulate to have a dumb terminal (for now) */
-#  ifdef HAVE_SETENV
+# ifdef HAVE_SETENV
 		setenv("TERM", "dumb", 1);
 		sprintf((char *)envbuf, "%ld", Rows);
 		setenv("ROWS", (char *)envbuf, 1);
@@ -3617,7 +3680,7 @@ mch_call_shell(cmd, options)
 		setenv("LINES", (char *)envbuf, 1);
 		sprintf((char *)envbuf, "%ld", Columns);
 		setenv("COLUMNS", (char *)envbuf, 1);
-#  else
+# else
 		/*
 		 * Putenv does not copy the string, it has to remain valid.
 		 * Use a static array to avoid loosing allocated memory.
@@ -3629,8 +3692,9 @@ mch_call_shell(cmd, options)
 		putenv(envbuf_Rows);
 		sprintf(envbuf_Columns, "COLUMNS=%ld", Columns);
 		putenv(envbuf_Columns);
-#  endif
+# endif
 
+# ifdef FEAT_GUI
 		if (pty_master_fd >= 0)
 		{
 		    close(pty_master_fd);   /* close master side of pty */
@@ -3646,6 +3710,7 @@ mch_call_shell(cmd, options)
 		    close(pty_slave_fd);    /* has been dupped, close it now */
 		}
 		else
+# endif
 		{
 		    /* set up stdin for the child */
 		    close(fd_toshell[1]);
@@ -3664,7 +3729,7 @@ mch_call_shell(cmd, options)
 		    dup(1);
 		}
 	    }
-# endif /* FEAT_GUI */
+
 	    /*
 	     * There is no type cast for the argv, because the type may be
 	     * different on different machines. This may cause a warning
@@ -3679,21 +3744,27 @@ mch_call_shell(cmd, options)
 	{
 	    /*
 	     * While child is running, ignore terminating signals.
+	     * Do catch CTRL-C, so that "got_int" is set.
 	     */
 	    catch_signals(SIG_IGN, SIG_ERR);
-
-# ifdef FEAT_GUI
+	    catch_int_signal();
 
 	    /*
 	     * For the GUI we redirect stdin, stdout and stderr to our window.
+	     * This is also used to pipe stdin/stdout to/from the external
+	     * command.
 	     */
-	    if (gui.in_use && show_shell_mess)
+	    if ((options & (SHELL_READ|SHELL_WRITE))
+# ifdef FEAT_GUI
+		    || (gui.in_use && show_shell_mess)
+# endif
+	       )
 	    {
-#  define BUFLEN 100		/* length for buffer, pseudo tty limit is 128 */
+# define BUFLEN 100		/* length for buffer, pseudo tty limit is 128 */
 		char_u	    buffer[BUFLEN + 1];
-#  ifdef FEAT_MBYTE
+# ifdef FEAT_MBYTE
 		int	    buffer_off = 0;	/* valid bytes in buffer[] */
-#  endif
+# endif
 		char_u	    ta_buf[BUFLEN + 1];	/* TypeAHead */
 		int	    ta_len = 0;		/* valid bytes in ta_buf[] */
 		int	    len;
@@ -3702,7 +3773,10 @@ mch_call_shell(cmd, options)
 		int	    c;
 		int	    toshell_fd;
 		int	    fromshell_fd;
+		garray_T    ga;
+		int	    noread_cnt;
 
+# ifdef FEAT_GUI
 		if (pty_master_fd >= 0)
 		{
 		    close(pty_slave_fd);	/* close slave side of pty */
@@ -3710,6 +3784,7 @@ mch_call_shell(cmd, options)
 		    toshell_fd = dup(pty_master_fd);
 		}
 		else
+# endif
 		{
 		    close(fd_toshell[0]);
 		    close(fd_fromshell[1]);
@@ -3738,6 +3813,76 @@ mch_call_shell(cmd, options)
 		old_State = State;
 		State = EXTERNCMD;	/* don't redraw at window resize */
 
+		if (options & SHELL_WRITE && toshell_fd >= 0)
+		{
+		    /* Fork a process that will write the lines to the
+		     * external program. */
+		    if ((wpid = fork()) == -1)
+		    {
+			MSG_PUTS(_("\nCannot fork\n"));
+		    }
+		    else if (wpid == 0)
+		    {
+			linenr_T    lnum = curbuf->b_op_start.lnum;
+			int	    written = 0;
+			char_u	    *p = ml_get(lnum);
+			char_u	    *s;
+			size_t	    l;
+
+			/* child */
+			for (;;)
+			{
+			    l = STRLEN(p + written);
+			    if (l == 0)
+				len = 0;
+			    else if (p[written] == NL)
+				/* NL -> NUL translation */
+				len = write(toshell_fd, "", (size_t)1);
+			    else
+			    {
+				s = vim_strchr(p + written, NL);
+				len = write(toshell_fd, (char *)p + written,
+					   s == NULL ? l : s - (p + written));
+			    }
+			    if (len == l)
+			    {
+				/* Finished a line, add a NL, unless this line
+				 * should not have one. */
+				if (lnum != curbuf->b_op_end.lnum
+					|| !curbuf->b_p_bin
+					|| (lnum != write_no_eol_lnum
+					    && (lnum !=
+						    curbuf->b_ml.ml_line_count
+						    || curbuf->b_p_eol)))
+				    write(toshell_fd, "\n", (size_t)1);
+				++lnum;
+				if (lnum > curbuf->b_op_end.lnum)
+				{
+				    /* finished all the lines, close pipe */
+				    close(toshell_fd);
+				    toshell_fd = -1;
+				    break;
+				}
+				p = ml_get(lnum);
+				written = 0;
+			    }
+			    else if (len > 0)
+				written += len;
+			}
+			_exit(0);
+		    }
+		    else
+		    {
+			close(toshell_fd);
+			toshell_fd = -1;
+		    }
+		}
+
+		if (options & SHELL_READ)
+		    ga_init2(&ga, 1, BUFLEN);
+
+		noread_cnt = 0;
+
 		for (;;)
 		{
 		    /*
@@ -3745,12 +3890,15 @@ mch_call_shell(cmd, options)
 		     * if there are any.  Don't do this if we are expanding
 		     * wild cards (would eat typeahead).  Don't get extra
 		     * characters when we already have one.
+		     * Don't read characters unless we didn't get output for a
+		     * while, avoids that ":r !ls" eats typeahead.
 		     */
 		    len = 0;
 		    if (!(options & SHELL_EXPAND)
 			    && (ta_len > 0
-				|| (len = ui_inchar(ta_buf, BUFLEN, 10L,
-								     0)) > 0))
+				|| (noread_cnt > 4
+				    && (len = ui_inchar(ta_buf,
+						       BUFLEN, 10L, 0)) > 0)))
 		    {
 			/*
 			 * For pipes:
@@ -3759,19 +3907,23 @@ mch_call_shell(cmd, options)
 			 */
 			if (len == 1 && (pty_master_fd < 0 || cmd != NULL))
 			{
-#  ifdef SIGINT
+# ifdef SIGINT
 			    /*
 			     * Send SIGINT to the child's group or all
 			     * processes in our group.
 			     */
 			    if (ta_buf[ta_len] == Ctrl_C
 					       || ta_buf[ta_len] == intr_char)
-#   ifdef HAVE_SETSID
+			    {
+#  ifdef HAVE_SETSID
 				kill(-pid, SIGINT);
-#   else
+#  else
 				kill(0, SIGINT);
-#   endif
 #  endif
+				if (wpid > 0)
+				    kill(wpid, SIGINT);
+			    }
+# endif
 			    if (pty_master_fd < 0 && toshell_fd >= 0
 					       && ta_buf[ta_len] == Ctrl_D)
 			    {
@@ -3799,10 +3951,10 @@ mch_call_shell(cmd, options)
 			    }
 			    else if (ta_buf[i] == '\r')
 				ta_buf[i] = '\n';
-#  ifdef FEAT_MBYTE
+# ifdef FEAT_MBYTE
 			    if (has_mbyte)
 				i += (*mb_ptr2len_check)(ta_buf + i) - 1;
-#  endif
+# endif
 			}
 
 			/*
@@ -3815,7 +3967,7 @@ mch_call_shell(cmd, options)
 			    {
 				if (ta_buf[i] == '\n' || ta_buf[i] == '\b')
 				    msg_putchar(ta_buf[i]);
-#  ifdef FEAT_MBYTE
+# ifdef FEAT_MBYTE
 				else if (has_mbyte)
 				{
 				    int l = (*mb_ptr2len_check)(ta_buf + i);
@@ -3823,7 +3975,7 @@ mch_call_shell(cmd, options)
 				    msg_outtrans_len(ta_buf + i, l);
 				    i += l - 1;
 				}
-#  endif
+# endif
 				else
 				    msg_outtrans_len(ta_buf + i, 1);
 			    }
@@ -3837,16 +3989,35 @@ mch_call_shell(cmd, options)
 			 * Write the characters to the child, unless EOF has
 			 * been typed for pipes.  Write one character at a
 			 * time, to avoid loosing too much typeahead.
+			 * When writing buffer lines, drop the typed
+			 * characters (only check for CTRL-C).
 			 */
-			if (toshell_fd >= 0)
+			if (options & SHELL_WRITE)
+			    ta_len = 0;
+			else if (toshell_fd >= 0)
 			{
 			    len = write(toshell_fd, (char *)ta_buf, (size_t)1);
 			    if (len > 0)
 			    {
 				ta_len -= len;
 				mch_memmove(ta_buf, ta_buf + len, ta_len);
+				noread_cnt = 0;
 			    }
 			}
+		    }
+
+		    if (got_int)
+		    {
+			/* CTRL-C sends a signal to the child, we ignore it
+			 * ourselves */
+#  ifdef HAVE_SETSID
+			kill(-pid, SIGINT);
+#  else
+			kill(0, SIGINT);
+#  endif
+			if (wpid > 0)
+			    kill(wpid, SIGINT);
+			got_int = FALSE;
 		    }
 
 		    /*
@@ -3858,23 +4029,41 @@ mch_call_shell(cmd, options)
 		     * TODO: This should handle escape sequences, compatible
 		     * to some terminal (vt52?).
 		     */
+		    ++noread_cnt;
 		    while (RealWaitForChar(fromshell_fd, 10L, NULL))
 		    {
 			len = read(fromshell_fd, (char *)buffer
-#  ifdef FEAT_MBYTE
+# ifdef FEAT_MBYTE
 				+ buffer_off, (size_t)(BUFLEN - buffer_off)
-#  else
+# else
 				, (size_t)BUFLEN
-#  endif
+# endif
 				);
 			if (len <= 0)		    /* end of file or error */
 			    goto finished;
-#  ifdef FEAT_MBYTE
-			len += buffer_off;
-			buffer[len] = NUL;
-			if (has_mbyte)
+
+			noread_cnt = 0;
+			if (options & SHELL_READ)
+			{
+			    /* Do NUL -> NL translation, append NL separated
+			     * lines to the current buffer. */
+			    for (i = 0; i < len; ++i)
+			    {
+				if (buffer[i] == NL)
+				    append_ga_line(&ga);
+				else if (buffer[i] == NUL)
+				    ga_append(&ga, NL);
+				else
+				    ga_append(&ga, buffer[i]);
+			    }
+			}
+# ifdef FEAT_MBYTE
+			else if (has_mbyte)
 			{
 			    int		l;
+
+			    len += buffer_off;
+			    buffer[len] = NUL;
 
 			    /* Check if the last character in buffer[] is
 			     * incomplete, keep these bytes for the next
@@ -3913,8 +4102,8 @@ mch_call_shell(cmd, options)
 			    }
 			    buffer_off = 0;
 			}
+# endif /* FEAT_MBYTE */
 			else
-#  endif /* FEAT_MBYTE */
 			{
 			    buffer[len] = NUL;
 			    msg_puts(buffer);
@@ -3931,11 +4120,11 @@ mch_call_shell(cmd, options)
 		     * Check if the child still exists, before checking for
 		     * typed characters (otherwise we would loose typeahead).
 		     */
-#  ifdef __NeXT__
+# ifdef __NeXT__
 		    wait_pid = wait4(pid, &status, WNOHANG, (struct rusage *) 0);
-#  else
+# else
 		    wait_pid = waitpid(pid, &status, WNOHANG);
-#  endif
+# endif
 		    if ((wait_pid == (pid_t)-1 && errno == ECHILD)
 			    || (wait_pid == pid && WIFEXITED(status)))
 		    {
@@ -3946,20 +4135,29 @@ mch_call_shell(cmd, options)
 		}
 finished:
 		p_more = p_more_save;
+		if (options & SHELL_READ)
+		{
+		    if (ga.ga_len > 0)
+		    {
+			append_ga_line(&ga);
+			/* remember that the NL was missing */
+			write_no_eol_lnum = curwin->w_cursor.lnum;
+		    }
+		    else
+			write_no_eol_lnum = 0;
+		    ga_clear(&ga);
+		}
 
-#  ifndef MACOS_X_UNIX /* TODO: Is it needed for MACOS_X ? */
 		/*
 		 * Give all typeahead that wasn't used back to ui_inchar().
 		 */
 		if (ta_len)
 		    ui_inchar_undo(ta_buf, ta_len);
-#  endif
 		State = old_State;
 		if (toshell_fd >= 0)
 		    close(toshell_fd);
 		close(fromshell_fd);
 	    }
-# endif /* FEAT_GUI */
 
 	    /*
 	     * Wait until our child has exited.
@@ -3970,7 +4168,7 @@ finished:
 	     */
 	    while (wait_pid != pid)
 	    {
-#ifdef _THREAD_SAFE
+# ifdef _THREAD_SAFE
 		/* Ugly hack: when compiled with Python threads are probably
 		 * used, in which case wait() sometimes hangs for no obvious
 		 * reason.  Use waitpid() instead and loop (like the GUI). */
@@ -3985,9 +4183,9 @@ finished:
 		    mch_delay(10L, TRUE);
 		    continue;
 		}
-#else
+# else
 		wait_pid = wait(&status);
-#endif
+# endif
 		if (wait_pid <= 0
 # ifdef ECHILD
 			&& errno == ECHILD
@@ -3995,6 +4193,11 @@ finished:
 		   )
 		    break;
 	    }
+
+	    /* Make sure the child that writes to the external program is
+	     * dead. */
+	    if (wpid > 0)
+		kill(wpid, SIGKILL);
 
 	    /*
 	     * Set to raw mode right now, otherwise a CTRL-C after
@@ -4656,7 +4859,19 @@ unix_expandpath(gap, path, wildoff, flags)
 		    if (*path_end != NUL)
 			backslash_halve(buf + len + 1);
 		    if (mch_getperm(buf) >= 0)	/* add existing file */
+		    {
+#if defined(MACOS_X) && defined(FEAT_MBYTE)
+			size_t precomp_len = STRLEN(buf)+1;
+			char_u *precomp_buf =
+			    mac_precompose_path(buf, precomp_len, &precomp_len);
+			if (precomp_buf)
+			{
+			    mch_memmove(buf, precomp_buf, precomp_len);
+			    vim_free(precomp_buf);
+			}
+#endif
 			addfile(gap, buf, flags);
+		    }
 		}
 	    }
 	}

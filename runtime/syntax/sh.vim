@@ -2,8 +2,8 @@
 " Language:		shell (sh) Korn shell (ksh) bash (sh)
 " Maintainer:		Dr. Charles E. Campbell, Jr.  <NdrOchipS@PcampbellAfamily.Mbiz>
 " Previous Maintainer:	Lennart Schultz <Lennart.Schultz@ecmwf.int>
-" Last Change:		Dec 28, 2004
-" Version:		71
+" Last Change:		Feb 16, 2005
+" Version:		72
 " URL:		http://www.erols.com/astronaut/vim/index.html#vimlinks_syntax
 "
 " Using the following VIM variables: {{{1
@@ -63,24 +63,24 @@ syn case match
 
 " Clusters: contains=@... clusters {{{1
 "==================================
-syn cluster shCaseEsacList	contains=shCaseStart,shCase,shCaseBar,shCaseIn,shComment,shDeref,shDerefSimple,shCaseCommandSub,shCaseSingleQuote,shCaseDoubleQuote,shSpecial
+syn cluster shCaseEsacList	contains=shCaseStart,shCase,shCaseBar,shCaseIn,shComment,shDeref,shDerefSimple,shCaseCommandSub,shCaseExSingleQuote,shCaseSingleQuote,shCaseDoubleQuote,shSpecial
 syn cluster shCaseList	contains=@shCommandSubList,shCaseEsac,shColon,shCommandSub,shCommandSub,shComment,shDo,shEcho,shExpr,shFor,shHereDoc,shIf,shRedir,shSetList,shSource,shStatement,shVariable,bkshFunction,shSpecial
 syn cluster shColonList	contains=@shCaseList
-syn cluster shCommandSubList	contains=shArithmetic,shDeref,shDerefSimple,shNumber,shOperator,shPosnParm,shSpecial,shSingleQuote,shDoubleQuote,shStatement,shVariable,shSubSh,shAlias,shTest
+syn cluster shCommandSubList	contains=shArithmetic,shDeref,shDerefSimple,shNumber,shOperator,shPosnParm,shSpecial,shExSingleQuote,shSingleQuote,shDoubleQuote,shStatement,shVariable,shSubSh,shAlias,shTest
 syn cluster shDblQuoteList	contains=shCommandSub,shDeref,shDerefSimple,shSpecial,shPosnParm
 syn cluster shDerefList	contains=shDeref,shDerefSimple,shDerefVar,shDerefSpecial,shDerefWordError
 syn cluster shDerefVarList	contains=shDerefOp,shDerefVarArray,shDerefOpError
-syn cluster shEchoList	contains=shArithmetic,shCommandSub,shDeref,shDerefSimple,shExpr,shSingleQuote,shDoubleQuote,shSpecial
-syn cluster shExprList1	contains=shCharClass,shNumber,shOperator,shSingleQuote,shDoubleQuote,shSpecial,shExpr,shDblBrace,shDeref,shDerefSimple
+syn cluster shEchoList	contains=shArithmetic,shCommandSub,shDeref,shDerefSimple,shExpr,shExSingleQuote,shSingleQuote,shDoubleQuote,shSpecial
+syn cluster shExprList1	contains=shCharClass,shNumber,shOperator,shExSingleQuote,shSingleQuote,shDoubleQuote,shSpecial,shExpr,shDblBrace,shDeref,shDerefSimple
 syn cluster shExprList2	contains=@shExprList1,@shCaseList,shTest
 syn cluster shFunctionList	contains=@shCaseList,shOperator
 syn cluster shHereBeginList	contains=@shCommandSubList
 syn cluster shHereList	contains=shBeginHere,shHerePayload
 syn cluster shHereListDQ	contains=shBeginHere,@shDblQuoteList,shHerePayload
-syn cluster shIdList	contains=shCommandSub,shWrapLineOperator,shIdWhiteSpace,shDeref,shDerefSimple,shSpecial,shRedir,shSingleQuote,shDoubleQuote,shExpr
+syn cluster shIdList	contains=shCommandSub,shWrapLineOperator,shIdWhiteSpace,shDeref,shDerefSimple,shSpecial,shRedir,shExSingleQuote,shSingleQuote,shDoubleQuote,shExpr
 syn cluster shLoopList	contains=@shCaseList,shTestOpr,shExpr,shDblBrace,shConditional,shCaseEsac,shTest
 syn cluster shSubShList	contains=@shCaseList
-syn cluster shTestList	contains=shCharClass,shComment,shCommandSub,shDeref,shDerefSimple,shDoubleQuote,shExpr,shExpr,shNumber,shOperator,shSingleQuote,shSpecial,shTestOpr,shTest
+syn cluster shTestList	contains=shCharClass,shComment,shCommandSub,shDeref,shDerefSimple,shDoubleQuote,shExpr,shExpr,shNumber,shOperator,shExSingleQuote,shSingleQuote,shSpecial,shTestOpr,shTest
 
 
 " Echo: {{{1
@@ -90,7 +90,7 @@ syn region shEcho matchgroup=shStatement start="\<echo\>"  skip="\\$" matchgroup
 syn region shEcho matchgroup=shStatement start="\<print\>" skip="\\$" matchgroup=shOperator end="$" matchgroup=NONE end="[<>;&|()]"me=e-1 end="\d[<>]"me=e-2 end="#"me=e-1 contains=@shEchoList
 
 " This must be after the strings, so that bla \" be correct
-syn region shEmbeddedEcho contained matchgroup=shStatement start="\<print\>" skip="\\$" matchgroup=shOperator end="$" matchgroup=NONE end="[<>;&|`)]"me=e-1 end="\d[<>]"me=e-2 end="#"me=e-1 contains=shNumber,shSingleQuote,shDeref,shDerefSimple,shSpecialVar,shSpecial,shOperator,shDoubleQuote,shCharClass
+syn region shEmbeddedEcho contained matchgroup=shStatement start="\<print\>" skip="\\$" matchgroup=shOperator end="$" matchgroup=NONE end="[<>;&|`)]"me=e-1 end="\d[<>]"me=e-2 end="#"me=e-1 contains=shNumber,shExSingleQuote,shSingleQuote,shDeref,shDerefSimple,shSpecialVar,shSpecial,shOperator,shDoubleQuote,shCharClass
 
 " Alias: {{{1
 " =====
@@ -124,7 +124,7 @@ syn match   shOption  "\s--\S\+"ms=s+1
 syn match   shOperator	"[!&;|]"
 syn match   shOperator	"\[[[^:]\|\]]"
 syn match   shOperator	"!\=="		skipwhite nextgroup=shPattern
-syn match   shPattern	"\<\S\+\())\)\@="	contained contains=shSingleQuote,shDoubleQuote,shDeref
+syn match   shPattern	"\<\S\+\())\)\@="	contained contains=shExSingleQuote,shSingleQuote,shDoubleQuote,shDeref
 
 " Subshells: {{{1
 " ==========
@@ -163,12 +163,17 @@ endif
 
 " Case: case...esac {{{1
 " ====
-syn match   shCaseBar	contained skipwhite "[^|"`'()]\{-}|"hs=e		nextgroup=shCase,shCaseStart,shCaseBar,shComment,shCaseSingleQuote,shCaseDoubleQuote
+syn match   shCaseBar	contained skipwhite "[^|"`'()]\{-}|"hs=e		nextgroup=shCase,shCaseStart,shCaseBar,shComment,shCaseExSingleQuote,shCaseSingleQuote,shCaseDoubleQuote
 syn match   shCaseStart	contained skipwhite skipnl "("			nextgroup=shCase,shCaseBar
 syn region  shCase	contained skipwhite skipnl matchgroup=shSnglCase start="[^$()]\{-})"ms=s,hs=e  end=";;" end="esac"me=s-1 contains=@shCaseList nextgroup=shCaseStart,shCase,,shComment
 syn region  shCaseEsac	matchgroup=shConditional start="\<case\>" end="\<esac\>"	contains=@shCaseEsacList
-syn keyword shCaseIn	contained skipwhite skipnl in			nextgroup=shCase,shCaseStart,shCaseBar,shComment,shCaseSingleQuote,shCaseDoubleQuote
-syn region  shCaseSingleQuote	matchgroup=shOperator start=+'+ skip=+\\\\\|\\.+ end=+'+	contains=shStringSpecial		skipwhite skipnl nextgroup=shCaseBar	contained
+syn keyword shCaseIn	contained skipwhite skipnl in			nextgroup=shCase,shCaseStart,shCaseBar,shComment,shCaseExSingleQuote,shCaseSingleQuote,shCaseDoubleQuote
+if exists("b:is_bash")
+ syn region  shCaseExSingleQuote	matchgroup=shOperator start=+\$'+ skip=+\\\\\|\\.+ end=+'+	contains=shStringSpecial,shSpecial	skipwhite skipnl nextgroup=shCaseBar	contained
+else
+ syn region  shCaseExSingleQuote	matchgroup=Error start=+\$'+ skip=+\\\\\|\\.+ end=+'+	contains=shStringSpecial	skipwhite skipnl nextgroup=shCaseBar	contained
+endif
+syn region  shCaseSingleQuote	matchgroup=shOperator start=+'+ end=+'+	contains=shStringSpecial		skipwhite skipnl nextgroup=shCaseBar	contained
 syn region  shCaseDoubleQuote	matchgroup=shOperator start=+"+ skip=+\\\\\|\\.+ end=+"+	contains=@shDblQuoteList,shStringSpecial	skipwhite skipnl nextgroup=shCaseBar	contained
 syn region  shCaseCommandSub	start=+`+ skip=+\\\\\|\\.+ end=+`+		contains=@shCommandSubList		skipwhite skipnl nextgroup=shCaseBar	contained
 
@@ -188,7 +193,7 @@ if exists("b:is_kornshell") || exists("b:is_bash")
  syn region shArithmetic matchgroup=shArithRegion  start="\$((" skip='\\\\\|\\.' end="))" contains=@shCommandSubList
  syn match  shSkipInitWS contained	"^\s\+"
 else
- syn region shCommandSub matchgroup=Error start="$(" end=")" contains=@shCommandSubList
+ syn region shCommandSub matchgroup=Error start="\$(" end=")" contains=@shCommandSubList
 endif
 
 if exists("b:is_bash")
@@ -213,7 +218,16 @@ syn region  shColon	start="^\s*:" end="$\|" end="#"me=e-1 contains=@shColonList
 " String And Character Constants: {{{1
 "================================
 syn match   shNumber	"-\=\<\d\+\>"
-syn match   shSpecial	"\\\d\d\d\|\\[abcfnrtv0]"	contained
+if exists("b:is_bash")
+ syn match   shSpecial	"\\\o\o\o\|\\x\x\x\|\\c.\|\\[abefnrtv]"	contained
+else
+ syn match   shSpecial	"\\\d\d\d\|\\[abcfnrtv0]"	contained
+endif
+if exists("b:is_bash")
+ syn region  shExSingleQuote	matchgroup=shOperator start=+\$'+ skip=+\\\\\|\\.+ end=+'+	contains=shStringSpecial,shSpecial
+else
+ syn region  shExSingleQuote	matchGroup=Error start=+\$'+ skip=+\\\\\|\\.+ end=+'+	contains=shStringSpecial,shSpecial
+endif
 syn region  shSingleQuote	matchgroup=shOperator start=+'+ end=+'+		contains=shStringSpecial
 syn region  shDoubleQuote	matchgroup=shOperator start=+"+ skip=+\\"+ end=+"+	contains=@shDblQuoteList,shStringSpecial
 syn match   shStringSpecial	"[^[:print:]]"	contained
@@ -314,7 +328,7 @@ endif
 "=============
 syn match  shVariable "\<\([bwglsav]:\)\=[a-zA-Z0-9.!@_%+,]*\ze="	nextgroup=shSetIdentifier
 syn match  shIdWhiteSpace  contained	"\s"
-syn match  shSetIdentifier contained	"="	nextgroup=shPattern,shDeref,shDerefSimple,shDoubleQuote,shSingleQuote
+syn match  shSetIdentifier contained	"="	nextgroup=shPattern,shDeref,shDerefSimple,shDoubleQuote,shSingleQuote,shExSingleQuote
 if exists("b:is_bash")
   syn region shSetList matchgroup=shSet start="\<\(declare\|typeset\|local\|export\|unset\)\>\ze[^/]" end="$" matchgroup=shOperator end="[;&]"me=e-1 matchgroup=NONE end="#\|="me=e-1 contains=@shIdList
   syn region shSetList matchgroup=shSet start="\<set\>[^/]"me=e-1 end="$" end="\\ze[|)]"		 matchgroup=shOperator end="[;&]"me=e-1 matchgroup=NONE end="[#=]"me=e-1 contains=@shIdList
@@ -448,32 +462,30 @@ syn sync match shWhileSync	grouphere	shRepeat	"\<while\>"
 " Default Highlighting: {{{1
 " =====================
 hi def link shArithRegion	shShellVariables
+hi def link shBeginHere	shRedir
 hi def link shCaseBar	shConditional
-hi def link shCaseIn	shConditional
 hi def link shCaseCommandSub	shCommandSub
 hi def link shCaseDoubleQuote	shDoubleQuote
+hi def link shCaseIn	shConditional
 hi def link shCaseSingleQuote	shSingleQuote
 hi def link shCaseStart	shConditional
 hi def link shCmdSubRegion	shShellVariables
 hi def link shColon	shStatement
-
-hi def link shDeref	shShellVariables
 hi def link shDerefOp	shOperator
-
-hi def link shDerefVar	shDeref
-hi def link shDerefPOL	shDerefOp
-hi def link shDerefPatString	shDerefPattern
 hi def link shDerefPatStringOp	shDerefOp
+hi def link shDerefPatString	shDerefPattern
+hi def link shDerefPOL	shDerefOp
+hi def link shDeref	shShellVariables
 hi def link shDerefSimple	shDeref
 hi def link shDerefSpecial	shDeref
 hi def link shDerefString	shDoubleQuote
-hi def link shHerePayload	shHereDoc
-hi def link shBeginHere	shRedir
-
+hi def link shDerefVar	shDeref
 hi def link shDoubleQuote	shString
 hi def link shEcho	shString
 hi def link shEmbeddedEcho	shString
+hi def link shExSingleQuote	shSingleQuote
 hi def link shHereDoc	shString
+hi def link shHerePayload	shHereDoc
 hi def link shLoop	shStatement
 hi def link shOption	shCommandSub
 hi def link shPattern	shString

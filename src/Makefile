@@ -505,6 +505,7 @@ CClink = $(CC)
 # Often used for GCC: mixed optimizing, lot of optimizing, debugging
 #CFLAGS = -g -O2 -fno-strength-reduce -Wall -Wshadow -Wmissing-prototypes
 #CFLAGS = -g -O2 -fno-strength-reduce -Wall -Wmissing-prototypes
+#CFLAGS = -g -Wall -Wmissing-prototypes
 #CFLAGS = -O6 -fno-strength-reduce -Wall -Wshadow -Wmissing-prototypes
 #CFLAGS = -g -DDEBUG -Wall -Wshadow -Wmissing-prototypes
 #CFLAGS = -g -O2 '-DSTARTUPTIME="vimstartup"' -fno-strength-reduce -Wall -Wmissing-prototypes
@@ -2410,6 +2411,11 @@ $(APPDIR): bundle-dir bundle-executable bundle-info bundle-resource \
 bundle-dir: $(APPDIR)/Contents $(VIMTARGET)
 	-@srcdir=`pwd`; cd $(HELPSOURCE); $(MAKE) VIMEXE=$$srcdir/$(VIMTARGET) vimtags
 	cp -R ../runtime $(APPDIR)
+# When using CVS some CVS directories might have been copied.
+	cvs=`find $(APPDIR) \( -name CVS -o -name AAPDIR \) -print`; \
+	      if test -n "$$cvs"; then \
+		 rm -rf $$cvs; \
+	      fi
 
 bundle-executable: $(VIMTARGET)
 	cp $(VIMTARGET) $(APPDIR)/Contents/MacOS/$(VIMTARGET)

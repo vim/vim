@@ -782,6 +782,8 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 #define SHELL_COOKED	4	/* set term to cooked mode */
 #define SHELL_DOOUT	8	/* redirecting output */
 #define SHELL_SILENT	16	/* don't print error returned by command */
+#define SHELL_READ	32	/* read lines and insert into buffer */
+#define SHELL_WRITE	64	/* write lines from buffer */
 
 /* Values returned by mch_nodetype() */
 #define NODE_NORMAL	0	/* file or directory, check with mch_isdir()*/
@@ -885,9 +887,10 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 /* flags for do_put() */
 #define PUT_FIXINDENT	1	/* make indent look nice */
 #define PUT_CURSEND	2	/* leave cursor after end of new text */
-#define PUT_LINE	4	/* put register as lines */
-#define PUT_LINE_SPLIT	8	/* split line for linewise register */
-#define PUT_LINE_FORWARD 16	/* put linewise register below Visual sel. */
+#define PUT_CURSLINE	4	/* leave cursor on last line of new text */
+#define PUT_LINE	8	/* put register as lines */
+#define PUT_LINE_SPLIT	16	/* split line for linewise register */
+#define PUT_LINE_FORWARD 32	/* put linewise register below Visual sel. */
 
 /* flags for set_indent() */
 #define SIN_CHANGED	1	/* call changed_bytes() when line changed */

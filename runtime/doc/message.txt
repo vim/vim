@@ -1,4 +1,4 @@
-*message.txt*   For Vim version 7.0aa.  Last change: 2005 Jan 08
+*message.txt*   For Vim version 7.0aa.  Last change: 2005 Feb 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -364,7 +364,8 @@ cannot be written.  You need to give the buffer a file name: >
 
 When using the '~' character in a pattern, it is replaced with the previously
 used pattern in a ":substitute" command.  This fails when no such command has
-been used yet.  See |/~|.
+been used yet.  See |/~|.  This also happens when using ":s/pat/%/", where the
+"%" stands for the previous substitute string.
 
 							*E35*  >
   No previous regular expression

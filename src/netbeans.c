@@ -114,14 +114,12 @@ BalloonEval	*balloonEval = NULL;
 
 #ifdef FEAT_GUI_MOTIF
 static void netbeans_Xt_connect __ARGS((void *context));
-#else
-# ifdef FEAT_GUI_GTK
+#endif
+#ifdef FEAT_GUI_GTK
 static void netbeans_gtk_connect __ARGS((void));
-# else
-#  ifdef FEAT_GUI_W32
+#endif
+#ifdef FEAT_GUI_W32
 static void netbeans_w32_connect __ARGS((void));
-#  endif
-# endif
 #endif
 
 static int dosetvisible = FALSE;
@@ -2559,6 +2557,10 @@ netbeans_startup_done(void)
 #else
 # ifdef FEAT_GUI_GTK
 	netbeans_gtk_connect();
+# else
+#  ifdef FEAT_GUI_W32
+	netbeans_w32_connect();
+#  endif
 # endif
 #endif
 

@@ -1456,7 +1456,7 @@ qf_list(eap)
 		qf_fmt_text((fname != NULL || qfp->qf_lnum != 0)
 				     ? skipwhite(qfp->qf_text) : qfp->qf_text,
 							      IObuff, IOSIZE);
-		msg_prt_line(IObuff);
+		msg_prt_line(IObuff, FALSE);
 		out_flush();		/* show one line at a time */
 		need_return = TRUE;
 		last_printed = i;
@@ -2279,7 +2279,6 @@ ex_vimgrep(eap)
     exarg_T	*eap;
 {
     regmmatch_T	regmatch;
-    char_u	*save_cpo;
     int		fcount;
     char_u	**fnames;
     char_u	*s;
@@ -2316,10 +2315,6 @@ ex_vimgrep(eap)
 	    return;
     }
 #endif
-
-    /* Make 'cpoptions' empty, the 'l' flag should not be used here. */
-    save_cpo = p_cpo;
-    p_cpo = empty_option;
 
     /* Get the search pattern: either white-separated or enclosed in // */
     regmatch.regprog = NULL;
@@ -2545,12 +2540,6 @@ jumpend:
 
 theend:
     vim_free(regmatch.regprog);
-
-    /* Only resture 'cpo' when it wasn't set in the mean time. */
-    if (p_cpo == empty_option)
-	p_cpo = save_cpo;
-    else
-	free_string_option(save_cpo);
 }
 
 /*

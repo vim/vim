@@ -38,6 +38,7 @@ STARTTEST
 :au BufReadPost     *.gz   !gzip <afile>:r
 :e! Xtestfile.gz                " Edit compressed file
 :w>>test.out                    " Append it to the output file
+:set shelltemp                  " need temp files here
 :au FilterReadPre   *.out  call rename(expand("<afile>"), expand("<afile>").".t")
 :au FilterReadPre   *.out  !sed s/e/E/ <afile>.t ><afile>
 :au FilterReadPre   *.out  !rm <afile>.t

@@ -1,4 +1,4 @@
-*gui_w32.txt*   For Vim version 7.0aa.  Last change: 2005 Jan 07
+*gui_w32.txt*   For Vim version 7.0aa.  Last change: 2005 Feb 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -235,7 +235,7 @@ cancel an operation.  Use CTRL-Break for that.
 
 CTRL-Z is used for undo.  This means you can't suspend Vim.
 
-							*CTRL-V-alternative*
+						*CTRL-V-alternative* *CTRL-Q*
 Since CTRL-V is used to paste, you can't use it to start a blockwise Visual
 selection.  You can use CTRL-Q instead.  You can also use CTRL-Q in Insert
 mode and Command-line mode to get the old meaning of CTRL-V.  But CTRL-Q

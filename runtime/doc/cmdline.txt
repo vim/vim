@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 7.0aa.  Last change: 2005 Jan 13
+*cmdline.txt*   For Vim version 7.0aa.  Last change: 2005 Feb 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -17,8 +17,9 @@ Basic command line editing is explained in chapter 20 of the user manual
 2. Command-line completion	|cmdline-completion|
 3. Ex command-lines		|cmdline-lines|
 4. Ex command-line ranges	|cmdline-ranges|
-5. Ex special characters	|cmdline-special|
-6. Command-line window		|cmdline-window|
+5. Ex command-line flags	|ex-flags|
+6. Ex special characters	|cmdline-special|
+7. Command-line window		|cmdline-window|
 
 ==============================================================================
 1. Command-line editing					*cmdline-editing*
@@ -668,7 +669,20 @@ Visual Mode and Range					*v_:*
 		lines.
 
 ==============================================================================
-5. Ex special characters				*cmdline-special*
+5. Ex command-line flags				*ex-flags*
+
+These flags are supported by a selection of Ex commands.  They print the line
+that the cursor ends up after executing the command:
+
+	l	output like for |:list|
+	#	add line number
+	p	output like for |:print|
+
+The flags can be combined, thus "l#" uses both a line number and |:list| style
+output.
+
+==============================================================================
+6. Ex special characters				*cmdline-special*
 
 In Ex commands, at places where a file name can be used, the following
 characters have a special meaning.  These can also be used in the expression

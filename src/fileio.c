@@ -140,10 +140,6 @@ static int get_mac_fio_flags __ARGS((char_u *ptr));
 #endif
 static int move_lines __ARGS((buf_T *frombuf, buf_T *tobuf));
 
-static linenr_T	write_no_eol_lnum = 0;	/* non-zero lnum when last line of
-					   next binary write should not have
-					   an end-of-line */
-
     void
 filemess(buf, name, s, attr)
     buf_T	*buf;
@@ -288,9 +284,7 @@ readfile(fname, sfname, from, lines_to_skip, lines_to_read, eap, flags)
     int		conv_restlen = 0;	/* nr of bytes in conv_rest[] */
 #endif
 
-#ifdef FEAT_AUTOCMD
     write_no_eol_lnum = 0;	/* in case it was set by the previous read */
-#endif
 
     /*
      * If there is no file name yet, use the one for the read file.
@@ -307,6 +301,10 @@ readfile(fname, sfname, from, lines_to_skip, lines_to_read, eap, flags)
 	if (setfname(curbuf, fname, sfname, FALSE) == OK)
 	    curbuf->b_flags |= BF_NOTEDITED;
     }
+
+    /* After reading a file the cursor line changes but we don't want to
+     * display the line. */
+    ex_no_reprint = TRUE;
 
     /*
      * For Unix: Use the short file name whenever possible.
@@ -2230,7 +2228,6 @@ failed:
     check_marks_read();
 #endif
 
-#ifdef FEAT_AUTOCMD
     /*
      * Trick: We remember if the last line of the read didn't have
      * an eol for when writing it again.  This is required for
@@ -2238,6 +2235,7 @@ failed:
      */
     write_no_eol_lnum = read_no_eol_lnum;
 
+#ifdef FEAT_AUTOCMD
     if (!read_stdin && !read_buffer)
     {
 	int m = msg_scroll;
@@ -2627,6 +2625,10 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
     write_info.bw_iconv_fd = (iconv_t)-1;
 # endif
 #endif
+
+    /* After writing a file changedtick changes but we don't want to display
+     * the line. */
+    ex_no_reprint = TRUE;
 
     /*
      * If there is no file name yet, use the one for the written file.
@@ -6267,7 +6269,7 @@ buf_store_time(buf, st, fname)
 write_lnum_adjust(offset)
     linenr_T	offset;
 {
-    if (write_no_eol_lnum)		/* only if there is a missing eol */
+    if (write_no_eol_lnum != 0)		/* only if there is a missing eol */
 	write_no_eol_lnum += offset;
 }
 

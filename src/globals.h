@@ -155,6 +155,7 @@ EXTERN int	did_endif INIT(= FALSE);    /* just had ":endif" */
 EXTERN int	did_emsg;		    /* set by emsg() when the message
 					       is displayed or thrown */
 EXTERN int	called_emsg;		    /* always set by emsg() */
+EXTERN int	ex_exitval INIT(= 0);	    /* exit value for ex mode */
 EXTERN int	emsg_on_display INIT(= FALSE);	/* there is an error message */
 EXTERN int	rc_did_emsg INIT(= FALSE);  /* vim_regcomp() called emsg() */
 
@@ -181,6 +182,7 @@ EXTERN int	x_force_connect INIT(= FALSE); /* Do connect to X server.
 						  "exclude" in 'clipboard'. */
 # endif
 #endif
+EXTERN int	ex_keep_indent INIT(= FALSE); /* getexmodeline(): keep indent */
 EXTERN int	vgetc_busy INIT(= FALSE);   /* inside vgetc() now */
 
 EXTERN int	didset_vim INIT(= FALSE);   /* did set $VIM ourselves */
@@ -927,6 +929,10 @@ EXTERN int	autocmd_bufnr INIT(= 0);     /* fnum for <abuf> on cmdline */
 EXTERN char_u	*autocmd_match INIT(= NULL); /* name for <amatch> on cmdline */
 #endif
 
+EXTERN linenr_T	write_no_eol_lnum INIT(= 0); /* non-zero lnum when last line
+						of next binary write should
+						not have an end-of-line */
+
 #ifdef FEAT_WINDOWS
 EXTERN int	postponed_split INIT(= 0);  /* for CTRL-W CTRL-] command */
 EXTERN int	postponed_split_flags INIT(= 0);  /* args for win_split() */
@@ -957,6 +963,7 @@ EXTERN int  redir_off INIT(= FALSE);	/* no redirection for a moment */
 EXTERN FILE *redir_fd INIT(= NULL);	/* message redirection file */
 #ifdef FEAT_EVAL
 EXTERN int  redir_reg INIT(= 0);	/* message redirection register */
+EXTERN int  redir_vname INIT(= 0);	/* message redirection variable */
 #endif
 
 #ifdef FEAT_LANGMAP
@@ -1399,14 +1406,12 @@ EXTERN char_u e_invexprmsg[]	INIT(=N_("E449: Invalid expression received"));
 EXTERN char_u e_guarded[]	INIT(=N_("E463: Region is guarded, cannot modify"));
 EXTERN char_u e_nbreadonly[]	INIT(=N_("E744: NetBeans does not allow changes in read-only files"));
 #endif
-#if defined(FEAT_EVAL) || defined(FEAT_SYN_HL)
 EXTERN char_u e_intern2[]	INIT(=N_("E685: Internal error: %s"));
-#endif
 #if defined(HAVE_SETJMP_H) || defined(HAVE_TRY_EXCEPT)
 EXTERN char_u e_complex[]	INIT(=N_("E361: Crash intercepted; regexp too complex?"));
 #endif
 EXTERN char_u e_outofstack[]	INIT(=N_("E363: pattern caused out-of-stack error"));
-
+EXTERN char_u e_emptybuf[]	INIT(=N_("E749: empty buffer"));
 
 #ifdef MACOS_X_UNIX
 EXTERN short disallow_gui	INIT(= FALSE);

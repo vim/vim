@@ -1,4 +1,4 @@
-*mbyte.txt*     For Vim version 7.0aa.  Last change: 2004 Dec 19
+*mbyte.txt*     For Vim version 7.0aa.  Last change: 2005 Feb 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar et al.
@@ -1319,7 +1319,7 @@ a zero if necessary.
 COMMAND ARGUMENTS					*utf-8-char-arg*
 
 Commands like |f|, |F|, |t| and |r| take an argument of one character.  For
-UTF-8 this argument may include one or two composing characters.  These needs
+UTF-8 this argument may include one or two composing characters.  These need
 to be produced together with the base character, Vim doesn't wait for the next
 character to be typed to find out if it is a composing character or not.
 Using 'keymap' or |:lmap| is a nice way to type these characters.

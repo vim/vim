@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.0aa.  Last change: 2005 Feb 07
+*editing.txt*   For Vim version 7.0aa.  Last change: 2005 Feb 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1143,13 +1143,16 @@ You may use the |:cd| and |:lcd| commands to change to another directory, so
 you will not have to type that directory name in front of the file names.  It
 also makes a difference for executing external commands, e.g. ":!ls".
 
+Changing directory fails when the current buffer is modified, the '.' flag is
+present in 'cpoptions' and "!" is not used in the command.
+
 							*:cd* *E472*
-:cd			On non-Unix systems: Print the current directory
+:cd[!]			On non-Unix systems: Print the current directory
 			name.  On Unix systems: Change the current directory
 			to the home directory.  Use |:pwd| to print the
 			current directory on all systems.
 
-:cd {path}		Change the current directory to {path}.
+:cd[!] {path}		Change the current directory to {path}.
 			If {path} is relative, it is searched for in the
 			directories listed in |'cdpath'|.
 			Does not change the meaning of an already opened file,
@@ -1160,19 +1163,19 @@ also makes a difference for executing external commands, e.g. ":!ls".
 				:cd %:h
 <
 							*:cd-* *E186*
-:cd -			Change to the previous current directory (before the
+:cd[!] -		Change to the previous current directory (before the
 			previous ":cd {path}" command). {not in Vi}
 
 							*:chd* *:chdir*
-:chd[ir] [path]		Same as |:cd|.
+:chd[ir][!] [path]	Same as |:cd|.
 
 							*:lc* *:lcd*
-:lc[d] {path}		Like |:cd|, but only set the current directory for the
+:lc[d][!] {path}	Like |:cd|, but only set the current directory for the
 			current window.  The current directory for other
 			windows is not changed. {not in Vi}
 
 							*:lch* *:lchdir*
-:lch[dir]		Same as |:lcd|. {not in Vi}
+:lch[dir][!]		Same as |:lcd|. {not in Vi}
 
 							*:pw* *:pwd* *E187*
 :pw[d]			Print the current directory name.  {Vi: no pwd}

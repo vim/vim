@@ -128,6 +128,7 @@ static int	getargopt __ARGS((exarg_T *eap));
 
 static int	check_more __ARGS((int, int));
 static linenr_T get_address __ARGS((char_u **, int skip, int to_other_file));
+static void	get_flags __ARGS((exarg_T *eap));
 #if !defined(FEAT_PERL) || !defined(FEAT_PYTHON) || !defined(FEAT_TCL) \
 	|| !defined(FEAT_RUBY) || !defined(FEAT_MZSCHEME)
 static void	ex_script_ni __ARGS((exarg_T *eap));
@@ -185,6 +186,7 @@ static void	ex_recover __ARGS((exarg_T *eap));
 static void	ex_mode __ARGS((exarg_T *eap));
 static void	ex_wrongmodifier __ARGS((exarg_T *eap));
 static void	ex_find __ARGS((exarg_T *eap));
+static void	ex_open __ARGS((exarg_T *eap));
 static void	ex_edit __ARGS((exarg_T *eap));
 #if !defined(FEAT_GUI) && !defined(FEAT_CLIENTSERVER)
 # define ex_drop		ex_ni
@@ -271,6 +273,7 @@ static void	ex_winpos __ARGS((exarg_T *eap));
 static void	ex_operators __ARGS((exarg_T *eap));
 static void	ex_put __ARGS((exarg_T *eap));
 static void	ex_copymove __ARGS((exarg_T *eap));
+static void	ex_may_print __ARGS((exarg_T *eap));
 static void	ex_submagic __ARGS((exarg_T *eap));
 static void	ex_join __ARGS((exarg_T *eap));
 static void	ex_at __ARGS((exarg_T *eap));
@@ -570,19 +573,22 @@ do_exmode(improved)
     int		save_msg_scroll;
     int		prev_msg_row;
     linenr_T	prev_line;
+    int		changedtick;
+
+    if (improved)
+	exmode_active = EXMODE_VIM;
+    else
+	exmode_active = EXMODE_NORMAL;
+    State = NORMAL;
+
+    /* When using ":global /pat/ visual" and then "Q" we return to continue
+     * the :global command. */
+    if (global_busy)
+	return;
 
     save_msg_scroll = msg_scroll;
     ++RedrawingDisabled;	    /* don't redisplay the window */
     ++no_wait_return;		    /* don't wait for return */
-    if (improved)
-	exmode_active = EXMODE_VIM;
-    else
-    {
-	settmode(TMODE_COOK);
-	exmode_active = EXMODE_NORMAL;
-    }
-
-    State = NORMAL;
 #ifdef FEAT_GUI
     /* Ignore scrollbar and mouse events in Ex mode */
     ++hold_gui_events;
@@ -606,6 +612,7 @@ do_exmode(improved)
 	need_wait_return = FALSE;
 	ex_pressedreturn = FALSE;
 	ex_no_reprint = FALSE;
+	changedtick = curbuf->b_changedtick;
 	prev_msg_row = msg_row;
 	prev_line = curwin->w_cursor.lnum;
 #ifdef FEAT_SNIFF
@@ -620,29 +627,38 @@ do_exmode(improved)
 	    do_cmdline(NULL, getexmodeline, NULL, DOCMD_NOWAIT);
 	lines_left = Rows - 1;
 
-	if (prev_line != curwin->w_cursor.lnum && !ex_no_reprint)
+	if ((prev_line != curwin->w_cursor.lnum
+		    || changedtick != curbuf->b_changedtick) && !ex_no_reprint)
 	{
-	    if (ex_pressedreturn)
+	    if (curbuf->b_ml.ml_flags & ML_EMPTY)
+		EMSG(_(e_emptybuf));
+	    else
 	    {
-		/* go up one line, to overwrite the ":<CR>" line, so the
-		 * output doensn't contain empty lines. */
-		msg_row = prev_msg_row;
-		if (prev_msg_row == Rows - 1)
-		    msg_row--;
+		if (ex_pressedreturn)
+		{
+		    /* go up one line, to overwrite the ":<CR>" line, so the
+		     * output doensn't contain empty lines. */
+		    msg_row = prev_msg_row;
+		    if (prev_msg_row == Rows - 1)
+			msg_row--;
+		}
+		msg_col = 0;
+		print_line_no_prefix(curwin->w_cursor.lnum, FALSE, FALSE);
+		msg_clr_eos();
 	    }
-	    msg_col = 0;
-	    print_line_no_prefix(curwin->w_cursor.lnum, FALSE);
-	    msg_clr_eos();
 	}
-	else if (ex_pressedreturn)	/* must be at EOF */
-	    EMSG(_("E501: At end-of-file"));
+	else if (ex_pressedreturn && !ex_no_reprint)	/* must be at EOF */
+	{
+	    if (curbuf->b_ml.ml_flags & ML_EMPTY)
+		EMSG(_(e_emptybuf));
+	    else
+		EMSG(_("E501: At end-of-file"));
+	}
     }
 
 #ifdef FEAT_GUI
     --hold_gui_events;
 #endif
-    if (!improved)
-	settmode(TMODE_RAW);
     --RedrawingDisabled;
     --no_wait_return;
     update_screen(CLEAR);
@@ -1663,7 +1679,8 @@ do_one_cmd(cmdlinep, sourcing,
 	/* in ex mode, an empty line works like :+ */
 	if (*ea.cmd == NUL && exmode_active
 			&& (getline_equal(getline, cookie, getexmodeline)
-			    || getline_equal(getline, cookie, getexline)))
+			    || getline_equal(getline, cookie, getexline))
+			&& curwin->w_cursor.lnum < curbuf->b_ml.ml_line_count)
 	{
 	    ea.cmd = (char_u *)"+";
 	    ex_pressedreturn = TRUE;
@@ -1671,7 +1688,10 @@ do_one_cmd(cmdlinep, sourcing,
 
 	/* ignore comment and empty lines */
 	if (*ea.cmd == '"' || *ea.cmd == NUL)
+	{
+	    ex_pressedreturn = TRUE;
 	    goto doend;
+	}
 
 /*
  * 2. handle command modifiers.
@@ -1936,7 +1956,7 @@ do_one_cmd(cmdlinep, sourcing,
 	 */
 	if (ea.skip)	    /* skip this if inside :if */
 	    goto doend;
-	if (*ea.cmd == '|')
+	if (*ea.cmd == '|' || (exmode_active && ea.line1 != ea.line2))
 	{
 	    ea.cmdidx = CMD_print;
 	    ea.argt = RANGE+COUNT+TRLBAR;
@@ -1948,14 +1968,12 @@ do_one_cmd(cmdlinep, sourcing,
 	}
 	else if (ea.addr_count != 0)
 	{
-	    if (ea.line2 < 0)
-		errormsg = invalid_range(&ea);
+	    if (ea.line2 < 0 || ea.line2 > curbuf->b_ml.ml_line_count)
+		errormsg = (char_u *)_(e_invrange);
 	    else
 	    {
 		if (ea.line2 == 0)
 		    curwin->w_cursor.lnum = 1;
-		else if (ea.line2 > curbuf->b_ml.ml_line_count)
-		    curwin->w_cursor.lnum = curbuf->b_ml.ml_line_count;
 		else
 		    curwin->w_cursor.lnum = ea.line2;
 		beginline(BL_SOL | BL_FIX);
@@ -2090,7 +2108,7 @@ do_one_cmd(cmdlinep, sourcing,
 	 */
 	if (!global_busy && ea.line1 > ea.line2)
 	{
-	    if (sourcing)
+	    if (sourcing || exmode_active)
 	    {
 		errormsg = (char_u *)_("E493: Backwards range given");
 		goto doend;
@@ -2280,9 +2298,13 @@ do_one_cmd(cmdlinep, sourcing,
 
     /*
      * Check for <newline> to end a shell command.
-     * Also do this for ":read !cmd" and ":write !cmd".
+     * Also do this for ":read !cmd", ":write !cmd" and ":global".
+     * Any others?
      */
-    else if (ea.cmdidx == CMD_bang || ea.usefilter)
+    else if (ea.cmdidx == CMD_bang
+	    || ea.cmdidx == CMD_global
+	    || ea.cmdidx == CMD_vglobal
+	    || ea.usefilter)
     {
 	for (p = ea.arg; *p; ++p)
 	{
@@ -2367,6 +2389,12 @@ do_one_cmd(cmdlinep, sourcing,
 		ea.line2 = curbuf->b_ml.ml_line_count;
 	}
     }
+
+    /*
+     * Check for flags: 'l', 'p' and '#'.
+     */
+    if (ea.argt & EXFLAGS)
+	get_flags(&ea);
 						/* no arguments allowed */
     if (!ni && !(ea.argt & EXTRA) && *ea.arg != NUL
 			      && vim_strchr((char_u *)"|\"", *ea.arg) == NULL)
@@ -2661,6 +2689,7 @@ find_command(eap, full)
 {
     int		len;
     char_u	*p;
+    int		i;
 
     /*
      * Isolate the command and search for it in the command table.
@@ -2669,6 +2698,7 @@ find_command(eap, full)
      * - the 's' command can be followed directly by 'c', 'g', 'i', 'I' or 'r'
      *	    but :sre[wind] is another command, as are :scrip[tnames],
      *	    :scs[cope], :sim[alt], :sig[ns] and :sil[ent].
+     * - the "d" command can directly be followed by 'l' or 'p' flag.
      */
     p = eap->cmd;
     if (*p == 'k')
@@ -2694,6 +2724,22 @@ find_command(eap, full)
 	if (p == eap->cmd && vim_strchr((char_u *)"@*!=><&~#", *p) != NULL)
 	    ++p;
 	len = (int)(p - eap->cmd);
+	if (*eap->cmd == 'd' && (p[-1] == 'l' || p[-1] == 'p'))
+	{
+	    /* Check for ":dl", ":dell", etc. to ":deletel": that's
+	     * :delete with the 'l' flag.  Same for 'p'. */
+	    for (i = 0; i < len; ++i)
+		if (eap->cmd[i] != "delete"[i])
+		    break;
+	    if (i == len - 1)
+	    {
+		--len;
+		if (p[-1] == 'l')
+		    eap->flags |= EXFLAG_LIST;
+		else
+		    eap->flags |= EXFLAG_PRINT;
+	    }
+	}
 
 	if (ASCII_ISLOWER(*eap->cmd))
 	    eap->cmdidx = cmdidxs[CharOrdLow(*eap->cmd)];
@@ -2928,8 +2974,6 @@ set_one_cmd_context(xp, buff)
 /*
  * 4. parse command
  */
-
-    cmd = skipwhite(cmd);
     xp->xp_pattern = cmd;
     if (*cmd == NUL)
 	return NULL;
@@ -3281,6 +3325,7 @@ set_one_cmd_context(xp, buff)
 	case CMD_botright:
 	case CMD_browse:
 	case CMD_confirm:
+	case CMD_debug:
 	case CMD_folddoclosed:
 	case CMD_folddoopen:
 	case CMD_hide:
@@ -3633,6 +3678,7 @@ set_one_cmd_context(xp, buff)
  * Backslashed delimiters after / or ? will be skipped, and commands will
  * not be expanded between /'s and ?'s or after "'".
  *
+ * Also skip white space and ":" characters.
  * Returns the "cmd" pointer advanced to beyond the range.
  */
     char_u *
@@ -3642,8 +3688,7 @@ skip_range(cmd, ctx)
 {
     int		delim;
 
-    while (*cmd != NUL && (vim_isspace(*cmd) || VIM_ISDIGIT(*cmd) ||
-			    vim_strchr((char_u *)".$%'/?-+,;", *cmd) != NULL))
+    while (vim_strchr((char_u *)" \t0123456789.$%'/?-+,;", *cmd) != NULL)
     {
 	if (*cmd == '\'')
 	{
@@ -3662,6 +3707,11 @@ skip_range(cmd, ctx)
 	if (*cmd != NUL)
 	    ++cmd;
     }
+
+    /* Skip ":" and white space. */
+    while (*cmd == ':')
+	cmd = skipwhite(cmd + 1);
+
     return cmd;
 }
 
@@ -3853,6 +3903,25 @@ get_address(ptr, skip, to_other_file)
 error:
     *ptr = cmd;
     return lnum;
+}
+
+/*
+ * Get flags from an Ex command argument.
+ */
+    static void
+get_flags(eap)
+    exarg_T *eap;
+{
+    while (vim_strchr((char_u *)"lp#", *eap->arg) != NULL)
+    {
+	if (*eap->arg == 'l')
+	    eap->flags |= EXFLAG_LIST;
+	else if (*eap->arg == 'p')
+	    eap->flags |= EXFLAG_PRINT;
+	else
+	    eap->flags |= EXFLAG_NR;
+	eap->arg = skipwhite(eap->arg + 1);
+    }
 }
 
 /*
@@ -4280,7 +4349,7 @@ separate_nextcmd(eap)
 
 #ifdef FEAT_EVAL
 	/* Skip over `=expr` when wildcards are expanded. */
-	else if (p[0] == '`' && p[1] == '=')
+	else if (p[0] == '`' && p[1] == '=' && (eap->argt & XFILE))
 	{
 	    p += 2;
 	    (void)skip_expr(&p);
@@ -6116,31 +6185,27 @@ ex_exit(eap)
 ex_print(eap)
     exarg_T	*eap;
 {
-    int		save_list = 0;	    /* init for GCC */
-
-    if (eap->cmdidx == CMD_list)
+    if (curbuf->b_ml.ml_flags & ML_EMPTY)
+	EMSG(_(e_emptybuf));
+    else
     {
-	save_list = curwin->w_p_list;
-	curwin->w_p_list = 1;
+	for ( ;!got_int; ui_breakcheck())
+	{
+	    print_line(eap->line1,
+		    (eap->cmdidx == CMD_number || eap->cmdidx == CMD_pound
+						 || (eap->flags & EXFLAG_NR)),
+		    eap->cmdidx == CMD_list || (eap->flags & EXFLAG_LIST));
+	    if (++eap->line1 > eap->line2)
+		break;
+	    out_flush();	    /* show one line at a time */
+	}
+	setpcmark();
+	/* put cursor at last line */
+	curwin->w_cursor.lnum = eap->line2;
+	beginline(BL_SOL | BL_FIX);
     }
-
-    for ( ;!got_int; ui_breakcheck())
-    {
-	print_line(eap->line1,
-		   (eap->cmdidx == CMD_number || eap->cmdidx == CMD_pound));
-	if (++eap->line1 > eap->line2)
-	    break;
-	out_flush();	    /* show one line at a time */
-    }
-    setpcmark();
-    /* put cursor at last line */
-    curwin->w_cursor.lnum = eap->line2;
-    beginline(BL_SOL | BL_FIX);
 
     ex_no_reprint = TRUE;
-
-    if (eap->cmdidx == CMD_list)
-	curwin->w_p_list = save_list;
 }
 
 #ifdef FEAT_BYTEOFF
@@ -6689,7 +6754,45 @@ ex_find(eap)
 }
 
 /*
- * ":edit", ":badd".
+ * ":open" simulation: for now just work like ":visual".
+ */
+    static void
+ex_open(eap)
+    exarg_T	*eap;
+{
+    regmatch_T	regmatch;
+    char_u	*p;
+
+    curwin->w_cursor.lnum = eap->line2;
+    beginline(BL_SOL | BL_FIX);
+    if (*eap->arg == '/')
+    {
+	/* ":open /pattern/": put cursor in column found with pattern */
+	++eap->arg;
+	p = skip_regexp(eap->arg, '/', p_magic, NULL);
+	*p = NUL;
+	regmatch.regprog = vim_regcomp(eap->arg, p_magic ? RE_MAGIC : 0);
+	if (regmatch.regprog != NULL)
+	{
+	    regmatch.rm_ic = p_ic;
+	    p = ml_get_curline();
+	    if (vim_regexec(&regmatch, p, (colnr_T)0))
+		curwin->w_cursor.col = regmatch.startp[0] - p;
+	    else
+		EMSG(_(e_nomatch));
+	    vim_free(regmatch.regprog);
+	}
+	/* Move to the NUL, ignore any other arguments. */
+	eap->arg += STRLEN(eap->arg);
+    }
+    check_cursor();
+
+    eap->cmdidx = CMD_visual;
+    do_exedit(eap, NULL);
+}
+
+/*
+ * ":edit", ":badd", ":visual".
  */
     static void
 ex_edit(eap)
@@ -6711,6 +6814,7 @@ do_exedit(eap, old_curwin)
 #ifdef FEAT_WINDOWS
     int		need_hide;
 #endif
+    int		exmode_was = exmode_active;
 
     /*
      * ":vi" command ends Ex mode.
@@ -6720,7 +6824,45 @@ do_exedit(eap, old_curwin)
     {
 	exmode_active = FALSE;
 	if (*eap->arg == NUL)
+	{
+	    /* Special case:  ":global/pat/visual\NLvi-commands" */
+	    if (global_busy)
+	    {
+		int	rd = RedrawingDisabled;
+		int	nwr = no_wait_return;
+		int	ms = msg_scroll;
+#ifdef FEAT_GUI
+		int	he = hold_gui_events;
+#endif
+
+		if (eap->nextcmd != NULL)
+		{
+		    stuffReadbuff(eap->nextcmd);
+		    eap->nextcmd = NULL;
+		}
+
+		if (exmode_was != EXMODE_VIM)
+		    settmode(TMODE_RAW);
+		RedrawingDisabled = 0;
+		no_wait_return = 0;
+		need_wait_return = FALSE;
+		msg_scroll = 0;
+#ifdef FEAT_GUI
+		hold_gui_events = 0;
+#endif
+		must_redraw = CLEAR;
+
+		main_loop(FALSE, TRUE);
+
+		RedrawingDisabled = rd;
+		no_wait_return = nwr;
+		msg_scroll = ms;
+#ifdef FEAT_GUI
+		hold_gui_events = he;
+#endif
+	    }
 	    return;
+	}
     }
 
     if ((eap->cmdidx == CMD_new
@@ -6961,7 +7103,9 @@ ex_syncbind(eap)
 ex_read(eap)
     exarg_T	*eap;
 {
-    int	    i;
+    int		i;
+    int		empty = (curbuf->b_ml.ml_flags & ML_EMPTY);
+    linenr_T	lnum;
 
     if (eap->usefilter)			/* :r!cmd */
 	do_bang(1, eap, FALSE, FALSE, TRUE);
@@ -7011,7 +7155,25 @@ ex_read(eap)
 		EMSG2(_(e_notopen), eap->arg);
 	}
 	else
+	{
+	    if (empty && exmode_active)
+	    {
+		/* Delete the empty line that remains.  Historically ex does
+		 * this but vi doesn't. */
+		if (eap->line2 == 0)
+		    lnum = curbuf->b_ml.ml_line_count;
+		else
+		    lnum = 1;
+		if (*ml_get(lnum) == NUL)
+		{
+		    ml_delete(lnum, FALSE);
+		    deleted_lines_mark(lnum, 1L);
+		    if (curwin->w_cursor.lnum >= lnum)
+			--curwin->w_cursor.lnum;
+		}
+	    }
 	    redraw_curbuf_later(VALID);
+	}
     }
 }
 
@@ -7034,6 +7196,13 @@ ex_cd(eap)
     else
 #endif
     {
+	if (vim_strchr(p_cpo, CPO_CHDIR) != NULL && curbufIsChanged()
+							     && !eap->forceit)
+	{
+	    EMSG(_("E747: Cannot change directory, buffer is modifed (add ! to override)"));
+	    return;
+	}
+
 	/* ":cd -": Change to previous directory */
 	if (STRCMP(new_dir, "-") == 0)
 	{
@@ -7132,6 +7301,7 @@ ex_equal(eap)
     exarg_T	*eap;
 {
     smsg((char_u *)"%ld", (long)eap->line2);
+    ex_may_print(eap);
 }
 
     static void
@@ -7361,6 +7531,7 @@ ex_operators(eap)
 #ifdef FEAT_VIRTUALEDIT
     virtual_op = MAYBE;
 #endif
+    ex_may_print(eap);
 }
 
 /*
@@ -7377,7 +7548,8 @@ ex_put(eap)
 	eap->forceit = TRUE;
     }
     curwin->w_cursor.lnum = eap->line2;
-    do_put(eap->regname, eap->forceit ? BACKWARD : FORWARD, 1L, PUT_LINE);
+    do_put(eap->regname, eap->forceit ? BACKWARD : FORWARD, 1L,
+						       PUT_LINE|PUT_CURSLINE);
 }
 
 /*
@@ -7395,6 +7567,7 @@ ex_copymove(eap)
 	eap->nextcmd = NULL;
 	return;
     }
+    get_flags(eap);
 
     /*
      * move or copy lines from 'eap->line1'-'eap->line2' to below line 'n'
@@ -7414,6 +7587,22 @@ ex_copymove(eap)
 	ex_copy(eap->line1, eap->line2, n);
     u_clearline();
     beginline(BL_SOL | BL_FIX);
+    ex_may_print(eap);
+}
+
+/*
+ * Print the current line if flags were given to the Ex command.
+ */
+    static void
+ex_may_print(eap)
+    exarg_T	*eap;
+{
+    if (eap->flags != 0)
+    {
+	print_line(curwin->w_cursor.lnum, (eap->flags & EXFLAG_NR),
+						  (eap->flags & EXFLAG_LIST));
+	ex_no_reprint = TRUE;
+    }
 }
 
 /*
@@ -7451,6 +7640,7 @@ ex_join(eap)
     }
     do_do_join(eap->line2 - eap->line1 + 1, !eap->forceit);
     beginline(BL_WHITE | BL_FIX);
+    ex_may_print(eap);
 }
 
 /*
@@ -7474,7 +7664,9 @@ ex_at(eap)
 	c = '@';
     /* put the register in mapbuf */
     if (do_execreg(c, TRUE, vim_strchr(p_cpo, CPO_EXECBUF) != NULL) == FAIL)
+    {
 	beep_flush();
+    }
     else
     {
 	int	save_efr = exec_from_reg;
@@ -7602,17 +7794,35 @@ ex_redir(eap)
 		    /* make register empty */
 		    write_reg_contents(redir_reg, (char_u *)"", -1, FALSE);
 		}
-		if (*arg != NUL)
-		    EMSG2(_(e_invarg2), eap->arg);
+	    }
+	    if (*arg != NUL)
+	    {
+		EMSG2(_(e_invarg2), eap->arg);
+		redir_reg = 0;
+	    }
+	}
+	else if (*arg == '=' && arg[1] == '>')
+	{
+	    int append;
+
+	    /* redirect to a variable */
+	    close_redir();
+	    arg += 2;
+
+	    if (*arg == '>')
+	    {
+		++arg;
+		append = TRUE;
 	    }
 	    else
-		EMSG2(_(e_invarg2), eap->arg);
+		append = FALSE;
+
+	    if (var_redir_start(skipwhite(arg), append) == OK)
+		redir_vname = 1;
 	}
 #endif
 
 	/* TODO: redirect to a buffer */
-
-	/* TODO: redirect to an internal variable */
 
 	else
 	    EMSG2(_(e_invarg2), eap->arg);
@@ -7690,6 +7900,11 @@ close_redir()
     }
 #ifdef FEAT_EVAL
     redir_reg = 0;
+    if (redir_vname)
+    {
+	var_redir_stop();
+	redir_vname = 0;
+    }
 #endif
 }
 
@@ -7774,8 +7989,7 @@ ex_mkrc(eap)
 #if defined(FEAT_SESSION) && defined(vim_mkdir)
     /* When using 'viewdir' may have to create the directory. */
     if (using_vdir && !mch_isdir(p_vdir))
-	if (vim_mkdir(p_vdir, 0755) != 0)
-	    EMSG2(_("E739: Cannot create directory: %s"), p_vdir);
+	vim_mkdir_emsg(p_vdir, 0755);
 #endif
 
     fd = open_exfile(fname, eap->forceit, WRITEBIN);
@@ -7892,6 +8106,22 @@ theend:
     vim_free(viewFile);
 #endif
 }
+
+#if ((defined(FEAT_SESSION) || defined(FEAT_EVAL)) && defined(vim_mkdir)) \
+	|| defined(PROTO)
+    int
+vim_mkdir_emsg(name, prot)
+    char_u	*name;
+    int		prot;
+{
+    if (vim_mkdir(name, prot) != 0)
+    {
+	EMSG2(_("E739: Cannot create directory: %s"), name);
+	return FAIL;
+    }
+    return OK;
+}
+#endif
 
 /*
  * Open a file for writing for an Ex command, with some checks.
