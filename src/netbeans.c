@@ -85,9 +85,6 @@ static void messageFromNetbeans __ARGS((gpointer, gint, GdkInputCondition));
 static void nb_parse_cmd __ARGS((char_u *));
 static int  nb_do_cmd __ARGS((int, char_u *, int, int, char_u *));
 static void nb_send __ARGS((char *buf, char *fun));
-#ifdef FEAT_BEVAL
-static void netbeans_beval_cb __ARGS((BalloonEval *beval, int state));
-#endif
 
 static int sd = -1;			/* socket fd for Netbeans connection */
 #ifdef FEAT_GUI_MOTIF
@@ -104,13 +101,6 @@ static int cmdno;			/* current command number for reply */
 static int haveConnection = FALSE;	/* socket is connected and
 					   initialization is done */
 static int oldFire = 1;
-
-#ifdef FEAT_BEVAL
-# if defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)
-extern Widget	textArea;
-# endif
-BalloonEval	*balloonEval = NULL;
-#endif
 
 #ifdef FEAT_GUI_MOTIF
 static void netbeans_Xt_connect __ARGS((void *context));
@@ -158,6 +148,9 @@ netbeans_disconnect(void)
     }
     sd = -1;
     haveConnection = FALSE;
+# ifdef FEAT_BEVAL
+    bevalServers &= ~BEVAL_NETBEANS;
+# endif
 }
 #endif /* FEAT_MOTIF_GUI */
 
@@ -165,17 +158,6 @@ netbeans_disconnect(void)
     static void
 netbeans_gtk_connect(void)
 {
-# ifdef FEAT_BEVAL
-    /*
-     * Set up the Balloon Expression Evaluation area.
-     * Always create it but disable it when 'ballooneval' isn't set.
-     */
-    balloonEval = gui_mch_create_beval_area(gui.drawarea, NULL,
-					    &netbeans_beval_cb, NULL);
-    if (!p_beval)
-	gui_mch_disable_beval_area(balloonEval);
-# endif
-
     netbeans_connect();
     if (sd > 0)
     {
@@ -199,6 +181,9 @@ netbeans_disconnect(void)
     }
     sd = -1;
     haveConnection = FALSE;
+# ifdef FEAT_BEVAL
+    bevalServers &= ~BEVAL_NETBEANS;
+# endif
 }
 #endif /* FEAT_GUI_GTK */
 
@@ -227,10 +212,9 @@ netbeans_disconnect(void)
     }
     sd = -1;
     haveConnection = FALSE;
-
-    /* It seems that Motif and GTK versions also need this: */
-    gui_mch_destroy_beval_area(balloonEval);
-    balloonEval = NULL;
+# ifdef FEAT_BEVAL
+    bevalServers &= ~BEVAL_NETBEANS;
+# endif
 }
 #endif /* FEAT_GUI_W32 */
 
@@ -2506,14 +2490,14 @@ netbeans_keyname(int key, char *buf)
  * respond with a showBalloon command when there is a useful result.
  */
 /*ARGSUSED*/
-    static void
+    void
 netbeans_beval_cb(
 	BalloonEval	*beval,
 	int		 state)
 {
-    char_u	*filename;
+    win_T	*wp;
     char_u	*text;
-    int		line;
+    linenr_T	lnum;
     int		col;
     char	buf[MAXPATHL * 2 + 25];
     char_u	*p;
@@ -2523,7 +2507,7 @@ netbeans_beval_cb(
     if (!p_beval || msg_scrolled > 0 || !haveConnection)
 	return;
 
-    if (gui_mch_get_beval_info(beval, &filename, &line, &text, &col) == OK)
+    if (get_beval_info(beval, TRUE, &wp, &lnum, &text, &col) == OK)
     {
 	/* Send debugger request.  Only when the text is of reasonable
 	 * length. */
@@ -2567,32 +2551,12 @@ netbeans_startup_done(void)
     if (!haveConnection)
 	return;
 
+#ifdef FEAT_BEVAL
+    bevalServers |= BEVAL_NETBEANS;
+#endif
+
     nbdebug(("EVT: %s", cmd));
     nb_send(cmd, "netbeans_startup_done");
-
-#ifdef FEAT_BEVAL
-# ifdef FEAT_GUI_MOTIF
-    if (gui.in_use)
-    {
-	/*
-	 * Set up the Balloon Expression Evaluation area for Motif.
-	 * GTK can do it earlier...
-	 * Always create it but disable it when 'ballooneval' isn't set.
-	 */
-	balloonEval = gui_mch_create_beval_area(textArea, NULL,
-						    &netbeans_beval_cb, NULL);
-	if (!p_beval)
-	    gui_mch_disable_beval_area(balloonEval);
-    }
-# else
-#  if defined(FEAT_GUI_W32) && defined(FEAT_BEVAL)
-	balloonEval = gui_mch_create_beval_area(NULL, NULL,
-						    &netbeans_beval_cb, NULL);
-	if (!p_beval)
-	    gui_mch_disable_beval_area(balloonEval);
-#  endif
-# endif
-#endif
 }
 
 /*
