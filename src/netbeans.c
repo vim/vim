@@ -1676,20 +1676,20 @@ nb_do_cmd(
 		return FAIL;
 	    }
 	    buf->fireChanges = 0;
-	    if (buf->bufp != NULL)
+	    if (buf->bufp != NULL && buf->bufp->b_was_netbeans_file)
 	    {
-		if (buf->bufp->b_was_netbeans_file
-				&& !buf->bufp->b_netbeans_file)
+		if (!buf->bufp->b_netbeans_file)
 		    EMSGN(_("E658: NetBeans connection lost for buffer %ld"),
 							   buf->bufp->b_fnum);
-#if 0		/* This breaks Agide. */
 		else
 		{
-		    do_bufdel(DOBUF_DEL, (char_u *)"", 1, buf->bufp->b_fnum,
-				buf->bufp->b_fnum, TRUE);
+		    /* NetBeans uses stopDocumentListen when it stops editing
+		     * a file.  It then expects the buffer in Vim to
+		     * disappear. */
+		    do_bufdel(DOBUF_DEL, (char_u *)"", 1,
+				  buf->bufp->b_fnum, buf->bufp->b_fnum, TRUE);
 		    vim_memset(buf, 0, sizeof(nbbuf_T));
 		}
-#endif
 	    }
 /* =====================================================================*/
 	}
