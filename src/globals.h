@@ -1264,9 +1264,6 @@ EXTERN char_u e_invcmd[]	INIT(=N_("E476: Invalid command"));
 #ifdef UNIX
 EXTERN char_u e_isadir2[]	INIT(=N_("E17: \"%s\" is a directory"));
 #endif
-#ifdef FEAT_EVAL
-EXTERN char_u e_letunexp[]	INIT(=N_("E18: Unexpected characters before '='"));
-#endif
 #ifdef FEAT_LIBCALL
 EXTERN char_u e_libcall[]	INIT(=N_("E364: Library call failed for \"%s()\""));
 #endif
