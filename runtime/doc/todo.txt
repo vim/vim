@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 05
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -31,26 +31,7 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 -------------------- Known bugs and current work -----------------------
 
 List data type:
-- When removing items from the condition stack may free cs_fors.
-- don't copy the list, use a list-watcher to adjust the item pointer when it's
-  deleted.
-- "for a in list"
-    Make copy of the list to avoid trouble when it changes.  As one big block?
-- "for [a, b] in [[1, 2], [3, 4]]"
-- support list generator: items are obtained with a function by index.
-    "range(1, 400, 2)" creates one.
-- == (same value) and "is" (same list)
-- add many functions:
-    call(func, list)		call function
-    keys(list)			list of all indexes 0 - (len(list) - 1)
-    repeat(list, count)		return list concatenated count times
-    concat(list1, list2)	return list1 and list2 concatenated
-    extend(list1, list2)	concatenate list2 to list 1
-    extend(list1, list2, idx)	prepend list2 before idx in list1
-    count(list, item)		nr of times item appears in list
-    index(list, item)		lowest index of item in list
-    pop(list[, idx])		removes item at idx (default: last)
-    pop(list, idx1, idx2)	removes items idx1 to idx2, returns them
+- add more functions:
     reverse(list)		reverses order
     sort(list[, func])		sort; func compares items
     getval(list, idx[, default])	get value at idx or default
@@ -59,13 +40,13 @@ List data type:
     str2list()			parse string to list in several ways: white
 				separated, [] form, etc.
 Fix the error numbers E999 in eval.c.
-
-Function reference: Define a nameless (numbered) function and assign
-it to a Funcref variable.
-    :function Myfunc = (arg)
-    :endfunc
+- Cache the length of a List?
 
 Use 'ignorecase' for ":vimgrep"?
+
+When allocating a new variable, a search is done for an empty entry.  May
+waste a lot of time if there isn't one.  Keep an index of available entry,
+none available, or unknown.
 
 patch for QuickFixCmdPre and QuickFixCmdPost autocommands. (Ciaran McCreesh,
 2005 Jan 1)
@@ -101,7 +82,6 @@ PLANNED FOR VERSION 7.0:
 -   new DATA TYPES:
 	- None?  (or use empty string?)
 	- dictionary
-	Check old patch from Robert Webb for array support.
     Add type checking?  See ~/vim/ideas.txt.
 -   Add SPELLCHECKER, with easy to add support for many languages.
     8   Add spell checking.  Use "ispell -a" somehow.

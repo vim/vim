@@ -320,13 +320,19 @@ static void list_free __ARGS((listvar *l));
 static listitem *listitem_alloc __ARGS((void));
 static void listitem_free __ARGS((listitem *item));
 static long list_len __ARGS((listvar *l));
+static int list_equal __ARGS((listvar *l1, listvar *l2, int ic));
+static int tv_equal __ARGS((typeval *tv1, typeval *tv2, int ic));
 static listitem *list_find __ARGS((listvar *l, long n));
+static listitem *list_find_ext __ARGS((listvar *l, long *ip));
 static void list_append __ARGS((listvar *l, listitem *item));
 static int list_append_tv __ARGS((listvar *l, typeval *tv));
+static int list_insert_tv __ARGS((listvar *l, typeval *tv, listitem *item));
+static int list_extend __ARGS((listvar	*l1, listvar *l2, listitem *bef));
+static int list_concat __ARGS((listvar *l1, listvar *l2, typeval *tv));
 static listvar *list_copy __ARGS((listvar *orig, int deep));
-static listitem *list_getrem __ARGS((listvar *l, long n));
+static void list_getrem __ARGS((listvar *l, listitem *item, listitem *item2));
 static char_u *list2string __ARGS((typeval *tv));
-static char_u *tv2string __ARGS((typeval *tv, char_u **tofree));
+static char_u *tv2string __ARGS((typeval *tv, char_u **tofree, char_u *numbuf));
 static int get_env_tv __ARGS((char_u **arg, typeval *rettv, int evaluate));
 static int find_internal_func __ARGS((char_u *name));
 static char_u *deref_func_name __ARGS((char_u *name, int *lenp));
@@ -348,11 +354,13 @@ static void f_bufnr __ARGS((typeval *argvars, typeval *rettv));
 static void f_bufwinnr __ARGS((typeval *argvars, typeval *rettv));
 static void f_byte2line __ARGS((typeval *argvars, typeval *rettv));
 static void f_byteidx __ARGS((typeval *argvars, typeval *rettv));
+static void f_call __ARGS((typeval *argvars, typeval *rettv));
 static void f_char2nr __ARGS((typeval *argvars, typeval *rettv));
 static void f_cindent __ARGS((typeval *argvars, typeval *rettv));
 static void f_col __ARGS((typeval *argvars, typeval *rettv));
 static void f_confirm __ARGS((typeval *argvars, typeval *rettv));
 static void f_copy __ARGS((typeval *argvars, typeval *rettv));
+static void f_count __ARGS((typeval *argvars, typeval *rettv));
 static void f_cscope_connection __ARGS((typeval *argvars, typeval *rettv));
 static void f_cursor __ARGS((typeval *argsvars, typeval *rettv));
 static void f_deepcopy __ARGS((typeval *argvars, typeval *rettv));
@@ -365,6 +373,7 @@ static void f_eventhandler __ARGS((typeval *argvars, typeval *rettv));
 static void f_executable __ARGS((typeval *argvars, typeval *rettv));
 static void f_exists __ARGS((typeval *argvars, typeval *rettv));
 static void f_expand __ARGS((typeval *argvars, typeval *rettv));
+static void f_extend __ARGS((typeval *argvars, typeval *rettv));
 static void f_filereadable __ARGS((typeval *argvars, typeval *rettv));
 static void f_filewritable __ARGS((typeval *argvars, typeval *rettv));
 static void f_finddir __ARGS((typeval *argvars, typeval *rettv));
@@ -411,6 +420,7 @@ static void f_iconv __ARGS((typeval *argvars, typeval *rettv));
 static void f_indent __ARGS((typeval *argvars, typeval *rettv));
 static void f_insert __ARGS((typeval *argvars, typeval *rettv));
 static void f_isdirectory __ARGS((typeval *argvars, typeval *rettv));
+static void f_index __ARGS((typeval *argvars, typeval *rettv));
 static void f_input __ARGS((typeval *argvars, typeval *rettv));
 static void f_inputdialog __ARGS((typeval *argvars, typeval *rettv));
 static void f_inputrestore __ARGS((typeval *argvars, typeval *rettv));
@@ -440,6 +450,7 @@ static void f_setcmdpos __ARGS((typeval *argvars, typeval *rettv));
 static void f_setwinvar __ARGS((typeval *argvars, typeval *rettv));
 static void f_remove __ARGS((typeval *argvars, typeval *rettv));
 static void f_rename __ARGS((typeval *argvars, typeval *rettv));
+static void f_repeat __ARGS((typeval *argvars, typeval *rettv));
 static void f_resolve __ARGS((typeval *argvars, typeval *rettv));
 static void f_search __ARGS((typeval *argvars, typeval *rettv));
 static void f_searchpair __ARGS((typeval *argvars, typeval *rettv));
@@ -449,7 +460,6 @@ static void f_remote_foreground __ARGS((typeval *argvars, typeval *rettv));
 static void f_remote_peek __ARGS((typeval *argvars, typeval *rettv));
 static void f_remote_read __ARGS((typeval *argvars, typeval *rettv));
 static void f_remote_send __ARGS((typeval *argvars, typeval *rettv));
-static void f_repeat __ARGS((typeval *argvars, typeval *rettv));
 static void f_server2client __ARGS((typeval *argvars, typeval *rettv));
 static void f_serverlist __ARGS((typeval *argvars, typeval *rettv));
 static void f_setline __ARGS((typeval *argvars, typeval *rettv));
@@ -2448,6 +2458,8 @@ eval3(arg, rettv, evaluate)
  *	var1 >= var2
  *	var1 < var2
  *	var1 <= var2
+ *	var1 is var2
+ *	var1 isnot var2
  *
  * "arg" must point to the first non-white of the expression.
  * "arg" is advanced to the next non-white after the recognized expression.
@@ -2464,6 +2476,7 @@ eval4(arg, rettv, evaluate)
     char_u	*p;
     int		i;
     exptype_T	type = TYPE_UNKNOWN;
+    int		type_is = FALSE;    /* TRUE for "is" and "isnot" */
     int		len = 2;
     long	n1, n2;
     char_u	*s1, *s2;
@@ -2507,6 +2520,17 @@ eval4(arg, rettv, evaluate)
 		    else
 			type = TYPE_SEQUAL;
 		    break;
+	case 'i':   if (p[1] == 's')
+		    {
+			if (p[2] == 'n' && p[3] == 'o' && p[4] == 't')
+			    len = 5;
+			if (!vim_isIDc(p[len]))
+			{
+			    type = len == 2 ? TYPE_EQUAL : TYPE_NEQUAL;
+			    type_is = TRUE;
+			}
+		    }
+		    break;
     }
 
     /*
@@ -2542,11 +2566,73 @@ eval4(arg, rettv, evaluate)
 
 	if (evaluate)
 	{
+	    if (type_is && rettv->v_type != var2.v_type)
+	    {
+		/* For "is" a different type always means FALSE, for "notis"
+		 * it means TRUE. */
+		n1 = (type == TYPE_NEQUAL);
+	    }
+	    else if (rettv->v_type == VAR_LIST || var2.v_type == VAR_LIST)
+	    {
+		if (type_is)
+		{
+		    n1 = (rettv->v_type == var2.v_type
+				   && rettv->vval.v_list == var2.vval.v_list);
+		    if (type == TYPE_NEQUAL)
+			n1 = !n1;
+		}
+		else if (rettv->v_type != var2.v_type
+			|| (type != TYPE_EQUAL && type != TYPE_NEQUAL))
+		{
+		    if (rettv->v_type != var2.v_type)
+			EMSG(_("E999: Can only compare List with List"));
+		    else
+			EMSG(_("E999: Invalid operation for Lists"));
+		    clear_tv(rettv);
+		    clear_tv(&var2);
+		    return FAIL;
+		}
+		else
+		{
+		    /* Compare two Lists for being equal or unequal. */
+		    n1 = list_equal(rettv->vval.v_list, var2.vval.v_list, ic);
+		    if (type == TYPE_NEQUAL)
+			n1 = !n1;
+		}
+	    }
+
+	    else if (rettv->v_type == VAR_FUNC || var2.v_type == VAR_FUNC)
+	    {
+		if (rettv->v_type != var2.v_type
+			|| (type != TYPE_EQUAL && type != TYPE_NEQUAL))
+		{
+		    if (rettv->v_type != var2.v_type)
+			EMSG(_("E999: Can only compare Funcref with Funcref"));
+		    else
+			EMSG(_("E999: Invalid operation for Funcrefs"));
+		    clear_tv(rettv);
+		    clear_tv(&var2);
+		    return FAIL;
+		}
+		else
+		{
+		    /* Compare two Funcrefs for being equal or unequal. */
+		    if (rettv->vval.v_string == NULL
+						|| var2.vval.v_string == NULL)
+			n1 = FALSE;
+		    else
+			n1 = STRCMP(rettv->vval.v_string,
+						     var2.vval.v_string) == 0;
+		    if (type == TYPE_NEQUAL)
+			n1 = !n1;
+		}
+	    }
+
 	    /*
 	     * If one of the two variables is a number, compare as a number.
 	     * When using "=~" or "!~", always compare as string.
 	     */
-	    if ((rettv->v_type == VAR_NUMBER || var2.v_type == VAR_NUMBER)
+	    else if ((rettv->v_type == VAR_NUMBER || var2.v_type == VAR_NUMBER)
 		    && type != TYPE_MATCH && type != TYPE_NOMATCH)
 	    {
 		n1 = get_tv_number(rettv);
@@ -2631,6 +2717,7 @@ eval5(arg, rettv, evaluate)
     int		evaluate;
 {
     typeval	var2;
+    typeval	var3;
     int		op;
     long	n1, n2;
     char_u	*s1, *s2;
@@ -2681,6 +2768,19 @@ eval5(arg, rettv, evaluate)
 		clear_tv(rettv);
 		rettv->v_type = VAR_STRING;
 		rettv->vval.v_string = p;
+	    }
+	    else if (rettv->v_type == VAR_LIST && var2.v_type == VAR_LIST)
+	    {
+		/* concatenate Lists */
+		if (list_concat(rettv->vval.v_list, var2.vval.v_list,
+							       &var3) == FAIL)
+		{
+		    clear_tv(rettv);
+		    clear_tv(&var2);
+		    return FAIL;
+		}
+		clear_tv(rettv);
+		*rettv = var3;
 	    }
 	    else
 	    {
@@ -3589,6 +3689,66 @@ list_len(l)
 }
 
 /*
+ * Return TRUE when two lists have exactly the same values.
+ */
+    static int
+list_equal(l1, l2, ic)
+    listvar	*l1;
+    listvar	*l2;
+    int		ic;	/* ignore case for strings */
+{
+    listitem	*item1, *item2;
+
+    for (item1 = l1->lv_first, item2 = l2->lv_first;
+	    item1 != NULL && item2 != NULL;
+			       item1 = item1->li_next, item2 = item2->li_next)
+	if (!tv_equal(&item1->li_tv, &item2->li_tv, ic))
+	    return FALSE;
+    return item1 == NULL && item2 == NULL;
+}
+
+/*
+ * Return TRUE if "tv1" and "tv2" have the same value.
+ * Compares the items just like "==" would compare them.
+ */
+    static int
+tv_equal(tv1, tv2, ic)
+    typeval *tv1;
+    typeval *tv2;
+    int	    ic;	    /* ignore case */
+{
+    char_u	buf1[NUMBUFLEN], buf2[NUMBUFLEN];
+
+    if (tv1->v_type == VAR_LIST || tv2->v_type == VAR_LIST)
+    {
+	/* recursive! */
+	if (tv1->v_type != tv2->v_type
+		   || !list_equal(tv1->vval.v_list, tv2->vval.v_list, ic))
+	    return FALSE;
+    }
+    else if (tv1->v_type == VAR_FUNC || tv2->v_type == VAR_FUNC)
+    {
+	if (tv1->v_type != tv2->v_type
+		|| tv1->vval.v_string == NULL
+		|| tv2->vval.v_string == NULL
+		|| STRCMP(tv1->vval.v_string, tv2->vval.v_string) != 0)
+	    return FALSE;
+    }
+    else if (tv1->v_type == VAR_NUMBER || tv2->v_type == VAR_NUMBER)
+    {
+	if (get_tv_number(tv1) != get_tv_number(tv2))
+	    return FALSE;
+    }
+    else if (!ic && STRCMP(get_tv_string_buf(tv1, buf1),
+				       get_tv_string_buf(tv2, buf2)) != 0)
+	return FALSE;
+    else if (ic && STRICMP(get_tv_string_buf(tv1, buf1),
+				       get_tv_string_buf(tv2, buf2)) != 0)
+	return FALSE;
+    return TRUE;
+}
+
+/*
  * Locate item with index "n" in list "l" and return it.
  * A negative index is counted from the end; -1 is the last item.
  * Returns NULL when "n" is out of range.
@@ -3621,6 +3781,39 @@ list_find(l, n)
 }
 
 /*
+ * Like list_find(), but also find an item just past the end.
+ * "*ip" is the item to find.
+ * When found "*ip" is set to zero, when not found "*ip" is non-zero.
+ * Returns NULL when item not found or item is just past the end.
+ */
+    static listitem *
+list_find_ext(l, ip)
+    listvar	*l;
+    long	*ip;
+{
+    long	n;
+    listitem	*item;
+
+    if (*ip < 0)
+    {
+	/* Count from the end: -1 is before last item. */
+	item = l->lv_last;
+	for (n = *ip + 1; n < 0 && item != NULL; ++n)
+	    item = item->li_prev;
+	if (item == NULL)
+	    n = 1;	/* error! */
+    }
+    else
+    {
+	item = l->lv_first;
+	for (n = *ip; n > 0 && item != NULL; --n)
+	    item = item->li_next;
+    }
+    *ip = n;
+    return item;
+}
+
+/*
  * Append item "item" to the end of list "l".
  */
     static void
@@ -3646,6 +3839,7 @@ list_append(l, item)
 
 /*
  * Append typeval "tv" to the end of list "l".
+ * Return FAIL when out of memory.
  */
     static int
 list_append_tv(l, tv)
@@ -3659,6 +3853,81 @@ list_append_tv(l, tv)
     copy_tv(tv, &ni->li_tv);
     list_append(l, ni);
     return OK;
+}
+
+/*
+ * Insert typeval "tv" in list "l" before "item".
+ * If "item" is NULL append at the end.
+ * Return FAIL when out of memory.
+ */
+    static int
+list_insert_tv(l, tv, item)
+    listvar	*l;
+    typeval	*tv;
+    listitem	*item;
+{
+    listitem	*ni = listitem_alloc();
+
+    if (ni == NULL)
+	return FAIL;
+    copy_tv(tv, &ni->li_tv);
+    if (item == NULL)
+	/* Append new item at end of list. */
+	list_append(l, ni);
+    else
+    {
+	/* Insert new item before existing item. */
+	ni->li_prev = item->li_prev;
+	ni->li_next = item;
+	if (item->li_prev == NULL)
+	    l->lv_first = ni;
+	else
+	    item->li_prev->li_next = ni;
+	item->li_prev = ni;
+    }
+    return OK;
+}
+
+/*
+ * Extend "l1" with "l2".
+ * If "bef" is NULL append at the end, otherwise insert before this item.
+ * Returns FAIL when out of memory.
+ */
+    static int
+list_extend(l1, l2, bef)
+    listvar	*l1;
+    listvar	*l2;
+    listitem	*bef;
+{
+    listitem	*item;
+
+    for (item = l2->lv_first; item != NULL; item = item->li_next)
+	if (list_insert_tv(l1, &item->li_tv, bef) == FAIL)
+	    return FAIL;
+    return OK;
+}
+
+/*
+ * Concatenate lists "l1" and "l2" into a new list, stored in "tv".
+ * Return FAIL when out of memory.
+ */
+    static int
+list_concat(l1, l2, tv)
+    listvar	*l1;
+    listvar	*l2;
+    typeval	*tv;
+{
+    listvar	*l;
+
+    /* make a copy of the first list. */
+    l = list_copy(l1, FALSE);
+    if (l == NULL)
+	return FAIL;
+    tv->v_type = VAR_LIST;
+    tv->vval.v_list = l;
+
+    /* append all items from the second list */
+    return list_extend(l, l2, NULL);
 }
 
 /*
@@ -3716,30 +3985,32 @@ list_copy(orig, deep)
 }
 
 /*
- * Remove item with index "n" from list "l" and return it.
- * Returns NULL when "n" is out of range.
+ * Remove items "item" to "item2" from list "l".
  */
-    static listitem *
-list_getrem(l, n)
+    static void
+list_getrem(l, item, item2)
     listvar	*l;
-    long	n;
-{
     listitem	*item;
+    listitem	*item2;
+{
+    listitem	*ip;
 
-    item = list_find(l, n);
-    if (item != NULL)
+    /* notify watchers */
+    for (ip = item; ip != NULL; ip = ip->li_next)
     {
-	list_fix_watch(l, item);	/* notify watchers */
-	if (item->li_next == NULL)
-	    l->lv_last = item->li_prev;
-	else
-	    item->li_next->li_prev = item->li_prev;
-	if (item->li_prev == NULL)
-	    l->lv_first = item->li_next;
-	else
-	    item->li_prev->li_next = item->li_next;
+	list_fix_watch(l, ip);
+	if (ip == item2)
+	    break;
     }
-    return item;
+
+    if (item2->li_next == NULL)
+	l->lv_last = item->li_prev;
+    else
+	item2->li_next->li_prev = item->li_prev;
+    if (item->li_prev == NULL)
+	l->lv_first = item2->li_next;
+    else
+	item->li_prev->li_next = item2->li_next;
 }
 
 /*
@@ -3755,6 +4026,7 @@ list2string(tv)
     int		first = TRUE;
     char_u	*tofree;
     char_u	*s;
+    char_u	numbuf[NUMBUFLEN];
 
     if (tv->vval.v_list == NULL)
 	return NULL;
@@ -3768,7 +4040,7 @@ list2string(tv)
 	else
 	    ga_concat(&ga, (char_u *)", ");
 
-	s = tv2string(&item->li_tv, &tofree);
+	s = tv2string(&item->li_tv, &tofree, numbuf);
 	if (s != NULL)
 	    ga_concat(&ga, s);
 	vim_free(tofree);
@@ -3782,14 +4054,14 @@ list2string(tv)
 /*
  * Return a string with the string representation of a variable.
  * If the memory is allocated "tofree" is set to it, otherwise NULL.
- * Can only be used once before the value is used, it may call
- * get_var_string().
+ * "numbuf" is used for a number.
  * May return NULL;
  */
     static char_u *
-tv2string(tv, tofree)
+tv2string(tv, tofree, numbuf)
     typeval	*tv;
     char_u	**tofree;
+    char_u	*numbuf;
 {
     switch (tv->v_type)
     {
@@ -3806,7 +4078,7 @@ tv2string(tv, tofree)
 	    EMSG2(_(e_intern2), "tv2string()");
     }
     *tofree = NULL;
-    return get_tv_string(tv);
+    return get_tv_string_buf(tv, numbuf);
 }
 
 /*
@@ -3888,11 +4160,13 @@ static struct fst
     {"bufwinnr",	1, 1, f_bufwinnr},
     {"byte2line",	1, 1, f_byte2line},
     {"byteidx",		2, 2, f_byteidx},
+    {"call",		2, 2, f_call},
     {"char2nr",		1, 1, f_char2nr},
     {"cindent",		1, 1, f_cindent},
     {"col",		1, 1, f_col},
     {"confirm",		1, 4, f_confirm},
     {"copy",		1, 1, f_copy},
+    {"count",		2, 3, f_count},
     {"cscope_connection",0,3, f_cscope_connection},
     {"cursor",		2, 2, f_cursor},
     {"deepcopy",	1, 1, f_deepcopy},
@@ -3905,6 +4179,7 @@ static struct fst
     {"executable",	1, 1, f_executable},
     {"exists",		1, 1, f_exists},
     {"expand",		1, 2, f_expand},
+    {"extend",		2, 3, f_extend},
     {"file_readable",	1, 1, f_filereadable},	/* obsolete */
     {"filereadable",	1, 1, f_filereadable},
     {"filewritable",	1, 1, f_filewritable},
@@ -3950,6 +4225,7 @@ static struct fst
     {"hostname",	0, 0, f_hostname},
     {"iconv",		3, 3, f_iconv},
     {"indent",		1, 1, f_indent},
+    {"index",		2, 3, f_index},
     {"input",		1, 2, f_input},
     {"inputdialog",	1, 3, f_inputdialog},
     {"inputrestore",	0, 0, f_inputrestore},
@@ -3979,7 +4255,7 @@ static struct fst
     {"remote_peek",	1, 2, f_remote_peek},
     {"remote_read",	1, 1, f_remote_read},
     {"remote_send",	2, 3, f_remote_send},
-    {"remove",		2, 2, f_remove},
+    {"remove",		2, 3, f_remove},
     {"rename",		2, 2, f_rename},
     {"repeat",		2, 2, f_repeat},
     {"resolve",		1, 1, f_resolve},
@@ -4402,13 +4678,17 @@ f_append(argvars, rettv)
     typeval	*rettv;
 {
     long	lnum;
+    listvar	*l;
 
     rettv->vval.v_number = 1; /* Default: Failed */
     if (argvars[0].v_type == VAR_LIST)
     {
-	if (argvars[0].vval.v_list != NULL
-		&& list_append_tv(argvars[0].vval.v_list, &argvars[1]) == OK)
+	l = argvars[0].vval.v_list;
+	if (l != NULL && list_append_tv(l, &argvars[1]) == OK)
+	{
+	    ++l->lv_refcount;
 	    copy_tv(&argvars[0], rettv);
+	}
     }
     else
     {
@@ -4762,6 +5042,55 @@ f_byteidx(argvars, rettv)
 }
 
 /*
+ * "call(func, arglist)" function
+ */
+    static void
+f_call(argvars, rettv)
+    typeval	*argvars;
+    typeval	*rettv;
+{
+    char_u	*func;
+    typeval	argv[MAX_FUNC_ARGS];
+    int		argc = 0;
+    listitem	*item;
+    int		dummy;
+
+    rettv->vval.v_number = 0;
+    if (argvars[1].v_type != VAR_LIST)
+    {
+	EMSG(_(e_listreq));
+	return;
+    }
+    if (argvars[1].vval.v_list == NULL)
+	return;
+
+    if (argvars[0].v_type == VAR_FUNC)
+	func = argvars[0].vval.v_string;
+    else
+	func = get_tv_string(&argvars[0]);
+
+    for (item = argvars[1].vval.v_list->lv_first; item != NULL;
+							 item = item->li_next)
+    {
+	if (argc == MAX_FUNC_ARGS)
+	{
+	    EMSG(_("E999: Too many arguments"));
+	    break;
+	}
+	/* Make a copy of each argument (is this really needed?) */
+	copy_tv(&item->li_tv, &argv[argc++]);
+    }
+
+    if (item == NULL)
+	(void)call_func(func, STRLEN(func), rettv, argc, argv,
+		  curwin->w_cursor.lnum, curwin->w_cursor.lnum, &dummy, TRUE);
+
+    /* Free the arguments. */
+    while (argc > 0)
+	clear_tv(&argv[--argc]);
+}
+
+/*
  * "char2nr(string)" function
  */
     static void
@@ -4921,6 +5250,33 @@ f_copy(argvars, rettv)
     }
     else
 	copy_tv(&argvars[0], rettv);
+}
+
+/*
+ * "count()" function
+ */
+    static void
+f_count(argvars, rettv)
+    typeval	*argvars;
+    typeval	*rettv;
+{
+    listitem	*li;
+    long	n = 0;
+    int		ic = FALSE;
+
+    if (argvars[0].v_type != VAR_LIST)
+	EMSG(_(e_listreq));
+    else if (argvars[0].vval.v_list != NULL)
+    {
+	if (argvars[2].v_type != VAR_UNKNOWN)
+	    ic = get_tv_number(&argvars[2]);
+
+	for (li = argvars[0].vval.v_list->lv_first; li != NULL;
+							     li = li->li_next)
+	    if (tv_equal(&li->li_tv, &argvars[1], ic))
+		++n;
+    }
+    rettv->vval.v_number = n;
 }
 
 /*
@@ -5259,6 +5615,48 @@ f_expand(argvars, rettv)
 	xpc.xp_context = EXPAND_FILES;
 	rettv->vval.v_string = ExpandOne(&xpc, s, NULL, flags, WILD_ALL);
 	ExpandCleanup(&xpc);
+    }
+}
+
+/*
+ * "extend(list, list [, idx])" function
+ */
+    static void
+f_extend(argvars, rettv)
+    typeval	*argvars;
+    typeval	*rettv;
+{
+    long	before;
+    long	n;
+    listitem	*item;
+    listvar	*l1, *l2;
+
+    rettv->vval.v_number = 0;
+    if (argvars[0].v_type != VAR_LIST || argvars[1].v_type != VAR_LIST)
+    {
+	EMSG(_(e_listreq));
+	return;
+    }
+    l1 = argvars[0].vval.v_list;
+    l2 = argvars[1].vval.v_list;
+    if (l1 != NULL && l2 != NULL)
+    {
+	if (argvars[2].v_type != VAR_UNKNOWN)
+	{
+	    n = before = get_tv_number(&argvars[2]);
+	    item = list_find_ext(l1, &n);
+	    if (n != 0)
+	    {
+		EMSGN(_(e_listidx), before);
+		return;
+	    }
+	}
+	else
+	    item = NULL;
+	list_extend(l1, l2, item);
+
+	++l1->lv_refcount;
+	copy_tv(&argvars[0], rettv);
     }
 }
 
@@ -6916,6 +7314,40 @@ f_indent(argvars, rettv)
 	rettv->vval.v_number = -1;
 }
 
+/*
+ * "index()" function
+ */
+    static void
+f_index(argvars, rettv)
+    typeval	*argvars;
+    typeval	*rettv;
+{
+    listvar	*l;
+    listitem	*item;
+    long	idx = 0;
+    int		ic = FALSE;
+
+    rettv->vval.v_number = -1;
+    if (argvars[0].v_type != VAR_LIST)
+    {
+	EMSG(_(e_listreq));
+	return;
+    }
+    l = argvars[0].vval.v_list;
+    if (l != NULL)
+    {
+	if (argvars[2].v_type != VAR_UNKNOWN)
+	    ic = get_tv_number(&argvars[2]);
+
+	for (item = l->lv_first; item != NULL; item = item->li_next, ++idx)
+	    if (tv_equal(&item->li_tv, &argvars[1], ic))
+	    {
+		rettv->vval.v_number = idx;
+		break;
+	    }
+    }
+}
+
 static int inputsecret_flag = 0;
 
 /*
@@ -7093,7 +7525,6 @@ f_insert(argvars, rettv)
     long	before = 0;
     long	n;
     listitem	*item;
-    listitem	*ni;
     listvar	*l;
 
     if (argvars[0].v_type != VAR_LIST)
@@ -7103,46 +7534,15 @@ f_insert(argvars, rettv)
 	if (argvars[2].v_type != VAR_UNKNOWN)
 	    before = get_tv_number(&argvars[2]);
 
-	if (before < 0)
-	{
-	    /* Count from the end: -1 is before last item. */
-	    item = l->lv_last;
-	    for (n = before + 1; n < 0 && item != NULL; ++n)
-		item = item->li_prev;
-	    if (item == NULL)
-		n = 1;	/* report an error, don't append */
-	}
-	else
-	{
-	    /* Can't use list_find() here, we allow one past the end. */
-	    item = l->lv_first;
-	    for (n = before; n > 0 && item != NULL; --n)
-		item = item->li_next;
-	}
+	n = before;
+	item = list_find_ext(l, &n);
 	if (n > 0)
 	    EMSGN(_(e_listidx), before);
 	else
 	{
-	    ni = listitem_alloc();
-	    if (ni != NULL)
-	    {
-		copy_tv(&argvars[1], &ni->li_tv);
-		if (item == NULL)
-		    /* Append new item at end of list. */
-		    list_append(l, ni);
-		else
-		{
-		    /* Insert new item before existing item. */
-		    ni->li_prev = item->li_prev;
-		    ni->li_next = item;
-		    if (item->li_prev == NULL)
-			l->lv_first = ni;
-		    else
-			item->li_prev->li_next = ni;
-		    item->li_prev = ni;
-		}
-		copy_tv(&argvars[0], rettv);
-	    }
+	    list_insert_tv(l, &argvars[1], item);
+	    ++l->lv_refcount;
+	    copy_tv(&argvars[0], rettv);
 	}
     }
 }
@@ -7595,7 +7995,7 @@ f_nr2char(argvars, rettv)
 }
 
 /*
- * "remove({list}, {idx})" function
+ * "remove({list}, {idx} [, {end}])" function
  */
     static void
 f_remove(argvars, rettv)
@@ -7603,21 +8003,59 @@ f_remove(argvars, rettv)
     typeval	*rettv;
 {
     listvar	*l;
-    listitem	*item;
+    listitem	*item, *item2;
+    listitem	*li;
     long	idx;
+    long	end;
 
+    rettv->vval.v_number = 0;
     if (argvars[0].v_type != VAR_LIST)
 	EMSG(_("E999: First argument of remove() must be a list"));
     else if ((l = argvars[0].vval.v_list) != NULL)
     {
 	idx = get_tv_number(&argvars[1]);
-	item = list_getrem(l, idx);
+	item = list_find(l, idx);
 	if (item == NULL)
 	    EMSGN(_(e_listidx), idx);
 	else
 	{
-	    *rettv = item->li_tv;
-	    vim_free(item);
+	    if (argvars[2].v_type == VAR_UNKNOWN)
+	    {
+		/* Remove one item, return its value. */
+		list_getrem(l, item, item);
+		*rettv = item->li_tv;
+		vim_free(item);
+	    }
+	    else
+	    {
+		/* Remove range of items, return list with values. */
+		end = get_tv_number(&argvars[2]);
+		item2 = list_find(l, end);
+		if (item2 == NULL)
+		    EMSGN(_(e_listidx), end);
+		else
+		{
+		    for (li = item; li != item2 && li != NULL; li = li->li_next)
+			;
+		    if (li == NULL)  /* didn't find "item2" after "item" */
+			EMSG(_(e_invrange));
+		    else
+		    {
+			list_getrem(l, item, item2);
+			l = list_alloc();
+			if (l != NULL)
+			{
+			    rettv->v_type = VAR_LIST;
+			    rettv->vval.v_list = l;
+			    l->lv_first = item;
+			    l->lv_last = item2;
+			    l->lv_refcount = 1;
+			    item->li_prev = NULL;
+			    item2->li_next = NULL;
+			}
+		    }
+		}
+	    }
 	}
     }
 }
@@ -7637,6 +8075,60 @@ f_rename(argvars, rettv)
     else
 	rettv->vval.v_number = vim_rename(get_tv_string(&argvars[0]),
 				      get_tv_string_buf(&argvars[1], buf));
+}
+
+/*
+ * "repeat()" function
+ */
+/*ARGSUSED*/
+    static void
+f_repeat(argvars, rettv)
+    typeval	*argvars;
+    typeval	*rettv;
+{
+    char_u	*p;
+    int		n;
+    int		slen;
+    int		len;
+    char_u	*r;
+    int		i;
+    listvar	*l;
+
+    n = get_tv_number(&argvars[1]);
+    if (argvars[0].v_type == VAR_LIST)
+    {
+	l = list_alloc();
+	if (l != NULL && argvars[0].vval.v_list != NULL)
+	{
+	    l->lv_refcount = 1;
+	    while (n-- > 0)
+		if (list_extend(l, argvars[0].vval.v_list, NULL) == FAIL)
+		    break;
+	}
+	rettv->v_type = VAR_LIST;
+	rettv->vval.v_list = l;
+    }
+    else
+    {
+	p = get_tv_string(&argvars[0]);
+	rettv->v_type = VAR_STRING;
+	rettv->vval.v_string = NULL;
+
+	slen = (int)STRLEN(p);
+	len = slen * n;
+	if (len <= 0)
+	    return;
+
+	r = alloc(len + 1);
+	if (r != NULL)
+	{
+	    for (i = 0; i < n; i++)
+		mch_memmove(r + i * slen, p, (size_t)slen);
+	    r[len] = NUL;
+	}
+
+	rettv->vval.v_string = r;
+    }
 }
 
 /*
@@ -8637,45 +9129,6 @@ f_remote_foreground(argvars, rettv)
 #endif
 }
 
-/*
- * "repeat()" function
- */
-/*ARGSUSED*/
-    static void
-f_repeat(argvars, rettv)
-    typeval	*argvars;
-    typeval	*rettv;
-{
-    char_u	*p;
-    int		n;
-    int		slen;
-    int		len;
-    char_u	*r;
-    int		i;
-
-    p = get_tv_string(&argvars[0]);
-    n = get_tv_number(&argvars[1]);
-
-    rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = NULL;
-
-    slen = (int)STRLEN(p);
-    len = slen * n;
-
-    if (len <= 0)
-        return;
-
-    r = alloc(len + 1);
-    if (r != NULL)
-    {
-        for (i = 0; i < n; i++)
-	    mch_memmove(r + i * slen, p, (size_t)slen);
-        r[len] = NUL;
-    }
-
-    rettv->vval.v_string = r;
-}
-
 #ifdef HAVE_STRFTIME
 /*
  * "strftime({format}[, {time}])" function
@@ -8804,9 +9257,10 @@ f_string(argvars, rettv)
     typeval	*rettv;
 {
     char_u	*tofree;
+    char_u	numbuf[NUMBUFLEN];
 
     rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = tv2string(&argvars[0], &tofree);
+    rettv->vval.v_string = tv2string(&argvars[0], &tofree, numbuf);
     if (tofree == NULL)
 	rettv->vval.v_string = vim_strsave(rettv->vval.v_string);
 }
@@ -10475,8 +10929,9 @@ list_one_var(v, prefix)
 {
     char_u	*tofree;
     char_u	*s;
+    char_u	numbuf[NUMBUFLEN];
 
-    s = tv2string(&v->tv, &tofree);
+    s = tv2string(&v->tv, &tofree, numbuf);
     list_one_var_a(prefix, v->v_name, v->tv.v_type,
 						s == NULL ? (char_u *)"" : s);
     vim_free(tofree);
@@ -10699,6 +11154,7 @@ ex_echo(eap)
     char_u	*p;
     int		needclr = TRUE;
     int		atstart = TRUE;
+    char_u	numbuf[NUMBUFLEN];
 
     if (eap->skip)
 	++emsg_skip;
@@ -10728,7 +11184,8 @@ ex_echo(eap)
 	    }
 	    else if (eap->cmdidx == CMD_echo)
 		msg_puts_attr((char_u *)" ", echo_attr);
-	    for (p = tv2string(&rettv, &tofree); *p != NUL && !got_int; ++p)
+	    for (p = tv2string(&rettv, &tofree, numbuf);
+						   *p != NUL && !got_int; ++p)
 		if (*p == '\n' || *p == '\r' || *p == TAB)
 		{
 		    if (*p != TAB && needclr)
@@ -11938,11 +12395,12 @@ get_return_cmd(rettv)
 {
     char_u	*s;
     char_u	*tofree = NULL;
+    char_u	numbuf[NUMBUFLEN];
 
     if (rettv == NULL)
 	s = (char_u *)"";
     else
-	s = tv2string((typeval *)rettv, &tofree);
+	s = tv2string((typeval *)rettv, &tofree, numbuf);
 
     STRCPY(IObuff, ":return ");
     STRNCPY(IObuff + 8, s, IOSIZE - 8);
@@ -12112,6 +12570,7 @@ write_viminfo_varlist(fp)
     int		i;
     char	*s;
     char_u	*tofree;
+    char_u	numbuf[NUMBUFLEN];
 
     if (find_viminfo_parameter('!') == NULL)
 	return;
@@ -12130,7 +12589,7 @@ write_viminfo_varlist(fp)
 		default: continue;
 	    }
 	    fprintf(fp, "!%s\t%s\t", this_var->v_name, s);
-	    viminfo_writestring(fp, tv2string(&this_var->tv, &tofree));
+	    viminfo_writestring(fp, tv2string(&this_var->tv, &tofree, numbuf));
 	    vim_free(tofree);
 	}
     }
