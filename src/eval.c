@@ -453,6 +453,7 @@ static void f_inputsave __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_inputsecret __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_insert __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_isdirectory __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_islocked __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_items __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_join __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_keys __ARGS((typval_T *argvars, typval_T *rettv));
@@ -556,6 +557,7 @@ static void list_one_var __ARGS((dictitem_T *v, char_u *prefix));
 static void list_one_var_a __ARGS((char_u *prefix, char_u *name, int type, char_u *string));
 static void set_var __ARGS((char_u *name, typval_T *varp, int copy));
 static int var_check_ro __ARGS((int flags, char_u *name));
+static int tv_check_lock __ARGS((int lock, char_u *name));
 static void copy_tv __ARGS((typval_T *from, typval_T *to));
 static void item_copy __ARGS((typval_T *from, typval_T *to, int deep));
 static char_u *find_option_end __ARGS((char_u **arg, int *opt_flags));
@@ -592,7 +594,10 @@ static int tv_op __ARGS((typval_T *tv1, typval_T *tv2, char_u  *op));
 static void list_add_watch __ARGS((list_T *l, listwatch_T *lw));
 static void list_rem_watch __ARGS((list_T *l, listwatch_T *lwrem));
 static void list_fix_watch __ARGS((list_T *l, listitem_T *item));
+static void ex_unletlock __ARGS((exarg_T *eap, char_u *argstart, int deep));
 static int do_unlet_var __ARGS((lval_T *lp, char_u *name_end, int forceit));
+static int do_lock_var __ARGS((lval_T *lp, char_u *name_end, int deep, int lock));
+static void item_lock __ARGS((typval_T *tv, int deep, int lock));
 
 /*
  * Initialize the global and v: variables.
@@ -1169,6 +1174,9 @@ ex_let(eap)
     expr = vim_strchr(expr, '=');
     if (expr == NULL)
     {
+	/*
+	 * ":let" without "=": list variables
+	 */
 	if (*arg == '[')
 	    EMSG(_(e_invarg));
 	else if (!ends_excmd(*arg))
@@ -1292,6 +1300,7 @@ ex_let_vars(arg_start, tv, copy, semicolon, var_count, nextchars)
 	    }
 
 	    ltv.v_type = VAR_LIST;
+	    ltv.v_lock = 0;
 	    ltv.vval.v_list = l;
 	    l->lv_refcount = 1;
 
@@ -2077,7 +2086,7 @@ clear_lval(lp)
 }
 
 /*
- * Set a variable that was parsed by get_lval().
+ * Set a variable that was parsed by get_lval() to "rettv".
  * "endp" points to just after the parsed name.
  * "op" is NULL, "+" for "+=", "-" for "-=", "." for ".=" or "=" for "=".
  */
@@ -2104,6 +2113,7 @@ set_var_lval(lp, endp, rettv, copy, op)
 	    {
 		typval_T tv;
 
+		/* handle +=, -= and .= */
 		if (get_var_tv(lp->ll_name, STRLEN(lp->ll_name), &tv) == OK)
 		{
 		    if (tv_op(&tv, rettv, op) == OK)
@@ -2116,6 +2126,10 @@ set_var_lval(lp, endp, rettv, copy, op)
 	    *endp = cc;
 	}
     }
+    else if (tv_check_lock(lp->ll_newkey == NULL
+		? lp->ll_tv->v_lock
+		: lp->ll_tv->vval.v_dict->dv_lock, lp->ll_name))
+	;
     else if (lp->ll_range)
     {
 	/*
@@ -2143,6 +2157,7 @@ set_var_lval(lp, endp, rettv, copy, op)
 		    break;
 		}
 		ni->li_tv.v_type = VAR_NUMBER;
+		ni->li_tv.v_lock = 0;
 		ni->li_tv.vval.v_number = 0;
 		list_append(lp->ll_list, ni);
 	    }
@@ -2631,14 +2646,46 @@ end:
 ex_unlet(eap)
     exarg_T	*eap;
 {
+    ex_unletlock(eap, eap->arg, 0);
+}
+
+/*
+ * ":lockvar" and ":unlockvar" commands
+ */
+    void
+ex_lockvar(eap)
+    exarg_T	*eap;
+{
     char_u	*arg = eap->arg;
+    int		deep = 2;
+
+    if (eap->forceit)
+	deep = -1;
+    else if (vim_isdigit(*arg))
+    {
+	deep = getdigits(&arg);
+	arg = skipwhite(arg);
+    }
+
+    ex_unletlock(eap, arg, deep);
+}
+
+/*
+ * ":unlet", ":lockvar" and ":unlockvar" are quite similar.
+ */
+    static void
+ex_unletlock(eap, argstart, deep)
+    exarg_T	*eap;
+    char_u	*argstart;
+    int		deep;
+{
+    char_u	*arg = argstart;
     char_u	*name_end;
     int		error = FALSE;
+    lval_T	lv;
 
     do
     {
-	lval_T	lv;
-
 	/* Parse the name and find the end. */
 	name_end = get_lval(arg, NULL, &lv, TRUE, eap->skip || error, FALSE);
 	if (lv.ll_name == NULL)
@@ -2657,8 +2704,19 @@ ex_unlet(eap)
 	}
 
 	if (!error && !eap->skip)
-	    if (do_unlet_var(&lv, name_end, eap->forceit) == FAIL)
-		error = TRUE;
+	{
+	    if (eap->cmdidx == CMD_unlet)
+	    {
+		if (do_unlet_var(&lv, name_end, eap->forceit) == FAIL)
+		    error = TRUE;
+	    }
+	    else
+	    {
+		if (do_lock_var(&lv, name_end, deep,
+					  eap->cmdidx == CMD_lockvar) == FAIL)
+		    error = TRUE;
+	    }
+	}
 
 	if (!eap->skip)
 	    clear_lval(&lv);
@@ -2668,7 +2726,6 @@ ex_unlet(eap)
 
     eap->nextcmd = check_nextcmd(arg);
 }
-
 
     static int
 do_unlet_var(lp, name_end, forceit)
@@ -2687,13 +2744,12 @@ do_unlet_var(lp, name_end, forceit)
 	/* Normal name or expanded name. */
 	if (check_changedtick(lp->ll_name))
 	    ret = FAIL;
-	else if (do_unlet(lp->ll_name) == FAIL && !forceit)
-	{
-	    EMSG2(_("E108: No such variable: \"%s\""), lp->ll_name);
+	else if (do_unlet(lp->ll_name, forceit) == FAIL)
 	    ret = FAIL;
-	}
 	*name_end = cc;
     }
+    else if (tv_check_lock(lp->ll_tv->v_lock, lp->ll_name))
+	return FAIL;
     else if (lp->ll_range)
     {
 	listitem_T    *li;
@@ -2722,10 +2778,12 @@ do_unlet_var(lp, name_end, forceit)
 
 /*
  * "unlet" a variable.  Return OK if it existed, FAIL if not.
+ * When "forceit" is TRUE don't complain if the variable doesn't exist.
  */
     int
-do_unlet(name)
+do_unlet(name, forceit)
     char_u	*name;
+    int		forceit;
 {
     hashtab_T	*ht;
     hashitem_T	*hi;
@@ -2737,14 +2795,152 @@ do_unlet(name)
 	hi = hash_find(ht, varname);
 	if (!HASHITEM_EMPTY(hi))
 	{
-	    if (!var_check_ro(HI2DI(hi)->di_flags, name))
-	    {
-		delete_var(ht, hi);
-		return OK;
-	    }
+	    if (var_check_ro(HI2DI(hi)->di_flags, name))
+		return FAIL;
+	    delete_var(ht, hi);
+	    return OK;
 	}
     }
+    if (forceit)
+	return OK;
+    EMSG2(_("E108: No such variable: \"%s\""), name);
     return FAIL;
+}
+
+/*
+ * Lock or unlock variable indicated by "lp".
+ * "deep" is the levels to go (-1 for unlimited);
+ * "lock" is TRUE for ":lockvar", FALSE for ":unlockvar".
+ */
+    static int
+do_lock_var(lp, name_end, deep, lock)
+    lval_T	*lp;
+    char_u	*name_end;
+    int		deep;
+    int		lock;
+{
+    int		ret = OK;
+    int		cc;
+    dictitem_T	*di;
+
+    if (deep == 0)	/* nothing to do */
+	return OK;
+
+    if (lp->ll_tv == NULL)
+    {
+	cc = *name_end;
+	*name_end = NUL;
+
+	/* Normal name or expanded name. */
+	if (check_changedtick(lp->ll_name))
+	    ret = FAIL;
+	else
+	{
+	    di = find_var(lp->ll_name, NULL);
+	    if (di == NULL)
+		ret = FAIL;
+	    else
+	    {
+		if (lock)
+		    di->di_flags |= DI_FLAGS_LOCK;
+		else
+		    di->di_flags &= ~DI_FLAGS_LOCK;
+		item_lock(&di->di_tv, deep, lock);
+	    }
+	}
+	*name_end = cc;
+    }
+    else if (lp->ll_range)
+    {
+	listitem_T    *li = lp->ll_li;
+
+	/* (un)lock a range of List items. */
+	while (li != NULL && (lp->ll_empty2 || lp->ll_n2 >= lp->ll_n1))
+	{
+	    item_lock(&li->li_tv, deep, lock);
+	    li = li->li_next;
+	    ++lp->ll_n1;
+	}
+    }
+    else if (lp->ll_list != NULL)
+	/* (un)lock a List item. */
+	item_lock(&lp->ll_li->li_tv, deep, lock);
+    else
+	/* un(lock) a Dictionary item. */
+	item_lock(&lp->ll_di->di_tv, deep, lock);
+
+    return ret;
+}
+
+/*
+ * Lock or unlock an item.  "deep" is nr of levels to go.
+ */
+    static void
+item_lock(tv, deep, lock)
+    typval_T	*tv;
+    int		deep;
+    int		lock;
+{
+    static int	recurse = 0;
+    list_T	*l;
+    listitem_T	*li;
+    dict_T	*d;
+    hashitem_T	*hi;
+    int		todo;
+
+    if (recurse >= DICT_MAXNEST)
+    {
+	EMSG(_("E743: variable nested too deep for (un)lock"));
+	return;
+    }
+    if (deep == 0)
+	return;
+    ++recurse;
+
+    /* lock/unlock the item itself */
+    if (lock)
+	tv->v_lock |= VAR_LOCKED;
+    else
+	tv->v_lock &= ~VAR_LOCKED;
+
+    switch (tv->v_type)
+    {
+	case VAR_LIST:
+	    if ((l = tv->vval.v_list) != NULL)
+	    {
+		if (lock)
+		    l->lv_lock |= VAR_LOCKED;
+		else
+		    l->lv_lock &= ~VAR_LOCKED;
+		if (deep < 0 || deep > 1)
+		    /* recursive: lock/unlock the items the List contains */
+		    for (li = l->lv_first; li != NULL; li = li->li_next)
+			item_lock(&li->li_tv, deep - 1, lock);
+	    }
+	    break;
+	case VAR_DICT:
+	    if ((d = tv->vval.v_dict) != NULL)
+	    {
+		if (lock)
+		    d->dv_lock |= VAR_LOCKED;
+		else
+		    d->dv_lock &= ~VAR_LOCKED;
+		if (deep < 0 || deep > 1)
+		{
+		    /* recursive: lock/unlock the items the List contains */
+		    todo = d->dv_hashtab.ht_used;
+		    for (hi = d->dv_hashtab.ht_array; todo > 0; ++hi)
+		    {
+			if (!HASHITEM_EMPTY(hi))
+			{
+			    --todo;
+			    item_lock(&HI2DI(hi)->di_tv, deep - 1, lock);
+			}
+		    }
+		}
+	    }
+    }
+    --recurse;
 }
 
 #if (defined(FEAT_MENU) && defined(FEAT_MULTI_LANG)) || defined(PROTO)
@@ -3621,6 +3817,8 @@ eval6(arg, rettv, evaluate)
  *  function()		function call
  *  $VAR		environment variable
  *  (expression)	nested expression
+ *  [expr, expr]	List
+ *  {key: val, key: val}  Dictionary
  *
  *  Also handle:
  *  ! in front		logical NOT
@@ -4420,6 +4618,7 @@ get_list_tv(arg, rettv, evaluate)
 	    if (item != NULL)
 	    {
 		item->li_tv = tv;
+		item->li_tv.v_lock = 0;
 		list_append(l, item);
 	    }
 	    else
@@ -5002,7 +5201,11 @@ dict_alloc()
 
     d = (dict_T *)alloc(sizeof(dict_T));
     if (d != NULL)
+    {
 	hash_init(&d->dv_hashtab);
+	d->dv_lock = 0;
+	d->dv_refcount = 0;
+    }
     return d;
 }
 
@@ -5058,7 +5261,10 @@ dictitem_alloc(key)
 
     di = (dictitem_T *)alloc(sizeof(dictitem_T) + STRLEN(key));
     if (di != NULL)
+    {
 	STRCPY(di->di_key, key);
+	di->di_flags = 0;
+    }
     return di;
 }
 
@@ -5075,6 +5281,7 @@ dictitem_copy(org)
     if (di != NULL)
     {
 	STRCPY(di->di_key, org->di_key);
+	di->di_flags = 0;
 	copy_tv(&org->di_tv, &di->di_tv);
     }
     return di;
@@ -5357,6 +5564,7 @@ get_dict_tv(arg, rettv, evaluate)
 	    if (item != NULL)
 	    {
 		item->di_tv = tv;
+		item->di_tv.v_lock = 0;
 		if (dict_add(d, item) == FAIL)
 		    dictitem_free(item);
 	    }
@@ -5679,6 +5887,7 @@ static struct fst
     {"inputsecret",	1, 2, f_inputsecret},
     {"insert",		2, 3, f_insert},
     {"isdirectory",	1, 1, f_isdirectory},
+    {"islocked",	1, 1, f_islocked},
     {"items",		1, 1, f_items},
     {"join",		1, 2, f_join},
     {"keys",		1, 1, f_keys},
@@ -6169,8 +6378,9 @@ f_add(argvars, rettv)
     rettv->vval.v_number = 1; /* Default: Failed */
     if (argvars[0].v_type == VAR_LIST)
     {
-	l = argvars[0].vval.v_list;
-	if (l != NULL && list_append_tv(l, &argvars[1]) == OK)
+	if ((l = argvars[0].vval.v_list) != NULL
+		&& !tv_check_lock(l->lv_lock, (char_u *)"add()")
+		&& list_append_tv(l, &argvars[1]) == OK)
 	    copy_tv(&argvars[0], rettv);
     }
     else
@@ -6612,7 +6822,9 @@ f_call(argvars, rettv)
 	    EMSG(_("E699: Too many arguments"));
 	    break;
 	}
-	/* Make a copy of each argument (is this really needed?) */
+	/* Make a copy of each argument.  This is needed to be able to set
+	 * v_lock to VAR_FIXED in the copy without changing the original list.
+	 */
 	copy_tv(&item->li_tv, &argv[argc++]);
     }
 
@@ -7259,7 +7471,8 @@ f_extend(argvars, rettv)
 
 	l1 = argvars[0].vval.v_list;
 	l2 = argvars[1].vval.v_list;
-	if (l1 != NULL && l2 != NULL)
+	if (l1 != NULL && !tv_check_lock(l1->lv_lock, (char_u *)"extend()")
+		&& l2 != NULL)
 	{
 	    if (argvars[2].v_type != VAR_UNKNOWN)
 	    {
@@ -7290,7 +7503,8 @@ f_extend(argvars, rettv)
 
 	d1 = argvars[0].vval.v_dict;
 	d2 = argvars[1].vval.v_dict;
-	if (d1 != NULL && d2 != NULL)
+	if (d1 != NULL && !tv_check_lock(d1->dv_lock, (char_u *)"extend()")
+		&& d2 != NULL)
 	{
 	    /* Check the third argument. */
 	    if (argvars[2].v_type != VAR_UNKNOWN)
@@ -7478,21 +7692,25 @@ filter_map(argvars, rettv, map)
     typval_T	save_key;
     int		rem;
     int		todo;
+    char_u	*msg = map ? (char_u *)"map()" : (char_u *)"filter()";
+
 
     rettv->vval.v_number = 0;
     if (argvars[0].v_type == VAR_LIST)
     {
-	if ((l = argvars[0].vval.v_list) == NULL)
+	if ((l = argvars[0].vval.v_list) == NULL
+		|| (map && tv_check_lock(l->lv_lock, msg)))
 	    return;
     }
     else if (argvars[0].v_type == VAR_DICT)
     {
-	if ((d = argvars[0].vval.v_dict) == NULL)
+	if ((d = argvars[0].vval.v_dict) == NULL
+		|| (map && tv_check_lock(d->dv_lock, msg)))
 	    return;
     }
     else
     {
-	EMSG2(_(e_listdictarg), map ? "map()" : "filter()");
+	EMSG2(_(e_listdictarg), msg);
 	return;
     }
 
@@ -7513,6 +7731,8 @@ filter_map(argvars, rettv, map)
 	    {
 		--todo;
 		di = HI2DI(hi);
+		if (tv_check_lock(di->di_tv.v_lock, msg))
+		    break;
 		vimvars[VV_KEY].vv_str = vim_strsave(di->di_key);
 		if (filter_map_one(&di->di_tv, expr, map, &rem) == FAIL)
 		    break;
@@ -7530,6 +7750,8 @@ filter_map(argvars, rettv, map)
     {
 	for (li = l->lv_first; li != NULL; li = nli)
 	{
+	    if (tv_check_lock(li->li_tv.v_lock, msg))
+		break;
 	    nli = li->li_next;
 	    if (filter_map_one(&li->li_tv, expr, map, &rem) == FAIL)
 		break;
@@ -8314,6 +8536,7 @@ f_getline(argvars, rettv)
 			break;
 		    list_append(l, li);
 		    li->li_tv.v_type = VAR_STRING;
+		    li->li_tv.v_lock = 0;
 		    li->li_tv.vval.v_string = vim_strsave(ml_get(lnum++));
 		}
 		rettv->vval.v_list = l;
@@ -9471,9 +9694,11 @@ f_insert(argvars, rettv)
     listitem_T	*item;
     list_T	*l;
 
+    rettv->vval.v_number = 0;
     if (argvars[0].v_type != VAR_LIST)
 	EMSG2(_(e_listarg), "insert()");
-    else if ((l = argvars[0].vval.v_list) != NULL)
+    else if ((l = argvars[0].vval.v_list) != NULL
+	    && !tv_check_lock(l->lv_lock, (char_u *)"insert()"))
     {
 	if (argvars[2].v_type != VAR_UNKNOWN)
 	    before = get_tv_number(&argvars[2]);
@@ -9500,6 +9725,80 @@ f_isdirectory(argvars, rettv)
     typval_T	*rettv;
 {
     rettv->vval.v_number = mch_isdir(get_tv_string(&argvars[0]));
+}
+
+static int tv_islocked __ARGS((typval_T *tv));
+
+/*
+ * Return TRUE if typeval "tv" is locked: Either tha value is locked itself or
+ * it refers to a List or Dictionary that is locked.
+ */
+    static int
+tv_islocked(tv)
+    typval_T	*tv;
+{
+    return (tv->v_lock & VAR_LOCKED)
+	|| (tv->v_type == VAR_LIST
+		&& tv->vval.v_list != NULL
+		&& (tv->vval.v_list->lv_lock & VAR_LOCKED))
+	|| (tv->v_type == VAR_DICT
+		&& tv->vval.v_dict != NULL
+		&& (tv->vval.v_dict->dv_lock & VAR_LOCKED));
+}
+
+/*
+ * "islocked()" function
+ */
+    static void
+f_islocked(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    lval_T	lv;
+    char_u	*end;
+    dictitem_T	*di;
+
+    rettv->vval.v_number = -1;
+    end = get_lval(get_tv_string(&argvars[0]), NULL, &lv, FALSE, FALSE, FALSE);
+    if (end != NULL && lv.ll_name != NULL)
+    {
+	if (*end != NUL)
+	    EMSG(_(e_trailing));
+	else
+	{
+	    if (lv.ll_tv == NULL)
+	    {
+		if (check_changedtick(lv.ll_name))
+		    rettv->vval.v_number = 1;	    /* always locked */
+		else
+		{
+		    di = find_var(lv.ll_name, NULL);
+		    if (di != NULL)
+		    {
+			/* Consider a variable locked when:
+			 * 1. the variable itself is locked
+			 * 2. the value of the variable is locked.
+			 * 3. the List or Dict value is locked.
+			 */
+			rettv->vval.v_number = ((di->di_flags & DI_FLAGS_LOCK)
+						  || tv_islocked(&di->di_tv));
+		    }
+		}
+	    }
+	    else if (lv.ll_range)
+		EMSG(_("E745: Range not allowed"));
+	    else if (lv.ll_newkey != NULL)
+		EMSG2(_(e_dictkey), lv.ll_newkey);
+	    else if (lv.ll_list != NULL)
+		/* List item. */
+		rettv->vval.v_number = tv_islocked(&lv.ll_li->li_tv);
+	    else
+		/* Dictionary item. */
+		rettv->vval.v_number = tv_islocked(&lv.ll_di->di_tv);
+	}
+    }
+
+    clear_lval(&lv);
 }
 
 static void dict_list __ARGS((typval_T *argvars, typval_T *rettv, int what));
@@ -9558,6 +9857,7 @@ dict_list(argvars, rettv, what)
 	    {
 		/* keys() */
 		li->li_tv.v_type = VAR_STRING;
+		li->li_tv.v_lock = 0;
 		li->li_tv.vval.v_string = vim_strsave(di->di_key);
 	    }
 	    else if (what == 1)
@@ -9570,6 +9870,7 @@ dict_list(argvars, rettv, what)
 		/* items() */
 		l2 = list_alloc();
 		li->li_tv.v_type = VAR_LIST;
+		li->li_tv.v_lock = 0;
 		li->li_tv.vval.v_list = l2;
 		if (l2 == NULL)
 		    break;
@@ -9580,6 +9881,7 @@ dict_list(argvars, rettv, what)
 		    break;
 		list_append(l2, li2);
 		li2->li_tv.v_type = VAR_STRING;
+		li2->li_tv.v_lock = 0;
 		li2->li_tv.vval.v_string = vim_strsave(di->di_key);
 
 		li2 = listitem_alloc();
@@ -10345,6 +10647,7 @@ f_range(argvars, rettv)
 		if (li == NULL)
 		    break;
 		li->li_tv.v_type = VAR_NUMBER;
+		li->li_tv.v_lock = 0;
 		li->li_tv.vval.v_number = i;
 		list_append(l, li);
 	    }
@@ -10600,7 +10903,8 @@ f_remove(argvars, rettv)
     {
 	if (argvars[2].v_type != VAR_UNKNOWN)
 	    EMSG2(_(e_toomanyarg), "remove()");
-	else if ((d = argvars[0].vval.v_dict) != NULL)
+	else if ((d = argvars[0].vval.v_dict) != NULL
+	    && !tv_check_lock(d->dv_lock, (char_u *)"remove()"))
 	{
 	    key = get_tv_string(&argvars[1]);
 	    di = dict_find(d, key, -1);
@@ -10616,7 +10920,8 @@ f_remove(argvars, rettv)
     }
     else if (argvars[0].v_type != VAR_LIST)
 	EMSG2(_(e_listdictarg), "remove()");
-    else if ((l = argvars[0].vval.v_list) != NULL)
+    else if ((l = argvars[0].vval.v_list) != NULL
+	    && !tv_check_lock(l->lv_lock, (char_u *)"remove()"))
     {
 	idx = get_tv_number(&argvars[1]);
 	item = list_find(l, idx);
@@ -10950,7 +11255,8 @@ f_reverse(argvars, rettv)
     rettv->vval.v_number = 0;
     if (argvars[0].v_type != VAR_LIST)
 	EMSG2(_(e_listarg), "reverse()");
-    else if ((l = argvars[0].vval.v_list) != NULL)
+    else if ((l = argvars[0].vval.v_list) != NULL
+	    && !tv_check_lock(l->lv_lock, (char_u *)"reverse()"))
     {
 	li = l->lv_last;
 	l->lv_first = l->lv_last = li;
@@ -11553,7 +11859,8 @@ item_compare2(s1, s2)
     typval_T	argv[2];
     int		dummy;
 
-    /* copy the values (is this really needed?) */
+    /* copy the values.  This is needed to be able to set v_lock to VAR_FIXED
+     * in the copy without changing the original list items. */
     copy_tv(&(*(listitem_T **)s1)->li_tv, &argv[0]);
     copy_tv(&(*(listitem_T **)s2)->li_tv, &argv[1]);
 
@@ -11591,7 +11898,7 @@ f_sort(argvars, rettv)
     else
     {
 	l = argvars[0].vval.v_list;
-	if (l == NULL)
+	if (l == NULL || tv_check_lock(l->lv_lock, (char_u *)"sort()"))
 	    return;
 	rettv->vval.v_list = l;
 	rettv->v_type = VAR_LIST;
@@ -11696,6 +12003,7 @@ f_split(argvars, rettv)
 		if (ni == NULL)
 		    break;
 		ni->li_tv.v_type = VAR_STRING;
+		ni->li_tv.v_lock = 0;
 		ni->li_tv.vval.v_string = vim_strnsave(str, end - str);
 		list_append(l, ni);
 	    }
@@ -13253,6 +13561,7 @@ clear_tv(varp)
 	    default:
 		EMSG2(_(e_intern2), "clear_tv()");
 	}
+	varp->v_lock = 0;
     }
 }
 
@@ -13534,6 +13843,7 @@ init_var_dict(dict, dict_var)
     dict->dv_refcount = 99999;
     dict_var->di_tv.vval.v_dict = dict;
     dict_var->di_tv.v_type = VAR_DICT;
+    dict_var->di_tv.v_lock = VAR_FIXED;
     dict_var->di_flags = DI_FLAGS_RO | DI_FLAGS_FIX;
     dict_var->di_key[0] = NUL;
 }
@@ -13696,7 +14006,8 @@ set_var(name, tv, copy)
     if (v != NULL)
     {
 	/* existing variable, need to clear the value */
-	if (var_check_ro(v->di_flags, name))
+	if (var_check_ro(v->di_flags, name)
+				      || tv_check_lock(v->di_tv.v_lock, name))
 	    return;
 	if (v->di_tv.v_type != tv->v_type
 		&& !((v->di_tv.v_type == VAR_STRING
@@ -13736,16 +14047,17 @@ set_var(name, tv, copy)
     }
     else		    /* add a new variable */
     {
-	v = (dictitem_T *)alloc((unsigned)(sizeof(dictitem_T) + STRLEN(varname)));
+	v = (dictitem_T *)alloc((unsigned)(sizeof(dictitem_T)
+							  + STRLEN(varname)));
 	if (v == NULL)
 	    return;
 	STRCPY(v->di_key, varname);
-	v->di_flags = 0;
 	if (hash_add(ht, DI2HIKEY(v)) == FAIL)
 	{
 	    vim_free(v);
 	    return;
 	}
+	v->di_flags = 0;
     }
 
     if (copy || tv->v_type == VAR_NUMBER)
@@ -13753,6 +14065,7 @@ set_var(name, tv, copy)
     else
     {
 	v->di_tv = *tv;
+	v->di_tv.v_lock = 0;
 	init_tv(tv);
     }
 }
@@ -13780,6 +14093,30 @@ var_check_ro(flags, name)
 }
 
 /*
+ * Return TRUE if typeval "tv" is set to be locked (immutable).
+ * Also give an error message, using "name".
+ */
+    static int
+tv_check_lock(lock, name)
+    int		lock;
+    char_u	*name;
+{
+    if (lock & VAR_LOCKED)
+    {
+	EMSG2(_("E741: Value is locked: %s"),
+				name == NULL ? (char_u *)_("Unknown") : name);
+	return TRUE;
+    }
+    if (lock & VAR_FIXED)
+    {
+	EMSG2(_("E742: Cannot change value of %s"),
+				name == NULL ? (char_u *)_("Unknown") : name);
+	return TRUE;
+    }
+    return FALSE;
+}
+
+/*
  * Copy the values from typval_T "from" to typval_T "to".
  * When needed allocates string or increases reference count.
  * Does not make a copy of a list or dict but copies the reference!
@@ -13790,6 +14127,7 @@ copy_tv(from, to)
     typval_T *to;
 {
     to->v_type = from->v_type;
+    to->v_lock = 0;
     switch (from->v_type)
     {
 	case VAR_NUMBER:
@@ -13858,10 +14196,12 @@ item_copy(from, to, deep)
 	    break;
 	case VAR_LIST:
 	    to->v_type = VAR_LIST;
+	    to->v_lock = 0;
 	    to->vval.v_list = list_copy(from->vval.v_list, deep);
 	    break;
 	case VAR_DICT:
 	    to->v_type = VAR_DICT;
+	    to->v_lock = 0;
 	    to->vval.v_dict = dict_copy(from->vval.v_dict, deep);
 	    break;
 	default:
@@ -14529,6 +14869,7 @@ ex_function(eap)
 		/* overwrite existing dict entry */
 		clear_tv(&fudi.fd_di->di_tv);
 	    fudi.fd_di->di_tv.v_type = VAR_FUNC;
+	    fudi.fd_di->di_tv.v_lock = 0;
 	    fudi.fd_di->di_tv.vval.v_string = vim_strsave(name);
 	    fp->refcount = 1;
 	}
@@ -15072,6 +15413,7 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
 	v->di_flags = DI_FLAGS_RO + DI_FLAGS_FIX;
 	hash_add(&fc.l_vars.dv_hashtab, DI2HIKEY(v));
 	v->di_tv.v_type = VAR_DICT;
+	v->di_tv.v_lock = 0;
 	v->di_tv.vval.v_dict = selfdict;
 	++selfdict->dv_refcount;
     }
@@ -15089,6 +15431,7 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
     v->di_flags = DI_FLAGS_RO | DI_FLAGS_FIX;
     hash_add(&fc.l_avars.dv_hashtab, DI2HIKEY(v));
     v->di_tv.v_type = VAR_LIST;
+    v->di_tv.v_lock = VAR_FIXED;
     v->di_tv.vval.v_list = &fc.l_varlist;
     vim_memset(&fc.l_varlist, 0, sizeof(list_T));
     fc.l_varlist.lv_refcount = 99999;
@@ -15121,7 +15464,8 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
 	}
 	else
 	{
-	    v = (dictitem_T *)alloc((unsigned)(sizeof(dictitem_T) + STRLEN(name)));
+	    v = (dictitem_T *)alloc((unsigned)(sizeof(dictitem_T)
+							     + STRLEN(name)));
 	    if (v == NULL)
 		break;
 	    v->di_flags = DI_FLAGS_RO;
@@ -15129,13 +15473,16 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
 	STRCPY(v->di_key, name);
 	hash_add(&fc.l_avars.dv_hashtab, DI2HIKEY(v));
 
-	/* Note: the values are copied directly to avoid alloc/free. */
+	/* Note: the values are copied directly to avoid alloc/free.
+	 * "argvars" must have VAR_FIXED for v_lock. */
 	v->di_tv = argvars[i];
+	v->di_tv.v_lock = VAR_FIXED;
 
 	if (ai >= 0 && ai < MAX_FUNC_ARGS)
 	{
 	    list_append(&fc.l_varlist, &fc.l_listitems[ai]);
 	    fc.l_listitems[ai].li_tv = argvars[i];
+	    fc.l_listitems[ai].li_tv.v_lock = VAR_FIXED;
 	}
     }
 
@@ -15276,6 +15623,7 @@ add_nr_var(dp, v, name, nr)
     v->di_flags = DI_FLAGS_RO | DI_FLAGS_FIX;
     hash_add(&dp->dv_hashtab, DI2HIKEY(v));
     v->di_tv.v_type = VAR_NUMBER;
+    v->di_tv.v_lock = VAR_FIXED;
     v->di_tv.vval.v_number = nr;
 }
 

@@ -1,6 +1,6 @@
 /* vi:set ts=8 sts=4 sw=4:
  *
- * MzScheme interface by Sergey Khorev <khorev@softlab.ru>
+ * MzScheme interface by Sergey Khorev <sergey.khorev@gmail.com>
  * Original work by Brent Fulgham <bfulgham@debian.org>
  * (Based on lots of help from Matthew Flatt)
  *
@@ -219,11 +219,21 @@ static Scheme_Object *(*dll_scheme_eval_string)(const char *str,
 static Scheme_Object *(*dll_scheme_eval_string_all)(const char *str, 
 	Scheme_Env *env, int all);
 static void (*dll_scheme_finish_primitive_module)(Scheme_Env *env);
+# if MZSCHEME_VERSION_MAJOR < 299
 static char *(*dll_scheme_format)(char *format, int flen, int argc,
 	Scheme_Object **argv, long *rlen);
+# else
+static char *(*dll_scheme_format_utf8)(char *format, int flen, int argc,
+	Scheme_Object **argv, long *rlen);
+# endif
 static void (*dll_scheme_gc_ptr_ok)(void *p);
+# if MZSCHEME_VERSION_MAJOR < 299
 static char *(*dll_scheme_get_sized_string_output)(Scheme_Object *,
 	long *len);
+# else
+static char *(*dll_scheme_get_sized_byte_string_output)(Scheme_Object *,
+	long *len);
+# endif
 static Scheme_Object *(*dll_scheme_intern_symbol)(const char *name);
 static Scheme_Object *(*dll_scheme_lookup_global)(Scheme_Object *symbol,
 	Scheme_Env *env);
@@ -235,8 +245,13 @@ static Scheme_Object *(*dll_scheme_make_namespace)(int argc,
 	Scheme_Object *argv[]);
 static Scheme_Object *(*dll_scheme_make_pair)(Scheme_Object *car, 
 	Scheme_Object *cdr);
+# if MZSCHEME_VERSION_MAJOR < 299
 static Scheme_Object *(*dll_scheme_make_string)(const char *chars);
 static Scheme_Object *(*dll_scheme_make_string_output_port)();
+# else
+static Scheme_Object *(*dll_scheme_make_byte_string)(const char *chars);
+static Scheme_Object *(*dll_scheme_make_byte_string_output_port)();
+# endif
 static Scheme_Object *(*dll_scheme_make_struct_instance)(Scheme_Object *stype,
 	int argc, Scheme_Object **argv);
 static Scheme_Object **(*dll_scheme_make_struct_names)(Scheme_Object *base,
@@ -244,7 +259,11 @@ static Scheme_Object **(*dll_scheme_make_struct_names)(Scheme_Object *base,
 static Scheme_Object *(*dll_scheme_make_struct_type)(Scheme_Object *base,
 	Scheme_Object *parent, Scheme_Object *inspector, int num_fields,
 	int num_uninit_fields, Scheme_Object *uninit_val,
-	Scheme_Object *properties);
+	Scheme_Object *properties
+# if MZSCHEME_VERSION_MAJOR >= 299
+	, Scheme_Object *guard
+# endif
+	);
 static Scheme_Object **(*dll_scheme_make_struct_values)(
 	Scheme_Object *struct_type, Scheme_Object **names, int count,
 	int flags);
@@ -262,6 +281,13 @@ static Scheme_Object *(*dll_scheme_read)(Scheme_Object *port);
 static void (*dll_scheme_signal_error)(const char *msg, ...);
 static void (*dll_scheme_wrong_type)(const char *name, const char *expected,
 	int which, int argc, Scheme_Object **argv);
+# if MZSCHEME_VERSION_MAJOR >= 299
+static void (*dll_scheme_set_param)(Scheme_Config *c, int pos, 
+	Scheme_Object *o);
+static Scheme_Config *(*dll_scheme_current_config)(void);
+static Scheme_Object *(*dll_scheme_char_string_to_byte_string)
+    (Scheme_Object *s);
+# endif
 
 /* arrays are imported directly */
 # define scheme_eof dll_scheme_eof
@@ -298,17 +324,32 @@ static void (*dll_scheme_wrong_type)(const char *name, const char *expected,
 # define scheme_eval_string dll_scheme_eval_string
 # define scheme_eval_string_all dll_scheme_eval_string_all
 # define scheme_finish_primitive_module dll_scheme_finish_primitive_module
-# define scheme_format dll_scheme_format
+# if MZSCHEME_VERSION_MAJOR < 299
+#  define scheme_format dll_scheme_format
+# else
+#  define scheme_format_utf8 dll_scheme_format_utf8
+# endif
 # define scheme_gc_ptr_ok dll_scheme_gc_ptr_ok
-# define scheme_get_sized_string_output dll_scheme_get_sized_string_output
+# if MZSCHEME_VERSION_MAJOR < 299
+#  define scheme_get_sized_string_output dll_scheme_get_sized_string_output
+# else
+#  define scheme_get_sized_byte_string_output \
+    dll_scheme_get_sized_byte_string_output
+# endif
 # define scheme_intern_symbol dll_scheme_intern_symbol
 # define scheme_lookup_global dll_scheme_lookup_global
 # define scheme_make_closed_prim_w_arity dll_scheme_make_closed_prim_w_arity
 # define scheme_make_integer_value dll_scheme_make_integer_value
 # define scheme_make_namespace dll_scheme_make_namespace
 # define scheme_make_pair dll_scheme_make_pair
-# define scheme_make_string dll_scheme_make_string
-# define scheme_make_string_output_port dll_scheme_make_string_output_port
+# if MZSCHEME_VERSION_MAJOR < 299
+#  define scheme_make_string dll_scheme_make_string
+#  define scheme_make_string_output_port dll_scheme_make_string_output_port
+# else
+#  define scheme_make_byte_string dll_scheme_make_byte_string
+#  define scheme_make_byte_string_output_port \
+    dll_scheme_make_byte_string_output_port
+# endif
 # define scheme_make_struct_instance dll_scheme_make_struct_instance
 # define scheme_make_struct_names dll_scheme_make_struct_names
 # define scheme_make_struct_type dll_scheme_make_struct_type
@@ -325,6 +366,12 @@ static void (*dll_scheme_wrong_type)(const char *name, const char *expected,
 # define scheme_set_stack_base dll_scheme_set_stack_base
 # define scheme_signal_error dll_scheme_signal_error
 # define scheme_wrong_type dll_scheme_wrong_type
+# if MZSCHEME_VERSION_MAJOR >= 299
+#  define scheme_set_param dll_scheme_set_param
+#  define scheme_current_config dll_scheme_current_config
+#  define scheme_char_string_to_byte_string \
+    dll_scheme_char_string_to_byte_string
+# endif
 
 typedef struct
 {
@@ -367,10 +414,19 @@ static Thunk_Info mzsch_imports[] = {
     {"scheme_eval_string_all", (void **)&dll_scheme_eval_string_all},
     {"scheme_finish_primitive_module", 
 	(void **)&dll_scheme_finish_primitive_module},
+# if MZSCHEME_VERSION_MAJOR < 299
     {"scheme_format", (void **)&dll_scheme_format},
+# else
+    {"scheme_format_utf8", (void **)&dll_scheme_format_utf8},
+#endif
     {"scheme_gc_ptr_ok", (void **)&dll_scheme_gc_ptr_ok},
+# if MZSCHEME_VERSION_MAJOR < 299
     {"scheme_get_sized_string_output", 
 	(void **)&dll_scheme_get_sized_string_output},
+# else
+    {"scheme_get_sized_byte_string_output", 
+	(void **)&dll_scheme_get_sized_byte_string_output},
+#endif
     {"scheme_intern_symbol", (void **)&dll_scheme_intern_symbol},
     {"scheme_lookup_global", (void **)&dll_scheme_lookup_global},
     {"scheme_make_closed_prim_w_arity", 
@@ -378,9 +434,15 @@ static Thunk_Info mzsch_imports[] = {
     {"scheme_make_integer_value", (void **)&dll_scheme_make_integer_value},
     {"scheme_make_namespace", (void **)&dll_scheme_make_namespace},
     {"scheme_make_pair", (void **)&dll_scheme_make_pair},
+# if MZSCHEME_VERSION_MAJOR < 299
     {"scheme_make_string", (void **)&dll_scheme_make_string},
     {"scheme_make_string_output_port", 
 	(void **)&dll_scheme_make_string_output_port},
+# else
+    {"scheme_make_byte_string", (void **)&dll_scheme_make_byte_string},
+    {"scheme_make_byte_string_output_port", 
+	(void **)&dll_scheme_make_byte_string_output_port},
+# endif
     {"scheme_make_struct_instance", 
 	(void **)&dll_scheme_make_struct_instance},
     {"scheme_make_struct_names", (void **)&dll_scheme_make_struct_names},
@@ -398,6 +460,12 @@ static Thunk_Info mzsch_imports[] = {
     {"scheme_set_stack_base", (void **)&dll_scheme_set_stack_base},
     {"scheme_signal_error", (void **)&dll_scheme_signal_error},
     {"scheme_wrong_type", (void **)&dll_scheme_wrong_type},
+# if MZSCHEME_VERSION_MAJOR >= 299
+    {"scheme_set_param", (void **)&dll_scheme_set_param},
+    {"scheme_current_config", (void **)&dll_scheme_current_config},
+    {"scheme_char_string_to_byte_string",
+	(void **)&dll_scheme_char_string_to_byte_string},
+# endif
     {NULL, NULL}};
 
 static HINSTANCE hMzGC = 0;
