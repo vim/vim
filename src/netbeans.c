@@ -2896,7 +2896,7 @@ netbeans_button_release(int button)
 
     if (bufno >= 0 && curwin != NULL && curwin->w_buffer == curbuf)
     {
-	int col = mouse_col - curwin->w_wincol - (curwin->w_p_nu ? 9 : 1);
+	int col = mouse_col - W_WINCOL(curwin) - (curwin->w_p_nu ? 9 : 1);
 	long off = pos2off(curbuf, &curwin->w_cursor);
 
 	/* sync the cursor position */
