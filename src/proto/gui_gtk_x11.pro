@@ -29,6 +29,7 @@ void gui_mch_free_fontset __ARGS((GuiFontset fontset));
 guicolor_T gui_mch_get_color __ARGS((char_u *name));
 void gui_mch_set_fg_color __ARGS((guicolor_T color));
 void gui_mch_set_bg_color __ARGS((guicolor_T color));
+void gui_mch_set_sp_color __ARGS((guicolor_T color));
 int gui_gtk2_draw_string __ARGS((int row, int col, char_u *s, int len, int flags));
 void gui_mch_draw_string __ARGS((int row, int col, char_u *s, int len, int flags));
 int gui_mch_haskey __ARGS((char_u *name));
