@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Mar 04
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Mar 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -97,6 +97,12 @@ a help file, and using ":quit".  Now only the window is closed.
 
 "-w {scriptout}" only works when {scriptout} doesn't start with a digit.
 Otherwise it's used to set the 'window' option.
+
+Previously <Home> and <xHome> could be mapped separately.  This had the
+disadvantage that all mappings (with modifiers) had to be duplicated, since
+you can't be sure what the keyboard generates.  Now all <xHome> are internally
+translated to <Home>, both for the keys and for mappings.  Also for <xEnd>,
+<xF1>, etc.
 
 ==============================================================================
 NEW FEATURES						*new-7*
@@ -422,6 +428,11 @@ IMPROVEMENTS						*improvements-7*
 
 Move the help for printing to a separate help file.  It's quite a lot now.
 
+The pattern matching code was changed from a recursive function to an
+iterative mechanism.  This avoids out-of-stack errors.  State is stored in
+allocated memory, running out of memory can always be detected.  Allows
+matching more complex things, but Vim may seem to hang while doing that.
+
 ":breakadd here" and ":breakdel here" can be used to set or delete a
 breakpoint at the cursor.
 
@@ -547,6 +558,13 @@ The "screen.linux" $TERM name is recognized to set the default for
 The |FileChangedShell| autocommand event can now use the |v:fcs_reason|
 variable that specifies what triggered the event.  |v:fcs_choice| can be used
 to reload the buffer or ask the user what to do.
+
+Not all modifiers were recognized for xterm function keys.  Added the
+possibility in term codes to end in ";*X" or "O*X", where X is any character
+and the * stands for the modifier code.
+Added the <xUp>, <xDown>, <xLeft> and <xRight> keys, to be able to recognize
+the two forms that xterm can send their codes in and still handle all possible
+modifiers.
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*

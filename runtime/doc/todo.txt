@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Mar 04
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Mar 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,13 +30,13 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
--   Steve Wall has a patch (2005 Mar 3) for adding function keys up to 37,
-    with modifiers.
-    Still need to recognize modifiers in "ESC O 5 F".  "ESC O * F"?
-":map <C-S-End> lll" has no effect.
+-   Patch from Steve Wall (2005 Mar 3) for dec locator mode with xterm 
+    above column 223.
+    Doesn't work: may send wrong escape sequence to terminal, because mouse
+    type already changed when calling mch_setmouse(FALSE).
 
-Mingw code to catch out-of-stack error doesn't work.  See MINGW_TRY in
-regexp.c.  Try with example from Michaelis.
+Remove code for out-of-stack checks.
+Verify non-recursive regmatch() is OK with example from Michaelis.
 
 Mac unicode patch (Da Woon Jung):
 - selecting proportional font breaks display
@@ -46,9 +46,6 @@ Patch for gettags(). Yegappan Lakshmanan Feb 27
 - docs: use of ^ and $ in pattern, refer to |tag-regexp|
 	  explain what the fields mean.
 	  use of 'tags' option
-
--   Patch from Steve Wall (2005 Mar 3) for xterm mouse positioning above
-    column 223.
 
 autoload:
 - Add a Vim script in $VIMRUNTIME/tools that takes a file with a list of
@@ -63,7 +60,7 @@ autoload:
 
 Patch for 'balloonexpr' option.  Sergey Khorev, Feb 26.  Addition Feb 27.
 
-Patch for "paranoid mode" by Kevin Collins, March 3.
+Patch for "paranoid mode" by Kevin Collins, March 3.  Later updated.
 
 Awaiting response:
 -   Patch for mch_FullName() also in Vim 6.3?  os_mswin.c
@@ -1076,8 +1073,6 @@ Macintosh:
     that the user knows he has to delete the files.
 7   It's possible to redefine a script-local function with ":func
     <SNR>123_Test()". (Krishna)  Disallow this.
-7   After ":%d" an undo reports the number of lines added as if there still
-    was one line.
 
 
 I can't reproduce these (if you can, let me know how!):
@@ -1641,11 +1636,6 @@ Built-in script language:
 
 
 Robustness:
-8   This pattern in syntax/java.vim causes a recursive call of regmatch():
-	syn match   javaStringError      +"\([^"\\]\|\\.\)*$+
-    A long line with a " in it can cause a crash when it runs out of stack
-    space (on systems where this isn't caught).  How can we catch this for
-    more systems?
 6   Add file locking.  Lock a file when starting to edit it with flock() or
     fcntl().  This patch has advisory file locking while reading/writing
     the file for Vim 5.4: ~/vim/patches/kahn_file_locking .
