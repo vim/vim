@@ -501,8 +501,13 @@ PYTHON_LIB = $(PYTHON)\libs\python$(PYTHON_VER).lib
 MZSCHEME_VER = 205_000
 !endif
 CFLAGS = $(CFLAGS) -DFEAT_MZSCHEME -I $(MZSCHEME)\include
-MZSCHEME_OBJ = $(OUTDIR)\if_mzsch.obj
+!if "$(DYNAMIC_MZSCHEME)" == "yes"
+!message MzScheme DLLs will be loaded dynamically
+CFLAGS = $(CFLAGS) -DDYNAMIC_MZSCHEME -DDYNAMIC_MZSCH_DLL=\"libmzsch$(MZSCHEME_VER).dll\" -DDYNAMIC_MZGC_DLL=\"libmzgc$(MZSCHEME_VER).dll\"
+!else
 MZSCHEME_LIB = $(MZSCHEME)\lib\msvc\libmzgc$(MZSCHEME_VER).lib $(MZSCHEME)\lib\msvc\libmzsch$(MZSCHEME_VER).lib
+!endif
+MZSCHEME_OBJ = $(OUTDIR)\if_mzsch.obj
 !endif
 
 # Perl interface

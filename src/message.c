@@ -1052,6 +1052,7 @@ set_keep_msg(s)
 	keep_msg = vim_strsave(s);
     else
 	keep_msg = NULL;
+    keep_msg_more = FALSE;
 }
 
 /*

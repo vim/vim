@@ -240,11 +240,11 @@ extern char *vim_SelFile __ARGS((Widget toplevel, char *prompt, char *init_path,
 #if defined(FEAT_PERL) && !defined(IN_PERL_FILE)
 # define CV void
 # ifdef __BORLANDC__
-#  pragma option -pc
+  #pragma option -pc
 # endif
 # include "if_perl.pro"
 # ifdef __BORLANDC__
-#  pragma option -p.
+  #pragma option -p.
 # endif
 # include "if_perlsfio.pro"
 #endif

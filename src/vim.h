@@ -20,9 +20,9 @@
     defined(DYNAMIC_ICONV) || \
     defined(DYNAMIC_IME) || \
     defined(XPM)
-#  pragma option -pc
+  #pragma option -pc
 # else
-#  pragma option -pr
+  #pragma option -pr
 # endif
 #endif
 
@@ -1284,7 +1284,6 @@ enum hlf_value
 #else
 # define MB_STRICMP(d, s)	STRICMP((d), (s))
 # define MB_STRNICMP(d, s, n)	STRNICMP((d), (s), (n))
-# define transchar_byte(c)	transchar(c)
 #endif
 
 #define STRCAT(d, s)	    strcat((char *)(d), (char *)(s))
@@ -1632,6 +1631,17 @@ typedef int VimClipboard;	/* This is required for the prototypes. */
 # define USE_MCH_ERRMSG
 #endif
 
+#ifndef FEAT_MBYTE
+# define after_pathsep(b, p)	vim_ispathsep(*((p) - 1))
+# define transchar_byte(c)	transchar(c)
+#endif
+
+#ifndef FEAT_LINEBREAK
+/* Without the 'numberwidth' option line numbers are always 7 chars. */
+# define number_width(x) 7
+#endif
+
+
 #include "globals.h"	    /* global variables and messages */
 
 #ifdef FEAT_SNIFF
@@ -1678,7 +1688,7 @@ typedef int VimClipboard;	/* This is required for the prototypes. */
 
 /* stop using fastcall for Borland */
 #if defined(__BORLANDC__) && defined(WIN32) && !defined(DEBUG)
-# pragma option -p.
+ #pragma option -p.
 #endif
 
 #if defined(MEM_PROFILE)
