@@ -2564,9 +2564,11 @@ Messaging_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	switch (data->dwData)
 	{
 	case COPYDATA_ENCODING:
+# ifdef FEAT_MBYTE
 	    /* Remember the encoding that the client uses. */
 	    vim_free(client_enc);
 	    client_enc = enc_canonize((char_u *)data->lpData);
+# endif
 	    return 1;
 
 	case COPYDATA_KEYS:

@@ -710,9 +710,11 @@ edit(cmdchar, startln, count)
 	    switch (c)
 	    {
 		case K_LEFT:	c = K_RIGHT; break;
+		case K_XLEFT:	c = K_XRIGHT; break;
 		case K_S_LEFT:	c = K_S_RIGHT; break;
 		case K_C_LEFT:	c = K_C_RIGHT; break;
 		case K_RIGHT:	c = K_LEFT; break;
+		case K_XRIGHT:	c = K_XLEFT; break;
 		case K_S_RIGHT: c = K_S_LEFT; break;
 		case K_C_RIGHT: c = K_C_LEFT; break;
 	    }
@@ -1105,7 +1107,11 @@ doESCkey:
 	    break;
 
 	case K_LEFT:
-	    ins_left();
+	case K_XLEFT:
+	    if (mod_mask & (MOD_MASK_SHIFT|MOD_MASK_CTRL))
+		ins_s_left();
+	    else
+		ins_left();
 	    break;
 
 	case K_S_LEFT:
@@ -1114,7 +1120,11 @@ doESCkey:
 	    break;
 
 	case K_RIGHT:
-	    ins_right();
+	case K_XRIGHT:
+	    if (mod_mask & (MOD_MASK_SHIFT|MOD_MASK_CTRL))
+		ins_s_right();
+	    else
+		ins_right();
 	    break;
 
 	case K_S_RIGHT:
@@ -1123,7 +1133,11 @@ doESCkey:
 	    break;
 
 	case K_UP:
-	    ins_up(FALSE);
+	case K_XUP:
+	    if (mod_mask & MOD_MASK_SHIFT)
+		ins_pageup();
+	    else
+		ins_up(FALSE);
 	    break;
 
 	case K_S_UP:
@@ -1133,7 +1147,11 @@ doESCkey:
 	    break;
 
 	case K_DOWN:
-	    ins_down(FALSE);
+	case K_XDOWN:
+	    if (mod_mask & MOD_MASK_SHIFT)
+		ins_pagedown();
+	    else
+		ins_down(FALSE);
 	    break;
 
 	case K_S_DOWN:
@@ -6193,12 +6211,14 @@ ins_ctrl_g()
     {
 	/* CTRL-G k and CTRL-G <Up>: cursor up to Insstart.col */
 	case K_UP:
+	case K_XUP:
 	case Ctrl_K:
 	case 'k': ins_up(TRUE);
 		  break;
 
 	/* CTRL-G j and CTRL-G <Down>: cursor down to Insstart.col */
 	case K_DOWN:
+	case K_XDOWN:
 	case Ctrl_J:
 	case 'j': ins_down(TRUE);
 		  break;
@@ -6428,6 +6448,10 @@ ins_start_select(c)
 	    case K_KPAGEUP:
 	    case K_PAGEDOWN:
 	    case K_KPAGEDOWN:
+	    case K_XLEFT:
+	    case K_XRIGHT:
+	    case K_XUP:
+	    case K_XDOWN:
 # ifdef MACOS
 	    case K_LEFT:
 	    case K_RIGHT:

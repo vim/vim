@@ -610,7 +610,13 @@ mch_delay(msec, ignoreinput)
 	WaitForChar(msec);
 }
 
-#if defined(HAVE_GETRLIMIT) \
+#if 0    /* disabled, no longer needed now that regmatch() is not recursive */
+# if defined(HAVE_GETRLIMIT)
+#  define HAVE_STACK_LIMIT
+# endif
+#endif
+
+#if defined(HAVE_STACK_LIMIT) \
 	|| (!defined(HAVE_SIGALTSTACK) && defined(HAVE_SIGSTACK))
 # define HAVE_CHECK_STACK_GROWTH
 /*
@@ -638,7 +644,7 @@ check_stack_growth(p)
 }
 #endif
 
-#if defined(HAVE_GETRLIMIT) || defined(PROTO)
+#if defined(HAVE_STACK_LIMIT) || defined(PROTO)
 static char *stack_limit = NULL;
 
 #if defined(_THREAD_SAFE) && defined(HAVE_PTHREAD_NP_H)
@@ -951,7 +957,7 @@ deathtrap SIGDEFARG(sigarg)
     set_vim_var_nr(VV_DYING, (long)entered);
 #endif
 
-#ifdef HAVE_GETRLIMIT
+#ifdef HAVE_STACK_LIMIT
     /* Since we are now using the signal stack, need to reset the stack
      * limit.  Otherwise using a regexp will fail. */
     get_stack_limit();
@@ -2683,12 +2689,10 @@ mch_early_init()
 {
 #ifdef HAVE_CHECK_STACK_GROWTH
     int			i;
-#endif
 
-#ifdef HAVE_CHECK_STACK_GROWTH
     check_stack_growth((char *)&i);
 
-# ifdef HAVE_GETRLIMIT
+# ifdef HAVE_STACK_LIMIT
     get_stack_limit();
 # endif
 
@@ -3092,7 +3096,8 @@ check_mouse_termcode()
 	    )
     {
 	set_mouse_termcode(KS_MOUSE, (char_u *)(term_is_8bit(T_NAME)
-		  ? IF_EB("\233M", CSI_STR "M") : IF_EB("\033[M", ESC_STR "[M")));
+		    ? IF_EB("\233M", CSI_STR "M")
+		    : IF_EB("\033[M", ESC_STR "[M")));
 	if (*p_mouse != NUL)
 	{
 	    /* force mouse off and maybe on to send possibly new mouse
@@ -3128,7 +3133,7 @@ check_mouse_termcode()
 # endif
 
 # ifdef FEAT_MOUSE_NET
-    /* There is no conflict, but one may type ESC } from Insert mode.  Don't
+    /* There is no conflict, but one may type "ESC }" from Insert mode.  Don't
      * define it in the GUI or when using an xterm. */
     if (!use_xterm_mouse()
 #  ifdef FEAT_GUI
@@ -3148,8 +3153,8 @@ check_mouse_termcode()
 	    && !gui.in_use
 #  endif
 	    )
-	set_mouse_termcode(KS_DEC_MOUSE,
-				       (char_u *)IF_EB("\033[", ESC_STR "["));
+	set_mouse_termcode(KS_DEC_MOUSE, (char_u *)(term_is_8bit(T_NAME)
+		     ? IF_EB("\233", CSI_STR) : IF_EB("\033[", ESC_STR "[")));
     else
 	del_mouse_termcode(KS_DEC_MOUSE);
 # endif

@@ -207,6 +207,10 @@ enum key_extra
     , KE_XF4
     , KE_XEND		/* extra (vt100) end key for xterm */
     , KE_XHOME		/* extra (vt100) home key for xterm */
+    , KE_XUP		/* extra vt100 cursor keys for xterm */
+    , KE_XDOWN
+    , KE_XLEFT
+    , KE_XRIGHT
 
     , KE_LEFTMOUSE_NM	/* non-mappable Left mouse button click */
     , KE_LEFTRELEASE_NM	/* non-mappable left mouse button release */
@@ -269,6 +273,12 @@ enum key_extra
 #define K_XF2		TERMCAP2KEY(KS_EXTRA, KE_XF2)
 #define K_XF3		TERMCAP2KEY(KS_EXTRA, KE_XF3)
 #define K_XF4		TERMCAP2KEY(KS_EXTRA, KE_XF4)
+
+/* extra set of cursor keys for vt100 compatible xterm */
+#define K_XUP		TERMCAP2KEY(KS_EXTRA, KE_XUP)
+#define K_XDOWN		TERMCAP2KEY(KS_EXTRA, KE_XDOWN)
+#define K_XLEFT		TERMCAP2KEY(KS_EXTRA, KE_XLEFT)
+#define K_XRIGHT	TERMCAP2KEY(KS_EXTRA, KE_XRIGHT)
 
 #define K_F1		TERMCAP2KEY('k', '1')	/* function keys */
 #define K_F2		TERMCAP2KEY('k', '2')

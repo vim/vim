@@ -1,4 +1,4 @@
-*digraph.txt*   For Vim version 7.0aa.  Last change: 2004 Oct 07
+*digraph.txt*   For Vim version 7.0aa.  Last change: 2005 Mar 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -161,8 +161,13 @@ These are the RFC1345 digraphs for the one-byte characters.  See the output of
 ":digraphs" for the others.  The characters above 255 are only available when
 Vim was compiled with the |+multi_byte| feature.
 
+EURO
+
 Exception: RFC1345 doesn't specify the euro sign.  In Vim the digraph =e was
-added for this.
+added for this.  Note the difference between latin1, where the digraph Cu is
+used for the currency sign, and latin9 (iso-8859-15), where the digraph =e is
+used for the euro sign, while both of them are the character 164, 0xa4.
+
 							*digraph-table*
 char  digraph	hex	dec	official name ~
 ^@	NU	0x00	  0	NULL (NUL)

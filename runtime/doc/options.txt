@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Mar 03
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Mar 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3972,6 +3972,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Number of pixel lines inserted between characters.  Useful if the font
 	uses the full character cell height, making lines touch each other.
 	When non-zero there is room for underlining.
+	With some fonts there can be too much room between lines (to have
+	space for ascents and descents).  Then it makes sense to set
+	'linespace' to a negative value.  This may cause display problems
+	though!
 
 						*'lisp'* *'nolisp'*
 'lisp'			boolean	(default off)
@@ -4709,8 +4713,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 'printmbcharset' 'pmbcs'  string (default "")
 			global
 			{not in Vi}
-			{only available when compiled with the |+printer|
-			and |+multi_byte| features}
+			{only available when compiled with the |+printer|,
+			|+postscript| and |+multi_byte| features}
 	The CJK character set to be used for CJK output from |:hardcopy|.
 	See |pmbcs-option|.
 
@@ -4718,8 +4722,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 'printmbfont' 'pmbfn'	string (default "")
 			global
 			{not in Vi}
-			{only available when compiled with the |+printer|
-			and |+multi_byte| features}
+			{only available when compiled with the |+printer|,
+			|+postscript| and |+multi_byte| features}
 	List of font names to be used for CJK output from |:hardcopy|.
 	See |pmbfn-option|.
 
@@ -6344,7 +6348,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	   xterm2	Works like "xterm", but with the xterm reporting the
 			mouse position while the mouse is dragged.  This works
 			much faster and more precise.  Your xterm must at
-			least at patchlevel 88	/ XFree 3.3.3 for this to
+			least at patchlevel 88 / XFree 3.3.3 for this to
 			work.  See below for how Vim detects this
 			automatically.
 							*netterm-mouse*

@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Feb 18
+" Last Change:	2005 Mar 06
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -91,7 +91,7 @@ au BufNewFile,BufRead build.xml			setf ant
 au BufNewFile,BufRead proftpd.conf*		setf apachestyle
 
 " Apache config file
-au BufNewFile,BufRead httpd.conf*,srm.conf*,access.conf*,.htaccess,apache.conf* setf apache
+au BufNewFile,BufRead httpd.conf*,srm.conf*,access.conf*,.htaccess,apache.conf*,apache2.conf*,/etc/apache2/*.conf* setf apache
 
 " XA65 MOS6510 cross assembler
 au BufNewFile,BufRead *.a65			setf a65

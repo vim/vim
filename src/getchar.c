@@ -4530,6 +4530,7 @@ check_map(keys, mode, exact)
 }
 #endif
 
+#if defined(MSDOS) || defined(MSWIN) || defined(OS2) || defined(MACOS)
 /*
  * Default mappings for some often used keys.
  */
@@ -4609,6 +4610,7 @@ static struct initmap
 	{(char_u *)"<Backspace> \"-d", VISUAL},
 #endif
 
+#if 0
 	/* Map extra keys to their normal equivalents. */
 	{(char_u *)"<xF1> <F1>", NORMAL+VISUAL+OP_PENDING},
 	{(char_u *)"<xF1> <F1>", INSERT+CMDLINE},
@@ -4630,7 +4632,9 @@ static struct initmap
 	{(char_u *)"<xEND> <END>", INSERT+CMDLINE},
 	{(char_u *)"<xHOME> <HOME>", NORMAL+VISUAL+OP_PENDING},
 	{(char_u *)"<xHOME> <HOME>", INSERT+CMDLINE},
+#endif
 };
+#endif
 
 /*
  * Set up default mappings.
@@ -4638,10 +4642,12 @@ static struct initmap
     void
 init_mappings()
 {
+#if defined(MSDOS) || defined(MSWIN) || defined(OS2) || defined(MACOS)
     int		i;
 
     for (i = 0; i < sizeof(initmappings) / sizeof(struct initmap); ++i)
 	add_map(initmappings[i].arg, initmappings[i].mode);
+#endif
 }
 
 /*

@@ -20,3 +20,8 @@ test text test text  [\u-z]
 xx  xx a
 xx aaaaa xx a
 xx aaaaa xx a
+xx Aaa xx
+xx Aaaa xx
+xx Aaa xx
+xx foobar xA xx
+xx an A xx

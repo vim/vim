@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 7.0aa.  Last change: 2005 Mar 04
+*term.txt*      For Vim version 7.0aa.  Last change: 2005 Mar 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -301,6 +301,10 @@ Note: Use the <> form if possible
 	t_kd	<Down>		arrow down			*t_kd* *'t_kd'*
 	t_kr	<Right>		arrow right			*t_kr* *'t_kr'*
 	t_kl	<Left>		arrow left			*t_kl* *'t_kl'*
+		<xUp>		alternate arrow up		*<xUp>*
+		<xDown>		alternate arrow down		*<xDown>*
+		<xRight>	alternate arrow right		*<xRight>*
+		<xLeft>		alternate arrow left		*<xLeft>*
 		<S-Up>		shift arrow up
 		<S-Down>	shift arrow down
 	t_%i	<S-Right>	shift arrow right		*t_%i* *'t_%i'*

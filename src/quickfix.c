@@ -2418,6 +2418,7 @@ ex_vimgrep(eap)
 	else
 	{
 	    found_match = FALSE;
+#if 0
 #ifdef HAVE_SETJMP_H
 	    /*
 	     * Matching with a regexp may cause a very deep recursive call of
@@ -2436,6 +2437,7 @@ ex_vimgrep(eap)
 		got_int = TRUE;
 		goto jumpend;
 	    }
+#endif
 #endif
 	    /* Try for a match in all lines of the buffer. */
 	    for (lnum = 1; lnum <= buf->b_ml.ml_line_count; ++lnum)
@@ -2475,9 +2477,11 @@ ex_vimgrep(eap)
 		if (got_int)
 		    break;
 	    }
+#if 0
 #ifdef HAVE_SETJMP_H
 jumpend:
 	    mch_endjmp();
+#endif
 #endif
 
 	    if (using_dummy)

@@ -1784,6 +1784,10 @@ static struct key_name_entry
     {K_DOWN,		(char_u *)"Down"},
     {K_LEFT,		(char_u *)"Left"},
     {K_RIGHT,		(char_u *)"Right"},
+    {K_XUP,		(char_u *)"xUp"},
+    {K_XDOWN,		(char_u *)"xDown"},
+    {K_XLEFT,		(char_u *)"xLeft"},
+    {K_XRIGHT,		(char_u *)"xRight"},
 
     {K_F1,		(char_u *)"F1"},
     {K_F2,		(char_u *)"F2"},
@@ -1957,20 +1961,6 @@ name_to_mod_mask(c)
     return 0;
 }
 
-#if 0 /* not used */
-/*
- * Decide whether the given key code (K_*) is a shifted special
- * key (by looking at mod_mask).  If it is, then return the appropriate shifted
- * key code, otherwise just return the character as is.
- */
-    int
-check_shifted_spec_key(c)
-    int	    c;
-{
-    return simplify_key(c, &mod_mask);
-}
-#endif
-
 /*
  * Check if if there is a special key code for "key" that includes the
  * modifiers specified.
@@ -2003,6 +1993,35 @@ simplify_key(key, modifiers)
 		return TERMCAP2KEY(modifier_keys_table[i + 1],
 						   modifier_keys_table[i + 2]);
 	    }
+    }
+    return key;
+}
+
+/*
+ * Change <xHome> to <Home>, <xUp> to <Up>, etc.
+ * "kp" must point to an array that holds the two characters that represent a
+ * special key.
+ */
+    int
+handle_x_keys(key)
+    int	    key;
+{
+    switch (key)
+    {
+	case K_XUP:	return K_UP;
+	case K_XDOWN:	return K_DOWN;
+	case K_XLEFT:	return K_LEFT;
+	case K_XRIGHT:	return K_RIGHT;
+	case K_XHOME:	return K_HOME;
+	case K_XEND:	return K_END;
+	case K_XF1:	return K_F1;
+	case K_XF2:	return K_F2;
+	case K_XF3:	return K_F3;
+	case K_XF4:	return K_F4;
+	case K_S_XF1:	return K_S_F1;
+	case K_S_XF2:	return K_S_F2;
+	case K_S_XF3:	return K_S_F3;
+	case K_S_XF4:	return K_S_F4;
     }
     return key;
 }
@@ -2246,7 +2265,10 @@ find_special_key(srcp, modp, keycode)
 	    if (modifiers != 0 && last_dash[2] == '>')
 		key = last_dash[1];
 	    else
+	    {
 		key = get_special_key_code(last_dash + 1);
+		key = handle_x_keys(key);
+	    }
 
 	    /*
 	     * get_special_key_code() may return NUL for invalid

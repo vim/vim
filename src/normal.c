@@ -381,13 +381,17 @@ static const struct nv_cmd
     {K_KINS,	nv_edit,	0,			0},
     {K_BS,	nv_ctrlh,	0,			0},
     {K_UP,	nv_up,		NV_SSS|NV_STS,		FALSE},
+    {K_XUP,	nv_up,		NV_SSS|NV_STS,		FALSE},
     {K_S_UP,	nv_page,	NV_SS,			BACKWARD},
     {K_DOWN,	nv_down,	NV_SSS|NV_STS,		FALSE},
+    {K_XDOWN,	nv_down,	NV_SSS|NV_STS,		FALSE},
     {K_S_DOWN,	nv_page,	NV_SS,			FORWARD},
     {K_LEFT,	nv_left,	NV_SSS|NV_STS|NV_RL,	0},
+    {K_XLEFT,	nv_left,	NV_SSS|NV_STS|NV_RL,	0},
     {K_S_LEFT,	nv_bck_word,	NV_SS|NV_RL,		0},
     {K_C_LEFT,	nv_bck_word,	NV_SSS|NV_RL|NV_STS,	1},
     {K_RIGHT,	nv_right,	NV_SSS|NV_STS|NV_RL,	0},
+    {K_XRIGHT,	nv_right,	NV_SSS|NV_STS|NV_RL,	0},
     {K_S_RIGHT,	nv_wordcmd,	NV_SS|NV_RL,		FALSE},
     {K_C_RIGHT,	nv_wordcmd,	NV_SSS|NV_RL|NV_STS,	TRUE},
     {K_PAGEUP,	nv_page,	NV_SSS|NV_STS,		BACKWARD},
@@ -832,10 +836,12 @@ getcount:
 	{
 	    case 'l':	    ca.cmdchar = 'h'; break;
 	    case K_RIGHT:   ca.cmdchar = K_LEFT; break;
+	    case K_XRIGHT:  ca.cmdchar = K_XLEFT; break;
 	    case K_S_RIGHT: ca.cmdchar = K_S_LEFT; break;
 	    case K_C_RIGHT: ca.cmdchar = K_C_LEFT; break;
 	    case 'h':	    ca.cmdchar = 'l'; break;
 	    case K_LEFT:    ca.cmdchar = K_RIGHT; break;
+	    case K_XLEFT:   ca.cmdchar = K_XRIGHT; break;
 	    case K_S_LEFT:  ca.cmdchar = K_S_RIGHT; break;
 	    case K_C_LEFT:  ca.cmdchar = K_C_RIGHT; break;
 	    case '>':	    ca.cmdchar = '<'; break;
@@ -4316,7 +4322,9 @@ nv_zet(cap)
 	    else if (nchar == 'l'
 		    || nchar == 'h'
 		    || nchar == K_LEFT
-		    || nchar == K_RIGHT)
+		    || nchar == K_XLEFT
+		    || nchar == K_RIGHT
+		    || nchar == K_XRIGHT)
 	    {
 		cap->count1 = n ? n * cap->count1 : cap->count1;
 		goto dozet;
@@ -4423,6 +4431,7 @@ dozet:
 		/* "zh" - scroll screen to the right */
     case 'h':
     case K_LEFT:
+    case K_XLEFT:
 		if (!curwin->w_p_wrap)
 		{
 		    if ((colnr_T)cap->count1 > curwin->w_leftcol)
@@ -4440,6 +4449,7 @@ dozet:
 		/* "zl" - scroll screen to the left */
     case 'l':
     case K_RIGHT:
+    case K_XRIGHT:
 		if (!curwin->w_p_wrap)
 		{
 		    /* scroll the window left */
@@ -5294,6 +5304,15 @@ nv_right(cap)
 # define PAST_LINE 0
 #endif
 
+    if (mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL))
+    {
+	/* <C-Right> and <S-Right> move a word or WORD right */
+	if (mod_mask & MOD_MASK_CTRL)
+	    cap->arg = TRUE;
+	nv_wordcmd(cap);
+	return;
+    }
+
     cap->oap->motion_type = MCHAR;
     cap->oap->inclusive = FALSE;
 #ifdef FEAT_VISUAL
@@ -5323,7 +5342,7 @@ nv_right(cap)
 			    && vim_strchr(p_ww, 's') != NULL)
 			|| (cap->cmdchar == 'l'
 			    && vim_strchr(p_ww, 'l') != NULL)
-			|| (cap->cmdchar == K_RIGHT
+			|| ((cap->cmdchar == K_RIGHT || cap->cmdchar == K_XRIGHT)
 			    && vim_strchr(p_ww, '>') != NULL))
 		    && curwin->w_cursor.lnum < curbuf->b_ml.ml_line_count)
 	    {
@@ -5399,6 +5418,15 @@ nv_left(cap)
 {
     long	n;
 
+    if (mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL))
+    {
+	/* <C-Left> and <S-Left> move a word or WORD left */
+	if (mod_mask & MOD_MASK_CTRL)
+	    cap->arg = 1;
+	nv_bck_word(cap);
+	return;
+    }
+
     cap->oap->motion_type = MCHAR;
     cap->oap->inclusive = FALSE;
     for (n = cap->count1; n > 0; --n)
@@ -5414,7 +5442,7 @@ nv_left(cap)
 			    && vim_strchr(p_ww, 'b') != NULL)
 			|| (cap->cmdchar == 'h'
 			    && vim_strchr(p_ww, 'h') != NULL)
-			|| (cap->cmdchar == K_LEFT
+			|| ((cap->cmdchar == K_LEFT || cap->cmdchar == K_XLEFT)
 			    && vim_strchr(p_ww, '<') != NULL))
 		    && curwin->w_cursor.lnum > 1)
 	    {
@@ -5456,11 +5484,20 @@ nv_left(cap)
 nv_up(cap)
     cmdarg_T	*cap;
 {
-    cap->oap->motion_type = MLINE;
-    if (cursor_up(cap->count1, cap->oap->op_type == OP_NOP) == FAIL)
-	clearopbeep(cap->oap);
-    else if (cap->arg)
-	beginline(BL_WHITE | BL_FIX);
+    if (mod_mask & MOD_MASK_SHIFT)
+    {
+	/* <S-Up> is page up */
+	cap->arg = BACKWARD;
+	nv_page(cap);
+    }
+    else
+    {
+	cap->oap->motion_type = MLINE;
+	if (cursor_up(cap->count1, cap->oap->op_type == OP_NOP) == FAIL)
+	    clearopbeep(cap->oap);
+	else if (cap->arg)
+	    beginline(BL_WHITE | BL_FIX);
+    }
 }
 
 /*
@@ -5471,6 +5508,13 @@ nv_up(cap)
 nv_down(cap)
     cmdarg_T	*cap;
 {
+    if (mod_mask & MOD_MASK_SHIFT)
+    {
+	/* <S-Down> is page down */
+	cap->arg = FORWARD;
+	nv_page(cap);
+    }
+    else
 #if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
     /* In a quickfix window a <CR> jumps to the error under the cursor. */
     if (bt_quickfix(curbuf) && cap->cmdchar == CAR)
@@ -5553,8 +5597,9 @@ nv_gotofile(cap)
 nv_end(cap)
     cmdarg_T	*cap;
 {
-    if (cap->arg)	/* CTRL-END = goto last line */
+    if (cap->arg || (mod_mask & MOD_MASK_CTRL))	/* CTRL-END = goto last line */
     {
+	cap->arg = TRUE;
 	nv_goto(cap);
 	cap->count1 = 1;		/* to end of current line */
     }
@@ -7205,6 +7250,7 @@ nv_g_cmd(cap)
      */
     case 'j':
     case K_DOWN:
+    case K_XDOWN:
 	/* with 'nowrap' it works just like the normal "j" command; also when
 	 * in a closed fold */
 	if (!curwin->w_p_wrap
@@ -7224,6 +7270,7 @@ nv_g_cmd(cap)
 
     case 'k':
     case K_UP:
+    case K_XUP:
 	/* with 'nowrap' it works just like the normal "k" command; also when
 	 * in a closed fold */
 	if (!curwin->w_p_wrap
@@ -7761,8 +7808,14 @@ nv_lineop(cap)
 nv_home(cap)
     cmdarg_T	*cap;
 {
-    cap->count0 = 1;
-    nv_pipe(cap);
+    /* CTRL-HOME is like "gg" */
+    if (mod_mask & MOD_MASK_CTRL)
+	nv_goto(cap);
+    else
+    {
+	cap->count0 = 1;
+	nv_pipe(cap);
+    }
 }
 
 /*

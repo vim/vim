@@ -263,6 +263,7 @@ do_window(nchar, Prenum, xchar)
 /* cursor to window below */
     case 'j':
     case K_DOWN:
+    case K_XDOWN:
     case Ctrl_J:
 		CHECK_CMDWIN
 #ifdef FEAT_VERTSPLIT
@@ -278,6 +279,7 @@ do_window(nchar, Prenum, xchar)
 /* cursor to window above */
     case 'k':
     case K_UP:
+    case K_XUP:
     case Ctrl_K:
 		CHECK_CMDWIN
 #ifdef FEAT_VERTSPLIT
@@ -294,6 +296,7 @@ do_window(nchar, Prenum, xchar)
 /* cursor to left window */
     case 'h':
     case K_LEFT:
+    case K_XLEFT:
     case Ctrl_H:
     case K_BS:
 		CHECK_CMDWIN
@@ -303,6 +306,7 @@ do_window(nchar, Prenum, xchar)
 /* cursor to right window */
     case 'l':
     case K_RIGHT:
+    case K_XRIGHT:
     case Ctrl_L:
 		CHECK_CMDWIN
 		win_goto_hor(FALSE, Prenum1);
