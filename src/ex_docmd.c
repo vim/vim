@@ -64,7 +64,6 @@ static char_u	*do_one_cmd __ARGS((char_u **, int, struct condstack *, char_u *(*
 static char_u	*do_one_cmd __ARGS((char_u **, int, char_u *(*getline)(int, void *, int), void *cookie));
 static int	if_level = 0;		/* depth in :if */
 #endif
-static int	checkforcmd __ARGS((char_u **pp, char *cmd, int len));
 static char_u	*find_command __ARGS((exarg_T *eap, int *full));
 
 static void	ex_abbreviate __ARGS((exarg_T *eap));
@@ -2616,12 +2615,12 @@ doend:
 #endif
 
 /*
- * Check for a command modifier command with optional tail.
+ * Check for an Ex command with optional tail.
  * If there is a match advance "pp" to the argument and return TRUE.
  */
-    static int
+    int
 checkforcmd(pp, cmd, len)
-    char_u	**pp;		/* start of command line */
+    char_u	**pp;		/* start of command */
     char	*cmd;		/* name of command */
     int		len;		/* required length */
 {
