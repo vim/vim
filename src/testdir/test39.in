@@ -1,0 +1,24 @@
+
+Test Visual block mode commands
+
+STARTTEST
+:so small.vim
+/^abcde
+:" Test shift-right of a block
+jlllljj>wlljlll>
+:" Test shift-left of a block
+G$hhhhkk<
+:" Test block-insert
+GklkkkIxyz
+:" Test block-replace
+Gllllkkklllrq
+:" Test block-change
+G$khhhhhkkcmno
+:$-4,$wq! test.out
+ENDTEST
+
+abcdefghijklm
+abcdefghijklm
+abcdefghijklm
+abcdefghijklm
+abcdefghijklm

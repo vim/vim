@@ -1,0 +1,34 @@
+INSTALLami.txt - Installation of Vim from source on Amiga
+
+This file contains instructions for compiling Vim. If you already have an
+executable version of Vim, you don't need this.
+
+The file "feature.h" can be edited to match your preferences. You can skip
+this, then you will get the default behavior as is documented, which should
+be fine for most people.
+
+
+Summary:
+make -f Make_manx.mak		Manx C
+make -f Make_sas.mak		Lattice/SAS C
+make -f Make_dice.mak		DICE
+
+The Manx compiler is preferred, it was used to produce the Amiga executable
+and has been tested most. You should not get any errors or warnings.
+
+The SAS compiler can be used. Older versions (6.0 to 6.3) don't work with the
+optimizer switched on. This seems to be fixed with 6.5 or 6.56, but this has
+not been tested much.  Also disable optimizing when the compiler runs out of
+memory or crashes the system (yes, that happens; did I say the Manx compiler
+is preferred?).
+
+The DICE makefile has been reported to work by one person only.
+
+You will have to set the "VIM" environment variable to the location of the
+documentation files.
+
+
+MorphOS
+
+Use the Make_morph.mak Makefile:
+	make -f Make_morph.mak

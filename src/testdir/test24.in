@@ -1,0 +1,21 @@
+Tests for regexp with backslash and other special characters inside []
+
+STARTTEST
+:set nocompatible viminfo+=nviminfo
+/[\x]
+x/[\t\]]
+x/[]y]
+x/[\]]
+x/[y^]
+x/[$y]
+x:?start?,$w! test.out
+:qa!
+ENDTEST
+
+start
+test \text test text
+test 	text test text
+test text ]test text
+test ]text test text
+test text te^st text
+test te$xt test text

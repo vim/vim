@@ -1,0 +1,657 @@
+# List of distributed Vim files.
+# Used by Makefile and upload.aap.
+
+# source files for all source archives
+SRC_ALL1 =	\
+		src/README.txt \
+		src/arabic.c \
+		src/arabic.h \
+		src/ascii.h \
+		src/buffer.c \
+		src/charset.c \
+		src/diff.c \
+		src/digraph.c \
+		src/edit.c \
+		src/eval.c \
+		src/ex_cmds.c \
+		src/ex_cmds.h \
+		src/ex_cmds2.c \
+		src/ex_docmd.c \
+		src/ex_eval.c \
+		src/ex_getln.c \
+		src/farsi.c \
+		src/farsi.h \
+		src/feature.h \
+		src/fileio.c \
+		src/fold.c \
+		src/getchar.c \
+		src/globals.h \
+		src/gui.c \
+		src/gui.h \
+		src/gui_beval.c \
+		src/gui_beval.h \
+		src/keymap.h \
+		src/macros.h \
+		src/main.c \
+		src/mark.c \
+		src/mbyte.c \
+		src/memfile.c \
+		src/memline.c \
+		src/menu.c \
+		src/message.c \
+		src/misc1.c \
+		src/misc2.c \
+		src/move.c \
+		src/mysign \
+		src/nbdebug.c \
+		src/nbdebug.h \
+		src/netbeans.c \
+		src/normal.c \
+		src/ops.c \
+		src/option.c \
+		src/option.h \
+		src/quickfix.c \
+		src/regexp.c \
+		src/regexp.h \
+		src/screen.c \
+		src/search.c \
+		src/structs.h \
+		src/syntax.c \
+		src/tag.c \
+		src/term.c \
+		src/term.h \
+		src/termlib.c \
+		src/ui.c \
+		src/undo.c \
+		src/version.c \
+		src/version.h \
+		src/vim.h \
+		src/window.c \
+		src/xxd/xxd.c \
+
+SRC_ALL2 =	\
+		src/main.aap \
+		src/testdir/main.aap \
+		src/testdir/*.in \
+		src/testdir/*.ok \
+		src/testdir/test49.vim \
+		src/proto.h \
+		src/proto/buffer.pro \
+		src/proto/charset.pro \
+		src/proto/diff.pro \
+		src/proto/digraph.pro \
+		src/proto/edit.pro \
+		src/proto/eval.pro \
+		src/proto/ex_cmds.pro \
+		src/proto/ex_cmds2.pro \
+		src/proto/ex_docmd.pro \
+		src/proto/ex_eval.pro \
+		src/proto/ex_getln.pro \
+		src/proto/fileio.pro \
+		src/proto/fold.pro \
+		src/proto/getchar.pro \
+		src/proto/gui.pro \
+		src/proto/gui_beval.pro \
+		src/proto/main.pro \
+		src/proto/mark.pro \
+		src/proto/mbyte.pro \
+		src/proto/memfile.pro \
+		src/proto/memline.pro \
+		src/proto/menu.pro \
+		src/proto/message.pro \
+		src/proto/misc1.pro \
+		src/proto/misc2.pro \
+		src/proto/move.pro \
+		src/proto/netbeans.pro \
+		src/proto/normal.pro \
+		src/proto/ops.pro \
+		src/proto/option.pro \
+		src/proto/quickfix.pro \
+		src/proto/regexp.pro \
+		src/proto/screen.pro \
+		src/proto/search.pro \
+		src/proto/syntax.pro \
+		src/proto/tag.pro \
+		src/proto/term.pro \
+		src/proto/termlib.pro \
+		src/proto/ui.pro \
+		src/proto/undo.pro \
+		src/proto/version.pro \
+		src/proto/window.pro \
+
+
+# source files for Unix only
+SRC_UNIX =	\
+		Makefile \
+		Filelist \
+		README_src.txt \
+		configure \
+		pixmaps/*.xpm \
+		pixmaps/gen-inline-pixbufs.sh \
+		pixmaps/stock_icons.h \
+		src/INSTALL \
+		src/Makefile \
+		src/auto/configure \
+		src/config.aap.in \
+		src/config.h.in \
+		src/config.mk.dist \
+		src/config.mk.in \
+		src/configure \
+		src/configure.in \
+		src/gui_at_fs.c \
+		src/gui_at_sb.c \
+		src/gui_at_sb.h \
+		src/gui_athena.c \
+		src/gui_gtk.c \
+		src/gui_gtk_f.c \
+		src/gui_gtk_f.h \
+		src/gui_gtk_x11.c \
+		src/gui_motif.c \
+		src/gui_x11.c \
+		src/hangulin.c \
+		src/if_xcmdsrv.c \
+		src/integration.c \
+		src/integration.h \
+		src/link.sh \
+		src/mkinstalldirs \
+		src/os_unix.c \
+		src/os_unix.h \
+		src/os_unixx.h \
+		src/osdef.sh \
+		src/osdef1.h.in \
+		src/osdef2.h.in \
+		src/pathdef.sh \
+		src/proto/gui_athena.pro \
+		src/proto/gui_gtk.pro \
+		src/proto/gui_gtk_x11.pro \
+		src/proto/gui_motif.pro \
+		src/proto/gui_x11.pro \
+		src/proto/hangulin.pro \
+		src/proto/if_xcmdsrv.pro \
+		src/proto/os_unix.pro \
+		src/proto/pty.pro \
+		src/proto/workshop.pro \
+		src/pty.c \
+		src/testdir/Makefile \
+		src/testdir/unix.vim \
+		src/toolcheck \
+		src/vim_icon.xbm \
+		src/vim_mask.xbm \
+		src/vimtutor \
+		src/which.sh \
+		src/workshop.c \
+		src/workshop.h \
+		src/wsdebug.c \
+		src/wsdebug.h \
+		src/xxd/Makefile \
+
+# source files for both DOS and Unix
+SRC_DOS_UNIX =	\
+		src/if_cscope.c \
+		src/if_cscope.h \
+		src/if_perl.xs \
+		src/if_perlsfio.c \
+		src/if_python.c \
+		src/if_ruby.c \
+		src/if_tcl.c \
+		src/proto/if_cscope.pro \
+		src/proto/if_perl.pro \
+		src/proto/if_perlsfio.pro \
+		src/proto/if_python.pro \
+		src/proto/if_ruby.pro \
+		src/proto/if_tcl.pro \
+		src/typemap \
+
+# source files for DOS (also in the extra archive)
+SRC_DOS =	\
+		src/GvimExt \
+		README_srcdos.txt \
+		src/INSTALLpc.txt \
+		src/Make_bc3.mak \
+		src/Make_bc5.mak \
+		src/Make_cyg.mak \
+		src/Make_djg.mak \
+		src/Make_ivc.mak \
+		src/Make_dvc.mak \
+		src/Make_ming.mak \
+		src/Make_mvc.mak \
+		src/Make_w16.mak \
+		src/bigvim.bat \
+		src/dimm.idl \
+		src/dlldata.c \
+		src/dosinst.c \
+		src/dosinst.h \
+		src/glbl_ime.cpp \
+		src/glbl_ime.h \
+		src/gui_w16.c \
+		src/gui_w32.c \
+		src/gui_w48.c \
+		src/guiw16rc.h \
+		src/gui_w32_rc.h \
+		src/if_ole.cpp \
+		src/if_ole.h \
+		src/if_ole.idl \
+		src/iid_ole.c \
+		src/os_dos.h \
+		src/os_msdos.c \
+		src/os_msdos.h \
+		src/os_w32dll.c \
+		src/os_w32exe.c \
+		src/os_win16.c \
+		src/os_win32.c \
+		src/os_mswin.c \
+		src/os_win16.h \
+		src/os_win32.h \
+		src/proto/gui_w16.pro \
+		src/proto/gui_w32.pro \
+		src/proto/if_ole.pro \
+		src/proto/os_msdos.pro \
+		src/proto/os_win16.pro \
+		src/proto/os_win32.pro \
+		src/proto/os_mswin.pro \
+		src/testdir/Make_dos.mak \
+		src/testdir/dos.vim \
+		src/uninstal.c \
+		src/vim.def \
+		src/vim.rc \
+		src/gvim.exe.mnf \
+		src/vim16.def \
+		src/vim16.rc \
+		src/vimrun.c \
+		src/vimtbar.h \
+		src/xpm_w32.c \
+		src/xpm_w32.h \
+		src/xxd/Make_bc3.mak \
+		src/xxd/Make_bc5.mak \
+		src/xxd/Make_cyg.mak \
+		src/xxd/Make_djg.mak \
+		src/xxd/Make_mvc.mak \
+		nsis/gvim.nsi \
+		nsis/README.txt \
+		uninstal.txt \
+		src/VisVim/Commands.cpp \
+		src/VisVim/Commands.h \
+		src/VisVim/DSAddIn.cpp \
+		src/VisVim/DSAddIn.h \
+		src/VisVim/OleAut.cpp \
+		src/VisVim/OleAut.h \
+		src/VisVim/README_VisVim.txt \
+		src/VisVim/Reg.cpp \
+		src/VisVim/Register.bat \
+		src/VisVim/Resource.h \
+		src/VisVim/StdAfx.cpp \
+		src/VisVim/StdAfx.h \
+		src/VisVim/UnRegist.bat \
+		src/VisVim/VisVim.cpp \
+		src/VisVim/VisVim.def \
+		src/VisVim/VisVim.mak \
+		src/VisVim/VisVim.h \
+		src/VisVim/VisVim.odl \
+		src/VisVim/VisVim.rc \
+		src/VisVim/VsReadMe.txt \
+
+# source files for DOS without CR/LF translation (also in the extra archive)
+SRC_DOS_BIN =	\
+		src/VisVim/Res \
+		src/tearoff.bmp \
+		src/tools.bmp \
+		src/tools16.bmp \
+		src/vim*.ico \
+		src/vim.tlb \
+		src/vimtbar.lib \
+		src/vimtbar.dll \
+		nsis/icons \
+
+# source files for Amiga, DOS, etc. (also in the extra archive)
+SRC_AMI_DOS =	\
+
+# source files for Amiga (also in the extra archive)
+SRC_AMI =	\
+		README_amisrc.txt \
+		README_amisrc.txt.info \
+		src.info \
+		src/INSTALLami.txt \
+		src/Make_agui.mak \
+		src/Make_aros.mak \
+		src/Make_dice.mak \
+		src/Make_manx.mak \
+		src/Make_morph.mak \
+		src/Make_sas.mak \
+		src/gui_amiga.c \
+		src/gui_amiga.h \
+		src/os_amiga.c \
+		src/os_amiga.h \
+		src/proto/gui_amiga.pro \
+		src/proto/os_amiga.pro \
+		src/testdir/Make_amiga.mak \
+		src/testdir/amiga.vim \
+		src/xxd/Make_amiga.mak \
+
+# source files for the Mac (also in the extra archive)
+SRC_MAC =	\
+		src/INSTALLmac.txt \
+		src/Make_mpw.mak \
+		src/dehqx.py \
+		src/gui_mac.c \
+		src/gui_mac.icns \
+		src/gui_mac.r \
+		src/os_mac* \
+		src/proto/gui_mac.pro \
+		src/proto/os_mac.pro \
+
+# source files for VMS (in the extra archive)
+SRC_VMS =	\
+		src/INSTALLvms.txt \
+		src/Make_vms.mms \
+		src/gui_gtk_vms.h \
+		src/os_vms.c \
+		src/os_vms_conf.h \
+		src/os_vms_mms.c \
+		src/proto/os_vms.pro \
+		src/testdir/Make_vms.mms \
+		src/testdir/vms.vim \
+		src/xxd/Make_vms.mms \
+		vimtutor.com \
+
+# source files for OS/2 (in the extra archive)
+SRC_OS2 =	\
+		src/Make_os2.mak \
+		src/os_os2_cfg.h \
+		src/testdir/Make_os2.mak \
+		src/testdir/todos.vim \
+		src/testdir/os2.vim \
+		src/xxd/Make_os2.mak \
+
+# source files for QNX (in the extra archive)
+SRC_QNX =	\
+		src/os_qnx.c \
+		src/os_qnx.h \
+		src/gui_photon.c \
+		src/proto/gui_photon.pro \
+		src/proto/os_qnx.pro \
+
+
+# source files for the extra archive (all sources that are not for Unix)
+SRC_EXTRA =	\
+		$(SRC_AMI) \
+		$(SRC_AMI_DOS) \
+		$(SRC_DOS) \
+		$(SRC_DOS_BIN) \
+		$(SRC_MAC) \
+		$(SRC_OS2) \
+		$(SRC_QNX) \
+		$(SRC_VMS) \
+		README_os390.txt \
+		src/Make_mint.mak \
+		src/Make_ro.mak \
+		src/gui_beos.cc \
+		src/gui_beos.h \
+		src/gui_riscos.c \
+		src/gui_riscos.h \
+		src/if_sniff.c \
+		src/if_sniff.h \
+		src/infplist.xml \
+		src/link.390 \
+		src/os_beos.c \
+		src/os_beos.h \
+		src/os_beos.rsrc \
+		src/os_mint.h \
+		src/os_riscos.c \
+		src/os_riscos.h \
+		src/proto/gui_beos.pro \
+		src/proto/gui_riscos.pro \
+		src/proto/os_beos.pro \
+		src/proto/os_riscos.pro \
+		src/os_vms_fix.com \
+		src/toolbar.phi \
+
+# runtime files for all distributions
+RT_ALL =	\
+		README.txt \
+		runtime/bugreport.vim \
+		runtime/doc/*.awk \
+		runtime/doc/*.pl \
+		runtime/doc/*.txt \
+		runtime/doc/Makefile \
+		runtime/doc/doctags.c \
+		runtime/doc/vim.1 \
+		runtime/doc/evim.1 \
+		runtime/doc/vimdiff.1 \
+		runtime/doc/vimtutor.1 \
+		runtime/doc/xxd.1 \
+		runtime/ftoff.vim \
+		runtime/gvimrc_example.vim \
+		runtime/macros/README.txt \
+		runtime/macros/dvorak \
+		runtime/macros/hanoi/click.me \
+		runtime/macros/hanoi/hanoi.vim \
+		runtime/macros/hanoi/poster \
+		runtime/macros/justify.vim \
+		runtime/macros/less.sh \
+		runtime/macros/less.vim \
+		runtime/macros/life/click.me \
+		runtime/macros/life/life.vim \
+		runtime/macros/matchit.vim \
+		runtime/macros/matchit.txt \
+		runtime/macros/maze/README.txt \
+		runtime/macros/maze/[mM]akefile \
+		runtime/macros/maze/main.aap \
+		runtime/macros/maze/maze.c \
+		runtime/macros/maze/maze_5.78 \
+		runtime/macros/maze/maze_mac \
+		runtime/macros/maze/mazeansi.c \
+		runtime/macros/maze/mazeclean.c \
+		runtime/macros/maze/poster \
+		runtime/macros/shellmenu.vim \
+		runtime/macros/swapmous.vim \
+		runtime/macros/urm/README.txt \
+		runtime/macros/urm/examples \
+		runtime/macros/urm/urm \
+		runtime/macros/urm/urm.vim \
+		runtime/mswin.vim \
+		runtime/evim.vim \
+		runtime/optwin.vim \
+		runtime/ftplugin.vim \
+		runtime/ftplugof.vim \
+		runtime/indent.vim \
+		runtime/indoff.vim \
+		runtime/termcap \
+		runtime/tools/README.txt \
+		runtime/tools/[a-z]*[a-z0-9] \
+		runtime/tutor/README.txt \
+		runtime/tutor/tutor \
+		runtime/tutor/tutor.vim \
+		runtime/vimrc_example.vim \
+
+# runtime files for all distributions without CR-NL translation
+RT_ALL_BIN =	\
+		runtime/doc/tags \
+		runtime/print/*.ps \
+
+# runtime script files
+RT_SCRIPTS =	\
+		runtime/filetype.vim \
+		runtime/scripts.vim \
+		runtime/menu.vim \
+		runtime/delmenu.vim \
+		runtime/synmenu.vim \
+		runtime/makemenu.vim \
+		runtime/colors/*.vim \
+		runtime/colors/README.txt \
+		runtime/compiler/*.vim \
+		runtime/compiler/README.txt \
+		runtime/indent/*.vim \
+		runtime/indent/README.txt \
+		runtime/ftplugin/*.vim \
+		runtime/ftplugin/README.txt \
+		runtime/plugin/*.vim \
+		runtime/plugin/README.txt \
+		runtime/syntax/*.vim \
+		runtime/syntax/README.txt \
+
+# Unix runtime
+RT_UNIX =	\
+		README_unix.txt \
+		runtime/vim16x16.png \
+		runtime/vim16x16.xpm \
+		runtime/vim32x32.png \
+		runtime/vim32x32.xpm \
+		runtime/vim48x48.png \
+		runtime/vim48x48.xpm \
+
+# Unix and DOS runtime without CR-LF translation
+RT_UNIX_DOS_BIN =	\
+		runtime/vim16x16.gif \
+		runtime/vim32x32.gif \
+		runtime/vim48x48.gif \
+
+# runtime not for unix or extra
+RT_NO_UNIX =	\
+
+# runtime for Amiga (also in the extra archive)
+RT_AMI_DOS =	\
+		runtime/doc/vim.man \
+		runtime/doc/vimdiff.man \
+		runtime/doc/vimtutor.man \
+		runtime/doc/xxd.man \
+
+# DOS runtime (also in the extra archive)
+RT_DOS =	\
+		README_dos.txt \
+		runtime/rgb.txt \
+		vimtutor.bat \
+
+# DOS runtime without CR-LF translation (also in the extra archive)
+RT_DOS_BIN =	\
+		runtime/vimlogo.cdr \
+		runtime/vimlogo.eps \
+		runtime/vimlogo.gif \
+		runtime/vimlogo.pdf \
+
+# Amiga runtime (also in the extra archive)
+RT_AMI =	\
+		README.txt.info \
+		README_ami.txt \
+		README_ami.txt.info \
+		libs/arp.library \
+		runtime/doc.info \
+		runtime/doc/*.info \
+		runtime/icons \
+		runtime/icons.info \
+		runtime/macros.info \
+		runtime/macros/*.info \
+		runtime/macros/hanoi/*.info \
+		runtime/macros/life/*.info \
+		runtime/macros/maze/*.info \
+		runtime/macros/urm/*.info \
+		runtime/tools.info \
+		runtime/tutor.info \
+		runtime/tutor/*.info \
+
+# runtime files in extra archive
+RT_EXTRA =	\
+		$(RT_AMI) \
+		$(RT_AMI_DOS) \
+		$(RT_DOS) \
+		$(RT_DOS_BIN) \
+		README_mac.txt \
+
+# included in all Amiga archives
+ROOT_AMI =	\
+		Contents \
+		Contents.info \
+		runtime.info \
+		vimdir.info \
+
+# root files for the extra archive
+ROOT_EXTRA =	\
+		$(ROOT_AMI) \
+
+# files for Amiga small binary (also in extra archive)
+BIN_AMI =	\
+		README_amibin.txt \
+		README_amibin.txt.info \
+		Vim.info \
+		Xxd.info \
+
+# files for DOS binary (also in extra archive)
+BIN_DOS =	\
+		README_bindos.txt \
+		uninstal.txt \
+
+# files for Win32 OLE binary (also in extra archive)
+BIN_OLE =	\
+		README_ole.txt \
+
+# files for Win32s binary (also in extra archive)
+BIN_W32S =	\
+		README_w32s.txt \
+
+# files for VMS binary (also in extra archive)
+BIN_VMS =	\
+		README_vms.txt \
+
+# files for OS/2 binary (also in extra archive)
+BIN_OS2 =	\
+		README_os2.txt \
+
+# binary files for extra archive
+BIN_EXTRA =	\
+		$(BIN_AMI) \
+		$(BIN_DOS) \
+		$(BIN_OLE) \
+		$(BIN_W32S) \
+		$(BIN_VMS) \
+		$(BIN_OS2) \
+
+# all files for extra archive
+EXTRA =		\
+		$(BIN_EXTRA) \
+		$(ROOT_EXTRA) \
+		$(RT_EXTRA) \
+		$(SRC_EXTRA) \
+		README_extra.txt \
+		src/VisVim/VisVim.dll \
+		farsi \
+		runtime/vimlogo.xpm \
+		src/swis.s \
+		src/tee/Makefile* \
+		src/tee/tee.c \
+		csdpmi4b.zip \
+		emx.dll \
+		emxlibcs.dll \
+
+# generic language files
+LANG_GEN = \
+		README_lang.txt \
+		runtime/lang/README.txt \
+		runtime/lang/menu_*.vim \
+		runtime/keymap/README.txt \
+		runtime/keymap/*.vim \
+		runtime/tutor/README.*.txt \
+		runtime/tutor/Makefile \
+		runtime/tutor/tutor.?? \
+		runtime/tutor/tutor.gr.* \
+		runtime/tutor/tutor.ja.* \
+		runtime/tutor/tutor.ko.* \
+		runtime/tutor/tutor.pl.* \
+		runtime/tutor/tutor.ru.* \
+		runtime/tutor/tutor.zh.* \
+
+# all files for lang archive
+LANG_SRC = \
+		src/po/README.txt \
+		src/po/README_mingw.txt \
+		src/po/README_mvc.txt \
+		src/po/cleanup.vim \
+		src/po/Makefile \
+		src/po/Make_ming.mak \
+		src/po/Make_mvc.mak \
+		src/po/sjiscorr.c \
+		src/po/*.po \
+
+# the language files for the Win32 lang archive
+LANG_DOS = \
+		src/po/*.mo \
+
+# vim: set ft=make:

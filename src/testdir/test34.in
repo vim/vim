@@ -1,0 +1,31 @@
+Test for user functions
+
+STARTTEST
+:so small.vim
+:function Table(title, ...)
+:  let ret = a:title
+:  let idx = 1
+:  while idx <= a:0
+:    exe "let ret = ret . a:" . idx
+:    let idx = idx + 1
+:  endwhile
+:  return ret
+:endfunction
+:function Compute(n1, n2, divname)
+:  if a:n2 == 0
+:    return "fail"
+:  endif
+:  exe "let g:" . a:divname . " = ". a:n1 / a:n2
+:  return "ok"
+:endfunction
+:let retval = "nop"
+/^here
+C=Table("xxx", 4, "asdf")
+ =Compute(45, 0, "retval")
+ =retval
+ =Compute(45, 5, "retval")
+ =retval
+:.wq! test.out
+ENDTEST
+
+here

@@ -1,0 +1,1014 @@
+# A-A-P recipe for building Vim
+#
+# There are no user choices in here!
+# Put configure arguments in the file config.arg.
+# Later there will be a config.txt file that contains examples and
+# explanations.
+#
+# Optional arguments:
+#  PREFIX=dir		Overrules the install directory.
+#			Can be specified when installing only.
+#			Example: aap install PREFIX=$HOME
+#
+
+# Skip the configure stuff when "link.sh" is executing this recipe recursively
+# to build pathdef.c or not building something and auto/config.aap does exist.
+@if ((_no.TARGETARG != "pathdef" and has_build_target())
+@	or not os.path.exists("auto/config.aap")):
+
+    #
+    # A U T O C O N F
+    #
+
+    # Run autoconf when configure.in has been changed since it was last run.
+    # This is skipped when the signatures in "mysign" are up-to-date.  When
+    # there is no autoconf program skip this (the signature is often the only
+    # thing that's outdated)
+    auto/configure {signfile = mysign} : configure.in
+	@if not program_path("autoconf"):
+	    :print Can't find autoconf, using existing configure script.
+	@else:
+            # Move configure aside, autoconf would overwrite it
+            :move {exist} configure configure.save
+            :sys autoconf
+            :cat configure | :eval re.sub('\\./config.log', 'auto/config.log', stdin) >! auto/configure
+            :chmod 755 auto/configure
+            :move configure.save configure
+            :del {force} auto/config.cache auto/config.status
+
+    # Change the configure script to produce config.aap instead of config.mk.
+    auto/configure.aap : auto/configure
+	:print Adjusting auto/configure for A-A-P.
+	:cat auto/configure | :eval re.sub("config.mk", "config.aap", stdin)
+							>! auto/configure.aap
+	:chmod 755 auto/configure.aap
+
+    # The configure script uses the directory where it's located, use a link.
+    configure.aap:  {buildcheck=}
+	:sys ln -s auto/configure.aap configure.aap
+
+    # Dependency: run configure.aap to update config.h and config.aap in the
+    # "auto" directory.
+    config {virtual} auto/config.h auto/config.aap :
+			 auto/configure.aap configure.aap
+			 config.arg config.h.in config.aap.in
+	:sys CONFIG_STATUS=auto/config.status
+                ./configure.aap `file2string("config.arg")`
+                    --cache-file=auto/config.cache
+
+    # Configure arguments: create an empty "config.arg" file when its missing
+    config.arg:
+	:touch {exist} config.arg
+
+    # "auto/config.aap" contains a lot of settings, such as the name of the
+    # executable "Target".
+    # First update it, forcefully if the "reconfig" target was used.
+    @if _no.TARGETARG != "comment" and _no.TARGETARG != "make":
+	@if "reconfig" in var2list(_no.TARGETARG):
+	    :del {force} auto/config.cache auto/config.status
+	    :update {force} auto/config.aap
+	@else:
+	    :update auto/config.aap
+
+# Include the recipe that autoconf generated.
+:include auto/config.aap
+
+# A "PREFIX=dir" argument overrules the value of $prefix
+@if _no.get("PREFIX"):
+    prefix = $PREFIX
+
+# Don't want "~/" in prefix.
+prefix = `os.path.expanduser(prefix)`
+
+#
+# G U I  variant
+#
+# The GUI is selected by configure, a lot of other things depend on it.
+#
+:variant GUI
+    GTK
+	GUI_SRC		= gui.c gui_gtk.c gui_gtk_x11.c pty.c gui_beval.c
+			    gui_gtk_f.c
+	GUI_OBJ		$= $BDIR/gui.o $BDIR/gui_gtk.o $BDIR/gui_gtk_x11.o
+			    $BDIR/pty.o $BDIR/gui_gtk_f.o
+	GUI_DEFS	= -DFEAT_GUI_GTK $NARROW_PROTO
+	GUI_IPATH	= $GUI_INC_LOC
+	GUI_LIBS_DIR	= $GUI_LIB_LOC
+	GUI_LIBS1	=
+	GUI_LIBS2	= $GTK_LIBNAME
+	GUI_TARGETS	= installglinks
+	GUI_MAN_TARGETS	= installghelplinks
+	GUI_TESTTARGET	= gui
+    MOTIF
+	GUI_SRC		= gui.c gui_motif.c gui_x11.c pty.c gui_beval.c
+	GUI_OBJ		$= $BDIR/gui.o $BDIR/gui_motif.o $BDIR/gui_x11.o
+			    $BDIR/pty.o $BDIR/gui_beval.o
+	GUI_DEFS	= -DFEAT_GUI_MOTIF $NARROW_PROTO
+	GUI_IPATH	= $GUI_INC_LOC
+	GUI_LIBS_DIR	= $GUI_LIB_LOC
+	GUI_LIBS1	=
+	GUI_LIBS2	= $MOTIF_LIBNAME -lXt
+	GUI_TARGETS	= installglinks
+	GUI_MAN_TARGETS	= installghelplinks
+	GUI_TESTTARGET	= gui
+    ATHENA
+	# XAW_LIB et al. can be overruled to use Xaw3d widgets
+	XAW_LIB		?= -lXaw
+	GUI_SRC		=  gui.c gui_athena.c gui_x11.c pty.c gui_beval.c \
+			    gui_at_sb.c gui_at_fs.c
+	GUI_OBJ		$= $BDIR/gui.o $BDIR/gui_athena.o $BDIR/gui_x11.o \
+			    $BDIR/pty.o $BDIR/gui_beval.o \
+			    $BDIR/gui_at_sb.o $BDIR/gui_at_fs.o
+	GUI_DEFS	= -DFEAT_GUI_ATHENA $NARROW_PROTO
+	GUI_IPATH	= $GUI_INC_LOC
+	GUI_LIBS_DIR	= $GUI_LIB_LOC
+	GUI_LIBS1	= $XAW_LIB
+	GUI_LIBS2	= -lXt
+	GUI_TARGETS	= installglinks
+	GUI_MAN_TARGETS	= installghelplinks
+	GUI_TESTTARGET	= gui
+    NEXTAW
+	# XAW_LIB et al. can be overruled to use Xaw3d widgets
+	XAW_LIB		?= -lXaw
+	GUI_SRC		=  gui.c gui_athena.c gui_x11.c pty.c gui_beval.c
+			    gui_at_fs.c
+	GUI_OBJ		$= $BDIR/gui.o $BDIR/gui_athena.o $BDIR/gui_x11.o
+			    $BDIR/pty.o $BDIR/gui_beval.o $BDIR/gui_at_fs.o
+	GUI_DEFS	= -DFEAT_GUI_ATHENA -DFEAT_GUI_NEXTAW $NARROW_PROTO
+	GUI_IPATH	= $GUI_INC_LOC
+	GUI_LIBS_DIR	= $GUI_LIB_LOC
+	GUI_LIBS1	= $NEXTAW_LIB
+	GUI_LIBS2	= -lXt
+	GUI_TARGETS	= installglinks
+	GUI_MAN_TARGETS	= installghelplinks
+	GUI_TESTTARGET	= gui
+    BEOSGUI
+	GUI_SRC		= gui.c gui_beos.cc pty.c
+	GUI_OBJ		= $BDIR/gui.o $BDIR/gui_beos.o  $BDIR/pty.o
+	GUI_DEFS	= -DFEAT_GUI_BEOS
+	GUI_IPATH	=
+	GUI_LIBS_DIR	=
+	GUI_LIBS1	= -lbe -lroot
+	GUI_LIBS2	=
+	GUI_TARGETS	= installglinks
+	GUI_MAN_TARGETS	= installghelplinks
+	GUI_TESTTARGET	= gui
+    PHOTONGUI
+	GUI_SRC		= gui.c gui_photon.c pty.c
+	GUI_OBJ		= $BDIR/gui.o $BDIR/gui_photon.o $BDIR/pty.o
+	GUI_DEFS	= -DFEAT_GUI_PHOTON
+	GUI_IPATH	=
+	GUI_LIBS_DIR	=
+	GUI_LIBS1	= -lph -lphexlib
+	GUI_LIBS2	=
+	GUI_TARGETS	= installglinks
+	GUI_MAN_TARGETS	= installghelplinks
+	GUI_TESTTARGET	= gui
+    *
+	GUI_SRC		=
+	GUI_OBJ		=
+	GUI_DEFS	=
+	GUI_IPATH	=
+	GUI_LIBS_DIR	=
+	GUI_LIBS1	=
+	GUI_LIBS2	=
+	GUI_TARGETS	=
+	GUI_MAN_TARGETS	=
+	GUI_TESTTARGET	=
+
+
+PRE_DEFS = -Iproto -I. $DEFS $GUI_DEFS $GUI_IPATH $CPPFLAGS $?(EXTRA_IPATHS)
+POST_DEFS = $X_CFLAGS $PERL_CFLAGS $PYTHON_CFLAGS $TCL_CFLAGS $RUBY_CFLAGS $?(EXTRA_DEFS)
+CFLAGS = $PRE_DEFS $CONF_CFLAGS $?(PROFILE_CFLAGS) $POST_DEFS
+CPPFLAGS =
+
+ALL_LIB_DIRS = $GUI_LIBS_DIR $X_LIBS_DIR
+LDFLAGS = $ALL_LIB_DIRS $CONF_LDFLAGS
+LIBS = $GUI_LIBS1 $GUI_X_LIBS $GUI_LIBS2 $X_PRE_LIBS $X_LIBS $X_EXTRA_LIBS $CONF_LIBS $?(EXTRA_LIBS) $PERL_LIBS $PYTHON_LIBS $TCL_LIBS $RUBY_LIBS $?(PROFILE_LIBS)
+
+Target = $VIMNAME
+
+# reconfig target also builds Vim (reconfiguration is handled above).
+reconfig {virtual}: $Target
+
+
+# Execute the test scripts.  Run these after compiling Vim, before installing.
+#
+# This will produce a lot of garbage on your screen, including a few error
+# messages.  Don't worry about that.
+# If there is a real error, there will be a difference between "test.out" and
+# a "test99.ok" file.
+# If everything is allright, the final message will be "ALL DONE".
+#
+test check:
+    VimProg = ../$Target
+    :execute testdir/main.aap $GUI_TESTTARGET
+
+testclean {virtual}:
+    :del {force} testdir/*.out testdir/test.log
+
+
+# When no fetch target exists we are not a child of the ../main.aap recipe,
+# Use ../main.aap to do the fetching.
+# --- If you get an error here for wrong number of arguments, you need to
+#     update to a newer version of A-A-P.
+@if not has_target("fetch"):
+    fetch:
+	:execute ../main.aap fetch
+
+
+# All the source files that need to be compiled.
+# Some are optional and depend on configure.
+# "version.c" is missing, it's always compiled (see below).
+Source =
+	buffer.c
+	charset.c
+	diff.c
+	digraph.c
+	edit.c
+	eval.c
+	ex_cmds.c
+	ex_cmds2.c
+	ex_docmd.c
+	ex_eval.c
+	ex_getln.c
+	fileio.c
+	fold.c
+	getchar.c
+	if_cscope.c
+	if_xcmdsrv.c
+	main.c
+	mark.c
+	memfile.c
+	memline.c
+	menu.c
+	message.c
+	misc1.c
+	misc2.c
+	move.c
+	mbyte.c
+	normal.c
+	ops.c
+	option.c
+	os_unix.c
+	auto/pathdef.c
+	quickfix.c
+	regexp.c
+	screen.c
+	search.c
+	syntax.c
+	tag.c
+	term.c
+	ui.c
+	undo.c
+	window.c
+	$OS_EXTRA_SRC
+	$GUI_SRC
+	$HANGULIN_SRC
+	$PERL_SRC
+	$NETBEANS_SRC
+	$PYTHON_SRC
+	$TCL_SRC
+	$RUBY_SRC
+	$SNIFF_SRC
+	$WORKSHOP_SRC
+
+# TODO: make is still used for subdirectories, need to write a recipe.
+MAKE ?= make
+
+all: $Target
+
+# This dependency is required to build auto/osdef.h before automatic
+# dependencies are generated.
+$Source version.c : auto/osdef.h
+
+# Need to mention that the target also depends on version.c, since it's not
+# inluded in $Source
+$Target : version.c
+
+# Some sources are to be found in the "auto" directory.
+SRCPATH += auto
+
+# When building Vim always compile version.c to get the timestamp.
+:filetype
+    declare my_prog
+:attr {filetype = my_prog} $Target
+
+:program $Target : $Source
+
+:action build my_prog object
+	version_obj = `src2obj("version.c")`
+	:do compile {target = $version_obj} version.c
+	#:do build {target = $target {filetype = program}} $source $version_obj
+	link_sed = $BDIR/link.sed
+	@if os.path.exists(link_sed):
+	    :move {force} $link_sed auto/link.sed
+	@else:
+	    :del {force} auto/link.sed
+	:update link2.sh
+	:sys LINK="$?(PURIFY) $?(SHRPENV) $CC $LDFLAGS \
+		-o $target $source $version_obj $LIBS" \
+		MAKE="aap" sh ./link2.sh
+	:copy {force} auto/link.sed $BDIR/link.sed
+
+# "link.sh" must be modified for A-A-P
+link2.sh : link.sh
+    :print Adjusting $-source for A-A-P.
+    :cat $source | :eval re.sub("objects/pathdef.o", "pathdef", stdin)
+								      >! $target
+
+xxd/xxd$EXESUF: xxd/xxd.c
+    :sys cd xxd; CC="$CC" CFLAGS="$CPPFLAGS $CFLAGS" \
+	    $MAKE -f Makefile
+
+# Build the language specific files if they were unpacked.
+# Generate the converted .mo files separately, it's no problem if this fails.
+languages {virtual}:
+	@if _no.MAKEMO:
+	    :sys cd $PODIR; CC="$CC" $MAKE prefix=$DESTDIR$prefix
+	    @try:
+		:sys cd $PODIR; CC="$CC" $MAKE prefix=$DESTDIR$prefix converted
+	    @except:
+		:print Generated converted language files failed, continuing
+
+# Update the *.po files for changes in the sources.  Only run manually.
+update-po {virtual}:
+	cd $PODIR; CC="$CC" $MAKE prefix=$DESTDIR$prefix update-po
+
+auto/if_perl.c: if_perl.xs
+	:sys $PERL -e 'unless ( $$] >= 5.005 ) { for (qw(na defgv errgv)) { print "#define PL_$$_ $$_\n" }}' > $target
+	:sys $PERL $PERLLIB/ExtUtils/xsubpp -prototypes -typemap \
+	    $PERLLIB/ExtUtils/typemap if_perl.xs >> $target
+
+auto/osdef.h: auto/config.h osdef.sh osdef1.h.in osdef2.h.in
+	:sys CC="$CC $CFLAGS" srcdir=$srcdir sh $srcdir/osdef.sh
+
+pathdef {virtual} : $BDIR/auto/pathdef$OBJSUF
+
+auto/pathdef.c: auto/config.aap
+	:print Creating $target
+	:print >! $target /* pathdef.c */
+	:print >> $target /* This file is automatically created by main.aap */
+	:print >> $target /* DO NOT EDIT!  Change main.aap only. */
+	:print >> $target $#include "vim.h"
+	:print >> $target char_u *default_vim_dir = (char_u *)"$VIMRCLOC";
+	:print >> $target char_u *default_vimruntime_dir = (char_u *)"$?VIMRUNTIMEDIR";
+	:print >> $target char_u *all_cflags = (char_u *)"$CC -c -I$srcdir $CFLAGS";
+	linkcmd = $CC $LDFLAGS -o $VIMTARGET $LIBS
+	link_sed = $BDIR/link.sed
+	@if os.path.exists(link_sed):
+	    # filter $linkcmd through $BDIR/link.sed
+	    :print $linkcmd | :syseval sed -f $link_sed | :eval re.sub("\n", "", stdin) | :assign linkcmd
+	:print >> $target char_u *all_lflags = (char_u *)"$linkcmd";
+	@if _no.get("COMPILEDBY"):
+	    who = $COMPILEDBY
+	    where = ''
+	@else:
+	    :syseval whoami | :eval re.sub("\n", "", stdin) | :assign who
+
+	    :syseval hostname | :eval re.sub("\n", "", stdin) | :assign where
+	:print >> $target char_u *compiled_user = (char_u *)"$who";
+	:print >> $target char_u *compiled_sys = (char_u *)"$where";
+
+
+### Names of the programs and targets
+VIMTARGET	= $VIMNAME$EXESUF
+EXTARGET	= $EXNAME$LNKSUF
+VIEWTARGET	= $VIEWNAME$LNKSUF
+GVIMNAME	= g$VIMNAME
+GVIMTARGET	= $GVIMNAME$LNKSUF
+GVIEWNAME	= g$VIEWNAME
+GVIEWTARGET	= $GVIEWNAME$LNKSUF
+RVIMNAME	= r$VIMNAME
+RVIMTARGET	= $RVIMNAME$LNKSUF
+RVIEWNAME	= r$VIEWNAME
+RVIEWTARGET	= $RVIEWNAME$LNKSUF
+RGVIMNAME	= r$GVIMNAME
+RGVIMTARGET	= $RGVIMNAME$LNKSUF
+RGVIEWNAME	= r$GVIEWNAME
+RGVIEWTARGET	= $RGVIEWNAME$LNKSUF
+VIMDIFFNAME	= $(VIMNAME)diff
+GVIMDIFFNAME	= g$VIMDIFFNAME
+VIMDIFFTARGET	= $VIMDIFFNAME$LNKSUF
+GVIMDIFFTARGET	= $GVIMDIFFNAME$LNKSUF
+EVIMNAME	= e$VIMNAME
+EVIMTARGET	= $EVIMNAME$LNKSUF
+EVIEWNAME	= e$VIEWNAME
+EVIEWTARGET	= $EVIEWNAME$LNKSUF
+
+### Names of the tools that are also made
+TOOLS = xxd/xxd$EXESUF
+
+# Root of the installation tree.  Empty for a normal install, set to an
+# existing path to install into a special place (for generating a package).
+DESTDIR ?=
+
+### Location of man pages
+MANSUBDIR = $MANDIR/man1
+
+### Location of Vim files (should not need to be changed, and
+### some things might not work when they are changed!)
+VIMDIR = /vim
+@r = re.compile('.*VIM_VERSION_NODOT\\s*"(vim\\d\\d[^"]*)".*', re.S)
+VIMRTDIR = /`r.match(open("version.h").read()).group(1)`
+HELPSUBDIR = /doc
+COLSUBDIR = /colors
+SYNSUBDIR = /syntax
+INDSUBDIR = /indent
+PLUGSUBDIR = /plugin
+FTPLUGSUBDIR = /ftplugin
+LANGSUBDIR = /lang
+COMPSUBDIR = /compiler
+KMAPSUBDIR = /keymap
+MACROSUBDIR = /macros
+TOOLSSUBDIR = /tools
+TUTORSUBDIR = /tutor
+PRINTSUBDIR = /print
+PODIR = po
+
+### VIMLOC	common root of the Vim files (all versions)
+### VIMRTLOC	common root of the runtime Vim files (this version)
+### VIMRCLOC	compiled-in location for global [g]vimrc files (all versions)
+### VIMRUNTIMEDIR  compiled-in location for runtime files (optional)
+### HELPSUBLOC	location for help files
+### COLSUBLOC	location for colorscheme files
+### SYNSUBLOC	location for syntax files
+### INDSUBLOC	location for indent files
+### PLUGSUBLOC	location for standard plugin files
+### FTPLUGSUBLOC  location for ftplugin files
+### LANGSUBLOC	location for language files
+### COMPSUBLOC	location for compiler files
+### KMAPSUBLOC	location for keymap files
+### MACROSUBLOC	location for macro files
+### TOOLSSUBLOC	location for tools files
+### TUTORSUBLOC	location for tutor files
+### PRINTSUBLOC	location for print files
+### SCRIPTLOC	location for script files (menu.vim, bugreport.vim, ..)
+### You can override these if you want to install them somewhere else.
+### Edit feature.h for compile-time settings.
+VIMLOC		= $DATADIR$VIMDIR
+VIMRTLOC	= $DATADIR$VIMDIR$VIMRTDIR
+VIMRCLOC	= $VIMLOC
+HELPSUBLOC	= $VIMRTLOC$HELPSUBDIR
+COLSUBLOC	= $VIMRTLOC$COLSUBDIR
+SYNSUBLOC	= $VIMRTLOC$SYNSUBDIR
+INDSUBLOC	= $VIMRTLOC$INDSUBDIR
+PLUGSUBLOC	= $VIMRTLOC$PLUGSUBDIR
+FTPLUGSUBLOC	= $VIMRTLOC$FTPLUGSUBDIR
+LANGSUBLOC	= $VIMRTLOC$LANGSUBDIR
+COMPSUBLOC	= $VIMRTLOC$COMPSUBDIR
+KMAPSUBLOC	= $VIMRTLOC$KMAPSUBDIR
+MACROSUBLOC	= $VIMRTLOC$MACROSUBDIR
+TOOLSSUBLOC	= $VIMRTLOC$TOOLSSUBDIR
+TUTORSUBLOC	= $VIMRTLOC$TUTORSUBDIR
+PRINTSUBLOC	= $VIMRTLOC$PRINTSUBDIR
+SCRIPTLOC	= $VIMRTLOC
+
+### Only set VIMRUNTIMEDIR when VIMRTLOC is set to a different location and
+### the runtime directory is not below it.
+#VIMRUNTIMEDIR = $VIMRTLOC
+
+### Name of the evim file target.
+EVIM_FILE	= $DESTDIR$SCRIPTLOC/evim.vim
+MSWIN_FILE	= $DESTDIR$SCRIPTLOC/mswin.vim
+
+### Name of the menu file target.
+SYS_MENU_FILE	= $DESTDIR$SCRIPTLOC/menu.vim
+SYS_SYNMENU_FILE = $DESTDIR$SCRIPTLOC/synmenu.vim
+SYS_DELMENU_FILE = $DESTDIR$SCRIPTLOC/delmenu.vim
+
+### Name of the bugreport file target.
+SYS_BUGR_FILE	= $DESTDIR$SCRIPTLOC/bugreport.vim
+
+### Name of the file type detection file target.
+SYS_FILETYPE_FILE = $DESTDIR$SCRIPTLOC/filetype.vim
+
+### Name of the file type detection file target.
+SYS_FTOFF_FILE	= $DESTDIR$SCRIPTLOC/ftoff.vim
+
+### Name of the file type detection script file target.
+SYS_SCRIPTS_FILE = $DESTDIR$SCRIPTLOC/scripts.vim
+
+### Name of the ftplugin-on file target.
+SYS_FTPLUGIN_FILE = $DESTDIR$SCRIPTLOC/ftplugin.vim
+
+### Name of the ftplugin-off file target.
+SYS_FTPLUGOF_FILE = $DESTDIR$SCRIPTLOC/ftplugof.vim
+
+### Name of the indent-on file target.
+SYS_INDENT_FILE = $DESTDIR$SCRIPTLOC/indent.vim
+
+### Name of the indent-off file target.
+SYS_INDOFF_FILE = $DESTDIR$SCRIPTLOC/indoff.vim
+
+### Name of the option window script file target.
+SYS_OPTWIN_FILE = $DESTDIR$SCRIPTLOC/optwin.vim
+
+### Permissions for binaries
+BINMOD = 755
+
+### Permissions for man page
+MANMOD = 644
+
+### Permissions for help files
+HELPMOD = 644
+
+### Permissions for Perl and shell scripts
+SCRIPTMOD = 755
+
+### Permission for Vim script files (menu.vim, bugreport.vim, ..)
+VIMSCRIPTMOD = 644
+
+### Permissions for all directories that are created
+DIRMOD = 755
+
+### Permissions for all other files that are created
+FILEMOD = 644
+
+# Where to copy the man and help files from
+HELPSOURCE = ../runtime/doc
+
+# Where to copy the script files from (menu, bugreport)
+SCRIPTSOURCE = ../runtime
+
+# Where to copy the colorscheme files from
+COLSOURCE = ../runtime/colors
+
+# Where to copy the syntax files from
+SYNSOURCE = ../runtime/syntax
+
+# Where to copy the indent files from
+INDSOURCE = ../runtime/indent
+
+# Where to copy the standard plugin files from
+PLUGSOURCE = ../runtime/plugin
+
+# Where to copy the ftplugin files from
+FTPLUGSOURCE = ../runtime/ftplugin
+
+# Where to copy the macro files from
+MACROSOURCE = ../runtime/macros
+
+# Where to copy the tools files from
+TOOLSSOURCE = ../runtime/tools
+
+# Where to copy the tutor files from
+TUTORSOURCE = ../runtime/tutor
+
+# Where to look for language specific files
+LANGSOURCE = ../runtime/lang
+
+# Where to look for compiler files
+COMPSOURCE = ../runtime/compiler
+
+# Where to look for keymap files
+KMAPSOURCE = ../runtime/keymap
+
+# Where to look for print resource files
+PRINTSOURCE = ../runtime/print
+
+# abbreviations
+DEST_BIN = $DESTDIR$BINDIR
+DEST_VIM = $DESTDIR$VIMLOC
+DEST_RT = $DESTDIR$VIMRTLOC
+DEST_HELP = $DESTDIR$HELPSUBLOC
+DEST_COL = $DESTDIR$COLSUBLOC
+DEST_SYN = $DESTDIR$SYNSUBLOC
+DEST_IND = $DESTDIR$INDSUBLOC
+DEST_PLUG = $DESTDIR$PLUGSUBLOC
+DEST_FTP = $DESTDIR$FTPLUGSUBLOC
+DEST_LANG = $DESTDIR$LANGSUBLOC
+DEST_COMP = $DESTDIR$COMPSUBLOC
+DEST_KMAP = $DESTDIR$KMAPSUBLOC
+DEST_MACRO = $DESTDIR$MACROSUBLOC
+DEST_TOOLS = $DESTDIR$TOOLSSUBLOC
+DEST_TUTOR = $DESTDIR$TUTORSUBLOC
+DEST_SCRIPT = $DESTDIR$SCRIPTLOC
+DEST_PRINT = $DESTDIR$PRINTSUBLOC
+DEST_MAN = $DESTDIR$MANSUBDIR
+
+# These are directories, create them when needed.
+:attr {directory = $DIRMOD} $DEST_BIN $DEST_VIM $DEST_RT $DEST_HELP $DEST_COL
+		$DEST_SYN $DEST_IND $DEST_PLUG $DEST_FTP $DEST_LANG
+		$DEST_COMP $DEST_KMAP $DEST_MACRO $DEST_TOOLS $DEST_TUTOR
+		$DEST_SCRIPT $DEST_PRINT $DEST_MAN
+
+#
+# I N S T A L L
+#
+install:
+    @if not os.path.isdir(_no.DEST_BIN):
+        @try:
+            :mkdir $DEST_BIN
+        @except:
+        @   pass
+    @if os.access(_no.DEST_BIN, os.W_OK):
+        # Bin directory is writable, install directly.
+        :update installvim installtools install-languages install-icons
+    @else:
+        # Bin directory is not writable, need to become root.
+	:print The destination directory "$DEST_BIN" is not writable.
+	:print If this is the wrong directory, use PREFIX to specify another one.
+        :print Otherwise, type the root password to continue installing.
+        :asroot $AAP install
+
+installvim {virtual}: installvimbin installruntime installlinks \
+			installhelplinks installmacros installtutor
+
+installvimbin {virtual}{force}: $Target $DEST_BIN
+	exe = $DEST_BIN/$VIMTARGET
+	@if os.path.exists(exe):
+	    # Move the old executable aside and delete it.  Any other method
+	    # may cause a crash if the executable is currently being used.
+	    :move {force} $exe $(exe).rm
+	    :del {force} $(exe).rm
+	:copy $VIMTARGET $DEST_BIN
+	:do strip $exe
+	:chmod $BINMOD $DEST_BIN/$VIMTARGET
+# may create a link to the new executable from /usr/bin/vi
+	@if _no.get("LINKIT"):
+	    :sys $LINKIT
+
+# install the help files; first adjust the contents for the location
+installruntime {virtual}{force}: $HELPSOURCE/vim.1 $DEST_MAN $DEST_VIM
+		$DEST_RT $DEST_HELP $DEST_COL $DEST_SYN $DEST_IND
+		$DEST_FTP $DEST_PLUG $DEST_TUTOR $DEST_COMP $DEST_PRINT
+	:print generating $DEST_MAN/$(VIMNAME).1
+	:cat $HELPSOURCE/vim.1 |
+		:eval re.sub("/usr/local/lib/vim", _no.VIMLOC, stdin) |
+		:eval re.sub(_no.VIMLOC + "/doc", _no.HELPSUBLOC, stdin) |
+		:eval re.sub(_no.VIMLOC + "/syntax", _no.SYNSUBLOC, stdin) |
+		:eval re.sub(_no.VIMLOC + "/tutor", _no.TUTORSUBLOC, stdin) |
+		:eval re.sub(_no.VIMLOC + "/vimrc",
+					       _no.VIMRCLOC + "/vimrc", stdin) |
+		:eval re.sub(_no.VIMLOC + "/gvimrc",
+					      _no.VIMRCLOC + "/gvimrc", stdin) |
+		:eval re.sub(_no.VIMLOC + "/menu.vim",
+					   _no.SCRIPTLOC + "/menu.vim", stdin) |
+		:eval re.sub(_no.VIMLOC + "/bugreport.vim",
+				      _no.SCRIPTLOC + "/bugreport.vim", stdin) |
+		:eval re.sub(_no.VIMLOC + "/filetype.vim",
+				       _no.SCRIPTLOC + "/filetype.vim", stdin) |
+		:eval re.sub(_no.VIMLOC + "/ftoff.vim",
+					  _no.SCRIPTLOC + "/ftoff.vim", stdin) |
+		:eval re.sub(_no.VIMLOC + "/scripts.vim",
+					_no.SCRIPTLOC + "/scripts.vim", stdin) |
+		:eval re.sub(_no.VIMLOC + "/optwin.vim",
+					 _no.SCRIPTLOC + "/optwin.vim", stdin) |
+		:eval re.sub(_no.VIMLOC + "/\\*.ps",
+						 _no.SCRIPTLOC + "/*.ps", stdin)
+		>! $DEST_MAN/$(VIMNAME).1
+	:chmod $MANMOD $DEST_MAN/$(VIMNAME).1
+
+	:print generating $DEST_MAN/$(VIMNAME)tutor.1
+	:cat $HELPSOURCE/vimtutor.1 |
+		:eval re.sub("/usr/local/lib/vim", _no.VIMLOC, stdin) |
+		:eval re.sub(_no.VIMLOC + "/tutor", _no.TUTORSUBLOC, stdin)
+		>! $DEST_MAN/$(VIMNAME)tutor.1
+	:chmod $MANMOD $DEST_MAN/$(VIMNAME)tutor.1
+
+	:copy $HELPSOURCE/vimdiff.1 $DEST_MAN/$(VIMDIFFNAME).1
+	:chmod $MANMOD $DEST_MAN/$(VIMDIFFNAME).1
+
+	:print generating $DEST_MAN/$(EVIMNAME).1
+	:cat $HELPSOURCE/evim.1 |
+		:eval re.sub("/usr/local/lib/vim", _no.SCRIPTLOC, stdin)
+		>! $DEST_MAN/$(EVIMNAME).1
+	:chmod $MANMOD $DEST_MAN/$(EVIMNAME).1
+
+        :cd $HELPSOURCE
+        @try:
+            XTRA = `glob.glob("*.??x")` `glob.glob("tags-??")`
+        @except:
+            XTRA =       # It's OK if there are no matches.
+	:copy *.txt tags $XTRA $DEST_HELP
+        :cd -
+        :cd $DEST_HELP
+	:chmod $HELPMOD *.txt tags $XTRA
+        :cd -
+	:copy  $HELPSOURCE/*.pl $DEST_HELP
+	:chmod $SCRIPTMOD $DEST_HELP/*.pl
+# install the menu files
+	:copy $SCRIPTSOURCE/menu.vim $SYS_MENU_FILE
+	:chmod $VIMSCRIPTMOD $SYS_MENU_FILE
+	:copy $SCRIPTSOURCE/synmenu.vim $SYS_SYNMENU_FILE
+	:chmod $VIMSCRIPTMOD $SYS_SYNMENU_FILE
+	:copy $SCRIPTSOURCE/delmenu.vim $SYS_DELMENU_FILE
+	:chmod $VIMSCRIPTMOD $SYS_DELMENU_FILE
+# install the evim file
+	:copy $SCRIPTSOURCE/mswin.vim $MSWIN_FILE
+	:chmod $VIMSCRIPTMOD $MSWIN_FILE
+	:copy $SCRIPTSOURCE/evim.vim $EVIM_FILE
+	:chmod $VIMSCRIPTMOD $EVIM_FILE
+# install the bugreport file
+	:copy $SCRIPTSOURCE/bugreport.vim $SYS_BUGR_FILE
+	:chmod $VIMSCRIPTMOD $SYS_BUGR_FILE
+# install the example vimrc files
+	:copy $SCRIPTSOURCE/vimrc_example.vim $DEST_SCRIPT
+	:chmod $VIMSCRIPTMOD $DEST_SCRIPT/vimrc_example.vim
+	:copy $SCRIPTSOURCE/gvimrc_example.vim $DEST_SCRIPT
+	:chmod $VIMSCRIPTMOD $DEST_SCRIPT/gvimrc_example.vim
+# install the file type detection files
+	:copy $SCRIPTSOURCE/filetype.vim $SYS_FILETYPE_FILE
+	:chmod $VIMSCRIPTMOD $SYS_FILETYPE_FILE
+	:copy $SCRIPTSOURCE/ftoff.vim $SYS_FTOFF_FILE
+	:chmod $VIMSCRIPTMOD $SYS_FTOFF_FILE
+	:copy $SCRIPTSOURCE/scripts.vim $SYS_SCRIPTS_FILE
+	:chmod $VIMSCRIPTMOD $SYS_SCRIPTS_FILE
+	:copy $SCRIPTSOURCE/ftplugin.vim $SYS_FTPLUGIN_FILE
+	:chmod $VIMSCRIPTMOD $SYS_FTPLUGIN_FILE
+	:copy $SCRIPTSOURCE/ftplugof.vim $SYS_FTPLUGOF_FILE
+	:chmod $VIMSCRIPTMOD $SYS_FTPLUGOF_FILE
+	:copy $SCRIPTSOURCE/indent.vim $SYS_INDENT_FILE
+	:chmod $VIMSCRIPTMOD $SYS_INDENT_FILE
+	:copy $SCRIPTSOURCE/indoff.vim $SYS_INDOFF_FILE
+	:chmod $VIMSCRIPTMOD $SYS_INDOFF_FILE
+	:copy $SCRIPTSOURCE/optwin.vim $SYS_OPTWIN_FILE
+	:chmod $VIMSCRIPTMOD $SYS_OPTWIN_FILE
+# install the print resource files
+	:copy $PRINTSOURCE/*.ps $DEST_PRINT
+	:chmod $FILEMOD $DEST_PRINT/*.ps
+# install the colorscheme files
+	:copy $COLSOURCE/*.vim $COLSOURCE/README.txt $DEST_COL
+	:chmod $HELPMOD $DEST_COL/*.vim $DEST_COL/README.txt
+# install the syntax files
+	:copy $SYNSOURCE/*.vim $SYNSOURCE/README.txt $DEST_SYN
+	:chmod $HELPMOD $DEST_SYN/*.vim $DEST_SYN/README.txt
+# install the indent files
+	:copy $INDSOURCE/*.vim $INDSOURCE/README.txt $DEST_IND
+	:chmod $HELPMOD $DEST_IND/*.vim
+# install the standard plugin files
+	:copy $PLUGSOURCE/*.vim $PLUGSOURCE/README.txt $DEST_PLUG
+	:chmod $HELPMOD $DEST_PLUG/*.vim $DEST_PLUG/README.txt
+# install the ftplugin files
+	:copy $FTPLUGSOURCE/*.vim $FTPLUGSOURCE/README.txt $DEST_FTP
+	:chmod $HELPMOD $DEST_FTP/*.vim $DEST_FTP/README.txt
+# install the compiler files
+	:copy $COMPSOURCE/*.vim $COMPSOURCE/README.txt $DEST_COMP
+	:chmod $HELPMOD $DEST_COMP/*.vim $DEST_COMP/README.txt
+
+installmacros {virtual}{force}: $MACROSOURCE $DEST_VIM $DEST_RT $DEST_MACRO
+	:copy {recursive}{force} $MACROSOURCE/* $DEST_MACRO
+	# Delete any CVS and AAPDIR directories.
+	# Use the ":tree" command if possible.  It was added later, fall back
+	# to using "find" when it doesn't work.
+	@try:
+	   :tree $DEST_MACRO {dirname = CVS}
+	      :del {recursive} $name
+	   :tree $DEST_MACRO {dirname = AAPDIR}
+	      :del {recursive} $name
+	   :tree $DEST_MACRO {dirname = .*}
+	      :chmod $DIRMOD $name
+	   :tree $DEST_MACRO {filename = .*}
+	      :chmod $FILEMOD $name
+	@except:
+	@  ok, cvsdirs = redir_system('find %s -name CVS -print' % _no.DEST_MACRO)
+	@  if ok and cvsdirs:
+	     :del {recursive} $cvsdirs
+	   :sys chmod $DIRMOD ``find $DEST_MACRO -type d -print``
+	   :sys chmod $FILEMOD ``find $DEST_MACRO -type f -print``
+	:chmod $SCRIPTMOD $DEST_MACRO/less.sh
+
+# install the tutor files
+installtutor {virtual}{force}: $TUTORSOURCE $DEST_VIM $DEST_RT $DEST_TUTOR
+	:copy vimtutor $DEST_BIN/$(VIMNAME)tutor
+	:chmod $SCRIPTMOD $DEST_BIN/$(VIMNAME)tutor
+	:copy $TUTORSOURCE/tutor* $TUTORSOURCE/README* $DEST_TUTOR
+	:chmod $HELPMOD $DEST_TUTOR/*
+
+# install helper program xxd
+installtools {virtual}{force}: $TOOLS $DEST_BIN $DEST_MAN \
+		$TOOLSSOURCE $DEST_VIM $DEST_RT $DEST_TOOLS
+	xxd = $DEST_BIN/xxd$EXESUF
+	@if os.path.exists(xxd):
+	  :move {force} $xxd $(xxd).rm
+	  :del $(xxd).rm
+	:copy xxd/xxd$EXESUF $DEST_BIN
+	:do strip $DEST_BIN/xxd$EXESUF
+	:chmod $BINMOD $DEST_BIN/xxd$EXESUF
+	:copy $HELPSOURCE/xxd.1 $DEST_MAN
+	:chmod $MANMOD $DEST_MAN/xxd.1
+# install the runtime tools
+	@try:
+	@  if aap_has(":tree"):
+	      # New method: copy everything and delete CVS and AAPDIR dirs
+	      :copy {recursive} $TOOLSSOURCE/* $DEST_TOOLS
+	      :tree $DEST_TOOLS {dirname = CVS}
+		 :delete {recursive} $name
+	      :tree $DEST_TOOLS {dirname = AAPDIR}
+		 :delete {recursive} $name
+	@except:
+	    # Old method: copy only specific files and directories.
+	    :copy {recursive} $TOOLSSOURCE/README.txt $TOOLSSOURCE/[a-z]* $DEST_TOOLS
+	:chmod $FILEMOD $DEST_TOOLS/*
+# replace the path in some tools
+	:progsearch perlpath perl
+	@if perlpath:
+	    :cat $TOOLSSOURCE/efm_perl.pl |
+		    :eval re.sub("/usr/bin/perl", perlpath, stdin)
+		    >! $DEST_TOOLS/efm_perl.pl
+	@else:
+	    :copy $TOOLSSOURCE/efm_perl.pl $DEST_TOOLS
+
+	:progsearch awkpath nawk gawk awk
+	@if awkpath:
+	    :cat $TOOLSSOURCE/mve.awk |
+		    :eval re.sub("/usr/bin/nawk", awkpath, stdin)
+		    >! $DEST_TOOLS/mve.awk
+	@else:
+	    :copy $TOOLSSOURCE/mve.awk $DEST_TOOLS
+
+	:sys chmod $SCRIPTMOD ``grep -l "^#!" $DEST_TOOLS/*``
+
+# install the language specific files, if they were unpacked
+install-languages {virtual}{force}: languages $DEST_LANG $DEST_KMAP
+	@if _no.MAKEMO:
+	   :sys cd $PODIR; $MAKE prefix=$DESTDIR$prefix \
+		    LOCALEDIR=$DEST_LANG INSTALL_DATA=cp FILEMOD=$FILEMOD install
+	@if os.path.exists(_no.LANGSOURCE):
+	   :print installing language files
+	   :copy $LANGSOURCE/README.txt $LANGSOURCE/*.vim $DEST_LANG
+	   :chmod $FILEMOD $DEST_LANG/*.vim
+	@if os.path.exists(_no.KMAPSOURCE):
+	   :copy $KMAPSOURCE/README.txt $KMAPSOURCE/*.vim $DEST_KMAP
+	   :chmod $FILEMOD $DEST_KMAP/*.vim
+
+# install the icons for KDE, if the directory exists and the icon doesn't.
+ICON48PATH = $DESTDIR$DATADIR/icons/hicolor/48x48/apps
+ICON32PATH = $DESTDIR$DATADIR/icons/locolor/32x32/apps
+ICON16PATH = $DESTDIR$DATADIR/icons/locolor/16x16/apps
+KDEPATH = $HOME/.kde/share/icons
+install-icons {virtual}:
+	gp = $ICON48PATH/gvim.png
+	@if os.path.isdir(_no.ICON48PATH) and not os.path.exists(gp):
+	   :copy $SCRIPTSOURCE/vim48x48.png $gp
+	gp = $ICON32PATH/gvim.png
+	@if os.path.isdir(_no.ICON32PATH) and not os.path.exists(gp):
+	   :copy $SCRIPTSOURCE/vim32x32.png $gp
+	gp = $ICON16PATH/gvim.png
+	@if os.path.isdir(_no.ICON16PATH) and not os.path.exists(gp):
+	   :copy $SCRIPTSOURCE/vim16x16.png $gp
+
+
+$HELPSOURCE/vim.1 $MACROSOURCE $TOOLSSOURCE:
+	@if not os.path.exists(_no.TOOLSSOURCE):
+	    :print Runtime files not found.
+	    :error You need to unpack the runtime archive before running "make install".
+
+# create links from various names to vim.  This is only done when the links
+# (or executables with the same name) don't exist yet.
+installlinks {virtual}: $GUI_TARGETS \
+			$DEST_BIN/$EXTARGET \
+			$DEST_BIN/$VIEWTARGET \
+			$DEST_BIN/$RVIMTARGET \
+			$DEST_BIN/$RVIEWTARGET \
+			$INSTALLVIMDIFF
+
+installglinks {virtual}: $DEST_BIN/$GVIMTARGET \
+			$DEST_BIN/$GVIEWTARGET \
+			$DEST_BIN/$RGVIMTARGET \
+			$DEST_BIN/$RGVIEWTARGET \
+			$DEST_BIN/$EVIMTARGET \
+			$DEST_BIN/$EVIEWTARGET \
+			$INSTALLGVIMDIFF
+
+installvimdiff {virtual}: $DEST_BIN/$VIMDIFFTARGET
+installgvimdiff {virtual}: $DEST_BIN/$GVIMDIFFTARGET
+
+# These dependencies use an empty buildcheck so that they are only done when
+# the target doesn't exist.
+$DEST_BIN/$EXTARGET: {buildcheck = }
+    :sys cd $DEST_BIN; ln -s $VIMTARGET $EXTARGET
+
+$DEST_BIN/$VIEWTARGET: {buildcheck = }
+    :sys cd $DEST_BIN; ln -s $VIMTARGET $VIEWTARGET
+
+$DEST_BIN/$GVIMTARGET: {buildcheck = }
+    :sys cd $DEST_BIN; ln -s $VIMTARGET $GVIMTARGET
+
+$DEST_BIN/$GVIEWTARGET: {buildcheck = }
+    :sys cd $DEST_BIN; ln -s $VIMTARGET $GVIEWTARGET
+
+$DEST_BIN/$RVIMTARGET: {buildcheck = }
+    :sys cd $DEST_BIN; ln -s $VIMTARGET $RVIMTARGET
+
+$DEST_BIN/$RVIEWTARGET: {buildcheck = }
+    :sys cd $DEST_BIN; ln -s $VIMTARGET $RVIEWTARGET
+
+$DEST_BIN/$RGVIMTARGET: {buildcheck = }
+    :sys cd $DEST_BIN; ln -s $VIMTARGET $RGVIMTARGET
+
+$DEST_BIN/$RGVIEWTARGET: {buildcheck = }
+    :sys cd $DEST_BIN; ln -s $VIMTARGET $RGVIEWTARGET
+
+$DEST_BIN/$VIMDIFFTARGET: {buildcheck = }
+    :sys cd $DEST_BIN; ln -s $VIMTARGET $VIMDIFFTARGET
+
+$DEST_BIN/$GVIMDIFFTARGET: {buildcheck = }
+    :sys cd $DEST_BIN; ln -s $VIMTARGET $GVIMDIFFTARGET
+
+$DEST_BIN/$EVIMTARGET: {buildcheck = }
+    :sys cd $DEST_BIN; ln -s $VIMTARGET $EVIMTARGET
+
+$DEST_BIN/$EVIEWTARGET: {buildcheck = }
+    :sys cd $DEST_BIN; ln -s $VIMTARGET $EVIEWTARGET
+
+# create links for the manual pages with various names to vim.	This is only
+# done when the links (or manpages with the same name) don't exist yet.
+installhelplinks {virtual}: $GUI_MAN_TARGETS \
+			$DEST_MAN/$(EXNAME).1 \
+			$DEST_MAN/$(VIEWNAME).1 \
+			$DEST_MAN/$(RVIMNAME).1 \
+			$DEST_MAN/$(RVIEWNAME).1
+
+installghelplinks {virtual}: $DEST_MAN/$(GVIMNAME).1 \
+			$DEST_MAN/$(GVIEWNAME).1 \
+			$DEST_MAN/$(RGVIMNAME).1 \
+			$DEST_MAN/$(RGVIEWNAME).1 \
+			$DEST_MAN/$(GVIMDIFFNAME).1 \
+			$DEST_MAN/$(EVIEWNAME).1
+
+$DEST_MAN/$(EXNAME).1: {buildcheck = }
+    :sys cd $DEST_MAN; ln -s $(VIMNAME).1 $(EXNAME).1
+
+$DEST_MAN/$(VIEWNAME).1: {buildcheck = }
+    :sys cd $DEST_MAN; ln -s $(VIMNAME).1 $(VIEWNAME).1
+
+$DEST_MAN/$(GVIMNAME).1: {buildcheck = }
+    :sys cd $DEST_MAN; ln -s $(VIMNAME).1 $(GVIMNAME).1
+
+$DEST_MAN/$(GVIEWNAME).1: {buildcheck = }
+    :sys cd $DEST_MAN; ln -s $(VIMNAME).1 $(GVIEWNAME).1
+
+$DEST_MAN/$(RVIMNAME).1: {buildcheck = }
+    :sys cd $DEST_MAN; ln -s $(VIMNAME).1 $(RVIMNAME).1
+
+$DEST_MAN/$(RVIEWNAME).1: {buildcheck = }
+    :sys cd $DEST_MAN; ln -s $(VIMNAME).1 $(RVIEWNAME).1
+
+$DEST_MAN/$(RGVIMNAME).1: {buildcheck = }
+    :sys cd $DEST_MAN; ln -s $(VIMNAME).1 $(RGVIMNAME).1
+
+$DEST_MAN/$(RGVIEWNAME).1: {buildcheck = }
+    :sys cd $DEST_MAN; ln -s $(VIMNAME).1 $(RGVIEWNAME).1
+
+$DEST_MAN/$(GVIMDIFFNAME).1: {buildcheck = }
+    :sys cd $DEST_MAN; ln -s $(VIMDIFFNAME).1 $(GVIMDIFFNAME).1
+
+$DEST_MAN/$(EVIEWNAME).1: {buildcheck = }
+    :sys cd $DEST_MAN; ln -s $(EVIMNAME).1 $(EVIEWNAME).1
+
+#
+# U N I N S T A L L
+#
+uninstall {virtual}{force}: uninstall_runtime
+    :del {force} $DEST_BIN/$VIMTARGET
+    :del {force} $DEST_MAN/$(VIMNAME).1 $DEST_MAN/$(VIMNAME)tutor.1
+    :del {force} $DEST_BIN/vimtutor
+    :del {force} $DEST_BIN/xxd$EXESUF $DEST_MAN/xxd.1
+    :del {force} $DEST_BIN/$EXTARGET $DEST_BIN/$VIEWTARGET
+    :del {force} $DEST_BIN/$GVIMTARGET $DEST_BIN/$GVIEWTARGET
+    :del {force} $DEST_BIN/$RVIMTARGET $DEST_BIN/$RVIEWTARGET
+    :del {force} $DEST_BIN/$RGVIMTARGET $DEST_BIN/$RGVIEWTARGET
+    :del {force} $DEST_BIN/$VIMDIFFTARGET $DEST_BIN/$GVIMDIFFTARGET
+    :del {force} $DEST_BIN/$EVIMTARGET $DEST_BIN/$EVIEWTARGET
+    :del {force} $DEST_MAN/$(EXNAME).1 $DEST_MAN/$(VIEWNAME).1
+    :del {force} $DEST_MAN/$(GVIMNAME).1 $DEST_MAN/$(GVIEWNAME).1
+    :del {force} $DEST_MAN/$(RVIMNAME).1 $DEST_MAN/$(RVIEWNAME).1
+    :del {force} $DEST_MAN/$(RGVIMNAME).1 $DEST_MAN/$(RGVIEWNAME).1
+    :del {force} $DEST_MAN/$(VIMDIFFNAME).1 $DEST_MAN/$(GVIMDIFFNAME).1
+    :del {force} $DEST_MAN/$(EVIMNAME).1 $DEST_MAN/$(EVIEWNAME).1
+
+# Note: "deldir" will fail if any files were added after "make install", that
+# is intentionally: Keep files the user added.
+uninstall_runtime {virtual}{force}:
+    :del {force} $DEST_HELP/*.txt $DEST_HELP/tags $DEST_HELP/*.pl
+    :del {force} $SYS_MENU_FILE $SYS_SYNMENU_FILE $SYS_DELMENU_FILE
+    :del {force} $SYS_BUGR_FILE $EVIM_FILE $MSWIN_FILE
+    :del {force} $DEST_SCRIPT/gvimrc_example.vim $DEST_SCRIPT/vimrc_example.vim
+    :del {force} $SYS_FILETYPE_FILE $SYS_FTOFF_FILE $SYS_SCRIPTS_FILE
+    :del {force} $SYS_INDOFF_FILE $SYS_INDENT_FILE
+    :del {force} $SYS_FTPLUGOF_FILE $SYS_FTPLUGIN_FILE
+    :del {force} $SYS_OPTWIN_FILE
+    :del {force} $DEST_COL/*.vim $DEST_COL/README.txt
+    :del {force} $DEST_SYN/*.vim $DEST_SYN/README.txt
+    :del {force} $DEST_IND/*.vim $DEST_IND/README.txt
+    :del {force} $DEST_PRINT/*.ps
+    :del {force}{recursive} $DEST_MACRO
+    :del {force}{recursive} $DEST_TUTOR
+    :del {force}{recursive} $DEST_TOOLS
+    :del {force}{recursive} $DEST_LANG
+    :del {force}{recursive} $DEST_KMAP
+    :del {force}{recursive} $DEST_COMP
+    :deldir {force} $DEST_HELP $DEST_COL $DEST_SYN $DEST_IND
+    :del {force}{recursive} $DEST_FTP/*.vim $DEST_FTP/README.txt
+    :del {force} $DEST_PLUG/*.vim $DEST_PLUG/README.txt
+    :deldir {force} $DEST_FTP $DEST_PLUG $DEST_PRINT $DEST_RT
+#	This will fail when other Vim versions are installed, no worries.
+    @try:
+	:deldir $DEST_VIM
+    @except:
+	:print Cannot delete $DEST_VIM
+
+
+# vim: sts=4 sw=4 :

@@ -1,0 +1,63 @@
+Test for "*Cmd" autocommands
+
+STARTTEST
+:so small.vim
+:/^start/,$w! Xxx		" write lines below to Xxx
+:au BufReadCmd testA 0r Xxx|$del
+:e testA			" will read text of Xxd instead
+:au BufWriteCmd testA call append(line("$"), "write")
+:w				" will append a line to the file
+:r testA			" should not read anything
+:				" now we have:
+:				" 1	start of Xxx
+:				" 2		test40
+:				" 3	end of Xxx
+:				" 4	write
+:au FileReadCmd testB '[r Xxx
+:2r testB			" will read Xxx below line 2 instead
+:				" 1	start of Xxx
+:				" 2		test40
+:				" 3	start of Xxx
+:				" 4		test40
+:				" 5	end of Xxx
+:				" 6	end of Xxx
+:				" 7	write
+:au FileWriteCmd testC '[,']copy $
+4GA1
+:4,5w testC			" will copy lines 4 and 5 to the end
+:r testC			" should not read anything
+:				" 1	start of Xxx
+:				" 2		test40
+:				" 3	start of Xxx
+:				" 4		test401
+:				" 5	end of Xxx
+:				" 6	end of Xxx
+:				" 7	write
+:				" 8		test401
+:				" 9	end of Xxx
+:au FILEAppendCmd testD '[,']w! test.out
+:w >>testD			" will write all lines to test.out
+:$r testD			" should not read anything
+:$w >>test.out			" append "end of Xxx" to test.out
+:au BufReadCmd testE 0r test.out|$del
+:sp testE			" split window with test.out
+5Goasdf:"
+:au BufWriteCmd testE w! test.out
+:wall				" will write other window to test.out
+:				" 1	start of Xxx
+:				" 2		test40
+:				" 3	start of Xxx
+:				" 4		test401
+:				" 5	end of Xxx
+:				" 6	asdf
+:				" 7	end of Xxx
+:				" 8	write
+:				" 9		test401
+:				" 10	end of Xxx
+:				" 11	end of Xxx
+:qa!
+ENDTEST
+
+start of Xxx
+	test40
+end of Xxx

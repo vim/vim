@@ -1,0 +1,61 @@
+#! /bin/sh
+
+# Start Vim on a copy of the tutor file.
+
+# Usage: vimtutor [xx], where xx is a language code like "es" or "nl".
+# When an argument is given, it tries loading that tutor.
+# When this fails or no argument was given, it tries using 'v:lang'
+# When that also fails, it uses the English version.
+
+xx=$1
+export xx
+
+# We need a temp file for the copy.  First try using a standard command.
+tmp="${TMPDIR-/tmp}"
+TUTORCOPY=`mktemp $tmp/tutorXXXXXX || tempfile -p tutor || echo none`
+
+# If the standard commands failed then create a directory to put the copy in.
+# That is a secure way to make a temp file.
+if test "$TUTORCOPY" = none; then
+	tmpdir=$tmp/vimtutor$$
+	OLD_UMASK=`umask`
+	umask 077
+	getout=no
+	mkdir $tmpdir || getout=yes
+	umask $OLD_UMASK
+	if test $getout = yes; then
+		echo "Could not create directory for tutor copy, exiting."
+		exit 1
+	fi
+	TUTORCOPY=$tmpdir/tutorcopy
+	touch $TUTORCOPY
+	TODELETE=$tmpdir
+else
+	TODELETE=$TUTORCOPY
+fi
+
+export TUTORCOPY
+
+# remove the copy of the tutor on exit
+trap "rm -rf $TODELETE" 0 1 2 3 9 11 13 15
+
+# Vim could be called "vim" or "vi".  Also check for "vim6", for people who
+# have Vim 5.x installed as "vim" and Vim 6.0 as "vim6".
+testvim=`which vim6 2>/dev/null`
+if test -f "$testvim"; then
+	VIM=vim6
+else
+	testvim=`which vim`
+	if test -f "$testvim"; then
+		VIM=vim
+	else
+		VIM=vi
+	fi
+fi
+
+# Use Vim to copy the tutor, it knows the value of $VIMRUNTIME
+# The script tutor.vim tells Vim which file to copy
+$VIM -u NONE -c 'so $VIMRUNTIME/tutor/tutor.vim'
+
+# Start vim without any .vimrc, set 'nocompatible'
+$VIM -u NONE -c "set nocp" $TUTORCOPY

@@ -1,0 +1,23 @@
+Tests for "r<Tab>" with 'smarttab' and 'expandtab' set/not set.
+
+STARTTEST
+:set smarttab expandtab ts=8 sw=4
+/some
+r	:set noexpandtab
+/other
+r	
+:" Test replacing with Tabs and then backspacing to undo it
+0wR			
+:" Test replacing with Tabs
+0wR			
+:?^start?,$w! test.out
+:qa!
+ENDTEST
+
+start text
+		some test text
+test text
+		other test text
+    a cde
+    f ghi
+test text

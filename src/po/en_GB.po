@@ -1,0 +1,48 @@
+# UK English Translation for Vim		vim:set foldmethod=marker:
+#
+# Do ":help uganda"  in Vim to read copying and usage conditions.
+# Do ":help credits" in Vim to see a list of people who contributed.
+#
+# FIRST AUTHOR Mike Williams <mrw@eandem.co.uk>, 2003.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Vim(UK English)\n"
+"POT-Creation-Date: 2003-02-23 10:27+0000\n"
+"PO-Revision-Date: 2003-02-25 11:05+0000\n"
+"Last-Translator: Mike Williams <mrw@eandem.co.uk>\n"
+"Language-Team: Mike Williams <mrw@eandem.co.uk>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=ISO_8859-1\n"
+"Content-Transfer-Encoding: 7bit\n"
+
+#, c-format
+msgid "E185: Cannot find color scheme %s"
+msgstr "E185: Cannot find colour scheme %s"
+
+#, c-format
+msgid "E254: Cannot allocate color %s"
+msgstr "E254: Cannot allocate colour %s"
+
+msgid "Vim E458: Cannot allocate colormap entry, some colors may be incorrect"
+msgstr ""
+"Vim E458: Cannot allocate colourmap entry, some colours may be incorrect"
+
+msgid "-background <color>\tUse <color> for the background (also: -bg)"
+msgstr "-background <colour>\tUse <colour> for the background (also: -bg)"
+
+msgid "-foreground <color>\tUse <color> for normal text (also: -fg)"
+msgstr "-foreground <colour>\tUse <colour> for normal text (also: -fg)"
+
+msgid "Messages maintainer: Bram Moolenaar <Bram@vim.org>"
+msgstr "Messages maintainer: Mike Williams <mrw@eandem.co.uk>"
+
+msgid "E419: FG color unknown"
+msgstr "E419: FG colour unknown"
+
+msgid "E420: BG color unknown"
+msgstr "E420: BG colour unknown"
+
+#, c-format
+msgid "E421: Color name or number not recognized: %s"
+msgstr "E421: Colour name or number not recognised: %s"

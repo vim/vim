@@ -1,0 +1,199 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Englisch (USA) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "#ifdef _WIN32\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#endif\r\n"
+    "#include ""afxres.rc""         // Standard components\r\n"
+    "#endif\r\n"
+    "1 TYPELIB ""VisVim.tlb""\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDR_TOOLBAR_MEDIUM      BITMAP  MOVEABLE PURE   "res\\ToolbarM.bmp"
+IDR_TOOLBAR_LARGE       BITMAP  MOVEABLE PURE   "res\\ToolbarL.bmp"
+
+#ifndef _MAC
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,1,0,1
+ PRODUCTVERSION 1,1,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x2L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "CompanyName", "\0"
+            VALUE "FileDescription", "VisVim DLL\0"
+            VALUE "FileVersion", "1, 1, 0, 1\0"
+            VALUE "InternalName", "VisVim\0"
+            VALUE "LegalCopyright", "Copyright (C) 1998\0"
+            VALUE "OriginalFilename", "VisVim.DLL\0"
+            VALUE "ProductName", "VisVim Dynamic Link Library\0"
+            VALUE "ProductVersion", "1, 1, 0, 1\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+#endif    // !_MAC
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ADDINMAIN DIALOG DISCARDABLE  0, 0, 178, 124
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Vim Add-In 1.4"
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "&Open file in DevStudio editor simultaneously",
+                    IDC_DEVSTUDIO_EDITOR,"Button",BS_AUTOCHECKBOX | WS_GROUP | 
+                    WS_TABSTOP,7,7,153,10
+    GROUPBOX        "Current directory",IDC_STATIC,7,35,164,58,WS_GROUP
+    CONTROL         "Set to &source file path",IDC_CD_SOURCE_PATH,"Button",
+                    BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,17,49,85,10
+    CONTROL         "Set to &parent directory of source file path",
+                    IDC_CD_SOURCE_PARENT,"Button",BS_AUTORADIOBUTTON,17,63,
+                    143,10
+    CONTROL         "Do &not change",IDC_CD_NONE,"Button",BS_AUTORADIOBUTTON,
+                    17,78,63,10
+    DEFPUSHBUTTON   "&Ok",IDOK,7,102,74,14,WS_GROUP
+    PUSHBUTTON      "&Cancel",IDCANCEL,97,102,74,14,WS_GROUP
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_ADDINMAIN, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 171
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 117
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_VISVIM_LONGNAME     "Vim Developer Studio Add-In"
+    IDS_VISVIM_DESCRIPTION  "Allows integration of Vim as the text editor in Developer Studio."
+    IDS_CMD_DIALOG          "\nVim Add-In Dialog\nDisplays the options dialog box of the Vim Add-In\nVim Add-In Dialog"
+    IDS_CMD_ENABLE          "\nEnable Vim Add-In\nEnables Vim as Visual Studio editor\nEnable Vim Add-In"
+    IDS_CMD_DISABLE         "\nDisable Vim Add-In\nDisables Vim as Visual Studio editor\nDisable Vim Add-In"
+    IDS_CMD_TOGGLE          "\nToggle Vim Add-In State\nToggles the enable state of the Vim Add-In\nToggle Vim Add-In State"
+    IDS_CMD_LOAD            "\nVim Add-In Load Document\nLoads the current document in Vim\nVim Add-In Load Document"
+END
+
+#endif    // Englisch (USA) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#endif
+#include "afxres.rc"         // Standard components
+#endif
+1 TYPELIB "VisVim.tlb"
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

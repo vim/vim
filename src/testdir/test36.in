@@ -1,0 +1,40 @@
+Test character classes in regexp
+
+STARTTEST
+/^start-here
+j:s/\d//g
+j:s/\D//g
+j:s/\o//g
+j:s/\O//g
+j:s/\x//g
+j:s/\X//g
+j:s/\w//g
+j:s/\W//g
+j:s/\h//g
+j:s/\H//g
+j:s/\a//g
+j:s/\A//g
+j:s/\l//g
+j:s/\L//g
+j:s/\u//g
+j:s/\U//g
+:/^start-here/+1,$wq! test.out
+ENDTEST
+
+start-here
+	 !"#$%&'()#+'-./0123456789:;<=>?@ABCDEFGHIXYZ[\]^_`abcdefghiwxyz{|}~ÄÇêõ¶±º«”È
+	 !"#$%&'()#+'-./0123456789:;<=>?@ABCDEFGHIXYZ[\]^_`abcdefghiwxyz{|}~ÄÇêõ¶±º«”È
+	 !"#$%&'()#+'-./0123456789:;<=>?@ABCDEFGHIXYZ[\]^_`abcdefghiwxyz{|}~ÄÇêõ¶±º«”È
+	 !"#$%&'()#+'-./0123456789:;<=>?@ABCDEFGHIXYZ[\]^_`abcdefghiwxyz{|}~ÄÇêõ¶±º«”È
+	 !"#$%&'()#+'-./0123456789:;<=>?@ABCDEFGHIXYZ[\]^_`abcdefghiwxyz{|}~ÄÇêõ¶±º«”È
+	 !"#$%&'()#+'-./0123456789:;<=>?@ABCDEFGHIXYZ[\]^_`abcdefghiwxyz{|}~ÄÇêõ¶±º«”È
+	 !"#$%&'()#+'-./0123456789:;<=>?@ABCDEFGHIXYZ[\]^_`abcdefghiwxyz{|}~ÄÇêõ¶±º«”È
+	 !"#$%&'()#+'-./0123456789:;<=>?@ABCDEFGHIXYZ[\]^_`abcdefghiwxyz{|}~ÄÇêõ¶±º«”È
+	 !"#$%&'()#+'-./0123456789:;<=>?@ABCDEFGHIXYZ[\]^_`abcdefghiwxyz{|}~ÄÇêõ¶±º«”È
+	 !"#$%&'()#+'-./0123456789:;<=>?@ABCDEFGHIXYZ[\]^_`abcdefghiwxyz{|}~ÄÇêõ¶±º«”È
+	 !"#$%&'()#+'-./0123456789:;<=>?@ABCDEFGHIXYZ[\]^_`abcdefghiwxyz{|}~ÄÇêõ¶±º«”È
+	 !"#$%&'()#+'-./0123456789:;<=>?@ABCDEFGHIXYZ[\]^_`abcdefghiwxyz{|}~ÄÇêõ¶±º«”È
+	 !"#$%&'()#+'-./0123456789:;<=>?@ABCDEFGHIXYZ[\]^_`abcdefghiwxyz{|}~ÄÇêõ¶±º«”È
+	 !"#$%&'()#+'-./0123456789:;<=>?@ABCDEFGHIXYZ[\]^_`abcdefghiwxyz{|}~ÄÇêõ¶±º«”È
+	 !"#$%&'()#+'-./0123456789:;<=>?@ABCDEFGHIXYZ[\]^_`abcdefghiwxyz{|}~ÄÇêõ¶±º«”È
+	 !"#$%&'()#+'-./0123456789:;<=>?@ABCDEFGHIXYZ[\]^_`abcdefghiwxyz{|}~ÄÇêõ¶±º«”È

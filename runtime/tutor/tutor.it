@@ -1,0 +1,805 @@
+===============================================================================
+=    Benvenuto  alla   G u i d a    all'Editor   V I M   -    Versione 1.5    =
+===============================================================================
+
+     Vim è un Editor molto potente ed ha parecchi comandi, troppi per
+     spiegarli tutti in una guida come questa.  Questa guida serve a
+     descrivere quei comandi che ti permettono di usare facilmente
+     Vim come Editor di uso generale.
+
+     Il tempo necessario per completare la guida è circa 25-30 minuti,
+     a seconda di quanto tempo dedichi alla sperimentazione.
+
+     I comandi nelle lezioni modificano questo testo. Fai una copia di questo
+     file per esercitarti (se hai usato "vimtutor", stai già usando una copia).
+
+     E' importante non scordare che questa guida vuole insegnare tramite
+     l'uso. Questo vuol dire che devi eseguire i comandi per impararli
+     davvero. Se leggi il testo e basta, dimenticherai presto i comandi!
+
+     Adesso, assicurati che il tasto BLOCCA-MAIUSCOLO non sia schiacciato
+     e premi il tasto    j    tanto da muovere il cursore fino a che la
+     Lezione 1.1 riempia completamente lo schermo.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			Lezione 1.1:  MOVIMENTI DEL CURSORE
+
+
+   ** Per muovere il cursore, premi i tasti h,j,k,l come indicato. **
+	     ^
+	     k		    NOTA:  Il tasto h è a sinistra e muove a sinistra.
+       < h	 l >		   Il tasto l è a destra e muove a destra.
+	     j			   Il tasto j ricorda una freccia in giù.
+	     v
+  1. Muovi il cursore sullo schermo finché non ti senti a tuo agio.
+
+  2. Tieni schiacciato il tasto "giù" (j) finché non si ripete il movimento.
+---> Adesso sai come arrivare fino alla lezione successiva.
+
+  3. Usando il tasto "giù" spostati alla Lezione 1.2.
+
+NOTA: Quando non sei sicuro del tasto che hai premuto, premi <ESC> per andare
+      in Modalità Normale [Normal Mode]. Poi ri-immetti il comando che volevi.
+
+NOTA: I tasti con le frecce fanno lo stesso servizio. Ma usando hjkl riesci
+      a muoverti molto più rapidamente, una volta presa l'abitudine.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		     Lezione 1.2: ENTRARE E USCIRE DA VIM
+
+
+  !! NOTA: Prima di eseguire quanto richiesto, leggi la Lezione per intero!!
+
+  1. Premi il tasto <ESC> (per assicurarti di essere in Modalità Normale).
+
+  2. Batti:			:q! <INVIO>.
+
+---> Così esci dall'Editor SENZA SALVARE alcuna modifica fatta.
+     Se vuoi uscire SALVANDO le modifiche batti:
+				:wq <INVIO>
+
+  3. Quando vedi il PROMPT della Shell, batti il comando con cui sei arrivato
+     qui.  Potrebbe essere:	vimtutor <INVIO>
+     Normalmente  useresti:	vim tutor <INVIO>
+
+---> 'vim' indica l'Editor vim, 'tutor' è il nome del file che tu vuoi aprire.
+
+  4. Se hai memorizzato questi comandi e ti senti pronto, esegui i passi
+     da 1 a 3 per uscire e rientrare nell'Editor.  Poi muovi il cursore in giù
+     fino alla Lezione 1.3.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		     Lezione 1.3: EDITING DI TESTI - CANCELLAZIONE
+
+
+** In Modalità Normale premi  x  per cancellare il carattere sotto al cursore **
+
+  1. Muovi il cursore alla linea più sotto, indicata da --->
+
+  2. Per correggere errori, muovi il cursore fino a posizionarlo sopra il
+     carattere da cancellare.
+
+  3. Premi il tasto	x     per cancellare il carattere sbagliato.
+
+  4. Ripeti i passi da 2 a 4 finché la frase è corretta.
+
+---> La mmucca saltòò finnoo allaa lunnna.
+
+  5. Ora che la linea è corretta, vai alla Lezione 1.4
+
+NOTA: Mentre segui questa guida, non cercare di imparare a memoria,
+				 ma impara facendo pratica.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		     Lezione 1.4: EDITING DI TESTI - INSERIMENTO
+
+
+       ** Quando sei in Modalità Normale premi  i  per inserire testo. **
+
+  1. Muovi il cursore alla prima linea qui sotto, indicata da --->
+
+  2. Per rendere la prima linea uguale alla seconda, muovi il cursore sopra
+     il primo carattere DOPO la posizione in cui il testo va inserito.
+
+  3. Premi  i  e batti le aggiunte opportune.
+
+  4. Quando un errore è corretto, premi <ESC> per tornare in Modalità Normale.
+     Ripeti i passi da 2 a 4 fino a completare la correzione della frase.
+
+---> C'era del tsto mncnt questa .
+---> C'era del testo mancante da questa linea.
+
+  5. Quando sei a tuo agio nell'inserimento di testo vai al sommario sotto.
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			       Lezione 1 SOMMARIO
+
+
+  1. Il cursore si muove usando i tasti con le frecce o i tasti hjkl.
+	 h (sinistra)	j (giù)       k (su)	    l (destra)
+
+  2. Per eseguire Vim (dal prompt %) batti:  vim NOMEFILE <INVIO>
+
+  3. Per uscire da Vim batti: <ESC> :q! <INVIO> per uscire senza salvare.
+		oppure batti: <ESC> :wq <INVIO> per uscire salvando modifiche.
+
+  4. Per cancellare il carattere sotto al cursore in Modalità Normale batti: x
+
+  5. Per inserire testo subito prima del cursore in Modalità Normale batti:
+	 i     batti del testo	<ESC>
+
+NOTA: premendo <ESC> ritornerai in Modalità Normale o annullerai
+      un comando errato che puoi aver inserito in parte.
+
+Ora continua con la Lezione 2.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			Lezione 2.1: COMANDI DI CANCELLAZIONE
+
+
+	  ** Batti  dw  per cancellare fino a fine parola. **
+
+  1. Premi  <ESC>  per accertarti di essere in Modalità Normale.
+
+  2. Muovi il cursore fino alla linea qui sotto, indicata da --->
+
+  3. Muovi il cursore all'inizio di una parola che vuoi cancellare.
+
+  4. Batti   dw   per cancellare la parola.
+
+NOTA: Le lettere  dw  saranno visibili sull'ultima linea dello schermo mentre le
+      batti. Se hai battuto qualcosa di sbagliato, premi  <ESC>  e ricomincia.
+
+---> Ci sono le alcune parole gioia che non c'entrano carta in questa frase.
+
+  5. Ripeti i passi 3 e 4 finché la frase è corretta, poi vai alla Lezione 2.2.
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		      Lezione 2.2: ALTRI COMANDI DI CANCELLAZIONE
+
+
+	   ** Batti  d$	per cancellare fino a fine linea. **
+
+  1. Premi  <ESC>  per accertarti di essere in Modalità Normale.
+
+  2. Muovi il cursore fino alla linea qui sotto, indicata da --->
+
+  3. Muovi il cursore alla fine della linea corretta (DOPO il primo . ).
+
+  4. Batti    d$    per cancellare fino a fine linea.
+
+---> Qualcuno ha battuto la fine di questa linea due volte. linea due volte.
+
+
+  5. Vai alla Lezione 2.3 per capire il funzionamento di questo comando.
+
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		     Lezione 2.3: COMANDI E OGGETTI
+
+
+  Il formato del comando  d  [delete] cancella è il seguente:
+
+	 [numero]   d	oggetto	    OPPURE     d [numero]   oggetto
+  Dove:
+    numero - indica quante volte va eseguito il comando (se omesso, vale 1).
+    d - è il comando di cancellazione.
+    oggetto - indica dove il comando va applicato (lista qui sotto).
+
+  Breve lista di oggetti:
+    w - dal cursore alla fine della parola, incluso lo spazio.
+    e - dal cursore alla fine della parola, ESCLUSO lo spazio.
+    $ - dal cursore fino a fine linea.
+
+NOTA: Per amanti dell'avventura: premendo solo il tasto che indica l'oggetto
+      mentre siete in Modalità Normale, senza dare un comando, sposta
+      il cursore come specificato nella "lista di oggetti" qui sopra.
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		Lezione 2.4: UNA ECCEZIONE A 'COMANDO-OGGETTO'
+
+	    ** Batti	 dd   per cancellare un'intera linea. **
+
+  Per la frequenza con cui capita di cancellare linee intere, chi
+  ha progettato Vi ha deciso che sarebbe stato più semplice
+  battere due d consecutive per cancellare una linea.
+
+  1. Muovi il cursore alla linea 2) nella frase qui sotto.
+  2. Batti  dd  per cancellare la linea.
+  3. Ora spostati alla linea 4).
+  4. Batti   2dd   (ricorda:  numero-comando-oggetto) per cancellare due linee.
+
+      1)  Le rose sono rosse,
+      2)  Nel fango ci si diverte,
+      3)  Le viole sono blu,
+      4)  Io ho un'automobile,
+      5)  Gli orologi segnano il tempo,
+      6)  Il miele è dolce,
+      7)  E lo sei anche tu.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			 Lezione 2.5: IL COMANDO UNDO [ANNULLA]
+
+    ** Premi  u		per annullare gli ultimi comandi eseguiti.  **
+    ** Premi  U		per annullare le modifiche all'ultima linea.   **
+
+  1. Muovi il cursore fino alla linea qui sotto, indicata da --->
+     e posizionati sul primo errore.
+  2. Batti  x  per cancellare il primo carattere sbagliato.
+  3. Adesso batti  u  per annullare l'ultimo comando eseguito.
+  4. Ora invece, correggi tutti gli errori sulla linea usando il comando  x .
+  5. Adesso batti una U Maiuscola per riportare la linea al suo stato originale.
+  6. Adesso batti  u  più volte per annullare la  U  e i comandi precedenti.
+  7. Adesso batti più volte CTRL-r (tenendo il tasto CTRL schiacciato
+     mentre batti r) per rifare i comandi (annullare l'annullamento).
+
+---> Correeggi gli errori ssu quuesta linea e riimpiazzali coon "undo".
+
+  8. Questi comandi sono molto utili. Ora spostati al Sommario della Lezione 2.
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			       Lezione 2 SOMMARIO
+
+
+  1. Per cancellare dal cursore fino alla fine di una parola batti:    dw
+
+  2. Per cancellare dal cursore fino alla fine della linea   batti:    d$
+
+  3. Per cancellare un'intera linea batti:    dd
+
+  4. Il formato per un comando in Modalità Normale è:
+
+       [numero]  comando  oggetto   OPPURE   comando  [numero]  oggetto
+     Dove:
+       numero - indica quante volte va eseguito il comando (se omesso, vale 1).
+       comando - è il comando da eseguire, ad es.  d  per [delete] cancellare.
+       oggetto - indica dove il comando va applicato, ad es.  w [word] parola,
+		$ (fino alla fine della linea), etc.
+
+  5. Per annullare i comandi precedenti,	  batti:	  u (u minuscola)
+     Per annullare tutte le modifiche a una linea batti:    U (U Maiuscola)
+     Per annullare l'annullamento [gli "undo"]	      batti:	  CTRL-r
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			 Lezione 3.1: IL COMANDO PUT [METTI, PONI]
+
+
+   ** Batti  p  per porre [put] l'ultima cancellazione dopo il cursore. **
+
+  1. Muovi il cursore alla prima linea fra quelle qui in basso.
+
+  2. Batti  dd  per cancellare la linea e depositarla nel buffer di Vim.
+
+  3. Muovi il cursore fino alla linea SOPRA quella dove andrebbe spostata
+     la linea che hai appena cancellato.
+
+  4. Mentre sei in Modalità Normale, batti  p  per reinserire la linea.
+
+  5. Ripeti i passi da 2 a 4 per mettere tutte le linee nel corretto ordine.
+
+     d)  Riesci a impararla tu?
+     b)  Le viole sono blu,
+     c)  La saggezza si impara,
+     a)  Le rose sono rosse,
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		  Lezione 3.2: IL COMANDO REPLACE [RIMPIAZZA]
+
+
+  ** Batti  r  e una lettera per rimpiazzare il carattere sotto al cursore. **
+
+  1. Muovi il cursore alla prima linea qui sotto, indicata da --->
+
+  2. Muovi il cursore fino a posizionarlo sopra il primo errore.
+
+  3. Batti   r	e poi il carattere che dovrebbe rimpiazzare l'errore.
+
+  4. Ripeti i passi 2 e 3 finché la prima linea è corretta.
+
+--->  Immattendo quetta libea, qualcuno ho predato alcuni tosti sballiati!
+--->  Immettendo questa linea, qualcuno ha premuto alcuni tasti sbagliati!
+
+  5. Ora passa alla Lezione 3.2.
+
+NOTA: Ricordati che dovresti imparare con la pratica, non solo leggendo.
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		Lezione 3.3: IL COMANDO CHANGE [CAMBIA]
+
+
+     ** Per cambiare una parola in tutto o in parte, batti  cw . **
+
+  1. Muovi il cursore alla prima linea qui sotto, indicata da --->
+
+  2. Posiziona il cursore alla u in lubw.
+
+  3. Batti  cw  e la parola corretta (in questo caso, batti  inea    ).
+
+  4. Premi <ESC> e vai sull'errore seguente (sul primo carattere da modificare).
+
+  5. Ripeti i passi 3 e 4 finché la prima frase è uguale alla seconda.
+
+---> Questa lubw ha alcune pptfd da asdert usgfk il comando CHANGE.
+---> Questa linea ha alcune parole da cambiare usando il comando CHANGE.
+
+Nota che  cw  non solo rimpiazza la parola, ma ti mette anche in Modalità
+Inserimento [Insert Mode]
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		       Lezione 3.4: ALTRI CAMBIAMENTI USANDO c
+
+
+** Il comando c [CHANGE] agisce sugli stessi oggetti del comando d [DELETE] **
+
+  1. Il comando CHANGE si comporta come DELETE.  Il formato è:
+
+       [numero]   c   oggetto	 OPPURE    c	[numero]   oggetto
+
+  2. Gli oggetti sono gli stessi, ad es. w (word, parola), $ (fine linea), etc.
+
+  3. Muovi il cursore alla prima linea qui sotto, indicata da --->
+
+  4. Posiziona il cursore al primo errore.
+
+  5. Batti  c$  per modificare il resto della linea secondo il modello della
+     linea successiva, e quando hai finito premi <ESC>
+
+---> La fine di questa linea deve essere aiutata a divenire come la seguente.
+---> La fine di questa linea deve essere corretta usando il comando  c$  .
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			       Lezione 3 SOMMARIO
+
+
+  1. Per reinserire testo che hai appena cancellato, batti   p   .  Questo
+     inserisce [pone] il testo cancellato DOPO il cursore (se era stata tolta
+     una linea intera, questa verrà messa nella linea SOTTO il cursore).
+
+  2. Per rimpiazzare il carattere sotto il cursore, batti   r   e poi il
+     carattere sostitutivo.
+
+  3. Il comando CHANGE ti permette di cambiare l'oggetto specificato dal
+     cursore fino alla fine dell'oggetto. Ad es. Batti  cw  per cambiare dal
+     cursore alla fine della parola,  c$  per cambiare fino a fine linea.
+
+  4. Il formato del comando CHANGE è:
+
+	 [numero]   c	oggetto	      OPPURE	c   [numero]   oggetto
+
+Ora vai alla prossima Lezione.
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		     Lezione 4.1: POSIZIONAMENTE E SITUAZIONE FILE
+
+
+  ** Batti CTRL-g per vedere a che punto sei nel file e la situazione del file.
+     Batti [numero] G  per raggiungere il numero della linea [numero] nel file.
+     Batti [numero] %  per posizionarti alla percentuale [numero] nel file **
+
+  NOTA: Leggi l'intera Lezione prima di eseguire un qualunque comando!!
+
+  1. Tieni premuto il tasto CTRL e batti  g  .  Una linea di situazione
+     sarà visibile in fondo alla pagina con il NOME FILE e la linea
+     in cui sei posizionato.  Ricordati il numero della linea per il Passo 3.
+
+  2. Premi  G  [G Maiuscolo] per posizionarti alla fine del file.
+
+  3. Batti il numero della linea in cui ti trovavi e poi  G  .  Questo ti
+     riporterà fino alla linea in cui ti trovavi quando avevi battuto CTRL-g.
+     (Mentre batti i numeri, questi NON saranno visualizzati sullo schermo.)
+
+  4. Se ti senti sicuro nel farlo, esegui i passi da 1 a 3.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		Lezione 4.2: IL COMANDO SEARCH [RICERCA]
+
+
+     ** Batti  /  seguito da una frase per ricercare quella frase. **
+
+  1. in Modalità Normale batti il carattere  /  . Nota che la "/" e il cursore
+     sono visibili in fondo dello schermo come quando si usa il comando  : .
+
+  2. Adesso batti 'errroore' <INVIO>. Questa è la parola che vuoi ricercare.
+
+  3. Per ricercare ancora la stessa frase, batti soltanto       n  .
+     Per ricercare la stessa frase in direzione opposta, batti  N  .
+
+  4. Se vuoi ricercare una frase in direzione opposta (in su), usa il
+     comando   ?   invece che   /  .
+
+---> Quando la ricerca arriva a fine file, ricomincia dall'inizio del file.
+
+  "errroore" non è il modo giusto di digitare errore; errroore è un errore.
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		   Lezione 4.3: RICERCA DI PARENTESI CORRISPONDENTI
+
+
+	 ** Batti  %  per trovare una  ),], o }  corripondenti. **
+
+  1. Posiziona il cursore su un (, [, or { nella linea, indicata da --->
+
+  2. Adesso batti il carattere   %  .
+
+  3. Il cursore dovrebbe ora trovarsi sulla parentesi corrispondente.
+
+  4. Batti  %  per muovere il cursore alla parentesi di prima (corrispondente)
+
+---> Questa ( è una linea di test con (, [ ] e { } al suo interno. ))
+
+NOTA: Questo è molto utile nel "debug" di un programma con parentesi errate!
+
+
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		      Lezione 4.4: UN MODO PER CORREGGERE GLI ERRORI
+
+
+  ** Batti  :s/vecchio/nuovo/g  per sostituire 'nuovo' a 'vecchio'. **
+
+  1. Muovi il cursore fino alla linea qui sotto, indicata da --->.
+
+  2. Batti  :s/lla/la <INVIO> .  Nota che questo comando cambia solo
+     LA PRIMA occorrenza di "lla" sulla linea.
+
+  3. Adesso batti  :s/lla/la/g  dove "g" sta per "globalmente" sulla linea.
+     Questo cambia TUTTE le occorrenze di "lla" sulla linea.
+
+---> lla stagione migliore per lla fioritura è lla primavera.
+
+  4. Per cambiare ogni ricorrenza di una stringa di caratteri tra due linee,
+     batti :#,#s/vecchio/nuovo/g  dove #,# sono i numeri delle due linee.
+     Batti :%s/vecchio/nuovo/g    per cambiare ogni occorrenza nell'intero file.
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			       Lezione 4 SOMMARIO
+
+
+1. CTRL-g  visualizza a che punto sei nel file e la situazione del file.
+   G       [G Maiuscolo] ti porta alla fine del file. Un numero di linea
+   seguito da  G  [G Maiuscolo] ti porta a quel numero di linea nel file.
+
+2. Battendo  /  seguito da una frase ricerca IN AVANTI quella frase.
+   Battendo  ?  seguito da una frase ricerca ALL'INDIETRO quella frase.
+   DOPO una ricerca batti    n   per trovare la prossima occorrenza nella
+   stessa direzione, oppure  N   per cercare in direzione opposta.
+
+3. Battendo  %  mentre il cursore si trova su  (,),[,],{, oppure }
+   ti posizioni sulla corrispondente parentesi.
+
+4. Per sostituire "nuovo" al primo "vecchio" in 1 linea batti :s/vecchio/nuovo
+   Per sostituire "nuovo" ad ogni  "vecchio" in 1 linea batti :s/vecchio/nuovo/g
+   Per sostituire frasi tra 2 numeri di linea [#]  batti   :#,#s/vecchio/nuovo/g
+   Per sostituire tutte le occorrenze nel file batti	     :%s/vecchio/nuovo/g
+   Per chiedere conferma ogni volta aggiungi 'c'	    :%s/vecchio/nuovo/gc
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		Lezione 5.1: COME ESEGUIRE UN COMANDO ESTERNO
+
+
+   ** Batti  :!	seguito da un comando esterno per eseguire il comando. **
+
+  1. Batti il comando   :   Per posizionare il cursore in fondo allo schermo.
+     Ciò ti permette di immettere un comando.
+
+  2. Adesso batti il carattere  !  (punto esclamativo).  Ciò ti permette di
+     eseguire qualsiasi comando esterno che si può eseguire nella "shell".
+
+  3. Ad esempio batti   ls   dopo il ! e poi premi <INVIO>.  Questo
+     visualizza una lista della tua directory, proprio come se fossi in una
+     "shell". Usa   :!dir  se  ls  non funziona.   [Unix:ls  MSDOS:dir]
+
+---> NOTA:  E' possibile in questo modo eseguire un comando a piacere.
+
+---> NOTA:  Tutti i comandi  :  devono essere terminati premendo <INVIO>
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		Lezione 5.2: ANCORA SULLA SCRITTURA DEI FILES
+
+
+     ** Per salvare le modifiche apportate a un file batti :w NOMEFILE. **
+
+  1. Batti  :!dir  or  :!ls  per procurarti una lista della tua directory.
+     Già sai che devi premere <INVIO> dopo aver scritto il comando.
+
+  2. Scegli un NOMEFILE che ancora non esista, ad es. TEST   .
+
+  3. Adesso batti:	 :w TEST   (dove TEST è il NOMEFILE che hai scelto).
+
+  4. Questo salva l'intero file ("tutor.it")  con il nome di TEST.
+     Per una verifica batti ancora  :!dir   per listare la tua directory.
+
+---> Nota che se esci da Vim e riesegui Vim usando come NOMEFILE TEST,
+     il file sarà una copia esatta di "tutor.it" al momento del salvataggio.
+
+  5. Ora cancella il file battendo:   :!rm      TEST    [sotto Unix] oppure
+				      :!del	TEST	[sotto MSDOS]
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		    Lezione 5.3: SCRIVERE IN MANIERA SELETTIVA
+
+
+     ** Per salvare una porzione del file, batti   :#,# w NOMEFILE **
+
+  1. Batti ancora  :!dir  o  :!ls  per procurarti una lista della tua directory
+     e scegli un NOMEFILE adatto, come ad es.  TEST  .
+
+  2. Muovi il cursore in cima a questa pagina e batti  CTRL-g  per procurarti
+     il numero di linea.  RICORDATI QUESTO NUMERO!
+
+  3. Ora spostati in fondo alla pagina e batti  CTRL-g again.
+     RICORDATI ANCHE QUESTO NUMERO!
+
+  4. Per salvare SOLO una parte in un file, batti   :#,# w TEST
+     dove  #,#  sono i due numeri che hai memorizzato (cima,fondo) e TEST
+     è il tuo NOMEFILE.
+
+  5. Ancora una volta, controlla che il file esista con il comando :!dir
+     ma NON CANCELLARLO.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		   Lezione 5.4: INSERIRE E RIUNIRE FILE
+
+
+   ** Per inserire il contenuto di un file, batti   :r NOMEFILE **
+
+  1. Batti  :!dir  per accertarti che il tuo NOMEFILE TEST sia ancora presente.
+
+  2. Posiziona il cursore all'inizio di questa pagina.
+
+NOTA: DOPO aver eseguito il Passo 3 vedrai ancora la Lezione 5.3.
+      Quindi spostati IN GIU' per tornare ancora a questa Lezione.
+
+  3. Ora inserisci il tuo file TEST con il comando   :r TEST   dove TEST è
+     il nome del file.
+
+NOTA: Il file che tu richiedi è inserito a partire da dove si trova il cursore.
+
+  4. Per verificare che un file è stato inserito, torna indietro col cursore
+     e nota che ci sono ora 2 copie della Lezione 5.3, quella originale e quella
+     da te inserita.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			       Lezione 5 SOMMARIO
+
+
+  1.  :!comando  esegue un comando esterno.
+
+      Alcuni esempi utili sono [in MSDOS]:
+	  :!dir		     -	visualizza lista directory
+	  :!del NOMEFILE     -	cancella file NOMEFILE.
+
+  2.  :w NOMEFILE  scrive su disco il file che stai editando con nome NOMEFILE.
+
+  3.  :#,#w NOMEFILE  salva le linee da # a # nel file NOMEFILE.
+
+  4.  :r NOMEFILE  legge il file NOMEFILE da disco e lo inserisce nel
+      file che stai editando, dopo il punto dove è posizionato il cursore.
+
+
+
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			 Lezione 6.1: IL COMANDO OPEN [APRI]
+
+
+  ** Batti   o   per aprire una linea sotto il cursore e per passare in
+     Modalità Inserimento. **
+
+  1. Muovi il cursore fino alla linea qui sotto, indicata da --->.
+
+  2. Batti   o   (minuscolo) per aprire una linea sotto il cursore e per
+     passare in Modalità Inserimento.
+
+  3. Adesso ricopia la linea indicata da --->
+     e premi <ESC> per uscire dalla Modalità Inserimento.
+
+---> Dopo battuto  o  il cursore è sulla linea aperta (in Modalità Inserimento)
+
+  4. Per aprire una linea SOPRA il cursore, batti   O  [Maiuscola], invece
+     che una   o   minuscola. Prova sulla linea subito sotto.
+Apri una linea SOPRA questa battendo  O  quando il cursore è su questa linea.
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		Lezione 6.2: IL COMANDO APPEND [AGGIUNGI]
+
+
+	     ** Batti   a   per inserire testo DOPO il cursore. **
+
+  1. Muovi il cursore alla fine della prima linea qui sotto, indicata da --->
+     battendo  $  mentre sei in Modalità Normale.
+
+  2. Batti una  a  (minuscola) per aggiungere testo DOPO il carattere sotto
+     il cursore.   (A Maiuscola aggiunge alla fine della linea).
+
+NOTA: Eviti così di battere   i   , l'ultimo carattere, il testo da aggiungere,
+      <ESC>, spostare il cursore a sinistra e battere   x  solo per aggiungere
+      qualcosa alla fine della linea!
+
+  3. Adesso completa la prima linea.  Nota anche che l'aggiunta funziona come
+     la Modalità Inserimento, tranne che per il luogo dove il testo è inserito.
+
+---> Questa linea ti permetterà di esercitarti
+---> Questa linea ti permetterà di esercitarti ad aggiungere testo a fine linea.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	   Lezione 6.3: UN'ALTRA VARIANTE DI REPLACE [RIMPIAZZA]
+
+
+     ** Batti una  R  Maiuscola per rimpiazzare più di un carattere. **
+
+  1. Muovi il cursore alla prima linea qui sotto, indicata da --->.
+
+  2. Posiziona il cursore all'inizio della prima parola differente
+     dalla seconda linea indicata da ---> (la parola "'ultima").
+
+  3. Adesso batti  R  e rimpiazza il resto del testo sulla prima linea battendo
+     sopra il testo preesistente per rendere la prima linea uguale alla seconda.
+
+---> Per rendere la prima linea uguale alla ultima su questa pagina usa i tasti.
+---> Per rendere la prima linea uguale alla seconda, batti R e il nuovo testo.
+
+  4. Nota che quando premi <ESC> per uscire, ogni testo non toccato resta
+     uguale.
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		  Lezione 6.4: SET [IMPOSTA] UN'OPZIONE
+
+      ** Imposta un'opzione per ignorare maiuscole/minuscole
+	 durante la ricerca/sostituzione **
+
+ 1. Ricerca 'ignora' battendo:
+    /ignora
+    Ripeti la ricerca più volte usando il tasto   n
+
+ 2. Imposta l'opzione 'ic' (Ignore case, [Ignora Maiuscolo/minuscolo]) battendo:
+    :set ic
+
+ 3. Adesso ricerca ancora 'ignora' premendo il tasto    n
+    Ripeti la ricerca più volte usando il tasto   n
+
+ 4. Imposta le opzioni 'hlsearch' e 'incsearch' [evidenzia_ricerca subito]
+    :set hls is
+
+ 5. Adesso ribatti ancora il comando di ricerca, e guarda cosa succede:
+    /ignore
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			       Lezione 6 SOMMARIO
+
+
+  1. Battendo  o  aggiungi una linea SOTTO il cursore ed il cursore
+     si posiziona sulla linea appena aperta, in Modalità Inserimento.
+     Battendo  O  [Maiuscola] apri la linea SOPRA la linea su cui è il cursore.
+
+  2. Batti una  a  per inserire testo DOPO il carattere su cui è il cursore.
+     Battendo   A  [Maiuscola] aggiungi testo alla fine della linea.
+
+  3. Battendo   R  [Maiuscola] entri in Modalità Rimpiazzo [Replace mode]
+     e ci resti finché non premi <ESC> per uscirne.
+
+  4. Battendo ":set xxx" imposti l'opzione "xxx"
+     Battendo ":h   xxx" vedi la documentazione [inglese] per l'opzione "xxx"
+
+
+
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		       Lezione 7: COMANDI DI AIUTO ON-LINE
+
+
+		      ** Usa il sistema di help on-line **
+
+  Vim ha un esauriente sistema di aiuto on-line.  Per cominciare, prova una di
+  queste alternative:
+	- premi il tasto <AIUTO> (se ce n'è uno)
+	- premi il tasto <F1>    (se ce n'è uno)
+	- batti   :help  <INVIO>  OPPURE   :h <INVIO>
+
+  Batti   :q <INVIO>   per chiudere la finestra di help.
+
+  Puoi trovare aiuto su quasi tutto, dando un argomento al comando ":help"
+  Prova questi (non dimenticare di premere <INVIO>):
+
+	:help w
+	:help c_<T
+	:help insert-index
+	:help user-manual
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		       LEZIONE 8: PREPARA UNO SCRIPT INIZIALE
+
+			  ** Attiva le opzioni Vim **
+
+  Vim ha molte più opzioni di Vi, ma molte di esse sono predefinite inattive.
+  Per cominciare a usare più opzioni, devi preparare un file "vimrc".
+
+  1. Comincia a editare il file "vimrc", a seconda del tuo sistema operativo:
+	:edit ~/.vimrc			per Unix
+	:edit $VIM/_vimrc		per MS-Windows
+
+  2. Ora inserisci il file "vimrc" d'esempio:
+
+	:read $VIMRUNTIME/vimrc_example.vim
+
+  3. Scrivi il file con:
+
+	:write
+
+  La prossima volta che apri Vim, vedrai in uso la colorazione sintattica.
+  Puoi aggiungere a questo file "vimrc" tutte le tue impostazioni preferite.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Qui finisce la Guida a Vim.  Il suo intento è di fornire una breve panoramica
+  dell'Editor Vim, che ti consenta di usare l'Editor abbastanza facilmente.
+  Questa guida è largamente incompleta poiché Vim ha moltissimi altri comandi.
+  Puoi anche leggere il manuale utente: ":help user-manual".
+
+  Per ulteriore lettura e studio, raccomandiamo:
+	Vim - Vi Improved - di Steve Oualline     Editore: New Riders
+  Il primo libro completamente dedicato a Vim. Utile specie per principianti.
+  Contiene molti esempi e figure.
+  Vedi http://iccf-holland.org/click5.html
+
+  Quest'altro libro è più su Vi che su Vim, ma è pure consigliato:
+	Learning the Vi Editor - di Linda Lamb e Arnold Robbins
+	Editore: O'Reilly & Associates Inc.
+  E' un buon libro per imparare quasi tutto ciò che puoi voler fare con Vi.
+  Ne esiste una traduzione italiana, basata su una vecchia edizione.
+
+  Questa guida è stata scritta da Michael C. Pierce e Robert K. Ware,
+  Colorado School of Mines, usando idee fornite da Charles Smith,
+  Colorado State University - E-mail: bware@mines.colorado.edu
+  Modificato per Vim da Bram Moolenaar.
+  Segnalare refusi ad Antonio Colombo - E-mail: antonio.colombo@jrc.it
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

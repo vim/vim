@@ -1,0 +1,61 @@
+// VisVim.odl : type library source for VisVim.dll
+
+// This file will be processed by the Make Type Library (mktyplib) tool to
+// produce the type library (VisVim.tlb).
+
+[	uuid(AC726707-2977-11D1-B2F3-006008040780), version(1.0),
+	helpstring ("VisVim Developer Studio Add-in") ]
+library VisVim
+{
+	importlib("stdole32.tlb");
+	importlib("devshl.dll");
+	importlib("ide\devdbg.pkg");
+
+
+	//  Dual interface for CCommands
+	//
+	//  All commands that your add-in adds to DevStudio
+	//   must appear in this interface.  You may use the
+	//   ClassView to add methods to this interface, which
+	//   will cause stub implementations of those methods to
+	//   appear in your CCommands class.
+
+	[	uuid(AC726703-2977-11D1-B2F3-006008040780),
+		oleautomation,
+		dual
+	]
+
+	interface ICommands : IDispatch
+	{
+		// methods
+		[id(1)]
+		HRESULT VisVimDialog();
+		HRESULT VisVimEnable();
+		HRESULT VisVimDisable();
+		HRESULT VisVimToggle();
+		HRESULT VisVimLoad();
+	};
+
+	//  Class information for CCommands
+
+	[ uuid(AC726704-2977-11D1-B2F3-006008040780) ]
+	coclass Commands
+	{
+		[default] interface ICommands;
+	};
+
+	[ hidden, uuid(AC726705-2977-11D1-B2F3-006008040780) ]
+	coclass ApplicationEvents
+	{
+		[default] interface IApplicationEvents;
+	}
+
+	[ hidden, uuid(AC726706-2977-11D1-B2F3-006008040780) ]
+	coclass DebuggerEvents
+	{
+		[default] interface IDebuggerEvents;
+	}
+
+	//{{AFX_APPEND_ODL}}
+	//}}AFX_APPEND_ODL}}
+};

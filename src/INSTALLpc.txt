@@ -1,0 +1,310 @@
+INSTALLpc.txt - Installation of Vim on PC
+
+This file contains instructions for compiling Vim. If you already have an
+executable version of Vim, you don't need this.
+
+More information can be found here:
+
+	http://mywebpage.netscape.com/sharppeople/vim/howto/
+
+The file "feature.h" can be edited to match your preferences. You can skip
+this, then you will get the default behavior as is documented, which should
+be fine for most people.
+
+
+Contents:
+1. MS-DOS
+2. Win32 (Windows NT and Windows 95)
+3. Windows NT with OpenNT
+4. Windows 3.1
+5. Using Mingw
+6. Cross compiling for Win32 from a Linux machine
+7. Building with Python support
+
+
+1. MS-DOS
+=========
+
+Summary:
+ren Make_bc3.mak Makefile; make      16 bit, Borland C++ and Turbo C++
+ren Make_tcc.mak Makefile; make	     16 bit, Turbo C
+make -f Make_djg.mak		     32 bit, DJGPP 2.0
+make -f Make_bc5.mak		     32 bit, Borland C++ 5.0 (edit it to
+					     define DOS)
+
+Warning: Be sure to use the right make.exe.  Microsoft C make doesn't work;
+Borland make only works with Make_bc3.mak, Make_bc5.mak and Make_tcc.mak;
+DJGPP/GNU make must be used for Make_djg.mak.
+
+The Borland C++ compiler has been used to generate the MS-DOS executable; it
+should work without problems. You will probably have to change the paths for
+LIBPATH and INCLUDEPATH in the start of the Makefile.  You will get two
+warnings which can be ignored (one about _chmod and one about precompiled
+header files).
+
+The "spawno" library by Ralf Brown was used in order to free memory when Vim
+starts a shell or other external command.  Only about 200 bytes are taken from
+conventional memory.  When recompiling get the spawno library from Simtel,
+directory "msdos/c".  It is called something like "spwno413.zip".  Or follow
+the instructions in the Makefile to remove the library.
+
+The Turbo C Makefile has not been tested much lately. It is included for those
+that don't have C++. You may need to make a few changes to get it to work.
+
+DJGPP needs to be installed properly to compile Vim; you need a lot of things
+before it works. When your setup is OK, Vim should compile with just one
+warning (about an argument to signal()).
+
+Make_bc5.mak is for those that have Borland C++ 5.0 or later.  At the top of
+the file, there are some variables you can change to make either a 32-bit
+Windows exe (GUI or console mode), or a 16-bit MS-DOS version.
+
+If you get all kinds of strange error messages when compiling, try adding <CR>
+characters at the end of each line.
+
+
+2. Win32 (Windows NT and Windows 95)
+====================================
+
+Summary:
+vcvars32				  Setup paths for nmake and MSVC
+
+nmake -f Make_mvc.mak		console   Win32 SDK or Microsoft Visual C++
+nmake -f Make_mvc.mak GUI=yes	GUI	  Microsoft Visual C++
+nmake -f Make_mvc.mak OLE=yes	OLE	  Microsoft Visual C++
+nmake -f Make_mvc.mak PERL=C:\Perl PYTHON=C:\Python etc.
+				Perl, Python, etc.
+					  Microsoft Visual C++
+
+make  -f Make_bc5.mak		GUI	  Borland C++ 5.x
+make  -f Make_bc5.mak		console	  Borland C++ 5.x (change the file)
+nmake -f Make_ivc.mak CFG="Vim - Win32 Release gvim"
+				GUI	  Microsoft Visual C++ 4.x or later
+nmake -f Make_ivc.mak CFG="Vim - Win32 Release gvim OLE"
+				OLE	  Microsoft Visual C++ 4.x or later
+
+make  -f Make_cyg.mak		various   Cygnus gcc
+make  -f Make_mingw.mak		various   MingW with gcc
+
+See the specific files for comments and options.
+
+These files have been supplied by George V. Reilly, Ben Singer, Ken Scott and
+Ron Aaron; they have been tested.  The Cygnus one many not fully work yet.
+With Cygnus gcc you can use the Unix Makefile instead (you need to get the
+Unix archive then).  Then you get a Cygwin application (feels like Vim is
+runnin on Unix), while with Make_cyg.mak you get a Windows application (like
+with the other makefiles).
+
+You can also use the Visual C++ IDE: use File/Open workspace, select the
+Make_ivc.mak file, then select Build/Build all.  This builds the GUI version
+by default.
+
+Vim for Win32 compiles with the Microsoft Visual C++ 2.0 compiler and later,
+and with the Borland C++ 4.5 32-bit compiler and later.  It compiles on
+Windows 95 and all four NT platforms: i386, Alpha, MIPS, and PowerPC.  The
+NT/i386 and the Windows 95 binaries are identical.  Use Make_mvc.mak to
+compile with Visual C++ and Make_bc5.mak to compile with Borland C++.
+
+Make_mvc.mak allows a Vim to be built with various different features and
+debug support.  Debugging with MS Devstudio is provided by Make_dvc.mak.
+For a description of the use of Make_dvc.mak, look in Make_mvc.mak.
+
+For compiling Gvim with IME support on far-east Windows, uncomment the
+MULTI_BYTE_IME define in the src/feature.h file before compiling.
+
+The Win32 console binary was compiled with Visual C++ version 5.0, using
+Make_mvc.mak and Make_bc5.mak (Borland C).  Other compilers should also work.
+If you get all kinds of strange error messages when compiling (you shouldn't
+with the Microsoft or Borland 32-bit compilers), try adding <CR> characters
+at the end of each line.
+
+You probably need to run "vcvars32" before using "nmake".
+
+For making the Win32s version, you need Microsoft Visual C++ 4.1 OR EARLIER.
+In version 4.2 support for Win32s was dropped!  Use this command:
+	nmake -f Make_mvc.mak GUI=yes
+
+See the respective Makefiles for more comments.
+
+
+3. Windows NT with OpenNT
+=========================
+
+(contributed by Michael A. Benzinger)
+
+Building Vim on OpenNT 2.0 on Windows NT 4.0, with Softway's prerelease gcc:
+1. export CONFIG_SHELL=//D/OpenNT/bin/sh
+2. Make the following exports for modifying config.mk:
+	export CFLAGS=-O -Wshadow
+	export X_PRE_LIBS=-lXmu
+2. Run configure as follows:
+	configure --prefix=/vim --bindir=/bin/opennt --enable-gui=Motif
+   If you don't have OpenNTif (Motif support), use this:
+	configure --prefix=/vim --bindir=/bin/opennt --enable-gui=Athena
+3. Edit Makefile to perform the following since the Makefile include syntax
+   differs from that of gmake:
+	#include config.mk
+	.include "config.mk"
+4. Change all install links to be "ln -f" and not "ln -s".
+5. Change to the 'ctags' directory and configure.
+6. Edit the Makefile and remove spurious spaces from lines 99 and 114.
+7. Change slink to "ln -f" from "ln -s".
+8. Return to the src directory.
+9. make
+
+
+4. Windows 3.1x
+===============
+
+make -f Make_w16.mak		     16 bit, Borland C++ 5.0
+
+Warning: Be sure to use the right make.exe.  It should be Borland make.
+
+You will almost certainly have to change the paths for libs and include files
+in the Makefile.  Look for "D:\BC5" and "ctl3dv2".  You will get a number of
+warnings which can be ignored ( _chmod, precompiled header files, and
+"possibly incorrect assignment").
+
+The makefile should also work for BC++ 4.0 and 4.5, but may need tweaking to
+remove unsupported compiler & liker options.
+
+
+5. Mingw
+========
+
+(written by Ron Aaron: <ronaharon@yahoo.com>)
+
+This is about how to produce a Win32 binary of gvim with Mingw.
+
+First, you need to get the 'mingw32' compiler, which is free for the download
+at:
+
+	http://www.mingw.org/
+
+Once you have downloaded the compiler binaries, unpack them on your hard disk
+somewhere, and put them on your PATH.  If you are on Win95/98 you can edit
+your AUTOEXEC.BAT file with a line like:
+
+	set PATH=C:\GCC-2.95.2\BIN;%PATH%
+
+or on NT/2000, go to the Control Panel, System, and edit the environment from
+there.
+
+Test if gcc is on your path.  From a CMD (or COMMAND on '95/98):
+
+	C:\> gcc --version
+	2.95.2
+
+	C:\> make --version
+	GNU Make version 3.77 (...etc...)
+
+Now you are ready to rock 'n' roll.  Unpack the vim sources (look on
+www.vim.org for exactly which version of the vim files you need).
+
+Change directory to 'vim\src':
+
+	C:\> cd vim\src
+	C:\VIM\SRC>
+
+and you type:
+
+	make -f Make_ming.mak gvim.exe
+
+After churning for a while, you will end up with 'gvim.exe' in the 'vim\src'
+directory.
+
+You should not need to do *any* editing of any files to get vim compiled this
+way.  If, for some reason, you want the console-mode-only version of vim (this
+is NOT recommended on Win32, especially on '95/'98!!!), you need only change
+the 'gvim.exe' to 'vim.exe' in the 'make' commands given above.
+
+If you are dismayed by how big the EXE is, I strongly recommend you get 'UPX'
+(also free!) and compress the file (typical compression is 50%). UPX can be
+found at
+	http://upx.tsx.org/
+
+
+ADDITION: NLS support with Mingw
+
+(by Eduardo F. Amatria <eferna1@platea.pntic.mec.es>)
+
+If you want National Language Support, read the file src/po/README_mingw.txt.
+You need to uncomment lines in Make_ming.mak to have NLS defined.
+
+
+6. Cross compiling for Win32 from a Linux machine
+=================================================
+
+(written by Ron Aaron: <ronaharon@yahoo.com> with help from
+Martin Kahlert <martin.kahlert@infineon.com>)
+
+If you like, you can compile the 'mingw' Win32 version from the comfort of
+your Linux (or other unix) box.  To do this, you need to follow a few steps:
+
+	1) Install the mingw32 cross-compiler (if you have it, go to step 2)
+		1a) from 'ftp://ftp.nanotech.wisc.edu/pub/khan/gnu-win32/mingw32/snapshots/gcc-2.95.2-1',
+			get:
+				binutils-19990818-1-src.tar.gz
+				mingw-msvcrt-20000203.zip
+				gcc-2.95.2-1-x86-win32.diff.gz
+		1b) from 'http://gcc.gnu.org/' get:
+				gcc-2.95.2.tar.gz
+		1c) create a place to put the compiler source and binaries:
+			(assuming you are in the home directory)
+			mkdir gcc-bin
+			mkdir gcc-src
+		1d) unpack the sources:
+			cd gcc-src
+			tar xzf ../binutils-19990818-1-src.tar.gz
+			tar xzf ../gcc-2.95.2.tar.gz
+			unzip ../mingw-msvcrt-20000203
+		1e) build the different tools:
+			export PREFIX=~/gcc-bin/
+			cd gcc-2.95.2
+			zcat ../gcc-2.95.2-1-x86-win32.diff.gz | patch -p1 -E
+			cd ../binutils-19990818
+			./configure --target=i586-pc-mingw32msvc --prefix=$PREFIX
+			make
+			make install
+			cd ../gcc-2.95.2
+			./configure --target=i586-pc-mingw32msvc \
+				--with-libs=~/gcc-bin/i386-mingw32msvc/lib \
+				--with-headers=~/gcc-bin/i386-mingw32msvc/include \
+				--enable-languages=c++ \
+				--prefix=$PREFIX
+			make
+			make install
+		1f) Add $PREFIX/bin to your $PATH.
+
+	2) get the *unix* version of the vim sources
+	3) in 'Make_ming.mak', set 'CROSS' to '1' instead of '0'.
+	4) make -f Make_ming.mak gvim.exe
+
+Now you have created the Windows binary from your Linux box!  Have fun...
+
+7. Building with Python support
+=================================================
+
+(written by Ron Aaron: <ronaharon@yahoo.com>)
+
+This has been tested with the mingw32 compiler, and the ActiveState
+ActivePython:
+    http://www.ActiveState.com/Products/ActivePython/
+
+After installing the ActivePython, you will have to create a 'mingw32'
+'libpython20.a' to link with:
+   cd $PYTHON/libs
+   pexports python20.dll > python20.def
+   dlltool -d python20.def -l libpython20.a
+
+Once that is done, edit the 'Make_ming.mak' so the PYTHON variable points to
+the root of the Python installation (C:\Python20, for example).  If you are
+cross-compiling on Linux with the mingw32 setup, you need to also convert all
+the 'Include' files to *unix* line-endings.  This bash command will do it
+easily:
+   for fil in *.h ; do vim -e -c 'set ff=unix|w|q' $fil
+
+Now just do:
+   make -f Make_ming.mak gvim.exe
+
+and you will end up with a Python-enabled, Win32 version.  Enjoy!

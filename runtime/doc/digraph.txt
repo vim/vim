@@ -1,0 +1,322 @@
+*digraph.txt*   For Vim version 7.0aa.  Last change: 2001 Sep 03
+
+
+		  VIM REFERENCE MANUAL    by Bram Moolenaar
+
+
+Digraphs						*digraphs* *Digraphs*
+
+Digraphs are used to enter characters that normally cannot be entered by
+an ordinary keyboard.  These are mostly accented characters which have the
+eighth bit set.  The digraphs are easier to remember than the decimal number
+that can be entered with CTRL-V (see |i_CTRL-V|).
+
+There is a brief introduction on digraphs in the user manual: |24.9|
+An alternative is using the 'keymap' option.
+
+1. Defining digraphs	|digraphs-define|
+2. Using digraphs	|digraphs-use|
+3. Default digraphs	|digraphs-default|
+
+{Vi does not have any of these commands}
+
+==============================================================================
+1. Defining digraphs					*digraphs-define*
+
+						*:dig* *:digraphs*
+:dig[raphs]		show currently defined digraphs.
+							*E104* *E39*
+:dig[raphs] {char1}{char2} {number} ...
+			Add digraph {char1}{char2} to the list.  {number} is
+			the decimal representation of the character.
+			Example: >
+	:digr e: 235 a: 228
+<			Avoid defining a digraph with '_' (underscore) as the
+			first character, it has a special meaning in the
+			future.
+
+Vim is normally compiled with the |+digraphs| feature.  If the feature is
+disabled, the ":digraph" command will display an error message.
+
+Example of the output of ":digraphs": >
+ TH Þ  222  ss ß  223  a! à  224  a' á  225  a> â  226  a? ã  227  a: ä  228
+
+The first two characters in each column are the characters you have to type to
+enter the digraph.
+
+In the middle of each column is the resulting character.  This may be mangled
+if you look at it on a system that does not support digraphs or if you print
+this file.
+
+The decimal number is the number of the character.
+
+==============================================================================
+2. Using digraphs					*digraphs-use*
+
+There are two methods to enter digraphs:			*i_digraph*
+	CTRL-K {char1} {char2}		or
+	{char1} <BS> {char2}
+The first is always available; the second only when the 'digraph' option is
+set.
+
+If a digraph with {char1}{char2} does not exist, Vim searches for a digraph
+{char2}{char1}.  This helps when you don't remember which character comes
+first.
+
+Note that when you enter CTRL-K {char1}, where {char1} is a special key, Vim
+enters the code for that special key.  This is not a digraph.
+
+Once you have entered the digraph, Vim treats the character like a normal
+character that occupies only one character in the file and on the screen.
+Example: >
+	'B' <BS> 'B'	will enter the broken '|' character (166)
+	'a' <BS> '>'	will enter an 'a' with a circumflex (226)
+	CTRL-K '-' '-'	will enter a soft hyphen (173)
+
+The current digraphs are listed with the ":digraphs" command.  Some of the
+default ones are listed below |digraph-table|.
+
+For CTRL-K, there is one general digraph: CTRL-K <Space> {char} will enter
+{char} with the highest bit set.  You can use this to enter meta-characters.
+
+The <Esc> character cannot be part of a digraph.  When hitting <Esc>, Vim
+stops digraph entry and ends Insert mode or Command-line mode, just like
+hitting an <Esc> out of digraph context.  Use CTRL-V 155 to enter meta-ESC
+(CSI).
+
+If you accidentally typed an 'a' that should be an 'e', you will type 'a' <BS>
+'e'.  But that is a digraph, so you will not get what you want.  To correct
+this, you will have to type <BS> e again.  To avoid this don't set the
+'digraph' option and use CTRL-K to enter digraphs.
+
+You may have problems using Vim with characters which have an ASCII value
+above 128.  For example: You insert ue (u-umlaut) and the editor echoes \334
+in Insert mode.  After leaving the Insert mode everything is fine.  Note that
+fmt removes all characters with ASCII codes above 128 from the text being
+formatted.  On some Unix systems this means you have to define the
+environment-variable LC_CTYPE.  If you are using csh, then put the following
+line in your .cshrc: >
+	setenv LC_CTYPE iso_8859_1
+
+==============================================================================
+3. Default digraphs					*digraphs-default*
+
+Vim comes with a set of default digraphs.  Check the output of ":digraphs" to
+see them.
+
+On most systems Vim uses the same digraphs.  They work for the Unicode and
+ISO-8859-1 character sets.  These default digraphs are taken from the RFC1345
+mnemonics.  To make it easy to remember the mnemonic, the second character has
+a standard meaning:
+
+	char name		char	meaning ~
+	Exclamation mark	!	Grave
+	Apostrophe		'	Acute accent
+	Greater-Than sign	>	Circumflex accent
+	Question Mark		?	tilde
+	Hyphen-Minus		-	Macron
+	Left parenthesis	(	Breve
+	Full Stop		.	Dot Above
+	Colon			:	Diaeresis
+	Comma			,	Cedilla
+	Underline		_	Underline
+	Solidus			/	Stroke
+	Quotation mark		"	Double acute accent
+	Semicolon		;	Ogonek
+	Less-Than sign		<	Caron
+	Zero			0	Ring above
+	Two			2	Hook
+	Nine			9	Horn
+
+	Equals			=	Cyrillic
+	Asterisk		*	Greek
+	Percent sign		%	Greek/Cyrillic special
+	Plus			+	smalls: Arabic, capitals: Hebrew
+	Three			3	some Latin/Greek/Cyrillic letters
+	Four			4	Bopomofo
+	Five			5	Hiragana
+	Six			6	Katakana
+
+Example: a: is ä  and o: is ö
+
+These are the RFC1345 digraphs for the one-byte characters.  See the output of
+":digraphs" for the others.  The characters above 255 are only available when
+Vim was compiled with the |+multi_byte| feature.
+							*digraph-table*
+char  digraph	hex	dec	official name ~
+^@	NU	0x00	  0	NULL (NUL)
+^A	SH	0x01	  1	START OF HEADING (SOH)
+^B	SX	0x02	  2	START OF TEXT (STX)
+^C	EX	0x03	  3	END OF TEXT (ETX)
+^D	ET	0x04	  4	END OF TRANSMISSION (EOT)
+^E	EQ	0x05	  5	ENQUIRY (ENQ)
+^F	AK	0x06	  6	ACKNOWLEDGE (ACK)
+^G	BL	0x07	  7	BELL (BEL)
+^H	BS	0x08	  8	BACKSPACE (BS)
+^I	HT	0x09	  9	CHARACTER TABULATION (HT)
+^@	LF	0x0a	 10	LINE FEED (LF)
+^K	VT	0x0b	 11	LINE TABULATION (VT)
+^L	FF	0x0c	 12	FORM FEED (FF)
+^M	CR	0x0d	 13	CARRIAGE RETURN (CR)
+^N	SO	0x0e	 14	SHIFT OUT (SO)
+^O	SI	0x0f	 15	SHIFT IN (SI)
+^P	DL	0x10	 16	DATALINK ESCAPE (DLE)
+^Q	D1	0x11	 17	DEVICE CONTROL ONE (DC1)
+^R	D2	0x12	 18	DEVICE CONTROL TWO (DC2)
+^S	D3	0x13	 19	DEVICE CONTROL THREE (DC3)
+^T	D4	0x14	 20	DEVICE CONTROL FOUR (DC4)
+^U	NK	0x15	 21	NEGATIVE ACKNOWLEDGE (NAK)
+^V	SY	0x16	 22	SYNCRONOUS IDLE (SYN)
+^W	EB	0x17	 23	END OF TRANSMISSION BLOCK (ETB)
+^X	CN	0x18	 24	CANCEL (CAN)
+^Y	EM	0x19	 25	END OF MEDIUM (EM)
+^Z	SB	0x1a	 26	SUBSTITUTE (SUB)
+^[	EC	0x1b	 27	ESCAPE (ESC)
+^\	FS	0x1c	 28	FILE SEPARATOR (IS4)
+^]	GS	0x1d	 29	GROUP SEPARATOR (IS3)
+^^	RS	0x1e	 30	RECORD SEPARATOR (IS2)
+^_	US	0x1f	 31	UNIT SEPARATOR (IS1)
+	SP	0x20	 32	SPACE
+#	Nb	0x23	 35	NUMBER SIGN
+$	DO	0x24	 36	DOLLAR SIGN
+@	At	0x40	 64	COMMERCIAL AT
+[	<(	0x5b	 91	LEFT SQUARE BRACKET
+\	//	0x5c	 92	REVERSE SOLIDUS
+]	)>	0x5d	 93	RIGHT SQUARE BRACKET
+^	'>	0x5e	 94	CIRCUMFLEX ACCENT
+`	'!	0x60	 96	GRAVE ACCENT
+{	(!	0x7b	123	LEFT CURLY BRACKET
+|	!!	0x7c	124	VERTICAL LINE
+}	!)	0x7d	125	RIGHT CURLY BRACKET
+~	'?	0x7e	126	TILDE
+^?	DT	0x7f	127	DELETE (DEL)
+~@	PA	0x80	128	PADDING CHARACTER (PAD)
+~A	HO	0x81	129	HIGH OCTET PRESET (HOP)
+~B	BH	0x82	130	BREAK PERMITTED HERE (BPH)
+~C	NH	0x83	131	NO BREAK HERE (NBH)
+~D	IN	0x84	132	INDEX (IND)
+~E	NL	0x85	133	NEXT LINE (NEL)
+~F	SA	0x86	134	START OF SELECTED AREA (SSA)
+~G	ES	0x87	135	END OF SELECTED AREA (ESA)
+~H	HS	0x88	136	CHARACTER TABULATION SET (HTS)
+~I	HJ	0x89	137	CHARACTER TABULATION WITH JUSTIFICATION (HTJ)
+~J	VS	0x8a	138	LINE TABULATION SET (VTS)
+~K	PD	0x8b	139	PARTIAL LINE FORWARD (PLD)
+~L	PU	0x8c	140	PARTIAL LINE BACKWARD (PLU)
+~M	RI	0x8d	141	REVERSE LINE FEED (RI)
+~N	S2	0x8e	142	SINGLE-SHIFT TWO (SS2)
+~O	S3	0x8f	143	SINGLE-SHIFT THREE (SS3)
+~P	DC	0x90	144	DEVICE CONTROL STRING (DCS)
+~Q	P1	0x91	145	PRIVATE USE ONE (PU1)
+~R	P2	0x92	146	PRIVATE USE TWO (PU2)
+~S	TS	0x93	147	SET TRANSMIT STATE (STS)
+~T	CC	0x94	148	CANCEL CHARACTER (CCH)
+~U	MW	0x95	149	MESSAGE WAITING (MW)
+~V	SG	0x96	150	START OF GUARDED AREA (SPA)
+~W	EG	0x97	151	END OF GUARDED AREA (EPA)
+~X	SS	0x98	152	START OF STRING (SOS)
+~Y	GC	0x99	153	SINGLE GRAPHIC CHARACTER INTRODUCER (SGCI)
+~Z	SC	0x9a	154	SINGLE CHARACTER INTRODUCER (SCI)
+~[	CI	0x9b	155	CONTROL SEQUENCE INTRODUCER (CSI)
+~\	ST	0x9c	156	STRING TERMINATOR (ST)
+~]	OC	0x9d	157	OPERATING SYSTEM COMMAND (OSC)
+~^	PM	0x9e	158	PRIVACY MESSAGE (PM)
+~_	AC	0x9f	159	APPLICATION PROGRAM COMMAND (APC)
+|	NS	0xa0	160	NO-BREAK SPACE
+¡	!I	0xa1	161	INVERTED EXCLAMATION MARK
+¢	Ct	0xa2	162	CENT SIGN
+£	Pd	0xa3	163	POUND SIGN
+¤	Cu	0xa4	164	CURRENCY SIGN
+¥	Ye	0xa5	165	YEN SIGN
+¦	BB	0xa6	166	BROKEN BAR
+§	SE	0xa7	167	SECTION SIGN
+¨	':	0xa8	168	DIAERESIS
+©	Co	0xa9	169	COPYRIGHT SIGN
+ª	-a	0xaa	170	FEMININE ORDINAL INDICATOR
+«	<<	0xab	171	LEFT-POINTING DOUBLE ANGLE QUOTATION MARK
+¬	NO	0xac	172	NOT SIGN
+­	--	0xad	173	SOFT HYPHEN
+®	Rg	0xae	174	REGISTERED SIGN
+¯	'm	0xaf	175	MACRON
+°	DG	0xb0	176	DEGREE SIGN
+±	+-	0xb1	177	PLUS-MINUS SIGN
+²	2S	0xb2	178	SUPERSCRIPT TWO
+³	3S	0xb3	179	SUPERSCRIPT THREE
+´	''	0xb4	180	ACUTE ACCENT
+µ	My	0xb5	181	MICRO SIGN
+¶	PI	0xb6	182	PILCROW SIGN
+·	.M	0xb7	183	MIDDLE DOT
+¸	',	0xb8	184	CEDILLA
+¹	1S	0xb9	185	SUPERSCRIPT ONE
+º	-o	0xba	186	MASCULINE ORDINAL INDICATOR
+»	>>	0xbb	187	RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
+¼	14	0xbc	188	VULGAR FRACTION ONE QUARTER
+½	12	0xbd	189	VULGAR FRACTION ONE HALF
+¾	34	0xbe	190	VULGAR FRACTION THREE QUARTERS
+¿	?I	0xbf	191	INVERTED QUESTION MARK
+À	A!	0xc0	192	LATIN CAPITAL LETTER A WITH GRAVE
+Á	A'	0xc1	193	LATIN CAPITAL LETTER A WITH ACUTE
+Â	A>	0xc2	194	LATIN CAPITAL LETTER A WITH CIRCUMFLEX
+Ã	A?	0xc3	195	LATIN CAPITAL LETTER A WITH TILDE
+Ä	A:	0xc4	196	LATIN CAPITAL LETTER A WITH DIAERESIS
+Å	AA	0xc5	197	LATIN CAPITAL LETTER A WITH RING ABOVE
+Æ	AE	0xc6	198	LATIN CAPITAL LETTER AE
+Ç	C,	0xc7	199	LATIN CAPITAL LETTER C WITH CEDILLA
+È	E!	0xc8	200	LATIN CAPITAL LETTER E WITH GRAVE
+É	E'	0xc9	201	LATIN CAPITAL LETTER E WITH ACUTE
+Ê	E>	0xca	202	LATIN CAPITAL LETTER E WITH CIRCUMFLEX
+Ë	E:	0xcb	203	LATIN CAPITAL LETTER E WITH DIAERESIS
+Ì	I!	0xcc	204	LATIN CAPITAL LETTER I WITH GRAVE
+Í	I'	0xcd	205	LATIN CAPITAL LETTER I WITH ACUTE
+Î	I>	0xce	206	LATIN CAPITAL LETTER I WITH CIRCUMFLEX
+Ï	I:	0xcf	207	LATIN CAPITAL LETTER I WITH DIAERESIS
+Ð	D-	0xd0	208	LATIN CAPITAL LETTER ETH (Icelandic)
+Ñ	N?	0xd1	209	LATIN CAPITAL LETTER N WITH TILDE
+Ò	O!	0xd2	210	LATIN CAPITAL LETTER O WITH GRAVE
+Ó	O'	0xd3	211	LATIN CAPITAL LETTER O WITH ACUTE
+Ô	O>	0xd4	212	LATIN CAPITAL LETTER O WITH CIRCUMFLEX
+Õ	O?	0xd5	213	LATIN CAPITAL LETTER O WITH TILDE
+Ö	O:	0xd6	214	LATIN CAPITAL LETTER O WITH DIAERESIS
+×	*X	0xd7	215	MULTIPLICATION SIGN
+Ø	O/	0xd8	216	LATIN CAPITAL LETTER O WITH STROKE
+Ù	U!	0xd9	217	LATIN CAPITAL LETTER U WITH GRAVE
+Ú	U'	0xda	218	LATIN CAPITAL LETTER U WITH ACUTE
+Û	U>	0xdb	219	LATIN CAPITAL LETTER U WITH CIRCUMFLEX
+Ü	U:	0xdc	220	LATIN CAPITAL LETTER U WITH DIAERESIS
+Ý	Y'	0xdd	221	LATIN CAPITAL LETTER Y WITH ACUTE
+Þ	TH	0xde	222	LATIN CAPITAL LETTER THORN (Icelandic)
+ß	ss	0xdf	223	LATIN SMALL LETTER SHARP S (German)
+à	a!	0xe0	224	LATIN SMALL LETTER A WITH GRAVE
+á	a'	0xe1	225	LATIN SMALL LETTER A WITH ACUTE
+â	a>	0xe2	226	LATIN SMALL LETTER A WITH CIRCUMFLEX
+ã	a?	0xe3	227	LATIN SMALL LETTER A WITH TILDE
+ä	a:	0xe4	228	LATIN SMALL LETTER A WITH DIAERESIS
+å	aa	0xe5	229	LATIN SMALL LETTER A WITH RING ABOVE
+æ	ae	0xe6	230	LATIN SMALL LETTER AE
+ç	c,	0xe7	231	LATIN SMALL LETTER C WITH CEDILLA
+è	e!	0xe8	232	LATIN SMALL LETTER E WITH GRAVE
+é	e'	0xe9	233	LATIN SMALL LETTER E WITH ACUTE
+ê	e>	0xea	234	LATIN SMALL LETTER E WITH CIRCUMFLEX
+ë	e:	0xeb	235	LATIN SMALL LETTER E WITH DIAERESIS
+ì	i!	0xec	236	LATIN SMALL LETTER I WITH GRAVE
+í	i'	0xed	237	LATIN SMALL LETTER I WITH ACUTE
+î	i>	0xee	238	LATIN SMALL LETTER I WITH CIRCUMFLEX
+ï	i:	0xef	239	LATIN SMALL LETTER I WITH DIAERESIS
+ð	d-	0xf0	240	LATIN SMALL LETTER ETH (Icelandic)
+ñ	n?	0xf1	241	LATIN SMALL LETTER N WITH TILDE
+ò	o!	0xf2	242	LATIN SMALL LETTER O WITH GRAVE
+ó	o'	0xf3	243	LATIN SMALL LETTER O WITH ACUTE
+ô	o>	0xf4	244	LATIN SMALL LETTER O WITH CIRCUMFLEX
+õ	o?	0xf5	245	LATIN SMALL LETTER O WITH TILDE
+ö	o:	0xf6	246	LATIN SMALL LETTER O WITH DIAERESIS
+÷	-:	0xf7	247	DIVISION SIGN
+ø	o/	0xf8	248	LATIN SMALL LETTER O WITH STROKE
+ù	u!	0xf9	249	LATIN SMALL LETTER U WITH GRAVE
+ú	u'	0xfa	250	LATIN SMALL LETTER U WITH ACUTE
+û	u>	0xfb	251	LATIN SMALL LETTER U WITH CIRCUMFLEX
+ü	u:	0xfc	252	LATIN SMALL LETTER U WITH DIAERESIS
+ý	y'	0xfd	253	LATIN SMALL LETTER Y WITH ACUTE
+þ	th	0xfe	254	LATIN SMALL LETTER THORN (Icelandic)
+ÿ	y:	0xff	255	LATIN SMALL LETTER Y WITH DIAERESIS
+
+ vim:tw=78:ts=8:ft=help:norl:

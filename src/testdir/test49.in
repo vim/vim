@@ -1,0 +1,13 @@
+This is a test of the script language.
+
+If after adding a new test, the test output doesn't appear properly in
+test49.failed, try to add one ore more "G"s at the line before ENDTEST.
+
+STARTTEST
+:so small.vim
+:se nocp nomore viminfo+=nviminfo
+:so test49.vim
+GGGGGGGGGG"rp:.-,$wq! test.out
+ENDTEST
+
+Results of test49.vim:

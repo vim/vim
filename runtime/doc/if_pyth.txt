@@ -1,0 +1,299 @@
+*if_pyth.txt*   For Vim version 7.0aa.  Last change: 2004 Feb 28
+
+
+		  VIM REFERENCE MANUAL    by Paul Moore
+
+
+The Python Interface to Vim				*python* *Python*
+
+1. Commands			|python-commands|
+2. The vim module		|python-vim|
+3. Buffer objects		|python-buffer|
+4. Range objects		|python-range|
+5. Window objects		|python-window|
+
+{Vi does not have any of these commands}
+
+The Python interface is available only when Vim was compiled with the
+|+python| feature.
+
+==============================================================================
+1. Commands						*python-commands*
+
+					*:python* *:py* *E205* *E263* *E264*
+:[range]py[thon] {stmt}
+			Execute Python statement {stmt}.
+
+:[range]py[thon] << {endmarker}
+{script}
+{endmarker}
+			Execute Python script {script}.
+			Note: This command doesn't work when the Python
+			feature wasn't compiled in.  To avoid errors, see
+			|script-here|.
+
+{endmarker} must NOT be preceded by any white space.  If {endmarker} is
+omitted from after the "<<", a dot '.' must be used after {script}, like
+for the |:append| and |:insert| commands.
+This form of the |:python| command is mainly useful for including python code
+in Vim scripts.
+
+Example: >
+	function! IcecreamInitialize()
+	python << EOF
+	class StrawberryIcecream:
+		def __call__(self):
+			print 'EAT ME'
+	EOF
+	endfunction
+<
+Note: Python is very sensitive to the indenting.  Also make sure the "class"
+line and "EOF" do not have any indent.
+
+							*:pyfile* *:pyf*
+:[range]pyf[ile] {file}
+			Execute the Python script in {file}.  The whole
+			argument is used as a single file name.  {not in Vi}
+
+Both of these commands do essentially the same thing - they execute a piece of
+Python code, with the "current range" |python-range| set to the given line
+range.
+
+In the case of :python, the code to execute is in the command-line.
+In the case of :pyfile, the code to execute is the contents of the given file.
+
+Python commands cannot be used in the |sandbox|.
+
+To pass arguments you need to set sys.argv[] explicitly.  Example: >
+
+	:python import sys
+	:python sys.argv = ["foo", "bar"]
+	:pyfile myscript.py
+
+Here are some examples					*python-examples*  >
+
+	:python from vim import *
+	:python from string import upper
+	:python current.line = upper(current.line)
+	:python print "Hello"
+	:python str = current.buffer[42]
+
+(Note that changes - like the imports - persist from one command to the next,
+just like in the Python interpreter.)
+
+==============================================================================
+2. The vim module					*python-vim*
+
+Python code gets all of its access to vim (with one exception - see
+|python-output| below) via the "vim" module. The vim module implements two
+methods, three constants, and one error object.  You need to import the vim
+module before using it: >
+	:python import vim
+
+Overview >
+	print "Hello"			# displays a message
+	vim.command(cmd)		# execute an ex command
+	w = vim.windows[n]		# gets window "n"
+	cw = vim.current.window		# gets the current window
+	b = vim.buffers[n]		# gets buffer "n"
+	cb = vim.current.buffer		# gets the current buffer
+	w.height = lines		# sets the window height
+	w.cursor = (row, col)		# sets the window cursor position
+	pos = w.cursor			# gets a tuple (row, col)
+	name = b.name			# gets the buffer file name
+	line = b[n]			# gets a line from the buffer
+	lines = b[n:m]			# gets a list of lines
+	num = len(b)			# gets the number of lines
+	b[n] = str			# sets a line in the buffer
+	b[n:m] = [str1, str2, str3]	# sets a number of lines at once
+	del b[n]			# deletes a line
+	del b[n:m]			# deletes a number of lines
+
+
+Methods of the "vim" module
+
+vim.command(str)					*python-command*
+	Executes the vim (ex-mode) command str. Returns None.
+	Examples: >
+		vim.command("set tw=72")
+		vim.command("%s/aaa/bbb/g")
+<	The following definition executes Normal mode commands: >
+		def normal(str):
+			vim.command("normal "+str)
+		# Note the use of single quotes to delimit a string containing
+		# double quotes
+		normal('"a2dd"aP')
+<								*E659*
+	The ":python" command cannot be used recursively with Python 2.2 and
+	older.  This only works with Python 2.3 and later: >
+		:python vim.command("python print 'Hello again Python'")
+
+vim.eval(str)						*python-eval*
+	Evaluates the expression str using the vim internal expression
+	evaluator (see |expression|). Returns the expression result as a
+	string.
+	Examples: >
+		text_width = vim.eval("&tw")
+		str = vim.eval("12+12")		# NB result is a string! Use
+						# string.atoi() to convert to
+						# a number.
+
+Error object of the "vim" module
+
+vim.error						*python-error*
+	Upon encountering a Vim error, Python raises an exception of type
+	vim.error.
+	Example: >
+		try:
+			vim.command("put a")
+		except vim.error:
+			# nothing in register a
+
+Constants of the "vim" module
+
+	Note that these are not actually constants - you could reassign them.
+	But this is silly, as you would then lose access to the vim objects
+	to which the variables referred.
+
+vim.buffers						*python-buffers*
+	A sequence object providing access to the list of vim buffers. The
+	object supports the following operations: >
+		b = vim.buffers[i]	# Indexing (read-only)
+		b in vim.buffers	# Membership test
+		n = len(vim.buffers)	# Number of elements
+		for b in vim.buffers:	# Sequential access
+<
+vim.windows						*python-windows*
+	A sequence object providing access to the list of vim windows. The
+	object supports the following operations: >
+		w = vim.windows[i]	# Indexing (read-only)
+		w in vim.windows	# Membership test
+		n = len(vim.windows)	# Number of elements
+		for w in vim.windows:	# Sequential access
+<
+vim.current						*python-current*
+	An object providing access (via specific attributes) to various
+	"current" objects available in vim:
+		vim.current.line	The current line (RW)		String
+		vim.current.buffer	The current buffer (RO)		Buffer
+		vim.current.window	The current window (RO)		Window
+		vim.current.range	The current line range (RO)	Range
+
+	The last case deserves a little explanation. When the :python or
+	:pyfile command specifies a range, this range of lines becomes the
+	"current range". A range is a bit like a buffer, but with all access
+	restricted to a subset of lines. See |python-range| for more details.
+
+
+Output from Python					*python-output*
+	Vim displays all Python code output in the Vim message area.  Normal
+	output appears as information messages, and error output appears as
+	error messages.
+
+	In implementation terms, this means that all output to sys.stdout
+	(including the output from print statements) appears as information
+	messages, and all output to sys.stderr (including error tracebacks)
+	appears as error messages.
+
+							*python-input*
+	Input (via sys.stdin, including input() and raw_input()) is not
+	supported, and may cause the program to crash. This should probably be
+	fixed.
+
+==============================================================================
+3. Buffer objects					*python-buffer*
+
+Buffer objects represent vim buffers. You can obtain them in a number of ways:
+	- via vim.current.buffer (|python-current|)
+	- from indexing vim.buffers (|python-buffers|)
+	- from the "buffer" attribute of a window (|python-window|)
+
+Buffer objects have one read-only attribute - name - the full file name for
+the buffer. They also have three methods (append, mark, and range; see below).
+
+You can also treat buffer objects as sequence objects. In this context, they
+act as if they were lists (yes, they are mutable) of strings, with each
+element being a line of the buffer. All of the usual sequence operations,
+including indexing, index assignment, slicing and slice assignment, work as
+you would expect. Note that the result of indexing (slicing) a buffer is a
+string (list of strings). This has one unusual consequence - b[:] is different
+from b. In particular, "b[:] = None" deletes the whole of the buffer, whereas
+"b = None" merely updates the variable b, with no effect on the buffer.
+
+Buffer indexes start at zero, as is normal in Python. This differs from vim
+line numbers, which start from 1. This is particularly relevant when dealing
+with marks (see below) which use vim line numbers.
+
+The buffer object methods are:
+	b.append(str)	Append a line to the buffer
+	b.append(list)	Append a list of lines to the buffer
+			Note that the option of supplying a list of strings to
+			the append method differs from the equivalent method
+			for Python's built-in list objects.
+	b.mark(name)	Return a tuple (row,col) representing the position
+			of the named mark (can also get the []"<> marks)
+	b.range(s,e)	Return a range object (see |python-range|) which
+			represents the part of the given buffer between line
+			numbers s and e |inclusive|.
+
+Examples (assume b is the current buffer) >
+	print b.name		# write the buffer file name
+	b[0] = "hello!!!"	# replace the top line
+	b[:] = None		# delete the whole buffer
+	del b[:]		# delete the whole buffer (same as above)
+	b[0:0] = [ "a line" ]	# add a line at the top
+	del b[2]		# delete a line (the third)
+	b.append("bottom")	# add a line at the bottom
+	n = len(b)		# number of lines
+	(row,col) = b.mark('a') # named mark
+	r = b.range(1,5)	# a sub-range of the buffer
+
+==============================================================================
+4. Range objects					*python-range*
+
+Range objects represent a part of a vim buffer. You can obtain them in a
+number of ways:
+	- via vim.current.range (|python-current|)
+	- from a buffer's range() method (|python-buffer|)
+
+A range object is almost identical in operation to a buffer object. However,
+all operations are restricted to the lines within the range (this line range
+can, of course, change as a result of slice assignments, line deletions, or
+the range.append() method).
+
+The range object attributes are:
+	r.start		Index of first line into the buffer
+	r.end		Index of last line into the buffer
+
+The range object methods are:
+	r.append(str)	Append a line to the range
+	r.append(list)	Append a list of lines to the range
+			Note that the option of supplying a list of strings to
+			the append method differs from the equivalent method
+			for Python's built-in list objects.
+
+Example (assume r is the current range):
+	# Send all lines in a range to the default printer
+	vim.command("%d,%dhardcopy!" % (r.start+1,r.end+1))
+
+==============================================================================
+5. Window objects					*python-window*
+
+Window objects represent vim windows. You can obtain them in a number of ways:
+	- via vim.current.window (|python-current|)
+	- from indexing vim.windows (|python-windows|)
+
+You can manipulate window objects only through their attributes. They have no
+methods, and no sequence or other interface.
+
+Window attributes are:
+	buffer (read-only)	The buffer displayed in this window
+	cursor (read-write)	The current cursor position in the window
+				This is a tuple, (row,col).
+	height (read-write)	The window height, in rows
+	width (read-write)	The window width, in columns
+The height attribute is writable only if the screen is split horizontally.
+The width attribute is writable only if the screen is split vertically.
+
+==============================================================================
+ vim:tw=78:ts=8:ft=help:norl:

@@ -1,0 +1,4161 @@
+*syntax.txt*	For Vim version 7.0aa.  Last change: 2004 Jun 09
+
+
+		  VIM REFERENCE MANUAL	  by Bram Moolenaar
+
+
+Syntax highlighting		*syntax* *syntax-highlighting* *coloring*
+
+Syntax highlighting enables Vim to show parts of the text in another font or
+color.	Those parts can be specific keywords or text matching a pattern.  Vim
+doesn't parse the whole file (to keep it fast), so the highlighting has its
+limitations.  Lexical highlighting might be a better name, but since everybody
+calls it syntax highlighting we'll stick with that.
+
+Vim supports syntax highlighting on all terminals.  But since most ordinary
+terminals have very limited highlighting possibilities, it works best in the
+GUI version, gvim.
+
+In the User Manual:
+|usr_06.txt| introduces syntax highlighting.
+|usr_44.txt| introduces writing a syntax file.
+
+1.  Quick start			|:syn-qstart|
+2.  Syntax files		|:syn-files|
+3.  Syntax loading procedure	|syntax-loading|
+4.  Syntax file remarks		|:syn-file-remarks|
+5.  Defining a syntax		|:syn-define|
+6.  :syntax arguments		|:syn-arguments|
+7.  Syntax patterns		|:syn-pattern|
+8.  Syntax clusters		|:syn-cluster|
+9.  Including syntax files	|:syn-include|
+10. Synchronizing		|:syn-sync|
+11. Listing syntax items	|:syntax|
+12. Highlight command		|:highlight|
+13. Linking groups		|:highlight-link|
+14. Cleaning up			|:syn-clear|
+15. Highlighting tags		|tag-highlight|
+16. Color xterms		|xterm-color|
+
+{Vi does not have any of these commands}
+
+Syntax highlighting is not available when the |+syntax| feature has been
+disabled at compile time.
+
+==============================================================================
+1. Quick start						*:syn-qstart*
+
+						*:syn-enable* *:syntax-enable*
+This command switches on syntax highlighting: >
+
+	:syntax enable
+
+What this command actually does is to execute the command >
+	:source $VIMRUNTIME/syntax/syntax.vim
+
+If the VIM environment variable is not set, Vim will try to find
+the path in another way (see |$VIMRUNTIME|).  Usually this works just
+fine.  If it doesn't, try setting the VIM environment variable to the
+directory where the Vim stuff is located.  For example, if your syntax files
+are in the "/usr/vim/vim50/syntax" directory, set $VIMRUNTIME to
+"/usr/vim/vim50".  You must do this in the shell, before starting Vim.
+
+							*:syn-on* *:syntax-on*
+The ":syntax enable" command will keep your current color settings.  This
+allows using ":highlight" commands to set your preferred colors before or
+after using this command.  If you want Vim to overrule your settings with the
+defaults, use: >
+	:syntax on
+<
+					*:hi-normal* *:highlight-normal*
+If you are running in the GUI, you can get white text on a black background
+with: >
+	:highlight Normal guibg=Black guifg=White
+For a color terminal see |:hi-normal-cterm|.
+For setting up your own colors syntax highlighting see |syncolor|.
+
+NOTE: The syntax files on MS-DOS and Windows have lines that end in <CR><NL>.
+The files for Unix end in <NL>.  This means you should use the right type of
+file for your system.  Although on MS-DOS and Windows the right format is
+automatically selected if the 'fileformats' option is not empty.
+
+NOTE: When using reverse video ("gvim -fg white -bg black"), the default value
+of 'background' will not be set until the GUI window is opened, which is after
+reading the .gvimrc.  This will cause the wrong default highlighting to be
+used.  To set the default value of 'background' before switching on
+highlighting, include the ":gui" command in the .gvimrc: >
+
+   :gui		" open window and set default for 'background'
+   :syntax on	" start highlighting, use 'background' to set colors
+
+NOTE: Using ":gui" in the .gvimrc means that "gvim -f" won't start in the
+foreground!  Use ":gui -f" then.
+
+
+You can toggle the syntax on/off with this command >
+   :if exists("syntax_on") | syntax off | else | syntax enable | endif
+
+To put this into a mapping, you can use: >
+   :map <F7> :if exists("syntax_on") <Bar>
+	\   syntax off <Bar>
+	\ else <Bar>
+	\   syntax enable <Bar>
+	\ endif <CR>
+[using the |<>| notation, type this literally]
+
+Details
+The ":syntax" commands are implemented by sourcing a file.  To see exactly how
+this works, look in the file:
+    command		file ~
+    :syntax enable	$VIMRUNTIME/syntax/syntax.vim
+    :syntax on		$VIMRUNTIME/syntax/syntax.vim
+    :syntax manual	$VIMRUNTIME/syntax/manual.vim
+    :syntax off		$VIMRUNTIME/syntax/nosyntax.vim
+Also see |syntax-loading|.
+
+==============================================================================
+2. Syntax files						*:syn-files*
+
+The syntax and highlighting commands for one language are normally stored in
+a syntax file.	The name convention is: "{name}.vim".  Where {name} is the
+name of the language, or an abbreviation (to fit the name in 8.3 characters,
+a requirement in case the file is used on a DOS filesystem).
+Examples:
+	c.vim		perl.vim	java.vim	html.vim
+	cpp.vim		sh.vim		csh.vim
+
+The syntax file can contain any Ex commands, just like a vimrc file.  But
+the idea is that only commands for a specific language are included.  When a
+language is a superset of another language, it may include the other one,
+for example, the cpp.vim file could include the c.vim file: >
+   :so $VIMRUNTIME/syntax/c.vim
+
+The .vim files are normally loaded with an autocommand.  For example: >
+   :au Syntax c	    runtime! syntax/c.vim
+   :au Syntax cpp   runtime! syntax/cpp.vim
+These commands are normally in the file $VIMRUNTIME/syntax/synload.vim.
+
+
+MAKING YOUR OWN SYNTAX FILES				*mysyntaxfile*
+
+When you create your own syntax files, and you want to have Vim use these
+automatically with ":syntax enable", do this:
+
+1. Create your user runtime directory.	You would normally use the first item
+   of the 'runtimepath' option.  Example for Unix: >
+	mkdir ~/.vim
+
+2. Create a directory in there called "syntax".  For Unix: >
+	mkdir ~/.vim/syntax
+
+3. Write the Vim syntax file.  Or download one from the internet.  Then write
+   it in your syntax directory.  For example, for the "mine" syntax: >
+	:w ~/.vim/syntax/mine.vim
+
+Now you can start using your syntax file manually: >
+	:set syntax=mine
+You don't have to exit Vim to use this.
+
+If you also want Vim to detect the type of file, see |new-filetype|.
+
+If you are setting up a system with many users and you don't want each user
+to add the same syntax file, you can use another directory from 'runtimepath'.
+
+
+ADDING TO AN EXISTING SYNTAX FILE		*mysyntaxfile-add*
+
+If you are mostly satisfied with an existing syntax file, but would like to
+add a few items or change the highlighting, follow these steps:
+
+1. Create your user directory from 'runtimepath', see above.
+
+2. Create a directory in there called "after/syntax".  For Unix: >
+	mkdir ~/.vim/after
+	mkdir ~/.vim/after/syntax
+
+3. Write a Vim script that contains the commands you want to use.  For
+   example, to change the colors for the C syntax: >
+	highlight cComment ctermfg=Green guifg=Green
+
+4. Write that file in the "after/syntax" directory.  Use the name of the
+   syntax, with ".vim" added.  For our C syntax: >
+	:w ~/.vim/after/syntax/c.vim
+
+That's it.  The next time you edit a C file the Comment color will be
+different.  You don't even have to restart Vim.
+
+
+REPLACING AN EXISTING SYNTAX FILE			*mysyntaxfile-replace*
+
+If you don't like a distributed syntax file, or you have downloaded a new
+version, follow the same steps as for |mysyntaxfile| above.  Just make sure
+that you write the syntax file in a directory that is early in 'runtimepath'.
+Vim will only load the first syntax file found.
+
+
+NAMING CONVENTIONS
+				    *group-name* *{group-name}* *E669* *W18*
+The name for a highlight or syntax group must consist of ASCII letters, digits
+and the underscore.  As a regexp: "[a-zA-Z0-9_]*"
+
+To be able to allow each user to pick his favorite set of colors, there must
+be preferred names for highlight groups that are common for many languages.
+These are the suggested group names (if syntax highlighting works properly
+you can see the actual color, except for "Ignore"):
+
+	*Comment	any comment
+
+	*Constant	any constant
+	 String		a string constant: "this is a string"
+	 Character	a character constant: 'c', '\n'
+	 Number		a number constant: 234, 0xff
+	 Boolean	a boolean constant: TRUE, false
+	 Float		a floating point constant: 2.3e10
+
+	*Identifier	any variable name
+	 Function	function name (also: methods for classes)
+
+	*Statement	any statement
+	 Conditional	if, then, else, endif, switch, etc.
+	 Repeat		for, do, while, etc.
+	 Label		case, default, etc.
+	 Operator	"sizeof", "+", "*", etc.
+	 Keyword	any other keyword
+	 Exception	try, catch, throw
+
+	*PreProc	generic Preprocessor
+	 Include	preprocessor #include
+	 Define		preprocessor #define
+	 Macro		same as Define
+	 PreCondit	preprocessor #if, #else, #endif, etc.
+
+	*Type		int, long, char, etc.
+	 StorageClass	static, register, volatile, etc.
+	 Structure	struct, union, enum, etc.
+	 Typedef	A typedef
+
+	*Special	any special symbol
+	 SpecialChar	special character in a constant
+	 Tag		you can use CTRL-] on this
+	 Delimiter	character that needs attention
+	 SpecialComment	special things inside a comment
+	 Debug		debugging statements
+
+	*Underlined	text that stands out, HTML links
+
+	*Ignore		left blank, hidden
+
+	*Error		any erroneous construct
+
+	*Todo		anything that needs extra attention; mostly the
+			keywords TODO FIXME and XXX
+
+The names marked with * are the preferred groups; the others are minor groups.
+For the preferred groups, the "syntax.vim" file contains default highlighting.
+The minor groups are linked to the preferred groups, so they get the same
+highlighting.  You can override these defaults by using ":highlight" commands
+after sourcing the "syntax.vim" file.
+
+Note that highlight group names are not case sensitive.  "String" and "string"
+can be used for the same group.
+
+The following names are reserved and cannot be used as a group name:
+	NONE   ALL   ALLBUT   contains	 contained
+
+==============================================================================
+3. Syntax loading procedure				*syntax-loading*
+
+This explains the details that happen when the command ":syntax enable" is
+issued.  When Vim initializes itself, it finds out where the runtime files are
+located.  This is used here as the variable |$VIMRUNTIME|.
+
+":syntax enable" and ":syntax on" do the following:
+
+    Source $VIMRUNTIME/syntax/syntax.vim
+    |
+    +-	Clear out any old syntax by sourcing $VIMRUNTIME/syntax/nosyntax.vim
+    |
+    +-	Source first syntax/synload.vim in 'runtimepath'
+    |	|
+    |	+-  Setup the colors for syntax highlighting.  If a color scheme is
+    |	|   defined it is loaded again with ":colors {name}".  Otherwise
+    |	|   ":runtime! syntax/syncolor.vim" is used.  ":syntax on" overrules
+    |	|   existing colors, ":syntax enable" only sets groups that weren't
+    |	|   set yet.
+    |	|
+    |	+-  Set up syntax autocmds to load the appropriate syntax file when
+    |	|   the 'syntax' option is set. *synload-1*
+    |	|
+    |	+-  Source the user's optional file, from the |mysyntaxfile| variable.
+    |	    This is for backwards compatibility with Vim 5.x only. *synload-2*
+    |
+    +-	Do ":filetype on", which does ":runtime! filetype.vim".  It loads any
+    |	filetype.vim files found.  It should always Source
+    |	$VIMRUNTIME/filetype.vim, which does the following.
+    |	|
+    |	+-  Install autocmds based on suffix to set the 'filetype' option
+    |	|   This is where the connection between file name and file type is
+    |	|   made for known file types. *synload-3*
+    |	|
+    |	+-  Source the user's optional file, from the *myfiletypefile*
+    |	|   variable.  This is for backwards compatibility with Vim 5.x only.
+    |	|   *synload-4*
+    |	|
+    |	+-  Install one autocommand which sources scripts.vim when no file
+    |	|   type was detected yet. *synload-5*
+    |	|
+    |	+-  Source $VIMRUNTIME/menu.vim, to setup the Syntax menu. |menu.vim|
+    |
+    +-	Install a FileType autocommand to set the 'syntax' option when a file
+    |	type has been detected. *synload-6*
+    |
+    +-	Execute syntax autocommands to start syntax highlighting for each
+	already loaded buffer.
+
+
+Upon loading a file, Vim finds the relevant syntax file as follows:
+
+    Loading the file triggers the BufReadPost autocommands.
+    |
+    +-	If there is a match with one of the autocommands from |synload-3|
+    |	(known file types) or |synload-4| (user's file types), the 'filetype'
+    |	option is set to the file type.
+    |
+    +-	The autocommand at |synload-5| is triggered.  If the file type was not
+    |	found yet, then scripts.vim is searched for in 'runtimepath'.  This
+    |	should always load $VIMRUNTIME/scripts.vim, which does the following.
+    |	|
+    |	+-  Source the user's optional file, from the *myscriptsfile*
+    |	|   variable.  This is for backwards compatibility with Vim 5.x only.
+    |	|
+    |	+-  If the file type is still unknown, check the contents of the file,
+    |	    again with checks like "getline(1) =~ pattern" as to whether the
+    |	    file type can be recognized, and set 'filetype'.
+    |
+    +-	When the file type was determined and 'filetype' was set, this
+    |	triggers the FileType autocommand |synload-6| above.  It sets
+    |	'syntax' to the determined file type.
+    |
+    +-	When the 'syntax' option was set above, this triggers an autocommand
+    |	from |synload-1| (and |synload-2|).  This find the main syntax file in
+    |	'runtimepath', with this command:
+    |		runtime! syntax/<name>.vim
+    |
+    +-	Any other user installed FileType or Syntax autocommands are
+	triggered.  This can be used to change the highlighting for a specific
+	syntax.
+
+==============================================================================
+4. Syntax file remarks					*:syn-file-remarks*
+
+						*b:current_syntax-variable*
+Vim stores the name of the syntax that has been loaded in the
+"b:current_syntax" variable.  You can use this if you want to load other
+settings, depending on which syntax is active.	Example: >
+   :au BufReadPost * if b:current_syntax == "csh"
+   :au BufReadPost *   do-some-things
+   :au BufReadPost * endif
+
+
+2HTML						*2html.vim* *convert-to-HTML*
+
+This is not a syntax file itself, but a script that converts the current
+window into HTML.  Vim opens a new window in which it builds the HTML file.
+
+You are not supposed to set the 'filetype' or 'syntax' option to "2html"!
+Source the script to convert the current file: >
+
+	:runtime! syntax/2html.vim
+<
+Warning: This is slow!
+							*:TOhtml*
+Or use the ":TOhtml" user command.  It is defined in a standard plugin.
+":TOhtml" also works with a range and in a Visual area: >
+
+	:10,40TOhtml
+
+After you save the resulting file, you can view it with any HTML viewer, such
+as Netscape.  The colors should be exactly the same as you see them in Vim.
+
+To restrict the conversion to a range of lines set "html_start_line" and
+"html_end_line" to the first and last line to be converted.  Example, using
+the last set Visual area: >
+
+	:let html_start_line = line("'<")
+	:let html_end_line = line("'>")
+
+The lines are numbered according to 'number' option and the Number
+highlighting.  You can force lines to be numbered in the HTML output by
+setting "html_number_lines" to non-zero value: >
+   :let html_number_lines = 1
+Force to omit the line numbers by using a zero value: >
+   :let html_number_lines = 0
+Go back to the default to use 'number' by deleting the variable: >
+   :unlet html_number_lines
+
+By default, HTML optimized for old browsers is generated.  If you prefer using
+cascading style sheets (CSS1) for the attributes (resulting in considerably
+shorter and valid HTML 4 file), use: >
+   :let html_use_css = 1
+
+By default "<pre>" and "</pre>" is used around the text.  This makes it show
+up as you see it in Vim, but without wrapping.	If you prefer wrapping, at the
+risk of making some things look a bit different, use: >
+   :let html_no_pre = 1
+This will use <br> at the end of each line and use "&nbsp;" for repeated
+spaces.
+
+The current value of 'encoding' is used to specify the charset of the HTML
+file.  This only works for those values of 'encoding' that have an equivalent
+HTML charset name.  To overrule this set g:html_use_encoding to the name of
+the charset to be used: >
+   :let html_use_encoding = "foobar"
+To omit the line that specifies the charset, set g:html_use_encoding to an
+empty string: >
+   :let html_use_encoding = ""
+To go back to the automatic mechanism, delete the g:html_use_encoding
+variable: >
+   :unlet html_use_encoding
+<
+					    *convert-to-XML* *convert-to-XHTML*
+An alternative is to have the script generate XHTML (XML compliant HTML).  To
+do this set the "use_xhtml" variable: >
+    :let use_xhtml = 1
+To disable it again delete the variable: >
+    :unlet use_xhtml
+The generated XHTML file can be used in DocBook XML documents.  See:
+	http://people.mech.kuleuven.ac.be/~pissaris/howto/src2db.html
+
+Remarks:
+- This only works in a version with GUI support.  If the GUI is not actually
+  running (possible for X11) it still works, but not very well (the colors
+  may be wrong).
+- Older browsers will not show the background colors.
+- From most browsers you can also print the file (in color)!
+
+Here is an example how to run the script over all .c and .h files from a
+Unix shell: >
+   for f in *.[ch]; do gvim -f +"syn on" +"run! syntax/2html.vim" +"wq" +"q" $f; done
+<
+
+ABEL							*abel.vim* *abel-syntax*
+
+ABEL highlighting provides some user-defined options.  To enable them, assign
+any value to the respective variable.  Example: >
+	:let abel_obsolete_ok=1
+To disable them use ":unlet".  Example: >
+	:unlet abel_obsolete_ok
+
+Variable			Highlight ~
+abel_obsolete_ok		obsolete keywords are statements, not errors
+abel_cpp_comments_illegal	do not interpret '//' as inline comment leader
+
+
+ADA							*ada.vim* *ada-syntax*
+
+This mode is designed for the 1995 edition of Ada ("Ada95"), which
+includes support for objected-programming, protected types, and so on.
+It handles code written for the original Ada language
+("Ada83" or "Ada87") as well, though Ada83 code which uses Ada95-only
+keywords will be wrongly colored (such code should be fixed anyway).
+For more information about Ada, see http://www.adapower.com.
+
+The Ada mode handles a number of situations cleanly.
+For example, it knows that the "-" in "-5" is a number, but the same
+character in "A-5" is an operator.  Normally, a "with" or "use" clause
+referencing another compilation unit is colored the same way as C's
+"#include" is colored.	If you have "Conditional" or "Repeat"
+groups colored differently, then "end if" and "end loop" will be
+colored as part of those respective groups.
+You can set these to different colors using vim's "highlight" command
+(e.g., to change how loops are displayed, enter the command
+":hi Repeat" followed by the color specification; on simple terminals
+the color specification ctermfg=White often shows well).
+
+There are several options you can select in this Ada mode.
+To enable them, assign a value to the option.  For example, to turn one on:
+   let ada_standard_types = 1
+To disable them use ":unlet".  Example:
+   unlet ada_standard_types = 1
+You can just use ":" and type these into the command line to set these
+temporarily before loading an Ada file.  You can make these option settings
+permanent by adding the "let" command(s), without a colon,
+to your "~/.vimrc" file.
+
+Here are the Ada mode options:
+
+Variable		 Action	~
+ada_standard_types	 Highlight types in package Standard (e.g., "Float")
+ada_space_errors	 Highlight extraneous errors in spaces...
+ada_no_trail_space_error   but ignore trailing spaces at the end of a line
+ada_no_tab_space_error	   but ignore tabs after spaces
+ada_withuse_ordinary	 Show "with" and "use" as ordinary keywords
+			   (when used to reference other compilation units
+			   they're normally highlighted specially).
+ada_begin_preproc	 Show all begin-like keywords using the coloring
+			   of C preprocessor commands.
+
+Even on a slow (90Mhz) PC this mode works quickly, but if you find
+the performance unacceptable, turn on ada_withuse_ordinary.
+
+
+ANT						*ant.vim* *ant-syntax*
+
+The ant syntax file provides syntax highlighting for javascript and python
+by default. Syntax highlighting for other script languages can be installed
+by the function AntSyntaxScript(), which takes the tag name as first argument
+and the script syntax file name as second argument. Example: >
+
+	:call AntSyntaxScript('perl', 'perl.vim')
+
+will install syntax perl highlighting for the following ant code >
+
+	<script language = 'perl'><![CDATA[
+	    # everything inside is highlighted as perl
+	]]></script>
+
+See |mysyntaxfile-add| for installing script languages permanently.
+
+
+APACHE						*apache.vim* *apache-syntax*
+
+The apache syntax file provides syntax highlighting depending on Apache HTTP
+server version, by default for 1.3.x.  Set "apache_version" to Apache version
+(as a string) to get highlighting for another version.	Example: >
+
+	:let apache_version = "2.0"
+<
+
+		*asm.vim* *asmh8300.vim* *nasm.vim* *masm.vim* *asm68k*
+ASSEMBLY	*asm-syntax* *asmh8300-syntax* *nasm-syntax* *masm-syntax*
+		*asm68k-syntax* *fasm.vim*
+
+Files matching "*.i" could be Progress or Assembly.  If the automatic detection
+doesn't work for you, or you don't edit Progress at all, use this in your
+startup vimrc: >
+   :let filetype_i = "asm"
+Replace "asm" with the type of assembly you use.
+
+There are many types of assembly languages that all use the same file name
+extensions.  Therefore you will have to select the type yourself, or add a
+line in the assembly file that Vim will recognize.  Currently these syntax
+files are included:
+	asm		GNU assembly (the default)
+	asm68k		Motorola 680x0 assembly
+	asmh8300	Hitachi H-8300 version of GNU assembly
+	ia64		Intel Itanium 64
+	fasm		Flat assembly (http://flatassembler.net)
+	masm		Microsoft assembly (probably works for any 80x86)
+	nasm		Netwide assembly
+	tasm		Turbo Assembly (with opcodes 80x86 up to Pentium, and
+			MMX)
+	pic		PIC assembly (currently for PIC16F84)
+
+The most flexible is to add a line in your assembly file containing: >
+	:asmsyntax=nasm
+Replace "nasm" with the name of the real assembly syntax.  This line must be
+one of the first five lines in the file.
+
+The syntax type can always be overruled for a specific buffer by setting the
+b:asmsyntax variable: >
+	:let b:asmsyntax=nasm
+
+If b:asmsyntax is not set, either automatically or by hand, then the value of
+the global variable asmsyntax is used.	This can be seen as a default assembly
+language: >
+	:let asmsyntax=nasm
+
+As a last resort, if nothing is defined, the "asm" syntax is used.
+
+
+Netwide assembler (nasm.vim) optional highlighting ~
+
+To enable a feature: >
+	:let   {variable}=1|set syntax=nasm
+To disable a feature: >
+	:unlet {variable}  |set syntax=nasm
+
+Variable		Highlight ~
+nasm_loose_syntax	unofficial parser allowed syntax not as Error
+			  (parser dependent; not recommended)
+nasm_ctx_outside_macro	contexts outside macro not as Error
+nasm_no_warn		potentially risky syntax not as ToDo
+
+
+ASPPERL and ASPVBS			*aspperl-syntax* *aspvbs-syntax*
+
+*.asp and *.asa files could be either Perl or Visual Basic script.  Since it's
+hard to detect this you can set two global variables to tell Vim what you are
+using.	For Perl script use: >
+	:let g:filetype_asa = "aspperl"
+	:let g:filetype_asp = "aspperl"
+For Visual Basic use: >
+	:let g:filetype_asa = "aspvbs"
+	:let g:filetype_asp = "aspvbs"
+
+
+BASIC				*basic.vim* *vb.vim* *basic-syntax* *vb-syntax*
+
+Both Visual Basic and "normal" basic use the extension ".bas".	To detect
+which one should be used, Vim checks for the string "VB_Name" in the first
+five lines of the file.  If it is not found, filetype will be "basic",
+otherwise "vb".  Files with the ".frm" extension will always be seen as Visual
+Basic.
+
+
+C							*c.vim* *c-syntax*
+
+A few things in C highlighting are optional.  To enable them assign any value
+to the respective variable.  Example: >
+	:let c_comment_strings=1
+To disable them use ":unlet".  Example: >
+	:unlet c_comment_strings
+
+Variable		Highlight ~
+c_gnu			GNU gcc specific items
+c_comment_strings	strings and numbers inside a comment
+c_space_errors		trailing white space and spaces before a <Tab>
+c_no_trail_space_error	 ... but no trailing spaces
+c_no_tab_space_error	 ... but no spaces before a <Tab>
+c_no_bracket_error	don't highlight {}; inside [] as errors
+c_no_ansi		don't do standard ANSI types and constants
+c_ansi_typedefs		 ... but do standard ANSI types
+c_ansi_constants	 ... but do standard ANSI constants
+c_no_utf		don't highlight \u and \U in strings
+c_syntax_for_h		use C syntax for *.h files, instead of C++
+c_no_if0		don't highlight "#if 0" blocks as comments
+c_no_cformat		don't highlight %-formats in strings
+c_no_c99		don't highlight C99 standard items
+
+If you notice highlighting errors while scrolling backwards, which are fixed
+when redrawing with CTRL-L, try setting the "c_minlines" internal variable
+to a larger number: >
+	:let c_minlines = 100
+This will make the syntax synchronization start 100 lines before the first
+displayed line.  The default value is 50 (15 when c_no_if0 is set).  The
+disadvantage of using a larger number is that redrawing can become slow.
+
+When using the "#if 0" / "#endif" comment highlighting, notice that this only
+works when the "#if 0" is within "c_minlines" from the top of the window.  If
+you have a long "#if 0" construct it will not be highlighted correctly.
+
+To match extra items in comments, use the cCommentGroup cluster.
+Example: >
+   :au Syntax c call MyCadd()
+   :function MyCadd()
+   :  syn keyword cMyItem contained Ni
+   :  syn cluster cCommentGroup add=cMyItem
+   :  hi link cMyItem Title
+   :endfun
+
+ANSI constants will be highlighted with the "cConstant" group.	This includes
+"NULL", "SIG_IGN" and others.  But not "TRUE", for example, because this is
+not in the ANSI standard.  If you find this confusing, remove the cConstant
+highlighting: >
+	:hi link cConstant NONE
+
+If you see '{' and '}' highlighted as an error where they are OK, reset the
+highlighting for cErrInParen and cErrInBracket.
+
+If you want to use folding in your C files, you can add these lines in a file
+an the "after" directory in 'runtimepath'.  For Unix this would be
+~/.vim/after/syntax/c.vim. >
+    syn region myFold start="{" end="}" transparent fold
+    syn sync fromstart
+    set foldmethod=syntax
+
+
+CHILL						*chill.vim* *chill-syntax*
+
+Chill syntax highlighting is similar to C.  See |c.vim| for all the settings
+that are available.  Additionally there is:
+
+chill_syntax_for_h	use Ch syntax for *.h files, instead of C or C++
+chill_space_errors	like c_space_errors
+chill_comment_string	like c_comment_strings
+chill_minlines		like c_minlines
+
+
+CHANGELOG				*changelog.vim* *changelog-syntax*
+
+ChangeLog supports highlighting spaces at the start of a line.
+If you do not like this, add following line to your .vimrc: >
+	let g:changelog_spacing_errors = 0
+This works the next time you edit a changelog file.  You can also use
+"b:changelog_spacing_errors" to set this per buffer (before loading the syntax
+file).
+
+You can change the highlighting used, e.g., to flag the spaces as an error: >
+	:hi link ChangelogError Error
+Or to avoid the highlighting: >
+	:hi link ChangelogError NONE
+This works immediately.
+
+
+COBOL						*cobol.vim* *cobol-syntax*
+
+COBOL highlighting has different needs for legacy code than it does for fresh
+development.  This is due to differences in what is being done (maintenance
+versus development) and other factors.	To enable legacy code highlighting,
+add this line to your .vimrc: >
+	:let cobol_legacy_code = 1
+To disable it again, use this: >
+	:unlet cobol_legacy_code
+
+
+COLD FUSION				*coldfusion.vim* *coldfusion-syntax*
+
+The ColdFusion has its own version of HTML comments. To turn on ColdFusion
+comment highlighting, add the following line to your startup file: >
+
+	:let html_wrong_comments = 1
+
+The ColdFusion syntax file is based on the HTML syntax file.
+
+
+CSH						*csh.vim* *csh-syntax*
+
+This covers the shell named "csh".  Note that on some systems tcsh is actually
+used.
+
+Detecting whether a file is csh or tcsh is notoriously hard.  Some systems
+symlink /bin/csh to /bin/tcsh, making it almost impossible to distinguish
+between csh and tcsh.  In case VIM guesses wrong you can set the
+"filetype_csh" variable.  For using csh: >
+
+	:let filetype_csh = "csh"
+
+For using tcsh: >
+
+	:let filetype_csh = "tcsh"
+
+Any script with a tcsh extension or a standard tcsh filename (.tcshrc,
+tcsh.tcshrc, tcsh.login) will have filetype tcsh.  All other tcsh/csh scripts
+will be classified as tcsh, UNLESS the "filetype_csh" variable exists. If the
+"filetype_csh" variable exists, the filetype will be set to the value of the
+variable.
+
+
+CYNLIB						*cynlib.vim* *cynlib-syntax*
+
+Cynlib files are C++ files that use the Cynlib class library to enable
+hardware modeling and simulation using C++. Typically Cynlib files have a .cc
+or a .cpp extension, which makes it very difficult to distinguish them from a
+normal C++ file. Thus, to enable Cynlib highlighting for .cc files, add this
+line to your .vimrc file: >
+
+	:let cynlib_cyntax_for_cc=1
+
+Similarly for cpp files (this extension is only usually used in Windows) >
+
+	:let cynlib_cyntax_for_cpp=1
+
+To disable these again, use this: >
+
+	:unlet cynlib_cyntax_for_cc
+	:unlet cynlib_cyntax_for_cpp
+<
+
+CWEB						*cweb.vim* *cweb-syntax*
+
+Files matching "*.w" could be Progress or cweb.  If the automatic detection
+doesn't work for you, or you don't edit Progress at all, use this in your
+startup vimrc: >
+   :let filetype_w = "cweb"
+
+
+DESKTOP					   *desktop.vim* *desktop-syntax*
+
+Primary goal of this syntax file is to highlight .desktop and .directory files
+according to freedesktop.org standard: http://pdx.freedesktop.org/Standards/
+But actually almost none implements this standard fully.  Thus it will
+highlight all Unix ini files. But you can force strict highlighting according
+to standard by placing this in your vimrc file: >
+	:let enforce_freedesktop_standard = 1
+
+
+DIRCOLORS			       *dircolors.vim* *dircolors-syntax*
+
+The dircolors utility highlighting definition has one option.  It exists to
+provide compatibility with the Slackware GNU/Linux distributions version of
+the command.  It adds a few keywords that are generally ignored by most
+versions.  On Slackware systems, however, the utility accepts the keywords and
+uses them for processing.  To enable the Slackware keywords add the following
+line to your startup file: >
+	let dircolors_is_slackware = 1
+
+
+DOCBOOK					*docbk.vim* *docbk-syntax* *docbook*
+DOCBOOK	XML				*docbkxml.vim* *docbkxml-syntax*
+DOCBOOK	SGML				*docbksgml.vim* *docbksgml-syntax*
+
+There are two types of DocBook files: SGML and XML.  To specify what type you
+are using the "b:docbk_type" variable should be set.  Vim does this for you
+automatically if it can recognize the type.  When Vim can't guess it the type
+defaults to XML.
+You can set the type manually: >
+	:let docbk_type = "sgml"
+or: >
+	:let docbk_type = "xml"
+You need to do this before loading the syntax file, which is complicated.
+Simpler is setting the filetype to "docbkxml" or "docbksgml": >
+	:set filetype=docbksgml
+or: >
+	:set filetype=docbkxml
+
+
+DOSBATCH				*dosbatch.vim* *dosbatch-syntax*
+
+There is one option with highlighting DOS batch files.	This covers new
+extensions to the Command Interpreter introduced with Windows 2000 and
+is controlled by the variable dosbatch_cmdextversion.  For Windows NT
+this should have the value 1, and for Windows 2000 it should be 2.
+Select the version you want with the following line: >
+
+  :let dosbatch_cmdextversion = 1
+
+If this variable is not defined it defaults to a value of 2 to support
+Windows 2000.
+
+
+DTD						*dtd.vim* *dtd-syntax*
+
+The DTD syntax highlighting is case sensitive by default. To disable
+case-sensitive highlighting, add the following line to your startup file: >
+
+	:let dtd_ignore_case=1
+
+The DTD syntax file will highlight unknown tags as errors. If
+this is annoying, it can be turned off by setting: >
+
+	:let dtd_no_tag_errors=1
+
+before sourcing the dtd.vim syntax file.
+Parameter entity names are highlighted in the definition using the
+'Type' highlighting group and 'Comment' for punctuation and '%'.
+Parameter entity instances are highlighted using the 'Constant'
+highlighting group and the 'Type' highlighting group for the
+delimiters % and ;. This can be turned off by setting: >
+
+	:let dtd_no_param_entities=1
+
+The DTD syntax file is also included by xml.vim to highlight included dtd's.
+
+
+EIFFEL						*eiffel.vim* *eiffel-syntax*
+
+While Eiffel is not case-sensitive, its style guidelines are, and the
+syntax highlighting file encourages their use. This also allows to
+highlight class names differently. If you want to disable case-sensitive
+highlighting, add the following line to your startup file: >
+
+	:let eiffel_ignore_case=1
+
+Case still matters for class names and TODO marks in comments.
+
+Conversely, for even stricter checks, add one of the following lines: >
+
+	:let eiffel_strict=1
+	:let eiffel_pedantic=1
+
+Setting eiffel_strict will only catch improper capitalization for the
+five predefined words "Current", "Void", "Result", "Precursor", and
+"NONE", to warn against their accidental use as feature or class names.
+
+Setting eiffel_pedantic will enforce adherence to the Eiffel style
+guidelines fairly rigorously (like arbitrary mixes of upper- and
+lowercase letters as well as outdated ways to capitalize keywords).
+
+If you want to use the lower-case version of "Current", "Void",
+"Result", and "Precursor", you can use >
+
+	:let eiffel_lower_case_predef=1
+
+instead of completely turning case-sensitive highlighting off.
+
+Support for ISE's proposed new creation syntax that is already
+experimentally handled by some compilers can be enabled by: >
+
+	:let eiffel_ise=1
+
+Finally, some vendors support hexadecimal constants. To handle them, add >
+
+	:let eiffel_hex_constants=1
+
+to your startup file.
+
+
+ERLANG						*erlang.vim* *erlang-syntax*
+
+The erlang highlighting supports Erlang (ERicsson LANGuage).
+Erlang is case sensitive and default extension is ".erl".
+
+If you want to disable keywords highlighting, put in your .vimrc: >
+	:let erlang_keywords = 1
+If you want to disable built-in-functions highlighting, put in your
+.vimrc file: >
+	:let erlang_functions = 1
+If you want to disable special characters highlighting, put in
+your .vimrc: >
+	:let erlang_characters = 1
+
+
+FORM						*form.vim* *form-syntax*
+
+The coloring scheme for syntax elements in the FORM file uses the default
+modes Conditional, Number, Statement, Comment, PreProc, Type, and String,
+following the language specifications in 'Symbolic Manipulation with FORM'' by
+J.A.M. Vermaseren, CAN, Netherlands, 1991.
+
+If you want include your own changes to the default colors, you have to
+redefine the following syntax groups:
+
+    - formConditional
+    - formNumber
+    - formStatement
+    - formHeaderStatement
+    - formComment
+    - formPreProc
+    - formDirective
+    - formType
+    - formString
+
+Note that the form.vim syntax file implements FORM preprocessor commands and
+directives per default in the same syntax group.
+
+A predefined enhanced color mode for FORM is available to distinguish between
+header statements and statements in the body of a FORM program. To activate
+this mode define the following variable in your vimrc file >
+
+	:let form_enhanced_color=1
+
+The enhanced mode also takes advantage of additional color features for a dark
+gvim display. Here, statements are colored LightYellow instead of Yellow, and
+conditionals are LightBlue for better distinction.
+
+
+FORTRAN					*fortran.vim* *fortran-syntax*
+
+Default highlighting and dialect ~
+Highlighting appropriate for f95 (Fortran 95) is used by default. This choice
+should be appropriate for most users most of the time because Fortran 95 is a
+superset of Fortran 90 and almost a superset of Fortran 77.
+
+Fortran source code form ~
+Fortran 9x code can be in either fixed or free source form. Note that the
+syntax highlighting will not be correct if the form is incorrectly set.
+
+When you create a new fortran file, the syntax script assumes fixed source
+form. If you always use free source form, then >
+    :let fortran_free_source=1
+in your .vimrc prior to the :syntax on command. If you always use fixed source
+form, then >
+    :let fortran_fixed_source=1
+in your .vimrc prior to the :syntax on command.
+
+If the form of the source code depends upon the file extension, then it is
+most convenient to set fortran_free_source in a ftplugin file. For more
+information on ftplugin files, see |ftplugin|. For example, if all your
+fortran files with an .f90 extension are written in free source form and the
+rest in fixed source form, add the following code to your ftplugin file >
+    let s:extfname = expand("%:e")
+    if s:extfname ==? "f90"
+	let fortran_free_source=1
+	unlet! fortran_fixed_source
+    else
+	let fortran_fixed_source=1
+	unlet! fortran_free_source
+    endif
+Note that this will work only if the "filetype plugin indent on" command
+precedes the "syntax on" command in your .vimrc file.
+
+When you edit an existing fortran file, the syntax script will assume free
+source form if the fortran_free_source variable has been set, and assumes
+fixed source form if the fortran_fixed_source variable has been set. If
+neither of these variables have been set, the syntax script attempts to
+determine which source form has been used by examining the first five columns
+of the first 25 lines of your file. If no signs of free source form are
+detected, then the file is assumed to be in fixed source form. The algorithm
+should work in the vast majority of cases. In some cases, such as a file that
+begins with 25 or more full-line comments, the script may incorrectly decide
+that the fortran code is in fixed form. If that happens, just add a
+non-comment statement beginning anywhere in the first five columns of the
+first twenty five lines, save (:w) and then reload (:e!) the file.
+
+Tabs in fortran files ~
+Tabs are not recognized by the Fortran standards. Tabs are not a good idea in
+fixed format fortran source code which requires fixed column boundaries.
+Therefore, tabs are marked as errors. Nevertheless, some programmers like
+using tabs. If your fortran files contain tabs, then you should set the
+variable fortran_have_tabs in your .vimrc with a command such as >
+    :let fortran_have_tabs=1
+placed prior to the :syntax on command. Unfortunately, the use of tabs will
+mean that the syntax file will not be able to detect incorrect margins.
+
+Syntax folding of fortran files ~
+If you wish to use foldmethod=syntax, then you must first set the variable
+fortran_fold with a command such as >
+    :let fortran_fold=1
+to instruct the syntax script to define fold regions for program units, that
+is main programs starting with a program statement, subroutines, function
+subprograms, block data subprograms, interface blocks, and modules. If you
+also set the variable fortran_fold_conditionals with a command such as >
+    :let fortran_fold_conditionals=1
+then fold regions will also be defined for do loops, if blocks, and select
+case constructs. If you also set the variable
+fortran_fold_multilinecomments with a command such as >
+    :let fortran_fold_multilinecomments=1
+then fold regions will also be defined for three or more consecutive comment
+lines. Note that defining fold regions can be slow for large files.
+
+If fortran_fold, and possibly fortran_fold_conditionals and/or
+fortran_fold_multilinecomments, have been set, then vim will fold your file if
+you set foldmethod=syntax. Comments or blank lines placed between two program
+units are not folded because they are seen as not belonging to any program
+unit.
+
+More precise fortran syntax ~
+If you set the variable fortran_more_precise with a command such as >
+    :let fortran_more_precise=1
+then the syntax coloring will be more precise but slower. In particular,
+statement labels used in do, goto and arithmetic if statements will be
+recognized, as will construct names at the end of a do, if, select or forall
+construct.
+
+Non-default fortran dialects ~
+The syntax script supports five Fortran dialects: f95, f90, f77, the Lahey
+subset elf90, and the Imagine1 subset F.
+
+If you use f77 with extensions, even common ones like do/enddo loops, do/while
+loops and free source form that are supported by most f77 compilers including
+g77 (GNU Fortran), then you will probably find the default highlighting
+satisfactory. However, if you use strict f77 with no extensions, not even free
+source form or the MIL STD 1753 extensions, then the advantages of setting the
+dialect to f77 are that names such as SUM are recognized as user variable
+names and not highlighted as f9x intrinsic functions, that obsolete constructs
+such as ASSIGN statements are not highlighted as todo items, and that fixed
+source form will be assumed.
+
+If you use elf90 or F, the advantage of setting the dialect appropriately is
+that f90 features excluded from these dialects will be highlighted as todo
+items and that free source form will be assumed as required for these
+dialects.
+
+The dialect can be selected by setting the variable fortran_dialect. The
+permissible values of fortran_dialect are case-sensitive and must be "f95",
+"f90", "f77", "elf" or "F". Invalid values of fortran_dialect are ignored.
+
+If all your fortran files use the same dialect, set fortran_dialect in your
+.vimrc prior to your syntax on statement. If the dialect depends upon the file
+extension, then it is most convenient to set it in a ftplugin file. For more
+information on ftplugin files, see |ftplugin|. For example, if all your
+fortran files with an .f90 extension are written in the elf subset, your
+ftplugin file should contain the code >
+    let s:extfname = expand("%:e")
+    if s:extfname ==? "f90"
+	let fortran_dialect="elf"
+    else
+	unlet! fortran_dialect
+    endif
+Note that this will work only if the "filetype plugin indent on" command
+precedes the "syntax on" command in your .vimrc file.
+
+Finer control is necessary if the file extension does not uniquely identify
+the dialect. You can override the default dialect, on a file-by-file basis, by
+including a comment with the directive "fortran_dialect=xx" (where xx=f77 or
+elf or F or f90 or f95) in one of the first three lines in your file. For
+example, your older .f files may be written in extended f77 but your newer
+ones may be F codes, and you would identify the latter by including in the
+first three lines of those files a Fortran comment of the form >
+  ! fortran_dialect=F
+F overrides elf if both directives are present.
+
+Limitations ~
+Parenthesis checking does not catch too few closing parentheses. Hollerith
+strings are not recognized. Some keywords may be highlighted incorrectly
+because Fortran90 has no reserved words.
+
+For further information related to fortran, see |fortran-indent| and
+|fortran-plugin|.
+
+
+FVWM CONFIGURATION FILES			*fvwm.vim* *fvwm-syntax*
+
+In order for Vim to recognize Fvwm configuration files that do not match
+the patterns *fvwmrc* or *fvwm2rc* , you must put additional patterns
+appropriate to your system in your myfiletypes.vim file.  For these
+patterns, you must set the variable "b:fvwm_version" to the major version
+number of Fvwm, and the 'filetype' option to fvwm.
+
+For example, to make Vim identify all files in /etc/X11/fvwm2/
+as Fvwm2 configuration files, add the following: >
+
+  :au! BufNewFile,BufRead /etc/X11/fvwm2/*  let b:fvwm_version = 2 |
+					 \ set filetype=fvwm
+
+If you'd like Vim to highlight all valid color names, tell it where to
+find the color database (rgb.txt) on your system.  Do this by setting
+"rgb_file" to its location.  Assuming your color database is located
+in /usr/X11/lib/X11/, you should add the line >
+
+	:let rgb_file = "/usr/X11/lib/X11/rgb.txt"
+
+to your .vimrc file.
+
+
+GSP							*gsp.vim*
+
+The default coloring style for GSP pages is defined by |html.vim|, and
+the coloring for java code (within java tags or inline between backticks)
+is defined by |java.vim|.  The following HTML groups defined in |html.vim|
+are redefined to incorporate and highlight inline java code:
+
+    htmlString
+    htmlValue
+    htmlEndTag
+    htmlTag
+    htmlTagN
+
+Highlighting should look fine most of the places where you'd see inline
+java code, but in some special cases it may not.  To add another HTML
+group where you will have inline java code where it does not highlight
+correctly, just copy the line you want from |html.vim| and add gspJava
+to the contains clause.
+
+The backticks for inline java are highlighted according to the htmlError
+group to make them easier to see.
+
+
+GROFF						*groff.vim* *groff-syntax*
+
+The groff syntax file is a wrapper for |nroff.vim|, see the notes
+under that heading for examples of use and configuration. The purpose
+of this wrapper is to set up groff syntax extensions by setting the
+filetype from a |modeline| or in a personal filetype definitions file
+(see |filetype.txt|).
+
+
+HASKELL			     *haskell.vim* *lhaskell.vim* *haskell-syntax*
+
+The Haskell syntax files support plain Haskell code as well as literate
+Haskell code, the latter in both Bird style and TeX style. The Haskell
+syntax highlighting will also highlight C preprocessor directives.
+
+If you want to highlight delimiter characters (useful if you have a
+light-coloured background), add to your .vimrc: >
+	:let hs_highlight_delimiters = 1
+To treat True and False as keywords as opposed to ordinary identifiers,
+add: >
+	:let hs_highlight_boolean = 1
+To also treat the names of primitive types as keywords: >
+	:let hs_highlight_types = 1
+And to treat the names of even more relatively common types as keywords: >
+	:let hs_highlight_more_types = 1
+If you want to highlight the names of debugging functions, put in
+your .vimrc: >
+	:let hs_highlight_debug = 1
+
+The Haskell syntax highlighting also highlights C preprocessor
+directives, and flags lines that start with # but are not valid
+directives as erroneous. This interferes with Haskell's syntax for
+operators, as they may start with #. If you want to highlight those
+as operators as opposed to errors, put in your .vimrc: >
+	:let hs_allow_hash_operator = 1
+
+The syntax highlighting for literate Haskell code will try to
+automatically guess whether your literate Haskell code contains
+TeX markup or not, and correspondingly highlight TeX constructs
+or nothing at all. You can override this globally by putting
+in your .vimrc >
+	:let lhs_markup = none
+for no highlighting at all, or >
+	:let lhs_markup = tex
+to force the highlighting to always try to highlight TeX markup.
+For more flexibility, you may also use buffer local versions of
+this variable, so e.g. >
+	:let b:lhs_markup = tex
+will force TeX highlighting for a particular buffer. It has to be
+set before turning syntax highlighting on for the buffer or
+loading a file.
+
+
+HTML						*html.vim* *html-syntax*
+
+The coloring scheme for tags in the HTML file works as follows.
+
+The  <> of opening tags are colored differently than the </> of a closing tag.
+This is on purpose! For opening tags the 'Function' color is used, while for
+closing tags the 'Type' color is used (See syntax.vim to check how those are
+defined for you)
+
+Known tag names are colored the same way as statements in C.  Unknown tag
+names are colored with the same color as the <> or </> respectively which
+makes it easy to spot errors
+
+Note that the same is true for argument (or attribute) names. Known attribute
+names are colored differently than unknown ones.
+
+Some HTML tags are used to change the rendering of text. The following tags
+are recognized by the html.vim syntax coloring file and change the way normal
+text is shown: <B> <I> <U> <EM> <STRONG> (<EM> is used as an alias for <I>,
+while <STRONG> as an alias for <B>), <H1> - <H6>, <HEAD>, <TITLE> and <A>, but
+only if used as a link that is, it must include a href as in
+<A href="somfile.html">).
+
+If you want to change how such text is rendered, you must redefine the
+following syntax groups:
+
+    - htmlBold
+    - htmlBoldUnderline
+    - htmlBoldUnderlineItalic
+    - htmlUnderline
+    - htmlUnderlineItalic
+    - htmlItalic
+    - htmlTitle for titles
+    - htmlH1 - htmlH6 for headings
+
+To make this redefinition work you must redefine them all with the exception
+of the last two (htmlTitle and htmlH[1-6], which are optional) and define the
+following variable in your vimrc (this is due to the order in which the files
+are read during initialization) >
+	:let html_my_rendering=1
+
+If you'd like to see an example download mysyntax.vim at
+http://www.fleiner.com/vim/download.html
+
+You can also disable this rendering by adding the following line to your
+vimrc file: >
+	:let html_no_rendering=1
+
+HTML comments are rather special (see an HTML reference document for the
+details), and the syntax coloring scheme will highlight all errors.
+However, if you prefer to use the wrong style (starts with <!-- and
+ends with --!>) you can define >
+	:let html_wrong_comments=1
+
+JavaScript and Visual Basic embedded inside HTML documents are highlighted as
+'Special' with statements, comments, strings and so on colored as in standard
+programming languages. Note that only JavaScript and Visual Basic are currently
+supported, no other scripting language has been added yet.
+
+Embedded and inlined cascading style sheets (CSS) are highlighted too.
+
+There are several html preprocessor languages out there. html.vim has been
+written such that it should be trivial to include it. To do so add the
+following two lines to the syntax coloring file for that language
+(the example comes from the asp.vim file):
+
+    runtime! syntax/html.vim
+    syn cluster htmlPreproc add=asp
+
+Now you just need to make sure that you add all regions that contain
+the preprocessor language to the cluster htmlPreproc.
+
+
+HTML/OS (by Aestiva)				*htmlos.vim* *htmlos-syntax*
+
+The coloring scheme for HTML/OS works as follows:
+
+Functions and variable names are the same color by default, because VIM
+doesn't specify different colors for Functions and Identifiers.  To change
+this (which is recommended if you want function names to be recognizable in a
+different color) you need to add the following line to either your ~/.vimrc: >
+  :hi Function term=underline cterm=bold ctermfg=LightGray
+
+Of course, the ctermfg can be a different color if you choose.
+
+Another issues that HTML/OS runs into is that there is no special filetype to
+signify that it is a file with HTML/OS coding.	You can change this by opening
+a file and turning on HTML/OS syntax by doing the following: >
+  :set syntax=htmlos
+
+Lastly, it should be noted that the opening and closing characters to begin a
+block of HTML/OS code can either be << or [[ and >> or ]], respectively.
+
+
+IA64				*ia64.vim* *intel-itanium* *ia64-syntax*
+
+Highlighting for the Intel Itanium 64 assembly language.  See |asm.vim| for
+how to recognize this filetype.
+
+To have *.inc files be recognized as IA64, add this to your .vimrc file: >
+	:let g:filetype_inc = "ia64"
+
+
+INFORM						*inform.vim* *inform-syntax*
+
+Inform highlighting includes symbols provided by the Inform Library, as
+most programs make extensive use of it.  If do not wish Library symbols
+to be highlighted add this to your vim startup: >
+	:let inform_highlight_simple=1
+
+By default it is assumed that Inform programs are Z-machine targeted,
+and highlights Z-machine assembly language symbols appropriately.  If
+you intend your program to be targeted to a Glulx/Glk environment you
+need to add this to your startup sequence: >
+	:let inform_highlight_glulx=1
+
+This will highlight Glulx opcodes instead, and also adds glk() to the
+set of highlighted system functions.
+
+The Inform compiler will flag certain obsolete keywords as errors when
+it encounters them.  These keywords are normally highlighted as errors
+by Vim.  To prevent such error highlighting, you must add this to your
+startup sequence: >
+	:let inform_suppress_obsolete=1
+
+By default, the language features highlighted conform to Compiler
+version 6.30 and Library version 6.11.  If you are using an older
+Inform development environment, you may with to add this to your
+startup sequence: >
+	:let inform_highlight_old=1
+
+
+JAVA						*java.vim* *java-syntax*
+
+The java.vim syntax highlighting file offers several options:
+
+In Java 1.0.2 it was never possible to have braces inside parens, so this was
+flagged as an error.  Since Java 1.1 this is possible (with anonymous
+classes), and therefore is no longer marked as an error. If you prefer the old
+way, put the following line into your vim startup file: >
+	:let java_mark_braces_in_parens_as_errors=1
+
+All identifiers in java.lang.* are always visible in all classes.  To
+highlight them use: >
+	:let java_highlight_java_lang_ids=1
+
+You can also highlight identifiers of most standard java packages if you
+download the javaid.vim script at http://www.fleiner.com/vim/download.html.
+If you prefer to only highlight identifiers of a certain package, say java.io
+use the following: >
+	:let java_highlight_java_io=1
+Check the javaid.vim file for a list of all the packages that are supported.
+
+Function names are not highlighted, as the way to find functions depends on
+how you write java code.  The syntax file knows two possible ways to highlight
+functions:
+
+If you write function declarations that are always indented by either
+a tab, 8 spaces or 2 spaces you may want to set >
+	:let java_highlight_functions="indent"
+However, if you follow the Java guidelines about how functions and classes are
+supposed to be named (with respect to upper and lowercase), use >
+	:let java_highlight_functions="style"
+If both options do not work for you, but you would still want function
+declarations to be highlighted create your own definitions by changing the
+definitions in java.vim or by creating your own java.vim which includes the
+original one and then adds the code to highlight functions.
+
+In java 1.1 the functions System.out.println() and System.err.println() should
+only be used for debugging. Therefor it is possible to highlight debugging
+statements differently. To do this you must add the following definition in
+your startup file: >
+	:let java_highlight_debug=1
+The result will be that those statements are highlighted as 'Special'
+characters. If you prefer to have them highlighted differently you must define
+new highlightings for the following groups.:
+    Debug, DebugSpecial, DebugString, DebugBoolean, DebugType
+which are used for the statement itself, special characters used in debug
+strings, strings, boolean constants and types (this, super) respectively. I
+have opted to chose another background for those statements.
+
+In order to help you to write code that can be easily ported between
+java and C++, all C++ keywords are marked as error in a java program.
+However, if you use them regularly, you may want to define the following
+variable in your .vimrc file: >
+	:let java_allow_cpp_keywords=1
+
+Javadoc is a program that takes special comments out of java program files and
+creates HTML pages. The standard configuration will highlight this HTML code
+similarly to HTML files (see |html.vim|). You can even add javascript
+and CSS inside this code (see below). There are four differences however:
+  1. The title (all characters up to the first '.' which is followed by
+     some white space or up to the first '@') is colored differently (to change
+     the color change the group CommentTitle).
+  2. The text is colored as 'Comment'.
+  3. HTML comments are colored as 'Special'
+  4. The special javadoc tags (@see, @param, ...) are highlighted as specials
+     and the argument (for @see, @param, @exception) as Function.
+To turn this feature off add the following line to your startup file: >
+	:let java_ignore_javadoc=1
+
+If you use the special javadoc comment highlighting described above you
+can also turn on special highlighting for javascript, visual basic
+scripts and embedded CSS (stylesheets). This makes only sense if you
+actually have javadoc comments that include either javascript or embedded
+CSS. The options to use are >
+	:let java_javascript=1
+	:let java_css=1
+	:let java_vb=1
+
+In order to highlight nested parens with different colors define colors
+for javaParen, javaParen1 and javaParen2, for example with >
+	:hi link javaParen Comment
+or >
+	:hi javaParen ctermfg=blue guifg=#0000ff
+
+If you notice highlighting errors while scrolling backwards, which are fixed
+when redrawing with CTRL-L, try setting the "java_minlines" internal variable
+to a larger number: >
+	:let java_minlines = 50
+This will make the syntax synchronization start 50 lines before the first
+displayed line.  The default value is 10.  The disadvantage of using a larger
+number is that redrawing can become slow.
+
+
+LACE						*lace.vim* *lace-syntax*
+
+Lace (Language for Assembly of Classes in Eiffel) is case insensitive, but the
+style guide lines are not.  If you prefer case insensitive highlighting, just
+define the vim variable 'lace_case_insensitive' in your startup file: >
+	:let lace_case_insensitive=1
+
+
+LEX						*lex.vim* *lex-syntax*
+
+Lex uses brute-force synchronizing as the "^%%$" section delimiter
+gives no clue as to what section follows.  Consequently, the value for >
+	:syn sync minlines=300
+may be changed by the user if s/he is experiencing synchronization
+difficulties (such as may happen with large lex files).
+
+
+LITE						*lite.vim* *lite-syntax*
+
+There are two options for the lite syntax highlighting.
+
+If you like SQL syntax highlighting inside Strings, use this: >
+
+	:let lite_sql_query = 1
+
+For syncing, minlines defaults to 100.	If you prefer another value, you can
+set "lite_minlines" to the value you desire.  Example: >
+
+	:let lite_minlines = 200
+
+
+LPC						*lpc.vim* *lpc-syntax*
+
+LPC stands for a simple, memory-efficient language: Lars Pensj| C. The
+file name of LPC is usually *.c.  Recognizing these files as LPC would bother
+users writing only C programs.	If you want to use LPC syntax in Vim, you
+should set a variable in your .vimrc file: >
+
+	:let lpc_syntax_for_c = 1
+
+If it doesn't work properly for some particular C or LPC files, use a
+modeline.  For a LPC file:
+
+	// vim:set ft=lpc:
+
+For a C file that is recognized as LPC:
+
+	// vim:set ft=c:
+
+If you don't want to set the variable, use the modeline in EVERY LPC file.
+
+There are several implementations for LPC, we intend to support most widely
+used ones. Here the default LPC syntax is for MudOS series, for MudOS v22
+and before, you should turn off the sensible modifiers, and this will also
+asserts the new efuns after v22 to be invalid, don't set this variable when
+you are using the latest version of MudOS: >
+
+	:let lpc_pre_v22 = 1
+
+For LpMud 3.2 series of LPC: >
+
+	:let lpc_compat_32 = 1
+
+For LPC4 series of LPC: >
+
+	:let lpc_use_lpc4_syntax = 1
+
+For uLPC series of LPC:
+uLPC has been developed to Pike, so you should use Pike syntax
+instead, and the name of your source file should be *.pike
+
+
+LUA						*lua.vim* *lua-syntax*
+
+This syntax file may be used for Lua 4.0 and Lua 5.0 (default). If you are
+programming in Lua 4.0, use this: >
+
+	:let lua_version = 4
+
+If lua_version variable doesn't exist, it is set to 5.
+
+
+MAIL								*mail.vim*
+
+Vim highlights all the standard elements of an email (headers, signatures,
+quoted text and URLs / email addresses). In keeping with standard conventions,
+signatures begin in a line containing only "--" followed optionally by
+whitespaces and end with a newline.
+
+Vim treats lines beginning with ']', '}', '|', '>' or a word followed by '>'
+as quoted text. However Vim highlights headers and signatures in quoted text
+only if the text is quoted with '>' (optionally followed by one space).
+
+By default mail.vim synchronises syntax to 100 lines before the first
+displayed line. If you have a slow machine, and generally deal with emails
+with short headers, you can change this to a smaller value: >
+
+    :let mail_minlines = 30
+
+
+MAKE						*make.vim* *make-syntax*
+
+In makefiles, commands are usually highlighted to make it easy for you to spot
+errors.  However, this may be too much coloring for you.  You can turn this
+feature off by using: >
+
+	:let make_no_commands = 1
+
+
+MAPLE						*maple.vim* *maple-syntax*
+
+Maple V, by Waterloo Maple Inc, supports symbolic algebra.  The language
+supports many packages of functions which are selectively loaded by the user.
+The standard set of packages' functions as supplied in Maple V release 4 may be
+highlighted at the user's discretion.  Users may place in their .vimrc file: >
+
+	:let mvpkg_all= 1
+
+to get all package functions highlighted, or users may select any subset by
+choosing a variable/package from the table below and setting that variable to
+1, also in their .vimrc file (prior to sourcing
+$VIMRUNTIME/syntax/syntax.vim).
+
+	Table of Maple V Package Function Selectors >
+  mv_DEtools	 mv_genfunc	mv_networks	mv_process
+  mv_Galois	 mv_geometry	mv_numapprox	mv_simplex
+  mv_GaussInt	 mv_grobner	mv_numtheory	mv_stats
+  mv_LREtools	 mv_group	mv_orthopoly	mv_student
+  mv_combinat	 mv_inttrans	mv_padic	mv_sumtools
+  mv_combstruct mv_liesymm	mv_plots	mv_tensor
+  mv_difforms	 mv_linalg	mv_plottools	mv_totorder
+  mv_finance	 mv_logic	mv_powseries
+
+
+MOO						*moo.vim* *moo-syntax*
+
+If you use C-style comments inside expressions and find it mangles your
+highlighting, you may want to use extended (slow!) matches for C-style
+comments: >
+
+	:let moo_extended_cstyle_comments = 1
+
+To disable highlighting of pronoun substitution patterns inside strings: >
+
+	:let moo_no_pronoun_sub = 1
+
+To disable highlighting of the regular expression operator '%|', and matching
+'%(' and '%)' inside strings: >
+
+	:let moo_no_regexp = 1
+
+Unmatched double quotes can be recognized and highlighted as errors: >
+
+	:let moo_unmatched_quotes = 1
+
+To highlight builtin properties (.name, .location, .programmer etc.): >
+
+	:let moo_builtin_properties = 1
+
+Unknown builtin functions can be recognized and highlighted as errors. If you
+use this option, add your own extensions to the mooKnownBuiltinFunction group.
+To enable this option: >
+
+	:let moo_unknown_builtin_functions = 1
+
+An example of adding sprintf() to the list of known builtin functions: >
+
+	:syn keyword mooKnownBuiltinFunction sprintf contained
+
+
+MSQL						*msql.vim* *msql-syntax*
+
+There are two options for the msql syntax highlighting.
+
+If you like SQL syntax highlighting inside Strings, use this: >
+
+	:let msql_sql_query = 1
+
+For syncing, minlines defaults to 100.	If you prefer another value, you can
+set "msql_minlines" to the value you desire.  Example: >
+
+	:let msql_minlines = 200
+
+
+NCF						*ncf.vim* *ncf-syntax*
+
+There is one option for NCF syntax highlighting.
+
+If you want to have unrecognized (by ncf.vim) statements highlighted as
+errors, use this: >
+
+	:let ncf_highlight_unknowns = 1
+
+If you don't want to highlight these errors, leave it unset.
+
+
+NROFF						*nroff.vim* *nroff-syntax*
+
+The nroff syntax file works with AT&T n/troff out of the box.  You need to
+activate the GNU groff extra features included in the syntax file before you
+can use them.
+
+For example, Linux and BSD distributions use groff as their default text
+processing package. In order to activate the extra syntax highlighting
+features for groff, add the following option to your start-up files: >
+
+  :let b:nroff_is_groff = 1
+
+Groff is different from the old AT&T n/troff that you may still find in
+Solaris.  Groff macro and request names can be longer than 2 characters and
+there are extensions to the language primitives.  For example, in AT&T troff
+you access the year as a 2-digit number with the request \(yr. In groff you
+can use the same request, recognized for compatibility, or you can use groff's
+native syntax, \[yr].  Furthermore, you can use a 4-digit year directly:
+\[year].  Macro requests can be longer than 2 characters, for example, GNU mm
+accepts the requests ".VERBON" and ".VERBOFF" for creating verbatim
+environments.
+
+In order to obtain the best formatted output g/troff can give you, you should
+follow a few simple rules about spacing and punctuation.
+
+1. Do not leave empty spaces at the end of lines.
+
+2. Leave one space and one space only after an end-of-sentence period,
+   exclamation mark, etc.
+
+3. For reasons stated below, it is best to follow all period marks with a
+   carriage return.
+
+The reason behind these unusual tips is that g/n/troff have a line breaking
+algorithm that can be easily upset if you don't follow the rules given above.
+
+Unlike TeX, troff fills text line-by-line, not paragraph-by-paragraph and,
+furthermore, it does not have a concept of glue or stretch, all horizontal and
+vertical space input will be output as is.
+
+Therefore, you should be careful about not using more space between sentences
+than you intend to have in your final document.  For this reason, the common
+practice is to insert a carriage return immediately after all punctuation
+marks. If you want to have "even" text in your final processed output, you
+need to maintaining regular spacing in the input text.  To mark both trailing
+spaces and two or more spaces after a punctuation as an error, use: >
+
+  :let nroff_space_errors = 1
+
+Another technique to detect extra spacing and other errors that will interfere
+with the correct typesetting of your file, is to define an eye-catching
+highlighting definition for the syntax groups "nroffDefinition" and
+"nroffDefSpecial" in your configuration files. For example: >
+
+  hi def nroffDefinition term=italic cterm=italic gui=reverse
+  hi def nroffDefSpecial term=italic,bold cterm=italic,bold
+			 \ gui=reverse,bold
+
+If you want to navigate preprocessor entries in your source file as easily as
+with section markers, you can activate the following option in your .vimrc
+file: >
+
+	let b:preprocs_as_sections = 1
+
+As well, the syntax file adds an extra paragraph marker for the exdented
+paragraph macro (.XP) in the ms package.
+
+Finally, there is a |groff.vim| syntax file that can be used for enabling
+groff syntax highlighting either on a file basis or globally by default.
+
+
+OCAML						*ocaml.vim* *ocaml-syntax*
+
+The OCaml syntax file handles files having the following prefixes: .ml,
+.mli, .mll and .mly.  By setting the following variable >
+
+	:let ocaml_revised = 1
+
+you can switch from standard OCaml-syntax to revised syntax as supported
+by the camlp4 preprocessor.  Setting the variable >
+
+	:let ocaml_noend_error = 1
+
+prevents highlighting of "end" as error, which is useful when sources
+contain very long structures that Vim does not synchronize anymore.
+
+
+PAPP						*papp.vim* *papp-syntax*
+
+The PApp syntax file handles .papp files and, to a lesser extend, .pxml
+and .pxsl files which are all a mixture of perl/xml/html/other using xml
+as the top-level file format. By default everything inside phtml or pxml
+sections is treated as a string with embedded preprocessor commands. If
+you set the variable: >
+
+	:let papp_include_html=1
+
+in your startup file it will try to syntax-hilight html code inside phtml
+sections, but this is relatively slow and much too colourful to be able to
+edit sensibly ;)
+
+The newest version of the papp.vim syntax file can usually be found at
+http://papp.plan9.de.
+
+
+PASCAL						*pascal.vim* *pascal-syntax*
+
+Files matching "*.p" could be Progress or Pascal.  If the automatic detection
+doesn't work for you, or you don't edit Progress at all, use this in your
+startup vimrc: >
+
+   :let filetype_p = "pascal"
+
+The Pascal syntax file has been extended to take into account some extensions
+provided by Turbo Pascal, Free Pascal Compiler and GNU Pascal Compiler.
+Delphi keywords are also supported. By default, Turbo Pascal 7.0 features are
+enabled.  If you prefer to stick with the standard Pascal keywords, add the
+following line to your startup file: >
+
+   :let pascal_traditional=1
+
+To switch on Delphi specific constructions (such as one-line comments,
+keywords, etc): >
+
+   :let pascal_delphi=1
+
+
+The option pascal_symbol_operator controls whether symbol operators such as +,
+*, .., etc. are displayed using the Operator color or not.  To colorize symbol
+operators, add the following line to your startup file: >
+
+   :let pascal_symbol_operator=1
+
+Some functions are highlighted by default.  To switch it off: >
+
+   :let pascal_no_functions=1
+
+Furthermore, there are specific variable for some compiler.  Besides
+pascal_delphi, there are pascal_gpc and pascal_fpc.  Default extensions try to
+match Turbo Pascal. >
+
+   :let pascal_gpc=1
+
+or >
+
+   :let pascal_fpc=1
+
+To ensure that strings are defined on a single line, you can define the
+pascal_one_line_string variable. >
+
+   :let pascal_one_line_string=1
+
+If you dislike <Tab> chars, you can set the pascal_no_tabs variable.  Tabs
+will be highlighted as Error. >
+
+   :let pascal_no_tabs=1
+
+
+
+PERL						*perl.vim* *perl-syntax*
+
+There are a number of possible options to the perl syntax highlighting.
+
+If you use POD files or POD segments, you might: >
+
+	:let perl_include_pod = 1
+
+To handle package references in variable and function names differently from
+the rest of the name (like 'PkgName::' in '$PkgName::VarName'): >
+
+	:let perl_want_scope_in_variables = 1
+
+If you want complex things like '@{${"foo"}}' to be parsed: >
+
+	:let perl_extended_vars = 1
+
+The coloring strings can be changed. By default strings and qq friends will be
+highlighted like the first line. If you set the variable
+perl_string_as_statement, it will be highlighted as in the second line.
+
+   "hello world!"; qq|hello world|;
+   ^^^^^^^^^^^^^^NN^^^^^^^^^^^^^^^N	  (unlet perl_string_as_statement)
+   S^^^^^^^^^^^^SNNSSS^^^^^^^^^^^SN	  (let perl_string_as_statement)
+
+(^ = perlString, S = perlStatement, N = None at all)
+
+The syncing has 3 options. The first two switch off some triggering of
+synchronization and should only be needed in case it fails to work properly.
+If while scrolling all of a sudden the whole screen changes color completely
+then you should try and switch off one of those. Let me know if you can figure
+out the line that causes the mistake.
+
+One triggers on "^\s*sub\s*" and the other on "^[$@%]" more or less. >
+
+	:let perl_no_sync_on_sub
+	:let perl_no_sync_on_global_var
+
+Below you can set the maximum distance VIM should look for starting points for
+its attempts in syntax highlighting. >
+
+	:let perl_sync_dist = 100
+
+If you want to use folding with perl, set perl_fold: >
+
+       :let perl_fold = 1
+
+
+PHP3 and PHP4		*php.vim* *php3.vim* *php-syntax* *php3-syntax*
+
+[note: previously this was called "php3", but since it now also supports php4
+it has been renamed to "php"]
+
+There are the following options for the php syntax highlighting.
+
+If you like SQL syntax highlighting inside Strings: >
+
+  let php_sql_query = 1
+
+For highlighting the Baselib methods: >
+
+  let php_baselib = 1
+
+Enable HTML syntax highlighting inside strings: >
+
+  let php_htmlInStrings = 1
+
+Using the old colorstyle: >
+
+  let php_oldStyle = 1
+
+Enable highlighting ASP-style short tags: >
+
+  let php_asp_tags = 1
+
+Disable short tags: >
+
+  let php_noShortTags = 1
+
+For highlighting parent error ] or ): >
+
+  let php_parent_error_close = 1
+
+For skipping an php end tag, if there exists an open ( or [ without a closing
+one: >
+
+  let php_parent_error_open = 1
+
+Enable folding for classes and functions: >
+
+  let php_folding = 1
+
+Selecting syncing method: >
+
+  let php_sync_method = x
+
+x = -1 to sync by search (default),
+x > 0 to sync at least x lines backwards,
+x = 0 to sync from start.
+
+
+PPWIZARD					*ppwiz.vim* *ppwiz-syntax*
+
+PPWizard is a preprocessor for HTML and OS/2 INF files
+
+This syntax file has the options:
+
+- ppwiz_highlight_defs : determines highlighting mode for PPWizard's
+  definitions. Possible values are
+
+  ppwiz_highlight_defs = 1 : PPWizard #define statements retain the
+    colors of their contents (e. g. PPWizard macros and variables)
+
+  ppwiz_highlight_defs = 2 : preprocessor #define and #evaluate
+    statements are shown in a single color with the exception of line
+    continuation symbols
+
+  The default setting for ppwiz_highlight_defs is 1.
+
+- ppwiz_with_html : If the value is 1 (the default), highlight literal
+  HTML code; if 0, treat HTML code like ordinary text.
+
+
+PHTML						*phtml.vim* *phtml-syntax*
+
+There are two options for the phtml syntax highlighting.
+
+If you like SQL syntax highlighting inside Strings, use this: >
+
+	:let phtml_sql_query = 1
+
+For syncing, minlines defaults to 100.	If you prefer another value, you can
+set "phtml_minlines" to the value you desire.  Example: >
+
+	:let phtml_minlines = 200
+
+
+POSTSCRIPT					*postscr.vim* *postscr-syntax*
+
+There are several options when it comes to highlighting PostScript.
+
+First which version of the PostScript language to highlight.  There are
+currently three defined language versions, or levels.  Level 1 is the original
+and base version, and includes all extensions prior to the release of level 2.
+Level 2 is the most common version around, and includes its own set of
+extensions prior to the release of level 3.  Level 3 is currently the highest
+level supported.  You select which level of the PostScript language you want
+highlighted by defining the postscr_level variable as follows: >
+
+	:let postscr_level=2
+
+If this variable is not defined it defaults to 2 (level 2) since this is
+the most prevalent version currently.
+
+Note, not all PS interpreters will support all language features for a
+particular language level.  In particular the %!PS-Adobe-3.0 at the start of
+PS files does NOT mean the PostScript present is level 3 PostScript!
+
+If you are working with Display PostScript, you can include highlighting of
+Display PS language features by defining the postscr_display variable as
+follows: >
+
+	:let postscr_display=1
+
+If you are working with Ghostscript, you can include highlighting of
+Ghostscript specific language features by defining the variable
+postscr_ghostscript as follows: >
+
+	:let postscr_ghostscript=1
+
+PostScript is a large language, with many predefined elements.	While it
+useful to have all these elements highlighted, on slower machines this can
+cause Vim to slow down.  In an attempt to be machine friendly font names and
+character encodings are not highlighted by default.  Unless you are working
+explicitly with either of these this should be ok.  If you want them to be
+highlighted you should set one or both of the following variables: >
+
+	:let postscr_fonts=1
+	:let postscr_encodings=1
+
+There is a stylistic option to the highlighting of and, or, and not.  In
+PostScript the function of these operators depends on the types of their
+operands - if the operands are booleans then they are the logical operators,
+if they are integers then they are binary operators.  As binary and logical
+operators can be highlighted differently they have to be highlighted one way
+or the other.  By default they are treated as logical operators.  They can be
+highlighted as binary operators by defining the variable
+postscr_andornot_binary as follows: >
+
+	:let postscr_andornot_binary=1
+<
+
+			*ptcap.vim*
+PRINTCAP + TERMCAP	*ptcap-syntax* *termcap-syntax* *printcap-syntax*
+
+This syntax file applies to the printcap and termcap databases.
+
+In order for Vim to recognize printcap/termcap files that do not match
+the patterns *printcap*, or *termcap*, you must put additional patterns
+appropriate to your system in your |myfiletypefile| file.  For these
+patterns, you must set the variable "b:ptcap_type" to either "print" or
+"term", and then the 'filetype' option to ptcap.
+
+For example, to make Vim identify all files in /etc/termcaps/ as termcap
+files, add the following: >
+
+   :au BufNewFile,BufRead /etc/termcaps/* let b:ptcap_type = "term" |
+				       \ set filetype=ptcap
+
+If you notice highlighting errors while scrolling backwards, which
+are fixed when redrawing with CTRL-L, try setting the "ptcap_minlines"
+internal variable to a larger number: >
+
+   :let ptcap_minlines = 50
+
+(The default is 20 lines.)
+
+
+PROGRESS				*progress.vim* *progress-syntax*
+
+Files matching "*.w" could be Progress or cweb.  If the automatic detection
+doesn't work for you, or you don't edit cweb at all, use this in your
+startup vimrc: >
+   :let filetype_w = "progress"
+The same happens for "*.i", which could be assembly, and "*.p", which could be
+Pascal.  Use this if you don't use assembly and Pascal: >
+   :let filetype_i = "progress"
+   :let filetype_p = "progress"
+
+
+PYTHON						*python.vim* *python-syntax*
+
+There are four options to control Python syntax highlighting.
+
+For highlighted numbers: >
+	:let python_highlight_numbers = 1
+
+For highlighted builtin functions: >
+	:let python_highlight_builtins = 1
+
+For highlighted standard exceptions: >
+	:let python_highlight_exceptions = 1
+
+For highlighted trailing whitespace and mix of spaces and tabs:
+	:let python_highlight_space_errors = 1
+
+If you want all possible Python highlighting (the same as setting the
+preceding three options): >
+	:let python_highlight_all = 1
+
+
+QUAKE						*quake.vim* *quake-syntax*
+
+The Quake syntax definition should work for most any FPS (First Person
+Shooter) based on one of the Quake engines. However, the command names vary
+a bit between the three games (Quake, Quake 2, and Quake 3 Arena) so the
+syntax definition checks for the existence of three global variables to allow
+users to specify what commands are legal in their files. The three variables
+can be set for the following effects:
+
+set to highlight commands only available in Quake: >
+	:let quake_is_quake1 = 1
+
+set to highlight commands only available in Quake 2: >
+	:let quake_is_quake2 = 1
+
+set to highlight commands only available in Quake 3 Arena: >
+	:let quake_is_quake3 = 1
+
+Any combination of these three variables is legal, but might highlight more
+commands than are actually available to you by the game.
+
+
+READLINE				*readline.vim* *readline-syntax*
+
+The readline library is primarily used by the BASH shell, which adds quite a
+few commands and options to the ones already available. To highlight these
+items as well you can add the following to your |vimrc| or just type it in the
+command line before loading a file with the readline syntax: >
+	let readline_has_bash = 1
+
+This will add highlighting for the commands that BASH (version 2.05a and
+later, and part earlier) adds.
+
+
+REXX						*rexx.vim* *rexx-syntax*
+
+If you notice highlighting errors while scrolling backwards, which are fixed
+when redrawing with CTRL-L, try setting the "rexx_minlines" internal variable
+to a larger number: >
+	:let rexx_minlines = 50
+This will make the syntax synchronization start 50 lines before the first
+displayed line.  The default value is 10.  The disadvantage of using a larger
+number is that redrawing can become slow.
+
+
+RUBY						*ruby.vim* *ruby-syntax*
+
+There are a few options to the Ruby syntax highlighting.
+
+By default, the "end" keyword is colorized according to the opening statement
+of the block it closes. While useful, this feature can be expensive: if you
+experience slow redrawing (or you are on a terminal with poor color support)
+you may want to turn it off by defining the "ruby_no_expensive" variable: >
+	:let ruby_no_expensive = 1
+In this case the same color will be used for all control keywords.
+
+If you do want this feature enabled, but notice highlighting errors while
+scrolling backwards, which are fixed when redrawing with CTRL-L, try setting
+the "ruby_minlines" variable to a value larger than 50: >
+	:let ruby_minlines = 100
+Ideally, this value should be a number of lines large enough to embrace your
+largest class or module.
+
+Finally, if you do not like to see too many color items around, you can define
+"ruby_no_identifiers": >
+	:let ruby_no_identifiers = 1
+This will prevent highlighting of special identifiers like "ConstantName",
+"$global_var", "@instance_var", "| iterator |", and ":symbol".
+
+
+SDL						*sdl.vim* *sdl-syntax*
+
+The SDL highlighting probably misses a few keywords, but SDL has so many
+of them it's almost impossibly to cope.
+
+The new standard, SDL-2000, specifies that all identifiers are
+case-sensitive (which was not so before), and that all keywords can be
+used either completely lowercase or completely uppercase. To have the
+highlighting reflect this, you can set the following variable: >
+	:let sdl_2000=1
+
+This also sets many new keywords. If you want to disable the old
+keywords, which is probably a good idea, use: >
+	:let SDL_no_96=1
+
+
+The indentation is probably also incomplete, but right now I am very
+satisfied with it for my own projects.
+
+
+SED						*sed.vim* *sed-syntax*
+
+To make tabs stand out from regular blanks (accomplished by using Todo
+highlighting on the tabs), define "highlight_sedtabs" by putting >
+
+	:let highlight_sedtabs = 1
+
+in the vimrc file.  (This special highlighting only applies for tabs
+inside search patterns, replacement texts, addresses or text included
+by an Append/Change/Insert command.)  If you enable this option, it is
+also a good idea to set the tab width to one character; by doing that,
+you can easily count the number of tabs in a string.
+
+Bugs:
+
+  The transform command (y) is treated exactly like the substitute
+  command.  This means that, as far as this syntax file is concerned,
+  transform accepts the same flags as substitute, which is wrong.
+  (Transform accepts no flags.)  I tolerate this bug because the
+  involved commands need very complex treatment (95 patterns, one for
+  each plausible pattern delimiter).
+
+
+SGML						*sgml.vim* *sgml-syntax*
+
+The coloring scheme for tags in the SGML file works as follows.
+
+The <> of opening tags are colored differently than the </> of a closing tag.
+This is on purpose! For opening tags the 'Function' color is used, while for
+closing tags the 'Type' color is used (See syntax.vim to check how those are
+defined for you)
+
+Known tag names are colored the same way as statements in C.  Unknown tag
+names are not colored which makes it easy to spot errors.
+
+Note that the same is true for argument (or attribute) names. Known attribute
+names are colored differently than unknown ones.
+
+Some SGML tags are used to change the rendering of text. The following tags
+are recognized by the sgml.vim syntax coloring file and change the way normal
+text is shown: <varname> <emphasis> <command> <function> <literal>
+<replaceable> <ulink> and <link>.
+
+If you want to change how such text is rendered, you must redefine the
+following syntax groups:
+
+    - sgmlBold
+    - sgmlBoldItalic
+    - sgmlUnderline
+    - sgmlItalic
+    - sgmlLink for links
+
+To make this redefinition work you must redefine them all and define the
+following variable in your vimrc (this is due to the order in which the files
+are read during initialization) >
+   let sgml_my_rendering=1
+
+You can also disable this rendering by adding the following line to your
+vimrc file: >
+   let sgml_no_rendering=1
+
+(Adapted from the html.vim help text by Claudio Fleiner <claudio@fleiner.com>)
+
+
+SH						*sh.vim* *sh-syntax*
+
+This covers the "normal" Unix (Bourne) sh, bash and the Korn shell.
+
+Vim attempts to determine which shell type is in use by specifying that
+various filenames are of specific types: >
+
+    ksh : .kshrc* *.ksh
+    bash: .bashrc* bashrc bash.bashrc .bash_profile* *.bash
+<
+If none of these cases pertain, then the first line of the file is examined
+(ex. /bin/sh  /bin/ksh	/bin/bash).  If the first line specifies a shelltype,
+then that shelltype is used.  However some files (ex. .profile) are known to
+be shell files but the type is not apparent.  Furthermore, on many systems
+sh is symbolically linked to "bash" (linux) or "ksh" (posix).
+
+One may specify a global default by instantiating one of the following three
+variables in your <.vimrc>:
+
+    ksh: >
+	let is_kornshell = 1
+<   bash: >
+	let is_bash	 = 1
+<   sh: >
+	let is_sh	 = 1
+
+If, in your <.vimrc>, you set >
+	let g:sh_fold_enabled= 1
+>
+then various syntax items (HereDocuments and function bodies) become
+syntax-foldable (see |:syn-fold|).
+
+If you notice highlighting errors while scrolling backwards, which are fixed
+when redrawing with CTRL-L, try setting the "sh_minlines" internal variable
+to a larger number.  Example: >
+
+	let sh_minlines = 500
+
+This will make syntax synchronization start 500 lines before the first
+displayed line.  The default value is 200.  The disadvantage of using a larger
+number is that redrawing can become slow.
+
+If you don't have much to synchronize on, displaying can be very slow.	To
+reduce this, the "sh_maxlines" internal variable can be set.  Example: >
+
+	let sh_maxlines = 100
+<
+The default is to use the twice sh_minlines.  Set it to a smaller number to
+speed up displaying.  The disadvantage is that highlight errors may appear.
+
+
+SPEEDUP (AspenTech plant simulator)		*spup.vim* *spup-syntax*
+
+The Speedup syntax file has some options:
+
+- strict_subsections : If this variable is defined, only keywords for
+  sections and subsections will be highlighted as statements but not
+  other keywords (like WITHIN in the OPERATION section).
+
+- highlight_types : Definition of this variable causes stream types
+  like temperature or pressure to be highlighted as Type, not as a
+  plain Identifier. Included are the types that are usually found in
+  the DECLARE section; if you defined own types, you have to include
+  them in the syntax file.
+
+- oneline_comments : this value ranges from 1 to 3 and determines the
+  highlighting of # style comments.
+
+  oneline_comments = 1 : allow normal Speedup code after an even
+  number of #s.
+
+  oneline_comments = 2 : show code starting with the second # as
+  error. This is the default setting.
+
+  oneline_comments = 3 : show the whole line as error if it contains
+  more than one #.
+
+Since especially OPERATION sections tend to become very large due to
+PRESETting variables, syncing may be critical. If your computer is
+fast enough, you can increase minlines and/or maxlines near the end of
+the syntax file.
+
+
+TCSH						*tcsh.vim* *tcsh-syntax*
+
+This covers the shell named "tcsh".  It is a superset of csh.  See |csh.vim|
+for how the filetype is detected.
+
+Tcsh does not allow \" in strings unless the "backslash_quote" shell variable
+is set. If you want VIM to assume that no backslash quote constructs exist add
+this line to your .vimrc: >
+
+	:let tcsh_backslash_quote = 0
+
+If you notice highlighting errors while scrolling backwards, which are fixed
+when redrawing with CTRL-L, try setting the "tcsh_minlines" internal variable
+to a larger number: >
+
+	:let tcsh_minlines = 100
+
+This will make the syntax synchronization start 100 lines before the first
+displayed line. The default value is 15. The disadvantage of using a larger
+number is that redrawing can become slow.
+
+
+TEX						*tex.vim* *tex-syntax*
+
+Run-on Comments/Math? ~
+
+The tex highlighting supports TeX, LaTeX, and some AmsTeX.  The
+highlighting supports three primary zones: normal, texZone, and texMathZone.
+Although a considerable effort has been made to have these zones terminate
+properly, zones delineated by $..$ and $$..$$ cannot be synchronized as
+there's no difference between start and end patterns.  Consequently, a
+special "TeX comment" has been provided >
+	%stopzone
+which will forcibly terminate the highlighting of either a texZone or a
+texMathZone.
+
+Slow Syntax Highlighting? ~
+
+If you have a slow computer, you may wish to reduce the values for >
+	:syn sync maxlines=200
+	:syn sync minlines=50
+(especially the latter).  If your computer is fast, you may wish to
+increase them.	This primarily affects synchronizing (ie. just what group,
+if any, is the text at the top of the screen supposed to be in?).
+
+Excessive Error Highlighting? ~
+
+The <tex.vim> supports lexical error checking of various sorts.  Thus,
+although the error checking is ofttimes very useful, it can indicate
+errors where none actually are.  If this proves to be a problem for you,
+you may put in your <.vimrc> the following statement: >
+	let tex_no_error=1
+and all error checking by <tex.vim> will be suppressed.
+
+Need a new Math Group? ~
+
+If you want to include a new math group in your LaTeX, the following
+code shows you an example as to how you might do so: >
+
+    syn cluster texMathZones add=texMathZoneLOCAL
+    syn region texMathZoneLOCAL start="\\begin\s*{\s*LOCALMATH\s*}"
+       \ end="\\end\s*{\s*LOCALMATH\s*}" keepend
+       \ contains=@texMathZoneGroup
+    if !exists("tex_no_math")
+     syn sync match texSyncMathZoneLOCAL grouphere texMathZoneLOCAL
+       \ "\\begin\s*{\s*LOCALMATH\*\s*}"
+     syn sync match texSyncMathZoneLOCAL groupthere NONE
+       \ "\\end\s*{\s*LOCALMATH\*\s*}"
+    endif
+    hi link texMathZoneLOCAL texMath
+<
+You'll need to change LOCALMATH to the name of your new math group,
+and then to put it into .vim/after/syntax/tex.vim.
+
+Starting a New Style? ~
+
+One may use "\makeatletter" in *.tex files, thereby making the use of "@" in
+commands available.  However, since the *.tex file doesn't have one of the
+following suffices: sty cls clo dtx ltx, the syntax highlighting will flag
+such use of @ as an error.  To solve this: >
+
+	:let b:tex_stylish = 1
+	:set ft=tex
+
+Putting "let g:tex_stylish=1" into your <.vimrc> will make <syntax/tex.vim>
+always accept such use of @.
+
+
+TF						*tf.vim* *tf-syntax*
+
+There is one option for the tf syntax highlighting.
+
+For syncing, minlines defaults to 100.	If you prefer another value, you can
+set "tf_minlines" to the value you desire.  Example: >
+
+	:let tf_minlines = your choice
+
+
+VIM						*vim.vim* *vim-syntax*
+
+There is a tradeoff between more accurate syntax highlighting versus
+screen updating speed.  To improve accuracy, you may wish to increase
+the g:vim_minlines variable.  The g:vim_maxlines variable may be used
+to improve screen updating rates (see |:syn-sync| for more on this).
+
+	g:vim_minlines : used to set synchronization minlines
+	g:vim_maxlines : used to set synchronization maxlines
+
+The g:vimembedscript option allows for somewhat faster loading of syntax
+highlighting for vim scripts at the expense of supporting syntax highlighting
+for external scripting languages (currently perl, python, ruby, and tcl).
+
+	g:vimembedscript == 1 (default)  <vim.vim> will allow highlighting
+	g:vimembedscript doesn't exist	 of supported embedded scripting
+					 languages: perl, python, ruby and
+					 tcl.
+
+	g:vimembedscript == 0		 Syntax highlighting for embedded
+					 scripting languages will not be
+					 loaded.
+
+
+XF86CONFIG				*xf86conf.vim* *xf86conf-syntax*
+
+The syntax of XF86Config file differs in XFree86 v3.x and v4.x.  Both
+variants are supported.  Automatic detection is used, but is far from perfect.
+You may need to specify the version manually.  Set the variable
+xf86conf_xfree86_version to 3 or 4 according to your XFree86 version in
+your .vimrc.  Example: >
+	:let xf86conf_xfree86_version=3
+When using a mix of versions, set the b:xf86conf_xfree86_version variable.
+
+Note that spaces and underscores in option names are not supported.  Use
+"SyncOnGreen" instead of "__s yn con gr_e_e_n" if you want the option name
+highlighted.
+
+
+XML						*xml.vim* *xml-syntax*
+
+Xml namespaces are highlighted by default. This can be inhibited by
+setting a global variable: >
+
+	:let g:xml_namespace_transparent=1
+<
+							*xml-folding*
+The xml syntax file provides syntax |folding| (see |:syn-fold|) between
+start and end tags. This can be turned on by >
+
+	:let g:xml_syntax_folding = 1
+	:set foldmethod=syntax
+
+Note: syntax folding might slow down syntax highlighting significantly,
+especially for large files.
+
+
+X Pixmaps (XPM)					*xpm.vim* *xpm-syntax*
+
+xpm.vim creates its syntax items dynamically based upon the contents of the
+XPM file.  Thus if you make changes e.g. in the color specification strings,
+you have to source it again e.g. with ":set syn=xpm".
+
+To copy a pixel with one of the colors, yank a "pixel" with "yl" and insert it
+somewhere else with "P".
+
+Do you want to draw with the mouse?  Try the following: >
+   :function! GetPixel()
+   :   let c = getline(line("."))[col(".") - 1]
+   :   echo c
+   :   exe "noremap <LeftMouse> <LeftMouse>r".c
+   :   exe "noremap <LeftDrag>	<LeftMouse>r".c
+   :endfunction
+   :noremap <RightMouse> <LeftMouse>:call GetPixel()<CR>
+   :set guicursor=n:hor20	   " to see the color beneath the cursor
+This turns the right button into a pipette and the left button into a pen.
+It will work with XPM files that have one character per pixel only and you
+must not click outside of the pixel strings, but feel free to improve it.
+
+It will look much better with a font in a quadratic cell size, e.g. for X: >
+	:set guifont=-*-clean-medium-r-*-*-8-*-*-*-*-80-*
+
+==============================================================================
+5. Defining a syntax					*:syn-define* *E410*
+
+Vim understands three types of syntax items:
+
+1. Keyword.
+   It can only contain keyword characters, according to the 'iskeyword'
+   option.  It cannot contain other syntax items.  It will only match with a
+   complete word (there are no keyword characters before or after the match).
+   The keyword "if" would match in "if(a=b)", but not in "ifdef x", because
+   "(" is not a keyword character and "d" is.
+
+2. Match.
+   This is a match with a single regexp pattern.
+
+3. Region.
+   This starts at a match of the "start" regexp pattern and ends with a match
+   with the "end" regexp pattern.  Any other text can appear in between.  A
+   "skip" regexp pattern can be used to avoid matching the "end" pattern.
+
+Several syntax ITEMs can be put into one syntax GROUP.	For a syntax group
+you can give highlighting attributes.  For example, you could have an item
+to define a "/* .. */" comment and another one that defines a "// .." comment,
+and put them both in the "Comment" group.  You can then specify that a
+"Comment" will be in bold font and have a blue color.  You are free to make
+one highlight group for one syntax item, or put all items into one group.
+This depends on how you want to specify your highlighting attributes.  Putting
+each item in its own group results in having to specify the highlighting
+for a lot of groups.
+
+Note that a syntax group and a highlight group are similar.  For a highlight
+group you will have given highlight attributes.  These attributes will be used
+for the syntax group with the same name.
+
+In case more than one item matches at the same position, the one that was
+defined LAST wins.  Thus you can override previously defined syntax items by
+using an item that matches the same text.  But a keyword always goes before a
+match or region.  And a keyword with matching case always goes before a
+keyword with ignoring case.
+
+
+PRIORITY						*:syn-priority*
+
+When several syntax items may match, these rules are used:
+
+1. When multiple Match or Region items start in the same position, the item
+   defined last has priority.
+2. A Keyword has priority over Match and Region items.
+3. An item that starts in an earlier position has priority over items that
+   start in later positions.
+
+
+DEFINING CASE						*:syn-case* *E390*
+
+:sy[ntax] case [match|ignore]
+	This defines if the following ":syntax" commands will work with
+	matching case, when using "match", or with ignoring case, when using
+	"ignore".  Note that any items before this are not affected, and all
+	items until the next ":syntax case" command are affected.
+
+
+DEFINING KEYWORDS					*:syn-keyword*
+
+:sy[ntax] keyword {group-name} [{options}] {keyword} .. [{options}]
+
+	This defines a number of keywords.
+
+	{group-name}	Is a syntax group name such as "Comment".
+	[{options}]	See |:syn-arguments| below.
+	{keyword} ..	Is a list of keywords which are part of this group.
+
+	Example: >
+  :syntax keyword   Type   int long char
+<
+	The {options} can be given anywhere in the line.  They will apply to
+	all keywords given, also for options that come after a keyword.
+	These examples do exactly the same: >
+  :syntax keyword   Type   contained int long char
+  :syntax keyword   Type   int long contained char
+  :syntax keyword   Type   int long char contained
+<
+	When you have a keyword with an optional tail, like Ex commands in
+	Vim, you can put the optional characters inside [], to define all the
+	variations at once: >
+  :syntax keyword   vimCommand	 ab[breviate] n[ext]
+<
+	Don't forget that a keyword can only be recognized if all the
+	characters are included in the 'iskeyword' option.  If one character
+	isn't, the keyword will never be recognized.
+	Multi-byte characters can also be used.  These do not have to be in
+	'iskeyword'.
+
+	A keyword always has higher priority than a match or region, the
+	keyword is used if more than one item matches.	Keywords do not nest
+	and a keyword can't contain anything else.
+
+	Note that when you have a keyword that is the same as an option (even
+	one that isn't allowed here), you can not use it.  Use a match
+	instead.
+
+	The maximum length of a keyword is 80 characters.
+
+	The same keyword can be defined multiple times, when its containment
+	differs.  For example, you can define the keyword once not contained
+	and use one highlight group, and once contained, and use a different
+	highlight group. Example: >
+  :syn keyword vimCommand tag
+  :syn keyword vimSetting contained tag
+<	When finding "tag" outside of any syntax item, the "vimCommand"
+	highlight group is used.  When finding "tag" in a syntax item that
+	contains "vimSetting", the "vimSetting" group is used.
+
+
+DEFINING MATCHES					*:syn-match*
+
+:sy[ntax] match {group-name} [{options}] [excludenl] {pattern} [{options}]
+
+	This defines one match.
+
+	{group-name}		A syntax group name such as "Comment".
+	[{options}]		See |:syn-arguments| below.
+	[excludenl]		Don't make a pattern with the end-of-line "$"
+				extend a containing match or region.  Must be
+				given before the pattern. |:syn-excludenl|
+	{pattern}		The search pattern that defines the match.
+				See |:syn-pattern| below.
+				Note that the pattern may match more than one
+				line, which makes the match depend on where
+				Vim starts searching for the pattern.  You
+				need to make sure syncing takes care of this.
+
+	Example (match a character constant): >
+  :syntax match Character /'.'/hs=s+1,he=e-1
+<
+
+DEFINING REGIONS	*:syn-region* *:syn-start* *:syn-skip* *:syn-end*
+							*E398* *E399*
+:sy[ntax] region {group-name} [{options}]
+		[matchgroup={group-name}]
+		[keepend]
+		[extend]
+		[excludenl]
+		start={start_pattern} ..
+		[skip={skip_pattern}]
+		end={end_pattern} ..
+		[{options}]
+
+	This defines one region.  It may span several lines.
+
+	{group-name}		A syntax group name such as "Comment".
+	[{options}]		See |:syn-arguments| below.
+	[matchgroup={group-name}]  The syntax group to use for the following
+				start or end pattern matches only.  Not used
+				for the text in between the matched start and
+				end patterns.  Use NONE to reset to not using
+				a different group for the start or end match.
+				See |:syn-matchgroup|.
+	keepend			Don't allow contained matches to go past a
+				match with the end pattern.  See
+				|:syn-keepend|.
+	extend			Override a "keepend" for an item this region
+				is contained in. See |:syn-extend|.
+	excludenl		Don't make a pattern with the end-of-line "$"
+				extend a containing match or item.  Only
+				useful for end patterns.  Must be given before
+				the patterns it applies to. |:syn-excludenl|
+	start={start_pattern}	The search pattern that defines the start of
+				the region.  See |:syn-pattern| below.
+	skip={skip_pattern}	The search pattern that defines text inside
+				the region where not to look for the end
+				pattern.  See |:syn-pattern| below.
+	end={end_pattern}	The search pattern that defines the end of
+				the region.  See |:syn-pattern| below.
+
+	Example: >
+  :syntax region String   start=+"+  skip=+\\"+  end=+"+
+<
+	The start/skip/end patterns and the options can be given in any order.
+	There can be zero or one skip pattern.	There must be one or more
+	start and end patterns.  This means that you can omit the skip
+	pattern, but you must give at least one start and one end pattern.  It
+	is allowed to have white space before and after the equal sign
+	(although it mostly looks better without white space).
+
+	When more than one start pattern is given, a match with one of these
+	is sufficient.	This means there is an OR relation between the start
+	patterns.  The last one that matches is used.  The same is true for
+	the end patterns.
+
+	The search for the end pattern starts right after the start pattern.
+	Offsets are not used for this.	This implies that the match for the
+	end pattern will never overlap with the start pattern.
+
+	The skip and end pattern can match across line breaks, but since the
+	search for the pattern can start in any line it often does not do what
+	you want.  The skip pattern doesn't avoid a match of an end pattern in
+	the next line.	Use single-line patterns to avoid trouble.
+
+	Note: The decision to start a region is only based on a matching start
+	pattern.  There is no check for a matching end pattern.  This does NOT
+	work: >
+		:syn region First  start="("  end=":"
+		:syn region Second start="("  end=";"
+<	The Second always matches before the First (last defined pattern has
+	higher priority).  The Second region then continues until the next
+	';', no matter if there is a ':' before it.  Using a match does work: >
+		:syn match First  "(\_.\{-}:"
+		:syn match Second "(\_.\{-};"
+<	This pattern matches any character or line break with "\_." and
+	repeats that with "\{-}" (repeat as few as possible).
+
+							*:syn-keepend*
+	By default, a contained match can obscure a match for the end pattern.
+	This is useful for nesting.  For example, a region that starts with
+	"{" and ends with "}", can contain another region.  An encountered "}"
+	will then end the contained region, but not the outer region:
+	    {		starts outer "{}" region
+		{	starts contained "{}" region
+		}	ends contained "{}" region
+	    }		ends outer "{} region
+	If you don't want this, the "keepend" argument will make the matching
+	of an end pattern of the outer region also end any contained item.
+	This makes it impossible to nest the same region, but allows for
+	contained items to highlight parts of the end pattern, without causing
+	that to skip the match with the end pattern.  Example: >
+  :syn match  vimComment +"[^"]\+$+
+  :syn region vimCommand start="set" end="$" contains=vimComment keepend
+<	The "keepend" makes the vimCommand always end at the end of the line,
+	even though the contained vimComment includes a match with the <EOL>.
+
+	When "keepend" is not used, a match with an end pattern is retried
+	after each contained match.  When "keepend" is included, the first
+	encountered match with an end pattern is used, truncating any
+	contained matches.
+							*:syn-extend*
+	The "keepend" behavior can be changed by using the "extend" argument.
+	When an item with "extend" is contained in an item that uses
+	"keepend", the "keepend" is ignored and the containing region will be
+	extended.
+	This can be used to have some contained items extend a region while
+	others don't.  Example: >
+
+   :syn region htmlRef start=+<a>+ end=+</a>+ keepend contains=htmlItem,htmlScript
+   :syn match htmlItem +<[^>]*>+ contained
+   :syn region htmlScript start=+<script+ end=+</script[^>]*>+ contained extend
+
+<	Here the htmlItem item does not make the htmlRef item continue
+	further, it is only used to highlight the <> items.  The htmlScript
+	item does extend the htmlRef item.
+
+	Another example: >
+   :syn region xmlFold start="<a>" end="</a>" fold transparent keepend extend
+<	This defines a region with "keepend", so that its end cannot be
+	changed by contained items, like when the "</a>" is matched to
+	highlight it differently.  But when the xmlFold region is nested (it
+	includes itself), the "extend" applies, so that the "</a>" of a nested
+	region only ends that region, and not the one it is contained in.
+
+							*:syn-excludenl*
+	When a pattern for a match or end pattern of a region includes a '$'
+	to match the end-of-line, it will make a region item that it is
+	contained in continue on the next line.  For example, a match with
+	"\\$" (backslash at the end of the line) can make a region continue
+	that would normally stop at the end of the line.  This is the default
+	behavior.  If this is not wanted, there are two ways to avoid it:
+	1. Use "keepend" for the containing item.  This will keep all
+	   contained matches from extending the match or region.  It can be
+	   used when all contained items must not extend the containing item.
+	2. Use "excludenl" in the contained item.  This will keep that match
+	   from extending the containing match or region.  It can be used if
+	   only some contained items must not extend the containing item.
+	   "excludenl" must be given before the pattern it applies to.
+
+							*:syn-matchgroup*
+	"matchgroup" can be used to highlight the start and/or end pattern
+	differently than the body of the region.  Example: >
+  :syntax region String matchgroup=Quote start=+"+  skip=+\\"+	end=+"+
+<	This will highlight the quotes with the "Quote" group, and the text in
+	between with the "String" group.
+	The "matchgroup" is used for all start and end patterns that follow,
+	until the next "matchgroup".  Use "matchgroup=NONE" to go back to not
+	using a matchgroup.
+
+	In a start or end pattern that is highlighted with "matchgroup" the
+	contained items of the region are not used.  This can be used to avoid
+	that a contained item matches in the start or end pattern match.  When
+	using "transparent", this does not apply to a start or end pattern
+	match that is highlighted with "matchgroup".
+
+	Here is an example, which highlights three levels of parentheses in
+	different colors: >
+   :sy region par1 matchgroup=par1 start=/(/ end=/)/ contains=par2
+   :sy region par2 matchgroup=par2 start=/(/ end=/)/ contains=par3 contained
+   :sy region par3 matchgroup=par3 start=/(/ end=/)/ contains=par1 contained
+   :hi par1 ctermfg=red guifg=red
+   :hi par2 ctermfg=blue guifg=blue
+   :hi par3 ctermfg=darkgreen guifg=darkgreen
+
+==============================================================================
+6. :syntax arguments					*:syn-arguments*
+
+The :syntax commands that define syntax items take a number of arguments.
+The common ones are explained here.  The arguments may be given in any order
+and may be mixed with patterns.
+
+Not all commands accept all arguments.	This table shows which arguments
+can not be used for all commands:
+							*E395* *E396*
+		    contains  oneline	fold  display  extend ~
+:syntax keyword		 -	 -	 -	 -	 -
+:syntax match		yes	 -	yes	yes	yes
+:syntax region		yes	yes	yes	yes	yes
+
+These arguments can be used for all three commands:
+	contained
+	containedin
+	nextgroup
+	transparent
+	skipwhite
+	skipnl
+	skipempty
+
+
+contained						*:syn-contained*
+
+When the "contained" argument is given, this item will not be recognized at
+the top level, but only when it is mentioned in the "contains" field of
+another match.	Example: >
+   :syntax keyword Todo    TODO    contained
+   :syntax match   Comment "//.*"  contains=Todo
+
+
+display							*:syn-display*
+
+If the "display" argument is given, this item will be skipped when the
+detected highlighting will not be displayed.  This will speed up highlighting,
+by skipping this item when only finding the syntax state for the text that is
+to be displayed.
+
+Generally, you can use "display" for match and region items that meet these
+conditions:
+- The item does not continue past the end of a line.  Example for C: A region
+  for a "/*" comment can't contain "display", because it continues on the next
+  line.
+- The item does not contain items that continue past the end of the line or
+  make it continue on the next line.
+- The item does not change the size of any item it is contained in.  Example
+  for C: A match with "\\$" in a preprocessor match can't have "display",
+  because it may make that preprocessor match shorter.
+- The item does not allow other items to match that didn't match otherwise,
+  and that item may extend the match too far.  Example for C: A match for a
+  "//" comment can't use "display", because a "/*" inside that comment would
+  match then and start a comment which extends past the end of the line.
+
+Examples, for the C language, where "display" can be used:
+- match with a number
+- match with a label
+
+
+transparent						*:syn-transparent*
+
+If the "transparent" argument is given, this item will not be highlighted
+itself, but will take the highlighting of the item it is contained in.	This
+is useful for syntax items that don't need any highlighting but are used
+only to skip over a part of the text.
+
+The "contains=" argument is also inherited from the item it is contained in,
+unless a "contains" argument is given for the transparent item itself.	To
+avoid that unwanted items are contained, use "contains=NONE".  Example, which
+highlights words in strings, but makes an exception for "vim": >
+	:syn match myString /'[^']*'/ contains=myWord,myVim
+	:syn match myWord   /\<[a-z]*\>/ contained
+	:syn match myVim    /\<vim\>/ transparent contained contains=NONE
+	:hi link myString String
+	:hi link myWord   Comment
+Since the "myVim" match comes after "myWord" it is the preferred match (last
+match in the same position overrules an earlier one).  The "transparent"
+argument makes the "myVim" match use the same highlighting as "myString".  But
+it does not contain anything.  If the "contains=NONE" argument would be left
+out, then "myVim" would use the contains argument from myString and allow
+"myWord" to be contained, which will be highlighted as a Constant.  This
+happens because a contained match doesn't match inside itself in the same
+position, thus the "myVim" match doesn't overrule the "myWord" match here.
+
+When you look at the colored text, it is like looking at layers of contained
+items.	The contained item is on top of the item it is contained in, thus you
+see the contained item.  When a contained item is transparent, you can look
+through, thus you see the item it is contained in.  In a picture:
+
+		look from here
+
+	    |	|   |	|   |	|
+	    V	V   V	V   V	V
+
+	       xxxx	  yyy		more contained items
+	    ....................	contained item (transparent)
+	=============================	first item
+
+The 'x', 'y' and '=' represent a highlighted syntax item.  The '.' represent a
+transparent group.
+
+What you see is:
+
+	=======xxxx=======yyy========
+
+Thus you look through the transparent "....".
+
+
+oneline							*:syn-oneline*
+
+The "oneline" argument indicates that the region does not cross a line
+boundary.  It must match completely in the current line.  However, when the
+region has a contained item that does cross a line boundary, it continues on
+the next line anyway.  A contained item can be used to recognize a line
+continuation pattern.  But the "end" pattern must still match in the first
+line, otherwise the region doesn't even start.
+
+When the start pattern includes a "\n" to match an end-of-line, the end
+pattern must be found in the same line as where the start pattern ends.  The
+end pattern may also include an end-of-line.  Thus the "oneline" argument
+means that the end of the start pattern and the start of the end pattern must
+be within one line.  This can't be changed by a skip pattern that matches a
+line break.
+
+
+fold							*:syn-fold*
+
+The "fold" argument makes the fold level increased by one for this item.
+Example: >
+   :syn region myFold start="{" end="}" transparent fold
+   :syn sync fromstart
+   :set foldmethod=syntax
+This will make each {} block form one fold.
+
+The fold will start on the line where the item starts, and end where the item
+ends.  If the start and end are within the same line, there is no fold.
+The 'foldnestmax' option limits the nesting of syntax folds.
+{not available when Vim was compiled without |+folding| feature}
+
+
+			*:syn-contains* *E405* *E406* *E407* *E408* *E409*
+contains={groupname},..
+
+The "contains" argument is followed by a list of syntax group names.  These
+groups will be allowed to begin inside the item (they may extend past the
+containing group's end).  This allows for recursive nesting of matches and
+regions.  If there is no "contains" argument, no groups will be contained in
+this item.  The group names do not need to be defined before they can be used
+here.
+
+contains=ALL
+		If the only item in the contains list is "ALL", then all
+		groups will be accepted inside the item.
+
+contains=ALLBUT,{group-name},..
+		If the first item in the contains list is "ALLBUT", then all
+		groups will be accepted inside the item, except the ones that
+		are listed.  Example: >
+  :syntax region Block start="{" end="}" ... contains=ALLBUT,Function
+
+contains=TOP
+		If the first item in the contains list is "TOP", then all
+		groups will be accepted that don't have the "contained"
+		argument.
+contains=TOP,{group-name},..
+		Like "TOP", but excluding the groups that are listed.
+
+contains=CONTAINED
+		If the first item in the contains list is "CONTAINED", then
+		all groups will be accepted that have the "contained"
+		argument.
+contains=CONTAINED,{group-name},..
+		Like "CONTAINED", but excluding the groups that are
+		listed.
+
+
+The {group-name} in the "contains" list can be a pattern.  All group names
+that match the pattern will be included (or excluded, if "ALLBUT" is used).
+The pattern cannot contain white space or a ','.  Example: >
+   ... contains=Comment.*,Keyw[0-3]
+The matching will be done at moment the syntax command is executed.  Groups
+that are defined later will not be matched.  Also, if the current syntax
+command defines a new group, it is not matched.  Be careful: When putting
+syntax commands in a file you can't rely on groups NOT being defined, because
+the file may have been sourced before, and ":syn clear" doesn't remove the
+group names.
+
+The contained groups will also match in the start and end patterns of a
+region.  If this is not wanted, the "matchgroup" argument can be used
+|:syn-matchgroup|.  The "ms=" and "me=" offsets can be used to change the
+region where contained items do match.	Note that this may also limit the
+area that is highlighted
+
+
+containedin={groupname}...				*:syn-containedin*
+
+The "containedin" argument is followed by a list of syntax group names.  The
+item will be allowed to begin inside these groups.  This works as if the
+containing item has a "contains=" argument that includes this item.
+
+The {groupname}... can be used just like for "contains", as explained above.
+
+This is useful when adding a syntax item afterwards.  An item can be told to
+be included inside an already existing item, without changing the definition
+of that item.  For example, to highlight a word in a C comment after loading
+the C syntax: >
+	:syn keyword myword HELP containedin=cComment contained
+Note that "contained" is also used, to avoid that the item matches at the top
+level.
+
+Matches for "containedin" are added to the other places where the item can
+appear.  A "contains" argument may also be added as usual.  Don't forget that
+keywords never contain another item, thus adding them to "containedin" won't
+work.
+
+
+nextgroup={groupname},..				*:syn-nextgroup*
+
+The "nextgroup" argument is followed by a list of syntax group names,
+separated by commas (just like with "contains", so you can also use patterns).
+
+If the "nextgroup" argument is given, the mentioned syntax groups will be
+tried for a match, after the match or region ends.  If none of the groups have
+a match, highlighting continues normally.  If there is a match, this group
+will be used, even when it is not mentioned in the "contains" field of the
+current group.	This is like giving the mentioned group priority over all
+other groups.  Example: >
+   :syntax match  ccFoobar  "Foo.\{-}Bar"  contains=ccFoo
+   :syntax match  ccFoo     "Foo"	    contained nextgroup=ccFiller
+   :syntax region ccFiller  start="."  matchgroup=ccBar  end="Bar"  contained
+
+This will highlight "Foo" and "Bar" differently, and only when there is a
+"Bar" after "Foo".  In the text line below, "f" shows where ccFoo is used for
+highlighting, and "bbb" where ccBar is used. >
+
+   Foo asdfasd Bar asdf Foo asdf Bar asdf
+   fff	       bbb	fff	 bbb
+
+Note the use of ".\{-}" to skip as little as possible until the next Bar.
+when ".*" would be used, the "asdf" in between "Bar" and "Foo" would be
+highlighted according to the "ccFoobar" group, because the ccFooBar match
+would include the first "Foo" and the last "Bar" in the line (see |pattern|).
+
+
+skipwhite						*:syn-skipwhite*
+skipnl							*:syn-skipnl*
+skipempty						*:syn-skipempty*
+
+These arguments are only used in combination with "nextgroup".	They can be
+used to allow the next group to match after skipping some text:
+	skipwhite	skip over space and Tab characters
+	skipnl		skip over the end of a line
+	skipempty	skip over empty lines (implies a "skipnl")
+
+When "skipwhite" is present, the white space is only skipped if there is no
+next group that matches the white space.
+
+When "skipnl" is present, the match with nextgroup may be found in the next
+line.  This only happens when the current item ends at the end of the current
+line!  When "skipnl" is not present, the nextgroup will only be found after
+the current item in the same line.
+
+When skipping text while looking for a next group, the matches for other
+groups are ignored.  Only when no next group matches, other items are tried
+for a match again.  This means that matching a next group and skipping white
+space and <EOL>s has a higher priority than other items.
+
+Example: >
+  :syn match ifstart "\<if.*"	  nextgroup=ifline skipwhite skipempty
+  :syn match ifline  "[^ \t].*" nextgroup=ifline skipwhite skipempty contained
+  :syn match ifline  "endif"	contained
+Note that the "[^ \t].*" match matches all non-white text.  Thus it would also
+match "endif".	Therefore the "endif" match is put last, so that it takes
+precedence.
+Note that this example doesn't work for nested "if"s.  You need to add
+"contains" arguments to make that work (omitted for simplicity of the
+example).
+
+==============================================================================
+7. Syntax patterns				*:syn-pattern* *E401* *E402*
+
+In the syntax commands, a pattern must be surrounded by two identical
+characters.  This is like it works for the ":s" command.  The most common to
+use is the double quote.  But if the pattern contains a double quote, you can
+use another character that is not used in the pattern.	Examples: >
+  :syntax region Comment  start="/\*"  end="\*/"
+  :syntax region String   start=+"+    end=+"+	 skip=+\\"+
+
+See |pattern| for the explanation of what a pattern is.  Syntax patterns are
+always interpreted like the 'magic' options is set, no matter what the actual
+value of 'magic' is.  And the patterns are interpreted like the 'l' flag is
+not included in 'cpoptions'.  This was done to make syntax files portable and
+independent of 'compatible' and 'magic' settings.
+
+Try to avoid patterns that can match an empty string, such as "[a-z]*".
+This slows down the highlighting a lot, because it matches everywhere.
+
+						*:syn-pattern-offset*
+The pattern can be followed by a character offset.  This can be used to
+change the highlighted part, and to change the text area included in the
+match or region (which only matters when trying to match other items).	Both
+are relative to the matched pattern.  The character offset for a skip
+pattern can be used to tell where to continue looking for an end pattern.
+
+The offset takes the form of "{what}={offset}"
+The {what} can be one of seven strings:
+
+ms	Match Start	offset for the start of the matched text
+me	Match End	offset for the end of the matched text
+hs	Highlight Start	offset for where the highlighting starts
+he	Highlight End	offset for where the highlighting ends
+rs	Region Start	offset for where the body of a region starts
+re	Region End	offset for where the body of a region ends
+lc	Leading Context	offset past "leading context" of pattern
+
+The {offset} can be:
+
+s	start of the matched pattern
+s+{nr}	start of the matched pattern plus {nr} chars to the right
+s-{nr}	start of the matched pattern plus {nr} chars to the left
+e	end of the matched pattern
+e+{nr}	end of the matched pattern plus {nr} chars to the right
+e-{nr}	end of the matched pattern plus {nr} chars to the left
+{nr}	(for "lc" only): start matching {nr} chars to the left
+
+Examples: "ms=s+1", "hs=e-2", "lc=3".
+
+Although all offsets are accepted after any pattern, they are not always
+meaningful.  This table shows which offsets are actually used:
+
+		    ms	 me   hs   he	rs   re	  lc ~
+match item	    yes  yes  yes  yes	-    -	  yes
+region item start   yes  -    yes  -	yes  -	  yes
+region item skip    -	 yes  -    -	-    -	  yes
+region item end     -	 yes  -    yes	-    yes  yes
+
+Offsets can be concatenated, with a ',' in between.  Example: >
+  :syn match String  /"[^"]*"/hs=s+1,he=e-1
+<
+    some "string" text
+	  ^^^^^^		highlighted
+
+Notes:
+- There must be no white space between the pattern and the character
+  offset(s).
+- The highlighted area will never be outside of the matched text.
+- A negative offset for an end pattern may not always work, because the end
+  pattern may be detected when the highlighting should already have stopped.
+- The start of a match cannot be in a line other than where the pattern
+  matched.  This doesn't work: "a\nb"ms=e.  You can make the highlighting
+  start in another line, this does work: "a\nb"hs=e.
+
+Example (match a comment but don't highlight the /* and */): >
+  :syntax region Comment start="/\*"hs=e+1 end="\*/"he=s-1
+<
+	/* this is a comment */
+	  ^^^^^^^^^^^^^^^^^^^	  highlighted
+
+A more complicated Example: >
+  :syn region Exa matchgroup=Foo start="foo"hs=s+2,rs=e+2 matchgroup=Bar end="bar"me=e-1,he=e-1,re=s-1
+<
+	 abcfoostringbarabc
+	    mmmmmmmmmmm	    match
+	      ssrrrreee	    highlight start/region/end ("Foo", "Exa" and "Bar")
+
+Leading context			*:syn-lc* *:syn-leading* *:syn-context*
+
+Note: This is an obsolete feature, only included for backwards compatibility
+with previous Vim versions.  It's now recommended to use the |/\@<=| construct
+in the pattern.
+
+The "lc" offset specifies leading context -- a part of the pattern that must
+be present, but is not considered part of the match.  An offset of "lc=n" will
+cause Vim to step back n columns before attempting the pattern match, allowing
+characters which have already been matched in previous patterns to also be
+used as leading context for this match.  This can be used, for instance, to
+specify that an "escaping" character must not precede the match: >
+
+  :syn match ZNoBackslash "[^\\]z"ms=s+1
+  :syn match WNoBackslash "[^\\]w"lc=1
+  :syn match Underline "_\+"
+<
+	  ___zzzz ___wwww
+	  ^^^	  ^^^	  matches Underline
+	      ^ ^	  matches ZNoBackslash
+		     ^^^^ matches WNoBackslash
+
+The "ms" offset is automatically set to the same value as the "lc" offset,
+unless you set "ms" explicitly.
+
+
+Multi-line patterns					*:syn-multi-line*
+
+The patterns can include "\n" to match an end-of-line.	Mostly this works as
+expected, but there are a few exceptions.
+
+When using a start pattern with an offset, the start of the match is not
+allowed to start in a following line.  The highlighting can start in a
+following line though.
+
+The skip pattern can include the "\n", but the search for an end pattern will
+continue in the first character of the next line, also when that character is
+matched by the skip pattern.  This is because redrawing may start in any line
+halfway a region and there is no check if the skip pattern started in a
+previous line.	For example, if the skip pattern is "a\nb" and an end pattern
+is "b", the end pattern does match in the second line of this: >
+	 x x a
+	 b x x
+Generally this means that the skip pattern should not match any characters
+after the "\n".
+
+
+External matches					*:syn-ext-match*
+
+These extra regular expression items are available in region patterns:
+
+						*/\z(* */\z(\)* *E50* *E52*
+    \z(\)	Marks the sub-expression as "external", meaning that it is can
+		be accessed from another pattern match.  Currently only usable
+		in defining a syntax region start pattern.
+
+					*/\z1* */\z2* */\z3* */\z4* */\z5*
+    \z1  ...  \z9			*/\z6* */\z7* */\z8* */\z9* *E66* *E67*
+		Matches the same string that was matched by the corresponding
+		sub-expression in a previous start pattern match.
+
+Sometimes the start and end patterns of a region need to share a common
+sub-expression.  A common example is the "here" document in Perl and many Unix
+shells.  This effect can be achieved with the "\z" special regular expression
+items, which marks a sub-expression as "external", in the sense that it can be
+referenced from outside the pattern in which it is defined.  The here-document
+example, for instance, can be done like this: >
+  :syn region hereDoc start="<<\z(\I\i*\)" end="^\z1$"
+
+As can be seen here, the \z actually does double duty.	In the start pattern,
+it marks the "\(\I\i*\)" sub-expression as external; in the end pattern, it
+changes the \1 back-reference into an external reference referring to the
+first external sub-expression in the start pattern.  External references can
+also be used in skip patterns: >
+  :syn region foo start="start \(\I\i*\)" skip="not end \z1" end="end \z1"
+
+Note that normal and external sub-expressions are completely orthogonal and
+indexed separately; for instance, if the pattern "\z(..\)\(..\)" is applied
+to the string "aabb", then \1 will refer to "bb" and \z1 will refer to "aa".
+Note also that external sub-expressions cannot be accessed as back-references
+within the same pattern like normal sub-expressions.  If you want to use one
+sub-expression as both a normal and an external sub-expression, you can nest
+the two, as in "\(\z(...\)\)".
+
+Note that only matches within a single line can be used.  Multi-line matches
+cannot be referred to.
+
+==============================================================================
+8. Syntax clusters					*:syn-cluster* *E400*
+
+:sy[ntax] cluster {cluster-name} [contains={group-name}..]
+				 [add={group-name}..]
+				 [remove={group-name}..]
+
+This command allows you to cluster a list of syntax groups together under a
+single name.
+
+	contains={group-name}..
+		The cluster is set to the specified list of groups.
+	add={group-name}..
+		The specified groups are added to the cluster.
+	remove={group-name}..
+		The specified groups are removed from the cluster.
+
+A cluster so defined may be referred to in a contains=.., nextgroup=.., add=..
+or remove=.. list with a "@" prefix.  You can also use this notation to
+implicitly declare a cluster before specifying its contents.
+
+Example: >
+   :syntax match Thing "# [^#]\+ #" contains=@ThingMembers
+   :syntax cluster ThingMembers contains=ThingMember1,ThingMember2
+
+As the previous example suggests, modifications to a cluster are effectively
+retroactive; the membership of the cluster is checked at the last minute, so
+to speak: >
+   :syntax keyword A aaa
+   :syntax keyword B bbb
+   :syntax cluster AandB contains=A
+   :syntax match Stuff "( aaa bbb )" contains=@AandB
+   :syntax cluster AandB add=B	  " now both keywords are matched in Stuff
+
+This also has implications for nested clusters: >
+   :syntax keyword A aaa
+   :syntax keyword B bbb
+   :syntax cluster SmallGroup contains=B
+   :syntax cluster BigGroup contains=A,@SmallGroup
+   :syntax match Stuff "( aaa bbb )" contains=@BigGroup
+   :syntax cluster BigGroup remove=B	" no effect, since B isn't in BigGroup
+   :syntax cluster SmallGroup remove=B	" now bbb isn't matched within Stuff
+
+==============================================================================
+9. Including syntax files				*:syn-include* *E397*
+
+It is often useful for one language's syntax file to include a syntax file for
+a related language.  Depending on the exact relationship, this can be done in
+two different ways:
+
+	- If top-level syntax items in the included syntax file are to be
+	  allowed at the top level in the including syntax, you can simply use
+	  the |:runtime| command: >
+
+  " In cpp.vim:
+  :runtime! syntax/c.vim
+  :unlet b:current_syntax
+
+<	- If top-level syntax items in the included syntax file are to be
+	  contained within a region in the including syntax, you can use the
+	  ":syntax include" command:
+
+:sy[ntax] include [@{grouplist-name}] {file-name}
+
+	  All syntax items declared in the included file will have the
+	  "contained" flag added.  In addition, if a group list is specified,
+	  all top-level syntax items in the included file will be added to
+	  that list. >
+
+   " In perl.vim:
+   :syntax include @Pod <sfile>:p:h/pod.vim
+   :syntax region perlPOD start="^=head" end="^=cut" contains=@Pod
+<
+	  When {file-name} is an absolute path (starts with "/", "c:", "$VAR"
+	  or "<sfile>") that file is sourced.  When it is a relative path
+	  (e.g., "syntax/pod.vim") the file is searched for in 'runtimepath'.
+	  All matching files are loaded.  Using a relative path is
+	  recommended, because it allows a user to replace the included file
+	  with his own version, without replacing the file that does the ":syn
+	  include".
+
+==============================================================================
+10. Synchronizing				*:syn-sync* *E403* *E404*
+
+Vim wants to be able to start redrawing in any position in the document.  To
+make this possible it needs to know the syntax state at the position where
+redrawing starts.
+
+:sy[ntax] sync [ccomment [group-name] | minlines={N} | ...]
+
+There are four ways to synchronize:
+1. Always parse from the start of the file.
+   |:syn-sync-first|
+2. Based on C-style comments.  Vim understands how C-comments work and can
+   figure out if the current line starts inside or outside a comment.
+   |:syn-sync-second|
+3. Jumping back a certain number of lines and start parsing there.
+   |:syn-sync-third|
+4. Searching backwards in the text for a pattern to sync on.
+   |:syn-sync-fourth|
+
+				*:syn-sync-maxlines* *:syn-sync-minlines*
+For the last three methods, the line range where the parsing can start is
+limited by "minlines" and "maxlines".
+
+If the "minlines={N}" argument is given, the parsing always starts at least
+that many lines backwards.  This can be used if the parsing may take a few
+lines before it's correct, or when it's not possible to use syncing.
+
+If the "maxlines={N}" argument is given, the number of lines that are searched
+for a comment or syncing pattern is restricted to N lines backwards (after
+adding "minlines").  This is useful if you have few things to sync on and a
+slow machine.  Example: >
+   :syntax sync ccomment maxlines=500
+<
+						*:syn-sync-linebreaks*
+When using a pattern that matches multiple lines, a change in one line may
+cause a pattern to no longer match in a previous line.	This means has to
+start above where the change was made.	How many lines can be specified with
+the "linebreaks" argument.  For example, when a pattern may include one line
+break use this: >
+   :syntax sync linebreaks=1
+The result is that redrawing always starts at least one line before where a
+change was made.  The default value for "linebreaks" is zero.  Usually the
+value for "minlines" is bigger than "linebreaks".
+
+
+First syncing method:			*:syn-sync-first*
+>
+   :syntax sync fromstart
+
+The file will be parsed from the start.  This makes syntax highlighting
+accurate, but can be slow for long files.  Vim caches previously parsed text,
+so that it's only slow when parsing the text for the first time.  However,
+when making changes some part of the next needs to be parsed again (worst
+case: to the end of the file).
+
+Using "fromstart" is equivalent to using "minlines" with a very large number.
+
+
+Second syncing method:			*:syn-sync-second* *:syn-sync-ccomment*
+
+For the second method, only the "ccomment" argument needs to be given.
+Example: >
+   :syntax sync ccomment
+
+When Vim finds that the line where displaying starts is inside a C-style
+comment, the last region syntax item with the group-name "Comment" will be
+used.  This requires that there is a region with the group-name "Comment"!
+An alternate group name can be specified, for example: >
+   :syntax sync ccomment javaComment
+This means that the last item specified with "syn region javaComment" will be
+used for the detected C comment region.  This only works properly if that
+region does have a start pattern "\/*" and an end pattern "*\/".
+
+The "maxlines" argument can be used to restrict the search to a number of
+lines.	The "minlines" argument can be used to at least start a number of
+lines back (e.g., for when there is some construct that only takes a few
+lines, but it hard to sync on).
+
+Note: Syncing on a C comment doesn't work properly when strings are used
+that cross a line and contain a "*/".  Since letting strings cross a line
+is a bad programming habit (many compilers give a warning message), and the
+chance of a "*/" appearing inside a comment is very small, this restriction
+is hardly ever noticed.
+
+
+Third syncing method:				*:syn-sync-third*
+
+For the third method, only the "minlines={N}" argument needs to be given.
+Vim will subtract {N} from the line number and start parsing there.  This
+means {N} extra lines need to be parsed, which makes this method a bit slower.
+Example: >
+   :syntax sync minlines=50
+
+"lines" is equivalent to "minlines" (used by older versions).
+
+
+Fourth syncing method:				*:syn-sync-fourth*
+
+The idea is to synchronize on the end of a few specific regions, called a
+sync pattern.  Only regions can cross lines, so when we find the end of some
+region, we might be able to know in which syntax item we are.  The search
+starts in the line just above the one where redrawing starts.  From there
+the search continues backwards in the file.
+
+This works just like the non-syncing syntax items.  You can use contained
+matches, nextgroup, etc.  But there are a few differences:
+- Keywords cannot be used.
+- The syntax items with the "sync" keyword form a completely separated group
+  of syntax items.  You can't mix syncing groups and non-syncing groups.
+- The matching works backwards in the buffer (line by line), instead of
+  forwards.
+- A line continuation pattern can be given.  It is used to decide which group
+  of lines need to be searched like they were one line.  This means that the
+  search for a match with the specified items starts in the first of the
+  consecutive that contain the continuation pattern.
+- When using "nextgroup" or "contains", this only works within one line (or
+  group of continued lines).
+- When using a region, it must start and end in the same line (or group of
+  continued lines).  Otherwise the end is assumed to be at the end of the
+  line (or group of continued lines).
+- When a match with a sync pattern is found, the rest of the line (or group of
+  continued lines) is searched for another match.  The last match is used.
+  This is used when a line can contain both the start end the end of a region
+  (e.g., in a C-comment like /* this */, the last "*/" is used).
+
+There are two ways how a match with a sync pattern can be used:
+1. Parsing for highlighting starts where redrawing starts (and where the
+   search for the sync pattern started).  The syntax group that is expected
+   to be valid there must be specified.  This works well when the regions
+   that cross lines cannot contain other regions.
+2. Parsing for highlighting continues just after the match.  The syntax group
+   that is expected to be present just after the match must be specified.
+   This can be used when the previous method doesn't work well.  It's much
+   slower, because more text needs to be parsed.
+Both types of sync patterns can be used at the same time.
+
+Besides the sync patterns, other matches and regions can be specified, to
+avoid finding unwanted matches.
+
+[The reason that the sync patterns are given separately, is that mostly the
+search for the sync point can be much simpler than figuring out the
+highlighting.  The reduced number of patterns means it will go (much)
+faster.]
+
+					    *syn-sync-grouphere* *E393* *E394*
+    :syntax sync match {sync-group-name} grouphere {group-name} "pattern" ..
+
+	Define a match that is used for syncing.  {group-name} is the
+	name of a syntax group that follows just after the match.  Parsing
+	of the text for highlighting starts just after the match.  A region
+	must exist for this {group-name}.  The first one defined will be used.
+	"NONE" can be used for when there is no syntax group after the match.
+
+						*syn-sync-groupthere*
+    :syntax sync match {sync-group-name} groupthere {group-name} "pattern" ..
+
+	Like "grouphere", but {group-name} is the name of a syntax group that
+	is to be used at the start of the line where searching for the sync
+	point started.	The text between the match and the start of the sync
+	pattern searching is assumed not to change the syntax highlighting.
+	For example, in C you could search backwards for "/*" and "*/".  If
+	"/*" is found first, you know that you are inside a comment, so the
+	"groupthere" is "cComment".  If "*/" is found first, you know that you
+	are not in a comment, so the "groupthere" is "NONE".  (in practice
+	it's a bit more complicated, because the "/*" and "*/" could appear
+	inside a string.  That's left as an exercise to the reader...).
+
+    :syntax sync match ..
+    :syntax sync region ..
+
+	Without a "groupthere" argument.  Define a region or match that is
+	skipped while searching for a sync point.
+
+    :syntax sync linecont {pattern}
+
+	When {pattern} matches in a line, it is considered to continue in
+	the next line.	This means that the search for a sync point will
+	consider the lines to be concatenated.
+
+If the "maxlines={N}" argument is given too, the number of lines that are
+searched for a match is restricted to N.  This is useful if you have very
+few things to sync on and a slow machine.  Example: >
+   :syntax sync maxlines=100
+
+You can clear all sync settings with: >
+   :syntax sync clear
+
+You can clear specific sync patterns with: >
+   :syntax sync clear {sync-group-name} ..
+
+==============================================================================
+11. Listing syntax items		*:syntax* *:sy* *:syn* *:syn-list*
+
+This commands lists all the syntax items: >
+
+    :sy[ntax] [list]
+
+To show the syntax items for one syntax group: >
+
+    :sy[ntax] list {group-name}
+
+To list the syntax groups in one cluster:			*E392*	>
+
+    :sy[ntax] list @{cluster-name}
+
+See above for other arguments for the ":syntax" command.
+
+Note that the ":syntax" command can be abbreviated to ":sy", although ":syn"
+is mostly used, because it looks better.
+
+==============================================================================
+12. Highlight command			*:highlight* *:hi* *E28* *E411* *E415*
+
+There are three types of highlight groups:
+- The ones used for specific languages.  For these the name starts with the
+  name of the language.  Many of these don't have any attributes, but are
+  linked to a group of the second type.
+- The ones used for all syntax languages.
+- The ones used for the 'highlight' option.
+							*hitest.vim*
+You can see all the groups currently active with this command: >
+    :so $VIMRUNTIME/syntax/hitest.vim
+This will open a new window containing all highlight group names, displayed
+in their own color.
+
+						*:colo* *:colorscheme* *E185*
+:colo[rscheme] {name}	Load color scheme {name}.  This searches 'runtimepath'
+			for the file "colors/{name}.vim.  The first one that
+			is found is loaded.
+			To see the name of the currently active color scheme
+			(if there is one): >
+				:echo g:colors_name
+<			Doesn't work recursively, thus you can't use
+			":colorscheme" in a color scheme script.
+
+:hi[ghlight]		List all the current highlight groups that have
+			attributes set.
+
+:hi[ghlight] {group-name}
+			List one highlight group.
+
+:hi[ghlight] clear	Reset all highlighting to the defaults.  Removes all
+			highlighting for groups added by the user!
+			Uses the current value of 'background' to decide which
+			default colors to use.
+
+:hi[ghlight] clear {group-name}
+:hi[ghlight] {group-name} NONE
+			Disable the highlighting for one highlight group.  It
+			is _not_ set back to the default colors.
+
+:hi[ghlight] [default] {group-name} {key}={arg} ..
+			Add a highlight group, or change the highlighting for
+			an existing group.
+			See |highlight-args| for the {key}={arg} arguments.
+			See |:highlight-default| for the optional [default]
+			argument.
+
+Normally a highlight group is added once when starting up.  This sets the
+default values for the highlighting.  After that, you can use additional
+highlight commands to change the arguments that you want to set to non-default
+values.  The value "NONE" can be used to switch the value off or go back to
+the default value.
+
+A simple way to change colors is with the |:colorscheme| command.  This loads
+a file with ":highlight" commands such as this: >
+
+   :hi Comment	gui=bold
+
+Note that all settings that are not included remain the same, only the
+specified field is used, and settings are merged with previous ones.  So, the
+result is like this single command has been used: >
+   :hi Comment	term=bold ctermfg=Cyan guifg=#80a0ff gui=bold
+<
+					*highlight-args* *E416* *E417* *E423*
+There are three types of terminals for highlighting:
+term	a normal terminal (vt100, xterm)
+cterm	a color terminal (MS-DOS console, color-xterm, these have the "Co"
+	termcap entry)
+gui	the GUI
+
+For each type the highlighting can be given.  This makes it possible to use
+the same syntax file on all terminals, and use the optimal highlighting.
+
+1. highlight arguments for normal terminals
+
+term={attr-list}			*attr-list* *highlight-term* *E418*
+	attr-list is a comma separated list (without spaces) of the
+	following items (in any order):
+		bold
+		underline
+		reverse
+		inverse		same as reverse
+		italic
+		standout
+		NONE		no attributes used (used to reset it)
+
+	Note that "bold" can be used here and by using a bold font.  They
+	have the same effect.
+
+start={term-list}				*highlight-start* *E422*
+stop={term-list}				*term-list* *highlight-stop*
+	These lists of terminal codes can be used to get
+	non-standard attributes on a terminal.
+
+	The escape sequence specified with the "start" argument
+	is written before the characters in the highlighted
+	area.  It can be anything that you want to send to the
+	terminal to highlight this area.  The escape sequence
+	specified with the "stop" argument is written after the
+	highlighted area.  This should undo the "start" argument.
+	Otherwise the screen will look messed up.
+
+	The {term-list} can have two forms:
+
+	1. A string with escape sequences.
+	   This is any string of characters, except that it can't start with
+	   "t_" and blanks are not allowed.  The <> notation is recognized
+	   here, so you can use things like "<Esc>" and "<Space>".  Example:
+		start=<Esc>[27h;<Esc>[<Space>r;
+
+	2. A list of terminal codes.
+	   Each terminal code has the form "t_xx", where "xx" is the name of
+	   the termcap entry.  The codes have to be separated with commas.
+	   White space is not allowed.	Example:
+		start=t_C1,t_BL
+	   The terminal codes must exist for this to work.
+
+
+2. highlight arguments for color terminals
+
+cterm={attr-list}					*highlight-cterm*
+	See above for the description of {attr-list} |attr-list|.
+	The "cterm" argument is likely to be different from "term", when
+	colors are used.  For example, in a normal terminal comments could
+	be underlined, in a color terminal they can be made Blue.
+	Note: Many terminals (e.g., DOS console) can't mix these attributes
+	with coloring.	Use only one of "cterm=" OR "ctermfg=" OR "ctermbg=".
+
+ctermfg={color-nr}				*highlight-ctermfg* *E421*
+ctermbg={color-nr}				*highlight-ctermbg*
+	The {color-nr} argument is a color number.  Its range is zero to
+	(not including) the number given by the termcap entry "Co".
+	The actual color with this number depends on the type of terminal
+	and its settings.  Sometimes the color also depends on the settings of
+	"cterm".  For example, on some systems "cterm=bold ctermfg=3" gives
+	another color, on others you just get color 3.
+
+	For an xterm this depends on your resources, and is a bit
+	unpredictable.	See your xterm documentation for the defaults.	The
+	colors for a color-xterm can be changed from the .Xdefaults file.
+	Unfortunately this means that it's not possible to get the same colors
+	for each user.	See |xterm-color| for info about color xterms.
+
+	The MSDOS standard colors are fixed (in a console window), so these
+	have been used for the names.  But the meaning of color names in X11
+	are fixed, so these color settings have been used, to make the
+	highlighting settings portable (complicated, isn't it?).  The
+	following names are recognized, with the color number used:
+
+							*cterm-colors*
+	    NR-16   NR-8    COLOR NAME ~
+	    0	    0	    Black
+	    1	    4	    DarkBlue
+	    2	    2	    DarkGreen
+	    3	    6	    DarkCyan
+	    4	    1	    DarkRed
+	    5	    5	    DarkMagenta
+	    6	    3	    Brown, DarkYellow
+	    7	    7	    LightGray, LightGrey, Gray, Grey
+	    8	    0*	    DarkGray, DarkGrey
+	    9	    4*	    Blue, LightBlue
+	    10	    2*	    Green, LightGreen
+	    11	    6*	    Cyan, LightCyan
+	    12	    1*	    Red, LightRed
+	    13	    5*	    Magenta, LightMagenta
+	    14	    3*	    Yellow, LightYellow
+	    15	    7*	    White
+
+	The number under "NR-16" is used for 16-color terminals ('t_Co'
+	greater than or equal to 16).  The number under "NR-8" is used for
+	8-color terminals ('t_Co' less than 16).  The '*' indicates that the
+	bold attribute is set for ctermfg.  In many 8-color terminals (e.g.,
+	"linux"), this causes the bright colors to appear.  This doesn't work
+	for background colors!	Without the '*' the bold attribute is removed.
+	If you want to set the bold attribute in a different way, put a
+	"cterm=" argument AFTER the "ctermfg=" or "ctermbg=" argument.	Or use
+	a number instead of a color name.
+
+	The case of the color names is ignored.
+	Note that for 16 color ansi style terminals (including xterms), the
+	numbers in the NR-8 column is used. Here '*' means 'add 8' so that Blue
+	is 12, DarkGray is 8 etc.
+
+	Note that for some color terminals these names may result in the wrong
+	colors!
+
+							*:hi-normal-cterm*
+	When setting the "ctermfg" or "ctermbg" colors for the Normal group,
+	these will become the colors used for the non-highlighted text.
+	Example: >
+		:highlight Normal ctermfg=grey ctermbg=darkblue
+<	When setting the "ctermbg" color for the Normal group, the
+	'background' option will be adjusted automatically.  This causes the
+	highlight groups that depend on 'background' to change!  This means
+	you should set the colors for Normal first, before setting other
+	colors.
+	When a colorscheme is being used, changing 'background' causes it to
+	be reloaded, which may reset all colors (including Normal).  First
+	delete the "colors_name" variable when you don't want this.
+
+	When you have set "ctermfg" or "ctermbg" for the Normal group, Vim
+	needs to reset the color when exiting.	This is done with the "op"
+	termcap entry |t_op|.  If this doesn't work correctly, try setting the
+	't_op' option in your .vimrc.
+							*E419* *E420*
+	When Vim knows the normal foreground and background colors, "fg" and
+	"bg" can be used as color names.  This only works after setting the
+	colors for the Normal group and for the MS-DOS console.  Example, for
+	reverse video: >
+	    :highlight Visual ctermfg=bg ctermbg=fg
+<	Note that the colors are used that are valid at the moment this
+	command are given.  If the Normal group colors are changed later, the
+	"fg" and "bg" colors will not be adjusted.
+
+
+3. highlight arguments for the GUI
+
+gui={attr-list}						*highlight-gui*
+	These give the attributes to use in the GUI mode.
+	See |attr-list| for a description.
+	Note that "bold" can be used here and by using a bold font.  They
+	have the same effect.
+	Note that the attributes are ignored for the "Normal" group.
+
+font={font-name}					*highlight-font*
+	font-name is the name of a font, as it is used on the system Vim
+	runs on.  For X11 this is a complicated name, for example: >
+   font=-misc-fixed-bold-r-normal--14-130-75-75-c-70-iso8859-1
+<
+	The font-name "NONE" can be used to revert to the default font.
+	When setting the font for the "Normal" group, this becomes the default
+	font (until the 'guifont' option is changed; the last one set is
+	used).
+	The following only works with Motif and Athena, not with other GUIs:
+	When setting the font for the "Menu" group, the menus will be changed.
+	When setting the font for the "Tooltip" group, the tooltips will be
+	changed.
+	All fonts used, except for Menu and Tooltip, should be of the same
+	character size as the default font!  Otherwise redrawing problems will
+	occur.
+
+guifg={color-name}					*highlight-guifg*
+guibg={color-name}					*highlight-guibg*
+	These give the foreground (guifg) and background (guibg) color to
+	use in the GUI.  There are a few special names:
+		NONE		no color (transparent)
+		bg		use normal background color
+		background	use normal background color
+		fg		use normal foreground color
+		foreground	use normal foreground color
+	To use a color name with an embedded space or other special character,
+	put it in single quotes.  The single quote cannot be used then.
+	Example: >
+	    :hi comment guifg='salmon pink'
+<
+							*gui-colors*
+	Suggested color names (these are available on most systems):
+	    Red		LightRed	DarkRed
+	    Green	LightGreen	DarkGreen	SeaGreen
+	    Blue	LightBlue	DarkBlue	SlateBlue
+	    Cyan	LightCyan	DarkCyan
+	    Magenta	LightMagenta	DarkMagenta
+	    Yellow	LightYellow	Brown		DarkYellow
+	    Gray	LightGray	DarkGray
+	    Black	White
+	    Orange	Purple		Violet
+
+	In the Win32 GUI version, additional system colors are available.  See
+	|win32-colors|.
+
+	You can also specify a color by its Red, Green and Blue values.
+	The format is "#rrggbb", where
+		"rr"	is the Red value
+		"bb"	is the Blue value
+		"gg"	is the Green value
+	All values are hexadecimal, range from "00" to "ff".  Examples: >
+  :highlight Comment guifg=#11f0c3 guibg=#ff00ff
+<
+					*highlight-groups* *highlight-default*
+These are the default highlighting groups.  These groups are used by the
+'highlight' option default.  Note that the highlighting depends on the value
+of 'background'.  You can see the current settings with the ":highlight"
+command.
+							*hl-Cursor*
+Cursor		the character under the cursor
+							*hl-CursorIM*
+CursorIM	like Cursor, but used when in IME mode |CursorIM|
+							*hl-Directory*
+Directory	directory names (and other special names in listings)
+							*hl-DiffAdd*
+DiffAdd		diff mode: Added line |diff.txt|
+							*hl-DiffChange*
+DiffChange	diff mode: Changed line |diff.txt|
+							*hl-DiffDelete*
+DiffDelete	diff mode: Deleted line |diff.txt|
+							*hl-DiffText*
+DiffText	diff mode: Changed text within a changed line |diff.txt|
+							*hl-ErrorMsg*
+ErrorMsg	error messages on the command line
+							*hl-VertSplit*
+VertSplit	the column separating vertically split windows
+							*hl-Folded*
+Folded		line used for closed folds
+							*hl-FoldColumn*
+FoldColumn	'foldcolumn'
+							*hl-SignColumn*
+SignColumn	column where |signs| are displayed
+							*hl-IncSearch*
+IncSearch	'incsearch' highlighting; also used for the text replaced with
+		":s///c"
+							*hl-LineNr*
+LineNr		line number for ":number" and ":#" commands, and when 'number'
+		option is set.
+							*hl-ModeMsg*
+ModeMsg		'showmode' message (e.g., "-- INSERT --")
+							*hl-MoreMsg*
+MoreMsg		|more-prompt|
+							*hl-NonText*
+NonText		'~' and '@' at the end of the window, characters from
+		'showbreak' and other characters that do not really exist in
+		the text (e.g., ">" displayed when a double-wide character
+		doesn't fit at the end of the line).
+							*hl-Normal*
+Normal		normal text
+							*hl-Question*
+Question	|hit-enter| prompt and yes/no questions
+							*hl-Search*
+Search		Last search pattern highlighting (see 'hlsearch').
+		Also used for highlighting the current line in the quickfix
+		window and similar items that need to stand out.
+							*hl-SpecialKey*
+SpecialKey	Meta and special keys listed with ":map", also for text used
+		to show unprintable characters in the text, 'listchars'.
+		Generally: text that is displayed differently from what it
+		really is.
+							*hl-StatusLine*
+StatusLine	status line of current window
+							*hl-StatusLineNC*
+StatusLineNC	status lines of not-current windows
+		Note: if this is equal to "StatusLine" Vim will use "^^^" in
+		the status line of the current window.
+							*hl-Title*
+Title		titles for output from ":set all", ":autocmd" etc.
+							*hl-Visual*
+Visual		Visual mode selection
+							*hl-VisualNOS*
+VisualNOS	Visual mode selection when vim is "Not Owning the Selection".
+		Only X11 Gui's |gui-x11| and |xterm-clipboard| supports this.
+							*hl-WarningMsg*
+WarningMsg	warning messages
+							*hl-WildMenu*
+WildMenu	current match in 'wildmenu' completion
+
+						*hl-User1* *hl-User1..9*
+The 'statusline' syntax allows the use of 9 different highlights in the
+statusline and ruler (via 'rulerformat'). The names are User1 to User9.
+
+For the GUI you can use these groups to set the colors for the menu,
+scrollbars and tooltips.  They don't have defaults.  This doesn't work for the
+Win32 GUI.  Only three highlight arguments have any effect here: font, guibg,
+and guifg.
+
+							*hl-Menu*
+Menu		Current font, background and foreground colors of the menus.
+		Also used for the toolbar.
+		Applicable highlight arguments: font, guibg, guifg.
+
+		NOTE: For Motif and Athena the font argument actually
+		specifies a fontset at all times, no matter if 'guifontset' is
+		empty, and as such it is tied to the current |:language| when
+		set.
+
+							*hl-Scrollbar*
+Scrollbar	Current background and foreground of the main window's
+		scrollbars.
+		Applicable highlight arguments: guibg, guifg.
+
+							*hl-Tooltip*
+Tooltip		Current font, background and foreground of the tooltips.
+		Applicable highlight arguments: font, guibg, guifg.
+
+		NOTE: For Motif and Athena the font argument actually
+		specifies a fontset at all times, no matter if 'guifontset' is
+		empty, and as such it is tied to the current |:language| when
+		set.
+
+==============================================================================
+13. Linking groups		*:hi-link* *:highlight-link* *E412* *E413*
+
+When you want to use the same highlighting for several syntax groups, you
+can do this more easily by linking the groups into one common highlight
+group, and give the color attributes only for that group.
+
+To set a link:
+
+    :hi[ghlight][!] [default] link {from-group} {to-group}
+
+To remove a link:
+
+    :hi[ghlight][!] [default] link {from-group} NONE
+
+Notes:							*E414*
+- If the {from-group} and/or {to-group} doesn't exist, it is created.  You
+  don't get an error message for a non-existing group.
+- As soon as you use a ":highlight" command for a linked group, the link is
+  removed.
+- If there are already highlight settings for the {from-group}, the link is
+  not made, unless the '!' is given.  For a ":highlight link" command in a
+  sourced file, you don't get an error message.  This can be used to skip
+  links for groups that already have settings.
+
+					*:hi-default* *:highlight-default*
+The [default] argument is used for setting the default highlighting for a
+group.	If highlighting has already been specified for the group the command
+will be ignored.  Also when there is an existing link.
+
+Using [default] is especially useful to overrule the highlighting of a
+specific syntax file.  For example, the C syntax file contains: >
+	:highlight default link cComment Comment
+If you like Question highlighting for C comments, put this in your vimrc file: >
+	:highlight link cComment Question
+Without the "default" in the C syntax file, the highlighting would be
+overruled when the syntax file is loaded.
+
+==============================================================================
+14. Cleaning up						*:syn-clear* *E391*
+
+If you want to clear the syntax stuff for the current buffer, you can use this
+command: >
+  :syntax clear
+
+This command should be used when you want to switch off syntax highlighting,
+or when you want to switch to using another syntax.  It's normally not needed
+in a syntax file itself, because syntax is cleared by the autocommands that
+load the syntax file.
+The command also deletes the "b:current_syntax" variable, since no syntax is
+loaded after this command.
+
+If you want to disable syntax highlighting for all buffers, you need to remove
+the autocommands that load the syntax files: >
+  :syntax off
+
+What this command actually does, is executing the command >
+  :source $VIMRUNTIME/syntax/nosyntax.vim
+See the "nosyntax.vim" file for details.  Note that for this to work
+$VIMRUNTIME must be valid.  See |$VIMRUNTIME|.
+
+To clean up specific syntax groups for the current buffer: >
+  :syntax clear {group-name} ..
+This removes all patterns and keywords for {group-name}.
+
+To clean up specific syntax group lists for the current buffer: >
+  :syntax clear @{grouplist-name} ..
+This sets {grouplist-name}'s contents to an empty list.
+
+						*:syntax-reset* *:syn-reset*
+If you have changed the colors and messed them up, use this command to get the
+defaults back: >
+
+  :syntax reset
+
+This doesn't change the colors for the 'highlight' option.
+
+Note that the syntax colors that you set in your vimrc file will also be reset
+back to their Vim default.
+Note that if you are using a color scheme, the colors defined by the color
+scheme for syntax highlighting will be lost.
+
+What this actually does is: >
+
+	let g:syntax_cmd = "reset"
+	runtime! syntax/syncolor.vim
+
+Note that this uses the 'runtimepath' option.
+
+							*syncolor*
+If you want to use different colors for syntax highlighting, you can add a Vim
+script file to set these colors.  Put this file in a directory in
+'runtimepath' which comes after $VIMRUNTIME, so that your settings overrule
+the default colors.  This way these colors will be used after the ":syntax
+reset" command.
+
+For Unix you can use the file ~/.vim/after/syntax/syncolor.vim.  Example: >
+
+	if &background == "light"
+	  highlight comment ctermfg=darkgreen guifg=darkgreen
+	else
+	  highlight comment ctermfg=green guifg=green
+	endif
+
+Note that when a color scheme is used, there might be some confusion whether
+your defined colors are to be used or the colors from the scheme.  This
+depends on the color scheme file.  See |:colorscheme|.
+
+							*syntax_cmd*
+The "syntax_cmd" variable is set to one of these values when the
+syntax/syncolor.vim files are loaded:
+   "on"		":syntax on" command.  Highlight colors are overruled but
+		links are kept
+   "enable"	":syntax enable" command.  Only define colors for groups that
+		don't have highlighting yet.  Use ":syntax default".
+   "reset"	":syntax reset" command or loading a color scheme.  Define all
+		the colors.
+   "skip"	Don't define colors.  Used to skip the default settings when a
+		syncolor.vim file earlier in 'runtimepath' has already set
+		them.
+
+==============================================================================
+15. Highlighting tags					*tag-highlight*
+
+If you want to highlight all the tags in your file, you can use the following
+mappings.
+
+	<F11>	-- Generate tags.vim file, and highlight tags.
+	<F12>	-- Just highlight tags based on existing tags.vim file.
+>
+  :map <F11>  :sp tags<CR>:%s/^\([^	:]*:\)\=\([^	]*\).*/syntax keyword Tag \2/<CR>:wq! tags.vim<CR>/^<CR><F12>
+  :map <F12>  :so tags.vim<CR>
+
+WARNING: The longer the tags file, the slower this will be, and the more
+memory Vim will consume.
+
+Only highlighting typedefs, unions and structs can be done too.  For this you
+must use Exuberant ctags (found at http://ctags.sf.net).
+
+Put these lines in your Makefile:
+
+# Make a highlight file for types.  Requires Exuberant ctags and awk
+types: types.vim
+types.vim: *.[ch]
+	ctags -i=gstuS -o- *.[ch] |\
+		awk 'BEGIN{printf("syntax keyword Type\t")}\
+			{printf("%s ", $$1)}END{print ""}' > $@
+
+And put these lines in your .vimrc: >
+
+   " load the types.vim highlighting file, if it exists
+   autocmd BufRead,BufNewFile *.[ch] let fname = expand('<afile>:p:h') . '/types.vim'
+   autocmd BufRead,BufNewFile *.[ch] if filereadable(fname)
+   autocmd BufRead,BufNewFile *.[ch]   exe 'so ' . fname
+   autocmd BufRead,BufNewFile *.[ch] endif
+
+==============================================================================
+16. Color xterms				*xterm-color* *color-xterm*
+
+Most color xterms have only eight colors.  If you don't get colors with the
+default setup, it should work with these lines in your .vimrc: >
+   :if &term =~ "xterm"
+   :  if has("terminfo")
+   :	set t_Co=8
+   :	set t_Sf=<Esc>[3%p1%dm
+   :	set t_Sb=<Esc>[4%p1%dm
+   :  else
+   :	set t_Co=8
+   :	set t_Sf=<Esc>[3%dm
+   :	set t_Sb=<Esc>[4%dm
+   :  endif
+   :endif
+<	[<Esc> is a real escape, type CTRL-V <Esc>]
+
+You might want to change the first "if" to match the name of your terminal,
+e.g. "dtterm" instead of "xterm".
+
+Note: Do these settings BEFORE doing ":syntax on".  Otherwise the colors may
+be wrong.
+							*xiterm* *rxvt*
+The above settings have been mentioned to work for xiterm and rxvt too.
+But for using 16 colors in an rxvt these should work with terminfo: >
+	:set t_AB=<Esc>[%?%p1%{8}%<%t25;%p1%{40}%+%e5;%p1%{32}%+%;%dm
+	:set t_AF=<Esc>[%?%p1%{8}%<%t22;%p1%{30}%+%e1;%p1%{22}%+%;%dm
+<
+							*colortest.vim*
+To test your color setup, a file has been included in the Vim distribution.
+To use it, execute these commands: >
+   :e $VIMRUNTIME/syntax/colortest.vim
+   :so %
+
+Some versions of xterm (and other terminals, like the linux console) can
+output lighter foreground colors, even though the number of colors is defined
+at 8.  Therefore Vim sets the "cterm=bold" attribute for light foreground
+colors, when 't_Co' is 8.
+
+							*xfree-xterm*
+To get 16 colors or more, get the newest xterm version (which should be
+included with Xfree86 3.3 and later).  You can also find the latest version
+at: >
+	http://invisible-island.net/xterm/xterm.html
+Here is a good way to configure it.  This uses 88 colors and enables the
+termcap-query feature, which allows Vim to ask the xterm how many colors it
+supports. >
+	./configure --disable-bold-color --enable-88-color --enable-tcap-query
+If you only get 8 colors, check the xterm compilation settings.
+(Also see |UTF8-xterm| for using this xterm with UTF-8 character encoding).
+
+This xterm should work with these lines in your .vimrc (for 16 colors): >
+   :if has("terminfo")
+   :  set t_Co=16
+   :  set t_AB=<Esc>[%?%p1%{8}%<%t%p1%{40}%+%e%p1%{92}%+%;%dm
+   :  set t_AF=<Esc>[%?%p1%{8}%<%t%p1%{30}%+%e%p1%{82}%+%;%dm
+   :else
+   :  set t_Co=16
+   :  set t_Sf=<Esc>[3%dm
+   :  set t_Sb=<Esc>[4%dm
+   :endif
+<	[<Esc> is a real escape, type CTRL-V <Esc>]
+
+Without |+terminfo|, Vim will recognize these settings, and automatically
+translate cterm colors of 8 and above to "<Esc>[9%dm" and "<Esc>[10%dm".
+Colors above 16 are also translated automatically.
+
+For 256 colors this has been reported to work: >
+
+   :set t_AB=<Esc>[48;5;%dm
+   :set t_AF=<Esc>[38;5;%dm
+
+Or just set the TERM environment variable to "xterm-color" or "xterm-16color"
+and try if that works.
+
+You probably want to use these X resources (in your ~/.Xdefaults file):
+	XTerm*color0:			#000000
+	XTerm*color1:			#c00000
+	XTerm*color2:			#008000
+	XTerm*color3:			#808000
+	XTerm*color4:			#0000c0
+	XTerm*color5:			#c000c0
+	XTerm*color6:			#008080
+	XTerm*color7:			#c0c0c0
+	XTerm*color8:			#808080
+	XTerm*color9:			#ff6060
+	XTerm*color10:			#00ff00
+	XTerm*color11:			#ffff00
+	XTerm*color12:			#8080ff
+	XTerm*color13:			#ff40ff
+	XTerm*color14:			#00ffff
+	XTerm*color15:			#ffffff
+	Xterm*cursorColor:		Black
+
+[Note: The cursorColor is required to work around a bug, which changes the
+cursor color to the color of the last drawn text.  This has been fixed by a
+newer version of xterm, but not everybody is it using yet.]
+
+To get these right away, reload the .Xdefaults file to the X Option database
+Manager (you only need to do this when you just changed the .Xdefaults file): >
+  xrdb -merge ~/.Xdefaults
+<
+					*xterm-blink* *xterm-blinking-cursor*
+To make the cursor blink in an xterm, see tools/blink.c.  Or use Thomas
+Dickey's xterm above patchlevel 107 (see above for where to get it), with
+these resources:
+	XTerm*cursorBlink:	on
+	XTerm*cursorOnTime:	400
+	XTerm*cursorOffTime:	250
+	XTerm*cursorColor:	White
+
+							*hpterm-color*
+These settings work (more or less) for a hpterm, which only supports 8
+foreground colors: >
+   :if has("terminfo")
+   :  set t_Co=8
+   :  set t_Sf=<Esc>[&v%p1%dS
+   :  set t_Sb=<Esc>[&v7S
+   :else
+   :  set t_Co=8
+   :  set t_Sf=<Esc>[&v%dS
+   :  set t_Sb=<Esc>[&v7S
+   :endif
+<	[<Esc> is a real escape, type CTRL-V <Esc>]
+
+						*Eterm* *enlightened-terminal*
+These settings have been reported to work for the Enlightened terminal
+emulator, or Eterm.  They might work for all xterm-like terminals that use the
+bold attribute to get bright colors.  Add an ":if" like above when needed. >
+       :set t_Co=16
+       :set t_AF=^[[%?%p1%{8}%<%t3%p1%d%e%p1%{22}%+%d;1%;m
+       :set t_AB=^[[%?%p1%{8}%<%t4%p1%d%e%p1%{32}%+%d;1%;m
+<
+						*TTpro-telnet*
+These settings should work for TTpro telnet.  Tera Term Pro is a freeware /
+open-source program for MS-Windows. >
+	set t_Co=16
+	set t_AB=^[[%?%p1%{8}%<%t%p1%{40}%+%e%p1%{32}%+5;%;%dm
+	set t_AF=^[[%?%p1%{8}%<%t%p1%{30}%+%e%p1%{22}%+1;%;%dm
+Also make sure TTpro's Setup / Window / Full Color is enabled, and make sure
+that Setup / Font / Enable Bold is NOT enabled.
+(info provided by John Love-Jensen <eljay@Adobe.COM>)
+
+ vim:tw=78:sw=4:ts=8:ft=help:norl:

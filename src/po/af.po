@@ -1,0 +1,6244 @@
+# Afrikaans translation for Vim
+# Do ":help uganda"  in Vim to read copying and usage conditions.
+# Do ":help credits" in Vim to see a list of people who contributed.
+# Danie Roux <droux@tuks.co.za>, 2001
+# Edited: Jean Jordaan (njj) <jean@upfrontsystems.co.za>, 10/01/2001
+# Edited by Danie on 10/31/2001
+#
+# njj: Save == Stoor. Write == Skryf.
+# njj: "deleted" == "geskrap"; "remove" == "verwyder"
+# njj: "source" == "uitvoer", want "sourced" lêers word uitgevoer
+# njj: "abort" == "staak"
+# close == sluit
+# Onseker:
+# X Display - vertoonskerm? (njj: ek dink dis reg.)
+# open vim in another GTK Widget - het vertaal as element (njj: OK, maar
+# 'n element is algemener as 'n widget: mens kry byvoorbeeld HTML
+# en XML elemente. Maar ek kan nie nou aan 'n spesifieker woord dink
+# nie.)
+# Printing aborted - drukkery gestaak? (njj: ek dink dis reg.)
+
+msgid ""
+msgstr ""
+"Project-Id-Version: Vim 6.0\n"
+"POT-Creation-Date: 2001-10-31 12:43+0200\n"
+"PO-Revision-Date: Wed Oct 31 13:41 SAST 2001\n"
+"Last-Translator: Danie Roux <droux@tuks.co.za>\n"
+"Language-Team: Danie Roux <droux@tuks.co.za>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=ISO_8859-1\n"
+"Content-Transfer-Encoding: 8-bit\n"
+
+#: buffer.c:97
+msgid "E82: Cannot allocate any buffer, exiting..."
+msgstr "E82: Kan nie buffer toeken nie, program sluit..."
+
+#: buffer.c:100
+msgid "E83: Cannot allocate buffer, using other one..."
+msgstr "E83: Kan nie buffer toeken nie, gaan ander een gebruik..."
+
+#: buffer.c:698
+msgid "No buffers were unloaded"
+msgstr "Geen buffers is uitgelaai nie"
+
+#: buffer.c:700
+msgid "No buffers were deleted"
+msgstr "Geen buffers is geskrap nie"
+
+#: buffer.c:702
+msgid "No buffers were wiped out"
+msgstr "Geen buffers is geskrap nie"
+
+#: buffer.c:710
+msgid "1 buffer unloaded"
+msgstr "1 buffer uitgelaai"
+
+#: buffer.c:712
+#, c-format
+msgid "%d buffers unloaded"
+msgstr "%d buffers uitgelaai"
+
+#: buffer.c:717
+msgid "1 buffer deleted"
+msgstr "1 buffer geskrap"
+
+#: buffer.c:719
+#, c-format
+msgid "%d buffers deleted"
+msgstr "%d buffers geskrap"
+
+#: buffer.c:724
+msgid "1 buffer wiped out"
+msgstr "1 buffer geskrap"
+
+#: buffer.c:726
+#, c-format
+msgid "%d buffers wiped out"
+msgstr "%d buffers geskrap"
+
+#: buffer.c:783
+msgid "E84: No modified buffer found"
+msgstr "E84: Geen veranderde buffer gevind nie"
+
+#. back where we started, didn't find anything.
+#: buffer.c:822
+msgid "E85: There is no listed buffer"
+msgstr "E85: Daar is geen gelyste buffer nie"
+
+#: buffer.c:834
+#, c-format
+msgid "E86: Cannot go to buffer %ld"
+msgstr "E86: Kan nie na buffer %ld gaan nie"
+
+#: buffer.c:837
+msgid "E87: Cannot go beyond last buffer"
+msgstr "E87: Kan nie verby laaste buffer gaan nie"
+
+#: buffer.c:839
+msgid "E88: Cannot go before first buffer"
+msgstr "E88: Kan nie vóór eerste buffer gaan nie"
+
+#: buffer.c:863
+#, c-format
+msgid "E89: No write since last change for buffer %ld (use ! to override)"
+msgstr ""
+"E89: Buffer %ld nog ongestoor sedert vorige wysiging (gebruik ! om te dwing)"
+
+#: buffer.c:879
+msgid "E90: Cannot unload last buffer"
+msgstr "E90: Kan nie laaste buffer uitlaai nie"
+
+#: buffer.c:1314
+msgid "W14: Warning: List of file names overflow"
+msgstr "W14: Waarskuwing: Lêerlys loop oor"
+
+#: buffer.c:1480
+#, c-format
+msgid "E92: Buffer %ld not found"
+msgstr "E92: buffer %ld kon nie gevind word nie"
+
+#: buffer.c:1700
+#, c-format
+msgid "E93: More than one match for %s"
+msgstr "E93: Meer as een treffer vir %s"
+
+#: buffer.c:1702
+#, c-format
+msgid "E94: No matching buffer for %s"
+msgstr "E94: Geen buffer wat by %s pas nie"
+
+#: buffer.c:2105 ex_docmd.c:6065
+#, c-format
+msgid "line %ld"
+msgstr "reël %ld"
+
+#: buffer.c:2188
+msgid "E95: Buffer with this name already exists"
+msgstr "E95: Buffer met hierdie naam bestaan alreeds"
+
+#: buffer.c:2481
+msgid " [Modified]"
+msgstr " [Gewysig]"
+
+#: buffer.c:2486
+msgid "[Not edited]"
+msgstr "[Ongewysig]"
+
+#: buffer.c:2491
+msgid "[New file]"
+msgstr "[Nuwe lêer]"
+
+#: buffer.c:2492
+msgid "[Read errors]"
+msgstr "[Leesfoute]"
+
+#: buffer.c:2494 fileio.c:1754
+msgid "[readonly]"
+msgstr "[lees alleen]"
+
+#: buffer.c:2510
+#, c-format
+msgid "1 line --%d%%--"
+msgstr "1 reël --%d%%--"
+
+#: buffer.c:2510
+#, c-format
+msgid "%ld lines --%d%%--"
+msgstr "%ld reëls --%d%%--"
+
+#: buffer.c:2518
+#, c-format
+msgid "line %ld of %ld --%d%%-- col "
+msgstr "reël %ld van %ld --%d%%-- kolom "
+
+#: buffer.c:2606
+msgid "[No file]"
+msgstr "[Geen lêer]"
+
+#. must be a help buffer
+#: buffer.c:2646
+msgid "help"
+msgstr "help"
+
+#: buffer.c:3151 screen.c:4671
+msgid "[help]"
+msgstr "[help]"
+
+#: buffer.c:3183 screen.c:4677
+msgid "[Preview]"
+msgstr "[Voorskou]"
+
+#: buffer.c:3389
+msgid "All"
+msgstr "Alles"
+
+#: buffer.c:3389
+msgid "Bot"
+msgstr "Ond"
+
+#: buffer.c:3391
+msgid "Top"
+msgstr "Bo"
+
+#: buffer.c:4127
+msgid ""
+"\n"
+"# Buffer list:\n"
+msgstr ""
+"\n"
+"# Buffer lys:\n"
+
+#: buffer.c:4160
+msgid "[Error List]"
+msgstr "[Foutlys]"
+
+#: buffer.c:4173 memline.c:1513
+msgid "[No File]"
+msgstr "[Geen lêer]"
+
+#: buffer.c:4393
+msgid ""
+"\n"
+"--- Signs ---"
+msgstr ""
+"\n"
+"--- Tekens ---"
+
+#: buffer.c:4403
+#, c-format
+msgid "Signs for %s:"
+msgstr "Tekens vir %s:"
+
+#: buffer.c:4409
+#, c-format
+msgid "    line=%ld  id=%d  name=%s"
+msgstr "    reël=%ld  id=%d  naam=%s"
+
+#: diff.c:133
+#, c-format
+msgid "E96: Can not diff more than %ld buffers"
+msgstr "E96: Kan nie meer as %ld buffers 'diff' nie"
+
+#: diff.c:648
+msgid "E97: Cannot create diffs"
+msgstr "E97: Kan nie 'diffs' skep nie "
+
+#: diff.c:747
+msgid "Patch file"
+msgstr "Laslap lêer"
+
+#: diff.c:991
+msgid "E98: Cannot read diff output"
+msgstr "E98: Kan nie 'diff' afvoer lees nie"
+
+#: diff.c:1704
+msgid "E99: Current buffer is not in diff mode"
+msgstr "E99: Huidige buffer is nie in 'diff' modus nie"
+
+#: diff.c:1716
+msgid "E100: No other buffer in diff mode"
+msgstr "E100: Geen ander buffer in 'diff' modus nie"
+
+#: diff.c:1724
+msgid "E101: More than two buffers in diff mode, don't know which one to use"
+msgstr ""
+"E101: Meer as twee buffers in 'diff' modus, weet nie watter een om te "
+"gebruik nie"
+
+#: diff.c:1747
+#, c-format
+msgid "E102: Can't find buffer \"%s\""
+msgstr "E102: Kan buffer %s nie vind nie"
+
+#: diff.c:1753
+#, c-format
+msgid "E103: Buffer \"%s\" is not in diff mode"
+msgstr "E103: Buffer \"%s\" is nie in 'diff' modus nie"
+
+#: digraph.c:2168
+msgid "E104: Escape not allowed in digraph"
+msgstr "E104: 'Escape' nie toegelaat in digraaf nie"
+
+#: digraph.c:2340
+msgid "Keymap file not found"
+msgstr "Sleutelbindinglêer nie gevind nie"
+
+#: digraph.c:2367
+msgid "E105: Using :loadkeymap not in a sourced file"
+msgstr "E105: :loadkeymap word buite 'n uitvoerlêer gebruik"
+
+#: edit.c:40
+msgid " Keyword completion (^N/^P)"
+msgstr " Sleutelwoord voltooiing (^N/^P)"
+
+#. ctrl_x_mode == 0, ^P/^N compl.
+#: edit.c:41
+msgid " ^X mode (^E/^Y/^L/^]/^F/^I/^K/^D/^V/^N/^P)"
+msgstr " ^X modus (^E/^Y/^L/^]/^F/^I/^K/^D/^N/^P)"
+
+#. Scroll has it's own msgs, in it's place there is the msg for local
+#. * ctrl_x_mode = 0 (eg continue_status & CONT_LOCAL)  -- Acevedo
+#: edit.c:44
+msgid " Keyword Local completion (^N/^P)"
+msgstr " Sleutelwoord Lokale voltooiing (^N/^P)"
+
+#: edit.c:45
+msgid " Whole line completion (^L/^N/^P)"
+msgstr " Hele-reël voltooiing (^L/^N/^P)"
+
+#: edit.c:46
+msgid " File name completion (^F/^N/^P)"
+msgstr " Lêernaam voltooiing (^F/^N/^P)"
+
+#: edit.c:47
+msgid " Tag completion (^]/^N/^P)"
+msgstr " Etiketvoltooiing (^]/^N/^P)"
+
+#: edit.c:48
+msgid " Path pattern completion (^N/^P)"
+msgstr " Gidspatroon voltooiing (^N/^P)"
+
+#: edit.c:49
+msgid " Definition completion (^D/^N/^P)"
+msgstr " Definisievoltooiing (^D/^N/^P)"
+
+#: edit.c:51
+msgid " Dictionary completion (^K/^N/^P)"
+msgstr " Woordeboekvoltooiing (^K/^N/^P)"
+
+#: edit.c:52
+msgid " Thesaurus completion (^T/^N/^P)"
+msgstr " Tesourusvoltooiing (^T/^N/^P)"
+
+#: edit.c:53
+msgid " Command-line completion (^V/^N/^P)"
+msgstr " Bevelreëlvoltooiing (^V/^N/^P)"
+
+#: edit.c:56
+msgid "Hit end of paragraph"
+msgstr "Het einde van paragraaf getref"
+
+#: edit.c:894
+msgid "'thesaurus' option is empty"
+msgstr "'thesaurus' opsie is leeg"
+
+#: edit.c:1070
+msgid "'dictionary' option is empty"
+msgstr "'dictionary' opsie is leeg"
+
+#: edit.c:1992
+#, c-format
+msgid "Scanning dictionary: %s"
+msgstr "Deursoek woordeboek: %s"
+
+#: edit.c:2183
+msgid " (insert) Scroll (^E/^Y)"
+msgstr " (invoeg) Rol (^E/^Y)"
+
+#: edit.c:2185
+msgid " (replace) Scroll (^E/^Y)"
+msgstr " (vervang) Rol (^E/^Y)"
+
+#: edit.c:2496
+#, c-format
+msgid "Scanning: %s"
+msgstr "Soek vir: %s"
+
+#: edit.c:2531
+msgid "Scanning tags."
+msgstr "Deursoek etikette."
+
+#: edit.c:3189
+msgid " Adding"
+msgstr " Word bygevoeg"
+
+#. showmode might reset the internal line pointers, so it must
+#. * be called before line = ml_get(), or when this address is no
+#. * longer needed.  -- Acevedo.
+#.
+#: edit.c:3238
+msgid "-- Searching..."
+msgstr "-- Soekend..."
+
+#: edit.c:3294
+msgid "Back at original"
+msgstr "Terug by oorspronklike"
+
+#: edit.c:3299
+msgid "Word from other line"
+msgstr "Woord van ander reël"
+
+#: edit.c:3304
+msgid "The only match"
+msgstr "Die enigste treffer"
+
+#: edit.c:3363
+#, c-format
+msgid "match %d of %d"
+msgstr "treffer %d van %d"
+
+#: edit.c:3366
+#, c-format
+msgid "match %d"
+msgstr "treffer %d"
+
+#: eval.c:696
+#, c-format
+msgid "E106: Unknown variable: \"%s\""
+msgstr "E106: Onbekende veranderlike: \"%s\""
+
+#: eval.c:975
+#, c-format
+msgid "E107: Missing braces: %s"
+msgstr "E107: Ontbrekende hakies: %s"
+
+#: eval.c:1043
+#, c-format
+msgid "E108: No such variable: \"%s\""
+msgstr "E108: Geen veranderlike: \"%s\""
+
+#: eval.c:1284
+msgid "E109: Missing ':' after '?'"
+msgstr "E109: Ontbrekende ':' na '?'"
+
+#: eval.c:1898
+msgid "E110: Missing ')'"
+msgstr "E110: Ontbrekende ')'"
+
+#: eval.c:1948
+msgid "E111: Missing ']'"
+msgstr "E111: Ontbrekende ']'"
+
+#: eval.c:2023
+#, c-format
+msgid "E112: Option name missing: %s"
+msgstr "E112: Opsienaam ontbreek: %s"
+
+#: eval.c:2041
+#, c-format
+msgid "E113: Unknown option: %s"
+msgstr "E113: Onbekende opsie: %s"
+
+#: eval.c:2103
+#, c-format
+msgid "E114: Missing quote: %s"
+msgstr "E114: Ontbrekende aanhalingsteken: %s"
+
+#: eval.c:2220
+#, c-format
+msgid "E115: Missing quote: %s"
+msgstr "E115: Ontbrekende aanhalingsteken: %s"
+
+#: eval.c:2537
+#, c-format
+msgid "E116: Invalid arguments for function %s"
+msgstr "E116: Ongeldige parameters vir funksie %s"
+
+#: eval.c:2538
+#, c-format
+msgid "E117: Unknown function: %s"
+msgstr "E117: Onbekende funksie: %s"
+
+#: eval.c:2539
+#, c-format
+msgid "E118: Too many arguments for function: %s"
+msgstr "E118: Te veel parameters vir funksie: %s"
+
+#: eval.c:2540
+#, c-format
+msgid "E119: Not enough arguments for function: %s"
+msgstr "E119: Te min parameters vir funksie: %s"
+
+#: eval.c:2541
+#, c-format
+msgid "E120: Using <SID> not in a script context: %s"
+msgstr "E120: <SID> word buite skripkonteks gebruik: %s"
+
+#: eval.c:3575
+#, c-format
+msgid "+-%s%3ld lines: "
+msgstr "+-%s%3ld reëls: "
+
+#: eval.c:4690
+msgid ""
+"&OK\n"
+"&Cancel"
+msgstr ""
+"&OK\n"
+"&Kanselleer"
+
+#: eval.c:5513
+msgid "E240: No connection to Vim server"
+msgstr "E240: Geen verbinding met Vim bediener"
+
+#: eval.c:5603
+msgid "E277: Unable to read a server reply"
+msgstr "E277: Kon bediener-terugvoer nie lees nie"
+
+#: eval.c:5628
+msgid "E258: Unable to send to client"
+msgstr "E258: Kan nie na kliënt stuur nie"
+
+#: eval.c:5669
+#, c-format
+msgid "E241: Unable to send to %s"
+msgstr "E241: Kan nie na %s stuur nie"
+
+#: eval.c:5767
+msgid "(Invalid)"
+msgstr "(Ongeldig)"
+
+#: eval.c:6770
+#, c-format
+msgid "E121: Undefined variable: %s"
+msgstr "E121: Ongedefinieerde veranderlike: %s"
+
+#: eval.c:7468
+#, c-format
+msgid "E122: Function %s already exists, use ! to replace"
+msgstr "E122: Funksie %s bestaan alreeds, gebruik ! om te vervang"
+
+#: eval.c:7510
+#, c-format
+msgid "E123: Undefined function: %s"
+msgstr "E123: Ongedefinieerde funksie: %s"
+
+#: eval.c:7523
+#, c-format
+msgid "E124: Missing '(': %s"
+msgstr "E124: Ontbrekende '(': %s"
+
+#: eval.c:7555
+#, c-format
+msgid "E125: Illegal argument: %s"
+msgstr "E125: Ongeldige parameter: %s"
+
+#: eval.c:7641
+msgid "E126: Missing :endfunction"
+msgstr "E126: Ontbrekende ':endfunction'"
+
+#: eval.c:7720
+#, c-format
+msgid "E127: Cannot redefine function %s: It is in use"
+msgstr "E127: Kan funksie %s nie herdefinieer nie: Dit is in gebruik"
+
+#: eval.c:7777
+#, c-format
+msgid "E128: Function name must start with a capital: %s"
+msgstr "E128: Funksienaam moet met 'n hoofletter begin: %s"
+
+#: eval.c:7783
+msgid "E129: Function name required"
+msgstr "E129: Funksienaam vereis"
+
+#: eval.c:7876
+msgid "function "
+msgstr "funksie "
+
+#: eval.c:7991
+#, c-format
+msgid "E130: Undefined function: %s"
+msgstr "E130: Ongedefinieerde funksie: %s"
+
+#: eval.c:7996
+#, c-format
+msgid "E131: Cannot delete function %s: It is in use"
+msgstr "E131: Kan funksie %s nie verwyder nie: Dit is in gebruik"
+
+#: eval.c:8043
+msgid "E132: Function call depth is higher than 'maxfuncdepth'"
+msgstr "E132: Funksieroepdiepte is groter as 'maxfuncdepth'"
+
+#. always scroll up, don't overwrite
+#: eval.c:8094
+#, c-format
+msgid "calling %s"
+msgstr "roep %s"
+
+#. always scroll up, don't overwrite
+#: eval.c:8119 ex_cmds2.c:1973
+#, c-format
+msgid "continuing in %s"
+msgstr "vervolg in %s"
+
+#: eval.c:8173
+msgid "E133: :return not inside a function"
+msgstr "E133: ':return' buite funksie"
+
+#: eval.c:8251
+#, c-format
+msgid "%s returning #%ld"
+msgstr "%s lewer #%ld op"
+
+#: eval.c:8254
+#, c-format
+msgid "%s returning \"%s\""
+msgstr "%s lewer \"%s\" op"
+
+#: eval.c:8395
+msgid ""
+"\n"
+"# global variables:\n"
+msgstr ""
+"\n"
+"# globale veranderlikes:\n"
+
+#: ex_cmds.c:92
+#, c-format
+msgid "<%s>%s%s  %d,  Hex %02x,  Octal %03o"
+msgstr "<%s>%s%s  %d,  Hex %02x,  Oktaal %03o"
+
+#: ex_cmds.c:428
+msgid "E134: Move lines into themselves"
+msgstr "E134: Skuif reëls in hulself in"
+
+#: ex_cmds.c:497
+msgid "1 line moved"
+msgstr "1 reël geskuif"
+
+#: ex_cmds.c:499
+#, c-format
+msgid "%ld lines moved"
+msgstr "%ld reëls geskuif"
+
+#: ex_cmds.c:890
+#, c-format
+msgid "%ld lines filtered"
+msgstr "%ld reëls filtreer"
+
+#: ex_cmds.c:918
+msgid "E135: *Filter* Autocommands must not change current buffer"
+msgstr "E135: *Filter* Outobevele mag nie die huidige buffer verander nie"
+
+#: ex_cmds.c:1003
+msgid "[No write since last change]\n"
+msgstr "[Ongestoor sedert vorige verandering]\n"
+
+#: ex_cmds.c:1248
+#, c-format
+msgid "viminfo: %s in line: "
+msgstr "viminfo: %s in reël: "
+
+#: ex_cmds.c:1253
+msgid "E136: viminfo: Too many errors, skipping rest of file"
+msgstr "E136: viminfo: Te veel foute, slaan die res van die lêer oor"
+
+#: ex_cmds.c:1282
+#, c-format
+msgid "Reading viminfo file \"%s\"%s%s%s"
+msgstr "Besig om viminfo lêer \"%s\"%s%s%s te lees"
+
+#: ex_cmds.c:1283
+msgid " info"
+msgstr " inligting"
+
+#: ex_cmds.c:1284
+msgid " marks"
+msgstr " merkers"
+
+#: ex_cmds.c:1285
+msgid " FAILED"
+msgstr " GEFAAL"
+
+#: ex_cmds.c:1376
+#, c-format
+msgid "E137: Viminfo file is not writable: %s"
+msgstr "E137: Viminfo lêer is nie skryfbaar nie: %s"
+
+#: ex_cmds.c:1501
+#, c-format
+msgid "E138: Can't write viminfo file %s!"
+msgstr "E138: Kan nie viminfo lêer %s stoor nie!"
+
+#: ex_cmds.c:1509
+#, c-format
+msgid "Writing viminfo file \"%s\""
+msgstr "Besig om viminfo lêer \"%s\" te stoor"
+
+#. Write the info:
+#: ex_cmds.c:1610
+#, c-format
+msgid "# This viminfo file was generated by Vim %s.\n"
+msgstr "# Hierdie viminfo lêer is gegenereer deur Vim %s.\n"
+
+#: ex_cmds.c:1612
+msgid ""
+"# You may edit it if you're careful!\n"
+"\n"
+msgstr ""
+"# Jy mag dit wysig as jy versigtig is!\n"
+"\n"
+
+#: ex_cmds.c:1614
+msgid "# Value of 'encoding' when this file was written\n"
+msgstr "# Waarde van 'encoding' toe hierdie lêer gestoor is\n"
+
+#: ex_cmds.c:1713
+msgid "Illegal starting char"
+msgstr "Ongeldige beginkarakter"
+
+#: ex_cmds.c:2053 ex_cmds.c:2289 ex_cmds2.c:602
+msgid "Save As"
+msgstr "Stoor As"
+
+#. Overwriting a file that is loaded in another buffer is not a
+#. * good idea.
+#: ex_cmds.c:2096
+msgid "E139: File is loaded in another buffer"
+msgstr "E139: Lêer is gelaai in ander buffer"
+
+#: ex_cmds.c:2130
+msgid "Write partial file?"
+msgstr "Skryf gedeeltelike lêer?"
+
+#: ex_cmds.c:2137
+msgid "E140: Use ! to write partial buffer"
+msgstr "E140: Gebruik ! om gedeeltelike buffer te skryf"
+
+#: ex_cmds.c:2223
+#, c-format
+msgid "Overwrite existing file \"%.*s\"?"
+msgstr "Oorskryf bestaande lêer \"%.*s\"?"
+
+#: ex_cmds.c:2294
+#, c-format
+msgid "E141: No file name for buffer %ld"
+msgstr "E141: Geen lêernaam vir buffer %ld nie"
+
+#: ex_cmds.c:2332
+msgid "E142: File not written: Writing is disabled by 'write' option"
+msgstr "E142: Lêer nie gestoor nie: Stoor is afgeskakel deur die 'write' opsie"
+
+#: ex_cmds.c:2352
+#, c-format
+msgid ""
+"'readonly' option is set for \"%.*s\".\n"
+"Do you wish to write anyway?"
+msgstr ""
+"'readonly' opsie is aan vir \"%.*s\".\n"
+"Wil jy dit forseer?"
+
+#: ex_cmds.c:2517
+msgid "Edit File"
+msgstr "Verander lêer"
+
+#: ex_cmds.c:3024
+#, c-format
+msgid "E143: Autocommands unexpectedly deleted new buffer %s"
+msgstr "E143: Outobevele het nuwe buffer %s onverwags geskrap"
+
+#: ex_cmds.c:3156
+msgid "E144: non-numeric argument to :z"
+msgstr "E144: nie-numeriese parameter vir :z"
+
+#: ex_cmds.c:3241
+msgid "E145: Shell commands not allowed in rvim"
+msgstr "E145: Dop bevele nie toegelaat in rvim"
+
+#: ex_cmds.c:3348
+msgid "E146: Regular expressions can't be delimited by letters"
+msgstr "E146: Patrone kan nie deur letters afgebaken word nie"
+
+#: ex_cmds.c:3686
+#, c-format
+msgid "replace with %s (y/n/a/q/l/^E/^Y)?"
+msgstr "vervang met %s (y/n/a/q/l/^E/^Y)?"
+
+#: ex_cmds.c:4050
+msgid "(Interrupted) "
+msgstr "(Onderbreek) "
+
+#: ex_cmds.c:4054
+msgid "1 substitution"
+msgstr "1 vervanging"
+
+#: ex_cmds.c:4056
+#, c-format
+msgid "%ld substitutions"
+msgstr "%ld vervangings"
+
+#: ex_cmds.c:4059
+msgid " on 1 line"
+msgstr " op 1 reël"
+
+#: ex_cmds.c:4061
+#, c-format
+msgid " on %ld lines"
+msgstr " op %ld reëls"
+
+#: ex_cmds.c:4112
+msgid "E147: Cannot do :global recursive"
+msgstr "E147: Kan nie :global rekursief doen nie "
+
+#: ex_cmds.c:4147
+msgid "E148: Regular expression missing from global"
+msgstr "E148: Patroon ontbreek uit globaal"
+
+#: ex_cmds.c:4196
+#, c-format
+msgid "Pattern found in every line: %s"
+msgstr "Patroon gevind in elke reël: %s"
+
+#: ex_cmds.c:4277
+msgid ""
+"\n"
+"# Last Substitute String:\n"
+"$"
+msgstr ""
+"\n"
+"# Vorige Vervangstring:\n"
+"$"
+
+#: ex_cmds.c:4376
+#, c-format
+msgid "E149: Sorry, no help for %s"
+msgstr "E149: Jammer, geen hulp vir %s nie"
+
+#: ex_cmds.c:4410
+#, c-format
+msgid "Sorry, help file \"%s\" not found"
+msgstr "Jammer, hulplêer \"%s\" kan nie gevind word nie"
+
+#: ex_cmds.c:4856
+#, c-format
+msgid "E150: Not a directory: %s"
+msgstr "E150: Nie 'n gids nie: %s"
+
+#: ex_cmds.c:4884
+#, c-format
+msgid "E152: Cannot open %s for writing"
+msgstr "E152: Kan nie %s oopmaak om te skryf nie"
+
+#: ex_cmds.c:4898
+#, c-format
+msgid "E153: Unable to open %s for reading"
+msgstr "E153: Kan nie %s oop maak om te lees nie"
+
+#: ex_cmds.c:4977
+#, c-format
+msgid "E154: Duplicate tag \"%s\" in file %s"
+msgstr "E154: Duplikaat etiket \"%s\" in lêer %s"
+
+#: ex_cmds.c:5078
+#, c-format
+msgid "E160: Unknown sign command: %s"
+msgstr "E160: Onbekende funksie: %s"
+
+#: ex_cmds.c:5098
+msgid "E156: Missing sign name"
+msgstr "E156: Ontbrekende tekennaam"
+
+#: ex_cmds.c:5144
+msgid "E255: Too many signs defined"
+msgstr "E77: Te veel tekens gedefinieer"
+
+#: ex_cmds.c:5186
+#, c-format
+msgid "E239: Invalid sign text: %s"
+msgstr "E239: Ongeldige tekenteks: %s"
+
+#: ex_cmds.c:5210 ex_cmds.c:5396
+#, c-format
+msgid "E155: Unknown sign: %s"
+msgstr "E155: Onbekende opsie: %s"
+
+#: ex_cmds.c:5256
+msgid "E159: Missing sign number"
+msgstr "E159: Ontbrekende tekennommer"
+
+#: ex_cmds.c:5336
+#, c-format
+msgid "E158: Invalid buffer name: %s"
+msgstr "E158: Ongeldige buffernaam: %s"
+
+#: ex_cmds.c:5375
+#, c-format
+msgid "E157: Invalid sign ID: %ld"
+msgstr "E157: Ongeldige teken ID: %ld"
+
+#: ex_cmds.c:5546
+msgid "[Deleted]"
+msgstr "[Geskrap]"
+
+#: ex_cmds2.c:70
+msgid "Entering Debug mode.  Type \"cont\" to leave."
+msgstr "Ontfoutmodus begin nou.  Tik \"cont\" om te verlaat."
+
+#: ex_cmds2.c:74 ex_docmd.c:771
+#, c-format
+msgid "line %ld: %s"
+msgstr "reël %ld: %s"
+
+#: ex_cmds2.c:76
+#, c-format
+msgid "cmd: %s"
+msgstr "cmd: %s"
+
+#: ex_cmds2.c:224
+#, c-format
+msgid "Breakpoint in \"%s%s\" line %ld"
+msgstr "Inspeksiepunt in \"%s%s\" reël %ld"
+
+#: ex_cmds2.c:388
+#, c-format
+msgid "E161: Breakpoint not found: %s"
+msgstr "E161: Inspeksiepunt kon nie gevind word nie: %s"
+
+#: ex_cmds2.c:414
+msgid "No breakpoints defined"
+msgstr "Geen inspeksiepunte gedefinieer nie"
+
+#: ex_cmds2.c:419
+#, c-format
+msgid "%3d  %s %s  line %ld"
+msgstr "%3d  %s %s  reël %ld"
+
+#: ex_cmds2.c:625
+#, c-format
+msgid "Save changes to \"%.*s\"?"
+msgstr "Stoor veranderinge na \"%.*s\"?"
+
+#: ex_cmds2.c:627 ex_docmd.c:8612
+msgid "Untitled"
+msgstr "Ongetiteld"
+
+#: ex_cmds2.c:763
+#, c-format
+msgid "E162: No write since last change for buffer \"%s\""
+msgstr "E162: Buffer \"%s\" is nie geskryf sedert vorige wysiging nie"
+
+#: ex_cmds2.c:832
+msgid "Warning: Entered other buffer unexpectedly (check autocommands)"
+msgstr "Waarskuwing: Ander buffer onverwags betree (kyk na outobevele)"
+
+#: ex_cmds2.c:1208
+msgid "E163: There is only one file to edit"
+msgstr "E163: Daar is net een lêer om te bewerk"
+
+#: ex_cmds2.c:1210
+msgid "E164: Cannot go before first file"
+msgstr "E164: Kan nie vóór die eerste lêer gaan nie"
+
+#: ex_cmds2.c:1212
+msgid "E165: Cannot go beyond last file"
+msgstr "E165: Kan nie verby die laaste lêer gaan nie"
+
+#: ex_cmds2.c:1632
+#, c-format
+msgid "Searching for \"%s\" in \"%s\""
+msgstr "Besig om te soek vir \"%s\" in \"%s\""
+
+#: ex_cmds2.c:1654
+#, c-format
+msgid "Searching for \"%s\""
+msgstr "Besig om te soek vir \"%s\""
+
+#: ex_cmds2.c:1678
+#, c-format
+msgid "not found in 'runtimepath': \"%s\""
+msgstr "kon nie in 'runtimepath' gevind word nie: \"%s\""
+
+#: ex_cmds2.c:1712
+msgid "Run Macro"
+msgstr "Voer Makro uit"
+
+#: ex_cmds2.c:1817
+#, c-format
+msgid "Cannot source a directory: \"%s\""
+msgstr "Kan nie gids uitvoer nie: \"%s\""
+
+#: ex_cmds2.c:1847
+#, c-format
+msgid "could not source \"%s\""
+msgstr "kon nie \"%s\" uitvoer nie"
+
+#: ex_cmds2.c:1849
+#, c-format
+msgid "line %ld: could not source \"%s\""
+msgstr "reël %ld: kon nie \"%s\" uitvoer nie"
+
+#: ex_cmds2.c:1863
+#, c-format
+msgid "sourcing \"%s\""
+msgstr "besig om \"%s\" uit te voer"
+
+#: ex_cmds2.c:1865
+#, c-format
+msgid "line %ld: sourcing \"%s\""
+msgstr "reël %ld: voer nou \"%s\" uit"
+
+#: ex_cmds2.c:1971
+#, c-format
+msgid "finished sourcing %s"
+msgstr "%s klaar uitgevoer"
+
+#: ex_cmds2.c:2272
+msgid "W15: Warning: Wrong line separator, ^M may be missing"
+msgstr "W15: Waarskuwing: Verkeerde reëlskeiding, ^M ontbreek dalk"
+
+#: ex_cmds2.c:2321
+msgid "E167: :scriptencoding used outside of a sourced file"
+msgstr "E167: ':scriptencoding' buite 'n uitvoerlêer gebruik"
+
+#: ex_cmds2.c:2354
+msgid "E168: :finish used outside of a sourced file"
+msgstr "E168: ':finish' buite 'n uitvoerlêer gebruik"
+
+#: ex_cmds2.c:2820
+msgid "No text to be printed"
+msgstr "Geen teks om te druk nie"
+
+#: ex_cmds2.c:2898
+#, c-format
+msgid "Printing page %d (%d%%)"
+msgstr "Druk nou bladsy %d (%d%%)"
+
+#: ex_cmds2.c:2907
+#, c-format
+msgid " Copy %d of %d"
+msgstr " Kopie %d van %d"
+
+#: ex_cmds2.c:2959
+#, c-format
+msgid "Printed: %s"
+msgstr "Gedruk: %s"
+
+#: ex_cmds2.c:2966
+msgid "Printing aborted"
+msgstr "Drukkery gestaak"
+
+#: ex_cmds2.c:3344
+msgid "E455: Error writing to PostScript output file"
+msgstr "E455: Kan nie na 'PostScript' afvoerlêer skryf nie"
+
+#: ex_cmds2.c:4019
+msgid "E324: Can't open PostScript output file"
+msgstr "E324: Kan nie 'PostScript' afvoerlêer oopmaak nie"
+
+#: ex_cmds2.c:4057
+#, c-format
+msgid "E456: Can't open file \"%s\""
+msgstr "E456: Kan nie lêer %s oopmaak nie"
+
+#: ex_cmds2.c:4068
+#, c-format
+msgid "E457: Can't read PostScript resource file \"%s\""
+msgstr "E457: Kan nie 'PostScript' hulpbron-lêer \"%s\" lees nie"
+
+#: ex_cmds2.c:4266
+msgid "Sending to printer..."
+msgstr "Besig om te stuur na drukker..."
+
+#: ex_cmds2.c:4270
+msgid "E365: Failed to print PostScript file"
+msgstr "E365: Kon nie 'PostScript' lêer druk nie"
+
+#: ex_cmds2.c:4272
+msgid "Print job sent."
+msgstr "Druktaak gestuur."
+
+#: ex_cmds2.c:4651
+#, c-format
+msgid "Current %slanguage: \"%s\""
+msgstr "Huidige %staal: \"%s\""
+
+#: ex_cmds2.c:4658
+#, c-format
+msgid "E197: Cannot set language to \"%s\""
+msgstr "E197: Kan nie taal na \"%s\" verander nie"
+
+#: ex_docmd.c:491
+msgid "Entering Ex mode.  Type \"visual\" to go to Normal mode."
+msgstr "Betree Ex modus.  Tik \"visual\" om na Normale modus terug te keer."
+
+#. must be at EOF
+#: ex_docmd.c:527
+msgid "At end-of-file"
+msgstr "By lêereinde"
+
+#: ex_docmd.c:602
+msgid "E169: Command too recursive"
+msgstr "E169: Bevel te rekursief"
+
+#: ex_docmd.c:911
+msgid "E170: Missing :endwhile"
+msgstr "E170: Ontbrekende ':endwhile'"
+
+#: ex_docmd.c:913
+msgid "E171: Missing :endif"
+msgstr "E171: Ontbrekende ':endif'"
+
+#: ex_docmd.c:923
+msgid "End of sourced file"
+msgstr "Einde van uitvoerlêer"
+
+#: ex_docmd.c:924
+msgid "End of function"
+msgstr "Einde van funksie "
+
+#: ex_docmd.c:1344
+msgid "Ambiguous use of user-defined command"
+msgstr "Dubbelsinnige gebruik van gebruiker-gedefinieerde bevel"
+
+#: ex_docmd.c:1358
+msgid "Not an editor command"
+msgstr "Nie 'n verwerkerbevel nie"
+
+#: ex_docmd.c:1441
+msgid "Don't panic!"
+msgstr "Bly kalm!"
+
+#: ex_docmd.c:1460
+msgid "Backwards range given"
+msgstr "Terugwaardse omvang gegee"
+
+#: ex_docmd.c:1469
+msgid "Backwards range given, OK to swap"
+msgstr "Terugwaardse omvang gegee, OK om te ruil"
+
+#: ex_docmd.c:1580
+msgid "Use w or w>>"
+msgstr "Gebruik w of w>>"
+
+#: ex_docmd.c:3086
+msgid "E319: Sorry, the command is not available in this version"
+msgstr "E319: Jammer, die bevel is nie geïmplementeer nie"
+
+#: ex_docmd.c:3256
+msgid "E172: Only one file name allowed"
+msgstr "E172: Slegs een lêernaam toegelaat"
+
+#: ex_docmd.c:3810
+#, c-format
+msgid "%d more files to edit.  Quit anyway?"
+msgstr "Nog %d lêers om te bewerk.  Stop in elk geval?"
+
+#: ex_docmd.c:3817
+#, c-format
+msgid "E173: %ld more files to edit"
+msgstr "E173: Nog %ld lêers om te bewerk"
+
+#: ex_docmd.c:3911
+msgid "E174: Command already exists: use ! to redefine"
+msgstr "E174: Bevel bestaan alreeds: gebruik ! om te herdefinieer"
+
+#: ex_docmd.c:4016
+msgid ""
+"\n"
+"    Name        Args Range Complete  Definition"
+msgstr ""
+"\n"
+"    Naam        Args Reeks Klaar     Definisie"
+
+#: ex_docmd.c:4105
+msgid "No user-defined commands found"
+msgstr "Geen gebruiker-gedefinieerde bevele gevind nie"
+
+#: ex_docmd.c:4136
+msgid "E175: No attribute specified"
+msgstr "E175: Geen eienskappe gespesifiseer nie"
+
+#: ex_docmd.c:4188
+msgid "E176: Invalid number of arguments"
+msgstr "E176: Ongeldige aantal parameters"
+
+#: ex_docmd.c:4203
+msgid "E177: Count cannot be specified twice"
+msgstr "E177: Telling kan nie twee keer gespesifiseer word nie"
+
+#: ex_docmd.c:4213
+msgid "E178: Invalid default value for count"
+msgstr "E178: Ongeldige verstekwaarde vir telling"
+
+#: ex_docmd.c:4241
+msgid "E179: argument required for complete"
+msgstr "E179: parameter nodig vir voltooiing"
+
+#: ex_docmd.c:4260
+#, c-format
+msgid "E180: Invalid complete value: %s"
+msgstr "E180: Ongeldige voltooiingswaarde: %s"
+
+#: ex_docmd.c:4268
+#, c-format
+msgid "E181: Invalid attribute: %s"
+msgstr "E181: Ongeldige eienskap: %s"
+
+#: ex_docmd.c:4309
+msgid "E182: Invalid command name"
+msgstr "E182: Ongeldige bevelnaam"
+
+#: ex_docmd.c:4324
+msgid "E183: User defined commands must start with an uppercase letter"
+msgstr "E183: Gebruiker-gedefinieerde bevele moet met 'n hoofletter begin"
+
+#: ex_docmd.c:4393
+#, c-format
+msgid "E184: No such user-defined command: %s"
+msgstr "E184: Geen gebruiker-gedefinieerde bevel nie: %s"
+
+#: ex_docmd.c:4844
+#, c-format
+msgid "E185: Cannot find color scheme %s"
+msgstr "E185: Kan nie kleurskema %s vind nie"
+
+#: ex_docmd.c:4852
+msgid "Greetings, Vim user!"
+msgstr "Goeiedag, Vim gebruiker!"
+
+#: ex_docmd.c:5549
+msgid "Edit File in new window"
+msgstr "Bewerk lêer in nuwe venster"
+
+#: ex_docmd.c:5815
+msgid "No swap file"
+msgstr "Geen ruillêer"
+
+#: ex_docmd.c:5919
+msgid "Append File"
+msgstr "Las aan by lêer"
+
+#: ex_docmd.c:5978
+msgid "E186: No previous directory"
+msgstr "E186: Geen vorige gids nie"
+
+#: ex_docmd.c:6055
+msgid "E187: Unknown"
+msgstr "E187: Onbekend"
+
+#: ex_docmd.c:6173
+#, c-format
+msgid "Window position: X %d, Y %d"
+msgstr "Vensterposisie: X %d, Y %d"
+
+#: ex_docmd.c:6178
+msgid "E188: Obtaining window position not implemented for this platform"
+msgstr ""
+"E188: Verkryging van vensterposisie is nie vir hierdie platform "
+"geïmplementeer nie"
+
+#: ex_docmd.c:6444
+msgid "Save Redirection"
+msgstr "Stoor Herversturing"
+
+#: ex_docmd.c:6593
+msgid "Save View"
+msgstr "Stoor Oorsig"
+
+#: ex_docmd.c:6594
+msgid "Save Session"
+msgstr "Stoor Sessie"
+
+#: ex_docmd.c:6596
+msgid "Save Setup"
+msgstr "Stoor konfigurasie"
+
+#: ex_docmd.c:6745
+#, c-format
+msgid "E189: \"%s\" exists (use ! to override)"
+msgstr "E189: \"%s\" bestaan (gebruik ! om te dwing)"
+
+#: ex_docmd.c:6750
+#, c-format
+msgid "E190: Cannot open \"%s\" for writing"
+msgstr "E190: Kan \"%s\" nie oopmaak vir skryf nie"
+
+#. set mark
+#: ex_docmd.c:6774
+msgid "E191: Argument must be a letter or forward/backward quote"
+msgstr ""
+"E191: Parameter moet 'n letter of 'n terug/vorentoe aanhalingsteken wees"
+
+#: ex_docmd.c:6803
+msgid "E192: Recursive use of :normal too deep"
+msgstr "E192: Rekursiewe gebruik van ':normal' te diep"
+
+#: ex_docmd.c:7171
+msgid ":if nesting too deep"
+msgstr "geneste ':if' te diep"
+
+#: ex_docmd.c:7206
+msgid ":endif without :if"
+msgstr "':endif' sonder ':if'"
+
+#: ex_docmd.c:7226
+msgid ":else without :if"
+msgstr "':else' sonder ':if'"
+
+#: ex_docmd.c:7228
+msgid ":elseif without :if"
+msgstr "':elseif' sonder ':if'"
+
+#: ex_docmd.c:7280
+msgid ":while nesting too deep"
+msgstr "':while' te diep genes"
+
+#: ex_docmd.c:7326
+msgid ":continue without :while"
+msgstr "':continue' sonder ':while'"
+
+#: ex_docmd.c:7353
+msgid ":break without :while"
+msgstr "':break' sonder ':while'"
+
+#: ex_docmd.c:7376 ex_docmd.c:7381
+msgid ":endwhile without :while"
+msgstr "':endwhile' sonder ':while'"
+
+#: ex_docmd.c:7402
+msgid "E193: :endfunction not inside a function"
+msgstr "E193: ':endfunction' nie in 'n funksie nie"
+
+#: ex_docmd.c:7582
+msgid "E194: No alternate file name to substitute for '#'"
+msgstr "E194: Geen alternatiewe lêernaam vir '#' nie"
+
+#: ex_docmd.c:7613
+msgid "no autocommand file name to substitute for \"<afile>\""
+msgstr "geen outobevel-lêernaam om \"<afile>\" mee te vervang nie"
+
+#: ex_docmd.c:7621
+msgid "no autocommand buffer number to substitute for \"<abuf>\""
+msgstr "geen outobevel buffernommer om \"<abuf>\" mee te vervang nie"
+
+#: ex_docmd.c:7632
+msgid "no autocommand match name to substitute for \"<amatch>\""
+msgstr "geen outobevel treffernaam om \"<amatch>\" mee te vervang nie"
+
+#: ex_docmd.c:7642
+msgid "no :source file name to substitute for \"<sfile>\""
+msgstr "geen ':source' lêernaam om \"<sfile>\" mee te vervang nie"
+
+#: ex_docmd.c:7683
+#, no-c-format
+msgid "Empty file name for '%' or '#', only works with \":p:h\""
+msgstr "Leë lêernaam vir '%' of '#', werk slegs met \":p:h\""
+
+#: ex_docmd.c:7685
+msgid "Evaluates to an empty string"
+msgstr "Evalueer na 'n leë string"
+
+#: ex_docmd.c:8594
+msgid "E195: Cannot open viminfo file for reading"
+msgstr "E195: Kan 'viminfo' lêer nie oopmaak om te lees nie"
+
+#: ex_docmd.c:8767
+msgid "E196: No digraphs in this version"
+msgstr "E196: Geen digrawe in hierdie weergawe nie"
+
+#: ex_getln.c:2785
+msgid "tagname"
+msgstr "etiketnaam"
+
+#: ex_getln.c:2788
+msgid " kind file\n"
+msgstr " tipe lêer\n"
+
+#: ex_getln.c:3997
+msgid "'history' option is zero"
+msgstr "'history' opsie is nul"
+
+#: ex_getln.c:4237
+#, c-format
+msgid ""
+"\n"
+"# %s History (newest to oldest):\n"
+msgstr ""
+"\n"
+"# %s Geskiedenis (van nuutste na oudste):\n"
+
+#: ex_getln.c:4238
+msgid "Command Line"
+msgstr "Bevelreël"
+
+#: ex_getln.c:4239
+msgid "Search String"
+msgstr "Soekstring"
+
+#: ex_getln.c:4240
+msgid "Expression"
+msgstr "Uitdrukking"
+
+#: ex_getln.c:4241
+msgid "Input Line"
+msgstr "Invoer Lyn"
+
+#: ex_getln.c:4271
+msgid "E198: cmd_pchar beyond the command length"
+msgstr "E198: 'cmd_pchar' verby die einde van opdraglengte"
+
+#: ex_getln.c:4435
+msgid "E199: Active window or buffer deleted"
+msgstr "E199: Aktiewe venster of buffer geskrap"
+
+#: fileio.c:347
+msgid "Illegal file name"
+msgstr "Ongeldige lêernaam"
+
+#: fileio.c:371 fileio.c:495 fileio.c:2491 fileio.c:2529
+msgid "is a directory"
+msgstr "is 'n gids"
+
+#: fileio.c:373
+msgid "is not a file"
+msgstr "is nie 'n lêer nie"
+
+#: fileio.c:515 fileio.c:3581
+msgid "[New File]"
+msgstr "[Nuwe lêer]"
+
+#: fileio.c:532
+msgid "[Permission Denied]"
+msgstr "[Toestemming Geweier]"
+
+#: fileio.c:624
+msgid "E200: *ReadPre autocommands made the file unreadable"
+msgstr "E200: '*ReadPre' outobevele het die lêer onleesbaar gemaak"
+
+#: fileio.c:626
+msgid "E201: *ReadPre autocommands must not change current buffer"
+msgstr "E201: '*ReadPre' outobevele mag nie die huidige buffer verander nie"
+
+#: fileio.c:646
+msgid "Vim: Reading from stdin...\n"
+msgstr "Vim: Lees nou vanaf 'stdin'...\n"
+
+#: fileio.c:652
+msgid "Reading from stdin..."
+msgstr "Lees nou vanaf stdin... "
+
+#. Re-opening the original file failed!
+#: fileio.c:876
+msgid "E202: Conversion made file unreadable!"
+msgstr "E202: Omsetting het lêer onleesbaar gemaak!"
+
+#: fileio.c:1732
+msgid "[fifo/socket]"
+msgstr "[fifo/socket]"
+
+#: fileio.c:1739
+msgid "[fifo]"
+msgstr "[fifo]"
+
+#: fileio.c:1746
+msgid "[socket]"
+msgstr "[socket]"
+
+#: fileio.c:1754
+msgid "[RO]"
+msgstr "[RO]"
+
+#: fileio.c:1764
+msgid "[CR missing]"
+msgstr "[CR ontbreek]"
+
+#: fileio.c:1769
+msgid "[NL found]"
+msgstr "[NL gevind]"
+
+#: fileio.c:1774
+msgid "[long lines split]"
+msgstr "[lang reëls verdeel]"
+
+#: fileio.c:1780 fileio.c:3565
+msgid "[NOT converted]"
+msgstr "[NIE omgesit nie]"
+
+#: fileio.c:1785 fileio.c:3570
+msgid "[converted]"
+msgstr "[omgesit]"
+
+#: fileio.c:1792 fileio.c:3595
+msgid "[crypted]"
+msgstr "[gekodeer]"
+
+#: fileio.c:1799
+msgid "[CONVERSION ERROR]"
+msgstr "[OMSETTINGSFOUT]"
+
+#: fileio.c:1806
+msgid "[READ ERRORS]"
+msgstr "[LEESFOUTE]"
+
+#: fileio.c:2013
+msgid "Can't find temp file for conversion"
+msgstr "Kan nie tydelike lêer vir omsetting vind nie"
+
+#: fileio.c:2020
+msgid "Conversion with 'charconvert' failed"
+msgstr "Omsetting met 'charconvert' het gefaal"
+
+#: fileio.c:2023
+msgid "can't read output of 'charconvert'"
+msgstr "kan afvoer van 'charconvert' nie lees nie"
+
+#: fileio.c:2407
+msgid "E203: Autocommands deleted or unloaded buffer to be written"
+msgstr "E203: Outobevele het die skryfbuffer geskrap of uitgelaai"
+
+#: fileio.c:2430
+msgid "E204: Autocommand changed number of lines in unexpected way"
+msgstr "E204: Outobevel het etlike reëls op onverwagse wyse verander "
+
+#: fileio.c:2496 fileio.c:2513
+msgid "is not a file or writable device"
+msgstr "is nie 'n lêer of 'n skryfbare toestel nie"
+
+#: fileio.c:2555
+msgid "is read-only (use ! to override)"
+msgstr "is lees-alleen (gebruik ! om te dwing)"
+
+#: fileio.c:2851
+msgid "Can't write to backup file (use ! to override)"
+msgstr "Kan nie na rugsteunlêer skryf nie (gebruik ! om te dwing)"
+
+#: fileio.c:2863
+msgid "Close error for backup file (use ! to override)"
+msgstr "Sluitfout vir rugsteunlêer (gebruik ! om te dwing)"
+
+#: fileio.c:2865
+msgid "Can't read file for backup (use ! to override)"
+msgstr "Kan rugsteunlêer nie lees nie (gebruik ! om te dwing)"
+
+#: fileio.c:2881
+msgid "Cannot create backup file (use ! to override)"
+msgstr "Kan rugsteunlêer nie skep nie (gebruik ! om te dwing)"
+
+#: fileio.c:2970
+msgid "Can't make backup file (use ! to override)"
+msgstr "Kan rugsteunlêer nie skep nie (gebruik ! om te dwing)"
+
+#: fileio.c:3032
+msgid "The resource fork will be lost (use ! to override)"
+msgstr "Die hulpbronvurk sal verlore gaan (gebruik ! om te dwing)"
+
+#: fileio.c:3121
+msgid "E214: Can't find temp file for writing"
+msgstr "E214: Kan nie tydelike lêer vind vir skryf nie"
+
+#: fileio.c:3139
+msgid "E213: Cannot convert (use ! to write without conversion)"
+msgstr "E213: Kan nie omsit nie (gebruik ! om te skryf sonder omsetting)"
+
+#: fileio.c:3176
+msgid "E166: Can't open linked file for writing"
+msgstr "E166: Kan lêer nie oopmaak vir skryf nie"
+
+#: fileio.c:3180
+msgid "E212: Can't open file for writing"
+msgstr "E212: Kan lêer nie oopmaak vir skryf nie"
+
+#: fileio.c:3423
+msgid "Close failed"
+msgstr "Sluiting gefaal"
+
+#: fileio.c:3481
+msgid "write error, conversion failed"
+msgstr "skryffout, omsetting gefaal"
+
+#: fileio.c:3487
+msgid "write error (file system full?)"
+msgstr "skryffout (lêerstelsel vol?)"
+
+#: fileio.c:3560
+msgid " CONVERSION ERROR"
+msgstr " OMSETTINGSFOUT"
+
+#: fileio.c:3576
+msgid "[Device]"
+msgstr "[Toestel]"
+
+#: fileio.c:3581
+msgid "[New]"
+msgstr "[Nuut]"
+
+#: fileio.c:3603
+msgid " [a]"
+msgstr " [a]"
+
+#: fileio.c:3603
+msgid " appended"
+msgstr " bygevoeg"
+
+#: fileio.c:3605
+msgid " [w]"
+msgstr " [w]"
+
+#: fileio.c:3605
+msgid " written"
+msgstr " geskryf"
+
+#: fileio.c:3655
+msgid "E205: Patchmode: can't save original file"
+msgstr "E205: patchmode: kan oorspronklike lêer nie stoor nie"
+
+#: fileio.c:3677
+msgid "E206: patchmode: can't touch empty original file"
+msgstr "E206: patchmode: kan leë oorspronglêer nie 'touch' nie"
+
+#: fileio.c:3692
+msgid "E207: Can't delete backup file"
+msgstr "E207: Kan rugsteunlêer nie verwyder nie"
+
+#: fileio.c:3744
+msgid ""
+"\n"
+"WARNING: Original file may be lost or damaged\n"
+msgstr ""
+"\n"
+"WAARSKUWING: Oorspronklike lêer mag verlore of beskadig wees\n"
+
+#: fileio.c:3746
+msgid "don't quit the editor until the file is successfully written!"
+msgstr "moenie die verwerker verlaat voor die lêer suksesvol geskryf is nie!"
+
+#: fileio.c:3826
+msgid "[dos]"
+msgstr "[dos]"
+
+#: fileio.c:3826
+msgid "[dos format]"
+msgstr "[dos formaat]"
+
+#: fileio.c:3833
+msgid "[mac]"
+msgstr "[mac]"
+
+#: fileio.c:3833
+msgid "[mac format]"
+msgstr "[mac formaat]"
+
+#: fileio.c:3840
+msgid "[unix]"
+msgstr "[unix]"
+
+#: fileio.c:3840
+msgid "[unix format]"
+msgstr "[unix formaat]"
+
+#: fileio.c:3867
+msgid "1 line, "
+msgstr "1 reël, "
+
+#: fileio.c:3869
+#, c-format
+msgid "%ld lines, "
+msgstr "%ld reëls, "
+
+#: fileio.c:3872
+msgid "1 character"
+msgstr "1 karakter"
+
+#: fileio.c:3874
+#, c-format
+msgid "%ld characters"
+msgstr "%ld karakters"
+
+#: fileio.c:3884
+msgid "[noeol]"
+msgstr "[noeol]"
+
+#: fileio.c:3884
+msgid "[Incomplete last line]"
+msgstr "[Onvoltooide laaste reël]"
+
+#. don't overwrite messages here
+#. must give this prompt
+#. don't use emsg() here, don't want to flush the buffers
+#: fileio.c:3903
+msgid "WARNING: The file has been changed since reading it!!!"
+msgstr "WAARSKUWING: Die lêer het verander sedert dit gelees is!!!"
+
+#: fileio.c:3905
+msgid "Do you really want to write to it"
+msgstr "Wil jy regtig soontoe skryf?"
+
+#: fileio.c:4861
+#, c-format
+msgid "E208: Error writing to \"%s\""
+msgstr "E208: Kan nie skryf na \"%s\""
+
+#: fileio.c:4868
+#, c-format
+msgid "E209: Error closing \"%s\""
+msgstr "E209: Kan \"%s\" nie sluit nie"
+
+#: fileio.c:4871
+#, c-format
+msgid "E210: Error reading \"%s\""
+msgstr "E210: Kan \"%s\" nie lees nie"
+
+#: fileio.c:5035
+msgid "E246: FileChangedShell autocommand deleted buffer"
+msgstr "E246: 'FileChangedShell' outobevel het buffer verwyder"
+
+#: fileio.c:5043
+#, c-format
+msgid "E211: Warning: File \"%s\" no longer available"
+msgstr "E211: Waarskuwing: Lêer \"%s\" is nie meer beskikbaar nie"
+
+#: fileio.c:5056
+#, c-format
+msgid ""
+"W12: Warning: File \"%s\" has changed and the buffer was changed in Vim as "
+"well"
+msgstr ""
+"W12: Waarskuwing: Lêer \"%s\" het verander sedert bewerking begin het en die "
+"buffer in Vim het ook verander"
+
+#: fileio.c:5059
+#, c-format
+msgid "W11: Warning: File \"%s\" has changed since editing started"
+msgstr "W11: Waarskuwing: Lêer \"%s\" het verander sedert bewerking begin het"
+
+#: fileio.c:5061
+#, c-format
+msgid "W16: Warning: Mode of file \"%s\" has changed since editing started"
+msgstr ""
+"W16: Waarskuwing: Modus van lêer \"%s\" het verander sedert bewerking begin "
+"het"
+
+#: fileio.c:5071
+#, c-format
+msgid "W13: Warning: File \"%s\" has been created after editing started"
+msgstr "W13: Waarskuwing: Lêer \"%s\" is geskep sedert bewerking begin het"
+
+#: fileio.c:5088
+msgid "Warning"
+msgstr "Waarskuwing"
+
+#: fileio.c:5089
+msgid ""
+"&OK\n"
+"&Load File"
+msgstr ""
+"&OK\n"
+"&Laai Lêer"
+
+#: fileio.c:5165
+#, c-format
+msgid "E321: Could not reload \"%s\""
+msgstr "E321: Kon nie \"%s\" herlaai nie"
+
+#: fileio.c:5670
+msgid "--Deleted--"
+msgstr "--Geskrap--"
+
+#. the group doesn't exist
+#: fileio.c:5830
+#, c-format
+msgid "E367: No such group: \"%s\""
+msgstr "E367: Geen sodanige groep nie: \"%s\""
+
+#: fileio.c:5955
+#, c-format
+msgid "E215: Illegal character after *: %s"
+msgstr "E215: Ongeldige karakter na *: %s"
+
+#: fileio.c:5966
+#, c-format
+msgid "E216: No such event: %s"
+msgstr "E216: Geen sodanige gebeurtenis nie: %s"
+
+#. Highlight title
+#: fileio.c:6115
+msgid ""
+"\n"
+"--- Auto-Commands ---"
+msgstr ""
+"\n"
+"--- Outobevele ---"
+
+#: fileio.c:6386
+msgid "E217: Can't execute autocommands for ALL events"
+msgstr "E217: Kan nie outobevele uitvoer vir 'ALL' gebeurtenisse nie"
+
+#: fileio.c:6409
+msgid "No matching autocommands"
+msgstr "Geen passende outobevele nie"
+
+#: fileio.c:6681
+msgid "E218: autocommand nesting too deep"
+msgstr "E218: outobevele te diep genes"
+
+#: fileio.c:6968
+#, c-format
+msgid "%s Auto commands for \"%s\""
+msgstr "%s outobevele vir \"%s\""
+
+#: fileio.c:6976
+#, c-format
+msgid "Executing %s"
+msgstr "Voer %s uit"
+
+#. always scroll up, don't overwrite
+#: fileio.c:7044
+#, c-format
+msgid "autocommand %s"
+msgstr "outobevel %s"
+
+#: fileio.c:7566
+msgid "E219: Missing {."
+msgstr "E219: Ontbrekende {."
+
+#: fileio.c:7568
+msgid "E220: Missing }."
+msgstr "E220: Ontbrekende }."
+
+#: fold.c:66
+msgid "No fold found"
+msgstr "Geen vou gevind nie"
+
+#: fold.c:554
+msgid "E350: Cannot create fold with current 'foldmethod'"
+msgstr "E350: Kan nie vou skep met huidige 'foldmethod' nie"
+
+#: fold.c:556
+msgid "E351: Cannot delete fold with current 'foldmethod'"
+msgstr "E351: Kan nie vou skrap met huidige 'foldmethod' nie"
+
+#: fold.c:1700
+msgid "E221: 'commentstring' is empty"
+msgstr "E221: 'commentstring' opsie is leeg"
+
+#: getchar.c:268
+msgid "E222: Add to read buffer"
+msgstr "E222: Voeg by leesbuffer"
+
+#: getchar.c:2114
+msgid "E223: recursive mapping"
+msgstr "E223: rekursiewe binding"
+
+#: getchar.c:2966
+#, c-format
+msgid "E224: global abbreviation already exists for %s"
+msgstr "E224: globale afkorting bestaan alreeds vir %s"
+
+#: getchar.c:2969
+#, c-format
+msgid "E225: global mapping already exists for %s"
+msgstr "E225: globale binding bestaan alreeds vir %s"
+
+#: getchar.c:3096
+#, c-format
+msgid "E226: abbreviation already exists for %s"
+msgstr "E226: afkorting bestaan already vir %s"
+
+#: getchar.c:3099
+#, c-format
+msgid "E227: mapping already exists for %s"
+msgstr "E227: binding bestaan alreeds vir %s"
+
+#: getchar.c:3163
+msgid "No abbreviation found"
+msgstr "Geen afkorting gevind nie"
+
+#: getchar.c:3165
+msgid "No mapping found"
+msgstr "Geen binding gevind nie"
+
+#: getchar.c:3990
+msgid "E228: makemap: Illegal mode"
+msgstr "E228: makemap: Ongeldige modus"
+
+#: gui.c:181
+msgid "E229: Cannot start the GUI"
+msgstr "E229: Kan nie die GUI begin nie"
+
+#: gui.c:306
+#, c-format
+msgid "E230: Cannot read from \"%s\""
+msgstr "E230: Kan nie lees uit \"%s\" nie"
+
+#: gui.c:431
+msgid "E231: 'guifontwide' invalid"
+msgstr "E231: 'guifontwide' ongeldig"
+
+#: gui.c:3926
+msgid "Error"
+msgstr "Fout"
+
+#: gui.c:3927
+msgid "&Ok"
+msgstr "&Ok"
+
+#: gui_at_fs.c:290
+msgid "<cannot open> "
+msgstr "<kan nie oopmaak nie> "
+
+#: gui_at_fs.c:1115
+#, c-format
+msgid "vim_SelFile: can't get font %s"
+msgstr "'vim_SelFile': kan font %s nie kry nie"
+
+#: gui_at_fs.c:2538
+msgid "vim_SelFile: can't return to current directory"
+msgstr "'vim_SelFile': Kan nie terugkeer na huidige gids nie"
+
+#: gui_at_fs.c:2557
+msgid "Pathname:"
+msgstr "Gidsnaam:"
+
+#: gui_at_fs.c:2563
+msgid "vim_SelFile: can't get current directory"
+msgstr "vim_SelFile: Kan nie huidige gids verkry nie"
+
+#: gui_at_fs.c:2571 gui_motif.c:1607
+msgid "OK"
+msgstr "OK"
+
+#. 'Cancel' button
+#: gui_at_fs.c:2571 gui_gtk.c:1683 gui_motif.c:1602 gui_motif.c:2823
+msgid "Cancel"
+msgstr "Kanselleer"
+
+#: gui_at_sb.c:486
+msgid "Scrollbar Widget: Could not get geometry of thumb pixmap."
+msgstr "Rolstaafelement: Kon nie pikselmatriks-duimnael se geometrie kry nie"
+
+#: gui_athena.c:1928 gui_motif.c:1855
+msgid "Vim dialog"
+msgstr "Vim dialooghokkie"
+
+#: gui_beval.c:68
+msgid "E232: Cannot create BalloonEval with both message and callback"
+msgstr "E232: Kan nie BalloonEval skep met beide boodskap en terugroep nie"
+
+#: gui_gtk.c:1144
+msgid "Vim dialog..."
+msgstr "Vim dialooghokkie..."
+
+#: gui_gtk.c:1519 gui_motif.c:2742
+msgid "VIM - Search and Replace..."
+msgstr "VIM - Soek en Vervang..."
+
+#: gui_gtk.c:1524 gui_motif.c:2744
+msgid "VIM - Search..."
+msgstr "VIM - Soek..."
+
+#: gui_gtk.c:1547 gui_motif.c:2862
+msgid "Find what:"
+msgstr "Soek na:"
+
+#: gui_gtk.c:1565 gui_motif.c:2894
+msgid "Replace with:"
+msgstr "Vervang met:"
+
+#. exact match only button
+#: gui_gtk.c:1597 gui_motif.c:2996
+msgid "Match exact word only"
+msgstr "Tref slegs presiese woord"
+
+#: gui_gtk.c:1609 gui_motif.c:2964
+msgid "Direction"
+msgstr "Rigting"
+
+#. 'Up' and 'Down' buttons
+#: gui_gtk.c:1621 gui_motif.c:2976
+msgid "Up"
+msgstr "Op"
+
+#: gui_gtk.c:1625 gui_motif.c:2984
+msgid "Down"
+msgstr "Af"
+
+#. 'Find Next' button
+#: gui_gtk.c:1647 gui_motif.c:2766
+msgid "Find Next"
+msgstr "Vind volgende"
+
+#. 'Replace' button
+#: gui_gtk.c:1664 gui_motif.c:2783
+msgid "Replace"
+msgstr "Vervang"
+
+#. 'Replace All' button
+#: gui_gtk.c:1673 gui_motif.c:2796
+msgid "Replace All"
+msgstr "Vervang alles"
+
+#: gui_gtk_x11.c:1076 gui_x11.c:1199
+msgid "E233: cannot open display"
+msgstr "E233: kan nie vertoonskerm oopmaak nie"
+
+#: gui_gtk_x11.c:2433 gui_x11.c:2002
+#, c-format
+msgid "E234: Unknown fontset: %s"
+msgstr "E234: Onbekende fontstel: %s"
+
+#: gui_gtk_x11.c:2460
+msgid "Font Selection"
+msgstr "Fontkeuse"
+
+#: gui_gtk_x11.c:2702 gui_mac.c:2780 gui_w48.c:1197 gui_x11.c:1838
+#, c-format
+msgid "E235: Unknown font: %s"
+msgstr "E235: Onbekende font: %s"
+
+#: gui_gtk_x11.c:2713 gui_x11.c:1862
+#, c-format
+msgid "E236: Font \"%s\" is not fixed-width"
+msgstr "E236: Font \"%s\" is nie 'n vaste-wydte font nie"
+
+#: gui_gtk_x11.c:2843
+#, c-format
+msgid "E242: Color name not recognized: %s"
+msgstr "E242: Kleurnaam is onbekend: %s"
+
+#: gui_gtk_x11.c:3519 ui.c:1929
+msgid "Used CUT_BUFFER0 instead of empty selection"
+msgstr "'CUT_BUFFER0' is gebruik in plaas van leë seleksie"
+
+#: gui_motif.c:1601 gui_motif.c:1604
+msgid "Filter"
+msgstr "Filter"
+
+#: gui_motif.c:1603
+msgid "Directories"
+msgstr "Gidse"
+
+#: gui_motif.c:1605
+msgid "Help"
+msgstr "Hulp"
+
+#: gui_motif.c:1606
+msgid "Files"
+msgstr "Lêers"
+
+#: gui_motif.c:1608
+msgid "Selection"
+msgstr "Seleksie"
+
+#: gui_motif.c:2809
+msgid "Undo"
+msgstr "Herroep"
+
+#: gui_riscos.c:951
+#, c-format
+msgid "E235: Can't load Zap font '%s'"
+msgstr "E235: Kan nie Zap font '%s' laai nie"
+
+#: gui_riscos.c:1047
+#, c-format
+msgid "E235: Can't use font %s"
+msgstr "E235: Kan nie font %s gebruik nie"
+
+#: gui_riscos.c:1167
+#, c-format
+msgid "E242: Missing color: %s"
+msgstr "E242: Ontbrekende kleur: %s"
+
+#: gui_riscos.c:3269
+msgid ""
+"\n"
+"Sending message to terminate child process.\n"
+msgstr ""
+"\n"
+"Besig om doodsboodskap aan kindproses te stuur.\n"
+
+#: gui_w32.c:823
+#, c-format
+msgid "E243: Argument not supported: \"-%s\"; Use the OLE version."
+msgstr "E243: Parameter nie bekend: \"-%s\"; Gebruik die OLE weergawe."
+
+#: gui_w48.c:2068
+msgid "Find string (use '\\\\' to find  a '\\')"
+msgstr "Vind string (gebruik '\\\\' om 'n '\\' te vind"
+
+#: gui_w48.c:2093
+msgid "Find & Replace (use '\\\\' to find  a '\\')"
+msgstr "Vind & vervang string (gebruik '\\\\' om 'n '\\' te vind"
+
+#: gui_x11.c:1419
+msgid "Vim E458: Cannot allocate colormap entry, some colors may be incorrect"
+msgstr ""
+"Vim E458: Kan nie kleurkaart-inskrywing toeken nie, sommige kleure mag "
+"verkeerd wees"
+
+#: gui_x11.c:1992
+#, c-format
+msgid "E250: Fonts for the following charsets are missing in fontset %s:"
+msgstr ""
+"E250: Fonte vir die volgende karakterstelle ontbreek in fontversameling %s:"
+
+#: gui_x11.c:2035
+#, c-format
+msgid "E252: Fontset name: %s"
+msgstr "E252: Fontstel naam: %s"
+
+#: gui_x11.c:2036
+#, c-format
+msgid "Font '%s' is not fixed-width"
+msgstr "Font '%s' is nie 'n vaste-wydte font nie"
+
+#: gui_x11.c:2055
+#, c-format
+msgid "E253: Fontset name: %s\n"
+msgstr "E253: Fonstel naam: %s\n"
+
+#: gui_x11.c:2056
+#, c-format
+msgid "Font0: %s\n"
+msgstr "Font0: %s\n"
+
+#: gui_x11.c:2057
+#, c-format
+msgid "Font1: %s\n"
+msgstr "Font1: %s\n"
+
+#: gui_x11.c:2058
+#, c-format
+msgid "Font%d width is not twice that of font0\n"
+msgstr "Font%d wydte is nie twee keer díe van font0 nie\n"
+
+#: gui_x11.c:2059
+#, c-format
+msgid "Font0 width: %ld\n"
+msgstr "Font0 wydte: %ld\n"
+
+#: gui_x11.c:2060
+#, c-format
+msgid ""
+"Font1 width: %ld\n"
+"\n"
+msgstr ""
+"Font1 wydte: %ld\n"
+"\n"
+
+#: gui_x11.c:2206
+#, c-format
+msgid "E254: Cannot allocate color %s"
+msgstr "E254: Kan nie kleur %s toeken nie"
+
+#: gui_x11.c:3256
+msgid "E255: Couldn't read in sign data!"
+msgstr "E255: Fout -- kon nie tekendata lees nie!"
+
+#: hangulin.c:610
+msgid "E256: Hangul automata ERROR"
+msgstr "E256: Hangul outomatiserings FOUT"
+
+#: if_cscope.c:26
+#, c-format
+msgid "Usage: cs[cope] %s"
+msgstr "Gebruik: cs[cope] %s"
+
+#: if_cscope.c:67
+msgid "Add a new database"
+msgstr "Voeg 'n nuwe databasis by"
+
+#: if_cscope.c:69
+msgid "Query for a pattern"
+msgstr "Soek vir 'n patroon"
+
+#: if_cscope.c:71
+msgid "Show this message"
+msgstr "Wys hierdie boodskap"
+
+#: if_cscope.c:73
+msgid "Kill a connection"
+msgstr "Sluit 'n verbinding"
+
+#: if_cscope.c:75
+msgid "Reinit all connections"
+msgstr "Herstel alle verbindings"
+
+#: if_cscope.c:77
+msgid "Show connections"
+msgstr "Wys verbindings"
+
+#: if_cscope.c:108
+msgid "This cscope command does not support splitting the window.\n"
+msgstr ""
+"Hierdie 'cscope' bevel ondersteun nie die splitsing van die venster nie.\n"
+
+#: if_cscope.c:143
+msgid "Usage: cstag <ident>"
+msgstr "Gebruik: 'cstag <ident>'"
+
+#: if_cscope.c:199
+msgid "E257: cstag: tag not found"
+msgstr "E257: 'cstag': etiket nie gevind nie"
+
+#: if_cscope.c:407 if_cscope.c:451
+#, c-format
+msgid "stat(%s) error: %d"
+msgstr "'stat(%s)' fout: %d"
+
+#: if_cscope.c:460 if_cscope.c:467
+#, c-format
+msgid "Added cscope database %s"
+msgstr "'cscope' databasis %s bygevoeg"
+
+#: if_cscope.c:474
+#, c-format
+msgid "%s is not a directory or a valid cscope database"
+msgstr "%s is nie 'n gids of 'n geldige 'cscope' databasis nie"
+
+#: if_cscope.c:557
+#, c-format
+msgid "error reading cscope connection %d"
+msgstr "'cscope' verbinding %d kon nie gelees word nie"
+
+#: if_cscope.c:633
+msgid "unknown cscope search type"
+msgstr "onbekende 'cscope' soektipe"
+
+#: if_cscope.c:680
+msgid "Could not create cscope pipes"
+msgstr "Kon nie 'cscope' pype skep nie"
+
+#: if_cscope.c:745
+msgid "cs_create_connection exec failed"
+msgstr "'cs_create_connection' uitvoering het misluk"
+
+#: if_cscope.c:755
+msgid "cs_create_connection: fdopen for to_fp failed"
+msgstr "'cs_create_connection': 'fdopen' vir 'to_fp' het misluk"
+
+#: if_cscope.c:757
+msgid "cs_create_connection: fdopen for fr_fp failed"
+msgstr "'cs_create_connection': 'fdopen' vir 'fr_fp' het misluk"
+
+#: if_cscope.c:785
+msgid "no cscope connections"
+msgstr "geen 'cscope' verbindings nie"
+
+#: if_cscope.c:855
+#, c-format
+msgid "E259: no matches found for cscope query %s of %s"
+msgstr "E259: geen treffers gevind vir 'cscope' versoek %s van %s nie"
+
+#: if_cscope.c:899
+msgid "cscope commands:\n"
+msgstr "'cscope' bevele:\n"
+
+#: if_cscope.c:902
+#, c-format
+msgid "%-5s: %-30s (Usage: %s)\n"
+msgstr "%-5s: %-30s (Gebruik: %s)\n"
+
+#: if_cscope.c:970
+msgid "duplicate cscope database not added"
+msgstr "duplikaat 'cscope' databasis nie bygevoeg nie"
+
+#: if_cscope.c:981
+msgid "maximum number of cscope connections reached"
+msgstr "maksimum aantal 'cscope' verbindings bereik"
+
+#: if_cscope.c:1102
+msgid "E260: cscope connection not found"
+msgstr "E260: 'cscope' verbinding nie gevind nie"
+
+#: if_cscope.c:1105
+#, c-format
+msgid "E261: cscope connection %s not found"
+msgstr "E261: 'cscope' verbinding %s nie gevind nie"
+
+#: if_cscope.c:1141
+msgid "cscope connection closed"
+msgstr "'cscope' verbinding gesluit"
+
+#: if_cscope.c:1149
+#, c-format
+msgid "cscope connection %s closed\n"
+msgstr "'cscope' verbinding %s gesluit\n"
+
+#. should not reach here
+#: if_cscope.c:1290
+msgid "fatal error in cs_manage_matches"
+msgstr "fatale fout in 'cs_manage_matches'"
+
+#: if_cscope.c:1341
+#, c-format
+msgid "E262: error reading cscope connection %d"
+msgstr "E262: 'cscope' verbinding %d kon nie gelees word nie"
+
+# njj: dalk 'verbinding' ipv 'verbinding' orals?
+#: if_cscope.c:1449
+msgid "couldn't malloc\n"
+msgstr "kon nie 'malloc' nie\n"
+
+#: if_cscope.c:1454
+#, c-format
+msgid "Cscope tag: %s\n"
+msgstr "Cscope etiket: %s\n"
+
+#: if_cscope.c:1458
+msgid "   #   line"
+msgstr "   #   reël"
+
+#: if_cscope.c:1460
+msgid "filename / context / line\n"
+msgstr "lêernaam / konteks / reël\n"
+
+#: if_cscope.c:1718
+msgid "All cscope databases reset"
+msgstr "Alle 'cscope' databasisse herstel"
+
+#: if_cscope.c:1785
+msgid "no cscope connections\n"
+msgstr "geen 'cscope' verbindings nie\n"
+
+#: if_cscope.c:1789
+msgid " # pid    database name                       prepend path\n"
+msgstr " # pid    databasis naam                      gidsvoorvoegsel\n"
+
+#: if_cscope.c:1800
+#, c-format
+msgid "%2d %-5ld  %-34s  <none>\n"
+msgstr "%2d %-5ld  %-34s  <geen>\n"
+
+#: if_python.c:376
+msgid ""
+"E263: Sorry, this command is disabled, the Python library could not be "
+"loaded."
+msgstr ""
+"E263: Jammer, hierdie bevel is afgeskakel, die Python biblioteek lêer kon "
+"nie gelaai word nie."
+
+#: if_python.c:576
+msgid "can't delete OutputObject attributes"
+msgstr "kan nie 'OutputObject' eienskappe skrap nie"
+
+#: if_python.c:583
+msgid "softspace must be an integer"
+msgstr "'softspace' moet 'n heelgetal wees"
+
+#: if_python.c:591
+msgid "invalid attribute"
+msgstr "ongeldige eienskap"
+
+#: if_python.c:630 if_python.c:644
+msgid "writelines() requires list of strings"
+msgstr "'writelines()' benodig 'n lys van stringe"
+
+#: if_python.c:770
+msgid "E264: Python: Error initialising I/O objects"
+msgstr "E264: Python: Kon nie I/O objekte inwy nie"
+
+# njj: net 'n voorstel ..
+#: if_python.c:955 if_tcl.c:1391
+msgid "invalid expression"
+msgstr "ongeldige uitdrukking"
+
+#: if_python.c:969 if_tcl.c:1396
+msgid "expressions disabled at compile time"
+msgstr "uitdrukkings afgeskakel tydens kompilering"
+
+#: if_python.c:982
+msgid "attempt to refer to deleted buffer"
+msgstr "poging om na 'n geskrapte buffer te verwys"
+
+#: if_python.c:997 if_python.c:1038 if_python.c:1102 if_tcl.c:1203
+msgid "line number out of range"
+msgstr "reëlnommer buite omvang"
+
+#: if_python.c:1235
+#, c-format
+msgid "<buffer object (deleted) at %8lX>"
+msgstr "<buffervoorwerp (geskrap) by %8lX>"
+
+#: if_python.c:1326 if_tcl.c:825
+msgid "invalid mark name"
+msgstr "onbekende merknaam"
+
+#: if_python.c:1601
+msgid "no such buffer"
+msgstr "buffer bestaan nie"
+
+#: if_python.c:1689
+msgid "attempt to refer to deleted window"
+msgstr "poging om na geskrapte venster te verwys"
+
+#: if_python.c:1734
+msgid "readonly attribute"
+msgstr "leesalleen eienskap"
+
+#: if_python.c:1747
+msgid "cursor position outside buffer"
+msgstr "loperposisie buite buffer"
+
+#: if_python.c:1824
+#, c-format
+msgid "<window object (deleted) at %.8lX>"
+msgstr "<venster voorwerp (geskrap) by %.8lX>"
+
+#: if_python.c:1836
+#, c-format
+msgid "<window object (unknown) at %.8lX>"
+msgstr "<verwyder voorwerp (onbekend) by %.8lX>"
+
+#: if_python.c:1838
+#, c-format
+msgid "<window %d>"
+msgstr "<venster %d>"
+
+#: if_python.c:1914
+msgid "no such window"
+msgstr "geen sodanige venster nie"
+
+#: if_python.c:2144 if_python.c:2175 if_python.c:2225 if_python.c:2285
+#: if_python.c:2402 if_python.c:2454 if_tcl.c:673 if_tcl.c:718 if_tcl.c:792
+#: if_tcl.c:862 if_tcl.c:1987
+msgid "cannot save undo information"
+msgstr "kan nie herwin-inligting stoor nie"
+
+#: if_python.c:2146 if_python.c:2232 if_python.c:2296
+msgid "cannot delete line"
+msgstr "kan reël nie verwyder nie"
+
+#: if_python.c:2177 if_python.c:2312 if_tcl.c:679 if_tcl.c:2009
+msgid "cannot replace line"
+msgstr "kan reël nie vervang nie"
+
+#: if_python.c:2328 if_python.c:2404 if_python.c:2462
+msgid "cannot insert line"
+msgstr "kan reël nie byvoeg nie"
+
+#: if_python.c:2566
+msgid "string cannot contain newlines"
+msgstr "string kan nie 'newlines' bevat nie"
+
+#: if_ruby.c:394
+msgid ""
+"E266: Sorry, this command is disabled, the Ruby library could not be loaded."
+msgstr ""
+"E266: Jammer, hierdie bevel is afgeskakel, die Ruby biblioteeklêer kon nie "
+"gelaai word nie."
+
+#: if_ruby.c:457
+#, c-format
+msgid "E273: unknown longjmp status %d"
+msgstr "E273: Onbekende 'longjmp' status %d"
+
+#: if_sniff.c:67
+msgid "Toggle implementation/definition"
+msgstr "Stel en herstel implimentasie/definisie"
+
+#: if_sniff.c:68
+msgid "Show base class of"
+msgstr "Wys basisklas van"
+
+#: if_sniff.c:69
+msgid "Show overridden member function"
+msgstr "Wys vervangde lidfunksie"
+
+#: if_sniff.c:70
+msgid "Retrieve from file"
+msgstr "Gaan haal uit lêer"
+
+#: if_sniff.c:71
+msgid "Retrieve from project"
+msgstr "Gaan haal uit projek"
+
+#: if_sniff.c:73
+msgid "Retrieve from all projects"
+msgstr "Gaan haal uit alle projekte"
+
+#: if_sniff.c:74
+msgid "Retrieve"
+msgstr "Gaan haal"
+
+#: if_sniff.c:75
+msgid "Show source of"
+msgstr "Wys kode van"
+
+#: if_sniff.c:76
+msgid "Find symbol"
+msgstr "Vind simbool"
+
+#: if_sniff.c:77
+msgid "Browse class"
+msgstr "Kyk klas deur"
+
+#: if_sniff.c:78
+msgid "Show class in hierarchy"
+msgstr "Wys klas in hiërargie"
+
+#: if_sniff.c:79
+msgid "Show class in restricted hierarchy"
+msgstr "Wys klas in beperkte hiërargie"
+
+#: if_sniff.c:80
+msgid "Xref refers to"
+msgstr "Xref verwys na"
+
+#: if_sniff.c:81
+msgid "Xref referred by"
+msgstr "Xref verwys deur"
+
+#: if_sniff.c:82
+msgid "Xref has a"
+msgstr "Xref het 'n"
+
+#: if_sniff.c:83
+msgid "Xref used by"
+msgstr "Xref gebruik deur"
+
+#: if_sniff.c:84
+msgid "Show docu of"
+msgstr "Wys 'docu' van"
+
+#: if_sniff.c:85
+msgid "Generate docu for"
+msgstr "Genereer 'docu' vir"
+
+#: if_sniff.c:97
+msgid ""
+"Cannot connect to SNiFF+. Check environment (sniffemacs must be found in "
+"$PATH).\n"
+msgstr ""
+"Kan nie 'n verbinding met 'SNiFF+' maak nie. Kyk of die omgewing reg is "
+"('sniffemacs' moet in '$PATH' gevind word).\n"
+
+#: if_sniff.c:425
+msgid "E274: Sniff: Error during read. Disconnected"
+msgstr "E274: Sniff: Fout gedurende lees. Verbinding gebreek"
+
+#: if_sniff.c:553
+msgid "SNiFF+ is currently "
+msgstr "SNiFF+ is tans"
+
+#: if_sniff.c:555
+msgid "not "
+msgstr "nie "
+
+#: if_sniff.c:556
+msgid "connected"
+msgstr "gekonnekteer"
+
+#: if_sniff.c:592
+#, c-format
+msgid "E275: Unknown SNiFF+ request: %s"
+msgstr "E275: Onbekende SNiFF+ versoek: %s"
+
+#: if_sniff.c:605
+msgid "E276: Error connecting to SNiFF+"
+msgstr "E276: Fout in konnekteer met SNiFF+"
+
+#: if_sniff.c:1010
+msgid "E278: SNiFF+ not connected"
+msgstr "E278: SNiFF+ is nie gekonnekteer nie"
+
+#: if_sniff.c:1019
+msgid "E279: Not a SNiFF+ buffer"
+msgstr "E279: Nie 'n SNiFF+ buffer nie"
+
+#: if_sniff.c:1084
+msgid "Sniff: Error during write. Disconnected"
+msgstr "Sniff: Fout gedurende stoor. Verbinding gebreek"
+
+#: if_tcl.c:407
+msgid "invalid buffer number"
+msgstr "ongeldige buffernommer"
+
+#: if_tcl.c:453 if_tcl.c:920 if_tcl.c:1099
+msgid "not implemented yet"
+msgstr "nog nie geïmplementeer nie"
+
+#: if_tcl.c:490
+msgid "unknown option"
+msgstr "onbekende opsie"
+
+#. ???
+#: if_tcl.c:763
+msgid "cannot set line(s)"
+msgstr "kan nie reël(s) stel nie"
+
+#: if_tcl.c:834
+msgid "mark not set"
+msgstr "merker nie gestel nie"
+
+#: if_tcl.c:840 if_tcl.c:1055
+#, c-format
+msgid "row %d column %d"
+msgstr "ry %d kolom %d"
+
+#: if_tcl.c:870
+msgid "cannot insert/append line"
+msgstr "kan nie reël invoeg/aanlas nie"
+
+#: if_tcl.c:1257
+msgid "unknown flag: "
+msgstr "onbekende vlag: "
+
+#: if_tcl.c:1327
+msgid "unknown vimOption"
+msgstr "onbekende 'vimOption'"
+
+#: if_tcl.c:1412
+msgid "keyboard interrupt"
+msgstr "sleutelbordonderbreking"
+
+#: if_tcl.c:1417
+msgid "vim error"
+msgstr "vim fout"
+
+#: if_tcl.c:1460
+msgid "cannot create buffer/window command: object is being deleted"
+msgstr "kan nie buffer/venster bevel skep nie: voorwerp word geskrap"
+
+#: if_tcl.c:1534
+msgid ""
+"cannot register callback command: buffer/window is already being deleted"
+msgstr ""
+"kan nie terugroepbevel registreer nie: buffer/venster word alreeds geskrap"
+
+#. This should never happen.  Famous last word?
+#: if_tcl.c:1551
+msgid ""
+"E280: TCL FATAL ERROR: reflist corrupt!? Please report this to vim-dev@vim."
+"org"
+msgstr ""
+"E280: TCL FATALE FOUT: verwlys korrup!? Rapporteer dit asb. aan <vim-dev@vim."
+"org>"
+
+#: if_tcl.c:1552
+msgid "cannot register callback command: buffer/window reference not found"
+msgstr ""
+"kan terugroepbevel nie registreer nie: buffer/vensterverwysing nie gevind nie"
+
+#: if_tcl.c:1713
+msgid "Sorry, this command is disabled: the Tcl library could not be loaded."
+msgstr ""
+"Jammer, hierdie bevel is afgeskakel, die Tcl biblioteek kon nie gelaai "
+"wordnie."
+
+#: if_tcl.c:1875
+msgid ""
+"E281: TCL ERROR: exit code is not int!? Please report this to vim-dev@vim.org"
+msgstr ""
+"E281: TCL FOUT: verlaatkode is nie 'n 'int'!? Rapporteer dit asb. aan <vim-"
+"dev@vim.org>"
+
+#: if_tcl.c:1995
+msgid "cannot get line"
+msgstr "kan nie reël kry nie"
+
+#: if_xcmdsrv.c:204
+msgid "Unable to register a command server name"
+msgstr "Kon nie bevelbediener naam registreer nie"
+
+#: if_xcmdsrv.c:417
+#, c-format
+msgid "E247: no registered server named \"%s\""
+msgstr "E247: geen geregistreerde bediener genaamd \"%s\""
+
+#: if_xcmdsrv.c:446
+msgid "E248: Failed to send command to the destination program"
+msgstr "E248: Het gefaal om bevel na doel program te stuur"
+
+#: if_xcmdsrv.c:714
+#, c-format
+msgid "Invalid server id used: %s"
+msgstr "Ongeldige bediener-id gebruik: %s"
+
+#: if_xcmdsrv.c:1061
+msgid "E249: couldn't read VIM instance registry property"
+msgstr "E249: kon nie VIM instansie register-kenmerk lees nie"
+
+#: if_xcmdsrv.c:1072
+msgid "E251: VIM instance registry property is badly formed.  Deleted!"
+msgstr "E251: VIM instansie register-kenmerk is swak gevorm. Geskrap!"
+
+#: main.c:53 option.c:3162 option.c:3269
+msgid "Unknown option"
+msgstr "Onbekende opsie"
+
+#: main.c:55
+msgid "Too many edit arguments"
+msgstr "Te veel redigeer-parameters"
+
+#: main.c:57
+msgid "Argument missing after"
+msgstr "Parameter ontbreek na"
+
+#: main.c:59
+msgid "Garbage after option"
+msgstr "Gemors na opsie"
+
+#: main.c:61
+msgid "Too many \"+command\" or \"-c command\" arguments"
+msgstr "Te veel \"+command\" of \"-c command\" parameters"
+
+#: main.c:63
+msgid "Invalid argument for"
+msgstr "Ongeldige parameter vir"
+
+#: main.c:436
+msgid "This Vim was not compiled with the diff feature."
+msgstr "Hierdie Vim is nie gekompileer met 'diff' funksionaliteit nie."
+
+#: main.c:858
+msgid "Attempt to open script file again: \""
+msgstr "Probeer weer om skriplêer oop te maak: \""
+
+#: main.c:862 main.c:869 main.c:913 memline.c:3673 memline.c:3677
+#: version.c:816 version.c:821 version.c:826 version.c:831 version.c:836
+#: version.c:841 version.c:847 version.c:851 version.c:855 version.c:860
+#: version.c:867 version.c:875 version.c:881
+msgid "\"\n"
+msgstr "\"\n"
+
+#: main.c:867
+msgid "Cannot open for reading: \""
+msgstr "Kan nie oopmaak om te lees nie: \""
+
+#: main.c:911
+msgid "Cannot open for script output: \""
+msgstr "Kan nie oopmaak vir skrip-afvoer nie: \""
+
+#: main.c:1020
+#, c-format
+msgid "%d files to edit\n"
+msgstr "%d lêers om te bewerk\n"
+
+#: main.c:1094
+msgid "Vim: Warning: Output is not to a terminal\n"
+msgstr "Vim: Waarskuwing: Afvoer gaan nie na 'n terminaal nie\n"
+
+#: main.c:1096
+msgid "Vim: Warning: Input is not from a terminal\n"
+msgstr "Vim: Waarskuwing: Invoer kom nie vanaf 'n terminaal nie\n"
+
+#. just in case..
+#: main.c:1171
+msgid "pre-vimrc command line"
+msgstr "vóór-'vimrc' bevelreël"
+
+#: main.c:1206
+#, c-format
+msgid "E282: Cannot read from \"%s\""
+msgstr "E282: Kan nie lees uit \"%s\" nie"
+
+#: main.c:2157
+msgid ""
+"\n"
+"More info with: \"vim -h\"\n"
+msgstr ""
+"\n"
+"Meer inligting met: \"vim -h\"\n"
+
+#: main.c:2190
+msgid "[file ..]       edit specified file(s)"
+msgstr "[lêer ..]       bewerk lêer(s)"
+
+#: main.c:2191
+msgid "-               read text from stdin"
+msgstr "-               lees teks uit 'stdin'"
+
+#: main.c:2192
+msgid "-t tag          edit file where tag is defined"
+msgstr "-t tag          bewerk lêer waar etiket gedefinieer is"
+
+#: main.c:2194
+msgid "-q [errorfile]  edit file with first error"
+msgstr "-q [foutlêer]   bewerk lêer met eerste fout"
+
+#: main.c:2203
+msgid ""
+"\n"
+"\n"
+"usage:"
+msgstr ""
+"\n"
+"\n"
+"gebruik:"
+
+#: main.c:2206
+msgid " vim [arguments] "
+msgstr " vim [parameters] "
+
+#: main.c:2210
+msgid ""
+"\n"
+"   or:"
+msgstr ""
+"\n"
+"   of:"
+
+#: main.c:2213
+msgid ""
+"\n"
+"\n"
+"Arguments:\n"
+msgstr ""
+"\n"
+"\n"
+"Parameters:\n"
+
+#: main.c:2214
+msgid "--\t\t\tOnly file names after this"
+msgstr "--\t\t\tSlegs lêername hierna"
+
+#: main.c:2216
+msgid "-register\t\tRegister this gvim for OLE"
+msgstr "-register\t\tRegistreer hierdie gvim vir OLE"
+
+#: main.c:2217
+msgid "-unregister\t\tUnregister gvim for OLE"
+msgstr "-unregister\t\tOnregistreer gvim vir OLE"
+
+#: main.c:2220
+msgid "-g\t\t\tRun using GUI (like \"gvim\")"
+msgstr "-g\t\t\tVoer uit met die GUI (soos \"gvim\")"
+
+#: main.c:2221
+msgid "-f\t\t\tForeground: Don't fork when starting GUI"
+msgstr "-f\t\t\tVoorgrond: Moenie vurk wanneer GUI begin nie"
+
+#: main.c:2223
+msgid "-v\t\t\tVi mode (like \"vi\")"
+msgstr "-v\t\t\tVi modus (soos \"vi\")"
+
+#: main.c:2224
+msgid "-e\t\t\tEx mode (like \"ex\")"
+msgstr "-e\t\t\tEx modus (soos \"ex\")"
+
+#: main.c:2225
+msgid "-s\t\t\tSilent (batch) mode (only for \"ex\")"
+msgstr "-s\t\t\tStil (bondel) modus (slegs vir \"ex\")"
+
+#: main.c:2227
+msgid "-d\t\t\tDiff mode (like \"vimdiff\")"
+msgstr "-d\t\t\tDiff modus (soos \"vimdiff\")"
+
+#: main.c:2229
+msgid "-y\t\t\tEasy mode (like \"evim\", modeless)"
+msgstr "-y\t\t\tEasy modus (soos \"evim\", modusloos)"
+
+#: main.c:2230
+msgid "-R\t\t\tReadonly mode (like \"view\")"
+msgstr "-R\t\t\tLeesalleen modus (soos \"view\")"
+
+#: main.c:2231
+msgid "-Z\t\t\tRestricted mode (like \"rvim\")"
+msgstr "-Z\t\t\tBeperkte modus (soos \"rvim\")"
+
+#: main.c:2232
+msgid "-m\t\t\tModifications (writing files) not allowed"
+msgstr "-m\t\t\tVeranderings (skryf van lêers) nie toegelaat nie"
+
+#: main.c:2233
+msgid "-M\t\t\tModifications in text not allowed"
+msgstr "-M\t\t\tVeranderings aan teks nie toegelaat nie"
+
+#: main.c:2234
+msgid "-b\t\t\tBinary mode"
+msgstr "-b\t\t\tBinêre modus"
+
+#: main.c:2236
+msgid "-l\t\t\tLisp mode"
+msgstr "-l\t\t\tLisp modus"
+
+#: main.c:2238
+msgid "-C\t\t\tCompatible with Vi: 'compatible'"
+msgstr "-C\t\t\tVersoenbaar met Vi: 'compatible'"
+
+#: main.c:2239
+msgid "-N\t\t\tNot fully Vi compatible: 'nocompatible'"
+msgstr "-N\t\t\tNie ten volle Vi-versoenbaar nie: 'nocompatible'"
+
+#: main.c:2240
+msgid "-V[N]\t\tVerbose level"
+msgstr "-V[N]\t\tOmslagtigheidsgraad"
+
+#: main.c:2241
+msgid "-D\t\t\tDebugging mode"
+msgstr "-D\t\t\tOntfoutmodus"
+
+#: main.c:2242
+msgid "-n\t\t\tNo swap file, use memory only"
+msgstr "-n\t\t\tGeen ruillêer, gebruik slegs geheue"
+
+#: main.c:2243
+msgid "-r\t\t\tList swap files and exit"
+msgstr "-r\t\t\tLys ruillêers en verlaat vim"
+
+#: main.c:2244
+msgid "-r (with file name)\tRecover crashed session"
+msgstr "-r (met lêer naam)\tHerwin ineengestorte sessie"
+
+#: main.c:2245
+msgid "-L\t\t\tSame as -r"
+msgstr "-L\t\t\tSelfde as -r"
+
+#: main.c:2247
+msgid "-f\t\t\tDon't use newcli to open window"
+msgstr "-f\t\t\tMoet nie 'newcli' gebruik om venster oop te maak nie"
+
+#: main.c:2248
+msgid "-dev <device>\t\tUse <device> for I/O"
+msgstr "-dev <toestel>\t\tGebruik <toestel> vir I/O"
+
+#: main.c:2251
+msgid "-H\t\t\tstart in Hebrew mode"
+msgstr "-H\t\t\tbegin in Hebreeuse modus"
+
+#: main.c:2254
+msgid "-F\t\t\tstart in Farsi mode"
+msgstr "-F\t\t\tbegin in Farsi modus"
+
+#: main.c:2256
+msgid "-T <terminal>\tSet terminal type to <terminal>"
+msgstr "-T <terminaal>\tStel terminaaltipe na <terminaal>"
+
+#: main.c:2257
+msgid "-u <vimrc>\t\tUse <vimrc> instead of any .vimrc"
+msgstr "-u <vimrc>\t\tGebruik <vimrc> in plaas van enige ander .vimrc"
+
+#: main.c:2259
+msgid "-U <gvimrc>\t\tUse <gvimrc> instead of any .gvimrc"
+msgstr "-U <gvimrc>\t\tGebruik <gvimrc> in plaas van enige .gvimrc"
+
+#: main.c:2261
+msgid "--noplugin\t\tDon't load plugin scripts"
+msgstr "--noplugin\t\tMoet nie inpropskripte laai nie"
+
+#: main.c:2262
+msgid "-o[N]\t\tOpen N windows (default: one for each file)"
+msgstr "-o[N]\t\tMaak N vensters oop (verstek: een vir elke lêer)"
+
+#: main.c:2263
+msgid "-O[N]\t\tlike -o but split vertically"
+msgstr "-O[N]\t\tsoos -o maar verdeel vertikaal"
+
+#: main.c:2264
+msgid "+\t\t\tStart at end of file"
+msgstr "+\t\t\tBegin by einde van lêer"
+
+#: main.c:2265
+msgid "+<lnum>\t\tStart at line <lnum>"
+msgstr "+<lnum>\t\tBegin by reël <lnum>"
+
+#: main.c:2267
+msgid "--cmd <command>\tExecute <command> before loading any vimrc file"
+msgstr "--cmd <bevel>\tVoer <bevel> uit voor enige .vimrc-lêer gelaai word"
+
+#: main.c:2269
+msgid "-c <command>\t\tExecute <command> after loading the first file"
+msgstr "-c <bevel>\t\tVoer <bevel> uit na eerste lêer gelaai is"
+
+#: main.c:2270
+msgid "-S <session>\t\tSource file <session> after loading the first file"
+msgstr ""
+"-S <sessie>\t\tVoer bevele in lêer <sessie> uit na eerste lêer gelaai is"
+
+#: main.c:2271
+msgid "-s <scriptin>\tRead Normal mode commands from file <scriptin>"
+msgstr "-s <skripin>\t\tLees Normale-modus bevele van lêer <skripin>"
+
+#: main.c:2272
+msgid "-w <scriptout>\tAppend all typed commands to file <scriptout>"
+msgstr "-w <skripuit>\tLas alle getikte bevele aan by lêer <skripuit>"
+
+#: main.c:2273
+msgid "-W <scriptout>\tWrite all typed commands to file <scriptout>"
+msgstr "-W <skripuit>\tSkryf alle getikte bevele na lêer <skripuit>"
+
+#: main.c:2275
+msgid "-x\t\t\tEdit encrypted files"
+msgstr "-x\t\t\tBewerk geënkripteerde lêers"
+
+#: main.c:2279
+msgid "-display <display>\tConnect vim to this particular X-server"
+msgstr "-display <display>\tKoppel vim aan hierdie X-bediener"
+
+#: main.c:2281
+msgid "-X\t\t\tDo not connect to X server"
+msgstr "-X\t\t\tMoet nie verbinding met X-bediener maak nie"
+
+#: main.c:2283
+msgid "--socketid <xid>\tOpen Vim inside another GTK widget"
+msgstr "--socketid <xid>\tMaak Vim in 'n ander GTK element oop"
+
+#: main.c:2287
+msgid "--remote <files>\tEdit <files> in a Vim server and exit"
+msgstr "--remote <lêers>\tWysig die <lêers> in a Vim bediener en verlaat"
+
+#: main.c:2288
+msgid ""
+"--remote-wait <files>  As --remote but wait for files to have been edited"
+msgstr ""
+"--remote-wait <lêers> Soos '--remote', maar wag vir lêers om gewysigte word"
+
+#: main.c:2289
+msgid "--remote-send <keys>\tSend <keys> to a Vim server and exit"
+msgstr ""
+"--remote-send <sleutels>\tStuur <sleutels> na 'n Vim-bediener en verlaat"
+
+#: main.c:2290
+msgid "--remote-expr <expr>\tEvaluate <expr> in a Vim server and print result"
+msgstr ""
+"--remote-expr <expr>\tEvalueer <expr> in 'n Vim-bediener en druk resultaat"
+
+#: main.c:2291
+msgid "--serverlist\t\tList available Vim server names and exit"
+msgstr "--serverlist\t\tLys beskikbare Vim-bediener name en verlaat"
+
+#: main.c:2292
+msgid "--servername <name>\tSend to/become the Vim server <name>"
+msgstr "--servername <naam>\tStuur na/word die Vim-bediener <naam>"
+
+#: main.c:2295
+msgid "-i <viminfo>\t\tUse <viminfo> instead of .viminfo"
+msgstr "-i <viminfo>\t\tGebruik <viminfo> in plaas van .viminfo"
+
+#: main.c:2297
+msgid "-h\t\t\tprint Help (this message) and exit"
+msgstr "-h\t\t\tskryf Hulp (hierdie boodskap) en sluit"
+
+#: main.c:2298
+msgid "--version\t\tprint version information and exit"
+msgstr "--version\t\tskryf weergawe-inligting en sluit"
+
+#: main.c:2302
+msgid ""
+"\n"
+"Arguments recognised by gvim (Motif version):\n"
+msgstr ""
+"\n"
+"Parameters deur gvim herken (Motif weergawe):\n"
+
+#: main.c:2305
+msgid ""
+"\n"
+"Arguments recognised by gvim (Athena version):\n"
+msgstr ""
+"\n"
+"Parameters deur gvim herken (Athena weergawe):\n"
+
+#: main.c:2308
+msgid "-display <display>\tRun vim on <display>"
+msgstr "-display <display>\tVoer vim op <display> uit"
+
+#: main.c:2309
+msgid "-iconic\t\tStart vim iconified"
+msgstr "-iconic\t\tBegin vim as ikoon"
+
+#: main.c:2311
+msgid "-name <name>\t\tUse resource as if vim was <name>"
+msgstr "-name <name>\t\tGebruik hulpbron asof vim <name> was"
+
+#: main.c:2312
+msgid "\t\t\t  (Unimplemented)\n"
+msgstr "\t\t\t  (Nog nie geïmplementeer nie)\n"
+
+#: main.c:2314
+msgid "-background <color>\tUse <color> for the background (also: -bg)"
+msgstr "-background <kleur>\tGebruik <kleur> vir die agtergrond (ook: -bg)"
+
+#: main.c:2315
+msgid "-foreground <color>\tUse <color> for normal text (also: -fg)"
+msgstr "-voorgrond <kleur>\tGebruik <kleur> vir normale teks (ook: -fg)"
+
+#: main.c:2316 main.c:2336
+msgid "-font <font>\t\tUse <font> for normal text (also: -fn)"
+msgstr "-font <font>\t\tGebruik <font> vir normale teks (ook -fn)"
+
+#: main.c:2317
+msgid "-boldfont <font>\tUse <font> for bold text"
+msgstr "­boldfont <font>\t Gebruik <font> vir vetletter teks"
+
+#: main.c:2318
+msgid "-italicfont <font>\tUse <font> for italic text"
+msgstr "-italicfont <font>\tGebruik <font> vir kursiewe teks"
+
+#: main.c:2319 main.c:2337
+msgid "-geometry <geom>\tUse <geom> for initial geometry (also: -geom)"
+msgstr "-geometry <geom>\tGebruik <geom> vir aanvanklike geometrie"
+
+#: main.c:2320
+msgid "-borderwidth <width>\tUse a border width of <width> (also: -bw)"
+msgstr "-borderwidth <wydte>\tGebruik 'n grenswydte van <wydte> (ook: -bw)"
+
+#: main.c:2321
+msgid "-scrollbarwidth <width>  Use a scrollbar width of <width> (also: -sw)"
+msgstr ""
+"-scrollbarwidth <wydte>\tGebruik 'n rolstaafwydte van <wydte> (ook: -sw>"
+
+#: main.c:2323
+msgid "-menuheight <height>\tUse a menu bar height of <height> (also: -mh)"
+msgstr ""
+"-menuheight <hoogte>\tGebruik a kieslysstaafhoogte van <hoogte> (ook: -mh)"
+
+#: main.c:2325 main.c:2338
+msgid "-reverse\t\tUse reverse video (also: -rv)"
+msgstr "-reverse\t\tGebruik tru-video (ook: -rv)"
+
+#: main.c:2326
+msgid "+reverse\t\tDon't use reverse video (also: +rv)"
+msgstr "+reverse\t\tMoet nie tru-video gebruik nie (ook: +rv)"
+
+#: main.c:2327
+msgid "-xrm <resource>\tSet the specified resource"
+msgstr "-xrm <hulpbron>\tStel die gespesifiseerde hulpbron"
+
+#: main.c:2330
+msgid ""
+"\n"
+"Arguments recognised by gvim (RISC OS version):\n"
+msgstr ""
+"\n"
+"Parameters wat gvim verstaan (RISC OS weergawe):\n"
+
+#: main.c:2331
+msgid "--columns <number>\tInitial width of window in columns"
+msgstr "--columns <aantal>\tAanvanklike wydte van venster in kolomme"
+
+#: main.c:2332
+msgid "--rows <number>\tInitial height of window in rows"
+msgstr "--rows <aantal>\tAanvanklike hoogte van venster in rye"
+
+#: main.c:2335
+msgid ""
+"\n"
+"Arguments recognised by gvim (GTK+ version):\n"
+msgstr ""
+"\n"
+"Parameters wat gvim verstaan (GTK+ weergawe):\n"
+
+#: main.c:2339
+msgid "-display <display>\tRun vim on <display> (also: --display)"
+msgstr "-display <skerm>\tVoer vim op <skerm> uit: (ook --display)"
+
+#: main.c:2341
+msgid "--help\t\tShow Gnome arguments"
+msgstr "--help\t\tWys Gnome parameters"
+
+#. Failed to send, abort.
+#: main.c:2566
+msgid ""
+"\n"
+"Send failed.\n"
+msgstr ""
+"\n"
+"Stuur het gefaal.\n"
+
+#. Let vim start normally.
+#: main.c:2571
+msgid ""
+"\n"
+"Send failed. Trying to execute locally\n"
+msgstr ""
+"\n"
+"Stuur het gefaal. Probeer om lokaal uit te voer\n"
+
+#: main.c:2604 main.c:2625
+#, c-format
+msgid "%d of %d edited"
+msgstr "%d van %d lêers bewerk"
+
+#: main.c:2648
+msgid "Send expression failed.\n"
+msgstr "Stuur van uitdrukking het gefaal.\n"
+
+#: mark.c:660
+msgid "No marks set"
+msgstr "Geen merkers gestel nie"
+
+#: mark.c:662
+#, c-format
+msgid "E283: No marks matching \"%s\""
+msgstr "E283: Geen merkers pas op \"%s\" nie"
+
+#. Highlight title
+#: mark.c:673
+msgid ""
+"\n"
+"mark line  col file/text"
+msgstr ""
+"\n"
+"merk reël   kol lêer/teks"
+
+#. Highlight title
+#: mark.c:711
+msgid ""
+"\n"
+" jump line  col file/text"
+msgstr ""
+"\n"
+" spring reël kol lêer/teks"
+
+#: mark.c:1073
+msgid ""
+"\n"
+"# File marks:\n"
+msgstr ""
+"\n"
+"# Lêermerkers:\n"
+
+#. Write the jumplist with -'
+#: mark.c:1108
+msgid ""
+"\n"
+"# Jumplist (newest first):\n"
+msgstr ""
+"\n"
+"# Springlys (nuutste eerste):\n"
+
+#: mark.c:1203
+msgid ""
+"\n"
+"# History of marks within files (newest to oldest):\n"
+msgstr ""
+"\n"
+"# Geskiedenis van merkers in lêers (nuutste tot oudste):\n"
+
+#: mark.c:1286
+msgid "Missing '>'"
+msgstr "Ontbrekende '>'"
+
+#: mbyte.c:395
+msgid "Not a valid codepage"
+msgstr "Nie 'n geldige kodeblad nie"
+
+#: mbyte.c:3014
+msgid "E284: Cannot set IC values"
+msgstr "E284: Kan nie IC waardes stel nie"
+
+#: mbyte.c:3166
+msgid "E285: Failed to create input context"
+msgstr "E285: Gefaal met die skep van invoerkonteks"
+
+#: mbyte.c:3313
+msgid "E286: Failed to open input method"
+msgstr "E286: Gefaal om invoermetode oop te maak"
+
+#: mbyte.c:3324
+msgid "E287: Warning: Could not set destroy callback to IM"
+msgstr "E287: Waarskuwing: Kon nie uitwis-terugroep na IM stel nie"
+
+#: mbyte.c:3330
+msgid "E288: input method doesn't support any style"
+msgstr "E288: invoermetode ondersteun geen styl nie"
+
+#: mbyte.c:3387
+msgid "E289: input method doesn't support my preedit type"
+msgstr "E289: invoermetode ondersteun nie my voor-bewerking tipe nie"
+
+#: mbyte.c:3461
+msgid "E290: over-the-spot style requires fontset"
+msgstr "E290: oor-die-plek styl vereis fontstel"
+
+#: mbyte.c:3489
+msgid "E291: Your GTK+ is older than 1.2.3. Status area disabled"
+msgstr "E291: Jou GTK+ is ouer as 1.2.3. Statusarea afgeskakel"
+
+#: mbyte.c:3726
+msgid "E292: Input Method Server is not running"
+msgstr "E292: Invoermetodebediener voer nie uit nie"
+
+#: memfile.c:473
+msgid "E293: block was not locked"
+msgstr "E293: blok was nie gesluit nie"
+
+#: memfile.c:972
+msgid "E294: Seek error in swap file read"
+msgstr "E294: Soekfout in lees van ruillêer"
+
+#: memfile.c:977
+msgid "E295: Read error in swap file"
+msgstr "E295: Leesfout in ruillêer"
+
+#: memfile.c:1029
+msgid "E296: Seek error in swap file write"
+msgstr "E296: Soekfout in skryf van ruillêer"
+
+#: memfile.c:1047
+msgid "E297: Write error in swap file"
+msgstr "E297: Skryffout in ruillêer"
+
+#: memfile.c:1244
+msgid "E300: Swap file already exists (symlink attack?)"
+msgstr "E300: Ruillêer bestaan alreeds! ('symlink' probleem?)"
+
+#: memline.c:275
+msgid "E298: Didn't get block nr 0?"
+msgstr "E298: Het nie blok no 0 gekry nie?"
+
+#: memline.c:315
+msgid "E298: Didn't get block nr 1?"
+msgstr "E298: Het nie blok no 1 gekry nie?"
+
+#: memline.c:333
+msgid "E298: Didn't get block nr 2?"
+msgstr "E298: Het nie blok no 2 gekry nie?"
+
+#. could not (re)open the swap file, what can we do????
+#: memline.c:443
+msgid "E301: Oops, lost the swap file!!!"
+msgstr "E301: Hiert, die ruillêer is weg!!!"
+
+#: memline.c:448
+msgid "E302: Could not rename swap file"
+msgstr "E302: Kon nie ruillêer vernoem nie"
+
+#: memline.c:518
+#, c-format
+msgid "E303: Unable to open swap file for \"%s\", recovery impossible"
+msgstr "E303: Kon nie ruillêer oopmaak vir \"%s\" nie, herwinning onmoontlik"
+
+#: memline.c:617
+msgid "E304: ml_timestamp: Didn't get block 0??"
+msgstr "E304: 'ml_timestamp': Het nie blok 0 gekry nie??"
+
+#: memline.c:757
+#, c-format
+msgid "E305: No swap file found for %s"
+msgstr "E305: Geen ruillêer gevind vir %s nie"
+
+#: memline.c:767
+msgid "Enter number of swap file to use (0 to quit): "
+msgstr "Tik die nommer van die ruillêer om te gebruik (0 om te stop)"
+
+#: memline.c:812
+#, c-format
+msgid "E306: Cannot open %s"
+msgstr "E306: Kan %s nie oopmaak nie"
+
+#: memline.c:834
+msgid "Unable to read block 0 from "
+msgstr "Kan nie blok 0 lees vanaf "
+
+#: memline.c:837
+msgid ""
+"\n"
+"Maybe no changes were made or Vim did not update the swap file."
+msgstr ""
+"\n"
+"Vim het die ruillêer nie opgedateer nie. Dalk was niks verander nie."
+
+#: memline.c:847 memline.c:864
+msgid " cannot be used with this version of Vim.\n"
+msgstr " kan nie gebruik word met hierdie weergawe van Vim nie.\n"
+
+#: memline.c:849
+msgid "Use Vim version 3.0.\n"
+msgstr "Gebruik Vim weergawe 3.0.\n"
+
+#: memline.c:855
+#, c-format
+msgid "E307: %s does not look like a Vim swap file"
+msgstr "E307: %s lyk nie soos 'n Vim ruillêer nie"
+
+#: memline.c:868
+msgid " cannot be used on this computer.\n"
+msgstr " kan nie gebruik word op hierdie rekenaar nie.\n"
+
+#: memline.c:870
+msgid "The file was created on "
+msgstr "Die lêer is geskep op "
+
+#: memline.c:874
+msgid ""
+",\n"
+"or the file has been damaged."
+msgstr ""
+",\n"
+"of die lêer is beskadig."
+
+#: memline.c:903
+#, c-format
+msgid "Using swap file \"%s\""
+msgstr "Gebruik ruillêer \"%s\""
+
+#: memline.c:915
+#, c-format
+msgid "Original file \"%s\""
+msgstr "Oorspronklike lêer \"%s\""
+
+#: memline.c:934
+msgid "E308: Warning: Original file may have been changed"
+msgstr "E308: Waarskuwing: Oorspronklike lêer is dalk gewysig"
+
+#: memline.c:975
+#, c-format
+msgid "E309: Unable to read block 1 from %s"
+msgstr "E309: Kan nie block 1 lees van %s"
+
+#: memline.c:979
+msgid "???MANY LINES MISSING"
+msgstr "???BAIE REËLS WEG"
+
+#: memline.c:995
+msgid "???LINE COUNT WRONG"
+msgstr "???REËLTELLING FOUTIEF"
+
+#: memline.c:1002
+msgid "???EMPTY BLOCK"
+msgstr "???LEË BLOK"
+
+#: memline.c:1028
+msgid "???LINES MISSING"
+msgstr "???REËLS WEG"
+
+#: memline.c:1060
+#, c-format
+msgid "E310: Block 1 ID wrong (%s not a .swp file?)"
+msgstr "E310: Blok 1 se ID is foutief (%s nie 'n .swp lêer nie?)"
+
+#: memline.c:1065
+msgid "???BLOCK MISSING"
+msgstr "???BLOK WEG"
+
+#: memline.c:1081
+msgid "??? from here until ???END lines may be messed up"
+msgstr "??? van hier tot ???END mag reëls deurmekaar wees"
+
+#: memline.c:1097
+msgid "??? from here until ???END lines may have been inserted/deleted"
+msgstr "??? van hier tot ???END mag daar reëls ingevoeg/geskrap wees"
+
+#: memline.c:1117
+msgid "???END"
+msgstr "???END"
+
+#: memline.c:1143
+msgid "E311: Recovery Interrupted"
+msgstr "E311: Herwinning onderbreek"
+
+#: memline.c:1145
+msgid ""
+"E312: Errors detected while recovering; look for lines starting with ???"
+msgstr ""
+"E312: Foute raakgesien gedurende herwinning; soek vir reëls wat begin met ???"
+
+#: memline.c:1148
+msgid "Recovery completed. You should check if everything is OK."
+msgstr "Herwinning is klaar. Kyk of alles reg is."
+
+#: memline.c:1149
+msgid ""
+"\n"
+"(You might want to write out this file under another name\n"
+msgstr ""
+"\n"
+"(Jy wil dalk die lêer stoor onder 'n ander naam\n"
+
+#: memline.c:1150
+msgid "and run diff with the original file to check for changes)\n"
+msgstr "en dit \"diff\" teen die oorspronklike lêer om wysigings te soek)\n"
+
+#: memline.c:1151
+msgid ""
+"Delete the .swp file afterwards.\n"
+"\n"
+msgstr ""
+"Verwyder die .swp-lêer na die tyd.\n"
+"\n"
+
+#. use msg() to start the scrolling properly
+#: memline.c:1207
+msgid "Swap files found:"
+msgstr "Ruillêers gevind:"
+
+#: memline.c:1385
+msgid "   In current directory:\n"
+msgstr "   In huidige gids:\n"
+
+#: memline.c:1387
+msgid "   Using specified name:\n"
+msgstr "   Wat gespesifiseerde naam gebruik:\n"
+
+#: memline.c:1391
+msgid "   In directory "
+msgstr "   In gids "
+
+#: memline.c:1409
+msgid "      -- none --\n"
+msgstr "      -- geen --\n"
+
+#: memline.c:1481
+msgid "          owned by: "
+msgstr "          eienaar: "
+
+#: memline.c:1483
+msgid "   dated: "
+msgstr "   gedateer: "
+
+#: memline.c:1487 memline.c:3680
+msgid "             dated: "
+msgstr "             gedateer: "
+
+#: memline.c:1503
+msgid "         [from Vim version 3.0]"
+msgstr "         [van Vim weergawe 3.0]"
+
+#: memline.c:1507
+msgid "         [does not look like a Vim swap file]"
+msgstr "         [lyk nie soos 'n Vim ruillêer nie]"
+
+#: memline.c:1511
+msgid "         file name: "
+msgstr "         lêernaam: "
+
+#: memline.c:1523
+msgid ""
+"\n"
+"          modified: "
+msgstr ""
+"\n"
+"          gewysig: "
+
+#: memline.c:1524
+msgid "YES"
+msgstr "JA"
+
+#: memline.c:1524
+msgid "no"
+msgstr "nee"
+
+#: memline.c:1528
+msgid ""
+"\n"
+"         user name: "
+msgstr ""
+"\n"
+"         gebruikersnaam: "
+
+#: memline.c:1535
+msgid "   host name: "
+msgstr "   gasheernaam: "
+
+#: memline.c:1537
+msgid ""
+"\n"
+"         host name: "
+msgstr ""
+"\n"
+"         gasheernaam: "
+
+#: memline.c:1543
+msgid ""
+"\n"
+"        process ID: "
+msgstr ""
+"\n"
+"         proses ID: "
+
+#: memline.c:1549
+msgid " (still running)"
+msgstr " (nog steeds aan die uitvoer)"
+
+#: memline.c:1561
+msgid ""
+"\n"
+"         [not usable with this version of Vim]"
+msgstr ""
+"\n"
+"         [nie bruikbaar met hierdie weergawe van Vim nie]"
+
+#: memline.c:1564
+msgid ""
+"\n"
+"         [not usable on this computer]"
+msgstr ""
+"\n"
+"         [nie bruikbaar op hierdie rekenaar nie]"
+
+#: memline.c:1569
+msgid "         [cannot be read]"
+msgstr "         [kan nie gelees word nie]"
+
+#: memline.c:1573
+msgid "         [cannot be opened]"
+msgstr "         [kan nie oopgemaak word nie]"
+
+#: memline.c:1763
+msgid "E313: Cannot preserve, there is no swap file"
+msgstr "E313: Kan nie bewaar nie, daar is geen ruillêer nie"
+
+#: memline.c:1816
+msgid "File preserved"
+msgstr "Lêer bewaar"
+
+#: memline.c:1818
+msgid "E314: Preserve failed"
+msgstr "E314: Kon nie bewaar nie"
+
+#: memline.c:1889
+#, c-format
+msgid "E315: ml_get: invalid lnum: %ld"
+msgstr "E315: 'ml_get': ongeldige 'lnum': %ld"
+
+#: memline.c:1915
+#, c-format
+msgid "E316: ml_get: cannot find line %ld"
+msgstr "E316: 'ml_get': kan reël %ld nie vind nie"
+
+#: memline.c:2303
+msgid "E317: pointer block id wrong 3"
+msgstr "E317: wyser blok id verkeerd 3"
+
+#: memline.c:2383
+msgid "stack_idx should be 0"
+msgstr "'stack_idx' moet 0 wees"
+
+#: memline.c:2445
+msgid "E318: Updated too many blocks?"
+msgstr "E318: Te veel blokke opgedateer?"
+
+#: memline.c:2602
+msgid "E317: pointer block id wrong 4"
+msgstr "E317: wyser blok id verkeerd 4"
+
+#: memline.c:2629
+msgid "deleted block 1?"
+msgstr "verwyder blok 1?"
+
+#: memline.c:2829
+#, c-format
+msgid "E320: Cannot find line %ld"
+msgstr "E320: Kan nie reël %ld vind nie"
+
+#: memline.c:3072
+msgid "E317: pointer block id wrong"
+msgstr "E317: wyser blok id verkeerd"
+
+#: memline.c:3088
+msgid "pe_line_count is zero"
+msgstr "'pe_line_count' is nul"
+
+#: memline.c:3117
+#, c-format
+msgid "E322: line number out of range: %ld past the end"
+msgstr "E322: reëlnommer buite perke: %ld verby die einde"
+
+#: memline.c:3121
+#, c-format
+msgid "E323: line count wrong in block %ld"
+msgstr "E323: reëltelling mag verkeerd wees in blok %ld"
+
+#: memline.c:3170
+msgid "Stack size increases"
+msgstr "Stapel grootte verhoog"
+
+#: memline.c:3216
+msgid "E317: pointer block id wrong 2"
+msgstr "E317: wyser blok id verkeerd 2"
+
+#: memline.c:3670
+msgid "E325: ATTENTION"
+msgstr "E325: LET OP"
+
+#: memline.c:3671
+msgid ""
+"\n"
+"Found a swap file by the name \""
+msgstr ""
+"\n"
+"Het 'n ruillêer gevind met die naam \""
+
+#: memline.c:3675
+msgid "While opening file \""
+msgstr "Tydens oopmaak van lêer \""
+
+#: memline.c:3684
+msgid "      NEWER than swap file!\n"
+msgstr "      NUWER as die ruillêer!\n"
+
+#. Some of these messages are long to allow translation to
+#. * other languages.
+#: memline.c:3688
+msgid ""
+"\n"
+"(1) Another program may be editing the same file.\n"
+"    If this is the case, be careful not to end up with two\n"
+"    different instances of the same file when making changes.\n"
+msgstr ""
+"\n"
+"(1) 'n Ander program mag besig wees met hierdie lêer.\n"
+"    Indien wel, pas op om nie met twee verskillende weergawes\n"
+"    van dieselfde lêer te sit wanneer veranderinge gemaak word nie.\n"
+
+#: memline.c:3689
+msgid "    Quit, or continue with caution.\n"
+msgstr "    Stop, of gaan versigtig voort.\n"
+
+#: memline.c:3690
+msgid ""
+"\n"
+"(2) An edit session for this file crashed.\n"
+msgstr ""
+"\n"
+"(2) 'n Bewerkingsessie van hierdie lêer het ineengestort.\n"
+
+#: memline.c:3691
+msgid "    If this is the case, use \":recover\" or \"vim -r "
+msgstr "    Indien wel, gebruik \":recover\" of \"vim -r"
+
+#: memline.c:3693
+msgid ""
+"\"\n"
+"    to recover the changes (see \":help recovery\").\n"
+msgstr ""
+"\"\n"
+"    om die veranderinge te herwin (sien \":help recovery\").\n"
+
+#: memline.c:3694
+msgid "    If you did this already, delete the swap file \""
+msgstr "    Indien jy dit alreeds gedoen het, verwyder die ruillêer \""
+
+#: memline.c:3696
+msgid ""
+"\"\n"
+"    to avoid this message.\n"
+msgstr ""
+"\"\n"
+"    om hierdie boodskap te vermy.\n"
+
+#: memline.c:3710 memline.c:3714
+msgid "Swap file \""
+msgstr "Ruillêer \""
+
+#: memline.c:3711 memline.c:3717
+msgid "\" already exists!"
+msgstr "\" bestaan alreeds!"
+
+#: memline.c:3720
+msgid "VIM - ATTENTION"
+msgstr "VIM - LET OP"
+
+#: memline.c:3722
+msgid "Swap file already exists!"
+msgstr "Ruillêer bestaan alreeds!"
+
+#: memline.c:3726
+msgid ""
+"&Open Read-Only\n"
+"&Edit anyway\n"
+"&Recover\n"
+"&Quit"
+msgstr ""
+"&Maak as lees-alleen oop\n"
+"&Bewerk in elk geval\n"
+"&Herwin\n"
+"&Stop"
+
+#: memline.c:3728
+msgid ""
+"&Open Read-Only\n"
+"&Edit anyway\n"
+"&Recover\n"
+"&Quit\n"
+"&Delete it"
+msgstr ""
+"&Maak as lees-alleen oop\n"
+"&Bewerk in elk geval\n"
+"&Herwin\n"
+"&Stop\n"
+"S&krap dit"
+
+#: memline.c:3781
+msgid "E326: Too many swap files found"
+msgstr "E326: Te veel ruillêers gevind"
+
+#: menu.c:64
+msgid "E327: Part of menu-item path is not sub-menu"
+msgstr "E327: Deel van kieslys-item pad is nie 'n sub-kieslys nie"
+
+#: menu.c:65
+msgid "E328: Menu only exists in another mode"
+msgstr "E328: Kieslys bestaan slegs in 'n ander modus"
+
+#: menu.c:66
+msgid "E329: No menu of that name"
+msgstr "E329: Geen kieslys met daardie naam nie"
+
+#: menu.c:503
+msgid "E330: Menu path must not lead to a sub-menu"
+msgstr "E330: Kieslyspad moenie lei na 'n sub-kieslys nie"
+
+#: menu.c:542
+msgid "E331: Must not add menu items directly to menu bar"
+msgstr "E331: Moenie kieslysitems direk by kieslysstaaf voeg nie"
+
+#: menu.c:548
+msgid "E332: Separator cannot be part of a menu path"
+msgstr "E332: Verdeler kan nie deel wees van kieslyspad nie"
+
+#. Now we have found the matching menu, and we list the mappings
+#. Highlight title
+#: menu.c:1063
+msgid ""
+"\n"
+"--- Menus ---"
+msgstr ""
+"\n"
+"--- Kieslyste ---"
+
+#: menu.c:1989
+msgid "Tear off this menu"
+msgstr "Skeur die kieslys af"
+
+#: menu.c:2054
+msgid "E333: Menu path must lead to a menu item"
+msgstr "E333: Kieslyspad moet lei na 'n kieslysitem"
+
+#: menu.c:2074
+#, c-format
+msgid "E334: Menu not found: %s"
+msgstr "E334: Kieslys nie gevind nie: %s"
+
+#: menu.c:2143
+#, c-format
+msgid "E335: Menu not defined for %s mode"
+msgstr "E335: Kieslys nie gedefinieer vir %s modus nie"
+
+#: menu.c:2181
+msgid "E336: Menu path must lead to a sub-menu"
+msgstr "E336: Kieslyspad moet lei na 'n sub-kieslys"
+
+#: menu.c:2202
+msgid "E337: Menu not found - check menu names"
+msgstr "E337: Kieslys nie gevind nie - maak seker oor die kieslys name"
+
+#: message.c:467
+#, c-format
+msgid "Error detected while processing %s:"
+msgstr "Fout ontdek tydens verwerking van %s: "
+
+#: message.c:483
+#, c-format
+msgid "line %4ld:"
+msgstr "reël %4ld:"
+
+#: message.c:523
+msgid "[string too long]"
+msgstr "[string te lank]"
+
+#: message.c:669
+msgid "Messages maintainer: Bram Moolenaar <Bram@vim.org>"
+msgstr "Boodskappe onderhouers: Danie Roux en Jean Jordaan <droux@tuks.co.za>"
+
+#: message.c:881
+msgid "Interrupt: "
+msgstr "Onderbreek: "
+
+#: message.c:884
+msgid "Hit ENTER to continue"
+msgstr "Druk ENTER om voort te gaan"
+
+#: message.c:886
+msgid "Hit ENTER or type command to continue"
+msgstr "Druk ENTER of tik 'n bevel om voort te gaan"
+
+#: message.c:1940
+msgid "-- More --"
+msgstr "-- Meer --"
+
+#: message.c:1943
+msgid " (RET/BS: line, SPACE/b: page, d/u: half page, q: quit)"
+msgstr " (RET/BS: reël, SPACE/b: bladsy, d/u: halwe bladsy, q: los dit"
+
+#: message.c:1944
+msgid " (RET: line, SPACE: page, d: half page, q: quit)"
+msgstr " (RET: reël, SPACE: bladsy, d: halwe bladsy, q: los dit"
+
+#: message.c:2419 message.c:2434
+msgid "Question"
+msgstr "Vraag"
+
+#: message.c:2421
+msgid ""
+"&Yes\n"
+"&No"
+msgstr ""
+"&Ja\n"
+"&Nee"
+
+#: message.c:2436
+msgid ""
+"&Yes\n"
+"&No\n"
+"&Cancel"
+msgstr ""
+"&Ja\n"
+"&Nee\n"
+"&Kanselleer"
+
+#: message.c:2454
+msgid ""
+"&Yes\n"
+"&No\n"
+"Save &All\n"
+"&Discard All\n"
+"&Cancel"
+msgstr ""
+"&Ja\n"
+"&Nee\n"
+"Stoor &alles\n"
+"&Gooi alles weg\n"
+"&Kanselleer"
+
+#: message.c:2494
+msgid "Save File dialog"
+msgstr "Stoor Lêer dialooghokkie"
+
+#: message.c:2496
+msgid "Open File dialog"
+msgstr "Maak lêer oop dialooghokkie"
+
+#. TODO: non-GUI file selector here
+#: message.c:2547
+msgid "E338: Sorry, no file browser in console mode"
+msgstr "E338: Jammer, lêerblaaier nie beskikbaar in konsole-modus nie"
+
+#: misc1.c:2449
+msgid "W10: Warning: Changing a readonly file"
+msgstr "W10: Waarskuwing: Jy wysig aan 'n leesalleen lêer"
+
+#: misc1.c:2678
+msgid "1 more line"
+msgstr "1 reël meer"
+
+#: misc1.c:2680
+msgid "1 line less"
+msgstr "1 reël minder"
+
+#: misc1.c:2685
+#, c-format
+msgid "%ld more lines"
+msgstr "%ld meer reëls"
+
+#: misc1.c:2687
+#, c-format
+msgid "%ld fewer lines"
+msgstr "%ld minder reëls"
+
+#: misc1.c:2690
+msgid " (Interrupted)"
+msgstr " (Onderbreek)"
+
+#: misc1.c:6245
+msgid "Vim: preserving files...\n"
+msgstr "Vim: bewaar lêers...\n"
+
+#. close all memfiles, without deleting
+#: misc1.c:6255
+msgid "Vim: Finished.\n"
+msgstr "Vim: Klaar.\n"
+
+#: misc2.c:647 misc2.c:663
+msgid "ERROR: "
+msgstr "FOUT: "
+
+#: misc2.c:667
+#, c-format
+msgid ""
+"\n"
+"[bytes] total alloc-freed %lu-%lu, in use %lu, peak use %lu\n"
+msgstr ""
+"\n"
+"[grepe] totaal 'alloc'-vrygelaat %lu-%lu, in gebruik %lu, piekgebruik %lu\n"
+
+#: misc2.c:669
+#, c-format
+msgid ""
+"[calls] total re/malloc()'s %lu, total free()'s %lu\n"
+"\n"
+msgstr ""
+"[roepe] totaal re/malloc()'s %lu, totale free()'s %lu\n"
+"\n"
+
+#: misc2.c:724
+msgid "E340: Line is becoming too long"
+msgstr "E340: Rëel word te lank"
+
+#: misc2.c:768
+#, c-format
+msgid "E341: Internal error: lalloc(%ld, )"
+msgstr "E341: Interne fout: 'lalloc(%ld, )'"
+
+#: misc2.c:876
+#, c-format
+msgid "E342: Out of memory!  (allocating %lu bytes)"
+msgstr "E342: Geheue is op! (ken %lu grepe toe)"
+
+#: misc2.c:2511
+#, c-format
+msgid "Calling shell to execute: \"%s\""
+msgstr "Roep dop om uit te voer: \"%s\""
+
+#: misc2.c:2706 misc2.c:5148 option.c:4584
+msgid "Missing colon"
+msgstr "Ontbrekende dubbelpunt"
+
+#: misc2.c:2708 misc2.c:2735
+msgid "Illegal mode"
+msgstr "Ongeldige modus"
+
+#: misc2.c:2774
+msgid "Illegal mouseshape"
+msgstr "Ongeldige muisvorm"
+
+#: misc2.c:2814 misc2.c:5168
+msgid "digit expected"
+msgstr "syfer verwag"
+
+#: misc2.c:2819
+msgid "Illegal percentage"
+msgstr "Ongeldige persentasie"
+
+#: misc2.c:3123
+msgid "Enter encryption key: "
+msgstr "Voer enkripsie-sleutel in: "
+
+#: misc2.c:3124
+msgid "Enter same key again: "
+msgstr "Voer die sleutel weer in: "
+
+#: misc2.c:3134
+msgid "Keys don't match!"
+msgstr "Sleutels verskil!"
+
+#: misc2.c:3648
+#, c-format
+msgid ""
+"E343: Invalid path: '**[number]' must be at the end of the path or be "
+"followed by '%s'."
+msgstr ""
+"E343: Ongeldige pad: '**[nommer]' moet aan die einde van 'n pad wees of "
+"gevolg wees deur %s'."
+
+#: misc2.c:4905
+#, c-format
+msgid "E344: Can't find directory \"%s\" in cdpath"
+msgstr "E344: Kan nie gids \"%s\" in 'cdpath' vind nie"
+
+#: misc2.c:4908
+#, c-format
+msgid "E345: Can't find file \"%s\" in path"
+msgstr "E345: Kan lêer \"%s\" nie vind in pad nie"
+
+#: misc2.c:4914
+#, c-format
+msgid "E346: No more directory \"%s\" found in cdpath"
+msgstr "E346: Geen gids \"%s\" meer gevind in 'cdpath' nie"
+
+#: misc2.c:4917
+#, c-format
+msgid "E347: No more file \"%s\" found in path"
+msgstr "E347: Geen lêer \"%s\" meer gevind in pad nie"
+
+#: misc2.c:5160
+msgid "Illegal component"
+msgstr "Ongeldige komponent"
+
+#: normal.c:2813
+msgid "Warning: terminal cannot highlight"
+msgstr "Waarskuwing: terminaal kan nie teks uitlig nie"
+
+#: normal.c:3008
+msgid "E348: No string under cursor"
+msgstr "E348: Geen string onder loper nie"
+
+#: normal.c:3010
+msgid "E349: No identifier under cursor"
+msgstr "E349: Geen identifiseerder onder loper nie"
+
+#: normal.c:4175
+msgid "E352: Cannot erase folds with current 'foldmethod'"
+msgstr "E352: Kan nie voue verwyder met huidige 'foldmethod' nie"
+
+# Het te doen met < en >
+#: ops.c:271
+#, c-format
+msgid "1 line %sed 1 time"
+msgstr "1 reël 1 keer ge-%s"
+
+#: ops.c:273
+#, c-format
+msgid "1 line %sed %d times"
+msgstr "1 reël ge-%s %d keer"
+
+#: ops.c:278
+#, c-format
+msgid "%ld lines %sed 1 time"
+msgstr "%ld reëls 1 keer ge-%s"
+
+#: ops.c:281
+#, c-format
+msgid "%ld lines %sed %d times"
+msgstr "%ld reëls ge-%s %d keer"
+
+#: ops.c:638
+#, c-format
+msgid "%ld lines to indent... "
+msgstr "%ld reëls om in te keep..."
+
+#: ops.c:688
+msgid "1 line indented "
+msgstr "1 reël ingekeep "
+
+#: ops.c:690
+#, c-format
+msgid "%ld lines indented "
+msgstr "%ld reëls ingekeep "
+
+#. must display the prompt
+#: ops.c:1528
+msgid "cannot yank; delete anyway"
+msgstr "kan nie pluk nie: verwyder in elk geval"
+
+#: ops.c:2018
+msgid "1 line ~ed"
+msgstr "1 reël ge-~"
+
+#: ops.c:2020
+#, c-format
+msgid "%ld lines ~ed"
+msgstr "%ld reëls ge-~"
+
+#: ops.c:2381
+#, c-format
+msgid "freeing %ld lines"
+msgstr "laat %ld reëls gaan"
+
+#: ops.c:2658
+msgid "1 line yanked"
+msgstr "1 reël gepluk"
+
+#: ops.c:2660
+#, c-format
+msgid "%ld lines yanked"
+msgstr "%ld reëls gepluk"
+
+#: ops.c:2916
+#, c-format
+msgid "E353: Nothing in register %s"
+msgstr "E353: Niks in register %s nie"
+
+#. Highlight title
+#: ops.c:3454
+msgid ""
+"\n"
+"--- Registers ---"
+msgstr ""
+"\n"
+"--- Registers ---"
+
+#: ops.c:4565
+msgid "Illegal register name"
+msgstr "Ongeldige registernaam"
+
+#: ops.c:4645
+msgid ""
+"\n"
+"# Registers:\n"
+msgstr ""
+"\n"
+"# Registers:\n"
+
+#: ops.c:4671
+#, c-format
+msgid "Unknown register type %d"
+msgstr "Onbekende registertipe %d"
+
+#: ops.c:5052
+#, c-format
+msgid "E354: Invalid register name: '%s'"
+msgstr "E354: Ongeldige registernaam: '%s'"
+
+#: ops.c:5393
+#, c-format
+msgid "%ld Cols; "
+msgstr "%ld Kolomme; "
+
+#: ops.c:5400
+#, c-format
+msgid "Selected %s%ld of %ld Lines; %ld of %ld Words; %ld of %ld Bytes"
+msgstr "%s%ld van %ld reëls gekies; %ld van %ld Woorde; %ld van %ld Grepe"
+
+# njj: Karakters kan meerdere grepe wees, sien ':h multibyte'
+#: ops.c:5416
+#, c-format
+msgid "Col %s of %s; Line %ld of %ld; Word %ld of %ld; Byte %ld of %ld"
+msgstr "Kol %s van %s; Reël %ld van %ld; Woord %ld van %ld; Greep %ld van %ld"
+
+#: ops.c:5427
+#, c-format
+msgid "(+%ld for BOM)"
+msgstr "(+%ld vir 'BOM')"
+
+#: option.c:1989
+msgid "Thanks for flying Vim"
+msgstr "Dankie dat jy vlieg met Vim"
+
+#: option.c:3175
+msgid "Option not supported"
+msgstr "Opsie is nie ondersteun nie"
+
+#: option.c:3200
+msgid "Not allowed in a modeline"
+msgstr "Nie toegelaat in 'n moduslyn nie"
+
+#: option.c:3256
+msgid ""
+"\n"
+"\tLast set from "
+msgstr ""
+"\n"
+"\tLaas gestel vanaf "
+
+#: option.c:3395
+msgid "Number required after ="
+msgstr "Nommer vereis na ="
+
+#: option.c:3702 option.c:4309
+msgid "Not found in termcap"
+msgstr "Nie gevind in 'termcap' nie"
+
+#: option.c:3768
+#, c-format
+msgid "Illegal character <%s>"
+msgstr "Ongeldige karakter <%s>"
+
+#: option.c:4294 option.c:5497
+msgid "Not allowed here"
+msgstr "Nie hier toegelaat nie"
+
+#: option.c:4301
+msgid "Cannot set 'term' to empty string"
+msgstr "Kan nie 'term' stel na leë string nie"
+
+#: option.c:4304
+msgid "Cannot change term in GUI"
+msgstr "Kan nie 'term' verander in GUI nie"
+
+#: option.c:4306
+msgid "Use \":gui\" to start the GUI"
+msgstr "Gebruik \":gui\" om die GUI te begin"
+
+#: option.c:4327
+msgid "'backupext' and 'patchmode' are equal"
+msgstr "'backupext' en 'patchmode' is dieselfde"
+
+#: option.c:4586
+msgid "Zero length string"
+msgstr "Nul-lengte string"
+
+#: option.c:4654
+#, c-format
+msgid "Missing number after <%s>"
+msgstr "Ontbrekende nommer na <%s>"
+
+#: option.c:4668
+msgid "Missing comma"
+msgstr "Ontbrekende komma"
+
+#: option.c:4675
+msgid "Must specify a ' value"
+msgstr "Moet 'n ' waarde spesifiseer"
+
+#: option.c:4715
+msgid "contains unprintable character"
+msgstr "bevat 'n ondrukbare karakter"
+
+#: option.c:4728
+msgid "Invalid font(s)"
+msgstr "Ongeldige font(e)"
+
+#: option.c:4734
+msgid "can't select fontset"
+msgstr "kan nie fontstel kies nie"
+
+#: option.c:4736
+msgid "Invalid fontset"
+msgstr "Ongeldige fontstel"
+
+#: option.c:4743
+msgid "can't select wide font"
+msgstr "kan nie wye font kies nie"
+
+#: option.c:4745
+msgid "Invalid wide font"
+msgstr "Ongeldige wye font"
+
+#: option.c:5014
+#, c-format
+msgid "Illegal character after <%c>"
+msgstr "Ongeldige karakter na <%c>"
+
+#: option.c:5097
+msgid "comma required"
+msgstr "komma benodig"
+
+#: option.c:5106
+#, c-format
+msgid "'commentstring' must be empty or contain %s"
+msgstr "'commentstring' moet leeg wees of %s bevat"
+
+#: option.c:5153
+msgid "No mouse support"
+msgstr "Geen muisondersteuning nie"
+
+#: option.c:5399
+msgid "Unclosed expression sequence"
+msgstr "Onvoltooide uitdrukkingreeks"
+
+#: option.c:5403
+msgid "too many items"
+msgstr "te veel items"
+
+#: option.c:5405
+msgid "unbalanced groups"
+msgstr "ongebalanseerde groepe"
+
+#: option.c:5620
+msgid "A preview window already exists"
+msgstr "Daar bestaan reeds 'n voorskouvenster"
+
+#: option.c:5881 option.c:5910
+msgid "'winheight' cannot be smaller than 'winminheight'"
+msgstr "'winheight' kan nie kleiner as 'winminheight' wees nie"
+
+#: option.c:5926 option.c:5945
+msgid "'winwidth' cannot be smaller than 'winminwidth'"
+msgstr "'winwidth' kan nie kleiner as 'winminwidth' wees nie"
+
+#: option.c:6085
+#, c-format
+msgid "Need at least %d lines"
+msgstr "Benodig ten minste %d reëls"
+
+#: option.c:6094
+#, c-format
+msgid "Need at least %d columns"
+msgstr "Benodig ten minste %d kolomme"
+
+#: option.c:6391
+#, c-format
+msgid "E355: Unknown option: %s"
+msgstr "E355: Onbekende opsie: %s"
+
+#: option.c:6500
+msgid ""
+"\n"
+"--- Terminal codes ---"
+msgstr ""
+"\n"
+"--- Terminaal kodes ---"
+
+#: option.c:6502
+msgid ""
+"\n"
+"--- Global option values ---"
+msgstr ""
+"\n"
+"--- Globale opsie waardes ---"
+
+#: option.c:6504
+msgid ""
+"\n"
+"--- Local option values ---"
+msgstr ""
+"\n"
+"--- Lokale opsie waardes ---"
+
+#: option.c:6506
+msgid ""
+"\n"
+"--- Options ---"
+msgstr ""
+"\n"
+"--- Opsies ---"
+
+#: option.c:7196
+msgid "E356: get_varp ERROR"
+msgstr "E356: 'get_varp' FOUT"
+
+#: option.c:8112
+#, c-format
+msgid "E357: 'langmap': Matching character missing for %s"
+msgstr "E357: 'langmap': Passende karakter ontbreek vir %s"
+
+#: option.c:8146
+#, c-format
+msgid "E358: 'langmap': Extra characters after semicolon: %s"
+msgstr "E358: 'langmap: Ekstra karakters na kommapunt: %s"
+
+#: os_amiga.c:273
+msgid "cannot open "
+msgstr "kan nie oopmaak nie "
+
+#: os_amiga.c:307
+msgid "VIM: Can't open window!\n"
+msgstr "VIM: Kan nie venster oopmaak nie!\n"
+
+#: os_amiga.c:329
+msgid "Need Amigados version 2.04 or later\n"
+msgstr "Benodig Amigados weergawe 2.04 of later\n"
+
+#: os_amiga.c:335
+#, c-format
+msgid "Need %s version %ld\n"
+msgstr "Benodig %s weergawe %ld\n"
+
+#: os_amiga.c:407
+msgid "Cannot open NIL:\n"
+msgstr "Kan nie NIL: oopmaak nie\n"
+
+#: os_amiga.c:418
+msgid "Cannot create "
+msgstr "Kan nie skep nie: "
+
+#: os_amiga.c:896
+#, c-format
+msgid "Vim exiting with %d\n"
+msgstr "Vim stop met %d\n"
+
+#: os_amiga.c:928
+msgid "cannot change console mode ?!\n"
+msgstr "kan konsole-modus nie verander nie ?!\n"
+
+#: os_amiga.c:938 os_mac.c:1168 os_mswin.c:619 os_riscos.c:728 os_unix.c:2726
+msgid "E359: Screen mode setting not supported"
+msgstr "E359: Skermmodus instelling nie ondersteun nie"
+
+#: os_amiga.c:994
+msgid "mch_get_shellsize: not a console??\n"
+msgstr "'mch_get_shellsize': nie 'n konsole nie??\n"
+
+#. if Vim opened a window: Executing a shell may cause crashes
+#: os_amiga.c:1142
+msgid "E360: Cannot execute shell with -f option"
+msgstr "E360: Kan nie dop met -f opsie uitvoer nie"
+
+#: os_amiga.c:1183 os_amiga.c:1273
+msgid "Cannot execute "
+msgstr "Kan nie uitvoer nie "
+
+#: os_amiga.c:1186 os_amiga.c:1283
+msgid "shell "
+msgstr "dop "
+
+#: os_amiga.c:1206 os_amiga.c:1308
+msgid " returned\n"
+msgstr " teruggekeer\n"
+
+#: os_amiga.c:1448
+msgid "ANCHOR_BUF_SIZE too small."
+msgstr "'ANCHOR_BUF_SIZE' is te klein"
+
+#: os_amiga.c:1452
+msgid "I/O ERROR"
+msgstr "I/O FOUT"
+
+#: os_mswin.c:503
+msgid "...(truncated)"
+msgstr "...(afgekap)"
+
+#: os_mswin.c:594
+msgid "'columns' is not 80, cannot execute external commands"
+msgstr "'columns' is nie 80 nie, kan nie eksterne bevele uitvoer nie"
+
+#: os_mswin.c:706 os_unix.c:4945
+#, c-format
+msgid "E364: Library call failed for \"%s()\""
+msgstr "E364: Biblioteekroep het gefaal vir \"%s\"()"
+
+#: os_mswin.c:1340
+msgid "E237: Printer selection failed"
+msgstr "E237: Drukker-seleksie het gefaal"
+
+#: os_mswin.c:1388
+#, c-format
+msgid "to %s on %s"
+msgstr "na %s op %s"
+
+#: os_mswin.c:1449 os_mswin.c:1459
+#, c-format
+msgid "E238: Print error: %s"
+msgstr "E238: Drukfout: %s"
+
+#: os_mswin.c:1460
+msgid "Unknown"
+msgstr "Onbekend"
+
+#: os_mswin.c:1487
+#, c-format
+msgid "Printing '%s'"
+msgstr "Druk nou '%s'"
+
+#: os_mswin.c:2551
+#, c-format
+msgid "E244: Illegal charset name \"%s\" in font name \"%s\""
+msgstr "E244: Ongeldige karakterstelnaam \"%s\" in fontnaam \"%s\""
+
+#: os_mswin.c:2559
+#, c-format
+msgid "E245: Illegal char '%c' in font name \"%s\""
+msgstr "E245: Ongeldige karakter '%c' in fontnaam \"%s\""
+
+#: os_riscos.c:1227
+msgid "E366: Invalid 'osfiletype' option - using Text"
+msgstr "E366: Ongeldige 'osfiletype' opsie - gaan Text gebruik"
+
+#: os_unix.c:800
+msgid "Vim: Double signal, exiting\n"
+msgstr "Vim: Dubbel sein, staak\n"
+
+#: os_unix.c:806
+#, c-format
+msgid "Vim: Caught deadly signal %s\n"
+msgstr "Vim: Het dodelike sein %s gevang\n"
+
+#: os_unix.c:809
+msgid "Vim: Caught deadly signal\n"
+msgstr "Vim: Het dodelike sein gevang\n"
+
+#: os_unix.c:1063
+#, c-format
+msgid "Opening the X display took %ld msec"
+msgstr "Om die X-vertoonskerm oop te maak het %ld msek gevat"
+
+#: os_unix.c:1090
+msgid ""
+"\n"
+"Vim: Got X error\n"
+msgstr ""
+"\n"
+"Vim: Het X fout ontvang\n"
+
+#: os_unix.c:1157
+msgid "Testing the X display failed"
+msgstr "Toetsing van die X-vertoonskerm het gefaal"
+
+#: os_unix.c:1301
+msgid "Opening the X display timed out"
+msgstr "Oopmaak van die X-vertoonskerm het uitgetel"
+
+#: os_unix.c:2899 os_unix.c:3483
+msgid ""
+"\n"
+"Cannot execute shell "
+msgstr ""
+"\n"
+"Kan nie dop uitvoer nie "
+
+#: os_unix.c:2944
+msgid ""
+"\n"
+"Cannot execute shell sh\n"
+msgstr ""
+"\n"
+"Kan nie dop 'sh' uitvoer nie\n"
+
+#: os_unix.c:2948 os_unix.c:3489
+msgid ""
+"\n"
+"shell returned "
+msgstr ""
+"\n"
+"dop lewer "
+
+#: os_unix.c:3082
+msgid ""
+"\n"
+"Cannot create pipes\n"
+msgstr ""
+"\n"
+"Kan nie pype skep nie\n"
+
+#: os_unix.c:3097
+msgid ""
+"\n"
+"Cannot fork\n"
+msgstr ""
+"\n"
+"Kan nie vurk nie\n"
+
+#: os_unix.c:3496
+msgid ""
+"\n"
+"Command terminated\n"
+msgstr ""
+"\n"
+"Bevel beëindig\n"
+
+#: os_unix.c:4993
+msgid "Opening the X display failed"
+msgstr "Oopmaak van die X vertoonskerm het gefaal"
+
+#: os_vms_mms.c:59
+msgid "At line"
+msgstr "By reël"
+
+#: os_w32exe.c:169
+msgid "Could not load vim32.dll!"
+msgstr "Kon nie 'vim32.dll' laai nie!"
+
+#: os_w32exe.c:169 os_w32exe.c:179
+msgid "VIM Error"
+msgstr "VIM Fout"
+
+#: os_w32exe.c:179
+msgid "Could not fix up function pointers to the DLL!"
+msgstr "Kon nie funksiewysers na die DLL opstel nie!"
+
+#: os_win16.c:578 os_win32.c:3021
+#, c-format
+msgid "shell returned %d"
+msgstr "dop het %d gelewer"
+
+#: os_win32.c:2489
+#, c-format
+msgid "Vim: Caught %s event\n"
+msgstr "Vim: Het %s gebeurtenis gevang\n"
+
+#: os_win32.c:2491
+msgid "close"
+msgstr "maak toe"
+
+#: os_win32.c:2493
+msgid "logoff"
+msgstr "teken uit"
+
+#: os_win32.c:2494
+msgid "shutdown"
+msgstr "sit af"
+
+#: os_win32.c:2975
+msgid "E371: Command not found"
+msgstr "E371: Bevel nie gevind nie"
+
+#: os_win32.c:2988
+msgid ""
+"VIMRUN.EXE not found in your $PATH.\n"
+"External commands will not pause after completion.\n"
+"See  :help win32-vimrun  for more information."
+msgstr ""
+"'VIMRUN.EXE' nie gevind in '$PATH' nie.\n"
+"Eksterne opdragte sal nie wag na voltooiing nie\n"
+"Sien ':help win32-vimrun' vir meer inligting."
+
+#: os_win32.c:2991
+msgid "Vim Warning"
+msgstr "Vim Waarskuwing"
+
+#: quickfix.c:281
+#, c-format
+msgid "E372: Too many %%%c in format string"
+msgstr "E372: Te veel %%%c in formaatstring"
+
+#: quickfix.c:294
+#, c-format
+msgid "E373: Unexpected %%%c in format string"
+msgstr "E373: Onverwagte %%%c in formaatstring"
+
+#: quickfix.c:348
+msgid "E374: Missing ] in format string"
+msgstr "E374: Ontbrekende ] in formaatstring"
+
+#: quickfix.c:362
+#, c-format
+msgid "E375: Unsupported %%%c in format string"
+msgstr "E375: Ongesteunde %%%c in formaatstring"
+
+#: quickfix.c:380
+#, c-format
+msgid "E376: Invalid %%%c in format string prefix"
+msgstr "E376: Ongeldige %%%c in formaatstringvoorvoegsel"
+
+#: quickfix.c:388
+#, c-format
+msgid "E377: Invalid %%%c in format string"
+msgstr "E377: Ongeldige %%%c in formaatstring"
+
+#: quickfix.c:414
+msgid "E378: 'errorformat' contains no pattern"
+msgstr "E378: 'errorformat' bevat geen patroon nie"
+
+#: quickfix.c:520
+msgid "E379: Missing or empty directory name"
+msgstr "E379: Ontbrekende of leë gidsnaam"
+
+#: quickfix.c:931
+msgid "No more items"
+msgstr "Geen items meer nie"
+
+#: quickfix.c:1152
+#, c-format
+msgid "(%d of %d)%s%s: "
+msgstr "(%d van %d)%s%s: "
+
+#: quickfix.c:1154
+msgid " (line deleted)"
+msgstr " (reël verwyder)"
+
+#: quickfix.c:1360
+msgid "E380: At bottom of quickfix stack"
+msgstr "E380: Onder aan 'quickfix' stapel"
+
+#: quickfix.c:1369
+msgid "E381: At top of quickfix stack"
+msgstr "E381: Bo aan 'quickfix' stapel"
+
+#: quickfix.c:1381
+#, c-format
+msgid "error list %d of %d; %d errors"
+msgstr "foutelys %d van %d; %d foute"
+
+#: quickfix.c:1842
+msgid "E382: Cannot write, 'buftype' option is set"
+msgstr "E382: Kan nie skryf nie, 'buftype' opsie is aan"
+
+#: regexp.c:801
+msgid "E339: Pattern too long"
+msgstr "E339: Patroon te lank"
+
+#: regexp.c:1315
+#, c-format
+msgid "E61: Nested %s*"
+msgstr "E61: Geneste %s*"
+
+#: regexp.c:1318
+#, c-format
+msgid "E62: Nested %s%c"
+msgstr "E62: Geneste %s%c"
+
+#: regexp.c:1467
+#, c-format
+msgid "E64: %s%c follows nothing"
+msgstr "E64: %s%c volg niks"
+
+#: regexp.c:2469
+#, c-format
+msgid "Syntax error in %s{...}"
+msgstr "Sintaksfout in %s{...}"
+
+#: regexp.c:2716
+msgid "E361: Crash intercepted; regexp too complex?"
+msgstr "E361: Ineenstorting onderskep. Patroon te kompleks?"
+
+#: regexp.c:2851
+msgid "E363: pattern caused out-of-stack error"
+msgstr "E363: patroon het lëe-stapel fout veroorsaak"
+
+#: regexp.c:3087
+msgid "External submatches:\n"
+msgstr "Eksterne subtreffers:\n"
+
+#: screen.c:2054
+#, c-format
+msgid "+--%3ld lines folded "
+msgstr "+--%3ld reëls gevou "
+
+#: screen.c:7426
+msgid " VREPLACE"
+msgstr " VVERVANG"
+
+#: screen.c:7430
+msgid " REPLACE"
+msgstr " VERVANG"
+
+#: screen.c:7435
+msgid " REVERSE"
+msgstr " OMKEER"
+
+#: screen.c:7437
+msgid " INSERT"
+msgstr " INVOEG"
+
+#: screen.c:7440
+msgid " (insert)"
+msgstr " (invoeg)"
+
+#: screen.c:7442
+msgid " (replace)"
+msgstr " (vervang)"
+
+#: screen.c:7444
+msgid " (vreplace)"
+msgstr " (vvervang)"
+
+#: screen.c:7447
+msgid " Hebrew"
+msgstr " Hebreeus"
+
+#: screen.c:7455
+msgid " (lang)"
+msgstr " (taal)"
+
+#: screen.c:7458
+msgid " (paste)"
+msgstr " (plak)"
+
+#: screen.c:7464
+msgid " SELECT"
+msgstr " KIES"
+
+#: screen.c:7466
+msgid " VISUAL"
+msgstr " VISUELE"
+
+#: screen.c:7468
+msgid " BLOCK"
+msgstr " BLOK"
+
+#: screen.c:7470
+msgid " LINE"
+msgstr " REËL"
+
+#: screen.c:7483 screen.c:7537
+msgid "recording"
+msgstr "besig om op te neem"
+
+#: search.c:36
+msgid "search hit TOP, continuing at BOTTOM"
+msgstr "soektog het BO getref, gaan voort van ONDER af"
+
+#: search.c:37
+msgid "search hit BOTTOM, continuing at TOP"
+msgstr "soektog het ONDER getref, gaan voort van BO af"
+
+#: search.c:440
+#, c-format
+msgid "E383: Invalid search string: %s"
+msgstr "E383: Ongeldige soekstring: %s"
+
+#: search.c:747
+#, c-format
+msgid "E384: search hit TOP without match for: %s"
+msgstr "E384: soektog het BO getref sonder treffer vir: %s"
+
+#: search.c:749
+#, c-format
+msgid "E385: search hit BOTTOM without match for: %s"
+msgstr "E385: soektog het ONDER getref sonder treffer vir: %s"
+
+#: search.c:1107
+msgid "E386: Expected '?' or '/'  after ';'"
+msgstr "E386: Verwag '?' of '/' na ';'"
+
+#: search.c:3476
+msgid " (includes previously listed match)"
+msgstr " (sluit in vorige gelyste treffer)"
+
+#. cursor at status line
+#: search.c:3496
+msgid "--- Included files "
+msgstr "--- Ingeslote lêers"
+
+#: search.c:3498
+msgid "not found "
+msgstr "nie gevind nie "
+
+#: search.c:3499
+msgid "in path ---\n"
+msgstr "in pad ---\n"
+
+#: search.c:3538
+msgid "  (Already listed)"
+msgstr " (Alreeds gelys)"
+
+#: search.c:3540
+msgid "  NOT FOUND"
+msgstr "  NIE GEVIND NIE"
+
+#: search.c:3592
+#, c-format
+msgid "Scanning included file: %s"
+msgstr "Deursoek ingeslote lêer: %s"
+
+#: search.c:3810
+msgid "E387: Match is on current line"
+msgstr "E387: Treffer is op huidige reël"
+
+#: search.c:3950
+msgid "All included files were found"
+msgstr "Alle ingeslote lêers is gevind"
+
+#: search.c:3952
+msgid "No included files"
+msgstr "Geen ingeslote lêers nie"
+
+#: search.c:3968
+msgid "E388: Couldn't find definition"
+msgstr "E388: Kon definisie nie vind nie"
+
+#: search.c:3970
+msgid "E389: Couldn't find pattern"
+msgstr "E389: Kon patroon nie vind nie"
+
+#: syntax.c:2991
+#, c-format
+msgid "E390: Illegal argument: %s"
+msgstr "E390: Ongeldige parameter: %s"
+
+#: syntax.c:3168
+#, c-format
+msgid "E391: No such syntax cluster: %s"
+msgstr "E391: Geen sodanige sintakskluster nie: %s"
+
+#: syntax.c:3332
+msgid "No Syntax items defined for this buffer"
+msgstr "Geen Sintaks-items gedefinieer vir hierdie buffer nie"
+
+#: syntax.c:3340
+msgid "syncing on C-style comments"
+msgstr "sinchroniseer met C-styl kommentaar"
+
+#: syntax.c:3348
+msgid "no syncing"
+msgstr "geen sinchronisering"
+
+#: syntax.c:3351
+msgid "syncing starts "
+msgstr "sinchronisasie begin "
+
+#: syntax.c:3353 syntax.c:3422
+msgid " lines before top line"
+msgstr " reëls voor boonste lyn"
+
+#: syntax.c:3357
+msgid ""
+"\n"
+"--- Syntax sync items ---"
+msgstr ""
+"\n"
+"--- Sintaks sync items ---"
+
+#: syntax.c:3360
+msgid ""
+"\n"
+"syncing on items"
+msgstr ""
+"\n"
+"sinchronisering met items"
+
+#: syntax.c:3365
+msgid ""
+"\n"
+"--- Syntax items ---"
+msgstr ""
+"\n"
+"--- Sintaks items ---"
+
+#: syntax.c:3388
+#, c-format
+msgid "E392: No such syntax cluster: %s"
+msgstr "E392: Geen sodanige sintakskluster nie: %s"
+
+#: syntax.c:3412
+msgid "minimal "
+msgstr "minimaal "
+
+#: syntax.c:3419
+msgid "maximal "
+msgstr "maksimaal "
+
+#: syntax.c:4047
+msgid "E393: group[t]here not accepted here"
+msgstr "E393: 'group[t]here' nie hier aanvaar nie"
+
+#: syntax.c:4071
+#, c-format
+msgid "E394: Didn't find region item for %s"
+msgstr "E394: Kon nie omgewingsitem vind vir %s nie"
+
+#: syntax.c:4099
+msgid "E395: contains argument not accepted here"
+msgstr "E395: bevat parameters nie hier aanvaar nie"
+
+#: syntax.c:4110
+msgid "E396: containedin argument not accepted here"
+msgstr "E396: 'containedin' parameter nie hier aanvaar nie"
+
+#: syntax.c:4188
+msgid "E397: Filename required"
+msgstr "E397: Lêernaam benodig"
+
+#: syntax.c:4524
+#, c-format
+msgid "E398: Missing '=': %s"
+msgstr "E398: Ontbrekende '=': %s"
+
+#: syntax.c:4680
+#, c-format
+msgid "E399: Not enough arguments: syntax region %s"
+msgstr "E399: Nie genoeg parameters nie: sintaksomgewing %s"
+
+#: syntax.c:5011
+msgid "E400: No cluster specified"
+msgstr "E400: Geen kluster gespesifiseer nie"
+
+#: syntax.c:5048
+#, c-format
+msgid "E401: Pattern delimiter not found: %s"
+msgstr "E401: Patroonbegrenser nie gevind nie: %s"
+
+#: syntax.c:5123
+#, c-format
+msgid "E402: Garbage after pattern: %s"
+msgstr "E402: Gemors na patroon: %s"
+
+#: syntax.c:5205
+msgid "E403: syntax sync: line continuations pattern specified twice"
+msgstr "E403: sintaks sync: reëlvoortgaanpatroon twee keer gespesifiseer"
+
+#: syntax.c:5262
+#, c-format
+msgid "E404: Illegal arguments: %s"
+msgstr "E404: Ongeldige parameters: %s"
+
+#: syntax.c:5312
+#, c-format
+msgid "E405: Missing equal sign: %s"
+msgstr "E405: Ontbrekende gelykaanteken: %s"
+
+#: syntax.c:5318
+#, c-format
+msgid "E406: Empty argument: %s"
+msgstr "E406: Leë parameter: %s"
+
+#: syntax.c:5345
+#, c-format
+msgid "E407: %s not allowed here"
+msgstr "E407: %s nie toegelaat hier nie"
+
+#: syntax.c:5352
+#, c-format
+msgid "E408: %s must be first in contains list"
+msgstr "E408: %s moet vóór in 'contains' lys wees"
+
+#: syntax.c:5422
+#, c-format
+msgid "E409: Unknown group name: %s"
+msgstr "E409: Onbekende groepnaam: %s"
+
+#: syntax.c:5645
+#, c-format
+msgid "E410: Invalid :syntax subcommand: %s"
+msgstr "E410: Ongeldige :syntax subbevel %s"
+
+#: syntax.c:6024
+#, c-format
+msgid "E411: highlight group not found: %s"
+msgstr "E411: uitliggroep nie gevind nie: %s"
+
+#: syntax.c:6048
+#, c-format
+msgid "E412: Not enough arguments: \":highlight link %s\""
+msgstr "E412: Te min parameters: \":highlight link %s\""
+
+#: syntax.c:6055
+#, c-format
+msgid "E413: Too many arguments: \":highlight link %s\""
+msgstr "E413: Te veel parameters: \":highlight link %s\""
+
+#: syntax.c:6075
+msgid "E414: group has settings, highlight link ignored"
+msgstr ""
+"E414: groep het instellings, uitligskakel ('highlight link') geïgnoreer"
+
+#: syntax.c:6204
+#, c-format
+msgid "E415: unexpected equal sign: %s"
+msgstr "E415: onverwagte gelykaanteken: %s"
+
+#: syntax.c:6240
+#, c-format
+msgid "E416: missing equal sign: %s"
+msgstr "E416: ontbrekende gelykaanteken: %s"
+
+#: syntax.c:6262
+#, c-format
+msgid "E417: missing argument: %s"
+msgstr "E417: ontbrekende parameter: %s"
+
+#: syntax.c:6299
+#, c-format
+msgid "E418: Illegal value: %s"
+msgstr "E418: Ongeldige waarde: %s"
+
+#: syntax.c:6418
+msgid "E419: FG color unknown"
+msgstr "E419: FG kleur onbekend"
+
+#: syntax.c:6429
+msgid "E420: BG color unknown"
+msgstr "E420: BG kleur onbekend"
+
+#: syntax.c:6484
+#, c-format
+msgid "E421: Color name or number not recognized: %s"
+msgstr "E421: Kleurnaam of -nommer nie herken nie: %s"
+
+#: syntax.c:6688
+#, c-format
+msgid "E422: terminal code too long: %s"
+msgstr "E422: terminaalkode te lank: %s"
+
+#: syntax.c:6735
+#, c-format
+msgid "E423: Illegal argument: %s"
+msgstr "E423: Ongeldige parameter: %s"
+
+#: syntax.c:7264
+msgid "E424: Too many different highlighting attributes in use"
+msgstr "E424: Te veel verskillende uitlig-eienskappe in gebruik"
+
+# njj: 'inkleur' vir 'uitlig'? net 'n idee ..
+#: tag.c:90
+msgid "at bottom of tag stack"
+msgstr "onderaan etiketstapel"
+
+#: tag.c:91
+msgid "at top of tag stack"
+msgstr "bo-aan etiketstapel"
+
+#: tag.c:392
+msgid "E425: Cannot go before first matching tag"
+msgstr "E425: Kan nie vóór eerste etiket-treffer gaan nie"
+
+#: tag.c:512
+#, c-format
+msgid "E426: tag not found: %s"
+msgstr "E426: etiket nie gevind nie: %s"
+
+#: tag.c:545
+msgid "  # pri kind tag"
+msgstr "  # pri tipe etiket"
+
+#: tag.c:548
+msgid "file\n"
+msgstr "lêer\n"
+
+#.
+#. * Ask to select a tag from the list.
+#. * When using ":silent" assume that <CR> was entered.
+#.
+#: tag.c:706
+msgid "Enter nr of choice (<CR> to abort): "
+msgstr "Sleutel nommer van keuse in (<CR> om te stop): "
+
+#: tag.c:746
+msgid "E427: There is only one matching tag"
+msgstr "E427: Daar is slegs een etiket-treffer"
+
+#: tag.c:748
+msgid "E428: Cannot go beyond last matching tag"
+msgstr "E428: Kan nie verby laaste etiket-treffer gaan nie"
+
+#: tag.c:768
+#, c-format
+msgid "File \"%s\" does not exist"
+msgstr "Lêer \"%s\" bestaan nie"
+
+#. Give an indication of the number of matching tags
+#: tag.c:780
+#, c-format
+msgid "tag %d of %d%s"
+msgstr "etiket %d van %d%s"
+
+#: tag.c:783
+msgid " or more"
+msgstr " of meer"
+
+#: tag.c:785
+msgid "  Using tag with different case!"
+msgstr " Gaan etiket met ander kas gebruik!"
+
+#: tag.c:828
+#, c-format
+msgid "E429: File \"%s\" does not exist"
+msgstr "E429: Lêer \"%s\" bestaan nie"
+
+#. Highlight title
+#: tag.c:897
+msgid ""
+"\n"
+"  # TO tag         FROM line  in file/text"
+msgstr ""
+"\n"
+"  # NA etiket      VAN reël   in lêer/teks"
+
+#: tag.c:1144
+msgid "Linear tag search"
+msgstr "Liniêre etiketsoek"
+
+#: tag.c:1146
+msgid "Binary tag search"
+msgstr "Binêre etiketsoek"
+
+#: tag.c:1172
+#, c-format
+msgid "Searching tags file %s"
+msgstr "Deursoek etiketlêer %s"
+
+#: tag.c:1356
+#, c-format
+msgid "E430: Tag file path truncated for %s\n"
+msgstr "E430: Etiketlêergids afgekap vir %s\n"
+
+#: tag.c:1847
+#, c-format
+msgid "E431: Format error in tags file \"%s\""
+msgstr "E431: Formaatfout in etiketlêer \"%s\""
+
+#: tag.c:1851
+#, c-format
+msgid "Before byte %ld"
+msgstr "Voor greep %ld"
+
+#: tag.c:1872
+#, c-format
+msgid "E432: Tags file not sorted: %s"
+msgstr "E432: Etiketlêer ongesorteer: %s"
+
+#. never opened any tags file
+#: tag.c:1911
+msgid "E433: No tags file"
+msgstr "E433: Geen etiketlêer nie"
+
+#: tag.c:2583
+msgid "E434: Can't find tag pattern"
+msgstr "E434: Kan nie etiketpatroon vind nie"
+
+#: tag.c:2594
+msgid "E435: Couldn't find tag, just guessing!"
+msgstr "E435: Kon nie etiket vind nie, ek raai maar!"
+
+#: term.c:1723
+msgid "' not known. Available builtin terminals are:"
+msgstr "' onbekend. Beskikbare ingeboude terminale is:"
+
+#: term.c:1747
+msgid "defaulting to '"
+msgstr "gebruik verstek '"
+
+#: term.c:2100
+msgid "Cannot open termcap file"
+msgstr "Kan nie 'termcap'-lêer oopmaak nie"
+
+#: term.c:2103
+msgid "Terminal entry not found in terminfo"
+msgstr "Terminaalinskrywing nie in 'terminfo' gevind nie"
+
+#: term.c:2105
+msgid "Terminal entry not found in termcap"
+msgstr "Terminaalinskrywing nie in 'termcap' gevind nie"
+
+#: term.c:2264
+#, c-format
+msgid "E436: No \"%s\" entry in termcap"
+msgstr "E436: Geen \"%s\" inskrywing in termcap nie"
+
+#: term.c:2738
+msgid "E437: terminal capability \"cm\" required"
+msgstr "E437: terminaalvermoë \"cm\" vereis"
+
+#. Highlight title
+#: term.c:4878
+msgid ""
+"\n"
+"--- Terminal keys ---"
+msgstr ""
+"\n"
+"--- Terminaal sleutels ---"
+
+#: ui.c:240
+msgid "new shell started\n"
+msgstr "nuwe dop begin\n"
+
+#: ui.c:1705
+msgid "Vim: Error reading input, exiting...\n"
+msgstr "Vim: Fout met lees van invoer, verlaat...\n"
+
+#. must display the prompt
+#: undo.c:351
+msgid "No undo possible; continue anyway"
+msgstr "Geen herstel moontlik; gaan in elk geval voort"
+
+#: undo.c:506
+msgid "E438: u_undo: line numbers wrong"
+msgstr "E438: u_undo: reëlnommers foutief"
+
+#: undo.c:675
+msgid "1 change"
+msgstr "1 verandering"
+
+#: undo.c:677
+#, c-format
+msgid "%ld changes"
+msgstr "%ld veranderinge"
+
+#: undo.c:721
+msgid "E439: undo list corrupt"
+msgstr "E439: herstellys korrup"
+
+#: undo.c:751
+msgid "E440: undo line missing"
+msgstr "E440: herstelreël ontbreek"
+
+#. Only MS VC 4.1 and earlier can do Win32s
+#: version.c:655
+msgid ""
+"\n"
+"MS-Windows 16/32 bit GUI version"
+msgstr ""
+"\n"
+"MS-Windows 16/32-bis GUI weergawe"
+
+#: version.c:657
+msgid ""
+"\n"
+"MS-Windows 32 bit GUI version"
+msgstr ""
+"\n"
+"MS-Windows 32-bis GUI version"
+
+#: version.c:660
+msgid " in Win32s mode"
+msgstr " in Win32s modus"
+
+#: version.c:662
+msgid " with OLE support"
+msgstr " met OLE ondersteuning"
+
+#: version.c:665
+msgid ""
+"\n"
+"MS-Windows 32 bit console version"
+msgstr ""
+"\n"
+"MS-Windows 32-bis konsole weergawe"
+
+#: version.c:669
+msgid ""
+"\n"
+"MS-Windows 16 bit version"
+msgstr ""
+"\n"
+"MS-Windows 16-bis weergawe"
+
+#: version.c:673
+msgid ""
+"\n"
+"32 bit MS-DOS version"
+msgstr ""
+"\n"
+"32-bis MS-DOS weergawe"
+
+#: version.c:675
+msgid ""
+"\n"
+"16 bit MS-DOS version"
+msgstr ""
+"\n"
+"16-bis MS-DOS weergawe"
+
+#: version.c:681
+msgid ""
+"\n"
+"MacOS X (unix) version"
+msgstr ""
+"\n"
+"MacOS X (unix) weergawe"
+
+#: version.c:683
+msgid ""
+"\n"
+"MacOS X version"
+msgstr ""
+"\n"
+"MacOS X weergawe"
+
+#: version.c:686
+msgid ""
+"\n"
+"MacOS version"
+msgstr ""
+"\n"
+"MacOS weergawe"
+
+#: version.c:691
+msgid ""
+"\n"
+"RISC OS version"
+msgstr ""
+"\n"
+"RISC OS weergawe"
+
+#: version.c:701
+msgid ""
+"\n"
+"Included patches: "
+msgstr ""
+"\n"
+"Ingeslote laslappies:"
+
+#: version.c:728
+msgid ""
+"\n"
+"Compiled "
+msgstr ""
+"\n"
+"Gekompileer op "
+
+#: version.c:731
+msgid "by "
+msgstr "deur "
+
+#: version.c:743
+msgid ""
+"\n"
+"Huge version "
+msgstr ""
+"\n"
+"Enorme weergawe "
+
+#: version.c:746
+msgid ""
+"\n"
+"Big version "
+msgstr ""
+"\n"
+"Groot weergawe "
+
+#: version.c:749
+msgid ""
+"\n"
+"Normal version "
+msgstr ""
+"\n"
+"Normale weergawe "
+
+#: version.c:752
+msgid ""
+"\n"
+"Small version "
+msgstr ""
+"\n"
+"Klein weergawe "
+
+#: version.c:754
+msgid ""
+"\n"
+"Tiny version "
+msgstr ""
+"\n"
+"Piepklein weergawe "
+
+#: version.c:760
+msgid "without GUI."
+msgstr "sonder GUI."
+
+#: version.c:764
+msgid "with GTK-GNOME GUI."
+msgstr "met GTK-GNOME GUI."
+
+#: version.c:766
+msgid "with GTK GUI."
+msgstr "met GTK GUI"
+
+#: version.c:770
+msgid "with X11-Motif GUI."
+msgstr "met X11-Motif GUI."
+
+#: version.c:773
+msgid "with X11-Athena GUI."
+msgstr "met X11-Athena GUI"
+
+#: version.c:776
+msgid "with BeOS GUI."
+msgstr "met BeOS GUI"
+
+#: version.c:779
+msgid "with Photon GUI."
+msgstr "met Photon GUI."
+
+#: version.c:782
+msgid "with GUI."
+msgstr "met GUI."
+
+#: version.c:785
+msgid "with Carbon GUI."
+msgstr "met Carbon GUI."
+
+#: version.c:788
+msgid "with Cocoa GUI."
+msgstr "met Cocoa GUI."
+
+#: version.c:791
+msgid "with (classic) GUI."
+msgstr "met (klassieke) GUI."
+
+#: version.c:802
+msgid "  Features included (+) or not (-):\n"
+msgstr "  Kenmerke in- (+) of uitgesluit (-):\n"
+
+#: version.c:814
+msgid "   system vimrc file: \""
+msgstr "   stelsel vimrc-lêer: \""
+
+#: version.c:819
+msgid "     user vimrc file: \""
+msgstr "     gebruiker vimrc-lêer: \""
+
+#: version.c:824
+msgid " 2nd user vimrc file: \""
+msgstr " 2de gebruiker vimrc-lêer \""
+
+#: version.c:829
+msgid " 3rd user vimrc file: \""
+msgstr " 3de gebruiker vimrc-lêer \""
+
+#: version.c:834
+msgid "      user exrc file: \""
+msgstr "      gebruiker exrc-lêer: \""
+
+#: version.c:839
+msgid "  2nd user exrc file: \""
+msgstr "  2de gebruiker exrc-lêer: \""
+
+#: version.c:845
+msgid "  system gvimrc file: \""
+msgstr "  stelsel gvimrc-lêer: \""
+
+#: version.c:849
+msgid "    user gvimrc file: \""
+msgstr "    gebruiker gvimrc-lêer: \""
+
+#: version.c:853
+msgid "2nd user gvimrc file: \""
+msgstr "2de gebruiker gvimrc-lêer: \""
+
+#: version.c:858
+msgid "3rd user gvimrc file: \""
+msgstr "3de gebruiker gvimrc-lêer: \""
+
+#: version.c:865
+msgid "    system menu file: \""
+msgstr "    stelsel kieslys-lêer: \""
+
+#: version.c:873
+msgid "  fall-back for $VIM: \""
+msgstr "  bystand vir $VIM: \""
+
+#: version.c:879
+msgid " f-b for $VIMRUNTIME: \""
+msgstr " bystand vir $VIMRUNTIME: \""
+
+#: version.c:883
+msgid "Compilation: "
+msgstr "Kompilering: "
+
+#: version.c:889
+msgid "Compiler: "
+msgstr "Kompileerder: "
+
+#: version.c:894
+msgid "Linking: "
+msgstr "Koppeling: "
+
+#: version.c:899
+msgid "  DEBUG BUILD"
+msgstr "  ONTFOUTINGS-KOMPILERING"
+
+#: version.c:934
+msgid "VIM - Vi IMproved"
+msgstr "VIM - Vi Met skop"
+
+# njj: :))
+#: version.c:936
+msgid "version "
+msgstr "Weergawe "
+
+#: version.c:937
+msgid "by Bram Moolenaar et al."
+msgstr "deur Bram Moolenaar et al."
+
+#: version.c:938
+msgid "Vim is open source and freely distributable"
+msgstr "Vim is vryekode, en vrylik verspreibaar"
+
+#: version.c:940
+msgid "Help poor children in Uganda!"
+msgstr "Help arm kinders in Uganda!"
+
+#: version.c:941
+msgid "type  :help iccf<Enter>       for information "
+msgstr "tik   :help iccf<Enter> vir meer inligting hieroor "
+
+#: version.c:943
+msgid "type  :q<Enter>               to exit         "
+msgstr "tik   :q<Enter>               om program verlaat    "
+
+#: version.c:944
+msgid "type  :help<Enter>  or  <F1>  for on-line help"
+msgstr "tik   :help<Enter>  of  <F1>  vir aanlyn hulp       "
+
+#: version.c:945
+msgid "type  :help version6<Enter>   for version info"
+msgstr "tik   :help version6<Enter>   vir weergawe-inligting"
+
+#: version.c:948
+msgid "Running in Vi compatible mode"
+msgstr "Voer tans uit in Vi-versoenbare modus"
+
+#: version.c:949
+msgid "type  :set nocp<Enter>        for Vim defaults"
+msgstr "tik   :set nocp<Enter>        vir Vim verstekwaardes   "
+
+#: version.c:950
+msgid "type  :help cp-default<Enter> for info on this"
+msgstr "tik   :help cp-default<Enter> vir meer inligting hieroor"
+
+#: version.c:990
+msgid "WARNING: Windows 95/98/ME detected"
+msgstr "WAARSKUWING: Windows 95/98/ME bespeur"
+
+#: version.c:993
+msgid "type  :help windows95<Enter>  for info on this"
+msgstr "tik   :help windows95<Enter>  vir meer inligting hieroor"
+
+#: window.c:201
+msgid "E441: There is no preview window"
+msgstr "E441: Daar is nie 'n voorskou-venster nie"
+
+#: window.c:568
+msgid "E442: Can't split topleft and botright at the same time"
+msgstr "E442: Kan nie bo-links en onder-regs terselfdertyd verdeel nie"
+
+#: window.c:1327
+msgid "E443: Cannot rotate when another window is split"
+msgstr "E443: Kan nie roteer terwyl 'n ander venster verdeel is nie"
+
+#: window.c:1810
+msgid "E444: Cannot close last window"
+msgstr "E444: Kan nie laaste venster toemaak nie"
+
+#: window.c:2474
+msgid "Already only one window"
+msgstr "Daar is alreeds slegs een venster"
+
+#: window.c:2521
+msgid "E445: Other window contains changes"
+msgstr "E445: Die ander venster bevat veranderinge"
+
+#: window.c:4341
+msgid "E446: No file name under cursor"
+msgstr "E446: Geen lêernaam onder loper"
+
+#: window.c:4460
+#, c-format
+msgid "E447: Can't find file \"%s\" in path"
+msgstr "E447: Kan lêer \"%s\" nie vind in pad nie"
+
+#: ../GvimExt/gvimext.cpp:586
+msgid "Edit with &multiple Vims"
+msgstr "Wysig met &meer as een Vim"
+
+#: ../GvimExt/gvimext.cpp:592
+msgid "Edit with single &Vim"
+msgstr "Wysig met 'n enkel &Vim"
+
+#: ../GvimExt/gvimext.cpp:604
+msgid "Edit with &Vim"
+msgstr "Wysig met &Vim"
+
+#. Now concatenate
+#: ../GvimExt/gvimext.cpp:628
+msgid "Edit with existing Vim - &"
+msgstr "Wysig met bestaande Vim - &"
+
+#: ../GvimExt/gvimext.cpp:752
+msgid "Edits the selected file(s) with Vim"
+msgstr "Wysig die gekose lêer(s) met Vim"
+
+#: ../GvimExt/gvimext.cpp:891 ../GvimExt/gvimext.cpp:969
+msgid "Error creating process: Check if gvim is in your path!"
+msgstr "FOut met die skep van proses: Kyk of gvim in jou pad is!"
+
+#: ../GvimExt/gvimext.cpp:892 ../GvimExt/gvimext.cpp:906
+#: ../GvimExt/gvimext.cpp:970
+msgid "gvimext.dll error"
+msgstr "'gvimext.dll' fout"
+
+#: ../GvimExt/gvimext.cpp:905
+msgid "Path length too long!"
+msgstr "Pad-lengte te lank"
+
+#: globals.h:878
+msgid "--No lines in buffer--"
+msgstr "--Geen reëls in buffer--"
+
+#.
+#. * The error messages that can be shared are included here.
+#. * Excluded are errors that are only used once and debugging messages.
+#.
+#: globals.h:1019
+msgid "Command aborted"
+msgstr "Bevel gekansellleer"
+
+#: globals.h:1020
+msgid "Argument required"
+msgstr "Parameter benodig"
+
+#: globals.h:1021
+msgid "E10: \\ should be followed by /, ? or &"
+msgstr "E10: \\ moet gevolg word deur /, ? of &"
+
+#: globals.h:1023
+msgid "E11: Invalid in command-line window; <CR> executes, CTRL-C quits"
+msgstr "E11: Ongeldig in bevelreël venster: <CR> voer uit, CTRL-C stop"
+
+#: globals.h:1025
+msgid "E12: Command not allowed from exrc/vimrc in current dir or tag search"
+msgstr ""
+"E12: Bevel uit exrc/vimrc nie toegelaat in huidige gids- of etiketsoektog nie"
+
+#: globals.h:1026
+msgid "E13: File exists (add ! to override)"
+msgstr "E13: Lêer bestaan (gebruik ! om te dwing)"
+
+#: globals.h:1027
+msgid "Command failed"
+msgstr "Bevel het gefaal"
+
+#: globals.h:1028
+msgid "Internal error"
+msgstr "Interne fout"
+
+#: globals.h:1029
+msgid "Interrupted"
+msgstr "Onderbreek"
+
+#: globals.h:1030
+msgid "E14: Invalid address"
+msgstr "E14: Ongeldige adres"
+
+#: globals.h:1031
+msgid "Invalid argument"
+msgstr "Ongeldige parameter"
+
+#: globals.h:1032
+#, c-format
+msgid "Invalid argument: %s"
+msgstr "Ongeldige parameter: %s"
+
+#: globals.h:1034
+#, c-format
+msgid "E15: Invalid expression: %s"
+msgstr "E15: Ongeldige uitdrukking: %s"
+
+#: globals.h:1036
+msgid "E16: Invalid range"
+msgstr "E16: Ongeldige omvang"
+
+#: globals.h:1037
+msgid "Invalid command"
+msgstr "Ongeldige bevel"
+
+#: globals.h:1039
+#, c-format
+msgid "E17: \"%s\" is a directory"
+msgstr "E17: \"%s\" is 'n gids"
+
+#: globals.h:1042
+msgid "E18: Unexpected characters before '='"
+msgstr "E18: Onverwagte karakters voor '='"
+
+#: globals.h:1044
+msgid "E19: Mark has invalid line number"
+msgstr "E19: Merker het ongeldige reëlnommer"
+
+#: globals.h:1045
+msgid "E20: Mark not set"
+msgstr "E20: Merker nie gestel nie"
+
+#: globals.h:1046
+msgid "E21: Cannot make changes, 'modifiable' is off"
+msgstr "E21: Kan nie wysig nie, 'modifiable' is af"
+
+#: globals.h:1047
+msgid "E22: Scripts nested too deep"
+msgstr "E22: Skripte te diep ge-nes"
+
+#: globals.h:1048
+msgid "E23: No alternate file"
+msgstr "E23: Geen alternatiewe lêer nie"
+
+#: globals.h:1049
+msgid "E24: No such abbreviation"
+msgstr "E24: Afkorting bestaan nie"
+
+#: globals.h:1050
+msgid "No ! allowed"
+msgstr "Geen ! toegelaat nie"
+
+#: globals.h:1052
+msgid "E25: GUI cannot be used: Not enabled at compile time"
+msgstr "E25: GUI kan nie gebruik word nie: Nie tydens kompilering gekies nie"
+
+#: globals.h:1055
+msgid "E26: Hebrew cannot be used: Not enabled at compile time\n"
+msgstr ""
+"E26: Hebreeus kan nie gebruik word nie: Nie tydens kompilering gekies nie\n"
+
+#: globals.h:1058
+msgid "E27: Farsi cannot be used: Not enabled at compile time\n"
+msgstr ""
+"E27: Farsi kan nie gebruik word nie: Nie tydens kompilering gekies nie\n"
+
+#: globals.h:1061
+#, c-format
+msgid "E28: No such highlight group name: %s"
+msgstr "E28: Geen sodanige uitliggroepnaam nie: %s"
+
+#: globals.h:1063
+msgid "E29: No inserted text yet"
+msgstr "E29: Nog geen ingevoegde teks nie"
+
+#: globals.h:1064
+msgid "E30: No previous command line"
+msgstr "E30: Geen vorige bevelreël nie"
+
+#: globals.h:1065
+msgid "E31: No such mapping"
+msgstr "E31: Geen so 'n binding nie"
+
+#: globals.h:1066
+msgid "No match"
+msgstr "Geen treffer nie"
+
+#: globals.h:1067
+#, c-format
+msgid "No match: %s"
+msgstr "Geen treffer: %s"
+
+#: globals.h:1068
+msgid "E32: No file name"
+msgstr "E32: Geen lêernaam"
+
+#: globals.h:1069
+msgid "E33: No previous substitute regular expression"
+msgstr "E33: Geen vorige vervangingspatroon nie"
+
+#: globals.h:1070
+msgid "E34: No previous command"
+msgstr "E34: Geen vorige bevel nie"
+
+#: globals.h:1071
+msgid "E35: No previous regular expression"
+msgstr "E35: Geen vorige patroon nie"
+
+#: globals.h:1072
+msgid "No range allowed"
+msgstr "Geen omvang toegelaat nie"
+
+#: globals.h:1074
+msgid "E36: Not enough room"
+msgstr "E36: Te min plek"
+
+#: globals.h:1076
+#, c-format
+msgid "Can't create file %s"
+msgstr "Kan nie lêer %s skep nie"
+
+#: globals.h:1077
+msgid "Can't get temp file name"
+msgstr "Kan nie tydelike lêernaam kry nie"
+
+#: globals.h:1078
+#, c-format
+msgid "Can't open file %s"
+msgstr "Kan nie lêer %s oopmaak nie"
+
+#: globals.h:1079
+#, c-format
+msgid "Can't read file %s"
+msgstr "Kan nie lêer %s lees nie"
+
+#: globals.h:1080
+msgid "E37: No write since last change (use ! to override)"
+msgstr "E37: Ongeskryf sedert vorige verandering (gebruik ! om te dwing)"
+
+#: globals.h:1081
+msgid "E38: Null argument"
+msgstr "E38: Nul parameter"
+
+# njj: hmm, hoe hanteer mens die onderskeid tussen 'Null' (afwesig) en
+# njj: 'Zero' (die nommer)?
+#: globals.h:1083
+msgid "E39: Number expected"
+msgstr "E39: Nommer verwag"
+
+#: globals.h:1086
+#, c-format
+msgid "E40: Can't open errorfile %s"
+msgstr "E40: Kan nie foutlêer %s oopmaak nie"
+
+#: globals.h:1089
+msgid "E41: Out of memory!"
+msgstr "E41: Geheue op!"
+
+#: globals.h:1092
+msgid "Pattern not found"
+msgstr "Patroon nie gevind nie"
+
+#: globals.h:1094
+#, c-format
+msgid "Pattern not found: %s"
+msgstr "Patroon nie gevind nie: %s"
+
+#: globals.h:1095
+msgid "Argument must be positive"
+msgstr "Parameter moet positief wees"
+
+#: globals.h:1097
+msgid "E42: No Errors"
+msgstr "E42: Geen Foute"
+
+#: globals.h:1099
+msgid "E43: Damaged match string"
+msgstr "E43: Beskadige trefferstring"
+
+#: globals.h:1100
+msgid "E44: Corrupted regexp program"
+msgstr "E44: Korrupte patroonprogram"
+
+#: globals.h:1101
+msgid "E45: 'readonly' option is set (use ! to override)"
+msgstr "E45: 'readonly' opsie is aan (gebruik ! om te dwing)"
+
+#: globals.h:1103
+#, c-format
+msgid "E46: Cannot set read-only variable \"%s\""
+msgstr "E46: Kan nie lees-alleen veranderlike stel nie \"%s\""
+
+#: globals.h:1106
+msgid "E47: Error while reading errorfile"
+msgstr "E47: Fout tydens lees van 'errorfile'"
+
+#: globals.h:1109
+msgid "E48: Not allowed in sandbox"
+msgstr "E48: Nie toegelaat in sandput nie"
+
+#: globals.h:1111
+msgid "E49: Invalid scroll size"
+msgstr "E49: Ongeldige rolgrootte"
+
+#: globals.h:1112
+msgid "E91: 'shell' option is empty"
+msgstr "E91: 'shell' (dop) opsie is leeg"
+
+#: globals.h:1113
+msgid "E72: Close error on swap file"
+msgstr "E72: Sluitfout met ruillêer"
+
+#: globals.h:1114
+msgid "E73: tag stack empty"
+msgstr "E73: etiketstapel leeg"
+
+#: globals.h:1115
+msgid "E74: Command too complex"
+msgstr "E74: Bevel te kompleks"
+
+#: globals.h:1116
+msgid "E75: Name too long"
+msgstr "E75: Naam te lank"
+
+#: globals.h:1117
+msgid "E76: Too many ["
+msgstr "E76: Te veel ["
+
+#: globals.h:1118
+msgid "E77: Too many file names"
+msgstr "E77: Te veel lêername"
+
+#: globals.h:1119
+msgid "Trailing characters"
+msgstr "Oorbodige karakters"
+
+#: globals.h:1120
+msgid "E78: Unknown mark"
+msgstr "E78: Onbekende merker"
+
+#: globals.h:1121
+msgid "E79: Cannot expand wildcards"
+msgstr "E79: Kan nie plekhouers uitbrei nie"
+
+#: globals.h:1122
+msgid "E80: Error while writing"
+msgstr "E80: Fout tydens skryfoperasie"
+
+#: globals.h:1123
+msgid "Zero count"
+msgstr "Nul telling"
+
+#: globals.h:1125
+msgid "E81: Using <SID> not in a script context"
+msgstr "E81: Gebruik van '<SID>' buite skripkonteks"
+
+#~ msgid "E258: no matches found in cscope connections"
+#~ msgstr "E258: geen treffers gevind in 'cscope' verbindings nie"
+
+#~ msgid "No servers found for this display"
+#~ msgstr "Geen bedieners gevind vir die 'display' nie"
+
+#~ msgid "Missing filename"
+#~ msgstr "Ontbrekende lêernaam"
+
+#~ msgid "Invalid line number: %ld"
+#~ msgstr "Ongeldige reëlnommer: %ld"
+
+#~ msgid "Cannot use :normal from event handler"
+#~ msgstr "Kan ':normal' nie vanuit gebeurtenishanteerder gebruik nie"
+
+#~ msgid "%ldL, %ldC"
+#~ msgstr "%ldR, %ldK"
+
+#~ msgid "VIM - Help on..."
+#~ msgstr "VIM - Hulp met.."
+
+#~ msgid "Topic:"
+#~ msgstr "Onderwerp:"
+
+#~ msgid "Error: During loading fontset %s"
+#~ msgstr "Fout: Gedurende die laai van fontstel %s"
+
+#~ msgid "locale is not set correctly"
+#~ msgstr "lokaal is nie korrek gestel nie"
+
+#~ msgid "Set LANG environment variable to your locale"
+#~ msgstr "Stel die 'LANG' omgewingsveranderlike na jou lokaal toe"
+
+#~ msgid "For korean:"
+#~ msgstr "Vir Afrikaans:"
+
+#~ msgid "   csh: setenv LANG ko"
+#~ msgstr "   csh: setenv LANG af"
+
+#~ msgid "   sh : export LANG=ko"
+#~ msgstr "   sh: export LANG=af"
+
+#~ msgid "fontset name: %s"
+#~ msgstr "fontstel naam: %s"
+
+#~ msgid "Your language Font missing"
+#~ msgstr "Jou taal Font ontbreek"
+
+#~ msgid "loaded fontname: %s"
+#~ msgstr "gelaaide fontnaam: %s"
+
+#~ msgid "Cannot allocate memory for debugger sign"
+#~ msgstr "Kan nie geheue toeken vir ontfouterteken nie"
+
+#~ msgid "automata ERROR: internal"
+#~ msgstr "automata FOUT: intern"
+
+#~ msgid "cs_add_common: alloc fail #1"
+#~ msgstr "'cs_add_common': toeken onsuksesvol #1"
+
+#~ msgid "cs_add_common: alloc fail #2"
+#~ msgstr "'cs_add_common': toeken onsuksesvol #2"
+
+#~ msgid "cs_add_common: alloc fail #3"
+#~ msgstr "'cs_add_common': toeken onsuksesvol #3"
+
+#~ msgid "cs_add_common: alloc fail #4"
+#~ msgstr "'cs_add_common': toeken onsuksesvol #4"
+
+#~ msgid "Retrieve next symbol"
+#~ msgstr "Kry volgende simbool"
+
+#~ msgid "-- SNiFF+ commands --"
+#~ msgstr "-- SNiFF+ bevele --"
+
+#~ msgid "Unrecognized sniff request [%s]"
+#~ msgstr "Onbekende sniff versoek [%s]"
+
+#~ msgid "Can't create input context."
+#~ msgstr "Kan nie invoerkonteks skep nie."
+
+#~ msgid "Sorry, deleting a menu is not possible in the Athena version"
+#~ msgstr ""
+#~ "Jammer, in die Athena weergawe is dit onmoontlik om 'n kieslys te skrap"
+
+#~ msgid "Out of memory"
+#~ msgstr "Geheue op"
+
+#~ msgid "PC (32 bits Vim)"
+#~ msgstr "PC (32 bisse Vim)"
+
+#~ msgid "PC (16 bits Vim)"
+#~ msgstr "PC (16 bisse Vim)"
+
+#~ msgid "Unsupported screen mode"
+#~ msgstr "Ongesteunde skermmodus"
+
+#~ msgid "deadly signal"
+#~ msgstr "dodelike sein"
+
+#~ msgid "some"
+#~ msgstr "sommige"
+
+#~ msgid "Library call failed"
+#~ msgstr "Biblioteekfunksieroep het gefaal"
+
+#~ msgid "Cannot clear all highlight groups"
+#~ msgstr "Kan nie alle uitliggroepe leegmaak nie"
+
+#~ msgid "GUI is not running"
+#~ msgstr "GUI voer nie uit nie"
+
+#~ msgid "Command too long"
+#~ msgstr "Bevel te lank"
+
+#~ msgid "Ambiguous mapping"
+#~ msgstr "Dubbelsinnige binding"
+
+#~ msgid "Ambiguous mapping, conflicts with \"%s\""
+#~ msgstr "Dubbelsinnige binding, bots met \"%s\""
+
+#~ msgid "Too many \\z("
+#~ msgstr "Te veel \\z("
+
+#~ msgid "Too many \\("
+#~ msgstr "Te veel \\("
+
+#~ msgid "Unmatched \\z("
+#~ msgstr "Onpaar \\z("
+
+#~ msgid "Unmatched \\%("
+#~ msgstr "Onpaar \\z"
+
+#~ msgid "Unmatched \\("
+#~ msgstr "Onpaar \\("
+
+#~ msgid "Unmatched \\)"
+#~ msgstr "Onpaar \\)"
+
+#~ msgid "*, \\+ or \\{ operand could be empty"
+#~ msgstr "*, \\+ of \\{ operand mag leeg wees"
+
+#~ msgid "invalid character after \\@"
+#~ msgstr "ongeldige karakter na \\@"
+
+#~ msgid "Too many complex \\{...}s"
+#~ msgstr "Te veel komplekse \\{...}ies"
+
+#~ msgid "Nested *, \\=, \\+, \\! or \\{"
+#~ msgstr "Geneste *, \\=, \\+, \\! of \\{"
+
+#~ msgid "invalid use of \\_"
+#~ msgstr "ongeldige gebruik van \\_"
+
+#~ msgid "\\= follows nothing"
+#~ msgstr "\\= volg niks"
+
+#~ msgid "\\+ follows nothing"
+#~ msgstr "\\+ volg niks"
+
+#~ msgid "\\@ follows nothing"
+#~ msgstr "\\@ volg niks"
+
+#~ msgid "\\{ follows nothing"
+#~ msgstr "\\{ volg niks"
+
+#~ msgid "\\* follows nothing"
+#~ msgstr "\\* volg niks"
+
+#~ msgid "Illegal back reference"
+#~ msgstr "Ongeldige tru-verwysing"
+
+#~ msgid "\\z( not allowed here"
+#~ msgstr "\\z( nie hier toegelaat nie"
+
+#~ msgid "\\z1 et al. not allowed here"
+#~ msgstr "\\z1 e.a. nie hier toegelaat nie"
+
+#~ msgid "Invalid character after \\z"
+#~ msgstr "ongeldige karakter na \\z"
+
+#~ msgid "Missing ] after \\%["
+#~ msgstr "Ontbrekende ] na \\%["
+
+#~ msgid "Empty \\%[]"
+#~ msgstr "Leë \\%[]"
+
+#~ msgid "Invalid character after \\%"
+#~ msgstr "ongeldige karakter na \\%"
+
+#~ msgid "Unexpected magic character; check META."
+#~ msgstr "Onverwagte toorkarakter; kyk na META."
+
+#~ msgid "type  :help uganda<Enter>     if you like Vim "
+#~ msgstr "tik   :help uganda<Enter>     as jy hou van Vim     "
+
+#~ msgid "     WARNING: Intel CPU detected.    "
+#~ msgstr "     WAARSKUWING: Intel SVE bespeur.    "
+
+#~ msgid " PPC has a much better architecture. "
+#~ msgstr " PPC het 'n veel beter argitektuur. "
+
+#~ msgid "Security error: new viminfo file is a symbolic link"
+#~ msgstr "Sekuriteitsfout: nuwe viminfo lêer is a simboliese skakel"
+
+#~ msgid "line ~%ld: %s"
+#~ msgstr "reël ~%ld: %s"
+
+#~ msgid "makeef option not set"
+#~ msgstr "'makeef' opsie nie aan nie"
+
+#~ msgid "Security error: filter output is a symbolic link: %s"
+#~ msgstr "Sekuriteitsfout: filter afvoer is 'n simboliese skakel"
+
+#~ msgid "Security error: 'charconvert' output is a symbolic link"
+#~ msgstr "Sekuriteitsfout: 'charconvert' afvoer is 'n simboliese skakel"
+
+#~ msgid "Security error: filter input is a symbolic link: %s"
+#~ msgstr "Sekuriteitsfout: filter invoer is 'n simboliese skakel"
+
+#~ msgid "Fold must be at least two lines"
+#~ msgstr "'n Vou moet ten minste 2 reëls wees"
+
+#~ msgid "No fold at this line"
+#~ msgstr "Geen vou by hierdie reël nie"
+
+#~ msgid "Security error: shell command output is a symbolic link"
+#~ msgstr "Sekuriteitsfout: Dop-bevel afvoer is 'n simboliese skakel"
+
+#~ msgid "Warning: %s option changed from modeline"
+#~ msgstr "Waarskuwing: %s opsie verander vanaf moduslyn"
+
+#~ msgid "Change dir debugging enabled."
+#~ msgstr "Verandergids ontfouting in staat gestel"
+
+#~ msgid "Not a proper file name: '%s'"
+#~ msgstr "Nie 'n geldige lêernaam nie: '%s'"
+
+#~ msgid "File name '%s' is valid"
+#~ msgstr "lêernaam '%s is ongeldig"
+
+#~ msgid "Leave: %s"
+#~ msgstr "Verlaat: %s"
+
+#~ msgid "WARNING: tag command changed a buffer!!!"
+#~ msgstr "WAARSKUWING: etiketbevel het buffer verander!!!"

@@ -1,0 +1,135 @@
+// vim:ts=8:sw=4:sts=4:
+//
+// VIM - Vi IMproved	by Bram Moolenaar
+//
+// Do ":help uganda"  in Vim to read copying and usage conditions.
+// Do ":help credits" in Vim to see a list of people who contributed.
+
+// vim.rc
+//   Icon and version information for the Win32 version of Vim
+//   Must be in DOS format <CR><NL>!
+
+#ifdef __MINGW32__
+# include <windows.h>
+# ifndef VS_FFI_FILEFLAGSMASK
+#  define VS_FFI_FILEFLAGSMASK    0x0000003FL
+# endif
+# ifndef VOS__WINDOWS32
+#  define VOS__WINDOWS32	  0x00000004L
+# endif
+#else
+# include <winver.h>
+#endif
+#include "version.h"
+#include "gui_w32_rc.h"
+#if defined(__BORLANDC__) || defined(__CYGWIN32__)
+# include <winresrc.h>
+#else
+# ifndef __MINGW32__
+#  include <winres.h>
+# endif
+#endif
+
+//
+// Icons
+//
+IDR_VIM		ICON "vim.ico"
+
+#ifdef FEAT_GUI_W32
+IDR_VIM_ERROR	ICON "vim_error.ico"
+IDR_VIM_ALERT	ICON "vim_alert.ico"
+IDR_VIM_INFO	ICON "vim_info.ico"
+IDR_VIM_QUESTION ICON "vim_quest.ico"
+
+//
+// Bitmaps
+//
+IDB_TEAROFF	BITMAP  DISCARDABLE  "tearoff.bmp"
+IDR_TOOLBAR1	BITMAP  DISCARDABLE  "tools.bmp"
+
+//
+// WinXP theme support
+//
+#ifndef CREATEPROCESS_MANIFEST_RESOURCE_ID
+# define CREATEPROCESS_MANIFEST_RESOURCE_ID 1
+#endif
+#ifndef RT_MANIFEST
+# define RT_MANIFEST 24
+#endif
+
+CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "gvim.exe.mnf"
+#endif // FEAT_GUI_W32
+
+//
+// Type Library
+//
+#ifdef FEAT_OLE
+ 1 TYPELIB "VIM.TLB"
+#endif
+
+//
+// Version
+//
+
+VS_VERSION_INFO		VERSIONINFO
+  FILEVERSION		VIM_VERSION_MAJOR,VIM_VERSION_MINOR,VIM_VERSION_BUILD,VIM_VERSION_PATCHLEVEL
+  PRODUCTVERSION	VIM_VERSION_MAJOR,VIM_VERSION_MINOR,VIM_VERSION_BUILD,VIM_VERSION_PATCHLEVEL
+  FILEFLAGSMASK		VS_FFI_FILEFLAGSMASK
+
+#if VIM_VERSION_PATCHLEVEL > 0
+ #ifdef _DEBUG
+  FILEFLAGS		VS_FF_PRERELEASE | VS_FF_DEBUG | VS_FF_PATCHED
+ #else
+  FILEFLAGS		VS_FF_PRERELEASE | VS_FF_PATCHED
+ #endif
+#else
+ #ifdef _DEBUG
+  FILEFLAGS		VS_FF_PRERELEASE | VS_FF_DEBUG
+ #else
+  FILEFLAGS		VS_FF_PRERELEASE
+ #endif
+#endif
+
+  FILEOS		VOS__WINDOWS32
+  FILETYPE		VFT_APP
+  FILESUBTYPE		0x0L
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    // 0x0409 == U.S. English; 0x04E4 => Windows Multilingual
+    BLOCK "040904E4"
+    BEGIN
+	VALUE "CompanyName",		"Vim Developers\0"
+	VALUE "FileDescription",	"Vi Improved - A Text Editor\0"
+	VALUE "FileVersion",		VIM_VERSION_MAJOR_STR ", " VIM_VERSION_MINOR_STR ", " VIM_VERSION_BUILD_STR ", " VIM_VERSION_PATCHLEVEL_STR  "\0"
+	VALUE "InternalName",		"VIM\0"
+	VALUE "LegalCopyright",		"Copyright \251 1996-2003\0"
+	VALUE "LegalTrademarks",	"Vim\0"
+	VALUE "OriginalFilename",	"VIM.EXE\0"
+	VALUE "ProductName",		"Vim\0"
+	VALUE "ProductVersion",		VIM_VERSION_MAJOR_STR ", " VIM_VERSION_MINOR_STR ", " VIM_VERSION_BUILD_STR ", " VIM_VERSION_PATCHLEVEL_STR "\0"
+    END
+  END
+  BLOCK "VarFileInfo"
+  BEGIN
+	VALUE "Translation", 0x409, 0x4E4
+  END
+END
+
+/*
+ *  Printing Status Dialog (should only be used when FEAT_PRINTER is defined)
+ */
+#define IDC_BOX1		400
+#define IDC_PRINTTEXT1		401
+#define IDC_PRINTTEXT2		402
+#define IDC_PROGRESS		403
+PRINTDLGBOX DIALOG 115, 63, 210, 80
+STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+FONT 8, "Helv"
+BEGIN
+    DEFPUSHBUTTON   "Cancel", IDCANCEL, 85, 60, 40, 14
+    CTEXT	    "Printing",IDC_PRINTTEXT1,23,15,157,8
+    CTEXT	    " ",IDC_PRINTTEXT2,23,25,157,8
+    CTEXT	    "Initializing...",IDC_PROGRESS,24,38,157,8
+    GROUPBOX	    "",IDC_BOX1,19,9,170,47
+END

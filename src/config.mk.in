@@ -1,0 +1,137 @@
+#
+# config.mk.in -- autoconf template for Vim on Unix		vim:ts=8:sw=8:
+#
+# DO NOT EDIT config.mk!!  It will be overwritten by configure.
+# Edit Makefile and run "make" or run ./configure with other arguments.
+#
+# Configure does not edit the makefile directly. This method is not the
+# standard use of GNU autoconf, but it has two advantages:
+#   a) The user can override every choice made by configure.
+#   b) Modifications to the makefile are not lost when configure is run.
+#
+# I hope this is worth being nonstandard. jw.
+
+@SET_MAKE@
+
+VIMNAME		= @VIMNAME@
+EXNAME		= @EXNAME@
+VIEWNAME	= @VIEWNAME@
+
+CC		= @CC@
+DEFS		= @DEFS@
+CFLAGS		= @CFLAGS@
+CPPFLAGS	= @CPPFLAGS@
+srcdir		= @srcdir@
+VPATH		= @srcdir@
+LDFLAGS		= @LDFLAGS@
+LIBS		= @LIBS@
+TAGPRG		= @TAGPRG@
+
+CPP		= @CPP@
+CPP_MM		= @CPP_MM@
+X_CFLAGS	= @X_CFLAGS@
+X_LIBS_DIR	= @X_LIBS@
+X_PRE_LIBS	= @X_PRE_LIBS@
+X_EXTRA_LIBS	= @X_EXTRA_LIBS@
+X_LIBS		= @X_LIB@
+
+PERL		= @vi_cv_path_perl@
+PERLLIB		= @vi_cv_perllib@
+PERL_LIBS	= @PERL_LIBS@
+SHRPENV		= @shrpenv@
+PERL_SRC	= @PERL_SRC@
+PERL_OBJ	= @PERL_OBJ@
+PERL_PRO	= @PERL_PRO@
+PERL_CFLAGS	= @PERL_CFLAGS@
+
+PYTHON_SRC	= @PYTHON_SRC@
+PYTHON_OBJ	= @PYTHON_OBJ@
+PYTHON_CFLAGS	= @PYTHON_CFLAGS@
+PYTHON_LIBS	= @PYTHON_LIBS@
+PYTHON_CONFDIR	= @PYTHON_CONFDIR@
+PYTHON_GETPATH_CFLAGS = @PYTHON_GETPATH_CFLAGS@
+
+TCL		= @vi_cv_path_tcl@
+TCL_SRC		= @TCL_SRC@
+TCL_OBJ		= @TCL_OBJ@
+TCL_PRO		= @TCL_PRO@
+TCL_CFLAGS	= @TCL_CFLAGS@
+TCL_LIBS	= @TCL_LIBS@
+
+HANGULIN_SRC	= @HANGULIN_SRC@
+HANGULIN_OBJ	= @HANGULIN_OBJ@
+
+WORKSHOP_SRC	= @WORKSHOP_SRC@
+WORKSHOP_OBJ	= @WORKSHOP_OBJ@
+
+NETBEANS_SRC	= @NETBEANS_SRC@
+NETBEANS_OBJ	= @NETBEANS_OBJ@
+
+RUBY		= @vi_cv_path_ruby@
+RUBY_SRC	= @RUBY_SRC@
+RUBY_OBJ	= @RUBY_OBJ@
+RUBY_PRO	= @RUBY_PRO@
+RUBY_CFLAGS	= @RUBY_CFLAGS@
+RUBY_LIBS	= @RUBY_LIBS@
+
+SNIFF_SRC	= @SNIFF_SRC@
+SNIFF_OBJ	= @SNIFF_OBJ@
+
+AWK		= @AWK@
+
+STRIP		= @STRIP@
+
+EXEEXT		= @EXEEXT@
+
+COMPILEDBY	= @compiledby@
+
+INSTALLVIMDIFF	= @dovimdiff@
+INSTALLGVIMDIFF	= @dogvimdiff@
+
+### Line break character as octal number for "tr"
+NL		= @line_break@
+
+### Top directory for everything
+prefix		= @prefix@
+
+### Top directory for the binary
+exec_prefix	= @exec_prefix@
+
+### Prefix for location of data files
+BINDIR		= @bindir@
+
+### Prefix for location of data files
+DATADIR		= @datadir@
+
+### Prefix for location of man pages
+MANDIR		= @mandir@
+
+### Do we have a GUI
+GUI_INC_LOC	= @GUI_INC_LOC@
+GUI_LIB_LOC	= @GUI_LIB_LOC@
+GUI_SRC		= $(@GUITYPE@_SRC)
+GUI_OBJ		= $(@GUITYPE@_OBJ)
+GUI_DEFS	= $(@GUITYPE@_DEFS)
+GUI_IPATH	= $(@GUITYPE@_IPATH)
+GUI_LIBS_DIR	= $(@GUITYPE@_LIBS_DIR)
+GUI_LIBS1	= $(@GUITYPE@_LIBS1)
+GUI_LIBS2	= $(@GUITYPE@_LIBS2)
+GUI_INSTALL	= $(@GUITYPE@_INSTALL)
+GUI_TARGETS	= $(@GUITYPE@_TARGETS)
+GUI_MAN_TARGETS	= $(@GUITYPE@_MAN_TARGETS)
+GUI_TESTTARGET	= $(@GUITYPE@_TESTTARGET)
+NARROW_PROTO	= @NARROW_PROTO@
+GUI_X_LIBS	= @GUI_X_LIBS@
+MOTIF_LIBNAME	= @MOTIF_LIBNAME@
+GTK_LIBNAME	= @GTK_LIBNAME@
+
+### Any OS dependent extra source and object file
+OS_EXTRA_SRC	= @OS_EXTRA_SRC@
+OS_EXTRA_OBJ	= @OS_EXTRA_OBJ@
+
+### If the *.po files are to be translated to *.mo files.
+MAKEMO		= @MAKEMO@
+
+# Make sure that "make first" will run "make all" once configure has done its
+# work.  This is needed when using the Makefile in the top directory.
+first: all

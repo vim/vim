@@ -1,0 +1,735 @@
+*netbeans.txt*  For Vim version 7.0aa.  Last change: 2004 May 01
+
+
+		  VIM REFERENCE MANUAL    by Gordon Prieur
+
+
+NetBeans ExternalEditor Integration Features		*netbeans*
+							*netbeans-support*
+1.  Introduction				|netbeans-intro|
+2.  NetBeans Key Bindings			|netbeans-keybindings|
+3.  Configuring Vim for NetBeans		|netbeans-configure|
+4.  Downloading NetBeans			|netbeans-download|
+5.  Preparing NetBeans for Vim			|netbeans-preparation|
+6.  Obtaining the External Editor Module	|obtaining-exted|
+7.  Setting up NetBeans to run with Vim		|netbeans-setup|
+8.  Messages					|netbeans-messages|
+9.  Running Vim from NetBeans			|netbeans-run|
+10. NetBeans protocol				|netbeans-protocol|
+11. Known problems				|netbeans-problems|
+
+{Vi does not have any of these features}
+{only available when compiled with the |+netbeans_intg| feature}
+
+==============================================================================
+1. Introduction						*netbeans-intro*
+
+NetBeans is an open source Integrated Development Environment developed
+jointly by Sun Microsystems, Inc. and the netbeans.org developer community.
+Initially just a Java IDE, NetBeans has had C, C++, and Fortran support added
+in recent releases.
+
+For more information visit the main NetBeans web site http://www.netbeans.org
+or the NetBeans External Editor site at http://externaleditor.netbeans.org.
+
+Sun Microsystems, Inc. also ships NetBeans under the name Sun ONE Studio.
+Visit http://www.sun.com for more information regarding the Sun ONE Studio
+product line.
+
+Current releases of NetBeans provide full support for Java and limited support
+for C, C++, and Fortran. Current releases of Sun ONE Studio provide full
+support for Java, C, C++, and Fortran.
+
+The interface to NetBeans is also supported by Agide, the A-A-P GUI IDE.
+Agide is very different from NetBeans:
+- Based on Python instead of Java, much smaller footprint and fast startup.
+- Agide is a framework in which many different tools can work together.
+See the A-A-P website for information: http://www.A-A-P.org.
+
+==============================================================================
+2. NetBeans Key Bindings				*netbeans-keybindings*
+
+Vim understands a number of key bindings that execute NetBeans commands. These
+are typically all the Function key combinations. To execute a NetBeans command,
+the user must press the Pause key followed by a NetBeans key binding. For
+example, in order to compile a Java file, the NetBeans key binding is "F9". So,
+while in vim, press "Pause F9" to compile a java file. To toggle a breakpoint
+at the current line, press "Pause Shift F8".
+
+The Pause key is Function key 21.  If you don't have a working Pause key and
+want to use F8 instead, use: >
+
+	:map <F8> <F21>
+
+The External Editor module dynamically reads the NetBeans key bindings so vim
+should always have the latest key bindings, even when NetBeans changes them.
+
+==============================================================================
+3. Configuring Vim for NetBeans			*netbeans-configure*
+
+For more help installing vim, please read |usr_90.txt| in the Vim User Manual.
+
+
+On Unix
+
+When running configure without arguments the NetBeans interface should be
+included.  That is, if the configure check to find out if your system supports
+the required features succeeds.
+
+In case you do not want the NetBeans interface you can disable it by
+uncommenting a line with "--disable-netbeans" in the Makefile.
+
+Currently, only gvim is supported in this integration as NetBeans does not
+have means to supply a terminal emulator for the vim command. Furthermore,
+there is only GUI support for GTK, GNOME, and Motif.
+
+If Motif support is required the user must supply XPM libraries. See
+|workshop-xpm| for details on obtaining the latest version of XPM.
+
+
+On MS-Windows
+
+The Win32 support is now in beta stage.
+
+To use XPM signs on Win32 (e.g. when using with NetBeans) you can compile
+XPM by yourself or use precompiled libraries from http://iamphet.nm.ru/misc/
+(for MS Visual C++) or http://gnuwin32.sourceforge.net (for MinGW).
+
+==============================================================================
+4. Downloading NetBeans					*netbeans-download*
+
+The NetBeans IDE is available for download from netbeans.org. You can download
+a released version, download sources, or use CVS to download the current
+source tree. If you choose to download sources, follow directions from
+netbeans.org on building NetBeans.
+
+Depending on the version of NetBeans you download, you may need to do further
+work to get the required External Editor module. This is the module which lets
+NetBeans work with gvim (or xemacs :-). See http://externaleditor.netbeans.org
+for details on downloading this module if your NetBeans release does not have
+it.
+
+For C, C++, and Fortran support you will also need the cpp module. See
+http://cpp.netbeans.org for information regarding this module.
+
+You can also download Sun ONE Studio from Sun Microsystems, Inc for a 30 day
+free trial. See http://www.sun.com for further details.
+
+==============================================================================
+5. Preparing NetBeans for Vim				*netbeans-preparation*
+
+In order for NetBeans to work with vim, the NetBeans External Editor module
+must be loaded and enabled. If you have a Sun ONE Studio Enterprise Edition
+then this module should be loaded and enabled. If you have a NetBeans release
+you may need to find another way of obtaining this open source module.
+
+You can check if you have this module by opening the Tools->Options dialog
+and drilling down to the "Modules" list (IDE Configuration->System->Modules).
+If your Modules list has an entry for "External Editor" you must make sure
+it is enabled (the "Enabled" property should have the value "True"). If your
+Modules list has no External Editor see the next section on |obtaining-exted|.
+
+==============================================================================
+6. Obtaining the External Editor Module			    *obtaining-exted*
+
+There are 2 ways of obtaining the External Editor module. The easiest way
+is to use the NetBeans Update Center to download and install the module.
+Unfortunately, some versions do not have this module in their update
+center. If you cannot download via the update center you will need to
+download sources and build the module. I will try and get the module
+available from the NetBeans Update Center so building will be unnecessary.
+Also check http://externaleditor.netbeans.org for other availability options.
+
+To download the External Editor sources via CVS and build your own module,
+see http://externaleditor.netbeans.org and http://www.netbeans.org.
+Unfortunately, this is not a trivial procedure.
+
+==============================================================================
+7. Setting up NetBeans to run with Vim			    *netbeans-setup*
+
+Assuming you have loaded and enabled the NetBeans External Editor module
+as described in |netbeans-preparation| all you need to do is verify that
+the gvim command line is properly configured for your environment.
+
+Open the Tools->Options dialog and open the Editing category. Select the
+External Editor. The right hand pane should contain a Properties tab and
+an Expert tab. In the Properties tab make sure the "Editor Type" is set
+to "Vim". In the Expert tab make sure the "Vim Command" is correct.
+
+You should be careful if you change the "Vim Command". There are command
+line options there which must be there for the connection to be properly
+set up. You can change the command name but thats about it. If your gvim
+can be found by your $PATH then the VIM Command can start with "gvim". If
+you don't want gvim searched from your $PATH then hard code in the full
+Unix path name. At this point you should get a gvim for any source file
+you open in NetBeans.
+
+If some files come up in gvim and others (with different file suffixes) come
+up in the default NetBeans editor you should verify the MIME type in the
+Expert tab MIME Type property. NetBeans is MIME oriented and the External
+Editor will only open MIME types specified in this property.
+
+==============================================================================
+8. Messages						*netbeans-messages*
+
+These messages are specific for NetBeans:
+
+							*E463*
+Region is guarded, cannot modify
+		NetBeans defines guarded areas in the text, which you cannot
+		change.
+
+							*E656*
+NetBeans dissallows writes of unmodified buffers
+		NetBeans does not support writes of unmodified buffers that
+		were opened from NetBeans.
+
+							*E657*
+Partial writes disallowed for NetBeans buffers
+		NetBeans does not support partial writes for buffers that were
+		opened from NetBeans.
+
+							*E658*
+NetBeans connection lost for this buffer
+		NetBeans has become confused about the state of this file.
+		Rather than risc data corruption, NetBeans has severed the
+		connection for this file. Vim will take over responsibility
+		for saving changes to this file and NetBeans will no longer
+		know of these changes.
+
+==============================================================================
+9. Running Vim from NetBeans				*netbeans-run*
+
+NetBeans starts Vim with the |-nb| argument.  Three forms can be used, that
+differ in the way the information for the connection is specified:
+
+	-nb={fname}				from a file
+	-nb:{hostname}:{addr}:{password}	directly
+	-nb					from a file or environment
+
+							*E660* *E668*
+For security reasons, the best method is to write the information in a file
+readable only by the user.  The name of the file can be passed with the
+"-nb={fname}" argument or, when "-nb" is used without a parameter, the
+environment variable "__NETBEANS_CONINFO".  The file must contain these three
+lines, in any order:
+
+	host={hostname}
+	port={addr}
+	auth={password}
+
+Other lines are ignored.  The caller of Vim is responsible for deleting the
+file afterwards.
+
+{hostname} is the name of the machine where NetBeans is running.  When omitted
+the environment variable "__NETBEANS_HOST" is used or the default "localhost".
+
+{addr} is the port number for NetBeans.  When omitted the environment variable
+"__NETBEANS_SOCKET" is used or the default 3219.
+
+{password} is the password for connecting to NetBeans.  When omitted the
+environment variable "__NETBEANS_VIM_PASSWORD" is used or "changeme".
+
+==============================================================================
+10. NetBeans protocol					*netbeans-protocol*
+
+The communication between NetBeans and Vim uses plain text messages.  This
+protocol was first designed to work with the external editor module of
+NetBeans (see http://externaleditor.netbeans.org).  Later it was extended to
+work with Agide (A-A-P GUI IDE, see http://www.a-a-p.org).  The extensions are
+marked with "version 2.1".
+
+Version 2.2 of the protocol has several minor changes which should only
+affect NetBeans users (ie, not Agide users). However, a bug was fixed which
+could cause confusion. The netbeans_saved() function sent a "save" protocol
+command. In protocol version 2.1 and earlier this was incorrectly interpreted
+as a notification that a write had taken place. In reality, it told NetBeans
+to save the file so multiple writes were being done. This caused various
+problems and has been fixed in 2.2. To decrease the likelyhood of this
+confusion happening again, netbeans_saved() has been renamed to
+netbeans_save_buffer().
+
+The messages are currently sent over a socket.  Since the messages are in
+plain UTF-8 text this protocol could also be used with any other communication
+mechanism.
+
+10.1 Kinds of messages		|nb-messages|
+10.2 Terms			|nb-terms|
+10.3 Commands			|nb-commands|
+10.4 Functions and Replies	|nb-functions|
+10.5 Events			|nb-events|
+10.6 Special messages		|nb-special|
+
+*E627* *E628* *E629* *E630* *E631* *E632* *E633* *E634* *E635* *E636*
+*E637* *E638* *E639* *E640* *E641* *E642* *E643* *E644* *E645* *E646*
+*E647* *E648* *E649* *E650* *E651* *E652* *E653* *E654*
+These errors occur when a message violates the protocol.
+
+
+10.1 Kinds of messages					*nb-messages*
+
+There are four kinds of messages:
+
+kind		direction	comment ~
+Command		IDE -> editor	no reply necessary
+Function	IDE -> editor	editor must send back a reply
+Reply		editor -> IDE	only in response to a Function
+Event		editor -> IDE	no reply necessary
+
+The messages are sent as a single line with a terminating newline character.
+Arguments are separated by a single space.  The first item of the message
+depends on the kind of message:
+
+kind		first item		example ~
+Command		bufID:name!seqno	11:showBalloon!123 "text"
+Function	bufID:name/seqno	11:getLength/123
+Reply		seqno			123 5000
+Event		bufID:name=123		11:keyCommand=123 "S-F2"
+
+
+10.2 Terms						*nb-terms*
+
+bufID		Buffer number.  A message may be either for a specific buffer
+		or generic.  Generic messages use a bufID of zero.  NOTE: this
+		buffer ID is assigned by the IDE, it is not Vim's buffer
+		number.  The bufID must be a sequentially rising number,
+		starting at one.
+
+seqno		The IDE uses a sequence number for Commands and Functions.  A
+		Reply must use the sequence number of the Function that it is
+		associated with.  A zero sequence number can be used for
+		Events (the seqno of the last received Command or Function can
+		also be used).
+
+string		Argument in double quotes.  Text is in UTF-8 encoding.  This
+		means ASCII is passed as-is.  Special characters are
+		represented with a backslash:
+			\"	double quote
+			\n	newline
+			\r	carriage-return
+			\t	tab (optional, also works literally)
+			\\	backslash
+		NUL bytes are not allowed!
+
+boolean		Argument with two possible values:
+			T	true
+			F	false
+
+number		Argument with a decimal number.
+
+optnum		Argument with either a decimal number or "none" (without the
+		quotes).
+
+offset		A number argument that indicates a byte position in a buffer.
+		The first byte has offset zero.  Line breaks are counted for
+		how they appear in the file (CR/LF counts for two bytes).
+		Note that a multi-byte character is counted for the number of
+		bytes it takes.
+
+lnum/col	Argument with a line number and column number position.  The
+		line number starts with one, the column is the byte position,
+		starting with zero.  Note that a multi-byte character counts
+		for several columns.
+
+pathname	String argument: file name with full path.
+
+
+10.3 Commands						*nb-commands*
+
+actionMenuItem	Not implemented.
+
+actionSensitivity
+		Not implemented.
+
+addAnno serNum typeNum off len
+		Place an annotation in this buffer.
+		Arguments:
+		   serNum	number	serial number of this placed
+					annotation, used to be able to remove
+					it
+		   typeNum	number	sequence number of the annotation
+					defined with defineAnnoType for this
+					buffer
+		   off		number	offset where annotation is to be placed
+		   len		number	not used
+		In version 2.1 "lnum/col" can be used instead of "off".
+
+balloonResult text
+		Not implemented.
+
+close		Close the buffer.  This leaves us without current buffer, very
+		dangerous to use!
+
+create		Creates a buffer without a name.  Replaces the current buffer
+		(it's hidden when it was changed).
+		NetBeans uses this as the first command for a file that is
+		being opened.  The sequence of commands could be:
+			create
+			setCaretListener	(ignored)
+			setModified		(no effect)
+			setContentType		(ignored)
+			startDocumentListen
+			setTitle
+			setFullName
+
+defineAnnoType typeNum typeName tooltip glyphFile fg bg
+		Define a type of annotation for this buffer.
+		Arguments:
+		   typeNum	number	sequence number (not really used)
+		   typeName	string	name that identifies this annotation
+		   tooltip	string	not used
+		   glyphFile	string	name of icon file
+		   fg		optnum	foreground color for line highlighting
+		   bg		optnum	background color for line highlighting
+		Vim will define a sign for the annotation.
+		When both "fg" and "bg" are "none" no line highlighting is
+		used (new in version 2.1).
+		When "glyphFile" is empty, no text sign is used (new in
+		version 2.1).
+		When "glyphFile" is one or two characters long, a text sign is
+		defined (new in version 2.1).
+		Note: the annotations will be defined in sequence, and the
+		sequence number is later used with addAnno.
+
+editFile pathname
+		Set the name for the buffer and edit the file "pathname", a
+		string argument.
+		Normal way for the IDE to tell the editor to edit a file.  If
+		the IDE is going to pass the file text to the editor use these
+		commands instead:
+			setFullName
+			insert
+			initDone
+		New in version 2.1.
+
+enableBalloonEval
+		Not implemented.
+
+endAtomic	End an atomic operation.  The changes between "startAtomic"
+		and "endAtomic" can be undone as one operation.  But it's not
+		implemented yet.  Redraw when necessary.
+
+guard off len
+		Mark an area in the buffer as guarded.  This means it cannot
+		be edited.  "off" and "len" are numbers and specify the text
+		to be guarded.
+
+initDone	Mark the buffer as ready for use.  Implicitly makes the buffer
+		the current buffer.  Fires the BufReadPost autocommand event.
+
+moveAnnoToFront serNum
+		Not implemented.
+
+netbeansBuffer isNetbeansBuffer
+		If "isNetbeansBuffer" is "T" then this buffer is ``owned'' by
+		NetBeans.
+		New in version 2.2.
+
+putBufferNumber pathname
+		Associate a buffer number with the Vim buffer by the name
+		"pathname", a string argument.  To be used when the editor
+		reported editing another file to the IDE and the IDE needs to
+		tell the editor what buffer number it will use for this file.
+		Also marks the buffer as initialized.
+		New in version 2.1.
+
+raise		Bring the editor to the foreground.
+		New in version 2.1.
+
+removeAnno serNum
+		Remove a previously place annotation for this buffer.
+		"serNum" is the same number used in addAnno.
+
+save		Save the buffer when it was modified.  The other side of the
+		interface is expected to write the buffer and invoke
+		"setModified" to reset the "changed" flag of the buffer.
+		The writing is skipped when one of these conditions is true:
+		- 'write' is not set
+		- the buffer is read-only
+		- the buffer does not have a file name
+		- 'buftype' disallows writing
+		New in version 2.2.
+
+setAsUser	Not implemented.
+
+setBufferNumber pathname
+		Associate a buffer number with Vim buffer by the name
+		"pathname".  To be used when the editor reported editing
+		another file to the IDE and the IDE needs to tell the editor
+		what buffer number it will use for this file.
+		Has the side effect of making the buffer the current buffer.
+		See "putBufferNumber" for a more useful command.
+
+setContentType
+		Not implemented.
+
+setDot off	Make the buffer the current buffer and set the cursor at the
+		specified position.  If there are folds they are opened to
+		make the cursor line visible.
+		In version 2.1 "lnum/col" can be used instead of "off".
+
+setExitDelay seconds
+		Set the delay for exiting to "seconds", a number.
+		This delay is used to give the IDE a chance to handle things
+		before really exiting.  The default delay is two seconds.
+		New in version 2.1.
+
+setFullName pathname
+		Set the file name to be used for a buffer to "pathname", a
+		string argument.
+		Used when the IDE wants to edit a file under control of the
+		IDE.  This makes the buffer the current buffer, but does not
+		read the file.  "insert" commands will be used next to set the
+		contents.
+
+setLocAndSize	Not implemented.
+
+setMark		Not implemented.
+
+setModified modified
+		When the boolean argument "modified" is "T" mark the buffer as
+		modified, when it is "F" mark it as unmodified.
+
+setReadOnly	Not implemented.
+
+setStyle	Not implemented.
+
+setTitle name
+		Set the title for the buffer to "name", a string argument.
+		The title is only used for NetBeans functions, not by Vim.
+
+setVisible visible
+		When the boolean argument "visible" is "T", goto the buffer.
+		The "F" argument does nothing.
+
+showBalloon text
+		Show a balloon (popup window) at the mouse pointer position,
+		containing "text", a string argument.  The balloon should
+		disappear when the mouse is moved more than a few pixels.
+		New in version 2.1.
+
+specialKeys	Not implemented.
+
+startAtomic	Begin an atomic operation.  The screen will not be updated
+		until "endAtomic" is given.
+
+startCaretListen
+		Not implemented.
+
+startDocumentListen
+		Mark the buffer to report changes to the IDE with the
+		"insert" and "remove" events.  The default is to report
+		changes.
+
+stopCaretListen
+		Not implemented.
+
+stopDocumentListen
+		Mark the buffer to stop reporting changes to the IDE.
+		Opposite of startDocumentListen.
+
+unguard off len
+		Opposite of "guard", remove guarding for a text area.
+
+version		Not implemented.
+
+
+10.4 Functions and Replies				*nb-functions*
+
+getDot		Not implemented.
+
+getCursor	Return the current buffer and cursor position.
+		The reply is:
+			seqno bufID lnum col off
+		seqno = sequence number of the function
+		bufID = buffer ID of the current buffer (if this is unknown -1
+			is used)
+		lnum  = line number of the cursor (first line is one)
+		col   = column number of the cursor (in bytes, zero based)
+		off   = offset of the cursor in the buffer (in bytes)
+		New in version 2.1.
+
+getLength	Return the length of the buffer in bytes.
+		Reply example for a buffer with 5000 bytes:
+			123 5000
+		TODO: explain use of partial line.
+
+getMark		Not implemented.
+
+getModified	When a buffer is specified: Return zero if the buffer does not
+		have changes, one if it does have changes.
+		When no buffer is specified (buffer number zero): Return the
+		number of buffers with changes.  When the result is zero it's
+		safe to tell Vim to exit.
+		New in version 2.1.
+
+getText		Return the contents of the buffer as a string.
+		Reply example for a buffer with two lines
+			123 "first line\nsecond line\n"
+		NOTE: docs indicate an offset and length argument, but this is
+		not implemented.
+
+insert off text
+		Insert "text" before position "off".  "text" is a string
+		argument, "off" a number.
+		Possible replies:
+			123		no problem
+			123 !message	failed
+		Note that the message in the reply is not quoted.
+
+remove off length
+		Delete "length" bytes of text at position "off".  Both
+		arguments are numbers.
+		Possible replies:
+			123		no problem
+			123 !message	failed
+		Note that the message in the reply is not quoted.
+
+saveAndExit	Perform the equivalent of closing Vim: ":confirm qall".
+		If there are no changed files or the user does not cancel the
+		operation Vim exits and no result is sent back.  The IDE can
+		consider closing the connection as a successful result.
+		If the user cancels the operation the number of modified
+		buffers that remains is returned and Vim does not exit.
+		New in version 2.1.
+
+
+10.5 Events						*nb-events*
+
+balloonEval off len type
+		The mouse pointer rests on text for a short while.  When "len"
+		is zero, there is no selection and the pointer is at position
+		"off".  When "len" is non-zero the text from position "off" to
+		"off" + "len" is selected.
+		Only sent after "enableBalloonEval" was used for this buffer.
+		"type" is not yet defined.
+		Not implemented yet.
+
+balloonText text
+		Used when 'ballooneval' is set and the mouse pointer rests on
+		some text for a moment.  "text" is a string, the text under
+		the mouse pointer.
+		New in version 2.1.
+
+buttonRelease button lnum col
+		Report which button was pressed and the location of the cursor
+		at the time of the release.  Only for buffers that are owned
+		by NetBeans.  This event is not sent if the button was
+		released while the mouse was in the status line or in a
+		separator line. If col is less than 1 the button release was
+		in the sign area.
+		New in version 2.2.
+
+fileClosed	Not implemented.
+
+fileModified	Not implemented.
+
+fileOpened pathname open modified
+		A file was opened by the user.
+		Arguments:
+		   pathname	string	  name of the file
+		   open		boolean   always "T"
+		   modified	boolean   always "F"
+
+geometry cols rows x y
+		Report the size and position of the editor window.
+		Arguments:
+		   cols		number	  number of text columns
+		   rows		number	  number of text rows
+		   x		number	  pixel position on screen
+		   y		number	  pixel position on screen
+		Only works for Motif.
+
+insert off text
+		Text "text" has been inserted in Vim at position "off".
+		Only fired when enabled, see "startDocumentListen".
+
+invokeAction	Not implemented.
+
+keyCommand keyName
+		Reports a special key being pressed with name "keyName", which
+		is a string.
+		Supported key names:
+			F1		function key 1
+			F2		function key 2
+			...
+			F12		function key 12
+
+			' '		space (without the quotes)
+			!		exclamation mark
+			...		any other ASCII printable character
+			~		tilde
+
+			X		any unrecognized key
+
+		The key may be prepended by "C", "S" and/or "M" for Control,
+		Shift and Meta (Alt) modifiers.  If there is a modifier a dash
+		is used to separate it from the key name.  For example:
+		"C-F2".
+		ASCII characters are new in version 2.1.
+
+keyAtPos keyName lnum/col
+		Like "keyCommand" and also report the line number and column
+		of the cursor.
+		New in version 2.1.
+
+killed		A file was closed by the user.  Only for files that have been
+		assigned a number by the IDE.
+
+newDotAndMark off off
+		Reports the position of the cursor being at "off" bytes into
+		the buffer.  Only sent just before a "keyCommand" event.
+
+quit		Not implemented.
+
+remove off len
+		Text was deleted in Vim at position "off" with byte length
+		"len".
+		Only fired when enabled, see "startDocumentListen".
+
+revert		Not implemented.
+
+save		The buffer has been saved and is now unmodified.
+		Only fired when enabled, see "startDocumentListen".
+
+startupDone	The editor has finished its startup work and is ready for
+		editing files.
+		New in version 2.1.
+
+unmodified	The buffer is now unmodified.
+		Only fired when enabled, see "startDocumentListen".
+
+version vers	Report the version of the interface implementation.  Vim
+		reports "2.2" (including the quotes).
+
+
+10.6 Special messages					*nb-special*
+
+These messages do not follow the style of the messages above.  They are
+terminated by a newline character.
+
+ACCEPT		Not used.
+
+AUTH password	editor -> IDE: First message that the editor sends to the IDE.
+		Must contain the password for the socket server, as specified
+		with the |-nb| argument.  No quotes are used!
+
+DISCONNECT	IDE -> editor: break the connection.  The editor will exit.
+		The IDE must only send this message when there are no unsaved
+		changes!
+
+DETACH		IDE -> editor: break the connection without exiting the
+		editor.  Used when the IDE exits without bringing down the
+		editor as well.
+		New in version 2.1.
+
+REJECT		Not used.
+
+==============================================================================
+11. Known problems					*netbeans-problems*
+
+NUL bytes are not possible.  For editor -> IDE they will appear as NL
+characters.  For IDE -> editor they cannot be inserted.
+
+
+ vim:tw=78:ts=8:ft=help:norl:

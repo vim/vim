@@ -1,0 +1,229 @@
+*sponsor.txt*   For Vim version 7.0aa.  Last change: 2004 Apr 23
+
+
+		  VIM REFERENCE MANUAL    by Bram Moolenaar
+
+
+
+SPONSOR VIM DEVELOPMENT						*sponsor*
+
+Fixing bugs and adding new features takes a lot of effort.  For a few years
+Bram has attempted to do this next to a full-time job.  During that time the
+todo list kept getting longer and longer.
+
+In order for Bram to support Vim properly he needs your support.  Through your
+donations Bram will be able to have a part-time job and spend more time on
+fixing bugs and adding new features.
+
+For the most recent information about sponsoring look on the Vim web site:
+
+	http://www.vim.org/sponsor/
+
+More explanations can be found in the |sponsor-faq|.
+
+
+REGISTERED VIM USER						*register*
+
+You can become a registered Vim user by sending at least 10 euro.  This works
+similar to sponsoring Vim, see |sponsor| above.  Registration was made
+possible for the situation where your boss or bookkeeper may be willing to
+register software, but does not like the terms "sponsoring" and "donation".
+
+More explanations can be found in the |register-faq|.
+
+
+VOTE FOR FEATURES					*vote-for-features*
+
+To give registered Vim users and sponsors an advantage over lurkers they can
+vote for the items Bram should work on.  How does this voting work?
+
+1.  You send at least 10 euro.  See below for ways to transfer money
+    |send-money|.
+
+2.  You will be e-mailed a registration key.  Enter this key on your account
+    page on the Vim website.  You can easily create an account if you don't
+    have one yet.
+
+3.  You can enter your votes on the voting page.  There is a link to that page
+    on your account page after entering a registration key.  Your votes will
+    be counted for two years.
+
+4.  The voting results appear on the results page, which is visible for
+    everybody:  http://www.vim.org/sponsor/vote_results.php
+
+Additionally, once you have send 100 euro or more in total, your name appears
+in the "Vim hall of honour":   http://www.vim.org/sponsor/hall_of_honour.php
+But only if you enable this on your account page.
+
+
+HOW TO SEND MONEY						*send-money*
+
+Creditcard	Through PayPal, see the PayPal site for information:
+			https://www.paypal.com
+		The e-mail address for sending sponsorship money is:
+			donate@vim.org
+		The e-mail address for Vim registration is:
+			register@vim.org
+		Using Euro is preferred, other currencies are also accepted.
+		In Euro countries a bank transfer is preferred, this has lower
+		costs.
+
+Bank transfer	Transfer to Bram's account at the Postbank: 1644503.  For
+		international transfers you can use these numbers:
+			IBAN:       NL79 PSTB 0001 6445 03
+			SWIFT/BIC:  PSTBNL21
+		This is the address of the bank:
+			ING Bank Amsterdam, Foreign Operations
+			PO Box 1800
+			1000 BV Amsterdam
+			The Netherlands
+		Include "Vim sponsor" or "Vim registration" in the comment of
+		your money transfer.  Send me an e-mail that mentions the
+		amount you transferred if you want to vote for features and
+		show others you are a registered Vim user or sponsor.
+
+Cash		Small amounts can be send with ordinary mail.  Put something
+		around the money, so that it's not noticable from the outside.
+		Mention your e-mail address if you want to vote for features
+		and show others you are a registered Vim user or sponsor.
+
+This is Bram's address: Bram Moolenaar
+			Clematisstraat 30
+			5925 BE Venlo
+			The Netherlands
+
+
+ALTERNATIVE
+
+If you don't care about sponsoring Vim Development or becoming a registered
+Vim user, but do care about helping needy children, consider giving to the
+ICCF Holland foundation.  This is the charity recommended by Vim's author.
+The money is used for a children centre in the south of Uganda, where AIDS has
+caused many victims.  See |uganda|.
+
+
+QUESTIONS AND ANSWERS				*sponsor-faq* *register-faq*
+
+Why should I give money?
+
+Bram has tried to work on Vim next to a full-time job.  The list of known bugs
+and ideas for new features has constantly been growing during this time.  Bram
+simply can't spend enough time on Vim development when he has a full-time job.
+Your contribution will make it possible for Bram to have a part-time job and
+spend much more time on Vim development.  Bugs will be fixed quicker and new
+Vim releases will become available more often.
+
+
+How much money should I send?
+
+That is up to you.  The more you give, the more time Bram can work on Vim.  An
+indication for individuals that use Vim at home: 10 Euro per year.  For
+professional use: 30 Euro per year per person.  Send at least 10 euro to be
+able to vote for features.
+
+
+What do I get in return?
+
+Each registered Vim user and sponsor who donates at least 10 euro will be able
+to vote for new features.  These votes will give priority to the work on Vim.
+The votes are valid for two years.  The more money you send the more your
+votes count |votes-counted|.
+
+If you send 100 Euro or more in total you will be mentioned on the "Vim hall
+of honour" page on the Vim web site.  But only if you enable this on your
+account page.  You can also select whether the amount will be visible.
+
+
+How do I become a Vim sponsor or registered Vim user?
+
+Send money, as explained above |send-money| and include your e-mail address.
+When the money has been received you will receive a unique registration key.
+This key can be used on the Vim website to activate voting on your Vim
+account.  You will then get an extra page where you can vote for features and
+choose whether others will be able to see that you donated.  There is a link
+to this page on your "My Account" page.
+
+
+What is the difference between sponsoring and registering?
+
+It has a different name.  Use the term "registration" if your boss doesn't
+like "sponsoring" or "donation".  The benefits are the same.
+
+
+How can I send money?
+
+See |send-money|.  Check the web site for the most recent information:
+http://www.vim.org/sponsor/
+
+
+Why don't you use the SourceForge donation system?
+
+SourceForge takes 5% of the donations for themselves.  If you want to support
+SourceForge you can send money to them directly.
+
+
+I cannot afford to send money, may I still use Vim?
+
+Yes.
+
+
+I did not register Vim, can I use all available features?
+
+Yes.
+
+
+I noticed a bug, do I need to register before I can report it?
+
+No, suggestions for improving Vim can always be given.  For improvements use
+the developer |maillist|, for reporting bugs see |bugs|.
+
+
+How are my votes counted?				*votes-counted*
+
+You may vote when you send 10 euro or more.  You can enter up to ten votes.
+You can select the same item several times to give it more points.  You can
+also enter three counter votes, these count as negative points.
+
+When you send 30 euro or more the points are doubled.  Above 100 euro they
+count four times, above 300 euro they count six times, above 1000 euro ten
+times.
+
+
+Can I change my votes?
+
+You can change your votes any time you like, up to two years after you
+sent money.  The points will be counted right away.
+
+
+How about Charityware?
+
+You have to decide yourself whether you want to sponsor Vim development, help
+the poor children in Uganda (see |uganda|) or both.  Bram will certainly keep
+on supporting the project in Uganda.  In the (unlikely) situation that Bram
+gets more donations for Vim development than he needs, he will send the money
+to Uganda.
+
+
+I donated $$$, now please add feature XYZ!
+
+There is no direct relation between your donation and the work Bram does.
+Otherwise you would be paying for work and Bram has to pay income tax over the
+donation.  If you want to hire Bram for specific work, contact him directly,
+don't use the donation system.
+
+
+Are the donations tax deductable?
+
+No.  Setting up a system for this is complex and imposes too many restrictions.
+The donations to help the children in |Uganda| are tax deductable in Holland,
+Germany, Canada and probably also in the USA.
+
+
+Can you send me a bill?
+
+Sending a bill would mean Bram does something in return for your contribution.
+That is work and would mean Bram has to pay income tax over the amount.  It is
+possible, but the net amount will be lower.
+
+
+ vim:tw=78:ts=8:ft=help:norl:

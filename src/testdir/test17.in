@@ -1,0 +1,27 @@
+Tests for "gf" on ${VAR}
+
+STARTTEST
+:so small.vim
+:if has("ebcdic")
+: set isfname=@,240-249,/,.,-,_,+,,,$,:,~,{,}
+:else
+: set isfname=@,48-57,/,.,-,_,+,,,$,:,~,{,}
+:endif
+:if has("unix")
+:let $CDIR = "."
+/CDIR
+:else
+:if has("amiga")
+:let $TDIR = "/testdir"
+:else
+:let $TDIR = "."
+:endif
+/TDIR
+:endif
+gf
+:w! test.out
+:qa!
+ENDTEST
+
+	${CDIR}/test17a.in
+	$TDIR/test17a.in

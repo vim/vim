@@ -1,0 +1,117 @@
+*undo.txt*      For Vim version 7.0aa.  Last change: 2003 Oct 21
+
+
+		  VIM REFERENCE MANUAL    by Bram Moolenaar
+
+
+Undo and redo						*undo-redo*
+
+The basics are explained in section |02.5| of the user manual.
+
+1. Undo and redo commands	|undo-commands|
+2. Two ways of undo		|undo-two-ways|
+3. Remarks about undo		|undo-remarks|
+
+==============================================================================
+1. Undo and redo commands				*undo-commands*
+
+<Undo>		or					*undo* *<Undo>* *u*
+u			Undo [count] changes.  {Vi: only one level}
+
+							*:u* *:un* *:undo*
+:u[ndo]			Undo one change.  {Vi: only one level}
+
+							*CTRL-R*
+CTRL-R			Redo [count] changes which were undone.  {Vi: redraw
+			screen}
+
+							*:red* *:redo* *redo*
+:red[o]			Redo one change which was undone.  {Vi: no redo}
+
+							*U*
+U			Undo all latest changes on one line.  {Vi: while not
+			moved off of it}
+
+The last changes are remembered.  You can use the undo and redo commands above
+to revert the text to how it was before each change.  You can also apply the
+changes again, getting back the text before the undo.
+
+The "U" command is treated by undo/redo just like any other command.  Thus a
+"u" command undoes a "U" command and a 'CTRL-R' command redoes it again.  When
+mixing "U", "u" and 'CTRL-R' you will notice that the "U" command will
+restore the situation of a line to before the previous "U" command.  This may
+be confusing.  Try it out to get used to it.
+The "U" command will always mark the buffer as changed.  When "U" changes the
+buffer back to how it was without changes, it is still considered changed.
+Use "u" to undo changes until the buffer becomes unchanged.
+
+==============================================================================
+2. Two ways of undo					*undo-two-ways*
+
+How undo and redo commands work depends on the 'u' flag in 'cpoptions'.
+There is the Vim way ('u' excluded) and the vi-compatible way ('u' included).
+In the Vim way, "uu" undoes two changes.  In the Vi-compatible way, "uu" does
+nothing (undoes an undo).
+
+'u' excluded, the Vim way:
+You can go back in time with the undo command.  You can then go forward again
+with the redo command.  If you make a new change after the undo command,
+the redo will not be possible anymore.
+
+'u' included, the Vi-compatible way:
+The undo command undoes the previous change, and also the previous undo command.
+The redo command repeats the previous undo command.  It does NOT repeat a
+change command, use "." for that.
+
+Examples	Vim way			Vi-compatible way	~
+"uu"		two times undo		no-op
+"u CTRL-R"	no-op			two times undo
+
+Rationale:  Nvi uses the "." command instead of CTRL-R.  Unfortunately, this
+	    is not Vi compatible.  For example "dwdwu." in Vi deletes two
+	    words, in Nvi it does nothing.
+
+==============================================================================
+3. Remarks about undo					*undo-remarks*
+
+The number of changes that are remembered is set with the 'undolevels' option.
+If it is zero, the Vi-compatible way is always used.  If it is negative no
+undo is possible.  Use this if you are running out of memory.
+
+Marks for the buffer ('a to 'z) are also saved and restored, together with the
+text.  {Vi does this a little bit different}
+
+When all changes have been undone, the buffer is not considered to be changed.
+It is then possible to exit Vim with ":q" instead of ":q!" {not in Vi}.  Note
+that this is relative to the last write of the file.  Typing "u" after ":w"
+actually changes the buffer, compared to what was written, so the buffer is
+considered changed then.
+
+When manual |folding| is being used, the folds are not saved and restored.
+Only changes completely within a fold will keep the fold as it was, because
+the first and last line of the fold don't change.
+
+The numbered registers can also be used for undoing deletes.  Each time you
+delete text, it is put into register "1.  The contents of register "1 are
+shifted to "2, etc.  The contents of register "9 are lost.  You can now get
+back the most recent deleted text with the put command: '"1P'.  (also, if the
+deleted text was the result of the last delete or copy operation, 'P' or 'p'
+also works as this puts the contents of the unnamed register).  You can get
+back the text of three deletes ago with '"3P'.
+
+						*redo-register*
+If you want to get back more than one part of deleted text, you can use a
+special feature of the repeat command ".".  It will increase the number of the
+register used.  So if you first do ""1P", the following "." will result in a
+'"2P'.  Repeating this will result in all numbered registers being inserted.
+
+Example:	If you deleted text with 'dd....' it can be restored with
+		'"1P....'.
+
+If you don't know in which register the deleted text is, you can use the
+:display command.  An alternative is to try the first register with '"1P', and
+if it is not what you want do 'u.'.  This will remove the contents of the
+first put, and repeat the put command for the second register.  Repeat the
+'u.' until you got what you want.
+
+ vim:tw=78:ts=8:ft=help:norl:

@@ -1,0 +1,15 @@
+
+
+NewGroup       xxx term=bold cterm=italic ctermfg=2 ctermbg=3
+
+
+Group3         xxx term=underline cterm=bold
+
+
+
+
+
+
+
+
+E475: term='asdf

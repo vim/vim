@@ -1,0 +1,4 @@
+#! /bin/sh
+# run the automatically generated configure script
+CONFIG_STATUS=auto/config.status \
+	auto/configure "$@" --srcdir="${srcdir-.}" --cache-file=auto/config.cache

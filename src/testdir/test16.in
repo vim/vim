@@ -1,0 +1,10 @@
+Tests for resetting "secure" flag after GUI has started.
+
+STARTTEST
+:set exrc secure
+:gui -f
+:.,$w! test.out
+:qa!
+ENDTEST
+
+	just some text

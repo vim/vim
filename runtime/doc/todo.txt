@@ -1,0 +1,3441 @@
+*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Jun 13
+
+
+		  VIM REFERENCE MANUAL	  by Bram Moolenaar
+
+
+			      TODO list for Vim		*todo*
+
+This is a veeeery long list of known bugs, current work and desired
+improvements.  To make it a little bit accessible, the items are grouped by
+subject.  In the first column of the line a classification is used to be able
+to look for "the next thing to do":
+
+Priority classification:
+9   next point release
+8   next release
+7   as soon as possible
+6   soon
+5   should be included
+4   nice to have
+3   consider including
+2   maybe not
+1   probably not
+-   unclassified
+
+						    *votes-for-changes*
+See |develop.txt| for development plans.  You can vote for which items should
+be worked on, but only if you sponsor Vim development.  See |sponsor|.
+
+							*known-bugs*
+-------------------- Known bugs and current work -----------------------
+
+GTK2: font dialog uses font size zero when 'guifont' is "Courier".  Patch from
+Yasuhiro Matsumoto, 2004 June 8.
+
+Python indent: # aser: still adds extra indent.
+
+
+For version 7.0:
+-   Include many PATCHES:
+    -   Include the kvim patch. http://freenux.org/vim/ (Mickael Marchand)
+	Do not add Qtopia yet, it doesn't work very well.
+-   new DATA TYPES: lists, dictionaries and function references.
+    Add type checking?  See ~/vim/ideas.txt.
+-   Add SPELLCHECKER, with easy to add support for many languages.
+-   REFACTORING: The main() function is very long.  Move parts to separate
+    functions, especially loops.  Ideas from Walter Briscoe (2003 Apr 3, 2004
+    Feb 9).
+-   Store messages to allow SCROLLING BACK for all commands.  And other "less"
+    like commands.
+-   "INTELLISENSE".  First cleanup the Insert-mode completion.
+	http://www.vim.org/scripts/script.php?script_id=747
+	http://sourceforge.net/projects/insenvim
+-   PERSISTENT UNDO: store undo in a file.
+    Support multiple threads.  Show the list of changes in a window to be able
+    to select a version.
+7   SWAP FILE CHANGE: When a dos format file was edited with ":e ++ff=unix",
+    Vim is killed and trying to recover the file, 'ff' will be dos.  Same for
+    non-default fileencoding.  (Miroslaw Dobrzanski-Neumann, Jul 17)
+    Should store the values in block 0 of the swap file, but that is an
+    incompatible change.
+7   Support WINDOW TABS.  Works like several pages, each with their own
+    split windows.  Patch for GTK 1.2 from Christian Michon, 2004 Jan 6.
+    Also for the console!
+-   EMBEDDING: Make it possible to run Vim inside a window of another program.
+    For Xwindows this can be done with XReparentWindow().
+    For GTK Neil Bird has a patch to use Vim like a widget.
+-   Add COLUMN NUMBERS to ":" commands ":line1,line2[col1,col2]cmd".  Block
+    can be selected with CTRL-V.  Allow '$' (end of line) for col2.
+-   Add DEBUGGER INTERFACE.  Implementation for gdb by Xavier de Gaye,
+    assisted by Mikolaj Machowski.  Should work like an IDE.  Try to keep it
+    generic.  Also found here: http://skawina.eu.org/mikolaj/vimgdb
+    To be able to start the debugger from inside Vim: For GUI run a program
+    with a netbeans connection; for console: start a program that splits the
+    terminal, runs the debugger in one window and reconnect Vim I/O to the
+    other window.
+    Wishes for NetBeans commands:
+    - make it possible to have 'defineAnnoType' also handle terminal colors.
+    - send 'balloonText' events for the cursor position (using CursorHold ?)
+      in terminal mode.
+-   STICKY CURSOR: Add a way of scrolling that leaves the cursor where it is.
+    Especially when using the scrollbar.  Typing a cursor-movement command
+    scrolls back to where the cursor is.
+
+
+Vi incompatibility:
+8   With undo/redo only marks in the changed lines should be changed.  Other
+    marks should be kept.  Vi keeps each mark at the same text, even when it
+    is deleted or restored. (Webb)
+    Also: A mark is lost after: make change, undo, redo and undo.
+    Example: "{d''" then "u" then "d''": deletes an extra line, because the ''
+    position is one line down. (Veselinovic)
+8   ":change" in a single-line file adds an empty line. When the file used to
+    be longer a "~" line is displayed, but there really is an empty line.
+    (Haakon Riiser, 2003 Dec 3 and Dec 16)
+8   ":append" and ":insert" in an empty file add an extra empty line. (Haakon
+    Riiser, 2003 Dec 3)  Test for ML_EMPTY.
+8   When stdin is not a tty, and Vim reads commands from it, an error should
+    make Vim exit.
+7   Unix Vim (not gvim): Typing CTRL-C in Ex mode should finish the line
+    (currently you can continue typing, but it's truncated later anyway).
+    Requires a way to make CTRL-C interrupt select() when in cooked input.
+8   When loading a file in the .exrc, Vi loads the argument anyway.  Vim skips
+    loading the argument if there is a file already.  When no file argument
+    given, Vi starts with an empty buffer, Vim keeps the loaded file. (Bearded)
+6   In Insert mode, when using <BS> or <Del>, don't wipe out the text, but
+    only move back the cursor.	Behaves like '$' in 'cpoptions'.  Use a flag
+    in 'cpoptions' to switch this on/off.
+8   When editing a file which is a symbolic link, and then opening another
+    symbolic link on the same file, Vim uses the name of the first one.
+    Adjust the file name in the buffer to the last one used?  Use several file
+    names in one buffer???
+    Also: When first editing file "test", which is symlink to "test2", and
+    then editing "test2", you end up editing buffer "test" again.  It's not
+    logical that the name that was first used sticks with the buffer.
+7   The ":undo" command works differently in Ex mode.  Edit a file, make some
+    changes, "Q", "undo" and _all_ changes are undone, like the ":visual"
+    command was one command.
+7   The ":map" command output overwrites the command.  Perhaps it should keep
+    the ":map" when it's used without arguments?
+7   CTRL-L is not the end of a section?  It is for Posix!  Make it an option.
+7   Implement 'prompt' option.	Init to off when stdin is not a tty.
+7   CTRL-T in Insert mode inserts 'shiftwidth' of spaces at the cursor.  Add a
+    flag in 'cpoptions' for this.
+7   Add a way to send an email for a crashed edit session.  Create a file when
+    making changes (containing name of the swap file), delete it when writing
+    the file.  Supply a program that can check for crashed sessions (either
+    all, for a system startup, or for one user, for in a .login file).
+7   Vi doesn't do autoindenting when input is not from a tty (in Ex mode).
+7   "z3<CR>" should still use the whole window, but only redisplay 3 lines.
+7   ":tag xx" should move the cursor to the first non-blank.  Or should it go
+    to the match with the tag?	Option?
+7   Implement 'autoprint'/'ap' option.
+7   Add flag in 'cpoptions' that makes <BS> after a count work like <Del>
+    (Sayre).
+7   Add flag in 'cpoptions' that makes operator (yank, filter) not move the
+    cursor, at least when cancelled. (default Vi compatible).
+7   Make "5dd" on last-but-one-line not delete anything (Vi compatible).
+    Add flag in 'cpoptions' for this.  When not present, "2dd" in the last
+    line should delete the last line.  Patch from greenx 2002 Apr 11.
+7   This Vi-trick doesn't work: "Q" to go to Ex mode, then "g/pattern/visual".
+    In Vi you can edit in visual mode, and when doing "Q" you jump to the next
+    match.  Nvi can do it too.
+7   Support '\' for line continuation in Ex mode for these commands: (Luebking)
+	g/./a\		    g/pattern1/ s/pattern2/rep1\\
+	line 1\		    line 2\\
+	line 2\		    line 3\\
+	.		    line4/
+6   ":e /tmp/$tty" doesn't work.  ":e $uid" does.  Is $tty not set because of
+    the way the shell is started?
+6   Vi compatibility (optional): make "ia<CR><ESC>10." do the same strange
+    thing.  (only repeat insert for the first line).
+
+
+GTK+ 1 (OK in GTK 2):
+8   When menus are disabled, 'm' removed from 'guioptions', Alt-F still pops
+    up the File menu.  Cannot reproduce this: gives a warning for a NULL
+    pointer if the menu was never displayed.
+8   When using "gvim -geom 40x30" or setting 'columns' in .gvimrc or with a
+    GUIEnter autocommand, the width is still set to fit the toolbar.  Also
+    happens when changing the font.  How to avoid that the toolbar specifies
+    the minimal window width?
+8   When using a theme with different scrollbars (gtkstep), the scrollbars can
+    be too narrow. (Drazen Kacar)
+8   Font "7x14" has a bold version "7x14bold".  Try to find the bold font by
+    appending "bold" when there are not 14 dashes.
+
+GTK+ GUI known bugs:
+8   GTK 2: Combining UTF-8 characters not displayed properly in menus (Mikolaj
+    Machowski)  They are displayed as separate characters.  Problem in
+    creating a label?
+9   Can't paste a Visual selection from GTK-gvim to vim in xterm or Motif gvim
+    when it is longer than 4000 characters.  Works OK from gvim to gvim and
+    vim to vim.  Pasting through xterm (using the shift key) also works.
+    It starts working after GTK gvim loses the selection and gains it again.
+7   DND doesn't work with KDE (also with GTK 1).
+
+
+Win32 GUI known bugs:
+8   On Windows 98 the unicows library is needed to support functions with UCS2
+    file names.  Can we load unicows.dll dynamically?
+8   The -P argument doesn't work very well with many MDI applications.
+    The last argument of CreateWindowEx() should be used, see MSDN docs.
+    Tutorial: http://win32assembly.online.fr/tut32.html
+8   In eval.c, io.h is included when MSWIN32 is defined.  Shouldn't this be
+    WIN32?  Or can including io.h be moved to vim.h? (Dan Sharp)
+7   Windows XP: When using "ClearType" for text smoothing, a column of yellow
+    pixels remains when typing spaces in front of a "D" ('guifont' set to
+    "lucida_console:h8").
+6   Win32 GUI: With "-u NONE -U NONE" and doing "CTRL-W v" "CTRL-W o", the ":"
+    of ":only" is highlighted like the cursor.  (Lipelis)
+7   When font smoothing is enabled, redrawing can become very slow.  The reason
+    appears to be drawing with a transparent background.  Would it be possible
+    to use an opaque background in most places?
+8   Use another default for 'termencoding': the active codepage.  Means that
+    when 'encoding' is changed typing characters still works properly.
+    Alternative: use the Unicode functions to obtain typed characters.
+8   Win32: Multi-byte characters are not displayed, even though the same font
+    in Notepad can display them. (Srinath Avadhanula)  Try with the
+    UTF-8-demo.txt page with Andale Mono.
+7   The cursor color indicating IME mode doesn't work properly. (Shizhu Pan,
+    2004 May 9)
+8   Win32: When clicking on the gvim title bar, which gives it focus, produces
+    a file-changed dialog, after clicking on a button in that dialog the gvim
+    window follows the mouse.  The button-up event is lost.  Only with
+    MS-Windows 98?
+    Try this: ":set sw ts", get enter-prompt, then change the file in a
+    console, go back to Vim and click "reload" in the dialog for the changed
+    file: Window moves with the cursor!
+    Put focus event in input buffer and let generic Vim code handle it?
+8   When activating the Vim window with mouse click, don't move cursor to
+    mouse position.  Catch WM_MOUSEACTIVATE. (Luevelsmeyer)
+9   The print dialog uses a font which doesn't display multi-byte messages.
+    Include patch from Vipin Aravind?  Update from Yasuhiro Matsumoto.
+8   Win32: When mouse is hidden and in the toolbar, moving it won't make it
+    appear. (Sami Salonen)
+8   Windows NT: writing to aux.* makes Vim hang. (Acevedo)
+8   Win32 GUI: With maximized window, ":set go-=r" doesn't use the space that
+    comes available. (Poucet)  It works OK on Win 98 but doesn't work on Win
+    NT 4.0.  Leaves a grey area where the scrollbar was.  ":set go+=r" also
+    doesn't work properly.
+8   When Vim is minimized and when maximizing it a file-changed dialog pops
+    up, Vim isn't maximized.  It should be done before the dialog, so that it
+    appears in the right position. (Webb)
+9   When selecting at the more-prompt or hit-enter-prompt, the right mouse
+    button doesn't give popup menu.
+    At the hit-enter prompt CTRL-Y doesn't work to copy the modeless
+    selection.
+    On the command line, don't get a popup menu for the right mouse button.
+    Let the middle button paste selected text (not the clipboard but the
+    non-Visual selection)?  Otherwise CTRL-Y has to be used to copy the text.
+8   When 'grepprg' doesn't execute, the error only flashes by, the
+    user can hardly see what is wrong. (Moore)
+    Could use vimrun with an "-nowait" argument to only wait when an error
+    occurs, but "command.com" doesn't return an error code.
+8   When the 'shell' cannot be executed, should give an appropriate error msg.
+    Esp. for a filter command, currently it only complains the file could not
+    be read.
+8   MessageBox used for error messages can be too big.	There is no way to
+    scroll it, or even hit the OK button (but you can hit return).
+    Use a scrollable window.
+7   Add an option to add one pixel column to the character width?  Lucida
+    Console italic is wider than the normal font ("d" overlaps with next char).
+    Opposite of 'linespace': 'columnspace'.
+7   At the hit-enter prompt scrolling now no longer works.  Need to use the
+    keyboard to get around this.  Pretend <CR> was hit when the user tries to
+    scroll?  Need to be able to get out of hit-enter prompt with the mouse
+    anyway.
+7   Scrollbar width doesn't change when selecting other windows appearance.
+    Also background color of Toolbar and rectangle below vert. scrollbar.
+7   "!start /min cmd" should run in a minimized window, instead of using
+    "/min" as the command name. (Rogall)
+6   Drawing text transparently doesn't seem to work (when drawing part cursor).
+8   CTRL key doesn't always work in combination with ALT key.  It does work
+    for function keys, not for alphabetic characters.  Perhaps this is because
+    CTRL-ALT is used by Windows as AltGr?
+8   CTRL-- doesn't work for AZERTY, because it's CTRL-[ for QWERTY.  How do we
+    know which keyboard is being used?
+7   When scrolling, and a background color is dithered, the dither pattern
+    doesn't always join correctly between the scrolled area and the new drawn
+    area (Koloseike).
+8   When gui_init_font() is called with "*", p_guifont is freed while it might
+    still be used somewhere.  This is too tricky, do the font selection first,
+    then set the new font by name (requires putting all logfont parameters in
+    the font name).
+
+
+Athena and Motif:
+9   Can configure be changed to disable netbeans if the Xpm library is
+    required and it's missing?
+8   When using the resource "Vim*borderwidth 2" the widgets are positioned
+    wrong.
+9   XIM is disabled by default for SGI/IRIX.  Fix XIM so that 'imdisable' can
+    be off by default.
+9   XIM doesn't work properly for Athena/Motif. (Yasuhiro Matsumoto) For now,
+    keep XIM active at all times when the input method has the preediting
+    flag.
+8   X11: A menu that contains an umlaut is truncated at that character.
+    Happens when the locale is "C", which uses ASCII instead of IS0-8859-1.
+    Is there a way to use latin1 by default?  Gnome_init() seems to do this.
+8   Perhaps use fontsets for everything?
+6   When starting in English and switching the language to Japanese, setting
+    the locale with ":lang", 'guifontset' and "hi menu font=", deleting all
+    menus and setting them again, the menus don't use the new font.  Most of
+    the tooltips work though...
+7   Motif: when using a file selection dialog, the specified file name is not
+    always used (when specifying a filter or another directory).
+8   When 'encoding' is different from the current locale (e.g., utf-8) the
+    menu strings don't work.  Requires conversion from 'encoding' to the
+    current locale.  Workaround: set 'langmenu'.
+
+
+Athena GUI:
+9   When dragging the scrollbar thumb very fast, focus is only obtained in
+    the scrollbar itself.  And the thumb is no longer updated when moving
+    through files.
+7   The file selector is not resizable.  With a big font it is difficult to
+    read long file names. (Schroeder)
+4   Re-write the widget attachments and code so that we will not have to go
+    through and calculate the absolute position of every widget every time the
+    window is refreshed/changes size.  This will help the "flashing-widgets"
+    problem during a refresh.
+5   When starting gvim with all the default colors and then typing
+    ":hi Menu guibg=cyan", the menus change color but the background of the
+    pullright pixmap doesn't change colors.
+    If you type ":hi Menu guibg=cyan font=anyfont", then the pixmap changes
+    colors as it should.
+    Allocating a new pixmap and setting the resource doesn't change the
+    pullright pixmap's colors.  Why?  Possible Athena bug?
+
+
+Motif GUI:
+8   Popup menu ordering is wrong.
+8   Accelerators don't work in a dialog.  Include patch from Martin Dalecki
+    (Jan 3, tested by David Harrison).  Should work with Alt-o then.
+7   Use accelerators for the Motif file selection dialog.  Patch from Martin
+    Dalecki 2002 Jan 11.
+7   Use XmStringCreateLocalized() instead of XmStringCreateSimple()?
+    David Harrison says it's OK (it exists in Motif 1.2).
+8   The texts in the find/replace dialog don't use the right font.
+8   Lesstif: When deleting a menu that's torn off, the torn off menu becomes
+    very small instead of disappearing.  When closing it, Vim crashes.
+    (Phillipps)
+
+
+GUI:
+9   On Solaris, creating the popup menu causes the right mouse button no
+    longer to work for extending the selection. (Halevy)
+9   When running an external program, it can't always be killed with CTRL-C.
+    e.g. on Solaris 5.5, when using "K" (Keech).  Other 'guipty' problems on
+    Solaris 2.6. (Marley)
+9   On Solaris: Using a "-geometry" argument, bigger than the window where Vim
+    is started from, causes empty lines below the cmdline. (raf)
+8   X11 GUI: When menu is disabled by excluding 'm' from 'guioptions', ALT key
+    should not be used to trigger a menu (like the Win32 version).
+8   When setting 'langmenu', it should be effective immediately.  Store both
+    the English and the translated text in the menu structure.  Re-generate
+    the translation when 'langmenu' has changed.
+8   Basic flaw in the GUI code: NextScreen is updated before calling
+    gui_write(), but the GUI code relies on NextScreen to represent the state
+    of where it is processing the output.
+    Need better separation of Vim core and GUI code.
+8   When fontset support is enabled, setting 'guifont' to a single font
+    doesn't work.
+8   Menu priority for sub-menus for: Amiga, BeOS.
+8   Add menu separators for Amiga, RISCOS.
+8   Add a few more command names.  Patch from Jiri Brezina (28 feb 2002).
+8   Add way to specify the file filter for the browse dialog.  At least for
+    browse().
+8   Add dialog for search/replace to other GUIs?  Tk has something for this,
+    use that code?  Or use console dialog.
+8   When selecting a font with the font dialog and the font is invalid, the
+    error message disappears too quick.
+8   gui_check_colors() is not called at the right moment.  Do it much later,
+    to avoid problems.
+8   gui_update_cursor() is called for a cursor shape change, even when there
+    are mappings to be processed.  Only do something when going to wait for
+    input.  Or maybe every 100 ms?
+8   X11: When the window size is reduced to fit on screen, there are blank
+    lines below the text and bottom scrollbar.  "gvim -geometry 80x78+0+0".
+    When the "+0+0" is omitted it works.
+8   When starting an external command, and 'guipty' set, BS and DEL are mixed
+    up.  Set erase character somehow?
+8   A dead circumflex followed by a space should give the '^' character
+    (Rommel).  Look how xterm does this.
+    Also: Bednar has some code for dead key handling.
+    Also: Nedit 5.0.2 with USE_XMIM does it right. (Gaya)
+8   The compose key doesn't work properly (Cepas).  Both for Win32 and X11.
+7   The cursor in an inactive window should be hollow.  Currently it's not
+    visible.
+7   GUI on Solaris 2.5.1, using /usr/dt/..: When gvim starts, cursor is
+    hollow, after window lowered/raised it's OK. (Godfrey)
+7   When starting GUI with ":gui", and window is made smaller because it
+    doesn't fit on the screen, there is an extra redraw.
+8   When setting font with .Xdefaults, there is an extra empty line at the
+    bottom, which disappears when using ":set guifont=<Tab>". (Chadzelek)
+8   When font shape changes, but not the size, doing ":set font=" does not
+    redraw the screen with the new font.  Also for Win32.
+    When the size changes, on Solaris 2.5 there isn't a redraw for the
+    remaining part of the window (Phillipps).
+-   Flashes really badly in certain cases when running remotely from a Sun.
+4   Re-write the code so that the highlighting isn't changed multiple times
+    when doing a ":hi clear".  The color changes happen three or more times
+    currently.  This is very obvious on a 66Mhz 486.
+
+
+MSDOS/DJGPP:
+9   Pressing CTRL-C often crashes the console Vim runs in. (Ken Liao)
+    When 'bioskey' isn't set it doesn't happen.  Could be a problem with the
+    BIOS emulation of the console.  Version 5.6 already had this problem.
+8   DJGPP: "cd c:" can take us to a directory that no longer exists.
+    change_drive() doesn't check this.  How to check for this error?
+9   The 16 bit version runs out of memory very quickly.  Should find unused
+    code and reduce static data.
+9   Crash when running on Windows 98 in a console window and pressing CTRL-C.
+    Happens now and then.  When debugging Vim in gdb this also happens.  Since
+    the console crashes, might be a bug in the DOS console.  Resetting
+    'bioskey' avoids it, but then CTRL-C doesn't work.
+9   DOS: Make CTRL-Fx and ALT-Fx work.
+    CTRL-F1 = CE-5E, CTRL-F2 = CE-5F, .., CTRL-F10 = CE-67
+    ALT-F1 = CE-68, ALT-F2 = CE-69, .., ALT-F10 = CE-71
+    Shifted cursor keys produce same codes as unshifted keys.  Use bioskey(2)
+    to get modifier mask for <S-C-M-Fx>.
+    Use K_SPECIAL/KS_MODIFIER codes to insert modifier mask in input stream?
+    Make this work like in Win32 console.
+    Mapping things like <M-A> doesn't work, because it generates an extended
+    key code.  Use a translation table?
+9   Can't read an opened swap file when the "share" command has not been used.
+    At least ignore the swap files that Vim has opened itself.
+8   Use DJGPP 2.03.
+8   The Dos32 version (DJGPP) can't use long file names on Windows NT.
+    Check if new package can be used (v2misc/ntlfn08[bs].zip).
+8   setlocale() is bogus.
+8   Vim busy waits for new characters or mouse clicks.	Should put in some
+    sort of sleep, to avoid eating 50% of the CPU time.  Test on an unpatched
+    Windows 95 system!
+8   DJGPP: when shell is bash, make fails. (Donahoe)
+7   Hitting CTRL-P twice quickly (e.g. in keyword completion) on a 8088
+    machine, starts printer echo! (John Mullin).
+7   MSDOS 16 bit version can't work with COMSPEC that has an argument, e.g.:
+    COMSPEC=C:\WINDOWS\COMMAND.COM /E:4096    (Bradley)
+    Caused by BCC system() function (Borland "make" has the same problem).
+8   Mouse: handle left&right button pressed as middle button pressed.  Add
+    modifier keys shift, ctrl and alt.
+7   When too many files are open (depends on FILES), strange things happen.
+    The Dos16 version runs out of memory, in the Dos32 version "!ls" causes a
+    crash.  Another symptom: .swp files are not deleted, existing files are
+    "[New file]".
+7   DJGPP version doesn't work with graphics display mode.  Switch to a mode
+    that is supported?
+8   DJGPP: ":mode" doesn't work for many modes.  Disable them.
+8   DJGPP: When starting in Ex mode, shouldn't clear the screen. (Walter
+    Briscoe)
+
+
+MSDOS, OS/2 and Win32:
+8   OS/2: Add backtick expansion.  Undefine NO_EXPANDPATH and use
+    gen_expand_wildcards().
+8   OS/2: Add clipboard support?  See example clipbrd.exe from Alexander
+    Wagner.
+8   OS/2: Add Extended Attributes support and define HAVE_ACL.
+8   OS/2: When editing a file name "foo.txt" that is actually called FOO.txt,
+    writing uses "foo.txt".  Should obtain the real file name.
+8   Should $USERPROFILE be used instead of $HOMEDRIVE/$HOMEPATH?
+8   Win32 console: <M-Up> and <M-Down> don't work. (Geddes)  We don't have
+    special keys for these.  Should use modifier + key.
+8   Win32 console: caps-lock makes non-alpha keys work like with shift.
+    Should work like in the GUI version.
+8   Environment variables in DOS are not case sensitive.  Make a define for
+    STRCMP_ENV(), and use it when comparing environment var names.
+8   Setting 'shellslash' has no immediate effect.  Change all file names when
+    it is set/reset?  Or only use it when actually executing a shell command?
+8   When editing a file on a Samba server, case might matter.  ":e file"
+    followed by ":e FILE" will edit "file" again, even though "FILE" might be
+    another one.  Set last used name in buflist_new()?  Fix do_ecmd(), etc.
+8   ":mksession" generates a "cd" command where "aa\#bb" means directory "#bb"
+    in "aa", but it's used as "aa#bb". (Ronald Hoellwarth)
+8   When a buffer is editing a file like "ftp://mach/file", which is not going
+    to be used like a normal file name, don't change the slashes to
+    backslashes. (Ronald Hoellwarth)
+
+
+Windows 95:
+8   Editing a file by it's short file name and writing it, makes the long file
+    name disappear.  Setting 'backupcopy' helps.
+    Use FindFirstFile()->cAlternateFileName in fname_case() (George Reilly).
+8   Doing wildcard expansion, will match the short filename, but result in the
+    long filename (both DJGPP and Win32).
+
+
+Win32 console:
+9   When editing a file by its short file name, it should be expanded into its
+    long file name, to avoid problems like these: (Mccollister)
+     1) Create a file called ".bashrc" using some other editor.
+     2) Drag that file onto a shortcut or the actual executable.
+     3) Note that the file name is something like BASHRC~1
+     4) Go to File->Save As menu item and type ".bashrc" as the file name.
+     5) Press "Yes" to indicate that I want to overwrite the file.
+     6) Note that the message "File exists (add ! to override)" is displayed
+	and the file is not saved.
+    Use FindFirstFile() to expand a file name and directory in the path to its
+    long name.
+8   Also implement 'conskey' option for the Win32 console version?  Look at
+    how Xvi does console I/O under Windows NT.
+7   Re-install the use of $TERM and support the use of different terminals,
+    besides the console.
+8   Use of <altgr> modifier doesn't work?  5.3 was OK. (Garcia-Suarez/Guckes)
+9   Mapping <C-S-Tab> doesn't work correctly.  How to see the difference with
+    <C-S-i>?
+9   tmpnam() uses file in root of file system: "\asdf".  That doesn't work on
+    a Netware network drive.  Use same function as for Win32 GUI?
+8   In os_win32.h, HAVE_STRICMP and HAVE_STRNICMP are defined only if __GNUC__
+    is not defined.  Shouldn't that be the other way around?
+8   ":winpos" doesn't work.  Patch from Vipin Aravind.
+7   Use SetConsoleCP() and SetConsoleOutputCP() to implement 'termencoding'?
+    Avoids that input and output work differently.  Need to be restored when
+    exiting.
+
+
+Amiga:
+8   In mch_inchar() should use convert_input_safe() to handle incomplete byte
+    sequences.
+9   In mch_expandpath() a "*" is to be expanded, but "\*" isn't.  Remove
+    backslashes in result.
+8   Executing a shell, only one option for 'shell' is separated.  Should do
+    all options, using white space separation.
+
+
+Macintosh:
+9   Mac: The motion type is not stored on the clipboard.  Using ":set
+    clipboard=unnamed" makes "yyp" work characterwise. (Michael DeMoney)
+7   Loading the Perl library only works on OS/X 10.2 or 10.3, never on both.
+    Load the Perl library dynamically see Python sources file dynload_mac
+    (Jack)
+    dynamic linking: http://developer.apple.com/technotes/tn2002/tn2064.html
+8   Inputting Unicode characters does not work in the terminal.  They appear
+    to arrive as upper and lower bytes. (David Brown, 2004 April 17)
+8   Typing Unicode characters doesn't work at all in the GUI.
+8   Patch to add 'transparency' option.  Disadvantage: it's slow. (Eckehard
+    Berns, 2004 May 9) http://ecki.to/vim-icns/TransBack.diff
+8   Patches from "Rain Dog" Cucka:
+    - guifont selector (2002 Dec 15)
+    - scrollbar (2002 Dec 8)
+    - Quartz fonts (2002 Dec 8)
+9   Problems in Carbon version for OS X: (Benji Fisher)
+    - keyboard shortcuts in the menus get lost.
+8   The Vim/About menu doesn't work.
+8   ":gui" doesn't fork.  Enabling the code in gui.c to fork causes a SEGV.
+8   Define vim_mkdir() for Macintosh.
+8   Define mch_writable() for Macintosh.
+9   When DiskLock is running, using a swap file causes a crash.  Appears to be
+    a problem with writing a file that starts with a dot. (Giacalone)
+9   On G3 Mac, OS version 8, control strip causes characters messed up when
+    scrolling (CTRL-L cleans it up). (Benji Fisher)
+9   On G3 Mac, OS version 8, variable-speed scrolling doesn't work, after two
+    seconds of scrolling the screen freezes. (Benji Fisher)
+9   In mac_expandpath() check that handling of backslashes is done properly.
+8   Standard Mac shortcuts are missing.  (Amerige)
+8   Handling of non-fixed width fonts is wrong. (Amerige)
+
+
+"Small" problems:
+8   When an ":edit" is inside a try command and the ATTENTION prompt is used,
+    the :catch commands are always executed, also when the file is edited
+    normally.  Should reset did_emsg and undo side effects.  Also make sure
+    the ATTENTION message shows up.
+9   When using ":e ++enc=foo file" and the file is already loaded with
+    'fileencoding' set to "bar", then do_ecmd() uses that buffer, even though
+    the fileencoding differs.  Reload the buffer in this situation?  Need to
+    check for the buffer to be unmodified.
+8   ":g//" gives "Pattern not found error" with E486.  Should not use the
+    error number, it's not a regular error message.
+7   Vimtutor leaves escape sequence in terminal. This is the xterm response to
+    requesting the version number.  (Yasuhiro Matsumoto)
+8   When redirecting and using ":silent" the current column for displaying and
+    redirection can be different.  Use a separate variable to hold the column
+    for redirection.
+7   There is no way to change directory and go back without changing the local
+    and/or global directory.  Add a way to find out if the current window uses
+    a local directory.  Add cdcmd() that returns ":cd" or ":lcd"?
+7   After running "make test" the window title is sometimes not restored.
+    Mostly sticks at "test3.in", but not always.  Appears to happen more often
+    when compiled with Python (threading).
+7   The messages for "vim --help" and "vim --version" don't use
+    'termencoding'.
+7   ATTENTION dialog choices are more logical when "Delete it' appears before
+    "Quit".  Patch by Robert Webb, 2004 May 3.
+8   When 'scrollbind' is set, a window won't scroll horizontally if the cursor
+    line is too short.  Add a word in 'scrollopt' to allow moving the cursor
+    to longer line that is visible.  A similar thing is done for the GUI when
+    using the horizontal scrollbar.
+7   VisVim can only open one file.  Hard to solve: each opened file is passed
+    with a separate invocation, would need to use timestamps to know the
+    invocations belong together.
+8   When giving a ":bwipeout" command a file-changed dialog may popup for this
+    buffer, which is pointless.  (Mike Williams)
+8   On MS-Windows ":make" doesn't show output while it is working.  Use the
+    tee.exe from  http://unxutils.sourceforge.net/ ?  About 16 Kbyte in the
+    UnxUtils.zip archive.
+    Alternate one: http://www.pramodx.20m.com/tee_for_win32.htm, but Walter
+    Briscoe says it's not as good.
+8   'fillchars' doesn't work for multi-byte characters.
+9   Editing a XML file with a long line is extremely slow.  Example file from
+    Randy Parker (Dec 13).  Editing the dictionaries for engspchk plugin with
+    syntax highlighting is also very slow.
+    Limit the searching for items to a few hundred characters?
+8   Command line completion: buffers "foo.txt" and "../b/foo.txt", completing
+    ":buf foo<Tab>" doesn't find the second one. (George V. Reilly)
+7   Output for ":scriptnames" and ":breaklist" should shorten the file names:
+    use "~/" when possible.
+8   After using diff mode, ":set nodiff" doesn't restore the old foldmethod.
+    (Thomas S. Urban)
+7   mb_off2cells() doesn't work correctly on the tail byte of a double-byte
+    character. (Yasuhiro Matsumoto)  It should return 1 when used on a tail
+    byte, like for utf-8.  Store second byte of double-byte in ScreenLines2[]
+    (like for DBCS_JPNU) and put a zero in the second byte (like for UTF-8).
+8   'backupdir' and 'directory' should use $TMPDIR, $TMP and/or $TEMP when
+    defined.
+7   Inside a function with "perl <<EOF" a line with "$i++" is recognized as an
+    ":insert" command, causing the following "endfunction" not to be found.
+    Add skipping this perl construction inside function definitions.
+7   When 'ttimeoutlen' is 10 and 'timeoutlen' is 1000, there is a keycode
+    "<Esc>a" and a mapping <Esc>x", when typing "<Esc>a" with half a second
+    delay should not be interpreted as a keycode. (Hans Ginzel)
+7   ":botright 1 new" twice causes all window heights to be changed.  Make the
+    bottom window only bigger as much as needed.
+7   "[p" doesn't work in Visual mode. (David Brown)
+7   The Cygwin and MingW makefiles define "PC", but it's not used anywhere.
+    Remove? (Dan Sharp)
+9   The argument <f-args> of a user command doesn't handle backslashes
+    properly. "Cmd \ e" is one argument, "Cmd \\ e" still is one argument.
+    "Cmd \  e" is two arguments, first one ending in space. (Kontra Gergely)
+9   User commands use the context of the script they were defined in.  This
+    causes a "s:var" argument to unexpectedly use a variable in the defining
+    script, not the calling script.  Add an argument to ":command":
+    "-keepcontext".  Do replace <SID>, so that a function in the defining
+    script can be called.
+8   The Japanese message translations for MS-Windows are called ja.sjis.po,
+    but they use encoding cp932.  Rename the file and check that it still
+    works.
+9   When a syntax region does not use "keepend" and a contained item does use
+    "extend", this makes the outer region stop at the end of the contained
+    region. (Lutz Eymers)  Another example Nov 14 2002.
+8   A very long message in confirm() can't be quit.  Make this possible with
+    CTRL-C.
+7   clip_x11_own_selection() uses CurrentTime, that is not allowed.  VNC X
+    server has a problem with this.  (Mark Waggoner) Remembering the timestamp
+    of events isn't always possible.  We don't get them in an xterm.  GTK
+    doesn't obtain the selection again when the timestamp differs, thus it
+    won't work for GTK anyway.
+8   When the clipboard isn't supported: ":yank*" gives a confusing error
+    message.  Specifically mention that the register name is invalid.
+8   "gf" always excludes trailing punctuation characters. file_name_in_line()
+    is currently fixed to use ".,:;!".  Add an option to make this
+    configurable?
+8   'hkmap' should probably be global-local.
+9   When "$" is in 'cpoptions' and folding is active, a "C" command changes
+    the folds and resets w_lines_valid.  The display updating doesn't work
+    then. (Pritesh Mistry)
+8   ":s!from!to!" works, but ":smagic!from!to!" doesn't.  It sees the "!" as a
+    flag to to the command.  Same for ":snomagic". (Johan Spetz)
+8   Using ":s" in a function changes the previous replacement string.  Save
+    "old_sub" in save_search_patterns()?
+8   When appending to a file and 'patchmode' isn't empty, a backup file is
+    always written, even when the original file already exists.
+7   When using "daw" on the last word in a file and this is a single letter,
+    nothing is deleted.  Should delete the letter and preceding white space.
+9   When getting focus while writing a large file, could warn for this file
+    being changed outside of Vim.  Avoid checking this while the file is being
+    written.
+9   The "Error detected while processing modelines" message should have an
+    error number.
+7   The message in bt_dontwrite_msg() could be clearer.
+8   Unix: When libcall() fails there is no clear error message.  Johannes
+    Zellner has a patch for this.
+8   The script ID that is stored with an option and displayed with ":verbose
+    set" isn't reset when the option is set internally.  For example when
+    'foldlevel' is set from 'foldlevelstart'.
+8   In the fileformat dialog, "Cancel" isn't translated.  Add a global
+    variable for this. (Eduardo Fernandez)
+9   When editing a file with 'readonly' set, there is no check for an existing
+    swap file.  Then using ":write" (without making any changes) doesn't give
+    a warning either.  Should check for an existing swap file without creating
+    one.
+7   On MS-DOS or MS-Windows, when editing the same file over a network, the
+    drive letter is different, thus an existing swap file doesn't generate a
+    warning.  Use some flag to indicate the swap file is in the same directory
+    as the original file?  Could make b0_fname[] start with a special
+    character like ">".
+7   When 'showbreak' is set, the amount of space a Tab occupies changes.
+    Should work like 'showbreak' is inserted without changing the Tabs.
+7   When there is a "help.txt" window in a session file, restoring that
+    session will not get the "LOCAL ADDITIONS" back.
+7   When 'mousefocus' is set and switching to another window with a typed
+    command, the mouse pointer may be moved to a part of the window that's
+    covered by another window and we lose focus.  Only move in the y
+    direction, not horizontally?
+8   When using CTRL-D after ":help", restrict the number of matches to a
+    thousand, otherwise using CTRL-D without an argument takes too long.
+8   ":hardcopy":
+    - Patch to append CTRL-D to PostScript output (Mike Williams, 2004 Jun 11)
+    - Using the cterm_color[] table is wrong when t_colors is > 16.
+    - Need to handle unprintable characters.
+    - Win32: On a B&W printer syntax highlighting isn't visible.  Perform
+      dithering to make grey text?
+    - support printing multi-byte characters.  Patch from Motonobu Ichimura.
+      New (better) patch from Mike Williams (2004 Jan 20)
+    - Add a flag in 'printoptions' to add an empty page to make the total
+      number even.  "addempty"? (Mike Williams)
+    - Should interpreted CTRL-L as a page break.
+    - Grey line numbers are not always readable.  Add field in 'printoptions'.
+      Default to black when no syntax highlighting.
+    - Be able to print a window in diff mode.
+    - Be able to specify a colorscheme to use for printing.  And a separate
+      one for B&W printing (if that can be detected).
+8   In Visual block mode with 'lbr' set, a change command doesn't insert the
+    text in following lines where the linebreak changes.
+9   dosinst.c: The DJGPP version can't uninstall the Uninstall registry key on
+    Windows NT.  How to install a .inf file on Windows NT and how to detect
+    that Windows NT is being used?
+8   When opening the same file on Unix and on MS-Windows, there is no
+    ATTENTION message, because the path in the swap file is different.  Using
+    a relative path name will cause no ATTENTION for Vim 5.8.
+    Somehow add a flag that the swap file is in the same dir as the file?
+8   When 'virtualedit' is "block,insert" and encoding is "utf-8", selecting a
+    block of one double-wide character, then "d" deletes only half of it.
+8   When 'virtualedit' is set, should "I" in blockwise visual mode also insert
+    in lines that don't extend into the block?
+8   With 'virtualedit' set, in Insert mode just after the end of line, CTRL-O
+    yh does not yank the last character of the line. (Pavel Papushev)
+    Doing "hl" first appears to make it work.
+8   With 'virtualedit' set it's possible to move into the blank area from
+    'linebreak'.
+8   With 'virtualedit' set and 'selection' "exclusive", a Visual selection
+    that ends in or after a tab, "d" doesn't delete (part of) the tab.
+    (Helmut Stiegler)
+8   With 'virtualedit' set, a blockwise Visual selection that starts and ends
+    in a tab, "<" shifts too much. (Helmut Stiegler)
+9   When jumping to a tag, the search pattern is put in the history.  When
+    'magic' is on, the pattern may not work.  Translate the pattern depending
+    on p_magic when putting it in the history?  Alternative: Store value of
+    'magic' in history.  (Margo)
+9   optwin.vim: Restoring a mapping for <Space> or <CR> is not correct for
+    ":noremap".  Add "mapcmd({string}, {mode})?  Use code from ":mkexrc".
+9   incsearch is incorrect for "/that/<Return>/this/;//" (last search pattern
+    isn't updated).
+9   term_console is used before it is set (msdos, Amiga).
+9   Get out-of-memory for ":g/^/,$s//@/" on 1000 lines, this is not handled
+    correctly.  Get many error messages while redrawing the screen, which
+    cause another redraw, etc.
+8   [<C-I> doesn't work when '*' is in 'iskeyword'.  find_pattern_in_path()
+    must escape special characters in the pattern.
+8   Vim can overwrite a read-only file with ":w!".  ":w" can't overwrite an
+    existing file, "w!" can, but perhaps not a read-only file?  Then use
+    ":w!!" for that.
+    Or ask for permission to overwrite it (if file can be made writable) and
+    restore file to readonly afterwards.
+7   When compiled with "xterm_clipboard", startup can be slower and might get
+    error message for invalid $DISPLAY.  Try connecting to the X server in the
+    background (forked), so that Vim starts up quicker?  Connect as soon as
+    the clipboard is to be used (Visual select mode starts, paste from
+    clipboard)
+7   X11: Some people prefer to use CLIPBOARD instead of PRIMARY for the normal
+    selection.  Add an "xclipboard" argument to the 'clipboard' option? (Mark
+    Waggoner)
+8   For xterm need to open a connection to the X server to get the window
+    title, which can be slow.  Can also get the title with "<Esc>[21t", no
+    need to use X11 calls.  This returns "<Esc>]l{title}<Esc>\".
+8   When the builtin xterm termcap contains codes that are not wanted, need a
+    way to avoid using the builtin termcap.
+8   Xterm sends ^[[H for <Home> and ^[[F for <End> in some mode.  Also
+    recognize these keys?  Mostly useful for xterm simulators, like gnometerm.
+    See http://dickey.his.com/xterm/xterm.faq.html#xterm_pc_style.
+8   '[ and '] should be set to start/end of line when using a linewise operator
+    (e.g., ":w").
+8   CTRL-A can't handle big "long" numbers, they become negative.  Check for
+    "-" character, if not present, use unsigned long.
+8   Make it possible to disable the special meaning of "#" in the first column
+    for ">>".
+8   Add suspending with CTRL-Z at the "more" prompt, and when executing a long
+    script in do_cmdline().
+8   When using 'hidden', many swap files will be open.  When Vim runs into the
+    maximum number of open files, error messages will appear.  Detect that
+    this problem is present, and close any hidden files that don't have
+    changes.
+8   With 'viminfo' set such that the ".viminfo" file is written on a FAT
+    filesystem, an illegal file name may be created: ".vim".
+8   For each buffer that is opened, the viminfo file is opened and read to
+    check for file marks.  This can be slow.
+7   In xterm, recognize both vt100 and vt220 cursor keys.  Change
+    add_termcode() to not remove an existing entry for a name, when it's
+    needed.
+    Need a generic solution to recognize different codes for the same key.
+8   Core dump within signal function: gdb doesn't show stack backtrace!  Option
+    to skip catch_signals()?
+9   Repeating a "cw" with "." doesn't work if the text was pasted from the
+    clipboard. (Thomas Jones)  It's because the menu/toolbar item exits Insert
+    mode and uses "gP".  How to fix this without breaking inserting a block of
+    text?
+8   In Replace mode pasting from the clipboard (using menu or toolbar) inserts
+    all the text.  Add ":rmenu"?
+8   Pasting with the mouse in Replace mode inserts the text, instead of
+    overwriting, when it is more than one line.  Same for using <C-R>.
+9   CTRL-E and CTRL-Y don't work in small window when 'so' is 4 and lines are
+    wrapping (Acevedo/in.226).  E.g., when using CTRL-E, window height 7,
+    window might actually scroll down when last line of buffer is displayed.
+    --> Remember if the previous command was "cursor follows screen" or
+    "screen follow cursor" and use this in cursupdate().
+7   tilde_replace() can only handle "~/", should also do "~user/".
+    Get the list of home directories (from /etc/passwd?  Use getpwent()) and
+    use some clever algorithm to match a path with that.  Find common strings
+    in the list?
+8   When dragging status line with mouse, sometimes a jump when first clicking
+    on the status line (caused by 'winheight').  Select window on button up,
+    instead of on button down.
+8   Dragging the status line doesn't scroll but redraw.
+9   Evaluating 'statusline' in build_stl_str_hl() does not properly check for
+    reaching the end of the available buffer.
+8   When performing incremental search, should abort searching as soon as a
+    character is typed.
+8   When the value of $MAKE contains a path, configure can't handle this.
+    It's an autoconf bug.  Remove the path from $MAKE to work around it.
+8   How to set VIMRC_FILE to \"something\" for configure?  Why does this not
+    work: CFLAGS='-DVIMRC_FILE=\"/mydir/myfile\"' ./configure
+8   The temporary file is sometimes not writable.  Check for this, and use an
+    alternate name when it isn't.  Or add the 'temptemplate' option: template
+    for the temp file name ":set temptemplate=/usr/tmp/?????.tmp".
+    Also: Win32 version uses Windows temp directory, which might not work for
+    cygwin bash.
+7   Get error "*, \+ or \( operand could be empty" for pattern "\(.\)\1\{3}".
+    Remember flags for backreferences.
+7   When switching to Daylight Saving Time, Vim complains that a file has been
+    changed since last read.  Can we use a function that uses GMT?
+7   When completing an environment variable after a '$', check for file names
+    that contain a '$' after all have been found.
+8   When "cm" termcap entry is missing, starting gvim shouldn't complain about
+    it. (Lohner)  Try out with "vt100" entry, cm replaced with cX.
+7   When an include file starts with "../", the check for already visiting
+    this file doesn't work.  Need to simplify the file name.
+8   On Sinix SYS_NMLN isn't defined.  Include patch from Cristiano De Michele.
+7   The names and comments for the arguments of do_browse() are confusing.
+    "dflt" isn't the default file name when "initdir" is not NULL and
+    "initdir" is the default path to be used.
+7   When 'scrolloff' is exactly half the window height, "j" causes a scroll of
+    two lines at a time.  "k" doesn't do this. (Cory T. Echols)
+8   When write_viminfo() is used while there are many orphaned viminfo
+    tempfiles writing the viminfo file fails.  Give a clear error message so
+    that the user knows he has to delete the files.
+7   It's possible to redefine a script-local function with ":func
+    <SNR>123_Test()". (Krishna)  Disallow this.
+7   After ":%d" an undo reports the number of lines added as if there still
+    was one line.
+
+
+I can't reproduce these (if you can, let me know how!):
+9   NT 4.0 on NTFS file system: Editing ".bashrc" (drag and drop), file
+    disappears.  Editing ".xyz" is OK.  Also, drag&drop only works for three
+    files. (McCollister)
+8   Motif: Tear-off menu item crashes Vim on some machines.  (Netherton)  It
+    works fine for me, maybe it's a Motif problem.
+
+
+Problems that will (probably) not be solved:
+-   In a terminal with 'mouse' set such that the mouse is active when entering
+    a command line, after executing a shell command that scrolls up the
+    display and then pressing ":": Selecting text with the mouse works like
+    the display wasn't scrolled.  Vim doesn't know how much the external
+    command scrolled up the display.  Use Shift to select text.
+-   X windows: When $DISPLAY points to a X server where there is no access
+    permission, trying to connect to the X server causes an error message.
+    XtOpenDisplay() prints this directly, there is no way to avoid it.
+-   X windows: Setting 'guifontset' to an illegal value sometimes crashes Vim.
+    This is caused by a fault in a X library function, can't be solved in Vim.
+-   Motif: When adding a menu item "Find this &Symbol", the "s" in "this" will
+    be underlined, instead of in "Symbol".  Motif doesn't let us specify which
+    character gets the highlighting.
+-   Moving the cursor removes color in color-xterm.  This is a color-xterm
+    problem!  color-xterm ver. 6.1 beta 3 and later work properly.
+-   In zsh, "gvim&" changes the terminal settings.  This is a zsh problem.
+    (Jennings)
+-   Problem with HPterm under X: old contents of window is lost (Cosentino).
+-   Amiga: When using quickfix with the Manx compiler we only get the first 25
+    errors.  How do we get the rest?
+-   Amiga: The ":cq" command does not always abort the Manx compiler.  Why?
+-   Linux: A file with protection r--rw-rw- is seen readonly for others. The
+    access() function in GNU libc is probably wrong.
+-   MSDOS: When using smartdrive with write-back buffering, writing to a
+    readonly floppy will cause problems.  How to test for a writable floppy
+    first?
+-   MSDOS: Both 16 and 32 bit versions: File name expansion doesn't work for
+    names that start with a dot.  These used to be illegal file names.
+-   When doing a CTRL-Z and typing a command for the shell, while Vim is busy
+    (e.g. writing a file), the command for the shell is sometimes eaten by Vim,
+    because the terminal mode is changed from RAW to CBREAK.
+-   An old version of GNU tgoto can't handle the terminfo code for "AF".  The
+    "%p1" is interpreted as "%p" and "1", causing color not to be working.
+    Fix: Change the "%p1" in the "AF" and "AB" terminfo entries to "%p".
+    (Benzinger).
+-   When running an external command from the GUI, typeahead is going to that
+    program, not to Vim.  It looks like the shell eats the characters, Vim
+    can't get back what the external command didn't use.
+-   Win32 GUI: Error code from external command not returned in shell_error.
+    It appears that cmd.exe and command.com don't return an error code.
+-   Win32 GUI: The Toolbar is a bit too high when the flat style is being
+    used.  We don't have control over the height of the Toolbar.
+-   Win32: All files created on the day of switching from winter to summer
+    time cause "changed since editing started" messages.  It goes away when
+    the file is written again the next day, or the timezone is adjusted.
+    DJGPP version is OK. (Zaimi)  Looks like a problem with the Win32 library.
+    Rebooting doesn't help.  Time stamps look OK in directory. (Penn)
+    Is this on FAT (stores wall clock time) or NTFS (stores UTS)?
+-   Win32, MS-Windows XP: $HOME uses the wrong drive when the user profiles
+    are not on the boot disk.  This is caused by a wrong value of $HOMEDRIVE.
+    This is a bug in XP, see MSKB article 818134.
+-   SunOS 5.5.1 with Motif: The file open dialog does not have a horizontal
+    scroll bar for the "files" selection.  This is a problem in the Motif
+    libraries, get a patch from Sun.
+-   Solaris 2.6 with GTK and Perl: gvim crashes when started.  Problem with X
+    input method called from GDK code.  Without Perl it doesn't crash.
+-   VMS: Vimdiff doesn't work with the VMS diff, because the output looks
+    different.  This makes test 47 fail.  Install a Unix-compatible diff.
+-   VMS v7.1 and older: Tests 21 and 32 fail.  From VMS v7.1-2 and newer Vim
+    does not have this behavior. (Zoltan Arpadffy)
+-   Win32 GUI: mouse wheel always scrolls rightmost window.  The events arrive
+    in Vim as if the rightmost scrollbar was used.
+-   GTK with Gnome: Produces an error message when starting up:
+	Gdk-WARNING **: locale not supported by C library
+    This is caused by the gnome library gnome_init() setting $LC_CTYPE to
+    "en_US".  Not all systems support this locale name, thus causing the
+    error.  Hopefully a newer version of GTK/Gnome fixes this problem.
+-   GTK 2: With this mapping the hit-enter prompt is _sometimes_ below the
+    screen, at other times there is a grey area below the command line:
+	:nmap <F11> :if &guioptions=~'m' \| set guioptions-=m \| else \| set guioptions+=m \| endif<cr>
+-   GTK: When pasting a selection from Vim to xclipboard gvim crashes with a
+    ABRT signal.  Probably an error in the file gdkselection.c, the assert
+    always fails when XmbTextListToTextProperty() fails. (Tom Allard)
+-   When using an xterm that supports the termresponse feature, and the 't_Co'
+    termcap option was wrong when Vim started, it will be corrected when the
+    termresponse is received.  Since the number of colors changes, the
+    highlighting needs to be initialized again.  This may cause colors defined
+    in the vimrc file to be lost.
+-   On Windows NT 4.0 the number of files passed to Vim with drag&drop and
+    "Edit with Vim" is limited.  The maximum command line length is 255 chars.
+
+---------------------  extensions and improvements ----------------------
+						    *extensions-improvements*
+
+Documentation:
+8   Extend usr_27.txt a bit. (Adam Seyfarth)
+9   Merge in ideas from ~/vim/patches/tutor.txt (Gabriel Zachmann)
+7   Add a section on debugging scripts in the user manual.
+9   Make the Reference Manual more precise.  For each command mention:
+    - change to cursor position and curswant
+    - if it can be undone (u/CTRL-R) and redone (.)
+    - how it works for folded lines
+    - how it works with multi-byte characters
+9   In change.txt, remark about Javadoc isn't right.  Right alignment would
+    work too.
+8   Spread the windows commands over the other files.  For example, ":stag"
+    should be with ":tag".  Cross-link with tags to avoid too much double
+    text.
+8   Add tags for all features, e.g. "gui_running".
+7   MS-Windows: When a wrong command is typed with an ALT key, give a hint to
+    look at the help for 'winaltkeys'.
+7   Add a help.vim plugin that maps <Tab> to jump to the next tag in || and
+    <C-Tab> (and <S-Tab>) to the previous tag.
+-   Check text editor compendium for vi and Vim remarks.
+
+
+Help:
+-   First try using the ":help" argument literally, before using it as a
+    pattern.  And then match it as part of a tag.
+-   When a help item has multiple matches make it possible to use ":tn" to go
+    to the other matches.
+-   Support a way to view (and edit) .info files.
+-   Default mapping for help files: <Tab> to position cursor on next |:tag|.
+-   Implement a "sticky" help window, some help text lines that are always
+    displayed in a window with fixed height. (Guckes)  Use "~/.vimhelp" file,
+    user can edit it to insert his favorite commands, new account can contain a
+    default contents.
+-   Make 'winminheight' a local option, so that the user can set a minimal
+    height for the help window (and other windows).
+-   ":help :s^I" should expand to ":help :substitute".
+-   Make the help key (<F1>) context sensitive?
+-   Learn mode: show short help while typing commands.
+
+
+User Friendlier:
+8   Windows install with install.exe: Use .exe instead of .bat files for
+    links, so that command line arguments are passed on unmodified? (Walter
+    Briscoe)
+8   Windows install: Be able to associate Vim with a selection of file types?
+8   Windows uninstall: Have uninstal.c delete the vimfiles directories that
+    dosinst.c creates.  List the contents of the directory (recursively) if
+    the user asks for it.  Requires an implementation of "rm -rf".
+8   Remember the name of the vimrc file that was used (~/.vimrc, $VIM/_vimrc,
+    $HOME/_vimrc, etc.) and add "edit vimrc" to the File menu.
+-   Add a way to save local settings and mappings into a new plugin file.
+    ":mkplugin <file>"?
+8   Add ":plugininstall" command.  Can be used to install a plugin file that
+    includes documentation.  Let the user select a directory from
+    'runtimepath'.
+	" Vim plugin
+	<main plugin code>
+	" >>> plugin help start <<<
+	<plugin docs>
+-   Add mappings local to a window: ":map <window> ..."?
+9   Add buffer-local menu.  Should offer a choice between removing the menu or
+    disabling it.  Be careful that tear-offs don't disappear (keep one empty
+    item?).
+    Alternative: use BufEnter and BufLeave autocommands.
+8   Add file locking.  Lock a file when starting to edit it with flock() or
+    fcntl().  This patch has advisory file locking while reading/writing the
+    file: ~/vim/patches/kahn_file_locking .
+8   make a vimtutor script for Amiga and other systems.
+7   Add the arguments for configure to the ":version" output?
+
+
+Diff mode:
+8   Add a command to stop diff mode: ":set nodiff fdc = 0 noscrollbind"
+8   Use diff mode to show the changes made in a buffer (compared to the file).
+    Use an unnamed buffer, like doing:
+	new | set bt=nofile | r # | 0d_ | diffthis | wincmd p | diffthis
+7   Add cursor-binding: when moving the cursor in one diff'ed buffer, also
+    move it in other diff'ed buffers, so that CTRL-W commands go to the same
+    location.
+
+
+Folding:
+    (commands still available: zg zG zI zJ zK zp zP zq zQ zV zw zW zy zY;
+    secondary: zB zS zT zZ)
+8   Add different highlighting for a fold line depending on the fold level.
+    (Noel Henson)
+8   When a closed fold is displayed open because of 'foldminlines', the
+    behavior of commands is still like the fold is closed.  How to make the
+    user aware of this?
+8   Add an option 'foldskip' with values like 'foldopen' that specifies which
+    commands skip over a closed fold.
+8   "H" and "L" count buffer lines instead of window lines. (Servatius Brandt)
+8   Add a way to add fold-plugins.  Johannes Zellner has one for VB.
+7   When using 2html.vim, also reproduce folds as you can see them.  When
+    someone doesn't want the folds he can disable them before converting.
+    First attempt by Carl Osterwisch, 2004 May 10.
+7   When using manual folding, the undo command should also restore folds.
+-   Allow completely hiding a closed fold.  Require showing a character in
+    'foldcolumn' to avoid the missing line goes unnoticed.
+-   When pressing the down arrow of a scrollbar, a closed fold doesn't scroll
+    until after a long time.  How to make scrolling with closed folds
+    smoother?
+-   When creating a session, also store folds for buffers in the buffer list,
+    using the wininfo in wi_folds.
+-   'foldmethod' "textobject": fold on sections and paragraph text objects.
+-   Add 'hidecomment' option: don't display comments in /* */ and after //.
+-   "zu": undo change in manual fold. "zU" redo change in manual fold.  How to
+    implement this?
+-   "zJ" command: add the line or fold below the fold in the fold under the
+    cursor.
+-   'foldmethod' "syntax": "fold=3": set fold level for a region.
+-   Can set 'foldtext' to empty string: don't display any line.  How to
+    implement this?
+-   Apply a new foldlevel to a range of lines. (Steve Litt)
+-   Have some way to restrict commands to not folded text.  Also commands like
+    searches.
+
+
+Multi-byte characters:
+9   When the tail byte of a double-byte character is illegal (e.g., a CR), the
+    display is messed up (Yasuhiro Matsumoto).  Should check for illegal
+    double-byte characters and display them differently (display each single
+    byte).
+8   Add an item in 'fileencodings' to check the first lines of a file for
+    the encoding.  See Python PEP: http://www.python.org/peps/pep-0263.html.
+    To avoid getting a wrong encoding only accept something Emacs-like:
+    "-*- coding: enc-na_me.foo -*-" and "-*- coding= enc-na_me.foo -*-"
+    Match with "-\*-\s*coding[:=]\s*\([::word::-_.]\+\)\s*-\*-" and use first
+    item.
+8   Add an item in 'fileencodings' to check the first line of an XML file for
+    the encoding. <?xml version="1.0" encoding="UTF-8"?>  Or "charset=UTF-8"?
+8   The quickfix file is read without conversion, thus in 'encoding'.  Add an
+    option to specify the encoding of the errorfile and convert it.  Also for
+    ":grep".
+8   When a file was converted from 'fileencoding' to 'encoding', a tag search
+    should also do this on the search pattern. (Andrzej M. Ostruszka)
+7   When converting a file fails, mention which byte could not be converted,
+    so that the user can fix the problem.
+8   Add configure option to be able to disable using the iconv library. (Udo
+    Schweigert)
+8   Add patch from Muraoka Taro (Mar 16) to support input method on Mac?
+9   'aleph' should be set to 1488 for Unicode. (Zvi Har'El)
+8   Should add test for using various commands with multi-byte characters.
+-   Include flipcase patch: ~/vim/patches/wall.flipcase2 ?  Make it work for
+    multi-byte characters.
+8   'infercase' doesn't work with multi-byte characters.
+8   toupper() function doesn't handle byte count changes.
+8   Support four composing characters, needed for Hebrew. (Ron Aaron)
+8   "ga" should show all composing characters, also if there are more than 2.
+7   When searching, should order of composing characters be ignored?
+8   Should implement 'delcombine' for command line editing.
+8   Detect overlong UTF-8 sequences and handle them like illegal bytes.
+8   ":s/x/\u\1/" doesn't work, making uppercase isn't done for multi-byte
+    characters.
+8   UTF-8: "r" in Visual mode doesn't take composing characters.
+8   UTF-8: When there is a precomposed character in the font, use it instead
+    of a character and a composing character.  See xterm for an example.
+7   When a character can't be displayed, display its digraph instead.
+    'display' option to specify this.
+7   Use ideas for nl_langinfo() from Markus Kuhn in enc_default():
+    (www.cl.cam.ac.uk/~mgk25/ucs/langinfo.c)
+-   GTK and Win32: Allow selecting fonts for 'guifontset' with the
+    fontselector somehow.
+-   GTK and Win32: make it possible to set the font for the menu to make it
+    possible to have 'encoding' different from the current locale.
+-   dbcs_class() only works for Japanese and Korean.  Implement this for
+    other encodings.  The "euc-jp" and "euc-kr" choices might be wrong.
+-   Find some way to automatically select the right GUI font or fontset,
+    depending on the default value of 'encoding'.
+    Irrelevant in the GTK+ 2 GUI so long as UTF-8 is used.
+    For Windows, the charset_pairs[] table could be used.  But how do we know
+    if a font exists?
+-   Do keyboard conversion from 'termencoding' to 'encoding' with
+    convert_input() for Mac GUI, RiscOS GUI, BeOS GUI.
+-   Add mnemonics from RFC1345 longer than two characters.
+    Support CTRL-K _{mnemonic}_
+7   In "-- INSERT (lang) --" show the name of the keymap used instead of
+    "lang". (Ilya Dogolazky)
+-   Make 'langmap' accept multi-byte characters.
+-   Do we need the reverse of 'keymap', like 'langmap' but with files and
+    multi-byte characters?  E.g., when using a Russian keyboard.
+-   Add the possibility to enter mappings which are used whenever normal text
+    could be entered.  E.g., for "f" command.  But not in Normal mode.  Sort
+    of opposite of 'langmap'.  Use ":tmap" command?
+-   When breaking a line, take properties of multi-byte characters into
+    account.  The "linebreak" program from Bruno Haible can do it:
+    ftp://ftp.ilog.fr/pub/Users/haible/gnu/linebreak-0.1.tar.gz
+    But it's very complicated...
+
+
+Printing:
+-   Add "page width" to wrap long lines.
+-   Win32: use a font dialog for setting 'printfont'.  Can reuse the code for
+    the 'guifont' dialog, put the common code in a separate function.
+-   Win32: when 'printfont' is empty use 'guifont'.
+-   Unix: Use some dialog box to do the obvious settings (paper size, printer
+    name, portrait/landscape, etc).
+-   Win32: add options to print dialog.  Patch from Vipin Aravind.
+-   PostScript: only works for 7-bit ASCII and EBCDIC.  Should support
+    different 'encoding' values somehow.
+-   Allow specifying the paper size, instead of using a standard size.  Same
+    units as for the margins.
+-   Support right-to-left text?
+8   Make the foreground color darkening function preserve the hue of the
+    color.
+
+
+Syntax highlighting:
+-   Patch to add highlighting for whitespace. (Tom Schumm, 2003 Jul 5)
+    use the patch that keeps using HLF_8 if HLF_WS has not
+    been given values.
+    Add section in help files for these highlight groups?
+8   Make ":syn off" use 'runtimepath' instead of $VIMRUNTIME. (Gary Johnson)
+    Should do the same for ":syn on" and ":syn manual".
+8   Support "containedin" argument for ":syn include", so that the defined
+    cluster can be added to existing syntax items.
+8   C syntax: Don't highlight {} as errors inside () when used like this:
+    "({ something })", often used in GCC code.
+8   When editing a new file without a name and giving it a name (by writing
+    it) and 'filetype' is not set, detect the filetype.  Avoid doing it for
+    ":wq file".
+8   Make conversion to HTML faster (Write it in C or pre-compile the script).
+9   There is still a redraw bug somewhere.  Probably because a cached state is
+    used in a wrong way.  I can't reproduce it...
+7   Make syntax keyword table configurable.  Set number of bits used with
+    ":syn clear [hashbits]", so that we don't need to reallocate the table.
+    minimal 4 bits, maximal 16. (Campbell)
+7   Be able to change only the background highlighting.  Useful for Diff* and
+    Search highlighting.
+8   Allow the user to add items to the Syntax menu sorted, without having to
+    change this for each release.
+8   Add a "matchcontains" for regions: items contained in the start or end
+    pattern, but not in the body.
+8   Add a "keepend-contained" argument: Don't change the end of an item this
+    one is contained in.  Like "keepend" but specified on the contained item,
+    instead of the containing item.
+8   For keywords, allow to define the size of the hash table with ":syn
+    clear".  Change KHASH_ defines into variables stored in buffer struct.
+    Use something else than linear linked list from the hash table. (Campbell)
+8   cpp.vim: In C++ it's allowed to use {} inside ().
+8   Some syntax files set 'iskeyword'.  When switching to another filetype
+    this isn't reset.  Add a special keyword definition for the syntax rules?
+    When this is done, use vim.vim syntax highlighting for help file examples,
+    but without ":" in 'iskeyword' for syntax.
+8   Add specific syntax item to match with parens/braces that don't have a
+    "%" match.  :syntax nomatch cMatchError (,{,[,),},] [contained]
+8   Highlight the text between two matching parens (e.g., with a grey
+    background) when on one of the parens or in between them.
+    Or highlight the matching paren when the cursor is on one.
+8   Add a command to jump to the next character highlighted with "Error".
+8   When using a cterm, and no ctermfg or ctermbg are defined, use start/stop
+    sequences.	Add remark in docs that :if 'term' == "term-name" should be
+    used.
+8   Add @spell cluster to String and Comment groups for many languages.  Will
+    allow spell checking. (Fleiner)
+8   When listing syntax items, try to sort the keywords alphabetically.  And
+    re-insert the [] if possible.
+8   Make it possible to use color of text for Visual highlight group (like for
+    the Cursor).
+8   "fg" and "bg" don't work in an xterm.  Get default colors from xterm with
+    an ESC sequence.  Ideas in: ~/vim/patches/vikas.xtermcolors .
+8   Make it possible to only highlight a sub-expression of a match.  Like
+    using "\1" in a ":s" command.
+8   Support for deleting syntax items:
+    :syn keyword cTodo remove this
+    :syn match cTodo remove "pattern"
+    :syn region cString remove start="this" end="that"
+8   Add possibility to sync on something else, when the syncing in one way
+    doesn't find match.  For HTML: When no {script} is found, try looking for
+    a '<'.  (Fleiner)
+7   Replace the synchronizing method with a state machine specification?
+    Should be able to start at any line in the file, search forwards or
+    backwards, and use the result of matching a pattern.
+7   Use parsing like awk, so that e.g., a ( without a matching ) can be
+    detected.
+8   Make it possible to use "inverted" highlighting, invert the original
+    character.  For Visual mode. (xterm-selection already does this).
+8   Highlight non-printable characters with "SpecialChar", linked to
+    "Special".  Display them with the digraph characters, if possible.
+7   Add "DefaultFG" and "DefaultBG" for the colors of the menu. (Martin
+    Dalecki has a patch for Motif)
+8   Highlight the clipboard-selection with a highlight group.
+8   Be able to reset highlighting to its original (default) values.
+7   Be able to write current highlighting to a file as commands, similar to
+    ":mkvimrc".
+8   Improve c.vim:
+    - Add check for unterminated strings, with a variable to switch it on:
+      "c_strict_ansi".
+    - Detect unbalanced "#endif".  Requires looking back a long way...
+8   Add an option to restrict the updating of syntax highlighting to the
+    current line while in Insert mode.
+8   When guessing value of 'background', the syntax file has already been
+    loaded (from the .gvimrc).	After changing 'background', load it again?
+8   Add ":syn resync" command, to re-parse the whole file until the current
+    display position.
+8   Should support "me" offset for a region start pattern.  To be used to
+    allow searching for the end pattern inside the match of the end pattern.
+    Example: syn region pikeXX start="([^{]" end=")" should work on "()".
+8   When using a regexp for "contains=", should delay matching with it until
+    redrawing happens.  Set a flag when a group is added, check this flag when
+    highlighting starts.
+7   Add "semitrans": Add highlighting.  E.g., make the text bold, but keep the
+    colors.  And add colors, so that Green+Red becomes Yellow.
+    E.g. for this html:
+	<B> bold text <I> italic+bold text </B> italic text </I>
+7   Wild idea: Not only set highlighting, but also change what is displayed
+    (e.g., remove characters, so that "<B>bold</B>" can be shown as "bold"):
+	:syn region boldstuff start="<B>" display="" end="</B>" display=""
+7   CTRL-] checks the highlight group for finding out what the tag is.
+7   Add an explanation how a list of words can be used to highlight misspelled
+    words.
+8   Add spell checking.  Use "ispell -a" somehow.
+    ~/vim/patches/wm_vim-5_4d.zip  can be used as an example (includes ispell
+    inside Vim).  Gautam Iyer has an example with "aspell".  "engspchk" from
+    Charles Campbell is a good way.  Support for approximate-regexps will help
+    (agrep http://www.tgries.de/agrep/).
+7   Command line completion for ":find" should search in 'path'.
+8   Add more command line completion for :syntax.
+8   Add more command line completion for :highlight.
+8   Add more command line completion for :sign.
+7   Should find a better way to parse the :syntax and :highlight commands.
+    Use tables or lists that can be shared by parsing for execution and
+    completion?
+8   Add ColorSchemePost autocommand event, so that scripts can set up their
+    highlighting. (Salman Halim)
+7   Add a few sets of colors (e.g. Borland Turbo C one).  With a menu to
+    select one of the sets.
+8   Add offsets to sub-matches: "\(a*\) *"he=e1-1
+    'e' is end of match 'e1' is end of sub-match 1, 's2' is start of submatch
+    2, etc.
+8   In Insert mode, when there are typeahead characters, postpone the
+    highlighting (for "." command).
+8   Syncing on comments isn't 100% correct when / / lines mix with / * and * /.
+    For example: What about a line that starts with / / and contains * /?
+8   Ignore / * and  * / inside strings, when syncing.
+7   Build a few more syntax files from the file "/usr/share/misc/vgrindefs":
+    ISP, LDL, Icon, ratfor.  And check "nedit/source/highlight.c".
+6   Add possibility to have background color continue until the right edge of
+    the window.  Useful for comment blocks and function headings. (Rogall)
+-   Make it possible to add "contains" items for all items in a group.	Useful
+    when extending an already existing syntax file.
+-   Add line-continuation pattern for non-syncing items too?
+-   Add possibility to highlight specific columns (for Fortran).  Or put a
+    line in between columns (e.g. for 'textwidth').
+    Patch to add 'hlcolumn' from Vit Stradal, 2004 May 20.
+-   Add possibility to highlight the whole line, including the right margin
+    (for comment blocks).
+-   Add 'hlmatch' option: List of flags:
+    'c': highlight match for character under the cursor.
+    'b': highlight the previous (, and its match.
+    'a': highlight all text from the previous ( until its match.
+	 Also for {}, <>, etc.?
+    'e': highlight all braces without a match (slow?)
+    OR: add an argument "cursor" to the syntax command, which means that the
+    region/match/keyword is only highlighted when the cursor is on it.
+    (Campbell)
+    Or do it like Elvis: define text objects and how to highlight them around
+    the cursor. (Iain Truskett)
+7   Make it possible to use all words in the tags files as Keyword.
+    Can also be done with a script (but it's slow).
+7   Make it possible to call a ":" command when a match is found.  Should
+    allow for adding keywords from the text (e.g. variables that are set).
+    And allows for sections with different highlighting.
+7   Add highlight group for commandline: "Commandline".  Make sure it
+    highlights the command line while typing a command, and any output from
+    messages.  And external commands?
+8   Make a version that works like less, but with highlighting: read stdin for
+    text, exit at end of file, don't allow editing, etc.  moreim?  lessim?
+7   SpecialKey highlighting overrules syntax highlighting.  Can't give an
+    unprintable char another color.  Would be useful for ^M at end of line.
+
+
+Built-in script language:
+8   Add referring to key options with "&t_xx".  Both for "echo &t_xx" and
+    ":let &t_xx =".  Useful for making portable mappings.
+8   Allow range for ":exec".  Pass it on to the executed command. (Webb)
+8   exists("&&option") tests if 'option' is actually implemented.  Useful for
+    'shellslash', for example.
+7   Be able to call a function while passing on a variable number of
+    arguments:
+	:function Foo(abc, ...)
+	:  call Bar(a:abc, a:*)
+    Charles Campbell has a patch for this
+8   Have a look at VSEL.  Would it be useful to include? (Bigham)
+8   Add ":fungroup" command, to group function definitions together.  When
+    encountered, all functions in the group are removed.  Suggest using an
+    obscure name to avoid name clashes.  Require a ":fungroup END" in the same
+    sourced file?  Assume the group ends at the end of the file.  Handle
+    nested packages?
+    Alternative: Support packages.  {package-name}:{function-name}().
+    Packages are loaded automatically when first used, from
+    $VIMRUNTIME/packages (or use a search path).
+7   Make globpath() also work with "**" and upwards search. (Brian Medley)
+7   Pre-parse or compile Vim scripts into a bytecode.
+    1. Put the bytecode with the original script, with an ":if
+       has('bytecode')" around it, so that it's only used with a Vim that
+       supports it.  Update the code with a command, can be used in an
+       autocommand.
+    2. Use a ".vic" file (like Python use .pyc).  Create it when writing a
+       .vim file.  Problem: distribution.
+    3. Use a cache directory for each user.  How to recognize which cached
+       file belongs to a sourced script?
+7   Add "n" flag to search() function, just like searchpair(). (Alexey
+    Marinichev)
+8   Add ":n" to fnamemodify(): normalize path, remove "../" when possible.
+    Aric Blumer has a patch for this.
+7   Add argument to winwidth() to subtract the space taken by 'foldcolumn',
+    signs and/or 'number'.
+8   Add functions:
+	multibyteidx(string, idx) Byte index in multi-byte character.
+				Patch by Ilya Sher, 2004 Feb 25
+	menuprop({name}, {idx}, {what})
+				Get menu property of menu {name} item {idx}.
+				menuprop("", 1, "name") returns "File".
+				menuprop("File", 1, "n") returns "nmenu
+				File.Open..." argument.
+				Patch by Ilya Sher, 2004 Apr 22
+	mapname({idx}, mode)	return the name of the idx'th mapping.
+				Patch by Ilya Sher, 2004 Mar 4.
+	match({pat}, {string} [,start] [,count]) get index of count'th match
+				Patch by Ilya Sher, 2004 Mar 31
+	sprintf(format, arg, ..) How to prevent a crash???
+	mousex() mousey()	get position of mouse pointer (patch by Ross
+				Presser)
+	attributes()		return file protection flags "drwxrwxrwx"
+	mkdir(dir)		Create directory
+	copy(from, to)		Copy a file
+	perl(cmd)		call Perl and return string
+	shorten(fname)		shorten a file name, like home_replace()
+	input(prompt, complete)	like input() but do specified completion
+	inputrl()		like input() but right-to-left
+	virtualmode()		add argument to obtain whether "$" was used in
+				Visual block mode.
+	tagtype(tag)		get type of tag (also checks if it exists)
+	getacp()		Win32: get codepage (Glenn Maynard)
+	tr(expr, from, to)	translate chars (Patch from Ron Aaron, Apr 8
+				2004)
+	find()			find file in 'path' (patch from Johannes
+				Zellner 2001 Dec 20)
+	realname()		Get user name (first, last, full)
+				user_fullname() patch by Nikolai Weibull, Nov
+				3 2002)
+	getfperm()		file permissions, in form "rwxrwxrwx"
+				(patch from Nikolai Weibull 2003 Jan 13)
+	getftype()		"file", "dir", "link", "other"?
+				(patch from Nikolai Weibull 2003 Jan 13)
+	setbufline()		set line in any buffer (patch from Yegappan
+				Lakshmanan, 2003 Jan 21)
+	getbufline()		get line from any buffer
+	deletebufline()		delete line in any buffer
+	appendbufline()		append line in any buffer
+	winnr("$")		Get number of windows.  (patch from Nikolai
+				Weibull 2003 Jan 13) (another patch from
+				Yegappan Lakshmanan, 2003 Aug 31)
+	search()		Add optional offset argument.
+				Add 'n' flag.  (patch from Nikolai Weibull
+				2003 Jan 13)
+	sort()			Sort a newline-separated string.  Also:
+				":sort".
+	libcall()		Allow more than one argument.
+	libcallext()		Like libcall(), but using a callback function
+				to allow the library to execute a command or
+				evaluate an expression.
+	confirm()		add "flags" argument, with 'v' for vertical
+				layout and 'c' for console dialog. (Haegg)
+				Flemming Madsen has a patch for the 'c' flag
+				(2003 May 13)
+	system({cmd}, {expr})	Filter {expr} through the shell command
+				{cmd} and return the result.
+				(Patch from Yegappan Lakshmanan)
+	raisewin()		raise gvim window (see HierAssist patch for
+				Tcl implementation ~/vim/HierAssist/ )
+	gettext()		Translate a message.  (Patch from Yasuhiro
+				Matsumoto) How to get the messages into the
+				.po files?
+	strrep()		Repeat a string (patch from Christophe Poucet,
+				2003 Sep 12, also contains XX)
+	char2hex()		convert char string to hex string.  XX
+	hex2char()		convert hex string to char string. XX
+7   Make bufname("'0") return the buffer name from mark '0.  How to get the
+    column and line number?  col("'0") currently returns zero.
+8   argc() returns 0 when using "vim -t tag".  How to detect that no file was
+    specified in any way?  To be able to jump to the last edited file.
+8   Pass the executable name to the Vim scripts in some way.  As v:argv0?
+8   Add command arguments with three dashes, passed on to Vim scripts.
+8   When starting to source a vim script, delete all functions that it has
+    previously defined?  Avoids using ":fun!" all the time.
+7   Add optional arguments to user functions:
+	:func myFunc(arg1, arg2, arg3 = "blah", arg4 = 17)
+6   User functions: Functions local to buffer "b:func()"?
+8   Add ":let var[{expr}] = {expr}".  When past the end of "var" just ignore.
+8   The "= register should be writable, if followed by the name of a variable,
+    option or environment variable.
+8   ":let &option" should list the value of the option.
+7   Add synIDlist(), making the whole list of syntax items on the
+    stack available (separated with '\n').
+8   Add autocommand-event for when a variable is changed:
+	:au VarChanged {varname} {commands}
+8   Add "has("gui_capable")", to check if the GUI can be started.
+8   Add possibility to use variables like registers: characterwise (default),
+    linewise (when ending in '\n'), blockwise (when ending in '\001').	reg0,
+    rega, reg%, etc.  Add functions linewise({expr}), blockwise({expr}) and
+    charwise({expr}).
+7   Make it possible to do any command on a string variable (make a buffer
+    with one line, containing the string).  Maybe add an (invisible) scratch
+    buffer for this?
+	result = scratch(string, command)
+	result = apply(string, command)
+	result = execute(string, command)
+    "command" would use <> notation.
+    Does scratch buffer have a number?  Or re-use same number?
+7   Add function to generate unique number (date in milliseconds).
+7   Automatically load a function from a file when it is called.  Need an
+    option for the search path. (Sekera)
+7   Persistent variables: "p:var"; stored in viminfo file and sessions files.
+7   Include support for arrays?  Patch from Robert Webb.
+    This is restricted to fixed-size arrays indexed by number.  Better: Use
+    associative arrays: a[5] = 3, a["some"] = 'x'. Implement by translating
+    into ordinary variables: a[5] is "-a-5", a["some"] is "a-some", a[5][6] is
+    "a-5-6".  But how to do array assignment and concatenation?
+    Alternative: use dictionaries, like Python.
+
+
+Robustness:
+8   This pattern in syntax/java.vim causes a recursive call of regmatch():
+	syn match   javaStringError      +"\([^"\\]\|\\.\)*$+
+    A long line with a " in it can cause a crash when it runs out of stack
+    space (on systems where this isn't caught).  How can we catch this for
+    more systems?
+
+
+Performance:
+8   Loading plugins takes startup time.  Only load the part that is used to
+    trigger the rest, and load the rest when it's needed?
+8   Turn b_syn_ic and b_syn_containedin into b_syn_flags.
+9   Loading menu.vim still takes quite a bit of time.  How to make it faster?
+8   in_id_list() takes much time for syntax highlighting.  Cache the result?
+7   setpcmark() shifts the jumplist, this takes quite a bit of time when
+    jumping around.  Instead use an index for the start?
+8   When displaying a space with only foreground highlighting, it's the same
+    as a space without attributes.  Avoid displaying spaces for the "~" lines
+    when starting up in a color terminal.
+8   Avoid alloc() for scratch buffer use, esp. in syntax.c.  It's very slow on
+    Win16.
+9   Setting GUI options in the console (e.g., 'guifont') should not cause a
+    redraw.
+8   Profiling shows that in_id_list() is used very often for C code.  Can this
+    function be improved?
+8   For an existing file, the page size of the swap file is always the
+    default, instead of using the block size of the device, because the swap
+    file is created only after setting the block size in mf_open().  How can
+    this be improved?
+8   Set default for 'ttyscroll' to half a screen height?  Should speed up
+    MS-DOS version. (Negri)
+7   C syntax highlighting gets a lot slower when adding a region for folding
+    from { to }. (Charles Campbell)  Inserting a "{" is very slow. (dman)
+7   HTML syntax highlighting is slow for long lines.  Try displaying
+    http://www.theregister.co.uk/content/4/22908.html. (Andre Pang)
+7   Check how performance of loading the wordlist can be improved (adding a
+    lot of abbreviations).
+7   DOS console: Add t_DL support, to make scrolling faster.
+7   Compile Ex commands to byte codes.  Store byte codes in a vim script file
+    at the end, after "compiled:.  Make it look like a single comment line
+    for old Vim versions.  Insert first line "Vim script compiled <timestamp>.
+    Only used compiled code when timestamp matches the file stat.
+    Add command to compile a vim script and add it to the file in-place.
+    Split Ex command executing into a parsing and executing phase.
+    Use compiled code for functions, while loops, etc.
+8   When editing a file with extremely long lines (e.g., an executable), the
+    "linerest" in readfile() is allocated twice to be able to copy what was
+    read so far.  Use realloc() instead?  Or split the line when allocating
+    memory fails and "linerest" is big (> 100000)?
+8   When defining autocommands (e.g., from $VIMRUNTIME/filetype.vim), need to
+    compare each pattern with all existing patterns.  Use a hash code to avoid
+    using strcmp() too often?
+7   Include turbo_loader patches, speeding up reading a file?
+    Speed up reading a file by reading it into a fixed-size buffer, creating
+    the list of indexes in another buffer, and then copying the result into a
+    memfile block with two copies.  Then read the next block into another
+    fixed-size buffer, create the second list of indexes and copy text from
+    the two blocks to the memfile block.
+7   do_cmdline(): Avoid that the command line is copied to allocated memory
+    and freed again later all the time.  For while loops, and for when called
+    with an argument that can be messed with.
+    Generic solution: Make a struct that contains a pointer and a flag that
+    indicates if the pointer should be freed when replaced.
+7   Check that the file size is not more than "sizeof(long)".
+-   Further improve finding mappings in maphash[] in vgetorpeek()
+8   Syntax highlighting is slow when deleting lines.  Try in
+    $VIMRUNTIME/filetype.vim.
+-   "out of memory" after deleting (1,$d) and changing (:%s/^/> /) a lot of
+    lines (27000) a few times.  Memory fragmentation?
+-   Have a look at how pdksh does memory allocation (alloc.c). (Dalecki)
+-   Do profiling on:
+    - :g/pat/normal cmd
+    - 1000ii<Esc>
+    - deleting 10Mbyte worth of lines (netscape binary)
+    - "[i" and "[d" (Yegappan Lakshmanan)
+    - ":g/^/m0" on a 450Kbyte file.  And the "u".
+    - highlighting "~/vim/test/longline.tex", "~/vim/test/scwoop.tcl" and
+      "~/vim/test/lockup.pl".
+    - loading a syntax file to highlight all words not from a dictionary.
+    - editing a vim script with syntax highlighting on (loading vim.vim).
+7   Screen updating can be further improved by only redrawing lines that were
+    changed (and lines after them, when syntax highlighting was used, and it
+    changed).
+    - On each change, remember start and end of the change.
+    - When inserting/deleting lines, remember begin, end, and line count.
+-   Use macros/duarte/capicua for profiling.  Nvi 1.71 is the fastest!
+-   When using a file with one long line (1Mbyte), then do "$hhhh", is still
+    very slow.  Avoid calling getvcol() for each "h"?
+-   Executing a register, e.g. "10000@@" is slow, because ins_typebuf has to
+    move the previous commands forward each time.  Pass count from
+    normal_cmd() down to do_execreg().
+-   Repeating insert "1000i-<Esc>" displays --INSERT-- all the time, because of
+    the <Esc> at the end.  Make this work faster (disable redrawing).
+-   Avoid calls to plines() for cursor line, use w_cline_height.
+-   After ":set nowrap" remove superfluous redraw with wrong hor. offset if
+    cursor is right of the screen.
+8   Make CTRL-C on Unix generate a signal, avoid using select() to check for a
+    CTRL-C (it's slow).
+
+
+Code size:
+8   GUI: When NO_CONSOLE is defined, more code can be excluded.
+-   Put getline() and cookie in a struct, so only one argument has to be
+    passed to do_cmdline() and other functions.
+8   Make a GUI-only version for Unix?
+8   In buf_write _() isn't needed when setting errmsg, do it once when using
+    it.
+7   When compiling with a GUI-only version, the code for cterm colors can be
+    left out.
+8   When compiled with a GUI-only version, the termcap entries for terminals
+    can be removed.
+8   Can the check for libelf in configure.in be removed?
+
+
+Messages:
+8   When using ":q" in a changed file, the error says to "add !".  Add the
+    command so that beginners understand it: "use :q!".
+8   For 'verbose' level 12 prints commands from source'ed files.  How to skip
+    lines that aren't executed?  Perhaps move the echoing to do_cmdline()?
+8   Use 'report' for ":bdel"?  (Krishna)  To avoid these messages when using a
+    script.
+8   "vim --version" output goes to stderr, should be stdout.  Can all output
+    from messages using printf() go to stdout?
+-   Delete message after new command has been entered and have waited for key.
+    Perhaps after ten seconds?
+-   Make message history available in "msg" variables: msg1, msg2, .. msg9.
+9   Check handling of overwriting of messages and delays:
+    Very wrong: errors while redrawing cause endless loop.
+    When switching to another file and screen scrolls because of the long
+    message and return must be typed, don't scroll the screen back before
+    redrawing.
+7   Add an option, which is a regexp, that disables warning messages which
+    match that regexp (Tsirkin).
+8   When address range is wrong you only get "Invalid range".  Be a bit more
+    specific: Negative, beyond last line, reverse range?  Include the text.
+8   Make it possible to ignore errors for a moment ('errorignore'?).  Another
+    option to switch off giving error messages ('errorquiet'?).  Also an option
+    not to give any messages ('quiet')?  Or ":quiet on", ":quiet off".
+    Careful: For a severe error (out of memory), and when the user starts
+    typing, error messages must be switched back on.
+    Also a flag to ignore error messages for shell commands (for mappings).
+-   Option to set time for emsg() sleep. Interrupt sleep when key is typed?
+    sleep before second message?
+8   In Ex silent mode or when reading commands from a file, what exactly is
+    not printed and what is?  Check ":print", ":set all", ":args", ":vers",
+    etc.  At least there should be no prompt. (Smulders)  And don't clear the
+    screen when reading commands from stdin. (Kendall)
+    --> Make a difference between informative messages, prompts, etc. and
+	error messages, printing text, etc.
+8   Window should be redrawn when resizing at the hit-enter prompt.
+    Also at the ":tselect" prompt.  Find a generic solution for redrawing when
+    a prompt is present (with a callback function?).
+
+
+Screen updating:
+7   Add a string to the 'display' option to make CTRL-E and CTRL-Y scroll one
+    screen line, also if this means the first line doesn't start with the
+    first character (like what happens with a single line that doesn't fit).
+-   screen_line():
+    - insert/delete character stuff.
+    - improve delete rest of line (spaces at end of line).
+-   When moving or resizing window, try to avoid a complete redraw (esp. when
+    dragging the status line with the mouse).
+-   When 'lazyredraw' set, don't echo :ex commands?  Need a flag to redraw when
+    waiting for a character.
+8   Add a ":refresh [winnr]" command, to force updating a window.  Useful from
+    an event handler where ":normal" can't be used.  Also useful when
+    'lazyredraw' is set in a mapping.
+7   Make 'list' and 'linebreak' work together.
+7   Add "nbsp" in 'listchars'?  Patch from David Blanchet, 2003 Jul 28.
+
+
+Scrolling:
+8   Add "zm" command: scroll horizontally to put the cursor in the middle.
+6   Add option to set the overlap for CTRL-F and CTRL-B. (Garhi)
+-   extend 'scrollbind' option: 'scrollopt' words "search", "relative", etc..
+    Also 'e'xecute some commands (search, vertical movements) in all bound
+    windows.
+7   Add 'scrollbind' feature to make the offset of one window with the next
+    one equal to the window height.  When editing one file in both windows it
+    looks like each window displays a page of the buffer.
+-   Allow scrolling by dragging with the mouse (grab a character and move it
+    up/down).  Like the "hand" in Acrobat reader.  Use Alt-LeftMouse for this?
+    (Goldfarb)
+-   Add command to execute some commands (search, vertical movements) in all
+    bound windows.
+-   Add 'search' option to 'scrollopt' to allow 'scrollbind' windows to
+    be bound by regexp searches
+-   Add "z>" and "z<": scroll sideways one screenfull. (Campbell)
+-   Add option to set the number of lines when not to scroll, instead of the
+    fixed number used now (for terminals that scroll slow with a large number
+    of lines but not with a single line).
+
+
+Autoconf:
+8   Should use acconfig.h to define prototypes that are used by autoheader.
+8   Some compilers don't give an error for "-OPT:Olimit" but a warning. (Webb)
+    Add a check for the warning, so that "Olimit" can be added automatically?
+-   Autoconf: Use @datadir@ for the system independent files.  Make sure the
+    system dependent and system independent files are separated. (Leitner).
+-   Add autoconf check for waitpid()/wait4().
+-   Remove fcntl() from autoconf, all systems have it?
+-   Set default for 'dictionary', add search for dictionary to autoconf.
+
+
+Perl interface:
+8   Rename typemap file to something else?
+7   Add patch from Benoit Cerrina to integrate Vim and Perl functions better.
+    Now also works for Ruby (2001 Nov 10)
+7   Make buffers accessed as Perl arrays. (Clark)
+7   Make it possible to compile with non-ANSI C?
+6   Tcl/Tk has the "load" command: load a shared library (.so or .dll).
+
+
+Shared libraries:
+6   Add support for loading shared libraries, and calling functions in it.
+	:libload internal-name libname
+	:libunload internal-name
+	:liblist
+	:libcall internal-name function(arg1, arg2, ...)
+	:libcall function(arg1, arg2, ...)
+    libcall() can have only one integer or String argument at the moment.
+6   Have a look on how Perl handles loading dynamic libraries.
+
+
+Tags:
+8   Add a command to jump to a certain kind of tag.  Allow the user to specify
+    values for the optional fields.  E.g., ":tag size type=m".
+8   Add a function that returns the line in the tags file for a matching tag.
+    Can be used to extract more info (class name, inheritance, etc.) (Rico
+    Hendriks)
+7   Count before CTRL-]: jump to N'th match
+8   Scope arguments for ":tag", e.g.: ":tag class:cPage open", like Elvis.
+8   When output of ":tselect" is long, getting the more-prompt, should be able
+    to type the tag number directly.
+7   Add a tag-select window.  Works like ":cwindow".  (Michal Malecki)
+7   Add the possibility to use the "-t {tag}" argument multiple times.  Open a
+    window for each tag.
+7   Make output of ":tselect" a bit nicer.  Use highlighting?
+7   Highlight the "tag 1 of >2" message.  New highlight group, or same as "hit
+    bottom" search message.
+7   When using ":tag" at the top of the tag stack, should add another entry,
+    so CTRL-T can bring you back to where you are now AND to where you were
+    before the previous ":tag" command. (Webb)
+7   When using CTRL-] on someClass::someMethod, separate class from method and
+    use ":ta class:someClass someMethod".
+    Include C++ tags changes (Bertin).	Change "class::func" tag into "func"
+    with "class=class"?  Docs in oldmail/bertin/in.xxx.
+7   Add ":tagargs", to set values for fields:
+	:tagargs class:someclass file:version.c
+	:tagargs clear
+    These are then the default values (changes the order of priority in tag
+    matching).
+7   Support for "gtags" and "global"?  With ":rtag" command?
+    There is an example for how to do this in Nvi.
+    Or do it like Elvis: 'tagprg' and 'tagprgonce' options. (Yamaguchi)
+    The Elvis method is far more flexible, do it that way.
+7   Support "col:99" extra field, to position the cursor in that column.  With
+    a flag in 'cpoptions' to switch it off again.
+7   Better support for jumping to where a function or variable is used.  Use
+    the id-utils, with a connection to "gid" (Emacs can do it too).  Add
+    ":idselect", which uses an "ID" database (made by "mkid") like "tselect".
+7   Add 'taglistfiles' option, show file name and type when listing matching
+    tags name with CTRL-D completion.  Patch from Yegappan Lakshmanan.
+
+
+Security:
+-   nothing at the moment
+
+
+Win32 GUI:
+8   Make debug mode work while starting up (vim -D).  Open console window for
+    the message and input?
+7   The Python interface only works with one version of Python, selected at
+    compile time.  Can this be made to work with version 2.1 and 2.2
+    dynamically?
+7   GvimExt: when there are several existing Vims, move the list to a submenu.
+    (Mike McCollister)
+8   When using "Edit with Vim" for one file it changes directory, when several
+    files are selected and using "Edit with single Vim" the directory isn't
+    changed.  At least change directory when the path is the same for all
+    files.  Perhaps just use the path of the first file or use the longest
+    common part of the path.
+8   Add font argument to set the lfCharSet. (Bobcik)
+8   Somehow automatically detect the system language and set $LANG, so that
+    gettext and menus work.
+8   Could keep console open to run multiple commands, to avoid the need to hit
+    return in every console.
+    Also: Look at how Emacs does runs external commands:
+	http://www.cs.washington.edu/homes/voelker/ntemacs.html.
+8   Need a separate PopUp menu for modeless selection.  Need two new commands:
+    Copy selection to clipboard, Paste selection (as typed text).
+8   Support copy/paste for other file formats.  At least HTML, perhaps RTF.
+    Add "copy special" and "paste special" commands?
+7   Use different default colors, to match the current Windows color scheme.
+    Sys_WindowText, Sys_Window, etc. (Lionel Schaffhauser)
+7   Use <C-Tab> to cycle through open windows (e.g., the find dialog).
+7   <Esc> should close a dialog.
+7   Keep the console for external commands open.  Don't wait for a key to be
+    hit.  Re-open it when the user has closed it anyway.  Or use a prepended
+    command: ":nowait {cmd}", or ":quiet", which executes {cmd} without any
+    prompts.
+7   Should be able to set an option so that when you double click a file that
+    is associated with Vim, you can either get a new instance of Vim, or have
+    the file added into an already running Vim.
+7   The "-P" argument only works for the current codepage.  Use wide
+    functions to find the window title.
+
+
+GUI:
+8   Add GTK 2.3 file dialog support.  Patch by Grahame Bowland, 2004 Mar 15,
+    but it doesn't use "initdir" or "dflt".
+8   Make inputdialog() work for Photon, Amiga, RiscOS.
+-   <C--> cannot be mapped.  Should be possible to recognize this as a
+    normal "-" with the Ctrl modifier.
+7   Implement ":popup" for other systems than Windows.
+8   Implement ":tearoff" for other systems than Win32 GUI.
+6   Implement ":untearoff": hide a torn-off menu.
+8   When using the scrollbar to scroll, don't move the cursor position.  When
+    moving the cursor: scroll to the cursor position.
+9   Make <S-Insert> paste from the clipboard by default. (Kunze)
+7   Menu local to a buffer, like mappings.  Or local to a filetype?
+8   In Buffers menu, add a choice whether selecting a buffer opens it in the
+    current window, splits the window or uses ":hide".
+8   Dragging the mouse pointer outside of a Vim Window should make the text
+    scroll.  Return a value from gui_send_mouse_event() to the machine
+    specific code to indicate the time in which the event should be repeated.
+8   Make it possible to ignore a mouse click when it's used to give Vim (gvim)
+    window focus.  Also when a mouse click is used to bring a window to front.
+8   Make the split into system independent code and system specific code more
+    explicit.  There are too many #ifdefs in gui.c.
+    If possible, separate the Vim code completely from the GUI code, to allow
+    running them in separate processes.
+8   Support a background bitmap.  Useful for marking a column.  Patch from
+    Heather Downs (GTK) and Vince Negri (Win32).
+7   X11: Support cursorColor resource and "-cr" argument.
+8   X11 (and others): CTRL-; is not different from ';'.  Set the modifier mask
+    to include CTRL for keys where CTRL produces the same ASCII code.
+7   Add some code to handle proportional fonts?  Need to draw each character
+    separately (like xterm).  Also for when a double-width font is not exactly
+    double-width. (Maeda)
+8   Should take font from xterm where gvim was started (if no other default).
+8   Selecting font names in X11 is difficult, make a script or something to
+    select one.  Martin Dalecki has a font selector for Motif, but it needs a
+    bit more work.
+7   Motif: use the menu font consistently.  Patch from Martin Dalecki 2002 Jan
+    11.
+8   Visual highlighting should keep the same font (bold, italic, etc.).
+8   Add flag to 'guioptions' to not put anything in the clipboard at all?
+8   Should support a way to use keys that we don't recognize yet.  Add a
+    command that adds entries to special_keys somehow.	How do we make this
+    portable (X11, Win32, ..)?
+7   Add a flag to 'guioptions' that tells not to remove inactive menu items.
+    For systems where greying-out or removing menu items is very slow.  The
+    menu items would remain visibly normally, but not do anything.
+7   Add ":minimize" and ":maximize", which iconize the window and back.
+    Useful when using gvim to run a script (e.g. 2html.vim).
+7   X11: Is it possible to free allocated colors, so that other programs can
+    use them again?  Otherwise, allow disabling allocating the default colors.
+    Or allocate an own colormap (check UAE).  With an option to use it.  For
+    the commandline, "-install" is mostly used for X11 programs.
+7   Add command line argument for "gvim" not to start the GUI.  Sort of the
+    inverse of "vim -g". (Vikas)
+7   Should support multi-column menus.
+-   Should add option for where to put the "Help" menu: like Motif at the far
+    right, or with the other menus (but still at the right).
+-   Add menu item to "Keep Insert mode".
+8   ":mkgvimrc" command, that includes menus.
+6   Big change: Move GUI to separate program "vimgui", to make startup of vim a
+    lot faster, but still be able to do "vim -g" or ":gui".
+7   More explicit mouse button binding instead of 'mousemodel'?
+7   Add option to set the position of the window on the screen.  'windowpos',
+    which has a value of "123,456": <x>,<y>.
+    Or add a command, like ":winsize"?
+7   Add toolbar for more GUIs.
+8   Make it possible to use "amenu icon=BuiltIn##", so that the toolbar item
+    name can be chosen free.
+7   Make it possible to put the toolbar on top, left, right and/or bottom of
+    the window?  Allows for softkey-like use.
+6   Separate the part of Vim that does the editing from the part that runs the
+    GUI.  Communicate through a pseudo-tty.  Vim starts up, creates a
+    pty that is connected to the terminal.  When the GUI starts, the pty is
+    reconnected to the GUI process.  When the GUI stops, it is connected to
+    the terminal again.  Also use the pty for external processes, it looks
+    like a vt100 terminal to them.  Vim uses extra commands to communicate GUI
+    things.
+7   Motif: For a confirm() dialog <Enter> should be ignored when no default
+    button selected, <Esc> should close the dialog.
+-   Motif steals <F10> from us, to pop up menus with the keyboard.  How do we
+    get it back if we want it?
+-   Motif: add 3D shading for the menu entries?  Patch from Martin Dalecki.
+-   Paste in Insert mode should not do autowrap etc.  Or maybe this should be
+    changeable with an option?
+-   Put a nice picture in the icon (but how do we do that?).
+7   When using a pseudo-tty Vim should behave like some terminal (vt52 looks
+    simple enough). Terminal codes to/from shell should be translated.
+-   Would it be useful to be able to quit the GUI and go back to the terminal
+    where it was started from?
+7   Support "-visual <type>" command line argument.
+
+
+VMS:
+-   Improvement: rewrite term/TTY handling.
+-   Improvement: create VMS GTK runtime libraries on OpenVMS 7.1-2 (today GTK
+    works just on 7.3).
+
+
+Autocommands:
+9   Make sure that side effects of autocommands are handled correctly.  Don't
+    execute autocommands when a buffer or window is halfway some changes.
+    Move all apply_autocmds() calls to a higher level where needed.
+8   Add ScriptReadCmd event: used to load remote Vim scripts, e.g.
+    "vim -u http://mach/path/vimrc".
+8   Use another option than 'updatetime' for the CursorHold event.  The two
+    things are unrelated for the user (but the implementation is more
+    difficult).
+8   Also trigger CursorHold in Insert mode?
+7   Add autocommand event for when a buffer cannot be abandoned.  So that user
+    can define the action taking (autowrite, dialog, fail) based on the kind
+    of file. (Yakov Lerner)  Or is BufLeave sufficient?
+8   Can't use ":normal" in CursorHold autocommands.  Make the CursorHold event
+    insert a special key code, and call the autocommand functions from a
+    higher level, so that vgetc() isn't used recursively.
+8   Autocommands should not change registers.  And marks?  And the jumplist?
+    And anything else?
+8   Autocommand for when modified files have been found, when getting input
+    focus again (e.g., FileChangedFocus).
+    Check when: getting focus, jumping to another buffer, ...
+8   Add autocommands, user functions and user commands to ":mkvimrc".
+8   Add "TagJumpFile" autocommand: When jumping to another file for a tag.
+    Can be used to open "main.c.gz" when "main.c" isn't found.
+6   Add KeymapChanged event, so that the effects of a different keymap can be
+    handled (e.g., other font) (Ron Aaron)
+7   Add a way to skip an autocommand if going from one *.c file to another *.c
+    file.
+7   When trying to open a directory, don't load the file but trigger an
+    autocommand event OpenDirectory.
+7   Add file type in front of file pattern: <d> for directory, <l> for link,
+    <x> for executable, etc.  <&xxx> for Risc OS.  With commas to separate
+    alternatives.  The autocommand is only executed when both the file type
+    AND the file pattern match. (Leonard)
+5   Add option that specifies extensions which are to be discarded from the
+    file name.  E.g. 'ausuffix', with ".gz,.orig".  Such that file.c.gz will
+    trigger the "*.c" autocommands.  (Belabas)
+7   Add something to break the autocommands for the current event, and for
+    what follows.  Useful for a "BufWritePre" that wants to avoid writing the
+    file.
+8   When editing "tt.gz", which is in DOS format, 'fileformat' stays at
+    "unix", thus writing the file changes it.  Somehow detect that the read
+    command used dos fileformat.  Same for 'fileencoding'.
+8   Add buffer-local autocommands?  Reduces overhead for autocommands that
+    trigger often (inserting a character, switching mode).
+	:au Event <buffer> do-something
+    E.g.:
+	:au BufEnter <buffer> menu enable ...
+	:au BufLeave <buffer> menu disable ...
+    Patch from Yakov Lerner, including test (2004 Jan 7).
+-   Add events to autocommands:
+    Error	    - When an error happens
+    NormalEnter	    - Entering Normal mode
+    InsertEnter	    - Entering Insert mode
+    ReplaceEnter    - Entering Replace mode
+    CmdEnter	    - Entering Cmdline mode
+    VisualEnter	    - Entering Visual mode
+    CmdUndefined    - Like FuncUndefined but for user commands.
+    *Leave	    - Leaving the mode
+    SearchPost	    - After doing a search command (e.g. to do "M")
+    PreDirChanged/PostDirChanged
+		    - Before/after ":cd" has been used (for changing the
+		      window title)
+    BufReadAction   - replaces reading a file
+    BufWriteAction  - replaces writing a file
+    ShutDown	    - when the system is about to shut down
+    InsertCharPre   - user typed character Insert mode, before inserting the
+		      char.  Pattern is matched with text before the cursor.
+		      Set v:char to the character, can be changed.
+		      (not triggered when 'paste' is set).
+    InsertCharPost  - user typed a character in Insert mode, after inserting
+		      the char.
+    BufModified	    - When a buffer becomes modified, or unmodified (for
+		      putting a [+] in the window title or checking out the
+		      file from CVS).
+    BufFirstChange  - When making a change, when 'modified' is set.  Can be
+		      used to do a :preserve for remote files.
+    BufChange	    - after a change was made.  Set some variables to indicate
+		      the position and number of inserted/deleted lines, so
+		      that marks can be updated.  HierAssist has patch to add
+		      BufChangePre, BufChangePost and RevertBuf. (Shah)
+    WinResized	    - When a window has been resized
+    VimResized	    - When the Vim window has been resized (SIGWINCH)
+		      patch from Yakov Lerner, 2003 July 24.
+-   Add autocommand to be executed every so many seconds?  For writing the
+    file now and then ('autosave').
+				  *'autosave'* *'as'* *'noautosave'* *'noas'*
+    'autosave' 'aw' number  (default 0)
+	    Automatically write the current buffer to file N seconds after the
+	    last change has been made and when |'modified'| is still set.
+	    Default: 0 = do not autosave the buffer.
+    Alternative: have 'autosave' use 'updatetime' and 'updatecount' but make
+    them save the file itself besides the swapfile.
+
+
+Insert mode completion/expansion:
+8   When there is no word before the cursor but something like "sys." complete
+    with "sys.".  Works well for C and similar languages.
+9   ^X^L completion doesn't repeat correctly.  It uses the first match with
+    the last added line, instead of continuing where the last match ended.
+    (Webb)
+8   The code has become too complex.  Redesign it, or at least add proper
+    comments.
+8   Add option to set different behavior for Insert mode completion:
+    - ignore/match case
+    - different characters than 'iskeyword'
+8   Add expression-expansion, so that the user can define his own kind of
+    completion.  Patch from Taro Muraoka, 2003 Aug 26.
+8   Add a command to undo the completion, go back to the original text.
+8   Use the class information in the tags file to do context-sensitive
+    completion.  After "foo." complete all member functions/variables of
+    "foo".  Need to search backwards for the class definition of foo.
+    Should work for C++ and Java.
+    Even more context would be nice: "import java.^N" -> "io", "lang", etc.
+7   When expanding $HOME/dir with ^X^F keep the $HOME (with an option?).
+7   Add CTRL-X command in Insert mode like CTRL-X CTRL-N, that completes WORDS
+    instead of words.
+8   Add CTRL-X CTRL-R: complete words from register contents.
+8   Add completion of previously inserted texts (like what CTRL-A does).
+    Requires remembering a number of insertions.
+8   Add 'f' flag to 'complete': Expand file names.
+    Also apply 'complete' to whole line completion.
+-   Make it possible to search include files in several places.  Use the
+    'path' option?  Can this be done with the dictionary completion (use
+    wildcards in the file name)?
+-   Make CTRL-X CTRL-K do a binary search in the dictionary (if it's sorted).
+-   Speed up CTRL-X CTRL-K dictionary searching (don't use a regexp?).
+-   Set a mark at the position where the match was found (file mark, could
+    be in another file).
+-   Add CTRL-A command in CTRL-X mode: show all matches.
+-   Make CTRL-X CTRL-L use the 'complete' option?
+-   Add command in CTRL-X mode to add following words to the completed string
+    (e.g. to complete "Pointer->element" with CTRL-X CTRL-P CTRL-W CTRL-W)
+-   CTRL-X CTRL-F: Use 'path' to find completions.
+-   CTRL-X CTRL-F: Option to use forward slashes on MS-Windows?
+-   CTRL-X CTRL-F: Don't replace "$VIM" with the actual value. (Kelly)
+8   Add option 'isexpand', containing characters when doing expansion (so that
+    "." and "\" can be included, without changing 'iskeyword'). (Goldfarb)
+    Also: 'istagword': characters used for CTRL-].
+    When 'isexpand' or 'istagword' are empty, use 'iskeyword'.
+-   Allow listing all matches in some way (and picking one from the list).
+
+
+Command line editing:
+7   Add commands (keys) to delete from the cursor to the end of the command
+    line.
+8   Custom completion of user commands can't use the standard completion
+    functions.  Add a hook to invoke a user function that returns the type of
+    completion to be done: "file", "tag", "custom", etc.
+-   Add flags to 'whichwrap' for command line editing (cursor right at end of
+    lines wraps to start of line).
+-   Make editing the command line work like Insert mode in a single-line view
+    on a buffer that contains the command line history.  But this has many
+    disadvantages, only implement it when these can be solved.  Elvis has run
+    into these, see remarks from Steve (~/Mail/oldmail/kirkendall/in.00012).
+    - Going back in history and editing a line there would change the history.
+      Would still need to keep a copy of the history elsewhere.  Like the
+      cmdwin does now already.
+    - Use CTRL-O to execute one Normal mode command.  How to switch to normal
+      mode for more commands?  <Esc> should cancel the command line.  CTRL-T?
+    - To allow "/" and "= need to recursively call getcmdline(), overwrite the
+      cmdline.  But then we are editing a command-line again.  How to avoid
+      that the user gets confused by the stack of command lines?
+    - Use edit() for normal cmdline editing?  Would have to integrate
+      getcmdline() into edit().  Need to solve conflicts between Insert mode
+      and Command-line mode commands.  Make it work like Korn shell and tcsh.
+      Problems:
+	- Insert: completion with 'wildchar'
+	- Insert: use cmdline abbreviations
+	- Insert: CTRL-D deletes indent instead of listing matches
+	- Normal: no CTRL-W commands
+	- Normal: no ":" commands?
+	- Normal: allow Visual mode only within one line.
+    - where to show insert/normal mode message?  Change highlighting of
+      character in first column?
+    - Implementation ideas:
+      - Set "curwin" and "curbuf" to the command line window and buffer.
+      - curwin->w_topline is always equal to curwin->w_cursor.lnum.
+      - never set 'number', no folding, etc.  No status line.
+      - sync undo after entering a command line?
+      - use NV_NOCL flag for commands that are not allowed in Command-line
+	Mode.
+
+
+Command line completion:
+8   Change expand_interactively into a flag that is passed as an argument.
+8   With command line completion after '%' and '#', expand current/alternate
+    file name, so it can be edited.  Also with modifiers, such as "%:h".
+8   When completing command names, either sort them on the long name, or list
+    them with the optional part inside [].
+7   Completion of network shares, patch by Yasuhiro Matsumoto.
+7   Completion of ":map x ": fill in the current mapping, so that it can be
+    edited. (Sven Guckes)
+7   Add completion for when entering an expression after CTRL-R= and "=.
+    (Servatius Brandt)
+-   For 'wildmenu': Simplify "../bar" when possible.
+-   When using <Up> in wildmenu mode for a submenu, should go back to the
+    current menu, not the first one.  E.g., ":emenu File.Save<Up>".
+8   For ":find" and ":sfind" expand files found in 'path'.
+8   Add cmdline completion for the ":debug" command.
+8   When using backtick expansion, the external command may write a greeting
+    message.  Add an option or commands to remove lines that match a regexp?
+7   When listing matches of files, display the common path separately from the
+    file names, if this makes the listing shorter. (Webb)
+-   Add command line completion for ":ilist" and friends, show matching
+    identifiers (Webb).
+8   Add command line completion for "old value" of a command.  ":args <key>"
+    would result in the current list of arguments, which you can then edit.
+7   Add command line completion with CTRL-X, just like Insert mode completion.
+    Useful for ":s/word/xx/".
+-   Add command to go back to the text as it was before completion started.
+    Also to be used for <Up> in the command line.
+-   Add 'wildlongest' option: Key to use to find longest common match for
+    command line completion (default CTRL-L), like 'wildchar'. (Cregut)
+    Also: when there are several matches, show them line a CTRL-D.
+-   Add completion for Environment variables: ":echo $SH<Tab>" -> "$SHELL".
+
+
+Command line history:
+-   Add "KeyWasTyped" flag: It's reset before each command and set when a
+    character from the keyboard is consumed. Value is used to decide to put a
+    command line in history or not. Put line in history if it didn't
+    completely resulted from one mapping.
+-   When using ":browse", also put the resulting edit command in the history,
+    so that it can be repeated. (Demirel)
+
+
+Insert mode:
+9   When 'autoindent' is set, hitting <CR> twice, while there is text after
+    the cursor, doesn't delete the autoindent in the resulting blank line.
+    (Rich Wales) This is Vi compatible, but it looks like a bug.  Rich has a
+    suggestion for a patch to fix this.
+8   When using CTRL-O in Insert mode, then executing an insert command
+    "a" or "i", should we return to Insert mode after <Esc>? (Eggink)
+    Perhaps it can be allowed a single time, to be able to do
+    "<C-O>10axyz<Esc>".  Nesting this further is confusing.
+    ":map <F2> 5aabc<Esc>" works only once from Insert mode.
+7   Use CTRL-G <count> to repeat what follows.  Useful for inserting a
+    character multiple times or repeating CTRL-Y.
+7   Make ":startinsert" command work directly for functions and scripts?
+    Also make it possible to append (it's difficult at end of line).
+    And add ":startreplace" (patch by Charles Campbell, 2004 Jan 9,
+    http://www.erols.com/astronaut/vim/index.html#Patch)
+7   Use 'matchpairs' for 'showmatch': When inserting a character check if it
+    appears in the rhs of 'matchpairs'.
+-   In Insert mode (and command line editing?): Allow undo of the last typed
+    character.	This is useful for CTRL-U, CTRL-W, delete and backspace, and
+    also for characters that wrap to the next line.
+    Also: be able to undo CTRL-R (insert register).
+    Possibly use 'backspace'="whole" for a mode where at least a <CR> that
+    inserts autoindent is undone by a single <BS>.
+-   Use CTRL-G in Insert mode for an extra range of commands, like "g" in
+    Normal mode.
+-   Make 'paste' work without resetting other options, but override their
+    value.  Avoids problems when changing files and modelines or autocommands
+    are used.
+-   When typing CTRL-V and a digit higher than 2, only expect two digits.
+-   Insert binary numbers with CTRL-V b.
+-   Make it possible to undo <BS>, <C-W> and <C-U>.  Bash uses CTRL-Y.
+
+
+'cindent', 'smartindent':
+8   Wrong indent for ":" after a method with line break in arguments:
+	Foo::Foo (int one,
+		    int two)
+	: something(4)
+	{}
+8   Wrong indent for ":" after a method with multiple lines:
+	Foo::Foo (int one, int two)
+		: something(4),
+	somethingelse(3)
+	{}
+9   Too much indent for "lulu": (Uwe Zeisberger)
+       int main ()
+       {
+	 if (lala)
+	   do
+	     ++(*lolo);
+	   while (lili
+		  && lele);
+	   lulu;
+       }
+9   Function gets extra indent: (Jamax)
+	void function(int param) {
+	     if (false)
+		 return;
+	}
+9   brace not indented correctly:
+	case 'c':   if (cond)
+			{
+    Should align with "if" in case statement.
+7   Allow aligning a closing ")" with the line above, instead of the matching
+    "(": (Riehm) if (asdfasdf &&
+			asdf
+			)
+8   Java: Inside an anonymous class, after an "else" or "try" the indent is
+    too small. (Vincent Bergbauer)
+8   In C++ it's possible to have {} inside (): (Kirshna)
+		func(
+			new String[] {
+			    "asdf",
+			    "asdf"
+			}
+		    );
+7   Separate "(0" option into inside/outside a function (Zellner):
+	func(
+	   int x)	// indent like "(4"
+	{
+	   if (a
+	       && b)	// indent like "(0"
+8   Strange problem with this code, "hello" is indented wrong: (Gary Holloway)
+    main() { char	foo[] = "/*";
+	 /* This is a comment; the indentation of C
+	  * source below this comment gets messed up due to the string above.
+	  */
+	  hello
+9   Using "{" in a comment: (Helmut Stiegler)
+    if (a)
+    {
+	    if (b)
+	    {
+		    // {
+	    }
+	    } <-- this is indented incorrect
+9   Wrong indent for cino=(4, removing the (void) fixes it: (Zellner)
+	(void) MyFancyFunction(
+			       argument);
+-   Make smartindenting configurable. Add 'sioptions', e.g. '#' setting the
+    indent to 0 should be switched on/off.
+7   Support ANSI style function header, with each argument on its own line.
+-   "[p" and "]p" should use 'cindent' code if it's on (only for the first
+    line).
+-   Add option to 'cindent' to set indent for comments outside of {}?
+-   Make a command to line up a comment after a code line with a previous
+    comment after a code line.	Can 'cindent' do this automatically?
+7   Add 'j' flag to 'formatoptions': Remove comment leader when joining lines.
+-   When 'cindent'ing a '}', showmatch is done before fixing the indent.  It
+    looks better when the indent is fixed before the showmatch. (Webb)
+-   Add option to make indenting work in comments too (for commented-out
+    code), unless the line starts with "*".
+-   Don't use 'cindent' when doing formatting with "gq"?
+-   When formatting a comment after some text, insert the '*' for the new line
+    (indent is correct if 'cindent' is set, but '*' doesn't get inserted).
+8   When 'comments' has both "s1:/*,mb:*,ex:*/" and "s1:(*,mb:*,ex:*)", the
+    'x' flag always uses the first match.  Need to continue looking for more
+    matches of "*" and remember all characters that could end the comment.
+-   For smartindent: When typing 'else' line it up with matching 'if'.
+-   'smartindent': allow patterns in 'cinwords', for e.g. TeX files, where
+    lines start with "\item".
+-   Support this style of comments (with an option): (Brown)
+	/* here is a comment that
+	is just autoindented, and
+	nothing else */
+-   Add words to 'cinwords' to reduce the indent, e.g., "end" or "fi".
+7   Use Tabs for the indent of starting lines, pad with spaces for
+    continuation lines.  Allows changing 'tabstop' without messing up the
+    indents.
+    And/or: Add option to copy indent as-is, without changing spaces to tabs.
+    also for 'autoindent'.  'keeptabs': when set don't change the tabs and
+    spaces used for indent, when the indent remains the same or increases.
+
+
+Java:
+8   Can have {} constructs inside parens.  Include changes from Steve
+    Odendahl?
+8   Recognize "import java.util.Vector" and use $CLASSPATH to find files for
+    "[i" commands and friends.
+-   For files found with 'include': handle "*" in included name, for Java.
+    (Jason)
+-   How to make a "package java.util" cause all classes in the package to be
+    searched?  Also for "import java.util.*". (Mark Brophy)
+
+
+'comments':
+8   When formatting C comments that are after code, the "*" isn't repeated
+    like it's done when there is no code.  And there is no automatic wrapping.
+    Recognize comments that come after code.  Should insert the comment leader
+    when it's "#" or "//".
+7   When using "comments=fg:--", Vim inserts three spaces for a new line.
+    When hitting a TAB, these spaces could be removed.
+7   The 'n'esting flag doesn't do the indenting of the last (rightmost) item.
+6   Make strings in 'comments' option a RE, to be able to match more
+    complicated things. (Phillipps)  Use a special flag to indicate that a
+    regexp is used.
+8   Make the 'comments' option with "/* * */" lines only repeat the "*" line
+    when there is a "/*" before it?  Or include this in 'cindent'?
+
+
+Virtual edit:
+8   Make the horizontal scrollbar work to move the text further left.
+7   Add a mode where the cursor is only allowed to go one character after the
+    end of the line?
+7   Allow specifying it separately for Tabs and beyond end-of-line?
+
+
+Text objects:
+8   Add test script for text object commands "aw", "iW", etc.
+7   Add text object for current search pattern: "a/" and "i/".  Makes it
+    possible to turn text highlighted for 'hlsearch' into a Visual area.
+8   Add "gp" and "gP" commands: insert text and make sure there is a single
+    space before it, unless at the start of the line, and after it, unless at
+    the end of the line or before a ".".
+7   Add objects with backwards extension?  Use "I" and "A".  Thus "2dAs"
+    deletes the current and previous sentence. (Jens Paulus)
+7   Add "g{" and "g}" to move to the first/last character of a paragraph
+    (instead of the line just before/after a paragraph as with "{" and "}").
+8   Add "a'" and 'a"': a single or double quoted string. (Tim Chase)
+    Patch from Taro Muraoka (2003 Dec 16).
+6   Ignore comment leaders for objects.  Make "das" work in reply-email.
+5   Make it possible to use syntax group matches as a text object.  For
+    example, define a "ccItem" group, then do "da<ccItem>" to delete one.
+    Or, maybe just define "dai", delete-an-item, to delete the syntax item the
+    cursor is on.
+
+
+Select mode:
+8   In blockwise mode, typed characters are inserted in front of the block,
+    backspace deletes a column before the block. (Steve Hall)
+7   Alt-leftmouse starts block mode selection in MS Word.
+    See http://www.vim.org/tips/tip.php?tip_id=743
+7   Add Cmdline-select mode.  Like Select mode, but used on the command line.
+    - Change gui_send_mouse_event() to pass on mouse events when 'mouse'
+      contains 'C' or 'A'.
+    - Catch mouse events in ex_getln.c.  Also shift-cursor, etc., like in
+      normal_cmd().
+    - remember start and end of selection in cmdline_info.
+    - Typing text replaces the selection.
+
+
+Visual mode:
+-   When dragging the Visual selection with the mouse and 'scrolloff' is zero,
+    behave like 'scrolloff' is one, so that the text scrolls when the pointer
+    is in the top line.
+8   When using "I" or "A" in Visual block mode, short lines do not get the new
+    text.  make it possible to add the text to short lines too, with padding
+    where needed.
+7   With a Visual block selected, "2x" deletes a block of double the width,
+    "3y" yanks a block of triple width, etc.
+7   When selecting linewise, using "itext" should insert "text" at the start
+    of each selected line.
+8   What is "R" supposed to do in Visual mode?
+8   Make Visual mode local to the buffer.  Allow changing to another buffer.
+    When starting a new Visual selection, remove the Visual selection in any
+    other buffer. (Ron Aaron)
+8   Support dragging the Visual area to drop it somewhere else. (Ron Aaron,
+    Ben Godfrey)
+7   Support dragging the Visual area to drop it in another program, and
+    receive dropped text from another program. (Ben Godfrey)
+7   With blockwise Visual mode and "c", "C", "I", "A", etc., allow the use of
+    a <CR>.  The entered lines are repeated over the Visual area.
+7   CTRL-V :s should substitute only in the block, not to whole lines. (David
+    Young is working on this)
+7   Filtering a block should only apply to the block, not to the whole lines.
+    When the number of lines is increased, add lines. When decreased, padd with
+    spaces or delete? Use ":`<,`>" on the command line.
+8   After filtering the Visual area, make "gv" select the filtered text?
+    Currently "gv" only selects a single line, not useful.
+7   Don't move the cursor when scrolling?  Needed when the selection should
+    stay the same.  Scroll to the cursor at any movement command.  With an
+    option!
+7   In Visual block mode, need to be able to define a corner on a position
+    that doesn't have text?  Also: when using the mouse, be able to select
+    part of a TAB.  Even more: Add a mode where the cursor can be on a screen
+    position where there is no text.  When typing, add spaces to fill the gap.
+    Other solution: Always use curswant, so that you can move the cursor to
+    the right column, and then use up/down movements to select the line,
+    without changing the column.
+6   ":left" and ":right" should work in Visual block mode.
+7   For Visual mode: Command to do a search for the string in the marked area.
+    Only when fewer than two lines. Use "g/" and "gb".  Patch from Yegappan
+    Lakshmanan.
+7   CTRL-I and CTRL-O should work in Visual mode, but only jump to marks in the
+    current buffer.
+7   CTRL-A and CTRL-X should increase/decrease all numbers in the Visual area.
+6   In non-Block mode, "I" should insert the same text in front of each line,
+    before the first non-blank, "gI" in column 1.
+6   In non-Block mode, "A" should append the same text after each line.
+6   ":'<,'>source" should read the selected lines and ":source" them.
+6   When in blockwise visual selection (CTRL-V), allow cursor to be placed
+    right of the line. Could also allow cursor to be placed anywhere on a TAB
+    or other special character.
+6   Add commands to move selected text, without deselecting.
+
+
+More advanced repeating commands:
+-   Add "." command for visual mode: redo last visual command (e.g. ":fmt").
+7   Repeating "d:{cmd}" with "." doesn't work. (Benji Fisher) Somehow remember
+    the command line so that it can be repeated?
+-   Add "." command after operator: repeat last command of same operator. E.g.
+    "c." will repeat last change, also when "x" used since then (Webb).
+    "y." will repeat last yank.
+    "c2." will repeat the last but one change?
+    Also: keep history of Normal mode commands, add command to list the history
+    and/or pick an older command.
+-   History stack for . command?  Use "g." command.
+
+
+Mappings and Abbreviations:
+8   Let ":verbose map xx" report where the mapping was set, just like with
+    ":verbose set".
+8   When "0" is mapped (it is a movement command) this mapping should not be
+    used after typing another number, e.g. "20l". (Charles Campbell)
+    Is this possible without disabling the mapping of the following command?
+8   Should mapping <C-A> and <C-S-A> both work?
+7   ":abbr b byte", append "b " to an existing word still expands to "byte".
+    This is Vi compatible, but can we avoid it anyway?
+8   ":verbose map" could show the script where the mapping was defined.
+    m_script_ID can be used.
+8   To make a mapping work with a prepended "x to select a register, store the
+    last _typed_ register name and access it with "&.
+8   Add ":amap", like ":amenu".
+8   Add ":cab!", abbreviations that only apply to Command-line mode and not to
+    entering search strings.
+8   Add a flag to ":abbrev" to eat the character that triggers the
+    abbreviation.  Thus "abb ab xxx" and typing "ab<Space>" inserts "xxx" and
+    not the <Space>.
+8   Allow mapping of CTRL-@ (anywhere in the LHS).
+8   Give a warning when using CTRL-C in the lhs of a mapping.  It will never
+    (?) work.
+7   ":verbose map" should display where a mapping was defined, like ":verbose
+    set".
+8   Add a way to save a current mapping and restore it later.  Use a function
+    that returns the mapping command to restore it: mapcmd()?  mapcheck() is
+    not fool proof.  How to handle ambiguous mappings?
+7   Add <0x8f> (hex), <033> (octal) and <123> (decimal) to <> notation?
+7   Allow mapping "Q" and "Q}" at the same time.  Need to put a flag with "Q",
+    that it needs an extra character before it can match. See Vile 'maplonger'
+    option.
+7   When someone tries to unmap with a trailing space, and it fails, try
+    unmapping without the trailing space.  Helps for ":unmap xx | unmap yy".
+7   Make it possible to map 'wildchar', but only when it's a special character
+    (like CTRL-E).  Currently it's only recognized when typed.  Useful for
+    mapping a key to do something and then completion.
+7   Add a mapping that works always, for remapping the keyboard.
+6   Context-sensitive abbreviations: Specify syntax group(s) in which the
+    abbreviations are to be used.
+-   Add mappings that take arguments.  Could work like the ":s" command.  For
+    example, for a mouse escape sequence:
+	:mapexp  <Esc>{\([0-9]*\),\([0-9]*\);	H\1j\2l
+-   Make it possible to include a <Nul> in the lhs and rhs of a mapping.
+-   Add command to repeat a whole mapping ("." only repeats the last change in
+    a mapping).  Also: Repeat a whole insert command, including any mappings
+    that it included.  Sort-of automatic recording?
+-   Make it possible to undo all the commands from a mapping, including a
+    trailing unfinished command, e.g. for ":map K iX^[r".
+-   Add an option to ":map" that makes it display the special keys in
+    <> notation (e.g. <CR> instead of ^M).  Or just always do this?
+-   Include an option (or flag to 'cpoptions') that makes errors in mappings
+    not flush the rest of the mapping (like nvi does).
+-   Use context sensitiveness of completion to switch abbreviations and
+    mappings off for :unab and :unmap.
+6   When using mappings in Insert mode, insert characters for incomplete
+    mappings first, then remove them again when a mapping matches.  Avoids
+    that characters that are the start of some mapping are not shown until you
+    hit another character.
+-   Add optional <Number> argument for mappings:
+    :map <Number>q	     ^W^W<Number>G
+    :map <Number>q<Number>t  ^W^W<Number1-1>G<Number2>l
+    :map q<Char>	    :s/<Char>/\u\0/g
+    Or implicit:
+    :map q			<Register>d<Number>$
+-   Add mappings for replace mode: ":rmap".  How do we then enter mappings for
+    non-replace Insert mode?
+-   Add separate mappings for Visual-character/block/line mode?
+6   Alias for Normal mode commands, works like :substitute?  Would allow
+    mappings with arguments.
+-   Add 'mapstop' command, to stop recursive mappings.
+-   List mappings that have a raw escape sequence both with the name of the key
+    for that escape sequence (if there is one) and the sequence itself.
+-   List mappings: Once with special keys listed as <>, once with meta chars as
+    <M-a>, once with the byte values (octal?). Sort of "spell mapping" command?
+-   When entering mappings: Add the possibility to enter meta keys like they
+    are displayed, within <>: <M-a>, <~@> or <|a>.
+-   Allow multiple arguments to :unmap.
+-   Command to show keys that are not used and available for mapping
+    ":freekeys".
+-   Allow any character except white space in abbreviations lhs (Riehm).
+
+
+Incsearch:
+-   Add a limit to the number of lines that are searched for 'incsearch'?
+-   When no match is found and the user types more, the screen is redrawn
+    anyway.  Could skip that.  Esp. if the line wraps and the text is scrolled
+    up every time.
+-   Temporarily open folds to show where the search ends up.  Restore the
+    folds when going to another line.
+-   When incsearch used and hitting return, no need to search again in many
+    cases, saves a lot of time in big files. (Slootman wants to work on this?)
+    When not using special characters, can continue search from the last match
+    (or not at all, when there was no match).  See oldmail/webb/in.872.
+-   With incsearch, use CTRL-N/CTRL-P to go to next/previous match, some other
+    key to copy matched word to search pattern (Alexander Schmid).
+
+
+Searching:
+8   Add a mechanism for recursiveness: "\(([^()]*\@@[^()]*)\)\@r".  \@@ stands
+    for "go recursive here" and \@r marks the recursive atom.
+item stack to allow matching ().  One side is "push X on
+    the stack if previous atom matched".  Other side is "match with top of
+    stack, pop it when it matches".  Use "\@pX" and "\@m"?
+	Example: \((\@p).\{-}\@m\)*
+7   Add an option to accept a match at the cursor position.  Also for
+    search(). (Brett)
+7   Add pattern item to use properties of Unicode characters.  In Perl it's
+    "\p{L}" for a letter.  See Regular Expression Pocket Reference.
+7   When 'rightleft' is set, the search pattern should be displayed right to
+    left as well?  See patch of Dec 26. (Nadim Shaikli)
+8   Would it be possible to allow ":23,45/pat/flags" to search for "pat" in
+    lines 23 to 45?  Or does this conflict with Ex range syntax?
+8   Allow identical pairs in 'matchpairs'.  Restrict the search to the current
+    line.
+7   Allow longer pairs in 'matchpairs'.  Use ~/vim/macros/matchit.vim as an
+    example.
+8   Make it possible to define the character that "%" checks for in
+    #if/#endif.  For nmake it's !if/!endif.
+-   For "%" command: set hierarchy for which things include other things that
+    should be ignored (like "*/" or "#endif" inside /* */).
+    Also: use "%" to jump from start to end of syntax region and back.
+    Alternative: use matchit.vim
+8   "/:/e+1" gets stuck on a match at the end of the line.  Do we care?
+8   A pattern like "\([^a]\+\)\+" takes an awful long time.  Recognize that
+    the recursive "\+" is meaningless and optimize for it.
+    This one is also very slow on "/* some comment */": "^\/\*\(.*[^/]\)*$".
+7   Recognize "[a-z]", "[0-9]", etc. and replace them with the faster "\l" and
+    "\d".
+7   Add a way to specify characters as hex, octal or <C-M> form.  Could be
+    \%1ax, \%200o and \%<C-M>.  Also \%1234u for multi-byte chars.
+8   Flags that apply to the whole pattern.
+    This works for all places where a regexp is used.
+    Add "\q" to not store this pattern as the last search pattern?
+8   Add an argument after ":s/pat/str/" for a range of matches.  For example,
+    ":s/pat/str/#3-4" to replace only the third and fourth "pat" in a line.
+8   Add an option not to use 'hlsearch' highlighting for ":s" and ":g"
+    commands. (Kahn)  It would work like ":noh" is used after that command.
+    Also: An extra flag to do this once, and a flag to keep the existing
+    search pattern.
+-   Add \%h{group-name}; to search for a specific highlight group.
+    Add \%s{syntax-group}; to search for a specific syntax group.
+-   Support Perl regexp.  Use PCRE (Perl Compatible RE) package. (Shade)
+    Or translate the pattern to a Vim one.
+    Don't switch on with an option for typed commands/mappings/functions, it's
+    too confusing.  Use "\@@" in the pattern, to avoid incompatibilities.
+7   Add POSIX regexp, like Nvi, with 'extended' option?  It's like very-magic.
+-   Remember flags for backreferenced items, so that "*" can be used after it.
+    Check with "\(\S\)\1\{3}". (Hemmerling)
+-   Add flags to search command (also for ":s"?):
+    i	ignore case
+    I	use case
+    p	use Perl regexp syntax (or POSIX?)
+    v	use Vi regexp syntax
+    f	forget pattern, don't keep it for "n" command
+    F   remember pattern, keep it for "n" command
+    Perl uses these too:
+    e	evaluate the right side as an expression (Perl only)
+    m	multiple line expression (we don't need it)
+    o	compile only once (Perl only)
+    s	single line expression (we don't need it)
+    x	extended regexp (we don't need it)
+    When used after ":g" command, backslash needed to avoid confusion with the
+    following command.
+    Add 'searchflags' for default flags (replaces 'gdefault').
+-   Add command to display the last used substitute pattern and last used
+    pattern. (Margo)  Maybe make it accessible through a register (like "/
+    for search string)?
+7   Use T-search algorithm, to speed up searching for strings without special
+    characters.  See C't article, August 1997.
+-   Add 'fuzzycase' option, so that case doesn't matter, and '-' and '_' are
+    equivalent (for Unix filenames).
+-   Add 'v' flag to search command: enter Visual mode, with the matching text
+    as Visual area. (variation on idea from Bertin)
+-   Searching: "/this//that/" should find "that" after "this".
+-   Add global search commands: Instead of wrapping at the end of the buffer,
+    they continue in another buffer. Use flag after search pattern:
+    a	for the next file in the argument list
+    f	for file in the buffer list
+    w	for file edited in a window.
+    e.g. "/pat/f". Then "n" and "N" work through files too. "f" flag also for
+    ":s/pat/foo/f"??? Then when 'autowrite' and 'hidden' are both not set, ask
+    before saving files: "Save modified buffer "/path/file"? (Yes/Hide/No
+    Save-all/hide-All/Quit) ".
+-   ":s/pat/foo/3": find 3rd match of "pat", like sed. (Thomas Koehler)
+-   Special characters in patterns:
+    Inside []:
+    \012  octal character
+    \0x1a hex character
+    \0<BS> \0<Esc>: special character
+7   When searching with 'n' give message when getting back where the search
+    first started. Remember start of search in '/ mark.
+7   Add option that scrolls screen to put cursor in middle of screen after
+    search always/when off-screen/never.  And after a ":tag" command.  Maybe
+    specify how many lines below the screen causes a redraw with the cursor in
+    the middle (default would be half a screen, zero means always).
+6   Support multiple search buffers, so macros can be made without side
+    effects.
+7   From xvim: Allow a newline in search patterns (also for :s, can delete
+    newline).  Add BOW, EOW, NEWL, NLORANY, NLBUTANY, magic 'n' and 'r', etc.
+    [not in xvim:] Add option to switch on matches crossing ONE line boundary.
+7   Add ":iselect", a combination of ":ilist" and ":tselect". (Aaron)
+    Also ":dselect".
+
+
+Undo:
+-   When accidentally hitting "R" instead of Ctrl-R, further Ctrl-R is not
+    possible, even when typing <Esc> immediately. (Grahn)  Also for "i", "a",
+    etc.  Postpone saving for undo until something is really inserted?
+8   When Inserting a lot of text, it can only be undone as a whole.  Make undo
+    sync points at every line or word.  Could recognize the start of a new
+    word (white space and then non-white space) and backspacing.
+    Can already use CTRL-G u, but that requires remapping a lot of things.
+8   Make undo more memory-efficient: Compare text before and after change,
+    only remember the lines that really changed.
+7   Add undo for a range of lines.  Can change these back to a previous
+    version without changing the rest of the file.  Stop doing this when a
+    change includes only some of these lines and changes the line count.  Need
+    to store these undo actions as a separate change that can be undone.
+7   Add an undo tree: When making a change, instead of clearing any future
+    undo (thus redo) info, make a new branch.  How to navigate through the
+    undo tree?
+-   For u_save() include the column number. This can be used to set '[ and '].
+    And in the future the undo can be made more efficient (Webb).
+-   In out-of-memory situations: Free allocated space in undo, and reduce the
+    number of undo levels (with confirmation).
+-   Instead of [+], give the number of changes since the last write: [+123].
+    When undoing to before the last write, change this to a negative number:
+    [-99].
+-   With undo with simple line delete/insert: optimize screen updating.
+-   When executing macro's: Save each line for undo only once.
+-   Store undo info in a file that survives until the next edit.  Then it's
+    possible to undo to before the current editing session.  Combined with
+    viminfo?
+-   When doing a global substitute, causing almost all lines to be changed,
+    undo info becomes very big.  Put undo info in swap file??
+
+
+Buffer list:
+8   Add patch from Charles Campbell to have ":0file!" remove the name of the
+    current buffer. (2003 June 17)
+7   Command to execute a command in another buffer: ":inbuf {bufname} {cmd}".
+    Also for other windows: ":inwin {winnr} {cmd}".  How to make sure that
+    this works properly for all commands, and still be able to return to the
+    current buffer/window?  E.g.: ":inbuf xxx only".
+8   Add File.{recent_files} menu entries: Recently edited files.
+    Ron Aaron has a plugin for this: mru.vim.
+8   Unix: Check all uses of fnamecmp() and fnamencmp() if they should check
+    inode too.
+7   Add another number for a buffer, which is visible for the user.  When
+    creating a new buffer, use the lowest number not in use. (or the highest
+    number in use plus one?)
+7   Offer some buffer selection from the command line?  Like using ":ls" and
+    asking for a buffer number. (Zachmann)
+-   When starting to edit a file that is already in the buffer list, use the
+    file name argument for the new short file name. (Webb)
+-   Add an option to make ":bnext" and ":bprev" wrap around the end of the
+    buffer list.  Also for ":next" and ":prev"?
+7   Add argument to ":ls" which is a pattern for buffers to list.
+    E.g. ":ls *.c". (Thompson)
+7   Add expansion of buffer names, so that "*.c" is expanded to all buffer
+    names.  Needed for ":bdel *.c", ":bunload *.c", etc.
+8   Support for <afile> where a buffer name is expected.
+8   Some commands don't use line numbers, but buffer numbers. '$'
+    should then mean the number of the last buffer.  E.g.: "4,$bdel".
+7   Add an option to mostly use slashes in file names.  Separately for
+    internal use and for when executing an external program?
+
+
+Swap (.swp) files:
+8   If writing to the swap file fails, should try to open one in another
+    directory from 'dir'.  Useful in case the file system is full and when
+    there are short file name problems.
+8   Also use the code to try using a short file name for the backup and swap
+    file for the Win32 and Dos 32 bit versions.
+8   When a file is edited by root, add $LOGNAME to know who did su.
+8   When the edited file is a symlink, try to put the swap file in the same
+    dir as the actual file. Adjust FullName().	Avoids editing the same file
+    twice (e.g. when using quickfix).  Also try to make the name of the backup
+    file the same as the actual file?
+    Use the code for resolve()?
+7   Store the options 'fileencoding', 'fileformat', etc. in the swapfile,
+    because they change what will be written to the file.  Requires adding
+    another block to the swapfile.
+7   When using 64 bit inode numbers, also store the top 32 bits.  Add another
+    field for this, using part of bo_fname[], to keep it compatible.
+7   When editing a file on removable media, should put swap file somewhere
+    else.  Use something like 'r' flag in 'viminfo'. 'diravoid'?
+    Also: Be able to specify minimum disk space, skip directory when not
+    enough room.
+7   Add a configure check for which directory should be used: /tmp, /var/tmp
+    or /var/preserve.
+-   Add an option to create a swap file only when making the first change to
+    the buffer.  (Liang)  Or only when the buffer is not read-only.
+-   Add option to set "umask" for backup files and swap files (Antwerpen).
+    'backupumask' and 'swapumask'?  Or 'umaskback' and 'umaskswap'?
+-   When editing a readonly file, don't use a swap file but read parts from the
+    original file.  Also do this when the file is huge (>'maxmem').  We do
+    need to load the file once to count the number of lines?  Perhaps keep a
+    cached list of which line is where.
+
+
+Viminfo:
+7   Can probably remove the code that checks for a writable viminfo file,
+    because we now do the chown() for root, and others can't overwrite someone
+    else's viminfo file.
+8   Add argument to keep the list of buffers when Vim is started with a file
+    name. (Schild)
+8   Keep the last used directory of the file browser (File/Open menu).
+8   Remember the last used register for "@@".
+8   Remember a list of last accessed files.  To be used in the
+    "File.Open Recent" menu.  Default is to remember 10 files or so.
+    Also remember which files have been read and written.  How to display
+    this?
+7   Also store the ". register (last inserted text).
+7   Make it possible to store buffer names in viminfo file relative to some
+    directory, to make them portable over a network. (Aaron)
+6   Store a snapshot of the currently opened windows.  So that when quitting
+    Vim, and then starting again (without a file name argument), you see the
+    same files in the windows.  Use ":mksession" code?
+-   Make marks present in .viminfo usable as file marks: Display a list of
+    "last visited files" and select one to jump to.
+
+
+Modelines:
+8   Before trying to execute a modeline, check that it looks like one (valid
+    option names).  If it's very wrong, silently ignore it.
+    Ignore a line that starts with "Subject: ".
+-   When an option value is coming from a modeline, do not carry it over to
+    another edited file?  Would need to remember the value from before the
+    modeline setting.
+-   Allow setting a variable from a modeline?  Only allow using fixed strings,
+    no function calls, to avoid a security problem.
+-   Allow ":doauto BufRead x.cpp" in modelines, to execute autocommands for
+    .cpp files.
+-   Support the "abbreviate" command in modelines (Kearns).  Careful for
+    characters after <Esc>, that is a security leak.
+-   Add option setting to ask user if he wants to have the modelines executed
+    or not.  Same for .exrc in local dir.
+
+
+Options:
+8   Make ":mksession" store buffer-specific options for the specific buffer.
+8   With ":mksession" always store the 'sessionoptions' option, even when
+    "options" isn't in it. (St-Amant)
+7   Setting an option always sets "w_set_curswant", while this is only
+    required for a few options.  Only do it for those options to avoid the
+    side effect.
+8   When using ":mksession", also store a command to reset all options to
+    their default value, before setting the options that are not at their
+    default value.
+8   Should ":mksession" restore the current directory when writing the
+    session, or the directory where the session file is?  Probably need a word
+    in 'sessionoptions' to make a choice:
+    "curdir" (cd to current directory when session file was generated)
+    "sessiondir" (cd to directory of session file)
+    "nodir" (don't cd at all)
+8   Make "old" number options that really give a number of effects into string
+    options that are a comma separated list.  The old number values should
+    also be supported.
+8   Add commands to save and restore an option, which also preserves the flag
+    that marks if the option was set.  Useful to keep the effect of setting
+    'compatible' after ":syntax on" has been used.
+7   There is 'titleold', why is there no 'iconold'? (Chazelas)
+7   Make 'scrolloff' a global-local option, so that it can be different in the
+    quickfix window, for example. (Gary Holloway)
+7   Add plugins for formatting.  Should be able to make a choice depending on
+    the language of a file (English/Korean/Japanese/etc.).
+
+
+External commands:
+8   When filtering text, redirect stderr so that it can't mess up the screen
+    and Vim doesn't need to redraw it.  Also for ":r !cmd".
+4   Set separate shell for ":sh", piping "range!filter", reading text "r !ls"
+    and writing text "w !wc". (Deutsche)  Allow arguments for fast start (e.g.
+    -f).
+4   Allow direct execution, without using a shell.
+4   Run an external command in the background.  But how about I/O in the GUI?
+    Careful: don't turn Vim into a shell!
+4   Add feature to disable using a shell or external commands.
+
+
+Multiple Windows:
+7   "vim -oO file ..." use both horizontal and vertical splits.
+8   Add CTRL-W T: go to the top window in the column of the current window.
+    And CTRL-W B: go to bottom window.
+7   Use CTRL-W <Tab>, like alt-tab, to switch between buffers.  Repeat <Tab>
+    to select another buffer (only loaded ones?), <BS> to go back, <Enter> to
+    select buffer, <Esc> to go back to original buffer.
+7   Add a 'winfixwidth' option, similar to 'winfixheight'.
+6   Add an option to resize the shell when splitting and/or closing a window.
+    ":vsp" would make the shell wider by as many columns as needed for the new
+    window.  Specify a maximum size (or use the screen size). ":close" would
+    shrink the shell by as many columns as come available. (Demirel)
+7   When starting Vim several times, instantiate a Vim server, that allows
+    communication between the different Vims.  Feels like one Vim running with
+    multiple top-level windows.  Esp. useful when Vim is started from an IDE
+    too.  Requires some form of inter process communication.
+-   Support a connection to an external viewer.  Could call the viewer
+    automatically after some seconds of non-activity, or with a command.
+    Allow some way of reporting scrolling and cursor positioning in the viewer
+    to Vim, so that the link between the viewed and edited text can be made.
+
+
+Marks:
+8   When cursor is first moved because of scrolling, set a mark at this
+    position.  (Rimon Barr)  Use '-.
+8   Add a command to jump to a mark and make the motion inclusive. g'm and g`m?
+8   The '" mark is set to the first line, even when doing ":next" a few times.
+    Only set the '" mark when the cursor was really moved in a file.
+8   Make `` and '', which would position the new cursor position in the middle
+    of the window, restore the old topline (or relative position) from when
+    the mark was set.
+7   Make a list of file marks in a separate window.  For listing all buffers,
+    matching tags, errors, etc.  Normal commands to move around.  Add commands
+    to jump to the mark (in current window or new window).  Start it with
+    ":browse marks"?
+6   Add a menu that lists the Marks like ":marks". (Amerige)
+8   Make it possible to delete marks.  Charles Campbell has a patch that does
+    this with the markclear() function (2004 Jan 9).  And the ":delmark"
+    command (2004 Feb 9)
+7   For ":jumps", ":tags" and ":marks", for not loaded buffers, remember the
+    text at the mark.  Highlight the column with the mark.
+7   Highlight each mark in some way (With "Mark" highlight group).
+    Or display marks in a separate column, like 'number' does.
+7   Use d"m to delete rectangular area from cursor to mark m (like Vile's \m
+    command).
+7   Try to keep marks in the same position when:
+    - replacing with a line break, like in ":s/pat/^M/", move marks after the
+      line break column to the next line. (Acevedo)
+    - inserting/deleting characters in a line.
+5   Include marks for start/end of the current word and section.  Useful in
+    mappings.
+6   Add "unnamed mark" feature: Like marks for the ":g" command, but place and
+    unplace them with commands before doing something with the lines.
+    Highlight the marked lines somehow.
+
+
+Digraphs:
+7   Make "ga" show the digraph for a character, if it exists.
+    Also the keymap?
+-   Make it possible to enter "r<C-E>" and "r<C-Y>" (get character from line
+    below/above).
+-   Use digraph table to tell Vim about the collating sequence of special
+    characters?
+8   Add command to remove (all) digraphs. (Brown)
+7   Support different sets of digraphs (depending on the character set?).  At
+    least Latin1/Unicode, Latin-2, MS-DOS (esp. for Win32).
+
+
+Writing files:
+-   In vim_rename(), should lock "from" file when deleting "to" file for
+    systems other than Amiga.  Avoids problems with unexpected longname to
+    shortname conversion.
+8   write mch_isdevice() for Amiga, Mac, VMS, etc.
+8   When appending to a file, Vim should also make a backup and a 'patchmode'
+    file.
+8   'backupskip' doesn't write a backup file at all, a bit dangerous for some
+    applications.  Add 'backupelsewhere' to write a backup file in another
+    directory?  Or add a flag to 'backupdir'?
+7   The 'directory' option supports changing path separators to "%" to make
+    file names unique, also support this for 'backupdir'. (Mikolaj Machowski)
+6   Add an option to write a new, numbered, backup file each time.  Like
+    'patchmode', e.g., 'backupmode'.
+6   Make it possible to write 'patchmode' files to a different directory.
+    E.g., ":set patchmode=~/backups/*.orig". (Thomas)
+6   Add an option to prepend something to the backup file name.  E.g., "#".
+    Or maybe allow a function to modify the backup file name?
+8   Only make a backup when overwriting a file for the first time. Avoids
+    losing the original when writing twice. (Slootman)
+7   On non-Unix machines, also overwrite the original file in some situations
+    (file system full, it's a link on an NFS partition).
+7   When editing a file, check that it has been change outside of Vim more
+    often, not only when writing over it.  E.g., at the time the swap file is
+    flushed.  Or every ten seconds or so (use the time of day, check it before
+    waiting for a character to be typed).
+8   When a file was changed since editing started, show this in the status
+    line of the window, like "[time]".
+    Make it easier to reload all outdated files that don't have changes.
+    Automatic and/or with a command.
+
+
+Substitute:
+8   Make it easier to replace in all files in the argument list. E.g.:
+    ":argsub/oldword/newword/".  Works like ":argdo %s/oldword/newword/g|w".
+-   :s///p prints the line after a substitution.
+-   With :s///c replace \&, ~, etc. when showing the replacement pattern.
+8   With :s///c allow scrolling horizontally when 'nowrap' is effective.
+    Also allow a count before the scrolling keys.
+-   Add number option to ":s//2": replace second occurrence of string? Or:
+    :s///N substitutes N times.
+-   Add answers to ":substitute" with 'c' flag, used in a ":global", e.g.:
+    ":g/pat1/s/pat2/pat3/cg": 'A' do all remaining replacements, 'Q' don't do
+    any replacements, 'u' undo last substitution.
+7   Substitute in a block of text.  Use {line}.{column} notation in an Ex
+    range, e.g.: ":1.3,$.5s" means to substitute from line 1 column 3 to the
+    last line column 5.
+5   Add commands to bookmark lines, display bookmarks, remove bookmarks,
+    operate on lines with bookmarks, etc.  Like ":global" but with the
+    possibility to keep the bookmarks and use them with several commands.
+    (Stanislav Sitar)
+
+
+Mouse support:
+7   Win32: Add patch for 5-button mouse. (Michael Geddes 2001 Nov 26)
+8   Add 'o' flag to 'mouse'?
+7   Be able to set a 'mouseshape' for the popup menu.
+8   Add 'mouse' flag, which sets a behavior like Visual mode, but automatic
+    yanking at the button-up event.  Or like Select mode, but typing gets you
+    out of Select mode, instead of replacing the text. (Bhaskar)
+7   Checkout sysmouse() for FreeBSD console mouse support.
+-   Implement mouse support for the Amiga console.
+-   Using right mouse button to extend a blockwise selection should attach to
+    the nearest corner of the rectangle (four possible corners).
+-   Precede mouse click by a number to simulate double clicks?!?
+-   When mouse click after 'r' command, get character that was pointed to.
+
+
+Crypt and security:
+8   Also crypt the swapfile, each block separately.  Change mf_write() and
+    mf_read().  How to get b_p_key to these functions?
+7   Support a stronger encryption.  Jason Holt implemented AES (May 6 2003).
+8   Lock all used memory so that it doesn't get swapped to disk (uncrypted).
+    Patch by Jason Holt, 2003 May 23.
+
+
+Argument list:
+6   Add command to put all filenames from the tag files in the argument list.
+    When given an argument, only use the files where that argument matches
+    (like `grep -l ident`) and jump to the first match.
+6   Add command to form an args list from all the buffers?
+
+
+Registers:
+8   Don't display empty registers with ":display". (Etienne)
+8   Make the # register writable, so that it can be restored after jumping
+    around in windows.
+8   Add put command that overwrites existing text.  Should also work for
+    blocks.  Useful to move text around in a table.  Works like using "R ^R r"
+    for every line.
+6   When yanking into the unnamed registers several times, somehow make the
+    previous contents also available (like it's done for deleting).  What
+    register names to use?  g"1, g"2, etc.?
+-   When appending to a register, also report the total resulting number of
+    lines.  Or just say "99 more lines yanked", add the "more".
+-   When inserting a register in Insert mode with CTRL-R, don't insert comment
+    leader when line wraps?
+-   The ":@r" commands should take a range and execute the register for each
+    line in the range.
+-   Add "P" command to insert contents of unnamed register, move selected text
+	to position of previous deleted (to swap foo and bar in " + foo")
+8   Should be able to yank and delete into the "/ register.
+    How to take care of the flags (offset, magic)?
+7   Add ! register, for shell commands. (patch from Grenie)
+
+Debug mode:
+7   Add something to enable debugging when a remote message is received.
+8   Add breakpoints for setting an option
+8   Add breakpoits for assigning to a variable.
+7   Add a watchpoint in the debug mode: An expression that breaks execution
+    when evaluating to non-zero.
+7   Store the history from debug mode in viminfo.
+7   Make the debug mode history available with histget() et al.
+
+
+Various improvements:
+8   Add ":rename" command: rename the file of the current buffer and rename
+    the buffer.  Buffer may be modified.
+7   Add the MzScheme interface.  Patch on http://iamphet.nm.ru/scheme/
+    (Sergey Khorev)
+6   In the quickfix window statusline add the command used to get the list of
+    errors, e.g. ":make foo", ":grep something *.c".
+6   Python interface: add vim.message() function. (Michal Vitecek, 2002 Nov 5)
+7   Support using ":vert" with User commands.  Add expandable items <vert>.
+    Do the same for ":browse" and ":confirm"?
+    For ":silent" and ":debug" apply to the whole user command.
+7   Allow a window not to have a statusline.  Makes it possible to use a
+    window as a buffer-tab selection.
+7   Add an invisible buffer which can be edited.  For use in scripts that want
+    to manipulate text without changing the window layout.
+8   Add a command to revert to the saved version of file; undo or redo until
+    all changes are gone.
+8   Make 'statusline' local, so that each window can have a different value.
+    But should it also be local to a buffer? (Yegappan Lakshmanan has a patch,
+    2002 feb 15)
+7   Add a ":cpfile", go in the other direction as ":cnfile".
+6   "vim -q -" should read the list of errors from stdin. (Gautam Mudunuri)
+8   In the gzip plugin, also recognize *.gz.orig, *.gz.bak, etc.  Like it's
+    done for filetype detection.  Patch from Walter Briscoe, 2003 Jul 1.
+8   Add "--remote-fail": When contacting the server fails, exit Vim.
+    Add "--remote-self": When contacting the server fails, do it in this Vim.
+    Overrules the default of "--remote-send" to fail and "--remote" to do it
+    in this Vim.
+8   When Vim was started without a server, make it possible to start one, as
+    if the "--servername" argument was given. ":startserver <name>"?
+8   No address range can be used before the command modifiers.  This makes
+    them difficult to use in a menu for Visual mode.  Accept the range and
+    have it apply to the following command.
+8   Add the possibility to set 'fileformats' to force a format and strip other
+    CR characters.  For example, for "dos" files remove CR characters at the
+    end of the line, so that a file with mixed line endings is cleaned up.
+    To just not display the CR characters: Add a flag to 'display'?
+7   Add a "-@ filelist" argument: read file names from a file. (David Kotchan
+    has a patch for it)
+7   Some compilers give error messages in which the file name does not have a
+    path.  Be able to specify that 'path' is used for these files.
+8   Add term entries for function keys on xterm with alt and ctrl (new in pl
+    94).  E.g., Control adds ";5" in "<Esc>[20;5~".  Find a generic way to
+    prepend a modifier in console mode, to avoid having to specify each
+    individual modified key.
+    Steve Wall has a patch (2002 Mar 12) for adding function keys up to 37,
+    with modifiers.
+7   Xterm sends <Esc>O3F for <M-End>.  Similarly for other <M-Home>, <M-Left>,
+    etc.  Combinations of Alt, Ctrl and Shift are also possible.  Recognize
+    these to avoid inserting the raw byte sequence, handle like the key
+    without modifier (unless mapped).
+8   Add ":breakdel *": delete all breakpoints.
+7   Support ":browse edit" in console, using explorer.vim?
+6   Add "gG": like what "gj" is to "j": go to the N'th window line.
+8   Add command like ":normal" that accepts <Key> notation like ":map".
+9   Support ACLs on more systems.
+7   Add ModeMsgVisual, ModeMsgInsert, etc. so that each mode message can be
+    highlighted differently.
+8   Allow using "**" as a wildcard in commands like ":next" and ":args".
+8   Provide a way to avoid wildcard expansion.  Use double quotes, like in the
+    shell?  :edit "my[file].txt"  (currently works if there is no "myf.txt")
+7   Add a message area for the user.  Set some option to reserve space (above
+    the command line?).  Use an ":echouser" command to display the message
+    (truncated to fit in the space).
+7   Add %s to 'keywordprg': replace with word under the cursor. (Zellner)
+8   Support printing on Unix.  Can use "lpansi.c" as an example. (Bookout)
+8   Add put command that replaces the text under it.  Esp. for blockwise
+    Visual mode.
+7   Enhance termreponse stuff: Add t_CV(?): pattern of term response, use
+    regexp: "\e\[[>?][0-9;]*c", but only check just after sending t_RV.
+7   Add "g|" command: move to N'th column from the left margin (after wrapping
+    and applying 'leftcol').  Works as "|" like what "g0" is to "0".
+7   Add patch from Wall for this one ( ~/Mail/oldmail/wall/in.00019 ):
+    'flipcase' variable: upper/lowercase pairs.
+    Insert comma's between pairs and allow a range, make it look like
+    'isfname'.  E.g. ":set flipcase=a-zA-Z,xX,23-33:143-153".  The colon to
+    separate the from and to part is optional.
+7   Support setting 'equalprg' to a user function name.
+9   Add cursor-column highlighting.  Enable it with 'cursorcolumn' option, set
+    highlighting with "CursorColumn" group.  Useful for aligning text.
+    Also cursor-row highlighting.
+    Patch from Yasuhiro Matsumoto for underlining the cursor line, 2004 Mar 24.
+    Alternatie: when 'number' is set highlight the number of the current line.
+7   Highlight the characters after the end-of-line differently.
+7   When 'whichwrap' contains "l", "$dl" should join lines?
+8   Include a connection to an external program through a pipe?  See patches
+    from Felbinger for a mathematica interface.
+    Or use emacs server kind of thing?
+8   Add an argument to configure to use $CFLAGS and not modify it? (Mooney)
+8   Enabling features is a mix of configure arguments and defines in
+    feature.h.  How to make this consistent?  Feature.h is required for
+    non-unix systems.  Perhaps let configure define CONF_XXX, and use #ifdef
+    CONF_XXX in feature.h?  Then what should min-features and max-features do?
+8   Add "g^E" and "g^Y", to scroll a screen-full line up and down.
+6   Add ":timer" command, to set a command to be executed at a certain
+    interval, or once after some time has elapsed. (Aaron)
+8   Add ":confirm" handling in open_exfile(), for when file already exists.
+8   Use confirm/dialog stuff to ask the user, when a file has changed outside
+    of Vim, if he wants to reload it.  Triggered when focus gained, after
+    shell command, when entering another buffer, etc..
+    Also do this when editing a new file, and another application creates
+    the file before doing ":w" in Vim.
+    Also check if the file protection has changed.  When checking a file into
+    RCS it is made read-only, when checking out it is made read-write.
+8   When quitting with changed files, make the dialog list the changed file
+    and allow "write all", "discard all", "write some".  The last one would
+    then ask "write" or "discard" for each changed file.  Patch in HierAssist
+    does something like this. (Shah)
+7   Use growarray for replace stack.
+7   Have a look at viH (Hellenic or Greek version of Vim).  But a solution
+    outside of Vim might be satisfactory (Haritsis).
+3   Make "2d%" work like "d%d%" instead of "d2%"?
+8   Make "more" prompt accept command characters, like "hit-enter" prompt?
+    Or extend it with more commands, like "less": 'b' for back, 'j' for one
+    line down, etc.
+8   For the "--more--" prompt, support the 'b'ack command for more commands.
+    Possible implementation: Do it at a very low level, caching the lines that
+    are on the screen (with highlight attributes).  Avoids that changes have
+    to be made for all functions that list something.
+7   "g CTRL-O" jumps back to last used buffer.	Skip CTRL-O jumps in the same
+    buffer.  Make jumplist remember the last ten accessed buffers?
+-   Keep a list of most recently used files for each window, use "[o" to go
+    back (older file) and "]n" to go forward (newer file) (like ^O and ^I for
+    jumps) (Webb). Use ":files" and ":ls" to list the files in history order.
+7   Add a history of recently accessed buffer.	Maybe make "2 CTRL-^" jump to
+    the 2nd previously visited buffer, "3 CTRL-^" to the third, etc.  Or use
+    "3 g CTRL-^" for this?
+7   Add an option to set the width of the 'number' column.  Eight positions is
+    often more than needed.  Or adjust the width to the length of the file?
+    Add patch that adds 'numberlen' option. (James Harvey)
+    Other patch with min and max from Emmanuel Renieris (2002 Jul 24)
+    Other patch without an option by Gilles Roy (2002 Jul 25)
+-   Add code to disable the CAPS key when going from Insert to Normal mode.
+-   Set date/protection/etc. of the patchfile the same as the original file.
+-   Use growarray for termcodes[] in term.c
+-   Add <window-99>, like <cword> but use filename of 99'th window.
+7   Add a way to change an operator to always work characterwise-inclusive
+    (like "v" makes the operator characterwise-exclusive).  "x" could be used.
+-   Make a set of operations on list of names: expand wildcards, replace home
+    dir, append a string, delete a string, etc.
+-   Remove mktemp() and use tmpname() only?  Ctags does this.
+-   When replacing environment variables, and there is one that is not set,
+    turn it into an empty string?  Only when expanding options? (Hiebert)
+-   Option to set command to be executed instead of producing a beep (e.g. to
+    call "play newbeep.au").
+-   Add option to show the current function name in the status line.  More or
+    less what you find with "[[k", like how 'cindent' recognizes a function.
+    (Bhatt).
+-   "[r" and "]r": like "p" and "P", but replace instead of insert (esp. for
+    blockwise registers).
+-   Add 'timecheck' option, on by default.  Makes it possible to switch off the
+    timestamp warning and question. (Dodt).
+-   Add an option to set the time after which Vim should check the timestamps
+    of the files.  Only check when an event occurs (e.g., character typed,
+    mouse moved).  Useful for non-GUI versions where keyboard focus isn't
+    noticeable.
+9   When using ":w <fname>" it's possible that this file is loaded in another
+    buffer.  Give a warning right away, don't wait for a shell command.
+-   Make 'smartcase' work even though 'ic' isn't set (Webb).
+7   Add ":justify" command.  Patch from Vit Stradal 2002 Nov 25.
+7   When formatting text, allow to break the line at a number of characters.
+    Use an option for this: 'breakchars'?  Useful for formatting Fortran code.
+-   Add flag to 'formatoptions' to be able to format book-style paragraphs
+    (first line of paragraph has larger indent, no empty lines between
+    paragraphs).  Complements the '2' flag.  Use '>' flag when larger indent
+    starts a new paragraph, use '<' flag when smaller indent starts a new
+    paragraph.	Both start a new paragraph on any indent change.
+8   Add 'formatexpr' option: Used for formatting operator "gq" instead of the
+    builtin formatting or 'formatprg'.
+8   Allow using a trailing space to signal a paragraph that continues on the
+    next line (MIME text/plain; format=flowed, RFC 2646).  Can be used for
+    continuous formatting.  Could use 'autoformat' option, which specifies a
+    regexp which triggers auto-formatting (for one line).
+    ":set autoformat=\\s$".
+-   Be able to redefine where a sentence stops.  Use a regexp pattern?
+7   Add command "g)" to go to the end of a sentence, "g(" to go back to the
+    end of a sentence. (Servatius Brandt)
+-   Be able to redefine where a paragraph starts.  For "[[" where the '{' is
+    not in column 1.
+6   Add ":cdprev": go back to the previous directory.  Need to remember a
+    stack of previous directories.  We also need ":cdnext".
+7   Should ":cd" for MS-DOS go to $HOME, when it's defined?
+-   Make "gq<CR>" work on the last line in the file.  Maybe for every operator?
+8   findmatchlimit() should be able to skip comments.  Solves problem of
+    matching the '{' in /* if (foo) { */ (Fiveash)
+-   findmatch() should be adjusted for Lisp.  See remark at get_lisp_indent().
+    Esp. \( and \) should be skipped. (Dorai Sitaram, incomplete patch Mar 18)
+-   Add more redirecting of Ex commands:
+	:redir @> register  (append)
+	:redir #  bufname
+	:redir #> bufname   (append)
+	:redir =  variable
+	:redir => variable  (append)
+-   Setting of options, specifically for a buffer or window, with
+    ":set window.option" or ":set buffer.option=val".  Or use ":buffer.set".
+    Also: "buffer.map <F1> quit".
+6   Would it be possible to change the color of the cursor in the Win32
+    console?  (Klaus Hast)
+-   Add :delcr command:
+			    *:delcr*
+     :[range]delcr[!]	Check [range] lines (default: whole buffer) for lines
+			ending in <CR>.  If all lines end in <CR>, or [!] is
+			used, remove the <CR> at the end of lines in [range].
+			A CTRL-Z at the end of the file is removed.  If
+			[range] is omitted, or it is the whole file, and all
+			lines end in <CR> 'textmode' is set.  {not in Vi}
+-   Should integrate addstar() and file_pat_to_reg_pat().
+-   When working over a serial line with 7 bit characters, remove meta
+    characters from 'isprint'.
+-   Use fchdir() in init_homedir(), like in FullName().
+-   In win_update(), when the GUI is active, always use the scrolling area.
+    Avoid that the last status line is deleted and needs to be redrawn.
+-   That "cTx" fails when the cursor is just after 'x' is Vi compatible, but
+    may not be what you expect.  Add a flag in 'cpoptions' for this?  More
+    general: Add an option to allow "c" to work with a null motion.
+-   Give better error messages by using errno (strerror()).
+-   Give "Usage:" error message when command used with wrong arguments (like
+    Nvi).
+-   Make 'restorescreen' option also work for xterm (and others), replaces the
+    SAVE_XTERM_SCREEN define.
+7   Support for ":winpos" In xterm: report the current window position.
+-   Give warning message when using ":set t_xx=asdf" for a termcap code that
+    Vim doesn't know about.  Add flag in 'shortmess'?
+6   Add ":che <file>", list all the include paths which lead to this file.
+-   For a commandline that has several commands (:s, :d, etc.) summarize the
+    changes all together instead of for each command (e.g. for the rot13
+    macro).
+-   Add command like "[I" that also shows the tree of included files.
+-   Add command like ":ts" that shows the output of "[I" and asks for a match
+    to jump to. (Zellner)
+-   ":set sm^L" results in ":set s", because short names of options are also
+    expanded.  Is there a better way to do this?
+-   Add ":@!" command, to ":@" like what ":source!" is to ":source".
+8   Add ":@:!": repeat last command with forceit set.
+-   Should be possible to write to a device, e.g. ":w! /dev/null".
+-   Add 't_normal': Used whenever t_me, t_se, t_ue or t_Zr is empty.
+-   ":cab map test ^V| je", ":cunab map" doesn't work.	This is vi compatible!
+-   CTRL-W CTRL-E and CTRL-W CTRL-Y should move the current window up or down
+    if it is not the first or last window.
+-   Include-file-search commands should look in the loaded buffer of a file (if
+    there is one) instead of the file itself.
+7   Change 'nrformats' to include the leader for each format.  Example:
+	nrformats=hex:$,binary:b,octal:0
+    Add setting of 'nrformats' to syntax files.
+-   'path' can become very long, don't use NameBuff for expansion.
+-   When unhiding a hidden buffer, put the same line at top of the window as
+    the one before hiding it. Or: keep the same relative cursor position (so
+    many percent down the windows).
+-   Make it possible for the 'showbreak' to be displayed at the end of the
+    line.  Use a comma to separate the part at the end and the start of the
+    line?  Highlight the linebreak characters, add flag in 'highlight'.
+-   Some string options should be expanded if they have wildcards, e.g.
+    'dictionary' when it is "*.h".
+-   Use a specific type for number and boolean options, making it possible to
+    change it for specific machines (e.g. when a long is 64 bit).
+-   Add option for <Insert> in replace mode going to normal mode. (Nugent)
+-   Add a next/previous possibility to "[^I" and friends.
+-   Add possibility to change the HOME directory.  Use the directory from the
+    passwd file? (Antwerpen)
+-   When doing "[^I" or "[^D" add position to tag stack.
+-   Add command to put current position to tag stack: ":tpush".
+8   Add commands to push and pop all or individual options. ":setpush tw",
+    ":setpop tw", ":setpush all".  Maybe pushing/popping all options is
+    sufficient.  ":setflush" resets the option stack?
+    How to handle an aborted mapping?  Remember position in tag stack when
+    mapping starts, restore it when an error aborts the mapping?
+-   Use a builtin grep command for ":grep"?  Makes it possible to add the
+    column number.  Can use the code of ":helpgrep".
+    Also support using "**" in filename, so that a directory tree can be
+    searched.
+-   Change ":fixdel" into option 'fixdel', t_del will be adjusted each time
+    t_bs is set? (Webb)
+-   "gc": goto character, move absolute character positions forward, also
+    counting newlines. "gC" goes backwards (Weigert).
+-   When doing CTRL-^, redraw buffer with the same topline (Demirel). Store
+    cursor row and window height to redraw cursor at same percentage of window
+    (Webb).
+-   Besides remembering the last used line number of a file, also remember the
+    column. Use it with CTRL-^ et. al.
+-   Check for non-digits when setting a number option (careful when entering
+    hex codes like 0xff).
+-   Add option to make "." redo the "@r" command, instead of the last command
+    executed by it.  Also to make "." redo the whole mapping.  Basically: redo
+    the last TYPED command.
+-   Support URL links for ^X^F in Insert mode, like for "gf".
+-   Support %name% expansion for "gf" on Windows.
+-   Make "gf" work on "file://c:/path/name".  "file:/c:/" and "file:///c:/"
+    should also work?
+-   Add 'urlpath', used like 'path' for when "gf" used on an URL?
+8   When using "gf" on an absolute file name, while editing a remote file
+    (starts with scp:// or http://) should prepend the method and machine
+    name.
+-   When finding an URL or file name, and it doesn't exist, try removing a
+    trailing '.'.
+-   Add ":path" command modifier.  Should work for every command that takes a
+    file name argument, to search for the file name in 'path'.	Use
+    find_file_in_path().
+-   Highlight control characters on the screen: Shows the difference between
+    CTRL-X and "^" followed by "X" (Colon).
+-   Integrate parsing of cmdline command and parsing for expansion.
+-   Create a program that can translate a .swp file from any machine into a
+    form usable by Vim on the current machine.
+-   Add ":noro" command: Reset 'ro' flag for all buffers, except ones that have
+    a readonly file. ":noro!" will reset all 'ro' flags.
+-   Add a variant of CTRL-V that stops interpretation of more than one
+    character.	For entering mappings on the command line where a key contains
+    several special characters, e.g. a trailing newline.
+-   Add regex for 'paragraphs' and 'sections': 'parare' and 'sectre'. Combine
+    the two into a regex for searching. (Ned Konz)
+-   Make '2' option in 'formatoptions' also work inside comments.
+-   Add 's' flag to 'formatoptions': Do not break when inside a string. (Dodt)
+-   When window size changed (with the mouse) and made too small, set it back
+    to the minimal size.
+-   Add "]>" and "[<", shift comment at end of line (command;  /* comment */).
+-   Should not call cursorcmd() for each vgetc() in getcmdline().
+-   ":split file1 file2" adds two more windows (Webb).
+-   Don't give message "Incomplete last line" when editing binary file.
+-   Add ":a", ":i" for preloading of named buffers.
+-   Allow autowrite when doing ":e file" (with an option 'eaw').
+-   Allow a "+command" argument before each file name in the Vim command line:
+    "vim +123 file1 +234 file2 +345 file3". ???
+-   When entering text, keep other windows on same buffer updated (when a line
+    entered)?
+-   Check out how screen does output optimizing.  Apparently this is possible
+    as an output filter.
+-   In dosub() regexec is called twice for the same line. Try to avoid this.
+-   Window updating from memline.c: insert/delete/replace line.
+-   Optimize ml_append() for speed, esp. for reading a file.
+-   V..c should keep indent when 'ai' is set, just like [count]cc.
+-   Updatescript() can be done faster with a string instead of a char.
+-   Screen updating is inefficient with CTRL-F and CTRL-B when there are long
+    lines.
+-   Uppercase characters in ex commands can be made lowercase?
+8   Add option to show characters in text not as "|A" but as decimal ("^129"),
+    hex ("\x81") or octal ("\201") or meta (M-x).  Nvi has the 'octal' option
+    to switch from hex to octal.  Vile can show unprintable characters in hex
+    or in octal.
+7   Tighter integration with xxd to edit binary files.  Make it more
+    easy/obvious to use.  Command line argument?
+-   How does vi detect whether a filter has messed up the screen? Check source.
+    After ":w !command" a wait_return?
+-   Improve screen updating code for doput() (use s_ins()).
+-   With 'p' command on last line: scroll screen up (also for terminals without
+    insert line command).
+-   Use insert/delete char when terminal supports it.
+-   Optimize screen redraw for slow terminals.
+-   Optimize "dw" for long row of spaces (say, 30000).
+-   Add "-d null" for editing from a script file without displaying.
+-   In Insert mode: Remember the characters that were removed with backspace
+    and re-insert them one at a time with <key1>, all together with <key2>.
+-   Amiga: Add possibility to set a keymap. The code in amiga.c does not work
+    yet.
+-   Implement 'redraw' option.
+-   Add special code to 'sections' option to define something else but '{' or
+    '}' as the start of a section (e.g. one shiftwidth to the right).
+-   Add 'indent' option: Always use this amount of indent when starting a new
+    line and when formatting text.
+-   Use pipes for filtering on Unix.  Requires using fork() to be able to read
+    and write at the same time, or some select() mechanism.
+7   Allow using Vim in a pipe: "ls | vim -u xxx.vim - | yyy".  Only needs
+    implementing ":w" to stdout in the buffer that was read from stdin.
+8   Allow opening an unnamed buffer with ":e !cmd" and ":sp !cmd".  Vile can
+    do it.
+-   Add commands like ]] and [[ that do not include the line jumped to.
+-   When :unab without matching "from" part and several matching "to" parts,
+    delete the entry that was used last, instead of the first in the list.
+-   Add text justification option.
+-   Set boolean options on/off with ":set paste=off", ":set paste=on".
+-   After "inv"ing an option show the value: ":set invpaste" gives "paste is
+    off".
+-   Check handling of CTRL-V and '\' for ":" commands that do not have TRLBAR.
+-   When a file cannot be opened but does exist, give error message.
+-   Amiga: When 'r' protection bit is not set, file can still be opened but
+    gives read errors. Check protection before opening.
+-   When writing check for file exists but no permission, "Permission denied".
+-   If file does not exists, check if directory exists.
+-   MSDOS: although t_cv and t_ci are not set, do invert char under cursor.
+-   Settings edit mode: make file with ":set opt=xx", edit it, parse it as ex
+    commands.
+-   ":set -w all": list one option per line.
+-   Amiga: test for 'w' flag when reading a file.
+-   :table command (Webb)
+-   Add new operator: clear, make area white (replace with spaces): "g ".
+-   Make it possible for a user to define a new operator.  Implementation with
+    internal scripting language or Perl?
+-   Add command to ":read" a file at a certain column (blockwise read?).
+-   Add sort of replace mode where case is taken from the old text (Goldfarb).
+-   Allow multiple arguments for ":read", read all the files.
+-   Support for tabs in specific columns: ":set tabcol=8,20,34,56" (Demirel).
+-   Add 'searchdir' option: Directories to search for file name being edited
+    (Demirel).
+-   Modifier for the put command: Change to linewise, charwise, blockwise, etc.
+-   Add commands for saving and restoring options ":set save" "set restore",
+    for use in macro's and the like.
+-   Keep output from listings in a window, so you can have a look at it while
+    working in another window. Put cmdline in a separate window?
+-   Add possibility to put output of ex commands in a buffer or file, e.g. for
+    ":set all".  ":r :set all"?
+-   'edit' option: When off changing the buffer is not possible (Really
+    read-only mode).
+-   When the 'equalalways' option is set, creating a new window should not
+    result in windows to become bigger. Deleting a window should not result in
+    a window to become smaller (Webb).
+-   When resizing the whole Vim window, the windows inside should be resized
+    proportionally (Webb).
+-   Include options directly in option table, no indirect pointers. Use
+    mkopttab to make option table?
+-   When doing ":w dir", where "dir" is a directory name, write the current
+    file into that directory, with the current file name (without the path)?
+-   Support for 'dictionary's that are sorted, makes access a lot faster
+    (Haritsis).
+-   Add "^Vrx" on the command line, replace with contents of register x. Used
+    instead of CTRL-R to make repeating possible. (Marinichev)
+-   Add "^Vb" on the command line, replace with word before or under the
+    cursor?
+-   Option to make a .swp file only when a change is made (Templeton).
+-   Support mapping for replace mode and "r" command (Vi doesn't do this)?
+5   Add 'ignorefilecase' option: Ignore case when expanding file names.
+    ":e ma<Tab>" would also find "Makefile" on Unix.
+8   Sorting of filenames for completion is wrong on systems that ignore case
+    of filenames.  Add 'ignorefncase' option.  When set, case in filenames is
+    ignored for sorting them. Patch by Mike Williams:
+    ~/vim/patches/ignorefncase.  Also change what matches?  Or use another
+    option name.
+8   Should be able to compile Vim in another directory, with $(srcdir) set to
+    where the sources are. Add $(srcdir) in the Makefile in a lot of places.
+    (Netherton)
+6   Make it configurable when "J" inserts a space or not.  Should not add a
+    space after "(", for example.
+5   When inserting spaces after the end-of-line for 'virtualedit', use tabs
+    when the user wants this (e.g., add a "tab" field to 'virtualedit').
+    (Servatius Brandt)
+
+
+From Elvis:
+-   Use "instman.sh" to install manpages?
+-   Add ":alias" command.
+-   fontchanges recognized "\\fB" etc.
+-   Search patterns:
+      \@	match word under cursor.
+    but do:
+      \@w	match the word under the cursor?
+      \@W	match the WORD under the cursor?
+8   ":window" command:
+    :win +	next window (up)
+    :win ++	idem, wrapping
+    :win -	previous window (down)
+    :win --	idem, wrapping
+    :win nr	to window number "nr"
+    :win name	to window editing buffer "name"
+7   ":cc" compiles a single file (default: current one).  'ccprg'   option is
+    program to use with ":cc".  Use ":compile" instead of ":cc"?
+
+
+From Nvi:
+-   'searchincr' option, alias for 'incsearch'?
+-   'leftright' option, alias for 'nowrap'?
+-   Have a look at "vi/doc/vi.chart", for Nvi specialties.
+8   Add 'keytime', time in 1/10 sec for mapping timeout?
+-   Add 'filec' option as an alternative for 'wildchar'.
+6   Support Nvi command names as an alias:
+    :bg		    :hide
+    :fg	fname	    :buf fname (with 'hidden' set?)
+    :dis b	    :ls
+    :Edit fname	    :split fname
+    :Fg fname	    :sbuf fname (with 'hidden' set?)
+    :Next	    :snext (can't do this, already use :Next)
+    :Previous	    :sprevious
+    :Tag	    :stag
+
+
+From xvi:
+-   CTRL-_ : swap 8th bit of character.
+-   Add egrep-like regex type, like xvi (Ned Konz) or Perl (Emmanuel Mogenet)
+
+
+From vile:
+-   When horizontal scrolling, use '>' for lines continuing right of a window.
+-   Support putting .swp files in /tmp: Command in rc.local to move .swp files
+    from /tmp to some directory before deleting files.
+
+
+Far future and "big" extensions:
+-   Make it easy to setup Vim for groups of users: novice vi users, novice
+    Vim users, C programmers, xterm users, GUI users,...
+-   Change layout of blocks in swap file: Text at the start, with '\n' in
+    between lines (just load the file without changes, except for Mac).
+    Indexes for lines are from the end of the block backwards.  It's the
+    current layout mirrored.
+-   Make it possible to edit a register, in a window, like a buffer.
+-   Add stuff to syntax highlighting to change the text (upper-case keywords,
+    set indent, define other highlighting, etc.).
+-   Mode to keep C-code formatted all the time (sort of on-line indent).
+-   Several top-level windows in one Vim session.  Be able to use a different
+    font in each top-level window.
+-   Allow editing above start and below end of buffer (flag in 'virtualedit').
+-   Smart cut/paste: recognize words and adjust spaces before/after them.
+-   Add open mode, use it when terminal has no cursor positioning.
+-   Special "drawing mode": a line is drawn where the cursor is moved to.
+    Backspace deletes along the line (from jvim).
+-   Implement ":Bset", set option in all buffers.  Also ":Wset", set in all
+    windows, ":Aset, set in all arguments and ":Tset", set in all files
+    mentioned in the tags file.
+    Add buffer/arg range, like in ":2,5B%s/..." (do we really need this???)
+    Add search string: "B/*.c/%s/.."?  Or ":F/*.c/%s/.."?
+-   Support for underlining (underscore-BS-char), bold (char-BS-char) and other
+    standout modes switched on/off with , 'overstrike' option (Reiter).
+-   Add vertical mode (Paul Jury, Demirel): "5vdw" deletes a word in five
+    lines, "3vitextESC" will insert "text" in three lines, etc..
+4   Recognize l, #, p as 'flags' to EX commands:
+    :g/RE/#l shall print lines with line numbers and in list format.
+    :g/RE/dp shall print lines that are deleted.
+    POSIX: Commands where flags shall apply to all lines written: list,
+    number, open, print, substitute, visual, &, z. For other commands, flags
+    shall apply to the current line after the command completes.  Examples:
+    :7,10j #l Join the lines 7-10 and print the result in list
+-   Allow two or more users to edit the same file at the same time.  Changes
+    are reflected in each Vim immediately.  Could work with local files but
+    also over the internet.  See http://www.codingmonkeys.de/subethaedit/.
+
+
+vim:tw=78:sw=4:sts=4:ts=8:ft=help:norl:
+vim: set fo+=n :
