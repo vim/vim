@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 14
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,25 +30,13 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-"daw" doesn't delete white space before single word in line. (Jens Paulus)
-
 Dictionary:
-- filter() for dictionaries: :call filter(dict, '& =~ "bla.*"')
-    & for key, &v for value?
-- functions:
-	len(dict)		nr of items
-	copy(dict)		make a copy
-	deepcopy(dict)		make a copy recursively
-	has_key(dict, key)   	whether key is present
-	getval(dict, key [, default])
-	extend(dict1, dict2)	add items from dict2 to dict1
-- Using "self" in function with "dict" attribute.  Also allow l:self.
-    Such a function must be called from a dictionary entry.
-  Third argument of call() passes dictionary:
-	:let res = call(function("DictFunc"), arglist, mydict)
 - Define nameless function: ":function dict.key(arg)"
 - ":delfunc dict.key".
 - ":unlet dict.key" "unlet list[idx]"
+- Set the error message numbers for E999.
+
+Make ":call Funcref()" work?
 
 Mention Rsync command on runtime.php page:
     rsync -avzcP --delete --exclude="dos" --delete-excluded ftp.nluug.nl::Vim/runtime/ vim63-runtime
@@ -281,6 +269,7 @@ List data type performance:
 Dictionary data type performance:
 - Use a hash to locate items
 
+Updated Ruby interface. (Ryan Paul)
 
 Awaiting updated patches:
     --- awaiting updated patch ---
