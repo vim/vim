@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 7.0aa.  Last change: 2004 Jun 15
+*gui.txt*       For Vim version 7.0aa.  Last change: 2004 Dec 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -52,7 +52,8 @@ When the GUI starts up initializations are carried out, in this order:
 	:let bmenu_max_pathlen = 50
 - If the "-U {gvimrc}" command-line option has been used when starting Vim,
   the {gvimrc} file will be read for initializations.  The following
-  initializations are skipped.
+  initializations are skipped.  When {gvimrc} is "NONE" no file will be read
+  for initializations.
 - For Unix and MS-Windows, if the system gvimrc exists, it is sourced.  The
   name of this file is normally "$VIM/gvimrc".  You can check this with
   ":version".  Also see |$VIM|.

@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.0aa.  Last change: 2004 Dec 16
+*editing.txt*   For Vim version 7.0aa.  Last change: 2004 Dec 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -46,7 +46,7 @@ However, the alternate file name is not changed when |:keepalt| is used.
 			name.  {not in Vi}
 
 All file names are remembered in the buffer list.  When you enter a file name,
-for editing (e.g., with ":e filename") or writing (e.g., with (:w file name"),
+for editing (e.g., with ":e filename") or writing (e.g., with ":w file name"),
 the file name is added to the list.  You can use the buffer list to remember
 which files you edited and to quickly switch from one file to another (e.g.,
 to copy text) with the |CTRL-^| command.  First type the number of the file
@@ -57,7 +57,7 @@ CTRL-G		or				*CTRL-G* *:f* *:fi* *:file*
 :f[ile]			Prints the current file name (as typed), the
 			cursor position (unless the 'ruler' option is set),
 			and the file status (readonly, modified, read errors,
-			new file)).  See the 'shortmess' option about how tho
+			new file).  See the 'shortmess' option about how tho
 			make this message shorter.  {Vi does not include
 			column number}
 
@@ -111,7 +111,7 @@ string, it is often displayed with HOME replaced with "~".  This was done to
 keep file names short.  When reading or writing files the full name is still
 used, the "~" is only used when displaying file names.  When replacing the
 file name would result in just "~", "~/" is used instead (to avoid confusion
-with 'backupext' set to "~").
+between options set to $HOME with 'backupext' set to "~").
 
 When writing the buffer, the default is to use the current file name.  Thus
 when you give the "ZZ" or ":wq" command, the original file will be
@@ -260,12 +260,12 @@ If you want to keep the changed buffer without saving it, switch on the
 
 							*:vi* *:visual*
 :vi[sual][!] [++opt] [+cmd] [file]
-			When entered in Ex mode: Leave |Ex-mode|, go back to
+			When used in Ex mode: Leave |Ex-mode|, go back to
 			Normal mode.  Otherwise same as |:edit|.
 
 							*:vie* *:view*
 :vie[w] [++opt] [+cmd] file
-			When entered in Ex mode: Leave Ex mode, go back to
+			When used in Ex mode: Leave |Ex mode|, go back to
 			Normal mode.  Otherwise same as |:edit|, but set
 			'readonly' option for this buffer.  {not in Vi}
 
@@ -666,7 +666,7 @@ list of the current window.
 			in Vi}
 
 :[count]wN[ext][!] [++opt] [+cmd] [file]		*:wN* *:wNext*
-:[count]wp[revous][!] [++opt] [+cmd] [file]		*:wp* *:wprevious*
+:[count]wp[revious][!] [++opt] [+cmd] [file]		*:wp* *:wprevious*
 			Same as :wnext, but go to previous file instead of
 			next.  {not in Vi}
 
@@ -1402,7 +1402,7 @@ options.  There are three different types of searching:
 
    '**' is more sophisticated:
       - It ONLY matches directories.
-      - It matches up to 30  directories deep, so you can use it to search an
+      - It matches up to 30 directories deep, so you can use it to search an
 	entire directory tree
       - The maximum number of levels matched can be given by appending a number
 	to '**'.

@@ -1,4 +1,4 @@
-*motion.txt*    For Vim version 7.0aa.  Last change: 2004 Nov 23
+*motion.txt*    For Vim version 7.0aa.  Last change: 2004 Dec 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -831,8 +831,8 @@ was made yet in the current file.
 
 							*'^* *`^*
 '^  `^			To the position where the cursor was the last time
-			when Insert mode was stopped  This is used by the |gi|
-			command.  Not set when the |:keepjumps| command
+			when Insert mode was stopped.  This is used by the
+			|gi| command.  Not set when the |:keepjumps| command
 			modifier was used.  {not in Vi}
 
 							*'.* *`.*

@@ -2153,6 +2153,10 @@ if test "x$GUITYPE:$enable_fontset" = "xGTK:yes" -a "0$gtk_major_version" -ge 2;
   AC_MSG_RESULT(GTK+ 2 GUI selected; fontset has been disabled)
   enable_fontset="no"
 fi
+if test "x$GUITYPE:$enable_fontset" = "xKDE:yes"; then
+  AC_MSG_RESULT(KDE GUI selected; fontset has been disabled)
+  enable_fontset="no"
+fi
 
 dnl There is no test for the BeOS GUI, if it's selected it's used
 if test -z "$SKIP_BEOS"; then

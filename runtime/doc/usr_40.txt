@@ -1,4 +1,4 @@
-*usr_40.txt*	For Vim version 7.0aa.  Last change: 2004 Feb 13
+*usr_40.txt*	For Vim version 7.0aa.  Last change: 2004 Dec 29
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -60,7 +60,8 @@ It looks a lot like the mapping for <F2> in Normal mode, only the start is
 different.  The <F2> mapping for Normal mode is still there.  Thus you can map
 the same key differently for each mode.
    Notice that, although this mapping starts in Insert mode, it ends in Normal
-mode.  If you want it to continue in Insert mode, append a "a" to the mapping.
+mode.  If you want it to continue in Insert mode, append an "a" to the
+mapping.
 
 Here is an overview of map commands and in which mode they work:
 

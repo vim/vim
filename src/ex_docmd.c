@@ -2114,7 +2114,7 @@ do_one_cmd(cmdlinep, sourcing,
      */
     if ((ea.cmdidx == CMD_make
 			 || ea.cmdidx == CMD_grep || ea.cmdidx == CMD_grepadd)
-	    && !grep_internal(&ea))
+	    && !grep_internal(ea.cmdidx))
     {
 	char_u		*new_cmdline;
 	char_u		*program;
@@ -3164,7 +3164,13 @@ set_one_cmd_context(xp, buff)
 	p++;
     xp->xp_pattern = p;
 
-    if (argt & XFILE)
+    if ((argt & XFILE)
+#ifdef FEAT_QUICKFIX
+	    || cmdidx == CMD_vimgrep
+	    || cmdidx == CMD_vimgrepadd
+	    || grep_internal(cmdidx)
+#endif
+       )
     {
 	int in_quote = FALSE;
 	char_u *bow = NULL;	/* Beginning of word */
@@ -4204,14 +4210,19 @@ separate_nextcmd(eap)
 
     p = eap->arg;
 #ifdef FEAT_QUICKFIX
-    if (eap->cmdidx == CMD_vimgrep
-	    || eap->cmdidx == CMD_vimgrepadd
-	    || grep_internal(eap))
+    if (*p != NUL && (eap->cmdidx == CMD_vimgrep
+		|| eap->cmdidx == CMD_vimgrepadd
+		|| grep_internal(eap->cmdidx)))
     {
 	/* Skip over the pattern. */
-	p = skip_regexp(p + 1, *p, TRUE, NULL);
-	if (*p == *eap->arg)
-	    ++p;
+	if (vim_isIDc(*p))
+	    p = skiptowhite(p);
+	else
+	{
+	    p = skip_regexp(p + 1, *p, TRUE, NULL);
+	    if (*p == *eap->arg)
+		++p;
+	}
     }
 #endif
 

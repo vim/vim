@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.0aa.  Last change: 2004 Dec 09
+*map.txt*       For Vim version 7.0aa.  Last change: 2004 Dec 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -613,7 +613,7 @@ Examples: ({CURSOR} is where you type a non-keyword character) >
 <		"#i{CURSOR}"	  is expanded to "#include"
 		">#i{CURSOR}"	  is not expanded
 >
-   :ab ;; <endofline>"
+   :ab ;; <endofline>
 <		"test;;"	  is not expanded
 		"test ;;"	  is expanded to "test <endofline>"
 
@@ -735,7 +735,7 @@ You see:    ab esc ^V^V^[
 	how it should appear in your .exrc file, if you choose to go that
 	route.  The first ^V is there to quote the second ^V; the :ab
 	command uses ^V as its own quote character, so you can include quoted
-	whitespace or the | character in the abbreviation.   The :ab command
+	whitespace or the | character in the abbreviation.  The :ab command
 	doesn't do anything special with the ^[ character, so it doesn't need
 	to be quoted.  (Although quoting isn't harmful; that's why typing 7
 	[but not 8!] ^Vs works.)
@@ -750,7 +750,7 @@ Stored as:  esc     ^V^[
 	Later, when the abbreviation is expanded because the user typed in
 	the word "esc", the long form is subjected to the same type of
 	^V interpretation as keyboard input.  So the ^V protects the ^[
-	character from being interpreted as the "exit input-mode" character.
+	character from being interpreted as the "exit Insert mode" character.
 	Instead, the ^[ is inserted into the text.
 
 Expands to: ^[
@@ -778,7 +778,7 @@ make it local to the script.  But when a mapping is executed from outside of
 the script, it doesn't know in which script the function was defined.  To
 avoid this problem, use "<SID>" instead of "s:".  The same translation is done
 as for mappings.  This makes it possible to define a call to the function in
-mapping.
+a mapping.
 
 When a local function is executed, it runs in the context of the script it was
 defined in.  This means that new functions and mappings it defines can also
@@ -1054,7 +1054,7 @@ Examples >
 	 Replace <line1>-pu_|<line1>,<line2>d|r <args>|<line1>d
 
    " Count the number of lines in the range
-   :com! -range -nargs=0 Lines :echo <line2> - <line1> + 1 "lines"
+   :com! -range -nargs=0 Lines  echo <line2> - <line1> + 1 "lines"
 
    " Call a user function (example of <f-args>)
    :com -nargs=* Mycmd call Myfunc(<f-args>)

@@ -725,6 +725,7 @@ EXTERN int* (*iconv_errno) (void);
 #ifdef FEAT_XIM
 # ifdef FEAT_GUI_KDE
 EXTERN colnr_T		preedit_start_col INIT(= MAXCOL);
+EXTERN colnr_T		preedit_end_col INIT(= MAXCOL);
 EXTERN char		*draw_feedback INIT(= NULL);
 # endif
 # ifdef FEAT_GUI_GTK

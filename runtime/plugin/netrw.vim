@@ -1,7 +1,7 @@
 " netrw.vim: Handles file transfer and remote directory listing across a network
-" last change:	Dec 06, 2004
+" last change:	Dec 29, 2004
 " Maintainer:	Charles E Campbell, Jr <drchipNOSPAM at campbellfamily dot biz>
-" Version:	53
+" Version:	54
 " License:	Vim License  (see vim's :help license)
 "
 "  But be doers of the Word, and not only hearers, deluding your own selves
@@ -14,7 +14,7 @@
 if exists("g:loaded_netrw") || &cp
   finish
 endif
-let g:loaded_netrw  = "v53"
+let g:loaded_netrw  = "v54"
 let s:save_cpo      = &cpo
 let loaded_explorer = 1
 set cpo&vim
@@ -228,9 +228,9 @@ if version >= 600
    au BufReadCmd  file://localhost/*	exe "silent doau BufReadPre ".expand("<afile>")|exe 'e /'.substitute(expand("<afile>"),"file:/*","","")|exe "silent doau BufReadPost ".expand("<afile>")
   endif
   au BufReadCmd   ftp://*,rcp://*,scp://*,http://*,dav://*,rsync://*,sftp://*	exe "silent doau BufReadPre ".expand("<afile>")|exe "Nread 0r ".expand("<afile>")|exe "silent doau BufReadPost ".expand("<afile>")
-  au FileReadCmd  ftp://*,rcp://*,scp://*,http://*,dav://*,rsync://*,sftp://*	exe "silent doau BufReadPre ".expand("<afile>")|exe "Nread "   .expand("<afile>")|exe "silent doau BufReadPost ".expand("<afile>")
+  au FileReadCmd  ftp://*,rcp://*,scp://*,http://*,dav://*,rsync://*,sftp://*	exe "silent doau BufReadPre ".expand("<afile>")|exe "Nread "   .expand("<afile>")|exe "silent doau FileReadPost ".expand("<afile>")
   au BufWriteCmd  ftp://*,rcp://*,scp://*,dav://*,rsync://*,sftp://*    	exe "silent doau BufWritePre ".expand("<afile>")|exe "Nwrite " .expand("<afile>")|exe "silent doau BufWritePost ".expand("<afile>")
-  au FileWriteCmd ftp://*,rcp://*,scp://*,dav://*,rsync://*,sftp://*    	exe "silent doau BufWritePre ".expand("<afile>")|exe "'[,']Nwrite " .expand("<afile>")|exe "silent doau BufWritePost ".expand("<afile>")
+  au FileWriteCmd ftp://*,rcp://*,scp://*,dav://*,rsync://*,sftp://*    	exe "silent doau BufWritePre ".expand("<afile>")|exe "'[,']Nwrite " .expand("<afile>")|exe "silent doau FileWritePost ".expand("<afile>")
  augroup END
 endif
 
@@ -262,15 +262,21 @@ endfun
 fun! <SID>NetRestorePosn()
 "  call Dfunc("NetRestorePosn() winnr=".s:netrw_winnr." line=".s:netrw_line." col=".s:netrw_col." hline=".s:netrw_hline)
 
+  " restore window
+"  call Decho("restore window: exe silent! ".s:netrw_winnr."wincmd w")
   exe "silent! ".s:netrw_winnr."wincmd w"
   if v:shell_error == 0
    " as suggested by Bram M: redraw on no error
    " allows protocol error messages to remain visible
    redraw!
   endif
+
   " restore top-of-screen line
+"  call Decho("restore topofscreen: exe norm! ".s:netrw_hline."G0z")
   exe "norm! ".s:netrw_hline."G0z\<CR>"
+
   " restore position
+"  call Decho("restore posn: exe norm! ".s:netrw_line."G0".s:netrw_col."|")
   exe "norm! ".s:netrw_line."G0".s:netrw_col."\<bar>"
 
 "  call Dret("NetRestorePosn")
@@ -670,77 +676,40 @@ fun! s:NetGetFile(readcmd, fname, method)
 "   call Decho("(copied) fname<".fname.">")
   endif
  
-  " get the file, but disable undo when reading a new buffer
   if a:readcmd[0] == '0'
-   let use_e_cmd = 0		" 1 when using ':edit'
-   let delline   = 0		" 1 when have to delete empty last line
-   if line("$") == 1 && getline(1) == ""
-    " Now being asked to 0r a file into an empty file.
-    " Safe to :e it instead, unless there is another window on the same buffer.
-    let curbufnr  = bufnr("%")
-    let use_e_cmd = 1
-    let delline   = 1
-    " Loop over all windows,
-    " reset use_e_cmd when another one is editing the current buffer.
-    let i = 1
-    while 1
-      if i != winnr() && winbufnr(i) == curbufnr
-        let use_e_cmd = 0
-        break
-      endif
-      let i = i + 1
-      if winbufnr(i) < 0
-        break
-      endif
-    endwhile
-   endif
- 
-   if use_e_cmd > 0
-    " ':edit' the temp file, wipe out the old buffer and rename the buffer
-    let curfilename = expand("%")
- 
-    let binlocal = &l:bin
-    let binglobal = &g:bin
-    if binlocal
-      setglobal bin		" Need to set 'bin' globally for ":e" command.
-    endif
-    silent exe "e! ".v:cmdarg." ".fname
-    if binlocal && !binglobal
-      setglobal nobin
-      setlocal bin
-    endif
- 
-    exe curbufnr . "bwipe!"
-    exe "f ".escape(curfilename," ")
-    " the ":f newname" apparently leaves the temporary file as the alternate
-    " file in the buffer list (see :ls!).  The following command wipes it out.
-    exe bufnr("#")."bwipe!"
-   else
-    let oldul= &ul
-    setlocal ul=-1
-    exe a:readcmd." ".v:cmdarg." ".escape(fname," ")
-    if delline > 0
-     " wipe out last line, which should be a blank line anyway
-     $del
-    endif
-    let &ul= oldul
-   endif
+  " get file into buffer
+   " record remote filename
+   let rfile= bufname("%")
+"   call Decho("edit remotefile<".rfile.">")
+   " rename the current buffer to the temp file (ie. fname)
+   exe "keepalt file ".fname
+   " edit temporary file
+   e
+   " rename buffer back to remote filename
+   exe "keepalt file ".rfile
+   " wipe out the buffer with the temp file name
+   exe "bwipe ".fname
+   let line1 = 1
+   let line2 = line("$")
+
   elseif filereadable(fname)
-"   call Decho("exe<".a:readcmd." ".v:cmdarg." ".fname.">")
+   " read file after current line
+   let curline = line(".")
+   let lastline= line("$")
+"   call Decho("exe<".a:readcmd." ".v:cmdarg." ".fname.">  line#".curline)
    exe a:readcmd." ".v:cmdarg." ".fname
+   let line1        = curline + 1
+   let line2        = line("$") - lastline + 1
+   let s:netrw_line = s:netrw_line + 1
+   let s:netrw_col  = 1
   else
-"   call Dret("NetGetFile")
+   " not readable
+"   call Dret("NetGetFile : fname<".fname."> not readable")
    return
   endif
  
   " User-provided (ie. optional) fix-it-up command
   if exists("*NetReadFixup")
-   let line1= line(".")
-   if a:readcmd == "r"
-    let line2= line("$") - line2 + line1
-   else
-    let line2= line("$") - line2
-   endif
 "   call Decho("calling NetReadFixup(method<".a:method."> line1=".line1." line2=".line2.")")
    call NetReadFixup(a:method, line1, line2)
   endif
@@ -2604,7 +2573,7 @@ fun! s:NetMethod(choice)  " globals: method machine id passwd fname
 "   call Decho("scp://...")
    let b:netrw_method = 4
    let g:netrw_machine= substitute(a:choice,scpurm,'\1',"")
-   let b:netrw_port   = substitute(a:choice,scpurm,'\2',"")
+   let g:netrw_port   = substitute(a:choice,scpurm,'\2',"")
    let b:netrw_fname  = substitute(a:choice,scpurm,'\3',"")
  
   " http://user@hostname/...path-to-file
@@ -2639,9 +2608,6 @@ fun! s:NetMethod(choice)  " globals: method machine id passwd fname
    let g:netrw_machine= substitute(a:choice,ftpurm,'\3',"")
    let g:netrw_port   = substitute(a:choice,ftpurm,'\4',"")
    let b:netrw_fname  = substitute(a:choice,ftpurm,'\5',"")
-   if g:netrw_port != ""
-     let g:netrw_port = substitute(g:netrw_port,"[#:]","","")
-   endif
    if userid != ""
     let g:netrw_uid= userid
    endif
@@ -2724,6 +2690,11 @@ fun! s:NetMethod(choice)  " globals: method machine id passwd fname
     call inputsave()|call input("Press <cr> to continue")|call inputrestore()
    endif
    let b:netrw_method  = -1
+  endif
+
+  " remove any leading [:#] from port number
+  if g:netrw_port != ""
+    let g:netrw_port = substitute(g:netrw_port,'[#:]\+','','')
   endif
  
 "  call Decho("a:choice       <".a:choice.">")

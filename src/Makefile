@@ -335,6 +335,8 @@ CClink = $(CC)
 # automatically be used if it is found.  If you have GNOME, but do not want to
 # use it (e.g., want a GTK-only version), then use --enable-gui=gtk.
 #
+# KDE doesn't fully work, unfortunately.  See the todo list.
+#
 # If the selected GUI isn't found, the GUI is disabled automatically
 #CONF_OPT_GUI = --enable-gui=gtk
 #CONF_OPT_GUI = --enable-gui=gtk --disable-gtktest

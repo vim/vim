@@ -18,6 +18,7 @@ int gui_mch_adjust_charsize __ARGS((void));
 GuiFontset gui_mch_get_fontset __ARGS((char_u *name, int report_error, int fixed_width));
 int gui_mch_init_font __ARGS((char_u *font_name, int fontset));
 GuiFont gui_mch_get_font __ARGS((char_u *name, int report_error));
+char_u *gui_mch_get_fontname __ARGS((GuiFont font, char_u *name));
 void gui_mch_set_font __ARGS((GuiFont font));
 void gui_mch_set_fontset __ARGS((GuiFontset fontset));
 void gui_mch_free_font __ARGS((GuiFont font));

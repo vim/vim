@@ -1641,6 +1641,8 @@ buflist_new(ffname, sfname, lnum, flags)
 #endif
     buf->b_u_synced = TRUE;
     buf->b_flags = BF_CHECK_RO | BF_NEVERLOADED;
+    if (flags & BLN_DUMMY)
+	buf->b_flags |= BF_DUMMY;
     buf_clear_file(buf);
     clrallmarks(buf);			/* clear marks */
     fmarks_check_names(buf);		/* check file marks for this file */
@@ -1874,9 +1876,40 @@ buflist_getfpos()
     }
 }
 
+#if defined(FEAT_QUICKFIX) || defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * Find file in buffer list by name (it has to be for the current window).
+ * Returns NULL if not found.
+ */
+    buf_T *
+buflist_findname_exp(fname)
+    char_u *fname;
+{
+    char_u	*ffname;
+    buf_T	*buf = NULL;
+
+    /* First make the name into a full path name */
+    ffname = FullName_save(fname,
+#ifdef UNIX
+	    TRUE	    /* force expansion, get rid of symbolic links */
+#else
+	    FALSE
+#endif
+	    );
+    if (ffname != NULL)
+    {
+	buf = buflist_findname(ffname);
+	vim_free(ffname);
+    }
+    return buf;
+}
+#endif
+
 /*
  * Find file in buffer list by name (it has to be for the current window).
  * "ffname" must have a full path.
+ * Skips dummy buffers.
+ * Returns NULL if not found.
  */
     buf_T *
 buflist_findname(ffname)
@@ -1893,6 +1926,7 @@ buflist_findname(ffname)
 /*
  * Same as buflist_findname(), but pass the stat structure to avoid getting it
  * twice for the same file.
+ * Returns NULL if not found.
  */
     static buf_T *
 buflist_findname_stat(ffname, stp)
@@ -1903,7 +1937,7 @@ buflist_findname_stat(ffname, stp)
     buf_T	*buf;
 
     for (buf = firstbuf; buf != NULL; buf = buf->b_next)
-	if (!otherfile_buf(buf, ffname
+	if ((buf->b_flags & BF_DUMMY) == 0 && !otherfile_buf(buf, ffname
 #ifdef UNIX
 		    , stp
 #endif
@@ -2457,9 +2491,9 @@ buflist_name_nr(fnum, fname, lnum)
 setfname(buf, ffname, sfname, message)
     buf_T	*buf;
     char_u	*ffname, *sfname;
-    int		message;
+    int		message;	/* give message when buffer already exists */
 {
-    buf_T	*obuf;
+    buf_T	*obuf = NULL;
 #ifdef UNIX
     struct stat st;
 #endif
@@ -2489,9 +2523,12 @@ setfname(buf, ffname, sfname, message)
 #ifdef UNIX
 	if (mch_stat((char *)ffname, &st) < 0)
 	    st.st_dev = (dev_T)-1;
-	obuf = buflist_findname_stat(ffname, &st);
+#endif
+	if (!(buf->b_flags & BF_DUMMY))
+#ifdef UNIX
+	    obuf = buflist_findname_stat(ffname, &st);
 #else
-	obuf = buflist_findname(ffname);
+	    obuf = buflist_findname(ffname);
 #endif
 	if (obuf != NULL && obuf != buf)
 	{

@@ -3780,7 +3780,7 @@ win_line(wp, lnum, startrow, endrow)
 		&& (search_attr == 0 || char_attr != search_attr))
 	    char_attr = extra_attr;
 
-#if defined(FEAT_XIM) && (defined(FEAT_GUI_GTK) || defined(FEAT_GUI_KDE))
+#if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
 	/* XIM don't send preedit_start and preedit_end, but they send
 	 * preedit_changed and commit.  Thus Vim can't set "im_is_active", use
 	 * im_is_preediting() here. */
@@ -4771,7 +4771,7 @@ status_match_len(xp, s)
 #endif
 		)
 	    ++s;
-	len += ptr2cells(s++);
+	len += ptr2cells(s);
 	mb_ptr_adv(s);
     }
 

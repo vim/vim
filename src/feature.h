@@ -650,7 +650,8 @@
  * +xfontset		X fontset support.  For outputting wide characters.
  */
 #ifndef FEAT_XFONTSET
-# if defined(FEAT_MBYTE) && defined(HAVE_X11) && !defined(HAVE_GTK2)
+# if defined(FEAT_MBYTE) && defined(HAVE_X11) \
+		&& !defined(HAVE_GTK2) && !defined(FEAT_GUI_KDE)
 #  define FEAT_XFONTSET
 # else
 /* #  define FEAT_XFONTSET */
@@ -1172,7 +1173,7 @@
 	    || defined(FEAT_NETBEANS_INTG))
 # define FEAT_BEVAL
 # if !defined(FEAT_XFONTSET) && !defined(FEAT_GUI_GTK) \
-	&& !defined(FEAT_GUI_W32)
+	&& !defined(FEAT_GUI_KDE) && !defined(FEAT_GUI_W32)
 #  define FEAT_XFONTSET
 # endif
 #endif

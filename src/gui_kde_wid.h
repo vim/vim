@@ -68,7 +68,8 @@ class QLineEdit;
 class QSignalMapper;
 class QPaintEvent;
 
-enum BlinkState {
+enum BlinkState
+{
 	BLINK_NONE,
 	BLINK_ON,
 	BLINK_OFF
@@ -79,12 +80,12 @@ class VimWidget : public QWidget, virtual public KVim
 	Q_OBJECT
 
 public:
-	VimWidget( QWidget *parent=0, const char *name=0, WFlags f=0 );
-	virtual void paintEvent( QPaintEvent *);
+	VimWidget(QWidget *parent = 0, const char *name = 0, WFlags f = 0);
+	virtual void paintEvent(QPaintEvent *);
 	void	draw_string(int x, int y, QString s, int len, int flags);
 
 	/** Init the blinking time */
-	void set_blink_time( long, long, long );
+	void set_blink_time(long, long, long);
 	void start_cursor_blinking();
 	void stop_cursor_blinking();
 	void wait(long);
@@ -108,24 +109,28 @@ public:
 	BlinkState blink_state;
 	QPainter *painter;
 	QPopupMenu *menu;
+	virtual void setMicroFocusHint(int x, int y, int w, int h, bool text=TRUE, QFont *f = 0)
+	{
+	    QWidget::setMicroFocusHint(x, y, w, h, text, f);
+	}
 
 protected:
-	virtual void keyPressEvent( QKeyEvent * );
-	virtual void mousePressEvent( QMouseEvent *);
-	virtual void mouseDoubleClickEvent( QMouseEvent *);
-	virtual void mouseReleaseEvent( QMouseEvent *);
-	virtual void mouseMoveEvent( QMouseEvent *);
-	virtual void focusInEvent( QFocusEvent * );
-	virtual void focusOutEvent( QFocusEvent * );
-	virtual void dragEnterEvent (QDragEnterEvent *);
-	virtual void dropEvent (QDropEvent *);
+	virtual void keyPressEvent(QKeyEvent *);
+	virtual void mousePressEvent(QMouseEvent *);
+	virtual void mouseDoubleClickEvent(QMouseEvent *);
+	virtual void mouseReleaseEvent(QMouseEvent *);
+	virtual void mouseMoveEvent(QMouseEvent *);
+	virtual void focusInEvent(QFocusEvent *);
+	virtual void focusOutEvent(QFocusEvent *);
+	virtual void dragEnterEvent(QDragEnterEvent *);
+	virtual void dropEvent(QDropEvent *);
 #ifdef FEAT_XIM
-	virtual void imStartEvent ( QIMEvent * );
-	virtual void imEndEvent ( QIMEvent * );
-	virtual void imComposeEvent ( QIMEvent * );
+	virtual void imStartEvent(QIMEvent *);
+	virtual void imEndEvent(QIMEvent *);
+	virtual void imComposeEvent(QIMEvent *);
 #endif
 #ifdef FEAT_MZSCHEME
-	virtual void timerEvent( QTimerEvent * );
+	virtual void timerEvent(QTimerEvent *);
 #endif
 
 	/* cursor blinking stuff */
@@ -149,24 +154,24 @@ class VimMainWindow : public KMainWindow
 	Q_OBJECT
 
 public:
-	VimMainWindow ( const char *name = 0L, WFlags f = WDestructiveClose );
+	VimMainWindow(const char *name = 0L, WFlags f = WDestructiveClose);
 
 	/** called when the widget closes */
 //	bool close(bool alsoDelete);
 	VimWidget	*w;
-        KEdFind         *finddlg;
-        KEdReplace      *repldlg;
+	KEdFind		*finddlg;
+	KEdReplace      *repldlg;
 	int		have_tearoff;
 	QTextCodec      *codec;
 
 public slots:
 	void    menu_activated(int dx);
-	void 	clipboard_selection_update();
-	void 	clipboard_data_update();
-        void    slotSearch();
-        void    slotFind();
-        void    slotReplace();
-        void    slotReplaceAll();
+	void	clipboard_selection_update();
+	void	clipboard_data_update();
+	void    slotSearch();
+	void    slotFind();
+	void    slotReplace();
+	void    slotReplaceAll();
 	void    showAboutApplication();
 	void    showAboutKDE();
 	void    showBugReport();
@@ -177,12 +182,12 @@ public slots:
 	void    unlock();
 
 protected:
-	virtual void wheelEvent (QWheelEvent *);
-	virtual void resizeEvent ( QResizeEvent *e );
+	virtual void wheelEvent(QWheelEvent *);
+	virtual void resizeEvent(QResizeEvent *e);
 
 #if defined(FEAT_SESSION)
-	void saveGlobalProperties (KConfig *conf);
-	void readGlobalProperties (KConfig *conf);
+	void saveGlobalProperties(KConfig *conf);
+	void readGlobalProperties(KConfig *conf);
 #endif
 	bool queryClose();
 	bool queryExit();
@@ -194,10 +199,10 @@ class VimDialog : public QDialog
 {
 	Q_OBJECT
 public:
-	VimDialog (int type,		/* type of dialog */
-	       unsigned char * title,		/* title of dialog */
-	       unsigned char * message,	/* message text */
-	       unsigned char * buttons,	/* names of buttons */
+	VimDialog(int type,		/* type of dialog */
+	       unsigned char *title,		/* title of dialog */
+	       unsigned char *message,	/* message text */
+	       unsigned char *buttons,	/* names of buttons */
 	       int def_but,		/* default button */
 	       char_u *textfield);		/* input text */
 private:
@@ -229,7 +234,8 @@ private:
 	QSignalMapper mapper;
 };
 
-class KVimUtils {
+class KVimUtils
+{
 public:
 	static QString convertEncodingName(QString);
 #if QT_VERSION<300
@@ -240,6 +246,13 @@ public:
 
 extern VimMainWindow	*vmw;
 extern SBPool		*sbpool;
-extern QString          *argServerName;
+extern QString		*argServerName;
+
+#define QSTR(x)	\
+	(has_mbyte ? \
+		(enc_utf8 ? \
+			QString::fromUtf8((const char *)x) : \
+			QString::fromLocal8Bit((const char *)x)) : \
+		QString((const char *)x))
 
 #endif // GUI_KDE_WIDGET

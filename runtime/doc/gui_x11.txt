@@ -1,4 +1,4 @@
-*gui_x11.txt*   For Vim version 7.0aa.  Last change: 2004 Jul 02
+*gui_x11.txt*   For Vim version 7.0aa.  Last change: 2004 Dec 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -436,6 +436,9 @@ command line argument).
 
 ==============================================================================
 7. KDE version					*gui-kde* *kde* *KDE* *KVim*
+
+NOTE: The KDE version is still under development.  It is not recommended for
+daily work.
 
 The KDE version of Vim works with KDE 2.x and KDE 3.x.
 KVim (name code for gui-kde) does not use traditional X settings for its

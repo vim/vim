@@ -1320,14 +1320,13 @@ x_error_handler(dpy, error_event)
     Display	*dpy;
     XErrorEvent	*error_event;
 {
-    /* KDE sometimes produces X error that we want to ignore */
-#if defined(FEAT_GUI_KDE)
     XGetErrorText(dpy, error_event->error_code, (char *)IObuff, IOSIZE);
-    STRCAT(IObuff, "\nVim: Got X error but we continue...\n");
-    fprintf(stderr, IObuff);
+#if defined(FEAT_GUI_KDE)
+    /* KDE sometimes produces X error that we want to ignore */
+    STRCAT(IObuff, _("\nVim: Got X error but we continue...\n"));
+    mch_errmsg((char *)IObuff);
     return 0;
 #else
-    XGetErrorText(dpy, error_event->error_code, (char *)IObuff, IOSIZE);
     STRCAT(IObuff, _("\nVim: Got X error\n"));
 
     /* We cannot print a message and continue, because no X calls are allowed

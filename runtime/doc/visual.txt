@@ -1,4 +1,4 @@
-*visual.txt*    For Vim version 7.0aa.  Last change: 2004 Jun 08
+*visual.txt*    For Vim version 7.0aa.  Last change: 2004 Dec 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -46,7 +46,7 @@ However, when the 'selection' option is set to "exclusive" and the cursor is
 after the Visual area, the character under the cursor is not included.
 
 With "v" the text before the start position and after the end position will
-not be highlighted.  However, All uppercase and non-alpha operators, except
+not be highlighted.  However, all uppercase and non-alpha operators, except
 "~" and "U", will work on whole lines anyway.  See the list of operators
 below.
 
@@ -139,6 +139,9 @@ extended to the rightmost column of the longest line.
 If you want to highlight exactly the same area as the last time, you can use
 "gv" |gv| |v_gv|.
 
+							*v_<Esc>*
+<Esc>			In Visual mode: Stop Visual mode.
+
 							*v_CTRL-C*
 CTRL-C			In Visual mode: Stop Visual mode.  When insert mode is
 			pending (the mode message shows
@@ -176,7 +179,7 @@ When switching to another window on the same buffer, the cursor position in
 that window is adjusted, so that the same Visual area is still selected.  This
 is especially useful to view the start of the Visual area in one window, and
 the end in another.  You can then use <RightMouse> (or <S-LeftMouse> when
-'mousemodel' is "popup") to move either end of the Visual area.
+'mousemodel' is "popup") to drag either end of the Visual area.
 
 ==============================================================================
 4. Operating on the Visual area				*visual-operators*
@@ -362,7 +365,7 @@ Note that special characters (like '.' and '*') will cause problems.
 Visual-block Examples					*blockwise-examples*
 With the following text, I will indicate the commands to produce the block and
 the results below. In all cases, the cursor begins on the 'a' in the first
-line if the test text.
+line of the test text.
 The following modeline settings are assumed ":ts=8:sw=4:".
 
 It will be helpful to

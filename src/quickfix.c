@@ -105,6 +105,9 @@ static void	qf_update_buffer __ARGS((void));
 static void	qf_fill_buffer __ARGS((void));
 #endif
 static char_u	*get_mef_name __ARGS((void));
+static buf_T	*load_dummy_buffer __ARGS((char_u *fname));
+static void	wipe_dummy_buffer __ARGS((buf_T *buf));
+static void	unload_dummy_buffer __ARGS((buf_T *buf));
 
 /*
  * Read the errorfile "efile" into memory, line by line, building the error
@@ -2063,10 +2066,10 @@ buf_hide(buf)
  * Return TRUE when using ":vimgrep" for ":grep".
  */
     int
-grep_internal(eap)
-    exarg_T	*eap;
+grep_internal(cmdidx)
+    cmdidx_T	cmdidx;
 {
-    return ((eap->cmdidx == CMD_grep || eap->cmdidx == CMD_grepadd)
+    return ((cmdidx == CMD_grep || cmdidx == CMD_grepadd)
 	    && STRCMP("internal",
 			*curbuf->b_p_gp == NUL ? p_gp : curbuf->b_p_gp) == 0);
 }
@@ -2083,7 +2086,7 @@ ex_make(eap)
     unsigned	len;
 
     /* Redirect ":grep" to ":vimgrep" if 'grepprg' is "internal". */
-    if (grep_internal(eap))
+    if (grep_internal(eap->cmdidx))
     {
 	ex_vimgrep(eap);
 	return;
@@ -2249,35 +2252,50 @@ ex_cfile(eap)
 ex_vimgrep(eap)
     exarg_T	*eap;
 {
-    regmatch_T	regmatch;
+    regmmatch_T	regmatch;
     char_u	*save_cpo;
     int         fcount;
     char_u	**fnames;
+    char_u      *s;
     char_u      *p;
     int		i;
-    FILE	*fd;
     int         fi;
     struct qf_line *prevp = NULL;
     long	lnum;
     garray_T	ga;
+    buf_T	*buf;
+    int		duplicate_name = FALSE;
+    int		using_dummy;
+    int		found_match;
+    int		first_match = TRUE;
 
     /* Make 'cpoptions' empty, the 'l' flag should not be used here. */
     save_cpo = p_cpo;
     p_cpo = empty_option;
 
-    /* Get the search pattern */
+    /* Get the search pattern: either white-separated or enclosed in // */
     regmatch.regprog = NULL;
-    p = skip_regexp(eap->arg + 1, *eap->arg, TRUE, NULL);
-    if (*p != *eap->arg)
+    if (vim_isIDc(*eap->arg))
     {
-	EMSG(_("E682: Invalid search pattern or delimiter"));
-	goto theend;
+	s = eap->arg;
+	p = skiptowhite(s);
     }
-    *p++ = NUL;
-    regmatch.regprog = vim_regcomp(eap->arg + 1, RE_MAGIC);
+    else
+    {
+	s = eap->arg + 1;
+	p = skip_regexp(s, *eap->arg, TRUE, NULL);
+	if (*p != *eap->arg)
+	{
+	    EMSG(_("E682: Invalid search pattern or delimiter"));
+	    goto theend;
+	}
+    }
+    if (*p != NUL)
+	*p++ = NUL;
+    regmatch.regprog = vim_regcomp(s, RE_MAGIC);
     if (regmatch.regprog == NULL)
 	goto theend;
-    regmatch.rm_ic = FALSE;
+    regmatch.rmm_ic = FALSE;
 
     p = skipwhite(p);
     if (*p == NUL)
@@ -2312,28 +2330,37 @@ ex_vimgrep(eap)
 
     for (fi = 0; fi < fcount && !got_int; ++fi)
     {
-	fd = fopen((char *)fnames[fi], "r");
-	if (fd == NULL)
+	buf = buflist_findname_exp(fnames[fi]);
+	if (buf == NULL || buf->b_ml.ml_mfp == NULL)
+	{
+	    /* Remember that a buffer with this name already exists. */
+	    duplicate_name = (buf != NULL);
+
+	    /* Load file into a buffer, so that 'fileencoding' is detected,
+	     * autocommands applied, etc. */
+	    buf = load_dummy_buffer(fnames[fi]);
+	    using_dummy = TRUE;
+	}
+	else
+	    /* Use existing, loaded buffer. */
+	    using_dummy = FALSE;
+	if (buf == NULL)
 	    smsg((char_u *)_("Cannot open file \"%s\""), fnames[fi]);
 	else
 	{
-	    lnum = 1;
-	    while (!vim_fgets(IObuff, IOSIZE, fd) && !got_int)
+	    found_match = FALSE;
+	    for (lnum = 1; lnum <= buf->b_ml.ml_line_count; ++lnum)
 	    {
-		if (vim_regexec(&regmatch, IObuff, (colnr_T)0))
+		if (vim_regexec_multi(&regmatch, curwin, buf, lnum,
+							      (colnr_T)0) > 0)
 		{
-		    int     l = STRLEN(IObuff);
-
-		    /* remove trailing CR, LF, spaces, etc. */
-		    while (l > 0 && IObuff[l - 1] <= ' ')
-			IObuff[--l] = NUL;
-
 		    if (qf_add_entry(&prevp,
 				NULL,       /* dir */
 				fnames[fi],
-				IObuff,
-				lnum,
-				(int)(regmatch.startp[0] - IObuff) + 1,/* col */
+				ml_get_buf(buf,
+				     regmatch.startpos[0].lnum + lnum, FALSE),
+				regmatch.startpos[0].lnum + lnum,
+				regmatch.startpos[0].col + 1,
 				FALSE,      /* virt_col */
 				0,          /* nr */
 				0,          /* type */
@@ -2343,11 +2370,34 @@ ex_vimgrep(eap)
 			got_int = TRUE;
 			break;
 		    }
+		    else
+			found_match = TRUE;
 		}
-		++lnum;
 		line_breakcheck();
+		if (got_int)
+		    break;
 	    }
-	    fclose(fd);
+
+	    if (using_dummy)
+	    {
+		if (duplicate_name)
+		    /* Never keep a dummy buffer if there is another buffer
+		     * with the same name. */
+		    wipe_dummy_buffer(buf);
+		else if (!buf_hide(buf))
+		{
+		    /* When not hiding the buffer and no match was found we
+		     * don't need to remember the buffer, wipe it out.  If
+		     * there was a match and it wasn't the first one: only
+		     * unload the buffer. */
+		    if (!found_match)
+			wipe_dummy_buffer(buf);
+		    else if (!first_match)
+			unload_dummy_buffer(buf);
+		}
+	    }
+	    if (found_match)
+		first_match = FALSE;
 	}
     }
 
@@ -2364,6 +2414,8 @@ ex_vimgrep(eap)
     /* Jump to first match. */
     if (qf_lists[qf_curlist].qf_count > 0)
 	qf_jump(0, 0, FALSE);
+    else
+	EMSG2(_(e_nomatch2), s);
 
 theend:
     vim_free(regmatch.regprog);
@@ -2373,6 +2425,104 @@ theend:
 	p_cpo = save_cpo;
     else
 	free_string_option(save_cpo);
+}
+
+/*
+ * Load file "fname" into a dummy buffer and return the buffer pointer.
+ * Returns NULL if it fails.
+ * Must call unload_dummy_buffer() or wipe_dummy_buffer() later!
+ */
+    static buf_T *
+load_dummy_buffer(fname)
+    char_u	*fname;
+{
+    buf_T	*newbuf;
+    int		failed = TRUE;
+#ifdef FEAT_AUTOCMD
+    aco_save_T	aco;
+#else
+    buf_T	*old_curbuf = curbuf;
+#endif
+
+    /* Allocate a buffer without putting it in the buffer list. */
+    newbuf = buflist_new(NULL, NULL, (linenr_T)1, BLN_DUMMY);
+    if (newbuf == NULL)
+	return NULL;
+
+#ifdef FEAT_AUTOCMD
+    /* set curwin/curbuf to buf and save a few things */
+    aucmd_prepbuf(&aco, newbuf);
+#else
+    curbuf = newbuf;
+    curwin->w_buffer = newbuf;
+#endif
+
+    /* Need to set the filename for autocommands. */
+    (void)setfname(curbuf, fname, NULL, FALSE);
+
+    if (ml_open() == OK)
+    {
+	/* Create swap file now to avoid the ATTENTION message. */
+	check_need_swap(TRUE);
+
+	/* Remove the "dummy" flag, otherwise autocommands may not
+	 * work. */
+	curbuf->b_flags &= ~BF_DUMMY;
+
+	if (readfile(fname, NULL,
+		    (linenr_T)0, (linenr_T)0, (linenr_T)MAXLNUM,
+		    NULL, READ_NEW | READ_DUMMY) == OK
+		&& !(curbuf->b_flags & BF_NEW))
+	{
+	    failed = FALSE;
+	    if (curbuf != newbuf)
+	    {
+		/* Bloody autocommands changed the buffer! */
+		if (buf_valid(newbuf))
+		    wipe_buffer(newbuf, FALSE);
+		newbuf = curbuf;
+	    }
+	}
+    }
+
+#ifdef FEAT_AUTOCMD
+    /* restore curwin/curbuf and a few other things */
+    aucmd_restbuf(&aco);
+#else
+    curbuf = old_curbuf;
+    curwin->w_buffer = old_curbuf;
+#endif
+
+    if (!buf_valid(newbuf))
+	return NULL;
+    if (failed)
+    {
+	wipe_dummy_buffer(newbuf);
+	return NULL;
+    }
+    return newbuf;
+}
+
+/*
+ * Wipe out the dummy buffer that load_dummy_buffer() created.
+ */
+    static void
+wipe_dummy_buffer(buf)
+    buf_T	*buf;
+{
+    if (curbuf != buf)		/* safety check */
+	wipe_buffer(buf, FALSE);
+}
+
+/*
+ * Unload the dummy buffer that load_dummy_buffer() created.
+ */
+    static void
+unload_dummy_buffer(buf)
+    buf_T	*buf;
+{
+    if (curbuf != buf)		/* safety check */
+	close_buffer(NULL, buf, DOBUF_UNLOAD);
 }
 
 /*
@@ -2487,7 +2637,8 @@ ex_helpgrep(eap)
 					    fnames[fi],
 					    IObuff,
 					    lnum,
-					    0,		/* col */
+					    (int)(regmatch.startp[0] - IObuff)
+								+ 1, /* col */
 					    FALSE,	/* virt_col */
 					    0,		/* nr */
 					    1,		/* type */

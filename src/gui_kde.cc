@@ -206,9 +206,7 @@ pixmap_create_by_dir(char_u *name)//{{{
     char_u full_pathname[MAXPATHL + 1];
 
     if (gui_find_bitmap(name, full_pathname, "xpm") == OK)
-    {
 	return QPixmap((const char *)full_pathname);
-    }
     else
 	return QPixmap();
 }//}}}
@@ -222,7 +220,7 @@ pixmap_create_from_file(char_u *file)
 #endif
 
     void
-gui_mch_add_menu(vimmenu_T * menu, int idx)//{{{
+gui_mch_add_menu(vimmenu_T *menu, int idx)//{{{
 {
 #ifdef FEAT_MENU
     QPopupMenu *me;
@@ -230,7 +228,7 @@ gui_mch_add_menu(vimmenu_T * menu, int idx)//{{{
 
     if (menu_is_popup(menu->name))
     {
-	menu->widget = new QPopupMenu(vmw , (const char *)menu->name);
+	menu->widget = new QPopupMenu(vmw , QSTR(menu->name));
 	QObject::connect(menu->widget, SIGNAL(activated(int)), vmw,
 						   SLOT(menu_activated(int)));
 	return;
@@ -242,15 +240,13 @@ gui_mch_add_menu(vimmenu_T * menu, int idx)//{{{
     if (parent)
     {
 	idx++; // for tearoffs to be first in menus
-	me = new QPopupMenu(parent->widget, (const char *)menu->name);
-	parent->widget->insertItem(QString((const char *)menu->name), me,
-								(int)me, idx);
+	me = new QPopupMenu(parent->widget, QSTR(menu->name));
+	parent->widget->insertItem(QSTR(menu->name), me, (int)me, idx);
     }
     else
     {
-	me = new QPopupMenu(vmw->menuBar() , (const char *)menu->name);
-	vmw->menuBar()->insertItem(QString((const char *)menu->name), me,
-								(int)me, idx);
+	me = new QPopupMenu(vmw->menuBar(), QSTR(menu->name));
+	vmw->menuBar()->insertItem(QSTR(menu->name), me, (int)me, idx);
     }
 
     me->setCaption((const char *)(menu->dname));
@@ -264,7 +260,7 @@ gui_mch_add_menu(vimmenu_T * menu, int idx)//{{{
 
 
     void
-gui_mch_add_menu_item(vimmenu_T * menu, int idx)//{{{
+gui_mch_add_menu_item(vimmenu_T *menu, int idx)//{{{
 {
 #ifdef FEAT_MENU
     vimmenu_T *parent = menu->parent;
@@ -302,7 +298,7 @@ gui_mch_add_menu_item(vimmenu_T * menu, int idx)//{{{
 		pix,
 		(int)menu, // id
 		true,
-		(char *)(menu->strings[MENU_INDEX_TIP]), // tooltip or text
+		QSTR(menu->strings[MENU_INDEX_TIP]), // tooltip or text
 		idx);
 	menu->parent=parent;
 	return;
@@ -315,7 +311,7 @@ gui_mch_add_menu_item(vimmenu_T * menu, int idx)//{{{
 	parent->widget->insertSeparator();
 	return;
     }
-    parent->widget->insertItem(QString((const char *)menu->name), (int)menu, idx);
+    parent->widget->insertItem(QSTR(menu->name), (int)menu, idx);
 #endif
 }//}}}
 
@@ -378,8 +374,8 @@ toggle_tearoffs(vimmenu_T *menu, int enable)//{{{
 	void
 gui_mch_toggle_tearoffs(int enable)//{{{
 {
-	vmw->have_tearoff=enable;
-	toggle_tearoffs(root_menu, enable);
+    vmw->have_tearoff=enable;
+    toggle_tearoffs(root_menu, enable);
 }//}}}
 #endif
 
@@ -389,7 +385,7 @@ gui_mch_toggle_tearoffs(int enable)//{{{
  * Destroy the machine specific menu widget.
  */
     void
-gui_mch_destroy_menu(vimmenu_T * menu)//{{{
+gui_mch_destroy_menu(vimmenu_T *menu)//{{{
 {
 #ifdef FEAT_TOOLBAR
     if (menu->parent && menu_is_toolbar(menu->parent->name))
@@ -429,6 +425,7 @@ gui_mch_set_scrollbar_pos(scrollbar_T *sb, int x, int y, int w, int h)//{{{
 {
     if (!sb->w)
 	return;
+
     //we add the menubar and toolbar height/width
     int X = 0;
     int Y = 0;
@@ -480,7 +477,7 @@ gui_mch_create_scrollbar(scrollbar_T *sb, int orient)//{{{
 }//}}}
 
     void
-gui_mch_destroy_scrollbar(scrollbar_T * sb)//{{{
+gui_mch_destroy_scrollbar(scrollbar_T *sb)//{{{
 {
     sbpool->destroy(sb);
 }//}}}
@@ -503,11 +500,11 @@ gui_mch_destroy_scrollbar(scrollbar_T * sb)//{{{
 /*ARGSUSED*/
     char_u *
 gui_mch_browse(int saving,//{{{
-		char_u * title,
-		char_u * dflt,
-		char_u * ext,
-		char_u * initdir,
-		char_u * filter)
+		char_u *title,
+		char_u *dflt,
+		char_u *ext,
+		char_u *initdir,
+		char_u *filter)
 {
     char *filt_glob;
 
@@ -524,8 +521,8 @@ gui_mch_browse(int saving,//{{{
 
     QString s;
     if (!saving)
-	s = KFileDialog::getOpenFileName((char *)initdir, (char *)filt_glob,
-							  vmw, (char *)title);
+	s = KFileDialog::getOpenFileName(QSTR(initdir), QSTR(filt_glob),
+							  vmw, QSTR(title));
     else
 	s = KFileDialog::getSaveFileName();
 
@@ -552,7 +549,7 @@ gui_mch_dialog(int type,		/* type of dialog *///{{{
 		char_u *title,		/* title of dialog */
 		char_u *message,	/* message text */
 		char_u *buttons,	/* names of buttons */
-		int def_but,		/* default button */
+		int    def_but,		/* default button */
 		char_u *textfield)
 {
     gui_mch_mousehide(FALSE);
@@ -566,7 +563,7 @@ gui_mch_dialog(int type,		/* type of dialog *///{{{
 
 #if defined(FEAT_MENU) || defined(PROTO)
     void
-gui_mch_show_popupmenu(vimmenu_T * menu)//{{{
+gui_mch_show_popupmenu(vimmenu_T *menu)//{{{
 {
     menu->widget->popup(QCursor::pos());
 }//}}}

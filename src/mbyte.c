@@ -4341,6 +4341,7 @@ xim_set_focus(focus)
     }
 }
 
+#ifndef FEAT_GUI_KDE
 /*ARGSUSED*/
     void
 im_set_position(row, col)
@@ -4349,6 +4350,7 @@ im_set_position(row, col)
 {
     xim_set_preedit();
 }
+#endif
 
 /*
  * Set the XIM to the current cursor position.
@@ -4642,7 +4644,7 @@ xim_set_status_area()
 #endif
 }
 
-#if defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK)
+#if defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_KDE)
 static char e_xim[] = N_("E285: Failed to create input context");
 #endif
 
@@ -5414,7 +5416,7 @@ xim_get_status_area_height()
     if (xim_input_style & (int)GDK_IM_STATUS_AREA)
 	return gui.char_height;
 #elif defined FEAT_GUI_KDE
-#warning FIXME
+    /* always return zero? */
 #else
     if (status_area_enabled)
 	return gui.char_height;
@@ -5434,6 +5436,10 @@ im_get_status()
 #  ifdef FEAT_GUI_GTK
     if (xim_input_style & (int)GDK_IM_PREEDIT_CALLBACKS)
 	return xim_can_preediting;
+#  endif
+#  ifdef FEAT_GUI_KDE
+    if (preedit_start_col != MAXCOL)
+	return TRUE;
 #  endif
     return xim_has_focus;
 }

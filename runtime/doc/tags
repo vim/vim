@@ -2520,6 +2520,10 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :vi	editing.txt	/*:vi*
 :vie	editing.txt	/*:vie*
 :view	editing.txt	/*:view*
+:vim	quickfix.txt	/*:vim*
+:vimgrep	quickfix.txt	/*:vimgrep*
+:vimgrepa	quickfix.txt	/*:vimgrepa*
+:vimgrepadd	quickfix.txt	/*:vimgrepadd*
 :visual	editing.txt	/*:visual*
 :visual_example	visual.txt	/*:visual_example*
 :viu	various.txt	/*:viu*
@@ -4951,7 +4955,6 @@ hebrew	hebrew.txt	/*hebrew*
 hebrew.txt	hebrew.txt	/*hebrew.txt*
 help	various.txt	/*help*
 help-context	help.txt	/*help-context*
-help-tags	tags	1
 help-translated	various.txt	/*help-translated*
 help-xterm-window	various.txt	/*help-xterm-window*
 help.txt	help.txt	/*help.txt*
@@ -5601,6 +5604,7 @@ new-user-manual	version6.txt	/*new-user-manual*
 new-utf-8	version6.txt	/*new-utf-8*
 new-vertsplit	version6.txt	/*new-vertsplit*
 new-vim-server	version6.txt	/*new-vim-server*
+new-vimgrep	version7.txt	/*new-vimgrep*
 new-virtedit	version6.txt	/*new-virtedit*
 news	intro.txt	/*news*
 nextnonblank()	eval.txt	/*nextnonblank()*

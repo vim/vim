@@ -1,4 +1,4 @@
-*fold.txt*      For Vim version 7.0aa.  Last change: 2004 Oct 15
+*fold.txt*      For Vim version 7.0aa.  Last change: 2004 Dec 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -279,7 +279,7 @@ zF		Create a fold for N lines.  Works like "zf".
 		Create a fold for the lines in {range}.  Works like "zf".
 
 							*zd* *E351*
-zd		Delete one fold at the cursor.  When the cursor is on folded
+zd		Delete one fold at the cursor.  When the cursor is on a folded
 		line, that fold is deleted.  Nested folds are moved one level
 		up.  In Visual mode all folds (partially) in the selected area
 		are deleted.  Careful: This easily deletes more folds than you
@@ -457,7 +457,7 @@ FOLDLEVEL						*fold-foldlevel*
 
 'foldlevel' is a number option: The higher the more folded regions are open.
 When 'foldlevel' is 0, all folds are closed.
-When 'foldlevel' is positive, some folds closed.
+When 'foldlevel' is positive, some folds are closed.
 When 'foldlevel' is very high, all folds are open.
 'foldlevel' is applied when it is changed.  After that manually folds can be
 opened and closed.

@@ -1918,7 +1918,7 @@ gui_outstr_nowrap(s, len, flags, fg, bg, back)
     long_u	hl_mask_todo;
     guicolor_T	fg_color;
     guicolor_T	bg_color;
-#if !defined(MSWIN16_FASTTEXT) && !defined(HAVE_GTK2)
+#if !defined(MSWIN16_FASTTEXT) && !defined(HAVE_GTK2) && !defined(FEAT_GUI_KDE)
     GuiFont	font = NOFONT;
 # ifdef FEAT_XFONTSET
     GuiFontset	fontset = NOFONTSET;
@@ -1972,7 +1972,7 @@ gui_outstr_nowrap(s, len, flags, fg, bg, back)
 	highlight_mask = gui.highlight_mask;
     hl_mask_todo = highlight_mask;
 
-#if !defined(MSWIN16_FASTTEXT) && !defined(HAVE_GTK2)
+#if !defined(MSWIN16_FASTTEXT) && !defined(HAVE_GTK2) && !defined(FEAT_GUI_KDE)
     /* Set the font */
     if (aep != NULL && aep->ae_u.gui.font != NOFONT)
 	font = aep->ae_u.gui.font;
@@ -2148,7 +2148,7 @@ gui_outstr_nowrap(s, len, flags, fg, bg, back)
 	    /* print the string so far if it's the last character or there is
 	     * a composing character. */
 	    if (i + cl >= len || (comping && i > start) || dowide
-#  if defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK) || defined (FEAT_GUI_KDE)
+#  if defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_KDE)
 		    || (cn > 1
 #   ifdef FEAT_XFONTSET
 			/* No fontset: At least draw char after wide char at
@@ -2173,10 +2173,14 @@ gui_outstr_nowrap(s, len, flags, fg, bg, back)
 		cells = 0;
 		if (dowide)
 		{
+#ifndef FEAT_GUI_KDE
 		    gui_mch_set_font(gui.wide_font);
+#endif
 		    gui_mch_draw_string(gui.row, scol - cn,
 						   s + start, cl, draw_flags);
+#ifndef FEAT_GUI_KDE
 		    gui_mch_set_font(font);
+#endif
 		    start += cl;
 		}
 

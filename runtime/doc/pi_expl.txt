@@ -1,4 +1,4 @@
-*pi_expl.txt*   For Vim version 7.0aa.  Last change: 2002 Nov 08
+*pi_expl.txt*   For Vim version 7.0aa.  Last change: 2004 Dec 29
 
 
 		  VIM REFERENCE MANUAL    by M A Aziz Ahmed
@@ -65,7 +65,7 @@ splitting horizontally, use the variable: >
 The default for this is the setting of splitbelow at the time the plugin is
 loaded.
 
-To control where the windows goes relative to the explorer window when
+To control where the window goes relative to the explorer window when
 splitting vertically, use the variable: >
   let g:explSplitRight=1    " Put new window to the right of the explorer
   let g:explSplitRight=0    " Put new window to the left of the explorer
@@ -77,14 +77,14 @@ To use a different split method for the explorer window, use: >
 			    " current window
   let g:explStartRight=0    " Put new explorer window to the left of the
 			    " current window
-The default for this set to g:explSplitRight at the time the plugin is loaded.
+The default is the value of g:explSplitRight at the time the plugin is loaded.
 
 To use a different split method for the explorer window, use: >
   let g:explStartBelow=1    " Put new explorer window below the
 			    " current window
   let g:explStartBelow=0    " Put new explorer window above the
 			    " current window
-The default for this set to g:explSplitBelow at the time the plugin is loaded.
+The default is the value of g:explSplitBelow at the time the plugin is loaded.
 
 The start splits allow for the explorer window to be placed in a file browser
 type arrangement, where the directories are shown on the left and the contents

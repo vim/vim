@@ -820,8 +820,8 @@ win_linetabsize(wp, p, len)
 }
 
 /*
- * return TRUE if 'c' is a normal identifier character
- * letters and characters from 'isident' option.
+ * Return TRUE if 'c' is a normal identifier character:
+ * Letters and characters from the 'isident' option.
  */
     int
 vim_isIDc(c)

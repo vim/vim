@@ -14,6 +14,7 @@ buf_T *buflist_new __ARGS((char_u *ffname, char_u *sfname, linenr_T lnum, int fl
 void free_buf_options __ARGS((buf_T *buf, int free_p_ff));
 int buflist_getfile __ARGS((int n, linenr_T lnum, int options, int forceit));
 void buflist_getfpos __ARGS((void));
+buf_T *buflist_findname_exp __ARGS((char_u *fname));
 buf_T *buflist_findname __ARGS((char_u *ffname));
 int buflist_findpat __ARGS((char_u *pattern, char_u *pattern_end, int unlisted, int diffmode));
 int ExpandBufnames __ARGS((char_u *pat, int *num_file, char_u ***file, int options));
@@ -24,7 +25,7 @@ pos_T *buflist_findfpos __ARGS((buf_T *buf));
 linenr_T buflist_findlnum __ARGS((buf_T *buf));
 void buflist_list __ARGS((exarg_T *eap));
 int buflist_name_nr __ARGS((int fnum, char_u **fname, linenr_T *lnum));
-int setfname __ARGS((buf_T *buf, char_u *ffname, char_u *sfname, int message));
+int setfname __ARGS((buf_T *buf, char_u *ffname, char_u *sfname, int exist_msg));
 void buf_set_name __ARGS((int fnum, char_u *name));
 void buf_name_changed __ARGS((buf_T *buf));
 buf_T *setaltfname __ARGS((char_u *ffname, char_u *sfname, linenr_T lnum));
