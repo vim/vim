@@ -1,4 +1,4 @@
-*gui_w32.txt*   For Vim version 7.0aa.  Last change: 2004 May 03
+*gui_w32.txt*   For Vim version 7.0aa.  Last change: 2005 Jan 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -232,6 +232,8 @@ $VIMRUNTIME/mswin.vim script.  You could add this line to your _vimrc file: >
 
 Since CTRL-C is used to copy the text to the clipboard, it can't be used to
 cancel an operation.  Use CTRL-Break for that.
+
+CTRL-Z is used for undo.  This means you can't suspend Vim.
 
 							*CTRL-V-alternative*
 Since CTRL-V is used to paste, you can't use it to start a blockwise Visual
