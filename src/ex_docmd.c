@@ -8085,6 +8085,11 @@ ex_normal(eap)
 ex_startinsert(eap)
     exarg_T	*eap;
 {
+    /* Ignore the command when already in Insert mode.  Inserting an
+     * expression register that invokes a function can do this. */
+    if (State & INSERT)
+	return;
+
     if (eap->forceit)
     {
 	coladvance((colnr_T)MAXCOL);

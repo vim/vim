@@ -2414,7 +2414,7 @@ gui_mch_destroy_scrollbar(scrollbar_T *sb)
  * Get current mouse coordinates in text window.
  */
     void
-gui_mch_get_mouse_(int *x, int *y)
+gui_mch_getmouse(int *x, int *y)
 {
     RECT rct;
     POINT mp;
