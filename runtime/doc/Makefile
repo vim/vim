@@ -254,10 +254,22 @@ HTMLS = \
 	windows.html \
 	workshop.html
 
+CONVERTED = \
+	vim-it.UTF-8.1 \
+	evim-it.UTF-8.1 \
+	vimdiff-it.UTF-8.1 \
+	vimtutor-it.UTF-8.1 \
+	xxd-it.UTF-8.1 \
+	vim-ru.UTF-8.1 \
+	evim-ru.UTF-8.1 \
+	vimdiff-ru.UTF-8.1 \
+	vimtutor-ru.UTF-8.1 \
+	xxd-ru.UTF-8.1 \
+
 .SUFFIXES:
 .SUFFIXES: .c .o .txt .html
 
-all: tags vim.man vimdiff.man vimtutor.man xxd.man
+all: tags vim.man vimdiff.man vimtutor.man xxd.man $(CONVERTED)
 
 # Use Vim to generate the tags file.  Can only be used when Vim has been
 # compiled and installed.  Supports multiple languages.
@@ -365,3 +377,33 @@ os_risc.txt:
 
 os_win32.txt:
 	touch os_win32.txt
+
+vim-it.UTF-8.1: vim-it.1
+	iconv -f latin1 -t utf-8 $< >$@
+
+evim-it.UTF-8.1: evim-it.1
+	iconv -f latin1 -t utf-8 $< >$@
+
+vimdiff-it.UTF-8.1: vimdiff-it.1
+	iconv -f latin1 -t utf-8 $< >$@
+
+vimtutor-it.UTF-8.1: vimtutor-it.1
+	iconv -f latin1 -t utf-8 $< >$@
+
+xxd-it.UTF-8.1: xxd-it.1
+	iconv -f latin1 -t utf-8 $< >$@
+
+vim-ru.UTF-8.1: vim-ru.1
+	iconv -f KOI8-R -t utf-8 $< >$@
+
+evim-ru.UTF-8.1: evim-ru.1
+	iconv -f KOI8-R -t utf-8 $< >$@
+
+vimdiff-ru.UTF-8.1: vimdiff-ru.1
+	iconv -f KOI8-R -t utf-8 $< >$@
+
+vimtutor-ru.UTF-8.1: vimtutor-ru.1
+	iconv -f KOI8-R -t utf-8 $< >$@
+
+xxd-ru.UTF-8.1: xxd-ru.1
+	iconv -f KOI8-R -t utf-8 $< >$@

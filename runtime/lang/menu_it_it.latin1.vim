@@ -1,7 +1,7 @@
 " Menu Translations:	Italian / Italiano
-" Maintainer:		Antonio Colombo <antonio.colombo@jrc.it>
+" Maintainer:		Antonio Colombo <azc10@yahoo.com>
 "			Vlad Sandrini <sator72@libero.it>
-" Last Change:	2004 Mar 3
+" Last Change:	2005 Mar 16
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")

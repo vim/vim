@@ -648,6 +648,13 @@ op_reindent(oap, how)
     linenr_T	last_changed = 0;
     linenr_T	start_lnum = curwin->w_cursor.lnum;
 
+    /* Don't even try when 'modifiable' is off. */
+    if (!curbuf->b_p_ma)
+    {
+	EMSG(_(e_modifiable));
+	return;
+    }
+
     for (i = oap->line_count; --i >= 0 && !got_int; )
     {
 	/* it's a slow thing to do, so give feedback so there's no worry that

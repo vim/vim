@@ -1073,9 +1073,11 @@ EXTERN int	no_hlsearch INIT(= FALSE);
 
 #ifdef FEAT_BEVAL
 EXTERN BalloonEval	*balloonEval INIT(= NULL);
+# if defined(FEAT_NETBEANS_INTG) || defined(FEAT_SUN_WORKSHOP)
 EXTERN int bevalServers INIT(= 0);
-# define BEVAL_NETBEANS		0x01
-# define BEVAL_WORKSHOP		0x02
+#  define BEVAL_NETBEANS		0x01
+#  define BEVAL_WORKSHOP		0x02
+# endif
 #endif
 
 #ifdef CURSOR_SHAPE

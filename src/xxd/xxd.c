@@ -40,7 +40,7 @@
  * 29.08.96 Added size_t to strncmp() for Amiga.
  * 24.03.97 Windows NT support (Phil Hanna). Clean exit for Amiga WB (Bram)
  * 02.04.97 Added -E option, to have EBCDIC translation instead of ASCII
- *	    (antonio.colombo@jrc.it)
+ *	    (azc10@yahoo.com)
  * 22.05.97 added -g (group octets) option (jcook@namerica.kla.com).
  * 23.09.98 nasty -p -r misfeature fixed: slightly wrong output, when -c was
  *	    missing or wrong.

@@ -2023,6 +2023,7 @@ fold_line(wp, fold_count, foldinfo, lnum, row)
     int		col;
     int		txtcol;
     int		off = (int)(current_ScreenLine - ScreenLines);
+    int		ri;
 
     /* Build the fold line:
      * 1. Add the cmdwin_type for the command-line window
@@ -2078,13 +2079,19 @@ fold_line(wp, fold_count, foldinfo, lnum, row)
     }
 
 #ifdef FEAT_RIGHTLEFT
-# define RL_MEMSET(p, v, l) vim_memset(ScreenAttrs + off + (wp->w_p_rl ? (W_WIDTH(wp) - (p) - (l)) : (p)), v, l)
+# define RL_MEMSET(p, v, l)  if (wp->w_p_rl) \
+				for (ri = 0; ri < l; ++ri) \
+				   ScreenAttrs[off + (W_WIDTH(wp) - (p) - (l)) + ri] = v; \
+			     else \
+				for (ri = 0; ri < l; ++ri) \
+				   ScreenAttrs[off + (p) + ri] = v
 #else
-# define RL_MEMSET(p, v, l) vim_memset(ScreenAttrs + off + p, v, l)
+# define RL_MEMSET(p, v, l)   for (ri = 0; ri < l; ++ri) \
+				 ScreenAttrs[off + (p) + ri] = v
 #endif
 
     /* Set all attributes of the 'number' column and the text */
-    RL_MEMSET(col, hl_attr(HLF_FL), (size_t)(W_WIDTH(wp) - col));
+    RL_MEMSET(col, hl_attr(HLF_FL), W_WIDTH(wp) - col);
 
 #ifdef FEAT_SIGNS
     /* If signs are being displayed, add two spaces. */
@@ -2330,13 +2337,14 @@ fold_line(wp, fold_count, foldinfo, lnum, row)
 		    else
 			len = W_WIDTH(wp) - txtcol;
 		    RL_MEMSET(wp->w_old_cursor_fcol + txtcol, hl_attr(HLF_V),
-				       (size_t)(len - wp->w_old_cursor_fcol));
+						 len - wp->w_old_cursor_fcol);
 		}
 	    }
 	    else
+	    {
 		/* Set all attributes of the text */
-		RL_MEMSET(txtcol, hl_attr(HLF_V),
-					      (size_t)(W_WIDTH(wp) - txtcol));
+		RL_MEMSET(txtcol, hl_attr(HLF_V), W_WIDTH(wp) - txtcol);
+	    }
 	}
     }
 #endif
@@ -2370,12 +2378,15 @@ copy_text_attr(off, buf, len, attr)
     int		len;
     int		attr;
 {
+    int		i;
+
     mch_memmove(ScreenLines + off, buf, (size_t)len);
 # ifdef FEAT_MBYTE
     if (enc_utf8)
 	vim_memset(ScreenLinesUC + off, 0, sizeof(u8char_T) * (size_t)len);
 # endif
-    vim_memset(ScreenAttrs + off, attr, (size_t)len);
+    for (i = 0; i < len; ++i)
+	ScreenAttrs[off + i] = attr;
 }
 
 /*

@@ -920,7 +920,7 @@ wait_return(redraw)
 	     * CTRL-C, but we need to loop then. */
 	    had_got_int = got_int;
 	    c = safe_vgetc();
-	    if (!global_busy)
+	    if (had_got_int && !global_busy)
 		got_int = FALSE;
 #ifdef FEAT_CLIPBOARD
 	    /* Strange way to allow copying (yanking) a modeless selection at

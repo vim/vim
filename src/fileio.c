@@ -3701,7 +3701,7 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
     while ((fd = mch_open((char *)wfname, O_WRONLY | O_EXTRA | (append
 			? (forceit ? (O_APPEND | O_CREAT) : O_APPEND)
 			: (O_CREAT | O_TRUNC))
-			, perm & 0777)) < 0)
+			, perm < 0 ? 0666 : (perm & 0777))) < 0)
     {
 	/*
 	 * A forced write will try to create a new file if the old one is
@@ -4269,7 +4269,7 @@ restore_backup:
 
 	    if (org == NULL
 		    || (empty_fd = mch_open(org, O_CREAT | O_EXTRA | O_EXCL,
-							    perm & 0777)) < 0)
+					perm < 0 ? 0666 : (perm & 0777))) < 0)
 	      EMSG(_("E206: patchmode: can't touch empty original file"));
 	    else
 	      close(empty_fd);

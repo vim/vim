@@ -2098,7 +2098,7 @@ op_colon(oap)
 	    stuffReadbuff((char_u *)"fmt");
 	else
 	    stuffReadbuff(p_fp);
-	stuffReadbuff((char_u *)"\n");
+	stuffReadbuff((char_u *)"\n']");
     }
 
     /*

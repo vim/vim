@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Mar 15
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Mar 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -2383,8 +2383,9 @@ getbufvar({expr}, {varname})				*getbufvar()*
 		The result is the value of option or local buffer variable
 		{varname} in buffer {expr}.  Note that the name without "b:"
 		must be used.
-		This also works for a global or local window option, but it
-		doesn't work for a global or local window variable.
+		This also works for a global or buffer-local option, but it
+		doesn't work for a global variable, window-local variable or
+		window-local option.
 		For the use of {expr}, see |bufname()| above.
 		When the buffer or variable doesn't exist an empty string is
 		returned, there is no error message.
@@ -2580,8 +2581,9 @@ getwinposy()	The result is a Number, which is the Y coordinate in pixels of
 getwinvar({nr}, {varname})				*getwinvar()*
 		The result is the value of option or local window variable
 		{varname} in window {nr}.
-		This also works for a global or local buffer option, but it
-		doesn't work for a global or local buffer variable.
+		This also works for a global option, buffer-local option and
+		window-local option, but it doesn't work for a global variable
+		or buffer-local variable.
 		Note that the name without "w:" must be used.
 		Examples: >
 			:let list_is_on = getwinvar(2, '&list')
@@ -3908,12 +3910,16 @@ taglist({expr})							*taglist()*
 					tool.
 			static		a file specific tag.  Refer to
 					|static-tag| for more information.
-		More entries may be present, depending on the content of the
-		tags file: access, implementation, inherits and signature.
-		Refer to the ctags documentation for information about these
-		fields.  For C code the fields "struct", "class" and "enum"
-		may appear, they give the name of the entity the tag is
-		contained in.
+		The "kind" entry is only available when using Exuberant ctags
+		generated tags file.  More entries may be present, depending
+		on the content of the tags file: access, implementation,
+		inherits and signature.  Refer to the ctags documentation for
+		information about these fields.  For C code the fields
+		"struct", "class" and "enum" may appear, they give the name of
+		the entity the tag is contained in.
+ 
+		The ex-command 'cmd' can be either an ex search pattern, a
+		line number or a line number followed by a byte number.
 
 		If there are no matching tags, then an empty list is returned.
 

@@ -7,7 +7,7 @@ vim \- Vi IMproved, a programmers text editor
 [options] [file ..]
 .br
 .B vim
-[options] -
+[options] \-
 .br
 .B vim
 [options] \-t tag
@@ -69,13 +69,13 @@ A list of filenames.
 The first one will be the current file and read into the buffer.
 The cursor will be positioned on the first line of the buffer.
 You can get to the other files with the ":next" command.
-To edit a file that starts with a dash, precede the filelist with "--".
+To edit a file that starts with a dash, precede the filelist with "\-\-".
 .TP
--
+\-
 The file to edit is read from stdin.  Commands are read from stderr, which
 should be a tty.
 .TP
--t {tag}
+\-t {tag}
 The file to edit and the initial cursor position depends on a "tag", a sort
 of goto label.
 {tag} is looked up in the tags file, the associated file becomes the current
@@ -86,7 +86,7 @@ The effect is that the file containing that function becomes the current file
 and the cursor is positioned on the start of the function.
 See ":help tag-commands".
 .TP
--q [errorfile]
+\-q [errorfile]
 Start in quickFix mode.
 The file [errorfile] is read and the first error is displayed.
 If [errorfile] is omitted, the filename is obtained from the 'errorfile'
@@ -105,27 +105,27 @@ The "normal" way, everything is default.
 ex
 Start in Ex mode.
 Go to Normal mode with the ":vi" command.
-Can also be done with the "-e" argument.
+Can also be done with the "\-e" argument.
 .TP
 view
 Start in read-only mode.  You will be protected from writing the files.  Can
-also be done with the "-R" argument.
+also be done with the "\-R" argument.
 .TP
 gvim gview
 The GUI version.
 Starts a new window.
-Can also be done with the "-g" argument.
+Can also be done with the "\-g" argument.
 .TP
 evim eview
 The GUI version in easy mode.
 Starts a new window.
-Can also be done with the "-y" argument.
+Can also be done with the "\-y" argument.
 .TP
 rvim rview rgvim rgview
 Like the above, but with restrictions.  It will not be possible to start shell
 commands, or suspend
 .B Vim.
-Can also be done with the "-Z" argument.
+Can also be done with the "\-Z" argument.
 .SH OPTIONS
 The options may be given in any order, before or after filenames.
 Options without an argument can be combined after a single dash.
@@ -141,7 +141,7 @@ See ":help search-pattern" for the available search patterns.
 .TP
 +{command}
 .TP
--c {command}
+\-c {command}
 {command} will be executed after the
 first file has been read.
 {command} is interpreted as an Ex command.
@@ -149,21 +149,21 @@ If the {command} contains spaces it must be enclosed in double quotes (this
 depends on the shell that is used).
 Example: Vim "+set si" main.c
 .br
-Note: You can use up to 10 "+" or "-c" commands.
+Note: You can use up to 10 "+" or "\-c" commands.
 .TP
--S {file}
+\-S {file}
 {file} will be sourced after the first file has been read.
-This is equivalent to -c "source {file}".
-{file} cannot start with '-'.
-If {file} is omitted "Session.vim" is used (only works when -S is the last
+This is equivalent to \-c "source {file}".
+{file} cannot start with '\-'.
+If {file} is omitted "Session.vim" is used (only works when \-S is the last
 argument).
 .TP
---cmd {command}
-Like using "-c", but the command is executed just before
+\-\-cmd {command}
+Like using "\-c", but the command is executed just before
 processing any vimrc file.
-You can use up to 10 of these commands, independently from "-c" commands.
+You can use up to 10 of these commands, independently from "\-c" commands.
 .TP
--A
+\-A
 If
 .B Vim
 has been compiled with ARABIC support for editing right-to-left
@@ -174,45 +174,45 @@ message is given and
 .B Vim
 aborts.
 .TP
--b
+\-b
 Binary mode.
 A few options will be set that makes it possible to edit a binary or
 executable file.
 .TP
--C
+\-C
 Compatible.  Set the 'compatible' option.
 This will make
 .B Vim
 behave mostly like Vi, even though a .vimrc file exists.
 .TP
--d
+\-d
 Start in diff mode.
 There should be two or three file name arguments.
 .B Vim
 will open all the files and show differences between them.
 Works like vimdiff(1).
 .TP
--d {device}
+\-d {device}
 Open {device} for use as a terminal.
 Only on the Amiga.
 Example:
 "\-d con:20/30/600/150".
 .TP
--D
+\-D
 Debugging.  Go to debugging mode when executing the first command from a
 script.
 .TP
--e
+\-e
 Start
 .B Vim
 in Ex mode, just like the executable was called "ex".
 .TP
--E
+\-E
 Start
 .B Vim
 in improved Ex mode, just like the executable was called "exim".
 .TP
--f
+\-f
 Foreground.  For the GUI version,
 .B Vim
 will not fork and detach from the shell it was started in.
@@ -225,12 +225,12 @@ is executed by a program that will wait for the edit
 session to finish (e.g. mail).
 On the Amiga the ":sh" and ":!" commands will not work.
 .TP
---nofork
+\-\-nofork
 Foreground.  For the GUI version,
 .B Vim
 will not fork and detach from the shell it was started in.
 .TP
--F
+\-F
 If
 .B Vim
 has been compiled with FKMAP support for editing right-to-left
@@ -241,7 +241,7 @@ Otherwise an error message is given and
 .B Vim
 aborts.
 .TP
--g
+\-g
 If
 .B Vim
 has been compiled with GUI support, this option enables the GUI.
@@ -249,13 +249,13 @@ If no GUI support was compiled in, an error message is given and
 .B Vim
 aborts.
 .TP
--h
+\-h
 Give a bit of help about the command line arguments and options.
 After this
 .B Vim
 exits.
 .TP
--H
+\-H
 If
 .B Vim
 has been compiled with RIGHTLEFT support for editing right-to-left
@@ -266,87 +266,87 @@ Otherwise an error message is given and
 .B Vim
 aborts.
 .TP
--i {viminfo}
+\-i {viminfo}
 When using the viminfo file is enabled, this option sets the filename to use,
 instead of the default "~/.viminfo".
 This can also be used to skip the use of the .viminfo file, by giving the name
 "NONE".
 .TP
--L
-Same as -r.
+\-L
+Same as \-r.
 .TP
--l
+\-l
 Lisp mode.
 Sets the 'lisp' and 'showmatch' options on.
 .TP
--m
+\-m
 Modifying files is disabled.
 Resets the 'write' option.
 You can still modify the buffer, but writing a file is not possible.
 .TP
--M
+\-M
 Modifications not allowed.  The 'modifiable' and 'write' options will be unset,
 so that changes are not allowed and files can not be written.  Note that these
 options can be set to enable making modifications.
 .TP
--N
+\-N
 No-compatible mode.  Reset the 'compatible' option.
 This will make
 .B Vim
 behave a bit better, but less Vi compatible, even though a .vimrc file does
 not exist.
 .TP
--n
+\-n
 No swap file will be used.
 Recovery after a crash will be impossible.
 Handy if you want to edit a file on a very slow medium (e.g. floppy).
 Can also be done with ":set uc=0".
 Can be undone with ":set uc=200".
 .TP
--nb
+\-nb
 Become an editor server for NetBeans.  See the docs for details.
 .TP
--o[N]
+\-o[N]
 Open N windows stacked.
 When N is omitted, open one window for each file.
 .TP
--O[N]
+\-O[N]
 Open N windows side by side.
 When N is omitted, open one window for each file.
 .TP
--R
+\-R
 Read-only mode.
 The 'readonly' option will be set.
 You can still edit the buffer, but will be prevented from accidently
 overwriting a file.
 If you do want to overwrite a file, add an exclamation mark to the Ex command,
 as in ":w!".
-The -R option also implies the -n option (see below).
+The \-R option also implies the \-n option (see below).
 The 'readonly' option can be reset with ":set noro".
 See ":help 'readonly'".
 .TP
--r
+\-r
 List swap files, with information about using them for recovery.
 .TP
--r {file}
+\-r {file}
 Recovery mode.
 The swap file is used to recover a crashed editing session.
 The swap file is a file with the same filename as the text file with ".swp"
 appended.
 See ":help recovery".
 .TP
--s
-Silent mode.  Only when started as "Ex" or when the "-e" option was given
-before the "-s" option.
+\-s
+Silent mode.  Only when started as "Ex" or when the "\-e" option was given
+before the "\-s" option.
 .TP
--s {scriptin}
+\-s {scriptin}
 The script file {scriptin} is read.
 The characters in the file are interpreted as if you had typed them.
 The same can be done with the command ":source! {scriptin}".
 If the end of the file is reached before the editor exits, further characters
 are read from the keyboard.
 .TP
--T {terminal}
+\-T {terminal}
 Tells
 .B Vim
 the name of the terminal you are using.
@@ -356,49 +356,49 @@ to
 .B Vim
 (builtin) or defined in the termcap or terminfo file.
 .TP
--u {vimrc}
+\-u {vimrc}
 Use the commands in the file {vimrc} for initializations.
 All the other initializations are skipped.
 Use this to edit a special kind of files.
 It can also be used to skip all initializations by giving the name "NONE".
 See ":help initialization" within vim for more details.
 .TP
--U {gvimrc}
+\-U {gvimrc}
 Use the commands in the file {gvimrc} for GUI initializations.
 All the other GUI initializations are skipped.
 It can also be used to skip all GUI initializations by giving the name "NONE".
 See ":help gui-init" within vim for more details.
 .TP
--V[N]
+\-V[N]
 Verbose.  Give messages about which files are sourced and for reading and
 writing a viminfo file.  The optional number N is the value for 'verbose'.
 Default is 10.
 .TP
--v
+\-v
 Start
 .B Vim
 in Vi mode, just like the executable was called "vi".  This only has effect
 when the executable is called "ex".
 .TP
--w {scriptout}
+\-w {scriptout}
 All the characters that you type are recorded in the file
 {scriptout}, until you exit
 .B Vim.
-This is useful if you want to create a script file to be used with "vim -s" or
+This is useful if you want to create a script file to be used with "vim \-s" or
 ":source!".
 If the {scriptout} file exists, characters are appended.
 .TP
--W {scriptout}
-Like -w, but an existing file is overwritten.
+\-W {scriptout}
+Like \-w, but an existing file is overwritten.
 .TP
--x
+\-x
 Use encryption when writing files.  Will prompt for a crypt key.
 .TP
--X
+\-X
 Don't connect to the X server.  Shortens startup time in a terminal, but the
 window title and clipboard will not be used.
 .TP
--y
+\-y
 Start
 .B Vim
 in easy mode, just like the executable was called "evim" or "eview".
@@ -406,58 +406,58 @@ Makes
 .B Vim
 behave like a click-and-type editor.
 .TP
--Z
+\-Z
 Restricted mode.  Works like the executable starts with "r".
 .TP
---
+\-\-
 Denotes the end of the options.
 Arguments after this will be handled as a file name.
-This can be used to edit a filename that starts with a '-'.
+This can be used to edit a filename that starts with a '\-'.
 .TP
---echo-wid
+\-\-echo\-wid
 GTK GUI only: Echo the Window ID on stdout.
 .TP
---help
-Give a help message and exit, just like "-h".
+\-\-help
+Give a help message and exit, just like "\-h".
 .TP
---literal
+\-\-literal
 Take file name arguments literally, do not expand wildcards.  This has no
 effect on Unix where the shell expands wildcards.
 .TP
---noplugin
-Skip loading plugins.  Implied by -u NONE.
+\-\-noplugin
+Skip loading plugins.  Implied by \-u NONE.
 .TP
---remote
+\-\-remote
 Connect to a Vim server and make it edit the files given in the rest of the
 arguments.  If no server is found a warning is given and the files are edited
 in the current Vim.
 .TP
---remote-expr {expr}
+\-\-remote\-expr {expr}
 Connect to a Vim server, evaluate {expr} in it and print the result on stdout.
 .TP
---remote-send {keys}
+\-\-remote\-send {keys}
 Connect to a Vim server and send {keys} to it.
 .TP
---remote-silent
-As --remote, but without the warning when no server is found.
+\-\-remote\-silent
+As \-\-remote, but without the warning when no server is found.
 .TP
---remote-wait
-As --remote, but Vim does not exit until the files have been edited.
+\-\-remote\-wait
+As \-\-remote, but Vim does not exit until the files have been edited.
 .TP
---remote-wait-silent
-As --remote-wait, but without the warning when no server is found.
+\-\-remote\-wait\-silent
+As \-\-remote\-wait, but without the warning when no server is found.
 .TP
---serverlist
+\-\-serverlist
 List the names of all Vim servers that can be found.
 .TP
---servername {name}
+\-\-servername {name}
 Use {name} as the server name.  Used for the current Vim, unless used with a
---remote argument, then it's the name of the server to connect to.
+\-\-remote argument, then it's the name of the server to connect to.
 .TP
---socketid {id}
+\-\-socketid {id}
 GTK GUI only: Use the GtkPlug mechanism to run gvim in another window.
 .TP
---version
+\-\-version
 Print version information and exit.
 .SH ON-LINE HELP
 Type ":help" in
@@ -465,7 +465,7 @@ Type ":help" in
 to get started.
 Type ":help subject" to get help on a specific subject.
 For example: ":help ZZ" to get help for the "ZZ" command.
-Use <Tab> and CTRL-D to complete subjects (":help cmdline-completion").
+Use <Tab> and CTRL-D to complete subjects (":help cmdline\-completion").
 Tags are present to jump from one place to another (sort of hypertext links,
 see ":help").
 All documentation files can be viewed in this way, for example
@@ -476,7 +476,7 @@ All documentation files can be viewed in this way, for example
 The
 .B Vim
 documentation files.
-Use ":help doc-file-list" to get the complete list.
+Use ":help doc\-file\-list" to get the complete list.
 .TP
 /usr/local/lib/vim/doc/tags
 The tags file used for finding information in the documentation files.

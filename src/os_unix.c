@@ -330,9 +330,6 @@ mch_inchar(buf, maxlen, wtime, tb_change_cnt)
     int		tb_change_cnt;
 {
     int		len;
-#ifdef FEAT_AUTOCMD
-    static int	once_already = 0;
-#endif
 
     /* Check if window changed size while we were busy, perhaps the ":set
      * columns=99" command was used. */
@@ -344,46 +341,33 @@ mch_inchar(buf, maxlen, wtime, tb_change_cnt)
 	while (WaitForChar(wtime) == 0)		/* no character available */
 	{
 	    if (!do_resize)	/* return if not interrupted by resize */
-	    {
-#ifdef FEAT_AUTOCMD
-		once_already = 0;
-#endif
 		return 0;
-	    }
 	    handle_resize();
 	}
     }
     else	/* wtime == -1 */
     {
-#ifdef FEAT_AUTOCMD
-	if (once_already == 2)
-	    updatescript(0);
-	else if (once_already == 1)
-	{
-	    setcursor();
-	    once_already = 2;
-	    return 0;
-	}
-	else
-#endif
 	/*
 	 * If there is no character available within 'updatetime' seconds
-	 * flush all the swap files to disk
+	 * flush all the swap files to disk.
 	 * Also done when interrupted by SIGWINCH.
 	 */
 	if (WaitForChar(p_ut) == 0)
 	{
 #ifdef FEAT_AUTOCMD
-	    if (has_cursorhold() && get_real_state() == NORMAL_BUSY)
+	    if (!did_cursorhold
+		    && has_cursorhold()
+		    && get_real_state() == NORMAL_BUSY
+		    && maxlen >= 3
+		    && !typebuf_changed(tb_change_cnt))
 	    {
-		apply_autocmds(EVENT_CURSORHOLD, NULL, NULL, FALSE, curbuf);
-		update_screen(VALID);
-		once_already = 1;
-		return 0;
+		buf[0] = K_SPECIAL;
+		buf[1] = KS_EXTRA;
+		buf[2] = (int)KE_CURSORHOLD;
+		return 3;
 	    }
-	    else
 #endif
-		updatescript(0);
+	    updatescript(0);
 	}
     }
 
@@ -418,9 +402,6 @@ mch_inchar(buf, maxlen, wtime, tb_change_cnt)
 	    for (i = 0; i < len; i++)
 		if (buf[i] == 0)
 		    buf[i] = K_NUL;
-#endif
-#ifdef FEAT_AUTOCMD
-	    once_already = 0;
 #endif
 	    return len;
 	}

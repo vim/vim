@@ -21,9 +21,9 @@
 creates a hex dump of a given file or standard input.
 It can also convert a hex dump back to its original binary form.
 Like
-.BR uuencode(1)
+.BR uuencode (1)
 and
-.BR uudecode(1)
+.BR uudecode (1)
 it allows the transmission of binary data in a `mail-safe' ASCII representation,
 but has the advantage of decoding to standard output.
 Moreover, it can be used to perform binary file patching.
@@ -114,19 +114,19 @@ anywhere.
 .TP
 .I \-seek offset
 When used after
-.I \-r
-: revert with
+.IR \-r :
+revert with
 .RI < offset >
 added to file positions found in hexdump.
 .TP
-.I \-s [\+][\-]seek
+.I \-s [+][\-]seek
 start at
 .RI < seek >
 bytes abs. (or rel.) infile offset.
-\fI\+ \fRindicates that the seek is relative to the current stdin file position
+\fI+ fRindicates that the seek is relative to the current stdin file position
 (meaningless when not reading from stdin).  \fI\- \fRindicates that the seek
 should be that many characters from the end of the input (or if combined with
-\fI \+ \fR: before the current stdin file position).
+\fI+\fR: before the current stdin file position).
 Without \-s option, xxd starts at the current file position.
 .TP
 .I \-u
@@ -159,12 +159,12 @@ Note the difference between
 .br
 and
 .br
-\fI% xxd \-i \< file\fR
+\fI% xxd \-i < file\fR
 .PP
 .I xxd \-s \+seek
 may be different from
-.I xxd \-s seek
-, as lseek(2) is used to "rewind" input.  A '+'
+.IR "xxd \-s seek" ,
+as lseek(2) is used to "rewind" input.  A '+'
 makes a difference if the input source is stdin, and if stdin's file position
 is not at the start of the file by the time xxd is started and given its input.
 The following examples may help to clarify (or further confuse!)...
@@ -180,7 +180,7 @@ the 1k where dd left off.
 .br
 \fI% sh \-c 'dd of=plain_snippet bs=1k count=1; xxd \-s +128 > hex_snippet' < file
 .PP
-Hexdump from file position 0x100 ( = 1024-768) on.
+Hexdump from file position 0x100 ( = 1024\-768) on.
 .br
 \fI% sh \-c 'dd of=plain_snippet bs=1k count=1; xxd \-s +-768 > hex_snippet' < file
 .PP

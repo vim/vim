@@ -1372,7 +1372,7 @@ gui_mch_destroy_menu(menu)
 
 	parent = XtParent(menu->id);
 #if defined(FEAT_TOOLBAR) && defined(FEAT_BEVAL)
-	if ((parent == toolBar) && (menu->tip != NULL))
+	if (parent == toolBar && menu->tip != NULL)
 	{
 	    /* We try to destroy this before the actual menu, because there are
 	     * callbacks, etc. that will be unregistered during the tooltip

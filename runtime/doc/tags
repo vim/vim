@@ -6459,6 +6459,7 @@ tag-search	tagsrch.txt	/*tag-search*
 tag-security	tagsrch.txt	/*tag-security*
 tag-skip-file	tagsrch.txt	/*tag-skip-file*
 tag-stack	tagsrch.txt	/*tag-stack*
+taglist()	eval.txt	/*taglist()*
 tags	tagsrch.txt	/*tags*
 tags-and-searches	tagsrch.txt	/*tags-and-searches*
 tags-file-changed	version5.txt	/*tags-file-changed*

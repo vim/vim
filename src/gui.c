@@ -553,11 +553,11 @@ gui_init()
 	balloonEval = gui_mch_create_beval_area(gui.drawarea, NULL,
 						     &general_beval_cb, NULL);
 # else
-#  ifdef FEAT_GUI_MOTIF
+#  if defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)
 	{
 	    extern Widget	textArea;
 	    balloonEval = gui_mch_create_beval_area(textArea, NULL,
-		    &general_beval_cb, NULL);
+						     &general_beval_cb, NULL);
 	}
 #  else
 #   ifdef FEAT_GUI_W32
