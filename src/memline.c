@@ -2462,8 +2462,8 @@ ml_append_int(buf, lnum, line, len, newfile, mark)
     if (usingNetbeans)
     {
 	if (STRLEN(line) > 0)
-	    netbeans_inserted(buf, lnum+1, (colnr_T)0, 0, line, STRLEN(line));
-	netbeans_inserted(buf, lnum+1, (colnr_T)STRLEN(line), 0,
+	    netbeans_inserted(buf, lnum+1, (colnr_T)0, line, STRLEN(line));
+	netbeans_inserted(buf, lnum+1, (colnr_T)STRLEN(line),
 							   (char_u *)"\n", 1);
     }
 #endif
@@ -2500,7 +2500,7 @@ ml_replace(lnum, line, copy)
     if (usingNetbeans)
     {
 	netbeans_removed(curbuf, lnum, 0, (long)STRLEN(ml_get(lnum)));
-	netbeans_inserted(curbuf, lnum, 0, 0, line, STRLEN(line));
+	netbeans_inserted(curbuf, lnum, 0, line, STRLEN(line));
     }
 #endif
     if (curbuf->b_ml.ml_line_lnum != lnum)	    /* other line buffered */
@@ -2605,7 +2605,7 @@ ml_delete_int(buf, lnum, message)
 
 #ifdef FEAT_NETBEANS_INTG
     if (usingNetbeans)
-	netbeans_removed(buf, lnum, 0, line_size);
+	netbeans_removed(buf, lnum, 0, (long)line_size);
 #endif
 
 /*

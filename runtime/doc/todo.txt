@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Oct 12
+*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Oct 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,6 +30,14 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Include NetBeans patches (Gordon Prieur, Oct 20)
+    See two messages for list of changed files.  Additionally:
+	doc/eval.txt
+    Docs for message E680.
+
+Line number not updated when inserting a line in anothe window. (Hitier
+Sylvain, Oct 24)
+
 Aborting at the ATTENTION prompt causes trouble:
     buffer remains active, nwindows isn't closed (fixed in buffer.c)
     alternate buffer gets "read error" flag.
@@ -47,6 +55,8 @@ work. (Valery Kondakoff)
 Solved in os_mswin.c.  Add to 6.3?
 
 Patch for Win32 textdomain: NAKADAIRA Yukihiro, Sept 17.
+
+Handling decimal point on keypad: use MapVirtualKey. (Vince Negri, Oct 20)
 
 Valencia: executable("xxd.exe") returns true while "!xxd" doesn't work.
 Works fine for me.  Only in specific environment?
@@ -76,6 +86,8 @@ Add a function to test if a font name actually works.
 When using "set laststatus=2 cmdheight=2" in the .gvimrc you only get one line
 for the cmdline. (Christian Robinson)  When the Vim window is resized (e.g.,
 xterm with many lines) it's OK.
+
+":e <cfile>" does not expand ~/file, very confusing compared to ":e ~/file".
 
 
 For version 7.0:
@@ -193,11 +205,8 @@ For version 7.0:
 	Also: when the environment variable exists, use it.  If it doesn't
 	exist, set it.  Requires good names: $VIM_USER_VIMRC  $VIM_USER_DIR
 
-xterm title: After setting a title, obtaining the title still may result in
-the old one.  Sometimes happens with the test scripts.  Setting the title is
-done with an ESC sequence, obtaining the old title with an X library call.
-Invoking XFlush() before getting the title doesn't help.
 
+-   Edit same file on Unix and from MS-Windows: no warning for swap file.
 -   In the kvim/KDE source files fix the formatting.
 -   KDE version is called "kvim".  Make it "gvim", like the others?
 -   Better configure check for KDE include files from Dan Sharp.
@@ -233,6 +242,7 @@ Invoking XFlush() before getting the title doesn't help.
 -   "INTELLISENSE".  First cleanup the Insert-mode completion.
 	http://www.vim.org/scripts/script.php?script_id=747
 	http://sourceforge.net/projects/insenvim
+	    of http://insenvim.sourceforge.net
 	http://cedet.sourceforge.net/intellisense.shtml (for Emacs)
 	Ivan Villanueva has something for Java.
     Can't call it Intellisense, it is a trademark by Microsoft.
@@ -250,6 +260,7 @@ Invoking XFlush() before getting the title doesn't help.
     info, make a new branch.
     To navigate through the undo tree number the states of the text
     sequentially and make it possible to go through the tree in that order.
+    Use "g+++" to go forward, "g---" to go backward.  Can mix - and +.
     Could also use timestamps (to show the time and/or jump to a state five
     minutes ago). (David Schweikert)
     To go from one state to another: backtrack to a common state, then forward
@@ -269,7 +280,8 @@ Invoking XFlush() before getting the title doesn't help.
     incompatible change.
 7   Support WINDOW TABS.  Works like several pages, each with their own
     split windows.  Patch for GTK 1.2 from Christian Michon, 2004 Jan 6.
-    Also for the console!
+    Also for the console!  In Emacs these are called frames.
+    Use "1gt" - "99gt" to switch to a tab?
 -   EMBEDDING: Make it possible to run Vim inside a window of another program.
     For Xwindows this can be done with XReparentWindow().
     For GTK Neil Bird has a patch to use Vim like a widget.
@@ -299,6 +311,8 @@ Invoking XFlush() before getting the title doesn't help.
     "foldcolumn". (Benji Fisher, 2004 Jun 21)
 -   FileChangedShellPost autocommand event: after (not) reloading a changed
     file.  Can be used to update statusline oslt.
+-   Running a shell command from the GUI still has limitations.  Look into how
+    the Vim shell project can help: http://vimshell.wana.at
 8   When a file is change outside of Vim and unmodified in Vim there is no
     simple way to automatically reload the file.  Either add an option for
     this or make it simple to have the FileChangedShell invoke the normal
@@ -361,7 +375,7 @@ name. (Charles Campbell)
 
 Add gui_mch_browsedir() for Motif, KDE and Mac OS/X.
 
-Translated manual pages: Install German one in /usr/local/man/de/man1/vim.1
+Install vim-it.1 manual page in .../man/it/man1/vim.1
 
 
 Vi incompatibility:
@@ -1014,6 +1028,9 @@ Macintosh:
 8   For xterm need to open a connection to the X server to get the window
     title, which can be slow.  Can also get the title with "<Esc>[21t", no
     need to use X11 calls.  This returns "<Esc>]l{title}<Esc>\".
+6   When the xterm reports the number of colors, a redraw occurs.  This is
+    annoying on a slow connection.  Wait for the xterm to report the number of
+    colors before drawing the screen.  With a timeout.
 8   When the builtin xterm termcap contains codes that are not wanted, need a
     way to avoid using the builtin termcap.
 8   Xterm sends ^[[H for <Home> and ^[[F for <End> in some mode.  Also
@@ -1108,6 +1125,12 @@ I can't reproduce these (if you can, let me know how!):
 
 
 Problems that will (probably) not be solved:
+-   xterm title: The following scenario may occur (esp. when running the Vim
+    test script): Vim 1 sets the title to "file1", then restores the title to
+    "xterm" when exiting with an ESC sequence.  Vim 2 obtains the old title
+    with an X library call, this may result in "file1", because the window
+    manager hasn't processed the "xterm" title yet.  Can apparently only be
+    worked around with a delay.
 -   In a terminal with 'mouse' set such that the mouse is active when entering
     a command line, after executing a shell command that scrolls up the
     display and then pressing ":": Selecting text with the mouse works like

@@ -5571,6 +5571,10 @@ f_has(argvars, retvar)
 	else if (STRICMP(name, "win95") == 0)
 	    n = mch_windows95();
 #endif
+#ifdef FEAT_NETBEANS_INTG
+	else if (STRICMP(name, "netbeans_enabled") == 0)
+	    n = usingNetbeans;
+#endif
     }
 
     retvar->var_val.var_number = n;

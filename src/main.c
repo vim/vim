@@ -1255,6 +1255,20 @@ scripterror:
 #endif
 	    )
     {
+#ifdef NBDEBUG
+	/*
+	 * This shouldn't be necessary. But if I run netbeans with the log
+	 * output coming to the console and XOpenDisplay fails, I get vim
+	 * trying to start with input/output to my console tty.  This fills my
+	 * input buffer so fast I can't even kill the process in under 2
+	 * minutes (and it beeps continuosly the whole time :-)
+	 */
+	if (usingNetbeans && (!stdout_isatty || !input_isatty))
+	{
+	    mch_errmsg(_("Vim: Error: Failure to start gvim from NetBeans\n"));
+	    exit(1);
+	}
+#endif
 	if (!stdout_isatty)
 	    mch_errmsg(_("Vim: Warning: Output is not to a terminal\n"));
 	if (!input_isatty)

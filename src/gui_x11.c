@@ -1540,10 +1540,6 @@ gui_mch_init()
     if (usingSunWorkShop)
 	workshop_connect(app_context);
 #endif
-#ifdef FEAT_NETBEANS_INTG
-    if (usingNetbeans)
-	netbeans_Xt_connect(app_context);
-#endif
 
 #ifdef FEAT_BEVAL
     gui_init_tooltip_font();

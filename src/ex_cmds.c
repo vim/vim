@@ -3208,8 +3208,8 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags)
 	    workshop_file_opened((char *)curbuf->b_ffname, curbuf->b_p_ro);
 # endif
 # ifdef FEAT_NETBEANS_INTG
-	if (usingNetbeans)
-	    netbeans_file_opened((char *)curbuf->b_ffname);
+	if (usingNetbeans & ((flags & ECMD_SET_HELP) != ECMD_SET_HELP))
+	    netbeans_file_opened(curbuf);
 # endif
     }
 #endif

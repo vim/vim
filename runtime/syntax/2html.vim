@@ -1,6 +1,6 @@
 " Vim syntax support file
 " Maintainer: Bram Moolenaar <Bram@vim.org>
-" Last Change: 2004 Oct 12
+" Last Change: 2004 Oct 15
 "	       (modified by David Ne\v{c}as (Yeti) <yeti@physics.muni.cz>)
 "	       (XHTML support by Panagiotis Issaris <takis@lumumba.luc.ac.be>)
 
@@ -103,6 +103,32 @@ if !exists("html_use_css")
   endfun
 endif
 
+" Return HTML valid characters enclosed in a span of class style_name with
+" unprintable characters expanded and double spaces replaced as necessary.
+function! s:HtmlFormat(text, style_name)
+  " Replace unprintable characters
+  let formatted = strtrans(a:text)
+
+  " Replace the reserved html characters
+  let formatted = substitute(substitute(substitute(substitute(substitute(formatted, '&', '\&amp;', 'g'), '<', '\&lt;', 'g'), '>', '\&gt;', 'g'), '"', '\&quot;', 'g'), "\x0c", '<hr class="PAGE-BREAK">', 'g')
+  
+  " Replace double spaces
+  if ' ' != s:HtmlSpace 
+    let formatted = substitute(formatted, '  ', s:HtmlSpace . s:HtmlSpace, 'g')
+  endif
+
+  " Enclose in a span of class style_name
+  let formatted = '<span class="' . a:style_name . '">' . formatted . '</span>'
+
+  " Add the class to class list if it's not there yet
+  let s:id = hlID(a:style_name)
+  if stridx(s:idlist, "," . s:id . ",") == -1
+    let s:idlist = s:idlist . s:id . ","
+  endif
+
+  return formatted
+endfun
+
 " Return CSS style describing given highlight id (can be empty)
 function! s:CSS1(id)
   let a = ""
@@ -157,7 +183,6 @@ endif
 
 
 " Set some options to make it work faster.
-" Expand tabs in original buffer to get 'tabstop' correctly used.
 " Don't report changes for :substitute, there will be many of them.
 let s:old_title = &title
 let s:old_icon = &icon
@@ -187,18 +212,29 @@ set magic
 
 if exists("use_xhtml")
   exe "normal! a<?xml version=\"1.0\"?>\n\e"
-  let tag_close = '/>'
+  let s:tag_close = '/>'
 else
-  let tag_close = '>'
+  let s:tag_close = '>'
+endif
+
+let s:HtmlSpace = ' '
+let s:HtmlEndline = ''
+if exists("html_no_pre")
+  let s:HtmlEndline = '<br' . s:tag_close
+  if exists("use_xhtml")
+    let s:HtmlSpace = '\&#x20;'
+  else
+    let s:HtmlSpace = '\&nbsp;'
+  endif
 endif
 
 " HTML header, with the title and generator ;-). Left free space for the CSS,
 " to be filled at the end.
 exe "normal! a<html>\n<head>\n<title>\e"
 exe "normal! a" . expand("%:p:~") . "</title>\n\e"
-exe "normal! a<meta name=\"Generator\" content=\"Vim/" . v:version/100 . "." . v:version %100 . '"' . tag_close . "\n\e"
+exe "normal! a<meta name=\"Generator\" content=\"Vim/" . v:version/100 . "." . v:version %100 . '"' . s:tag_close . "\n\e"
 if s:html_encoding != ""
-  exe "normal! a<meta http-equiv=\"content-type\" content=\"text/html; charset=" . s:html_encoding . '"' . tag_close . "\n\e"
+  exe "normal! a<meta http-equiv=\"content-type\" content=\"text/html; charset=" . s:html_encoding . '"' . s:tag_close . "\n\e"
 endif
 if exists("html_use_css")
   exe "normal! a<style type=\"text/css\">\n<!--\n-->\n</style>\n\e"
@@ -213,11 +249,6 @@ exe s:orgwin . "wincmd w"
 
 " List of all id's
 let s:idlist = ","
-
-let s:expandedtab = ' '
-while strlen(s:expandedtab) < &ts
-  let s:expandedtab = s:expandedtab . ' '
-endwhile
 
 " Loop over all lines in the original text.
 " Use html_start_line and html_end_line if they are set.
@@ -238,34 +269,17 @@ else
   let s:end = line("$")
 endif
 
-" Closed folds are kept in the HTML.  Prepare the closed fold template text.
 if has('folding')
-  let s:c = &fillchars[matchend(&fillchars, 'fold:')]
-  if s:c == ''
-    let s:c = '-'
+  let s:foldfillchar = &fillchars[matchend(&fillchars, 'fold:')]
+  if s:foldfillchar == ''
+    let s:foldfillchar = '-'
   endif
-  let s:htmlfoldtext = '+' . s:c
-  while strlen(s:htmlfoldtext) < &columns
-      let s:htmlfoldtext = s:htmlfoldtext . s:c
-  endwhile
-  unlet s:c
+endif
+let s:difffillchar = &fillchars[matchend(&fillchars, 'diff:')]
+if s:difffillchar == ''
+  let s:difffillchar = '-'
 endif
 
-" For diff filler lines
-if has('diff')
-  if s:numblines
-    let s:fillerline = strpart('        ', 0, strlen(line("$"))) . ' '
-  else
-    let s:fillerline = ''
-  endif
-  let s:fillchar = &fillchars[matchend(&fillchars, 'diff:')]
-  if s:fillchar == ''
-    let s:fillchar = '-'
-  endif
-  while strlen(s:fillerline) < &columns
-      let s:fillerline = s:fillerline . s:fillchar
-  endwhile
-endif
 
 while s:lnum <= s:end
 
@@ -274,24 +288,28 @@ while s:lnum <= s:end
   if s:filler > 0
     let s:n = s:filler
     while s:n > 0
-      if s:n > 2 && s:n < s:filler && !exists("html_whole_filler")
-	let s:new = strpart(s:fillerline, 0, 3) . " " . s:filler . " inserted lines "
-	let s:new = s:new . strpart(s:fillerline, strlen(s:new))
-	let s:n = 2
+      if s:numblines
+        " Indent if line numbering is on
+        let s:new = repeat(' ', strlen(s:end) + 1) . repeat(s:difffillchar, 3)
       else
-	let s:new = s:fillerline
-      endif
-      let s:id_name = "DiffDelete"
-      let s:id = hlID(s:id_name)
-      let s:new = '<span class="' . s:id_name . '">' . s:new . '</span>'
-      " Add the class to class list if it's not there yet
-      if stridx(s:idlist, "," . s:id . ",") == -1
-	let s:idlist = s:idlist . s:id . ","
+        let s:new = repeat(s:difffillchar, 3)
       endif
 
+      if s:n > 2 && s:n < s:filler && !exists("html_whole_filler")
+	let s:new = s:new . " " . s:filler . " inserted lines "
+	let s:n = 2
+      endif
+
+      if !exists("html_no_pre")
+        " HTML line wrapping is off--go ahead and fill to the margin
+        let s:new = s:new . repeat(s:difffillchar, &columns - strlen(s:new))
+      endif
+
+      let s:new = s:HtmlFormat(s:new, "DiffDelete")
       exe s:newwin . "wincmd w"
-      exe "normal! a" . strtrans(s:new) . "\n\e"
+      exe "normal! a" . s:new . s:HtmlEndline . "\n\e"
       exe s:orgwin . "wincmd w"
+
       let s:n = s:n - 1
     endwhile
     unlet s:n
@@ -300,35 +318,22 @@ while s:lnum <= s:end
 
   " Start the line with the line number.
   if s:numblines
-    let s:new = strpart('        ', 0, strlen(line("$")) - strlen(s:lnum)) . s:lnum . ' '
+    let s:new = repeat(' ', strlen(s:end) - strlen(s:lnum)) . s:lnum . ' '
   else
     let s:new = ""
   endif
-
-  " Get the current line
-  let s:line = getline(s:lnum)
 
   if has('folding') && foldclosed(s:lnum) > -1
     "
     " This is the beginning of a folded block
     "
-    let s:line = foldtextresult(s:lnum)
-
-    let s:new = s:new . s:line
+    let s:new = s:new . foldtextresult(s:lnum)
     if !exists("html_no_pre")
-      let s:new = s:new . strpart(s:htmlfoldtext, strlen(s:new))
+      " HTML line wrapping is off--go ahead and fill to the margin
+      let s:new = s:new . repeat(s:foldfillchar, &columns - strlen(s:new))
     endif
     
-    " Replace the reserved html characters
-    let s:new = substitute(substitute(substitute(substitute(substitute(s:new, '&', '\&amp;', 'g'), '<', '\&lt;', 'g'), '>', '\&gt;', 'g'), '"', '\&quot;', 'g'), "\x0c", '<hr class="PAGE-BREAK">', 'g')
-   
-    let s:id_name = "Folded"
-    let s:id = hlID(s:id_name)
-    let s:new = '<span class="' . s:id_name . '">' . s:new . '</span>'
-    " Add the class to class list if it's not there yet
-    if stridx(s:idlist, "," . s:id . ",") == -1
-      let s:idlist = s:idlist . s:id . ","
-    endif
+    let s:new = s:HtmlFormat(s:new, "Folded")
 
     " Skip to the end of the fold  
     let s:lnum = foldclosedend(s:lnum)
@@ -337,10 +342,12 @@ while s:lnum <= s:end
     "
     " A line that is not folded.
     "
+    let s:line = getline(s:lnum)
+
     let s:len = strlen(s:line)
 
     if s:numblines
-      let s:new = '<span class="lnr">' . s:new . '</span>  '
+      let s:new = '<span class="lnr">' . s:new . '</span>'
     endif
 
     " Get the diff attribute, if any.
@@ -348,7 +355,7 @@ while s:lnum <= s:end
 
     " Loop over each character in the line
     let s:col = 1
-    while s:col <= s:len
+    while s:col <= s:len || (s:col == 1 && s:diffattr)
       let s:startcol = s:col " The start column for processing text
       if s:diffattr
 	let s:id = diff_hlID(s:lnum, s:col)
@@ -356,11 +363,11 @@ while s:lnum <= s:end
 	" Speed loop (it's small - that's the trick)
 	" Go along till we find a change in hlID
 	while s:col <= s:len && s:id == diff_hlID(s:lnum, s:col) | let s:col = s:col + 1 | endwhile
-	while s:len < &columns
+        if s:len < &columns && !exists("html_no_pre")
 	  " Add spaces at the end to mark the changed line.
-	  let s:line = s:line . ' '
-	  let s:len = s:len + 1
-	endwhile
+          let s:line = s:line . repeat(' ', &columns - s:len)
+          let s:len = &columns
+        endif
       else
 	let s:id = synID(s:lnum, s:col, 1)
 	let s:col = s:col + 1
@@ -369,42 +376,24 @@ while s:lnum <= s:end
 	while s:col <= s:len && s:id == synID(s:lnum, s:col, 1) | let s:col = s:col + 1 | endwhile
       endif
 
+      " Expand tabs
+      let s:expandedtab = strpart(s:line, s:startcol - 1, s:col - s:startcol)
+      let idx = stridx(s:expandedtab, "\t")
+      while idx >= 0
+        let i = &ts - ((idx + s:startcol - 1) % &ts)
+        let s:expandedtab = substitute(s:expandedtab, '\t', repeat(' ', i), '')
+        let idx = stridx(s:expandedtab, "\t")
+      endwhile
+
       " Output the text with the same synID, with class set to {s:id_name}
       let s:id = synIDtrans(s:id)
       let s:id_name = synIDattr(s:id, "name", s:whatterm)
-      let s:new = s:new . '<span class="' . s:id_name . '">' . substitute(substitute(substitute(substitute(substitute(strpart(s:line, s:startcol - 1, s:col - s:startcol), '&', '\&amp;', 'g'), '<', '\&lt;', 'g'), '>', '\&gt;', 'g'), '"', '\&quot;', 'g'), "\x0c", '<hr class="PAGE-BREAK">', 'g') . '</span>'
-      " Add the class to class list if it's not there yet
-      if stridx(s:idlist, "," . s:id . ",") == -1
-	let s:idlist = s:idlist . s:id . ","
-      endif
-
-      if s:col > s:len
-	break
-      endif
+      let s:new = s:new . s:HtmlFormat(s:expandedtab,  s:id_name)
     endwhile
   endif
 
-  " Expand tabs
-  let s:pad=0
-  let s:start = 0
-  let s:idx = stridx(s:line, "\t")
-  while s:idx >= 0
-    let s:i = &ts - ((s:start + s:pad + s:idx) % &ts)
-    let s:new = substitute(s:new, '\t', strpart(s:expandedtab, 0, s:i), '')
-    let s:pad = s:pad + s:i - 1
-    let s:start = s:start + s:idx + 1
-    let s:idx = stridx(strpart(s:line, s:start), "\t")
-  endwhile
-
-  if exists("html_no_pre")
-    if exists("use_xhtml")
-      let s:new = substitute(s:new, '  ', '\&#x20;\&#x20;', 'g') . '<br/>'
-    else
-      let s:new = substitute(s:new, '  ', '\&nbsp;\&nbsp;', 'g') . '<br>'
-    endif
-  endif
   exe s:newwin . "wincmd w"
-  exe "normal! a" . strtrans(s:new) . "\n\e"
+  exe "normal! a" . s:new . s:HtmlEndline . "\n\e"
   exe s:orgwin . "wincmd w"
   let s:lnum = s:lnum + 1
   +
@@ -488,7 +477,7 @@ while s:idlist != ""
 endwhile
 
 " Add hyperlinks
-%s+\(http://\S\{-}\)\(\([.,;:}]\=\(\s\|$\)\)\|[\\"'<>]\|&gt;\|&lt;\)+<A HREF="\1">\1</A>\2+ge
+%s+\(http://\S\{-}\)\(\([.,;:}]\=\(\s\|$\)\)\|[\\"'<>]\|&gt;\|&lt;\|&quot;\)+<A HREF="\1">\1</A>\2+ge
 
 " The DTD
 if exists("html_use_css")
@@ -512,12 +501,13 @@ exe s:newwin . "wincmd w"
 " Save a little bit of memory (worth doing?)
 unlet s:old_et s:old_paste s:old_icon s:old_report s:old_title s:old_search
 unlet s:whatterm s:idlist s:lnum s:end s:fgc s:bgc s:old_magic
-unlet! s:col s:id s:attr s:len s:line s:new s:did_retab s:numblines
+unlet! s:col s:id s:attr s:len s:line s:new s:expandedtab s:numblines
 unlet s:orgwin s:newwin s:orgbufnr
 delfunc s:HtmlColor
+delfunc s:HtmlFormat
 delfunc s:CSS1
 if !exists("html_use_css")
   delfunc s:HtmlOpening
   delfunc s:HtmlClosing
 endif
-silent! unlet s:htmlfoldtext s:fillerline s:diffattr
+silent! unlet s:diffattr s:difffillchar s:foldfillchar s:HtmlSpace s:HtmlEndline

@@ -3309,11 +3309,6 @@ gui_mch_init(void)
     /* Pretend we don't have input focus, we will get an event if we do. */
     gui.in_focus = FALSE;
 
-#ifdef FEAT_NETBEANS_INTG
-    if (usingNetbeans)
-	netbeans_gtk_connect();
-# endif
-
     return OK;
 }
 
