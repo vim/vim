@@ -395,39 +395,58 @@ transstr(s)
 #if defined(FEAT_SYN_HL) || defined(FEAT_INS_EXPAND) || defined(PROTO)
 /*
  * Convert the string "p[len]" to do ignore-case comparing.  Uses the current
- * locale.  Returns an allocated string (NULL for out-of-memory).
+ * locale.
+ * When "buf" is NULL returns an allocated string (NULL for out-of-memory).
+ * Otherwise puts the result in "buf[buflen]".
  */
     char_u *
-str_foldcase(str, len)
+str_foldcase(str, orglen, buf, buflen)
     char_u	*str;
-    int		len;
+    int		orglen;
+    char_u	*buf;
+    int		buflen;
 {
     garray_T	ga;
     int		i;
+    int		len = orglen;
 
 #define GA_CHAR(i)  ((char_u *)ga.ga_data)[i]
 #define GA_PTR(i)   ((char_u *)ga.ga_data + i)
+#define STR_CHAR(i)  (buf == NULL ? GA_CHAR(i) : buf[i])
+#define STR_PTR(i)   (buf == NULL ? GA_PTR(i) : buf + i)
 
-    /* Copy "str" into allocated memory, unmodified. */
-    ga_init2(&ga, 1, 10);
-    if (ga_grow(&ga, len + 1) == FAIL)
-	return NULL;
-    mch_memmove(ga.ga_data, str, (size_t)len);
-    GA_CHAR(len) = NUL;
-    ga.ga_len = len;
+    /* Copy "str" into "buf" or allocated memory, unmodified. */
+    if (buf == NULL)
+    {
+	ga_init2(&ga, 1, 10);
+	if (ga_grow(&ga, len + 1) == FAIL)
+	    return NULL;
+	mch_memmove(ga.ga_data, str, (size_t)len);
+	ga.ga_len = len;
+    }
+    else
+    {
+	if (len >= buflen)	    /* Ugly! */
+	    len = buflen - 1;
+	mch_memmove(buf, str, (size_t)len);
+    }
+    if (buf == NULL)
+	GA_CHAR(len) = NUL;
+    else
+	buf[len] = NUL;
 
     /* Make each character lower case. */
     i = 0;
-    while (GA_CHAR(i) != NUL)
+    while (STR_CHAR(i) != NUL)
     {
 #ifdef FEAT_MBYTE
-	if (enc_utf8 || (has_mbyte && MB_BYTE2LEN(GA_CHAR(i)) > 1))
+	if (enc_utf8 || (has_mbyte && MB_BYTE2LEN(STR_CHAR(i)) > 1))
 	{
 	    if (enc_utf8)
 	    {
 		int	c, lc;
 
-		c = utf_ptr2char(GA_PTR(i));
+		c = utf_ptr2char(STR_PTR(i));
 		lc = utf_tolower(c);
 		if (c != lc)
 		{
@@ -439,34 +458,51 @@ str_foldcase(str, len)
 		    if (ol != nl)
 		    {
 			if (nl > ol)
-			    if (ga_grow(&ga, nl - ol) == FAIL)
+			{
+			    if (buf == NULL ? ga_grow(&ga, nl - ol + 1) == FAIL
+						    : len + nl - ol >= buflen)
 			    {
 				/* out of memory, keep old char */
 				lc = c;
 				nl = ol;
 			    }
+			}
 			if (ol != nl)
 			{
-			    mch_memmove(GA_PTR(i) + nl, GA_PTR(i) + ol,
+			    if (buf == NULL)
+			    {
+				mch_memmove(GA_PTR(i) + nl, GA_PTR(i) + ol,
 						  STRLEN(GA_PTR(i) + ol) + 1);
-			    ga.ga_len += nl - ol;
+				ga.ga_len += nl - ol;
+			    }
+			    else
+			    {
+				mch_memmove(buf + i + nl, buf + i + ol,
+						    STRLEN(buf + i + ol) + 1);
+				len += nl - ol;
+			    }
 			}
 		    }
-		    (void)utf_char2bytes(lc, GA_PTR(i));
+		    (void)utf_char2bytes(lc, STR_PTR(i));
 		}
 	    }
 	    /* skip to next multi-byte char */
-	    i += (*mb_ptr2len_check)(GA_PTR(i));
+	    i += (*mb_ptr2len_check)(STR_PTR(i));
 	}
 	else
 #endif
 	{
-	    GA_CHAR(i) = TOLOWER_LOC(GA_CHAR(i));
+	    if (buf == NULL)
+		GA_CHAR(i) = TOLOWER_LOC(GA_CHAR(i));
+	    else
+		buf[i] = TOLOWER_LOC(buf[i]);
 	    ++i;
 	}
     }
 
-    return (char_u *)ga.ga_data;
+    if (buf == NULL)
+	return (char_u *)ga.ga_data;
+    return buf;
 }
 #endif
 
