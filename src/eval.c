@@ -109,6 +109,7 @@ static char *e_listidx = N_("E999: list index out of range: %ld");
 static char *e_undefvar = N_("E121: Undefined variable: %s");
 static char *e_missbrac = N_("E111: Missing ']'");
 static char *e_intern2 = N_("E999: Internal error: %s");
+static char *e_listarg = N_("E999: Argument of %s must be a list");
 
 /*
  * All user-defined global variables are stored in "variables".
@@ -338,17 +339,17 @@ static int find_internal_func __ARGS((char_u *name));
 static char_u *deref_func_name __ARGS((char_u *name, int *lenp));
 static int get_func_tv __ARGS((char_u *name, int len, typeval *rettv, char_u **arg, linenr_T firstline, linenr_T lastline, int *doesrange, int evaluate));
 static int call_func __ARGS((char_u *name, int len, typeval *rettv, int argcount, typeval *argvars, linenr_T firstline, linenr_T lastline, int *doesrange, int evaluate));
+
+static void f_add __ARGS((typeval *argvars, typeval *rettv));
 static void f_append __ARGS((typeval *argvars, typeval *rettv));
 static void f_argc __ARGS((typeval *argvars, typeval *rettv));
 static void f_argidx __ARGS((typeval *argvars, typeval *rettv));
 static void f_argv __ARGS((typeval *argvars, typeval *rettv));
 static void f_browse __ARGS((typeval *argvars, typeval *rettv));
 static void f_browsedir __ARGS((typeval *argvars, typeval *rettv));
-static buf_T *find_buffer __ARGS((typeval *avar));
 static void f_bufexists __ARGS((typeval *argvars, typeval *rettv));
 static void f_buflisted __ARGS((typeval *argvars, typeval *rettv));
 static void f_bufloaded __ARGS((typeval *argvars, typeval *rettv));
-static buf_T *get_buf_tv __ARGS((typeval *tv));
 static void f_bufname __ARGS((typeval *argvars, typeval *rettv));
 static void f_bufnr __ARGS((typeval *argvars, typeval *rettv));
 static void f_bufwinnr __ARGS((typeval *argvars, typeval *rettv));
@@ -378,16 +379,15 @@ static void f_filereadable __ARGS((typeval *argvars, typeval *rettv));
 static void f_filewritable __ARGS((typeval *argvars, typeval *rettv));
 static void f_finddir __ARGS((typeval *argvars, typeval *rettv));
 static void f_findfile __ARGS((typeval *argvars, typeval *rettv));
-static void f_findfilendir __ARGS((typeval *argvars, typeval *rettv, int dir));
 static void f_fnamemodify __ARGS((typeval *argvars, typeval *rettv));
 static void f_foldclosed __ARGS((typeval *argvars, typeval *rettv));
 static void f_foldclosedend __ARGS((typeval *argvars, typeval *rettv));
-static void foldclosed_both __ARGS((typeval *argvars, typeval *rettv, int end));
 static void f_foldlevel __ARGS((typeval *argvars, typeval *rettv));
 static void f_foldtext __ARGS((typeval *argvars, typeval *rettv));
 static void f_foldtextresult __ARGS((typeval *argvars, typeval *rettv));
 static void f_foreground __ARGS((typeval *argvars, typeval *rettv));
 static void f_function __ARGS((typeval *argvars, typeval *rettv));
+static void f_get __ARGS((typeval *argvars, typeval *rettv));
 static void f_getbufvar __ARGS((typeval *argvars, typeval *rettv));
 static void f_getchar __ARGS((typeval *argvars, typeval *rettv));
 static void f_getcharmod __ARGS((typeval *argvars, typeval *rettv));
@@ -413,31 +413,29 @@ static void f_histadd __ARGS((typeval *argvars, typeval *rettv));
 static void f_histdel __ARGS((typeval *argvars, typeval *rettv));
 static void f_histget __ARGS((typeval *argvars, typeval *rettv));
 static void f_histnr __ARGS((typeval *argvars, typeval *rettv));
-static void f_hlexists __ARGS((typeval *argvars, typeval *rettv));
 static void f_hlID __ARGS((typeval *argvars, typeval *rettv));
+static void f_hlexists __ARGS((typeval *argvars, typeval *rettv));
 static void f_hostname __ARGS((typeval *argvars, typeval *rettv));
 static void f_iconv __ARGS((typeval *argvars, typeval *rettv));
 static void f_indent __ARGS((typeval *argvars, typeval *rettv));
-static void f_insert __ARGS((typeval *argvars, typeval *rettv));
-static void f_isdirectory __ARGS((typeval *argvars, typeval *rettv));
 static void f_index __ARGS((typeval *argvars, typeval *rettv));
 static void f_input __ARGS((typeval *argvars, typeval *rettv));
 static void f_inputdialog __ARGS((typeval *argvars, typeval *rettv));
 static void f_inputrestore __ARGS((typeval *argvars, typeval *rettv));
 static void f_inputsave __ARGS((typeval *argvars, typeval *rettv));
 static void f_inputsecret __ARGS((typeval *argvars, typeval *rettv));
+static void f_insert __ARGS((typeval *argvars, typeval *rettv));
+static void f_isdirectory __ARGS((typeval *argvars, typeval *rettv));
 static void f_last_buffer_nr __ARGS((typeval *argvars, typeval *rettv));
 static void f_len __ARGS((typeval *argvars, typeval *rettv));
 static void f_libcall __ARGS((typeval *argvars, typeval *rettv));
 static void f_libcallnr __ARGS((typeval *argvars, typeval *rettv));
-static void libcall_common __ARGS((typeval *argvars, typeval *rettv, int type));
 static void f_line __ARGS((typeval *argvars, typeval *rettv));
 static void f_line2byte __ARGS((typeval *argvars, typeval *rettv));
 static void f_lispindent __ARGS((typeval *argvars, typeval *rettv));
 static void f_localtime __ARGS((typeval *argvars, typeval *rettv));
 static void f_maparg __ARGS((typeval *argvars, typeval *rettv));
 static void f_mapcheck __ARGS((typeval *argvars, typeval *rettv));
-static void get_maparg __ARGS((typeval *argvars, typeval *rettv, int exact));
 static void f_match __ARGS((typeval *argvars, typeval *rettv));
 static void f_matchend __ARGS((typeval *argvars, typeval *rettv));
 static void f_matchstr __ARGS((typeval *argvars, typeval *rettv));
@@ -445,40 +443,43 @@ static void f_mode __ARGS((typeval *argvars, typeval *rettv));
 static void f_nextnonblank __ARGS((typeval *argvars, typeval *rettv));
 static void f_nr2char __ARGS((typeval *argvars, typeval *rettv));
 static void f_prevnonblank __ARGS((typeval *argvars, typeval *rettv));
-static void f_setbufvar __ARGS((typeval *argvars, typeval *rettv));
-static void f_setcmdpos __ARGS((typeval *argvars, typeval *rettv));
-static void f_setwinvar __ARGS((typeval *argvars, typeval *rettv));
-static void f_remove __ARGS((typeval *argvars, typeval *rettv));
-static void f_rename __ARGS((typeval *argvars, typeval *rettv));
-static void f_repeat __ARGS((typeval *argvars, typeval *rettv));
-static void f_resolve __ARGS((typeval *argvars, typeval *rettv));
-static void f_search __ARGS((typeval *argvars, typeval *rettv));
-static void f_searchpair __ARGS((typeval *argvars, typeval *rettv));
-static int get_search_arg __ARGS((typeval *varp, int *flagsp));
 static void f_remote_expr __ARGS((typeval *argvars, typeval *rettv));
 static void f_remote_foreground __ARGS((typeval *argvars, typeval *rettv));
 static void f_remote_peek __ARGS((typeval *argvars, typeval *rettv));
 static void f_remote_read __ARGS((typeval *argvars, typeval *rettv));
 static void f_remote_send __ARGS((typeval *argvars, typeval *rettv));
+static void f_remove __ARGS((typeval *argvars, typeval *rettv));
+static void f_rename __ARGS((typeval *argvars, typeval *rettv));
+static void f_repeat __ARGS((typeval *argvars, typeval *rettv));
+static void f_resolve __ARGS((typeval *argvars, typeval *rettv));
+static void f_reverse __ARGS((typeval *argvars, typeval *rettv));
+static void f_search __ARGS((typeval *argvars, typeval *rettv));
+static void f_searchpair __ARGS((typeval *argvars, typeval *rettv));
 static void f_server2client __ARGS((typeval *argvars, typeval *rettv));
 static void f_serverlist __ARGS((typeval *argvars, typeval *rettv));
+static void f_setbufvar __ARGS((typeval *argvars, typeval *rettv));
+static void f_setcmdpos __ARGS((typeval *argvars, typeval *rettv));
 static void f_setline __ARGS((typeval *argvars, typeval *rettv));
 static void f_setreg __ARGS((typeval *argvars, typeval *rettv));
+static void f_setwinvar __ARGS((typeval *argvars, typeval *rettv));
 static void f_simplify __ARGS((typeval *argvars, typeval *rettv));
-static void find_some_match __ARGS((typeval *argvars, typeval *rettv, int start));
+static void f_sort __ARGS((typeval *argvars, typeval *rettv));
+static void f_str2list __ARGS((typeval *argvars, typeval *rettv));
+#ifdef HAVE_STRFTIME
 static void f_strftime __ARGS((typeval *argvars, typeval *rettv));
+#endif
 static void f_stridx __ARGS((typeval *argvars, typeval *rettv));
 static void f_string __ARGS((typeval *argvars, typeval *rettv));
 static void f_strlen __ARGS((typeval *argvars, typeval *rettv));
 static void f_strpart __ARGS((typeval *argvars, typeval *rettv));
 static void f_strridx __ARGS((typeval *argvars, typeval *rettv));
 static void f_strtrans __ARGS((typeval *argvars, typeval *rettv));
+static void f_submatch __ARGS((typeval *argvars, typeval *rettv));
+static void f_substitute __ARGS((typeval *argvars, typeval *rettv));
 static void f_synID __ARGS((typeval *argvars, typeval *rettv));
 static void f_synIDattr __ARGS((typeval *argvars, typeval *rettv));
 static void f_synIDtrans __ARGS((typeval *argvars, typeval *rettv));
 static void f_system __ARGS((typeval *argvars, typeval *rettv));
-static void f_submatch __ARGS((typeval *argvars, typeval *rettv));
-static void f_substitute __ARGS((typeval *argvars, typeval *rettv));
 static void f_tempname __ARGS((typeval *argvars, typeval *rettv));
 static void f_tolower __ARGS((typeval *argvars, typeval *rettv));
 static void f_toupper __ARGS((typeval *argvars, typeval *rettv));
@@ -493,6 +494,7 @@ static void f_winline __ARGS((typeval *argvars, typeval *rettv));
 static void f_winnr __ARGS((typeval *argvars, typeval *rettv));
 static void f_winrestcmd __ARGS((typeval *argvars, typeval *rettv));
 static void f_winwidth __ARGS((typeval *argvars, typeval *rettv));
+
 static win_T *find_win_by_nr __ARGS((typeval *vp));
 static pos_T *var2fpos __ARGS((typeval *varp, int lnum));
 static int get_env_len __ARGS((char_u **arg));
@@ -3251,6 +3253,7 @@ eval_index(arg, rettv, evaluate)
 		    clear_tv(rettv);
 		    rettv->v_type = VAR_LIST;
 		    rettv->vval.v_list = l;
+		    ++l->lv_refcount;
 		}
 		else
 		{
@@ -4143,6 +4146,7 @@ static struct fst
 				/* implemenation of function */
 } functions[] =
 {
+    {"add",		2, 2, f_add},
     {"append",		2, 2, f_append},
     {"argc",		0, 0, f_argc},
     {"argidx",		0, 0, f_argidx},
@@ -4193,6 +4197,7 @@ static struct fst
     {"foldtextresult",	1, 1, f_foldtextresult},
     {"foreground",	0, 0, f_foreground},
     {"function",	1, 1, f_function},
+    {"get",		2, 3, f_get},
     {"getbufvar",	2, 2, f_getbufvar},
     {"getchar",		0, 1, f_getchar},
     {"getcharmod",	0, 0, f_getcharmod},
@@ -4204,7 +4209,7 @@ static struct fst
     {"getfsize",	1, 1, f_getfsize},
     {"getftime",	1, 1, f_getftime},
     {"getftype",	1, 1, f_getftype},
-    {"getline",		1, 1, f_getline},
+    {"getline",		1, 2, f_getline},
     {"getreg",		0, 1, f_getreg},
     {"getregtype",	0, 1, f_getregtype},
     {"getwinposx",	0, 0, f_getwinposx},
@@ -4259,6 +4264,7 @@ static struct fst
     {"rename",		2, 2, f_rename},
     {"repeat",		2, 2, f_repeat},
     {"resolve",		1, 1, f_resolve},
+    {"reverse",		1, 1, f_reverse},
     {"search",		1, 2, f_search},
     {"searchpair",	3, 5, f_searchpair},
     {"server2client",	2, 2, f_server2client},
@@ -4269,6 +4275,8 @@ static struct fst
     {"setreg",		2, 3, f_setreg},
     {"setwinvar",	3, 3, f_setwinvar},
     {"simplify",	1, 1, f_simplify},
+    {"sort",		1, 2, f_sort},
+    {"str2list",	1, 2, f_str2list},
 #ifdef HAVE_STRFTIME
     {"strftime",	1, 2, f_strftime},
 #endif
@@ -4669,15 +4677,13 @@ call_func(name, len, rettv, argcount, argvars, firstline, lastline,
  */
 
 /*
- * "append(lnum, string)" function
- * or "append(list, item)" function
+ * "add(list, item)" function
  */
     static void
-f_append(argvars, rettv)
+f_add(argvars, rettv)
     typeval	*argvars;
     typeval	*rettv;
 {
-    long	lnum;
     listvar	*l;
 
     rettv->vval.v_number = 1; /* Default: Failed */
@@ -4685,24 +4691,58 @@ f_append(argvars, rettv)
     {
 	l = argvars[0].vval.v_list;
 	if (l != NULL && list_append_tv(l, &argvars[1]) == OK)
-	{
-	    ++l->lv_refcount;
 	    copy_tv(&argvars[0], rettv);
-	}
     }
     else
+	EMSG(_(e_listreq));
+}
+
+/*
+ * "append(lnum, string/list)" function
+ */
+    static void
+f_append(argvars, rettv)
+    typeval	*argvars;
+    typeval	*rettv;
+{
+    long	lnum;
+    listvar	*l = NULL;
+    listitem	*li = NULL;
+    typeval	*tv;
+    long	added = 0;
+
+    rettv->vval.v_number = 1;		/* Default: Failed */
+    lnum = get_tv_lnum(argvars);
+    if (lnum >= 0
+	    && lnum <= curbuf->b_ml.ml_line_count
+	    && u_save(lnum, lnum + 1) == OK)
     {
-	lnum = get_tv_lnum(argvars);
-	if (lnum >= 0
-		&& lnum <= curbuf->b_ml.ml_line_count
-		&& u_save(lnum, lnum + 1) == OK)
+	if (argvars[1].v_type == VAR_LIST)
 	{
-	    ml_append(lnum, get_tv_string(&argvars[1]), (colnr_T)0, FALSE);
-	    if (curwin->w_cursor.lnum > lnum)
-		++curwin->w_cursor.lnum;
-	    appended_lines_mark(lnum, 1L);
-	    rettv->vval.v_number = 0;
+	    l = argvars[1].vval.v_list;
+	    if (l == NULL)
+		return;
+	    li = l->lv_first;
 	}
+	for (;;)
+	{
+	    if (l == NULL)
+		tv = &argvars[1];	/* append a string */
+	    else if (li == NULL)
+		break;			/* end of list */
+	    else
+		tv = &li->li_tv;	/* append item from list */
+	    ml_append(lnum + added, get_tv_string(tv), (colnr_T)0, FALSE);
+	    ++added;
+	    if (l == NULL)
+		break;
+	    li = li->li_next;
+	}
+
+	appended_lines_mark(lnum, added);
+	if (curwin->w_cursor.lnum > lnum)
+	    curwin->w_cursor.lnum += added;
+	rettv->vval.v_number = 0;	/* Success */
     }
 }
 
@@ -4804,6 +4844,8 @@ f_browsedir(argvars, rettv)
     rettv->v_type = VAR_STRING;
 }
 
+static buf_T *find_buffer __ARGS((typeval *avar));
+
 /*
  * Find a buffer by number or exact name.
  */
@@ -4874,6 +4916,8 @@ f_bufloaded(argvars, rettv)
     buf = find_buffer(&argvars[0]);
     rettv->vval.v_number = (buf != NULL && buf->b_ml.ml_mfp != NULL);
 }
+
+static buf_T *get_buf_tv __ARGS((typeval *tv));
 
 /*
  * Get buffer by number or pattern.
@@ -5723,30 +5767,10 @@ f_filewritable(argvars, rettv)
     rettv->vval.v_number = retval;
 }
 
-/*
- * "finddir({fname}[, {path}[, {count}]])" function
- */
-    static void
-f_finddir(argvars, rettv)
-    typeval	*argvars;
-    typeval	*rettv;
-{
-    f_findfilendir(argvars, rettv, TRUE);
-}
-
-/*
- * "findfile({fname}[, {path}[, {count}]])" function
- */
-    static void
-f_findfile(argvars, rettv)
-    typeval	*argvars;
-    typeval	*rettv;
-{
-    f_findfilendir(argvars, rettv, FALSE);
-}
+static void findfilendir __ARGS((typeval *argvars, typeval *rettv, int dir));
 
     static void
-f_findfilendir(argvars, rettv, dir)
+findfilendir(argvars, rettv, dir)
     typeval	*argvars;
     typeval	*rettv;
     int		dir;
@@ -5789,6 +5813,28 @@ f_findfilendir(argvars, rettv, dir)
 }
 
 /*
+ * "finddir({fname}[, {path}[, {count}]])" function
+ */
+    static void
+f_finddir(argvars, rettv)
+    typeval	*argvars;
+    typeval	*rettv;
+{
+    findfilendir(argvars, rettv, TRUE);
+}
+
+/*
+ * "findfile({fname}[, {path}[, {count}]])" function
+ */
+    static void
+f_findfile(argvars, rettv)
+    typeval	*argvars;
+    typeval	*rettv;
+{
+    findfilendir(argvars, rettv, FALSE);
+}
+
+/*
  * "fnamemodify({fname}, {mods})" function
  */
     static void
@@ -5817,27 +5863,7 @@ f_fnamemodify(argvars, rettv)
     vim_free(fbuf);
 }
 
-/*
- * "foldclosed()" function
- */
-    static void
-f_foldclosed(argvars, rettv)
-    typeval	*argvars;
-    typeval	*rettv;
-{
-    foldclosed_both(argvars, rettv, FALSE);
-}
-
-/*
- * "foldclosedend()" function
- */
-    static void
-f_foldclosedend(argvars, rettv)
-    typeval	*argvars;
-    typeval	*rettv;
-{
-    foldclosed_both(argvars, rettv, TRUE);
-}
+static void foldclosed_both __ARGS((typeval *argvars, typeval *rettv, int end));
 
 /*
  * "foldclosed()" function
@@ -5866,6 +5892,28 @@ foldclosed_both(argvars, rettv, end)
     }
 #endif
     rettv->vval.v_number = -1;
+}
+
+/*
+ * "foldclosed()" function
+ */
+    static void
+f_foldclosed(argvars, rettv)
+    typeval	*argvars;
+    typeval	*rettv;
+{
+    foldclosed_both(argvars, rettv, FALSE);
+}
+
+/*
+ * "foldclosedend()" function
+ */
+    static void
+f_foldclosedend(argvars, rettv)
+    typeval	*argvars;
+    typeval	*rettv;
+{
+    foldclosed_both(argvars, rettv, TRUE);
 }
 
 /*
@@ -6031,6 +6079,79 @@ f_function(argvars, rettv)
 }
 
 /*
+ * "get()" function
+ */
+    static void
+f_get(argvars, rettv)
+    typeval	*argvars;
+    typeval	*rettv;
+{
+    listitem	*item;
+    listvar	*l;
+
+    if (argvars[0].v_type != VAR_LIST)
+	EMSG2(_(e_listarg), "get()");
+    else if ((l = argvars[0].vval.v_list) != NULL)
+    {
+	item = list_find(l, get_tv_number(&argvars[1]));
+	if (item == NULL)
+	{
+	    if (argvars[2].v_type == VAR_UNKNOWN)
+		rettv->vval.v_number = 0;
+	    else
+		copy_tv(&argvars[2], rettv);
+	}
+	else
+	    copy_tv(&item->li_tv, rettv);
+    }
+}
+
+/*
+ * "getbufvar()" function
+ */
+    static void
+f_getbufvar(argvars, rettv)
+    typeval	*argvars;
+    typeval	*rettv;
+{
+    buf_T	*buf;
+    buf_T	*save_curbuf;
+    char_u	*varname;
+    VAR		v;
+
+    ++emsg_off;
+    buf = get_buf_tv(&argvars[0]);
+    varname = get_tv_string(&argvars[1]);
+
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = NULL;
+
+    if (buf != NULL && varname != NULL)
+    {
+	if (*varname == '&')	/* buffer-local-option */
+	{
+	    /* set curbuf to be our buf, temporarily */
+	    save_curbuf = curbuf;
+	    curbuf = buf;
+
+	    get_option_tv(&varname, rettv, TRUE);
+
+	    /* restore previous notion of curbuf */
+	    curbuf = save_curbuf;
+	}
+	else
+	{
+	    /* look up the variable */
+	    v = find_var_in_ga(&buf->b_vars, varname);
+	    if (v != NULL)
+		copy_tv(&v->tv, rettv);
+	}
+    }
+
+    --emsg_off;
+}
+
+/*
  * "getchar()" function
  */
     static void
@@ -6123,51 +6244,6 @@ f_getcmdpos(argvars, rettv)
     typeval	*rettv;
 {
     rettv->vval.v_number = get_cmdline_pos() + 1;
-}
-
-/*
- * "getbufvar()" function
- */
-    static void
-f_getbufvar(argvars, rettv)
-    typeval	*argvars;
-    typeval	*rettv;
-{
-    buf_T	*buf;
-    buf_T	*save_curbuf;
-    char_u	*varname;
-    VAR		v;
-
-    ++emsg_off;
-    buf = get_buf_tv(&argvars[0]);
-    varname = get_tv_string(&argvars[1]);
-
-    rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = NULL;
-
-    if (buf != NULL && varname != NULL)
-    {
-	if (*varname == '&')	/* buffer-local-option */
-	{
-	    /* set curbuf to be our buf, temporarily */
-	    save_curbuf = curbuf;
-	    curbuf = buf;
-
-	    get_option_tv(&varname, rettv, TRUE);
-
-	    /* restore previous notion of curbuf */
-	    curbuf = save_curbuf;
-	}
-	else
-	{
-	    /* look up the variable */
-	    v = find_var_in_ga(&buf->b_vars, varname);
-	    if (v != NULL)
-		copy_tv(&v->tv, rettv);
-	}
-    }
-
-    --emsg_off;
 }
 
 /*
@@ -6391,6 +6467,66 @@ f_getftype(argvars, rettv)
 }
 
 /*
+ * "getline(lnum)" function
+ */
+    static void
+f_getline(argvars, rettv)
+    typeval	*argvars;
+    typeval	*rettv;
+{
+    linenr_T	lnum;
+    linenr_T	end;
+    char_u	*p;
+    listvar	*l;
+    listitem	*li;
+
+    lnum = get_tv_lnum(argvars);
+
+    if (argvars[1].v_type == VAR_UNKNOWN)
+    {
+	if (lnum >= 1 && lnum <= curbuf->b_ml.ml_line_count)
+	    p = ml_get(lnum);
+	else
+	    p = (char_u *)"";
+
+	rettv->v_type = VAR_STRING;
+	rettv->vval.v_string = vim_strsave(p);
+    }
+    else
+    {
+	end = get_tv_lnum(&argvars[1]);
+	if (end < lnum)
+	{
+	    EMSG(_(e_invrange));
+	    rettv->vval.v_number = 0;
+	}
+	else
+	{
+	    l = list_alloc();
+	    if (l != NULL)
+	    {
+		if (lnum < 1)
+		    lnum = 1;
+		if (end > curbuf->b_ml.ml_line_count)
+		    end = curbuf->b_ml.ml_line_count;
+		while (lnum <= end)
+		{
+		    li = listitem_alloc();
+		    if (li == NULL)
+			break;
+		    list_append(l, li);
+		    li->li_tv.v_type = VAR_STRING;
+		    li->li_tv.vval.v_string = vim_strsave(ml_get(lnum++));
+		}
+		rettv->vval.v_list = l;
+		rettv->v_type = VAR_LIST;
+		++l->lv_refcount;
+	    }
+	}
+    }
+}
+
+/*
  * "getreg()" function
  */
     static void
@@ -6451,28 +6587,6 @@ f_getregtype(argvars, rettv)
     }
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = vim_strsave(buf);
-}
-
-/*
- * "getline(lnum)" function
- */
-    static void
-f_getline(argvars, rettv)
-    typeval	*argvars;
-    typeval	*rettv;
-{
-    linenr_T	lnum;
-    char_u	*p;
-
-    lnum = get_tv_lnum(argvars);
-
-    if (lnum >= 1 && lnum <= curbuf->b_ml.ml_line_count)
-	p = ml_get(lnum);
-    else
-	p = (char_u *)"";
-
-    rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = vim_strsave(p);
 }
 
 /*
@@ -7222,17 +7336,6 @@ f_histnr(argvars, rettv)
 }
 
 /*
- * "highlight_exists()" function
- */
-    static void
-f_hlexists(argvars, rettv)
-    typeval	*argvars;
-    typeval	*rettv;
-{
-    rettv->vval.v_number = highlight_exists(get_tv_string(&argvars[0]));
-}
-
-/*
  * "highlightID(name)" function
  */
     static void
@@ -7241,6 +7344,17 @@ f_hlID(argvars, rettv)
     typeval	*rettv;
 {
     rettv->vval.v_number = syn_name2id(get_tv_string(&argvars[0]));
+}
+
+/*
+ * "highlight_exists()" function
+ */
+    static void
+f_hlexists(argvars, rettv)
+    typeval	*argvars;
+    typeval	*rettv;
+{
+    rettv->vval.v_number = highlight_exists(get_tv_string(&argvars[0]));
 }
 
 /*
@@ -7528,7 +7642,7 @@ f_insert(argvars, rettv)
     listvar	*l;
 
     if (argvars[0].v_type != VAR_LIST)
-	EMSG(_("E999: First argument of insert() must be a list"));
+	EMSG2(_(e_listarg), "insert()");
     else if ((l = argvars[0].vval.v_list) != NULL)
     {
 	if (argvars[2].v_type != VAR_UNKNOWN)
@@ -7601,27 +7715,7 @@ f_len(argvars, rettv)
     }
 }
 
-/*
- * "libcall()" function
- */
-    static void
-f_libcall(argvars, rettv)
-    typeval	*argvars;
-    typeval	*rettv;
-{
-    libcall_common(argvars, rettv, VAR_STRING);
-}
-
-/*
- * "libcallnr()" function
- */
-    static void
-f_libcallnr(argvars, rettv)
-    typeval	*argvars;
-    typeval	*rettv;
-{
-    libcall_common(argvars, rettv, VAR_NUMBER);
-}
+static void libcall_common __ARGS((typeval *argvars, typeval *rettv, int type));
 
     static void
 libcall_common(argvars, rettv, type)
@@ -7666,6 +7760,28 @@ libcall_common(argvars, rettv, type)
 	    rettv->vval.v_number = nr_result;
     }
 #endif
+}
+
+/*
+ * "libcall()" function
+ */
+    static void
+f_libcall(argvars, rettv)
+    typeval	*argvars;
+    typeval	*rettv;
+{
+    libcall_common(argvars, rettv, VAR_STRING);
+}
+
+/*
+ * "libcallnr()" function
+ */
+    static void
+f_libcallnr(argvars, rettv)
+    typeval	*argvars;
+    typeval	*rettv;
+{
+    libcall_common(argvars, rettv, VAR_NUMBER);
 }
 
 /*
@@ -7746,27 +7862,7 @@ f_localtime(argvars, rettv)
     rettv->vval.v_number = (varnumber_T)time(NULL);
 }
 
-/*
- * "maparg()" function
- */
-    static void
-f_maparg(argvars, rettv)
-    typeval	*argvars;
-    typeval	*rettv;
-{
-    get_maparg(argvars, rettv, TRUE);
-}
-
-/*
- * "mapcheck()" function
- */
-    static void
-f_mapcheck(argvars, rettv)
-    typeval	*argvars;
-    typeval	*rettv;
-{
-    get_maparg(argvars, rettv, FALSE);
-}
+static void get_maparg __ARGS((typeval *argvars, typeval *rettv, int exact));
 
     static void
 get_maparg(argvars, rettv, exact)
@@ -7814,37 +7910,28 @@ get_maparg(argvars, rettv, exact)
 }
 
 /*
- * "match()" function
+ * "maparg()" function
  */
     static void
-f_match(argvars, rettv)
+f_maparg(argvars, rettv)
     typeval	*argvars;
     typeval	*rettv;
 {
-    find_some_match(argvars, rettv, 1);
+    get_maparg(argvars, rettv, TRUE);
 }
 
 /*
- * "matchend()" function
+ * "mapcheck()" function
  */
     static void
-f_matchend(argvars, rettv)
+f_mapcheck(argvars, rettv)
     typeval	*argvars;
     typeval	*rettv;
 {
-    find_some_match(argvars, rettv, 0);
+    get_maparg(argvars, rettv, FALSE);
 }
 
-/*
- * "matchstr()" function
- */
-    static void
-f_matchstr(argvars, rettv)
-    typeval	*argvars;
-    typeval	*rettv;
-{
-    find_some_match(argvars, rettv, 2);
-}
+static void find_some_match __ARGS((typeval *argvars, typeval *rettv, int start));
 
     static void
 find_some_match(argvars, rettv, type)
@@ -7932,6 +8019,39 @@ theend:
 }
 
 /*
+ * "match()" function
+ */
+    static void
+f_match(argvars, rettv)
+    typeval	*argvars;
+    typeval	*rettv;
+{
+    find_some_match(argvars, rettv, 1);
+}
+
+/*
+ * "matchend()" function
+ */
+    static void
+f_matchend(argvars, rettv)
+    typeval	*argvars;
+    typeval	*rettv;
+{
+    find_some_match(argvars, rettv, 0);
+}
+
+/*
+ * "matchstr()" function
+ */
+    static void
+f_matchstr(argvars, rettv)
+    typeval	*argvars;
+    typeval	*rettv;
+{
+    find_some_match(argvars, rettv, 2);
+}
+
+/*
  * "mode()" function
  */
 /*ARGSUSED*/
@@ -7972,6 +8092,29 @@ f_mode(argvars, rettv)
 }
 
 /*
+ * "nextnonblank()" function
+ */
+    static void
+f_nextnonblank(argvars, rettv)
+    typeval	*argvars;
+    typeval	*rettv;
+{
+    linenr_T	lnum;
+
+    for (lnum = get_tv_lnum(argvars); ; ++lnum)
+    {
+	if (lnum > curbuf->b_ml.ml_line_count)
+	{
+	    lnum = 0;
+	    break;
+	}
+	if (*skipwhite(ml_get(lnum)) != NUL)
+	    break;
+    }
+    rettv->vval.v_number = lnum;
+}
+
+/*
  * "nr2char()" function
  */
     static void
@@ -7995,6 +8138,251 @@ f_nr2char(argvars, rettv)
 }
 
 /*
+ * "prevnonblank()" function
+ */
+    static void
+f_prevnonblank(argvars, rettv)
+    typeval	*argvars;
+    typeval	*rettv;
+{
+    linenr_T	lnum;
+
+    lnum = get_tv_lnum(argvars);
+    if (lnum < 1 || lnum > curbuf->b_ml.ml_line_count)
+	lnum = 0;
+    else
+	while (lnum >= 1 && *skipwhite(ml_get(lnum)) == NUL)
+	    --lnum;
+    rettv->vval.v_number = lnum;
+}
+
+#if defined(FEAT_CLIENTSERVER) && defined(FEAT_X11)
+static void make_connection __ARGS((void));
+static int check_connection __ARGS((void));
+
+    static void
+make_connection()
+{
+    if (X_DISPLAY == NULL
+# ifdef FEAT_GUI
+	    && !gui.in_use
+# endif
+	    )
+    {
+	x_force_connect = TRUE;
+	setup_term_clip();
+	x_force_connect = FALSE;
+    }
+}
+
+    static int
+check_connection()
+{
+    make_connection();
+    if (X_DISPLAY == NULL)
+    {
+	EMSG(_("E240: No connection to Vim server"));
+	return FAIL;
+    }
+    return OK;
+}
+#endif
+
+#ifdef FEAT_CLIENTSERVER
+static void remote_common __ARGS((typeval *argvars, typeval *rettv, int expr));
+
+    static void
+remote_common(argvars, rettv, expr)
+    typeval	*argvars;
+    typeval	*rettv;
+    int		expr;
+{
+    char_u	*server_name;
+    char_u	*keys;
+    char_u	*r = NULL;
+    char_u	buf[NUMBUFLEN];
+# ifdef WIN32
+    HWND	w;
+# else
+    Window	w;
+# endif
+
+    if (check_restricted() || check_secure())
+	return;
+
+# ifdef FEAT_X11
+    if (check_connection() == FAIL)
+	return;
+# endif
+
+    server_name = get_tv_string(&argvars[0]);
+    keys = get_tv_string_buf(&argvars[1], buf);
+# ifdef WIN32
+    if (serverSendToVim(server_name, keys, &r, &w, expr, TRUE) < 0)
+# else
+    if (serverSendToVim(X_DISPLAY, server_name, keys, &r, &w, expr, 0, TRUE)
+									  < 0)
+# endif
+    {
+	if (r != NULL)
+	    EMSG(r);		/* sending worked but evaluation failed */
+	else
+	    EMSG2(_("E241: Unable to send to %s"), server_name);
+	return;
+    }
+
+    rettv->vval.v_string = r;
+
+    if (argvars[2].v_type != VAR_UNKNOWN)
+    {
+	var	v;
+	char_u	str[30];
+
+	sprintf((char *)str, "0x%x", (unsigned int)w);
+	v.tv.v_type = VAR_STRING;
+	v.tv.vval.v_string = vim_strsave(str);
+	set_var(get_tv_string(&argvars[2]), &v.tv, FALSE);
+	vim_free(v.tv.vval.v_string);
+    }
+}
+#endif
+
+/*
+ * "remote_expr()" function
+ */
+/*ARGSUSED*/
+    static void
+f_remote_expr(argvars, rettv)
+    typeval	*argvars;
+    typeval	*rettv;
+{
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = NULL;
+#ifdef FEAT_CLIENTSERVER
+    remote_common(argvars, rettv, TRUE);
+#endif
+}
+
+/*
+ * "remote_foreground()" function
+ */
+/*ARGSUSED*/
+    static void
+f_remote_foreground(argvars, rettv)
+    typeval	*argvars;
+    typeval	*rettv;
+{
+    rettv->vval.v_number = 0;
+#ifdef FEAT_CLIENTSERVER
+# ifdef WIN32
+    /* On Win32 it's done in this application. */
+    serverForeground(get_tv_string(&argvars[0]));
+# else
+    /* Send a foreground() expression to the server. */
+    argvars[1].v_type = VAR_STRING;
+    argvars[1].vval.v_string = vim_strsave((char_u *)"foreground()");
+    argvars[2].v_type = VAR_UNKNOWN;
+    remote_common(argvars, rettv, TRUE);
+    vim_free(argvars[1].vval.v_string);
+# endif
+#endif
+}
+
+/*ARGSUSED*/
+    static void
+f_remote_peek(argvars, rettv)
+    typeval	*argvars;
+    typeval	*rettv;
+{
+#ifdef FEAT_CLIENTSERVER
+    var		v;
+    char_u	*s = NULL;
+# ifdef WIN32
+    int		n = 0;
+# endif
+
+    if (check_restricted() || check_secure())
+    {
+	rettv->vval.v_number = -1;
+	return;
+    }
+# ifdef WIN32
+    sscanf(get_tv_string(&argvars[0]), "%x", &n);
+    if (n == 0)
+	rettv->vval.v_number = -1;
+    else
+    {
+	s = serverGetReply((HWND)n, FALSE, FALSE, FALSE);
+	rettv->vval.v_number = (s != NULL);
+    }
+# else
+    rettv->vval.v_number = 0;
+    if (check_connection() == FAIL)
+	return;
+
+    rettv->vval.v_number = serverPeekReply(X_DISPLAY,
+			   serverStrToWin(get_tv_string(&argvars[0])), &s);
+# endif
+
+    if (argvars[1].v_type != VAR_UNKNOWN && rettv->vval.v_number > 0)
+    {
+	v.tv.v_type = VAR_STRING;
+	v.tv.vval.v_string = vim_strsave(s);
+	set_var(get_tv_string(&argvars[1]), &v.tv, FALSE);
+	vim_free(v.tv.vval.v_string);
+    }
+#else
+    rettv->vval.v_number = -1;
+#endif
+}
+
+/*ARGSUSED*/
+    static void
+f_remote_read(argvars, rettv)
+    typeval	*argvars;
+    typeval	*rettv;
+{
+    char_u	*r = NULL;
+
+#ifdef FEAT_CLIENTSERVER
+    if (!check_restricted() && !check_secure())
+    {
+# ifdef WIN32
+	/* The server's HWND is encoded in the 'id' parameter */
+	int		n = 0;
+
+	sscanf(get_tv_string(&argvars[0]), "%x", &n);
+	if (n != 0)
+	    r = serverGetReply((HWND)n, FALSE, TRUE, TRUE);
+	if (r == NULL)
+# else
+	if (check_connection() == FAIL || serverReadReply(X_DISPLAY,
+		serverStrToWin(get_tv_string(&argvars[0])), &r, FALSE) < 0)
+# endif
+	    EMSG(_("E277: Unable to read a server reply"));
+    }
+#endif
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = r;
+}
+
+/*
+ * "remote_send()" function
+ */
+/*ARGSUSED*/
+    static void
+f_remote_send(argvars, rettv)
+    typeval	*argvars;
+    typeval	*rettv;
+{
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = NULL;
+#ifdef FEAT_CLIENTSERVER
+    remote_common(argvars, rettv, FALSE);
+#endif
+}
+
+/*
  * "remove({list}, {idx} [, {end}])" function
  */
     static void
@@ -8010,7 +8398,7 @@ f_remove(argvars, rettv)
 
     rettv->vval.v_number = 0;
     if (argvars[0].v_type != VAR_LIST)
-	EMSG(_("E999: First argument of remove() must be a list"));
+	EMSG2(_(e_listarg), "remove()");
     else if ((l = argvars[0].vval.v_list) != NULL)
     {
 	idx = get_tv_number(&argvars[1]);
@@ -8333,24 +8721,89 @@ fail:
 }
 
 /*
- * "simplify()" function
+ * "reverse({list})" function
  */
     static void
-f_simplify(argvars, rettv)
+f_reverse(argvars, rettv)
     typeval	*argvars;
     typeval	*rettv;
 {
-    char_u	*p;
+    listvar	*l;
+    listitem	*li, *ni;
 
-    p = get_tv_string(&argvars[0]);
-    rettv->vval.v_string = vim_strsave(p);
-    simplify_filename(rettv->vval.v_string);	/* simplify in place */
-    rettv->v_type = VAR_STRING;
+    rettv->vval.v_number = 0;
+    if (argvars[0].v_type != VAR_LIST)
+	EMSG2(_(e_listarg), "reverse()");
+    else if ((l = argvars[0].vval.v_list) != NULL)
+    {
+	li = l->lv_last;
+	l->lv_first = l->lv_last = li;
+	while (li != NULL)
+	{
+	    ni = li->li_prev;
+	    list_append(l, li);
+	    li = ni;
+	}
+	rettv->vval.v_list = l;
+	rettv->v_type = VAR_LIST;
+	++l->lv_refcount;
+    }
 }
 
 #define SP_NOMOVE	1	/* don't move cursor */
 #define SP_REPEAT	2	/* repeat to find outer pair */
 #define SP_RETCOUNT	4	/* return matchcount */
+
+static int get_search_arg __ARGS((typeval *varp, int *flagsp));
+
+/*
+ * Get flags for a search function.
+ * Possibly sets "p_ws".
+ * Returns BACKWARD, FORWARD or zero (for an error).
+ */
+    static int
+get_search_arg(varp, flagsp)
+    typeval	*varp;
+    int		*flagsp;
+{
+    int		dir = FORWARD;
+    char_u	*flags;
+    char_u	nbuf[NUMBUFLEN];
+    int		mask;
+
+    if (varp->v_type != VAR_UNKNOWN)
+    {
+	flags = get_tv_string_buf(varp, nbuf);
+	while (*flags != NUL)
+	{
+	    switch (*flags)
+	    {
+		case 'b': dir = BACKWARD; break;
+		case 'w': p_ws = TRUE; break;
+		case 'W': p_ws = FALSE; break;
+		default:  mask = 0;
+			  if (flagsp != NULL)
+			     switch (*flags)
+			     {
+				 case 'n': mask = SP_NOMOVE; break;
+				 case 'r': mask = SP_REPEAT; break;
+				 case 'm': mask = SP_RETCOUNT; break;
+			     }
+			  if (mask == 0)
+			  {
+			      EMSG2(_(e_invarg2), flags);
+			      dir = 0;
+			  }
+			  else
+			      *flagsp |= mask;
+	    }
+	    if (dir == 0)
+		break;
+	    ++flags;
+	}
+    }
+    return dir;
+}
 
 /*
  * "search()" function
@@ -8533,53 +8986,55 @@ theend:
     p_cpo = save_cpo;
 }
 
-/*
- * Get flags for a search function.
- * Possibly sets "p_ws".
- * Returns BACKWARD, FORWARD or zero (for an error).
- */
-    static int
-get_search_arg(varp, flagsp)
-    typeval	*varp;
-    int		*flagsp;
+/*ARGSUSED*/
+    static void
+f_server2client(argvars, rettv)
+    typeval	*argvars;
+    typeval	*rettv;
 {
-    int		dir = FORWARD;
-    char_u	*flags;
-    char_u	nbuf[NUMBUFLEN];
-    int		mask;
+#ifdef FEAT_CLIENTSERVER
+    char_u	buf[NUMBUFLEN];
+    char_u	*server = get_tv_string(&argvars[0]);
+    char_u	*reply = get_tv_string_buf(&argvars[1], buf);
 
-    if (varp->v_type != VAR_UNKNOWN)
+    rettv->vval.v_number = -1;
+    if (check_restricted() || check_secure())
+	return;
+# ifdef FEAT_X11
+    if (check_connection() == FAIL)
+	return;
+# endif
+
+    if (serverSendReply(server, reply) < 0)
     {
-	flags = get_tv_string_buf(varp, nbuf);
-	while (*flags != NUL)
-	{
-	    switch (*flags)
-	    {
-		case 'b': dir = BACKWARD; break;
-		case 'w': p_ws = TRUE; break;
-		case 'W': p_ws = FALSE; break;
-		default:  mask = 0;
-			  if (flagsp != NULL)
-			     switch (*flags)
-			     {
-				 case 'n': mask = SP_NOMOVE; break;
-				 case 'r': mask = SP_REPEAT; break;
-				 case 'm': mask = SP_RETCOUNT; break;
-			     }
-			  if (mask == 0)
-			  {
-			      EMSG2(_(e_invarg2), flags);
-			      dir = 0;
-			  }
-			  else
-			      *flagsp |= mask;
-	    }
-	    if (dir == 0)
-		break;
-	    ++flags;
-	}
+	EMSG(_("E258: Unable to send to client"));
+	return;
     }
-    return dir;
+    rettv->vval.v_number = 0;
+#else
+    rettv->vval.v_number = -1;
+#endif
+}
+
+/*ARGSUSED*/
+    static void
+f_serverlist(argvars, rettv)
+    typeval	*argvars;
+    typeval	*rettv;
+{
+    char_u	*r = NULL;
+
+#ifdef FEAT_CLIENTSERVER
+# ifdef WIN32
+    r = serverGetVimNames();
+# else
+    make_connection();
+    if (X_DISPLAY != NULL)
+	r = serverGetVimNames(X_DISPLAY);
+# endif
+#endif
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = r;
 }
 
 /*
@@ -8811,322 +9266,244 @@ f_setwinvar(argvars, rettv)
 }
 
 /*
- * "nextnonblank()" function
+ * "simplify()" function
  */
     static void
-f_nextnonblank(argvars, rettv)
+f_simplify(argvars, rettv)
     typeval	*argvars;
     typeval	*rettv;
 {
-    linenr_T	lnum;
+    char_u	*p;
 
-    for (lnum = get_tv_lnum(argvars); ; ++lnum)
-    {
-	if (lnum > curbuf->b_ml.ml_line_count)
-	{
-	    lnum = 0;
-	    break;
-	}
-	if (*skipwhite(ml_get(lnum)) != NUL)
-	    break;
-    }
-    rettv->vval.v_number = lnum;
+    p = get_tv_string(&argvars[0]);
+    rettv->vval.v_string = vim_strsave(p);
+    simplify_filename(rettv->vval.v_string);	/* simplify in place */
+    rettv->v_type = VAR_STRING;
 }
+
+static int
+#ifdef __BORLANDC__
+    _RTLENTRYF
+#endif
+	item_compare __ARGS((const void *s1, const void *s2));
+static int
+#ifdef __BORLANDC__
+    _RTLENTRYF
+#endif
+	item_compare2 __ARGS((const void *s1, const void *s2));
+
+static int	item_compare_ic;
+static char_u	*item_compare_func;
+#define ITEM_COMPARE_FAIL 999
 
 /*
- * "prevnonblank()" function
+ * Compare functions for f_sort() below.
  */
-    static void
-f_prevnonblank(argvars, rettv)
-    typeval	*argvars;
-    typeval	*rettv;
+    static int
+#ifdef __BORLANDC__
+_RTLENTRYF
+#endif
+item_compare(s1, s2)
+    const void	*s1;
+    const void	*s2;
 {
-    linenr_T	lnum;
+    char_u	*p1, *p2;
+    char_u	*tofree1, *tofree2;
+    int		res;
+    char_u	numbuf1[NUMBUFLEN];
+    char_u	numbuf2[NUMBUFLEN];
 
-    lnum = get_tv_lnum(argvars);
-    if (lnum < 1 || lnum > curbuf->b_ml.ml_line_count)
-	lnum = 0;
+    p1 = tv2string(&(*(listitem **)s1)->li_tv, &tofree1, numbuf1);
+    p2 = tv2string(&(*(listitem **)s2)->li_tv, &tofree2, numbuf2);
+    if (item_compare_ic)
+	res = STRICMP(p1, p2);
     else
-	while (lnum >= 1 && *skipwhite(ml_get(lnum)) == NUL)
-	    --lnum;
-    rettv->vval.v_number = lnum;
-}
-
-#if defined(FEAT_CLIENTSERVER) && defined(FEAT_X11)
-static void make_connection __ARGS((void));
-static int check_connection __ARGS((void));
-
-    static void
-make_connection()
-{
-    if (X_DISPLAY == NULL
-# ifdef FEAT_GUI
-	    && !gui.in_use
-# endif
-	    )
-    {
-	x_force_connect = TRUE;
-	setup_term_clip();
-	x_force_connect = FALSE;
-    }
+	res = STRCMP(p1, p2);
+    vim_free(tofree1);
+    vim_free(tofree2);
+    return res;
 }
 
     static int
-check_connection()
-{
-    make_connection();
-    if (X_DISPLAY == NULL)
-    {
-	EMSG(_("E240: No connection to Vim server"));
-	return FAIL;
-    }
-    return OK;
-}
+#ifdef __BORLANDC__
+_RTLENTRYF
 #endif
+item_compare2(s1, s2)
+    const void	*s1;
+    const void	*s2;
+{
+    int		res;
+    typeval	rettv;
+    typeval	argv[2];
+    int		dummy;
 
-/*ARGSUSED*/
+    /* copy the values (is this really needed?) */
+    copy_tv(&(*(listitem **)s1)->li_tv, &argv[0]);
+    copy_tv(&(*(listitem **)s2)->li_tv, &argv[1]);
+
+    rettv.v_type = VAR_UNKNOWN;		/* clear_tv() uses this */
+    res = call_func(item_compare_func, STRLEN(item_compare_func),
+				       &rettv, 2, argv, 0L, 0L, &dummy, TRUE);
+    clear_tv(&argv[0]);
+    clear_tv(&argv[1]);
+
+    if (res == FAIL)
+	res = ITEM_COMPARE_FAIL;
+    else
+	res = get_tv_number(&rettv);
+    clear_tv(&rettv);
+    return res;
+}
+
+/*
+ * "sort({list})" function
+ */
     static void
-f_serverlist(argvars, rettv)
+f_sort(argvars, rettv)
     typeval	*argvars;
     typeval	*rettv;
 {
-    char_u	*r = NULL;
+    listvar	*l;
+    listitem	*li;
+    listitem	**ptrs;
+    long	len;
+    long	i;
 
-#ifdef FEAT_CLIENTSERVER
-# ifdef WIN32
-    r = serverGetVimNames();
-# else
-    make_connection();
-    if (X_DISPLAY != NULL)
-	r = serverGetVimNames(X_DISPLAY);
-# endif
-#endif
-    rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = r;
-}
-
-/*ARGSUSED*/
-    static void
-f_remote_peek(argvars, rettv)
-    typeval	*argvars;
-    typeval	*rettv;
-{
-#ifdef FEAT_CLIENTSERVER
-    var		v;
-    char_u	*s = NULL;
-# ifdef WIN32
-    int		n = 0;
-# endif
-
-    if (check_restricted() || check_secure())
-    {
-	rettv->vval.v_number = -1;
-	return;
-    }
-# ifdef WIN32
-    sscanf(get_tv_string(&argvars[0]), "%x", &n);
-    if (n == 0)
-	rettv->vval.v_number = -1;
+    rettv->vval.v_number = 0;
+    if (argvars[0].v_type != VAR_LIST)
+	EMSG2(_(e_listarg), "sort()");
     else
     {
-	s = serverGetReply((HWND)n, FALSE, FALSE, FALSE);
-	rettv->vval.v_number = (s != NULL);
-    }
-# else
-    rettv->vval.v_number = 0;
-    if (check_connection() == FAIL)
-	return;
+	l = argvars[0].vval.v_list;
+	if (l == NULL)
+	    return;
+	rettv->vval.v_list = l;
+	rettv->v_type = VAR_LIST;
+	++l->lv_refcount;
 
-    rettv->vval.v_number = serverPeekReply(X_DISPLAY,
-			   serverStrToWin(get_tv_string(&argvars[0])), &s);
-# endif
+	len = list_len(l);
+	if (len <= 1)
+	    return;	/* short list sorts pretty quickly */
 
-    if (argvars[1].v_type != VAR_UNKNOWN && rettv->vval.v_number > 0)
-    {
-	v.tv.v_type = VAR_STRING;
-	v.tv.vval.v_string = vim_strsave(s);
-	set_var(get_tv_string(&argvars[1]), &v.tv, FALSE);
-	vim_free(v.tv.vval.v_string);
-    }
-#else
-    rettv->vval.v_number = -1;
-#endif
-}
+	item_compare_ic = FALSE;
+	item_compare_func = NULL;
+	if (argvars[1].v_type != VAR_UNKNOWN)
+	{
+	    if (argvars[1].v_type == VAR_FUNC)
+		item_compare_func = argvars[0].vval.v_string;
+	    else
+	    {
+		i = get_tv_number(&argvars[1]);
+		if (i == 1)
+		    item_compare_ic = TRUE;
+		else
+		    item_compare_func = get_tv_string(&argvars[1]);
+	    }
+	}
 
-/*ARGSUSED*/
-    static void
-f_remote_read(argvars, rettv)
-    typeval	*argvars;
-    typeval	*rettv;
-{
-    char_u	*r = NULL;
+	/* Make an array with each entry pointing to an item in the List. */
+	ptrs = (listitem **)alloc((int)(len * sizeof(listitem *)));
+	if (ptrs == NULL)
+	    return;
+	i = 0;
+	for (li = l->lv_first; li != NULL; li = li->li_next)
+	    ptrs[i++] = li;
 
-#ifdef FEAT_CLIENTSERVER
-    if (!check_restricted() && !check_secure())
-    {
-# ifdef WIN32
-	/* The server's HWND is encoded in the 'id' parameter */
-	int		n = 0;
-
-	sscanf(get_tv_string(&argvars[0]), "%x", &n);
-	if (n != 0)
-	    r = serverGetReply((HWND)n, FALSE, TRUE, TRUE);
-	if (r == NULL)
-# else
-	if (check_connection() == FAIL || serverReadReply(X_DISPLAY,
-		serverStrToWin(get_tv_string(&argvars[0])), &r, FALSE) < 0)
-# endif
-	    EMSG(_("E277: Unable to read a server reply"));
-    }
-#endif
-    rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = r;
-}
-
-/*ARGSUSED*/
-    static void
-f_server2client(argvars, rettv)
-    typeval	*argvars;
-    typeval	*rettv;
-{
-#ifdef FEAT_CLIENTSERVER
-    char_u	buf[NUMBUFLEN];
-    char_u	*server = get_tv_string(&argvars[0]);
-    char_u	*reply = get_tv_string_buf(&argvars[1], buf);
-
-    rettv->vval.v_number = -1;
-    if (check_restricted() || check_secure())
-	return;
-# ifdef FEAT_X11
-    if (check_connection() == FAIL)
-	return;
-# endif
-
-    if (serverSendReply(server, reply) < 0)
-    {
-	EMSG(_("E258: Unable to send to client"));
-	return;
-    }
-    rettv->vval.v_number = 0;
-#else
-    rettv->vval.v_number = -1;
-#endif
-}
-
-#ifdef FEAT_CLIENTSERVER
-static void remote_common __ARGS((typeval *argvars, typeval *rettv, int expr));
-
-    static void
-remote_common(argvars, rettv, expr)
-    typeval	*argvars;
-    typeval	*rettv;
-    int		expr;
-{
-    char_u	*server_name;
-    char_u	*keys;
-    char_u	*r = NULL;
-    char_u	buf[NUMBUFLEN];
-# ifdef WIN32
-    HWND	w;
-# else
-    Window	w;
-# endif
-
-    if (check_restricted() || check_secure())
-	return;
-
-# ifdef FEAT_X11
-    if (check_connection() == FAIL)
-	return;
-# endif
-
-    server_name = get_tv_string(&argvars[0]);
-    keys = get_tv_string_buf(&argvars[1], buf);
-# ifdef WIN32
-    if (serverSendToVim(server_name, keys, &r, &w, expr, TRUE) < 0)
-# else
-    if (serverSendToVim(X_DISPLAY, server_name, keys, &r, &w, expr, 0, TRUE)
-									  < 0)
-# endif
-    {
-	if (r != NULL)
-	    EMSG(r);		/* sending worked but evaluation failed */
+	/* test the compare function */
+	if (item_compare_func != NULL
+		&& item_compare2((void *)&ptrs[0], (void *)&ptrs[1])
+							 == ITEM_COMPARE_FAIL)
+	    EMSG(_("E999: Sort compare function failed"));
 	else
-	    EMSG2(_("E241: Unable to send to %s"), server_name);
+	{
+	    /* Sort the array with item pointers. */
+	    qsort((void *)ptrs, (size_t)len, sizeof(listitem *),
+		    item_compare_func == NULL ? item_compare : item_compare2);
+
+	    /* Clear the List and append the items in the sorted order. */
+	    l->lv_first = l->lv_last = NULL;
+	    for (i = 0; i < len; ++i)
+		list_append(l, ptrs[i]);
+	}
+
+	vim_free(ptrs);
+    }
+}
+
+    static void
+f_str2list(argvars, rettv)
+    typeval	*argvars;
+    typeval	*rettv;
+{
+    char_u	*str;
+    char_u	*end;
+    char_u	*pat;
+    regmatch_T	regmatch;
+    char_u	patbuf[NUMBUFLEN];
+    char_u	*save_cpo;
+    int		match;
+    listitem	*ni;
+    listvar	*l;
+    colnr_T	col = 0;
+
+    /* Make 'cpoptions' empty, the 'l' flag should not be used here. */
+    save_cpo = p_cpo;
+    p_cpo = (char_u *)"";
+
+    str = get_tv_string(&argvars[0]);
+    if (argvars[1].v_type == VAR_UNKNOWN)
+	pat = (char_u *)"[\\x01- ]\\+";
+    else
+	pat = get_tv_string_buf(&argvars[1], patbuf);
+
+    l = list_alloc();
+    if (l == NULL)
 	return;
-    }
+    rettv->v_type = VAR_LIST;
+    rettv->vval.v_list = l;
+    ++l->lv_refcount;
 
-    rettv->vval.v_string = r;
-
-    if (argvars[2].v_type != VAR_UNKNOWN)
+    regmatch.regprog = vim_regcomp(pat, RE_MAGIC + RE_STRING);
+    if (regmatch.regprog != NULL)
     {
-	var	v;
-	char_u	str[30];
+	regmatch.rm_ic = FALSE;
+	while (*str != NUL)
+	{
+	    match = vim_regexec_nl(&regmatch, str, col);
+	    if (match)
+		end = regmatch.startp[0];
+	    else
+		end = str + STRLEN(str);
+	    if (end > str)
+	    {
+		ni = listitem_alloc();
+		if (ni == NULL)
+		    break;
+		ni->li_tv.v_type = VAR_STRING;
+		ni->li_tv.vval.v_string = vim_strnsave(str, end - str);
+		list_append(l, ni);
+	    }
+	    if (!match)
+		break;
+	    /* Advance to just after the match. */
+	    if (regmatch.endp[0] > str)
+		col = 0;
+	    else
+	    {
+		/* Don't get stuck at the same match. */
+#ifdef FEAT_MBYTE
+		col = mb_ptr2len_check(regmatch.endp[0]);
+#else
+		col = 1;
+#endif
+	    }
+	    str = regmatch.endp[0];
+	}
 
-	sprintf((char *)str, "0x%x", (unsigned int)w);
-	v.tv.v_type = VAR_STRING;
-	v.tv.vval.v_string = vim_strsave(str);
-	set_var(get_tv_string(&argvars[2]), &v.tv, FALSE);
-	vim_free(v.tv.vval.v_string);
+	vim_free(regmatch.regprog);
     }
-}
-#endif
 
-/*
- * "remote_expr()" function
- */
-/*ARGSUSED*/
-    static void
-f_remote_expr(argvars, rettv)
-    typeval	*argvars;
-    typeval	*rettv;
-{
-    rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = NULL;
-#ifdef FEAT_CLIENTSERVER
-    remote_common(argvars, rettv, TRUE);
-#endif
-}
-
-/*
- * "remote_send()" function
- */
-/*ARGSUSED*/
-    static void
-f_remote_send(argvars, rettv)
-    typeval	*argvars;
-    typeval	*rettv;
-{
-    rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = NULL;
-#ifdef FEAT_CLIENTSERVER
-    remote_common(argvars, rettv, FALSE);
-#endif
-}
-
-/*
- * "remote_foreground()" function
- */
-/*ARGSUSED*/
-    static void
-f_remote_foreground(argvars, rettv)
-    typeval	*argvars;
-    typeval	*rettv;
-{
-    rettv->vval.v_number = 0;
-#ifdef FEAT_CLIENTSERVER
-# ifdef WIN32
-    /* On Win32 it's done in this application. */
-    serverForeground(get_tv_string(&argvars[0]));
-# else
-    /* Send a foreground() expression to the server. */
-    argvars[1].v_type = VAR_STRING;
-    argvars[1].vval.v_string = vim_strsave((char_u *)"foreground()");
-    argvars[2].v_type = VAR_UNKNOWN;
-    remote_common(argvars, rettv, TRUE);
-    vim_free(argvars[1].vval.v_string);
-# endif
-#endif
+    p_cpo = save_cpo;
 }
 
 #ifdef HAVE_STRFTIME
@@ -9215,40 +9592,6 @@ f_stridx(argvars, rettv)
 }
 
 /*
- * "strridx()" function
- */
-    static void
-f_strridx(argvars, rettv)
-    typeval	*argvars;
-    typeval	*rettv;
-{
-    char_u	buf[NUMBUFLEN];
-    char_u	*needle;
-    char_u	*haystack;
-    char_u	*rest;
-    char_u	*lastmatch = NULL;
-
-    needle = get_tv_string(&argvars[1]);
-    haystack = get_tv_string_buf(&argvars[0], buf);
-    if (*needle == NUL)
-	/* Empty string matches past the end. */
-	lastmatch = haystack + STRLEN(haystack);
-    else
-	for (rest = haystack; *rest != '\0'; ++rest)
-	{
-	    rest = (char_u *)strstr((char *)rest, (char *)needle);
-	    if (rest == NULL)
-		break;
-	    lastmatch = rest;
-	}
-
-    if (lastmatch == NULL)
-	rettv->vval.v_number = -1;
-    else
-	rettv->vval.v_number = (varnumber_T)(lastmatch - haystack);
-}
-
-/*
  * "string()" function
  */
     static void
@@ -9320,6 +9663,40 @@ f_strpart(argvars, rettv)
 }
 
 /*
+ * "strridx()" function
+ */
+    static void
+f_strridx(argvars, rettv)
+    typeval	*argvars;
+    typeval	*rettv;
+{
+    char_u	buf[NUMBUFLEN];
+    char_u	*needle;
+    char_u	*haystack;
+    char_u	*rest;
+    char_u	*lastmatch = NULL;
+
+    needle = get_tv_string(&argvars[1]);
+    haystack = get_tv_string_buf(&argvars[0], buf);
+    if (*needle == NUL)
+	/* Empty string matches past the end. */
+	lastmatch = haystack + STRLEN(haystack);
+    else
+	for (rest = haystack; *rest != '\0'; ++rest)
+	{
+	    rest = (char_u *)strstr((char *)rest, (char *)needle);
+	    if (rest == NULL)
+		break;
+	    lastmatch = rest;
+	}
+
+    if (lastmatch == NULL)
+	rettv->vval.v_number = -1;
+    else
+	rettv->vval.v_number = (varnumber_T)(lastmatch - haystack);
+}
+
+/*
  * "strtrans()" function
  */
     static void
@@ -9329,6 +9706,38 @@ f_strtrans(argvars, rettv)
 {
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = transstr(get_tv_string(&argvars[0]));
+}
+
+/*
+ * "submatch()" function
+ */
+    static void
+f_submatch(argvars, rettv)
+    typeval	*argvars;
+    typeval	*rettv;
+{
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = reg_submatch((int)get_tv_number(&argvars[0]));
+}
+
+/*
+ * "substitute()" function
+ */
+    static void
+f_substitute(argvars, rettv)
+    typeval	*argvars;
+    typeval	*rettv;
+{
+    char_u	patbuf[NUMBUFLEN];
+    char_u	subbuf[NUMBUFLEN];
+    char_u	flagsbuf[NUMBUFLEN];
+
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = do_string_sub(
+	    get_tv_string(&argvars[0]),
+	    get_tv_string_buf(&argvars[1], patbuf),
+	    get_tv_string_buf(&argvars[2], subbuf),
+	    get_tv_string_buf(&argvars[3], flagsbuf));
 }
 
 /*
@@ -9555,38 +9964,6 @@ done:
     }
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = res;
-}
-
-/*
- * "submatch()" function
- */
-    static void
-f_submatch(argvars, rettv)
-    typeval	*argvars;
-    typeval	*rettv;
-{
-    rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = reg_submatch((int)get_tv_number(&argvars[0]));
-}
-
-/*
- * "substitute()" function
- */
-    static void
-f_substitute(argvars, rettv)
-    typeval	*argvars;
-    typeval	*rettv;
-{
-    char_u	patbuf[NUMBUFLEN];
-    char_u	subbuf[NUMBUFLEN];
-    char_u	flagsbuf[NUMBUFLEN];
-
-    rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = do_string_sub(
-	    get_tv_string(&argvars[0]),
-	    get_tv_string_buf(&argvars[1], patbuf),
-	    get_tv_string_buf(&argvars[2], subbuf),
-	    get_tv_string_buf(&argvars[3], flagsbuf));
 }
 
 /*

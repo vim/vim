@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.0aa.  Last change: 2005 Jan 03
+*starting.txt*  For Vim version 7.0aa.  Last change: 2005 Jan 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1033,6 +1033,7 @@ CTRL-Z			Suspend Vim, like ":stop".
 			Command-line mode, the CTRL-Z is inserted as a normal
 			character.  In Visual mode Vim goes back to Normal
 			mode.
+			Note: if CTRL-Z undoes a change see |mswin.vim|.
 
 
 :sus[pend][!]	or			*:sus* *:suspend* *:st* *:stop*
