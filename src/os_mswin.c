@@ -584,6 +584,7 @@ display_errors()
 	for (p = (char *)error_ga.ga_data; *p; ++p)
 	    if (!isspace(*p))
 	    {
+#if 0
 		/* Truncate a very long message, it will go off-screen. */
 		if (STRLEN(p) > 2000)
 		{
@@ -595,6 +596,7 @@ display_errors()
 #endif
 		    STRCPY(s, _("...(truncated)"));
 		}
+#endif
 
 		(void)gui_mch_dialog(VIM_ERROR, (char_u *)_("Error"),
 					      p, (char_u *)_("&Ok"), 1, NULL);
