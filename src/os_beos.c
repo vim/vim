@@ -192,15 +192,6 @@ beos_select(int nbits,
     }
 #endif
 
-#if FEAT_GUI_BEOS
-    /*
-     * If not reading from terminal, pretend there is input.
-     * This makes the pty reading (for the GUI) "work" for
-     * :!ls but not for :r !ls ... weird.
-     */
-    if (gui.in_use && State == EXTERNCMD)
-	return 1;
-#endif
     return 0;
 }
 

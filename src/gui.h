@@ -11,10 +11,6 @@
 /* #define D(x)	printf x; */
 #define D(x)
 
-#if defined(FEAT_GUI_AMIGA)
-# include <intuition/intuition.h>
-#endif
-
 #ifdef FEAT_GUI_MOTIF
 # define FEAT_GUI_X11
 # include <Xm/Xm.h>
@@ -50,10 +46,6 @@ class VimWidget;
 #ifdef FEAT_GUI_GTK
 # include <X11/Intrinsic.h>
 # include <gtk/gtk.h>
-#endif
-
-#ifdef FEAT_GUI_BEOS
-# include "gui_beos.h"
 #endif
 
 #ifdef FEAT_GUI_MAC
@@ -102,7 +94,7 @@ class VimWidget;
  * GUIs that support dropping files on a running Vim.
  */
 #if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MAC) \
-	|| defined(FEAT_GUI_BEOS) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_KDE)
+	|| defined(FEAT_GUI_GTK) || defined(FEAT_GUI_KDE)
 # define HAVE_DROP_FILE
 #endif
 
@@ -229,9 +221,6 @@ typedef struct GuiScrollbar
 				   32767 lines.  When the file is longer,
 				   scroll_shift is set to the number of shifts
 				   to reduce the count.  */
-#endif
-#if FEAT_GUI_BEOS
-    VimScrollBar *id;		/* Pointer to real scroll bar */
 #endif
 #ifdef FEAT_GUI_MAC
     ControlHandle id;		/* A handle to the scrollbar */
@@ -476,14 +465,6 @@ typedef struct Gui
     guicolor_T	currBgColor;	    /* Current background text color */
 #endif
 
-#ifdef FEAT_GUI_BEOS
-    VimApp     *vimApp;
-    VimWindow  *vimWindow;
-    VimFormView *vimForm;
-    VimTextAreaView *vimTextArea;
-    int		vdcmp;		    /* Vim Direct Communication Message Port */
-#endif
-
 #ifdef FEAT_GUI_MAC
     WindowPtr	VimWindow;
     MenuHandle	MacOSHelpMenu;	    /* Help menu provided by the MacOS */
@@ -491,12 +472,6 @@ typedef struct Gui
     int		MacOSHaveCntxMenu;  /* Contextual menu available */
     WindowPtr	wid;		    /* Window id of text area */
     int		visibility;	    /* Is window partially/fully obscured? */
-#endif
-
-#if defined(FEAT_GUI_AMIGA)
-    struct Window *window;		/* a handle to the amiga window */
-    struct Menu	  *menu;		/* a pointer to the first menu */
-    struct TextFont *textfont;		/* a pointer to the font structure */
 #endif
 
 #ifdef RISCOS

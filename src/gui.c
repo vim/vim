@@ -1218,10 +1218,6 @@ gui_resize_shell(pixel_width, pixel_height)
 again:
     busy = TRUE;
 
-#ifdef FEAT_GUI_BEOS
-    vim_lock_screen();
-#endif
-
     /* Flush pending output before redrawing */
     out_flush();
 
@@ -1247,10 +1243,6 @@ again:
     if (gui.num_rows != screen_Rows || gui.num_cols != screen_Columns
 	    || gui.num_rows != Rows || gui.num_cols != Columns)
 	shell_resized();
-
-#ifdef FEAT_GUI_BEOS
-    vim_unlock_screen();
-#endif
 
     gui_update_scrollbars(TRUE);
     gui_update_cursor(FALSE, TRUE);
