@@ -1,6 +1,6 @@
 " Vim script language tests
 " Author:	Servatius Brandt <Servatius.Brandt@fujitsu-siemens.com>
-" Last Change:	2005 Jan 15
+" Last Change:	2005 Jan 16
 
 "-------------------------------------------------------------------------------
 " Test environment							    {{{1
@@ -8515,6 +8515,7 @@ function! MATCH(expected, msg, enr, emsg)
 	    else
 		let msg = escape(msg, '"')
 		Xout "Unexpected message:" msg
+		Xout "Expected:" a:enr . ": " . a:emsg
 	    endif
 	endif
     else
@@ -8522,6 +8523,7 @@ function! MATCH(expected, msg, enr, emsg)
 	if !a:expected		" match although not expected
 	    let msg = escape(msg, '"')
 	    Xout "Unexpected message:" msg
+	    Xout "Expected none."
 	endif
     endif
     return match

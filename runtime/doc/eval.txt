@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 15
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -260,7 +260,9 @@ examples: >
 	:call add(list, [1, 2])		" append List as one new item
 	:call extend(list, [1, 2])	" extend the list with two more items
 	:let i = remove(list, 3)	" remove item 3
+	:unlet list[3]			" idem
 	:let l = remove(list, 3, -1)	" remove items 3 to last item
+	:unlet list[3 : ]		" idem
 	:call filter(list, 'v:val =~ "x"')  " remove items with an 'x'
 
 Changing the oder of items in a list: >
@@ -416,8 +418,11 @@ use |:let| this way: >
 	:let dict[4] = "four"
 	:let dict['one'] = item
 
-Removing an entry from a Dictionary is done with |remove()|: >
-	:let i = remove(dict, 'aaa')	" remove item with key 'aaa'
+Removing an entry from a Dictionary is done with |remove()| or |:unlet|.
+Three ways to remove the entry with key "aaa" from dict: >
+	:let i = remove(dict, 'aaa')
+	:unlet dict.aaa
+	:unlet dict['aaa']
 
 Merging a Dictionary with another is done with |extend()|: >
 	:call extend(adict, bdict)	" extend adict with entries from bdict
@@ -4313,6 +4318,12 @@ This would call the function "my_func_whizz(parameter)".
 			variable names can be given, they are all removed.
 			With [!] no error message is given for non-existing
 			variables.
+			One or more items from a List can be removed: >
+				:unlet list[3]	  " remove fourth item
+				:unlet list[3:]   " remove fourth item to last
+<			One item from a Dictionary can be removed at a time: >
+				:unlet dict['two']
+				:unlet dict.two
 
 :if {expr1}			*:if* *:endif* *:en* *E171* *E579* *E580*
 :en[dif]		Execute the commands until the next matching ":else"
