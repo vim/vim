@@ -1001,7 +1001,7 @@ gui_mch_new_menu_font()
 		Dimension height;
 
 		XtVaGetValues(mp->id,
-			XtNheight,(XtArgVal *)&height,
+			XtNheight, &height,
 			NULL);
 		if (height < max_height)
 		    max_height = height;
