@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Mar 11
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Mar 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -332,6 +332,7 @@ New functions: ~
 |split()|		split a String into a List
 |string()|		String representation of a List or Dictionary
 |system()|		Filters {input} through a shell command.
+|taglist()|		Get list of matching tags. (Yegappan Lakshmanan)
 |tr()|			Translate characters. (Ron Aaron)
 |values()|		get List of Dictionary values
 |writefile()|		write a list of lines into a file
@@ -958,5 +959,15 @@ Completion didn't work after ":argdo", ":windo" and ":bufdo".  Also for ":set
 When setting 'ttymouse' to "dec" in an xterm that supports the DEC mouse
 locator it doesn't work.  Now switch off the mouse before selecting another
 mouse model.
+
+When the CursorHold event is triggered and the commands peek for typed
+characters the typeahead buffer may be messed up, e.g., when a mouse-up event
+is received.  Avoid invoking the autocommands from the function waiting for a
+character, let it put K_CURSORHOLD in the input buffer.
+
+Removed the "COUNT" flag from ":argadd", to avoid ":argadd 1*" to be used like
+":1argadd *".
+
+Avoid that $LANG is used for the menus when LC_MESSAGES is "en_US".
 
  vim:tw=78:ts=8:ft=help:norl:

@@ -121,6 +121,7 @@ static int fontset_ascent __ARGS((XFontSet fs));
 
 static guicolor_T	prev_fg_color = INVALCOLOR;
 static guicolor_T	prev_bg_color = INVALCOLOR;
+static guicolor_T	prev_sp_color = INVALCOLOR;
 
 #if defined(FEAT_GUI_MOTIF) && defined(FEAT_MENU)
 static XButtonPressedEvent last_mouse_event;
@@ -145,6 +146,7 @@ static void gui_x11_send_event_handler __ARGS((Widget, XtPointer, XEvent *, Bool
 static void gui_x11_wm_protocol_handler __ARGS((Widget, XtPointer, XEvent *, Boolean *));
 static void gui_x11_blink_cb __ARGS((XtPointer timed_out, XtIntervalId *interval_id));
 static Cursor gui_x11_create_blank_mouse __ARGS((void));
+static void draw_curl __ARGS((int row, int col, int cells));
 
 
 /*
@@ -2431,6 +2433,9 @@ find_closest_color(colormap, colorPtr)
     return OK;
 }
 
+/*
+ * Set the current text foreground color.
+ */
     void
 gui_mch_set_fg_color(color)
     guicolor_T	color;
@@ -2457,6 +2462,16 @@ gui_mch_set_bg_color(color)
 }
 
 /*
+ * Set the current text special color.
+ */
+    void
+gui_mch_set_sp_color(color)
+    guicolor_T	color;
+{
+    prev_sp_color = color;
+}
+
+/*
  * create a mouse pointer that is blank
  */
     static Cursor
@@ -2468,6 +2483,29 @@ gui_x11_create_blank_mouse()
     XFreeGC(gui.dpy, gc);
     return XCreatePixmapCursor(gui.dpy, blank_pixmap, blank_pixmap,
 	    (XColor*)&gui.norm_pixel, (XColor*)&gui.norm_pixel, 0, 0);
+}
+
+/*
+ * Draw a curled line at the bottom of the character cell.
+ */
+    static void
+draw_curl(row, col, cells)
+    int row;
+    int col;
+    int cells;
+{
+    int			i;
+    int			offset;
+    const static int	val[8] = {1, 0, 0, 0, 1, 2, 2, 2 };
+
+    XSetForeground(gui.dpy, gui.text_gc, prev_sp_color);
+    for (i = FILL_X(col); i < FILL_X(col + cells); ++i)
+    {
+	offset = val[i % 8];
+	XDrawPoint(gui.dpy, gui.wid, gui.text_gc, i,
+						FILL_Y(row + 1) - 1 - offset);
+    }
+    XSetForeground(gui.dpy, gui.text_gc, prev_fg_color);
 }
 
     void
@@ -2561,6 +2599,7 @@ gui_mch_draw_string(row, col, s, len, flags)
 	XFillRectangle(gui.dpy, gui.wid, gui.text_gc, FILL_X(col),
 		FILL_Y(row), gui.char_width * cells, gui.char_height);
 	XSetForeground(gui.dpy, gui.text_gc, prev_fg_color);
+
 #ifdef FEAT_MBYTE
 	if (enc_utf8)
 	    XDrawString16(gui.dpy, gui.wid, gui.text_gc, TEXT_X(col),
@@ -2596,10 +2635,22 @@ gui_mch_draw_string(row, col, s, len, flags)
 		    TEXT_Y(row), (char *)s, len);
     }
 
+    /* Undercurl: draw curl at the bottom of the character cell. */
+    if (flags & DRAW_UNDERC)
+	draw_curl(row, col, cells);
+
     /* Underline: draw a line at the bottom of the character cell. */
     if (flags & DRAW_UNDERL)
+    {
+	int	y = FILL_Y(row + 1) - 1;
+
+	/* When p_linespace is 0, overwrite the bottom row of pixels.
+	 * Otherwise put the line just below the character. */
+	if (p_linespace > 1)
+	    y -= p_linespace - 1;
 	XDrawLine(gui.dpy, gui.wid, gui.text_gc, FILL_X(col),
-	     FILL_Y(row + 1) - 1, FILL_X(col + cells) - 1, FILL_Y(row + 1) - 1);
+		y, FILL_X(col + cells) - 1, y);
+    }
 
 #ifdef FEAT_XFONTSET
     if (current_fontset != NULL)
