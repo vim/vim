@@ -1996,10 +1996,11 @@ scripterror:
     {
 	/*
 	 * We start commands on line 0, make "vim +/pat file" match a
-	 * pattern on line 1.
+	 * pattern on line 1.  But don't move the cursor when an autocommand
+	 * with g`" was used.
 	 */
 	msg_scroll = TRUE;
-	if (tagname == NULL)
+	if (tagname == NULL && curwin->w_cursor.lnum <= 1)
 	    curwin->w_cursor.lnum = 0;
 	sourcing_name = (char_u *)"command line";
 #ifdef FEAT_EVAL

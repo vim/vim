@@ -9042,14 +9042,17 @@ f_getwinvar(argvars, rettv)
     {
 	if (*varname == '&')	/* window-local-option */
 	{
-	    /* set curwin to be our win, temporarily */
+	    /* Set curwin to be our win, temporarily.  Also set curbuf, so
+	     * that we can get buffer-local options. */
 	    oldcurwin = curwin;
 	    curwin = win;
+	    curbuf = win->w_buffer;
 
 	    get_option_tv(&varname, rettv, 1);
 
 	    /* restore previous notion of curwin */
 	    curwin = oldcurwin;
+	    curbuf = curwin->w_buffer;
 	}
 	else
 	{

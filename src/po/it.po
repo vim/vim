@@ -1,6 +1,6 @@
 # Italian Translation for Vim
 #
-# FIRST AUTHOR Antonio Colombo <antonio.colombo@jrc.it>, 2000
+# FIRST AUTHOR Antonio Colombo <azc10@yahoo.com>, 2000
 #
 # Ogni commento è benvenuto...
 # Every remark is very welcome...
@@ -16,7 +16,7 @@ msgstr ""
 "PO-Revision-Date:  2004-06-02 20:02+0200\n"
 "Last-Translator:   Vlad Sandrini   <marco@sandrini.biz>\n"
 "Language-Team:     Italian"
-"                   Antonio Colombo <antonio.colombo@jrc.it>\n"
+"                   Antonio Colombo <azc10@yahoo.com>\n"
 "                   Vlad Sandrini   <marco@sandrini.biz>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO_8859-1\n"
