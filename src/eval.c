@@ -607,6 +607,18 @@ static int function_exists __ARGS((char_u *name));
 static int builtin_function __ARGS((char_u *name));
 #ifdef FEAT_PROFILE
 static void func_do_profile __ARGS((ufunc_T *fp));
+static void prof_sort_list __ARGS((FILE *fd, ufunc_T **sorttab, int st_len, char *title, int prefer_self));
+static void prof_func_line __ARGS((FILE *fd, int count, proftime_T *total, proftime_T *self, int prefer_self));
+static int
+# ifdef __BORLANDC__
+    _RTLENTRYF
+# endif
+	prof_total_cmp __ARGS((const void *s1, const void *s2));
+static int
+# ifdef __BORLANDC__
+    _RTLENTRYF
+# endif
+	prof_self_cmp __ARGS((const void *s1, const void *s2));
 #endif
 static int script_autoload __ARGS((char_u *name));
 static char_u *autoload_name __ARGS((char_u *name));
@@ -16125,8 +16137,12 @@ func_dump_profile(fd)
     int		todo;
     ufunc_T	*fp;
     int		i;
+    ufunc_T	**sorttab;
+    int		st_len = 0;
 
     todo = func_hashtab.ht_used;
+    sorttab = (ufunc_T **)alloc((unsigned)(sizeof(ufunc_T) * todo));
+
     for (hi = func_hashtab.ht_array; todo > 0; ++hi)
     {
 	if (!HASHITEM_EMPTY(hi))
@@ -16135,6 +16151,9 @@ func_dump_profile(fd)
 	    fp = HI2UF(hi);
 	    if (fp->uf_profiling)
 	    {
+		if (sorttab != NULL)
+		    sorttab[st_len++] = fp;
+
 		if (fp->uf_name[0] == K_SPECIAL)
 		    fprintf(fd, "FUNCTION  <SNR>%s()\n", fp->uf_name + 3);
 		else
@@ -16150,26 +16169,115 @@ func_dump_profile(fd)
 
 		for (i = 0; i < fp->uf_lines.ga_len; ++i)
 		{
-		    if (fp->uf_tml_count[i] > 0)
-		    {
-			fprintf(fd, "%5d ", fp->uf_tml_count[i]);
-			if (profile_equal(&fp->uf_tml_total[i],
-							 &fp->uf_tml_self[i]))
-			    fprintf(fd, "           ");
-			else
-			    fprintf(fd, "%s ",
-					   profile_msg(&fp->uf_tml_total[i]));
-			fprintf(fd, "%s ", profile_msg(&fp->uf_tml_self[i]));
-		    }
-		    else
-			fprintf(fd, "                            ");
+		    prof_func_line(fd, fp->uf_tml_count[i],
+			     &fp->uf_tml_total[i], &fp->uf_tml_self[i], TRUE);
 		    fprintf(fd, "%s\n", FUNCLINE(fp, i));
 		}
 		fprintf(fd, "\n");
 	    }
 	}
     }
+
+    if (sorttab != NULL && st_len > 0)
+    {
+	qsort((void *)sorttab, (size_t)st_len, sizeof(ufunc_T *),
+							      prof_total_cmp);
+	prof_sort_list(fd, sorttab, st_len, "TOTAL", FALSE);
+	qsort((void *)sorttab, (size_t)st_len, sizeof(ufunc_T *),
+							      prof_self_cmp);
+	prof_sort_list(fd, sorttab, st_len, "SELF", TRUE);
+    }
 }
+
+    static void
+prof_sort_list(fd, sorttab, st_len, title, prefer_self)
+    FILE	*fd;
+    ufunc_T	**sorttab;
+    int		st_len;
+    char	*title;
+    int		prefer_self;	/* when equal print only self time */
+{
+    int		i;
+    ufunc_T	*fp;
+
+    fprintf(fd, "FUNCTIONS SORTED ON %s TIME\n", title);
+    fprintf(fd, "count  total (s)   self (s)  function\n");
+    for (i = 0; i < 20 && i < st_len; ++i)
+    {
+	fp = sorttab[i];
+	prof_func_line(fd, fp->uf_tm_count, &fp->uf_tm_total, &fp->uf_tm_self,
+								 prefer_self);
+	if (fp->uf_name[0] == K_SPECIAL)
+	    fprintf(fd, " <SNR>%s()\n", fp->uf_name + 3);
+	else
+	    fprintf(fd, " %s()\n", fp->uf_name);
+    }
+    fprintf(fd, "\n");
+}
+
+/*
+ * Print the count and times for one function or function line.
+ */
+    static void
+prof_func_line(fd, count, total, self, prefer_self)
+    FILE	*fd;
+    int		count;
+    proftime_T	*total;
+    proftime_T	*self;
+    int		prefer_self;	/* when equal print only self time */
+{
+    if (count > 0)
+    {
+	fprintf(fd, "%5d ", count);
+	if (prefer_self && profile_equal(total, self))
+	    fprintf(fd, "           ");
+	else
+	    fprintf(fd, "%s ", profile_msg(total));
+	if (!prefer_self && profile_equal(total, self))
+	    fprintf(fd, "           ");
+	else
+	    fprintf(fd, "%s ", profile_msg(self));
+    }
+    else
+	fprintf(fd, "                            ");
+}
+
+/*
+ * Compare function for total time sorting.
+ */
+    static int
+#ifdef __BORLANDC__
+_RTLENTRYF
+#endif
+prof_total_cmp(s1, s2)
+    const void	*s1;
+    const void	*s2;
+{
+    ufunc_T	*p1, *p2;
+
+    p1 = *(ufunc_T **)s1;
+    p2 = *(ufunc_T **)s2;
+    return profile_cmp(&p1->uf_tm_total, &p2->uf_tm_total);
+}
+
+/*
+ * Compare function for self time sorting.
+ */
+    static int
+#ifdef __BORLANDC__
+_RTLENTRYF
+#endif
+prof_self_cmp(s1, s2)
+    const void	*s1;
+    const void	*s2;
+{
+    ufunc_T	*p1, *p2;
+
+    p1 = *(ufunc_T **)s1;
+    p2 = *(ufunc_T **)s2;
+    return profile_cmp(&p1->uf_tm_self, &p2->uf_tm_self);
+}
+
 #endif
 
 /*

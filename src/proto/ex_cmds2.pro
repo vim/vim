@@ -18,6 +18,7 @@ void profile_add __ARGS((proftime_T *tm, proftime_T *tm2));
 void profile_get_wait __ARGS((proftime_T *tm));
 void profile_sub_wait __ARGS((proftime_T *tm, proftime_T *tma));
 int profile_equal __ARGS((proftime_T *tm1, proftime_T *tm2));
+int profile_cmp __ARGS((proftime_T *tm1, proftime_T *tm2));
 char *profile_msg __ARGS((proftime_T *tm));
 void ex_profile __ARGS((exarg_T *eap));
 void profile_dump __ARGS((void));
