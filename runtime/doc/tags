@@ -2266,6 +2266,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :sa	windows.txt	/*:sa*
 :sal	windows.txt	/*:sal*
 :sall	windows.txt	/*:sall*
+:san	eval.txt	/*:san*
+:sandbox	eval.txt	/*:sandbox*
 :sargument	windows.txt	/*:sargument*
 :sav	editing.txt	/*:sav*
 :saveas	editing.txt	/*:saveas*
@@ -4052,6 +4054,7 @@ book	intro.txt	/*book*
 boolean	options.txt	/*boolean*
 break-finally	eval.txt	/*break-finally*
 browse()	eval.txt	/*browse()*
+browsedir()	eval.txt	/*browsedir()*
 browsefilter	editing.txt	/*browsefilter*
 bufexists()	eval.txt	/*bufexists()*
 buffer-hidden	windows.txt	/*buffer-hidden*
@@ -4922,6 +4925,7 @@ hebrew	hebrew.txt	/*hebrew*
 hebrew.txt	hebrew.txt	/*hebrew.txt*
 help	various.txt	/*help*
 help-context	help.txt	/*help-context*
+help-tags	tags	1
 help-translated	various.txt	/*help-translated*
 help-xterm-window	various.txt	/*help-xterm-window*
 help.txt	help.txt	/*help.txt*

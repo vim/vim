@@ -1276,9 +1276,9 @@ gui_mch_browse(int saving,
 	       char_u *initdir,
 	       char_u *filter)
 {
-    GtkFileSelection *fs;	/* shortcut */
-    char_u dirbuf[MAXPATHL];
-    char_u *p;
+    GtkFileSelection	*fs;	/* shortcut */
+    char_u		dirbuf[MAXPATHL];
+    char_u		*p;
 
 # ifdef HAVE_GTK2
     title = CONVERT_TO_UTF8(title);
@@ -1346,6 +1346,75 @@ gui_mch_browse(int saving,
     if (p == NULL)
 	p = gui.browse_fname;
     return vim_strsave(p);
+}
+
+/*
+ * Put up a directory selector
+ * Returns the selected name in allocated memory, or NULL for Cancel.
+ * title			title for the window
+ * dflt				default name
+ * initdir			initial directory, NULL for current dir
+ */
+/*ARGSUSED*/
+    char_u *
+gui_mch_browsedir(
+	       char_u *title,
+	       char_u *initdir)
+{
+# if defined(GTK_FILE_CHOOSER)	    /* Only in GTK 2.4 and later. */
+    char_u		dirbuf[MAXPATHL];
+    char_u		*p;
+    GtkWidget		*dirdlg;	    /* file selection dialog */
+    char_u		*dirname = NULL;
+
+    title = CONVERT_TO_UTF8(title);
+
+    dirdlg = gtk_file_chooser_dialog_new(
+	    (const gchar *)title,
+	    GTK_WINDOW(gui.mainwin),
+	    GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+	    GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+	    GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
+	    NULL);
+
+    CONVERT_TO_UTF8_FREE(title);
+
+    /* if our pointer is currently hidden, then we should show it. */
+    gui_mch_mousehide(FALSE);
+
+    /* GTK appears to insist on an absolute path. */
+    if (initdir == NULL || *initdir == NUL
+	       || vim_FullName(initdir, dirbuf, MAXPATHL - 10, FALSE) == FAIL)
+	mch_dirname(dirbuf, MAXPATHL - 10);
+
+    /* Always need a trailing slash for a directory.
+     * Also add a dummy file name, so that we get to the directory. */
+    add_pathsep(dirbuf);
+    STRCAT(dirbuf, "@zd(*&1|");
+    gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(dirdlg),
+						      (const gchar *)dirbuf);
+
+    /* Run the dialog. */
+    if (gtk_dialog_run(GTK_DIALOG(dirdlg)) == GTK_RESPONSE_ACCEPT)
+	dirname = (char_u *)gtk_file_chooser_get_filename(
+						    GTK_FILE_CHOOSER(dirdlg));
+    gtk_widget_destroy(dirdlg);
+    if (dirname == NULL)
+	return NULL;
+
+    /* shorten the file name if possible */
+    mch_dirname(dirbuf, MAXPATHL);
+    p = shorten_fname(dirname, dirbuf);
+    if (p == NULL || *p == NUL)
+	p = dirname;
+    p = vim_strsave(p);
+    g_free(dirname);
+    return p;
+
+# else
+    /* For GTK 2.2 and earlier: fall back to ordinary file selector. */
+    return gui_mch_browse(0, title, NULL, NULL, initdir, NULL);
+# endif
 }
 
 #endif	/* FEAT_BROWSE */
@@ -3038,4 +3107,3 @@ gui_gtk_position_in_parent(
 }
 
 #endif /* !HAVE_GTK2 */
-

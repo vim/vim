@@ -184,8 +184,9 @@ current_func_returned()
 #include "version.h"
 
 /* values for flags: */
-#define VV_COMPAT   1	    /* compatible, also used without "v:" */
-#define VV_RO	    2	    /* read-only */
+#define VV_COMPAT	1	/* compatible, also used without "v:" */
+#define VV_RO		2	/* read-only */
+#define VV_RO_SBX	4	/* read-only in the sandbox*/
 
 struct vimvar
 {
@@ -193,7 +194,7 @@ struct vimvar
     int		len;		/* length of name */
     char_u	*val;		/* current value (can also be a number!) */
     char	type;		/* VAR_NUMBER or VAR_STRING */
-    char	flags;		/* VV_COMPAT and VV_RO */
+    char	flags;		/* VV_COMPAT, VV_RO, VV_RO_SBX */
 } vimvars[VV_LEN] =
 {   /* The order here must match the VV_ defines in vim.h! */
     {"count", sizeof("count") - 1, NULL, VAR_NUMBER, VV_COMPAT+VV_RO},
@@ -207,7 +208,7 @@ struct vimvar
     {"this_session", sizeof("this_session") - 1, NULL, VAR_STRING, VV_COMPAT},
     {"version", sizeof("version") - 1, (char_u *)VIM_VERSION_100,
 						 VAR_NUMBER, VV_COMPAT+VV_RO},
-    {"lnum", sizeof("lnum") - 1, NULL, VAR_NUMBER, VV_RO},
+    {"lnum", sizeof("lnum") - 1, NULL, VAR_NUMBER, VV_RO_SBX},
     {"termresponse", sizeof("termresponse") - 1, NULL, VAR_STRING, VV_RO},
     {"fname", sizeof("fname") - 1, NULL, VAR_STRING, VV_RO},
     {"lang", sizeof("lang") - 1, NULL, VAR_STRING, VV_RO},
@@ -220,10 +221,10 @@ struct vimvar
     {"fname_new", sizeof("fname_new") - 1, NULL, VAR_STRING, VV_RO},
     {"fname_diff", sizeof("fname_diff") - 1, NULL, VAR_STRING, VV_RO},
     {"cmdarg", sizeof("cmdarg") - 1, NULL, VAR_STRING, VV_RO},
-    {"foldstart", sizeof("foldstart") - 1, NULL, VAR_NUMBER, VV_RO},
-    {"foldend", sizeof("foldend") - 1, NULL, VAR_NUMBER, VV_RO},
-    {"folddashes", sizeof("folddashes") - 1, NULL, VAR_STRING, VV_RO},
-    {"foldlevel", sizeof("foldlevel") - 1, NULL, VAR_NUMBER, VV_RO},
+    {"foldstart", sizeof("foldstart") - 1, NULL, VAR_NUMBER, VV_RO_SBX},
+    {"foldend", sizeof("foldend") - 1, NULL, VAR_NUMBER, VV_RO_SBX},
+    {"folddashes", sizeof("folddashes") - 1, NULL, VAR_STRING, VV_RO_SBX},
+    {"foldlevel", sizeof("foldlevel") - 1, NULL, VAR_NUMBER, VV_RO_SBX},
     {"progname", sizeof("progname") - 1, NULL, VAR_STRING, VV_RO},
     {"servername", sizeof("servername") - 1, NULL, VAR_STRING, VV_RO},
     {"dying", sizeof("dying") - 1, NULL, VAR_NUMBER, VV_RO},
@@ -254,6 +255,7 @@ static void f_argc __ARGS((VAR argvars, VAR retvar));
 static void f_argidx __ARGS((VAR argvars, VAR retvar));
 static void f_argv __ARGS((VAR argvars, VAR retvar));
 static void f_browse __ARGS((VAR argvars, VAR retvar));
+static void f_browsedir __ARGS((VAR argvars, VAR retvar));
 static buf_T *find_buffer __ARGS((VAR avar));
 static void f_bufexists __ARGS((VAR argvars, VAR retvar));
 static void f_buflisted __ARGS((VAR argvars, VAR retvar));
@@ -288,6 +290,7 @@ static void f_foldclosedend __ARGS((VAR argvars, VAR retvar));
 static void foldclosed_both __ARGS((VAR argvars, VAR retvar, int end));
 static void f_foldlevel __ARGS((VAR argvars, VAR retvar));
 static void f_foldtext __ARGS((VAR argvars, VAR retvar));
+static void f_foldtextresult __ARGS((VAR argvars, VAR retvar));
 static void f_foreground __ARGS((VAR argvars, VAR retvar));
 static void f_getbufvar __ARGS((VAR argvars, VAR retvar));
 static void f_getchar __ARGS((VAR argvars, VAR retvar));
@@ -2814,6 +2817,7 @@ static struct fst
     {"argidx",		0, 0, f_argidx},
     {"argv",		1, 1, f_argv},
     {"browse",		4, 4, f_browse},
+    {"browsedir",	2, 2, f_browsedir},
     {"bufexists",	1, 1, f_bufexists},
     {"buffer_exists",	1, 1, f_bufexists},	/* obsolete */
     {"buffer_name",	1, 1, f_bufname},	/* obsolete */
@@ -2848,6 +2852,7 @@ static struct fst
     {"foldclosedend",	1, 1, f_foldclosedend},
     {"foldlevel",	1, 1, f_foldlevel},
     {"foldtext",	0, 0, f_foldtext},
+    {"foldtextresult",	1, 1, f_foldtextresult},
     {"foreground",	0, 0, f_foreground},
     {"getbufvar",	2, 2, f_getbufvar},
     {"getchar",		0, 1, f_getchar},
@@ -3379,7 +3384,33 @@ f_browse(argvars, retvar)
     defname = get_var_string_buf(&argvars[3], buf2);
 
     retvar->var_val.var_string =
-		 do_browse(save, title, defname, NULL, initdir, NULL, curbuf);
+		 do_browse(save ? BROWSE_SAVE : 0,
+				 title, defname, NULL, initdir, NULL, curbuf);
+#else
+    retvar->var_val.var_string = NULL;
+#endif
+    retvar->var_type = VAR_STRING;
+}
+
+/*
+ * "browsedir(title, initdir)" function
+ */
+/* ARGSUSED */
+    static void
+f_browsedir(argvars, retvar)
+    VAR		argvars;
+    VAR		retvar;
+{
+#ifdef FEAT_BROWSE
+    char_u	*title;
+    char_u	*initdir;
+    char_u	buf[NUMBUFLEN];
+
+    title = get_var_string(&argvars[0]);
+    initdir = get_var_string_buf(&argvars[1], buf);
+
+    retvar->var_val.var_string = do_browse(BROWSE_DIR,
+				    title, NULL, NULL, initdir, NULL, curbuf);
 #else
     retvar->var_val.var_string = NULL;
 #endif
@@ -4394,6 +4425,39 @@ f_foldtext(argvars, retvar)
 	    foldtext_cleanup(r + len);
 	    retvar->var_val.var_string = r;
 	}
+    }
+#endif
+}
+
+/*
+ * "foldtextresult(lnum)" function
+ */
+/*ARGSUSED*/
+    static void
+f_foldtextresult(argvars, retvar)
+    VAR		argvars;
+    VAR		retvar;
+{
+#ifdef FEAT_FOLDING
+    linenr_T	lnum;
+    char_u	*text;
+    char_u	buf[51];
+    foldinfo_T  foldinfo;
+    int		fold_count;
+#endif
+
+    retvar->var_type = VAR_STRING;
+    retvar->var_val.var_string = NULL;
+#ifdef FEAT_FOLDING
+    lnum = get_var_lnum(argvars);
+    fold_count = foldedCount(curwin, lnum, &foldinfo);
+    if (fold_count > 0)
+    {
+	text = get_foldtext(curwin, lnum, lnum + fold_count - 1,
+							      &foldinfo, buf);
+	if (text == buf)
+	    text = vim_strsave(text);
+	retvar->var_val.var_string = text;
     }
 #endif
 }
@@ -9035,6 +9099,8 @@ set_var(name, varp)
     {
 	if (vimvars[i].flags & VV_RO)
 	    EMSG2(_(e_readonlyvar), name);
+	else if ((vimvars[i].flags & VV_RO_SBX) && sandbox)
+	    EMSG2(_(e_readonlysbx), name);
 	else
 	{
 	    if (vimvars[i].type == VAR_STRING)

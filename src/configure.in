@@ -1586,7 +1586,7 @@ dnl define an autoconf function to check for a specified version of GTK, and
 dnl try to compile/link a GTK program.  this gets used once for GTK 1.1.16.
 dnl
 dnl AM_PATH_GTK([MINIMUM-VERSION, [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]]])
-dnl Test for GTK, and define GTK_CFLAGS and GTK_LIBS
+dnl Test for GTK, and define GTK_CFLAGS, GTK_LIBDIR and GTK_LIBS
 dnl
 AC_DEFUN(AM_PATH_GTK,
 [
@@ -1602,6 +1602,7 @@ AC_DEFUN(AM_PATH_GTK,
       dnl But I guess the dependency on pkgconfig.m4 is not wanted or
       dnl something like that.
       GTK_CFLAGS=`$PKG_CONFIG --cflags gtk+-2.0`
+      GTK_LIBDIR=`$PKG_CONFIG --libs-only-L gtk+-2.0`
       GTK_LIBS=`$PKG_CONFIG --libs gtk+-2.0`
       gtk_major_version=`$PKG_CONFIG --modversion gtk+-2.0 | \
 	     sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\1/'`
@@ -1613,6 +1614,7 @@ AC_DEFUN(AM_PATH_GTK,
     elif test "X$GTK_CONFIG" != "Xno"; then
     {
       GTK_CFLAGS=`$GTK_CONFIG $gtk_config_args --cflags`
+      GTK_LIBDIR=
       GTK_LIBS=`$GTK_CONFIG $gtk_config_args --libs`
       gtk_major_version=`$GTK_CONFIG $gtk_config_args --version | \
 	     sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\1/'`
@@ -1854,7 +1856,8 @@ if test -z "$SKIP_GTK"; then
     dnl problems (bold fonts, --remote doesn't work).
     if test "X$SKIP_GTK2" != "XYES"; then
       AM_PATH_GTK(2.2.0,
-		  [GTK_LIBNAME="$GTK_LIBS"
+		  [GUI_LIB_LOC="$GTK_LIBDIR"
+		   GTK_LIBNAME="$GTK_LIBS"
 		  GUI_INC_LOC="$GTK_CFLAGS"], )
       if test "x$GTK_CFLAGS" != "x"; then
 	SKIP_ATHENA=YES

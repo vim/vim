@@ -779,8 +779,8 @@ browse_save_fname(buf)
     {
 	char_u *fname;
 
-	fname = do_browse(TRUE, (char_u *)_("Save As"), NULL, NULL, NULL,
-								   NULL, buf);
+	fname = do_browse(BROWSE_SAVE, (char_u *)_("Save As"),
+						 NULL, NULL, NULL, NULL, buf);
 	if (fname != NULL)
 	{
 	    if (setfname(buf, fname, NULL, TRUE) == OK)
@@ -2011,7 +2011,7 @@ ex_source(eap)
     {
 	char_u *fname = NULL;
 
-	fname = do_browse(FALSE, (char_u *)_("Source Vim script"), eap->arg,
+	fname = do_browse(0, (char_u *)_("Source Vim script"), eap->arg,
 				      NULL, NULL, BROWSE_FILTER_MACROS, NULL);
 	if (fname != NULL)
 	{

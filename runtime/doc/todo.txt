@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Oct 07
+*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Oct 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,15 +30,8 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Add browsedir(): like browse() but for directories.
-    For GTK it already sort-of works when the default name is empty.
-
-When ":file" sets the alternate file name and it's empty this doesn't make
-sense.  Could skip it, but would that break scripts that rely on the buffer to
-exist?
-
 Folding support for 2html. (Carl Osterwisch, Oct 4)
-How to evaluate an expression in the sandbox?
+Now diff output!
 
 Aborting at the ATTENTION prompt causes trouble:
     buffer remains active, nwindows isn't closed (fixed in buffer.c)
@@ -57,13 +50,6 @@ work. (Valery Kondakoff)
 Solved in os_mswin.c.  Add to 6.3?
 
 Patch for Win32 textdomain: NAKADAIRA Yukihiro, Sept 17.
-
-GTK 2 error message with this sequence (Namsh Oct 7):
-	- start gvim with French locale
-	- set enc=utf-8
-	- :aunmenu *
-	- :unlet  did_install_default_menus
-	- :source $VIMRUNTIME/menu.vim
 
 Valencia: executable("xxd.exe") returns true while "!xxd" doesn't work.
 Works fine for me.  Only in specific environment?
@@ -371,6 +357,8 @@ Also place vimtutor.bat in %windir%?
 Support ":enew filename" to edit a new buffer with a name.  It's like "enew |
 file filename" but without setting the alternate file to a buffer without a
 name. (Charles Campbell)
+
+Add gui_mch_browsedir() for Motif, KDE and Mac OS/X.
 
 
 Vi incompatibility:

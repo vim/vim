@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2004 Oct 07
+*options.txt*	For Vim version 7.0aa.  Last change: 2004 Oct 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1062,7 +1062,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	break if 'linebreak' is on.
 
 						*'browsedir'* *'bsdir'*
-'browsedir' 'bsdir'	string	(default for "last")
+'browsedir' 'bsdir'	string	(default: "last")
 			global
 			{not in Vi} {only for Motif and Win32 GUI}
 	Which directory to use for the file browser:

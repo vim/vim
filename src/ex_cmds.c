@@ -2026,6 +2026,8 @@ ex_file(eap)
 	 * The name of the current buffer will be changed.
 	 * A new (unlisted) buffer entry needs to be made to hold the old file
 	 * name, which will become the alternate file name.
+	 * But don't set the alternate file name if the buffer didn't have a
+	 * name.
 	 */
 	fname = curbuf->b_ffname;
 	sfname = curbuf->b_sfname;
@@ -2039,9 +2041,12 @@ ex_file(eap)
 	    return;
 	}
 	curbuf->b_flags |= BF_NOTEDITED;
-	buf = buflist_new(fname, xfname, curwin->w_cursor.lnum, 0);
-	if (buf != NULL && !cmdmod.keepalt)
-	    curwin->w_alt_fnum = buf->b_fnum;
+	if (xfname != NULL && *xfname != NUL)
+	{
+	    buf = buflist_new(fname, xfname, curwin->w_cursor.lnum, 0);
+	    if (buf != NULL && !cmdmod.keepalt)
+		curwin->w_alt_fnum = buf->b_fnum;
+	}
 	vim_free(fname);
 	vim_free(sfname);
 #ifdef FEAT_AUTOCMD
@@ -2105,7 +2110,7 @@ do_write(eap)
 #ifdef FEAT_BROWSE
     if (cmdmod.browse)
     {
-	browse_file = do_browse(TRUE, (char_u *)_("Save As"), ffname,
+	browse_file = do_browse(BROWSE_SAVE, (char_u *)_("Save As"), ffname,
 						    NULL, NULL, NULL, curbuf);
 	if (browse_file == NULL)
 	    goto theend;
@@ -2609,7 +2614,7 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags)
 #ifdef FEAT_BROWSE
 	if (cmdmod.browse)
 	{
-	    browse_file = do_browse(FALSE, (char_u *)_("Edit File"), ffname,
+	    browse_file = do_browse(0, (char_u *)_("Edit File"), ffname,
 						    NULL, NULL, NULL, curbuf);
 	    if (browse_file == NULL)
 		goto theend;

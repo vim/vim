@@ -2020,9 +2020,8 @@ fold_line(wp, fold_count, foldinfo, lnum, row)
     linenr_T	lnume = lnum + fold_count - 1;
     int		len;
     char_u	*p;
-    char_u	*text = NULL;
+    char_u	*text;
     int		fdc;
-    int		level;
     int		col;
     int		txtcol;
     int		off = (int)(current_ScreenLine - ScreenLines);
@@ -2139,71 +2138,7 @@ fold_line(wp, fold_count, foldinfo, lnum, row)
     /*
      * 4. Compose the folded-line string with 'foldtext', if set.
      */
-#ifdef FEAT_EVAL
-    if (*wp->w_p_fdt != NUL)
-    {
-	char_u	dashes[51];
-	win_T	*save_curwin;
-
-	/* Set "v:foldstart" and "v:foldend". */
-	set_vim_var_nr(VV_FOLDSTART, lnum);
-	set_vim_var_nr(VV_FOLDEND, lnume);
-
-	/* Set "v:folddashes" to a string of "level" dashes. */
-	/* Set "v:foldlevel" to "level". */
-	level = foldinfo->fi_level;
-	if (level > 50)
-	    level = 50;
-	vim_memset(dashes, '-', (size_t)level);
-	dashes[level] = NUL;
-	set_vim_var_string(VV_FOLDDASHES, dashes, -1);
-	set_vim_var_nr(VV_FOLDLEVEL, (long)level);
-	save_curwin = curwin;
-	curwin = wp;
-	curbuf = wp->w_buffer;
-
-	++emsg_off;
-	text = eval_to_string_safe(wp->w_p_fdt, NULL);
-	--emsg_off;
-
-	curwin = save_curwin;
-	curbuf = curwin->w_buffer;
-	set_vim_var_string(VV_FOLDDASHES, NULL, -1);
-
-	if (text != NULL)
-	{
-	    /* Replace unprintable characters, if there are any.  But
-	     * replace a TAB with a space. */
-	    for (p = text; *p != NUL; ++p)
-	    {
-#ifdef FEAT_MBYTE
-		if (has_mbyte && (len = (*mb_ptr2len_check)(p)) > 1)
-		{
-		    if (!vim_isprintc((*mb_ptr2char)(p)))
-			break;
-		    p += len - 1;
-		}
-		else
-#endif
-		    if (*p == TAB)
-			*p = ' ';
-		    else if (ptr2cells(p) > 1)
-			break;
-	    }
-	    if (*p != NUL)
-	    {
-		p = transstr(text);
-		vim_free(text);
-		text = p;
-	    }
-	}
-    }
-    if (text == NULL)
-#endif
-    {
-	sprintf((char *)buf, _("+--%3ld lines folded "), fold_count);
-	text = buf;
-    }
+    text = get_foldtext(wp, lnum, lnume, foldinfo, buf);
 
     txtcol = col;	/* remember where text starts */
 

@@ -941,10 +941,10 @@ static struct vimoption
 # ifdef FEAT_EVAL
 			    (char_u *)VAR_WIN, PV_FDT,
 			    {(char_u *)"foldtext()", (char_u *)NULL}
-#else
+# else
 			    (char_u *)NULL, PV_NONE,
 			    {(char_u *)NULL, (char_u *)0L}
-#endif
+# endif
 			    },
 #endif
     {"formatoptions","fo",  P_STRING|P_ALLOCED|P_VIM|P_FLAGLIST,

@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2004 Oct 06
+*eval.txt*      For Vim version 7.0aa.  Last change: 2004 Oct 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -670,19 +670,19 @@ v:fname_diff	The name of the diff (patch) file.  Only valid while
 					*v:folddashes* *folddashes-variable*
 v:folddashes	Used for 'foldtext': dashes representing foldlevel of a closed
 		fold.
-		Read-only. |fold-foldtext|
+		Read-only in the |sandbox|. |fold-foldtext|
 
 					*v:foldlevel* *foldlevel-variable*
 v:foldlevel	Used for 'foldtext': foldlevel of closed fold.
-		Read-only. |fold-foldtext|
+		Read-only in the |sandbox|. |fold-foldtext|
 
 					*v:foldend* *foldend-variable*
 v:foldend	Used for 'foldtext': last line of closed fold.
-		Read-only. |fold-foldtext|
+		Read-only in the |sandbox|. |fold-foldtext|
 
 					*v:foldstart* *foldstart-variable*
 v:foldstart	Used for 'foldtext': first line of closed fold.
-		Read-only. |fold-foldtext|
+		Read-only in the |sandbox|. |fold-foldtext|
 
 					*v:insertmode* *insertmode-variable*
 v:insertmode	Used for the |InsertEnter| and |InsertChange| autocommand
@@ -710,9 +710,9 @@ v:lc_time	The current locale setting for time messages of the runtime
 		command.  See |multi-lang|.
 
 						*v:lnum* *lnum-variable*
-v:lnum		Line number for the 'foldexpr' and 'indentexpr' expressions.
-		Only valid while one of these expressions is being evaluated.
-		Read-only. |fold-expr| 'indentexpr'
+v:lnum		Line number for the 'foldexpr' |fold-expr| and 'indentexpr'
+		expressions.  Only valid while one of these expressions is
+		being evaluated.  Read-only when in the |sandbox|.
 
 					*v:prevcount* *prevcount-variable*
 v:prevcount	The count given for the last but one Normal mode command.
@@ -812,6 +812,7 @@ argidx()			Number  current index in the argument list
 argv( {nr})			String	{nr} entry of the argument list
 browse( {save}, {title}, {initdir}, {default})
 				String	put up a file requester
+browsedir( {title}, {initdir})  String	put up a directory requester
 bufexists( {expr})		Number	TRUE if buffer {expr} exists
 buflisted( {expr})		Number  TRUE if buffer {expr} is listed
 bufloaded( {expr})		Number  TRUE if buffer {expr} is loaded
@@ -986,6 +987,19 @@ browse({save}, {title}, {initdir}, {default})
 		    {title}	title for the requester
 		    {initdir}	directory to start browsing in
 		    {default}	default file name
+		When the "Cancel" button is hit, something went wrong, or
+		browsing is not possible, an empty string is returned.
+
+							*browsedir()*
+browsedir({title}, {initdir})
+		Put up a directory requester.  This only works when
+		"has("browse")" returns non-zero (only in some GUI versions).
+		On systems where a directory browser is not supported a file
+		browser is used.  In that case: select a file in the directory
+		to be used.
+		The input fields are:
+		    {title}	title for the requester
+		    {initdir}	directory to start browsing in
 		When the "Cancel" button is hit, something went wrong, or
 		browsing is not possible, an empty string is returned.
 
@@ -1487,6 +1501,16 @@ foldtext()	Returns a String, to be displayed for a closed fold.  This is
 		first non-blank line of the fold.  Leading white space, "//"
 		or "/*" and the text from the 'foldmarker' and 'commentstring'
 		options is removed.
+		{not available when compiled without the |+folding| feature}
+
+foldtextresult({lnum})					*foldtextresult()*
+		Returns the text that is displayed for the closed fold at line
+		{lnum}.  Evaluates 'foldtext' in the appropriate context.
+		When there is no closed fold at {lnum} an empty string is
+		returned.
+		{lnum} is used like with |getline()|.  Thus "." is the current
+		line, "'m" mark m, etc.
+		Useful when exporting folded text, e.g., to HTML.
 		{not available when compiled without the |+folding| feature}
 
 							*foreground()*
@@ -4716,7 +4740,7 @@ options are evaluated in a sandbox.  This means that you are protected from
 these expressions having nasty side effects.  This gives some safety for when
 these options are set from a modeline.  It is also used when the command from
 a tags file is executed.
-This is not guaranteed 100% secure, but it should block most attacks.
+The sandbox is also used for the |:sandbox| command.
 
 These items are not allowed in the sandbox:
 	- changing the buffer text
@@ -4725,5 +4749,12 @@ These items are not allowed in the sandbox:
 	- executing a shell command
 	- reading or writing a file
 	- jumping to another buffer or editing a file
+This is not guaranteed 100% secure, but it should block most attacks.
+
+							*:san* *:sandbox*
+:sandbox {cmd}		Execute {cmd} in the sandbox.  Useful to evaluate an
+			option that may have been set from a modeline, e.g.
+			'foldexpr'.
+
 
  vim:tw=78:ts=8:ft=help:norl:

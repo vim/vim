@@ -2583,8 +2583,9 @@ ungetchr()
 }
 
 /*
- * get and return the value of the hex string immediately after the current
- * position. Return -1 for invalid, or 0-255 for valid. Position is updated:
+ * Get and return the value of the hex string at the current position.
+ * Return -1 if there is no valid hex number.
+ * The position is updated:
  *     blahblah\%x20asdf
  *         before-^ ^-after
  * The parameter controls the maximum number of input characters. This will be

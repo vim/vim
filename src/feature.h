@@ -1042,6 +1042,11 @@
 # define MSWIN_FR_BUFSIZE 256
 #endif
 
+#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MOTIF) \
+	|| defined(MSWIN_FIND_REPLACE) || defined(FEAT_GUI_KDE)
+# define FIND_REPLACE_DIALOG 1
+#endif
+
 /*
  * +clientserver	Remote control via the remote_send() function
  *			and the --remote argument

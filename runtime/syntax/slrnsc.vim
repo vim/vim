@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Slrn score file (based on slrn 0.9.8.0)
-" Maintainer:	Preben 'Peppe' Guldberg <peppe-vim@wielders.org>
-" Last Change:	19 May 2004
+" Maintainer:	Preben 'Peppe' Guldberg <peppe@wielders.org>
+" Last Change:	8 Oct 2004
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -48,7 +48,7 @@ syn region slrnscScoreItem	contained matchgroup=Special start="^\s*\~\={::\=" en
 
 syn keyword slrnscScore		contained Score
 syn match slrnscScoreIdent	contained "%.*"
-syn match slrnScoreLine		"^\s*Score::\=\s\+=\=-\=\d\+\s*\(%.*\)\=$" skipempty nextgroup=slrnscScoreItem contains=slrnscScore,slrnscDelim,slrnscOper,slrnscNumber,slrnscScoreIdent
+syn match slrnScoreLine		"^\s*Score::\=\s\+=\=[-+]\=\d\+\s*\(%.*\)\=$" skipempty nextgroup=slrnscScoreItem contains=slrnscScore,slrnscDelim,slrnscOper,slrnscNumber,slrnscScoreIdent
 
 " Define the default highlighting.
 " For version 5.7 and earlier: only when not done already

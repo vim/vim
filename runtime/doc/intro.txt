@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 7.0aa.  Last change: 2004 Jun 12
+*intro.txt*     For Vim version 7.0aa.  Last change: 2004 Oct 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -226,12 +226,14 @@ Vim would never have become what it is now, without the help of these people!
 	Kayhan Demirel		sent me news in Uganda
 	Chris & John Downey	xvi (ideas for multi-windows version)
 	Henk Elbers		first VMS port
+	Daniel Elstner		GTK+ 2 port
 	Eric Fischer		Mac port, 'cindent', and other improvements
 	Benji Fisher		Answering lots of user questions
 	Bill Foster		Athena GUI port
 	Loic Grenie		xvim (ideas for multi windows version)
 	Sven Guckes		Vim promotor and previous WWW page maintainer
 	Darren Hiebert		Exuberant ctags
+	Jason Hildebrand	GTK+ 2 port
 	Bruce Hunsaker		improvements for VMS port
 	Andy Kahn		Cscope support, GTK+ GUI port
 	Oezguer Kesim		Maintainer of Vim Mailing Lists

@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.0aa.  Last change: 2004 Sep 18
+*syntax.txt*	For Vim version 7.0aa.  Last change: 2004 Oct 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -392,6 +392,9 @@ Force to omit the line numbers by using a zero value: >
    :let html_number_lines = 0
 Go back to the default to use 'number' by deleting the variable: >
    :unlet html_number_lines
+
+Closed folds are put in the HTML as they are displayed.  If you don't want
+this, use the "zR" command before invoking 2html.
 
 By default, HTML optimized for old browsers is generated.  If you prefer using
 cascading style sheets (CSS1) for the attributes (resulting in considerably

@@ -3734,7 +3734,7 @@ vim_findfile_init(path, filename, stopdirs, level, free_visited, need_dir,
     {
 	int	llevel;
 	int	len;
-	char_u	*errpt;
+	char	*errpt;
 
 	/* save the fix part of the path */
 	ff_search_ctx->ffsc_fix_path = vim_strnsave(path,
@@ -3758,15 +3758,15 @@ vim_findfile_init(path, filename, stopdirs, level, free_visited, need_dir,
 		ff_expand_buffer[len++] = *wc_part++;
 		ff_expand_buffer[len++] = *wc_part++;
 
-		llevel = strtol((char *)wc_part, (char **)&errpt, 10);
-		if (errpt != wc_part && llevel > 0 && llevel < 255)
+		llevel = strtol((char *)wc_part, &errpt, 10);
+		if ((char_u *)errpt != wc_part && llevel > 0 && llevel < 255)
 		    ff_expand_buffer[len++] = llevel;
-		else if (errpt != wc_part && llevel == 0)
+		else if ((char_u *)errpt != wc_part && llevel == 0)
 		    /* restrict is 0 -> remove already added '**' */
 		    len -= 2;
 		else
 		    ff_expand_buffer[len++] = FF_MAX_STAR_STAR_EXPAND;
-		wc_part = errpt;
+		wc_part = (char_u *)errpt;
 		if (*wc_part != PATHSEP && *wc_part != NUL)
 		{
 		    EMSG2(_("E343: Invalid path: '**[number]' must be at the end of the path or be followed by '%s'."), PATHSEPSTR);

@@ -1,6 +1,6 @@
 " Vim syntax support file
 " Maintainer: Bram Moolenaar <Bram@vim.org>
-" Last Change: 2004 May 31
+" Last Change: 2004 Oct 10
 "	       (modified by David Ne\v{c}as (Yeti) <yeti@physics.muni.cz>)
 "	       (XHTML support by Panagiotis Issaris <takis@lumumba.luc.ac.be>)
 
@@ -238,40 +238,88 @@ else
   let s:end = line("$")
 endif
 
+" Closed folds are kept in the HTML.  Prepare the closed fold template text.
+if has('folding')
+  let s:c = &fillchars[matchend(&fillchars, 'fold:')]
+  if s:c == ''
+    let s:c = '-'
+  endif
+  let s:htmlfoldtext = '+' . s:c
+  while strlen(s:htmlfoldtext) < &columns
+      let s:htmlfoldtext = s:htmlfoldtext . s:c
+  endwhile
+  unlet s:c
+endif
+
+
 while s:lnum <= s:end
 
   " Get the current line
   let s:line = getline(s:lnum)
-  let s:len = strlen(s:line)
   let s:new = ""
 
-  if s:numblines
-    let s:new = '<span class="lnr">' . strpart('        ', 0, strlen(line("$")) - strlen(s:lnum)) . s:lnum . '</span>  '
-  endif
+  if has('folding') && foldclosed(s:lnum) > -1
+    "
+    " This is the beginning of a folded block
+    "
+    if s:numblines
+      let s:new = strpart('        ', 0, strlen(line("$")) - strlen(s:lnum)) . s:lnum . ' '
+    endif
+    let s:line = foldtextresult(s:lnum)
 
-  " Loop over each character in the line
-  let s:col = 1
-  while s:col <= s:len
-    let s:startcol = s:col " The start column for processing text
-    let s:id = synID(s:lnum, s:col, 1)
-    let s:col = s:col + 1
-    " Speed loop (it's small - that's the trick)
-    " Go along till we find a change in synID
-    while s:col <= s:len && s:id == synID(s:lnum, s:col, 1) | let s:col = s:col + 1 | endwhile
-
-    " Output the text with the same synID, with class set to {s:id_name}
-    let s:id = synIDtrans(s:id)
-    let s:id_name = synIDattr(s:id, "name", s:whatterm)
-    let s:new = s:new . '<span class="' . s:id_name . '">' . substitute(substitute(substitute(substitute(substitute(strpart(s:line, s:startcol - 1, s:col - s:startcol), '&', '\&amp;', 'g'), '<', '\&lt;', 'g'), '>', '\&gt;', 'g'), '"', '\&quot;', 'g'), "\x0c", '<hr class="PAGE-BREAK">', 'g') . '</span>'
+    let s:new = s:new . s:line
+    if !exists("html_no_pre")
+      let s:new = s:new . strpart(s:htmlfoldtext, strlen(s:new))
+    endif
+    
+    " Replace the reserved html characters
+    let s:new = substitute(substitute(substitute(substitute(substitute(s:new, '&', '\&amp;', 'g'), '<', '\&lt;', 'g'), '>', '\&gt;', 'g'), '"', '\&quot;', 'g'), "\x0c", '<hr class="PAGE-BREAK">', 'g')
+   
+    let s:id_name = "Folded"
+    let s:id = hlID(s:id_name)
+    let s:new = '<span class="' . s:id_name . '">' . s:new . '</span>'
     " Add the class to class list if it's not there yet
     if stridx(s:idlist, "," . s:id . ",") == -1
       let s:idlist = s:idlist . s:id . ","
     endif
 
-    if s:col > s:len
-      break
+    " Skip to the end of the fold  
+    let s:lnum = foldclosedend(s:lnum)
+
+  else
+    "
+    " A line that is not folded.
+    "
+    let s:len = strlen(s:line)
+
+    if s:numblines
+      let s:new = '<span class="lnr">' . strpart('        ', 0, strlen(line("$")) - strlen(s:lnum)) . s:lnum . '</span>  '
     endif
-  endwhile
+
+    " Loop over each character in the line
+    let s:col = 1
+    while s:col <= s:len
+      let s:startcol = s:col " The start column for processing text
+      let s:id = synID(s:lnum, s:col, 1)
+      let s:col = s:col + 1
+      " Speed loop (it's small - that's the trick)
+      " Go along till we find a change in synID
+      while s:col <= s:len && s:id == synID(s:lnum, s:col, 1) | let s:col = s:col + 1 | endwhile
+
+      " Output the text with the same synID, with class set to {s:id_name}
+      let s:id = synIDtrans(s:id)
+      let s:id_name = synIDattr(s:id, "name", s:whatterm)
+      let s:new = s:new . '<span class="' . s:id_name . '">' . substitute(substitute(substitute(substitute(substitute(strpart(s:line, s:startcol - 1, s:col - s:startcol), '&', '\&amp;', 'g'), '<', '\&lt;', 'g'), '>', '\&gt;', 'g'), '"', '\&quot;', 'g'), "\x0c", '<hr class="PAGE-BREAK">', 'g') . '</span>'
+      " Add the class to class list if it's not there yet
+      if stridx(s:idlist, "," . s:id . ",") == -1
+	let s:idlist = s:idlist . s:id . ","
+      endif
+
+      if s:col > s:len
+	break
+      endif
+    endwhile
+  endif
 
   " Expand tabs
   let s:pad=0

@@ -12,6 +12,7 @@ void gui_mch_set_scrollbar_pos __ARGS((scrollbar_T *sb, int x, int y, int w, int
 void gui_mch_create_scrollbar __ARGS((scrollbar_T *sb, int orient));
 void gui_mch_destroy_scrollbar __ARGS((scrollbar_T *sb));
 char_u *gui_mch_browse __ARGS((int saving, char_u *title, char_u *dflt, char_u *ext, char_u *initdir, char_u *filter));
+char_u *gui_mch_browsedir __ARGS((char_u *title, char_u *initdir));
 int gui_mch_dialog __ARGS((int type, char_u *title, char_u *message, char_u *buttons, int def_but, char_u *textfield));
 int gui_mch_dialog __ARGS((int type, char_u *title, char_u *message, char_u *buttons, int def_but, char_u *textfield));
 void gui_mch_show_popupmenu __ARGS((vimmenu_T *menu));
