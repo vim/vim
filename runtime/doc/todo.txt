@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 03
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,16 +30,19 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+When 'insertmode' is set  CTRL-I 4isometext<Esc> and then some typing hangs
+Vim. (Jens Paulus)
+
+:let completion stops after the first argument.
+
 List data type:
-- ":let list[expr] = expr"
-- ":let [a, b] = [1, 2]"
-- ":let [a, b; rest] = [1, 2, 3, 4]"
 - "for a in list"
 - "for [a, b] in [[1, 2], [3, 4]]"
 - == (same value) and "is" (same list)
+- store in viminfo: read_viminfo_varlist()
 - add many functions:
     call(func, list)		call function
-    keys(list)			list of all indexes 0 - len(list)
+    keys(list)			list of all indexes 0 - (len(list) - 1)
     repeat(list, count)		return list concatenated count times
     concat(list1, list2)	return list1 and list2 concatenated
     extend(list1, list2)	concatenate list2 to list 1
@@ -53,11 +56,19 @@ List data type:
     getval(list, idx[, default])	get value at idx or default
     file2lines()
     file2words()
+Fix the error numbers E999 in eval.c.
+
+Function reference: Define a nameless (numbered) function and assign
+it to a Funcref variable.
+    :function Myfunc = (arg)
+    :endfunc
+
+Use 'ignorecase' for ":vimgrep"?
 
 patch for QuickFixCmdPre and QuickFixCmdPost autocommands. (Ciaran McCreesh,
 2005 Jan 1)
 
-New Motif toolbar button from Martin Dalecki:
+New Motif toolbar button from Marcin Dalecki:
 - add remark in version7.txt
 - check if it works for pixmap loaded from a file.
 
@@ -104,7 +115,7 @@ PLANNED FOR VERSION 7.0:
 	  times later.  Sort of global syntax items.
 	- Use wordlists from openoffice (myspell).  Work together with them to
 	  update the wordlist.  (Adri Verhoef, Aad Nales)
-	- Patch from Martin Dalecki. (2004 Dec)  Uses ispell
+	- Patch from Marcin Dalecki. (2004 Dec)  Uses ispell
 	  implements "undercurl" attribute.  But how to set its color?
 	  Perhaps use "guicurl=Red" instead?
 	  If underline and undercurl are both there use undercurl only.
@@ -249,9 +260,6 @@ Add gui_mch_browsedir() for Motif, KDE and Mac OS/X.
 HTML indenting can be slow, find out why.  Any way to do some kind of
 profiling for Vim script?
 
-Mac: problem with Xcode, Vim doesn't continue until the next click.
-Apparently hangs in handle_drop().  A PostEvent() avoids it. (Da Woon Jung)
-
 Awaiting updated patches:
     --- awaiting updated patch ---
     7   Add patch from Wall for this one ( ~/Mail/oldmail/wall/in.00019 ):
@@ -280,10 +288,6 @@ Awaiting updated patches:
     7   Make "5dd" on last-but-one-line not delete anything (Vi compatible).
 	Add flag in 'cpoptions' for this.  When not present, "2dd" in the last
 	line should delete the last line.  Patch from greenx 2002 Apr 11.
-    8   Accelerators don't work in a dialog.  Include patch from Martin Dalecki
-	(Jan 3, tested by David Harrison).  Should work with Alt-o then.
-    7   Use accelerators for the Motif file selection dialog.  Patch from
-	Martin Dalecki 2002 Jan 11.
     8   Add a few more command names to the menus.  Patch from Jiri Brezina
 	(28 feb 2002).
     7   ATTENTION dialog choices are more logical when "Delete it' appears
@@ -297,7 +301,7 @@ Awaiting updated patches:
 	Add section in help files for these highlight groups?
     8   "fg" and "bg" don't work in an xterm.  Get default colors from xterm
 	with an ESC sequence.  Ideas in: ~/vim/patches/vikas.xtermcolors .
-    7   Add "DefaultFG" and "DefaultBG" for the colors of the menu. (Martin
+    7   Add "DefaultFG" and "DefaultBG" for the colors of the menu. (Marcin
 	Dalecki has a patch for Motif)
     -   Add possibility to highlight specific columns (for Fortran).  Or put a
 	line in between columns (e.g. for 'textwidth').
@@ -316,9 +320,6 @@ Awaiting updated patches:
 	better.  Now also works for Ruby (2001 Nov 10)
     -   Patch from Herculano de Lima Einloft Neto for better formatting of the
 	quickfix window (2004 dec 2)
-    7   Motif: use the menu font consistently.  Patch from Martin Dalecki 2002
-	Jan 11.
-    -   Motif: add 3D shading for the menu entries?  Patch from Martin Dalecki.
     7   When 'rightleft' is set, the search pattern should be displayed right
 	to left as well?  See patch of Dec 26. (Nadim Shaikli)
     8   Lock all used memory so that it doesn't get swapped to disk (uncrypted).
@@ -353,6 +354,10 @@ Awaiting updated patches:
         Win32: the text to replace with isn't remembered.
     -	For GUI Find/Replace dialog support using a regexp.  Patch for Motif
 	and GTK by degreneir (nov 10 and nov 18).
+
+Check if file explorer can handle directory names and links with a single
+quote. (Nieko Maatjes, 2005 Jan 4)
+
 
 Vi incompatibility:
 9   In Ex mode, "u" undoes all changes, not just the last one. (John Cowan)
@@ -1998,8 +2003,7 @@ GUI:
     double-width. (Maeda)
 8   Should take font from xterm where gvim was started (if no other default).
 8   Selecting font names in X11 is difficult, make a script or something to
-    select one.  Martin Dalecki has a font selector for Motif, but it needs a
-    bit more work.
+    select one.
 8   Visual highlighting should keep the same font (bold, italic, etc.).
 8   Add flag to 'guioptions' to not put anything in the clipboard at all?
 8   Should support a way to use keys that we don't recognize yet.  Add a
