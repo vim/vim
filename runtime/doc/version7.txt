@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jan 14
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jan 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -666,5 +666,6 @@ mode. (Peter Winters)
 
 Completion for ":next a'<Tab>" put a backslash before single quote, but it was
 not removed when editing a file.  Now halve backslashes in save_patterns().
+Also fix expanding a file name with the shell that contains "\'".
 
  vim:tw=78:ts=8:ft=help:norl:

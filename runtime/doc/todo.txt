@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 15
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -33,7 +33,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 Dictionary:
 - Define nameless function: ":function dict.key(arg)"
 - ":delfunc dict.key".
-- ":unlet dict.key" "unlet list[idx]"
 - Set the error message numbers for E999.
 
 Make ":call Funcref()" work?
@@ -215,7 +214,8 @@ PLANNED FOR VERSION 7.0:
     this or make it simple to have the FileChangedShell invoke the normal
     action, telling it what to do.
 -   Displaying size of Visual area: use 24-33 column display.
--   Mac: Unicode input and display (Eckehard Berns, June 27)
+-   Mac: Unicode input and display (Eckehard Berns, 2004 June 27)
+    Other patch from Da Woon Jung, 2005 Jan 16.
 8   Add patch from Muraoka Taro (Mar 16) to support input method on Mac?
     New patch 2004 Jun 16
 9   Add cursor-column highlighting.  Enable it with 'cursorcolumn' option,
