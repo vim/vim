@@ -246,6 +246,7 @@
 
 /*
  * +linebreak		'showbreak', 'breakat'  and 'linebreak' options.
+ *			Also 'numberwidth'.
  */
 #ifdef FEAT_NORMAL
 # define FEAT_LINEBREAK

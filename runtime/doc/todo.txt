@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Jul 02
+*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Jul 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,32 +30,10 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Docs for 'numberwidth'.  index.  optwin.vim
+
 For version 7.0:
 -   Include many PATCHES:
-    7   Add "nbsp" in 'listchars'?  Patch from David Blanchet, 2003 Jul 28.
-	again 2004 Jun 16
-    8   Add ":n" to fnamemodify(): normalize path, remove "../" when possible.
-	Aric Blumer has a patch for this.
-	He will update the patch for 6.3.
-    9   Add cursor-column highlighting.  Enable it with 'cursorcolumn' option,
-	set highlighting with "CursorColumn" group.  Useful for aligning text.
-	Also cursor-row highlighting.  Patch from Yasuhiro Matsumoto for
-	underlining the cursor line, 2004 Mar 24.  Update 2004 Jun 17
-	Alternatie: when 'number' is set highlight the number of the current
-	line.
-    7   Completion of network shares, patch by Yasuhiro Matsumoto.
-	Update 2004 Jun 17.
-    8   Patches from Peter "Rain Dog" Cucka:
-	- guifont selector (2002 Dec 15)
-	  update 2004 Jun 20
-    7   Add an option to set the width of the 'number' column.  Eight
-	positions is often more than needed.  Or adjust the width to the
-	length of the file?
-	Add patch that adds 'numberlen' option. (James Harvey)
-	Other patch with min and max from Emmanuel Renieris (2002 Jul 24)
-	Other patch without an option by Gilles Roy (2002 Jul 25)
-	New patch from Emmanuel Renieris, 2004 Jun 17
-	Needs more work: use one option with one or two numbers
     7   Be able to call a function while passing on a variable number of
 	arguments:
 	    :function Foo(abc, ...)
@@ -88,6 +66,9 @@ For version 7.0:
 	Resp: no time now.
     8   Add GTK 2.3 file dialog support.  Patch by Grahame Bowland, 2004 Mar 15,
 	but it doesn't use "initdir" or "dflt". (will update patch)
+    8   Add ":n" to fnamemodify(): normalize path, remove "../" when possible.
+	Aric Blumer has a patch for this.
+	He will update the patch for 6.3.
     8   Add buffer-local autocommands?  Reduces overhead for autocommands that
 	trigger often (inserting a character, switching mode).
 	    :au Event <buffer> do-something
@@ -100,6 +81,13 @@ For version 7.0:
 	VimResized	    - When the Vim window has been resized (SIGWINCH)
 	  patch from Yakov Lerner, 2003 July 24.
 	  He'll write documentation and send updated patch.
+    7   Completion of network shares, patch by Yasuhiro Matsumoto.
+	Update 2004 Jun 17.
+	How does this work?  Missing comments.
+    gettext()		Translate a message.  (Patch from Yasuhiro Matsumoto)
+			Update 2004 Jun 17
+			Missing docs.  Search in 'runtimepath'?
+			How to get the messages into the .po files?
     --- responses above --
     7   Make "5dd" on last-but-one-line not delete anything (Vi compatible).
 	Add flag in 'cpoptions' for this.  When not present, "2dd" in the last
@@ -152,10 +140,6 @@ For version 7.0:
 	find()			find file in 'path' (patch from Johannes
 				Zellner 2001 Dec 20)
 				Update 2004 Jun 16.
-	gettext()		Translate a message.  (Patch from Yasuhiro
-				Matsumoto) How to get the messages into the
-				.po files?
-				Update 2004 Jun 17
 	realname()		Get user name (first, last, full)
 				user_fullname() patch by Nikolai Weibull, Nov
 				3 2002)
@@ -221,6 +205,7 @@ For version 7.0:
 
 -   In the kvim/KDE source files fix the formatting.
 -   KDE version is called "kvim".  Make it "gvim", like the others?
+-   Better configure check for KDE include files from Dan Sharp.
 -   Change ga_room into ga_maxlen, so that it doesn't need to be
     incremented/decremented each time.
 -   For string variables, use length instead of NUL termination.
@@ -289,10 +274,15 @@ For version 7.0:
 -   Mac: Unicode input and display (Eckehard Berns, June 27)
 8   Add patch from Muraoka Taro (Mar 16) to support input method on Mac?
     New patch 2004 Jun 16
-7   Add the MzScheme interface?
-    NO: it changes too much of the code, while hardly anybody will use it.
-    Patch on http://iamphet.nm.ru/scheme/ (Sergey Khorev)
-    Alt URL: http://cyber.miem.edu.ru/~iamphet/scheme/mzvim-0.560.tar.gz
+7   Add the MzScheme interface?  New patch 2004 Jul 2. (Sergey Khorev)
+    Also fix a few Lisp problems.
+9   Add cursor-column highlighting.  Enable it with 'cursorcolumn' option,
+    set highlighting with "CursorColumn" group.  Useful for aligning text.
+    Also cursor-row highlighting.  Patch from Yasuhiro Matsumoto for
+    underlining the cursor line: 2004 Jun 17.  Should use highlight group
+    instead.
+    Alternative: when 'number' is set highlight the number of the current
+    line.
 
 Vi incompatibility:
 8   With undo/redo only marks in the changed lines should be changed.  Other

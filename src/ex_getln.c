@@ -3974,6 +3974,7 @@ ExpandUserDefined(xp, regmatch, num_file, file)
     char_u      num[50];
     garray_T	ga;
     int		save_current_SID = current_SID;
+    struct cmdline_info	    save_ccline;
 
     if (xp->xp_arg == NULL || xp->xp_arg[0] == '\0')
 	return FAIL;
@@ -3987,9 +3988,17 @@ ExpandUserDefined(xp, regmatch, num_file, file)
     args[1] = ccline.cmdbuff;
     args[2] = num;
 
+    /* Save the cmdline, we don't know what the function may do. */
+    save_ccline = ccline;
+    ccline.cmdbuff = NULL;
+    ccline.cmdprompt = NULL;
     current_SID = xp->xp_scriptID;
+
     all = call_vim_function(xp->xp_arg, 3, args, FALSE);
+
+    ccline = save_ccline;
     current_SID = save_current_SID;
+
     ccline.cmdbuff[ccline.cmdlen] = keep;
     if (all == NULL)
 	return FAIL;

@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 7.0aa.  Last change: 2004 Jul 02
+*quickref.txt*  For Vim version 7.0aa.  Last change: 2004 Jul 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -764,6 +764,7 @@ Short explanation of each option:		*option-list*
 |'mousetime'|	  |'mouset'| max time between mouse double-click
 |'nrformats'|	  |'nf'|     number formats recognized for CTRL-A command
 |'number'|	  |'nu'|     print the line number in front of each line
+|'numberwidth'|	  |'nuw'|    number of columns used for the line number
 |'osfiletype'|	  |'oft'|    operating system-specific filetype information
 |'paragraphs'|	  |'para'|   nroff macros that separate paragraphs
 |'paste'|		     allow pasting text

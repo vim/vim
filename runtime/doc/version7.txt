@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2004 Jul 02
+*version7.txt*  For Vim version 7.0aa.  Last change: 2004 Jul 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -86,6 +86,8 @@ Options: ~
 			mode to do any kind of completion.  (Taro Muraoka)
 'quoteescape'		Characters used to escape quotes inside a string.
 			Used for the a", a' and a` text objects. |a'|
+'numberwidth'		Minimal width of the space used for the 'number'
+			option. (Emmanuel Renieris)
 
 Ex commands: ~
 
@@ -116,6 +118,8 @@ character selections can be used between two Vims. (Eckehard Berns)
 Also fixes the problem that setting 'clipboard' to "unnamed" breaks using
 "yyp".
 
+Mac: GUI font selector. (Peter "Rain Dog" Cucka)
+
 The netrw plugin now also supports viewing a directory, when "scp://" is used.
 Deleting and renaming files is possible.  (Charles Campbell)
 
@@ -132,6 +136,8 @@ few more important commands.  Used ideas from Gabriel Zachmann.
 
 Unix: When libcall() fails obtain an error message with dlerror() and display
 it. (Johannes Zellner)
+
+Added "nbsp" in 'listchars'. (David Blanchet)
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*

@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2004 Jul 02
+" Last Change:	2004 Jul 03
 
 " If there already is an option window, jump to that one.
 if bufwinnr("option-window") > 0
@@ -359,6 +359,11 @@ call <SID>OptionG("lcs", &lcs)
 call append("$", "number\tshow the line number for each line")
 call append("$", "\t(local to window)")
 call <SID>BinOptionL("nu")
+if has("linebreak")
+  call append("$", "numberwidth\tnumber of columns to use for the line number")
+  call append("$", "\t(local to window)")
+  call <SID>OptionL("nuw")
+endif
 
 
 call <SID>Header("syntax and highlighting")

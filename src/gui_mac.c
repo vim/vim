@@ -203,6 +203,16 @@ ControlActionUPP gScrollDrag;
 /* Keeping track of which scrollbar is being dragged */
 static ControlHandle dragged_sb = NULL;
 
+#if defined(USE_CARBONIZED) && defined(MACOS_X)
+static struct
+{
+    FMFontFamily family;
+    FMFontSize size;
+    FMFontStyle style;
+    Boolean isPanelVisible;
+} gFontPanelInfo = { 0, 0, 0, false };
+#endif
+
 /*
  * The Quickdraw global is predefined in CodeWarior
  * but is not in Apple MPW
@@ -1436,6 +1446,99 @@ InstallAEHandlers(void)
 }
 #endif /* USE_AEVENT */
 
+
+#if defined(USE_CARBONIZED) && defined(MACOS_X)
+/*
+ * Callback function, installed by InstallFontPanelHandler(), below,
+ * to handle Font Panel events.
+ */
+    static OSStatus
+FontPanelHandler(EventHandlerCallRef inHandlerCallRef, EventRef inEvent,
+    void *inUserData)
+{
+    if (GetEventKind(inEvent) == kEventFontPanelClosed)
+    {
+	gFontPanelInfo.isPanelVisible = false;
+	return noErr;
+    }
+
+    if (GetEventKind(inEvent) == kEventFontSelection)
+    {
+	OSStatus status;
+	FMFontFamily newFamily;
+	FMFontSize newSize;
+	FMFontStyle newStyle;
+
+	/* Retrieve the font family ID number. */
+	status = GetEventParameter(inEvent, kEventParamFMFontFamily,
+		/*inDesiredType=*/typeFMFontFamily, /*outActualType=*/NULL,
+		/*inBufferSize=*/sizeof(FMFontFamily), /*outActualSize=*/NULL,
+		&newFamily);
+	if (status == noErr)
+	    gFontPanelInfo.family = newFamily;
+
+	/* Retrieve the font size. */
+	status = GetEventParameter(inEvent, kEventParamFMFontSize,
+		typeFMFontSize, NULL, sizeof(FMFontSize), NULL, &newSize);
+	if (status == noErr)
+	    gFontPanelInfo.size = newSize;
+
+	/* Retrieve the font style (bold, etc.).  Currently unused. */
+	status = GetEventParameter(inEvent, kEventParamFMFontStyle,
+		typeFMFontStyle, NULL, sizeof(FMFontStyle), NULL, &newStyle);
+	if (status == noErr)
+	    gFontPanelInfo.style = newStyle;
+    }
+    return noErr;
+}
+
+
+    static void
+InstallFontPanelHandler()
+{
+    EventTypeSpec eventTypes[2];
+    EventHandlerUPP handlerUPP;
+    /* EventHandlerRef handlerRef; */
+
+    eventTypes[0].eventClass = kEventClassFont;
+    eventTypes[0].eventKind  = kEventFontSelection;
+    eventTypes[1].eventClass = kEventClassFont;
+    eventTypes[1].eventKind  = kEventFontPanelClosed;
+
+    handlerUPP = NewEventHandlerUPP(FontPanelHandler);
+
+    InstallApplicationEventHandler(handlerUPP, /*numTypes=*/2, eventTypes,
+	    /*userData=*/NULL, /*handlerRef=*/NULL);
+}
+
+
+/*
+ * Fill the buffer pointed to by outName with the name and size
+ * of the font currently selected in the Font Panel.
+ */
+    static void
+GetFontPanelSelection(char_u* outName)
+{
+    Str255 buf;
+    Boolean isBold = false, isItalic = false;
+
+    if (!outName)
+	return;
+
+    (void)FMGetFontFamilyName(gFontPanelInfo.family, buf);
+    p2cstrcpy(outName, buf);
+
+#if 0 /* TODO: enable when styles are supported in gui_mac_find_font() */
+    isBold = (gFontPanelInfo.style & bold);
+    isItalic = (gFontPanelInfo.style & italic);
+#endif
+
+    sprintf(&outName[buf[0]], ":h%d%s%s", gFontPanelInfo.size,
+	    (isBold ? ":b" : ""), (isItalic ? ":i" : ""));
+}
+#endif
+
+
 /*
  * ------------------------------------------------------------
  * Unfiled yet
@@ -2614,6 +2717,28 @@ gui_mac_find_font(font_name)
     *p = c;
 
     GetFNum(pFontName, &font_id);
+
+    if (font_id == 0)
+    {
+	/*
+	 * Try again, this time replacing underscores in the font name
+	 * with spaces (:set guifont allows the two to be used
+	 * interchangeably; the Font Manager doesn't).
+	 */
+	int i, changed = FALSE;
+
+	for (i = pFontName[0]; i > 0; --i)
+	{
+	    if (pFontName[i] == '_')
+	    {
+		pFontName[i] = ' ';
+		changed = TRUE;
+	    }
+	}
+	if (changed)
+	    GetFNum(pFontName, &font_id);
+    }
+
 #else
     /* name = C2Pascal_save(menu->dname); */
     fontNamePtr = C2Pascal_save_and_remove_backslash(font_name);
@@ -3002,6 +3127,11 @@ gui_mch_init()
     gScrollDrag   = NewControlActionProc(gui_mac_drag_thumb);
 #endif
 
+#if defined(USE_CARBONIZED) && defined(MACOS_X)
+    /* Install Carbon event callbacks. */
+    (void)InstallFontPanelHandler();
+#endif
+
     /* Getting a handle to the Help menu */
 #ifdef USE_HELPMENU
 # ifdef USE_CARBONIZED
@@ -3233,6 +3363,56 @@ gui_mch_get_screen_dimensions(screen_w, screen_h)
 }
 
 
+#if defined(USE_CARBONIZED) && defined(MACOS_X)
+/*
+ * Open the Font Panel and wait for the user to select a font and
+ * close the panel.  Then fill the buffer pointed to by font_name with
+ * the name and size of the selected font and return the font's handle,
+ * or NOFONT in case of an error.
+ */
+    static GuiFont
+gui_mac_select_font(char_u *font_name)
+{
+    GuiFont		    selected_font = NOFONT;
+    OSStatus		    status;
+    FontSelectionQDStyle    curr_font;
+
+    /* Initialize the Font Panel with the current font. */
+    curr_font.instance.fontFamily = gui.norm_font & 0xFFFF;
+    curr_font.size = (gui.norm_font >> 16);
+    /* TODO: set fontStyle once styles are supported in gui_mac_find_font() */
+    curr_font.instance.fontStyle = 0;
+    curr_font.hasColor = false;
+    curr_font.version = 0; /* version number of the style structure */
+    status = SetFontInfoForSelection(kFontSelectionQDType,
+	    /*numStyles=*/1, &curr_font, /*eventTarget=*/NULL);
+
+    gFontPanelInfo.family = curr_font.instance.fontFamily;
+    gFontPanelInfo.style = curr_font.instance.fontStyle;
+    gFontPanelInfo.size = curr_font.size;
+
+    /* Pop up the Font Panel. */
+    status = FPShowHideFontPanel();
+    if (status == noErr)
+    {
+	/*
+	 * The Font Panel is modeless.  We really need it to be modal,
+	 * so we spin in an event loop until the panel is closed.
+	 */
+	gFontPanelInfo.isPanelVisible = true;
+	while (gFontPanelInfo.isPanelVisible)
+	{
+	    EventRecord e;
+	    WaitNextEvent(everyEvent, &e, /*sleep=*/20, /*mouseRgn=*/NULL);
+	}
+
+	GetFontPanelSelection(font_name);
+	selected_font = gui_mac_find_font(font_name);
+    }
+    return selected_font;
+}
+#endif
+
 
 /*
  * Initialise vim to use the font with the given name.	Return FAIL if the font
@@ -3262,6 +3442,31 @@ gui_mch_init_font(font_name, fontset)
 	}
 	font = (suggestedSize << 16) + ((long) font_id & 0xFFFF);
     }
+#if defined(USE_CARBONIZED) && defined(MACOS_X)
+    else if (STRCMP(font_name, "*") == 0)
+    {
+	char_u *new_p_guifont, font_name[512];
+
+	font = gui_mac_select_font(font_name);
+	if (font == NOFONT)
+	    return FAIL;
+
+	/* Set guifont to the name of the selected font. */
+	new_p_guifont = alloc(STRLEN(font_name) + 1);
+	if (new_p_guifont != NULL)
+	{
+	    STRCPY(new_p_guifont, font_name);
+	    vim_free(p_guifont);
+	    p_guifont = new_p_guifont;
+	    /* Replace spaces in the font name with underscores. */
+	    for ( ; *new_p_guifont; ++new_p_guifont)
+	    {
+		if (*new_p_guifont == ' ')
+		    *new_p_guifont = '_';
+	    }
+	}
+    }
+#endif
     else
     {
 	font = gui_mac_find_font(font_name);

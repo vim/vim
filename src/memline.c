@@ -257,6 +257,9 @@ ml_open()
     curbuf->b_ml.ml_mfp = mfp;
     curbuf->b_ml.ml_flags = ML_EMPTY;
     curbuf->b_ml.ml_line_count = 1;
+#ifdef FEAT_LINEBREAK
+    curwin->w_nrwidth_line_count = 0;
+#endif
 
 #if defined(MSDOS) && !defined(DJGPP)
     /* for 16 bit MS-DOS create a swapfile now, because we run out of

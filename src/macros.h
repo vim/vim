@@ -243,3 +243,8 @@
     /* Whether to draw the vertical bar on the right side of the cell. */
 # define CURSOR_BAR_RIGHT (curwin->w_p_rl && (!(State & CMDLINE) || cmdmsg_rl))
 #endif
+
+#ifndef FEAT_LINEBREAK
+/* Without the 'numberwidth' option line numbers are always 7 chars. */
+# define number_width(x) 7
+#endif

@@ -43,4 +43,5 @@ void unshowmode __ARGS((int force));
 int redrawing __ARGS((void));
 int messaging __ARGS((void));
 void showruler __ARGS((int always));
+int number_width __ARGS((win_T *wp));
 /* vim: set ft=c : */

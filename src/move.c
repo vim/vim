@@ -892,7 +892,7 @@ validate_cursor_col()
 win_col_off(wp)
     win_T	*wp;
 {
-    return ((wp->w_p_nu ? 8 : 0)
+    return ((wp->w_p_nu ? number_width(wp) + 1 : 0)
 #ifdef FEAT_CMDWIN
 	    + (cmdwin_type == 0 || wp != curwin ? 0 : 1)
 #endif
@@ -925,7 +925,7 @@ win_col_off2(wp)
     win_T	*wp;
 {
     if (wp->w_p_nu && vim_strchr(p_cpo, CPO_NUMCOL) != NULL)
-	return 8;
+	return number_width(wp) + 1;
     return 0;
 }
 

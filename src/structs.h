@@ -169,6 +169,10 @@ typedef struct
 #define w_p_list w_onebuf_opt.wo_list	/* 'list' */
     int		wo_nu;
 #define w_p_nu w_onebuf_opt.wo_nu	/* 'number' */
+#ifdef FEAT_LINEBREAK
+    long	wo_nuw;
+# define w_p_nuw w_onebuf_opt.wo_nuw	/* 'numberwidth' */
+#endif
 #if defined(FEAT_WINDOWS)
     int		wo_wfh;
 # define w_p_wfh w_onebuf_opt.wo_wfh	/* 'winfixheight' */
@@ -1470,6 +1474,9 @@ struct window
     char	w_foldinvalid;	    /* when TRUE: folding needs to be
 				       recomputed */
 #endif
+#ifdef FEAT_LINEBREAK
+    int		w_nrwidth;	    /* width of 'number' column being used */
+#endif
 
     /*
      * === end of cached values ===
@@ -1577,6 +1584,11 @@ struct window
 
 #ifdef FEAT_GUI
     scrollbar_T	w_scrollbars[2];	/* vert. Scrollbars for this window */
+#endif
+#ifdef FEAT_LINEBREAK
+    linenr_T	w_nrwidth_line_count;	/* line count when ml_nrwidth_width
+					 * was computed. */
+    int		w_nrwidth_width;	/* nr of chars to print line count. */
 #endif
 
 #ifdef FEAT_PERL

@@ -497,7 +497,7 @@ CClink = $(CC)
 #CFLAGS = -g -O2 -fno-strength-reduce -Wall -Wmissing-prototypes
 #CFLAGS = -O6 -fno-strength-reduce -Wall -Wshadow -Wmissing-prototypes
 #CFLAGS = -g -DDEBUG -Wall -Wshadow -Wmissing-prototypes
-#CFLAGS = -g -O2 -DSTARTUPTIME=\"vimstartup\" -fno-strength-reduce -Wall -Wmissing-prototypes
+#CFLAGS = -g -O2 '-DSTARTUPTIME="vimstartup"' -fno-strength-reduce -Wall -Wmissing-prototypes
 
 # EFENCE - Electric-Fence malloc debugging: catches memory accesses beyond
 # allocated memory (and makes every malloc()/free() very slow).
@@ -1492,8 +1492,11 @@ config auto/config.mk: auto/configure config.mk.in config.h.in
 
 # Use "make reconfig" to rerun configure without cached values.
 # When config.h changes, most things will be recompiled automatically.
-# Use "myself" to make "all" with a possibly changed auto/config.mk.
-reconfig: scratch clean config myself
+# Invoke $(MAKE) to run config with the empty auto/config.mk.
+# Invoke $(MAKE) to build all with the filled auto/config.mk.
+reconfig: scratch clean
+	$(MAKE) -f Makefile config
+	$(MAKE) -f Makefile all
 
 # Run autoconf to produce auto/configure.
 # Note:
@@ -2413,9 +2416,11 @@ objects/gui_kde_widget.o: gui_kde_widget.cc
 	$(KDE_DIR)/bin/dcopidl2cpp --c++-suffix cc --no-stub kvim_iface.kidl
 	$(CCC) -o $@ gui_kde_widget.cc
 
+gui_kde_widget_moc.cc: objects/gui_kde_widget.o
 objects/gui_kde_widget_moc.o: gui_kde_widget_moc.cc
 	$(CCC) -o $@ gui_kde_widget_moc.cc
 
+kvim_iface_skel.cc: objects/gui_kde_widget.o
 objects/kvim_iface_skel.o: kvim_iface_skel.cc
 	$(CCC) -o $@ kvim_iface_skel.cc
 

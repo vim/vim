@@ -1956,11 +1956,11 @@ print_line_no_prefix(lnum, use_number)
     linenr_T	lnum;
     int		use_number;
 {
-    char_u	numbuf[20];
+    char_u	numbuf[30];
 
     if (curwin->w_p_nu || use_number)
     {
-	sprintf((char *)numbuf, "%7ld ", (long)lnum);
+	sprintf((char *)numbuf, "%*ld ", number_width(curwin), (long)lnum);
 	msg_puts_attr(numbuf, hl_attr(HLF_N));	/* Highlight line nrs */
     }
     msg_prt_line(ml_get(lnum));

@@ -106,6 +106,7 @@ typedef enum
     , PV_MPS
     , PV_NF
     , PV_NU
+    , PV_NUW
     , PV_OFT
     , PV_PATH
     , PV_PI
@@ -1546,6 +1547,13 @@ static struct vimoption
     {"number",	    "nu",   P_BOOL|P_VI_DEF|P_RWIN,
 			    (char_u *)VAR_WIN, PV_NU,
 			    {(char_u *)FALSE, (char_u *)0L}},
+    {"numberwidth", "nuw",  P_NUM|P_RWIN|P_VIM,
+#ifdef FEAT_LINEBREAK
+			    (char_u *)VAR_WIN, PV_NUW,
+#else
+			    (char_u *)NULL, PV_NONE,
+#endif
+			    {(char_u *)8L, (char_u *)4L}},
     {"open",	    NULL,   P_BOOL|P_VI_DEF,
 			    (char_u *)NULL, PV_NONE,
 			    {(char_u *)FALSE, (char_u *)0L}},
@@ -1598,7 +1606,7 @@ static struct vimoption
     {"preserveindent", "pi", P_BOOL|P_VI_DEF|P_VIM,
 			    (char_u *)&p_pi, PV_PI,
 			    {(char_u *)FALSE, (char_u *)0L}},
-    {"previewheight", "pvh",P_NUM|P_VI_DEF,
+    {"previewheight", "pvh", P_NUM|P_VI_DEF,
 #if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
 			    (char_u *)&p_pvh, PV_NONE,
 #else
@@ -6631,7 +6639,7 @@ set_num_option(opt_idx, varp, value, errbuf, opt_flags)
     }
 
 # ifdef FEAT_VERTSPLIT
-    if (pp == &p_wiw)
+    else if (pp == &p_wiw)
     {
 	if (p_wiw < 1)
 	{
@@ -6808,6 +6816,24 @@ set_num_option(opt_idx, varp, value, errbuf, opt_flags)
 	u_sync();
 	p_ul = value;
     }
+
+#ifdef FEAT_LINEBREAK
+    /* 'numberwidth' must be positive */
+    else if (pp == &curwin->w_p_nuw)
+    {
+	if (curwin->w_p_nuw < 1)
+	{
+	    errmsg = e_positive;
+	    curwin->w_p_nuw = 1;
+	}
+	if (curwin->w_p_nuw > 10)
+	{
+	    errmsg = e_invarg;
+	    curwin->w_p_nuw = 10;
+	}
+	curwin->w_nrwidth_line_count = 0;
+    }
+#endif
 
     /*
      * Check the bounds for numeric options here
@@ -7857,6 +7883,9 @@ get_varp(p)
 	case PV_FMR:	return (char_u *)&(curwin->w_p_fmr);
 #endif
 	case PV_NU:	return (char_u *)&(curwin->w_p_nu);
+#ifdef FEAT_LINEBREAK
+	case PV_NUW:	return (char_u *)&(curwin->w_p_nuw);
+#endif
 #if defined(FEAT_WINDOWS)
 	case PV_WFH:	return (char_u *)&(curwin->w_p_wfh);
 #endif
@@ -8025,6 +8054,9 @@ copy_winopt(from, to)
 #endif
     to->wo_list = from->wo_list;
     to->wo_nu = from->wo_nu;
+#ifdef FEAT_LINEBREAK
+    to->wo_nuw = from->wo_nuw;
+#endif
 #ifdef FEAT_RIGHTLEFT
     to->wo_rl  = from->wo_rl;
     to->wo_rlc = vim_strsave(from->wo_rlc);

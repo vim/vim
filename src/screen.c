@@ -415,6 +415,13 @@ update_screen(type)
     if (clear_cmdline)		/* going to clear cmdline (done below) */
 	check_for_delay(FALSE);
 
+#ifdef FEAT_LINEBREAK
+    /* Force redraw when width of 'number' column changes. */
+    if (curwin->w_redr_type < NOT_VALID
+				 && curwin->w_nrwidth != number_width(curwin))
+	curwin->w_redr_type = NOT_VALID;
+#endif
+
     /*
      * Only start redrawing if there is really something to do.
      */
@@ -820,6 +827,17 @@ win_update(wp)
     search_hl.buf = buf;
     search_hl.lnum = 0;
     search_hl.first_lnum = 0;
+#endif
+
+#ifdef FEAT_LINEBREAK
+    /* Force redraw when width of 'number' column changes. */
+    i = number_width(curwin);
+    if (curwin->w_nrwidth != i)
+    {
+	type = NOT_VALID;
+	curwin->w_nrwidth = i;
+    }
+    else
 #endif
 
     if (buf->b_mod_set && buf->b_mod_xlines != 0 && wp->w_redraw_top != 0)
@@ -2101,9 +2119,11 @@ fold_line(wp, fold_count, foldinfo, lnum, row)
 	len = W_WIDTH(wp) - col;
 	if (len > 0)
 	{
-	    if (len > 8)
-		len = 8;
-	    sprintf((char *)buf, "%7ld ", (long)lnum);
+	    int	    w = number_width(wp);
+
+	    if (len > w + 1)
+		len = w + 1;
+	    sprintf((char *)buf, "%*ld ", w, (long)lnum);
 #ifdef FEAT_RIGHTLEFT
 	    if (wp->w_p_rl)
 		/* the line number isn't reversed */
@@ -3073,7 +3093,8 @@ win_line(wp, lnum, startrow, endrow)
 #endif
 			    )
 		    {
-			sprintf((char *)extra, "%7ld ", (long)lnum);
+			sprintf((char *)extra, "%*ld ",
+						number_width(wp), (long)lnum);
 			if (wp->w_skipcol > 0)
 			    for (p_extra = extra; *p_extra == ' '; ++p_extra)
 				*p_extra = '-';
@@ -3086,7 +3107,7 @@ win_line(wp, lnum, startrow, endrow)
 		    }
 		    else
 			c_extra = ' ';
-		    n_extra = 8;
+		    n_extra = number_width(wp) + 1;
 		    char_attr = hl_attr(HLF_N);
 		}
 	    }
@@ -8455,5 +8476,42 @@ win_redr_ruler(wp, always)
 	wp->w_ru_topfill = wp->w_topfill;
 #endif
     }
+}
+#endif
+
+#if defined(FEAT_LINEBREAK) || defined(PROTO)
+/*
+ * Return the width of the 'number' column.
+ * Zero when 'number' isn't set.
+ * Otherwise it depends on 'numberwidth' and the line count.
+ */
+    int
+number_width(wp)
+    win_T	*wp;
+{
+    int		n;
+    linenr_T	lnum;
+
+    if (!wp->w_p_nu)
+	return 0;
+
+    lnum = wp->w_buffer->b_ml.ml_line_count;
+    if (lnum == wp->w_nrwidth_line_count)
+	return wp->w_nrwidth_width;
+    wp->w_nrwidth_line_count = lnum;
+
+    n = 0;
+    do
+    {
+        lnum /= 10;
+        ++n;
+    } while (lnum > 0);
+
+    /* 'numberwidth' gives the minimal width plus one */
+    if (n < wp->w_p_nuw - 1)
+	n = wp->w_p_nuw - 1;
+
+    wp->w_nrwidth_width = n;
+    return n;
 }
 #endif

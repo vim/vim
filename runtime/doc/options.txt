@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2004 Jul 02
+*options.txt*	For Vim version 7.0aa.  Last change: 2004 Jul 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3881,8 +3881,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  precedes:c	Character to show in the first column, when 'wrap'
 			is off and there is text preceding the character
 			visible in the first column.
-	  nbsp:c	Character to show for non-breakable space. Left to
-			blank when omitted.
+	  nbsp:c	Character to show for a non-breakable space (character
+	  		0xA0, 160).  Left blank when omitted.
 
 	The characters ':' and ',' should not be used.  UTF-8 characters can
 	be used when 'encoding' is "utf-8", otherwise only printable
@@ -4260,9 +4260,25 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Print the line number in front of each line.  When the 'n' option is
 	excluded from 'cpoptions' a wrapped line will not use the column of
 	line numbers (this is the default when 'compatible' isn't set).
+	The 'numberwidth' option can be used to set the room used for the line
+	number.
 	When a long, wrapped line doesn't start with the first character, '-'
 	characters are put before the number.
 	See |hl-LineNr| for the highlighting used for the number.
+
+						*'numberwidth'* *'nuw'*
+'numberwidth' 'nuw'	number	(Vim default: 4  Vi default: 8)
+			local to window
+	Minimal number of columns to use for the line number.  Only relevant
+	when the 'number' option is set.
+	Since one space is always between the number and the text, there is
+	one less character for the number itself.
+	The value is the minimum width.  A bigger width is used when needed to
+	fit the highest line number in the buffer.  Thus with the Vim default
+	of 4 there is room for a line number up to 999.  When the buffer has
+	1000 lines five columns will be used.
+	The minimum value is 1, the maximum value is 10.
+	NOTE: 'numberwidth' is reset to 8 when 'compatible' is set.
 
 					*'osfiletype'* *'oft'* *E366*
 'osfiletype' 'oft'	string (RISC-OS default: "Text",
