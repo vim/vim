@@ -1,4 +1,4 @@
-*usr_21.txt*	For Vim version 7.0aa.  Last change: 2004 Mar 29
+*usr_21.txt*	For Vim version 7.0aa.  Last change: 2004 Jun 16
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -65,7 +65,7 @@ a look at an overview:
 	:w !{program}		execute {program} and send text to its input
 	:[range]!{program}	filter text through {program}
 
-Notice that the precense of a range before "!{program}" makes a big
+Notice that the presense of a range before "!{program}" makes a big
 difference.  Without it executes the program normally, with the range a number
 of text lines is filtered through the program.
 

@@ -1,4 +1,4 @@
-*netbeans.txt*  For Vim version 7.0aa.  Last change: 2004 May 01
+*netbeans.txt*  For Vim version 7.0aa.  Last change: 2004 Jun 16
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur
@@ -180,7 +180,7 @@ Region is guarded, cannot modify
 		change.
 
 							*E656*
-NetBeans dissallows writes of unmodified buffers
+NetBeans disallows writes of unmodified buffers
 		NetBeans does not support writes of unmodified buffers that
 		were opened from NetBeans.
 
@@ -245,7 +245,7 @@ could cause confusion. The netbeans_saved() function sent a "save" protocol
 command. In protocol version 2.1 and earlier this was incorrectly interpreted
 as a notification that a write had taken place. In reality, it told NetBeans
 to save the file so multiple writes were being done. This caused various
-problems and has been fixed in 2.2. To decrease the likelyhood of this
+problems and has been fixed in 2.2. To decrease the likelihood of this
 confusion happening again, netbeans_saved() has been renamed to
 netbeans_save_buffer().
 

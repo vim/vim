@@ -5186,7 +5186,23 @@ nv_scroll(cap)
 	if (cap->count1 - 1 >= curwin->w_cursor.lnum)
 	    curwin->w_cursor.lnum = 1;
 	else
-	    curwin->w_cursor.lnum -= cap->count1 - 1;
+	{
+#ifdef FEAT_FOLDING
+	    if (hasAnyFolding(curwin))
+	    {
+		/* Count a fold for one screen line. */
+		for (n = cap->count1 - 1; n > 0
+			    && curwin->w_cursor.lnum > curwin->w_topline; --n)
+		{
+		    (void)hasFolding(curwin->w_cursor.lnum,
+						&curwin->w_cursor.lnum, NULL);
+		    --curwin->w_cursor.lnum;
+		}
+	    }
+	    else
+#endif
+		curwin->w_cursor.lnum -= cap->count1 - 1;
+	}
     }
     else
     {
@@ -5222,8 +5238,23 @@ nv_scroll(cap)
 	    if (n > 0 && used > curwin->w_height)
 		--n;
 	}
-	else
+	else /* (cap->cmdchar == 'H') */
+	{
 	    n = cap->count1 - 1;
+#ifdef FEAT_FOLDING
+	    if (hasAnyFolding(curwin))
+	    {
+		/* Count a fold for one screen line. */
+		lnum = curwin->w_topline;
+		while (n-- > 0 && lnum < curwin->w_botline - 1)
+		{
+		    hasFolding(lnum, NULL, &lnum);
+		    ++lnum;
+		}
+		n = lnum - curwin->w_topline;
+	    }
+#endif
+	}
 	curwin->w_cursor.lnum = curwin->w_topline + n;
 	if (curwin->w_cursor.lnum > curbuf->b_ml.ml_line_count)
 	    curwin->w_cursor.lnum = curbuf->b_ml.ml_line_count;

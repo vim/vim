@@ -1,4 +1,4 @@
-*farsi.txt*     For Vim version 7.0aa.  Last change: 2002 Oct 29
+*farsi.txt*     For Vim version 7.0aa.  Last change: 2004 Jun 16
 
 
 		  VIM REFERENCE MANUAL    by Mortaza Ghassab Shiran
@@ -66,7 +66,7 @@ If the "extra" archive has been unpacked, the following files are found in the
 subdirectories of the '$VIM/farsi' directory:
 
    +  far-a01.pcf    X Windows fonts for Unix including Linux systems
-   +  far-a01.bf     X Windows fonts for SunOs
+   +  far-a01.bf     X Windows fonts for SunOS
    +  far-a01.f16    a screen fonts for Unix including Linux systems
    +  far-a01.fon    a monospaced fonts for Windows NT/95/98
    +  far-a01.com    a screen fonts for DOS
@@ -92,7 +92,7 @@ o  Installation of fonts for X Window systems (Unix/Linux)
    >  mkfontdir
    >  xset +fp path_name_of_farsi_fonts_directory
 
-o  Installation of fonts for X Window systems (SunOs)
+o  Installation of fonts for X Window systems (SunOS)
 
    Copy far-a01.bf font into a directory of your choice.
    Change to the directory containing the far-a01.fb fonts and

@@ -1,4 +1,4 @@
-*version6.txt*  For Vim version 7.0aa.  Last change: 2004 Jun 07
+*version6.txt*  For Vim version 7.0aa.  Last change: 2004 Jun 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1764,7 +1764,7 @@ Motif: (Martin Dalecki)
 - Use XPM bitmaps for the icon when possible.  Use the Solaris XpmP.h include
   file when it's available.
 - Change the shadow of the toolbar items to get a visual feedback of it being
-  pressed on non-LessTiff.
+  pressed on non-LessTif.
 - Use gadgets instead of windows for some items for speed.
 
 Command line completion:
@@ -6645,7 +6645,7 @@ Solution:   Don't map CTRL-N after CTRL-X CTRL-N.  Same for CTRL-P.
 Files:	    src/getchar.c
 
 Patch 6.1.031
-Problem:    Cygwin: Xxd could read a file in text mode intead of binary mode.
+Problem:    Cygwin: Xxd could read a file in text mode instead of binary mode.
 Solution:   Use "rb" or "rt" when needed. (Pavol Juhas)
 Files:	    src/xxd/xxd.c
 
@@ -6947,7 +6947,7 @@ Solution:   Fix explorer plugin and key modifiers. (Axel Kielhorn)
 Files:	    src/edit.c, src/feature.h, src/gui_mac.c, src/os_mac.c
 
 Patch 6.1.077
-Problem:    On a Debian systEm wht ACL linking fails. (Lubomir Host)
+Problem:    On a Debian system with ACL linking fails. (Lubomir Host)
 Solution:   When the "acl" library is used, check if the "attr" library is
 	    present and use it.
 Files:	    src/auto/configure, src/configure.in, src/link.sh
@@ -7229,7 +7229,7 @@ Files:	    src/move.c
 
 Patch 6.1.121 (depends on 6.1.098)
 Problem:    When starting Select mode from Insert mode, then using the Paste
-	    menu entry, the cursor is left before the laste pasted character.
+	    menu entry, the cursor is left before the last pasted character.
 	    (Mario Schweigler)
 Solution:   Set the cursor for Insert mode one character to the right.
 Files:	    runtime/menu.vim
@@ -7963,7 +7963,7 @@ Patch 6.1.231
 Problem:    Double clicking with the mouse to select a word does not work for
 	    multi-byte characters.
 Solution:   Use vim_iswordc() instead of vim_isIDc().  This means 'iskeyword'
-	    is used intead of 'isident'.  Also fix that mixing ASCII with
+	    is used instead of 'isident'.  Also fix that mixing ASCII with
 	    multi-byte word characters doesn't work, the mouse class for
 	    punctuation and word characters was mixed up.
 Files:	    src/normal.c
@@ -10262,7 +10262,7 @@ Files:	    src/ex_cmds.c
 
 Patch 6.2.053
 Problem:    Prototype for bzero() doesn't match most systems.
-Solution:   Use "void *" instead of "char *" and "size_t" intead of "int".
+Solution:   Use "void *" instead of "char *" and "size_t" instead of "int".
 Files:	    src/osdef1.h.in
 
 Patch 6.2.054
@@ -10534,7 +10534,7 @@ Files:	    src/buffer.c
 Patch 6.2.096
 Problem:    Win32: ":let @* = ''" put a newline on the clipboard. (Klaus
 	    Bosau)
-Solution:   Put zero bytes on the clibpoard for an empty string.
+Solution:   Put zero bytes on the clipboard for an empty string.
 Files:	    src/ops.c
 
 Patch 6.2.097
@@ -11339,7 +11339,7 @@ Files:	    src/fileio.c, src/netbeans.c, src/proto/netbeans.pro,
 	    runtime/doc/netbeans.txt, runtime/doc/tags
 
 Patch 6.2.216 (after 6.2.206)
-Problem:    Multi-byte characters stil cannot be used as hotkeys in a console
+Problem:    Multi-byte characters still cannot be used as hotkeys in a console
 	    dialog.  (Mattias Erkisson)
 Solution:   Make get_keystroke() handle multi-byte characters.
 Files:	    src/misc1.c
@@ -11376,7 +11376,7 @@ Files:	    src/ex_cmds.h
 Patch 6.2.222
 Problem:    Using "--remote" several times on a row only opens some of the
 	    files. (Dany St-Amant)
-Solution:   Don't delete all typehead when the server receives a command from
+Solution:   Don't delete all typeahead when the server receives a command from
 	    a client, only delete typed characters.
 Files:	    src/main.c
 
@@ -11874,7 +11874,7 @@ Problem:    When in debug mode, receiving a message from a remote client
 	    causes a crash.  Evaluating an expression causes Vim to wait for
 	    "cont" to be typed, without a prompt.  (Hari Krishna Dara)
 Solution:   Disable debugging when evaluating an expression for a client.
-	    (Michael Geddes)  Don't try reading into the typehead buffer when
+	    (Michael Geddes)  Don't try reading into the typeahead buffer when
 	    it may have been filled in another way.
 Files:	    src/ex_getln.c, src/getchar.c, src/if_xcmdsrv.c, src/main.c,
 	    src/misc1.c, src/proto/getchar.pro, src/proto/main.pro,
@@ -12556,7 +12556,7 @@ Patch 6.2.398 (extra)
 Problem:    Win32 console: no extra key modifiers are supported.
 Solution:   Encode the modifiers into the input stream.  Also fix that special
 	    keys are converted and stop working when 'tenc' is set.  Also fix
-	    that when 'tenc' is intialized the input and output conversion is
+	    that when 'tenc' is initialized the input and output conversion is
 	    not setup properly until 'enc' or 'tenc' is set.
 Files:	    src/getchar.c, src/option.c, src/os_win32.c
 
@@ -13081,7 +13081,7 @@ Patch 6.2.476
 Problem:    When reloading a hidden buffer changed outside of Vim and the
 	    current buffer is read-only, the reloaded buffer becomes
 	    read-only.  (Hari Krishna Dara)
-Solution:   Save the 'readonly' flag of the realoaded buffer instead of the
+Solution:   Save the 'readonly' flag of the reloaded buffer instead of the
 	    current buffer.
 Files:	    src/fileio.c
 

@@ -19,6 +19,8 @@ syn match  poFormat	"%\(\d\+\$\)\=[-+' #0*]*\(\d*\|\*\|\*\d\+\$\)\(\.\(\d*\|\*\|
 syn match  poFormat	"%%" contained
 syn region poString	start=+"+ skip=+\\\\\|\\"+ end=+"+
 			\ contains=poSpecial,poFormat
+syn region poFuzzy       start=+^#,\sfuzzy+ end=+^$+
+syn match  poUntranslated +^msgstr\s""\n\n+
 
 " Define the default highlighting.
 " For version 5.7 and earlier: only when not done already
@@ -37,6 +39,8 @@ if version >= 508 || !exists("did_po_syn_inits")
   HiLink poSpecial	Special
   HiLink poFormat	poSpecial
   HiLink poString	String
+  HiLink poFuzzy	Todo
+  HiLink poUntranslated	Todo
 
   delcommand HiLink
 endif

@@ -38,6 +38,7 @@ int read_viminfo_sub_string __ARGS((vir_T *virp, int force));
 void write_viminfo_sub_string __ARGS((FILE *fp));
 void prepare_tagpreview __ARGS((void));
 void ex_help __ARGS((exarg_T *eap));
+char_u *check_help_lang __ARGS((char_u *arg));
 int help_heuristic __ARGS((char_u *matched_string, int offset, int wrong_case));
 int find_help_tags __ARGS((char_u *arg, int *num_matches, char_u ***matches, int keep_lang));
 void fix_help_buffer __ARGS((void));

@@ -1,4 +1,4 @@
-*motion.txt*    For Vim version 7.0aa.  Last change: 2004 May 13
+*motion.txt*    For Vim version 7.0aa.  Last change: 2004 Jun 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -672,11 +672,12 @@ m[  or  m]		Set the |'[| or |']| mark.  Useful when an operator is
 			the cursor, this is not a motion command).
 
 						*:ma* *:mark* *E191*
-:[range]ma[rk] {a-zA-Z}	Set mark {a-zA-Z} at last line number in [range],
+:[range]ma[rk] {a-zA-Z'}
+			Set mark {a-zA-Z'} at last line number in [range],
 			column 0.  Default is cursor line.
 
 						*:k*
-:[range]k{a-zA-Z}	Same as :mark, but the space before the mark name can
+:[range]k{a-zA-Z'}	Same as :mark, but the space before the mark name can
 			be omitted.
 
 						*'* *'a* *`* *`a*
@@ -692,7 +693,9 @@ g'{mark}  g`{mark}
 			jumping within the current buffer.  Example: >
 				g`"
 <			jumps to the last known position in a file.  See
-			$VIMRUNTIME/vimrc_example.vim.  {not in Vi}
+			$VIMRUNTIME/vimrc_example.vim.
+			Also see |:keepjumps|.
+			{not in Vi}
 
 						*:marks*
 :marks			List all the current marks (not a motion command).
@@ -868,7 +871,7 @@ These commands are not marks themselves, but jump to a mark:
 			  or larger than before, all marks are kept at the
 			  same line number.
 			- When the number of lines decreases, the marks in the
-			  ilnes that disappeared are deleted.
+			  lines that disappeared are deleted.
 			In any case the marks below the filtered text have
 			their line numbers adjusted, thus stick to the text,
 			as usual.
@@ -877,12 +880,22 @@ These commands are not marks themselves, but jump to a mark:
 
 							*:keepj* *:keepjumps*
 :keepj[umps] {command}
-			Do not change the |''|, |'.| and |'^| marks, the
-			|jumplist| or the |changelist|.  Useful when making a
-			change or inserting text automatically and the user
-			doesn't want to go to this position.  E.g., when
-			updating a "Last change" timestamp: >
-	autocmd BufWritePre,FileWritePre *.abc keepjumps call SetLastChange()
+			Moving around in {command} does not change the |''|,
+			|'.| and |'^| marks, the |jumplist| or the
+			|changelist|.
+			Useful when making a change or inserting text
+			automatically and the user doesn't want to go to this
+			position.  E.g., when updating a "Last change"
+			timestamp in the first line: >
+
+				:let lnum = getline(".")
+				:keepjumps normal gg
+				:call SetLastChange()
+				:keepjumps exe "normal " . lnum . "G"
+<
+			Note that ":keepjumps" must be used for every command.
+			When invoking a function the commands in that function
+			can still change the jumplist.
 
 ==============================================================================
 8. Jumps					*jump-motions*

@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.0aa.  Last change: 2004 Jun 15
+*starting.txt*  For Vim version 7.0aa.  Last change: 2004 Jun 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1222,7 +1222,7 @@ Note that Views and Sessions are not perfect:
 - They don't restore everything.  For example, defined functions, autocommands
   and ":syntax on" are not included.  Things like register contents and
   command line history are in viminfo, not in Sessions or Views.
-- Global option values are only set when the differ from the default value.
+- Global option values are only set when they differ from the default value.
   When the current value is not the default value, loading a Session will not
   set it back to the default value.  Local options will be set back to the
   default value though.

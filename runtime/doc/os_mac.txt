@@ -1,4 +1,4 @@
-*os_mac.txt*    For Vim version 7.0aa.  Last change: 2004 Apr 27
+*os_mac.txt*    For Vim version 7.0aa.  Last change: 2004 Jun 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar et al.
@@ -74,11 +74,16 @@ A: Under Window Settings, Emulation, make sure that "Escape non-ASCII
 ==============================================================================
 4. Mac Lack						*mac-lack*
 
--The filenames containing both ":" and "/" are sometimes misinterpreted.
-  (just re-execute the command)
--Scrollbar are not scrolling live, and  when only the arrow or scroll area,
-   a limit of 32 line or page is scrolled.
--Syntax highlighting works on 68k Macs but is _really_ slow.
+The filenames containing both ":" and "/" are sometimes misinterpreted.  (just
+re-execute the command)
+
+Scrollbar are not scrolling live, and  when only the arrow or scroll area, a
+limit of 32 line or page is scrolled.
+
+Syntax highlighting works on 68k Macs but is _really_ slow.
+
+In a terminal CTRL-^ needs to be entered as Shift-Control-6.  CTRL-@ as
+Shift-Control-2.
 
 ==============================================================================
 5. Mac Bug Report					*mac-bug*

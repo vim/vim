@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 7.0aa.  Last change: 2004 May 24
+*index.txt*     For Vim version 7.0aa.  Last change: 2004 Jun 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -130,8 +130,8 @@ tag		char		action	~
 |i_<C-Home>|	<C-Home>	cursor to start of file
 |i_<End>|	<End>		cursor past end of line
 |i_<C-End>|	<C-End>		cursor past end of file
-|i_<PageUp>|	<PageUp>	one screenfull backward
-|i_<PageDown>|	<PageDown>	one screenfull forward
+|i_<PageUp>|	<PageUp>	one screenful backward
+|i_<PageDown>|	<PageDown>	one screenful forward
 |i_<F1>|	<F1>		same as <Help>
 |i_<Help>|	<Help>		stop insert mode and display help window
 |i_<Insert>|	<Insert>	toggle Insert/Replace mode

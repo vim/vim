@@ -1006,6 +1006,7 @@ qf_jump(dir, errornr, forceit)
 #ifdef FEAT_FOLDING
     int			old_KeyTyped = KeyTyped; /* getting file may reset it */
 #endif
+    int			ok = OK;
 
     if (qf_curlist >= qf_listcount || qf_lists[qf_curlist].qf_count == 0)
     {
@@ -1097,6 +1098,42 @@ qf_jump(dir, errornr, forceit)
 	print_message = FALSE;
 
     /*
+     * For ":helpgrep" find a help window or open one.
+     */
+    if (qf_ptr->qf_type == 1 && !curwin->w_buffer->b_help)
+    {
+	win_T	*wp;
+	int	n;
+
+	for (wp = firstwin; wp != NULL; wp = wp->w_next)
+	    if (wp->w_buffer != NULL && wp->w_buffer->b_help)
+		break;
+	if (wp != NULL && wp->w_buffer->b_nwindows > 0)
+	    win_enter(wp, TRUE);
+	else
+	{
+	    /*
+	     * Split off help window; put it at far top if no position
+	     * specified, the current window is vertically split and narrow.
+	     */
+	    n = WSP_HELP;
+# ifdef FEAT_VERTSPLIT
+	    if (cmdmod.split == 0 && curwin->w_width != Columns
+						      && curwin->w_width < 80)
+		n |= WSP_TOP;
+# endif
+	    if (win_split(0, n) == FAIL)
+		goto theend;
+
+	    if (curwin->w_height < p_hh)
+		win_setheight((int)p_hh);
+	}
+
+	if (!p_im)
+	    restart_edit = 0;	    /* don't want insert mode in help file */
+    }
+
+    /*
      * If currently in the quickfix window, find another window to show the
      * file in.
      */
@@ -1170,8 +1207,28 @@ qf_jump(dir, errornr, forceit)
      */
     old_curbuf = curbuf;
     old_lnum = curwin->w_cursor.lnum;
-    if (qf_ptr->qf_fnum == 0 || buflist_getfile(qf_ptr->qf_fnum,
-		    (linenr_T)1, GETF_SETMARK | GETF_SWITCH, forceit) == OK)
+
+    if (qf_ptr->qf_fnum != 0)
+    {
+	if (qf_ptr->qf_type == 1)
+	{
+	    /* Open help file (do_ecmd() will set b_help flag, readfile() will
+	     * set b_p_ro flag). */
+	    if (!can_abandon(curbuf, forceit))
+	    {
+		EMSG(_(e_nowrtmsg));
+		ok = FALSE;
+	    }
+	    else
+		ok = do_ecmd(qf_ptr->qf_fnum, NULL, NULL, NULL, (linenr_T)1,
+						   ECMD_HIDE + ECMD_SET_HELP);
+	}
+	else
+	    ok = buflist_getfile(qf_ptr->qf_fnum,
+			    (linenr_T)1, GETF_SETMARK | GETF_SWITCH, forceit);
+    }
+
+    if (ok == OK)
     {
 	/* When not switched to another buffer, still need to set pc mark */
 	if (curbuf == old_curbuf)
@@ -2145,10 +2202,18 @@ ex_helpgrep(eap)
     int		fi;
     struct qf_line *prevp = NULL;
     long	lnum;
+#ifdef FEAT_MULTI_LANG
+    char_u	*lang;
+#endif
 
     /* Make 'cpoptions' empty, the 'l' flag should not be used here. */
     save_cpo = p_cpo;
     p_cpo = (char_u *)"";
+
+#ifdef FEAT_MULTI_LANG
+    /* Check for a specified language */
+    lang = check_help_lang(eap->arg);
+#endif
 
     regmatch.regprog = vim_regcomp(eap->arg, RE_MAGIC + RE_STRING);
     regmatch.rm_ic = FALSE;
@@ -2172,6 +2237,16 @@ ex_helpgrep(eap)
 	    {
 		for (fi = 0; fi < fcount && !got_int; ++fi)
 		{
+#ifdef FEAT_MULTI_LANG
+		    /* Skip files for a different language. */
+		    if (lang != NULL
+			    && STRNICMP(lang, fnames[fi]
+					    + STRLEN(fnames[fi]) - 3, 2) != 0
+			    && !(STRNICMP(lang, "en", 2) == 0
+				&& STRNICMP("txt", fnames[fi]
+					   + STRLEN(fnames[fi]) - 3, 3) == 0))
+			    continue;
+#endif
 		    fd = fopen((char *)fnames[fi], "r");
 		    if (fd != NULL)
 		    {
@@ -2227,6 +2302,8 @@ ex_helpgrep(eap)
     /* Jump to first match. */
     if (qf_lists[qf_curlist].qf_count > 0)
 	qf_jump(0, 0, FALSE);
+    else
+	EMSG2(_(e_nomatch2), eap->arg);
 }
 
 #endif /* FEAT_QUICKFIX */

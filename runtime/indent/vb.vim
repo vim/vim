@@ -1,7 +1,7 @@
 " Vim indent file
 " Language:	VisualBasic (ft=vb) / Basic (ft=basic) / SaxBasic (ft=vb)
 " Author:	Johannes Zellner <johannes@zellner.org>
-" Last Change:	Tue, 27 Apr 2004 14:54:59 CEST
+" Last Change:	Fri, 18 Jun 2004 07:22:42 CEST
 
 if exists("b:did_indent")
     finish
@@ -10,7 +10,7 @@ let b:did_indent = 1
 
 setlocal indentexpr=VbGetIndent(v:lnum)
 setlocal indentkeys&
-setlocal indentkeys+==~else,=~elseif,=~end,=~wend,=~case,=~next,=~select,~=loop,<:>
+setlocal indentkeys+==~else,=~elseif,=~end,=~wend,=~case,=~next,=~select,=~loop,<:>
 
 " Only define the function once.
 if exists("*VbGetIndent")

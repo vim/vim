@@ -1519,29 +1519,45 @@ theend:
 # include <shellapi.h>	/* required for FindExecutable() */
 #endif
 
+/*
+ * Return TRUE if "name" is in $PATH.
+ * TODO: Should also check if it's really executable.
+ */
     static int
 executable_exists(char *name)
 {
-    char location[2 * _MAX_PATH + 2];
-    char widename[2 * _MAX_PATH];
+    char	*dum;
+    char	fname[_MAX_PATH];
 
-    /* There appears to be a bug in FindExecutableA() on Windows NT.
-     * Use FindExecutableW() instead... */
-    if (g_PlatformId == VER_PLATFORM_WIN32_NT)
+#ifdef FEAT_MBYTE
+    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
     {
-	MultiByteToWideChar(CP_ACP, 0, (LPCTSTR)name, -1,
-						 (LPWSTR)widename, _MAX_PATH);
-	if (FindExecutableW((LPCWSTR)widename, (LPCWSTR)"",
-					    (LPWSTR)location) > (HINSTANCE)32)
-	    return TRUE;
+	WCHAR	*p = enc_to_ucs2(name, NULL);
+	WCHAR	fnamew[_MAX_PATH];
+	WCHAR	*dumw;
+	long	n;
+
+	if (p != NULL)
+	{
+	    n = (long)SearchPathW(NULL, p, NULL, _MAX_PATH, fnamew, &dumw);
+	    vim_free(p);
+	    if (n > 0 || GetLastError() != ERROR_CALL_NOT_IMPLEMENTED)
+	    {
+		if (n == 0)
+		    return FALSE;
+		if (GetFileAttributesW(fnamew) & FILE_ATTRIBUTE_DIRECTORY)
+		    return FALSE;
+		return TRUE;
+	    }
+	    /* Retry with non-wide function (for Windows 98). */
+	}
     }
-    else
-    {
-	if (FindExecutableA((LPCTSTR)name, (LPCTSTR)"",
-					    (LPTSTR)location) > (HINSTANCE)32)
-	    return TRUE;
-    }
-    return FALSE;
+#endif
+    if (SearchPath(NULL, name, NULL, _MAX_PATH, fname, &dum) == 0)
+	return FALSE;
+    if (mch_isdir(fname))
+	return FALSE;
+    return TRUE;
 }
 
 #ifdef FEAT_GUI_W32

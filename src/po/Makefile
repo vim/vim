@@ -97,8 +97,8 @@ zh_CN.cp936.po: zh_CN.po
 # Convert ru.po to create ru.cp1251.po.
 ru.cp1251.po: ru.po
 	rm -f ru.cp1251.po
-	iconv -f koi8-r -t cp1251 ru.po | \
-		sed -e 's/charset=koi8-r/charset=cp1251/' -e 's/# Original translations/# Generated from ru.po, DO NOT EDIT/' > ru.cp1251.po
+	iconv -f utf-8 -t cp1251 ru.po | \
+		sed -e 's/charset=utf-8/charset=cp1251/' -e 's/# Original translations/# Generated from ru.po, DO NOT EDIT/' > ru.cp1251.po
 
 check:
 	@if test "x" = "x$(prefix)"; then \

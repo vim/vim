@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0aa.  Last change: 2004 Apr 09
+*insert.txt*    For Vim version 7.0aa.  Last change: 2004 Jun 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -908,7 +908,7 @@ gi			Insert text in the same position as where Insert mode
 			The position is corrected for inserted/deleted lines,
 			but NOT for inserted/deleted characters.
 			When the |:keepjumps| command modifier is used the |'^|
-			mark wont be changed.
+			mark won't be changed.
 			{not in Vi}
 
 							*o*

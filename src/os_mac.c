@@ -527,7 +527,7 @@ mch_breakcheck()
      */
     EventRecord theEvent;
 
-    if (EventAvail (keyDownMask, &theEvent))
+    if (EventAvail(keyDownMask, &theEvent))
 	if ((theEvent.message & charCodeMask) == Ctrl_C && ctrl_c_interrupts)
 	    got_int = TRUE;
 #if 0

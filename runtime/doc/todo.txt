@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Jun 16
+*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Jun 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,19 +30,10 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-This example doesn't work:
-    :e `=foo . ".c" `
-Inside `` don't use " as the start of a comment.
-Also don't expand % or #.
-
-Corrections for docs from A3.  Skip ones already done.
-
-
 For version 7.0:
 -   Include many PATCHES:
-    9   Win32 GuI: The print dialog uses a font which doesn't display multi-byte
-	messages.  Include patch from Vipin Aravind?  Update from Yasuhiro
-	Matsumoto.
+    9   Merge in ideas from tutor.txt (Gabriel Zachmann)
+	New version 2004 June 16.
     8   ":winpos" doesn't work.  Patch from Vipin Aravind.
     8   Add GTK 2.3 file dialog support.  Patch by Grahame Bowland, 2004 Mar 15,
 	but it doesn't use "initdir" or "dflt". (will update patch)
@@ -51,7 +42,7 @@ For version 7.0:
     8   Add file locking.  Lock a file when starting to edit it with flock() or
 	fcntl().  This patch has advisory file locking while reading/writing
 	the file: ~/vim/patches/kahn_file_locking .
-	Do we still want this/
+	Do we still want this?  Andy doesn't have time to work on it.
     8   Add buffer-local autocommands?  Reduces overhead for autocommands that
 	trigger often (inserting a character, switching mode).
 	    :au Event <buffer> do-something
@@ -64,10 +55,79 @@ For version 7.0:
 	VimResized	    - When the Vim window has been resized (SIGWINCH)
 	  patch from Yakov Lerner, 2003 July 24.
 	  He'll write documentation and send updated patch.
+        InsmodEnter
+	InsmodLeave	    Taro Muraoka, 2004 Jun 16
     -   Include the kvim patch. http://freenux.org/vim/ (Mickael Marchand)
 	Do not add Qtopia yet, it doesn't work very well.
 	Mickael will update the patch before 21st.
-    --- responses above
+    8   Unix: When libcall() fails there is no clear error message.  Johannes
+	Zellner has a patch for this.
+	updated patch 2004 June 16.
+    7   Add the MzScheme interface.  Patch on http://iamphet.nm.ru/scheme/
+	(Sergey Khorev)
+	Alt URL: http://cyber.miem.edu.ru/~iamphet/scheme/mzvim-0.560.tar.gz
+    8   Add patch from Muraoka Taro (Mar 16) to support input method on Mac?
+	New patch 2004 Jun 16
+    8   Add expression-expansion, so that the user can define his own kind of
+	completion.  Patch from Taro Muraoka, 2003 Aug 26.
+	New patch 2004 Jun 16
+    8   Text objects: Add "a'" and 'a"': a single or double quoted string.
+	(Tim Chase) Patch from Taro Muraoka (2003 Dec 16).
+	New patch 2004 Jun 16
+    7   Add "nbsp" in 'listchars'?  Patch from David Blanchet, 2003 Jul 28.
+	again 2004 Jun 16
+    8   Add ":n" to fnamemodify(): normalize path, remove "../" when possible.
+	Aric Blumer has a patch for this.
+	He will update the patch for 6.3.
+    9   Add cursor-column highlighting.  Enable it with 'cursorcolumn' option,
+	set highlighting with "CursorColumn" group.  Useful for aligning text.
+	Also cursor-row highlighting.  Patch from Yasuhiro Matsumoto for
+	underlining the cursor line, 2004 Mar 24.  Update 2004 Jun 17
+	Alternatie: when 'number' is set highlight the number of the current
+	line.
+    7   Completion of network shares, patch by Yasuhiro Matsumoto.
+	Update 2004 Jun 17.
+    8   Patches from Peter "Rain Dog" Cucka:
+	- guifont selector (2002 Dec 15)  will send update
+    7   Add an option to set the width of the 'number' column.  Eight
+	positions is often more than needed.  Or adjust the width to the
+	length of the file?
+	Add patch that adds 'numberlen' option. (James Harvey)
+	Other patch with min and max from Emmanuel Renieris (2002 Jul 24)
+	Other patch without an option by Gilles Roy (2002 Jul 25)
+	New patch from Emmanuel Renieris, 2004 Jun 17
+	Needs more work: use one option with one or two numbers
+    7   Be able to call a function while passing on a variable number of
+	arguments:
+	    :function Foo(abc, ...)
+	    :  call Bar(a:abc, a:*)
+	Charles Campbell has a patch for this
+	He lost the patch himself.
+    7   Make ":startinsert" command work directly for functions and scripts?
+	Also make it possible to append (it's difficult at end of line).
+	And add ":startreplace" (patch by Charles Campbell, 2004 Jan 9,
+	http://www.erols.com/astronaut/vim/index.html#Patch)
+	Update 2004 June 18
+    8   Add patch from Charles Campbell to have ":0file!" remove the name of
+	the current buffer. (2003 June 17)
+	Lost the patch himself.
+    8   Make it possible to delete marks.  Charles Campbell has a patch that
+	does this with the markclear() function (2004 Jan 9).  And the
+	":delmark" command (2004 Feb 9)
+	Update 2004 June 18
+    8   ":hardcopy":
+	- Patch to append CTRL-D to PostScript output (Mike Williams, 2004 Jun
+	  14)
+	- support printing multi-byte characters.  Patch from Motonobu
+	  Ichimura.  New (better) patch from Mike Williams (2004 Jan 20)
+	  Updated patch: http://www.eandem.co.uk/mrw/vim/special/index.html
+    7   Add patch from Wall for this one ( ~/Mail/oldmail/wall/in.00019 ):
+	'flipcase' variable: upper/lowercase pairs.
+	Insert comma's between pairs and allow a range, make it look like
+	'isfname'.  E.g. ":set flipcase=a-zA-Z,xX,23-33:143-153".  The colon to
+	separate the from and to part is optional.
+	Resp: no time now.
+    --- responses above --
     7   Make "5dd" on last-but-one-line not delete anything (Vi compatible).
 	Add flag in 'cpoptions' for this.  When not present, "2dd" in the last
 	line should delete the last line.  Patch from greenx 2002 Apr 11.
@@ -77,30 +137,10 @@ For version 7.0:
 	Martin Dalecki 2002 Jan 11.
     8   Add a few more command names to the menus.  Patch from Jiri Brezina
 	(28 feb 2002).
-    8   Patch to add 'transparency' option.  Disadvantage: it's slow. (Eckehard
-	Berns, 2004 May 9) http://ecki.to/vim-icns/TransBack.diff
-    8   Patches from "Rain Dog" Cucka:
-	- guifont selector (2002 Dec 15)
-	- scrollbar (2002 Dec 8)
-	- Quartz fonts (2002 Dec 8)
     7   ATTENTION dialog choices are more logical when "Delete it' appears
 	before "Quit".  Patch by Robert Webb, 2004 May 3.
-    8   Unix: When libcall() fails there is no clear error message.  Johannes
-	Zellner has a patch for this.
-    8   ":hardcopy":
-	- Patch to append CTRL-D to PostScript output (Mike Williams, 2004 Jun
-	  14)
-	- support printing multi-byte characters.  Patch from Motonobu
-	  Ichimura.  New (better) patch from Mike Williams (2004 Jan 20)
-    9   Merge in ideas from ~/vim/patches/tutor.txt (Gabriel Zachmann)
-    8   Add patch from Muraoka Taro (Mar 16) to support input method on Mac?
     -   Include flipcase patch: ~/vim/patches/wall.flipcase2 ?  Make it work
 	for multi-byte characters.
-    7   Add patch from Wall for this one ( ~/Mail/oldmail/wall/in.00019 ):
-	'flipcase' variable: upper/lowercase pairs.
-	Insert comma's between pairs and allow a range, make it look like
-	'isfname'.  E.g. ":set flipcase=a-zA-Z,xX,23-33:143-153".  The colon to
-	separate the from and to part is optional.
     -   Win32: add options to print dialog.  Patch from Vipin Aravind.
     -   Patch to add highlighting for whitespace. (Tom Schumm, 2003 Jul 5)
 	use the patch that keeps using HLF_8 if HLF_WS has not
@@ -113,19 +153,6 @@ For version 7.0:
     -   Add possibility to highlight specific columns (for Fortran).  Or put a
 	line in between columns (e.g. for 'textwidth').
 	Patch to add 'hlcolumn' from Vit Stradal, 2004 May 20.
-    9   Add cursor-column highlighting.  Enable it with 'cursorcolumn' option,
-	set highlighting with "CursorColumn" group.  Useful for aligning text.
-	Also cursor-row highlighting.  Patch from Yasuhiro Matsumoto for
-	underlining the cursor line, 2004 Mar 24.
-	Alternatie: when 'number' is set highlight the number of the current
-	line.
-    7   Be able to call a function while passing on a variable number of
-	arguments:
-	    :function Foo(abc, ...)
-	    :  call Bar(a:abc, a:*)
-	Charles Campbell has a patch for this
-    8   Add ":n" to fnamemodify(): normalize path, remove "../" when possible.
-	Aric Blumer has a patch for this.
     8   Add functions:
 	tr(expr, from, to)	translate chars (Patch from Ron Aaron, Apr 8
 				2004)
@@ -136,9 +163,9 @@ For version 7.0:
 				Presser)
 				He will send a new patch.
 				Is this really useful?
-	---
 	multibyteidx(string, idx) Byte index in multi-byte character.
 				Patch by Ilya Sher, 2004 Feb 25
+				Update June 18 (third one).
 	menuprop({name}, {idx}, {what})
 				Get menu property of menu {name} item {idx}.
 				menuprop("", 1, "name") returns "File".
@@ -148,9 +175,15 @@ For version 7.0:
 	mapname({idx}, mode)	return the name of the idx'th mapping.
 				Patch by Ilya Sher, 2004 Mar 4.
 	match({pat}, {string} [,start] [,count]) get index of count'th match
-				Patch by Ilya Sher, 2004 Mar 31
+				Patch by Ilya Sher, 2004 Jun 19
 	find()			find file in 'path' (patch from Johannes
 				Zellner 2001 Dec 20)
+				Update 2004 Jun 16.
+	gettext()		Translate a message.  (Patch from Yasuhiro
+				Matsumoto) How to get the messages into the
+				.po files?
+				Update 2004 Jun 17
+	---
 	realname()		Get user name (first, last, full)
 				user_fullname() patch by Nikolai Weibull, Nov
 				3 2002)
@@ -175,10 +208,6 @@ For version 7.0:
 				(Patch from Yegappan Lakshmanan)
 	raisewin()		raise gvim window (see HierAssist patch for
 				Tcl implementation ~/vim/HierAssist/ )
-	gettext()		Translate a message.  (Patch from Yasuhiro
-				Matsumoto) How to get the messages into the
-				.po files?
-    7   Add "nbsp" in 'listchars'?  Patch from David Blanchet, 2003 Jul 28.
     7   Add patch from Benoit Cerrina to integrate Vim and Perl functions
 	better.  Now also works for Ruby (2001 Nov 10)
     7   Add 'taglistfiles' option, show file name and type when listing matching
@@ -186,37 +215,20 @@ For version 7.0:
     7   Motif: use the menu font consistently.  Patch from Martin Dalecki 2002
 	Jan 11.
     -   Motif: add 3D shading for the menu entries?  Patch from Martin Dalecki.
-    8   Add expression-expansion, so that the user can define his own kind of
-	completion.  Patch from Taro Muraoka, 2003 Aug 26.
-    7   Completion of network shares, patch by Yasuhiro Matsumoto.
     9   When 'autoindent' is set, hitting <CR> twice, while there is text after
 	the cursor, doesn't delete the autoindent in the resulting blank line.
 	(Rich Wales) This is Vi compatible, but it looks like a bug.  Rich has
 	a suggestion for a patch to fix this.
 	e-mail to Rich bounced.
-    7   Make ":startinsert" command work directly for functions and scripts?
-	Also make it possible to append (it's difficult at end of line).
-	And add ":startreplace" (patch by Charles Campbell, 2004 Jan 9,
-	http://www.erols.com/astronaut/vim/index.html#Patch)
-    8   Text objects: Add "a'" and 'a"': a single or double quoted string.
-	(Tim Chase) Patch from Taro Muraoka (2003 Dec 16).
     7   For Visual mode: Command to do a search for the string in the marked
 	area.  Only when fewer than two lines. Use "g/" and "gb".  Patch from
 	Yegappan Lakshmanan.
     7   When 'rightleft' is set, the search pattern should be displayed right
 	to left as well?  See patch of Dec 26. (Nadim Shaikli)
-    8   Add patch from Charles Campbell to have ":0file!" remove the name of
-	the current buffer. (2003 June 17)
-    8   Make it possible to delete marks.  Charles Campbell has a patch that
-	does this with the markclear() function (2004 Jan 9).  And the
-	":delmark" command (2004 Feb 9)
-    7   Win32: Add patch for 5-button mouse. (Michael Geddes 2001 Nov 26)
     8   Lock all used memory so that it doesn't get swapped to disk (uncrypted).
 	Patch by Jason Holt, 2003 May 23.
     7   Support a stronger encryption.  Jason Holt implemented AES (May 6 2003).
     7   Add ! register, for shell commands. (patch from Grenie)
-    7   Add the MzScheme interface.  Patch on http://iamphet.nm.ru/scheme/
-	(Sergey Khorev)
     8   Make 'statusline' local, so that each window can have a different
 	value.  But should it also be local to a buffer? (Yegappan Lakshmanan
 	has a patch, 2002 feb 15)
@@ -233,21 +245,10 @@ For version 7.0:
     8   Include a connection to an external program through a pipe?  See
 	patches from Felbinger for a mathematica interface.
 	Or use emacs server kind of thing?
-    7   Add an option to set the width of the 'number' column.  Eight
-	positions is often more than needed.  Or adjust the width to the
-	length of the file?
-	Add patch that adds 'numberlen' option. (James Harvey)
-	Other patch with min and max from Emmanuel Renieris (2002 Jul 24)
-	Other patch without an option by Gilles Roy (2002 Jul 25)
     7   Add ":justify" command.  Patch from Vit Stradal 2002 Nov 25.
     -   findmatch() should be adjusted for Lisp.  See remark at
 	get_lisp_indent().  Esp. \( and \) should be skipped. (Dorai Sitaram,
 	incomplete patch Mar 18)
-    8   Sorting of filenames for completion is wrong on systems that ignore
-	case of filenames.  Add 'ignorefncase' option.  When set, case in
-	filenames is ignored for sorting them. Patch by Mike Williams:
-	~/vim/patches/ignorefncase.  Also change what matches?  Or use another
-	option name.
 -   Change ga_room into ga_maxlen, so that it doesn't need to be
     incremented/decremented each time.
 -   new DATA TYPES: lists, dictionaries and function references.
@@ -716,8 +717,9 @@ Amiga:
 
 
 Macintosh:
-9   Mac: The motion type is not stored on the clipboard.  Using ":set
-    clipboard=unnamed" makes "yyp" work characterwise. (Michael DeMoney)
+7   Patch to add 'transparency' option.  Disadvantage: it's slow. (Eckehard
+    Berns, 2004 May 9) http://ecki.to/vim/TransBack-2004-05-09.diff
+    Needs more work.  Add when someone really wants it.
 7   Loading the Perl library only works on OS/X 10.2 or 10.3, never on both.
     Load the Perl library dynamically see Python sources file dynload_mac
     (Jack)
@@ -1745,7 +1747,7 @@ Scrolling:
     bound windows.
 -   Add 'search' option to 'scrollopt' to allow 'scrollbind' windows to
     be bound by regexp searches
--   Add "z>" and "z<": scroll sideways one screenfull. (Campbell)
+-   Add "z>" and "z<": scroll sideways one screenful. (Campbell)
 -   Add option to set the number of lines when not to scroll, instead of the
     fixed number used now (for terminals that scroll slow with a large number
     of lines but not with a single line).
@@ -2971,7 +2973,7 @@ Registers:
 Debug mode:
 7   Add something to enable debugging when a remote message is received.
 8   Add breakpoints for setting an option
-8   Add breakpoits for assigning to a variable.
+8   Add breakpoints for assigning to a variable.
 7   Add a watchpoint in the debug mode: An expression that breaks execution
     when evaluating to non-zero.
 7   Store the history from debug mode in viminfo.
@@ -3361,6 +3363,11 @@ Various improvements:
 -   Support mapping for replace mode and "r" command (Vi doesn't do this)?
 5   Add 'ignorefilecase' option: Ignore case when expanding file names.
     ":e ma<Tab>" would also find "Makefile" on Unix.
+8   Sorting of filenames for completion is wrong on systems that ignore
+    case of filenames.  Add 'ignorefncase' option.  When set, case in
+    filenames is ignored for sorting them. Patch by Mike Williams:
+    ~/vim/patches/ignorefncase.  Also change what matches?  Or use another
+    option name.
 8   Should be able to compile Vim in another directory, with $(srcdir) set to
     where the sources are. Add $(srcdir) in the Makefile in a lot of places.
     (Netherton)

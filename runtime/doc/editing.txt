@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.0aa.  Last change: 2004 Jun 14
+*editing.txt*   For Vim version 7.0aa.  Last change: 2004 Jun 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -340,10 +340,11 @@ directly before the first or just after the last backtick.
 
 							*`=*
 You can have the backticks expanded as a Vim expression, instead of
-an external command, by using the syntax `={expr}` e.g. >
+an external command, by using the syntax `={expr}` e.g.: >
 	:let foo='bar'
 	:e `=foo . ".c" `
-edits "bar.c".  Note that the expression cannot contain a backtick.
+This will edit "bar.c".  The expression can contain just about anything, thus
+this can also be used to avoid the special meaning of '"', '|', '%' and '#'.
 
 							*++opt* *[++opt]*
 The [++opt] argument can be used to force the value of 'fileformat' or

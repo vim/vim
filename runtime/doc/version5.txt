@@ -1,4 +1,4 @@
-*version5.txt*  For Vim version 7.0aa.  Last change: 2004 Jan 17
+*version5.txt*  For Vim version 7.0aa.  Last change: 2004 Jun 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1517,7 +1517,7 @@ Menus defined in the .vimrc were removed when GUI started.
 
 Crash when pasting with the mouse in insert mode.
 
-Crash whith ":unmenu *" in .gvimrc for Athena.
+Crash with ":unmenu *" in .gvimrc for Athena.
 
 "5>>" shifted 5 lines 5 times, instead of 1 time.
 
@@ -2026,7 +2026,7 @@ $vim/macros".  If no initial dir specified for ":browse e", can be compiled to
 either begin in the current directory, or that of the current buffer. (Negri
 and Kahn)
 Added the 'browsedir' option, with value "current", "last" or "buffer".  Tells
-wether a browse dialog starts in last used dir, dir of current buffer, or
+whether a browse dialog starts in last used dir, dir of current buffer, or
 current dir.  ":browse w" is unaffected.
 The default menus have been changed to use the ":browse" command.
 
@@ -3667,8 +3667,8 @@ and starts Vim on it.  "make install" now also copies the tutor.
 In the output of ":clist" the current entry is highlighted, with the 'i'
 highlighting (same as used for 'incsearch').
 
-For the ":clist" command, you can scroll backwards with "b" (one screenfull),
-"u" (half a screenfull) and "k" (one line).
+For the ":clist" command, you can scroll backwards with "b" (one screenful),
+"u" (half a screenful) and "k" (one line).
 
 Multi-byte support:
 - X-input method for multi-byte characters.  And various fixes for multi-byte
@@ -4582,7 +4582,7 @@ buffers, only beep and continue with the insert command.
 Dos and Win32 console: Setting t_me didn't work to get another color.  Made
 this works backwards compatible.
 
-For turkish (LANG = "tr") uppercase 'i' is not an 'I'.  Use ASCII uppercase
+For Turkish (LANG = "tr") uppercase 'i' is not an 'I'.  Use ASCII uppercase
 translation in vim_strup() to avoid language problems. (Komur)
 
 Unix: Use usleep() or nanosleep() for mch_delay() when available.  Hopefully
@@ -7578,7 +7578,7 @@ Fixed compiling under NeXT. (Jeroen C.M. Goudswaard)
 
 optwin.vim gave an error when used in Vi compatible mode ('cpo' contains 'C').
 
-Tcl interpreter: "buffer" command didn't check for precense of an argument.
+Tcl interpreter: "buffer" command didn't check for presense of an argument.
 (Dave Bodenstab)
 
 dosinst.c: Added checks for too long file name.

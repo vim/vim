@@ -1,11 +1,11 @@
-*pi_netrw.txt*  For Vim version 7.0aa.  Last change: Apr 21, 2004
+*pi_netrw.txt*  For Vim version 6.2.  Last change: Jun 15, 2004
 
 
 		VIM REFERENCE MANUAL    by Charles E. Campbell, Jr.
 
-*dav*		*http*		*network*	*rcp*		*scp*
-*fetch*		*netrw*		*Nread*		*rsync*		*sftp*
-*ftp*		*netrw.vim*	*Nwrite*	*netrw-file*
+*dav*           *http*          *network*       *rcp*           *scp*
+*fetch*         *netrw*         *Nread*         *rsync*         *sftp*
+*ftp*           *netrw.vim*     *Nwrite*        *netrw-file*
 
 ==============================================================================
 0. Contents						*netrw-contents*
@@ -16,15 +16,16 @@
 4.  Transparent File Transfer...........................|netrw-transparent|
 5.  Ex Commands.........................................|netrw-ex|
 6.  Variables and Options...............................|netrw-var|
-7.  Debugging...........................................|netrw-debug|
-8.  New Stuff...........................................|netrw-new|
-9.  Credits.............................................|netrw-credits|
+7.  Remote Directory Listing............................|netrw-dir|
+8.  Debugging...........................................|netrw-debug|
+9.  History.............................................|netrw-history|
+10. Credits.............................................|netrw-credits|
 
 The functionality mentioned here is done via using |standard-plugin|
 techniques.  This plugin is only available if
 
-	set nocp		    " 'compatible' is not set
-	filetype plugin on	    " plugins are enabled
+	set nocp                    " 'compatible' is not set
+	filetype plugin on          " plugins are enabled
 
 You can avoid loading this plugin by setting the "loaded_netrw" variable
 in your <.vimrc> file: >
@@ -49,16 +50,16 @@ in your <.vimrc> file: >
 
 	Controlling External Applications
 
-	 Protocol  Variable	       Default Value
-	 --------  ----------------    -------------
-	   dav:    g:netrw_dav_cmd   = "cadaver"
-	   fetch:  g:netrw_fetch_cmd = "fetch -o"
-	   ftp:    g:netrw_ftp_cmd   = "ftp"
-	   http:   g:netrw_http_cmd  = "fetch -o"   else if fetch is available
-	   http:   g:netrw_http_cmd  = "wget -q -O"    If wget is available
-	   rcp:    g:netrw_rcp_cmd   = "rcp"
-	   rsync:  g:netrw_rsync_cmd = "rsync -a"
-	   scp:    g:netrw_scp_cmd   = "scp -q"
+	 Protocol  Variable	     Default Value
+	 --------  ----------------  -------------
+	    dav:    g:netrw_dav_cmd  = "cadaver"
+	  fetch:  g:netrw_fetch_cmd  = "fetch -o"
+	    ftp:    g:netrw_ftp_cmd  = "ftp"
+           http:   g:netrw_http_cmd  = "fetch -o"    if fetch is available
+	   http:   g:netrw_http_cmd  = "wget -q -O"  If wget  is available
+	    rcp:    g:netrw_rcp_cmd  = "rcp"
+	  rsync:  g:netrw_rsync_cmd  = "rsync -a"
+	    scp:    g:netrw_scp_cmd  = "scp -q"
 	   sftp:   g:netrw_sftp_cmd  = "sftp"
 
     READING
@@ -76,7 +77,7 @@ in your <.vimrc> file: >
 	:Nread "sftp://[user@]machine/file"		uses sftp
 
     WRITING
-	:Nwrite ?					give help
+	:Nwrite ?    					give help
 	:Nwrite "machine:file"				uses rcp
 	:Nwrite "machine file"				uses ftp   with <.netrc>
 	:Nwrite "machine id password file"		uses ftp
@@ -87,6 +88,9 @@ in your <.vimrc> file: >
 	:Nwrite "scp://[user@]machine[[:#]port]/file"	uses scp
 	:Nwrite "sftp://[user@]machine/file"		uses sftp
 	http: not supported!
+
+    DIRECTORY LISTING
+	:Nread [protocol]://[user]@hostname/path/
 
     USER AND PASSWORD CHANGING
 	Attempts to use ftp will prompt you for a user-id and a password.
@@ -148,7 +152,7 @@ transfer/protocol.  Files are read from/written to a temporary file
 clean up.
 
 One may modify any protocol's implementing external application
-by setting a variable (ex. scp uses the variable g:netrw_scp_cmd,
+by settinbg a variable (ex. scp uses the variable g:netrw_scp_cmd,
 which is defaulted to "scp -q").
 
 Ftp, an old protocol, seems to be blessed by numerous implementations.
@@ -181,57 +185,57 @@ additional prompting.
 
 								*netrw-urls*
   +=================================+============================+============+
-  |  Reading			    | Writing			 |  Uses      |
+  |  Reading                        | Writing                    |  Uses      |
   +=================================+============================+============+
-  | DAV:			    |				 |	      |
-  |  dav://host/path		    |				 | cadaver    |
-  |  :Nread dav://host/path	    | :Nwrite dav://host/path	 | cadaver    |
+  | DAV:                            |                            |            |
+  |  dav://host/path                |                            | cadaver    |
+  |  :Nread dav://host/path         | :Nwrite dav://host/path    | cadaver    |
   +---------------------------------+----------------------------+------------+
-  | FETCH:			    |				 |	      |
-  |  fetch://[user@]host/path	    |				 |	      |
-  |  fetch://[user@]host:http/path  |  Not Available		 | fetch      |
-  |  :Nread fetch://[user@]host/path|				 |	      |
+  | FETCH:                          |                            |            |
+  |  fetch://[user@]host/path       |                            |            |
+  |  fetch://[user@]host:http/path  |  Not Available             | fetch      |
+  |  :Nread fetch://[user@]host/path|                            |            |
   +---------------------------------+----------------------------+------------+
-  | FILE:			    |				 |	      |
-  |  file:///*			    | file:///*			 |	      |
-  |  file://localhost/*		    | file://localhost/*	 |	      |
+  | FILE:                           |                            |            |
+  |  file:///*                      | file:///*                  |            |
+  |  file://localhost/*             | file://localhost/*         |            |
   +---------------------------------+----------------------------+------------+
-  | FTP:	  (*3)		    |		   (*3)		 |	      |
-  |  ftp://[user@]host/path	    | ftp://[user@]host/path	 | ftp	(*2)  |
-  |  :Nread ftp://host/path	    | :Nwrite ftp://host/path	 | ftp+.netrc |
-  |  :Nread host path		    | :Nwrite host path		 | ftp+.netrc |
-  |  :Nread host uid pass path	    | :Nwrite host uid pass path | ftp	      |
+  | FTP:          (*3)              |              (*3)          |            |
+  |  ftp://[user@]host/path         | ftp://[user@]host/path     | ftp  (*2)  |
+  |  :Nread ftp://host/path         | :Nwrite ftp://host/path    | ftp+.netrc |
+  |  :Nread host path               | :Nwrite host path          | ftp+.netrc |
+  |  :Nread host uid pass path      | :Nwrite host uid pass path | ftp        |
   +---------------------------------+----------------------------+------------+
-  | HTTP: wget is executable: (*4)  |				 |	      |
-  |  http://[user@]host/path	    |	     Not Available	 | wget       |
+  | HTTP: wget is executable: (*4)  |                            |            |
+  |  http://[user@]host/path        |        Not Available       | wget       |
   +---------------------------------+----------------------------+------------+
-  | HTTP: fetch is executable (*4)  |				 |	      |
-  |  http://[user@]host/path	    |	     Not Available	 | fetch      |
+  | HTTP: fetch is executable (*4)  |                            |            |
+  |  http://[user@]host/path        |        Not Available       | fetch      |
   +---------------------------------+----------------------------+------------+
-  | RCP:			    |				 |	      |
-  |  rcp://[user@]host/path	    | rcp://[user@]host/path	 | rcp	      |
+  | RCP:                            |                            |            |
+  |  rcp://[user@]host/path         | rcp://[user@]host/path     | rcp        |
   +---------------------------------+----------------------------+------------+
-  | RSYNC:			    |				 |	      |
-  |  rsync://[user@]host/path	    | rsync://[user@]host/path	 | rsync      |
-  |  :Nread rsync://host/path	    | :Nwrite rsync://host/path  | rsync      |
-  |  :Nread rcp://host/path	    | :Nwrite rcp://host/path	 | rcp	      |
+  | RSYNC:                          |                            |            |
+  |  rsync://[user@]host/path       | rsync://[user@]host/path   | rsync      |
+  |  :Nread rsync://host/path       | :Nwrite rsync://host/path  | rsync      |
+  |  :Nread rcp://host/path         | :Nwrite rcp://host/path    | rcp        |
   +---------------------------------+----------------------------+------------+
-  | SCP:			    |				 |	      |
-  |  scp://[user@]host/path	    | scp://[user@]host/path	 | scp	      |
-  |  :Nread scp://host/path	    | :Nwrite scp://host/path	 | scp	(*1)  |
+  | SCP:                            |                            |            |
+  |  scp://[user@]host/path         | scp://[user@]host/path     | scp        |
+  |  :Nread scp://host/path         | :Nwrite scp://host/path    | scp  (*1)  |
   +---------------------------------+----------------------------+------------+
-  | SFTP:			    |				 |	      |
-  |  sftp://[user@]host/path	    | sftp://[user@]host/path	 | sftp       |
-  |  :Nread sftp://host/path	    | :Nwrite sftp://host/path	 | sftp  (*1) |
+  | SFTP:                           |                            |            |
+  |  sftp://[user@]host/path        | sftp://[user@]host/path    | sftp       |
+  |  :Nread sftp://host/path        | :Nwrite sftp://host/path   | sftp  (*1) |
   +=================================+============================+============+
 
 	(*1) For an absolute path use scp://machine//path.
 
 	(*2) if <.netrc> is present, it is assumed that it will
 	work with your ftp client.  Otherwise the script will
-	prompt for user-id and password.
+	prompt for user-id and pasword.
 
-	(*3) for ftp, "machine" may be machine#port or machine:port
+        (*3) for ftp, "machine" may be machine#port or machine:port
 	if a different port is needed than the standard ftp port
 
 	(*4) for http:..., if wget is available it will be used.  Otherwise,
@@ -327,67 +331,88 @@ additional commands available.
 
 
 ==============================================================================
-6. Variables and Options			*netrw-options* *netrw-var*
+6. Variables and Options       			*netrw-options* *netrw-var*
 
 The script <netrw.vim> uses several variables which can affect <netrw.vim>'s
 behavior.  These variables typically may be set in the user's <.vimrc> file:
-
-	g:netrw_uid		Holds current user-id for ftp.
-	g:netrw_passwd		Holds current password for ftp.
-	b:netrw_lastfile	Holds latest method/machine/path.
-	b:netrw_line		Holds current line number     (during NetWrite)
-	b:netrw_col		Holds current cursor position (during NetWrite)
-	g:netrw_ftp		=0 use default ftp	      (uid password)
-				=1 use alternate ftp	      (user uid password)
-				(see |netrw-options|)
-	g:netrw_ftpmode		="binary"		      (default)
-				="ascii"		      (your choice)
-	g:netrw_ignorenetrc	=1			      (default)
-				   if you have a <.netrc> file but you don't
+>
+                                -------------
+                           	Netrw Options
+                                -------------
+	Option			Meaning
+	--------------		-----------------------------------------------
+<
+        b:netrw_col             Holds current cursor position (during NetWrite)
+        g:netrw_cygwin          =1 assume scp under windows is from cygwin
+                                                              (default/windows)
+                                =0 assume scp under windows accepts windows
+                                   style paths                (default/else)
+        g:netrw_ftp             =0 use default ftp            (uid password)
+        g:netrw_ftpmode         ="binary"                     (default)
+                                ="ascii"                      (your choice)
+	g:netrw_ignorenetrc     =1                            (default)
+	                           if you have a <.netrc> file but you don't
 				   want it used, then set this variable.  Its
 				   mere existence is enough to cause <.netrc>
 				   to be ignored.
-	g:netrw_win95ftp	=0 use unix-style ftp even if win95/98/ME/etc
-				=1 use default method to do ftp
-	g:netrw_cygwin		=1 assume scp under windows is from cygwin
-							      (default/windows)
-				=0 assume scp under windows accepts windows
-				   style paths		      (default/else)
-	g:netrw_use_nt_rcp	=0 don't use WinNT/2K/XP's rcp (default)
-				=1 use WinNT/2K/XP's rcp, binary mode
-
-
+        b:netrw_lastfile        Holds latest method/machine/path.
+        b:netrw_line            Holds current line number     (during NetWrite)
+        g:netrw_passwd          Holds current password for ftp.
+	g:netrw_silent          =0 transfers done normally
+	                        =1 transfers done silently
+        g:netrw_uid             Holds current user-id for ftp.
+                                =1 use alternate ftp          (user uid password)
+                                (see |netrw-options|)
+        g:netrw_use_nt_rcp      =0 don't use WinNT/2K/XP's rcp (default)
+                                =1 use WinNT/2K/XP's rcp, binary mode
+        g:netrw_win95ftp        =0 use unix-style ftp even if win95/98/ME/etc
+                                =1 use default method to do ftp >
+	-----------------------------------------------------------------------
+<
 The script will also make use of the following variables internally, albeit
 temporarily.
-
+>
+			     -------------------
+			     Temporary Variables
+			     -------------------
+	Variable		Meaning
+	--------		------------------------------------
+<
 	g:netrw_method		Index indicating rcp/ftp+.netrc/ftp
 	g:netrw_machine		Holds machine name parsed from input
-	g:netrw_fname		Holds filename being accessed
-
+	g:netrw_fname		Holds filename being accessed >
+	------------------------------------------------------------
+<
 								*netrw-protocol*
+
+Netrw supports a number of protocols.  These protocols are invoked using the
+variables listed below, and may be modified by the user.
 >
 			   ------------------------
-			   Protocol Control Options
+                           Protocol Control Options
 			   ------------------------
-    Option	      Type	  Setting	  Meaning ~
-    ---------	      --------	  --------------  --------------------------- >
-    netrw_ftp	      variable	  =doesn't exist  userid set by "user userid"
-				  =0		  userid set by "user userid"
-				  =1		  userid set by "userid"
-    NetReadFixup      function	  =doesn't exist  no change
-				  =exists	  Allows user to have files
-						  read via ftp automatically
-						  transformed however they wish
-						  by NetReadFixup()
+    Option            Type        Setting         Meaning
+    ---------         --------    --------------  ---------------------------
+<
+    netrw_ftp         variable    =doesn't exist  userid set by "user userid"
+                                  =0              userid set by "user userid"
+                                  =1              userid set by "userid"
+    NetReadFixup      function    =doesn't exist  no change
+                                  =exists         Allows user to have files
+                                                  read via ftp automatically
+                                                  transformed however they wish
+                                                  by NetReadFixup()
     g:netrw_dav_cmd    variable   ="cadaver"
     g:netrw_fetch_cmd  variable   ="fetch -o"
     g:netrw_ftp_cmd    variable   ="ftp"
     g:netrw_http_cmd   variable   ="fetch -o" else if fetch is executable
     g:netrw_http_cmd   variable   ="wget -O"  if      wget  is executable
+    g:netrw_list_cmd   variable   ="ssh HOSTNAME ls -Fa"
     g:netrw_rcp_cmd    variable   ="rcp"
     g:netrw_rsync_cmd  variable   ="rsync -a"
     g:netrw_scp_cmd    variable   ="scp -q"
-    g:netrw_sftp_cmd   variable   ="sftp"
+    g:netrw_sftp_cmd   variable   ="sftp" >
+    -------------------------------------------------------------------------
 <
 The first two options both help with certain ftp's that give trouble otherwise.
 In order to best understand how to use these options if ftp is giving you
@@ -396,16 +421,21 @@ troubles, a bit of discussion follows on how netrw does ftp reads.
 The g:netrw_..._cmd variables specify the external program to use handle
 the associated protocol (rcp, ftp, etc), plus any options.
 
-Netrw typically builds up lines of one of the following formats in a
+The g:netrw_list_cmd's HOSTNAME entry will be changed via substitution with
+whatever the current request is for a hostname.
+
+For ftp, netrw typically builds up lines of one of the following formats in a
 temporary file:
 >
   IF g:netrw_ftp !exists or is not 1     IF g:netrw_ftp exists and is 1
   ----------------------------------     ------------------------------
-       open machine [port]		      open machine [port]
-       user userid password		      userid password
-       [g:netrw_ftpmode]		      password
-       get filename tempfile		      [g:netrw_ftpmode]
-					      get filename tempfile
+<
+       open machine [port]                    open machine [port]
+       user userid password                   userid password
+       [g:netrw_ftpmode]                      password
+       get filename tempfile                  [g:netrw_ftpmode]
+                                              get filename tempfile >
+  ---------------------------------------------------------------------
 <
 Netrw then executes the lines above by use of a filter:
 >
@@ -418,14 +448,14 @@ where
 	-n means don't use netrc and is used for Method #3 (ftp w/o <.netrc>)
 
 If <.netrc> exists it will be used to avoid having to query the user for
-userid and password).  The transferred file is put into a temporary file.
+userid and password.  The transferred file is put into a temporary file.
 The temporary file is then read into the main editing session window that
 requested it and the temporary file deleted.
 
 If your ftp doesn't accept the "user" command and immediately just demands
 a userid, then try putting "let netrw_ftp=1" in your <.vimrc>.
 
-								*netrw-fixup*
+							 	*netrw-fixup*
 If your ftp for whatever reason generates unwanted lines (such as AUTH
 messages) you may write a NetReadFixup(tmpfile) function:
 >
@@ -441,7 +471,7 @@ messages) you may write a NetReadFixup(tmpfile) function:
       elseif a:method == 7 "rsync
       elseif a:method == 8 "fetch
       elseif a:method == 9 "sftp
-      else		 " complain
+      else               " complain
       endif
     endfunction
 >
@@ -453,17 +483,42 @@ and so it is desirable to automate their removal.  Here's some code taken
 from <netrw.vim> itself:
 >
     if has("win95") && g:netrw_win95ftp
-     fu! NetReadFixup(method, line1, line2)
+     fun! NetReadFixup(method, line1, line2)
        if method == 3   " ftp (no <.netrc>)
-	let fourblanklines= line2 - 3
-	silent fourblanklines.",".line2."g/^\s*/d"
+        let fourblanklines= line2 - 3
+        silent fourblanklines.",".line2."g/^\s*/d"
        endif
      endfunction
     endif
 >
 
 ==============================================================================
-7. Debugging						*netrw-debug*
+7. Remote Directory Listing				*netrw-dir* *netrw-list*
+
+Netrw supports listing (browsing) directories on remote hosts; simply attempt
+to read a "file" with a trailing slash and it will be interpreted as a
+request to browse a directory:
+
+	vim [protocol]://[user@]hostname/path/
+
+Netrw will modify the command in g:netrw_list to perform the directory listing
+operation.  By default the command is:
+
+	ssh HOSTNAME ls -Fa
+
+where the HOSTNAME becomes the hostname as requested by the attempted
+read.  Naturally, the user may override this command with whatever is
+preferred.  The NetList function which implements remote directory
+browsing expects that directories will be flagged by a trailing slash.
+
+Browsing is simple: move the cursor onto a file or directory of interest.
+Hitting the <cr> (the return key) will select the file or directory.  Directories
+will themselves be listed, and files will be opened using the protocol given
+in the original read request.
+
+
+==============================================================================
+8. Debugging						*netrw-debug*
 
 The <netrw.vim> script is typically available as:
 
@@ -494,31 +549,40 @@ which is loaded automatically at startup (assuming :set nocp).
 		drchipNOSPAM at campbellfamily.biz - NOSPAM
 
 ==============================================================================
-8. New Stuff						*netrw-new* *netrw-newstuff*
+9. History						*netrw-history*
 
-       v43: * moved "Explanation" comments to <pi_netrw.txt> help file
-	      as "Network Reference" (|netrw-ref|)
-	    * <netrw.vim> now uses Dfunc() Decho() and Dret() for debugging
-	    * removed superfluous NetRestorePosn() calls
-       v42: * now does BufReadPre and BufReadPost events on file:///*
-	      and file://localhost/*
-       v41: * installed file:///* and file://localhost/* handling
-       v40: * prevents redraw when a protocol error occurs so that the
-	      user may see it
-       v39: * sftp support
-       v38: * Now uses NetRestorePosn() calls with Nread/Nwrite commands
-	    * Temporary files now removed via bwipe! instead of bwipe
-	      (thanks to Dave Roberts)
-       v37: * Claar's modifications which test if ftp is successful, otherwise
-	      give an error message
-	    * After a read, the alternate file was pointing to the temp file.
-	      The temp file buffer is now wiped out.
-	    * removed silent from transfer methods so user can see what's
-	      happening
+	v46: * now handles remote directory browsing
+	     * g:netrw_silent (if 1) will cause all transfers to be silent'd
+	v45: * made the [user@]hostname:path form a bit more restrictive
+	       to better handle errors in using protocols
+	       (e.g. scp:usr@host:file was being recognized as an rcp request)
+	v44: * changed from "rsync -a" to just "rsync"
+	     * somehow an editing error messed up the test to recognize
+	       use of the fetch method for NetRead.
+	     * more debugging statements included
+	v43: * moved "Explanation" comments to <pi_netrw.txt> help file
+	       as "Network Reference" (|netrw-ref|)
+	     * <netrw.vim> now uses Dfunc() Decho() and Dret() for debugging
+	     * removed superfluous NetRestorePosn() calls
+	v42: * now does BufReadPre and BufReadPost events on file:///*
+	       and file://localhost/*
+	v41: * installed file:///* and file://localhost/* handling
+	v40: * prevents redraw when a protocol error occurs so that the
+	       user may see it
+	v39: * sftp support
+	v38: * Now uses NetRestorePosn() calls with Nread/Nwrite commands
+	     * Temporary files now removed via bwipe! instead of bwipe
+	       (thanks to Dave Roberts)
+	v37: * Claar's modifications which test if ftp is successful, otherwise
+	       give an error message
+	     * After a read, the alternate file was pointing to the temp file.
+	       The temp file buffer is now wiped out.
+	     * removed silent from transfer methods so user can see what's
+	       happening
 
 
 ==============================================================================
-9. Credits						*netrw-credits*
+10. Credits						*netrw-credits*
 
 	Vim editor	by Bram Moolenaar (Thanks, Bram!)
 	dav		support by C Campbell

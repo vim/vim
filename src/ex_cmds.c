@@ -4573,7 +4573,7 @@ ex_help(eap)
     buf_T	*buf;
 #ifdef FEAT_MULTI_LANG
     int		len;
-    char_u	*lang = NULL;
+    char_u	*lang;
 #endif
 
     if (eap != NULL)
@@ -4613,13 +4613,7 @@ ex_help(eap)
 
 #ifdef FEAT_MULTI_LANG
     /* Check for a specified language */
-    len = STRLEN(arg);
-    if (len >= 3 && arg[len - 3] == '@' && ASCII_ISALPHA(arg[len - 2])
-					       && ASCII_ISALPHA(arg[len - 1]))
-    {
-	lang = arg + len - 2;
-	lang[-1] = NUL;		/* remove the '@' */
-    }
+    lang = check_help_lang(arg);
 #endif
 
     /* When no argument given go to the index. */
@@ -4747,6 +4741,28 @@ erret:
     vim_free(tag);
 }
 
+
+#if defined(FEAT_MULTI_LANG) || defined(PROTO)
+/*
+ * In an argument search for a language specifiers in the form "@xx".
+ * Changes the "@" to NUL if found, and returns a pointer to "xx".
+ * Returns NULL if not found.
+ */
+    char_u *
+check_help_lang(arg)
+    char_u *arg;
+{
+    int len = STRLEN(arg);
+
+    if (len >= 3 && arg[len - 3] == '@' && ASCII_ISALPHA(arg[len - 2])
+					       && ASCII_ISALPHA(arg[len - 1]))
+    {
+	arg[len - 3] = NUL;		/* remove the '@' */
+	return arg + len - 2;
+    }
+    return NULL;
+}
+#endif
 
 /*
  * Return a heuristic indicating how well the given string matches.  The
@@ -5180,7 +5196,9 @@ ex_helptags(eap)
     garray_T	ga;
     int		i, j;
     int		len;
+#ifdef FEAT_MULTI_LANG
     char_u	lang[2];
+#endif
     char_u	ext[5];
     char_u	fname[8];
     int		filecount;

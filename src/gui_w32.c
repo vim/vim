@@ -818,9 +818,11 @@ FindWindowTitle(HWND hwnd, LPARAM lParam)
     {
 	if (strstr(buf, title) != NULL)
 	{
-	    /* Found it.  Store the window ref. and quit searching. */
+	    /* Found it.  Store the window ref. and quit searching if MDI
+	     * works. */
 	    vim_parent_hwnd = FindWindowEx(hwnd, NULL, "MDIClient", NULL);
-	    return FALSE;
+	    if (vim_parent_hwnd != NULL)
+		return FALSE;
 	}
     }
     return TRUE;	/* continue searching */

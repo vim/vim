@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2004 May 18
+*eval.txt*      For Vim version 7.0aa.  Last change: 2004 Jun 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -515,7 +515,7 @@ Another example that does the same: >
 	command Tick let s:counter = s:counter + 1 | echo s:counter
 
 When calling a function and invoking a user-defined command, the context for
-script varialbes is set to the script where the function or command was
+script variables is set to the script where the function or command was
 defined.
 
 The script variables are also available when a function is defined inside a
@@ -972,9 +972,13 @@ browse({save}, {title}, {initdir}, {default})
 bufexists({expr})					*bufexists()*
 		The result is a Number, which is non-zero if a buffer called
 		{expr} exists.
+		If the {expr} argument is a number, buffer numbers are used.
 		If the {expr} argument is a string it must match a buffer name
-		exactly.
-		If the {expr} argument is a number buffer numbers are used.
+		exactly.  The name can be:
+		- Relative to the current directory.
+		- A full path.
+		- The name of a buffer with 'filetype' set to "nofile".
+		- A URL name.
 		Unlisted buffers will be found.
 		Note that help files are listed by their short name in the
 		output of |:buffers|, but bufexists() requires using their
@@ -987,12 +991,12 @@ bufexists({expr})					*bufexists()*
 buflisted({expr})					*buflisted()*
 		The result is a Number, which is non-zero if a buffer called
 		{expr} exists and is listed (has the 'buflisted' option set).
-		The {expr} argument is used like with bufexists().
+		The {expr} argument is used like with |bufexists()|.
 
 bufloaded({expr})					*bufloaded()*
 		The result is a Number, which is non-zero if a buffer called
 		{expr} exists and is loaded (shown in a window or hidden).
-		The {expr} argument is used like with bufexists().
+		The {expr} argument is used like with |bufexists()|.
 
 bufname({expr})						*bufname()*
 		The result is the name of a buffer, as it is displayed by the
@@ -1233,6 +1237,9 @@ executable({expr})					*executable()*
 		This function checks if an executable with the name {expr}
 		exists.  {expr} must be the name of the program without any
 		arguments.  executable() uses the normal $PATH.
+		On MS-DOS and MS-Windows the ".exe", ".bat", etc. must be
+		included.  It only checks if the file exists and is not a
+		directory, not if it's really executable.
 		The result is a Number:
 			1	exists
 			0	does not exist
@@ -1910,7 +1917,7 @@ line({expr})	The result is a Number, which is the line number of the file
 		This autocommand jumps to the last known position in a file
 		just after opening it, if the '" mark is set: >
 	:au BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$") | exe "normal g'\"" | endif
-<
+
 line2byte({lnum})					*line2byte()*
 		Return the byte count from the start of the buffer for line
 		{lnum}.  This includes the end-of-line character, depending on
@@ -2746,7 +2753,7 @@ fork			Compiled to use fork()/exec() instead of system().
 gettext			Compiled with message translation |multi-lang|
 gui			Compiled with GUI enabled.
 gui_athena		Compiled with Athena GUI.
-gui_beos		Compiled with BeOs GUI.
+gui_beos		Compiled with BeOS GUI.
 gui_gtk			Compiled with GTK+ GUI (any version).
 gui_gtk2		Compiled with GTK+ 2 GUI (gui_gtk is also defined).
 gui_mac			Compiled with Macintosh GUI.
@@ -2801,7 +2808,7 @@ scrollbind		Compiled with 'scrollbind' support.
 showcmd			Compiled with 'showcmd' support.
 signs			Compiled with |:sign| support.
 smartindent		Compiled with 'smartindent' support.
-sniff			Compiled with SniFF interface support.
+sniff			Compiled with SNiFF interface support.
 statusline		Compiled with support for 'statusline', 'rulerformat'
 			and special formats of 'titlestring' and 'iconstring'.
 sun_workshop		Compiled with support for Sun |workshop|.

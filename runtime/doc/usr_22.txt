@@ -1,4 +1,4 @@
-*usr_22.txt*	For Vim version 7.0aa.  Last change: 2003 Mar 17
+*usr_22.txt*	For Vim version 7.0aa.  Last change: 2004 Jun 16
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -95,7 +95,7 @@ The following commands are used to display other information:
 	s		Use the field the cursor is in to sort on.  First
 			display the size and date with i.  Then Move the
 			cursor to the size of any file and press s.  The files
-			will now be sorted on size.  Press s wile the cursor
+			will now be sorted on size.  Press s while the cursor
 			is on a date and the items will be sorted on date.
 	r		reverse the sorting order (either size or date)
 

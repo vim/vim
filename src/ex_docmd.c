@@ -2319,8 +2319,8 @@ do_one_cmd(cmdlinep, sourcing,
 	}
     }
 						/* no arguments allowed */
-    if (!ni && !(ea.argt & EXTRA) && *ea.arg != NUL &&
-				 vim_strchr((char_u *)"|\"", *ea.arg) == NULL)
+    if (!ni && !(ea.argt & EXTRA) && *ea.arg != NUL
+			      && vim_strchr((char_u *)"|\"", *ea.arg) == NULL)
     {
 	errormsg = (char_u *)_(e_trailing);
 	goto doend;
@@ -3885,6 +3885,17 @@ expand_filename(eap, cmdlinep, errormsgp)
     has_wildcards = mch_has_wildcard(eap->arg);
     for (p = eap->arg; *p; )
     {
+#ifdef FEAT_EVAL
+	/* Skip over `=expr`, wildcards in it are not expanded. */
+	if (p[0] == '`' && p[1] == '=')
+	{
+	    p += 2;
+	    (void)skip_expr(&p);
+	    if (*p == '`')
+		++p;
+	    continue;
+	}
+#endif
 	/*
 	 * Quick check if this cannot be the start of a special string.
 	 * Also removes backslash before '%', '#' and '<'.
@@ -4157,6 +4168,18 @@ separate_nextcmd(eap)
 	    if (*p == NUL)		/* stop at NUL after CTRL-V */
 		break;
 	}
+
+#ifdef FEAT_EVAL
+	/* Skip over `=expr` when wildcards are expanded. */
+	else if (p[0] == '`' && p[1] == '=')
+	{
+	    p += 2;
+	    (void)skip_expr(&p);
+	    if (*p == '`')
+		++p;
+	}
+#endif
+
 	/* Check for '"': start of comment or '|': next command */
 	/* :@" and :*" do not start a comment!
 	 * :redir @" doesn't either. */

@@ -5290,8 +5290,11 @@ shorten_fnames(force)
 	    }
 	    if (p == NULL || buf->b_fname == NULL)
 		buf->b_fname = buf->b_ffname;
-	    mf_fullname(buf->b_ml.ml_mfp);
 	}
+
+	/* Always make the swap file name a full path, a "nofile" buffer may
+	 * also have a swap file. */
+	mf_fullname(buf->b_ml.ml_mfp);
     }
 #ifdef FEAT_WINDOWS
     status_redraw_all();

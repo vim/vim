@@ -1,4 +1,4 @@
-*mbyte.txt*     For Vim version 7.0aa.  Last change: 2004 Jun 07
+*mbyte.txt*     For Vim version 7.0aa.  Last change: 2004 Jun 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar et al.
@@ -141,7 +141,7 @@ There are several ways to enter multi-byte characters:
 - For all systems keymaps can be used.  See |mbyte-keymap|.
 
 The options 'iminsert', 'imsearch' and 'imcmdline' can be used to chose
-the different input medhods or disable them temporarily.
+the different input methods or disable them temporarily.
 
 ==============================================================================
 2.  Locale						*mbyte-locale*
@@ -906,7 +906,7 @@ IME status to that memorized automatically.
 This works on not only insert-normal mode, but also search-command input and
 replace mode.
 The options 'iminsert', 'imsearch' and 'imcmdline' can be used to chose
-the different input medhods or disable them temporarily.
+the different input methods or disable them temporarily.
 
 WHAT IS IME
     IME is a part of East asian version Windows.  That helps you to input

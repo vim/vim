@@ -3052,13 +3052,16 @@ current_word(oap, count, include, bigword)
 	--count;
     }
 
-    if (include_white && cls() != 0)
+    if (include_white && (cls() != 0
+		 || (curwin->w_cursor.col == 0 && !inclusive)))
     {
 	/*
 	 * If we don't include white space at the end, move the start
 	 * to include some white space there. This makes "daw" work
 	 * better on the last word in a sentence (and "2daw" on last-but-one
-	 * word).  But don't delete white space at start of line (indent).
+	 * word).  Also when "2daw" deletes "word." at the end of the line
+	 * (cursor is at start of next line).
+	 * But don't delete white space at start of line (indent).
 	 */
 	pos = curwin->w_cursor;	/* save cursor position */
 	curwin->w_cursor = start_pos;

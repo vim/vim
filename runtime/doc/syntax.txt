@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.0aa.  Last change: 2004 Jun 15
+*syntax.txt*	For Vim version 7.0aa.  Last change: 2004 Jun 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -739,7 +739,7 @@ variable.
 CYNLIB						*cynlib.vim* *cynlib-syntax*
 
 Cynlib files are C++ files that use the Cynlib class library to enable
-hardware modeling and simulation using C++. Typically Cynlib files have a .cc
+hardware modelling and simulation using C++. Typically Cynlib files have a .cc
 or a .cpp extension, which makes it very difficult to distinguish them from a
 normal C++ file. Thus, to enable Cynlib highlighting for .cc files, add this
 line to your .vimrc file: >
@@ -1664,7 +1664,7 @@ file: >
 
 	let b:preprocs_as_sections = 1
 
-As well, the syntax file adds an extra paragraph marker for the exdented
+As well, the syntax file adds an extra paragraph marker for the extended
 paragraph macro (.XP) in the ms package.
 
 Finally, there is a |groff.vim| syntax file that can be used for enabling

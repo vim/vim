@@ -1518,7 +1518,7 @@ swapfile_info(fname)
 	    {
 		MSG_PUTS(_("         file name: "));
 		if (b0.b0_fname[0] == NUL)
-		    MSG_PUTS(_("[No File]"));
+		    MSG_PUTS(_("[No Name]"));
 		else
 		    msg_outtrans(b0.b0_fname);
 
@@ -3781,7 +3781,7 @@ findswapname(buf, dirp, old_fname)
 	 * Change the ".swp" extension to find another file that can be used.
 	 * First decrement the last char: ".swo", ".swn", etc.
 	 * If that still isn't enough decrement the last but one char: ".svz"
-	 * Can happen when editing many "No File" buffers.
+	 * Can happen when editing many "No Name" buffers.
 	 */
 	if (fname[n - 1] == 'a')	/* ".s?a" */
 	{

@@ -1,4 +1,4 @@
-*recover.txt*   For Vim version 7.0aa.  Last change: 2004 Apr 16
+*recover.txt*   For Vim version 7.0aa.  Last change: 2004 Jun 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -61,7 +61,7 @@ Disadvantages:
   directories (although Vim tries to avoid that by comparing the path name).
   This will result in bogus ATTENTION warning messages.
 - When you use your home directory, and somebody else tries to edit the same
-  file, he will not see your swap file and will not get the ATTENTION waring
+  file, he will not see your swap file and will not get the ATTENTION warning
   message.
 On the Amiga you can also use a recoverable ram disk, but there is no 100%
 guarantee that this works.  Putting swap files in a normal ram disk (like RAM:

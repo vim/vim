@@ -1,4 +1,4 @@
-*sponsor.txt*   For Vim version 7.0aa.  Last change: 2004 Apr 23
+*sponsor.txt*   For Vim version 7.0aa.  Last change: 2004 Jun 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -83,9 +83,10 @@ Bank transfer	Transfer to Bram's account at the Postbank: 1644503.  For
 		show others you are a registered Vim user or sponsor.
 
 Cash		Small amounts can be send with ordinary mail.  Put something
-		around the money, so that it's not noticable from the outside.
-		Mention your e-mail address if you want to vote for features
-		and show others you are a registered Vim user or sponsor.
+		around the money, so that it's not noticeable from the
+		outside.  Mention your e-mail address if you want to vote for
+		features and show others you are a registered Vim user or
+		sponsor.
 
 This is Bram's address: Bram Moolenaar
 			Clematisstraat 30

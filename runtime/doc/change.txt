@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.0aa.  Last change: 2004 Jun 15
+*change.txt*    For Vim version 7.0aa.  Last change: 2004 Jun 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1048,7 +1048,7 @@ operation.  When something has been dropped onto Vim, the "~ register is
 filled in and the <Drop> pseudo key is sent for notification.  You can remap
 this key if you want; the default action (for all modes) is to insert the
 contents of the "~ register at the cursor position.  {not in Vi}
-{only available when compiled with the |+dnd| feature, curently only with the
+{only available when compiled with the |+dnd| feature, currently only with the
 GTK GUI}
 
 Note: The "~ register is only used when dropping plain text onto Vim.
@@ -1137,6 +1137,13 @@ gw{motion}		Format the lines that {motion} moves over.  Similar to
 			|gq| but puts the cursor back at the same position in
 			the text.  However, 'formatprg' is not used.
 			{not in Vi}
+
+gwgw							*gwgw* *gww*
+gww			Format the current line as with "gw".  {not in Vi}
+
+							*v_gw*
+{Visual}gw		Format the highlighted text as with "gw".  (for
+			{Visual} see |Visual-mode|).  {not in Vi}
 
 Example: To format the current paragraph use:			*gqap*  >
 	gqap

@@ -2987,7 +2987,12 @@ mch_isdir(char_u *name)
 mch_can_exe(name)
     char_u	*name;
 {
-    return (searchpath(name) != NULL);
+    char	*p;
+
+    p = searchpath(name);
+    if (p == NULL || mch_isdir(p))
+	return FALSE;
+    return TRUE;
 }
 #endif
 

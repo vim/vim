@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 7.0aa.  Last change: 2004 May 20
+*quickfix.txt*  For Vim version 7.0aa.  Last change: 2004 Jun 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -795,7 +795,7 @@ processing.
 
 Maintaining the correct directory is more complicated if you don't use
 GNU-make. AIX-make for example doesn't print any information about its working
-directory. Then you need to enhance the makefile. In the makefile of lesstiff
+directory. Then you need to enhance the makefile. In the makefile of LessTif
 there is a command which echoes "Making {target} in {dir}". The special
 problem here is that it doesn't print informations on leaving the directory
 and that it doesn't print the absolute path.

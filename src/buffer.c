@@ -4579,7 +4579,7 @@ buf_spname(buf)
     }
 #endif
     if (buf->b_fname == NULL)
-	return _("[No File]");
+	return _("[No Name]");
     return NULL;
 }
 

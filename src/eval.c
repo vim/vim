@@ -599,6 +599,20 @@ eval_to_string_skip(arg, nextcmd, skip)
 }
 
 /*
+ * Skip over an expression at "*pp".
+ * Return FAIL for an error, OK otherwise.
+ */
+    int
+skip_expr(pp)
+    char_u	**pp;
+{
+    var		retvar;
+
+    *pp = skipwhite(*pp);
+    return eval1(pp, &retvar, FALSE);
+}
+
+/*
  * Top level evaluation function, returning a string.
  * Return pointer to allocated memory, or NULL for failure.
  */
@@ -3374,6 +3388,20 @@ find_buffer(avar)
 	{
 	    buf = buflist_findname(name);
 	    vim_free(name);
+	}
+	if (buf == NULL)
+	{
+	    /* No full path name match, try a match with a URL or a "nofile"
+	     * buffer, these don't use the full path. */
+	    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+		if (buf->b_fname != NULL
+			&& (path_with_url(buf->b_fname)
+#ifdef FEAT_QUICKFIX
+			    || bt_nofile(buf)
+#endif
+			   )
+			&& STRCMP(buf->b_fname, avar->var_val.var_string) == 0)
+		    break;
 	}
     }
     return buf;

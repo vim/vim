@@ -432,7 +432,7 @@ CClink = $(CC)
 #CONF_OPT_FEAT = --with-features=small
 #CONF_OPT_FEAT = --with-features=normal
 #CONF_OPT_FEAT = --with-features=big
-CONF_OPT_FEAT = --with-features=huge
+#CONF_OPT_FEAT = --with-features=huge
 
 # COMPILED BY - For including a specific e-mail address for ":version".
 #CONF_OPT_COMPBY = "--with-compiledby=John Doe <JohnDoe@yahoo.com>"
@@ -493,7 +493,7 @@ CONF_OPT_FEAT = --with-features=huge
 
 # Often used for GCC: mixed optimizing, lot of optimizing, debugging
 #CFLAGS = -g -O2 -fno-strength-reduce -Wall -Wshadow -Wmissing-prototypes
-CFLAGS = -g -O2 -fno-strength-reduce -Wall -Wmissing-prototypes
+#CFLAGS = -g -O2 -fno-strength-reduce -Wall -Wmissing-prototypes
 #CFLAGS = -O6 -fno-strength-reduce -Wall -Wshadow -Wmissing-prototypes
 #CFLAGS = -g -DDEBUG -Wall -Wshadow -Wmissing-prototypes
 #CFLAGS = -g -O2 -DSTARTUPTIME=\"vimstartup\" -fno-strength-reduce -Wall -Wmissing-prototypes

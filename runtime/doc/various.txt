@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.0aa.  Last change: 2004 Jun 14
+*various.txt*   For Vim version 7.0aa.  Last change: 2004 Jun 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -571,9 +571,11 @@ g CTRL-A		Only when Vim was compiled with MEM_PROFILING defined
 			current file.  See |help-translated|.
 
 							*:helpg* *:helpgrep*
-:helpg[rep] {pattern}
+:helpg[rep] {pattern}[@xx]
 			Search all help text files and make a list of lines
 			in which {pattern} matches.  Jumps to the first match.
+			The optional [@xx] specifies that only matches in the
+			"xx" language are to be found.
 			You can navigate through the matches with the
 			|quickfix| commands, e.g., |:cnext| to jump to the
 			next one.  Or use |:cwindow| to get the list of
@@ -584,6 +586,8 @@ g CTRL-A		Only when Vim was compiled with MEM_PROFILING defined
 				:helpgrep Uganda
 <			Example for case ignoring search: >
 				:helpgrep uganda\c
+<			Example for searching in French help: >
+				:helpgrep backspace@fr
 <			Cannot be followed by another command, everything is
 			used as part of the pattern.  But you can use
 			|:execute| when needed.

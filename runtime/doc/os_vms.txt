@@ -1,4 +1,4 @@
-*os_vms.txt*    For Vim version 7.0aa.  Last change: 2004 May 16
+*os_vms.txt*    For Vim version 7.0aa.  Last change: 2004 Jun 16
 
 
 		  VIM REFERENCE MANUAL
@@ -280,7 +280,7 @@ For more information type $help set disp in VMS prompt.
    You need to set up one X server and run Vim as in point 2.
    For MS Windows there are available free X servers as MIX , Omni X etc.
    as well as excellent commercial products as eXcursion or ReflectionX with
-   buit in DEC support.
+   built in DEC support.
 
 Please note, that executables without GUI are slightly faster during startup
 then with enabled GUI in character mode. Therefore, if you do not use GUI
