@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Jan 07
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Jan 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1969,6 +1969,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	To include a comma in a file name precede it with a backslash.  Spaces
 	after a comma are ignored, otherwise spaces are included in the file
 	name.  See |option-backslash| about using backslashes.
+	This has nothing to do with the |Dictionary| variable type.
 	Where to find a list of words?
 	- On FreeBSD, there is the file "/usr/share/dict/words".
 	- In the Simtel archive, look in the "msdos/linguist" directory.

@@ -2408,6 +2408,21 @@ utf_head_off(base, p)
 }
 
 /*
+ * Copy a character from "*fp" to "*tp" and advance the pointers.
+ */
+    void
+mb_copy_char(fp, tp)
+    char_u	**fp;
+    char_u	**tp;
+{
+    int	    l = (*mb_ptr2len_check)(*fp);
+
+    mch_memmove(*tp, *fp, (size_t)l);
+    *tp += l;
+    *fp += l;
+}
+
+/*
  * Return the offset from "p" to the first byte of a character.  When "p" is
  * at the start of a character 0 is returned, otherwise the offset to the next
  * character.  Can start anywhere in a stream of bytes.

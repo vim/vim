@@ -4724,7 +4724,7 @@ mch_expand_wildcards(num_pat, pat, num_file, file, flags)
 	else
 	    buf = vim_strsave(*pat);
 	expl_files = NULL;
-	has_wildcard = mch_has_exp_wildcard(buf);  /* (still) wildcards in there? */
+	has_wildcard = mch_has_exp_wildcard(buf);  /* (still) wildcards? */
 	if (has_wildcard)   /* yes, so expand them */
 	    expl_files = (char_u **)_fnexplode(buf);
 
@@ -5226,12 +5226,20 @@ save_patterns(num_pat, pat, num_file, file)
     char_u	***file;
 {
     int		i;
+    char_u	*s;
 
     *file = (char_u **)alloc(num_pat * sizeof(char_u *));
     if (*file == NULL)
 	return FAIL;
     for (i = 0; i < num_pat; i++)
-	(*file)[i] = vim_strsave(pat[i]);
+    {
+	s = vim_strsave(pat[i]);
+	if (s != NULL)
+	    /* Be compatible with expand_filename(): halve the number of
+	     * backslashes. */
+	    backslash_halve(s);
+	(*file)[i] = s;
+    }
     *num_file = num_pat;
     return OK;
 }

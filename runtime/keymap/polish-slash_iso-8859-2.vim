@@ -1,6 +1,8 @@
 " Polish letters keymap for iso-8859-2
 " Maintainer:	HS6_06	<hs6_06@o2.pl>
-" Last Changed:	2005 Jan 9
+" Last Changed:	2005 Jan 12
+" Current version: 1.0.2
+" History: polish-slash.vim
 
 " This keymap adds the special Polish letters 
 " to an existing Latin keyboard.
@@ -9,7 +11,7 @@
 "   instead of AltGr+{acelnosxz} you ve to use "/" followed by {acelnosxz}
 
 " short keymap name for statusline
-let b:keymap_name = "polish-slash-iso-8859-2"
+let b:keymap_name = "PL-slash-ISO"
 
 scriptencoding latin1
 

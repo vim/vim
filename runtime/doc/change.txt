@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.0aa.  Last change: 2004 Dec 29
+*change.txt*    For Vim version 7.0aa.  Last change: 2005 Jan 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -378,7 +378,7 @@ The CTRL-A command is very useful in a macro.  Example: Use the following
 steps to make a numbered list.
 
 1. Create the first list entry, make sure it starts with a number.
-2. qa	     - start recording into buffer 'a'
+2. qa	     - start recording into register 'a'
 3. Y	     - yank the entry
 4. p	     - put a copy of the entry below the first one
 5. CTRL-A    - increment the number

@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 11
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -9,14 +9,15 @@ Expression evaluation			*expression* *expr* *E15* *eval*
 Using expressions is introduced in chapter 41 of the user manual |usr_41.txt|.
 
 Note: Expression evaluation can be disabled at compile time.  If this has been
-done, the features in this document are not available.  See |+eval| and the
-last chapter below.
+done, the features in this document are not available.  See |+eval| and 
+|no-eval-feature|.
 
 1.  Variables			|variables|
     1.1 Variable types
     1.2 Function references		|Funcref|
     1.3 Lists				|List|
-    1.4 More about variables		|more-variables|
+    1.4 Dictionaries			|Dictionaries|
+    1.5 More about variables		|more-variables|
 2.  Expression syntax		|expression-syntax|
 3.  Internal variable		|internal-variables|
 4.  Builtin Functions		|functions|
@@ -37,10 +38,17 @@ last chapter below.
 
 There are four types of variables:
 
-Number		a 32 bit signed number
-String		a NUL terminated string of 8-bit unsigned characters (bytes)
-Funcref		a reference to a function |Funcref|
-List		an ordered sequence of items |List|
+Number		A 32 bit signed number.
+		Examples:  -123  0x10  0177
+
+String		A NUL terminated string of 8-bit unsigned characters (bytes).
+		Examples: "ab\txx\"--"  'x-z''a,c'
+
+Funcref		A reference to a function |Funcref|.
+		Example: function("strlen")
+
+List		An ordered sequence of items |List|.
+		Example: [1, 2, ['a', 'b']]
 
 The Number and String types are converted automatically, depending on how they
 are used.
@@ -78,7 +86,7 @@ List and Funcref types are not automatically converted.
 								*E706*
 You will get an error if you try to change the type of a variable.  You need
 to |:unlet| it first to avoid this error.  String and Number are considered
-equivalent though. >
+equivalent though.  Consider this sequence of commands: >
 	:let l = "string"
 	:let l = 44		" changes type from String to Number
 	:let l = [1, 2, 3]	" error!
@@ -171,9 +179,14 @@ available. >
 	:let shortlist = mylist[2:2]	" List with one item: [3]
 	:let otherlist = mylist[:]	" make a copy of the List
 
+The second index can be just before the first index.  In that case the result
+is an empty list.  If the second index is lower, this results in an error. >
+	:echo mylist[2:1]		" result: []
+	:echo mylist[2:0]		" error!
+
 
 List identity ~
-
+							*list-identity*
 When variable "aa" is a list and you assign it to another variable "bb", both
 variables refer to the same list.  Thus changing the list "aa" will also
 change "bb": >
@@ -248,7 +261,7 @@ examples: >
 	:call extend(list, [1, 2])	" extend the list with two more items
 	:let i = remove(list, 3)	" remove item 3
 	:let l = remove(list, 3, -1)	" remove items 3 to last item
-	:call filter(list, #& =~ 'x'#)	" remove items with an 'x'
+	:call filter(list, '& =~ "x"')	" remove items with an 'x'
 
 Changing the oder of items in a list: >
 	:call sort(list)		" sort a list alphabetically
@@ -303,7 +316,7 @@ Functions that are useful with a List: >
 	:if empty(list)			" check if list is empty
 	:let l = len(list)		" number of items in a list
 	:let big = max(list)		" maximum value in a list
-	:let small = min(list)		" minumum value in a list
+	:let small = min(list)		" minimum value in a list
 	:let xs = count(list, 'x')	" count nr of times 'x' appears in list
 	:let i = index(list, 'x')	" index of first 'x' in list
 	:let lines = getline(1, 10)	" get ten text lines from buffer
@@ -311,10 +324,109 @@ Functions that are useful with a List: >
 	:let list = split("a b c")	" create list from items in a string
 	:let string = join(list, ', ')	" create string from list items
 	:let s = string()		" String representation of a list
-	:call map(list, #'>> ' . &#)	" prepend ">> " to each item
+	:call map(list, '">> " . &')	" prepend ">> " to each item
 
 
-1.4 More about variables ~
+1.4 Dictionaries ~
+							*Dictionaries*
+A Dictionary is an associative array: Each entry has a key and a value.  The
+entry can be located with the key.  The entries are stored without ordering.
+
+
+Dictionary creation ~
+
+A Dictionary is created with a comma separated list of entries in curly
+braces.  Each entry has a key and a value, separated by a colon.  Examples: >
+	:let mydict = {1: 'one', 2: 'two', 3: 'three'}
+	:let emptydict = {}
+
+A key is always a String.  You can use a Number, it will be converted to a
+String automatically.  Thus the String '4' and the number 4 will find the same
+entry.  Note that the String '04' and the Number 04 are different, since 04
+will be converted to the String '4'.
+
+A value can be any expression.  Using a Dictionary for an entry creates a
+nested Dictionary: >
+	:let nestdict = {1: {11: 'a', 12: 'b'}, 2: {21: 'c'}}
+
+An extra comma after the last entry is ignored.
+
+
+Accessing entries ~
+
+The normal way to access an entry is by putting the key in square brackets: >
+	:let val = mydict["one"]
+	:let mydict["four"] = 4
+
+You can add new entries to an existing Dictionary this way.
+
+For keys that consist entirely of letters, digits and underscore the following
+form can be used |expr-entry|: >
+	:let val = mydict.one
+	:let mydict.four = 4
+
+Since an entry can be any type, also a List and a Dictionary, the indexing and
+key lookup can be repeated: >
+	:let dict.key[idx].key = 0
+
+
+Dictionary to List conversion ~
+
+You may want to loop over the entries in a dictionary.  For this you need to
+turn the Dictionary into a List and pass it to |:for|.
+
+Most often you want to loop over the keys, using the |keys()| function: >
+	:for key in keys(mydict)
+	:   echo key . ': ' . mydict[key]
+	:endfor
+
+The List of keys is unsorted.  You may want to sort them first: >
+	:for key in sort(keys(mydict))
+
+To loop over the values use the |values()| function:  >
+	:for v in values(mydict)
+	:   echo "value: " . v
+	:endfor
+
+If you want both the key and the value use the |items()| function.  It returns
+a List of Lists with two items: the key and the value: >
+	:for entry in items(mydict)
+	:   echo entry[0] . ': ' . entry[1]
+	:endfor
+
+
+Dictionary identity ~
+
+Just like Lists you need to use |copy()| and |deepcopy()| to make a copy of a
+Dictionary.  Otherwise, assignment results in referring to the same
+Dictionary: >
+	:let onedict = {'a': 1, 'b': 2}
+	:let adict = onedict
+	:let adict['a'] = 11
+	:echo onedict['a']
+	11
+
+For more info see |list-identity|.
+
+
+Dictionary modification ~
+							*dict-modification*
+To change an already existing entry of a Dictionary, or to add a new entry,
+use |:let| this way: >
+	:let dict[4] = "four"
+	:let dict['one'] = item
+
+Removing an entry from a Dictionary is done with |remove()|: >
+	:let i = remove(dict, 'aaa')	" remove item with key 'aaa'
+
+Merging a Dictionary with another is done with |extend()|: >
+	:call extend(adict, bdict)	" extend adict with entries from bdict
+
+Weeding out entries from a Dictionary can be done with |filter()|: >
+	:call filter(dict '& =~ "x"')	" remove entries with value 'x'
+
+
+1.5 More about variables ~
 							*more-variables*
 If you need to know the type of a variable or expression, use the |type()|
 function.
@@ -379,11 +491,11 @@ Expression syntax summary, from least to most significant:
 
 |expr8|	expr9[expr1]		byte of a String or item of a List
 	expr9[expr1 : expr2]	substring of a String or sublist of a List
+	expr9.name		entry in a Dictionary
 
 |expr9|	number			number constant
 	"string"		string constant, backslash is special
-	'string'		string constant
-	#string#		string constant
+	'string'		string constant, ' is doubled
 	[expr1, ...]		List
 	&option			option value
 	(expr1)			nested expression
@@ -607,6 +719,7 @@ error.  Example: >
 Generally, if a List index is equal to or higher than the length of the List,
 or more negative than the length of the List, this results in an error.
 
+
 expr9[expr1a : expr1b]	substring or sublist		*expr-[:]*
 
 If expr9 is a Number or String this results in the substring with the bytes
@@ -637,6 +750,26 @@ above, except that indexes out of range cause an error.  Examples: >
 	:let l = mylist[:]		" shallow copy of a List
 
 Using expr9[expr1] or expr9[expr1a : expr1b] on a Funcref results in an error.
+
+
+expr9.name		entry in a Dictionary		*expr-entry*
+
+If expr9 is a Dictionary and it is followed by a dot, then the following name
+will be used as a key in the Dictionary.  This is just like: expr9[name].
+
+The name must consist of alphanumeric characters, just like a variable name,
+but it may start with a number.  Curly braces cannot be used.
+
+There must not be white space before or after the dot.
+
+Examples: >
+	:let dict = {"one": 1, 2: "two"}
+	:echo dict.one
+	:echo dict .2
+
+Note that the dot is also used for String concatenation.  To avoid confusion
+always put spaces around the dot for String concatenation.
+
 
 						*expr9*
 number
@@ -683,24 +816,12 @@ literal-string						*literal-string* *E115*
 Note that single quotes are used.
 
 This string is taken as it is.  No backslashes are removed or have a special
-meaning.  A literal-string cannot contain a single quote.  Use a double-quoted
-string or sharp-string for that.
+meaning.  The only exception is that two quotes stand for one quote.
 
 Single quoted strings are useful for patterns, so that backslashes do not need
 to be doubled.  These two commands are equivalent: >
 	if a =~ "\\s*"
 	if a =~ '\s*'
-
-
-sharp-string						*sharp-string*
----------------
-#string#		string constant			*expr-#*
-
-Most characters in the string are taken as-is.  Only the '#' character is
-special: It needs to be double to get one.
-
-Sharp-strings are useful when a string may contain single quotes, double
-quotes and/or backslashes.
 
 
 option						*expr-option* *E112* *E113*
@@ -1236,6 +1357,7 @@ inputsecret( {prompt} [, {text}]) String  like input() but hiding the text
 insert( {list}, {item} [, {idx}]) List	insert {item} in {list} [before {idx}]
 isdirectory( {directory})	Number	TRUE if {directory} is a directory
 join( {list} [, {sep}])		String	join {list} items into one String
+keys( {dict})			List	List of keys in {dict}
 len( {expr})			Number	the length of {expr}
 libcall( {lib}, {func}, {arg})	String	call {func} in library {lib} with {arg}
 libcallnr( {lib}, {func}, {arg})  Number  idem, but return a Number
@@ -1258,6 +1380,8 @@ mode()				String	current editing mode
 nextnonblank( {lnum})		Number	line nr of non-blank line >= {lnum}
 nr2char( {expr})		String	single char with ASCII value {expr}
 prevnonblank( {lnum})		Number	line nr of non-blank line <= {lnum}
+range( {expr} [, {max} [, {stride}]])
+				List	items from {expr} to {max}
 remote_expr( {server}, {string} [, {idvar}])
 				String	send expression
 remote_foreground( {server})	Number	bring Vim server to the foreground
@@ -1267,6 +1391,7 @@ remote_read( {serverid})	String	read reply string
 remote_send( {server}, {string} [, {idvar}])
 				String	send key sequence
 remove( {list}, {idx} [, {end}])  any	remove items {idx}-{end} from {list}
+remove( {dict}, {key})  	any	remove entry {key} from {dict}
 rename( {from}, {to})		Number	rename (move) file from {from} to {to}
 repeat( {expr}, {count})	String	repeat {expr} {count} times
 resolve( {filename})		String	get filename a shortcut points to
@@ -1905,14 +2030,17 @@ filter({list}, {expr})					*filter()* *E712*
 		zero remove the item from the List.
 		Inside {expr} the symbol "&" stands for the existing
 		item.  Example: >
-			:call filter(mylist, #& !~ "OLD"#)
-<		Removes the items where "OLD" appears.
+			:call filter(mylist, '& !~ "OLD"')
+<		Removes the items where "OLD" appears.  And this: >
+			:call filter(mylist, 0)
+<		Removes all the items, thus clears the List or Dictionary.
+
 		Note that {expr} is an expression that evaluates to an
-		expression.  Often it is good to use a |sharp-string| to avoid
-		having to double backslashes.
+		expression.  Often it is good to use a |literal-string| to
+		avoid having to double backslashes.
 		The operation is done in-place.  If you want a list to remain
 		unmodified make a copy first: >
-			:let l = filter(copy(mylist), #& =~ "KEEP"#)
+			:let l = filter(copy(mylist), '& =~ "KEEP"')
 <		Returns {list}.
 
 
@@ -2524,6 +2652,10 @@ join({list} [, {sep}])					*join()*
 		converted into a string like with |string()|.
 		The opposite function is |split()|.
 
+keys({dict})						*keys()*
+		Return a List with all the keys of {dict}.  The List is in
+		arbitrary order.
+
 							*len()* *E701*
 len({expr})	The result is a Number, which is the length of the argument.
 		When {expr} is a String or a Number the length in bytes is
@@ -2637,14 +2769,14 @@ map({list}, {expr})					*map()*
 		{expr}.
 		Inside {expr} the symbol "&" stands for the existing
 		item.  Example: >
-			:call map(mylist, #"> " . & . " <"#)
+			:call map(mylist, '"> " . & . " <"')
 <		This puts "> " before and " <" after each item in "mylist".
 		Note that {expr} is an expression that evaluates to an
-		expression.  Often it is good to use a |sharp-string| to avoid
-		having to double backslashes.
+		expression.  Often it is good to use a |literal-string| to
+		avoid having to double backslashes.
 		The operation is done in-place.  If you want a list to remain
 		unmodified make a copy first: >
-			:let tlist = map(copy(mylist), # & . "\t"#)
+			:let tlist = map(copy(mylist), ' & . "\t"')
 <		Returns {list}.
 
 
@@ -2817,6 +2949,19 @@ prevnonblank({lnum})					*prevnonblank()*
 		above it, zero is returned.
 		Also see |nextnonblank()|.
 
+range({expr} [, {max} [, {stride}]])				*range()*
+		Returns a List with Numbers:
+		- If only {expr} is specified: [0, 1, ..., {expr} - 1]
+		- If {max} is specified: [{expr}, {expr} + 1, ..., {max}]
+		- If {stride} is specified: [{expr}, {expr} + {stride}, ...,
+		  {max}] (increasing {expr} with {stride} each time, not
+		  producing a value past {max}).
+		Examples: >
+			range(4) 		" [0, 1, 2, 3]
+			range(2, 4)		" [2, 3, 4]
+			range(2, 9, 3)		" [2, 5, 8]
+			range(2, -2, -1) 	" [2, 1, 0, -1, -2]
+<
 							*remote_expr()* *E449*
 remote_expr({server}, {string} [, {idvar}])
 		Send the {string} to {server}.  The string is sent as an
@@ -2902,7 +3047,12 @@ remove({list}, {idx} [, {end}])				*remove()*
 		Example: >
 			:echo "last item: " . remove(mylist, -1)
 			:call remove(mylist, 0, 9)
-<		Use |delete()| to remove a file.
+remove({dict}, {key})
+		Remove the entry from {dict} with key {key}.  Example: >
+			:echo "removed " . remove(dict, "one")
+<		If there is no {key} in {dict} this is an error.
+
+		Use |delete()| to remove a file.
 
 rename({from}, {to})					*rename()*
 		Rename the file by the name {from} to the name {to}.  This
@@ -3088,8 +3238,11 @@ setcmdpos({pos})					*setcmdpos()*
 		{pos}.  The first position is 1.
 		Use |getcmdpos()| to obtain the current position.
 		Only works while editing the command line, thus you must use
-		|c_CTRL-\_e| or |c_CTRL-R_=|.  The position is set after the
-		command line is set to the expression.
+		|c_CTRL-\_e|, |c_CTRL-R_=| or |c_CTRL-R_CTRL-R| with '='.  For
+		|c_CTRL-\_e| and |c_CTRL-R_CTRL-R| with '=' the position is
+		set after the command line is set to the expression.  For
+		|c_CTRL-R_=| it is set after evaluating the expression but
+		before inserting the resulting text.
 		When the number is too big the cursor is put at the end of the
 		line.  A number smaller than one has undefined results.
 		Returns 0 when successful, 1 when not editing the command
@@ -3229,11 +3382,11 @@ string({expr})	Return {expr} converted to a String.  If {expr} is a Number,
 		String or a composition of them, then the result can be parsed
 		back with |eval()|.
 			{expr} type	result ~
-			String		#string#
+			String		'string'
 			Number		123
-			Funcref		function(#name#)
+			Funcref		function('name')
 			List		[item, item]
-		Note that in String values the # character is doubled.
+		Note that in String values the ' character is doubled.
 
 							*strlen()*
 strlen({expr})	The result is a Number, which is the length of the String
@@ -4110,7 +4263,7 @@ This would call the function "my_func_whizz(parameter)".
 				:endwhile
 <
 			NOTE: The ":append" and ":insert" commands don't work
-			properly inside a :while" and ":for" loop.
+			properly inside a ":while" and ":for" loop.
 
 :for {var} in {list}					*:for* *E690*
 :endfo[r]						*:endfo* *:endfor*
@@ -4358,8 +4511,8 @@ This would call the function "my_func_whizz(parameter)".
 <			This has an <Esc> character, see |expr-string|.
 
 			Note: The executed string may be any command-line, but
-			you cannot start or end a "while" or "if" command.
-			Thus this is illegal: >
+			you cannot start or end a "while", "for" or "if"
+			command.  Thus this is illegal: >
 		:execute 'while i > 5'
 		:execute 'echo "test" | break'
 <
