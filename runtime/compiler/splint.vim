@@ -2,7 +2,7 @@
 " Compiler:     splint/lclint (C source code checker)
 " Maintainer:   Ralf Wildenhues <Ralf.Wildenhues@gmx.de>
 " Splint Home:	http://www.splint.org/
-" Last Change:  $Date$
+" Last Change:  2004 Oct 02
 " $Revision$
 
 if exists("current_compiler")
@@ -64,7 +64,7 @@ CompilerSet errorformat=%OLCLint*m,
 	\%D%*\\a[%*\\d]:\ Entering\ directory\ `%f',
 	\%X%*\\a[%*\\d]:\ Leaving\ directory\ `%f',
 	\%DMaking\ %*\\a\ in\ %f,
-	\%C\ \ %m
+	\%C\ %#%m
 
 let &cpo = s:cpo_save
 unlet s:cpo_save
