@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Feb 02
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Feb 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1476,6 +1476,8 @@ match( {expr}, {pat}[, {start}[, {count}]])
 				Number	position where {pat} matches in {expr}
 matchend( {expr}, {pat}[, {start}[, {count}]])
 				Number	position where {pat} ends in {expr}
+matchlist( {expr}, {pat}[, {start}[, {count}]])
+				List	match and submatches of {pat} in {expr}
 matchstr( {expr}, {pat}[, {start}[, {count}]])
 				String	{count}'th match of {pat} in {expr}
 max({list})			Number	maximum value of items in {list}
@@ -1486,6 +1488,7 @@ nr2char( {expr})		String	single char with ASCII value {expr}
 prevnonblank( {lnum})		Number	line nr of non-blank line <= {lnum}
 range( {expr} [, {max} [, {stride}]])
 				List	items from {expr} to {max}
+readfile({fname} [, {binary}])	List	get list of lines from file {fname}
 remote_expr( {server}, {string} [, {idvar}])
 				String	send expression
 remote_foreground( {server})	Number	bring Vim server to the foreground
@@ -1548,6 +1551,8 @@ winline()			Number	window line of the cursor
 winnr()				Number	number of current window
 winrestcmd()			String	returns command to restore window sizes
 winwidth( {nr})			Number	width of window {nr}
+writefile({list}, {fname} [, {binary}])
+				Number	write list of lines to file {fname}
 
 add({list}, {expr})					*add()*
 		Append the item {expr} to List {list}.  Returns the resulting
@@ -2004,8 +2009,12 @@ exists({expr})	The result is a Number, which is non-zero if {expr} is
 					or user defined function (see
 					|user-functions|).
 			varname		internal variable (see
-					|internal-variables|).  Does not work
-					for |curly-braces-names|.
+					|internal-variables|).  Also works
+					for |curly-braces-names|, Dictionary
+					entries, List items, etc.  Beware that
+					this may cause functions to be
+					invoked cause an error message for an
+					invalid expression.
 			:cmdname	Ex command: built-in command, user
 					command or command modifier |:command|.
 					Returns:
@@ -2939,9 +2948,10 @@ map({expr}, {string})					*map()*
 			:call map(mylist, '"> " . v:val . " <"')
 <		This puts "> " before and " <" after each item in "mylist".
 
-		Note that {string} is the result of expression and is then
+		Note that {string} is the result of an expression and is then
 		used as an expression again.  Often it is good to use a
-		|literal-string| to avoid having to double backslashes.
+		|literal-string| to avoid having to double backslashes.  You
+		still have to double ' quotes
 
 		The operation is done in-place.  If you want a List or
 		Dictionary to remain unmodified make a copy first: >
@@ -3050,6 +3060,13 @@ matchend({expr}, {pat}[, {start}[, {count}]])			*matchend()*
 <		result is "-1".
 		When {expr} is a List the result is equal to match().
 
+matchlist({expr}, {pat}[, {start}[, {count}]])			*matchlist()*
+		Same as match(), but return a List.  The first item in the
+		list is the matched string, same as what matchstr() would
+		return.  Following items are submatches, like "\1", "\2", etc.
+		in |:substitute|.
+		When there is no match an empty list is returned.
+
 matchstr({expr}, {pat}[, {start}[, {count}]])			*matchstr()*
 		Same as match(), but return the matched string.  Example: >
 			:echo matchstr("testing", "ing")
@@ -3133,6 +3150,27 @@ range({expr} [, {max} [, {stride}]])				*range()*
 			range(2, 9, 3)		" [2, 5, 8]
 			range(2, -2, -1) 	" [2, 1, 0, -1, -2]
 <
+							*readfile()*
+readfile({fname} [, {binary}])
+		Read file {fname} and return a List, each line of the file as
+		an item.  Lines broken at NL characters.  Macintosh files
+		separated with CR will result in a single long line (unless a
+		NL appears somewhere).
+		When {binary} is equal to "b" binary mode is used:
+		- When the last line ends in a NL an extra empty list item is
+		  added.
+		- No CR characters are removed.
+		Otherwise:
+		- CR characters that appear before a NL are removed.
+		- Whether the last line ends in a NL or not does not matter.
+		All NUL characters are replaced with a NL character.
+		Note that the whole file is read into memory and there is no
+		recognition of encoding.  Read a file into a buffer if you
+		need to.
+		When the file can't be opened an error message is given and
+		the result is an empty list.
+		Also see |writefile()|.
+
 							*remote_expr()* *E449*
 remote_expr({server}, {string} [, {idvar}])
 		Send the {string} to {server}.  The string is sent as an
@@ -3879,6 +3917,26 @@ winwidth({nr})						*winwidth()*
   :  exe "normal 50\<C-W>|"
   :endif
 <
+							*writefile()*
+writefile({list}, {fname} [, {binary}])
+		Write List {list} to file {fname}.  Each list item is
+		separated with a NL.  Each list item must be a String or
+		Number.
+		When {binary} is equal to "b" binary mode is used: There will
+		not be a NL after the last list item.  An empty item at the
+		end does cause the last line in the file to end in a NL.
+		All NL characters are replaced with a NUL character.
+		Inserting CR characters needs to be done before passing {list}
+		to writefile().
+		An existing file is overwritten, if possible.
+		When the write fails -1 is returned, otherwise 0.  There is an
+		error message if the file can't be created or when writing
+		fails.
+		Also see |readfile()|.
+		To copy a file byte for byte: >
+			:let fl = readfile("foo", "b")
+			:call writefile(fl, "foocopy", "b")
+<
 
 							*feature-list*
 There are three types of features:
@@ -4597,7 +4655,7 @@ This would call the function "my_func_whizz(parameter)".
 :for {var} in {list}					*:for* *E690* *E732*
 :endfo[r]						*:endfo* *:endfor*
 			Repeat the commands between ":for" and ":endfor" for
-			each item in {list}.  variable {var} is set to the
+			each item in {list}.  Variable {var} is set to the
 			value of each item.
 			When an error is detected for a command inside the
 			loop, execution continues after the "endfor".

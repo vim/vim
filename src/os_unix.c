@@ -1974,6 +1974,7 @@ mch_restore_title(which)
 
 /*
  * Return TRUE if "name" looks like some xterm name.
+ * Seiichi Sato mentioned that "mlterm" works like xterm.
  */
     int
 vim_is_xterm(name)
@@ -1984,6 +1985,7 @@ vim_is_xterm(name)
     return (STRNICMP(name, "xterm", 5) == 0
 		|| STRNICMP(name, "nxterm", 6) == 0
 		|| STRNICMP(name, "kterm", 5) == 0
+		|| STRNICMP(name, "mlterm", 6) == 0
 		|| STRNICMP(name, "rxvt", 4) == 0
 		|| STRCMP(name, "builtin_xterm") == 0);
 }

@@ -2532,6 +2532,7 @@ gui_mch_dialog(
     int		msgheight;
     char_u	*pstart;
     char_u	*pend;
+    char_u	*last_white;
     char_u	*tbuffer;
     RECT	rect;
     HWND	hwnd;
@@ -2550,6 +2551,8 @@ gui_mch_dialog(
     LOGFONT	lfSysmenu;
     int		use_lfSysmenu = FALSE;
 #endif
+    garray_T	ga;
+    int		l;
 
 #ifndef NO_CONSOLE
     /* Don't output anything in silent mode ("ex -s") */
@@ -2571,7 +2574,8 @@ gui_mch_dialog(
 
     /* allocate some memory for dialog template */
     /* TODO should compute this really */
-    pdlgtemplate = p = (PWORD)LocalAlloc(LPTR, DLG_ALLOC_SIZE);
+    pdlgtemplate = p = (PWORD)LocalAlloc(LPTR,
+					    DLG_ALLOC_SIZE + STRLEN(message));
 
     if (p == NULL)
 	return -1;
@@ -2641,42 +2645,91 @@ gui_mch_dialog(
     minButtonWidth = GetTextWidth(hdc, "Cancel", 6);
 
     /* Maximum width of a dialog, if possible */
-    GetWindowRect(s_hwnd, &rect);
-    maxDialogWidth = rect.right - rect.left
-		     - GetSystemMetrics(SM_CXFRAME) * 2;
-    if (maxDialogWidth < DLG_MIN_MAX_WIDTH)
-	maxDialogWidth = DLG_MIN_MAX_WIDTH;
+    if (s_hwnd == NULL)
+    {
+	RECT	workarea_rect;
 
-    maxDialogHeight = rect.bottom - rect.top - GetSystemMetrics(SM_CXFRAME) * 2;
-    if (maxDialogHeight < DLG_MIN_MAX_HEIGHT)
-	maxDialogHeight = DLG_MIN_MAX_HEIGHT;
+	/* We don't have a window, use the desktip area. */
+	get_work_area(&workarea_rect);
+	maxDialogWidth = workarea_rect.right - workarea_rect.left - 100;
+	if (maxDialogWidth > 600)
+	    maxDialogWidth = 600;
+	maxDialogHeight = workarea_rect.bottom - workarea_rect.top - 100;
+    }
+    else
+    {
+	/* Use our own window for the size, unless it's very small. */
+	GetWindowRect(s_hwnd, &rect);
+	maxDialogWidth = rect.right - rect.left
+					   - GetSystemMetrics(SM_CXFRAME) * 2;
+	if (maxDialogWidth < DLG_MIN_MAX_WIDTH)
+	    maxDialogWidth = DLG_MIN_MAX_WIDTH;
 
-    /* Set dlgwidth to width of message */
+	maxDialogHeight = rect.bottom - rect.top
+					   - GetSystemMetrics(SM_CXFRAME) * 2;
+	if (maxDialogHeight < DLG_MIN_MAX_HEIGHT)
+	    maxDialogHeight = DLG_MIN_MAX_HEIGHT;
+    }
+
+    /* Set dlgwidth to width of message.
+     * Copy the message into "ga", changing NL to CR-NL and inserting line
+     * breaks where needed. */
     pstart = message;
     messageWidth = 0;
-    msgheight = fontHeight;
+    msgheight = 0;
+    ga_init2(&ga, sizeof(char), 500);
     do
     {
-	pend = vim_strchr(pstart, DLG_BUTTON_SEP);
-	if (pend == NULL)
-	    pend = pstart + STRLEN(pstart);	/* Last line of message. */
-	msgheight += fontHeight;
-	textWidth = GetTextWidth(hdc, pstart, (int)(pend - pstart));
-	if (textWidth >= maxDialogWidth)
+	msgheight += fontHeight;    /* at least one line */
+
+	/* Need to figure out where to break the string.  The system does it
+	 * at a word boundary, which would mean we can't compute the number of
+	 * wrapped lines. */
+	textWidth = 0;
+	last_white = NULL;
+	for (pend = pstart; *pend != NUL && *pend != '\n'; )
 	{
-	    /* Line will wrap.  This doesn't work correctly, because the wrap
-	     * happens at a word boundary! */
-	    messageWidth = maxDialogWidth;
-	    while (textWidth >= maxDialogWidth)
+#ifdef FEAT_MBYTE
+	    l = mb_ptr2len_check(pend);
+#else
+	    l = 1;
+#endif
+	    if (l == 1 && vim_iswhite(*pend)
+					&& textWidth > maxDialogWidth * 3 / 4)
+		last_white = pend;
+	    textWidth += GetTextWidth(hdc, pend, l);
+	    if (textWidth >= maxDialogWidth)
 	    {
+		/* Line will wrap. */
+		messageWidth = maxDialogWidth;
 		msgheight += fontHeight;
-		textWidth -= maxDialogWidth;
+		textWidth = 0;
+
+		if (last_white != NULL)
+		{
+		    /* break the line just after a space */
+		    ga.ga_len -= pend - (last_white + 1);
+		    pend = last_white + 1;
+		    last_white = NULL;
+		}
+		ga_append(&ga, '\r');
+		ga_append(&ga, '\n');
+		continue;
 	    }
+
+	    while (--l >= 0)
+		ga_append(&ga, *pend++);
 	}
-	else if (textWidth > messageWidth)
+	if (textWidth > messageWidth)
 	    messageWidth = textWidth;
+
+	ga_append(&ga, '\r');
+	ga_append(&ga, '\n');
 	pstart = pend + 1;
     } while (*pend != NUL);
+
+    if (ga.ga_data != NULL)
+	message = ga.ga_data;
 
     messageWidth += 10;		/* roundoff space */
 
@@ -2685,6 +2738,7 @@ gui_mch_dialog(
     {
 	msgheight = maxDialogHeight;
 	scroll_flag = WS_VSCROLL;
+	messageWidth += GetSystemMetrics(SM_CXVSCROLL);
     }
 
     /* Add width of icon to dlgwidth, and some space */
@@ -2933,6 +2987,7 @@ gui_mch_dialog(
     vim_free(tbuffer);
     vim_free(buttonWidths);
     vim_free(buttonPositions);
+    vim_free(ga.ga_data);
 
     /* Focus back to our window (for when MDI is used). */
     (void)SetFocus(s_hwnd);

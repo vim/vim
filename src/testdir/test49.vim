@@ -1,6 +1,6 @@
 " Vim script language tests
 " Author:	Servatius Brandt <Servatius.Brandt@fujitsu-siemens.com>
-" Last Change:	2005 Jan 18
+" Last Change:	2005 Feb 03
 
 "-------------------------------------------------------------------------------
 " Test environment							    {{{1

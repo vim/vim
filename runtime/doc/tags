@@ -5937,6 +5937,7 @@ rcp	pi_netrw.txt	/*rcp*
 read-messages	insert.txt	/*read-messages*
 read-only-share	editing.txt	/*read-only-share*
 read-stdin	version5.txt	/*read-stdin*
+readfile()	eval.txt	/*readfile()*
 readline-syntax	syntax.txt	/*readline-syntax*
 readline.vim	syntax.txt	/*readline.vim*
 recording	repeat.txt	/*recording*
@@ -6863,6 +6864,7 @@ write-local-help	usr_41.txt	/*write-local-help*
 write-plugin	usr_41.txt	/*write-plugin*
 write-quit	editing.txt	/*write-quit*
 write-readonly	editing.txt	/*write-readonly*
+writefile()	eval.txt	/*writefile()*
 writing	editing.txt	/*writing*
 www	intro.txt	/*www*
 x	change.txt	/*x*

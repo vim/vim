@@ -11,11 +11,24 @@
 #
 # Neil Schemenauer <nascheme@ucalgary.ca>
 # March 1999
+#
+# Safe method for the temp file by Javier Fernández-Sanguino_Peña
 
 INFILE=$1
-OUTFILE=/tmp/vimspell.$$
-# if you have "tempfile", use the following line
-#OUTFILE=`tempfile`
+tmp="${TMPDIR-/tmp}"
+OUTFILE=`mktemp -t vimspellXXXXXX || tempfile -p vimspell || echo none`
+# If the standard commands failed then create the file
+# since we cannot create a directory (we cannot remove it on exit)
+# create a file in the safest way possible.
+if test "$OUTFILE" = none; then
+        OUTFILE=$tmp/vimspell$$
+	[ -e $OUTFILE ] && { echo "Cannot use temporary file $OUTFILE, it already exists!; exit 1 ; } 
+        (umask 077; touch $OUTFILE)
+fi
+# Note the copy of vimspell cannot be deleted on exit since it is
+# used by vim, otherwise it should do this:
+# trap "rm -f $OUTFILE" 0 1 2 3 9 11 13 15
+
 
 #
 # local spellings

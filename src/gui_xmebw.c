@@ -18,13 +18,12 @@
  */
 
 /*
- * Enhanced Motif PushButton widget with move over behaviour.
+ * Enhanced Motif PushButton widget with move over behavior.
  */
 
-#include <ctype.h>
-#include <stdio.h>
-#include <assert.h>
-#include <auto/config.h>
+#include "vim.h"
+
+#ifdef FEAT_TOOLBAR
 
 #include <Xm/XmP.h>
 #include <Xm/DrawP.h>
@@ -1407,3 +1406,5 @@ BorderUnhighlight(Widget w)
     (*(xmPushButtonClassRec.primitive_class.border_unhighlight))(w);
     draw_pixmap(eb, NULL, NULL);
 }
+
+#endif /* FEAT_TOOLBAR */

@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 7.0aa.  Last change: 2005 Jan 25
+*usr_41.txt*	For Vim version 7.0aa.  Last change: 2005 Feb 04
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -653,6 +653,8 @@ System functions and manipulation of files:
 	rename()		rename a file
 	system()		get the result of a shell command
 	hostname()		name of the system
+	readfile()		read a file into a List of lines
+	writefile()		write a List of lines into a file
 
 Buffers, windows and the argument list:
 	argc()			number of entries in the argument list

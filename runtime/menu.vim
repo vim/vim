@@ -2,7 +2,7 @@
 " You can also use this as a start for your own set of menus.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Jan 30
+" Last Change:	2005 Feb 03
 
 " Note that ":an" (short for ":anoremenu") is often used to make a menu work
 " in all modes and avoid side effects from mappings defined by the user.
@@ -136,7 +136,7 @@ an 10.620 &File.E&xit<Tab>:qa			:confirm qa<CR>
 " the right position, also for "gi".
 " Note: the same stuff appears in mswin.vim.
 if has("virtualedit")
-  nnoremap <silent> <script> <SID>Paste :call <SID>Paste()<CR>
+  let s:paste_cmd = ":call <SID>Paste()<CR>"
   func! <SID>Paste()
     let ove = &ve
     set ve=all
@@ -152,16 +152,17 @@ if has("virtualedit")
     let &ve = ove
   endfunc
 else
-  nnoremap <silent> <script> <SID>Paste "=@+.'xy'<CR>gPFx"_2x
+  let s:paste_cmd = "\"=@+.'xy'<CR>gPFx\"_2x"
 endif
 
-" Use maps for items that are present both in Edit, Popup and Toolbar menu.
+" Define the string to use for items that are present both in Edit, Popup and
+" Toolbar menu.
 if has("virtualedit")
-  vnoremap <script> <SID>vPaste	"-c<Esc><SID>Paste
-  inoremap <script> <SID>iPaste	<Esc><SID>Pastegi
+  let s:paste_v_cmd = '"-c<Esc>' . s:paste_cmd
+  let s:paste_i_cmd = '<Esc>' . s:paste_cmd . 'gi'
 else
-  vnoremap <script> <SID>vPaste	"-c<Esc>gix<Esc><SID>Paste"_x
-  inoremap <script> <SID>iPaste	x<Esc><SID>Paste"_s
+  let s:paste_v_cmd = '"-c<Esc>gix<Esc>' . s:paste_cmd . '"_x'
+  let s:paste_i_cmd = 'x<Esc>' . s:paste_cmd . '"_s'
 endif
 
 func! <SID>SelectAll()
@@ -180,8 +181,8 @@ vnoremenu 20.350 &Edit.&Copy<Tab>"+y		"+y
 cnoremenu 20.350 &Edit.&Copy<Tab>"+y		<C-Y>
 nnoremenu 20.360 &Edit.&Paste<Tab>"+gP		"+gP
 cnoremenu	 &Edit.&Paste<Tab>"+gP		<C-R>+
-vnoremenu <script> &Edit.&Paste<Tab>"+gP	<SID>vPaste
-inoremenu <script> &Edit.&Paste<Tab>"+gP	<SID>iPaste
+exe 'vnoremenu <script> &Edit.&Paste<Tab>"+gP	' . s:paste_v_cmd
+exe 'inoremenu <script> &Edit.&Paste<Tab>"+gP	' . s:paste_i_cmd
 nnoremenu 20.370 &Edit.Put\ &Before<Tab>[p	[p
 inoremenu	 &Edit.Put\ &Before<Tab>[p	<C-O>[p
 nnoremenu 20.380 &Edit.Put\ &After<Tab>]p	]p
@@ -781,8 +782,8 @@ vnoremenu 1.30 PopUp.&Copy		"+y
 cnoremenu 1.30 PopUp.&Copy		<C-Y>
 nnoremenu 1.40 PopUp.&Paste		"+gP
 cnoremenu 1.40 PopUp.&Paste		<C-R>+
-vnoremenu <script> 1.40 PopUp.&Paste	<SID>vPaste
-inoremenu <script> 1.40 PopUp.&Paste	<SID>iPaste
+exe 'vnoremenu <script> 1.40 PopUp.&Paste	' . s:paste_v_cmd
+exe 'inoremenu <script> 1.40 PopUp.&Paste	' . s:paste_i_cmd
 vnoremenu 1.50 PopUp.&Delete		x
 an 1.55 PopUp.-SEP2-			<Nop>
 vnoremenu 1.60 PopUp.Select\ Blockwise	<C-V>
@@ -848,8 +849,8 @@ if has("toolbar")
   cnoremenu 1.80 ToolBar.Copy		<C-Y>
   nnoremenu 1.90 ToolBar.Paste		"+gP
   cnoremenu	 ToolBar.Paste		<C-R>+
-  vnoremenu <script>	 ToolBar.Paste	<SID>vPaste
-  inoremenu <script>	 ToolBar.Paste	<SID>iPaste
+  exe 'vnoremenu <script>	 ToolBar.Paste	' . s:paste_v_cmd
+  exe 'inoremenu <script>	 ToolBar.Paste	' . s:paste_i_cmd
 
   if !has("gui_athena")
     an 1.95   ToolBar.-sep3-		<Nop>
@@ -995,6 +996,8 @@ an 50.720 &Syntax.&Highlight\ test	:runtime syntax/hitest.vim<CR>
 an 50.730 &Syntax.&Convert\ to\ HTML	:runtime syntax/2html.vim<CR>
 
 endif " !exists("did_install_syntax_menu")
+
+unlet! s:paste_i_cmd s:paste_v_cmd s:paste_cmd
 
 " Restore the previous value of 'cpoptions'.
 let &cpo = s:cpo_save
