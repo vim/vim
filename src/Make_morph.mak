@@ -2,16 +2,6 @@
 # Makefile for VIM, using MorphOS SDK (gcc 2.95.3)
 #
 
-# Uncomment the following two lines and comment the two after in
-# case you want to play with GVIM MorphOS. But it's still known
-# to not work at all. So meanwhile it's better to stick with VIM.
-
-# GVIM =	-DFEAT_GUI_AMIGA
-# GVIMSRC =	gui_amiga.c gui.c
-
-GVIM =
-GVIMSRC =
-
 CFLAGS =	-c						\
 		-pipe						\
 		-O2						\
@@ -19,7 +9,6 @@ CFLAGS =	-c						\
 								\
 		-DNO_ARP					\
 		-DUSE_TMPNAM					\
-		${GVIM}						\
 								\
 		-I proto					\
 								\
@@ -74,7 +63,6 @@ SRC =	buffer.c						\
 	undo.c							\
 	version.c						\
 	window.c						\
-	${GVIMSRC}
 
 OBJ =	$(SRC:.c=.o)
 
