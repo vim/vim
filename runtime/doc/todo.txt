@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Mar 25
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Mar 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,10 +30,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Check that xterm function keys XHOME and ZHOME do work.
-
-Wildcard expansion failure: ":w /tmp/$$.`echo test`" (Adri Verhoef)
-
 Mac unicode patch (Da Woon Jung):
 - selecting proportional font breaks display
 - UTF-8 text causes display problems.  Font replacement causes this.
@@ -50,6 +46,9 @@ autoload:
   For the "helpfile" item ":helptags" is run.
 
 Win32: Balloon text can't contain line break.
+    Hints for multiline tooltips from Alexei Alexandrov (2005 Mar 26)
+    Patch from Sergey Khorev, 2005 Mar 28
+    Add has("balloon_multiline")
 
 Awaiting response:
 -   Patch for mch_FullName() also in Vim 6.3?  os_mswin.c
@@ -106,6 +105,7 @@ PLANNED FOR VERSION 7.0:
     like commands.
 -   "INTELLISENSE".  First cleanup the Insert-mode completion.
 	http://www.vim.org/scripts/script.php?script_id=747
+	www.vim.org script 1213 (Java Development Environment) (Fuchuan Wang)
 	http://sourceforge.net/projects/insenvim
 	    of http://insenvim.sourceforge.net
 	http://cedet.sourceforge.net/intellisense.shtml (for Emacs)

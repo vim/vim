@@ -5836,7 +5836,7 @@ get_dict_tv(arg, rettv, evaluate)
 	    item = dict_find(d, key, -1);
 	    if (item != NULL)
 	    {
-		EMSG(_("E721: Duplicate key in Dictionary"));
+		EMSG2(_("E721: Duplicate key in Dictionary: \"%s\""), key);
 		clear_tv(&tvkey);
 		clear_tv(&tv);
 		goto failret;
@@ -11218,7 +11218,7 @@ f_readfile(argvars, rettv)
     }
 
     filtd = 0;
-    while (cnt < maxline)
+    while (cnt < maxline || maxline < 0)
     {
 	readlen = fread(buf + filtd, 1, FREAD_SIZE - filtd, fd);
 	buflen = filtd + readlen;
@@ -11267,7 +11267,7 @@ f_readfile(argvars, rettv)
 		li->li_tv.vval.v_string = s;
 		list_append(l, li);
 
-		if (++cnt >= maxline)
+		if (++cnt >= maxline && maxline >= 0)
 		    break;
 		if (readlen <= 0)
 		    break;
@@ -11306,6 +11306,17 @@ f_readfile(argvars, rettv)
 	    filtd -= tolist;
 	}
     }
+
+    /*
+     * For a negative line count use only the lines at the end of the file,
+     * free the rest.
+     */
+    if (maxline < 0)
+	while (cnt > -maxline)
+	{
+	    listitem_remove(l, l->lv_first);
+	    --cnt;
+	}
 
     vim_free(prev);
     fclose(fd);

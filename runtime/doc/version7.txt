@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Mar 24
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Mar 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -323,7 +323,7 @@ New functions: ~
 |count()|		count nr of times a value is in a List or Dictionary
 |deepcopy()|		make a full copy of a List or Dictionary
 |empty()|		check if List or Dictionary is empty
-|getqflist()|		list of quickfix errors
+|getqflist()|		list of quickfix errors (Yegappan Lakshmanan)
 |extend()|		append one List to another or add items from one
 			Dictionary to another
 |filter()|		remove selected items from a List or Dictionary
@@ -351,7 +351,7 @@ New functions: ~
 |remove()|		remove one or more items from a List or Dictionary
 |repeat()| 		Repeat "expr" "count" times.  (Christophe Poucet)
 |reverse()|		reverse the order of a List
-|setqflist()|		create a quickfix list
+|setqflist()|		create a quickfix list (Yegappan Lakshmanan)
 |sort()|		sort a List
 |split()|		split a String into a List
 |string()|		String representation of a List or Dictionary
@@ -408,6 +408,10 @@ SQL-Informix syntax file. (Dean L Hill)
 PHP compiler plugin. (Doug Kearns)
 
 Sive syntax file. (Nikolai Weibull)
+
+Moved all the indent settings from the filetype plugin to the indent file.
+Implemented b:undo_indent to undo indent settings when setting 'filetype' to a
+different value.
 
 
 New Keymaps: ~
@@ -606,6 +610,8 @@ modifiers.
 
 getwinvar() now also works to obtain a buffer-local option from the specified
 window.
+
+Added the "%s" item to 'errorformat'. (Yegappan Lakshmanan)
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*
@@ -1016,5 +1022,8 @@ Don't insert a DBCS character with a NUL second byte.
 
 In Insert mode CTRL-O <Home> didn't move the cursor.  Made "ins_at_eol" global
 and reset it in nv_home().
+
+Wildcard expansion failed: ":w /tmp/$$.`echo test`".  Don't put quotes around
+spaces inside backticks.
 
  vim:tw=78:ts=8:ft=help:norl:

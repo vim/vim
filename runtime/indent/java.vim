@@ -1,7 +1,7 @@
 " Vim indent file
 " Language:	Java
 " Maintainer:	Toby Allsopp <toby.allsopp@peace.com> (resigned)
-" Last Change:	2004 Oct 05
+" Last Change:	2005 Mar 28
 
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")
@@ -10,13 +10,15 @@ endif
 let b:did_indent = 1
 
 " Indent Java anonymous classes correctly.
-setlocal cinoptions& cinoptions+=j1
+setlocal cindent cinoptions& cinoptions+=j1
 
 " The "extends" and "implements" lines start off with the wrong indent.
 setlocal indentkeys& indentkeys+=0=extends indentkeys+=0=implements
 
 " Set the function to do the work.
 setlocal indentexpr=GetJavaIndent()
+
+let b:undo_indent = "set cin< cino< indentkeys< indentexpr<"
 
 " Only define the function once.
 if exists("*GetJavaIndent")
