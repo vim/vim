@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 16
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,24 +30,11 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Dictionary:
-- Define nameless function: ":function dict.key(arg)"
-- ":delfunc dict.key".
-- Set the error message numbers for E999.
-
-Make ":call Funcref()" work?
+Sanity check of eval.c:
+- Go through the code for magic braces.
 
 Mention Rsync command on runtime.php page:
     rsync -avzcP --delete --exclude="dos" --delete-excluded ftp.nluug.nl::Vim/runtime/ vim63-runtime
-
-List type:
-- Make second index in list[i:j] exclusive, like Python?
-    Marcus Aurelius: yes
-- Add List functions to version7.txt.
-- Add List functions to overview of funtions in user manual.
-- Explain Lists in the user manual?
-
-Add +=, -= and .= assignments.
 
 netrw plugin:
 - provide :Explore and :Sexplore like the old file explorer?
@@ -66,6 +53,8 @@ patch for QuickFixCmdPre and QuickFixCmdPost autocommands. (Ciaran McCreesh,
 New Motif toolbar button from Marcin Dalecki:
 - add remark in version7.txt
 - check if it works for pixmap loaded from a file.
+
+Explain Lists, Dicts, |:for| etc. in the user manual |usr_41.txt|.
 
 Awaiting response:
 -   Patch for mch_FullName() also in Vim 6.3?  os_mswin.c
@@ -93,9 +82,7 @@ PLANNED FOR VERSION 7.0:
     Also: for strings up to 3 bytes don't allocate memory, VAR_STRINGX.
 -   new DATA TYPES:
 	- None?  (or use empty string?)
-	- dictionary
-	    range(start, end, stride) creates a listable dict.
-    Add type checking?  See ~/vim/ideas.txt.
+    See ~/vim/ideas.txt.
 -   Add SPELLCHECKER, with easy to add support for many languages.
     8   Add spell checking.  Use "ispell -a" somehow.
 	~/vim/patches/wm_vim-5_4d.zip  can be used as an example (includes

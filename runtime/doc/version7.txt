@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jan 16
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jan 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -17,7 +17,7 @@ INCOMPATIBLE CHANGES			|incompatible-7|
 
 NEW FEATURES				|new-7|
 
-New data types				|new-data-types|
+Vim script enhancements			|new-vim-script|
 KDE support				|new-KDE|
 Translated manual pages			|new-manpage-trans|
 Internal grep				|new-vimgrep|
@@ -93,8 +93,8 @@ non-latin1 environment, such as Russian.
 ==============================================================================
 NEW FEATURES						*new-7*
 
-New data types						*new-data-types*
---------------
+Vim script enhancements					*new-vim-script*
+-----------------------
 
 In Vim scripts the following types have been added:
 
@@ -104,11 +104,12 @@ In Vim scripts the following types have been added:
 
 Many functions and commands have been added to support the new types.
 
-The Dictionary is NOT IMPLEMENTED YET!
-
 The |string()| function can be used to get a string representation of a
 variable.  Works for Numbers, Strings and composites of them.  Then |eval()|
 can be used to turn the string back into the variable value.
+
+The |:let| command can now use ":let var += expr" like using ":let var = var +
+expr".  "-=" and ".=" works in a similar way.
 
 
 KDE support						*new-KDE*
@@ -208,22 +209,45 @@ Win32: The ":winpos" command now also works in the console. (Vipin Aravind)
 
 New functions: ~
 
-browsedir(title, init)	|browsedir()|	Dialog to select a directory.
-byteidx(expr, nr)	|byteidx()| 	Index of a character. (Ilya Sher)
-finddir(name)		|finddir()|	Find a directory in 'path'.
-findfile(name)		|findfile()|	Find a file in 'path'. (Johannes
-					Zellner)
-foldtextresult(lnum)	|foldtextresult()|  The text displayed for a closed
-					fold at line "lnum".
-getfperm(fname)		|getfperm()|	Get file permission string. (Nikolai
-					Weibull)
-getftype(fname)		|getftype()|	Get type of file. (Nikolai Weibull)
-repeat(expr, count)	|repeat()| 	Repeat "expr" "count" times.
-					(Christophe Poucet)
-tr(expr, from, to)	|tr()|		Translate characters. (Ron Aaron)
-system(cmd, input)	|system()|	Filters {input} through a shell
-					command.
-getfontname([name])	|getfontname()| Get actual font name being used.
+|add()|			append an item to a List
+|append()|		append List of lines to the buffer
+|browsedir()|		Dialog to select a directory.
+|byteidx()| 		Index of a character. (Ilya Sher)
+|call()|		call a function with List as arguments
+|copy()|		make a shallow copy of a List or Dictionary
+|count()|		count nr of times a value is in a List or Dictionary
+|deepcopy()|		make a full copy of a List or Dictionary
+|empty()|		check if List or Dictionary is empty
+|extend()|		append one List to another or add items from one
+			Dictionary to another
+|filter()|		remove selected items from a List or Dictionary
+|finddir()|		Find a directory in 'path'.
+|findfile()|		Find a file in 'path'. (Johannes Zellner)
+|foldtextresult()|  	The text displayed for a closed fold at line "lnum".
+|function()|		make a Funcref out of a function name
+|get()|			get an item from a List or Dictionary
+|getfontname()| 	Get actual font name being used.
+|getfperm()|		Get file permission string. (Nikolai Weibull)
+|getftype()|		Get type of file. (Nikolai Weibull)
+|getline()|		get List with buffer lines
+|has_key()|		check whether a key appears in a Dictionary
+|insert()|		insert an item somewhere in a List
+|items()|		get List of Dictionary key-value pairs
+|join()|		join List items into a String
+|keys()|		get List of Dictionary keys
+|len()|			number of items in a List or Dictionary
+|map()|			change each List or Dictionary item
+|max()|			maximum value in a List or Dictionary
+|min()|			minimum value in a List or Dictionary
+|remove()|		remove one or more items from a List or Dictionary
+|repeat()| 		Repeat "expr" "count" times.  (Christophe Poucet)
+|reverse()|		reverse the order of a List
+|sort()|		sort a List
+|split()|		split a String into a List
+|string()|		String representation of a List or Dictionary
+|system()|		Filters {input} through a shell command.
+|tr()|			Translate characters. (Ron Aaron)
+|values()|		get List of Dictionary values
 
 
 New autocommand events: ~

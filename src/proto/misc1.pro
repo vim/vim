@@ -63,6 +63,7 @@ int vim_ispathlistsep __ARGS((int c));
 int vim_fnamecmp __ARGS((char_u *x, char_u *y));
 int vim_fnamencmp __ARGS((char_u *x, char_u *y, size_t len));
 char_u *concat_fnames __ARGS((char_u *fname1, char_u *fname2, int sep));
+char_u *concat_str __ARGS((char_u *str1, char_u *str2));
 void add_pathsep __ARGS((char_u *p));
 char_u *FullName_save __ARGS((char_u *fname, int force));
 pos_T *find_start_comment __ARGS((int ind_maxcomment));
