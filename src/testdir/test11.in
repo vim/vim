@@ -20,13 +20,12 @@ STARTTEST
 :set bin
 :au FileWritePre    *.gz   '[,']!gzip
 :au FileWritePost   *.gz   undo
-:/start of testfile/,/end of testfile/w! Xtestfile.gz
+:/^start of testfile/,/^end of testfile/w! Xtestfile.gz
 :au FileReadPost    *.gz   '[,']!gzip -d
 :$r Xtestfile.gz                " Read and decompress the testfile
 :?startstart?,$w! test.out      " Write contents of this file
 :au BufNewFile      *.c    read Xtest.c
-gg/^end of testfile
-:/start of test.c/+1,/end of test.c/-1w! Xtest.c
+:/^start of test.c/+1,/^end of test.c/-1w! Xtest.c
 :e! foo.c                       " Will load Xtest.c
 :au FileAppendPre   *.out  '[,']s/new/NEW/
 :au FileAppendPost  *.out  !cat Xtest.c >>test.out

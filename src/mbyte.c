@@ -5553,99 +5553,8 @@ convert_input_safe(ptr, len, maxlen, restp, restlenp)
 }
 
 #if defined(MACOS_X)
-static char_u *mac_string_convert __ARGS((char_u *ptr, int len, int *lenp, int fail_on_error, CFStringEncoding from, CFStringEncoding to, int *unconvlenp));
-
-/*
- * A Mac version of string_convert_ext() for special cases.
- */
-    static char_u *
-mac_string_convert(ptr, len, lenp, fail_on_error, from, to, unconvlenp)
-    char_u		*ptr;
-    int			len;
-    int			*lenp;
-    int			fail_on_error;
-    CFStringEncoding	from;
-    CFStringEncoding	to;
-    int			*unconvlenp;
-{
-    char_u		*retval, *d;
-    CFStringRef		cfstr;
-    int			buflen, in, out, l, i;
-
-    if (unconvlenp != NULL)
-	*unconvlenp = 0;
-    cfstr = CFStringCreateWithBytes(NULL, ptr, len, from, 0);
-    /* When conversion failed, try excluding bytes from the end, helps when
-     * there is an incomplete byte sequence.  Only do up to 6 bytes to avoid
-     * looping a long time when there really is something unconvertable. */
-    while (cfstr == NULL && unconvlenp != NULL && len > 1 && *unconvlenp < 6)
-    {
-	--len;
-	++*unconvlenp;
-	cfstr = CFStringCreateWithBytes(NULL, ptr, len, from, 0);
-    }
-    if (cfstr == NULL)
-	return NULL;
-    if (to == kCFStringEncodingUTF8)
-	buflen = len * 6 + 1;
-    else
-	buflen = len + 1;
-    retval = alloc(buflen);
-    if (retval == NULL)
-    {
-	CFRelease(cfstr);
-	return NULL;
-    }
-    if (!CFStringGetCString(cfstr, retval, buflen, to))
-    {
-	CFRelease(cfstr);
-	if (fail_on_error)
-	{
-	    vim_free(retval);
-	    return NULL;
-	}
-
-	/* conversion failed for the whole string, but maybe it will work
-	 * for each character */
-	for (d = retval, in = 0, out = 0; in < len && out < buflen - 1;)
-	{
-	    if (from == kCFStringEncodingUTF8)
-		l = utf_ptr2len_check(ptr + in);
-	    else
-		l = 1;
-	    cfstr = CFStringCreateWithBytes(NULL, ptr + in, l, from, 0);
-	    if (cfstr == NULL)
-	    {
-		*d++ = '?';
-		out++;
-	    }
-	    else
-	    {
-		if (!CFStringGetCString(cfstr, d, buflen - out, to))
-		{
-		    *d++ = '?';
-		    out++;
-		}
-		else
-		{
-		    i = strlen(d);
-		    d += i;
-		    out += i;
-		}
-		CFRelease(cfstr);
-	    }
-	    in += l;
-	}
-	*d = NUL;
-	if (lenp != NULL)
-	    *lenp = out;
-	return retval;
-    }
-    CFRelease(cfstr);
-    if (lenp != NULL)
-	*lenp = strlen(retval);
-    return retval;
-}
+/* This is in os_mac_conv.c. */
+extern char_u *mac_string_convert __ARGS((char_u *ptr, int len, int *lenp, int fail_on_error, int from, int to, int *unconvlenp));
 #endif
 
 /*
@@ -5762,30 +5671,22 @@ string_convert_ext(vcp, ptr, lenp, unconvlenp)
 # ifdef MACOS_X
 	case CONV_MAC_LATIN1:
 	    retval = mac_string_convert(ptr, len, lenp, vcp->vc_fail,
-					kCFStringEncodingMacRoman,
-					kCFStringEncodingISOLatin1,
-					unconvlenp);
+					'm', 'l', unconvlenp);
 	    break;
 
 	case CONV_LATIN1_MAC:
 	    retval = mac_string_convert(ptr, len, lenp, vcp->vc_fail,
-					kCFStringEncodingISOLatin1,
-					kCFStringEncodingMacRoman,
-					unconvlenp);
+					'l', 'm', unconvlenp);
 	    break;
 
 	case CONV_MAC_UTF8:
 	    retval = mac_string_convert(ptr, len, lenp, vcp->vc_fail,
-					kCFStringEncodingMacRoman,
-					kCFStringEncodingUTF8,
-					unconvlenp);
+					'm', 'u', unconvlenp);
 	    break;
 
 	case CONV_UTF8_MAC:
 	    retval = mac_string_convert(ptr, len, lenp, vcp->vc_fail,
-					kCFStringEncodingUTF8,
-					kCFStringEncodingMacRoman,
-					unconvlenp);
+					'u', 'm', unconvlenp);
 	    break;
 # endif
 

@@ -1196,7 +1196,9 @@ CARBONGUI_LIBS2	=
 CARBONGUI_INSTALL = install_macosx
 CARBONGUI_TARGETS =
 CARBONGUI_MAN_TARGETS =
-CARBONGUI_TESTTARGET =
+CARBONGUI_TESTTARGET = gui
+CARBONGUI_BUNDLE = $(VIMNAME).app
+CARBONGUI_TESTARG = VIMPROG=../$(CARBONGUI_BUNDLE)/Contents/MacOS/$(VIMTARGET)
 
 # All GUI files
 ALL_GUI_SRC  = gui.c gui_gtk.c gui_gtk_f.c gui_motif.c gui_athena.c gui_gtk_x11.c gui_x11.c gui_at_sb.c gui_at_fs.c pty.c gui_kde.cc gui_kde_widget.cc gui_kde_x11.cc gui_kde_widget_moc.cc
@@ -1465,7 +1467,7 @@ PRO_MANUAL = os_amiga.pro os_msdos.pro os_win16.pro os_win32.pro \
 	os_mswin.pro os_beos.pro os_vms.pro os_riscos.pro $(PERL_PRO)
 
 # Default target is making the executable and tools
-all: $(VIMTARGET) $(TOOLS) languages
+all: $(VIMTARGET) $(TOOLS) languages $(GUI_BUNDLE)
 
 tools: $(TOOLS)
 
@@ -1641,7 +1643,7 @@ types.vim: $(TAGS_SRC) $(TAGS_INCL)
 #
 test check:
 	$(MAKE) -f Makefile $(VIMTARGET)
-	cd testdir; $(MAKE) -f Makefile $(GUI_TESTTARGET) VIMPROG=../$(VIMTARGET)
+	cd testdir; $(MAKE) -f Makefile $(GUI_TESTTARGET) VIMPROG=../$(VIMTARGET) $(GUI_TESTARG)
 
 testclean:
 	cd testdir; $(MAKE) -f Makefile clean
@@ -2035,6 +2037,7 @@ clean celan: testclean
 	-rm -f *.o objects/* core $(VIMTARGET).core $(VIMTARGET) xxd/*.o
 	-rm -f $(TOOLS) auto/osdef.h auto/pathdef.c auto/if_perl.c
 	-rm -f conftest* *~ auto/link.sed
+	-rm -rf $(GUI_BUNDLE)
 	-rm -f gui_kde_widget_moc.cc kvim_iface_skel.cc *.kidl
 	if test -d $(PODIR); then \
 		cd $(PODIR); $(MAKE) prefix=$(DESTDIR)$(prefix) clean; \
@@ -2327,6 +2330,9 @@ objects/os_qnx.o: os_qnx.c
 objects/os_macosx.o: os_macosx.c
 	$(CCC) -o $@ os_macosx.c
 
+objects/os_mac_conv.o: os_mac_conv.c
+	$(CCC) -o $@ os_mac_conv.c
+
 objects/os_unix.o: os_unix.c
 	$(CCC) -o $@ os_unix.c
 
@@ -2410,13 +2416,11 @@ Makefile:
 ###############################################################################
 ### MacOS X installation
 ###
-### This creates a runnable Vim.app in the src directory
+### This installs a runnable Vim.app in $(prefix)
 
 REZ    = /Developer/Tools/Rez
-APPDIR = $(VIMNAME).app
+APPDIR = $(GUI_BUNDLE)
 RESDIR = $(APPDIR)/Contents/Resources
-# FIXME: i'm sure someone else can do something clever with grep
-# sed and version.h here
 VERSION = $(VIMMAJOR).$(VIMMINOR)
 
 ### Common flags
@@ -2434,7 +2438,10 @@ ICONS = $(RESDIR)/$(ICON_APP)
 #ICON_DOCTXT = $(shell if [ -e doc-txt.icns ] ; then echo doc-txt.icns ; else echo ; fi)
 #ICONS = $(addprefix $(RESDIR)/, $(ICON_APP) $(ICON_DOC) $(ICON_DOCTXT))
 
-install_macosx: bundle-dir bundle-executable bundle-info bundle-resource \
+install_macosx: $(APPDIR)
+	$(INSTALL_DATA_R) $(APPDIR) $(DESTDIR)$(prefix)
+
+$(APPDIR): bundle-dir bundle-executable bundle-info bundle-resource \
 	bundle-language
 
 bundle-dir: $(APPDIR)/Contents $(VIMTARGET)
@@ -2473,11 +2480,8 @@ bundle-rsrc: os_mac.rsr.hqx
 bundle-language: bundle-dir
 
 $(APPDIR)/Contents:
-	mkdir $(APPDIR)
-	mkdir $(APPDIR)/Contents
-	mkdir $(APPDIR)/Contents/MacOS
-	mkdir $(RESDIR)
-	mkdir $(RESDIR)/English.lproj
+	-$(SHELL) ./mkinstalldirs $(APPDIR)/Contents/MacOS
+	-$(SHELL) ./mkinstalldirs $(RESDIR)/English.lproj
 
 $(RESDIR)/%.icns: %.icns
 	cp $< $@

@@ -3237,7 +3237,15 @@ set_helplang_default(lang)
 	if (p_hlg == NULL)
 	    p_hlg = empty_option;
 	else
+	{
+	    /* zh_CN becomes "cn", zh_TW becomes "tw". */
+	    if (STRNICMP(p_hlg, "zh_", 3) == 0 && STRLEN(p_hlg) >= 5)
+	    {
+		p_hlg[0] = TOLOWER_ASC(p_hlg[3]);
+		p_hlg[1] = TOLOWER_ASC(p_hlg[4]);
+	    }
 	    p_hlg[2] = NUL;
+	}
 	options[idx].flags |= P_ALLOCED;
     }
 }

@@ -338,8 +338,8 @@ ICONV_OPEN_ERR:
  * TECCreateConverter() failed.
  */
     static size_t
-null_conv(iconv_t cd, const char** inbuf, size_t *inbytesleft,
-	char** outbuf, size_t *outbytesleft)
+null_conv(iconv_t cd, const char **inbuf, size_t *inbytesleft,
+	char **outbuf, size_t *outbytesleft)
 {
     const char* buf_in = inbuf && *inbuf ? *inbuf : NULL;
     char* buf_out = outbuf && *outbuf ? *outbuf : NULL;
@@ -375,14 +375,14 @@ null_conv(iconv_t cd, const char** inbuf, size_t *inbytesleft,
 }
 
     size_t
-iconv(iconv_t cd, const char** inbuf, size_t *inbytesleft,
-	char** outbuf, size_t *outbytesleft)
+iconv(iconv_t cd, const char **inbuf, size_t *inbytesleft,
+	char **outbuf, size_t *outbytesleft)
 {
-    ConstTextPtr buf_in;
-    TextPtr buf_out;
-    ByteCount out_len, out_true;
-    ByteCount in_len, in_true;
-    OSStatus st;
+    ConstTextPtr    buf_in;
+    TextPtr	    buf_out;
+    ByteCount	    out_len, out_true;
+    ByteCount	    in_len, in_true;
+    OSStatus	    st;
 
     if (!cd)
     {
@@ -537,7 +537,7 @@ iconv_close(iconv_t cd)
     }
 }
 
-    int*
+    int *
 iconv_errno()
 {
     return &last_errno;
@@ -549,8 +549,8 @@ iconv_errno()
 #define GETTEXT_BUFNUM		64
 #define GETTEXT_BUFSIZE		256
 
-    char*
-mch_gettext(const char* msgid)
+    char *
+mch_gettext(const char *msgid)
 {
     static char		buf[GETTEXT_BUFNUM][GETTEXT_BUFSIZE];
     static int		bufnum = 0;
@@ -593,18 +593,18 @@ MCH_GETTEXT_FINISH:
 	CFRelease(strkey);
     if (strmsg)
 	CFRelease(strmsg);
-    return (char*)(msg ? msg : msgid);
+    return (char *)(msg ? msg : msgid);
 }
 
-    char*
-mch_bindtextdomain(const char* domain, const char* dirname)
+    char *
+mch_bindtextdomain(const char *domain, const char *dirname)
 {
     TRACE("mch_bindtextdomain(%s, %s)\n", domain, dirname);
     return (char*)dirname;
 }
 
-    char*
-mch_textdomain(const char* domain)
+    char *
+mch_textdomain(const char *domain)
 {
     TRACE("mch_textdomain(%s)\n", domain);
     return (char*)domain;

@@ -1498,40 +1498,14 @@ retry:
 # ifdef MACOS_X
 	    if (fio_flags & FIO_MACROMAN)
 	    {
+		extern int macroman2enc __ARGS((char_u *ptr, long *sizep, long
+			    real_size));
 		/*
 		 * Conversion from Apple MacRoman char encoding to UTF-8 or
-		 * latin1, using standard Carbon framework.
+		 * latin1.  This is in os_mac_conv.c.
 		 */
-		CFStringRef	cfstr;
-		CFRange		r;
-		CFIndex		len = size;
-
-		/* MacRoman is an 8-bit encoding, no need to move bytes to
-		 * conv_rest[]. */
-		cfstr = CFStringCreateWithBytes(NULL, ptr, len,
-						kCFStringEncodingMacRoman, 0);
-		/*
-		 * If there is a conversion error, try using another
-		 * conversion.
-		 */
-		if (cfstr == NULL)
+		if (macroman2enc(ptr, &size, real_size) == FAIL)
 		    goto rewind_retry;
-
-		r.location = 0;
-		r.length = CFStringGetLength(cfstr);
-		if (r.length != CFStringGetBytes(cfstr, r,
-			(enc_utf8) ? kCFStringEncodingUTF8
-						 : kCFStringEncodingISOLatin1,
-			0, /* no lossy conversion */
-			0, /* not external representation */
-			ptr + size, real_size - size, &len))
-		{
-		    CFRelease(cfstr);
-		    goto rewind_retry;
-		}
-		CFRelease(cfstr);
-		mch_memmove(ptr, ptr + size, len);
-		size = len;
 	    }
 	    else
 # endif
@@ -2744,7 +2718,7 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 	    if (!(did_cmd = apply_autocmds_exarg(EVENT_FILEAPPENDCMD,
 					 sfname, sfname, FALSE, curbuf, eap)))
 	    {
-		if (bt_nofile(curbuf))
+		if (overwriting && bt_nofile(curbuf))
 		    nofile_err = TRUE;
 		else
 		    apply_autocmds_exarg(EVENT_FILEAPPENDPRE,
@@ -4789,11 +4763,11 @@ buf_write_bytes(ip)
 	    /*
 	     * Convert UTF-8 or latin1 to Apple MacRoman.
 	     */
-	    CFStringRef	cfstr;
-	    CFRange	r;
-	    CFIndex	l;
 	    char_u	*from;
 	    size_t	fromlen;
+	    extern int enc2macroman __ARGS((char_u *from, size_t fromlen,
+			char_u *to, int *tolenp, int maxtolen, char_u *rest,
+			int *restlenp));
 
 	    if (ip->bw_restlen > 0)
 	    {
@@ -4811,41 +4785,14 @@ buf_write_bytes(ip)
 		fromlen = len;
 	    }
 
-	    ip->bw_restlen = 0;
-	    cfstr = CFStringCreateWithBytes(NULL, from, fromlen,
-		    (enc_utf8) ?
-		    kCFStringEncodingUTF8 : kCFStringEncodingISOLatin1,
-		    0);
-	    while (cfstr == NULL && ip->bw_restlen < 3 && fromlen > 1)
-	    {
-		ip->bw_rest[ip->bw_restlen++] = from[--fromlen];
-		cfstr = CFStringCreateWithBytes(NULL, from, fromlen,
-		    (enc_utf8) ?
-		    kCFStringEncodingUTF8 : kCFStringEncodingISOLatin1,
-		    0);
-	    }
-	    if (cfstr == NULL)
+	    if (enc2macroman(from, fromlen,
+			ip->bw_conv_buf, &len, ip->bw_conv_buflen,
+			ip->bw_rest, &ip->bw_restlen) == FAIL)
 	    {
 		ip->bw_conv_error = TRUE;
 		return FAIL;
 	    }
-
-	    r.location = 0;
-	    r.length = CFStringGetLength(cfstr);
-	    if (r.length != CFStringGetBytes(cfstr, r,
-			kCFStringEncodingMacRoman,
-			0, /* no lossy conversion */
-			0, /* not external representation (since vim
-			    * handles this internally */
-			ip->bw_conv_buf, ip->bw_conv_buflen, &l))
-	    {
-		CFRelease(cfstr);
-		ip->bw_conv_error = TRUE;
-		return FAIL;
-	    }
-	    CFRelease(cfstr);
 	    buf = ip->bw_conv_buf;
-	    len = l;
 	}
 # endif
 
@@ -6696,7 +6643,8 @@ static AutoPat *first_autopat[NUM_EVENTS] =
     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
 };
 
 /*

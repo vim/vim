@@ -358,7 +358,14 @@ SRC_MAC =	\
 		src/gui_mac.c \
 		src/gui_mac.icns \
 		src/gui_mac.r \
-		src/os_mac* \
+		src/os_mac.build \
+		src/os_mac.c \
+		src/os_mac.h \
+		src/os_mac.rsr.hqx \
+		src/os_mac.sit.hqx \
+		src/os_mac_conv.c \
+		src/os_macosx.c \
+		src/os_mac.pbproj/project.pbxproj
 		src/proto/gui_mac.pro \
 		src/proto/os_mac.pro \
 

@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2004 Jul 16
+*version7.txt*  For Vim version 7.0aa.  Last change: 2004 Jul 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -123,7 +123,10 @@ Win32: The ":winpos" command now also works in the console. (Vipin Aravind)
 
 New functions: ~
 
-tr(expr, from, to)	|tr()| Translate characters. (Ron Aaron)
+repeat(expr, count)	|repeat()| 	Repeat "expr" "count" times.
+					(Christophe Poucet)
+tr(expr, from, to)	|tr()|		Translate characters. (Ron Aaron)
+byteidx(expr, nr)	|byteidx()| 	Index of a character. (Ilya Sher)
 
 
 New autocommand events: ~
@@ -182,6 +185,12 @@ For lisp indenting and matching parenthesis: (Sergey Khorev)
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*
 
+Mac: "make" now creates the Vim.app directory and "make install" copies it to
+its final destination. (Raf)
+
+Mac: Made it possible to compile with Motif, Athena or GTK without tricks and
+still being able to use the MacRoman conversion.  Added the os_mac_conv.c
+file.
 
 ==============================================================================
 BUG FIXES						*bug-fixes-7*
@@ -254,5 +263,8 @@ is indented too much.
 When 'comments' includes multi-byte characters inserting the middle part and
 alignment may go wrong.  'cindent' also suffers from this for right-aligned
 items.
+
+The default for 'helplang' was "zh" for both "zh_cn" and "zh_tw".  Now use
+"cn" or "tw" as intended.
 
  vim:tw=78:ts=8:ft=help:norl:

@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2004 Jul 05
+*eval.txt*      For Vim version 7.0aa.  Last change: 2004 Jul 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -814,6 +814,7 @@ bufname( {expr})		String	Name of the buffer {expr}
 bufnr( {expr})			Number	Number of the buffer {expr}
 bufwinnr( {expr})		Number	window number of buffer {expr}
 byte2line( {byte})		Number	line number at byte count {byte}
+byteidx( {expr}, {nr})		Number  byte index of {nr}'th char in {expr}
 char2nr( {expr})		Number	ASCII value of first char in {expr}
 cindent( {lnum})		Number  C indent for line {lnum}
 col( {expr})			Number	column nr of cursor or mark
@@ -897,6 +898,7 @@ remote_read( {serverid})	String	read reply string
 remote_send( {server}, {string} [, {idvar}])
 				String	send key sequence
 rename( {from}, {to})		Number  rename (move) file from {from} to {to}
+repeat( {expr}, {count})	String  repeat {expr} {count} times
 resolve( {filename})		String  get filename a shortcut points to
 search( {pattern} [, {flags}])	Number  search for {pattern}
 searchpair( {start}, {middle}, {end} [, {flags} [, {skip}]])
@@ -1071,6 +1073,22 @@ byte2line({byte})					*byte2line()*
 		Also see |line2byte()|, |go| and |:goto|.
 		{not available when compiled without the |+byte_offset|
 		feature}
+
+byteidx({expr}, {nr})					*byteidx()*
+		Return byte index of the {nr}'th character in the string
+		{expr}.  Use zero for the first character, it returns zero.
+		This function is only useful when there are multibyte
+		characters, otherwise the returned value is equal to {nr}.
+		Composing characters are counted as a separate character.
+		Example : >
+			echo matchstr(str, ".", byteidx(str, 3))
+<		will display the fourth character.  Another way to do the
+		same: >
+			let s = strpart(str, byteidx(str, 3))
+			echo strpart(s, 0, byteidx(s, 1))
+<		If there are less than {nr} characters -1 is returned.
+		If there are exactly {nr} characters the length of the string
+		is returned.
 
 char2nr({expr})						*char2nr()*
 		Return number value of the first char in {expr}.  Examples: >
@@ -2178,6 +2196,12 @@ rename({from}, {to})					*rename()*
 		result is a Number, which is 0 if the file was renamed
 		successfully, and non-zero when the renaming failed.
 		This function is not available in the |sandbox|.
+
+repeat({expr}, {count})					*repeat()*
+		Repeat {expr} {count} times and return the concatenated
+		result.  Example: >
+			:let seperator = repeat('-', 80)
+<		When {count} is zero or negative the result is empty.
 
 resolve({filename})					*resolve()* *E655*
 		On MS-Windows, when {filename} is a shortcut (a .lnk file),

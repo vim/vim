@@ -5789,6 +5789,7 @@ remove-filetype	filetype.txt	/*remove-filetype*
 remove-option-flags	options.txt	/*remove-option-flags*
 rename()	eval.txt	/*rename()*
 rename-files	tips.txt	/*rename-files*
+repeat()	eval.txt	/*repeat()*
 repeat.txt	repeat.txt	/*repeat.txt*
 repeating	repeat.txt	/*repeating*
 replacing	change.txt	/*replacing*
@@ -5866,6 +5867,8 @@ s<CR>	change.txt	/*s<CR>*
 sandbox	eval.txt	/*sandbox*
 save-file	editing.txt	/*save-file*
 save-settings	starting.txt	/*save-settings*
+scheme-syntax	syntax.txt	/*scheme-syntax*
+scheme.vim	syntax.txt	/*scheme.vim*
 scp	pi_netrw.txt	/*scp*
 script-here	if_perl.txt	/*script-here*
 script-local	map.txt	/*script-local*

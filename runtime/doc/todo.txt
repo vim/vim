@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Jul 16
+*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Jul 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,37 +30,12 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-When switching between Aap script and make Vim won't always run.
+Add fix for zh_cn to Vim 6.3?  (Liang)
 
-Mac: Compiling --enable-gui=athena doesn't work.  Try to fix without disabling
-Carbon.  Otherwise adjust configure to disable Darwin. (raf)
-
-Mac: "make install" doesn't install.  Patch from RAF.
-
-UTF-8 in 'comments' causes wrong indent.  Counting bytes instead of char
-width? (Nikolai Weibull)
 
 For version 7.0:
 -   Include many PATCHES:
     8   Add functions:
-	strrep()		Repeat a string (patch from Christophe Poucet,
-				2003 Sep 12, also contains XX)
-				Alt: repeat(expr, count) werkt ook voor lists.
-	mousex() mousey()	get position of mouse pointer (patch by Ross
-				Presser)
-				He will send a new patch.
-				Is this really useful?
-	multibyteidx(string, idx) Byte index in multi-byte character.
-				Patch by Ilya Sher, 2004 Feb 25
-				Update June 18 (third one).
-	menuprop({name}, {idx}, {what})
-				Get menu property of menu {name} item {idx}.
-				menuprop("", 1, "name") returns "File".
-				menuprop("File", 1, "n") returns "nmenu
-				File.Open..." argument.
-				Patch by Ilya Sher, 2004 Apr 22
-	mapname({idx}, mode)	return the name of the idx'th mapping.
-				Patch by Ilya Sher, 2004 Mar 4.
 	match({pat}, {string} [,start] [,count]) get index of count'th match
 				Patch by Ilya Sher, 2004 Jun 19
 	find()			find file in 'path' (patch from Johannes
@@ -287,6 +262,8 @@ For version 7.0:
 -   When using 'incsearch" CTRL-R CTRL-W gets the word under the cursor, but
     the part that already matched is doubled then.  Remove the part of the
     word that would be doubled.  Make it work line CTRL-N in Insert mode.
+-   Add Lua interface? (Wolfgang Oertl)
+
 
 Vi incompatibility:
 8   With undo/redo only marks in the changed lines should be changed.  Other
@@ -1486,6 +1463,17 @@ Built-in script language:
 7   Add argument to winwidth() to subtract the space taken by 'foldcolumn',
     signs and/or 'number'.
 8   Add functions:
+	menuprop({name}, {idx}, {what})
+				Get menu property of menu {name} item {idx}.
+				menuprop("", 1, "name") returns "File".
+				menuprop("File", 1, "n") returns "nmenu
+				File.Open..." argument.
+				Patch by Ilya Sher, 2004 Apr 22
+				Return a list of menus and/or a dictionary
+				with properties instead.
+	mapname({idx}, mode)	return the name of the idx'th mapping.
+				Patch by Ilya Sher, 2004 Mar 4.
+				Return a list instead.
 	sprintf(format, arg, ..) How to prevent a crash???
 	attributes()		return file protection flags "drwxrwxrwx"
 	mkdir(dir)		Create directory

@@ -18,18 +18,23 @@
 
 /*
  * Macintosh machine-dependent things.
+ *
+ * Include the Mac header files, unless also compiling with X11 (the header
+ * files have many conflicts).
  */
-#include <QuickDraw.h>
-#include <ToolUtils.h>
-#include <LowMem.h>
-#include <Scrap.h>
-#include <Sound.h>
-#include <TextUtils.h>
-#include <Memory.h>
-#include <OSUtils.h>
-#include <Files.h>
-#ifdef FEAT_MBYTE
-# include <Script.h>
+#ifndef FEAT_X11
+# include <QuickDraw.h>
+# include <ToolUtils.h>
+# include <LowMem.h>
+# include <Scrap.h>
+# include <Sound.h>
+# include <TextUtils.h>
+# include <Memory.h>
+# include <OSUtils.h>
+# include <Files.h>
+# ifdef FEAT_MBYTE
+#  include <Script.h>
+# endif
 #endif
 
 /*
@@ -303,10 +308,13 @@
 #endif
 
 #define DFLT_ERRORFILE		"errors.err"
-#ifdef COLON_AS_PATHSEP
-# define DFLT_RUNTIMEPATH	"$VIM:vimfiles,$VIMRUNTIME,$VIM:vimfiles:after"
-#else
-# define DFLT_RUNTIMEPATH	"~/.vim,$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after,~/.vim/after"
+
+#ifndef DFLT_RUNTIMEPATH
+# ifdef COLON_AS_PATHSEP
+#  define DFLT_RUNTIMEPATH	"$VIM:vimfiles,$VIMRUNTIME,$VIM:vimfiles:after"
+# else
+#  define DFLT_RUNTIMEPATH	"~/.vim,$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after,~/.vim/after"
+# endif
 #endif
 
 /*

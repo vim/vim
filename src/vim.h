@@ -91,7 +91,7 @@
     || defined(FEAT_GUI_AMIGA) \
     || defined(FEAT_GUI_PHOTON) \
     || defined(FEAT_GUI_KDE)
-# ifndef FEAT_GUI
+# if !defined(FEAT_GUI) && !defined(NO_X11_INCLUDES)
 #  define FEAT_GUI
 # endif
 #endif
@@ -158,6 +158,35 @@
 /* +x11 is only enabled when it's both available and wanted. */
 #if defined(HAVE_X11) && defined(WANT_X11)
 # define FEAT_X11
+#endif
+
+#ifdef NO_X11_INCLUDES
+    /* In os_mac_conv.c NO_X11_INCLUDES is defined to avoid X11 headers.
+     * Disable all X11 related things to avoid conflicts. */
+# ifdef FEAT_X11
+#  undef FEAT_X11
+# endif
+# ifdef FEAT_XCLIPBOARD
+#  undef FEAT_XCLIPBOARD
+# endif
+# ifdef FEAT_GUI_MOTIF
+#  undef FEAT_GUI_MOTIF
+# endif
+# ifdef FEAT_GUI_ATHENA
+#  undef FEAT_GUI_ATHENA
+# endif
+# ifdef FEAT_GUI_GTK
+#  undef FEAT_GUI_GTK
+# endif
+# ifdef FEAT_BEVAL_TIP
+#  undef FEAT_BEVAL_TIP
+# endif
+# ifdef FEAT_XIM
+#  undef FEAT_XIM
+# endif
+# ifdef FEAT_CLIENTSERVER
+#  undef FEAT_CLIENTSERVER
+# endif
 #endif
 
 /* Can't use "PACKAGE" here, conflicts with a Perl include file. */

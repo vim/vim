@@ -1239,11 +1239,11 @@ echo "configure:1230: checking if Darwin files are there" >&5
 
   if test "$enable_darwin" = "yes"; then
     MACOSX=yes
-    OS_EXTRA_SCR="os_macosx.c";
-    OS_EXTRA_OBJ="objects/os_macosx.o"
+    OS_EXTRA_SCR="os_macosx.c os_mac_conv.c";
+    OS_EXTRA_OBJ="objects/os_macosx.o objects/os_mac_conv.o"
     CPPFLAGS="$CPPFLAGS -DMACOS_X_UNIX -I/Developer/Headers/FlatCarbon -no-cpp-precomp"
 
-            ac_safe=`echo "Carbon/Carbon.h" | sed 'y%./+-%__p_%'`
+                ac_safe=`echo "Carbon/Carbon.h" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for Carbon/Carbon.h""... $ac_c" 1>&6
 echo "configure:1249: checking for Carbon/Carbon.h" >&5
 if eval "test \"`echo '$''{'ac_cv_header_$ac_safe'+set}'`\" = set"; then
@@ -1277,7 +1277,7 @@ else
 fi
 
     if test "x$CARBON" = "xyes"; then
-      if test -z "$with_x"; then
+      if test -z "$with_x" -a "X$enable_gui" != Xmotif -a "X$enable_gui" != Xathena -a "X$enable_gui" != Xgtk -a "X$enable_gui" != Xgtk2; then
 	with_x=no
 	DEFAULT_VIMNAME=Vim
       fi

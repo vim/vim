@@ -263,6 +263,7 @@ static void f_bufname __ARGS((VAR argvars, VAR retvar));
 static void f_bufnr __ARGS((VAR argvars, VAR retvar));
 static void f_bufwinnr __ARGS((VAR argvars, VAR retvar));
 static void f_byte2line __ARGS((VAR argvars, VAR retvar));
+static void f_byteidx __ARGS((VAR argvars, VAR retvar));
 static void f_char2nr __ARGS((VAR argvars, VAR retvar));
 static void f_cindent __ARGS((VAR argvars, VAR retvar));
 static void f_col __ARGS((VAR argvars, VAR retvar));
@@ -349,6 +350,7 @@ static void f_remote_foreground __ARGS((VAR argvars, VAR retvar));
 static void f_remote_peek __ARGS((VAR argvars, VAR retvar));
 static void f_remote_read __ARGS((VAR argvars, VAR retvar));
 static void f_remote_send __ARGS((VAR argvars, VAR retvar));
+static void f_repeat __ARGS((VAR argvars, VAR retvar));
 static void f_server2client __ARGS((VAR argvars, VAR retvar));
 static void f_serverlist __ARGS((VAR argvars, VAR retvar));
 static void f_setline __ARGS((VAR argvars, VAR retvar));
@@ -2817,6 +2819,7 @@ static struct fst
     {"bufnr",		1, 1, f_bufnr},
     {"bufwinnr",	1, 1, f_bufwinnr},
     {"byte2line",	1, 1, f_byte2line},
+    {"byteidx",		2, 2, f_byteidx},
     {"char2nr",		1, 1, f_char2nr},
     {"cindent",		1, 1, f_cindent},
     {"col",		1, 1, f_col},
@@ -2896,6 +2899,7 @@ static struct fst
     {"remote_read",	1, 1, f_remote_read},
     {"remote_send",	2, 3, f_remote_send},
     {"rename",		2, 2, f_rename},
+    {"repeat",		2, 2, f_repeat},
     {"resolve",		1, 1, f_resolve},
     {"search",		1, 2, f_search},
     {"searchpair",	3, 5, f_searchpair},
@@ -3584,6 +3588,42 @@ f_byte2line(argvars, retvar)
     else
 	retvar->var_val.var_number = ml_find_line_or_offset(curbuf,
 							  (linenr_T)0, &boff);
+#endif
+}
+
+/*
+ * "byteidx()" function
+ */
+/*ARGSUSED*/
+    static void
+f_byteidx(argvars, retvar)
+    VAR		argvars;
+    VAR		retvar;
+{
+#ifdef FEAT_MBYTE
+    char_u	*t;
+#endif
+    char_u	*str;
+    long	idx;
+
+    str = get_var_string(&argvars[0]);
+    idx = get_var_number(&argvars[1]);
+    retvar->var_val.var_number = -1;
+    if (idx < 0)
+	return;
+
+#ifdef FEAT_MBYTE
+    t = str;
+    for ( ; idx > 0; idx--)
+    {
+	if (*t == NUL)		/* EOL reached */
+	    return;
+	t += mb_ptr2len_check(t);
+    }
+    retvar->var_val.var_number = t - str;
+#else
+    if (idx <= STRLEN(str))
+	retvar->var_val.var_number = idx;
 #endif
 }
 
@@ -6918,6 +6958,45 @@ f_remote_foreground(argvars, retvar)
     vim_free(argvars[1].var_val.var_string);
 # endif
 #endif
+}
+
+/*
+ * "repeat()" function
+ */
+/*ARGSUSED*/
+    static void
+f_repeat(argvars, retvar)
+    VAR		argvars;
+    VAR		retvar;
+{
+    char_u	*p;
+    int		n;
+    int		slen;
+    int		len;
+    char_u	*r;
+    int		i;
+
+    p = get_var_string(&argvars[0]);
+    n = get_var_number(&argvars[1]);
+
+    retvar->var_type = VAR_STRING;
+    retvar->var_val.var_string = NULL;
+
+    slen = (int)STRLEN(p);
+    len = slen * n;
+
+    if (len <= 0)
+        return;
+
+    r = alloc(len + 1);
+    if (r != NULL)
+    {
+        for (i = 0; i < n; i++)
+	    mch_memmove(r + i * slen, p, (size_t)slen);
+        r[len] = NUL;
+    }
+
+    retvar->var_val.var_string = r;
 }
 
 #ifdef HAVE_STRFTIME

@@ -103,15 +103,16 @@ if test "`(uname) 2>/dev/null`" = Darwin; then
 
   if test "$enable_darwin" = "yes"; then
     MACOSX=yes
-    OS_EXTRA_SCR="os_macosx.c";
-    OS_EXTRA_OBJ="objects/os_macosx.o"
+    OS_EXTRA_SCR="os_macosx.c os_mac_conv.c";
+    OS_EXTRA_OBJ="objects/os_macosx.o objects/os_mac_conv.o"
     CPPFLAGS="$CPPFLAGS -DMACOS_X_UNIX -I/Developer/Headers/FlatCarbon -no-cpp-precomp"
 
     dnl If Carbon is found, assume we don't want X11
     dnl unless it was specifically asked for (--with-x)
+    dnl or Motif, Athena or GTK GUI is used.
     AC_CHECK_HEADER(Carbon/Carbon.h, CARBON=yes)
     if test "x$CARBON" = "xyes"; then
-      if test -z "$with_x"; then
+      if test -z "$with_x" -a "X$enable_gui" != Xmotif -a "X$enable_gui" != Xathena -a "X$enable_gui" != Xgtk -a "X$enable_gui" != Xgtk2; then
 	with_x=no
 	DEFAULT_VIMNAME=Vim
       fi
