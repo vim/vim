@@ -3146,11 +3146,14 @@ set_init_2()
 	/*
 	 * If 'background' wasn't set by the user, try guessing the value,
 	 * depending on the terminal name.  Only need to check for terminals
-	 * with a dark background, that can handle color.  Only "linux"
-	 * console at the moment.
+	 * with a dark background, that can handle color.  Recognized are:
+	 * "linux"	    Linux console
+	 * "screen.linux"   Linux console with screen
 	 */
 	idx = findoption((char_u *)"bg");
-	if (!(options[idx].flags & P_WAS_SET) && STRCMP(T_NAME, "linux") == 0)
+	if (!(options[idx].flags & P_WAS_SET)
+		&& (STRCMP(T_NAME, "linux") == 0
+		    || STRCMP(T_NAME, "screen.linux") == 0))
 	{
 	    set_string_option_direct(NULL, idx, (char_u *)"dark", OPT_FREE);
 	    /* don't mark it as set, when starting the GUI it may be changed
