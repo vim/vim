@@ -3184,48 +3184,20 @@ vim_regexec_multi(rmp, win, buf, lnum, col)
     return r;
 }
 
-#if 0	/* disabled, no longer needed now that regmatch() is not recursive */
-# ifdef HAVE_SETJMP_H
-#  define USE_SETJMP
-# endif
-# ifdef HAVE_TRY_EXCEPT
-#  define USE_TRY_EXCEPT
-# endif
-#endif
-
 /*
  * Match a regexp against a string ("line" points to the string) or multiple
  * lines ("line" is NULL, use reg_getline()).
  */
-#ifdef USE_SETJMP
-    static long
-vim_regexec_both(line_arg, col_arg)
-    char_u	*line_arg;
-    colnr_T	col_arg;	/* column to start looking for match */
-#else
     static long
 vim_regexec_both(line, col)
     char_u	*line;
     colnr_T	col;		/* column to start looking for match */
-#endif
 {
     regprog_T	*prog;
     char_u	*s;
-    long	retval;
-#ifdef USE_SETJMP
-    char_u	*line;
-    colnr_T	col;
-    int		did_mch_startjmp = FALSE;
-#endif
+    long	retval = 0L;
 
     reg_tofree = NULL;
-
-#ifdef USE_SETJMP
-    /* Trick to avoid "might be clobbered by `longjmp'" warning from gcc. */
-    line = line_arg;
-    col = col_arg;
-#endif
-    retval = 0L;
 
     if (REG_MULTI)
     {
@@ -3312,36 +3284,6 @@ vim_regexec_both(line, col)
 	    goto theend;
     }
 
-#ifdef USE_TRY_EXCEPT
-    __try
-    {
-#endif
-
-#ifdef USE_SETJMP
-    /*
-     * Matching with a regexp may cause a very deep recursive call of
-     * regmatch().  Vim will crash when running out of stack space.  Catch
-     * this here if the system supports it.
-     * It's a bit slow, do it after the check for "regmust".
-     * Don't do it if the caller already set it up.
-     */
-    if (!lc_active)
-    {
-	did_mch_startjmp = TRUE;
-	mch_startjmp();
-	if (SETJMP(lc_jump_env) != 0)
-	{
-	    mch_didjmp();
-# ifdef SIGHASARG
-	    if (lc_signal != SIGINT)
-# endif
-		EMSG(_(e_complex));
-	    retval = 0L;
-	    goto inner_end;
-	}
-    }
-#endif
-
     regline = line;
     reglnum = 0;
 
@@ -3414,26 +3356,6 @@ vim_regexec_both(line, col)
 	}
     }
 
-#ifdef USE_SETJMP
-inner_end:
-    if (did_mch_startjmp)
-	mch_endjmp();
-#endif
-#ifdef USE_TRY_EXCEPT
-    }
-    __except(EXCEPTION_EXECUTE_HANDLER)
-    {
-	if (GetExceptionCode() == EXCEPTION_STACK_OVERFLOW)
-	{
-	    RESETSTKOFLW();
-	    EMSG(_(e_outofstack));
-	}
-	else
-	    EMSG(_(e_complex));
-	retval = 0L;
-    }
-#endif
-
 theend:
     /* Didn't find a match. */
     vim_free(reg_tofree);
@@ -3505,68 +3427,67 @@ regtry(prog, col)
 	need_clear_zsubexpr = TRUE;
 #endif
 
-    if (regmatch(prog->program + 1))
+    if (regmatch(prog->program + 1) == 0)
+	return 0;
+
+    cleanup_subexpr();
+    if (REG_MULTI)
     {
-	cleanup_subexpr();
-	if (REG_MULTI)
+	if (reg_startpos[0].lnum < 0)
 	{
-	    if (reg_startpos[0].lnum < 0)
-	    {
-		reg_startpos[0].lnum = 0;
-		reg_startpos[0].col = col;
-	    }
-	    if (reg_endpos[0].lnum < 0)
-	    {
-		reg_endpos[0].lnum = reglnum;
-		reg_endpos[0].col = (int)(reginput - regline);
-	    }
-	    else
-		/* Use line number of "\ze". */
-		reglnum = reg_endpos[0].lnum;
+	    reg_startpos[0].lnum = 0;
+	    reg_startpos[0].col = col;
+	}
+	if (reg_endpos[0].lnum < 0)
+	{
+	    reg_endpos[0].lnum = reglnum;
+	    reg_endpos[0].col = (int)(reginput - regline);
 	}
 	else
-	{
-	    if (reg_startp[0] == NULL)
-		reg_startp[0] = regline + col;
-	    if (reg_endp[0] == NULL)
-		reg_endp[0] = reginput;
-	}
+	    /* Use line number of "\ze". */
+	    reglnum = reg_endpos[0].lnum;
+    }
+    else
+    {
+	if (reg_startp[0] == NULL)
+	    reg_startp[0] = regline + col;
+	if (reg_endp[0] == NULL)
+	    reg_endp[0] = reginput;
+    }
 #ifdef FEAT_SYN_HL
-	/* Package any found \z(...\) matches for export. Default is none. */
-	unref_extmatch(re_extmatch_out);
-	re_extmatch_out = NULL;
+    /* Package any found \z(...\) matches for export. Default is none. */
+    unref_extmatch(re_extmatch_out);
+    re_extmatch_out = NULL;
 
-	if (prog->reghasz == REX_SET)
+    if (prog->reghasz == REX_SET)
+    {
+	int		i;
+
+	cleanup_zsubexpr();
+	re_extmatch_out = make_extmatch();
+	for (i = 0; i < NSUBEXP; i++)
 	{
-	    int		i;
-
-	    cleanup_zsubexpr();
-	    re_extmatch_out = make_extmatch();
-	    for (i = 0; i < NSUBEXP; i++)
+	    if (REG_MULTI)
 	    {
-		if (REG_MULTI)
-		{
-		    /* Only accept single line matches. */
-		    if (reg_startzpos[i].lnum >= 0
-			    && reg_endzpos[i].lnum == reg_startzpos[i].lnum)
-			re_extmatch_out->matches[i] =
-			    vim_strnsave(reg_getline(reg_startzpos[i].lnum)
+		/* Only accept single line matches. */
+		if (reg_startzpos[i].lnum >= 0
+			&& reg_endzpos[i].lnum == reg_startzpos[i].lnum)
+		    re_extmatch_out->matches[i] =
+			vim_strnsave(reg_getline(reg_startzpos[i].lnum)
 						       + reg_startzpos[i].col,
-				    reg_endzpos[i].col - reg_startzpos[i].col);
-		}
-		else
-		{
-		    if (reg_startzp[i] != NULL && reg_endzp[i] != NULL)
-			re_extmatch_out->matches[i] =
+				   reg_endzpos[i].col - reg_startzpos[i].col);
+	    }
+	    else
+	    {
+		if (reg_startzp[i] != NULL && reg_endzp[i] != NULL)
+		    re_extmatch_out->matches[i] =
 			    vim_strnsave(reg_startzp[i],
-				    (int)(reg_endzp[i] - reg_startzp[i]));
-		}
+					(int)(reg_endzp[i] - reg_startzp[i]));
 	    }
 	}
-#endif
-	return 1 + reglnum;
     }
-    return 0;
+#endif
+    return 1 + reglnum;
 }
 
 #ifdef FEAT_MBYTE
@@ -4601,7 +4522,12 @@ regmatch(scan)
 		    /* It could match.  Prepare for trying to match what
 		     * follows.  The code is below.  Parameters are stored in
 		     * a regstar_T on the regstack. */
-		    if (ga_grow(&regstack, sizeof(regstar_T)) == FAIL)
+		    if (((unsigned)regstack.ga_len >> 10) >= p_mmp)
+		    {
+			EMSG(_(e_maxmempat));
+			status = RA_FAIL;
+		    }
+		    else if (ga_grow(&regstack, sizeof(regstar_T)) == FAIL)
 			status = RA_FAIL;
 		    else
 		    {
@@ -4641,7 +4567,12 @@ regmatch(scan)
 	  case BEHIND:
 	  case NOBEHIND:
 	    /* Need a bit of room to store extra positions. */
-	    if (ga_grow(&regstack, sizeof(regbehind_T)) == FAIL)
+	    if (((unsigned)regstack.ga_len >> 10) >= p_mmp)
+	    {
+		EMSG(_(e_maxmempat));
+		status = RA_FAIL;
+	    }
+	    else if (ga_grow(&regstack, sizeof(regbehind_T)) == FAIL)
 		status = RA_FAIL;
 	    else
 	    {
@@ -5029,7 +4960,7 @@ regmatch(scan)
 	    break;
     }
 
-    /* May want to continue with the inner loop. */
+    /* May need to continue with the inner loop, starting at "scan". */
     if (status == RA_CONT)
 	continue;
 
@@ -5050,6 +4981,8 @@ regmatch(scan)
 	    printf("Premature EOL\n");
 #endif
 	}
+	if (status == RA_FAIL)
+	    got_int = TRUE;
 	return (status == RA_MATCH);
     }
 
@@ -5071,6 +5004,11 @@ regstack_push(regstack, state, scan, startp)
 {
     regitem_T	*rp;
 
+    if (((unsigned)regstack->ga_len >> 10) >= p_mmp)
+    {
+	EMSG(_(e_maxmempat));
+	return NULL;
+    }
     if (ga_grow(regstack, sizeof(regitem_T)) == FAIL)
 	return NULL;
 

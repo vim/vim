@@ -59,11 +59,13 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'backupskip'	options.txt	/*'backupskip'*
 'balloondelay'	options.txt	/*'balloondelay'*
 'ballooneval'	options.txt	/*'ballooneval'*
+'balloonexpr'	options.txt	/*'balloonexpr'*
 'bdir'	options.txt	/*'bdir'*
 'bdlay'	options.txt	/*'bdlay'*
 'beautify'	vi_diff.txt	/*'beautify'*
 'beval'	options.txt	/*'beval'*
 'bex'	options.txt	/*'bex'*
+'bexpr'	options.txt	/*'bexpr'*
 'bf'	vi_diff.txt	/*'bf'*
 'bg'	options.txt	/*'bg'*
 'bh'	options.txt	/*'bh'*
@@ -351,6 +353,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'maxfuncdepth'	options.txt	/*'maxfuncdepth'*
 'maxmapdepth'	options.txt	/*'maxmapdepth'*
 'maxmem'	options.txt	/*'maxmem'*
+'maxmempattern'	options.txt	/*'maxmempattern'*
 'maxmemtot'	options.txt	/*'maxmemtot'*
 'mef'	options.txt	/*'mef'*
 'menuitems'	options.txt	/*'menuitems'*
@@ -362,6 +365,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'mls'	options.txt	/*'mls'*
 'mm'	options.txt	/*'mm'*
 'mmd'	options.txt	/*'mmd'*
+'mmp'	options.txt	/*'mmp'*
 'mmt'	options.txt	/*'mmt'*
 'mod'	options.txt	/*'mod'*
 'modeline'	options.txt	/*'modeline'*
@@ -1065,6 +1069,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 +perl	various.txt	/*+perl*
 +postscript	various.txt	/*+postscript*
 +printer	various.txt	/*+printer*
++profile	various.txt	/*+profile*
 +python	various.txt	/*+python*
 +quickfix	various.txt	/*+quickfix*
 +rightleft	various.txt	/*+rightleft*
@@ -2770,6 +2775,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 <register>	map.txt	/*<register>*
 <sfile>	cmdline.txt	/*<sfile>*
 <xCSI>	intro.txt	/*<xCSI>*
+<xDown>	term.txt	/*<xDown>*
 <xEnd>	term.txt	/*<xEnd>*
 <xEnd>-xterm	term.txt	/*<xEnd>-xterm*
 <xF1>	term.txt	/*<xF1>*
@@ -2782,6 +2788,9 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 <xF4>-xterm	term.txt	/*<xF4>-xterm*
 <xHome>	term.txt	/*<xHome>*
 <xHome>-xterm	term.txt	/*<xHome>-xterm*
+<xLeft>	term.txt	/*<xLeft>*
+<xRight>	term.txt	/*<xRight>*
+<xUp>	term.txt	/*<xUp>*
 =	change.txt	/*=*
 ==	change.txt	/*==*
 >	change.txt	/*>*
@@ -3249,9 +3258,8 @@ E358	options.txt	/*E358*
 E359	term.txt	/*E359*
 E36	windows.txt	/*E36*
 E360	various.txt	/*E360*
-E361	pattern.txt	/*E361*
 E362	term.txt	/*E362*
-E363	pattern.txt	/*E363*
+E363	options.txt	/*E363*
 E364	eval.txt	/*E364*
 E365	print.txt	/*E365*
 E366	options.txt	/*E366*
@@ -4182,6 +4190,11 @@ beos-timeout	os_beos.txt	/*beos-timeout*
 beos-unicode	os_beos.txt	/*beos-unicode*
 beos-utf8	os_beos.txt	/*beos-utf8*
 beos-vimdir	os_beos.txt	/*beos-vimdir*
+beval_bufnr-variable	eval.txt	/*beval_bufnr-variable*
+beval_col-variable	eval.txt	/*beval_col-variable*
+beval_lnum-variable	eval.txt	/*beval_lnum-variable*
+beval_text-variable	eval.txt	/*beval_text-variable*
+beval_winnr-variable	eval.txt	/*beval_winnr-variable*
 blockwise-examples	visual.txt	/*blockwise-examples*
 blockwise-operators	visual.txt	/*blockwise-operators*
 blockwise-register	change.txt	/*blockwise-register*
@@ -6614,6 +6627,11 @@ utf-8-in-xwindows	mbyte.txt	/*utf-8-in-xwindows*
 utf-8-typing	mbyte.txt	/*utf-8-typing*
 utf8	mbyte.txt	/*utf8*
 v	visual.txt	/*v*
+v:beval_bufnr	eval.txt	/*v:beval_bufnr*
+v:beval_col	eval.txt	/*v:beval_col*
+v:beval_lnum	eval.txt	/*v:beval_lnum*
+v:beval_text	eval.txt	/*v:beval_text*
+v:beval_winnr	eval.txt	/*v:beval_winnr*
 v:charconvert_from	eval.txt	/*v:charconvert_from*
 v:charconvert_to	eval.txt	/*v:charconvert_to*
 v:cmdarg	eval.txt	/*v:cmdarg*
@@ -6967,6 +6985,7 @@ xterm-copy-paste	term.txt	/*xterm-copy-paste*
 xterm-cursor-keys	term.txt	/*xterm-cursor-keys*
 xterm-end-home-keys	term.txt	/*xterm-end-home-keys*
 xterm-function-keys	term.txt	/*xterm-function-keys*
+xterm-modifier-keys	term.txt	/*xterm-modifier-keys*
 xterm-mouse	options.txt	/*xterm-mouse*
 xterm-mouse-wheel	scroll.txt	/*xterm-mouse-wheel*
 xterm-save-screen	tips.txt	/*xterm-save-screen*

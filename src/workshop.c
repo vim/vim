@@ -58,7 +58,7 @@ static void	 load_buffer_by_number(int, int);
 static void	 load_window(char *, int lnum);
 static void	 warp_to_pc(int);
 #ifdef FEAT_BEVAL
-static void	 bevalCB(BalloonEval *, int);
+void		workshop_beval_cb(BalloonEval *, int);
 #endif
 static char	*fixAccelText(char *);
 static void	 addMenu(char *, char *, char *);
@@ -74,7 +74,6 @@ static int	 tbpri;			/* ToolBar priority */
 int		 usingSunWorkShop = 0;	/* set if -ws flag is used */
 char		 curMenuName[BUFSIZ];
 char		 curMenuPriority[BUFSIZ];
-BalloonEval	*balloonEval;
 
 static Boolean	 workshopInitDone = False;
 static Boolean	 workshopHotKeysEnabled = False;
@@ -220,21 +219,7 @@ workshop_load_file(
 #endif
 
 #ifdef FEAT_BEVAL
-    if (balloonEval == NULL)
-    {
-	/*
-	 * Set up the Balloon Expression Evaluation area.
-	 * It's enabled by default.  Disable it when 'ballooneval' is off.
-	 */
-# ifdef FEAT_GUI_GTK
-	balloonEval = gui_mch_create_beval_area(gui.drawarea, NULL,
-							      &bevalCB, NULL);
-# else
-	balloonEval = gui_mch_create_beval_area(textArea, NULL, bevalCB, NULL);
-# endif
-	if (!p_beval)
-	    gui_mch_disable_beval_area(balloonEval);
-    }
+    bevalServers |= BEVAL_WORKSHOP;
 #endif
 
     load_window(filename, line);
@@ -1566,15 +1551,15 @@ fixAccelText(
 }
 
 #ifdef FEAT_BEVAL
-    static void
-bevalCB(
+    void
+workshop_beval_cb(
 	BalloonEval	*beval,
 	int		 state)
 {
-    char_u	*filename;
+    win_T	*wp;
     char_u	*text;
     int		 type;
-    int		 line;
+    linenr_T	 lnum;
     int		 col;
     int		 idx;
     char	 buf[MAXPATHLEN * 2];
@@ -1583,7 +1568,7 @@ bevalCB(
     if (!p_beval)
 	return;
 
-    if (gui_mch_get_beval_info(beval, &filename, &line, &text, &col) == OK)
+    if (get_beval_info(beval, FALSE, &wp, &lnum, &text, &col) == OK)
     {
 	if (text && text[0])
 	{
@@ -1606,7 +1591,7 @@ bevalCB(
 	    idx = computeIndex(col, text, beval->ts);
 	    if (idx > 0)
 	    {
-		line = 0;
+		lnum = 0;
 
 		/*
 		 * If successful, it will respond with a balloon cmd.
@@ -1623,9 +1608,10 @@ bevalCB(
 
 		/* Send request to dbx */
 		sprintf(buf, "toolVerb debug.balloonEval "
-			"%s %d,0 %d,0 %d,%d %d %s\n", (char *) filename,
-			line, idx, type, serialNo++,
-			strlen((char *) text), (char *) text);
+			"%s %ld,0 %d,0 %d,%d %ld %s\n",
+			(char *)wp->w_buffer->b_ffname,
+			(long)lnum, idx, type, serialNo++,
+			(long)strlen((char *)text), (char *)text);
 		balloonEval = beval;
 		workshop_send_message(buf);
 	    }

@@ -44,5 +44,6 @@ int workshop_test_getcursorcol __ARGS((void));
 char *workshop_test_getcursorrowtext __ARGS((void));
 char *workshop_test_getselectedtext __ARGS((void));
 void workshop_save_sensitivity __ARGS((char *filename));
+void workshop_beval_cb __ARGS((BalloonEval *beval, int state));
 void findYourself __ARGS((char *argv0));
 /* vim: set ft=c : */

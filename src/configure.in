@@ -807,7 +807,7 @@ if test "$enable_rubyinterp" = "yes"; then
   AC_PATH_PROG(vi_cv_path_ruby, ruby)
   if test "X$vi_cv_path_ruby" != "X"; then
     AC_MSG_CHECKING(Ruby version)
-    if $vi_cv_path_ruby -e 'VERSION >= "1.6.0" or exit 1' >/dev/null 2>/dev/null; then
+    if $vi_cv_path_ruby -e '(VERSION rescue RUBY_VERSION) >= "1.6.0" or exit 1' >/dev/null 2>/dev/null; then
       AC_MSG_RESULT(OK)
       AC_MSG_CHECKING(Ruby header files)
       rubyhdrdir=`$vi_cv_path_ruby -r mkmf -e 'print Config::CONFIG[["archdir"]] || $hdrdir' 2>/dev/null`

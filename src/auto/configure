@@ -4629,7 +4629,7 @@ fi
   if test "X$vi_cv_path_ruby" != "X"; then
     echo "$as_me:$LINENO: checking Ruby version" >&5
 echo $ECHO_N "checking Ruby version... $ECHO_C" >&6
-    if $vi_cv_path_ruby -e 'VERSION >= "1.6.0" or exit 1' >/dev/null 2>/dev/null; then
+    if $vi_cv_path_ruby -e 'RUBY_VERSION >= "1.6.0" or exit 1' >/dev/null 2>/dev/null; then
       echo "$as_me:$LINENO: result: OK" >&5
 echo "${ECHO_T}OK" >&6
       echo "$as_me:$LINENO: checking Ruby header files" >&5

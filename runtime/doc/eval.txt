@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Mar 04
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Mar 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1104,6 +1104,32 @@ variables for each buffer.  Use local buffer variables instead |b:var|.
 
 
 Predefined Vim variables:			*vim-variable* *v:var*
+
+					*v:beval_col* *beval_col-variable*
+v:beval_col	The number of the column, over which the mouse pointer is.
+		This is the byte index in the |v:beval_lnum| line.
+		Only valid while evaluating the 'balloonexpr' option.
+
+					*v:beval_bufnr* *beval_bufnr-variable*
+v:beval_bufnr	The number of the buffer, over which the mouse pointer is. Only
+		valid while evaluating the 'balloonexpr' option.
+
+					*v:beval_lnum* *beval_lnum-variable*
+v:beval_lnum	The number of the line, over which the mouse pointer is. Only
+		valid while evaluating the 'balloonexpr' option.
+
+					*v:beval_text* *beval_text-variable*
+v:beval_text	The text under or after the mouse pointer.  Usually a word as it is
+		useful for debugging a C program.  'iskeyword' applies, but a
+		dot and "->" before the position is included.  When on a ']'
+		the text before it is used, including the matching '[' and
+		word before it.  When on a Visual area within one line the
+		highlighted text is used.
+		Only valid while evaluating the 'balloonexpr' option.
+
+					*v:beval_winnr* *beval_winnr-variable*
+v:beval_winnr	The number of the window, over which the mouse pointer is. Only
+		valid while evaluating the 'balloonexpr' option.
 
 			*v:charconvert_from* *charconvert_from-variable*
 v:charconvert_from

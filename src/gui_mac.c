@@ -3879,6 +3879,12 @@ gui_mch_init_font(font_name, fontset)
     TextSize(font >> 16);
     TextFont(font & 0xFFFF);
 
+    GetFontInfo(&font_info);
+
+    gui.char_ascent = font_info.ascent;
+    gui.char_width  = CharWidth('_');
+    gui.char_height = font_info.ascent + font_info.descent + p_linespace;
+
 #ifdef USE_ATSUI_DRAWING
     ATSUFontID			fontID;
     Fixed			fontSize;
@@ -3926,12 +3932,6 @@ gui_mch_init_font(font_name, fontset)
 	}
     }
 #endif
-
-    GetFontInfo(&font_info);
-
-    gui.char_ascent = font_info.ascent;
-    gui.char_width  = CharWidth('_');
-    gui.char_height = font_info.ascent + font_info.descent + p_linespace;
 
     return OK;
 
@@ -4313,11 +4313,6 @@ gui_mch_draw_string(row, col, s, len, flags)
     int		len;
     int		flags;
 {
-#if defined(FEAT_GUI) && defined(MACOS_X)
-#ifndef USE_ATSUI_DRAWING
-    SInt32	sys_version;
-#endif
-#endif
 #ifdef FEAT_MBYTE
 #ifdef USE_ATSUI_DRAWING
     /* ATSUI requires utf-16 strings */
@@ -4342,10 +4337,7 @@ gui_mch_draw_string(row, col, s, len, flags)
     /*
      * On OS X, try using Quartz-style text antialiasing.
      */
-    sys_version = 0;
-
-    Gestalt(gestaltSystemVersion, &sys_version);
-    if (sys_version >= 0x1020)
+    if (gMacSystemVersion >= 0x1020)
     {
 	/* Quartz antialiasing is available only in OS 10.2 and later. */
 	UInt32 qd_flags = (p_antialias ?
@@ -4366,7 +4358,7 @@ gui_mch_draw_string(row, col, s, len, flags)
 #ifdef USE_ATSUI_DRAWING
     if ((flags & DRAW_TRANSP) == 0)
 #else
-    if (((sys_version >= 0x1020 && p_antialias) || p_linespace != 0)
+    if (((gMacSystemVersion >= 0x1020 && p_antialias) || p_linespace != 0)
 	    && !(flags & DRAW_TRANSP))
 #endif
     {
@@ -4394,7 +4386,7 @@ gui_mch_draw_string(row, col, s, len, flags)
     }
 
 #ifndef USE_ATSUI_DRAWING
-    if (sys_version >= 0x1020 && p_antialias)
+    if (gMacSystemVersion >= 0x1020 && p_antialias)
     {
 	StyleParameter face;
 

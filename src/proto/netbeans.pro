@@ -1,9 +1,11 @@
 /* netbeans.c */
+void netbeans_w32_connect __ARGS((void));
 void messageFromNetbeansW32 __ARGS((void));
 int isNetbeansBuffer __ARGS((buf_T *bufp));
 int isNetbeansModified __ARGS((buf_T *bufp));
 void netbeans_end __ARGS((void));
 void ex_nbkey __ARGS((exarg_T *eap));
+void netbeans_beval_cb __ARGS((BalloonEval *beval, int state));
 void netbeans_startup_done __ARGS((void));
 void netbeans_send_disconnect __ARGS((void));
 void netbeans_frame_moved __ARGS((int new_x, int new_y));

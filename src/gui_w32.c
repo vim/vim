@@ -3947,7 +3947,7 @@ gui_mch_destroy_sign(sign)
 /* BALLOON-EVAL IMPLEMENTATION FOR WINDOWS.
  *  Added by Sergey Khorev <sergey.khorev@gmail.com>
  *
- * The only reused thing is gui_beval.h and gui_mch_get_beval_info()
+ * The only reused thing is gui_beval.h and get_beval_info()
  * from gui_beval.c (note it uses x and y of the BalloonEval struct
  * to get current mouse position).
  *

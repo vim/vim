@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Mar 06
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Mar 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -992,8 +992,39 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 			{not in Vi}
 			{only available when compiled with the |+balloon_eval|
-			and |+sun_workshop| or |+netbeans_intg| features}
+			feature}
 	Switch on the |balloon-eval| functionality.
+
+						     *'balloonexpr'* *'bexpr'*
+'balloonexpr' 'bexpr'	string	(default "")
+			global
+			{not in Vi}
+			{only available when compiled with the |+balloon_eval|
+			feature}
+	Expression to show in evaluation balloon.  It is only used when
+	'ballooneval' is on.  These variables can be used:
+
+	v:beval_bufnr	number of the buffer in which balloon is going to show
+	v:beval_winnr	number of the window
+	v:beval_lnum	line number
+	v:beval_col	column number (byte index)
+	v:beval_text	word under or after the mouse pointer
+
+	The evaluation of the expression must not have side effects!
+	Example: >
+    function! MyBalloonExpr()
+	return 'Cursor is at line ' . v:beval_lnum . 
+		\', column ' . v:beval_col .
+		\ ' of file ' .  bufname(v:beval_bufnr) .
+		\ ' on word "' . v:beval_text . '"'
+    endfunction
+    set bexpr=MyBalloonExpr()
+    set ballooneval
+<
+	NOTE: The balloon is displayed only if the cursor is on a text
+	character.  If the result of evaluating 'balloonexpr' is not empty,
+	Vim does not try to send a message to an external debugger (Netbeans
+	or Sun Workshop).
 
 				     *'binary'* *'bin'* *'nobinary'* *'nobin'*
 'binary' 'bin'		boolean	(default off)
@@ -4160,6 +4191,20 @@ A jump table for the options with a short description can be found at |Q_op|.
 	other memory to be freed.  Maximum value 2000000.  Use this to work
 	without a limit.  Also see 'maxmemtot'.
 
+						*'maxmempattern'* *'mmp'*
+'maxmempattern' 'mmp'	number	(default 1000)
+			global
+			{not in Vi}
+	Maximum amount of memory (in Kbyte) to use for pattern matching.
+	Maximum value 2000000.  Use this to work without a limit.
+							*E363*
+	When Vim runs into the limit it gives an error message mostly behaves
+	like CTRL-C was typed.
+	Running into the limit often means that the pattern is very
+	inefficient or too complex.  This may already happen with the pattern
+	"\(.\)*" on a very long line.  ".*" works much better.
+	Vim may run out of memory before hitting the 'maxmempattern' limit.
+
 						*'maxmemtot'* *'mmt'*
 'maxmemtot' 'mmt'	number	(default between 2048 and 10240 (system
 				 dependent) or half the amount of memory
@@ -6345,6 +6390,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 				"s"  = button state
 				"c"  = column plus 33
 				"r"  = row plus 33
+	   		This only works up to 223 columns!  See "dec" for a
+			solution.
 	   xterm2	Works like "xterm", but with the xterm reporting the
 			mouse position while the mouse is dragged.  This works
 			much faster and more precise.  Your xterm must at
@@ -6358,6 +6405,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 							*dec-mouse*
 	   dec		DEC terminal mouse handling.  The mouse generates a
 			rather complex sequence, starting with "<Esc>[".
+			This is also available for an Xterm, if it was
+			configured with "--enable-dec-locator".
 							*jsbterm-mouse*
 	   jsbterm	JSB term mouse handling.
 							*pterm-mouse*
