@@ -329,7 +329,7 @@ ifeq ($(GUI),yes)
 ifeq (yes, $(NETBEANS))
 # Only allow NETBEANS for a GUI build.
 DEFINES += -DFEAT_NETBEANS_INTG
-EXTRA_OBJS += $(OUTDIR)/netbeans.o $(OUTDIR)/gui_beval.o
+EXTRA_OBJS += $(OUTDIR)/netbeans.o
 EXTRA_LIBS += -lwsock32
 
 ifeq (yes, $(NBDEBUG))
@@ -352,7 +352,7 @@ endif
 EXE = gvim$(DEBUG_SUFFIX).exe
 OUTDIR = gobj$(DEBUG_SUFFIX)
 DEFINES += -DFEAT_GUI_W32 -DFEAT_CLIPBOARD
-EXTRA_OBJS += $(OUTDIR)/gui.o $(OUTDIR)/gui_w32.o $(OUTDIR)/os_w32exe.o
+EXTRA_OBJS += $(OUTDIR)/gui.o $(OUTDIR)/gui_w32.o $(OUTDIR)/gui_beval.o $(OUTDIR)/os_w32exe.o
 EXTRA_LIBS += -mwindows -lcomctl32
 else
 EXE = vim$(DEBUG_SUFFIX).exe

@@ -605,7 +605,7 @@ vimobj = $(vimobj) \
 
 !if ("$(NETBEANS)"=="yes")
 vimobj = $(vimobj) \
-    $(OBJDIR)\netbeans.obj $(OBJDIR)\gui_beval.obj
+    $(OBJDIR)\netbeans.obj
 !endif
 
 !ifdef XPM
@@ -628,6 +628,7 @@ DLLTARGET = joebob
 vimobj = $(vimobj) \
 	$(vimwinmain) \
 	$(OBJDIR)\gui.obj \
+	$(OBJDIR)\gui_beval.obj \
 	$(OBJDIR)\gui_w32.obj
 !endif
 
