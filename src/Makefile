@@ -1161,19 +1161,6 @@ NEXTAW_TESTTARGET = gui
 # too:
 #EXTRA_LIBS = /usr/openwin/lib/libXmu.sa -lm
 
-### BeOS GUI
-BEOSGUI_SRC	= gui.c gui_beos.cc pty.c
-BEOSGUI_OBJ	= objects/gui.o objects/gui_beos.o  objects/pty.o
-BEOSGUI_DEFS	= -DFEAT_GUI_BEOS
-BEOSGUI_IPATH	=
-BEOSGUI_LIBS_DIR =
-BEOSGUI_LIBS1	= -lbe -lroot
-BEOSGUI_LIBS2	=
-BEOSGUI_INSTALL = install_normal
-BEOSGUI_TARGETS	= installglinks
-BEOSGUI_MAN_TARGETS = yes
-BEOSGUI_TESTTARGET = gui
-
 # PHOTON GUI
 PHOTONGUI_SRC	= gui.c gui_photon.c pty.c
 PHOTONGUI_OBJ	= objects/gui.o objects/gui_photon.o objects/pty.o
@@ -1206,7 +1193,7 @@ CARBONGUI_TESTARG = VIMPROG=../$(CARBONGUI_BUNDLE)/Contents/MacOS/$(VIMTARGET)
 
 # All GUI files
 ALL_GUI_SRC  = gui.c gui_gtk.c gui_gtk_f.c gui_motif.c gui_xmdlg.c gui_xmebw.c gui_athena.c gui_gtk_x11.c gui_x11.c gui_at_sb.c gui_at_fs.c pty.c gui_kde.cc gui_kde_wid.cc gui_kde_x11.cc gui_kde_wid_moc.cc
-ALL_GUI_PRO  = gui.pro gui_gtk.pro gui_motif.pro gui_xmdlg.pro gui_athena.pro gui_gtk_x11.pro gui_x11.pro gui_w16.pro gui_w32.pro gui_amiga.pro gui_photon.pro
+ALL_GUI_PRO  = gui.pro gui_gtk.pro gui_motif.pro gui_xmdlg.pro gui_athena.pro gui_gtk_x11.pro gui_x11.pro gui_w16.pro gui_w32.pro gui_photon.pro
 
 # }}}
 
@@ -2177,9 +2164,6 @@ objects/gui_at_sb.o: gui_at_sb.c
 
 objects/gui_athena.o: gui_athena.c
 	$(CCC) -o $@ gui_athena.c
-
-objects/gui_beos.o: gui_beos.cc
-	$(CCC) -o $@ gui_beos.cc
 
 objects/gui_beval.o: gui_beval.c
 	$(CCC) -o $@ gui_beval.c
