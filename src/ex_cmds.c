@@ -4663,6 +4663,7 @@ ex_global(eap)
 	return;
     }
 
+#if 0
 #ifdef HAVE_SETJMP_H
     /*
      * Matching with a regexp may cause a very deep recursive call of
@@ -4682,6 +4683,7 @@ ex_global(eap)
 	goto jumpend;
     }
 #endif
+#endif
 
     /*
      * pass 1: set marks for each (not) matching line
@@ -4698,9 +4700,11 @@ ex_global(eap)
 	line_breakcheck();
     }
 
+#if 0
 #ifdef HAVE_SETJMP_H
 jumpend:
     mch_endjmp();
+#endif
 #endif
 
     /*
