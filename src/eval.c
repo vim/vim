@@ -330,7 +330,6 @@ static int tv_equal __ARGS((typval_T *tv1, typval_T *tv2, int ic));
 static int string_isa_number __ARGS((char_u *s));
 static listitem_T *list_find __ARGS((list_T *l, long n));
 static long list_idx_of_item __ARGS((list_T *l, listitem_T *item));
-static listitem_T *list_find_ext __ARGS((list_T *l, long *ip));
 static void list_append __ARGS((list_T *l, listitem_T *item));
 static int list_append_tv __ARGS((list_T *l, typval_T *tv));
 static int list_insert_tv __ARGS((list_T *l, typval_T *tv, listitem_T *item));
@@ -1058,8 +1057,7 @@ eval_foldexpr(arg, cp)
 	/* If the result is a number, just return the number. */
 	if (tv.v_type == VAR_NUMBER)
 	    retval = tv.vval.v_number;
-	else if (tv.v_type == VAR_UNKNOWN
-		|| tv.vval.v_string == NULL)
+	else if (tv.v_type != VAR_STRING || tv.vval.v_string == NULL)
 	    retval = 0;
 	else
 	{
@@ -1257,8 +1255,7 @@ ex_let_vars(arg_start, tv, copy, semicolon, var_count, nextchars)
     /*
      * ":let [v1, v2] = list" or ":for [v1, v2] in listlist"
      */
-    l = tv->vval.v_list;
-    if (tv->v_type != VAR_LIST || l == NULL)
+    if (tv->v_type != VAR_LIST || (l = tv->vval.v_list) == NULL)
     {
 	EMSG(_(e_listreq));
 	return FAIL;
@@ -2211,6 +2208,7 @@ set_var_lval(lp, endp, rettv, copy, op)
 	else
 	{
 	    *lp->ll_tv = *rettv;
+	    lp->ll_tv->v_lock = 0;
 	    init_tv(rettv);
 	}
     }
@@ -2293,7 +2291,7 @@ list_add_watch(l, lw)
 }
 
 /*
- * Remove a watches from a list.
+ * Remove a watcher from a list.
  * No warning when it isn't found...
  */
     static void
@@ -4734,14 +4732,9 @@ listitem_remove(l, item)
 list_len(l)
     list_T	*l;
 {
-    listitem_T	*item;
-    long	len = 0;
-
     if (l == NULL)
 	return 0L;
-    for (item = l->lv_first; item != NULL; item = item->li_next)
-	++len;
-    return len;
+    return l->lv_len;
 }
 
 /*
@@ -4881,20 +4874,70 @@ list_find(l, n)
 
     if (l == NULL)
 	return NULL;
+
+    /* Negative index is relative to the end. */
     if (n < 0)
+	n = l->lv_len + n;
+
+    /* Check for index out of range. */
+    if (n < 0 || n >= l->lv_len)
+	return NULL;
+
+    /* When there is a cached index may start search from there. */
+    if (l->lv_idx_item != NULL)
     {
-	idx = -1;	/* search from the end */
-	for (item = l->lv_last; item != NULL && idx > n; item = item->li_prev)
-	    --idx;
+	if (n < l->lv_idx / 2)
+	{
+	    /* closest to the start of the list */
+	    item = l->lv_first;
+	    idx = 0;
+	}
+	else if (n > (l->lv_idx + l->lv_len) / 2)
+	{
+	    /* closest to the end of the list */
+	    item = l->lv_last;
+	    idx = l->lv_len - 1;
+	}
+	else
+	{
+	    /* closest to the cached index */
+	    item = l->lv_idx_item;
+	    idx = l->lv_idx;
+	}
     }
     else
     {
-	idx = 0;	/* search from the start */
-	for (item = l->lv_first; item != NULL && idx < n; item = item->li_next)
-	    ++idx;
+	if (n < l->lv_len / 2)
+	{
+	    /* closest to the start of the list */
+	    item = l->lv_first;
+	    idx = 0;
+	}
+	else
+	{
+	    /* closest to the end of the list */
+	    item = l->lv_last;
+	    idx = l->lv_len - 1;
+	}
     }
-    if (idx != n)
-	return NULL;
+
+    while (n > idx)
+    {
+	/* search forward */
+	item = item->li_next;
+	++idx;
+    }
+    while (n < idx)
+    {
+	/* search backward */
+	item = item->li_prev;
+	--idx;
+    }
+
+    /* cache the used index */
+    l->lv_idx = idx;
+    l->lv_idx_item = item;
+
     return item;
 }
 
@@ -4921,39 +4964,6 @@ list_idx_of_item(l, item)
 }
 
 /*
- * Like list_find(), but also find an item just past the end.
- * "*ip" is the item to find.
- * When found "*ip" is set to zero, when not found "*ip" is non-zero.
- * Returns NULL when item not found or item is just past the end.
- */
-    static listitem_T *
-list_find_ext(l, ip)
-    list_T	*l;
-    long	*ip;
-{
-    long	n;
-    listitem_T	*item;
-
-    if (*ip < 0)
-    {
-	/* Count from the end: -1 is before last item. */
-	item = l->lv_last;
-	for (n = *ip + 1; n < 0 && item != NULL; ++n)
-	    item = item->li_prev;
-	if (item == NULL)
-	    n = 1;	/* error! */
-    }
-    else
-    {
-	item = l->lv_first;
-	for (n = *ip; n > 0 && item != NULL; --n)
-	    item = item->li_next;
-    }
-    *ip = n;
-    return item;
-}
-
-/*
  * Append item "item" to the end of list "l".
  */
     static void
@@ -4974,6 +4984,7 @@ list_append(l, item)
 	item->li_prev = l->lv_last;
 	l->lv_last = item;
     }
+    ++l->lv_len;
     item->li_next = NULL;
 }
 
@@ -5020,10 +5031,17 @@ list_insert_tv(l, tv, item)
 	ni->li_prev = item->li_prev;
 	ni->li_next = item;
 	if (item->li_prev == NULL)
+	{
 	    l->lv_first = ni;
+	    ++l->lv_idx;
+	}
 	else
+	{
 	    item->li_prev->li_next = ni;
+	    l->lv_idx_item = NULL;
+	}
 	item->li_prev = ni;
+	++l->lv_len;
     }
     return OK;
 }
@@ -5122,6 +5140,7 @@ list_remove(l, item, item2)
     /* notify watchers */
     for (ip = item; ip != NULL; ip = ip->li_next)
     {
+	--l->lv_len;
 	list_fix_watch(l, ip);
 	if (ip == item2)
 	    break;
@@ -5135,6 +5154,7 @@ list_remove(l, item, item2)
 	l->lv_first = item2->li_next;
     else
 	item->li_prev->li_next = item2->li_next;
+    l->lv_idx_item = NULL;
 }
 
 /*
@@ -6547,7 +6567,7 @@ find_buffer(avar)
 
     if (avar->v_type == VAR_NUMBER)
 	buf = buflist_findnr((int)avar->vval.v_number);
-    else if (avar->vval.v_string != NULL)
+    else if (avar->v_type == VAR_STRING && avar->vval.v_string != NULL)
     {
 	buf = buflist_findname_exp(avar->vval.v_string);
 	if (buf == NULL)
@@ -6623,6 +6643,8 @@ get_buf_tv(tv)
 
     if (tv->v_type == VAR_NUMBER)
 	return buflist_findnr((int)tv->vval.v_number);
+    if (tv->v_type != VAR_STRING)
+	return NULL;
     if (name == NULL || *name == NUL)
 	return curbuf;
     if (name[0] == '$' && name[1] == NUL)
@@ -7289,9 +7311,8 @@ f_escape(argvars, rettv)
 {
     char_u	buf[NUMBUFLEN];
 
-    rettv->vval.v_string =
-	vim_strsave_escaped(get_tv_string(&argvars[0]),
-		get_tv_string_buf(&argvars[1], buf));
+    rettv->vval.v_string = vim_strsave_escaped(get_tv_string(&argvars[0]),
+					 get_tv_string_buf(&argvars[1], buf));
     rettv->v_type = VAR_STRING;
 }
 
@@ -7467,7 +7488,6 @@ f_extend(argvars, rettv)
 	list_T		*l1, *l2;
 	listitem_T	*item;
 	long		before;
-	long		n;
 
 	l1 = argvars[0].vval.v_list;
 	l2 = argvars[1].vval.v_list;
@@ -7476,12 +7496,17 @@ f_extend(argvars, rettv)
 	{
 	    if (argvars[2].v_type != VAR_UNKNOWN)
 	    {
-		n = before = get_tv_number(&argvars[2]);
-		item = list_find_ext(l1, &n);
-		if (n != 0)
+		before = get_tv_number(&argvars[2]);
+		if (before == l1->lv_len)
+		    item = NULL;
+		else
 		{
-		    EMSGN(_(e_listidx), before);
-		    return;
+		    item = list_find(l1, before);
+		    if (item == NULL)
+		    {
+			EMSGN(_(e_listidx), before);
+			return;
+		    }
 		}
 	    }
 	    else
@@ -9487,7 +9512,6 @@ f_index(argvars, rettv)
     list_T	*l;
     listitem_T	*item;
     long	idx = 0;
-    long	min_idx = 0;
     int		ic = FALSE;
 
     rettv->vval.v_number = -1;
@@ -9499,15 +9523,19 @@ f_index(argvars, rettv)
     l = argvars[0].vval.v_list;
     if (l != NULL)
     {
+	item = l->lv_first;
 	if (argvars[2].v_type != VAR_UNKNOWN)
 	{
-	    min_idx = get_tv_number(&argvars[2]);
+	    /* Start at specified item.  Use the cached index that list_find()
+	     * sets, so that a negative number also works. */
+	    item = list_find(l, get_tv_number(&argvars[2]));
+	    idx = l->lv_idx;
 	    if (argvars[3].v_type != VAR_UNKNOWN)
 		ic = get_tv_number(&argvars[3]);
 	}
 
-	for (item = l->lv_first; item != NULL; item = item->li_next, ++idx)
-	    if (idx >= min_idx && tv_equal(&item->li_tv, &argvars[1], ic))
+	for ( ; item != NULL; item = item->li_next, ++idx)
+	    if (tv_equal(&item->li_tv, &argvars[1], ic))
 	    {
 		rettv->vval.v_number = idx;
 		break;
@@ -9690,7 +9718,6 @@ f_insert(argvars, rettv)
     typval_T	*rettv;
 {
     long	before = 0;
-    long	n;
     listitem_T	*item;
     list_T	*l;
 
@@ -9703,11 +9730,18 @@ f_insert(argvars, rettv)
 	if (argvars[2].v_type != VAR_UNKNOWN)
 	    before = get_tv_number(&argvars[2]);
 
-	n = before;
-	item = list_find_ext(l, &n);
-	if (n > 0)
-	    EMSGN(_(e_listidx), before);
+	if (before == l->lv_len)
+	    item = NULL;
 	else
+	{
+	    item = list_find(l, before);
+	    if (item == NULL)
+	    {
+		EMSGN(_(e_listidx), before);
+		l = NULL;
+	    }
+	}
+	if (l != NULL)
 	{
 	    list_insert_tv(l, &argvars[1], item);
 	    ++l->lv_refcount;
@@ -10021,9 +10055,8 @@ libcall_common(argvars, rettv, type)
     /* The first two args must be strings, otherwise its meaningless */
     if (argvars[0].v_type == VAR_STRING && argvars[1].v_type == VAR_STRING)
     {
-	if (argvars[2].v_type == VAR_NUMBER)
-	    string_in = NULL;
-	else
+	string_in = NULL;
+	if (argvars[2].v_type == VAR_STRING)
 	    string_in = argvars[2].vval.v_string;
 	if (type == VAR_NUMBER)
 	    string_result = NULL;
@@ -10275,16 +10308,7 @@ find_some_match(argvars, rettv, type)
 	    li = list_find(l, start);
 	    if (li == NULL)
 		goto theend;
-	    if (start < 0)
-	    {
-		listitem_T *ni;
-
-		/* Need to compute the index. */
-		for (ni = li; ni->li_prev != NULL; ni = ni->li_prev)
-		    ++idx;
-	    }
-	    else
-		idx = start;
+	    idx = l->lv_idx;	/* use the cached index */
 	}
 	else
 	{
@@ -10468,7 +10492,7 @@ max_min(argvars, rettv, domax)
 	}
     }
     else
-	EMSG(_(e_listreq));
+	EMSG(_(e_listdictarg));
     rettv->vval.v_number = n;
 }
 
@@ -10904,7 +10928,7 @@ f_remove(argvars, rettv)
 	if (argvars[2].v_type != VAR_UNKNOWN)
 	    EMSG2(_(e_toomanyarg), "remove()");
 	else if ((d = argvars[0].vval.v_dict) != NULL
-	    && !tv_check_lock(d->dv_lock, (char_u *)"remove()"))
+		&& !tv_check_lock(d->dv_lock, (char_u *)"remove()"))
 	{
 	    key = get_tv_string(&argvars[1]);
 	    di = dict_find(d, key, -1);
@@ -10945,8 +10969,14 @@ f_remove(argvars, rettv)
 		    EMSGN(_(e_listidx), end);
 		else
 		{
-		    for (li = item; li != item2 && li != NULL; li = li->li_next)
-			;
+		    int	    cnt = 0;
+
+		    for (li = item; li != NULL; li = li->li_next)
+		    {
+			++cnt;
+			if (li == item2)
+			    break;
+		    }
 		    if (li == NULL)  /* didn't find "item2" after "item" */
 			EMSG(_(e_invrange));
 		    else
@@ -10962,6 +10992,7 @@ f_remove(argvars, rettv)
 			    l->lv_refcount = 1;
 			    item->li_prev = NULL;
 			    item2->li_next = NULL;
+			    l->lv_len = cnt;
 			}
 		    }
 		}
@@ -11260,6 +11291,7 @@ f_reverse(argvars, rettv)
     {
 	li = l->lv_last;
 	l->lv_first = l->lv_last = li;
+	l->lv_len = 0;
 	while (li != NULL)
 	{
 	    ni = li->li_prev;
@@ -11945,6 +11977,7 @@ f_sort(argvars, rettv)
 
 	    /* Clear the List and append the items in the sorted order. */
 	    l->lv_first = l->lv_last = NULL;
+	    l->lv_len = 0;
 	    for (i = 0; i < len; ++i)
 		list_append(l, ptrs[i]);
 	}
@@ -12773,6 +12806,7 @@ f_type(argvars, rettv)
 	case VAR_STRING: n = 1; break;
 	case VAR_FUNC:   n = 2; break;
 	case VAR_LIST:   n = 3; break;
+	case VAR_DICT:   n = 4; break;
 	default: EMSG2(_(e_intern2), "f_type()"); n = 0; break;
     }
     rettv->vval.v_number = n;
@@ -13520,7 +13554,11 @@ free_tv(varp)
 	    case VAR_DICT:
 		dict_unref(varp->vval.v_dict);
 		break;
+	    case VAR_NUMBER:
+	    case VAR_UNKNOWN:
+		break;
 	    default:
+		EMSG2(_(e_intern2), "free_tv()");
 		break;
 	}
 	vim_free(varp);
@@ -13600,7 +13638,7 @@ get_tv_number(varp)
 							TRUE, TRUE, &n, NULL);
 	    break;
 	case VAR_LIST:
-	    EMSG(_("E703: Using a List as a number"));
+	    EMSG(_("E745: Using a List as a number"));
 	    break;
 	case VAR_DICT:
 	    EMSG(_("E728: Using a Dictionary as a number"));
@@ -14020,7 +14058,8 @@ set_var(name, tv, copy)
 	}
 
 	/*
-	 * Handle setting internal v: variables separately: we keep the type.
+	 * Handle setting internal v: variables separately: we don't change
+	 * the type.
 	 */
 	if (ht == &vimvarht)
 	{
@@ -14832,6 +14871,15 @@ ex_function(eap)
 	    EMSG(_(e_funcdict));
 	    goto erret;
 	}
+	if (fudi.fd_di == NULL)
+	{
+	    /* Can't add a function to a locked dictionary */
+	    if (tv_check_lock(fudi.fd_dict->dv_lock, eap->arg))
+		goto erret;
+	}
+	    /* Can't change an existing function if it is locked */
+	else if (tv_check_lock(fudi.fd_di->di_tv.v_lock, eap->arg))
+	    goto erret;
 
 	/* Give the function a sequential number.  Can only be used with a
 	 * Funcref! */
@@ -15510,6 +15558,8 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
 	    if (p_verbose >= 14)
 	    {
 		char_u	buf[MSG_BUF_LEN];
+		char_u	numbuf[NUMBUFLEN];
+		char_u	*tofree;
 
 		msg_puts((char_u *)"(");
 		for (i = 0; i < argcount; ++i)
@@ -15520,11 +15570,10 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
 			msg_outnum((long)argvars[i].vval.v_number);
 		    else
 		    {
-			trunc_string(get_tv_string(&argvars[i]),
+			trunc_string(tv2string(&argvars[i], &tofree, numbuf),
 							    buf, MSG_BUF_LEN);
-			msg_puts((char_u *)"\"");
 			msg_puts(buf);
-			msg_puts((char_u *)"\"");
+			vim_free(tofree);
 		    }
 		}
 		msg_puts((char_u *)")");
@@ -15556,7 +15605,7 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
     /* when being verbose, mention the return value */
     if (p_verbose >= 12)
     {
-	char_u	*sn, *val;
+	char_u	*sn;
 
 	++no_wait_return;
 	msg_scroll = TRUE;	    /* always scroll up, don't overwrite */
@@ -15571,12 +15620,16 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
 	else if (fc.rettv->v_type == VAR_NUMBER)
 	    smsg((char_u *)_("%s returning #%ld"), sn,
 					      (long)fc.rettv->vval.v_number);
-	else if (fc.rettv->v_type == VAR_STRING)
+	else
 	{
-	    val = get_tv_string(fc.rettv);
-	    if (STRLEN(val) > IOSIZE / 2 - 50)
-		val = val + STRLEN(val) - (IOSIZE / 2 - 50);
-	    smsg((char_u *)_("%s returning \"%s\""), sn, val);
+	    char_u	buf[MSG_BUF_LEN];
+	    char_u	numbuf[NUMBUFLEN];
+	    char_u	*tofree;
+
+	    trunc_string(tv2string(fc.rettv, &tofree, numbuf),
+							    buf, MSG_BUF_LEN);
+	    smsg((char_u *)_("%s returning %s"), sn, buf);
+	    vim_free(tofree);
 	}
 	msg_puts((char_u *)"\n");   /* don't overwrite this either */
 	cmdline_row = msg_row;

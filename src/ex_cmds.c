@@ -1286,6 +1286,8 @@ viminfo_error(errnum, message, line)
 {
     sprintf((char *)IObuff, _("%sviminfo: %s in line: "), errnum, message);
     STRNCAT(IObuff, line, IOSIZE - STRLEN(IObuff));
+    if (IObuff[STRLEN(IObuff) - 1] == '\n')
+	IObuff[STRLEN(IObuff) - 1] = NUL;
     emsg(IObuff);
     if (++viminfo_errcnt >= 10)
     {
