@@ -2,8 +2,8 @@
 " Language:	PHP
 " Author:	Miles Lott <milos@groupwhere.org>
 " URL:		http://milosch.dyndns.org/php.vim
-" Last Change:	2004 May 18
-" Version:	0.4
+" Last Change:	2005 Mar 21
+" Version:	0.6
 " Notes:  Close all switches with default:\nbreak; and it will look better.
 "         Also, open and close brackets should be alone on a line.
 "         This is my preference, and the only way this will look nice.
@@ -11,7 +11,9 @@
 "         switch/case.  It is nearly perfect for anyone regardless of your
 "         stance on brackets.
 "
-" Changes: Fixes for closing php tag, switch statement closure, and php_indent_shortopentags
+" Changes: 0.6 - fix indention for closing bracket (patch from pierre.habouzit@m4x.org)
+"          0.5 - fix duplicate indent on open tag, and empty bracketed statements.
+"          0.4 - Fixes for closing php tag, switch statement closure, and php_indent_shortopentags
 "          option from Steffen Bruentjen <vim@kontraphon.de>
 "
 " Options: php_noindent_switch=1 -- do not try to indent switch/case statements (version 0.1 behavior)
@@ -49,16 +51,16 @@ function GetPhpIndent()
 	let pline = getline(lnum - 1) " previous to last line
 	let ind = indent(lnum)
 
-	" Indent after php open tags
+	" Indent after php open tag
 	if line =~ '<?php'
 		let ind = ind + &sw
-		" indent after short open tags
-	endif
-	if exists('g:php_indent_shortopentags')
+	elseif exists('g:php_indent_shortopentags')
+		" indent after short open tag
 		if line =~ '<?'
 			let ind = ind + &sw
 		endif
 	endif
+	" indent after php closing tag
 	if cline =~ '\M?>'
 		let ind = ind - &sw
 	endif
@@ -72,7 +74,15 @@ function GetPhpIndent()
 			let ind = ind - &sw
 		endif
 		return ind
-	else " Try to indent switch/case statements as well
+	else
+		" Search the matching bracket (with searchpair()) and set the indent of
+		" to the indent of the matching line.
+		if cline =~ '^\s*}'
+			call cursor(line('.'), 1)
+			let ind = indent(searchpair('{', '', '}','bW', 'synIDattr(synID(line("."), col("."), 0), "name") =~? "string"'))
+			return ind
+		endif
+		" Try to indent switch/case statements as well
 		" Indent blocks enclosed by {} or () or case statements, with some anal requirements
 		if line =~ 'case.*:\|[{(]\s*\(#[^)}]*\)\=$'
 			let ind = ind + &sw
@@ -92,7 +102,7 @@ function GetPhpIndent()
 		" Search the matching bracket (with searchpair()) and set the indent of cline
 		" to the indent of the matching line.
 		if cline =~ '^\s*}'
-			call cursor(line('.'), 1)
+			call cursor(line('. '), 1)
 			let ind = indent(searchpair('{', '', '}', 'bW', 'synIDattr(synID(line("."), col("."), 0), "name") =~? "string"'))
 			return ind
 		endif

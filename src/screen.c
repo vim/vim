@@ -3600,7 +3600,7 @@ win_line(wp, lnum, startrow, endrow)
 									    1);
 
 			spell_attr = 0;
-			iswordc = vim_iswordc_buf(prev_ptr, wp->w_buffer);
+			iswordc = spell_iswordc(prev_ptr);
 			if (iswordc && !prev_iswordc)
 			{
 			    word_end = v + spell_check(wp, prev_ptr,

@@ -2202,9 +2202,20 @@ syn_current_attr(syncing, displaying, can_spell)
 	     * done in the current item.
 	     */
 
-	    /* Always do spelling if there is no @Spell cluster. */
+	    /* If there is no @Spell cluster: Do spelling for items without
+	     * @NoSpell.  Otherwise only in items with @Spell */
 	    if (syn_buf->b_spell_cluster_id == 0)
-		*can_spell = TRUE;
+	    {
+		if (syn_buf->b_nospell_cluster_id == 0 || current_trans_id == 0)
+		    *can_spell = TRUE;
+		else
+		{
+		    sps.inc_tag = 0;
+		    sps.id = syn_buf->b_nospell_cluster_id;
+		    sps.cont_in_list = NULL;
+		    *can_spell = !in_id_list(sip, sip->si_cont_list, &sps, 0);
+		}
+	    }
 	    else if (current_trans_id == 0)
 		*can_spell = FALSE;
 	    else
@@ -5094,6 +5105,8 @@ syn_add_cluster(name)
 
     if (STRICMP(name, "Spell") == 0)
 	curbuf->b_spell_cluster_id = len + SYNID_CLUSTER;
+    if (STRICMP(name, "NoSpell") == 0)
+	curbuf->b_nospell_cluster_id = len + SYNID_CLUSTER;
 
     return len + SYNID_CLUSTER;
 }

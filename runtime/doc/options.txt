@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Mar 19
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Mar 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5644,6 +5644,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 		set spelllang=en_us,nl
 <	This means both US English and Dutch words are recognized.  Words that
 	are not recognized will be highlighted.
+	When 'encoding' is set the word lists are loaded again.  Thus it's a
+	good idea to set 'spelllang' after setting 'encoding'.
 	More info at |spell|.
 
 			*'splitbelow'* *'sb'* *'nosplitbelow'* *'nosb'*

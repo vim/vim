@@ -3096,7 +3096,7 @@ iconv_string(vcp, str, slen, unconvlenp)
 	    else
 	    {
 		l = (*mb_ptr2len_check)((char_u *)from);
-		if (l > fromlen)
+		if (l > (int)fromlen)
 		    l = fromlen;
 	    }
 	    from += l;

@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Mar 20
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Mar 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,6 +29,16 @@ The words that are not recognized are highlighted with one of these:
 	SpellLocal	wrong spelling for selected region
 
 
+PERFORMANCE
+
+Note that Vim does on-the-fly spellchecking.  To make this work fast the
+word list is loaded in memory.  Thus this uses a lot of memory (2 Mbyte or
+more).  There might also be a noticable delay when the word list is loaded,
+which happens when 'spelllang' is set.  Each word list is only loaded once,
+they are not deleted when 'spelllang' is made empty.  When 'encoding' is set
+the word lists are reloaded, thus you may notice a delay then too.
+
+
 REGIONS
 
 A word may be spelled differently in various regions.  For example, English
@@ -55,6 +65,8 @@ Vim searches for spell files in the "spell" subdirectory of the directories in
 Exception: Vim uses "latin1" when 'encoding' is "iso-8859-15".  The euro sign
 doesn't matter for spelling.
 
+Spelling for EBCDIC is currently not supported.
+
 A spell file might not be available in the current 'encoding'.  You may try
 using the "iconv" program to create one: >
 
@@ -68,6 +80,28 @@ is useful for English: "en.spl"  The file with encoding is checked first, thus
 you could have one with encoding that includes words with non-ASCII characters
 and use the ASCII file as a fall-back.
 
+
+WORDS
+
+Vim uses a fixed method to recognize a word.  This is independent of
+'iskeyword', so that it also works in help files and for languages that
+include characters like '-' in 'iskeyword'.  The word characters do depend on
+'encoding'.
+
+A word that starts with a digit is always ignored.
+
+
+SYNTAX HIGHLIGHTING
+
+Files that use syntax highlighting can specify where spell checking should be
+done:
+
+   everywhere			   default
+   in specific items		   use "contains=@Spell"
+   everywhere but specific items   use "contains=@NoSpell"
+
+Note that mixing @Spell and @NoSpell doesn't make sense.
+
 ==============================================================================
 X. Spell file format					*spell-file-format*
 							*E751*
@@ -75,19 +109,22 @@ X. Spell file format					*spell-file-format*
 The spelling for a language is specified in file with a specific format.
 The first character of a line specifies what follows in the line:
 
-	char	argument	meaning ~
-	-	xx		words for xx region follow (repeats)
-	<space>	<word>		normal word
-	>	<word>		rare word
-	=	<word>		word with non-keyword characters
-	+	<word>		optional word addition
-	#	<anything>	comment
+	line		meaning ~
+	-xx[-yy]...	words for region xx (and region yy, etc.) follow
+	<word>		normal word
+	><word>		rare word
+	+<word>		optional addition after a word
+	!<word>		normal word, keep upper/lower case
+	!><word>	rare word, keep upper/lower case
+	!+<word>	optional word addition, keep upper/lower case
+	#<anything>	comment
 
 Empty lines are ignored.  The word continues until the end of the line.  Watch
 out for trailing white space!
 
-Words that start with an upper-case letter will be required to be written that
-way.  Otherwise, words must be in lower-case.
+Words that start with an upper-case letter will be required to start with an
+upper-case letter.  Otherwise, words must be in lower-case and case is
+ignored.
 
 It is possible that a word appears both with an upper-case letter and as a
 rare word.  This means that the word with an upper-case letter is OK and the
@@ -98,7 +135,7 @@ starts the word for "en_us".  This can be repeated for words that are used in
 more than one region.  For example "-ca-us" is used for Canadian and US
 English words.  Use "---" to go back to the words for all regions.
 
-Vim supports up to six regions.					*E752*
+Vim supports up to eight regions.				*E752*
 
 It is possible to have a match that starts with a valid word.  In that case
 the match is used, because it is longer.  Example:

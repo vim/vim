@@ -83,6 +83,7 @@ EXE_dependencies = \
 	regexp.obj \
 	screen.obj \
 	search.obj \
+	spell.obj \
 	syntax.obj \
 	tag.obj \
 	term.obj \

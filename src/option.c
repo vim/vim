@@ -2029,7 +2029,7 @@ static struct vimoption
 			    (char_u *)NULL, PV_NONE,
 #endif
 			    {(char_u *)FALSE, (char_u *)0L}},
-    {"spelllang",   "spl",  P_STRING|P_ALLOCED|P_VI_DEF|P_COMMA,
+    {"spelllang",   "spl",  P_STRING|P_ALLOCED|P_VI_DEF|P_COMMA|P_RBUF,
 #ifdef FEAT_SYN_HL
 			    (char_u *)&p_spl, PV_SPL,
 			    {(char_u *)"", (char_u *)0L}
@@ -2824,6 +2824,11 @@ set_init_1()
 
     /* Must be before option_expand(), because that one needs vim_isIDc() */
     didset_options();
+
+#ifdef FEAT_SYN_HL
+    /* Use the current chartab for the generic chartab. */
+    init_spell_chartab();
+#endif
 
 #ifdef FEAT_LINEBREAK
     /*
@@ -5558,7 +5563,8 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 	    errmsg = e_invarg;
 	else
 	    check_mouse_termcode();
-	setmouse();	/* may switch it on again */
+	if (termcap_active)
+	    setmouse();		/* may switch it on again */
     }
 #endif
 
@@ -5656,7 +5662,7 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 #endif
 
 #ifdef FEAT_SYN_HL
-    /* When 'spellang' is set, load the wordlists. */
+    /* When 'spelllang' is set, load the wordlists. */
     else if (varp == &(curbuf->b_p_spl))
     {
 	errmsg = did_set_spelllang(curbuf);

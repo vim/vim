@@ -130,12 +130,13 @@ buf_init_chartab(buf, global)
      */
     vim_memset(buf->b_chartab, 0, (size_t)32);
 #ifdef FEAT_MBYTE
-    for (c = 0; c < 256; ++c)
-    {
-	/* double-byte characters are probably word characters */
-	if (enc_dbcs != 0 && MB_BYTE2LEN(c) == 2)
-	    SET_CHARTAB(buf, c);
-    }
+    if (enc_dbcs != 0)
+	for (c = 0; c < 256; ++c)
+	{
+	    /* double-byte characters are probably word characters */
+	    if (MB_BYTE2LEN(c) == 2)
+		SET_CHARTAB(buf, c);
+	}
 #endif
 
 #ifdef FEAT_LISP
@@ -912,6 +913,96 @@ vim_iswordc_buf(p, buf)
 	return mb_get_class(p) >= 2;
 # endif
     return (GET_CHARTAB(buf, *p) != 0);
+}
+
+static char spell_chartab[256];
+
+/*
+ * Init the chartab used for spelling.  Only depends on 'encoding'.
+ * Called once while starting up and when 'encoding' was changed.
+ * Unfortunately, we can't use isalpha() here, since the current locale may
+ * differ from 'encoding'.
+ */
+    void
+init_spell_chartab()
+{
+    int	    i;
+
+    /* ASCII is always the same, no matter what 'encoding' is used.
+     * EBCDIC is not supported! */
+    for (i = 0; i < '0'; ++i)
+	spell_chartab[i] = FALSE;
+    /* We include numbers.  A word shouldn't start with a number, but handling
+     * that is done separately. */
+    for ( ; i <= '9'; ++i)
+	spell_chartab[i] = TRUE;
+    for ( ; i < 'A'; ++i)
+	spell_chartab[i] = FALSE;
+    for ( ; i <= 'Z'; ++i)
+	spell_chartab[i] = TRUE;
+    for ( ; i < 'a'; ++i)
+	spell_chartab[i] = FALSE;
+    for ( ; i <= 'z'; ++i)
+	spell_chartab[i] = TRUE;
+#ifdef FEAT_MBYTE
+    if (enc_dbcs)
+    {
+	/* DBCS: assume double-wide characters are word characters. */
+	for ( ; i <= 255; ++i)
+	    if (MB_BYTE2LEN(i) == 2)
+		spell_chartab[i] = TRUE;
+	    else
+		spell_chartab[i] = FALSE;
+    }
+    else if (STRCMP(p_enc, "cp850") == 0)
+#endif
+#if defined(MSDOS) || defined(FEAT_MBYTE)
+    {
+	/* cp850, MS-DOS */
+	for ( ; i < 128; ++i)
+	    spell_chartab[i] = FALSE;
+	for ( ; i <= 0x9a; ++i)
+	    spell_chartab[i] = TRUE;
+	for ( ; i < 0xa0; ++i)
+	    spell_chartab[i] = FALSE;
+	for ( ; i <= 0xa5; ++i)
+	    spell_chartab[i] = TRUE;
+	for ( ; i <= 255; ++i)
+	    spell_chartab[i] = FALSE;
+    }
+#endif
+#ifdef FEAT_MBYTE
+    else
+#endif
+#if defined(FEAT_MBYTE) || !defined(MSDOS)
+    {
+	/* Rough guess: anything we don't recognize assumes word characters
+	 * like latin1. */
+	for ( ; i < 0xc0; ++i)
+	    spell_chartab[i] = FALSE;
+	for ( ; i <= 255; ++i)
+	    spell_chartab[i] = TRUE;
+# ifdef FEAT_MBYTE
+	if (STRCMP(p_enc, "latin1") == 0)
+# endif
+	    spell_chartab[0xf7] = FALSE;	    /* divide-by */
+    }
+#endif
+}
+
+/*
+ * Return TRUE if "p" points to a word character.
+ * This only depends on 'encoding', not on 'iskeyword'.
+ */
+    int
+spell_iswordc(p)
+    char_u *p;
+{
+# ifdef FEAT_MBYTE
+    if (has_mbyte && MB_BYTE2LEN(*p) > 1)
+	return mb_get_class(p) >= 2;
+# endif
+    return spell_chartab[*p];
 }
 #endif
 

@@ -1424,6 +1424,7 @@ struct file_buffer
     garray_T	b_syn_patterns;		/* table for syntax patterns */
     garray_T	b_syn_clusters;		/* table for syntax clusters */
     int		b_spell_cluster_id;	/* @Spell cluster ID or 0 */
+    int		b_nospell_cluster_id;	/* @NoSpell cluster ID or 0 */
     int		b_syn_containedin;	/* TRUE when there is an item with a
 					   "containedin" argument */
     int		b_syn_sync_flags;	/* flags about how to sync */

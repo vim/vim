@@ -110,6 +110,7 @@ ObjFiles = \
    $(INTDIR)\regexp.obj\
    $(INTDIR)\screen.obj\
    $(INTDIR)\search.obj\
+   $(INTDIR)\spell.obj\
    $(INTDIR)\syntax.obj\
    $(INTDIR)\tag.obj\
    $(INTDIR)\term.obj\

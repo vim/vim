@@ -3146,7 +3146,7 @@ update_mouseshape(shape_idx)
     int new_mouse_shape;
 
     /* Only works in GUI mode. */
-    if (!gui.in_use)
+    if (!gui.in_use || gui.starting)
 	return;
 
     /* Postpone the updating when more is to come.  Speeds up executing of

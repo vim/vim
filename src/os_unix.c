@@ -4273,7 +4273,7 @@ WaitForChar(msec)
     /* May need to query the mouse position. */
     if (WantQueryMouse)
     {
-	WantQueryMouse = 0;
+	WantQueryMouse = FALSE;
 	mch_write((char_u *)IF_EB("\033[1'|", ESC_STR "[1'|"), 5);
     }
 #endif

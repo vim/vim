@@ -21,9 +21,9 @@
 crea un'immagine esadecimale di un dato file o dello "standard input".
 Può anche ottenere da un'immagine esadecimale il file binario originale.
 Come
-.BR uuencode(1)
+.BR uuencode (1)
 e
-.BR uudecode(1)
+.BR uudecode (1)
 permette di trasmettere dati binari in una rapresentazione ASCII "a prova
 di email", ma ha anche il vantaggio di poter decodificare sullo "standard
 output".  Inoltre, può essere usato per effettuare delle modifiche (patch)
@@ -124,21 +124,21 @@ o delle linee vuote possono essere inserite a piacere [e vengono ingorate].
 .TP
 .I \-seek distanza
 Usato con l'opzione
-.I \-r
-: (ricostruzione),
+.IR \-r :
+(ricostruzione),
 .RI < distanza >
 viene aggiunta alla posizione nel file trovata nella immagine
 esadecimale.
 .TP
-.I \-s [\+][\-]seek
+.I \-s [+][\-]seek
 Inizia a
 .RI < seek >
 bytes assoluti (o relativi) di distanza all'interno di input_file.
-\fI\+ \fRindica che il "seek" è relativo alla posizione corrente nel file
+\fI+ \fRindica che il "seek" è relativo alla posizione corrente nel file
 "standard input" (non significativa quando non si legge da "standard input").
 \fI\- \fRindica che il "seek" dovrebbe posizionarsi ad quel numero di
 caratteri dalla fine dell'input (o se in combinazione con
-\fI \+ \fR: prime della posizione corrente nel file "standard input").
+\fI+ \fR: prime della posizione corrente nel file "standard input").
 Se non si specifica una opzione \-s option, xxd inizia alla posizione
 corrente all'interno del file.
 .TP
@@ -183,7 +183,7 @@ e
 .PP
 .I xxd \-s \+seek
 può comportarsi in modo diverso da
-.I xxd \-s seek
+.IR "xxd \-s seek"
 , perché lseek(2) è usata per tornare indietro nel file di input.  Il '+'
 fa differenza se il file di input è lo "standard input", e se la pozione nel
 file di "standard input" non è all'inizio del file quando xxd è eseguito,
@@ -202,7 +202,7 @@ si aggiunge a 1k (1024) dove `dd' si era fermato.
 .br
 \fI% sh \-c 'dd of=normale bs=1k count=1; xxd \-s +128 > esadecimale' < file
 .PP
-Immagine esadecimale dalla posizione 0x100 ( = 1024-768 ) del file in avanti.
+Immagine esadecimale dalla posizione 0x100 ( = 1024\-768 ) del file in avanti.
 .br
 \fI% sh \-c 'dd of=normale bs=1k count=1; xxd \-s +-768 > esadecimale' < file
 .PP

@@ -362,7 +362,7 @@ EXTERN int	mouse_dragging INIT(= 0);	/* extending Visual area with
  * When the DEC mouse has been pressed but not yet released we enable
  * automatic querys for the mouse position.
  */
-EXTERN int	WantQueryMouse INIT(= 0);
+EXTERN int	WantQueryMouse INIT(= FALSE);
 # endif
 
 # ifdef FEAT_GUI
