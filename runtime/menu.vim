@@ -2,7 +2,7 @@
 " You can also use this as a start for your own set of menus.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2004 Sep 16
+" Last Change:	2004 Dec 04
 
 " Note that ":an" (short for ":anoremenu") is often used to make a menu work
 " in all modes and avoid side effects from mappings defined by the user.
@@ -785,9 +785,37 @@ inoremenu <script> 1.40 PopUp.&Paste	<SID>iPaste
 vnoremenu 1.50 PopUp.&Delete		x
 an 1.55 PopUp.-SEP2-			<Nop>
 vnoremenu 1.60 PopUp.Select\ Blockwise	<C-V>
-an 1.70 PopUp.Select\ &Word		vaw
-an 1.80 PopUp.Select\ &Line		V
-an 1.90 PopUp.Select\ &Block		<C-V>
+
+nnoremenu 1.70 PopUp.Select\ &Word	vaw
+onoremenu 1.70 PopUp.Select\ &Word	aw
+vnoremenu 1.70 PopUp.Select\ &Word	<C-C>vaw
+inoremenu 1.70 PopUp.Select\ &Word	<C-O>vaw
+cnoremenu 1.70 PopUp.Select\ &Word	<C-C>vaw
+
+nnoremenu 1.73 PopUp.Select\ &Sentence	vas
+onoremenu 1.73 PopUp.Select\ &Sentence	as
+vnoremenu 1.73 PopUp.Select\ &Sentence	<C-C>vas
+inoremenu 1.73 PopUp.Select\ &Sentence	<C-O>vas
+cnoremenu 1.73 PopUp.Select\ &Sentence	<C-C>vas
+
+nnoremenu 1.77 PopUp.Select\ Pa&ragraph	vap
+onoremenu 1.77 PopUp.Select\ Pa&ragraph	ap
+vnoremenu 1.77 PopUp.Select\ Pa&ragraph	<C-C>vap
+inoremenu 1.77 PopUp.Select\ Pa&ragraph	<C-O>vap
+cnoremenu 1.77 PopUp.Select\ Pa&ragraph	<C-C>vap
+
+nnoremenu 1.80 PopUp.Select\ &Line	V
+onoremenu 1.80 PopUp.Select\ &Line	<C-C>V
+vnoremenu 1.80 PopUp.Select\ &Line	<C-C>V
+inoremenu 1.80 PopUp.Select\ &Line	<C-O>V
+cnoremenu 1.80 PopUp.Select\ &Line	<C-C>V
+
+nnoremenu 1.90 PopUp.Select\ &Block	<C-V>
+onoremenu 1.90 PopUp.Select\ &Block	<C-C><C-V>
+vnoremenu 1.90 PopUp.Select\ &Block	<C-C><C-V>
+inoremenu 1.90 PopUp.Select\ &Block	<C-O><C-V>
+cnoremenu 1.90 PopUp.Select\ &Block	<C-C><C-V>
+
 noremenu  <script> <silent> 1.100 PopUp.Select\ &All	:<C-U>call <SID>SelectAll()<CR>
 inoremenu <script> <silent> 1.100 PopUp.Select\ &All	<C-O>:call <SID>SelectAll()<CR>
 cnoremenu <script> <silent> 1.100 PopUp.Select\ &All	<C-U>call <SID>SelectAll()<CR>

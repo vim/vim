@@ -1514,6 +1514,17 @@ vgetc()
 		continue;
 	    }
 #endif
+#ifdef HAVE_GTK2
+	    /* GTK: <F10> normally selects the menu, but it's passed until
+	     * here to allow mapping it.  Intercept and invoke the GTK
+	     * behavior if it's not mapped. */
+	    if (c == K_F10 && gui.menubar != NULL)
+	    {
+		gtk_menu_shell_select_first(GTK_MENU_SHELL(gui.menubar), FALSE);
+		continue;
+	    }
+#endif
+
 #ifdef FEAT_GUI
 	    /* Translate K_CSI to CSI.  The special key is only used to avoid
 	     * it being recognized as the start of a special key. */
@@ -1540,7 +1551,14 @@ vgetc()
 		case K_KDIVIDE:		c = '/'; break;
 		case K_KMULTIPLY:	c = '*'; break;
 		case K_KENTER:		c = CAR; break;
-		case K_KPOINT:		c = '.'; break;
+		case K_KPOINT:
+#ifdef WIN32
+					/* Can be either '.' or a ',', *
+					 * depending on the type of keypad. */
+					c = MapVirtualKey(VK_DECIMAL, 2); break;
+#else
+					c = '.'; break;
+#endif
 		case K_K0:		c = '0'; break;
 		case K_K1:		c = '1'; break;
 		case K_K2:		c = '2'; break;

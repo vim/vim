@@ -1,9 +1,9 @@
 " Lynx syntax file
 " Filename:	lynx.vim
 " Language:	Lynx configuration file ( lynx.cfg )
-" Maintainer:	Doug Kearns <djkea2@mugca.its.monash.edu.au>
-" URL:		http://mugca.its.monash.edu.au/~djkea2/vim/syntax/lynx.vim
-" Last Change:	2003 May 11
+" Maintainer:	Doug Kearns <djkea2@gus.gscit.monash.edu.au>
+" URL:		http://gus.gscit.monash.edu.au/~djkea2/vim/syntax/lynx.vim
+" Last Change:	2004 Nov 27
 
 " TODO: more intelligent and complete argument highlighting
 

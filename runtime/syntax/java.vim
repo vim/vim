@@ -2,7 +2,7 @@
 " Language:     Java
 " Maintainer:   Claudio Fleiner <claudio@fleiner.com>
 " URL:		http://www.fleiner.com/vim/syntax/java.vim
-" Last Change:  2004 Apr 23
+" Last Change:  2004 Nov 12
 
 " Please check :help java.vim for comments on some of the options available.
 
@@ -37,7 +37,7 @@ JavaHiLink javaError2 javaError
 
 " keyword definitions
 syn keyword javaExternal	native package
-syn match javaExternal		"\<import\(\s\+static\>\)\?"
+syn match javaExternal          "\<import\>\(\s\+static\>\)\?"
 syn keyword javaError		goto const
 syn keyword javaConditional	if else switch
 syn keyword javaRepeat		while for do
@@ -228,6 +228,7 @@ if exists("java_highlight_debug")
 
   " to make this work you must define the highlighting for these groups
   syn match javaDebug "\<System\.\(out\|err\)\.print\(ln\)*\s*("me=e-1 contains=javaDebug.* nextgroup=javaDebugParen
+  syn match javaDebug "\<p\s*("me=e-1 contains=javaDebug.* nextgroup=javaDebugParen
   syn match javaDebug "[A-Za-z][a-zA-Z0-9_]*\.printStackTrace\s*("me=e-1 contains=javaDebug.* nextgroup=javaDebugParen
   syn match javaDebug "\<trace[SL]\=\s*("me=e-1 contains=javaDebug.* nextgroup=javaDebugParen
 
@@ -263,6 +264,12 @@ syn region  javaParenT  transparent matchgroup=javaParen  start="("  end=")" con
 syn region  javaParenT1 transparent matchgroup=javaParen1 start="(" end=")" contains=@javaTop,javaParenT2 contained
 syn region  javaParenT2 transparent matchgroup=javaParen2 start="(" end=")" contains=@javaTop,javaParenT  contained
 syn match   javaParenError       ")"
+" catch errors caused by wrong square parenthesis
+syn region  javaParenT  transparent matchgroup=javaParen  start="\["  end="\]" contains=@javaTop,javaParenT1
+syn region  javaParenT1 transparent matchgroup=javaParen1 start="\[" end="\]" contains=@javaTop,javaParenT2 contained
+syn region  javaParenT2 transparent matchgroup=javaParen2 start="\[" end="\]" contains=@javaTop,javaParenT  contained
+syn match   javaParenError       "\]"
+
 JavaHiLink javaParenError       javaError
 
 if !exists("java_minlines")

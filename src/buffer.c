@@ -538,8 +538,7 @@ buf_freeall(buf, del_buf, wipe_buf)
 	    return;
     }
 # ifdef FEAT_EVAL
-    /* autocmds may abort script processing */
-    if (aborting())
+    if (aborting())	    /* autocmds may abort script processing */
 	return;
 # endif
 
@@ -755,7 +754,6 @@ handle_swap_exists(old_curbuf)
 # endif
     }
     swap_exists_action = SEA_NONE;
-
 }
 #endif
 
@@ -1031,8 +1029,12 @@ do_buffer(action, start, dir, count, forceit)
 		     * now. */
 		    return FAIL;
 # endif
+		/* If it's still changed fail silently, the dialog already
+		 * mentioned why it fails. */
+		if (bufIsChanged(buf))
+		    return FAIL;
 	    }
-	    if (bufIsChanged(buf))
+	    else
 #endif
 	    {
 		EMSGN(_("E89: No write since last change for buffer %ld (add ! to override)"),
@@ -1518,8 +1520,7 @@ buflist_new(ffname, sfname, lnum, flags)
 	if (buf == curbuf)
 	    apply_autocmds(EVENT_BUFWIPEOUT, NULL, NULL, FALSE, curbuf);
 # ifdef FEAT_EVAL
-	/* autocmds may abort script processing */
-	if (aborting())
+	if (aborting())		/* autocmds may abort script processing */
 	    return NULL;
 # endif
 #endif
@@ -1572,8 +1573,7 @@ buflist_new(ffname, sfname, lnum, flags)
 	if (buf != curbuf)	 /* autocommands deleted the buffer! */
 	    return NULL;
 #if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
-	/* autocmds may abort script processing */
-	if (aborting())
+	if (aborting())		/* autocmds may abort script processing */
 	    return NULL;
 #endif
 	/* buf->b_nwindows = 0; why was this here? */
@@ -1649,8 +1649,7 @@ buflist_new(ffname, sfname, lnum, flags)
 	if (flags & BLN_LISTED)
 	    apply_autocmds(EVENT_BUFADD, NULL, NULL, FALSE, buf);
 # ifdef FEAT_EVAL
-	/* autocmds may abort script processing */
-	if (aborting())
+	if (aborting())		/* autocmds may abort script processing */
 	    return NULL;
 # endif
     }

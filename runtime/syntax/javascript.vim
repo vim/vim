@@ -2,7 +2,7 @@
 " Language:	JavaScript
 " Maintainer:	Claudio Fleiner <claudio@fleiner.com>
 " URL:		http://www.fleiner.com/vim/syntax/javascript.vim
-" Last Change:	2004 May 16
+" Last Change:	2004 Nov 20
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -35,14 +35,15 @@ syn region  javaScriptStringD	       start=+"+  skip=+\\\\\|\\"+  end=+"+  conta
 syn region  javaScriptStringS	       start=+'+  skip=+\\\\\|\\'+  end=+'+  contains=javaScriptSpecial,@htmlPreproc
 syn match   javaScriptSpecialCharacter "'\\.'"
 syn match   javaScriptNumber	       "-\=\<\d\+L\=\>\|0[xX][0-9a-fA-F]\+\>"
-syn region  javaScriptRegexpString     start=+/+ skip=+\\\\\|\\/+ end=+/[gi]\?\s*$+ end=+/[gi]\?\s*[;,)]+me=e-1 contains=@htmlPreproc oneline
-syn keyword javaScriptConditional      if else
-syn keyword javaScriptRepeat	       while for
-syn keyword javaScriptBranch	       break continue switch case default
-syn keyword javaScriptOperator	       new in
-syn keyword javaScriptType	       this var const
-syn keyword javaScriptStatement        return with
-syn keyword javaScriptBoolean	       true false
+syn region  javaScriptRegexpString     start=+/[^/*]+me=e-1 skip=+\\\\\|\\/+ end=+/[gi]\?\s*$+ end=+/[gi]\?\s*[;.,)]+me=e-1 contains=@htmlPreproc oneline
+syn keyword javaScriptConditional	if else
+syn keyword javaScriptRepeat		while for
+syn keyword javaScriptBranch		break continue switch case default
+syn keyword javaScriptOperator		new in
+syn keyword javaScriptType		this var const
+syn keyword javaScriptStatement		return with
+syn keyword javaScriptBoolean		true false
+syn keyword javaScriptNull		null
 
 if exists("javaScript_fold")
     syn match	javaScriptFunction      "\<function\>"
@@ -62,7 +63,8 @@ syn sync fromstart
 syn sync maxlines=100
 
 " catch errors caused by wrong parenthesis
-syn region  javaScriptParen       transparent start="(" end=")" contains=javaScriptParen,javaScriptComment,javaScriptSpecial,javaScriptStringD,javaScriptStringS,javaScriptSpecialCharacter,javaScriptNumber,javaScriptRegexpString,javaScriptBoolean,javaScriptBraces
+syn region  javaScriptParen       transparent start="(" end=")" contains=javaScriptParen,javaScriptComment,javaScriptSpecial,javaScriptStringD,javaScriptStringS,javaScriptSpecialCharacter,javaScriptNumber,javaScriptRegexpString,javaScriptBoolean,javaScriptBraces,javaScriptFunction,javaScriptFunctionFold,javaScriptConditional,javaScriptRepeat,javaScriptBranch,javaScriptOperator,javaScriptType,javaScriptStatement,javaScriptBoolean,javaScriptConstant
+ syn region  javaScriptParen       transparent start="(" end=")" contains=javaScriptParen,javaScriptComment,javaScriptSpecial,javaScriptStringD,javaScriptStringS,javaScriptSpecialCharacter,javaScriptNumber,javaScriptRegexpString,javaScriptBoolean,javaScriptBraces
 syn match   javaScrParenError  ")"
 
 if main_syntax == "javascript"
@@ -79,27 +81,28 @@ if version >= 508 || !exists("did_javascript_syn_inits")
   else
     command -nargs=+ HiLink hi def link <args>
   endif
-  HiLink javaScriptComment	     Comment
-  HiLink javaScriptLineComment	     Comment
-  HiLink javaScriptCommentTodo	     Todo
-  HiLink javaScriptSpecial	     Special
-  HiLink javaScriptStringS	     String
-  HiLink javaScriptStringD	     String
-  HiLink javaScriptCharacter	     Character
-  HiLink javaScriptSpecialCharacter  javaScriptSpecial
-  HiLink javaScriptNumber	     javaScriptValue
-  HiLink javaScriptConditional	     Conditional
-  HiLink javaScriptRepeat	     Repeat
-  HiLink javaScriptBranch	     Conditional
-  HiLink javaScriptOperator	     Operator
-  HiLink javaScriptType		     Type
-  HiLink javaScriptStatement	     Statement
-  HiLink javaScriptFunction	     Function
-  HiLink javaScriptBraces	     Function
-  HiLink javaScriptError	     Error
-  HiLink javaScrParenError	     javaScriptError
-  HiLink javaScriptBoolean	     Boolean
-  HiLink javaScriptRegexpString      String
+  HiLink javaScriptComment		Comment
+  HiLink javaScriptLineComment		Comment
+  HiLink javaScriptCommentTodo		Todo
+  HiLink javaScriptSpecial		Special
+  HiLink javaScriptStringS		String
+  HiLink javaScriptStringD		String
+  HiLink javaScriptCharacter		Character
+  HiLink javaScriptSpecialCharacter	javaScriptSpecial
+  HiLink javaScriptNumber		javaScriptValue
+  HiLink javaScriptConditional		Conditional
+  HiLink javaScriptRepeat		Repeat
+  HiLink javaScriptBranch		Conditional
+  HiLink javaScriptOperator		Operator
+  HiLink javaScriptType			Type
+  HiLink javaScriptStatement		Statement
+  HiLink javaScriptFunction		Function
+  HiLink javaScriptBraces		Function
+  HiLink javaScriptError		Error
+  HiLink javaScrParenError		javaScriptError
+  HiLink javaScriptNull			Keyword
+  HiLink javaScriptBoolean		Boolean
+  HiLink javaScriptRegexpString		String
   delcommand HiLink
 endif
 

@@ -903,6 +903,13 @@ deathtrap SIGDEFARG(sigarg)
     }
 #endif
 
+#ifdef SIGHASARG
+    /* When SIGHUP is blocked: postpone its effect and return here.  This
+     * avoids that a non-reentrant function is interrupted, e.g., free(). */
+    if (entered == 0 && sigarg == SIGHUP && !handle_sighup(SIGHUP_RCV))
+	SIGRETURN;
+#endif
+
     /* Remember how often we have been called. */
     ++entered;
 
@@ -1171,6 +1178,39 @@ catch_signals(func_deadly, func_other)
 	}
 	else if (func_other != SIG_ERR)
 	    signal(signal_info[i].sig, func_other);
+}
+
+/*
+ * Handling of SIGHUP:
+ * "when" == SIGHUP_RCV:  when busy, postpone, otherwise return TRUE
+ * "when" == SIGHUP_BLOCK: Going to be busy, block SIGHUP
+ * "when" == SIGHUP_UNBLOCK: Going wait, unblock SIGHUP
+ * Returns TRUE when Vim should exit.
+ */
+    int
+handle_sighup(when)
+    int		when;
+{
+    static int got_sighup = FALSE;
+    static int blocked = FALSE;
+
+    switch (when)
+    {
+	case SIGHUP_RCV:     if (!blocked)
+				 return TRUE;	/* exit! */
+			     got_sighup = TRUE;
+			     got_int = TRUE;    /* break any loops */
+			     break;
+
+	case SIGHUP_BLOCK:   blocked = TRUE;
+			     break;
+
+	case SIGHUP_UNBLOCK: blocked = FALSE;
+			     if (got_sighup)
+				 kill(getpid(), SIGHUP);
+			     break;
+    }
+    return FALSE;
 }
 
 /*

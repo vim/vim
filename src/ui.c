@@ -176,7 +176,13 @@ ui_inchar(buf, maxlen, wtime, tb_change_cnt)
 # ifdef FEAT_GUI
     else
 # endif
+    {
+	if (wtime == -1)
+	    handle_sighup(SIGHUP_UNBLOCK);  /* allow SIGHUP to kill us */
 	retval = mch_inchar(buf, maxlen, wtime, tb_change_cnt);
+	if (wtime == -1)
+	    handle_sighup(SIGHUP_BLOCK);    /* block SIGHUP */
+    }
 #endif
 
     ctrl_c_interrupts = TRUE;
@@ -1852,7 +1858,10 @@ ui_cursor_shape()
 # ifdef FEAT_GUI
     if (gui.in_use)
 	gui_update_cursor_later();
+    else
 # endif
+	term_cursor_shape();
+
 # ifdef MCH_CURSOR_SHAPE
     mch_update_cursor();
 # endif

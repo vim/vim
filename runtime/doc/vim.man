@@ -279,8 +279,8 @@ OPTIONS
        -W {scriptout}
                    Like -w, but an existing file is overwritten.
 
-       -x          Use  encryption  when  writing  files.    Will prompt for a
-                   crypt key.
+       -x          Use encryption when writing files.  Will prompt for a crypt
+                   key.
 
        -X          Don't connect to the X server.  Shortens startup time in  a
                    terminal,  but  the  window title and clipboard will not be
@@ -297,12 +297,13 @@ OPTIONS
                    be handled as a file name.  This can  be  used  to  edit  a
                    filename that starts with a '-'.
 
-       --echo-wid  GTK GUI only: Echo the Window ID on stdout
+       --echo-wid  GTK GUI only: Echo the Window ID on stdout.
 
        --help      Give a help message and exit, just like "-h".
 
        --literal   Take  file  name  arguments  literally, do not expand wild-
-                   cards.  Not needed on Unix, the shell expand wildcards.
+                   cards.  This has no effect on Unix where the shell  expands
+                   wildcards.
 
        --noplugin  Skip loading plugins.  Implied by -u NONE.
 
@@ -311,18 +312,18 @@ OPTIONS
                    is given and the files are edited in the current Vim.
 
        --remote-expr {expr}
-                   Connect to a Vim server, evaluate {expr} in  it  and  print
+                   Connect  to  a  Vim server, evaluate {expr} in it and print
                    the result on stdout.
 
        --remote-send {keys}
                    Connect to a Vim server and send {keys} to it.
 
        --remote-silent
-                   As  --remote,  but  without  the  warning when no server is
+                   As --remote, but without the  warning  when  no  server  is
                    found.
 
        --remote-wait
-                   As --remote, but Vim does not exit  until  the  files  have
+                   As  --remote,  but  Vim  does not exit until the files have
                    been edited.
 
        --remote-wait-silent
@@ -333,31 +334,31 @@ OPTIONS
                    List the names of all Vim servers that can be found.
 
        --servername {name}
-                   Use {name} as the server name.  Used for the  current  Vim,
+                   Use  {name}  as the server name.  Used for the current Vim,
                    unless used with a --remote argument, then it's the name of
                    the server to connect to.
 
        --socketid {id}
-                   GTK GUI only: Use the GtkPlug  mechanism  to  run  gvim  in
+                   GTK  GUI  only:  Use  the  GtkPlug mechanism to run gvim in
                    another window.
 
        --version   Print version information and exit.
 
 ON-LINE HELP
-       Type  ":help"  in Vim to get started.  Type ":help subject" to get help
-       on a specific subject.  For example: ":help ZZ" to  get  help  for  the
-       "ZZ"  command.   Use <Tab> and CTRL-D to complete subjects (":help cmd-
-       line-completion").  Tags are present to jump from one place to  another
+       Type ":help" in Vim to get started.  Type ":help subject" to  get  help
+       on  a  specific  subject.   For example: ":help ZZ" to get help for the
+       "ZZ" command.  Use <Tab> and CTRL-D to complete subjects  (":help  cmd-
+       line-completion").   Tags are present to jump from one place to another
        (sort of hypertext links, see ":help").  All documentation files can be
        viewed in this way, for example ":help syntax.txt".
 
 FILES
        /usr/local/lib/vim/doc/*.txt
-                      The Vim documentation files.  Use ":help  doc-file-list"
+                      The  Vim documentation files.  Use ":help doc-file-list"
                       to get the complete list.
 
        /usr/local/lib/vim/doc/tags
-                      The  tags file used for finding information in the docu-
+                      The tags file used for finding information in the  docu-
                       mentation files.
 
        /usr/local/lib/vim/syntax/syntax.vim
@@ -373,7 +374,7 @@ FILES
                       System wide gvim initializations.
 
        /usr/local/lib/vim/optwin.vim
-                      Script used for the ":options" command, a  nice  way  to
+                      Script  used  for  the ":options" command, a nice way to
                       view and set options.
 
        /usr/local/lib/vim/menu.vim
@@ -383,11 +384,11 @@ FILES
                       Script to generate a bug report.  See ":help bugs".
 
        /usr/local/lib/vim/filetype.vim
-                      Script  to  detect  the type of a file by its name.  See
+                      Script to detect the type of a file by  its  name.   See
                       ":help 'filetype'".
 
        /usr/local/lib/vim/scripts.vim
-                      Script to detect the type of a  file  by  its  contents.
+                      Script  to  detect  the  type of a file by its contents.
                       See ":help 'filetype'".
 
        /usr/local/lib/vim/*.ps
@@ -402,17 +403,17 @@ SEE ALSO
 AUTHOR
        Most of Vim was made by Bram Moolenaar, with a lot of help from others.
        See ":help credits" in Vim.
-       Vim is based on Stevie, worked on by: Tim Thompson,  Tony  Andrews  and
-       G.R.  (Fred) Walter.  Although hardly any of the original code remains.
+       Vim  is  based  on Stevie, worked on by: Tim Thompson, Tony Andrews and
+       G.R. (Fred) Walter.  Although hardly any of the original code  remains.
 
 BUGS
        Probably.  See ":help todo" for a list of known problems.
 
-       Note that a number of things that may be regarded as bugs by some,  are
-       in  fact  caused by a too-faithful reproduction of Vi's behaviour.  And
-       if you think other things are bugs "because Vi  does  it  differently",
-       you  should  take  a closer look at the vi_diff.txt file (or type :help
-       vi_diff.txt when in Vim).  Also have a look  at  the  'compatible'  and
+       Note  that a number of things that may be regarded as bugs by some, are
+       in fact caused by a too-faithful reproduction of Vi's  behaviour.   And
+       if  you  think  other things are bugs "because Vi does it differently",
+       you should take a closer look at the vi_diff.txt file  (or  type  :help
+       vi_diff.txt  when  in  Vim).   Also have a look at the 'compatible' and
        'cpoptions' options.
 
 

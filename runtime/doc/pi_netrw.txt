@@ -1,4 +1,4 @@
-*pi_netrw.txt  For Vim version 6.2.  Last change: Sep 13, 2004
+*pi_netrw.txt*  For Vim version 6.3.  Last change: Oct 08, 2004
 
 
 		VIM REFERENCE MANUAL    by Charles E. Campbell, Jr.
@@ -536,11 +536,13 @@ from <netrw.vim> itself:
      <c-l>......Refreshing the Listing..................|netrw-ctrl-l|
      o..........Browsing with a Horizontal Split........|netrw-o|
      p..........Preview Window..........................|netrw-p|
-     q..........Listing Bookmarks.......................|netrw-q|
+     q..........Listing Bookmarks and History...........|netrw-q|
      r..........Reversing Sorting Order.................|netrw-r|
      R..........Renaming Files or Directories...........|netrw-R|
      s..........Selecting Sorting Style.................|netrw-s|
      S..........Editing the Sorting Sequence............|netrw-S|
+     u..........Changing to a Predecessor Directory.....|netrw-u|
+     U..........Changing to a Successor Directory.......|netrw-U|
      v..........Browsing with a Vertical Split..........|netrw-v|
      x..........Customizing Browsing....................|netrw-x|
 
@@ -751,7 +753,7 @@ EDIT FILE OR DIRECTORY HIDING LIST				*netrw-h*
 The "<ctrl-h>" map brings up a requestor allowing the user to change the
 file/directory hiding list.  The hiding list consists of one or more patterns
 delimited by commas.  Files and/or directories satisfying these patterns will
-be hidden (ie. not shown).
+either be hidden (ie. not shown) or be the only ones displayed (see |netrw-a|).
 
 
 BROWSING WITH A HORIZONTALLY SPLIT WINDOW			*netrw-o*
@@ -800,6 +802,22 @@ REVERSING SORTING ORDER						*netrw-r*
 
 One may toggle between normal and reverse sorting order by pressing the
 "r" key.
+
+
+CHANGING TO A PREDECESSOR DIRECTORY				*netrw-u*
+
+Every time you change to a new directory (new for the current session),
+netrw will save the directory in a recently-visited directory history
+list (unless g:netrw_dirhistmax is zero; by default, its ten).  With the
+"u" map, one can change to an earlier directory (predecessor).  To do
+the opposite, see |netrw-U|.
+
+
+CHANGING TO A SUCCESSOR DIRECTORY				*netrw-U*
+
+With the "U" map, one can change to a later directory (successor).
+This map is the opposite of the "u" map. (see |netrw-u|)  Use the
+q map to list both the bookmarks and history. (see |netrw-q|)
 
 
 BROWSING WITH A VERTICALLY SPLIT WINDOW				*netrw-v*
@@ -854,7 +872,8 @@ One may easily "bookmark" a directory by using
 	{cnt}b
 
 Any count may be used.  One may use viminfo's "!" option to retain bookmarks
-between vim sessions.
+between vim sessions.  See |netrw-B| for how to return to a bookmark and
+|netrw-q| for how to list them.
 
 
 CHANGING TO A BOOKMARKED DIRECTORY				*netrw-B*
@@ -863,12 +882,14 @@ To change directory back to a bookmarked directory, use
 
 	{cnt}B
 
-Any count may be used.
+Any count may be used to reference any of the bookmarks.  See |netrw-b|
+for how to bookmark a directory and |netrw-q| for how to list them.
 
 
-LISTING BOOKMARKS						*netrw-q*
+LISTING BOOKMARKS AND HISTORY					*netrw-q*
 
-Pressing "q" will list the bookmarked directories. (query)
+Pressing "q" will list the bookmarked directories and directory traversal
+history (query). (see |netrw-b|, |netrw-B|, |netrw-u|, and |netrw-U|)
 
 
 IMPROVING DIRECTORY BROWSING				*netrw-list-hack*
@@ -991,11 +1012,26 @@ which is loaded automatically at startup (assuming :set nocp).
 	   attempting to read/write your file over the network.  Please
 	   send that information to <netrw.vim>'s maintainer,
 
-		drchipNOSPAM at campbellfamily.biz - NOSPAM
+		NdrOchip at ScampbellPfamily.AbizM - NOSPAM
 
 ==============================================================================
 10. History						*netrw-history*
 
+	v52: * nonumber'ing now set for browsing buffers
+	     * when the hiding list hid all files, error messages ensued. Fixed
+	     * when browsing, swf is set, but directory is not set, when netrw
+	       was attempting to restore options, vim wanted to save a swapfile
+	       to a local directory using an url-style path.  Fixed
+	v51: * cygwin detection now automated (using windows and &shell is bash)
+	     * customizable browser "file" rejection patterns
+	     * directory history
+	     * :[range]w url  now supported (ie. netrw has a FileWriteCmd event)
+	     * error messages have a "Press <cr> to continue" to allow them
+	       to be seen
+	     * directory browser displays no longer bother the swapfile
+	     * u/U commands to go up and down the history stack
+	     * history stack may be saved with viminfo with its "!" option
+	     * bugfixes associated with unwanted [No Files] entries
 	v50: * directories now displayed using buftype=nofile; should keep the
 	       directory names as-is
 	     * attempts to remove empty "[No File]" buffers leftover
@@ -1003,8 +1039,8 @@ which is loaded automatically at startup (assuming :set nocp).
 	     * bugfix: a "caps-lock" editing difficulty left in v49 was fixed
 	     * syntax highlighting for "Showing:" the hiding list included
 	     * bookmarks can now be retained if "!" is in the viminfo option
-	v49: * will use ftp for http://.../ browsing v48: * One may use ftp to
-	       do remote host file browsing
+	v49: * will use ftp for http://.../ browsing v48:
+	     * One may use ftp to do remote host file browsing
 	     * (windows and !cygwin) remote browsing with ftp can now use
 	       the "dir" command internally to provide listings
 	     * g:netrw_keepdir now allows one to keep the initial current
@@ -1032,9 +1068,9 @@ which is loaded automatically at startup (assuming :set nocp).
 	       listings
 	     * improved unusual file and directory name handling preview
 	     * window support
-	v47: * now handles local directory browsing.  v46: * now handles
-	remote directory browsing
-	     * g:netrw_silent (if 1) will cause all transfers to be silent'd
+	v47: * now handles local directory browsing.
+	v46: * now handles remote directory browsing
+	     * g:netrw_silent (if 1) will cause all transfers to be silent
 	v45: * made the [user@]hostname:path form a bit more restrictive to
 	       better handle errors in using protocols (e.g. scp:usr@host:file
 	       was being recognized as an rcp request) v44: * changed from

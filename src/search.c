@@ -4031,7 +4031,7 @@ find_pattern_in_path(ptr, dir, len, whole, skip_comments,
 
 #ifdef RISCOS
     /* UnixLib knows best how to munge c file names - turn munging back on. */
-    __riscosify_control = __RISCOSIFY_LONG_TRUNCATE;
+    int __riscosify_control = 0;
 #endif
 
     if (type != CHECK_PATH && type != FIND_DEFINE

@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.0aa.  Last change: 2004 Oct 12
+*syntax.txt*	For Vim version 7.0aa.  Last change: 2004 Dec 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -639,6 +639,10 @@ c_syntax_for_h		use C syntax for *.h files, instead of C++
 c_no_if0		don't highlight "#if 0" blocks as comments
 c_no_cformat		don't highlight %-formats in strings
 c_no_c99		don't highlight C99 standard items
+
+When 'foldmethod' is set to "syntax" then /* */ comments and { } blocks will
+become a fold.  If you don't want comments to become a fold use: >
+	:let c_no_comment_fold = 1
 
 If you notice highlighting errors while scrolling backwards, which are fixed
 when redrawing with CTRL-L, try setting the "c_minlines" internal variable
@@ -2128,6 +2132,9 @@ By default only R5RS keywords are highlighted and properly indented.
 
 MzScheme-specific stuff will be used if b:is_mzscheme or g:is_mzscheme
 variables are defined.
+ 
+Also scheme.vim supports keywords of the Chicken Scheme->C compiler.  Define
+b:is_chicken or g:is_chicken, if you need them.
 
 
 SDL						*sdl.vim* *sdl-syntax*

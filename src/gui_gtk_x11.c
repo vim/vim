@@ -3080,6 +3080,17 @@ gui_mch_init(void)
     gui.menubar = gtk_menu_bar_new();
     gtk_widget_set_name(gui.menubar, "vim-menubar");
 
+# ifdef HAVE_GTK2
+    /* Avoid that GTK takes <F10> away from us. */
+    {
+	GtkSettings *gtk_settings;
+
+	gtk_settings = gtk_settings_get_for_screen(gdk_screen_get_default());
+	g_object_set(gtk_settings, "gtk-menu-bar-accel", NULL, NULL);
+    }
+# endif
+
+
 # ifdef FEAT_GUI_GNOME
     if (using_gnome)
     {

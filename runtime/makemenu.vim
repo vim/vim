@@ -1,6 +1,6 @@
 " Script to define the syntax menu in synmenu.vim
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2004 Sep 11
+" Last Change:	2004 Nov 20
 
 " This is used by "make menu" in the src directory.
 edit <sfile>:p:h/synmenu.vim
@@ -366,6 +366,7 @@ SynMenu Sh-S.Shell\ script.csh:csh
 SynMenu Sh-S.Shell\ script.tcsh:tcsh
 SynMenu Sh-S.Shell\ script.zsh:zsh
 SynMenu Sh-S.SiCAD:sicad
+SynMenu Sh-S.Sieve:sieve
 SynMenu Sh-S.Simula:simula
 SynMenu Sh-S.Sinda.Sinda\ compare:sindacmp
 SynMenu Sh-S.Sinda.Sinda\ input:sinda
@@ -423,6 +424,7 @@ SynMenu TUV.TeX.Texinfo:texinfo
 SynMenu TUV.TF\ mud\ client:tf
 SynMenu TUV.Tidy\ configuration:tidy
 SynMenu TUV.Tilde:tilde
+SynMenu TUV.TPP:tpp
 SynMenu TUV.Trasys\ input:trasys
 SynMenu TUV.TSS.Command\ Line:tsscl
 SynMenu TUV.TSS.Geometry:tssgm

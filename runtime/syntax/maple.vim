@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	Maple V (based on release 4)
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrOchipS@PcampbellAfamily.Mbiz>
-" Last Change:	Aug 19, 2004
-" Version:	5
+" Last Change:	Oct 12, 2004
+" Version:	6
 " URL:	http://www.erols.com/astronaut/vim/index.html#vimlinks_syntax
 "
 " Package Function Selection: {{{1
@@ -116,11 +116,12 @@ syn keyword mvPackage	VectorCalculus	Worksheet	XMLTools
 syn keyword mvTodo	contained	TODO
 if exists("g:mapleversion") && g:mapleversion < 9
  syn region  mvString	start=+`+ skip=+``+ end=+`+	keepend	contains=mvTodo
+ syn region  mvString	start=+"+ skip=+""+ end=+"+	keepend
  syn region  mvDelayEval	start=+'+ end=+'+	keepend contains=ALLBUT,mvError,mvBraceError,mvCurlyError,mvParenError,mvSemiError
  syn match   mvVarAssign	"[a-zA-Z_][a-zA-Z_0-9]*[ \t]*:=" contains=mvAssign
  syn match   mvAssign	":="	contained
 else
- syn region  mvName	start=+`+ skip=+``+ end=+`+	keepend	contains=mvTodo
+ syn region  mvName		start=+`+ skip=+``+ end=+`+	keepend	contains=mvTodo
  syn region  mvString	start=+"+ skip=+""+ end=+"+	keepend
  syn region  mvDelayEval	start=+'+ end=+'+	keepend contains=ALLBUT,mvError,mvBraceError,mvCurlyError,mvParenError
  syn match   mvDelim		"[;:]"	display

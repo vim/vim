@@ -2382,7 +2382,15 @@ get_tagfname(first, buf)
 	    ga_init2(&tag_fnames, (int)sizeof(char_u *), 10);
 	    do_in_runtimepath((char_u *)
 #ifdef FEAT_MULTI_LANG
+# ifdef VMS
+		    /* Functions decc$to_vms() and decc$translate_vms() crash
+		     * on some VMS systems with wildcards "??".  Seems ECO
+		     * patches do fix the problem in C RTL, but we can't use
+		     * an #ifdef for that. */
+		    "doc/tags doc/tags-*"
+# else
 		    "doc/tags doc/tags-??"
+# endif
 #else
 		    "doc/tags"
 #endif

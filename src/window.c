@@ -1924,7 +1924,11 @@ win_close(win, free_buf)
 	curbuf = curwin->w_buffer;
 	close_curwin = TRUE;
     }
-    if (p_ea)
+    if (p_ea
+#ifdef FEAT_VERTSPLIT
+	    && (*p_ead == 'b' || *p_ead == dir)
+#endif
+	    )
 	win_equal(curwin, TRUE,
 #ifdef FEAT_VERTSPLIT
 		dir

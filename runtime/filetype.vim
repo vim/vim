@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2004 Oct 14
+" Last Change:	2004 Nov 18
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -1280,6 +1280,9 @@ au BufNewFile,BufRead *.sdl,*.pr		setf sdl
 
 " sed
 au BufNewFile,BufRead *.sed			setf sed
+
+" Sieve (RFC 3028)
+au BufNewFile,BufRead *.siv			setf sieve
 
 " Sendmail
 au BufNewFile,BufRead sendmail.cf		setf sm

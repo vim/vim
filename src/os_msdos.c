@@ -505,14 +505,14 @@ mch_restore_cursor_shape(int restore)
     if (restore)
     {
 	if (saved)
-	    regs.h.ah = 0x01;	    /*Set Cursor*/
+	    regs.h.ah = 0x01;	    /* Set Cursor */
 	else
 	    return;
     }
     else
     {
-	regs.h.ah = 0x03;	    /*Get Cursor*/
-	regs.h.bh = 0x00;	    /*Page */
+	regs.h.ah = 0x03;	    /* Get Cursor */
+	regs.h.bh = 0x00;	    /* Page */
 	saved = TRUE;
     }
 
@@ -528,9 +528,9 @@ mch_set_cursor_shape(int thickness)
 {
     union REGS	    regs;
 
-    regs.h.ch = 7 - thickness;	    /*Starting Line*/
-    regs.h.cl = 7;		    /*Ending Line*/
-    regs.h.ah = 0x01;		    /*Set Cursor*/
+    regs.h.ch = 7 - thickness;	    /* Starting Line */
+    regs.h.cl = 7;		    /* Ending Line */
+    regs.h.ah = 0x01;		    /* Set Cursor */
     (void)int86(0x10, &regs, &regs);
 }
 

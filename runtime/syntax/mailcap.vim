@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	Mailcap configuration file
-" Maintainer:	Doug Kearns
-" Last Change:	2002 November 24
-" URL:		http://mugca.its.monash.edu.au/~djkea2/vim/syntax/mailcap.vim
+" Maintainer:	Doug Kearns <djkea2@gus.gscit.monash.edu.au>
+" Last Change:	2004 Nov 27
+" URL:		http://gus.gscit.monash.edu.au/~djkea2/vim/syntax/mailcap.vim
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded

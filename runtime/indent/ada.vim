@@ -1,7 +1,7 @@
 " Vim indent file
 " Language:	Ada
 " Maintainer:	Neil Bird <neil@fnxweb.com>
-" Last Change:	2003 May 20
+" Last Change:	2004 Nov 23
 " Version:	$Id$
 " Look for the latest version at http://vim.sourceforge.net/
 "
@@ -25,11 +25,11 @@ if exists("*GetAdaIndent")
    finish
 endif
 
-let s:AdaBlockStart = '^\s*\(if\>\|while\>\|else\>\|elsif\>\|loop\>\|for\>.*\<loop\>\|declare\>\|begin\>\|type\>.*\<is\s*$\|\(type\>.*\)\=\<record\>\|procedure\>\|function\>\|accept\>\|do\>\|task\>\|package\>\|then\>\|when\>\|is\>\)'
+let s:AdaBlockStart = '^\s*\(if\>\|while\>\|else\>\|elsif\>\|loop\>\|for\>.*\<\(loop\|use\)\>\|declare\>\|begin\>\|type\>.*\<is\>[^;]*$\|\(type\>.*\)\=\<record\>\|procedure\>\|function\>\|accept\>\|do\>\|task\>\|package\>\|then\>\|when\>\|is\>\)'
 let s:AdaComment = "\\v^(\"[^\"]*\"|'.'|[^\"']){-}\\zs\\s*--.*"
 
 
-" Try to find indent of the block we're in (and about to complete)
+" Try to find indent of the block we're in
 " prev_indent = the previous line's indent
 " prev_lnum   = previous line (to start looking on)
 " blockstart  = expr. that indicates a possible start of this block
@@ -44,7 +44,7 @@ function s:MainBlockIndent( prev_indent, prev_lnum, blockstart, stop_at )
    let line = substitute( getline(lnum), s:AdaComment, '', '' )
    while lnum > 1
       if a:stop_at != ''  &&  line =~ '^\s*' . a:stop_at  &&  indent(lnum) < a:prev_indent
-         return -1
+         return a:prev_indent
       elseif line =~ '^\s*' . a:blockstart
          let ind = indent(lnum)
          if ind < a:prev_indent
@@ -111,7 +111,7 @@ function s:EndBlockIndent( prev_indent, prev_lnum, blockstart, blockend )
    return a:prev_indent - &sw
 endfunction
 
-" As per MainBlockIndent, but return indent of previous statement-start
+" Return indent of previous statement-start
 " (after we've indented due to multi-line statements).
 " This time, we start searching on the line *before* the one given (which is
 " the end of a statement - we want the previous beginning).
@@ -169,6 +169,7 @@ function GetAdaIndent()
 
    " Get default indent (from prev. line)
    let ind = indent(lnum)
+   let initind = ind
 
    " Now check what's on the previous line
    if line =~ s:AdaBlockStart  ||  line =~ '(\s*$'
@@ -210,7 +211,7 @@ function GetAdaIndent()
       " Multiple line generic instantiation ('package blah is\nnew thingy')
       let ind = s:StatementIndent( ind - &sw, lnum )
    elseif line =~ ';\s*$'
-      " Statement end - try to find current statement-start indent
+      " Statement end (but not 'end' ) - try to find current statement-start indent
       let ind = s:StatementIndent( ind, lnum )
    endif
 
@@ -224,11 +225,14 @@ function GetAdaIndent()
       " Start of line for ada-pp
       let ind = 0
    elseif continuation && line =~ '^\s*('
-      let ind = ind + &sw
+      " Don't do this if we've already indented due to the previous line
+      if ind == initind
+         let ind = ind + &sw
+      endif
    elseif line =~ '^\s*\(begin\|is\)\>'
       let ind = s:MainBlockIndent( ind, lnum, '\(procedure\|function\|declare\|package\|task\)\>', 'begin\>' )
    elseif line =~ '^\s*record\>'
-      let ind = s:MainBlockIndent( ind, lnum, 'type\>', '' ) + &sw
+      let ind = s:MainBlockIndent( ind, lnum, 'type\>\|for\>.*\<use\>', '' ) + &sw
    elseif line =~ '^\s*\(else\|elsif\)\>'
       let ind = s:MainBlockIndent( ind, lnum, 'if\>', '' )
    elseif line =~ '^\s*when\>'
@@ -251,7 +255,7 @@ function GetAdaIndent()
       let ind = s:EndBlockIndent( ind, lnum, 'case\>.*\<is\>', 'end\>\s*\<case\>' )
    elseif line =~ '^\s*end\>'
       " General case for end
-      let ind = s:MainBlockIndent( ind, lnum, '\(if\|while\|for\|loop\|accept\|begin\|record\|case\|exception\)\>', '' )
+      let ind = s:MainBlockIndent( ind, lnum, '\(if\|while\|for\|loop\|accept\|begin\|record\|case\|exception\|package\)\>', '' )
    elseif line =~ '^\s*exception\>'
       let ind = s:MainBlockIndent( ind, lnum, 'begin\>', '' )
    elseif line =~ '^\s*then\>'

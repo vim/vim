@@ -2,8 +2,8 @@
 " Language:		shell (sh) Korn shell (ksh) bash (sh)
 " Maintainer:		Dr. Charles E. Campbell, Jr.  <NdrOchipS@PcampbellAfamily.Mbiz>
 " Previous Maintainer:	Lennart Schultz <Lennart.Schultz@ecmwf.int>
-" Last Change:		Jul 26, 2004
-" Version:		69
+" Last Change:		Oct 17, 2004
+" Version:		70
 " URL:		http://www.erols.com/astronaut/vim/index.html#vimlinks_syntax
 "
 " Using the following VIM variables: {{{1
@@ -53,6 +53,9 @@ endif
 
 if !exists("g:sh_fold_enabled")
  let g:sh_fold_enabled= 0
+elseif g:sh_fold_enabled != 0 && !has("folding")
+ let g:sh_fold_enabled= 0
+ echomsg "Ignoring g:sh_fold_enabled=".g:sh_fold_enabled."; re-compile vim for +fold support"
 endif
 
 " sh syntax is case sensitive
@@ -344,7 +347,7 @@ syn match bkshFunctionDelim	"[{}]"	contained
 
 " Parameter Dereferencing: {{{1
 " ========================
-syn match  shDerefSimple	"\$\w\+"
+syn match  shDerefSimple	"\$\%(\h\w*\|\d\)"
 syn region shDeref	matchgroup=PreProc start="\${" end="}"	contains=@shDerefList,shDerefVarArray
 syn match  shDerefWordError	"[^}$[]"	contained
 syn match  shDerefSimple	"\$[-#*@!?]"

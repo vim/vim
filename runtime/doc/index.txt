@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 7.0aa.  Last change: 2004 Sep 07
+*index.txt*     For Vim version 7.0aa.  Last change: 2004 Nov 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -328,8 +328,7 @@ tag		char	      note action in Normal mode	~
 				   characters, repeat the entered text N-1
 				   times
 |S|		["x]S		2  delete N lines [into buffer x] and start
-				   insert; synonym for "^cc" or "0cc",
-				   depending on autoindent
+				   insert; synonym for "cc".
 |T|		T{char}		1  cursor till after Nth occurrence of {char}
 				   to the left
 |U|		U		2  undo all latest changes on one line
@@ -425,7 +424,7 @@ tag		char	      note action in Normal mode	~
 |<Insert>|	<Insert>	2  same as "i"
 |<Left>|	<Left>		1  same as "h"
 |<LeftMouse>|	<LeftMouse>	1  move cursor to the mouse click position
-|<MiddleMouse>| <MiddleMouse>	2  same as "P" at the mouse click position
+|<MiddleMouse>| <MiddleMouse>	2  same as "gP" at the mouse click position
 |<PageDown>|	<PageDown>	   same as CTRL-F
 |<PageUp>|	<PageUp>	   same as CTRL-B
 |<Right>|	<Right>		1  same as "l"

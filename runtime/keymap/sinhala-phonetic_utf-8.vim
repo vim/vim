@@ -1,6 +1,6 @@
 " Vim Keymap file for Sinhala (Sri Lanka) (2003-11-02)
 " Maintainer  : Harshula Jayasuriya <hash@jayasolutions.cjb.net>
-" Last Updated: 2004-10-10
+" Last Updated: 2004-11-14
 " This is a static phonetic mapping for a standard US-English keyboard
 " (qwerty)
 " http://www.nongnu.org/sinhala/doc/keymaps/sinhala-keyboard_3.html
@@ -12,6 +12,7 @@
 " Select the new keymap
 "   set keymap=sinhala-phonetic_utf-8
 
+let b:keymap_name = "sinhala"
 
 loadkeymap
 V	<char-0x0d82>	"  ං - anusvaraya (anusvara)
@@ -43,7 +44,7 @@ G	<char-0x0d9d>	" ඝ - mahaapraana gayanna (gha)
 c	<char-0x0da0>	" ච - alpapraana cayanna (ca)
 C	<char-0x0da1>	" ඡ - mahaapraana cayanna (cha)
 j	<char-0x0da2>	" ජ - alpapraana jayanna (ja)
-J	<char-0x0da3>	" ඣ - mahaapraana jhayanna (jha)
+J	<char-0x0da3>	" ඣ - mahaapraana jayanna (jha)
 z	<char-0x0da4>	" ඤ - taaluja naasikyaya (nya)
 Z	<char-0x0da5>	" ඥ - taaluja sanyooga naasikyaya (jnya)
 <A-j>	<char-0x0da6>	" ඦ - sanyaka jayanna (nyja)
@@ -52,13 +53,13 @@ T	<char-0x0da8>	" ඨ - mahaapraana ttayanna (ttha)
 d	<char-0x0da9>	" ඩ - alpapraana ddayanna (dda)
 D	<char-0x0daa>	" ඪ - mahaapraana ddayanna (ddha)
 N	<char-0x0dab>	" ණ - muurdhaja nayanna (nna)
-<A-d>	<char-0x0dac>	" ඬ - sanyaka ddayanna (nndda)
+x	<char-0x0dac>	" ඬ - sanyaka ddayanna (nndda)
 <A-t>	<char-0x0dad>	" ත - alpapraana tayanna (ta)
 <A-T>	<char-0x0dae>	" ථ - mahaapraana tayanna (tha)
-x	<char-0x0daf>	" ද - alpapraana dayanna (da)
-X	<char-0x0db0>	" ධ - mahaapraana dayanna (dha)
+<A-d>	<char-0x0daf>	" ද - alpapraana dayanna (da)
+<A-D>	<char-0x0db0>	" ධ - mahaapraana dayanna (dha)
 n	<char-0x0db1>	" න - dantaja nayanna (na)
-<A-x>	<char-0x0db3>	" ඳ - sanyaka dayanna (nda)
+X	<char-0x0db3>	" ඳ - sanyaka dayanna (nda)
 p	<char-0x0db4>	" ප - alpapraana payanna (pa)
 P	<char-0x0db5>	" ඵ - mahaapraana payanna (pha)
 b	<char-0x0db6>	" බ - alpapraana bayanna (ba)
@@ -102,5 +103,5 @@ Y	<char-0x0dca><char-0x200d><char-0x0dba>	"  ්‍ය - yansaya
 <A-\>	<char-0x0dca><char-0x200d>	" join - conjunct letters cons 0DCA 200D cons
 <A-|>	<char-0x200d>	" touch - ZWJ
 
-"<S-space>	<char-0x00a0>	" - no-break space. <S-space> didn't work.
+<S-space>	<char-0x00a0>	" - no-break space. <S-space> didn't work.
 <C-space>	<char-0x200c>	" - ZWNJ. <A-space> doesn't work!

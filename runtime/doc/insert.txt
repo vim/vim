@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0aa.  Last change: 2004 Jul 04
+*insert.txt*    For Vim version 7.0aa.  Last change: 2004 Nov 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -124,6 +124,9 @@ CTRL-R {0-9a-z"%#*+:.-=}					*i_CTRL-R*
 			'-'	the last small (less than a line) delete
 			'='	the expression register: you are prompted to
 				enter an expression (see |expression|)
+				Note that 0x80 (128 decimal) is used for
+				special keys, use CTRL-R CTRL-R to insert it
+				literally.
 		See |registers| about registers.  {not in Vi}
 
 CTRL-R CTRL-R {0-9a-z"%#*+/:.-=}			*i_CTRL-R_CTRL-R*

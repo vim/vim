@@ -5,7 +5,7 @@
 " $Date$
 " $Revision$
 " URL: http://www.djoce.net/page/vim/
-" Last Change:	2004 Sep 14
+" Last Change:	2004 Sept 14 : removed specific value for tab (sw)
 
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")

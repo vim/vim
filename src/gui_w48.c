@@ -488,27 +488,49 @@ char_to_string(int ch, char_u *string, int slen)
     WCHAR	wstring[2];
     char_u	*ws = NULL;;
 
-    /* "ch" is a UTF-16 character.  Convert it to a string of bytes.  When
-     * "enc_codepage" is non-zero use the standard Win32 function, otherwise
-     * use our own conversion function (e.g., for UTF-8). */
-    wstring[0] = ch;
-    if (enc_codepage > 0)
-	len = WideCharToMultiByte(enc_codepage, 0, wstring, 1, string, slen,
-								     0, NULL);
-    else
+    if (os_version.dwPlatformId != VER_PLATFORM_WIN32_NT)
     {
-	len = 1;
-	ws = ucs2_to_enc(wstring, &len);
-	if (ws == NULL)
-	    len = 0;
+	/* On Windows 95/98 we apparently get the character in the active
+	 * codepage, not in UCS-2.  If conversion is needed convert it to
+	 * UCS-2 first. */
+	if ((int)GetACP() == enc_codepage)
+	    len = 0;	    /* no conversion required */
 	else
 	{
-	    if (len > slen)	/* just in case */
-		len = slen;
-	    mch_memmove(string, ws, len);
-	    vim_free(ws);
+	    string[0] = ch;
+	    len = MultiByteToWideChar(GetACP(), 0, string, 1, wstring, 2);
 	}
     }
+    else
+    {
+	wstring[0] = ch;
+	len = 1;
+    }
+
+    if (len > 0)
+    {
+	/* "ch" is a UTF-16 character.  Convert it to a string of bytes.  When
+	 * "enc_codepage" is non-zero use the standard Win32 function,
+	 * otherwise use our own conversion function (e.g., for UTF-8). */
+	if (enc_codepage > 0)
+	    len = WideCharToMultiByte(enc_codepage, 0, wstring, len,
+						       string, slen, 0, NULL);
+	else
+	{
+	    len = 1;
+	    ws = ucs2_to_enc(wstring, &len);
+	    if (ws == NULL)
+		len = 0;
+	    else
+	    {
+		if (len > slen)	/* just in case */
+		    len = slen;
+		mch_memmove(string, ws, len);
+		vim_free(ws);
+	    }
+	}
+    }
+
     if (len == 0)
 #endif
     {
@@ -682,9 +704,10 @@ _OnMouseButtonDown(
 	 * Holding down the left and right buttons simulates pushing the middle
 	 * button.
 	 */
-	if (repeated_click &&
-		((button == MOUSE_LEFT && s_button_pending == MOUSE_RIGHT) ||
-		 (button == MOUSE_RIGHT && s_button_pending == MOUSE_LEFT)))
+	if (repeated_click
+		&& ((button == MOUSE_LEFT && s_button_pending == MOUSE_RIGHT)
+		    || (button == MOUSE_RIGHT
+					  && s_button_pending == MOUSE_LEFT)))
 	{
 	    /*
 	     * Hmm, gui.c will ignore more than one button down at a time, so
@@ -745,7 +768,7 @@ _OnMouseMoveOrRelease(
     {
 	/* Delayed action for mouse down event */
 	_OnMouseEvent(s_button_pending, s_x_pending,
-			s_y_pending, FALSE, s_kFlags_pending);
+					s_y_pending, FALSE, s_kFlags_pending);
 	s_button_pending = -1;
     }
     if (s_uMsg == WM_MOUSEMOVE)
@@ -1532,6 +1555,9 @@ process_message(void)
     int		i;
     int		modifiers = 0;
     int		key;
+#ifdef FEAT_MENU
+    static char_u k10[] = {K_SPECIAL, 'k', ';', 0};
+#endif
 
     GetMessage(&msg, NULL, 0, 0);
 
@@ -1619,11 +1645,11 @@ process_message(void)
 		    && (vk != VK_SPACE || !(GetKeyState(VK_MENU) & 0x8000)))
 	    {
 #ifdef FEAT_MENU
-		/* Check for <F10>: Windows selects the menu.  Ignore it when
-		 * 'winaltkeys' is "yes" or "menu" */
+		/* Check for <F10>: Windows selects the menu.  When <F10> is
+		 * mapped we want to use the mapping instead. */
 		if (vk == VK_F10
 			&& gui.menu_is_active
-			&& (*p_wak == 'y' || *p_wak == 'm'))
+			&& check_map(k10, State, FALSE) == NULL)
 		    break;
 #endif
 		if (GetKeyState(VK_SHIFT) & 0x8000)
@@ -1734,9 +1760,10 @@ process_message(void)
 #endif
 
 #ifdef FEAT_MENU
-    /* Check for <F10>: Windows selects the menu.  Don't let Windows handle it
-     * when 'winaltkeys' is "no" */
-    if (vk != VK_F10 || *p_wak != 'n')
+    /* Check for <F10>: Default effect is to select the menu.  When <F10> is
+     * mapped we need to stop it here to avoid strange effects (e.g., for the
+     * key-up event) */
+    if (vk != VK_F10 || check_map(k10, State, FALSE) == NULL)
 #endif
 	DispatchMessage(&msg);
 }
@@ -1829,6 +1856,11 @@ gui_mch_wait_for_chars(int wtime)
 		s_wait_timer = 0;
 	    }
 	    allow_scrollbar = FALSE;
+
+	    /* Clear pending mouse button, the release event may have been
+	     * taken by the dialog window. */
+	    s_button_pending = -1;
+
 	    return OK;
 	}
     }

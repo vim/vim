@@ -2886,6 +2886,15 @@ op_yank(oap, deleting, mess)
      */
     curbuf->b_op_start = oap->start;
     curbuf->b_op_end = oap->end;
+    if (yanktype == MLINE
+#ifdef FEAT_VISUAL
+		&& !oap->block_mode
+#endif
+       )
+    {
+	curbuf->b_op_start.col = 0;
+	curbuf->b_op_end.col = MAXCOL;
+    }
 
 #ifdef FEAT_CLIPBOARD
     /*

@@ -1,9 +1,9 @@
 " Vim syntax file
 " Filename:	ratpoison.vim
 " Language:	Ratpoison configuration/commands file ( /etc/ratpoisonrc ~/.ratpoisonrc )
-" Maintainer:	Doug Kearns <djkea2@mugca.its.monash.edu.au>
-" URL:		http://mugca.its.monash.edu.au/~djkea2/vim/syntax/ratpoison.vim
-" Last Change:	2004 Apr 27
+" Maintainer:	Doug Kearns <djkea2@gus.gscit.monash.edu.au>
+" URL:		http://gus.gscit.monash.edu.au/~djkea2/vim/syntax/ratpoison.vim
+" Last Change:	2004 Nov 27
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded

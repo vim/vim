@@ -1,4 +1,4 @@
-*motion.txt*    For Vim version 7.0aa.  Last change: 2004 Sep 07
+*motion.txt*    For Vim version 7.0aa.  Last change: 2004 Nov 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -814,8 +814,8 @@ was made yet in the current file.
 			area in the current buffer.  {not in Vi}.
 
 							*''* *``*
-''  ``			To the position before latest jump, or where the last
-			"m'" or "m`" command was given.  Not set when the
+''  ``			To the position before the latest jump, or where the
+			last "m'" or "m`" command was given.  Not set when the
 			|:keepjumps| command modifier was used.
 			Also see |restore-position|.
 
@@ -1240,7 +1240,7 @@ L			To line [count] from bottom of window (default: Last
 			Cursor is adjusted for 'scrolloff' option.
 
 <LeftMouse>		Moves to the position on the screen where the mouse
-			click is |inclusive|.  See also |<LeftMouse>|.  If the
+			click is |exclusive|.  See also |<LeftMouse>|.  If the
 			position is in a status line, that window is made the
 			active window and the cursor is not moved.  {not in Vi}
 

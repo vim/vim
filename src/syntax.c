@@ -2339,6 +2339,10 @@ check_state_ends()
 		cur_si->si_h_endpos = cur_si->si_eoe_pos;
 		cur_si->si_flags |= HL_MATCH;
 		update_si_attr(current_state.ga_len - 1);
+
+		/* what matches next may be different now, clear it */
+		next_match_idx = 0;
+		next_match_col = MAXCOL;
 		break;
 	    }
 	    else
@@ -2439,6 +2443,8 @@ update_si_attr(idx)
 	{
 	    sip->si_attr = CUR_STATE(idx - 1).si_attr;
 	    sip->si_trans_id = CUR_STATE(idx - 1).si_trans_id;
+	    sip->si_h_startpos = CUR_STATE(idx - 1).si_h_startpos;
+	    sip->si_h_endpos = CUR_STATE(idx - 1).si_h_endpos;
 	    if (sip->si_cont_list == NULL)
 	    {
 		sip->si_flags |= HL_TRANS_CONT;
@@ -5620,7 +5626,8 @@ in_id_list(cur_si, list, ssp, contained)
     int		r;
 
     /* If spp has a "containedin" list and "cur_si" is in it, return TRUE. */
-    if (cur_si != NULL && ssp->cont_in_list != NULL)
+    if (cur_si != NULL && ssp->cont_in_list != NULL
+					    && !(cur_si->si_flags & HL_MATCH))
     {
 	/* Ignore transparent items without a contains argument.  Double check
 	 * that we don't go back past the first one. */

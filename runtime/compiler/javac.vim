@@ -1,8 +1,8 @@
 " Vim compiler file
 " Compiler:     javac
-" Maintainer:   Doug Kearns <djkea2@mugca.its.monash.edu.au>
-" URL:		http://mugca.its.monash.edu.au/~djkea2/vim/compiler/javac.vim
-" Last Change:  2004 Apr 15
+" Maintainer:   Doug Kearns <djkea2@gus.gscit.monash.edu.au>
+" URL:		http://gus.gscit.monash.edu.au/~djkea2/vim/compiler/javac.vim
+" Last Change:  2004 Nov 27
 
 if exists("current_compiler")
   finish

@@ -1,9 +1,9 @@
 " Vim syntax file
 " Filename:	tidy.vim
 " Language:	HMTL Tidy configuration file ( /etc/tidyrc ~/.tidyrc )
-" Maintainer:	Doug Kearns <djkea2@mugca.its.monash.edu.au>
-" URL:		http://mugca.its.monash.edu.au/~djkea2/vim/syntax/tidy.vim
-" Last Change:	2002 Oct 24
+" Maintainer:	Doug Kearns <djkea2@gus.gscit.monash.edu.au>
+" URL:		http://gus.gscit.monash.edu.au/~djkea2/vim/syntax/tidy.vim
+" Last Change:	2004 Nov 27
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded

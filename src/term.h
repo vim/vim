@@ -76,6 +76,8 @@ enum SpecialKey
     KS_CWP,	/* set window position in pixels */
     KS_CWS,	/* set window size in characters */
     KS_CRV,	/* request version string */
+    KS_CSI,	/* start insert mode (bar cursor) */
+    KS_CEI,	/* end insert mode (block cursor) */
 #ifdef FEAT_VERTSPLIT
     KS_CSV,	/* scroll region vertical */
 #endif
@@ -148,6 +150,8 @@ extern char_u *(term_strings[]);    /* current terminal strings */
 #define T_FS	(term_str(KS_FS))	/* set window title end */
 #define T_CWP	(term_str(KS_CWP))	/* window position */
 #define T_CWS	(term_str(KS_CWS))	/* window size */
+#define T_CSI	(term_str(KS_CSI))	/* start insert mode */
+#define T_CEI	(term_str(KS_CEI))	/* end insert mode */
 #define T_CRV	(term_str(KS_CRV))	/* request version string */
 #define T_OP	(term_str(KS_OP))	/* original color pair */
 

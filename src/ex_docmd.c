@@ -7892,7 +7892,6 @@ update_topline_cursor()
 ex_normal(eap)
     exarg_T	*eap;
 {
-    oparg_T	oa;
     int		save_msg_scroll = msg_scroll;
     int		save_restart_edit = restart_edit;
     int		save_msg_didout = msg_didout;
@@ -7996,30 +7995,17 @@ ex_normal(eap)
 	 */
 	do
 	{
-	    clear_oparg(&oa);
-	    finish_op = FALSE;
 	    if (eap->addr_count != 0)
 	    {
 		curwin->w_cursor.lnum = eap->line1++;
 		curwin->w_cursor.col = 0;
 	    }
 
-	    /*
-	     * Stuff the argument into the typeahead buffer.
-	     * Execute normal_cmd() until there is no typeahead left.
-	     */
-	    ins_typebuf(
+	    exec_normal_cmd(
 #ifdef FEAT_MBYTE
 		    arg != NULL ? arg :
 #endif
-		    eap->arg, eap->forceit ? REMAP_NONE : REMAP_YES, 0,
-								 TRUE, FALSE);
-	    while ((!stuff_empty() || (!typebuf_typed() && typebuf.tb_len > 0))
-		    && !got_int)
-	    {
-		update_topline_cursor();
-		normal_cmd(&oa, FALSE);	/* execute a Normal mode cmd */
-	    }
+		    eap->arg, eap->forceit ? REMAP_NONE : REMAP_YES, FALSE);
 	}
 	while (eap->addr_count > 0 && eap->line1 <= eap->line2 && !got_int);
     }
@@ -8082,6 +8068,35 @@ ex_stopinsert(eap)
 {
     restart_edit = 0;
     stop_insert_mode = TRUE;
+}
+#endif
+
+#if defined(FEAT_EX_EXTRA) || defined(FEAT_MENU) || defined(PROTO)
+/*
+ * Execute normal mode command "cmd".
+ * "remap" can be REMAP_NONE or REMAP_YES.
+ */
+    void
+exec_normal_cmd(cmd, remap, silent)
+    char_u	*cmd;
+    int		remap;
+    int		silent;
+{
+    oparg_T	oa;
+
+    /*
+     * Stuff the argument into the typeahead buffer.
+     * Execute normal_cmd() until there is no typeahead left.
+     */
+    clear_oparg(&oa);
+    finish_op = FALSE;
+    ins_typebuf(cmd, remap, 0, TRUE, silent);
+    while ((!stuff_empty() || (!typebuf_typed() && typebuf.tb_len > 0))
+								  && !got_int)
+    {
+	update_topline_cursor();
+	normal_cmd(&oa, FALSE);	/* execute a Normal mode cmd */
+    }
 }
 #endif
 
@@ -8742,6 +8757,17 @@ makeopens(fd, dirnow)
     }
 
     /*
+     * If there is an empty, unnamed buffer we will wipe it out later.
+     * Remember the buffer number.
+     */
+    if (put_line(fd, "if expand('%') == '' && !&modified && line('$') <= 1 && getline(1) == ''") == FAIL)
+	return FAIL;
+    if (put_line(fd, "  let s:wipebuf = bufnr('%')") == FAIL)
+	return FAIL;
+    if (put_line(fd, "endif") == FAIL)
+	return FAIL;
+
+    /*
      * Now save the current files, current buffer first.
      */
     if (put_line(fd, "set shortmess=aoO") == FAIL)
@@ -8873,6 +8899,18 @@ makeopens(fd, dirnow)
      * Restore cursor to the current window if it's not the first one.
      */
     if (cnr > 1 && (fprintf(fd, "%dwincmd w", cnr) < 0 || put_eol(fd) == FAIL))
+	return FAIL;
+
+    /*
+     * Wipe out an empty unnamed buffer we started in.
+     */
+    if (put_line(fd, "if exists('s:wipebuf')") == FAIL)
+	return FAIL;
+    if (put_line(fd, "  exe 'bwipe ' . s:wipebuf") == FAIL)
+	return FAIL;
+    if (put_line(fd, "endif") == FAIL)
+	return FAIL;
+    if (put_line(fd, "unlet! s:wipebuf") == FAIL)
 	return FAIL;
 
     /*

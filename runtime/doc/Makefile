@@ -36,6 +36,7 @@ DOCS = \
 	help.txt \
 	howto.txt \
 	if_cscop.txt \
+	if_mzsch.txt \
 	if_ole.txt \
 	if_perl.txt \
 	if_pyth.txt \
@@ -156,6 +157,7 @@ HTMLS = \
 	help.html \
 	howto.html \
 	if_cscop.html \
+	if_mzsch.html \
 	if_ole.html \
 	if_perl.html \
 	if_pyth.html \

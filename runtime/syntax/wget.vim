@@ -1,9 +1,9 @@
 " Wget syntax file
 " Filename:     wget.vim
 " Language:     Wget configuration file ( /etc/wgetrc ~/.wgetrc )
-" Maintainer:   Doug Kearns <djkea2@mugca.its.monash.edu.au>
-" URL:		http://mugca.its.monash.edu.au/~djkea2/vim/syntax/wget.vim
-" Last Change:  2003 May 11
+" Maintainer:   Doug Kearns <djkea2@gus.gscit.monash.edu.au>
+" URL:		http://gus.gscit.monash.edu.au/~djkea2/vim/syntax/wget.vim
+" Last Change:  2004 Nov 27
 
 " TODO: all commands are actually underscore and hyphen insensitive, though
 "       they are normally named as listed below

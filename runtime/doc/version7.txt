@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2004 Oct 12
+*version7.txt*  For Vim version 7.0aa.  Last change: 2004 Dec 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -19,6 +19,7 @@ NEW FEATURES				|new-7|
 
 New data types				|new-data-types|
 KDE support				|new-KDE|
+Translated manual pages			|new-manpage-trans|
 Various new items			|new-items-7|
 
 IMPROVEMENTS				|improvements-7|
@@ -55,6 +56,10 @@ The "2html.vim" script now converts closed folds to HTML.  This means the HTML
 looks like its displayed, with the same folds open and closed.  Use "zR" if no
 folds should appear in the HTML. (partly by Carl Osterwisch)
 Diff mode now is also converted as it is displayed.
+
+Win32: The effect of the <F10> key depended on 'winaltkeys'.  Now it depends
+on whether <F10> has been mapped or not.  This allows mapping <F10> without
+changing 'winaltkeys'.
 
 ==============================================================================
 NEW FEATURES						*new-7*
@@ -95,6 +100,13 @@ The 'printmbcharset' and 'printmbfont' options are used for this.
 Also see |postscript-cjk-printing|.  (Mike Williams)
 
 
+Translated manual pages					*new-manpage-trans*
+-----------------------
+
+The manual page of Vim and associated programs is now also available in
+Italian (translated by Antonio Colombo).  More languages will follow.
+
+
 Various new items					*new-items-7*
 -----------------
 
@@ -115,6 +127,8 @@ Options: ~
 'mzquantum'		Time in msec to schedule MzScheme threads.
 'printmbcharset'	CJK character set to be used for :hardcopy
 'printmbfont'		font names to be used for CJK output of :hardcopy
+'fsync'			Whether fsync() is called after writing a file.
+			(Ciaran McCreesh)
 
 
 Ex commands: ~
@@ -187,6 +201,8 @@ SQL-Informix syntax file. (Dean L Hill)
 
 PHP compiler plugin. (Doug Kearns)
 
+Sive syntax file. (Nikolai Weibull)
+
 
 New Keymaps: ~
 
@@ -209,6 +225,10 @@ Mac: GUI font selector. (Peter "Rain Dog" Cucka)
 
 The netrw plugin now also supports viewing a directory, when "scp://" is used.
 Deleting and renaming files is possible.  (Charles Campbell)
+
+Added the t_SI and t_EI escape sequences for starting and ending Insert mode.
+To be used to set the cursor shape to a bar or a block.  No default values,
+they are not supported by termcap/terminfo.
 
 ==============================================================================
 IMPROVEMENTS						*improvements-7*
@@ -266,6 +286,17 @@ the tcl interpreter. (suggested by Alexios Zavras)
 
 Support conversion between utf-8 and latin9 (iso-8859-15) internally, so that
 digraphs still work when iconv is not available.
+
+When a session file is loaded while editing an unnamed, empty buffer that
+buffer is wiped out.  Avoids that there is an unused buffer in the buffer
+list.
+
+Win32: When libintl.dll supports bind_textdomain_codeset(), use it.
+(NAKADAIRA Yukihiro)
+
+When foldtext() finds no text after removing the comment leader, use the
+second line of the fold.  Helps for C-style /* */ comments where the first
+line is just "/*".
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*
@@ -420,5 +451,50 @@ directory for the library early in the link flags.
 
 With the GUI find/replace dialog a replace only worked if the pattern was
 literal text.  Now it works for any pattern.
+
+When 'equalalways' is set and 'eadirection' is "hor", ":quit" would still
+cause equalizing window heights in the vertical direction.
+
+When ":emenu" is used in a startup script the command was put in the typeahead
+buffer, causing a prompt for the crypt key to be messed up.
+
+Mac OS/X: The default for 'isprint' included characters 128-160, causes
+problems for Terminal.app.
+
+When a syntax item with "containedin" is used, it may match in the start or
+end of a region with a matchgroup, while this doesn't happen for a "contains"
+argument.
+
+When a transparent syntax items matches in another item where the highlighting
+has already stopped (because of a he= argument), the highlighting would come
+back.
+
+When cscope is used to set the quickfix error list, it didn't get set if there
+was only one match. (Sergey Khorev)
+
+When 'confirm' is set and using ":bdel" in a modified buffer, then selecting
+"cancel", would still give an error message.
+
+The PopUp menu items that started Visual mode didn't work when not in Normal
+mode.  Switching between selecting a word and a line was not possible.
+
+Win32: The keypad decimal point always resulted in a '.', while on some
+keyboards it's a ','.  Use MapVirtualKey(VK_DECIMAL, 2).
+
+Removed unused function DisplayCompStringOpaque() from gui_w32.c
+
+In Visual mode there is not always an indication whether the line break is
+selected or not.  Highlight the character after the line when the line break
+is included, e.g., after "v$o".
+
+GTK: The <F10> key can't be mapped, it selects the menu.  Disable that with a
+GTK setting and do select the menu when <F10> isn't mapped. (David Necas)
+
+After "Y" '[ and '] were not at start/end of the yanked text.
+
+When a telnet connection is dropped Vim preserves files and exits.  While
+doing that a SIGHUP may arrive and disturbe us, thus ignore it. (Scott
+Anderson)  Also postpone SIGHUP until it's safe to handle.  Added
+handle_sighup().
 
  vim:tw=78:ts=8:ft=help:norl:

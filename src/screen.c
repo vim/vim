@@ -110,8 +110,8 @@ typedef struct
     int		attr;	/* attributes to be used for a match */
     int		attr_cur; /* attributes currently active in win_line() */
     linenr_T	first_lnum;	/* first lnum to search for multi-line pat */
-    char_u	*startp; /* in win_line() points to char where HL starts */
-    char_u	*endp;	 /* in win_line() points to char where HL ends */
+    colnr_T	startcol; /* in win_line() points to char where HL starts */
+    colnr_T	endcol;	 /* in win_line() points to char where HL ends */
 } match_T;
 
 static match_T search_hl;	/* used for 'hlsearch' highlight matching */
@@ -944,8 +944,8 @@ win_update(wp)
 
 	/* When a change starts above w_topline and the end is below
 	 * w_topline, start redrawing at w_topline.
-	 * If the end of the change is above w_topline: do like no changes was
-	 * maded, but redraw the first line to find changes in syntax. */
+	 * If the end of the change is above w_topline: do like no change was
+	 * made, but redraw the first line to find changes in syntax. */
 	if (mod_top != 0 && mod_top < wp->w_topline)
 	{
 	    if (mod_bot > wp->w_topline)
@@ -955,6 +955,11 @@ win_update(wp)
 		top_end = 1;
 #endif
 	}
+
+	/* When line numbers are displayed need to redraw all lines below
+	 * inserted/deleted lines. */
+	if (mod_top != 0 && buf->b_mod_xlines != 0 && wp->w_p_nu)
+	    mod_bot = MAXLNUM;
     }
 
     /*
@@ -1625,12 +1630,6 @@ win_update(wp)
 			}
 		    }
 		}
-
-		/* When inserting or deleting lines and 'number' is set:
-		 * Redraw all lines below the change to update the line
-		 * numbers. */
-		if (buf->b_mod_xlines != 0 && wp->w_p_nu)
-		    bot_start = 0;
 	    }
 
 #ifdef FEAT_FOLDING
@@ -2642,6 +2641,8 @@ win_line(wp, lnum, startrow, endrow)
 		    fromcol = -10;
 		    tocol = MAXCOL;
 		}
+		else if (bot->col == MAXCOL)
+		    tocol = MAXCOL;
 		else
 		{
 		    pos = *bot;
@@ -2852,8 +2853,8 @@ win_line(wp, lnum, startrow, endrow)
     shl = &search_hl;
     for (;;)
     {
-	shl->startp = NULL;
-	shl->endp = NULL;
+	shl->startcol = MAXCOL;
+	shl->endcol = MAXCOL;
 	shl->attr_cur = 0;
 	if (shl->rm.regprog != NULL)
 	{
@@ -2868,25 +2869,25 @@ win_line(wp, lnum, startrow, endrow)
 	    if (shl->lnum != 0 && shl->lnum <= lnum)
 	    {
 		if (shl->lnum == lnum)
-		    shl->startp = line + shl->rm.startpos[0].col;
+		    shl->startcol = shl->rm.startpos[0].col;
 		else
-		    shl->startp = line;
+		    shl->startcol = 0;
 		if (lnum == shl->lnum + shl->rm.endpos[0].lnum
 						  - shl->rm.startpos[0].lnum)
-		    shl->endp = line + shl->rm.endpos[0].col;
+		    shl->endcol = shl->rm.endpos[0].col;
 		else
-		    shl->endp = line + MAXCOL;
+		    shl->endcol = MAXCOL;
 		/* Highlight one character for an empty match. */
-		if (shl->startp == shl->endp)
+		if (shl->startcol == shl->endcol)
 		{
 #ifdef FEAT_MBYTE
-		    if (has_mbyte && *shl->endp != NUL)
-			shl->endp += (*mb_ptr2len_check)(shl->endp);
+		    if (has_mbyte && line[shl->endcol] != NUL)
+			shl->endcol += (*mb_ptr2len_check)(line + shl->endcol);
 		    else
 #endif
-			++shl->endp;
+			++shl->endcol;
 		}
-		if (shl->startp < ptr)  /* match at leftcol */
+		if ((long)shl->startcol < v)  /* match at leftcol */
 		{
 		    shl->attr_cur = shl->attr;
 		    search_attr = shl->attr;
@@ -3150,22 +3151,22 @@ win_line(wp, lnum, startrow, endrow)
 		 * Do this first for search_hl, then for match_hl, so that
 		 * ":match" overrules 'hlsearch'.
 		 */
+		v = (long)(ptr - line);
 		shl = &search_hl;
 		for (;;)
 		{
 		    while (shl->rm.regprog != NULL)
 		    {
-			if (shl->startp != NULL
-				&& ptr >= shl->startp
-				&& ptr < shl->endp)
+			if (shl->startcol != MAXCOL
+				&& v >= (long)shl->startcol
+				&& v < (long)shl->endcol)
 			{
 			    shl->attr_cur = shl->attr;
 			}
-			else if (ptr == shl->endp)
+			else if (v == (long)shl->endcol)
 			{
 			    shl->attr_cur = 0;
 
-			    v = (long)(ptr - line);
 			    next_search_hl(wp, shl, lnum, (colnr_T)v);
 
 			    /* Need to get the line again, a multi-line regexp
@@ -3175,23 +3176,23 @@ win_line(wp, lnum, startrow, endrow)
 
 			    if (shl->lnum == lnum)
 			    {
-				shl->startp = line + shl->rm.startpos[0].col;
+				shl->startcol = shl->rm.startpos[0].col;
 				if (shl->rm.endpos[0].lnum == 0)
-				    shl->endp = line + shl->rm.endpos[0].col;
+				    shl->endcol = shl->rm.endpos[0].col;
 				else
-				    shl->endp = line + MAXCOL;
+				    shl->endcol = MAXCOL;
 
-				if (shl->startp == shl->endp)
+				if (shl->startcol == shl->endcol)
 				{
 				    /* highlight empty match, try again after
 				     * it */
 #ifdef FEAT_MBYTE
 				    if (has_mbyte)
-					shl->endp +=
-					       (*mb_ptr2len_check)(shl->endp);
+					shl->endcol += (*mb_ptr2len_check)(line
+							       + shl->endcol);
 				    else
 #endif
-					++shl->endp;
+					++shl->endcol;
 				}
 
 				/* Loop to check if the match starts at the
@@ -3635,8 +3636,22 @@ win_line(wp, lnum, startrow, endrow)
 			c = ' ';
 		    }
 		}
-		else if (c == NUL && wp->w_p_list && lcs_eol_one > 0)
+		else if (c == NUL
+			&& ((wp->w_p_list && lcs_eol > 0)
+			    || ((fromcol >= 0 || fromcol_prev >= 0)
+				&& tocol > vcol
+				&& VIsual_mode != Ctrl_V
+				&& (
+# ifdef FEAT_RIGHTLEFT
+				    wp->w_p_rl ? (col >= 0) :
+# endif
+				    (col < W_WIDTH(wp)))
+				&& !(noinvcur
+				    && (colnr_T)vcol == wp->w_virtcol)))
+			&& lcs_eol_one >= 0)
 		{
+		    /* Display a '$' after the line or highlight an extra
+		     * character if the line break is included. */
 #if defined(FEAT_DIFF) || defined(LINE_ATTR)
 		    /* For a diff line the highlighting continues after the
 		     * "$". */
@@ -3667,7 +3682,10 @@ win_line(wp, lnum, startrow, endrow)
 			    c_extra = NUL;
 			}
 		    }
-		    c = lcs_eol;
+		    if (wp->w_p_list)
+			c = lcs_eol;
+		    else
+			c = ' ';
 		    lcs_eol_one = -1;
 		    --ptr;	    /* put it back at the NUL */
 		    if (area_attr == 0 && search_attr == 0)
@@ -3847,8 +3865,8 @@ win_line(wp, lnum, startrow, endrow)
 		    && ((area_attr != 0 && vcol == fromcol)
 #ifdef FEAT_SEARCH_EXTRA
 			/* highlight 'hlsearch' match at end of line */
-			|| ptr - 1 == search_hl.startp
-			|| ptr - 1 == match_hl.startp
+			|| (ptr - line) - 1 == (long)search_hl.startcol
+			|| (ptr - line) - 1 == (long)match_hl.startcol
 #endif
 		       ))
 	    {
@@ -3885,7 +3903,7 @@ win_line(wp, lnum, startrow, endrow)
 #ifdef FEAT_SEARCH_EXTRA
 		if (area_attr == 0)
 		{
-		    if (ptr - 1 == match_hl.startp)
+		    if ((ptr - line) - 1 == (long)match_hl.startcol)
 			char_attr = match_hl.attr;
 		    else
 			char_attr = search_hl.attr;

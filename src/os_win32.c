@@ -228,15 +228,18 @@ get_exe_name(void)
 #  define GETTEXT_DLL "libintl.dll"
 # endif
 /* Dummy funcitons */
-static char* null_libintl_gettext(const char *);
-static char* null_libintl_textdomain(const char *);
-static char* null_libintl_bindtextdomain(const char *, const char *);
+static char *null_libintl_gettext(const char *);
+static char *null_libintl_textdomain(const char *);
+static char *null_libintl_bindtextdomain(const char *, const char *);
+static char *null_libintl_bind_textdomain_codeset(const char *, const char *);
 
 static HINSTANCE hLibintlDLL = 0;
-char* (*dyn_libintl_gettext)(const char *) = null_libintl_gettext;
-char* (*dyn_libintl_textdomain)(const char *) = null_libintl_textdomain;
-char* (*dyn_libintl_bindtextdomain)(const char *, const char *)
+char *(*dyn_libintl_gettext)(const char *) = null_libintl_gettext;
+char *(*dyn_libintl_textdomain)(const char *) = null_libintl_textdomain;
+char *(*dyn_libintl_bindtextdomain)(const char *, const char *)
 						= null_libintl_bindtextdomain;
+char *(*dyn_libintl_bind_textdomain_codeset)(const char *, const char *)
+				       = null_libintl_bind_textdomain_codeset;
 
     int
 dyn_libintl_init(char *libname)
@@ -287,6 +290,15 @@ dyn_libintl_init(char *libname)
 	    return 0;
 	}
     }
+
+    /* The bind_textdomain_codeset() function is optional. */
+    (FARPROC)dyn_libintl_bind_textdomain_codeset =
+					  (FARPROC)GetProcAddress(hLibintlDLL,
+						   "bind_textdomain_codeset");
+    if (dyn_libintl_bind_textdomain_codeset == NULL)
+	dyn_libintl_bind_textdomain_codeset =
+					 null_libintl_bind_textdomain_codeset;
+
     return 1;
 }
 
@@ -299,6 +311,7 @@ dyn_libintl_end()
     dyn_libintl_gettext		= null_libintl_gettext;
     dyn_libintl_textdomain	= null_libintl_textdomain;
     dyn_libintl_bindtextdomain	= null_libintl_bindtextdomain;
+    dyn_libintl_bind_textdomain_codeset = null_libintl_bind_textdomain_codeset;
 }
 
     static char *
@@ -309,6 +322,13 @@ null_libintl_gettext(const char *msgid)
 
     static char *
 null_libintl_bindtextdomain(const char *domainname, const char *dirname)
+{
+    return NULL;
+}
+
+    static char *
+null_libintl_bind_textdomain_codeset(const char *domainname,
+							  const char *codeset)
 {
     return NULL;
 }

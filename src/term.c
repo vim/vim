@@ -1643,6 +1643,7 @@ set_termname(term)
 				{KS_CIS, "IS"}, {KS_CIE, "IE"},
 				{KS_TS, "ts"}, {KS_FS, "fs"},
 				{KS_CWP, "WP"}, {KS_CWS, "WS"},
+				{KS_CSI, "SI"}, {KS_CEI, "EI"},
 				{(enum SpecialKey)0, NULL}
 			    };
 
@@ -3396,6 +3397,31 @@ cursor_off()
 	if (!cursor_is_off)
 	    out_str(T_VI);	    /* disable cursor */
 	cursor_is_off = TRUE;
+    }
+}
+
+/*
+ * Set cursor shape to match Insert mode.
+ */
+    void
+term_cursor_shape()
+{
+    static int showing_insert_mode = MAYBE;
+
+    if (!full_screen || *T_CSI == NUL || *T_CEI == NUL)
+	return;
+
+    if (State & INSERT)
+    {
+	if (showing_insert_mode != TRUE)
+	    out_str(T_CSI);	    /* disable cursor */
+	showing_insert_mode = TRUE;
+    }
+    else
+    {
+	if (showing_insert_mode != FALSE)
+	    out_str(T_CEI);	    /* disable cursor */
+	showing_insert_mode = FALSE;
     }
 }
 

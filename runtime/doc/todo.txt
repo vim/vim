@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Oct 24
+*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Dec 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,57 +30,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Include NetBeans patches (Gordon Prieur, Oct 20)
-    See two messages for list of changed files.  Additionally:
-	doc/eval.txt
-    Docs for message E680.
-
-Line number not updated when inserting a line in anothe window. (Hitier
-Sylvain, Oct 24)
-
-Aborting at the ATTENTION prompt causes trouble:
-    buffer remains active, nwindows isn't closed (fixed in buffer.c)
-    alternate buffer gets "read error" flag.
-    ":sbuf" and ":ball" leave an empty window behind.
-Change in handle_swap_exists() also in 6.3?
-Add enter_cleanup() and leave_cleanup() also in 6.3?
-    buffer.c
-    ex_eval.c
-    proto/ex_eval.pro
-    structs.h
-    vim.h
-
-Win32: When the path to a file has Russian characters, ":cd %:p:h" doesn't
-work. (Valery Kondakoff)
-Solved in os_mswin.c.  Add to 6.3?
-
-Patch for Win32 textdomain: NAKADAIRA Yukihiro, Sept 17.
-
-Handling decimal point on keypad: use MapVirtualKey. (Vince Negri, Oct 20)
-
-Valencia: executable("xxd.exe") returns true while "!xxd" doesn't work.
-Works fine for me.  Only in specific environment?
-
-netrw plugin: When coming back to the same directory a scratch buffer appears.
-Only on Win32. (Charles Campbell, Sept 15)
-
-New Eiffel indent script from Jocelyn Fiat.  OK with David Clarke.
-
-Win32: not using 'tenc' in GUI causes problems on Win 98?  (Jiri Jezdinsky)
-Try out with Russian input method.
-
-After "Y" '[ and '] are not at start/end of the yanked text. (Ken Clark)
-
-Patch for adding 'fsync' option: disable using fsync() on file write. (Sept.
-26, Ciaran McCreesh)
-
-Folding for C syntax: (Olaf Dabrunz 27 sept 2004)
-
-Add remark about using Vim with VS .net to Visvim docs. (David Fishburn, Sept
-27)
-
-Vim icon for documents associated with Vim? (Rahul Kulkarni, sept 28)
-
 Add a function to test if a font name actually works.
 
 When using "set laststatus=2 cmdheight=2" in the .gvimrc you only get one line
@@ -89,6 +38,30 @@ xterm with many lines) it's OK.
 
 ":e <cfile>" does not expand ~/file, very confusing compared to ":e ~/file".
 
+SIGHUP is delayed until waiting for a character.  Can the same thing be done
+for SIGINT?  Then also check when waiting for a short time.
+
+When no termcap/termlib library is found, check that compiling Vim works in
+configure.  Give an clear error message ("install termcap or ncurses-dev
+package") when it doesn't.
+
+When doing ":w file" 'modified' is reset, but "u" sets it, while the file is
+actually unchanged.  Don't reset 'modified' when 'nocp' is set.
+
+Win32: "gvim -V100" should use dialog with scrollbar.
+
+Using CTRL-A on "08" should not work like octal. (Matthew Duggan)
+
+Cursor onder laatste regel na ":g/pat/s//>" commando waardoor regels niet meer
+wrappen. (Adri Verhoef, Dec 1)
+
+Included NetBeans patches (Gordon Prieur, Oct 20)
+    See two messages for list of changed files.  Additionally:
+	doc/eval.txt
+    Docs for message E680.
+    Docs for ":nbkey".
+    Asked Gordon to send the differences again, some parts apparently are
+    missing.
 
 For version 7.0:
 
@@ -172,6 +145,8 @@ For version 7.0:
 				Tcl implementation ~/vim/HierAssist/ )
     7   Add patch from Benoit Cerrina to integrate Vim and Perl functions
 	better.  Now also works for Ruby (2001 Nov 10)
+    -   Patch from Herculano de Lima Einloft Neto for better formatting of the
+	quickfix window (2004 dec 2)
     7   Motif: use the menu font consistently.  Patch from Martin Dalecki 2002
 	Jan 11.
     -   Motif: add 3D shading for the menu entries?  Patch from Martin Dalecki.
@@ -204,13 +179,32 @@ For version 7.0:
 	runtime files?
 	Also: when the environment variable exists, use it.  If it doesn't
 	exist, set it.  Requires good names: $VIM_USER_VIMRC  $VIM_USER_DIR
+    -	Add the ":cbuffer" command: read list of errors from a buffer instead
+	of from a file. (Yegappan Lakshmanan, Oct 31, but avoid the temp file)
+	Perhaps ":cexpr" could read from a list?
+	Add %b to 'errorformat': buffer number. (Yegappan Lakshmanan / Suresh
+	Govindachar)
+    -	The Replace dialog takes "\r" literal, unless "replace all" is used.
+	Need to escape backslashes.
+        Win32: the text to replace with isn't remembered.
+    -	For GUI Find/Replace dialog support using a regexp.  Patch for Motif
+	and GTK by degreneir (nov 10 and nov 18).
+-   Use a builtin grep command for ":grep"?  Makes it possible to add the
+    column number.  Can use the code of ":helpgrep".
+    Patch from Yegappan Lakshmanan, Nov 4.  Or use ":grep" and set 'grepprg'
+    to something special?  Could also do both.
+    Also support using "**" in filename, so that a directory tree can be
+    searched.
+    Also see the "minigrep.vim" script on www.vim.org.
 
 
 -   Edit same file on Unix and from MS-Windows: no warning for swap file.
+-   Drop the kvim support?  There is no maintenance and "yzis" is supposed to
+    replace it.
 -   In the kvim/KDE source files fix the formatting.
 -   KDE version is called "kvim".  Make it "gvim", like the others?
 -   Better configure check for KDE include files from Dan Sharp.
--   KDE Input method patch. (Yasuhiro Matsumoto)
+-   KDE GUI Input method patch. (Yasuhiro Matsumoto) (upd. Oct 25 2004)
 -   Change ga_room into ga_maxlen, so that it doesn't need to be
     incremented/decremented each time.
 -   For string variables, use length instead of NUL termination.
@@ -279,9 +273,11 @@ For version 7.0:
     Should store the values in block 0 of the swap file, but that is an
     incompatible change.
 7   Support WINDOW TABS.  Works like several pages, each with their own
-    split windows.  Patch for GTK 1.2 from Christian Michon, 2004 Jan 6.
-    Also for the console!  In Emacs these are called frames.
+    split windows.  Patch for GTK 1.2 passed on by Christian Michon, 2004 Jan 6.
+    Also for the console!
+    In Emacs these are called frames.  Could also call them "pages".
     Use "1gt" - "99gt" to switch to a tab?
+    Simple patch for GTK by Luis M (nov 7).
 -   EMBEDDING: Make it possible to run Vim inside a window of another program.
     For Xwindows this can be done with XReparentWindow().
     For GTK Neil Bird has a patch to use Vim like a widget.
@@ -337,14 +333,18 @@ For version 7.0:
 -   "onemore" flag in 'virtualedit': move cursor past end of line.  Patch by
     Mattias Flodin (2004 Jul 30)
 
-The fsync() in buf_write() causes laptop harddisk spinup.  Add an option to
-avoid it?
+Win32: When setting 'encoding' in a Vim server to "utf-8", and using "vim
+--remote russian" in a console, "russian" should be converted from the console
+encoding to utf-8.  Send all remote messages in utf-8?  Only on Win32?
 
 Support ":set syntax=cpp.doxygen"?  Suggested patch by Michael Geddes (9 Aug
 2004).  Should also work for 'filetype'.
 
 Patch for 'breakindent' option: repeat indent for wrapped line. (Vaclav
-Smilauer, 2004 Sep 13)
+Smilauer, 2004 Sep 13, fix Oct 31)
+
+":bufdo g/something/p" has the last match overwritten by the file info.
+Example by Cesar Andalou (Nov 3).
 
 Win32: In 'fileencodings' allow using "acp" for the active codepage.  Useful
 value: "ucs-bom,utf-8,acp,latin1"
@@ -375,7 +375,13 @@ name. (Charles Campbell)
 
 Add gui_mch_browsedir() for Motif, KDE and Mac OS/X.
 
-Install vim-it.1 manual page in .../man/it/man1/vim.1
+Add Makefile code to install *-it.1 manual pages in .../man/it/man1/*.1
+
+HTML indenting can be slow, find out why.  Any way to do some kind of
+profiling for Vim script?
+
+Mac: problem with Xcode, Vim doesn't continue until the next click.
+Apparently hanges in handle_drop().  A PostEvent() avoids it. (Da Woon Jung)
 
 
 Vi incompatibility:
@@ -1218,6 +1224,8 @@ Problems that will (probably) not be solved:
 						    *extensions-improvements*
 
 Documentation:
+8   The GUI help should explain the Find and Find/Replace dialogs.  Add a link
+    to it from ":promptrepl" and ":promptfind".
 8   List of options should mention whether environment variables are expanded
     or not.
 8   Extend usr_27.txt a bit. (Adam Seyfarth)
@@ -1308,8 +1316,10 @@ Folding:
 8   "H" and "L" count buffer lines instead of window lines. (Servatius Brandt)
 8   Add a way to add fold-plugins.  Johannes Zellner has one for VB.
 7   When using manual folding, the undo command should also restore folds.
--   Allow completely hiding a closed fold.  Require showing a character in
-    'foldcolumn' to avoid the missing line goes unnoticed.
+-   Allow completely hiding a closed fold.  E.g., by setting 'foldtext' to an
+    empty string.  Require showing a character in 'foldcolumn' to avoid the
+    missing line goes unnoticed.
+    How to implement this?
 -   When pressing the down arrow of a scrollbar, a closed fold doesn't scroll
     until after a long time.  How to make scrolling with closed folds
     smoother?
@@ -1317,15 +1327,14 @@ Folding:
     using the wininfo in wi_folds.
 -   'foldmethod' "textobject": fold on sections and paragraph text objects.
 -   Add 'hidecomment' option: don't display comments in /* */ and after //.
+    Or is the conceal patch from Vince Negri a more generic solution?
 -   "zu": undo change in manual fold. "zU" redo change in manual fold.  How to
     implement this?
 -   "zJ" command: add the line or fold below the fold in the fold under the
     cursor.
 -   'foldmethod' "syntax": "fold=3": set fold level for a region.
--   Can set 'foldtext' to empty string: don't display any line.  How to
-    implement this?
 -   Apply a new foldlevel to a range of lines. (Steve Litt)
--   Have some way to restrict commands to not folded text.  Also commands like
+8   Have some way to restrict commands to not folded text.  Also commands like
     searches.
 
 
@@ -1344,7 +1353,7 @@ Multi-byte characters:
     the encoding. <?xml version="1.0" encoding="UTF-8"?>  Or "charset=UTF-8"?
 8   The quickfix file is read without conversion, thus in 'encoding'.  Add an
     option to specify the encoding of the errorfile and convert it.  Also for
-    ":grep".
+    ":grep" and ":helpgrep".
 8   When a file was converted from 'fileencoding' to 'encoding', a tag search
     should also do this on the search pattern. (Andrzej M. Ostruszka)
 7   When converting a file fails, mention which byte could not be converted,
@@ -1717,8 +1726,8 @@ Performance:
     this be improved?
 8   Set default for 'ttyscroll' to half a screen height?  Should speed up
     MS-DOS version. (Negri)
-7   C syntax highlighting gets a lot slower when adding a region for folding
-    from { to }. (Charles Campbell)  Inserting a "{" is very slow. (dman)
+7   C syntax highlighting gets a lot slower after ":set foldmethod=syntax".
+    (Charles Campbell)  Inserting a "{" is very slow. (dman)
 7   HTML syntax highlighting is slow for long lines.  Try displaying
     http://www.theregister.co.uk/content/4/22908.html. (Andre Pang)
 7   Check how performance of loading the wordlist can be improved (adding a
@@ -2064,7 +2073,7 @@ GUI:
 7   Motif: For a confirm() dialog <Enter> should be ignored when no default
     button selected, <Esc> should close the dialog.
 -   Motif steals <F10> from us, to pop up menus with the keyboard.  How do we
-    get it back if we want it?
+    get it back if we want it?  It's already solved for GTK.
 -   Paste in Insert mode should not do autowrap etc.  Or maybe this should be
     changeable with an option?
 -   Put a nice picture in the icon (but how do we do that?).
@@ -3340,11 +3349,6 @@ Various improvements:
     sufficient.  ":setflush" resets the option stack?
     How to handle an aborted mapping?  Remember position in tag stack when
     mapping starts, restore it when an error aborts the mapping?
--   Use a builtin grep command for ":grep"?  Makes it possible to add the
-    column number.  Can use the code of ":helpgrep".
-    Also support using "**" in filename, so that a directory tree can be
-    searched.
-    Also see the "minigrep.vim" script on www.vim.org.
 -   Change ":fixdel" into option 'fixdel', t_del will be adjusted each time
     t_bs is set? (Webb)
 -   "gc": goto character, move absolute character positions forward, also

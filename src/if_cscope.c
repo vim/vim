@@ -1092,7 +1092,7 @@ cs_find_common(opt, pat, forceit, verbose)
 	    return FALSE;
 	}
     }
-    if (qfpos != NULL && *qfpos != '0' && totmatches > 1)
+    if (qfpos != NULL && *qfpos != '0' && totmatches > 0)
     {
 	/* fill error list */
 	FILE *f;

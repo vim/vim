@@ -1,9 +1,9 @@
 " Vim syntax file
 " Language:		Ruby
-" Maintainer:		Doug Kearns
+" Maintainer:		Doug Kearns <djkea2@gus.gscit.monash.edu.au>
 " Previous Maintainer:	Mirko Nasato
-" Last Change:		2003 May 31
-" URL:			http://mugca.its.monash.edu.au/~djkea2/vim/syntax/ruby.vim
+" Last Change:		2004 Nov 27
+" URL:			http://gus.gscit.monash.edu.au/~djkea2/vim/syntax/ruby.vim
 
 " $Id$
 

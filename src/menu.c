@@ -2107,8 +2107,9 @@ ex_emenu(eap)
 	return;
     }
 
-    /* Found the menu, so execute. */
-    if (restart_edit)
+    /* Found the menu, so execute.
+     * Use the Insert mode entry when returning to Insert mode. */
+    if (restart_edit && !current_SID)
     {
 	mode = (char_u *)"Insert";
 	idx = MENU_INDEX_INSERT;
@@ -2123,8 +2124,7 @@ ex_emenu(eap)
 	/* GEDDES: This is not perfect - but it is a
 	 * quick way of detecting whether we are doing this from a
 	 * selection - see if the range matches up with the visual
-	 * select start and end.
-	 */
+	 * select start and end.  */
 	if ((curbuf->b_visual_start.lnum == eap->line1)
 		&& (curbuf->b_visual_end.lnum) == eap->line2)
 	{
@@ -2144,8 +2144,7 @@ ex_emenu(eap)
 	    tpos.col = MAXCOL;
 	}
 
-	/* Activate visual mode
-	 */
+	/* Activate visual mode */
 	VIsual_active = TRUE;
 	VIsual_reselect = TRUE;
 	check_cursor();
@@ -2155,8 +2154,7 @@ ex_emenu(eap)
 	check_cursor();
 
 	/* Adjust the cursor to make sure it is in the correct pos
-	 * for exclusive mode
-	 */
+	 * for exclusive mode */
 	if (*p_sel == 'e' && gchar_cursor() != NUL)
 	    ++curwin->w_cursor.col;
     }
@@ -2168,7 +2166,13 @@ ex_emenu(eap)
 
     if (idx != MENU_INDEX_INVALID && menu->strings[idx] != NULL)
     {
-	ins_typebuf(menu->strings[idx], menu->noremap[idx], 0,
+	/* When executing a script or function execute the commands right now.
+	 * Otherwise put them in the typeahead buffer. */
+	if (current_SID != 0)
+	    exec_normal_cmd(menu->strings[idx], menu->noremap[idx],
+							   menu->silent[idx]);
+	else
+	    ins_typebuf(menu->strings[idx], menu->noremap[idx], 0,
 						     TRUE, menu->silent[idx]);
     }
     else

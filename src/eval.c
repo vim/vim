@@ -4485,7 +4485,16 @@ f_foldtext(argvars, retvar)
 	s = skipwhite(ml_get(lnum));
 	/* skip C comment-start */
 	if (s[0] == '/' && (s[1] == '*' || s[1] == '/'))
+	{
 	    s = skipwhite(s + 2);
+	    if (*skipwhite(s) == NUL
+			      && lnum + 1 < (linenr_T)vimvars[VV_FOLDEND].val)
+	    {
+		s = skipwhite(ml_get(lnum + 1));
+		if (*s == '*')
+		    s = skipwhite(s + 1);
+	    }
+	}
 	txt = _("+-%s%3ld lines: ");
 	r = alloc((unsigned)(STRLEN(txt)
 		    + STRLEN(vimvars[VV_FOLDDASHES].val)    /* for %s */

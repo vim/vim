@@ -2380,7 +2380,7 @@ special_keys(char_u *args)
 
 	if ((sep = strchr(tok, '-')) != NULL)
 	{
-	    *sep = NULL;
+	    *sep = NUL;
 	    while (*tok)
 	    {
 		switch (*tok)

@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.0aa.  Last change: 2004 May 21
+*map.txt*       For Vim version 7.0aa.  Last change: 2004 Dec 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -232,8 +232,6 @@ command line (not a search pattern) the mappings are disabled until a CTRL-^
 is typed.  The state last used is remembered for Insert mode and Search
 patterns separately.  The state for Insert mode is also used when typing a
 character as an argument to command like "f" or "t".
-   When adding a ":lmap" mapping the use of these mappings in Insert mode and
-for Search patterns will be switched on.
    Language mappings will never be applied to already mapped characters.  They
 are only used for typed characters.  This assumes that the language mapping
 was already done when typing the mapping.

@@ -434,9 +434,10 @@ typedef unsigned short u8char_T;
 #  define FEAT_GETTEXT
 # endif
 /* These are in os_win32.c */
-extern char* (*dyn_libintl_gettext)(const char* msgid);
-extern char* (*dyn_libintl_bindtextdomain)(const char* domainname, const char* dirname);
-extern char* (*dyn_libintl_textdomain)(const char* domainname);
+extern char *(*dyn_libintl_gettext)(const char *msgid);
+extern char *(*dyn_libintl_bindtextdomain)(const char *domainname, const char *dirname);
+extern char *(*dyn_libintl_bind_textdomain_codeset)(const char *domainname, const char *codeset);
+extern char *(*dyn_libintl_textdomain)(const char *domainname);
 #endif
 
 
@@ -448,7 +449,11 @@ extern char* (*dyn_libintl_textdomain)(const char* domainname);
 # ifdef DYNAMIC_GETTEXT
 #  define _(x) (*dyn_libintl_gettext)((char *)(x))
 #  define N_(x) x
-#  define bindtextdomain(domain,dir) (*dyn_libintl_bindtextdomain)(domain,dir)
+#  define bindtextdomain(domain, dir) (*dyn_libintl_bindtextdomain)((domain), (dir))
+#  define bind_textdomain_codeset(domain, codeset) (*dyn_libintl_bind_textdomain_codeset)((domain), (codeset))
+#  if !defined(HAVE_BIND_TEXTDOMAIN_CODESET)
+#   define HAVE_BIND_TEXTDOMAIN_CODESET 1
+#  endif
 #  define textdomain(domain) (*dyn_libintl_textdomain)(domain)
 # else
 #  include <libintl.h>
@@ -466,6 +471,10 @@ extern char* (*dyn_libintl_textdomain)(const char* domainname);
 #  undef bindtextdomain
 # endif
 # define bindtextdomain(x, y) /* empty */
+# ifdef bind_textdomain_codeset
+#  undef bind_textdomain_codeset
+# endif
+# define bind_textdomain_codeset(x, y) /* empty */
 # ifdef textdomain
 #  undef textdomain
 # endif
@@ -1832,6 +1841,14 @@ typedef int VimClipboard;	/* This is required for the prototypes. */
 # include <EXTERN.h>
 # include <perl.h>
 # include <XSUB.h>
+#endif
+
+/* values for handle_sighup() */
+#define SIGHUP_RCV	1
+#define SIGHUP_BLOCK	2
+#define SIGHUP_UNBLOCK  3
+#ifndef UNIX
+# define handle_sighup(x) /* nothing */
 #endif
 
 #endif /* VIM__H */

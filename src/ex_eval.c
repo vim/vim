@@ -1820,19 +1820,25 @@ ex_endtry(eap)
 }
 
 /*
- * Function to be called before a failed command invokes a sequence of
- * autocommands for cleanup.  (Failure means here that a call to emsg() has
- * been made, an interrupt occurred, or there is an uncaught exception from a
- * previous autocommand execution of the same command.)  This function works a
- * bit like ex_finally() except that there was not actually an extra try block
- * around the part that failed and an error or interrupt has not (yet) been
- * converted to an exception.  This function saves the
- * error/interrupt/exception state and prepares for the call to do_cmdline()
- * that is going to be made for the cleanup autocommand execution.
+ * enter_cleanup() and leave_cleanup()
  *
- * Stores the pending error/interrupt/exception state in the cleanup_T
- * structure pointed to by "csp", which has to be passed as an argument to
- * leave_cleanup() after the autocommand execution has finished.
+ * Functions to be called before/after invoking a sequence of autocommands for
+ * cleanup for a failed command.  (Failure means here that a call to emsg()
+ * has been made, an interrupt occurred, or there is an uncaught exception
+ * from a previous autocommand execution of the same command.)
+ *
+ * Call enter_cleanup() with a pointer to a cleanup_T and pass the same
+ * pointer to leave_cleanup().  The cleanup_T structure stores the pending
+ * error/interrupt/exception state.
+ */
+
+/*
+ * This function works a bit like ex_finally() except that there was not
+ * actually an extra try block around the part that failed and an error or
+ * interrupt has not (yet) been converted to an exception.  This function
+ * saves the error/interrupt/ exception state and prepares for the call to
+ * do_cmdline() that is going to be made for the cleanup autocommand
+ * execution.
  */
     void
 enter_cleanup(csp)
@@ -1883,16 +1889,19 @@ enter_cleanup(csp)
 }
 
 /*
- * Function to be called after a failed command invoked a sequence of
- * autocommands for cleanup.  It is a bit like ex_endtry() except that there
- * was not actually an extra try block around the part that failed and an
- * error or interrupt had not (yet) been converted to an exception when the
- * cleanup autocommand sequence was invoked.  This function has to be called
- * with the address of the cleanup_T structure filled by enter_cleanup() as an
- * argument; it restores the error/interrupt/exception state saved by that
- * function - except there was an aborting error, an interrupt or an uncaught
- * exception during execution of the cleanup autocommands.  In the latter
- * case, the saved error/interrupt/ exception state is discarded.
+ * See comment above enter_cleanup() for how this function is used.
+ *
+ * This function is a bit like ex_endtry() except that there was not actually
+ * an extra try block around the part that failed and an error or interrupt
+ * had not (yet) been converted to an exception when the cleanup autocommand
+ * sequence was invoked.
+ *
+ * This function has to be called with the address of the cleanup_T structure
+ * filled by enter_cleanup() as an argument; it restores the error/interrupt/
+ * exception state saved by that function - except there was an aborting
+ * error, an interrupt or an uncaught exception during execution of the
+ * cleanup autocommands.  In the latter case, the saved error/interrupt/
+ * exception state is discarded.
  */
     void
 leave_cleanup(csp)
@@ -1959,7 +1968,7 @@ leave_cleanup(csp)
 
 	/* Report if required by the 'verbose' option or when debugging. */
 	report_resume_pending(pending,
-		(pending & CSTP_THROW) ? (void *)current_exception : NULL);
+		   (pending & CSTP_THROW) ? (void *)current_exception : NULL);
     }
 }
 

@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2004 Jul 05
+" Last Change:	2004 Dec 09
 
 " If there already is an option window, jump to that one.
 if bufwinnr("option-window") > 0
@@ -889,6 +889,8 @@ call append("$", "\t(global or local to buffer)")
 call <SID>BinOptionG("ar", &ar)
 call append("$", "patchmode\tkeep oldest version of a file; specifies file name extension")
 call <SID>OptionG("pm", &pm)
+call append("$", "fsync\tforcibly sync the file to disk after writing it")
+call <SID>BinOptionG("fs", &fs)
 if !has("msdos")
   call append("$", "shortname\tuse 8.3 file names")
   call append("$", "\t(local to buffer)")

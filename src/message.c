@@ -487,7 +487,7 @@ msg_source(attr)
     }
 
     /* remember the last sourcing name printed, also when it's empty */
-    if (sourcing_name == NULL || other_sourcing_name)
+    if (sourcing_name == NULL || other_sourcing_name())
     {
 	vim_free(last_sourcing_name);
 	if (sourcing_name == NULL)

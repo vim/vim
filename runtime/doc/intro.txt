@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 7.0aa.  Last change: 2004 Oct 08
+*intro.txt*     For Vim version 7.0aa.  Last change: 2004 Nov 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -350,7 +350,7 @@ and <> are part of what you type, the context should make this clear.
 		concatenated.  For example, {a-zA-Z0-9} is any alphanumeric
 		character.
 
-							*{motion}*
+						*{motion}* *movement*
 {motion}	A command that moves the cursor.  These are explained in
 		|motion.txt|.  Examples:
 			w		to start of next word

@@ -40,6 +40,7 @@ int mouse_model_popup __ARGS((void));
 void scroll_start __ARGS((void));
 void cursor_on __ARGS((void));
 void cursor_off __ARGS((void));
+void term_cursor_shape __ARGS((void));
 void scroll_region_set __ARGS((win_T *wp, int off));
 void scroll_region_reset __ARGS((void));
 void clear_termcodes __ARGS((void));

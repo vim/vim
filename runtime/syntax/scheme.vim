@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Scheme (R5RS)
-" Last Change:	July 14, 2004
-" Maintainer:	Sergey Khorev <iamphet@nm.ru>
+" Last Change:	Nov 28, 2004
+" Maintainer:	Sergey Khorev <sergey.khorev@gmail.com>
 " Original author:	Dirk van Deun <dirk@igwe.vub.ac.be>
 
 " This script incorrectly recognizes some junk input as numerals:
@@ -143,7 +143,7 @@ syn region schemeStruc matchgroup=Delimiter start="\[" matchgroup=Delimiter end=
 syn region schemeStruc matchgroup=Delimiter start="#\[" matchgroup=Delimiter end="\]" contains=ALL
 
 " Simple literals:
-syn region	schemeString	start=+"+  skip=+\\[\\"]+ end=+"+
+syn region schemeString start=+\%(\\\)\@<!"+ skip=+\\[\\"]+ end=+"+
 
 " Comments:
 
@@ -172,15 +172,16 @@ syn match	schemeChar	oneline    "#\\newline"
 syn match	schemeError	oneline    !#\\newline[^ \t\[\]()";]\+!
 
 if exists("b:is_mzscheme") || exists("is_mzscheme")
-    " MzScheme extensions added by Sergey Khorev
+    " MzScheme extensions
     " multiline comment
-    syntax region schemeMultilineComment start=/#|/ end=/|#/
+    syn region	schemeComment start="#|" end="|#"
+
     " #%xxx are the special MzScheme identifiers
     syn match schemeOther oneline    "#%[-a-z!$%&*/:<=>?^_~0-9+.@#%]\+"
     " anything limited by |'s is identifier
     syn match schemeOther oneline    "|[^|]\+|"
 
-    syn match	schemeChar	oneline    "#\\return"
+    syn match	schemeChar	oneline    "#\\\%(return\|tab\)"
 
     " Modules require stmt
     syn keyword schemeExtSyntax module require dynamic-require lib prefix all-except prefix-all-except rename
@@ -230,12 +231,19 @@ endif
 
 
 if exists("b:is_chicken") || exists("is_chicken")
+    " multiline comment
+    syntax region schemeMultilineComment start=/#|/ end=/|#/ contains=schemeMultilineComment
+
     syn match schemeOther oneline    "##[-a-z!$%&*/:<=>?^_~0-9+.@#%]\+"
     syn match schemeExtSyntax oneline    "#:[-a-z!$%&*/:<=>?^_~0-9+.@#%]\+"
 
     syn keyword schemeExtSyntax unit uses declare hide foreign-declare foreign-parse foreign-parse/spec
-    syn keyword schemeExtSyntax foreign-lambda foreign-lambda* 
-    syn keyword schemeExtSyntax let-optionals let-optionals* define-foreign-variable
+    syn keyword schemeExtSyntax foreign-lambda foreign-lambda* define-external define-macro load-library
+    syn keyword schemeExtSyntax let-values let*-values letrec-values ->string require-extension
+    syn keyword schemeExtSyntax let-optionals let-optionals* define-foreign-variable define-record
+    syn keyword schemeExtSyntax pointer tag-pointer tagged-pointer? define-foreign-type
+    syn keyword schemeExtSyntax require require-for-syntax cond-expand and-let* receive argc+argv
+    syn keyword schemeExtSyntax fixnum? fx= fx> fx< fx>= fx<= fxmin fxmax
     syn keyword schemeExtFunc ##core#inline ##sys#error ##sys#update-errno
 
     " here-string

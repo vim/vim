@@ -789,8 +789,7 @@ _WndProc(
 	    break;
 	}
 #ifdef MSWIN_FIND_REPLACE
-	else
-	if (uMsg == s_findrep_msg && s_findrep_msg != 0)
+	else if (uMsg == s_findrep_msg && s_findrep_msg != 0)
 	{
 	    _OnFindRepl();
 	}
@@ -1409,20 +1408,6 @@ gui_mch_set_bg_color(guicolor_T color)
 # include <ime.h>   /* Apparently not needed for Cygwin, MingW or Borland. */
 #endif
 #include <imm.h>
-
-/*
- * display composition string(korean)
- */
-    static void
-DisplayCompStringOpaque(char_u *s, int len)
-{
-    int OldBkMode = GetBkMode(s_hdc);
-
-    SetBkMode(s_hdc, OPAQUE);
-    gui_outstr_nowrap(s, len, GUI_MON_TRS_CURSOR,
-					     (guicolor_T)0, (guicolor_T)0, 0);
-    SetBkMode(s_hdc, OldBkMode);
-}
 
 /*
  * handle WM_IME_NOTIFY message

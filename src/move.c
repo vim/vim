@@ -1551,7 +1551,12 @@ scrollup_clamp()
 	    --curwin->w_topfill;
 	else
 #endif
+	{
+#ifdef FEAT_FOLDING
+	    (void)hasFolding(curwin->w_topline, NULL, &curwin->w_topline);
+#endif
 	    ++curwin->w_topline;
+	}
 	++curwin->w_botline;		/* approximate w_botline */
 	curwin->w_valid &= ~(VALID_WROW|VALID_CROW|VALID_BOTLINE);
     }

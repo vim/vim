@@ -2,7 +2,7 @@
 " Language:	tpp - Text Presentation Program
 " Maintainer:	Gerfried Fuchs <alfie@ist.org>
 " Filenames:	*.tpp
-" Last Change:	13. October 2004
+" Last Change:	28. October 2004
 " URL:		http://alfie.ist.org/projects/vim/syntax/tpp.vim
 " License:	BSD
 "
@@ -25,7 +25,7 @@ endif
 
 "" list of the legal switches/options
 syn match tppAbstractOptionKey contained "^--\%(author\|title\|date\) *" nextgroup=tppValue
-syn match tppPageLocalOptionKey contained "^--\%(heading\|center\|right\|sleep\|huge\|exec\) *" nextgroup=tppValue
+syn match tppPageLocalOptionKey contained "^--\%(heading\|center\|right\|huge\|sethugefont\|exec\) *" nextgroup=tppValue
 syn match tppPageLocalSwitchKey contained "^--\%(horline\|-\|\%(begin\|end\)\%(\%(shell\)\?output\|slide\%(left\|right\|top\|bottom\)\)\|\%(bold\|rev\|ul\)\%(on\|off\)\|withborder\)"
 syn match tppNewPageOptionKey contained "^--newpage *" nextgroup=tppValue
 syn match tppColorOptionKey contained "^--\%(\%(bg\|fg\)\?color\) *"
@@ -39,7 +39,7 @@ syn region tppPageLocalSwitch start="^--" end="$" contains=tppPageLocalSwitchKey
 syn region tppColorOption start="^--\%(\%(bg\|fg\)\?color\)" end="$" contains=tppColorOptionKey,tppColor oneline
 syn region tppTimeOption start="^--sleep" end="$" contains=tppTimeOptionKey,tppTime oneline
 syn region tppNewPageOption start="^--newpage" end="$" contains=tppNewPageOptionKey oneline
-syn region tppPageLocalOption start="^--\%(heading\|center\|right\|sleep\|huge\|exec\)" end="$" contains=tppPageLocalOptionKey oneline
+syn region tppPageLocalOption start="^--\%(heading\|center\|right\|huge\|sethugefont\|exec\)" end="$" contains=tppPageLocalOptionKey oneline
 syn region tppAbstractOption start="^--\%(author\|title\|date\)" end="$" contains=tppAbstractOptionKey oneline
 
 if main_syntax != 'sh'
@@ -55,6 +55,7 @@ if main_syntax != 'sh'
 
 endif
 
+syn match tppComment "^--##.*$"
 
 " Define the default highlighting.
 " For version 5.7 and earlier: only when not done already
@@ -76,6 +77,7 @@ if version >= 508 || !exists("did_tpp_syn_inits")
   HiLink tppValue			String
   HiLink tppColor			String
   HiLink tppTime			Number
+  HiLink tppComment			Comment
   HiLink tppAbstractOption		Error
   HiLink tppPageLocalOption		Error
   HiLink tppPageLocalSwitch		Error

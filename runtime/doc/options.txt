@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2004 Oct 21
+*options.txt*	For Vim version 7.0aa.  Last change: 2004 Dec 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -138,6 +138,9 @@ example, if Alt-b produces <Esc>b, use this: >
 	:set <M-b>=^[b
 (the ^[ is a real <Esc> here, use CTRL-V <Esc> to enter it)
 The advantage over a mapping is that it works in all situations.
+
+The t_xx options cannot be set from a |modeline| or in the |sandbox|, for
+security reasons.
 
 The listing from ":set" looks different from Vi.  Long string options are put
 at the end of the list.  The number of options is quite large.  The output of
@@ -953,6 +956,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	accidentally overwriting existing files with a backup file.  You might
 	prefer using ".bak", but make sure that you don't have files with
 	".bak" that you want to keep.
+	Only normal file name characters can be used, "/\*?[|<>" are illegal.
 
 	If you like to keep a lot of backups, you could use a BufWritePre
 	autocommand to change 'backupext' just before writing the file to
@@ -1835,7 +1839,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 			everything inside quotes is ignored.  When matching a
 			paren inside quotes, it will find the matching one (if
 			there is one).  This works very well for C programs.
-								*cpo-star*
+			This flag is also used for other features, such as
+			C-indenting.
+			 					cpo-star*
 		*	Use ":*" in the same way as ":@".  When not included,
 			":*" is an alias for ":'<,'>", select the Visual area.
 								*cpo-<*
@@ -2479,6 +2485,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	type that is actually stored with the file.
 	This option is not copied to another buffer, independent of the 's' or
 	'S' flag in 'cpoptions'.
+	Only normal file name characters can be used, "/\*?[|<>" are illegal.
 
 						*'fillchars'* *'fcs'*
 'fillchars' 'fcs'	string	(default "vert:|,fold:-")
@@ -2725,6 +2732,20 @@ A jump table for the options with a short description can be found at |Q_op|.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
+							*'fsync'* *'fs'*
+'fsync' 'fs'		boolean	(default on)
+			global
+			{not in Vi}
+	When on, the library function fsync() will be called after writing a
+	file.  This will flush a file to disk, ensuring that it is safely
+	written even on filesystems which do metadata-only journaling.  This
+	will force the harddrive to spin up on Linux systems running in laptop
+	mode, so it may be undesirable in some situations.  Be warned that
+	turning this off increases the chances of data loss after a crash.  On
+	systems without an fsync() implementation, this variable is always
+	off.
+	Also see 'swapsync' for controlling fsync() on swap files.
+
 				   *'gdefault'* *'gd'* *'nogdefault'* *'nogd'*
 'gdefault' 'gd'		boolean	(default off)
 			global
@@ -2791,6 +2812,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	the height of the cursor can be changed.  This can be done by
 	specifying a block cursor, or a percentage for a vertical or
 	horizontal cursor.
+	For a console the 't_SI' and 't_EI' escape sequences are used.
 
 	The option is a comma separated list of parts.  Each part consist of a
 	mode-list and an argument-list:
@@ -3686,6 +3708,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Setting this option to a valid keymap name has the side effect of
 	setting 'iminsert' to one, so that the keymap becomes effective.
 	'imsearch' is also set to one, unless it was -1
+	Only normal file name characters can be used, "/\*?[|<>" are illegal.
 
 					*'keymodel'* *'km'*
 'keymodel' 'km'		string	(default "")
@@ -3777,6 +3800,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	matter what $LANG is set to: >
 		:set langmenu=nl_NL.ISO_8859-1
 <	When 'langmenu' is empty, |v:lang| is used.
+	Only normal file name characters can be used, "/\*?[|<>" are illegal.
 	If your $LANG is set to a non-English language but you do want to use
 	the English menus: >
 		:set langmenu=none
@@ -4427,6 +4451,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Using 'patchmode' for compressed files appends the extension at the
 	end (e.g., "file.gz.orig"), thus the resulting name isn't always
 	recognized as a compressed file.
+	Only normal file name characters can be used, "/\*?[|<>" are illegal.
 
 					*'path'* *'pa'* *E343* *E345* *E347*
 'path' 'pa'		string	(default on Unix: ".,/usr/include,,"
@@ -4537,6 +4562,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			feature}
 	The name of the printer to be used for |:hardcopy|.
 	See |pdev-option|.
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
 
 						*'printencoding'* *'penc'*
 'printencoding' 'penc'	String	(default empty, except for some systems)
@@ -5647,6 +5674,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	systems the swap file will not be written at all.  For a unix system
 	setting it to "sync" will use the sync() call instead of the default
 	fsync(), which may work better on some systems.
+	The 'fsync' option is used for the actual file.
 
 						*'switchbuf'* *'swb'*
 'switchbuf' 'swb'	string	(default "")
@@ -5687,6 +5715,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Syntax autocommand event is triggered with the value as argument.
 	This option is not copied to another buffer, independent of the 's' or
 	'S' flag in 'cpoptions'.
+	Only normal file name characters can be used, "/\*?[|<>" are illegal.
 
 					*'tabstop'* *'ts'*
 'tabstop' 'ts'		number	(default 8)
@@ -6065,6 +6094,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	This option will be used for the window title when exiting Vim if the
 	original title cannot be restored.  Only happens if 'title' is on or
 	'titlestring' is not empty.
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
 						*'titlestring'*
 'titlestring'		string	(default "")
 			global
@@ -6649,8 +6680,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 		keys can be mapped.
 	If the menu is disabled by excluding 'm' from 'guioptions', the ALT
 	key is never used for the menu.
-	In the Win32 version, the <F10> key is handled like this too, since
-	Windows uses it to select a menu.
+	This option is not used for <F10>; on Win32 and with GTK <F10> will
+	select the menu, unless it has been mapped.
 
 						*'winheight'* *'wh'* *E591*
 'winheight' 'wh'	number	(default 1)

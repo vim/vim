@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.0aa.  Last change: 2004 Oct 11
+*change.txt*    For Vim version 7.0aa.  Last change: 2004 Nov 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -350,23 +350,24 @@ CTRL-X			Subtract [count] from the number or alphabetic
 The CTRL-A and CTRL-X commands work for (signed) decimal numbers, unsigned
 octal and hexadecimal numbers and alphabetic characters.  This depends on the
 'nrformats' option.
-- When 'nrformats' includes "alpha", Vim will change the alphabetic character
-  under or after the cursor.  This is useful to make lists with an alphabetic
-  index.
-- When 'nrformats' includes "hex", Vim assumes numbers starting with '0x' or
-  '0X' are hexadecimal.  The case of the rightmost letter in the number
-  determines the case of the resulting hexadecimal number.  If there is no
-  letter in the current number, Vim uses the previously detected case.
 - When 'nrformats' includes "octal", Vim considers numbers starting with a '0'
   to be octal.  Other numbers are decimal and may have a preceding minus sign.
   If the cursor is on a number, the commands apply to that number; otherwise
   Vim uses the number to the right of the cursor.
+- When 'nrformats' includes "hex", Vim assumes numbers starting with '0x' or
+  '0X' are hexadecimal.  The case of the rightmost letter in the number
+  determines the case of the resulting hexadecimal number.  If there is no
+  letter in the current number, Vim uses the previously detected case.
+- When 'nrformats' includes "alpha", Vim will change the alphabetic character
+  under or after the cursor.  This is useful to make lists with an alphabetic
+  index.
 
 For numbers with leading zeros (including all octal and hexadecimal numbers),
 Vim preserves the number of characters in the number when possible.  CTRL-A on
-"0077" results in "0100", CTRL-X on "0x100" results in "0x0ff".  Note that
-when 'nrformats' includes "octal", decimal numbers with leading zeros are
-impossible because they are indistinguishable from octal numbers.
+"0077" results in "0100", CTRL-X on "0x100" results in "0x0ff".
+
+Note that when 'nrformats' includes "octal", decimal numbers with leading
+zeros are impossible because they are indistinguishable from octal numbers.
 
 The CTRL-A command is very useful in a macro.  Example: Use the following
 steps to make a numbered list.
@@ -863,8 +864,10 @@ inside of strings can change!  Also see 'softtabstop' option. >
 							*<MiddleMouse>*
 ["x]<MiddleMouse>	Put the text from a register before the cursor [count]
 			times.  Uses the "* register, unless another is
-			specified.  Using the mouse only works when 'mouse'
-			contains 'n' or 'a'.
+			specified.  
+			Leaves the cursor at the end of the new text.
+			Using the mouse only works when 'mouse' contains 'n'
+			or 'a'.
 			{not in Vi}
 			If you have a scrollwheel and often accidentally paste
 			text, you can use these mappings to disable the

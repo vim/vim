@@ -2,14 +2,14 @@
 "                    netrw's browsers' x command ("eXecute launcher")
 " Author:	Charles E. Campbell, Jr.
 " Date:		Aug 31, 2004
-" Version:	3a	NOT RELEASED
+" Version:	3
 
 " ---------------------------------------------------------------------
 " Prevent Reloading: {{{1
 if exists("g:loaded_netrwfilehandlers") || &cp
  finish
 endif
-let g:loaded_netrwfilehandlers= "v3a"
+let g:loaded_netrwfilehandlers= "v3"
 
 " ---------------------------------------------------------------------
 " NetrwFileHandler_html: handles html when the user hits "x" when the {{{1
@@ -153,7 +153,7 @@ endfun
 fun! NetrwFileHandler_pdf(pdf)
 "  " call Dfunc("NetrwFileHandler_pdf(pdf<".a:pdf.">)")
   if executable("gs")
-   exe "silent! !gs ".a:pdf
+   exe 'silent! !gs "'.a:pdf.'"'
   else
 "   " call Dret("NetrwFileHandler_pdf 0")
    return 0
@@ -168,7 +168,7 @@ endfun
 fun! NetrwFileHandler_sxw(sxw)
 "  " call Dfunc("NetrwFileHandler_sxw(sxw<".a:sxw.">)")
   if executable("gs")
-   exe "silent! !gs ".a:sxw
+   exe 'silent! !gs "'.a:sxw.'"'
   else
 "   " call Dret("NetrwFileHandler_sxw 0")
    return 0
@@ -184,7 +184,7 @@ fun! NetrwFileHandler_doc(doc)
 "  " call Dfunc("NetrwFileHandler_doc(doc<".a:doc.">)")
 
   if executable("oowriter")
-   exe "silent! !oowriter ".a:doc
+   exe 'silent! !oowriter "'.a:doc.'"'
    redraw!
   else
 "   " call Dret("NetrwFileHandler_doc 0")
@@ -201,7 +201,7 @@ fun! NetrwFileHandler_sxw(sxw)
 "  " call Dfunc("NetrwFileHandler_sxw(sxw<".a:sxw.">)")
 
   if executable("oowriter")
-   exe "silent! !oowriter ".a:sxw
+   exe 'silent! !oowriter "'.a:sxw.'"'
    redraw!
   else
 "   " call Dret("NetrwFileHandler_sxw 0")
@@ -218,7 +218,7 @@ fun! NetrwFileHandler_xls(xls)
 "  " call Dfunc("NetrwFileHandler_xls(xls<".a:xls.">)")
 
   if executable("oocalc")
-   exe "silent! !oocalc ".a:xls
+   exe 'silent! !oocalc "'.a:xls.'"'
    redraw!
   else
 "   " call Dret("NetrwFileHandler_xls 0")

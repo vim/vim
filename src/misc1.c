@@ -7653,6 +7653,12 @@ get_lisp_indent()
     void
 prepare_to_exit()
 {
+#if defined(UNIX)
+    /* Ignore SIGHUP, because a dropped connection may make Vim exit and then
+     * get a SIGHUP while exiting, which causes various reentrent problems. */
+    signal(SIGHUP, SIG_IGN);
+#endif
+
 #ifdef FEAT_GUI
     if (gui.in_use)
     {

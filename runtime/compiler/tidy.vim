@@ -1,8 +1,8 @@
 " Vim compiler file
 " Compiler:	HTML Tidy
-" Maintainer:	Doug Kearns <djkea2@mugca.its.monash.edu.au>
-" URL:		http://mugca.its.monash.edu.au/~djkea2/vim/compiler/tidy.vim
-" Last Change:	2004 Mar 27
+" Maintainer:	Doug Kearns <djkea2@gus.gscit.monash.edu.au>
+" URL:		http://gus.gscit.monash.edu.au/~djkea2/vim/compiler/tidy.vim
+" Last Change:	2004 Nov 27
 
 " NOTE: set 'tidy_compiler_040800' if you are using the 4th August 2000 release
 "       of HTML Tidy.

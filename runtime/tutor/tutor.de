@@ -67,7 +67,7 @@ Bemerkung: Die Cursor-Tasten sollten ebenfalls funktionieren.  Aber wenn Du
      Wenn Du die Änderungen speichern und beenden willst, tippe:
 				:wq  <ENTER>
 
-  3. Wenn Du die Eingabeaufforderung siehst, tippe das Kommando, dass Dich zu
+  3. Wenn Du die Eingabeaufforderung siehst, tippe das Kommando, das Dich zu
      diesem Tutor geführt hat. Das könnte sein: vimtutor <ENTER>
      Im Normalfall würdest Du eingeben			Vim tutor <ENTER>
 
@@ -299,11 +299,11 @@ Bemerkung:  Für die Wagemutigen: die Eingabe lediglich des Objekt-Teils im
 			   Lektion 3.1: ANFÜGEN (PUT)
 
 
-       ** Tippe p ,um das zuletzt Gelöschte nach dem Cursor anzufügen. **
+       ** Tippe p , um das zuletzt Gelöschte nach dem Cursor anzufügen. **
 
   1. Bewege den Cursor zur ersten Zeile des unten stehenden Sinnspruchs.
 
-  2. Tippe  dd  , um die Zeile zu löschen und sie im Vims Puffer zu speichern.
+  2. Tippe  dd  , um die Zeile zu löschen und sie in Vims Puffer zu speichern.
 
   3. Bewege den Cursor zur Zeile ÜBER derjenigen,
      wo die gelöschte Zeile platziert werden soll.
@@ -350,7 +350,7 @@ Bemerkung: Erinnere Dich, dass Du durch Anwenden lernen solltest, nicht durch
 
   1. Bewege den Cursor zur ersten unten stehenden, mit ---> markierten Zeile.
 
-  2. Plaziere den Cursor auf das s von Wstwr.
+  2. Platziere den Cursor auf das s von Wstwr.
 
   3. Tippe  cw  und die Wortkorrektur ein (in diesem Fall, tippe  'örter'.)
 
@@ -372,7 +372,7 @@ Bemerke, dass  cw  nicht nur das Wort ersetzt, sondern Dich außerdem in den
 
      ** Das change-Kommando arbeitet mit denselben Objekten wie delete  **
 
-  1. Das change Kommando arbeitet gleicher Weise wie delete. Das Format ist:
+  1. Das change Kommando arbeitet in gleicher Weise wie delete. Das Format ist:
 
        [Nummer]   c   Objekt       ODER       c   [Nummer]   Objekt
 
@@ -393,7 +393,7 @@ Bemerke, dass  cw  nicht nur das Wort ersetzt, sondern Dich außerdem in den
 			   ZUSAMMENFASSUNG VON LEKTION 3
 
 
-  1. Um einen vorher gelöschten Text anzufügen, tippe  p  . Diese fügt den
+  1. Um einen vorher gelöschten Text anzufügen, tippe  p  . Dies fügt den
      gelöschten Text NACH dem Cursor an (wenn es sich um eine ganze Zeile
      handelt, wird ab der Zeile unter dem Cursor eingefügt).
 
@@ -463,7 +463,7 @@ Nun fahre mit der nächsten Lektion fort.
 
    ** Tippe  % , um eine korrespondierende Klammer ),], oder } zu finden. **
 
-  1. Plaziere den Cursor auf irgendeinem der Zeichen (, [, oder {
+  1. Platziere den Cursor auf irgendeinem der Zeichen (, [, oder {
      in der unten stehenden Zeile, die mit ---> markiert ist.
 
   2. Nun tippe das  %  Zeichen.
@@ -612,7 +612,7 @@ Bemerkung: Diese Funktionalität ist sehr nützlich bei der Fehlersuche in einem
   1. Tippe   :!ls   bzw.   !dir ,  um sicherzustellen, dass Deine Datei TEST
      von vorhin vorhanden ist.
 
-  2. Plaziere den Cursor auf der ersten Zeile dieses Kapitels.
+  2. Platziere den Cursor auf der ersten Zeile dieses Kapitels.
 
 BEACHTE:  Nachdem Du Schritt 3 ausgeführt hast, wirst Du Lektion 5.3  sehen.
 	  An diesem Punkt bewege Dich wieder ABWÄRTS zu dieser Lektion.
@@ -706,7 +706,7 @@ Bemerkung: Dies macht es überflüssig, erst i zu tippen, dann das letzte
 
   1. Bewege den Cursor zur ersten unten stehenden, mit ---> markierten Zeile.
 
-  2. Plaziere den Cursor auf den Anfang des ersten Wortes, welches sich von
+  2. Platziere den Cursor auf den Anfang des ersten Wortes, welches sich von
      der zweiten mit ---> markierten Zeile unterscheidet (das Wort 'benutze').
 
   3. Nun gib ein R  ein, und ersetze den Rest des Textes auf der ersten
@@ -825,10 +825,18 @@ Du kannst all Deine Lieblingsoptionen zu dieser "vimrc" - Datei zufügen.
   Für weiteres Lesen und Lernen kann folgendes Buch empfohlen werden:
 	Vim - Vi Improved - von Steve Oualline
 	Verlag: New Riders
-  Das erste Buch, dass durchgängig Vim gewidmet ist.  Besonders nützlich
+  Das erste Buch, das durchgängig Vim gewidmet ist.  Besonders nützlich
   für Anfänger.
   Viele Beispiele und Bilder sind enthalten.
   Siehe http://www.iccf.nl/click5.html
+
+  Als aktuelle Referenz fï¿½r Version 6.2 und knappe Einfï¿½hrung dient das
+  folgende Buch:
+        vim ge-packt von Reinhard Wobst
+	mitp-Verlag, ISBN 3-8266-1425-9
+  Trotz der kompakten Darstellung ist es durch viele nï¿½tzliche Beispiele auch
+  fï¿½r Einsteiger empfehlenswert.  Probekapitel und die Beispielskripte sind
+  online erhï¿½ltlich.  Siehe http://www.iccf.nl/click5.html
 
   Folgendes Buch ist älter und mehr über Vi als Vim, aber auch empfehlenswert:
 	Linda Lamb und Arnold Robbins

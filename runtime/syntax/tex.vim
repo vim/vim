@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	TeX
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrOchipS@PcampbellAfamily.Mbiz>
-" Last Change:	Jun 15, 2004
-" Version:	25
+" Last Change:	Oct 13, 2004
+" Version:	26
 " URL:		http://www.erols.com/astronaut/vim/index.html#vimlinks_syntax
 "
 " Notes: {{{1
@@ -112,7 +112,7 @@ else
  syn region texMatcher		matchgroup=Delimiter start="{" skip="\\\\\|\\[{}]"	end="}"		contains=@texMatchGroup
  syn region texMatcher		matchgroup=Delimiter start="\["				end="]"		contains=@texMatchGroup
 endif
-syn region texParen		start="("						end=")"		contains=@texMatchGroup
+syn region texParen		start="("						end=")"		contains=@texMatchGroup,@Spell
 if !exists("g:tex_no_error")
  syn match  texError		"[}\])]"
 endif
@@ -233,9 +233,24 @@ syn match texSpaceCode		"\\\(math\|cat\|del\|lc\|sf\|uc\)code`"me=e-1 nextgroup=
 syn match texSpaceCodeChar    "`\\\=.\(\^.\)\==\(\d\|\"\x\{1,6}\|`.\)"	contained
 
 " Sections, subsections, etc: {{{1
-syn match texSection		"\\\(sub\)*section\*\=\>"
-syn match texSection		"\\\(title\|author\|part\|chapter\|paragraph\|subparagraph\)\>"
-syn match texSection		"\\begin\s*{\s*abstract\s*}\|\\end\s*{\s*abstract\s*}"
+if exists("tex_dosynfolds") && has("folding")
+ " COMBAK -- this folding doesn't work as expected as yet
+ syn region Red	matchgroup=texSection start="\\section\*\=\>"			end="\\\%(sub\)*\%(abstract\|section\|author\|part\|chapter\|paragraph\|subparagraph\)\*\=\>"me=s end="%\s*stopzone\>" fold
+" syn region Red	matchgroup=texSection start="\\section\*\=\>"			end="\ze\\\(sub\)*\(abstract\|section\|author\|part\|chapter\|paragraph\|subparagraph\)\*\=\>" end="%\s*stopzone\>" contains=TOP fold
+" syn region Blue	matchgroup=texSection start="\\subsection\*\=\>"		end="\ze\\\(sub\)*\(abstract\|section\|author\|part\|chapter\|paragraph\|subparagraph\)\*\=\>" contains=TOP fold
+" syn region texSectionZone	matchgroup=texSection start="\\subsubsection\*\=\>"		end="\ze\\\(sub\)*\(abstract\|section\|author\|part\|chapter\|paragraph\|subparagraph\)\*\=\>" contains=TOP fold
+" syn region texSectionZone	matchgroup=texSection start="\\title\*\=\>"			end="\ze\\\(sub\)*\(abstract\|section\|author\|part\|chapter\|paragraph\|subparagraph\)\*\=\>" contains=TOP fold
+" syn region texSectionZone	matchgroup=texSection start="\\author\*\=\>"			end="\ze\\\(sub\)*\(abstract\|section\|author\|part\|chapter\|paragraph\|subparagraph\)\*\=\>" contains=TOP fold
+" syn region texSectionZone	matchgroup=texSection start="\\part\*\=\>"			end="\ze\\\(sub\)*\(abstract\|section\|author\|part\|chapter\|paragraph\|subparagraph\)\*\=\>" contains=TOP fold
+" syn region texSectionZone	matchgroup=texSection start="\\chapter\*\=\>"			end="\ze\\\(sub\)*\(abstract\|section\|author\|part\|chapter\|paragraph\|subparagraph\)\*\=\>" contains=TOP fold
+" syn region texSectionZone	matchgroup=texSection start="\\paragraph\*\=\>"		end="\ze\\\(sub\)*\(abstract\|section\|author\|part\|chapter\|paragraph\|subparagraph\)\*\=\>" contains=TOP fold
+" syn region texSectionZone	matchgroup=texSection start="\\subparagraph\*\=\>"		end="\ze\\\(sub\)*\(abstract\|section\|author\|part\|chapter\|paragraph\|subparagraph\)\*\=\>" contains=TOP fold
+" syn region texSectionZone	matchgroup=texSection start="\\begin\s*{\s*abstract\s*}"	end="\\end\s*{\s*abstract\s*}"  contains=TOP fold
+else
+ syn match texSection		"\\\(sub\)*section\*\=\>"
+ syn match texSection		"\\\(title\|author\|part\|chapter\|paragraph\|subparagraph\)\>"
+ syn match texSection		"\\begin\s*{\s*abstract\s*}\|\\end\s*{\s*abstract\s*}"
+endif
 
 " Bad Math (mismatched): {{{1
 if !exists("tex_no_math")

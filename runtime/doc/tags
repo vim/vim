@@ -229,6 +229,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'formatoptions'	options.txt	/*'formatoptions'*
 'formatprg'	options.txt	/*'formatprg'*
 'fp'	options.txt	/*'fp'*
+'fs'	options.txt	/*'fs'*
+'fsync'	options.txt	/*'fsync'*
 'ft'	options.txt	/*'ft'*
 'gcr'	options.txt	/*'gcr'*
 'gd'	options.txt	/*'gd'*
@@ -756,6 +758,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 't_CV'	term.txt	/*'t_CV'*
 't_Co'	term.txt	/*'t_Co'*
 't_DL'	term.txt	/*'t_DL'*
+'t_EI'	term.txt	/*'t_EI'*
 't_F1'	term.txt	/*'t_F1'*
 't_F2'	term.txt	/*'t_F2'*
 't_F3'	term.txt	/*'t_F3'*
@@ -789,6 +792,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 't_KL'	term.txt	/*'t_KL'*
 't_RI'	term.txt	/*'t_RI'*
 't_RV'	term.txt	/*'t_RV'*
+'t_SI'	term.txt	/*'t_SI'*
 't_Sb'	term.txt	/*'t_Sb'*
 't_Sf'	term.txt	/*'t_Sf'*
 't_WP'	term.txt	/*'t_WP'*
@@ -4298,7 +4302,6 @@ cpo-o	options.txt	/*cpo-o*
 cpo-p	options.txt	/*cpo-p*
 cpo-r	options.txt	/*cpo-r*
 cpo-s	options.txt	/*cpo-s*
-cpo-star	options.txt	/*cpo-star*
 cpo-t	options.txt	/*cpo-t*
 cpo-u	options.txt	/*cpo-u*
 cpo-v	options.txt	/*cpo-v*
@@ -4929,7 +4932,6 @@ hebrew	hebrew.txt	/*hebrew*
 hebrew.txt	hebrew.txt	/*hebrew.txt*
 help	various.txt	/*help*
 help-context	help.txt	/*help-context*
-help-tags	tags	1
 help-translated	various.txt	/*help-translated*
 help-xterm-window	various.txt	/*help-xterm-window*
 help.txt	help.txt	/*help.txt*
@@ -5391,6 +5393,7 @@ mouse-mode-table	term.txt	/*mouse-mode-table*
 mouse-overview	term.txt	/*mouse-overview*
 mouse-swap-buttons	term.txt	/*mouse-swap-buttons*
 mouse-using	term.txt	/*mouse-using*
+movement	intro.txt	/*movement*
 ms-dos	os_msdos.txt	/*ms-dos*
 msdos	os_msdos.txt	/*msdos*
 msdos-arrows	os_msdos.txt	/*msdos-arrows*
@@ -5462,6 +5465,7 @@ netrw-B	pi_netrw.txt	/*netrw-B*
 netrw-D	pi_netrw.txt	/*netrw-D*
 netrw-R	pi_netrw.txt	/*netrw-R*
 netrw-S	pi_netrw.txt	/*netrw-S*
+netrw-U	pi_netrw.txt	/*netrw-U*
 netrw-activate	pi_netrw.txt	/*netrw-activate*
 netrw-b	pi_netrw.txt	/*netrw-b*
 netrw-bookmark	pi_netrw.txt	/*netrw-bookmark*
@@ -5507,6 +5511,7 @@ netrw-ref	pi_netrw.txt	/*netrw-ref*
 netrw-rename	pi_netrw.txt	/*netrw-rename*
 netrw-s	pi_netrw.txt	/*netrw-s*
 netrw-transparent	pi_netrw.txt	/*netrw-transparent*
+netrw-u	pi_netrw.txt	/*netrw-u*
 netrw-uidpass	pi_netrw.txt	/*netrw-uidpass*
 netrw-urls	pi_netrw.txt	/*netrw-urls*
 netrw-v	pi_netrw.txt	/*netrw-v*
@@ -5553,6 +5558,7 @@ new-indent-flex	version6.txt	/*new-indent-flex*
 new-items-6	version6.txt	/*new-items-6*
 new-items-7	version7.txt	/*new-items-7*
 new-line-continuation	version5.txt	/*new-line-continuation*
+new-manpage-trans	version7.txt	/*new-manpage-trans*
 new-multi-byte	version5.txt	/*new-multi-byte*
 new-multi-lang	version6.txt	/*new-multi-lang*
 new-network-files	version6.txt	/*new-network-files*
@@ -5690,6 +5696,7 @@ phtml-syntax	syntax.txt	/*phtml-syntax*
 phtml.vim	syntax.txt	/*phtml.vim*
 pi_expl.txt	pi_expl.txt	/*pi_expl.txt*
 pi_gzip.txt	pi_gzip.txt	/*pi_gzip.txt*
+pi_netrw.txt	pi_netrw.txt	/*pi_netrw.txt*
 pi_spec.txt	pi_spec.txt	/*pi_spec.txt*
 plugin	usr_05.txt	/*plugin*
 plugin-details	filetype.txt	/*plugin-details*
@@ -6084,6 +6091,7 @@ t_CS	term.txt	/*t_CS*
 t_CV	term.txt	/*t_CV*
 t_Co	term.txt	/*t_Co*
 t_DL	term.txt	/*t_DL*
+t_EI	term.txt	/*t_EI*
 t_F1	term.txt	/*t_F1*
 t_F2	term.txt	/*t_F2*
 t_F3	term.txt	/*t_F3*
@@ -6117,6 +6125,7 @@ t_KK	term.txt	/*t_KK*
 t_KL	term.txt	/*t_KL*
 t_RI	term.txt	/*t_RI*
 t_RV	term.txt	/*t_RV*
+t_SI	term.txt	/*t_SI*
 t_Sb	term.txt	/*t_Sb*
 t_Sf	term.txt	/*t_Sf*
 t_WP	term.txt	/*t_WP*
@@ -6299,6 +6308,8 @@ term.txt	term.txt	/*term.txt*
 termcap	term.txt	/*termcap*
 termcap-changed	version4.txt	/*termcap-changed*
 termcap-colors	term.txt	/*termcap-colors*
+termcap-cursor-color	term.txt	/*termcap-cursor-color*
+termcap-cursor-shape	term.txt	/*termcap-cursor-shape*
 termcap-syntax	syntax.txt	/*termcap-syntax*
 termcap-title	term.txt	/*termcap-title*
 terminal-colors	os_unix.txt	/*terminal-colors*

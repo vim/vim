@@ -1,7 +1,7 @@
 " Vim support file to switch on loading plugins for file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2003 May 10
+" Last change:	2004 Nov 22
 
 if exists("did_load_ftplugin")
   finish
@@ -14,7 +14,7 @@ augroup filetypeplugin
     if expand("<amatch>") != ""
       if exists("b:undo_ftplugin")
 	exe b:undo_ftplugin
-	unlet b:undo_ftplugin b:did_ftplugin
+	unlet! b:undo_ftplugin b:did_ftplugin
       endif
       if &cpo =~# "S" && exists("b:did_ftplugin")
 	" In compatible mode options are reset to the global values, need to
