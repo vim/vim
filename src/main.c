@@ -3158,7 +3158,7 @@ build_drop_cmd(filec, filev, sendReply)
     }
     /* Bring the window to the foreground, goto Insert mode when 'im' set and
      * clear command line. */
-    ga_concat(&ga, (char_u *)"cal foreground()|if &im|star|en|ec<CR>");
+    ga_concat(&ga, (char_u *)"cal foreground()|if &im|star|en|redr|f<CR>");
     ga_append(&ga, NUL);
     return ga.ga_data;
 }

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Dec 29
+*todo.txt*      For Vim version 7.0aa.  Last change: 2004 Dec 31
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,10 +30,12 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Go through patches from Martin Dalecki.  /tmp/dalecki/README
+When using ":new" relative cursor position causes first line to disappear.
+(Jens Paulus, Opening a new window)
 
 Awaiting response:
 -   Patch for mch_FullName() also in Vim 6.3?  os_mswin.c
+-   patch for MakePre and MakePost autocommands. (Ciaran McCreesh)
 -   Win32: "gvim -V100" should use dialog with scrollbar.  Using
     gui_mch_dialog() would be good, but need to move display_errors() to after
     creating the window, so that s_hwnd is valid.
@@ -47,8 +49,6 @@ Awaiting response:
 	Docs for ":nbkey".
 	Asked Gordon to send the differences again, some parts apparently are
 	missing.
--   Browsefilter support for KDE. (Dan Sharp, 2004 July)
--   Better configure check for KDE include files from Dan Sharp.
 
 
 PLANNED FOR VERSION 7.0:
@@ -56,6 +56,7 @@ PLANNED FOR VERSION 7.0:
 -   For string variables, use length instead of NUL termination?
 	+ can include NUL characters
 	- setline() will have problems with NL vs NUL.
+    Can use list of numbers instead (inefficient though).
 -   new DATA TYPES:
 	- None?  (or use empty string?)
 	- list
@@ -63,6 +64,7 @@ PLANNED FOR VERSION 7.0:
 	- function reference
 	Check old patch from Robert Webb for array support.
     Add type checking?  See ~/vim/ideas.txt.
+-   Add "{range}execute": execute lines from a buffer.
 -   Add SPELLCHECKER, with easy to add support for many languages.
     8   Add spell checking.  Use "ispell -a" somehow.
 	~/vim/patches/wm_vim-5_4d.zip  can be used as an example (includes
@@ -77,6 +79,9 @@ PLANNED FOR VERSION 7.0:
 	  times later.  Sort of global syntax items.
 	- Use wordlists from openoffice (myspell).  Work together with them to
 	  update the wordlist.  (Adri Verhoef, Aad Nales)
+	- Patch from Martin Dalecki. (2004 Dec)  Uses ispell
+	  implements "undercurl" attribute.  But how to set its color?
+	  Perhaps use "guicurl=Red" instead?
 -   REFACTORING: The main() function is very long.  Move parts to separate
     functions, especially loops.  Ideas from Walter Briscoe (2003 Apr 3, 2004
     Feb 9).
@@ -1343,6 +1348,8 @@ Printing:
 -   Add "page width" to wrap long lines.
 -   Win32: use a font dialog for setting 'printfont'.  Can reuse the code for
     the 'guifont' dialog, put the common code in a separate function.
+-   Add the file timestamp to the page header (with an option). (George
+    Reilly)
 -   Win32: when 'printfont' is empty use 'guifont'.
 -   Unix: Use some dialog box to do the obvious settings (paper size, printer
     name, portrait/landscape, etc).

@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2004 Dec 28
+*version7.txt*  For Vim version 7.0aa.  Last change: 2004 Dec 31
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -272,6 +272,10 @@ Also fixes the problem that setting 'clipboard' to "unnamed" breaks using
 
 Mac: GUI font selector. (Peter "Rain Dog" Cucka)
 
+GUI font selector for Motif. (Martin Dalecki)
+
+Mnemonics for the Motif find/replace dialog. (Martin Dalecki)
+
 Mac: better integration with Xcode.  Post a fake mouse-up event after the odoc
 event and the drag receive handler to work around a stall after Vim loads a
 file.  Fixed an off-by-one line number error. (Da Woon Jung)
@@ -372,6 +376,10 @@ with different 'encoding' settings to exchange messages.
 
 Internal: Changed ga_room into ga_maxlen, so that it doesn't need to be
 incremented/decremented each time.
+
+Included a few improvements for Motif from Martin Dalecki.  Draw label
+contents ourselves to make them handle fonts in a way configurable by Vim and
+a bit less dependent on the X11 font management.
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*
@@ -603,5 +611,20 @@ when building the ":drop" command.
 
 A comment or | just after a expresion-backtick argument was not recognized.
 E.g. in :e `="foo"`"comment.
+
+"(" does not stop at an empty sentence (single dot and white space) while ")"
+does.  Also breaks "das" on that dot.
+
+When doing "yy" with the cursor on a TAB the ruler could be wrong and "k"
+moved the cursor to another column.
+
+When 'commentstring' is '"%s' and there is a double quote in the line a double
+quote before the fold marker isn't removed in the text displayed for a  closed
+fold.
+
+In Visual mode, when 'bin' and 'eol' set, g CTRL-G counted the last line
+break, resulting in "selected 202 of 201 bytes".
+
+Motif: fonts were not used for dialog components. (Martin Dalecki)
 
  vim:tw=78:ts=8:ft=help:norl:

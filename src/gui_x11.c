@@ -1834,7 +1834,16 @@ gui_mch_init_font(font_name, do_fontset)
 
 #ifdef FEAT_XFONTSET
     XFontSet	fontset = NULL;
+#endif
 
+#ifdef FEAT_GUI_MOTIF
+    /* A font name equal "*" is indicating, that we should activate the font
+     * selection dialogue to get a new font name. So let us do it here. */
+    if (font_name != NULL && STRCMP(font_name, "*") == 0)
+	font_name = gui_xm_select_font(hl_get_font_name());
+#endif
+
+#ifdef FEAT_XFONTSET
     if (do_fontset)
     {
 	/* If 'guifontset' is set, VIM treats all font specifications as if
@@ -1936,6 +1945,10 @@ gui_mch_init_font(font_name, do_fontset)
 	}
     }
 
+#ifdef FEAT_GUI_MOTIF
+    gui_motif_synch_fonts();
+#endif
+
     return OK;
 }
 
@@ -1988,6 +2001,7 @@ gui_mch_get_font(name, giveErrorIfMissing)
     return (GuiFont)font;
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Return the name of font "font" in allocated memory.
  * Don't know how to get the actual name, thus use the provided name.
@@ -2002,6 +2016,7 @@ gui_mch_get_fontname(font, name)
 	return NULL;
     return vim_strsave(name);
 }
+#endif
 
     int
 gui_mch_adjust_charsize()
