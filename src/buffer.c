@@ -3474,7 +3474,7 @@ build_stl_str_hl(wp, out, outlen, fmt, fillchar, maxwidth, hl)
 
 	    curwin = o_curwin;
 	    curbuf = o_curbuf;
-	    do_unlet((char_u *)"g:actual_curbuf");
+	    do_unlet((char_u *)"g:actual_curbuf", TRUE);
 
 	    if (str != NULL && *str != 0)
 	    {
