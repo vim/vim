@@ -2514,7 +2514,7 @@ jumpend:
 		{
 		    /* The buffer is still loaded, the Filetype autocommands
 		     * need to be done now, in that buffer.  And then the
-		     * modelines (again). */
+		     * modelines need to be done (again). */
 		    aucmd_prepbuf(&aco, buf);
 		    apply_autocmds(EVENT_FILETYPE, buf->b_p_ft,
 						     buf->b_fname, TRUE, buf);
@@ -2631,6 +2631,9 @@ load_dummy_buffer(fname)
     newbuf = buflist_new(NULL, NULL, (linenr_T)1, BLN_DUMMY);
     if (newbuf == NULL)
 	return NULL;
+
+    /* Init the options. */
+    buf_copy_options(newbuf, BCO_ENTER | BCO_NOHELP);
 
 #ifdef FEAT_AUTOCMD
     /* set curwin/curbuf to buf and save a few things */

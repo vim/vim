@@ -1333,10 +1333,19 @@ retry:
 		 * If there is conversion error or not enough room try using
 		 * another conversion.
 		 */
-		if ((iconv(iconv_fd, (void *)&fromp, &from_size, &top, &to_size)
+		while ((iconv(iconv_fd, (void *)&fromp, &from_size,
+							       &top, &to_size)
 			    == (size_t)-1 && ICONV_ERRNO != ICONV_EINVAL)
 						  || from_size > CONV_RESTLEN)
-		    goto rewind_retry;
+		{
+		    if (!keep_dest_enc)
+			goto rewind_retry;
+		    /* Ignore a byte and try again. */
+		    ++fromp;
+		    --from_size;
+		    *top++ = '?';
+		    --to_size;
+		}
 
 		if (from_size > 0)
 		{

@@ -3182,6 +3182,36 @@ vim_regexec_multi(rmp, win, buf, lnum, col)
     return r;
 }
 
+#if 0	/* this does not appear to work... */
+# ifdef __MINGW32__
+#  define MINGW_TRY
+# endif
+#endif
+
+#ifdef MINGW_TRY
+/*
+ * Special assembly code for MingW to simulate __try / __except.
+ * Does not work with the optimizer!
+ */
+# include <excpt.h>
+
+static void *ESP_save;	/* used as _ESP below */
+static void *EBP_save;	/* used as _EBP below */
+
+__attribute__ ((cdecl))
+    EXCEPTION_DISPOSITION
+    _except_regexec_handler(
+	    struct _EXCEPTION_RECORD *ExceptionRecord,
+	    void *EstablisherFrame,
+	    struct _CONTEXT *ContextRecord,
+	    void *DispatcherContext)
+{
+    __asm__ __volatile__ (
+	    "jmp regexec_reentry");
+    return 0; /* Function does not return */
+}
+#endif
+
 /*
  * Match a regexp against a string ("line" points to the string) or multiple
  * lines ("line" is NULL, use reg_getline()).
@@ -3301,6 +3331,17 @@ vim_regexec_both(line, col)
 	    goto theend;
     }
 
+#ifdef MINGW_TRY
+    /* Ugly assembly code that is necessary to simulate "__try". */
+    __asm__ __volatile__ (
+	    "movl  %esp, _ESP_save" "\n\t"
+	    "movl  %ebp, _EBP_save");
+
+    __asm__ __volatile__ (
+	    "pushl $__except_regexec_handler" "\n\t"
+	    "pushl %fs:0" "\n\t"
+	    "mov   %esp, %fs:0");
+#endif
 #ifdef HAVE_TRY_EXCEPT
     __try
     {
@@ -3425,6 +3466,22 @@ inner_end:
 	    EMSG(_(e_complex));
 	retval = 0L;
     }
+#endif
+#ifdef MINGW_TRY
+    __asm__ __volatile__ (
+	    "jmp   regexec_pop" "\n"
+	    "regexec_reentry:" "\n\t"
+	    "movl  _ESP_save, %esp" "\n\t"
+	    "movl  _EBP_save, %ebp");
+
+	EMSG(_(e_complex));
+	retval = 0L;
+
+    __asm__ __volatile__ (
+	    "regexec_pop:" "\n\t"
+	    "mov   (%esp), %eax" "\n\t"
+	    "mov   %eax, %fs:0" "\n\t"
+	    "add   $8, %esp");
 #endif
 
 theend:

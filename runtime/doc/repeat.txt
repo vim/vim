@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 7.0aa.  Last change: 2005 Feb 26
+*repeat.txt*    For Vim version 7.0aa.  Last change: 2005 Feb 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -572,7 +572,8 @@ It is only included when Vim was compiled with "huge" features.
 		This only profiles the script itself, not the functions
 		defined in it.
 		When the [!] is added then all functions defined in the script
-		will also be profiled.
+		will also be profiled.  But only if the script is loaded after
+		this command.
 
 
 You must always start with a ":profile start fname" command.  The resulting
@@ -632,5 +633,7 @@ mind there are various things that may clobber the results:
 	:   delfunc MyFunc
 	:endif
 <
+- Profiling may give weird results on multi-processor systems, when sleep
+  mode kicks in or the processor frequency is reduced to save power.
 
  vim:tw=78:ts=8:ft=help:norl:

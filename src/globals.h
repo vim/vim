@@ -656,10 +656,10 @@ EXTERN JMP_BUF x_jump_env;
  * Used to protect areas where we could crash.
  */
 EXTERN JMP_BUF lc_jump_env;	/* argument to SETJMP() */
-#ifdef SIGHASARG
+# ifdef SIGHASARG
 EXTERN int lc_signal;		/* catched signal number, 0 when no was signal
 				   catched; used for mch_libcall() */
-#endif
+# endif
 EXTERN int lc_active INIT(= FALSE); /* TRUE when lc_jump_env is valid. */
 #endif
 
@@ -1412,7 +1412,7 @@ EXTERN char_u e_nbreadonly[]	INIT(=N_("E744: NetBeans does not allow changes in 
 #if defined(FEAT_EVAL) || defined(FEAT_SYN_HL) || defined(PROTO)
 EXTERN char_u e_intern2[]	INIT(=N_("E685: Internal error: %s"));
 #endif
-#if defined(HAVE_SETJMP_H) || defined(HAVE_TRY_EXCEPT)
+#if defined(HAVE_SETJMP_H) || defined(HAVE_TRY_EXCEPT) || defined(__MINGW32__)
 EXTERN char_u e_complex[]	INIT(=N_("E361: Crash intercepted; regexp too complex?"));
 #endif
 EXTERN char_u e_outofstack[]	INIT(=N_("E363: pattern caused out-of-stack error"));

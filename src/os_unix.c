@@ -3830,6 +3830,7 @@ mch_call_shell(cmd, options)
 			size_t	    l;
 
 			/* child */
+			close(fromshell_fd);
 			for (;;)
 			{
 			    l = STRLEN(p + written);

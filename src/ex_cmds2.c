@@ -26,7 +26,7 @@
 static void	cmd_source __ARGS((char_u *fname, exarg_T *eap));
 
 #ifdef FEAT_EVAL
-/* Growarray to store the names of sourced scripts.
+/* Growarray to store info about already sourced scripts.
  * For Unix also store the dev/ino, so that we don't have to stat() each
  * script when going through the list. */
 typedef struct scriptitem_S
@@ -38,7 +38,7 @@ typedef struct scriptitem_S
 # endif
 # ifdef FEAT_PROFILE
     int		sn_prof_on;	/* TRUE when script is/was profiled */
-    int		sn_pr_force;	/* forceit: profile defined functions */
+    int		sn_pr_force;	/* forceit: profile functions in this script */
     proftime_T	sn_pr_child;	/* time set when going into first child */
     int		sn_pr_nest;	/* nesting for sn_pr_child */
     /* profiling the script as a whole */
@@ -802,8 +802,12 @@ static proftime_T prof_wait_time;
 profile_zero(tm)
     proftime_T *tm;
 {
+# ifdef WIN3264
+    tm->QuadPart = 0;
+# else
     tm->tv_usec = 0;
     tm->tv_sec = 0;
+# endif
 }
 
 /*
@@ -813,7 +817,11 @@ profile_zero(tm)
 profile_start(tm)
     proftime_T *tm;
 {
+# ifdef WIN3264
+    QueryPerformanceCounter(tm);
+# else
     gettimeofday(tm, NULL);
+# endif
 }
 
 /*
@@ -825,6 +833,10 @@ profile_end(tm)
 {
     proftime_T now;
 
+# ifdef WIN3264
+    QueryPerformanceCounter(&now);
+    tm->QuadPart = now.QuadPart - tm->QuadPart;
+# else
     gettimeofday(&now, NULL);
     tm->tv_usec = now.tv_usec - tm->tv_usec;
     tm->tv_sec = now.tv_sec - tm->tv_sec;
@@ -833,6 +845,7 @@ profile_end(tm)
 	tm->tv_usec += 1000000;
 	--tm->tv_sec;
     }
+# endif
 }
 
 /*
@@ -842,6 +855,9 @@ profile_end(tm)
 profile_sub(tm, tm2)
     proftime_T *tm, *tm2;
 {
+# ifdef WIN3264
+    tm->QuadPart -= tm2->QuadPart;
+# else
     tm->tv_usec -= tm2->tv_usec;
     tm->tv_sec -= tm2->tv_sec;
     if (tm->tv_usec < 0)
@@ -849,6 +865,7 @@ profile_sub(tm, tm2)
 	tm->tv_usec += 1000000;
 	--tm->tv_sec;
     }
+# endif
 }
 
 /*
@@ -858,6 +875,9 @@ profile_sub(tm, tm2)
 profile_add(tm, tm2)
     proftime_T *tm, *tm2;
 {
+# ifdef WIN3264
+    tm->QuadPart += tm2->QuadPart;
+# else
     tm->tv_usec += tm2->tv_usec;
     tm->tv_sec += tm2->tv_sec;
     if (tm->tv_usec >= 1000000)
@@ -865,6 +885,7 @@ profile_add(tm, tm2)
 	tm->tv_usec -= 1000000;
 	++tm->tv_sec;
     }
+# endif
 }
 
 /*
@@ -897,7 +918,27 @@ profile_sub_wait(tm, tma)
 profile_equal(tm1, tm2)
     proftime_T *tm1, *tm2;
 {
+# ifdef WIN3264
+    return (tm1->QuadPart == tm2->QuadPart);
+# else
     return (tm1->tv_usec == tm2->tv_usec && tm1->tv_sec == tm2->tv_sec);
+# endif
+}
+
+/*
+ * Return <0, 0 or >0 if "tm1" < "tm2", "tm1" == "tm2" or "tm1" > "tm2"
+ */
+    int
+profile_cmp(tm1, tm2)
+    proftime_T *tm1, *tm2;
+{
+# ifdef WIN3264
+    return (int)(tm2->QuadPart - tm1->QuadPart);
+# else
+    if (tm1->tv_sec == tm2->tv_sec)
+	return tm2->tv_usec - tm1->tv_usec;
+    return tm2->tv_sec - tm1->tv_sec;
+# endif
 }
 
 /*
@@ -910,7 +951,14 @@ profile_msg(tm)
 {
     static char buf[50];
 
+# ifdef WIN3264
+    LARGE_INTEGER   fr;
+
+    QueryPerformanceFrequency(&fr);
+    sprintf(buf, "%10.6lf", (double)tm->QuadPart / (double)fr.QuadPart);
+# else
     sprintf(buf, "%3ld.%06ld", (long)tm->tv_sec, (long)tm->tv_usec);
+#endif
     return buf;
 }
 
@@ -962,8 +1010,8 @@ profile_dump()
 	    EMSG2(_(e_notopen), profile_fname);
 	else
 	{
-	    func_dump_profile(fd);
 	    script_dump_profile(fd);
+	    func_dump_profile(fd);
 	    fclose(fd);
 	}
     }

@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=0 sw=8:
+/* vi:set ts=8 sts=4 sw=4:
  *
  * VIM - Vi IMproved		by Bram Moolenaar
  *
@@ -382,7 +382,9 @@
 /*
  * +profile		Profiling for functions and scripts.
  */
-#if defined(FEAT_HUGE) && defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
+#if defined(FEAT_HUGE) \
+	&& ((defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)) \
+		|| defined(WIN3264))
 # define FEAT_PROFILE
 #endif
 
