@@ -639,7 +639,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'pvw'	options.txt	/*'pvw'*
 'qe'	options.txt	/*'qe'*
 'quote	motion.txt	/*'quote*
-'quoteescape''	options.txt	/*'quoteescape''*
+'quoteescape'	options.txt	/*'quoteescape'*
 'readonly'	options.txt	/*'readonly'*
 'redraw'	vi_diff.txt	/*'redraw'*
 'remap'	options.txt	/*'remap'*
@@ -1226,7 +1226,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 /\%>c	pattern.txt	/*\/\\%>c*
 /\%>l	pattern.txt	/*\/\\%>l*
 /\%>v	pattern.txt	/*\/\\%>v*
-/\%U/	pattern.txt	/*\/\\%U\/*
+/\%U	pattern.txt	/*\/\\%U*
 /\%[]	pattern.txt	/*\/\\%[]*
 /\%^	pattern.txt	/*\/\\%^*
 /\%c	pattern.txt	/*\/\\%c*
@@ -1581,6 +1581,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :,	cmdline.txt	/*:,*
 :.	cmdline.txt	/*:.*
 :/	cmdline.txt	/*:\/*
+:0file	editing.txt	/*:0file*
 ::.	cmdline.txt	/*::.*
 ::8	cmdline.txt	/*::8*
 ::e	cmdline.txt	/*::e*
@@ -1606,13 +1607,11 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :@	repeat.txt	/*:@*
 :@:	repeat.txt	/*:@:*
 :@@	repeat.txt	/*:@@*
-:Explore	pi_expl.txt	/*:Explore*
 :Man	filetype.txt	/*:Man*
 :N	editing.txt	/*:N*
 :Next	editing.txt	/*:Next*
 :P	various.txt	/*:P*
 :Print	various.txt	/*:Print*
-:Sexplore	pi_expl.txt	/*:Sexplore*
 :TOhtml	syntax.txt	/*:TOhtml*
 :X	editing.txt	/*:X*
 :\bar	cmdline.txt	/*:\\bar*
@@ -4655,9 +4654,6 @@ exists()	eval.txt	/*exists()*
 expand()	eval.txt	/*expand()*
 expand-env	options.txt	/*expand-env*
 expand-environment-var	options.txt	/*expand-environment-var*
-expl-starting	pi_expl.txt	/*expl-starting*
-explorer-delete	pi_expl.txt	/*explorer-delete*
-explorer-rename	pi_expl.txt	/*explorer-rename*
 expr	eval.txt	/*expr*
 expr-!	eval.txt	/*expr-!*
 expr-!=	eval.txt	/*expr-!=*
@@ -4732,9 +4728,7 @@ farsi.txt	farsi.txt	/*farsi.txt*
 fasm.vim	syntax.txt	/*fasm.vim*
 feature-list	eval.txt	/*feature-list*
 fetch	pi_netrw.txt	/*fetch*
-file-browser	pi_expl.txt	/*file-browser*
 file-browser-5.2	version5.txt	/*file-browser-5.2*
-file-explorer	pi_expl.txt	/*file-explorer*
 file-formats	editing.txt	/*file-formats*
 file-pattern	autocmd.txt	/*file-pattern*
 file-read	insert.txt	/*file-read*
@@ -4850,22 +4844,6 @@ g'a	motion.txt	/*g'a*
 g,	motion.txt	/*g,*
 g0	motion.txt	/*g0*
 g8	various.txt	/*g8*
-g:explDateFormat	pi_expl.txt	/*g:explDateFormat*
-g:explDetailedHelp	pi_expl.txt	/*g:explDetailedHelp*
-g:explDetailedList	pi_expl.txt	/*g:explDetailedList*
-g:explDirsFirst	pi_expl.txt	/*g:explDirsFirst*
-g:explFileHandler	pi_expl.txt	/*g:explFileHandler*
-g:explHideFiles	pi_expl.txt	/*g:explHideFiles*
-g:explSortBy	pi_expl.txt	/*g:explSortBy*
-g:explSplitBelow	pi_expl.txt	/*g:explSplitBelow*
-g:explSplitRight	pi_expl.txt	/*g:explSplitRight*
-g:explStartBelow	pi_expl.txt	/*g:explStartBelow*
-g:explStartRight	pi_expl.txt	/*g:explStartRight*
-g:explSuffixesLast	pi_expl.txt	/*g:explSuffixesLast*
-g:explUseSeparators	pi_expl.txt	/*g:explUseSeparators*
-g:explVertical	pi_expl.txt	/*g:explVertical*
-g:explWinSize	pi_expl.txt	/*g:explWinSize*
-g:netrw-a	pi_netrw.txt	/*g:netrw-a*
 g:netrw_list_cmd	pi_netrw.txt	/*g:netrw_list_cmd*
 g:netrw_list_hide	pi_netrw.txt	/*g:netrw_list_hide*
 g:netrw_rm_cmd	pi_netrw.txt	/*g:netrw_rm_cmd*
@@ -4906,7 +4884,7 @@ g`a	motion.txt	/*g`a*
 ga	various.txt	/*ga*
 gd	pattern.txt	/*gd*
 ge	motion.txt	/*ge*
-get	eval.txt	/*get*
+get()	eval.txt	/*get()*
 getbufvar()	eval.txt	/*getbufvar()*
 getchar()	eval.txt	/*getchar()*
 getcharmod()	eval.txt	/*getcharmod()*
@@ -5314,6 +5292,7 @@ ip	motion.txt	/*ip*
 iquote	motion.txt	/*iquote*
 is	motion.txt	/*is*
 isdirectory()	eval.txt	/*isdirectory()*
+items()	eval.txt	/*items()*
 iw	motion.txt	/*iw*
 i{	motion.txt	/*i{*
 i}	motion.txt	/*i}*
@@ -5593,6 +5572,7 @@ netrw-D	pi_netrw.txt	/*netrw-D*
 netrw-R	pi_netrw.txt	/*netrw-R*
 netrw-S	pi_netrw.txt	/*netrw-S*
 netrw-U	pi_netrw.txt	/*netrw-U*
+netrw-a	pi_netrw.txt	/*netrw-a*
 netrw-activate	pi_netrw.txt	/*netrw-activate*
 netrw-b	pi_netrw.txt	/*netrw-b*
 netrw-bookmark	pi_netrw.txt	/*netrw-bookmark*
@@ -5823,7 +5803,6 @@ php3-syntax	syntax.txt	/*php3-syntax*
 php3.vim	syntax.txt	/*php3.vim*
 phtml-syntax	syntax.txt	/*phtml-syntax*
 phtml.vim	syntax.txt	/*phtml.vim*
-pi_expl.txt	pi_expl.txt	/*pi_expl.txt*
 pi_gzip.txt	pi_gzip.txt	/*pi_gzip.txt*
 pi_netrw.txt	pi_netrw.txt	/*pi_netrw.txt*
 pi_spec.txt	pi_spec.txt	/*pi_spec.txt*
@@ -6693,6 +6672,7 @@ v_x	change.txt	/*v_x*
 v_y	change.txt	/*v_y*
 v_~	change.txt	/*v_~*
 val-variable	eval.txt	/*val-variable*
+values()	eval.txt	/*values()*
 variables	eval.txt	/*variables*
 various	various.txt	/*various*
 various-cmds	various.txt	/*various-cmds*

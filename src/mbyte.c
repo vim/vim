@@ -2407,6 +2407,7 @@ utf_head_off(base, p)
     return (int)(p - q);
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Copy a character from "*fp" to "*tp" and advance the pointers.
  */
@@ -2421,6 +2422,7 @@ mb_copy_char(fp, tp)
     *tp += l;
     *fp += l;
 }
+#endif
 
 /*
  * Return the offset from "p" to the first byte of a character.  When "p" is

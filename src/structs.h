@@ -936,8 +936,8 @@ typedef struct hashtable_S
 {
     long_u	ht_mask;	/* mask used for hash value (nr of items in
 				 * array is "ht_mask" + 1) */
-    int		ht_used;	/* number of items used */
-    int		ht_filled;	/* number of items used + removed */
+    long_u	ht_used;	/* number of items used */
+    long_u	ht_filled;	/* number of items used + removed */
     int		ht_locked;	/* counter for hash_lock() */
     int		ht_error;	/* when set growing failed, can't add more
 				   items before growing works */

@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.0aa.  Last change: 2004 Dec 24
+*autocmd.txt*   For Vim version 7.0aa.  Last change: 2005 Jan 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -495,7 +495,7 @@ InsertChange			When typing <Insert> while in Insert or
 				anything else that the user does not expect.
 							*InsertLeave*
 InsertLeave			When leaving Insert mode.  Also when using
-				CTRL-O |i_CTRL-O|.
+				CTRL-O |i_CTRL-O|.  But not for |i_CTRL-C|.
 							*FileEncoding*
 FileEncoding			Obsolete.  It still works and is equivalent
 				to |EncodingChanged|.

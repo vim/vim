@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 25
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1458,6 +1458,7 @@ inputsave()			Number	save and clear typeahead
 inputsecret( {prompt} [, {text}]) String  like input() but hiding the text
 insert( {list}, {item} [, {idx}]) List	insert {item} in {list} [before {idx}]
 isdirectory( {directory})	Number	TRUE if {directory} is a directory
+items( {dict})			List	List of key-value pairs in {dict}
 join( {list} [, {sep}])		String	join {list} items into one String
 keys( {dict})			List	List of keys in {dict}
 len( {expr})			Number	the length of {expr}
@@ -1519,7 +1520,8 @@ string( {expr})			String	String representation of {expr} value
 strlen( {expr})			Number	length of the String {expr}
 strpart( {src}, {start}[, {len}])
 				String	{len} characters of {src} at {start}
-strridx( {haystack}, {needle})	Number	last index of {needle} in {haystack}
+strridx( {haystack}, {needle} [, {start}])
+				Number	last index of {needle} in {haystack}
 strtrans( {expr})		String	translate string to make it printable
 submatch( {nr})			String	specific match in ":substitute"
 substitute( {expr}, {pat}, {sub}, {flags})
@@ -1535,6 +1537,7 @@ toupper( {expr})		String	the String {expr} switched to uppercase
 tr( {src}, {fromstr}, {tostr})	String	translate chars of {src} in {fromstr}
 					to chars in {tostr}
 type( {name})			Number	type of variable {name}
+values( {dict})			List	List of values in {dict}
 virtcol( {expr})		Number	screen column of cursor or mark
 visualmode( [expr])		String	last visual mode used
 winbufnr( {nr})			Number	buffer number of window {nr}
@@ -2266,7 +2269,7 @@ function({name})					*function()* *E700*
 		{name} can be a user defined function or an internal function.
 
 
-get({list}, {idx} [, {default}])			*get*
+get({list}, {idx} [, {default}])			*get()*
 		Get item {idx} from List {list}.  When this item is not
 		available return {default}.  Return zero when {default} is
 		omitted.
@@ -2779,6 +2782,11 @@ isdirectory({directory})				*isdirectory()*
 		with the name {directory} exists.  If {directory} doesn't
 		exist, or isn't a directory, the result is FALSE.  {directory}
 		is any expression, which is used as a String.
+
+items({dict})						*items()*
+		Return a List with all the key-value pairs of {dict}.  Each
+		List item is a list with two items: the key of a {dict} entry
+		and the value of this entry.  The List is in arbitrary order.
 
 
 join({list} [, {sep}])					*join()*
@@ -3517,12 +3525,15 @@ strftime({format} [, {time}])				*strftime()*
 stridx({haystack}, {needle} [, {start}])		*stridx()*
 		The result is a Number, which gives the byte index in
 		{haystack} of the first occurrence of the String {needle}.
-		If {start} is specified, the String {needle} is searched from
-		the byte index {start} in the String {haystack}.
-		The search is done case-sensitive.
+		If {start} is specified, the search starts at index {start}.
+		This can be used to find a second match: >
+			:let comma1 = stridx(line, ",")
+			:let comma2 = stridx(line, ",", comma1 + 1)
+<		The search is done case-sensitive.
 		For pattern searches use |match()|. 
 		-1 is returned if the {needle} does not occur in {haystack}.
-		See also |strridx()|. Examples: >
+		See also |strridx()|.
+		Examples: >
 		  :echo stridx("An Example", "Example")	     3
 		  :echo stridx("Starting point", "Start")    0
 		  :echo stridx("Starting point", "start")   -1
@@ -3565,10 +3576,15 @@ strpart({src}, {start}[, {len}])			*strpart()*
 		example, to get three bytes under and after the cursor: >
 			strpart(getline(line(".")), col(".") - 1, 3)
 <
-strridx({haystack}, {needle})				*strridx()*
-		The result is a Number, which gives the index in {haystack} of
-		the last occurrence of the String {needle}.
-		The search is done case-sensitive.
+strridx({haystack}, {needle} [, {start}])			*strridx()*
+		The result is a Number, which gives the byte index in
+		{haystack} of the last occurrence of the String {needle}.
+		When {start} is specified, matches beyond this index are
+		ignored.  This can be used to find a match before a previous
+		match: >
+			:let lastcomma = strridx(line, ",")
+			:let comma2 = strridx(line, ",", lastcomma - 1)
+<		The search is done case-sensitive.
 		For pattern searches use |match()|.
 		-1 is returned if the {needle} does not occur in {haystack}.
 		If the {needle} is empty the length of {haystack} is returned.
@@ -3741,6 +3757,11 @@ type({expr})	The result is a Number, depending on the type of {expr}:
 			:if type(myvar) == type("")
 			:if type(myvar) == type(function("tr"))
 			:if type(myvar) == type([])
+
+values({dict})						*values()*
+		Return a List with all the values of {dict}.  The List is in
+		arbitrary order.
+
 
 virtcol({expr})						*virtcol()*
 		The result is a Number, which is the screen column of the file
@@ -4161,17 +4182,15 @@ Example: >
   :  echohl Title
   :  echo a:title
   :  echohl None
-  :  let idx = 1
-  :  while idx <= a:0
-  :    echo a:{idx} . ' '
-  :    let idx = idx + 1
-  :  endwhile
-  :  return idx
+  :  echo a:0 . " items:"
+  :  for s in a:000
+  :    echon ' ' . s
+  :  endfor
   :endfunction
 
 This function can then be called with: >
-  let lines = Table("Table", "line1", "line2")
-  let lines = Table("Empty Table")
+  call Table("Table", "line1", "line2")
+  call Table("Empty Table")
 
 To return more than one value, pass the name of a global variable: >
   :function Compute(n1, n2, divname)
@@ -4411,7 +4430,7 @@ This would call the function "my_func_whizz(parameter)".
 			List item.
 
 :let [{name}, ..., ; {lastname}] = {expr1}
-			Like |let-unpack| above, but the List may have more
+			Like |:let-unpack| above, but the List may have more
 			items than there are names.  A list of the remaining
 			items is assigned to {lastname}.  If there are no
 			remaining items {lastname} is set to an empty list.

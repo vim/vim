@@ -6121,8 +6121,11 @@ ins_reg()
 	    im_set_active(TRUE);
 # endif
     }
-    if (regname == NUL)
+    if (regname == NUL || !valid_yank_reg(regname, FALSE))
+    {
+	vim_beep();
 	need_redraw = TRUE;	/* remove the '"' */
+    }
     else
     {
 #endif

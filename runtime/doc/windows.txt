@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 7.0aa.  Last change: 2004 Dec 29
+*windows.txt*   For Vim version 7.0aa.  Last change: 2005 Jan 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1098,7 +1098,7 @@ help		Contains a help file.  Will only be created with the |:help|
 		and can't be changed.  The 'buflisted' option will be reset
 		for a help buffer.
 
-directory	Displays directory contents.  Used by the |file-explorer|
+directory	Displays directory contents.  Can be used by a file explorer
 		plugin.  The buffer is created with these settings: >
 			:set buftype=nowrite
 			:set bufhidden=delete

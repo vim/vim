@@ -813,6 +813,7 @@ valid_yank_reg(regname, writing)
 /*
  * Set y_current and y_append, according to the value of "regname".
  * Cannot handle the '_' register.
+ * Must only be called with a valid register name!
  *
  * If regname is 0 and writing, use register 0
  * If regname is 0 and reading, use previous register
@@ -2996,10 +2997,11 @@ copy_yank_reg(reg)
 #endif
 
 /*
- * put contents of register "regname" into the text
- * flags: PUT_FIXINDENT	make indent look nice
- *	  PUT_CURSEND	leave cursor after end of new text
- *	  PUT_LINE	force linewise put (":put")
+ * Put contents of register "regname" into the text.
+ * Caller must check "regname" to be valid!
+ * "flags": PUT_FIXINDENT	make indent look nice
+ *	    PUT_CURSEND		leave cursor after end of new text
+ *	    PUT_LINE		force linewise put (":put")
  */
     void
 do_put(regname, dir, count, flags)
@@ -3635,6 +3637,7 @@ end:
 	if (regname == '=')
 	    vim_free(y_array);
     }
+    /* If the cursor is past the end of the line put it at the end. */
     if (gchar_cursor() == NUL
 	    && curwin->w_cursor.col > 0
 	    && !(restart_edit || (State & INSERT)))

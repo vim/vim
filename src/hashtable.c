@@ -336,7 +336,8 @@ hash_may_resize(ht)
     else
     {
 	/* Allocate an array. */
-	newarray = (hashitem_T *)alloc((unsigned)(sizeof(hashitem_T) * newsize));
+	newarray = (hashitem_T *)alloc((unsigned)
+					      (sizeof(hashitem_T) * newsize));
 	if (newarray == NULL)
 	{
 	    /* Out of memory.  When there are NULL items still return OK.

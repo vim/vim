@@ -1,4 +1,4 @@
-*version6.txt*  For Vim version 7.0aa.  Last change: 2004 Jun 16
+*version6.txt*  For Vim version 7.0aa.  Last change: 2005 Jan 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -864,8 +864,6 @@ on a directory moves the browser to that directory.
 
 There are several other possibilities, such as opening a file in the preview
 window, renaming files and deleting files.
-
-See |file-explorer|.
 
 
 Editing files over a network				*new-network-files*

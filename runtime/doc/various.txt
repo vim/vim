@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.0aa.  Last change: 2005 Jan 20
+*various.txt*   For Vim version 7.0aa.  Last change: 2005 Jan 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -492,9 +492,9 @@ K			Run a program to lookup the keyword under the
 			     :sleep 100m     "sleep for a hundred milliseconds
 			     10gs	     "sleep for ten seconds
 <			Can be interrupted with CTRL-C (CTRL-Break on MS-DOS).
-			"gs" stands for "goto sleep".  While sleeping the
-			cursor is positioned in the text (if visible).  {not
-			in Vi}
+			"gs" stands for "goto sleep".
+			While sleeping the cursor is positioned in the text,
+			if at a visible position.  {not in Vi}
 
 							*g_CTRL-A*
 g CTRL-A		Only when Vim was compiled with MEM_PROFILING defined

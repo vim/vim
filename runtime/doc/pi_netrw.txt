@@ -740,7 +740,7 @@ One may rename a block of files and directories by selecting them with
 the V (|linewise-visual|).
 
 
-HIDING FILES OR DIRECTORIES		*g:netrw-a* *g:netrw_list_hide*
+HIDING FILES OR DIRECTORIES		*netrw-a* *g:netrw_list_hide*
 
 Netrw's browsing facility allows one to use the hiding list in one of
 three ways: ignore it, hide files which match, and show only those files

@@ -74,7 +74,7 @@ SRC_ALL2 =	\
 		src/main.aap \
 		src/testdir/main.aap \
 		src/testdir/*.in \
-		src/testdir/*.ok \
+		src/testdir/test[0-9]*.ok \
 		src/testdir/test49.vim \
 		src/proto.h \
 		src/proto/buffer.pro \

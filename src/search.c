@@ -503,8 +503,8 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use)
     regmmatch_T	regmatch;
     char_u	*ptr;
     colnr_T	matchcol;
-    colnr_T	startcol;
     lpos_T	endpos;
+    lpos_T	matchpos;
     int		loop;
     pos_T	start_pos;
     int		at_first_line;
@@ -512,7 +512,6 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use)
     int		match_ok;
     long	nmatched;
     int		submatch = 0;
-    linenr_T	first_lnum;
 #ifdef FEAT_SEARCH_EXTRA
     int		break_loop = FALSE;
 #else
@@ -573,9 +572,8 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use)
 					   lnum += dir, at_first_line = FALSE)
 	    {
 		/*
-		 * Look for a match somewhere in the line.
+		 * Look for a match somewhere in line "lnum".
 		 */
-		first_lnum = lnum;
 		nmatched = vim_regexec_multi(&regmatch, win, buf,
 							    lnum, (colnr_T)0);
 		/* Abort searching on an error (e.g., out of stack). */
@@ -584,13 +582,12 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use)
 		if (nmatched > 0)
 		{
 		    /* match may actually be in another line when using \zs */
-		    lnum += regmatch.startpos[0].lnum;
-		    ptr = ml_get_buf(buf, lnum, FALSE);
-		    startcol = regmatch.startpos[0].col;
+		    matchpos = regmatch.startpos[0];
 		    endpos = regmatch.endpos[0];
 # ifdef FEAT_EVAL
 		    submatch = first_submatch(&regmatch);
 # endif
+		    ptr = ml_get_buf(buf, lnum + matchpos.lnum, FALSE);
 
 		    /*
 		     * Forward search in the first line: match should be after
@@ -601,16 +598,20 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use)
 		    {
 			match_ok = TRUE;
 			/*
+			 * When the match starts in a next line it's certainly
+			 * past the start position.
 			 * When match lands on a NUL the cursor will be put
 			 * one back afterwards, compare with that position,
 			 * otherwise "/$" will get stuck on end of line.
 			 */
-			while ((options & SEARCH_END)
-				?  (nmatched == 1
-				    && (int)endpos.col - 1
+			while (matchpos.lnum == 0
+				&& ((options & SEARCH_END)
+				    ?  (nmatched == 1
+					&& (int)endpos.col - 1
 					     < (int)start_pos.col + extra_col)
-				: ((int)startcol - (ptr[startcol] == NUL)
-					    < (int)start_pos.col + extra_col))
+				    : ((int)matchpos.col
+						  - (ptr[matchpos.col] == NUL)
+					    < (int)start_pos.col + extra_col)))
 			{
 			    /*
 			     * If vi-compatible searching, continue at the end
@@ -628,7 +629,7 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use)
 				}
 				matchcol = endpos.col;
 				/* for empty match: advance one char */
-				if (matchcol == startcol
+				if (matchcol == matchpos.col
 						      && ptr[matchcol] != NUL)
 				{
 #ifdef FEAT_MBYTE
@@ -642,7 +643,7 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use)
 			    }
 			    else
 			    {
-				matchcol = startcol;
+				matchcol = matchpos.col;
 				if (ptr[matchcol] != NUL)
 				{
 #ifdef FEAT_MBYTE
@@ -656,12 +657,13 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use)
 			    }
 			    if (ptr[matchcol] == NUL
 				    || (nmatched = vim_regexec_multi(&regmatch,
-					      win, buf, lnum, matchcol)) == 0)
+					      win, buf, lnum + matchpos.lnum,
+					      matchcol)) == 0)
 			    {
 				match_ok = FALSE;
 				break;
 			    }
-			    startcol = regmatch.startpos[0].col;
+			    matchpos = regmatch.startpos[0];
 			    endpos = regmatch.endpos[0];
 # ifdef FEAT_EVAL
 			    submatch = first_submatch(&regmatch);
@@ -669,7 +671,7 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use)
 
 			    /* Need to get the line pointer again, a
 			     * multi-line search may have made it invalid. */
-			    ptr = ml_get_buf(buf, lnum, FALSE);
+			    ptr = ml_get_buf(buf, lnum + matchpos.lnum, FALSE);
 			}
 			if (!match_ok)
 			    continue;
@@ -686,20 +688,29 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use)
 			match_ok = FALSE;
 			for (;;)
 			{
-			    if (!at_first_line
-				    || ((options & SEARCH_END)
-					?  (nmatched == 1
-					    && (int)regmatch.endpos[0].col - 1
+			    /* Remember a position that is before the start
+			     * position, we use it if it's the last match in
+			     * the line.  Always accept a position after
+			     * wrapping around. */
+			    if (loop
+				|| ((options & SEARCH_END)
+				    ? (lnum + regmatch.endpos[0].lnum
+							      < start_pos.lnum
+					|| (lnum + regmatch.endpos[0].lnum
+							     == start_pos.lnum
+					     && (int)regmatch.endpos[0].col - 1
 								   + extra_col
-							<= (int)start_pos.col)
-					: ((int)regmatch.startpos[0].col
+							<= (int)start_pos.col))
+				    : (lnum + regmatch.startpos[0].lnum
+							      < start_pos.lnum
+					|| (lnum + regmatch.startpos[0].lnum
+							     == start_pos.lnum
+					     && (int)regmatch.startpos[0].col
 								   + extra_col
-						      <= (int)start_pos.col)))
+						      <= (int)start_pos.col))))
 			    {
-				/* Remember this position, we use it if it's
-				 * the last match in the line. */
 				match_ok = TRUE;
-				startcol = regmatch.startpos[0].col;
+				matchpos = regmatch.startpos[0];
 				endpos = regmatch.endpos[0];
 # ifdef FEAT_EVAL
 				submatch = first_submatch(&regmatch);
@@ -721,7 +732,7 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use)
 				    break;
 				matchcol = endpos.col;
 				/* for empty match: advance one char */
-				if (matchcol == startcol
+				if (matchcol == matchpos.col
 						      && ptr[matchcol] != NUL)
 				{
 #ifdef FEAT_MBYTE
@@ -735,7 +746,10 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use)
 			    }
 			    else
 			    {
-				matchcol = startcol;
+				/* Stop when the match is in a next line. */
+				if (matchpos.lnum > 0)
+				    break;
+				matchcol = matchpos.col;
 				if (ptr[matchcol] != NUL)
 				{
 #ifdef FEAT_MBYTE
@@ -749,12 +763,13 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use)
 			    }
 			    if (ptr[matchcol] == NUL
 				    || (nmatched = vim_regexec_multi(&regmatch,
-					      win, buf, lnum, matchcol)) == 0)
+					      win, buf, lnum + matchpos.lnum,
+							      matchcol)) == 0)
 				break;
 
 			    /* Need to get the line pointer again, a
 			     * multi-line search may have made it invalid. */
-			    ptr = ml_get_buf(buf, lnum, FALSE);
+			    ptr = ml_get_buf(buf, lnum + matchpos.lnum, FALSE);
 			}
 
 			/*
@@ -767,13 +782,13 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use)
 
 		    if (options & SEARCH_END && !(options & SEARCH_NOOF))
 		    {
-			pos->lnum = endpos.lnum + first_lnum;
+			pos->lnum = lnum + endpos.lnum;
 			pos->col = endpos.col - 1;
 		    }
 		    else
 		    {
-			pos->lnum = lnum;
-			pos->col = startcol;
+			pos->lnum = lnum + matchpos.lnum;
+			pos->col = matchpos.col;
 		    }
 #ifdef FEAT_VIRTUALEDIT
 		    pos->coladd = 0;
@@ -781,7 +796,7 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use)
 		    found = 1;
 
 		    /* Set variables used for 'incsearch' highlighting. */
-		    search_match_lines = endpos.lnum - (lnum - first_lnum);
+		    search_match_lines = endpos.lnum - matchpos.lnum;
 		    search_match_endcol = endpos.col;
 		    break;
 		}

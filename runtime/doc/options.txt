@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Jan 14
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Jan 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2738,7 +2738,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	A pattern that is used to recognize a list header.  This is used for
 	the "n" flag in 'formatoptions'.
 	The pattern must match exactly the text that will be the indent for
-	the line below it.  You can use |\ze| to mark the end of the match
+	the line below it.  You can use |/\ze| to mark the end of the match
 	while still checking more characters.  There must be a character
 	following the pattern, when it matches the whole line it is handled
 	like there is no match.
@@ -4656,7 +4656,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	List of items that control the format of the output of |:hardcopy|.
 	See |popt-option|.
 
-						*'quoteescape''* *'qe'*
+						*'quoteescape'* *'qe'*
 'quoteescape' 'qe'	string	(default "\")
 			local to buffer
 			{not in Vi}

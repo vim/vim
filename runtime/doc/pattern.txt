@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 7.0aa.  Last change: 2005 Jan 24
+*pattern.txt*   For Vim version 7.0aa.  Last change: 2005 Jan 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1027,7 +1027,7 @@ x	A single character, with no special meaning, matches itself
 <	Matches the words "r", "re", "ro", "rea", "roa", "read" and "road".
 	{not available when compiled without the +syntax feature}
 
-				*/\%d* */\%x* */\%o* */\%u* */\%U/* *E678*
+				*/\%d* */\%x* */\%o* */\%u* */\%U* *E678*
 
 \%d123	Matches the character specified with a decimal number.  Must be
 	followed by a non-digit.

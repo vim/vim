@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0aa.  Last change: 2005 Jan 05
+*insert.txt*    For Vim version 7.0aa.  Last change: 2005 Jan 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -53,7 +53,8 @@ char		action	~
 		yourself to use CTRL-[.
 						*i_CTRL-C*
 CTRL-C		Quit insert mode, go back to Normal mode.  Do not check for
-		abbreviations.
+		abbreviations.  Does not trigger the |InsertLeave| autocommand
+		event.
 
 						*i_CTRL-@*
 CTRL-@		Insert previously inserted text and stop insert.  {Vi: only
