@@ -493,7 +493,7 @@ CClink = $(CC)
 
 # Often used for GCC: mixed optimizing, lot of optimizing, debugging
 #CFLAGS = -g -O2 -fno-strength-reduce -Wall -Wshadow -Wmissing-prototypes
-CFLAGS = -g -O2 -fno-strength-reduce -Wall -Wmissing-prototypes
+#CFLAGS = -g -O2 -fno-strength-reduce -Wall -Wmissing-prototypes
 #CFLAGS = -O6 -fno-strength-reduce -Wall -Wshadow -Wmissing-prototypes
 #CFLAGS = -g -DDEBUG -Wall -Wshadow -Wmissing-prototypes
 #CFLAGS = -g -O2 -DSTARTUPTIME=\"vimstartup\" -fno-strength-reduce -Wall -Wmissing-prototypes
