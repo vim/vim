@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 7.0aa.  Last change: 2005 Feb 24
+*quickfix.txt*  For Vim version 7.0aa.  Last change: 2005 Mar 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -32,7 +32,7 @@ without having to remember all the error messages.
 
 In Vim the quickfix commands are used more generally to find a list of
 positions in files.  For example, |:vimgrep| finds pattern matches.  You can
-use the positions in a script with the |errorlist()| function.  Thus you can
+use the positions in a script with the |getqflist()| function.  Thus you can
 do a lot more than the edit/compile/fix cycle!
 
 If you are using Manx's Aztec C compiler on the Amiga look here for how to use
@@ -609,6 +609,7 @@ Basic items
 			uses the length for the column number)
 	%*{conv}	any scanf non-assignable conversion
 	%%		the single '%' character
+	%s		search text (finds a string)
 
 The "%f" conversion depends on the current 'isfname' setting.
 
@@ -631,6 +632,13 @@ or >
 to indicate the column of the error.  This is to be used in a multi-line error
 message.  See |errorformat-javac| for a  useful example.
 
+The "%s" conversion specifies the text to search for to locate the error line.
+The text is used as a literal string.  The anchors "^" and "$" are added to
+the text to locate the error line exactly matching the search text and the
+text is prefixed with the "\V" atom to make it "very nomagic".  The "%s"
+conversion can be used to locate lines without a line number in the error
+output.  Like the output of the "grep" shell command.
+When the pattern is present the line number will not be used.
 
 Changing directory
 

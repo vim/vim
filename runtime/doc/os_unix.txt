@@ -1,4 +1,4 @@
-*os_unix.txt*   For Vim version 7.0aa.  Last change: 2003 Mar 15
+*os_unix.txt*   For Vim version 7.0aa.  Last change: 2005 Mar 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -54,7 +54,7 @@ supports colors, but "T_Co" is empty or zero): >
 
 For real color terminals the ":highlight" command can be used.
 
-The file "tools/Vim132" is a shell script that can be used to put Vim in 132
+The file "tools/vim132" is a shell script that can be used to put Vim in 132
 column mode on a vt100 and lookalikes.
 
  vim:tw=78:ts=8:ft=help:norl:

@@ -21,6 +21,7 @@ void ex_cfile __ARGS((exarg_T *eap));
 void ex_vimgrep __ARGS((exarg_T *eap));
 char_u *skip_vimgrep_pat __ARGS((char_u *p, char_u **s, int *flags));
 int get_errorlist __ARGS((list_T *list));
+int set_errorlist __ARGS((list_T *list));
 void ex_cbuffer __ARGS((exarg_T *eap));
 void ex_helpgrep __ARGS((exarg_T *eap));
 /* vim: set ft=c : */

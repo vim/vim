@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Mar 20
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Mar 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -197,7 +197,7 @@ patterns, this also allows grepping in compressed and remote files.
 |:vimgrep|.
 
 If you want to use the search results in a script you can use the
-|errorlist()| function.
+|getqflist()| function.
 
 
 POSIX compatibility					*new-posix*
@@ -323,7 +323,7 @@ New functions: ~
 |count()|		count nr of times a value is in a List or Dictionary
 |deepcopy()|		make a full copy of a List or Dictionary
 |empty()|		check if List or Dictionary is empty
-|errorlist()|		list of quickfix errors
+|getqflist()|		list of quickfix errors
 |extend()|		append one List to another or add items from one
 			Dictionary to another
 |filter()|		remove selected items from a List or Dictionary
@@ -351,6 +351,7 @@ New functions: ~
 |remove()|		remove one or more items from a List or Dictionary
 |repeat()| 		Repeat "expr" "count" times.  (Christophe Poucet)
 |reverse()|		reverse the order of a List
+|setqflist()|		create a quickfix list
 |sort()|		sort a List
 |split()|		split a String into a List
 |string()|		String representation of a List or Dictionary
@@ -1012,5 +1013,8 @@ Don't move the cursor if it's somewhere past the first line.
 
 When 'encoding' is "sjis" inserting CTRL-V u d800 a few times causes a crash.
 Don't insert a DBCS character with a NUL second byte.
+
+In Insert mode CTRL-O <Home> didn't move the cursor.  Made "ins_at_eol" global
+and reset it in nv_home().
 
  vim:tw=78:ts=8:ft=help:norl:

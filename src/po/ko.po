@@ -161,8 +161,8 @@ msgid "line %ld of %ld --%d%%-- col "
 msgstr "%ld / %ld 줄 --%d%%-- 칸 "
 
 #: buffer.c:2868
-msgid "[No file]"
-msgstr "[파일 없음]"
+msgid "[No Name]"
+msgstr "[이름 없음]"
 
 #. must be a help buffer
 #: buffer.c:2908

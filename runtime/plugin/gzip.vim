@@ -1,6 +1,6 @@
 " Vim plugin for editing compressed files.
 " Maintainer: Bram Moolenaar <Bram@vim.org>
-" Last Change: 2004 Jul 30
+" Last Change: 2005 Mar 24
 
 " Exit quickly when:
 " - this plugin was already loaded
@@ -118,7 +118,7 @@ fun s:write(cmd)
   " don't do anything if the cmd is not supported
   if s:check(a:cmd)
     " Rename the file before compressing it.
-    let nm = expand("<afile>")
+    let nm = resolve(expand("<afile>"))
     let nmt = s:tempname(nm)
     if rename(nm, nmt) == 0
       call system(a:cmd . " " . nmt)

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Mar 22
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Mar 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,11 +30,9 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Problem with hang in setmouse() -> update_mouseshape() (Froloff)
-    - check for termcap_active in option.c
-    - add gui.starting in misc2.c
+Check that xterm function keys XHOME and ZHOME do work.
 
-":e" causes a scroll (in spell.c).
+Wildcard expansion failure: ":w /tmp/$$.`echo test`" (Adri Verhoef)
 
 Mac unicode patch (Da Woon Jung):
 - selecting proportional font breaks display
@@ -51,22 +49,24 @@ autoload:
     helpfile doc/myscript.txt
   For the "helpfile" item ":helptags" is run.
 
+Win32: Balloon text can't contain line break.
+
 Awaiting response:
 -   Patch for mch_FullName() also in Vim 6.3?  os_mswin.c
 -   Win32: tearoff menu window should have a scrollbar when it's taller than
     the screen.
-
-When on a line with a single character, "A CTRL-O <Home>" puts cursor back
-after end-of-line. (Peter Winters)  Make "o_eol" global and reset it when
-moving cursor?
 
 
 PLANNED FOR VERSION 7.0:
 
 -   Add SPELLCHECKER, with support for many languages.
     - Use "engspchk" from Charles Campbell for ideas.
+    - Alternative: use MySpell library (in OpenOffice.org).
+	http://spellchecker.mozdev.org/source.html
     - Alternative: use aspell library.
-    - Implement 's addition.
+    - Dump pre-parsed spell structs in a file?
+    - More complicated: Regions with different languages?  E.g. comments in
+      English, strings in German (po file).
     - Commands required:
 	add word to private dict: wrong and OK (in popup menu for evim)
 	    :spell good <word>	    zg
@@ -86,6 +86,7 @@ PLANNED FOR VERSION 7.0:
       Add ":syntax contains {pattern} add=@Spell" command?  A bit like ":syn
       cluster" but change the contains list directly for matching syntax
       items.
+    - Install spell files with src/main.aap.
     Alternatives using ispell or aspell:
     8   Add spell checking.  Use "ispell -a" somehow.
 	~/vim/patches/wm_vim-5_4d.zip  can be used as an example (includes
@@ -2624,8 +2625,13 @@ Incsearch:
 Searching:
 7   Add "g/" and "gb" to search for a pattern in the Visually selected text?
     "g?" is already used for rot13.
-8   Add a mechanism for recursiveness: "\(([^()]*\@@[^()]*)\)\@r".  \@@ stands
-    for "go recursive here" and \@r marks the recursive atom.
+8   Add a mechanism for recursiveness: "\@(([^()]*\@g[^()]*)\)".  \@g stands
+    for "go recursive here" and \@( \) marks the recursive part.
+    Perl does it this way:
+	    $paren = qr/ \(( [^()] | (??{ $paren }) )* \) /x;
+    Here $paren is evaluated when it's encountered.  This is like a regexp
+    inside a regexp.  In the above terms it would be:
+	    \@((\([^()]\|\@g\)*)\)
 8   Add an item for a big character range, so that one can search for a
     chinese character: \z[234-1234]  or \z[XX-YY] or \z[0x23-0x234].
 7   Add an item stack to allow matching ().  One side is "push X on
@@ -3394,6 +3400,8 @@ Various improvements:
     '}' as the start of a section (e.g. one shiftwidth to the right).
 7   Allow using Vim in a pipe: "ls | vim -u xxx.vim - | yyy".  Only needs
     implementing ":w" to stdout in the buffer that was read from stdin.
+    Perhaps writing to stdout will work, since stderr is used for the terminal
+    I/O.
 8   Allow opening an unnamed buffer with ":e !cmd" and ":sp !cmd".  Vile can
     do it.
 -   Add commands like ]] and [[ that do not include the line jumped to.

@@ -38,7 +38,7 @@ rgviewname=${14}
 gvimdiffname=${15}
 eviewname=${16}
 
-if test $what = "install" -a (-e $destdir/$vimname.1 -o -e $destdir/$vimdiffname.1 -o -e $destdir/$eviewname.1); then
+if test $what = "install" -a \( -e $destdir/$vimname.1 -o -e $destdir/$vimdiffname.1 -o -e $destdir/$eviewname.1 \); then
    if test ! -d $destdir; then
       echo creating $destdir
       ./mkinstalldirs $destdir

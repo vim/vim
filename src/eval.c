@@ -428,7 +428,6 @@ static void f_did_filetype __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_diff_filler __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_diff_hlID __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_empty __ARGS((typval_T *argvars, typval_T *rettv));
-static void f_errorlist __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_escape __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_eval __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_eventhandler __ARGS((typval_T *argvars, typval_T *rettv));
@@ -462,6 +461,7 @@ static void f_getfsize __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getftime __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getftype __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getline __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_getqflist __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getreg __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getregtype __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getwinposx __ARGS((typval_T *argvars, typval_T *rettv));
@@ -536,6 +536,7 @@ static void f_serverlist __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_setbufvar __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_setcmdpos __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_setline __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_setqflist __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_setreg __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_setwinvar __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_simplify __ARGS((typval_T *argvars, typval_T *rettv));
@@ -5121,7 +5122,7 @@ list_append_tv(l, tv)
 }
 
 /*
- * Add a dictionary to a list.  Used by errorlist().
+ * Add a dictionary to a list.  Used by getqflist().
  * Return FAIL when out of memory.
  */
     int
@@ -5670,6 +5671,40 @@ dict_find(d, key, len)
 }
 
 /*
+ * Get a string item from a dictionary in allocated memory.
+ * Returns NULL if the entry doesn't exist or out of memory.
+ */
+    char_u *
+get_dict_string(d, key)
+    dict_T	*d;
+    char_u	*key;
+{
+    dictitem_T	*di;
+
+    di = dict_find(d, key, -1);
+    if (di == NULL)
+	return NULL;
+    return vim_strsave(get_tv_string(&di->di_tv));
+}
+
+/*
+ * Get a number item from a dictionary.
+ * Returns 0 if the entry doesn't exist or out of memory.
+ */
+    long
+get_dict_number(d, key)
+    dict_T	*d;
+    char_u	*key;
+{
+    dictitem_T	*di;
+
+    di = dict_find(d, key, -1);
+    if (di == NULL)
+	return 0;
+    return get_tv_number(&di->di_tv);
+}
+
+/*
  * Return an allocated string with the string representation of a Dictionary.
  * May return NULL.
  */
@@ -6078,7 +6113,6 @@ static struct fst
     {"diff_filler",	1, 1, f_diff_filler},
     {"diff_hlID",	2, 2, f_diff_hlID},
     {"empty",		1, 1, f_empty},
-    {"errorlist",	0, 0, f_errorlist},
     {"escape",		2, 2, f_escape},
     {"eval",		1, 1, f_eval},
     {"eventhandler",	0, 0, f_eventhandler},
@@ -6113,6 +6147,7 @@ static struct fst
     {"getftime",	1, 1, f_getftime},
     {"getftype",	1, 1, f_getftype},
     {"getline",		1, 2, f_getline},
+    {"getqflist",	0, 0, f_getqflist},
     {"getreg",		0, 1, f_getreg},
     {"getregtype",	0, 1, f_getregtype},
     {"getwinposx",	0, 0, f_getwinposx},
@@ -6189,6 +6224,7 @@ static struct fst
     {"setbufvar",	3, 3, f_setbufvar},
     {"setcmdpos",	1, 1, f_setcmdpos},
     {"setline",		2, 2, f_setline},
+    {"setqflist",	1, 1, f_setqflist},
     {"setreg",		2, 3, f_setreg},
     {"setwinvar",	3, 3, f_setwinvar},
     {"simplify",	1, 1, f_simplify},
@@ -7578,36 +7614,6 @@ f_empty(argvars, rettv)
 }
 
 /*
- * "errorlist()" function
- */
-/*ARGSUSED*/
-    static void
-f_errorlist(argvars, rettv)
-    typval_T	*argvars;
-    typval_T	*rettv;
-{
-#ifdef FEAT_QUICKFIX
-    list_T	*l;
-#endif
-
-    rettv->vval.v_number = FALSE;
-#ifdef FEAT_QUICKFIX
-    l = list_alloc();
-    if (l != NULL)
-    {
-	if (get_errorlist(l) != FAIL)
-	{
-	    rettv->vval.v_list = l;
-	    rettv->v_type = VAR_LIST;
-	    ++l->lv_refcount;
-	}
-	else
-	    list_free(l);
-    }
-#endif
-}
-
-/*
  * "escape({string}, {chars})" function
  */
     static void
@@ -8912,6 +8918,36 @@ f_getline(argvars, rettv)
 	    }
 	}
     }
+}
+
+/*
+ * "getqflist()" function
+ */
+/*ARGSUSED*/
+    static void
+f_getqflist(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+#ifdef FEAT_QUICKFIX
+    list_T	*l;
+#endif
+
+    rettv->vval.v_number = FALSE;
+#ifdef FEAT_QUICKFIX
+    l = list_alloc();
+    if (l != NULL)
+    {
+	if (get_errorlist(l) != FAIL)
+	{
+	    rettv->vval.v_list = l;
+	    rettv->v_type = VAR_LIST;
+	    ++l->lv_refcount;
+	}
+	else
+	    list_free(l);
+    }
+#endif
 }
 
 /*
@@ -12288,6 +12324,30 @@ f_setline(argvars, rettv)
 	check_cursor_col();
 	rettv->vval.v_number = 0;
     }
+}
+
+/*
+ * "setqflist()" function
+ */
+/*ARGSUSED*/
+    static void
+f_setqflist(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    rettv->vval.v_number = -1;
+
+#ifdef FEAT_QUICKFIX
+    if (argvars[0].v_type != VAR_LIST)
+	EMSG(_(e_listreq));
+    else
+    {
+	list_T  *l = argvars[0].vval.v_list;
+
+	if (l != NULL && set_errorlist(l) == OK)
+	    rettv->vval.v_number = 0;
+    }
+#endif
 }
 
 /*
