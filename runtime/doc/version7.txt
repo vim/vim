@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Feb 04
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Feb 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -256,6 +256,9 @@ New functions: ~
 |values()|		get List of Dictionary values
 |writefile()|		write a list of lines into a file
 
+User defined functions can now be loaded automatically from the "autoload"
+directory in 'runtimepath'.  See |autoload-functions|.
+
 
 New autocommand events: ~
 
@@ -264,6 +267,8 @@ New autocommand events: ~
 |InsertLeave|		leaving Insert or Replace mode
 
 |ColorScheme|		after loading a color scheme
+|QuickFixCmdPre|	before :make, :grep et al. (Ciaran McCreesh)
+|QuickFixCmdPost|	after :make, :grep et al. (Ciaran McCreesh)
 
 
 New items in search patterns: ~
@@ -313,6 +318,8 @@ Also fixes the problem that setting 'clipboard' to "unnamed" breaks using
 Mac: GUI font selector. (Peter "Rain Dog" Cucka)
 
 GUI font selector for Motif. (Marcin Dalecki)
+
+Nicer toolbar buttons for Motif. (Marcin Dalecki)
 
 Mnemonics for the Motif find/replace dialog. (Marcin Dalecki)
 
@@ -435,6 +442,9 @@ invalid characters after the register name.
 
 The stridx() and strridx() functions take a third argument, where to start
 searching.  (Yegappan Lakshmanan)
+
+g CTRL-G also shows the number of characters if it differs from the number of
+bytes.
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*
@@ -734,5 +744,21 @@ mapping.
 Treat "mlterm" as an xterm-like terminal. (Seiichi Sato)
 
 ":z.4" and ":z=4" didn't work Vi compatible.
+
+When sourcing a file, editing it and sourcing it again, it could appear twice
+in ":scriptnames" and get a new <SID>, because the inode has changed.
+
+When $SHELL is set but empty the 'shell' option would be empty.  Don't use an
+empty $SHELL value.
+
+A command "w! file" in .vimrc or $EXINIT didn't work.  Now it writes an empty
+file.
+
+When a CTRL-F command at the end of the file failed, the cursor was still
+moved to the start of the line.  Now it remains where it is.
+
+When using ":s" or "&" to repeat the last substitute and "$" was used to put
+the cursor in the last column, put the cursor in the last column again.  This
+is Vi compatible.
 
  vim:tw=78:ts=8:ft=help:norl:

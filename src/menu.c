@@ -1001,6 +1001,9 @@ free_menu(menup)
     vim_free(menu->actext);
 #ifdef FEAT_TOOLBAR
     vim_free(menu->iconfile);
+# ifdef FEAT_GUI_MOTIF
+    vim_free(menu->xpm_fname);
+# endif
 #endif
     for (i = 0; i < MENU_MODES; i++)
 	free_menu_string(menu, i);

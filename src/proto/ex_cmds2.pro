@@ -43,6 +43,7 @@ int *source_dbg_tick __ARGS((void *cookie));
 int source_level __ARGS((void *cookie));
 int do_source __ARGS((char_u *fname, int check_other, int is_vimrc));
 void ex_scriptnames __ARGS((exarg_T *eap));
+int has_scriptname __ARGS((char_u *name));
 void scriptnames_slash_adjust __ARGS((void));
 char_u *get_scriptname __ARGS((scid_T id));
 char *fgets_cr __ARGS((char *s, int n, FILE *stream));

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Feb 05
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Feb 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,19 +30,21 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-patch for QuickFixCmdPre and QuickFixCmdPost autocommands. (Ciaran McCreesh,
-2005 Jan 1)
+Make list of user functions a hashtable.
 
-When 'nowrap' is set and selecting text with the mouse, moving the mouse right
-of the text area doesn't cause a horizontal scroll. (Dave Ewart)
+POSIX compliance:
+- See ~/src/posix/TET//vsc/results/0015e/journal  test 130
+- "-w#" and "-w #" argument doesn't work.
+
+Announce autoload functionality.
+
+"norm! gQ" hangs.  Fixes in ex_getln.c and ex_docmd.c also in Vim 6.3?
 
 New Motif toolbar button from Marcin Dalecki:
-- add remark in version7.txt
-- after ":colors default" all the toolbar icons are the same.
-- check if it works for pixmap loaded from a file.
-
-Explain Lists, Dicts, |:for| etc. in the user manual |usr_41.txt|.
-Add more tests for all List and Dict related functionality.
+- When the mouse pointer is over an Agide button the red becomes black.
+  Something with the way colors are specified in the .xpm file.
+- The pixmap is two pixels smaller than it should be.  The gap is filled
+  with grey instead of the current toolbar background color.
 
 Awaiting response:
 -   Patch for mch_FullName() also in Vim 6.3?  os_mswin.c
@@ -52,12 +54,6 @@ Awaiting response:
 
 PLANNED FOR VERSION 7.0:
 
--   For string variables, use length instead of NUL termination?
-	+ can include NUL characters
-	- setline() will have problems with NL vs NUL.
-    Can use list of numbers instead (inefficient though).
-    Also: for strings up to 3 bytes don't allocate memory, use v_list itself
-    as a character array?
 -   new DATA TYPES:
 	- None?  (or use empty string?)
     See ~/vim/ideas.txt.
@@ -207,8 +203,6 @@ PLANNED FOR VERSION 7.0:
 Support ":set syntax=cpp.doxygen"?  Suggested patch by Michael Geddes (9 Aug
 2004).  Should also work for 'filetype'.
 
-g CTRL-G should also show number of characters (not only bytes).
-
 For manipulating buffers without opening a new window, support Virtual
 windows.  Example:
     :virtwin let l = GetBufLine(4, 10)
@@ -235,6 +229,8 @@ usec.  reltime([start, [end]])
     reltime(start) current time relative to [start]
 	echo timestring(reltime(start), 3)  (3 is nr of digits after dot)
     reltime(start, end) difference between start and end
+
+Add more tests for all new functionality in Vim 7.  Especially new functions.
 
 Updated Ruby interface. (Ryan Paul)
 
@@ -497,9 +493,6 @@ Win32 GUI known bugs:
 8   When the 'shell' cannot be executed, should give an appropriate error msg.
     Esp. for a filter command, currently it only complains the file could not
     be read.
-8   MessageBox used for error messages can be too big.	There is no way to
-    scroll it, or even hit the OK button (but you can hit return).
-    Use a scrollable window.
 7   Add an option to add one pixel column to the character width?  Lucida
     Console italic is wider than the normal font ("d" overlaps with next char).
     Opposite of 'linespace': 'columnspace'.
@@ -806,9 +799,6 @@ Macintosh:
 7   There is no way to change directory and go back without changing the local
     and/or global directory.  Add a way to find out if the current window uses
     a local directory.  Add cdcmd() that returns ":cd" or ":lcd"?
-7   After running "make test" the window title is sometimes not restored.
-    Mostly sticks at "test3.in", but not always.  Appears to happen more often
-    when compiled with Python (threading).
 7   The messages for "vim --help" and "vim --version" don't use
     'termencoding'.
 8   When 'scrollbind' is set, a window won't scroll horizontally if the cursor
@@ -1074,7 +1064,7 @@ I can't reproduce these (if you can, let me know how!):
 Problems that will (probably) not be solved:
 -   xterm title: The following scenario may occur (esp. when running the Vim
     test script): Vim 1 sets the title to "file1", then restores the title to
-    "xterm" when exiting with an ESC sequence.  Vim 2 obtains the old title
+    "xterm" with an ESC sequence when exiting.  Vim 2 obtains the old title
     with an X library call, this may result in "file1", because the window
     manager hasn't processed the "xterm" title yet.  Can apparently only be
     worked around with a delay.
@@ -1645,6 +1635,8 @@ Robustness:
 
 
 Performance:
+7   For strings up to 3 bytes don't allocate memory, use v_list itself as a
+    character array.  Use VAR_SSTRING (short string).
 8   Loading plugins takes startup time.  Only load the part that is used to
     trigger the rest, and load the rest when it's needed?
 8   Turn b_syn_ic and b_syn_containedin into b_syn_flags.
@@ -3218,6 +3210,8 @@ Various improvements:
 	:redir #>> bufname   (append)
 	:redir =>  variable
 	:redir =>> variable  (append)
+-   Give error message when starting :redir: twice or using END when no
+    redirection was active.
 -   Setting of options, specifically for a buffer or window, with
     ":set window.option" or ":set buffer.option=val".  Or use ":buffer.set".
     Also: "buffer.map <F1> quit".
