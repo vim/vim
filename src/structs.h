@@ -1810,12 +1810,10 @@ struct VimMenu
 #endif
 #ifdef FEAT_GUI_MOTIF
     int		sensitive;	    /* turn button on/off */
+    char	**xpm;		    /* pixmap data */
 #endif
-#if defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_MOTIF)
+#ifdef FEAT_GUI_ATHENA
     Pixmap	image;		    /* Toolbar image */
-#endif
-#ifdef FEAT_GUI_MOTIF
-    Pixmap	image_ins;	    /* Toolbar image insensitive */
 #endif
 #ifdef FEAT_BEVAL_TIP
     BalloonEval *tip;		    /* tooltip for this menu item */

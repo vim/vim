@@ -1530,6 +1530,7 @@ op_delete(oap)
     if (       oap->motion_type == MCHAR
 #ifdef FEAT_VISUAL
 	    && !oap->is_VIsual
+	    && !oap->block_mode
 #endif
 	    && oap->line_count > 1
 	    && oap->op_type == OP_DELETE)
@@ -2679,6 +2680,7 @@ op_yank(oap, deleting, mess)
 	    && !oap->inclusive
 #ifdef FEAT_VISUAL
 	    && (!oap->is_VIsual || *p_sel == 'o')
+	    && !oap->block_mode
 #endif
 	    && oap->end.col == 0
 	    && yanklines > 1)
@@ -5997,7 +5999,7 @@ cursor_pos_info()
 		    if (lnum == curbuf->b_ml.ml_line_count
 			    && !curbuf->b_p_eol
 			    && curbuf->b_p_bin
-			    && STRLEN(s) < len)
+			    && (long)STRLEN(s) < len)
 			char_count_cursor -= eol_size;
 		}
 	    }

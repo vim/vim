@@ -154,7 +154,11 @@ SRC_UNIX =	\
 		src/kvim_iface.h \
 		src/gui_motif.c \
 		src/gui_xmdlg.c \
+		src/gui_xmebw.c \
+		src/gui_xmebw.h \
+		src/gui_xmebwp.h \
 		src/gui_x11.c \
+		src/gui_x11_pm.h \
 		src/hangulin.c \
 		src/if_xcmdsrv.c \
 		src/integration.c \
