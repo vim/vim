@@ -5905,7 +5905,7 @@ buf_check_timestamp(buf, focus)
     char_u	*path;
     char_u	*tbuf;
     char	*mesg = NULL;
-    char	*mesg2;
+    char	*mesg2 = "";
     int		helpmesg = FALSE;
     int		reload = FALSE;
 #if defined(FEAT_CON_DIALOG) || defined(FEAT_GUI_DIALOG)

@@ -1411,6 +1411,7 @@ acp_to_enc(str, str_size, out, outlen)
     MultiByteToWideChar_alloc(GetACP(), 0, str, str_size, &widestr, outlen);
     if (widestr != NULL)
     {
+	++*outlen;	/* Include the 0 after the string */
 	*out = ucs2_to_enc((short_u *)widestr, outlen);
 	vim_free(widestr);
     }

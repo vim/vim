@@ -355,7 +355,7 @@ CFLAGS += -s
 endif
 
 LIB = -lkernel32 -luser32 -lgdi32 -ladvapi32 -lcomdlg32 -lcomctl32
-GUIOBJ =  $(OUTDIR)/gui.o $(OUTDIR)/gui_w32.o $(OUTDIR)/os_w32exe.o
+GUIOBJ =  $(OUTDIR)/gui.o $(OUTDIR)/gui_w32.o $(OUTDIR)/gui_beval.o $(OUTDIR)/os_w32exe.o
 OBJ = \
 	$(OUTDIR)/buffer.o \
 	$(OUTDIR)/charset.o \
@@ -423,7 +423,7 @@ endif
 ifeq ($(NETBEANS),yes)
 # Only allow NETBEANS for a GUI build.
 ifeq (yes, $(GUI))
-OBJ += $(OUTDIR)/netbeans.o $(OUTDIR)/gui_beval.o
+OBJ += $(OUTDIR)/netbeans.o
 LIB += -lwsock32
 endif
 endif

@@ -1179,7 +1179,7 @@
 	&& (   (defined(FEAT_TOOLBAR) \
 		&& !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_W32)) \
 	    || defined(FEAT_SUN_WORKSHOP) \
-	    || defined(FEAT_NETBEANS_INTG))
+	    || defined(FEAT_NETBEANS_INTG) || defined(FEAT_EVAL))
 # define FEAT_BEVAL
 # if !defined(FEAT_XFONTSET) && !defined(FEAT_GUI_GTK) \
 	&& !defined(FEAT_GUI_KDE) && !defined(FEAT_GUI_W32)

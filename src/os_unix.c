@@ -841,7 +841,10 @@ sig_alarm SIGDEFARG(sigarg)
 }
 #endif
 
-#if defined(HAVE_SETJMP_H) || defined(PROTO)
+#if (defined(HAVE_SETJMP_H) \
+	&& ((defined(FEAT_X11) && defined(FEAT_XCLIPBOARD)) \
+	    || defined(FEAT_LIBCALL))) \
+    || defined(PROTO)
 /*
  * A simplistic version of setjmp() that only allows one level of using.
  * Don't call twice before calling mch_endjmp()!.
