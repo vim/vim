@@ -2194,7 +2194,7 @@ write_session_file(char_u *filename)
     do_cmdline_cmd((char_u *)"let Save_VV_this_session = v:this_session");
     failed = (do_cmdline_cmd((char_u *)mksession_cmdline) == FAIL);
     do_cmdline_cmd((char_u *)"let v:this_session = Save_VV_this_session");
-    do_unlet((char_u *)"Save_VV_this_session");
+    do_unlet((char_u *)"Save_VV_this_session", TRUE);
 
     ssop_flags = save_ssop_flags;
     g_free(mksession_cmdline);

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 27
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jan 31
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,18 +30,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Allow space: "call function ()"
-
-List a:000 must be immutable.
-    lock(list)	    lock(dict)
-    deeplock(list)
-    islocked(list)
-Also unlock(), so that you can pass a list to a function and be sure it's not
-changed?  Then super-lock a:000, can't be unlocked.
-
-":breakadd here" doesn't work. (Johnny Blaze, Jan 26)
-Problem with backslashes in file name?
-
 List data type performance:
 - Cache the length of a List?
 - Cache the last used index?
@@ -56,6 +44,10 @@ Sanity check of eval.c:
 
 Mention rsync command on runtime.php page:
     rsync -avzcP --delete --exclude="dos" --delete-excluded ftp.nluug.nl::Vim/runtime/ vim63-runtime
+
+When 'paste' is set in the GUI the toolbar button doesn't work in Insert mode.
+Use ":exe" in menu.vim to avoid duplicating the commands, instead of using a
+mapping.
 
 Better way to get temp file for tcltags and vimspell scripts. (javier Pena)
 Possibly leave out code for temp directory.
@@ -81,13 +73,6 @@ Awaiting response:
     How to add a scrollbar to the dialog?
 -   Win32: tearoff menu window should have a scrollbar when it's taller than
     the screen.
--   Included NetBeans patches (Gordon Prieur, Oct 20)
-	See two messages for list of changed files.  Additionally:
-	    doc/eval.txt
-	Docs for message E680.
-	Docs for ":nbkey".
-	Asked Gordon to send the differences again, some parts apparently are
-	missing.
 
 
 PLANNED FOR VERSION 7.0:
@@ -219,6 +204,8 @@ PLANNED FOR VERSION 7.0:
     this or make it simple to have the FileChangedShell invoke the normal
     action, telling it what to do.
 -   Displaying size of Visual area: use 24-33 column display.
+    When selecting multiple lines, up to about a screenfull, also count the
+    characters.
 -   Mac: Unicode input and display (Eckehard Berns, 2004 June 27)
     Other patch from Da Woon Jung, 2005 Jan 16.
 8   Add patch from Muraoka Taro (Mar 16) to support input method on Mac?
@@ -243,6 +230,8 @@ PLANNED FOR VERSION 7.0:
 
 Support ":set syntax=cpp.doxygen"?  Suggested patch by Michael Geddes (9 Aug
 2004).  Should also work for 'filetype'.
+
+g CTRL-G should also show number of characters (not only bytes).
 
 For manipulating buffers without opening a new window, support Virtual
 windows.  Example:
@@ -1912,6 +1901,8 @@ Tags:
 7   When using ":tag" at the top of the tag stack, should add another entry,
     so CTRL-T can bring you back to where you are now AND to where you were
     before the previous ":tag" command. (Webb)
+-   When doing "[^I" or "[^D" add position to tag stack.
+-   Add command to put current position to tag stack: ":tpush".
 7   When using CTRL-] on someClass::someMethod, separate class from method and
     use ":ta class:someClass someMethod".
     Include C++ tags changes (Bertin).	Change "class::func" tag into "func"
@@ -3317,8 +3308,6 @@ Various improvements:
 -   Add a next/previous possibility to "[^I" and friends.
 -   Add possibility to change the HOME directory.  Use the directory from the
     passwd file? (Antwerpen)
--   When doing "[^I" or "[^D" add position to tag stack.
--   Add command to put current position to tag stack: ":tpush".
 8   Add commands to push and pop all or individual options. ":setpush tw",
     ":setpop tw", ":setpush all".  Maybe pushing/popping all options is
     sufficient.  ":setflush" resets the option stack?
