@@ -1,4 +1,4 @@
-*vi_diff.txt*   For Vim version 7.0aa.  Last change: 2004 Jun 08
+*vi_diff.txt*   For Vim version 7.0aa.  Last change: 2005 Feb 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -20,6 +20,7 @@ is missing something or because Posix is beside the mark).
 4. The most interesting additions	|vim-additions|
 5. Other vim features			|other-features|
 6. Command-line arguments		|cmdline-arguments|
+7. POSIX compliance			|posix-compliance|
 
 ==============================================================================
 1. Missing commands					*missing-commands*
@@ -880,5 +881,21 @@ Only Vim is able to accept options in between and after the file names.
 -Z		Vim: restricted mode
 
 @{cmdfile}	Vile: use {cmdfile} as startup file.
+
+==============================================================================
+7. POSIX compliance					*posix-compliance*
+
+In 2005 the POSIX test suite was run to check the compatiblity of Vim.  Most
+of the test was executed properly.  Here are the few things where Vim differs:
+
+The -w{number} and -w {number} command line arguments are not supported by
+Vim.
+							*posix-screen-size*
+The $COLUMNS and $LINES environment variables are ignored by Vim if the size
+can be obtained from the terminal in a more reliable way.  Set the $VIM_POSIX
+environment variable to have $COLUMNS and $LINES overrule sizes obtained in
+another way.
+
+
 
  vim:tw=78:ts=8:ft=help:norl:
