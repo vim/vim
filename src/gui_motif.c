@@ -126,7 +126,7 @@ scroll_cb(w, client_data, call_data)
 
 /*
  * Implement three dimensional shading of insensitive labels.
- * By Martin Dalecki.
+ * By Marcin Dalecki.
  */
 
 #include <Xm/XmP.h>
