@@ -2,7 +2,7 @@
 " Language:	BIND 8.x configuration file
 " Maintainer:	glory hump <rnd@web-drive.ru>
 " Last change:	Mon May 21 04:51:01 SAMST 2001
-" Updated:	by Martin Dalecki 2004-12-31
+" Updated:	by Marcin Dalecki 2004-12-31
 " Filenames:	named.conf
 " URL:	http://rnd.web-drive.ru/vim/syntax/named.vim [DEFUNCT]
 " $Id$
