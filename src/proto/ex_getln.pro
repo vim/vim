@@ -2,7 +2,7 @@
 char_u *getcmdline __ARGS((int firstc, long count, int indent));
 char_u *getcmdline_prompt __ARGS((int firstc, char_u *prompt, int attr));
 char_u *getexline __ARGS((int c, void *dummy, int indent));
-char_u *getexmodeline __ARGS((int c, void *dummy, int indent));
+char_u *getexmodeline __ARGS((int promptc, void *dummy, int indent));
 int cmdline_overstrike __ARGS((void));
 int cmdline_at_end __ARGS((void));
 colnr_T cmdline_getvcol_cursor __ARGS((void));

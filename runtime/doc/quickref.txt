@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 7.0aa.  Last change: 2004 Jul 27
+*quickref.txt*  For Vim version 7.0aa.  Last change: 2005 Mar 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -607,6 +607,7 @@ Short explanation of each option:		*option-list*
 |'backupskip'|	  |'bsk'|    no backup for files that match these patterns
 |'balloondelay'|  |'bdlay'|  delay in mS before a balloon may pop up
 |'ballooneval'|   |'beval'|  switch on balloon evaluation
+|'balloonexpr'|   |'bexpr'|  expression to show in balloon
 |'binary'|	  |'bin'|    read/write/edit file in binary mode
 |'bioskey'|	  |'biosk'|  MS-DOS: use bios calls for input characters
 |'bomb'|		     prepend a Byte Order Mark to the file
@@ -750,6 +751,7 @@ Short explanation of each option:		*option-list*
 |'maxfuncdepth'|  |'mfd'|    maximum recursive depth for user functions
 |'maxmapdepth'|   |'mmd'|    maximum recursive depth for mapping
 |'maxmem'|	  |'mm'|     maximum memory (in Kbyte) used for one buffer
+|'maxmempattern'| |'mmp'|    maximum memory (in Kbyte) used for pattern search
 |'maxmemtot'|	  |'mmt'|    maximum memory (in Kbyte) used for all buffers
 |'menuitems'|	  |'mis'|    maximum number of items in a menu
 |'modeline'|	  |'ml'|     recognize modelines at start or end of file
