@@ -1240,14 +1240,29 @@ gui_mch_get_font(
     int		giveErrorIfMissing)
 {
     LOGFONT	lf;
-    GuiFont	font;
+    GuiFont	font = NOFONT;
 
-    get_logfont(&lf, name, NULL);
-    font = get_font_handle(&lf);
+    if (get_logfont(&lf, name, NULL, giveErrorIfMissing) == OK)
+	font = get_font_handle(&lf);
     if (font == NOFONT && giveErrorIfMissing)
 	EMSG2(_(e_font), name);
     return font;
 }
+
+/*
+ * Return the name of font "font" in allocated memory.
+ * Don't know how to get the actual name, thus use the provided name.
+ */
+    char_u *
+gui_mch_get_fontname(font, name)
+    GuiFont font;
+    char_u  *name;
+{
+    if (name == NULL)
+	return NULL;
+    return vim_strsave(name);
+}
+
     void
 gui_mch_free_font(GuiFont font)
 {
@@ -2600,21 +2615,65 @@ gui_mch_exit(int rc)
 #endif
 }
 
+    static char_u *
+logfont2name(LOGFONT lf)
+{
+    char	*p;
+    char	*res;
+    char	*charset_name;
+
+    charset_name = charset_id2name((int)lf.lfCharSet);
+    res = alloc((unsigned)(strlen(lf.lfFaceName) + 20
+		    + (charset_name == NULL ? 0 : strlen(charset_name) + 2)));
+    if (res != NULL)
+    {
+	p = res;
+	/* make a normal font string out of the lf thing:*/
+	sprintf((char *)p, "%s:h%d", lf.lfFaceName, pixels_to_points(
+			 lf.lfHeight < 0 ? -lf.lfHeight : lf.lfHeight, TRUE));
+	while (*p)
+	{
+	    if (*p == ' ')
+		*p = '_';
+	    ++p;
+	}
+#ifndef MSWIN16_FASTTEXT
+	if (lf.lfItalic)
+	    STRCAT(p, ":i");
+	if (lf.lfWeight >= FW_BOLD)
+	    STRCAT(p, ":b");
+#endif
+	if (lf.lfUnderline)
+	    STRCAT(p, ":u");
+	if (lf.lfStrikeOut)
+	    STRCAT(p, ":s");
+	if (charset_name != NULL)
+	{
+	    STRCAT(p, ":c");
+	    STRCAT(p, charset_name);
+	}
+    }
+
+    return res;
+}
+
 /*
- * Initialise vim to use the font with the given name.	Return FAIL if the font
- * could not be loaded, OK otherwise.
+ * Initialise vim to use the font with the given name.
+ * Return FAIL if the font could not be loaded, OK otherwise.
  */
     int
 gui_mch_init_font(char_u *font_name, int fontset)
 {
     LOGFONT	lf;
     GuiFont	font = NOFONT;
+    char_u	*p;
 
     /* Load the font */
-    if (get_logfont(&lf, font_name, NULL))
+    if (get_logfont(&lf, font_name, NULL, TRUE) == OK)
 	font = get_font_handle(&lf);
     if (font == NOFONT)
 	return FAIL;
+
     if (font_name == NULL)
 	font_name = lf.lfFaceName;
 #if defined(FEAT_MBYTE_IME) || defined(GLOBAL_IME)
@@ -2627,46 +2686,21 @@ gui_mch_init_font(char_u *font_name, int fontset)
     gui.norm_font = font;
     current_font_height = lf.lfHeight;
     GetFontSize(font);
-    hl_set_font_name(lf.lfFaceName);
 
-    /* When setting 'guifont' to "*" replace it with the actual font name. */
-    if (STRCMP(font_name, "*") == 0 && STRCMP(p_guifont, "*") == 0)
+    p = logfont2name(lf);
+    if (p != NULL)
     {
-	char	    *charset_name;
-	char_u	    *p;
+	hl_set_font_name(p);
 
-	charset_name = charset_id2name((int)lf.lfCharSet);
-	p = alloc((unsigned)(strlen(lf.lfFaceName) + 20
-		    + (charset_name == NULL ? 0 : strlen(charset_name) + 2)));
-	if (p != NULL)
+	/* When setting 'guifont' to "*" replace it with the actual font name.
+	 * */
+	if (STRCMP(font_name, "*") == 0 && STRCMP(p_guifont, "*") == 0)
 	{
-	    /* make a normal font string out of the lf thing:*/
-	    sprintf((char *)p, "%s:h%d", lf.lfFaceName, pixels_to_points(
-			 lf.lfHeight < 0 ? -lf.lfHeight : lf.lfHeight, TRUE));
 	    vim_free(p_guifont);
 	    p_guifont = p;
-	    while (*p)
-	    {
-		if (*p == ' ')
-		    *p = '_';
-		++p;
-	    }
-#ifndef MSWIN16_FASTTEXT
-	    if (lf.lfItalic)
-		STRCAT(p, ":i");
-	    if (lf.lfWeight >= FW_BOLD)
-		STRCAT(p, ":b");
-#endif
-	    if (lf.lfUnderline)
-		STRCAT(p, ":u");
-	    if (lf.lfStrikeOut)
-		STRCAT(p, ":s");
-	    if (charset_name != NULL)
-	    {
-		STRCAT(p, ":c");
-		STRCAT(p, charset_name);
-	    }
 	}
+	else
+	    vim_free(p);
     }
 
 #ifndef MSWIN16_FASTTEXT

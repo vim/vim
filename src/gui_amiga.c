@@ -1209,6 +1209,11 @@ gui_mch_destroy_scrollbar(scrollbar_T *sb)
 }
 #endif
 
+char_u *gui_mch_getfontname(GuiFont font)
+{
+    return vim_strsave((char_u *)"default");
+}
+
 int gui_mch_init_font(char_u *font_name, int fontset)
 {
     /*D("gui_mch_init_font");*/
@@ -1227,10 +1232,20 @@ gui_mch_adjust_charsize()
 }
 
     GuiFont
-gui_mch_get_font( char_u *name, int giveErrorIfMissing)
+gui_mch_get_font(char_u *name, int giveErrorIfMissing)
 {
     /*D("gui_mch_get_font");*/
     return NULL;
+}
+
+/*
+ * Return the name of font "font" in allocated memory.
+ * We always use the default font.
+ */
+    char_u *
+gui_mch_get_fontname(GuiFont font, char_u *name)
+{
+    return vim_strsave((char_u *)"default");
 }
 
     void

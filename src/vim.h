@@ -1843,12 +1843,11 @@ typedef int VimClipboard;	/* This is required for the prototypes. */
 # include <XSUB.h>
 #endif
 
-/* values for handle_sighup() */
-#define SIGHUP_RCV	1
-#define SIGHUP_BLOCK	2
-#define SIGHUP_UNBLOCK  3
+/* values for handle_signal() that are not a signal */
+#define SIGNAL_BLOCK	-1
+#define SIGNAL_UNBLOCK  -2
 #ifndef UNIX
-# define handle_sighup(x) /* nothing */
+# define handle_signal(x) 0
 #endif
 
 #endif /* VIM__H */

@@ -11,7 +11,7 @@ void mch_didjmp __ARGS((void));
 void mch_suspend __ARGS((void));
 void mch_init __ARGS((void));
 void reset_signals __ARGS((void));
-int handle_sighup __ARGS((int when));
+int handle_signal __ARGS((int sig));
 int mch_check_win __ARGS((int argc, char **argv));
 int mch_input_isatty __ARGS((void));
 int mch_can_restore_title __ARGS((void));

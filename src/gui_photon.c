@@ -2986,6 +2986,7 @@ gui_mch_init_font(char_u *vim_font_name, int fontset)
 	    vim_free( font_name );
 	    return( FAIL );
 	}
+
 	gui_mch_free_font( gui.norm_font );
 	gui.norm_font = font_tag;
     }
@@ -3044,6 +3045,20 @@ gui_mch_get_font(char_u *vim_font_name, int report_error)
 	EMSG2(e_font, vim_font_name );
 
     return( FAIL );
+}
+
+/*
+ * Return the name of font "font" in allocated memory.
+ * Don't know how to get the actual name, thus use the provided name.
+ */
+    char_u *
+gui_mch_get_fontname(font, name)
+    GuiFont font;
+    char_u  *name;
+{
+    if (name == NULL)
+	return NULL;
+    return vim_strsave(name);
 }
 
     void

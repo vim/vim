@@ -2397,6 +2397,15 @@ error:
 }
 
 /*
+ * Return the name of font "font" in allocated memory.
+ */
+    char_u *
+gui_mch_get_fontname(GuiFont font, char_u *name)
+{
+    return vim_strsave(((VimFont *)font)->name);
+}
+
+/*
  * Set the current text font.
  */
     void

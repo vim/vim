@@ -4803,6 +4803,7 @@ getcharmod()	eval.txt	/*getcharmod()*
 getcmdline()	eval.txt	/*getcmdline()*
 getcmdpos()	eval.txt	/*getcmdpos()*
 getcwd()	eval.txt	/*getcwd()*
+getfontname()	eval.txt	/*getfontname()*
 getfperm()	eval.txt	/*getfperm()*
 getfsize()	eval.txt	/*getfsize()*
 getftime()	eval.txt	/*getftime()*
@@ -4932,6 +4933,7 @@ hebrew	hebrew.txt	/*hebrew*
 hebrew.txt	hebrew.txt	/*hebrew.txt*
 help	various.txt	/*help*
 help-context	help.txt	/*help-context*
+help-tags	tags	1
 help-translated	various.txt	/*help-translated*
 help-xterm-window	various.txt	/*help-xterm-window*
 help.txt	help.txt	/*help.txt*

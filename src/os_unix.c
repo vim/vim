@@ -800,6 +800,8 @@ catch_sigint SIGDEFARG(sigarg)
     static RETSIGTYPE
 catch_sigpwr SIGDEFARG(sigarg)
 {
+    /* this is not required on all systems, but it doesn't hurt anybody */
+    signal(SIGPWR, (RETSIGTYPE (*)())catch_sigpwr);
     /*
      * I'm not sure we get the SIGPWR signal when the system is really going
      * down or when the batteries are almost empty.  Just preserve the swap
@@ -904,9 +906,31 @@ deathtrap SIGDEFARG(sigarg)
 #endif
 
 #ifdef SIGHASARG
-    /* When SIGHUP is blocked: postpone its effect and return here.  This
-     * avoids that a non-reentrant function is interrupted, e.g., free(). */
-    if (entered == 0 && sigarg == SIGHUP && !handle_sighup(SIGHUP_RCV))
+    /* When SIGHUP, SIGQUIT, etc. are blocked: postpone the effect and return
+     * here.  This avoids that a non-reentrant function is interrupted, e.g.,
+     * free().  Calling free() again may then cause a crash. */
+    if (entered == 0
+	    && (0
+# ifdef SIGHUP
+		|| sigarg == SIGHUP
+# endif
+# ifdef SIGQUIT
+		|| sigarg == SIGQUIT
+# endif
+# ifdef SIGTERM
+		|| sigarg == SIGTERM
+# endif
+# ifdef SIGPWR
+		|| sigarg == SIGPWR
+# endif
+# ifdef SIGUSR1
+		|| sigarg == SIGUSR1
+# endif
+# ifdef SIGUSR2
+		|| sigarg == SIGUSR2
+# endif
+		)
+	    && !handle_signal(sigarg))
 	SIGRETURN;
 #endif
 
@@ -1181,33 +1205,39 @@ catch_signals(func_deadly, func_other)
 }
 
 /*
- * Handling of SIGHUP:
- * "when" == SIGHUP_RCV:  when busy, postpone, otherwise return TRUE
- * "when" == SIGHUP_BLOCK: Going to be busy, block SIGHUP
- * "when" == SIGHUP_UNBLOCK: Going wait, unblock SIGHUP
+ * Handling of SIGHUP, SIGQUIT and SIGTERM:
+ * "when" == a signal: when busy, postpone, otherwise return TRUE
+ * "when" == SIGNAL_BLOCK: Going to be busy, block signals
+ * "when" == SIGNAL_UNBLOCK: Going wait, unblock signals
  * Returns TRUE when Vim should exit.
  */
     int
-handle_sighup(when)
-    int		when;
+handle_signal(sig)
+    int		sig;
 {
-    static int got_sighup = FALSE;
-    static int blocked = FALSE;
+    static int got_signal = 0;
+    static int blocked = TRUE;
 
-    switch (when)
+    switch (sig)
     {
-	case SIGHUP_RCV:     if (!blocked)
+	case SIGNAL_BLOCK:   blocked = TRUE;
+			     break;
+
+	case SIGNAL_UNBLOCK: blocked = FALSE;
+			     if (got_signal != 0)
+			     {
+				 kill(getpid(), got_signal);
+				 got_signal = 0;
+			     }
+			     break;
+
+	default:	     if (!blocked)
 				 return TRUE;	/* exit! */
-			     got_sighup = TRUE;
-			     got_int = TRUE;    /* break any loops */
-			     break;
-
-	case SIGHUP_BLOCK:   blocked = TRUE;
-			     break;
-
-	case SIGHUP_UNBLOCK: blocked = FALSE;
-			     if (got_sighup)
-				 kill(getpid(), SIGHUP);
+			     got_signal = sig;
+#ifdef SIGPWR
+			     if (sig != SIGPWR)
+#endif
+				 got_int = TRUE;    /* break any loops */
 			     break;
     }
     return FALSE;

@@ -61,6 +61,7 @@ void gui_mch_show_toolbar __ARGS((int showit));
 int gui_mch_init_font __ARGS((char_u *vim_font_name, int fontset));
 int gui_mch_adjust_charsize __ARGS((void));
 GuiFont gui_mch_get_font __ARGS((char_u *vim_font_name, int report_error));
+char_u *gui_mch_get_fontname __ARGS((GuiFont font, char_u *name));
 void gui_mch_set_font __ARGS((GuiFont font));
 void gui_mch_free_font __ARGS((GuiFont font));
 /* vim: set ft=c : */

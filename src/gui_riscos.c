@@ -1053,6 +1053,20 @@ gui_mch_get_font(name, giveErrorIfMissing)
 }
 
 /*
+ * Return the name of font "font" in allocated memory.
+ * Don't know how to get the actual name, thus use the provided name.
+ */
+    char_u *
+gui_mch_get_fontname(font, name)
+    GuiFont font;
+    char_u  *name;
+{
+    if (name == NULL)
+	return NULL;
+    return vim_strsave(name);
+}
+
+/*
  * Set the current text font.
  */
     void

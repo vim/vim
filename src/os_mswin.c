@@ -2096,7 +2096,7 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
      * Initialise the font according to 'printfont'
      */
     memset(&fLogFont, 0, sizeof(fLogFont));
-    if (!get_logfont(&fLogFont, p_pfn, prt_dlg.hDC))
+    if (get_logfont(&fLogFont, p_pfn, prt_dlg.hDC, TRUE) == FAIL)
     {
 	EMSG2(_("E613: Unknown printer font: %s"), p_pfn);
 	mch_print_cleanup();
@@ -3161,11 +3161,16 @@ init_logfont(LOGFONT *lf)
     return OK;
 }
 
+/*
+ * Get font info from "name" into logfont "lf".
+ * Return OK for a valid name, FAIL otherwise.
+ */
     int
 get_logfont(
-    LOGFONT *lf,
-    char_u  *name,
-    HDC printer_dc)
+    LOGFONT	*lf,
+    char_u	*name,
+    HDC		printer_dc,
+    int		verbose)
 {
     char_u	*p;
     int		i;
@@ -3173,7 +3178,7 @@ get_logfont(
 
     *lf = s_lfDefault;
     if (name == NULL)
-	return 1;
+	return OK;
 
     if (STRCMP(name, "*") == 0)
     {
@@ -3191,7 +3196,7 @@ get_logfont(
 	if (ChooseFont(&cf))
 	    goto theend;
 #else
-	return 0;
+	return FAIL;
 #endif
     }
 
@@ -3201,7 +3206,7 @@ get_logfont(
     for (p = name; *p && *p != ':'; p++)
     {
 	if (p - name + 1 > LF_FACESIZE)
-	    return 0;			/* Name too long */
+	    return FAIL;			/* Name too long */
 	lf->lfFaceName[p - name] = *p;
     }
     if (p != name)
@@ -3229,7 +3234,7 @@ get_logfont(
 		did_replace = TRUE;
 	    }
 	if (!did_replace || init_logfont(lf) == FAIL)
-	    return 0;
+	    return FAIL;
     }
 
     while (*p == ':')
@@ -3273,7 +3278,7 @@ get_logfont(
 			    p += strlen(cp->name);
 			    break;
 			}
-		    if (cp->name == NULL)
+		    if (cp->name == NULL && verbose)
 		    {
 			sprintf((char *)IObuff, _("E244: Illegal charset name \"%s\" in font name \"%s\""), p, name);
 			EMSG(IObuff);
@@ -3282,11 +3287,14 @@ get_logfont(
 		    break;
 		}
 	    default:
-		sprintf((char *)IObuff,
-			_("E245: Illegal char '%c' in font name \"%s\""),
-			p[-1], name);
-		EMSG(IObuff);
-		break;
+		if (verbose)
+		{
+		    sprintf((char *)IObuff,
+			    _("E245: Illegal char '%c' in font name \"%s\""),
+			    p[-1], name);
+		    EMSG(IObuff);
+		}
+		return FAIL;
 	}
 	while (*p == ':')
 	    p++;
@@ -3304,7 +3312,7 @@ theend:
 	    mch_memmove(lastlf, lf, sizeof(LOGFONT));
     }
 
-    return 1;
+    return OK;
 }
 
 #endif /* defined(FEAT_GUI) || defined(FEAT_PRINTER) */

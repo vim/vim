@@ -548,7 +548,7 @@ char_u **new_fnames_from_AEDesc(AEDesc *theList, long *numFiles, OSErr *error)
 	    /* Caller is able to clean up */
 	    /* TODO: Should be clean up or not? For safety. */
 #ifdef USE_SIOUX
-	    printf("aevt_odoc: AEGetNthPtr error: %d\n", newError);
+	    printf("aevt_odoc: AEGetNthPtr error: %ld\n", (long)newError);
 #endif
 	    return(fnames);
 	}
@@ -1130,7 +1130,7 @@ HandleODocAE(const AppleEvent *theAEvent, AppleEvent *theReply, long refCon)
     if (error)
     {
 #ifdef USE_SIOUX
-	printf("aevt_odoc: AEGetParamDesc error: %d\n", error);
+	printf("aevt_odoc: AEGetParamDesc error: %ld\n", (long)error);
 #endif
 	return(error);
     }
@@ -1144,15 +1144,16 @@ HandleODocAE(const AppleEvent *theAEvent, AppleEvent *theReply, long refCon)
     if (error)
     {
 #ifdef USE_SIOUX
-	printf("aevt_odoc: AEGetParamPtr error: %d\n", error);
+	printf("aevt_odoc: AEGetParamPtr error: %ld\n", (long)error);
 #endif
 	return(error);
     }
 
 #ifdef USE_SIOUX
-    printf("aevt_odoc: lineNum: %d, startRange %d, endRange %d, [date %lx]\n",
-	    thePosition.lineNum, thePosition.startRange, thePosition.endRange,
-	    thePosition.theDate);
+    printf("aevt_odoc: lineNum: %d, startRange %ld, endRange %ld, [date %lx]\n",
+	    (int)thePosition.lineNum,
+	    (long)thePosition.startRange, (long)thePosition.endRange,
+	    (long)thePosition.theDate);
 #endif
 /*
     error = AEGetParamDesc(theAEvent, keyAEPosition, typeChar, &thePosition);
@@ -1209,7 +1210,7 @@ HandleODocAE(const AppleEvent *theAEvent, AppleEvent *theReply, long refCon)
     {
 	if (thePosition.lineNum >= 0)
 	{
-	    lnum = thePosition.lineNum;
+	    lnum = thePosition.lineNum + 1;
 	/*  oap->motion_type = MLINE;
 	    setpcmark();*/
 	    if (lnum < 1L)
@@ -1217,6 +1218,7 @@ HandleODocAE(const AppleEvent *theAEvent, AppleEvent *theReply, long refCon)
 	    else if (lnum > curbuf->b_ml.ml_line_count)
 		lnum = curbuf->b_ml.ml_line_count;
 	    curwin->w_cursor.lnum = lnum;
+	    curwin->w_cursor.col = 0;
 	/*  beginline(BL_SOL | BL_FIX);*/
 	}
 	else
@@ -1225,8 +1227,31 @@ HandleODocAE(const AppleEvent *theAEvent, AppleEvent *theReply, long refCon)
 
     /* Update the screen display */
     update_screen(NOT_VALID);
+#ifdef FEAT_VISUAL
+    /* Select the text if possible */
+    if (gotPosition)
+    {
+        VIsual_active = TRUE;
+        VIsual_select = FALSE;
+        if (thePosition.lineNum < 0)
+	{
+            VIsual_mode = 'v';
+            VIsual = curwin->w_cursor;
+            goto_byte(thePosition.endRange);
+        }
+        else
+	{
+            VIsual_mode = 'V';
+            VIsual = curwin->w_cursor;
+            VIsual.col = 0;
+        }
+    }
+#endif
     setcursor();
     out_flush();
+
+    /* Fake mouse event to wake from stall */
+    PostEvent(mouseUp, 0);
 
   finished:
     AEDisposeDesc(&theList); /* dispose what we allocated */
@@ -1235,7 +1260,7 @@ HandleODocAE(const AppleEvent *theAEvent, AppleEvent *theReply, long refCon)
     if (error)
     {
 #ifdef USE_SIOUX
-	printf("aevt_odoc: HandleUnusedParms error: %d\n", error);
+	printf("aevt_odoc: HandleUnusedParms error: %ld\n", (long)error);
 #endif
 	return(error);
     }
@@ -2513,6 +2538,8 @@ gui_mac_mouse_wheel(EventHandlerCallRef nextHandler, EventRef theEvent,
 							   kEventPriorityLow))
 	goto bail;
 
+    ReleaseEvent(bogusEvent);
+
     if (noErr == GetWindowBounds(gui.VimWindow, kWindowContentRgn, &bounds))
     {
 	point.h -= bounds.left;
@@ -3028,6 +3055,10 @@ receiveHandler(WindowRef theWindow, void* handlerRefCon, DragRef theDrag)
     count = j;
 
     gui_handle_drop(x, y, modifiers, fnames, count);
+
+    /* Fake mouse event to wake from stall */
+    PostEvent(mouseUp, 0);
+
     return noErr;
 }
 
@@ -3433,6 +3464,7 @@ gui_mch_init_font(font_name, fontset)
     FontInfo	font_info;
     short	font_id;
     GuiFont	font;
+    char_u	used_font_name[512];
 
     if (font_name == NULL)
     {
@@ -3443,23 +3475,26 @@ gui_mch_init_font(font_name, fontset)
 	{
 	    /* Then pickup the standard application font */
 	    font_id = GetAppFont();
+	    STRCPY(used_font_name, "default");
 	}
+	else
+	    STRCPY(used_font_name, "Monaco");
 	font = (suggestedSize << 16) + ((long) font_id & 0xFFFF);
     }
 #if defined(USE_CARBONIZED) && defined(MACOS_X)
     else if (STRCMP(font_name, "*") == 0)
     {
-	char_u *new_p_guifont, font_name[512];
+	char_u *new_p_guifont;
 
-	font = gui_mac_select_font(font_name);
+	font = gui_mac_select_font(used_font_name);
 	if (font == NOFONT)
 	    return FAIL;
 
 	/* Set guifont to the name of the selected font. */
-	new_p_guifont = alloc(STRLEN(font_name) + 1);
+	new_p_guifont = alloc(STRLEN(used_font_name) + 1);
 	if (new_p_guifont != NULL)
 	{
-	    STRCPY(new_p_guifont, font_name);
+	    STRCPY(new_p_guifont, used_font_name);
 	    vim_free(p_guifont);
 	    p_guifont = new_p_guifont;
 	    /* Replace spaces in the font name with underscores. */
@@ -3474,11 +3509,16 @@ gui_mch_init_font(font_name, fontset)
     else
     {
 	font = gui_mac_find_font(font_name);
+	STRNCPY(used_font_name, font_name, sizeof(used_font_name));
+	used_font_name[sizeof(used_font_name) - 1] = NUL;
 
 	if (font == NOFONT)
 	    return FAIL;
     }
+
     gui.norm_font = font;
+
+    hl_set_font_name(used_font_name);
 
     TextSize(font >> 16);
     TextFont(font & 0xFFFF);
@@ -3527,6 +3567,20 @@ gui_mch_get_font(name, giveErrorIfMissing)
      */
 
     return font;
+}
+
+/*
+ * Return the name of font "font" in allocated memory.
+ * Don't know how to get the actual name, thus use the provided name.
+ */
+    char_u *
+gui_mch_get_fontname(font, name)
+    GuiFont font;
+    char_u  *name;
+{
+    if (name == NULL)
+	return NULL;
+    return vim_strsave(name);
 }
 
 /*

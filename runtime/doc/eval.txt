@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2004 Oct 24
+*eval.txt*      For Vim version 7.0aa.  Last change: 2004 Dec 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -856,6 +856,7 @@ getcmdpos()			Number	return cursor position in command-line
 getcwd()			String	the current working directory
 getfperm( {fname})		String	file permissions of file {fname}
 getfsize( {fname})		Number	size in bytes of file {fname}
+getfontname( [{name}])		String	name of font being used
 getftime( {fname})		Number	last modification time of file
 getftype( {fname})		String	description of type of file {fname}
 getline( {lnum})		String	line {lnum} from current buffer
@@ -1632,6 +1633,20 @@ getfsize({fname})					*getfsize()*
 		given file {fname}.
 		If {fname} is a directory, 0 is returned.
 		If the file {fname} can't be found, -1 is returned.
+
+getfontname([{name}])					*getfontname()*
+		Without an argument returns the name of the normal font being
+		used.  Like what is used for the Normal highlight group
+		|hl-Normal|.
+		With an argument a check is done whether {name} is a valid
+		font name.  If not then an empty string is returned.
+		Otherwise the actual font name is returned, or {name} if the
+		GUI does not support obtaining the real name.
+		Only works when the GUI is running, thus not you your vimrc or
+		Note that the GTK 2 GUI accepts any font name, thus checking
+		for a valid name does not work.
+		gvimrc file.  Use the |GUIEnter| autocommand to use this
+		function just after the GUI has started.
 
 getfperm({fname})					*getfperm()*
 		The result is a String, which is the read, write, and execute

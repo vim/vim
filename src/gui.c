@@ -546,6 +546,10 @@ gui_init()
 	if (!im_xim_isvalid_imactivate())
 	    EMSG(_("E599: Value of 'imactivatekey' is invalid"));
 #endif
+	/* When 'cmdheight' was set during startup it may not have taken
+	 * effect yet. */
+	if (p_ch != 1L)
+	    command_height(1L);
 
 	return;
     }
@@ -741,6 +745,7 @@ set_guifontwide(name)
 		    font = gui_mch_get_font(wide_name, FALSE);
 		    if (font != NOFONT)
 		    {
+			gui_mch_free_font(gui.wide_font);
 			gui.wide_font = font;
 			set_string_option_direct((char_u *)"gfw", -1,
 							 wide_name, OPT_FREE);

@@ -3958,6 +3958,16 @@ expand_filename(eap, cmdlinep, errormsgp)
 	    continue;
 	}
 
+	/* Wildcards won't be expanded below, the replacement is taken
+	 * literally.  But do expand "~/file", "~user/file" and "$HOME/file". */
+	if (vim_strchr(repl, '$') != NULL || vim_strchr(repl, '~') != NULL)
+	{
+	    char_u *l = repl;
+
+	    repl = expand_env_save(repl);
+	    vim_free(l);
+	}
+
 	/* Need to escape white space et al. with a backslash.  Don't do this
 	 * for shell commands (may have to use quotes instead).  Don't do this
 	 * for non-unix systems when there is a single argument (spaces don't

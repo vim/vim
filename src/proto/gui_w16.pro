@@ -14,6 +14,7 @@ void gui_mch_set_scrollbar_pos __ARGS((scrollbar_T *sb, int x, int y, int w, int
 void gui_mch_create_scrollbar __ARGS((scrollbar_T *sb, int orient));
 int gui_mch_adjust_charsize __ARGS((void));
 GuiFont gui_mch_get_font __ARGS((char_u *name, int giveErrorIfMissing));
+char_u *gui_mch_get_fontname __ARGS((GuiFont font, char_u *name));
 void gui_mch_free_font __ARGS((GuiFont font));
 guicolor_T gui_mch_get_color __ARGS((char_u *name));
 int gui_mch_haskey __ARGS((char_u *name));
@@ -51,6 +52,7 @@ int gui_mch_maximized __ARGS((void));
 void gui_mch_newfont __ARGS((void));
 void gui_mch_settitle __ARGS((char_u *title, char_u *icon));
 void mch_set_mouse_shape __ARGS((int shape));
+char_u *gui_mch_browsedir __ARGS((char_u *title, char_u *initdir));
 char_u *gui_mch_browse __ARGS((int saving, char_u *title, char_u *dflt, char_u *ext, char_u *initdir, char_u *filter));
 int get_cmd_args __ARGS((char *prog, char *cmdline, char ***argvp, char **tofree));
 void gui_mch_prepare __ARGS((int *argc, char **argv));

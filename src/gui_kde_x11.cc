@@ -384,7 +384,7 @@ gui_mch_open()//{{{
 	vmw->menuBar()->insertItem("&KVim", vmw->w->menu);
 #endif
 	if (startfont!=NULL)
-	    gui_mch_init_font((char_u*)startfont->latin1(),0);
+	    gui_mch_init_font((char_u*)startfont->latin1(), FALSE);
 
 	if (startsize!=NULL)
 	    vmw->resize(startsize->width(), startsize->height());
@@ -558,9 +558,9 @@ char_u *gui_mch_font_dialog (char_u *oldval)//{{{
 gui_mch_init_font(char_u * font_name, int fontset)//{{{
 {
 	QString fontname;
-	GuiFont font=NULL;
+	GuiFont font = NULL;
 
-	if (font_name==NULL)
+	if (font_name == NULL)
 	{
 #if 0
 #if QT_VERSION>=300
@@ -589,31 +589,30 @@ gui_mch_init_font(char_u * font_name, int fontset)//{{{
 	font = new QFont();
 	font->fromString( fontname );
 */
+#ifdef FEAT_XFONTSET
+	if (fontset)
+	    font = gui_mch_get_fontset(font_name, TRUE, TRUE);
+	if (font == NULL)
+#endif
+	    font = gui_mch_get_font(font_name, FALSE);
+
+	if (font == NULL)
+	    return FAIL;
+	if (fontname.contains('*') && fontname.contains('-'))
+	    return FAIL;
+
 	gui_mch_free_font(gui.norm_font);
 #ifdef FEAT_XFONTSET
 	gui_mch_free_fontset(gui.fontset);
+	gui.fontset = NOFONTSET;
 	if (fontset)
-	    font = gui_mch_get_fontset(font_name,TRUE,TRUE);
+	{
+	    gui.fontset = font;
+	    gui.norm_font = NOFONT;
+	}
+	else
 #endif
-	if (font == NULL) {
-	    font = gui_mch_get_font(font_name,FALSE);
 	    gui.norm_font = font;
-#ifdef FEAT_XFONTSET
-	    gui.fontset=NOFONTSET;
-#endif
-	}
-#ifdef FEAT_XFONTSET
-	else {
-	    gui.fontset=font;
-	    gui.norm_font=NOFONT;
-	}
-#endif
-
-	if (font == NULL)
-		return FAIL;
-
-	if (fontname.contains('*') && fontname.contains('-'))
-		return FAIL;
 
 	/* Compute the width of the character cell.  Some fonts include
 	 * double-width characters.  Use the width of ASCII characters to find
@@ -659,6 +658,20 @@ gui_mch_get_font(char_u * name, int report_error)//{{{
 	if (!myFont->fixedPitch()) dbf("Non fixed-width font");
 	return (GuiFont) myFont;
 }//}}}
+
+/*
+ * Return the name of font "font" in allocated memory.
+ * Don't know how to get the actual name, thus use the provided name.
+ */
+    char_u *
+gui_mch_get_fontname(font, name)
+    GuiFont font;
+    char_u  *name;
+{
+    if (name == NULL)
+	return NULL;
+    return vim_strsave(name);
+}
 
 /*
  * Set the current text font.
