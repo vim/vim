@@ -1,4 +1,4 @@
-*diff.txt*      For Vim version 7.0aa.  Last change: 2004 Jul 20
+*diff.txt*      For Vim version 7.0aa.  Last change: 2005 Mar 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -157,8 +157,8 @@ original file and diff with that.  For example: >
 
 A buffer that is unloaded cannot be used for the diff.  But it does work for
 hidden buffers.  You can use ":hide" to close a window without unloading the
-buffer.
-
+buffer.  If you don't want a buffer to remain used for the diff do ":set
+nodiff" before hiding it.
 
 							*:diffu* *:diffupdate*
 Vim attempts to keep the differences updated when you make changes to the

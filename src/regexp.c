@@ -3516,7 +3516,7 @@ reg_prev_class()
 static long	bl_minval;
 static long	bl_maxval;
 
-/* Values for rs_state. */
+/* Values for rs_state in regitem_T. */
 typedef enum regstate_E
 {
     RS_NOPEN = 0	/* NOPEN and NCLOSE */
@@ -3545,7 +3545,7 @@ typedef enum regstate_E
  */
 typedef struct regitem_S
 {
-    regstate_T	rs_state;	/* what we are doing, on of RS_ below */
+    regstate_T	rs_state;	/* what we are doing, one of RS_ above */
     char_u	*rs_scan;	/* current node in program */
     long	rs_startp;	/* start position for BACK (offset) */
     union

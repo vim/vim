@@ -172,6 +172,12 @@ getcmdline(firstc, count, indent)
 #endif
     expand_T	xpc;
     long	*b_im_ptr = NULL;
+#if defined(FEAT_WILDMENU) || defined(FEAT_EVAL) || defined(FEAT_SEARCH_EXTRA)
+    /* Everything that may work recursively should save and restore the
+     * current command line in save_ccline.  That includes update_screen(), a
+     * custom status line may invoke ":normal". */
+    struct cmdline_info save_ccline;
+#endif
 
 #ifdef FEAT_SNIFF
     want_sniff_request = 0;
@@ -423,7 +429,9 @@ getcmdline(firstc, count, indent)
 		    p_ls = save_p_ls;
 		    p_wmh = save_p_wmh;
 		    last_status(FALSE);
+		    save_cmdline(&save_ccline);
 		    update_screen(VALID);	/* redraw the screen NOW */
+		    restore_cmdline(&save_ccline);
 		    redrawcmd();
 		    save_p_ls = -1;
 		}
@@ -613,7 +621,6 @@ getcmdline(firstc, count, indent)
 #ifdef FEAT_EVAL
 	    else if (c == 'e')
 	    {
-		struct cmdline_info save_ccline;
 		char_u		    *p = NULL;
 
 		/*
@@ -1061,8 +1068,6 @@ getcmdline(firstc, count, indent)
 		new_cmdpos = -1;
 		if (c == '=')
 		{
-		    struct cmdline_info	    save_ccline;
-
 		    if (ccline.cmdfirstc == '=')/* can't do this recursively */
 		    {
 			beep_flush();
@@ -1665,7 +1670,10 @@ cmdline_changed:
 	    }
 	    validate_cursor();
 
+	    save_cmdline(&save_ccline);
 	    update_screen(NOT_VALID);
+	    restore_cmdline(&save_ccline);
+
 	    msg_starthere();
 	    redrawcmdline();
 	    did_incsearch = TRUE;
