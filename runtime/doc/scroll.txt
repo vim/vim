@@ -1,4 +1,4 @@
-*scroll.txt*    For Vim version 7.0aa.  Last change: 2004 Jun 08
+*scroll.txt*    For Vim version 7.0aa.  Last change: 2005 Feb 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -52,6 +52,8 @@ CTRL-D			Scroll window Downwards in the buffer.  The number of
 <PageDown>	or				*<PageDown>* *CTRL-F*
 CTRL-F			Scroll window [count] pages Forwards (downwards) in
 			the buffer.  See also 'startofline' option.
+			When there is only one window the 'window' option
+			might be used.
 
 							*z+*
 z+			Without [count]: Redraw with the line just below the
@@ -89,6 +91,8 @@ CTRL-U			Scroll window Upwards in the buffer.  The number of
 <PageUp>	or					*<PageUp>* *CTRL-B*
 CTRL-B			Scroll window [count] pages Backwards (upwards) in the
 			buffer.  See also 'startofline' option.
+			When there is only one window the 'window' option
+			might be used.
 
 							*z^*
 z^			Without [count]: Redraw with the line just above the

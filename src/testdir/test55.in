@@ -149,15 +149,20 @@ STARTTEST
 :endfunc
 :$put =d.func(string(remove(d, 'func')))
 :"
-:" Nasty: deepcopy() dict that refers to itself (fails)
+:" Nasty: deepcopy() dict that refers to itself (fails when noref used)
 :let d = {1:1, 2:2}
 :let l = [4, d, 6]
 :let d[3] = l
+:let dc = deepcopy(d)
 :try
-:  let x = deepcopy(d)
+:  let dc = deepcopy(d, 1)
 :catch
 :  $put =v:exception[:14]
 :endtry
+:let l2 = [0, l, l, 3]
+:let l[1] = l2
+:let l3 = deepcopy(l2)
+:$put ='same list: ' . (l3[1] is l3[2])
 :"
 :" Locked variables
 :for depth in range(5)
@@ -252,6 +257,14 @@ STARTTEST
 :catch
 :  $put ='caught ' . v:exception
 :endtry
+:"
+:" reverse() and sort()
+:let l = ['-0', 'A11', 2, 'xaaa', 4, 'foo', 'foo6', [0, 1, 2], 'x8']
+:$put =string(reverse(l))
+:$put =string(reverse(reverse(l)))
+:$put =string(sort(l))
+:$put =string(reverse(sort(l)))
+:$put =string(sort(reverse(sort(l))))
 :"
 :endfun
 :call Test(1, 2, [3, 4], {5: 6})  " This may take a while

@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0aa.  Last change: 2005 Jan 26
+*insert.txt*    For Vim version 7.0aa.  Last change: 2005 Feb 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -922,6 +922,9 @@ i			Insert text before the cursor [count] times.
 							*I*
 I			Insert text before the first non-blank in the line
 			[count] times.
+			When the 'H' flag is present in 'cpoptions' and the
+			line only contains blanks, insert start just before
+			the last blank.
 
 							*gI*
 gI			Insert text in column 1 [count] times.  {not in Vi}
@@ -941,11 +944,15 @@ gi			Insert text in the same position as where Insert mode
 o			Begin a new line below the cursor and insert text,
 			repeat [count] times.  {Vi: blank [count] screen
 			lines}
+			When the '#' flag is in 'cpoptions' the count is
+			ignored.
 
 							*O*
 O			Begin a new line above the cursor and insert text,
 			repeat [count] times.  {Vi: blank [count] screen
 			lines}
+			When the '#' flag is in 'cpoptions' the count is
+			ignored.
 
 These commands are used to start inserting text.  You can end insert mode with
 <Esc>.  See |mode-ins-repl| for the other special characters in Insert mode.

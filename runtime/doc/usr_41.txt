@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 7.0aa.  Last change: 2005 Feb 07
+*usr_41.txt*	For Vim version 7.0aa.  Last change: 2005 Feb 08
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -1087,7 +1087,7 @@ know the key.  A Dictionary is created with curly braces: >
    	
 	:let uk2nl = {'one': 'een', 'two': 'twee', 'three': 'drie'}
 
-Now you can lookup words by putting the key in square brakets: >
+Now you can lookup words by putting the key in square brackets: >
 
 	:echo uk2nl['two']
 <	twee ~
@@ -1185,7 +1185,7 @@ Is equivalent to: >
 
 The get() function checks if a key is present in a Dictionary.  If it is, then
 the value is retrieved.  If it isn't, then the default value is returned, in
-the example it's '???'.  This is a covenient way to handle situations where a
+the example it's '???'.  This is a convenient way to handle situations where a
 key may not be present and you don't want an error message.
 
 The join() function does the opposite of split(): it joins together a list of

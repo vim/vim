@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.0aa.  Last change: 2005 Jan 14
+*change.txt*    For Vim version 7.0aa.  Last change: 2005 Feb 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -52,6 +52,8 @@ For inserting text see |insert.txt|.
 			of the line and [count]-1 more lines [into register
 			x]; synonym for "d$".
 			(not |linewise|)
+			When the '#' flag is in 'cpoptions' the count is
+			ignored.
 
 {Visual}["x]x	or					*v_x* *v_d* *v_<Del>*
 {Visual}["x]d   or
@@ -1017,7 +1019,8 @@ except when the command specifies a register with ["x].
 4. Named registers "a to "z or "A to "Z			*quote_alpha* *quotea*
 Vim fills these registers only when you say so.  Specify them as lowercase
 letters to replace their previous contents or as uppercase letters to append
-to their previous contents.
+to their previous contents.  When the '>' flag is present in 'cpoptions' then
+a line break is inserted before the appended text.
 
 5. Read-only registers ":, "., "% and "#
 These are '%', '#', ':' and '.'.  You can use them only with the "p", "P",

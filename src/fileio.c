@@ -433,7 +433,7 @@ readfile(fname, sfname, from, lines_to_skip, lines_to_read, eap, flags)
      * Only set/reset b_p_ro when BF_CHECK_RO is set.
      */
     check_readonly = (newfile && (curbuf->b_flags & BF_CHECK_RO));
-    if (check_readonly && !readonlymode)    /* default: set file not readonly */
+    if (check_readonly && !readonlymode)
 	curbuf->b_p_ro = FALSE;
 
     if (newfile && !read_stdin && !read_buffer)
@@ -3499,8 +3499,8 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 #endif
 
     /* When using ":w!" and writing to the current file, readonly makes no
-     * sense, reset it */
-    if (forceit && overwriting)
+     * sense, reset it, unless 'Z' appears in 'cpoptions'.  */
+    if (forceit && overwriting && vim_strchr(p_cpo, CPO_KEEPRO) == NULL)
     {
 	buf->b_p_ro = FALSE;
 #ifdef FEAT_TITLE

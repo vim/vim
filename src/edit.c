@@ -6270,6 +6270,10 @@ ins_esc(count, cmdchar)
 
 	if (--*count > 0)	/* repeat what was typed */
 	{
+	    /* Vi repeats the insert without replacing characters. */
+	    if (vim_strchr(p_cpo, CPO_REPLCNT) != NULL)
+		State &= ~REPLACE_FLAG;
+
 	    (void)start_redo_ins();
 	    if (cmdchar == 'r' || cmdchar == 'v')
 		stuffReadbuff(ESC_STR);	/* no ESC in redo buffer */

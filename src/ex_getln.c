@@ -205,12 +205,24 @@ getcmdline(firstc, count, indent)
      * set some variables for redrawcmd()
      */
     ccline.cmdfirstc = (firstc == '@' ? 0 : firstc);
-    ccline.cmdindent = indent;
-    alloc_cmdbuff(exmode_active ? 250 : 0); /* alloc initial ccline.cmdbuff */
+    ccline.cmdindent = (firstc > 0 ? indent : 0);
+
+    /* alloc initial ccline.cmdbuff */
+    alloc_cmdbuff(exmode_active ? 250 : indent + 1);
     if (ccline.cmdbuff == NULL)
 	return NULL;			    /* out of memory */
     ccline.cmdlen = ccline.cmdpos = 0;
     ccline.cmdbuff[0] = NUL;
+
+    /* autoindent for :insert and :append */
+    if (firstc <= 0)
+    {
+	copy_spaces(ccline.cmdbuff, indent);
+	ccline.cmdbuff[indent] = NUL;
+	ccline.cmdpos = indent;
+	ccline.cmdspos = indent;
+	ccline.cmdlen = indent;
+    }
 
     ExpandInit(&xpc);
 
@@ -1878,7 +1890,7 @@ getexmodeline(c, dummy, indent)
     garray_T		line_ga;
     int			len;
     int			off = 0;
-    char_u		*p;
+    char_u		*pend;
     int			finished = FALSE;
 #if defined(FEAT_GUI) || defined(NO_COOKED_INPUT)
     int			startcol = 0;
@@ -1897,6 +1909,7 @@ getexmodeline(c, dummy, indent)
 	msg_putchar('\n');
     if (c == ':')
     {
+	/* indent that is only displayed, not in the line itself */
 	msg_putchar(':');
 	while (indent-- > 0)
 	    msg_putchar(' ');
@@ -1907,6 +1920,25 @@ getexmodeline(c, dummy, indent)
 
     ga_init2(&line_ga, 1, 30);
 
+    /* autoindent for :insert and :append is in the line itself */
+    if (c <= 0)
+    {
+#if defined(FEAT_GUI) || defined(NO_COOKED_INPUT)
+	vcol = indent;
+#endif
+	while (indent >= 8)
+	{
+	    ga_append(&line_ga, TAB);
+	    msg_puts((char_u *)"        ");
+	    indent -= 8;
+	}
+	while (indent-- > 0)
+	{
+	    ga_append(&line_ga, ' ');
+	    msg_putchar(' ');
+	}
+    }
+
     /*
      * Get the line, one character at a time.
      */
@@ -1915,14 +1947,14 @@ getexmodeline(c, dummy, indent)
     {
 	if (ga_grow(&line_ga, 40) == FAIL)
 	    break;
-	p = (char_u *)line_ga.ga_data + line_ga.ga_len;
+	pend = (char_u *)line_ga.ga_data + line_ga.ga_len;
 
 	/* Get one character (inchar gets a third of maxlen characters!) */
-	len = inchar(p + off, 3, -1L, 0);
+	len = inchar(pend + off, 3, -1L, 0);
 	if (len < 0)
 	    continue;	    /* end of input script reached */
 	/* for a special character, we need at least three characters */
-	if ((*p == K_SPECIAL || *p == CSI) && off + len < 3)
+	if ((*pend == K_SPECIAL || *pend == CSI) && off + len < 3)
 	{
 	    off += len;
 	    continue;
@@ -1947,7 +1979,7 @@ getexmodeline(c, dummy, indent)
 
 	    while (len > 0)
 	    {
-		c1 = *p++;
+		c1 = *pend++;
 		--len;
 		if ((c1 == K_SPECIAL
 #  if !defined(NO_COOKED_INPUT) || defined(FEAT_GUI)
@@ -1955,8 +1987,8 @@ getexmodeline(c, dummy, indent)
 #  endif
 		    ) && len >= 2)
 		{
-		    c1 = TO_SPECIAL(p[0], p[1]);
-		    p += 2;
+		    c1 = TO_SPECIAL(pend[0], pend[1]);
+		    pend += 2;
 		    len -= 2;
 		}
 
@@ -2006,6 +2038,46 @@ getexmodeline(c, dummy, indent)
 			continue;
 		    }
 
+		    if (c1 == Ctrl_T)
+			c1 = TAB;	/* very simplistic... */
+
+		    if (c1 == Ctrl_D)
+		    {
+			char_u	*p;
+
+			/* Delete one shiftwidth. */
+			p = (char_u *)line_ga.ga_data;
+			p[line_ga.ga_len] = NUL;
+			indent = get_indent_str(p, 8);
+			--indent;
+			indent -= indent % 8;
+			while (get_indent_str(p, 8) > indent)
+			{
+			    char_u *s = skipwhite(p);
+
+			    mch_memmove(s - 1, s, line_ga.ga_len - (s - p) + 1);
+			    --line_ga.ga_len;
+			}
+			msg_col = startcol;
+			for (vcol = 0; *p != NUL; ++p)
+			{
+			    if (*p == TAB)
+			    {
+				do
+				{
+				    msg_putchar(' ');
+				} while (++vcol % 8);
+			    }
+			    else
+			    {
+				msg_outtrans_len(p, 1);
+				vcol += char2cells(*p);
+			    }
+			}
+			msg_clr_eos();
+			continue;
+		    }
+
 		    if (c1 == Ctrl_V)
 		    {
 			escaped = TRUE;
@@ -2046,13 +2118,13 @@ getexmodeline(c, dummy, indent)
 	    line_ga.ga_len += len;
 	}
 #endif
-	p = (char_u *)(line_ga.ga_data) + line_ga.ga_len;
-	if (line_ga.ga_len && p[-1] == '\n')
+	pend = (char_u *)(line_ga.ga_data) + line_ga.ga_len;
+	if (line_ga.ga_len && pend[-1] == '\n')
 	{
 	    finished = TRUE;
 	    --line_ga.ga_len;
-	    --p;
-	    *p = NUL;
+	    --pend;
+	    *pend = NUL;
 	}
     }
 

@@ -2332,9 +2332,20 @@ onepage(dir, count)
 #endif
 	if (dir == FORWARD)
 	{
-					/* at end of file */
-	    if (curwin->w_botline > curbuf->b_ml.ml_line_count)
+	    if (firstwin == lastwin && p_window > 0 && p_window < Rows - 1)
 	    {
+		/* Vi compatible scrolling */
+		if (p_window <= 2)
+		    ++curwin->w_topline;
+		else
+		    curwin->w_topline += p_window - 2;
+		if (curwin->w_topline > curbuf->b_ml.ml_line_count)
+		    curwin->w_topline = curbuf->b_ml.ml_line_count;
+		curwin->w_cursor.lnum = curwin->w_topline;
+	    }
+	    else if (curwin->w_botline > curbuf->b_ml.ml_line_count)
+	    {
+		/* at end of file */
 		curwin->w_topline = curbuf->b_ml.ml_line_count;
 #ifdef FEAT_DIFF
 		curwin->w_topfill = 0;
@@ -2371,6 +2382,21 @@ onepage(dir, count)
 		continue;
 	    }
 #endif
+	    if (firstwin == lastwin && p_window > 0 && p_window < Rows - 1)
+	    {
+		/* Vi compatible scrolling (sort of) */
+		if (p_window <= 2)
+		    --curwin->w_topline;
+		else
+		    curwin->w_topline -= p_window - 2;
+		if (curwin->w_topline < 1)
+		    curwin->w_topline = 1;
+		curwin->w_cursor.lnum = curwin->w_topline + p_window - 1;
+		if (curwin->w_cursor.lnum > curbuf->b_ml.ml_line_count)
+		    curwin->w_cursor.lnum = curbuf->b_ml.ml_line_count;
+		continue;
+	    }
+
 	    /* Find the line at the top of the window that is going to be the
 	     * line at the bottom of the window.  Make sure this results in
 	     * the same line as before doing CTRL-F. */

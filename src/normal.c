@@ -1379,6 +1379,7 @@ do_pending_operator(cap, old_col, gui_yank)
 #ifdef FEAT_VISUAL
 		&& (!VIsual_active || oap->motion_force)
 #endif
+		&& cap->cmdchar != 'D'
 #ifdef FEAT_FOLDING
 		&& oap->op_type != OP_FOLD
 		&& oap->op_type != OP_FOLDOPEN
@@ -6701,9 +6702,24 @@ nv_optrans(cap)
 
     if (!checkclearopq(cap->oap))
     {
-	if (cap->count0)
-	    stuffnumReadbuff(cap->count0);
-	stuffReadbuff(ar[(int)(vim_strchr(str, cap->cmdchar) - str)]);
+	/* In Vi "2D" doesn't delete the next line.  Can't translate it
+	 * either, because "2." should also not use the count. */
+	if (cap->cmdchar == 'D' && vim_strchr(p_cpo, CPO_HASH) != NULL)
+	{
+	    cap->oap->start = curwin->w_cursor;
+	    cap->oap->op_type = OP_DELETE;
+	    cap->count1 = 1;
+	    nv_dollar(cap);
+	    finish_op = TRUE;
+	    ResetRedobuff();
+	    AppendCharToRedobuff('D');
+	}
+	else
+	{
+	    if (cap->count0)
+		stuffnumReadbuff(cap->count0);
+	    stuffReadbuff(ar[(int)(vim_strchr(str, cap->cmdchar) - str)]);
+	}
     }
     cap->opcount = 0;
 }
@@ -7599,6 +7615,9 @@ n_opencmd(cap)
 #endif
 		    0, 0))
 	{
+	    /* When '#' is in 'cpoptions' ignore the count. */
+	    if (vim_strchr(p_cpo, CPO_HASH) != NULL)
+		cap->count1 = 1;
 	    invoke_edit(cap, FALSE, cap->cmdchar, TRUE);
 	}
     }
@@ -8156,7 +8175,10 @@ nv_edit(cap)
 		break;
 
 	    case 'I':	/* "I"nsert before the first non-blank */
-		beginline(BL_WHITE);
+		if (vim_strchr(p_cpo, CPO_INSEND) == NULL)
+		    beginline(BL_WHITE);
+		else
+		    beginline(BL_WHITE|BL_FIX);
 		break;
 
 	    case 'a':	/* "a"ppend is like "i"nsert on the next character. */

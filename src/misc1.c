@@ -23,7 +23,6 @@ static char_u *remove_tail __ARGS((char_u *p, char_u *pend, char_u *name));
 #if defined(USE_EXE_NAME) && defined(MACOS_X)
 static char_u *remove_tail_with_ext __ARGS((char_u *p, char_u *pend, char_u *ext));
 #endif
-static int get_indent_str __ARGS((char_u *ptr, int ts));
 static int copy_indent __ARGS((int size, char_u	*src));
 
 /*
@@ -63,7 +62,7 @@ get_indent_buf(buf, lnum)
  * count the size (in window cells) of the indent in line "ptr", with
  * 'tabstop' at "ts"
  */
-    static int
+    int
 get_indent_str(ptr, ts)
     char_u	*ptr;
     int		ts;
@@ -79,7 +78,7 @@ get_indent_str(ptr, ts)
 	else
 	    break;
     }
-    return (count);
+    return count;
 }
 
 /*

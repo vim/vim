@@ -1,8 +1,8 @@
 " Vim indent file
-" Language:	Python
-" Maintainer:	Bram Moolenaar <Bram@vim.org>
+" Language:		Python
+" Maintainer:		Bram Moolenaar <Bram@vim.org>
 " Original Author:	David Bustos <bustos@caltech.edu>
-" Last Change:	2004 Jul 25
+" Last Change:		2005 Feb 08
 
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")

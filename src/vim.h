@@ -604,6 +604,7 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 #define BF_NEW_W	0x20	/* Warned for BF_NEW and file created */
 #define BF_READERR	0x40	/* got errors while reading the file */
 #define BF_DUMMY	0x80	/* dummy buffer, only used internally */
+#define BF_PRESERVED	0x100	/* ":preserve" was used */
 
 /* Mask to check for flags that prevent normal writing */
 #define BF_WRITE_MASK	(BF_NOTEDITED + BF_NEW + BF_READERR)

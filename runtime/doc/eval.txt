@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Feb 07
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Feb 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1899,7 +1899,7 @@ cursor({lnum}, {col})					*cursor()*
 		If {col} is zero, the cursor will stay in the current column.
 
 
-deepcopy({expr})					*deepcopy()* *E698*
+deepcopy({expr}[, {noref}])				*deepcopy()* *E698*
 		Make a copy of {expr}.  For Numbers and Strings this isn't
 		different from using {expr} directly.
 		When {expr} is a List a full copy is created.  This means
@@ -1907,10 +1907,15 @@ deepcopy({expr})					*deepcopy()* *E698*
 		copy, and vise versa.  When an item is a List, a copy for it
 		is made, recursively.  Thus changing an item in the copy does
 		not change the contents of the original List.
+		When {noref} is omitted or zero a contained List or Dictionary
+		is only copied once.  All references point to this single
+		copy.  With {noref} set to 1 every occurrence of a List or
+		Dictionary results in a new copy.  This also means that a
+		cyclic reference causes deepcopy() to fail.
 								*E724*
 		Nesting is possible up to 100 levels.  When there is an item
-		that refers back to a higher level making a deep copy will
-		fail.
+		that refers back to a higher level making a deep copy with
+		{noref} set to 1 will fail.
 		Also see |copy()|.
 
 delete({fname})							*delete()*
@@ -4399,8 +4404,9 @@ Vim will look for the file "autoload/foo/bar.vim" in 'runtimepath'.
 The name before the first colon must be at least two characters long,
 otherwise it looks like a scope, such as "s:".
 
-Note that the script will be sourced again and again if a function is called
-that looks like it is defined in the autoload script but it isn't.
+Note that when you make a mistake and call a function that is supposed to be
+defined in an autoload script, but the script doesn't actually define the
+function, the script will be sourced every time you try to call the function.
 
 ==============================================================================
 6. Curly braces names					*curly-braces-names*

@@ -2991,6 +2991,9 @@ win_new_shellsize()
 	ui_new_shellsize();
     if (old_Rows != Rows)
     {
+	/* if 'window' uses the whole screen, keep it using that */
+	if (p_window == old_Rows - 1)
+	    p_window = Rows - 1;
 	old_Rows = Rows;
 	shell_new_rows();	/* update window sizes */
     }
@@ -3234,6 +3237,8 @@ stoptermcap()
  * echoed.
  * Only do this after termcap mode has been started, otherwise the codes for
  * the cursor keys may be wrong.
+ * On Unix only do it when both output and input are a tty (avoid writing
+ * request to terminal while reading from a file).
  * The result is caught in check_termcode().
  */
     static void
@@ -3244,6 +3249,7 @@ may_req_termresponse()
 	    && termcap_active
 #ifdef UNIX
 	    && isatty(1)
+	    && isatty(read_cmd_fd)
 #endif
 	    && *T_CRV != NUL)
     {

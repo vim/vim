@@ -826,8 +826,9 @@ main
 				/* "-w {scriptout}"	write to script */
 		if (vim_isdigit(((char_u *)argv[0])[argv_idx]))
 		{
-		    argv_idx = -1;
-		    break;			/* not implemented, ignored */
+		    i = get_number_arg((char_u *)argv[0], &argv_idx, 10);
+		    set_option_value((char_u *)"window", (long)i, NULL, 0);
+		    break;
 		}
 		want_argument = TRUE;
 		break;
@@ -848,7 +849,17 @@ main
 		restricted = TRUE;
 		break;
 
-	    case 'c':		/* "-c {command}" execute command */
+	    case 'c':		/* "-c{command}" or "-c {command}" execute
+				   command */
+		if (argv[0][argv_idx] != NUL)
+		{
+		    if (n_commands >= MAX_ARG_CMDS)
+			mainerr(ME_EXTRA_CMD, NULL);
+		    commands[n_commands++] = (char_u *)argv[0] + argv_idx;
+		    argv_idx = -1;
+		    break;
+		}
+		/*FALLTRHOUGH*/
 	    case 'S':		/* "-S {file}" execute Vim script */
 	    case 'i':		/* "-i {viminfo}" use for viminfo */
 #ifndef FEAT_DIFF
@@ -990,7 +1001,17 @@ scripterror:
 #endif
 		    break;
 
-		case 'w':	/* "-w {scriptout}" append to script file */
+		case 'w':	/* "-w {nr}" 'window' value */
+				/* "-w {scriptout}" append to script file */
+		    if (vim_isdigit(*((char_u *)argv[0])))
+		    {
+			argv_idx = 0;
+			i = get_number_arg((char_u *)argv[0], &argv_idx, 10);
+			set_option_value((char_u *)"window", (long)i, NULL, 0);
+			argv_idx = -1;
+			break;
+		    }
+		    /*FALLTRHOUGH*/
 		case 'W':	/* "-W {scriptout}" overwrite script file */
 		    if (scriptout != NULL)
 			goto scripterror;

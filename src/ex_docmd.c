@@ -6457,6 +6457,7 @@ alist_slash_adjust()
 ex_preserve(eap)
     exarg_T	*eap;
 {
+    curbuf->b_flags |= BF_PRESERVED;
     ml_preserve(curbuf, TRUE);
 }
 

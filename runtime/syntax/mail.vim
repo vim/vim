@@ -2,7 +2,7 @@
 " Language:		Mail file
 " Previous Maintainer:	Felix von Leitner <leitner@math.fu-berlin.de>
 " Maintainer:		Gautam Iyer <gautam@math.uchicago.edu>
-" Last Change:		Mon 23 Feb 2004 02:26:16 PM CST
+" Last Change:		Thu 10 Feb 2005 09:46:26 AM CST
 
 " Quit when a syntax file was already loaded
 if exists("b:current_syntax")
@@ -38,8 +38,8 @@ syn match	mailSubject	contained "\v(^(\> ?)*)@<=subject:.*$" contains=@Spell
 " Anything in the header between < and > is an email address
 syn match	mailHeaderEmail	contained "<.\{-}>"
 
-" Mail Signatures. (Begin with "--", end with change in quote level)
-syn region	mailSignature	keepend contains=@mailLinks,@mailQuoteExps start="^\z(\(> \?\)*\)-- *$" end="^\z1$" end="^\z1\@!"me=s-1 end="^\z1\(> \?\)\+"me=s-1
+" Mail Signatures. (Begin with "-- ", end with change in quote level)
+syn region	mailSignature	keepend contains=@mailLinks,@mailQuoteExps start="^\z(\(> \?\)*\)-- $" end="^\z1$" end="^\z1\@!"me=s-1 end="^\z1\(> \?\)\+"me=s-1
 
 " URLs start with a known protocol or www,web,w3.
 syn match mailURL `\v<(((https?|ftp|gopher)://|(mailto|file|news):)[^' 	<>"]+|(www|web|w3)[a-z0-9_-]*\.[a-z0-9._-]+\.[^' 	<>"]+)[a-z0-9/]`

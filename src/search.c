@@ -2493,11 +2493,12 @@ found:
 }
 
 /*
- * findpar(dir, count, what) - Find the next paragraph in direction 'dir'
+ * Find the next paragraph or section in direction 'dir'.
  * Paragraphs are currently supposed to be separated by empty lines.
- * Return TRUE if the next paragraph was found.
+ * If 'what' is NUL we go to the next paragraph.
  * If 'what' is '{' or '}' we go to the next section.
  * If 'both' is TRUE also stop at '}'.
+ * Return TRUE if the next paragraph or section was found.
  */
     int
 findpar(oap, dir, count, what, both)
@@ -2510,6 +2511,7 @@ findpar(oap, dir, count, what, both)
     linenr_T	curr;
     int		did_skip;   /* TRUE after separating lines have been skipped */
     int		first;	    /* TRUE on first line */
+    int		posix = (vim_strchr(p_cpo, CPO_PARA) != NULL);
 #ifdef FEAT_FOLDING
     linenr_T	fold_first; /* first line of a closed fold */
     linenr_T	fold_last;  /* last line of a closed fold */
@@ -2537,7 +2539,11 @@ findpar(oap, dir, count, what, both)
 	    }
 #endif
 
-	    if (!first && did_skip && startPS(curr, what, both))
+	    /* POSIX has it's own ideas of what a paragraph boundary is and it
+	     * doesn't match historical Vi: It also stops at a "{" in the
+	     * first column and at an empty line. */
+	    if (!first && did_skip && (startPS(curr, what, both)
+			   || (posix && what == NUL && *ml_get(curr) == '{')))
 		break;
 
 #ifdef FEAT_FOLDING

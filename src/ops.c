@@ -2838,9 +2838,9 @@ op_yank(oap, deleting, mess)
 	if (yanktype == MLINE)	/* MLINE overrides MCHAR and MBLOCK */
 	    curr->y_type = MLINE;
 
-	/* concatenate the last line of the old block with the first line of
-	 * the new block */
-	if (curr->y_type == MCHAR)
+	/* Concatenate the last line of the old block with the first line of
+	 * the new block, unless being Vi compatible. */
+	if (curr->y_type == MCHAR && vim_strchr(p_cpo, CPO_REGAPPEND) == NULL)
 	{
 	    pnew = lalloc((long_u)(STRLEN(curr->y_array[curr->y_size - 1])
 			      + STRLEN(y_current->y_array[0]) + 1), TRUE);
@@ -3897,6 +3897,8 @@ do_do_join(count, insert_space)
     long    count;
     int	    insert_space;
 {
+    colnr_T	col = MAXCOL;
+
     if (u_save((linenr_T)(curwin->w_cursor.lnum - 1),
 		    (linenr_T)(curwin->w_cursor.lnum + count)) == FAIL)
 	return;
@@ -3909,7 +3911,13 @@ do_do_join(count, insert_space)
 	    beep_flush();
 	    break;
 	}
+	if (col == MAXCOL && vim_strchr(p_cpo, CPO_JOINCOL) != NULL)
+	    col = curwin->w_cursor.col;
     }
+
+    /* Vi compatible: use the column of the first join */
+    if (col != MAXCOL && vim_strchr(p_cpo, CPO_JOINCOL) != NULL)
+	curwin->w_cursor.col = col;
 
 #if 0
     /*

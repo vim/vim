@@ -665,7 +665,7 @@ static struct vimoption
 			    {(char_u *)FALSE, (char_u *)0L}},
     {"cpoptions",   "cpo",  P_STRING|P_VIM|P_RALL|P_FLAGLIST,
 			    (char_u *)&p_cpo, PV_NONE,
-			    {(char_u *)CPO_ALL, (char_u *)CPO_DEFAULT}},
+			    {(char_u *)CPO_VI, (char_u *)CPO_VIM}},
     {"cscopepathcomp", "cspc", P_NUM|P_VI_DEF|P_VIM,
 #ifdef FEAT_CSCOPE
 			    (char_u *)&p_cspc, PV_NONE,
@@ -2340,7 +2340,7 @@ static struct vimoption
 #endif
 			    },
     {"window",	    "wi",   P_NUM|P_VI_DEF,
-			    (char_u *)NULL, PV_NONE,
+			    (char_u *)&p_window, PV_NONE,
 			    {(char_u *)0L, (char_u *)0L}},
     {"winheight",   "wh",   P_NUM|P_VI_DEF,
 #ifdef FEAT_WINDOWS
@@ -2590,6 +2590,10 @@ set_init_1()
 
     /* Be Vi compatible by default */
     p_cp = TRUE;
+
+    /* Use POSIX compatibility when $VIM_POSIX is set. */
+    if (mch_getenv((char_u *)"VIM_POSIX") != NULL)
+	set_string_default("cpo", (char_u *)CPO_ALL);
 
     /*
      * Find default value for 'shell' option.
@@ -3082,31 +3086,39 @@ set_number_default(name, val)
     void
 set_init_2()
 {
+    int		idx;
+
     /*
      * 'scroll' defaults to half the window height. Note that this default is
      * wrong when the window height changes.
      */
-    options[findoption((char_u *)"scroll")].def_val[VI_DEFAULT]
-					      = (char_u *)((long_u)Rows >> 1);
+    set_number_default("scroll", (long_u)Rows >> 1);
     comp_col();
+
+    /*
+     * 'window' is only for backwards compatibility with Vi.
+     * Default is Rows - 1.
+     */
+    idx = findoption((char_u *)"wi");
+    if (!(options[idx].flags & P_WAS_SET))
+	p_window = Rows - 1;
+    set_number_default("window", Rows - 1);
 
 #if !((defined(MSDOS) || defined(OS2) || defined(WIN3264)) && !defined(FEAT_GUI))
     {
-	int	idx4;
-
 	/*
 	 * If 'background' wasn't set by the user, try guessing the value,
 	 * depending on the terminal name.  Only need to check for terminals
 	 * with a dark background, that can handle color.  Only "linux"
 	 * console at the moment.
 	 */
-	idx4 = findoption((char_u *)"bg");
-	if (!(options[idx4].flags & P_WAS_SET) && STRCMP(T_NAME, "linux") == 0)
+	idx = findoption((char_u *)"bg");
+	if (!(options[idx].flags & P_WAS_SET) && STRCMP(T_NAME, "linux") == 0)
 	{
-	    set_string_option_direct(NULL, idx4, (char_u *)"dark", OPT_FREE);
+	    set_string_option_direct(NULL, idx, (char_u *)"dark", OPT_FREE);
 	    /* don't mark it as set, when starting the GUI it may be changed
 	     * again */
-	    options[idx4].flags &= ~P_WAS_SET;
+	    options[idx].flags &= ~P_WAS_SET;
 	}
     }
 #endif
@@ -6872,6 +6884,14 @@ set_num_option(opt_idx, varp, value, errbuf, opt_flags)
 #endif
     }
 
+    else if (pp == &p_window)
+    {
+	if (p_window < 1)
+	    p_window = 1;
+	else if (p_window >= Rows)
+	    p_window = Rows - 1;
+    }
+
     else if (pp == &curbuf->b_p_imsearch)
     {
 	if (curbuf->b_p_imsearch < -1 || curbuf->b_p_imsearch > B_IMODE_LAST)
@@ -7011,6 +7031,8 @@ set_num_option(opt_idx, varp, value, errbuf, opt_flags)
 	    if (cmdline_row > Rows - p_ch && Rows > p_ch)
 		cmdline_row = Rows - p_ch;
 	}
+	if (p_window >= Rows)
+	    p_window = Rows - 1;
     }
 
     if (curbuf->b_p_sts < 0)

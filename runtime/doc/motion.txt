@@ -1,4 +1,4 @@
-*motion.txt*    For Vim version 7.0aa.  Last change: 2005 Feb 07
+*motion.txt*    For Vim version 7.0aa.  Last change: 2005 Feb 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -465,9 +465,12 @@ A paragraph begins after each empty line, and also at each of a set of
 paragraph macros, specified by the pairs of characters in the 'paragraphs'
 option.  The default is "IPLPPPQPP LIpplpipbp", which corresponds to the
 macros ".IP", ".LP", etc.  (These are nroff macros, so the dot must be in the
-first column).  A section boundary is also a paragraph boundary.  Note that
-this does not include a '{' or '}' in the first column.  Also note that a
-blank line (only containing white space) is NOT a paragraph boundary.
+first column).  A section boundary is also a paragraph boundary.
+Note that a blank line (only containing white space) is NOT a paragraph
+boundary.
+Also note that this does not include a '{' or '}' in the first column.  When
+the '{' flag is in 'cpoptions' then '{' in the first column is used as a
+paragraph boundary |posix|.
 
 							*section*
 A section begins after a form-feed (<C-L>) in the first column and at each of

@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Feb 07
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Feb 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1640,6 +1640,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	"+=" and "-=" feature of ":set" |add-option-flags|.
 	NOTE: This option is set to the Vi default value when 'compatible' is
 	set and to the Vim default value when 'compatible' is reset.
+	NOTE: This option is set to the POSIX default value at startup when
+	the Vi default value would be used and the $VIM_POSIX environment
+	variable exists |posix|.  This means tries to behave like the POSIX
+	specification.
 
 	    contains	behavior	~
 								*cpo-a*
@@ -1708,6 +1712,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 			yet.
 								*cpo-g*
 		g	Goto line 1 when using ":edit" without argument.
+								*cpo-H*
+		H	When using "I" on a line with only blanks, insert
+			before the last blank.  Without this flag insert after
+			the last blank.
 								*cpo-i*
 		i	When included, interrupting the reading of a file will
 			leave it modified.
@@ -1768,6 +1776,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 								*cpo-p*
 		p	Vi compatible Lisp indenting.  When not present, a
 			slightly better algorithm is used.
+								*cpo-q*
+		q	When joining multiple lines leave the cursor at the
+			position where it would be when joining two lines.
 								*cpo-r*
 		r	Redo ("." command) uses "/" to repeat a search
 			command, instead of the actually used search string.
@@ -1816,8 +1827,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 		x	<Esc> on the command-line executes the command-line.
 			The default in Vim is to abandon the command-line,
 			because <Esc> normally aborts a command.  |c_<Esc>|
+								*cpo-X*
+		X	When using a count with "R" the replaced text is
+			deleted only once.  Also when repeating "R" with "."
+			and a count.
 								*cpo-y*
 		y	A yank command can be redone with ".".
+								*cpo-Z*
+		Z	When using "w!" while the 'readonly' option is set,
+			don't reset 'readonly'.
 								*cpo-!*
 		!	When redoing a filter command, use the last used
 			external command, whatever it was.  Otherwise the last
@@ -1856,7 +1874,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		+	When included, a ":write file" command will reset the
 			'modified' flag of the buffer, even though the buffer
 			itself may still be different from its file.
-			 					cpo-star*
+			 					*cpo-star*
 		*	Use ":*" in the same way as ":@".  When not included,
 			":*" is an alias for ":'<,'>", select the Visual area.
 								*cpo-<*
@@ -1867,6 +1885,28 @@ A jump table for the options with a short description can be found at |Q_op|.
 				'<' included:	"<Tab>"  (5 characters)
 				'<' excluded:	"^I"	 (^I is a real <Tab>)
 			Also see the 'k' flag above.
+								*cpo->*
+		>	When appending to a register, put a line break before
+			the appended text.
+
+	POSIX flags.  These are not included in the Vi default value, except
+	when $VIM_POSIX was set on startup. |posix|
+
+	    contains	behavior	~
+			 					*cpo-#*
+		#	A count before "D", "o" and "O" has no effect.
+								*cpo-{*
+		{	The |{| and |}| commands also stop at a "{" character
+			at the start of a line.
+								*cpo-bar*
+		|	The value of the $LINES and $COLUMNS environment
+			variables overrule the terminal size values obtained
+			with system specific functions.
+								*cpo-&*
+		&	When ":preserve" was used keep the swap file when
+			exiting normally while this buffer is still loaded.
+			This flag is tested when exiting.
+
 
 						*'cscopepathcomp'* *'cspc'*
 'cscopepathcomp' 'cspc'	number	(default 0)
@@ -4684,9 +4724,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	If on, writes fail unless you use a '!'.  Protects you from
 	accidentally overwriting a file.  Default on when Vim is started
 	in read-only mode ("vim -R") or when the executable is called "view".
+	When using ":w!" the 'readonly' option is reset for the current
+	buffer, unless the 'Z' flag is in 'cpoptions'.
 	{not in Vi:}  When using the ":view" command the 'readonly' option is
-	set for the newly edited buffer.  When using ":w!" the 'readonly'
-	option is reset for the current buffer.
+	set for the newly edited buffer.
 
 						*'remap'* *'noremap'*
 'remap'			boolean	(default on)
@@ -4835,6 +4876,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	files:
 	  filetype.vim	filetypes by file name |new-filetype|
 	  scripts.vim	filetypes by file contents |new-filetype-scripts|
+	  autoload/	automatically loaded scripts |autoload-functions|
 	  colors/	color scheme files |:colorscheme|
 	  compiler/	compiler files |:compiler|
 	  doc/		documentation |write-local-help|
@@ -6740,6 +6782,20 @@ A jump table for the options with a short description can be found at |Q_op|.
 	key is never used for the menu.
 	This option is not used for <F10>; on Win32 and with GTK <F10> will
 	select the menu, unless it has been mapped.
+
+						*'window'* *'wi'*
+'window' 'wi'		number  (default screen height - 1)
+			global
+	Window height.  Do not confuse this with the height of the Vim window,
+	use 'lines' for that.
+	Used for |CTRL-F| and |CTRL-B| when the value is smaller than 'lines'
+	minus one.  The screen will scroll 'window' minus two lines, with a
+	minimum of one.
+	When 'window' is equal to 'lines' minus one CTRL-F and CTRL-B scroll
+	in a much smarter way, taking care of wrapping lines.
+	When resizing the Vim window, the value is smaller than 1 or more than
+	or equal to 'lines' it will be set to 'lines' minus 1.
+	{Vi also uses the option to specify the number of displayed lines}
 
 						*'winheight'* *'wh'* *E591*
 'winheight' 'wh'	number	(default 1)

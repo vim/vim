@@ -132,6 +132,7 @@
 #define CPO_FNAMER	'f'	/* set file name for ":r file" */
 #define CPO_FNAMEW	'F'	/* set file name for ":w file" */
 #define CPO_GOTO1	'g'	/* goto line 1 for ":edit" */
+#define CPO_INSEND	'H'	/* "I" inserts before last blank in line */
 #define CPO_INTMOD	'i'	/* interrupt a read makes buffer modified */
 #define CPO_INDENT	'I'	/* remove auto-indent more often */
 #define CPO_JOINSP	'j'	/* only use two spaces for join after '.' */
@@ -146,6 +147,7 @@
 #define CPO_LINEOFF	'o'
 #define CPO_OVERNEW	'O'	/* silently overwrite new file */
 #define CPO_LISP	'p'	/* 'lisp' indenting */
+#define CPO_JOINCOL	'q'	/* with "3J" use column after first join */
 #define CPO_REDO	'r'
 #define CPO_REMMARK	'R'	/* remove marks when filtering */
 #define CPO_BUFOPT	's'
@@ -156,7 +158,9 @@
 #define CPO_CW		'w'	/* "cw" only changes one blank */
 #define CPO_FWRITE	'W'	/* "w!" doesn't overwrite readonly files */
 #define CPO_ESC		'x'
+#define CPO_REPLCNT	'X'	/* "R" with a count only delets chars once */
 #define CPO_YANK	'y'
+#define CPO_KEEPRO	'Z'	/* don't reset 'readonly' on ":w!" */
 #define CPO_DOLLAR	'$'
 #define CPO_FILTER	'!'
 #define CPO_MATCH	'%'
@@ -164,8 +168,16 @@
 #define CPO_PLUS	'+'	/* ":write file" resets 'modified' */
 #define CPO_MINUS	'-'	/* "9-" fails at and before line 9 */
 #define CPO_SPECI	'<'	/* don't recognize <> in mappings */
-#define CPO_DEFAULT	"aABceFs"
-#define CPO_ALL		"aAbBcCdDeEfFgiIjJkKlLmMnoOprRsStuvwWxy$!%*-+<"
+#define CPO_REGAPPEND	'>'	/* insert NL when appending to a register */
+/* POSIX flags */
+#define CPO_HASH	'#'	/* "D", "o" and "O" do not use a count */
+#define CPO_PARA	'{'	/* "{" is also a paragraph boundary */
+#define CPO_TSIZE	'|'	/* $LINES and $COLUMNS overrule term size */
+#define CPO_PRESERVE	'&'	/* keep swap file after :preserve */
+/* default values for Vim, Vi and POSIX */
+#define CPO_VIM		"aABceFs"
+#define CPO_VI		"aAbBcCdDeEfFgHiIjJkKlLmMnoOpqrRsStuvwWxXyZ$!%*-+<>"
+#define CPO_ALL		"aAbBcCdDeEfFgHiIjJkKlLmMnoOpqrRsStuvwWxXyZ$!%*-+<>#{|&"
 
 /* characters for p_ww option: */
 #define WW_ALL		"bshl<>[],~"
@@ -789,6 +801,7 @@ EXTERN int	p_warn;		/* 'warn' */
 #ifdef FEAT_CMDL_COMPL
 EXTERN char_u	*p_wop;		/* 'wildoptions' */
 #endif
+EXTERN long	p_window;	/* 'window' */
 #if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MOTIF) || defined(LINT) \
 	|| defined (FEAT_GUI_GTK) || defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_KDE)
 #define FEAT_WAK

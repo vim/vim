@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Feb 07
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Feb 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,15 +30,34 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Make list of user functions a hashtable.
+"norm! gQ" hangs.  Fixes in ex_getln.c and ex_docmd.c also in Vim 6.3?
+
+autoload:
+- Rename directory to from "autoload" to "library"?
+- Also autoload when reading a variable with a long:name that doesn't exist.
+- Example using short script with user command that triggers loading script
+  with functionality.
+- Remark about one script depending on another, recursively.
+- Catch recursive autoloading.
+- Add note in docs about HelpExtractor wrapper script.  Think about a good way
+  that the user doesn't need to run ":helptags" manually.
 
 POSIX compliance:
-- See ~/src/posix/TET//vsc/results/0015e/journal  test 130
-- "-w#" and "-w #" argument doesn't work.
+- vi test 310 fails; exit code non-zero when any error occurred?
+- vi test 33 fails for unknown reasons
+- ex test 24 fails because test is wrong?
+- ex test 29 fails because exit value is always 0.
+- ex tests 47, 48, 49 fail because .exrc file isn't read in silent mode and
+  $EXINIT isn't used.
+- ex test 57 fails, need to look into this.
+- check ex test output
+- report use of $LINES and $COLUMNS to austin maillist.
 
-Announce autoload functionality.
+Make list of user functions a hashtable.
 
-"norm! gQ" hangs.  Fixes in ex_getln.c and ex_docmd.c also in Vim 6.3?
+Docs for using "syntax/{filetype}/*.vim" syntax files.
+
+Include Mac unicode patch (Da Woon Jung).
 
 New Motif toolbar button from Marcin Dalecki:
 - When the mouse pointer is over an Agide button the red becomes black.
@@ -50,6 +69,13 @@ Awaiting response:
 -   Patch for mch_FullName() also in Vim 6.3?  os_mswin.c
 -   Win32: tearoff menu window should have a scrollbar when it's taller than
     the screen.
+
+Patch from Yegappan Lakshmanan for redirecting of Ex commands (Feb 9 10:58):
+Look into how lval struct is kept for a long time.
+	:redir =>  variable
+	:redir =>> variable  (append)
+
+Improvements for Python indent script: Peter Wilson.
 
 
 PLANNED FOR VERSION 7.0:
@@ -229,6 +255,14 @@ usec.  reltime([start, [end]])
     reltime(start) current time relative to [start]
 	echo timestring(reltime(start), 3)  (3 is nr of digits after dot)
     reltime(start, end) difference between start and end
+Real Profiling:
+    - :profile start /tmp/somefile  (append if exists)
+    - :profile pause
+    - :profile resume
+    - :profile stop
+    - per function line
+    - self, Vim and total time (incl system time)
+    - dump results in file on exit or when stopped.
 
 Add more tests for all new functionality in Vim 7.  Especially new functions.
 
@@ -2405,6 +2439,8 @@ Virtual edit:
 
 Text objects:
 8   Add test script for text object commands "aw", "iW", etc.
+8   Add text object for part of a CamelHumedWord and under_scored_word.
+    (Scott Graham)  "ac" and "au"?
 7   Add text object for current search pattern: "a/" and "i/".  Makes it
     possible to turn text highlighted for 'hlsearch' into a Visual area.
 8   Add "gp" and "gP" commands: insert text and make sure there is a single
@@ -3208,8 +3244,6 @@ Various improvements:
 	:redir @r> register  (append)
 	:redir #>  bufname
 	:redir #>> bufname   (append)
-	:redir =>  variable
-	:redir =>> variable  (append)
 -   Give error message when starting :redir: twice or using END when no
     redirection was active.
 -   Setting of options, specifically for a buffer or window, with

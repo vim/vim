@@ -114,6 +114,7 @@ prefix = `os.path.expanduser(prefix)`
 
     MOTIF
 	GUI_SRC		= gui.c gui_motif.c gui_x11.c pty.c gui_beval.c
+		  	  gui_xmdlg.c gui_xmebw.c
 	GUI_OBJ		=
 	GUI_DEFS	= -DFEAT_GUI_MOTIF $NARROW_PROTO
 	GUI_IPATH	= $GUI_INC_LOC

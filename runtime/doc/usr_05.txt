@@ -1,4 +1,4 @@
-*usr_05.txt*	For Vim version 7.0aa.  Last change: 2004 Dec 29
+*usr_05.txt*	For Vim version 7.0aa.  Last change: 2005 Feb 08
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -7,7 +7,7 @@
 
 Vim can be tuned to work like you want it to.  This chapter shows you how to
 make Vim start with options set to different values.  Add plugins to extend
-Vims capabilities.  Or define your own macros.
+Vim's capabilities.  Or define your own macros.
 
 |05.1|	The vimrc file
 |05.2|	The example vimrc file explained
@@ -251,8 +251,8 @@ you use an existing Vim command, that command will no longer be available.
 You better avoid that.
    One key that can be used with mappings is the backslash.  Since you
 probably want to define more than one mapping, add another character.  You
-could map "\p" to add parens around a word, and "\c" to add curly braces, for
-example: >
+could map "\p" to add parentheses around a word, and "\c" to add curly braces,
+for example: >
 
 	:map \p i(<Esc>ea)<Esc>
 	:map \c i{<Esc>ea}<Esc>

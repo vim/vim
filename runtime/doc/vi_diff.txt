@@ -1,4 +1,4 @@
-*vi_diff.txt*   For Vim version 7.0aa.  Last change: 2005 Feb 07
+*vi_diff.txt*   For Vim version 7.0aa.  Last change: 2005 Feb 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -50,7 +50,6 @@ prompt			boolean	(default on)		*'prompt'*
 redraw			boolean	(default off)		*'redraw'*
 slowopen (slow)		boolean	(default off)		*'slowopen'* *'slow'*
 sourceany		boolean	(default off)		*'sourceany'*
-window (wi)		number	(default 23)		*'window'* *'wi'*
 w300			number	(default 23)		*'w300'*
 w1200			number	(default 23)		*'w1200'*
 w9600			number	(default 23)		*'w9600'*
@@ -883,19 +882,32 @@ Only Vim is able to accept options in between and after the file names.
 @{cmdfile}	Vile: use {cmdfile} as startup file.
 
 ==============================================================================
-7. POSIX compliance					*posix-compliance*
+7. POSIX compliance				*posix* *posix-compliance*
 
 In 2005 the POSIX test suite was run to check the compatiblity of Vim.  Most
-of the test was executed properly.  Here are the few things where Vim differs:
+of the test was executed properly.  There are the few things where Vim
+is not POSIX compliant.
 
-The -w{number} and -w {number} command line arguments are not supported by
-Vim.
+Set the $VIM_POSIX environment variable to have 'cpoptions' include the POSIX
+flags when Vim starts up.  This makes Vim run as POSIX as it can.  That's
+different from being Vi compatible.
+
+This is where Vim does not behave as POSIX specifies and why:
+
+	The -w{number} and -w {number} command line arguments are not
+	supported by Vim.
 							*posix-screen-size*
-The $COLUMNS and $LINES environment variables are ignored by Vim if the size
-can be obtained from the terminal in a more reliable way.  Set the $VIM_POSIX
-environment variable to have $COLUMNS and $LINES overrule sizes obtained in
-another way.
+	The $COLUMNS and $LINES environment variables are ignored by Vim if
+	the size can be obtained from the terminal in a more reliable way.
+	Add the '|' flag to 'cpoptions' to have $COLUMNS and $LINES overrule
+	sizes obtained in another way.
 
+	The "{" and "}" commands don't stop at a "{" in the original Vi, but
+	POSIX specifies it does.  Add the '{' flag to 'cpoptions' if you want
+	it the POSIX way.
+
+	The "D", "o" and "O" commands accept a count.  Also when repeated.
+	Add the '#' flag to 'cpoptions' if you want to ignore the count.
 
 
  vim:tw=78:ts=8:ft=help:norl:

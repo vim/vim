@@ -3008,7 +3008,7 @@ maketitle()
 	    /* format: "fname + (path) (1 of 2) - VIM" */
 
 	    if (curbuf->b_fname == NULL)
-		STRCPY(buf, _("[No file]"));
+		STRCPY(buf, _("[No Name]"));
 	    else
 	    {
 		p = transstr(gettail(curbuf->b_fname));

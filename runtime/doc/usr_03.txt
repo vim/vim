@@ -1,4 +1,4 @@
-*usr_03.txt*	For Vim version 7.0aa.  Last change: 2004 Jan 17
+*usr_03.txt*	For Vim version 7.0aa.  Last change: 2005 Feb 08
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -13,7 +13,7 @@ these commands below |Q_lr|.
 |03.1|	Word movement
 |03.2|	Moving to the start or end of a line
 |03.3|	Moving to a character
-|03.4|	Matching a paren
+|03.4|	Matching a parenthesis
 |03.5|	Moving to a specific line
 |03.6|	Telling where you are
 |03.7|	Scrolling around
@@ -145,7 +145,7 @@ aborted forward search and doesn't do anything.  Note: <Esc> cancels most
 operations, not just searches.
 
 ==============================================================================
-*03.4*	Matching a paren
+*03.4*	Matching a parenthesis
 
 When writing a program you often end up with nested () constructs.  Then the
 "%" command is very handy: It moves to the matching paren.  If the cursor is
