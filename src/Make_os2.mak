@@ -71,6 +71,7 @@ OBJ = \
 	regexp.o \
 	screen.o \
 	search.o \
+	spell.o \
 	syntax.o \
 	tag.o \
 	term.o \
@@ -141,6 +142,7 @@ quickfix.o:	quickfix.c  $(INCL)
 regexp.o:	regexp.c  $(INCL)
 screen.o:	screen.c  $(INCL)
 search.o:	search.c  $(INCL)
+spell.o:	spell.c  $(INCL)
 syntax.o:	syntax.c  $(INCL)
 tag.o:		tag.c  $(INCL)
 term.o:		term.c  $(INCL)

@@ -204,12 +204,12 @@ static int current_id = 0;	    /* ID of current char for syn_get_id() */
 static int current_trans_id = 0;    /* idem, transparancy removed */
 #endif
 
-struct syn_cluster
+typedef struct syn_cluster_S
 {
     char_u	    *scl_name;	    /* syntax cluster name */
     char_u	    *scl_name_u;    /* uppercase of scl_name */
     short	    *scl_list;	    /* IDs in this syntax cluster */
-};
+} syn_cluster_T;
 
 /*
  * Methods of combining two clusters
@@ -218,7 +218,7 @@ struct syn_cluster
 #define CLUSTER_ADD	    2	/* add second list to first */
 #define CLUSTER_SUBTRACT    3	/* subtract second list from first */
 
-#define SYN_CLSTR(buf)	((struct syn_cluster *)((buf)->b_syn_clusters.ga_data))
+#define SYN_CLSTR(buf)	((syn_cluster_T *)((buf)->b_syn_clusters.ga_data))
 
 /*
  * Syntax group IDs have different types:
@@ -372,7 +372,7 @@ static void invalidate_current_state __ARGS((void));
 static int syn_stack_equal __ARGS((synstate_T *sp));
 static void validate_current_state __ARGS((void));
 static int syn_finish_line __ARGS((int syncing));
-static int syn_current_attr __ARGS((int syncing, int displaying));
+static int syn_current_attr __ARGS((int syncing, int displaying, int *can_spell));
 static int did_match_already __ARGS((int idx, garray_T *gap));
 static stateitem_T *push_next_match __ARGS((stateitem_T *cur_si));
 static void check_state_ends __ARGS((void));
@@ -1660,7 +1660,7 @@ syn_finish_line(syncing)
     {
 	while (!current_finished)
 	{
-	    (void)syn_current_attr(syncing, FALSE);
+	    (void)syn_current_attr(syncing, FALSE, NULL);
 	    /*
 	     * When syncing, and found some item, need to check the item.
 	     */
@@ -1693,10 +1693,13 @@ syn_finish_line(syncing)
  * "col" is normally 0 for the first use in a line, and increments by one each
  * time.  It's allowed to skip characters and to stop before the end of the
  * line.  But only a "col" after a previously used column is allowed.
+ * When "can_spell" is not NULL set it to TRUE when spell-checking should be
+ * done.
  */
     int
-get_syntax_attr(col)
+get_syntax_attr(col, can_spell)
     colnr_T	col;
+    int		*can_spell;
 {
     int	    attr = 0;
 
@@ -1715,7 +1718,7 @@ get_syntax_attr(col)
      */
     while (current_col <= col)
     {
-	attr = syn_current_attr(FALSE, TRUE);
+	attr = syn_current_attr(FALSE, TRUE, can_spell);
 	++current_col;
     }
 
@@ -1727,9 +1730,10 @@ get_syntax_attr(col)
  * Get syntax attributes for current_lnum, current_col.
  */
     static int
-syn_current_attr(syncing, displaying)
+syn_current_attr(syncing, displaying, can_spell)
     int		syncing;		/* When 1: called for syncing */
     int		displaying;		/* result will be displayed */
+    int		*can_spell;		/* return: do spell checking */
 {
     int		syn_id;
     lpos_T	endpos;		/* was: char_u *endp; */
@@ -1740,7 +1744,7 @@ syn_current_attr(syncing, displaying)
     int		end_idx;	/* group ID for end pattern */
     int		idx;
     synpat_T	*spp;
-    stateitem_T	*cur_si, *sip;
+    stateitem_T	*cur_si, *sip = NULL;
     int		startcol;
     int		endcol;
     long	flags;
@@ -2166,6 +2170,9 @@ syn_current_attr(syncing, displaying)
 #endif
     if (cur_si != NULL)
     {
+#ifndef FEAT_EVAL
+	int	current_trans_id = 0;
+#endif
 	for (idx = current_state.ga_len - 1; idx >= 0; --idx)
 	{
 	    sip = &CUR_STATE(idx);
@@ -2180,11 +2187,35 @@ syn_current_attr(syncing, displaying)
 		current_attr = sip->si_attr;
 #ifdef FEAT_EVAL
 		current_id = sip->si_id;
-		current_trans_id = sip->si_trans_id;
 #endif
+		current_trans_id = sip->si_trans_id;
 		break;
 	    }
 	}
+
+	if (can_spell != NULL)
+	{
+	    struct sp_syn   sps;
+
+	    /*
+	     * set "can_spell" to TRUE if spell checking is supposed to be
+	     * done in the current item.
+	     */
+
+	    /* Always do spelling if there is no @Spell cluster. */
+	    if (syn_buf->b_spell_cluster_id == 0)
+		*can_spell = TRUE;
+	    else if (current_trans_id == 0)
+		*can_spell = FALSE;
+	    else
+	    {
+		sps.inc_tag = 0;
+		sps.id = syn_buf->b_spell_cluster_id;
+		sps.cont_in_list = NULL;
+		*can_spell = in_id_list(sip, sip->si_cont_list, &sps, 0);
+	    }
+	}
+
 
 	/*
 	 * Check for end of current state (and the states before it) at the
@@ -2205,6 +2236,9 @@ syn_current_attr(syncing, displaying)
 	    }
 	}
     }
+    else if (can_spell != NULL)
+	/* Only do spelling when there is no @Spell cluster. */
+	*can_spell = (syn_buf->b_spell_cluster_id == 0);
 
     /* nextgroup ends at end of line, unless "skipnl" or "skipemtpy" present */
     if (current_next_list != NULL
@@ -5029,16 +5063,16 @@ syn_check_cluster(pp, len)
  */
     static int
 syn_add_cluster(name)
-    char_u		*name;
+    char_u	*name;
 {
-    int len;
+    int		len;
 
     /*
      * First call for this growarray: init growing array.
      */
     if (curbuf->b_syn_clusters.ga_data == NULL)
     {
-	curbuf->b_syn_clusters.ga_itemsize = sizeof(struct syn_cluster);
+	curbuf->b_syn_clusters.ga_itemsize = sizeof(syn_cluster_T);
 	curbuf->b_syn_clusters.ga_growsize = 10;
     }
 
@@ -5052,11 +5086,14 @@ syn_add_cluster(name)
     }
     len = curbuf->b_syn_clusters.ga_len;
 
-    vim_memset(&(SYN_CLSTR(curbuf)[len]), 0, sizeof(struct syn_cluster));
+    vim_memset(&(SYN_CLSTR(curbuf)[len]), 0, sizeof(syn_cluster_T));
     SYN_CLSTR(curbuf)[len].scl_name = name;
     SYN_CLSTR(curbuf)[len].scl_name_u = vim_strsave_up(name);
     SYN_CLSTR(curbuf)[len].scl_list = NULL;
     ++curbuf->b_syn_clusters.ga_len;
+
+    if (STRICMP(name, "Spell") == 0)
+	curbuf->b_spell_cluster_id = len + SYNID_CLUSTER;
 
     return len + SYNID_CLUSTER;
 }
@@ -5089,7 +5126,7 @@ syn_cmd_cluster(eap, syncing)
     if (rest != NULL)
     {
 	scl_id = syn_check_cluster(arg, (int)(group_name_end - arg))
-		    - SYNID_CLUSTER;
+							      - SYNID_CLUSTER;
 
 	for (;;)
 	{
@@ -5896,7 +5933,7 @@ syn_get_id(lnum, col, trans)
 	    || col < (long)current_col)
 	syntax_start(curwin, lnum);
 
-    (void)get_syntax_attr((colnr_T)col);
+    (void)get_syntax_attr((colnr_T)col, NULL);
 
     return (trans ? current_trans_id : current_id);
 }
@@ -5968,6 +6005,9 @@ static char *(highlight_init_light[]) =
 	"Normal gui=NONE",
 	"Question term=standout ctermfg=DarkGreen gui=bold guifg=SeaGreen",
 	"Search term=reverse ctermbg=Yellow ctermfg=NONE guibg=Yellow guifg=NONE",
+	"SpellBad term=reverse ctermbg=LightRed guisp=Red gui=undercurl",
+	"SpellRare term=reverse ctermbg=LightMagenta guisp=Magenta gui=undercurl",
+	"SpellLocal term=underline ctermbg=Cyan guisp=DarkCyan gui=undercurl",
 	"SpecialKey term=bold ctermfg=DarkBlue guifg=Blue",
 	"Title term=bold ctermfg=DarkMagenta gui=bold guifg=Magenta",
 	"WarningMsg term=standout ctermfg=DarkRed guifg=Red",
@@ -5990,6 +6030,9 @@ static char *(highlight_init_dark[]) =
 	"Question term=standout ctermfg=LightGreen gui=bold guifg=Green",
 	"Search term=reverse ctermbg=Yellow ctermfg=Black guibg=Yellow guifg=Black",
 	"SpecialKey term=bold ctermfg=LightBlue guifg=Cyan",
+	"SpellBad term=reverse ctermbg=Red guisp=Red gui=undercurl",
+	"SpellRare term=reverse ctermbg=Magenta guisp=Magenta gui=undercurl",
+	"SpellLocal term=underline ctermbg=Cyan guisp=Cyan gui=undercurl",
 	"Title term=bold ctermfg=LightMagenta gui=bold guifg=Magenta",
 	"WarningMsg term=standout ctermfg=LightRed guifg=Red",
 	"WildMenu term=standout ctermbg=Yellow ctermfg=Black guibg=Yellow guifg=Black",
@@ -7518,6 +7561,128 @@ get_attr_entry(table, aep)
     ++table->ga_len;
     return (table->ga_len - 1 + ATTR_OFF);
 }
+
+#if defined(FEAT_SYN_HL) || defined(PROTO)
+/*
+ * Combine the spelling attributes with other attributes.  "spell_attr"
+ * overrules "char_attr".
+ * This creates a new group when required.
+ * Since we expect there to be few spelling mistakes we don't cache the
+ * result.
+ * Return the resulting attributes.
+ */
+    int
+hl_combine_attr(char_attr, spell_attr)
+    int	    char_attr;
+    int	    spell_attr;
+{
+    attrentry_T *char_aep = NULL;
+    attrentry_T *spell_aep;
+    attrentry_T new_en;
+
+    if (char_attr == 0)
+	return spell_attr;
+    if (char_attr <= HL_ALL && spell_attr <= HL_ALL)
+	return char_attr | spell_attr;
+#ifdef FEAT_GUI
+    if (gui.in_use)
+    {
+	if (char_attr > HL_ALL)
+	    char_aep = syn_gui_attr2entry(char_attr);
+	if (char_aep != NULL)
+	    new_en = *char_aep;
+	else
+	{
+	    vim_memset(&new_en, 0, sizeof(new_en));
+	    if (char_attr <= HL_ALL)
+		new_en.ae_attr = char_attr;
+	}
+
+	if (spell_attr <= HL_ALL)
+	    new_en.ae_attr |= spell_attr;
+	else
+	{
+	    spell_aep = syn_gui_attr2entry(spell_attr);
+	    if (spell_aep != NULL)
+	    {
+		new_en.ae_attr |= spell_aep->ae_attr;
+		if (spell_aep->ae_u.gui.fg_color != INVALCOLOR)
+		    new_en.ae_u.gui.fg_color = spell_aep->ae_u.gui.fg_color;
+		if (spell_aep->ae_u.gui.bg_color != INVALCOLOR)
+		    new_en.ae_u.gui.bg_color = spell_aep->ae_u.gui.bg_color;
+		if (spell_aep->ae_u.gui.sp_color != INVALCOLOR)
+		    new_en.ae_u.gui.sp_color = spell_aep->ae_u.gui.sp_color;
+		if (spell_aep->ae_u.gui.font != NOFONT)
+		    new_en.ae_u.gui.font = spell_aep->ae_u.gui.font;
+# ifdef FEAT_XFONTSET
+		if (spell_aep->ae_u.gui.fontset != NOFONTSET)
+		    new_en.ae_u.gui.fontset = spell_aep->ae_u.gui.fontset;
+# endif
+	    }
+	}
+	return get_attr_entry(&gui_attr_table, &new_en);
+    }
+#endif
+
+    if (t_colors > 1)
+    {
+	if (char_attr > HL_ALL)
+	    char_aep = syn_cterm_attr2entry(char_attr);
+	if (char_aep != NULL)
+	    new_en = *char_aep;
+	else
+	{
+	    vim_memset(&new_en, 0, sizeof(new_en));
+	    if (char_attr <= HL_ALL)
+		new_en.ae_attr = char_attr;
+	}
+
+	if (spell_attr <= HL_ALL)
+	    new_en.ae_attr |= spell_attr;
+	else
+	{
+	    spell_aep = syn_cterm_attr2entry(spell_attr);
+	    if (spell_aep != NULL)
+	    {
+		new_en.ae_attr |= spell_aep->ae_attr;
+		if (spell_aep->ae_u.cterm.fg_color > 0)
+		    new_en.ae_u.cterm.fg_color = spell_aep->ae_u.cterm.fg_color;
+		if (spell_aep->ae_u.cterm.bg_color > 0)
+		    new_en.ae_u.cterm.bg_color = spell_aep->ae_u.cterm.bg_color;
+	    }
+	}
+	return get_attr_entry(&cterm_attr_table, &new_en);
+    }
+
+    if (char_attr > HL_ALL)
+	char_aep = syn_term_attr2entry(char_attr);
+    if (char_aep != NULL)
+	new_en = *char_aep;
+    else
+    {
+	vim_memset(&new_en, 0, sizeof(new_en));
+	if (char_attr <= HL_ALL)
+	    new_en.ae_attr = char_attr;
+    }
+
+    if (spell_attr <= HL_ALL)
+	new_en.ae_attr |= spell_attr;
+    else
+    {
+	spell_aep = syn_cterm_attr2entry(spell_attr);
+	if (spell_aep != NULL)
+	{
+	    new_en.ae_attr |= spell_aep->ae_attr;
+	    if (spell_aep->ae_u.term.start != NULL)
+	    {
+		new_en.ae_u.term.start = spell_aep->ae_u.term.start;
+		new_en.ae_u.term.stop = spell_aep->ae_u.term.stop;
+	    }
+	}
+    }
+    return get_attr_entry(&term_attr_table, &new_en);
+}
+#endif
 
 #ifdef FEAT_GUI
 

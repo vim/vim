@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.0aa.  Last change: 2005 Mar 14
+*syntax.txt*	For Vim version 7.0aa.  Last change: 2005 Mar 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3893,6 +3893,17 @@ SpecialKey	Meta and special keys listed with ":map", also for text used
 		to show unprintable characters in the text, 'listchars'.
 		Generally: text that is displayed differently from what it
 		really is.
+							*hl-SpellBad*
+SpellBad	Word that is not recognized by the spellchecker. |spell|
+		This will be combined with the highlighting used otherwise.
+							*hl-SpellLocal*
+SpellLocal	Word that is recognized by the spellchecker as one that is
+		used in another region. |spell|
+		This will be combined with the highlighting used otherwise.
+							*hl-SpellRare*
+SpellRare	Word that is recognized by the spellchecker as one that is
+		hardly ever used. |spell|
+		This will be combined with the highlighting used otherwise.
 							*hl-StatusLine*
 StatusLine	status line of current window
 							*hl-StatusLineNC*

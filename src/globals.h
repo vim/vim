@@ -1220,6 +1220,10 @@ EXTERN int	virtual_op INIT(= MAYBE);
 #ifdef FEAT_SYN_HL
 /* Display tick, incremented for each call to update_screen() */
 EXTERN disptick_T	display_tick INIT(= 0);
+
+/* Line in which spell checking wasn't highlighted because it touched the
+ * cursor position in Insert mode. */
+EXTERN linenr_T		spell_redraw_lnum INIT(= 0);
 #endif
 
 #ifdef ALT_X_INPUT

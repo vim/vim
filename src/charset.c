@@ -394,8 +394,8 @@ transstr(s)
 
 #if defined(FEAT_SYN_HL) || defined(FEAT_INS_EXPAND) || defined(PROTO)
 /*
- * Convert the string "p[len]" to do ignore-case comparing.  Uses the current
- * locale.
+ * Convert the string "str[orglen]" to do ignore-case comparing.  Uses the
+ * current locale.
  * When "buf" is NULL returns an allocated string (NULL for out-of-memory).
  * Otherwise puts the result in "buf[buflen]".
  */

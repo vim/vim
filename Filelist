@@ -661,6 +661,9 @@ EXTRA =		\
 LANG_GEN = \
 		README_lang.txt \
 		runtime/doc/*-it.1 \
+		runtime/doc/*-it.UTF-8.1 \
+		runtime/doc/*-ru.1 \
+		runtime/doc/*-ru.UTF-8.1 \
 		runtime/lang/README.txt \
 		runtime/lang/menu_*.vim \
 		runtime/keymap/README.txt \
@@ -674,6 +677,7 @@ LANG_GEN = \
 		runtime/tutor/tutor.pl.* \
 		runtime/tutor/tutor.ru.* \
 		runtime/tutor/tutor.zh.* \
+		runtime/spell/en.spl \
 
 # all files for lang archive
 LANG_SRC = \

@@ -59,6 +59,7 @@ SRC = \
 	regexp.c \
 	screen.c \
 	search.c \
+	spell.c \
 	syntax.c \
 	tag.c \
 	term.c \
@@ -100,6 +101,7 @@ OBJ =	o/buffer.o \
 	o/regexp.o \
 	o/screen.o \
 	o/search.o \
+	o/spell.o \
 	o/syntax.o \
 	o/tag.o \
 	o/term.o \
@@ -197,6 +199,8 @@ o/regexp.o:	regexp.c  $(SYMS) regexp.h
 o/screen.o:	screen.c  $(SYMS)
 
 o/search.o:	search.c  $(SYMS) regexp.h
+
+o/spell.o:	spell.c  $(SYMS)
 
 o/syntax.o:	syntax.c  $(SYMS)
 

@@ -122,6 +122,7 @@ SRC = \
 	regexp.c \
 	screen.c \
 	search.c \
+	spell.c \
 	syntax.c \
 	tag.c \
 	term.c \
@@ -164,6 +165,7 @@ OBJ = \
 	regexp.o \
 	screen.o \
 	search.o \
+	spell.o \
 	syntax.o \
 	tag.o \
 	term.o \
@@ -206,6 +208,7 @@ PRO = \
 	proto/regexp.pro \
 	proto/screen.pro \
 	proto/search.pro \
+	proto/spell.pro \
 	proto/syntax.pro \
 	proto/tag.pro \
 	proto/term.pro \
@@ -335,6 +338,8 @@ screen.o:		screen.c
 proto/screen.pro:	screen.c
 search.o:		search.c
 proto/search.pro:	search.c
+spell.o:		spell.c
+proto/spell.pro:	spell.c
 syntax.o:		syntax.c
 proto/syntax.pro:	syntax.c
 tag.o:			tag.c

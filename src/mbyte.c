@@ -990,6 +990,10 @@ dbcs_char2bytes(c, buf)
     {
 	buf[0] = (unsigned)c >> 8;
 	buf[1] = c;
+	/* Never use a NUL byte, it causes lots of trouble.  It's an invalid
+	 * character anyway. */
+	if (buf[1] == NUL)
+	    buf[1] = '\n';
 	return 2;
     }
     buf[0] = c;
@@ -3087,7 +3091,14 @@ iconv_string(vcp, str, slen, unconvlenp)
 	    *to++ = '?';
 	    if ((*mb_ptr2cells)((char_u *)from) > 1)
 		*to++ = '?';
-	    l = (*mb_ptr2len_check)((char_u *)from);
+	    if (enc_utf8)
+		l = utfc_ptr2len_check_len((char_u *)from, fromlen);
+	    else
+	    {
+		l = (*mb_ptr2len_check)((char_u *)from);
+		if (l > fromlen)
+		    l = fromlen;
+	    }
 	    from += l;
 	    fromlen -= l;
 	}

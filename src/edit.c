@@ -126,6 +126,9 @@ static void insert_special __ARGS((int, int, int));
 static void check_auto_format __ARGS((int));
 static void redo_literal __ARGS((int c));
 static void start_arrow __ARGS((pos_T *end_insert_pos));
+#ifdef FEAT_SYN_HL
+static void check_spell_redraw __ARGS((void));
+#endif
 static void stop_insert __ARGS((pos_T *end_insert_pos, int esc));
 static int  echeck_abbr __ARGS((int));
 static void replace_push_off __ARGS((int c));
@@ -880,6 +883,9 @@ doESCkey:
 	    /*
 	     * This is the ONLY return from edit()!
 	     */
+#ifdef FEAT_SYN_HL
+	    check_spell_redraw();
+#endif
 	    /* Always update o_lnum, so that a "CTRL-O ." that adds a line
 	     * still puts the cursor back after the inserted text. */
 	    if (o_eol && gchar_cursor() == NUL)
@@ -3958,6 +3964,11 @@ get_literal()
 
     if (cc == 0)	/* NUL is stored as NL */
 	cc = '\n';
+#ifdef FEAT_MBYTE
+    if (enc_dbcs && (cc & 0xff) == 0)
+	cc = '?';	/* don't accept an illegal DBCS char, the NUL in the
+			   second byte will cause trouble! */
+#endif
 
     --no_mapping;
 #ifdef FEAT_GUI
@@ -4774,7 +4785,28 @@ start_arrow(end_insert_pos)
 	stop_insert(end_insert_pos, FALSE);
 	arrow_used = TRUE;	/* this means we stopped the current insert */
     }
+#ifdef FEAT_SYN_HL
+    check_spell_redraw();
+#endif
 }
+
+#ifdef FEAT_SYN_HL
+/*
+ * If we skipped highlighting word at cursor, do it now.
+ * It may be skipped again, thus reset spell_redraw_lnum first.
+ */
+    static void
+check_spell_redraw()
+{
+    if (spell_redraw_lnum != 0)
+    {
+	linenr_T	lnum = spell_redraw_lnum;
+
+	spell_redraw_lnum = 0;
+	redrawWinline(lnum, FALSE);
+    }
+}
+#endif
 
 /*
  * stop_arrow() is called before a change is made in insert mode.

@@ -1,0 +1,121 @@
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Mar 20
+
+
+		  VIM REFERENCE MANUAL	  by Bram Moolenaar
+
+
+Spell checking						*spell*
+
+1. Quick start			|spell-quickstart|
+X. Spell file format		|spell-file-format|
+
+{Vi does not have any of these commands}
+
+Spell checking is not available when the |+syntax| feature has been disabled
+at compile time.
+
+==============================================================================
+1. Quick start						*spell-quickstart*
+
+This command switches on spell checking: >
+
+	:setlocal spell spelllang=en_us
+
+This switches the 'spell' option on and specifies to check for US English.
+
+The words that are not recognized are highlighted with one of these:
+	SpellBad	word not recognized
+	SpellRare	rare word
+	SpellLocal	wrong spelling for selected region
+
+
+REGIONS
+
+A word may be spelled differently in various regions.  For example, English
+comes in (at least) these variants:
+
+	en		all regions
+	en_us		US
+	en_gb		Great Britain
+	en_ca		Canada
+
+Words that are not used in one region but are used in another region are
+highlighted with SpellLocal.
+
+Always use lowercase letters.
+
+
+SPELL FILES
+
+Vim searches for spell files in the "spell" subdirectory of the directories in
+'runtimepath'.  The name is: xx.yyy.spl, where:
+	xx	the language name
+	yyy	the value of 'encoding'
+
+Exception: Vim uses "latin1" when 'encoding' is "iso-8859-15".  The euro sign
+doesn't matter for spelling.
+
+A spell file might not be available in the current 'encoding'.  You may try
+using the "iconv" program to create one: >
+
+	iconv -f latin1 -t koi8-r de.latin1.spl >de.koi8-r.spl
+
+However, if some characters cannot be presented in the target encoding this
+will give wrong results.
+
+If a spell file only uses ASCII characters the encoding can be omitted.  This
+is useful for English: "en.spl"  The file with encoding is checked first, thus
+you could have one with encoding that includes words with non-ASCII characters
+and use the ASCII file as a fall-back.
+
+==============================================================================
+X. Spell file format					*spell-file-format*
+							*E751*
+
+The spelling for a language is specified in file with a specific format.
+The first character of a line specifies what follows in the line:
+
+	char	argument	meaning ~
+	-	xx		words for xx region follow (repeats)
+	<space>	<word>		normal word
+	>	<word>		rare word
+	=	<word>		word with non-keyword characters
+	+	<word>		optional word addition
+	#	<anything>	comment
+
+Empty lines are ignored.  The word continues until the end of the line.  Watch
+out for trailing white space!
+
+Words that start with an upper-case letter will be required to be written that
+way.  Otherwise, words must be in lower-case.
+
+It is possible that a word appears both with an upper-case letter and as a
+rare word.  This means that the word with an upper-case letter is OK and the
+word without the upper-case letter is rare.
+								*E753*
+The region is specified with "-xx".  For example, in the "en.spl" file "-us"
+starts the word for "en_us".  This can be repeated for words that are used in
+more than one region.  For example "-ca-us" is used for Canadian and US
+English words.  Use "---" to go back to the words for all regions.
+
+Vim supports up to six regions.					*E752*
+
+It is possible to have a match that starts with a valid word.  In that case
+the match is used, because it is longer.  Example:
+
+	 we
+	=we're
+
+"re" is not a word, thus "=we're" is needed to avoid it gets highlighted.
+
+The "+" items may appear after any word.  For English "'s" is used.  Be
+careful with this, it may hide mistakes.
+
+Vim will check for duplicate words in the files used, but you will only get
+warnings if the 'verbose' option is set to 1 or more.
+
+Note that the "=" and "+" words will slow down the operation.  Use them only
+when really needed.
+
+
+ vim:tw=78:sw=4:ts=8:ft=help:norl:

@@ -189,6 +189,10 @@ typedef struct
 #endif
     long	wo_scr;
 #define w_p_scr w_onebuf_opt.wo_scr	/* 'scroll' */
+#ifdef FEAT_SYN_HL
+    int		wo_spell;
+#define w_p_spell w_onebuf_opt.wo_spell	/* 'spell' */
+#endif
 #ifdef FEAT_STL_OPT
     char_u	*wo_stl;
 #define w_p_stl w_onebuf_opt.wo_stl	/* 'statusline' */
@@ -1337,6 +1341,7 @@ struct file_buffer
     int		b_p_swf;	/* 'swapfile' */
 #ifdef FEAT_SYN_HL
     char_u	*b_p_syn;	/* 'syntax' */
+    char_u	*b_p_spl;	/* 'spelllang' */
 #endif
     long	b_p_ts;		/* 'tabstop' */
     int		b_p_tx;		/* 'textmode' */
@@ -1418,6 +1423,7 @@ struct file_buffer
     int		b_syn_ic;		/* ignore case for :syn cmds */
     garray_T	b_syn_patterns;		/* table for syntax patterns */
     garray_T	b_syn_clusters;		/* table for syntax clusters */
+    int		b_spell_cluster_id;	/* @Spell cluster ID or 0 */
     int		b_syn_containedin;	/* TRUE when there is an item with a
 					   "containedin" argument */
     int		b_syn_sync_flags;	/* flags about how to sync */
@@ -1454,6 +1460,10 @@ struct file_buffer
     int		b_sst_freecount;
     linenr_T	b_sst_check_lnum;
     short_u	b_sst_lasttick;	/* last display tick */
+
+    /* for spell checking */
+    garray_T	b_langp;	/* list of pointers to slang_T, see spell.c */
+
 #endif /* FEAT_SYN_HL */
 
 #ifdef FEAT_SIGNS

@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Mar 17
+" Last Change:	2005 Mar 20
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -1483,6 +1483,9 @@ au BufNewFile,BufRead *.sp,*.spice		setf spice
 
 " Spyce
 au BufNewFile,BufRead *.spy,*.spi		setf spyce
+
+" Vim spell file
+au BufNewFile,BufRead *.spl			setf vimspell
 
 " Squid
 au BufNewFile,BufRead squid.conf		setf squid

@@ -2501,6 +2501,11 @@ win_line(wp, lnum, startrow, endrow)
     int		syntax_attr = 0;	/* attributes desired by syntax */
     int		has_syntax = FALSE;	/* this buffer has syntax highl. */
     int		save_did_emsg;
+    int		has_spell = FALSE;	/* this buffer has spell checking */
+    int		spell_attr = 0;		/* attributes desired by spelling */
+    int		word_end = 0;		/* last byte with same spell_attr */
+    int		iswordc;		/* prev. char was a word character */
+    int		prev_iswordc = FALSE;	/* prev. char was a word character */
 #endif
     int		extra_check;		/* has syntax or linebreak */
 #ifdef FEAT_MBYTE
@@ -2596,6 +2601,13 @@ win_line(wp, lnum, startrow, endrow)
 	    has_syntax = TRUE;
 	    extra_check = TRUE;
 	}
+    }
+
+    if (wp->w_p_spell && *wp->w_buffer->b_p_spl != NUL)
+    {
+	/* Prepare for spell checking. */
+	has_spell = TRUE;
+	extra_check = TRUE;
     }
 #endif
 
@@ -3231,6 +3243,11 @@ win_line(wp, lnum, startrow, endrow)
 	    else
 		char_attr = search_attr;
 
+#ifdef FEAT_SYN_HL
+	    if (spell_attr != 0)
+		char_attr = hl_combine_attr(char_attr, spell_attr);
+#endif
+
 #ifdef FEAT_DIFF
 	    if (diff_hlf != (enum hlf_value)0 && n_extra == 0)
 	    {
@@ -3539,16 +3556,20 @@ win_line(wp, lnum, startrow, endrow)
 	    if (extra_check)
 	    {
 #ifdef FEAT_SYN_HL
+		int	can_spell = TRUE;
+
 		/* Get syntax attribute, unless still at the start of the line
 		 * (double-wide char that doesn't fit). */
-		if (has_syntax && (v = (long)(ptr - line)) > 0)
+		v = (long)(ptr - line);
+		if (has_syntax && v > 0)
 		{
 		    /* Get the syntax attribute for the character.  If there
 		     * is an error, disable syntax highlighting. */
 		    save_did_emsg = did_emsg;
 		    did_emsg = FALSE;
 
-		    syntax_attr = get_syntax_attr((colnr_T)v - 1);
+		    syntax_attr = get_syntax_attr((colnr_T)v - 1,
+					       has_spell ? &can_spell : NULL);
 
 		    if (did_emsg)
 			syntax_clear(wp->w_buffer);
@@ -3563,10 +3584,51 @@ win_line(wp, lnum, startrow, endrow)
 		    if (area_attr == 0 && search_attr == 0)
 			char_attr = syntax_attr;
 		}
+
+		/* Check spelling at the start of a word.
+		 * Only do this when there is no syntax highlighting, there is
+		 * on @Spell cluster or the current syntax item contains the
+		 * @Spell cluster. */
+		if (has_spell && v >= word_end)
+		{
+		    if (!has_syntax || can_spell)
+		    {
+			char_u	*prev_ptr = ptr - (
+# ifdef FEAT_MBYTE
+							has_mbyte ? mb_l :
+# endif
+									    1);
+
+			spell_attr = 0;
+			iswordc = vim_iswordc_buf(prev_ptr, wp->w_buffer);
+			if (iswordc && !prev_iswordc)
+			{
+			    word_end = v + spell_check(wp, prev_ptr,
+								 &spell_attr);
+			    /* In Insert mode only highlight a word that
+			     * doesn't touch the cursor. */
+			    if (spell_attr != 0
+				    && (State & INSERT) != 0
+				    && wp->w_cursor.lnum == lnum
+				    && wp->w_cursor.col >=
+						    (colnr_T)(prev_ptr - line)
+				    && wp->w_cursor.col < (colnr_T)word_end)
+			    {
+				spell_attr = 0;
+				spell_redraw_lnum = lnum;
+			    }
+			}
+			prev_iswordc = iswordc;
+		    }
+		    else
+			spell_attr = 0;
+		}
+		if (spell_attr != 0)
+		    char_attr = hl_combine_attr(char_attr, spell_attr);
 #endif
 #ifdef FEAT_LINEBREAK
 		/*
-		 * Found last space before word: check for line break
+		 * Found last space before word: check for line break.
 		 */
 		if (wp->w_p_lbr && vim_isbreak(c) && !vim_isbreak(*ptr)
 						      && !wp->w_p_list)

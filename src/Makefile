@@ -125,6 +125,7 @@
 #		make installmanlinks	only installs the Vim manpage links
 #		make installmacros	only installs the Vim macros
 #		make installtutor	only installs the Vim tutor
+#		make installspell	only installs the spell files
 #		make installtools	only installs xxd
 #	If you install Vim, not to install for real but to prepare a package
 #	or RPM, set DESTDIR to the root of the tree.
@@ -874,6 +875,7 @@ KMAPSUBDIR = /keymap
 MACROSUBDIR = /macros
 TOOLSSUBDIR = /tools
 TUTORSUBDIR = /tutor
+SPELLSUBDIR = /spell
 PRINTSUBDIR = /print
 PODIR = po
 
@@ -893,6 +895,7 @@ PODIR = po
 ### MACROSUBLOC	location for macro files
 ### TOOLSSUBLOC	location for tools files
 ### TUTORSUBLOC	location for tutor files
+### SPELLSUBLOC	location for spell files
 ### PRINTSUBLOC	location for PostScript files (prolog, latin1, ..)
 ### SCRIPTLOC	location for script files (menu.vim, bugreport.vim, ..)
 ### You can override these if you want to install them somewhere else.
@@ -912,6 +915,7 @@ KMAPSUBLOC	= $(VIMRTLOC)$(KMAPSUBDIR)
 MACROSUBLOC	= $(VIMRTLOC)$(MACROSUBDIR)
 TOOLSSUBLOC	= $(VIMRTLOC)$(TOOLSSUBDIR)
 TUTORSUBLOC	= $(VIMRTLOC)$(TUTORSUBDIR)
+SPELLSUBLOC	= $(VIMRTLOC)$(SPELLSUBDIR)
 PRINTSUBLOC	= $(VIMRTLOC)$(PRINTSUBDIR)
 SCRIPTLOC	= $(VIMRTLOC)
 
@@ -1015,6 +1019,9 @@ TOOLSSOURCE = ../runtime/tools
 
 # Where to copy the tutor files from
 TUTORSOURCE = ../runtime/tutor
+
+# Where to copy the spell files from
+SPELLSOURCE = ../runtime/spell
 
 # Where to look for language specific files
 LANGSOURCE = ../runtime/lang
@@ -1275,6 +1282,7 @@ DEST_KMAP = $(DESTDIR)$(KMAPSUBLOC)
 DEST_MACRO = $(DESTDIR)$(MACROSUBLOC)
 DEST_TOOLS = $(DESTDIR)$(TOOLSSUBLOC)
 DEST_TUTOR = $(DESTDIR)$(TUTORSUBLOC)
+DEST_SPELL = $(DESTDIR)$(SPELLSUBLOC)
 DEST_SCRIPT = $(DESTDIR)$(SCRIPTLOC)
 DEST_PRINT = $(DESTDIR)$(PRINTSUBLOC)
 DEST_MAN_TOP = $(DESTDIR)$(MANDIR)
@@ -1282,8 +1290,10 @@ DEST_MAN_TOP = $(DESTDIR)$(MANDIR)
 # We assume that the ".../man/xx/man1/" directory is for latin1 manual pages.
 # Some systems use UTF-8, but these should find the ".../man/xx.UTF-8/man1/"
 # directory first.
+# FreeBSD uses ".../man/xx.ISO8859-1/man1" for latin1, use that one too.
 DEST_MAN = $(DEST_MAN_TOP)$(MAN1DIR)
 DEST_MAN_IT = $(DEST_MAN_TOP)/it$(MAN1DIR)
+DEST_MAN_IT_I = $(DEST_MAN_TOP)/it.ISO8859-1$(MAN1DIR)
 DEST_MAN_IT_U = $(DEST_MAN_TOP)/it.UTF-8$(MAN1DIR)
 DEST_MAN_RU = $(DEST_MAN_TOP)/ru.KOI8-R$(MAN1DIR)
 DEST_MAN_RU_U = $(DEST_MAN_TOP)/ru.UTF-8$(MAN1DIR)
@@ -1336,6 +1346,7 @@ BASIC_SRC = \
 	regexp.c \
 	screen.c \
 	search.c \
+	spell.c \
 	syntax.c \
 	tag.c \
 	term.c \
@@ -1404,6 +1415,7 @@ OBJ = \
 	objects/regexp.o \
 	objects/screen.o \
 	objects/search.o \
+	objects/spell.o \
 	objects/syntax.o \
 	$(SNIFF_OBJ) \
 	objects/tag.o \
@@ -1461,6 +1473,7 @@ PRO_AUTO = \
 	regexp.pro \
 	screen.pro \
 	search.pro \
+	spell.pro \
 	syntax.pro \
 	tag.pro \
 	term.pro \
@@ -1681,7 +1694,7 @@ install: $(GUI_INSTALL)
 
 install_normal: installvim installtools install-languages install-icons
 
-installvim: installvimbin installruntime installlinks installmanlinks installmacros installtutor
+installvim: installvimbin installruntime installlinks installmanlinks installmacros installtutor installspell
 
 installvimbin: $(VIMTARGET) $(DESTDIR)$(exec_prefix) $(DEST_BIN)
 	-if test -f $(DEST_BIN)/$(VIMTARGET); then \
@@ -1702,7 +1715,7 @@ INSTALLMANARGS = $(VIMLOC) $(SCRIPTLOC) $(VIMRCLOC) $(HELPSOURCE) $(MANMOD) \
 # install the help files; first adjust the contents for the final location
 installruntime: $(HELPSOURCE)/vim.1 $(DEST_VIM) $(DEST_RT) \
 		$(DEST_HELP) $(DEST_PRINT) $(DEST_COL) $(DEST_SYN) $(DEST_IND) \
-		$(DEST_FTP) $(DEST_PLUG) $(DEST_TUTOR) $(DEST_COMP)
+		$(DEST_FTP) $(DEST_PLUG) $(DEST_TUTOR) $(DEST_SPELL) $(DEST_COMP)
 	-$(SHELL) ./installman.sh install $(DEST_MAN) "" $(INSTALLMANARGS)
 	@echo generating help tags
 # Generate the help tags with ":helptags" to handle all languages.
@@ -1792,6 +1805,13 @@ installtutor: $(TUTORSOURCE) $(DEST_VIM) $(DEST_RT) $(DEST_TUTOR)
 	-$(INSTALL_DATA) $(TUTORSOURCE)/README* $(TUTORSOURCE)/tutor* $(DEST_TUTOR)
 	chmod $(HELPMOD) $(DEST_TUTOR)/*
 
+# Install the spell files, if they exist.
+installspell: $(SPELLSOURCE) $(DEST_VIM) $(DEST_RT) $(DEST_SPELL)
+	if test -f $(SPELLSOURCE)/en.spl; then \
+	  $(INSTALL_DATA) $(SPELLSOURCE)/*.spl $(DEST_SPELL); \
+	  chmod $(HELPMOD) $(DEST_SPELL)/*.spl; \
+	fi
+
 # install helper program xxd
 installtools: $(TOOLS) $(DESTDIR)$(exec_prefix) $(DEST_BIN) \
 		$(TOOLSSOURCE) $(DEST_VIM) $(DEST_RT) $(DEST_TOOLS)
@@ -1804,6 +1824,7 @@ installtools: $(TOOLS) $(DESTDIR)$(exec_prefix) $(DEST_BIN) \
 	chmod $(BINMOD) $(DEST_BIN)/xxd$(EXEEXT)
 	-$(SHELL) ./installman.sh xxd $(DEST_MAN) "" $(INSTALLMANARGS)
 	-$(SHELL) ./installman.sh xxd $(DEST_MAN_IT) "-it" $(INSTALLMANARGS)
+	-$(SHELL) ./installman.sh xxd $(DEST_MAN_IT_I) "-it" $(INSTALLMANARGS)
 	-$(SHELL) ./installman.sh xxd $(DEST_MAN_IT_U) "-it.UTF-8" $(INSTALLMANARGS)
 	-$(SHELL) ./installman.sh xxd $(DEST_MAN_RU) "-ru" $(INSTALLMANARGS)
 	-$(SHELL) ./installman.sh xxd $(DEST_MAN_RU_U) "-ru.UTF-8" $(INSTALLMANARGS)
@@ -1825,11 +1846,14 @@ installtools: $(TOOLS) $(DESTDIR)$(exec_prefix) $(DEST_BIN) \
 # install the language specific files, if they were unpacked
 install-languages: languages $(DEST_LANG) $(DEST_KMAP)
 	-$(SHELL) ./installman.sh install $(DEST_MAN_IT) "-it" $(INSTALLMANARGS)
+	-$(SHELL) ./installman.sh install $(DEST_MAN_IT_I) "-it" $(INSTALLMANARGS)
 	-$(SHELL) ./installman.sh install $(DEST_MAN_IT_U) "-it.UTF-8" $(INSTALLMANARGS)
 	-$(SHELL) ./installman.sh install $(DEST_MAN_RU) "-ru" $(INSTALLMANARGS)
 	-$(SHELL) ./installman.sh install $(DEST_MAN_RU_U) "-ru.UTF-8" $(INSTALLMANARGS)
 	-$(SHELL) ./installml.sh install "$(GUI_MAN_TARGETS)" \
 		$(DEST_MAN_IT) $(INSTALLMLARGS)
+	-$(SHELL) ./installml.sh install "$(GUI_MAN_TARGETS)" \
+		$(DEST_MAN_IT_I) $(INSTALLMLARGS)
 	-$(SHELL) ./installml.sh install "$(GUI_MAN_TARGETS)" \
 		$(DEST_MAN_IT_U) $(INSTALLMLARGS)
 	-$(SHELL) ./installml.sh install "$(GUI_MAN_TARGETS)" \
@@ -1895,7 +1919,8 @@ $(DESTDIR)$(exec_prefix) $(DEST_BIN) \
 		$(DEST_VIM) $(DEST_RT) $(DEST_HELP) \
 		$(DEST_PRINT) $(DEST_COL) $(DEST_SYN) $(DEST_IND) $(DEST_FTP) \
 		$(DEST_LANG) $(DEST_KMAP) $(DEST_COMP) \
-		$(DEST_MACRO) $(DEST_TOOLS) $(DEST_TUTOR) $(DEST_PLUG):
+		$(DEST_MACRO) $(DEST_TOOLS) $(DEST_TUTOR) $(DEST_SPELL) \
+		$(DEST_PLUG):
 	-$(SHELL) ./mkinstalldirs $@
 	-chmod $(DIRMOD) $@
 
@@ -1982,6 +2007,7 @@ uninstall: uninstall_runtime
 uninstall_runtime:
 	-$(SHELL) ./installman.sh uninstall $(DEST_MAN) "" $(INSTALLMANARGS)
 	-$(SHELL) ./installman.sh uninstall $(DEST_MAN_IT) "" $(INSTALLMANARGS)
+	-$(SHELL) ./installman.sh uninstall $(DEST_MAN_IT_I) "" $(INSTALLMANARGS)
 	-$(SHELL) ./installman.sh uninstall $(DEST_MAN_IT_U) "" $(INSTALLMANARGS)
 	-$(SHELL) ./installman.sh uninstall $(DEST_MAN_RU) "" $(INSTALLMANARGS)
 	-$(SHELL) ./installman.sh uninstall $(DEST_MAN_RU_U) "" $(INSTALLMANARGS)
@@ -1990,13 +2016,15 @@ uninstall_runtime:
 	-$(SHELL) ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
 		$(DEST_MAN_IT) $(INSTALLMLARGS)
 	-$(SHELL) ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
+		$(DEST_MAN_IT_I) $(INSTALLMLARGS)
+	-$(SHELL) ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
 		$(DEST_MAN_IT_U) $(INSTALLMLARGS)
 	-$(SHELL) ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
 		$(DEST_MAN_RU) $(INSTALLMLARGS)
 	-$(SHELL) ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
 		$(DEST_MAN_RU_U) $(INSTALLMLARGS)
 	-rm -f $(DEST_MAN)/xxd.1
-	-rm -f $(DEST_MAN_IT)/xxd.1 $(DEST_MAN_IT_U)/xxd.1
+	-rm -f $(DEST_MAN_IT)/xxd.1 $(DEST_MAN_IT_I)/xxd.1 $(DEST_MAN_IT_U)/xxd.1
 	-rm -f $(DEST_MAN_RU)/xxd.1 $(DEST_MAN_RU_U)/xxd.1
 	-rm -f $(DEST_HELP)/*.txt $(DEST_HELP)/tags $(DEST_HELP)/*.pl
 	-rm -f $(DEST_HELP)/*.??x $(DEST_HELP)/tags-??
@@ -2012,6 +2040,7 @@ uninstall_runtime:
 	-rm -f $(DEST_IND)/*.vim $(DEST_IND)/README.txt
 	-rm -rf $(DEST_MACRO)
 	-rm -rf $(DEST_TUTOR)
+	-rm -rf $(DEST_SPELL)
 	-rm -rf $(DEST_TOOLS)
 	-rm -rf $(DEST_LANG)
 	-rm -rf $(DEST_KMAP)
@@ -2365,6 +2394,9 @@ objects/screen.o: screen.c
 objects/search.o: search.c
 	$(CCC) -o $@ search.c
 
+objects/spell.o: spell.c
+	$(CCC) -o $@ spell.c
+
 objects/syntax.o: syntax.c
 	$(CCC) -o $@ syntax.c
 
@@ -2640,6 +2672,10 @@ objects/screen.o: screen.c vim.h auto/config.h feature.h os_unix.h \
  gui.h gui_beval.h proto/gui_beval.pro option.h ex_cmds.h proto.h \
  globals.h farsi.h arabic.h
 objects/search.o: search.c vim.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h macros.h structs.h regexp.h \
+ gui.h gui_beval.h proto/gui_beval.pro option.h ex_cmds.h proto.h \
+ globals.h farsi.h arabic.h
+objects/spell.o: spell.c vim.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h structs.h regexp.h \
  gui.h gui_beval.h proto/gui_beval.pro option.h ex_cmds.h proto.h \
  globals.h farsi.h arabic.h

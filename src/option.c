@@ -119,8 +119,10 @@ typedef enum
     , PV_SCBIND
     , PV_SCROLL
     , PV_SI
-    , PV_STL
     , PV_SN
+    , PV_SPELL
+    , PV_SPL
+    , PV_STL
     , PV_STS
     , PV_SUA
     , PV_SW
@@ -232,6 +234,7 @@ static long	p_sw;
 static int	p_swf;
 #ifdef FEAT_SYN_HL
 static char_u	*p_syn;
+static char_u	*p_spl;
 #endif
 static long	p_ts;
 static long	p_tw;
@@ -1108,7 +1111,7 @@ static struct vimoption
 			    {(char_u *)FALSE, (char_u *)0L}},
     {"highlight",   "hl",   P_STRING|P_VI_DEF|P_RCLR|P_COMMA|P_NODUP,
 			    (char_u *)&p_hl, PV_NONE,
-			    {(char_u *)"8:SpecialKey,@:NonText,d:Directory,e:ErrorMsg,i:IncSearch,l:Search,m:MoreMsg,M:ModeMsg,n:LineNr,r:Question,s:StatusLine,S:StatusLineNC,c:VertSplit,t:Title,v:Visual,V:VisualNOS,w:WarningMsg,W:WildMenu,f:Folded,F:FoldColumn,A:DiffAdd,C:DiffChange,D:DiffDelete,T:DiffText,>:SignColumn",
+			    {(char_u *)"8:SpecialKey,@:NonText,d:Directory,e:ErrorMsg,i:IncSearch,l:Search,m:MoreMsg,M:ModeMsg,n:LineNr,r:Question,s:StatusLine,S:StatusLineNC,c:VertSplit,t:Title,v:Visual,V:VisualNOS,w:WarningMsg,W:WildMenu,f:Folded,F:FoldColumn,A:DiffAdd,C:DiffChange,D:DiffDelete,T:DiffText,>:SignColumn,B:SpellBad,R:SpellRare,L:SpellLocal",
 				(char_u *)0L}},
     {"history",	    "hi",   P_NUM|P_VIM,
 			    (char_u *)&p_hi, PV_NONE,
@@ -2019,6 +2022,22 @@ static struct vimoption
     {"sourceany",   NULL,   P_BOOL|P_VI_DEF,
 			    (char_u *)NULL, PV_NONE,
 			    {(char_u *)FALSE, (char_u *)0L}},
+    {"spell",	    NULL,   P_BOOL|P_VI_DEF|P_RWIN,
+#ifdef FEAT_SYN_HL
+			    (char_u *)VAR_WIN, PV_SPELL,
+#else
+			    (char_u *)NULL, PV_NONE,
+#endif
+			    {(char_u *)FALSE, (char_u *)0L}},
+    {"spelllang",   "spl",  P_STRING|P_ALLOCED|P_VI_DEF|P_COMMA,
+#ifdef FEAT_SYN_HL
+			    (char_u *)&p_spl, PV_SPL,
+			    {(char_u *)"", (char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)0L, (char_u *)0L}
+#endif
+			    },
     {"splitbelow",  "sb",   P_BOOL|P_VI_DEF,
 #ifdef FEAT_WINDOWS
 			    (char_u *)&p_sb, PV_NONE,
@@ -2978,6 +2997,10 @@ set_init_1()
 	    /* $HOME may have characters in active code page. */
 	    init_homedir();
 # endif
+#ifdef FEAT_SYN_HL
+	    /* Need to reload spell dictionaries */
+	    spell_reload();
+#endif
 	}
 	else
 	{
@@ -4583,6 +4606,7 @@ check_buf_options(buf)
 #endif
 #ifdef FEAT_SYN_HL
     check_string_option(&buf->b_p_syn);
+    check_string_option(&buf->b_p_spl);
 #endif
 #ifdef FEAT_SEARCHPATH
     check_string_option(&buf->b_p_sua);
@@ -5629,6 +5653,14 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
     /* 'clipboard' */
     else if (varp == &p_cb)
 	errmsg = check_clipboard_option();
+#endif
+
+#ifdef FEAT_SYN_HL
+    /* When 'spellang' is set, load the wordlists. */
+    else if (varp == &(curbuf->b_p_spl))
+    {
+	errmsg = did_set_spelllang(curbuf);
+    }
 #endif
 
 #ifdef FEAT_AUTOCMD
@@ -8111,6 +8143,9 @@ get_varp(p)
 	case PV_ARAB:	return (char_u *)&(curwin->w_p_arab);
 #endif
 	case PV_LIST:	return (char_u *)&(curwin->w_p_list);
+#ifdef FEAT_SYN_HL
+	case PV_SPELL:	return (char_u *)&(curwin->w_p_spell);
+#endif
 #ifdef FEAT_DIFF
 	case PV_DIFF:	return (char_u *)&(curwin->w_p_diff);
 #endif
@@ -8238,6 +8273,7 @@ get_varp(p)
 	case PV_SWF:	return (char_u *)&(curbuf->b_p_swf);
 #ifdef FEAT_SYN_HL
 	case PV_SYN:	return (char_u *)&(curbuf->b_p_syn);
+	case PV_SPL:	return (char_u *)&(curbuf->b_p_spl);
 #endif
 	case PV_SW:	return (char_u *)&(curbuf->b_p_sw);
 	case PV_TS:	return (char_u *)&(curbuf->b_p_ts);
@@ -8317,6 +8353,9 @@ copy_winopt(from, to)
 #endif
 #ifdef FEAT_SCROLLBIND
     to->wo_scb = from->wo_scb;
+#endif
+#ifdef FEAT_SYN_HL
+    to->wo_spell = from->wo_spell;
 #endif
 #ifdef FEAT_DIFF
     to->wo_diff = from->wo_diff;
@@ -8544,6 +8583,8 @@ buf_copy_options(buf, flags)
 #ifdef FEAT_SYN_HL
 	    /* Don't copy 'syntax', it must be set */
 	    buf->b_p_syn = empty_option;
+	    buf->b_p_spl = vim_strsave(p_spl);
+	    did_set_spelllang(buf);
 #endif
 #if defined(FEAT_CINDENT) && defined(FEAT_EVAL)
 	    buf->b_p_inde = vim_strsave(p_inde);

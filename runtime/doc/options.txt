@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Mar 14
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Mar 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3349,6 +3349,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|hl-Folded|	 f  line used for closed folds
 	|hl-FoldColumn|	 F  'foldcolumn'
 	|hl-SignColumn|	 >  column used for |signs|
+	|hl-SpellBad|	 B  misspelled word |spell|
+	|hl-SpellRare|	 R  rare word |spell|
+	|hl-SpellLocal|	 L  word from other region |spell|
 
 	The display modes are:
 		r	reverse		(termcap entry "mr" and "me")
@@ -5620,6 +5623,28 @@ A jump table for the options with a short description can be found at |Q_op|.
 	The 'L' flag in 'cpoptions' changes how tabs are used when 'list' is
 	set.
 	NOTE: This option is set to 0 when 'compatible' is set.
+
+						*'spell'* *'nospell'*
+'spell'			boolean	(default off)
+			local to window
+			{not in Vi}
+			{not available when compiled without the |+syntax|
+			feature}
+	When on spell checking will be done.  See |spell|.
+	The languages used are specified with 'spelllang'.
+
+						*'spelllang'* *'spl'*
+'spelllang' 'spl'	string	(default empty)
+			local to buffer
+			{not in Vi}
+			{not available when compiled without the |+syntax|
+			feature}
+	A comma separated list of languages.  when the 'spell' option is on
+	spellchecking will be done for these languages.  Example: >
+		set spelllang=en_us,nl
+<	This means both US English and Dutch words are recognized.  Words that
+	are not recognized will be highlighted.
+	More info at |spell|.
 
 			*'splitbelow'* *'sb'* *'nosplitbelow'* *'nosb'*
 'splitbelow' 'sb'	boolean	(default off)
