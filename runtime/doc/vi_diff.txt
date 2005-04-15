@@ -1,4 +1,4 @@
-*vi_diff.txt*   For Vim version 7.0aa.  Last change: 2005 Feb 21
+*vi_diff.txt*   For Vim version 7.0aa.  Last change: 2005 Apr 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -144,7 +144,7 @@ Support for different systems.
 Multi level undo.					|undo|
 	'u' goes backward in time, 'CTRL-R' goes forward again.  Set option
 	'undolevels' to the number of changes to be remembered (default 1000).
-	Set 'undolevels' to 0 for a vi-compatible one level undo. Set it to
+	Set 'undolevels' to 0 for a vi-compatible one level undo.  Set it to
 	-1 for no undo at all.
 
 	When all changes in a buffer have been undone, the buffer is not
@@ -641,7 +641,7 @@ but "abc<NL>defabc<NL>defabc<NL>def" in Vim.
 
 In Command-line mode:
 
-<Esc> terminates the command-line without executing it. In vi the command
+<Esc> terminates the command-line without executing it.  In vi the command
 line would be executed, which is not what most people expect (hitting <Esc>
 should always get you back to command mode).  To avoid problems with some
 obscure macros, an <Esc> in a macro will execute the command.  If you want a
