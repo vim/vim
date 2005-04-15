@@ -1,4 +1,4 @@
-*if_ruby.txt*   For Vim version 7.0aa.  Last change: 2004 Mar 14
+*if_ruby.txt*   For Vim version 7.0aa.  Last change: 2005 Mar 29
 
 
 		  VIM REFERENCE MANUAL    by Shugo Maeda
@@ -32,7 +32,7 @@ downloading Ruby there.
 			Execute Ruby script {script}.
 			{endpattern} must NOT be preceded by any white space.
 			If {endpattern} is omitted, it defaults to a dot '.'
-			like for the |:append| and |:insert| commands. This
+			like for the |:append| and |:insert| commands.  This
 			form of the |:ruby| command is mainly useful for
 			including ruby code in vim scripts.
 			Note: This command doesn't work when the Ruby feature
@@ -60,7 +60,7 @@ Example Vim script: >
 						*:rubydo* *:rubyd* *E265*
 :[range]rubyd[o] {cmd}	Evaluate Ruby command {cmd} for each line in the
 			[range], with $_ being set to the text of each line in
-			turn, without a trailing <EOL>. Setting $_ will change
+			turn, without a trailing <EOL>.  Setting $_ will change
 			the text, but note that it is not possible to add or
 			delete lines using this command.
 			The default for [range] is the whole file: "1,$".
@@ -115,7 +115,7 @@ VIM::command({cmd})
 							*ruby-evaluate*
 VIM::evaluate({expr})
 	Evaluates {expr} using the vim internal expression evaluator (see
-	|expression|). Returns the expression result as a string.
+	|expression|).  Returns the expression result as a string.
 
 ==============================================================================
 3. VIM::Buffer objects					*ruby-buffer*
@@ -126,7 +126,7 @@ Class Methods:
 
 current		Returns the current buffer object.
 count		Returns the number of buffers.
-self[{n}]	Returns the buffer object for the number {n}. The first number
+self[{n}]	Returns the buffer object for the number {n}.  The first number
 		is 0.
 
 Methods:
@@ -151,7 +151,7 @@ Class Methods:
 
 current		Returns the current window object.
 count		Returns the number of windows.
-self[{n}]	Returns the window object for the number {n}. The first number
+self[{n}]	Returns the window object for the number {n}.  The first number
 		is 0.
 
 Methods:

@@ -1,4 +1,4 @@
-*os_msdos.txt*  For Vim version 7.0aa.  Last change: 2004 Aug 31
+*os_msdos.txt*  For Vim version 7.0aa.  Last change: 2005 Mar 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -97,7 +97,7 @@ write a file, and for filter commands.  Or Vim runs out of memory, and random
 problems may result.
 
 The Dos32 version cannot have an unlimited number of files open at any one
-time.  The limit depends on the setting of FILES in your CONFIG.SYS. This
+time.  The limit depends on the setting of FILES in your CONFIG.SYS.  This
 defaults to 15; if you need to edit a lot of files, you should increase this.
 If you do not set FILES high enough, you can get strange errors, and shell
 commands may cause a crash!
@@ -241,7 +241,7 @@ In other versions, the following can be used.
 
 How to copy/paste text from/to vim in a dos box:
 
-1) to get VIM to run in a window, instead of full screen, press alt+enter.
+1) To get VIM to run in a window, instead of full screen, press alt+enter.
    This toggles back and forth between full screen and a dos window.
    NOTE: In Windows 95 you must have the property "Fast Pasting" unchecked!
    In the properties dialog box for the MS-DOS window, go to "MS-DOS
@@ -251,25 +251,25 @@ How to copy/paste text from/to vim in a dos box:
 
 2) To paste something _into_ Vim, put Vim in insert mode.
 
-3) put the text you want to paste on the windows clipboard.
+3) Put the text you want to paste on the windows clipboard.
 
-4) Click the control box in the upper left of the Vim window. (This looks
-   like a big minus sign). If you don't want to use the mouse, you can get
+4) Click the control box in the upper left of the Vim window.  (This looks
+   like a big minus sign.)  If you don't want to use the mouse, you can get
    this with alt+spacebar.
-5) on the resulting dropdown menu choose "Edit"
-6) on the child dropdown menu choose "Paste"
+5) On the resulting dropdown menu choose "Edit".
+6) On the child dropdown menu choose "Paste".
 
 To copy something from the Vim window to the clipboard,
 
-1) select the control box to get the control drop down menu.
-2) select "Edit".
-3) select "Mark"
-4) using either the keys or the mouse, select the part of the Vim window that
-   you want to copy. To use the keys, use the arrow keys, and hold down shift
+1) Select the control box to get the control drop down menu.
+2) Select "Edit".
+3) Select "Mark".
+4) Using either the keys or the mouse, select the part of the Vim window that
+   you want to copy.  To use the keys, use the arrow keys, and hold down shift
    to extend the selection.
-5) when you've completed your selection, press 'enter.' The selection
-   is now in the windows clipboard. By the way, this can be any
-   rectangular selection, for example columns 4-25 in rows 7-10. It can
+5) When you've completed your selection, press 'enter'.  The selection
+   is now in the windows clipboard.  By the way, this can be any
+   rectangular selection, for example columns 4-25 in rows 7-10.  It can
    include anything in the VIM window: the output of a :!dir, for
    example.
 

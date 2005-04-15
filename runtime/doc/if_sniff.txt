@@ -1,4 +1,4 @@
-*if_sniff.txt*	For Vim version 7.0aa.  Last change: 2001 Sep 03
+*if_sniff.txt*	For Vim version 7.0aa.  Last change: 2005 Mar 29
 
 
 		  VIM REFERENCE MANUAL
@@ -45,7 +45,7 @@ edit source code.  On the other hand, you can send queries to SNiFF+ with the
 :sni[ff]		    Display all possible requests and the connection
 			    status
 
-Most requests require a symbol (identifier) as parameter. If it is omitted,
+Most requests require a symbol (identifier) as parameter.  If it is omitted,
 Vim will use the current word under the cursor.
 The available requests are listed below:
 
@@ -54,7 +54,7 @@ request		      mapping	description
 connect			sc	Establish connection with SNiFF+.
 				Make sure SNiFF+ is prepared for this in the
 				Preferences
-disconnect		sq	Disconnect from SNiFF+. You can reconnect any
+disconnect		sq	Disconnect from SNiFF+.  You can reconnect any
 				time with :sniff connect (or 'sc')
 toggle			st	Toggle between implementation
 				and definition file
@@ -80,7 +80,7 @@ show-docu		sd	Show documentation of symbol
 gen-docu		sD	Generate documentation of symbol
 
 The mappings are defined in a file 'sniff.vim', which is part of every SNiFF+
-product ($SNIFF_DIR/config/sniff.vim). This file is sourced whenever Vim
+product ($SNIFF_DIR/config/sniff.vim).  This file is sourced whenever Vim
 connects to SNiFF+.
 
 ==============================================================================

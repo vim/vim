@@ -223,6 +223,9 @@ static void	ex_popup __ARGS((exarg_T *eap));
 #ifndef FEAT_SYN_HL
 # define ex_syntax		ex_ni
 #endif
+#if !defined(FEAT_SYN_HL) || !defined(FEAT_MBYTE)
+# define ex_mkspell		ex_ni
+#endif
 #ifndef FEAT_MZSCHEME
 # define ex_mzscheme		ex_script_ni
 # define ex_mzfile		ex_ni
@@ -4149,11 +4152,11 @@ expand_filename(eap, cmdlinep, errormsgp)
 
 	/* For a shell command a '!' must be escaped. */
 	if ((eap->usefilter || eap->cmdidx == CMD_bang)
-		&& vim_strchr(repl, '!') != NULL)
+					&& vim_strpbrk(repl, "!&;()") != NULL)
 	{
 	    char_u	*l;
 
-	    l = vim_strsave_escaped(repl, (char_u *)"!");
+	    l = vim_strsave_escaped(repl, (char_u *)"!&;()");
 	    if (l != NULL)
 	    {
 		vim_free(repl);
@@ -7328,7 +7331,8 @@ ex_equal(eap)
 ex_sleep(eap)
     exarg_T	*eap;
 {
-    int	    n;
+    int		n;
+    long	len;
 
     if (cursor_valid())
     {
@@ -7336,7 +7340,15 @@ ex_sleep(eap)
 	if (n >= 0)
 	    windgoto((int)n, curwin->w_wcol);
     }
-    do_sleep(eap->line2 * (*eap->arg == 'm' ? 1L : 1000L));
+
+    len = eap->line2;
+    switch (*eap->arg)
+    {
+	case 'm': break;
+	case NUL: len *= 1000L; break;
+	default: EMSG2(_(e_invarg2), eap->arg); return;
+    }
+    do_sleep(len);
 }
 
 /*

@@ -1,4 +1,4 @@
-*print.txt*     For Vim version 7.0aa.  Last change: 2004 Jul 05
+*print.txt*     For Vim version 7.0aa.  Last change: 2005 Apr 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -32,7 +32,7 @@ used.
 			printer.
 
 			On MS-Windows a dialog is displayed to allow selection
-			of printer, paper size etc. To skip the dialog, use
+			of printer, paper size etc.  To skip the dialog, use
 			the [!].  In this case the printer defined by
 			'printdevice' is used, or, if 'printdevice' is empty,
 			the system default printer.
@@ -65,7 +65,7 @@ the current window's 'wrap' or 'linebreak' settings.  The "wrap" item in
 'printoptions' can be used to switch wrapping off.
 The current highlighting colors are used in the printout, with the following
 considerations:
-1) The normal background is always rendered as white (i.e. blank paper.)
+1) The normal background is always rendered as white (i.e. blank paper).
 2) White text or the default foreground is rendered as black, so that it shows
    up!
 3) If 'background' is "dark", then the colours are darkened to compensate for

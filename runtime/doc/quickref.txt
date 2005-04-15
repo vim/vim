@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 7.0aa.  Last change: 2005 Mar 07
+*quickref.txt*  For Vim version 7.0aa.  Last change: 2005 Apr 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1171,7 +1171,7 @@ Context-sensitive completion on the command-line:
 |:xall|	  :xa[ll][!]  or :wqall[!]
 				Write all changed buffers and exit
 
-|:stop|	  :st[op][!]		Suspend VIM or start new shell. If 'aw' option
+|:stop|	  :st[op][!]		Suspend VIM or start new shell.  If 'aw' option
 				   is set and [!] not given write the buffer.
 |CTRL-Z|     CTRL-Z		Same as ":stop"
 ------------------------------------------------------------------------------

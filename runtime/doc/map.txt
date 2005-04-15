@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.0aa.  Last change: 2005 Feb 27
+*map.txt*       For Vim version 7.0aa.  Last change: 2005 Mar 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -22,7 +22,7 @@ is to define a sequence commands for a function key.  Example: >
 
 	:map <F2> a<C-R>=strftime("%c")<CR><Esc>
 
-This appends the current date and time after the cursor. (in <> notation |<>|)
+This appends the current date and time after the cursor (in <> notation |<>|).
 
 There are commands to enter new mappings, remove mappings and list mappings.
 See |map-overview| for the various forms of "map" and their relationships with
@@ -174,7 +174,7 @@ There are five sets of mappings
 - For Visual mode: When typing commands while the Visual area is highlighted.
 - For Operator-pending mode: When an operator is pending (after "d", "y", "c",
   etc.).  Example: ":omap { w" makes "y{" work like "yw" and "d{" like "dw".
-- For Insert mode. These are also used in Replace mode.
+- For Insert mode.  These are also used in Replace mode.
 - For Command-line mode: When entering a ":" or "/" command.
 
 There are no separate mappings for Select mode.  The same as for Visual mode
@@ -811,7 +811,7 @@ feature}.
 ==============================================================================
 4. User-defined commands				*user-commands*
 
-It is possible to define your own Ex commands. A user-defined command can act
+It is possible to define your own Ex commands.  A user-defined command can act
 just like a built-in command (it can have a range or arguments, arguments can
 be completed as filenames or buffer names, etc), except that when the command
 is executed, it is transformed into a normal ex command and then executed.
@@ -820,7 +820,7 @@ For starters: See section |40.2| in the user manual.
 
 						*E183* *user-cmd-ambiguous*
 All user defined commands must start with an uppercase letter, to avoid
-confusion with builtin commands. (There are a few builtin commands, notably
+confusion with builtin commands.  (There are a few builtin commands, notably
 :Next, :Print and :X, which do start with an uppercase letter.  The builtin
 will always take precedence in these cases).  The other characters of the user
 command can be uppercase letters, lowercase letters or digits.  When using
@@ -829,8 +829,8 @@ ambiguous.  For example, the command ":Cc2" could be the user command ":Cc2"
 without an argument, or the command ":Cc" with argument "2".  It is advised to
 put a space between the command name and the argument to avoid these problems.
 
-When using a user-defined command, the command can be abbreviated. However, if
-an abbreviation is not unique, an error will be issued. Furthermore, a
+When using a user-defined command, the command can be abbreviated.  However, if
+an abbreviation is not unique, an error will be issued.  Furthermore, a
 built-in command will always take precedence.
 
 Example: >
@@ -846,7 +846,7 @@ It is recommended that full names for user-defined commands are used in
 scripts.
 
 :com[mand]						*:com* *:command*
-			List all user-defined commands. When listing commands,
+			List all user-defined commands.  When listing commands,
 			the characters in the first two columns are
 			    !	Command has the -bang attribute
 			    "	Command has the -register attribute
@@ -858,8 +858,8 @@ scripts.
 							*E174* *E182*
 :com[mand][!] [{attr}...] {cmd} {rep}
 			Define a user command.  The name of the command is
-			{cmd} and its replacement text is {rep}. The command's
-			attributes (see below) are {attr}. If the command
+			{cmd} and its replacement text is {rep}.  The command's
+			attributes (see below) are {attr}.  If the command
 			already exists, an error is reported, unless a ! is
 			specified, in which case the command is redefined.
 
@@ -871,20 +871,20 @@ scripts.
 
 Command attributes
 
-User-defined commands are treated by Vim just like any other ex commands. They
-can have arguments, or have a range specified. Arguments are subject to
-completion as filenames, buffers, etc. Exactly how this works depends upon the
+User-defined commands are treated by Vim just like any other ex commands.  They
+can have arguments, or have a range specified.  Arguments are subject to
+completion as filenames, buffers, etc.  Exactly how this works depends upon the
 command's attributes, which are specified when the command is defined.
 
 There are a number of attributes, split into four categories: argument
-handling, completion behavior, range handling, and special cases. The
+handling, completion behavior, range handling, and special cases.  The
 attributes are described below, by category.
 
 Argument handling					*E175* *E176*
 
 By default, a user defined command will take no arguments (and an error is
-reported if any are supplied). However, it is possible to specify that the
-command can take arguments, using the -nargs attribute. Valid cases are:
+reported if any are supplied).  However, it is possible to specify that the
+command can take arguments, using the -nargs attribute.  Valid cases are:
 
 	-nargs=0    No arguments are allowed (the default)
 	-nargs=1    Exactly one argument is required
@@ -961,11 +961,11 @@ The following example lists user names to a Finger command >
 
 Range handling						*E177* *E178*
 
-By default, user-defined commands do not accept a line number range. However,
+By default, user-defined commands do not accept a line number range.  However,
 it is possible to specify that the command does take a range (the -range
 attribute), or that it takes an arbitrary count value, either in the line
 number position (-range=N, like the |:split| command) or as a "count"
-argument (-count=N, like the |:Next| command). Possible attributes are:
+argument (-count=N, like the |:Next| command).  Possible attributes are:
 
 	-range	    Range allowed, default is current line
 	-range=%    Range allowed, default is whole file (1,$)
@@ -997,9 +997,9 @@ replacement text separately.
 Replacement text
 
 The replacement text for a user defined command is scanned for special escape
-sequences, using <...> notation. Escape sequences are replaced with values
-from the entered command line, and all other text is copied unchanged. The
-resulting string is executed as an Ex command. If the initial < of an escape
+sequences, using <...> notation.  Escape sequences are replaced with values
+from the entered command line, and all other text is copied unchanged.  The
+resulting string is executed as an Ex command.  If the initial < of an escape
 sequence is preceded by a backslash, the sequence is copied unchanged.
 
 The valid escape sequences are
@@ -1017,7 +1017,7 @@ The valid escape sequences are
 		expands to nothing.
 						*<reg>* *<register>*
 	<reg>	(See the '-register' attribute) The optional register,
-		if specified. Otherwise, expands to nothing. <register>
+		if specified.  Otherwise, expands to nothing.  <register>
 		is a synonym for this.
 						*<args>*
 	<args>	The command arguments, exactly as supplied (but as
@@ -1034,7 +1034,7 @@ If the first two characters of an escape sequence are "q-" (for example,
 for use in an expression.  This uses the argument as one single value.
 
 To allow commands to pass their arguments on to a user-defined function, there
-is a special form <f-args> ("function args"). This splits the command
+is a special form <f-args> ("function args").  This splits the command
 arguments at spaces and Tabs, quotes each argument individually, and the
 <f-args> sequence is replaced by the comma-separated list of quoted arguments.
 See the Mycmd example below.  When there is no argument, <f-args> also has no

@@ -1,4 +1,4 @@
-*indent.txt*    For Vim version 7.0aa.  Last change: 2005 Feb 24
+*indent.txt*    For Vim version 7.0aa.  Last change: 2005 Mar 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -237,7 +237,7 @@ assume a 'shiftwidth' of 4.
 				}		  }
 <
 	bN    If N != 0 Vim will align a final "break" with the case label,
-	      so that case..break looks like a sort of block. (default: 0).
+	      so that case..break looks like a sort of block.  (default: 0).
 
 		cino=		    cino=b1 >
 		  switch (x)	      switch(x)
@@ -325,7 +325,7 @@ assume a 'shiftwidth' of 4.
 		  ********/		    ********/
 <	      (Example uses ":set comments& comments-=s1:/* comments^=s0:/*")
 
-	/N    Indent comment lines N characters extra. (default 0).
+	/N    Indent comment lines N characters extra.  (default 0).
 		cino=			  cino=/4 >
 		  a = b;		    a = b;
 		  /* comment */			/* comment */
@@ -381,7 +381,7 @@ assume a 'shiftwidth' of 4.
 	      the last non-white character in its line and it is not the
 	      closing parentheses, indent the following line N characters
 	      relative to the outer context (i.e. start of the line or the
-	      next unclosed parentheses). (default: 0).
+	      next unclosed parentheses).  (default: 0).
 
 		cino=(0			   cino=(0,W4 >
 		  a_long_line(		    a_long_line(
@@ -406,7 +406,7 @@ assume a 'shiftwidth' of 4.
 <
 					*java-cinoptions* *java-indenting*
 	jN    Indent java anonymous classes correctly.  The value 'N' is
-	      currently unused but must be non-zero (e.g. 'j1'). 'j1' will
+	      currently unused but must be non-zero (e.g. 'j1').  'j1' will
 	      indent for example the following code snippet correctly: >
 
 		object.add(new ChangeListener() {
@@ -451,31 +451,31 @@ REMARKS ABOUT SPECIFIC INDENT FILES ~
 
 FORTRAN							*fortran-indent*
 
-Block if, select case, and where constructs are indented. Comments, labelled
+Block if, select case, and where constructs are indented.  Comments, labelled
 statements and continuation lines are indented if the Fortran is in free
 source form, whereas they are not indented if the Fortran is in fixed source
-form because of the left margin requirements. Hence manual indent corrections
+form because of the left margin requirements.  Hence manual indent corrections
 will be necessary for labelled statements and continuation lines when fixed
-source form is being used. For further discussion of the method used for the
+source form is being used.  For further discussion of the method used for the
 detection of source format see |fortran-syntax|.
 
 Do loops ~
-All do loops are left unindented by default. Do loops can be unstructured in
+All do loops are left unindented by default.  Do loops can be unstructured in
 Fortran with (possibly multiple) loops ending on a labelled executable
-statement of almost arbitrary type. Correct indentation requires
-compiler-quality parsing. Old code with do loops ending on labelled statements
+statement of almost arbitrary type.  Correct indentation requires
+compiler-quality parsing.  Old code with do loops ending on labelled statements
 of arbitrary type can be indented with elaborate programs such as Tidy
-(http://www.unb.ca/chem/ajit/f_tidy.htm). Structured do/continue loops are
+(http://www.unb.ca/chem/ajit/f_tidy.htm).  Structured do/continue loops are
 also left unindented because continue statements are also used for purposes
-other than ending a do loop. Programs such as Tidy can convert structured
-do/continue loops to the do/enddo form. Do loops of the do/enddo variety can
-be indented. If you use only structured loops of the do/enddo form, you should
+other than ending a do loop.  Programs such as Tidy can convert structured
+do/continue loops to the do/enddo form.  Do loops of the do/enddo variety can
+be indented.  If you use only structured loops of the do/enddo form, you should
 declare this by setting the fortran_do_enddo variable in your .vimrc as
 follows >
 
    let fortran_do_enddo=1
 
-in which case do loops will be indented. If all your loops are of do/enddo
+in which case do loops will be indented.  If all your loops are of do/enddo
 type only in, say, .f90 files, then you should set a buffer flag with an
 autocommand such as >
 

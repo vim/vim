@@ -1,4 +1,4 @@
-*usr_21.txt*	For Vim version 7.0aa.  Last change: 2004 Oct 10
+*usr_21.txt*	For Vim version 7.0aa.  Last change: 2005 Apr 01
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -120,7 +120,7 @@ looks like this: >
 	:set viminfo='1000
 
 The f option controls whether global marks (A-Z and 0-9) are stored.  If this
-option is 0, none are stored. If it is 1 or you do not specify an f option,
+option is 0, none are stored.  If it is 1 or you do not specify an f option,
 the marks are stored.  You want this feature, so now you have this: >
 
 	:set viminfo='1000,f1
@@ -199,7 +199,7 @@ work and pick up where you left off the next day.  You can do this by saving
 your editing session and restoring it the next day.
    A Vim session contains all the information about what you are editing.
 This includes things such as the file list, window layout, global variables,
-options and other information. (Exactly what is remembered is controlled by
+options and other information.  (Exactly what is remembered is controlled by
 the 'sessionoptions' option, described below.)
    The following command creates a session file: >
 

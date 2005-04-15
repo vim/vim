@@ -3605,7 +3605,7 @@ win_line(wp, lnum, startrow, endrow)
 			iswordc = spell_iswordc(prev_ptr);
 			if (iswordc && !prev_iswordc)
 			{
-			    word_end = v + spell_check(wp, prev_ptr,
+			    word_end = v + spell_check(wp, line, prev_ptr,
 								 &spell_attr);
 			    /* In Insert mode only highlight a word that
 			     * doesn't touch the cursor. */
@@ -8002,7 +8002,7 @@ showmode()
 	    if (gui.in_use)
 	    {
 		if (hangul_input_state_get())
-		    MSG_PUTS_ATTR(" ÇÑ±Û", attr);   /* HANGUL */
+		    MSG_PUTS_ATTR(" \307\321\261\333", attr);   /* HANGUL */
 	    }
 #endif
 #ifdef FEAT_INS_EXPAND

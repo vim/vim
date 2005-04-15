@@ -1,4 +1,4 @@
-*version5.txt*  For Vim version 7.0aa.  Last change: 2004 Jun 16
+*version5.txt*  For Vim version 7.0aa.  Last change: 2005 Apr 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -562,11 +562,11 @@ New options						*added-options*
 
 'hlsearch'	Highlight all matches with the last used search pattern.
 
-'hkmapp'	Phonetic Hebrew mapping (Ilya Dogolazky).
+'hkmapp'	Phonetic Hebrew mapping. (Ilya Dogolazky)
 
-'iconstring'	Define the name of the icon, when not empty. (version 5.2: the
+'iconstring'	Define the name of the icon, when not empty.  (Version 5.2: the
 		string is used literally, a newline can be used to make two
-		lines).
+		lines.)
 
 'lazyredraw'	Don't redraw the screen while executing macros, registers or
 		other not typed commands.
@@ -591,9 +591,9 @@ New options						*added-options*
 		changing the value of 'tabstop'.  Makes it more easy to keep
 		'ts' at 8, while still getting four spaces for a <Tab>.
 
-'titlestring'	String for the window title, when not empty.  (version 5.2:
+'titlestring'	String for the window title, when not empty.  (Version 5.2:
 		this string is used literally, a newline can be used to make
-		two lines).
+		two lines.)
 
 'verbose'	Level of verbosity.  Makes it possible to show which .vimrc,
 		.exrc, .viminfo files etc. are used for initializing.  Also
@@ -728,7 +728,7 @@ Autocommands:
 - VimLeave autocommands are executed after writing the viminfo file, instead
   of before.  |VimLeave|
 - Allow changing autocommands while executing them.  This allows for
-  self-modifying autocommands. (idea from Goldberg)
+  self-modifying autocommands.  (idea from Goldberg)
 - When using autocommands with two or more patterns, could not split
   ":if/:endif" over two lines.  Now all matching autocommands are executed in
   one do_cmdline().
@@ -1046,7 +1046,7 @@ in the wrong line and the window to be scrolled (Acevedo).
 
 After ":set all&", 'lines' and 'ttytype' were still non-default, because the
 defaults never got set.  Now the defaults for 'lines' and 'columns' are set
-after detecting the window size. 'term' and 'ttytype' defaults are set when
+after detecting the window size.  'term' and 'ttytype' defaults are set when
 detecting the terminal type.
 
 For (most) non-Unix systems, don't add file names with illegal characters when
@@ -1357,7 +1357,7 @@ caused various errors and a crash.
 DJGPP version could not save long lines (>64000) for undo.
 
 "yw" on the last char in the file didn't work.  Also fixed "6x" at the end of
-the line. "6X" at the start of a line fails, but does not break a mapping.  In
+the line.  "6X" at the start of a line fails, but does not break a mapping.  In
 general, a movement for an operator doesn't beep or flush a mapping, but when
 there is nothing to operate on it beeps (this is Vi compatible).
 
@@ -1777,7 +1777,7 @@ Added "g]" to always do ":tselect" for the ident under the cursor.
 Added ":tjump" and ":stjump" commands.
 Improved listing of ":tselect" when tag names are a bit long.
 
-Included patches for the Macintosh version. Also for Python interface.
+Included patches for the Macintosh version.  Also for Python interface.
 (St-Amant)
 
 ":buf foo" now also restores cursor column, when the buffer was used before.
@@ -2070,7 +2070,7 @@ a printable character replaces the selection.
 - Added 'mousemodel' option: Change use of mouse buttons.
 - Added 'keymodel' option: tells to use shifted special keys to start a
   Visual or Select mode selection.
-- Added ":behave". Can be used to quickly set 'selectmode', 'mousemodel'
+- Added ":behave".  Can be used to quickly set 'selectmode', 'mousemodel'
   and 'keymodel' for MS-Windows and xterm behavior.
 - The xterm-like selection is now called modeless selection.
 - Visual mode mappings and menus are used in Select mode.  They automatically
@@ -2150,7 +2150,7 @@ New functions						*new-functions-5.2*
 |browse()|	puts up a file requester when available. (Negri)
 |escape()|	escapes characters in a string with a backslash.
 |fnamemodify()|	modifies a file name.
-|input()|	asks the user to enter a line. (Aaron) There is a separate
+|input()|	asks the user to enter a line. (Aaron)  There is a separate
 		history for lines typed for the input() function.
 |argc()|
 |argv()|	can be used to access the argument list.
@@ -2394,7 +2394,7 @@ events.  Makes cursor blinking work for Terhaar, breaks it for me.
 
 Non-text in ":list" output is highlighted with NonText.
 
-Added text objects: "i(" and "i)" as synonym for "ib". "i{" and "i}" as
+Added text objects: "i(" and "i)" as synonym for "ib".  "i{" and "i}" as
 synonym for "iB".  New: "i<" and "i>", to select <thing>.  All this also for
 "a" objects.
 
@@ -2607,7 +2607,7 @@ Graceful handling of NULLs in drag-dropped file list.  Handle passing NULL to
 Fullname_save(). (Negri)
 
 Win32: ":!start" to invoke a program without opening a console, swapping
-screens, or waiting for completion in either console or gui version. e.g. you
+screens, or waiting for completion in either console or gui version, e.g. you
 can type ":!start winfile".  ALSO fixes "can't delete swapfile after spawning
 a shell" bug. (enhancement of Aaron patch) (Negri)
 
@@ -3783,7 +3783,7 @@ Macintosh: (St-Amant)
 - Weak-linking of Python 1.5.1 (only on PPC).  Python is supported when the
   library is available.
 - If an error is encountered when sourcing the users .vimrc, the alert box now
-  shows right away with the OK button defaulted. There's no more "Delete"-key
+  shows right away with the OK button defaulted.  There's no more "Delete"-key
   sign at the start of each line
 - Better management of environment variables.  Now $VIM is calculated only
   once, not regenerated every time it is used.
@@ -4067,7 +4067,7 @@ Various XIM and multi-byte fixes:
 - Fix user cannot see his language while he is typing his language with
   off-the-spot method. (Nagano)
 - Fix preedit position using text/edit area (using gui.wid). (Nagano)
-- remove 'fix dead key' codes. It was needed since XNFocusWindow was
+- remove 'fix dead key' codes.  It was needed since XNFocusWindow was
   "x11_window", XNFocusWindow is now gui.wid. (Nagano)
 - Remove some compile warnings and fix typos. (Namsh)
 - For status area, check the gtk+ version while Vim runs.  I believe it is
@@ -4783,7 +4783,7 @@ translated to "}" before the shell got it.  Now don't remove backslashes when
 wildcards are going to be expanded.
 
 Unix: ":e /tmp/$uid" didn't work.  When expanding environment variables in a
-file name doesn't work, use the shell to expand the file name. ":e /tmp/$tty"
+file name doesn't work, use the shell to expand the file name.  ":e /tmp/$tty"
 still doesn't work though.
 
 "make test" didn't always work on DOS/Windows for test30, because it depended

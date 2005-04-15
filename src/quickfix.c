@@ -2338,11 +2338,9 @@ ex_vimgrep(eap)
     char_u	**fnames;
     char_u	*s;
     char_u	*p;
-    int		i;
     int		fi;
     qfline_T	*prevp = NULL;
     long	lnum;
-    garray_T	ga;
     buf_T	*buf;
     int		duplicate_name = FALSE;
     int		using_dummy;
@@ -2404,12 +2402,7 @@ ex_vimgrep(eap)
 	    ;
 
     /* parse the list of arguments */
-    if (get_arglist(&ga, p) == FAIL)
-	goto theend;
-    i = gen_expand_wildcards(ga.ga_len, (char_u **)ga.ga_data,
-				       &fcount, &fnames, EW_FILE|EW_NOTFOUND);
-    ga_clear(&ga);
-    if (i == FAIL)
+    if (get_arglist_exp(p, &fcount, &fnames) == FAIL)
 	goto theend;
     if (fcount == 0)
     {

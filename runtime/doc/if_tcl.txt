@@ -1,4 +1,4 @@
-*if_tcl.txt*    For Vim version 7.0aa.  Last change: 2004 Jan 17
+*if_tcl.txt*    For Vim version 7.0aa.  Last change: 2005 Mar 29
 
 
 		  VIM REFERENCE MANUAL    by Ingo Wilken
@@ -36,7 +36,7 @@ comments, ideas etc to <Ingo.Wilken@informatik.uni-oldenburg.de>
 			wasn't compiled in.  To avoid errors, see
 			|script-here|.
 
-{endmarker} must NOT be preceded by any white space. If {endmarker} is
+{endmarker} must NOT be preceded by any white space.  If {endmarker} is
 omitted from after the "<<", a dot '.' must be used after {script}, like for
 the |:append| and |:insert| commands.
 This form of the |:tcl| command is mainly useful for including tcl code in Vim
@@ -152,7 +152,7 @@ Commands:
 
 	::vim::window {option}				*tcl-window*
 	Provides access to vim windows.  Currently only the "list" option is
-	implemented. This creates a window command (see |tcl-window-cmds|) for
+	implemented.  This creates a window command (see |tcl-window-cmds|) for
 	each window, and returns a list of the command names as the result.
 	Example: >
 		set wins [::vim::window list]
@@ -227,7 +227,7 @@ The ::vim::current(window) variable contains the name of the window command
 for the current window.  A window command is automatically deleted when the
 corresponding vim window is closed.
 
-Lets assume the name of the window command is stored in the Tcl variable "win",
+Let's assume the name of the window command is stored in the Tcl variable "win",
 i.e. "$win" calls the command.  The following options are available: >
 
 	$win buffer		# Create Tcl command for window's buffer.
@@ -306,7 +306,7 @@ changed, all marks in the buffer are automatically adjusted.  Any changes to
 the buffer's contents made by Tcl commands can be undone with the "undo" vim
 command (see |undo|).
 
-Lets assume the name of the buffer command is stored in the Tcl variable "buf",
+Let's assume the name of the buffer command is stored in the Tcl variable "buf",
 i.e. "$buf" calls the command.  The following options are available: >
 
 	$buf append {n} {str}	# Append a line to buffer, after line {n}.
@@ -497,7 +497,7 @@ This procedure runs an ex command on each buffer (idea stolen from Ron Aaron):
 	}
 Use it like this:
 	:tcl eachbuf %s/foo/bar/g
-Be careful with Tcl's string and backslash substitution, tough. If in doubt,
+Be careful with Tcl's string and backslash substitution, tough.  If in doubt,
 surround the ex command with curly braces.
 
 

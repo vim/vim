@@ -1,4 +1,4 @@
-*netbeans.txt*  For Vim version 7.0aa.  Last change: 2005 Jan 31
+*netbeans.txt*  For Vim version 7.0aa.  Last change: 2005 Apr 04
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur
@@ -38,7 +38,7 @@ Visit http://www.sun.com for more information regarding the Sun ONE Studio
 product line.
 
 Current releases of NetBeans provide full support for Java and limited support
-for C, C++, and Fortran. Current releases of Sun ONE Studio provide full
+for C, C++, and Fortran.  Current releases of Sun ONE Studio provide full
 support for Java, C, C++, and Fortran.
 
 The interface to NetBeans is also supported by Agide, the A-A-P GUI IDE.
@@ -50,12 +50,12 @@ See the A-A-P website for information: http://www.A-A-P.org.
 ==============================================================================
 2. NetBeans Key Bindings				*netbeans-keybindings*
 
-Vim understands a number of key bindings that execute NetBeans commands. These
-are typically all the Function key combinations. To execute a NetBeans command,
-the user must press the Pause key followed by a NetBeans key binding. For
-example, in order to compile a Java file, the NetBeans key binding is "F9". So,
-while in vim, press "Pause F9" to compile a java file. To toggle a breakpoint
-at the current line, press "Pause Shift F8".
+Vim understands a number of key bindings that execute NetBeans commands.
+These are typically all the Function key combinations.  To execute a NetBeans
+command, the user must press the Pause key followed by a NetBeans key binding.
+For example, in order to compile a Java file, the NetBeans key binding is
+"F9".  So, while in vim, press "Pause F9" to compile a java file.  To toggle a
+breakpoint at the current line, press "Pause Shift F8".
 
 The Pause key is Function key 21.  If you don't have a working Pause key and
 want to use F8 instead, use: >
@@ -81,10 +81,10 @@ In case you do not want the NetBeans interface you can disable it by
 uncommenting a line with "--disable-netbeans" in the Makefile.
 
 Currently, only gvim is supported in this integration as NetBeans does not
-have means to supply a terminal emulator for the vim command. Furthermore,
+have means to supply a terminal emulator for the vim command.  Furthermore,
 there is only GUI support for GTK, GNOME, and Motif.
 
-If Motif support is required the user must supply XPM libraries. See
+If Motif support is required the user must supply XPM libraries.  See
 |workshop-xpm| for details on obtaining the latest version of XPM.
 
 
@@ -99,45 +99,45 @@ XPM by yourself or use precompiled libraries from http://iamphet.nm.ru/misc/
 ==============================================================================
 4. Downloading NetBeans					*netbeans-download*
 
-The NetBeans IDE is available for download from netbeans.org. You can download
+The NetBeans IDE is available for download from netbeans.org.  You can download
 a released version, download sources, or use CVS to download the current
-source tree. If you choose to download sources, follow directions from
+source tree.  If you choose to download sources, follow directions from
 netbeans.org on building NetBeans.
 
 Depending on the version of NetBeans you download, you may need to do further
-work to get the required External Editor module. This is the module which lets
-NetBeans work with gvim (or xemacs :-). See http://externaleditor.netbeans.org
+work to get the required External Editor module.  This is the module which lets
+NetBeans work with gvim (or xemacs :-).  See http://externaleditor.netbeans.org
 for details on downloading this module if your NetBeans release does not have
 it.
 
-For C, C++, and Fortran support you will also need the cpp module. See
+For C, C++, and Fortran support you will also need the cpp module.  See
 http://cpp.netbeans.org for information regarding this module.
 
 You can also download Sun ONE Studio from Sun Microsystems, Inc for a 30 day
-free trial. See http://www.sun.com for further details.
+free trial.  See http://www.sun.com for further details.
 
 ==============================================================================
 5. Preparing NetBeans for Vim				*netbeans-preparation*
 
 In order for NetBeans to work with vim, the NetBeans External Editor module
-must be loaded and enabled. If you have a Sun ONE Studio Enterprise Edition
-then this module should be loaded and enabled. If you have a NetBeans release
+must be loaded and enabled.  If you have a Sun ONE Studio Enterprise Edition
+then this module should be loaded and enabled.  If you have a NetBeans release
 you may need to find another way of obtaining this open source module.
 
 You can check if you have this module by opening the Tools->Options dialog
 and drilling down to the "Modules" list (IDE Configuration->System->Modules).
 If your Modules list has an entry for "External Editor" you must make sure
-it is enabled (the "Enabled" property should have the value "True"). If your
+it is enabled (the "Enabled" property should have the value "True").  If your
 Modules list has no External Editor see the next section on |obtaining-exted|.
 
 ==============================================================================
 6. Obtaining the External Editor Module			    *obtaining-exted*
 
-There are 2 ways of obtaining the External Editor module. The easiest way
+There are 2 ways of obtaining the External Editor module.  The easiest way
 is to use the NetBeans Update Center to download and install the module.
 Unfortunately, some versions do not have this module in their update
-center. If you cannot download via the update center you will need to
-download sources and build the module. I will try and get the module
+center.  If you cannot download via the update center you will need to
+download sources and build the module.  I will try and get the module
 available from the NetBeans Update Center so building will be unnecessary.
 Also check http://externaleditor.netbeans.org for other availability options.
 
@@ -152,22 +152,22 @@ Assuming you have loaded and enabled the NetBeans External Editor module
 as described in |netbeans-preparation| all you need to do is verify that
 the gvim command line is properly configured for your environment.
 
-Open the Tools->Options dialog and open the Editing category. Select the
-External Editor. The right hand pane should contain a Properties tab and
-an Expert tab. In the Properties tab make sure the "Editor Type" is set
-to "Vim". In the Expert tab make sure the "Vim Command" is correct.
+Open the Tools->Options dialog and open the Editing category.  Select the
+External Editor.  The right hand pane should contain a Properties tab and
+an Expert tab.  In the Properties tab make sure the "Editor Type" is set
+to "Vim".  In the Expert tab make sure the "Vim Command" is correct.
 
-You should be careful if you change the "Vim Command". There are command
+You should be careful if you change the "Vim Command".  There are command
 line options there which must be there for the connection to be properly
-set up. You can change the command name but thats about it. If your gvim
-can be found by your $PATH then the VIM Command can start with "gvim". If
+set up.  You can change the command name but that's about it.  If your gvim
+can be found by your $PATH then the VIM Command can start with "gvim".  If
 you don't want gvim searched from your $PATH then hard code in the full
-Unix path name. At this point you should get a gvim for any source file
+Unix path name.  At this point you should get a gvim for any source file
 you open in NetBeans.
 
 If some files come up in gvim and others (with different file suffixes) come
 up in the default NetBeans editor you should verify the MIME type in the
-Expert tab MIME Type property. NetBeans is MIME oriented and the External
+Expert tab MIME Type property.  NetBeans is MIME oriented and the External
 Editor will only open MIME types specified in this property.
 
 ==============================================================================
@@ -194,7 +194,7 @@ Partial writes disallowed for NetBeans buffers
 NetBeans connection lost for this buffer
 		NetBeans has become confused about the state of this file.
 		Rather than risc data corruption, NetBeans has severed the
-		connection for this file. Vim will take over responsibility
+		connection for this file.  Vim will take over responsibility
 		for saving changes to this file and NetBeans will no longer
 		know of these changes.
 
@@ -248,13 +248,13 @@ NetBeans (see http://externaleditor.netbeans.org).  Later it was extended to
 work with Agide (A-A-P GUI IDE, see http://www.a-a-p.org).  The extensions are
 marked with "version 2.1".
 
-Version 2.2 of the protocol has several minor changes which should only
-affect NetBeans users (ie, not Agide users). However, a bug was fixed which
-could cause confusion. The netbeans_saved() function sent a "save" protocol
-command. In protocol version 2.1 and earlier this was incorrectly interpreted
-as a notification that a write had taken place. In reality, it told NetBeans
-to save the file so multiple writes were being done. This caused various
-problems and has been fixed in 2.2. To decrease the likelihood of this
+Version 2.2 of the protocol has several minor changes which should only affect
+NetBeans users (ie, not Agide users).  However, a bug was fixed which could
+cause confusion.  The netbeans_saved() function sent a "save" protocol
+command.  In protocol version 2.1 and earlier this was incorrectly interpreted
+as a notification that a write had taken place.  In reality, it told NetBeans
+to save the file so multiple writes were being done.  This caused various
+problems and has been fixed in 2.2.  To decrease the likelihood of this
 confusion happening again, netbeans_saved() has been renamed to
 netbeans_save_buffer().
 
@@ -428,7 +428,7 @@ initDone	Mark the buffer as ready for use.  Implicitly makes the buffer
 
 insertDone
 		Sent by NetBeans to tell vim an initial file insert is done.
-		This triggers a read message being printed. Prior to version
+		This triggers a read message being printed.  Prior to version
 		2.3, no read messages were displayed after opening a file.
 		New in version 2.3.
 
@@ -466,8 +466,8 @@ save		Save the buffer when it was modified.  The other side of the
 		New in version 2.2.
 
 saveDone
-		Sent by NetBeans to tell vim a save is done. This triggers
-		a save message being printed. Prior to version 2.3, no save
+		Sent by NetBeans to tell vim a save is done.  This triggers
+		a save message being printed.  Prior to version 2.3, no save
 		messages were displayed after a save.
 		New in version 2.3.
 
@@ -539,7 +539,7 @@ showBalloon text
 
 specialKeys
 		Map a set of keys (mostly function keys) to be passed back
-		to NetBeans for processing. This lets NetBeans hotkeys be
+		to NetBeans for processing.  This lets NetBeans hotkeys be
 		used from vim.
 		Implemented in version 2.3.
 
@@ -652,7 +652,7 @@ buttonRelease button lnum col
 		at the time of the release.  Only for buffers that are owned
 		by NetBeans.  This event is not sent if the button was
 		released while the mouse was in the status line or in a
-		separator line. If col is less than 1 the button release was
+		separator line.  If col is less than 1 the button release was
 		in the sign area.
 		New in version 2.2.
 
@@ -772,8 +772,8 @@ REJECT		Not used.
 							*:nbkey*
 :nbkey key			Pass the key to NetBeans for processing
 
-Pass the key to NetBeans for hot-key processing. You should not need to use
-this command directly. However, NetBeans passes a list of hot-keys to Vim at
+Pass the key to NetBeans for hot-key processing.  You should not need to use
+this command directly.  However, NetBeans passes a list of hot-keys to Vim at
 startup and when one of these keys is pressed, this command is generated to
 send the key press back to NetBeans.
 

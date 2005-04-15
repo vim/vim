@@ -2649,7 +2649,10 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
     if (reset_changed
 	    && whole
 	    && buf == curbuf
-	    && curbuf->b_ffname == NULL
+#ifdef FEAT_QUICKFIX
+	    && !bt_nofile(buf)
+#endif
+	    && buf->b_ffname == NULL
 	    && !filtering
 	    && vim_strchr(p_cpo, CPO_FNAMEW) != NULL)
     {

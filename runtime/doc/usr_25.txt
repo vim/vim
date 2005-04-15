@@ -1,4 +1,4 @@
-*usr_25.txt*	For Vim version 7.0aa.  Last change: 2003 Jun 21
+*usr_25.txt*	For Vim version 7.0aa.  Last change: 2005 Apr 01
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -198,7 +198,7 @@ command: >
 
 	:runtime macros/justify.vim
 
-This Vim script file defines a new visual command "_j". To justify a block of
+This Vim script file defines a new visual command "_j".  To justify a block of
 text, highlight the text in Visual mode and then execute "_j".
    Look in the file for more explanations.  To go there, do "gf" on this name:
 $VIMRUNTIME/macros/justify.vim.

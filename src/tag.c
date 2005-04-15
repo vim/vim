@@ -2333,15 +2333,17 @@ findtag_end:
 }
 
 static garray_T tag_fnames = GA_EMPTY;
-static void found_tagfile_cb __ARGS((char_u *fname));
+static void found_tagfile_cb __ARGS((char_u *fname, void *cookie));
 
 /*
  * Callback function for finding all "tags" and "tags-??" files in
  * 'runtimepath' doc directories.
  */
+/*ARGSUSED*/
     static void
-found_tagfile_cb(fname)
+found_tagfile_cb(fname, cookie)
     char_u	*fname;
+    void	*cookie;
 {
     if (ga_grow(&tag_fnames, 1) == OK)
 	((char_u **)(tag_fnames.ga_data))[tag_fnames.ga_len++] =
@@ -2390,7 +2392,7 @@ get_tagfname(first, buf)
 #else
 		    "doc/tags"
 #endif
-						    , TRUE, found_tagfile_cb);
+					      , TRUE, found_tagfile_cb, NULL);
 	    hf_idx = 0;
 	}
 	else if (*curbuf->b_p_tags != NUL)

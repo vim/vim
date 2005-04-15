@@ -1,4 +1,4 @@
-*if_perl.txt*   For Vim version 7.0aa.  Last change: 2004 Aug 30
+*if_perl.txt*   For Vim version 7.0aa.  Last change: 2005 Mar 29
 
 
 		  VIM REFERENCE MANUAL    by Sven Verdoolaege
@@ -18,7 +18,7 @@ The Perl interface only works when Vim was compiled with the |+perl| feature.
 1. Editing Perl files					*perl-editing*
 
 Vim syntax highlighting supports Perl and POD files.  Vim assumes a file is
-Perl code if the filename has a .pl or .pm suffix. Vim also examines the first
+Perl code if the filename has a .pl or .pm suffix.  Vim also examines the first
 line of a file, regardless of the filename suffix, to check if a file is a
 Perl script (see scripts.vim in Vim's syntax directory).  Vim assumes a file
 is POD text if the filename has a .POD suffix.
@@ -50,7 +50,7 @@ http://www.perl.com/CPAN/ports/nt/Standard/x86/
 3. Using the Perl interface				*perl-using*
 
 							*:perl* *:pe*
-:pe[rl] {cmd}		Execute Perl command {cmd}. The current package
+:pe[rl] {cmd}		Execute Perl command {cmd}.  The current package
 			is "main".
 
 :pe[rl] << {endpattern}
@@ -84,7 +84,7 @@ Example vim script: >
 							*:perldo* *:perld*
 :[range]perld[o] {cmd}	Execute Perl command {cmd} for each line in the
 			[range], with $_ being set to the text of each line in
-			turn, without a trailing <EOL>. Setting $_ will change
+			turn, without a trailing <EOL>.  Setting $_ will change
 			the text, but note that it is not possible to add or
 			delete lines using this command.
 			The default for [range] is the whole file: "1,$".
@@ -211,7 +211,7 @@ Buffer->Count()		Returns the number of lines in the Buffer.
 							*perl-Get*
 Buffer->Get({lnum}, {lnum}?, ...)
 			Returns a text string of line {lnum} in the Buffer
-			for each {lnum} specified. An array can be passed
+			for each {lnum} specified.  An array can be passed
 			with a list of {lnum}'s specified.
 
 							*perl-Delete*

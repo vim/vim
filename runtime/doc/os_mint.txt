@@ -1,4 +1,4 @@
-*os_mint.txt*   For Vim version 7.0aa.  Last change: 2001 Sep 03
+*os_mint.txt*   For Vim version 7.0aa.  Last change: 2005 Mar 29
 
 
 		  VIM REFERENCE MANUAL    by Jens M. Felderhoff
@@ -15,12 +15,12 @@ The Unix behavior described in the documentation also refers to the
 MiNT version of Vim unless explicitly stated otherwise.
 
 For wildcard expansion of <~> (home directory) you need a shell that
-expands the tilde. The vanilla Bourne shell doesn't recognize it.
+expands the tilde.  The vanilla Bourne shell doesn't recognize it.
 With csh and ksh it should work OK.
 
 The MiNT version of vim needs the termcap file /etc/termcap with the
-terminal capabilities of your terminal. Builtin termcaps are
-supported for the vt52 terminal. Termcap entries for the TOSWIN window
+terminal capabilities of your terminal.  Builtin termcaps are
+supported for the vt52 terminal.  Termcap entries for the TOSWIN window
 manager and the virtual console terminals have been appended to the
 termcap file that comes with the Vim distribution.
 

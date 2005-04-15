@@ -1,4 +1,4 @@
-*if_pyth.txt*   For Vim version 7.0aa.  Last change: 2004 Jul 25
+*if_pyth.txt*   For Vim version 7.0aa.  Last change: 2005 Mar 29
 
 
 		  VIM REFERENCE MANUAL    by Paul Moore
@@ -85,7 +85,7 @@ just like in the Python interpreter.)
 2. The vim module					*python-vim*
 
 Python code gets all of its access to vim (with one exception - see
-|python-output| below) via the "vim" module. The vim module implements two
+|python-output| below) via the "vim" module.  The vim module implements two
 methods, three constants, and one error object.  You need to import the vim
 module before using it: >
 	:python import vim
@@ -113,7 +113,7 @@ Overview >
 Methods of the "vim" module
 
 vim.command(str)					*python-command*
-	Executes the vim (ex-mode) command str. Returns None.
+	Executes the vim (ex-mode) command str.  Returns None.
 	Examples: >
 	    :py vim.command("set tw=72")
 	    :py vim.command("%s/aaa/bbb/g")
@@ -130,7 +130,7 @@ vim.command(str)					*python-command*
 
 vim.eval(str)						*python-eval*
 	Evaluates the expression str using the vim internal expression
-	evaluator (see |expression|). Returns the expression result as a
+	evaluator (see |expression|).  Returns the expression result as a
 	string.
 	Examples: >
 	    :py text_width = vim.eval("&tw")
@@ -156,7 +156,7 @@ Constants of the "vim" module
 	to which the variables referred.
 
 vim.buffers						*python-buffers*
-	A sequence object providing access to the list of vim buffers. The
+	A sequence object providing access to the list of vim buffers.  The
 	object supports the following operations: >
 	    :py b = vim.buffers[i]	# Indexing (read-only)
 	    :py b in vim.buffers	# Membership test
@@ -164,7 +164,7 @@ vim.buffers						*python-buffers*
 	    :py for b in vim.buffers:	# Sequential access
 <
 vim.windows						*python-windows*
-	A sequence object providing access to the list of vim windows. The
+	A sequence object providing access to the list of vim windows.  The
 	object supports the following operations: >
 	    :py w = vim.windows[i]	# Indexing (read-only)
 	    :py w in vim.windows	# Membership test
@@ -179,10 +179,10 @@ vim.current						*python-current*
 		vim.current.window	The current window (RO)		Window
 		vim.current.range	The current line range (RO)	Range
 
-	The last case deserves a little explanation. When the :python or
+	The last case deserves a little explanation.  When the :python or
 	:pyfile command specifies a range, this range of lines becomes the
-	"current range". A range is a bit like a buffer, but with all access
-	restricted to a subset of lines. See |python-range| for more details.
+	"current range".  A range is a bit like a buffer, but with all access
+	restricted to a subset of lines.  See |python-range| for more details.
 
 
 Output from Python					*python-output*
@@ -197,31 +197,31 @@ Output from Python					*python-output*
 
 							*python-input*
 	Input (via sys.stdin, including input() and raw_input()) is not
-	supported, and may cause the program to crash. This should probably be
+	supported, and may cause the program to crash.  This should probably be
 	fixed.
 
 ==============================================================================
 3. Buffer objects					*python-buffer*
 
-Buffer objects represent vim buffers. You can obtain them in a number of ways:
+Buffer objects represent vim buffers.  You can obtain them in a number of ways:
 	- via vim.current.buffer (|python-current|)
 	- from indexing vim.buffers (|python-buffers|)
 	- from the "buffer" attribute of a window (|python-window|)
 
 Buffer objects have one read-only attribute - name - the full file name for
-the buffer. They also have three methods (append, mark, and range; see below).
+the buffer.  They also have three methods (append, mark, and range; see below).
 
-You can also treat buffer objects as sequence objects. In this context, they
+You can also treat buffer objects as sequence objects.  In this context, they
 act as if they were lists (yes, they are mutable) of strings, with each
-element being a line of the buffer. All of the usual sequence operations,
+element being a line of the buffer.  All of the usual sequence operations,
 including indexing, index assignment, slicing and slice assignment, work as
-you would expect. Note that the result of indexing (slicing) a buffer is a
-string (list of strings). This has one unusual consequence - b[:] is different
-from b. In particular, "b[:] = None" deletes the whole of the buffer, whereas
+you would expect.  Note that the result of indexing (slicing) a buffer is a
+string (list of strings).  This has one unusual consequence - b[:] is different
+from b.  In particular, "b[:] = None" deletes the whole of the buffer, whereas
 "b = None" merely updates the variable b, with no effect on the buffer.
 
-Buffer indexes start at zero, as is normal in Python. This differs from vim
-line numbers, which start from 1. This is particularly relevant when dealing
+Buffer indexes start at zero, as is normal in Python.  This differs from vim
+line numbers, which start from 1.  This is particularly relevant when dealing
 with marks (see below) which use vim line numbers.
 
 The buffer object methods are:
@@ -255,12 +255,12 @@ Examples (assume b is the current buffer) >
 ==============================================================================
 4. Range objects					*python-range*
 
-Range objects represent a part of a vim buffer. You can obtain them in a
+Range objects represent a part of a vim buffer.  You can obtain them in a
 number of ways:
 	- via vim.current.range (|python-current|)
 	- from a buffer's range() method (|python-buffer|)
 
-A range object is almost identical in operation to a buffer object. However,
+A range object is almost identical in operation to a buffer object.  However,
 all operations are restricted to the lines within the range (this line range
 can, of course, change as a result of slice assignments, line deletions, or
 the range.append() method).
@@ -283,11 +283,11 @@ Example (assume r is the current range):
 ==============================================================================
 5. Window objects					*python-window*
 
-Window objects represent vim windows. You can obtain them in a number of ways:
+Window objects represent vim windows.  You can obtain them in a number of ways:
 	- via vim.current.window (|python-current|)
 	- from indexing vim.windows (|python-windows|)
 
-You can manipulate window objects only through their attributes. They have no
+You can manipulate window objects only through their attributes.  They have no
 methods, and no sequence or other interface.
 
 Window attributes are:

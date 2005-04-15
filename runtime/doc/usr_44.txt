@@ -1,4 +1,4 @@
-*usr_44.txt*	For Vim version 7.0aa.  Last change: 2002 Oct 10
+*usr_44.txt*	For Vim version 7.0aa.  Last change: 2005 Apr 01
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -550,7 +550,7 @@ before the top of the screen: >
 
 If it cannot figure out where it is in that space, it starts looking farther
 and farther back until it figures out what to do.  But it looks no farther
-back than 500 lines. (A large "maxlines" slows down processing.  A small one
+back than 500 lines.  (A large "maxlines" slows down processing.  A small one
 might cause synchronization to fail.)
    To make synchronizing go a bit faster, tell Vim which syntax items can be
 skipped.  Every match and region that only needs to be used when actually

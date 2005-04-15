@@ -1,4 +1,4 @@
-*os_mac.txt*    For Vim version 7.0aa.  Last change: 2004 Dec 13
+*os_mac.txt*    For Vim version 7.0aa.  Last change: 2005 Mar 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar et al.
@@ -33,7 +33,7 @@ Indianapolis IN 46220 USA
 ==============================================================================
 1. Filename Convention					*mac-filename*
 
-You can use either the unix or mac path separator or a mix of both. In order
+You can use either the unix or mac path separator or a mix of both.  In order
 to determine if the specified filename is relative to the current folder or
 absolute (i.e. relative to the "Desktop"), the following algorithm is used:
 
@@ -59,7 +59,7 @@ You can use the |$VIM| and |$VIMRUNTIME|  variable. >
 2. .vimrc and .vim files				*mac-vimfile*
 
 On the Mac files starting with a dot "." are discouraged, thus the rc files
-are named "vimrc" or "_vimrc" and "gvimrc" or "_gvimrc". These files can be in
+are named "vimrc" or "_vimrc" and "gvimrc" or "_gvimrc".  These files can be in
 any format (mac, dos or unix).  Vim can handle any file format when the
 |'nocompatible'| option is set, otherwise it will only handle mac format
 files.

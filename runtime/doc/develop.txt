@@ -1,4 +1,4 @@
-*develop.txt*   For Vim version 7.0aa.  Last change: 2004 Jan 17
+*develop.txt*   For Vim version 7.0aa.  Last change: 2005 Mar 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -366,7 +366,33 @@ window		View on a buffer.  There can be several windows in Vim,
 		fit in the shell.
 
 
-To be continued...
+Spell checking						*develop-spell*
+
+When spell checking was going to be added to Vim a survey was done over the
+available spell checking libraries and programs.  Unfortunately, the result
+was that none of them provided sufficient capabilities to be used as the spell
+checking engine in Vim, for various reasons:
+
+- Missing support for multi-byte encodings.  At least UTF-8 must be supported,
+  so that more than one language can be used in the same file.
+- For the programs and libraries: Using them as-is would require installing
+  them separately from Vim.  That's not impossible, but a drawback.
+- Performance: A few tests showed that it's possible to check spelling on the
+  fly (while redrawing), just like syntax highlighting.  But the mechanisms
+  used by other code are much slower.  Myspell uses a simplistic hashtable,
+  for example.
+- For a program like aspell a communication mechanism would have to be setup.
+  That's complicated to do in a portable way (Unix-only would be relatively
+  simple, but that's not good enough).  And performance will become a problem
+  (lots of process switching involved).
+- Missing support for words with non-word characters, such as "Etten-Leur" and
+  "et al.", would require marking the pieces of them OK, lowering the
+  reliability.
+- Missing support for regions or dialects.  Makes it difficult to accept
+  all English words and highlight non-Canadian words differently.
+- Missing support for rare words.  Many words are correct but hardly ever used
+  and could be a misspelled often-used word.
+
 
 ==============================================================================
 4. Assumptions						*design-assumptions*

@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.0aa.  Last change: 2005 Mar 16
+*change.txt*    For Vim version 7.0aa.  Last change: 2005 Apr 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -915,6 +915,8 @@ inside of strings can change!  Also see 'softtabstop' option. >
 			current line).  This always works |linewise|, thus
 			this command can be used to put a yanked block as new
 			lines.
+			The cursor is left on the first non-blank in the last
+			new line.
 			The register can also be '=' followed by an optional
 			expression.  The expression continues until the end of
 			the command.  You need to escape the '|' and '"'
@@ -964,9 +966,9 @@ When using a put command like |p| or |P| in Visual mode, Vim will try to
 replace the selected text with the contents of the register.  Whether this
 works well depends on the type of selection and the type of the text in the
 register.  With blockwise selection it also depends on the size of the block
-and whether the corners are on an existing character. (implementation detail:
+and whether the corners are on an existing character.  (Implementation detail:
 it actually works by first putting the register after the selection and then
-deleting the selection).
+deleting the selection.)
 
 							*blockwise-register*
 If you use a blockwise Visual mode command to get the text into the register,
@@ -1417,7 +1419,7 @@ If the 'comments' option includes "/*", "*" and/or "*/", then Vim has some
 built in stuff to treat these types of comments a bit more cleverly.
 Opening a new line before or after "/*" or "*/" (with 'r' or 'o' present in
 'formatoptions') gives the correct start of the line automatically.  The same
-happens with formatting and auto-wrapping. Opening a line after a line
+happens with formatting and auto-wrapping.  Opening a line after a line
 starting with "/*" or "*" and containing "*/", will cause no comment leader to
 be inserted, and the indent of the new line is taken from the line containing
 the start of the comment.

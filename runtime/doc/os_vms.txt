@@ -1,4 +1,4 @@
-*os_vms.txt*    For Vim version 7.0aa.  Last change: 2004 Jun 16
+*os_vms.txt*    For Vim version 7.0aa.  Last change: 2005 Apr 01
 
 
 		  VIM REFERENCE MANUAL
@@ -69,32 +69,32 @@ See the file [.SRC]INSTALLVMS.TXT.
 4. Problems						*vms-problems*
 
 The code has been tested under Open VMS 6.2 - 7.3 on Alpha and VAX platforms
-with the DECC compiler. It should work without bigger problems.
-If it happened that your system does not have some include libraries you can
-tune up in OS_VMS_CONF.H file.
+with the DEC C compiler.  It should work without bigger problems.
+If your system does not have some include libraries you can tune up in
+OS_VMS_CONF.H file.
 
 If you decided to build Vim with +perl, +python, etc. options, first you need
-to download OpenVMS distributions of Perl and Python. Build and deploy the
-libraries and change adequate lines in MAKE_VMS.MMS file. There should not be
-problem from Vim side.
+to download OpenVMS distributions of Perl and Python.  Build and deploy the
+libraries and change adequate lines in MAKE_VMS.MMS file.  There should not be
+a problem from Vim side.
 
-Note: Under VAX it should work with DEC C compiler without problem. VAXC
-compiler is not fully ANSI C compatible in pre-processor directives
-semantics, therefore you have to use a converter program what will do the
-lion part of the job. For detailed instruction read file INSTALLvms.txt
+Note: Under VAX it should work with the DEC C compiler without problems.  The
+VAX C compiler is not fully ANSI C compatible in pre-processor directives
+semantics, therefore you have to use a converter program what will do the lion
+part of the job.  For detailed instructions read file INSTALLvms.txt
 
-MMS_VIM.EXE is building together with VIM.EXE, but for XD.EXE you should
+MMS_VIM.EXE is build together with VIM.EXE, but for XD.EXE you should
 change to subdirectory and build it separately.
 
-CTAGS is not part of Vim source distribution any more, however the OpenVMS
-specific source might contain CTAGS source files as it is described above.
+CTAGS is not part of the Vim source distribution anymore, however the OpenVMS
+specific source might contain CTAGS source files as described above.
 You can find more information about CTAGS on VMS at
 http://www.polarhome.com/ctags/
 
 Advanced users may try some acrobatics in FEATURE.H file also.
 
 It is possible to compile with +xfontset +xim options too, but then you have
-to set up GUI fonts etc. correctly. See. :help xim from Vim command prompt.
+to set up GUI fonts etc. correctly.  See :help xim from Vim command prompt.
 
 You may want to use GUI with GTK icons, then you have to download and install
 GTK for OpenVMS or at least runtime shareable images - LIBGTK from
@@ -132,18 +132,18 @@ Use: >
 	define/nolog TMP	device:[path.tmp]
 
 to get vim.exe to find its document, filetype, and syntax files, and to
-specify a directory where temporary files will be located. Copy the "runtime"
+specify a directory where temporary files will be located.  Copy the "runtime"
 subdirectory of the vim distribution to vimruntime.
 
 Logicals $VIMRUNTIME and $TMP are optional.
 
 If $VIMRUNTIME is not set, Vim will guess and try to set up automatically.
-Read more about at :help runtime
+Read more about it at :help runtime
 
 If $TMP is not set, you will not be able to use some functions as CTAGS,
 XXD, printing etc. that use temporary directory for normal operation.
-$TMP directory should be readable and writable by the user(s).
-The easiest way to set up $TMP is to define logical: >
+The $TMP directory should be readable and writable by the user(s).
+The easiest way to set up $TMP is to define a logical: >
 
 	define/nolog TMP SYS$SCRATCH
 or as: >
@@ -155,9 +155,9 @@ or as: >
 
 Usually, you want to run just one version of Vim on your system, therefore
 it is enough to dedicate one directory for Vim.
-Copy all Vim runtime directory structure to the deployment position.
+Copy the whole Vim runtime directory structure to the deployment position.
 Add the following lines to your LOGIN.COM (in SYS$LOGIN directory).
-Set up logical $VIM as: >
+Set up the logical $VIM as: >
 
 	$ define VIM device:<path>
 
@@ -174,20 +174,20 @@ Please, check the notes for customization and configuration of symbols.
 You may want to create .vimrc and .gvimrc files in your home directory
 (SYS$LOGIN) to overwrite default settings.
 
-The easiest way is just rename example files. You may leave the menu file
-(MENU.VIM) and files vimrc and gvimrc in the original $VIM directory. It will
-be default setup for all users, and for users is enough just to have their
-own additions or resetting in home directory in files .vimrc and .gvimrc.
+The easiest way is just rename example files.  You may leave the menu file
+(MENU.VIM) and files vimrc and gvimrc in the original $VIM directory.  It will
+be default setup for all users, and for users it is enough just to have their
+own additions or resetting in their home directory in files .vimrc and .gvimrc.
 It should work without problems.
 
-Note: Remember, system rc files (default for all users) does not have leading
-"." So, system rc files are: >
+Note: Remember, system rc files (default for all users) don't have a leading
+".".  So, system rc files are: >
 
 	$VIM:vimrc
 	$VIM:gvimrc
 	$VIM:menu.vim
 
-and user's customized rc files are: >
+and user customized rc files are: >
 
 	sys$login:.vimrc
 	sys$login:.gvimrc
@@ -203,7 +203,7 @@ Example LOGIN.COM: >
 
 Note: This set-up should be enough, if you are working on standalone server or
 clustered environment, but if you want to use Vim as internode editor in
-DECNET environment, it will satisfy you as well.
+DECNET environment, it will satisfy as well.
 You just have to define the "whole" path: >
 
 	$ define VIM "<server_name>[""user password""]::device:<path>"
@@ -214,10 +214,11 @@ as for example: >
 	$ define VIM "PLUTO::RF10:[UTIL.VIM]"
 	$ define VIM "PLUTO""ZAY mypass""::RF10:[UTIL.VIM]" ! if passwd required
 
-You can also use $VIMRUNTIME logical to point to proper version of Vim if you
-have installed more versions in the same time. If $VIMRUNTIME is not defined
-Vim will borrow value from $VIM logical. You can find more information about
-$VIMRUNTIME logical by typing :help runtime as a Vim command.
+You can also use the $VIMRUNTIME logical to point to the proper version of Vim
+if you have installed more versions at the same time.  If $VIMRUNTIME is not
+defined Vim will borrow its value from the $VIM logical.  You can find more
+information about the $VIMRUNTIME logical by typing :help runtime as a Vim
+command.
 
 System administrators might want to set up a system wide Vim installation,
 then add to the SYS$STARTUP:SYLOGICALS.COM >
@@ -231,38 +232,40 @@ and to the SYS$STARTUP:SYLOGIN.COM >
 	$ gv*im:== spawn/nowait/input=NLA0 mcr VIM:VIM.EXE -g -GEOMETRY 80x40
 
 
-It will set up normal Vim work environment for every user on the system.
+It will set up a normal Vim work environment for every user on the system.
 
 ==============================================================================
 
 7. GUI mode questions					*vms-gui*
 
-OpenVMS in a real mainframe OS, therefore even if it has a GUI console, most of
-the users does not use a native X/Window environment during normal operation.
-It is not possible to start Vim in GUI mode "just like that". But anyhow it is
-not too complicate either.
+OpenVMS is a real mainframe OS, therefore even if it has a GUI console, most
+of the users do not use a native X/Window environment during normal operation.
+It is not possible to start Vim in GUI mode "just like that".  But anyhow it
+is not too complicated either.
 
-First of all: you will need an executable that is built with enabled GUI.
+First of all: you will need an executable that is built with the GUI enabled.
 
 Second: you need to have installed DECW/Motif on your VMS server, otherwise
 you will get errors that some shareable libraries are missing.
 
-Third: If you choose to run Vim with extra feature as GUI/GTK then you need
-GTK installation too or at least GTK runtime environment (LIBGTK etc.)
+Third: If you choose to run Vim with extra features such as GUI/GTK then you
+need a GTK installation too or at least a GTK runtime environment (LIBGTK
+etc.).
 
 1) If you are working on the VMS X/Motif console:
    Start Vim with the command: >
 
 	$ mc device:<path>VIM.EXE -g
 <
-   or type :gui as a command to the Vim command prompt. For more info :help gui
+   or type :gui as a command to the Vim command prompt.  For more info :help
+   gui
 
-2) If you are working on other X/Window environment as Unix or some remote X
-   VMS console. Set up display to your host with: >
+2) If you are working on some other X/Window environment like Unix or a remote
+   X VMS console.  Set up display to your host with: >
 
 	$ set disp/create/node=<your IP address>/trans=<transport-name>
 <
-   and start Vim as in point 1. You can find more help in VMS documentation or
+   and start Vim as in point 1.  You can find more help in VMS documentation or
    type: help set disp in VMS prompt.
    Examples: >
 
@@ -276,11 +279,11 @@ For more information type $help set disp in VMS prompt.
 3) Another elegant solution is XDM if you have installed on OpenVMS box.
    It is possible to work from XDM client as from GUI console.
 
-4) If you are working on MS Windows or other non X/Window environment
-   You need to set up one X server and run Vim as in point 2.
-   For MS Windows there are available free X servers as MIX , Omni X etc.
+4) If you are working on MS-Windows or some other non X/Window environment
+   you need to set up one X server and run Vim as in point 2.
+   For MS-Windows there are available free X servers as MIX , Omni X etc.,
    as well as excellent commercial products as eXcursion or ReflectionX with
-   built in DEC support.
+   built-in DEC support.
 
 Please note, that executables without GUI are slightly faster during startup
 then with enabled GUI in character mode. Therefore, if you do not use GUI
@@ -319,7 +322,7 @@ Read more in ch: 8.6 (Terminal problems).
 
 8.2 Filters
 
-Vim supports filters; ie. if you have a sort program that can handle
+Vim supports filters, i.e., if you have a sort program that can handle
 input/output redirection like Unix (<infile >outfile), you could use >
 
 	:map \s 0!'aqsort<CR>
@@ -333,19 +336,20 @@ Vim is saving files into a new file with the next higher file version
 number, try these settings. >
 
 	:set nobackup	     " does not create *.*_ backup files
-	:set nowritebackup   " does not have any purpose on VMS. It's default.
+	:set nowritebackup   " does not have any purpose on VMS.  It's the
+	                     " default.
 
 Recovery is working perfect as well from the default swap file.
 Read more with :help swapfile
 
 (Claude Marinier <ClaudeMarinier@xwavesolutions.com> Vim 5.5, Zoltan Arpadffy
-Vim 5.6 )
+Vim 5.6)
 
 
 8.4 Directory conversion
 
 Vim will internally convert any unix-style paths and even mixed unix/VMS
-paths into VMS style paths. Some typical conversions resemble:
+paths into VMS style paths.  Some typical conversions resemble:
 
 	/abc/def/ghi		-> abc:[def]ghi.
 	/abc/def/ghi.j		-> abc:[def]ghi.j
@@ -377,9 +381,9 @@ example: >
 Note: syntax is very important, otherwise VMS will recognize more parameters
 instead of one (resulting with: file not found)
 
-2.  Set up Vim as your internode editor. If Vim is not installed on your host,
-just set up your IP address, full Vim path including the server name and run
-the command procedure below: >
+2.  Set up Vim as your internode editor.  If Vim is not installed on your
+host, just set up your IP address, the full Vim path including the server name
+and run the command procedure below: >
 
 	$ if (p1 .eqs. "") .OR. (p2 .eqs. "") then goto usage
 	$ set disp/create/node=<your_IP_here>/trans=tcpip
@@ -392,8 +396,8 @@ the command procedure below: >
 	$ write sys$output " Example: @SETVIM.COM username passwd"
 	$ end:
 
-Note: Never use it in clustered environment (you do not need it), and load could
-be very-very slow, but even faster then a local Emacs. :-)
+Note: Never use it in a clustered environment (you do not need it), loading
+could be very-very slow, but even faster then a local Emacs. :-)
 
 (Zoltan Arpadffy, Vim 5.6)
 
@@ -404,7 +408,7 @@ If your terminal name is not known to Vim and it is trying to find the default
 one you will get the following message during start-up:
 ---
 Terminal entry not found in termcap
-'unknown-terminal' not known. Available built-in terminals are:
+'unknown-terminal' not known.  Available built-in terminals are:
     builtin_gui
     builtin_riscos
     builtin_amiga
@@ -422,13 +426,13 @@ defaulting to 'vt320'
 ---
 The solution is to define default terminal name: >
 
-	$ ! unknown terminal name. let us use vt320 or ansi instead.
+	$ ! unknown terminal name.  Let us use vt320 or ansi instead.
 	$ ! Note: it's case sensitive
 	$ define term "vt320"
 
 Terminals from VT100 to VT320 (as V300, VT220, VT200 ) do not need any extra
-keyboard mappings. They should work perfect as they are, including arrows,
-Ins, Del buttons etc. Except Backspace in GUI mode. To solve it, add to
+keyboard mappings.  They should work perfect as they are, including arrows,
+Ins, Del buttons etc., except Backspace in GUI mode.  To solve it, add to
 .gvimrc: >
 
 	inoremap <Del> <BS>
@@ -457,9 +461,9 @@ special commands to execute executables: >
 	MCR <path>filename <parameters>
 
 OpenVMS users always have to be aware that the Vim command :! "just" drop them
-to DCL prompt. This feature is possible to use without any problem with all
+to DCL prompt.  This feature is possible to use without any problem with all
 DCL commands, but if we want to execute some program as XXD, CTAGS, JTAGS etc.
-we're running into trouble if we following the Vim documentation (see: help
+we're running into trouble if we follow the Vim documentation (see: help
 xxd).
 
 Solution: Execute with the MC command and add the full path to the executable.
@@ -470,9 +474,9 @@ Example: Instead of :%!xxd command use: >
 ... or in general: >
 	:!mc <path>filename <parameters>
 
-Note: You can use XXD, and CTAGS from GUI menu.
+Note: You can use XXD and CTAGS from GUI menu.
 
-To customize ctags it is possible to define logical $CTAGS with standard
+To customize ctags it is possible to define the logical $CTAGS with standard
 parameters as: >
 
 	define/nolog CTAGS "--totals -o sys$login:tags"
@@ -488,7 +492,7 @@ documentation at http://ctags.sourceforge.net/ctags.html.
 If you want to use your .vimrc and .gvimrc from other platforms (e.g. Windows)
 you can get in trouble if you ftp that file(s): VMS has different end-of-line
 indication.
-The symptom is that ViM is not sourcing your .vimrc/.gvimrc, even if you say:
+The symptom is that Vim is not sourcing your .vimrc/.gvimrc, even if you say:
 >
 	:so sys$login:.vimrc
 
@@ -535,8 +539,8 @@ will be confused after a window-resize.
 
 From 6.0 diff functionality has been implemented, but OpenVMS does not use
 GNU/Unix like diff therefore built in diff does not work.
-There is a simple solution to solve this anomaly. Install an Unix like diff
-and Vim will work perfect in diff mode too. You just have to redefine your
+There is a simple solution to solve this anomaly.  Install a Unix like diff
+and Vim will work perfect in diff mode too.  You just have to redefine your
 diff program as: >
 
 	define /nolog diff <GNU_PATH>diff.exe
@@ -551,16 +555,16 @@ boxes that is meant to solve GNU problems on OpenVMS.
 8.12 diff-mode
 
 Vim 6.0 and higher supports vim diff-mode (See |new-diff-mode|, |diff-mode|
-and |08.7|). This uses the external program 'diff' and expects a Unix-like
-output format from diff. The standard VMS diff has a different output
-format. To use vim on VMS in diff-mode, you need to:
+and |08.7|).  This uses the external program 'diff' and expects a Unix-like
+output format from diff.  The standard VMS diff has a different output
+format.  To use vim on VMS in diff-mode, you need to:
     1 Install a Unix-like diff program, e.g. GNU diff
     2 Tell vim to use the Unix-like diff for diff-mode.
 
 You can download GNU diff from the VIM-VMS website, it is one of the GNU
-tools in http://www.polarhome.com/vim/files/gnu_tools.zip. I suggest to
+tools in http://www.polarhome.com/vim/files/gnu_tools.zip.  I suggest to
 unpack it in a separate directory "GNU" and create a logical GNU: that
-points to that directory. e.g: >
+points to that directory, e.g: >
 
    DEFINE GNU    <DISK>:[<DIRECTORY>.BIN.GNU]
 
@@ -569,9 +573,9 @@ prompt: >
 
    GDIFF :==     $GNU:DIFF.EXE
 
-Now you need to tell vim to use the new diff program. Take the example
+Now you need to tell vim to use the new diff program.  Take the example
 settings from |diff-diffexpr| and change the call to the external diff
-program to the new diff on VMS. Add this to your .vimrc file: >
+program to the new diff on VMS.  Add this to your .vimrc file: >
 
      " Set up vimdiff options
        if v:version >= 600
@@ -612,8 +616,8 @@ You can now compare files in 4 ways: >
 
 8.13 Allow '$' in C keywords
 
-DEC C uses many identifiers with '$' in them. This is not allowed in ANSI C,
-and vim recognises the '$' as the end of the identifier. You can change this
+DEC C uses many identifiers with '$' in them.  This is not allowed in ANSI C,
+and vim recognises the '$' as the end of the identifier.  You can change this
 with the |iskeyword|command.
 Add this command to your .vimrc file: >
 
@@ -625,7 +629,7 @@ CS.VIM) and add this command: >
 	set iskeyword+=$
 
 Now word-based commands, e.g. the '*'-search-command and the CTRL-]
-tag-lookup, work on the whole identifier. (Ctags on VMS also supports '$' in
+tag-lookup, work on the whole identifier.  (Ctags on VMS also supports '$' in
 C keywords since ctags version 5.1.)
 
 ( Coen Engelbarts, Vim 6.1)
@@ -633,8 +637,8 @@ C keywords since ctags version 5.1.)
 8.14 VIMTUTOR for beginners
 
 It exits VIMTUTOR.COM DCL script that can help Vim beginners to learn/make
-first steps with Vim on OpenVMS. Depending of binary distribution you may start
-it with: >
+first steps with Vim on OpenVMS.  Depending of binary distribution you may
+start it with: >
 
 	@vim:vimtutor
 

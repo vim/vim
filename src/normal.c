@@ -6065,6 +6065,18 @@ nv_brackets(cap)
     }
 #endif
 
+#ifdef FEAT_SYN_HL
+    /*
+     * "[s", "[S", "]s" and "]S": move to next spell error.
+     */
+    else if (cap->nchar == 's' || cap->nchar == 'S')
+    {
+	if (spell_move_to(cap->cmdchar == ']' ? FORWARD : BACKWARD,
+				    cap->nchar == 's' ? TRUE : FALSE) == FAIL)
+	    clearopbeep(cap->oap);
+    }
+#endif
+
     /* Not a valid cap->nchar. */
     else
 	clearopbeep(cap->oap);
@@ -8493,6 +8505,7 @@ nv_put(cap)
     int		regname = 0;
     void	*reg1 = NULL, *reg2 = NULL;
     int		empty = FALSE;
+    int		was_visual = FALSE;
 #endif
     int		dir;
     int		flags = 0;
@@ -8527,6 +8540,7 @@ nv_put(cap)
 	     * Need to save and restore the registers that the delete
 	     * overwrites if the old contents is being put.
 	     */
+	    was_visual = TRUE;
 	    regname = cap->oap->regname;
 # ifdef FEAT_CLIPBOARD
 	    adjust_clip_reg(&regname);
@@ -8587,8 +8601,17 @@ nv_put(cap)
 	/* If a register was saved, put it back now. */
 	if (reg2 != NULL)
 	    put_register(regname, reg2);
+
+	/* What to reselect with "gv"?  Selecting the just put text seems to
+	 * be the most useful, since the original text was removed. */
+	if (was_visual)
+	{
+	    curbuf->b_visual_start = curbuf->b_op_start;
+	    curbuf->b_visual_end = curbuf->b_op_end;
+	}
+
 	/* When all lines were selected and deleted do_put() leaves an empty
-	 * line that needs to delete now. */
+	 * line that needs to be deleted now. */
 	if (empty && *ml_get(curbuf->b_ml.ml_line_count) == NUL)
 	    ml_delete(curbuf->b_ml.ml_line_count, TRUE);
 #endif

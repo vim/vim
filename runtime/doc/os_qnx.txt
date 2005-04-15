@@ -1,4 +1,4 @@
-*os_qnx.txt*    For Vim version 7.0aa.  Last change: 2004 Apr 23
+*os_qnx.txt*    For Vim version 7.0aa.  Last change: 2005 Mar 29
 
 
 		  VIM REFERENCE MANUAL    by Julian Kinraid
@@ -22,7 +22,7 @@ Vim on QNX behaves much like other unix versions. |os_unix.txt|
 
 2. Compiling Vim					*qnx-compiling*
 
-Vim can be compiled using the standard configure/make approach. If you want to
+Vim can be compiled using the standard configure/make approach.  If you want to
 compile for X11, pass the --with-x option to configure.  Otherwise, running
 ./configure without any arguments or passing --enable-gui=photon, will compile
 vim with the Photon gui support.  Run ./configure --help , to find out other
@@ -118,12 +118,12 @@ Known problems:
 		set noguipty
 
 Bugs:
-	- Still a slight problem with menu highlighting
+	- Still a slight problem with menu highlighting.
 	- When using phditto/phinows/etc., if you are using a font that
 	  doesn't support the bold attribute, when vim attempts to draw
 	  bold text it will be all messed up.
 	- The cursor can sometimes be hard to see.
-	- A number of minor problems that can fixed :)
+	- A number of minor problems that can fixed. :)
 
 Todo:
 	- Improve multi-language support.

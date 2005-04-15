@@ -5177,6 +5177,8 @@ mch_expand_wildcards(num_pat, pat, num_file, file, flags)
 		else if (!intick && vim_strchr((char_u *)" '",
 							   pat[i][j]) != NULL)
 		{
+		    /* Put quotes around special characters, but not when
+		     * inside ``. */
 		    *p++ = '"';
 		    while (pat[i][j] != NUL
 			    && vim_strchr((char_u *)" '", pat[i][j]) != NULL)

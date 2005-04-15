@@ -1584,6 +1584,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 45.3	usr_45.txt	/*45.3*
 45.4	usr_45.txt	/*45.4*
 45.5	usr_45.txt	/*45.5*
+755	spell.txt	/*755*
 90.1	usr_90.txt	/*90.1*
 90.2	usr_90.txt	/*90.2*
 90.3	usr_90.txt	/*90.3*
@@ -2129,6 +2130,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :mkexrc	starting.txt	/*:mkexrc*
 :mks	starting.txt	/*:mks*
 :mksession	starting.txt	/*:mksession*
+:mksp	spell.txt	/*:mksp*
+:mkspell	spell.txt	/*:mkspell*
 :mkv	starting.txt	/*:mkv*
 :mkvie	starting.txt	/*:mkvie*
 :mkview	starting.txt	/*:mkview*
@@ -3688,10 +3691,12 @@ E748	repeat.txt	/*E748*
 E749	eval.txt	/*E749*
 E75	vi_diff.txt	/*E75*
 E750	repeat.txt	/*E750*
-E751	spell.txt	/*E751*
-E752	spell.txt	/*E752*
-E753	spell.txt	/*E753*
+E754	spell.txt	/*E754*
+E756	spell.txt	/*E756*
+E758	spell.txt	/*E758*
+E759	spell.txt	/*E759*
 E76	pattern.txt	/*E76*
+E760	spell.txt	/*E760*
 E77	message.txt	/*E77*
 E78	motion.txt	/*E78*
 E79	message.txt	/*E79*
@@ -3998,6 +4003,7 @@ ZZ	editing.txt	/*ZZ*
 [pattern]	pattern.txt	/*[pattern]*
 [quotex]	intro.txt	/*[quotex]*
 [range]	cmdline.txt	/*[range]*
+[s	spell.txt	/*[s*
 [star	motion.txt	/*[star*
 [z	fold.txt	/*[z*
 [{	motion.txt	/*[{*
@@ -4023,6 +4029,7 @@ ZZ	editing.txt	/*ZZ*
 ]i	tagsrch.txt	/*]i*
 ]m	motion.txt	/*]m*
 ]p	change.txt	/*]p*
+]s	spell.txt	/*]s*
 ]star	motion.txt	/*]star*
 ]z	fold.txt	/*]z*
 ]}	motion.txt	/*]}*
@@ -4579,6 +4586,7 @@ design-not	develop.txt	/*design-not*
 design-speed-size	develop.txt	/*design-speed-size*
 desktop-syntax	syntax.txt	/*desktop-syntax*
 desktop.vim	syntax.txt	/*desktop.vim*
+develop-spell	develop.txt	/*develop-spell*
 develop.txt	develop.txt	/*develop.txt*
 development	develop.txt	/*development*
 dh	change.txt	/*dh*
@@ -4808,6 +4816,7 @@ fcs_reason-variable	eval.txt	/*fcs_reason-variable*
 feature-list	eval.txt	/*feature-list*
 fetch	pi_netrw.txt	/*fetch*
 file-browser-5.2	version5.txt	/*file-browser-5.2*
+file-explorer	pi_netrw.txt	/*file-explorer*
 file-formats	editing.txt	/*file-formats*
 file-pattern	autocmd.txt	/*file-pattern*
 file-read	insert.txt	/*file-read*
@@ -6219,8 +6228,12 @@ spec_chglog_release_info	pi_spec.txt	/*spec_chglog_release_info*
 special-buffers	windows.txt	/*special-buffers*
 speed-up	tips.txt	/*speed-up*
 spell	spell.txt	/*spell*
+spell-affix-mbyte	spell.txt	/*spell-affix-mbyte*
+spell-affix-vim	spell.txt	/*spell-affix-vim*
 spell-file-format	spell.txt	/*spell-file-format*
+spell-mkspell	spell.txt	/*spell-mkspell*
 spell-quickstart	spell.txt	/*spell-quickstart*
+spell-wordlist-format	spell.txt	/*spell-wordlist-format*
 spell.txt	spell.txt	/*spell.txt*
 split()	eval.txt	/*split()*
 splitfind	windows.txt	/*splitfind*

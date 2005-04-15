@@ -1,4 +1,4 @@
-*visual.txt*    For Vim version 7.0aa.  Last change: 2004 Dec 29
+*visual.txt*    For Vim version 7.0aa.  Last change: 2005 Apr 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -88,8 +88,11 @@ linewise Visual     Visual	   blockwise Visual	  Normal
 
 							*gv* *v_gv*
 gv			Start Visual mode with the same area as the previous
-			area and the same mode.  In Visual mode the current and
-			the previous Visual area are exchanged.
+			area and the same mode.
+			In Visual mode the current and the previous Visual
+			area are exchanged.
+			After using "p" or "P" in Visual mode the text that
+			was put will be selected.
 
 							*<LeftMouse>*
 <LeftMouse>		Set the current cursor position.  If Visual mode is
@@ -272,7 +275,7 @@ See |v_b_I_example|.
 
 Visual-block Append						*v_b_A*
 With a blockwise selection, A{string}<ESC> will append {string} to the end of
-block on every line of the block. There is some differing behavior where the
+block on every line of the block.  There is some differing behavior where the
 block RHS is not straight, due to different line lengths:
 
 1. Block was created with <C-v>$
@@ -297,12 +300,12 @@ all lines.
 
 								*v_b_<*
 Visual-block Shift						*v_b_>*
-The block is shifted by 'shiftwidth'. The RHS of the block is irrelevant. The
+The block is shifted by 'shiftwidth'.  The RHS of the block is irrelevant.  The
 LHS of the block determines the point from which to apply a right shift, and
-padding includes TABs optimally according to 'ts' and 'et'. The LHS of the
+padding includes TABs optimally according to 'ts' and 'et'.  The LHS of the
 block determines the point upto which to shift left.
     Note: v_< padding is buggy if the Visual Block starts and ends in the same
-    TAB. (Vim 5.4c).
+    TAB. (Vim 5.4c)
 See |v_b_>_example|.
 See |v_b_<_example|.
 
@@ -364,14 +367,14 @@ Note that special characters (like '.' and '*') will cause problems.
 
 Visual-block Examples					*blockwise-examples*
 With the following text, I will indicate the commands to produce the block and
-the results below. In all cases, the cursor begins on the 'a' in the first
+the results below.  In all cases, the cursor begins on the 'a' in the first
 line of the test text.
 The following modeline settings are assumed ":ts=8:sw=4:".
 
 It will be helpful to
 :set hls
 /<TAB>
-where <TAB> is a real TAB. This helps visualise the operations.
+where <TAB> is a real TAB.  This helps visualise the operations.
 
 The test text is:
 

@@ -1,4 +1,4 @@
-*tips.txt*      For Vim version 7.0aa.  Last change: 2005 Feb 23
+*tips.txt*      For Vim version 7.0aa.  Last change: 2005 Apr 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -129,26 +129,26 @@ Switching screens in an xterm		*xterm-screens* *xterm-save-screen*
 :the same thing as each other for a given xterm setup.
 
 They not necessarily do the same thing, as this may be a termcap vs.
-terminfo problem. You should be aware that there are two databases for
+terminfo problem.  You should be aware that there are two databases for
 describing attributes of a particular type of terminal: termcap and
-terminfo. This can cause differences when the entries differ AND when of
+terminfo.  This can cause differences when the entries differ AND when of
 the programs in question one uses terminfo and the other uses termcap
 (also see |+terminfo|).
 
 In your particular problem, you are looking for the control sequences
-^[[?47h and ^[[?47l. These switch between xterms alternate and main screen
-buffer. As a quick workaround a command sequence like >
+^[[?47h and ^[[?47l.  These switch between xterms alternate and main screen
+buffer.  As a quick workaround a command sequence like >
 	echo -n "^[[?47h"; vim ... ; echo -n "^[[?47l"
-may do what you want. (My notation ^[ means the ESC character, further down
+may do what you want.  (My notation ^[ means the ESC character, further down
 you'll see that the databases use \E instead).
 
 On startup, vim echoes the value of the termcap variable ti (terminfo:
-smcup) to the terminal. When exiting, it echoes te (terminfo: rmcup). Thus
+smcup) to the terminal.  When exiting, it echoes te (terminfo: rmcup).  Thus
 these two variables are the correct place where the above mentioned control
 sequences should go.
 
 Compare your xterm termcap entry (found in /etc/termcap) with your xterm
-terminfo entry (retrieved with /usr/5bin/infocmp -C xterm). Both should
+terminfo entry (retrieved with /usr/5bin/infocmp -C xterm).  Both should
 contain entries similar to: >
 	:te=\E[2J\E[?47l\E8:ti=\E7\E[?47h:
 
@@ -339,7 +339,7 @@ be able to give comments to the parts of the mapping. >
 
 (<> notation |<>|.  Note that this is all typed literally.  ^W is "^" "W", not
 CTRL-W.  You can copy/paste this into Vim if '<' is not included in
-'cpoptions')
+'cpoptions'.)
 
 Note that the last comment starts with |", because the ":execute" command
 doesn't accept a comment directly.

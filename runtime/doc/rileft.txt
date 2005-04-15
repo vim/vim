@@ -1,4 +1,4 @@
-*rileft.txt*    For Vim version 7.0aa.  Last change: 2003 May 07
+*rileft.txt*    For Vim version 7.0aa.  Last change: 2005 Apr 04
 
 
 		  VIM REFERENCE MANUAL    by Avner Lottem
@@ -36,7 +36,7 @@ bidi and is merely opting to present a functional means to display/enter/use
 right-to-left languages.  An older hybrid solution in which direction is
 encoded for every character (or group of characters) are not supported either
 as this kind of support is out of the scope of a simple addition to an
-existing editor (and its not sanctioned by Unicode either).
+existing editor (and it's not sanctioned by Unicode either).
 
 
 Highlights

@@ -1,4 +1,4 @@
-*hangulin.txt*  For Vim version 7.0aa.  Last change: 2001 Sep 03
+*hangulin.txt*  For Vim version 7.0aa.  Last change: 2005 Mar 29
 
 
 		  VIM REFERENCE MANUAL    by Chi-Deok Hwang and Sung-Hyun Nam
@@ -7,17 +7,17 @@ Introduction					*hangul*
 ------------
 It is to input hangul, the Korean language, with VIM GUI version.
 If you have a XIM program, you can use another |+xim| feature.
-Basically, it is for whom has no XIM program.
+Basically, it is for anybody who has no XIM program.
 
 Compile
 -------
-Next is a basic option. You can add any other configure option. >
+Next is a basic option.  You can add any other configure option. >
 
    ./configure --with-x --enable-multibyte --enable-fontset --enable-hangulinput
 
-And you should check the feature.h. If |+hangul_input| feature is enabled
+And you should check feature.h.  If |+hangul_input| feature is enabled
 by configure, you can select more options such as keyboard type, 2 bulsik
-or 3 bulsik. You can find keywords like next in there. >
+or 3 bulsik.  You can find keywords like next in there. >
 
 	#define HANGUL_DEFAULT_KEYBOARD 2
 	#define ESC_CHG_TO_ENG_MODE
@@ -38,7 +38,7 @@ You should add nexts to your global vimrc ($HOME/.vimrc). >
 Keyboard
 --------
 You can change keyboard type (2 bulsik or 3 bulsik) using VIM_KEYBOARD
-or HANGUL_KEYBOARD_TYPE environment variables. For sh, just do (2 bulsik): >
+or HANGUL_KEYBOARD_TYPE environment variables.  For sh, just do (2 bulsik): >
 
     export VIM_KEYBOARD="2"
 or >
@@ -67,9 +67,9 @@ $HOME/.gvimrc: >
 
 attention! the , (comma) or ; (semicolon)
 
-And there should be no ':set guifont'. If it exists, then Gvim ignores
-':set guifontset'. It means VIM runs without fontset supporting.
-So, you can see only English. Hangul does not be correctly displayed.
+And there should be no ':set guifont'.  If it exists, then Gvim ignores
+':set guifontset'.  It means VIM runs without fontset supporting.
+So, you can see only English.  Hangul does not be correctly displayed.
 
 After 'fontset' feature is enabled, VIM does not allow using 'font'.
 For example, if you use >
@@ -78,17 +78,17 @@ in your .gvimrc, then you should do for syntax >
    :hi Comment guifg=Cyan font=another_eng_font,another_your_font
 If you just do >
    :hi Comment font=another_eng_font
-then you can see a GOOD error message. Be careful!
+then you can see a GOOD error message.  Be careful!
 
 hangul_font width should be twice than english_font width.
 
 Unsupported Feature
 -------------------
-Johab font not yet supported. And I don't have any plan.
+Johab font not yet supported.  And I don't have any plan.
 If you really want to use johab font, you can use the
 hanguldraw.c in gau package.
 
-Hanja input not yet supported. And I don't have any plan.
+Hanja input not yet supported.  And I don't have any plan.
 If you really want to input hanja, just use VIM with hanterm.
 
 Bug or Comment

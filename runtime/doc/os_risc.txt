@@ -1,4 +1,4 @@
-*os_risc.txt*   For Vim version 7.0aa.  Last change: 2004 May 01
+*os_risc.txt*   For Vim version 7.0aa.  Last change: 2005 Mar 29
 
 
 		  VIM REFERENCE MANUAL    by Thomas Leonard
@@ -47,9 +47,9 @@ distribution, but modified slightly to work within the limits of ADFS, plus
 some extra files such as the window templates.
 
 User choices are read from `Choices:*' and are saved to `<Choices$Write>.*'.
-If you have the new !Boot structure then these should be set up already. If
+If you have the new !Boot structure then these should be set up already.  If
 not, set Choices$Path to a list of directories to search when looking for
-user configuration files. Set Choices$Write to the directory you want files
+user configuration files.  Set Choices$Write to the directory you want files
 to be saved into (so your search patterns and marks can be remembered between
 sessions).
 
@@ -58,7 +58,7 @@ sessions).
 2. Filename munging
 
 All pathname munging is disabled by default, so Vim should behave like a
-normal RISC OS application now. So, if you want to edit `doc/html' then you
+normal RISC OS application now.  So, if you want to edit `doc/html' then you
 actually type `*vi doc/html'.
 
 The only times munging is done is when:
@@ -66,7 +66,7 @@ The only times munging is done is when:
 - Searching included files from C programs, since these are always munged.
   See |[I|.
   Note: make sure you are in the right directory when you use this
-	command (ie the one with subdirectories 'c' and 'h').
+	command (i.e. the one with subdirectories 'c' and 'h').
 
 - Sourcing files using |:so|.
   Paths starting `$VIM/' are munged like this:
@@ -88,7 +88,7 @@ To use Vim from the command-line use the `*vi' command (or '*ex' for
 Type `*vi -h' for a list of options.
 
 Running the command-line version of Vim in a large high-color mode may cause
-the scrolling to be very slow. Either change to a mode with fewer colors or
+the scrolling to be very slow.  Either change to a mode with fewer colors or
 use the GUI version.
 
 Also, holding down Ctrl will slow it down even more, and Ctrl-Shift will
@@ -115,7 +115,7 @@ The global clipboard is supported, so you can select some text and then
 paste it directly into another application (provided it supports the
 clipboard too).
 
-Clicking Menu now opens a menu like a normal RISC OS program. Hold down Shift
+Clicking Menu now opens a menu like a normal RISC OS program.  Hold down Shift
 when clicking Menu to paste (from the global clipboard).
 
 Dragging a file to the window replaces the CURRENT buffer (the one with the
@@ -134,27 +134,27 @@ For fonts, you have the choice of the system font, an outline font, the system
 font via ZapRedraw and any of the Zap fonts via ZapRedraw: >
 
   :set guifont=
-<			To use the system font via the VDU drivers. Supports
+<			To use the system font via the VDU drivers.  Supports
 			bold and underline.
 >
   :set guifont=Corpus.Medium
-<			Use the named outline font. You can use any font, but
+<			Use the named outline font.  You can use any font, but
 			only monospaced ones like Corpus look right.
 >
   :set guifont=Corpus.Medium:w8:h12:b:i
 <			As before, but with size of 8 point by 12 point, and
 			in bold italic.
 			If only one of width and height is given then that
-			value is used for both. If neither is given then 10
+			value is used for both.  If neither is given then 10
 			point is used.
 
-Thanks to John Kortink, Vim can use the ZapRedraw module. Start the font name
+Thanks to John Kortink, Vim can use the ZapRedraw module.  Start the font name
 with '!' (or '!!' for double height), like this: >
 
   :set guifont=!!
 <			Use the system font, but via ZapRedraw.  This gives a
 			faster redraw on StrongARM processors, but you can't
-			get bold or italic text. Double height.
+			get bold or italic text.  Double height.
 >
   :set guifont=!script
 <			Uses the named Zap font (a directory in VimFont$Path).
@@ -164,12 +164,12 @@ with '!' (or '!!' for double height), like this: >
 			currently, but you can use any of the Zap fonts if
 			they are in VimFont$Path.
 			Vim will try to load font files '0', 'B', 'I' and 'IB'
-			from the named directory. Only '0' (normal style) MUST
-			be present. Link files are not currently supported.
+			from the named directory.  Only '0' (normal style) MUST
+			be present.  Link files are not currently supported.
 
 Note that when using ZapRedraw the edit bar is drawn in front of the character
-you are on rather than behind it. Also redraw is incorrect for screen modes
-with eigen values of 0. If the font includes control characters then you can
+you are on rather than behind it.  Also redraw is incorrect for screen modes
+with eigen values of 0.  If the font includes control characters then you can
 get Vim to display them by changing the 'isprint' option.
 
 If you find the scrolling is too slow on your machine, try experimenting
@@ -199,8 +199,8 @@ It seems to work pretty well now, using '*vi -T ansi'.
 
 If Vim crashes then the swap and backup files (if any) will be in the
 directories set with the 'directory' and 'bdir' options.  By default the swap
-files are in <Wimp$ScrapDir> (ie inside !Scrap) and backups are in the
-directory you were saving to. Vim will allow you to try and recover the file
+files are in <Wimp$ScrapDir> (i.e. inside !Scrap) and backups are in the
+directory you were saving to.  Vim will allow you to try and recover the file
 when you next try to edit it.
 
 To see a list of swap files, press <F12> and type `*vi -r'.
@@ -223,13 +223,13 @@ command-line version, or press CTRL-C in the GUI version.
 							*riscos-memory*
 8. Memory usage
 
-Vim will use dynamic areas on RISC OS 3.5 or later. If you can use them on
-older machines then edit the !RunTxt and GVim files. I don't know what UnixLib
+Vim will use dynamic areas on RISC OS 3.5 or later.  If you can use them on
+older machines then edit the !RunTxt and GVim files.  I don't know what UnixLib
 does by default on these machines so I'm playing safe.
 
 It doesn't work at all well without dynamic areas, since it can't change its
-memory allocation once running. Hence you should edit `!Vim.GVim' and
-`!Vim.!RunTxt' to choose the best size for you. You probably need at least
+memory allocation once running.  Hence you should edit `!Vim.GVim' and
+`!Vim.!RunTxt' to choose the best size for you.  You probably need at least
 about 1400K.
 
 ==============================================================================
@@ -237,11 +237,11 @@ about 1400K.
 9. Filetypes
 
 You can now specify that autocommands are only executed for files of certain
-types. The filetype is given in the form &xxx, when xxx is the filetype.
+types.  The filetype is given in the form &xxx, when xxx is the filetype.
 
-Filetypes must be specified by number (eg &fff for Text).
+Filetypes must be specified by number (e.g. &fff for Text).
 
-The system has changed from version 5.3. The new sequence of events is:
+The system has changed from version 5.3.  The new sequence of events is:
 
 - A file is loaded. |'osfiletype'| is set to the RISC OS filetype.
 - Based on the filetype and pathname, Vim will try to set |'filetype'| to the
@@ -264,7 +264,7 @@ Some examples may make this clearer:
   since many pathnames contain them.
 
 - You can prefix the command with '~', which stops any output from being
-  displayed. This also means that you don't have to press <Enter> afterwards,
+  displayed.  This also means that you don't have to press <Enter> afterwards,
   and stops the screen from being redrawn. {only in the GUI version}
 
 ==============================================================================
@@ -274,14 +274,14 @@ Some examples may make this clearer:
 Downloading everything you need:
 
 - Get the latest source distribution (see www.vim.org)
-- Get the runtime environment files (eg these help files)
+- Get the runtime environment files (e.g. these help files)
 - Get the `extra' archive (contains the RISC OS specific bits)
 - Get the RISC OS binary distribution (if possible)
 
 
 Unarchiving:
 
-- Create a raFS disk and put the archives on it.
+- Create a raFS disk and put the archives on it
 - Un-gzip them
 - Un-tar them   (*tar xELf 50 archive/tar)
 
@@ -289,9 +289,9 @@ Unarchiving:
 Recompiling the sources:
 
 - Create c, s, and h directories.
-- Put all the header files in 'h'	     \
-- Put all the C files in `c'		     | And lose the extensions
-- Put the assembler file (`swis/s') in 's'   /
+- Put all the header files in 'h'.	     \
+- Put all the C files in `c'.		     | And lose the extensions
+- Put the assembler file (`swis/s') in 's'.  /
 - Rename all the files in `proto' to `h', like this:
     raFS::VimSrc.source.proto.file/pro
 	  becomes
@@ -300,9 +300,9 @@ Recompiling the sources:
     .pro"
        with
     _pro.h"
-- Create a simple Makefile if desired and do '*make -k'
-  Use 'CC = gcc -DRISCOS -DUSE_GUI -O2 -x c' in the Makefile
-- Save the binary as !Vim.Vim in the binary distribution
+- Create a simple Makefile if desired and do '*make -k'.
+  Use 'CC = gcc -DRISCOS -DUSE_GUI -O2 -x c' in the Makefile.
+- Save the binary as !Vim.Vim in the binary distribution.
 
 
 Updating the run-time environment:
@@ -311,9 +311,9 @@ Updating the run-time environment:
   new files.
 - Remove files in `doc' not ending in `/txt', except for `tags'.
 - Lose the extensions from the files in `doc'.
-- Edit the `doc.tags' file. Remove extensions from the second column: >
+- Edit the `doc.tags' file.  Remove extensions from the second column: >
 	:%s/^\(.[^\t]*\t.*\)\.txt\t/\1\t/
-- Remove extensions from the syntax files. Split them into two directories
+- Remove extensions from the syntax files.  Split them into two directories
   to avoid the 77 entry limit on old ADFS filesystems.
 - Edit `Vim:FileType' to match `*.c.*' as well as `*/c' and so on.
   Add filetype checking too.

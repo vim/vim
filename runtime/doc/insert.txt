@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0aa.  Last change: 2005 Feb 21
+*insert.txt*    For Vim version 7.0aa.  Last change: 2005 Apr 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -190,7 +190,7 @@ CTRL-Q		Same as CTRL-V.
 		work then.  It does work in the GUI.
 
 CTRL-X		Enter CTRL-X mode.  This is a sub-mode where commands can
-		be given to complete words or scroll the window. See
+		be given to complete words or scroll the window.  See
 		|i_CTRL-X| and |ins-completion|. {not in Vi}
 
 						*i_CTRL-E*
@@ -271,7 +271,7 @@ entered directly.  This way you can enter any character, except a line break
 
 first char	mode	     max nr of chars   max value ~
 (none)		decimal		   3		255
-o or O		octal		   3		255
+o or O		octal		   3		377	 (255)
 x or X		hexadecimal	   2		ff	 (255)
 u		hexadecimal	   4		ffff	 (65535)
 U		hexadecimal	   8		7fffffff (2147483647)
@@ -392,7 +392,7 @@ The CTRL-G j and CTRL-G k commands can be used to insert text in front of a
 column.  Example: >
    int i;
    int j;
-Position the cursor on the first "int", type "istatic<C-G>j       ".  The
+Position the cursor on the first "int", type "istatic <C-G>j       ".  The
 result is: >
    static int i;
 	  int j;
@@ -726,7 +726,7 @@ CTRL-X CTRL-K		Search the files given with the 'dictionary' option
 			keyword replaces the previous matching keyword.
 
 							*i_CTRL-X_CTRL-T*
-CTRL-X CTRL-T		Works as CTRL-X CTRL-K, but in a special way. It uses
+CTRL-X CTRL-T		Works as CTRL-X CTRL-K, but in a special way.  It uses
 			the 'thesaurus' option instead of 'dictionary'.  If a
 			match is found in the thesaurus file, all the
 			remaining words on the same line are included as

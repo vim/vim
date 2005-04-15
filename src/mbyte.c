@@ -706,6 +706,11 @@ codepage_invalid:
 	gui_mch_update_codec();
 #endif
 
+#ifdef FEAT_SYN_HL
+    /* Need to reload spell dictionaries */
+    spell_reload();
+#endif
+
     return NULL;
 }
 

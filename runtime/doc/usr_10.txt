@@ -1,4 +1,4 @@
-*usr_10.txt*	For Vim version 7.0aa.  Last change: 2005 Mar 15
+*usr_10.txt*	For Vim version 7.0aa.  Last change: 2005 Apr 01
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -700,7 +700,7 @@ as input.  The output of this command then replaces the selected block.
    Because this summarizes badly if you are unfamiliar with UNIX filters, take
 a look at an example.  The sort command sorts a file.  If you execute the
 following command, the unsorted file input.txt will be sorted and written to
-output.txt. (This works on both UNIX and Microsoft Windows.) >
+output.txt.  (This works on both UNIX and Microsoft Windows.) >
 
 	sort <input.txt >output.txt
 

@@ -177,16 +177,16 @@ by setting a variable (ex. scp uses the variable g:netrw_scp_cmd,
 which is defaulted to "scp -q").
 
 Ftp, an old protocol, seems to be blessed by numerous implementations.
-Unfortunately, some implementations are noisy (ie., add junk to the end
+Unfortunately, some implementations are noisy (i.e., add junk to the end
 of the file).  Thus, concerned users may decide to write a NetReadFixup()
 function that will clean up after reading with their ftp.  Some Unix systems
-(ie., FreeBSD) provide a utility called "fetch" which uses the ftp protocol
+(i.e., FreeBSD) provide a utility called "fetch" which uses the ftp protocol
 but is not noisy and more convenient, actually, for <netrw.vim> to use.
 Consequently, if "fetch" is executable, it will be used to do reads for
 ftp://... (and http://...) .  See |netrw-var| for more about this.
 
 For rcp, scp, sftp, and http, one may use network-oriented file transfers
-transparently; ie.
+transparently; i.e.
 >
 	vim rcp://[user@]machine/path
 	vim scp://[user@]machine/path
@@ -198,7 +198,7 @@ that file.  Your ftp must be able to use the <.netrc> file on its own, however.
 	vim ftp://[user@]machine[[:#]portnumber]/path
 <
 However, ftp will often need to query the user for the userid and password.
-The latter will be done "silently"; ie. asterisks will show up instead of
+The latter will be done "silently"; i.e. asterisks will show up instead of
 the actually-typed-in password.  Netrw will retain the userid and password
 for subsequent read/writes from the most recent transfer so subsequent
 transfers (read/write) to or from that machine will take place without
@@ -625,7 +625,7 @@ NETRW BROWSER VARIABLES					*netrw-browse-var*
 	g:netrw_timefmt			specify format string to strftime() (%c)
 	g:netrw_winsize			specify initial size of new o/v windows
 
-INTRODUCTION TO DIRECTORY BROWSING
+INTRODUCTION TO DIRECTORY BROWSING			*file-explorer*
 
 Netrw supports the browsing of directories on the local system and on remote
 hosts, including generating listing directories, entering directories, editing

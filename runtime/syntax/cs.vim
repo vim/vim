@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	C#
 " Maintainer:	Johannes Zellner <johannes@zellner.org>
-" Last Change:	Tue, 09 Mar 2004 14:32:13 CET
+" Last Change:	Mi, 13 Apr 2005 22:52:57 CEST
 " Filenames:	*.cs
 " $Id$
 "
@@ -92,7 +92,7 @@ syn match   csSpecialChar	contained +\\["\\'0abfnrtvx]+
 " unicode characters
 syn match   csUnicodeNumber	+\\\(u\x\{4}\|U\x\{8}\)+ contained contains=csUnicodeSpecifier
 syn match   csUnicodeSpecifier	+\\[uU]+ contained
-syn region  csVerbatimString	start=+@"+ end=+"+ end=+$+ contains=csVerbatimSpec
+syn region  csVerbatimString	start=+@"+ end=+"+ end=+$+ skip=+""+ contains=csVerbatimSpec
 syn match   csVerbatimSpec	+@"+he=s+1 contained
 syn region  csString		start=+"+  end=+"+ end=+$+ contains=csSpecialChar,csSpecialError,csUnicodeNumber
 syn match   csCharacter		"'[^']*'" contains=csSpecialChar,csSpecialCharError

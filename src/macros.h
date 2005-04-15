@@ -260,8 +260,10 @@
 # define mb_ptr_adv(p) p += has_mbyte ? (*mb_ptr2len_check)(p) : 1
 # define mb_ptr_back(s, p) p -= has_mbyte ? ((*mb_head_off)(s, p - 1) + 1) : 1
 # define MB_COPY_CHAR(f, t) if (has_mbyte) mb_copy_char(&f, &t); else *t++ = *f++
+# define MB_CHARLEN(p) mb_charlen(p)
 #else
 # define mb_ptr_adv(p) ++p
 # define mb_ptr_back(s, p) --p
 # define MB_COPY_CHAR(f, t) *t++ = *f++
+# define MB_CHARLEN(p) STRLEN(p)
 #endif

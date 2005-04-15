@@ -1,4 +1,4 @@
-*sign.txt*      For Vim version 7.0aa.  Last change: 2004 May 22
+*sign.txt*      For Vim version 7.0aa.  Last change: 2005 Apr 04
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur
@@ -18,19 +18,19 @@ Sign Support Features				*sign-support*
 
 When a debugger or other IDE tool is driving an editor it needs to be able
 to give specific highlights which quickly tell the user useful information
-about the file. One example of this would be a debugger which had an icon
-in the left-hand column denoting a breakpoint. Another example might be an
-arrow representing the Program Counter (PC). The sign features allow both
+about the file.  One example of this would be a debugger which had an icon
+in the left-hand column denoting a breakpoint.  Another example might be an
+arrow representing the Program Counter (PC).  The sign features allow both
 placement of a sign, or icon, in the left-hand side of the window and
-definition of a highlight which will be applied to that line. Displaying the
+definition of a highlight which will be applied to that line.  Displaying the
 sign as an image is most likely only feasible in gvim (although Sun
-Microsystem's dtterm does support this its the only terminal emulator I know
+Microsystem's dtterm does support this it's the only terminal emulator I know
 of which does).  A text sign and the highlight should be feasible in any color
 terminal emulator.
 
-Signs and highlights are not useful just for debuggers. Sun's Visual
+Signs and highlights are not useful just for debuggers.  Sun's Visual
 WorkShop uses signs and highlights to mark build errors and SourceBrowser
-hits. Additionally, the debugger supports 8 to 10 different signs and
+hits.  Additionally, the debugger supports 8 to 10 different signs and
 highlight colors. |workshop|  Same for Netbeans |netbeans|.
 
 There are two steps in using signs:

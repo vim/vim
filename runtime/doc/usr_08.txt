@@ -1,4 +1,4 @@
-*usr_08.txt*	For Vim version 7.0aa.  Last change: 2004 Jun 04
+*usr_08.txt*	For Vim version 7.0aa.  Last change: 2005 Apr 01
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -52,7 +52,7 @@ the bottom one the code that uses these variables.
 
 The CTRL-W w command can be used to jump between the windows.  If you are in
 the top window, CTRL-W w jumps to the window below it.  If you are in the
-bottom window it will jump to the first window. (CTRL-W CTRL-W does the same
+bottom window it will jump to the first window.  (CTRL-W CTRL-W does the same
 thing, in case you let go of the CTRL key a bit later.)
 
 

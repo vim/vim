@@ -1,7 +1,7 @@
 " Vim Compiler File
 " Compiler:	ant
 " Maintainer:	Johannes Zellner <johannes@zellner.org>
-" Last Change:	Tue, 27 Apr 2004 15:01:45 CEST
+" Last Change:	Mi, 13 Apr 2005 22:50:07 CEST
 
 if exists("current_compiler")
     finish
@@ -21,15 +21,15 @@ CompilerSet makeprg=ant
 "     ant with jikes +E, which assumes  the following
 "     two property lines in your 'build.xml':
 "
-"	  <property name = "build.compiler"	  value = "jikes"/>
-"	  <property name = "build.compiler.emacs" value = "true"/>
+"         <property name = "build.compiler"       value = "jikes"/>
+"         <property name = "build.compiler.emacs" value = "true"/>
 "
 " second line:
 "     ant with javac
 "
 " note that this will work also for tasks like [wtkbuild]
 "
-setlocal errorformat=\ %#[%.%#]\ %#%f:%l:%v:%*\\d:%*\\d:\ %t%[%^:]%#:%m,
+CompilerSet errorformat=\ %#[%.%#]\ %#%f:%l:%v:%*\\d:%*\\d:\ %t%[%^:]%#:%m,
     \%A\ %#[%.%#]\ %f:%l:\ %m,%-Z\ %#[%.%#]\ %p^,%C\ %#[%.%#]\ %#%m
 
 " ,%-C%.%#

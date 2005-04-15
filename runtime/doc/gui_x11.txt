@@ -1,4 +1,4 @@
-*gui_x11.txt*   For Vim version 7.0aa.  Last change: 2004 Dec 29
+*gui_x11.txt*   For Vim version 7.0aa.  Last change: 2005 Mar 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -113,7 +113,7 @@ same.  Note that some fonts that have the same point size don't have the same
 pixel size!  Additionally, the positioning of the fonts must be the same
 (ascent and descent).  You can check this with "xlsfonts -l {fontname}".
 
-If any of these things are also set with Vim commands, eg with
+If any of these things are also set with Vim commands, e.g. with
 ":set guifont=Screen15", then this will override the X resources (currently
 'guifont' is the only option that is supported).
 

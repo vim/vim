@@ -1,4 +1,4 @@
-*mbyte.txt*     For Vim version 7.0aa.  Last change: 2005 Feb 13
+*mbyte.txt*     For Vim version 7.0aa.  Last change: 2005 Mar 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar et al.
@@ -436,7 +436,7 @@ Useful utilities for converting the charset:
 	ftp://ftp.cuhk.hk/pub/chinese/ifcss/software/unix/convert/hc-30.tar.gz
 
     Korean:	    hmconv
-	Hmconv is Korean code conversion utility especially for E-mail. It can
+	Hmconv is Korean code conversion utility especially for E-mail.  It can
 	convert between EUC-KR and ISO-2022-KR.  Hmconv can be found at:
 	ftp://ftp.kaist.ac.kr/pub/hangul/code/hmconv/
 
@@ -444,7 +444,7 @@ Useful utilities for converting the charset:
 	Lv is a Powerful Multilingual File Viewer.  And it can be worked as
 	|charset| converter.  Supported |charset|: ISO-2022-CN, ISO-2022-JP,
 	ISO-2022-KR, EUC-CN, EUC-JP, EUC-KR, EUC-TW, UTF-7, UTF-8, ISO-8859
-	series, Shift_JIS, Big5 and HZ. Lv can be found at:
+	series, Shift_JIS, Big5 and HZ.  Lv can be found at:
 	http://www.ff.iij4u.or.jp/~nrt/freeware/lv4495.tar.gz
 
 
@@ -506,7 +506,7 @@ Now start xterm with >
 or, for bigger character: >
   xterm -u8 -fn -misc-fixed-medium-r-normal--15-140-75-75-c-90-iso10646-1
 
-and you will have a working UTF-8 terminal emulator. Try both >
+and you will have a working UTF-8 terminal emulator.  Try both >
 
    cat utf-8-demo.txt
    vim utf-8-demo.txt
@@ -761,7 +761,7 @@ is suitable for complex input, such as CJK.
   number of Hira-gana characters are 76.  So, first, we pre-input text as
   pronounced in Hira-gana, second, we convert Hira-gana to Kanji or Kata-Kana,
   if needed.  There are some Kana-Kanji conversion server: jserver
-  (distributed with Wnn, see below) and canna. Canna could be found at:
+  (distributed with Wnn, see below) and canna.  Canna could be found at:
   ftp://ftp.nec.co.jp/pub/Canna/ (no longer works).
 
 There is a good input system: Wnn4.2.  Wnn 4.2 contains,
@@ -801,7 +801,7 @@ Use the RPM or port for your system.
     Preedit Area and Status Area are performed by the client application in
     the area of application.  The client application is directed by the
     |IM-server| to display all pre-edit data at the location of text
-    insertion. The client registers callbacks invoked by the input method
+    insertion.  The client registers callbacks invoked by the input method
     during pre-editing.
 *.  over-the-spot					*OverTheSpot*
     Status Area is created in a fixed position within the area of application,
@@ -1231,7 +1231,7 @@ is no longer relevant in the GTK+ 2 GUI.
 Up to two combining characters can be used.  The combining character is drawn
 on top of the preceding character.  When editing text a composing character is
 mostly considered part of the preceding character.  For example "x" will
-delete a character and its following composing characters by default. If the
+delete a character and its following composing characters by default.  If the
 'delcombine' option is on, then pressing 'x' will delete the combining
 characters, one at a time, then the base character.  But when inserting, you
 type the first character and the following composing characters separately,
@@ -1253,7 +1253,7 @@ characters present in the selected font.
 
 Useful commands:
 - "ga" shows the decimal, hexadecimal and octal value of the character under
-  the cursor.  If there are composing characters these are shown too. (if the
+  the cursor.  If there are composing characters these are shown too.  (If the
   message is truncated, use ":messages").
 - "g8" shows the bytes used in a UTF-8 character, also the composing
   characters, as hex numbers.

@@ -1,4 +1,4 @@
-*if_ole.txt*    For Vim version 7.0aa.  Last change: 2004 Dec 09
+*if_ole.txt*    For Vim version 7.0aa.  Last change: 2005 Mar 29
 
 
 		  VIM REFERENCE MANUAL    by Paul Moore
@@ -22,7 +22,7 @@ An alternative is using the client-server communication |clientserver|.
 1. Activation						*ole-activation*
 
 Vim acts as an OLE automation server, accessible from any automation client,
-for example, Visual Basic, Python, or Perl. The Vim application "name" (its
+for example, Visual Basic, Python, or Perl.  The Vim application "name" (its
 "ProgID", in OLE terminology) is "Vim.Application".
 
 Hence, in order to start a Vim instance (or connect to an already running
@@ -41,8 +41,8 @@ instance), code similar to the following should be used:
 	$vim = new Win32::OLE 'Vim.Application';
 
 Vim does not support acting as a "hidden" OLE server, like some other OLE
-Automation servers. When a client starts up an instance of Vim, that instance
-is immediately visible. Simply closing the OLE connection to the Vim instance
+Automation servers.  When a client starts up an instance of Vim, that instance
+is immediately visible.  Simply closing the OLE connection to the Vim instance
 is not enough to shut down the Vim instance - it is necessary to explicitly
 execute a quit command (for example, :qa!, :wqa).
 
@@ -54,17 +54,17 @@ Vim exposes four methods for use by clients.
 							*ole-sendkeys*
 SendKeys(keys)		Execute a series of keys.
 
-This method takes a single parameter, which is a string of keystrokes. These
+This method takes a single parameter, which is a string of keystrokes.  These
 keystrokes are executed exactly as if they had been types in at the keyboard.
 Special keys can be given using their <..> names, as for the right hand side
-of a mapping. Note: Execution of the Ex "normal" command is not supported -
+of a mapping.  Note: Execution of the Ex "normal" command is not supported -
 see below |ole-normal|.
 
 Examples (Visual Basic syntax) >
 	Vim.SendKeys "ihello<Esc>"
 	Vim.SendKeys "ma1GV4jy`a"
 
-These examples assume that Vim starts in Normal mode. To force Normal mode,
+These examples assume that Vim starts in Normal mode.  To force Normal mode,
 start the key sequence with CTRL-\ CTRL-N as in >
 
 	Vim.SendKeys "<C-\><C-N>ihello<Esc>"
@@ -109,7 +109,7 @@ Example (Visual Basic syntax) >
 
 Due to the way Vim processes OLE Automation commands, combined with the method
 of implementation of the ex command :normal, it is not possible to execute the
-:normal command via OLE automation. Any attempt to do so will fail, probably
+:normal command via OLE automation.  Any attempt to do so will fail, probably
 harmlessly, although possibly in unpredictable ways.
 
 There is currently no practical way to trap this situation, and users must
@@ -118,7 +118,7 @@ simply be aware of the limitation.
 4. Registration					*ole-registration* *E243*
 
 Before Vim will act as an OLE server, it must be registered in the system
-registry. In order to do this, Vim should be run with a single parameter of
+registry.  In order to do this, Vim should be run with a single parameter of
 "-register".
 							*-register*  >
 	gvim -register
@@ -131,9 +131,9 @@ In some situations registering is not possible.  This happens when the
 registry is not writable.  If you run into this problem you need to run gvim
 as "Administrator".
 
-Once vim is registered, the application path is stored in the registry. Before
-moving, deleting, or upgrading Vim, the registry entries should be removed
-using the "-unregister" switch.
+Once vim is registered, the application path is stored in the registry.
+Before moving, deleting, or upgrading Vim, the registry entries should be
+removed using the "-unregister" switch.
 							*-unregister*  >
 	gvim -unregister
 

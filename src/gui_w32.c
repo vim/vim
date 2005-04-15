@@ -1794,7 +1794,7 @@ gui_mch_draw_string(
 #ifdef FEAT_MBYTE
     static WCHAR *unicodebuf = NULL;
     static int   *unicodepdy = NULL;
-    int		unibuflen = 0;
+    static int	unibuflen = 0;
     int		n = 0;
 #endif
     HPEN	hpen, old_pen;
@@ -1923,7 +1923,7 @@ gui_mch_draw_string(
 		break;
 
     /* Check if the Unicode buffer exists and is big enough.  Create it
-     * with the same lengt as the multi-byte string, the number of wide
+     * with the same length as the multi-byte string, the number of wide
      * characters is always equal or smaller. */
     if ((enc_utf8
 		|| (enc_codepage > 0 && (int)GetACP() != enc_codepage)

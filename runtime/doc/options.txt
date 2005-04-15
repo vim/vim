@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Mar 28
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Apr 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3209,8 +3209,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	  't'	Include tearoff menu items.  Currently only works for Win32,
 		GTK+, and Motif 1.2 GUI.
-	  'T'	Include Toolbar.  Currently only in Win32, GTK+, Motif, and
-		Athena GUIs.
+	  'T'	Include Toolbar.  Currently only in Win32, GTK+, Motif, Photon
+	        and Athena GUIs.
 
 	  'r'	Right-hand scrollbar is always present.
 	  'R'	Right-hand scrollbar is present when there is a vertically
@@ -5060,7 +5060,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			feature}
 			{not in Vi}
 	This is a comma-separated list of words that specifies how
-	'scrollbind' windows should behave.
+	'scrollbind' windows should behave.  'sbo' stands for ScrollBind
+	Options.
 	The following words are available:
 	    ver		Bind vertical scrolling for 'scrollbind' windows
 	    hor		Bind horizontal scrolling for 'scrollbind' windows
@@ -5631,7 +5632,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not available when compiled without the |+syntax|
 			feature}
 	When on spell checking will be done.  See |spell|.
-	The languages used are specified with 'spelllang'.
+	The languages are specified with 'spelllang'.
 
 						*'spelllang'* *'spl'*
 'spelllang' 'spl'	string	(default empty)
@@ -5644,8 +5645,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 		set spelllang=en_us,nl
 <	This means both US English and Dutch words are recognized.  Words that
 	are not recognized will be highlighted.
-	When 'encoding' is set the word lists are loaded again.  Thus it's a
-	good idea to set 'spelllang' after setting 'encoding'.
+	When 'encoding' is set the word lists are reloaded.  Thus it's a good
+	idea to set 'spelllang' after setting 'encoding'.
 	More info at |spell|.
 
 			*'splitbelow'* *'sb'* *'nosplitbelow'* *'nosb'*

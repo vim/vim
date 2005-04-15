@@ -5241,7 +5241,8 @@ qsort(base, elm_count, elm_size, cmp)
 }
 #endif
 
-#if defined(FEAT_EX_EXTRA) || defined(FEAT_CMDL_COMPL) || defined(PROTO)
+#if defined(FEAT_EX_EXTRA) || defined(FEAT_CMDL_COMPL) \
+    || (defined(FEAT_SYN_HL) && defined(FEAT_MBYTE)) || defined(PROTO)
 /*
  * Sort an array of strings.
  */

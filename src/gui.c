@@ -4326,17 +4326,18 @@ ex_gui(eap)
 /*
  * This is shared between Athena, Motif and GTK.
  */
-static char_u	*gfp_buffer;
-
-static void gfp_setname __ARGS((char_u *fname));
+static void gfp_setname __ARGS((char_u *fname, void *cookie));
 
 /*
  * Callback function for do_in_runtimepath().
  */
     static void
-gfp_setname(fname)
+gfp_setname(fname, cookie)
     char_u	*fname;
+    void	*cookie;
 {
+    char_u	*gfp_buffer = cookie;
+
     if (STRLEN(fname) >= MAXPATHL)
 	*gfp_buffer = NUL;
     else
@@ -4356,8 +4357,8 @@ gui_find_bitmap(name, buffer, ext)
     if (STRLEN(name) > MAXPATHL - 14)
 	return FAIL;
     sprintf((char *)buffer, "bitmaps/%s.%s", name, ext);
-    gfp_buffer = buffer;
-    if (do_in_runtimepath(buffer, FALSE, gfp_setname) == FAIL || *buffer == NUL)
+    if (do_in_runtimepath(buffer, FALSE, gfp_setname, buffer) == FAIL
+							    || *buffer == NUL)
 	return FAIL;
     return OK;
 }

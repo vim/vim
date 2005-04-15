@@ -1,4 +1,4 @@
-*os_beos.txt*	For Vim version 7.0aa.  Last change: 2004 May 01
+*os_beos.txt*	For Vim version 7.0aa.  Last change: 2005 Mar 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -31,11 +31,11 @@ matters not discussed in this file, Vim behaves very much like the Unix
 1. General						*beos-general*
 
 The default syntax highlighting mostly works with different foreground colors
-to highlight items. This works best if you set your Terminal window to a
-darkish background and light letters. Some middle-grey background (for
+to highlight items.  This works best if you set your Terminal window to a
+darkish background and light letters.  Some middle-grey background (for
 instance (r,g,b)=(168,168,168)) with black letters also works nicely.  If you
 use the default light background and dark letters, it may look better to
-simply reverse the notion of foreground and background color settings. To do
+simply reverse the notion of foreground and background color settings.  To do
 this, add this to your .vimrc file (where <Esc> may need to be replaced with
 the escape character): >
 
@@ -48,7 +48,7 @@ the escape character): >
 2. Compiling Vim					*beos-compiling*
 
 From the Advanced Access Preview Release (AAPR) on, Vim can be configured with
-the standard configure script. To get the compiler and its flags right, use
+the standard configure script.  To get the compiler and its flags right, use
 the following command-line in the shell (you can cut and paste it in one go):
 
 CC=$BE_C_COMPILER CFLAGS="$BE_DEFAULT_C_FLAGS -O7" \
@@ -60,9 +60,9 @@ When configure has run, and you wish to enable GUI support, you must edit the
 config.mk file so that the lines with GUI_xxx refer to $(BEOSGUI_xxx) instead
 of $(NONE_xxx).
 Alternatively you can make this change in the Makefile; it will have a
-more permanent effect. Search for "NONE_".
+more permanent effect.  Search for "NONE_".
 
-After compilation you need to add the resources to the binary. Add the
+After compilation you need to add the resources to the binary.  Add the
 following few lines near the end (before the line with "exit $exit_value") of
 the link.sh script to do this automatically.
 
@@ -81,12 +81,12 @@ You will need it when using "make install" to install Vim.
 Now type "make" to compile Vim, then "make install" to install it.
 
 If you want to install Vim by hand, you must copy Vim to $HOME/config/bin, and
-create a bunch of symlinks to it ({g,r,rg}{vim,ex,view}). Furthermore you must
-copy Vims configuration files to $HOME/config/share/vim:
+create a bunch of symlinks to it ({g,r,rg}{vim,ex,view}).  Furthermore you must
+copy Vim's configuration files to $HOME/config/share/vim:
 vim-5.0s/{*.vim,doc,syntax}.  For completeness, you should also copy the nroff
-manual pages to $HOME/config/man/man1. Don't forget ctags/ctags and xxd/xxd!
+manual pages to $HOME/config/man/man1.  Don't forget ctags/ctags and xxd/xxd!
 
-Obviously, you need the unlimited linker to actually link Vim. See
+Obviously, you need the unlimited linker to actually link Vim.  See
 http://www.metrowerks.com for purchasing the CodeWarrior compiler for BeOS.
 There are currently no other linkers that can do the job.
 
@@ -97,7 +97,7 @@ you have the appropriate files installed. |beos-perl|
 3. Timeout in the Terminal				*beos-timeout*
 
 Because some POSIX/UNIX features are still missing[1], there is no direct OS
-support for read-with-timeout in the Terminal. This would meat that you cannot
+support for read-with-timeout in the Terminal.  This would mean that you cannot
 use :mappings of more than one character, unless you also :set notimeout.
 |'timeout'|
 
@@ -112,16 +112,16 @@ indistinctive character sequences.
 These problems do not exist in the GUI.
 
 [1]: there is no select() on file descriptors; also the termios VMIN and VTIME
-settings do not seem to work properly. This has been the case since DR7 at
+settings do not seem to work properly.  This has been the case since DR7 at
 least and still has not been fixed as of PR2.
 
 							*beos-unicode*
 4. Unicode vs. Latin1					*beos-utf8*
 
 BeOS uses Unicode and UTF-8 for text strings (16-bit characters encoded to
-8-bit characters). Vim assumes ISO-Latin1 or other 8-bit character codes.
-This does not produce the desired results for non-ASCII characters. Try the
-command :digraphs to see. If they look messed up, use :set isprint=@ to
+8-bit characters).  Vim assumes ISO-Latin1 or other 8-bit character codes.
+This does not produce the desired results for non-ASCII characters.  Try the
+command :digraphs to see.  If they look messed up, use :set isprint=@ to
 (slightly) improve the display of ISO-Latin1 characters 128-255.  This works
 better in the GUI, depending on which font you use (below).
 
@@ -133,32 +133,32 @@ You may also use the /boot/bin/xtou command to convert UTF-8 files from (xtou
 
 Normally Vim starts with the GUI if you start it as gvim or vim -g.  The BeOS
 version tries to determine if it was started from the Tracker instead of the
-Terminal, and if so, use the GUI anyway. However, the current detection scheme
-is fooled if you use the command "vim - </dev/null" or "vim filename &". The
+Terminal, and if so, use the GUI anyway.  However, the current detection scheme
+is fooled if you use the command "vim - </dev/null" or "vim filename &".  The
 latter can be called a feature but probably only works because there is no
 BSD-style job control.
 
 Stuff that does not work yet:
 
 - Running external commands from the GUI does not work 100% (again due to lack
-  of support for select()). There was a choice between seeing the command's
-  output, or being able to interrupt it. I chose for seeing the output. Even
+  of support for select()).  There was a choice between seeing the command's
+  output, or being able to interrupt it.  I chose for seeing the output.  Even
   now the command sometimes crashes mysteriously, apparently in Be's
-  malloc_internal() called from the putenv() function, after fork()ing. (data
-  access exception occurred, ec01b0ec:  90e80000 *stw r7, 0x0000 (r8))(:!ls
-  works usually, :r !ls usually doesn't). This has been reported as bug
+  malloc_internal() called from the putenv() function, after fork()ing.  (data
+  access exception occurred, ec01b0ec:  90e80000 *stw r7, 0x0000 (r8)).  (:!ls
+  works usually, :r !ls usually doesn't).  This has been reported as bug
   # 971215-083826.
 - The window title.
 - Starting the GUI from the Terminal version with :gui always acts as if
-  :gui -f were used. There is no way to fix this that I can see.
+  :gui -f were used.  There is no way to fix this that I can see.
 - There are some small display glitches here and there that I hope to clean up
-  later. Most of them occur when the window is partially obscured. Some of
+  later.  Most of them occur when the window is partially obscured.  Some of
   them seem to be bugs in BeOS, because the Terminal has similar glitches.
-- Mouse up events are not generated when outside the window. This is a bug in
-  BeOS. You can notice this when selecting text and moving the cursor outside
+- Mouse up events are not generated when outside the window.  This is a bug in
+  BeOS.  You can notice this when selecting text and moving the cursor outside
   the window, then letting go of the mouse button.  Another way is when you
   drag the scrollbar and do the same thing.  Because Vim still thinks you are
-  still playing with the scrollbar it won't change it itself. I provided a
+  still playing with the scrollbar it won't change it itself.  I provided a
   workaround which kicks in when the window is activated or deactivated (so it
   works best with focus- follows-mouse (/boot/bin/ffm) turned on).
 - The cursor does not flash (very low priority; I'm not sure I even like it
@@ -172,7 +172,7 @@ The default value for $VIM is set at compile time and can be determined with >
 
   :version
 
-The normal value is /boot/home/config/share/vim. If you don't like it you can
+The normal value is /boot/home/config/share/vim.  If you don't like it you can
 set the VIM environment variable to override this, or set 'helpfile' in your
 .vimrc: >
 
@@ -189,7 +189,7 @@ session, unless you use the File Types application to set Vim to be "Single
 Launch") or on the Vim window (starts editing the files).  Dropping a folder
 sets Vim's current working directory. |:cd| |:pwd| If you drop files or
 folders with either SHIFT key pressed, Vim changes directory to the folder
-that contains the first item dropped. When starting Vim, there is no need to
+that contains the first item dropped.  When starting Vim, there is no need to
 press shift: Vim behaves as if you do.
 
 Files dropped set the current argument list. |argument-list|
@@ -198,10 +198,10 @@ Files dropped set the current argument list. |argument-list|
 8. Single Launch vs. Multiple Launch			*beos-launch*
 
 As distributed Vim's Application Flags (as seen in the FileTypes preference)
-are set to Multiple Launch. If you prefer, you can set them to Single Launch
+are set to Multiple Launch.  If you prefer, you can set them to Single Launch
 instead.  Attempts to start a second copy of Vim will cause the first Vim to
-open the files instead. This works from the Tracker but also from the command
-line. In the latter case, non-file (option) arguments are not supported.
+open the files instead.  This works from the Tracker but also from the command
+line.  In the latter case, non-file (option) arguments are not supported.
 
 NB: Only the GUI version has a BApplication (and hence Application Flags).
 This section does not apply to the GUI-less version, should you compile one.
@@ -214,16 +214,16 @@ Set fonts with >
   :set guifont=Courier10_BT/Roman/10
 
 where the first part is the font family, the second part the style, and the
-third part the size. You can use underscores instead of spaces in family and
+third part the size.  You can use underscores instead of spaces in family and
 style.
 
-Best results are obtained with monospaced fonts (such as Courier). Vim
+Best results are obtained with monospaced fonts (such as Courier).  Vim
 attempts to use all fonts in B_FIXED_SPACING mode but apparently this does not
 work for proportional fonts (despite what the BeBook says).
 
 Vim also tries to use the B_ISO8859_1 encoding, also known as ISO Latin 1.
-This also does not work for all fonts. It does work for Courier, but not for
-ProFontISOLatin1/Regular (strangely enough). You can verify this by giving the >
+This also does not work for all fonts.  It does work for Courier, but not for
+ProFontISOLatin1/Regular (strangely enough).  You can verify this by giving the >
 
   :digraphs
 
@@ -270,30 +270,30 @@ because the ALT (aka COMMAND) keys are not passed to applications.
 
 Vim calls the various mouse buttons LeftMouse, MiddleMouse and RightMouse.  If
 you use the default Mouse preference settings these names indeed correspond to
-reality. Vim uses this mapping:
+reality.  Vim uses this mapping:
 
     Button 1 -> LeftMouse,
     Button 2 -> RightMouse,
     Button 3 -> MiddleMouse.
 
 If your mouse has fewer than 3 buttons you can provide your own mapping from
-mouse clicks with modifier(s) to other mouse buttons. See the file
+mouse clicks with modifier(s) to other mouse buttons.  See the file
 vim-5.x/macros/swapmous.vim for an example.		|gui-mouse-mapping|
 
 
 12. Color names						*beos-colors*
 
-Vim has a number of color names built-in. Additional names are read from the
-file $VIMRUNTIME/rgb.txt, if present. This file is basically the color
-database from X. Names used from this file are cached for efficiency.
+Vim has a number of color names built-in.  Additional names are read from the
+file $VIMRUNTIME/rgb.txt, if present.  This file is basically the color
+database from X.  Names used from this file are cached for efficiency.
 
 
 13. Compiling with Perl					*beos-perl*
 
-Compiling with Perl support enabled is slightly tricky. The Metrowerks
-compiler has some strange ideas where to search for include files. Since
+Compiling with Perl support enabled is slightly tricky.  The Metrowerks
+compiler has some strange ideas where to search for include files.  Since
 several include files with Perl have the same names as some Vim header
-files, the wrong ones get included. To fix this, run the following Perl
+files, the wrong ones get included.  To fix this, run the following Perl
 script while in the vim-5.0/src directory: >
 
    preproc.pl > perl.h

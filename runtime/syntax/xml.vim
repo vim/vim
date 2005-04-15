@@ -3,7 +3,7 @@
 " Maintainer:	Johannes Zellner <johannes@zellner.org>
 "		Author and previous maintainer:
 "		Paul Siegmann <pauls@euronet.nl>
-" Last Change:	Fri, 04 Jun 2004 10:41:54 CEST
+" Last Change:	Mi, 13 Apr 2005 22:40:09 CEST
 " Filenames:	*.xml
 " $Id$
 
@@ -58,8 +58,8 @@ syn match xmlError "[<&]"
 "
 " <tag foo.attribute = "value">
 "                      ^^^^^^^
-syn region  xmlString contained start=+"+ skip=+\\\\\|\\"+ end=+"+ contains=xmlEntity display
-syn region  xmlString contained start=+'+ skip=+\\\\\|\\'+ end=+'+ contains=xmlEntity display
+syn region  xmlString contained start=+"+ end=+"+ contains=xmlEntity display
+syn region  xmlString contained start=+'+ end=+'+ contains=xmlEntity display
 
 
 " punctuation (within attributes) e.g. <tag xml:foo.attribute ...>
@@ -233,7 +233,7 @@ else
 
 endif
 
-syn keyword xmlTodo         contained TODO FIXME XXX display
+syn keyword xmlTodo         contained TODO FIXME XXX
 syn match   xmlCommentError contained "[^><!]"
 syn region  xmlCommentPart
     \ start=+--+

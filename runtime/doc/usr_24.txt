@@ -1,4 +1,4 @@
-*usr_24.txt*	For Vim version 7.0aa.  Last change: 2003 Aug 18
+*usr_24.txt*	For Vim version 7.0aa.  Last change: 2005 Apr 01
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -104,7 +104,7 @@ Vim do that use this command: >
 When you now type a text like "(example)", as soon as you type the ) Vim will
 briefly move the cursor to the matching (, keep it there for half a second,
 and move back to where you were typing.
-   In case there is not matching (, Vim will beep.  Then you know that you
+   In case there is no matching (, Vim will beep.  Then you know that you
 might have forgotten the ( somewhere, or typed a ) too many.
    The match will also be shown for [] and {} pairs.  You don't have to wait
 with typing the next character, as soon as Vim sees it the cursor will move

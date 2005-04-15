@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 7.0aa.  Last change: 2005 Jan 14
+*gui.txt*       For Vim version 7.0aa.  Last change: 2005 Apr 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -184,7 +184,7 @@ When the scrollbar is dragged all the way down, the last line of the file
 will appear in the top of the window.
 
 If a window is shrunk to zero height (by the growth of another window) its
-scrollbar disappears. It reappears when the window is restored.
+scrollbar disappears.  It reappears when the window is restored.
 
 If a window is vertically split, it will get a scrollbar when it is the
 current window and when, taking the middle of the current window and drawing a
@@ -408,7 +408,7 @@ used - you should read whichever of these is appropriate now).
 							*clipboard*
 There is a special register for storing this selection, it is the "*
 register.  Nothing is put in here unless the information about what text is
-selected is about to change (eg with a left mouse click somewhere), or when
+selected is about to change (e.g. with a left mouse click somewhere), or when
 another application wants to paste the selected text.  Then the text is put
 in the "* register.  For example, to cut a line and make it the current
 selection/put it on the clipboard: >
@@ -504,7 +504,7 @@ floating menus that do not appear on the main menu bar.
 				*E328* *E329* *E337*
 To create a new menu item, use the ":menu" commands.  They are mostly like
 the ":map" set of commands but the first argument is a menu item name, given
-as a path of menus and submenus with a '.' between them. eg: >
+as a path of menus and submenus with a '.' between them, e.g.: >
 
    :menu File.Save  :w<CR>
    :inoremenu File.Save  <C-O>:w<CR>
@@ -648,9 +648,9 @@ simple.
 
 							*gui-toolbar*
 The toolbar is currently available in the Win32, Athena, Motif, GTK+ (X11),
-KDE and Photon GUI.  It should turn up in other GUIs in due course.  The default
-toolbar is setup in menu.vim.
-The display of the toolbar is controlled by the 'guioptions' letter 'T'. You
+KDE and Photon GUI.  It should turn up in other GUIs in due course.  The
+default toolbar is setup in menu.vim.
+The display of the toolbar is controlled by the 'guioptions' letter 'T'.  You
 can thus have menu & toolbar together, or either on its own, or neither.
 The appearance is controlled by the 'toolbar' option.  You can chose between
 an image, text or both.
@@ -661,7 +661,7 @@ level.  Vim interprets the items in this menu as follows:
 1)  If an "icon=" argument was specified, the file with this name is used.
     The file can either be specified with the full path or with the base name.
     In the last case it is searched for in the "bitmaps" directory in
-    'runtimepath', like in point 3).  Examples: >
+    'runtimepath', like in point 3.  Examples: >
 	:amenu icon=/usr/local/pixmaps/foo_icon.xpm ToolBar.Foo :echo "Foo"<CR>
 	:amenu icon=FooIcon ToolBar.Foo :echo "Foo"<CR>
 <   Note that in the first case the extension is included, while in the second
@@ -671,7 +671,7 @@ level.  Vim interprets the items in this menu as follows:
     A menu priority must come _after_ the icon argument: >
 	:amenu icon=foo 1.42 ToolBar.Foo :echo "42!"<CR>
 2)  An item called 'BuiltIn##', where ## is a number, is taken as number ## of
-    the built-in bitmaps available in Vim. Currently there are 31 numbered
+    the built-in bitmaps available in Vim.  Currently there are 31 numbered
     from 0 to 30 which cover most common editing operations |builtin-tools|. >
 	:amenu ToolBar.BuiltIn22 :call SearchNext("back")<CR>
 3)  An item with another name is first searched for in the directory
@@ -747,7 +747,7 @@ To see what an existing menu is mapped to, use just one argument after the
 menu commands (just like you would with the ":map" commands).  If the menu
 specified is a submenu, then all menus under that hierarchy will be shown.
 If no argument is given after :menu at all, then ALL menu items are shown
-for the appropriate mode (eg, Command-line mode for :cmenu).
+for the appropriate mode (e.g., Command-line mode for :cmenu).
 
 Special characters in the list, just before the rhs:
 *	The menu was defined with "nore" to disallow remapping.
@@ -856,7 +856,7 @@ See section |42.4| in the user manual.
 
 When a tip is defined for a menu item, it appears in the command-line area
 when the mouse is over that item, much like a standard Windows menu hint in
-the status bar. (Except when Vim is in Command-line mode, when of course
+the status bar.  (Except when Vim is in Command-line mode, when of course
 nothing is displayed.)
 When a tip is defined for a ToolBar item, it appears as a tooltip when the
 mouse pauses over that button, in the usual fashion.  Use the |hl-Tooltip|
@@ -870,7 +870,7 @@ The tip is defined like this: >
 And delete it with: >
 	:tunmenu MyMenu.Hello
 
-Tooltips are currently only supported for the X11 and Win32 GUI. However, they
+Tooltips are currently only supported for the X11 and Win32 GUI.  However, they
 should appear for the other gui platforms in the not too distant future.
 
 The ":tmenu" command works just like other menu commands, it uses the same
@@ -920,7 +920,7 @@ This section describes other features which are related to the GUI.
   get "<Modifiers-Key>".
 
 - In the GUI, the modifiers SHIFT, CTRL, and ALT (or META) may be used within
-  mappings of special keys and mouse events.  eg: :map <M-LeftDrag> <LeftDrag>
+  mappings of special keys and mouse events.  E.g.: :map <M-LeftDrag> <LeftDrag>
 
 - In the GUI, several normal keys may have modifiers in mappings etc, these
   are <Space>, <Tab>, <NL>, <CR>, <Esc>.

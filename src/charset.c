@@ -972,6 +972,19 @@ init_spell_chartab()
     }
 #endif
 #ifdef FEAT_MBYTE
+    else if (STRCMP(p_enc, "iso-8859-2") == 0)
+    {
+	/* latin2 */
+	for ( ; i <= 0xa0; ++i)
+	    spell_chartab[i] = FALSE;
+	for ( ; i <= 255; ++i)
+	    spell_chartab[i] = TRUE;
+	spell_chartab[0xa4] = FALSE;	    /* currency sign */
+	spell_chartab[0xa7] = FALSE;	    /* paragraph sign */
+	spell_chartab[0xad] = FALSE;	    /* dash */
+	spell_chartab[0xb0] = FALSE;	    /* degrees */
+	spell_chartab[0xf7] = FALSE;	    /* divide-by */
+    }
     else
 #endif
 #if defined(FEAT_MBYTE) || !defined(MSDOS)
@@ -1117,6 +1130,7 @@ win_lbr_chartabsize(wp, s, col, headp)
     int		numberextra;
     char_u	*ps;
     int		tab_corr = (*s == TAB);
+    int		n;
 
     /*
      * No 'linebreak' and 'showbreak': return quickly.
@@ -1160,9 +1174,12 @@ win_lbr_chartabsize(wp, s, col, headp)
 	col2 = col;
 	colmax = W_WIDTH(wp) - numberextra;
 	if (col >= colmax)
-	    colmax += (((col - colmax)
-			/ (colmax + win_col_off2(wp))) + 1)
-			* (colmax + win_col_off2(wp));
+	{
+	    n = colmax + win_col_off2(wp);
+	    if (n > 0)
+		colmax += (((col - colmax) / n) + 1) * n;
+	}
+
 	for (;;)
 	{
 	    ps = s;

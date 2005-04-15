@@ -3,7 +3,7 @@
 " Maintainer:	    Kazunobu Kuriyama <kazunobu.kuriyama@nifty.com>
 " Ex-maintainer:    Anthony Hodsdon <ahodsdon@fastmail.fm>
 " First Author:	    Valentino Kyriakides <1kyriaki@informatik.uni-hamburg.de>
-" Last Change:	    2004 May 20
+" Last Change:	    2005 Apr 13
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -30,8 +30,9 @@ endif
 
 " ObjC keywords, types, type qualifiers etc.
 syn keyword objcStatement	self super _cmd
-syn keyword objcType		id Class SEL IMP BOOL nil Nil
+syn keyword objcType		id Class SEL IMP BOOL
 syn keyword objcTypeModifier	bycopy in out inout oneway
+syn keyword objcConstant	nil Nil
 
 " Match the ObjC #import directive (like C's #include)
 syn region objcImported display contained start=+"+  skip=+\\\\\|\\"+  end=+"+
@@ -98,6 +99,7 @@ if version >= 508 || !exists("did_objc_syntax_inits")
   HiLink objcString		cString
   HiLink objcSpecial		Special
   HiLink objcProtocol		None
+  HiLink objcConstant		cConstant
 
   delcommand HiLink
 endif

@@ -1,4 +1,4 @@
-*version6.txt*  For Vim version 7.0aa.  Last change: 2005 Jan 26
+*version6.txt*  For Vim version 7.0aa.  Last change: 2005 Apr 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -956,7 +956,7 @@ Use "--remote" to have files be edited in an already running Vim.
 Use "--remote-wait" to do the same and wait for the editing to finish.
 Use "--remote-send" to send commands from one Vim to another.
 Use "--remote-expr" to have an expression evaluated in another Vim.
-Use "--serverlist" to list the currently available Vim servers. (X only)
+Use "--serverlist" to list the currently available Vim servers.  (X only)
 There are also functions to communicate between the server and the client.
 |remote_send()| |remote_expr()|
 
@@ -1055,7 +1055,7 @@ window).  This makes it easy to navigate through the error list.
 - |:cwindow| takes care that there is a quickfix window only when there are
   recognized errors. (Dan Sharp)
 
-- Quickfix also knows "info", next to "warning" and "error" types. "%I" can be
+- Quickfix also knows "info", next to "warning" and "error" types.  "%I" can be
   used for the start of a multi-line informational message. (Tony Leneis)
 - The "%p" argument can be used in 'errorformat' to get the column number from
   a line where "^" points to the column. (Stefan Roemer)
@@ -1144,7 +1144,7 @@ The View also contains the local argument list and manually created, opened
 and closed folds.
 
 Added the ":loadview" command and the 'viewdir' option: Allows for saving and
-restoring views of a file with simple commands. ":mkview 1" saves view 1 for
+restoring views of a file with simple commands.  ":mkview 1" saves view 1 for
 the current file, ":loadview 1" loads it again.  Also allows quickly switching
 between two views on one file.  And saving and restoring manual folds and the
 folding state.
@@ -3303,7 +3303,7 @@ open the GUI window early to be able to display the messages and pop up the
 dialog.
 
 "r<CR>" on a multi-byte character deleted only the first byte of the
-character. "3r<CR>" deleted three bytes instead of three characters.
+character.  "3r<CR>" deleted three bytes instead of three characters.
 
 When interrupting reading a file, Vi considers the buffer modified.  Added the
 'i' flag in 'cpoptions' flag for this (we don't want it modified to be able to
@@ -3830,7 +3830,7 @@ Problem:    VMS: Printing doesn't work, the file is deleted too quickly.
 	    No longer need the VMS specific printing menu.
 	    gethostname() is not available with VAXC.
 	    The makefile was lacking selection of the tiny-huge feature set.
-Solution:   Adjust the 'printexpr' option default. Fix the other problems and
+Solution:   Adjust the 'printexpr' option default.  Fix the other problems and
 	    update the documentation.  (Zoltan Arpadffy)
 Files:	    runtime/doc/os_vms.txt, runtime/menu.vim, src/INSTALLvms.txt,
 	    src/Make_vms.mms, src/option.c, src/os_unix.c, src/os_vms_conf.h
@@ -3843,7 +3843,7 @@ Files:	    src/ops.c
 
 Patch 6.0.029
 Problem:    When making a change in line 1, then in line 2 and then deleting
-	    line 1, undo info could be wrong. Only when the changes are undone
+	    line 1, undo info could be wrong.  Only when the changes are undone
 	    at once. (Gerhard Hochholzer)
 Solution:   When not saving a line for undo because it was already done
 	    before, remember for which entry the last line must be computed.
@@ -3891,7 +3891,7 @@ Files:	    runtime/menu.vim
 
 Patch 6.0.036
 Problem:    OS/2, MS-DOS and MS-Windows: Using a path that starts with a
-	    slash in 'tags' doesn't work as expected. (Mathias Koehrer
+	    slash in 'tags' doesn't work as expected. (Mathias Koehrer)
 Solution:   Only use the drive, not the whole path to the current directory.
 	    Also make it work for "c:dir/file".
 Files:	    src/misc2.c
@@ -6127,7 +6127,7 @@ New message translation for Norwegian. (Øyvind Holm)
 New color scheme:
 	desert (Hans Fugal)
 
-Arabic specific features. 'arabicshape', 'termbidi', 'arabic' and
+Arabic specific features.  'arabicshape', 'termbidi', 'arabic' and
 'rightleftcmd' options.  (Nadim Shaikli & Isam Bayazidi)
 
 Support for neXtaw GUI toolkit, mostly like Athena. (Alexey Froloff)
@@ -6810,7 +6810,7 @@ Files:	    runtime/filetype.vim, runtime/plugin/gzip.vim
 
 Patch 6.1.056
 Problem:    Loading the Syntax menu can take quite a bit of time.
-Solution:   Add the "skip_syntax_sel_menu" variable.  When its defined the
+Solution:   Add the "skip_syntax_sel_menu" variable.  When it's defined the
 	    available syntax files are not in the Syntax menu.
 Files:	    runtime/doc/gui.txt, runtime/menu.vim
 
@@ -7640,7 +7640,7 @@ Problem:    The extra mouse buttons found on some mice don't work.
 Solution:   Support two extra buttons for MS-Windows. (Michael Geddes)
 Files:	    runtime/doc/term.txt, src/edit.c, src/ex_getln.c, src/gui.c,
 	    src/gui_w32.c, src/gui_w48.c, src/keymap.h, src/message.c,
-	    src/misc1.c, src/misc2.c, src/normal.c. src/vim.h
+	    src/misc1.c, src/misc2.c, src/normal.c, src/vim.h
 
 Patch 6.1.185 (depends on 6.1.182)
 Problem:    Can't compile without +comments feature.

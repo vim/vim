@@ -1,4 +1,4 @@
-*usr_02.txt*	For Vim version 7.0aa.  Last change: 2004 Jun 08
+*usr_02.txt*	For Vim version 7.0aa.  Last change: 2005 Apr 01
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -425,7 +425,7 @@ the editor: "ZZ".  This will only close the help window, not exit Vim.
 As you read the help text, you will notice some text enclosed in vertical bars
 (for example, |help|).  This indicates a hyperlink.  If you position the
 cursor anywhere between the bars and press CTRL-] (jump to tag), the help
-system takes you to the indicated subject. (For reasons not discussed here,
+system takes you to the indicated subject.  (For reasons not discussed here,
 the Vim terminology for a hyperlink is tag.  So CTRL-] jumps to the location
 of the tag given by the word under the cursor.)
    After a few jumps, you might want to go back.  CTRL-T (pop tag) takes you
@@ -484,7 +484,7 @@ example, use the following command: >
 
 The table with all mode prefixes can be found here: |help-context|.
 
-Special keys are enclosed in angle brackets. To find help on the up-arrow key
+Special keys are enclosed in angle brackets.  To find help on the up-arrow key
 in Insert mode, for instance, use this command: >
 
 	:help i_<Up>

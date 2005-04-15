@@ -1,4 +1,4 @@
-*usr_03.txt*	For Vim version 7.0aa.  Last change: 2005 Feb 08
+*usr_03.txt*	For Vim version 7.0aa.  Last change: 2005 Apr 01
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -332,7 +332,7 @@ the <Left> and <Right> cursor keys when necessary.
    Pressing <Enter> executes the command.
 
 	Note:
-	The characters .*[]^%/\?~$ have special meaning. If you want to use
+	The characters .*[]^%/\?~$ have special meanings.  If you want to use
 	them in a search you must put a \ in front of them.  See below.
 
 To find the next occurrence of the same string use the "n" command.  Use this

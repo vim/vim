@@ -1,4 +1,4 @@
-*gui_w16.txt*   For Vim version 7.0aa.  Last change: 2001 Sep 03
+*gui_w16.txt*   For Vim version 7.0aa.  Last change: 2005 Mar 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -21,32 +21,32 @@ Other relevant documentation:
 
 {Vi does not have a Windows GUI}
 
-The Win16 version of Vim will run on Windows 3.1 or later. It has not been
+The Win16 version of Vim will run on Windows 3.1 or later.  It has not been
 tested on 3.0, it probably won't work without being recompiled and
-modified. (but you really should upgrade to 3.11 anyway. :)
+modified.  (But you really should upgrade to 3.11 anyway. :)
 
 In most respects it behaves identically to the Win32 GUI version, including
-having a flat-style toolbar(!). The chief differences:
+having a flat-style toolbar(!).  The chief differences:
 
 1) Bold/Italic text is not available, to speed up repaint/reduce resource
-   usage. (You can re-instate this by undefining MSWIN16_FASTTEXT.)
+   usage.  (You can re-instate this by undefining MSWIN16_FASTTEXT.)
 2) No tearoff menu emulation.
 3) No OLE interface.
-4) No long filename support (of course)
+4) No long filename support (of course).
 5) No tooltips on toolbar buttons - instead they produce command-line tips
    like menu items do.
-6) Line length limited to 32767 characters (like 16-bit DOS version)
+6) Line length limited to 32767 characters (like 16-bit DOS version).
 
 
 ==============================================================================
 1. Starting the GUI					*win16-start*
 
 The Win16 GUI version of Vim will always start the GUI, no matter how you
-start it or what it's called. There is no 'console' version as such, but you
+start it or what it's called.  There is no 'console' version as such, but you
 can use one of the DOS versions in a DOS box.
 
 The Win16 GUI has an extra menu item:  "Window/Select Font".  It brings up the
-standard Windows font selector. Note that bold and italic fonts are not
+standard Windows font selector.  Note that bold and italic fonts are not
 supported in an attempt to maximize GDI drawing speed.
 
 Setting the menu height doesn't work for the Win16 GUI.
@@ -82,7 +82,7 @@ The clipboard works in the same way as the Win32 version: see |gui-clipboard|.
 4. Shell Commands					*win16-shell*
 
 Vim spawns a DOS window for external commands, to make it possible to run any
-DOS command. The window uses the _default.pif settings.
+DOS command.  The window uses the _default.pif settings.
 
 							*win16-!start*
 Normally, Vim waits for a command to complete before continuing (this makes
@@ -135,7 +135,7 @@ as the traditional interface shared with the console version.
 6.1 Dialogs
 
 The dialogs displayed by the "confirm" family (i.e. the 'confirm' option,
-|:confirm| command and |confirm()| function are GUI-based rather than the
+|:confirm| command and |confirm()| function) are GUI-based rather than the
 console-based ones used by other versions.  There is no option to change this.
 
 
@@ -157,7 +157,7 @@ PrintFile.  See $VIMRUNTIME/menu.vim for how it works by default.
 Using this should also work: >
 	:w >>prn
 
-Vim supports a number of standard MS Windows features. Some of these are
+Vim supports a number of standard MS Windows features.  Some of these are
 detailed elsewhere: see |'mouse'|, |win32-hidden-menus|.
 Also see |:simalt|
 
@@ -176,11 +176,11 @@ names with any Ex command.
 
 							*win16-truetype*
 It is recommended that you use a raster font and not a TrueType
-fixed-pitch font. e.g. Use Courier, not Courier New. This is not just
+fixed-pitch font.  E.g. use Courier, not Courier New.  This is not just
 to use less resources but because there are subtle bugs in the
-handling of fixed-pitch TrueType in Win3.1x. In particular, when you move
+handling of fixed-pitch TrueType in Win3.1x.  In particular, when you move
 a block cursor over a pipe character '|', the cursor is drawn in the wrong
-size and bits get left behind. This is a bug in the Win3.1x GDI, it doesn't
+size and bits get left behind.  This is a bug in the Win3.1x GDI, it doesn't
 happen if you run the exe under 95/NT.
 
  vim:tw=78:sw=4:ts=8:ft=help:norl:

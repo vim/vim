@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Mar 26
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Apr 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1412,7 +1412,7 @@ v:warningmsg	Last given warning message.  It's allowed to set this variable.
 
 See |function-list| for a list grouped by what the function is used for.
 
-(Use CTRL-] on the function name to jump to the full explanation)
+(Use CTRL-] on the function name to jump to the full explanation.)
 
 USAGE				RESULT	DESCRIPTION	~
 
@@ -1620,7 +1620,7 @@ writefile({list}, {fname} [, {binary}])
 
 add({list}, {expr})					*add()*
 		Append the item {expr} to List {list}.  Returns the resulting
-		List. Examples: >
+		List.  Examples: >
 			:let alist = add([1, 2, 3], item)
 			:call add(mylist, "woodstock")
 <		Note that when {expr} is a List it is appended as a single
@@ -1809,6 +1809,7 @@ char2nr({expr})						*char2nr()*
 <		The current 'encoding' is used.  Example for "utf-8": >
 			char2nr("á")		returns 225
 			char2nr("á"[0])		returns 195
+<		nr2char() does the opposite.
 
 cindent({lnum})						*cindent()*
 		Get the amount of indent for line {lnum} according the C
@@ -2551,10 +2552,10 @@ getqflist()						*getqflist()*
 
 getreg([{regname}])					*getreg()*
 		The result is a String, which is the contents of register
-		{regname}. Example: >
+		{regname}.  Example: >
 			:let cliptext = getreg('*')
 <		getreg('=') returns the last evaluated value of the expression
-		register. (For use in maps).
+		register.  (For use in maps.)
 		If {regname} is not specified, |v:register| is used.
 
 
@@ -2677,7 +2678,7 @@ histadd({history}, {item})				*histadd()*
 <		This function is not available in the |sandbox|.
 
 histdel({history} [, {item}])				*histdel()*
-		Clear {history}, ie. delete all its entries.  See |hist-names|
+		Clear {history}, i.e. delete all its entries.  See |hist-names|
 		for the possible values of {history}.
 
 		If the parameter {item} is given as String, this is seen
@@ -2753,7 +2754,7 @@ hlID({name})	The result is a Number, which is the ID of the highlight group
 
 hostname()						*hostname()*
 		The result is a String, which is the name of the machine on
-		which Vim is currently running. Machine names greater than
+		which Vim is currently running.  Machine names greater than
 		256 characters long are truncated.
 
 iconv({expr}, {from}, {to})				*iconv()*
@@ -2873,7 +2874,7 @@ insert({list}, {item} [, {idx}])			*insert()*
 		{idx}.  If {idx} is zero it goes before the first item, just
 		like omitting {idx}.  A negative {idx} is also possible, see
 		|list-index|.  -1 inserts just before the last item.
-		Returns the resulting List. Examples: >
+		Returns the resulting List.  Examples: >
 			:let mylist = insert([2, 3, 5], 1)
 			:call insert(mylist, 4, -1)
 			:call insert(mylist, 6, len(mylist))
@@ -3131,7 +3132,7 @@ match({expr}, {pat}[, {start}[, {count}]])			*match()*
 		If {start} is given, the search starts from byte index
 		{start} in a String or item {start} in a List.
 		The result, however, is still the index counted from the
-		first character/item. Example: >
+		first character/item.  Example: >
 			:echo match("testing", "ing", 2)
 <		result is again "4". >
 			:echo match("testing", "ing", 4)
@@ -3405,7 +3406,7 @@ repeat({expr}, {count})					*repeat()*
 			:let seperator = repeat('-', 80)
 <		When {count} is zero or negative the result is empty.
 		When {expr} is a List the result is {expr} concatenated
-		{count} times. Example: >
+		{count} times.  Example: >
 			:let longlist = repeat(['a', 'b'], 3)
 <		Results in ['a', 'b', 'a', 'b', 'a', 'b'].
 
@@ -3544,7 +3545,7 @@ server2client( {clientid}, {string})			*server2client()*
 		{only available when compiled with the |+clientserver| feature}
 		Note:
 		This id has to be stored before the next command can be
-		received. Ie. before returning from the received command and
+		received.  I.e. before returning from the received command and
 		before calling any commands that waits for input.
 		See also |clientserver|.
 		Example: >
@@ -3587,9 +3588,10 @@ setcmdpos({pos})					*setcmdpos()*
 		line.
 
 setline({lnum}, {line})					*setline()*
-		Set line {lnum} of the current buffer to {line}.  If this
-		succeeds, 0 is returned.  If this fails (most likely because
-		{lnum} is invalid) 1 is returned.  Example: >
+		Set line {lnum} of the current buffer to {line}.
+		{lnum} is used like with |getline()|.
+		If this succeeds, 0 is returned.  If this fails (most likely
+		because {lnum} is invalid) 1 is returned.  Example: >
 			:call setline(5, strftime("%c"))
 <		Note: The '[ and '] marks are not set.
 
@@ -3715,7 +3717,9 @@ split({expr} [, {pattern}])				*split()*
 			:let words = split(getline('.'), '\W\+')
 <		Since empty strings are not added the "\+" isn't required but
 		it makes the function work a bit faster.
-		The opposite function is |join()|.
+		To split a string in individual characters: >
+			:for c in split(mystring, '\zs')
+<		The opposite function is |join()|.
 
 
 strftime({format} [, {time}])				*strftime()*
@@ -3806,7 +3810,7 @@ strridx({haystack}, {needle} [, {start}])			*strridx()*
 		For pattern searches use |match()|.
 		-1 is returned if the {needle} does not occur in {haystack}.
 		If the {needle} is empty the length of {haystack} is returned.
-		See also |stridx()|. Examples: >
+		See also |stridx()|.  Examples: >
 		  :echo strridx("an angry armadillo", "an")	     3
 <		  					*strrchr()*
 		When used with a single character it works similar to the C
@@ -3940,7 +3944,7 @@ taglist({expr})							*taglist()*
 					defined.
 			cmd		Ex command used to locate the tag in
 					the file.
-			kind		type of the tag. The value for this
+			kind		type of the tag.  The value for this
 					entry depends on the language specific
 					kind values generated by the ctags
 					tool.
@@ -4068,7 +4072,7 @@ visualmode([expr])						*visualmode()*
 
 							*winbufnr()*
 winbufnr({nr})	The result is a Number, which is the number of the buffer
-		associated with window {nr}. When {nr} is zero, the number of
+		associated with window {nr}.  When {nr} is zero, the number of
 		the buffer in the current window is returned.  When window
 		{nr} doesn't exist, -1 is returned.
 		Example: >
@@ -4657,7 +4661,7 @@ You can use multiple brace pairs: >
 where "end_of_word" is either "verb" or "jective".
 
 However, the expression inside the braces must evaluate to a valid single
-variable name. e.g. this is invalid: >
+variable name, e.g. this is invalid: >
 	:let foo='a + b'
 	:echo c{foo}d
 .. since the result of expansion is "ca + bd", which is not a variable name.

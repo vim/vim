@@ -1,4 +1,4 @@
-*usr_42.txt*	For Vim version 7.0aa.  Last change: 2002 Oct 08
+*usr_42.txt*	For Vim version 7.0aa.  Last change: 2005 Apr 01
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -109,7 +109,7 @@ Thus each name in {menu-item} has its priority number.
 
 SPECIAL CHARACTERS
 
-The {menu-item} in this example is "&File.&Save<Tab>:w". This brings up an
+The {menu-item} in this example is "&File.&Save<Tab>:w".  This brings up an
 important point: {menu-item} must be one word.  If you want to put a dot,
 space or tabs in the name, you either use the <> notation (<Space> and <Tab>,
 for instance) or use the backslash (\) escape. >

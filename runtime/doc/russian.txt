@@ -1,4 +1,4 @@
-*russian.txt*   For Vim version 7.0aa.  Last change: 2004 Dec 22
+*russian.txt*   For Vim version 7.0aa.  Last change: 2005 Apr 01
 
 
 		  VIM REFERENCE MANUAL    by Vassily Ragosin
@@ -14,7 +14,7 @@ Russian language localization and support in Vim	   *russian* *Russian*
 ===============================================================================
 1. Introduction							*russian-intro*
 
-Russian language is supported perfectly well in Vim. You can type and view
+Russian language is supported perfectly well in Vim.  You can type and view
 Russian text just as any other, without the need to tweak the settings.
 
 ===============================================================================
@@ -28,8 +28,8 @@ example,
 <
 In the latter case, you can switch between languages even if you do not have
 system Russian keyboard or independently from a system-wide keyboard settings.
-See 'keymap'. You can also map a key to switch between keyboards, if you
-choose the latter option. See |:map|.
+See 'keymap'.  You can also map a key to switch between keyboards, if you
+choose the latter option.  See |:map|.
 
 For your convenience, to avoid switching between keyboards, when you need to
 enter Normal mode command, you can also set 'langmap' option:
@@ -51,11 +51,11 @@ different codepages from
     http://www.sourceforge.net/projects/ruvim/
 
 Make sure that your Vim is at least 6.2.506 and use ruvim 0.5 or later for
-automatic installs. Vim also needs to be compiled with |+gettext| feature for
+automatic installs.  Vim also needs to be compiled with |+gettext| feature for
 user interface items translations to work.
 
 After downloading an archive from RuVim project, unpack it into your
-$VIMRUNTIME directory. We recommend using UTF-8 archive, if your version of
+$VIMRUNTIME directory.  We recommend using UTF-8 archive, if your version of
 Vim is compiled with |+multi_byte| feature enabled.
 
 In order to use the Russian documentation, make sure you have set the
@@ -66,7 +66,7 @@ In order to use the Russian documentation, make sure you have set the
 
 -- If you are using Russian message translations in Win32 console, then
    you may see the output produced by "vim --help", "vim --version" commands
-   and Win32 console window title appearing in a wrong codepage. This problem
+   and Win32 console window title appearing in a wrong codepage.  This problem
    is related to a bug in GNU gettext library and may be fixed in the future
    releases of gettext.
 

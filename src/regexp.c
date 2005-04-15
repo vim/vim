@@ -738,65 +738,69 @@ reg_equi_class(c)
     {
 	switch (c)
 	{
-	    case 'A': case 'À': case 'Á': case 'Â':
-	    case 'Ã': case 'Ä': case 'Å':
-		      regmbc('A'); regmbc('À'); regmbc('Á'); regmbc('Â');
-		      regmbc('Ã'); regmbc('Ä'); regmbc('Å');
+	    case 'A': case '\300': case '\301': case '\302':
+	    case '\303': case '\304': case '\305':
+		      regmbc('A'); regmbc('\300'); regmbc('\301');
+		      regmbc('\302'); regmbc('\303'); regmbc('\304');
+		      regmbc('\305');
 		      return;
-	    case 'C': case 'Ç':
-		      regmbc('C'); regmbc('Ç');
+	    case 'C': case '\307':
+		      regmbc('C'); regmbc('\307');
 		      return;
-	    case 'E': case 'È': case 'É': case 'Ê': case 'Ë':
-		      regmbc('E'); regmbc('È'); regmbc('É'); regmbc('Ê');
-		      regmbc('Ë');
+	    case 'E': case '\310': case '\311': case '\312': case '\313':
+		      regmbc('E'); regmbc('\310'); regmbc('\311');
+		      regmbc('\312'); regmbc('\313');
 		      return;
-	    case 'I': case 'Ì': case 'Í': case 'Î': case 'Ï':
-		      regmbc('I'); regmbc('Ì'); regmbc('Í'); regmbc('Î');
-		      regmbc('Ï');
+	    case 'I': case '\314': case '\315': case '\316': case '\317':
+		      regmbc('I'); regmbc('\314'); regmbc('\315');
+		      regmbc('\316'); regmbc('\317');
 		      return;
-	    case 'N': case 'Ñ':
-		      regmbc('N'); regmbc('Ñ');
+	    case 'N': case '\321':
+		      regmbc('N'); regmbc('\321');
 		      return;
-	    case 'O': case 'Ò': case 'Ó': case 'Ô': case 'Õ': case 'Ö':
-		      regmbc('O'); regmbc('Ò'); regmbc('Ó'); regmbc('Ô');
-		      regmbc('Õ'); regmbc('Ö');
+	    case 'O': case '\322': case '\323': case '\324': case '\325':
+	    case '\326':
+		      regmbc('O'); regmbc('\322'); regmbc('\323');
+		      regmbc('\324'); regmbc('\325'); regmbc('\326');
 		      return;
-	    case 'U': case 'Ù': case 'Ú': case 'Û': case 'Ü':
-		      regmbc('U'); regmbc('Ù'); regmbc('Ú'); regmbc('Û');
-		      regmbc('Ü');
+	    case 'U': case '\331': case '\332': case '\333': case '\334':
+		      regmbc('U'); regmbc('\331'); regmbc('\332');
+		      regmbc('\333'); regmbc('\334');
 		      return;
-	    case 'Y': case 'İ':
-		      regmbc('Y'); regmbc('İ');
+	    case 'Y': case '\335':
+		      regmbc('Y'); regmbc('\335');
 		      return;
-	    case 'a': case 'à': case 'á': case 'â':
-	    case 'ã': case 'ä': case 'å':
-		      regmbc('a'); regmbc('à'); regmbc('á'); regmbc('â');
-		      regmbc('ã'); regmbc('ä'); regmbc('å');
+	    case 'a': case '\340': case '\341': case '\342':
+	    case '\343': case '\344': case '\345':
+		      regmbc('a'); regmbc('\340'); regmbc('\341');
+		      regmbc('\342'); regmbc('\343'); regmbc('\344');
+		      regmbc('\345');
 		      return;
-	    case 'c': case 'ç':
-		      regmbc('c'); regmbc('ç');
+	    case 'c': case '\347':
+		      regmbc('c'); regmbc('\347');
 		      return;
-	    case 'e': case 'è': case 'é': case 'ê': case 'ë':
-		      regmbc('e'); regmbc('è'); regmbc('é'); regmbc('ê');
-		      regmbc('ë');
+	    case 'e': case '\350': case '\351': case '\352': case '\353':
+		      regmbc('e'); regmbc('\350'); regmbc('\351');
+		      regmbc('\352'); regmbc('\353');
 		      return;
-	    case 'i': case 'ì': case 'í': case 'î': case 'ï':
-		      regmbc('i'); regmbc('ì'); regmbc('í'); regmbc('î');
-		      regmbc('ï');
+	    case 'i': case '\354': case '\355': case '\356': case '\357':
+		      regmbc('i'); regmbc('\354'); regmbc('\355');
+		      regmbc('\356'); regmbc('\357');
 		      return;
-	    case 'n': case 'ñ':
-		      regmbc('n'); regmbc('ñ');
+	    case 'n': case '\361':
+		      regmbc('n'); regmbc('\361');
 		      return;
-	    case 'o': case 'ò': case 'ó': case 'ô': case 'õ': case 'ö':
-		      regmbc('o'); regmbc('ò'); regmbc('ó'); regmbc('ô');
-		      regmbc('õ'); regmbc('ö');
+	    case 'o': case '\362': case '\363': case '\364': case '\365':
+	    case '\366':
+		      regmbc('o'); regmbc('\362'); regmbc('\363');
+		      regmbc('\364'); regmbc('\365'); regmbc('\366');
 		      return;
-	    case 'u': case 'ù': case 'ú': case 'û': case 'ü':
-		      regmbc('u'); regmbc('ù'); regmbc('ú'); regmbc('û');
-		      regmbc('ü');
+	    case 'u': case '\371': case '\372': case '\373': case '\374':
+		      regmbc('u'); regmbc('\371'); regmbc('\372');
+		      regmbc('\373'); regmbc('\374');
 		      return;
-	    case 'y': case 'ı': case 'ÿ':
-		      regmbc('y'); regmbc('ı'); regmbc('ÿ');
+	    case 'y': case '\375': case '\377':
+		      regmbc('y'); regmbc('\375'); regmbc('\377');
 		      return;
 	}
     }
