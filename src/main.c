@@ -711,7 +711,7 @@ main
 #endif
 	    case 'M':		/* "-M"  no changes or writing of files */
 		reset_modifiable();
-		/* FALLTRHOUGH */
+		/* FALLTHROUGH */
 
 	    case 'm':		/* "-m"  no writing of files */
 		p_write = FALSE;
@@ -859,7 +859,7 @@ main
 		    argv_idx = -1;
 		    break;
 		}
-		/*FALLTRHOUGH*/
+		/*FALLTHROUGH*/
 	    case 'S':		/* "-S {file}" execute Vim script */
 	    case 'i':		/* "-i {viminfo}" use for viminfo */
 #ifndef FEAT_DIFF
@@ -1011,7 +1011,7 @@ scripterror:
 			argv_idx = -1;
 			break;
 		    }
-		    /*FALLTRHOUGH*/
+		    /*FALLTHROUGH*/
 		case 'W':	/* "-W {scriptout}" overwrite script file */
 		    if (scriptout != NULL)
 			goto scripterror;

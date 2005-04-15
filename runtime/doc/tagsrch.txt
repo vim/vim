@@ -1,4 +1,4 @@
-*tagsrch.txt*   For Vim version 7.0aa.  Last change: 2005 Feb 14
+*tagsrch.txt*   For Vim version 7.0aa.  Last change: 2005 Apr 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -251,7 +251,7 @@ g CTRL-]		Like CTRL-], but use ":tjump" instead of ":tag".
 			in Vi}
 
 							*:tf* *:tfirst*
-:[count]tf[irst][!]	Same as ":trewind". {not in Vi}
+:[count]tf[irst][!]	Same as ":trewind".  {not in Vi}
 
 							*:tl* *:tlast*
 :tl[ast][!]		Jump to last matching tag.  See |tag-!| for [!].  {not
@@ -281,12 +281,12 @@ the same as above, with a "p" prepended.
 
 							*:pts* *:ptselect*
 :pts[elect][!] [ident]	Does ":tselect[!] [ident]" and shows the new tag in a
-			"Preview" window. See |:ptag| for more info.
+			"Preview" window.  See |:ptag| for more info.
 			{not in Vi}
 
 							*:ptj* *:ptjump*
 :ptj[ump][!] [ident]	Does ":tjump[!] [ident]" and shows the new tag in a
-			"Preview" window. See |:ptag| for more info.
+			"Preview" window.  See |:ptag| for more info.
 			{not in Vi}
 
 							*:ptn* *:ptnext*
@@ -305,7 +305,7 @@ the same as above, with a "p" prepended.
 			{not in Vi}
 
 							*:ptf* *:ptfirst*
-:[count]ptf[irst][!]	Same as ":ptrewind". {not in Vi}
+:[count]ptf[irst][!]	Same as ":ptrewind".  {not in Vi}
 
 							*:ptl* *:ptlast*
 :ptl[ast][!]		":tlast" in the preview window.  See |:ptag|.
@@ -395,7 +395,7 @@ In a future version changing the buffer will be impossible.  All this for
 security reasons: Somebody might hide a nasty command in the tags file, which
 would otherwise go unnoticed.  Example: >
 	:$d|/tag-function-name/
-{this security prevention is not present in Vi}.
+{this security prevention is not present in Vi}
 
 In Vi the ":tag" command sets the last search pattern when the tag is searched
 for.  In Vim this is not done, the previous search pattern is still remembered,
@@ -582,8 +582,8 @@ If the command is a normal search command (it starts and ends with "/" or
 "?"), some special handling is done:
 - Searching starts on line 1 of the file.
   The direction of the search is forward for "/", backward for "?".
-  Note that 'wrapscan' does not matter, the whole file is always searched. {Vi
-  does use 'wrapscan', which caused tags sometimes not be found).  {Vi starts
+  Note that 'wrapscan' does not matter, the whole file is always searched.  (Vi
+  does use 'wrapscan', which caused tags sometimes not be found.)  {Vi starts
   searching in line 2 of another file.  It does not find a tag in line 1 of
   another file when 'wrapscan' is not set}
 - If the search fails, another try is done ignoring case.  If that fails too,
@@ -596,7 +596,7 @@ If the command is a normal search command (it starts and ends with "/" or
 	"^[#a-zA-Z_].*\<tagname[ \t]*("
   This means: A line starting with '#' or an identifier and containing the tag
   followed by white space and a '('.  This will find macro names and function
-  names with a type prepended.  {the extra searches are not in Vi}.
+  names with a type prepended.  {the extra searches are not in Vi}
 
 ==============================================================================
 6. Include file searches		*include-search* *definition-search*

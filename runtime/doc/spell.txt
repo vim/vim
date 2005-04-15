@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Mar 22
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Apr 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -7,7 +7,8 @@
 Spell checking						*spell*
 
 1. Quick start			|spell-quickstart|
-X. Spell file format		|spell-file-format|
+2. Generating a spell file	|spell-mkspell|
+9. Spell file format		|spell-file-format|
 
 {Vi does not have any of these commands}
 
@@ -21,18 +22,29 @@ This command switches on spell checking: >
 
 	:setlocal spell spelllang=en_us
 
-This switches the 'spell' option on and specifies to check for US English.
+This switches on the 'spell' option and specifies to check for US English.
 
 The words that are not recognized are highlighted with one of these:
 	SpellBad	word not recognized
 	SpellRare	rare word
 	SpellLocal	wrong spelling for selected region
 
+Vim only checks words for spelling, there is no grammar check.
+
+To search for the next misspelled word:
+
+							*]s* *E756*
+]s			Move to next misspelled word after the cursor.
+
+							*[s*
+[s			Move to next misspelled word before the cursor.
+			DOESN'T WORK YET!
+
 
 PERFORMANCE
 
 Note that Vim does on-the-fly spellchecking.  To make this work fast the
-word list is loaded in memory.  Thus this uses a lot of memory (2 Mbyte or
+word list is loaded in memory.  Thus this uses a lot of memory (1 Mbyte or
 more).  There might also be a noticable delay when the word list is loaded,
 which happens when 'spelllang' is set.  Each word list is only loaded once,
 they are not deleted when 'spelllang' is made empty.  When 'encoding' is set
@@ -52,33 +64,34 @@ comes in (at least) these variants:
 Words that are not used in one region but are used in another region are
 highlighted with SpellLocal.
 
-Always use lowercase letters.
+Always use lowercase letters for the language and region names.
 
 
 SPELL FILES
 
 Vim searches for spell files in the "spell" subdirectory of the directories in
-'runtimepath'.  The name is: xx.yyy.spl, where:
-	xx	the language name
-	yyy	the value of 'encoding'
+'runtimepath'.  The name is: LL-XXX.EEE.spl, where:
+	LL	the language name
+	-XXX	optional addition
+	EEE	the value of 'encoding'
 
 Exception: Vim uses "latin1" when 'encoding' is "iso-8859-15".  The euro sign
 doesn't matter for spelling.
 
 Spelling for EBCDIC is currently not supported.
 
-A spell file might not be available in the current 'encoding'.  You may try
-using the "iconv" program to create one: >
-
-	iconv -f latin1 -t koi8-r de.latin1.spl >de.koi8-r.spl
-
-However, if some characters cannot be presented in the target encoding this
-will give wrong results.
+A spell file might not be available in the current 'encoding'.  See
+|spell-mkspell| about how to create a spell file.  Converting a spell file
+with "iconv" will NOT work.
 
 If a spell file only uses ASCII characters the encoding can be omitted.  This
 is useful for English: "en.spl"  The file with encoding is checked first, thus
 you could have one with encoding that includes words with non-ASCII characters
 and use the ASCII file as a fall-back.
+
+							*E758* *E759*
+When loading a spell file Vim checks that it is properly formatted.  If you
+get an error the file may be truncated, modified or for another Vim version.
 
 
 WORDS
@@ -103,56 +116,143 @@ done:
 Note that mixing @Spell and @NoSpell doesn't make sense.
 
 ==============================================================================
-X. Spell file format					*spell-file-format*
-							*E751*
+2. Generating a spell file				*spell-mkspell*
 
-The spelling for a language is specified in file with a specific format.
-The first character of a line specifies what follows in the line:
+Vim uses a binary file format for spelling.  This greatly speeds up loading
+the word list and keeps it small.
 
-	line		meaning ~
-	-xx[-yy]...	words for region xx (and region yy, etc.) follow
-	<word>		normal word
-	><word>		rare word
-	+<word>		optional addition after a word
-	!<word>		normal word, keep upper/lower case
-	!><word>	rare word, keep upper/lower case
-	!+<word>	optional word addition, keep upper/lower case
-	#<anything>	comment
+You can create a Vim spell file from the .aff and .dic files that Myspell
+uses.  Myspell is used by OpenOffice.org and Mozilla.  You should be able to
+find them here:
+	http://lingucomponent.openoffice.org/spell_dic.html
 
-Empty lines are ignored.  The word continues until the end of the line.  Watch
-out for trailing white space!
+:mksp[ell] {outname}  {inname} ...			*:mksp* *:mkspell*
+			Generate spell file {outname}.spl from Myspell files
+			{inname}.aff and {inname}.dic.
+			Multiple {inname} arguments can be given to combine
+			regions into one Vim spell file.  Example: >
+		:mkspell ~/.vim/spell/en /tmp/en_US /tmp/en_CA /tmp/en_AU
+<			This combines the English word lists for US, CA and AU
+			into one en.spl file.
+			Up to eight regions can be combined. *E754* *755*
 
-Words that start with an upper-case letter will be required to start with an
-upper-case letter.  Otherwise, words must be in lower-case and case is
-ignored.
+Since you might want to change the word list for use with Vim the following
+procedure is recommended:
 
-It is possible that a word appears both with an upper-case letter and as a
-rare word.  This means that the word with an upper-case letter is OK and the
-word without the upper-case letter is rare.
-								*E753*
-The region is specified with "-xx".  For example, in the "en.spl" file "-us"
-starts the word for "en_us".  This can be repeated for words that are used in
-more than one region.  For example "-ca-us" is used for Canadian and US
-English words.  Use "---" to go back to the words for all regions.
+1. Obtain the xx_YY.aff and xx_YY.dic files from Myspell.
+2. Make a copy of these files to xx_YY.orig.aff and xx_YY.orig.dic.
+3. Change the xx_YY.aff and xx_YY.dic files to remove bad words, add missing
+   words, etc.
+4. Use |:mkspell| to generate the Vim spell file and try it out.
 
-Vim supports up to eight regions.				*E752*
+When the Myspell files are updated you can merge the differences:
+5. Obtain the new Myspell files as xx_YY.new.aff and xx_UU.new.dic.
+6. Use Vimdiff to see what changed: >
+	vimdiff xx_YY.orig.dic xx_YY.new.dic
+7. Take over the changes you like in xx_YY.dic.
+   You may also need to change xx_YY.aff.
+8. Rename xx_YY.new.dic to xx_YY.orig.dic and xx_YY.new.aff to xx_YY.new.aff.
 
-It is possible to have a match that starts with a valid word.  In that case
-the match is used, because it is longer.  Example:
+==============================================================================
+9. Spell file format					*spell-file-format*
 
-	 we
-	=we're
+This is the format of the files that are used by the person who creates and
+maintains a word list.
 
-"re" is not a word, thus "=we're" is needed to avoid it gets highlighted.
+Note that we avoid the word "dictionary" here.  That is because the goal of
+spell checking differs from writing a dictionary (as in the book).  For
+spelling we need a list of words that are OK, thus need not to be highlighted.
+Names will not appear in a dictionary, but do appear in a word list.  And
+some old words are rarely used and are common misspellings.  These do appear
+in a dictionary but not in a word list.
 
-The "+" items may appear after any word.  For English "'s" is used.  Be
-careful with this, it may hide mistakes.
+There are two files: the basic word list and an affix file.  The affixes are
+used to modify the basic words to get the full word list.  This significantly
+reduces the number of words, especially for a language like Polish.  This is
+called affix compression.
 
-Vim will check for duplicate words in the files used, but you will only get
-warnings if the 'verbose' option is set to 1 or more.
+The format for the affix and word list files is mostly identical to what
+Myspell uses (the spell checker of Mozilla and OpenOffice.org).  A description
+can be found here:
+	http://lingucomponent.openoffice.org/affix.readme ~
+Note that affixes are case sensitive, this isn't obvious from the description.
+Vim supports a few extras.  Hopefully Myspell will support these too some day.
+See |spell-affix-vim|.
 
-Note that the "=" and "+" words will slow down the operation.  Use them only
-when really needed.
+The basic word list and the affix file are combined and turned into a binary
+spell file.  All the preprocessing has been done, thus this file loads fast.
+The binary spell file format is described in the source code (src/spell.c).
+But only developers need to know about it.
+
+The preprocessing also allows us to take the Myspell language files and modify
+them before the Vim word list is made.  The tools for this can be found in the
+"src/spell" directory.
+
+
+WORD LIST FORMAT					*spell-wordlist-format*
+
+A very short example, with line numbers:
+
+	1	1234
+	2	aan
+	3	Als
+	4	Etten-Leur
+	5	et al.
+	6	's-Gravenhage
+	7	's-Gravenhaags
+	8	bedel/P
+	9	kado/1
+	10	cadeau/2
+
+The first line contains the number of words.  Vim ignores it.  *E760*
+
+What follows is one word per line.  There should be no white space after the
+word.
+
+When the word only has lower-case letters it will also match with the word
+starting with an upper-case letter.
+
+When the word includes an upper-case letter, this means the upper-case letter
+is required at this position.  The same word with a lower-case letter at this
+position will not match. When some of the other letters are upper-case it will
+not match either.
+
+The same word with all upper-case characters will always be OK.
+
+	word list	matches			does not match ~
+	als		als Als ALS		ALs AlS aLs aLS
+	Als		Als  ALS		als ALs AlS aLs aLS
+	ALS		ALS			als Als ALs AlS aLs aLS
+	AlS		AlS ALS			als Als ALs aLs aLS
+
+Note in line 5 to 7 that non-word characters are used.  You can include
+any character in a word.  When checking the text a word still only matches
+when it appears with a non-word character before and after it.  For Myspell a
+word starting with a non-word character probably won't work.
+
+After the word there is an optional slash and flags.  Most of these flags are
+letters that indicate the affixes that can be used with this word.
+
+							*spell-affix-vim*
+A flag that Vim adds and is not in Myspell is the "=" flag.  This has the
+meaning that case matters.  This can be used if the word does not have the
+first letter in upper case at the start of a sentence.  Example:
+
+	word list	matches			does not match ~
+	's morgens/=	's morgens		'S morgens 's Morgens
+	's Morgens	's Morgens		'S morgens 's morgens
+
+							*spell-affix-mbyte*
+The basic word list is normally in an 8-bit encoding, which is mentioned in
+the affix file.  The affix file must always be in the same encoding as the
+word list.  This is compatible with Myspell.  For Vim the encoding may also be
+something else, any encoding that "iconv" supports.  The "SET" line must
+specify the name of the encoding.  When using a multi-byte encoding it's
+possible to use more different affixes.
+
+Performance hint: Although using affixes reduces the number of words, it
+reduces the speed.  It's a good idea to put all the often used words in the
+word list with the affixes prepended/appended.
 
 
  vim:tw=78:sw=4:ts=8:ft=help:norl:

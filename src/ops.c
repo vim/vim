@@ -3430,9 +3430,9 @@ do_put(regname, dir, count, flags)
 	/* adjust '] mark */
 	curbuf->b_op_end.lnum = curwin->w_cursor.lnum - 1;
 	curbuf->b_op_end.col = bd.textcol + totlen - 1;
-#ifdef FEAT_VIRTUALEDIT
+# ifdef FEAT_VIRTUALEDIT
 	curbuf->b_op_end.coladd = 0;
-#endif
+# endif
 	if (flags & PUT_CURSEND)
 	{
 	    curwin->w_cursor = curbuf->b_op_end;
@@ -3627,7 +3627,7 @@ error:
 
 	    if (flags & PUT_CURSLINE)
 	    {
-		/* ":put": put cursor on last inserte line */
+		/* ":put": put cursor on last inserted line */
 		curwin->w_cursor.lnum = lnum;
 		beginline(BL_WHITE | BL_FIX);
 	    }

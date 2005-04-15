@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 7.0aa.  Last change: 2005 Mar 07
+*pattern.txt*   For Vim version 7.0aa.  Last change: 2005 Mar 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -631,7 +631,7 @@ overview.
 	position: "\(foo\)\@!bar" will match "bar" in "foobar", because at the
 	position where "bar" matches, "foo" does not match.  To avoid matching
 	"foobar" you could use "\(foo\)\@!...bar", but that doesn't match a
-	bar at the start of a line. Use "\(foo\)\@<!bar".
+	bar at the start of a line.  Use "\(foo\)\@<!bar".
 
 							*/\@<=*
 \@<=	Matches with zero width if the preceding atom matches just before what
@@ -735,7 +735,7 @@ $	At end of pattern or in front of "\|" or "\)" ("|" or ")" after "\v"):
 
 							*/\>*
 \>	Matches the end of a word: The previous char is the last char of a
-	word. The 'iskeyword' option specifies what is a word character.
+	word.  The 'iskeyword' option specifies what is a word character.
 	|/zero-width|
 
 							*/\zs*
@@ -745,7 +745,7 @@ $	At end of pattern or in front of "\|" or "\)" ("|" or ")" after "\v"):
 		/^\s*\zsif
 <	matches an "if" at the start of a line, ignoring white space.
 	Can be used multiple times, the last one encountered in a matching
-	branch is used. Example: >
+	branch is used.  Example: >
 		/\(.\{-}\zsFab\)\{3}
 <	Finds the third occurrence of "Fab".
 	{not in Vi} {not available when compiled without the +syntax feature}
@@ -930,7 +930,7 @@ x	A single character, with no special meaning, matches itself
 
 []	(with 'nomagic': \[])		*/[]* */\[]* */\_[]* */collection*
 \_[]
-	A collection. This is a sequence of characters enclosed in brackets.
+	A collection.  This is a sequence of characters enclosed in brackets.
 	It matches any single character in the collection.
 	Example		matches ~
 	[xyz]		any 'x', 'y' or 'z'

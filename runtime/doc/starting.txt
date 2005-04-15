@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.0aa.  Last change: 2005 Feb 19
+*starting.txt*  For Vim version 7.0aa.  Last change: 2005 Apr 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -281,7 +281,7 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 <
 							*-b*
 -b		Binary mode.  File I/O will only recognize <NL> to separate
-		lines. The 'expandtab' option will be reset.  The 'textwidth'
+		lines.  The 'expandtab' option will be reset.  The 'textwidth'
 		option is set to 0.  'modeline' is reset.  The 'binary' option
 		is set.  This is done after reading the vimrc/exrc files but
 		before reading any file in the arglist.  See also
@@ -294,17 +294,17 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 -A		Arabic mode.  Sets the 'arabic' option on.  (Only when
 		compiled with the |+arabic| features (which include
 		|+rightleft|), otherwise Vim gives an error message
-		and exits.  {not in Vi}
+		and exits.)  {not in Vi}
 
 							*-F*
 -F		Farsi mode.  Sets the 'fkmap' and 'rightleft' options on.
 		(Only when compiled with |+rightleft| and |+farsi| features,
-		otherwise Vim gives an error message and exits).  {not in Vi}
+		otherwise Vim gives an error message and exits.)  {not in Vi}
 
 							*-H*
 -H		Hebrew mode.  Sets the 'hkmap' and 'rightleft' options on.
 		(Only when compiled with the |+rightleft| feature, otherwise
-		Vim gives an error message and exits).  {not in Vi}
+		Vim gives an error message and exits.)  {not in Vi}
 
 							*-V* *verbose*
 -V[N]		Verbose.  Sets the 'verbose' option to [N] (default: 10).
@@ -373,7 +373,7 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 -T {terminal}	Set the terminal type to "terminal".  This influences the
 		codes that Vim will send to your terminal.  This is normally
 		not needed, because Vim will be able to find out what type
-		of terminal you are using (See |terminal-info|).  {not in Vi}
+		of terminal you are using.  (See |terminal-info|.)  {not in Vi}
 
 							*-d*
 -d		Start in diff mode, like |vimdiff|.
@@ -428,7 +428,7 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 
 							*-U* *E230*
 -U {gvimrc}	The file "gvimrc" is read for initializations when the GUI
-		starts.  Other GUI initializations are skipped. When {gvimrc}
+		starts.  Other GUI initializations are skipped.  When {gvimrc}
 		is equal to "NONE", no file is read for GUI initializations at
 		all.  |gui-init|
 		Exception: Reading the system-wide menu file is always done.

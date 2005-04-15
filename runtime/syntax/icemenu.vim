@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Icewm Menu
-" Maintainer:	James Mahler <jmahler@purdue.edu>
-" Last Change:	Tue Dec  9 21:08:22 EST 2003
+" Maintainer:	James Mahler <James.Mahler@gmail.com>
+" Last Change:	Fri Apr  1 15:13:48 EST 2005
 " Extensions:	~/.icewm/menu
 " Comment:	Icewm is a lightweight window manager.  This adds syntax
 "		highlighting when editing your user's menu file (~/.icewm/menu).
@@ -9,7 +9,7 @@
 " clear existing syntax
 if version < 600
 	syntax clear
-elseif exists("bLcurrent_syntax")
+elseif exists("b:current_syntax")
 	finish
 endif
 

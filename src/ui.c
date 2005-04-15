@@ -2800,7 +2800,11 @@ mouse_comp_pos(win, rowp, colp, lnump)
     {
 #ifdef FEAT_DIFF
 	/* Don't include filler lines in "count" */
-	if (win->w_p_diff && !hasFoldingWin(win, lnum, NULL, NULL, TRUE, NULL))
+	if (win->w_p_diff
+# ifdef FEAT_FOLDING
+		&& !hasFoldingWin(win, lnum, NULL, NULL, TRUE, NULL)
+# endif
+		)
 	{
 	    if (lnum == win->w_topline)
 		row -= win->w_topfill;

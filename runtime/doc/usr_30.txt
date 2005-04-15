@@ -1,4 +1,4 @@
-*usr_30.txt*	For Vim version 7.0aa.  Last change: 2004 Jan 17
+*usr_30.txt*	For Vim version 7.0aa.  Last change: 2005 Apr 01
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -35,7 +35,7 @@ you give) and captures the results: >
 
 If errors were generated, they are captured and the editor positions you where
 the first error occurred.
-   Take a look at an example ":make" session. (Typical :make sessions generate
+   Take a look at an example ":make" session.  (Typical :make sessions generate
 far more errors and fewer stupid ones.)  After typing ":make" the screen looks
 like this:
 
@@ -606,7 +606,7 @@ This allows formatting a message like this:
 Try setting 'textwidth' to a different value, e.g., 80, and format the text by
 Visually selecting it and typing "gq".  The result is:
 
-	> ! Did you see that site? It looks really great. ~
+	> ! Did you see that site?  It looks really great. ~
 	> I don't like it.  The colors are terrible. ~
 	What is the URL of that site? ~
 

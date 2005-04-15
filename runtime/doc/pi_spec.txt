@@ -1,13 +1,13 @@
-*pi_spec.txt*   For Vim version 7.0aa.  Last change: 2002 Oct 29
+*pi_spec.txt*   For Vim version 7.0aa.  Last change: 2005 Apr 01
 
 by Gustavo Niemeyer ~
 
 This is a filetype plugin to work with rpm spec files.
 
 Currently, this Vim plugin allows you to easily update the %changelog
-section in RPM spec files. It will even create a section for you if it
-doesn't exist yet. If you've already inserted an entry today, it will
-give you the opportunity to just add a new item in today's entry. If you
+section in RPM spec files.  It will even create a section for you if it
+doesn't exist yet.  If you've already inserted an entry today, it will
+give you the opportunity to just add a new item in today's entry.  If you
 don't provide a format string (|spec_chglog_format|), it'll ask you an
 email address and build a format string by itself.
 
@@ -22,24 +22,24 @@ The spec_chglog plugin provides a map like the following:
 	:map <buffer> <LocalLeader>c <Plug>SpecChangelog
 
 It means that you may run the plugin inside a spec file by pressing
-your maplocalleader key (default is '\') plus 'c'. If you do not have
+your maplocalleader key (default is '\') plus 'c'.  If you do not have
 |spec_chglog_format| set, the plugin will ask you for an email address
 to use in this edit session.
 
 Everytime you run the plugin, it will check to see if the last entry
-in the changelog has been written today and by you. If it's the entry
+in the changelog has been written today and by you.  If it's the entry
 mathes, it will just insert a new changelog item, otherwise it will
-create a new changelog entry. If you are running with
+create a new changelog entry.  If you are running with
 |spec_chglog_release_info| enabled, it will also check if the name, version
-and release matches. The plugin is smart enough to ask you if it should
+and release matches.  The plugin is smart enough to ask you if it should
 update the package release, if you have not done so.
 
 Setting a map					*spec-setting-a-map*
 -------------
 
 As you should know, you can easily set a map to access any Vim command (or
-anything, for that matter). If you don't like the default map of
-<LocalLeader>c, you may just set up your own key. The following line
+anything, for that matter).  If you don't like the default map of
+<LocalLeader>c, you may just set up your own key.  The following line
 shows you how you could do this in your .vimrc file, mapping the plugin to
 the <F5> key:
 
@@ -57,16 +57,16 @@ This command will add a map only in the spec file buffers.
 The format string				*spec_chglog_format*
 -----------------
 
-You can easily customize how your spec file entry will look like. To do
+You can easily customize how your spec file entry will look like.  To do
 this just set the variable "spec_chglog_format" in your .vimrc file like
 this: >
 
 	let spec_chglog_format = "%a %b %d %Y My Name <my@email.com>"
 
-Note that "%a %b %d %Y" is the most used time format. If you don't provide
+Note that "%a %b %d %Y" is the most used time format.  If you don't provide
 a format string, when you run the SpecChangelog command for the first
 time, it will ask you an email address and build the |spec_chglog_format|
-variable for you. This way, you will only need to provide your email
+variable for you.  This way, you will only need to provide your email
 address once.
 
 To discover which format options you can use, take a look at the strftime()
@@ -76,7 +76,7 @@ Where to insert new items			*spec_chglog_prepend*
 -------------------------
 
 The plugin will usually insert new %changelog entry items (note that it's
-not the entry itself) after the existing ones. If you set the
+not the entry itself) after the existing ones.  If you set the
 spec_chglog_prepend variable >
 
 	let spec_chglog_prepend = 1
@@ -87,11 +87,11 @@ Inserting release info				*spec_chglog_release_info*
 ----------------------
 
 If you want, the plugin may automatically insert release information
-on each changelog entry. One advantage of turning this feature on is
+on each changelog entry.  One advantage of turning this feature on is
 that it may control if the release has been updated after the last
-change in the package or not. If you have not updated the package
+change in the package or not.  If you have not updated the package
 version or release, it will ask you if it should update the package
-release for you. To turn this feature on, just insert the following
+release for you.  To turn this feature on, just insert the following
 code in your .vimrc: >
 
 	let spec_chglog_release_info = 1

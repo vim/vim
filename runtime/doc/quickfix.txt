@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 7.0aa.  Last change: 2005 Mar 25
+*quickfix.txt*  For Vim version 7.0aa.  Last change: 2005 Apr 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -122,7 +122,7 @@ The following quickfix commands can be used:
 :cl[ist] [from] [, [to]]
 			List all errors that are valid |quickfix-valid|.
 			If numbers [from] and/or [to] are given, the respective
-			range of errors is listed. A negative number counts
+			range of errors is listed.  A negative number counts
 			from the last error backwards, -1 being the last error.
 			The 'switchbuf' settings are respected when jumping
 			to a buffer.
@@ -380,16 +380,16 @@ id-utils) in a similar way to its compiler integration (see |:make| above).
 5.3 Setting up external grep
 
 If you have a standard "grep" program installed, the :grep command may work
-well with the defaults. The syntax is very similar to the standard command: >
+well with the defaults.  The syntax is very similar to the standard command: >
 
 	:grep foo *.c
 
-Will search all files with the .c extension for the substring "foo". The
+Will search all files with the .c extension for the substring "foo".  The
 arguments to :grep are passed straight to the "grep" program, so you can use
 whatever options your "grep" supports.
 
 By default, :grep invokes grep with the -n option (show file and line
-numbers). You can change this with the 'grepprg' option. You will need to set
+numbers).  You can change this with the 'grepprg' option.  You will need to set
 'grepprg' if:
 
 a)	You are using a program that isn't called "grep"
@@ -515,8 +515,8 @@ stdin (standard input) will not be interactive.
 PYUNIT COMPILER						*compiler-pyunit*
 
 This is not actually a compiler, but a unit testing framework for the
-Python language. It is included into standard Python distribution
-starting from version 2.0. For older versions, you can get it from
+Python language.  It is included into standard Python distribution
+starting from version 2.0.  For older versions, you can get it from
 http://pyunit.sourceforge.net.
 
 When you run your tests with the help of the framework, possible errors
@@ -534,20 +534,20 @@ Also see http://vim.sourceforge.net/tip_view.php?tip_id=280.
 TEX COMPILER						*compiler-tex*
 
 Included in the distribution compiler for TeX ($VIMRUNTIME/compiler/tex.vim)
-uses make command if possible. If the compiler finds a file named "Makefile"
+uses make command if possible.  If the compiler finds a file named "Makefile"
 or "makefile" in the current directory, it supposes that you want to process
-your *TeX files with make, and the makefile does the right work. In this case
-compiler sets 'errorformat' for *TeX output and leaves 'makeprg' untouched. If
+your *TeX files with make, and the makefile does the right work.  In this case
+compiler sets 'errorformat' for *TeX output and leaves 'makeprg' untouched.  If
 neither "Makefile" nor "makefile" is found, the compiler will not use make.
 You can force the compiler to ignore makefiles by defining
 b:tex_ignore_makefile or g:tex_ignore_makefile variable (they are checked for
 existence only).
 
 If the compiler chose not to use make, it need to choose a right program for
-processing your input. If b:tex_flavor or g:tex_flavor (in this precedence)
+processing your input.  If b:tex_flavor or g:tex_flavor (in this precedence)
 variable exists, it defines TeX flavor for :make (actually, this is the name
 of executed command), and if both variables do not exist, it defaults to
-"latex". For example, while editing chapter2.tex \input-ed from mypaper.tex
+"latex".  For example, while editing chapter2.tex \input-ed from mypaper.tex
 written in AMS-TeX: >
 
 	:let b:tex_flavor = 'amstex'
@@ -557,16 +557,16 @@ written in AMS-TeX: >
 
 Note that you must specify a name of the file to process as an argument (to
 process the right file when editing \input-ed or \include-ed file; portable
-solution for substituting % for no arguments is welcome). This is not in the
+solution for substituting % for no arguments is welcome).  This is not in the
 semantics of make, where you specify a target, not source, but you may specify
 filename without extension ".tex" and mean this as "make filename.dvi or
 filename.pdf or filename.some_result_extension according to compiler".
 
 Note: tex command line syntax is set to usable both for MikTeX (suggestion
-by Srinath Avadhanula) and teTeX (checked by Artem Chuprina). Suggestion
+by Srinath Avadhanula) and teTeX (checked by Artem Chuprina).  Suggestion
 from |errorformat-LaTeX| is too complex to keep it working for different
 shells and OSes and also does not allow to use other available TeX options,
-if any. If your TeX doesn't support "-interaction=nonstopmode", please
+if any.  If your TeX doesn't support "-interaction=nonstopmode", please
 report it with different means to express \nonstopmode from the command line.
 
 =============================================================================
@@ -600,7 +600,7 @@ Basic items
 			column of the error, (1 <tab> == 1 character column))
 	%v		virtual column number (finds a number representing
 			screen column of the error (1 <tab> == 8 screen
-			columns)
+			columns))
 	%t		error type (finds a single character)
 	%n		error number (finds a number)
 	%m		error message (finds a string)
@@ -646,7 +646,7 @@ The following uppercase conversion characters specify the type of special
 format strings.  At most one of them may be given as a prefix at the begin
 of a single comma-separated format pattern.
 Some compilers produce messages that consist of directory names that have to
-be prepended to each file name read by %f (example: GNU make). The following
+be prepended to each file name read by %f (example: GNU make).  The following
 codes can be used to scan these directory names; they will be stored in an
 internal directory stack.					*E379*
 	%D		"enter directory" format string; expects a following
@@ -654,7 +654,7 @@ internal directory stack.					*E379*
 	%X		"leave directory" format string; expects following %f
 
 When defining an "enter directory" or "leave directory" format, the "%D" or
-"%X" has to be given at the start of that substring. Vim tracks the directory
+"%X" has to be given at the start of that substring.  Vim tracks the directory
 changes and prepends the current directory to each erroneous file found with a
 relative path.  See |quickfix-directory-stack| for details, tips and
 limitations.
@@ -663,7 +663,7 @@ limitations.
 Multi-line messages				*errorformat-multi-line*
 
 It is possible to read the output of programs that produce multi-line
-messages, ie. error strings that consume more than one line.  Possible
+messages, i.e. error strings that consume more than one line.  Possible
 prefixes are:
 	%E		start of a multi-line error message
 	%W		start of a multi-line warning message
@@ -756,7 +756,7 @@ A call of |:clist| writes them accordingly with their correct filenames:
   9 a3.tt:67 col 3 warning: 's' already defined
 
 Unlike the other prefixes that all match against whole lines, %P, %Q and %O
-can be used to match several patterns in the same line. Thus it is possible
+can be used to match several patterns in the same line.  Thus it is possible
 to parse even nested files like in the following line:
   {"file1" {"file2" error1} error2 {"file3" error3 {"file4" error4 error5}}}
 The %O then parses over strings that do not contain any push/pop file name
@@ -766,11 +766,11 @@ information.  See |errorformat-LaTeX| for an extended example.
 Ignoring and using whole messages			*efm-ignore*
 
 The codes '+' or '-' can be combined with the uppercase codes above; in that
-case they have to precede the letter, eg. '%+A' or '%-G':
+case they have to precede the letter, e.g. '%+A' or '%-G':
 	%-		do not include the matching multi-line in any output
 	%+		include the whole matching line in the %m error string
 
-One prefix is only useful in combination with '+' or '-', namely %G. It parses
+One prefix is only useful in combination with '+' or '-', namely %G.  It parses
 over lines containing general information like compiler version strings or
 other headers that can be skipped.
 	%-G		ignore this message
@@ -785,7 +785,7 @@ with previous versions of Vim.  However, it is also possible to specify
 Since meta characters of the regular expression language can be part of
 ordinary matching strings or file names (and therefore internally have to
 be escaped), meta symbols have to be written with leading '%':
-	%\		the single '\' character. Note that this has to be
+	%\		the single '\' character.  Note that this has to be
 			escaped ("%\\") in ":set errorformat=" definitions.
 	%.		the single '.' character.
 	%#		the single '*'(!) character.
@@ -795,7 +795,7 @@ be escaped), meta symbols have to be written with leading '%':
 	%~		the single '~' character.
 When using character classes in expressions (see |/\i| for an overview),
 terms containing the "\+" quantifier can be written in the scanf() "%*"
-notation. Example: "%\\d%\\+" ("\d\+", "any number") is equivalent to "%*\\d".
+notation.  Example: "%\\d%\\+" ("\d\+", "any number") is equivalent to "%*\\d".
 Important note: The \(...\) grouping of sub-matches can not be used in format
 specifications because it is reserved for internal conversions.
 
@@ -881,19 +881,19 @@ required for the set command.
 8. The directory stack				*quickfix-directory-stack*
 
 Quickfix maintains a stack for saving all used directories parsed from the
-make output. For GNU-make this is rather simple, as it always prints the
-absolute path of all directories it enters and leaves. Regardless if this is
+make output.  For GNU-make this is rather simple, as it always prints the
+absolute path of all directories it enters and leaves.  Regardless if this is
 done via a 'cd' command in the makefile or with the parameter "-C dir" (change
-to directory before reading the makefile). It may be useful to use the switch
+to directory before reading the makefile).  It may be useful to use the switch
 "-w" to force GNU-make to print out the working directory before and after
 processing.
 
 Maintaining the correct directory is more complicated if you don't use
-GNU-make. AIX-make for example doesn't print any information about its working
-directory. Then you need to enhance the makefile. In the makefile of LessTif
-there is a command which echoes "Making {target} in {dir}". The special
-problem here is that it doesn't print informations on leaving the directory
-and that it doesn't print the absolute path.
+GNU-make.  AIX-make for example doesn't print any information about its
+working directory.  Then you need to enhance the makefile.  In the makefile of
+LessTif there is a command which echoes "Making {target} in {dir}".  The
+special problem here is that it doesn't print informations on leaving the
+directory and that it doesn't print the absolute path.
 
 To solve the problem with relative paths and missing "leave directory"
 messages Vim uses following algorithm:
@@ -907,10 +907,10 @@ messages Vim uses following algorithm:
 
 Additionally it is checked for every file, if it really exists in the
 identified directory.  If not, it is searched in all other directories of the
-directory stack (NOT the directory subtree!). If it is still not found, it is
+directory stack (NOT the directory subtree!).  If it is still not found, it is
 assumed that it is in Vim's current directory.
 
-There are limitation in this algorithm. This examples assume that make just
+There are limitation in this algorithm.  This examples assume that make just
 prints information about entering a directory in the form "Making all in dir".
 
 1) Assume you have following directories and files:
@@ -957,7 +957,7 @@ Add
 to your 'errorformat' to handle the above output.
 
 Note that Vim doesn't check if the directory name in a "leave directory"
-messages is the current directory. This is why you could just use the message
+messages is the current directory.  This is why you could just use the message
 "Leaving dir".
 
 =============================================================================
@@ -1019,7 +1019,7 @@ It should be easy to adopt the above LaTeX errorformat to any compiler output
 consisting of multi-line errors.
 
 The commands can be placed in a |vimrc| file or some other Vim script file,
-eg. a script containing LaTeX related stuff which is loaded only when editing
+e.g. a script containing LaTeX related stuff which is loaded only when editing
 LaTeX sources.
 Make sure to copy all lines of the example (in the given order), afterwards
 remove the comment lines.  For the '\' notation at the start of some lines see
@@ -1033,7 +1033,7 @@ remove the comment lines.  For the '\' notation at the start of some lines see
  :set efm=%E!\ LaTeX\ %trror:\ %m,
 	\%E!\ %m,
 <		Start of multi-line warning messages; the first two also
-		include the line number. Meaning of some regular expressions:
+		include the line number.  Meaning of some regular expressions:
 		  - "%.%#"  (".*")   matches a (possibly empty) string
 		  - "%*\\d" ("\d\+") matches a number >
 	\%+WLaTeX\ %.%#Warning:\ %.%#line\ %l%.%#,
@@ -1072,7 +1072,7 @@ remove the comment lines.  For the '\' notation at the start of some lines see
 		on a stack since the file apparently does not contain any
 		error: >
 	\%+O(%f)%r,
-<		Push a file name onto the stack. The name is given after '(': >
+<		Push a file name onto the stack.  The name is given after '(': >
 	\%+P(%f%r,
 	\%+P\ %\\=(%f%r,
 	\%+P%*[^()](%f%r,

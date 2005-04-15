@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Vim help file
 " Maintainer:	Bram Moolenaar (Bram@vim.org)
-" Last Change:	2004 May 17
+" Last Change:	2005 Mar 31
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -111,9 +111,9 @@ syn match helpTodo		"\t[* ]Todo\t\+[a-z].*"
 
 
 " Additionally load a language-specific syntax file "help_ab.vim".
-let i = match(expand("%"), '\.\a\ax$')
-if i > 0
-  exe "runtime syntax/help_" . strpart(expand("%"), i + 1, 2) . ".vim"
+let s:i = match(expand("%"), '\.\a\ax$')
+if s:i > 0
+  exe "runtime syntax/help_" . strpart(expand("%"), s:i + 1, 2) . ".vim"
 endif
 
 syn sync minlines=40

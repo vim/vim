@@ -1,4 +1,4 @@
-*farsi.txt*     For Vim version 7.0aa.  Last change: 2004 Jun 16
+*farsi.txt*     For Vim version 7.0aa.  Last change: 2005 Mar 29
 
 
 		  VIM REFERENCE MANUAL    by Mortaza Ghassab Shiran
@@ -42,7 +42,7 @@ o  Changing keyboard mapping and reverse insert modes using a single
 o  Backing from reverse insert mode to the correct place in the file
    (if possible).
 
-o  While in Farsi mode, numbers are entered from left to right. Upon entering
+o  While in Farsi mode, numbers are entered from left to right.  Upon entering
    a none number character, that character will be inserted just into the
    left of the last number.
 
@@ -54,8 +54,8 @@ o  Farsi keymapping on the command line in reverse insert mode.
 
 o  Toggling between left-to-right and right-to-left via F8 function key.
 
-o  Toggling between Farsi ISIR-3342 standard encoding and VIM Farsi via F9
-   function key. Since this makes sense only for the text written in
+o  Toggling between Farsi ISIR-3342 standard encoding and Vim Farsi via F9
+   function key.  Since this makes sense only for the text written in
    right-to-left mode, this function is also supported only in right-to-left
    mode.
 
@@ -77,8 +77,8 @@ Font Installation
 
 o  Installation of fonts for MS Window systems (NT/95/98)
 
-   From 'Control Panel' folder, start the 'Fonts' program. Then from 'file'
-   menu item select 'Install New Fonts ...'. Browse and select the
+   From 'Control Panel' folder, start the 'Fonts' program.  Then from 'file'
+   menu item select 'Install New Fonts ...'.  Browse and select the
    'far-a01.fon', then follow the installation guide.
    NOTE: several people have reported that this does not work.  The solution
    is unknown.
@@ -104,19 +104,19 @@ o  Installation of fonts for X Window systems (SunOS)
 o  Installation of ASCII screen fonts (Unix/Linux)
 
    For Linux system, copy the far-a01.f16 fonts into /usr/lib/kbd/consolefonts
-   directory and execute the setfont program as "setfont far-a01.f16". For
+   directory and execute the setfont program as "setfont far-a01.f16".  For
    other systems (e.g. SCO Unix), please refer to the fonts installation
    section of your system administration manuals.
 
 o  Installation of ASCII screen fonts (DOS)
 
-   After system power on, prior to the first use of VIM, upload the Farsi
+   After system power on, prior to the first use of Vim, upload the Farsi
    fonts by executing the far-a01.com font uploading program.
 
 
 Usage
 -----
-Prior to starting VIM, the environment in which VIM can run in Farsi mode,
+Prior to starting Vim, the environment in which Vim can run in Farsi mode,
 must be set.  In addition to installation of Farsi fonts, following points
 refer to some of the system environments, which you may need to set:
 Key code mapping, loading graphic card in ASCII screen mode, setting the IO
@@ -124,26 +124,26 @@ driver in 8 bit clean mode ... .
 
 o  Setting the Farsi fonts
 
-   +  For VIM GUI set the 'guifont' to far-a01. This is done by entering
-      ':set guifont=far-a01' in the VIM window.
+   +  For Vim GUI set the 'guifont' to far-a01.  This is done by entering
+      ':set guifont=far-a01' in the Vim window.
 
-      You can have 'guifont' set to far-a01 by VIM during the VIM startup
+      You can have 'guifont' set to far-a01 by Vim during the Vim startup
       by appending the ':set guifont=far-a01' into your .vimrc file
       (in case of NT/95/98 platforms _vimrc).
 
-      Under the X Window environment, you can also start the VIM with
+      Under the X Window environment, you can also start Vim with the
       '-fn far-a01' option.
 
-   +  For the VIM within a xterm, start a xterm with the Farsi fonts (e.g.
-      kterm -fn far-a01). Then start the VIM inside the kterm.
+   +  For Vim within a xterm, start a xterm with the Farsi fonts (e.g.
+      kterm -fn far-a01).  Then start Vim inside the kterm.
 
-   +  For VIM under DOS, prior to the first usage of VIM, upload the Farsi
+   +  For Vim under DOS, prior to the first usage of Vim, upload the Farsi
       fonts by executing the far-a01.com fonts uploading program.
 
 o  Farsi Keymapping Activation
 
    To activate the Farsi keymapping, set either 'altkeymap' or 'fkmap'.
-   This is done by entering ':set akm' or ':set fk' in the VIM window.
+   This is done by entering ':set akm' or ':set fk' in the Vim window.
    You can have 'altkeymap' or 'fkmap' set as default by appending ':set akm'
    or ':set fk' in your .vimrc file or _vimrc in case of NT/95/98 platforms.
 
@@ -152,24 +152,24 @@ o  Farsi Keymapping Activation
 
 o  right-to-left Farsi Mode
 
-   By default VIM starts in Left-to-right mode. Following are ways to change
+   By default Vim starts in Left-to-right mode.  Following are ways to change
    the window orientation:
 
-   + Start the VIM with -F option (e.g. vim -F ... ).
+   + Start Vim with the -F option (e.g. vim -F ...).
 
-   + Use F8 function key to toggle between left-to-right and right-to-left.
+   + Use the F8 function key to toggle between left-to-right and right-to-left.
 
    + While in Left-to-right mode, enter 'set rl' in the command line ('rl' is
      the abbreviation for rightleft).
 
-   + Put the 'set rl' line in your '.vimrc' file to start the  VIM in
+   + Put the 'set rl' line in your '.vimrc' file to start Vim in
      right-to-left mode permanently.
 
 Encoding
 --------
 
-The letter encoding used is the VIM extended ISIR-3342 standard with a built
-in function to convert between VIM extended ISIR-3342 and ISIR-3342 standard.
+The letter encoding used is the Vim extended ISIR-3342 standard with a built
+in function to convert between Vim extended ISIR-3342 and ISIR-3342 standard.
 
 For document portability reasons, the letter encoding is kept the same across
 different platforms (i.e. UNIX's, NT/95/98, MS DOS, ...).
@@ -183,11 +183,11 @@ o  Keyboard
    +  CTRL-_ moves the cursor to the end of the typed text in edit mode.
 
    +  CTRL-_ in command mode only toggles keyboard mapping between Farsi(akm)/
-      Latin. The Farsi text is then entered in reverse insert mode.
+      Latin.  The Farsi text is then entered in reverse insert mode.
 
    +  F8 - Toggles between left-to-right and right-to-left.
 
-   +  F9 - Toggles the encoding between ISIR-3342 standard and VIM extended
+   +  F9 - Toggles the encoding between ISIR-3342 standard and Vim extended
       ISIR-3342 (supported only in right-to-left mode).
 
    +  Keyboard mapping is based on the Iranian ISIRI-2901 standard.
@@ -231,28 +231,28 @@ o  In insert/replace mode and fkmap (Farsi mode) set, CTRL-B is not
    supported.
 
 o  If you change the character mapping between Latin/Farsi, the redo buffer
-   will be reset (emptied). That is, redo is valid and will function (using
+   will be reset (emptied).  That is, redo is valid and will function (using
    '.') only within the mode you are in.
 
 o  While numbers are entered in Farsi mode, the redo buffer will be reset
-   (emptied). That is, you can not redo the last changes (using '.') after
+   (emptied).  That is, you cannot redo the last changes (using '.') after
    entering numbers.
 
-o  While in left-to-right and Farsi mode set, CTRL-R is not supported.
+o  While in left-to-right mode and Farsi mode set, CTRL-R is not supported.
 
 o  While in right-to-left mode, the search on 'Latin' pattern does not work,
    except if you enter the Latin search pattern in reverse.
 
-o  In the command mode, there is no support for entering the numbers from left
-   to right and also for the sake of the flexibility the keymapping logic is
+o  In command mode there is no support for entering numbers from left
+   to right and also for the sake of flexibility the keymapping logic is
    restricted.
 
-o  Under X Window environment, if you want to run the VIM within a xterm
+o  Under the X Window environment, if you want to run Vim within a xterm
    terminal emulator and Farsi mode set, you need to have an ANSI compatible
-   xterm terminal emulator. This is because the letter codes above 128 decimal
+   xterm terminal emulator.  This is because the letter codes above 128 decimal
    have certain meanings in the standard xterm terminal emulator.
 
-   Note: Under X Window environment, VIM GUI works fine in Farsi mode.
+   Note: Under X Window environment, Vim GUI works fine in Farsi mode.
 	 This eliminates the need of any xterm terminal emulator.
 
 
@@ -261,7 +261,7 @@ Bugs
 While in insert/replace and Farsi mode set, if you repeatedly change the
 cursor position (via cursor movement) and enter new text and then try to undo
 the last change, the undo will lag one change behind.  But as you continue to
-undo, you will reach the original line of text. You can also use U to undo all
+undo, you will reach the original line of text.  You can also use U to undo all
 changes made in the current line.
 
 For more information about the bugs refer to rileft.txt.

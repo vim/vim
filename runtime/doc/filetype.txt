@@ -1,4 +1,4 @@
-*filetype.txt*  For Vim version 7.0aa.  Last change: 2004 Aug 31
+*filetype.txt*  For Vim version 7.0aa.  Last change: 2005 Mar 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -382,7 +382,7 @@ ways to change this:
 
 CHANGELOG						*changelog-plugin*
 
-Allows for easy entrance of Changelog entries in Changelog files. There are
+Allows for easy entrance of Changelog entries in Changelog files.  There are
 some commands, mappings, and variables worth exploring:
 
 Options:
@@ -462,7 +462,7 @@ g:changelog_date_entry_search
 The Changelog entries are inserted where they add the least amount of text.
 After figuring out the current date and user, the file is searched for an
 entry beginning with the current date and user and if found adds another item
-under it. If not found, a new entry and item is prepended to the beginning of
+under it.  If not found, a new entry and item is prepended to the beginning of
 the Changelog.
 
 
@@ -474,7 +474,7 @@ Options:
 'textwidth'	is set to 72 for fixed source format as required by the
 		Fortran standards and to 80 for free source format.
 'formatoptions' is set to break code and comment lines and to preserve long
-		lines. You can format comments with |gq|.
+		lines.  You can format comments with |gq|.
 For further discussion of fortran_have_tabs and the method used for the
 detection of source format see |fortran-syntax|.
 

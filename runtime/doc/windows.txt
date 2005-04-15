@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 7.0aa.  Last change: 2005 Feb 18
+*windows.txt*   For Vim version 7.0aa.  Last change: 2005 Apr 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -516,7 +516,7 @@ The minimal height and width of a window is set with 'winminheight' and
 24. :[N]sprevious [N]   34. :[N]sbprevious [N]  split + to Nth previous arg/buf
 25. :srewind / :sfirst	35. :sbrewind / :sbfirst split + to first arg/buf
 26. :slast		36. :sblast		split + to last arg/buf
-27. :sall		37: :sball		edit all args/buffers
+27. :sall		37. :sball		edit all args/buffers
 			38. :sunhide		edit all loaded buffers
 			39. :[N]sbmod [N]	split + to Nth modified buf
 
@@ -725,7 +725,7 @@ to have it keep the same height when opening/closing other windows.
 :pta[g][!] [tagname]
 		Does ":tag[!] [tagname]" and shows the found tag in a
 		"Preview" window without changing the current buffer or cursor
-		position. If a "Preview" window already exists, it is re-used
+		position.  If a "Preview" window already exists, it is re-used
 		(like a help window is).  If a new one is opened,
 		'previewheight' is used for the height of the window.   See
 		also |:tag|.
@@ -750,12 +750,12 @@ CTRL-W CTRL-Z					*CTRL-W_CTRL-Z* *:pc* *:pclose*
 
 CTRL-W }						*CTRL-W_}*
 		Use identifier under cursor as a tag and perform a :ptag on
-		it. Make the new Preview window (if required) N high.  If N is
+		it.  Make the new Preview window (if required) N high.  If N is
 		not given, 'previewheight' is used.
 
 CTRL-W g }						*CTRL-W_g}*
 		Use identifier under cursor as a tag and perform a :ptjump on
-		it. Make the new Preview window (if required) N high.  If N is
+		it.  Make the new Preview window (if required) N high.  If N is
 		not given, 'previewheight' is used.
 
 							*:ped* *:pedit*
@@ -903,7 +903,7 @@ list of buffers. |unlisted-buffer|
 :bad[d]	[+lnum] {fname}
 		Add file name {fname} to the buffer list, without loading it.
 		If "lnum" is specified, the cursor will be positioned at that
-		line when the buffer is first entered. Note that other
+		line when the buffer is first entered.  Note that other
 		commands after the + will be ignored.
 
 :[N]bd[elete][!]			*:bd* *:bdel* *:bdelete* *E516*
@@ -1002,7 +1002,7 @@ list of buffers. |unlisted-buffer|
 		buffer (if there is one).  Similarly, if you are in a normal
 		(non-help) buffer, this takes you to the next normal buffer.
 		This is so that if you have invoked help, it doesn't get in
-		the way when you're browsing code/text buffers. The next three
+		the way when you're browsing code/text buffers.  The next three
 		commands also work like this.
 
 							*:sbn* *:sbnext*

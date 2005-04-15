@@ -996,8 +996,9 @@ doESCkey:
 		if (*curbuf->b_p_tsr == NUL && *p_tsr == NUL)
 		{
 		    ctrl_x_mode = 0;
+		    edit_submode = NULL;
 		    msg_attr((char_u *)_("'thesaurus' option is empty"),
-			     hl_attr(HLF_E));
+							      hl_attr(HLF_E));
 		    if (emsg_silent == 0)
 		    {
 			vim_beep();
@@ -1216,8 +1217,9 @@ doESCkey:
 		if (*curbuf->b_p_dict == NUL && *p_dict == NUL)
 		{
 		    ctrl_x_mode = 0;
+		    edit_submode = NULL;
 		    msg_attr((char_u *)_("'dictionary' option is empty"),
-			     hl_attr(HLF_E));
+							      hl_attr(HLF_E));
 		    if (emsg_silent == 0)
 		    {
 			vim_beep();

@@ -1,4 +1,4 @@
-*usr_07.txt*	For Vim version 7.0aa.  Last change: 2004 Mar 12
+*usr_07.txt*	For Vim version 7.0aa.  Last change: 2005 Apr 01
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -266,7 +266,7 @@ positions without placing marks there.
 ==============================================================================
 *07.4*	Backup files
 
-Usually Vim does not produce a backup file. If you want to have one, all you
+Usually Vim does not produce a backup file.  If you want to have one, all you
 need to do is execute the following command: >
 
 	:set backup

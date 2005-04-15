@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 7.0aa.  Last change: 2005 Feb 28
+*repeat.txt*    For Vim version 7.0aa.  Last change: 2005 Apr 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -176,7 +176,7 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			matching files.  Example: >
 				:runtime! plugin/*.vim
 <			This is what Vim uses to load the plugin files when
-			starting up. This similar command: >
+			starting up.  This similar command: >
 				:runtime plugin/*.vim
 <			would source the first file only.
 

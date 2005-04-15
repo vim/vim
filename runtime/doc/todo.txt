@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Mar 28
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Apr 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,6 +30,36 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Frame size wrong after ":sp" with this in vimrc (Michael Schaap):
+	set cmdheight=2
+	set lines=43
+
+Trick to get ...MOUSE_NM not used when there are vertical splits.  Can we pass
+-col instead of col? (Yegappan Lakshmanan)
+
+Hang in searchpair(). (2005 April 12, John Wellesz)
+
+With this mapping a click on a status line echoes the wrong buffer name:
+    :noremap <Leftmouse> <Leftmouse>:echo bufname('%')<CR>
+
+When in diff mode and making a change that causes the "changed" highlighting
+to disappear, it's still highlighted in another window.
+
+regmatch(): "regstack" could start with a fixed block of data for speed.
+"backpos" is never freed. (Alexei Alexandrov)
+
+Starting without any buffers, set nocp, ":b <Tab>" gives error message.
+(Ciaran McCressh for Aron Griffis)
+
+Problem with 'insertmode'. (Georg Dahn, 2005 April 9, expl. April 14)
+Problem with CTRL-V pasting more than one line. (Georg Dahn, 2005 April 11)
+
+Patch for setqflist() (Yegappan Lakshmanan, 2005 April 11)
+
+In an errorfile expand "~/" to home directory. (Arnout Engelen)
+
+Patch for 2html.vim to disable folding (Michael Schaap, 2005 April 12)
+
 Mac unicode patch (Da Woon Jung):
 - selecting proportional font breaks display
 - UTF-8 text causes display problems.  Font replacement causes this.
@@ -47,23 +77,59 @@ autoload:
 
 Win32: Balloon text can't contain line break.
     Hints for multiline tooltips from Alexei Alexandrov (2005 Mar 26)
-    Patch from Sergey Khorev, 2005 Mar 28
+    Patch from Sergey Khorev, 2005 Apr 11
     Add has("balloon_multiline")
+
+setline() should accept a List.
+Add ":[range]sort" command.  Sort on specified field, using a regexp?  Remove
+duplicates?
 
 Awaiting response:
 -   Patch for mch_FullName() also in Vim 6.3?  os_mswin.c
 -   Win32: tearoff menu window should have a scrollbar when it's taller than
     the screen.
 
+Make option like 'verbose' that writes output into a file?  Should make it
+possible to see what's happening without messing up the display.
+
 
 PLANNED FOR VERSION 7.0:
 
 -   Add SPELLCHECKER, with support for many languages.
     - Use "engspchk" from Charles Campbell for ideas.
-    - Alternative: use MySpell library (in OpenOffice.org).
+    - Spell checking code todo's:
+	- BWF_ADDS and BWF_ADDSM for more than 256, only one byte for count.
+	- Case folding only works when locale is set properly.
+	  E.g., when C locale is active then 'enc' is "latin1" but Ångström
+	  isn't seen as a ONECAP.
+	  Use our own character tables for encodings used in spell files?
+	  Use iswupper() if possible?
+	  Put the character tables in the .aff file?
+	- Implement = flag in .dic: KEEPCASE for lower case word.
+	    's morgens/=  does not match 'S morgens
+	- Merge en_US, en_CA, en_AU, etc.
+	- Implement compound words?
+	- Make matching additions faster somehow?
+	- More efficient way to store additions?
+	- remove fw_prefix and fw_suffix, use fw_len (word length) and put
+	  prefixes and suffixes right after it.
+	- Make "en-rare" spell file.
+	  Convention: use en_US (language_region) and en-rare (language-field)
+	- Need to check for affixes of zero length?
+	- specify word characters in .aff file?
+	- Polish: Anio and Hanio are wrong words, even though Myspell allows
+	  them.  Problem with not ignoring case in conditions.
+	- Put addition up to end of word also in hashtab, so that "s'aaa"
+	  is found by "'aaa", s-bbb by "-bbb", etc.  Put rest in table (search
+	  longest match).
+        - Rare words: use another dictionary.  Add hl groups to 'spelllang'?
+	    :set spelllang=en_us,en.rare/SpellRare,en.math/SpellMath
+    - References MySpell library (in OpenOffice.org).
 	http://spellchecker.mozdev.org/source.html
+	http://whiteboard.openoffice.org/source/browse/whiteboard/lingucomponent/source/spellcheck/myspell/
+      author: Kevin Hendricks <kevin.hendricks@sympatico.ca>
     - Alternative: use aspell library.
-    - Dump pre-parsed spell structs in a file?
+      ispell is replaced by aspell, thus forget about it.
     - More complicated: Regions with different languages?  E.g. comments in
       English, strings in German (po file).
     - Commands required:
@@ -72,12 +138,13 @@ PLANNED FOR VERSION 7.0:
 	    :spell wrong <word>	    zw
 	[s  move to previous spell error  [S also rare word
 	]s  move to next spell error      ]S also rare word
+	    (only "]s" is currently implemented)
     - Update option window for 'spell' and 'spelllang'.
-    - Use an external program like ispell or aspell for suggestions to correct
-      the spelling.
-    - Need wordlists for many languages; "language pack"
-    - Use wordlists from openoffice (myspell).  Work together with them to
-      update the wordlist.  (Adri Verhoef, Aad Nales)
+    - Use an external program like aspell for suggestions to correct the
+      spelling?  Or include the myspell/spell code in Vim?
+    - Distribution: Need wordlists for many languages; "language pack"
+    - Work together with OpenOffic.org to update the wordlists.  (Adri
+      Verhoef, Aad Nales)
     - Support for approximate-regexps will help with finding similar words
       (agrep http://www.tgries.de/agrep/).
     - Charles Campbell asks for method to add "contained" groups to
@@ -91,6 +158,7 @@ PLANNED FOR VERSION 7.0:
 	~/vim/patches/wm_vim-5_4d.zip  can be used as an example (includes
 	ispell inside Vim).  Gautam Iyer has an example with "aspell".
     Patch from Marcin Dalecki, uses pipe to aspell.
+
 
 -   REFACTORING: The main() function is very long.  Move parts to separate
     functions, especially loops.  Ideas from Walter Briscoe (2003 Apr 3, 2004
@@ -110,6 +178,8 @@ PLANNED FOR VERSION 7.0:
 	    of http://insenvim.sourceforge.net
 	http://cedet.sourceforge.net/intellisense.shtml (for Emacs)
 	Ivan Villanueva has something for Java.
+	Ideas from Emads:
+	    http://www.xref-tech.com/xrefactory/more_c_completion.html
     Can't call it Intellisense, it is a trademark by Microsoft.
     Ideas from the Vim 7 BOF at SANE:
     - It's not possible to have one solution for all languages.  Design an
@@ -217,6 +287,14 @@ PLANNED FOR VERSION 7.0:
     with \u, \U, etc.
 
 Adjust src/main.aap for installing manpages like in Makefile.
+
+Add strtol() to avoid the problems with leading zero causing octal conversion.
+
+Try new POSIX tests, made after my comments. (Geoff Clare, 2005 April 7)
+Before April 23 if possible.
+
+Add a 'tool' window: behaves like a preview window but there can be several.
+Don't count it in only_one_window(). (Alexei Alexandrov)
 
 Win32: Patch for Korean IME. (Yusung, 2005 March 21)
 
@@ -361,7 +439,7 @@ Vi incompatibility:
     Also: A mark is lost after: make change, undo, redo and undo.
     Example: "{d''" then "u" then "d''": deletes an extra line, because the ''
     position is one line down. (Veselinovic)
-8   ":change" in a single-line file adds an empty line. When the file used to
+8   ":change" in a single-line file adds an empty line.  When the file used to
     be longer a "~" line is displayed, but there really is an empty line.
     (Haakon Riiser, 2003 Dec 3 and Dec 16)
 8   ":append" and ":insert" in an empty file add an extra empty line. (Haakon
@@ -549,7 +627,7 @@ Athena and Motif:
     wrong.
 9   XIM is disabled by default for SGI/IRIX.  Fix XIM so that 'imdisable' can
     be off by default.
-9   XIM doesn't work properly for Athena/Motif. (Yasuhiro Matsumoto) For now,
+9   XIM doesn't work properly for Athena/Motif. (Yasuhiro Matsumoto)  For now,
     keep XIM active at all times when the input method has the preediting
     flag.
 8   X11: A menu that contains an umlaut is truncated at that character.
@@ -873,7 +951,7 @@ Macintosh:
 7   The Cygwin and MingW makefiles define "PC", but it's not used anywhere.
     Remove? (Dan Sharp)
 9   The argument <f-args> of a user command doesn't handle backslashes
-    properly. "Cmd \ e" is one argument, "Cmd \\ e" still is one argument.
+    properly.  "Cmd \ e" is one argument, "Cmd \\ e" still is one argument.
     "Cmd \  e" is two arguments, first one ending in space. (Kontra Gergely)
 9   User commands use the context of the script they were defined in.  This
     causes a "s:var" argument to unexpectedly use a variable in the defining
@@ -895,7 +973,7 @@ Macintosh:
     won't work for GTK anyway.
 8   When the clipboard isn't supported: ":yank*" gives a confusing error
     message.  Specifically mention that the register name is invalid.
-8   "gf" always excludes trailing punctuation characters. file_name_in_line()
+8   "gf" always excludes trailing punctuation characters.  file_name_in_line()
     is currently fixed to use ".,:;!".  Add an option to make this
     configurable?
 8   'hkmap' should probably be global-local.
@@ -1118,7 +1196,7 @@ Problems that will (probably) not be solved:
 -   Amiga: When using quickfix with the Manx compiler we only get the first 25
     errors.  How do we get the rest?
 -   Amiga: The ":cq" command does not always abort the Manx compiler.  Why?
--   Linux: A file with protection r--rw-rw- is seen readonly for others. The
+-   Linux: A file with protection r--rw-rw- is seen readonly for others.  The
     access() function in GNU libc is probably wrong.
 -   MSDOS: When using smartdrive with write-back buffering, writing to a
     readonly floppy will cause problems.  How to test for a writable floppy
@@ -1269,6 +1347,7 @@ Folding:
 8   Add "z/" and "z?" for searching in not folded text only.
 8   Add different highlighting for a fold line depending on the fold level.
     (Noel Henson)
+7   Use "++--", "+++--" for different levels instead of "+---" "+----".
 8   When a closed fold is displayed open because of 'foldminlines', the
     behavior of commands is still like the fold is closed.  How to make the
     user aware of this?
@@ -1311,7 +1390,8 @@ Multi-byte characters:
     Match with "-\*-\s*coding[:=]\s*\([::word::-_.]\+\)\s*-\*-" and use first
     item.
 8   Add an item in 'fileencodings' to check the first line of an XML file for
-    the encoding. <?xml version="1.0" encoding="UTF-8"?>  Or "charset=UTF-8"?
+    the encoding.  <?xml version="1.0" encoding="UTF-8"?>  Or "charset=UTF-8"?
+    For HTML look for "charset=utf-8".
 8   The quickfix file is read without conversion, thus in 'encoding'.  Add an
     option to specify the encoding of the errorfile and convert it.  Also for
     ":grep" and ":helpgrep".
@@ -1444,7 +1524,7 @@ Syntax highlighting:
 7   Use parsing like awk, so that e.g., a ( without a matching ) can be
     detected.
 8   Make it possible to use "inverted" highlighting, invert the original
-    character.  For Visual mode. (xterm-selection already does this).
+    character.  For Visual mode.  (xterm-selection already does this).
 8   Highlight non-printable characters with "SpecialChar", linked to
     "Special".  Display them with the digraph characters, if possible.
 8   Highlight the clipboard-selection with a highlight group.
@@ -1790,7 +1870,7 @@ Messages:
     Careful: For a severe error (out of memory), and when the user starts
     typing, error messages must be switched back on.
     Also a flag to ignore error messages for shell commands (for mappings).
--   Option to set time for emsg() sleep. Interrupt sleep when key is typed?
+-   Option to set time for emsg() sleep.  Interrupt sleep when key is typed?
     sleep before second message?
 8   In Ex silent mode or when reading commands from a file, what exactly is
     not printed and what is?  Check ":print", ":set all", ":args", ":vers",
@@ -2028,7 +2108,7 @@ GUI:
 7   Motif: For a confirm() dialog <Enter> should be ignored when no default
     button selected, <Esc> should close the dialog.
 7   When using a pseudo-tty Vim should behave like some terminal (vt52 looks
-    simple enough). Terminal codes to/from shell should be translated.
+    simple enough).  Terminal codes to/from shell should be translated.
 -   Would it be useful to be able to quit the GUI and go back to the terminal
     where it was started from?
 7   Support "-visual <type>" command line argument.
@@ -2353,7 +2433,7 @@ Insert mode:
 9   Wrong indent for cino=(4, removing the (void) fixes it: (Zellner)
 	(void) MyFancyFunction(
 			       argument);
--   Make smartindenting configurable. Add 'sioptions', e.g. '#' setting the
+-   Make smartindenting configurable.  Add 'sioptions', e.g. '#' setting the
     indent to 0 should be switched on/off.
 7   Support ANSI style function header, with each argument on its own line.
 -   "[p" and "]p" should use 'cindent' code if it's on (only for the first
@@ -2509,16 +2589,16 @@ Visual mode:
 6   In non-Block mode, "A" should append the same text after each line.
 6   ":'<,'>source" should read the selected lines and ":source" them.
 6   When in blockwise visual selection (CTRL-V), allow cursor to be placed
-    right of the line. Could also allow cursor to be placed anywhere on a TAB
+    right of the line.  Could also allow cursor to be placed anywhere on a TAB
     or other special character.
 6   Add commands to move selected text, without deselecting.
 
 
 More advanced repeating commands:
 -   Add "." command for visual mode: redo last visual command (e.g. ":fmt").
-7   Repeating "d:{cmd}" with "." doesn't work. (Benji Fisher) Somehow remember
+7   Repeating "d:{cmd}" with "." doesn't work. (Benji Fisher)  Somehow remember
     the command line so that it can be repeated?
--   Add "." command after operator: repeat last command of same operator. E.g.
+-   Add "." command after operator: repeat last command of same operator.  E.g.
     "c." will repeat last change, also when "x" used since then (Webb).
     "y." will repeat last yank.
     "c2." will repeat the last but one change?
@@ -2556,7 +2636,7 @@ Mappings and Abbreviations:
     not fool proof.  How to handle ambiguous mappings?
 7   Add <0x8f> (hex), <033> (octal) and <123> (decimal) to <> notation?
 7   Allow mapping "Q" and "Q}" at the same time.  Need to put a flag with "Q",
-    that it needs an extra character before it can match. See Vile 'maplonger'
+    that it needs an extra character before it can match.  See Vile 'maplonger'
     option.
 7   When someone tries to unmap with a trailing space, and it fails, try
     unmapping without the trailing space.  Helps for ":unmap xx | unmap yy".
@@ -2598,7 +2678,7 @@ Mappings and Abbreviations:
 -   List mappings that have a raw escape sequence both with the name of the key
     for that escape sequence (if there is one) and the sequence itself.
 -   List mappings: Once with special keys listed as <>, once with meta chars as
-    <M-a>, once with the byte values (octal?). Sort of "spell mapping" command?
+    <M-a>, once with the byte values (octal?).  Sort of "spell mapping" command?
 -   When entering mappings: Add the possibility to enter meta keys like they
     are displayed, within <>: <M-a>, <~@> or <|a>.
 -   Allow multiple arguments to :unmap.
@@ -2709,17 +2789,17 @@ Searching:
     as Visual area. (variation on idea from Bertin)
 -   Searching: "/this//that/" should find "that" after "this".
 -   Add global search commands: Instead of wrapping at the end of the buffer,
-    they continue in another buffer. Use flag after search pattern:
+    they continue in another buffer.  Use flag after search pattern:
     a	for the next file in the argument list
     f	for file in the buffer list
     w	for file edited in a window.
-    e.g. "/pat/f". Then "n" and "N" work through files too. "f" flag also for
-    ":s/pat/foo/f"??? Then when 'autowrite' and 'hidden' are both not set, ask
+    e.g. "/pat/f".  Then "n" and "N" work through files too.  "f" flag also for
+    ":s/pat/foo/f"???  Then when 'autowrite' and 'hidden' are both not set, ask
     before saving files: "Save modified buffer "/path/file"? (Yes/Hide/No
     Save-all/hide-All/Quit) ".
 -   ":s/pat/foo/3": find 3rd match of "pat", like sed. (Thomas Koehler)
 7   When searching with 'n' give message when getting back where the search
-    first started. Remember start of search in '/ mark.
+    first started.  Remember start of search in '/ mark.
 7   Add option that scrolls screen to put cursor in middle of screen after
     search always/when off-screen/never.  And after a ":tag" command.  Maybe
     specify how many lines below the screen causes a redraw with the cursor in
@@ -2775,8 +2855,8 @@ Buffer list:
 8   Unix: Check all uses of fnamecmp() and fnamencmp() if they should check
     inode too.
 7   Add another number for a buffer, which is visible for the user.  When
-    creating a new buffer, use the lowest number not in use. (or the highest
-    number in use plus one?)
+    creating a new buffer, use the lowest number not in use (or the highest
+    number in use plus one?).
 7   Offer some buffer selection from the command line?  Like using ":ls" and
     asking for a buffer number. (Zachmann)
 -   When starting to edit a file that is already in the buffer list, use the
@@ -2788,7 +2868,7 @@ Buffer list:
 7   Add expansion of buffer names, so that "*.c" is expanded to all buffer
     names.  Needed for ":bdel *.c", ":bunload *.c", etc.
 8   Support for <afile> where a buffer name is expected.
-8   Some commands don't use line numbers, but buffer numbers. '$'
+8   Some commands don't use line numbers, but buffer numbers.  '$'
     should then mean the number of the last buffer.  E.g.: "4,$bdel".
 7   Add an option to mostly use slashes in file names.  Separately for
     internal use and for when executing an external program?
@@ -2802,14 +2882,14 @@ Swap (.swp) files:
     file for the Win32 and Dos 32 bit versions.
 8   When a file is edited by root, add $LOGNAME to know who did su.
 8   When the edited file is a symlink, try to put the swap file in the same
-    dir as the actual file. Adjust FullName().	Avoids editing the same file
+    dir as the actual file.  Adjust FullName().  Avoids editing the same file
     twice (e.g. when using quickfix).  Also try to make the name of the backup
     file the same as the actual file?
     Use the code for resolve()?
 7   When using 64 bit inode numbers, also store the top 32 bits.  Add another
     field for this, using part of bo_fname[], to keep it compatible.
 7   When editing a file on removable media, should put swap file somewhere
-    else.  Use something like 'r' flag in 'viminfo'. 'diravoid'?
+    else.  Use something like 'r' flag in 'viminfo'.  'diravoid'?
     Also: Be able to specify minimum disk space, skip directory when not
     enough room.
 7   Add a configure check for which directory should be used: /tmp, /var/tmp
@@ -2914,7 +2994,7 @@ Multiple Windows:
 7   Add a 'winfixwidth' option, similar to 'winfixheight'.
 6   Add an option to resize the shell when splitting and/or closing a window.
     ":vsp" would make the shell wider by as many columns as needed for the new
-    window.  Specify a maximum size (or use the screen size). ":close" would
+    window.  Specify a maximum size (or use the screen size).  ":close" would
     shrink the shell by as many columns as come available. (Demirel)
 7   When starting Vim several times, instantiate a Vim server, that allows
     communication between the different Vims.  Feels like one Vim running with
@@ -2929,7 +3009,7 @@ Multiple Windows:
 Marks:
 8   When cursor is first moved because of scrolling, set a mark at this
     position.  (Rimon Barr)  Use '-.
-8   Add a command to jump to a mark and make the motion inclusive. g'm and g`m?
+8   Add a command to jump to a mark and make the motion inclusive.  g'm and g`m?
 8   The '" mark is set to the first line, even when doing ":next" a few times.
     Only set the '" mark when the cursor was really moved in a file.
 8   Make `` and '', which would position the new cursor position in the middle
@@ -2987,7 +3067,7 @@ Writing files:
     E.g., ":set patchmode=~/backups/*.orig". (Thomas)
 6   Add an option to prepend something to the backup file name.  E.g., "#".
     Or maybe allow a function to modify the backup file name?
-8   Only make a backup when overwriting a file for the first time. Avoids
+8   Only make a backup when overwriting a file for the first time.  Avoids
     losing the original when writing twice. (Slootman)
 7   On non-Unix machines, also overwrite the original file in some situations
     (file system full, it's a link on an NFS partition).
@@ -3002,13 +3082,13 @@ Writing files:
 
 
 Substitute:
-8   Make it easier to replace in all files in the argument list. E.g.:
+8   Make it easier to replace in all files in the argument list.  E.g.:
     ":argsub/oldword/newword/".  Works like ":argdo %s/oldword/newword/g|w".
 -   :s///p prints the line after a substitution.
 -   With :s///c replace \&, ~, etc. when showing the replacement pattern.
 8   With :s///c allow scrolling horizontally when 'nowrap' is effective.
     Also allow a count before the scrolling keys.
--   Add number option to ":s//2": replace second occurrence of string? Or:
+-   Add number option to ":s//2": replace second occurrence of string?  Or:
     :s///N substitutes N times.
 -   Add answers to ":substitute" with 'c' flag, used in a ":global", e.g.:
     ":g/pat1/s/pat2/pat3/cg": 'A' do all remaining replacements, 'Q' don't do
@@ -3107,7 +3187,7 @@ Various improvements:
     Overrules the default of "--remote-send" to fail and "--remote" to do it
     in this Vim.
 8   When Vim was started without a server, make it possible to start one, as
-    if the "--servername" argument was given. ":startserver <name>"?
+    if the "--servername" argument was given.  ":startserver <name>"?
 8   No address range can be used before the command modifiers.  This makes
     them difficult to use in a menu for Visual mode.  Accept the range and
     have it apply to the following command.
@@ -3178,7 +3258,7 @@ Various improvements:
     buffer.  Make jumplist remember the last ten accessed buffers?
 -   Keep a list of most recently used files for each window, use "[o" to go
     back (older file) and "]n" to go forward (newer file) (like ^O and ^I for
-    jumps) (Webb). Use ":files" and ":ls" to list the files in history order.
+    jumps). (Webb)  Use ":files" and ":ls" to list the files in history order.
 7   Add a history of recently accessed buffer.	Maybe make "2 CTRL-^" jump to
     the 2nd previously visited buffer, "3 CTRL-^" to the third, etc.  Or use
     "3 g CTRL-^" for this?
@@ -3295,7 +3375,7 @@ Various improvements:
     Add setting of 'nrformats' to syntax files.
 -   'path' can become very long, don't use NameBuff for expansion.
 -   When unhiding a hidden buffer, put the same line at top of the window as
-    the one before hiding it. Or: keep the same relative cursor position (so
+    the one before hiding it.  Or: keep the same relative cursor position (so
     many percent down the windows).
 -   Make it possible for the 'showbreak' to be displayed at the end of the
     line.  Use a comma to separate the part at the end and the start of the
@@ -3316,12 +3396,12 @@ Various improvements:
 -   Change ":fixdel" into option 'fixdel', t_del will be adjusted each time
     t_bs is set? (Webb)
 -   "gc": goto character, move absolute character positions forward, also
-    counting newlines. "gC" goes backwards (Weigert).
--   When doing CTRL-^, redraw buffer with the same topline (Demirel). Store
+    counting newlines.  "gC" goes backwards (Weigert).
+-   When doing CTRL-^, redraw buffer with the same topline. (Demirel)  Store
     cursor row and window height to redraw cursor at same percentage of window
     (Webb).
 -   Besides remembering the last used line number of a file, also remember the
-    column. Use it with CTRL-^ et. al.
+    column.  Use it with CTRL-^ et. al.
 -   Check for non-digits when setting a number option (careful when entering
     hex codes like 0xff).
 -   Add option to make "." redo the "@r" command, instead of the last command
@@ -3346,11 +3426,11 @@ Various improvements:
 -   Create a program that can translate a .swp file from any machine into a
     form usable by Vim on the current machine.
 -   Add ":noro" command: Reset 'ro' flag for all buffers, except ones that have
-    a readonly file. ":noro!" will reset all 'ro' flags.
+    a readonly file.  ":noro!" will reset all 'ro' flags.
 -   Add a variant of CTRL-V that stops interpretation of more than one
     character.	For entering mappings on the command line where a key contains
     several special characters, e.g. a trailing newline.
--   Add regex for 'paragraphs' and 'sections': 'parare' and 'sectre'. Combine
+-   Add regex for 'paragraphs' and 'sections': 'parare' and 'sectre'.  Combine
     the two into a regex for searching. (Ned Konz)
 -   Make '2' option in 'formatoptions' also work inside comments.
 -   Add 's' flag to 'formatoptions': Do not break when inside a string. (Dodt)
@@ -3368,7 +3448,7 @@ Various improvements:
     entered)?
 -   Check out how screen does output optimizing.  Apparently this is possible
     as an output filter.
--   In dosub() regexec is called twice for the same line. Try to avoid this.
+-   In dosub() regexec is called twice for the same line.  Try to avoid this.
 -   Window updating from memline.c: insert/delete/replace line.
 -   Optimize ml_append() for speed, esp. for reading a file.
 -   V..c should keep indent when 'ai' is set, just like [count]cc.
@@ -3382,7 +3462,7 @@ Various improvements:
     or in octal.
 7   Tighter integration with xxd to edit binary files.  Make it more
     easy/obvious to use.  Command line argument?
--   How does vi detect whether a filter has messed up the screen? Check source.
+-   How does vi detect whether a filter has messed up the screen?  Check source.
     After ":w !command" a wait_return?
 -   Improve screen updating code for doput() (use s_ins()).
 -   With 'p' command on last line: scroll screen up (also for terminals without
@@ -3393,7 +3473,7 @@ Various improvements:
 -   Add "-d null" for editing from a script file without displaying.
 -   In Insert mode: Remember the characters that were removed with backspace
     and re-insert them one at a time with <key1>, all together with <key2>.
--   Amiga: Add possibility to set a keymap. The code in amiga.c does not work
+-   Amiga: Add possibility to set a keymap.  The code in amiga.c does not work
     yet.
 -   Implement 'redraw' option.
 -   Add special code to 'sections' option to define something else but '{' or
@@ -3414,7 +3494,7 @@ Various improvements:
 -   Check handling of CTRL-V and '\' for ":" commands that do not have TRLBAR.
 -   When a file cannot be opened but does exist, give error message.
 -   Amiga: When 'r' protection bit is not set, file can still be opened but
-    gives read errors. Check protection before opening.
+    gives read errors.  Check protection before opening.
 -   When writing check for file exists but no permission, "Permission denied".
 -   If file does not exists, check if directory exists.
 -   MSDOS: although t_cv and t_ci are not set, do invert char under cursor.
@@ -3436,23 +3516,23 @@ Various improvements:
 -   Add commands for saving and restoring options ":set save" "set restore",
     for use in macro's and the like.
 -   Keep output from listings in a window, so you can have a look at it while
-    working in another window. Put cmdline in a separate window?
+    working in another window.  Put cmdline in a separate window?
 -   Add possibility to put output of ex commands in a buffer or file, e.g. for
     ":set all".  ":r :set all"?
 -   'edit' option: When off changing the buffer is not possible (Really
     read-only mode).
 -   When the 'equalalways' option is set, creating a new window should not
-    result in windows to become bigger. Deleting a window should not result in
+    result in windows to become bigger.  Deleting a window should not result in
     a window to become smaller (Webb).
 -   When resizing the whole Vim window, the windows inside should be resized
     proportionally (Webb).
--   Include options directly in option table, no indirect pointers. Use
+-   Include options directly in option table, no indirect pointers.  Use
     mkopttab to make option table?
 -   When doing ":w dir", where "dir" is a directory name, write the current
     file into that directory, with the current file name (without the path)?
 -   Support for 'dictionary's that are sorted, makes access a lot faster
     (Haritsis).
--   Add "^Vrx" on the command line, replace with contents of register x. Used
+-   Add "^Vrx" on the command line, replace with contents of register x.  Used
     instead of CTRL-R to make repeating possible. (Marinichev)
 -   Add "^Vb" on the command line, replace with word before or under the
     cursor?
@@ -3554,7 +3634,7 @@ Far future and "big" extensions:
     :g/RE/#l shall print lines with line numbers and in list format.
     :g/RE/dp shall print lines that are deleted.
     POSIX: Commands where flags shall apply to all lines written: list,
-    number, open, print, substitute, visual, &, z. For other commands, flags
+    number, open, print, substitute, visual, &, z.  For other commands, flags
     shall apply to the current line after the command completes.  Examples:
     :7,10j #l Join the lines 7-10 and print the result in list
 -   Allow two or more users to edit the same file at the same time.  Changes

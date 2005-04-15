@@ -3002,10 +3002,6 @@ set_init_1()
 	    /* $HOME may have characters in active code page. */
 	    init_homedir();
 # endif
-#ifdef FEAT_SYN_HL
-	    /* Need to reload spell dictionaries */
-	    spell_reload();
-#endif
 	}
 	else
 	{

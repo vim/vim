@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 7.0aa.  Last change: 2005 Feb 07
+*intro.txt*     For Vim version 7.0aa.  Last change: 2005 Mar 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -330,11 +330,11 @@ and <> are part of what you type, the context should make this clear.
 ["x]		An optional register designation where text can be stored.
 		See |registers|.  The x is a single character between 'a' and
 		'z' or 'A' and 'Z' or '"', and in some cases (with the put
-		command) between '0' and '9', '%', '#', or others. The
+		command) between '0' and '9', '%', '#', or others.  The
 		uppercase and lowercase letter designate the same register,
 		but the lowercase letter is used to overwrite the previous
 		register contents, while the uppercase letter is used to
-		append to the previous register contents. Without the ""x" or
+		append to the previous register contents.  Without the ""x" or
 		with """" the stored text is put into the unnamed register.
 
 							*{}*

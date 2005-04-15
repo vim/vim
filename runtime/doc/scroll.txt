@@ -1,4 +1,4 @@
-*scroll.txt*    For Vim version 7.0aa.  Last change: 2005 Feb 10
+*scroll.txt*    For Vim version 7.0aa.  Last change: 2005 Apr 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -265,12 +265,12 @@ You can also use Alt and Ctrl modifiers.
 This only works when Vim gets the scroll wheel events, of course.  You can
 check if this works with the "xev" program.
 
-When using Xfree86, the /etc/XF86Config file should have the correct entry for
+When using XFree86, the /etc/XF86Config file should have the correct entry for
 your mouse.  For FreeBSD, this entry works for a Logitech scrollmouse: >
     Protocol     "MouseMan"
     Device       "/dev/psm0"
     ZAxisMapping 4 5
-See the Xfree86 documentation for information.
+See the XFree86 documentation for information.
 
 							*xterm-mouse-wheel*
 To use the mouse wheel in a new xterm you only have to make the scroll wheel

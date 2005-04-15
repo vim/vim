@@ -1,4 +1,4 @@
-*remote.txt*    For Vim version 7.0aa.  Last change: 2003 Nov 10
+*remote.txt*    For Vim version 7.0aa.  Last change: 2005 Apr 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -87,7 +87,7 @@ SERVER NAME
 By default Vim will try to register the name under which it was invoked (gvim,
 egvim ...).  This can be overridden with the --servername argument.  If the
 specified name is not available, a postfix is applied until a free name is
-encountered, ie. "gvim1" for the second invocation of gvim on a particular
+encountered, i.e. "gvim1" for the second invocation of gvim on a particular
 X-server.  The resulting name is available in the servername builtin variable
 |v:servername|.  The case of the server name is ignored, thus "gvim" and
 "GVIM" are considered equal.
@@ -121,7 +121,7 @@ wait for each of the files to have been edited.  This uses the BufUnload
 event, thus as soon as a file has been unloaded, Vim assumes you are done
 editing it.
 Note that the --remote and --remote-wait arguments will consume the rest of
-the command line.  Ie. all remaining arguments will be regarded as filenames.
+the command line.  I.e. all remaining arguments will be regarded as filenames.
 You can not put options there!
 
 

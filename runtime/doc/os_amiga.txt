@@ -1,4 +1,4 @@
-*os_amiga.txt*  For Vim version 7.0aa.  Last change: 2004 Jun 28
+*os_amiga.txt*  For Vim version 7.0aa.  Last change: 2005 Mar 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -13,7 +13,7 @@ Installation on the Amiga:
   look for the file "VIM:doc/help.txt" (for the help command).
   Setting the environment variable $VIM also works.  And the other way around:
   when $VIM used and it is not defined, "VIM:" is used.
-- With DOS 1.3 or earlier: Put "arp.library" in "libs:". Vim must have been
+- With DOS 1.3 or earlier: Put "arp.library" in "libs:".  Vim must have been
   compiled with the |+ARP| feature enabled.  Make sure that newcli and run are
   in "C:" (for executing external commands).
 - Put a shell that accepts a command with "-c" (e.g. "Csh" from Fish disk
@@ -21,13 +21,13 @@ Installation on the Amiga:
   executing external commands).
 
 If you have sufficient memory you can avoid startup delays by making Vim and
-csh resident with the command "rez csh vim". You will have to put
-"rezlib.library" in your "libs:" directory. Under 2.0 you will need rez
+csh resident with the command "rez csh vim".  You will have to put
+"rezlib.library" in your "libs:" directory.  Under 2.0 you will need rez
 version 0.5.
 
 If you do not use digraphs, you can save some memory by recompiling without
-the |+digraphs| feature. If you want to use Vim with other terminals you can
-recompile with the TERMCAP option. Vim compiles with Manx 5.x and SAS 6.x.
+the |+digraphs| feature.  If you want to use Vim with other terminals you can
+recompile with the TERMCAP option.  Vim compiles with Manx 5.x and SAS 6.x.
 See the makefiles and feature.h.
 
 If you notice Vim crashes on some files when syntax highlighting is on, or
@@ -47,7 +47,7 @@ If you want to use different colors set the termcap codes:
 	t_ZH (for italic text)
 	t_ZR (for normal text after t_ZH)
 
-Standard ANSI escape sequences are used. The codes are:
+Standard ANSI escape sequences are used.  The codes are:
 30 grey char   40 grey cell   >0 grey background    0 all attributes off
 31 black char  41 black cell  >1 black background   1 boldface
 32 white char  42 white cell  >2 white background   2 faint
@@ -57,8 +57,8 @@ Standard ANSI escape sequences are used. The codes are:
 36 white char  46 white cell  >6 white background   8 invisible
 37 blue char   47 blue cell   >7 blue background
 
-The codes with '>' must be the last. The cell and background color should be
-the same. The codes can be combined by separating them with a semicolon. For
+The codes with '>' must be the last.  The cell and background color should be
+the same.  The codes can be combined by separating them with a semicolon.  For
 example to get white text on a blue background: >
   :set t_me=^V<Esc>[0;32;43;>3m
   :set t_se=^V<Esc>[0;32;43;>3m
@@ -72,14 +72,14 @@ example to get white text on a blue background: >
 
 When using multiple commands with a filter command, e.g. >
   :r! echo this; echo that
-Only the output of the last command is used. To fix this you have to group the
-commands. This depends on the shell you use (that is why it is not done
-automatically in Vim). Examples: >
+Only the output of the last command is used.  To fix this you have to group the
+commands.  This depends on the shell you use (that is why it is not done
+automatically in Vim).  Examples: >
   :r! (echo this; echo that)
   :r! {echo this; echo that}
 
 Commands that accept a single file name allow for embedded spaces in the file
-name. However, when using commands that accept several file names, embedded
+name.  However, when using commands that accept several file names, embedded
 spaces need to be escaped with a backslash.
 
 ------------------------------------------------------------------------------
@@ -94,8 +94,8 @@ For the latest info about the MorphOS version:
 Problems ~
 
 There are a couple of problems which are not MorphOS related but more Vim and
-UN*X related. When starting up Vim in ram: it complains with a nag requester
-from MorphOS please simply ignore it. Another problem is when running Vim as
+UN*X related.  When starting up Vim in ram: it complains with a nag requester
+from MorphOS please simply ignore it.  Another problem is when running Vim as
 is some plugins will cause a few problems which you can ignore as well.
 Hopefully someone will be fixing it over the time.
 
@@ -116,7 +116,7 @@ Installation ~
 
 	ftp://ftp.vim.org/pub/vim/amiga/vim62rt.tgz
 
-   and unpack it in your 'Apps' directory of the MorphOS installation. For me
+   and unpack it in your 'Apps' directory of the MorphOS installation.  For me
    this would create following directory hierarchy:
 
 	MorphOS:Apps/Vim/Vim62/...
@@ -130,8 +130,8 @@ Installation ~
 
 4) Copy the '.vimrc' file to s:
 
-5) There is also a file named 'color-sequence' included in this archive. This
-   will set the MorphOS Shell to show ANSI colors. Please copy the file to s:
+5) There is also a file named 'color-sequence' included in this archive.  This
+   will set the MorphOS Shell to show ANSI colors.  Please copy the file to s:
    and change the s:shell-startup to:
 
 	;Begin VIM

@@ -1,4 +1,4 @@
-*usr_23.txt*	For Vim version 7.0aa.  Last change: 2001 Sep 03
+*usr_23.txt*	For Vim version 7.0aa.  Last change: 2005 Apr 01
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -82,7 +82,7 @@ Vim guesses wrong.
 OVERRULING THE FORMAT
 
 If you use the good old Vi and try to edit an MS-DOS format file, you will
-find that each line ends with a ^M character. (^M is <CR>).  The automatic
+find that each line ends with a ^M character.  (^M is <CR>).  The automatic
 detection avoids this.  Suppose you do want to edit the file that way?  Then
 you need to overrule the format: >
 

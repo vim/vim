@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Mar 20
+" Last Change:	2005 Apr 13
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -1210,7 +1210,7 @@ au BufNewFile,BufRead .ratpoisonrc,ratpoisonrc	setf ratpoison
 au BufNewFile,BufRead *\,v			setf rcs
 
 " Readline
-au BufNewFile,BufRead .inputrc			setf readline
+au BufNewFile,BufRead .inputrc,inputrc		setf readline
 
 " Registry for MS-Windows
 au BufNewFile,BufRead *.reg
@@ -1483,9 +1483,6 @@ au BufNewFile,BufRead *.sp,*.spice		setf spice
 
 " Spyce
 au BufNewFile,BufRead *.spy,*.spi		setf spyce
-
-" Vim spell file
-au BufNewFile,BufRead *.spl			setf vimspell
 
 " Squid
 au BufNewFile,BufRead squid.conf		setf squid

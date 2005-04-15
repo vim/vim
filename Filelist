@@ -662,6 +662,8 @@ EXTRA =		\
 # generic language files
 LANG_GEN = \
 		README_lang.txt \
+		runtime/doc/*-fr.1 \
+		runtime/doc/*-fr.UTF-8.1 \
 		runtime/doc/*-it.1 \
 		runtime/doc/*-it.UTF-8.1 \
 		runtime/doc/*-ru.1 \
@@ -679,7 +681,9 @@ LANG_GEN = \
 		runtime/tutor/tutor.pl.* \
 		runtime/tutor/tutor.ru.* \
 		runtime/tutor/tutor.zh.* \
-		runtime/spell/en.spl \
+		runtime/spell/README.txt \
+		runtime/spell/en.latin1.spl \
+		runtime/spell/en.utf-8.spl \
 
 # all files for lang archive
 LANG_SRC = \

@@ -1,4 +1,4 @@
-*usr_40.txt*	For Vim version 7.0aa.  Last change: 2004 Dec 29
+*usr_40.txt*	For Vim version 7.0aa.  Last change: 2005 Apr 01
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -383,9 +383,9 @@ Some of the other options and keywords are as follows:
 	-count={number}		The command can take a count whose default is
 				{number}.  The resulting count can be used
 				through the <count> keyword.
-	-bang			You can use a !. If present, using <bang> will
+	-bang			You can use a !.  If present, using <bang> will
 				result in a !.
-	-register		You can specify a register. (The default is
+	-register		You can specify a register.  (The default is
 				the unnamed register.)
 				The register specification is available as
 				<reg> (a.k.a. <register>).
@@ -425,14 +425,14 @@ More details about all this in the reference manual: |user-commands|.
 *40.3*	Autocommands
 
 An autocommand is a command that is executed automatically in response to some
-event, such as a file being read or written or a buffer change. Through the
+event, such as a file being read or written or a buffer change.  Through the
 use of autocommands you can train Vim to edit compressed files, for example.
 That is used in the |gzip| plugin.
    Autocommands are very powerful.  Use them with care and they will help you
 avoid typing many commands.  Use them carelessly and they will cause a lot of
 trouble.
 
-Suppose you want to replace a date stamp on the end of a file every time it is
+Suppose you want to replace a datestamp on the end of a file every time it is
 written.  First you define a function: >
 
 	:function DateInsert()

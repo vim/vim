@@ -1586,6 +1586,31 @@ get_arglist(gap, str)
     return OK;
 }
 
+#if defined(FEAT_QUICKFIX) || (defined(FEAT_SYN_HL) && defined(FEAT_MBYTE)) \
+	|| defined(PROTO)
+/*
+ * Parse a list of arguments (file names), expand them and return in
+ * "fnames[fcountp]".
+ * Return FAIL or OK.
+ */
+    int
+get_arglist_exp(str, fcountp, fnamesp)
+    char_u	*str;
+    int		*fcountp;
+    char_u	***fnamesp;
+{
+    garray_T	ga;
+    int		i;
+
+    if (get_arglist(&ga, str) == FAIL)
+	return FAIL;
+    i = gen_expand_wildcards(ga.ga_len, (char_u **)ga.ga_data,
+				       fcountp, fnamesp, EW_FILE|EW_NOTFOUND);
+    ga_clear(&ga);
+    return i;
+}
+#endif
+
 #if defined(FEAT_GUI) || defined(FEAT_CLIENTSERVER) || defined(PROTO)
 /*
  * Redefine the argument list.
@@ -2375,11 +2400,13 @@ ex_runtime(eap)
     cmd_runtime(eap->arg, eap->forceit);
 }
 
-static void source_callback __ARGS((char_u *fname));
+static void source_callback __ARGS((char_u *fname, void *cookie));
 
+/*ARGSUSED*/
     static void
-source_callback(fname)
+source_callback(fname, cookie)
     char_u	*fname;
+    void	*cookie;
 {
     (void)do_source(fname, FALSE, FALSE);
 }
@@ -2395,21 +2422,22 @@ cmd_runtime(name, all)
     char_u	*name;
     int		all;
 {
-    return do_in_runtimepath(name, all, source_callback);
+    return do_in_runtimepath(name, all, source_callback, NULL);
 }
 
 /*
- * Find "name" in 'runtimepath'.  When found, call the "callback" function for
- * it.
+ * Find "name" in 'runtimepath'.  When found, invoke the callback function for
+ * it: callback(fname, "cookie")
  * When "all" is TRUE repeat for all matches, otherwise only the first one is
  * used.
  * Returns OK when at least one match found, FAIL otherwise.
  */
     int
-do_in_runtimepath(name, all, callback)
+do_in_runtimepath(name, all, callback, cookie)
     char_u	*name;
     int		all;
-    void	(*callback)__ARGS((char_u *fname));
+    void	(*callback)__ARGS((char_u *fname, void *ck));
+    void	*cookie;
 {
     char_u	*rtp;
     char_u	*np;
@@ -2465,7 +2493,7 @@ do_in_runtimepath(name, all, callback)
 		    {
 			for (i = 0; i < num_files; ++i)
 			{
-			    (*callback)(files[i]);
+			    (*callback)(files[i], cookie);
 			    did_one = TRUE;
 			    if (!all)
 				break;
@@ -4763,7 +4791,7 @@ static void prt_real_bits __ARGS((double real, int precision, int *pinteger, int
 static void prt_write_real __ARGS((double val, int prec));
 static void prt_def_var __ARGS((char *name, double value, int prec));
 static void prt_flush_buffer __ARGS((void));
-static void prt_resource_name __ARGS((char_u *filename));
+static void prt_resource_name __ARGS((char_u *filename, void *cookie));
 static int prt_find_resource __ARGS((char *name, struct prt_ps_resource_S *resource));
 static int prt_open_resource __ARGS((struct prt_ps_resource_S *resource));
 static int prt_check_resource __ARGS((struct prt_ps_resource_S *resource, char_u *version));
@@ -5152,12 +5180,14 @@ prt_flush_buffer()
     }
 }
 
-static char_u *resource_filename;
 
     static void
-prt_resource_name(filename)
+prt_resource_name(filename, cookie)
     char_u  *filename;
+    void    *cookie;
 {
+    char_u *resource_filename = cookie;
+
     if (STRLEN(filename) >= MAXPATHL)
 	*resource_filename = NUL;
     else
@@ -5177,9 +5207,9 @@ prt_find_resource(name, resource)
     add_pathsep(buffer);
     STRCAT(buffer, name);
     STRCAT(buffer, ".ps");
-    resource_filename = resource->filename;
-    *resource_filename = NUL;
-    return (do_in_runtimepath(buffer, FALSE, prt_resource_name)
+    resource->filename[0] = NUL;
+    return (do_in_runtimepath(buffer, FALSE, prt_resource_name,
+							   resource->filename)
 	    && resource->filename[0] != NUL);
 }
 
@@ -5980,7 +6010,7 @@ mch_print_init(psettings, jobname, forceit)
 
         if (!mbfont_opts[OPT_MBFONT_REGULAR].present)
         {
-            EMSG(_("E675: No default font specfifed for multi-byte printing."));
+            EMSG(_("E675: No default font specified for multi-byte printing."));
             return FALSE;
         }
 

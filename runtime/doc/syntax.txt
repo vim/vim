@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.0aa.  Last change: 2005 Mar 19
+*syntax.txt*	For Vim version 7.0aa.  Last change: 2005 Apr 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -520,9 +520,9 @@ the performance unacceptable, turn on ada_withuse_ordinary.
 ANT						*ant.vim* *ant-syntax*
 
 The ant syntax file provides syntax highlighting for javascript and python
-by default. Syntax highlighting for other script languages can be installed
+by default.  Syntax highlighting for other script languages can be installed
 by the function AntSyntaxScript(), which takes the tag name as first argument
-and the script syntax file name as second argument. Example: >
+and the script syntax file name as second argument.  Example: >
 
 	:call AntSyntaxScript('perl', 'perl.vim')
 
@@ -737,7 +737,7 @@ To disable it again, use this: >
 
 COLD FUSION				*coldfusion.vim* *coldfusion-syntax*
 
-The ColdFusion has its own version of HTML comments. To turn on ColdFusion
+The ColdFusion has its own version of HTML comments.  To turn on ColdFusion
 comment highlighting, add the following line to your startup file: >
 
 	:let html_wrong_comments = 1
@@ -763,7 +763,7 @@ For using tcsh: >
 
 Any script with a tcsh extension or a standard tcsh filename (.tcshrc,
 tcsh.tcshrc, tcsh.login) will have filetype tcsh.  All other tcsh/csh scripts
-will be classified as tcsh, UNLESS the "filetype_csh" variable exists. If the
+will be classified as tcsh, UNLESS the "filetype_csh" variable exists.  If the
 "filetype_csh" variable exists, the filetype will be set to the value of the
 variable.
 
@@ -771,9 +771,9 @@ variable.
 CYNLIB						*cynlib.vim* *cynlib-syntax*
 
 Cynlib files are C++ files that use the Cynlib class library to enable
-hardware modelling and simulation using C++. Typically Cynlib files have a .cc
+hardware modelling and simulation using C++.  Typically Cynlib files have a .cc
 or a .cpp extension, which makes it very difficult to distinguish them from a
-normal C++ file. Thus, to enable Cynlib highlighting for .cc files, add this
+normal C++ file.  Thus, to enable Cynlib highlighting for .cc files, add this
 line to your .vimrc file: >
 
 	:let cynlib_cyntax_for_cc=1
@@ -801,7 +801,7 @@ DESKTOP					   *desktop.vim* *desktop-syntax*
 Primary goal of this syntax file is to highlight .desktop and .directory files
 according to freedesktop.org standard: http://pdx.freedesktop.org/Standards/
 But actually almost none implements this standard fully.  Thus it will
-highlight all Unix ini files. But you can force strict highlighting according
+highlight all Unix ini files.  But you can force strict highlighting according
 to standard by placing this in your vimrc file: >
 	:let enforce_freedesktop_standard = 1
 
@@ -850,8 +850,8 @@ If this variable is not defined it defaults to a value of 2 to support
 Windows 2000.
 
 A second option covers whether *.btm files should be detected as type
-"dosbatch" (MS-DOS batch files) or type "btm" (4DOS batch files). The latter
-is used by default. You may select the former with the following line: >
+"dosbatch" (MS-DOS batch files) or type "btm" (4DOS batch files).  The latter
+is used by default.  You may select the former with the following line: >
 
    :let g:dosbatch_syntax_for_btm = 1
 
@@ -861,12 +861,12 @@ If this variable is undefined or zero, btm syntax is selected.
 
 DTD						*dtd.vim* *dtd-syntax*
 
-The DTD syntax highlighting is case sensitive by default. To disable
+The DTD syntax highlighting is case sensitive by default.  To disable
 case-sensitive highlighting, add the following line to your startup file: >
 
 	:let dtd_ignore_case=1
 
-The DTD syntax file will highlight unknown tags as errors. If
+The DTD syntax file will highlight unknown tags as errors.  If
 this is annoying, it can be turned off by setting: >
 
 	:let dtd_no_tag_errors=1
@@ -876,7 +876,7 @@ Parameter entity names are highlighted in the definition using the
 'Type' highlighting group and 'Comment' for punctuation and '%'.
 Parameter entity instances are highlighted using the 'Constant'
 highlighting group and the 'Type' highlighting group for the
-delimiters % and ;. This can be turned off by setting: >
+delimiters % and ;.  This can be turned off by setting: >
 
 	:let dtd_no_param_entities=1
 
@@ -886,8 +886,8 @@ The DTD syntax file is also included by xml.vim to highlight included dtd's.
 EIFFEL						*eiffel.vim* *eiffel-syntax*
 
 While Eiffel is not case-sensitive, its style guidelines are, and the
-syntax highlighting file encourages their use. This also allows to
-highlight class names differently. If you want to disable case-sensitive
+syntax highlighting file encourages their use.  This also allows to
+highlight class names differently.  If you want to disable case-sensitive
 highlighting, add the following line to your startup file: >
 
 	:let eiffel_ignore_case=1
@@ -919,7 +919,7 @@ experimentally handled by some compilers can be enabled by: >
 
 	:let eiffel_ise=1
 
-Finally, some vendors support hexadecimal constants. To handle them, add >
+Finally, some vendors support hexadecimal constants.  To handle them, add >
 
 	:let eiffel_hex_constants=1
 
@@ -965,38 +965,38 @@ Note that the form.vim syntax file implements FORM preprocessor commands and
 directives per default in the same syntax group.
 
 A predefined enhanced color mode for FORM is available to distinguish between
-header statements and statements in the body of a FORM program. To activate
+header statements and statements in the body of a FORM program.  To activate
 this mode define the following variable in your vimrc file >
 
 	:let form_enhanced_color=1
 
 The enhanced mode also takes advantage of additional color features for a dark
-gvim display. Here, statements are colored LightYellow instead of Yellow, and
+gvim display.  Here, statements are colored LightYellow instead of Yellow, and
 conditionals are LightBlue for better distinction.
 
 
 FORTRAN					*fortran.vim* *fortran-syntax*
 
 Default highlighting and dialect ~
-Highlighting appropriate for f95 (Fortran 95) is used by default. This choice
+Highlighting appropriate for f95 (Fortran 95) is used by default.  This choice
 should be appropriate for most users most of the time because Fortran 95 is a
 superset of Fortran 90 and almost a superset of Fortran 77.
 
 Fortran source code form ~
-Fortran 9x code can be in either fixed or free source form. Note that the
+Fortran 9x code can be in either fixed or free source form.  Note that the
 syntax highlighting will not be correct if the form is incorrectly set.
 
 When you create a new fortran file, the syntax script assumes fixed source
-form. If you always use free source form, then >
+form.  If you always use free source form, then >
     :let fortran_free_source=1
-in your .vimrc prior to the :syntax on command. If you always use fixed source
+in your .vimrc prior to the :syntax on command.  If you always use fixed source
 form, then >
     :let fortran_fixed_source=1
 in your .vimrc prior to the :syntax on command.
 
 If the form of the source code depends upon the file extension, then it is
-most convenient to set fortran_free_source in a ftplugin file. For more
-information on ftplugin files, see |ftplugin|. For example, if all your
+most convenient to set fortran_free_source in a ftplugin file.  For more
+information on ftplugin files, see |ftplugin|.  For example, if all your
 fortran files with an .f90 extension are written in free source form and the
 rest in fixed source form, add the following code to your ftplugin file >
     let s:extfname = expand("%:e")
@@ -1012,25 +1012,25 @@ precedes the "syntax on" command in your .vimrc file.
 
 When you edit an existing fortran file, the syntax script will assume free
 source form if the fortran_free_source variable has been set, and assumes
-fixed source form if the fortran_fixed_source variable has been set. If
+fixed source form if the fortran_fixed_source variable has been set.  If
 neither of these variables have been set, the syntax script attempts to
 determine which source form has been used by examining the first five columns
-of the first 25 lines of your file. If no signs of free source form are
-detected, then the file is assumed to be in fixed source form. The algorithm
-should work in the vast majority of cases. In some cases, such as a file that
+of the first 25 lines of your file.  If no signs of free source form are
+detected, then the file is assumed to be in fixed source form.  The algorithm
+should work in the vast majority of cases.  In some cases, such as a file that
 begins with 25 or more full-line comments, the script may incorrectly decide
-that the fortran code is in fixed form. If that happens, just add a
+that the fortran code is in fixed form.  If that happens, just add a
 non-comment statement beginning anywhere in the first five columns of the
 first twenty five lines, save (:w) and then reload (:e!) the file.
 
 Tabs in fortran files ~
-Tabs are not recognized by the Fortran standards. Tabs are not a good idea in
+Tabs are not recognized by the Fortran standards.  Tabs are not a good idea in
 fixed format fortran source code which requires fixed column boundaries.
-Therefore, tabs are marked as errors. Nevertheless, some programmers like
-using tabs. If your fortran files contain tabs, then you should set the
+Therefore, tabs are marked as errors.  Nevertheless, some programmers like
+using tabs.  If your fortran files contain tabs, then you should set the
 variable fortran_have_tabs in your .vimrc with a command such as >
     :let fortran_have_tabs=1
-placed prior to the :syntax on command. Unfortunately, the use of tabs will
+placed prior to the :syntax on command.  Unfortunately, the use of tabs will
 mean that the syntax file will not be able to detect incorrect margins.
 
 Syntax folding of fortran files ~
@@ -1039,26 +1039,26 @@ fortran_fold with a command such as >
     :let fortran_fold=1
 to instruct the syntax script to define fold regions for program units, that
 is main programs starting with a program statement, subroutines, function
-subprograms, block data subprograms, interface blocks, and modules. If you
+subprograms, block data subprograms, interface blocks, and modules.  If you
 also set the variable fortran_fold_conditionals with a command such as >
     :let fortran_fold_conditionals=1
 then fold regions will also be defined for do loops, if blocks, and select
-case constructs. If you also set the variable
+case constructs.  If you also set the variable
 fortran_fold_multilinecomments with a command such as >
     :let fortran_fold_multilinecomments=1
 then fold regions will also be defined for three or more consecutive comment
-lines. Note that defining fold regions can be slow for large files.
+lines.  Note that defining fold regions can be slow for large files.
 
 If fortran_fold, and possibly fortran_fold_conditionals and/or
 fortran_fold_multilinecomments, have been set, then vim will fold your file if
-you set foldmethod=syntax. Comments or blank lines placed between two program
+you set foldmethod=syntax.  Comments or blank lines placed between two program
 units are not folded because they are seen as not belonging to any program
 unit.
 
 More precise fortran syntax ~
 If you set the variable fortran_more_precise with a command such as >
     :let fortran_more_precise=1
-then the syntax coloring will be more precise but slower. In particular,
+then the syntax coloring will be more precise but slower.  In particular,
 statement labels used in do, goto and arithmetic if statements will be
 recognized, as will construct names at the end of a do, if, select or forall
 construct.
@@ -1070,7 +1070,7 @@ subset elf90, and the Imagine1 subset F.
 If you use f77 with extensions, even common ones like do/enddo loops, do/while
 loops and free source form that are supported by most f77 compilers including
 g77 (GNU Fortran), then you will probably find the default highlighting
-satisfactory. However, if you use strict f77 with no extensions, not even free
+satisfactory.  However, if you use strict f77 with no extensions, not even free
 source form or the MIL STD 1753 extensions, then the advantages of setting the
 dialect to f77 are that names such as SUM are recognized as user variable
 names and not highlighted as f9x intrinsic functions, that obsolete constructs
@@ -1082,14 +1082,14 @@ that f90 features excluded from these dialects will be highlighted as todo
 items and that free source form will be assumed as required for these
 dialects.
 
-The dialect can be selected by setting the variable fortran_dialect. The
+The dialect can be selected by setting the variable fortran_dialect.  The
 permissible values of fortran_dialect are case-sensitive and must be "f95",
-"f90", "f77", "elf" or "F". Invalid values of fortran_dialect are ignored.
+"f90", "f77", "elf" or "F".  Invalid values of fortran_dialect are ignored.
 
 If all your fortran files use the same dialect, set fortran_dialect in your
-.vimrc prior to your syntax on statement. If the dialect depends upon the file
-extension, then it is most convenient to set it in a ftplugin file. For more
-information on ftplugin files, see |ftplugin|. For example, if all your
+.vimrc prior to your syntax on statement.  If the dialect depends upon the file
+extension, then it is most convenient to set it in a ftplugin file.  For more
+information on ftplugin files, see |ftplugin|.  For example, if all your
 fortran files with an .f90 extension are written in the elf subset, your
 ftplugin file should contain the code >
     let s:extfname = expand("%:e")
@@ -1102,9 +1102,9 @@ Note that this will work only if the "filetype plugin indent on" command
 precedes the "syntax on" command in your .vimrc file.
 
 Finer control is necessary if the file extension does not uniquely identify
-the dialect. You can override the default dialect, on a file-by-file basis, by
+the dialect.  You can override the default dialect, on a file-by-file basis, by
 including a comment with the directive "fortran_dialect=xx" (where xx=f77 or
-elf or F or f90 or f95) in one of the first three lines in your file. For
+elf or F or f90 or f95) in one of the first three lines in your file.  For
 example, your older .f files may be written in extended f77 but your newer
 ones may be F codes, and you would identify the latter by including in the
 first three lines of those files a Fortran comment of the form >
@@ -1112,8 +1112,8 @@ first three lines of those files a Fortran comment of the form >
 F overrides elf if both directives are present.
 
 Limitations ~
-Parenthesis checking does not catch too few closing parentheses. Hollerith
-strings are not recognized. Some keywords may be highlighted incorrectly
+Parenthesis checking does not catch too few closing parentheses.  Hollerith
+strings are not recognized.  Some keywords may be highlighted incorrectly
 because Fortran90 has no reserved words.
 
 For further information related to fortran, see |fortran-indent| and
@@ -1170,7 +1170,7 @@ group to make them easier to see.
 GROFF						*groff.vim* *groff-syntax*
 
 The groff syntax file is a wrapper for |nroff.vim|, see the notes
-under that heading for examples of use and configuration. The purpose
+under that heading for examples of use and configuration.  The purpose
 of this wrapper is to set up groff syntax extensions by setting the
 filetype from a |modeline| or in a personal filetype definitions file
 (see |filetype.txt|).
@@ -1179,7 +1179,7 @@ filetype from a |modeline| or in a personal filetype definitions file
 HASKELL			     *haskell.vim* *lhaskell.vim* *haskell-syntax*
 
 The Haskell syntax files support plain Haskell code as well as literate
-Haskell code, the latter in both Bird style and TeX style. The Haskell
+Haskell code, the latter in both Bird style and TeX style.  The Haskell
 syntax highlighting will also highlight C preprocessor directives.
 
 If you want to highlight delimiter characters (useful if you have a
@@ -1198,15 +1198,15 @@ your .vimrc: >
 
 The Haskell syntax highlighting also highlights C preprocessor
 directives, and flags lines that start with # but are not valid
-directives as erroneous. This interferes with Haskell's syntax for
-operators, as they may start with #. If you want to highlight those
+directives as erroneous.  This interferes with Haskell's syntax for
+operators, as they may start with #.  If you want to highlight those
 as operators as opposed to errors, put in your .vimrc: >
 	:let hs_allow_hash_operator = 1
 
 The syntax highlighting for literate Haskell code will try to
 automatically guess whether your literate Haskell code contains
 TeX markup or not, and correspondingly highlight TeX constructs
-or nothing at all. You can override this globally by putting
+or nothing at all.  You can override this globally by putting
 in your .vimrc >
 	:let lhs_markup = none
 for no highlighting at all, or >
@@ -1215,7 +1215,7 @@ to force the highlighting to always try to highlight TeX markup.
 For more flexibility, you may also use buffer local versions of
 this variable, so e.g. >
 	:let b:lhs_markup = tex
-will force TeX highlighting for a particular buffer. It has to be
+will force TeX highlighting for a particular buffer.  It has to be
 set before turning syntax highlighting on for the buffer or
 loading a file.
 
@@ -1233,14 +1233,14 @@ Known tag names are colored the same way as statements in C.  Unknown tag
 names are colored with the same color as the <> or </> respectively which
 makes it easy to spot errors
 
-Note that the same is true for argument (or attribute) names. Known attribute
+Note that the same is true for argument (or attribute) names.  Known attribute
 names are colored differently than unknown ones.
 
-Some HTML tags are used to change the rendering of text. The following tags
+Some HTML tags are used to change the rendering of text.  The following tags
 are recognized by the html.vim syntax coloring file and change the way normal
 text is shown: <B> <I> <U> <EM> <STRONG> (<EM> is used as an alias for <I>,
 while <STRONG> as an alias for <B>), <H1> - <H6>, <HEAD>, <TITLE> and <A>, but
-only if used as a link that is, it must include a href as in
+only if used as a link (that is, it must include a href as in
 <A href="somfile.html">).
 
 If you want to change how such text is rendered, you must redefine the
@@ -1276,13 +1276,13 @@ ends with --!>) you can define >
 
 JavaScript and Visual Basic embedded inside HTML documents are highlighted as
 'Special' with statements, comments, strings and so on colored as in standard
-programming languages. Note that only JavaScript and Visual Basic are currently
+programming languages.  Note that only JavaScript and Visual Basic are currently
 supported, no other scripting language has been added yet.
 
 Embedded and inlined cascading style sheets (CSS) are highlighted too.
 
-There are several html preprocessor languages out there. html.vim has been
-written such that it should be trivial to include it. To do so add the
+There are several html preprocessor languages out there.  html.vim has been
+written such that it should be trivial to include it.  To do so add the
 following two lines to the syntax coloring file for that language
 (the example comes from the asp.vim file):
 
@@ -1358,7 +1358,7 @@ The java.vim syntax highlighting file offers several options:
 
 In Java 1.0.2 it was never possible to have braces inside parens, so this was
 flagged as an error.  Since Java 1.1 this is possible (with anonymous
-classes), and therefore is no longer marked as an error. If you prefer the old
+classes), and therefore is no longer marked as an error.  If you prefer the old
 way, put the following line into your vim startup file: >
 	:let java_mark_braces_in_parens_as_errors=1
 
@@ -1366,7 +1366,7 @@ All identifiers in java.lang.* are always visible in all classes.  To
 highlight them use: >
 	:let java_highlight_java_lang_ids=1
 
-You can also highlight identifiers of most standard java packages if you
+You can also highlight identifiers of most standard Java packages if you
 download the javaid.vim script at http://www.fleiner.com/vim/download.html.
 If you prefer to only highlight identifiers of a certain package, say java.io
 use the following: >
@@ -1374,7 +1374,7 @@ use the following: >
 Check the javaid.vim file for a list of all the packages that are supported.
 
 Function names are not highlighted, as the way to find functions depends on
-how you write java code.  The syntax file knows two possible ways to highlight
+how you write Java code.  The syntax file knows two possible ways to highlight
 functions:
 
 If you write function declarations that are always indented by either
@@ -1388,44 +1388,44 @@ declarations to be highlighted create your own definitions by changing the
 definitions in java.vim or by creating your own java.vim which includes the
 original one and then adds the code to highlight functions.
 
-In java 1.1 the functions System.out.println() and System.err.println() should
+In Java 1.1 the functions System.out.println() and System.err.println() should
 only be used for debugging.  Therefore it is possible to highlight debugging
-statements differently. To do this you must add the following definition in
+statements differently.  To do this you must add the following definition in
 your startup file: >
 	:let java_highlight_debug=1
 The result will be that those statements are highlighted as 'Special'
-characters. If you prefer to have them highlighted differently you must define
+characters.  If you prefer to have them highlighted differently you must define
 new highlightings for the following groups.:
     Debug, DebugSpecial, DebugString, DebugBoolean, DebugType
 which are used for the statement itself, special characters used in debug
-strings, strings, boolean constants and types (this, super) respectively. I
+strings, strings, boolean constants and types (this, super) respectively.  I
 have opted to chose another background for those statements.
 
 In order to help you to write code that can be easily ported between
-java and C++, all C++ keywords are marked as error in a java program.
+Java and C++, all C++ keywords are marked as error in a Java program.
 However, if you use them regularly, you may want to define the following
 variable in your .vimrc file: >
 	:let java_allow_cpp_keywords=1
 
-Javadoc is a program that takes special comments out of java program files and
-creates HTML pages. The standard configuration will highlight this HTML code
-similarly to HTML files (see |html.vim|). You can even add javascript
-and CSS inside this code (see below). There are four differences however:
+Javadoc is a program that takes special comments out of Java program files and
+creates HTML pages.  The standard configuration will highlight this HTML code
+similarly to HTML files (see |html.vim|).  You can even add Javascript
+and CSS inside this code (see below).  There are four differences however:
   1. The title (all characters up to the first '.' which is followed by
      some white space or up to the first '@') is colored differently (to change
      the color change the group CommentTitle).
   2. The text is colored as 'Comment'.
   3. HTML comments are colored as 'Special'
-  4. The special javadoc tags (@see, @param, ...) are highlighted as specials
+  4. The special Javadoc tags (@see, @param, ...) are highlighted as specials
      and the argument (for @see, @param, @exception) as Function.
 To turn this feature off add the following line to your startup file: >
 	:let java_ignore_javadoc=1
 
-If you use the special javadoc comment highlighting described above you
-can also turn on special highlighting for javascript, visual basic
-scripts and embedded CSS (stylesheets). This makes only sense if you
-actually have javadoc comments that include either javascript or embedded
-CSS. The options to use are >
+If you use the special Javadoc comment highlighting described above you
+can also turn on special highlighting for Javascript, visual basic
+scripts and embedded CSS (stylesheets).  This makes only sense if you
+actually have Javadoc comments that include either Javascript or embedded
+CSS.  The options to use are >
 	:let java_javascript=1
 	:let java_css=1
 	:let java_vb=1
@@ -1478,7 +1478,7 @@ set "lite_minlines" to the value you desire.  Example: >
 
 LPC						*lpc.vim* *lpc-syntax*
 
-LPC stands for a simple, memory-efficient language: Lars Pensj| C. The
+LPC stands for a simple, memory-efficient language: Lars Pensj| C.  The
 file name of LPC is usually *.c.  Recognizing these files as LPC would bother
 users writing only C programs.	If you want to use LPC syntax in Vim, you
 should set a variable in your .vimrc file: >
@@ -1497,7 +1497,7 @@ For a C file that is recognized as LPC:
 If you don't want to set the variable, use the modeline in EVERY LPC file.
 
 There are several implementations for LPC, we intend to support most widely
-used ones. Here the default LPC syntax is for MudOS series, for MudOS v22
+used ones.  Here the default LPC syntax is for MudOS series, for MudOS v22
 and before, you should turn off the sensible modifiers, and this will also
 asserts the new efuns after v22 to be invalid, don't set this variable when
 you are using the latest version of MudOS: >
@@ -1519,7 +1519,7 @@ instead, and the name of your source file should be *.pike
 
 LUA						*lua.vim* *lua-syntax*
 
-This syntax file may be used for Lua 4.0 and Lua 5.0 (default). If you are
+This syntax file may be used for Lua 4.0 and Lua 5.0 (default).  If you are
 programming in Lua 4.0, use this: >
 
 	:let lua_version = 4
@@ -1530,16 +1530,16 @@ If lua_version variable doesn't exist, it is set to 5.
 MAIL								*mail.vim*
 
 Vim highlights all the standard elements of an email (headers, signatures,
-quoted text and URLs / email addresses). In keeping with standard conventions,
+quoted text and URLs / email addresses).  In keeping with standard conventions,
 signatures begin in a line containing only "--" followed optionally by
 whitespaces and end with a newline.
 
 Vim treats lines beginning with ']', '}', '|', '>' or a word followed by '>'
-as quoted text. However Vim highlights headers and signatures in quoted text
+as quoted text.  However Vim highlights headers and signatures in quoted text
 only if the text is quoted with '>' (optionally followed by one space).
 
 By default mail.vim synchronises syntax to 100 lines before the first
-displayed line. If you have a slow machine, and generally deal with emails
+displayed line.  If you have a slow machine, and generally deal with emails
 with short headers, you can change this to a smaller value: >
 
     :let mail_minlines = 30
@@ -1604,7 +1604,7 @@ To highlight builtin properties (.name, .location, .programmer etc.): >
 
 	:let moo_builtin_properties = 1
 
-Unknown builtin functions can be recognized and highlighted as errors. If you
+Unknown builtin functions can be recognized and highlighted as errors.  If you
 use this option, add your own extensions to the mooKnownBuiltinFunction group.
 To enable this option: >
 
@@ -1648,7 +1648,7 @@ activate the GNU groff extra features included in the syntax file before you
 can use them.
 
 For example, Linux and BSD distributions use groff as their default text
-processing package. In order to activate the extra syntax highlighting
+processing package.  In order to activate the extra syntax highlighting
 features for groff, add the following option to your start-up files: >
 
   :let b:nroff_is_groff = 1
@@ -1656,7 +1656,7 @@ features for groff, add the following option to your start-up files: >
 Groff is different from the old AT&T n/troff that you may still find in
 Solaris.  Groff macro and request names can be longer than 2 characters and
 there are extensions to the language primitives.  For example, in AT&T troff
-you access the year as a 2-digit number with the request \(yr. In groff you
+you access the year as a 2-digit number with the request \(yr.  In groff you
 can use the same request, recognized for compatibility, or you can use groff's
 native syntax, \[yr].  Furthermore, you can use a 4-digit year directly:
 \[year].  Macro requests can be longer than 2 characters, for example, GNU mm
@@ -1684,7 +1684,7 @@ vertical space input will be output as is.
 Therefore, you should be careful about not using more space between sentences
 than you intend to have in your final document.  For this reason, the common
 practice is to insert a carriage return immediately after all punctuation
-marks. If you want to have "even" text in your final processed output, you
+marks.  If you want to have "even" text in your final processed output, you
 need to maintaining regular spacing in the input text.  To mark both trailing
 spaces and two or more spaces after a punctuation as an error, use: >
 
@@ -1693,7 +1693,7 @@ spaces and two or more spaces after a punctuation as an error, use: >
 Another technique to detect extra spacing and other errors that will interfere
 with the correct typesetting of your file, is to define an eye-catching
 highlighting definition for the syntax groups "nroffDefinition" and
-"nroffDefSpecial" in your configuration files. For example: >
+"nroffDefSpecial" in your configuration files.  For example: >
 
   hi def nroffDefinition term=italic cterm=italic gui=reverse
   hi def nroffDefSpecial term=italic,bold cterm=italic,bold
@@ -1732,15 +1732,15 @@ PAPP						*papp.vim* *papp-syntax*
 
 The PApp syntax file handles .papp files and, to a lesser extend, .pxml
 and .pxsl files which are all a mixture of perl/xml/html/other using xml
-as the top-level file format. By default everything inside phtml or pxml
-sections is treated as a string with embedded preprocessor commands. If
+as the top-level file format.  By default everything inside phtml or pxml
+sections is treated as a string with embedded preprocessor commands.  If
 you set the variable: >
 
 	:let papp_include_html=1
 
 in your startup file it will try to syntax-hilight html code inside phtml
 sections, but this is relatively slow and much too colourful to be able to
-edit sensibly ;)
+edit sensibly. ;)
 
 The newest version of the papp.vim syntax file can usually be found at
 http://papp.plan9.de.
@@ -1756,7 +1756,7 @@ startup vimrc: >
 
 The Pascal syntax file has been extended to take into account some extensions
 provided by Turbo Pascal, Free Pascal Compiler and GNU Pascal Compiler.
-Delphi keywords are also supported. By default, Turbo Pascal 7.0 features are
+Delphi keywords are also supported.  By default, Turbo Pascal 7.0 features are
 enabled.  If you prefer to stick with the standard Pascal keywords, add the
 following line to your startup file: >
 
@@ -1825,8 +1825,8 @@ If you do not want complex things like '@{${"foo"}}' to be parsed: >
 
 (In Vim 6.x it was the other way around: "perl_extended_vars" enabled it.)
 
-The coloring strings can be changed. By default strings and qq friends will be
-highlighted like the first line. If you set the variable
+The coloring strings can be changed.  By default strings and qq friends will be
+highlighted like the first line.  If you set the variable
 perl_string_as_statement, it will be highlighted as in the second line.
 
    "hello world!"; qq|hello world|;
@@ -1835,10 +1835,10 @@ perl_string_as_statement, it will be highlighted as in the second line.
 
 (^ = perlString, S = perlStatement, N = None at all)
 
-The syncing has 3 options. The first two switch off some triggering of
+The syncing has 3 options.  The first two switch off some triggering of
 synchronization and should only be needed in case it fails to work properly.
 If while scrolling all of a sudden the whole screen changes color completely
-then you should try and switch off one of those. Let me know if you can figure
+then you should try and switch off one of those.  Let me know if you can figure
 out the line that causes the mistake.
 
 One triggers on "^\s*sub\s*" and the other on "^[$@%]" more or less. >
@@ -1920,10 +1920,10 @@ PPWizard is a preprocessor for HTML and OS/2 INF files
 This syntax file has the options:
 
 - ppwiz_highlight_defs : determines highlighting mode for PPWizard's
-  definitions. Possible values are
+  definitions.  Possible values are
 
   ppwiz_highlight_defs = 1 : PPWizard #define statements retain the
-    colors of their contents (e. g. PPWizard macros and variables)
+    colors of their contents (e.g. PPWizard macros and variables)
 
   ppwiz_highlight_defs = 2 : preprocessor #define and #evaluate
     statements are shown in a single color with the exception of line
@@ -2066,10 +2066,10 @@ preceding three options): >
 QUAKE						*quake.vim* *quake-syntax*
 
 The Quake syntax definition should work for most any FPS (First Person
-Shooter) based on one of the Quake engines. However, the command names vary
+Shooter) based on one of the Quake engines.  However, the command names vary
 a bit between the three games (Quake, Quake 2, and Quake 3 Arena) so the
 syntax definition checks for the existence of three global variables to allow
-users to specify what commands are legal in their files. The three variables
+users to specify what commands are legal in their files.  The three variables
 can be set for the following effects:
 
 set to highlight commands only available in Quake: >
@@ -2088,7 +2088,7 @@ commands than are actually available to you by the game.
 READLINE				*readline.vim* *readline-syntax*
 
 The readline library is primarily used by the BASH shell, which adds quite a
-few commands and options to the ones already available. To highlight these
+few commands and options to the ones already available.  To highlight these
 items as well you can add the following to your |vimrc| or just type it in the
 command line before loading a file with the readline syntax: >
 	let readline_has_bash = 1
@@ -2113,7 +2113,7 @@ RUBY						*ruby.vim* *ruby-syntax*
 There are a few options to the Ruby syntax highlighting.
 
 By default, the "end" keyword is colorized according to the opening statement
-of the block it closes. While useful, this feature can be expensive: if you
+of the block it closes.  While useful, this feature can be expensive: if you
 experience slow redrawing (or you are on a terminal with poor color support)
 you may want to turn it off by defining the "ruby_no_expensive" variable: >
 	:let ruby_no_expensive = 1
@@ -2151,11 +2151,11 @@ of them it's almost impossibly to cope.
 
 The new standard, SDL-2000, specifies that all identifiers are
 case-sensitive (which was not so before), and that all keywords can be
-used either completely lowercase or completely uppercase. To have the
+used either completely lowercase or completely uppercase.  To have the
 highlighting reflect this, you can set the following variable: >
 	:let sdl_2000=1
 
-This also sets many new keywords. If you want to disable the old
+This also sets many new keywords.  If you want to disable the old
 keywords, which is probably a good idea, use: >
 	:let SDL_no_96=1
 
@@ -2199,10 +2199,10 @@ defined for you)
 Known tag names are colored the same way as statements in C.  Unknown tag
 names are not colored which makes it easy to spot errors.
 
-Note that the same is true for argument (or attribute) names. Known attribute
+Note that the same is true for argument (or attribute) names.  Known attribute
 names are colored differently than unknown ones.
 
-Some SGML tags are used to change the rendering of text. The following tags
+Some SGML tags are used to change the rendering of text.  The following tags
 are recognized by the sgml.vim syntax coloring file and change the way normal
 text is shown: <varname> <emphasis> <command> <function> <literal>
 <replaceable> <ulink> and <link>.
@@ -2289,7 +2289,7 @@ The Speedup syntax file has some options:
 
 - highlight_types : Definition of this variable causes stream types
   like temperature or pressure to be highlighted as Type, not as a
-  plain Identifier. Included are the types that are usually found in
+  plain Identifier.  Included are the types that are usually found in
   the DECLARE section; if you defined own types, you have to include
   them in the syntax file.
 
@@ -2300,13 +2300,13 @@ The Speedup syntax file has some options:
   number of #s.
 
   oneline_comments = 2 : show code starting with the second # as
-  error. This is the default setting.
+  error.  This is the default setting.
 
   oneline_comments = 3 : show the whole line as error if it contains
   more than one #.
 
 Since especially OPERATION sections tend to become very large due to
-PRESETting variables, syncing may be critical. If your computer is
+PRESETting variables, syncing may be critical.  If your computer is
 fast enough, you can increase minlines and/or maxlines near the end of
 the syntax file.
 
@@ -2328,7 +2328,7 @@ This covers the shell named "tcsh".  It is a superset of csh.  See |csh.vim|
 for how the filetype is detected.
 
 Tcsh does not allow \" in strings unless the "backslash_quote" shell variable
-is set. If you want VIM to assume that no backslash quote constructs exist add
+is set.  If you want VIM to assume that no backslash quote constructs exist add
 this line to your .vimrc: >
 
 	:let tcsh_backslash_quote = 0
@@ -2340,7 +2340,7 @@ to a larger number: >
 	:let tcsh_minlines = 100
 
 This will make the syntax synchronization start 100 lines before the first
-displayed line. The default value is 15. The disadvantage of using a larger
+displayed line.  The default value is 15.  The disadvantage of using a larger
 number is that redrawing can become slow.
 
 
@@ -2364,7 +2364,7 @@ If you have a slow computer, you may wish to reduce the values for >
 	:syn sync maxlines=200
 	:syn sync minlines=50
 (especially the latter).  If your computer is fast, you may wish to
-increase them.	This primarily affects synchronizing (ie. just what group,
+increase them.	This primarily affects synchronizing (i.e. just what group,
 if any, is the text at the top of the screen supposed to be in?).
 
 Excessive Error Highlighting? ~
@@ -2461,14 +2461,14 @@ highlighted.
 
 XML						*xml.vim* *xml-syntax*
 
-Xml namespaces are highlighted by default. This can be inhibited by
+Xml namespaces are highlighted by default.  This can be inhibited by
 setting a global variable: >
 
 	:let g:xml_namespace_transparent=1
 <
 							*xml-folding*
 The xml syntax file provides syntax |folding| (see |:syn-fold|) between
-start and end tags. This can be turned on by >
+start and end tags.  This can be turned on by >
 
 	:let g:xml_syntax_folding = 1
 	:set foldmethod=syntax
@@ -2607,7 +2607,7 @@ DEFINING KEYWORDS					*:syn-keyword*
 	The same keyword can be defined multiple times, when its containment
 	differs.  For example, you can define the keyword once not contained
 	and use one highlight group, and once contained, and use a different
-	highlight group. Example: >
+	highlight group.  Example: >
   :syn keyword vimCommand tag
   :syn keyword vimSetting contained tag
 <	When finding "tag" outside of any syntax item, the "vimCommand"
@@ -2663,7 +2663,7 @@ DEFINING REGIONS	*:syn-region* *:syn-start* *:syn-skip* *:syn-end*
 				match with the end pattern.  See
 				|:syn-keepend|.
 	extend			Override a "keepend" for an item this region
-				is contained in. See |:syn-extend|.
+				is contained in.  See |:syn-extend|.
 	excludenl		Don't make a pattern with the end-of-line "$"
 				extend a containing match or item.  Only
 				useful for end patterns.  Must be given before
@@ -3736,7 +3736,7 @@ ctermbg={color-nr}				*highlight-ctermbg*
 
 	The case of the color names is ignored.
 	Note that for 16 color ansi style terminals (including xterms), the
-	numbers in the NR-8 column is used. Here '*' means 'add 8' so that Blue
+	numbers in the NR-8 column is used.  Here '*' means 'add 8' so that Blue
 	is 12, DarkGray is 8 etc.
 
 	Note that for some color terminals these names may result in the wrong
@@ -3924,7 +3924,7 @@ WildMenu	current match in 'wildmenu' completion
 
 						*hl-User1* *hl-User1..9*
 The 'statusline' syntax allows the use of 9 different highlights in the
-statusline and ruler (via 'rulerformat'). The names are User1 to User9.
+statusline and ruler (via 'rulerformat').  The names are User1 to User9.
 
 For the GUI you can use these groups to set the colors for the menu,
 scrollbars and tooltips.  They don't have defaults.  This doesn't work for the
@@ -4151,14 +4151,14 @@ To use it, execute these commands: >
    :e $VIMRUNTIME/syntax/colortest.vim
    :so %
 
-Some versions of xterm (and other terminals, like the linux console) can
+Some versions of xterm (and other terminals, like the Linux console) can
 output lighter foreground colors, even though the number of colors is defined
 at 8.  Therefore Vim sets the "cterm=bold" attribute for light foreground
 colors, when 't_Co' is 8.
 
 							*xfree-xterm*
 To get 16 colors or more, get the newest xterm version (which should be
-included with Xfree86 3.3 and later).  You can also find the latest version
+included with XFree86 3.3 and later).  You can also find the latest version
 at: >
 	http://invisible-island.net/xterm/xterm.html
 Here is a good way to configure it.  This uses 88 colors and enables the

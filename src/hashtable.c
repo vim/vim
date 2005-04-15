@@ -38,9 +38,9 @@
 /* Magic value for algorithm that walks through the array. */
 #define PERTURB_SHIFT 5
 
-static int hash_may_resize __ARGS((hashtab_T *ht));
+static int hash_may_resize __ARGS((hashtab_T *ht, int minitems));
 
-#if 0  /* not used */
+#if defined(FEAT_SYN_HL) || defined(PROTO)
 /*
  * Create an empty hash table.
  * Returns NULL when out of memory.
@@ -189,7 +189,7 @@ hash_add_item(ht, hi, key, hash)
     hash_T	hash;
 {
     /* If resizing failed before and it fails again we can't add an item. */
-    if (ht->ht_error && hash_may_resize(ht) == FAIL)
+    if (ht->ht_error && hash_may_resize(ht, 0) == FAIL)
 	return FAIL;
 
     ++ht->ht_used;
@@ -199,7 +199,7 @@ hash_add_item(ht, hi, key, hash)
     hi->hi_hash = hash;
 
     /* When the space gets low may resize the array. */
-    return hash_may_resize(ht);
+    return hash_may_resize(ht, 0);
 }
 
 #if 0  /* not used */
@@ -233,7 +233,7 @@ hash_remove(ht, hi)
 {
     --ht->ht_used;
     hi->hi_key = HI_KEY_REMOVED;
-    hash_may_resize(ht);
+    hash_may_resize(ht, 0);
 }
 
 /*
@@ -249,6 +249,20 @@ hash_lock(ht)
 }
 
 /*
+ * Lock a hashtable at the specified number of entries.
+ * Caller must make sure no more than "size" entries will be added.
+ * Must call hash_unlock() later.
+ */
+    void
+hash_lock_size(ht, size)
+    hashtab_T	*ht;
+    int		size;
+{
+    (void)hash_may_resize(ht, size);
+    ++ht->ht_locked;
+}
+
+/*
  * Unlock a hashtable: allow ht_array changes again.
  * Table will be resized (shrink) when necessary.
  * This must balance a call to hash_lock().
@@ -258,7 +272,7 @@ hash_unlock(ht)
     hashtab_T	*ht;
 {
     --ht->ht_locked;
-    (void)hash_may_resize(ht);
+    (void)hash_may_resize(ht, 0);
 }
 
 /*
@@ -267,8 +281,9 @@ hash_unlock(ht)
  * Returns OK or FAIL (out of memory).
  */
     static int
-hash_may_resize(ht)
+hash_may_resize(ht, minitems)
     hashtab_T	*ht;
+    int		minitems;		/* minimal number of items */
 {
     hashitem_T	temparray[HT_INIT_SIZE];
     hashitem_T	*oldarray, *newarray;
@@ -291,25 +306,37 @@ hash_may_resize(ht)
 	EMSG("hash_may_resize(): table completely filled");
 #endif
 
-    /* Return quickly for small tables with at least two NULL items.  NULL
-     * items are required for the lookup to decide a key isn't there. */
-    if (ht->ht_filled < HT_INIT_SIZE - 1 && ht->ht_array == ht->ht_smallarray)
-	return OK;
+    if (minitems == 0)
+    {
+	/* Return quickly for small tables with at least two NULL items.  NULL
+	 * items are required for the lookup to decide a key isn't there. */
+	if (ht->ht_filled < HT_INIT_SIZE - 1
+					 && ht->ht_array == ht->ht_smallarray)
+	    return OK;
 
-    /*
-     * Grow or refill the array when it's more than 2/3 full (including
-     * removed items, so that they get cleaned up).
-     * Shrink the array when it's less than 1/5 full.  When growing it is at
-     * least 1/4 full (avoids repeated grow-shrink operations)
-     */
-    oldsize = ht->ht_mask + 1;
-    if (ht->ht_filled * 3 < oldsize * 2 && ht->ht_used > oldsize / 5)
-	return OK;
+	/*
+	 * Grow or refill the array when it's more than 2/3 full (including
+	 * removed items, so that they get cleaned up).
+	 * Shrink the array when it's less than 1/5 full.  When growing it is
+	 * at least 1/4 full (avoids repeated grow-shrink operations)
+	 */
+	oldsize = ht->ht_mask + 1;
+	if (ht->ht_filled * 3 < oldsize * 2 && ht->ht_used > oldsize / 5)
+	    return OK;
 
-    if (ht->ht_used > 1000)
-	minsize = ht->ht_used * 2;  /* it's big, don't make too much room */
+	if (ht->ht_used > 1000)
+	    minsize = ht->ht_used * 2;  /* it's big, don't make too much room */
+	else
+	    minsize = ht->ht_used * 4;  /* make plenty of room */
+    }
     else
-	minsize = ht->ht_used * 4;  /* make plenty of room */
+    {
+	/* Use specified size. */
+	if (minitems < ht->ht_used)	/* just in case... */
+	    minitems = ht->ht_used;
+	minsize = minitems * 3 / 2;	/* array is up to 2/3 full */
+    }
+
     newsize = HT_INIT_SIZE;
     while (newsize < minsize)
     {

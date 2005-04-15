@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.0aa.  Last change: 2005 Mar 07
+*various.txt*   For Vim version 7.0aa.  Last change: 2005 Apr 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -151,7 +151,7 @@ g8			Print the hex values of the bytes used in the
 			(to start Insert mode, see |:startinsert|).  A ":"
 			command must be completed as well.  And you can't use
 			"Q" or "gQ" to start Ex mode.
-			{commands} cannot start with a space. Put a 1 (one)
+			{commands} cannot start with a space.  Put a 1 (one)
 			before it, 1 space is one space.
 			The 'insertmode' option is ignored for {commands}.
 			This command cannot be followed by another command,
@@ -509,7 +509,7 @@ K			Run a program to lookup the keyword under the
 
 [N]gs							*gs* *:sl* *:sleep*
 :[N]sl[eep] [N]	[m]	Do nothing for [N] seconds.  When [m] is included,
-			sleep for [N] milliseconds. The count for "gs" always
+			sleep for [N] milliseconds.  The count for "gs" always
 			uses seconds.  The default is one second. >
 			     :sleep	     "sleep for one second
 			     :5sleep	     "sleep for five seconds

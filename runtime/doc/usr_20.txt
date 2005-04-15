@@ -1,4 +1,4 @@
-*usr_20.txt*	For Vim version 7.0aa.  Last change: 2003 Apr 30
+*usr_20.txt*	For Vim version 7.0aa.  Last change: 2005 Apr 01
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -263,7 +263,7 @@ now check the list for the item you wanted.  If it isn't there, you can use
 characters before pressing <Tab> to complete the rest.
    If you have watched carefully, you will have noticed that "incsearch"
 doesn't start with "is".  In this case "is" stands for the short name of
-"incsearch". (Many options have a short and a long name.)  Vim is clever
+"incsearch".  (Many options have a short and a long name.)  Vim is clever
 enough to know that you might have wanted to expand the short name of the
 option into the long name.
 

@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Mar 28
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Apr 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -106,6 +106,8 @@ you can't be sure what the keyboard generates.  Now all <xHome> are internally
 translated to <Home>, both for the keys and for mappings.  Also for <xEnd>,
 <xF1>, etc.
 
+":put" now leaves the cursor on the last inserted line.
+
 ==============================================================================
 NEW FEATURES						*new-7*
 
@@ -180,11 +182,15 @@ Translated manual pages					*new-manpage-trans*
 The manual page of Vim and associated programs is now also available in
 several other languages.
 
+French  - translated by David Blanchet
 Italian - translated by Antonio Colombo
 Russian - translated by Vassily Ragosin
 
-The Unix Makefile installs the Italian manual pages in .../man/it/man1/.
-Other languages in similar places.
+The Unix Makefile installs the Italian manual pages in .../man/it/man1/,
+.../man/it.ISO8859-1/man1/ and .../man/it.UTF-8/man1/.  There appears to be no
+standard for what encoding goes in the "it" directory, the 8-bit encoded file
+is used there as a best guess.
+Other languages are installed in similar places.
 
 
 Internal grep						*new-vimgrep*
@@ -388,8 +394,8 @@ New items in search patterns: ~
 |/\%U| \%U1234abcd	search for character with 8 pos. hex number
 |/\]|  [\U1234abcd]	idem, in a colletion
 			    (The above partly by Ciaran McCreesh)
-|/[=|  [[=a=]]		an equivalence class (only for latin1 characters)
-|/[.|  [[.a.]]		a collation element (only works with single char)
+|/[[=| [[=a=]]		an equivalence class (only for latin1 characters)
+|/[[.| [[.a.]]		a collation element (only works with single char)
 
 Nesting |/multi| items no longer is an error when an empty match is possible.
 
@@ -1025,5 +1031,15 @@ and reset it in nv_home().
 
 Wildcard expansion failed: ":w /tmp/$$.`echo test`".  Don't put quotes around
 spaces inside backticks.
+
+After this sequence of commands: Y V p gv: the wrong line is selected.  Now
+let "gv" select the text that was put, since the original text is deleted.
+This should be the most useful thing to do.
+
+":sleep 100u" sleeps for 100 seconds, not 100 usec as one might expect.  Give
+an error message when the argument isn't recognized.
+
+In gui_mch_draw_string() in gui_w32.c "unibuflen" wasn't static, resulting in
+reallocating the buffer every time. (Alexei Alexandrov)
 
  vim:tw=78:ts=8:ft=help:norl:

@@ -1,4 +1,4 @@
-*arabic.txt*	For Vim version 7.0aa.  Last change: 2004 Jun 09
+*arabic.txt*	For Vim version 7.0aa.  Last change: 2005 Mar 29
 
 
 		  VIM REFERENCE MANUAL	  by Nadim Shaikli
@@ -24,7 +24,7 @@ Introduction
 ------------
 Arabic is a rather demanding language in which a number of special
 features are required.	Characters are right-to-left oriented and
-ought to appear as such on the screen (ie. from right to left).
+ought to appear as such on the screen (i.e. from right to left).
 Arabic also requires shaping of its characters, meaning the same
 character has a different visual form based on its relative location
 within a word (initial, medial, final or stand-alone).	Arabic also
@@ -60,7 +60,7 @@ o  Changing keyboard mapping and reverse insert modes using a single
 
 o  Toggling complete Arabic support via a single command.
 
-o  While in Arabic mode, numbers are entered from left to right. Upon
+o  While in Arabic mode, numbers are entered from left to right.  Upon
    entering a none number character, that character will be inserted
    just into the left of the last number.
 
@@ -101,14 +101,14 @@ need to be accounted for and invoked.
 
 o  Setting the Arabic fonts
 
-   +  For VIM GUI set the 'guifont' to your_ARABIC_FONT. This is done
+   +  For VIM GUI set the 'guifont' to your_ARABIC_FONT.  This is done
       by entering the following command in the VIM window.
 >
 		:set guifont=your_ARABIC_FONT
 <
       NOTE: the string 'your_ARABIC_FONT' is used to denote a complete
-	    font name akin to that used in linux/unix system.
-	    (eg. -misc-fixed-medium-r-normal--20-200-75-75-c-100-iso10646-1)
+	    font name akin to that used in Linux/Unix systems.
+	    (e.g. -misc-fixed-medium-r-normal--20-200-75-75-c-100-iso10646-1)
 
       You can append the 'guifont' set command to your .vimrc file
       in order to get the same above noted results.  In other words,
@@ -179,11 +179,11 @@ o  Enable Arabic settings [short-cut]
 
    If, on the other hand, you'd like to be verbose and explicit and
    are opting not to use the 'arabic' short-cut command, here's what
-   is needed (ie. if you use ':set arabic' you can skip this section) -
+   is needed (i.e. if you use ':set arabic' you can skip this section) -
 
    +  Arabic Keymapping Activation
 
-      To activate the Arabic keymap (ie. to remap your English/Latin
+      To activate the Arabic keymap (i.e. to remap your English/Latin
       keyboard to look-n-feel like a standard Arabic one), set the
       'keymap' command to "arabic".  This is done by entering
 >
@@ -197,14 +197,14 @@ o  Enable Arabic settings [short-cut]
       default mapping (English), it is advised that users use the 'CTRL-^'
       key press while in insert (or add/replace) mode.	The command-line
       will display your current mapping by displaying an "Arabic" string
-      next to your insertion mode (eg. -- INSERT Arabic --) indicating
+      next to your insertion mode (e.g. -- INSERT Arabic --) indicating
       your current keymap.
 
    +  Arabic deletion of a combined pair character
 
       By default VIM has the 'delcombine' option disabled.  This option
       allows the deletion of ALEF in a LAM_ALEF (LAA) combined character
-      and still retain the LAM (ie. it reverts to treating the combined
+      and still retain the LAM (i.e. it reverts to treating the combined
       character as its natural two characters form -- this also pertains
       to harakat and their combined forms).  You can enable this option
       by entering
@@ -227,7 +227,7 @@ o  Enable Arabic settings [short-cut]
       - While in Left-to-right mode, enter ':set rl' in the command line
 	('rl' is the abbreviation for rightleft).
 
-      - Put the ':set rl' line in your '.vimrc' file to start the VIM in
+      - Put the ':set rl' line in your '.vimrc' file to start Vim in
 	right-to-left mode permanently.
 
    +  Arabic right-to-left command-line Mode
@@ -295,7 +295,7 @@ Restrictions
 ------------
 
 o  VIM in its GUI form does not currently support Bi-directionality
-   (ie. the ability to see both Arabic and Latin intermixed within
+   (i.e. the ability to see both Arabic and Latin intermixed within
    the same line).
 
 
@@ -304,7 +304,7 @@ Known Bugs
 
 There is one known minor bug,
 
- 1. If you insert a haraka (eg. Fatha (U+064E)) after a LAM (U+0644)
+ 1. If you insert a haraka (e.g. Fatha (U+064E)) after a LAM (U+0644)
     and then insert an ALEF (U+0627), the appropriate combining will
     not happen due to the sandwiched haraka resulting in something
     that will NOT be displayed correctly.
@@ -320,4 +320,3 @@ There is one known minor bug,
 No other bugs are known to exist.
 
  vim:tw=78:ts=8:ft=help:norl:
-

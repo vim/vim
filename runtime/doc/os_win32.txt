@@ -1,4 +1,4 @@
-*os_win32.txt*  For Vim version 7.0aa.  Last change: 2004 Aug 31
+*os_win32.txt*  For Vim version 7.0aa.  Last change: 2005 Mar 29
 
 
 		  VIM REFERENCE MANUAL    by George Reilly
@@ -192,7 +192,7 @@ A. In the GUI version, you can use the 'guifont' option.  Example: >
 Q. When I change the size of the console window with ':set lines=xx' or
    similar, the font changes! (Win95)
 A. You have the console font set to 'Auto' in Vim's (or your MS-DOS prompt's)
-   properties. This makes W95 guess (badly!) what font is best. Set an explicit
+   properties.  This makes W95 guess (badly!) what font is best.  Set an explicit
    font instead.
 
 Q. Why can't I paste into Vim when running Windows 95?
@@ -282,7 +282,7 @@ A. VisionFS can't handle certain dot (.) three letter extension file names.
 	dir > file.bat
 <
    The result is that the "dir" command updates the "file.bat~" file, instead
-   of creating a new "file.bat" file. This same behavior is exhibited in Vim
+   of creating a new "file.bat" file.  This same behavior is exhibited in Vim
    when editing an existing file named "foo.bat" because the default behavior
    of Vim is to create a temporary file with a '~' character appended to the
    name.  When the file is written, it winds up being deleted.
@@ -306,13 +306,13 @@ A. When using :! to run an external command, you can run it with "start": >
    To avoid this special treatment, use ":! start".
 
 Q. I'm using Win32s, and when I try to run an external command like "make",
-   Vim doesn't wait for it to finish! Help!
+   Vim doesn't wait for it to finish!  Help!
 A. The problem is that a 32-bit application (Vim) can't get notification from
-   Windows that a 16-bit application (your DOS session) has finished. Vim
+   Windows that a 16-bit application (your DOS session) has finished.  Vim
    includes a work-around for this, but you must set up your DOS commands to
-   run in a window, not full-screen. Unfortunately the default when you
-   install Windows is full-screen. To change this:
-   1) Start PIF editor (in the Main program group)
+   run in a window, not full-screen.  Unfortunately the default when you
+   install Windows is full-screen.  To change this:
+   1) Start PIF editor (in the Main program group).
    2) Open the file "_DEFAULT.PIF" in your Windows directory.
    3) Changes the display option from "Full Screen" to "Windowed".
    4) Save and exit.
@@ -321,10 +321,10 @@ A. The problem is that a 32-bit application (Vim) can't get notification from
 	:!dir C:\<CR>".
 <  You should see a DOS box window appear briefly with the directory listing.
 
-Q. I use Vim under Win32s and NT. In NT, I can define the console to default to
-   50 lines, so that I get a 80x50 shell when I ':sh'. Can I do the same in
+Q. I use Vim under Win32s and NT.  In NT, I can define the console to default to
+   50 lines, so that I get a 80x50 shell when I ':sh'.  Can I do the same in
    W3.1x, or am I stuck with 80x25?
-A. Edit SYSTEM.INI and add 'ScreenLines=50' to the [NonWindowsApp] section. DOS
+A. Edit SYSTEM.INI and add 'ScreenLines=50' to the [NonWindowsApp] section.  DOS
    prompts and external DOS commands will now run in a 50-line window.
 
  vim:tw=78:fo=tcq2:ts=8:ft=help:norl:

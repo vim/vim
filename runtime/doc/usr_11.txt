@@ -1,4 +1,4 @@
-*usr_11.txt*	For Vim version 7.0aa.  Last change: 2004 Apr 23
+*usr_11.txt*	For Vim version 7.0aa.  Last change: 2005 Apr 01
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -34,7 +34,7 @@ messages (with different file names, of course):
 
 	Using swap file ".help.txt.swp" ~
 	Original file "~/vim/runtime/doc/help.txt" ~
-	Recovery completed. You should check if everything is OK. ~
+	Recovery completed.  You should check if everything is OK. ~
 	(You might want to write out this file under another name ~
 	and run diff with the original file to check for changes) ~
 	Delete the .swp file afterwards. ~
@@ -181,7 +181,7 @@ something wrong.  It may be one of these two situations.
    either it was changed after the crash (perhaps you recovered it earlier,
    but didn't delete the swap file?), or else the file was saved before the
    crash but after the last write of the swap file (then you're lucky: you
-   don't even need that old swap file). Vim will warn you for this with this
+   don't even need that old swap file).  Vim will warn you for this with this
    extra line:
 
       NEWER than swap file! ~
@@ -193,17 +193,17 @@ Sometimes the line
 
 	[cannot be read] ~
 
-will appear under the name of the swap file. This can be good or bad,
+will appear under the name of the swap file.  This can be good or bad,
 depending on circumstances.
 
 It is good if a previous editing session crashed without having made any
-changes to the file. Then a directory listing of the swap file will show
-that it has zero bytes. You may delete it and proceed.
+changes to the file.  Then a directory listing of the swap file will show
+that it has zero bytes.  You may delete it and proceed.
 
-It is slightly bad if you don't have read permission for the swap file. You
-may want to view the file read-only, or quit. On multi-user systems, if you
+It is slightly bad if you don't have read permission for the swap file.  You
+may want to view the file read-only, or quit.  On multi-user systems, if you
 yourself did the last changes under a different login name, a logout
-followed by a login under that other name might cure the "read error". Or
+followed by a login under that other name might cure the "read error".  Or
 else you might want to find out who last edited (or is editing) the file and
 have a talk with them.
 
