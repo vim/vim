@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Apr 15
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Apr 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -75,23 +75,24 @@ Vim searches for spell files in the "spell" subdirectory of the directories in
 	-XXX	optional addition
 	EEE	the value of 'encoding'
 
-Exception: Vim uses "latin1" when 'encoding' is "iso-8859-15".  The euro sign
-doesn't matter for spelling.
+Exceptions:
+- Vim uses "latin1" when 'encoding' is "iso-8859-15".  The euro sign doesn't
+  matter for spelling.
+- When no spell file for 'encoding' is found "ascii" is tried.  This only
+  works for languages where nearly all words are ASCII, such as English.  It
+  helps when 'encoding' is not "latin1", such as iso-8859-2, and English text
+  is being edited.
 
 Spelling for EBCDIC is currently not supported.
 
 A spell file might not be available in the current 'encoding'.  See
 |spell-mkspell| about how to create a spell file.  Converting a spell file
-with "iconv" will NOT work.
-
-If a spell file only uses ASCII characters the encoding can be omitted.  This
-is useful for English: "en.spl"  The file with encoding is checked first, thus
-you could have one with encoding that includes words with non-ASCII characters
-and use the ASCII file as a fall-back.
+with "iconv" will NOT work!
 
 							*E758* *E759*
 When loading a spell file Vim checks that it is properly formatted.  If you
-get an error the file may be truncated, modified or for another Vim version.
+get an error the file may be truncated, modified or intended for another Vim
+version.
 
 
 WORDS
@@ -126,9 +127,14 @@ uses.  Myspell is used by OpenOffice.org and Mozilla.  You should be able to
 find them here:
 	http://lingucomponent.openoffice.org/spell_dic.html
 
-:mksp[ell] {outname}  {inname} ...			*:mksp* *:mkspell*
+:mksp[ell] [-ascii] {outname} {inname} ...		*:mksp* *:mkspell*
 			Generate spell file {outname}.spl from Myspell files
 			{inname}.aff and {inname}.dic.
+			When the [-ascii] argument is present, words with
+			non-ascii characters are skipped.  The resulting file
+			ends in "ascii.spl".  Otherwise the resulting file
+			ends in "ENC.spl", where ENC is the value of
+			'encoding'.
 			Multiple {inname} arguments can be given to combine
 			regions into one Vim spell file.  Example: >
 		:mkspell ~/.vim/spell/en /tmp/en_US /tmp/en_CA /tmp/en_AU

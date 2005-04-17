@@ -115,6 +115,8 @@ struct PyMethodDef { int a; };
 # define Py_FindMethod dll_Py_FindMethod
 # define Py_InitModule4 dll_Py_InitModule4
 # define Py_Initialize dll_Py_Initialize
+# define Py_Finalize dll_Py_Finalize
+# define Py_IsInitialized dll_Py_IsInitialized
 # define _PyObject_New dll__PyObject_New
 # define _Py_NoneStruct (*dll__Py_NoneStruct)
 # define PyObject_Init dll__PyObject_Init
@@ -169,6 +171,8 @@ static PyObject*(*dll_Py_BuildValue)(char *, ...);
 static PyObject*(*dll_Py_FindMethod)(struct PyMethodDef[], PyObject *, char *);
 static PyObject*(*dll_Py_InitModule4)(char *, struct PyMethodDef *, char *, PyObject *, int);
 static void(*dll_Py_Initialize)(void);
+static void(*dll_Py_Finalize)(void);
+static int(*dll_Py_IsInitialized)(void);
 static PyObject*(*dll__PyObject_New)(PyTypeObject *, PyObject *);
 static PyObject*(*dll__PyObject_Init)(PyObject *, PyTypeObject *);
 static PyObject* dll__Py_NoneStruct;
@@ -245,6 +249,8 @@ static struct
     {"Py_FindMethod", (PYTHON_PROC*)&dll_Py_FindMethod},
     {"Py_InitModule4", (PYTHON_PROC*)&dll_Py_InitModule4},
     {"Py_Initialize", (PYTHON_PROC*)&dll_Py_Initialize},
+    {"Py_Finalize", (PYTHON_PROC*)&dll_Py_Finalize},
+    {"Py_IsInitialized", (PYTHON_PROC*)&dll_Py_IsInitialized},
     {"_PyObject_New", (PYTHON_PROC*)&dll__PyObject_New},
     {"PyObject_Init", (PYTHON_PROC*)&dll__PyObject_Init},
     {"_Py_NoneStruct", (PYTHON_PROC*)&dll__Py_NoneStruct},
@@ -423,7 +429,12 @@ static void Python_Release_Vim(void)
 python_end()
 {
 #ifdef DYNAMIC_PYTHON
+    if (hinstPython && Py_IsInitialized())
+        Py_Finalize();
     end_dynamic_python();
+#else
+    if (Py_IsInitialized())
+        Py_Finalize();
 #endif
 }
 

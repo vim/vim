@@ -2,7 +2,7 @@
 " Language:	Makefile
 " Maintainer:	Claudio Fleiner <claudio@fleiner.com>
 " URL:		http://www.fleiner.com/vim/syntax/make.vim
-" Last Change:	2004 Apr 30
+" Last Change:	2005 Apr 17
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -67,9 +67,9 @@ syn match makeStatement contained "(\(subst\|addprefix\|addsuffix\|basename\|cal
 
 " Comment
 if exists("make_microsoft")
-   syn match  makeComment "#.*" contains=makeTodo
+   syn match  makeComment "#.*" contains=makeTodo,@Spell
 else
-   syn region  makeComment	start="#" end="^$" end="[^\\]$" keepend contains=makeTodo
+   syn region  makeComment	start="#" end="^$" end="[^\\]$" keepend contains=makeTodo,@Spell
    syn match   makeComment	"#$"
 endif
 syn keyword makeTodo TODO FIXME XXX contained

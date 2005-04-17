@@ -15,7 +15,7 @@
 #include "vim.h"
 
 #ifdef SPAWNO
-# include <spawno.h>		/* special MSDOS swapping library */
+# include <spawno.h>		/* special MS-DOS swapping library */
 #endif
 
 #ifdef HAVE_FCNTL_H
@@ -2311,6 +2311,11 @@ getout(exitval)
     if (!gui.in_use)
 #endif
 	windgoto((int)Rows - 1, 0);
+
+#if defined(FEAT_EVAL) || defined(FEAT_SYN_HL)
+    /* Optionally print hashtable efficiency. */
+    hash_debug_results();
+#endif
 
 #ifdef FEAT_GUI
     msg_didany = FALSE;

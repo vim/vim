@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Apr 15
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Apr 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -98,7 +98,14 @@ PLANNED FOR VERSION 7.0:
 -   Add SPELLCHECKER, with support for many languages.
     - Use "engspchk" from Charles Campbell for ideas.
     - Spell checking code todo's:
-	- BWF_ADDS and BWF_ADDSM for more than 256, only one byte for count.
+	- For French, prefixes with single quotes result in many additions.
+	  How to do this more efficiently?  Both storing and checking.
+	  Put addition up to end of word also in hashtab, so that "s'aaa"
+	  is found by "'aaa", s-bbb by "-bbb", etc.  Put rest in table (search
+	  longest match).
+	- use BWF_ADDS and BWF_ADDSM for more than 256, only one byte for count.
+	- Implement user and project word lists.  Commands to add words and to
+	  mark words as wrong.
 	- Case folding only works when locale is set properly.
 	  E.g., when C locale is active then 'enc' is "latin1" but Ångström
 	  isn't seen as a ONECAP.
@@ -107,29 +114,21 @@ PLANNED FOR VERSION 7.0:
 	  Put the character tables in the .aff file?
 	- Implement = flag in .dic: KEEPCASE for lower case word.
 	    's morgens/=  does not match 'S morgens
-	- Merge en_US, en_CA, en_AU, etc.
 	- Implement compound words?
-	- Make matching additions faster somehow?
-	- More efficient way to store additions?
 	- remove fw_prefix and fw_suffix, use fw_len (word length) and put
 	  prefixes and suffixes right after it.
 	- Make "en-rare" spell file.
 	  Convention: use en_US (language_region) and en-rare (language-field)
-	- Need to check for affixes of zero length?
-	- specify word characters in .aff file?
+          Add hl groups to 'spelllang'?
+	    :set spelllang=en_us,en-rare/SpellRare,en-math/SpellMath
 	- Polish: Anio and Hanio are wrong words, even though Myspell allows
 	  them.  Problem with not ignoring case in conditions.
-	- Put addition up to end of word also in hashtab, so that "s'aaa"
-	  is found by "'aaa", s-bbb by "-bbb", etc.  Put rest in table (search
-	  longest match).
-        - Rare words: use another dictionary.  Add hl groups to 'spelllang'?
-	    :set spelllang=en_us,en.rare/SpellRare,en.math/SpellMath
     - References MySpell library (in OpenOffice.org).
 	http://spellchecker.mozdev.org/source.html
 	http://whiteboard.openoffice.org/source/browse/whiteboard/lingucomponent/source/spellcheck/myspell/
       author: Kevin Hendricks <kevin.hendricks@sympatico.ca>
     - Alternative: use aspell library.
-      ispell is replaced by aspell, thus forget about it.
+      ispell is replaced by aspell, thus forget about ispell.
     - More complicated: Regions with different languages?  E.g. comments in
       English, strings in German (po file).
     - Commands required:
@@ -139,11 +138,13 @@ PLANNED FOR VERSION 7.0:
 	[s  move to previous spell error  [S also rare word
 	]s  move to next spell error      ]S also rare word
 	    (only "]s" is currently implemented)
+	    Make this work like displaying, check @Spell in syntax.
+	    Support a count.
     - Update option window for 'spell' and 'spelllang'.
     - Use an external program like aspell for suggestions to correct the
-      spelling?  Or include the myspell/spell code in Vim?
+      spelling?  Or include the myspell suggestion code in Vim?
     - Distribution: Need wordlists for many languages; "language pack"
-    - Work together with OpenOffic.org to update the wordlists.  (Adri
+    - Work together with OpenOffice.org to update the wordlists.  (Adri
       Verhoef, Aad Nales)
     - Support for approximate-regexps will help with finding similar words
       (agrep http://www.tgries.de/agrep/).

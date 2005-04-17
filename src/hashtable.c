@@ -32,7 +32,10 @@
 #if defined(FEAT_EVAL) || defined(FEAT_SYN_HL) || defined(PROTO)
 
 #if 0
-# define HT_DEBUG	/* extra checks for table consistency */
+# define HT_DEBUG	/* extra checks for table consistency  and statistics */
+
+static long hash_count_lookup = 0;	/* count number of hashtab lookups */
+static long hash_count_perturb = 0;	/* count number of "misses" */
 #endif
 
 /* Magic value for algorithm that walks through the array. */
@@ -40,7 +43,7 @@
 
 static int hash_may_resize __ARGS((hashtab_T *ht, int minitems));
 
-#if defined(FEAT_SYN_HL) || defined(PROTO)
+#if 0 /* currently not used */
 /*
  * Create an empty hash table.
  * Returns NULL when out of memory.
@@ -112,6 +115,10 @@ hash_lookup(ht, key, hash)
     hashitem_T	*hi;
     int		idx;
 
+#ifdef HT_DEBUG
+    ++hash_count_lookup;
+#endif
+
     /*
      * Quickly handle the most common situations:
      * - return if there is no item at all
@@ -141,6 +148,9 @@ hash_lookup(ht, key, hash)
      */
     for (perturb = hash; ; perturb >>= PERTURB_SHIFT)
     {
+#ifdef HT_DEBUG
+	++hash_count_perturb;	    /* count a "miss" for hashtab lookup */
+#endif
 	idx = (idx << 2) + idx + perturb + 1;
 	hi = &ht->ht_array[idx & ht->ht_mask];
 	if (hi->hi_key == NULL)
@@ -152,6 +162,23 @@ hash_lookup(ht, key, hash)
 	if (hi->hi_key == HI_KEY_REMOVED && freeitem == NULL)
 	    freeitem = hi;
     }
+}
+
+/*
+ * Print the efficiency of hashtable lookups.
+ * Useful when trying different hash algorithms.
+ * Called when exiting.
+ */
+    void
+hash_debug_results()
+{
+#ifdef HT_DEBUG
+    fprintf(stderr, "\r\n\r\n\r\n\r\n");
+    fprintf(stderr, "Number of hashtable lookups: %ld\r\n", hash_count_lookup);
+    fprintf(stderr, "Number of perturb loops: %ld\r\n", hash_count_perturb);
+    fprintf(stderr, "Percentage of perturb loops: %ld%%\r\n",
+				hash_count_perturb * 100 / hash_count_lookup);
+#endif
 }
 
 /*
@@ -332,7 +359,7 @@ hash_may_resize(ht, minitems)
     else
     {
 	/* Use specified size. */
-	if (minitems < ht->ht_used)	/* just in case... */
+	if ((long_u)minitems < ht->ht_used)	/* just in case... */
 	    minitems = ht->ht_used;
 	minsize = minitems * 3 / 2;	/* array is up to 2/3 full */
     }
@@ -420,16 +447,28 @@ hash_may_resize(ht, minitems)
 }
 
 /*
- * Get the hash number for a key.  Uses the ElfHash algorithm, which is
- * supposed to have an even distribution (suggested by Charles Campbell).
+ * Get the hash number for a key.
+ * If you think you know a better hash function: Compile with HT_DEBUG set and
+ * run a script that uses hashtables a lot.  Vim will then print statistics
+ * when exiting.  Try that with the current hash algorithm and yours.  The
+ * lower the percentage the better.
  */
     hash_T
 hash_hash(key)
     char_u	*key;
 {
-    hash_T	hash = 0;
+    hash_T	hash;
+    char_u	*p;
+
+    if ((hash = *key) == 0)
+	return (hash_T)0;	/* Empty keys are not allowed, but we don't
+				   want to crash if we get one. */
+    p = key + 1;
+
+#if 0
+    /* ElfHash algorithm, which is supposed to have an even distribution.
+     * Suggested by Charles Campbell. */
     hash_T	g;
-    char_u	*p = key;
 
     while (*p != NUL)
     {
@@ -438,6 +477,13 @@ hash_hash(key)
 	if (g != 0)
 	    hash ^= g >> 24;		/* xor g's high 4 bits into hash */
     }
+#else
+
+    /* A simplistic algorithm that appears to do very well.
+     * Suggested by George Reilly. */
+    while (*p != NUL)
+	hash = hash * 101 + *p++;
+#endif
 
     return hash;
 }

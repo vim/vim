@@ -370,6 +370,8 @@ CClink = $(CC)
 
 # PYTHON
 # Uncomment this when you want to include the Python interface.
+# NOTE: This may cause threading to be enabled, which has side effects (such
+# as using different libraries and debugging becomes more difficult).
 #CONF_OPT_PYTHON = --enable-pythoninterp
 
 # TCL
@@ -1810,7 +1812,11 @@ installtutor: $(DEST_VIM) $(DEST_RT) $(DEST_TUTOR)
 
 # Install the spell files, if they exist.
 installspell: $(DEST_VIM) $(DEST_RT) $(DEST_SPELL)
-	if test -f $(SPELLSOURCE)/en.spl; then \
+	if test -f $(SPELLSOURCE)/en.latin1.spl; then \
+	  $(INSTALL_DATA) $(SPELLSOURCE)/*.spl $(DEST_SPELL); \
+	  chmod $(HELPMOD) $(DEST_SPELL)/*.spl; \
+	fi
+	if test -f $(SPELLSOURCE)/en.utf-8.spl; then \
 	  $(INSTALL_DATA) $(SPELLSOURCE)/*.spl $(DEST_SPELL); \
 	  chmod $(HELPMOD) $(DEST_SPELL)/*.spl; \
 	fi

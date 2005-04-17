@@ -1,7 +1,8 @@
 " Menu Translations:	German / Deutsch
-" Maintainer:		Johannes Zellner <johannes@zellner.org>
-" Originally By:	Marcin Dalecki <martin@dalecki.de>
-" Last Change:	Sat, 20 Apr 2002 19:02:42 CEST
+" Maintainer:		Georg Dahn <gorgyd@yahoo.co.uk>
+" Originally By:	Marcin Dalecki <dalecki@cs.net.pl>
+"            		Johannes Zellner <johannes@zellner.org>
+" Last Change:	Sun, 17 Apr 2005 18:28:58 CEST
 " vim:set foldmethod=marker tabstop=8:
 
 " Quit when menu translations have already been done.
@@ -44,7 +45,8 @@ menutrans &Copy<Tab>"+y			&Kopieren<Tab>"+y
 menutrans &Paste<Tab>"+gP		Ein&fügen<Tab>"+gP
 menutrans Put\ &Before<Tab>[p		Da&vor\ Einfügen<Tab>[p
 menutrans Put\ &After<Tab>]p		Da&nach\ Einfügen<Tab>]p
-menutrans &Select\ all<Tab>ggVG		Alles\ &Markieren<Tab>ggVG
+menutrans &Delete<Tab>x 		&Löschen<Tab>x
+menutrans &Select\ All<Tab>ggVG		Alles\ &Markieren<Tab>ggVG
 menutrans &Find\.\.\.			&Suchen\.\.\.
 menutrans Find\ and\ Rep&lace\.\.\.	Suchen\ und\ &Ersetzen\.\.\.
 
@@ -156,6 +158,7 @@ menutrans Conve&rt\ back<Tab>:%!xxd\ -r			Zurück\ konvertieren<Tab>:%!xxd\ -r
 
 " {{{ SYNTAX / SYNTAX
 menutrans &Syntax				&Syntax
+menutrans &Show\ filetypes\ in\ menu		Dateitypen\ an&zeigen
 menutrans Set\ '&syntax'\ only			Nur\ '&syntax'\ Setzen
 menutrans Set\ '&filetype'\ too			Auch\ '&filetype'\ Setzen
 menutrans &Off					&Aus

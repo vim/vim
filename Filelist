@@ -682,6 +682,10 @@ LANG_GEN = \
 		runtime/tutor/tutor.ru.* \
 		runtime/tutor/tutor.zh.* \
 		runtime/spell/README.txt \
+
+# generic language files, binary
+LANG_GEN_BIN = \
+		runtime/spell/en.ascii.spl \
 		runtime/spell/en.latin1.spl \
 		runtime/spell/en.utf-8.spl \
 
