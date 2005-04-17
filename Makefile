@@ -282,6 +282,7 @@ unixrt: dist prepare
 	tar cf - \
 		$(RT_SCRIPTS) \
 		$(LANG_GEN) \
+		$(LANG_GEN_BIN) \
 		| (cd dist/$(VIMRTDIR); tar xf -)
 	cd dist && tar cf $(VIMVER)-rt2.tar $(VIMRTDIR)
 	gzip -9 dist/$(VIMVER)-rt2.tar
@@ -439,6 +440,7 @@ dosrt_unix2dos: dist prepare no_title.vim
 		$(RT_UNIX_DOS_BIN) \
 		$(RT_ALL_BIN) \
 		$(RT_DOS_BIN) \
+		$(LANG_GEN_BIN) \
 		| (cd dist/vim/$(VIMRTDIR); tar xf -)
 	mv dist/vim/$(VIMRTDIR)/runtime/* dist/vim/$(VIMRTDIR)
 	rmdir dist/vim/$(VIMRTDIR)/runtime
