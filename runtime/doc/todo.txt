@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Apr 17
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Apr 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -45,6 +45,9 @@ With this mapping a click on a status line echoes the wrong buffer name:
 When in diff mode and making a change that causes the "changed" highlighting
 to disappear, it's still highlighted in another window.
 
+This doesn't work: "a[var1:var2]".  Requires space before/after ':'.  Can this
+be fixed?  Otherwise document it.
+
 regmatch(): "regstack" could start with a fixed block of data for speed.
 "backpos" is never freed. (Alexei Alexandrov)
 
@@ -59,6 +62,8 @@ Patch for setqflist() (Yegappan Lakshmanan, 2005 April 11)
 In an errorfile expand "~/" to home directory. (Arnout Engelen)
 
 Patch for 2html.vim to disable folding (Michael Schaap, 2005 April 12)
+
+Win32: Alt-F10 no longer working? (Bill McCarthy, April 18)
 
 Mac unicode patch (Da Woon Jung):
 - selecting proportional font breaks display
@@ -98,11 +103,9 @@ PLANNED FOR VERSION 7.0:
 -   Add SPELLCHECKER, with support for many languages.
     - Use "engspchk" from Charles Campbell for ideas.
     - Spell checking code todo's:
-	- For French, prefixes with single quotes result in many additions.
-	  How to do this more efficiently?  Both storing and checking.
-	  Put addition up to end of word also in hashtab, so that "s'aaa"
-	  is found by "'aaa", s-bbb by "-bbb", etc.  Put rest in table (search
-	  longest match).
+	- Can have prefixes with addstring and suffixes with leadstring.  Use
+	  separate basic word for this, like for different caps?
+	- Verify French spell checking works efficiently.
 	- use BWF_ADDS and BWF_ADDSM for more than 256, only one byte for count.
 	- Implement user and project word lists.  Commands to add words and to
 	  mark words as wrong.
