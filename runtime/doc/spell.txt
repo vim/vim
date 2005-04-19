@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Apr 17
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Apr 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -35,6 +35,8 @@ To search for the next misspelled word:
 
 							*]s* *E756*
 ]s			Move to next misspelled word after the cursor.
+			NOTE: doesn't obey syntax highlighting yet, thus
+			will stop at more places than what is highlighted.
 
 							*[s*
 [s			Move to next misspelled word before the cursor.
@@ -57,9 +59,11 @@ A word may be spelled differently in various regions.  For example, English
 comes in (at least) these variants:
 
 	en		all regions
-	en_us		US
-	en_gb		Great Britain
+	en_au		Australia
 	en_ca		Canada
+	en_gb		Great Britain
+	en_nz		New Zealand
+	en_us		USA
 
 Words that are not used in one region but are used in another region are
 highlighted with SpellLocal.

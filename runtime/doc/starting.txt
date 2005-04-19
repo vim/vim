@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.0aa.  Last change: 2005 Apr 01
+*starting.txt*  For Vim version 7.0aa.  Last change: 2005 Apr 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -764,10 +764,11 @@ accordingly.  Vim proceeds in this order:
 	-  The environment variable EXINIT.
 	   The value of $EXINIT is used as an Ex command line.
 	-  The user exrc file(s).  Same as for the user vimrc file, but with
-	   "vimrc" replaced by "exrc".  But without the (*)!
+	   "vimrc" replaced by "exrc".  But only one of ".exrc" and "_exrc" is
+	   used, depending on the system.  And without the (*)!
 
      d. If the 'exrc' option is on (which is not the default), the current
-	directory is searched for four files.  The first that exists is used,
+	directory is searched for three files.  The first that exists is used,
 	the others are ignored.
 	-  The file ".vimrc" (for Unix, Amiga and OS/2) (*)
 		    "_vimrc" (for MS-DOS and Win32) (*)
@@ -775,8 +776,6 @@ accordingly.  Vim proceeds in this order:
 		    ".vimrc" (for MS-DOS and Win32) (*)
 	-  The file ".exrc"  (for Unix, Amiga and OS/2)
 		    "_exrc"  (for MS-DOS and Win32)
-	-  The file "_exrc"  (for Unix, Amiga and OS/2)
-		    ".exrc"  (for MS-DOS and Win32)
 
      (*) Using this file or environment variable will cause 'compatible' to be
 	 off by default.  See |compatible-default|.
