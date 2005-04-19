@@ -1,4 +1,4 @@
-*tips.txt*      For Vim version 7.0aa.  Last change: 2005 Apr 01
+*tips.txt*      For Vim version 7.0aa.  Last change: 2005 Apr 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -259,7 +259,7 @@ digraph.c
 and I want to rename *.c *.bla.  I'd do it like this: >
 
 	$ vim
-	:r! ls *.c
+	:r !ls *.c
 	:%s/\(.*\).c/mv & \1.bla
 	:w !sh
 	:q!

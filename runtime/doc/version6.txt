@@ -1,4 +1,4 @@
-*version6.txt*  For Vim version 7.0aa.  Last change: 2005 Apr 04
+*version6.txt*  For Vim version 7.0aa.  Last change: 2005 Apr 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -9917,7 +9917,7 @@ Menu translations:
 Tutor translations:
 	Catalan (Ernest Adrogue)
 	Russian in cp1251 (Alexey Froloff)
-	Slovak in cp1251 and iso8859-2 (Lubos Celko)
+	Slovak in cp1250 and iso8859-2 (Lubos Celko)
 	Swedish (Johan Svedberg)
 	Korean (Kee-Won Seo)
 	UTF-8 version of the Japanese tutor (Yasuhiro Matsumoto) Use this as
