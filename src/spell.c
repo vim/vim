@@ -10,13 +10,21 @@
 /*
  * spell.c: code for spell checking
  *
- * Terminology:
- * "dword" is a dictionary word, made out of letters and digits.
- * "nword" is a word with a character that's not a letter or digit.
- * "word"  is either a "dword" or an "nword".
- */
-
-/*
+ * The basic spell checking mechanism is:
+ * 1. Isolate a word, up to the next non-word character.
+ * 2. Find the word in the hashtable of basic words.
+ * 3. If not found, look in the hashtable with "prewords".  These are prefixes
+ *    with a non-word character following a word character, e.g., "de-".
+ * 4. If still not found, for each matching a prefix try if the word matches
+ *    without the prefix (and with the "chop" string added back).
+ * 5. If still still not found, for each matching suffix try if the word
+ *    matches without the suffix (and with the "chop" string added back).
+ *
+ * Matching involves checking the caps type: Onecap ALLCAP KeepCap.
+ * After finding a matching word check for a leadstring (non-word characters
+ * before the word) and addstring (more text following, starting with a
+ * non-word character).
+ *
  * Why doesn't Vim use aspell/ispell/myspell/etc.?
  * See ":help develop-spell".
  */
@@ -36,9 +44,10 @@
 #define MAXWLEN 100		/* assume max. word len is this many bytes */
 
 /*
- * Structure that is used to store the text from the language file.  This
- * avoids the need to allocate space for each individual word.  It's allocated
- * in big chunks for speed.
+ * Structure that is used to store the structures and strings from the
+ * language file.  This avoids the need to allocate space for each individual
+ * word.  It's allocated in big chunks for speed.  It's freed all at once when
+ * 'encoding' changes.
  */
 #define  SBLOCKSIZE 4096	/* default size of sb_data */
 typedef struct sblock_S sblock_T;
@@ -48,7 +57,8 @@ struct sblock_S
     char_u	sb_data[1];	/* data, actually longer */
 };
 
-/* Info from "REP" entries in ".aff" file used in af_rep. */
+/* Info from "REP" entries in ".aff" file used in af_rep.
+ * TODO: This is not used yet.  Either use it or remove it. */
 typedef struct repentry_S
 {
     char_u	*re_from;
@@ -63,19 +73,30 @@ struct affitem_S
 {
     affitem_T	*ai_next;	/* next affix with same ai_add[] or NULL */
     short_u	ai_nr;		/* affix number */
-    char_u	ai_combine;	/* prefix combines with suffix */
-    char_u	ai_choplen;	/* length of ai_chop in bytes */
+    char_u	ai_flags;	/* AFF_ flags */
+    char_u	ai_choplen;	/* length of chop string in bytes */
     char_u	ai_addlen;	/* length of ai_add in bytes */
-    char_u	*ai_chop;	/* text chopped off basic word (can be NULL) */
-    char_u	ai_add[1];	/* text added to basic word (actually longer) */
+    char_u	ai_leadlen;	/* for AFF_PREWORD: length of lead string */
+    char_u	ai_taillen;	/* for AFF_PREWORD: length of tail string */
+    char_u	ai_add[1];	/* Text added to basic word. This stores:
+				 * 0: word for AFF_PREWORD or whole addition
+				 * ai_addlen + 1: chop string
+				 * + ai_choplen + 1: lead string for AFF_PREWORD
+				 * + ai_leadlen + 1: trail string f. AFF_PREWORD
+				 */
 };
 
 /* Get affitem_T pointer from hashitem that uses ai_add */
 static affitem_T dumai;
 #define HI2AI(hi)	((affitem_T *)((hi)->hi_key - (dumai.ai_add - (char_u *)&dumai)))
 
+/* ai_flags: Affix item flags */
+#define AFF_COMBINE	0x01	/* prefix combines with suffix */
+#define AFF_PREWORD	0x02	/* prefix includes word */
+
 /*
- * Structure used to store words and other info for one language.
+ * Structure used to store words and other info for one language, loaded from
+ * a .spl file.
  */
 typedef struct slang_S slang_T;
 struct slang_S
@@ -86,49 +107,65 @@ struct slang_S
     int		sl_prefcnt;	/* number of prefix NRs */
     garray_T	sl_preftab;	/* list of hashtables to lookup prefixes */
     affitem_T	*sl_prefzero;	/* list of prefixes with zero add length */
+    hashtab_T	sl_prewords;	/* prefixes that include a word */
     int		sl_suffcnt;	/* number of suffix NRs */
     garray_T	sl_sufftab;	/* list of hashtables to lookup suffixes */
     affitem_T	*sl_suffzero;	/* list of suffixes with zero add length */
-    char_u	*sl_try;	/* "TRY" from .aff file */
-    garray_T	sl_rep;		/* list of repentry_T entries from REP lines */
+    char_u	*sl_try;	/* "TRY" from .aff file  TODO: not used */
+    garray_T	sl_rep;		/* list of repentry_T entries from REP lines
+				 * TODO not used */
     char_u	sl_regions[17];	/* table with up to 8 region names plus NUL */
     sblock_T	*sl_block;	/* list with allocated memory blocks */
     int		sl_error;	/* error while loading */
 };
 
+/* First language that is loaded, start of the linked list of loaded
+ * languages. */
 static slang_T *first_lang = NULL;
 
 /*
  * Structure to store an addition to a basic word.
+ * There are many of these, keep it small!
  */
 typedef struct addword_S addword_T;
 struct addword_S
 {
     addword_T	*aw_next;	/* next addition */
     char_u	aw_flags;	/* ADD_ flags */
-    char_u	aw_leadlen;	/* length of lead in bytes */
-    char_u	aw_wordlen;	/* length of aw_word in bytes */
     char_u	aw_region;	/* region for word with this addition */
+    char_u	aw_leadlen;	/* byte length of lead in aw_word */
+    char_u	aw_wordlen;	/* byte length of first word in aw_word */
+    char_u	aw_saveb;	/* saved byte where aw_word[] is truncated at
+				   end of hashtable key; NUL when not using
+				   hashtable */
     char_u	aw_word[1];	/* text, actually longer: case-folded addition
 				   plus, with ADD_KEEPCAP: keep-case addition */
 };
 
+/* Get addword_T pointer from hashitem that uses aw_word */
+static addword_T dumaw;
+#define HI2ADDWORD(hi)	((addword_T *)((hi)->hi_key - (dumaw.aw_word - (char_u *)&dumaw)))
+
 /*
  * Structure to store a basic word.
+ * There are many of these, keep it small!
  */
 typedef struct fword_S fword_T;
 struct fword_S
 {
-    fword_T	*fw_next;	/* same basic word with different caps */
-    char_u	fw_region;	/* region bits */
-    char_u	fw_prefixcnt;	/* number of prefix numbers */
-    char_u	fw_suffixcnt;	/* number of suffix numbers */
-    short_u	fw_flags;	/* BWF_ flags */
-    void	*fw_prefix;	/* table with prefix numbers */
-    void	*fw_suffix;	/* table with suffix numbers */
+    fword_T	*fw_next;	/* same basic word with different caps and/or
+				 * affixes */
     addword_T	*fw_adds;	/* first addword_T entry */
-    char_u	fw_word[1];	/* actually longer: case folded word, or
-				   keep-case word when (flags & BWF_KEEPCAP) */
+    short_u	fw_flags;	/* BWF_ flags */
+    char_u	fw_region;	/* region bits */
+    char_u	fw_prefixcnt;	/* number of prefix NRs */
+    char_u	fw_suffixcnt;	/* number of suffix NRs */
+    char_u	fw_word[1];	/* actually longer:
+				 * 0:  case folded word or keep-case word when
+				 *     (flags & BWF_KEEPCAP)
+				 * + word length + 1: list of prefix NRs
+				 * + fw_prefixcnt [* 2]: list of suffix NRs
+				 */
 };
 
 /* Get fword_T pointer from hashitem that uses fw_word */
@@ -167,6 +204,11 @@ typedef struct langp_S
 				       for single-letter words) */
 #define BWF_KEEPCAP	0x0800	    /* Keep case as-is */
 
+#define BWF_ADDHASH	0x8000	    /* Internal: use hashtab for additions */
+
+#define NOWC_KEY (char_u *)"x"	    /* hashtab key used for additions without
+				       any word character */
+
 /* flags used for addition in the spell file */
 #define ADD_REGION	0x02	    /* region byte follows */
 #define ADD_ONECAP	0x04	    /* first letter must be capital */
@@ -178,7 +220,7 @@ typedef struct langp_S
  * (Needed to keep ADD_ flags in one byte.) */
 #define ADD2BWF(x)	(((x) & 0x0f) | (((x) & 0xf0) << 4))
 
-#define VIMSPELLMAGIC "VIMspell01"  /* string at start of Vim spell file */
+#define VIMSPELLMAGIC "VIMspell02"  /* string at start of Vim spell file */
 #define VIMSPELLMAGICL 10
 
 /*
@@ -188,31 +230,44 @@ typedef struct matchinf_S
 {
     langp_T	*mi_lp;			/* info for language and region */
     slang_T	*mi_slang;		/* info for the language */
+
+    /* pointers to original text to be checked */
     char_u	*mi_line;		/* start of line containing word */
     char_u	*mi_word;		/* start of word being checked */
     char_u	*mi_end;		/* first non-word char after mi_word */
-    char_u	*mi_wend;		/* end of matching word (is "mi_end"
+    char_u	*mi_wend;		/* end of matching word (is mi_end
 					 * or further) */
-    char_u	*mi_cword;		/* word to check, can be "mi_fword" */
-    char_u	mi_fword[MAXWLEN + 1];	/* "mi_word" to "mi_end" case-folded */
-    int		mi_faddlen;		/* length of valid bytes in "mi_fadd" */
-    char_u	*mi_faddp;		/* next char to be added to "mi_fadd" */
-    char_u	mi_fadd[MAXWLEN + 1];	/* "mi_end" and further case-folded */
+    char_u	*mi_fend;		/* next char to be added to mi_fword */
+
+    /* case-folded text */
+    char_u	mi_fword[MAXWLEN + 1];	/* mi_word case-folded */
+    int		mi_fendlen;		/* byte length of first word in
+					   mi_fword */
+    int		mi_faddlen;		/* byte length of text in mi_fword
+					   after first word */
+    char_u	*mi_cword;		/* word to check, points in mi_fword */
+    char_u	*mi_awend;		/* after next word, to check for
+					   addition (NULL when not done yet) */
+    int		mi_did_awend;		/* did compute mi_awend */
+
+    /* others */
     int		mi_result;		/* result so far: SP_BAD, SP_OK, etc. */
     int		mi_capflags;		/* BWF_ONECAP BWF_ALLCAP BWF_KEEPCAP */
 } matchinf_T;
 
 static int word_match __ARGS((matchinf_T *mip));
 static int check_adds __ARGS((matchinf_T *mip, fword_T *fw, int req_pref, int req_suf));
-static int supports_afffix __ARGS((int cnt, void *afffix, int afffixcnt, int nr));
+static void fill_awend __ARGS((matchinf_T *mip));
+static void fold_addchars __ARGS((matchinf_T *mip, int addlen));
+static int supports_affix __ARGS((int cnt, char_u *afflist, int afflistlen, int nr));
 static int prefix_match __ARGS((matchinf_T *mip));
+static int noprefix_match __ARGS((matchinf_T *mip, char_u *pword, char_u *cstart, affitem_T *ai));
 static int suffix_match __ARGS((matchinf_T *mip));
 static int match_caps __ARGS((int flags, char_u *caseword, matchinf_T *mip, char_u *cword, char_u *end));
 static slang_T *slang_alloc __ARGS((char_u *lang));
 static void slang_free __ARGS((slang_T *lp));
 static slang_T *spell_load_lang __ARGS((char_u *lang));
 static void spell_load_file __ARGS((char_u *fname, void *cookie));
-static int spell_load_affixes __ARGS((FILE *fd, slang_T *lp, int *bl_usedp, int affm, void **affp));
 static void *getroom __ARGS((slang_T *lp, int *bl_used, int len));
 static int find_region __ARGS((char_u *rp, char_u *region));
 static int captype __ARGS((char_u *word, char_u *end));
@@ -248,16 +303,22 @@ spell_check(wp, line, ptr, attrp)
     if (*ptr >= '0' && *ptr <= '9')
 	return (int)(mi.mi_end - ptr);
 
-    /* Make case-folded copy of the Word.  Compute its hash value. */
+    /* Make case-folded copy of the word. */
     (void)str_foldcase(ptr, mi.mi_end - ptr, mi.mi_fword, MAXWLEN + 1);
     mi.mi_cword = mi.mi_fword;
+    mi.mi_fendlen = STRLEN(mi.mi_fword);
+    mi.mi_faddlen = 0;
+    mi.mi_fend = mi.mi_end;
 
-    /* The word is bad unless we find it in the dictionary. */
+    /* Check the caps type of the word. */
+    mi.mi_capflags = captype(ptr, mi.mi_end);
+
+    /* The word is bad unless we recognize it. */
     mi.mi_result = SP_BAD;
     mi.mi_wend = mi.mi_end;
-    mi.mi_faddp = mi.mi_end;
-    mi.mi_faddlen = 0;
-    mi.mi_capflags = captype(ptr, mi.mi_end);
+
+    mi.mi_awend = NULL;
+    mi.mi_did_awend = FALSE;
     mi.mi_line = line;
 
     /*
@@ -294,29 +355,158 @@ spell_check(wp, line, ptr, attrp)
 }
 
 /*
- * Check if the word "mip->mi_cword" matches.
+ * Check if the word "mip->mi_word" matches.
+ * "mip->mi_fword" is the same word case-folded;
+ *
+ * This checks the word as a whole and for prefixes that include a word.
+ *
+ * Note that when called mi_fword only contains the word up to mip->mi_end,
+ * but when checking additions it gets longer.
  */
     static int
 word_match(mip)
     matchinf_T *mip;
 {
-    hash_T	fhash = hash_hash(mip->mi_cword);
+    hash_T	fhash = hash_hash(mip->mi_fword);
     hashitem_T	*hi;
     fword_T	*fw;
     int		valid = FALSE;
+    char_u	*p;
+    char_u	pword[MAXWLEN + 1];
+    int		charlen;
+    int		capflags_save;
+    affitem_T	*ai;
+    char_u	*cstart;
+    int		addlen;
+    int		n;
+    char_u	*save_end;
+    int		cc;
 
-    hi = hash_lookup(&mip->mi_slang->sl_words, mip->mi_cword, fhash);
-    if (HASHITEM_EMPTY(hi))
-	return FALSE;
+    hi = hash_lookup(&mip->mi_slang->sl_words, mip->mi_fword, fhash);
+    if (!HASHITEM_EMPTY(hi))
+    {
+	/*
+	 * Find a basic word for which the case of "mi_word" is correct.
+	 * If it is, check additions and use the longest one.
+	 */
+	for (fw = HI2FWORD(hi); fw != NULL; fw = fw->fw_next)
+	    if (match_caps(fw->fw_flags, fw->fw_word, mip,
+						   mip->mi_word, mip->mi_end))
+		valid |= check_adds(mip, fw, -1, -1);
+    }
 
     /*
-     * Find a basic word for which the case of word "cword" is correct.
-     * If it is, check additions and use the longest one.
+     * Try finding a matching preword for "mip->mi_word".  These are
+     * prefixes that have a non-word character after a word character:
+     * "d'", "de-", "'s-", "l'de-".  But not "'s".
+     * Also need to do this when a matching word was already found, because we
+     * might find a longer match this way (French: "qu" and "qu'a-t-elle").
      */
-    for (fw = HI2FWORD(hi); fw != NULL; fw = fw->fw_next)
-	if (match_caps(fw->fw_flags, fw->fw_word, mip,
-						   mip->mi_word, mip->mi_end))
-	    valid |= check_adds(mip, fw, -1, -1);
+    cc = mip->mi_fword[mip->mi_fendlen];
+    mip->mi_fword[mip->mi_fendlen] = NUL;
+    hi = hash_lookup(&mip->mi_slang->sl_prewords, mip->mi_fword, fhash);
+    mip->mi_fword[mip->mi_fendlen] = cc;
+    if (!HASHITEM_EMPTY(hi))
+    {
+	capflags_save = mip->mi_capflags;
+
+	/* Go through the list of matching prewords. */
+	for (ai = HI2AI(hi); ai != NULL; ai = ai->ai_next)
+	{
+	    /* Check that the lead string matches before the word. */
+	    p = ai->ai_add + ai->ai_addlen + ai->ai_choplen + 2;
+	    if (ai->ai_leadlen > 0)
+	    {
+		if (mip->mi_word - mip->mi_line < ai->ai_leadlen
+			|| STRNCMP(mip->mi_word - ai->ai_leadlen, p,
+						     ai->ai_leadlen) != 0)
+		    continue;
+		p += ai->ai_leadlen + 1;	/* advance "p" to tail */
+	    }
+	    else
+		++p;			/* advance "p" to tail */
+
+	    /* Check that the tail string matches after the word.  Need
+	     * to fold case first.  */
+	    if (ai->ai_taillen > 0)
+	    {
+		if (ai->ai_taillen >= mip->mi_faddlen)
+		{
+		    fold_addchars(mip, ai->ai_taillen);
+		    if (ai->ai_taillen > mip->mi_faddlen)
+			continue;	/* not enough chars, can't match */
+		}
+		if (STRNCMP(mip->mi_fword + mip->mi_fendlen,
+						  p, ai->ai_taillen) != 0)
+		    continue;
+	    }
+
+	    /*
+	     * This preword matches.  Remove the preword and check that
+	     * the resulting word exits.
+	     */
+
+	    /* Find the place in the original word where the tail ends,
+	     * needed for case checks. */
+#ifdef FEAT_MBYTE
+	    charlen = mb_charlen(p);
+#else
+	    charlen = ai->ai_taillen;
+#endif
+	    cstart = mip->mi_end;
+	    for (n = 0; n < charlen; ++n)
+		mb_ptr_adv(cstart);
+
+	    /* The new word starts with the chop. Then add up to the next
+	     * non-word char. */
+	    mch_memmove(pword, ai->ai_add + ai->ai_addlen + 1,
+							  ai->ai_choplen);
+	    p = mip->mi_fword + mip->mi_fendlen + ai->ai_taillen;
+	    addlen = ai->ai_taillen;
+	    while (spell_iswordc(p))
+	    {
+		++charlen;
+#ifdef FEAT_MBYTE
+		addlen += (*mb_ptr2len_check)(p);
+#else
+		++addlen;
+#endif
+		mb_ptr_adv(p);
+		if (addlen >= mip->mi_faddlen)
+		{
+		    /* Get more folded characters in mip->mi_fword. */
+		    fold_addchars(mip, addlen);
+		    if (addlen >= mip->mi_faddlen)
+			break;	/* not enough chars, can't match */
+		}
+	    }
+	    mch_memmove(pword + ai->ai_choplen,
+		    mip->mi_fword + mip->mi_fendlen + ai->ai_taillen,
+						 addlen - ai->ai_taillen);
+	    pword[ai->ai_choplen + addlen - ai->ai_taillen] = NUL;
+
+	    /* Need to set mi_end to find additions.  Also set mi_fendlen
+	     * and mi_faddlen. */
+	    save_end = mip->mi_end;
+	    while (--charlen >= 0)
+		mb_ptr_adv(mip->mi_end);
+	    mip->mi_fendlen += addlen;
+	    mip->mi_faddlen -= addlen;
+
+	    /* Find the word "pword", caseword "cstart". */
+	    n = noprefix_match(mip, pword, cstart, ai);
+	    mip->mi_end = save_end;
+	    mip->mi_fendlen -= addlen;
+	    mip->mi_faddlen += addlen;
+	    if (n)
+		valid = TRUE;
+
+	    /* If we found a valid word, we still need to try other
+	     * suffixes, because it may have an addition that's longer. */
+	}
+
+	mip->mi_capflags = capflags_save;
+    }
 
     return valid;
 }
@@ -334,16 +524,41 @@ check_adds(mip, fw, req_pref, req_suf)
 {
     int		valid = FALSE;
     addword_T	*aw;
+    addword_T	*naw = NULL;
     char_u	*p;
     int		addlen;
-    int		fl;
+    int		cc;
+    hashitem_T	*hi;
+    char_u	*cp = NULL;
+    int		n;
 
-    /* A word may be valid without additions. */
-    if ((fw->fw_flags & BWF_VALID)
-	    && (req_pref < 0 || supports_afffix(mip->mi_slang->sl_prefcnt,
-				   fw->fw_prefix, fw->fw_prefixcnt, req_pref))
-	    && (req_suf < 0 || supports_afffix(mip->mi_slang->sl_suffcnt,
-				   fw->fw_suffix, fw->fw_suffixcnt, req_suf)))
+    /* Check if required prefixes and suffixes are supported.  These are on
+     * the basic word, not on each addition. */
+    if (req_pref >= 0 || req_suf >= 0)
+    {
+	/* Prefix NRs are stored just after the word in fw_word. */
+	cp = fw->fw_word + STRLEN(fw->fw_word) + 1;
+	if (req_pref >= 0 && !supports_affix(mip->mi_slang->sl_prefcnt,
+					      cp, fw->fw_prefixcnt, req_pref))
+	    return FALSE;
+	if (req_suf >= 0)
+	{
+	    /* Suffix NRs are stored just after the Prefix NRs. */
+	    if (fw->fw_prefixcnt > 0)
+	    {
+		if (mip->mi_slang->sl_prefcnt > 256)
+		    cp += fw->fw_prefixcnt * 2;
+		else
+		    cp += fw->fw_prefixcnt;
+	    }
+	    if (!supports_affix(mip->mi_slang->sl_suffcnt,
+					       cp, fw->fw_suffixcnt, req_suf))
+		return FALSE;
+	}
+    }
+
+    /* A word may be valid without an addition. */
+    if (fw->fw_flags & BWF_VALID)
     {
 	valid = TRUE;
 	if (mip->mi_result != SP_OK)
@@ -353,15 +568,56 @@ check_adds(mip, fw, req_pref, req_suf)
 	    else
 		mip->mi_result = SP_OK;
 	}
+	/* Set word end, required when matching a word after a preword. */
+	if (mip->mi_wend < mip->mi_end)
+	    mip->mi_wend = mip->mi_end;
     }
 
     /*
      * Check additions, both before and after the word.
      * This may make the word longer, thus we also need to check
      * when we already found a matching word.
+     * When the BWF_ADDHASH flag is present then fw_adds points to a hashtable
+     * for quick lookup.  Otherwise it points to the list of all possible
+     * additions.
      */
-    for (aw = fw->fw_adds; aw != NULL; aw = aw->aw_next)
+    if (fw->fw_flags & BWF_ADDHASH)
     {
+	/* Locate the text up to the next end-of-word. */
+	if (!mip->mi_did_awend)
+	    fill_awend(mip);
+	if (mip->mi_awend == NULL)
+	    return valid;	    /* there is no next word */
+
+	cc = *mip->mi_awend;
+	*mip->mi_awend = NUL;
+	hi = hash_find((hashtab_T *)fw->fw_adds,
+					     mip->mi_fword + mip->mi_fendlen);
+	*mip->mi_awend = cc;
+	if (HASHITEM_EMPTY(hi))
+	    return valid;		/* no matching addition */
+	aw = HI2ADDWORD(hi);
+
+	/* Also check additions without word characters.  If they are there,
+	 * skip the first dummy entry. */
+	hi = hash_find((hashtab_T *)fw->fw_adds, NOWC_KEY);
+	if (!HASHITEM_EMPTY(hi))
+	    naw = HI2ADDWORD(hi)->aw_next;
+    }
+    else
+	aw = fw->fw_adds;
+
+    for ( ; ; aw = aw->aw_next)
+    {
+	if (aw == NULL)
+	{
+	    /* At end of list: may also try additions without word chars. */
+	    if (naw == NULL)
+		break;
+	    aw = naw;
+	    naw = NULL;
+	}
+
 	if (aw->aw_leadlen > 0)
 	{
 	    /* There is a leader, verify that it matches. */
@@ -391,28 +647,21 @@ check_adds(mip, fw, req_pref, req_suf)
 	    /* Check for matching addition and no word character after it.
 	     * First make sure we have enough case-folded chars to compare
 	     * with. */
-	    while (mip->mi_faddlen <= addlen)
-	    {
-		if (*mip->mi_faddp == NUL)
-		{
-		    mip->mi_fadd[mip->mi_faddlen] = NUL;
-		    break;
-		}
-#ifdef FEAT_MBYTE
-		fl = (*mb_ptr2len_check)(mip->mi_faddp);
-#else
-		fl = 1;
-#endif
-		(void)str_foldcase(mip->mi_faddp, fl,
-				   mip->mi_fadd + mip->mi_faddlen,
-						   MAXWLEN - mip->mi_faddlen);
-		mip->mi_faddp += fl;
-		mip->mi_faddlen += STRLEN(mip->mi_fadd + mip->mi_faddlen);
-	    }
+	    if (addlen >= mip->mi_faddlen)
+		fold_addchars(mip, addlen);
 
-	    if (STRNCMP(mip->mi_fadd, p, addlen) != 0
-		    || (mip->mi_fadd[addlen] != NUL
-				     && spell_iswordc(mip->mi_fadd + addlen)))
+	    /* Put back the saved char, if needed. */
+	    if (aw->aw_saveb != NUL)
+	    {
+		cp = p + STRLEN(p);
+		*cp = aw->aw_saveb;
+	    }
+	    n = STRNCMP(mip->mi_fword + mip->mi_fendlen, p, addlen);
+	    if (aw->aw_saveb != NUL)
+		*cp = NUL;
+
+	    if (n != 0 || (mip->mi_fword[mip->mi_fendlen + addlen] != NUL
+		  && spell_iswordc(mip->mi_fword + mip->mi_fendlen + addlen)))
 		continue;
 
 	    /* Compute the length in the original word, before case folding. */
@@ -422,8 +671,8 @@ check_adds(mip, fw, req_pref, req_suf)
 		int	l;
 
 		p = mip->mi_end;
-		for (l = 0; l < addlen;
-				   l += (*mb_ptr2len_check)(mip->mi_fadd + l))
+		for (l = 0; l < addlen; l += (*mb_ptr2len_check)(mip->mi_fword
+						       + mip->mi_fendlen + l))
 		    mb_ptr_adv(p);
 		addlen = p - mip->mi_end;
 	    }
@@ -454,34 +703,111 @@ check_adds(mip, fw, req_pref, req_suf)
 }
 
 /*
- * Return TRUE if word "fw" supports afffix "nr".
+ * Locate the text up to the next end-of-word after mip->mi_end.
+ */
+    static void
+fill_awend(mip)
+    matchinf_T	*mip;
+{
+    char_u	*p = mip->mi_end;
+    int		addlen = 0;
+    int		find_word = TRUE;
+
+    mip->mi_did_awend = TRUE;
+    if (mip->mi_faddlen == 0)
+	fold_addchars(mip, 0);	    /* need to fold first char */
+
+    /* 1: find_word == TRUE: skip over non-word characters after mi_end.
+     * 2: find_word == FALSE: skip over following word characters. */
+    for (p = mip->mi_fword + mip->mi_fendlen; *p != NUL; mb_ptr_adv(p))
+    {
+	if (spell_iswordc(p) == find_word)
+	{
+	    if (!find_word)
+		break;		    /* done */
+	    find_word = !find_word;
+	}
+#ifdef FEAT_MBYTE
+	addlen += (*mb_ptr2len_check)(p);
+#else
+	++addlen;
+#endif
+	if (addlen >= mip->mi_faddlen)
+	    fold_addchars(mip, addlen);	    /* need to fold more chars */
+    }
+
+    /* If there are extra chars store the result. */
+    if (addlen != 0)
+	mip->mi_awend = p;
+}
+
+/*
+ * Fold enough characters of the checked text to be able to compare with an
+ * addition of length "addlen" plus one character (to be able to check the
+ * next character to be a non-word char).
+ * When there are not enough characters (end of line) mip->mi_faddlen will be
+ * smaller than "addlen".
+ */
+    static void
+fold_addchars(mip, addlen)
+    matchinf_T	*mip;
+    int		addlen;
+{
+    int		l;
+    char_u	*p = mip->mi_fword + mip->mi_fendlen;
+
+    while (mip->mi_faddlen <= addlen)
+    {
+	if (*mip->mi_fend == NUL)	/* end of the line */
+	{
+	    p[mip->mi_faddlen] = NUL;
+	    break;
+	}
+#ifdef FEAT_MBYTE
+	if (has_mbyte)
+	    l = (*mb_ptr2len_check)(mip->mi_fend);
+	else
+#endif
+	    l = 1;
+	(void)str_foldcase(mip->mi_fend, l, p + mip->mi_faddlen,
+				 MAXWLEN - mip->mi_fendlen - mip->mi_faddlen);
+	mip->mi_fend += l;
+	mip->mi_faddlen += STRLEN(p + mip->mi_faddlen);
+    }
+}
+
+/*
+ * Return TRUE if affix "nr" appears in affix list "afflist[afflistlen]".
  */
     static int
-supports_afffix(cnt, afffix, afffixcnt, nr)
-    int		cnt;
-    void	*afffix;
-    int		afffixcnt;
+supports_affix(cnt, afflist, afflistlen, nr)
+    int		cnt;		/* total affix NR count */
+    char_u	*afflist;
+    int		afflistlen;	/* affix count in "afflist" */
     int		nr;
 {
-    char_u	*pc;
-    short_u	*ps;
+    char_u	*pc = afflist;
     int		i;
+    int		nr_msb, nr_lsb;
 
     if (cnt <= 256)
     {
-	/* char_u affix numbers */
-	pc = afffix;
-	for (i = afffixcnt; --i >= 0; )
+	/* one byte affix numbers */
+	for (i = afflistlen; --i >= 0; )
 	    if (*pc++ == nr)
 		return TRUE;
     }
     else
     {
-	/* short_u affix numbers */
-	ps = afffix;
-	for (i = afffixcnt; --i >= 0; )
-	    if (*ps++ == nr)
+	/* two byte affix numbers, MSB first */
+	nr_msb = (unsigned)nr >> 8;
+	nr_lsb = nr & 0xff;
+	for (i = afflistlen; --i >= 0; )
+	{
+	    if (*pc++ == nr_msb && *pc == nr_lsb)
 		return TRUE;
+	    ++pc;
+	}
     }
     return FALSE;
 }
@@ -498,15 +824,12 @@ prefix_match(mip)
     int		cc;
     affitem_T	*ai;
     char_u	pword[MAXWLEN + 1];
-    fword_T	*fw;
     hashtab_T	*ht;
     hashitem_T	*hi;
-    int		i;
     int		found_valid = FALSE;
     int		cstart_charlen = 0;
     char_u	*cstart = mip->mi_word;
     int		capflags_save = mip->mi_capflags;
-    char_u	*p;
 
     /*
      * Check for prefixes with different character lengths.
@@ -518,7 +841,7 @@ prefix_match(mip)
 	{
 #ifdef FEAT_MBYTE
 	    if (has_mbyte)
-		len += mb_ptr2len_check(mip->mi_cword + len);
+		len += (*mb_ptr2len_check)(mip->mi_cword + len);
 	    else
 #endif
 		len += 1;
@@ -549,10 +872,12 @@ prefix_match(mip)
 	/* Loop over all matching prefixes. */
 	for ( ; ai != NULL; ai = ai->ai_next)
 	{
-	    /* Create the basic word by removing the prefix and adding the
-	     * chop string. */
-	    mch_memmove(pword, ai->ai_chop, ai->ai_choplen);
-	    STRCPY(pword + ai->ai_choplen, mip->mi_cword + ai->ai_addlen);
+	    /* Create the basic word from the chop string and the word after
+	     * the matching add string. */
+	    mch_memmove(pword, ai->ai_add + ai->ai_addlen + 1, ai->ai_choplen);
+	    mch_memmove(pword + ai->ai_choplen, mip->mi_cword + ai->ai_addlen,
+					     mip->mi_fendlen - ai->ai_addlen);
+	    pword[mip->mi_fendlen - ai->ai_addlen] = NUL;
 
 	    /* Adjust the word start for case checks, we only check the
 	     * part after the prefix. */
@@ -562,49 +887,77 @@ prefix_match(mip)
 		++cstart_charlen;
 	    }
 
-	    /* Removing the prefix may change the caps, e.g. for
-	     * "deAlf" removing "de" makes it ONECAP. */
-	    mip->mi_capflags = captype(cstart, mip->mi_end);
+	    /* Find the word "pword", caseword "cstart". */
+	    found_valid |= noprefix_match(mip, pword, cstart, ai);
 
-	    /* Find the basic word. */
-	    hi = hash_find(&mip->mi_slang->sl_words, pword);
-	    if (!HASHITEM_EMPTY(hi))
+	    if (found_valid && mip->mi_result == SP_OK)
 	    {
-		/* Check if the word supports this prefix. */
-		for (fw = HI2FWORD(hi); fw != NULL; fw = fw->fw_next)
-		    if (match_caps(fw->fw_flags, fw->fw_word, mip,
-							 cstart, mip->mi_end))
-			found_valid |= check_adds(mip, fw, ai->ai_nr, -1);
-
-		if (found_valid && mip->mi_result == SP_OK)
-		{
-		    /* Found a valid word, no need to try other suffixes. */
-		    mip->mi_capflags = capflags_save;
-		    return TRUE;
-		}
-	    }
-
-	    /* No matching basic word without prefix.  When combining is
-	     * allowed try with suffixes. */
-	    if (ai->ai_combine)
-	    {
-		/* Pass the word with prefix removed to suffix_match(). */
-		mip->mi_cword = pword;
-		p = mip->mi_word;
-		mip->mi_word = cstart;
-		i = suffix_match(mip);
-		mip->mi_cword = mip->mi_fword;
-		mip->mi_word = p;
-		if (i)
-		{
-		    mip->mi_capflags = capflags_save;
-		    return TRUE;
-		}
+		/* Found a valid word, no need to try other suffixes. */
+		mip->mi_capflags = capflags_save;
+		return TRUE;
 	    }
 	}
     }
 
     mip->mi_capflags = capflags_save;
+    return FALSE;
+}
+
+/*
+ * Check for matching word after removing a prefix.
+ * Return TRUE if found.
+ */
+    static int
+noprefix_match(mip, pword, cstart, ai)
+    matchinf_T	*mip;
+    char_u	*pword;	    /* case-folded word */
+    char_u	*cstart;    /* original word after removed prefix */
+    affitem_T	*ai;	    /* the prefix item */
+{
+    hashitem_T	*hi;
+    fword_T	*fw;
+    int		found_valid = FALSE;
+    char_u	*word;
+    int		i;
+    int		fendlen;
+
+    /* Removing the prefix may change the caps, e.g. for
+     * "deAlf" removing "de" makes it ONECAP. */
+    mip->mi_capflags = captype(cstart, mip->mi_end);
+
+    /* Find the basic word. */
+    hi = hash_find(&mip->mi_slang->sl_words, pword);
+    if (!HASHITEM_EMPTY(hi))
+    {
+	/* Check if the word supports this prefix. */
+	for (fw = HI2FWORD(hi); fw != NULL; fw = fw->fw_next)
+	    if (match_caps(fw->fw_flags, fw->fw_word, mip,
+						 cstart, mip->mi_end))
+		found_valid |= check_adds(mip, fw, ai->ai_nr, -1);
+
+	if (found_valid && mip->mi_result == SP_OK)
+	    /* Found a valid word, no need to try other suffixes. */
+	    return TRUE;
+    }
+
+    /* No matching basic word without prefix.  When combining is
+     * allowed try with suffixes. */
+    if (ai->ai_flags & AFF_COMBINE)
+    {
+	/* Pass the word with prefix removed to suffix_match(). */
+	mip->mi_cword = pword;
+	word = mip->mi_word;
+	mip->mi_word = cstart;
+	fendlen = mip->mi_fendlen;
+	mip->mi_fendlen = STRLEN(pword);
+	i = suffix_match(mip);
+	mip->mi_cword = mip->mi_fword;
+	mip->mi_word = word;
+	mip->mi_fendlen = fendlen;
+	if (i)
+	    return TRUE;
+    }
+
     return FALSE;
 }
 
@@ -616,6 +969,8 @@ suffix_match(mip)
     matchinf_T	*mip;
 {
     char_u	*sufp;
+    char_u	*endw = mip->mi_cword + mip->mi_fendlen;
+    int		endw_c = *endw;
     int		charlen;
     affitem_T	*ai;
     char_u	pword[MAXWLEN + 1];
@@ -633,7 +988,7 @@ suffix_match(mip)
      * only, thus adds something).
      * Stop checking if there are no suffixes with so many characters.
      */
-    sufp = mip->mi_cword + STRLEN(mip->mi_cword);
+    sufp = endw;
     for (charlen = 0; charlen <= mip->mi_slang->sl_sufftab.ga_len; ++charlen)
     {
 	/* Move the pointer to the possible suffix back one character, unless
@@ -654,11 +1009,13 @@ suffix_match(mip)
 	    if (ht->ht_used == 0)
 		continue;
 
+	    *endw = NUL;	/* truncate after possible suffix */
 	    hi = hash_find(ht, sufp);
 	    if (HASHITEM_EMPTY(hi))
 		ai = NULL;
 	    else
 		ai = HI2AI(hi);
+	    *endw = endw_c;
 	}
 
 	if (ai != NULL)
@@ -675,7 +1032,8 @@ suffix_match(mip)
 		if (ai->ai_choplen == 0)
 		    pword[tlen] = NUL;
 		else
-		    mch_memmove(pword + tlen, ai->ai_chop, ai->ai_choplen + 1);
+		    mch_memmove(pword + tlen, ai->ai_add + ai->ai_addlen + 1,
+							  ai->ai_choplen + 1);
 
 		/* Find the basic word. */
 		hi = hash_find(&mip->mi_slang->sl_words, pword);
@@ -734,8 +1092,8 @@ match_caps(flags, caseword, mip, cword, end)
 
     if ((capflags & BWF_KEEPCAP) == 0 && end > mip->mi_end)
     {
-	/* If "end" is past "mip->mi_end" we need to check the characters
-	 * after the basic word. */
+	/* If "end" is past "mip->mi_end" we need to adjust the caps type for
+	 * characters after the basic word. */
 #ifdef FEAT_MBYTE
 	past_second = (mip->mi_word + (*mb_ptr2len_check)(mip->mi_word)
 							       < mip->mi_end);
@@ -944,6 +1302,7 @@ slang_alloc(lang)
 	lp->sl_name = vim_strsave(lang);
 	hash_init(&lp->sl_words);
 	ga_init2(&lp->sl_preftab, sizeof(hashtab_T), 4);
+	hash_init(&lp->sl_prewords);
 	ga_init2(&lp->sl_sufftab, sizeof(hashtab_T), 4);
 	lp->sl_prefzero = NULL;
 	lp->sl_suffzero = NULL;
@@ -965,12 +1324,31 @@ slang_free(lp)
 {
     sblock_T	*sp;
     int		i;
+    fword_T	*fw;
+    int		todo;
+    hashitem_T	*hi;
 
     vim_free(lp->sl_name);
+
+    /* The words themselves are in memory blocks referenced by "sl_block".
+     * Only the hashtables for additions need to be cleared. */
+    todo = lp->sl_words.ht_used;
+    for (hi = lp->sl_words.ht_array; todo > 0; ++hi)
+    {
+	if (!HASHITEM_EMPTY(hi))
+	{
+	    --todo;
+	    fw = HI2FWORD(hi);
+	    if (fw->fw_flags & BWF_ADDHASH)
+		hash_clear((hashtab_T *)fw->fw_adds);
+	}
+    }
     hash_clear(&lp->sl_words);
+
     for (i = 0; i < lp->sl_preftab.ga_len; ++i)
 	hash_clear(((hashtab_T *)lp->sl_preftab.ga_data) + i);
     ga_clear(&lp->sl_preftab);
+    hash_clear(&lp->sl_prewords);
     for (i = 0; i < lp->sl_sufftab.ga_len; ++i)
 	hash_clear(((hashtab_T *)lp->sl_sufftab.ga_data) + i);
     ga_clear(&lp->sl_sufftab);
@@ -999,6 +1377,7 @@ spell_load_file(fname, cookie)
     char_u	buf[MAXWLEN + 1];
     char_u	cbuf[MAXWLEN + 1];
     char_u	fbuf[MAXWLEN + 1];
+    char_u	affixbuf[256 * 2 * 2]; /* max 2 * 256 affix nrs of 2 bytes */
     char_u	*p;
     int		itm;
     int		i;
@@ -1006,6 +1385,7 @@ spell_load_file(fname, cookie)
     int		affnr;
     int		affflags;
     int		affitemcnt;
+    int		prefixcnt, suffixcnt;
     int		bl_used = SBLOCKSIZE;
     int		widx;
     int		prefm = 0;  /* 1 if <= 256 prefixes, sizeof(short_u) otherw. */
@@ -1027,8 +1407,9 @@ spell_load_file(fname, cookie)
     hashitem_T	*hi;
     hash_T	hash;
     int		adds;
-    addword_T	*aw;
+    addword_T	*aw, *naw;
     int		flen;
+    int		xlen;
 
     fd = fopen((char *)fname, "r");
     if (fd == NULL)
@@ -1082,14 +1463,14 @@ formerr:
 	    gap = &lp->sl_preftab;
 	    aip = &lp->sl_prefzero;
 	    lp->sl_prefcnt = affcount;
-	    prefm = affcount > 256 ? sizeof(short_u) : 1;
+	    prefm = affcount > 256 ? 2 : 1;
 	}
 	else
 	{
 	    gap = &lp->sl_sufftab;
 	    aip = &lp->sl_suffzero;
 	    lp->sl_suffcnt = affcount;
-	    suffm = affcount > 256 ? sizeof(short_u) : 1;
+	    suffm = affcount > 256 ? 2 : 1;
 	}
 
 	i = (getc(fd) << 8) + getc(fd);		/* <afftotcnt> */
@@ -1100,16 +1481,15 @@ formerr:
 	 */
 	for (affnr = 0; affnr < affcount; ++affnr)
 	{
-	    /* <affix>: <affflags> <affitemcnt> <affitem> ... */
-	    affflags = getc(fd);			/* <affflags> */
-	    if (affflags == EOF)
-		goto truncerr;
+	    /* <affix>: <affitemcnt> <affitem> ... */
 	    affitemcnt = (getc(fd) << 8) + getc(fd);	/* <affitemcnt> */
 	    if (affitemcnt < 0)
 		goto truncerr;
 	    for (itm = 0; itm < affitemcnt; ++itm)
 	    {
-		/* <affitem>: <affchoplen> <affchop> <affaddlen> <affadd> */
+		/* <affitem>: <affflags> <affchoplen> <affchop>
+		 *				    <affaddlen> <affadd> */
+		affflags = getc(fd);			/* <affflags> */
 		choplen = getc(fd);			/* <affchoplen> */
 		if (choplen == EOF)
 		    goto truncerr;
@@ -1121,20 +1501,25 @@ formerr:
 		addlen = getc(fd);			/* <affaddlen> */
 		if (addlen == EOF)
 		    goto truncerr;
+		if (affflags & AFF_PREWORD)
+		    xlen = addlen + 2;	/* space for lead and trail string */
+		else
+		    xlen = 0;
+
 		/* Get room to store the affitem_T, chop and add strings. */
 		p = (char_u *)getroom(lp, &bl_used,
-				    sizeof(affitem_T) + choplen + addlen + 1);
+			     sizeof(affitem_T) + addlen + choplen + 1 + xlen);
 		if (p == NULL)
 		    goto errorend;
 
 		ai = (affitem_T *)p;
 		ai->ai_nr = affnr;
-		ai->ai_combine = affflags;
+		ai->ai_flags = affflags;
 		ai->ai_choplen = choplen;
 		ai->ai_addlen = addlen;
 
-		p += sizeof(affitem_T) + addlen;
-		ai->ai_chop = p;
+		/* Chop string is at ai_add[ai_addlen + 1]. */
+		p = ai->ai_add + addlen + 1;
 		STRCPY(p, buf);
 
 		p = ai->ai_add;
@@ -1142,63 +1527,114 @@ formerr:
 		    p[i] = getc(fd);
 		p[i] = NUL;
 
-		/*
-		 * Add the affix to a hashtable.  Which one depends on the
-		 * length of the added string in characters.
-		 */
-#ifdef FEAT_MBYTE
-		/* Change "addlen" from length in bytes to length in chars. */
-		if (has_mbyte)
-		    addlen = mb_charlen(p);
-#endif
-		if (addlen == 0)
+		if (affflags & AFF_PREWORD)
 		{
-		    /* Link in list of zero length affixes. */
-		    ai->ai_next = *aip;
-		    *aip = ai;
-		}
-		else
-		{
-		    if (gap->ga_len < addlen)
-		    {
-			/* Longer affix, need more hashtables. */
-			if (ga_grow(gap, addlen - gap->ga_len) == FAIL)
-			    goto errorend;
+		    int	    l, leadoff, trailoff;
 
-			/* Re-allocating ga_data means that an ht_array
-			 * pointing to ht_smallarray becomes invalid.  We can
-			 * recognize this: ht_mask is at its init value. */
-			for (i = 0; i < gap->ga_len; ++i)
-			{
-			    ht = ((hashtab_T *)gap->ga_data) + i;
-			    if (ht->ht_mask == HT_INIT_SIZE - 1)
-				ht->ht_array = ht->ht_smallarray;
-			}
+		    /*
+		     * Separate lead and trail string, put word at ai_add, so
+		     * that it can be used as hashtable key.
+		     */
+		    /* lead string: up to first word char */
+		    while (*p != NUL && !spell_iswordc(p))
+			mb_ptr_adv(p);
+		    ai->ai_leadlen = p - ai->ai_add;
+		    leadoff = addlen + choplen + 2;
+		    mch_memmove(ai->ai_add + leadoff, ai->ai_add,
+							      ai->ai_leadlen);
+		    ai->ai_add[leadoff + ai->ai_leadlen] = NUL;
 
-			/* Init the newly used hashtable(s). */
-			while (gap->ga_len < addlen)
-			{
-			    hash_init(((hashtab_T *)gap->ga_data)
-							       + gap->ga_len);
-			    ++gap->ga_len;
-			}
-		    }
-		    ht = ((hashtab_T *)gap->ga_data) + addlen - 1;
-		    hash = hash_hash(p);
-		    hi = hash_lookup(ht, p, hash);
+		    /* trail string: after last word char */
+		    while (*p != NUL && spell_iswordc(p))
+			mb_ptr_adv(p);
+		    trailoff = leadoff + ai->ai_leadlen + 1;
+		    STRCPY(ai->ai_add + trailoff, p);
+		    ai->ai_taillen = STRLEN(p);
+
+		    /* word itself */
+		    l = (p - ai->ai_add) - ai->ai_leadlen;
+		    mch_memmove(ai->ai_add, ai->ai_add + ai->ai_leadlen, l);
+		    ai->ai_add[l] = NUL;
+		    hash = hash_hash(ai->ai_add);
+		    hi = hash_lookup(&lp->sl_prewords, ai->ai_add, hash);
 		    if (HASHITEM_EMPTY(hi))
 		    {
-			/* First affix with this "ai_add", add to hashtable. */
-			hash_add_item(ht, hi, p, hash);
+			/* First affix with this word, add to hashtable. */
+			hash_add_item(&lp->sl_prewords, hi, ai->ai_add, hash);
 			ai->ai_next = NULL;
 		    }
 		    else
 		    {
-			/* There already is an affix with this "ai_add", link
-			 * in the list.  */
+			/* There already is an affix with this word, link in
+			 * the list.  */
 			ai2 = HI2AI(hi);
 			ai->ai_next = ai2->ai_next;
 			ai2->ai_next = ai;
+		    }
+		}
+		else
+		{
+		    /*
+		     * Add the affix to a hashtable.  Which one depends on the
+		     * length of the added string in characters.
+		     */
+#ifdef FEAT_MBYTE
+		    /* Change "addlen" from length in bytes to length in
+		     * chars. */
+		    if (has_mbyte)
+			addlen = mb_charlen(p);
+#endif
+		    if (addlen == 0)
+		    {
+			/* Link in list of zero length affixes. */
+			ai->ai_next = *aip;
+			*aip = ai;
+		    }
+		    else
+		    {
+			if (gap->ga_len < addlen)
+			{
+			    /* Longer affix, need more hashtables. */
+			    if (ga_grow(gap, addlen - gap->ga_len) == FAIL)
+				goto errorend;
+
+			    /* Re-allocating ga_data means that an ht_array
+			     * pointing to ht_smallarray becomes invalid.  We
+			     * can recognize this: ht_mask is at its init
+			     * value. */
+			    for (i = 0; i < gap->ga_len; ++i)
+			    {
+				ht = ((hashtab_T *)gap->ga_data) + i;
+				if (ht->ht_mask == HT_INIT_SIZE - 1)
+				    ht->ht_array = ht->ht_smallarray;
+			    }
+
+			    /* Init the newly used hashtable(s). */
+			    while (gap->ga_len < addlen)
+			    {
+				hash_init(((hashtab_T *)gap->ga_data)
+							       + gap->ga_len);
+				++gap->ga_len;
+			    }
+			}
+			ht = ((hashtab_T *)gap->ga_data) + addlen - 1;
+			hash = hash_hash(p);
+			hi = hash_lookup(ht, p, hash);
+			if (HASHITEM_EMPTY(hi))
+			{
+			    /* First affix with this "ai_add", add to
+			     * hashtable. */
+			    hash_add_item(ht, hi, p, hash);
+			    ai->ai_next = NULL;
+			}
+			else
+			{
+			    /* There already is an affix with this "ai_add",
+			     * link in the list.  */
+			    ai2 = HI2AI(hi);
+			    ai->ai_next = ai2->ai_next;
+			    ai2->ai_next = ai;
+			}
 		    }
 		}
 	    }
@@ -1262,19 +1698,54 @@ formerr:
 	     * the case-folded word.  Note: this should only happen after the
 	     * basic word! */
 	    wlen = getc(fd);
-	    if (wlen == EOF)
+	    if (wlen < 0)
 		goto truncerr;
 	    for (i = 0; i < wlen; ++i)
 		cbuf[i] = getc(fd);
 	    cbuf[i] = NUL;
 	}
 
-	/* Find room to store the word in a fword_T. */
-	fw = (fword_T *)getroom(lp, &bl_used, (int)sizeof(fword_T) + wlen);
+	/* Optional prefixes */
+	p = affixbuf;
+	if (flags & BWF_PREFIX)
+	{
+	    cnt = getc(fd);				/* <affixcnt> */
+	    if (cnt < 0)
+		goto truncerr;
+	    prefixcnt = cnt;
+	    for (i = cnt * prefm; --i >= 0; )		/* <affixNR> */
+		*p++ = getc(fd);
+	}
+	else
+	    prefixcnt = 0;
+
+	/* Optional suffixes */
+	if (flags & BWF_SUFFIX)
+	{
+	    cnt = getc(fd);				/* <affixcnt> */
+	    if (cnt < 0)
+		goto truncerr;
+	    suffixcnt = cnt;
+	    for (i = cnt * suffm; --i >= 0; )		/* <affixNR> */
+		*p++ = getc(fd);
+	}
+	else
+	    suffixcnt = 0;
+
+	/* Find room to store the word in an fword_T. */
+	fw = (fword_T *)getroom(lp, &bl_used, (int)sizeof(fword_T) + wlen
+							    + (p - affixbuf));
 	if (fw == NULL)
 	    goto errorend;
 	mch_memmove(fw->fw_word, (flags & BWF_KEEPCAP) ? cbuf : buf, wlen + 1);
+
+	/* Put the affix NRs just after the word, if any. */
+	if (p > affixbuf)
+	    mch_memmove(fw->fw_word + wlen + 1, affixbuf, p - affixbuf);
+
 	fw->fw_flags = flags;
+	fw->fw_prefixcnt = prefixcnt;
+	fw->fw_suffixcnt = suffixcnt;
 
 	hash = hash_hash(buf);
 	hi = hash_lookup(&lp->sl_words, buf, hash);
@@ -1287,24 +1758,12 @@ formerr:
 	else
 	{
 	    /* Already have this basic word in the hashtable, this one will
-	     * have different case flags. */
+	     * have different case flags and/or affixes. */
 	    fw2 = HI2FWORD(hi);
 	    fw->fw_next = fw2->fw_next;
 	    fw2->fw_next = fw;
 	    --widx;			/* don't count this one */
 	}
-
-	/* Optional prefixes and suffixes. */
-	if (flags & BWF_PREFIX)
-	    fw->fw_prefixcnt = spell_load_affixes(fd, lp, &bl_used,
-						       prefm, &fw->fw_prefix);
-	else
-	    fw->fw_prefixcnt = 0;
-	if (flags & BWF_SUFFIX)
-	    fw->fw_suffixcnt = spell_load_affixes(fd, lp, &bl_used,
-						       suffm, &fw->fw_suffix);
-	else
-	    fw->fw_suffixcnt = 0;
 
 	if (flags & BWF_REGION)
 	    fw->fw_region = getc(fd);			/* <region> */
@@ -1315,6 +1774,24 @@ formerr:
 	if (flags & BWF_ADDS)
 	{
 	    adds = (getc(fd) << 8) + getc(fd);		/* <addcnt> */
+
+	    if (adds > 30)
+	    {
+		/* Use a hashtable to loopup the part until the next word end.
+		 * This uses more memory and involves some overhead, thus only
+		 * do it when there are many additions (e.g., for French).  */
+		ht = (hashtab_T *)getroom(lp, &bl_used, sizeof(hashtab_T));
+		if (ht == NULL)
+		    goto errorend;
+		hash_init(ht);
+		fw->fw_adds = (addword_T *)ht;
+		fw->fw_flags |= BWF_ADDHASH;
+
+		/* Preset the size of the hashtable. It's never unlocked. */
+		hash_lock_size(ht, adds + 1);
+	    }
+	    else
+		ht = NULL;
 
 	    while (--adds >= 0)
 	    {
@@ -1352,9 +1829,6 @@ formerr:
 					   sizeof(addword_T) + addlen + flen);
 		if (aw == NULL)
 		    goto errorend;
-		aw->aw_next = fw->fw_adds;
-		fw->fw_adds = aw;
-		aw->aw_leadlen = leadlen;
 
 		if (flags & ADD_KEEPCAP)
 		{
@@ -1368,11 +1842,82 @@ formerr:
 
 		aw->aw_flags = flags;
 		aw->aw_wordlen = addlen;
+		aw->aw_leadlen = leadlen;
 
 		if (flags & ADD_REGION)
 		    aw->aw_region = getc(fd);		/* <region> */
 		else
 		    aw->aw_region = REGION_ALL;
+
+		if (ht == NULL)
+		{
+		    /* Using simple linked list, put it in front. */
+		    aw->aw_next = fw->fw_adds;
+		    fw->fw_adds = aw;
+		    aw->aw_saveb = NUL;
+		}
+		else
+		{
+		    /* Put addition in hashtable.  For key we use the part up
+		     * to the next end-of-word. */
+		    if (leadlen == 0)
+		    {
+			p = aw->aw_word;
+			while (*p != NUL && !spell_iswordc(p))
+			    mb_ptr_adv(p);
+		    }
+
+		    if (leadlen != 0 || *p == NUL)
+		    {
+			/* Only non-word characters in addition, add it to the
+			 * list with the special key NOWC_KEY.  Also do this
+			 * when there is a leadstring, it would get too
+			 * complicated. */
+			hash = hash_hash(NOWC_KEY);
+			hi = hash_lookup(ht, NOWC_KEY, hash);
+			if (HASHITEM_EMPTY(hi))
+			{
+			    /* we use a dummy item as the list header */
+			    naw = (addword_T *)getroom(lp, &bl_used,
+					sizeof(addword_T) + STRLEN(NOWC_KEY));
+			    if (naw == NULL)
+				goto errorend;
+			    STRCPY(naw->aw_word, NOWC_KEY);
+			    hash_add_item(ht, hi, naw->aw_word, hash);
+			    naw->aw_next = aw;
+			    aw->aw_next = NULL;
+			}
+			else
+			{
+			    naw = HI2ADDWORD(hi);
+			    aw->aw_next = naw->aw_next;
+			    naw->aw_next = aw;
+			}
+			aw->aw_saveb = NUL;
+		    }
+		    else
+		    {
+			/* Truncate at next non-word character, store that
+			 * byte in "aw_saveb". */
+			while (*p != NUL && spell_iswordc(p))
+			    mb_ptr_adv(p);
+			aw->aw_saveb = *p;
+			*p = NUL;
+			hash = hash_hash(aw->aw_word);
+			hi = hash_lookup(ht, aw->aw_word, hash);
+			if (HASHITEM_EMPTY(hi))
+			{
+			    hash_add_item(ht, hi, aw->aw_word, hash);
+			    aw->aw_next = NULL;
+			}
+			else
+			{
+			    naw = HI2ADDWORD(hi);
+			    aw->aw_next = naw->aw_next;
+			    naw->aw_next = aw;
+			}
+		    }
+		}
 	    }
 	}
     }
@@ -1386,49 +1931,6 @@ end_OK:
     hash_unlock(&lp->sl_words);
     sourcing_name = save_sourcing_name;
     sourcing_lnum = save_sourcing_lnum;
-}
-
-/*
- * Read a list of affixes from the spell file.
- */
-    static int
-spell_load_affixes(fd, lp, bl_usedp, affm, affp)
-    FILE	*fd;
-    slang_T	*lp;
-    int		*bl_usedp;
-    int		affm;
-    void	**affp;
-{
-    int		cnt;
-    int		i, n;
-    char_u	*p;
-
-    cnt = getc(fd);				/* <affixcnt> */
-    if (cnt == EOF)
-	return 0;
-
-    /* Get room to store the affixNR list, either as char_u (1
-     * byte) or short_u (2 bytes). */
-    p = (char_u *)getroom(lp, bl_usedp, cnt * affm);
-    if (p == NULL)
-	return 0;
-    *affp = p;
-    for (n = 0; n < cnt; ++n)
-    {
-	i = getc(fd);			/* <affixNR> */
-	if (affm > 1)
-	{
-	    i = (i << 8) + getc(fd);
-	    *(short_u *)p = i;
-	    p += sizeof(short_u);
-	}
-	else
-	{
-	    *(char_u *)p = i;
-	    ++p;
-	}
-    }
-    return cnt;
 }
 
 /*
@@ -1739,6 +2241,7 @@ struct affentry_S
 				 * char after word char.  NULL otherwise. */
     char_u	*ae_add_pw;	/* For a prefix with both word and non-word
 			         * chars: first word char.  NULL otherwise. */
+    char_u	ae_preword;	/* TRUE for a prefix with one word */
     char_u	*ae_cond;	/* condition (NULL for ".") */
     regprog_T	*ae_prog;	/* regexp program for ae_cond or NULL */
     short_u	ae_affnr;	/* for old affix: new affix number */
@@ -2237,6 +2740,7 @@ get_new_aff(oldaff, gap, prefix)
     int		retval = OK;
     char_u	*p;
     garray_T	tga;
+    int		preword;
 
     /*
      * Loop over all the old affix names.
@@ -2268,12 +2772,14 @@ get_new_aff(oldaff, gap, prefix)
 	    for (oldae = oldah->ah_first; oldae != NULL && retval == OK;
 						       oldae = oldae->ae_next)
 	    {
+		preword = FALSE;
 		oldae->ae_add_nw = NULL;
 		oldae->ae_add_pw = NULL;
 		if (oldae->ae_add != NULL)
 		{
 		    /* Check for non-word characters in the affix.  If there
-		     * is one this affix will be turned into an addition.
+		     * is one a suffix will be turned into an addition, a
+		     * prefix may be turned into a leadstring.
 		     * This is stored with the old affix, that is where
 		     * trans_affixes() will check. */
 		    for (p = oldae->ae_add; *p != NUL; mb_ptr_adv(p))
@@ -2285,9 +2791,17 @@ get_new_aff(oldaff, gap, prefix)
 
 		    if (prefix && oldae->ae_add_nw != NULL)
 		    {
-			/* If a prefix has both word and non-word characters
-			 * special treatment is necessary.  If it has only
-			 * non-word characters it becomes a leadstring. */
+			/* If a prefix has non-word characters special
+			 * treatment is necessary:
+			 * - If it has only non-word characters it becomes a
+			 *   leadstring.
+			 * - If it has a sequence of word characters followed
+			 *   by a non-word char it becomes a "preword": "d'",
+			 *   "de-", "d'ai", etc.
+			 * - if it has another mix of word and non-word
+			 *   characters the part before the last word char
+			 *   becomes a leadstring: "'d", etc.
+			 */
 			for (p = oldae->ae_add; *p != NUL; mb_ptr_adv(p))
 			    if (spell_iswordc(p))
 			    {
@@ -2305,6 +2819,12 @@ get_new_aff(oldaff, gap, prefix)
 				    oldae->ae_add_nw = p;
 				    break;
 				}
+			    if (oldae->ae_add_nw != NULL)
+			    {
+				preword = TRUE;
+				oldae->ae_add_pw = NULL;
+				oldae->ae_add_nw = NULL;
+			    }
 			}
 		    }
 		}
@@ -2355,6 +2875,7 @@ get_new_aff(oldaff, gap, prefix)
 			newae->ae_add = NULL;
 		    else
 			newae->ae_add = vim_strsave(oldae->ae_add);
+		    newae->ae_preword = preword;
 
 		    /* The condition is not copied, since the new affix is
 		     * only used for words where the condition matches. */
@@ -2369,7 +2890,8 @@ get_new_aff(oldaff, gap, prefix)
 		for (gapnr = 0; gapnr < gap->ga_len; ++gapnr)
 		{
 		    gapah = ((affheader_T *)gap->ga_data) + gapnr;
-		    if (same_affentries(newah, gapah))
+		    if (newah->ah_combine == gapah->ah_combine
+					     && same_affentries(newah, gapah))
 			/* Found an existing affheader_T entry with same
 			 * affentry_T list, use its number. */
 			break;
@@ -2569,8 +3091,12 @@ trans_affixes(dw, bw, oldaff, newwords)
 	ah = HI2AH(aff_hi);
 	for (ae = ah->ah_first; ae != NULL; ae = ae->ae_next)
 	{
+	    /* Setup for regexp matching.  Note that we don't ignore case.
+	     * This is weird, because he rules in an .aff file don't care
+	     * about case, but it's necessary for compatibility with Myspell.
+	     */
 	    regmatch.regprog = ae->ae_prog;
-	    regmatch.rm_ic = FALSE;	/* TODO: Should this be TRUE??? */
+	    regmatch.rm_ic = FALSE;
 	    if (ae->ae_prog == NULL
 			   || vim_regexec(&regmatch, dw->dw_word, (colnr_T)0))
 	    {
@@ -3095,9 +3621,14 @@ same_affixes(bw, nbw)
 }
 
 /*
- * For each basic word with additions turn the affixes into other additions
- * and/or new basic words.  The result is that no affixes apply to a word with
- * additions.
+ * For each basic word with additions turn the suffixes into other additions
+ * and/or new basic words.  For each basic word with a leadstring turn the
+ * prefixes into other leadstrings and/or new basic words.
+ * The result is that no affixes apply to the additions or leadstring of a
+ * word.
+ * This is also needed when a word with an addition has a prefix and the word
+ * with prefix also exists.  E.g., "blurp's/D" (D is prefix "de") and
+ * "deblurp".  "deblurp" would match and no prefix would be tried.
  */
     static void
 expand_affixes(newwords, prefgap, suffgap)
@@ -3165,6 +3696,9 @@ expand_affixes(newwords, prefgap, suffgap)
 			 * when there is no prefix (pi == -1). */
 			do
 			{
+			  /* Skip prewords, they don't need to be expanded. */
+			  if (pae == NULL || !pae->ae_preword)
+			  {
 			    /* Loop over all suffix numbers.  Do without a
 			     * suffix first when there is a prefix. */
 			    for (si = (pi == -1 ? 0 : -1);
@@ -3193,10 +3727,11 @@ expand_affixes(newwords, prefgap, suffgap)
 					sae = sae->ae_next;
 				} while (sae != NULL);
 			    }
+			  }
 
-			    /* Advance to next prefix entry, if there is one. */
-			    if (pae != NULL)
-				pae = pae->ae_next;
+			  /* Advance to next prefix entry, if there is one. */
+			  if (pae != NULL)
+			      pae = pae->ae_next;
 			} while (pae != NULL);
 		    }
 		}
@@ -3217,6 +3752,8 @@ expand_affixes(newwords, prefgap, suffgap)
 /*
  * Add one word to "add_words" for basic word "bw" with additions, adding
  * prefix "pae" and suffix "sae".  Either "pae" or "sae" can be NULL.
+ * Don't do this when not necessary:
+ * - no leadstring and adding prefix doesn't result in existing word.
  */
     static void
 expand_one_aff(bw, add_words, pae, sae)
@@ -3329,6 +3866,17 @@ expand_one_aff(bw, add_words, pae, sae)
 	    else
 		nbw->bw_leadstring = vim_strsave(bw->bw_leadstring);
 	}
+	else if (bw->bw_prefix.ga_len > 0)
+	{
+	    /* There is no leadstring, copy the list of possible prefixes. */
+	    ga_init2(&nbw->bw_prefix, sizeof(short_u), 1);
+	    if (ga_grow(&nbw->bw_prefix, bw->bw_prefix.ga_len) == OK)
+	    {
+		mch_memmove(nbw->bw_prefix.ga_data, bw->bw_prefix.ga_data,
+				      bw->bw_prefix.ga_len * sizeof(short_u));
+		nbw->bw_prefix.ga_len = bw->bw_prefix.ga_len;
+	    }
+	}
 
 	if (bw->bw_addstring != NULL)
 	{
@@ -3405,7 +3953,7 @@ put_bytes(fd, nr, len)
 }
 
 /*
- * Write affix info.  <affflags> <affitemcnt> <affitem> ...
+ * Write affix info.  <affitemcnt> <affitem> ...
  */
     static void
 write_affix(fd, ah)
@@ -3416,15 +3964,21 @@ write_affix(fd, ah)
     affentry_T	*ae;
     char_u	*p;
     int		round;
-
-    fputc(ah->ah_combine ? 1 : 0, fd);		/* <affflags> */
+    int		flags;
 
     /* Count the number of entries. */
     for (ae = ah->ah_first; ae != NULL; ae = ae->ae_next)
 	++i;
     put_bytes(fd, (long_u)i, 2);		/* <affitemcnt> */
 
+    /* <affitem>: <affflags> <affchoplen> <affchop> <affaddlen> <affadd> */
     for (ae = ah->ah_first; ae != NULL; ae = ae->ae_next)
+    {
+	flags = ah->ah_combine ? AFF_COMBINE : 0;
+	if (ae->ae_preword)
+	    flags |= AFF_PREWORD;
+	fputc(flags, fd);			/* <affflags> */
+
 	for (round = 1; round <= 2; ++round)
 	{
 	    p = round == 1 ? ae->ae_chop : ae->ae_add;
@@ -3437,6 +3991,7 @@ write_affix(fd, ah)
 		fwrite(p, STRLEN(p), (size_t)1, fd);
 	    }
 	}
+    }
 }
 
 /*
@@ -3464,7 +4019,7 @@ write_affixlist(fd, aff, bytes)
  *
  * <HEADER>: <fileID> <regioncnt> <regionname> ...
  *
- * <fileID>     10 bytes    "VIMspell01"
+ * <fileID>     10 bytes    "VIMspell02"
  * <regioncnt>  1 byte	    number of regions following (8 supported)
  * <regionname>	2 bytes     Region name: ca, au, etc.
  *			    First <regionname> is region 1.
@@ -3480,14 +4035,15 @@ write_affixlist(fd, aff, bytes)
  *                          First affixNR is 0.
  * <afftotcnt>	2 bytes	    Total number of affix items (MSB comes first).
  *
- * <affix>: <affflags> <affitemcnt> <affitem> ...
+ * <affix>: <affitemcnt> <affitem> ...
  *
- * <affflags>	1 byte	    0x01: prefix combines with suffix.
- *			    0x02-0x80: unset
  * <affitemcnt> 2 bytes	    Number of affixes with this affixNR (MSB first).
  *
- * <affitem>: <affchoplen> <affchop> <affaddlen> <affadd>
+ * <affitem>: <affflags> <affchoplen> <affchop> <affaddlen> <affadd>
  *
+ * <affflags>	1 byte	    0x01: prefix combines with suffix, AFF_COMBINE
+ *			    0x02: prefix includes word, AFF_PREWORD
+ *			    0x04-0x80: unset
  * <affchoplen> 1 byte	    Length of <affchop> in bytes.
  * <affchop>    N bytes     To be removed from basic word.
  * <affaddlen>  1 byte	    Length of <affadd> in bytes.
@@ -3516,16 +4072,19 @@ write_affixlist(fd, aff, bytes)
  * <string>	N bytes	    Additional bytes for word, up to byte smaller than
  *			    0x20 (space).
  *			    Must only contain case-folded word characters.
- * <flags>	1 byte	    0x01: word is valid without addition
- *			    0x02: has region byte
- *			    0x04: first letter must be upper-case
+ * <flags>	1 byte	    0x01: word is valid without addition, BWF_VALID
+ *			    0x02: has region byte, BWF_REGION
+ *			    0x04: first letter must be upper-case, BWF_ONECAP
  *			    0x08: has suffixes, <affixcnt> and <affixNR> follow
- *			    0x10: more flags, <flags2> follows next
+ *					BWF_SUFFIX
+ *			    0x10: more flags, <flags2> follows next, BWF_SECOND
  *			    0x20-0x80: can't be used, unset
- * <flags2>	1 byte	    0x01: has additions, <addcnt> and <add> follow
+ * <flags2>	1 byte	    0x01: has additions, <addcnt> and <add> follow,
+ *					BWF_ADDS
  *			    0x02: has prefixes, <affixcnt> and <affixNR> follow
- *			    0x04: all letters must be upper-case
- *			    0x08: case must match
+ *					BWF_PREFIX
+ *			    0x04: all letters must be upper-case, BWF_ALLCAP
+ *			    0x08: case must match, BWF_KEEPCAP
  *			    0x10-0x80: unset
  * <caselen>	1 byte	    Length of <caseword>.
  * <caseword>	N bytes	    Word with matching case.
@@ -3539,12 +4098,13 @@ write_affixlist(fd, aff, bytes)
  *
  * <add>: <addflags> <addlen> [<leadlen> <addstring>] [<region>]
  *
- * <addflags>	1 byte	    0x01: fixed case, <addstring> is the whole word
- *				  with matching case.
- *			    0x02: first letter must be upper-case
- *			    0x04: all letters must be upper-case
- *			    0x08: has region byte
- *			    0x10-0x80: unset
+ * <addflags>	1 byte	    0x01: unset
+ *			    0x02: has region byte, ADD_REGION
+ *			    0x04: first letter must be upper-case, ADD_ONECAP
+ *			    0x08-0x20: unset
+ *			    0x40: all letters must be upper-case, ADD_ALLCAP
+ *			    0x80: fixed case, <addstring> is the whole word
+ *				  with matching case, ADD_KEEPCAP.
  * <addlen>	1 byte	    Length of <addstring> in bytes.
  * <leadlen>	1 byte	    Number of bytes at start of <addstring> that must
  *			    come before the start of the basic word.
@@ -3798,17 +4358,16 @@ write_bword(fd, bwf, lowcap, prevbw, regionmask, prefm, suffm)
     {
 	flags |= BWF_VALID;
 
-	/* Add the prefix/suffix list if there are prefixes/suffixes. */
-	if (bw->bw_prefix.ga_len > 0)
-	    flags |= BWF_PREFIX;
-	if (bw->bw_suffix.ga_len > 0)
-	    flags |= BWF_SUFFIX;
-
 	/* Flags: add the region byte if the word isn't valid in all
 	 * regions. */
 	if (regionmask != 0 && (bw->bw_region & regionmask) != regionmask)
 	    flags |= BWF_REGION;
     }
+    /* Add the prefix/suffix list if there are prefixes/suffixes. */
+    if (bw->bw_leadstring == NULL && bw->bw_prefix.ga_len > 0)
+	flags |= BWF_PREFIX;
+    if (bw->bw_addstring == NULL && bw->bw_suffix.ga_len > 0)
+	flags |= BWF_SUFFIX;
 
     /* Flags: may have additions. */
     if (adds > 0)
