@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Apr 19
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Apr 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -103,29 +103,26 @@ PLANNED FOR VERSION 7.0:
 -   Add SPELLCHECKER, with support for many languages.
     - Use "engspchk" from Charles Campbell for ideas.
     - Spell checking code todo's:
-	- Can have prefixes with addstring and suffixes with leadstring.  Use
-	  separate basic word for this, like for different caps?
 	- Verify French spell checking works efficiently.
-	- use BWF_ADDS and BWF_ADDSM for more than 256, only one byte for count.
 	- Implement user and project word lists.  Commands to add words and to
 	  mark words as wrong.
 	- Case folding only works when locale is set properly.
 	  E.g., when C locale is active then 'enc' is "latin1" but Ångström
 	  isn't seen as a ONECAP.
 	  Use our own character tables for encodings used in spell files?
-	  Use iswupper() if possible?
+	  Use iswupper() if possible?  Same locale/'encoding' problems.
 	  Put the character tables in the .aff file?
 	- Implement = flag in .dic: KEEPCASE for lower case word.
 	    's morgens/=  does not match 'S morgens
 	- Implement compound words?
-	- remove fw_prefix and fw_suffix, use fw_len (word length) and put
-	  prefixes and suffixes right after it.
 	- Make "en-rare" spell file.
 	  Convention: use en_US (language_region) and en-rare (language-field)
           Add hl groups to 'spelllang'?
 	    :set spelllang=en_us,en-rare/SpellRare,en-math/SpellMath
-	- Polish: Anio and Hanio are wrong words, even though Myspell allows
-	  them.  Problem with not ignoring case in conditions.
+	- How about making suggestions?  Use an external program like aspell?
+	  Or include the myspell suggestion code in Vim?
+	- Some word lists are inefficient.  Remove affixes from a word when it
+	  results in another basic word.
     - References MySpell library (in OpenOffice.org).
 	http://spellchecker.mozdev.org/source.html
 	http://whiteboard.openoffice.org/source/browse/whiteboard/lingucomponent/source/spellcheck/myspell/
@@ -138,17 +135,12 @@ PLANNED FOR VERSION 7.0:
 	add word to private dict: wrong and OK (in popup menu for evim)
 	    :spell good <word>	    zg
 	    :spell wrong <word>	    zw
-	[s  move to previous spell error  [S also rare word
-	]s  move to next spell error      ]S also rare word
-	    (only "]s" is currently implemented)
-	    Make this work like displaying, check @Spell in syntax.
-	    Support a count.
     - Update option window for 'spell' and 'spelllang'.
-    - Use an external program like aspell for suggestions to correct the
-      spelling?  Or include the myspell suggestion code in Vim?
     - Distribution: Need wordlists for many languages; "language pack"
+      Put them on the ftp site, ready to download.  Include README for
+      copyrights.
     - Work together with OpenOffice.org to update the wordlists.  (Adri
-      Verhoef, Aad Nales)
+      Verhoef, Aad Nales)  Setup vim-spell maillist?
     - Support for approximate-regexps will help with finding similar words
       (agrep http://www.tgries.de/agrep/).
     - Charles Campbell asks for method to add "contained" groups to
