@@ -5929,28 +5929,27 @@ get_syntax_name(xp, idx)
 
 #endif /* FEAT_CMDL_COMPL */
 
-#if defined(FEAT_EVAL) || defined(FEAT_PRINTER) || defined(PROTO)
 /*
  * Function called for expression evaluation: get syntax ID at file position.
  */
     int
-syn_get_id(lnum, col, trans)
+syn_get_id(lnum, col, trans, spellp)
     long	lnum;
-    long	col;
+    colnr_T	col;
     int		trans;	    /* remove transparancy */
+    int		*spellp;    /* return: can do spell checking */
 {
     /* When the position is not after the current position and in the same
      * line of the same buffer, need to restart parsing. */
     if (curwin->w_buffer != syn_buf
 	    || lnum != current_lnum
-	    || col < (long)current_col)
+	    || col < current_col)
 	syntax_start(curwin, lnum);
 
-    (void)get_syntax_attr((colnr_T)col, NULL);
+    (void)get_syntax_attr(col, spellp);
 
     return (trans ? current_trans_id : current_id);
 }
-#endif
 
 #if defined(FEAT_FOLDING) || defined(PROTO)
 /*

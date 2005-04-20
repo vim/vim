@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Apr 19
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Apr 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -35,12 +35,20 @@ To search for the next misspelled word:
 
 							*]s* *E756*
 ]s			Move to next misspelled word after the cursor.
-			NOTE: doesn't obey syntax highlighting yet, thus
-			will stop at more places than what is highlighted.
+			A count before the command can be used to repeat.
+			This uses the @Spell and @NoSpell clusters from syntax
+			highlighting, see |spell-syntax|.
 
 							*[s*
-[s			Move to next misspelled word before the cursor.
-			DOESN'T WORK YET!
+[s			Like "]s" but search backwards, find the misspelled
+			word before the cursor.
+
+							*]S*
+]S			Like "]s" but only stop at bad words, not at rare
+			words or words for another region.
+
+							*[S*
+[S			Like "]S" but search backwards.
 
 
 PERFORMANCE
@@ -109,7 +117,7 @@ include characters like '-' in 'iskeyword'.  The word characters do depend on
 A word that starts with a digit is always ignored.
 
 
-SYNTAX HIGHLIGHTING
+SYNTAX HIGHLIGHTING					*spell-syntax*
 
 Files that use syntax highlighting can specify where spell checking should be
 done:
