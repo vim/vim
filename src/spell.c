@@ -203,6 +203,7 @@ typedef struct langp_S
 #define BWF_ALLCAP	0x0400	    /* all letters must be capital (not used
 				       for single-letter words) */
 #define BWF_KEEPCAP	0x0800	    /* Keep case as-is */
+#define BWF_ADDS_M	0x1000	    /* there are more than 255 additions */
 
 #define BWF_ADDHASH	0x8000	    /* Internal: use hashtab for additions */
 
@@ -212,6 +213,8 @@ typedef struct langp_S
 /* flags used for addition in the spell file */
 #define ADD_REGION	0x02	    /* region byte follows */
 #define ADD_ONECAP	0x04	    /* first letter must be capital */
+#define ADD_LEADLEN	0x10	    /* there is a leadlen byte */
+#define ADD_COPYLEN	0x20	    /* there is a copylen byte */
 #define ADD_ALLCAP	0x40	    /* all letters must be capital (not used
 				       for single-letter words) */
 #define ADD_KEEPCAP	0x80	    /* fixed case */
@@ -220,7 +223,7 @@ typedef struct langp_S
  * (Needed to keep ADD_ flags in one byte.) */
 #define ADD2BWF(x)	(((x) & 0x0f) | (((x) & 0xf0) << 4))
 
-#define VIMSPELLMAGIC "VIMspell02"  /* string at start of Vim spell file */
+#define VIMSPELLMAGIC "VIMspell03"  /* string at start of Vim spell file */
 #define VIMSPELLMAGICL 10
 
 /*
@@ -1164,13 +1167,17 @@ spell_move_to(dir, allwords)
     int		dir;		/* FORWARD or BACKWARD */
     int		allwords;	/* TRUE for "[s" and "]s" */
 {
-    pos_T	pos;
+    linenr_T	lnum;
+    pos_T	found_pos;
     char_u	*line;
     char_u	*p;
     int		wc;
     int		nwc;
     int		attr = 0;
     int		len;
+    int		has_syntax = syntax_present(curbuf);
+    int		col;
+    int		can_spell;
 
     if (!curwin->w_p_spell || *curwin->w_buffer->b_p_spl == NUL)
     {
@@ -1178,37 +1185,81 @@ spell_move_to(dir, allwords)
 	return FAIL;
     }
 
-    /* TODO: moving backwards */
-
-    /* Start looking for bad word at the start of the line, because we can't
-     * start halfway a word and know where it ends. */
-    pos = curwin->w_cursor;
-    pos.col = 0;
-    wc = FALSE;
+    /*
+     * Start looking for bad word at the start of the line, because we can't
+     * start halfway a word, we don't know where it starts or ends.
+     *
+     * When searching backwards, we continue in the line to find the last
+     * bad word (in the cursor line: before the cursor).
+     */
+    lnum = curwin->w_cursor.lnum;
+    found_pos.lnum = 0;
 
     while (!got_int)
     {
-	line = ml_get(pos.lnum);
-	p = line + pos.col;
+	line = ml_get(lnum);
+	p = line;
+	wc = FALSE;
+
 	while (*p != NUL)
 	{
 	    nwc = spell_iswordc(p);
 	    if (!wc && nwc)
 	    {
+		/* When searching backward don't search after the cursor. */
+		if (dir == BACKWARD
+			&& lnum == curwin->w_cursor.lnum
+			&& (colnr_T)(p - line) >= curwin->w_cursor.col)
+		    break;
+
 		/* start of word */
-		/* TODO: check for bad word attr */
 		len = spell_check(curwin, line, p, &attr);
+
 		if (attr != 0)
 		{
-		    if (curwin->w_cursor.lnum < pos.lnum
-			    || (curwin->w_cursor.lnum == pos.lnum
-				&& curwin->w_cursor.col < (colnr_T)(p - line)))
+		    /* We found a bad word.  Check the attribute. */
+		    /* TODO: check for syntax @Spell cluster. */
+		    if (allwords || attr == highlight_attr[HLF_SPB])
 		    {
-			curwin->w_cursor.lnum = pos.lnum;
-			curwin->w_cursor.col = p - line;
-			return OK;
+			/* When searching forward only accept a bad word after
+			 * the cursor. */
+			if (dir == BACKWARD
+				|| lnum > curwin->w_cursor.lnum
+				|| (lnum == curwin->w_cursor.lnum
+				    && (colnr_T)(p - line)
+						      > curwin->w_cursor.col))
+			{
+			    if (has_syntax)
+			    {
+				col = p - line;
+				(void)syn_get_id(lnum, (colnr_T)col,
+							   FALSE, &can_spell);
+
+				/* have to get the line again, a multi-line
+				 * regexp may make it invalid */
+				line = ml_get(lnum);
+				p = line + col;
+			    }
+			    else
+				can_spell = TRUE;
+
+			    if (can_spell)
+			    {
+				found_pos.lnum = lnum;
+				found_pos.col = p - line;
+#ifdef FEAT_VIRTUALEDIT
+				found_pos.coladd = 0;
+#endif
+				if (dir == FORWARD)
+				{
+				    /* No need to search further. */
+				    curwin->w_cursor = found_pos;
+				    return OK;
+				}
+			    }
+			}
 		    }
-		    attr = 0;	/* bad word is before or at cursor */
+		    attr = 0;
 		}
 		p += len;
 		if (*p == NUL)
@@ -1222,11 +1273,24 @@ spell_move_to(dir, allwords)
 	}
 
 	/* Advance to next line. */
-	if (pos.lnum == curbuf->b_ml.ml_line_count)
-	    return FAIL;
-	++pos.lnum;
-	pos.col = 0;
-	wc = FALSE;
+	if (dir == BACKWARD)
+	{
+	    if (found_pos.lnum != 0)
+	    {
+		/* Use the last match in the line. */
+		curwin->w_cursor = found_pos;
+		return OK;
+	    }
+	    if (lnum == 1)
+		return FAIL;
+	    --lnum;
+	}
+	else
+	{
+	    if (lnum == curbuf->b_ml.ml_line_count)
+		return FAIL;
+	    ++lnum;
+	}
 
 	line_breakcheck();
     }
@@ -1773,7 +1837,10 @@ formerr:
 	fw->fw_adds = NULL;
 	if (flags & BWF_ADDS)
 	{
-	    adds = (getc(fd) << 8) + getc(fd);		/* <addcnt> */
+	    if (flags & BWF_ADDS_M)
+		adds = (getc(fd) << 8) + getc(fd);	/* <addcnt> */
+	    else
+		adds = getc(fd);			/* <addcnt> */
 
 	    if (adds > 30)
 	    {
@@ -1795,8 +1862,8 @@ formerr:
 
 	    while (--adds >= 0)
 	    {
-		/* <add>: <addflags> <addlen> [<leadlen> <addstring>]
-		 *			[<region>] */
+		/* <add>: <addflags> <addlen> [<leadlen>] [<copylen>]
+		 *				[<addstring>] [<region>] */
 		flags = getc(fd);			/* <addflags> */
 		addlen = getc(fd);			/* <addlen> */
 		if (addlen == EOF)
@@ -1804,15 +1871,21 @@ formerr:
 		if (addlen >= MAXWLEN)
 		    goto formerr;
 
+		if (flags & ADD_LEADLEN)
+		    leadlen = getc(fd);			/* <leadlen> */
+		else
+		    leadlen = 0;
+
 		if (addlen > 0)
 		{
-		    leadlen = getc(fd);			/* <leadlen> */
-		    for (i = 0; i < addlen; ++i)	/* <addstring> */
+		    if (flags & ADD_COPYLEN)
+			i = getc(fd);			/* <copylen> */
+		    else
+			i = 0;
+		    for ( ; i < addlen; ++i)		/* <addstring> */
 			cbuf[i] = getc(fd);
 		    cbuf[i] = NUL;
 		}
-		else
-		    leadlen = 0;
 
 		if (flags & ADD_KEEPCAP)
 		{
@@ -2292,6 +2365,20 @@ typedef struct affhash_S
 static affhash_T dumas;
 #define HI2AS(hi)	((affhash_T *)((hi)->hi_key - (dumas.as_word - (char_u *)&dumas)))
 
+/* info for writing the spell file */
+typedef struct winfo_S
+{
+    FILE	*wif_fd;
+    basicword_T	*wif_prevbw;	/* last written basic word */
+    int		wif_regionmask;	/* regions supported */
+    int		wif_prefm;	/* 1 or 2 bytes used for prefix NR */
+    int		wif_suffm;	/* 1 or 2 bytes used for suffix NR */
+    long	wif_wcount;	/* written word count */
+    long	wif_acount;	/* written addition count */
+    long	wif_addmax;	/* max number of additions on one word */
+    char_u	*wif_addmaxw;	/* word with max additions */
+} winfo_T;
+
 
 static afffile_T *spell_read_aff __ARGS((char_u *fname, vimconv_T *conv, int ascii));
 static void spell_free_aff __ARGS((afffile_T *aff));
@@ -2313,7 +2400,7 @@ static void put_bytes __ARGS((FILE *fd, long_u nr, int len));
 static void write_affix __ARGS((FILE *fd, affheader_T *ah));
 static void write_affixlist __ARGS((FILE *fd, garray_T *aff, int bytes));
 static void write_vim_spell __ARGS((char_u *fname, garray_T *prefga, garray_T *suffga, hashtab_T *newwords, int regcount, char_u *regchars));
-static void write_bword __ARGS((FILE *fd, basicword_T *bw, int lowcap, basicword_T **prevbw, int regionmask, int prefm, int suffm));
+static void write_bword __ARGS((winfo_T *wif, basicword_T *bw, int lowcap));
 static void free_wordtable __ARGS((hashtab_T *ht));
 static void free_basicword __ARGS((basicword_T *bw));
 static void free_affixentries __ARGS((affentry_T *first));
@@ -4019,7 +4106,7 @@ write_affixlist(fd, aff, bytes)
  *
  * <HEADER>: <fileID> <regioncnt> <regionname> ...
  *
- * <fileID>     10 bytes    "VIMspell02"
+ * <fileID>     10 bytes    "VIMspell03"
  * <regioncnt>  1 byte	    number of regions following (8 supported)
  * <regionname>	2 bytes     Region name: ca, au, etc.
  *			    First <regionname> is region 1.
@@ -4085,6 +4172,8 @@ write_affixlist(fd, aff, bytes)
  *					BWF_PREFIX
  *			    0x04: all letters must be upper-case, BWF_ALLCAP
  *			    0x08: case must match, BWF_KEEPCAP
+ *			    0x10: has more than 255 additions, <addcnt> is two
+ *				  bytes, BWF_ADDS_M
  *			    0x10-0x80: unset
  * <caselen>	1 byte	    Length of <caseword>.
  * <caseword>	N bytes	    Word with matching case.
@@ -4094,20 +4183,23 @@ write_affixlist(fd, aff, bytes)
  * <region>	1 byte	    Bitmask for regions in which word is valid.  When
  *			    omitted it's valid in all regions.
  *			    Lowest bit is for region 1.
- * <addcnt>	2 bytes	    Number of <add> items following.
+ * <addcnt>	1 or 2 byte Number of <add> items following.
  *
- * <add>: <addflags> <addlen> [<leadlen> <addstring>] [<region>]
+ * <add>: <addflags> <addlen> [<leadlen>] [<copylen>] [<addstring>] [<region>]
  *
  * <addflags>	1 byte	    0x01: unset
  *			    0x02: has region byte, ADD_REGION
  *			    0x04: first letter must be upper-case, ADD_ONECAP
- *			    0x08-0x20: unset
+ *			    0x08: unset
+ *			    0x10: has a <leadlen>, ADD_LEADLEN
+ *			    0x20: has a <copylen>, ADD_COPYLEN
  *			    0x40: all letters must be upper-case, ADD_ALLCAP
  *			    0x80: fixed case, <addstring> is the whole word
  *				  with matching case, ADD_KEEPCAP.
  * <addlen>	1 byte	    Length of <addstring> in bytes.
  * <leadlen>	1 byte	    Number of bytes at start of <addstring> that must
  *			    come before the start of the basic word.
+ * <copylen>	1 byte	    Number of bytes copied from previous <addstring>.
  * <addstring>	N bytes	    Word characters, before/in/after the word.
  *
  * All text characters are in 'encoding': <affchop>, <affadd>, <string>,
@@ -4128,48 +4220,48 @@ write_vim_spell(fname, prefga, suffga, newwords, regcount, regchars)
     int		regcount;	/* number of regions */
     char_u	*regchars;	/* region names */
 {
-    FILE	*fd;
+    winfo_T	wif;
     garray_T	*gap;
     hashitem_T	*hi;
     char_u	**wtab;
     int		todo;
     int		flags, aflags;
-    basicword_T	*bw, *bwf, *bw2 = NULL, *prevbw = NULL;
-    int		regionmask;	/* mask for all relevant region bits */
+    basicword_T	*bw, *bwf, *bw2 = NULL;
     int		i;
     int		cnt;
     affentry_T	*ae;
     int		round;
-    int		prefm, suffm;
     garray_T	bwga;
 
-    fd = fopen((char *)fname, "w");
-    if (fd == NULL)
+    vim_memset(&wif, 0, sizeof(winfo_T));
+
+    wif.wif_fd = fopen((char *)fname, "w");
+    if (wif.wif_fd == NULL)
     {
 	EMSG2(_(e_notopen), fname);
 	return;
     }
 
-    fwrite(VIMSPELLMAGIC, VIMSPELLMAGICL, (size_t)1, fd);
+    fwrite(VIMSPELLMAGIC, VIMSPELLMAGICL, (size_t)1, wif.wif_fd);
 
     /* write the region names if there is more than one */
     if (regcount > 1)
     {
-	putc(regcount, fd);
-	fwrite(regchars, (size_t)(regcount * 2), (size_t)1, fd);
-	regionmask = (1 << regcount) - 1;
+	putc(regcount, wif.wif_fd);
+	fwrite(regchars, (size_t)(regcount * 2), (size_t)1, wif.wif_fd);
+	wif.wif_regionmask = (1 << regcount) - 1;
     }
     else
     {
-	putc(0, fd);
-	regionmask = 0;
+	putc(0, wif.wif_fd);
+	wif.wif_regionmask = 0;
     }
 
     /* Write the prefix and suffix lists. */
     for (round = 1; round <= 2; ++round)
     {
 	gap = round == 1 ? prefga : suffga;
-	put_bytes(fd, (long_u)gap->ga_len, 2);	    /* <affcount> */
+	put_bytes(wif.wif_fd, (long_u)gap->ga_len, 2);	    /* <affcount> */
 
 	/* Count the total number of affix items. */
 	cnt = 0;
@@ -4177,27 +4269,28 @@ write_vim_spell(fname, prefga, suffga, newwords, regcount, regchars)
 	    for (ae = ((affheader_T *)gap->ga_data + i)->ah_first;
 						 ae != NULL; ae = ae->ae_next)
 		++cnt;
-	put_bytes(fd, (long_u)cnt, 2);		    /* <afftotcnt> */
+	put_bytes(wif.wif_fd, (long_u)cnt, 2);		    /* <afftotcnt> */
 
 	for (i = 0; i < gap->ga_len; ++i)
-	    write_affix(fd, (affheader_T *)gap->ga_data + i);
+	    write_affix(wif.wif_fd, (affheader_T *)gap->ga_data + i);
     }
 
     /* Number of bytes used for affix NR depends on affix count. */
-    prefm = (prefga->ga_len > 256) ? 2 : 1;
-    suffm = (suffga->ga_len > 256) ? 2 : 1;
+    wif.wif_prefm = (prefga->ga_len > 256) ? 2 : 1;
+    wif.wif_suffm = (suffga->ga_len > 256) ? 2 : 1;
 
     /* Write the suggest info. TODO */
-    put_bytes(fd, 0L, 4);
+    put_bytes(wif.wif_fd, 0L, 4);
 
     /*
      * Write the word list.  <wordcount> <worditem> ...
      */
     /* number of basic words in 4 bytes */
-    put_bytes(fd, newwords->ht_used, 4);	    /* <wordcount> */
+    put_bytes(wif.wif_fd, newwords->ht_used, 4);	    /* <wordcount> */
 
     /*
-     * Sort the word list, so that we can reuse as many bytes as possible.
+     * Sort the word list, so that we can copy as many bytes as possible from
+     * the previous word.
      */
     wtab = (char_u **)alloc((unsigned)(sizeof(char_u *) * newwords->ht_used));
     if (wtab != NULL)
@@ -4279,23 +4372,78 @@ write_vim_spell(fname, prefga, suffga, newwords, regcount, regchars)
 	     * without VALID flag first (makes it easier to read the list back
 	     * in). */
 	    if (bw->bw_flags & BWF_KEEPCAP)
-		write_bword(fd, bw, TRUE, &prevbw, regionmask, prefm, suffm);
-	    write_bword(fd, bw, FALSE, &prevbw, regionmask, prefm, suffm);
+		write_bword(&wif, bw, TRUE);
+	    write_bword(&wif, bw, FALSE);
 
 	    /* Write other basic words, with different caps. */
 	    for (i = 0; i < bwga.ga_len; ++i)
 	    {
 		bw2 = ((basicword_T **)bwga.ga_data)[i];
 		if (bw2 != bw)
-		    write_bword(fd, bw2, FALSE, &prevbw, regionmask,
-								prefm, suffm);
+		    write_bword(&wif, bw2, FALSE);
 	    }
 	}
 
 	ga_clear(&bwga);
     }
 
-    fclose(fd);
+    fclose(wif.wif_fd);
+
+    /* Print a few statistics. */
+    if (wif.wif_addmaxw == NULL)
+	wif.wif_addmaxw = (char_u *)"";
+    smsg((char_u *)_("Maximum number of adds on a word: %ld (%s)"),
+					     wif.wif_addmax, wif.wif_addmaxw);
+    smsg((char_u *)_("Average number of adds on a word: %f"),
+			       (float)wif.wif_acount / (float)wif.wif_wcount);
+}
+
+/*
+ * Compare two basic words for their <addstring>.
+ */
+static int
+#ifdef __BORLANDC__
+_RTLENTRYF
+#endif
+bw_compare __ARGS((const void *s1, const void *s2));
+
+    static int
+#ifdef __BORLANDC__
+_RTLENTRYF
+#endif
+bw_compare(s1, s2)
+    const void	*s1;
+    const void	*s2;
+{
+    basicword_T *bw1 = *(basicword_T **)s1;
+    basicword_T *bw2 = *(basicword_T **)s2;
+    int		i = 0;
+
+    /* compare the leadstrings */
+    if (bw1->bw_leadstring == NULL)
+    {
+	if (bw2->bw_leadstring != NULL)
+	    return 1;
+    }
+    else if (bw2->bw_leadstring == NULL)
+	return -1;
+    else
+	i = STRCMP(bw1->bw_leadstring, bw2->bw_leadstring);
+
+    if (i == 0)
+    {
+	/* leadstrings are identical, compare the addstrings */
+	if (bw1->bw_addstring == NULL)
+	{
+	    if (bw2->bw_addstring != NULL)
+		return 1;
+	}
+	else if (bw2->bw_addstring == NULL)
+	    return -1;
+	else
+	    i = STRCMP(bw1->bw_addstring, bw2->bw_addstring);
+    }
+    return i;
 }
 
 /*
@@ -4309,34 +4457,36 @@ write_vim_spell(fname, prefga, suffga, newwords, regcount, regchars)
  *			  [<addcnt> <add> ...]
  */
     static void
-write_bword(fd, bwf, lowcap, prevbw, regionmask, prefm, suffm)
-    FILE	*fd;
+write_bword(wif, bwf, lowcap)
+    winfo_T	*wif;		/* info for writing */
     basicword_T	*bwf;
     int		lowcap;		/* write KEEPKAP word as not-valid */
-    basicword_T **prevbw;	/* last written basic word */
-    int		regionmask;	/* mask that includes all possible regions */
-    int		prefm;
-    int		suffm;
 {
+    FILE	*fd = wif->wif_fd;
     int		flags;
     int		aflags;
     int		len;
     int		leadlen, addlen;
+    int		copylen;
     int		clen;
     int		adds = 0;
     int		i;
+    int		idx;
     basicword_T *bw, *bw2;
+    basicword_T **wtab;
+    int		count;
+    int		l;
 
     /* Check how many bytes can be copied from the previous word. */
     len = STRLEN(bwf->bw_word);
-    if (*prevbw == NULL)
+    if (wif->wif_prevbw == NULL)
 	clen = 0;
     else
 	for (clen = 0; clen < len
-		&& (*prevbw)->bw_word[clen] == bwf->bw_word[clen]; ++clen)
+		&& wif->wif_prevbw->bw_word[clen] == bwf->bw_word[clen]; ++clen)
 	    ;
     putc(clen, fd);				/* <nr> */
-    *prevbw = bwf;
+    wif->wif_prevbw = bwf;
 						/* <string> */
     if (len > clen)
 	fwrite(bwf->bw_word + clen, (size_t)(len - clen), (size_t)1, fd);
@@ -4360,7 +4510,8 @@ write_bword(fd, bwf, lowcap, prevbw, regionmask, prefm, suffm)
 
 	/* Flags: add the region byte if the word isn't valid in all
 	 * regions. */
-	if (regionmask != 0 && (bw->bw_region & regionmask) != regionmask)
+	if (wif->wif_regionmask != 0 && (bw->bw_region & wif->wif_regionmask)
+						       != wif->wif_regionmask)
 	    flags |= BWF_REGION;
     }
     /* Add the prefix/suffix list if there are prefixes/suffixes. */
@@ -4371,7 +4522,11 @@ write_bword(fd, bwf, lowcap, prevbw, regionmask, prefm, suffm)
 
     /* Flags: may have additions. */
     if (adds > 0)
+    {
 	flags |= BWF_ADDS;
+	if (adds >= 256)
+	    flags |= BWF_ADDS_M;
+    }
 
     /* The dummy word before a KEEPCAP word doesn't have any flags, they are
      * in the actual word that follows. */
@@ -4403,56 +4558,133 @@ write_bword(fd, bwf, lowcap, prevbw, regionmask, prefm, suffm)
 
     /* write prefix and suffix lists: <affixcnt> <affixNR> ... */
     if (flags & BWF_PREFIX)
-	write_affixlist(fd, &bw->bw_prefix, prefm);
+	write_affixlist(fd, &bw->bw_prefix, wif->wif_prefm);
     if (flags & BWF_SUFFIX)
-	write_affixlist(fd, &bw->bw_suffix, suffm);
+	write_affixlist(fd, &bw->bw_suffix, wif->wif_suffm);
 
     if (flags & BWF_REGION)
 	putc(bw->bw_region, fd);		/* <region> */
+
+    ++wif->wif_wcount;
 
     /*
      * Additions.
      */
     if (adds > 0)
     {
-	put_bytes(fd, (long_u)adds, 2);		/* <addcnt> */
+	if (adds >= 256)
+	    put_bytes(fd, (long_u)adds, 2);	/* 2 byte <addcnt> */
+	else
+	    putc(adds, fd);			/* 1 byte <addcnt> */
 
+	/* statistics */
+	wif->wif_acount += adds;
+	if (wif->wif_addmax < adds)
+	{
+	    wif->wif_addmax = adds;
+	    wif->wif_addmaxw = bw->bw_word;
+	}
+
+	/*
+	 * Sort the list of additions, so that we can copy as many bytes as
+	 * possible from the previous addstring.
+	 */
+
+	/* Make a table with pointers to each basic word that has additions. */
+	wtab = (basicword_T **)alloc((unsigned)(sizeof(basicword_T *) * adds));
+	if (wtab == NULL)
+	    return;
+	count = 0;
 	for (bw = bwf; bw != NULL; bw = bw->bw_cnext)
 	    if (bw->bw_leadstring != NULL || bw->bw_addstring != NULL)
+		wtab[count++] = bw;
+
+	/* Sort. */
+	qsort((void *)wtab, (size_t)count, sizeof(basicword_T *), bw_compare);
+
+	/* Now write each basic word to the spell file.  Copy bytes from the
+	 * previous leadstring/addstring if possible. */
+	bw2 = NULL;
+	for (idx = 0; idx < count; ++idx)
+	{
+	    bw = wtab[idx];
+
+	    /* <add>: <addflags> <addlen> [<leadlen>] [<copylen>]
+	     *				[<addstring>] [<region>] */
+	    copylen = 0;
+	    if (bw->bw_leadstring == NULL)
+		leadlen = 0;
+	    else
 	    {
-		/* <add>: <addflags> <addlen> [<leadlen> <addstring>]
-		 *	  [<region>] */
-		aflags = 0;
-		if (bw->bw_flags & BWF_ONECAP)
-		    aflags |= ADD_ONECAP;
-		if (bw->bw_flags & BWF_ALLCAP)
-		    aflags |= ADD_ALLCAP;
-		if (bw->bw_flags & BWF_KEEPCAP)
-		    aflags |= ADD_KEEPCAP;
-		if (regionmask != 0
-				&& (bw->bw_region & regionmask) != regionmask)
-		    aflags |= ADD_REGION;
-		putc(aflags, fd);		    /* <addflags> */
-
-		if (bw->bw_leadstring == NULL)
-		    leadlen = 0;
-		else
-		    leadlen = STRLEN(bw->bw_leadstring);
-		if (bw->bw_addstring == NULL)
-		    addlen = 0;
-		else
-		    addlen = STRLEN(bw->bw_addstring);
-		putc(leadlen + addlen, fd);		    /* <addlen> */
-		putc(leadlen, fd);			    /* <leadlen> */
-							    /* <addstring> */
-		if (bw->bw_leadstring != NULL)
-		    fwrite(bw->bw_leadstring, (size_t)leadlen, (size_t)1, fd);
-		if (bw->bw_addstring != NULL)
-		    fwrite(bw->bw_addstring, (size_t)addlen, (size_t)1, fd);
-
-		if (aflags & ADD_REGION)
-		    putc(bw->bw_region, fd);		/* <region> */
+		leadlen = STRLEN(bw->bw_leadstring);
+		if (bw2 != NULL && bw2->bw_leadstring != NULL)
+		    for ( ; copylen < leadlen; ++copylen)
+			if (bw->bw_leadstring[copylen]
+					   != bw2->bw_leadstring[copylen])
+			    break;
 	    }
+	    if (bw->bw_addstring == NULL)
+		addlen = 0;
+	    else
+	    {
+		addlen = STRLEN(bw->bw_addstring);
+		if (bw2 != NULL && copylen == leadlen
+					     && bw2->bw_addstring != NULL)
+		{
+		    for (i = 0; i < addlen; ++i)
+			if (bw->bw_addstring[i] != bw2->bw_addstring[i])
+			    break;
+		    copylen += i;
+		}
+	    }
+
+	    aflags = 0;
+	    /* Only copy bytes when it's more than one, the length itself
+	     * takes an extra byte. */
+	    if (copylen > 1)
+		aflags |= ADD_COPYLEN;
+	    else
+		copylen = 0;
+
+	    if (bw->bw_flags & BWF_ONECAP)
+		aflags |= ADD_ONECAP;
+	    if (bw->bw_flags & BWF_ALLCAP)
+		aflags |= ADD_ALLCAP;
+	    if (bw->bw_flags & BWF_KEEPCAP)
+		aflags |= ADD_KEEPCAP;
+	    if (wif->wif_regionmask != 0 && (bw->bw_region
+			    & wif->wif_regionmask) != wif->wif_regionmask)
+		aflags |= ADD_REGION;
+	    if (leadlen > 0)
+		aflags |= ADD_LEADLEN;
+	    putc(aflags, fd);		    /* <addflags> */
+
+	    putc(leadlen + addlen, fd);			/* <addlen> */
+	    if (aflags & ADD_LEADLEN)
+		putc(leadlen, fd);			/* <leadlen> */
+	    if (aflags & ADD_COPYLEN)
+		putc(copylen, fd);			/* <copylen> */
+
+							/* <addstring> */
+	    if (leadlen > copylen && bw->bw_leadstring != NULL)
+		fwrite(bw->bw_leadstring + copylen,
+				  (size_t)(leadlen - copylen), (size_t)1, fd);
+	    if (leadlen + addlen > copylen && bw->bw_addstring != NULL)
+	    {
+		if (copylen >= leadlen)
+		    l = copylen - leadlen;
+		else
+		    l = 0;
+		fwrite(bw->bw_addstring + l,
+					 (size_t)(addlen - l), (size_t)1, fd);
+	    }
+
+	    if (aflags & ADD_REGION)
+		putc(bw->bw_region, fd);		/* <region> */
+
+	    bw2 = bw;
+	}
+	vim_free(wtab);
     }
 }
 

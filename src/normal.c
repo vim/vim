@@ -6071,9 +6071,14 @@ nv_brackets(cap)
      */
     else if (cap->nchar == 's' || cap->nchar == 'S')
     {
-	if (spell_move_to(cap->cmdchar == ']' ? FORWARD : BACKWARD,
+	setpcmark();
+	for (n = 0; n < cap->count1; ++n)
+	    if (spell_move_to(cap->cmdchar == ']' ? FORWARD : BACKWARD,
 				    cap->nchar == 's' ? TRUE : FALSE) == FAIL)
-	    clearopbeep(cap->oap);
+	    {
+		clearopbeep(cap->oap);
+		break;
+	    }
     }
 #endif
 
