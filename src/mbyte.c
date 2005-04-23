@@ -2160,7 +2160,7 @@ utf_tolower(a)
 	return TOLOWER_ASC(a);
 
 #if defined(HAVE_TOWLOWER) && defined(__STDC__ISO_10646__)
-    /* If towlower() is availble and handles Unicode, use it. */
+    /* If towlower() is available and handles Unicode, use it. */
     if (!(cmp_flags & CMP_INTERNAL))
 	return towlower(a);
 #endif
