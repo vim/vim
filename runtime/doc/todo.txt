@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Apr 20
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Apr 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -65,6 +65,9 @@ Patch for 2html.vim to disable folding (Michael Schaap, 2005 April 12)
 
 Win32: Alt-F10 no longer working? (Bill McCarthy, April 18)
 
+With "wa" in 'formatoptions', backspace at start-of-line doesn't work.  It
+should delete the space at the end of the previous line. (Alan Isaac)
+
 Mac unicode patch (Da Woon Jung):
 - selecting proportional font breaks display
 - UTF-8 text causes display problems.  Font replacement causes this.
@@ -103,15 +106,8 @@ PLANNED FOR VERSION 7.0:
 -   Add SPELLCHECKER, with support for many languages.
     - Use "engspchk" from Charles Campbell for ideas.
     - Spell checking code todo's:
-	- Verify French spell checking works efficiently.
 	- Implement user and project word lists.  Commands to add words and to
 	  mark words as wrong.
-	- Case folding only works when locale is set properly.
-	  E.g., when C locale is active then 'enc' is "latin1" but Ångström
-	  isn't seen as a ONECAP.
-	  Use our own character tables for encodings used in spell files?
-	  Use iswupper() if possible?  Same locale/'encoding' problems.
-	  Put the character tables in the .aff file?
 	- Implement = flag in .dic: KEEPCASE for lower case word.
 	    's morgens/=  does not match 'S morgens
 	- Implement compound words?

@@ -1,189 +1,194 @@
-# Swedish translation for Vim.
-# Copyright (C) 2003 Free Software Foundation, Inc.
-# Johan Svedberg <johan@svedberg.pp.se>, 2003.
+# Swedish messages for Vim.
+# Copyright (C) Johan Svedberg 2004-2005 <johan@svedberg.com>
 msgid ""
 msgstr ""
 "Project-Id-Version: Vim 6.2\n"
-"POT-Creation-Date: 2004-01-30 11:57+0100\n"
-"PO-Revision-Date: 2004-09-07 17:10%z\n"
-"Last-Translator: Johan Svedberg <johan@svedberg.pp.se>\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2005-04-23 14:43+0200\n"
+"PO-Revision-Date: 2005-04-23 15:23+0200\n"
+"Last-Translator: Johan Svedberg <johan@svedberg.com>\n"
 "Language-Team: Swedish <sv@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-1\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: buffer.c:97
+#: buffer.c:102
 msgid "E82: Cannot allocate any buffer, exiting..."
 msgstr "E82: Kan inte allokera någon buffert, avslutar..."
 
-#: buffer.c:100
+#: buffer.c:105
 msgid "E83: Cannot allocate buffer, using other one..."
 msgstr "E83: Kan inte allokera buffert, använder en annan..."
 
-#: buffer.c:797
+#: buffer.c:849
+#, c-format
 msgid "E515: No buffers were unloaded"
 msgstr "E515: Inga buffertar blev urladdade"
 
-#: buffer.c:799
+#: buffer.c:851
+#, c-format
 msgid "E516: No buffers were deleted"
 msgstr "E516: Inga buffertar blev borttagna"
 
-#: buffer.c:801
+#: buffer.c:853
+#, c-format
 msgid "E517: No buffers were wiped out"
 msgstr "E517: Inga buffertar blev utraderade"
 
-#: buffer.c:809
+#: buffer.c:861
 msgid "1 buffer unloaded"
 msgstr "1 buffert laddades ur"
 
-#: buffer.c:811
+#: buffer.c:863
 #, c-format
 msgid "%d buffers unloaded"
 msgstr "%d buffertar laddades ur"
 
-#: buffer.c:816
+#: buffer.c:868
 msgid "1 buffer deleted"
 msgstr "1 buffert borttagen"
 
-#: buffer.c:818
+#: buffer.c:870
 #, c-format
 msgid "%d buffers deleted"
 msgstr "%d buffertar borttagna"
 
-#: buffer.c:823
+#: buffer.c:875
 msgid "1 buffer wiped out"
 msgstr "1 buffert utraderad"
 
-#: buffer.c:825
+#: buffer.c:877
 #, c-format
 msgid "%d buffers wiped out"
 msgstr "%d buffertar utraderade"
 
-#: buffer.c:886
+#: buffer.c:938
 msgid "E84: No modified buffer found"
 msgstr "E84: Ingen modifierad buffert hittad"
 
 #. back where we started, didn't find anything.
-#: buffer.c:925
+#: buffer.c:977
 msgid "E85: There is no listed buffer"
 msgstr "E85: Det finns inga listade buffertar"
 
-#: buffer.c:937
+#: buffer.c:989
+#, c-format
 msgid "E86: Buffer %ld does not exist"
 msgstr "E86: Buffert %ld existerar inte"
 
-#: buffer.c:940
+#: buffer.c:992
 msgid "E87: Cannot go beyond last buffer"
 msgstr "E87: Kan inte gå bortom sista buffert"
 
-#: buffer.c:942
+#: buffer.c:994
 msgid "E88: Cannot go before first buffer"
 msgstr "E88: Kan inte gå före första buffert"
 
-#: buffer.c:980
+#: buffer.c:1032
 #, c-format
 msgid "E89: No write since last change for buffer %ld (add ! to override)"
 msgstr ""
 "E89: Ingen skrivning sedan senaste ändring för buffert %ld (lägg till ! för "
 "att tvinga)"
 
-#: buffer.c:997
+#: buffer.c:1049
 msgid "E90: Cannot unload last buffer"
 msgstr "E90: Kan inte ladda ur senaste buffert"
 
-#: buffer.c:1530
+#: buffer.c:1582
 msgid "W14: Warning: List of file names overflow"
 msgstr "W14: Varning: Lista över filnamn flödar över"
 
-#: buffer.c:1701
+#: buffer.c:1753
 #, c-format
 msgid "E92: Buffer %ld not found"
 msgstr "E92: Buffer %ld hittades inte"
 
-#: buffer.c:1932
+#: buffer.c:1984
 #, c-format
 msgid "E93: More than one match for %s"
 msgstr "E93: Fler än en träff för %s"
 
-#: buffer.c:1934
+#: buffer.c:1986
 #, c-format
 msgid "E94: No matching buffer for %s"
 msgstr "E94: Ingen matchande buffert för %s"
 
-#: buffer.c:2329 ex_docmd.c:6691
+#: buffer.c:2381
 #, c-format
 msgid "line %ld"
 msgstr "rad %ld"
 
-#: buffer.c:2412
+#: buffer.c:2466
 msgid "E95: Buffer with this name already exists"
 msgstr "E95: Buffer med det här namnet existerar redan"
 
-#: buffer.c:2705
+#: buffer.c:2761
 msgid " [Modified]"
 msgstr " [Modifierad]"
 
-#: buffer.c:2710
+#: buffer.c:2766
 msgid "[Not edited]"
 msgstr "[Inte redigerad]"
 
-#: buffer.c:2715
+#: buffer.c:2771
 msgid "[New file]"
 msgstr "[Ny fil]"
 
-#: buffer.c:2716
+#: buffer.c:2772
 msgid "[Read errors]"
 msgstr "[Läsfel]"
 
-#: buffer.c:2718 fileio.c:1939
+#: buffer.c:2774 fileio.c:2132
 msgid "[readonly]"
 msgstr "[skrivskyddad]"
 
-#: buffer.c:2739
+#: buffer.c:2795
 #, c-format
 msgid "1 line --%d%%--"
 msgstr "1 rad --%d%%--"
 
-#: buffer.c:2741
+#: buffer.c:2797
 #, c-format
 msgid "%ld lines --%d%%--"
 msgstr "%ld rader --%d%%--"
 
-#: buffer.c:2748
+#: buffer.c:2804
 #, c-format
 msgid "line %ld of %ld --%d%%-- col "
 msgstr "rad %ld av %ld --%d%%-- kol "
 
-#: buffer.c:2849
+#: buffer.c:2912
 msgid "[No file]"
 msgstr "[Ingen fil]"
 
 #. must be a help buffer
-#: buffer.c:2889
+#: buffer.c:2952
 msgid "help"
 msgstr "hjälp"
 
-#: buffer.c:3448 screen.c:4996
+#: buffer.c:3516 screen.c:5083
 msgid "[help]"
 msgstr "[hjälp]"
 
-#: buffer.c:3480 screen.c:5002
+#: buffer.c:3548 screen.c:5089
 msgid "[Preview]"
 msgstr "[Förhandsvisning]"
 
-#: buffer.c:3760
+#: buffer.c:3828
 msgid "All"
 msgstr "Alla"
 
-#: buffer.c:3760
+#: buffer.c:3828
 msgid "Bot"
 msgstr "Bott"
 
-#: buffer.c:3762
+#: buffer.c:3830
 msgid "Top"
 msgstr "Topp"
 
-#: buffer.c:4508
+#: buffer.c:4592
+#, c-format
 msgid ""
 "\n"
 "# Buffer list:\n"
@@ -191,15 +196,15 @@ msgstr ""
 "\n"
 "# Buffertlista:\n"
 
-#: buffer.c:4541
+#: buffer.c:4625
 msgid "[Error List]"
 msgstr "[Fellista]"
 
-#: buffer.c:4554 memline.c:1513
+#: buffer.c:4638 memline.c:1521
 msgid "[No File]"
 msgstr "[Ingen fil]"
 
-#: buffer.c:4857
+#: buffer.c:4951
 msgid ""
 "\n"
 "--- Signs ---"
@@ -207,150 +212,151 @@ msgstr ""
 "\n"
 "--- Tecken ---"
 
-#: buffer.c:4876
+#: buffer.c:4970
 #, c-format
 msgid "Signs for %s:"
 msgstr "Tecken för %s:"
 
-#: buffer.c:4882
+#: buffer.c:4976
 #, c-format
 msgid "    line=%ld  id=%d  name=%s"
 msgstr "    line=%ld  id=%d  namn%s"
 
-#: diff.c:133
+#: diff.c:139
 #, c-format
 msgid "E96: Can not diff more than %ld buffers"
 msgstr "E96: Kan inte skilja fler än %ld buffertar"
 
-#: diff.c:651
+#: diff.c:713
 msgid "E97: Cannot create diffs"
 msgstr "E97: Kan inte skapa skiljare"
 
-#: diff.c:750
+#: diff.c:819
 msgid "Patch file"
 msgstr "Patchfil"
 
-#: diff.c:1001
+#: diff.c:1072
 msgid "E98: Cannot read diff output"
 msgstr "E98: Kan inte läsa skiljeutdata"
 
-#: diff.c:1742
+#: diff.c:1822
 msgid "E99: Current buffer is not in diff mode"
 msgstr "E99: Aktuell buffert är inte i skiljeläge"
 
-#: diff.c:1754
+#: diff.c:1834
 msgid "E100: No other buffer in diff mode"
 msgstr "E100: Ingen annan buffert i skiljeläge"
 
-#: diff.c:1762
+#: diff.c:1842
 msgid "E101: More than two buffers in diff mode, don't know which one to use"
 msgstr ""
 "E101: Fler än två buffertar i skiljeläge, vet inte vilken som ska användas"
 
-#: diff.c:1785
+#: diff.c:1865
 #, c-format
 msgid "E102: Can't find buffer \"%s\""
 msgstr "E102: Kan inte hitta buffert \"%s\""
 
-#: diff.c:1791
+#: diff.c:1871
 #, c-format
 msgid "E103: Buffer \"%s\" is not in diff mode"
 msgstr "E103: Buffert \"%s\" är inte i skiljeläge"
 
-#: digraph.c:2172
+#: digraph.c:2200
 msgid "E104: Escape not allowed in digraph"
 msgstr "E104: Escape inte tillåtet i digraf"
 
-#: digraph.c:2344
+#: digraph.c:2385
 msgid "E544: Keymap file not found"
 msgstr "E544: Keymap-fil hittades inte"
 
-#: digraph.c:2371
+#: digraph.c:2412
 msgid "E105: Using :loadkeymap not in a sourced file"
 msgstr "E105: Användning av :loadkeymap utanför en körd fil"
 
 #: edit.c:40
-msgid " Keyword completion (^N/^P)"
-msgstr " Nyckelordskomplettering (^N/^P)"
+msgid " Keyword completion (^N^P)"
+msgstr " Nyckelordskomplettering (^N^P)"
 
 #. ctrl_x_mode == 0, ^P/^N compl.
 #: edit.c:41
-msgid " ^X mode (^E/^Y/^L/^]/^F/^I/^K/^D/^V/^N/^P)"
-msgstr " ^X-läge (^E/^Y/^L/^]/^F/^I/^K/^D/^V/^N/^P)"
+msgid " ^X mode (^E^Y^L^]^F^I^K^D^V^N^P)"
+msgstr " ^X-läge (^E^Y^L^]^F^I^K^D^V^N^P)"
 
 #. Scroll has it's own msgs, in it's place there is the msg for local
 #. * ctrl_x_mode = 0 (eg continue_status & CONT_LOCAL)  -- Acevedo
 #: edit.c:44
-msgid " Keyword Local completion (^N/^P)"
-msgstr " Lokal nyckelordskomplettering (^N/^P)"
+msgid " Keyword Local completion (^N^P)"
+msgstr " Lokal nyckelordskomplettering (^N^P)"
 
 #: edit.c:45
-msgid " Whole line completion (^L/^N/^P)"
-msgstr " Helradskomplettering (^L/^N/^P)"
+msgid " Whole line completion (^L^N^P)"
+msgstr " Helradskomplettering (^L^N^P)"
 
 #: edit.c:46
-msgid " File name completion (^F/^N/^P)"
-msgstr " Filnamnskomplettering (^F/^N/^P)"
+msgid " File name completion (^F^N^P)"
+msgstr " Filnamnskomplettering (^F^N^P)"
 
 #: edit.c:47
-msgid " Tag completion (^]/^N/^P)"
-msgstr " Taggkomplettering (^]/^N/^P)"
+msgid " Tag completion (^]^N^P)"
+msgstr " Taggkomplettering (^]^N^P)"
 
 #: edit.c:48
-msgid " Path pattern completion (^N/^P)"
-msgstr " Sökvägsmönsterkomplettering (^N/^P)"
+msgid " Path pattern completion (^N^P)"
+msgstr " Sökvägsmönsterkomplettering (^N^P)"
 
 #: edit.c:49
-msgid " Definition completion (^D/^N/^P)"
-msgstr " Definitionskomplettering (^D/^N/^P)"
+msgid " Definition completion (^D^N^P)"
+msgstr " Definitionskomplettering (^D^N^P)"
 
 #: edit.c:51
-msgid " Dictionary completion (^K/^N/^P)"
-msgstr " Ordbokskomplettering (^K/^N/^P)"
+msgid " Dictionary completion (^K^N^P)"
+msgstr " Ordbokskomplettering (^K^N^P)"
 
 #: edit.c:52
-msgid " Thesaurus completion (^T/^N/^P)"
-msgstr " Tesaurkomplettering (^T/^N/^P)"
+msgid " Thesaurus completion (^T^N^P)"
+msgstr " Tesaurkomplettering (^T^N^P)"
 
 #: edit.c:53
-msgid " Command-line completion (^V/^N/^P)"
-msgstr " Kommandoradskomplettering (^V/^N/^P)"
+msgid " Command-line completion (^V^N^P)"
+msgstr " Kommandoradskomplettering (^V^N^P)"
 
 #: edit.c:56
 msgid "Hit end of paragraph"
 msgstr "Stötte på slutet på stycket"
 
-#: edit.c:953
+#: edit.c:963
 msgid "'thesaurus' option is empty"
 msgstr "'thesaurus'-flagga är tom"
 
-#: edit.c:1157
+#: edit.c:1168
 msgid "'dictionary' option is empty"
 msgstr "'dictionary'-flagga är tom"
 
-#: edit.c:2154
+#: edit.c:2164
 #, c-format
 msgid "Scanning dictionary: %s"
 msgstr "Söker igenom ordbok: %s"
 
-#: edit.c:2360
+#: edit.c:2370
 msgid " (insert) Scroll (^E/^Y)"
 msgstr " (infoga) Rulla (^E/^Y)"
 
-#: edit.c:2362
+#: edit.c:2372
 msgid " (replace) Scroll (^E/^Y)"
 msgstr " (ersätt) Rulla (^E/^Y)"
 
-#: edit.c:2676
+#: edit.c:2686
 #, c-format
 msgid "Scanning: %s"
 msgstr "Söker igenom: %s"
 
-#: edit.c:2711
+#: edit.c:2721
+#, c-format
 msgid "Scanning tags."
 msgstr "Söker igenom taggar."
 
-#: edit.c:3373
+#: edit.c:3383
 msgid " Adding"
 msgstr " Lägger till"
 
@@ -358,102 +364,102 @@ msgstr " Lägger till"
 #. * be called before line = ml_get(), or when this address is no
 #. * longer needed.  -- Acevedo.
 #.
-#: edit.c:3422
+#: edit.c:3432
 msgid "-- Searching..."
 msgstr "-- Söker..."
 
-#: edit.c:3478
+#: edit.c:3488
 msgid "Back at original"
 msgstr "Tillbaka på orginalet"
 
-#: edit.c:3483
+#: edit.c:3493
 msgid "Word from other line"
 msgstr "Ord från annan rad"
 
-#: edit.c:3488
+#: edit.c:3498
 msgid "The only match"
 msgstr "Den enda träffen"
 
-#: edit.c:3547
+#: edit.c:3557
 #, c-format
 msgid "match %d of %d"
 msgstr "träff %d av %d"
 
-#: edit.c:3550
+#: edit.c:3560
 #, c-format
 msgid "match %d"
 msgstr "träff %d"
 
 #. Skip further arguments but do continue to
 #. * search for a trailing command.
-#: eval.c:1011
+#: eval.c:1024
 #, c-format
 msgid "E106: Unknown variable: \"%s\""
 msgstr "E106: Okänd variabel: \"%s\""
 
-#: eval.c:1307
+#: eval.c:1320
 #, c-format
 msgid "E107: Missing braces: %s"
 msgstr "E107: Saknar hakparantes: %s"
 
-#: eval.c:1412 eval.c:1426
+#: eval.c:1435 eval.c:1449
 #, c-format
 msgid "E108: No such variable: \"%s\""
 msgstr "E108: Ingen sådan variabel: \"%s\""
 
-#: eval.c:1682
+#: eval.c:1705
 msgid "E109: Missing ':' after '?'"
 msgstr "E109: Saknar ':' efter '?'"
 
-#: eval.c:2298
+#: eval.c:2327
 msgid "E110: Missing ')'"
 msgstr "E110: Saknar ')'"
 
-#: eval.c:2355
+#: eval.c:2389
 msgid "E111: Missing ']'"
 msgstr "E111: Saknar ']'"
 
-#: eval.c:2431
+#: eval.c:2466
 #, c-format
 msgid "E112: Option name missing: %s"
 msgstr "E112: Flaggnamn saknas: %s"
 
-#: eval.c:2449
+#: eval.c:2484
 #, c-format
 msgid "E113: Unknown option: %s"
 msgstr "E113: Okänd flagga: %s"
 
-#: eval.c:2520
+#: eval.c:2555
 #, c-format
 msgid "E114: Missing quote: %s"
 msgstr "E114: Saknar citattecken: %s"
 
-#: eval.c:2663
+#: eval.c:2698
 #, c-format
 msgid "E115: Missing quote: %s"
 msgstr "E115: Saknar citattecken: %s"
 
-#: eval.c:3018
+#: eval.c:3054
 #, c-format
 msgid "E116: Invalid arguments for function %s"
 msgstr "E116: Ogiltiga argument för funktion %s"
 
-#: eval.c:3048
+#: eval.c:3083
 #, c-format
 msgid "E117: Unknown function: %s"
 msgstr "E117: Okänd funktion: %s"
 
-#: eval.c:3049
+#: eval.c:3084
 #, c-format
 msgid "E118: Too many arguments for function: %s"
 msgstr "E118: För många argument till funktion: %s"
 
-#: eval.c:3050
+#: eval.c:3085
 #, c-format
 msgid "E119: Not enough arguments for function: %s"
 msgstr "E119: Inte tillräckligt med argument till funktion: %s"
 
-#: eval.c:3051
+#: eval.c:3086
 #, c-format
 msgid "E120: Using <SID> not in a script context: %s"
 msgstr "E120: Använder <SID> inte i skriptsammanhang: %s"
@@ -463,16 +469,16 @@ msgstr "E120: Använder <SID> inte i skriptsammanhang: %s"
 #. * this way has the compelling advantage that translations need not to
 #. * be touched at all.  See below what 'ok' and 'ync' are used for.
 #.
-#: eval.c:3641 gui.c:4260 gui_gtk.c:2001
+#: eval.c:3687 gui.c:4389 gui_gtk.c:2065
 msgid "&Ok"
 msgstr "&Ok"
 
-#: eval.c:4180
+#: eval.c:4226
 #, c-format
 msgid "+-%s%3ld lines: "
 msgstr "+-%s%3ld rader: "
 
-#: eval.c:5406
+#: eval.c:5477
 msgid ""
 "&OK\n"
 "&Cancel"
@@ -480,129 +486,130 @@ msgstr ""
 "&OK\n"
 "&Avbryt"
 
-#: eval.c:5446
+#: eval.c:5517
 msgid "called inputrestore() more often than inputsave()"
 msgstr "anropade inputrestore() oftare än inputsave()"
 
-#: eval.c:5904
-msgid "E655: Too much symbolic links (cycle?)"
+#: eval.c:5977
+msgid "E655: Too many symbolic links (cycle?)"
 msgstr "E655: För många symboliska länkar (slinga?)"
 
-#: eval.c:6523
+#: eval.c:6626
 msgid "E240: No connection to Vim server"
 msgstr "E240: Ingen anslutning till Vim-server"
 
-#: eval.c:6620
+#: eval.c:6724
 msgid "E277: Unable to read a server reply"
 msgstr "E277: Kunde inte läsa ett serversvar"
 
-#: eval.c:6648
+#: eval.c:6752
 msgid "E258: Unable to send to client"
 msgstr "E258: Kunde inte sända till klient"
 
-#: eval.c:6696
+#: eval.c:6800
 #, c-format
 msgid "E241: Unable to send to %s"
 msgstr "E241: Kunde inte sända till %s"
 
-#: eval.c:6796
+#: eval.c:6900
 msgid "(Invalid)"
 msgstr "(Ogiltig)"
 
-#: eval.c:7945
+#: eval.c:8079
 #, c-format
 msgid "E121: Undefined variable: %s"
 msgstr "E121: Odefinierad variabel: %s"
 
-#: eval.c:8377
+#: eval.c:8511
 #, c-format
 msgid "E461: Illegal variable name: %s"
 msgstr "E461: Otillåtet variabelnamn: %s"
 
-#: eval.c:8665
+#: eval.c:8803
 #, c-format
 msgid "E122: Function %s already exists, add ! to replace it"
 msgstr "E122: Funktionen %s existerar redan, lägg till ! för att ersätta den"
 
-#: eval.c:8732
+#: eval.c:8876
 #, c-format
 msgid "E123: Undefined function: %s"
 msgstr "E123: Odefinierad funktion: %s"
 
-#: eval.c:8745
+#: eval.c:8889
 #, c-format
 msgid "E124: Missing '(': %s"
 msgstr "E124: Saknar '(': %s"
 
-#: eval.c:8778
+#: eval.c:8922
 #, c-format
 msgid "E125: Illegal argument: %s"
 msgstr "E125: Otillåtet argument: %s"
 
-#: eval.c:8857
+#: eval.c:9001
 msgid "E126: Missing :endfunction"
 msgstr "E126: Saknar :endfunction"
 
-#: eval.c:8940
+#: eval.c:9108
 #, c-format
 msgid "E127: Cannot redefine function %s: It is in use"
 msgstr "E127: Kan inte omdefiniera funktion %s: Den används"
 
-#: eval.c:9008
+#: eval.c:9178
 msgid "E129: Function name required"
 msgstr "E129: Funktionsnamn krävs"
 
-#: eval.c:9059
+#: eval.c:9229
 #, c-format
 msgid "E128: Function name must start with a capital: %s"
 msgstr "E128: Funktionsnamn måste börja med en versal: %s"
 
-#: eval.c:9251
+#: eval.c:9421
 #, c-format
 msgid "E130: Undefined function: %s"
 msgstr "E130: Odefinierad funktion: %s"
 
-#: eval.c:9256
+#: eval.c:9426
 #, c-format
 msgid "E131: Cannot delete function %s: It is in use"
 msgstr "E131: Kan inte ta bort funktion %s: Den används"
 
-#: eval.c:9304
+#: eval.c:9474
 msgid "E132: Function call depth is higher than 'maxfuncdepth'"
 msgstr "E132: Djupet på funktionsanropet är högre än 'maxfuncdepth'"
 
 #. always scroll up, don't overwrite
-#: eval.c:9357
+#: eval.c:9527
 #, c-format
 msgid "calling %s"
 msgstr "anropar %s"
 
-#: eval.c:9419
+#: eval.c:9589
 #, c-format
 msgid "%s aborted"
 msgstr "%s avbröts"
 
-#: eval.c:9421
+#: eval.c:9591
 #, c-format
 msgid "%s returning #%ld"
 msgstr "%s returnerar #%ld"
 
-#: eval.c:9428
+#: eval.c:9598
 #, c-format
 msgid "%s returning \"%s\""
 msgstr "%s returnerar \"%s\""
 
 #. always scroll up, don't overwrite
-#: eval.c:9444 ex_cmds2.c:2292
+#: eval.c:9614 ex_cmds2.c:2375
 #, c-format
 msgid "continuing in %s"
 msgstr "fortsätter i %s"
 
-#: eval.c:9470
+#: eval.c:9640
 msgid "E133: :return not inside a function"
 msgstr "E133: :return inte inom en funktion"
 
-#: eval.c:9801
+#: eval.c:9971
+#, c-format
 msgid ""
 "\n"
 "# global variables:\n"
@@ -614,7 +621,7 @@ msgstr ""
 msgid "Entering Debug mode.  Type \"cont\" to continue."
 msgstr "Går in i felsökningsläge.  Skriv \"cont\" för att fortsätta."
 
-#: ex_cmds2.c:96 ex_docmd.c:906
+#: ex_cmds2.c:96 ex_docmd.c:976
 #, c-format
 msgid "line %ld: %s"
 msgstr "rad %ld: %s"
@@ -629,213 +636,219 @@ msgstr "kommando: %s"
 msgid "Breakpoint in \"%s%s\" line %ld"
 msgstr "Brytpunkt i \"%s%s\" rad %ld"
 
-#: ex_cmds2.c:540
+#: ex_cmds2.c:545
 #, c-format
 msgid "E161: Breakpoint not found: %s"
 msgstr "E161: Brytpunkt hittades inte: %s"
 
-#: ex_cmds2.c:566
+#: ex_cmds2.c:571
 msgid "No breakpoints defined"
 msgstr "Inga brytpunkter definierade"
 
-#: ex_cmds2.c:571
+#: ex_cmds2.c:576
 #, c-format
 msgid "%3d  %s %s  line %ld"
 msgstr "%3d  %s %s  rad %ld"
 
-#: ex_cmds.c:2097 ex_cmds.c:2362 ex_cmds2.c:763
+#: ex_cmds2.c:766 ex_cmds.c:2100
 msgid "Save As"
 msgstr "Spara som"
 
-#: ex_cmds2.c:786
+#: ex_cmds2.c:791
 #, c-format
 msgid "Save changes to \"%.*s\"?"
 msgstr "Spara ändringar till \"%.*s\"?"
 
-#: ex_cmds2.c:788 ex_docmd.c:9085
+#: ex_cmds2.c:793 ex_docmd.c:9429
 msgid "Untitled"
 msgstr "Namnlös"
 
-#: ex_cmds2.c:915
+#: ex_cmds2.c:920
 #, c-format
 msgid "E162: No write since last change for buffer \"%s\""
 msgstr "E162: Ingen skrivning sedan senaste ändring för buffert \"%s\""
 
-#: ex_cmds2.c:984
+#: ex_cmds2.c:989
 msgid "Warning: Entered other buffer unexpectedly (check autocommands)"
 msgstr "Varning: Gick in i andra buffertar oväntat (kontrollera autokommandon)"
 
-#: ex_cmds2.c:1387
+#: ex_cmds2.c:1392
 msgid "E163: There is only one file to edit"
 msgstr "E163: Det finns bara en fil att redigera"
 
-#: ex_cmds2.c:1389
+#: ex_cmds2.c:1394
 msgid "E164: Cannot go before first file"
 msgstr "E164: Kan inte gå före första filen"
 
-#: ex_cmds2.c:1391
+#: ex_cmds2.c:1396
 msgid "E165: Cannot go beyond last file"
 msgstr "E165: Kan inte gå bortom sista filen"
 
-#: ex_cmds2.c:1842
+#: ex_cmds2.c:1809
+#, c-format
+msgid "E666: compiler not supported: %s"
+msgstr "E666: kompilator stöds inte: %s"
+
+#: ex_cmds2.c:1906
 #, c-format
 msgid "Searching for \"%s\" in \"%s\""
 msgstr "Söker efter \"%s\" i \"%s\""
 
-#: ex_cmds2.c:1864
+#: ex_cmds2.c:1928
 #, c-format
 msgid "Searching for \"%s\""
 msgstr "Söker efter \"%s\""
 
-#: ex_cmds2.c:1885
+#: ex_cmds2.c:1950
 #, c-format
 msgid "not found in 'runtimepath': \"%s\""
 msgstr "hittades inte i 'runtimepath': \"%s\""
 
-#: ex_cmds2.c:1919
+#: ex_cmds2.c:1984
 msgid "Source Vim script"
 msgstr "Läs Vim-skript"
 
-#: ex_cmds2.c:2109
+#: ex_cmds2.c:2174
 #, c-format
 msgid "Cannot source a directory: \"%s\""
 msgstr "Kan inte läsa en katalog: \"%s\""
 
-#: ex_cmds2.c:2147
+#: ex_cmds2.c:2212
 #, c-format
 msgid "could not source \"%s\""
 msgstr "kunde inte läsa \"%s\""
 
-#: ex_cmds2.c:2149
+#: ex_cmds2.c:2214
 #, c-format
 msgid "line %ld: could not source \"%s\""
 msgstr "rad %ld: kunde inte läsa \"%s\""
 
-#: ex_cmds2.c:2163
+#: ex_cmds2.c:2228
 #, c-format
 msgid "sourcing \"%s\""
 msgstr "läser \"%s\""
 
-#: ex_cmds2.c:2165
+#: ex_cmds2.c:2230
 #, c-format
 msgid "line %ld: sourcing \"%s\""
 msgstr "rad %ld: läser \"%s\""
 
-#: ex_cmds2.c:2290
+#: ex_cmds2.c:2373
 #, c-format
 msgid "finished sourcing %s"
 msgstr "läste klart %s"
 
-#: ex_cmds2.c:2634
+#: ex_cmds2.c:2717
 msgid "W15: Warning: Wrong line separator, ^M may be missing"
 msgstr "W15: Varning: Fel radavskiljare, ^M kan saknas"
 
-#: ex_cmds2.c:2683
+#: ex_cmds2.c:2766
 msgid "E167: :scriptencoding used outside of a sourced file"
 msgstr "E167: :scriptencoding används utanför en körd fil"
 
-#: ex_cmds2.c:2716
+#: ex_cmds2.c:2799
 msgid "E168: :finish used outside of a sourced file"
 msgstr "E168: :finish används utanför en körd fil"
 
-#: ex_cmds2.c:3159
+#: ex_cmds2.c:3248
 #, c-format
 msgid "Page %d"
 msgstr "Sida %d"
 
-#: ex_cmds2.c:3315
+#: ex_cmds2.c:3404
 msgid "No text to be printed"
 msgstr "Ingen text att skriva ut"
 
-#: ex_cmds2.c:3393
+#: ex_cmds2.c:3482
 #, c-format
 msgid "Printing page %d (%d%%)"
 msgstr "Skriver ut sida %d (%d%%)"
 
-#: ex_cmds2.c:3405
+#: ex_cmds2.c:3494
 #, c-format
 msgid " Copy %d of %d"
 msgstr " Kopia %d av %d"
 
-#: ex_cmds2.c:3463
+#: ex_cmds2.c:3552
 #, c-format
 msgid "Printed: %s"
 msgstr "Skrev ut: %s"
 
-#: ex_cmds2.c:3470
+#: ex_cmds2.c:3559
+#, c-format
 msgid "Printing aborted"
 msgstr "Utskrift avbruten"
 
-#: ex_cmds2.c:3835
+#: ex_cmds2.c:3924
 msgid "E455: Error writing to PostScript output file"
 msgstr "E455: Fel vid skrivning av utdata till PostScript-fil"
 
-#: ex_cmds2.c:4110
+#: ex_cmds2.c:4199
 #, c-format
 msgid "E624: Can't open file \"%s\""
 msgstr "E624: Kan inte öppna fil \"%s\""
 
-#: ex_cmds2.c:4120 ex_cmds2.c:4745
+#: ex_cmds2.c:4209 ex_cmds2.c:4834
 #, c-format
 msgid "E457: Can't read PostScript resource file \"%s\""
 msgstr "E457: Kan inte läsa PostScript-resursfil \"%s\""
 
-#: ex_cmds2.c:4128
+#: ex_cmds2.c:4217
 #, c-format
 msgid "E618: file \"%s\" is not a PostScript resource file"
 msgstr "E618: fil \"%s\" är inte en PostScript-resursfil"
 
-#: ex_cmds2.c:4143 ex_cmds2.c:4163 ex_cmds2.c:4178 ex_cmds2.c:4200
+#: ex_cmds2.c:4232 ex_cmds2.c:4252 ex_cmds2.c:4267 ex_cmds2.c:4289
 #, c-format
 msgid "E619: file \"%s\" is not a supported PostScript resource file"
 msgstr "E619: fil \"%s\" är inte en PostScript-resursfil som stöds"
 
-#: ex_cmds2.c:4230
+#: ex_cmds2.c:4319
 #, c-format
 msgid "E621: \"%s\" resource file has wrong version"
 msgstr "E621: \"%s\"-källfilen har fel version"
 
-#: ex_cmds2.c:4697
+#: ex_cmds2.c:4786
 msgid "E324: Can't open PostScript output file"
 msgstr "E324: Kan inte öppna PostScript-utfil"
 
-#: ex_cmds2.c:4730
+#: ex_cmds2.c:4819
 #, c-format
 msgid "E456: Can't open file \"%s\""
 msgstr "E456: Kan inte öppna fil \"%s\""
 
-#: ex_cmds2.c:4849
+#: ex_cmds2.c:4938
 msgid "E456: Can't find PostScript resource file \"prolog.ps\""
 msgstr "E456: Kan inte hitta PostScript-källfilen \"prolog.ps\""
 
-#: ex_cmds2.c:4880
+#: ex_cmds2.c:4969
 #, c-format
 msgid "E456: Can't find PostScript resource file \"%s.ps\""
 msgstr "E456: Kan inte hitta PostScript-källfilen \"%s.ps\""
 
-#: ex_cmds2.c:4898
+#: ex_cmds2.c:4987
 #, c-format
 msgid "E620: Unable to convert from multi-byte to \"%s\" encoding"
 msgstr "E620: Kunde inte konvertera från multi-byte till \"%s\" encoding"
 
-#: ex_cmds2.c:5023
+#: ex_cmds2.c:5112
 msgid "Sending to printer..."
 msgstr "Skickar till skrivare..."
 
-#: ex_cmds2.c:5027
+#: ex_cmds2.c:5116
 msgid "E365: Failed to print PostScript file"
 msgstr "E365: Misslyckades med att skriva ut PostScript-fil"
 
-#: ex_cmds2.c:5029
+#: ex_cmds2.c:5118
 msgid "Print job sent."
 msgstr "Skrivarjobb skickat."
 
-#: ex_cmds2.c:5438
+#: ex_cmds2.c:5628
 #, c-format
 msgid "Current %slanguage: \"%s\""
 msgstr "Aktuellt %sspråk: \"%s\""
 
-#: ex_cmds2.c:5449
+#: ex_cmds2.c:5639
 #, c-format
 msgid "E197: Cannot set language to \"%s\""
 msgstr "E197: Kan inte sätta språk till \"%s\""
@@ -846,10 +859,12 @@ msgid "<%s>%s%s  %d,  Hex %02x,  Octal %03o"
 msgstr "<%s>%s%s  %d,  Hex %02x,  Oktalt %03o"
 
 #: ex_cmds.c:118
+#, c-format
 msgid "> %d, Hex %04x, Octal %o"
 msgstr "> %d, Hex %04x,  Oktalt %o"
 
 #: ex_cmds.c:119
+#, c-format
 msgid "> %d, Hex %08x, Octal %o"
 msgstr "> %d, Hex %08x, Oktalt %o"
 
@@ -866,67 +881,68 @@ msgstr "1 rad flyttad"
 msgid "%ld lines moved"
 msgstr "%ld rader flyttade"
 
-#: ex_cmds.c:924
+#: ex_cmds.c:927
 #, c-format
 msgid "%ld lines filtered"
 msgstr "%ld rader filtrerade"
 
-#: ex_cmds.c:952
+#: ex_cmds.c:955
 msgid "E135: *Filter* Autocommands must not change current buffer"
 msgstr "E135: *Filter*-Autokommandon får inte ändra aktuell buffert"
 
-#: ex_cmds.c:1037
+#: ex_cmds.c:1040
 msgid "[No write since last change]\n"
 msgstr "[Ingen skrivning sedan senaste ändring]\n"
 
-#: ex_cmds.c:1283
+#: ex_cmds.c:1286
 #, c-format
 msgid "%sviminfo: %s in line: "
 msgstr "%sviminfo: %s på rad: "
 
-#: ex_cmds.c:1288
+#: ex_cmds.c:1291
 msgid "E136: viminfo: Too many errors, skipping rest of file"
 msgstr "E136: viminfo: För många fel, hoppar över resten av filen"
 
-#: ex_cmds.c:1323
+#: ex_cmds.c:1326
 #, c-format
 msgid "Reading viminfo file \"%s\"%s%s%s"
 msgstr "Läser viminfo-fil \"%s\"%s%s%s"
 
-#: ex_cmds.c:1324
+#: ex_cmds.c:1327
 msgid " info"
 msgstr " info"
 
-#: ex_cmds.c:1325
+#: ex_cmds.c:1328
 msgid " marks"
 msgstr " märken"
 
-#: ex_cmds.c:1326
+#: ex_cmds.c:1329
 msgid " FAILED"
 msgstr " MISSLYCKADES"
 
-#: ex_cmds.c:1418
+#: ex_cmds.c:1421
 #, c-format
 msgid "E137: Viminfo file is not writable: %s"
 msgstr "E137: Viminfo-fil är inte skrivbar: %s"
 
-#: ex_cmds.c:1543
+#: ex_cmds.c:1546
 #, c-format
 msgid "E138: Can't write viminfo file %s!"
 msgstr "E138: Kan inte skriva viminfo-fil %s!"
 
-#: ex_cmds.c:1551
+#: ex_cmds.c:1554
 #, c-format
 msgid "Writing viminfo file \"%s\""
 msgstr "Skriver viminfo-fil \"%s\""
 
 #. Write the info:
-#: ex_cmds.c:1649
+#: ex_cmds.c:1652
 #, c-format
 msgid "# This viminfo file was generated by Vim %s.\n"
 msgstr "# Den här viminfo-filen genererades av Vim %s.\n"
 
-#: ex_cmds.c:1651
+#: ex_cmds.c:1654
+#, c-format
 msgid ""
 "# You may edit it if you're careful!\n"
 "\n"
@@ -934,43 +950,44 @@ msgstr ""
 "# Du får redigera den om du är försiktig!\n"
 "\n"
 
-#: ex_cmds.c:1653
+#: ex_cmds.c:1656
+#, c-format
 msgid "# Value of 'encoding' when this file was written\n"
 msgstr "# Värde av 'encoding' när den här filen blev skriven\n"
 
-#: ex_cmds.c:1752
+#: ex_cmds.c:1755
 msgid "Illegal starting char"
 msgstr "Otillåtet starttecken"
 
 #. Overwriting a file that is loaded in another buffer is not a
 #. * good idea.
-#: ex_cmds.c:2140
+#: ex_cmds.c:2143
 msgid "E139: File is loaded in another buffer"
 msgstr "E139: Filen är inläst i en annan buffert"
 
-#: ex_cmds.c:2174
+#: ex_cmds.c:2177
 msgid "Write partial file?"
 msgstr "Skriv ofullständig fil?"
 
-#: ex_cmds.c:2181
+#: ex_cmds.c:2184
 msgid "E140: Use ! to write partial buffer"
 msgstr "E140: Använd ! för att skriva ofullständig buffert"
 
-#: ex_cmds.c:2296
+#: ex_cmds.c:2299
 #, c-format
 msgid "Overwrite existing file \"%.*s\"?"
 msgstr "Skriv över befintlig fil \"%.*s\"?"
 
-#: ex_cmds.c:2367
+#: ex_cmds.c:2370
 #, c-format
 msgid "E141: No file name for buffer %ld"
 msgstr "E141: Inget filnamn för buffert %ld"
 
-#: ex_cmds.c:2405
+#: ex_cmds.c:2409
 msgid "E142: File not written: Writing is disabled by 'write' option"
 msgstr "E142: Filen skrevs inte: Skrivning är inaktiverat med 'write'-flaggan"
 
-#: ex_cmds.c:2425
+#: ex_cmds.c:2429
 #, c-format
 msgid ""
 "'readonly' option is set for \"%.*s\".\n"
@@ -979,68 +996,69 @@ msgstr ""
 "'readonly' flaggan är satt för \"%.*s\".\n"
 "Önskar du att skriva ändå?"
 
-#: ex_cmds.c:2597
+#: ex_cmds.c:2602
 msgid "Edit File"
 msgstr "Redigera fil"
 
-#: ex_cmds.c:3170
+#: ex_cmds.c:3209
 #, c-format
 msgid "E143: Autocommands unexpectedly deleted new buffer %s"
 msgstr "E143: Autokommandon tog oväntat bort ny buffert %s"
 
-#: ex_cmds.c:3302
+#: ex_cmds.c:3343
 msgid "E144: non-numeric argument to :z"
 msgstr "E144: ickenumeriskt argument till :z"
 
-#: ex_cmds.c:3387
+#: ex_cmds.c:3428
 msgid "E145: Shell commands not allowed in rvim"
 msgstr "E145: Skalkommandon inte tillåtna i rvim"
 
-#: ex_cmds.c:3494
+#: ex_cmds.c:3535
 msgid "E146: Regular expressions can't be delimited by letters"
 msgstr "E146: Reguljära uttryck kan inte vara åtskilda av bokstäver"
 
-#: ex_cmds.c:3840
+#: ex_cmds.c:3887
 #, c-format
 msgid "replace with %s (y/n/a/q/l/^E/^Y)?"
 msgstr "ersätt med %s (y/n/a/q/l/^E/^Y)?"
 
-#: ex_cmds.c:4216
+#: ex_cmds.c:4283
 msgid "(Interrupted) "
 msgstr "(Avbruten) "
 
-#: ex_cmds.c:4220
+#: ex_cmds.c:4287
 msgid "1 substitution"
 msgstr "1 ersättning"
 
-#: ex_cmds.c:4222
+#: ex_cmds.c:4289
 #, c-format
 msgid "%ld substitutions"
 msgstr "%ld ersättningar"
 
-#: ex_cmds.c:4225
+#: ex_cmds.c:4292
 msgid " on 1 line"
 msgstr " på 1 rad"
 
-#: ex_cmds.c:4227
+#: ex_cmds.c:4294
 #, c-format
 msgid " on %ld lines"
 msgstr " på %ld rader"
 
-#: ex_cmds.c:4278
+#: ex_cmds.c:4345
 msgid "E147: Cannot do :global recursive"
 msgstr "E147: Kan inte göra :global rekursivt"
 
-#: ex_cmds.c:4313
+#: ex_cmds.c:4380
 msgid "E148: Regular expression missing from global"
 msgstr "E148: Reguljärt uttryck saknas från global"
 
-#: ex_cmds.c:4362
+#: ex_cmds.c:4429
 #, c-format
 msgid "Pattern found in every line: %s"
 msgstr "Mönster funnet i varje rad: %s"
 
-#: ex_cmds.c:4443
+#: ex_cmds.c:4510
+#, c-format
 msgid ""
 "\n"
 "# Last Substitute String:\n"
@@ -1050,166 +1068,176 @@ msgstr ""
 "# Senaste ersättningssträng:\n"
 "$"
 
-#: ex_cmds.c:4556
+#: ex_cmds.c:4611
+msgid "E478: Don't panic!"
+msgstr "E478: Få inte panik!"
+
+#: ex_cmds.c:4663
+#, c-format
+msgid "E661: Sorry, no '%s' help for %s"
+msgstr "E661: Tyvärr, ingen '%s' hjälp för %s"
+
+#: ex_cmds.c:4666
 #, c-format
 msgid "E149: Sorry, no help for %s"
 msgstr "E149: Tyvärr, ingen hjälp för %s"
 
-#: ex_cmds.c:4590
+#: ex_cmds.c:4700
 #, c-format
 msgid "Sorry, help file \"%s\" not found"
 msgstr "Tyvärr, hjälpfil \"%s\" hittades inte"
 
-#: ex_cmds.c:5067
+#: ex_cmds.c:5203
 #, c-format
 msgid "E150: Not a directory: %s"
 msgstr "E150: Inte en katalog: %s"
 
-#: ex_cmds.c:5095
+#: ex_cmds.c:5344
 #, c-format
 msgid "E152: Cannot open %s for writing"
 msgstr "E152: Kan inte öppna %s för skrivning"
 
-#: ex_cmds.c:5130
+#: ex_cmds.c:5380
 #, c-format
 msgid "E153: Unable to open %s for reading"
 msgstr "E153: Kunde inte öppna %s för läsning"
 
-#: ex_cmds.c:5209
+#: ex_cmds.c:5416
 #, c-format
-msgid "E154: Duplicate tag \"%s\" in file %s"
-msgstr "E154: Duplicerad tagg \"%s\" i fil %s"
+msgid "E670: Mix of help file encodings within a language: %s"
+msgstr "E670: Blandning av hjälpfilskodningar inom ett språk: %s"
 
-#: ex_cmds.c:5316
+#: ex_cmds.c:5495
+#, c-format
+msgid "E154: Duplicate tag \"%s\" in file %s/%s"
+msgstr "E154: Duplicerad tagg \"%s\" i fil %s/%s"
+
+#: ex_cmds.c:5611
 #, c-format
 msgid "E160: Unknown sign command: %s"
 msgstr "E160: Okänt signaturkommando: %s"
 
-#: ex_cmds.c:5336
+#: ex_cmds.c:5631
 msgid "E156: Missing sign name"
 msgstr "E156: Saknar signaturnamn"
 
-#: ex_cmds.c:5382
+#: ex_cmds.c:5677
 msgid "E612: Too many signs defined"
 msgstr "E612: För många signaturer definierade"
 
-#: ex_cmds.c:5449
+#: ex_cmds.c:5745
 #, c-format
 msgid "E239: Invalid sign text: %s"
 msgstr "E239: Ogiltig signaturtext: %s"
 
-#: ex_cmds.c:5480 ex_cmds.c:5666
+#: ex_cmds.c:5776 ex_cmds.c:5967
 #, c-format
 msgid "E155: Unknown sign: %s"
 msgstr "E155: Okänd signatur: %s"
 
-#: ex_cmds.c:5526
+#: ex_cmds.c:5825
 msgid "E159: Missing sign number"
 msgstr "E159: Saknar signaturnummer"
 
-#: ex_cmds.c:5606
+#: ex_cmds.c:5907
 #, c-format
 msgid "E158: Invalid buffer name: %s"
 msgstr "E158: Ogiltigt buffertnamn: %s"
 
-#: ex_cmds.c:5645
+#: ex_cmds.c:5946
 #, c-format
 msgid "E157: Invalid sign ID: %ld"
 msgstr "E157: Ogiltigt signatur-ID: %ld"
 
-#: ex_cmds.c:5715
+#: ex_cmds.c:6016
 msgid " (NOT FOUND)"
 msgstr " (INTE HITTADE)"
 
-#: ex_cmds.c:5717
+#: ex_cmds.c:6018
 msgid " (not supported)"
 msgstr " (stöds inte)"
 
-#: ex_cmds.c:5816
+#: ex_cmds.c:6117
 msgid "[Deleted]"
 msgstr "[Borttagen]"
 
-#: ex_docmd.c:490
+#: ex_docmd.c:525
 msgid "Entering Ex mode.  Type \"visual\" to go to Normal mode."
 msgstr "Går in i Ex-läge.  Skriv \"visual\" för att gå till Normal-läge."
 
 #. must be at EOF
-#: ex_docmd.c:526
+#: ex_docmd.c:569
 msgid "E501: At end-of-file"
 msgstr "E501: Vid filslut"
 
-#: ex_docmd.c:632
+#: ex_docmd.c:678
 msgid "E169: Command too recursive"
 msgstr "E169: Kommando för rekursivt"
 
-#: ex_docmd.c:1155
+#: ex_docmd.c:1240
 #, c-format
 msgid "E605: Exception not caught: %s"
 msgstr "E605: Undantag inte fångat: %s"
 
-#: ex_docmd.c:1241
+#: ex_docmd.c:1328
 msgid "End of sourced file"
 msgstr "Slut på läst fil"
 
-#: ex_docmd.c:1242
+#: ex_docmd.c:1329
 msgid "End of function"
 msgstr "Slut på funktion"
 
-#: ex_docmd.c:1706
+#: ex_docmd.c:1918
 msgid "E464: Ambiguous use of user-defined command"
 msgstr "E464: Otydlig användning av användardefinierat kommando"
 
-#: ex_docmd.c:1720
+#: ex_docmd.c:1932
 msgid "E492: Not an editor command"
 msgstr "E492: Inte ett redigerarkommando"
 
-#: ex_docmd.c:1810
-msgid "E478: Don't panic!"
-msgstr "E478: Få inte panik!"
-
-#: ex_docmd.c:1829
+#: ex_docmd.c:2039
 msgid "E493: Backwards range given"
 msgstr "E493: Bakåtområde givet"
 
-#: ex_docmd.c:1838
+#: ex_docmd.c:2048
 msgid "Backwards range given, OK to swap"
 msgstr "Bakåtområde givet, OK att växla"
 
-#: ex_docmd.c:1961
+#: ex_docmd.c:2171
 msgid "E494: Use w or w>>"
 msgstr "E494: Använd w eller w>>"
 
-#: ex_docmd.c:3570
+#: ex_docmd.c:3797
 msgid "E319: Sorry, the command is not available in this version"
 msgstr "E319: Tyvärr, kommandot är inte tillgängligt i den här versionen"
 
-#: ex_docmd.c:3756
+#: ex_docmd.c:4000
 msgid "E172: Only one file name allowed"
 msgstr "E172: Bara ett filnamn tillåtet"
 
-#: ex_docmd.c:4320
+#: ex_docmd.c:4580
 msgid "1 more file to edit.  Quit anyway?"
 msgstr "1 fil till att redigera.  Avsluta ändå?"
 
-#: ex_docmd.c:4323
+#: ex_docmd.c:4583
 #, c-format
 msgid "%d more files to edit.  Quit anyway?"
 msgstr "%d filer till att redigera.  Avsluta ändå?"
 
-#: ex_docmd.c:4330
+#: ex_docmd.c:4590
 msgid "E173: 1 more file to edit"
 msgstr "E173: 1 fil till att redigera"
 
-#: ex_docmd.c:4332
+#: ex_docmd.c:4592
 #, c-format
 msgid "E173: %ld more files to edit"
 msgstr "E173: %ld filer till att redigera"
 
-#: ex_docmd.c:4427
+#: ex_docmd.c:4687
 msgid "E174: Command already exists: add ! to replace it"
 msgstr "E174: Kommando existerar redan: lägg till ! för att ersätta det"
 
-#: ex_docmd.c:4537
+#: ex_docmd.c:4798
 msgid ""
 "\n"
 "    Name        Args Range Complete  Definition"
@@ -1217,324 +1245,324 @@ msgstr ""
 "\n"
 "    Namn        Arg Område Färdigt  Definition"
 
-#: ex_docmd.c:4626
+#: ex_docmd.c:4887
 msgid "No user-defined commands found"
 msgstr "Inga användardefinierade kommandon hittade"
 
-#: ex_docmd.c:4658
+#: ex_docmd.c:4919
 msgid "E175: No attribute specified"
 msgstr "E175: Inga attribut angivna"
 
-#: ex_docmd.c:4710
+#: ex_docmd.c:4971
 msgid "E176: Invalid number of arguments"
 msgstr "E176: Ogiltigt antal argument"
 
-#: ex_docmd.c:4725
+#: ex_docmd.c:4986
 msgid "E177: Count cannot be specified twice"
 msgstr "E177: Antal kan inte anges två gånger"
 
-#: ex_docmd.c:4735
+#: ex_docmd.c:4996
 msgid "E178: Invalid default value for count"
 msgstr "E178: Ogiltigt standardvärde för antal"
 
-#: ex_docmd.c:4766
+#: ex_docmd.c:5027
 msgid "E179: argument required for complete"
 msgstr "E179: argument krävs för komplettering"
 
-#: ex_docmd.c:4798
+#: ex_docmd.c:5059
 #, c-format
 msgid "E180: Invalid complete value: %s"
 msgstr "E180: Ogiltigt kompletteringsvärde: %s"
 
-#: ex_docmd.c:4803
-msgid "E467: Custom completion requires a function argument"
-msgstr "E467: Specialkomplettering kräver ett funktionsargument"
-
-#: ex_docmd.c:4808
+#: ex_docmd.c:5068
 msgid "E468: Completion argument only allowed for custom completion"
 msgstr "E468: Kompletteringsargument bara tillåtet för specialkomplettering"
 
-#: ex_docmd.c:4818
+#: ex_docmd.c:5074
+msgid "E467: Custom completion requires a function argument"
+msgstr "E467: Specialkomplettering kräver ett funktionsargument"
+
+#: ex_docmd.c:5085
 #, c-format
 msgid "E181: Invalid attribute: %s"
 msgstr "E181: Ogiltigt attribut: %s"
 
-#: ex_docmd.c:4861
+#: ex_docmd.c:5128
 msgid "E182: Invalid command name"
 msgstr "E182: Ogiltigt kommandonamn"
 
-#: ex_docmd.c:4876
+#: ex_docmd.c:5143
 msgid "E183: User defined commands must start with an uppercase letter"
 msgstr "E183: Användardefinierade kommandon måste börja med en stor bokstav"
 
-#: ex_docmd.c:4946
+#: ex_docmd.c:5214
 #, c-format
 msgid "E184: No such user-defined command: %s"
 msgstr "E184: Inget sådant användardefinierat kommando: %s"
 
-#: ex_docmd.c:5405
+#: ex_docmd.c:5675
 #, c-format
 msgid "E185: Cannot find color scheme %s"
 msgstr "E185: Kan inte hitta färgschema %s"
 
-#: ex_docmd.c:5413
+#: ex_docmd.c:5683
 msgid "Greetings, Vim user!"
 msgstr "Välkommen, Vim-användare!"
 
-#: ex_docmd.c:6136
+#: ex_docmd.c:6404
 msgid "Edit File in new window"
 msgstr "Redigera fil i nytt fönster"
 
-#: ex_docmd.c:6431
+#: ex_docmd.c:6719
 msgid "No swap file"
 msgstr "Ingen växlingsfil"
 
-#: ex_docmd.c:6535
+#: ex_docmd.c:6823
 msgid "Append File"
 msgstr "Lägg till fil"
 
-#: ex_docmd.c:6599
+#: ex_docmd.c:6887
 msgid "E186: No previous directory"
 msgstr "E186: Ingen tidigare katalog"
 
-#: ex_docmd.c:6681
+#: ex_docmd.c:6969
 msgid "E187: Unknown"
 msgstr "E187: Okänt"
 
-#: ex_docmd.c:6766
+#: ex_docmd.c:7054
 msgid "E465: :winsize requires two number arguments"
 msgstr "E465: :winsize kräver två sifferargument"
 
-#: ex_docmd.c:6817
+#: ex_docmd.c:7110
 #, c-format
 msgid "Window position: X %d, Y %d"
 msgstr "Fönsterposition: X %d, Y %d"
 
-#: ex_docmd.c:6822
+#: ex_docmd.c:7115
 msgid "E188: Obtaining window position not implemented for this platform"
 msgstr ""
 "E188: Förskaffa fönsterposition inte implementerat för den här plattformen"
 
-#: ex_docmd.c:6832
+#: ex_docmd.c:7125
 msgid "E466: :winpos requires two number arguments"
 msgstr "E466: :winpos kräver två sifferargument"
 
-#: ex_docmd.c:7111
+#: ex_docmd.c:7403
 msgid "Save Redirection"
 msgstr "Spara omdirigering"
 
-#: ex_docmd.c:7292
+#: ex_docmd.c:7593
 msgid "Save View"
 msgstr "Spara vy"
 
-#: ex_docmd.c:7293
+#: ex_docmd.c:7594
 msgid "Save Session"
 msgstr "Spara session"
 
-#: ex_docmd.c:7295
+#: ex_docmd.c:7596
 msgid "Save Setup"
 msgstr "Spara konfiguration"
 
-#: ex_docmd.c:7446
+#: ex_docmd.c:7748
 #, c-format
 msgid "E189: \"%s\" exists (add ! to override)"
 msgstr "E189: \"%s\" existerar (lägg till ! för att tvinga)"
 
-#: ex_docmd.c:7451
+#: ex_docmd.c:7753
 #, c-format
 msgid "E190: Cannot open \"%s\" for writing"
 msgstr "E190: Kan inte öppna \"%s\" för skrivning"
 
 #. set mark
-#: ex_docmd.c:7475
+#: ex_docmd.c:7777
 msgid "E191: Argument must be a letter or forward/backward quote"
 msgstr ""
 "E191: Argument måste vara en bokstav eller framåt-/bakåtvänt citattecken"
 
-#: ex_docmd.c:7517
+#: ex_docmd.c:7819
 msgid "E192: Recursive use of :normal too deep"
 msgstr "E192: Rekursiv användning av :normal för djup"
 
-#: ex_docmd.c:8033
+#: ex_docmd.c:8337
 msgid "E194: No alternate file name to substitute for '#'"
-msgstr "E194: Inget alternativt filnamn att ersätta '#' med"
+msgstr "E194: Inget alternativt filnamn att byta ut '#' med"
 
-#: ex_docmd.c:8064
+#: ex_docmd.c:8368
 msgid "E495: no autocommand file name to substitute for \"<afile>\""
 msgstr "E495: inget autokommando-filnamn att ersätta \"<afile>\" med"
 
-#: ex_docmd.c:8072
+#: ex_docmd.c:8376
 msgid "E496: no autocommand buffer number to substitute for \"<abuf>\""
 msgstr "E496: inget autokommando-buffernummer att ersätta \"<abuf>\" med"
 
-#: ex_docmd.c:8083
+#: ex_docmd.c:8387
 msgid "E497: no autocommand match name to substitute for \"<amatch>\""
-msgstr "E497: inget autokommando-träffnamn att ersätta \"<amatch>\" med"
+msgstr "E497: inget autokommando-träffnamn att byta ut \"<amatch>\" med"
 
-#: ex_docmd.c:8093
+#: ex_docmd.c:8397
 msgid "E498: no :source file name to substitute for \"<sfile>\""
-msgstr "E498: inget :source-filnamn att ersätta \"<sfile>\" med"
+msgstr "E498: inget :source-filnamn att byta ut \"<sfile>\" med"
 
-#: ex_docmd.c:8134
+#: ex_docmd.c:8438
 #, no-c-format
 msgid "E499: Empty file name for '%' or '#', only works with \":p:h\""
 msgstr "E499: Tomt filnamn för '%' or '#', fungerar bara med \":p:h\""
 
-#: ex_docmd.c:8136
+#: ex_docmd.c:8440
 msgid "E500: Evaluates to an empty string"
 msgstr "E500: Evaluerar till en tom sträng"
 
-#: ex_docmd.c:9067
+#: ex_docmd.c:9411
 msgid "E195: Cannot open viminfo file for reading"
 msgstr "E195: Kan inte öppna viminfo-fil för läsning"
 
-#: ex_docmd.c:9240
+#: ex_docmd.c:9584
 msgid "E196: No digraphs in this version"
 msgstr "E196: Inga digrafer i den här versionen"
 
-#: ex_eval.c:423
+#: ex_eval.c:440
 msgid "E608: Cannot :throw exceptions with 'Vim' prefix"
 msgstr "E608: Kan inte :throw undantag med 'Vim'-prefix"
 
 #. always scroll up, don't overwrite
-#: ex_eval.c:509
+#: ex_eval.c:529
 #, c-format
 msgid "Exception thrown: %s"
 msgstr "Undantag kastade: %s"
 
-#: ex_eval.c:556
+#: ex_eval.c:576
 #, c-format
 msgid "Exception finished: %s"
 msgstr "Undantag färdiga: %s"
 
-#: ex_eval.c:557
+#: ex_eval.c:577
 #, c-format
 msgid "Exception discarded: %s"
 msgstr "Undantag förkastade: %s"
 
-#: ex_eval.c:600 ex_eval.c:644
+#: ex_eval.c:620 ex_eval.c:664
 #, c-format
 msgid "%s, line %ld"
 msgstr "%s, rad %ld"
 
 #. always scroll up, don't overwrite
-#: ex_eval.c:618
+#: ex_eval.c:638
 #, c-format
 msgid "Exception caught: %s"
 msgstr "Undantag fångade: %s"
 
-#: ex_eval.c:693
+#: ex_eval.c:713
 #, c-format
 msgid "%s made pending"
 msgstr "%s gjordes avvaktande"
 
-#: ex_eval.c:696
+#: ex_eval.c:716
 #, c-format
 msgid "%s resumed"
 msgstr "%s återupptagen"
 
-#: ex_eval.c:700
+#: ex_eval.c:720
 #, c-format
 msgid "%s discarded"
 msgstr "%s förkastad"
 
-#: ex_eval.c:726
+#: ex_eval.c:746
 msgid "Exception"
 msgstr "Undantag"
 
-#: ex_eval.c:732
+#: ex_eval.c:752
 msgid "Error and interrupt"
 msgstr "Fel och avbrytet"
 
-#: ex_eval.c:734 gui.c:4259
+#: ex_eval.c:754 gui.c:4388
 msgid "Error"
 msgstr "Fel"
 
 #. if (pending & CSTP_INTERRUPT)
-#: ex_eval.c:736
+#: ex_eval.c:756
 msgid "Interrupt"
 msgstr "Avbryt"
 
-#: ex_eval.c:810
+#: ex_eval.c:830
 msgid "E579: :if nesting too deep"
 msgstr "E579: :if nästlad för djupt"
 
-#: ex_eval.c:847
+#: ex_eval.c:867
 msgid "E580: :endif without :if"
 msgstr "E580: :endif utan :if"
 
-#: ex_eval.c:891
+#: ex_eval.c:911
 msgid "E581: :else without :if"
 msgstr "E581: :else utan :if"
 
-#: ex_eval.c:894
+#: ex_eval.c:914
 msgid "E582: :elseif without :if"
 msgstr "E582: :elseif utan :if"
 
-#: ex_eval.c:901
+#: ex_eval.c:921
 msgid "E583: multiple :else"
 msgstr "E583: flera :else"
 
-#: ex_eval.c:904
+#: ex_eval.c:924
 msgid "E584: :elseif after :else"
 msgstr "E584: :elseif efter :else"
 
-#: ex_eval.c:971
+#: ex_eval.c:991
 msgid "E585: :while nesting too deep"
 msgstr "E585: :while nästlad för djupt"
 
-#: ex_eval.c:1027
+#: ex_eval.c:1047
 msgid "E586: :continue without :while"
 msgstr "E586: :continue utan :while"
 
-#: ex_eval.c:1067
+#: ex_eval.c:1087
 msgid "E587: :break without :while"
 msgstr "E587: :break utan :while"
 
-#: ex_eval.c:1266
+#: ex_eval.c:1286
 msgid "E601: :try nesting too deep"
 msgstr "E601: :try nästlad för djupt"
 
-#: ex_eval.c:1346
+#: ex_eval.c:1366
 msgid "E603: :catch without :try"
 msgstr "E603: :catch utan :try"
 
 #. Give up for a ":catch" after ":finally" and ignore it.
 #. * Just parse.
-#: ex_eval.c:1368
+#: ex_eval.c:1388
 msgid "E604: :catch after :finally"
 msgstr "E604: :catch efter :finally"
 
-#: ex_eval.c:1501
+#: ex_eval.c:1521
 msgid "E606: :finally without :try"
 msgstr "E606: :finally utan :try"
 
 #. Give up for a multiple ":finally" and ignore it.
-#: ex_eval.c:1525
+#: ex_eval.c:1545
 msgid "E607: multiple :finally"
 msgstr "E607: flera :finally"
 
-#: ex_eval.c:1634
+#: ex_eval.c:1654
 msgid "E602: :endtry without :try"
 msgstr "E602: :endtry utan :try"
 
-#: ex_eval.c:1966
+#: ex_eval.c:2140
 msgid "E193: :endfunction not inside a function"
 msgstr "E193: :endfunction inte inom en funktion"
 
-#: ex_getln.c:3229
+#: ex_getln.c:3444
 msgid "tagname"
 msgstr "taggnamn"
 
-#: ex_getln.c:3232
+#: ex_getln.c:3447
 msgid " kind file\n"
 msgstr " snäll fil\n"
 
-#: ex_getln.c:4591
+#: ex_getln.c:4946
 msgid "'history' option is zero"
 msgstr "'history'-flagga är noll"
 
-#: ex_getln.c:4856
+#: ex_getln.c:5217
 #, c-format
 msgid ""
 "\n"
@@ -1543,256 +1571,260 @@ msgstr ""
 "\n"
 "# %s Historia (nyaste till äldsta):\n"
 
-#: ex_getln.c:4857
+#: ex_getln.c:5218
 msgid "Command Line"
 msgstr "Kommandorad"
 
-#: ex_getln.c:4858
+#: ex_getln.c:5219
 msgid "Search String"
 msgstr "Söksträng"
 
-#: ex_getln.c:4859
+#: ex_getln.c:5220
 msgid "Expression"
 msgstr "Uttryck"
 
-#: ex_getln.c:4860
+#: ex_getln.c:5221
 msgid "Input Line"
 msgstr "Inmatningsrad"
 
-#: ex_getln.c:4898
+#: ex_getln.c:5259
 msgid "E198: cmd_pchar beyond the command length"
 msgstr "E198: cmd_pchar bortom kommandolängden"
 
-#: ex_getln.c:5075
+#: ex_getln.c:5436
 msgid "E199: Active window or buffer deleted"
 msgstr "E199: Aktivt fönster eller buffert borttagen"
 
-#: fileio.c:369
+#: fileio.c:383
 msgid "Illegal file name"
 msgstr "Otillåtet filnamn"
 
-#: fileio.c:393 fileio.c:518 fileio.c:2730 fileio.c:2771
+#: fileio.c:408 fileio.c:548 fileio.c:2938 fileio.c:2979
 msgid "is a directory"
 msgstr "är en katalog"
 
-#: fileio.c:395
+#: fileio.c:410
 msgid "is not a file"
 msgstr "är inte en fil"
 
-#: fileio.c:540 fileio.c:3892
+#: fileio.c:570 fileio.c:4170
 msgid "[New File]"
 msgstr "[Ny fil]"
 
-#: fileio.c:573
+#: fileio.c:603
 msgid "[Permission Denied]"
 msgstr "[Tillåtelse nekas]"
 
-#: fileio.c:677
+#: fileio.c:714
 msgid "E200: *ReadPre autocommands made the file unreadable"
 msgstr "E200: *ReadPre autokommandon gjorde filen oläsbar"
 
-#: fileio.c:679
+#: fileio.c:716
 msgid "E201: *ReadPre autocommands must not change current buffer"
 msgstr "E201: *ReadPre autokommandon får inte ändra nuvarande buffert"
 
-#: fileio.c:700
+#: fileio.c:737
 msgid "Vim: Reading from stdin...\n"
 msgstr "Vim: Läser från standard in...\n"
 
-#: fileio.c:706
+#: fileio.c:743
 msgid "Reading from stdin..."
 msgstr "Läser från standard in..."
 
 #. Re-opening the original file failed!
-#: fileio.c:951
+#: fileio.c:1020
 msgid "E202: Conversion made file unreadable!"
 msgstr "E202: Konvertering gjorde filen oläsbar!"
 
-#: fileio.c:1917
+#: fileio.c:2110
 msgid "[fifo/socket]"
 msgstr "[fifo/uttag]"
 
-#: fileio.c:1924
+#: fileio.c:2117
 msgid "[fifo]"
 msgstr "[fifo]"
 
-#: fileio.c:1931
+#: fileio.c:2124
 msgid "[socket]"
 msgstr "[uttag]"
 
-#: fileio.c:1939
+#: fileio.c:2132
 msgid "[RO]"
 msgstr "[EL]"
 
-#: fileio.c:1949
+#: fileio.c:2142
 msgid "[CR missing]"
 msgstr "[CR saknas]"
 
-#: fileio.c:1954
+#: fileio.c:2147
 msgid "[NL found]"
 msgstr "[NL hittat]"
 
-#: fileio.c:1959
+#: fileio.c:2152
 msgid "[long lines split]"
 msgstr "[långa rader delade]"
 
-#: fileio.c:1965 fileio.c:3876
+#: fileio.c:2158 fileio.c:4154
 msgid "[NOT converted]"
 msgstr "[INTE konverterad]"
 
-#: fileio.c:1970 fileio.c:3881
+#: fileio.c:2163 fileio.c:4159
 msgid "[converted]"
 msgstr "[konverterad]"
 
-#: fileio.c:1977 fileio.c:3906
+#: fileio.c:2170 fileio.c:4184
 msgid "[crypted]"
 msgstr "[krypterad]"
 
-#: fileio.c:1984
+#: fileio.c:2177
 msgid "[CONVERSION ERROR]"
 msgstr "[KONVERTERINGSFEL]"
 
-#: fileio.c:1990
+#: fileio.c:2183
 #, c-format
 msgid "[ILLEGAL BYTE in line %ld]"
 msgstr "[OTILLÅTEN BIT på rad %ld]"
 
-#: fileio.c:1997
+#: fileio.c:2190
 msgid "[READ ERRORS]"
 msgstr "[LÄSFEL]"
 
-#: fileio.c:2213
+#: fileio.c:2406
 msgid "Can't find temp file for conversion"
 msgstr "Kan inte hitta temporär fil för konvertering"
 
-#: fileio.c:2220
+#: fileio.c:2413
 msgid "Conversion with 'charconvert' failed"
 msgstr "Konvertering med 'charconvert' misslyckades"
 
-#: fileio.c:2223
+#: fileio.c:2416
 msgid "can't read output of 'charconvert'"
 msgstr "kan inte läsa utdata av 'charconvert'"
 
-#: fileio.c:2617
+#: fileio.c:2821
 msgid "E203: Autocommands deleted or unloaded buffer to be written"
 msgstr ""
 "E203: Autokommandon tog bort eller laddade ur buffert som skulle skrivas"
 
-#: fileio.c:2640
+#: fileio.c:2844
 msgid "E204: Autocommand changed number of lines in unexpected way"
 msgstr "E204: Autokommado ändrade antal rader på ett oväntat sätt"
 
-#: fileio.c:2674
+#: fileio.c:2882
 msgid "NetBeans dissallows writes of unmodified buffers"
 msgstr "NetBeans tillåter inte skrivning av omodifierade buffertar"
 
-#: fileio.c:2682
+#: fileio.c:2890
 msgid "Partial writes disallowed for NetBeans buffers"
 msgstr "Delvisa skrivningar tillåts inte i NetBeans-buffertar"
 
-#: fileio.c:2736 fileio.c:2754
+#: fileio.c:2944 fileio.c:2962
 msgid "is not a file or writable device"
 msgstr "är inte en fil eller skrivbar enhet"
 
-#: fileio.c:2806
+#: fileio.c:3014
 msgid "is read-only (add ! to override)"
 msgstr "är skrivskyddad (lägg till ! för att tvinga)"
 
-#: fileio.c:3124
+#: fileio.c:3360
 msgid "E506: Can't write to backup file (add ! to override)"
 msgstr "E506: Kan inte skriva till säkerhetskopia (lägg till ! för att tvinga)"
 
-#: fileio.c:3136
+#: fileio.c:3372
 msgid "E507: Close error for backup file (add ! to override)"
 msgstr "E507: Stängningsfel för säkerhetskopia (lägg till ! för att tvinga)"
 
-#: fileio.c:3138
+#: fileio.c:3374
 msgid "E508: Can't read file for backup (add ! to override)"
 msgstr ""
 "E508: Kan inte läsa fil för säkerhetskopia (lägg till ! för att tvinga)"
 
-#: fileio.c:3154
+#: fileio.c:3390
 msgid "E509: Cannot create backup file (add ! to override)"
 msgstr "E509: Kan inte skapa säkerhetskopia (lägg till ! för att tvinga)"
 
-#: fileio.c:3257
+#: fileio.c:3493
 msgid "E510: Can't make backup file (add ! to override)"
 msgstr "E510: Kan inte göra säkerhetskopia (lägg till ! för att tvinga)"
 
-#: fileio.c:3319
+#: fileio.c:3555
 msgid "E460: The resource fork would be lost (add ! to override)"
 msgstr "E460: Resursgrenen skulle tappas bort (lägg till ! för att tvinga)"
 
-#: fileio.c:3420
+#: fileio.c:3665
 msgid "E214: Can't find temp file for writing"
 msgstr "E214: Kan inte hitta temporär fil för skrivning"
 
-#: fileio.c:3438
+#: fileio.c:3683
 msgid "E213: Cannot convert (add ! to write without conversion)"
 msgstr ""
 "E213: Kan inte konvertera (lägg till ! för att skriva utan konvertering)"
 
-#: fileio.c:3473
+#: fileio.c:3718
 msgid "E166: Can't open linked file for writing"
 msgstr "E166: Kan inte öppna länkad fil för skrivning"
 
-#: fileio.c:3477
+#: fileio.c:3722
 msgid "E212: Can't open file for writing"
 msgstr "E212: Kan inte öppna fil för skrivning"
 
-#: fileio.c:3727
+#: fileio.c:3997
+msgid "E667: Fsync failed"
+msgstr "E667: Fsync misslyckades"
+
+#: fileio.c:4004
 msgid "E512: Close failed"
 msgstr "E512: Stängning misslyckades"
 
-#: fileio.c:3798
+#: fileio.c:4075
 msgid "E513: write error, conversion failed"
 msgstr "E513: skrivfel, konvertering misslyckades"
 
-#: fileio.c:3804
+#: fileio.c:4081
 msgid "E514: write error (file system full?)"
 msgstr "E514: skrivfel (filsystem fullt?)"
 
-#: fileio.c:3871
+#: fileio.c:4149
 msgid " CONVERSION ERROR"
 msgstr " KONVERTERINGSFEL"
 
-#: fileio.c:3887
+#: fileio.c:4165
 msgid "[Device]"
 msgstr "[Enhet]"
 
-#: fileio.c:3892
+#: fileio.c:4170
 msgid "[New]"
 msgstr "[Ny]"
 
-#: fileio.c:3914
+#: fileio.c:4192
 msgid " [a]"
 msgstr " [l]"
 
-#: fileio.c:3914
+#: fileio.c:4192
 msgid " appended"
 msgstr " lade till"
 
-#: fileio.c:3916
+#: fileio.c:4194
 msgid " [w]"
 msgstr " [s]"
 
-#: fileio.c:3916
+#: fileio.c:4194
 msgid " written"
 msgstr " skriven"
 
-#: fileio.c:3966
+#: fileio.c:4244
 msgid "E205: Patchmode: can't save original file"
 msgstr "E205: Patchläge: kan inte spara orginalfil"
 
-#: fileio.c:3988
+#: fileio.c:4266
 msgid "E206: patchmode: can't touch empty original file"
 msgstr "E206: patchläge: kan inte skapa tom orginalfil"
 
-#: fileio.c:4003
+#: fileio.c:4281
 msgid "E207: Can't delete backup file"
 msgstr "E207: Kan inte ta bort säkerhetskopia"
 
-#: fileio.c:4067
+#: fileio.c:4345
 msgid ""
 "\n"
 "WARNING: Original file may be lost or damaged\n"
@@ -1800,96 +1832,96 @@ msgstr ""
 "\n"
 "VARNING: Orginalfilen kan vara förlorad eller skadad\n"
 
-#: fileio.c:4069
+#: fileio.c:4347
 msgid "don't quit the editor until the file is successfully written!"
 msgstr "avsluta inte redigeraren innan filen är framgångsrikt skriven"
 
-#: fileio.c:4158
+#: fileio.c:4436
 msgid "[dos]"
 msgstr "[dos]"
 
-#: fileio.c:4158
+#: fileio.c:4436
 msgid "[dos format]"
 msgstr "[dos-format]"
 
-#: fileio.c:4165
+#: fileio.c:4443
 msgid "[mac]"
 msgstr "[mac]"
 
-#: fileio.c:4165
+#: fileio.c:4443
 msgid "[mac format]"
 msgstr "[mac-format]"
 
-#: fileio.c:4172
+#: fileio.c:4450
 msgid "[unix]"
 msgstr "[unix]"
 
-#: fileio.c:4172
+#: fileio.c:4450
 msgid "[unix format]"
 msgstr "[unix-format]"
 
-#: fileio.c:4199
+#: fileio.c:4477
 msgid "1 line, "
 msgstr "1 rad, "
 
-#: fileio.c:4201
+#: fileio.c:4479
 #, c-format
 msgid "%ld lines, "
 msgstr "%ld rader, "
 
-#: fileio.c:4204
+#: fileio.c:4482
 msgid "1 character"
 msgstr "1 tecken"
 
-#: fileio.c:4206
+#: fileio.c:4484
 #, c-format
 msgid "%ld characters"
 msgstr "%ld tecken"
 
-#: fileio.c:4216
+#: fileio.c:4494
 msgid "[noeol]"
 msgstr "[inget radslut]"
 
-#: fileio.c:4216
+#: fileio.c:4494
 msgid "[Incomplete last line]"
 msgstr "[Ofullständig sistarad]"
 
 #. don't overwrite messages here
 #. must give this prompt
 #. don't use emsg() here, don't want to flush the buffers
-#: fileio.c:4235
+#: fileio.c:4513
 msgid "WARNING: The file has been changed since reading it!!!"
 msgstr "VARNING: Filen har ändrats sedan den lästes in!!!"
 
-#: fileio.c:4237
+#: fileio.c:4515
 msgid "Do you really want to write to it"
 msgstr "Vill du verkligen skriva till den"
 
-#: fileio.c:5313
+#: fileio.c:5779
 #, c-format
 msgid "E208: Error writing to \"%s\""
 msgstr "E208: Fel vid skrivning till \"%s\""
 
-#: fileio.c:5320
+#: fileio.c:5786
 #, c-format
 msgid "E209: Error closing \"%s\""
 msgstr "E209: Fel vid stängning av \"%s\""
 
-#: fileio.c:5323
+#: fileio.c:5789
 #, c-format
 msgid "E210: Error reading \"%s\""
 msgstr "E210: Fel vid läsning av \"%s\""
 
-#: fileio.c:5543
+#: fileio.c:6027
 msgid "E246: FileChangedShell autocommand deleted buffer"
 msgstr "E246: FileChangedShell-autokommandot tog bort buffert"
 
-#: fileio.c:5551
+#: fileio.c:6034
 #, c-format
 msgid "E211: Warning: File \"%s\" no longer available"
 msgstr "E211: Varning: Filen \"%s\" är inte längre tillgänglig"
 
-#: fileio.c:5564
+#: fileio.c:6048
 #, c-format
 msgid ""
 "W12: Warning: File \"%s\" has changed and the buffer was changed in Vim as "
@@ -1897,28 +1929,32 @@ msgid ""
 msgstr ""
 "W12: Varning: Filen \"%s\" har ändrats och bufferten ändrades i Vim också"
 
-#: fileio.c:5567
+#: fileio.c:6051
 #, c-format
 msgid "W11: Warning: File \"%s\" has changed since editing started"
 msgstr "W11: Varning: Filen \"%s\" har ändrats sedan redigeringen började"
 
-#: fileio.c:5569
+#: fileio.c:6053
 #, c-format
 msgid "W16: Warning: Mode of file \"%s\" has changed since editing started"
 msgstr ""
 "W16: Varning: Rättigheterna på filen \"%s\" har ändrats sedan redigeringen "
 "började"
 
-#: fileio.c:5579
+#: fileio.c:6063
 #, c-format
 msgid "W13: Warning: File \"%s\" has been created after editing started"
 msgstr "W13: Varning: Filen \"%s\" har skapats efter redigeringen började"
 
-#: fileio.c:5596
+#: fileio.c:6076
+msgid "See \":help W11\" for more info."
+msgstr "Se \":help W11\" för mer info."
+
+#: fileio.c:6090
 msgid "Warning"
 msgstr "Varning"
 
-#: fileio.c:5597
+#: fileio.c:6091
 msgid ""
 "&OK\n"
 "&Load File"
@@ -1926,42 +1962,43 @@ msgstr ""
 "&OK\n"
 "&Läs in filen"
 
-#: fileio.c:5695
+#: fileio.c:6197
 #, c-format
 msgid "E462: Could not prepare for reloading \"%s\""
 msgstr "E462: Kunde inte förbereda för att läsa om \"%s\""
 
-#: fileio.c:5714
+#: fileio.c:6216
 #, c-format
 msgid "E321: Could not reload \"%s\""
 msgstr "E321: Kunde inte läsa om \"%s\""
 
-#: fileio.c:6296
+#: fileio.c:6797
 msgid "--Deleted--"
 msgstr "--Borttagen--"
 
 #. the group doesn't exist
-#: fileio.c:6456
+#: fileio.c:6957
 #, c-format
 msgid "E367: No such group: \"%s\""
 msgstr "E367: Ingen sådan grupp: \"%s\""
 
-#: fileio.c:6582
+#: fileio.c:7083
 #, c-format
 msgid "E215: Illegal character after *: %s"
 msgstr "E215: Otillåtet tecken efter *: %s"
 
-#: fileio.c:6594
+#: fileio.c:7095
 #, c-format
 msgid "E216: No such event: %s"
 msgstr "E216: Ingen sådan händelse: %s"
 
-#: fileio.c:6596
+#: fileio.c:7097
+#, c-format
 msgid "E216: No such group or event: %s"
 msgstr "E216: Ingen sådan grupp eller händelse: %s"
 
 #. Highlight title
-#: fileio.c:6745
+#: fileio.c:7255
 msgid ""
 "\n"
 "--- Auto-Commands ---"
@@ -1969,91 +2006,91 @@ msgstr ""
 "\n"
 "--- Autokommandon ---"
 
-#: fileio.c:7016
+#: fileio.c:7526
 msgid "E217: Can't execute autocommands for ALL events"
 msgstr "E217: Kan inte köra autokommandon för ALLA händelser"
 
-#: fileio.c:7039
+#: fileio.c:7549
 msgid "No matching autocommands"
 msgstr "Inga matchande autokommandon"
 
-#: fileio.c:7359
+#: fileio.c:7870
 msgid "E218: autocommand nesting too deep"
 msgstr "E218: autokommando nästlad för djupt"
 
-#: fileio.c:7627
+#: fileio.c:8145
 #, c-format
 msgid "%s Auto commands for \"%s\""
 msgstr "%s Autokommandon för \"%s\""
 
-#: fileio.c:7635
+#: fileio.c:8153
 #, c-format
 msgid "Executing %s"
 msgstr "Kör %s"
 
 #. always scroll up, don't overwrite
-#: fileio.c:7703
+#: fileio.c:8221
 #, c-format
 msgid "autocommand %s"
 msgstr "autokommando %s"
 
-#: fileio.c:8270
+#: fileio.c:8788
 msgid "E219: Missing {."
 msgstr "E219: Saknar {."
 
-#: fileio.c:8272
+#: fileio.c:8790
 msgid "E220: Missing }."
 msgstr "E220: Saknar }."
 
-#: fold.c:66
+#: fold.c:68
 msgid "E490: No fold found"
 msgstr "E490: Inget veck funnet"
 
-#: fold.c:565
+#: fold.c:593
 msgid "E350: Cannot create fold with current 'foldmethod'"
 msgstr "E350: Kan inte skapa veck med nuvarande 'foldmethod'"
 
-#: fold.c:567
+#: fold.c:595
 msgid "E351: Cannot delete fold with current 'foldmethod'"
 msgstr "E351: Kan inte ta bort veck med nuvarande 'foldmethod'"
 
-#: getchar.c:246
+#: getchar.c:249
 msgid "E222: Add to read buffer"
 msgstr "E222: Lägg till i läsbuffert"
 
-#: getchar.c:2157
+#: getchar.c:2216
 msgid "E223: recursive mapping"
 msgstr "E223: rekursiv mappning"
 
-#: getchar.c:3023
+#: getchar.c:3096
 #, c-format
 msgid "E224: global abbreviation already exists for %s"
 msgstr "E224: global förkortning existerar redan för %s"
 
-#: getchar.c:3026
+#: getchar.c:3099
 #, c-format
 msgid "E225: global mapping already exists for %s"
 msgstr "E225: global mappning existerar redan för %s"
 
-#: getchar.c:3153
+#: getchar.c:3231
 #, c-format
 msgid "E226: abbreviation already exists for %s"
 msgstr "E226: förkortning existerar redan för %s"
 
-#: getchar.c:3156
+#: getchar.c:3234
 #, c-format
 msgid "E227: mapping already exists for %s"
 msgstr "E227: mappning existerar redan för %s"
 
-#: getchar.c:3220
+#: getchar.c:3298
 msgid "No abbreviation found"
 msgstr "Ingen förkortning hittades"
 
-#: getchar.c:3222
+#: getchar.c:3300
 msgid "No mapping found"
 msgstr "Ingen mappning hittades"
 
-#: getchar.c:4112
+#: getchar.c:4192
 msgid "E228: makemap: Illegal mode"
 msgstr "E228: makemap: Otillåtet läge"
 
@@ -2082,7 +2119,7 @@ msgstr "E615: vim_SelFile: kan inte hämta aktuell katalog"
 msgid "OK"
 msgstr "OK"
 
-#: gui_at_fs.c:2815 gui_gtk.c:2638 gui_motif.c:1618 gui_motif.c:2849
+#: gui_at_fs.c:2815 gui_gtk.c:2737 gui_motif.c:1618 gui_motif.c:2849
 msgid "Cancel"
 msgstr "Avbryt"
 
@@ -2094,37 +2131,41 @@ msgstr "Vim-dialog"
 msgid "Scrollbar Widget: Could not get geometry of thumb pixmap."
 msgstr "Rullningslist: Kunde inte hämta geometrin på miniatyrbild."
 
-#: gui_beval.c:101 gui_w32.c:3772
+#: gui_beval.c:101 gui_w32.c:3978
 msgid "E232: Cannot create BalloonEval with both message and callback"
 msgstr "E232: Kan inte skapa BalloonEval med både meddelande och återkallning"
 
-#: gui.c:219
+#: gui.c:220
 msgid "E229: Cannot start the GUI"
 msgstr "E229: Kan inte starta GUI"
 
-#: gui.c:348
+#: gui.c:349
 #, c-format
 msgid "E230: Cannot read from \"%s\""
 msgstr "E230: Kan inte läsa från \"%s\""
 
-#: gui.c:473
+#: gui.c:472
+msgid "E665: Cannot start GUI, no valid font found"
+msgstr "E665: Kan inte starta GUI, ingen giltig font hittades"
+
+#: gui.c:477
 msgid "E231: 'guifontwide' invalid"
 msgstr "E231: 'guifontwide' ogiltig"
 
-#: gui.c:543
+#: gui.c:547
 msgid "E599: Value of 'imactivatekey' is invalid"
 msgstr "E599: Värdet av 'imactivatekey' är ogiltigt"
 
-#: gui.c:3945
+#: gui.c:4068
 #, c-format
 msgid "E254: Cannot allocate color %s"
 msgstr "E254: Kan inte allokera färg %s"
 
-#: gui_gtk.c:1567
+#: gui_gtk.c:1613
 msgid "Vim dialog..."
 msgstr "Vim-dialog..."
 
-#: gui_gtk.c:2002 message.c:2886
+#: gui_gtk.c:2066 message.c:3005
 msgid ""
 "&Yes\n"
 "&No\n"
@@ -2134,74 +2175,74 @@ msgstr ""
 "&Nej\n"
 "&Avbryt"
 
-#: gui_gtk.c:2165
+#: gui_gtk.c:2274
 msgid "Input _Methods"
 msgstr "Inmatnings_metoder"
 
-#: gui_gtk.c:2431 gui_motif.c:2768
+#: gui_gtk.c:2540 gui_motif.c:2768
 msgid "VIM - Search and Replace..."
 msgstr "VIM - Sök och ersätt..."
 
-#: gui_gtk.c:2439 gui_motif.c:2770
+#: gui_gtk.c:2548 gui_motif.c:2770
 msgid "VIM - Search..."
 msgstr "VIM - Sök..."
 
-#: gui_gtk.c:2471 gui_motif.c:2888
+#: gui_gtk.c:2580 gui_motif.c:2888
 msgid "Find what:"
 msgstr "Hitta vad:"
 
-#: gui_gtk.c:2491 gui_motif.c:2920
+#: gui_gtk.c:2598 gui_motif.c:2920
 msgid "Replace with:"
 msgstr "Ersätt med:"
 
 #. whole word only button
-#: gui_gtk.c:2523 gui_motif.c:3036
+#: gui_gtk.c:2630 gui_motif.c:3036
 msgid "Match whole word only"
 msgstr "Matcha endast hela ord"
 
 #. match case button
-#: gui_gtk.c:2536 gui_motif.c:3048
+#: gui_gtk.c:2641 gui_motif.c:3048
 msgid "Match case"
 msgstr "Skilj på stora/små bokstäver"
 
-#: gui_gtk.c:2548 gui_motif.c:2990
+#: gui_gtk.c:2651 gui_motif.c:2990
 msgid "Direction"
 msgstr "Riktning"
 
 #. 'Up' and 'Down' buttons
-#: gui_gtk.c:2560 gui_motif.c:3002
+#: gui_gtk.c:2663 gui_motif.c:3002
 msgid "Up"
 msgstr "Upp"
 
-#: gui_gtk.c:2564 gui_motif.c:3010
+#: gui_gtk.c:2667 gui_motif.c:3010
 msgid "Down"
 msgstr "Ned"
 
-#: gui_gtk.c:2590 gui_gtk.c:2592 gui_motif.c:2792
+#: gui_gtk.c:2689 gui_gtk.c:2691 gui_motif.c:2792
 msgid "Find Next"
 msgstr "Hitta nästa"
 
-#: gui_gtk.c:2609 gui_gtk.c:2611 gui_motif.c:2809
+#: gui_gtk.c:2708 gui_gtk.c:2710 gui_motif.c:2809
 msgid "Replace"
 msgstr "Ersätt"
 
-#: gui_gtk.c:2622 gui_gtk.c:2624 gui_motif.c:2822
+#: gui_gtk.c:2721 gui_gtk.c:2723 gui_motif.c:2822
 msgid "Replace All"
 msgstr "Ersätt alla"
 
-#: gui_gtk_x11.c:2248
+#: gui_gtk_x11.c:2327
 msgid "Vim: Received \"die\" request from session manager\n"
 msgstr "Vim: Tog emot \"die\"-begäran från sessionshanteraren\n"
 
-#: gui_gtk_x11.c:3437
+#: gui_gtk_x11.c:3519
 msgid "Vim: Main window unexpectedly destroyed\n"
 msgstr "Vim: Huvudfönster oväntat förstört\n"
 
-#: gui_gtk_x11.c:4051
+#: gui_gtk_x11.c:4138
 msgid "Font Selection"
 msgstr "Typsnittsval"
 
-#: gui_gtk_x11.c:5907 ui.c:2016
+#: gui_gtk_x11.c:6035 ui.c:2120
 msgid "Used CUT_BUFFER0 instead of empty selection"
 msgstr "Använd CUT_BUFFER0 istället för tomt val"
 
@@ -2247,66 +2288,75 @@ msgstr ""
 "\n"
 "Skickar meddelande för att avsluta barnprocess.\n"
 
-#: gui_w32.c:803
+#: gui_w32.c:839
+#, c-format
+msgid "E671: Cannot find window title \"%s\""
+msgstr "E671: Kan inte hitta fönstertitel \"%s\""
+
+#: gui_w32.c:847
 #, c-format
 msgid "E243: Argument not supported: \"-%s\"; Use the OLE version."
 msgstr "E243: Argument stöds inte: \"-%s\"; Används OLE-versionen."
 
-#: gui_w48.c:2079
+#: gui_w32.c:1100
+msgid "E672: Unable to open window inside MDI application"
+msgstr "E672: Kunde inte öppna fönster inne i MDI-applikation"
+
+#: gui_w48.c:2190
 msgid "Find string (use '\\\\' to find  a '\\')"
 msgstr "Sök sträng (använd '\\\\' för att hitta '\\')"
 
-#: gui_w48.c:2104
+#: gui_w48.c:2215
 msgid "Find & Replace (use '\\\\' to find  a '\\')"
 msgstr "Sök & ersätt (använd '\\\\' för att hitta '\\')"
 
-#: gui_x11.c:1523
+#: gui_x11.c:1537
 msgid "Vim E458: Cannot allocate colormap entry, some colors may be incorrect"
 msgstr ""
 "Vim E458: Kan inte allokera post i färgkarta, några färger kan bli felaktiga"
 
-#: gui_x11.c:2104
+#: gui_x11.c:2118
 #, c-format
 msgid "E250: Fonts for the following charsets are missing in fontset %s:"
 msgstr ""
 "E250: Typsnitt för följande teckenkoder saknas i typsnittsuppsättningen %s:"
 
-#: gui_x11.c:2147
+#: gui_x11.c:2161
 #, c-format
 msgid "E252: Fontset name: %s"
 msgstr "E252: Typsnittsuppsättningsnamn: %s"
 
-#: gui_x11.c:2148
+#: gui_x11.c:2162
 #, c-format
 msgid "Font '%s' is not fixed-width"
 msgstr "Font '%s' är inte fast bredd"
 
-#: gui_x11.c:2167
+#: gui_x11.c:2181
 #, c-format
 msgid "E253: Fontset name: %s\n"
 msgstr "E253: Typsnittsuppsättningsnamn: %s\n"
 
-#: gui_x11.c:2168
+#: gui_x11.c:2182
 #, c-format
 msgid "Font0: %s\n"
 msgstr "Typsnitt0: %s\n"
 
-#: gui_x11.c:2169
+#: gui_x11.c:2183
 #, c-format
 msgid "Font1: %s\n"
 msgstr "Typsnitt1: %s\n"
 
-#: gui_x11.c:2170
+#: gui_x11.c:2184
 #, c-format
-msgid "Font%d width is not twice that of font0\n"
-msgstr "Typsnitt%d är inte dubbelt så bred som font0\n"
+msgid "Font%ld width is not twice that of font0\n"
+msgstr "Typsnitt%ld är inte dubbelt så bred som font0\n"
 
-#: gui_x11.c:2171
+#: gui_x11.c:2185
 #, c-format
 msgid "Font0 width: %ld\n"
 msgstr "Typsnitt0 bredd: %ld\n"
 
-#: gui_x11.c:2172
+#: gui_x11.c:2186
 #, c-format
 msgid ""
 "Font1 width: %ld\n"
@@ -2352,127 +2402,127 @@ msgstr "E560: Användning: cs[cope] %s"
 msgid "This cscope command does not support splitting the window.\n"
 msgstr "Det här scope-kommandot stöder inte delning av fönstret.\n"
 
-#: if_cscope.c:170
+#: if_cscope.c:175
 msgid "E562: Usage: cstag <ident>"
 msgstr "E562: Användning: cstag <identifierare>"
 
-#: if_cscope.c:226
+#: if_cscope.c:231
 msgid "E257: cstag: tag not found"
 msgstr "E257: cstag: tagg hittades inte"
 
-#: if_cscope.c:404
+#: if_cscope.c:409
 #, c-format
 msgid "E563: stat(%s) error: %d"
 msgstr "E563: stat(%s)-fel: %d"
 
-#: if_cscope.c:414
+#: if_cscope.c:419
 msgid "E563: stat error"
 msgstr "E563: stat-fel"
 
-#: if_cscope.c:511
+#: if_cscope.c:516
 #, c-format
 msgid "E564: %s is not a directory or a valid cscope database"
 msgstr "E564: %s är inte en katalog eller en godkänd cscope-databas"
 
-#: if_cscope.c:529
+#: if_cscope.c:534
 #, c-format
 msgid "Added cscope database %s"
 msgstr "Lade till cscope-databas %s"
 
-#: if_cscope.c:584
+#: if_cscope.c:589
 #, c-format
 msgid "E262: error reading cscope connection %ld"
 msgstr "E262: fel vid läsning av cscope-anslutning %ld"
 
-#: if_cscope.c:689
+#: if_cscope.c:694
 msgid "E561: unknown cscope search type"
 msgstr "E561: okänd cscope-söktyp"
 
-#: if_cscope.c:731
+#: if_cscope.c:736
 msgid "E566: Could not create cscope pipes"
 msgstr "E566: Kunde inte skapa cscope-rör"
 
-#: if_cscope.c:748
+#: if_cscope.c:753
 msgid "E622: Could not fork for cscope"
 msgstr "E622: Kunde inte grena för cscope"
 
-#: if_cscope.c:842 if_cscope.c:892
+#: if_cscope.c:847 if_cscope.c:897
 msgid "cs_create_connection exec failed"
 msgstr "cs_create_connection-exekvering misslyckades"
 
-#: if_cscope.c:893
+#: if_cscope.c:898
 msgid "E623: Could not spawn cscope process"
 msgstr "E623: Kunde inte starta cscope-process"
 
-#: if_cscope.c:906
+#: if_cscope.c:911
 msgid "cs_create_connection: fdopen for to_fp failed"
 msgstr "cs_create_connection: fdopen för to_fp misslyckades"
 
-#: if_cscope.c:908
+#: if_cscope.c:913
 msgid "cs_create_connection: fdopen for fr_fp failed"
 msgstr "cs_create_connection: fdopen för fr_fp misslyckades"
 
-#: if_cscope.c:946
+#: if_cscope.c:951
 msgid "E567: no cscope connections"
 msgstr "E567: inga cscope-anslutningar"
 
-#: if_cscope.c:1020
+#: if_cscope.c:1025
 #, c-format
 msgid "E259: no matches found for cscope query %s of %s"
 msgstr "E259: inga träffar funna för cscope-förfrågan %s av %s"
 
-#: if_cscope.c:1077
+#: if_cscope.c:1082
 #, c-format
 msgid "E469: invalid cscopequickfix flag %c for %c"
 msgstr "E469: ogiltig cscopequickfix flagga %c för %c"
 
-#: if_cscope.c:1146
+#: if_cscope.c:1152
 msgid "cscope commands:\n"
 msgstr "cscope-kommandon:\n"
 
-#: if_cscope.c:1149
+#: if_cscope.c:1155
 #, c-format
 msgid "%-5s: %-30s (Usage: %s)"
 msgstr "%-5s: %-30s (Användning: %s)"
 
-#: if_cscope.c:1247
+#: if_cscope.c:1253
 #, c-format
 msgid "E625: cannot open cscope database: %s"
 msgstr "E625: kan inte öppna cscope-databas: %s"
 
-#: if_cscope.c:1265
+#: if_cscope.c:1271
 msgid "E626: cannot get cscope database information"
 msgstr "E626: kan inte hämta cscope-databasinformation"
 
-#: if_cscope.c:1290
+#: if_cscope.c:1296
 msgid "E568: duplicate cscope database not added"
 msgstr "E568: dubblerad cscope-databas inte lagd till"
 
-#: if_cscope.c:1301
+#: if_cscope.c:1307
 msgid "E569: maximum number of cscope connections reached"
 msgstr "E569: maximalt antal av cscope-anslutningar nått"
 
-#: if_cscope.c:1417
+#: if_cscope.c:1424
 #, c-format
 msgid "E261: cscope connection %s not found"
 msgstr "E261: cscope-anslutning %s hittades inte"
 
-#: if_cscope.c:1451
+#: if_cscope.c:1458
 #, c-format
 msgid "cscope connection %s closed"
 msgstr "cscope-anslutning %s stängd"
 
 #. should not reach here
-#: if_cscope.c:1591
+#: if_cscope.c:1598
 msgid "E570: fatal error in cs_manage_matches"
 msgstr "E570: ödesdigert fel i cs_manage_matches"
 
-#: if_cscope.c:1841
+#: if_cscope.c:1848
 #, c-format
 msgid "Cscope tag: %s"
 msgstr "Cscope-tagg: %s"
 
-#: if_cscope.c:1863
+#: if_cscope.c:1870
 msgid ""
 "\n"
 "   #   line"
@@ -2480,28 +2530,28 @@ msgstr ""
 "\n"
 "   #   rad"
 
-#: if_cscope.c:1865
+#: if_cscope.c:1872
 msgid "filename / context / line\n"
 msgstr "filnamn / sammanhang / rad\n"
 
-#: if_cscope.c:1977
+#: if_cscope.c:1990
 #, c-format
 msgid "E609: Cscope error: %s"
 msgstr "E609: Cscope-fel: %s"
 
-#: if_cscope.c:2143
+#: if_cscope.c:2176
 msgid "All cscope databases reset"
 msgstr "Alla cscope-databaser återställda"
 
-#: if_cscope.c:2211
+#: if_cscope.c:2244
 msgid "no cscope connections\n"
 msgstr "inga cscope-anslutningar\n"
 
-#: if_cscope.c:2215
+#: if_cscope.c:2248
 msgid " # pid    database name                       prepend path\n"
 msgstr " # pid    databasnamn                        först i sökväg\n"
 
-#: if_python.c:413
+#: if_python.c:438
 msgid ""
 "E263: Sorry, this command is disabled, the Python library could not be "
 "loaded."
@@ -2509,116 +2559,120 @@ msgstr ""
 "E263: Tyvärr, detta kommandot är inaktiverat, Python-biblioteket kunde inte "
 "läsas in."
 
-#: if_python.c:615
+#: if_python.c:504
+msgid "E659: Cannot invoke Python recursively"
+msgstr "E659: Kan inte anropa Python rekursivt"
+
+#: if_python.c:705
 msgid "can't delete OutputObject attributes"
 msgstr "kan inte ta bort OutputObject-attribut"
 
-#: if_python.c:622
+#: if_python.c:712
 msgid "softspace must be an integer"
 msgstr "softspace måste vara ett heltal"
 
-#: if_python.c:630
+#: if_python.c:720
 msgid "invalid attribute"
 msgstr "ogiltigt attribut"
 
-#: if_python.c:669 if_python.c:683
+#: if_python.c:759 if_python.c:773
 msgid "writelines() requires list of strings"
 msgstr "writelines() kräver lista av strängar"
 
-#: if_python.c:809
+#: if_python.c:899
 msgid "E264: Python: Error initialising I/O objects"
 msgstr "E264: Python: Fel vid initiering av I/O-objekt"
 
-#: if_python.c:994 if_tcl.c:1402
+#: if_python.c:1084 if_tcl.c:1402
 msgid "invalid expression"
 msgstr "ogiltigt uttryck"
 
-#: if_python.c:1008 if_tcl.c:1407
+#: if_python.c:1098 if_tcl.c:1407
 msgid "expressions disabled at compile time"
 msgstr "uttryck inaktiverat vid kompilering"
 
-#: if_python.c:1021
+#: if_python.c:1111
 msgid "attempt to refer to deleted buffer"
 msgstr "försök att referera till borttagen buffert"
 
-#: if_python.c:1036 if_python.c:1077 if_python.c:1141 if_tcl.c:1214
+#: if_python.c:1126 if_python.c:1167 if_python.c:1231 if_tcl.c:1214
 msgid "line number out of range"
 msgstr "radnummer utanför område"
 
-#: if_python.c:1276
+#: if_python.c:1366
 #, c-format
 msgid "<buffer object (deleted) at %8lX>"
 msgstr "<buffertobjekt (borttaget) vid %8lX>"
 
-#: if_python.c:1367 if_tcl.c:836
+#: if_python.c:1457 if_tcl.c:836
 msgid "invalid mark name"
 msgstr "ogiltigt märknamn"
 
-#: if_python.c:1647
+#: if_python.c:1737
 msgid "no such buffer"
 msgstr "ingen sådan buffert"
 
-#: if_python.c:1735
+#: if_python.c:1825
 msgid "attempt to refer to deleted window"
 msgstr "försök att referera till borttaget fönster"
 
-#: if_python.c:1780
+#: if_python.c:1870
 msgid "readonly attribute"
 msgstr "skrivskyddad attribut"
 
-#: if_python.c:1793
+#: if_python.c:1883
 msgid "cursor position outside buffer"
 msgstr "markörposition utanför buffert"
 
-#: if_python.c:1870
+#: if_python.c:1960
 #, c-format
 msgid "<window object (deleted) at %.8lX>"
 msgstr "<fönsterobjekt (borttaget) vid %.8lX>"
 
-#: if_python.c:1882
+#: if_python.c:1972
 #, c-format
 msgid "<window object (unknown) at %.8lX>"
 msgstr "<fönsterobjekt (okänt) vid %.8lX>"
 
-#: if_python.c:1884
+#: if_python.c:1974
 #, c-format
 msgid "<window %d>"
 msgstr "<fönster %d>"
 
-#: if_python.c:1960
+#: if_python.c:2050
 msgid "no such window"
 msgstr "inget sådant fönster"
 
-#: if_python.c:2221 if_python.c:2255 if_python.c:2310 if_python.c:2378
-#: if_python.c:2500 if_python.c:2552 if_tcl.c:684 if_tcl.c:729 if_tcl.c:803
-#: if_tcl.c:873 if_tcl.c:1998
+#: if_python.c:2311 if_python.c:2345 if_python.c:2400 if_python.c:2468
+#: if_python.c:2590 if_python.c:2642 if_tcl.c:684 if_tcl.c:729 if_tcl.c:803
+#: if_tcl.c:873 if_tcl.c:1999
 msgid "cannot save undo information"
 msgstr "kan inte spara ångra-information"
 
-#: if_python.c:2223 if_python.c:2317 if_python.c:2389
+#: if_python.c:2313 if_python.c:2407 if_python.c:2479
 msgid "cannot delete line"
 msgstr "kan inte ta bort rad"
 
-#: if_python.c:2260 if_python.c:2405 if_tcl.c:690 if_tcl.c:2020
+#: if_python.c:2350 if_python.c:2495 if_tcl.c:690 if_tcl.c:2021
 msgid "cannot replace line"
 msgstr "kan inte ersätta rad"
 
-#: if_python.c:2423 if_python.c:2502 if_python.c:2560
+#: if_python.c:2513 if_python.c:2592 if_python.c:2650
 msgid "cannot insert line"
 msgstr "kan inte infoga rad"
 
-#: if_python.c:2664
+#: if_python.c:2754
 msgid "string cannot contain newlines"
 msgstr "sträng kan inte innehålla nyrader"
 
-#: if_ruby.c:412
+#: if_ruby.c:422
 msgid ""
 "E266: Sorry, this command is disabled, the Ruby library could not be loaded."
 msgstr ""
 "E266: Tyvärr, detta kommandot är inaktiverat, Ruby-biblioteket kunde inte "
 "läsas in."
 
-#: if_ruby.c:475
+#: if_ruby.c:485
 #, c-format
 msgid "E273: unknown longjmp status %d"
 msgstr "E273: okänt longjmp-status %d"
@@ -2826,24 +2880,24 @@ msgstr ""
 "E281: TCL-FEL: Avslutningskoden är inte int!? Var snäll och rapportera detta "
 "till vim-dev@vim.org"
 
-#: if_tcl.c:2006
+#: if_tcl.c:2007
 msgid "cannot get line"
 msgstr "kan inte hämta rad"
 
-#: if_xcmdsrv.c:215
+#: if_xcmdsrv.c:225
 msgid "Unable to register a command server name"
 msgstr "Kunde inte registrera ett kommandoservernamn"
 
-#: if_xcmdsrv.c:465
+#: if_xcmdsrv.c:473
 msgid "E248: Failed to send command to the destination program"
 msgstr "E248: Misslyckades att skicka kommando till målprogrammet"
 
-#: if_xcmdsrv.c:739
+#: if_xcmdsrv.c:748
 #, c-format
 msgid "E573: Invalid server id used: %s"
 msgstr "E573: Ogiltigt server-id använt: %s"
 
-#: if_xcmdsrv.c:1102
+#: if_xcmdsrv.c:1111
 msgid "E251: VIM instance registry property is badly formed.  Deleted!"
 msgstr "E251: VIM instansregisteregenskap är dåligt format.  Borttaget!"
 
@@ -2872,50 +2926,46 @@ msgstr ""
 msgid "Invalid argument for"
 msgstr "Ogiltigt argument för"
 
-#: main.c:466
+#: main.c:471
 msgid "This Vim was not compiled with the diff feature."
 msgstr "Denna Vim blev inte kompilerad med diff-funktionen."
 
-#: main.c:925
+#: main.c:937
 msgid "Attempt to open script file again: \""
 msgstr "Försök att öppna skriptfil igen: \""
 
-#: main.c:929 main.c:936 main.c:980 memline.c:3694 memline.c:3698
-msgid "\"\n"
-msgstr "\"\n"
-
-#: main.c:934
+#: main.c:946
 msgid "Cannot open for reading: \""
 msgstr "Kan inte öppna för läsning: \""
 
-#: main.c:978
+#: main.c:990
 msgid "Cannot open for script output: \""
 msgstr "Kan inte öppna för skriptutmatning: \""
 
-#: main.c:1112
+#: main.c:1137
 #, c-format
 msgid "%d files to edit\n"
 msgstr "%d filer att redigera\n"
 
-#: main.c:1202
+#: main.c:1238
 msgid "Vim: Warning: Output is not to a terminal\n"
 msgstr "Vim: Varning: Utmatning är inte till en terminal\n"
 
-#: main.c:1204
+#: main.c:1240
 msgid "Vim: Warning: Input is not from a terminal\n"
 msgstr "Vim: Varning: Inmatning är inte från en terminal\n"
 
 #. just in case..
-#: main.c:1266
+#: main.c:1308
 msgid "pre-vimrc command line"
 msgstr "pre-vimrc kommandorad"
 
-#: main.c:1307
+#: main.c:1349
 #, c-format
 msgid "E282: Cannot read from \"%s\""
 msgstr "E282: Kan inte läsa från \"%s\""
 
-#: main.c:2365
+#: main.c:2429
 msgid ""
 "\n"
 "More info with: \"vim -h\"\n"
@@ -2923,23 +2973,23 @@ msgstr ""
 "\n"
 "Mer info med: \"vim -h\"\n"
 
-#: main.c:2398
+#: main.c:2462
 msgid "[file ..]       edit specified file(s)"
 msgstr "[fil ..]       redigera angivna fil(er)"
 
-#: main.c:2399
+#: main.c:2463
 msgid "-               read text from stdin"
 msgstr "-              läs text från standard in"
 
-#: main.c:2400
+#: main.c:2464
 msgid "-t tag          edit file where tag is defined"
 msgstr "-t tagg        redigera fil där tagg är definierad"
 
-#: main.c:2402
+#: main.c:2466
 msgid "-q [errorfile]  edit file with first error"
 msgstr "-q [felfil]    redigera fil med första fel"
 
-#: main.c:2411
+#: main.c:2475
 msgid ""
 "\n"
 "\n"
@@ -2949,11 +2999,11 @@ msgstr ""
 "\n"
 "användning:"
 
-#: main.c:2414
+#: main.c:2478
 msgid " vim [arguments] "
 msgstr " vim [argument] "
 
-#: main.c:2418
+#: main.c:2482
 msgid ""
 "\n"
 "   or:"
@@ -2961,7 +3011,7 @@ msgstr ""
 "\n"
 "     eller:"
 
-#: main.c:2421
+#: main.c:2485
 msgid ""
 "\n"
 "\n"
@@ -2971,249 +3021,249 @@ msgstr ""
 "\n"
 "Argument:\n"
 
-#: main.c:2422
+#: main.c:2486
 msgid "--\t\t\tOnly file names after this"
 msgstr "--\t\t\tBara filnamn efter det här"
 
-#: main.c:2424
+#: main.c:2488
 msgid "--literal\t\tDon't expand wildcards"
 msgstr "--literal\t\tExpandera inte jokertecken"
 
-#: main.c:2427
+#: main.c:2491
 msgid "-register\t\tRegister this gvim for OLE"
 msgstr "-register\t\tRegistrera gvim för OLE"
 
-#: main.c:2428
+#: main.c:2492
 msgid "-unregister\t\tUnregister gvim for OLE"
 msgstr "-unregister\t\tAvregistrera gvim för OLE"
 
-#: main.c:2431
+#: main.c:2495
 msgid "-g\t\t\tRun using GUI (like \"gvim\")"
 msgstr "-g\t\t\tKör som GUI (som \"gvim\")"
 
-#: main.c:2432
+#: main.c:2496
 msgid "-f  or  --nofork\tForeground: Don't fork when starting GUI"
 msgstr "-f  eller --nofork\tFörgrund: Grena inte vid start av GUI"
 
-#: main.c:2434
+#: main.c:2498
 msgid "-v\t\t\tVi mode (like \"vi\")"
 msgstr "-v\t\t\tVi-läge (som \"vi\")"
 
-#: main.c:2435
+#: main.c:2499
 msgid "-e\t\t\tEx mode (like \"ex\")"
 msgstr "-e\t\t\tEx-läge (som \"ex\")"
 
-#: main.c:2436
+#: main.c:2500
 msgid "-s\t\t\tSilent (batch) mode (only for \"ex\")"
 msgstr "-s\t\t\tTyst (batch) läge (bara för \"ex\")"
 
-#: main.c:2438
+#: main.c:2502
 msgid "-d\t\t\tDiff mode (like \"vimdiff\")"
 msgstr "-d\t\t\tDiff-läge (som \"vimdiff\")"
 
-#: main.c:2440
+#: main.c:2504
 msgid "-y\t\t\tEasy mode (like \"evim\", modeless)"
 msgstr "-y\t\t\tLätt läge (som \"evim\", lägeslös)"
 
-#: main.c:2441
+#: main.c:2505
 msgid "-R\t\t\tReadonly mode (like \"view\")"
 msgstr "-R\t\t\tSkrivskyddat läge (som \"view\")"
 
-#: main.c:2442
+#: main.c:2506
 msgid "-Z\t\t\tRestricted mode (like \"rvim\")"
 msgstr "-Z\t\t\tBegränsat läge (som \"rvim\")"
 
-#: main.c:2443
+#: main.c:2507
 msgid "-m\t\t\tModifications (writing files) not allowed"
 msgstr "-m\t\t\tModifieringar (skriva filer) inte tillåtet"
 
-#: main.c:2444
+#: main.c:2508
 msgid "-M\t\t\tModifications in text not allowed"
 msgstr "-M\t\t\tModifieringar i text inte tillåtet"
 
-#: main.c:2445
+#: main.c:2509
 msgid "-b\t\t\tBinary mode"
 msgstr "-b\t\t\tBinärläge"
 
-#: main.c:2447
+#: main.c:2511
 msgid "-l\t\t\tLisp mode"
 msgstr "-l\t\t\tLisp-läge"
 
-#: main.c:2449
+#: main.c:2513
 msgid "-C\t\t\tCompatible with Vi: 'compatible'"
 msgstr "-C\t\t\tKompatibelt med Vi: 'compatible'"
 
-#: main.c:2450
+#: main.c:2514
 msgid "-N\t\t\tNot fully Vi compatible: 'nocompatible'"
 msgstr "-N\t\t\tInte fullt Vi-kompatibel: 'nocompatible'"
 
-#: main.c:2451
+#: main.c:2515
 msgid "-V[N]\t\tVerbose level"
 msgstr "-V[N]\t\tMångordigt läge"
 
-#: main.c:2452
+#: main.c:2516
 msgid "-D\t\t\tDebugging mode"
 msgstr "-D\t\t\tFelsökningsläge"
 
-#: main.c:2453
+#: main.c:2517
 msgid "-n\t\t\tNo swap file, use memory only"
 msgstr "-n\t\t\tIngen växlingsfil, använd endast minnet"
 
-#: main.c:2454
+#: main.c:2518
 msgid "-r\t\t\tList swap files and exit"
 msgstr "-r\t\t\tLista växlingsfiler och avsluta"
 
-#: main.c:2455
+#: main.c:2519
 msgid "-r (with file name)\tRecover crashed session"
 msgstr "-r (med filnamn)\tÅterskapa kraschad session"
 
-#: main.c:2456
+#: main.c:2520
 msgid "-L\t\t\tSame as -r"
 msgstr "-L\t\t\tSamma som -r"
 
-#: main.c:2458
+#: main.c:2522
 msgid "-f\t\t\tDon't use newcli to open window"
 msgstr "-f\t\t\tAnvända inte newcli för att öppna fönster"
 
-#: main.c:2459
+#: main.c:2523
 msgid "-dev <device>\t\tUse <device> for I/O"
 msgstr "-dev <enhet>\t\tAnvänd <enhet> för I/O"
 
-#: main.c:2462
+#: main.c:2526
 msgid "-A\t\t\tstart in Arabic mode"
 msgstr "-A\t\t\tstarta i arabiskt läge"
 
-#: main.c:2465
+#: main.c:2529
 msgid "-H\t\t\tStart in Hebrew mode"
 msgstr "-H\t\t\tStarta i hebreiskt läge"
 
-#: main.c:2468
+#: main.c:2532
 msgid "-F\t\t\tStart in Farsi mode"
 msgstr "-F\t\t\tStarta i persiskt läge (Farsi)"
 
-#: main.c:2470
+#: main.c:2534
 msgid "-T <terminal>\tSet terminal type to <terminal>"
 msgstr "-T <terminal>\tStäll in terminaltyp till <terminal>"
 
-#: main.c:2471
+#: main.c:2535
 msgid "-u <vimrc>\t\tUse <vimrc> instead of any .vimrc"
 msgstr "-u <vimrc>\t\tAnvänd <vimrc> istället för någon .vimrc"
 
-#: main.c:2473
+#: main.c:2537
 msgid "-U <gvimrc>\t\tUse <gvimrc> instead of any .gvimrc"
 msgstr "-U <gvimrc>\t\tAnvänd <gvimrc> istället för någon .gvimrc"
 
-#: main.c:2475
+#: main.c:2539
 msgid "--noplugin\t\tDon't load plugin scripts"
 msgstr "--noplugin\t\tLäs inte in insticksskript"
 
-#: main.c:2476
+#: main.c:2540
 msgid "-o[N]\t\tOpen N windows (default: one for each file)"
 msgstr "-o[N]\t\tÖppna N fönster (standard: ett för varje fil)"
 
-#: main.c:2477
+#: main.c:2541
 msgid "-O[N]\t\tLike -o but split vertically"
 msgstr "-O[N]\t\tSom -o men dela vertikalt"
 
-#: main.c:2478
+#: main.c:2542
 msgid "+\t\t\tStart at end of file"
 msgstr "+\t\t\tStarta vid slut av fil"
 
-#: main.c:2479
+#: main.c:2543
 msgid "+<lnum>\t\tStart at line <lnum>"
 msgstr "+<lnr>\t\tStarta på rad <rnr>"
 
-#: main.c:2481
+#: main.c:2545
 msgid "--cmd <command>\tExecute <command> before loading any vimrc file"
 msgstr "--cmd <kommando>\tKör <kommando> före inläsning av någon vimrc fil"
 
-#: main.c:2483
+#: main.c:2547
 msgid "-c <command>\t\tExecute <command> after loading the first file"
 msgstr "-c <kommando>\tKör <kommando> efter inläsning av den första filen"
 
-#: main.c:2484
+#: main.c:2548
 msgid "-S <session>\t\tSource file <session> after loading the first file"
 msgstr "-S <session>\t\tKör fil <session> efter inläsning av den första filen"
 
-#: main.c:2485
+#: main.c:2549
 msgid "-s <scriptin>\tRead Normal mode commands from file <scriptin>"
 msgstr "-s <inskript>\tLäs Normallägeskommandon från fil <inskript>"
 
-#: main.c:2486
+#: main.c:2550
 msgid "-w <scriptout>\tAppend all typed commands to file <scriptout>"
 msgstr "-w <utskript>\tLägg till alla skrivna kommandon till fil <utskript>"
 
-#: main.c:2487
+#: main.c:2551
 msgid "-W <scriptout>\tWrite all typed commands to file <scriptout>"
 msgstr "-W <utskript>\tSkriv alla skrivna kommandon till fil <utskript>"
 
-#: main.c:2489
+#: main.c:2553
 msgid "-x\t\t\tEdit encrypted files"
 msgstr "-x\t\t\tRedigera krypterade filer"
 
-#: main.c:2493
+#: main.c:2557
 msgid "-display <display>\tConnect vim to this particular X-server"
 msgstr "-display <display>\tAnslut vim till just denna X-server"
 
-#: main.c:2495
+#: main.c:2559
 msgid "-X\t\t\tDo not connect to X server"
 msgstr "-X\t\t\tAnslut inte till X server"
 
-#: main.c:2498
+#: main.c:2562
 msgid "--remote <files>\tEdit <files> in a Vim server if possible"
 msgstr "--remote <filer>\tRedigera <filer> i en Vim-server om möjligt"
 
-#: main.c:2499
+#: main.c:2563
 msgid "--remote-silent <files>  Same, don't complain if there is no server"
 msgstr ""
 "--remote-silent <filer>\tSamma, klaga inte om det inte finns någon server"
 
-#: main.c:2500
+#: main.c:2564
 msgid ""
 "--remote-wait <files>  As --remote but wait for files to have been edited"
 msgstr ""
 "--remote-wait <filer>\tSom --remote men vänta på att filer har blivit "
 "redigerade"
 
-#: main.c:2501
+#: main.c:2565
 msgid ""
 "--remote-wait-silent <files>  Same, don't complain if there is no server"
 msgstr ""
 "--remote-wait-silent <filer>\tSamma, klaga inte om det inte finns någon "
 "server"
 
-#: main.c:2502
+#: main.c:2566
 msgid "--remote-send <keys>\tSend <keys> to a Vim server and exit"
 msgstr ""
 "--remote-send <nycklar>\tSkicka <nycklar> till en Vim-server och avsluta"
 
-#: main.c:2503
+#: main.c:2567
 msgid "--remote-expr <expr>\tEvaluate <expr> in a Vim server and print result"
 msgstr ""
 "--remote-expr <uttryck>\tEvaluera <uttryck> i en Vim-server och skriv ut "
 "resultatet"
 
-#: main.c:2504
+#: main.c:2568
 msgid "--serverlist\t\tList available Vim server names and exit"
 msgstr "--serverlist\t\tLista tillgängliga Vim-servernamn och avsluta"
 
-#: main.c:2505
+#: main.c:2569
 msgid "--servername <name>\tSend to/become the Vim server <name>"
 msgstr "--servername <namn>\tSkicka till/för att bli Vim-servern <namn>"
 
-#: main.c:2508
+#: main.c:2572
 msgid "-i <viminfo>\t\tUse <viminfo> instead of .viminfo"
 msgstr "-i <viminfo>\t\tAnvänd <viminfo> istället för .viminfo"
 
-#: main.c:2510
+#: main.c:2574
 msgid "-h  or  --help\tPrint Help (this message) and exit"
 msgstr "-h  eller  --help\tSkriv ut Hjälp (det här meddelandet) och avsluta"
 
-#: main.c:2511
+#: main.c:2575
 msgid "--version\t\tPrint version information and exit"
 msgstr "--version\t\tSkriv ut versionsinformation och avsluta"
 
-#: main.c:2515
+#: main.c:2579
 msgid ""
 "\n"
 "Arguments recognised by gvim (Motif version):\n"
@@ -3221,7 +3271,7 @@ msgstr ""
 "\n"
 "Argument som stöds av gvim (Motif-version):\n"
 
-#: main.c:2519
+#: main.c:2583
 msgid ""
 "\n"
 "Arguments recognised by gvim (neXtaw version):\n"
@@ -3229,7 +3279,7 @@ msgstr ""
 "\n"
 "Argument som stöds av gvim (neXtaw-version):\n"
 
-#: main.c:2521
+#: main.c:2585
 msgid ""
 "\n"
 "Arguments recognised by gvim (Athena version):\n"
@@ -3237,73 +3287,73 @@ msgstr ""
 "\n"
 "Argument som stöds av gvim (Athena-version):\n"
 
-#: main.c:2525
+#: main.c:2589
 msgid "-display <display>\tRun vim on <display>"
 msgstr "-display <display>\tKör vim på <display>"
 
-#: main.c:2526
+#: main.c:2590
 msgid "-iconic\t\tStart vim iconified"
 msgstr "-iconic\t\tStarta vim som ikon"
 
-#: main.c:2528
+#: main.c:2592
 msgid "-name <name>\t\tUse resource as if vim was <name>"
 msgstr "-name <namn>\t\tAnvänd resurs som om vim var <namn>"
 
-#: main.c:2529
+#: main.c:2593
 msgid "\t\t\t  (Unimplemented)\n"
 msgstr "\t\t\t   (Oimplementerat)\n"
 
-#: main.c:2531
+#: main.c:2595
 msgid "-background <color>\tUse <color> for the background (also: -bg)"
 msgstr "-background <färg>\tAnvänd <färg> för bakgrunden (även: -bg)"
 
-#: main.c:2532
+#: main.c:2596
 msgid "-foreground <color>\tUse <color> for normal text (also: -fg)"
 msgstr "-foreground <färg>\tAnvänd <färg> för vanlig text (även: -fg)"
 
-#: main.c:2533 main.c:2553
+#: main.c:2597 main.c:2617
 msgid "-font <font>\t\tUse <font> for normal text (also: -fn)"
 msgstr "-font <typsnitt>\tAnvänd <typsnitt> för vanlig text (även: -fn)"
 
-#: main.c:2534
+#: main.c:2598
 msgid "-boldfont <font>\tUse <font> for bold text"
 msgstr "­boldfont <typsnitt>\tAnvänd <typsnitt> för fet text"
 
-#: main.c:2535
+#: main.c:2599
 msgid "-italicfont <font>\tUse <font> for italic text"
 msgstr "-italicfont <typsnitt>\tAnvänd <typsnitt> för kursiv text"
 
-#: main.c:2536 main.c:2554
+#: main.c:2600 main.c:2618
 msgid "-geometry <geom>\tUse <geom> for initial geometry (also: -geom)"
 msgstr ""
 "-geometry <geom>\tAnvänd <geom> för inledande fönsterplacering (även: -geom)"
 
-#: main.c:2537
+#: main.c:2601
 msgid "-borderwidth <width>\tUse a border width of <width> (also: -bw)"
 msgstr "-borderwidth <bredd>\tAnvänd en rambredd med <bredd> (även: -bw)"
 
-#: main.c:2538
+#: main.c:2602
 msgid "-scrollbarwidth <width>  Use a scrollbar width of <width> (also: -sw)"
 msgstr ""
 "-scrollbarwidth <bredd>  Använd en rullningslistbredd på <bredd> (även: -sw)"
 
-#: main.c:2540
+#: main.c:2604
 msgid "-menuheight <height>\tUse a menu bar height of <height> (also: -mh)"
 msgstr "-menuheight <höjd>\tAnvänd en menyradshöjd med <höjd> (även: -mh)"
 
-#: main.c:2542 main.c:2555
+#: main.c:2606 main.c:2619
 msgid "-reverse\t\tUse reverse video (also: -rv)"
 msgstr "-reverse\t\tAnvänd omvänd video (även: -rv)"
 
-#: main.c:2543
+#: main.c:2607
 msgid "+reverse\t\tDon't use reverse video (also: +rv)"
 msgstr "+reverse\t\tAnvänd inte omvänd video (även: +rv)"
 
-#: main.c:2544
+#: main.c:2608
 msgid "-xrm <resource>\tSet the specified resource"
 msgstr "-xrm <tillgång>\tStäll in den angivna tillgången"
 
-#: main.c:2547
+#: main.c:2611
 msgid ""
 "\n"
 "Arguments recognised by gvim (RISC OS version):\n"
@@ -3311,15 +3361,15 @@ msgstr ""
 "\n"
 "Argument igenkända av gvim (RISC OS-version):\n"
 
-#: main.c:2548
+#: main.c:2612
 msgid "--columns <number>\tInitial width of window in columns"
 msgstr "--columns <antal>\tInledande bredd på fönster i kolumner"
 
-#: main.c:2549
+#: main.c:2613
 msgid "--rows <number>\tInitial height of window in rows"
 msgstr "--rows <antal>\tInledande höjd på fönster i rader"
 
-#: main.c:2552
+#: main.c:2616
 msgid ""
 "\n"
 "Arguments recognised by gvim (GTK+ version):\n"
@@ -3327,60 +3377,60 @@ msgstr ""
 "\n"
 "Argument igenkända av gvim (GTK+-version):\n"
 
-#: main.c:2556
+#: main.c:2620
 msgid "-display <display>\tRun vim on <display> (also: --display)"
 msgstr "-display <display>\tKör vim på <display> (även: --display)"
 
-#: main.c:2558
+#: main.c:2622
 msgid "--role <role>\tSet a unique role to identify the main window"
 msgstr "--role <roll>\tStäll in en unik roll för att identifiera huvudfönstret"
 
-#: main.c:2560
+#: main.c:2624
 msgid "--socketid <xid>\tOpen Vim inside another GTK widget"
 msgstr "--socketid <xid>\tÖppna Vim innanför en annan GTK-widget"
 
-#: main.c:2562
-msgid "--help\t\tShow Gnome arguments"
-msgstr "--help\t\tVisa Gnome-argument"
+#: main.c:2627
+msgid "-P <parent title>\tOpen Vim inside parent application"
+msgstr "-P <föräldertitel>\tÖppna Vim inne i förälderapplikation"
 
-#: main.c:2794
+#: main.c:2865
 msgid "No display"
 msgstr "Ingen display"
 
 #. Failed to send, abort.
-#: main.c:2809
+#: main.c:2880
 msgid ": Send failed.\n"
 msgstr ": Överföring misslyckades.\n"
 
 #. Let vim start normally.
-#: main.c:2815
+#: main.c:2886
 msgid ": Send failed. Trying to execute locally\n"
 msgstr ": Överföring misslyckades. Försöker att köra lokalt\n"
 
-#: main.c:2853 main.c:2874
+#: main.c:2924 main.c:2945
 #, c-format
 msgid "%d of %d edited"
 msgstr "%d av %d redigerade"
 
-#: main.c:2896
+#: main.c:2967
 msgid "No display: Send expression failed.\n"
 msgstr "Ingen display: Överföringsuttryck misslyckades.\n"
 
-#: main.c:2908
+#: main.c:2979
 msgid ": Send expression failed.\n"
 msgstr ": Överföringsuttryck misslyckades.\n"
 
-#: mark.c:662
+#: mark.c:709
 msgid "No marks set"
 msgstr "Inga märken satta"
 
-#: mark.c:664
+#: mark.c:711
 #, c-format
 msgid "E283: No marks matching \"%s\""
 msgstr "E283: Inga märken matchade \"%s\""
 
 #. Highlight title
-#: mark.c:675
+#: mark.c:722
 msgid ""
 "\n"
 "mark line  col file/text"
@@ -3389,7 +3439,7 @@ msgstr ""
 "märke rad  kol fil/text"
 
 #. Highlight title
-#: mark.c:713
+#: mark.c:760
 msgid ""
 "\n"
 " jump line  col file/text"
@@ -3397,7 +3447,17 @@ msgstr ""
 "\n"
 " hopp rad kol fil/text"
 
-#: mark.c:1083
+#. Highlight title
+#: mark.c:805
+msgid ""
+"\n"
+"change line  col text"
+msgstr ""
+"\n"
+"ändring rad  kol text"
+
+#: mark.c:1281
+#, c-format
 msgid ""
 "\n"
 "# File marks:\n"
@@ -3406,7 +3466,8 @@ msgstr ""
 "# Filmärken:\n"
 
 #. Write the jumplist with -'
-#: mark.c:1118
+#: mark.c:1316
+#, c-format
 msgid ""
 "\n"
 "# Jumplist (newest first):\n"
@@ -3414,7 +3475,8 @@ msgstr ""
 "\n"
 "# Hopplista (nyaste först):\n"
 
-#: mark.c:1214
+#: mark.c:1412
+#, c-format
 msgid ""
 "\n"
 "# History of marks within files (newest to oldest):\n"
@@ -3422,47 +3484,47 @@ msgstr ""
 "\n"
 "# Historia för märken inne i filer (nyaste till äldsta):\n"
 
-#: mark.c:1297
+#: mark.c:1501
 msgid "Missing '>'"
 msgstr "Saknar '>'"
 
-#: mbyte.c:415
+#: mbyte.c:467
 msgid "E543: Not a valid codepage"
 msgstr "E543: Inte en godkänd teckentabell"
 
-#: mbyte.c:4099
+#: mbyte.c:4468
 msgid "E284: Cannot set IC values"
 msgstr "E284: Kan inte ställa in IC-värden"
 
-#: mbyte.c:4251
+#: mbyte.c:4620
 msgid "E285: Failed to create input context"
 msgstr "E285: Misslyckades att skapa inmatningsmiljö"
 
-#: mbyte.c:4398
+#: mbyte.c:4778
 msgid "E286: Failed to open input method"
 msgstr "E286: Misslyckades att öppna inmatningsmetod"
 
-#: mbyte.c:4409
+#: mbyte.c:4789
 msgid "E287: Warning: Could not set destroy callback to IM"
 msgstr "E287: Varning: Kunde inte ställa in förstörningsåterkallning till IM"
 
-#: mbyte.c:4415
+#: mbyte.c:4795
 msgid "E288: input method doesn't support any style"
 msgstr "E288: inmatningsmetod stöder inte någon stil"
 
-#: mbyte.c:4472
+#: mbyte.c:4852
 msgid "E289: input method doesn't support my preedit type"
 msgstr "E289: inmatningsmetod stöder inte min förredigeringstyp"
 
-#: mbyte.c:4546
+#: mbyte.c:4926
 msgid "E290: over-the-spot style requires fontset"
 msgstr "E290: över-pricken-stil kräver typsnittsuppsättning"
 
-#: mbyte.c:4578
+#: mbyte.c:4962
 msgid "E291: Your GTK+ is older than 1.2.3. Status area disabled"
 msgstr "E291: Din GTK+ är äldre än 1.2.3. Statusområde inaktiverat"
 
-#: mbyte.c:4857
+#: mbyte.c:5269
 msgid "E292: Input Method Server is not running"
 msgstr "E292: Inmatningsmetodserver körs inte"
 
@@ -3470,23 +3532,23 @@ msgstr "E292: Inmatningsmetodserver körs inte"
 msgid "E293: block was not locked"
 msgstr "E293: block låstes inte"
 
-#: memfile.c:995
+#: memfile.c:1010
 msgid "E294: Seek error in swap file read"
 msgstr "E294: Sökfel i växelfilsläsning"
 
-#: memfile.c:1000
+#: memfile.c:1015
 msgid "E295: Read error in swap file"
 msgstr "E295: Läsfel i växelfil"
 
-#: memfile.c:1052
+#: memfile.c:1067
 msgid "E296: Seek error in swap file write"
 msgstr "E296: Sökfel i växelfilskrivning"
 
-#: memfile.c:1070
+#: memfile.c:1085
 msgid "E297: Write error in swap file"
 msgstr "E297: Skrivfel i växelfil"
 
-#: memfile.c:1267
+#: memfile.c:1282
 msgid "E300: Swap file already exists (symlink attack?)"
 msgstr "E300: Växelfil existerar redan (symlänksattack?)"
 
@@ -3503,42 +3565,42 @@ msgid "E298: Didn't get block nr 2?"
 msgstr "E298: Tog inte emot block nr 2?"
 
 #. could not (re)open the swap file, what can we do????
-#: memline.c:443
+#: memline.c:444
 msgid "E301: Oops, lost the swap file!!!"
 msgstr "E301: Hoppsan, tappat bort växelfilen!!!"
 
-#: memline.c:448
+#: memline.c:449
 msgid "E302: Could not rename swap file"
 msgstr "E302: Kunde inte döpa om växelfil"
 
-#: memline.c:518
+#: memline.c:519
 #, c-format
 msgid "E303: Unable to open swap file for \"%s\", recovery impossible"
 msgstr "E303: Kunde inte öppna växelfil för \"%s\", återskapning omöjlig"
 
-#: memline.c:617
+#: memline.c:618
 msgid "E304: ml_timestamp: Didn't get block 0??"
 msgstr "E304: ml_timestamp: Tog inte emot block 0??"
 
-#: memline.c:757
+#: memline.c:758
 #, c-format
 msgid "E305: No swap file found for %s"
 msgstr "E305: Ingen växelfil hittad för %s"
 
-#: memline.c:767
+#: memline.c:768
 msgid "Enter number of swap file to use (0 to quit): "
 msgstr "Ange nummer på växelfil att använda (0 för att avsluta): "
 
-#: memline.c:812
+#: memline.c:813
 #, c-format
 msgid "E306: Cannot open %s"
 msgstr "E306: Kan inte öppna %s"
 
-#: memline.c:834
+#: memline.c:835
 msgid "Unable to read block 0 from "
 msgstr "Kunde inte läsa block 0 från "
 
-#: memline.c:837
+#: memline.c:838
 msgid ""
 "\n"
 "Maybe no changes were made or Vim did not update the swap file."
@@ -3547,28 +3609,28 @@ msgstr ""
 "Kanske gjordes inte några förändringar eller så uppdaterade inte Vim "
 "växlingsfilen."
 
-#: memline.c:847 memline.c:864
+#: memline.c:848 memline.c:865
 msgid " cannot be used with this version of Vim.\n"
 msgstr " kan inte användas med den här versionen av Vim.\n"
 
-#: memline.c:849
+#: memline.c:850
 msgid "Use Vim version 3.0.\n"
 msgstr "Använd Vim version 3.0.\n"
 
-#: memline.c:855
+#: memline.c:856
 #, c-format
 msgid "E307: %s does not look like a Vim swap file"
 msgstr "E307: %s ser inte ut som en Vim-växlingsfil"
 
-#: memline.c:868
+#: memline.c:869
 msgid " cannot be used on this computer.\n"
 msgstr " kan inte användas på den här datorn.\n"
 
-#: memline.c:870
+#: memline.c:871
 msgid "The file was created on "
 msgstr "Filen skapades på "
 
-#: memline.c:874
+#: memline.c:875
 msgid ""
 ",\n"
 "or the file has been damaged."
@@ -3576,77 +3638,81 @@ msgstr ""
 ",\n"
 "eller så har filen blivit skadad."
 
-#: memline.c:903
+#: memline.c:904
 #, c-format
 msgid "Using swap file \"%s\""
 msgstr "Använder växlingsfil \"%s\""
 
-#: memline.c:909
+#: memline.c:910
 #, c-format
 msgid "Original file \"%s\""
 msgstr "Orginalfil \"%s\""
 
-#: memline.c:922
+#: memline.c:923
 msgid "E308: Warning: Original file may have been changed"
 msgstr "E308: Varning: Orginalfilen kan ha blivit skadad"
 
-#: memline.c:975
+#: memline.c:976
 #, c-format
 msgid "E309: Unable to read block 1 from %s"
 msgstr "E309: Kunde inte läsa block 1 från %s"
 
-#: memline.c:979
+#: memline.c:980
 msgid "???MANY LINES MISSING"
 msgstr "???MÅNGA RADER SAKNAS"
 
-#: memline.c:995
+#: memline.c:996
 msgid "???LINE COUNT WRONG"
 msgstr "???RADANTAL FEL"
 
-#: memline.c:1002
+#: memline.c:1003
 msgid "???EMPTY BLOCK"
 msgstr "???TOMT BLOCK"
 
-#: memline.c:1028
+#: memline.c:1029
 msgid "???LINES MISSING"
 msgstr "???RADER SAKNAS"
 
-#: memline.c:1060
+#: memline.c:1061
 #, c-format
 msgid "E310: Block 1 ID wrong (%s not a .swp file?)"
 msgstr "E310: Block 1 ID fel (%s inte en .swp-fil?)"
 
-#: memline.c:1065
+#: memline.c:1066
 msgid "???BLOCK MISSING"
 msgstr "???BLOCK SAKNAS"
 
-#: memline.c:1081
+#: memline.c:1082
 msgid "??? from here until ???END lines may be messed up"
 msgstr "??? från här till ???SLUT kan rader vara tillstökade"
 
-#: memline.c:1097
+#: memline.c:1098
 msgid "??? from here until ???END lines may have been inserted/deleted"
 msgstr "??? från här till ???SLUT kan rader ha blivit infogade/borttagna"
 
-#: memline.c:1117
+#: memline.c:1118
 msgid "???END"
 msgstr "??SLUT"
 
-#: memline.c:1143
+#: memline.c:1144
 msgid "E311: Recovery Interrupted"
 msgstr "E311: Återskapning avbruten"
 
-#: memline.c:1145
+#: memline.c:1149
 msgid ""
 "E312: Errors detected while recovering; look for lines starting with ???"
 msgstr ""
 "E312: Fel upptäckt vid återskapning; titta efter rader som börjar med ???"
 
-#: memline.c:1148
+#: memline.c:1151
+msgid "See \":help E312\" for more information."
+msgstr "Se \":help E312\" för mer information."
+
+#: memline.c:1156
 msgid "Recovery completed. You should check if everything is OK."
 msgstr "Återskapning klar. Du borde kontrollera om allting är OK."
 
-#: memline.c:1149
+#: memline.c:1157
 msgid ""
 "\n"
 "(You might want to write out this file under another name\n"
@@ -3654,12 +3720,12 @@ msgstr ""
 "\n"
 "(Du kanske vill spara den här filen under ett annat namn\n"
 
-#: memline.c:1150
+#: memline.c:1158
 msgid "and run diff with the original file to check for changes)\n"
 msgstr ""
 "och kör diff med orginalfilen för att kontrollera efter förändringar)\n"
 
-#: memline.c:1151
+#: memline.c:1159
 msgid ""
 "Delete the .swp file afterwards.\n"
 "\n"
@@ -3668,51 +3734,51 @@ msgstr ""
 "\n"
 
 #. use msg() to start the scrolling properly
-#: memline.c:1207
+#: memline.c:1215
 msgid "Swap files found:"
 msgstr "Växlingsfiler hittade:"
 
-#: memline.c:1385
+#: memline.c:1393
 msgid "   In current directory:\n"
 msgstr "   I aktuell katalog:\n"
 
-#: memline.c:1387
+#: memline.c:1395
 msgid "   Using specified name:\n"
 msgstr "   Använder angivet namn:\n"
 
-#: memline.c:1391
+#: memline.c:1399
 msgid "   In directory "
 msgstr "   I katalog "
 
-#: memline.c:1409
+#: memline.c:1417
 msgid "      -- none --\n"
 msgstr "      -- inget --\n"
 
-#: memline.c:1481
+#: memline.c:1489
 msgid "          owned by: "
 msgstr "          ägd av: "
 
-#: memline.c:1483
+#: memline.c:1491
 msgid "   dated: "
 msgstr "   daterad: "
 
-#: memline.c:1487 memline.c:3701
+#: memline.c:1495 memline.c:3685
 msgid "             dated: "
 msgstr "             daterad: "
 
-#: memline.c:1503
+#: memline.c:1511
 msgid "         [from Vim version 3.0]"
 msgstr "         [från Vim version 3.0]"
 
-#: memline.c:1507
+#: memline.c:1515
 msgid "         [does not look like a Vim swap file]"
 msgstr "         [ser inte ut som en Vim-växlingsfil]"
 
-#: memline.c:1511
+#: memline.c:1519
 msgid "         file name: "
 msgstr "         filnamn: "
 
-#: memline.c:1517
+#: memline.c:1525
 msgid ""
 "\n"
 "          modified: "
@@ -3720,15 +3786,15 @@ msgstr ""
 "\n"
 "          modifierad: "
 
-#: memline.c:1518
+#: memline.c:1526
 msgid "YES"
 msgstr "JA"
 
-#: memline.c:1518
+#: memline.c:1526
 msgid "no"
 msgstr "nej"
 
-#: memline.c:1522
+#: memline.c:1530
 msgid ""
 "\n"
 "         user name: "
@@ -3736,11 +3802,11 @@ msgstr ""
 "\n"
 "         användarnamn: "
 
-#: memline.c:1529
+#: memline.c:1537
 msgid "   host name: "
 msgstr "   värdnamn: "
 
-#: memline.c:1531
+#: memline.c:1539
 msgid ""
 "\n"
 "         host name: "
@@ -3748,7 +3814,7 @@ msgstr ""
 "\n"
 "         värdnamn: "
 
-#: memline.c:1537
+#: memline.c:1545
 msgid ""
 "\n"
 "        process ID: "
@@ -3756,11 +3822,11 @@ msgstr ""
 "\n"
 "        process-ID: "
 
-#: memline.c:1543
+#: memline.c:1551
 msgid " (still running)"
 msgstr " (körs fortfarande)"
 
-#: memline.c:1555
+#: memline.c:1563
 msgid ""
 "\n"
 "         [not usable with this version of Vim]"
@@ -3768,7 +3834,7 @@ msgstr ""
 "\n"
 "         [inte användbar med den här versionen av Vim]"
 
-#: memline.c:1558
+#: memline.c:1566
 msgid ""
 "\n"
 "         [not usable on this computer]"
@@ -3776,92 +3842,92 @@ msgstr ""
 "\n"
 "         [inte användbar på den här datorn]"
 
-#: memline.c:1563
+#: memline.c:1571
 msgid "         [cannot be read]"
 msgstr "         [kan inte läsas]"
 
-#: memline.c:1567
+#: memline.c:1575
 msgid "         [cannot be opened]"
 msgstr "         [kan inte öppnas]"
 
-#: memline.c:1757
+#: memline.c:1765
 msgid "E313: Cannot preserve, there is no swap file"
 msgstr "E313: Kan inte bevara, det finns ingen växlingsfil"
 
-#: memline.c:1810
+#: memline.c:1818
 msgid "File preserved"
 msgstr "Fil bevarad"
 
-#: memline.c:1812
+#: memline.c:1820
 msgid "E314: Preserve failed"
 msgstr "E314: Bevaring misslyckades"
 
-#: memline.c:1883
+#: memline.c:1891
 #, c-format
 msgid "E315: ml_get: invalid lnum: %ld"
 msgstr "E315: ml_get: ogiltigt lnum: %ld"
 
-#: memline.c:1909
+#: memline.c:1917
 #, c-format
 msgid "E316: ml_get: cannot find line %ld"
 msgstr "E316: ml_get: kan inte hitta rad %ld"
 
-#: memline.c:2299
+#: memline.c:2307
 msgid "E317: pointer block id wrong 3"
 msgstr "E317: pekarblock-id fel 3"
 
-#: memline.c:2379
+#: memline.c:2387
 msgid "stack_idx should be 0"
 msgstr "stack_idx ska vara 0"
 
-#: memline.c:2441
+#: memline.c:2449
 msgid "E318: Updated too many blocks?"
 msgstr "E318: Uppdaterade för många block?"
 
-#: memline.c:2623
+#: memline.c:2631
 msgid "E317: pointer block id wrong 4"
 msgstr "E317: pekarblock-id fel 4"
 
-#: memline.c:2650
+#: memline.c:2658
 msgid "deleted block 1?"
 msgstr "tagit bort block 1?"
 
-#: memline.c:2850
+#: memline.c:2858
 #, c-format
 msgid "E320: Cannot find line %ld"
 msgstr "E320: Kan inte hitta rad %ld"
 
-#: memline.c:3093
+#: memline.c:3101
 msgid "E317: pointer block id wrong"
 msgstr "E317: pekarblock-id fel"
 
-#: memline.c:3109
+#: memline.c:3117
 msgid "pe_line_count is zero"
 msgstr "pe_line_count är noll"
 
-#: memline.c:3138
+#: memline.c:3146
 #, c-format
 msgid "E322: line number out of range: %ld past the end"
 msgstr "E322: radnummer utanför område: %ld bakom slutet"
 
-#: memline.c:3142
+#: memline.c:3150
 #, c-format
 msgid "E323: line count wrong in block %ld"
 msgstr "E323: radantal fel i block %ld"
 
-#: memline.c:3191
+#: memline.c:3199
 msgid "Stack size increases"
 msgstr "Stackstorlek ökar"
 
-#: memline.c:3237
+#: memline.c:3245
 msgid "E317: pointer block id wrong 2"
 msgstr "E317: pekarblock-id fel 2"
 
-#: memline.c:3691
+#: memline.c:3675
 msgid "E325: ATTENTION"
-msgstr "E325: LYSTRING"
+msgstr "E325: OBSERVERA"
 
-#: memline.c:3692
+#: memline.c:3676
 msgid ""
 "\n"
 "Found a swap file by the name \""
@@ -3869,17 +3935,17 @@ msgstr ""
 "\n"
 "Hittade en växlingsfil med namnet \""
 
-#: memline.c:3696
+#: memline.c:3680
 msgid "While opening file \""
 msgstr "Vid öppning av fil \""
 
-#: memline.c:3705
+#: memline.c:3689
 msgid "      NEWER than swap file!\n"
 msgstr "      NYARE än växelfil!\n"
 
 #. Some of these messages are long to allow translation to
 #. * other languages.
-#: memline.c:3709
+#: memline.c:3693
 msgid ""
 "\n"
 "(1) Another program may be editing the same file.\n"
@@ -3891,11 +3957,11 @@ msgstr ""
 "    Om så är fallet, var försiktig så att det inte slutar med två\n"
 "    versioner av samma fil vid förändringar.\n"
 
-#: memline.c:3710
+#: memline.c:3694
 msgid "    Quit, or continue with caution.\n"
 msgstr "    Avsluta, eller fortsätt på egen risk.\n"
 
-#: memline.c:3711
+#: memline.c:3695
 msgid ""
 "\n"
 "(2) An edit session for this file crashed.\n"
@@ -3903,11 +3969,11 @@ msgstr ""
 "\n"
 "(2) En redigeringssession för den här filen kraschade.\n"
 
-#: memline.c:3712
+#: memline.c:3696
 msgid "    If this is the case, use \":recover\" or \"vim -r "
 msgstr "    Om så är fallet, använd \":recover\" eller \"vim -r "
 
-#: memline.c:3714
+#: memline.c:3698
 msgid ""
 "\"\n"
 "    to recover the changes (see \":help recovery\").\n"
@@ -3915,11 +3981,11 @@ msgstr ""
 "\"\n"
 "    för att återskapa förändringarna (se \":help recovery\").\n"
 
-#: memline.c:3715
+#: memline.c:3699
 msgid "    If you did this already, delete the swap file \""
 msgstr "    Om du redan har gjort det, ta bort växlingsfilen \""
 
-#: memline.c:3717
+#: memline.c:3701
 msgid ""
 "\"\n"
 "    to avoid this message.\n"
@@ -3927,49 +3993,53 @@ msgstr ""
 "\"\n"
 "    för att undvika det här meddelandet.\n"
 
-#: memline.c:3731 memline.c:3735
+#: memline.c:3715 memline.c:3719
 msgid "Swap file \""
 msgstr "Växlingsfil \""
 
-#: memline.c:3732 memline.c:3738
+#: memline.c:3716 memline.c:3722
 msgid "\" already exists!"
 msgstr "\" existerar redan!"
 
-#: memline.c:3741
+#: memline.c:3725
 msgid "VIM - ATTENTION"
 msgstr "VIM - LYSTRING"
 
-#: memline.c:3743
+#: memline.c:3727
 msgid "Swap file already exists!"
 msgstr "Växlingsfil existerar redan!"
 
-#: memline.c:3747
-msgid ""
-"&Open Read-Only\n"
-"&Edit anyway\n"
-"&Recover\n"
-"&Quit"
-msgstr ""
-"&Öppna skrivskyddad\n"
-"&Redigera ändå\n"
-"&Återskapa\n"
-"&Avsluta"
-
-#: memline.c:3749
+#: memline.c:3731
 msgid ""
 "&Open Read-Only\n"
 "&Edit anyway\n"
 "&Recover\n"
 "&Quit\n"
+"&Abort"
+msgstr ""
+"&Öppna skrivskyddad\n"
+"&Redigera ändå\n"
+"&Återskapa\n"
+"&Avsluta\n"
+"A&vbryt"
+
+#: memline.c:3733
+msgid ""
+"&Open Read-Only\n"
+"&Edit anyway\n"
+"&Recover\n"
+"&Quit\n"
+"&Abort\n"
 "&Delete it"
 msgstr ""
 "&Öppna skrivskyddad\n"
 "&Redigera ändå\n"
 "&Återskapa\n"
 "&Avsluta\n"
+"A&vbryt\n"
 "&Ta bort den"
 
-#: memline.c:3802
+#: memline.c:3790
 msgid "E326: Too many swap files found"
 msgstr "E326: För många växlingsfiler hittade"
 
@@ -3985,21 +4055,21 @@ msgstr "E328: Meny existerar bara i ett annat läge"
 msgid "E329: No menu of that name"
 msgstr "E329: Ingen meny med det namnet"
 
-#: menu.c:509
+#: menu.c:525
 msgid "E330: Menu path must not lead to a sub-menu"
 msgstr "E330: Menysökväg får inte leda till en undermeny"
 
-#: menu.c:548
+#: menu.c:564
 msgid "E331: Must not add menu items directly to menu bar"
 msgstr "E331: Får inte lägga till menyföremål direkt till menyrad"
 
-#: menu.c:554
+#: menu.c:570
 msgid "E332: Separator cannot be part of a menu path"
 msgstr "E332: Avskiljare kam inte vara en del av en menysökväg"
 
 #. Now we have found the matching menu, and we list the mappings
 #. Highlight title
-#: menu.c:1081
+#: menu.c:1097
 msgid ""
 "\n"
 "--- Menus ---"
@@ -4007,79 +4077,79 @@ msgstr ""
 "\n"
 "--- Menyer ---"
 
-#: menu.c:1998
+#: menu.c:2019
 msgid "Tear off this menu"
 msgstr "Ta loss den här menyn"
 
-#: menu.c:2063
+#: menu.c:2084
 msgid "E333: Menu path must lead to a menu item"
 msgstr "E333: Menysökväg måste leda till ett menyföremål"
 
-#: menu.c:2083
+#: menu.c:2104
 #, c-format
 msgid "E334: Menu not found: %s"
 msgstr "E334: Meny hittades inte: %s"
 
-#: menu.c:2152
+#: menu.c:2173
 #, c-format
 msgid "E335: Menu not defined for %s mode"
 msgstr "E335: Meny inte definierad för %s läge"
 
-#: menu.c:2190
+#: menu.c:2211
 msgid "E336: Menu path must lead to a sub-menu"
 msgstr "E336: Menysökväg måste leda till en undermeny"
 
-#: menu.c:2211
+#: menu.c:2232
 msgid "E337: Menu not found - check menu names"
 msgstr "E337: Meny hittades inte - kontrollera menynamn"
 
-#: message.c:519
+#: message.c:414
 #, c-format
 msgid "Error detected while processing %s:"
 msgstr "Fel upptäcktes vid bearbetning av %s:"
 
-#: message.c:535
+#: message.c:440
 #, c-format
 msgid "line %4ld:"
 msgstr "rad %4ld:"
 
-#: message.c:575
+#: message.c:647
 msgid "[string too long]"
 msgstr "[sträng för lång]"
 
-#: message.c:721
+#: message.c:797
 msgid "Messages maintainer: Bram Moolenaar <Bram@vim.org>"
-msgstr "Meddelandeansvarig: Johan Svedberg <johan@svedberg.pp.se>"
+msgstr "Meddelandeansvarig: Johan Svedberg <johan@svedberg.com>"
 
-#: message.c:945
+#: message.c:1025
 msgid "Interrupt: "
 msgstr "Avbrott: "
 
-#: message.c:948
+#: message.c:1028
 msgid "Hit ENTER to continue"
 msgstr "Tryck RETUR för att fortsätta"
 
-#: message.c:950
+#: message.c:1030
 msgid "Hit ENTER or type command to continue"
 msgstr "Tryck RETUR eller skriv kommando för att fortsätta"
 
-#: message.c:2258
+#: message.c:2351
 msgid "-- More --"
 msgstr "-- Mer --"
 
-#: message.c:2261
+#: message.c:2354
 msgid " (RET/BS: line, SPACE/b: page, d/u: half page, q: quit)"
 msgstr " (ENT/BS: rad, BLANKSTEG/b: sida, d/u: halv sida q: avsluta"
 
-#: message.c:2262
+#: message.c:2355
 msgid " (RET: line, SPACE: page, d: half page, q: quit)"
 msgstr " (ENT: rad, BLANKSTEG: sida d: halv sida q: avsluta)"
 
-#: message.c:2869 message.c:2884
+#: message.c:2988 message.c:3003
 msgid "Question"
 msgstr "Fråga"
 
-#: message.c:2871
+#: message.c:2990
 msgid ""
 "&Yes\n"
 "&No"
@@ -4087,7 +4157,7 @@ msgstr ""
 "&Ja\n"
 "&Nej"
 
-#: message.c:2904
+#: message.c:3023
 msgid ""
 "&Yes\n"
 "&No\n"
@@ -4101,59 +4171,60 @@ msgstr ""
 "&Kasta bort alla\n"
 "&Avbryt"
 
-#: message.c:2945
+#: message.c:3064
 msgid "Save File dialog"
 msgstr "Filsparandedialog"
 
-#: message.c:2947
+#: message.c:3066
 msgid "Open File dialog"
 msgstr "Filöppnandedialog"
 
 #. TODO: non-GUI file selector here
-#: message.c:3018
+#: message.c:3137
 msgid "E338: Sorry, no file browser in console mode"
 msgstr "E338: Tyvärr, ingen filbläddrare i konsoll-läge"
 
-#: misc1.c:2679
+#: misc1.c:2773
 msgid "W10: Warning: Changing a readonly file"
 msgstr "W10: Varning: Ändrar en skrivskyddad fil"
 
-#: misc1.c:2918
+#: misc1.c:3021
 msgid "1 more line"
 msgstr "1 rad till"
 
-#: misc1.c:2920
+#: misc1.c:3023
 msgid "1 line less"
 msgstr "1 rad mindre"
 
-#: misc1.c:2925
+#: misc1.c:3028
 #, c-format
 msgid "%ld more lines"
 msgstr "%ld rad till"
 
-#: misc1.c:2927
+#: misc1.c:3030
 #, c-format
 msgid "%ld fewer lines"
 msgstr "%ld färre rader"
 
-#: misc1.c:2930
+#: misc1.c:3033
 msgid " (Interrupted)"
 msgstr " (Avbruten)"
 
-#: misc1.c:6602
+#: misc1.c:7599
 msgid "Vim: preserving files...\n"
 msgstr "Vim: bevarar filer...\n"
 
 #. close all memfiles, without deleting
-#: misc1.c:6612
+#: misc1.c:7609
 msgid "Vim: Finished.\n"
 msgstr "Vim: Färdig.\n"
 
-#: misc2.c:670 misc2.c:686
+#: misc2.c:695 misc2.c:711
+#, c-format
 msgid "ERROR: "
 msgstr "FEL: "
 
-#: misc2.c:690
+#: misc2.c:715
 #, c-format
 msgid ""
 "\n"
@@ -4163,7 +4234,8 @@ msgstr ""
 "[bitar] sammanlagd allok-frigjord %lu-%lu, i användning %lu, toppanvändning %"
 "lu\n"
 
-#: misc2.c:692
+#: misc2.c:717
+#, c-format
 msgid ""
 "[calls] total re/malloc()'s %lu, total free()'s %lu\n"
 "\n"
@@ -4171,58 +4243,58 @@ msgstr ""
 "[anrop] sammanlagda om/malloc()'s %lu, sammanlagda free()'s %lu\n"
 "\n"
 
-#: misc2.c:747
+#: misc2.c:772
 msgid "E340: Line is becoming too long"
 msgstr "E340: Rad börjar bli för lång"
 
-#: misc2.c:791
+#: misc2.c:816
 #, c-format
 msgid "E341: Internal error: lalloc(%ld, )"
 msgstr "E341: Internt fel: lalloc(%ld, )"
 
-#: misc2.c:899
+#: misc2.c:924
 #, c-format
 msgid "E342: Out of memory!  (allocating %lu bytes)"
 msgstr "E342: Slut på minne!  (allokerar %lu bitar)"
 
-#: misc2.c:2565
+#: misc2.c:2594
 #, c-format
 msgid "Calling shell to execute: \"%s\""
 msgstr "Anropar skal att köra: \"%s\""
 
-#: misc2.c:2787
+#: misc2.c:2816
 msgid "E545: Missing colon"
 msgstr "E545: Saknar kolon"
 
-#: misc2.c:2789 misc2.c:2816
+#: misc2.c:2818 misc2.c:2845
 msgid "E546: Illegal mode"
 msgstr "E546: Otillåtet läge"
 
-#: misc2.c:2855
+#: misc2.c:2884
 msgid "E547: Illegal mouseshape"
 msgstr "E547: Otillåten musform"
 
-#: misc2.c:2895
+#: misc2.c:2924
 msgid "E548: digit expected"
 msgstr "E548: siffra förväntades"
 
-#: misc2.c:2900
+#: misc2.c:2929
 msgid "E549: Illegal percentage"
 msgstr "E549: Otillåten procentsats"
 
-#: misc2.c:3210
+#: misc2.c:3239
 msgid "Enter encryption key: "
 msgstr "Ange krypteringsnyckel: "
 
-#: misc2.c:3211
+#: misc2.c:3240
 msgid "Enter same key again: "
 msgstr "Ange samma nyckel igen: "
 
-#: misc2.c:3221
+#: misc2.c:3250
 msgid "Keys don't match!"
 msgstr "Nycklar matchar inte!"
 
-#: misc2.c:3770
+#: misc2.c:3799
 #, c-format
 msgid ""
 "E343: Invalid path: '**[number]' must be at the end of the path or be "
@@ -4231,140 +4303,162 @@ msgstr ""
 "E343: Ogiltig sökväg: '**[nummer]' måste vara i slutet på sökvägen eller "
 "följas av '%s'."
 
-#: misc2.c:5049
+#: misc2.c:5078
 #, c-format
 msgid "E344: Can't find directory \"%s\" in cdpath"
 msgstr "E344: Kan inte hitta katalog \"%s\" i cdpath"
 
-#: misc2.c:5052
+#: misc2.c:5081
 #, c-format
 msgid "E345: Can't find file \"%s\" in path"
 msgstr "E345: Kan inte hitta fil \"%s\" i sökväg"
 
-#: misc2.c:5058
+#: misc2.c:5087
 #, c-format
 msgid "E346: No more directory \"%s\" found in cdpath"
 msgstr "E346: Ingen katalog \"%s\" hittades i cdpath"
 
-#: misc2.c:5061
+#: misc2.c:5090
 #, c-format
 msgid "E347: No more file \"%s\" found in path"
 msgstr "E347: Ingen fil \"%s\" hittades i sökvägen"
 
-#: misc2.c:5295
+#: misc2.c:5324
 msgid "E550: Missing colon"
 msgstr "E550: Saknar kolon"
 
-#: misc2.c:5307
+#: misc2.c:5336
 msgid "E551: Illegal component"
 msgstr "E551: Otillåten komponent"
 
-#: misc2.c:5315
+#: misc2.c:5344
 msgid "E552: digit expected"
 msgstr "E552: siffra förväntades"
 
 #. Get here when the server can't be found.
-#: netbeans.c:346
+#: netbeans.c:396
 msgid "Cannot connect to Netbeans #2"
 msgstr "Kan inte ansluta till Netbeans #2"
 
-#: netbeans.c:354
+#: netbeans.c:404
 msgid "Cannot connect to Netbeans"
 msgstr "Kan inte ansluta till Netbeans"
 
-#: netbeans.c:633
+#: netbeans.c:450
+#, c-format
+msgid "E668: Wrong access mode for NetBeans connection info file: \"%s\""
+msgstr "E668: Fel rättigheter på NetBeans-anslutningens info-fil: \"%s\""
+
+#: netbeans.c:749
 msgid "read from Netbeans socket"
 msgstr "läs från Netbeans-uttag"
 
-#: normal.c:2944
+#: netbeans.c:1643
+#, c-format
+msgid "E658: NetBeans connection lost for buffer %ld"
+msgstr "E658: NetBeans-anslutning förlorad för buffert %ld"
+
+#: normal.c:2988
 msgid "Warning: terminal cannot highlight"
 msgstr "Varning: terminal kan inte framhäva"
 
-#: normal.c:3159
+#: normal.c:3284
 msgid "E348: No string under cursor"
 msgstr "E348: Ingen sträng under markör"
 
-#: normal.c:3161
+#: normal.c:3286
 msgid "E349: No identifier under cursor"
 msgstr "E349: Ingen identifierare under markör"
 
-#: normal.c:4379
+#: normal.c:4528
 msgid "E352: Cannot erase folds with current 'foldmethod'"
 msgstr "E352: Kan inte ta bort veck med aktuell 'foldmethod'"
 
-#: normal.c:7802
+#: normal.c:6749
+msgid "E664: changelist is empty"
+msgstr "E664: ändringslista är tom"
+
+#: normal.c:6751
+msgid "E662: At start of changelist"
+msgstr "E662: Vid början på ändringslista"
+
+#: normal.c:6753
+msgid "E663: At end of changelist"
+msgstr "E663: Vid slutet på ändringslista"
+
+#: normal.c:8015
 msgid "Type  :quit<Enter>  to exit Vim"
 msgstr "skriv  :q<Enter>                för att avsluta Vim         "
 
-#: ops.c:295
+#: ops.c:291
 #, c-format
 msgid "1 line %sed 1 time"
 msgstr "1 rad %sad 1 gång"
 
-#: ops.c:297
+#: ops.c:293
 #, c-format
 msgid "1 line %sed %d times"
 msgstr "1 rad %sade %d gånger"
 
-#: ops.c:302
+#: ops.c:298
 #, c-format
 msgid "%ld lines %sed 1 time"
 msgstr "%ld rader %sad 1 gång"
 
-#: ops.c:305
+#: ops.c:301
 #, c-format
 msgid "%ld lines %sed %d times"
 msgstr "%ld rader %sade %d gånger"
 
-#: ops.c:663
+#: ops.c:659
 #, c-format
 msgid "%ld lines to indent... "
 msgstr "%ld rader att indentera... "
 
-#: ops.c:713
+#: ops.c:709
 msgid "1 line indented "
 msgstr "1 rad indenterad "
 
-#: ops.c:715
+#: ops.c:711
 #, c-format
 msgid "%ld lines indented "
 msgstr "%ld rader indenterade "
 
 #. must display the prompt
-#: ops.c:1647
+#: ops.c:1616
 msgid "cannot yank; delete anyway"
 msgstr "kan inte kopiera; ta bort ändå"
 
-#: ops.c:2155
+#: ops.c:2202
 msgid "1 line changed"
 msgstr "1 rad ändrad"
 
-#: ops.c:2157
+#: ops.c:2204
 #, c-format
 msgid "%ld lines changed"
 msgstr "%ld rader ändrade"
 
-#: ops.c:2541
+#: ops.c:2588
 #, c-format
 msgid "freeing %ld lines"
 msgstr "frigör %ld rader"
 
-#: ops.c:2822
+#: ops.c:2869
 msgid "1 line yanked"
 msgstr "1 rad kopierad"
 
-#: ops.c:2824
+#: ops.c:2871
 #, c-format
 msgid "%ld lines yanked"
 msgstr "%ld rader kopierade"
 
-#: ops.c:3109
+#: ops.c:3156
 #, c-format
 msgid "E353: Nothing in register %s"
 msgstr "E353: Ingenting i register %s"
 
 #. Highlight title
-#: ops.c:3660
+#: ops.c:3712
 msgid ""
 "\n"
 "--- Registers ---"
@@ -4372,11 +4466,12 @@ msgstr ""
 "\n"
 "--- Register ---"
 
-#: ops.c:4875
+#: ops.c:5023
 msgid "Illegal register name"
 msgstr "Otillåtet registernamn"
 
-#: ops.c:4961
+#: ops.c:5111
+#, c-format
 msgid ""
 "\n"
 "# Registers:\n"
@@ -4384,57 +4479,57 @@ msgstr ""
 "\n"
 "# Register:\n"
 
-#: ops.c:4994
+#: ops.c:5161
 #, c-format
 msgid "E574: Unknown register type %d"
 msgstr "E574: Okänd registertyp %d"
 
-#: ops.c:5480
+#: ops.c:5646
 #, c-format
 msgid "E354: Invalid register name: '%s'"
 msgstr "E354: Otillåtet registernamn: '%s'"
 
-#: ops.c:5840
+#: ops.c:6006
 #, c-format
 msgid "%ld Cols; "
 msgstr "%ld kolumner; "
 
-#: ops.c:5847
+#: ops.c:6013
 #, c-format
 msgid "Selected %s%ld of %ld Lines; %ld of %ld Words; %ld of %ld Bytes"
 msgstr "Markerade %s%ld av %ld rader; %ld av %ld ord; %ld av %ld bitar"
 
-#: ops.c:5863
+#: ops.c:6029
 #, c-format
 msgid "Col %s of %s; Line %ld of %ld; Word %ld of %ld; Byte %ld of %ld"
 msgstr "Kol %s av %s; rad %ld av %ld; ord %ld av %ld; bit %ld av %ld"
 
-#: ops.c:5874
+#: ops.c:6040
 #, c-format
 msgid "(+%ld for BOM)"
 msgstr "(+%ld för BOM)"
 
-#: option.c:1633
+#: option.c:1644
 msgid "%<%f%h%m%=Page %N"
 msgstr "%<%f%h%m%=Sida %N"
 
-#: option.c:2082
+#: option.c:2093
 msgid "Thanks for flying Vim"
 msgstr "Tack för att du flyger med Vim"
 
-#: option.c:3354 option.c:3461
+#: option.c:3429 option.c:3545
 msgid "E518: Unknown option"
 msgstr "E518: Okänd flagga"
 
-#: option.c:3367
+#: option.c:3442
 msgid "E519: Option not supported"
 msgstr "E519: Flagga inte stödd"
 
-#: option.c:3392
+#: option.c:3467
 msgid "E520: Not allowed in a modeline"
 msgstr "E520: Inte tillåtet i en lägesrad"
 
-#: option.c:3448
+#: option.c:3532
 msgid ""
 "\n"
 "\tLast set from "
@@ -4442,138 +4537,138 @@ msgstr ""
 "\n"
 "\tSenast satt från "
 
-#: option.c:3587
+#: option.c:3671
 msgid "E521: Number required after ="
 msgstr "E521: Nummer krävs efter ="
 
-#: option.c:3914 option.c:4531
+#: option.c:3999 option.c:4639
 msgid "E522: Not found in termcap"
 msgstr "E522: Inte hittat i termcap"
 
-#: option.c:3980
+#: option.c:4074
 #, c-format
 msgid "E539: Illegal character <%s>"
 msgstr "E539: Otillåtet tecken <%s>"
 
-#: option.c:4523
+#: option.c:4631
 msgid "E529: Cannot set 'term' to empty string"
 msgstr "E529: Kan inte sätta 'term' till tom sträng"
 
-#: option.c:4526
+#: option.c:4634
 msgid "E530: Cannot change term in GUI"
 msgstr "E530: Kan inte ändra term i GUI"
 
-#: option.c:4528
+#: option.c:4636
 msgid "E531: Use \":gui\" to start the GUI"
 msgstr "E531: Använd \":gui\" för att starta GUI"
 
-#: option.c:4549
+#: option.c:4665
 msgid "E589: 'backupext' and 'patchmode' are equal"
 msgstr "E589: 'backuptext' och 'patchmode' är lika"
 
-#: option.c:4734
+#: option.c:4880
 msgid "E617: Cannot be changed in the GTK+ 2 GUI"
 msgstr "E617: Kan inte bli ändrat i GTK+ 2-GUI"
 
-#: option.c:4890
+#: option.c:5036
 msgid "E524: Missing colon"
 msgstr "E524: Saknar kolon"
 
-#: option.c:4892
+#: option.c:5038
 msgid "E525: Zero length string"
 msgstr "E525: Nollängdssträng"
 
-#: option.c:4960
+#: option.c:5106
 #, c-format
 msgid "E526: Missing number after <%s>"
 msgstr "E526: Saknar nummer efter <%s>"
 
-#: option.c:4974
+#: option.c:5120
 msgid "E527: Missing comma"
 msgstr "E527: Saknar komma"
 
-#: option.c:4981
+#: option.c:5127
 msgid "E528: Must specify a ' value"
 msgstr "E528: Måste ange ett '-värde"
 
-#: option.c:5022
+#: option.c:5168
 msgid "E595: contains unprintable or wide character"
 msgstr "E595: innehåller outskrivbara eller breda tecken"
 
-#: option.c:5071
+#: option.c:5217
 msgid "E596: Invalid font(s)"
 msgstr "E596: Ogiltig(a) typsnitt"
 
-#: option.c:5079
+#: option.c:5225
 msgid "E597: can't select fontset"
 msgstr "E597: kan inte välja typsnittsuppsättning"
 
-#: option.c:5081
+#: option.c:5227
 msgid "E598: Invalid fontset"
 msgstr "E598: Ogiltig typsnittsuppsättning"
 
-#: option.c:5088
+#: option.c:5234
 msgid "E533: can't select wide font"
 msgstr "E533: kan inte välja brett typsnitt"
 
-#: option.c:5090
+#: option.c:5236
 msgid "E534: Invalid wide font"
 msgstr "E534: Ogiltigt brett typsnitt"
 
-#: option.c:5360
+#: option.c:5506
 #, c-format
 msgid "E535: Illegal character after <%c>"
 msgstr "E535: Otillåtet tecken efter <%c>"
 
-#: option.c:5465
+#: option.c:5617
 msgid "E536: comma required"
 msgstr "E536: komma krävs"
 
-#: option.c:5475
+#: option.c:5627
 #, c-format
 msgid "E537: 'commentstring' must be empty or contain %s"
 msgstr "E537: 'commentstring' måste vara tom eller innehålla %s"
 
-#: option.c:5548
+#: option.c:5702
 msgid "E538: No mouse support"
 msgstr "E538: Inget musstöd"
 
-#: option.c:5816
+#: option.c:5972
 msgid "E540: Unclosed expression sequence"
 msgstr "E540: Ostängd uttryckssekvens"
 
-#: option.c:5820
+#: option.c:5976
 msgid "E541: too many items"
 msgstr "E541: för många föremål"
 
-#: option.c:5822
+#: option.c:5978
 msgid "E542: unbalanced groups"
 msgstr "E542: obalanserade grupper"
 
-#: option.c:6062
+#: option.c:6218
 msgid "E590: A preview window already exists"
 msgstr "E590: Ett förhandsvisningsfönster existerar redan"
 
-#: option.c:6319
+#: option.c:6475
 msgid "W17: Arabic requires UTF-8, do ':set encoding=utf-8'"
 msgstr "W17: Arabiska kräver UTF-8, gör ':set encoding=utf-8'"
 
-#: option.c:6636
+#: option.c:6808
 #, c-format
 msgid "E593: Need at least %d lines"
 msgstr "E593: Behöver åtminstone %d rader"
 
-#: option.c:6645
+#: option.c:6818
 #, c-format
 msgid "E594: Need at least %d columns"
 msgstr "E594: Behöver åtminstone %d kolumner"
 
-#: option.c:6950
+#: option.c:7125
 #, c-format
 msgid "E355: Unknown option: %s"
 msgstr "E355: Okänd flagga: %s"
 
-#: option.c:7060
+#: option.c:7245
 msgid ""
 "\n"
 "--- Terminal codes ---"
@@ -4581,7 +4676,7 @@ msgstr ""
 "\n"
 "--- Terminalkoder ---"
 
-#: option.c:7062
+#: option.c:7247
 msgid ""
 "\n"
 "--- Global option values ---"
@@ -4589,7 +4684,7 @@ msgstr ""
 "\n"
 "--- Globala flaggvärden ---"
 
-#: option.c:7064
+#: option.c:7249
 msgid ""
 "\n"
 "--- Local option values ---"
@@ -4597,7 +4692,7 @@ msgstr ""
 "\n"
 "--- Lokala flaggvärden ---"
 
-#: option.c:7066
+#: option.c:7251
 msgid ""
 "\n"
 "--- Options ---"
@@ -4605,152 +4700,153 @@ msgstr ""
 "\n"
 "--- Flaggor ---"
 
-#: option.c:7767
+#: option.c:7957
 msgid "E356: get_varp ERROR"
 msgstr "E356: get_varp-FEL"
 
-#: option.c:8738
+#: option.c:8928
 #, c-format
 msgid "E357: 'langmap': Matching character missing for %s"
 msgstr "E357: 'langmap': Matchande tecken saknas för %s"
 
-#: option.c:8772
+#: option.c:8962
 #, c-format
 msgid "E358: 'langmap': Extra characters after semicolon: %s"
 msgstr "E358: 'langmap': Extra tecken efter semikolon: %s"
 
-#: os_amiga.c:275
+#: os_amiga.c:280
 msgid "cannot open "
 msgstr "kan inte öppna "
 
-#: os_amiga.c:309
+#: os_amiga.c:314
 msgid "VIM: Can't open window!\n"
 msgstr "VIM: Kan inte öppna fönster!\n"
 
-#: os_amiga.c:333
+#: os_amiga.c:338
 msgid "Need Amigados version 2.04 or later\n"
 msgstr "Behöver Amigados version 2.04 eller senare\n"
 
-#: os_amiga.c:339
+#: os_amiga.c:344
 #, c-format
 msgid "Need %s version %ld\n"
 msgstr "Behöver %s version %ld\n"
 
-#: os_amiga.c:411
+#: os_amiga.c:416
 msgid "Cannot open NIL:\n"
 msgstr "Kan inte öppna NIL:\n"
 
-#: os_amiga.c:422
+#: os_amiga.c:427
 msgid "Cannot create "
 msgstr "Kan inte skapa "
 
-#: os_amiga.c:900
+#: os_amiga.c:905
 #, c-format
 msgid "Vim exiting with %d\n"
 msgstr "Vim avslutar med %d\n"
 
-#: os_amiga.c:932
+#: os_amiga.c:941
 msgid "cannot change console mode ?!\n"
 msgstr "kan inte ändra konsoll-läge ?!\n"
 
-#: os_amiga.c:998
+#: os_amiga.c:1012
 msgid "mch_get_shellsize: not a console??\n"
 msgstr "mch_get_shellsize: inte en konsoll??\n"
 
 #. if Vim opened a window: Executing a shell may cause crashes
-#: os_amiga.c:1147
+#: os_amiga.c:1161
 msgid "E360: Cannot execute shell with -f option"
 msgstr "E360: Kan inte köra skal med -f-flagga"
 
-#: os_amiga.c:1188 os_amiga.c:1278
+#: os_amiga.c:1202 os_amiga.c:1292
 msgid "Cannot execute "
 msgstr "Kan inte köra "
 
-#: os_amiga.c:1191 os_amiga.c:1288
+#: os_amiga.c:1205 os_amiga.c:1302
 msgid "shell "
 msgstr "skal "
 
-#: os_amiga.c:1211 os_amiga.c:1313
+#: os_amiga.c:1225 os_amiga.c:1327
 msgid " returned\n"
 msgstr " returnerade\n"
 
-#: os_amiga.c:1454
+#: os_amiga.c:1468
 msgid "ANCHOR_BUF_SIZE too small."
 msgstr "ANCHOR_BUF_SIZE för liten."
 
-#: os_amiga.c:1458
+#: os_amiga.c:1472
 msgid "I/O ERROR"
 msgstr "I/O-FEL"
 
-#: os_mswin.c:525
+#: os_mswin.c:552
 msgid "...(truncated)"
 msgstr "...(trunkerade)"
 
-#: os_mswin.c:627
+#: os_mswin.c:671
 msgid "'columns' is not 80, cannot execute external commands"
 msgstr "'columns' är inte 80, kan inte köra externa kommandon"
 
-#: os_mswin.c:1866
+#: os_mswin.c:2003
 msgid "E237: Printer selection failed"
 msgstr "E237: Skrivarval misslyckades"
 
-#: os_mswin.c:1906
+#: os_mswin.c:2043
 #, c-format
 msgid "to %s on %s"
 msgstr "till %s på %s"
 
-#: os_mswin.c:1921
+#: os_mswin.c:2058
 #, c-format
 msgid "E613: Unknown printer font: %s"
 msgstr "E613: Okänt skrivartypsnitt: %s"
 
-#: os_mswin.c:1971 os_mswin.c:1981
+#: os_mswin.c:2107 os_mswin.c:2117
 #, c-format
 msgid "E238: Print error: %s"
 msgstr "E238: Skrivarfel: %s"
 
-#: os_mswin.c:1982
+#: os_mswin.c:2118
 msgid "Unknown"
 msgstr "Okänd"
 
-#: os_mswin.c:2009
+#: os_mswin.c:2145
 #, c-format
 msgid "Printing '%s'"
 msgstr "Skriver ut '%s'"
 
-#: os_mswin.c:3095
+#: os_mswin.c:3235
 #, c-format
 msgid "E244: Illegal charset name \"%s\" in font name \"%s\""
 msgstr "E244: Otillåtet teckenkodsnamn \"%s\" i typsnittsnamn \"%s\""
 
-#: os_mswin.c:3103
+#: os_mswin.c:3243
 #, c-format
 msgid "E245: Illegal char '%c' in font name \"%s\""
 msgstr "E245: Otillåtet tecken '%c' i typsnittsnamn \"%s\""
 
-#: os_riscos.c:1258
+#: os_riscos.c:1259
 msgid "E366: Invalid 'osfiletype' option - using Text"
 msgstr "E366: Ogiltig 'osfiletype'-flagga - använder Text"
 
-#: os_unix.c:897
+#: os_unix.c:927
 msgid "Vim: Double signal, exiting\n"
 msgstr "Vim: Dubbelsignal, avslutar\n"
 
-#: os_unix.c:903
+#: os_unix.c:933
 #, c-format
 msgid "Vim: Caught deadly signal %s\n"
 msgstr "Vim: Fångade dödlig signal %s\n"
 
-#: os_unix.c:906
+#: os_unix.c:936
+#, c-format
 msgid "Vim: Caught deadly signal\n"
 msgstr "Vim: Fångade dödlig signal\n"
 
-#: os_unix.c:1169
+#: os_unix.c:1199
 #, c-format
 msgid "Opening the X display took %ld msec"
 msgstr "Öppning av X-display tog %ld ms"
 
-#: os_unix.c:1196
+#: os_unix.c:1226
 msgid ""
 "\n"
 "Vim: Got X error\n"
@@ -4758,15 +4854,15 @@ msgstr ""
 "\n"
 "Vim: Fick X-error\n"
 
-#: os_unix.c:1304
+#: os_unix.c:1338
 msgid "Testing the X display failed"
 msgstr "Testning av X-displayen misslyckades"
 
-#: os_unix.c:1443
+#: os_unix.c:1477
 msgid "Opening the X display timed out"
 msgstr "Öppning av X-displayen tog för lång tid"
 
-#: os_unix.c:3190 os_unix.c:3870
+#: os_unix.c:3234 os_unix.c:3914
 msgid ""
 "\n"
 "Cannot execute shell "
@@ -4774,7 +4870,7 @@ msgstr ""
 "\n"
 "Kan inte köra skal "
 
-#: os_unix.c:3238
+#: os_unix.c:3282
 msgid ""
 "\n"
 "Cannot execute shell sh\n"
@@ -4782,7 +4878,7 @@ msgstr ""
 "\n"
 "Kan inte köra skal sh\n"
 
-#: os_unix.c:3242 os_unix.c:3876
+#: os_unix.c:3286 os_unix.c:3920
 msgid ""
 "\n"
 "shell returned "
@@ -4790,7 +4886,7 @@ msgstr ""
 "\n"
 "skal returnerade "
 
-#: os_unix.c:3377
+#: os_unix.c:3421
 msgid ""
 "\n"
 "Cannot create pipes\n"
@@ -4798,7 +4894,7 @@ msgstr ""
 "\n"
 "Kan inte skapa rör\n"
 
-#: os_unix.c:3392
+#: os_unix.c:3436
 msgid ""
 "\n"
 "Cannot fork\n"
@@ -4806,7 +4902,7 @@ msgstr ""
 "\n"
 "Kan inte grena\n"
 
-#: os_unix.c:3883
+#: os_unix.c:3927
 msgid ""
 "\n"
 "Command terminated\n"
@@ -4814,34 +4910,30 @@ msgstr ""
 "\n"
 "Kommando avslutades\n"
 
-#: os_unix.c:4147 os_unix.c:4272 os_unix.c:5933
+#: os_unix.c:4191 os_unix.c:4316 os_unix.c:6006
 msgid "XSMP lost ICE connection"
 msgstr "XSMP tappade ICE-anslutning"
 
-#: os_unix.c:5516
+#: os_unix.c:5589
 msgid "Opening the X display failed"
 msgstr "Öppning av X-displayen misslyckades"
 
-#: os_unix.c:5838
+#: os_unix.c:5911
 msgid "XSMP handling save-yourself request"
 msgstr "XSMP hanterar spara-själv-förfrågan"
 
-#: os_unix.c:5957
+#: os_unix.c:6030
 msgid "XSMP opening connection"
 msgstr "XSMP öppnar anslutning"
 
-#: os_unix.c:5976
+#: os_unix.c:6049
 msgid "XSMP ICE connection watch failed"
 msgstr "XSMP ICE-anslutning övervakning misslyckades"
 
-#: os_unix.c:5996
+#: os_unix.c:6069
 #, c-format
 msgid "XSMP SmcOpenConnection failed: %s"
 msgstr "XSMP SmcOpenConnection misslyckades: %s"
-
-#: os_vms_mms.c:59
-msgid "At line"
-msgstr "På rad"
 
 #: os_w32exe.c:65
 msgid "Could not allocate memory for command line."
@@ -4859,33 +4951,33 @@ msgstr "Kunde inte läsa in vim32.dll!"
 msgid "Could not fix up function pointers to the DLL!"
 msgstr "Kunde inte ordna upp funktionspekare till DLL:en!"
 
-#: os_win16.c:341 os_win32.c:3064
+#: os_win16.c:342 os_win32.c:3248
 #, c-format
 msgid "shell returned %d"
 msgstr "skal returnerade %d"
 
-#: os_win32.c:2522
+#: os_win32.c:2706
 #, c-format
 msgid "Vim: Caught %s event\n"
 msgstr "Vim: Fångade %s-händelse\n"
 
-#: os_win32.c:2524
+#: os_win32.c:2708
 msgid "close"
 msgstr "stäng"
 
-#: os_win32.c:2526
+#: os_win32.c:2710
 msgid "logoff"
 msgstr "logga ut"
 
-#: os_win32.c:2527
+#: os_win32.c:2711
 msgid "shutdown"
 msgstr "stäng av"
 
-#: os_win32.c:3017
+#: os_win32.c:3201
 msgid "E371: Command not found"
 msgstr "E371: Kommando hittades inte"
 
-#: os_win32.c:3030
+#: os_win32.c:3214
 msgid ""
 "VIMRUN.EXE not found in your $PATH.\n"
 "External commands will not pause after completion.\n"
@@ -4895,9 +4987,13 @@ msgstr ""
 "Externa kommandon vill inte stå stilla efter färdigställning.\n"
 "Se  :help win32-vimrun  för mer information."
 
-#: os_win32.c:3033
+#: os_win32.c:3217
 msgid "Vim Warning"
 msgstr "Vim-varning"
+
+#: os_vms_mms.c:59
+msgid "At line"
+msgstr "På rad"
 
 #: quickfix.c:258
 #, c-format
@@ -4936,33 +5032,33 @@ msgstr "E378: 'errorformat' innehåller inga mönster"
 msgid "E379: Missing or empty directory name"
 msgstr "E379: Saknar eller tomt katalognamn"
 
-#: quickfix.c:988
+#: quickfix.c:990
 msgid "E553: No more items"
 msgstr "E553: Inga fler föremål"
 
-#: quickfix.c:1225
+#: quickfix.c:1229
 #, c-format
 msgid "(%d of %d)%s%s: "
 msgstr "(%d av %d)%s%s: "
 
-#: quickfix.c:1227
+#: quickfix.c:1231
 msgid " (line deleted)"
 msgstr " (rad borttagen)"
 
-#: quickfix.c:1440
+#: quickfix.c:1444
 msgid "E380: At bottom of quickfix stack"
 msgstr "E380: På botten av quickfix-stack"
 
-#: quickfix.c:1449
+#: quickfix.c:1453
 msgid "E381: At top of quickfix stack"
 msgstr "E381: På toppen av quickfix-stack"
 
-#: quickfix.c:1461
+#: quickfix.c:1465
 #, c-format
 msgid "error list %d of %d; %d errors"
 msgstr "fellista %d av %d; %d fel"
 
-#: quickfix.c:1939
+#: quickfix.c:1945
 msgid "E382: Cannot write, 'buftype' option is set"
 msgstr "E382: Kan inte skriva, 'buftype'-flagga är satt"
 
@@ -4971,307 +5067,315 @@ msgstr "E382: Kan inte skriva, 'buftype'-flagga är satt"
 msgid "E369: invalid item in %s%%[]"
 msgstr "E369: ogiltigt föremål i %s%%[]"
 
-#: regexp.c:827
+#: regexp.c:838
 msgid "E339: Pattern too long"
 msgstr "E339: Mönster för långt"
 
-#: regexp.c:996
+#: regexp.c:1009
 msgid "E50: Too many \\z("
 msgstr "E50: För många \\z("
 
-#: regexp.c:1007
+#: regexp.c:1020
 #, c-format
 msgid "E51: Too many %s("
 msgstr "E51: För många %s("
 
-#: regexp.c:1064
+#: regexp.c:1077
 msgid "E52: Unmatched \\z("
 msgstr "E52: Omatchade \\z("
 
-#: regexp.c:1068
+#: regexp.c:1081
 #, c-format
 msgid "E53: Unmatched %s%%("
 msgstr "E53: Omatchade %s%%("
 
-#: regexp.c:1070
+#: regexp.c:1083
 #, c-format
 msgid "E54: Unmatched %s("
 msgstr "E54: Omatchade %s("
 
-#: regexp.c:1075
+#: regexp.c:1088
 #, c-format
 msgid "E55: Unmatched %s)"
 msgstr "E55: Omatchade %s)"
 
-#: regexp.c:1244
+#: regexp.c:1258
 #, c-format
 msgid "E56: %s* operand could be empty"
 msgstr "E56: %s*-operand kan vara tom"
 
-#: regexp.c:1247
+#: regexp.c:1261
 #, c-format
 msgid "E57: %s+ operand could be empty"
 msgstr "E57: %s+-operand kan vara tom"
 
-#: regexp.c:1301
+#: regexp.c:1316
 #, c-format
 msgid "E59: invalid character after %s@"
 msgstr "E59: ogiltigt tecken efter %s@"
 
-#: regexp.c:1326
+#: regexp.c:1344
 #, c-format
 msgid "E58: %s{ operand could be empty"
 msgstr "E58: %s{-operand kan vara tom"
 
-#: regexp.c:1336
+#: regexp.c:1354
 #, c-format
 msgid "E60: Too many complex %s{...}s"
 msgstr "E60: För många komplexa %s{...}s"
 
-#: regexp.c:1352
+#: regexp.c:1370
 #, c-format
 msgid "E61: Nested %s*"
 msgstr "E61: Nästlade %s*"
 
-#: regexp.c:1355
+#: regexp.c:1373
 #, c-format
 msgid "E62: Nested %s%c"
 msgstr "E62: Nästlade %s%c"
 
-#: regexp.c:1473
+#: regexp.c:1491
 msgid "E63: invalid use of \\_"
 msgstr "E63: ogiltig användning av \\_"
 
-#: regexp.c:1518
+#: regexp.c:1536
 #, c-format
 msgid "E64: %s%c follows nothing"
 msgstr "E64: %s%c följer ingenting"
 
-#: regexp.c:1574
+#: regexp.c:1592
 msgid "E65: Illegal back reference"
 msgstr "E65: Otillåten bakåtreferens"
 
-#: regexp.c:1587
+#: regexp.c:1605
 msgid "E66: \\z( not allowed here"
 msgstr "E66: \\z{ inte tillåtet här"
 
-#: regexp.c:1606
+#: regexp.c:1624
 msgid "E67: \\z1 et al. not allowed here"
 msgstr "E67: \\z1 m.fl. inte tillåtet här"
 
-#: regexp.c:1617
+#: regexp.c:1635
 msgid "E68: Invalid character after \\z"
 msgstr "E68: Ogiltigt tecken efter \\z"
 
-#: regexp.c:1666
+#: regexp.c:1684
 #, c-format
 msgid "E69: Missing ] after %s%%["
 msgstr "E69: Saknar ] efter %s%%["
 
-#: regexp.c:1682
+#: regexp.c:1700
 #, c-format
 msgid "E70: Empty %s%%[]"
 msgstr "E70: Tom %s%%[]"
 
-#: regexp.c:1742
+#: regexp.c:1760
 #, c-format
 msgid "E71: Invalid character after %s%%"
 msgstr "E71: Ogiltigt tecken efter %s%%"
 
-#: regexp.c:2539
+#: regexp.c:2557
 #, c-format
 msgid "E554: Syntax error in %s{...}"
 msgstr "E554: Syntaxfel i %s{...}"
 
-#: regexp.c:2800
+#: regexp.c:2863 regexp.c:3016
 msgid "E361: Crash intercepted; regexp too complex?"
 msgstr "E361: Krasch hejdad; reguljärt uttryck för komplext?"
 
-#: regexp.c:2941
+#: regexp.c:3004 regexp.c:3013
 msgid "E363: pattern caused out-of-stack error"
 msgstr "E363: mönster orsakade slut-på-stack-fel"
 
-#: regexp.c:3180
+#: regexp.c:3258
 msgid "External submatches:\n"
 msgstr "Externa underträffar:\n"
 
-#: screen.c:2115
+#: screen.c:2183
 #, c-format
 msgid "+--%3ld lines folded "
 msgstr "+--%3ld rader vikta "
 
-#: screen.c:7892
+#: screen.c:8009
 msgid " VREPLACE"
 msgstr " VERSÄTT"
 
-#: screen.c:7896
+#: screen.c:8013
 msgid " REPLACE"
 msgstr " ERSÄTT"
 
-#: screen.c:7901
+#: screen.c:8018
 msgid " REVERSE"
 msgstr " OMVÄND"
 
-#: screen.c:7903
+#: screen.c:8020
 msgid " INSERT"
 msgstr " INFOGA"
 
-#: screen.c:7906
+#: screen.c:8023
 msgid " (insert)"
 msgstr " (infoga)"
 
-#: screen.c:7908
+#: screen.c:8025
 msgid " (replace)"
 msgstr " (ersätt)"
 
-#: screen.c:7910
+#: screen.c:8027
 msgid " (vreplace)"
 msgstr " (versätt)"
 
-#: screen.c:7913
+#: screen.c:8030
 msgid " Hebrew"
 msgstr " Hebreiska"
 
-#: screen.c:7924
+#: screen.c:8041
 msgid " Arabic"
 msgstr " Arabiska"
 
-#: screen.c:7927
+#: screen.c:8044
 msgid " (lang)"
 msgstr " (språk)"
 
-#: screen.c:7931
+#: screen.c:8048
 msgid " (paste)"
 msgstr " (klistra in)"
 
-#: screen.c:7937
-msgid " SELECT"
-msgstr " MARKERA"
-
-#: screen.c:7939
+#: screen.c:8061
 msgid " VISUAL"
 msgstr " VISUELL"
 
-#: screen.c:7941
-msgid " BLOCK"
-msgstr " BLOCK"
+#: screen.c:8062
+msgid " VISUAL LINE"
+msgstr " VISUELL RAD"
 
-#: screen.c:7943
-msgid " LINE"
-msgstr " RAD"
+#: screen.c:8063
+msgid " VISUAL BLOCK"
+msgstr " VISUELLT BLOCK"
 
-#: screen.c:7956 screen.c:8016
+#: screen.c:8064
+msgid " SELECT"
+msgstr " MARKERA"
+
+#: screen.c:8065
+msgid " SELECT LINE"
+msgstr " MARKERA RAD"
+
+#: screen.c:8066
+msgid " SELECT BLOCK"
+msgstr " MARKERA BLOCK"
+
+#: screen.c:8081 screen.c:8144
 msgid "recording"
 msgstr "spelar in"
 
-#: search.c:36
+#: search.c:37
 msgid "search hit TOP, continuing at BOTTOM"
 msgstr "sökning nådde TOPPEN, fortsätter vid BOTTEN"
 
-#: search.c:37
+#: search.c:38
 msgid "search hit BOTTOM, continuing at TOP"
 msgstr "sökning nådde BOTTEN, forsätter vid TOPPEN"
 
-#: search.c:525
+#: search.c:526
 #, c-format
 msgid "E383: Invalid search string: %s"
 msgstr "E383: Ogiltig söksträng: %s"
 
-#: search.c:852
+#: search.c:853
 #, c-format
 msgid "E384: search hit TOP without match for: %s"
 msgstr "E384: sökning nådde TOPPEN utan träff av: %s"
 
-#: search.c:855
+#: search.c:856
 #, c-format
 msgid "E385: search hit BOTTOM without match for: %s"
 msgstr "E385: sökning nådde BOTTEN utan träff av: %s"
 
-#: search.c:1247
+#: search.c:1250
 msgid "E386: Expected '?' or '/'  after ';'"
 msgstr "E386: Förväntade '?' eller '/' efter ';'"
 
-#: search.c:3709
+#: search.c:3769
 msgid " (includes previously listed match)"
 msgstr " (inkluderar tidigare listad träff)"
 
 #. cursor at status line
-#: search.c:3729
+#: search.c:3789
 msgid "--- Included files "
 msgstr "--- Inkluderade filer "
 
-#: search.c:3731
+#: search.c:3791
 msgid "not found "
 msgstr "hittades inte "
 
-#: search.c:3732
+#: search.c:3792
 msgid "in path ---\n"
 msgstr "i sökväg ---\n"
 
-#: search.c:3771
+#: search.c:3849
 msgid "  (Already listed)"
 msgstr " (Redan listade)"
 
-#: search.c:3773
+#: search.c:3851
 msgid "  NOT FOUND"
 msgstr " INTE HITTADE"
 
-#: search.c:3825
+#: search.c:3903
 #, c-format
 msgid "Scanning included file: %s"
 msgstr "Söker igenom inkluderad fil: %s"
 
-#: search.c:4043
+#: search.c:4121
 msgid "E387: Match is on current line"
 msgstr "E387: Matchning är på aktuell rad"
 
-#: search.c:4186
+#: search.c:4264
 msgid "All included files were found"
 msgstr "Alla inkluderade filer hittades"
 
-#: search.c:4188
+#: search.c:4266
 msgid "No included files"
 msgstr "Inga inkluderade filer"
 
-#: search.c:4204
+#: search.c:4282
 msgid "E388: Couldn't find definition"
 msgstr "E388: Kunde inte hitta definition"
 
-#: search.c:4206
+#: search.c:4284
 msgid "E389: Couldn't find pattern"
 msgstr "E389: Kunde inte hitta mönster"
 
-#: syntax.c:3023
+#: syntax.c:3054
 #, c-format
 msgid "E390: Illegal argument: %s"
 msgstr "E390: Otillåtet argument: %s"
 
-#: syntax.c:3203
+#: syntax.c:3234
 #, c-format
 msgid "E391: No such syntax cluster: %s"
 msgstr "E391: Inget sådant syntax-kluster: %s"
 
-#: syntax.c:3367
+#: syntax.c:3398
 msgid "No Syntax items defined for this buffer"
 msgstr "Inga syntax-föremål definierade för den här bufferten"
 
-#: syntax.c:3375
+#: syntax.c:3406
 msgid "syncing on C-style comments"
 msgstr "synkning av C-stil-kommentarer"
 
-#: syntax.c:3383
+#: syntax.c:3414
 msgid "no syncing"
 msgstr "ingen synkning"
 
-#: syntax.c:3386
+#: syntax.c:3417
 msgid "syncing starts "
 msgstr "synkning startar"
 
-#: syntax.c:3388 syntax.c:3463
+#: syntax.c:3419 syntax.c:3494
 msgid " lines before top line"
 msgstr " rader före topprad"
 
-#: syntax.c:3393
+#: syntax.c:3424
 msgid ""
 "\n"
 "--- Syntax sync items ---"
@@ -5279,7 +5383,7 @@ msgstr ""
 "\n"
 "--- Syntax-synkföremål ---"
 
-#: syntax.c:3398
+#: syntax.c:3429
 msgid ""
 "\n"
 "syncing on items"
@@ -5287,7 +5391,7 @@ msgstr ""
 "\n"
 "synkning av föremål"
 
-#: syntax.c:3404
+#: syntax.c:3435
 msgid ""
 "\n"
 "--- Syntax items ---"
@@ -5295,176 +5399,190 @@ msgstr ""
 "\n"
 "--- Syntax föremål ---"
 
-#: syntax.c:3427
+#: syntax.c:3458
 #, c-format
 msgid "E392: No such syntax cluster: %s"
 msgstr "E392: Inga sådana syntaxkluster: %s"
 
-#: syntax.c:3453
+#: syntax.c:3484
 msgid "minimal "
 msgstr "minimal "
 
-#: syntax.c:3460
+#: syntax.c:3491
 msgid "maximal "
 msgstr "maximal "
 
-#: syntax.c:3472
+#: syntax.c:3503
 msgid "; match "
 msgstr "; träff "
 
-#: syntax.c:3474
+#: syntax.c:3505
 msgid " line breaks"
 msgstr " radbrytningar"
 
-#: syntax.c:4108
+#: syntax.c:4139
 msgid "E393: group[t]here not accepted here"
 msgstr "E393: grupper inte tillåtna här"
 
-#: syntax.c:4132
+#: syntax.c:4163
 #, c-format
 msgid "E394: Didn't find region item for %s"
 msgstr "E394: Hittade inte regionföremål för %s"
 
-#: syntax.c:4160
+#: syntax.c:4191
 msgid "E395: contains argument not accepted here"
 msgstr "E395: innehåller argument som inte är tillåtna här"
 
-#: syntax.c:4171
+#: syntax.c:4202
 msgid "E396: containedin argument not accepted here"
 msgstr "E396: innehöll argument som inte är tillåtna här"
 
-#: syntax.c:4249
+#: syntax.c:4280
 msgid "E397: Filename required"
 msgstr "E397: Filnamn krävs"
 
-#: syntax.c:4587
+#: syntax.c:4618
 #, c-format
 msgid "E398: Missing '=': %s"
 msgstr "E398: Saknar '=': %s"
 
-#: syntax.c:4745
+#: syntax.c:4776
 #, c-format
 msgid "E399: Not enough arguments: syntax region %s"
 msgstr "E399: Inte tillräckliga argument: syntaxregion %s"
 
-#: syntax.c:5076
+#: syntax.c:5107
 msgid "E400: No cluster specified"
 msgstr "E400: Inget kluster angivet"
 
-#: syntax.c:5113
+#: syntax.c:5144
 #, c-format
 msgid "E401: Pattern delimiter not found: %s"
 msgstr "E401: Mönsteravgränsare hittades inte: %s"
 
-#: syntax.c:5188
+#: syntax.c:5219
 #, c-format
 msgid "E402: Garbage after pattern: %s"
 msgstr "E402: Skräp efter mönster: %s"
 
-#: syntax.c:5278
+#: syntax.c:5309
 msgid "E403: syntax sync: line continuations pattern specified twice"
 msgstr "E403: syntax-synk: radfortsättningsmönster angivet två gånger"
 
-#: syntax.c:5335
+#: syntax.c:5366
 #, c-format
 msgid "E404: Illegal arguments: %s"
 msgstr "E404: Otillåtna argument: %s"
 
-#: syntax.c:5385
+#: syntax.c:5416
 #, c-format
 msgid "E405: Missing equal sign: %s"
 msgstr "E405: Saknar likamed-tecken: %s"
 
-#: syntax.c:5391
+#: syntax.c:5422
 #, c-format
 msgid "E406: Empty argument: %s"
 msgstr "E406: Tomt argument: %s"
 
-#: syntax.c:5418
+#: syntax.c:5449
 #, c-format
 msgid "E407: %s not allowed here"
 msgstr "E407: %s inte tillåtet här"
 
-#: syntax.c:5425
+#: syntax.c:5456
 #, c-format
 msgid "E408: %s must be first in contains list"
 msgstr "E408: %s måste vara först i innehållslista"
 
-#: syntax.c:5495
+#: syntax.c:5526
 #, c-format
 msgid "E409: Unknown group name: %s"
 msgstr "E409: Okänt gruppnamn: %s"
 
-#: syntax.c:5728
+#: syntax.c:5759
 #, c-format
 msgid "E410: Invalid :syntax subcommand: %s"
 msgstr "E410: Ogiltigt :syntax-underkommando: %s"
 
-#: syntax.c:6107
+#: syntax.c:6027
+msgid "E679: recursive loop loading syncolor.vim"
+msgstr "E679: rekursiv loop läser in syncolor.vim "
+
+#: syntax.c:6151
 #, c-format
 msgid "E411: highlight group not found: %s"
 msgstr "E411: framhävningsgrupp hittades inte: %s"
 
-#: syntax.c:6131
+#: syntax.c:6175
 #, c-format
 msgid "E412: Not enough arguments: \":highlight link %s\""
 msgstr "E412: Inte tillräckliga argument: \":highlight länk %s\""
 
-#: syntax.c:6138
+#: syntax.c:6182
 #, c-format
 msgid "E413: Too many arguments: \":highlight link %s\""
 msgstr "E413: För många argument: \":highlight länk %s\""
 
-#: syntax.c:6158
+#: syntax.c:6202
 msgid "E414: group has settings, highlight link ignored"
 msgstr "E414: grupp har inställningar, framhävningslänk ignorerad"
 
-#: syntax.c:6287
+#: syntax.c:6331
 #, c-format
 msgid "E415: unexpected equal sign: %s"
 msgstr "E415: oväntat likamed-tecken: %s"
 
-#: syntax.c:6323
+#: syntax.c:6367
 #, c-format
 msgid "E416: missing equal sign: %s"
 msgstr "E416: saknar likamed-tecken: %s"
 
-#: syntax.c:6345
+#: syntax.c:6395
 #, c-format
 msgid "E417: missing argument: %s"
 msgstr "E417: saknar argument: %s"
 
-#: syntax.c:6382
+#: syntax.c:6432
 #, c-format
 msgid "E418: Illegal value: %s"
 msgstr "E418: Otillåtet värde: %s"
 
-#: syntax.c:6501
+#: syntax.c:6551
 msgid "E419: FG color unknown"
 msgstr "E419: FG-färg okänd"
 
-#: syntax.c:6512
+#: syntax.c:6562
 msgid "E420: BG color unknown"
 msgstr "E420: BG-färg okänd"
 
-#: syntax.c:6573
+#: syntax.c:6623
 #, c-format
 msgid "E421: Color name or number not recognized: %s"
 msgstr "E421: Färgnamn eller nummer inte igenkänt: %s"
 
-#: syntax.c:6779
+#: syntax.c:6829
 #, c-format
 msgid "E422: terminal code too long: %s"
 msgstr "E422: terminalkod för lång: %s"
 
-#: syntax.c:6826
+#: syntax.c:6876
 #, c-format
 msgid "E423: Illegal argument: %s"
 msgstr "E423: Otillåtet argument: %s"
 
-#: syntax.c:7355
+#: syntax.c:7405
 msgid "E424: Too many different highlighting attributes in use"
 msgstr "E424: För många olika framhävningsattribut i användning"
+
+#: syntax.c:7926
+msgid "E669: Unprintable character in group name"
+msgstr "E669: Oskrivbart tecken i gruppnamn"
+
+#. This is an error, but since there previously was no check only
+#. * give a warning.
+#: syntax.c:7933
+msgid "W18: Invalid character in group name"
+msgstr "W18: Ogiltigt tecken i gruppnamn"
 
 #: tag.c:90
 msgid "E555: at bottom of tag stack"
@@ -5474,20 +5592,20 @@ msgstr "E555: på botten av taggstack"
 msgid "E556: at top of tag stack"
 msgstr "E556: på toppen av taggstack"
 
-#: tag.c:396
+#: tag.c:412
 msgid "E425: Cannot go before first matching tag"
 msgstr "E425: Kan inte gå före första matchande tagg"
 
-#: tag.c:516
+#: tag.c:550
 #, c-format
 msgid "E426: tag not found: %s"
 msgstr "E426: tagg hittades inte: %s"
 
-#: tag.c:549
+#: tag.c:583
 msgid "  # pri kind tag"
 msgstr "  # pri-typ-tagg"
 
-#: tag.c:552
+#: tag.c:586
 msgid "file\n"
 msgstr "fil\n"
 
@@ -5495,44 +5613,44 @@ msgstr "fil\n"
 #. * Ask to select a tag from the list.
 #. * When using ":silent" assume that <CR> was entered.
 #.
-#: tag.c:710
+#: tag.c:744
 msgid "Enter nr of choice (<CR> to abort): "
 msgstr "Ange nr av val (<CR> för att avbryta): "
 
-#: tag.c:750
+#: tag.c:784
 msgid "E427: There is only one matching tag"
 msgstr "E427: Det finns bara en matchande tagg"
 
-#: tag.c:752
+#: tag.c:786
 msgid "E428: Cannot go beyond last matching tag"
 msgstr "E428: Kan inte gå bortom sista matchande tagg"
 
-#: tag.c:772
+#: tag.c:810
 #, c-format
 msgid "File \"%s\" does not exist"
 msgstr "Fil \"%s\" existerar inte"
 
 #. Give an indication of the number of matching tags
-#: tag.c:785
+#: tag.c:823
 #, c-format
 msgid "tag %d of %d%s"
 msgstr "tagg %d av %d%s"
 
-#: tag.c:788
+#: tag.c:826
 msgid " or more"
 msgstr " eller fler"
 
-#: tag.c:790
+#: tag.c:828
 msgid "  Using tag with different case!"
 msgstr "  Använder tagg med annan storlek!"
 
-#: tag.c:834
+#: tag.c:872
 #, c-format
 msgid "E429: File \"%s\" does not exist"
 msgstr "E429: Fil \"%s\" existerar inte"
 
 #. Highlight title
-#: tag.c:903
+#: tag.c:941
 msgid ""
 "\n"
 "  # TO tag         FROM line  in file/text"
@@ -5540,75 +5658,75 @@ msgstr ""
 "\n"
 "  # TILL tagg          FRÅN LINJE  i fil/text"
 
-#: tag.c:1210
+#: tag.c:1363
 #, c-format
 msgid "Searching tags file %s"
 msgstr "Söker tagg-fil %s"
 
-#: tag.c:1396
+#: tag.c:1550
 #, c-format
 msgid "E430: Tag file path truncated for %s\n"
 msgstr "E430: Taggfilsökväg trunkerades för %s\n"
 
-#: tag.c:1969
+#: tag.c:2203
 #, c-format
 msgid "E431: Format error in tags file \"%s\""
 msgstr "E431: Formateringsfel i tagg-fil \"%s\""
 
-#: tag.c:1973
+#: tag.c:2207
 #, c-format
 msgid "Before byte %ld"
 msgstr "Före byte %ld"
 
-#: tag.c:1994
+#: tag.c:2240
 #, c-format
 msgid "E432: Tags file not sorted: %s"
 msgstr "E432: Tagg-fil inte sorterad: %s"
 
 #. never opened any tags file
-#: tag.c:2034
+#: tag.c:2280
 msgid "E433: No tags file"
 msgstr "E433: Ingen tagg-fil"
 
-#: tag.c:2742
+#: tag.c:3024
 msgid "E434: Can't find tag pattern"
 msgstr "E434: Kan inte hitta taggmönster"
 
-#: tag.c:2753
+#: tag.c:3035
 msgid "E435: Couldn't find tag, just guessing!"
 msgstr "E435: Kunde inte hitta tagg, gissar bara!"
 
-#: term.c:1745
+#: term.c:1771
 msgid "' not known. Available builtin terminals are:"
 msgstr "' inte känd. Tillgängliga inbyggda terminaler är:"
 
-#: term.c:1769
+#: term.c:1795
 msgid "defaulting to '"
 msgstr "använder standard '"
 
-#: term.c:2127
+#: term.c:2153
 msgid "E557: Cannot open termcap file"
 msgstr "E557: Kan inte öppna termcap-fil"
 
-#: term.c:2131
+#: term.c:2157
 msgid "E558: Terminal entry not found in terminfo"
 msgstr "E558: Terminalnotering hittades inte i terminfo"
 
-#: term.c:2133
+#: term.c:2159
 msgid "E559: Terminal entry not found in termcap"
 msgstr "E559: Terminalnotering hittades inte i termcap"
 
-#: term.c:2292
+#: term.c:2318
 #, c-format
 msgid "E436: No \"%s\" entry in termcap"
 msgstr "E436: Ingen \"%s\"-notering i termcap"
 
-#: term.c:2766
+#: term.c:2792
 msgid "E437: terminal capability \"cm\" required"
 msgstr "E437: terminalkapacitet \"cm\" krävs"
 
 #. Highlight title
-#: term.c:4973
+#: term.c:5002
 msgid ""
 "\n"
 "--- Terminal keys ---"
@@ -5616,42 +5734,42 @@ msgstr ""
 "\n"
 "--- Terminalnycklar ---"
 
-#: ui.c:252
+#: ui.c:258
 msgid "new shell started\n"
 msgstr "nytt skal startat\n"
 
-#: ui.c:1791
+#: ui.c:1841
 msgid "Vim: Error reading input, exiting...\n"
 msgstr "Vim: Fel vid läsning av inmatning, avslutar...\n"
 
 #. must display the prompt
-#: undo.c:394
+#: undo.c:405
 msgid "No undo possible; continue anyway"
 msgstr "Ingen ångring möjlig; fortsätter ändå"
 
-#: undo.c:549
+#: undo.c:561
 msgid "E438: u_undo: line numbers wrong"
 msgstr "E438: u_undo: radnummer fel"
 
-#: undo.c:718
+#: undo.c:757
 msgid "1 change"
 msgstr "1 ändring"
 
-#: undo.c:720
+#: undo.c:759
 #, c-format
 msgid "%ld changes"
 msgstr "%ld ändringar"
 
-#: undo.c:764
+#: undo.c:812
 msgid "E439: undo list corrupt"
 msgstr "E439: ångra-lista trasig"
 
-#: undo.c:796
+#: undo.c:844
 msgid "E440: undo line missing"
 msgstr "E440: ångra-rad saknas"
 
 #. Only MS VC 4.1 and earlier can do Win32s
-#: version.c:1131
+#: version.c:849
 msgid ""
 "\n"
 "MS-Windows 16/32 bit GUI version"
@@ -5659,7 +5777,7 @@ msgstr ""
 "\n"
 "MS-Windows 16/32-bitars GUI-version"
 
-#: version.c:1133
+#: version.c:851
 msgid ""
 "\n"
 "MS-Windows 32 bit GUI version"
@@ -5667,15 +5785,15 @@ msgstr ""
 "\n"
 "MS-Windows 32-bitars GUI-version"
 
-#: version.c:1136
+#: version.c:854
 msgid " in Win32s mode"
 msgstr " i Win32s-läge"
 
-#: version.c:1138
+#: version.c:856
 msgid " with OLE support"
 msgstr " med OLE-stöd"
 
-#: version.c:1141
+#: version.c:859
 msgid ""
 "\n"
 "MS-Windows 32 bit console version"
@@ -5683,7 +5801,7 @@ msgstr ""
 "\n"
 "MS-Windows 32-bitars konsollversion"
 
-#: version.c:1145
+#: version.c:863
 msgid ""
 "\n"
 "MS-Windows 16 bit version"
@@ -5691,7 +5809,7 @@ msgstr ""
 "\n"
 "MS-Windows 16-bitars version"
 
-#: version.c:1149
+#: version.c:867
 msgid ""
 "\n"
 "32 bit MS-DOS version"
@@ -5699,7 +5817,7 @@ msgstr ""
 "\n"
 "32-bitars MS-DOS-version"
 
-#: version.c:1151
+#: version.c:869
 msgid ""
 "\n"
 "16 bit MS-DOS version"
@@ -5707,7 +5825,7 @@ msgstr ""
 "\n"
 "16-bitars MS-DOS-version"
 
-#: version.c:1157
+#: version.c:875
 msgid ""
 "\n"
 "MacOS X (unix) version"
@@ -5715,7 +5833,7 @@ msgstr ""
 "\n"
 "MacOS X-version (unix)"
 
-#: version.c:1159
+#: version.c:877
 msgid ""
 "\n"
 "MacOS X version"
@@ -5723,7 +5841,7 @@ msgstr ""
 "\n"
 "MacOS X-version"
 
-#: version.c:1162
+#: version.c:880
 msgid ""
 "\n"
 "MacOS version"
@@ -5731,7 +5849,7 @@ msgstr ""
 "\n"
 "MacOS-version"
 
-#: version.c:1167
+#: version.c:885
 msgid ""
 "\n"
 "RISC OS version"
@@ -5739,7 +5857,7 @@ msgstr ""
 "\n"
 "RISC OS-version"
 
-#: version.c:1177
+#: version.c:895
 msgid ""
 "\n"
 "Included patches: "
@@ -5747,11 +5865,11 @@ msgstr ""
 "\n"
 "Inkluderade patchar: "
 
-#: version.c:1203 version.c:1571
+#: version.c:921 version.c:1289
 msgid "Modified by "
 msgstr "Modifierad av "
 
-#: version.c:1210
+#: version.c:928
 msgid ""
 "\n"
 "Compiled "
@@ -5759,11 +5877,11 @@ msgstr ""
 "\n"
 "Kompilerad "
 
-#: version.c:1213
+#: version.c:931
 msgid "by "
 msgstr "av "
 
-#: version.c:1225
+#: version.c:943
 msgid ""
 "\n"
 "Huge version "
@@ -5771,7 +5889,7 @@ msgstr ""
 "\n"
 "Enorm version "
 
-#: version.c:1228
+#: version.c:946
 msgid ""
 "\n"
 "Big version "
@@ -5779,7 +5897,7 @@ msgstr ""
 "\n"
 "Stor version "
 
-#: version.c:1231
+#: version.c:949
 msgid ""
 "\n"
 "Normal version "
@@ -5787,7 +5905,7 @@ msgstr ""
 "\n"
 "Normal version "
 
-#: version.c:1234
+#: version.c:952
 msgid ""
 "\n"
 "Small version "
@@ -5795,7 +5913,7 @@ msgstr ""
 "\n"
 "Liten version "
 
-#: version.c:1236
+#: version.c:954
 msgid ""
 "\n"
 "Tiny version "
@@ -5803,231 +5921,231 @@ msgstr ""
 "\n"
 "Jätteliten version "
 
-#: version.c:1242
+#: version.c:960
 msgid "without GUI."
 msgstr "utan GUI."
 
-#: version.c:1247
+#: version.c:965
 msgid "with GTK2-GNOME GUI."
 msgstr "med GTK2-GNOME-GUI."
 
-#: version.c:1249
+#: version.c:967
 msgid "with GTK-GNOME GUI."
 msgstr "med GTK-GNOME-GUI."
 
-#: version.c:1253
+#: version.c:971
 msgid "with GTK2 GUI."
 msgstr "med GTK2-GUI."
 
-#: version.c:1255
+#: version.c:973
 msgid "with GTK GUI."
 msgstr "med GTK-GUI."
 
-#: version.c:1260
+#: version.c:978
 msgid "with X11-Motif GUI."
 msgstr "med X11-Motif-GUI."
 
-#: version.c:1264
+#: version.c:982
 msgid "with X11-neXtaw GUI."
 msgstr "med X11-neXtaw-GUI."
 
-#: version.c:1266
+#: version.c:984
 msgid "with X11-Athena GUI."
 msgstr "med X11-Athena-GUI."
 
-#: version.c:1270
+#: version.c:988
 msgid "with BeOS GUI."
 msgstr "med BeOS-GUI."
 
-#: version.c:1273
+#: version.c:991
 msgid "with Photon GUI."
 msgstr "med Photon-GUI."
 
-#: version.c:1276
+#: version.c:994
 msgid "with GUI."
 msgstr "med GUI."
 
-#: version.c:1279
+#: version.c:997
 msgid "with Carbon GUI."
 msgstr "med Carbon-GUI."
 
-#: version.c:1282
+#: version.c:1000
 msgid "with Cocoa GUI."
 msgstr "med Cocoa-GUI."
 
-#: version.c:1285
+#: version.c:1003
 msgid "with (classic) GUI."
 msgstr "med (klassiskt) GUI."
 
-#: version.c:1296
+#: version.c:1014
 msgid "  Features included (+) or not (-):\n"
 msgstr "  Funktioner inkluderade (+) eller inte (-):\n"
 
-#: version.c:1308
+#: version.c:1026
 msgid "   system vimrc file: \""
 msgstr "   system-vimrc-fil: \""
 
-#: version.c:1313
+#: version.c:1031
 msgid "     user vimrc file: \""
 msgstr "     användar-vimrc-fil: \""
 
-#: version.c:1318
+#: version.c:1036
 msgid " 2nd user vimrc file: \""
 msgstr " Andra användar-vimrc-fil: \""
 
-#: version.c:1323
+#: version.c:1041
 msgid " 3rd user vimrc file: \""
 msgstr " Tredje användar-vimrc-fil: \""
 
-#: version.c:1328
+#: version.c:1046
 msgid "      user exrc file: \""
 msgstr "      användar-exrc-fil: \""
 
-#: version.c:1333
+#: version.c:1051
 msgid "  2nd user exrc file: \""
 msgstr "  Andra användar-exrc-fil: \""
 
-#: version.c:1339
+#: version.c:1057
 msgid "  system gvimrc file: \""
 msgstr "  system-gvimrc-fil: \""
 
-#: version.c:1343
+#: version.c:1061
 msgid "    user gvimrc file: \""
 msgstr "    användar-gvimrc-fil: \""
 
-#: version.c:1347
+#: version.c:1065
 msgid "2nd user gvimrc file: \""
 msgstr "Andra användar-gvimrc-fil: \""
 
-#: version.c:1352
+#: version.c:1070
 msgid "3rd user gvimrc file: \""
 msgstr "Tredje användar-gvimrc-fil: \""
 
-#: version.c:1359
+#: version.c:1077
 msgid "    system menu file: \""
 msgstr "    systemmenyfil: \""
 
-#: version.c:1367
+#: version.c:1085
 msgid "  fall-back for $VIM: \""
 msgstr "  reserv för $VIM: \""
 
-#: version.c:1373
+#: version.c:1091
 msgid " f-b for $VIMRUNTIME: \""
 msgstr " reserv för $VIMRUNTIME: \""
 
-#: version.c:1377
+#: version.c:1095
 msgid "Compilation: "
 msgstr "Kompilering: "
 
-#: version.c:1383
+#: version.c:1101
 msgid "Compiler: "
 msgstr "Kompilator: "
 
-#: version.c:1388
+#: version.c:1106
 msgid "Linking: "
 msgstr "Länkning: "
 
-#: version.c:1393
+#: version.c:1111
 msgid "  DEBUG BUILD"
 msgstr "  FELSÖKNINGSBYGGD"
 
-#: version.c:1432
+#: version.c:1150
 msgid "VIM - Vi IMproved"
 msgstr "VIM - Vi IMproved"
 
-#: version.c:1434
+#: version.c:1152
 msgid "version "
 msgstr "version "
 
-#: version.c:1435
+#: version.c:1153
 msgid "by Bram Moolenaar et al."
 msgstr "av Bram Moolenaar m.fl."
 
-#: version.c:1439
+#: version.c:1157
 msgid "Vim is open source and freely distributable"
 msgstr "Vim är öppen källkod och fri att distribuera"
 
-#: version.c:1441
+#: version.c:1159
 msgid "Help poor children in Uganda!"
 msgstr "Hjälp fattiga barn i Uganda!"
 
-#: version.c:1442
+#: version.c:1160
 msgid "type  :help iccf<Enter>       for information "
 msgstr "skriv  :help iccf<Enter>        för information          "
 
-#: version.c:1444
+#: version.c:1162
 msgid "type  :q<Enter>               to exit         "
 msgstr "skriv  :q<Enter>                för att avsluta          "
 
-#: version.c:1445
+#: version.c:1163
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr "skriv  :help<Enter> eller <F1>  för online-hjälp         "
 
-#: version.c:1446
+#: version.c:1164
 msgid "type  :help version6<Enter>   for version info"
 msgstr "skriv  :help version6<Enter>    för versioninformation   "
 
-#: version.c:1449
+#: version.c:1167
 msgid "Running in Vi compatible mode"
 msgstr "Kör i Vi-kompatibelt läge"
 
-#: version.c:1450
+#: version.c:1168
 msgid "type  :set nocp<Enter>        for Vim defaults"
 msgstr "skriv  :set nocp<Enter>        för Vim- standarder       "
 
-#: version.c:1451
+#: version.c:1169
 msgid "type  :help cp-default<Enter> for info on this"
 msgstr "skriv  :help cp-default<Enter> för information om det här"
 
-#: version.c:1466
+#: version.c:1184
 msgid "menu  Help->Orphans           for information    "
 msgstr "meny  Hjälp->Föräldralösa           för information    "
 
-#: version.c:1468
+#: version.c:1186
 msgid "Running modeless, typed text is inserted"
 msgstr "Kör lägeslöst, skriven text blir infogad"
 
-#: version.c:1469
+#: version.c:1187
 msgid "menu  Edit->Global Settings->Toggle Insert Mode  "
 msgstr "meny Redigera->Globala inställningar->Växla infogningsläge  "
 
-#: version.c:1470
+#: version.c:1188
 msgid "                              for two modes      "
 msgstr "                              för två lägen      "
 
-#: version.c:1474
+#: version.c:1192
 msgid "menu  Edit->Global Settings->Toggle Vi Compatible"
 msgstr "meny  Redigera->Globala Inställningar->Växla Vi Komptaibel"
 
-#: version.c:1475
+#: version.c:1193
 msgid "                              for Vim defaults   "
 msgstr "                              för vim-standardalternativ   "
 
-#: version.c:1522
+#: version.c:1240
 msgid "Sponsor Vim development!"
 msgstr "Stöd utvecklingen av Vim!"
 
-#: version.c:1523
+#: version.c:1241
 msgid "Become a registered Vim user!"
 msgstr "Bli en registrerad Vim-användare!"
 
-#: version.c:1526
+#: version.c:1244
 msgid "type  :help sponsor<Enter>    for information "
 msgstr "skriv  :help sponsor<Enter>     för information          "
 
-#: version.c:1527
+#: version.c:1245
 msgid "type  :help register<Enter>   for information "
 msgstr "skriv  :help register<Enter>    för information          "
 
-#: version.c:1529
+#: version.c:1247
 msgid "menu  Help->Sponsor/Register  for information    "
 msgstr "meny  Hjälp->Stöd/Registrera           för information    "
 
-#: version.c:1539
+#: version.c:1257
 msgid "WARNING: Windows 95/98/ME detected"
 msgstr "VARNING: Windows 95/98/ME upptäckt"
 
-#: version.c:1542
+#: version.c:1260
 msgid "type  :help windows95<Enter>  for info on this"
 msgstr "skriv  :help windows95<Enter>  för info om det här"
 
@@ -6043,28 +6161,28 @@ msgstr "E442: Kan inte dela toppvänster och bottenhöger samtidigt"
 msgid "E443: Cannot rotate when another window is split"
 msgstr "E443: Kan inte rotera när ett annat fönster är delat"
 
-#: window.c:1835
+#: window.c:1836
 msgid "E444: Cannot close last window"
 msgstr "E444: Kan inte stänga senaste fönstret"
 
-#: window.c:2566
+#: window.c:2567
 msgid "Already only one window"
 msgstr "Redan bara ett fönster"
 
-#: window.c:2613
+#: window.c:2614
 msgid "E445: Other window contains changes"
 msgstr "E445: Andra fönster innehåller ändringar"
 
-#: window.c:4474
+#: window.c:4480
 msgid "E446: No file name under cursor"
 msgstr "E446: Inget filnamn under markör"
 
-#: window.c:4593
+#: window.c:4599
 #, c-format
 msgid "E447: Can't find file \"%s\" in path"
 msgstr "E447: Kan inte hitta fil \"%s\" i sökväg"
 
-#: globals.h:1209 if_perl.xs:326
+#: if_perl.xs:326 globals.h:1241
 #, c-format
 msgid "E370: Could not load library %s"
 msgstr "E370: Kunde inte läsa in bibliotek %s"
@@ -6075,7 +6193,7 @@ msgstr ""
 "Tyvärr, det här kommandot är inaktiverat: Perl-biblioteket kunde inte läsas "
 "in."
 
-#: if_perl.xs:600
+#: if_perl.xs:607
 msgid "E299: Perl evaluation forbidden in sandbox without the Safe module"
 msgstr "E299: Perl-evaluering förbjuden i sandlåda utan Safe-modulen"
 
@@ -6116,7 +6234,7 @@ msgstr "gvimext.dll-fel"
 msgid "Path length too long!"
 msgstr "Sökvägslängd för lång!"
 
-#: globals.h:999
+#: globals.h:1031
 msgid "--No lines in buffer--"
 msgstr "--Inga rader i buffert--"
 
@@ -6124,393 +6242,390 @@ msgstr "--Inga rader i buffert--"
 #. * The error messages that can be shared are included here.
 #. * Excluded are errors that are only used once and debugging messages.
 #.
-#: globals.h:1162
+#: globals.h:1194
 msgid "E470: Command aborted"
 msgstr "E470: Kommando avbrutet"
 
-#: globals.h:1163
+#: globals.h:1195
 msgid "E471: Argument required"
 msgstr "E471: Argument krävs"
 
-#: globals.h:1164
+#: globals.h:1196
 msgid "E10: \\ should be followed by /, ? or &"
 msgstr "E10: \\ borde följas av /, ? eller &"
 
-#: globals.h:1166
+#: globals.h:1198
 msgid "E11: Invalid in command-line window; <CR> executes, CTRL-C quits"
 msgstr "E11: Felaktighet i kommandoradsfönster; <CR> kör, CTRL-C avslutar"
 
-#: globals.h:1168
+#: globals.h:1200
 msgid "E12: Command not allowed from exrc/vimrc in current dir or tag search"
 msgstr ""
 "E12: Kommando inte tillåtet från exrc/vimrc i aktuell katalog eller "
 "taggsökning"
 
-#: globals.h:1170
+#: globals.h:1202
 msgid "E171: Missing :endif"
 msgstr "E171: Saknar :endif"
 
-#: globals.h:1171
+#: globals.h:1203
 msgid "E600: Missing :endtry"
 msgstr "E600: Saknar :endtry"
 
-#: globals.h:1172
+#: globals.h:1204
 msgid "E170: Missing :endwhile"
 msgstr "E170: Saknar :endwhile"
 
-#: globals.h:1173
+#: globals.h:1205
 msgid "E588: :endwhile without :while"
 msgstr "E588: :endwhile utan :while"
 
-#: globals.h:1175
+#: globals.h:1207
 msgid "E13: File exists (add ! to override)"
 msgstr "E13: Fil existerar (lägg till ! för att tvinga)"
 
-#: globals.h:1176
+#: globals.h:1208
 msgid "E472: Command failed"
 msgstr "E472: Kommando misslyckades"
 
-#: globals.h:1178
+#: globals.h:1210
 #, c-format
 msgid "E234: Unknown fontset: %s"
 msgstr "E234: Okänd typsnittsuppsättning: %s"
 
-#: globals.h:1182
+#: globals.h:1214
 #, c-format
 msgid "E235: Unknown font: %s"
 msgstr "E235: Okänt typsnitt: %s"
 
-#: globals.h:1185
+#: globals.h:1217
 #, c-format
 msgid "E236: Font \"%s\" is not fixed-width"
 msgstr "E236: Typsnitt \"%s\" är inte bredd-fixerad"
 
-#: globals.h:1187
+#: globals.h:1219
 msgid "E473: Internal error"
 msgstr "E473: Internt fel"
 
-#: globals.h:1188
+#: globals.h:1220
 msgid "Interrupted"
 msgstr "Avbruten"
 
-#: globals.h:1189
+#: globals.h:1221
 msgid "E14: Invalid address"
 msgstr "E14: Ogiltig address"
 
-#: globals.h:1190
+#: globals.h:1222
 msgid "E474: Invalid argument"
 msgstr "E474: Ogiltigt argument"
 
-#: globals.h:1191
+#: globals.h:1223
 #, c-format
 msgid "E475: Invalid argument: %s"
 msgstr "E475: Ogiltigt argument: %s"
 
-#: globals.h:1193
+#: globals.h:1225
 #, c-format
 msgid "E15: Invalid expression: %s"
 msgstr "E15: Ogiltigt uttryck: %s"
 
-#: globals.h:1195
+#: globals.h:1227
 msgid "E16: Invalid range"
 msgstr "E16: Ogiltigt område"
 
-#: globals.h:1196
+#: globals.h:1228
 msgid "E476: Invalid command"
 msgstr "E476: Ogiltigt kommando"
 
-#: globals.h:1198
+#: globals.h:1230
 #, c-format
 msgid "E17: \"%s\" is a directory"
 msgstr "E17: \"%s\" är en katalog"
 
-#: globals.h:1201
+#: globals.h:1233
 msgid "E18: Unexpected characters before '='"
 msgstr "E18: Oväntade tecken före '='"
 
-#: globals.h:1204
+#: globals.h:1236
 #, c-format
 msgid "E364: Library call failed for \"%s()\""
 msgstr "E364: Biblioteksanrop misslyckades för \"%s()\""
 
-#: globals.h:1210
+#: globals.h:1242
 #, c-format
 msgid "E448: Could not load library function %s"
 msgstr "E448: Kunde inte läsa in biblioteksfunktion %s"
 
-#: globals.h:1212
+#: globals.h:1244
 msgid "E19: Mark has invalid line number"
 msgstr "E19: Markering har ogiltigt radnummer"
 
-#: globals.h:1213
+#: globals.h:1245
 msgid "E20: Mark not set"
 msgstr "E20: Markering inte satt"
 
-#: globals.h:1214
+#: globals.h:1246
 msgid "E21: Cannot make changes, 'modifiable' is off"
 msgstr "E21: Kan inte göra ändringar, 'modifiable' är av"
 
-#: globals.h:1215
+#: globals.h:1247
 msgid "E22: Scripts nested too deep"
 msgstr "E22: Skript nästlade för djupt"
 
-#: globals.h:1216
+#: globals.h:1248
 msgid "E23: No alternate file"
 msgstr "E23: Ingen alternativ fil"
 
-#: globals.h:1217
+#: globals.h:1249
 msgid "E24: No such abbreviation"
 msgstr "E24: Ingen sådan förkortning"
 
-#: globals.h:1218
+#: globals.h:1250
 msgid "E477: No ! allowed"
 msgstr "E477: Inget ! tillåtet"
 
-#: globals.h:1220
+#: globals.h:1252
 msgid "E25: GUI cannot be used: Not enabled at compile time"
 msgstr "E25: GUI kan inte användas: Inte aktiverat vid kompilering"
 
-#: globals.h:1223
+#: globals.h:1255
 msgid "E26: Hebrew cannot be used: Not enabled at compile time\n"
 msgstr "E26: Hebreiska kan inte användas: Inte aktiverat vid kompilering\n"
 
-#: globals.h:1226
+#: globals.h:1258
 msgid "E27: Farsi cannot be used: Not enabled at compile time\n"
 msgstr "E27: Persiska kan inte användas: Inte aktiverat vid kompilering\n"
 
-#: globals.h:1229
+#: globals.h:1261
 msgid "E800: Arabic cannot be used: Not enabled at compile time\n"
 msgstr "E800: Arabiska kan inte användas: Inte aktiverat vid kompilering\n"
 
-#: globals.h:1232
+#: globals.h:1264
 #, c-format
 msgid "E28: No such highlight group name: %s"
 msgstr "E28: Inget sådant framhävningsgruppnamn: %s"
 
-#: globals.h:1234
+#: globals.h:1266
 msgid "E29: No inserted text yet"
 msgstr "E29: Ingen infogad text än"
 
-#: globals.h:1235
+#: globals.h:1267
 msgid "E30: No previous command line"
 msgstr "E30: Ingen tidigare kommandorad"
 
-#: globals.h:1236
+#: globals.h:1268
 msgid "E31: No such mapping"
 msgstr "E31: Ingen sådan mappning"
 
-#: globals.h:1237
+#: globals.h:1269
 msgid "E479: No match"
 msgstr "E479: Ingen träff"
 
-#: globals.h:1238
+#: globals.h:1270
 #, c-format
 msgid "E480: No match: %s"
 msgstr "E480: Ingen träff: %s"
 
-#: globals.h:1239
+#: globals.h:1271
 msgid "E32: No file name"
 msgstr "E32: Inget filnamn"
 
-#: globals.h:1240
+#: globals.h:1272
 msgid "E33: No previous substitute regular expression"
-msgstr "E33: Inget tidigare reguljärt uttryck för ersättning"
+msgstr "E33: Inget tidigare utbytningsreguljäruttryck"
 
-#: globals.h:1241
+#: globals.h:1273
 msgid "E34: No previous command"
 msgstr "E34: Inget tidigare kommando"
 
-#: globals.h:1242
+#: globals.h:1274
 msgid "E35: No previous regular expression"
 msgstr "E35: Inget tidigare reguljärt uttryck"
 
-#: globals.h:1243
+#: globals.h:1275
 msgid "E481: No range allowed"
 msgstr "E481: Inget område tillåtet"
 
-#: globals.h:1245
+#: globals.h:1277
 msgid "E36: Not enough room"
 msgstr "E36: Inte tillräckligt med utrymme"
 
-#: globals.h:1248
+#: globals.h:1280
 #, c-format
 msgid "E247: no registered server named \"%s\""
 msgstr "E247: ingen registrerad server med namnet \"%s\""
 
-#: globals.h:1250
+#: globals.h:1282
 #, c-format
 msgid "E482: Can't create file %s"
 msgstr "E482: Kan inte skapa fil %s"
 
-#: globals.h:1251
+#: globals.h:1283
 msgid "E483: Can't get temp file name"
 msgstr "E483: Kan inte hämta temporärt filnamn"
 
-#: globals.h:1252
+#: globals.h:1284
 #, c-format
 msgid "E484: Can't open file %s"
 msgstr "E484: Kan inte öppna fil %s"
 
-#: globals.h:1253
+#: globals.h:1285
 #, c-format
 msgid "E485: Can't read file %s"
 msgstr "E485: Kan inte läsa fil %s"
 
-#: globals.h:1254
+#: globals.h:1286
 msgid "E37: No write since last change (add ! to override)"
 msgstr ""
 "E37: Ingen skrivning sedan senaste ändring (lägg till ! för att tvinga)"
 
-#: globals.h:1255
+#: globals.h:1287
 msgid "E38: Null argument"
 msgstr "E38: Null-argument"
 
-#: globals.h:1257
+#: globals.h:1289
 msgid "E39: Number expected"
 msgstr "E39: Nummer väntat"
 
-#: globals.h:1260
+#: globals.h:1292
 #, c-format
 msgid "E40: Can't open errorfile %s"
 msgstr "E40: Kan inte öppna felfil %s"
 
-#: globals.h:1263
+#: globals.h:1295
 msgid "E233: cannot open display"
 msgstr "E233: kan inte öppna display"
 
-#: globals.h:1265
+#: globals.h:1297
 msgid "E41: Out of memory!"
 msgstr "E41: Slut på minne!"
 
-#: globals.h:1267
+#: globals.h:1299
 msgid "Pattern not found"
 msgstr "Mönster hittades inte"
 
-#: globals.h:1269
+#: globals.h:1301
 #, c-format
 msgid "E486: Pattern not found: %s"
 msgstr "E486: Mönster hittades inte: %s"
 
-#: globals.h:1270
+#: globals.h:1302
 msgid "E487: Argument must be positive"
 msgstr "E487: Argument måste vara positivt"
 
-#: globals.h:1272
+#: globals.h:1304
 msgid "E459: Cannot go back to previous directory"
 msgstr "E459: Kan inte gå tillbaka till tidigare katalog"
 
-#: globals.h:1276
+#: globals.h:1308
 msgid "E42: No Errors"
 msgstr "E42: Inga fel"
 
-#: globals.h:1278
+#: globals.h:1310
 msgid "E43: Damaged match string"
 msgstr "E43: Skadad träffsträng"
 
-#: globals.h:1279
+#: globals.h:1311
 msgid "E44: Corrupted regexp program"
 msgstr "E44: Trasigt program för reguljära uttryck"
 
-#: globals.h:1280
+#: globals.h:1312
 msgid "E45: 'readonly' option is set (add ! to override)"
 msgstr "E45: 'readonly' flagga är satt (lägg till ! för att tvinga)"
 
-#: globals.h:1282
+#: globals.h:1314
 #, c-format
 msgid "E46: Cannot set read-only variable \"%s\""
 msgstr "E46: Kan inte sätta skrivskyddad variabel \"%s\""
 
-#: globals.h:1285
+#: globals.h:1317
 msgid "E47: Error while reading errorfile"
 msgstr "E47: Fel vid läsning av felfil"
 
-#: globals.h:1288
+#: globals.h:1320
 msgid "E48: Not allowed in sandbox"
 msgstr "E48: Inte tillåtet i sandlåda"
 
-#: globals.h:1290
+#: globals.h:1322
 msgid "E523: Not allowed here"
 msgstr "E523: Inte tillåtet här"
 
-#: globals.h:1293
+#: globals.h:1325
 msgid "E359: Screen mode setting not supported"
 msgstr "E359: Skärmläge inställning inte stödd"
 
-#: globals.h:1295
+#: globals.h:1327
 msgid "E49: Invalid scroll size"
 msgstr "E49: Ogiltig rullningsstorlek"
 
-#: globals.h:1296
+#: globals.h:1328
 msgid "E91: 'shell' option is empty"
 msgstr "E91: 'shell' flagga är tom"
 
-#: globals.h:1298
+#: globals.h:1330
 msgid "E255: Couldn't read in sign data!"
 msgstr "E255: Kunde inte läsa in teckendata!"
 
-#: globals.h:1300
+#: globals.h:1332
 msgid "E72: Close error on swap file"
 msgstr "E72: Stängningsfel på växlingsfil"
 
-#: globals.h:1301
+#: globals.h:1333
 msgid "E73: tag stack empty"
 msgstr "E73: taggstack tom"
 
-#: globals.h:1302
+#: globals.h:1334
 msgid "E74: Command too complex"
 msgstr "E74: Kommando för komplext"
 
-#: globals.h:1303
+#: globals.h:1335
 msgid "E75: Name too long"
 msgstr "E75: Namn för långt"
 
-#: globals.h:1304
+#: globals.h:1336
 msgid "E76: Too many ["
 msgstr "E76: För många ["
 
-#: globals.h:1305
+#: globals.h:1337
 msgid "E77: Too many file names"
 msgstr "E77: För många filnamn"
 
-#: globals.h:1306
+#: globals.h:1338
 msgid "E488: Trailing characters"
 msgstr "E488: Eftersläpande tecken"
 
-#: globals.h:1307
+#: globals.h:1339
 msgid "E78: Unknown mark"
 msgstr "E78: Okänt märke"
 
-#: globals.h:1308
+#: globals.h:1340
 msgid "E79: Cannot expand wildcards"
 msgstr "E79: Kan inte expandera jokertecken"
 
-#: globals.h:1310
+#: globals.h:1342
 msgid "E591: 'winheight' cannot be smaller than 'winminheight'"
 msgstr "E591: 'winheight' kan inte vara mindre än 'winminheight'"
 
-#: globals.h:1312
+#: globals.h:1344
 msgid "E592: 'winwidth' cannot be smaller than 'winminwidth'"
 msgstr "E592: 'winwidth' kan inte vara mindre än 'winminwidth'"
 
-#: globals.h:1315
+#: globals.h:1347
 msgid "E80: Error while writing"
 msgstr "E80: Fel vid skrivning"
 
-#: globals.h:1316
+#: globals.h:1348
 msgid "Zero count"
 msgstr "Noll-längd"
 
-#: globals.h:1318
+#: globals.h:1350
 msgid "E81: Using <SID> not in a script context"
 msgstr "E81: Använder inte <SID> i ett skriptsammanhang"
 
-#: globals.h:1321
+#: globals.h:1353
 msgid "E449: Invalid expression received"
 msgstr "E449: Ogiltigt uttryck mottaget"
 
-#: globals.h:1324
+#: globals.h:1356
 msgid "E463: Region is guarded, cannot modify"
 msgstr "E463: Region är vaktad, kan inte modifiera"
-
-#~ msgid "E86: Cannot go to buffer %ld"
-#~ msgstr "E85: Kan inte gå till buffert %ld"
