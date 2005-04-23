@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Apr 04
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Apr 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -337,6 +337,10 @@ Functions that are useful with a List: >
 	:let string = join(list, ', ')	" create string from list items
 	:let s = string(list)		" String representation of list
 	:call map(list, '">> " . v:val')  " prepend ">> " to each item
+
+Don't forget that a combination of features can make things simple.  For
+example, to add up all the numbers in a list: >
+	:exe 'let sum = ' . join(nrlist, '+')
 
 
 1.4 Dictionaries ~
@@ -3719,7 +3723,10 @@ split({expr} [, {pattern}])				*split()*
 		it makes the function work a bit faster.
 		To split a string in individual characters: >
 			:for c in split(mystring, '\zs')
-<		The opposite function is |join()|.
+<		If you want to keep the separator you can also use '\zs': >
+			:echo split('abc:def:ghi', ':\zs')
+<			['abc:', 'def:', 'ghi'] ~
+		The opposite function is |join()|.
 
 
 strftime({format} [, {time}])				*strftime()*

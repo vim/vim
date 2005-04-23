@@ -915,97 +915,280 @@ vim_iswordc_buf(p, buf)
     return (GET_CHARTAB(buf, *p) != 0);
 }
 
-static char spell_chartab[256];
+/*
+ * The tables used for spelling.  These are only used for the first 256
+ * characters.
+ */
+typedef struct spelltab_S
+{
+    char_u  st_isw[256];	/* flags: is word char */
+    char_u  st_isu[256];	/* flags: is uppercase char */
+    char_u  st_fold[256];	/* chars: folded case */
+} spelltab_T;
+
+static spelltab_T   spelltab;
+static int	    did_set_spelltab;
+
+#define SPELL_ISWORD	1
+#define SPELL_ISUPPER	2
+
+static void clear_spell_chartab __ARGS((spelltab_T *sp));
+static int set_spell_finish __ARGS((spelltab_T	*new_st));
+
+/*
+ * Init the chartab used for spelling for ASCII.
+ * EBCDIC is not supported!
+ */
+    static void
+clear_spell_chartab(sp)
+    spelltab_T	*sp;
+{
+    int	    i;
+
+    /* Init everything to FALSE. */
+    vim_memset(sp->st_isw, FALSE, sizeof(sp->st_isw));
+    vim_memset(sp->st_isu, FALSE, sizeof(sp->st_isu));
+    for (i = 0; i < 256; ++i)
+	sp->st_fold[i] = i;
+
+    /* We include digits.  A word shouldn't start with a digit, but handling
+     * that is done separately. */
+    for (i = '0'; i <= '9'; ++i)
+	sp->st_isw[i] = TRUE;
+    for (i = 'A'; i <= 'Z'; ++i)
+    {
+	sp->st_isw[i] = TRUE;
+	sp->st_isu[i] = TRUE;
+	sp->st_fold[i] = i + 0x20;
+    }
+    for (i = 'a'; i <= 'z'; ++i)
+	sp->st_isw[i] = TRUE;
+}
 
 /*
  * Init the chartab used for spelling.  Only depends on 'encoding'.
- * Called once while starting up and when 'encoding' was changed.
- * Unfortunately, we can't use isalpha() here, since the current locale may
- * differ from 'encoding'.
+ * Called once while starting up and when 'encoding' changes.
+ * The default is to use isalpha(), but the spell file should define the word
+ * characters to make it possible that 'encoding' differs from the current
+ * locale.
  */
     void
 init_spell_chartab()
 {
     int	    i;
 
-    /* ASCII is always the same, no matter what 'encoding' is used.
-     * EBCDIC is not supported! */
-    for (i = 0; i < '0'; ++i)
-	spell_chartab[i] = FALSE;
-    /* We include numbers.  A word shouldn't start with a number, but handling
-     * that is done separately. */
-    for ( ; i <= '9'; ++i)
-	spell_chartab[i] = TRUE;
-    for ( ; i < 'A'; ++i)
-	spell_chartab[i] = FALSE;
-    for ( ; i <= 'Z'; ++i)
-	spell_chartab[i] = TRUE;
-    for ( ; i < 'a'; ++i)
-	spell_chartab[i] = FALSE;
-    for ( ; i <= 'z'; ++i)
-	spell_chartab[i] = TRUE;
+    did_set_spelltab = FALSE;
+    clear_spell_chartab(&spelltab);
+
 #ifdef FEAT_MBYTE
     if (enc_dbcs)
     {
 	/* DBCS: assume double-wide characters are word characters. */
-	for ( ; i <= 255; ++i)
+	for (i = 128; i <= 255; ++i)
 	    if (MB_BYTE2LEN(i) == 2)
-		spell_chartab[i] = TRUE;
-	    else
-		spell_chartab[i] = FALSE;
-    }
-    else if (STRCMP(p_enc, "cp850") == 0)
-#endif
-#if defined(MSDOS) || defined(FEAT_MBYTE)
-    {
-	/* cp850, MS-DOS */
-	for ( ; i < 128; ++i)
-	    spell_chartab[i] = FALSE;
-	for ( ; i <= 0x9a; ++i)
-	    spell_chartab[i] = TRUE;
-	for ( ; i < 0xa0; ++i)
-	    spell_chartab[i] = FALSE;
-	for ( ; i <= 0xa5; ++i)
-	    spell_chartab[i] = TRUE;
-	for ( ; i <= 255; ++i)
-	    spell_chartab[i] = FALSE;
-    }
-#endif
-#ifdef FEAT_MBYTE
-    else if (STRCMP(p_enc, "iso-8859-2") == 0)
-    {
-	/* latin2 */
-	for ( ; i <= 0xa0; ++i)
-	    spell_chartab[i] = FALSE;
-	for ( ; i <= 255; ++i)
-	    spell_chartab[i] = TRUE;
-	spell_chartab[0xa4] = FALSE;	    /* currency sign */
-	spell_chartab[0xa7] = FALSE;	    /* paragraph sign */
-	spell_chartab[0xad] = FALSE;	    /* dash */
-	spell_chartab[0xb0] = FALSE;	    /* degrees */
-	spell_chartab[0xf7] = FALSE;	    /* divide-by */
+		spelltab.st_isw[i] = TRUE;
     }
     else
 #endif
-#if defined(FEAT_MBYTE) || !defined(MSDOS)
     {
-	/* Rough guess: anything we don't recognize assumes word characters
-	 * like latin1. */
-	for ( ; i < 0xc0; ++i)
-	    spell_chartab[i] = FALSE;
-	for ( ; i <= 255; ++i)
-	    spell_chartab[i] = TRUE;
-# ifdef FEAT_MBYTE
-	if (STRCMP(p_enc, "latin1") == 0)
-# endif
-	    spell_chartab[0xf7] = FALSE;	    /* divide-by */
+	/* Rough guess: use isalpha() for characters above 128. */
+	for (i = 128; i < 256; ++i)
+	{
+	    spelltab.st_isw[i] = isalpha(i);
+	    if (isupper(i))
+	    {
+		spelltab.st_isu[i] = TRUE;
+		spelltab.st_fold[i] = tolower(i);
+	    }
+	}
     }
+}
+
+static char *e_affform = N_("E761: Format error in affix file FOL, LOW or UPP");
+static char *e_affrange = N_("E762: Character in FOL, LOW or UPP is out of range");
+
+/*
+ * Set the spell character tables from strings in the affix file.
+ */
+    int
+set_spell_chartab(fol, low, upp)
+    char_u	*fol;
+    char_u	*low;
+    char_u	*upp;
+{
+    /* We build the new tables here first, so that we can compare with the
+     * previous one. */
+    spelltab_T	new_st;
+    char_u	*pf = fol, *pl = low, *pu = upp;
+    int		f, l, u;
+
+    clear_spell_chartab(&new_st);
+
+    while (*pf != NUL)
+    {
+	if (*pl == NUL || *pu == NUL)
+	{
+	    EMSG(_(e_affform));
+	    return FAIL;
+	}
+#ifdef FEAT_MBYTE
+	f = mb_ptr2char_adv(&pf);
+	l = mb_ptr2char_adv(&pl);
+	u = mb_ptr2char_adv(&pu);
+#else
+	f = *pf++;
+	l = *pl++;
+	u = *pu++;
 #endif
+	/* Every character that appears is a word character. */
+	if (f < 256)
+	    new_st.st_isw[f] = TRUE;
+	if (l < 256)
+	    new_st.st_isw[l] = TRUE;
+	if (u < 256)
+	    new_st.st_isw[u] = TRUE;
+
+	/* if "LOW" and "FOL" are not the same the "LOW" char needs
+	 * case-folding */
+	if (l < 256 && l != f)
+	{
+	    if (f >= 256)
+	    {
+		EMSG(_(e_affrange));
+		return FAIL;
+	    }
+	    new_st.st_fold[l] = f;
+	}
+
+	/* if "UPP" and "FOL" are not the same the "UPP" char needs
+	 * case-folding and it's upper case. */
+	if (u < 256 && u != f)
+	{
+	    if (f >= 256)
+	    {
+		EMSG(_(e_affrange));
+		return FAIL;
+	    }
+	    new_st.st_fold[u] = f;
+	    new_st.st_isu[u] = TRUE;
+	}
+    }
+
+    if (*pl != NUL || *pu != NUL)
+    {
+	EMSG(_(e_affform));
+	return FAIL;
+    }
+
+    return set_spell_finish(&new_st);
 }
 
 /*
- * Return TRUE if "p" points to a word character.
- * This only depends on 'encoding', not on 'iskeyword'.
+ * Set the spell character tables from strings in the .spl file.
+ */
+    int
+set_spell_charflags(flags, cnt, upp)
+    char_u	*flags;
+    int		cnt;
+    char_u	*upp;
+{
+    /* We build the new tables here first, so that we can compare with the
+     * previous one. */
+    spelltab_T	new_st;
+    int		i;
+    char_u	*p = upp;
+
+    clear_spell_chartab(&new_st);
+
+    for (i = 0; i < cnt; ++i)
+    {
+	new_st.st_isw[i + 128] = (flags[i] & SPELL_ISWORD) != 0;
+	new_st.st_isu[i + 128] = (flags[i] & SPELL_ISUPPER) != 0;
+
+	if (*p == NUL)
+	    return FAIL;
+#ifdef FEAT_MBYTE
+	new_st.st_fold[i + 128] = mb_ptr2char_adv(&p);
+#else
+	new_st.st_fold[i + 128] = *p++;
+#endif
+    }
+
+    return set_spell_finish(&new_st);
+}
+
+    static int
+set_spell_finish(new_st)
+    spelltab_T	*new_st;
+{
+    int		i;
+
+    if (did_set_spelltab)
+    {
+	/* check that it's the same table */
+	for (i = 0; i < 256; ++i)
+	{
+	    if (spelltab.st_isw[i] != new_st->st_isw[i]
+		    || spelltab.st_isu[i] != new_st->st_isu[i]
+		    || spelltab.st_fold[i] != new_st->st_fold[i])
+	    {
+		EMSG(_("E763: Word characters differ between spell files"));
+		return FAIL;
+	    }
+	}
+    }
+    else
+    {
+	/* copy the new spelltab into the one being used */
+	spelltab = *new_st;
+	did_set_spelltab = TRUE;
+    }
+
+    return OK;
+}
+
+#if defined(FEAT_MBYTE) || defined(PROTO)
+/*
+ * Write the current tables into the .spl file.
+ */
+    void
+write_spell_chartab(fd)
+    FILE	*fd;
+{
+    char_u	charbuf[256 * 4];
+    int		len = 0;
+    int		flags;
+    int		i;
+
+    if (!did_set_spelltab)
+    {
+	/* No character table specified, write zero counts. */
+	fputc(0, fd);
+	fputc(0, fd);
+	fputc(0, fd);
+	return;
+    }
+
+    fputc(128, fd);				    /* <charflagslen> */
+    for (i = 128; i < 256; ++i)
+    {
+	flags = 0;
+	if (spelltab.st_isw[i])
+	    flags |= SPELL_ISWORD;
+	if (spelltab.st_isu[i])
+	    flags |= SPELL_ISUPPER;
+	fputc(flags, fd);			    /* <charflags> */
+
+	len += mb_char2bytes(spelltab.st_fold[i], charbuf + len);
+    }
+
+    put_bytes(fd, (long_u)len, 2);		    /* <fcharlen> */
+    fwrite(charbuf, (size_t)len, (size_t)1, fd);    /* <fchars> */
+}
+#endif
+
+/*
+ * Return TRUE if "p" points to a word character for spelling.
  */
     int
 spell_iswordc(p)
@@ -1015,9 +1198,103 @@ spell_iswordc(p)
     if (has_mbyte && MB_BYTE2LEN(*p) > 1)
 	return mb_get_class(p) >= 2;
 # endif
-    return spell_chartab[*p];
+    return spelltab.st_isw[*p];
 }
+
+/*
+ * Return TRUE if "c" is an upper-case character for spelling.
+ */
+    int
+spell_isupper(c)
+    int		c;
+{
+# ifdef FEAT_MBYTE
+    if (enc_utf8)
+    {
+	/* For Unicode we can call utf_isupper(), but don't do that for ASCII,
+	 * because we don't want to use 'casemap' here. */
+	if (c >= 128)
+	    return utf_isupper(c);
+    }
+    else if (has_mbyte && c > 256)
+    {
+	/* For characters above 255 we don't have something specfied.
+	 * Fall back to locale-dependent iswupper().  If not available
+	 * simply return FALSE. */
+#  ifdef HAVE_ISWUPPER
+	return iswupper(c);
+#  else
+	return FALSE;
+#  endif
+    }
+# endif
+    return spelltab.st_isu[c];
+}
+
+/*
+ * case-fold "p[len]" into "buf[buflen]".  Used for spell checking.
+ * Returns FAIL when something wrong.
+ */
+    int
+spell_casefold(p, len, buf, buflen)
+    char_u	*p;
+    int		len;
+    char_u	*buf;
+    int		buflen;
+{
+    int		i;
+
+    if (len >= buflen)
+    {
+	buf[0] = NUL;
+	return FAIL;		/* result will not fit */
+    }
+
+#ifdef FEAT_MBYTE
+    if (has_mbyte)
+    {
+	int	c;
+	int	outi = 0;
+
+	/* Fold one character at a time. */
+	for (i = 0; i < len; i += mb_ptr2len_check(p + i))
+	{
+	    c = mb_ptr2char(p + i);
+	    if (enc_utf8)
+		/* For Unicode case folding is always the same, no need to use
+		 * the table from the spell file. */
+		c = utf_fold(c);
+	    else if (c < 256)
+		/* Use the table from the spell file. */
+		c = spelltab.st_fold[c];
+# ifdef HAVE_TOWLOWER
+	    else
+		/* We don't know what to do, fall back to towlower(), it
+		 * depends on the current locale. */
+		c = towlower(c);
+# endif
+	    if (outi + MB_MAXBYTES > buflen)
+	    {
+		buf[outi] = NUL;
+		return FAIL;
+	    }
+	    outi += mb_char2bytes(c, buf + outi);
+	}
+	buf[outi] = NUL;
+    }
+    else
 #endif
+    {
+	/* Be quick for non-multibyte encodings. */
+	for (i = 0; i < len; ++i)
+	    buf[i] = spelltab.st_fold[p[i]];
+	buf[i] = NUL;
+    }
+
+    return OK;
+}
+
+#endif /* FEAT_SYN_HL */
 
 /*
  * return TRUE if 'c' is a valid file-name character

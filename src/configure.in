@@ -2245,7 +2245,7 @@ AC_CHECK_HEADERS(stdarg.h stdlib.h string.h sys/select.h sys/utsname.h \
 	sys/stream.h sys/ptem.h termios.h libc.h sys/statfs.h \
 	poll.h sys/poll.h pwd.h utime.h sys/param.h libintl.h \
 	libgen.h util/debug.h util/msg18n.h frame.h \
-	sys/acl.h sys/access.h sys/sysctl.h sys/sysinfo.h wchar.h)
+	sys/acl.h sys/access.h sys/sysctl.h sys/sysinfo.h wchar.h wctype.h)
 
 dnl pthread_np.h may exist but can only be used after including pthread.h
 AC_MSG_CHECKING([for pthread_np.h])
@@ -2637,7 +2637,8 @@ AC_CHECK_FUNCS(bcmp fchdir fchown fseeko fsync ftello getcwd getpseudotty \
 	memset nanosleep opendir putenv qsort readlink select setenv \
 	setpgid setsid sigaltstack sigstack sigset sigsetjmp sigaction \
 	sigvec snprintf strcasecmp strerror strftime stricmp strncasecmp \
-	strnicmp strpbrk strtol tgetent towlower towupper usleep utime utimes)
+	strnicmp strpbrk strtol tgetent towlower towupper iswupper \
+	usleep utime utimes)
 
 dnl fstatfs() can take 2 to 4 arguments, try to use st_blksize if possible
 AC_MSG_CHECKING(for st_blksize)

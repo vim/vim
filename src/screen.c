@@ -2603,7 +2603,10 @@ win_line(wp, lnum, startrow, endrow)
 	}
     }
 
-    if (wp->w_p_spell && *wp->w_buffer->b_p_spl != NUL)
+    if (wp->w_p_spell
+	    && *wp->w_buffer->b_p_spl != NUL
+	    && wp->w_buffer->b_langp.ga_len > 0
+	    && *(char **)(wp->w_buffer->b_langp.ga_data) != NULL)
     {
 	/* Prepare for spell checking. */
 	has_spell = TRUE;

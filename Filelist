@@ -122,6 +122,8 @@ SRC_ALL2 =	\
 		src/proto/undo.pro \
 		src/proto/version.pro \
 		src/proto/window.pro \
+		src/spell/*.diff \
+		src/spell/Makefile \
 
 
 # source files for Unix only

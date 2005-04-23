@@ -1,6 +1,6 @@
 " Menu Translations:    Swedish
-" Maintainer:		Johan Svedberg <johan@svedberg.pp.se>
-" Last Change:		2004 May 16
+" Maintainer:		Johan Svedberg <johan@svedberg.com>
+" Last Change:		2005 April 23
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")
@@ -17,12 +17,13 @@ endif
 " Help menu
 menutrans &Help			&Hjälp
 menutrans &Overview<Tab><F1>	&Översikt<Tab><F1>
-menutrans &How-to\ links	&Hur-göra-länkar
 menutrans &User\ Manual		&Användarmanual
-"menutrans &GUI			&GUI
+menutrans &How-to\ links	&Hur-göra-länkar
+menutrans &Find\.\.\.		&Sök\.\.\.
 menutrans &Credits		&Tack
 menutrans Co&pying		&Kopieringsrättigheter
-menutrans &Find\.\.\.		&Sök\.\.\.
+menutrans &Sponsor/Register	&Sponsra/Registrering
+menutrans O&rphans		F&örälderlösa
 menutrans &Version		&Version
 menutrans &About		&Om
 
@@ -50,7 +51,7 @@ menutrans &Copy<Tab>"+y			&Kopiera<Tab>"+y
 menutrans &Paste<Tab>"+gP		Klistra &in<Tab>"+gP
 menutrans Put\ &Before<Tab>[p		Sätt\ in\ &före<Tab>[p
 menutrans Put\ &After<Tab>]p		Sätt\ in\ &efter<Tab>]p
-menutrans &Select\ all<Tab>ggVG		&Markera\ allt<Tab>ggVG
+menutrans &Select\ All<Tab>ggVG		&Markera\ allt<Tab>ggVG
 menutrans &Find\.\.\.			&Sök\.\.\.
 menutrans &Find<Tab>/			&Sök<Tab>/
 menutrans Find\ and\ Rep&lace\.\.\.	Sök\ och\ ersätt\.\.\.
@@ -75,6 +76,7 @@ menutrans Insert\ mode			Infogningsläge
 menutrans Block\ and\ Insert		Block\ och\ infogning
 menutrans Always			Alltid
 menutrans Toggle\ Insert\ &Mode<Tab>:set\ im!	Växla\ infogningsläge<Tab>:set\ im!
+menutrans Toggle\ Vi\ C&ompatible<Tab>:set\ cp!	Växla\ Vi-kompatibelitet<Tab>:set\ cp!
 menutrans Search\ &Path\.\.\.		Sökväg\.\.\.
 menutrans Ta&g\ Files\.\.\.		Taggfiler\.\.\.
 menutrans Toggle\ &Toolbar		Växla\ verktygsrad
@@ -91,6 +93,8 @@ menutrans Toggle\ W&rap\ at\ word<Tab>:set\ lbr!	Växla\ radbrytning\ vid\ ord<ta
 menutrans Toggle\ &expand-tab<Tab>:set\ et!		Växla\ tab-expandering<Tab>:set\ et!
 menutrans Toggle\ &auto-indent<Tab>:set\ ai!		Växla\ auto-indentering<Tab>:set\ ai!
 menutrans Toggle\ &C-indenting<Tab>:set\ cin!		Växla\ C-indentering<Tab>:set\ cin!
+menutrans &Shiftwidth					&Shiftbredd
+menutrans Soft\ &Tabstop				Mjuka\ &Tabbstopp
 menutrans Te&xt\ Width\.\.\.				Textbredd\.\.\.
 menutrans &File\ Format\.\.\.				Filformat\.\.\.
 
@@ -123,7 +127,7 @@ menutrans &Close\ all\ folds<Tab>zM	Stäng\ alla\ veck<Tab>zM
 menutrans O&pen\ more\ folds<Tab>zr	Öppna\ mer\ veck<Tab>zr
 menutrans &Open\ all\ folds<Tab>zR	Öppna\ mer\ veck<Tab>zR
 menutrans Fold\ Met&hod			Veckmetod
-menutrans M&anual			Manual
+menutrans M&anual			Manuell
 menutrans I&ndent			Indentering
 menutrans E&xpression			Uttryck
 menutrans S&yntax			Syntax

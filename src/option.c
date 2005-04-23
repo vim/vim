@@ -5658,10 +5658,20 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 #endif
 
 #ifdef FEAT_SYN_HL
-    /* When 'spelllang' is set, load the wordlists. */
+    /* When 'spelllang' is set and there is a window for this buffer in which
+     * 'spell' is set load the wordlists. */
     else if (varp == &(curbuf->b_p_spl))
     {
-	errmsg = did_set_spelllang(curbuf);
+	win_T	    *wp;
+
+	FOR_ALL_WINDOWS(wp)
+	    if (wp->w_buffer == curbuf && wp->w_p_spell)
+	    {
+		errmsg = did_set_spelllang(curbuf);
+# ifdef FEAT_WINDOWS
+		break;
+# endif
+	    }
     }
 #endif
 
@@ -6633,6 +6643,19 @@ set_bool_option(opt_idx, varp, value, opt_flags)
 	/* Only de-activate it here, it will be enabled when changing mode. */
 	if (p_imdisable)
 	    im_set_active(FALSE);
+    }
+#endif
+
+#ifdef FEAT_SYN_HL
+    /* 'spell' */
+    else if ((int *)varp == &curwin->w_p_spell)
+    {
+	if (curwin->w_p_spell)
+	{
+	    char_u	*errmsg = did_set_spelllang(curbuf);
+	    if (errmsg != NULL)
+		EMSG(_(errmsg));
+	}
     }
 #endif
 
@@ -8586,7 +8609,6 @@ buf_copy_options(buf, flags)
 	    /* Don't copy 'syntax', it must be set */
 	    buf->b_p_syn = empty_option;
 	    buf->b_p_spl = vim_strsave(p_spl);
-	    did_set_spelllang(buf);
 #endif
 #if defined(FEAT_CINDENT) && defined(FEAT_EVAL)
 	    buf->b_p_inde = vim_strsave(p_inde);

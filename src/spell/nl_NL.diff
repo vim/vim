@@ -1,0 +1,153 @@
+*** nl_NL.orig.aff	Wed Apr 20 11:48:16 2005
+--- nl_NL.aff	Sat Apr 23 16:48:27 2005
+***************
+*** 3,4 ****
+--- 3,8 ----
+  
++ FOL  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏ÿ
++ LOW  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏ÿ
++ UPP  ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞ‗אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏ÿ
++ 
+  NOSPLITSUGS
+***************
+*** 33,52 ****
+  SFX J N 18
+! SFX J 0 tje [aeiou][aeiou] 
+! SFX J 0 tjes [aeiou][aeiou] 
+! SFX J 0 atje [^aeiou]a 
+! SFX J 0 atjes [^aeiou]a 
+! SFX J 0 etje [^aeiou]i 
+! SFX J 0 etjes [^aeiou]i 
+  SFX J 0 'tje [^aeiou]y
+! SFX J 0 'tjes [^aeiou]y 
+  SFX J 0 otje [^aeiou]o
+! SFX J 0 otjes [^aeiou]o 
+  SFX J 0 utje [^aeiou]u
+! SFX J 0 utjes [^aeiou]u 
+! SFX J 0 tje [aeiou][lnrw] 
+! SFX J 0 tjes [aeiou][lnrw] 
+! SFX J 0 pje [aeiou][m] 
+! SFX J 0 pjes [aeiou][m] 
+! SFX J 0 je [aeiou][bcdfgkpt] 
+! SFX J 0 jes [aeiou][bcdfgkpt] 
+  
+--- 37,56 ----
+  SFX J N 18
+! SFX J 0 tje [aeiou][aeiou]
+! SFX J 0 tjes [aeiou][aeiou]
+! SFX J 0 atje [^aeiou]a
+! SFX J 0 atjes [^aeiou]a
+! SFX J 0 etje [^aeiou]i
+! SFX J 0 etjes [^aeiou]i
+  SFX J 0 'tje [^aeiou]y
+! SFX J 0 'tjes [^aeiou]y
+  SFX J 0 otje [^aeiou]o
+! SFX J 0 otjes [^aeiou]o
+  SFX J 0 utje [^aeiou]u
+! SFX J 0 utjes [^aeiou]u
+! SFX J 0 tje [aeiou][lnrw]
+! SFX J 0 tjes [aeiou][lnrw]
+! SFX J 0 pje [aeiou][m]
+! SFX J 0 pjes [aeiou][m]
+! SFX J 0 je [aeiou][bcdfgkpt]
+! SFX J 0 jes [aeiou][bcdfgkpt]
+  
+***************
+*** 253,255 ****
+  REP ubi ibu
+! REP croc krok 
+  REP ten than
+--- 257,259 ----
+  REP ubi ibu
+! REP croc krok
+  REP ten than
+***************
+*** 288,290 ****
+  REP capucino cappuccino
+! REP celcius Celsius 
+  REP kado cadeau
+--- 292,294 ----
+  REP capucino cappuccino
+! REP celcius Celsius
+  REP kado cadeau
+***************
+*** 294,300 ****
+  REP committee comitי
+! REP komitee comitי 
+! REP komittee comitי 
+! REP kommitee comitי 
+  REP kommittee comitי
+! REP kwis quiz 
+  REP kwissen quizzen
+--- 298,304 ----
+  REP committee comitי
+! REP komitee comitי
+! REP komittee comitי
+! REP kommitee comitי
+  REP kommittee comitי
+! REP kwis quiz
+  REP kwissen quizzen
+***************
+*** 302,304 ****
+  REP copy kopij
+! REP pitoresque pittoreske 
+  REP reikweite reikwijdte
+--- 306,308 ----
+  REP copy kopij
+! REP pitoresque pittoreske
+  REP reikweite reikwijdte
+***************
+*** 314,319 ****
+  REP klup club
+! REP wiskid whizzkid 
+! REP kontakt contact 
+! REP kontekst context 
+! REP korrekt correct 
+  REP kritikus criticus
+--- 318,323 ----
+  REP klup club
+! REP wiskid whizzkid
+! REP kontakt contact
+! REP kontekst context
+! REP korrekt correct
+  REP kritikus criticus
+*** nl_NL.orig.dic	Tue Apr 19 21:03:15 2005
+--- nl_NL.dic	Wed Apr 20 18:47:07 2005
+***************
+*** 91,93 ****
+  Athene
+- Athene
+  Atjees/E
+--- 91,92 ----
+***************
+*** 216,217 ****
+--- 215,218 ----
+  Brussels/E
++ BTW
++ B.T.W.
+  Budel
+***************
+*** 325,326 ****
+--- 326,328 ----
+  Duurstede
++ DVD
+  Dwingeloo
+***************
+*** 813,814 ****
+--- 815,817 ----
+  Montfort
++ Moolenaar/X
+  Moordrecht
+***************
+*** 46300,46301 ****
+--- 46303,46305 ----
+  informaticus
++ informatie/S
+  informatie-uitwisseling
+***************
+*** 60206,60207 ****
+--- 60210,60213 ----
+  lצss
++ m.a.w.
++ m.b.t.
+  ma/JW

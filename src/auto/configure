@@ -4629,7 +4629,7 @@ fi
   if test "X$vi_cv_path_ruby" != "X"; then
     echo "$as_me:$LINENO: checking Ruby version" >&5
 echo $ECHO_N "checking Ruby version... $ECHO_C" >&6
-    if $vi_cv_path_ruby -e 'RUBY_VERSION >= "1.6.0" or exit 1' >/dev/null 2>/dev/null; then
+    if $vi_cv_path_ruby -e '(VERSION rescue RUBY_VERSION) >= "1.6.0" or exit 1' >/dev/null 2>/dev/null; then
       echo "$as_me:$LINENO: result: OK" >&5
 echo "${ECHO_T}OK" >&6
       echo "$as_me:$LINENO: checking Ruby header files" >&5
@@ -10989,6 +10989,7 @@ fi
 
 
 
+
 for ac_header in stdarg.h stdlib.h string.h sys/select.h sys/utsname.h \
 	termcap.h fcntl.h sgtty.h sys/ioctl.h sys/time.h termio.h \
 	iconv.h langinfo.h unistd.h stropts.h errno.h \
@@ -10996,7 +10997,7 @@ for ac_header in stdarg.h stdlib.h string.h sys/select.h sys/utsname.h \
 	sys/stream.h sys/ptem.h termios.h libc.h sys/statfs.h \
 	poll.h sys/poll.h pwd.h utime.h sys/param.h libintl.h \
 	libgen.h util/debug.h util/msg18n.h frame.h \
-	sys/acl.h sys/access.h sys/sysctl.h sys/sysinfo.h wchar.h
+	sys/acl.h sys/access.h sys/sysctl.h sys/sysinfo.h wchar.h wctype.h
 do
 as_ac_Header=`echo "ac_cv_header_$ac_header" | $as_tr_sh`
 if eval "test \"\${$as_ac_Header+set}\" = set"; then
@@ -13372,12 +13373,14 @@ fi
 
 
 
+
 for ac_func in bcmp fchdir fchown fseeko fsync ftello getcwd getpseudotty \
 	getpwnam getpwuid getrlimit gettimeofday getwd lstat memcmp \
 	memset nanosleep opendir putenv qsort readlink select setenv \
 	setpgid setsid sigaltstack sigstack sigset sigsetjmp sigaction \
 	sigvec snprintf strcasecmp strerror strftime stricmp strncasecmp \
-	strnicmp strpbrk strtol tgetent towlower towupper usleep utime utimes
+	strnicmp strpbrk strtol tgetent towlower towupper iswupper \
+	usleep utime utimes
 do
 as_ac_var=`echo "ac_cv_func_$ac_func" | $as_tr_sh`
 echo "$as_me:$LINENO: checking for $ac_func" >&5

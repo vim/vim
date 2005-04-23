@@ -3697,6 +3697,9 @@ E758	spell.txt	/*E758*
 E759	spell.txt	/*E759*
 E76	pattern.txt	/*E76*
 E760	spell.txt	/*E760*
+E761	spell.txt	/*E761*
+E762	spell.txt	/*E762*
+E763	spell.txt	/*E763*
 E77	message.txt	/*E77*
 E78	motion.txt	/*E78*
 E79	message.txt	/*E79*
@@ -4218,6 +4221,7 @@ blockwise-operators	visual.txt	/*blockwise-operators*
 blockwise-register	change.txt	/*blockwise-register*
 blockwise-visual	visual.txt	/*blockwise-visual*
 book	intro.txt	/*book*
+bookmark	usr_03.txt	/*bookmark*
 boolean	options.txt	/*boolean*
 break-finally	eval.txt	/*break-finally*
 browse()	eval.txt	/*browse()*
@@ -5113,7 +5117,6 @@ hebrew	hebrew.txt	/*hebrew*
 hebrew.txt	hebrew.txt	/*hebrew.txt*
 help	various.txt	/*help*
 help-context	help.txt	/*help-context*
-help-tags	tags	1
 help-translated	various.txt	/*help-translated*
 help-xterm-window	various.txt	/*help-xterm-window*
 help.txt	help.txt	/*help.txt*
@@ -6230,6 +6233,7 @@ spec_chglog_release_info	pi_spec.txt	/*spec_chglog_release_info*
 special-buffers	windows.txt	/*special-buffers*
 speed-up	tips.txt	/*speed-up*
 spell	spell.txt	/*spell*
+spell-affix-chars	spell.txt	/*spell-affix-chars*
 spell-affix-mbyte	spell.txt	/*spell-affix-mbyte*
 spell-affix-vim	spell.txt	/*spell-affix-vim*
 spell-file-format	spell.txt	/*spell-file-format*
