@@ -410,6 +410,10 @@ typedef unsigned short u8char_T;
 
 #include <assert.h>
 
+#ifdef HAVE_WCTYPE_H
+# include <wctype.h>
+#endif
+
 /* ================ end of the header file puzzle =============== */
 
 /*

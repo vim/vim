@@ -1,4 +1,4 @@
-*usr_03.txt*	For Vim version 7.0aa.  Last change: 2005 Apr 01
+*usr_03.txt*	For Vim version 7.0aa.  Last change: 2005 Apr 22
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -601,7 +601,7 @@ The ":jumps" command gives a list of positions you jumped to.  The entry which
 you used last is marked with a ">".
 
 
-NAMED MARKS
+NAMED MARKS							*bookmark*
 
 Vim enables you to place your own marks in the text.  The command "ma" marks
 the place under the cursor as mark a.  You can place 26 marks (a through z) in

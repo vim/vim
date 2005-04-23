@@ -1,0 +1,87 @@
+*** en_CA.orig.aff	Fri Apr 15 13:20:36 2005
+--- en_CA.aff	Sat Apr 23 19:57:43 2005
+***************
+*** 3,4 ****
+--- 3,8 ----
+  
++ FOL  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏ÿ
++ LOW  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏ÿ
++ UPP  ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞ‗אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏ÿ
++ 
+  PFX A Y 1
+***************
+*** 30,33 ****
+  SFX N   e     ion        e
+! SFX N   y     ication    y 
+! SFX N   0     en         [^ey] 
+  
+--- 34,37 ----
+  SFX N   e     ion        e
+! SFX N   y     ication    y
+! SFX N   0     en         [^ey]
+  
+***************
+*** 40,42 ****
+  SFX H   y     ieth       y
+! SFX H   0     th         [^y] 
+  
+--- 44,46 ----
+  SFX H   y     ieth       y
+! SFX H   0     th         [^y]
+  
+***************
+*** 47,49 ****
+  SFX G   e     ing        e
+! SFX G   0     ing        [^e] 
+  
+--- 51,53 ----
+  SFX G   e     ing        e
+! SFX G   0     ing        [^e]
+  
+*** en_CA.orig.dic	Sat Apr 16 14:40:06 2005
+--- en_CA.dic	Tue Apr 19 22:19:46 2005
+***************
+*** 46,48 ****
+  R/G
+- S
+  easternmost
+--- 46,47 ----
+***************
+*** 89,91 ****
+  r/GVTJ
+! s/FK
+  fatting
+--- 88,90 ----
+  r/GVTJ
+! cons
+  fatting
+***************
+*** 13669,13671 ****
+  engross/LDRSG
+! hobbit
+  certainty/MUS
+--- 13668,13670 ----
+  engross/LDRSG
+! hobbit/MS
+  certainty/MUS
+***************
+*** 36707,36708 ****
+--- 36706,36708 ----
+  Moody/M
++ Moolenaar/M
+  Bresenham/M
+***************
+*** 50272,50273 ****
+--- 50272,50274 ----
+  Dutch/M
++ Farsi
+  Sharon/M
+***************
+*** 52565,52567 ****
+  hatchery/MS
+! vim/SM
+  compatriot/MS
+--- 52566,52568 ----
+  hatchery/MS
+! Vim/SM
+  compatriot/MS

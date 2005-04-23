@@ -97,6 +97,8 @@ static affitem_T dumai;
 /*
  * Structure used to store words and other info for one language, loaded from
  * a .spl file.
+ * The main access is through hashtable "sl_word", using the case-folded
+ * word as the key.  This finds a linked list of fword_T.
  */
 typedef struct slang_S slang_T;
 struct slang_S
@@ -149,6 +151,8 @@ static addword_T dumaw;
 /*
  * Structure to store a basic word.
  * There are many of these, keep it small!
+ * The list of prefix and suffix NRs is stored after "fw_word" to avoid the
+ * need for two extra pointers.
  */
 typedef struct fword_S fword_T;
 struct fword_S
@@ -223,7 +227,7 @@ typedef struct langp_S
  * (Needed to keep ADD_ flags in one byte.) */
 #define ADD2BWF(x)	(((x) & 0x0f) | (((x) & 0xf0) << 4))
 
-#define VIMSPELLMAGIC "VIMspell03"  /* string at start of Vim spell file */
+#define VIMSPELLMAGIC "VIMspell04"  /* string at start of Vim spell file */
 #define VIMSPELLMAGICL 10
 
 /*
@@ -307,7 +311,7 @@ spell_check(wp, line, ptr, attrp)
 	return (int)(mi.mi_end - ptr);
 
     /* Make case-folded copy of the word. */
-    (void)str_foldcase(ptr, mi.mi_end - ptr, mi.mi_fword, MAXWLEN + 1);
+    (void)spell_casefold(ptr, mi.mi_end - ptr, mi.mi_fword, MAXWLEN + 1);
     mi.mi_cword = mi.mi_fword;
     mi.mi_fendlen = STRLEN(mi.mi_fword);
     mi.mi_faddlen = 0;
@@ -404,6 +408,8 @@ word_match(mip)
      * "d'", "de-", "'s-", "l'de-".  But not "'s".
      * Also need to do this when a matching word was already found, because we
      * might find a longer match this way (French: "qu" and "qu'a-t-elle").
+     * The check above may have added characters to mi_fword, thus we need to
+     * truncate it after the basic word for the hash lookup.
      */
     cc = mip->mi_fword[mip->mi_fendlen];
     mip->mi_fword[mip->mi_fendlen] = NUL;
@@ -772,7 +778,7 @@ fold_addchars(mip, addlen)
 	else
 #endif
 	    l = 1;
-	(void)str_foldcase(mip->mi_fend, l, p + mip->mi_faddlen,
+	(void)spell_casefold(mip->mi_fend, l, p + mip->mi_faddlen,
 				 MAXWLEN - mip->mi_fendlen - mip->mi_faddlen);
 	mip->mi_fend += l;
 	mip->mi_faddlen += STRLEN(p + mip->mi_faddlen);
@@ -992,6 +998,8 @@ suffix_match(mip)
      * Stop checking if there are no suffixes with so many characters.
      */
     sufp = endw;
+    *endw = NUL;	/* truncate after possible suffix */
+
     for (charlen = 0; charlen <= mip->mi_slang->sl_sufftab.ga_len; ++charlen)
     {
 	/* Move the pointer to the possible suffix back one character, unless
@@ -1012,13 +1020,11 @@ suffix_match(mip)
 	    if (ht->ht_used == 0)
 		continue;
 
-	    *endw = NUL;	/* truncate after possible suffix */
 	    hi = hash_find(ht, sufp);
 	    if (HASHITEM_EMPTY(hi))
 		ai = NULL;
 	    else
 		ai = HI2AI(hi);
-	    *endw = endw_c;
 	}
 
 	if (ai != NULL)
@@ -1027,6 +1033,7 @@ suffix_match(mip)
 	     * we can use. */
 	    tlen = sufp - mip->mi_cword;    /* length of word without suffix */
 	    mch_memmove(pword, mip->mi_cword, tlen);
+	    *endw = endw_c;
 
 	    for ( ; ai != NULL; ai = ai->ai_next)
 	    {
@@ -1068,9 +1075,12 @@ suffix_match(mip)
 		    }
 		}
 	    }
+
+	    *endw = NUL;	/* truncate after possible suffix */
 	}
     }
 
+    *endw = endw_c;
     mip->mi_capflags = capflags_save;
     return FALSE;
 }
@@ -1115,7 +1125,7 @@ match_caps(flags, caseword, mip, cword, end)
 		else
 #endif
 		    c = *p++;
-		if (MB_ISUPPER(c))
+		if (spell_isupper(c))
 		{
 		    if (capflags == 0 || (capflags & BWF_ONECAP))
 		    {
@@ -1460,7 +1470,7 @@ spell_load_file(fname, cookie)
     int		round;
     char_u	*save_sourcing_name = sourcing_name;
     linenr_T	save_sourcing_lnum = sourcing_lnum;
-    int		cnt;
+    int		cnt, ccnt;
     int		choplen;
     int		addlen;
     int		leadlen;
@@ -1474,39 +1484,41 @@ spell_load_file(fname, cookie)
     addword_T	*aw, *naw;
     int		flen;
     int		xlen;
+    char_u	*fol;
 
     fd = fopen((char *)fname, "r");
     if (fd == NULL)
     {
 	EMSG2(_(e_notopen), fname);
-	goto errorend;
+	goto endFAIL;
     }
 
     /* Set sourcing_name, so that error messages mention the file name. */
     sourcing_name = fname;
     sourcing_lnum = 0;
 
-    /* <HEADER>: <fileID> <regioncnt> <regionname> ... */
+    /* <HEADER>: <fileID> <regioncnt> <regionname> ...
+     *		 <charflagslen> <charflags>  <fcharslen> <fchars> */
     for (i = 0; i < VIMSPELLMAGICL; ++i)
 	buf[i] = getc(fd);				/* <fileID> */
     if (STRNCMP(buf, VIMSPELLMAGIC, VIMSPELLMAGICL) != 0)
     {
 	EMSG(_("E757: Wrong file ID in spell file"));
-	goto errorend;
+	goto endFAIL;
     }
 
     cnt = getc(fd);					/* <regioncnt> */
-    if (cnt == EOF)
+    if (cnt < 0)
     {
 truncerr:
 	EMSG(_("E758: Truncated spell file"));
-	goto errorend;
+	goto endFAIL;
     }
     if (cnt > 8)
     {
 formerr:
 	EMSG(_("E759: Format error in spell file"));
-	goto errorend;
+	goto endFAIL;
     }
     for (i = 0; i < cnt; ++i)
     {
@@ -1515,8 +1527,39 @@ formerr:
     }
     lp->sl_regions[cnt * 2] = NUL;
 
-    /* round 1: <PREFIXLIST>: <affcount> <afftotcnt> <affix> ...
-     * round 2: <SUFFIXLIST>: <affcount> <afftotcnt> <affix> ...  */
+    cnt = getc(fd);					/* <charflagslen> */
+    if (cnt > 0)
+    {
+	p = (char_u *)getroom(lp, &bl_used, cnt);
+	if (p == NULL)
+	    goto endFAIL;
+	for (i = 0; i < cnt; ++i)
+	    p[i] = getc(fd);				/* <charflags> */
+
+	ccnt = (getc(fd) << 8) + getc(fd);		/* <fcharslen> */
+	if (ccnt <= 0)
+	    goto formerr;
+	fol = (char_u *)getroom(lp, &bl_used, ccnt + 1);
+	if (fol == NULL)
+	    goto endFAIL;
+	for (i = 0; i < ccnt; ++i)
+	    fol[i] = getc(fd);				/* <fchars> */
+	fol[i] = NUL;
+
+	/* Set the word-char flags and fill spell_isupper() table. */
+	if (set_spell_charflags(p, cnt, fol) == FAIL)
+	    goto formerr;
+    }
+    else
+    {
+	/* When <charflagslen> is zero then <fcharlen> must also be zero. */
+	cnt = (getc(fd) << 8) + getc(fd);
+	if (cnt != 0)
+	    goto formerr;
+    }
+
+    /* round 1: <PREFIXLIST>: <affcount> <affix> ...
+     * round 2: <SUFFIXLIST>: <affcount> <affix> ...  */
     for (round = 1; round <= 2; ++round)
     {
 	affcount = (getc(fd) << 8) + getc(fd);		/* <affcount> */
@@ -1537,9 +1580,6 @@ formerr:
 	    suffm = affcount > 256 ? 2 : 1;
 	}
 
-	i = (getc(fd) << 8) + getc(fd);		/* <afftotcnt> */
-	/* afftotcnt is not used */
-
 	/*
 	 * For each affix NR there can be several affixes.
 	 */
@@ -1555,7 +1595,7 @@ formerr:
 		 *				    <affaddlen> <affadd> */
 		affflags = getc(fd);			/* <affflags> */
 		choplen = getc(fd);			/* <affchoplen> */
-		if (choplen == EOF)
+		if (choplen < 0)
 		    goto truncerr;
 		if (choplen >= MAXWLEN)
 		    goto formerr;
@@ -1563,7 +1603,7 @@ formerr:
 		    buf[i] = getc(fd);
 		buf[i] = NUL;
 		addlen = getc(fd);			/* <affaddlen> */
-		if (addlen == EOF)
+		if (addlen < 0)
 		    goto truncerr;
 		if (affflags & AFF_PREWORD)
 		    xlen = addlen + 2;	/* space for lead and trail string */
@@ -1571,12 +1611,11 @@ formerr:
 		    xlen = 0;
 
 		/* Get room to store the affitem_T, chop and add strings. */
-		p = (char_u *)getroom(lp, &bl_used,
+		ai = (affitem_T *)getroom(lp, &bl_used,
 			     sizeof(affitem_T) + addlen + choplen + 1 + xlen);
-		if (p == NULL)
-		    goto errorend;
+		if (ai == NULL)
+		    goto endFAIL;
 
-		ai = (affitem_T *)p;
 		ai->ai_nr = affnr;
 		ai->ai_flags = affflags;
 		ai->ai_choplen = choplen;
@@ -1596,8 +1635,12 @@ formerr:
 		    int	    l, leadoff, trailoff;
 
 		    /*
-		     * Separate lead and trail string, put word at ai_add, so
-		     * that it can be used as hashtable key.
+		     * A preword is a prefix that's recognized as a word: it
+		     * contains a word characters folled by a non-word
+		     * character.
+		     * <affadd> is the whole prefix.  Separate lead and trail
+		     * string, put the word itself at ai_add, so that it can
+		     * be used as hashtable key.
 		     */
 		    /* lead string: up to first word char */
 		    while (*p != NUL && !spell_iswordc(p))
@@ -1623,13 +1666,13 @@ formerr:
 		    hi = hash_lookup(&lp->sl_prewords, ai->ai_add, hash);
 		    if (HASHITEM_EMPTY(hi))
 		    {
-			/* First affix with this word, add to hashtable. */
+			/* First preword with this word, add to hashtable. */
 			hash_add_item(&lp->sl_prewords, hi, ai->ai_add, hash);
 			ai->ai_next = NULL;
 		    }
 		    else
 		    {
-			/* There already is an affix with this word, link in
+			/* There already is a preword with this word, link in
 			 * the list.  */
 			ai2 = HI2AI(hi);
 			ai->ai_next = ai2->ai_next;
@@ -1660,7 +1703,7 @@ formerr:
 			{
 			    /* Longer affix, need more hashtables. */
 			    if (ga_grow(gap, addlen - gap->ga_len) == FAIL)
-				goto errorend;
+				goto endFAIL;
 
 			    /* Re-allocating ga_data means that an ht_array
 			     * pointing to ht_smallarray becomes invalid.  We
@@ -1733,14 +1776,14 @@ formerr:
 	 */
 	/* Use <nr> bytes from the previous word. */
 	wlen = getc(fd);				/* <nr> */
-	if (wlen == EOF)
+	if (wlen < 0)
 	{
 	    if (widx >= wordcount)	/* normal way to end the file */
 		break;
 	    goto truncerr;
 	}
 
-	/* Read further word bytes until one below 0x20, that must be the
+	/* Read further word bytes until one below 0x20, that one must be the
 	 * flags.  Keep this fast! */
 	for (;;)
 	{
@@ -1760,10 +1803,12 @@ formerr:
 	{
 	    /* Read <caselen> and <caseword> first, its length may differ from
 	     * the case-folded word.  Note: this should only happen after the
-	     * basic word! */
+	     * basic word without KEEPCAP! */
 	    wlen = getc(fd);
 	    if (wlen < 0)
 		goto truncerr;
+	    if (wlen >= MAXWLEN)
+		goto formerr;
 	    for (i = 0; i < wlen; ++i)
 		cbuf[i] = getc(fd);
 	    cbuf[i] = NUL;
@@ -1800,7 +1845,7 @@ formerr:
 	fw = (fword_T *)getroom(lp, &bl_used, (int)sizeof(fword_T) + wlen
 							    + (p - affixbuf));
 	if (fw == NULL)
-	    goto errorend;
+	    goto endFAIL;
 	mch_memmove(fw->fw_word, (flags & BWF_KEEPCAP) ? cbuf : buf, wlen + 1);
 
 	/* Put the affix NRs just after the word, if any. */
@@ -1811,12 +1856,15 @@ formerr:
 	fw->fw_prefixcnt = prefixcnt;
 	fw->fw_suffixcnt = suffixcnt;
 
+	/* We store the word in the hashtable case-folded.  For a KEEPCAP word
+	 * the entry must already exist, because fw_word can't be used as the
+	 * key, it differs from "buf"! */
 	hash = hash_hash(buf);
 	hi = hash_lookup(&lp->sl_words, buf, hash);
 	if (HASHITEM_EMPTY(hi))
 	{
 	    if (hash_add_item(&lp->sl_words, hi, fw->fw_word, hash) == FAIL)
-		goto errorend;
+		goto endFAIL;
 	    fw->fw_next = NULL;
 	}
 	else
@@ -1826,7 +1874,7 @@ formerr:
 	    fw2 = HI2FWORD(hi);
 	    fw->fw_next = fw2->fw_next;
 	    fw2->fw_next = fw;
-	    --widx;			/* don't count this one */
+	    --widx;		/* don't count this one as a basic word */
 	}
 
 	if (flags & BWF_REGION)
@@ -1841,15 +1889,20 @@ formerr:
 		adds = (getc(fd) << 8) + getc(fd);	/* <addcnt> */
 	    else
 		adds = getc(fd);			/* <addcnt> */
+	    if (adds < 0)
+		goto formerr;
 
 	    if (adds > 30)
 	    {
-		/* Use a hashtable to loopup the part until the next word end.
+		/* Use a hashtable to lookup the part until the next word end.
+		 * Thus for "de-bur-die" "de" is the basic word, "-bur" is key
+		 * in the addition hashtable, "-bur<NUL>die" the whole
+		 * addition and "aw_saveb" is '-'.
 		 * This uses more memory and involves some overhead, thus only
-		 * do it when there are many additions (e.g., for French).  */
+		 * do it when there are many additions (e.g., for French). */
 		ht = (hashtab_T *)getroom(lp, &bl_used, sizeof(hashtab_T));
 		if (ht == NULL)
-		    goto errorend;
+		    goto endFAIL;
 		hash_init(ht);
 		fw->fw_adds = (addword_T *)ht;
 		fw->fw_flags |= BWF_ADDHASH;
@@ -1860,19 +1913,26 @@ formerr:
 	    else
 		ht = NULL;
 
+	    /*
+	     * Note: uses cbuf[] to copy bytes from previous addition.
+	     */
 	    while (--adds >= 0)
 	    {
 		/* <add>: <addflags> <addlen> [<leadlen>] [<copylen>]
 		 *				[<addstring>] [<region>] */
 		flags = getc(fd);			/* <addflags> */
 		addlen = getc(fd);			/* <addlen> */
-		if (addlen == EOF)
+		if (addlen < 0)
 		    goto truncerr;
 		if (addlen >= MAXWLEN)
 		    goto formerr;
 
 		if (flags & ADD_LEADLEN)
+		{
 		    leadlen = getc(fd);			/* <leadlen> */
+		    if (leadlen > addlen)
+			goto formerr;
+		}
 		else
 		    leadlen = 0;
 
@@ -1891,7 +1951,7 @@ formerr:
 		{
 		    /* <addstring> is in original case, need to get
 		     * case-folded word too. */
-		    (void)str_foldcase(cbuf, addlen, fbuf, MAXWLEN);
+		    (void)spell_casefold(cbuf, addlen, fbuf, MAXWLEN);
 		    flen = addlen - leadlen + 1;
 		    addlen = STRLEN(fbuf);
 		}
@@ -1901,7 +1961,7 @@ formerr:
 		aw = (addword_T *)getroom(lp, &bl_used,
 					   sizeof(addword_T) + addlen + flen);
 		if (aw == NULL)
-		    goto errorend;
+		    goto endFAIL;
 
 		if (flags & ADD_KEEPCAP)
 		{
@@ -1954,7 +2014,7 @@ formerr:
 			    naw = (addword_T *)getroom(lp, &bl_used,
 					sizeof(addword_T) + STRLEN(NOWC_KEY));
 			    if (naw == NULL)
-				goto errorend;
+				goto endFAIL;
 			    STRCPY(naw->aw_word, NOWC_KEY);
 			    hash_add_item(ht, hi, naw->aw_word, hash);
 			    naw->aw_next = aw;
@@ -1994,11 +2054,12 @@ formerr:
 	    }
 	}
     }
-    goto end_OK;
+    goto endOK;
 
-errorend:
+endFAIL:
     lp->sl_error = TRUE;
-end_OK:
+
+endOK:
     if (fd != NULL)
 	fclose(fd);
     hash_unlock(&lp->sl_words);
@@ -2187,7 +2248,7 @@ captype(word, end)
 #else
     c = *p++;
 #endif
-    firstcap = allcap = MB_ISUPPER(c);
+    firstcap = allcap = spell_isupper(c);
 
     /*
      * Need to check all letters to find a word with mixed upper/lower.
@@ -2201,7 +2262,7 @@ captype(word, end)
 #else
 	    c = *p;
 #endif
-	    if (!MB_ISUPPER(c))
+	    if (!spell_isupper(c))
 	    {
 		/* UUl -> KEEPCAP */
 		if (past_second && allcap)
@@ -2345,9 +2406,9 @@ struct basicword_S
     garray_T	bw_prefix;	/* table with prefix numbers */
     garray_T	bw_suffix;	/* table with suffix numbers */
     int		bw_region;	/* region bits */
-    char_u	*bw_caseword;	/* keep-case word */
-    char_u	*bw_leadstring;	/* must come before bw_word */
-    char_u	*bw_addstring;	/* must come after bw_word */
+    char_u	*bw_caseword;	/* keep-case word or NULL */
+    char_u	*bw_leadstring;	/* must come before bw_word or NULL */
+    char_u	*bw_addstring;	/* must come after bw_word or NULL */
     char_u	bw_word[1];	/* actually longer: word case folded */
 };
 
@@ -2391,12 +2452,12 @@ static void add_affhash __ARGS((hashtab_T *ht, char_u *key, int newnr));
 static void clear_affhash __ARGS((hashtab_T *ht));
 static void trans_affixes __ARGS((dicword_T *dw, basicword_T *bw, afffile_T *oldaff, hashtab_T *newwords));
 static int build_wordlist __ARGS((hashtab_T *newwords, hashtab_T *oldwords, afffile_T *oldaff, int regionmask));
+static basicword_T *get_basicword __ARGS((char_u *word, int asize));
 static void combine_regions __ARGS((hashtab_T *newwords));
 static int same_affixes __ARGS((basicword_T *bw, basicword_T *nbw));
-static void expand_affixes __ARGS((hashtab_T *newwords, garray_T *prefgap, garray_T *suffgap));
-static void expand_one_aff __ARGS((basicword_T *bw, garray_T *add_words, affentry_T *pae, affentry_T *sae));
-static void add_to_wordlist __ARGS((hashtab_T *newwords, basicword_T *bw));
-static void put_bytes __ARGS((FILE *fd, long_u nr, int len));
+static int expand_affixes __ARGS((hashtab_T *newwords, garray_T *prefgap, garray_T *suffgap));
+static int expand_one_aff __ARGS((basicword_T *bw, garray_T *add_words, affentry_T *pae, affentry_T *sae));
+static int add_to_wordlist __ARGS((hashtab_T *newwords, basicword_T *bw));
 static void write_affix __ARGS((FILE *fd, affheader_T *ah));
 static void write_affixlist __ARGS((FILE *fd, garray_T *aff, int bytes));
 static void write_vim_spell __ARGS((char_u *fname, garray_T *prefga, garray_T *suffga, hashtab_T *newwords, int regcount, char_u *regchars));
@@ -2428,6 +2489,9 @@ spell_read_aff(fname, conv, ascii)
     affheader_T	*cur_aff = NULL;
     int		aff_todo = 0;
     hashtab_T	*tp;
+    char_u	*low = NULL;
+    char_u	*fol = NULL;
+    char_u	*upp = NULL;
 
     fd = fopen((char *)fname, "r");
     if (fd == NULL)
@@ -2449,8 +2513,9 @@ spell_read_aff(fname, conv, ascii)
     /*
      * Read all the lines in the file one by one.
      */
-    while (!vim_fgets(rline, MAXLINELEN, fd))
+    while (!vim_fgets(rline, MAXLINELEN, fd) && !got_int)
     {
+	line_breakcheck();
 	++lnum;
 
 	/* Skip comment lines. */
@@ -2462,6 +2527,12 @@ spell_read_aff(fname, conv, ascii)
 	if (conv->vc_type != CONV_NONE)
 	{
 	    pc = string_convert(conv, rline, NULL);
+	    if (pc == NULL)
+	    {
+		smsg((char_u *)_("Conversion failure for word in %s line %d: %s"),
+							   fname, lnum, rline);
+		continue;
+	    }
 	    line = pc;
 	}
 	else
@@ -2587,6 +2658,30 @@ spell_read_aff(fname, conv, ascii)
 		    cur_aff->ah_first = aff_entry;
 		}
 	    }
+	    else if (STRCMP(items[0], "FOL") == 0 && itemcnt == 2)
+	    {
+		if (fol != NULL)
+		    smsg((char_u *)_("Duplicate FOL in %s line %d"),
+								 fname, lnum);
+		else
+		    fol = vim_strsave(items[1]);
+	    }
+	    else if (STRCMP(items[0], "LOW") == 0 && itemcnt == 2)
+	    {
+		if (low != NULL)
+		    smsg((char_u *)_("Duplicate LOW in %s line %d"),
+								 fname, lnum);
+		else
+		    low = vim_strsave(items[1]);
+	    }
+	    else if (STRCMP(items[0], "UPP") == 0 && itemcnt == 2)
+	    {
+		if (upp != NULL)
+		    smsg((char_u *)_("Duplicate UPP in %s line %d"),
+								 fname, lnum);
+		else
+		    upp = vim_strsave(items[1]);
+	    }
 	    else if (STRCMP(items[0], "REP") == 0 && itemcnt == 2)
 		/* Ignore REP count */;
 	    else if (STRCMP(items[0], "REP") == 0 && itemcnt == 3)
@@ -2606,6 +2701,18 @@ spell_read_aff(fname, conv, ascii)
 						       fname, lnum, items[0]);
 	}
 
+    }
+
+    if (fol != NULL || low != NULL || upp != NULL)
+    {
+	if (fol == NULL || low == NULL || upp == NULL)
+	    smsg((char_u *)_("Missing FOL/LOW/UPP line in %s"), fname);
+	else
+	    set_spell_chartab(fol, low, upp);
+
+	vim_free(fol);
+	vim_free(low);
+	vim_free(upp);
     }
 
     vim_free(pc);
@@ -2720,8 +2827,9 @@ spell_read_dic(ht, fname, conv, ascii)
      * The words are converted to 'encoding' here, before being added to
      * the hashtable.
      */
-    while (!vim_fgets(line, MAXLINELEN, fd))
+    while (!vim_fgets(line, MAXLINELEN, fd) && !got_int)
     {
+	line_breakcheck();
 	++lnum;
 
 	/* Remove CR, LF and white space from end. */
@@ -2745,6 +2853,12 @@ spell_read_dic(ht, fname, conv, ascii)
 	if (conv->vc_type != CONV_NONE)
 	{
 	    pc = string_convert(conv, line, NULL);
+	    if (pc == NULL)
+	    {
+		smsg((char_u *)_("Conversion failure for word in %s line %d: %s"),
+						       fname, lnum, line);
+		continue;
+	    }
 	    w = pc;
 	}
 	else
@@ -2756,7 +2870,10 @@ spell_read_dic(ht, fname, conv, ascii)
 	dw = (dicword_T *)alloc_clear((unsigned)sizeof(dicword_T)
 							     + STRLEN(w));
 	if (dw == NULL)
+	{
+	    vim_free(pc);
 	    break;
+	}
 	STRCPY(dw->dw_word, w);
 	vim_free(pc);
 
@@ -3136,7 +3253,7 @@ trans_affixes(dw, bw, oldaff, newwords)
     char_u	key[2];
     char_u	*p;
     char_u	*affnm;
-    garray_T	*gap;
+    garray_T	*gap, *agap;
     hashitem_T	*aff_hi;
     affheader_T	*ah;
     affentry_T	*ae;
@@ -3144,7 +3261,6 @@ trans_affixes(dw, bw, oldaff, newwords)
     int		i;
     basicword_T *nbw;
     int		alen;
-    int		wlen;
     garray_T	suffixga;	/* list of words with non-word suffixes */
     garray_T	prefixga;	/* list of words with non-word prefixes */
     char_u	nword[MAXWLEN];
@@ -3179,7 +3295,7 @@ trans_affixes(dw, bw, oldaff, newwords)
 	for (ae = ah->ah_first; ae != NULL; ae = ae->ae_next)
 	{
 	    /* Setup for regexp matching.  Note that we don't ignore case.
-	     * This is weird, because he rules in an .aff file don't care
+	     * This is weird, because the rules in an .aff file don't care
 	     * about case, but it's necessary for compatibility with Myspell.
 	     */
 	    regmatch.regprog = ae->ae_prog;
@@ -3190,23 +3306,19 @@ trans_affixes(dw, bw, oldaff, newwords)
 		if ((ae->ae_add_nw != NULL || ae->ae_add_pw != NULL)
 			&& (gap != &bw->bw_suffix || bw->bw_addstring == NULL))
 		{
-		    /* Affix has a non-word character and isn't prepended to
+		    /*
+		     * Affix has a non-word character and isn't prepended to
 		     * leader or appended to addition.  Need to use another
-		     * word with an addition.  It's a copy of the basicword_T
-		     * "bw". */
-		    if (gap == &bw->bw_suffix)
+		     * word with a leadstring and/or addstring.
+		     */
+		    if (gap == &bw->bw_suffix || ae->ae_add_nw == NULL)
 		    {
-			alen = ae->ae_add_nw - ae->ae_add;
-			nbw = (basicword_T *)alloc((unsigned)(
-				    sizeof(basicword_T) + STRLEN(bw->bw_word)
-								 + alen + 1));
-			if (nbw != NULL)
+			/* Suffix or prefix with only non-word chars.
+			 * Build the new basic word in "nword": Remove chop
+			 * string and append/prepend addition. */
+			if (gap == &bw->bw_suffix)
 			{
-			    *nbw = *bw;
-			    ga_init2(&nbw->bw_prefix, sizeof(short_u), 1);
-			    ga_init2(&nbw->bw_suffix, sizeof(short_u), 1);
-
-			    /* Adding the suffix may change the caps. */
+			    /* suffix goes at the end of the word */
 			    STRCPY(nword, dw->dw_word);
 			    if (ae->ae_chop != NULL)
 			    {
@@ -3217,64 +3329,11 @@ trans_affixes(dw, bw, oldaff, newwords)
 				*p = NUL;
 			    }
 			    STRCAT(nword, ae->ae_add);
-			    flags = captype(nword, nword + STRLEN(nword));
-			    if (flags & BWF_KEEPCAP)
-			    {
-				/* "caseword" excludes the addition */
-				nword[STRLEN(dw->dw_word) + alen] = NUL;
-				nbw->bw_caseword = vim_strsave(nword);
-			    }
-			    nbw->bw_flags &= ~(BWF_ONECAP | BWF_ALLCAP
-							       | BWF_KEEPCAP);
-			    nbw->bw_flags |= flags;
-
-			    if (bw->bw_leadstring != NULL)
-				nbw->bw_leadstring =
-					       vim_strsave(bw->bw_leadstring);
-			    nbw->bw_addstring = vim_strsave(ae->ae_add_nw);
-
-			    STRCPY(nbw->bw_word, bw->bw_word);
-			    if (alen > 0 || ae->ae_chop != NULL)
-			    {
-				/* Suffix starts with word character and/or
-				 * chop off something.  Append it to the word.
-				 * Add new word entry. */
-				wlen = STRLEN(nbw->bw_word);
-				if (ae->ae_chop != NULL)
-				    wlen -= STRLEN(ae->ae_chop);
-				mch_memmove(nbw->bw_word + wlen, ae->ae_add,
-									alen);
-				nbw->bw_word[wlen + alen] = NUL;
-				add_to_wordlist(newwords, nbw);
-			    }
-			    else
-				/* Basic word is the same, link "nbw" after
-				 * "bw". */
-				bw->bw_next = nbw;
-
-			    /* Remember this word, we need to set bw_prefix
-			     * and bw_prefix later. */
-			    if (ga_grow(&suffixga, 1) == OK)
-				((basicword_T **)suffixga.ga_data)
-						    [suffixga.ga_len++] = nbw;
+			    agap = &suffixga;
 			}
-		    }
-		    else if (ae->ae_add_nw == NULL)
-		    {
-			/* Prefix that starts with non-word char(s) and may be
-			 * followed by word chars: Make a leadstring and
-			 * prepend word chars before the word. */
-			alen = STRLEN(ae->ae_add_pw);
-			nbw = (basicword_T *)alloc((unsigned)(
-				    sizeof(basicword_T) + STRLEN(bw->bw_word)
-								 + alen + 1));
-			if (nbw != NULL)
+			else
 			{
-			    *nbw = *bw;
-			    ga_init2(&nbw->bw_prefix, sizeof(short_u), 1);
-			    ga_init2(&nbw->bw_suffix, sizeof(short_u), 1);
-
-			    /* Adding the prefix may change the caps. */
+			    /* prefix goes before the word */
 			    STRCPY(nword, ae->ae_add);
 			    p = dw->dw_word;
 			    if (ae->ae_chop != NULL)
@@ -3282,51 +3341,33 @@ trans_affixes(dw, bw, oldaff, newwords)
 				for (i = mb_charlen(ae->ae_chop); i > 0; --i)
 				    mb_ptr_adv( p);
 			    STRCAT(nword, p);
+			    agap = &prefixga;
+			}
 
-			    flags = captype(nword, nword + STRLEN(nword));
-			    if (flags & BWF_KEEPCAP)
-				/* "caseword" excludes the addition */
-				nbw->bw_caseword = vim_strsave(nword
-					      + (ae->ae_add_pw - ae->ae_add));
-			    else
-				nbw->bw_caseword = NULL;
-			    nbw->bw_flags &= ~(BWF_ONECAP | BWF_ALLCAP
-							       | BWF_KEEPCAP);
-			    nbw->bw_flags |= flags;
+			/* Create a basicword_T from the word. */
+			nbw = get_basicword(nword, 1);
+			if (nbw != NULL)
+			{
+			    nbw->bw_region = bw->bw_region;
+			    nbw->bw_flags |= bw->bw_flags
+				   & ~(BWF_ONECAP | BWF_ALLCAP | BWF_KEEPCAP);
 
-			    if (bw->bw_addstring != NULL)
-				nbw->bw_addstring =
-					       vim_strsave(bw->bw_addstring);
-			    else
-				nbw->bw_addstring = NULL;
-			    nbw->bw_leadstring = vim_strnsave(ae->ae_add,
-						  ae->ae_add_pw - ae->ae_add);
-
-			    if (alen > 0 || ae->ae_chop != NULL)
-			    {
-				/* Prefix ends in word character and/or chop
-				 * off something.  Prepend it to the word.
-				 * Add new word entry. */
-				STRCPY(nbw->bw_word, ae->ae_add_pw);
-				p = bw->bw_word;
-				if (ae->ae_chop != NULL)
-				    p += STRLEN(ae->ae_chop);
-				STRCAT(nbw->bw_word, p);
-				add_to_wordlist(newwords, nbw);
-			    }
+			    if (STRCMP(bw->bw_word, nbw->bw_word) != 0)
+				/* Basic word differs, add new word entry. */
+				(void)add_to_wordlist(newwords, nbw);
 			    else
 			    {
 				/* Basic word is the same, link "nbw" after
 				 * "bw". */
-				STRCPY(nbw->bw_word, bw->bw_word);
+				nbw->bw_next = bw->bw_next;
 				bw->bw_next = nbw;
 			    }
 
-			    /* Remember this word, we need to set bw_suffix
-			     * and bw_suffix later. */
-			    if (ga_grow(&prefixga, 1) == OK)
-				((basicword_T **)prefixga.ga_data)
-						    [prefixga.ga_len++] = nbw;
+			    /* Remember this word, we need to set bw_prefix
+			     * or bw_suffix later. */
+			    if (ga_grow(agap, 1) == OK)
+				((basicword_T **)agap->ga_data)
+						       [agap->ga_len++] = nbw;
 			}
 		    }
 		    else
@@ -3345,7 +3386,7 @@ trans_affixes(dw, bw, oldaff, newwords)
 #else
 			    n = 1;
 #endif
-			    (void)str_foldcase(p, n, nword + alen,
+			    (void)spell_casefold(p, n, nword + alen,
 							      MAXWLEN - alen);
 			    alen += STRLEN(nword + alen);
 			}
@@ -3393,7 +3434,7 @@ trans_affixes(dw, bw, oldaff, newwords)
 			    else
 				nbw->bw_leadstring = NULL;
 
-			    add_to_wordlist(newwords, nbw);
+			    (void)add_to_wordlist(newwords, nbw);
 
 			    /* Remember this word, we need to set bw_suffix
 			     * and bw_suffix later. */
@@ -3482,17 +3523,6 @@ build_wordlist(newwords, oldwords, oldaff, regionmask)
     hashitem_T	*old_hi;
     dicword_T	*dw;
     basicword_T *bw;
-    char_u	foldword[MAXLINELEN];
-    int		leadlen;
-    char_u	leadstring[MAXLINELEN];
-    int		addlen;
-    char_u	addstring[MAXLINELEN];
-    int		dwlen;
-    char_u	*p;
-    int		clen;
-    int		flags;
-    char_u	*cp = NULL;
-    int		l;
     char_u	message[MAXLINELEN + MAXWLEN];
 
     todo = oldwords->ht_used;
@@ -3519,107 +3549,15 @@ build_wordlist(newwords, oldwords, oldaff, regionmask)
 		    break;
 	    }
 
-	    /* The basic words are always stored with folded case. */
-	    dwlen = STRLEN(dw->dw_word);
-	    (void)str_foldcase(dw->dw_word, dwlen, foldword, MAXLINELEN);
-	    flags = captype(dw->dw_word, dw->dw_word + dwlen);
-
-	    /* Check for non-word characters before the word. */
-	    clen = 0;
-	    leadlen = 0;
-	    if (!spell_iswordc(foldword))
-	    {
-		p = foldword;
-		for (;;)
-		{
-		    mb_ptr_adv(p);
-		    ++clen;
-		    if (*p == NUL)	/* Only non-word chars (bad word!) */
-		    {
-			if (p_verbose > 0)
-			    smsg((char_u *)_("Warning: word without word characters: \"%s\""),
-								    foldword);
-			break;
-		    }
-		    if (spell_iswordc(p))
-		    {
-			/* Move the leader to "leadstring" and remove it from
-			 * "foldword". */
-			leadlen = p - foldword;
-			mch_memmove(leadstring, foldword, leadlen);
-			leadstring[leadlen] = NUL;
-			mch_memmove(foldword, p, STRLEN(p) + 1);
-			break;
-		    }
-		}
-	    }
-
-	    /* Check for non-word characters after word characters. */
-	    addlen = 0;
-	    for (p = foldword; spell_iswordc(p); mb_ptr_adv(p))
-	    {
-		if (*p == NUL)
-		    break;
-		++clen;
-	    }
-	    if (*p != NUL)
-	    {
-		/* Move the addition to "addstring" and truncate "foldword". */
-		if (flags & BWF_KEEPCAP)
-		{
-		    /* Preserve caps, need to skip the right number of
-		     * characters in the original word (case folding may
-		     * change the byte count). */
-		    l = 0;
-		    for (cp = dw->dw_word; l < clen; mb_ptr_adv(cp))
-			++l;
-		    addlen = STRLEN(cp);
-		    mch_memmove(addstring, cp, addlen + 1);
-		}
-		else
-		{
-		    addlen = STRLEN(p);
-		    mch_memmove(addstring, p, addlen + 1);
-		}
-		*p = NUL;
-	    }
-
-	    bw = (basicword_T *)alloc_clear((unsigned)sizeof(basicword_T)
-							  + STRLEN(foldword));
+	    bw = get_basicword(dw->dw_word, 10);
 	    if (bw == NULL)
 		break;
-	    STRCPY(bw->bw_word, foldword);
 	    bw->bw_region = regionmask;
 
-	    if (leadlen > 0)
-		bw->bw_leadstring = vim_strsave(leadstring);
-	    else
-		bw->bw_leadstring = NULL;
-	    if (addlen > 0)
-		bw->bw_addstring = vim_strsave(addstring);
-	    else
-		bw->bw_addstring = NULL;
-
-	    add_to_wordlist(newwords, bw);
-
-	    if (flags & BWF_KEEPCAP)
-	    {
-		if (addlen == 0)
-		    /* use the whole word */
-		    bw->bw_caseword = vim_strsave(dw->dw_word + leadlen);
-		else
-		    /* use only up to the addition */
-		    bw->bw_caseword = vim_strnsave(dw->dw_word + leadlen,
-						  cp - dw->dw_word - leadlen);
-		if (bw->bw_caseword == NULL)	/* out of memory */
-		    flags &= ~BWF_KEEPCAP;
-	    }
-	    bw->bw_flags = flags;
+	    (void)add_to_wordlist(newwords, bw);
 
 	    /* Deal with any affix names on the old word, translate them
 	     * into affix numbers. */
-	    ga_init2(&bw->bw_prefix, sizeof(short_u), 10);
-	    ga_init2(&bw->bw_suffix, sizeof(short_u), 10);
 	    if (dw->dw_affnm != NULL)
 		trans_affixes(dw, bw, oldaff, newwords);
 	}
@@ -3627,6 +3565,128 @@ build_wordlist(newwords, oldwords, oldaff, regionmask)
     if (todo > 0)
 	return FAIL;
     return OK;
+}
+
+/*
+ * Get a basicword_T from a word in original case.
+ * Caller must set bw_region.
+ * Returns NULL when something fails.
+ */
+    static basicword_T *
+get_basicword(word, asize)
+    char_u	*word;
+    int		asize;	    /* growsize for affix garray */
+{
+    int		dwlen;
+    char_u	foldword[MAXLINELEN];
+    int		flags;
+    int		clen;
+    int		leadlen;
+    char_u	*p;
+    char_u	leadstring[MAXLINELEN];
+    int		addlen;
+    char_u	addstring[MAXLINELEN];
+    char_u	*cp = NULL;
+    int		l;
+    basicword_T *bw;
+
+    /* The basic words are always stored with folded case. */
+    dwlen = STRLEN(word);
+    (void)spell_casefold(word, dwlen, foldword, MAXLINELEN);
+    flags = captype(word, word + dwlen);
+
+    /* Check for non-word characters before the word. */
+    clen = 0;
+    leadlen = 0;
+    if (!spell_iswordc(foldword))
+    {
+	p = foldword;
+	for (;;)
+	{
+	    mb_ptr_adv(p);
+	    ++clen;
+	    if (*p == NUL)	/* Only non-word chars (bad word!) */
+	    {
+		if (p_verbose > 0)
+		    smsg((char_u *)_("Warning: word without word characters: \"%s\""),
+							    foldword);
+		break;
+	    }
+	    if (spell_iswordc(p))
+	    {
+		/* Move the leader to "leadstring" and remove it from
+		 * "foldword". */
+		leadlen = p - foldword;
+		mch_memmove(leadstring, foldword, leadlen);
+		leadstring[leadlen] = NUL;
+		mch_memmove(foldword, p, STRLEN(p) + 1);
+		break;
+	    }
+	}
+    }
+
+    /* Check for non-word characters after word characters. */
+    addlen = 0;
+    for (p = foldword; spell_iswordc(p); mb_ptr_adv(p))
+    {
+	if (*p == NUL)
+	    break;
+	++clen;
+    }
+    if (*p != NUL)
+    {
+	/* Move the addition to "addstring" and truncate "foldword". */
+	if (flags & BWF_KEEPCAP)
+	{
+	    /* Preserve caps, need to skip the right number of
+	     * characters in the original word (case folding may
+	     * change the byte count). */
+	    l = 0;
+	    for (cp = word; l < clen; mb_ptr_adv(cp))
+		++l;
+	    addlen = STRLEN(cp);
+	    mch_memmove(addstring, cp, addlen + 1);
+	}
+	else
+	{
+	    addlen = STRLEN(p);
+	    mch_memmove(addstring, p, addlen + 1);
+	}
+	*p = NUL;
+    }
+
+    bw = (basicword_T *)alloc_clear((unsigned)sizeof(basicword_T)
+							  + STRLEN(foldword));
+    if (bw == NULL)
+	return NULL;
+
+    STRCPY(bw->bw_word, foldword);
+
+    if (leadlen > 0)
+	bw->bw_leadstring = vim_strsave(leadstring);
+    else
+	bw->bw_leadstring = NULL;
+    if (addlen > 0)
+	bw->bw_addstring = vim_strsave(addstring);
+    else
+	bw->bw_addstring = NULL;
+
+    if (flags & BWF_KEEPCAP)
+    {
+	if (addlen == 0)
+	    /* use the whole word */
+	    bw->bw_caseword = vim_strsave(word + leadlen);
+	else
+	    /* use only up to the addition */
+	    bw->bw_caseword = vim_strnsave(word + leadlen,
+							 cp - word - leadlen);
+    }
+
+    bw->bw_flags = flags;
+    ga_init2(&bw->bw_prefix, sizeof(short_u), asize);
+    ga_init2(&bw->bw_suffix, sizeof(short_u), asize);
+
+    return bw;
 }
 
 /*
@@ -3662,14 +3722,16 @@ combine_regions(newwords)
 			    && (bw->bw_addstring == NULL)
 						== (nbw->bw_addstring == NULL)
 			    && ((bw->bw_flags & BWF_KEEPCAP) == 0
-				|| (STRCMP(bw->bw_caseword,
-						      nbw->bw_caseword) == 0))
+				|| bw->bw_caseword == NULL
+				|| nbw->bw_caseword == NULL
+				|| STRCMP(bw->bw_caseword,
+						      nbw->bw_caseword) == 0)
 			    && (bw->bw_leadstring == NULL
-				|| (STRCMP(bw->bw_leadstring,
-						    nbw->bw_leadstring) == 0))
+				|| STRCMP(bw->bw_leadstring,
+						    nbw->bw_leadstring) == 0)
 			    && (bw->bw_addstring == NULL
-				|| (STRCMP(bw->bw_addstring,
-						     nbw->bw_addstring) == 0))
+				|| STRCMP(bw->bw_addstring,
+						     nbw->bw_addstring) == 0)
 			    && same_affixes(bw, nbw)
 			    )
 		    {
@@ -3716,8 +3778,10 @@ same_affixes(bw, nbw)
  * This is also needed when a word with an addition has a prefix and the word
  * with prefix also exists.  E.g., "blurp's/D" (D is prefix "de") and
  * "deblurp".  "deblurp" would match and no prefix would be tried.
+ *
+ * Returns FAIL when out of memory.
  */
-    static void
+    static int
 expand_affixes(newwords, prefgap, suffgap)
     hashtab_T	*newwords;
     garray_T	*prefgap;
@@ -3731,6 +3795,7 @@ expand_affixes(newwords, prefgap, suffgap)
     garray_T	add_words;
     int		n;
     char_u	message[MAXLINELEN + MAXWLEN];
+    int		retval = OK;
 
     ga_init2(&add_words, sizeof(basicword_T *), 10);
 
@@ -3806,7 +3871,12 @@ expand_affixes(newwords, prefgap, suffgap)
 				{
 				    /* Expand the word for this combination of
 				     * prefixes and affixes. */
-				    expand_one_aff(bw, &add_words, pae, sae);
+				    if (expand_one_aff(bw, &add_words,
+							    pae, sae) == FAIL)
+				    {
+					retval = FAIL;
+					goto theend;
+				    }
 
 				    /* Advance to next suffix entry, if there
 				     * is one. */
@@ -3831,9 +3901,16 @@ expand_affixes(newwords, prefgap, suffgap)
      * all its items.
      */
     for (pi = 0; pi < add_words.ga_len; ++pi)
-	add_to_wordlist(newwords, ((basicword_T **)add_words.ga_data)[pi]);
+    {
+	retval = add_to_wordlist(newwords,
+				     ((basicword_T **)add_words.ga_data)[pi]);
+	if (retval == FAIL)
+	    break;
+    }
 
+theend:
     ga_clear(&add_words);
+    return retval;
 }
 
 /*
@@ -3841,8 +3918,9 @@ expand_affixes(newwords, prefgap, suffgap)
  * prefix "pae" and suffix "sae".  Either "pae" or "sae" can be NULL.
  * Don't do this when not necessary:
  * - no leadstring and adding prefix doesn't result in existing word.
+ * Returns FAIL when out of memory.
  */
-    static void
+    static int
 expand_one_aff(bw, add_words, pae, sae)
     basicword_T	    *bw;
     garray_T	    *add_words;
@@ -3873,7 +3951,7 @@ expand_one_aff(bw, add_words, pae, sae)
     STRCPY(word + l, bw->bw_word + choplen);
 
     /* Do the same for bw_caseword, if it's there. */
-    if (bw->bw_flags & BWF_KEEPCAP)
+    if ((bw->bw_flags & BWF_KEEPCAP) && bw->bw_caseword != NULL)
     {
 	if (l > 0)
 	    mch_memmove(caseword, pae->ae_add, l);
@@ -3907,112 +3985,116 @@ expand_one_aff(bw, add_words, pae, sae)
 
     nbw = (basicword_T *)alloc_clear((unsigned)
 					  sizeof(basicword_T) + STRLEN(word));
-    if (nbw != NULL)
+    if (nbw == NULL)
+	return FAIL;
+
+    /* Add the new word to the list of words to be added later. */
+    if (ga_grow(add_words, 1) == FAIL)
     {
-	/* Add the new word to the list of words to be added later. */
-	if (ga_grow(add_words, 1) == FAIL)
+	vim_free(nbw);
+	return FAIL;
+    }
+    ((basicword_T **)add_words->ga_data)[add_words->ga_len++] = nbw;
+
+    /* Copy the (modified) basic word, flags and region. */
+    STRCPY(nbw->bw_word, word);
+    nbw->bw_flags = bw->bw_flags;
+    nbw->bw_region = bw->bw_region;
+
+    /* Set the (modified) caseword. */
+    if (bw->bw_flags & BWF_KEEPCAP)
+	nbw->bw_caseword = vim_strsave(caseword);
+    else
+	nbw->bw_caseword = NULL;
+
+    if (bw->bw_leadstring != NULL)
+    {
+	if (pae != NULL)
 	{
-	    vim_free(nbw);
-	    return;
-	}
-	((basicword_T **)add_words->ga_data)[add_words->ga_len++] = nbw;
-
-	/* Copy the (modified) basic word, flags and region. */
-	STRCPY(nbw->bw_word, word);
-	nbw->bw_flags = bw->bw_flags;
-	nbw->bw_region = bw->bw_region;
-
-	/* Set the (modified) caseword. */
-	if (bw->bw_flags & BWF_KEEPCAP)
-	    if ((nbw->bw_caseword = vim_strsave(caseword)) == NULL)
-		nbw->bw_flags &= ~BWF_KEEPCAP;
-
-	if (bw->bw_leadstring != NULL)
-	{
-	    if (pae != NULL)
+	    /* Prepend prefix to leadstring. */
+	    ll = STRLEN(bw->bw_leadstring);
+	    l = choplen = 0;
+	    if (pae->ae_add != NULL)
+		l = STRLEN(pae->ae_add);
+	    if (pae->ae_chop != NULL)
 	    {
-		/* Prepend prefix to leadstring. */
-		ll = STRLEN(bw->bw_leadstring);
-		l = choplen = 0;
-		if (pae->ae_add != NULL)
-		    l = STRLEN(pae->ae_add);
-		if (pae->ae_chop != NULL)
-		{
-		    choplen = STRLEN(pae->ae_chop);
-		    if (choplen > ll)	    /* TODO: error? */
-			choplen = ll;
-		}
-		nbw->bw_leadstring = alloc((unsigned)(ll + l - choplen + 1));
-		if (nbw->bw_leadstring != NULL)
-		{
-		    if (l > 0)
-			mch_memmove(nbw->bw_leadstring, pae->ae_add, l);
-		    STRCPY(nbw->bw_leadstring + l, bw->bw_leadstring + choplen);
-		}
+		choplen = STRLEN(pae->ae_chop);
+		if (choplen > ll)	    /* TODO: error? */
+		    choplen = ll;
 	    }
-	    else
-		nbw->bw_leadstring = vim_strsave(bw->bw_leadstring);
-	}
-	else if (bw->bw_prefix.ga_len > 0)
-	{
-	    /* There is no leadstring, copy the list of possible prefixes. */
-	    ga_init2(&nbw->bw_prefix, sizeof(short_u), 1);
-	    if (ga_grow(&nbw->bw_prefix, bw->bw_prefix.ga_len) == OK)
+	    nbw->bw_leadstring = alloc((unsigned)(ll + l - choplen + 1));
+	    if (nbw->bw_leadstring != NULL)
 	    {
-		mch_memmove(nbw->bw_prefix.ga_data, bw->bw_prefix.ga_data,
-				      bw->bw_prefix.ga_len * sizeof(short_u));
-		nbw->bw_prefix.ga_len = bw->bw_prefix.ga_len;
+		if (l > 0)
+		    mch_memmove(nbw->bw_leadstring, pae->ae_add, l);
+		STRCPY(nbw->bw_leadstring + l, bw->bw_leadstring + choplen);
 	    }
 	}
-
-	if (bw->bw_addstring != NULL)
+	else
+	    nbw->bw_leadstring = vim_strsave(bw->bw_leadstring);
+    }
+    else if (bw->bw_prefix.ga_len > 0)
+    {
+	/* There is no leadstring, copy the list of possible prefixes. */
+	ga_init2(&nbw->bw_prefix, sizeof(short_u), 1);
+	if (ga_grow(&nbw->bw_prefix, bw->bw_prefix.ga_len) == OK)
 	{
-	    if (sae != NULL)
-	    {
-		/* Append suffix to addstring. */
-		l = STRLEN(bw->bw_addstring);
-		if (sae->ae_chop != NULL)
-		{
-		    l -= STRLEN(sae->ae_chop);
-		    if (l < 0)	    /* TODO: error? */
-			l = 0;
-		}
-		if (sae->ae_add == NULL)
-		    ll = 0;
-		else
-		    ll = STRLEN(sae->ae_add);
-		nbw->bw_addstring = alloc((unsigned)(ll + l - choplen + 1));
-		if (nbw->bw_addstring != NULL)
-		{
-		    STRCPY(nbw->bw_addstring, bw->bw_addstring);
-		    if (sae->ae_add == NULL)
-			nbw->bw_addstring[l] = NUL;
-		    else
-			STRCPY(nbw->bw_addstring + l, sae->ae_add);
-		}
-	    }
-	    else
-		nbw->bw_addstring = vim_strsave(bw->bw_addstring);
+	    mch_memmove(nbw->bw_prefix.ga_data, bw->bw_prefix.ga_data,
+				  bw->bw_prefix.ga_len * sizeof(short_u));
+	    nbw->bw_prefix.ga_len = bw->bw_prefix.ga_len;
 	}
     }
+
+    if (bw->bw_addstring != NULL)
+    {
+	if (sae != NULL)
+	{
+	    /* Append suffix to addstring. */
+	    l = STRLEN(bw->bw_addstring);
+	    if (sae->ae_chop != NULL)
+	    {
+		l -= STRLEN(sae->ae_chop);
+		if (l < 0)	    /* TODO: error? */
+		    l = 0;
+	    }
+	    if (sae->ae_add == NULL)
+		ll = 0;
+	    else
+		ll = STRLEN(sae->ae_add);
+	    nbw->bw_addstring = alloc((unsigned)(ll + l - choplen + 1));
+	    if (nbw->bw_addstring != NULL)
+	    {
+		STRCPY(nbw->bw_addstring, bw->bw_addstring);
+		if (sae->ae_add == NULL)
+		    nbw->bw_addstring[l] = NUL;
+		else
+		    STRCPY(nbw->bw_addstring + l, sae->ae_add);
+	    }
+	}
+	else
+	    nbw->bw_addstring = vim_strsave(bw->bw_addstring);
+    }
+
+    return OK;
 }
 
 /*
  * Add basicword_T "*bw" to wordlist "newwords".
  */
-    static void
+    static int
 add_to_wordlist(newwords, bw)
     hashtab_T	*newwords;
     basicword_T	*bw;
 {
     hashitem_T	*hi;
     basicword_T *bw2;
+    int		retval = OK;
 
     hi = hash_find(newwords, bw->bw_word);
     if (HASHITEM_EMPTY(hi))
     {
 	/* New entry, add to hashlist. */
-	hash_add(newwords, bw->bw_word);
+	retval = hash_add(newwords, bw->bw_word);
 	bw->bw_next = NULL;
     }
     else
@@ -4022,12 +4104,13 @@ add_to_wordlist(newwords, bw)
 	bw->bw_next = bw2->bw_next;
 	bw2->bw_next = bw;
     }
+    return retval;
 }
 
 /*
  * Write a number to file "fd", MSB first, in "len" bytes.
  */
-    static void
+    void
 put_bytes(fd, nr, len)
     FILE    *fd;
     long_u  nr;
@@ -4105,22 +4188,29 @@ write_affixlist(fd, aff, bytes)
  *						    <SUGGEST> <WORDLIST>
  *
  * <HEADER>: <fileID> <regioncnt> <regionname> ...
+ *		 <charflagslen> <charflags> <fcharslen> <fchars>
  *
- * <fileID>     10 bytes    "VIMspell03"
+ * <fileID>     10 bytes    "VIMspell04"
  * <regioncnt>  1 byte	    number of regions following (8 supported)
  * <regionname>	2 bytes     Region name: ca, au, etc.
  *			    First <regionname> is region 1.
  *
+ * <charflagslen> 1 byte    Number of bytes in <charflags> (should be 128).
+ * <charflags>  N bytes     List of flags (first one is for character 128):
+ *			    0x01  word character
+ *			    0x01  upper-case character
+ * <fcharslen>  2 bytes     Number of bytes in <fchars>.
+ * <fchars>     N bytes	    Folded characters, first one is for character 128.
  *
- * <PREFIXLIST>: <affcount> <afftotcnt> <affix> ...
- * <SUFFIXLIST>: <affcount> <afftotcnt> <affix> ...
+ *
+ * <PREFIXLIST>: <affcount> <affix> ...
+ * <SUFFIXLIST>: <affcount> <affix> ...
  *		list of possible affixes: prefixes and suffixes.
  *
  * <affcount>	2 bytes	    Number of affixes (MSB comes first).
  *                          When more than 256 an affixNR is 2 bytes.
  *                          This is separate for prefixes and suffixes!
  *                          First affixNR is 0.
- * <afftotcnt>	2 bytes	    Total number of affix items (MSB comes first).
  *
  * <affix>: <affitemcnt> <affitem> ...
  *
@@ -4228,8 +4318,6 @@ write_vim_spell(fname, prefga, suffga, newwords, regcount, regchars)
     int		flags, aflags;
     basicword_T	*bw, *bwf, *bw2 = NULL;
     int		i;
-    int		cnt;
-    affentry_T	*ae;
     int		round;
     garray_T	bwga;
 
@@ -4242,12 +4330,14 @@ write_vim_spell(fname, prefga, suffga, newwords, regcount, regchars)
 	return;
     }
 
-    fwrite(VIMSPELLMAGIC, VIMSPELLMAGICL, (size_t)1, wif.wif_fd);
+    /* <HEADER>: <fileID> <regioncnt> <regionname> ...
+     *		 <charflagslen> <charflags> <fcharslen> <fchars> */
+    fwrite(VIMSPELLMAGIC, VIMSPELLMAGICL, (size_t)1, wif.wif_fd); /* <fileID> */
 
     /* write the region names if there is more than one */
     if (regcount > 1)
     {
-	putc(regcount, wif.wif_fd);
+	putc(regcount, wif.wif_fd);	    /* <regioncnt> <regionname> ... */
 	fwrite(regchars, (size_t)(regcount * 2), (size_t)1, wif.wif_fd);
 	wif.wif_regionmask = (1 << regcount) - 1;
     }
@@ -4257,19 +4347,16 @@ write_vim_spell(fname, prefga, suffga, newwords, regcount, regchars)
 	wif.wif_regionmask = 0;
     }
 
-    /* Write the prefix and suffix lists. */
+    /* Write the table with character flags and table for case folding.
+     * <charflagslen> <charflags>  <fcharlen> <fchars> */
+    write_spell_chartab(wif.wif_fd);
+
+    /* <PREFIXLIST>: <affcount> <affix> ...
+     * <SUFFIXLIST>: <affcount> <affix> ... */
     for (round = 1; round <= 2; ++round)
     {
 	gap = round == 1 ? prefga : suffga;
 	put_bytes(wif.wif_fd, (long_u)gap->ga_len, 2);	    /* <affcount> */
-
-	/* Count the total number of affix items. */
-	cnt = 0;
-	for (i = 0; i < gap->ga_len; ++i)
-	    for (ae = ((affheader_T *)gap->ga_data + i)->ah_first;
-						 ae != NULL; ae = ae->ae_next)
-		++cnt;
-	put_bytes(wif.wif_fd, (long_u)cnt, 2);		    /* <afftotcnt> */
 
 	for (i = 0; i < gap->ga_len; ++i)
 	    write_affix(wif.wif_fd, (affheader_T *)gap->ga_data + i);
@@ -4279,12 +4366,14 @@ write_vim_spell(fname, prefga, suffga, newwords, regcount, regchars)
     wif.wif_prefm = (prefga->ga_len > 256) ? 2 : 1;
     wif.wif_suffm = (suffga->ga_len > 256) ? 2 : 1;
 
-    /* Write the suggest info. TODO */
-    put_bytes(wif.wif_fd, 0L, 4);
+    /* <SUGGEST> : <suggestlen> <more> ...
+     *  TODO.  Only write a zero length for now. */
+    put_bytes(wif.wif_fd, 0L, 4);			    /* <suggestlen> */
 
     /*
-     * Write the word list.  <wordcount> <worditem> ...
+     * <WORDLIST>: <wordcount> <worditem> ...
      */
+
     /* number of basic words in 4 bytes */
     put_bytes(wif.wif_fd, newwords->ht_used, 4);	    /* <wordcount> */
 
@@ -4333,8 +4422,10 @@ write_vim_spell(fname, prefga, suffga, newwords, regcount, regchars)
 								| BWF_ALLCAP);
 		    if (flags == aflags
 			    && ((flags & BWF_KEEPCAP) == 0
-				|| (STRCMP(bw->bw_caseword,
-						     bw2->bw_caseword) == 0))
+				|| bw->bw_caseword == NULL
+				|| bw2->bw_caseword == NULL
+				|| STRCMP(bw->bw_caseword,
+						       bw2->bw_caseword) == 0)
 			    && same_affixes(bw, bw2))
 			break;
 		}
@@ -4385,6 +4476,7 @@ write_vim_spell(fname, prefga, suffga, newwords, regcount, regchars)
 	}
 
 	ga_clear(&bwga);
+	vim_free(wtab);
     }
 
     fclose(wif.wif_fd);
@@ -4548,7 +4640,7 @@ write_bword(wif, bwf, lowcap)
     if (lowcap)
 	return;
 
-    if (flags & BWF_KEEPCAP)
+    if ((flags & BWF_KEEPCAP) && bw->bw_caseword != NULL)
     {
 	len = STRLEN(bw->bw_caseword);
 	putc(len, fd);			/* <caselen> */
@@ -4684,6 +4776,7 @@ write_bword(wif, bwf, lowcap)
 
 	    bw2 = bw;
 	}
+
 	vim_free(wtab);
     }
 }
@@ -4710,6 +4803,7 @@ ex_mkspell(eap)
     vimconv_T	conv;
     int		ascii = FALSE;
     char_u	*arg = eap->arg;
+    int		error = FALSE;
 
     if (STRNCMP(arg, "-ascii", 6) == 0)
     {
@@ -4765,6 +4859,10 @@ ex_mkspell(eap)
 		}
 	    }
 	}
+
+	/* Clear the char type tables, don't want to use any of the currently
+	 * used spell properties. */
+	init_spell_chartab();
 
 	/*
 	 * Read all the .aff and .dic files.
@@ -4846,15 +4944,18 @@ ex_mkspell(eap)
 	     */
 	    MSG(_("Processing words..."));
 	    out_flush();
-	    expand_affixes(&newwords, &prefga, &suffga);
+	    error = expand_affixes(&newwords, &prefga, &suffga) == FAIL;
 
-	    /* Write the info in the spell file. */
-	    smsg((char_u *)_("Writing spell file %s..."), wfname);
-	    out_flush();
-	    write_vim_spell(wfname, &prefga, &suffga, &newwords,
+	    if (!error)
+	    {
+		/* Write the info in the spell file. */
+		smsg((char_u *)_("Writing spell file %s..."), wfname);
+		out_flush();
+		write_vim_spell(wfname, &prefga, &suffga, &newwords,
 						     fcount - 1, region_name);
-	    MSG(_("Done!"));
-	    out_flush();
+		MSG(_("Done!"));
+		out_flush();
+	    }
 
 	    /* Free the allocated stuff. */
 	    free_wordtable(&newwords);

@@ -2390,6 +2390,11 @@ get_winopts(buf)
     if (p_fdls >= 0)
 	curwin->w_p_fdl = p_fdls;
 #endif
+
+#ifdef FEAT_SYN_HL
+    if (curwin->w_p_spell && *buf->b_p_spl != NUL)
+	did_set_spelllang(buf);
+#endif
 }
 
 /*

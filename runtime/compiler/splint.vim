@@ -2,7 +2,7 @@
 " Compiler:     splint/lclint (C source code checker)
 " Maintainer:   Ralf Wildenhues <Ralf.Wildenhues@gmx.de>
 " Splint Home:	http://www.splint.org/
-" Last Change:  2004 Oct 02
+" Last Change:  2005 Apr 21
 " $Revision$
 
 if exists("current_compiler")
@@ -53,6 +53,7 @@ CompilerSet makeprg=splint\ %
 
 CompilerSet errorformat=%OLCLint*m,
 	\%OSplint*m,
+	\%f(%l\\,%c):\ %m,
 	\%*[\ ]%f:%l:%c:\ %m,
 	\%*[\ ]%f:%l:\ %m,
 	\%*[^\"]\"%f\"%*\\D%l:\ %m,
