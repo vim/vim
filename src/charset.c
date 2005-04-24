@@ -991,14 +991,15 @@ init_spell_chartab()
     else
 #endif
     {
-	/* Rough guess: use isalpha() for characters above 128. */
+	/* Rough guess: use isalpha() and isupper() for characters above 128.
+	 * */
 	for (i = 128; i < 256; ++i)
 	{
-	    spelltab.st_isw[i] = isalpha(i);
-	    if (isupper(i))
+	    spelltab.st_isw[i] = MB_ISUPPER(i) || MB_ISLOWER(i);
+	    if (MB_ISUPPER(i))
 	    {
 		spelltab.st_isu[i] = TRUE;
-		spelltab.st_fold[i] = tolower(i);
+		spelltab.st_fold[i] = MB_TOLOWER(i);
 	    }
 	}
     }
@@ -1150,6 +1151,8 @@ set_spell_finish(new_st)
 #if defined(FEAT_MBYTE) || defined(PROTO)
 /*
  * Write the current tables into the .spl file.
+ * This makes sure the same characters are recognized as word characters when
+ * generating an when using a spell file.
  */
     void
 write_spell_chartab(fd)
@@ -1159,15 +1162,6 @@ write_spell_chartab(fd)
     int		len = 0;
     int		flags;
     int		i;
-
-    if (!did_set_spelltab)
-    {
-	/* No character table specified, write zero counts. */
-	fputc(0, fd);
-	fputc(0, fd);
-	fputc(0, fd);
-	return;
-    }
 
     fputc(128, fd);				    /* <charflagslen> */
     for (i = 128; i < 256; ++i)

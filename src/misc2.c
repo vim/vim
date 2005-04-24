@@ -2474,11 +2474,15 @@ get_pseudo_mouse_code(button, is_click, is_drag)
 	    && is_drag == mouse_table[i].is_drag)
 	{
 #ifdef FEAT_GUI
-	    /* Trick: a non mappable left click and release has mouse_col < 0.
-	     * Used for 'mousefocus' in gui_mouse_moved() */
-	    if (mouse_col < 0)
+	    /* Trick: a non mappable left click and release has mouse_col -1
+	     * or added MOUSE_COLOFF.  Used for 'mousefocus' in
+	     * gui_mouse_moved() */
+	    if (mouse_col < 0 || mouse_col > MOUSE_COLOFF)
 	    {
-		mouse_col = 0;
+		if (mouse_col < 0)
+		    mouse_col = 0;
+		else
+		    mouse_col -= MOUSE_COLOFF;
 		if (mouse_table[i].pseudo_code == (int)KE_LEFTMOUSE)
 		    return (int)KE_LEFTMOUSE_NM;
 		if (mouse_table[i].pseudo_code == (int)KE_LEFTRELEASE)
