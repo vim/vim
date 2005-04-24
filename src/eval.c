@@ -12061,6 +12061,7 @@ f_searchpair(argvars, rettv)
     char_u	*pat, *pat2, *pat3;
     pos_T	pos;
     pos_T	firstpos;
+    pos_T	foundpos;
     pos_T	save_cursor;
     pos_T	save_pos;
     int		save_p_ws = p_ws;
@@ -12114,6 +12115,7 @@ f_searchpair(argvars, rettv)
     save_cursor = curwin->w_cursor;
     pos = curwin->w_cursor;
     firstpos.lnum = 0;
+    foundpos.lnum = 0;
     pat = pat3;
     for (;;)
     {
@@ -12125,6 +12127,17 @@ f_searchpair(argvars, rettv)
 
 	if (firstpos.lnum == 0)
 	    firstpos = pos;
+	if (equalpos(pos, foundpos))
+	{
+	    /* Found the same position again.  Can happen with a pattern that
+	     * has "\zs" at the end and searching backwards.  Advance one
+	     * character and try again. */
+	    if (dir == BACKWARD)
+		decl(&pos);
+	    else
+		incl(&pos);
+	}
+	foundpos = pos;
 
 	/* If the skip pattern matches, ignore this match. */
 	if (*skip != NUL)
