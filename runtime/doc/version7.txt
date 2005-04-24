@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Apr 17
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Apr 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1044,5 +1044,19 @@ reallocating the buffer every time. (Alexei Alexandrov)
 
 When using a Python "atexit" function it was not invoked when Vim exits.  Now
 call Py_Finalize() for that. (Ugo Di Girolamo)
+
+GTK GUI: using a .vimrc with "set cmdheight=2 lines=43" and ":split" right
+after startup, the window layout is messed up. (Michael Schaap)  Added
+win_new_shellsize() call in gui_init() to fix the topframe size.
+
+Trick to get ...MOUSE_NM not used when there are vertical splits.  Now pass
+column -1 for the left most window and add MOUSE_COLOFF for others.  Limits
+mouse column to 10000.
+
+searchpair() may hang when the end pattern has "\zs" at the end.  Check that
+we find the same position again and advance one character.
+
+When in diff mode and making a change that causes the "changed" highlighting
+to disappear or reappear, it was still highlighted in another window.
 
  vim:tw=78:ts=8:ft=help:norl:

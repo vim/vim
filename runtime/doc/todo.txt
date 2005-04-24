@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Apr 23
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Apr 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,21 +29,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
-
-Frame size wrong after ":sp" with this in vimrc (Michael Schaap):
-	set cmdheight=2
-	set lines=43
-
-Trick to get ...MOUSE_NM not used when there are vertical splits.  Can we pass
--col instead of col? (Yegappan Lakshmanan)
-
-Hang in searchpair(). (2005 April 12, John Wellesz)
-
-With this mapping a click on a status line echoes the wrong buffer name:
-    :noremap <Leftmouse> <Leftmouse>:echo bufname('%')<CR>
-
-When in diff mode and making a change that causes the "changed" highlighting
-to disappear, it's still highlighted in another window.
 
 This doesn't work: "a[var1:var2]".  Requires space before/after ':'.  Can this
 be fixed?  Otherwise document it.

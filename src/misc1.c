@@ -2464,7 +2464,8 @@ changed()
     ++global_changedtick;
 }
 
-static void changedOneline __ARGS((linenr_T lnum));
+static void changedOneline __ARGS((buf_T *buf, linenr_T lnum));
+static void changed_lines_buf __ARGS((buf_T *buf, linenr_T lnum, linenr_T lnume, long xtra));
 static void changed_common __ARGS((linenr_T lnum, colnr_T col, linenr_T lnume, long xtra));
 
 /*
@@ -2478,29 +2479,48 @@ changed_bytes(lnum, col)
     linenr_T	lnum;
     colnr_T	col;
 {
-    changedOneline(lnum);
+    changedOneline(curbuf, lnum);
     changed_common(lnum, col, lnum + 1, 0L);
+
+#ifdef FEAT_DIFF
+    /* Diff highlighting in other diff windows may need to be updated too. */
+    if (curwin->w_p_diff)
+    {
+	win_T	    *wp;
+	linenr_T    wlnum;
+
+	for (wp = firstwin; wp != NULL; wp = wp->w_next)
+	    if (wp->w_p_diff && wp != curwin)
+	    {
+		redraw_win_later(wp, VALID);
+		wlnum = diff_lnum_win(lnum, wp);
+		if (wlnum > 0)
+		    changedOneline(wp->w_buffer, wlnum);
+	    }
+    }
+#endif
 }
 
     static void
-changedOneline(lnum)
+changedOneline(buf, lnum)
+    buf_T	*buf;
     linenr_T	lnum;
 {
-    if (curbuf->b_mod_set)
+    if (buf->b_mod_set)
     {
 	/* find the maximum area that must be redisplayed */
-	if (lnum < curbuf->b_mod_top)
-	    curbuf->b_mod_top = lnum;
-	else if (lnum >= curbuf->b_mod_bot)
-	    curbuf->b_mod_bot = lnum + 1;
+	if (lnum < buf->b_mod_top)
+	    buf->b_mod_top = lnum;
+	else if (lnum >= buf->b_mod_bot)
+	    buf->b_mod_bot = lnum + 1;
     }
     else
     {
 	/* set the area that must be redisplayed to one line */
-	curbuf->b_mod_set = TRUE;
-	curbuf->b_mod_top = lnum;
-	curbuf->b_mod_bot = lnum + 1;
-	curbuf->b_mod_xlines = 0;
+	buf->b_mod_set = TRUE;
+	buf->b_mod_top = lnum;
+	buf->b_mod_bot = lnum + 1;
+	buf->b_mod_xlines = 0;
     }
 }
 
@@ -2572,32 +2592,63 @@ changed_lines(lnum, col, lnume, xtra)
     linenr_T	lnume;	    /* line below last changed line */
     long	xtra;	    /* number of extra lines (negative when deleting) */
 {
-    if (curbuf->b_mod_set)
+    changed_lines_buf(curbuf, lnum, lnume, xtra);
+
+#ifdef FEAT_DIFF
+    if (xtra == 0 && curwin->w_p_diff)
+    {
+	/* When the number of lines doesn't change then mark_adjust() isn't
+	 * called and other diff buffers still need to be marked for
+	 * displaying. */
+	win_T	    *wp;
+	linenr_T    wlnum;
+
+	for (wp = firstwin; wp != NULL; wp = wp->w_next)
+	    if (wp->w_p_diff && wp != curwin)
+	    {
+		redraw_win_later(wp, VALID);
+		wlnum = diff_lnum_win(lnum, wp);
+		if (wlnum > 0)
+		    changed_lines_buf(wp->w_buffer, wlnum,
+						    lnume - lnum + wlnum, 0L);
+	    }
+    }
+#endif
+
+    changed_common(lnum, col, lnume, xtra);
+}
+
+    static void
+changed_lines_buf(buf, lnum, lnume, xtra)
+    buf_T	*buf;
+    linenr_T	lnum;	    /* first line with change */
+    linenr_T	lnume;	    /* line below last changed line */
+    long	xtra;	    /* number of extra lines (negative when deleting) */
+{
+    if (buf->b_mod_set)
     {
 	/* find the maximum area that must be redisplayed */
-	if (lnum < curbuf->b_mod_top)
-	    curbuf->b_mod_top = lnum;
-	if (lnum < curbuf->b_mod_bot)
+	if (lnum < buf->b_mod_top)
+	    buf->b_mod_top = lnum;
+	if (lnum < buf->b_mod_bot)
 	{
 	    /* adjust old bot position for xtra lines */
-	    curbuf->b_mod_bot += xtra;
-	    if (curbuf->b_mod_bot < lnum)
-		curbuf->b_mod_bot = lnum;
+	    buf->b_mod_bot += xtra;
+	    if (buf->b_mod_bot < lnum)
+		buf->b_mod_bot = lnum;
 	}
-	if (lnume + xtra > curbuf->b_mod_bot)
-	    curbuf->b_mod_bot = lnume + xtra;
-	curbuf->b_mod_xlines += xtra;
+	if (lnume + xtra > buf->b_mod_bot)
+	    buf->b_mod_bot = lnume + xtra;
+	buf->b_mod_xlines += xtra;
     }
     else
     {
 	/* set the area that must be redisplayed */
-	curbuf->b_mod_set = TRUE;
-	curbuf->b_mod_top = lnum;
-	curbuf->b_mod_bot = lnume + xtra;
-	curbuf->b_mod_xlines = xtra;
+	buf->b_mod_set = TRUE;
+	buf->b_mod_top = lnum;
+	buf->b_mod_bot = lnume + xtra;
+	buf->b_mod_xlines = xtra;
     }
-
-    changed_common(lnum, col, lnume, xtra);
 }
 
     static void
