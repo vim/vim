@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Apr 23
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Apr 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -306,7 +306,9 @@ When the encoding is UTF-8 no word characters need to be specified.
 
 							*E763*
 All spell files for the same encoding must use the same word characters,
-otherwise they can't be combined without errors.
+otherwise they can't be combined without errors.  The XX.ascii.spl spell file
+generated with the "-ascii" argument will not contain the table with
+characters, so that it can be combine with spell files for any encoding.
 
 
  vim:tw=78:sw=4:ts=8:ft=help:norl:
