@@ -2460,7 +2460,7 @@ static int expand_one_aff __ARGS((basicword_T *bw, garray_T *add_words, affentry
 static int add_to_wordlist __ARGS((hashtab_T *newwords, basicword_T *bw));
 static void write_affix __ARGS((FILE *fd, affheader_T *ah));
 static void write_affixlist __ARGS((FILE *fd, garray_T *aff, int bytes));
-static void write_vim_spell __ARGS((char_u *fname, garray_T *prefga, garray_T *suffga, hashtab_T *newwords, int regcount, char_u *regchars));
+static void write_vim_spell __ARGS((char_u *fname, garray_T *prefga, garray_T *suffga, hashtab_T *newwords, int regcount, char_u *regchars, int ascii));
 static void write_bword __ARGS((winfo_T *wif, basicword_T *bw, int lowcap));
 static void free_wordtable __ARGS((hashtab_T *ht));
 static void free_basicword __ARGS((basicword_T *bw));
@@ -2705,10 +2705,15 @@ spell_read_aff(fname, conv, ascii)
 
     if (fol != NULL || low != NULL || upp != NULL)
     {
-	if (fol == NULL || low == NULL || upp == NULL)
-	    smsg((char_u *)_("Missing FOL/LOW/UPP line in %s"), fname);
-	else
-	    set_spell_chartab(fol, low, upp);
+	/* Don't write a word table for an ASCII file, so that we don't check
+	 * for conflicts with a word table that matches 'encoding'. */
+	if (!ascii)
+	{
+	    if (fol == NULL || low == NULL || upp == NULL)
+		smsg((char_u *)_("Missing FOL/LOW/UPP line in %s"), fname);
+	    else
+		set_spell_chartab(fol, low, upp);
+	}
 
 	vim_free(fol);
 	vim_free(low);
@@ -4302,13 +4307,14 @@ write_affixlist(fd, aff, bytes)
  * Write the Vim spell file "fname".
  */
     static void
-write_vim_spell(fname, prefga, suffga, newwords, regcount, regchars)
+write_vim_spell(fname, prefga, suffga, newwords, regcount, regchars, ascii)
     char_u	*fname;
     garray_T	*prefga;	/* prefixes, affheader_T entries */
     garray_T	*suffga;	/* suffixes, affheader_T entries */
     hashtab_T	*newwords;	/* basic words, basicword_T entries */
     int		regcount;	/* number of regions */
     char_u	*regchars;	/* region names */
+    int		ascii;		/* TRUE for ascii spell file */
 {
     winfo_T	wif;
     garray_T	*gap;
@@ -4348,8 +4354,17 @@ write_vim_spell(fname, prefga, suffga, newwords, regcount, regchars)
     }
 
     /* Write the table with character flags and table for case folding.
-     * <charflagslen> <charflags>  <fcharlen> <fchars> */
-    write_spell_chartab(wif.wif_fd);
+     * <charflagslen> <charflags>  <fcharlen> <fchars>
+     * Skip this for ASCII, the table may conflict with the one used for
+     * 'encoding'. */
+    if (ascii)
+    {
+	putc(0, wif.wif_fd);
+	putc(0, wif.wif_fd);
+	putc(0, wif.wif_fd);
+    }
+    else
+	write_spell_chartab(wif.wif_fd);
 
     /* <PREFIXLIST>: <affcount> <affix> ...
      * <SUFFIXLIST>: <affcount> <affix> ... */
@@ -4952,7 +4967,7 @@ ex_mkspell(eap)
 		smsg((char_u *)_("Writing spell file %s..."), wfname);
 		out_flush();
 		write_vim_spell(wfname, &prefga, &suffga, &newwords,
-						     fcount - 1, region_name);
+					      fcount - 1, region_name, ascii);
 		MSG(_("Done!"));
 		out_flush();
 	    }

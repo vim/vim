@@ -1478,6 +1478,11 @@ int vim_memcmp __ARGS((void *, void *, size_t));
 # define SET_NUM_MOUSE_CLICKS(code, num) \
     (code) = ((code) & 0x3f) | ((((num) - 1) & 3) << 6)
 
+/* Added to mouse column for GUI when 'mousefocus' wants to give focus to a
+ * window by simulating a click on its status line.  We could use up to 128 *
+ * 128 = 16384 columns, now it's reduced to 10000. */
+# define MOUSE_COLOFF 10000
+
 /*
  * jump_to_mouse() returns one of first four these values, possibly with
  * some of the other three added.
