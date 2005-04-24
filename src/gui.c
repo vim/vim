@@ -539,12 +539,15 @@ gui_init()
 	/* Our GUI can't do bidi. */
 	p_tbidi = FALSE;
 #endif
-#if defined FEAT_GUI_GTK || defined FEAT_GUI_KDE
+#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_KDE)
 	/* Give GTK+ a chance to put all widget's into place. */
 	gui_mch_update();
 	/* Now make sure the shell fits on the screen. */
 	gui_set_shellsize(FALSE, TRUE);
 #endif
+	/* When 'lines' was set while starting up the topframe may have to be
+	 * resized. */
+	win_new_shellsize();
 
 #ifdef FEAT_BEVAL
 	/* Always create the Balloon Evaluation area, but disable it when
@@ -4181,8 +4184,8 @@ gui_mouse_moved(x, y)
 	/*
 	 * format a mouse click on status line input
 	 * ala gui_send_mouse_event(0, x, y, 0, 0);
-	 * Trick: Use a column of -1, so that check_termcode will generate a
-	 * K_LEFTMOUSE_NM key code.
+	 * Trick: Use a column number -1, so that get_pseudo_mouse_code() will
+	 * generate a K_LEFTMOUSE_NM key code.
 	 */
 	if (finish_op)
 	{
@@ -4196,7 +4199,7 @@ gui_mouse_moved(x, y)
 	st[3] = (char_u)MOUSE_LEFT;
 	fill_mouse_coord(st + 4,
 #ifdef FEAT_VERTSPLIT
-		W_WINCOL(wp),
+		wp->w_wincol == 0 ? -1 : wp->w_wincol + MOUSE_COLOFF,
 #else
 		-1,
 #endif
