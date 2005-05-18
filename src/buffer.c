@@ -2102,13 +2102,13 @@ ExpandBufnames(pat, num_file, file, options)
 
     /*
      * attempt == 0: try match with    '\<', match at start of word
-     * attempt == 2: try match without '\<', match anywhere
+     * attempt == 1: try match without '\<', match anywhere
      */
-    for (attempt = 0; attempt <= 2; attempt += 2)
+    for (attempt = 0; attempt <= 1; ++attempt)
     {
-	if (attempt == 2 && patc == pat)
+	if (attempt > 0 && patc == pat)
 	    break;	/* there was no anchor, no need to try again */
-	prog = vim_regcomp(patc + attempt, RE_MAGIC);
+	prog = vim_regcomp(patc + attempt * 11, RE_MAGIC);
 	if (prog == NULL)
 	{
 	    if (patc != pat)
