@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.0aa.  Last change: 2005 Apr 01
+*syntax.txt*	For Vim version 7.0aa.  Last change: 2005 May 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1577,6 +1577,14 @@ $VIMRUNTIME/syntax/syntax.vim).
   mv_combstruct mv_liesymm	mv_plots	mv_tensor
   mv_difforms	 mv_linalg	mv_plottools	mv_totorder
   mv_finance	 mv_logic	mv_powseries
+
+
+MATHEMATICA			*mma.vim* *mma-syntax* *mathematica-syntax*
+
+Empty *.m files will automatically be presumed to be Matlab files unless you
+have the following in your .vimrc: >
+
+	let filetype_m = "mma"
 
 
 MOO						*moo.vim* *moo-syntax*

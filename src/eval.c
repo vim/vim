@@ -580,8 +580,12 @@ static pos_T *var2fpos __ARGS((typval_T *varp, int lnum));
 static int get_env_len __ARGS((char_u **arg));
 static int get_id_len __ARGS((char_u **arg));
 static int get_name_len __ARGS((char_u **arg, char_u **alias, int evaluate, int verbose));
-static char_u *find_name_end __ARGS((char_u *arg, char_u **expr_start, char_u **expr_end, int incl_br));
+static char_u *find_name_end __ARGS((char_u *arg, char_u **expr_start, char_u **expr_end, int flags));
+#define FNE_INCL_BR	1	/* find_name_end(): include [] in name */
+#define FNE_CHECK_START	2	/* find_name_end(): check name starts with
+				   valid character */
 static int eval_isnamec __ARGS((int c));
+static int eval_isnamec1 __ARGS((int c));
 static int get_var_tv __ARGS((char_u *name, int len, typval_T *rettv, int verbose));
 static int handle_subscript __ARGS((char_u **arg, typval_T *rettv, int evaluate, int verbose));
 static typval_T *alloc_tv __ARGS((void));
@@ -650,7 +654,7 @@ static void list_vim_vars __ARGS((void));
 static char_u *list_arg_vars __ARGS((exarg_T *eap, char_u *arg));
 static char_u *ex_let_one __ARGS((char_u *arg, typval_T *tv, int copy, char_u *endchars, char_u *op));
 static int check_changedtick __ARGS((char_u *arg));
-static char_u *get_lval __ARGS((char_u *name, typval_T *rettv, lval_T *lp, int unlet, int skip, int quiet));
+static char_u *get_lval __ARGS((char_u *name, typval_T *rettv, lval_T *lp, int unlet, int skip, int quiet, int fne_flags));
 static void clear_lval __ARGS((lval_T *lp));
 static void set_var_lval __ARGS((lval_T *lp, char_u *endp, typval_T *rettv, int copy, char_u *op));
 static int tv_op __ARGS((typval_T *tv1, typval_T *tv2, char_u  *op));
@@ -662,6 +666,9 @@ static int do_unlet_var __ARGS((lval_T *lp, char_u *name_end, int forceit));
 static int do_lock_var __ARGS((lval_T *lp, char_u *name_end, int deep, int lock));
 static void item_lock __ARGS((typval_T *tv, int deep, int lock));
 static int tv_islocked __ARGS((typval_T *tv));
+
+/* Character used as separated in autoload function/variable names. */
+#define AUTOLOAD_CHAR '#'
 
 /*
  * Initialize the global and v: variables.
@@ -792,7 +799,7 @@ var_redir_start(name, append)
     typval_T	tv;
 
     /* Make sure a valid variable name is specified */
-    if (!eval_isnamec(*name) || VIM_ISDIGIT(*name))
+    if (!eval_isnamec1(*name))
     {
 	EMSG(_(e_invarg));
 	return FAIL;
@@ -810,7 +817,8 @@ var_redir_start(name, append)
     }
 
     /* Parse the variable name (can be a dict or list entry). */
-    redir_endp = get_lval(redir_varname, NULL, redir_lval, FALSE, FALSE, FALSE);
+    redir_endp = get_lval(redir_varname, NULL, redir_lval, FALSE, FALSE, FALSE,
+							     FNE_CHECK_START);
     if (redir_endp == NULL || redir_lval->ll_name == NULL || *redir_endp != NUL)
     {
 	if (redir_endp != NULL && *redir_endp != NUL)
@@ -1551,7 +1559,7 @@ skip_var_one(arg)
 {
     if (vim_strchr((char_u *)"$@&", *arg) != NULL)
 	++arg;
-    return find_name_end(arg, NULL, NULL, TRUE);
+    return find_name_end(arg, NULL, NULL, FNE_INCL_BR | FNE_CHECK_START);
 }
 
 /*
@@ -1643,7 +1651,7 @@ list_arg_vars(eap, arg)
     {
 	if (error || eap->skip)
 	{
-	    arg = find_name_end(arg, NULL, NULL, TRUE);
+	    arg = find_name_end(arg, NULL, NULL, FNE_INCL_BR | FNE_CHECK_START);
 	    if (!vim_iswhite(*arg) && !ends_excmd(*arg))
 	    {
 		emsg_severe = TRUE;
@@ -1888,11 +1896,11 @@ ex_let_one(arg, tv, copy, endchars, op)
      * ":let var = expr": Set internal variable.
      * ":let {expr} = expr": Idem, name made with curly braces
      */
-    else if ((eval_isnamec(*arg) && !VIM_ISDIGIT(*arg)) || *arg == '{')
+    else if (eval_isnamec1(*arg) || *arg == '{')
     {
 	lval_T	lv;
 
-	p = get_lval(arg, tv, &lv, FALSE, FALSE, FALSE);
+	p = get_lval(arg, tv, &lv, FALSE, FALSE, FALSE, FNE_CHECK_START);
 	if (p != NULL && lv.ll_name != NULL)
 	{
 	    if (endchars != NULL && vim_strchr(endchars, *skipwhite(p)) == NULL)
@@ -1942,13 +1950,14 @@ check_changedtick(arg)
  * Returns NULL for a parsing error.  Still need to free items in "lp"!
  */
     static char_u *
-get_lval(name, rettv, lp, unlet, skip, quiet)
+get_lval(name, rettv, lp, unlet, skip, quiet, fne_flags)
     char_u	*name;
     typval_T	*rettv;
     lval_T	*lp;
     int		unlet;
     int		skip;
     int		quiet;	    /* don't give error messages */
+    int		fne_flags;  /* flags for find_name_end() */
 {
     char_u	*p;
     char_u	*expr_start, *expr_end;
@@ -1969,11 +1978,11 @@ get_lval(name, rettv, lp, unlet, skip, quiet)
     {
 	/* When skipping just find the end of the name. */
 	lp->ll_name = name;
-	return find_name_end(name, NULL, NULL, TRUE);
+	return find_name_end(name, NULL, NULL, FNE_INCL_BR | fne_flags);
     }
 
     /* Find the end of the name. */
-    p = find_name_end(name, &expr_start, &expr_end, FALSE);
+    p = find_name_end(name, &expr_start, &expr_end, fne_flags);
     if (expr_start != NULL)
     {
 	/* Don't expand the name when we already know there is an error. */
@@ -2842,7 +2851,8 @@ ex_unletlock(eap, argstart, deep)
     do
     {
 	/* Parse the name and find the end. */
-	name_end = get_lval(arg, NULL, &lv, TRUE, eap->skip || error, FALSE);
+	name_end = get_lval(arg, NULL, &lv, TRUE, eap->skip || error, FALSE,
+							     FNE_CHECK_START);
 	if (lv.ll_name == NULL)
 	    error = TRUE;	    /* error but continue parsing */
 	if (name_end == NULL || (!vim_iswhite(*name_end)
@@ -10178,7 +10188,8 @@ f_islocked(argvars, rettv)
     dictitem_T	*di;
 
     rettv->vval.v_number = -1;
-    end = get_lval(get_tv_string(&argvars[0]), NULL, &lv, FALSE, FALSE, FALSE);
+    end = get_lval(get_tv_string(&argvars[0]), NULL, &lv, FALSE, FALSE, FALSE,
+							     FNE_CHECK_START);
     if (end != NULL && lv.ll_name != NULL)
     {
 	if (*end != NUL)
@@ -13967,7 +13978,8 @@ get_name_len(arg, alias, evaluate, verbose)
     /*
      * Find the end of the name; check for {} construction.
      */
-    p = find_name_end(*arg, &expr_start, &expr_end, FALSE);
+    p = find_name_end(*arg, &expr_start, &expr_end,
+					       len > 0 ? 0 : FNE_CHECK_START);
     if (expr_start != NULL)
     {
 	char_u	*temp_string;
@@ -14002,15 +14014,16 @@ get_name_len(arg, alias, evaluate, verbose)
  * Find the end of a variable or function name, taking care of magic braces.
  * If "expr_start" is not NULL then "expr_start" and "expr_end" are set to the
  * start and end of the first magic braces item.
+ * "flags" can have FNE_INCL_BR and FNE_CHECK_START.
  * Return a pointer to just after the name.  Equal to "arg" if there is no
  * valid name.
  */
     static char_u *
-find_name_end(arg, expr_start, expr_end, incl_br)
+find_name_end(arg, expr_start, expr_end, flags)
     char_u	*arg;
     char_u	**expr_start;
     char_u	**expr_end;
-    int		incl_br;	/* Include [] indexes and .name */
+    int		flags;
 {
     int		mb_nest = 0;
     int		br_nest = 0;
@@ -14022,10 +14035,14 @@ find_name_end(arg, expr_start, expr_end, incl_br)
 	*expr_end = NULL;
     }
 
+    /* Quick check for valid starting character. */
+    if ((flags & FNE_CHECK_START) && !eval_isnamec1(*arg) && *arg != '{')
+	return arg;
+
     for (p = arg; *p != NUL
 		    && (eval_isnamec(*p)
 			|| *p == '{'
-			|| (incl_br && (*p == '[' || *p == '.'))
+			|| ((flags & FNE_INCL_BR) && (*p == '[' || *p == '.'))
 			|| mb_nest != 0
 			|| br_nest != 0); ++p)
     {
@@ -14108,7 +14125,7 @@ make_expanded_name(in_start, expr_start, expr_end, in_end)
 
     if (retval != NULL)
     {
-	temp_result = find_name_end(retval, &expr_start, &expr_end, FALSE);
+	temp_result = find_name_end(retval, &expr_start, &expr_end, 0);
 	if (expr_start != NULL)
 	{
 	    /* Further expansion! */
@@ -14130,7 +14147,18 @@ make_expanded_name(in_start, expr_start, expr_end, in_end)
 eval_isnamec(c)
     int	    c;
 {
-    return (ASCII_ISALNUM(c) || c == '_' || c == ':');
+    return (ASCII_ISALNUM(c) || c == '_' || c == ':' || c == AUTOLOAD_CHAR);
+}
+
+/*
+ * Return TRUE if character "c" can be used as the first character in a
+ * variable or function name (excluding '{' and '}').
+ */
+    static int
+eval_isnamec1(c)
+    int	    c;
+{
+    return (ASCII_ISALPHA(c) || c == '_');
 }
 
 /*
@@ -14729,8 +14757,8 @@ find_var_ht(name, varname)
 {
     if (name[1] != ':')
     {
-	/* The name must not start with a colon. */
-	if (name[0] == ':')
+	/* The name must not start with a colon or #. */
+	if (name[0] == ':' || name[0] == AUTOLOAD_CHAR)
 	    return NULL;
 	*varname = name;
 
@@ -14745,8 +14773,10 @@ find_var_ht(name, varname)
     *varname = name + 2;
     if (*name == 'g')				/* global variable */
 	return &globvarht;
-    /* There must be no ':' in the rest of the name, unless g: is used */
-    if (vim_strchr(name + 2, ':') != NULL)
+    /* There must be no ':' or '#' in the rest of the name, unless g: is used
+     */
+    if (vim_strchr(name + 2, ':') != NULL
+			       || vim_strchr(name + 2, AUTOLOAD_CHAR) != NULL)
 	return NULL;
     if (*name == 'b')				/* buffer variable */
 	return &curbuf->b_vars.dv_hashtab;
@@ -15886,7 +15916,7 @@ ex_function(eap)
 
     if (fp == NULL)
     {
-	if (fudi.fd_dict == NULL && vim_strchr(name, ':') != NULL)
+	if (fudi.fd_dict == NULL && vim_strchr(name, AUTOLOAD_CHAR) != NULL)
 	{
 	    int	    slen, plen;
 	    char_u  *scriptname;
@@ -16018,7 +16048,8 @@ trans_function_name(pp, skip, flags, fdp)
     if (lead > 2)
 	start += lead;
 
-    end = get_lval(start, NULL, &lv, FALSE, skip, flags & TFN_QUIET);
+    end = get_lval(start, NULL, &lv, FALSE, skip, flags & TFN_QUIET,
+					      lead > 2 ? 0 : FNE_CHECK_START);
     if (end == start)
     {
 	if (!skip)
@@ -16038,7 +16069,7 @@ trans_function_name(pp, skip, flags, fdp)
 		EMSG2(_(e_invarg2), start);
 	}
 	else
-	    *pp = find_name_end(start, NULL, NULL, TRUE);
+	    *pp = find_name_end(start, NULL, NULL, FNE_INCL_BR);
 	goto theend;
     }
 
@@ -16236,13 +16267,14 @@ function_exists(name)
 
 /*
  * Return TRUE if "name" looks like a builtin function name: starts with a
- * lower case letter and doesn't contain a ':'.
+ * lower case letter and doesn't contain a ':' or AUTOLOAD_CHAR.
  */
     static int
 builtin_function(name)
     char_u *name;
 {
-    return ASCII_ISLOWER(name[0]) && vim_strchr(name, ':') == NULL;
+    return ASCII_ISLOWER(name[0]) && vim_strchr(name, ':') == NULL
+				   && vim_strchr(name, AUTOLOAD_CHAR) == NULL;
 }
 
 #if defined(FEAT_PROFILE) || defined(PROTO)
@@ -16440,7 +16472,7 @@ script_autoload(name)
     int		ret = FALSE;
 
     /* If there is no colon after name[1] there is no package name. */
-    p = vim_strchr(name, ':');
+    p = vim_strchr(name, AUTOLOAD_CHAR);
     if (p == NULL || p <= name + 2)
 	return FALSE;
 
@@ -16464,15 +16496,15 @@ autoload_name(name)
     char_u	*p;
     char_u	*scriptname;
 
-    /* Get the script file name: replace ':' with '/', append ".vim". */
+    /* Get the script file name: replace '#' with '/', append ".vim". */
     scriptname = alloc((unsigned)(STRLEN(name) + 14));
     if (scriptname == NULL)
 	return FALSE;
     STRCPY(scriptname, "autoload/");
     STRCAT(scriptname, name);
-    *vim_strrchr(scriptname, ':') = NUL;
+    *vim_strrchr(scriptname, AUTOLOAD_CHAR) = NUL;
     STRCAT(scriptname, ".vim");
-    while ((p = vim_strchr(scriptname, ':')) != NULL)
+    while ((p = vim_strchr(scriptname, AUTOLOAD_CHAR)) != NULL)
 	*p = '/';
     return scriptname;
 }
@@ -16852,7 +16884,7 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
 		    else
 		    {
 			trunc_string(tv2string(&argvars[i], &tofree, numbuf),
-							    buf, MSG_BUF_LEN);
+							    buf, MSG_BUF_CLEN);
 			msg_puts(buf);
 			vim_free(tofree);
 		    }
@@ -16940,7 +16972,7 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
 	    char_u	*tofree;
 
 	    trunc_string(tv2string(fc.rettv, &tofree, numbuf),
-							    buf, MSG_BUF_LEN);
+							   buf, MSG_BUF_CLEN);
 	    smsg((char_u *)_("%s returning %s"), sn, buf);
 	    vim_free(tofree);
 	}

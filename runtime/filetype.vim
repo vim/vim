@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Apr 13
+" Last Change:	2005 May 18
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -822,7 +822,11 @@ fun! s:FTm()
     endif
     let n = n + 1
   endwhile
-  setf matlab
+  if exists("g:filetype_m")
+    exe "setf " . g:filetype_m
+  else
+    setf matlab
+  endif
 endfun
 
 " Maya Extension Language
@@ -1435,8 +1439,14 @@ au BufNewFile,BufRead *.il			setf skill
 au BufNewFile,BufRead .slrnrc			setf slrnrc
 au BufNewFile,BufRead *.score			setf slrnsc
 
-" Smalltalk
-au BufNewFile,BufRead *.st,*.cls		setf st
+" Smalltalk (and TeX)
+au BufNewFile,BufRead *.st			setf st
+au BufNewFile,BufRead *.cls
+	\ if getline(1) =~ '^%' |
+	\  setf tex |
+	\ else |
+	\  setf st |
+	\ endif
 
 " Smarty templates
 au BufNewFile,BufRead *.tpl			setf smarty

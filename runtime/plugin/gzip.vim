@@ -1,6 +1,6 @@
 " Vim plugin for editing compressed files.
 " Maintainer: Bram Moolenaar <Bram@vim.org>
-" Last Change: 2005 Mar 24
+" Last Change: 2005 May 18
 
 " Exit quickly when:
 " - this plugin was already loaded
@@ -48,12 +48,41 @@ fun s:check(cmd)
   exe "return s:have_" . name
 endfun
 
+" Set b:gzip_comp_arg to the gzip argument to be used for compression, based on
+" the flags in the compressed file.
+" The only compression methods that can be detected are max speed (-1) and max
+" compression (-9).
+fun s:set_compression(line)
+  " get the Compression Method
+  let l:cm = char2nr(a:line[2])
+  " if it's 8 (DEFLATE), we can check for the compression level
+  if l:cm == 8
+    " get the eXtra FLags
+    let l:xfl = char2nr(a:line[8])
+    " max compression
+    if l:xfl == 2
+      let b:gzip_comp_arg = "-9"
+    " min compression
+    elseif l:xfl == 4
+      let b:gzip_comp_arg = "-1"
+    endif
+  endif
+endfun
+
+
 " After reading compressed file: Uncompress text in buffer with "cmd"
 fun s:read(cmd)
   " don't do anything if the cmd is not supported
   if !s:check(a:cmd)
     return
   endif
+
+  " for gzip check current compression level and set b:gzip_comp_arg.
+  silent! unlet b:gzip_comp_arg
+  if a:cmd[0] == 'g'
+    call s:set_compression(getline(1))
+  endif
+
   " make 'patchmode' empty, we don't want a copy of the written file
   let pm_save = &pm
   set pm=
@@ -121,7 +150,11 @@ fun s:write(cmd)
     let nm = resolve(expand("<afile>"))
     let nmt = s:tempname(nm)
     if rename(nm, nmt) == 0
-      call system(a:cmd . " " . nmt)
+      if exists("b:gzip_comp_arg")
+	call system(a:cmd . " " . b:gzip_comp_arg . " " . nmt)
+      else
+	call system(a:cmd . " " . nmt)
+      endif
       call rename(nmt . "." . expand("<afile>:e"), nm)
     endif
   endif
@@ -131,8 +164,15 @@ endfun
 fun s:appre(cmd)
   " don't do anything if the cmd is not supported
   if s:check(a:cmd)
-    " Rename to a weird name to avoid the risk of overwriting another file
     let nm = expand("<afile>")
+
+    " for gzip check current compression level and set b:gzip_comp_arg.
+    silent! unlet b:gzip_comp_arg
+    if a:cmd[0] == 'g'
+      call s:set_compression(readfile(nm, "b", 1)[0])
+    endif
+
+    " Rename to a weird name to avoid the risk of overwriting another file
     let nmt = expand("<afile>:p:h") . "/X~=@l9q5"
     let nmte = nmt . "." . expand("<afile>:e")
     if rename(nm, nmte) == 0

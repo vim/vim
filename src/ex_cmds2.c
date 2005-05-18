@@ -141,7 +141,14 @@ do_debug(cmd)
     if (sourcing_name != NULL)
 	msg(sourcing_name);
     if (sourcing_lnum != 0)
-	smsg((char_u *)_("line %ld: %s"), (long)sourcing_lnum, cmd);
+    {
+	char_u	    buf[IOSIZE];
+
+	/* Truncate the command, the whole must fit in IObuff. */
+	STRNCPY(buf, cmd, IOSIZE - 50);
+	buf[IOSIZE - 50] = NUL;
+	smsg((char_u *)_("line %ld: %s"), (long)sourcing_lnum, buf);
+    }
     else
 	msg_str((char_u *)_("cmd: %s"), cmd);
 
@@ -1942,6 +1949,7 @@ do_argfile(eap, argn)
 {
     int		other;
     char_u	*p;
+    int		old_arg_idx = curwin->w_arg_idx;
 
     if (argn < 0 || argn >= ARGCOUNT)
     {
@@ -1995,14 +2003,16 @@ do_argfile(eap, argn)
 	   )
 	    arg_had_last = TRUE;
 
-	/* Edit the file; always use the last known line number. */
-	(void)do_ecmd(0, alist_name(&ARGLIST[curwin->w_arg_idx]), NULL,
+	/* Edit the file; always use the last known line number.
+	 * When it fails (e.g. Abort for already edited file) restore the
+	 * argument index. */
+	if (do_ecmd(0, alist_name(&ARGLIST[curwin->w_arg_idx]), NULL,
 		      eap, ECMD_LAST,
 		      (P_HID(curwin->w_buffer) ? ECMD_HIDE : 0) +
-					   (eap->forceit ? ECMD_FORCEIT : 0));
-
+				   (eap->forceit ? ECMD_FORCEIT : 0)) == FAIL)
+	    curwin->w_arg_idx = old_arg_idx;
 	/* like Vi: set the mark where the cursor is in the file. */
-	if (eap->cmdidx != CMD_argdo)
+	else if (eap->cmdidx != CMD_argdo)
 	    setmark('\'');
     }
 }
@@ -2463,8 +2473,14 @@ do_in_runtimepath(name, all, callback, cookie)
     if (buf != NULL && rtp_copy != NULL)
     {
 	if (p_verbose > 1)
-	    smsg((char_u *)_("Searching for \"%s\" in \"%s\""),
+	{
+	    if (STRLEN(name) + STRLEN(p_rtp) > IOSIZE - 100)
+		MSG(_("Searching for a long name in 'runtimepath'"));
+	    else
+		smsg((char_u *)_("Searching for \"%s\" in \"%s\""),
 						 (char *)name, (char *)p_rtp);
+	}
+
 	/* Loop over all entries in 'runtimepath'. */
 	rtp = rtp_copy;
 	while (*rtp != NUL && (all || !did_one))

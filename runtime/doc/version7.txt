@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Apr 24
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 May 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -619,6 +619,9 @@ window.
 
 Added the "%s" item to 'errorformat'. (Yegappan Lakshmanan)
 
+GTK GUI: use the GTK file dialog when it's available.  Mix from patches by
+Grahame Bowland and Evan Webb.
+
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*
 
@@ -1058,5 +1061,11 @@ we find the same position again and advance one character.
 
 When in diff mode and making a change that causes the "changed" highlighting
 to disappear or reappear, it was still highlighted in another window.
+
+When a ":next" command fails because the user selects "Abort" at the ATTENTION
+prompt the argument index was advanced anyway.
+
+When "~" is in 'iskeyword' the "gd" doesn't work, it's used for the previous
+substitute pattern.  Put "\V" in the pattern to avoid that.
 
  vim:tw=78:ts=8:ft=help:norl:

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Apr 24
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 May 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,19 +30,12 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-This doesn't work: "a[var1:var2]".  Requires space before/after ':'.  Can this
-be fixed?  Otherwise document it.
-
-regmatch(): "regstack" could start with a fixed block of data for speed.
-"backpos" is never freed. (Alexei Alexandrov)
-
-Starting without any buffers, set nocp, ":b <Tab>" gives error message.
-(Ciaran McCressh for Aron Griffis)
-
 Problem with 'insertmode'. (Georg Dahn, 2005 April 9, expl. April 14)
 Problem with CTRL-V pasting more than one line. (Georg Dahn, 2005 April 11)
 
 Patch for setqflist() (Yegappan Lakshmanan, 2005 April 11)
+
+":help \=<Tab>" doesn't find "sub-replace-\=".
 
 In an errorfile expand "~/" to home directory. (Arnout Engelen)
 
@@ -50,12 +43,32 @@ Patch for 2html.vim to disable folding (Michael Schaap, 2005 April 12)
 
 Win32: Alt-F10 no longer working? (Bill McCarthy, April 18)
 
+Patch for if_python to make exit work better with threads. (ugo)
+
 With "wa" in 'formatoptions', backspace at start-of-line doesn't work.  It
 should delete the space at the end of the previous line. (Alan Isaac)
+
+GTK GUI: Running a script that does :vsp and :quit, causing the left scrollbar
+to appear and disappear, causes resizing. (gvcolors.vim from Charles Campbell,
+2005 April 25)
+
+Problem with ":mksession" for "vim -o "+argdel *" prog1 prog2 prog3"
+(Bill McCarthy, 2005 April 26)
+
+getreg('=') returns the result of evaluating the expression.  How to get the
+expression itself, so that it can be restored? (David Fishburn)  Perhaps use
+getreg('=', 1).  Also make setreg('=') work then.
+
+Win32: With the taskbar at the top of the screen, scrolling doesn't redraw
+properly. (Sergey Khorev, 2005 April 27)
 
 Mac unicode patch (Da Woon Jung):
 - selecting proportional font breaks display
 - UTF-8 text causes display problems.  Font replacement causes this.
+
+When 'shortmess' is empty and 'keymap' set to accents, in Insert mode CTRL-N
+may cause the hit-enter prompt.  Typing 'a then doesn't result in the accented
+character. (Ilya Dogolazky)
 
 autoload:
 - Add a Vim script in $VIMRUNTIME/tools that takes a file with a list of
@@ -74,8 +87,16 @@ Win32: Balloon text can't contain line break.
     Add has("balloon_multiline")
 
 setline() should accept a List.
+
+smsg() uses IObuff.  The checks for the result not fitting are complicated,
+find another solution.  Add vsnprintf() and snprintf() functions?
+    http://www.ijs.si/software/snprintf/
+
 Add ":[range]sort" command.  Sort on specified field, using a regexp?  Remove
 duplicates?
+
+Patch to alternate fold highlighting.  (Anthony Iano-Fletcher, 2005 May 12)
+More levels?
 
 Awaiting response:
 -   Patch for mch_FullName() also in Vim 6.3?  os_mswin.c
@@ -90,6 +111,8 @@ PLANNED FOR VERSION 7.0:
 
 -   Add SPELLCHECKER, with support for many languages.
     - Use "engspchk" from Charles Campbell for ideas.
+    - Is it worth trying the trie structure (see code from Olaf Seibert, 2005
+      May 9)
     - Spell checking code todo's:
 	- Implement user and project word lists.  Commands to add words and to
 	  mark words as wrong.
@@ -265,6 +288,9 @@ PLANNED FOR VERSION 7.0:
 
 Adjust src/main.aap for installing manpages like in Makefile.
 
+Also generate the .pdb file that can be used to generate a useful crash report
+on MS-Windows. (George Reilly)
+
 Add strtol() to avoid the problems with leading zero causing octal conversion.
 
 Try new POSIX tests, made after my comments. (Geoff Clare, 2005 April 7)
@@ -323,8 +349,6 @@ Updated Ruby interface. (Ryan Paul)
 
 Awaiting updated patches:
     --- awaiting updated patch ---
-    8   Add GTK 2.3 file dialog support.  Patch by Grahame Bowland, 2004 Mar
-	15, but it doesn't use "initdir" or "dflt". (will update patch)
     8   Add ":n" to fnamemodify(): normalize path, remove "../" when possible.
 	Aric Blumer has a patch for this.
 	He will update the patch for 6.3.
@@ -2104,6 +2128,7 @@ Autocommands:
     changing the buffer name.
 8   Add ScriptReadCmd event: used to load remote Vim scripts, e.g.
     "vim -u http://mach/path/vimrc".
+7   Add TagJump event: do something after jumping to a tag.
 8   Use another option than 'updatetime' for the CursorHold event.  The two
     things are unrelated for the user (but the implementation is more
     difficult).
@@ -2786,7 +2811,7 @@ Searching:
 7   From xvim: Allow a newline in search patterns (also for :s, can delete
     newline).  Add BOW, EOW, NEWL, NLORANY, NLBUTANY, magic 'n' and 'r', etc.
     [not in xvim:] Add option to switch on matches crossing ONE line boundary.
-7   Add ":iselect", a combination of ":ilist" and ":tselect". (Aaron)
+7   Add ":iselect", a combination of ":ilist" and ":tselect". (Aaron) (Zellner)
     Also ":dselect".
 
 
@@ -3334,8 +3359,6 @@ Various improvements:
     changes all together instead of for each command (e.g. for the rot13
     macro).
 -   Add command like "[I" that also shows the tree of included files.
--   Add command like ":ts" that shows the output of "[I" and asks for a match
-    to jump to. (Zellner)
 -   ":set sm^L" results in ":set s", because short names of options are also
     expanded.  Is there a better way to do this?
 -   Add ":@!" command, to ":@" like what ":source!" is to ":source".

@@ -7506,7 +7506,7 @@ get_attr_entry(table, aep)
 	return i + ATTR_OFF;
     }
 
-    if (table->ga_len + ATTR_OFF >= 256)
+    if (table->ga_len + ATTR_OFF > MAX_TYPENR)
     {
 	/*
 	 * Running out of attribute entries!  remove all attributes, and

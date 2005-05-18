@@ -6307,7 +6307,7 @@ sign_list_defined(sp)
 {
     char_u	*p;
 
-    smsg((char_u *)"sign %s", sp->sn_name);
+    msg_str((char_u *)"sign %s", sp->sn_name);
     if (sp->sn_icon != NULL)
     {
 	MSG_PUTS(" icon=");

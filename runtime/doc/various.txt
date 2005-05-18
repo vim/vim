@@ -400,13 +400,13 @@ N  *+X11*		Unix only: can restore window title |X11|
 :redi[r] @{a-zA-Z}	Redirect messages to register {a-z}.  Append to the
 			contents of the register if its name is given
 			uppercase {A-Z}.  {not in Vi}
-:redi[r] @{a-z}>	Append messages to register {a-z}. {not in Vi}
+:redi[r] @{a-z}>>	Append messages to register {a-z}. {not in Vi}
 
 :redi[r] @*		Redirect messages to the clipboard. {not in Vi}
-:redi[r] @*>		Append messages to the clipboard. {not in Vi}
+:redi[r] @*>>		Append messages to the clipboard. {not in Vi}
 
 :redi[r] @"		Redirect messages to the unnamed register. {not in Vi}
-:redi[r] @">		Append messages to the unnamed register. {not in Vi}
+:redi[r] @">>		Append messages to the unnamed register. {not in Vi}
 
 :redi[r] => {var}	Redirect messages to a variable.  If the variable
 			doesn't exist, then it is created.  If the variable
