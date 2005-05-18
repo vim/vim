@@ -24,6 +24,7 @@
 # define HAVE_STRING_H
 #endif
 #define HAVE_STRCSPN
+#define HAVE_VSNPRINTF
 #ifndef __GNUC__
 #define HAVE_STRICMP
 #define HAVE_STRNICMP
