@@ -296,8 +296,6 @@ OPTFLAG = /Ox
 !endif
 CFLAGS = $(CFLAGS) $(OPTFLAG) -DNDEBUG $(CPUARG)
 RCFLAGS = $(rcflags) $(rcvars) -DNDEBUG
-PDB =
-LINK_PDB =
 ! ifdef USE_MSVCRT
 CFLAGS = $(CFLAGS) -MD
 LIBC = msvcrt.lib
@@ -308,13 +306,7 @@ LIBC = libc.lib
 ! endif
 !else  # DEBUG
 VIM = vimd
-# MSVC 4.1
-PDB = /Fd$(OUTDIR)/
-LINK_PDB = /PDB:$(OUTDIR)/
-# MSVC 2.2
-# PDB = /Fd$(OUTDIR)/vim.pdb
-# LINK_PDB = /PDB:$(OUTDIR)/vim.pdb
-CFLAGS = $(CFLAGS) -D_DEBUG -DDEBUG /Zi /Od
+CFLAGS = $(CFLAGS) -D_DEBUG -DDEBUG /Od
 RCFLAGS = $(rcflags) $(rcvars) -D_DEBUG -DDEBUG
 # The /fixed:no is needed for Quantify. Assume not 4.? as unsupported in VC4.0.
 ! if "$(_NMAKE_VER)" == ""
@@ -620,7 +612,15 @@ FEATURES = BIG
 CFLAGS = $(CFLAGS) -DFEAT_$(FEATURES)
 
 #
-# End extra featuare include
+# Always generate the .pdb file, so that we get debug symbols that can be used
+# on a crash (doesn't add overhead to the executable).
+#
+CFLAGS = $(CFLAGS) /Zi
+PDB = /Fd$(OUTDIR)/
+LINK_PDB = /PDB:$(OUTDIR)/$(VIM).pdb -debug:full -debugtype:cv,fixup
+
+#
+# End extra feature include
 #
 !message
 

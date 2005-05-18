@@ -7815,8 +7815,8 @@ ex_redir(eap)
 		    || *arg == '"')
 	    {
 		redir_reg = *arg++;
-		if (*arg == '>')
-		    ++arg;
+		if (*arg == '>' && arg[1] == '>')
+		    arg += 2;
 		else if (*arg == NUL && (islower(redir_reg)
 # ifdef FEAT_CLIPBOARD
 			    || redir_reg == '*'
@@ -7829,8 +7829,8 @@ ex_redir(eap)
 	    }
 	    if (*arg != NUL)
 	    {
-		EMSG2(_(e_invarg2), eap->arg);
 		redir_reg = 0;
+		EMSG2(_(e_invarg2), eap->arg);
 	    }
 	}
 	else if (*arg == '=' && arg[1] == '>')

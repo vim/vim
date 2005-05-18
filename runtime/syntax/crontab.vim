@@ -1,9 +1,10 @@
 " Vim syntax file
-" Language:	crontab 2.3.3
+" Language:	crontab
 " Maintainer:	John Hoelzel johnh51@users.sourceforge.net
-" Last change:	Mon Jun  9 2003
-" Filenames:    /tmp/crontab.* used by "crontab -e"
-" URL:		http://johnh51.get.to/vim/syntax/crontab.vim
+" Maintainer:	David Necas (Yeti) <yeti@physics.muni.cz>
+" Last Change:	2005-04-26
+" Filenames:	/tmp/crontab.* used by "crontab -e"
+" URL:		http://trific.ath.cx/Ftp/vim/syntax/crontab.vim
 "
 " crontab line format:
 " Minutes   Hours   Days   Months   Days_of_Week   Commands # comments
@@ -16,20 +17,24 @@ elseif exists("b:current_syntax")
   finish
 endif
 
-syntax match  crontabMin     "\_^[0-9\-\/\,\.]\{}\>\|\*"  nextgroup=crontabHr   skipwhite
-syntax match  crontabHr       "\<[0-9\-\/\,\.]\{}\>\|\*"  nextgroup=crontabDay  skipwhite contained
-syntax match  crontabDay      "\<[0-9\-\/\,\.]\{}\>\|\*"  nextgroup=crontabMnth skipwhite contained
+syntax match  crontabMin     "^\s*[-0-9/,.*]\+"  nextgroup=crontabHr   skipwhite
+syntax match  crontabHr       "\s[-0-9/,.*]\+"  nextgroup=crontabDay  skipwhite contained
+syntax match  crontabDay      "\s[-0-9/,.*]\+"  nextgroup=crontabMnth skipwhite contained
 
-syntax match  crontabMnth  "\<[a-z0-9\-\/\,\.]\{}\>\|\*"  nextgroup=crontabDow  skipwhite contained
+syntax match  crontabMnth  "\s[-a-z0-9/,.*]\+"  nextgroup=crontabDow  skipwhite contained
 syntax keyword crontabMnth12 contained   jan feb mar apr may jun jul aug sep oct nov dec
 
-syntax match  crontabDow   "\<[a-z0-9\-\/\,\.]\{}\>\|\*"  nextgroup=crontabCmd  skipwhite contained
+syntax match  crontabDow   "\s[-a-z0-9/,.*]\+"  nextgroup=crontabCmd  skipwhite contained
 syntax keyword crontabDow7   contained    sun mon tue wed thu fri sat
 
 "  syntax region crontabCmd  start="\<[a-z0-9\/\(]" end="$" nextgroup=crontabCmnt skipwhite contained contains=crontabCmnt keepend
 
-syntax region crontabCmd  start="\S" end="$" nextgroup=crontabCmnt skipwhite contained contains=crontabCmnt keepend
-syntax match  crontabCmnt /#.*/
+syntax region crontabCmd  start="\S" end="$" nextgroup=crontabCmnt skipwhite contained keepend
+syntax match  crontabCmnt "^\s*#.*"
+
+syntax match  crontabNick  "^\s*@\(reboot\|yearly\|annually\|monthly\|weekly\|daily\|midnight\|hourly\)\>" nextgroup=crontabCmd skipwhite
+
+syntax match  crontabVar  "^\s*\k\w*\s*="me=e-1
 
 " Define the default highlighting.
 " For version 5.7 and earlier: only when not done already
@@ -55,6 +60,9 @@ if version >= 508 || !exists("did_crontab_syn_inits")
   HiLink crontabDow7		PreProc
   HiLink crontabDowS		PreProc
   HiLink crontabDowN		PreProc
+
+  HiLink crontabNick		Special
+  HiLink crontabVar		Identifier
 
 " comment out next line for to suppress unix commands coloring.
   HiLink crontabCmd		Type

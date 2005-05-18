@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.0aa.  Last change: 2005 Apr 04
+*editing.txt*   For Vim version 7.0aa.  Last change: 2005 Apr 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -54,12 +54,12 @@ and then hit CTRL-^.  {Vi: only one alternate file name is remembered}
 
 
 CTRL-G		or				*CTRL-G* *:f* *:fi* *:file*
-:f[ile]			Prints the current file name (as typed), the
-			cursor position (unless the 'ruler' option is set),
-			and the file status (readonly, modified, read errors,
-			new file).  See the 'shortmess' option about how to
-			make this message shorter.  {Vi does not include
-			column number}
+:f[ile]			Prints the current file name (as typed, unless ":cd"
+			was used), the cursor position (unless the 'ruler'
+			option is set), and the file status (readonly,
+			modified, read errors, new file).  See the 'shortmess'
+			option about how to make this message shorter.
+			{Vi does not include column number}
 
 :f[ile]!		like |:file|, but don't truncate the name even when
 			'shortmess' indicates this.

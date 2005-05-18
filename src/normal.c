@@ -3929,13 +3929,17 @@ nv_gd(oap, nchar)
     int		save_p_scs;
     char_u	*ptr;
 
-    if ((len = find_ident_under_cursor(&ptr, FIND_IDENT)) == 0 ||
-					       (pat = alloc(len + 5)) == NULL)
+    if ((len = find_ident_under_cursor(&ptr, FIND_IDENT)) == 0
+	    || (pat = alloc(len + 7)) == NULL)
     {
 	clearopbeep(oap);
 	return;
     }
-    sprintf((char *)pat, vim_iswordp(ptr) ? "\\<%.*s\\>" : "%.*s", len, ptr);
+
+    /* Put "\V" before the pattern to avoid that the special meaning of "."
+     * and "~" causes trouble. */
+    sprintf((char *)pat, vim_iswordp(ptr) ? "\\V\\<%.*s\\>" : "\\V%.*s",
+								    len, ptr);
     old_pos = curwin->w_cursor;
     save_p_ws = p_ws;
     save_p_scs = p_scs;

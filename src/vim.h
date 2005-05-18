@@ -1227,7 +1227,15 @@ enum hlf_value
 #define LSIZE	    512		/* max. size of a line in the tags file */
 
 #define IOSIZE	   (1024+1)	/* file i/o and sprintf buffer size */
-#define MSG_BUF_LEN 80		/* length of buffer for small messages */
+
+#ifdef FEAT_MBYTE
+# define MSG_BUF_LEN 480	/* length of buffer for small messages */
+# define MSG_BUF_CLEN  (MSG_BUF_LEN / 6)    /* cell length (worst case: utf-8
+					       takes 6 bytes for one cell) */
+#else
+# define MSG_BUF_LEN 80		/* length of buffer for small messages */
+# define MSG_BUF_CLEN  MSG_BUF_LEN	    /* cell length */
+#endif
 
 #if defined(AMIGA) || defined(__linux__) || defined(__QNX__) || defined(__CYGWIN32__) || defined(_AIX)
 # define TBUFSZ 2048		/* buffer size for termcap entry */
