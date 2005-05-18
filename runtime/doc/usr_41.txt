@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 7.0aa.  Last change: 2005 Mar 25
+*usr_41.txt*	For Vim version 7.0aa.  Last change: 2005 May 18
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -2229,11 +2229,11 @@ Here you need to know that MyLibFunction() is defined in a script
 To make this a bit simpler Vim offers the autoload mechanism.  Then the
 example looks like this: >
 
-	call mylib:myfunction(arg)
+	call mylib#myfunction(arg)
 
 That's a lot simpler, isn't it?  Vim will recognize the function name and when
 it's not defined search for the script "autoload/mylib.vim" in 'runtimepath'.
-That script must define the "mylib:myfunction()" function.
+That script must define the "mylib#myfunction()" function.
 
 You can put many other functions in the mylib.vim script, you are free to
 organize your functions in library scripts.  But you must use function names
@@ -2243,7 +2243,7 @@ would not know what script to load.
 If you get really enthousiastic and write lots of library scripts, you may
 want to use subdirectories.  Example: >
 
-	call netlib:ftp:read('somefile')
+	call netlib#ftp#read('somefile')
 
 For Unix the library script used for this could be:
 
@@ -2251,7 +2251,7 @@ For Unix the library script used for this could be:
 
 Where the function is defined like this: >
 
-	function netlib:ftp:read(fname)
+	function netlib#ftp#read(fname)
 		"  Read the file fname through ftp
 	endfunction
 
@@ -2261,12 +2261,12 @@ exactly matches the subdirectory and script name.
 
 You can use the same mechanism for variables: >
 
-	let weekdays = dutch:weekdays
+	let weekdays = dutch#weekdays
 
 This will load the script "autoload/dutch.vim", which should contain something
 like: >
 
-	let dutch:weekdays = ['zondag', 'maandag', 'dinsdag', 'woensdag',
+	let dutch#weekdays = ['zondag', 'maandag', 'dinsdag', 'woensdag',
 		\ 'donderdag', 'vrijdag', 'zaterdag']
 
 Further reading: |autoload|.

@@ -1,4 +1,4 @@
-*diff.txt*      For Vim version 7.0aa.  Last change: 2005 Mar 08
+*diff.txt*      For Vim version 7.0aa.  Last change: 2005 Apr 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -161,6 +161,8 @@ buffer.  If you don't want a buffer to remain used for the diff do ":set
 nodiff" before hiding it.
 
 							*:diffu* *:diffupdate*
+:diffu[pdate]			Update the diff highlighting and folds.
+
 Vim attempts to keep the differences updated when you make changes to the
 text.  This mostly takes care of inserted and deleted lines.  Changes within a
 line and more complicated changes do not cause the differences to be updated.

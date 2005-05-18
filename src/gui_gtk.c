@@ -1209,7 +1209,11 @@ gui_mch_destroy_scrollbar(scrollbar_T *sb)
 /*
  * Implementation of the file selector related stuff
  */
+#if defined(HAVE_GTK2) && GTK_CHECK_VERSION(2,4,0)
+# define USE_FILE_CHOOSER
+#endif
 
+#ifndef USE_FILE_CHOOSER
 /*ARGSUSED*/
     static void
 browse_ok_cb(GtkWidget *widget, gpointer cbdata)
@@ -1258,6 +1262,7 @@ browse_destroy_cb(GtkWidget * widget)
 
     return FALSE;
 }
+#endif
 
 /*
  * Put up a file requester.
@@ -1278,7 +1283,9 @@ gui_mch_browse(int saving,
 	       char_u *initdir,
 	       char_u *filter)
 {
-    GtkFileSelection	*fs;	/* shortcut */
+#ifdef USE_FILE_CHOOSER
+    GtkWidget		*fc;
+#endif
     char_u		dirbuf[MAXPATHL];
     char_u		*p;
 
@@ -1286,12 +1293,56 @@ gui_mch_browse(int saving,
     title = CONVERT_TO_UTF8(title);
 # endif
 
-    if (!gui.filedlg)
+    /* Concatenate "initdir" and "dflt". */
+    if (initdir == NULL || *initdir == NUL)
+	mch_dirname(dirbuf, MAXPATHL);
+    else if (STRLEN(initdir) + 2 < MAXPATHL)
+	STRCPY(dirbuf, initdir);
+    else
+	dirbuf[0] = NUL;
+    /* Always need a trailing slash for a directory. */
+    add_pathsep(dirbuf);
+    if (dflt != NULL && *dflt != NUL
+			      && STRLEN(dirbuf) + 2 + STRLEN(dflt) < MAXPATHL)
+	STRCAT(dirbuf, dflt);
+
+    /* If our pointer is currently hidden, then we should show it. */
+    gui_mch_mousehide(FALSE);
+
+#ifdef USE_FILE_CHOOSER
+    /* We create the dialog each time, so that the button text can be "Open"
+     * or "Save" according to the action. */
+    fc = gtk_file_chooser_dialog_new((const gchar *)title,
+	    GTK_WINDOW(gui.mainwin),
+	    saving ? GTK_FILE_CHOOSER_ACTION_SAVE
+					   : GTK_FILE_CHOOSER_ACTION_OPEN,
+	    saving ? GTK_STOCK_SAVE : GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+	    GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+	    NULL);
+    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(fc),
+						       (const gchar *)dirbuf);
+
+    gui.browse_fname = NULL;
+    if (gtk_dialog_run(GTK_DIALOG(fc)) == GTK_RESPONSE_ACCEPT)
     {
+        char *filename;
+
+        filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fc));
+        gui.browse_fname = (char_u *)g_strdup(filename);
+        g_free(filename);
+    }
+    gtk_widget_destroy(GTK_WIDGET(fc));
+
+#else
+
+    if (gui.filedlg == NULL)
+    {
+	GtkFileSelection	*fs;	/* shortcut */
+
 	gui.filedlg = gtk_file_selection_new((const gchar *)title);
 	gtk_window_set_modal(GTK_WINDOW(gui.filedlg), TRUE);
 	gtk_window_set_transient_for(GTK_WINDOW(gui.filedlg),
-		GTK_WINDOW(gui.mainwin));
+						     GTK_WINDOW(gui.mainwin));
 	fs = GTK_FILE_SELECTION(gui.filedlg);
 
 	gtk_container_border_width(GTK_CONTAINER(fs), 4);
@@ -1308,26 +1359,6 @@ gui_mch_browse(int saving,
     else
 	gtk_window_set_title(GTK_WINDOW(gui.filedlg), (const gchar *)title);
 
-# ifdef HAVE_GTK2
-    CONVERT_TO_UTF8_FREE(title);
-# endif
-
-    /* if our pointer is currently hidden, then we should show it. */
-    gui_mch_mousehide(FALSE);
-
-    /* Concatenate "initdir" and "dflt". */
-    if (initdir == NULL || *initdir == NUL)
-	mch_dirname(dirbuf, MAXPATHL);
-    else if (STRLEN(initdir) + 2 < MAXPATHL)
-	STRCPY(dirbuf, initdir);
-    else
-	dirbuf[0] = NUL;
-    /* Always need a trailing slash for a directory. */
-    add_pathsep(dirbuf);
-    if (dflt != NULL && *dflt != NUL
-			      && STRLEN(dirbuf) + 2 + STRLEN(dflt) < MAXPATHL)
-	STRCAT(dirbuf, dflt);
-
     gtk_file_selection_set_filename(GTK_FILE_SELECTION(gui.filedlg),
 						      (const gchar *)dirbuf);
 # ifndef HAVE_GTK2
@@ -1338,7 +1369,11 @@ gui_mch_browse(int saving,
     gtk_widget_show(gui.filedlg);
     while (gui.filedlg && GTK_WIDGET_DRAWABLE(gui.filedlg))
 	gtk_main_iteration_do(TRUE);
+#endif
 
+# ifdef HAVE_GTK2
+    CONVERT_TO_UTF8_FREE(title);
+# endif
     if (gui.browse_fname == NULL)
 	return NULL;
 
@@ -1421,6 +1456,7 @@ gui_mch_browsedir(
 # endif
 }
 #endif
+
 
 #endif	/* FEAT_BROWSE */
 
@@ -3104,7 +3140,6 @@ gui_gtk_position_in_parent(
 	pos_x = xP + wP - c_size.width - 2;
     /* Assume 'guiheadroom' indicates the title bar height... */
     if ((pos_y + c_size.height + p_ghr / 2) > (hP + yP))
-	pos_y = yP + hP - c_size.height - 2 - p_ghr / 2;
 
     gtk_widget_set_uposition(child, pos_x, pos_y);
 }

@@ -3073,6 +3073,81 @@ static linenr_T		reg_firstlnum;
 static linenr_T		reg_maxline;
 static int		reg_line_lbr;	    /* "\n" in string is line break */
 
+/* Values for rs_state in regitem_T. */
+typedef enum regstate_E
+{
+    RS_NOPEN = 0	/* NOPEN and NCLOSE */
+    , RS_MOPEN		/* MOPEN + [0-9] */
+    , RS_MCLOSE		/* MCLOSE + [0-9] */
+#ifdef FEAT_SYN_HL
+    , RS_ZOPEN		/* ZOPEN + [0-9] */
+    , RS_ZCLOSE		/* ZCLOSE + [0-9] */
+#endif
+    , RS_BRANCH		/* BRANCH */
+    , RS_BRCPLX_MORE	/* BRACE_COMPLEX and trying one more match */
+    , RS_BRCPLX_LONG	/* BRACE_COMPLEX and trying longest match */
+    , RS_BRCPLX_SHORT	/* BRACE_COMPLEX and trying shortest match */
+    , RS_NOMATCH	/* NOMATCH */
+    , RS_BEHIND1	/* BEHIND / NOBEHIND matching rest */
+    , RS_BEHIND2	/* BEHIND / NOBEHIND matching behind part */
+    , RS_STAR_LONG	/* STAR/PLUS/BRACE_SIMPLE longest match */
+    , RS_STAR_SHORT	/* STAR/PLUS/BRACE_SIMPLE shortest match */
+} regstate_T;
+
+/*
+ * When there are alternatives a regstate_T is put on the regstack to remember
+ * what we are doing.
+ * Before it may be another type of item, depending on rs_state, to remember
+ * more things.
+ */
+typedef struct regitem_S
+{
+    regstate_T	rs_state;	/* what we are doing, one of RS_ above */
+    char_u	*rs_scan;	/* current node in program */
+    union
+    {
+	save_se_T  sesave;
+	regsave_T  regsave;
+    } rs_un;			/* room for saving reginput */
+    short	rs_no;		/* submatch nr */
+} regitem_T;
+
+static regitem_T *regstack_push __ARGS((regstate_T state, char_u *scan));
+static void regstack_pop __ARGS((char_u **scan));
+
+/* used for BEHIND and NOBEHIND matching */
+typedef struct regbehind_S
+{
+    regsave_T	save_after;
+    regsave_T	save_behind;
+} regbehind_T;
+
+/* used for STAR, PLUS and BRACE_SIMPLE matching */
+typedef struct regstar_S
+{
+    int		nextb;		/* next byte */
+    int		nextb_ic;	/* next byte reverse case */
+    long	count;
+    long	minval;
+    long	maxval;
+} regstar_T;
+
+/* used to store input position when a BACK was encountered, so that we now if
+ * we made any progress since the last time. */
+typedef struct backpos_S
+{
+    char_u	*bp_scan;	/* "scan" where BACK was encountered */
+    regsave_T	bp_pos;		/* last input position */
+} backpos_T;
+
+/*
+ * regstack and backpos are used by regmatch().  They are kept over calls to
+ * avoid invoking malloc() and free() often.
+ */
+static garray_T	regstack;	/* stack with regitem_T items, sometimes
+				   preceded by regstar_T or regbehind_T. */
+static garray_T	backpos;	/* table with backpos_T for BACK */
+
 /*
  * Get pointer to the line "lnum", which is relative to "reg_firstlnum".
  */
@@ -3201,6 +3276,14 @@ vim_regexec_both(line, col)
     long	retval = 0L;
 
     reg_tofree = NULL;
+
+    /* Init the regstack empty.  Use an item size of 1 byte, since we push
+     * different things onto it.  Use a large grow size to avoid reallocating
+     * it too often. */
+    ga_init2(&regstack, 1, 10000);
+
+    /* Init the backpos table empty. */
+    ga_init2(&backpos, sizeof(backpos_T), 10);
 
     if (REG_MULTI)
     {
@@ -3360,8 +3443,10 @@ vim_regexec_both(line, col)
     }
 
 theend:
-    /* Didn't find a match. */
     vim_free(reg_tofree);
+    ga_clear(&regstack);
+    ga_clear(&backpos);
+
     return retval;
 }
 
@@ -3519,73 +3604,6 @@ reg_prev_class()
 static long	bl_minval;
 static long	bl_maxval;
 
-/* Values for rs_state in regitem_T. */
-typedef enum regstate_E
-{
-    RS_NOPEN = 0	/* NOPEN and NCLOSE */
-    , RS_MOPEN		/* MOPEN + [0-9] */
-    , RS_MCLOSE		/* MCLOSE + [0-9] */
-#ifdef FEAT_SYN_HL
-    , RS_ZOPEN		/* ZOPEN + [0-9] */
-    , RS_ZCLOSE		/* ZCLOSE + [0-9] */
-#endif
-    , RS_BRANCH		/* BRANCH */
-    , RS_BRCPLX_MORE	/* BRACE_COMPLEX and trying one more match */
-    , RS_BRCPLX_LONG	/* BRACE_COMPLEX and trying longest match */
-    , RS_BRCPLX_SHORT	/* BRACE_COMPLEX and trying shortest match */
-    , RS_NOMATCH	/* NOMATCH */
-    , RS_BEHIND1	/* BEHIND / NOBEHIND matching rest */
-    , RS_BEHIND2	/* BEHIND / NOBEHIND matching behind part */
-    , RS_STAR_LONG	/* STAR/PLUS/BRACE_SIMPLE longest match */
-    , RS_STAR_SHORT	/* STAR/PLUS/BRACE_SIMPLE shortest match */
-} regstate_T;
-
-/*
- * When there are alternatives a regstate_T is put on the regstack to remember
- * what we are doing.
- * Before it may be another type of item, depending on rs_state, to remember
- * more things.
- */
-typedef struct regitem_S
-{
-    regstate_T	rs_state;	/* what we are doing, one of RS_ above */
-    char_u	*rs_scan;	/* current node in program */
-    union
-    {
-	save_se_T  sesave;
-	regsave_T  regsave;
-    } rs_un;			/* room for saving reginput */
-    short	rs_no;		/* submatch nr */
-} regitem_T;
-
-static regitem_T *regstack_push __ARGS((garray_T *regstack, regstate_T state, char_u *scan));
-static void regstack_pop __ARGS((garray_T *regstack, char_u **scan));
-
-/* used for BEHIND and NOBEHIND matching */
-typedef struct regbehind_S
-{
-    regsave_T	save_after;
-    regsave_T	save_behind;
-} regbehind_T;
-
-/* used for STAR, PLUS and BRACE_SIMPLE matching */
-typedef struct regstar_S
-{
-    int		nextb;		/* next byte */
-    int		nextb_ic;	/* next byte reverse case */
-    long	count;
-    long	minval;
-    long	maxval;
-} regstar_T;
-
-/* used to store input position when a BACK was encountered, so that we now if
- * we made any progress since the last time. */
-typedef struct backpos_S
-{
-    char_u	*bp_scan;	/* "scan" where BACK was encountered */
-    regsave_T	bp_pos;		/* last input position */
-} backpos_T;
-
 /*
  * regmatch - main matching routine
  *
@@ -3608,8 +3626,6 @@ regmatch(scan)
   char_u	*next;		/* Next node. */
   int		op;
   int		c;
-  garray_T	regstack;	/* stack with regitem_T items, sometimes
-				   preceded by regstar_T or regbehind_T. */
   regitem_T	*rp;
   int		no;
   int		status;		/* one of the RA_ values: */
@@ -3618,14 +3634,11 @@ regmatch(scan)
 #define RA_BREAK	3	/* break inner loop */
 #define RA_MATCH	4	/* successful match */
 #define RA_NOMATCH	5	/* didn't match */
-  garray_T	backpos;	/* table with backpos_T for BACK */
 
-  /* Init the regstack empty.  Use an item size of 1 byte, since we push
-   * different things onto it.  Use a large grow size to avoid reallocating
-   * it too often. */
-  ga_init2(&regstack, 1, 10000);
-
-  ga_init2(&backpos, sizeof(backpos_T), 10);
+  /* Init the regstack and backpos table empty.  They are initialized and
+   * freed in vim_regexec_both() to reduce malloc()/free() calls. */
+  regstack.ga_len = 0;
+  backpos.ga_len = 0;
 
   /*
    * Repeat until "regstack" is empty.
@@ -4133,7 +4146,7 @@ regmatch(scan)
 	    {
 		no = op - MOPEN;
 		cleanup_subexpr();
-		rp = regstack_push(&regstack, RS_MOPEN, scan);
+		rp = regstack_push(RS_MOPEN, scan);
 		if (rp == NULL)
 		    status = RA_FAIL;
 		else
@@ -4148,7 +4161,7 @@ regmatch(scan)
 
 	  case NOPEN:	    /* \%( */
 	  case NCLOSE:	    /* \) after \%( */
-		if (regstack_push(&regstack, RS_NOPEN, scan) == NULL)
+		if (regstack_push(RS_NOPEN, scan) == NULL)
 		    status = RA_FAIL;
 		/* We simply continue and handle the result when done. */
 		break;
@@ -4166,7 +4179,7 @@ regmatch(scan)
 	    {
 		no = op - ZOPEN;
 		cleanup_zsubexpr();
-		rp = regstack_push(&regstack, RS_ZOPEN, scan);
+		rp = regstack_push(RS_ZOPEN, scan);
 		if (rp == NULL)
 		    status = RA_FAIL;
 		else
@@ -4193,7 +4206,7 @@ regmatch(scan)
 	    {
 		no = op - MCLOSE;
 		cleanup_subexpr();
-		rp = regstack_push(&regstack, RS_MCLOSE, scan);
+		rp = regstack_push(RS_MCLOSE, scan);
 		if (rp == NULL)
 		    status = RA_FAIL;
 		else
@@ -4218,7 +4231,7 @@ regmatch(scan)
 	    {
 		no = op - ZCLOSE;
 		cleanup_zsubexpr();
-		rp = regstack_push(&regstack, RS_ZCLOSE, scan);
+		rp = regstack_push(RS_ZCLOSE, scan);
 		if (rp == NULL)
 		    status = RA_FAIL;
 		else
@@ -4396,7 +4409,7 @@ regmatch(scan)
 		    next = OPERAND(scan);	/* Avoid recursion. */
 		else
 		{
-		    rp = regstack_push(&regstack, RS_BRANCH, scan);
+		    rp = regstack_push(RS_BRANCH, scan);
 		    if (rp == NULL)
 			status = RA_FAIL;
 		    else
@@ -4446,7 +4459,7 @@ regmatch(scan)
 		if (brace_count[no] <= (brace_min[no] <= brace_max[no]
 					     ? brace_min[no] : brace_max[no]))
 		{
-		    rp = regstack_push(&regstack, RS_BRCPLX_MORE, scan);
+		    rp = regstack_push(RS_BRCPLX_MORE, scan);
 		    if (rp == NULL)
 			status = RA_FAIL;
 		    else
@@ -4465,7 +4478,7 @@ regmatch(scan)
 		    /* Range is the normal way around, use longest match */
 		    if (brace_count[no] <= brace_max[no])
 		    {
-			rp = regstack_push(&regstack, RS_BRCPLX_LONG, scan);
+			rp = regstack_push(RS_BRCPLX_LONG, scan);
 			if (rp == NULL)
 			    status = RA_FAIL;
 			else
@@ -4482,7 +4495,7 @@ regmatch(scan)
 		    /* Range is backwards, use shortest match first */
 		    if (brace_count[no] <= brace_min[no])
 		    {
-			rp = regstack_push(&regstack, RS_BRCPLX_SHORT, scan);
+			rp = regstack_push(RS_BRCPLX_SHORT, scan);
 			if (rp == NULL)
 			    status = RA_FAIL;
 			else
@@ -4562,7 +4575,7 @@ regmatch(scan)
 		    else
 		    {
 			regstack.ga_len += sizeof(regstar_T);
-			rp = regstack_push(&regstack, rst.minval <= rst.maxval
+			rp = regstack_push(rst.minval <= rst.maxval
 					? RS_STAR_LONG : RS_STAR_SHORT, scan);
 			if (rp == NULL)
 			    status = RA_FAIL;
@@ -4582,7 +4595,7 @@ regmatch(scan)
 	  case NOMATCH:
 	  case MATCH:
 	  case SUBPAT:
-	    rp = regstack_push(&regstack, RS_NOMATCH, scan);
+	    rp = regstack_push(RS_NOMATCH, scan);
 	    if (rp == NULL)
 		status = RA_FAIL;
 	    else
@@ -4607,7 +4620,7 @@ regmatch(scan)
 	    else
 	    {
 		regstack.ga_len += sizeof(regbehind_T);
-		rp = regstack_push(&regstack, RS_BEHIND1, scan);
+		rp = regstack_push(RS_BEHIND1, scan);
 		if (rp == NULL)
 		    status = RA_FAIL;
 		else
@@ -4675,7 +4688,7 @@ regmatch(scan)
 	{
 	  case RS_NOPEN:
 	    /* Result is passed on as-is, simply pop the state. */
-	    regstack_pop(&regstack, &scan);
+	    regstack_pop(&scan);
 	    break;
 
 	  case RS_MOPEN:
@@ -4683,7 +4696,7 @@ regmatch(scan)
 	    if (status == RA_NOMATCH)
 		restore_se(&rp->rs_un.sesave, &reg_startpos[rp->rs_no],
 						  &reg_startp[rp->rs_no]);
-	    regstack_pop(&regstack, &scan);
+	    regstack_pop(&scan);
 	    break;
 
 #ifdef FEAT_SYN_HL
@@ -4692,7 +4705,7 @@ regmatch(scan)
 	    if (status == RA_NOMATCH)
 		restore_se(&rp->rs_un.sesave, &reg_startzpos[rp->rs_no],
 						 &reg_startzp[rp->rs_no]);
-	    regstack_pop(&regstack, &scan);
+	    regstack_pop(&scan);
 	    break;
 #endif
 
@@ -4701,7 +4714,7 @@ regmatch(scan)
 	    if (status == RA_NOMATCH)
 		restore_se(&rp->rs_un.sesave, &reg_endpos[rp->rs_no],
 						    &reg_endp[rp->rs_no]);
-	    regstack_pop(&regstack, &scan);
+	    regstack_pop(&scan);
 	    break;
 
 #ifdef FEAT_SYN_HL
@@ -4710,14 +4723,14 @@ regmatch(scan)
 	    if (status == RA_NOMATCH)
 		restore_se(&rp->rs_un.sesave, &reg_endzpos[rp->rs_no],
 						   &reg_endzp[rp->rs_no]);
-	    regstack_pop(&regstack, &scan);
+	    regstack_pop(&scan);
 	    break;
 #endif
 
 	  case RS_BRANCH:
 	    if (status == RA_MATCH)
 		/* this branch matched, use it */
-		regstack_pop(&regstack, &scan);
+		regstack_pop(&scan);
 	    else
 	    {
 		if (status != RA_BREAK)
@@ -4730,7 +4743,7 @@ regmatch(scan)
 		{
 		    /* no more branches, didn't find a match */
 		    status = RA_NOMATCH;
-		    regstack_pop(&regstack, &scan);
+		    regstack_pop(&scan);
 		}
 		else
 		{
@@ -4749,7 +4762,7 @@ regmatch(scan)
 		reg_restore(&rp->rs_un.regsave, &backpos);
 		--brace_count[rp->rs_no];	/* decrement match count */
 	    }
-	    regstack_pop(&regstack, &scan);
+	    regstack_pop(&scan);
 	    break;
 
 	  case RS_BRCPLX_LONG:
@@ -4762,7 +4775,7 @@ regmatch(scan)
 		/* continue with the items after "\{}" */
 		status = RA_CONT;
 	    }
-	    regstack_pop(&regstack, &scan);
+	    regstack_pop(&scan);
 	    if (status == RA_CONT)
 		scan = regnext(scan);
 	    break;
@@ -4772,7 +4785,7 @@ regmatch(scan)
 	    if (status == RA_NOMATCH)
 		/* There was no match, try to match one more item. */
 		reg_restore(&rp->rs_un.regsave, &backpos);
-	    regstack_pop(&regstack, &scan);
+	    regstack_pop(&scan);
 	    if (status == RA_NOMATCH)
 	    {
 		scan = OPERAND(scan);
@@ -4792,7 +4805,7 @@ regmatch(scan)
 		if (rp->rs_no != SUBPAT)	/* zero-width */
 		    reg_restore(&rp->rs_un.regsave, &backpos);
 	    }
-	    regstack_pop(&regstack, &scan);
+	    regstack_pop(&scan);
 	    if (status == RA_CONT)
 		scan = regnext(scan);
 	    break;
@@ -4800,7 +4813,7 @@ regmatch(scan)
 	  case RS_BEHIND1:
 	    if (status == RA_NOMATCH)
 	    {
-		regstack_pop(&regstack, &scan);
+		regstack_pop(&scan);
 		regstack.ga_len -= sizeof(regbehind_T);
 	    }
 	    else
@@ -4844,7 +4857,7 @@ regmatch(scan)
 		else
 		    /* But we didn't want a match. */
 		    status = RA_NOMATCH;
-		regstack_pop(&regstack, &scan);
+		regstack_pop(&scan);
 		regstack.ga_len -= sizeof(regbehind_T);
 	    }
 	    else
@@ -4897,7 +4910,7 @@ regmatch(scan)
 		    }
 		    else
 			status = RA_NOMATCH;
-		    regstack_pop(&regstack, &scan);
+		    regstack_pop(&scan);
 		    regstack.ga_len -= sizeof(regbehind_T);
 		}
 	    }
@@ -4910,7 +4923,7 @@ regmatch(scan)
 
 		if (status == RA_MATCH)
 		{
-		    regstack_pop(&regstack, &scan);
+		    regstack_pop(&scan);
 		    regstack.ga_len -= sizeof(regstar_T);
 		    break;
 		}
@@ -4976,7 +4989,7 @@ regmatch(scan)
 		if (status != RA_CONT)
 		{
 		    /* Failed. */
-		    regstack_pop(&regstack, &scan);
+		    regstack_pop(&scan);
 		    regstack.ga_len -= sizeof(regstar_T);
 		    status = RA_NOMATCH;
 		}
@@ -5000,7 +5013,6 @@ regmatch(scan)
      */
     if (regstack.ga_len == 0 || status == RA_FAIL)
     {
-	ga_clear(&regstack);
 	if (scan == NULL)
 	{
 	    /*
@@ -5027,26 +5039,25 @@ regmatch(scan)
  * Returns pointer to new item.  Returns NULL when out of memory.
  */
     static regitem_T *
-regstack_push(regstack, state, scan)
-    garray_T	*regstack;
+regstack_push(state, scan)
     regstate_T	state;
     char_u	*scan;
 {
     regitem_T	*rp;
 
-    if ((long)((unsigned)regstack->ga_len >> 10) >= p_mmp)
+    if ((long)((unsigned)regstack.ga_len >> 10) >= p_mmp)
     {
 	EMSG(_(e_maxmempat));
 	return NULL;
     }
-    if (ga_grow(regstack, sizeof(regitem_T)) == FAIL)
+    if (ga_grow(&regstack, sizeof(regitem_T)) == FAIL)
 	return NULL;
 
-    rp = (regitem_T *)((char *)regstack->ga_data + regstack->ga_len);
+    rp = (regitem_T *)((char *)regstack.ga_data + regstack.ga_len);
     rp->rs_state = state;
     rp->rs_scan = scan;
 
-    regstack->ga_len += sizeof(regitem_T);
+    regstack.ga_len += sizeof(regitem_T);
     return rp;
 }
 
@@ -5054,16 +5065,15 @@ regstack_push(regstack, state, scan)
  * Pop an item from the regstack.
  */
     static void
-regstack_pop(regstack, scan)
-    garray_T	*regstack;
+regstack_pop(scan)
     char_u	**scan;
 {
     regitem_T	*rp;
 
-    rp = (regitem_T *)((char *)regstack->ga_data + regstack->ga_len) - 1;
+    rp = (regitem_T *)((char *)regstack.ga_data + regstack.ga_len) - 1;
     *scan = rp->rs_scan;
 
-    regstack->ga_len -= sizeof(regitem_T);
+    regstack.ga_len -= sizeof(regitem_T);
 }
 
 /*

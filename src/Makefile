@@ -1259,7 +1259,7 @@ POST_DEFS = $(X_CFLAGS) $(MZSCHEME_CFLAGS) $(PERL_CFLAGS) $(PYTHON_CFLAGS) $(TCL
 
 ALL_CFLAGS = $(PRE_DEFS) $(CFLAGS) $(PROFILE_CFLAGS) $(POST_DEFS)
 
-LINT_CFLAGS = -DLINT -I. $(PRE_DEFS) $(POST_DEFS) -Dinline= -D__extension__= -Dalloca=alloca
+LINT_CFLAGS = -DLINT -I. $(PRE_DEFS) $(POST_DEFS) -Dinline= -D__extension__= -Dalloca=alloca -D"__attribute__(x)="
 
 DEPEND_CFLAGS = -DPROTO -DDEPEND -DFEAT_GUI $(LINT_CFLAGS)
 

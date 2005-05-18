@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Apr 22
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 May 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -193,6 +193,10 @@ The second index can be just before the first index.  In that case the result
 is an empty list.  If the second index is lower, this results in an error. >
 	:echo mylist[2:1]		" result: []
 	:echo mylist[2:0]		" error!
+
+NOTE: mylist[s:e] means using the variable "s:e" as index.  Watch out for
+using a single letter variable before the ":".  Insert a space when needed:
+mylist[s : e].
 
 
 List identity ~
@@ -4596,14 +4600,14 @@ Using a script in the "autoload" directory is simpler, but requires using
 exactly the right file name.  A function that can be autoloaded has a name
 like this: >
 
-	:call filename:funcname()
+	:call filename#funcname()
 
 When such a function is called, and it is not defined yet, Vim will search the
 "autoload" directories in 'runtimepath' for a script file called
 "filename.vim".  For example "~/.vim/autoload/filename.vim".  That file should
 then define the function like this: >
 
-	function filename:funcname()
+	function filename#funcname()
 	   echo "Done!"
 	endfunction
 
@@ -4611,10 +4615,10 @@ The file name and the name used before the colon in the function must match
 exactly, and the defined function must have the name exactly as it will be
 called.
 
-It is possible to use subdirectories.  Every colon in the function name works
-like a path separator.  Thus when calling a function: >
+It is possible to use subdirectories.  Every # in the function name works like
+a path separator.  Thus when calling a function: >
 
-	:call foo:bar:func()
+	:call foo#bar#func()
 
 Vim will look for the file "autoload/foo/bar.vim" in 'runtimepath'.
 
@@ -4623,13 +4627,13 @@ otherwise it looks like a scope, such as "s:".
 
 This also works when reading a variable that has not been set yet: >
 
-	:let l = foo:bar:lvar
+	:let l = foo#bar#lvar
 
 When assigning a value to such a variable nothing special happens.  This can
 be used to pass settings to the autoload script before it's loaded: >
 
-	:let foo:bar:toggle = 1
-	:call foo:bar:func()
+	:let foo#bar#toggle = 1
+	:call foo#bar#func()
 
 Note that when you make a mistake and call a function that is supposed to be
 defined in an autoload script, but the script doesn't actually define the

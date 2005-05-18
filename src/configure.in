@@ -1075,11 +1075,11 @@ else
   fi
 fi
 
-test "x$with_x" = xno -a "x$BEOS" != "xyes" -a "x$MACOSX" != "xyes" -a "x$QNX" != "xyes" && enable_gui=no
+test "x$with_x" = xno -a "x$MACOSX" != "xyes" -a "x$QNX" != "xyes" && enable_gui=no
 
 AC_MSG_CHECKING(--enable-gui argument)
 AC_ARG_ENABLE(gui,
- [  --enable-gui[=OPTS]     X11 GUI [default=auto] [OPTS=auto/no/gtk/gtk2/gnome/gnome2/kde/motif/athena/neXtaw/beos/photon/carbon]], , enable_gui="auto")
+ [  --enable-gui[=OPTS]     X11 GUI [default=auto] [OPTS=auto/no/gtk/gtk2/gnome/gnome2/kde/motif/athena/neXtaw/photon/carbon]], , enable_gui="auto")
 
 dnl Canonicalize the --enable-gui= argument so that it can be easily compared.
 dnl Do not use character classes for portability with old tools.

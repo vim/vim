@@ -6292,6 +6292,7 @@ style-names	develop.txt	/*style-names*
 style-spaces	develop.txt	/*style-spaces*
 style-various	develop.txt	/*style-various*
 sub-menu-priority	gui.txt	/*sub-menu-priority*
+sub-replace-\=	change.txt	/*sub-replace-\\=*
 sub-replace-expression	change.txt	/*sub-replace-expression*
 sub-replace-special	change.txt	/*sub-replace-special*
 submatch()	eval.txt	/*submatch()*
