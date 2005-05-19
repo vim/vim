@@ -1307,7 +1307,7 @@ xopen_message(tvp)
     gettimeofday(&end_tv, NULL);
     smsg((char_u *)_("Opening the X display took %ld msec"),
 	    (end_tv.tv_sec - tvp->tv_sec) * 1000L
-	    + (end_tv.tv_usec - tvp->tv_usec) / 1000L);
+				   + (end_tv.tv_usec - tvp->tv_usec) / 1000L);
 }
 # endif
 #endif
@@ -2092,6 +2092,7 @@ mch_get_uname(uid, s, len)
 	    && pw->pw_name != NULL && *(pw->pw_name) != NUL)
     {
 	STRNCPY(s, pw->pw_name, len);
+	s[len - 1] = NUL;
 	return OK;
     }
 #endif
@@ -6453,8 +6454,9 @@ xsmp_init(void)
     if (xsmp.smcconn == NULL)
     {
 	char errorreport[132];
-	sprintf(errorreport, _("XSMP SmcOpenConnection failed: %s"),
-		errorstring);
+
+	vim_snprintf(errorreport, sizeof(errorreport),
+			 _("XSMP SmcOpenConnection failed: %s"), errorstring);
 	if (p_verbose > 0)
 	    MSG(errorreport);
 	return;

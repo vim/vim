@@ -1,4 +1,4 @@
-*if_mzsch.txt*  For Vim version 7.0aa.  Last change: 2005 Jan 23
+*if_mzsch.txt*  For Vim version 7.0aa.  Last change: 2005 May 08
 
 
 		  VIM REFERENCE MANUAL    by Sergey Khorev
@@ -110,6 +110,9 @@ something like this in your .vimrc (EOFs should not have indentation): >
 <
 
 The global namespace just instantiated this module with the prefix "vimext:".
+							*mzscheme-sandbox*
+When executed in the |sandbox|, access to some filesystem and Vim interface
+procedures is restricted.
 
 ==============================================================================
 2. Examples						*mzscheme-examples*

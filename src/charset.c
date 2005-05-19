@@ -1005,6 +1005,7 @@ init_spell_chartab()
     }
 }
 
+#if defined(FEAT_MBYTE) || defined(PROTO)
 static char *e_affform = N_("E761: Format error in affix file FOL, LOW or UPP");
 static char *e_affrange = N_("E762: Character in FOL, LOW or UPP is out of range");
 
@@ -1083,6 +1084,7 @@ set_spell_chartab(fol, low, upp)
 
     return set_spell_finish(&new_st);
 }
+#endif
 
 /*
  * Set the spell character tables from strings in the .spl file.

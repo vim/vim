@@ -3377,7 +3377,8 @@ get_logfont(
 			}
 		    if (cp->name == NULL && verbose)
 		    {
-			sprintf((char *)IObuff, _("E244: Illegal charset name \"%s\" in font name \"%s\""), p, name);
+			vim_snprintf((char *)IObuff, IOSIZE,
+				_("E244: Illegal charset name \"%s\" in font name \"%s\""), p, name);
 			EMSG(IObuff);
 			break;
 		    }
@@ -3386,7 +3387,7 @@ get_logfont(
 	    default:
 		if (verbose)
 		{
-		    sprintf((char *)IObuff,
+		    vim_snprintf((char *)IObuff, IOSIZE,
 			    _("E245: Illegal char '%c' in font name \"%s\""),
 			    p[-1], name);
 		    EMSG(IObuff);

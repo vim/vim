@@ -2125,7 +2125,7 @@ cs_reset(eap)
 {
     char	**dblist = NULL, **pplist = NULL, **fllist = NULL;
     int	i;
-    char buf[8]; /* for sprintf " (#%d)" */
+    char buf[20]; /* for sprintf " (#%d)" */
 
     /* malloc our db and ppath list */
     dblist = (char **)alloc(CSCOPE_MAX_CONNECTIONS * sizeof(char *));

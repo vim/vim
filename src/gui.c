@@ -4359,7 +4359,7 @@ gui_find_bitmap(name, buffer, ext)
 {
     if (STRLEN(name) > MAXPATHL - 14)
 	return FAIL;
-    sprintf((char *)buffer, "bitmaps/%s.%s", name, ext);
+    vim_snprintf((char *)buffer, MAXPATHL, "bitmaps/%s.%s", name, ext);
     if (do_in_runtimepath(buffer, FALSE, gfp_setname, buffer) == FAIL
 							    || *buffer == NUL)
 	return FAIL;

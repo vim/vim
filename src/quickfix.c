@@ -1478,7 +1478,8 @@ qf_list(eap)
 		if (fname == NULL)
 		    sprintf((char *)IObuff, "%2d", i);
 		else
-		    sprintf((char *)IObuff, "%2d %s", i, (char *)fname);
+		    vim_snprintf((char *)IObuff, IOSIZE, "%2d %s",
+							    i, (char *)fname);
 		msg_outtrans_attr(IObuff, i == qf_lists[qf_curlist].qf_index
 			? hl_attr(HLF_L) : hl_attr(HLF_D));
 		if (qfp->qf_lnum == 0)

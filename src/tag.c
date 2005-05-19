@@ -598,7 +598,8 @@ do_tag(tag, type, count, forceit, verbose)
 			*IObuff = '>';
 		    else
 			*IObuff = ' ';
-		    sprintf((char *)IObuff + 1, "%2d %s ", i + 1,
+		    vim_snprintf((char *)IObuff + 1, IOSIZE - 1,
+			    "%2d %s ", i + 1,
 					   mt_names[matches[i][0] & MT_MASK]);
 		    msg_puts(IObuff);
 		    if (tagp.tagkind != NULL)
@@ -807,8 +808,7 @@ do_tag(tag, type, count, forceit, verbose)
 	     * file didn't exist.  Otherwise an EMSG() is given below.
 	     */
 	    if (nofile_fname != NULL && error_cur_match != cur_match)
-		msg_str((char_u *)_("File \"%s\" does not exist"),
-								nofile_fname);
+		smsg((char_u *)_("File \"%s\" does not exist"), nofile_fname);
 
 
 	    ic = (matches[cur_match][0] & MT_IC_OFF);
@@ -1360,7 +1360,7 @@ find_tags(pat, num_matches, matchesp, flags, mincount, buf_ffname)
 		continue;
 
 	    if (p_verbose >= 5)
-		msg_str((char_u *)_("Searching tags file %s"), tag_fname);
+		smsg((char_u *)_("Searching tags file %s"), tag_fname);
 	}
 	did_open = TRUE;    /* remember that we found at least one file */
 

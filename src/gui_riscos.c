@@ -3218,8 +3218,7 @@ gui_mch_call_shell(cmd, options)
 	length = out_redir - cmd;
 	out_file = fopen(out_redir + 3, "wb");
 	if (out_file == NULL)
-	    msg_str("WARNING : Can't open file %s for writing\n",
-							       out_redir + 3);
+	    smsg("WARNING : Can't open file %s for writing\n", out_redir + 3);
     }
 
     if (length > 180)

@@ -169,9 +169,9 @@ name_part(char *font, char *buf)
     get_part(font, 1, buf3);
 
     if (strlen(buf3))
-	sprintf(buf, "%s (%s)", buf2, buf3);
+	vim_snprintf(buf, TEMP_BUF_SIZE, "%s (%s)", buf2, buf3);
     else
-	sprintf(buf, "%s", buf2);
+	vim_snprintf(buf, TEMP_BUF_SIZE, "%s", buf2);
 }
 
 /*
@@ -188,23 +188,23 @@ style_part(char *font, char *buf)
 
     if (!strcmp(buf2, "normal") && !strcmp(buf2, "Normal")
 						   && !strcmp(buf2, "NORMAL"))
-	sprintf(buf, "%s %s", buf3, buf2);
+	vim_snprintf(buf, TEMP_BUF_SIZE, "%s %s", buf3, buf2);
     else
 	strcpy(buf, buf3);
 
     get_part(font, 6, buf2);
 
     if (buf2[0] != '\0')
-	sprintf(buf3, "%s %s", buf, buf2);
+	vim_snprintf(buf3, TEMP_BUF_SIZE, "%s %s", buf, buf2);
     else
 	strcpy(buf3, buf);
 
     get_part(font, 4, buf2);
 
     if (!strcmp(buf2, "o") || !strcmp(buf2, "O"))
-	sprintf(buf, "%s oblique", buf3);
+	vim_snprintf(buf, TEMP_BUF_SIZE, "%s oblique", buf3);
     else if (!strcmp(buf2, "i") || !strcmp(buf2, "I"))
-	sprintf(buf, "%s italic", buf3);
+	vim_snprintf(buf, TEMP_BUF_SIZE, "%s italic", buf3);
 
     if (!strcmp(buf, " "))
 	strcpy(buf, "-");
@@ -262,7 +262,7 @@ encoding_part(char *font, char *buf)
     get_part(font, 14, buf2);
 
     if (strlen(buf1) > 0 && strlen(buf2))
-	sprintf(buf, "%s-%s", buf1, buf2);
+	vim_snprintf(buf, TEMP_BUF_SIZE, "%s-%s", buf1, buf2);
     if (!strcmp(buf, " "))
 	strcpy(buf, "-");
 }
@@ -551,7 +551,7 @@ stoggle_callback(Widget w,
 	XmToggleButtonCallbackStruct *call_data)
 {
     int		i, do_sel;
-    char	newSize[10];
+    char	newSize[TEMP_BUF_SIZE];
     XmString	str;
 
     if (call_data->reason != (int)XmCR_VALUE_CHANGED)

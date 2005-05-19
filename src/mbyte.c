@@ -2255,6 +2255,7 @@ mb_strnicmp(s1, s2, n)
 show_utf8()
 {
     int		len;
+    int		rlen = 0;
     char_u	*line;
     int		clen;
     int		i;
@@ -2269,7 +2270,6 @@ show_utf8()
 	return;
     }
 
-    IObuff[0] = NUL;
     clen = 0;
     for (i = 0; i < len; ++i)
     {
@@ -2277,11 +2277,17 @@ show_utf8()
 	{
 	    /* start of (composing) character, get its length */
 	    if (i > 0)
-		STRCAT(IObuff, "+ ");
+	    {
+		STRCPY(IObuff + rlen, "+ ");
+		rlen += 2;
+	    }
 	    clen = utf_ptr2len_check(line + i);
 	}
-	sprintf((char *)IObuff + STRLEN(IObuff), "%02x ", line[i]);
+	sprintf((char *)IObuff + rlen, "%02x ", line[i]);
 	--clen;
+	rlen += STRLEN(IObuff + rlen);
+	if (rlen > IOSIZE - 20)
+	    break;
     }
 
     msg(IObuff);

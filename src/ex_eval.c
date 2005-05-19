@@ -484,8 +484,8 @@ throw_exception(value, type, cmdname)
 				    || (VIM_ISDIGIT(p[3])
 					&& p[4] == ':'))))))
 	    {
-		if (*p == NUL || p == mesg)  /* 'E123' missing or at beginning */
-		    STRCAT(val, mesg);
+		if (*p == NUL || p == mesg)
+		    STRCAT(val, mesg);  /* 'E123' missing or at beginning */
 		else
 		{
 		    /* '"filename" E123: message text' */
@@ -525,7 +525,7 @@ throw_exception(value, type, cmdname)
 	    msg_silent = FALSE;		/* display messages */
 	++no_wait_return;
 	msg_scroll = TRUE;	    /* always scroll up, don't overwrite */
-	msg_str((char_u *)_("Exception thrown: %s"), excp->value);
+	smsg((char_u *)_("Exception thrown: %s"), excp->value);
 	msg_puts((char_u *)"\n");   /* don't overwrite this either */
 	cmdline_row = msg_row;
 	--no_wait_return;
@@ -571,7 +571,7 @@ discard_exception(excp, was_finished)
 	    msg_silent = FALSE;		/* display messages */
 	++no_wait_return;
 	msg_scroll = TRUE;	    /* always scroll up, don't overwrite */
-	msg_str(was_finished
+	smsg(was_finished
 		    ? (char_u *)_("Exception finished: %s")
 		    : (char_u *)_("Exception discarded: %s"),
 		excp->value);
@@ -616,10 +616,10 @@ catch_exception(excp)
     if (*excp->throw_name != NUL)
     {
 	if (excp->throw_lnum != 0)
-	    sprintf((char *)IObuff, _("%s, line %ld"), excp->throw_name,
-		    (long)excp->throw_lnum);
+	    vim_snprintf((char *)IObuff, IOSIZE, _("%s, line %ld"),
+				    excp->throw_name, (long)excp->throw_lnum);
 	else
-	    STRCPY(IObuff, excp->throw_name);
+	    vim_snprintf((char *)IObuff, IOSIZE, "%s", excp->throw_name);
 	set_vim_var_string(VV_THROWPOINT, IObuff, -1);
     }
     else
@@ -634,7 +634,7 @@ catch_exception(excp)
 	    msg_silent = FALSE;		/* display messages */
 	++no_wait_return;
 	msg_scroll = TRUE;	    /* always scroll up, don't overwrite */
-	msg_str((char_u *)_("Exception caught: %s"), excp->value);
+	smsg((char_u *)_("Exception caught: %s"), excp->value);
 	msg_puts((char_u *)"\n");   /* don't overwrite this either */
 	cmdline_row = msg_row;
 	--no_wait_return;
@@ -659,11 +659,12 @@ finish_exception(excp)
 	if (*caught_stack->throw_name != NUL)
 	{
 	    if (caught_stack->throw_lnum != 0)
-		sprintf((char *)IObuff,
+		vim_snprintf((char *)IObuff, IOSIZE,
 			_("%s, line %ld"), caught_stack->throw_name,
 			(long)caught_stack->throw_lnum);
 	    else
-		STRCPY(IObuff, caught_stack->throw_name);
+		vim_snprintf((char *)IObuff, IOSIZE, "%s",
+						    caught_stack->throw_name);
 	    set_vim_var_string(VV_THROWPOINT, IObuff, -1);
 	}
 	else
@@ -742,7 +743,8 @@ report_pending(action, pending, value)
 	default:
 	    if (pending & CSTP_THROW)
 	    {
-		sprintf((char *)IObuff, (char *)mesg, _("Exception"));
+		vim_snprintf((char *)IObuff, IOSIZE,
+						(char *)mesg, _("Exception"));
 		mesg = vim_strnsave(IObuff, (int)STRLEN(IObuff) + 4);
 		STRCAT(mesg, ": %s");
 		s = (char *)((except_T *)value)->value;
@@ -760,7 +762,7 @@ report_pending(action, pending, value)
 	msg_silent = FALSE;	/* display messages */
     ++no_wait_return;
     msg_scroll = TRUE;		/* always scroll up, don't overwrite */
-    msg_str(mesg, (char_u *)s);
+    smsg(mesg, (char_u *)s);
     msg_puts((char_u *)"\n");   /* don't overwrite this either */
     cmdline_row = msg_row;
     --no_wait_return;

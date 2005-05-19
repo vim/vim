@@ -86,10 +86,11 @@ wsdebug_log_init(
 	char		*file;		/* possible ws_debug output file */
 	char		*cp;		/* ws_dlevel pointer */
 
-	if (log_var && (file = getenv(log_var)) != NULL) {
+	if (log_var && (file = getenv(log_var)) != NULL)
+	{
 		char buf[BUFSIZ];
 
-		sprintf(buf, "date > %s", file);
+		vim_snprintf(buf, sizeof(buf), "date > %s", file);
 		system(buf);
 		ws_debug = fopen(file, "a");
 		if (level_var && (cp = getenv(level_var)) != NULL) {

@@ -5117,7 +5117,6 @@ hebrew	hebrew.txt	/*hebrew*
 hebrew.txt	hebrew.txt	/*hebrew.txt*
 help	various.txt	/*help*
 help-context	help.txt	/*help-context*
-help-tags	tags	1
 help-translated	various.txt	/*help-translated*
 help-xterm-window	various.txt	/*help-xterm-window*
 help.txt	help.txt	/*help.txt*
@@ -5550,6 +5549,7 @@ matchend()	eval.txt	/*matchend()*
 matchit-install	usr_05.txt	/*matchit-install*
 matchlist()	eval.txt	/*matchlist()*
 matchstr()	eval.txt	/*matchstr()*
+mathematica-syntax	syntax.txt	/*mathematica-syntax*
 max()	eval.txt	/*max()*
 mbyte-IME	mbyte.txt	/*mbyte-IME*
 mbyte-XIM	mbyte.txt	/*mbyte-XIM*
@@ -5579,6 +5579,8 @@ minimal-features	os_msdos.txt	/*minimal-features*
 missing-options	vi_diff.txt	/*missing-options*
 mkdir()	eval.txt	/*mkdir()*
 mlang.txt	mlang.txt	/*mlang.txt*
+mma-syntax	syntax.txt	/*mma-syntax*
+mma.vim	syntax.txt	/*mma.vim*
 mode()	eval.txt	/*mode()*
 mode-Ex	intro.txt	/*mode-Ex*
 mode-cmdline	cmdline.txt	/*mode-cmdline*

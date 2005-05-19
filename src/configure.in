@@ -2636,7 +2636,7 @@ AC_CHECK_FUNCS(bcmp fchdir fchown fseeko fsync ftello getcwd getpseudotty \
 	getpwnam getpwuid getrlimit gettimeofday getwd lstat memcmp \
 	memset nanosleep opendir putenv qsort readlink select setenv \
 	setpgid setsid sigaltstack sigstack sigset sigsetjmp sigaction \
-	sigvec snprintf strcasecmp strerror strftime stricmp strncasecmp \
+	sigvec strcasecmp strerror strftime stricmp strncasecmp \
 	strnicmp strpbrk strtol tgetent towlower towupper iswupper \
 	usleep utime utimes)
 
@@ -2776,30 +2776,6 @@ if test "$enable_gpm" = "yes"; then
 else
   AC_MSG_RESULT(yes)
 fi
-
-AC_MSG_CHECKING(for vsnprintf())
-AC_TRY_RUN([
-#include <stdio.h>
-#include <stdarg.h>
-	/* Check use of vsnprintf() */
-	void warn(char *fmt, ...);
-	void warn(char *fmt, ...)
-	{
-	  va_list ap; char buf[20];
-	  va_start(ap, fmt);
-	  vsnprintf(buf, 20, fmt, ap);
-	  va_end(ap);
-	}
-	main()
-	{
-	warn("testing %s\n", "a very long string that won't fit");
-	exit(0);
-	}
-	    ],
-	AC_DEFINE(HAVE_VSNPRINTF) AC_MSG_RESULT(yes),
-	AC_MSG_RESULT(no),
-	AC_MSG_ERROR(failed to compile test program))
-
 
 dnl rename needs to be checked separately to work on Nextstep with cc
 AC_MSG_CHECKING(for rename)

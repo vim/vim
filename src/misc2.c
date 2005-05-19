@@ -2606,7 +2606,7 @@ call_shell(cmd, opt)
 
     if (p_verbose > 3)
     {
-	msg_str((char_u *)_("Calling shell to execute: \"%s\""),
+	smsg((char_u *)_("Calling shell to execute: \"%s\""),
 						    cmd == NULL ? p_sh : cmd);
 	out_char('\n');
 	cursor_on();
@@ -4076,8 +4076,8 @@ vim_findfile(search_ctx)
 	    {
 		/* always scroll up, don't overwrite */
 		msg_scroll = TRUE;
-		smsg((char_u *)"Searching: %s (%s)", ctx->ffs_fix_path,
-			ctx->ffs_wc_path);
+		smsg((char_u *)"Searching: %s (%s)",
+					 ctx->ffs_fix_path, ctx->ffs_wc_path);
 		/* don't overwrite this either */
 		msg_puts((char_u *)"\n");
 		cmdline_row = msg_row;
@@ -4266,7 +4266,7 @@ vim_findfile(search_ctx)
 				    {
 					/* always scroll up, don't overwrite */
 					msg_scroll = TRUE;
-					msg_str((char_u *)"Already: %s",
+					smsg((char_u *)"Already: %s",
 								   file_path);
 					/* don't overwrite this either */
 					msg_puts((char_u *)"\n");
@@ -4295,7 +4295,7 @@ vim_findfile(search_ctx)
 				{
 				    /* always scroll up, don't overwrite */
 				    msg_scroll = TRUE;
-				    msg_str((char_u *)"HIT: %s", file_path);
+				    smsg((char_u *)"HIT: %s", file_path);
 				    /* don't overwrite this either */
 				    msg_puts((char_u *)"\n");
 				    cmdline_row = msg_row;
@@ -4485,7 +4485,7 @@ ff_get_visited_list(filename, list_headp)
 		{
 		    /* always scroll up, don't overwrite */
 		    msg_scroll = TRUE;
-		    msg_str((char_u *)"ff_get_visited_list: FOUND list for %s",
+		    smsg((char_u *)"ff_get_visited_list: FOUND list for %s",
 								    filename);
 		    /* don't overwrite this either */
 		    msg_puts((char_u *)"\n");
@@ -4503,7 +4503,7 @@ ff_get_visited_list(filename, list_headp)
     {
 	/* always scroll up, don't overwrite */
 	msg_scroll = TRUE;
-	msg_str((char_u *)"ff_get_visited_list: new list for %s", filename);
+	smsg((char_u *)"ff_get_visited_list: new list for %s", filename);
 	/* don't overwrite this either */
 	msg_puts((char_u *)"\n");
 	cmdline_row = msg_row;
@@ -5596,23 +5596,3 @@ vimpty_getenv(string)
 # endif
 
 #endif /* !defined(HAVE_SETENV) && !defined(HAVE_PUTENV) */
-
-/*
- * Print a message with one string argument.
- * Make sure that the result fits in IObuff.
- * This is not in message.c, because the prototype for smsg() isn't used
- * there.
- */
-    void
-msg_str(s, arg)
-    char_u	*s;
-    char_u	*arg;
-{
-    int		ls = STRLEN(s);
-    int		larg = STRLEN(arg);
-
-    if (ls + larg >= IOSIZE)
-	smsg(s, arg + (ls + larg - IOSIZE));
-    else
-	smsg(s, arg);
-}

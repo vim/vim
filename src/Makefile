@@ -1225,8 +1225,10 @@ CPP_DEPEND = $(CC) -I$(srcdir) -M$(CPP_MM) $(DEPEND_CFLAGS)
 # flags for cproto
 #     This is for cproto 3 patchlevel 8 or below
 #     __inline, __attribute__ and __extension__ are not recognized by cproto
-NO_ATTR = -D__inline= -D"__attribute__\\(x\\)=" -D"__asm__\\(x\\)=" -D__extension__= \
--D__restrict="" -D__gnuc_va_list=char -D__builtin_va_list=char
+NO_ATTR = -D__inline= -D__inline__= -DG_IMPLEMENT_INLINES \
+	  -D"__attribute__\\(x\\)=" -D"__asm__\\(x\\)=" \
+	  -D__extension__= -D__restrict="" \
+	  -D__gnuc_va_list=char -D__builtin_va_list=char
 
 #
 #     This is for cproto 3 patchlevel 9 or above (currently 4.6)
@@ -1259,7 +1261,9 @@ POST_DEFS = $(X_CFLAGS) $(MZSCHEME_CFLAGS) $(PERL_CFLAGS) $(PYTHON_CFLAGS) $(TCL
 
 ALL_CFLAGS = $(PRE_DEFS) $(CFLAGS) $(PROFILE_CFLAGS) $(POST_DEFS)
 
-LINT_CFLAGS = -DLINT -I. $(PRE_DEFS) $(POST_DEFS) -Dinline= -D__extension__= -Dalloca=alloca -D"__attribute__(x)="
+LINT_CFLAGS = -DLINT -I. $(PRE_DEFS) $(POST_DEFS) -Dinline= -D__extension__= -Dalloca=alloca
+
+LINT_EXTRA = -DUSE_SNIFF -DHANGUL_INPUT -D"__attribute__(x)="
 
 DEPEND_CFLAGS = -DPROTO -DDEPEND -DFEAT_GUI $(LINT_CFLAGS)
 
@@ -2172,7 +2176,7 @@ depend:
 
 # Run lint.  Clean up the *.ln files that are sometimes left behind.
 lint:
-	lint $(LINT_OPTIONS) $(LINT_CFLAGS) -DUSE_SNIFF -DHANGUL_INPUT $(LINT_SRC)
+	lint $(LINT_OPTIONS) $(LINT_CFLAGS) $(LINT_EXTRA) $(LINT_SRC)
 	-rm -f *.ln
 
 # Check dosinst.c with lint.

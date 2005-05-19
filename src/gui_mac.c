@@ -1644,7 +1644,7 @@ GetFontPanelSelection(char_u* outName)
 
 	/* Only encode font size, because style (bold, italic, etc) is
 	 * already part of the font full name */
-	snprintf(styleString, FONT_STYLE_BUFFER_SIZE, ":h%d",
+	vim_snprintf(styleString, FONT_STYLE_BUFFER_SIZE, ":h%d",
 		gFontPanelInfo.size/*,
 		((gFontPanelInfo.style & bold)!=0 ? ":b" : ""),
 		((gFontPanelInfo.style & italic)!=0 ? ":i" : ""),

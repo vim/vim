@@ -294,7 +294,7 @@ workshop_save_file(
 #endif
 
     /* Save the given file */
-    sprintf(cbuf, "w %s", filename);
+    vim_snprintf(cbuf, sizeof(cbuf), "w %s", filename);
     coloncmd(cbuf, TRUE);
 }
 
@@ -380,14 +380,16 @@ workshop_add_mark_type(
     {
 	if (colorspec != NULL && *colorspec)
 	{
-	    sprintf(cbuf, "highlight WS%s guibg=%s", gbuf, colorspec);
+	    vim_snprintf(cbuf, sizeof(cbuf),
+				  "highlight WS%s guibg=%s", gbuf, colorspec);
 	    coloncmd(cbuf, FALSE);
-	    sprintf(cibuf, "linehl=WS%s", gbuf);
+	    vim_snprintf(cibuf, sizeof(cibuf), "linehl=WS%s", gbuf);
 	}
 	else
 	    cibuf[0] = NUL;
 
-	sprintf(cbuf, "sign define %d %s icon=%s", idx, cibuf, sign);
+	vim_snprintf(cbuf, sizeof(cbuf),
+			       "sign define %d %s icon=%s", idx, cibuf, sign);
 	coloncmd(cbuf, TRUE);
     }
 }
@@ -408,7 +410,7 @@ workshop_set_mark(
 		filename, lineno, markId, idx);
 #endif
 
-    sprintf(cbuf, "sign place %d line=%d name=%d file=%s",
+    vim_snprintf(cbuf, sizeof(cbuf), "sign place %d line=%d name=%d file=%s",
 					       markId, lineno, idx, filename);
     coloncmd(cbuf, TRUE);
 }
@@ -428,7 +430,8 @@ workshop_change_mark_type(
 		filename, markId, idx);
 #endif
 
-    sprintf(cbuf, "sign place %d name=%d file=%s", markId, idx, filename);
+    vim_snprintf(cbuf, sizeof(cbuf),
+		      "sign place %d name=%d file=%s", markId, idx, filename);
     coloncmd(cbuf, TRUE);
 }
 
@@ -453,7 +456,7 @@ workshop_goto_mark(
 		message : "<None>");
 #endif
 
-    sprintf(cbuf, "sign jump %d file=%s", markId, filename);
+    vim_snprintf(cbuf, sizeof(cbuf), "sign jump %d file=%s", markId, filename);
     coloncmd(cbuf, TRUE);
     if (message != NULL && *message != NUL)
 	gui_mch_set_footer((char_u *)message);
@@ -473,7 +476,8 @@ workshop_delete_mark(
 		filename, markId);
 #endif
 
-    sprintf(cbuf, "sign unplace %d file=%s", markId, filename);
+    vim_snprintf(cbuf, sizeof(cbuf),
+				 "sign unplace %d file=%s", markId, filename);
     coloncmd(cbuf, TRUE);
 }
 
@@ -633,7 +637,7 @@ workshop_menu_begin(
     mnembuf[idx++] = NUL;
     name = addUniqueMnemonic(mnembuf, label);
 
-    sprintf(curMenuName, "%s", name);
+    vim_snprintf(curMenuName, sizeof(curMenuName), "%s", name);
     sprintf(curMenuPriority, "%d.0", menuPriority);
 }
 
@@ -735,12 +739,12 @@ workshop_menu_item(
 #endif
 
     if (acceleratorText != NULL)
-	sprintf(accText, "<Tab>%s", acceleratorText);
+	vim_snprintf(accText, sizeof(accText), "<Tab>%s", acceleratorText);
     else
 	accText[0] = NUL;
     updatePriority(False);
-    sprintf(namebuf, "%s.%s", curMenuName, fixup(label));
-    sprintf(cbuf, "amenu %s %s%s\t:wsverb %s<CR>",
+    vim_snprintf(namebuf, sizeof(namebuf), "%s.%s", curMenuName, fixup(label));
+    vim_snprintf(cbuf, sizeof(cbuf), "amenu %s %s%s\t:wsverb %s<CR>",
 	    curMenuPriority, namebuf, accText, verb);
 
     coloncmd(cbuf, TRUE);
@@ -748,7 +752,7 @@ workshop_menu_item(
 
     if (*sensitive == '0')
     {
-	sprintf(cbuf, "amenu disable %s", namebuf);
+	vim_snprintf(cbuf, sizeof(cbuf), "amenu disable %s", namebuf);
 	coloncmd(cbuf, TRUE);
     }
 }
@@ -824,6 +828,7 @@ workshop_toolbar_button(
     char	namebuf[BUFSIZ];
     static int	tbid = 1;
     char_u	*p;
+    int		len;
 
 #ifdef WSDEBUG_TRACE
     if (WSDLEVEL(WS_TRACE_VERBOSE))
@@ -858,16 +863,18 @@ workshop_toolbar_button(
     }
 
     p = vim_strsave_escaped((char_u *)label, (char_u *)"\\. ");
-    sprintf(namebuf, "ToolBar.%s", p);
+    vim_snprintf(namebuf, sizeof(namebuf), "ToolBar.%s", p);
     vim_free(p);
     STRCPY(cbuf, "amenu <silent> ");
     if (file != NULL && *file != NUL)
     {
 	p = vim_strsave_escaped((char_u *)file, (char_u *)" ");
-	sprintf(cbuf + STRLEN(cbuf), "icon=%s ", p);
+	len = STRLEN(cbuf);
+	vim_snprintf(cbuf + len, sizeof(cbuf) - len, "icon=%s ", p);
 	vim_free(p);
     }
-    sprintf(cbuf + STRLEN(cbuf), "1.%d %s :wsverb %s<CR>",
+    len = STRLEN(cbuf);
+    vim_snprintf(cbuf + len, sizeof(cbuf) - len,"1.%d %s :wsverb %s<CR>",
 							tbpri, namebuf, verb);
 
     /* Define the menu item */
@@ -876,14 +883,14 @@ workshop_toolbar_button(
     if (*sense == '0')
     {
 	/* If menu isn't sensitive at startup... */
-	sprintf(cbuf, "amenu disable %s", namebuf);
+	vim_snprintf(cbuf, sizeof(cbuf), "amenu disable %s", namebuf);
 	coloncmd(cbuf, True);
     }
 
     if (help && *help)
     {
 	/* Do the tooltip */
-	sprintf(cbuf, "tmenu %s %s", namebuf, help);
+	vim_snprintf(cbuf, sizeof(cbuf), "tmenu %s %s", namebuf, help);
 	coloncmd(cbuf, True);
     }
 
@@ -961,7 +968,7 @@ workshop_set_option(
     {
 	case 's':
 	    if (strcmp(option, "syntax") == 0)
-		sprintf(cbuf, "syntax %s", value);
+		vim_snprintf(cbuf, sizeof(cbuf), "syntax %s", value);
 	    else if (strcmp(option, "savefiles") == 0)
 		; /* XXX - Not yet implemented */
 	    break;
@@ -1074,7 +1081,8 @@ workshop_hotkeys(
 	{
 	    if (mp->accel != NULL)
 	    {
-		sprintf(cbuf, "map %s :wsverb %s<CR>", mp->accel, mp->verb);
+		vim_snprintf(cbuf, sizeof(cbuf),
+			"map %s :wsverb %s<CR>", mp->accel, mp->verb);
 		coloncmd(cbuf, TRUE);
 	    }
 	}
@@ -1083,7 +1091,7 @@ workshop_hotkeys(
 	{
 	    if (mp->accel != NULL)
 	    {
-		sprintf(cbuf, "unmap %s", mp->accel);
+		vim_snprintf(cbuf, sizeof(cbuf), "unmap %s", mp->accel);
 		coloncmd(cbuf, TRUE);
 	    }
 	}
@@ -1272,7 +1280,7 @@ load_buffer_by_name(
     else
 	lnumbuf[0] = NUL;
 
-    sprintf(cbuf, "e %s %s", lnumbuf, filename);
+    vim_snprintf(cbuf, sizeof(cbuf), "e %s %s", lnumbuf, filename);
     coloncmd(cbuf, False);
 }
 
@@ -1392,9 +1400,11 @@ updatePriority(
     pri = atoi(p) + 10;		/* our new priority */
 
     if (subMenu)
-	sprintf(curMenuPriority, "%s.%d.0", curMenuPriority, pri);
+	vim_snprintf(curMenuPriority, sizeof(curMenuPriority),
+					     "%s.%d.0", curMenuPriority, pri);
     else
-	sprintf(curMenuPriority, "%s.%d", curMenuPriority, pri);
+	vim_snprintf(curMenuPriority, sizeof(curMenuPriority),
+					       "%s.%d", curMenuPriority, pri);
 }
 
     static char *
@@ -1543,7 +1553,7 @@ fixAccelText(
 
     if (*ap == 'F' && atoi(&ap[1]) > 0)
     {
-	sprintf(buf, "<%s%s>", shift, ap);
+	vim_snprintf(buf, sizeof(buf), "<%s%s>", shift, ap);
 	return strdup(buf);
     }
     else
@@ -1607,7 +1617,7 @@ workshop_beval_cb(
 		    type = (int)GPLineEval_EVALUATE;
 
 		/* Send request to dbx */
-		sprintf(buf, "toolVerb debug.balloonEval "
+		vim_snprintf(buf, sizeof(buf), "toolVerb debug.balloonEval "
 			"%s %ld,0 %d,0 %d,%d %ld %s\n",
 			(char *)wp->w_buffer->b_ffname,
 			(long)lnum, idx, type, serialNo++,
@@ -1670,7 +1680,8 @@ addMenu(
 	menuMap[menuMapSize++].verb = strdup(verb);
 	if (accel && workshopHotKeysEnabled)
 	{
-	    sprintf(cbuf, "map %s :wsverb %s<CR>", accel, verb);
+	    vim_snprintf(cbuf, sizeof(cbuf),
+					"map %s :wsverb %s<CR>", accel, verb);
 	    coloncmd(cbuf, TRUE);
 	}
     }

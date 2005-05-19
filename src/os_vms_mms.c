@@ -40,7 +40,8 @@ int main(int argc, char *argv[])
 	    strcat(target, argp);
 	}
     }
-    sprintf(cmd, "%s/output=tmp:errors.vim_tmp %s", mms, target);
+    vim_snprintf(cmd, sizeof(cmd), "%s/output=tmp:errors.vim_tmp %s",
+								 mms, target);
     system(cmd);
     fpi = fopen("tmp:errors.vim_tmp", "r");
     fpo = fopen(error_file, "w");
