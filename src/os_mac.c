@@ -682,6 +682,7 @@ mch_get_user_name(s, len)
 	    && pw->pw_name != NULL && *(pw->pw_name) != NUL)
     {
 	STRNCPY(s, pw->pw_name, len);
+	s[len - 1] = NUL;
 	return OK;
     }
 #endif

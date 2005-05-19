@@ -313,6 +313,15 @@ _RTLENTRYF
 smsg_attr __ARGS((int, char_u *, long, long, long,
 			long, long, long, long, long, long, long));
 
+int vim_snprintf __ARGS((char *, size_t, char *, long, long, long,
+				   long, long, long, long, long, long, long));
+
+/*
+ * smsg(str, arg, ...) is like using sprintf(buf, str, arg, ...) and then
+ * calling msg(buf).
+ * The buffer used is IObuff, the message is truncated at IOSIZE.
+ */
+
 /* VARARGS */
     int
 #ifdef __BORLANDC__
@@ -335,11 +344,15 @@ smsg_attr(attr, s, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
     char_u	*s;
     long	a1, a2, a3, a4, a5, a6, a7, a8, a9, a10;
 {
-    sprintf((char *)IObuff, (char *)s, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10);
+    vim_snprintf((char *)IObuff, IOSIZE, (char *)s,
+				     a1, a2, a3, a4, a5, a6, a7, a8, a9, a10);
     return msg_attr(IObuff, attr);
 }
 
 # else /* HAVE_STDARG_H */
+
+int vim_snprintf(char *str, size_t str_m, char *fmt, ...);
+static int vim_vsnprintf(char *str, size_t str_m, char *fmt, va_list ap);
 
     int
 #ifdef __BORLANDC__
@@ -350,11 +363,7 @@ smsg(char_u *s, ...)
     va_list arglist;
 
     va_start(arglist, s);
-# ifdef HAVE_VSNPRINTF
-    vsnprintf((char *)IObuff, IOSIZE, (char *)s, arglist);
-# else
-    vsprintf((char *)IObuff, (char *)s, arglist);
-# endif
+    vim_vsnprintf((char *)IObuff, IOSIZE, (char *)s, arglist);
     va_end(arglist);
     return msg(IObuff);
 }
@@ -368,11 +377,7 @@ smsg_attr(int attr, char_u *s, ...)
     va_list arglist;
 
     va_start(arglist, s);
-# ifdef HAVE_VSNPRINTF
-    vsnprintf((char *)IObuff, IOSIZE, (char *)s, arglist);
-# else
-    vsprintf((char *)IObuff, (char *)s, arglist);
-# endif
+    vim_vsnprintf((char *)IObuff, IOSIZE, (char *)s, arglist);
     va_end(arglist);
     return msg_attr(IObuff, attr);
 }
@@ -645,18 +650,7 @@ emsg3(s, a1, a2)
 #endif
 	    )
 	return TRUE;		/* no error messages at the moment */
-
-    /* Check for NULL strings (just in case) */
-    if (a1 == NULL)
-	a1 = (char_u *)"[NULL]";
-    if (a2 == NULL)
-	a2 = (char_u *)"[NULL]";
-
-    /* Check for very long strings (can happen with ":help ^A<CR>"). */
-    if (STRLEN(s) + STRLEN(a1) + STRLEN(a2) >= (size_t)IOSIZE)
-	a1 = a2 = (char_u *)_("[string too long]");
-
-    sprintf((char *)IObuff, (char *)s, (char *)a1, (char *)a2);
+    vim_snprintf((char *)IObuff, IOSIZE, (char *)s, (char *)a1, (char *)a2);
     return emsg(IObuff);
 }
 
@@ -674,7 +668,7 @@ emsgn(s, n)
 #endif
 	    )
 	return TRUE;		/* no error messages at the moment */
-    sprintf((char *)IObuff, (char *)s, n);
+    vim_snprintf((char *)IObuff, IOSIZE, (char *)s, n);
     return emsg(IObuff);
 }
 
@@ -3205,3 +3199,699 @@ do_browse(flags, title, dflt, ext, initdir, filter, buf)
     return fname;
 }
 #endif
+
+/*
+ * This code was included to provide a portable vsnprintf() and snprintf().
+ * Some systems may provide their own, but we always use these for
+ * consistency.
+ *
+ * This code is based on snprintf.c - a portable implementation of snprintf
+ * by Mark Martinec <mark.martinec@ijs.si>, Version 2.2, 2000-10-06.
+ * It was heavely modified to fit in Vim.
+ * The original code, including useful comments, can be found here:
+ *	http://www.ijs.si/software/snprintf/
+ *
+ * This snprintf() only supports the following conversion specifiers:
+ * s, c, d, u, o, x, X, p  (and synonyms: i, D, U, O - see below)
+ * with flags: '-', '+', ' ', '0' and '#'.
+ * An asterisk is supported for field width as well as precision.
+ *
+ * Length modifiers 'h' (short int) and 'l' (long int) are supported.
+ * 'll' (long long int) is not supported.
+ *
+ * It is permitted for str_m to be zero, and it is permitted to specify NULL
+ * pointer for resulting string argument if str_m is zero (as per ISO C99).
+ *
+ * The return value is the number of characters which would be generated
+ * for the given input, excluding the trailing null. If this value
+ * is greater or equal to str_m, not all characters from the result
+ * have been stored in str, output bytes beyond the (str_m-1) -th character
+ * are discarded. If str_m is greater than zero it is guaranteed
+ * the resulting string will be null-terminated.
+ */
+
+/*
+ * When va_list is not supported we only define vim_snprintf().
+ */
+
+/* When generating prototypes all of this is skipped, cproto doesn't
+ * understand this. */
+#ifndef PROTO
+# ifdef HAVE_STDARG_H
+    int
+vim_snprintf(char *str, size_t str_m, char *fmt, ...)
+{
+    va_list	ap;
+    int		str_l;
+
+    va_start(ap, fmt);
+    str_l = vim_vsnprintf(str, str_m, fmt, ap);
+    va_end(ap);
+    return str_l;
+}
+
+    static int
+vim_vsnprintf(str, str_m, fmt, ap)
+# else
+    /* clumsy way to work around missing va_list */
+#  define get_a_arg(i) (i == 1 ? a1 : i == 2 ? a2 : i == 3 ? a3 : i == 4 ? a4 : i == 5 ? a5 : i == 6 ? a6 : i == 7 ? a7 : i == 8 ? a8 : i == 9 ? a9 : a10)
+
+/* VARARGS */
+    int
+#ifdef __BORLANDC__
+_RTLENTRYF
+#endif
+vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
+# endif
+    char	*str;
+    size_t	str_m;
+    char	*fmt;
+# ifdef HAVE_STDARG_H
+    va_list	ap;
+# else
+    long	a1, a2, a3, a4, a5, a6, a7, a8, a9, a10;
+# endif
+{
+    size_t	str_l = 0;
+    char	*p = fmt;
+# ifndef HAVE_STDARG_H
+    int		arg_idx = 1;
+# endif
+
+    if (p == NULL)
+	p = "";
+    while (*p != NUL)
+    {
+	if (*p != '%')
+	{
+	    char    *q = strchr(p + 1, '%');
+	    size_t  n = (q == NULL) ? STRLEN(p) : (q - p);
+
+	    if (str_l < str_m)
+	    {
+		size_t avail = str_m - str_l;
+
+		mch_memmove(str + str_l, p, n > avail ? avail : n);
+	    }
+	    p += n;
+	    str_l += n;
+	}
+	else
+	{
+	    size_t  min_field_width = 0, precision = 0;
+	    int	    zero_padding = 0, precision_specified = 0, justify_left = 0;
+	    int	    alternate_form = 0, force_sign = 0;
+
+	    /* If both the ' ' and '+' flags appear, the ' ' flag should be
+	     * ignored. */
+	    int	    space_for_positive = 1;
+
+	    /* allowed values: \0, h, l, L */
+	    char    length_modifier = '\0';
+
+	    /* temporary buffer for simple numeric->string conversion */
+	    char    tmp[32];
+
+	    /* string address in case of string argument */
+	    char    *str_arg;
+
+	    /* natural field width of arg without padding and sign */
+	    size_t  str_arg_l;
+
+	    /* unsigned char argument value - only defined for c conversion.
+	     * N.B. standard explicitly states the char argument for the c
+	     * conversion is unsigned */
+	    unsigned char uchar_arg;
+
+	    /* number of zeros to be inserted for numeric conversions as
+	     * required by the precision or minimal field width */
+	    size_t  number_of_zeros_to_pad = 0;
+
+	    /* index into tmp where zero padding is to be inserted */
+	    size_t  zero_padding_insertion_ind = 0;
+
+	    /* current conversion specifier character */
+	    char    fmt_spec = '\0';
+
+	    str_arg = NULL;
+	    p++;  /* skip '%' */
+
+	    /* parse flags */
+	    while (*p == '0' || *p == '-' || *p == '+' || *p == ' '
+						   || *p == '#' || *p == '\'')
+	    {
+		switch (*p)
+		{
+		    case '0': zero_padding = 1; break;
+		    case '-': justify_left = 1; break;
+		    case '+': force_sign = 1; space_for_positive = 0; break;
+		    case ' ': force_sign = 1;
+			      /* If both the ' ' and '+' flags appear, the ' '
+			       * flag should be ignored */
+			      break;
+		    case '#': alternate_form = 1; break;
+		    case '\'': break;
+		}
+		p++;
+	    }
+	    /* If the '0' and '-' flags both appear, the '0' flag should be
+	     * ignored. */
+
+	    /* parse field width */
+	    if (*p == '*')
+	    {
+		int j;
+
+		p++;
+#ifndef HAVE_STDARG_H
+		j = get_a_arg(arg_idx);
+		++arg_idx;
+#else
+		j = va_arg(ap, int);
+#endif
+		if (j >= 0)
+		    min_field_width = j;
+		else
+		{
+		    min_field_width = -j;
+		    justify_left = 1;
+		}
+	    }
+	    else if (VIM_ISDIGIT((int)(*p)))
+	    {
+		/* size_t could be wider than unsigned int; make sure we treat
+		 * argument like common implementations do */
+		unsigned int uj = *p++ - '0';
+
+		while (VIM_ISDIGIT((int)(*p)))
+		    uj = 10 * uj + (unsigned int)(*p++ - '0');
+		min_field_width = uj;
+	    }
+
+	    /* parse precision */
+	    if (*p == '.')
+	    {
+		p++;
+		precision_specified = 1;
+		if (*p == '*')
+		{
+		    int j;
+
+#ifndef HAVE_STDARG_H
+		    j = get_a_arg(arg_idx);
+		    ++arg_idx;
+#else
+		    j = va_arg(ap, int);
+#endif
+		    p++;
+		    if (j >= 0)
+			precision = j;
+		    else
+		    {
+			precision_specified = 0;
+			precision = 0;
+		    }
+		}
+		else if (VIM_ISDIGIT((int)(*p)))
+		{
+		    /* size_t could be wider than unsigned int; make sure we
+		     * treat argument like common implementations do */
+		    unsigned int uj = *p++ - '0';
+
+		    while (VIM_ISDIGIT((int)(*p)))
+			uj = 10 * uj + (unsigned int)(*p++ - '0');
+		    precision = uj;
+		}
+	    }
+
+	    /* parse 'h', 'l' and 'll' length modifiers */
+	    if (*p == 'h' || *p == 'l')
+	    {
+		length_modifier = *p;
+		p++;
+		if (length_modifier == 'l' && *p == 'l')
+		{
+		    /* double l = long long */
+		    length_modifier = 'l';	/* treat it as a single 'l' */
+		    p++;
+		}
+	    }
+	    fmt_spec = *p;
+
+	    /* common synonyms: */
+	    switch (fmt_spec)
+	    {
+		case 'i': fmt_spec = 'd'; break;
+		case 'D': fmt_spec = 'd'; length_modifier = 'l'; break;
+		case 'U': fmt_spec = 'u'; length_modifier = 'l'; break;
+		case 'O': fmt_spec = 'o'; length_modifier = 'l'; break;
+		default: break;
+	    }
+
+	    /* get parameter value, do initial processing */
+	    switch (fmt_spec)
+	    {
+		/* '%' and 'c' behave similar to 's' regarding flags and field
+		 * widths */
+	    case '%':
+	    case 'c':
+	    case 's':
+		length_modifier = '\0';
+		zero_padding = 0;    /* turn zero padding off for string
+					conversions */
+		str_arg_l = 1;
+		switch (fmt_spec)
+		{
+		case '%':
+		    str_arg = p;
+		    break;
+
+		case 'c':
+		    {
+			int j;
+#ifndef HAVE_STDARG_H
+			j = get_a_arg(arg_idx);
+			++arg_idx;
+#else
+			j = va_arg(ap, int);
+#endif
+			/* standard demands unsigned char */
+			uchar_arg = (unsigned char)j;
+			str_arg = (char *)&uchar_arg;
+			break;
+		    }
+
+		case 's':
+#ifndef HAVE_STDARG_H
+		    str_arg = (char *)get_a_arg(arg_idx);
+		    ++arg_idx;
+#else
+		    str_arg = va_arg(ap, char *);
+#endif
+		    if (str_arg == NULL)
+		    {
+			str_arg = "[NULL]";
+			str_arg_l = 6;
+		    }
+		    /* make sure not to address string beyond the specified
+		     * precision !!! */
+		    else if (!precision_specified)
+			str_arg_l = strlen(str_arg);
+		    /* truncate string if necessary as requested by precision */
+		    else if (precision == 0)
+			str_arg_l = 0;
+		    else
+		    {
+			/* memchr on HP does not like n > 2^31  !!! */
+			char *q = memchr(str_arg, '\0',
+				precision <= 0x7fffffff ? precision
+								: 0x7fffffff);
+			str_arg_l = (q == NULL) ? precision : q - str_arg;
+		    }
+		    break;
+
+		default:
+		    break;
+		}
+		break;
+
+	    case 'd': case 'u': case 'o': case 'x': case 'X': case 'p':
+		{
+		    /* NOTE: the u, o, x, X and p conversion specifiers
+		     * imply the value is unsigned;  d implies a signed
+		     * value */
+
+		    /* 0 if numeric argument is zero (or if pointer is
+		     * NULL for 'p'), +1 if greater than zero (or nonzero
+		     * for unsigned arguments), -1 if negative (unsigned
+		     * argument is never negative) */
+		    int arg_sign = 0;
+
+		    /* only defined for length modifier h, or for no
+		     * length modifiers */
+		    int int_arg = 0;
+		    unsigned int uint_arg = 0;
+
+		    /* only defined for length modifier l */
+		    long int long_arg = 0;
+		    unsigned long int ulong_arg = 0;
+
+		    /* pointer argument value -only defined for p
+		     * conversion */
+		    void *ptr_arg = NULL;
+
+		    if (fmt_spec == 'p')
+		    {
+			length_modifier = '\0';
+#ifndef HAVE_STDARG_H
+			ptr_arg = (void *)get_a_arg(arg_idx);
+			++arg_idx;
+#else
+			ptr_arg = va_arg(ap, void *);
+#endif
+			if (ptr_arg != NULL)
+			    arg_sign = 1;
+		    }
+		    else if (fmt_spec == 'd')
+		    {
+			/* signed */
+			switch (length_modifier)
+			{
+			case '\0':
+			case 'h':
+			    /* It is non-portable to specify a second argument
+			     * of char or short to va_arg, because arguments
+			     * seen by the called function are not char or
+			     * short.  C converts char and short arguments to
+			     * int before passing them to a function.  */
+#ifndef HAVE_STDARG_H
+			    int_arg = get_a_arg(arg_idx);
+			    ++arg_idx;
+#else
+			    int_arg = va_arg(ap, int);
+#endif
+			    if (int_arg > 0)
+				arg_sign =  1;
+			    else if (int_arg < 0)
+				arg_sign = -1;
+			    break;
+			case 'l':
+#ifndef HAVE_STDARG_H
+			    long_arg = get_a_arg(arg_idx);
+			    ++arg_idx;
+#else
+			    long_arg = va_arg(ap, long int);
+#endif
+			    if (long_arg > 0)
+				arg_sign =  1;
+			    else if (long_arg < 0)
+				arg_sign = -1;
+			    break;
+			}
+		    }
+		    else
+		    {
+			/* unsigned */
+			switch (length_modifier)
+			{
+			    case '\0':
+			    case 'h':
+#ifndef HAVE_STDARG_H
+				uint_arg = get_a_arg(arg_idx);
+				++arg_idx;
+#else
+				uint_arg = va_arg(ap, unsigned int);
+#endif
+				if (uint_arg != 0)
+				    arg_sign = 1;
+				break;
+			    case 'l':
+#ifndef HAVE_STDARG_H
+				ulong_arg = get_a_arg(arg_idx);
+				++arg_idx;
+#else
+				ulong_arg = va_arg(ap, unsigned long int);
+#endif
+				if (ulong_arg != 0)
+				    arg_sign = 1;
+				break;
+			}
+		    }
+
+		    str_arg = tmp;
+		    str_arg_l = 0;
+
+		    /* NOTE:
+		     *   For d, i, u, o, x, and X conversions, if precision is
+		     *   specified, the '0' flag should be ignored. This is so
+		     *   with Solaris 2.6, Digital UNIX 4.0, HPUX 10, Linux,
+		     *   FreeBSD, NetBSD; but not with Perl.
+		     */
+		    if (precision_specified)
+			zero_padding = 0;
+		    if (fmt_spec == 'd')
+		    {
+			if (force_sign && arg_sign >= 0)
+			    tmp[str_arg_l++] = space_for_positive ? ' ' : '+';
+			/* leave negative numbers for sprintf to handle, to
+			 * avoid handling tricky cases like (short int)-32768 */
+		    }
+		    else if (alternate_form)
+		    {
+			if (arg_sign != 0
+				     && (fmt_spec == 'x' || fmt_spec == 'X') )
+			{
+			    tmp[str_arg_l++] = '0';
+			    tmp[str_arg_l++] = fmt_spec;
+			}
+			/* alternate form should have no effect for p
+			 * conversion, but ... */
+		    }
+
+		    zero_padding_insertion_ind = str_arg_l;
+		    if (!precision_specified)
+			precision = 1;   /* default precision is 1 */
+		    if (precision == 0 && arg_sign == 0)
+		    {
+			/* When zero value is formatted with an explicit
+			 * precision 0, the resulting formatted string is
+			 * empty (d, i, u, o, x, X, p).   */
+		    }
+		    else
+		    {
+			char	f[5];
+			int	f_l = 0;
+
+			/* construct a simple format string for sprintf */
+			f[f_l++] = '%';
+			if (!length_modifier)
+			    ;
+			else if (length_modifier == '2')
+			{
+			    f[f_l++] = 'l';
+			    f[f_l++] = 'l';
+			}
+			else
+			    f[f_l++] = length_modifier;
+			f[f_l++] = fmt_spec;
+			f[f_l++] = '\0';
+
+			if (fmt_spec == 'p')
+			    str_arg_l += sprintf(tmp + str_arg_l, f, ptr_arg);
+			else if (fmt_spec == 'd')
+			{
+			    /* signed */
+			    switch (length_modifier)
+			    {
+			    case '\0':
+			    case 'h': str_arg_l += sprintf(
+						 tmp + str_arg_l, f, int_arg);
+				      break;
+			    case 'l': str_arg_l += sprintf(
+						tmp + str_arg_l, f, long_arg);
+				      break;
+			    }
+			}
+			else
+			{
+			    /* unsigned */
+			    switch (length_modifier)
+			    {
+			    case '\0':
+			    case 'h': str_arg_l += sprintf(
+						tmp + str_arg_l, f, uint_arg);
+				      break;
+			    case 'l': str_arg_l += sprintf(
+					       tmp + str_arg_l, f, ulong_arg);
+				      break;
+			    }
+			}
+
+			/* include the optional minus sign and possible
+			 * "0x" in the region before the zero padding
+			 * insertion point */
+			if (zero_padding_insertion_ind < str_arg_l
+				&& tmp[zero_padding_insertion_ind] == '-')
+			    zero_padding_insertion_ind++;
+			if (zero_padding_insertion_ind + 1 < str_arg_l
+				&& tmp[zero_padding_insertion_ind]   == '0'
+				&& (tmp[zero_padding_insertion_ind + 1] == 'x'
+				 || tmp[zero_padding_insertion_ind + 1] == 'X'))
+			    zero_padding_insertion_ind += 2;
+		    }
+
+		    {
+			size_t num_of_digits = str_arg_l
+						 - zero_padding_insertion_ind;
+
+			if (alternate_form && fmt_spec == 'o'
+				/* unless zero is already the first
+				 * character */
+				&& !(zero_padding_insertion_ind < str_arg_l
+				    && tmp[zero_padding_insertion_ind] == '0'))
+			{
+			    /* assure leading zero for alternate-form
+			     * octal numbers */
+			    if (!precision_specified
+					     || precision < num_of_digits + 1)
+			    {
+				/* precision is increased to force the
+				 * first character to be zero, except if a
+				 * zero value is formatted with an
+				 * explicit precision of zero */
+				precision = num_of_digits + 1;
+				precision_specified = 1;
+			    }
+			}
+			/* zero padding to specified precision? */
+			if (num_of_digits < precision)
+			    number_of_zeros_to_pad = precision - num_of_digits;
+		    }
+		    /* zero padding to specified minimal field width? */
+		    if (!justify_left && zero_padding)
+		    {
+			int n = min_field_width - (str_arg_l
+						    + number_of_zeros_to_pad);
+			if (n > 0)
+			    number_of_zeros_to_pad += n;
+		    }
+		    break;
+		}
+
+	    default:
+		/* unrecognized conversion specifier, keep format string
+		 * as-is */
+		zero_padding = 0;  /* turn zero padding off for non-numeric
+				      convers. */
+		justify_left = 1;
+		min_field_width = 0;                /* reset flags */
+
+		/* discard the unrecognized conversion, just keep *
+		 * the unrecognized conversion character          */
+		str_arg = p;
+		str_arg_l = 0;
+		if (*p != NUL)
+		    str_arg_l++;  /* include invalid conversion specifier
+				     unchanged if not at end-of-string */
+		break;
+	    }
+
+	    if (*p != NUL)
+		p++;     /* step over the just processed conversion specifier */
+
+	    /* insert padding to the left as requested by min_field_width;
+	     * this does not include the zero padding in case of numerical
+	     * conversions*/
+	    if (!justify_left)
+	    {
+		/* left padding with blank or zero */
+		int n = min_field_width - (str_arg_l + number_of_zeros_to_pad);
+
+		if (n > 0)
+		{
+		    if (str_l < str_m)
+		    {
+			size_t avail = str_m - str_l;
+
+			vim_memset(str + str_l, zero_padding ? '0' : ' ',
+						       n > avail ? avail : n);
+		    }
+		    str_l += n;
+		}
+	    }
+
+	    /* zero padding as requested by the precision or by the minimal
+	     * field width for numeric conversions required? */
+	    if (number_of_zeros_to_pad <= 0)
+	    {
+		/* will not copy first part of numeric right now, *
+		 * force it to be copied later in its entirety    */
+		zero_padding_insertion_ind = 0;
+	    }
+	    else
+	    {
+		/* insert first part of numerics (sign or '0x') before zero
+		 * padding */
+		int n = zero_padding_insertion_ind;
+
+		if (n > 0)
+		{
+		    if (str_l < str_m)
+		    {
+			size_t avail = str_m - str_l;
+
+			mch_memmove(str + str_l, str_arg,
+						       n > avail ? avail : n);
+		    }
+		    str_l += n;
+		}
+
+		/* insert zero padding as requested by the precision or min
+		 * field width */
+		n = number_of_zeros_to_pad;
+		if (n > 0)
+		{
+		    if (str_l < str_m)
+		    {
+			size_t avail = str_m-str_l;
+
+			vim_memset(str + str_l, '0', n > avail ? avail : n);
+		    }
+		    str_l += n;
+		}
+	    }
+
+	    /* insert formatted string
+	     * (or as-is conversion specifier for unknown conversions) */
+	    {
+		int n = str_arg_l - zero_padding_insertion_ind;
+
+		if (n > 0)
+		{
+		    if (str_l < str_m)
+		    {
+			size_t avail = str_m - str_l;
+
+			mch_memmove(str + str_l,
+				str_arg + zero_padding_insertion_ind,
+				n > avail ? avail : n);
+		    }
+		    str_l += n;
+		}
+	    }
+
+	    /* insert right padding */
+	    if (justify_left)
+	    {
+		/* right blank padding to the field width */
+		int n = min_field_width - (str_arg_l + number_of_zeros_to_pad);
+
+		if (n > 0)
+		{
+		    if (str_l < str_m)
+		    {
+			size_t avail = str_m - str_l;
+
+			vim_memset(str + str_l, ' ', n > avail ? avail : n);
+		    }
+		    str_l += n;
+		}
+	    }
+	}
+    }
+
+    if (str_m > 0)
+    {
+	/* make sure the string is null-terminated even at the expense of
+	 * overwriting the last character (shouldn't happen, but just in case)
+	 * */
+	str[str_l <= str_m - 1 ? str_l : str_m - 1] = '\0';
+    }
+
+    /* Return the number of characters formatted (excluding trailing null
+     * character), that is, the number of characters that would have been
+     * written to the buffer if it were large enough. */
+    return (int)str_l;
+}
+
+#endif /* PROTO */

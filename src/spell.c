@@ -1332,13 +1332,15 @@ spell_load_lang(lang)
 	else
 #endif
 	    p = (char_u *)"latin1";
-	sprintf((char *)fname_enc, "spell/%s.%s.spl", lang, p);
+	vim_snprintf((char *)fname_enc, sizeof(fname_enc),
+						  "spell/%s.%s.spl", lang, p);
 
 	r = do_in_runtimepath(fname_enc, TRUE, spell_load_file, lp);
 	if (r == FAIL && !lp->sl_error)
 	{
 	    /* Try loading the ASCII version. */
-	    sprintf((char *)fname_enc, "spell/%s.ascii.spl", lang);
+	    vim_snprintf((char *)fname_enc, sizeof(fname_enc),
+						  "spell/%s.ascii.spl", lang);
 
 	    r = do_in_runtimepath(fname_enc, TRUE, spell_load_file, lp);
 	}
@@ -4837,7 +4839,7 @@ ex_mkspell(eap)
     {
 	/* Check for overwriting before doing things that may take a lot of
 	 * time. */
-	sprintf((char *)wfname, "%s.%s.spl", fnames[0],
+	vim_snprintf((char *)wfname, sizeof(wfname), "%s.%s.spl", fnames[0],
 					   ascii ? (char_u *)"ascii" : p_enc);
 	if (!eap->forceit && mch_stat((char *)wfname, &st) >= 0)
 	{
@@ -4887,12 +4889,12 @@ ex_mkspell(eap)
 	{
 	    /* Read the .aff file.  Will init "conv" based on the "SET" line. */
 	    conv.vc_type = CONV_NONE;
-	    sprintf((char *)fname, "%s.aff", fnames[i]);
+	    vim_snprintf((char *)fname, sizeof(fname), "%s.aff", fnames[i]);
 	    if ((afile[i - 1] = spell_read_aff(fname, &conv, ascii)) == NULL)
 		break;
 
 	    /* Read the .dic file. */
-	    sprintf((char *)fname, "%s.dic", fnames[i]);
+	    vim_snprintf((char *)fname, sizeof(fname), "%s.dic", fnames[i]);
 	    if (spell_read_dic(&dfile[i - 1], fname, &conv, ascii) == FAIL)
 		break;
 

@@ -95,25 +95,32 @@ extern int _stricoll __ARGS((char *a, char *b));
 # include "hashtable.pro"
 # include "main.pro"
 # include "mark.pro"
-# if !defined MESSAGE_FILE || defined(HAVE_STDARG_H)
-    /* These prototypes cannot be produced automatically and conflict with
-     * the old-style prototypes in message.c. */
-int
-#ifdef __BORLANDC__
-_RTLENTRYF
-#endif
-smsg __ARGS((char_u *, ...));
-int
-#ifdef __BORLANDC__
-_RTLENTRYF
-#endif
-smsg_attr __ARGS((int, char_u *, ...));
-# endif
 # include "memfile.pro"
 # include "memline.pro"
 # ifdef FEAT_MENU
 #  include "menu.pro"
 # endif
+
+# if !defined MESSAGE_FILE || defined(HAVE_STDARG_H)
+    /* These prototypes cannot be produced automatically and conflict with
+     * the old-style prototypes in message.c. */
+int
+#  ifdef __BORLANDC__
+_RTLENTRYF
+#  endif
+smsg __ARGS((char_u *, ...));
+int
+#  ifdef __BORLANDC__
+_RTLENTRYF
+#  endif
+smsg_attr __ARGS((int, char_u *, ...));
+int
+#  ifdef __BORLANDC__
+_RTLENTRYF
+#  endif
+vim_snprintf __ARGS((char *, size_t, char *, ...));
+# endif
+
 # include "message.pro"
 # include "misc1.pro"
 # include "misc2.pro"

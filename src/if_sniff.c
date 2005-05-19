@@ -817,14 +817,15 @@ HandleSniffRequest(buffer)
 		vi_open_file(file);
 	    else if (buf!=curbuf)
 	    {
-		sprintf(VICommand, SelectBuf, file);
+		vim_snprintf(VICommand, sizeof(VICommand), SelectBuf, file);
 		vi_exec_cmd(VICommand);
 	    }
 	    if (command == 'o')
 		vi_set_cursor_pos((long)position);
 	    else
 	    {
-		sprintf(VICommand, GotoLine, (int)position);
+		vim_snprintf(VICommand, sizeof(VICommand), GotoLine,
+							       (int)position);
 		vi_exec_cmd(VICommand);
 	    }
 	    checkpcmark();	/* [mark.c] */
@@ -853,7 +854,7 @@ HandleSniffRequest(buffer)
 	    buf = vi_find_buffer(file);
 	    if (buf && !buf->b_changed) /* delete buffer only if not modified */
 	    {
-		sprintf(VICommand, DeleteBuf, file);
+		vim_snprintf(VICommand, sizeof(VICommand), DeleteBuf, file);
 		vi_exec_cmd(VICommand);
 	    }
 	    vi_open_file(new_path);
@@ -875,7 +876,8 @@ HandleSniffRequest(buffer)
 		    buf->b_flags |= BF_CHECK_RO + BF_NEVERLOADED;
 		    if (writable && !buf->b_changed)
 		    {
-			sprintf(VICommand, UnloadBuf, file);
+			vim_snprintf(VICommand, sizeof(VICommand), UnloadBuf,
+									file);
 			vi_exec_cmd(VICommand);
 		    }
 		}
@@ -895,7 +897,7 @@ HandleSniffRequest(buffer)
 
 	    if (tab_width > 0 && tab_width <= 16)
 	    {
-		sprintf(VICommand, SetTab, tab_width);
+		vim_snprintf(VICommand, sizeof(VICommand), SetTab, tab_width);
 		vi_exec_cmd(VICommand);
 	    }
 	    break;
@@ -1030,7 +1032,7 @@ SendRequest(command, symbol)
 	}
 
 	if (symbol)
-	    sprintf(cmdstr, "%c%s%s%ld%s%s\n",
+	    vim_snprintf(cmdstr, sizeof(cmdstr), "%c%s%s%ld%s%s\n",
 		command->cmd_code,
 		buffer_name,
 		sniff_rq_sep,
@@ -1039,7 +1041,8 @@ SendRequest(command, symbol)
 		symbol
 	    );
 	else
-	    sprintf(cmdstr, "%c%s\n", command->cmd_code, buffer_name);
+	    vim_snprintf(cmdstr, sizeof(cmdstr), "%c%s\n",
+		    command->cmd_code, buffer_name);
     }
     else    /* simple request */
     {
@@ -1051,7 +1054,8 @@ SendRequest(command, symbol)
     {
 	if ((cmd_type & NEED_SYMBOL) && !(cmd_type & EMPTY_SYMBOL))
 	{
-	    sprintf(msgtxt, "%s: %s", _(command->cmd_msg), symbol);
+	    vim_snprintf(msgtxt, sizeof(msgtxt), "%s: %s",
+						 _(command->cmd_msg), symbol);
 	    vi_msg(msgtxt);
 	}
 	else

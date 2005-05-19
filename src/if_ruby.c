@@ -474,7 +474,7 @@ static void error_print(int state)
 	    char *p;
 
 	    epath = rb_class_path(eclass);
-	    snprintf(buff, BUFSIZ, "%s: %s",
+	    vim_snprintf(buff, BUFSIZ, "%s: %s",
 		     RSTRING(epath)->ptr, RSTRING(einfo)->ptr);
 	    p = strchr(buff, '\n');
 	    if (p) *p = '\0';
@@ -482,7 +482,7 @@ static void error_print(int state)
 	}
 	break;
     default:
-	snprintf(buff, BUFSIZ, _("E273: unknown longjmp status %d"), state);
+	vim_snprintf(buff, BUFSIZ, _("E273: unknown longjmp status %d"), state);
 	EMSG(buff);
 	break;
     }

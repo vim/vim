@@ -1054,21 +1054,11 @@ do_cmdline(cmdline, getline, cookie, flags)
 
 	if (p_verbose >= 15 && sourcing_name != NULL)
 	{
-	    int	c = -1;
-
 	    ++no_wait_return;
 	    msg_scroll = TRUE;	    /* always scroll up, don't overwrite */
-	    /* Truncate long lines, smsg() can't handle that. */
-	    if (STRLEN(cmdline_copy) > 200)
-	    {
-		c = cmdline_copy[200];
-		cmdline_copy[200] = NUL;
-	    }
 	    smsg((char_u *)_("line %ld: %s"),
 					   (long)sourcing_lnum, cmdline_copy);
 	    msg_puts((char_u *)"\n");   /* don't overwrite this either */
-	    if (c >= 0)
-		cmdline_copy[200] = c;
 	    cmdline_row = msg_row;
 	    --no_wait_return;
 	}
@@ -1341,7 +1331,8 @@ do_cmdline(cmdline, getline, cookie, flags)
 	    switch (current_exception->type)
 	    {
 		case ET_USER:
-		    sprintf((char *)IObuff, _("E605: Exception not caught: %s"),
+		    vim_snprintf((char *)IObuff, IOSIZE,
+			    _("E605: Exception not caught: %s"),
 			    current_exception->value);
 		    p = vim_strsave(IObuff);
 		    break;
@@ -4802,7 +4793,7 @@ check_more(message, forceit)
 		if (n == 1)
 		    STRCPY(buff, _("1 more file to edit.  Quit anyway?"));
 		else
-		    sprintf((char *)buff,
+		    vim_snprintf((char *)buff, IOSIZE,
 			      _("%d more files to edit.  Quit anyway?"), n);
 		if (vim_dialog_yesno(VIM_QUESTION, NULL, buff, 1) == VIM_YES)
 		    return OK;
@@ -9902,6 +9893,10 @@ ex_viminfo(eap)
 #endif
 
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG) || defined(PROTO)
+/*
+ * Make a dialog message in "buff[IOSIZE]".
+ * "format" must contain "%.*s".
+ */
     void
 dialog_msg(buff, format, fname)
     char_u	*buff;

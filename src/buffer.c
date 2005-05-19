@@ -2476,9 +2476,9 @@ buflist_list(eap)
 	{
 	    IObuff[len++] = ' ';
 	} while (--i > 0 && len < IOSIZE - 18);
-	sprintf((char *)IObuff + len, _("line %ld"),
-		buf == curbuf ? curwin->w_cursor.lnum :
-				(long)buflist_findlnum(buf));
+	vim_snprintf((char *)IObuff + len, IOSIZE - len, _("line %ld"),
+		buf == curbuf ? curwin->w_cursor.lnum
+					       : (long)buflist_findlnum(buf));
 	msg_outtrans(IObuff);
 	out_flush();	    /* output one line at a time */
 	ui_breakcheck();
@@ -2852,6 +2852,7 @@ fileinfo(fullname, shorthelp, dont_truncate)
     int		n;
     char_u	*p;
     char_u	*buffer;
+    size_t	len;
 
     buffer = alloc(IOSIZE);
     if (buffer == NULL)
@@ -2878,7 +2879,8 @@ fileinfo(fullname, shorthelp, dont_truncate)
 					  (int)(IOSIZE - (p - buffer)), TRUE);
     }
 
-    sprintf((char *)buffer + STRLEN(buffer),
+    len = STRLEN(buffer);
+    vim_snprintf((char *)buffer + len, IOSIZE - len,
 	    "\"%s%s%s%s%s%s",
 	    curbufIsChanged() ? (shortmess(SHM_MOD)
 					  ?  " [+]" : _(" [Modified]")) : " ",
@@ -2906,24 +2908,27 @@ fileinfo(fullname, shorthelp, dont_truncate)
     else
 	n = (int)(((long)curwin->w_cursor.lnum * 100L) /
 					    (long)curbuf->b_ml.ml_line_count);
+    len = STRLEN(buffer);
     if (curbuf->b_ml.ml_flags & ML_EMPTY)
     {
-	STRCPY(buffer + STRLEN(buffer), _(no_lines_msg));
+	vim_snprintf((char *)buffer + len, IOSIZE - len, "%s", _(no_lines_msg));
     }
 #ifdef FEAT_CMDL_INFO
     else if (p_ru)
     {
 	/* Current line and column are already on the screen -- webb */
 	if (curbuf->b_ml.ml_line_count == 1)
-	    sprintf((char *)buffer + STRLEN(buffer), _("1 line --%d%%--"), n);
+	    vim_snprintf((char *)buffer + len, IOSIZE - len,
+		    _("1 line --%d%%--"), n);
 	else
-	    sprintf((char *)buffer + STRLEN(buffer), _("%ld lines --%d%%--"),
+	    vim_snprintf((char *)buffer + len, IOSIZE - len,
+		    _("%ld lines --%d%%--"),
 					 (long)curbuf->b_ml.ml_line_count, n);
     }
 #endif
     else
     {
-	sprintf((char *)buffer + STRLEN(buffer),
+	vim_snprintf((char *)buffer + len, IOSIZE - len,
 		_("line %ld of %ld --%d%%-- col "),
 		(long)curwin->w_cursor.lnum,
 		(long)curbuf->b_ml.ml_line_count,
@@ -3630,7 +3635,8 @@ build_stl_str_hl(wp, out, outlen, fmt, fillchar, maxwidth, hl)
 	    if (*wp->w_buffer->b_p_ft != NUL
 		    && STRLEN(wp->w_buffer->b_p_ft) < TMPLEN - 3)
 	    {
-		sprintf((char *)tmp, "[%s]", wp->w_buffer->b_p_ft);
+		vim_snprintf((char *)tmp, sizeof(tmp), "[%s]",
+							wp->w_buffer->b_p_ft);
 		str = tmp;
 	    }
 	    break;
@@ -3640,7 +3646,8 @@ build_stl_str_hl(wp, out, outlen, fmt, fillchar, maxwidth, hl)
 	    if (*wp->w_buffer->b_p_ft != NUL
 		    && STRLEN(wp->w_buffer->b_p_ft) < TMPLEN - 2)
 	    {
-		sprintf((char *)tmp, ",%s", wp->w_buffer->b_p_ft);
+		vim_snprintf((char *)tmp, sizeof(tmp), ",%s",
+							wp->w_buffer->b_p_ft);
 		for (t = tmp; *t != 0; t++)
 		    *t = TOUPPER_LOC(*t);
 		str = tmp;
@@ -3768,10 +3775,12 @@ build_stl_str_hl(wp, out, outlen, fmt, fillchar, maxwidth, hl)
 		*t++ = '%';
 		*t = t[-3];
 		*++t = 0;
-		sprintf((char *)p, (char *)nstr, 0, num, n);
+		vim_snprintf((char *)p, outlen - (p - out), (char *)nstr,
+								   0, num, n);
 	    }
 	    else
-		sprintf((char *)p, (char *)nstr, minwid, num);
+		vim_snprintf((char *)p, outlen - (p - out), (char *)nstr,
+								 minwid, num);
 	    p += STRLEN(p);
 	}
 	else
@@ -3917,8 +3926,8 @@ build_stl_str_hl(wp, out, outlen, fmt, fillchar, maxwidth, hl)
 
 #if defined(FEAT_STL_OPT) || defined(FEAT_CMDL_INFO) || defined(PROTO)
 /*
- * Get relative cursor position in window, in the form 99%, using "Top", "Bot"
- * or "All" when appropriate.
+ * Get relative cursor position in window into "str[]", in the form 99%, using
+ * "Top", "Bot" or "All" when appropriate.
  */
     void
 get_rel_pos(wp, str)
@@ -4694,7 +4703,7 @@ write_viminfo_bufferlist(fp)
     max_buffers = get_viminfo_parameter('%');
 
     /* Allocate room for the file name, lnum and col. */
-    line = alloc(MAXPATHL + 30);
+    line = alloc(MAXPATHL + 40);
     if (line == NULL)
 	return;
 
@@ -5076,22 +5085,13 @@ sign_list_placed(rbuf)
     {
 	if (buf->b_signlist != NULL)
 	{
-#ifdef HAVE_SNPRINTF
-	    snprintf
-#else
-	    sprintf
-#endif
-		(lbuf,
-#ifdef HAVE_SNPRINTF
-		 BUFSIZ,
-#endif
-		    _("Signs for %s:"), buf->b_fname);
+	    vim_snprintf(lbuf, BUFSIZ, _("Signs for %s:"), buf->b_fname);
 	    MSG_PUTS_ATTR(lbuf, hl_attr(HLF_D));
 	    msg_putchar('\n');
 	}
 	for (p = buf->b_signlist; p != NULL; p = p->next)
 	{
-	    sprintf(lbuf, _("    line=%ld  id=%d  name=%s"),
+	    vim_snprintf(lbuf, BUFSIZ, _("    line=%ld  id=%d  name=%s"),
 			   (long)p->lnum, p->id, sign_typenr2name(p->typenr));
 	    MSG_PUTS(lbuf);
 	    msg_putchar('\n');

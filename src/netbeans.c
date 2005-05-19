@@ -403,7 +403,7 @@ netbeans_connect(void)
 	}
     }
 
-    sprintf(buf, "AUTH %s\n", password);
+    vim_snprintf(buf, sizeof(buf), "AUTH %s\n", password);
     nb_send(buf, "netbeans_connect");
 
     sprintf(buf, "0:version=0 \"%s\"\n", ExtEdProtocolVersion);
@@ -2379,7 +2379,8 @@ special_keys(char_u *args)
 	}
 
 	strcpy(&keybuf[i], tok);
-	sprintf(cmdbuf, "<silent><%s> :nbkey %s<CR>", keybuf, keybuf);
+	vim_snprintf(cmdbuf, sizeof(cmdbuf),
+				"<silent><%s> :nbkey %s<CR>", keybuf, keybuf);
 	do_map(0, (char_u *)cmdbuf, NORMAL, FALSE);
 	tok = strtok(NULL, " ");
     }
@@ -2516,7 +2517,8 @@ netbeans_beval_cb(
 	    p = nb_quote(text);
 	    if (p != NULL)
 	    {
-		sprintf(buf, "0:balloonText=%d \"%s\"\n", cmdno, p);
+		vim_snprintf(buf, sizeof(buf),
+				       "0:balloonText=%d \"%s\"\n", cmdno, p);
 		vim_free(p);
 	    }
 	    nbdebug(("EVT: %s", buf));
@@ -2613,7 +2615,7 @@ netbeans_file_activated(buf_T *bufp)
     if (q == NULL || bp == NULL || bufp == NULL)
 	return;
 
-    sprintf(buffer, "%d:fileOpened=%d \"%s\" %s %s\n",
+    vim_snprintf(buffer, sizeof(buffer),  "%d:fileOpened=%d \"%s\" %s %s\n",
 	    bufno,
 	    bufno,
 	    (char *)q,
@@ -2649,7 +2651,7 @@ netbeans_file_opened(buf_T *bufp)
     else
 	bnum = 0;
 
-    sprintf(buffer, "%d:fileOpened=%d \"%s\" %s %s\n",
+    vim_snprintf(buffer, sizeof(buffer), "%d:fileOpened=%d \"%s\" %s %s\n",
 	    bnum,
 	    0,
 	    (char *)q,
@@ -2913,7 +2915,7 @@ netbeans_keystring(int key, char *keyName)
 						 : nb_quote(curbuf->b_ffname);
 	if (q == NULL)
 	    return;
-	sprintf(buf, "0:fileOpened=%d \"%s\" %s %s\n", 0,
+	vim_snprintf(buf, sizeof(buf), "0:fileOpened=%d \"%s\" %s %s\n", 0,
 		q,
 		"T",  /* open in NetBeans */
 		"F"); /* modified */
@@ -2939,12 +2941,14 @@ netbeans_keystring(int key, char *keyName)
      */
 
     /* now send keyCommand event */
-    sprintf(buf, "%d:keyCommand=%d \"%s\"\n", bufno, cmdno, keyName);
+    vim_snprintf(buf, sizeof(buf), "%d:keyCommand=%d \"%s\"\n",
+						       bufno, cmdno, keyName);
     nbdebug(("EVT: %s", buf));
     nb_send(buf, "netbeans_keycommand");
 
     /* New: do both at once and include the lnum/col. */
-    sprintf(buf, "%d:keyAtPos=%d \"%s\" %ld %ld/%ld\n", bufno, cmdno, keyName,
+    vim_snprintf(buf, sizeof(buf), "%d:keyAtPos=%d \"%s\" %ld %ld/%ld\n",
+	    bufno, cmdno, keyName,
 		off, (long)curwin->w_cursor.lnum, (long)curwin->w_cursor.col);
     nbdebug(("EVT: %s", buf));
     nb_send(buf, "netbeans_keycommand");
