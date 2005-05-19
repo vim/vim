@@ -2140,7 +2140,7 @@ clip_x11_request_selection(myShell, dpy, cbd)
 	clip_yank_selection(MCHAR, buffer, (long)nbytes, cbd);
 	XFree((void *)buffer);
 	if (p_verbose > 0)
-	    smsg((char_u *)_("Used CUT_BUFFER0 instead of empty selection") );
+	    MSG(_("Used CUT_BUFFER0 instead of empty selection"));
     }
 }
 

@@ -11414,7 +11414,7 @@ remote_common(argvars, rettv, expr)
     if (argvars[2].v_type != VAR_UNKNOWN)
     {
 	dictitem_T	v;
-	char_u	str[30];
+	char_u		str[30];
 
 	sprintf((char *)str, "0x%x", (unsigned int)w);
 	v.di_tv.v_type = VAR_STRING;
@@ -16867,7 +16867,7 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
 	{
 	    ++no_wait_return;
 	    msg_scroll = TRUE;	    /* always scroll up, don't overwrite */
-	    msg_str((char_u *)_("calling %s"), sourcing_name);
+	    smsg((char_u *)_("calling %s"), sourcing_name);
 	    if (p_verbose >= 14)
 	    {
 		char_u	buf[MSG_BUF_LEN];
@@ -16950,30 +16950,26 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
     /* when being verbose, mention the return value */
     if (p_verbose >= 12)
     {
-	char_u	*sn;
-
 	++no_wait_return;
 	msg_scroll = TRUE;	    /* always scroll up, don't overwrite */
 
-	/* Make sure the output fits in IObuff. */
-	sn = sourcing_name;
-	if (STRLEN(sourcing_name) > IOSIZE / 2 - 50)
-	    sn = sourcing_name + STRLEN(sourcing_name) - (IOSIZE / 2 - 50);
-
 	if (aborting())
-	    smsg((char_u *)_("%s aborted"), sn);
+	    smsg((char_u *)_("%s aborted"), sourcing_name);
 	else if (fc.rettv->v_type == VAR_NUMBER)
-	    smsg((char_u *)_("%s returning #%ld"), sn,
-					      (long)fc.rettv->vval.v_number);
+	    smsg((char_u *)_("%s returning #%ld"), sourcing_name,
+					       (long)fc.rettv->vval.v_number);
 	else
 	{
 	    char_u	buf[MSG_BUF_LEN];
 	    char_u	numbuf[NUMBUFLEN];
 	    char_u	*tofree;
 
+	    /* The value may be very long.  Skip the middle part, so that we
+	     * have some idea how it starts and ends. smsg() would always
+	     * truncate it at the end. */
 	    trunc_string(tv2string(fc.rettv, &tofree, numbuf),
 							   buf, MSG_BUF_CLEN);
-	    smsg((char_u *)_("%s returning %s"), sn, buf);
+	    smsg((char_u *)_("%s returning %s"), sourcing_name, buf);
 	    vim_free(tofree);
 	}
 	msg_puts((char_u *)"\n");   /* don't overwrite this either */
@@ -16994,7 +16990,7 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
     {
 	++no_wait_return;
 	msg_scroll = TRUE;	    /* always scroll up, don't overwrite */
-	msg_str((char_u *)_("continuing in %s"), sourcing_name);
+	smsg((char_u *)_("continuing in %s"), sourcing_name);
 	msg_puts((char_u *)"\n");   /* don't overwrite this either */
 	cmdline_row = msg_row;
 	--no_wait_return;

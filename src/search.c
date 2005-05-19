@@ -4278,8 +4278,9 @@ find_pattern_in_path(ptr, dir, len, whole, skip_comments,
 #ifdef FEAT_INS_EXPAND
 		    if (action == ACTION_EXPAND)
 		    {
-			sprintf((char*)IObuff, _("Scanning included file: %s"),
-			    (char *)new_fname);
+			vim_snprintf((char*)IObuff, IOSIZE,
+				_("Scanning included file: %s"),
+				(char *)new_fname);
 			msg_trunc_attr(IObuff, TRUE, hl_attr(HLF_R));
 		    }
 #endif

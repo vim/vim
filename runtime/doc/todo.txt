@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 May 18
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 May 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -87,10 +87,6 @@ Win32: Balloon text can't contain line break.
     Add has("balloon_multiline")
 
 setline() should accept a List.
-
-smsg() uses IObuff.  The checks for the result not fitting are complicated,
-find another solution.  Add vsnprintf() and snprintf() functions?
-    http://www.ijs.si/software/snprintf/
 
 Add ":[range]sort" command.  Sort on specified field, using a regexp?  Remove
 duplicates?

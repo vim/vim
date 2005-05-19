@@ -5226,7 +5226,7 @@ write_viminfo_registers(fp)
 #endif
 	    default:
 		sprintf((char *)IObuff, _("E574: Unknown register type %d"),
-		    y_regs[i].y_type);
+							    y_regs[i].y_type);
 		emsg(IObuff);
 		type = (char_u *)"LINE";
 		break;
@@ -5943,8 +5943,8 @@ line_count_info(line, wc, cc, limit, eol_size)
 cursor_pos_info()
 {
     char_u	*p;
-    char_u	buf1[20];
-    char_u	buf2[20];
+    char_u	buf1[50];
+    char_u	buf2[40];
     linenr_T	lnum;
     long	byte_count = 0;
     long	byte_count_cursor = 0;
@@ -6106,7 +6106,7 @@ cursor_pos_info()
 		buf1[0] = NUL;
 
 	    if (char_count_cursor == byte_count_cursor
-		    && char_count == byte_count)
+						  && char_count == byte_count)
 		sprintf((char *)IObuff, _("Selected %s%ld of %ld Lines; %ld of %ld Words; %ld of %ld Bytes"),
 			buf1, line_count_selected,
 			(long)curbuf->b_ml.ml_line_count,

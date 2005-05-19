@@ -1369,12 +1369,13 @@ BufferGetattr(PyObject *self, char *name)
     static PyObject *
 BufferRepr(PyObject *self)
 {
-    static char repr[50];
+    static char repr[100];
     BufferObject *this = (BufferObject *)(self);
 
     if (this->buf == INVALID_BUFFER_VALUE)
     {
-	sprintf(repr, _("<buffer object (deleted) at %8lX>"), (long)(self));
+	vim_snprintf(repr, 100, _("<buffer object (deleted) at %8lX>"),
+								(long)(self));
 	return PyString_FromString(repr);
     }
     else
@@ -1389,7 +1390,7 @@ BufferRepr(PyObject *self)
 	if (len > 35)
 	    name = name + (35 - len);
 
-	sprintf(repr, "<buffer %s%s>", len > 35 ? "..." : "", name);
+	vim_snprintf(repr, 100, "<buffer %s%s>", len > 35 ? "..." : "", name);
 
 	return PyString_FromString(repr);
     }
@@ -1588,12 +1589,12 @@ RangeGetattr(PyObject *self, char *name)
     static PyObject *
 RangeRepr(PyObject *self)
 {
-    static char repr[75];
+    static char repr[100];
     RangeObject *this = (RangeObject *)(self);
 
     if (this->buf->buf == INVALID_BUFFER_VALUE)
     {
-	sprintf(repr, "<range object (for deleted buffer) at %8lX>",
+	vim_snprintf(repr, 100, "<range object (for deleted buffer) at %8lX>",
 								(long)(self));
 	return PyString_FromString(repr);
     }
@@ -1609,7 +1610,7 @@ RangeRepr(PyObject *self)
 	if (len > 45)
 	    name = name + (45 - len);
 
-	sprintf(repr, "<range %s%s (%d:%d)>",
+	vim_snprintf(repr, 100, "<range %s%s (%d:%d)>",
 		len > 45 ? "..." : "", name,
 		this->start, this->end);
 
@@ -1963,12 +1964,13 @@ WindowSetattr(PyObject *self, char *name, PyObject *val)
     static PyObject *
 WindowRepr(PyObject *self)
 {
-    static char repr[50];
+    static char repr[100];
     WindowObject *this = (WindowObject *)(self);
 
     if (this->win == INVALID_WINDOW_VALUE)
     {
-	sprintf(repr, _("<window object (deleted) at %.8lX>"), (long)(self));
+	vim_snprintf(repr, 100, _("<window object (deleted) at %.8lX>"),
+								(long)(self));
 	return PyString_FromString(repr);
     }
     else
@@ -1980,9 +1982,10 @@ WindowRepr(PyObject *self)
 	    ++i;
 
 	if (w == NULL)
-	    sprintf(repr, _("<window object (unknown) at %.8lX>"), (long)(self));
+	    vim_snprintf(repr, 100, _("<window object (unknown) at %.8lX>"),
+								(long)(self));
 	else
-	    sprintf(repr, _("<window %d>"), i);
+	    vim_snprintf(repr, 100, _("<window %d>"), i);
 
 	return PyString_FromString(repr);
     }

@@ -34,12 +34,13 @@
 # endif
 # define scheme_format scheme_format_utf8
 
-# define GET_BYTE_STRING(obj) (SCHEME_BYTE_STRINGP(obj) ? obj :   \
+# define SCHEME_GET_BYTE_STRING(obj) (SCHEME_BYTE_STRINGP(obj) ? obj :   \
 	scheme_char_string_to_byte_string(obj))
 #else
-# define GET_BYTE_STRING(obj) (obj)
+# define SCHEME_GET_BYTE_STRING(obj) (obj)
 # define SCHEME_BYTE_STRLEN_VAL SCHEME_STRLEN_VAL
 # define SCHEME_BYTE_STR_VAL SCHEME_STR_VAL
+# define scheme_byte_string_to_char_string(obj) (obj)
 #endif
 
 #endif /* _IF_MZSCH_H_ */

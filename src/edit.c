@@ -2218,8 +2218,8 @@ ins_compl_dictionaries(dict, pat, dir, flags, thesaurus)
 	    fp = mch_fopen((char *)files[i], "r");  /* open dictionary file */
 	    if (flags != DICT_EXACT)
 	    {
-		sprintf((char*)IObuff, _("Scanning dictionary: %s"),
-							    (char *)files[i]);
+		vim_snprintf((char *)IObuff, IOSIZE,
+			      _("Scanning dictionary: %s"), (char *)files[i]);
 		msg_trunc_attr(IObuff, TRUE, hl_attr(HLF_R));
 	    }
 
@@ -2827,7 +2827,7 @@ ins_compl_get_exp(ini, dir)
 		    dict = ins_buf->b_fname;
 		    dict_f = DICT_EXACT;
 		}
-		sprintf((char *)IObuff, _("Scanning: %s"),
+		vim_snprintf((char *)IObuff, IOSIZE, _("Scanning: %s"),
 			ins_buf->b_fname == NULL
 			    ? buf_spname(ins_buf)
 			    : ins_buf->b_sfname == NULL

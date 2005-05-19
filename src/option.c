@@ -2571,7 +2571,7 @@ static char_u *set_chars_option __ARGS((char_u **varp));
 static char_u *check_clipboard_option __ARGS((void));
 #endif
 static char_u *set_bool_option __ARGS((int opt_idx, char_u *varp, int value, int opt_flags));
-static char_u *set_num_option __ARGS((int opt_idx, char_u *varp, long value, char_u *errbuf, int opt_flags));
+static char_u *set_num_option __ARGS((int opt_idx, char_u *varp, long value, char_u *errbuf, size_t errbuflen, int opt_flags));
 static void check_redraw __ARGS((long_u flags));
 static int findoption __ARGS((char_u *));
 static int find_key_option __ARGS((char_u *));
@@ -3881,7 +3881,7 @@ do_set(arg, opt_flags)
 			if (removing)
 			    value = *(long *)varp - value;
 			errmsg = set_num_option(opt_idx, varp, value,
-							   errbuf, opt_flags);
+					   errbuf, sizeof(errbuf), opt_flags);
 		    }
 		    else if (opt_idx >= 0)		    /* string */
 		    {
@@ -4287,7 +4287,7 @@ illegal_char(errbuf, c)
     if (errbuf == NULL)
 	return (char_u *)"";
     sprintf((char *)errbuf, _("E539: Illegal character <%s>"),
-	    (char *)transchar(c));
+							(char *)transchar(c));
     return errbuf;
 }
 
@@ -6822,11 +6822,12 @@ set_bool_option(opt_idx, varp, value, opt_flags)
  * Returns NULL for success, or an error message for an error.
  */
     static char_u *
-set_num_option(opt_idx, varp, value, errbuf, opt_flags)
+set_num_option(opt_idx, varp, value, errbuf, errbuflen, opt_flags)
     int		opt_idx;		/* index in options[] table */
     char_u	*varp;			/* pointer to the option variable */
     long	value;			/* new value */
     char_u	*errbuf;		/* buffer for error messages */
+    size_t	errbuflen;		/* length of "errbuf" */
     int		opt_flags;		/* OPT_LOCAL, OPT_GLOBAL and
 					   OPT_MODELINE */
 {
@@ -7116,8 +7117,8 @@ set_num_option(opt_idx, varp, value, errbuf, opt_flags)
     {
 	if (errbuf != NULL)
 	{
-	    sprintf((char *)errbuf, _("E593: Need at least %d lines"),
-								  min_rows());
+	    vim_snprintf((char *)errbuf, errbuflen,
+			       _("E593: Need at least %d lines"), min_rows());
 	    errmsg = errbuf;
 	}
 	Rows = min_rows();
@@ -7126,8 +7127,8 @@ set_num_option(opt_idx, varp, value, errbuf, opt_flags)
     {
 	if (errbuf != NULL)
 	{
-	    sprintf((char *)errbuf, _("E594: Need at least %d columns"),
-								 MIN_COLUMNS);
+	    vim_snprintf((char *)errbuf, errbuflen,
+			    _("E594: Need at least %d columns"), MIN_COLUMNS);
 	    errmsg = errbuf;
 	}
 	Columns = MIN_COLUMNS;
@@ -7453,7 +7454,8 @@ set_option_value(name, number, string, opt_flags)
 	    if (varp != NULL)	/* hidden option is not changed */
 	    {
 		if (flags & P_NUM)
-		    (void)set_num_option(opt_idx, varp, number, NULL, opt_flags);
+		    (void)set_num_option(opt_idx, varp, number,
+							  NULL, 0, opt_flags);
 		else
 		    (void)set_bool_option(opt_idx, varp, (int)number, opt_flags);
 	    }

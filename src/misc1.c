@@ -3295,7 +3295,7 @@ init_homedir()
 	    if (exp != NULL && *exp != NUL
 					&& STRLEN(exp) + STRLEN(p) < MAXPATHL)
 	    {
-		sprintf((char *)NameBuff, "%s%s", exp, p + 1);
+		vim_snprintf((char *)NameBuff, MAXPATHL, "%s%s", exp, p + 1);
 		var = NameBuff;
 		/* Also set $HOME, it's needed for _viminfo. */
 		vim_setenv((char_u *)"HOME", NameBuff);

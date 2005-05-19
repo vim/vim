@@ -1309,7 +1309,7 @@ msgid "1 substitution"
 msgstr "1 sostituzione"
 
 #: ex_cmds.c:4550
-#, fuzzy, c-format
+#, c-format
 msgid "%ld matches"
 msgstr "%ld corrisp."
 
@@ -1608,7 +1608,6 @@ msgid "Append File"
 msgstr "In aggiunta al File"
 
 #: ex_docmd.c:7225
-#, fuzzy
 msgid "E747: Cannot change directory, buffer is modifed (add ! to override)"
 msgstr ""
 "E747: Non posso cambiare directory, buffer modificato (aggiungi ! per "
@@ -2271,7 +2270,6 @@ msgid "W16: Warning: Mode of file \"%s\" has changed since editing started"
 msgstr "W16: Attenzione: Modo File \"%s\" modificato dopo l'apertura"
 
 #: fileio.c:6066
-#, fuzzy
 msgid "See \":help W16\" for more info."
 msgstr "Vedere \":help W16\" per ulteriori informazioni."
 
@@ -5600,7 +5598,6 @@ msgid "E382: Cannot write, 'buftype' option is set"
 msgstr "E382: Non posso scrivere, l'opzione 'buftype' è impostata"
 
 #: quickfix.c:2379
-#, fuzzy
 msgid "E682: Invalid search pattern or delimiter"
 msgstr "E682: Espressione o delimitatore di ricerca non validi"
 
@@ -6688,7 +6685,6 @@ msgid "with (classic) GUI."
 msgstr "con GUI (classica)."
 
 #: version.c:876
-#, fuzzy
 msgid "with KDE GUI."
 msgstr "con GUI KDE."
 
@@ -7002,7 +6998,6 @@ msgid "E588: :endwhile without :while"
 msgstr "E588: :endwhile senza :while"
 
 #: globals.h:1276
-#, fuzzy
 msgid "E588: :endfor without :for"
 msgstr "E588: :endfor senza :for"
 

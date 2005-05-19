@@ -14,11 +14,7 @@
 " I also recommend setting the default 'Comment' hilighting to something
 " other than the color used for 'Function', since both are plentiful in
 " most mathematica files, and they are often the same color (when using 
-" background=dark).  I use
-"
-"   hi Comment ctermfg=darkcyan
-"   
-" darkgreen also looks good on my terminal.
+" background=dark).
 "
 " Credits:
 " o  Original Mathematica syntax version written by
@@ -44,16 +40,6 @@ syntax cluster mmaComments contains=mmaComment,mmaFunctionComment,mmaItem,mmaFun
 syntax cluster mmaCommentStrings contains=mmaLooseQuote,mmaCommentString,mmaUnicode
 syntax cluster mmaStrings contains=@mmaCommentStrings,mmaString
 syntax cluster mmaTop contains=mmaOperator,mmaGenericFunction,mmaPureFunction,mmaVariable
-
-" Variables:
-"   Dollar sign variables
-syntax match mmaVariable "$\a\+\d*"
-"   Preceding contexts
-syntax match mmaVariable "`\=\a\+\d*`"
-
-" Numbers:
-syntax match mmaNumber "\<\%(\d\+\.\=\d*\|\d*\.\=\d\+\)\>"
-syntax match mmaNumber "`\d\+\>"
 
 " Predefined Constants:
 "   to list all predefined Symbols would be too insane...
@@ -89,41 +75,24 @@ syntax keyword mmaVariable Black Blue Brown Cyan Gray Green Magenta Orange Pink 
 " function attributes
 syntax keyword mmaVariable Protected Listable OneIdentity Orderless Flat Constant NumericFunction Locked ReadProtected HoldFirst HoldRest HoldAll HoldAllComplete SequenceHold NHoldFirst NHoldRest NHoldAll Temporary Stub 
 
-" Strings:
-"   "string"
-"   'string' is not accepted (until literal strings are supported!)
-syntax region mmaString start=+\\\@<!"+ skip=+\\\@<!\\\%(\\\\\)*"+ end=+"+
-syntax region mmaCommentString oneline start=+\\\@<!"+ skip=+\\\@<!\\\%(\\\\\)*"+ end=+"+ contained
+" Comment Sections:
+"   this:
+"   :that:
+syntax match mmaItem "\%(^[( |*\t]*\)\@<=\%(:\+\|\a\)[a-zA-Z0-9 ]\+:" contained contains=@mmaNotes
 
-" Function Usage Messages:
-"   "SymbolName::item"
-syntax match mmaMessage "$\=\a\+\d*::\a\+\d*"
-
-" Pure Functions:
-syntax match mmaPureFunction "#\%(#\|\d\+\)\="
-syntax match mmaPureFunction "&"
-
-" Named Functions:
-" Since everything is pretty much a function, get this straight 
-" from context
-syntax match mmaGenericFunction "[A-Za-z0-9`]\+\s*\%([@[]\|/:\|/\=/@\)\@=" contains=mmaOperator
-syntax match mmaGenericFunction "\~\s*[^~]\+\s*\~"hs=s+1,he=e-1 contains=mmaOperator,mmaBoring
-syntax match mmaGenericFunction "//\s*[A-Za-z0-9`]\+"hs=s+2 contains=mmaOperator
- 
 " Comment Keywords:
 syntax keyword mmaTodo TODO NOTE HEY contained
 syntax match mmaTodo "X\{3,}" contained
 syntax keyword mmaFixme FIX[ME] FIXTHIS BROKEN contained
 " yay pirates...
 syntax match mmaFixme "\%(Y\=A\+R\+G\+\|GRR\+\|CR\+A\+P\+\)\%(!\+\)\=" contained
-syntax match mmaemPHAsis "\(_\+\)[ a-zA-Z0-9]\+\1" contained
 
-" Comment Sections:
-"   this:
-"   :that:
-syntax match mmaItem "\%(^[( |*\t]*\)\@<=\%(:\+\|\a\)[a-zA-Z0-9 ]\+:" contained contains=@mmaNotes
+" EmPHAsis:
+" this unnecessary, but whatever :)
+syntax match mmaemPHAsis "\%(^\|\s\)\([_/]\)[a-zA-Z0-9]\+\%(\s\+[a-zA-Z0-9]\+\)*\1\%(\s\|$\)" contained contains=mmaemPHAsis
+syntax match mmaemPHAsis "\%(^\|\s\)(\@<!\*[a-zA-Z0-9]\+\%(\s\+[a-zA-Z0-9]\+\)*)\@!\*\%(\s\|$\)" contained contains=mmaemPHAsis
 
-" Actual Mathematica Comments:
+" Regular Comments:
 "   (* *)
 "   allow nesting (* (* *) *) even though the frontend
 "   won't always like it.
@@ -140,6 +109,19 @@ syntax region mmaFunctionTitle contained matchgroup=mmaFunctionComment start="\%
 syntax match mmaComment "(\*\*\+)"
 " catch preceding *
 syntax match mmaCommentStar "^\s*\*\+" contained
+
+" Variables:
+"   Dollar sign variables
+syntax match mmaVariable "$\a\+\d*"
+"   Preceding contexts
+syntax match mmaVariable "`\=\a\+\d*`"
+
+" Strings:
+"   "string"
+"   'string' is not accepted (until literal strings are supported!)
+syntax region mmaString start=+\\\@<!"+ skip=+\\\@<!\\\%(\\\\\)*"+ end=+"+
+syntax region mmaCommentString oneline start=+\\\@<!"+ skip=+\\\@<!\\\%(\\\\\)*"+ end=+"+ contained
+
 
 " Patterns:
 "   Each pattern marker below can be Blank[] (_), BlankSequence[] (__)
@@ -197,7 +179,25 @@ syntax match mmaOperator "[*+=^.:?-]"
 syntax match mmaOperator "\%(\~\~\=\)"
 syntax match mmaOperator "\%(=\{2,3}\|=\=!=\|||\=\|&&\|!\)" contains=ALLBUT,mmaPureFunction
 
-  
+" Function Usage Messages:
+"   "SymbolName::item"
+syntax match mmaMessage "$\=\a\+\d*::\a\+\d*"
+
+" Pure Functions:
+syntax match mmaPureFunction "#\%(#\|\d\+\)\="
+syntax match mmaPureFunction "&"
+
+" Named Functions:
+" Since everything is pretty much a function, get this straight 
+" from context
+syntax match mmaGenericFunction "[A-Za-z0-9`]\+\s*\%([@[]\|/:\|/\=/@\)\@=" contains=mmaOperator
+syntax match mmaGenericFunction "\~\s*[^~]\+\s*\~"hs=s+1,he=e-1 contains=mmaOperator,mmaBoring
+syntax match mmaGenericFunction "//\s*[A-Za-z0-9`]\+"hs=s+2 contains=mmaOperator
+
+" Numbers:
+syntax match mmaNumber "\<\%(\d\+\.\=\d*\|\d*\.\=\d\+\)\>"
+syntax match mmaNumber "`\d\+\%(\d\@!\.\|\>\)"
+
 " Special Characters:
 "   \[Name]     named character
 "   \ooo        octal
@@ -243,10 +243,10 @@ if version >= 508 || !exists("did_mma_syn_inits")
     HiLink mmaFunctionComment   Comment
     HiLink mmaLooseQuote        Comment
 	HiLink mmaGenericFunction   Function
+	HiLink mmaVariable          Identifier
 	HiLink mmaOperator          Operator
     HiLink mmaPatternOp         Operator
 	HiLink mmaPureFunction      Operator
-	HiLink mmaVariable          Identifier
 	HiLink mmaString            String
     HiLink mmaCommentString     String
 	HiLink mmaUnicode           String

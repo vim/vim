@@ -852,7 +852,9 @@ bufselfcmd(ref, interp, objc, objv)
 	    else
 	    {
 		char rbuf[64];
-		sprintf(rbuf, _("row %d column %d"), (int)row2tcl(pos->lnum), (int)col2tcl(pos->col));
+
+		sprintf(rbuf, _("row %d column %d"),
+			     (int)row2tcl(pos->lnum), (int)col2tcl(pos->col));
 		Tcl_SetResult(interp, rbuf, TCL_VOLATILE);
 	    }
 	    break;
@@ -874,7 +876,8 @@ bufselfcmd(ref, interp, objc, objv)
 		--val1;
 	    if (u_save((linenr_T)val1, (linenr_T)(val1+1)) != OK)
 	    {
-		Tcl_SetResult(interp, _("cannot save undo information"), TCL_STATIC);
+		Tcl_SetResult(interp, _("cannot save undo information"),
+								  TCL_STATIC);
 		err = TCL_ERROR;
 		break;
 	    }
@@ -882,7 +885,8 @@ bufselfcmd(ref, interp, objc, objv)
 	    line = Tcl_GetStringFromObj(objv[3], NULL);
 	    if (ml_append((linenr_T)val1, (char_u *)line, 0, FALSE) != OK)
 	    {
-		Tcl_SetResult(interp, _("cannot insert/append line"), TCL_STATIC);
+		Tcl_SetResult(interp, _("cannot insert/append line"),
+								  TCL_STATIC);
 		err = TCL_ERROR;
 		break;
 	    }
@@ -1067,6 +1071,7 @@ winselfcmd(ref, interp, objc, objv)
 	    if (objc == 2)
 	    {
 		char buf[64];
+
 		sprintf(buf, _("row %d column %d"), (int)row2tcl(win->w_cursor.lnum), (int)col2tcl(win->w_cursor.col));
 		Tcl_SetResult(interp, buf, TCL_VOLATILE);
 		break;
@@ -1486,7 +1491,8 @@ tclgetref(interp, refstartP, prefix, vimobj, proc)
     }
 
     if (ref)
-	sprintf(name, "::vim::%s", Tcl_GetCommandName(interp, ref->cmd));
+	vim_snprintf(name, sizeof(name), "::vim::%s",
+					Tcl_GetCommandName(interp, ref->cmd));
     else
     {
 	if (unused)
@@ -1507,7 +1513,8 @@ tclgetref(interp, refstartP, prefix, vimobj, proc)
 	}
 
 	/* This might break on some exotic systems... */
-	sprintf(name, "::vim::%s_%lx", prefix, (unsigned long)vimobj);
+	vim_snprintf(name, sizeof(name), "::vim::%s_%lx",
+					       prefix, (unsigned long)vimobj);
 	cmd = Tcl_CreateObjCommand(interp, name, proc,
 	    (ClientData)ref, (Tcl_CmdDeleteProc *)delref);
 	if (!cmd)
@@ -1881,7 +1888,7 @@ tclexit(error)
     if (error == TCL_EXIT )
     {
 	int retval;
-	char buf[32];
+	char buf[50];
 	Tcl_Obj *robj;
 
 	robj = Tcl_GetObjResult(tclinfo.interp);
@@ -1892,7 +1899,7 @@ tclexit(error)
 	}
 	else
 	{
-	    sprintf(buf, "E572: exit code %d", retval);
+	    sprintf(buf, _("E572: exit code %d"), retval);
 	    tclerrmsg(buf);
 	    if (retval == 0 )
 	    {

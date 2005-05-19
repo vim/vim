@@ -141,16 +141,9 @@ do_debug(cmd)
     if (sourcing_name != NULL)
 	msg(sourcing_name);
     if (sourcing_lnum != 0)
-    {
-	char_u	    buf[IOSIZE];
-
-	/* Truncate the command, the whole must fit in IObuff. */
-	STRNCPY(buf, cmd, IOSIZE - 50);
-	buf[IOSIZE - 50] = NUL;
-	smsg((char_u *)_("line %ld: %s"), (long)sourcing_lnum, buf);
-    }
+	smsg((char_u *)_("line %ld: %s"), (long)sourcing_lnum, cmd);
     else
-	msg_str((char_u *)_("cmd: %s"), cmd);
+	smsg((char_u *)_("cmd: %s"), cmd);
 
     /*
      * Repeat getting a command and executing it.
@@ -342,7 +335,8 @@ dbg_check_breakpoint(eap)
 		p = (char_u *)"<SNR>";
 	    else
 		p = (char_u *)"";
-	    smsg((char_u *)_("Breakpoint in \"%s%s\" line %ld"), p,
+	    smsg((char_u *)_("Breakpoint in \"%s%s\" line %ld"),
+		    p,
 		    debug_breakpoint_name + (*p == NUL ? 0 : 3),
 		    (long)debug_breakpoint_lnum);
 	    debug_breakpoint_name = NULL;
@@ -2473,13 +2467,8 @@ do_in_runtimepath(name, all, callback, cookie)
     if (buf != NULL && rtp_copy != NULL)
     {
 	if (p_verbose > 1)
-	{
-	    if (STRLEN(name) + STRLEN(p_rtp) > IOSIZE - 100)
-		MSG(_("Searching for a long name in 'runtimepath'"));
-	    else
-		smsg((char_u *)_("Searching for \"%s\" in \"%s\""),
+	    smsg((char_u *)_("Searching for \"%s\" in \"%s\""),
 						 (char *)name, (char *)p_rtp);
-	}
 
 	/* Loop over all entries in 'runtimepath'. */
 	rtp = rtp_copy;
@@ -2501,7 +2490,7 @@ do_in_runtimepath(name, all, callback, cookie)
 								       "\t ");
 
 		    if (p_verbose > 2)
-			msg_str((char_u *)_("Searching for \"%s\""), buf);
+			smsg((char_u *)_("Searching for \"%s\""), buf);
 
 		    /* Expand wildcards, invoke the callback for each match. */
 		    if (gen_expand_wildcards(1, &buf, &num_files, &files,
@@ -2523,7 +2512,7 @@ do_in_runtimepath(name, all, callback, cookie)
     vim_free(buf);
     vim_free(rtp_copy);
     if (p_verbose > 0 && !did_one)
-	msg_str((char_u *)_("not found in 'runtimepath': \"%s\""), name);
+	smsg((char_u *)_("not found in 'runtimepath': \"%s\""), name);
 
 #ifdef AMIGA
     proc->pr_WindowPtr = save_winptr;
@@ -2733,7 +2722,7 @@ do_source(fname, check_other, is_vimrc)
 #endif
     if (mch_isdir(fname_exp))
     {
-	msg_str((char_u *)_("Cannot source a directory: \"%s\""), fname);
+	smsg((char_u *)_("Cannot source a directory: \"%s\""), fname);
 	goto theend;
     }
 
@@ -2771,10 +2760,10 @@ do_source(fname, check_other, is_vimrc)
 	if (p_verbose > 0)
 	{
 	    if (sourcing_name == NULL)
-		msg_str((char_u *)_("could not source \"%s\""), fname);
+		smsg((char_u *)_("could not source \"%s\""), fname);
 	    else
 		smsg((char_u *)_("line %ld: could not source \"%s\""),
-			sourcing_lnum, fname);
+							sourcing_lnum, fname);
 	}
 	goto theend;
     }
@@ -2787,10 +2776,10 @@ do_source(fname, check_other, is_vimrc)
     if (p_verbose > 1)
     {
 	if (sourcing_name == NULL)
-	    msg_str((char_u *)_("sourcing \"%s\""), fname);
+	    smsg((char_u *)_("sourcing \"%s\""), fname);
 	else
 	    smsg((char_u *)_("line %ld: sourcing \"%s\""),
-		    sourcing_lnum, fname);
+							sourcing_lnum, fname);
     }
     if (is_vimrc)
 	vimrc_found();
@@ -2972,16 +2961,12 @@ do_source(fname, check_other, is_vimrc)
     sourcing_lnum = save_sourcing_lnum;
     if (p_verbose > 1)
     {
-	msg_str((char_u *)_("finished sourcing %s"), fname);
+	smsg((char_u *)_("finished sourcing %s"), fname);
 	if (sourcing_name != NULL)
-	    msg_str((char_u *)_("continuing in %s"), sourcing_name);
+	    smsg((char_u *)_("continuing in %s"), sourcing_name);
     }
 #ifdef STARTUPTIME
-# ifdef HAVE_SNPRINTF
-    snprintf(IObuff, IOSIZE, "sourcing %s", fname);
-# else
-    sprintf(IObuff, "sourcing %s", fname);
-# endif
+    vim_snprintf(IObuff, IOSIZE, "sourcing %s", fname);
     time_msg(IObuff, &tv_start);
     time_pop(&tv_rel);
 #endif
@@ -4263,14 +4248,15 @@ ex_hardcopy(eap)
 	    page_prtpos = prtpos;
 	}
 
-	sprintf((char *)IObuff, _("Printed: %s"), settings.jobname);
+	vim_snprintf((char *)IObuff, IOSIZE, _("Printed: %s"),
+							    settings.jobname);
 	prt_message(IObuff);
     }
 
 print_fail:
     if (got_int || settings.user_abort)
     {
-	sprintf((char *)IObuff, _("Printing aborted"));
+	sprintf((char *)IObuff, "%s", _("Printing aborted"));
 	prt_message(IObuff);
     }
     mch_print_end(&settings);
@@ -4954,7 +4940,7 @@ prt_write_file_len(buffer, bytes)
 prt_write_string(s)
     char	*s;
 {
-    sprintf((char *)prt_line_buffer, "%s", s);
+    vim_snprintf((char *)prt_line_buffer, sizeof(prt_line_buffer), "%s", s);
     prt_write_file(prt_line_buffer);
 }
 
@@ -4990,8 +4976,8 @@ prt_def_font(new_name, encoding, height, font)
     int		height;
     char	*font;
 {
-    sprintf((char *)prt_line_buffer, "/_%s /VIM-%s /%s ref\n",
-                                                     new_name, encoding, font);
+    vim_snprintf((char *)prt_line_buffer, sizeof(prt_line_buffer),
+			  "/_%s /VIM-%s /%s ref\n", new_name, encoding, font);
     prt_write_file(prt_line_buffer);
 #ifdef FEAT_MBYTE
     if (prt_out_mbyte)
@@ -4999,8 +4985,8 @@ prt_def_font(new_name, encoding, height, font)
 		       new_name, height, 500./prt_ps_courier_font.wx, new_name);
     else
 #endif
-    sprintf((char *)prt_line_buffer, "/%s %d /_%s ffs\n",
-						    new_name, height, new_name);
+	vim_snprintf((char *)prt_line_buffer, sizeof(prt_line_buffer),
+			     "/%s %d /_%s ffs\n", new_name, height, new_name);
     prt_write_file(prt_line_buffer);
 }
 
@@ -5014,11 +5000,11 @@ prt_def_cidfont(new_name, height, cidfont)
     int		height;
     char	*cidfont;
 {
-    sprintf((char *)prt_line_buffer, "/_%s /%s[/%s] vim_composefont\n",
-                                                new_name, prt_cmap, cidfont);
+    vim_snprintf((char *)prt_line_buffer, sizeof(prt_line_buffer),
+	      "/_%s /%s[/%s] vim_composefont\n", new_name, prt_cmap, cidfont);
     prt_write_file(prt_line_buffer);
-    sprintf((char *)prt_line_buffer, "/%s %d /_%s ffs\n", new_name, height,
-                                                                    new_name);
+    vim_snprintf((char *)prt_line_buffer, sizeof(prt_line_buffer),
+			     "/%s %d /_%s ffs\n", new_name, height, new_name);
     prt_write_file(prt_line_buffer);
 }
 
@@ -5030,7 +5016,8 @@ prt_dup_cidfont(original_name, new_name)
     char	*original_name;
     char	*new_name;
 {
-    sprintf((char *)prt_line_buffer, "/%s %s d\n", new_name, original_name);
+    vim_snprintf((char *)prt_line_buffer, sizeof(prt_line_buffer),
+				       "/%s %s d\n", new_name, original_name);
     prt_write_file(prt_line_buffer);
 }
 #endif
@@ -5105,7 +5092,8 @@ prt_def_var(name, value, prec)
     double	value;
     int		prec;
 {
-    sprintf((char *)prt_line_buffer, "/%s ", name);
+    vim_snprintf((char *)prt_line_buffer, sizeof(prt_line_buffer),
+								"/%s ", name);
     prt_write_file(prt_line_buffer);
     prt_write_real(value, prec);
     sprintf((char *)prt_line_buffer, "d\n");
@@ -5532,7 +5520,8 @@ prt_dsc_start()
 prt_dsc_noarg(comment)
     char	*comment;
 {
-    sprintf((char *)prt_line_buffer, "%%%%%s\n", comment);
+    vim_snprintf((char *)prt_line_buffer, sizeof(prt_line_buffer),
+							 "%%%%%s\n", comment);
     prt_write_file(prt_line_buffer);
 }
 
@@ -5541,7 +5530,8 @@ prt_dsc_textline(comment, text)
     char	*comment;
     char	*text;
 {
-    sprintf((char *)prt_line_buffer, "%%%%%s: %s\n", comment, text);
+    vim_snprintf((char *)prt_line_buffer, sizeof(prt_line_buffer),
+					       "%%%%%s: %s\n", comment, text);
     prt_write_file(prt_line_buffer);
 }
 
@@ -5551,7 +5541,8 @@ prt_dsc_text(comment, text)
     char	*text;
 {
     /* TODO - should scan 'text' for any chars needing escaping! */
-    sprintf((char *)prt_line_buffer, "%%%%%s: (%s)\n", comment, text);
+    vim_snprintf((char *)prt_line_buffer, sizeof(prt_line_buffer),
+					     "%%%%%s: (%s)\n", comment, text);
     prt_write_file(prt_line_buffer);
 }
 
@@ -5565,7 +5556,8 @@ prt_dsc_ints(comment, count, ints)
 {
     int		i;
 
-    sprintf((char *)prt_line_buffer, "%%%%%s:", comment);
+    vim_snprintf((char *)prt_line_buffer, sizeof(prt_line_buffer),
+							  "%%%%%s:", comment);
     prt_write_file(prt_line_buffer);
 
     for (i = 0; i < count; i++)
@@ -5584,12 +5576,15 @@ prt_dsc_resources(comment, type, string)
     char	*string;
 {
     if (comment != NULL)
-	sprintf((char *)prt_line_buffer, "%%%%%s: %s", comment, type);
+	vim_snprintf((char *)prt_line_buffer, sizeof(prt_line_buffer),
+						 "%%%%%s: %s", comment, type);
     else
-	sprintf((char *)prt_line_buffer, "%%%%+ %s", type);
+	vim_snprintf((char *)prt_line_buffer, sizeof(prt_line_buffer),
+							    "%%%%+ %s", type);
     prt_write_file(prt_line_buffer);
 
-    sprintf((char *)prt_line_buffer, " %s\n", string);
+    vim_snprintf((char *)prt_line_buffer, sizeof(prt_line_buffer),
+							     " %s\n", string);
     prt_write_file(prt_line_buffer);
 }
 
@@ -5654,7 +5649,8 @@ prt_dsc_docmedia(paper_name, width, height, weight, colour, type)
     char	*colour;
     char	*type;
 {
-    sprintf((char *)prt_line_buffer, "%%%%DocumentMedia: %s ", paper_name);
+    vim_snprintf((char *)prt_line_buffer, sizeof(prt_line_buffer),
+					"%%%%DocumentMedia: %s ", paper_name);
     prt_write_file(prt_line_buffer);
     prt_write_real(width, 2);
     prt_write_real(height, 2);

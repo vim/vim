@@ -89,8 +89,9 @@ do_ascii(eap)
 	else
 #endif
 	    buf2[0] = NUL;
-	sprintf((char *)IObuff, _("<%s>%s%s  %d,  Hex %02x,  Octal %03o"),
-		transchar(c), buf1, buf2, c, c, c);
+	vim_snprintf((char *)IObuff, IOSIZE,
+		_("<%s>%s%s  %d,  Hex %02x,  Octal %03o"),
+					   transchar(c), buf1, buf2, c, c, c);
 #ifdef FEAT_MBYTE
 	c = c1;
 	c1 = c2;
@@ -113,8 +114,8 @@ do_ascii(eap)
 #endif
 		)
 	    IObuff[len++] = ' '; /* draw composing char on top of a space */
-	IObuff[len + (*mb_char2bytes)(c, IObuff + len)] = NUL;
-	sprintf((char *)IObuff + STRLEN(IObuff),
+	len += (*mb_char2bytes)(c, IObuff + len);
+	vim_snprintf((char *)IObuff + len, IOSIZE - len,
 			c < 0x10000 ? _("> %d, Hex %04x, Octal %o")
 				    : _("> %d, Hex %08x, Octal %o"), c, c, c);
 	c = c1;
@@ -974,8 +975,8 @@ do_filter(line1, line2, eap, cmd, do_in, do_out)
 	{
 	    if (do_in)
 	    {
-		sprintf((char *)msg_buf, _("%ld lines filtered"),
-							     (long)linecount);
+		vim_snprintf((char *)msg_buf, sizeof(msg_buf),
+				    _("%ld lines filtered"), (long)linecount);
 		if (msg(msg_buf) && !msg_scroll)
 		{
 		    /* save message to display it after redraw */
@@ -1337,7 +1338,8 @@ viminfo_error(errnum, message, line)
     char    *message;
     char_u  *line;
 {
-    sprintf((char *)IObuff, _("%sviminfo: %s in line: "), errnum, message);
+    vim_snprintf((char *)IObuff, IOSIZE, _("%sviminfo: %s in line: "),
+							     errnum, message);
     STRNCAT(IObuff, line, IOSIZE - STRLEN(IObuff));
     if (IObuff[STRLEN(IObuff) - 1] == '\n')
 	IObuff[STRLEN(IObuff) - 1] = NUL;
@@ -1373,17 +1375,11 @@ read_viminfo(file, want_info, want_marks, forceit)
     fp = mch_fopen((char *)fname, READBIN);
 
     if (p_verbose > 0)
-    {
-	char_u	*s;
-
-	s = fname;
-	if (STRLEN(fname) > IOSIZE - 100)
-	    s = fname + STRLEN(fname) - (IOSIZE - 100);
-	smsg((char_u *)_("Reading viminfo file \"%s\"%s%s%s"), s,
-		    want_info ? _(" info") : "",
-		    want_marks ? _(" marks") : "",
-		    fp == NULL ? _(" FAILED") : "");
-    }
+	smsg((char_u *)_("Reading viminfo file \"%s\"%s%s%s"),
+		fname,
+		want_info ? _(" info") : "",
+		want_marks ? _(" marks") : "",
+		fp == NULL ? _(" FAILED") : "");
 
     vim_free(fname);
     if (fp == NULL)
@@ -1607,7 +1603,7 @@ write_viminfo(file, forceit)
     }
 
     if (p_verbose > 0)
-	msg_str((char_u *)_("Writing viminfo file \"%s\""), fname);
+	smsg((char_u *)_("Writing viminfo file \"%s\""), fname);
 
     viminfo_errcnt = 0;
     do_viminfo(fp_in, fp_out, !forceit, !forceit, FALSE);
@@ -4529,6 +4525,8 @@ outofmem:
 do_sub_msg(count_only)
     int	    count_only;		/* used 'n' flag for ":s" */
 {
+    int	    len = 0;
+
     /*
      * Only report substitutions when:
      * - more than 'report' substitutions
@@ -4540,20 +4538,24 @@ do_sub_msg(count_only)
 	    && messaging())
     {
 	if (got_int)
+	{
 	    STRCPY(msg_buf, _("(Interrupted) "));
-	else
-	    msg_buf[0] = NUL;
+	    len = STRLEN(msg_buf);
+	}
 	if (sub_nsubs == 1)
-	    STRCAT(msg_buf, count_only ? _("1 match") : _("1 substitution"));
+	    vim_snprintf((char *)msg_buf + len, sizeof(msg_buf) - len,
+		    "%s", count_only ? _("1 match") : _("1 substitution"));
 	else
-	    sprintf((char *)msg_buf + STRLEN(msg_buf),
+	    vim_snprintf((char *)msg_buf + len, sizeof(msg_buf) - len,
 		    count_only ? _("%ld matches") : _("%ld substitutions"),
 								   sub_nsubs);
+	len = STRLEN(msg_buf);
 	if (sub_nlines == 1)
-	    STRCAT(msg_buf, _(" on 1 line"));
+	    vim_snprintf((char *)msg_buf + len, sizeof(msg_buf) - len,
+		    "%s", _(" on 1 line"));
 	else
-	    sprintf((char *)msg_buf + STRLEN(msg_buf), _(" on %ld lines"),
-							    (long)sub_nlines);
+	    vim_snprintf((char *)msg_buf + len, sizeof(msg_buf) - len,
+		    _(" on %ld lines"), (long)sub_nlines);
 	if (msg(msg_buf))
 	{
 	    /* save message to display it after redraw */
@@ -4686,9 +4688,9 @@ ex_global(eap)
     else if (ndone == 0)
     {
 	if (type == 'v')
-	    msg_str((char_u *)_("Pattern found in every line: %s"), pat);
+	    smsg((char_u *)_("Pattern found in every line: %s"), pat);
 	else
-	    msg_str((char_u *)_(e_patnotf2), pat);
+	    smsg((char_u *)_(e_patnotf2), pat);
     }
     else
 	global_exe(cmd);
@@ -4955,8 +4957,7 @@ ex_help(eap)
 	     */
 	    if ((helpfd = mch_fopen((char *)p_hf, READBIN)) == NULL)
 	    {
-		msg_str((char_u *)_("Sorry, help file \"%s\" not found"),
-									p_hf);
+		smsg((char_u *)_("Sorry, help file \"%s\" not found"), p_hf);
 		goto erret;
 	    }
 	    fclose(helpfd);
@@ -5660,7 +5661,7 @@ helptags_one(dir, ext, tagfname)
 	    got_int = TRUE;
 	else
 	{
-	    s = alloc(30);
+	    s = alloc(18 + STRLEN(tagfname));
 	    if (s == NULL)
 		got_int = TRUE;
 	    else
@@ -5793,7 +5794,7 @@ helptags_one(dir, ext, tagfname)
 		if (*p2 == '\t')
 		{
 		    *p2 = NUL;
-		    sprintf((char *)NameBuff,
+		    vim_snprintf((char *)NameBuff, MAXPATHL,
 			    _("E154: Duplicate tag \"%s\" in file %s/%s"),
 				     ((char_u **)ga.ga_data)[i], dir, p2 + 1);
 		    EMSG(NameBuff);
@@ -6307,7 +6308,7 @@ sign_list_defined(sp)
 {
     char_u	*p;
 
-    msg_str((char_u *)"sign %s", sp->sn_name);
+    smsg((char_u *)"sign %s", sp->sn_name);
     if (sp->sn_icon != NULL)
     {
 	MSG_PUTS(" icon=");

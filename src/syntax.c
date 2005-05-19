@@ -3433,7 +3433,7 @@ syn_cmd_onoff(eap, name)
     if (!eap->skip)
     {
 	STRCPY(buf, "so ");
-	sprintf((char *)buf + 3, SYNTAX_FNAME, name);
+	vim_snprintf((char *)buf + 3, sizeof(buf) - 3, SYNTAX_FNAME, name);
 	do_cmdline_cmd(buf);
     }
 }

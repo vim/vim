@@ -1,7 +1,8 @@
 " Vim indent file
 " Language:	Lisp
-" Maintainer:	noone
-" Last Change:	2005 Mar 28
+" Maintainer:    Sergey Khorev <sergey.khorev@gmail.com>
+" URL:		 http://iamphet.nm.ru/vim
+" Last Change:	2005 May 19
 
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")
@@ -9,7 +10,6 @@ if exists("b:did_indent")
 endif
 let b:did_indent = 1
 
-" Autoindent is the best we can do.
-setlocal ai
+setlocal ai nosi
 
-let b:undo_indent = "setl ai<"
+let b:undo_indent = "setl ai< si<"
