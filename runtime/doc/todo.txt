@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 May 19
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 May 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,34 +30,14 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Problem with 'insertmode'. (Georg Dahn, 2005 April 9, expl. April 14)
-Problem with CTRL-V pasting more than one line. (Georg Dahn, 2005 April 11)
-
-Patch for setqflist() (Yegappan Lakshmanan, 2005 April 11)
-
-":help \=<Tab>" doesn't find "sub-replace-\=".
-
-In an errorfile expand "~/" to home directory. (Arnout Engelen)
-
-Patch for 2html.vim to disable folding (Michael Schaap, 2005 April 12)
-
-Win32: Alt-F10 no longer working? (Bill McCarthy, April 18)
-
-Patch for if_python to make exit work better with threads. (ugo)
-
-With "wa" in 'formatoptions', backspace at start-of-line doesn't work.  It
-should delete the space at the end of the previous line. (Alan Isaac)
-
-GTK GUI: Running a script that does :vsp and :quit, causing the left scrollbar
-to appear and disappear, causes resizing. (gvcolors.vim from Charles Campbell,
-2005 April 25)
-
 Problem with ":mksession" for "vim -o "+argdel *" prog1 prog2 prog3"
 (Bill McCarthy, 2005 April 26)
 
 getreg('=') returns the result of evaluating the expression.  How to get the
 expression itself, so that it can be restored? (David Fishburn)  Perhaps use
 getreg('=', 1).  Also make setreg('=') work then.
+
+Use "file::func()" for autoload?
 
 Win32: With the taskbar at the top of the screen, scrolling doesn't redraw
 properly. (Sergey Khorev, 2005 April 27)
@@ -69,6 +49,9 @@ Mac unicode patch (Da Woon Jung):
 When 'shortmess' is empty and 'keymap' set to accents, in Insert mode CTRL-N
 may cause the hit-enter prompt.  Typing 'a then doesn't result in the accented
 character. (Ilya Dogolazky)
+
+split(): keep empty items halfway.  With an option also keep empty items at
+start and end. (Johnny Blaze)
 
 autoload:
 - Add a Vim script in $VIMRUNTIME/tools that takes a file with a list of
@@ -101,6 +84,9 @@ Awaiting response:
 
 Make option like 'verbose' that writes output into a file?  Should make it
 possible to see what's happening without messing up the display.
+
+Patch for if_python to make exit work better with threads. (ugo)
+Still seems to fail 15% of the time.
 
 
 PLANNED FOR VERSION 7.0:

@@ -1,7 +1,7 @@
 " Vim support file to detect file types in scripts
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2005 Mar 04
+" Last change:	2005 May 20
 
 " This file is called by an autocommand for every file that has just been
 " loaded into a buffer.  It checks if the type of file can be recognized by
@@ -15,7 +15,7 @@ endif
 
 " Load the user defined scripts file first
 " Only do this when the FileType autocommand has not been triggered yet
-if exists("myscriptsfile") && file_readable(expand(myscriptsfile))
+if exists("myscriptsfile") && filereadable(expand(myscriptsfile))
   execute "source " . myscriptsfile
   if did_filetype()
     finish
@@ -40,10 +40,14 @@ if s:line1 =~ "^#!"
 
   " Get the program name.
   " Only accept spaces in PC style paths: "#!c:/program files/perl [args]".
+  " If the word env is used, use the first word after the space:
+  " "#!/usr/bin/env perl [path/args]"
   " If there is no path use the first word: "#!perl [path/args]".
   " Otherwise get the last word after a slash: "#!/usr/bin/perl [path/args]".
   if s:line1 =~ '^#!\s*\a:[/\\]'
     let s:name = substitute(s:line1, '^#!.*[/\\]\(\i\+\).*', '\1', '')
+  elseif s:line1 =~ '^#!.*\<env\>'
+    let s:name = substitute(s:line1, '^#!.*\<env\>\s\+\(\i\+\).*', '\1', '')
   elseif s:line1 =~ '^#!\s*[^/\\ ]*\>\([^/\\]\|$\)'
     let s:name = substitute(s:line1, '^#!\s*\([^/\\ ]*\>\).*', '\1', '')
   else
@@ -85,6 +89,10 @@ if s:line1 =~ "^#!"
     " Makefiles
   elseif s:name =~ 'make\>'
     set ft=make
+
+    " Lua
+  elseif s:name =~ 'lua'
+    set ft=lua
 
     " Perl
   elseif s:name =~ 'perl'

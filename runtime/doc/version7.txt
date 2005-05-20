@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 May 19
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 May 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -76,8 +76,9 @@ When ":file xxx" is used in a buffer without a name, the alternate file name
 isn't set.  This avoids creating buffers without a name that are not useful.
 
 The "2html.vim" script now converts closed folds to HTML.  This means the HTML
-looks like its displayed, with the same folds open and closed.  Use "zR" if no
-folds should appear in the HTML. (partly by Carl Osterwisch)
+looks like its displayed, with the same folds open and closed.  Use "zR", or
+"let html_ignore_folding=1", if no folds should appear in the HTML. (partly by
+Carl Osterwisch)
 Diff mode now is also converted as it is displayed.
 
 Win32: The effect of the <F10> key depended on 'winaltkeys'.  Now it depends
@@ -1071,5 +1072,16 @@ substitute pattern.  Put "\V" in the pattern to avoid that.
 Use of sprintf() sometimes didn't check properly for buffer overflow.  Also
 when using smsg().  Included code for snprintf() to avoid having to do size
 checks where invoking them
+
+":help \=<Tab>" didn't find "sub-replace-\=".  Wild menu for help tags didn't
+show backslashes.  ":he :s\=" didn't work.
+
+When reading an errorfile "~/" in a file name was not expanded.
+
+GTK GUI: When adding a scrollbar (e.g. when using ":vsplit") in a script or
+removing it the window size may change.  GTK sends us resize events when we
+change the window size ourselves, but they may come at an unexpected moment.
+Peek for a character to get any window resize events and fix 'columns' and
+'lines' to undo this.
 
  vim:tw=78:ts=8:ft=help:norl:

@@ -6234,7 +6234,7 @@ static struct fst
     {"setbufvar",	3, 3, f_setbufvar},
     {"setcmdpos",	1, 1, f_setcmdpos},
     {"setline",		2, 2, f_setline},
-    {"setqflist",	1, 1, f_setqflist},
+    {"setqflist",	1, 2, f_setqflist},
     {"setreg",		2, 3, f_setreg},
     {"setwinvar",	3, 3, f_setwinvar},
     {"simplify",	1, 1, f_simplify},
@@ -10601,7 +10601,7 @@ get_maparg(argvars, rettv, exact)
     mode = get_map_mode(&which, 0);
 
     keys = replace_termcodes(keys, &keys_buf, TRUE, TRUE);
-    rhs = check_map(keys, mode, exact);
+    rhs = check_map(keys, mode, exact, FALSE);
     vim_free(keys_buf);
     if (rhs != NULL)
     {
@@ -12370,6 +12370,9 @@ f_setqflist(argvars, rettv)
     typval_T	*argvars;
     typval_T	*rettv;
 {
+    char_u	*act;
+    int		action = ' ';
+
     rettv->vval.v_number = -1;
 
 #ifdef FEAT_QUICKFIX
@@ -12379,7 +12382,14 @@ f_setqflist(argvars, rettv)
     {
 	list_T  *l = argvars[0].vval.v_list;
 
-	if (l != NULL && set_errorlist(l) == OK)
+	if (argvars[1].v_type == VAR_STRING)
+	{
+	    act = get_tv_string(&argvars[1]);
+	    if (*act == 'a' || *act == 'r')
+		action = *act;
+	}
+
+	if (l != NULL && set_errorlist(l, action) == OK)
 	    rettv->vval.v_number = 0;
     }
 #endif

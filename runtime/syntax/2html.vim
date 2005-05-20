@@ -273,7 +273,7 @@ else
   let s:end = line("$")
 endif
 
-if has('folding')
+if has('folding') && !exists('html_ignore_folding')
   let s:foldfillchar = &fillchars[matchend(&fillchars, 'fold:')]
   if s:foldfillchar == ''
     let s:foldfillchar = '-'
@@ -327,7 +327,7 @@ while s:lnum <= s:end
     let s:new = ""
   endif
 
-  if has('folding') && foldclosed(s:lnum) > -1
+  if has('folding') && !exists('html_ignore_folding') && foldclosed(s:lnum) > -1
     "
     " This is the beginning of a folded block
     "

@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 7.0aa.  Last change: 2005 Apr 01
+*quickfix.txt*  For Vim version 7.0aa.  Last change: 2005 May 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -611,7 +611,8 @@ Basic items
 	%%		the single '%' character
 	%s		search text (finds a string)
 
-The "%f" conversion depends on the current 'isfname' setting.
+The "%f" conversion depends on the current 'isfname' setting.  "~/" is
+expanded to the home directory and environment variables are expanded.
 
 The "%f" and "%m" conversions have to detect the end of the string.  They
 should be followed by a character that cannot be in the string.  Everything

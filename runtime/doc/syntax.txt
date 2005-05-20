@@ -399,7 +399,8 @@ Go back to the default to use 'number' by deleting the variable: >
    :unlet html_number_lines
 
 Closed folds are put in the HTML as they are displayed.  If you don't want
-this, use the "zR" command before invoking 2html.
+this, use the "zR" command before invoking 2html, or use: >
+   :let html_ignore_folding = 1
 
 By default, HTML optimized for old browsers is generated.  If you prefer using
 cascading style sheets (CSS1) for the attributes (resulting in considerably
