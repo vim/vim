@@ -3242,10 +3242,29 @@ gui_init_which_components(oldval)
 	}
 #endif
 	if (need_set_size)
+	{
+#ifdef FEAT_GUI_GTK
+	    long    r = Rows;
+	    long    c = Columns;
+#endif
 	    /* Adjust the size of the window to make the text area keep the
 	     * same size and to avoid that part of our window is off-screen
 	     * and a scrollbar can't be used, for example. */
 	    gui_set_shellsize(FALSE, fix_size);
+
+#ifdef FEAT_GUI_GTK
+	    /* GTK has the annoying habit of sending us resize events when
+	     * changing the window size ourselves.  This mostly happens when
+	     * waiting for a character to arrive, quite unpredictably, and may
+	     * change Columns and Rows when we don't want it.  Wait for a
+	     * character here to avoid this effect.
+	     * If you remove this, please test this command for resizing
+	     * effects: ":vsp|q|vsp|q|vsp|q" */
+	    (void)char_avail();
+	    Rows = r;
+	    Columns = c;
+#endif
+	}
     }
 }
 
