@@ -1582,7 +1582,7 @@ serverlist()			String	get a list of available servers
 setbufvar( {expr}, {varname}, {val})	set {varname} in buffer {expr} to {val}
 setcmdpos( {pos})		Number	set cursor position in command-line
 setline( {lnum}, {line})	Number	set line {lnum} to {line}
-setqflist( {list} )		Number	set list of quickfix items using {list}
+setqflist( {list}[, {action}])	Number	set list of quickfix items using {list}
 setreg( {n}, {v}[, {opt}])	Number	set register to value and type
 setwinvar( {nr}, {varname}, {val})	set {varname} in window {nr} to {val}
 simplify( {filename})		String	simplify filename as much as possible
@@ -3604,7 +3604,7 @@ setline({lnum}, {line})					*setline()*
 <		Note: The '[ and '] marks are not set.
 
 
-setqflist({list})					*setqflist()*
+setqflist({list} [, {action}])				*setqflist()*
 		Creates a quickfix list using the items in {list}.  Each item
 		in {list} is a dictionary.  Non-dictionary items in {list} are
 		ignored.  Each dictionary item can contain the following
@@ -3628,6 +3628,13 @@ setqflist({list})					*setqflist()*
 		handled as an error line.
 		If both "pattern" and "lnum" are present then "pattern" will
 		be used.
+
+		If {action} is set to 'a', then the items from {list} are
+		added to the existing quickfix list. If there is no existing
+		list, then a new list is created. If {action} is set to 'r',
+		then the items from the current quickfix list are replaced
+		with the items from {list}. If {action} is not present or is
+		set to ' ', then a new list is created.
 
 		Returns zero for success, -1 for failure.
 

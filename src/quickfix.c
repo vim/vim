@@ -492,11 +492,15 @@ restofline:
 		 */
 		if ((i = (int)fmt_ptr->addr[0]) > 0)		/* %f */
 		{
-		    len = (int)(regmatch.endp[i] - regmatch.startp[i]);
-		    STRNCPY(namebuf, regmatch.startp[i], len);
-		    namebuf[len] = NUL;
+		    int c = *regmatch.endp[i];
+
+		    /* Expand ~/file and $HOME/file to full path. */
+		    *regmatch.endp[i] = NUL;
+		    expand_env(regmatch.startp[i], namebuf, CMDBUFFSIZE);
+		    *regmatch.endp[i] = c;
+
 		    if (vim_strchr((char_u *)"OPQ", idx) != NULL
-			    && mch_getperm(namebuf) == -1)
+						&& mch_getperm(namebuf) == -1)
 			continue;
 		}
 		if ((i = (int)fmt_ptr->addr[1]) > 0)		/* %n */
@@ -2788,8 +2792,9 @@ get_errorlist(list)
  * of dictionaries.
  */
     int
-set_errorlist(list)
+set_errorlist(list, action)
     list_T	*list;
+    int		action;
 {
     listitem_T	*li;
     dict_T	*d;
@@ -2801,8 +2806,16 @@ set_errorlist(list)
     int		valid, status;
     int		retval = OK;
 
-    /* make place for a new list */
-    qf_new_list();
+    if (action == ' ' || qf_curlist == qf_listcount)
+	/* make place for a new list */
+	qf_new_list();
+    else if (action == 'a' && qf_lists[qf_curlist].qf_count > 0)
+	/* Adding to existing list, find last entry. */
+	for (prevp = qf_lists[qf_curlist].qf_start;
+	     prevp->qf_next != prevp; prevp = prevp->qf_next)
+	    ;
+    else if (action == 'r')
+	qf_free(qf_curlist);
 
     for (li = list->lv_first; li != NULL; li = li->li_next)
     {

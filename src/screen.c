@@ -4818,6 +4818,7 @@ draw_vsep_win(wp, row)
 
 #ifdef FEAT_WILDMENU
 static int status_match_len __ARGS((expand_T *xp, char_u *s));
+static int skip_status_match_char __ARGS((expand_T *xp, char_u *s));
 
 /*
  * Get the lenght of an item as it will be shown in the status line.
@@ -4840,18 +4841,31 @@ status_match_len(xp, s)
 
     while (*s != NUL)
     {
-	/* Don't display backslashes used for escaping, they look ugly. */
-	if (rem_backslash(s)
-#ifdef FEAT_MENU
-		|| (emenu && (s[0] == '\\' && s[1] != NUL))
-#endif
-		)
+	if (skip_status_match_char(xp, s))
 	    ++s;
 	len += ptr2cells(s);
 	mb_ptr_adv(s);
     }
 
     return len;
+}
+
+/*
+ * Return TRUE for characters that are not displayed in a status match.
+ * These are backslashes used for escaping.  Do show backslashes in help tags.
+ */
+    static int
+skip_status_match_char(xp, s)
+    expand_T	*xp;
+    char_u	*s;
+{
+    return ((rem_backslash(s) && xp->xp_context != EXPAND_HELP)
+#ifdef FEAT_MENU
+	    || ((xp->xp_context == EXPAND_MENUS
+		    || xp->xp_context == EXPAND_MENUNAMES)
+			  && (s[0] == '\t' || (s[0] == '\\' && s[1] != NUL)))
+#endif
+	   );
 }
 
 /*
@@ -4989,13 +5003,7 @@ win_redr_status_matches(xp, num_matches, matches, match, showtail)
 #endif
 	    for ( ; *s != NUL; ++s)
 	{
-	    /* Don't display backslashes used for escaping, they look ugly. */
-	    if (rem_backslash(s)
-#ifdef FEAT_MENU
-		    || (emenu
-			  && (s[0] == '\t' || (s[0] == '\\' && s[1] != NUL)))
-#endif
-		    )
+	    if (skip_status_match_char(xp, s))
 		++s;
 	    clen += ptr2cells(s);
 #ifdef FEAT_MBYTE

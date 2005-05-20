@@ -55,7 +55,7 @@ int check_abbr __ARGS((int c, char_u *ptr, int col, int mincol));
 int makemap __ARGS((FILE *fd, buf_T *buf));
 int put_escstr __ARGS((FILE *fd, char_u *strstart, int what));
 void check_map_keycodes __ARGS((void));
-char_u *check_map __ARGS((char_u *keys, int mode, int exact));
+char_u *check_map __ARGS((char_u *keys, int mode, int exact, int ign_mod));
 void init_mappings __ARGS((void));
 void add_map __ARGS((char_u *map, int mode));
 /* vim: set ft=c : */
