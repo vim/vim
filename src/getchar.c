@@ -4522,14 +4522,16 @@ check_map_keycodes()
  * NULL otherwise
  */
     char_u *
-check_map(keys, mode, exact)
+check_map(keys, mode, exact, ign_mod)
     char_u	*keys;
     int		mode;
     int		exact;		/* require exact match */
+    int		ign_mod;	/* ignore preceding modifier */
 {
     int		hash;
     int		len, minlen;
     mapblock_T	*mp;
+    char_u	*s;
 #ifdef FEAT_LOCALMAP
     int		local;
 #endif
@@ -4553,14 +4555,23 @@ check_map(keys, mode, exact)
 	    {
 		/* skip entries with wrong mode, wrong length and not matching
 		 * ones */
-		if (mp->m_keylen < len)
-		    minlen = mp->m_keylen;
-		else
-		    minlen = len;
-		if ((mp->m_mode & mode)
-			&& (!exact || mp->m_keylen == len)
-			&& STRNCMP(mp->m_keys, keys, minlen) == 0)
-		    return mp->m_str;
+		if ((mp->m_mode & mode) && (!exact || mp->m_keylen == len))
+		{
+		    if (len > mp->m_keylen)
+			minlen = mp->m_keylen;
+		    else
+			minlen = len;
+		    s = mp->m_keys;
+		    if (ign_mod && s[0] == K_SPECIAL && s[1] == KS_MODIFIER
+							       && s[2] != NUL)
+		    {
+			s += 3;
+			if (len > mp->m_keylen - 3)
+			    minlen = mp->m_keylen - 3;
+		    }
+		    if (STRNCMP(s, keys, minlen) == 0)
+			return mp->m_str;
+		}
 	    }
 	}
 

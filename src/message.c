@@ -3785,18 +3785,18 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 	    if (!justify_left)
 	    {
 		/* left padding with blank or zero */
-		int n = min_field_width - (str_arg_l + number_of_zeros_to_pad);
+		int pn = min_field_width - (str_arg_l + number_of_zeros_to_pad);
 
-		if (n > 0)
+		if (pn > 0)
 		{
 		    if (str_l < str_m)
 		    {
 			size_t avail = str_m - str_l;
 
 			vim_memset(str + str_l, zero_padding ? '0' : ' ',
-						       n > avail ? avail : n);
+					     (size_t)pn > avail ? avail : pn);
 		    }
-		    str_l += n;
+		    str_l += pn;
 		}
 	    }
 
@@ -3812,41 +3812,42 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 	    {
 		/* insert first part of numerics (sign or '0x') before zero
 		 * padding */
-		int n = zero_padding_insertion_ind;
+		int zn = zero_padding_insertion_ind;
 
-		if (n > 0)
+		if (zn > 0)
 		{
 		    if (str_l < str_m)
 		    {
 			size_t avail = str_m - str_l;
 
 			mch_memmove(str + str_l, str_arg,
-						       n > avail ? avail : n);
+					     (size_t)zn > avail ? avail : zn);
 		    }
-		    str_l += n;
+		    str_l += zn;
 		}
 
 		/* insert zero padding as requested by the precision or min
 		 * field width */
-		n = number_of_zeros_to_pad;
-		if (n > 0)
+		zn = number_of_zeros_to_pad;
+		if (zn > 0)
 		{
 		    if (str_l < str_m)
 		    {
 			size_t avail = str_m-str_l;
 
-			vim_memset(str + str_l, '0', n > avail ? avail : n);
+			vim_memset(str + str_l, '0',
+					     (size_t)zn > avail ? avail : zn);
 		    }
-		    str_l += n;
+		    str_l += zn;
 		}
 	    }
 
 	    /* insert formatted string
 	     * (or as-is conversion specifier for unknown conversions) */
 	    {
-		int n = str_arg_l - zero_padding_insertion_ind;
+		int sn = str_arg_l - zero_padding_insertion_ind;
 
-		if (n > 0)
+		if (sn > 0)
 		{
 		    if (str_l < str_m)
 		    {
@@ -3854,9 +3855,9 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 
 			mch_memmove(str + str_l,
 				str_arg + zero_padding_insertion_ind,
-				n > avail ? avail : n);
+				(size_t)sn > avail ? avail : sn);
 		    }
-		    str_l += n;
+		    str_l += sn;
 		}
 	    }
 
@@ -3864,17 +3865,18 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 	    if (justify_left)
 	    {
 		/* right blank padding to the field width */
-		int n = min_field_width - (str_arg_l + number_of_zeros_to_pad);
+		int pn = min_field_width - (str_arg_l + number_of_zeros_to_pad);
 
-		if (n > 0)
+		if (pn > 0)
 		{
 		    if (str_l < str_m)
 		    {
 			size_t avail = str_m - str_l;
 
-			vim_memset(str + str_l, ' ', n > avail ? avail : n);
+			vim_memset(str + str_l, ' ',
+					     (size_t)pn > avail ? avail : pn);
 		    }
-		    str_l += n;
+		    str_l += pn;
 		}
 	    }
 	}
