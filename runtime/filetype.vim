@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 May 18
+" Last Change:	2005 May 20
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -527,6 +527,9 @@ au BufNewFile,BufRead *esmtprc			setf esmtprc
 
 " ESQL-C
 au BufNewFile,BufRead *.ec,*.EC			setf esqlc
+
+" Esterel
+au BufNewFile,BufRead *.strl			setf esterel
 
 " Essbase script
 au BufNewFile,BufRead *.csc			setf csc

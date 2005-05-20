@@ -6708,6 +6708,22 @@ ins_bs(c, mode, inserted_space_p)
 	    {
 		temp = gchar_cursor();	/* remember current char */
 		--curwin->w_cursor.lnum;
+
+		/* When "aw" is in 'formatoptions' we must delete the space at
+		 * the end of the line, otherwise the line will be broken
+		 * again when auto-formatting. */
+		if (has_format_option(FO_AUTO)
+					   && has_format_option(FO_WHITE_PAR))
+		{
+		    char_u  *ptr = ml_get_buf(curbuf, curwin->w_cursor.lnum,
+									TRUE);
+		    int	    len;
+
+		    len = STRLEN(ptr);
+		    if (len > 0 && ptr[len - 1] == ' ')
+			ptr[len - 1] = NUL;
+		}
+
 		(void)do_join(FALSE);
 		if (temp == NUL && gchar_cursor() != NUL)
 		    inc_cursor();
