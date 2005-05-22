@@ -2512,6 +2512,14 @@ get_scroll_flags(void)
     RECT	rcVim, rcOther, rcDest;
 
     GetWindowRect(s_hwnd, &rcVim);
+
+    /* Check if the window is partly above or below the screen.  We don't care
+     * about partly left or right of the screen, it is not relevant when
+     * scrolling up or down. */
+    if (rcVim.top < 0 || rcVim.bottom > GetSystemMetrics(SM_CYFULLSCREEN))
+	return SW_INVALIDATE;
+
+    /* Check if there is an window (partly) on top of us. */
     for (hwnd = s_hwnd; (hwnd = GetWindow(hwnd, GW_HWNDPREV)) != (HWND)0; )
 	if (IsWindowVisible(hwnd))
 	{
