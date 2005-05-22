@@ -844,9 +844,7 @@ wait_return(redraw)
     int		c;
     int		oldState;
     int		tmpState;
-#ifndef ORG_HITRETURN
     int		had_got_int;
-#endif
 
     if (redraw == TRUE)
 	must_redraw = CLEAR;
@@ -900,22 +898,22 @@ wait_return(redraw)
 #endif
 	hit_return_msg();
 
-#ifdef ORG_HITRETURN
-	do
-	{
-	    c = safe_vgetc();
-	} while (vim_strchr((char_u *)"\r\n: ", c) == NULL);
-	if (c == ':')			/* this can vi too (but not always!) */
-	    stuffcharReadbuff(c);
-#else
 	do
 	{
 	    /* Remember "got_int", if it is set vgetc() probably returns a
 	     * CTRL-C, but we need to loop then. */
 	    had_got_int = got_int;
+
+	    /* Don't do mappings here, we put the character back in the
+	     * typeahead buffer. */
+	    ++no_mapping;
+	    ++allow_keys;
 	    c = safe_vgetc();
 	    if (had_got_int && !global_busy)
 		got_int = FALSE;
+	    --no_mapping;
+	    --allow_keys;
+
 #ifdef FEAT_CLIPBOARD
 	    /* Strange way to allow copying (yanking) a modeless selection at
 	     * the hit-enter prompt.  Use CTRL-Y, because the same is used in
@@ -957,11 +955,16 @@ wait_return(redraw)
 #endif
 	    if (vim_strchr((char_u *)"\r\n ", c) == NULL && c != Ctrl_C)
 	{
-	    stuffcharReadbuff(c);
+	    char_u	buf[2];
+
+	    /* Put the character back in the typeahead buffer.  Don't use the
+	     * stuff buffer, because lmaps wouldn't work. */
+	    buf[0] = c;
+	    buf[1] = NUL;
+	    ins_typebuf(buf, REMAP_YES, 0, !KeyTyped, FALSE);
 	    do_redraw = TRUE;	    /* need a redraw even though there is
-				       something in the stuff buffer */
+				       typeahead */
 	}
-#endif
     }
     redir_off = FALSE;
 
@@ -1033,11 +1036,7 @@ hit_return_msg()
     if (got_int)
 	MSG_PUTS(_("Interrupt: "));
 
-#ifdef ORG_HITRETURN
-    MSG_PUTS_ATTR(_("Hit ENTER to continue"), hl_attr(HLF_R));
-#else
     MSG_PUTS_ATTR(_("Hit ENTER or type command to continue"), hl_attr(HLF_R));
-#endif
     if (!msg_use_printf())
 	msg_clr_eos();
 }

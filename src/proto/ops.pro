@@ -9,6 +9,7 @@ void op_reindent __ARGS((oparg_T *oap, int (*how)(void)));
 int get_expr_register __ARGS((void));
 void set_expr_line __ARGS((char_u *new_line));
 char_u *get_expr_line __ARGS((void));
+char_u *get_expr_line_src __ARGS((void));
 int valid_yank_reg __ARGS((int regname, int writing));
 void get_yank_register __ARGS((int regname, int writing));
 int may_get_selection __ARGS((int regname));
@@ -48,7 +49,7 @@ void clip_yank_selection __ARGS((int type, char_u *str, long len, VimClipboard *
 int clip_convert_selection __ARGS((char_u **str, long_u *len, VimClipboard *cbd));
 void dnd_yank_drag_data __ARGS((char_u *str, long len));
 char_u get_reg_type __ARGS((int regname, long *reglen));
-char_u *get_reg_contents __ARGS((int regname, int allowexpr));
+char_u *get_reg_contents __ARGS((int regname, int allowexpr, int expr_src));
 void write_reg_contents __ARGS((int name, char_u *str, int maxlen, int must_append));
 void write_reg_contents_ex __ARGS((int name, char_u *str, int maxlen, int must_append, int yank_type, long block_len));
 void clear_oparg __ARGS((oparg_T *oap));

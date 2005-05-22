@@ -304,6 +304,7 @@ static void	ex_stopinsert __ARGS((exarg_T *eap));
 # define ex_startinsert		ex_ni
 # define ex_stopinsert		ex_ni
 # define ex_helptags		ex_ni
+# define ex_sort		ex_ni
 #endif
 #ifdef FEAT_FIND_ID
 static void	ex_checkpath __ARGS((exarg_T *eap));
@@ -9437,6 +9438,7 @@ put_view(fd, wp, add_edit, flagp)
     win_T	*save_curwin;
     int		f;
     int		do_cursor;
+    int		did_next = FALSE;
 
     /* Always restore cursor position for ":mksession".  For ":mkview" only
      * when 'viewoptions' contains "cursor". */
@@ -9459,17 +9461,19 @@ put_view(fd, wp, add_edit, flagp)
 	    return FAIL;
     }
 
-    /* Only when part of a session: restore the argument index. */
-    if (wp->w_arg_idx != 0 && flagp == &ssop_flags)
+    /* Only when part of a session: restore the argument index.  Some
+     * arguments may have been deleted, check if the index is valid. */
+    if (wp->w_arg_idx != 0 && wp->w_arg_idx <= WARGCOUNT(wp)
+						      && flagp == &ssop_flags)
     {
 	if (fprintf(fd, "%ldnext", (long)wp->w_arg_idx) < 0
 		|| put_eol(fd) == FAIL)
 	    return FAIL;
+	did_next = TRUE;
     }
 
     /* Edit the file.  Skip this when ":next" already did it. */
-    if (add_edit && (wp->w_arg_idx == 0 || flagp != &ssop_flags
-						    || wp->w_arg_idx_invalid))
+    if (add_edit && (!did_next || wp->w_arg_idx_invalid))
     {
 	/*
 	 * Load the file.

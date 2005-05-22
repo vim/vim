@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 7.0aa.  Last change: 2005 Mar 29
+*index.txt*     For Vim version 7.0aa.  Last change: 2005 May 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1354,6 +1354,7 @@ The commands are sorted on the non-optional part of their name.
 				argument list
 |:sniff|	:sni[ff]	send request to sniff
 |:snomagic|	:sno[magic]	:substitute with 'nomagic'
+|:sort|		:sor[t]		sort lines
 |:source|	:so[urce]	read Vim or Ex commands from a file
 |:split|	:sp[lit]	split current window
 |:sprevious|	:spr[evious]	split window and go to previous file in the

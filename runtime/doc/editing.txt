@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.0aa.  Last change: 2005 Apr 27
+*editing.txt*   For Vim version 7.0aa.  Last change: 2005 May 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -563,7 +563,9 @@ list of the current window.
 			current entry.
 			This command keeps the currently edited file, also
 			when it's deleted from the argument list.
-			{not in Vi} {not available when compiled without the
+			Example: >
+				:argdel *.obj
+<			{not in Vi} {not available when compiled without the
 			|+listcmds| feature}
 
 :{range}argd[elete]	Delete the {range} files from the argument list.
