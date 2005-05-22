@@ -1431,6 +1431,10 @@ EXTERN char_u e_intern2[]	INIT(=N_("E685: Internal error: %s"));
 EXTERN char_u e_maxmempat[]	INIT(=N_("E363: pattern uses more memory than 'maxmempattern'"));
 EXTERN char_u e_emptybuf[]	INIT(=N_("E749: empty buffer"));
 
+#ifdef FEAT_EX_EXTRA
+EXTERN char_u e_invalpat[]	INIT(=N_("E682: Invalid search pattern or delimiter"));
+#endif
+
 #ifdef MACOS_X_UNIX
 EXTERN short disallow_gui	INIT(= FALSE);
 #endif

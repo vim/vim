@@ -783,6 +783,17 @@ get_expr_line()
     vim_free(expr_copy);
     return rv;
 }
+
+/*
+ * Get the '=' register expression itself, without evaluating it.
+ */
+    char_u *
+get_expr_line_src()
+{
+    if (expr_line == NULL)
+	return NULL;
+    return vim_strsave(expr_line);
+}
 #endif /* FEAT_EVAL */
 
 /*
@@ -5588,9 +5599,10 @@ get_reg_type(regname, reglen)
  * Returns NULL for error.
  */
     char_u *
-get_reg_contents(regname, allowexpr)
+get_reg_contents(regname, allowexpr, expr_src)
     int		regname;
-    int		allowexpr;	/* allow "=" register. */
+    int		allowexpr;	/* allow "=" register */
+    int		expr_src;	/* get expression for "=" register */
 {
     long	i;
     char_u	*retval;
@@ -5601,7 +5613,11 @@ get_reg_contents(regname, allowexpr)
     if (regname == '=')
     {
 	if (allowexpr)
+	{
+	    if (expr_src)
+		return get_expr_line_src();
 	    return get_expr_line();
+	}
 	return NULL;
     }
 

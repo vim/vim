@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 7.0aa.  Last change: 2005 Mar 29
+*pattern.txt*   For Vim version 7.0aa.  Last change: 2005 May 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -835,8 +835,8 @@ $	At end of pattern or in front of "\|" or "\)" ("|" or ")" after "\v"):
 	are halfway a Tab or other character that occupies more than one
 	screen character.  {not in Vi}
 	WARNING: When inserting or deleting text Vim does not automatically
-	update the matches.  This means Syntax highlighting quickly becomes
-	wrong.
+	update highlighted matches.  This means Syntax highlighting quickly
+	becomes wrong.
 	Example, to highlight the all characters after virtual column 72: >
 		/\%>72v.*
 <	When 'hlsearch' is set and you move the cursor around and make changes
