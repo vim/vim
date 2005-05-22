@@ -261,6 +261,156 @@ linelen(has_tab)
     return len;
 }
 
+/* Buffer for one line used during sorting.  It's allocated to contain the
+ * longest line being sorted. */
+static char_u	*sortbuf;
+
+static int	sort_ic;		/* ignore case */
+
+static int
+#ifdef __BORLANDC__
+_RTLENTRYF
+#endif
+sort_compare __ARGS((const void *s1, const void *s2));
+
+    static int
+#ifdef __BORLANDC__
+_RTLENTRYF
+#endif
+sort_compare(s1, s2)
+    const void	*s1;
+    const void	*s2;
+{
+    lpos_T	l1 = *(lpos_T *)s1;
+    lpos_T	l2 = *(lpos_T *)s2;
+    char_u	*s;
+
+    /* We need to copy one line into "sortbuf", because there is no guarantee
+     * that the first pointer becomes invalid when obtaining the second one. */
+    STRCPY(sortbuf, ml_get(l1.lnum) + l1.col);
+    s = ml_get(l2.lnum) + l2.col;
+    return sort_ic ? STRICMP(sortbuf, s) : STRCMP(sortbuf, s);
+}
+
+/*
+ * ":sort".
+ */
+    void
+ex_sort(eap)
+    exarg_T	*eap;
+{
+    regmatch_T	regmatch;
+    int		len;
+    linenr_T	lnum;
+    long	maxlen = 0;
+    lpos_T	*nrs;
+    size_t	count = eap->line2 - eap->line1 + 1;
+    int		i;
+    char_u	*p;
+    char_u	*s;
+    int		unique = FALSE;
+    long	deleted;
+
+    if (u_save((linenr_T)(eap->line1 - 1), (linenr_T)(eap->line2 + 1)) == FAIL)
+	return;
+    sortbuf = NULL;
+    regmatch.regprog = NULL;
+    nrs = (lpos_T *)lalloc((long_u)(count * sizeof(lpos_T)), TRUE);
+    if (nrs == NULL)
+	goto theend;
+
+    for (p = eap->arg; *p != NUL; ++p)
+    {
+	if (vim_iswhite(*p))
+	    ;
+	else if (*p == 'i')
+	    sort_ic = TRUE;
+	else if (*p == 'u')
+	    unique = TRUE;
+	else if (!ASCII_ISALPHA(*p))
+	{
+	    s = skip_regexp(p + 1, *p, TRUE, NULL);
+	    if (*s != *p)
+	    {
+		EMSG(_(e_invalpat));
+		goto theend;
+	    }
+	    *s = NUL;
+	    regmatch.regprog = vim_regcomp(p + 1, RE_MAGIC);
+	    if (regmatch.regprog == NULL)
+		goto theend;
+	    p = s + 1;
+	    regmatch.rm_ic = p_ic;
+	}
+	else
+	{
+	    EMSG2(_(e_invarg2), p);
+	    goto theend;
+	}
+    }
+
+    /*
+     * Make an array with all line numbers, so that we don't have to copy all
+     * the lines into allocated memory.
+     * Also get the longest line length.
+     */
+    for (lnum = eap->line1; lnum <= eap->line2; ++lnum)
+    {
+	nrs[lnum - eap->line1].lnum = lnum;
+	nrs[lnum - eap->line1].col = 0;
+
+	s = ml_get(lnum);
+	if (regmatch.regprog != NULL && vim_regexec(&regmatch, s, 0))
+	    nrs[lnum - eap->line1].col = regmatch.endp[0] - s;
+
+	len = STRLEN(s);
+	if (maxlen < len)
+	    maxlen = len;
+    }
+
+    sortbuf = alloc((unsigned)maxlen + 1);
+    if (sortbuf == NULL)
+	goto theend;
+
+    /* sort the array of line numbers */
+    qsort((void *)nrs, count, sizeof(lpos_T), sort_compare);
+
+    /* Insert the lines in the sorted order below the last one. */
+    lnum = eap->line2;
+    for (i = 0; i < count; ++i)
+    {
+	s = ml_get(nrs[eap->forceit ? count - i - 1 : i].lnum);
+	if (!unique || i == 0
+		|| (sort_ic ? STRICMP(s, sortbuf) : STRCMP(s, sortbuf)) != 0)
+	{
+	    if (ml_append(lnum++, s, (colnr_T)0, FALSE) == FAIL)
+		break;
+	    STRCPY(sortbuf, s);
+	}
+    }
+
+    /* delete the original lines if appending worked */
+    if (i == count)
+	for (i = 0; i < count; ++i)
+	    ml_delete(eap->line1, FALSE);
+    else
+	count = 0;
+
+    deleted = count - (lnum - eap->line2);
+    if (deleted > 0)
+	mark_adjust(eap->line2 - deleted, eap->line2, (long)MAXLNUM, -deleted);
+    else if (deleted < 0)
+	mark_adjust(eap->line2, MAXLNUM, -deleted, 0L);
+    changed_lines(eap->line1, 0, eap->line2 + 1, -deleted);
+    curwin->w_cursor.lnum = eap->line1;
+    beginline(BL_WHITE | BL_FIX);
+
+theend:
+    vim_free(nrs);
+    vim_free(sortbuf);
+    vim_free(regmatch.regprog);
+}
+
 /*
  * ":retab".
  */

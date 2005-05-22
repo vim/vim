@@ -93,6 +93,8 @@ COMPILEDBY	= @compiledby@
 
 INSTALLVIMDIFF	= @dovimdiff@
 INSTALLGVIMDIFF	= @dogvimdiff@
+INSTALL_LANGS	= @INSTALL_LANGS@
+INSTALL_TOOL_LANGS	= @INSTALL_TOOL_LANGS@
 
 ### Line break character as octal number for "tr"
 NL		= @line_break@

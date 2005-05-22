@@ -1878,7 +1878,7 @@ ex_let_one(arg, tv, copy, endchars, op)
 	    p = get_tv_string(tv);
 	    if (op != NULL && *op == '.')
 	    {
-		s = get_reg_contents(*arg == '@' ? '"' : *arg, FALSE);
+		s = get_reg_contents(*arg == '@' ? '"' : *arg, FALSE, FALSE);
 		if (s != NULL)
 		{
 		    p = tofree = concat_str(s, p);
@@ -4092,7 +4092,8 @@ eval7(arg, rettv, evaluate)
 		if (evaluate)
 		{
 		    rettv->v_type = VAR_STRING;
-		    rettv->vval.v_string = get_reg_contents(**arg, FALSE);
+		    rettv->vval.v_string = get_reg_contents(**arg,
+								FALSE, FALSE);
 		}
 		if (**arg != NUL)
 		    ++*arg;
@@ -6158,7 +6159,7 @@ static struct fst
     {"getftype",	1, 1, f_getftype},
     {"getline",		1, 2, f_getline},
     {"getqflist",	0, 0, f_getqflist},
-    {"getreg",		0, 1, f_getreg},
+    {"getreg",		0, 2, f_getreg},
     {"getregtype",	0, 1, f_getregtype},
     {"getwinposx",	0, 0, f_getwinposx},
     {"getwinposy",	0, 0, f_getwinposy},
@@ -6239,7 +6240,7 @@ static struct fst
     {"setwinvar",	3, 3, f_setwinvar},
     {"simplify",	1, 1, f_simplify},
     {"sort",		1, 2, f_sort},
-    {"split",		1, 2, f_split},
+    {"split",		1, 3, f_split},
 #ifdef HAVE_STRFTIME
     {"strftime",	1, 2, f_strftime},
 #endif
@@ -8970,9 +8971,14 @@ f_getreg(argvars, rettv)
 {
     char_u	*strregname;
     int		regname;
+    int		arg2 = FALSE;
 
     if (argvars[0].v_type != VAR_UNKNOWN)
+    {
 	strregname = get_tv_string(&argvars[0]);
+	if (argvars[1].v_type != VAR_UNKNOWN)
+	    arg2 = get_tv_number(&argvars[1]);
+    }
     else
 	strregname = vimvars[VV_REG].vv_str;
     regname = (strregname == NULL ? '"' : *strregname);
@@ -8980,7 +8986,7 @@ f_getreg(argvars, rettv)
 	regname = '"';
 
     rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = get_reg_contents(regname, TRUE);
+    rettv->vval.v_string = get_reg_contents(regname, TRUE, arg2);
 }
 
 /*
@@ -12345,20 +12351,60 @@ f_setline(argvars, rettv)
 {
     linenr_T	lnum;
     char_u	*line;
+    list_T	*l = NULL;
+    listitem_T	*li = NULL;
+    long	added = 0;
+    linenr_T	lcount = curbuf->b_ml.ml_line_count;
 
-    lnum = get_tv_lnum(argvars);
-    line = get_tv_string(&argvars[1]);
-    rettv->vval.v_number = 1;		/* FAIL is default */
-
-    if (lnum >= 1
-	    && lnum <= curbuf->b_ml.ml_line_count
-	    && u_savesub(lnum) == OK
-	    && ml_replace(lnum, line, TRUE) == OK)
+    lnum = get_tv_lnum(&argvars[0]);
+    if (argvars[1].v_type == VAR_LIST)
     {
-	changed_bytes(lnum, 0);
-	check_cursor_col();
-	rettv->vval.v_number = 0;
+	l = argvars[1].vval.v_list;
+	li = l->lv_first;
     }
+    else
+	line = get_tv_string(&argvars[1]);
+
+    rettv->vval.v_number = 0;		/* OK */
+    for (;;)
+    {
+	if (l != NULL)
+	{
+	    /* list argument, get next string */
+	    if (li == NULL)
+		break;
+	    line = get_tv_string(&li->li_tv);
+	    li = li->li_next;
+	}
+
+	rettv->vval.v_number = 1;	/* FAIL */
+	if (lnum < 1 || lnum > curbuf->b_ml.ml_line_count + 1)
+	    break;
+	if (lnum <= curbuf->b_ml.ml_line_count)
+	{
+	    /* existing line, replace it */
+	    if (u_savesub(lnum) == OK && ml_replace(lnum, line, TRUE) == OK)
+	    {
+		changed_bytes(lnum, 0);
+		check_cursor_col();
+		rettv->vval.v_number = 0;	/* OK */
+	    }
+	}
+	else if (added > 0 || u_save(lnum - 1, lnum) == OK)
+	{
+	    /* lnum is one past the last line, append the line */
+	    ++added;
+	    if (ml_append(lnum - 1, line, (colnr_T)0, FALSE) == OK)
+		rettv->vval.v_number = 0;	/* OK */
+	}
+
+	if (l == NULL)			/* only one string argument */
+	    break;
+	++lnum;
+    }
+
+    if (added > 0)
+	appended_lines_mark(lcount, added);
 }
 
 /*
@@ -12695,7 +12741,7 @@ f_split(argvars, rettv)
 {
     char_u	*str;
     char_u	*end;
-    char_u	*pat;
+    char_u	*pat = NULL;
     regmatch_T	regmatch;
     char_u	patbuf[NUMBUFLEN];
     char_u	*save_cpo;
@@ -12703,16 +12749,21 @@ f_split(argvars, rettv)
     listitem_T	*ni;
     list_T	*l;
     colnr_T	col = 0;
+    int		keepempty = FALSE;
 
     /* Make 'cpoptions' empty, the 'l' flag should not be used here. */
     save_cpo = p_cpo;
     p_cpo = (char_u *)"";
 
     str = get_tv_string(&argvars[0]);
-    if (argvars[1].v_type == VAR_UNKNOWN)
-	pat = (char_u *)"[\\x01- ]\\+";
-    else
+    if (argvars[1].v_type != VAR_UNKNOWN)
+    {
 	pat = get_tv_string_buf(&argvars[1], patbuf);
+	if (argvars[2].v_type != VAR_UNKNOWN)
+	    keepempty = get_tv_number(&argvars[2]);
+    }
+    if (pat == NULL || *pat == NUL)
+	pat = (char_u *)"[\\x01- ]\\+";
 
     l = list_alloc();
     if (l == NULL)
@@ -12725,14 +12776,17 @@ f_split(argvars, rettv)
     if (regmatch.regprog != NULL)
     {
 	regmatch.rm_ic = FALSE;
-	while (*str != NUL)
+	while (*str != NUL || keepempty)
 	{
-	    match = vim_regexec_nl(&regmatch, str, col);
+	    if (*str == NUL)
+		match = FALSE;	/* empty item at the end */
+	    else
+		match = vim_regexec_nl(&regmatch, str, col);
 	    if (match)
 		end = regmatch.startp[0];
 	    else
 		end = str + STRLEN(str);
-	    if (end > str)
+	    if (keepempty || end > str || (l->lv_len > 0 && *str != NUL))
 	    {
 		ni = listitem_alloc();
 		if (ni == NULL)

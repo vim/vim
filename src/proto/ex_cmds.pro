@@ -1,6 +1,7 @@
 /* ex_cmds.c */
 void do_ascii __ARGS((exarg_T *eap));
 void ex_align __ARGS((exarg_T *eap));
+void ex_sort __ARGS((exarg_T *eap));
 void ex_retab __ARGS((exarg_T *eap));
 int do_move __ARGS((linenr_T line1, linenr_T line2, linenr_T dest));
 void ex_copy __ARGS((linenr_T line1, linenr_T line2, linenr_T n));

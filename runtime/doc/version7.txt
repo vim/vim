@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 May 20
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 May 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -192,6 +192,9 @@ The Unix Makefile installs the Italian manual pages in .../man/it/man1/,
 standard for what encoding goes in the "it" directory, the 8-bit encoded file
 is used there as a best guess.
 Other languages are installed in similar places.
+The translated pages are not automatically installed when Vim was configured
+with "--disable-nls", but "make install-languages install-tool-languages" will
+do it anyway.
 
 
 Internal grep						*new-vimgrep*
@@ -318,6 +321,10 @@ Win32: The ":winpos" command now also works in the console. (Vipin Aravind)
 
 |:cbuffer|		Read error lines from a buffer. (partly by Yegappan
 			Lakshmanan)
+
+|:sort|			Sort lines in the buffer without depending on an
+			external command.
+
 
 New functions: ~
 
@@ -569,11 +576,13 @@ When a register is empty it is not stored in the viminfo file.
 
 Removed the tcltags script, it's obsolete.
 
-":redir @*>" and ":redir @+>" append to the clipboard.  Better check for
+":redir @*>>" and ":redir @+>>" append to the clipboard.  Better check for
 invalid characters after the register name. |:redir|
 
 ":redir => variable" and ":redir =>> variable" write or append to a variable.
 (Yegappan Lakshmanan) |:redir|
+
+":redir @{a-z}>>" appends to register a to z.
 
 ":let g:" lists global variables.
 ":let b:" lists buffer-local variables.
@@ -582,6 +591,12 @@ invalid characters after the register name. |:redir|
 
 The stridx() and strridx() functions take a third argument, where to start
 searching.  (Yegappan Lakshmanan)
+
+The getreg() function takes an extra argument to be able to get the expression
+for the '=' register instead of the result of evaluating it.
+
+The setline() function can take a List argument to set multiple lines.  When
+the line number is just below the last line the line is appended.
 
 g CTRL-G also shows the number of characters if it differs from the number of
 bytes.
@@ -1083,5 +1098,13 @@ removing it the window size may change.  GTK sends us resize events when we
 change the window size ourselves, but they may come at an unexpected moment.
 Peek for a character to get any window resize events and fix 'columns' and
 'lines' to undo this.
+
+After deleting files from the argument list a session file generated with
+":mksession" may contain invalid ":next" commands.
+
+When 'shortmess' is empty and 'keymap' set to accents, in Insert mode CTRL-N
+may cause the hit-enter prompt.  Typing 'a then didn't result in the accented
+character.  Put the character typed at the prompt back in the typeahead buffer
+so that mapping is done in the right mode.
 
  vim:tw=78:ts=8:ft=help:norl:

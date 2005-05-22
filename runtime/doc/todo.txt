@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 May 20
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 May 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,28 +30,12 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Problem with ":mksession" for "vim -o "+argdel *" prog1 prog2 prog3"
-(Bill McCarthy, 2005 April 26)
-
-getreg('=') returns the result of evaluating the expression.  How to get the
-expression itself, so that it can be restored? (David Fishburn)  Perhaps use
-getreg('=', 1).  Also make setreg('=') work then.
-
-Use "file::func()" for autoload?
-
-Win32: With the taskbar at the top of the screen, scrolling doesn't redraw
-properly. (Sergey Khorev, 2005 April 27)
+Make option like 'verbose' that writes output into a file?  Should make it
+possible to see what's happening without messing up the display.
 
 Mac unicode patch (Da Woon Jung):
 - selecting proportional font breaks display
 - UTF-8 text causes display problems.  Font replacement causes this.
-
-When 'shortmess' is empty and 'keymap' set to accents, in Insert mode CTRL-N
-may cause the hit-enter prompt.  Typing 'a then doesn't result in the accented
-character. (Ilya Dogolazky)
-
-split(): keep empty items halfway.  With an option also keep empty items at
-start and end. (Johnny Blaze)
 
 autoload:
 - Add a Vim script in $VIMRUNTIME/tools that takes a file with a list of
@@ -69,11 +53,6 @@ Win32: Balloon text can't contain line break.
     Patch from Sergey Khorev, 2005 Apr 11
     Add has("balloon_multiline")
 
-setline() should accept a List.
-
-Add ":[range]sort" command.  Sort on specified field, using a regexp?  Remove
-duplicates?
-
 Patch to alternate fold highlighting.  (Anthony Iano-Fletcher, 2005 May 12)
 More levels?
 
@@ -81,9 +60,6 @@ Awaiting response:
 -   Patch for mch_FullName() also in Vim 6.3?  os_mswin.c
 -   Win32: tearoff menu window should have a scrollbar when it's taller than
     the screen.
-
-Make option like 'verbose' that writes output into a file?  Should make it
-possible to see what's happening without messing up the display.
 
 Patch for if_python to make exit work better with threads. (ugo)
 Still seems to fail 15% of the time.
