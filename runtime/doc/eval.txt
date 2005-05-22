@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 May 18
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 May 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1497,7 +1497,7 @@ getftype( {fname})		String	description of type of file {fname}
 getline( {lnum})		String	line {lnum} of current buffer
 getline( {lnum}, {end})		List	lines {lnum} to {end} of current buffer
 getqflist()			List	list of quickfix items
-getreg( [{regname}])		String	contents of register
+getreg( [{regname} [, 1]])	String	contents of register
 getregtype( [{regname}])	String	type of register
 getwinposx()			Number	X coord in pixels of GUI Vim window
 getwinposy()			Number	Y coord in pixels of GUI Vim window
@@ -1587,7 +1587,8 @@ setreg( {n}, {v}[, {opt}])	Number	set register to value and type
 setwinvar( {nr}, {varname}, {val})	set {varname} in window {nr} to {val}
 simplify( {filename})		String	simplify filename as much as possible
 sort( {list} [, {func}])	List	sort {list}, using {func} to compare
-split( {expr} [, {pat}])	List	make List from {pat} separated {expr}
+split( {expr} [, {pat} [, {keepempty}]])
+				List	make List from {pat} separated {expr}
 strftime( {format}[, {time}])	String	time in specified format
 stridx( {haystack}, {needle}[, {start}])
 				Number	index of {needle} in {haystack}
@@ -2558,12 +2559,15 @@ getqflist()						*getqflist()*
 			:endfor
 
 
-getreg([{regname}])					*getreg()*
+getreg([{regname} [, 1]])				*getreg()*
 		The result is a String, which is the contents of register
 		{regname}.  Example: >
 			:let cliptext = getreg('*')
 <		getreg('=') returns the last evaluated value of the expression
 		register.  (For use in maps.)
+		getreg('=', 1) returns the expression itself, so that it can
+		be restored with |setreg()|.  For other registers the extra
+		argument is ignored, thus you can always give it.
 		If {regname} is not specified, |v:register| is used.
 
 
@@ -2576,7 +2580,6 @@ getregtype([{regname}])					*getregtype()*
 		    0			for an empty or unknown register
 		<CTRL-V> is one character with value 0x16.
 		If {regname} is not specified, |v:register| is used.
-
 
 							*getwinposx()*
 getwinposx()	The result is a Number, which is the X coordinate in pixels of
@@ -3598,9 +3601,18 @@ setcmdpos({pos})					*setcmdpos()*
 setline({lnum}, {line})					*setline()*
 		Set line {lnum} of the current buffer to {line}.
 		{lnum} is used like with |getline()|.
+		When {lnum} is just below the last line the {line} will be
+		added as a new line.
 		If this succeeds, 0 is returned.  If this fails (most likely
 		because {lnum} is invalid) 1 is returned.  Example: >
 			:call setline(5, strftime("%c"))
+<		When {line} is a List then line {lnum} and following lines
+		will be set to the items in the list.  Example: >
+			:call setline(5, ['aaa', 'bbb', 'ccc'])
+<		This is equivalent to: >
+			:for [n, l] in [[5, 6, 7], ['aaa', 'bbb', 'ccc']]
+			:  call setline(n, l)
+			:endfor
 <		Note: The '[ and '] marks are not set.
 
 
@@ -3669,7 +3681,7 @@ setreg({regname}, {value} [,{options}])
 
 <		This example shows using the functions to save and restore a
 		register. >
-			:let var_a = getreg('a')
+			:let var_a = getreg('a', 1)
 			:let var_amode = getregtype('a')
 			    ....
 			:call setreg('a', var_a, var_amode)
@@ -3712,6 +3724,7 @@ sort({list} [, {func}])					*sort()* *E702*
 			:let sortedlist = sort(copy(mylist))
 <		Uses the string representation of each item to sort on.
 		Numbers sort after Strings, Lists after Numbers.
+		For sorting text in the current buffer use |:sort|.
 		When {func} is given and it is one then case is ignored.
 		When {func} is a Funcref or a function name, this function is
 		called to compare items.  The function is invoked with two
@@ -3723,21 +3736,23 @@ sort({list} [, {func}])					*sort()* *E702*
 			endfunc
 			let sortedlist = sort(mylist, "MyCompare")
 
-split({expr} [, {pattern}])				*split()*
-		Make a List out of {expr}.  When {pattern} is omitted each
-		white-separated sequence of characters becomes an item.
+split({expr} [, {pattern} [, {keepempty}]])			*split()*
+		Make a List out of {expr}.  When {pattern} is omitted or empty
+		each white-separated sequence of characters becomes an item.
 		Otherwise the string is split where {pattern} matches,
-		removing the matched characters.  Empty strings are omitted.
+		removing the matched characters.
+		When the first or last item is empty it is omitted, unless the
+		{keepempty} argument is given and it's non-zero.
 		Example: >
 			:let words = split(getline('.'), '\W\+')
-<		Since empty strings are not added the "\+" isn't required but
-		it makes the function work a bit faster.
-		To split a string in individual characters: >
+<		To split a string in individual characters: >
 			:for c in split(mystring, '\zs')
 <		If you want to keep the separator you can also use '\zs': >
 			:echo split('abc:def:ghi', ':\zs')
 <			['abc:', 'def:', 'ghi'] ~
-		The opposite function is |join()|.
+		Splitting a table where the first element can be empty: >
+			:let items = split(line, ':', 1)
+<		The opposite function is |join()|.
 
 
 strftime({format} [, {time}])				*strftime()*

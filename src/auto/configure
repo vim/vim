@@ -309,7 +309,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS SET_MAKE CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CPP EGREP AWK STRIP CPP_MM OS_EXTRA_SRC OS_EXTRA_OBJ VIMNAME EXNAME VIEWNAME line_break dovimdiff dogvimdiff compiledby vi_cv_path_mzscheme MZSCHEME_SRC MZSCHEME_OBJ MZSCHEME_PRO MZSCHEME_LIBS MZSCHEME_CFLAGS vi_cv_path_perl vi_cv_perllib shrpenv PERL_SRC PERL_OBJ PERL_PRO PERL_CFLAGS PERL_LIBS vi_cv_path_python PYTHON_CONFDIR PYTHON_LIBS PYTHON_GETPATH_CFLAGS PYTHON_CFLAGS PYTHON_SRC PYTHON_OBJ vi_cv_path_tcl TCL_SRC TCL_OBJ TCL_PRO TCL_CFLAGS TCL_LIBS vi_cv_path_ruby RUBY_SRC RUBY_OBJ RUBY_PRO RUBY_CFLAGS RUBY_LIBS WORKSHOP_SRC WORKSHOP_OBJ NETBEANS_SRC NETBEANS_OBJ SNIFF_SRC SNIFF_OBJ xmkmfpath X_CFLAGS X_PRE_LIBS X_LIBS X_EXTRA_LIBS X_LIB MOC KDE_CONFIG KDE_LIBS KDE_INCLUDES KDE_PREFIX CXX CXXFLAGS ac_ct_CXX QT_LIBS QT_INCLUDES ROOTQT GTK_CONFIG GTK12_CONFIG PKG_CONFIG GTK_CFLAGS GTK_LIBS GTK_LIBNAME GNOME_LIBS GNOME_LIBDIR GNOME_INCLUDEDIR GNOME_CONFIG MOTIF_LIBNAME NARROW_PROTO GUI_INC_LOC GUI_LIB_LOC GUITYPE GUI_X_LIBS HANGULIN_SRC HANGULIN_OBJ TAGPRG MSGFMT MAKEMO LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS SET_MAKE CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CPP EGREP AWK STRIP CPP_MM OS_EXTRA_SRC OS_EXTRA_OBJ VIMNAME EXNAME VIEWNAME line_break dovimdiff dogvimdiff compiledby vi_cv_path_mzscheme MZSCHEME_SRC MZSCHEME_OBJ MZSCHEME_PRO MZSCHEME_LIBS MZSCHEME_CFLAGS vi_cv_path_perl vi_cv_perllib shrpenv PERL_SRC PERL_OBJ PERL_PRO PERL_CFLAGS PERL_LIBS vi_cv_path_python PYTHON_CONFDIR PYTHON_LIBS PYTHON_GETPATH_CFLAGS PYTHON_CFLAGS PYTHON_SRC PYTHON_OBJ vi_cv_path_tcl TCL_SRC TCL_OBJ TCL_PRO TCL_CFLAGS TCL_LIBS vi_cv_path_ruby RUBY_SRC RUBY_OBJ RUBY_PRO RUBY_CFLAGS RUBY_LIBS WORKSHOP_SRC WORKSHOP_OBJ NETBEANS_SRC NETBEANS_OBJ SNIFF_SRC SNIFF_OBJ xmkmfpath X_CFLAGS X_PRE_LIBS X_LIBS X_EXTRA_LIBS X_LIB MOC KDE_CONFIG KDE_LIBS KDE_INCLUDES KDE_PREFIX CXX CXXFLAGS ac_ct_CXX QT_LIBS QT_INCLUDES ROOTQT GTK_CONFIG GTK12_CONFIG PKG_CONFIG GTK_CFLAGS GTK_LIBS GTK_LIBNAME GNOME_LIBS GNOME_LIBDIR GNOME_INCLUDEDIR GNOME_CONFIG MOTIF_LIBNAME NARROW_PROTO GUI_INC_LOC GUI_LIB_LOC GUITYPE GUI_X_LIBS HANGULIN_SRC HANGULIN_OBJ TAGPRG INSTALL_LANGS INSTALL_TOOL_LANGS MSGFMT MAKEMO LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -868,7 +868,7 @@ Optional Features:
   --enable-hangulinput    Include Hangul input support.
   --enable-xim            Include XIM input support.
   --enable-fontset        Include X fontset output support.
-  --enable-gui=OPTS     X11 GUI default=auto OPTS=auto/no/gtk/gtk2/gnome/gnome2/kde/motif/athena/neXtaw/beos/photon/carbon
+  --enable-gui=OPTS     X11 GUI default=auto OPTS=auto/no/gtk/gtk2/gnome/gnome2/kde/motif/athena/neXtaw/photon/carbon
   --enable-kde-check      If auto-select GUI, check for KDE default=no
   --enable-gtk-check      If auto-select GUI, check for GTK default=yes
   --enable-gtk2-check     If GTK GUI, check for GTK+ 2 default=yes
@@ -6900,7 +6900,7 @@ rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
   fi
 fi
 
-test "x$with_x" = xno -a "x$BEOS" != "xyes" -a "x$MACOSX" != "xyes" -a "x$QNX" != "xyes" && enable_gui=no
+test "x$with_x" = xno -a "x$MACOSX" != "xyes" -a "x$QNX" != "xyes" && enable_gui=no
 
 echo "$as_me:$LINENO: checking --enable-gui argument" >&5
 echo $ECHO_N "checking --enable-gui argument... $ECHO_C" >&6
@@ -13373,12 +13373,11 @@ fi
 
 
 
-
 for ac_func in bcmp fchdir fchown fseeko fsync ftello getcwd getpseudotty \
 	getpwnam getpwuid getrlimit gettimeofday getwd lstat memcmp \
 	memset nanosleep opendir putenv qsort readlink select setenv \
 	setpgid setsid sigaltstack sigstack sigset sigsetjmp sigaction \
-	sigvec snprintf strcasecmp strerror strftime stricmp strncasecmp \
+	sigvec strcasecmp strerror strftime stricmp strncasecmp \
 	strnicmp strpbrk strtol tgetent towlower towupper iswupper \
 	usleep utime utimes
 do
@@ -14251,67 +14250,6 @@ else
 echo "${ECHO_T}yes" >&6
 fi
 
-echo "$as_me:$LINENO: checking for vsnprintf()" >&5
-echo $ECHO_N "checking for vsnprintf()... $ECHO_C" >&6
-if test "$cross_compiling" = yes; then
-  { { echo "$as_me:$LINENO: error: failed to compile test program" >&5
-echo "$as_me: error: failed to compile test program" >&2;}
-   { (exit 1); exit 1; }; }
-else
-  cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-
-#include <stdio.h>
-#include <stdarg.h>
-	/* Check use of vsnprintf() */
-	void warn(char *fmt, ...);
-	void warn(char *fmt, ...)
-	{
-	  va_list ap; char buf[20];
-	  va_start(ap, fmt);
-	  vsnprintf(buf, 20, fmt, ap);
-	  va_end(ap);
-	}
-	main()
-	{
-	warn("testing %s\n", "a very long string that won't fit");
-	exit(0);
-	}
-
-_ACEOF
-rm -f conftest$ac_exeext
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && { ac_try='./conftest$ac_exeext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  cat >>confdefs.h <<\_ACEOF
-#define HAVE_VSNPRINTF 1
-_ACEOF
- echo "$as_me:$LINENO: result: yes" >&5
-echo "${ECHO_T}yes" >&6
-else
-  echo "$as_me: program exited with status $ac_status" >&5
-echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-( exit $ac_status )
-echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6
-fi
-rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
-fi
-
-
 echo "$as_me:$LINENO: checking for rename" >&5
 echo $ECHO_N "checking for rename... $ECHO_C" >&6
 cat >conftest.$ac_ext <<_ACEOF
@@ -14963,6 +14901,12 @@ fi;
 if test "$enable_nls" = "yes"; then
   echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6
+
+  INSTALL_LANGS=install-languages
+
+  INSTALL_TOOL_LANGS=install-tool-languages
+
+
   # Extract the first word of "msgfmt", so it can be a program name with args.
 set dummy msgfmt; ac_word=$2
 echo "$as_me:$LINENO: checking for $ac_word" >&5
@@ -16814,6 +16758,8 @@ s,@GUI_X_LIBS@,$GUI_X_LIBS,;t t
 s,@HANGULIN_SRC@,$HANGULIN_SRC,;t t
 s,@HANGULIN_OBJ@,$HANGULIN_OBJ,;t t
 s,@TAGPRG@,$TAGPRG,;t t
+s,@INSTALL_LANGS@,$INSTALL_LANGS,;t t
+s,@INSTALL_TOOL_LANGS@,$INSTALL_TOOL_LANGS,;t t
 s,@MSGFMT@,$MSGFMT,;t t
 s,@MAKEMO@,$MAKEMO,;t t
 s,@LIBOBJS@,$LIBOBJS,;t t

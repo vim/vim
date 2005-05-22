@@ -2406,7 +2406,7 @@ fi
 
 if test "x$olibs" = "x$LIBS"; then
   AC_MSG_CHECKING([for tgetent()])
-  AC_TRY_LINK([], 
+  AC_TRY_LINK([],
       [char s[10000]; int res = tgetent(s, "thisterminaldoesnotexist");],
 	AC_MSG_RESULT(yes),
 	AC_MSG_ERROR([NOT FOUND!
@@ -2932,6 +2932,12 @@ AC_ARG_ENABLE(nls,
 
 if test "$enable_nls" = "yes"; then
   AC_MSG_RESULT(no)
+
+  INSTALL_LANGS=install-languages
+  AC_SUBST(INSTALL_LANGS)
+  INSTALL_TOOL_LANGS=install-tool-languages
+  AC_SUBST(INSTALL_TOOL_LANGS)
+
   AC_CHECK_PROG(MSGFMT, msgfmt, msgfmt, )
   AC_MSG_CHECKING([for NLS])
   if test -f po/Makefile; then

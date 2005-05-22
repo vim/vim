@@ -2381,7 +2381,7 @@ ex_vimgrep(eap)
     p = skip_vimgrep_pat(eap->arg, &s, &flags);
     if (p == NULL)
     {
-	EMSG(_("E682: Invalid search pattern or delimiter"));
+	EMSG(_(e_invalpat));
 	goto theend;
     }
     regmatch.regprog = vim_regcomp(s, RE_MAGIC);

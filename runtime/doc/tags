@@ -2397,6 +2397,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :sno	change.txt	/*:sno*
 :snomagic	change.txt	/*:snomagic*
 :so	repeat.txt	/*:so*
+:sor	change.txt	/*:sor*
+:sort	change.txt	/*:sort*
 :source	repeat.txt	/*:source*
 :source_crnl	repeat.txt	/*:source_crnl*
 :sp	windows.txt	/*:sp*
@@ -5117,6 +5119,7 @@ hebrew	hebrew.txt	/*hebrew*
 hebrew.txt	hebrew.txt	/*hebrew.txt*
 help	various.txt	/*help*
 help-context	help.txt	/*help-context*
+help-tags	tags	1
 help-translated	various.txt	/*help-translated*
 help-xterm-window	various.txt	/*help-xterm-window*
 help.txt	help.txt	/*help.txt*
@@ -5639,6 +5642,7 @@ mzscheme	if_mzsch.txt	/*mzscheme*
 mzscheme-buffer	if_mzsch.txt	/*mzscheme-buffer*
 mzscheme-commands	if_mzsch.txt	/*mzscheme-commands*
 mzscheme-examples	if_mzsch.txt	/*mzscheme-examples*
+mzscheme-sandbox	if_mzsch.txt	/*mzscheme-sandbox*
 mzscheme-threads	if_mzsch.txt	/*mzscheme-threads*
 mzscheme-vim	if_mzsch.txt	/*mzscheme-vim*
 mzscheme-vimext	if_mzsch.txt	/*mzscheme-vimext*
@@ -6225,6 +6229,7 @@ sniff-commands	if_sniff.txt	/*sniff-commands*
 sniff-compiling	if_sniff.txt	/*sniff-compiling*
 sniff-intro	if_sniff.txt	/*sniff-intro*
 sort()	eval.txt	/*sort()*
+sorting	change.txt	/*sorting*
 space	intro.txt	/*space*
 spec-customizing	pi_spec.txt	/*spec-customizing*
 spec-how-to-use-it	pi_spec.txt	/*spec-how-to-use-it*
