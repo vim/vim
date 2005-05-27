@@ -136,7 +136,7 @@ global_ime_DefWindowProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
     {
 #if defined(WIN3264) && defined(FEAT_MBYTE)
 	if (wide_WindowProc)
-	    lResult = DefWindowProcW(hwnd, Msg, wParam, lParam);
+	    lResult = DefWindowProcW(hWnd, Msg, wParam, lParam);
 	else
 #endif
 	    lResult = DefWindowProc(hWnd, Msg, wParam, lParam);
