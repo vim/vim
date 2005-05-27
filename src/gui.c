@@ -3260,7 +3260,8 @@ gui_init_which_components(oldval)
 	     * character here to avoid this effect.
 	     * If you remove this, please test this command for resizing
 	     * effects: ":vsp|q|vsp|q|vsp|q" */
-	    (void)char_avail();
+	    if (!gui.starting)
+		(void)char_avail();
 	    Rows = r;
 	    Columns = c;
 #endif
