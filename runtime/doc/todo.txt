@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 May 22
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 May 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,12 +30,36 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+GTK: Hang for "gvim </tmp/tt >&/tmp/ttt".  Ready to read char from stdin but
+it's never read.
+Namsh also has a problem with a hang, coming from the added char_avail() call.
+Temporary fix: check "gui.starting".
+
 Make option like 'verbose' that writes output into a file?  Should make it
 possible to see what's happening without messing up the display.
+
+Errors when compiling with Cygwin (Thomas).
+
+":sort n" sort on decimal number (skipping white space)
+":sort x" sort on hex number
+":sort o" sort on octal number
+Docs: doesn't work well together with :global.
+
+split(): splitting into chars doesn't work.
+
+":qtag" command: make list of matching tags and use like quickfix list.
+This changes the stack of quickfix lists.  Make another list and use ":qnext",
+":qprev", etc.?  Do allow other commands for quickfix list, such as quickfix
+window.
 
 Mac unicode patch (Da Woon Jung):
 - selecting proportional font breaks display
 - UTF-8 text causes display problems.  Font replacement causes this.
+
+Should we always set LC_CTYPE to "C", so that all library functions work on
+bytes?  Avoids problems with sprintf() on MS-Windows. (Yongwei)
+Problem noticed: tooltips are messed up.  Depends on the moment 'encoding' is
+changed.
 
 autoload:
 - Add a Vim script in $VIMRUNTIME/tools that takes a file with a list of

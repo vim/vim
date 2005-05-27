@@ -12350,7 +12350,7 @@ f_setline(argvars, rettv)
     typval_T	*rettv;
 {
     linenr_T	lnum;
-    char_u	*line;
+    char_u	*line = NULL;
     list_T	*l = NULL;
     listitem_T	*li = NULL;
     long	added = 0;

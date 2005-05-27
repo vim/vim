@@ -327,7 +327,14 @@ ex_sort(eap)
 	    sort_ic = TRUE;
 	else if (*p == 'u')
 	    unique = TRUE;
-	else if (!ASCII_ISALPHA(*p))
+	else if (*p == '"')	/* comment start */
+	    break;
+	else if (check_nextcmd(p) != NULL)
+	{
+	    eap->nextcmd = check_nextcmd(p);
+	    break;
+	}
+	else if (!ASCII_ISALPHA(*p) && regmatch.regprog == NULL)
 	{
 	    s = skip_regexp(p + 1, *p, TRUE, NULL);
 	    if (*s != *p)
@@ -339,7 +346,7 @@ ex_sort(eap)
 	    regmatch.regprog = vim_regcomp(p + 1, RE_MAGIC);
 	    if (regmatch.regprog == NULL)
 		goto theend;
-	    p = s + 1;
+	    p = s;		/* continue after the regexp */
 	    regmatch.rm_ic = p_ic;
 	}
 	else
