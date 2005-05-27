@@ -87,7 +87,7 @@ nmake -f Make_ivc.mak CFG="Vim - Win32 Release gvim OLE"
 				OLE	  Microsoft Visual C++ 4.x or later
 
 make  -f Make_cyg.mak		various   Cygnus gcc
-make  -f Make_mingw.mak		various   MingW with gcc
+make  -f Make_ming.mak		various   MingW with gcc
 
 See the specific files for comments and options.
 
