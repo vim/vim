@@ -1360,7 +1360,11 @@ find_tags(pat, num_matches, matchesp, flags, mincount, buf_ffname)
 		continue;
 
 	    if (p_verbose >= 5)
+	    {
+		verbose_enter();
 		smsg((char_u *)_("Searching tags file %s"), tag_fname);
+		verbose_leave();
+	    }
 	}
 	did_open = TRUE;    /* remember that we found at least one file */
 

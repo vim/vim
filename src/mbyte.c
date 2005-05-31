@@ -3164,8 +3164,12 @@ iconv_enabled(verbose)
 	/* Only give the message when 'verbose' is set, otherwise it might be
 	 * done whenever a conversion is attempted. */
 	if (verbose && p_verbose > 0)
+	{
+	    verbose_enter();
 	    EMSG2(_(e_loadlib),
 		    hIconvDLL == 0 ? DYNAMIC_ICONV_DLL : DYNAMIC_MSVCRT_DLL);
+	    verbose_leave();
+	}
 	iconv_end();
 	return FALSE;
     }
@@ -3180,7 +3184,11 @@ iconv_enabled(verbose)
     {
 	iconv_end();
 	if (verbose && p_verbose > 0)
+	{
+	    verbose_enter();
 	    EMSG2(_(e_loadfunc), "for libiconv");
+	    verbose_leave();
+	}
 	return FALSE;
     }
     return TRUE;
@@ -4846,7 +4854,11 @@ xim_real_init(x11_window, x11_display)
 	/* Only give this message when verbose is set, because too many people
 	 * got this message when they didn't want to use a XIM. */
 	if (p_verbose > 0)
+	{
+	    verbose_enter();
 	    EMSG(_("E286: Failed to open input method"));
+	    verbose_leave();
+	}
 	return FALSE;
     }
 
@@ -4920,7 +4932,11 @@ xim_real_init(x11_window, x11_display)
 	/* Only give this message when verbose is set, because too many people
 	 * got this message when they didn't want to use a XIM. */
 	if (p_verbose > 0)
+	{
+	    verbose_enter();
 	    EMSG(_("E289: input method doesn't support my preedit type"));
+	    verbose_leave();
+	}
 	XCloseIM(xim);
 	return FALSE;
     }
@@ -5337,7 +5353,11 @@ xim_init(void)
     if (!gdk_im_ready())
     {
 	if (p_verbose > 0)
+	{
+	    verbose_enter();
 	    EMSG(_("E292: Input Method Server is not running"));
+	    verbose_leave();
+	}
 	return;
     }
     if ((xic_attr = gdk_ic_attr_new()) != NULL)

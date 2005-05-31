@@ -6963,9 +6963,13 @@ aubuflocal_remove(buf)
 	    {
 		au_remove_pat(ap);
 		if (p_verbose >= 6)
+		{
+		    verbose_enter();
 		    smsg((char_u *)
 			    _("auto-removing autocommand: %s <buffer=%d>"),
 					   event_nr2name(event), buf->b_fnum);
+		    verbose_leave();
+		}
 	    }
     au_cleanup();
 }
@@ -8342,7 +8346,11 @@ auto_next_pat(apc, stop_at_last)
 		    sprintf((char *)sourcing_name, s,
 					       (char *)name, (char *)ap->pat);
 		    if (p_verbose >= 8)
+		    {
+			verbose_enter();
 			smsg((char_u *)_("Executing %s"), sourcing_name);
+			verbose_leave();
+		    }
 		}
 
 		apc->curpat = ap;
@@ -8409,10 +8417,10 @@ getnextac(c, cookie, indent)
 
     if (p_verbose >= 9)
     {
-	msg_scroll = TRUE;	    /* always scroll up, don't overwrite */
+	verbose_enter_scroll();
 	smsg((char_u *)_("autocommand %s"), ac->cmd);
 	msg_puts((char_u *)"\n");   /* don't overwrite this either */
-	cmdline_row = msg_row;
+	verbose_leave_scroll();
     }
     retval = vim_strsave(ac->cmd);
     autocmd_nested = ac->nested;

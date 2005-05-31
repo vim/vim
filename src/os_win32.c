@@ -274,7 +274,11 @@ dyn_libintl_init(char *libname)
 	if (!hLibintlDLL)
 	{
 	    if (p_verbose > 0)
+	    {
+		verbose_enter();
 		EMSG2(_(e_loadlib), GETTEXT_DLL);
+		verbose_leave();
+	    }
 	    return 0;
 	}
     }
@@ -286,7 +290,11 @@ dyn_libintl_init(char *libname)
 	{
 	    dyn_libintl_end();
 	    if (p_verbose > 0)
+	    {
+		verbose_enter();
 		EMSG2(_(e_loadfunc), libintl_entry[i].name);
+		verbose_leave();
+	    }
 	    return 0;
 	}
     }

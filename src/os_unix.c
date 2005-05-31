@@ -1451,7 +1451,7 @@ test_x11_window(dpy)
     (void)XSetErrorHandler(old_handler);
 
     if (p_verbose > 0 && got_x_error)
-	MSG(_("Testing the X display failed"));
+	verb_msg((char_u *)_("Testing the X display failed"));
 
     return (got_x_error ? FAIL : OK);
 }
@@ -1590,13 +1590,17 @@ get_x11_windis()
 	alarm(0);
 	signal(SIGALRM, (RETSIGTYPE (*)())sig_save);
 	if (p_verbose > 0 && sig_alarm_called)
-	    MSG(_("Opening the X display timed out"));
+	    verb_msg((char_u *)_("Opening the X display timed out"));
 #endif
 	if (x11_display != NULL)
 	{
 # if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
 	    if (p_verbose > 0)
+	    {
+		verbose_enter();
 		xopen_message(&start_tv);
+		verbose_leave();
+	    }
 # endif
 	    if (test_x11_window(x11_display) == FAIL)
 	    {
@@ -4507,7 +4511,7 @@ RealWaitForChar(fd, msec, check_for_gpm)
 	    else if (fds[xsmp_idx].revents & POLLHUP)
 	    {
 		if (p_verbose > 0)
-		    MSG(_("XSMP lost ICE connection"));
+		    verb_msg((char_u *)_("XSMP lost ICE connection"));
 		xsmp_close();
 	    }
 	    if (--ret == 0)
@@ -4649,7 +4653,7 @@ RealWaitForChar(fd, msec, check_for_gpm)
 	    if (FD_ISSET(xsmp_icefd, &efds))
 	    {
 		if (p_verbose > 0)
-		    MSG(_("XSMP lost ICE connection"));
+		    verb_msg((char_u *)_("XSMP lost ICE connection"));
 		xsmp_close();
 		if (--ret == 0)
 		    finished = FALSE;   /* keep going if event was only one */
@@ -5974,7 +5978,7 @@ setup_term_clip()
 	if (xterm_dpy == NULL)
 	{
 	    if (p_verbose > 0)
-		MSG(_("Opening the X display failed"));
+		verb_msg((char_u *)_("Opening the X display failed"));
 	    return;
 	}
 
@@ -5983,7 +5987,11 @@ setup_term_clip()
 
 # if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
 	if (p_verbose > 0)
+	{
+	    verbose_enter();
 	    xopen_message(&start_tv);
+	    verbose_leave();
+	}
 # endif
 
 	/* Create a Shell to make converters work. */
@@ -6296,7 +6304,7 @@ xsmp_handle_save_yourself(smc_conn, client_data, save_type,
     ml_sync_all(FALSE, FALSE);	/* preserve all swap files */
 
     if (p_verbose > 0)
-	MSG(_("XSMP handling save-yourself request"));
+	verb_msg((char_u *)_("XSMP handling save-yourself request"));
 
 # if defined(FEAT_GUI) && defined(USE_XSMP_INTERACT)
     /* Now see if we can ask about unsaved files */
@@ -6391,7 +6399,7 @@ xsmp_handle_requests()
     {
 	/* Lost ICE */
 	if (p_verbose > 0)
-	    MSG(_("XSMP lost ICE connection"));
+	    verb_msg((char_u *)_("XSMP lost ICE connection"));
 	xsmp_close();
 	return FAIL;
     }
@@ -6415,7 +6423,7 @@ xsmp_init(void)
 #endif
 
     if (p_verbose > 0)
-	MSG(_("XSMP opening connection"));
+	verb_msg((char_u *)_("XSMP opening connection"));
 
     xsmp.save_yourself = xsmp.shutdown = False;
 
@@ -6434,7 +6442,7 @@ xsmp_init(void)
     if (IceAddConnectionWatch(xsmp_ice_connection, &dummy) == 0)
     {
 	if (p_verbose > 0)
-	    MSG(_("XSMP ICE connection watch failed"));
+	    verb_msg((char_u *)_("XSMP ICE connection watch failed"));
 	return;
     }
 
@@ -6455,10 +6463,12 @@ xsmp_init(void)
     {
 	char errorreport[132];
 
-	vim_snprintf(errorreport, sizeof(errorreport),
-			 _("XSMP SmcOpenConnection failed: %s"), errorstring);
 	if (p_verbose > 0)
-	    MSG(errorreport);
+	{
+	    vim_snprintf(errorreport, sizeof(errorreport),
+			 _("XSMP SmcOpenConnection failed: %s"), errorstring);
+	    verb_msg((char_u *)errorreport);
+	}
 	return;
     }
     xsmp.iceconn = SmcGetIceConnection(xsmp.smcconn);

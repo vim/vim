@@ -1,5 +1,6 @@
 /* message.c */
 int msg __ARGS((char_u *s));
+int verb_msg __ARGS((char_u *s));
 int msg_attr __ARGS((char_u *s, int attr));
 int msg_attr_keep __ARGS((char_u *s, int attr, int keep));
 char_u *msg_strtrunc __ARGS((char_u *s));
@@ -49,6 +50,12 @@ void msg_clr_eos_force __ARGS((void));
 void msg_clr_cmdline __ARGS((void));
 int msg_end __ARGS((void));
 void msg_check __ARGS((void));
+void verbose_enter __ARGS((void));
+void verbose_leave __ARGS((void));
+void verbose_enter_scroll __ARGS((void));
+void verbose_leave_scroll __ARGS((void));
+void verbose_stop __ARGS((void));
+int verbose_open __ARGS((void));
 void give_warning __ARGS((char_u *message, int hl));
 void msg_advance __ARGS((int col));
 int do_dialog __ARGS((int type, char_u *title, char_u *message, char_u *buttons, int dfltbutton, char_u *textfield));

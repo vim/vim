@@ -3259,7 +3259,8 @@ gui_init_which_components(oldval)
 	     * change Columns and Rows when we don't want it.  Wait for a
 	     * character here to avoid this effect.
 	     * If you remove this, please test this command for resizing
-	     * effects: ":vsp|q|vsp|q|vsp|q" */
+	     * effects (with optional left scrollbar): ":vsp|q|vsp|q|vsp|q".
+	     * Don't do this while starting up though. */
 	    if (!gui.starting)
 		(void)char_avail();
 	    Rows = r;
