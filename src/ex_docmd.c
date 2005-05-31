@@ -1056,11 +1056,14 @@ do_cmdline(cmdline, getline, cookie, flags)
 	if (p_verbose >= 15 && sourcing_name != NULL)
 	{
 	    ++no_wait_return;
-	    msg_scroll = TRUE;	    /* always scroll up, don't overwrite */
+	    verbose_enter_scroll();
+
 	    smsg((char_u *)_("line %ld: %s"),
 					   (long)sourcing_lnum, cmdline_copy);
-	    msg_puts((char_u *)"\n");   /* don't overwrite this either */
-	    cmdline_row = msg_row;
+	    if (msg_silent == 0)
+		msg_puts((char_u *)"\n");   /* don't overwrite this */
+
+	    verbose_leave_scroll();
 	    --no_wait_return;
 	}
 

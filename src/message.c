@@ -34,6 +34,7 @@ static void t_puts __ARGS((int t_col, char_u *t_s, char_u *s, int attr));
 static void msg_screen_putchar __ARGS((int c, int attr));
 static int  msg_check_screen __ARGS((void));
 static void redir_write __ARGS((char_u *s, int maxlen));
+static void verbose_write __ARGS((char_u *s, int maxlen));
 #ifdef FEAT_CON_DIALOG
 static char_u *msg_show_console_dialog __ARGS((char_u *message, char_u *buttons, int dfltbutton));
 static int	confirm_msg_used = FALSE;	/* displaying confirm_msg */
@@ -100,6 +101,25 @@ msg(s)
 {
     return msg_attr_keep(s, 0, FALSE);
 }
+
+#if defined(FEAT_EVAL) || defined(FEAT_X11) || defined(USE_XSMP) \
+    || defined(PROTO)
+/*
+ * Like msg() but keep it silent when 'verbosefile' is set.
+ */
+    int
+verb_msg(s)
+    char_u	*s;
+{
+    int		n;
+
+    verbose_enter();
+    n = msg_attr_keep(s, 0, FALSE);
+    verbose_leave();
+
+    return n;
+}
+#endif
 
     int
 msg_attr(s, attr)
@@ -183,7 +203,7 @@ msg_strtrunc(s)
 
     /* May truncate message to avoid a hit-return prompt */
     if (!msg_scroll && !need_wait_return && shortmess(SHM_TRUNCALL)
-							    && !exmode_active)
+					 && !exmode_active && msg_silent == 0)
     {
 	len = vim_strsize(s);
 	room = (int)(Rows - cmdline_row - 1) * Columns + sc_col - 1;
@@ -2524,11 +2544,22 @@ redir_write(str, maxlen)
     char_u	*s = str;
     static int	cur_col = 0;
 
-    if ((redir_fd != NULL
+    /* Don't do anything for displaying prompts and the like. */
+    if (redir_off)
+	return;
+
+    /*
+     * If 'verbosefile' is set write message in that file.
+     * Must come before the rest because of updating "msg_col".
+     */
+    if (*p_vfile != NUL)
+	verbose_write(s, maxlen);
+
+    if (redir_fd != NULL
 #ifdef FEAT_EVAL
 			  || redir_reg || redir_vname
 #endif
-				       ) && !redir_off)
+				       )
     {
 	/* If the string doesn't start with CR or NL, go to msg_col */
 	if (*s != '\n' && *s != '\r')
@@ -2572,6 +2603,139 @@ redir_write(str, maxlen)
 
 	if (msg_silent != 0)	/* should update msg_col */
 	    msg_col = cur_col;
+    }
+}
+
+/*
+ * Before giving verbose messsage.
+ * Must always be called paired with verbose_leave()!
+ */
+    void
+verbose_enter()
+{
+    if (*p_vfile != NUL)
+	++msg_silent;
+}
+
+/*
+ * After giving verbose message.
+ * Must always be called paired with verbose_enter()!
+ */
+    void
+verbose_leave()
+{
+    if (*p_vfile != NUL)
+	if (--msg_silent < 0)
+	    msg_silent = 0;
+}
+
+/*
+ * Like verbose_enter() and set msg_scroll when displaying the message.
+ */
+    void
+verbose_enter_scroll()
+{
+    if (*p_vfile != NUL)
+	++msg_silent;
+    else
+	/* always scroll up, don't overwrite */
+	msg_scroll = TRUE;
+}
+
+/*
+ * Like verbose_leave() and set cmdline_row when displaying the message.
+ */
+    void
+verbose_leave_scroll()
+{
+    if (*p_vfile != NUL)
+    {
+	if (--msg_silent < 0)
+	    msg_silent = 0;
+    }
+    else
+	cmdline_row = msg_row;
+}
+
+static FILE *verbose_fd = NULL;
+static int  verbose_did_open = FALSE;
+
+/*
+ * Called when 'verbosefile' is set: stop writing to the file.
+ */
+    void
+verbose_stop()
+{
+    if (verbose_fd != NULL)
+    {
+	fclose(verbose_fd);
+	verbose_fd = NULL;
+    }
+    verbose_did_open = FALSE;
+}
+
+/*
+ * Open the file 'verbosefile'.
+ * Return FAIL or OK.
+ */
+    int
+verbose_open()
+{
+    if (verbose_fd == NULL && !verbose_did_open)
+    {
+	/* Only give the error message once. */
+	verbose_did_open = TRUE;
+
+	verbose_fd = fopen((char *)p_vfile, "a");
+	if (verbose_fd == NULL)
+	{
+	    EMSG2(_(e_notopen), p_vfile);
+	    return FAIL;
+	}
+    }
+    return OK;
+}
+
+/*
+ * Write a string to 'verbosefile'.
+ * When "maxlen" is -1 write the whole string, otherwise up to "maxlen" bytes.
+ */
+    static void
+verbose_write(str, maxlen)
+    char_u	*str;
+    int		maxlen;
+{
+    char_u	*s = str;
+    static int	cur_col = 0;
+
+    /* Open the file when called the first time. */
+    if (verbose_fd == NULL)
+	verbose_open();
+
+    if (verbose_fd != NULL)
+    {
+	/* If the string doesn't start with CR or NL, go to msg_col */
+	if (*s != '\n' && *s != '\r')
+	{
+	    while (cur_col < msg_col)
+	    {
+		fputs(" ", verbose_fd);
+		++cur_col;
+	    }
+	}
+
+	/* Adjust the current column */
+	while (*s != NUL && (maxlen < 0 || (int)(s - str) < maxlen))
+	{
+	    putc(*s, verbose_fd);
+	    if (*s == '\r' || *s == '\n')
+		cur_col = 0;
+	    else if (*s == '\t')
+		cur_col += (8 - cur_col % 8);
+	    else
+		++cur_col;
+	    ++s;
+	}
     }
 }
 
@@ -3206,7 +3370,7 @@ do_browse(flags, title, dflt, ext, initdir, filter, buf)
  *
  * This code is based on snprintf.c - a portable implementation of snprintf
  * by Mark Martinec <mark.martinec@ijs.si>, Version 2.2, 2000-10-06.
- * It was heavely modified to fit in Vim.
+ * Included with permission.  It was heavely modified to fit in Vim.
  * The original code, including useful comments, can be found here:
  *	http://www.ijs.si/software/snprintf/
  *

@@ -40,6 +40,8 @@ void getvvcol __ARGS((win_T *wp, pos_T *pos, colnr_T *start, colnr_T *cursor, co
 void getvcols __ARGS((win_T *wp, pos_T *pos1, pos_T *pos2, colnr_T *left, colnr_T *right));
 char_u *skipwhite __ARGS((char_u *p));
 char_u *skipdigits __ARGS((char_u *p));
+char_u *skiptodigit __ARGS((char_u *p));
+char_u *skiptohex __ARGS((char_u *p));
 int vim_isdigit __ARGS((int c));
 int vim_isxdigit __ARGS((int c));
 char_u *skiptowhite __ARGS((char_u *p));

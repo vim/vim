@@ -1,0 +1,35 @@
+t1: alphabetical
+One test
+Two test
+one test
+two test
+t2: alpha, unique
+One test
+Two test
+Two test 
+one test
+t3: alpha, unique, skip pattern
+two: aaa
+another: tuvy
+one: xay
+t4: number
+xce   9
+asdf 83 asd
+one 333   
+t5: number and skip
+one 33:4   99
+:9 
+asdf 3 a: sd 11
+t6: octal
+asdf 0014
+2389
+111
+t7: hex and skip
+asd/ad 1413
+0x44/1a1
+sf/0x1d3
+t8: wrong arguments
+ccc
+bbb
+aaa
+t8:
