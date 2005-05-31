@@ -2601,8 +2601,12 @@ spell_read_aff(fname, conv, ascii)
 		else if (*items[2] == 'N')
 		    cur_aff->ah_combine = FALSE;
 		else if (p_verbose > 0)
+		{
+		    verbose_enter();
 		    smsg((char_u *)_("Expected Y or N in %s line %d: %s"),
 						       fname, lnum, items[2]);
+		    verbose_leave();
+		}
 		cur_aff->ah_first = NULL;
 		if (*items[0] == 'P')
 		    tp = &aff->af_pref;
@@ -2699,8 +2703,12 @@ spell_read_aff(fname, conv, ascii)
 		++aff->af_rep.ga_len;
 	    }
 	    else if (p_verbose > 0)
+	    {
+		verbose_enter();
 		smsg((char_u *)_("Unrecognized item in %s line %d: %s"),
 						       fname, lnum, items[0]);
+		verbose_leave();
+	    }
 	}
 
     }
@@ -3615,8 +3623,12 @@ get_basicword(word, asize)
 	    if (*p == NUL)	/* Only non-word chars (bad word!) */
 	    {
 		if (p_verbose > 0)
+		{
+		    verbose_enter();
 		    smsg((char_u *)_("Warning: word without word characters: \"%s\""),
 							    foldword);
+		    verbose_leave();
+		}
 		break;
 	    }
 	    if (spell_iswordc(p))
