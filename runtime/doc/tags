@@ -937,6 +937,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'vdir'	options.txt	/*'vdir'*
 've'	options.txt	/*'ve'*
 'verbose'	options.txt	/*'verbose'*
+'verbosefile'	options.txt	/*'verbosefile'*
+'vfile'	options.txt	/*'vfile'*
 'vi'	options.txt	/*'vi'*
 'viewdir'	options.txt	/*'viewdir'*
 'viewoptions'	options.txt	/*'viewoptions'*
@@ -5119,6 +5121,7 @@ hebrew	hebrew.txt	/*hebrew*
 hebrew.txt	hebrew.txt	/*hebrew.txt*
 help	various.txt	/*help*
 help-context	help.txt	/*help-context*
+help-tags	tags	1
 help-translated	various.txt	/*help-translated*
 help-xterm-window	various.txt	/*help-xterm-window*
 help.txt	help.txt	/*help.txt*

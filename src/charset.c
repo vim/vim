@@ -1829,7 +1829,7 @@ skipwhite(p)
 }
 
 /*
- * skipdigits: skip over digits;
+ * skip over digits
  */
     char_u *
 skipdigits(p)
@@ -1839,6 +1839,32 @@ skipdigits(p)
 	++p;
     return p;
 }
+
+#if defined(FEAT_EX_EXTRA) || defined(PROTO)
+/*
+ * skip to digit (or NUL after the string)
+ */
+    char_u *
+skiptodigit(p)
+    char_u	*p;
+{
+    while (*p != NUL && !VIM_ISDIGIT(*p))	/* skip to next digit */
+	++p;
+    return p;
+}
+
+/*
+ * skip to hex character (or NUL after the string)
+ */
+    char_u *
+skiptohex(p)
+    char_u	*p;
+{
+    while (*p != NUL && !vim_isxdigit(*p))	/* skip to next digit */
+	++p;
+    return p;
+}
+#endif
 
 /*
  * Variant of isdigit() that can handle characters > 0x100.
@@ -1942,6 +1968,10 @@ vim_isblankline(lbuf)
  * If "len" is not NULL, the length of the number in characters is returned.
  * If "nptr" is not NULL, the signed result is returned in it.
  * If "unptr" is not NULL, the unsigned result is returned in it.
+ * If "dooct" is non-zero recognize octal numbers, when > 1 always assume
+ * octal number.
+ * If "dohext" is non-zero recognize hex numbers, when > 1 always assume
+ * hex number.
  */
     void
 vim_str2nr(start, hexp, len, dooct, dohex, nptr, unptr)
@@ -1995,25 +2025,22 @@ vim_str2nr(start, hexp, len, dooct, dohex, nptr, unptr)
     /*
      * Do the string-to-numeric conversion "manually" to avoid sscanf quirks.
      */
-    if (hex)
+    if (hex == '0' || dooct > 1)
     {
-	if (hex == '0')
+	/* octal */
+	while ('0' <= *ptr && *ptr <= '7')
 	{
-	    /* octal */
-	    while ('0' <= *ptr && *ptr <= '7')
-	    {
-		un = 8 * un + (unsigned long)(*ptr - '0');
-		++ptr;
-	    }
+	    un = 8 * un + (unsigned long)(*ptr - '0');
+	    ++ptr;
 	}
-	else
+    }
+    else if (hex != 0 || dohex > 1)
+    {
+	/* hex */
+	while (vim_isxdigit(*ptr))
 	{
-	    /* hex */
-	    while (vim_isxdigit(*ptr))
-	    {
-		un = 16 * un + (unsigned long)hex2nr(*ptr);
-		++ptr;
-	    }
+	    un = 16 * un + (unsigned long)hex2nr(*ptr);
+	    ++ptr;
 	}
     }
     else

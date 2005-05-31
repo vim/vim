@@ -1130,7 +1130,7 @@ cs_find_common(opt, pat, forceit, verbose)
 	if (matches == NULL)
 	    return FALSE;
 
-	(void)cs_manage_matches(matches, contexts, totmatches, Store);
+	(void)cs_manage_matches(matches, contexts, matched, Store);
 
 	return do_tag((char_u *)pat, DT_CSCOPE, 0, forceit, verbose);
     }
@@ -1693,8 +1693,8 @@ cs_file_results(f, nummatches_a)
 
 	for (j = 0; j < nummatches_a[i]; j++)
 	{
-	   if ((fullname=cs_parse_results(i, buf, CSREAD_BUFSIZE, &cntx,
-			   &slno, &search))==NULL)
+	   if ((fullname = cs_parse_results(i, buf, CSREAD_BUFSIZE, &cntx,
+			   &slno, &search)) == NULL)
 	       continue;
 
 	   context = (char *)alloc(strlen(cntx)+5);

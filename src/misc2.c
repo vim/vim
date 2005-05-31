@@ -2606,10 +2606,12 @@ call_shell(cmd, opt)
 
     if (p_verbose > 3)
     {
+	verbose_enter();
 	smsg((char_u *)_("Calling shell to execute: \"%s\""),
 						    cmd == NULL ? p_sh : cmd);
 	out_char('\n');
 	cursor_on();
+	verbose_leave();
     }
 
 #ifdef FEAT_PROFILE
@@ -4059,13 +4061,12 @@ vim_findfile(search_ctx)
 #ifdef FF_VERBOSE
 		if (p_verbose >= 5)
 		{
-		    /* always scroll up, don't overwrite */
-		    msg_scroll = TRUE;
+		    verbose_enter_scroll();
 		    smsg((char_u *)"Already Searched: %s (%s)",
 					   ctx->ffs_fix_path, ctx->ffs_wc_path);
 		    /* don't overwrite this either */
 		    msg_puts((char_u *)"\n");
-		    cmdline_row = msg_row;
+		    verbose_leave_scroll();
 		}
 #endif
 		ff_free_stack_element(ctx);
@@ -4074,13 +4075,12 @@ vim_findfile(search_ctx)
 #ifdef FF_VERBOSE
 	    else if (p_verbose >= 5)
 	    {
-		/* always scroll up, don't overwrite */
-		msg_scroll = TRUE;
+		verbose_enter_scroll();
 		smsg((char_u *)"Searching: %s (%s)",
 					 ctx->ffs_fix_path, ctx->ffs_wc_path);
 		/* don't overwrite this either */
 		msg_puts((char_u *)"\n");
-		cmdline_row = msg_row;
+		verbose_leave_scroll();
 	    }
 #endif
 
@@ -4264,13 +4264,12 @@ vim_findfile(search_ctx)
 				{
 				    if (p_verbose >= 5)
 				    {
-					/* always scroll up, don't overwrite */
-					msg_scroll = TRUE;
+					verbose_enter_scroll();
 					smsg((char_u *)"Already: %s",
 								   file_path);
 					/* don't overwrite this either */
 					msg_puts((char_u *)"\n");
-					cmdline_row = msg_row;
+					verbose_leave_scroll();
 				    }
 				    continue;
 				}
@@ -4293,12 +4292,11 @@ vim_findfile(search_ctx)
 #ifdef FF_VERBOSE
 				if (p_verbose >= 5)
 				{
-				    /* always scroll up, don't overwrite */
-				    msg_scroll = TRUE;
+				    verbose_enter_scroll();
 				    smsg((char_u *)"HIT: %s", file_path);
 				    /* don't overwrite this either */
 				    msg_puts((char_u *)"\n");
-				    cmdline_row = msg_row;
+				    verbose_leave_scroll();
 				}
 #endif
 				return file_path;
@@ -4483,13 +4481,12 @@ ff_get_visited_list(filename, list_headp)
 #ifdef FF_VERBOSE
 		if (p_verbose >= 5)
 		{
-		    /* always scroll up, don't overwrite */
-		    msg_scroll = TRUE;
+		    verbose_enter_scroll();
 		    smsg((char_u *)"ff_get_visited_list: FOUND list for %s",
 								    filename);
 		    /* don't overwrite this either */
 		    msg_puts((char_u *)"\n");
-		    cmdline_row = msg_row;
+		    verbose_leave_scroll();
 		}
 #endif
 		return retptr;
@@ -4501,12 +4498,11 @@ ff_get_visited_list(filename, list_headp)
 #ifdef FF_VERBOSE
     if (p_verbose >= 5)
     {
-	/* always scroll up, don't overwrite */
-	msg_scroll = TRUE;
+	verbose_enter_scroll();
 	smsg((char_u *)"ff_get_visited_list: new list for %s", filename);
 	/* don't overwrite this either */
 	msg_puts((char_u *)"\n");
-	cmdline_row = msg_row;
+	verbose_leave_scroll();
     }
 #endif
 

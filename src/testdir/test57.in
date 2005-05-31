@@ -1,0 +1,52 @@
+Tests for :sort command.     vim: set ft=vim :
+
+STARTTEST
+:so small.vim
+:"
+:/^t1:/+1,/^t2/-1sort
+:/^t2:/+1,/^t3/-1sort u
+:/^t3:/+1,/^t4/-1sort u /[^:]*:/
+:/^t4:/+1,/^t5/-1sort n
+:/^t5:/+1,/^t6/-1sort n -[^:]*:-
+:/^t6:/+1,/^t7/-1sort o
+:/^t7:/+1,/^t8/-1sort x ,.*/,
+:/^t8:/+1,/^t9/-1sort n o
+:/^t1:/,$wq! test.out
+ENDTEST
+
+t1: alphabetical
+two test
+One test
+one test
+Two test
+t2: alpha, unique
+One test
+one test
+Two test
+one test
+Two test 
+t3: alpha, unique, skip pattern
+one: xay
+two: aaa
+another: tuvy
+t4: number
+asdf 83 asd
+one 333   
+xce   9
+t5: number and skip
+asdf 3 a: sd 11
+one 33:4   99
+:9 
+t6: octal
+2389
+111
+asdf 0014
+t7: hex and skip
+sf/0x1d3
+0x44/1a1
+asd/ad 1413
+t8: wrong arguments
+ccc
+bbb
+aaa
+t8:

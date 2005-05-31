@@ -3966,6 +3966,7 @@ gui_mch_destroy_sign(sign)
 	vim_free(sign);
     }
 }
+#endif
 
 #if defined(FEAT_BEVAL) || defined(PROTO)
 
@@ -4230,6 +4231,4 @@ netbeans_draw_multisign_indicator(int row)
     SetPixel(s_hdc, x+3, y++, gui.currFgColor);
     SetPixel(s_hdc, x+2, y, gui.currFgColor);
 }
-#endif
-
 #endif

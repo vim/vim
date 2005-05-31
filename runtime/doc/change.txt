@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.0aa.  Last change: 2005 May 22
+*change.txt*    For Vim version 7.0aa.  Last change: 2005 May 31
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1494,8 +1494,20 @@ found here: |sort()|.
 
 			With [i] case is ignored.
 
+			With [n] sorting is done on the first decimal number
+			in the line (after a {pattern} match).
+
+			With [x] sorting is done on the first hexadecimal
+			number in the line (after a {pattern} match).  A
+			leading "0x" or "0X" is ignored.
+
+			With [o] sorting is done on the first octal number in
+			the line (after a {pattern} match).
+
 			With [u] only keep the first of a sequence of
 			identical lines (ignoring case when [i] is used).
+			Note that leading and trailing white space may cause
+			lines to be different.
 
 			When /{pattern}/ is specified the text matched with
 			{pattern} is skipped, so that you sort on what comes
@@ -1509,5 +1521,7 @@ found here: |sort()|.
 			ignoring the difference between tabs and spaces): >
 				:sort /.*\%10v/
 <
+Note that using ":sort" with ":global" doesn't sort the matching lines, it's
+quite useless.
 
  vim:tw=78:ts=8:ft=help:norl:

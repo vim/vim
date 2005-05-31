@@ -523,14 +523,22 @@ throw_exception(value, type, cmdname)
 
 	if (debug_break_level > 0)
 	    msg_silent = FALSE;		/* display messages */
+	else
+	    verbose_enter();
 	++no_wait_return;
-	msg_scroll = TRUE;	    /* always scroll up, don't overwrite */
+	if (debug_break_level > 0 || *p_vfile == NUL)
+	    msg_scroll = TRUE;	    /* always scroll up, don't overwrite */
+
 	smsg((char_u *)_("Exception thrown: %s"), excp->value);
 	msg_puts((char_u *)"\n");   /* don't overwrite this either */
-	cmdline_row = msg_row;
+
+	if (debug_break_level > 0 || *p_vfile == NUL)
+	    cmdline_row = msg_row;
 	--no_wait_return;
 	if (debug_break_level > 0)
 	    msg_silent = save_msg_silent;
+	else
+	    verbose_leave();
     }
 
     current_exception = excp;
@@ -569,17 +577,23 @@ discard_exception(excp, was_finished)
 	saved_IObuff = vim_strsave(IObuff);
 	if (debug_break_level > 0)
 	    msg_silent = FALSE;		/* display messages */
+	else
+	    verbose_enter();
 	++no_wait_return;
-	msg_scroll = TRUE;	    /* always scroll up, don't overwrite */
+	if (debug_break_level > 0 || *p_vfile == NUL)
+	    msg_scroll = TRUE;	    /* always scroll up, don't overwrite */
 	smsg(was_finished
 		    ? (char_u *)_("Exception finished: %s")
 		    : (char_u *)_("Exception discarded: %s"),
 		excp->value);
 	msg_puts((char_u *)"\n");   /* don't overwrite this either */
-	cmdline_row = msg_row;
+	if (debug_break_level > 0 || *p_vfile == NUL)
+	    cmdline_row = msg_row;
 	--no_wait_return;
 	if (debug_break_level > 0)
 	    msg_silent = save_msg_silent;
+	else
+	    verbose_leave();
 	STRCPY(IObuff, saved_IObuff);
 	vim_free(saved_IObuff);
     }
@@ -632,14 +646,22 @@ catch_exception(excp)
 
 	if (debug_break_level > 0)
 	    msg_silent = FALSE;		/* display messages */
+	else
+	    verbose_enter();
 	++no_wait_return;
-	msg_scroll = TRUE;	    /* always scroll up, don't overwrite */
+	if (debug_break_level > 0 || *p_vfile == NUL)
+	    msg_scroll = TRUE;	    /* always scroll up, don't overwrite */
+
 	smsg((char_u *)_("Exception caught: %s"), excp->value);
 	msg_puts((char_u *)"\n");   /* don't overwrite this either */
-	cmdline_row = msg_row;
+
+	if (debug_break_level > 0 || *p_vfile == NUL)
+	    cmdline_row = msg_row;
 	--no_wait_return;
 	if (debug_break_level > 0)
 	    msg_silent = save_msg_silent;
+	else
+	    verbose_leave();
     }
 }
 
@@ -785,7 +807,13 @@ report_make_pending(pending, value)
     void	*value;
 {
     if (p_verbose >= 14 || debug_break_level > 0)
+    {
+	if (debug_break_level <= 0)
+	    verbose_enter();
 	report_pending(RP_MAKE, pending, value);
+	if (debug_break_level <= 0)
+	    verbose_leave();
+    }
 }
 
 /*
@@ -798,7 +826,13 @@ report_resume_pending(pending, value)
     void	*value;
 {
     if (p_verbose >= 14 || debug_break_level > 0)
+    {
+	if (debug_break_level <= 0)
+	    verbose_enter();
 	report_pending(RP_RESUME, pending, value);
+	if (debug_break_level <= 0)
+	    verbose_leave();
+    }
 }
 
 /*
@@ -811,7 +845,13 @@ report_discard_pending(pending, value)
     void	*value;
 {
     if (p_verbose >= 14 || debug_break_level > 0)
+    {
+	if (debug_break_level <= 0)
+	    verbose_enter();
 	report_pending(RP_DISCARD, pending, value);
+	if (debug_break_level <= 0)
+	    verbose_leave();
+    }
 }
 
 

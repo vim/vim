@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Apr 14
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 May 31
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -6535,6 +6535,21 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	This option can also be set with the "-V" argument.  See |-V|.
 	This option is also set by the |:verbose| command.
+
+	When the 'verbosefile' option is set then the verbose messages are not
+	displayed.
+
+						*'verbosefile'* *'vfile'*
+'verbosefile' 'vfile'	string	(default empty)
+			global
+			{not in Vi}
+	When not empty all messages are written in a file with this name.
+	When the file exists messages are appended.
+	Writing to the file ends when Vim exits or when 'verbosefile' is made
+	empty.
+	Setting 'verbosefile' to a new value is like making it empty first.
+	The difference with |:redir| is that verbose messages are not
+	displayed when 'verbosefile' is set.
 
 						*'viewdir'* *'vdir'*
 'viewdir' 'vdir'	string	(default for Amiga, MS-DOS, OS/2 and Win32:

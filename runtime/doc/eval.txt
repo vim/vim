@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 May 22
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 May 31
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -3743,6 +3743,8 @@ split({expr} [, {pattern} [, {keepempty}]])			*split()*
 		removing the matched characters.
 		When the first or last item is empty it is omitted, unless the
 		{keepempty} argument is given and it's non-zero.
+		Other empty items are kept when {pattern} matches at least one
+		character or when {keepempty} is non-zero.
 		Example: >
 			:let words = split(getline('.'), '\W\+')
 <		To split a string in individual characters: >
