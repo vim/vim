@@ -2259,6 +2259,9 @@ static struct vimoption
     {"verbose",	    "vbs",  P_NUM|P_VI_DEF,
 			    (char_u *)&p_verbose, PV_NONE,
 			    {(char_u *)0L, (char_u *)0L}},
+    {"verbosefile", "vfile", P_STRING|P_EXPAND|P_VI_DEF|P_SECURE,
+			    (char_u *)&p_vfile, PV_NONE,
+			    {(char_u *)"", (char_u *)0L}},
     {"viewdir",     "vdir", P_STRING|P_EXPAND|P_VI_DEF|P_SECURE,
 #ifdef FEAT_SESSION
 			    (char_u *)&p_vdir, PV_NONE,
@@ -3731,8 +3734,10 @@ do_set(arg, opt_flags)
 		    {
 			if (options[opt_idx].scriptID != 0)
 			{
+			    verbose_enter();
 			    MSG_PUTS(_("\n\tLast set from "));
 			    MSG_PUTS(get_scriptname(options[opt_idx].scriptID));
+			    verbose_leave();
 			}
 		    }
 #endif
@@ -5315,6 +5320,14 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 	errmsg = check_cedit();
     }
 #endif
+
+    /* 'verbosefile' */
+    else if (varp == &p_vfile)
+    {
+	verbose_stop();
+	if (*p_vfile != NUL && verbose_open() == FAIL)
+	    errmsg = e_invarg;
+    }
 
 #ifdef FEAT_VIMINFO
     /* 'viminfo' */

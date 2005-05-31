@@ -813,6 +813,12 @@ main
 	    case 'V':		/* "-V{N}"	Verbose level */
 		/* default is 10: a little bit verbose */
 		p_verbose = get_number_arg((char_u *)argv[0], &argv_idx, 10);
+		if (argv[0][argv_idx] != NUL)
+		{
+		    set_option_value((char_u *)"verbosefile", 0L,
+					     (char_u *)argv[0] + argv_idx, 0);
+		    argv_idx = STRLEN(argv[0]);
+		}
 		break;
 
 	    case 'v':		/* "-v"  Vi-mode (as if called "vi") */

@@ -3127,8 +3127,8 @@ syntax_clear(buf)
 {
     int i;
 
-    curbuf->b_syn_ic = FALSE;	    /* Use case, by default */
-    curbuf->b_syn_containedin = FALSE;
+    buf->b_syn_ic = FALSE;	    /* Use case, by default */
+    buf->b_syn_containedin = FALSE;
 
     /* free the keywords */
     clear_keywtab(&buf->b_keywtab);

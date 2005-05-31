@@ -1,5 +1,4 @@
 /* hashtable.c */
-hashtab_T *hash_create __ARGS((void));
 void hash_init __ARGS((hashtab_T *ht));
 void hash_clear __ARGS((hashtab_T *ht));
 hashitem_T *hash_find __ARGS((hashtab_T *ht, char_u *key));

@@ -2467,8 +2467,12 @@ do_in_runtimepath(name, all, callback, cookie)
     if (buf != NULL && rtp_copy != NULL)
     {
 	if (p_verbose > 1)
+	{
+	    verbose_enter();
 	    smsg((char_u *)_("Searching for \"%s\" in \"%s\""),
 						 (char *)name, (char *)p_rtp);
+	    verbose_leave();
+	}
 
 	/* Loop over all entries in 'runtimepath'. */
 	rtp = rtp_copy;
@@ -2490,7 +2494,11 @@ do_in_runtimepath(name, all, callback, cookie)
 								       "\t ");
 
 		    if (p_verbose > 2)
+		    {
+			verbose_enter();
 			smsg((char_u *)_("Searching for \"%s\""), buf);
+			verbose_leave();
+		    }
 
 		    /* Expand wildcards, invoke the callback for each match. */
 		    if (gen_expand_wildcards(1, &buf, &num_files, &files,
@@ -2512,7 +2520,11 @@ do_in_runtimepath(name, all, callback, cookie)
     vim_free(buf);
     vim_free(rtp_copy);
     if (p_verbose > 0 && !did_one)
+    {
+	verbose_enter();
 	smsg((char_u *)_("not found in 'runtimepath': \"%s\""), name);
+	verbose_leave();
+    }
 
 #ifdef AMIGA
     proc->pr_WindowPtr = save_winptr;
@@ -2759,11 +2771,13 @@ do_source(fname, check_other, is_vimrc)
     {
 	if (p_verbose > 0)
 	{
+	    verbose_enter();
 	    if (sourcing_name == NULL)
 		smsg((char_u *)_("could not source \"%s\""), fname);
 	    else
 		smsg((char_u *)_("line %ld: could not source \"%s\""),
 							sourcing_lnum, fname);
+	    verbose_leave();
 	}
 	goto theend;
     }
@@ -2775,11 +2789,13 @@ do_source(fname, check_other, is_vimrc)
      */
     if (p_verbose > 1)
     {
+	verbose_enter();
 	if (sourcing_name == NULL)
 	    smsg((char_u *)_("sourcing \"%s\""), fname);
 	else
 	    smsg((char_u *)_("line %ld: sourcing \"%s\""),
 							sourcing_lnum, fname);
+	verbose_leave();
     }
     if (is_vimrc)
 	vimrc_found();
@@ -2961,9 +2977,11 @@ do_source(fname, check_other, is_vimrc)
     sourcing_lnum = save_sourcing_lnum;
     if (p_verbose > 1)
     {
+	verbose_enter();
 	smsg((char_u *)_("finished sourcing %s"), fname);
 	if (sourcing_name != NULL)
 	    smsg((char_u *)_("continuing in %s"), sourcing_name);
+	verbose_leave();
     }
 #ifdef STARTUPTIME
     vim_snprintf(IObuff, IOSIZE, "sourcing %s", fname);

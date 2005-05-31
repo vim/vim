@@ -6132,7 +6132,11 @@ clip_mch_request_selection(VimClipboard *cbd)
 	/* Got something */
 	clip_yank_selection(MCHAR, buffer, (long)nbytes, cbd);
 	if (p_verbose > 0)
+	{
+	    verbose_enter();
 	    smsg((char_u *)_("Used CUT_BUFFER0 instead of empty selection"));
+	    verbose_leave();
+	}
     }
     if (buffer != NULL)
 	XFree(buffer);

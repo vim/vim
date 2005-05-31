@@ -1696,7 +1696,13 @@ fill_input_buf(exit_on_error)
 #endif
 
 #ifdef FEAT_GUI
-    if (gui.in_use)
+    if (gui.in_use
+# ifdef NO_CONSOLE_INPUT
+    /* Don't use the GUI input when the window hasn't been opened yet.
+     * We get here from ui_inchar() when we should try reading from stdin. */
+	    && !no_console_input()
+# endif
+       )
     {
 	gui_mch_update();
 	return;
@@ -2140,7 +2146,7 @@ clip_x11_request_selection(myShell, dpy, cbd)
 	clip_yank_selection(MCHAR, buffer, (long)nbytes, cbd);
 	XFree((void *)buffer);
 	if (p_verbose > 0)
-	    MSG(_("Used CUT_BUFFER0 instead of empty selection"));
+	    verb_msg((char_u *)_("Used CUT_BUFFER0 instead of empty selection"));
     }
 }
 

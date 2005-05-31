@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.0aa.  Last change: 2005 Apr 01
+*various.txt*   For Vim version 7.0aa.  Last change: 2005 May 31
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -392,6 +392,8 @@ N  *+X11*		Unix only: can restore window title |X11|
 			To stop the messages and commands from being echoed to
 			the screen, put the commands in a function and call it
 			with ":silent call Function()".
+			An alternative is to use the 'verbosefile' option,
+			this can be used in combination with ":redir".
 			{not in Vi}
 
 :redi[r] >> {file}	Redirect messages to file {file}.  Append if {file}
@@ -475,6 +477,8 @@ N  *+X11*		Unix only: can restore window title |X11|
 				:4verbose set verbose | set verbose
 <				  verbose=4 ~
 				  verbose=0 ~
+			For logging verbose messages in a file use the
+			'verbosefile' option.
 
 							*K*
 K			Run a program to lookup the keyword under the

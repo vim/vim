@@ -10071,7 +10071,7 @@ f_inputrestore(argvars, rettv)
     }
     else if (p_verbose > 1)
     {
-	msg((char_u *)_("called inputrestore() more often than inputsave()"));
+	verb_msg((char_u *)_("called inputrestore() more often than inputsave()"));
 	rettv->vval.v_number = 1; /* Failed */
     }
 }
@@ -12786,7 +12786,8 @@ f_split(argvars, rettv)
 		end = regmatch.startp[0];
 	    else
 		end = str + STRLEN(str);
-	    if (keepempty || end > str || (l->lv_len > 0 && *str != NUL))
+	    if (keepempty || end > str || (l->lv_len > 0 && *str != NUL
+					  && match && end < regmatch.endp[0]))
 	    {
 		ni = listitem_alloc();
 		if (ni == NULL)
@@ -16930,7 +16931,8 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
 	if (p_verbose >= 12)
 	{
 	    ++no_wait_return;
-	    msg_scroll = TRUE;	    /* always scroll up, don't overwrite */
+	    verbose_enter_scroll();
+
 	    smsg((char_u *)_("calling %s"), sourcing_name);
 	    if (p_verbose >= 14)
 	    {
@@ -16956,7 +16958,8 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
 		msg_puts((char_u *)")");
 	    }
 	    msg_puts((char_u *)"\n");   /* don't overwrite this either */
-	    cmdline_row = msg_row;
+
+	    verbose_leave_scroll();
 	    --no_wait_return;
 	}
     }
@@ -17015,7 +17018,7 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
     if (p_verbose >= 12)
     {
 	++no_wait_return;
-	msg_scroll = TRUE;	    /* always scroll up, don't overwrite */
+	verbose_enter_scroll();
 
 	if (aborting())
 	    smsg((char_u *)_("%s aborted"), sourcing_name);
@@ -17037,7 +17040,8 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
 	    vim_free(tofree);
 	}
 	msg_puts((char_u *)"\n");   /* don't overwrite this either */
-	cmdline_row = msg_row;
+
+	verbose_leave_scroll();
 	--no_wait_return;
     }
 
@@ -17053,10 +17057,12 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
     if (p_verbose >= 12 && sourcing_name != NULL)
     {
 	++no_wait_return;
-	msg_scroll = TRUE;	    /* always scroll up, don't overwrite */
+	verbose_enter_scroll();
+
 	smsg((char_u *)_("continuing in %s"), sourcing_name);
 	msg_puts((char_u *)"\n");   /* don't overwrite this either */
-	cmdline_row = msg_row;
+
+	verbose_leave_scroll();
 	--no_wait_return;
     }
 

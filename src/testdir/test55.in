@@ -274,6 +274,8 @@ STARTTEST
 :$put =string(split(':aa::bb:', ':', 0))
 :$put =string(split(':aa::bb:', ':', 1))
 :$put =string(split('aa,,bb, cc,', ',\s*', 1))
+:$put =string(split('abc', '\zs'))
+:$put =string(split('abc', '\zs', 1))
 :"
 :endfun
 :call Test(1, 2, [3, 4], {5: 6})  " This may take a while

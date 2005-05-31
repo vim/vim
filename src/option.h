@@ -804,6 +804,7 @@ static char *(p_ve_values[]) = {"block", "insert", "all", NULL};
 # define VE_ALL		4
 #endif
 EXTERN long	p_verbose;	/* 'verbose' */
+EXTERN char_u	*p_vfile;	/* 'verbosefile' */
 EXTERN int	p_warn;		/* 'warn' */
 #ifdef FEAT_CMDL_COMPL
 EXTERN char_u	*p_wop;		/* 'wildoptions' */

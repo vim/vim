@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 May 22
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 May 31
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -296,6 +296,7 @@ Options: ~
 			(idea by Hugo Haas)
 'spell'			switch spell checking on/off
 'spelllang'		languages to check spelling for
+'verbosefile'		Log messages in a file.
 
 
 Ex commands: ~
@@ -583,6 +584,10 @@ invalid characters after the register name. |:redir|
 (Yegappan Lakshmanan) |:redir|
 
 ":redir @{a-z}>>" appends to register a to z.
+
+The 'verbosefile' option can be used to log messages in a file.  Verbose
+messages are not displayed then.  The "-V{filename}" argument can be used to
+log startup messages.
 
 ":let g:" lists global variables.
 ":let b:" lists buffer-local variables.

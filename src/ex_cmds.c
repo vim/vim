@@ -266,6 +266,14 @@ linelen(has_tab)
 static char_u	*sortbuf;
 
 static int	sort_ic;		/* ignore case */
+static int	sort_nr;		/* sort on number */
+
+/* Struct to store info to be sorted. */
+typedef struct
+{
+    linenr_T	lnum;			/* line number */
+    long	col_nr;			/* column number or number */
+} sorti_T;
 
 static int
 #ifdef __BORLANDC__
@@ -281,14 +289,19 @@ sort_compare(s1, s2)
     const void	*s1;
     const void	*s2;
 {
-    lpos_T	l1 = *(lpos_T *)s1;
-    lpos_T	l2 = *(lpos_T *)s2;
+    sorti_T	l1 = *(sorti_T *)s1;
+    sorti_T	l2 = *(sorti_T *)s2;
     char_u	*s;
+
+    /* When sorting numbers "col_nr" is the number, not the column number. */
+    if (sort_nr)
+	return l1.col_nr - l2.col_nr;
 
     /* We need to copy one line into "sortbuf", because there is no guarantee
      * that the first pointer becomes invalid when obtaining the second one. */
-    STRCPY(sortbuf, ml_get(l1.lnum) + l1.col);
-    s = ml_get(l2.lnum) + l2.col;
+    STRCPY(sortbuf, ml_get(l1.lnum) + l1.col_nr);
+    s = ml_get(l2.lnum) + l2.col_nr;
+
     return sort_ic ? STRICMP(sortbuf, s) : STRCMP(sortbuf, s);
 }
 
@@ -303,21 +316,26 @@ ex_sort(eap)
     int		len;
     linenr_T	lnum;
     long	maxlen = 0;
-    lpos_T	*nrs;
+    sorti_T	*nrs;
     size_t	count = eap->line2 - eap->line1 + 1;
-    int		i;
+    size_t	i;
     char_u	*p;
     char_u	*s;
     int		unique = FALSE;
     long	deleted;
+    colnr_T	col;
+    int		sort_oct;		/* sort on octal number */
+    int		sort_hex;		/* sort on hex number */
 
     if (u_save((linenr_T)(eap->line1 - 1), (linenr_T)(eap->line2 + 1)) == FAIL)
 	return;
     sortbuf = NULL;
     regmatch.regprog = NULL;
-    nrs = (lpos_T *)lalloc((long_u)(count * sizeof(lpos_T)), TRUE);
+    nrs = (sorti_T *)lalloc((long_u)(count * sizeof(sorti_T)), TRUE);
     if (nrs == NULL)
 	goto theend;
+
+    sort_ic = sort_nr = sort_oct = sort_hex = 0;
 
     for (p = eap->arg; *p != NUL; ++p)
     {
@@ -325,6 +343,12 @@ ex_sort(eap)
 	    ;
 	else if (*p == 'i')
 	    sort_ic = TRUE;
+	else if (*p == 'n')
+	    sort_nr = 2;
+	else if (*p == 'o')
+	    sort_oct = 2;
+	else if (*p == 'x')
+	    sort_hex = 2;
 	else if (*p == 'u')
 	    unique = TRUE;
 	else if (*p == '"')	/* comment start */
@@ -356,31 +380,60 @@ ex_sort(eap)
 	}
     }
 
+    /* Can only have one of 'n', 'o' and 'x'. */
+    if (sort_nr + sort_oct + sort_hex > 2)
+    {
+	EMSG(_(e_invarg));
+	goto theend;
+    }
+
+    /* From here on "sort_nr" is used as a flag for any number sorting. */
+    sort_nr += sort_oct + sort_hex;
+
     /*
-     * Make an array with all line numbers, so that we don't have to copy all
+     * Make an array with all line numbers.  This avoids having to copy all
      * the lines into allocated memory.
-     * Also get the longest line length.
+     * When sorting on strings "col_nr" is de offset in the line, for numbers
+     * sorting it's the number to sort on.  This means the pattern matching
+     * and number conversion only has to be done once per line.
+     * Also get the longest line length for allocating "sortbuf".
      */
     for (lnum = eap->line1; lnum <= eap->line2; ++lnum)
     {
-	nrs[lnum - eap->line1].lnum = lnum;
-	nrs[lnum - eap->line1].col = 0;
-
 	s = ml_get(lnum);
-	if (regmatch.regprog != NULL && vim_regexec(&regmatch, s, 0))
-	    nrs[lnum - eap->line1].col = regmatch.endp[0] - s;
-
 	len = STRLEN(s);
 	if (maxlen < len)
 	    maxlen = len;
+
+	if (regmatch.regprog != NULL && vim_regexec(&regmatch, s, 0))
+	    col = regmatch.endp[0] - s;
+	else
+	    col = 0;
+
+	if (sort_nr)
+	{
+	    /* Sorting on number: Store the number itself. */
+	    if (sort_hex)
+		s = skiptohex(s + col);
+	    else
+		s = skiptodigit(s + col);
+	    vim_str2nr(s, NULL, NULL, sort_oct, sort_hex,
+					&nrs[lnum - eap->line1].col_nr, NULL);
+	}
+	else
+	    /* Store the column to sort at. */
+	    nrs[lnum - eap->line1].col_nr = col;
+
+	nrs[lnum - eap->line1].lnum = lnum;
     }
 
+    /* Allocate a buffer that can hold the longest line. */
     sortbuf = alloc((unsigned)maxlen + 1);
     if (sortbuf == NULL)
 	goto theend;
 
     /* sort the array of line numbers */
-    qsort((void *)nrs, count, sizeof(lpos_T), sort_compare);
+    qsort((void *)nrs, count, sizeof(sorti_T), sort_compare);
 
     /* Insert the lines in the sorted order below the last one. */
     lnum = eap->line2;
@@ -392,7 +445,8 @@ ex_sort(eap)
 	{
 	    if (ml_append(lnum++, s, (colnr_T)0, FALSE) == FAIL)
 		break;
-	    STRCPY(sortbuf, s);
+	    if (unique)
+		STRCPY(sortbuf, s);
 	}
     }
 
@@ -403,12 +457,14 @@ ex_sort(eap)
     else
 	count = 0;
 
+    /* Adjust marks for deleted (or added) lines and prepare for displaying. */
     deleted = count - (lnum - eap->line2);
     if (deleted > 0)
 	mark_adjust(eap->line2 - deleted, eap->line2, (long)MAXLNUM, -deleted);
     else if (deleted < 0)
 	mark_adjust(eap->line2, MAXLNUM, -deleted, 0L);
     changed_lines(eap->line1, 0, eap->line2 + 1, -deleted);
+
     curwin->w_cursor.lnum = eap->line1;
     beginline(BL_WHITE | BL_FIX);
 
@@ -1532,11 +1588,15 @@ read_viminfo(file, want_info, want_marks, forceit)
     fp = mch_fopen((char *)fname, READBIN);
 
     if (p_verbose > 0)
+    {
+	verbose_enter();
 	smsg((char_u *)_("Reading viminfo file \"%s\"%s%s%s"),
 		fname,
 		want_info ? _(" info") : "",
 		want_marks ? _(" marks") : "",
 		fp == NULL ? _(" FAILED") : "");
+	verbose_leave();
+    }
 
     vim_free(fname);
     if (fp == NULL)
@@ -1760,7 +1820,11 @@ write_viminfo(file, forceit)
     }
 
     if (p_verbose > 0)
+    {
+	verbose_enter();
 	smsg((char_u *)_("Writing viminfo file \"%s\""), fname);
+	verbose_leave();
+    }
 
     viminfo_errcnt = 0;
     do_viminfo(fp_in, fp_out, !forceit, !forceit, FALSE);

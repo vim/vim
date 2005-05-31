@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 May 25
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 May 31
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,27 +30,17 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-GTK: Hang for "gvim </tmp/tt >&/tmp/ttt".  Ready to read char from stdin but
-it's never read.
-Namsh also has a problem with a hang, coming from the added char_avail() call.
-Temporary fix: check "gui.starting".
-
-Make option like 'verbose' that writes output into a file?  Should make it
-possible to see what's happening without messing up the display.
-
-Errors when compiling with Cygwin (Thomas).
-
-":sort n" sort on decimal number (skipping white space)
-":sort x" sort on hex number
-":sort o" sort on octal number
-Docs: doesn't work well together with :global.
-
-split(): splitting into chars doesn't work.
-
 ":qtag" command: make list of matching tags and use like quickfix list.
 This changes the stack of quickfix lists.  Make another list and use ":qnext",
 ":qprev", etc.?  Do allow other commands for quickfix list, such as quickfix
 window.
+
+Win32: Balloon text can't contain line break.
+    Hints for multiline tooltips from Alexei Alexandrov (2005 Mar 26)
+    Patch from Sergey Khorev, 2005 Apr 11
+    Add has("balloon_multiline")
+
+Patch in if_cscope.c also in 6.3?  (Froloff)
 
 Mac unicode patch (Da Woon Jung):
 - selecting proportional font breaks display
@@ -71,11 +61,6 @@ autoload:
     script autoload/yourlib.vim
     helpfile doc/myscript.txt
   For the "helpfile" item ":helptags" is run.
-
-Win32: Balloon text can't contain line break.
-    Hints for multiline tooltips from Alexei Alexandrov (2005 Mar 26)
-    Patch from Sergey Khorev, 2005 Apr 11
-    Add has("balloon_multiline")
 
 Patch to alternate fold highlighting.  (Anthony Iano-Fletcher, 2005 May 12)
 More levels?
@@ -121,7 +106,7 @@ PLANNED FOR VERSION 7.0:
 	add word to private dict: wrong and OK (in popup menu for evim)
 	    :spell good <word>	    zg
 	    :spell wrong <word>	    zw
-    - Update option window for 'spell' and 'spelllang'.
+    - Update option window for 'verbosefile', 'spell' and 'spelllang'.
     - Distribution: Need wordlists for many languages; "language pack"
       Put them on the ftp site, ready to download.  Include README for
       copyrights.

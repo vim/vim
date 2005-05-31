@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.0aa.  Last change: 2005 Apr 18
+*starting.txt*  For Vim version 7.0aa.  Last change: 2005 May 31
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -311,6 +311,11 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		Messages will be given for each file that is ":source"d and
 		for reading or writing a viminfo file.  Can be used to find
 		out what is happening upon startup and exit.  {not in Vi}
+
+-V[N]{filename}
+		Like -V and set 'verbosefile' to {filename}.  The result is
+		that messages are not displayed but written to the file
+		{filename}.  {filename} must not start with a digit.
 
 							*-D*
 -D		Debugging.  Go to debugging mode when executing the first
@@ -706,6 +711,8 @@ accordingly.  Vim proceeds in this order:
 2. Process the arguments
 	The options and file names from the command that start Vim are
 	inspected.  Buffers are created for all files (but not loaded yet).
+	The |-V| argument can be used to display or log what happens next,
+	useful for debugging the initializations.
 
 3. Execute Ex commands, from environment variables and/or files
 	An environment variable is read as one Ex command line, where multiple
