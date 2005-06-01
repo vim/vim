@@ -38,11 +38,11 @@ static garray_T	user_digraphs = {0, 0, sizeof(digr_T), 10, NULL};
  * Note: Characters marked with XX are not included literally, because some
  * compilers cannot handle them (Amiga SAS/C is the most picky one).
  */
+static digr_T digraphdefault[] =
 #if defined(MSDOS) || defined(OS2)
 	/*
 	 * MSDOS digraphs.
 	 */
-digr_T	digraphdefault[] =
        {{'C', ',', 128},	/* ~@ XX */
 	{'u', '"', 129},	/* Å */
 	{'e', '\'', 130},	/* Ç */
@@ -111,7 +111,6 @@ digr_T	digraphdefault[] =
 	/*
 	 * ATARI digraphs
 	 */
-digr_T	digraphdefault[] =
        {{'C', ',', 128},	/* ~@ XX */
 	{'u', '"', 129},	/* Å */
 	{'e', '\'', 130},	/* Ç */
@@ -178,7 +177,6 @@ digr_T	digraphdefault[] =
 	/*
 	 * different HPUX digraphs
 	 */
-digr_T	digraphdefault[] =
        {{'A', '`', 161},	/* ° */
 	{'A', '^', 162},	/* ¢ */
 	{'E', '`', 163},	/* £ */
@@ -285,7 +283,6 @@ digr_T	digraphdefault[] =
 	 * EBCDIC - ISO digraphs
 	 * TODO: EBCDIC Table is Code-Page 1047
 	 */
-digr_T	digraphdefault[] =
        {{'a', '^',    66},	/* ‚ */
 	{'a', '"',    67},	/* ‰ */
 	{'a', '`',    68},	/* ‡ */
@@ -395,7 +392,6 @@ digr_T	digraphdefault[] =
 	/*
 	 * Macintosh digraphs
 	 */
-digr_T	digraphdefault[] =
        {{'a', 't', 64},		/* @ */
 	{'A', '"', 128},	/* ~@ XX */
 	{'A', 'o', 129},	/* ≈ */
@@ -526,7 +522,6 @@ digr_T	digraphdefault[] =
 	/*
 	 * digraphs compatible with Vim 5.x
 	 */
-digr_T	digraphdefault[] =
        {{'~', '!', 161},	/* ° */
 	{'c', '|', 162},	/* ¢ */
 	{'$', '$', 163},	/* £ */
@@ -635,7 +630,6 @@ digr_T	digraphdefault[] =
 	 * digraphs for Unicode from RFC1345
 	 * (also work for ISO-8859-1 aka latin1)
 	 */
-digr_T	digraphdefault[] =
        {
 	{'N', 'U', 0x0a},	/* LF for NUL */
 	{'S', 'H', 0x01},

@@ -399,15 +399,20 @@ N  *+X11*		Unix only: can restore window title |X11|
 :redi[r] >> {file}	Redirect messages to file {file}.  Append if {file}
 			already exists.  {not in Vi}
 
-:redi[r] @{a-zA-Z}	Redirect messages to register {a-z}.  Append to the
+:redi[r] @{a-zA-Z}>	Redirect messages to register {a-z}.  Append to the
 			contents of the register if its name is given
-			uppercase {A-Z}.  {not in Vi}
+			uppercase {A-Z}.  For backward compatibility, the ">"
+			after the register name can be omitted. {not in Vi}
 :redi[r] @{a-z}>>	Append messages to register {a-z}. {not in Vi}
 
-:redi[r] @*		Redirect messages to the clipboard. {not in Vi}
+:redi[r] @*>		Redirect messages to the clipboard. For backward
+			compatibility, the ">" after the register name can be
+			omitted. {not in Vi}
 :redi[r] @*>>		Append messages to the clipboard. {not in Vi}
 
-:redi[r] @"		Redirect messages to the unnamed register. {not in Vi}
+:redi[r] @">		Redirect messages to the unnamed register. For
+			backward compatibility, the ">" after the register
+			name can be omitted. {not in Vi}
 :redi[r] @">>		Append messages to the unnamed register. {not in Vi}
 
 :redi[r] => {var}	Redirect messages to a variable.  If the variable

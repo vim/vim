@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 May 31
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,10 +30,22 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-":qtag" command: make list of matching tags and use like quickfix list.
-This changes the stack of quickfix lists.  Make another list and use ":qnext",
-":qprev", etc.?  Do allow other commands for quickfix list, such as quickfix
-window.
+Add extra list of file locations.  Can be used with:
+    :ltag	      list of matching tags, like :tselect
+
+    :lnext	      next location
+    :lprevious :lNext previous location
+    :lnfile	      location in next file
+    :lNfile :lpfile   location in previous file
+    :lrewind :lfirst  first location
+    :llast	      last location
+    :lq [N]	      go to location N (current one if N omitted)
+    :lwindow	      open window with locations (separate from quickfix window)
+    :lopen	      open window with locations
+    :lclose	      close window with locations
+    :llist	      list locations
+    :lfile	      read locations from file using 'errorformat'
+    :lgetfile	      idem, don't jump to first one
 
 Win32: Balloon text can't contain line break.
     Hints for multiline tooltips from Alexei Alexandrov (2005 Mar 26)
@@ -50,6 +62,9 @@ Should we always set LC_CTYPE to "C", so that all library functions work on
 bytes?  Avoids problems with sprintf() on MS-Windows. (Yongwei)
 Problem noticed: tooltips are messed up.  Depends on the moment 'encoding' is
 changed.
+
+Include new PHP indent script from John Wellesz?
+    http://www.vim.org/scripts/download_script.php?src_id=4330
 
 autoload:
 - Add a Vim script in $VIMRUNTIME/tools that takes a file with a list of

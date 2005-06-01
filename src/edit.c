@@ -198,10 +198,10 @@ static int	can_cindent;		/* may do cindenting on this line */
 static int	old_indent = 0;		/* for ^^D command in insert mode */
 
 #ifdef FEAT_RIGHTLEFT
-int		revins_on;		/* reverse insert mode on */
-int		revins_chars;		/* how much to skip after edit */
-int		revins_legal;		/* was the last char 'legal'? */
-int		revins_scol;		/* start column of revins session */
+static int	revins_on;		/* reverse insert mode on */
+static int	revins_chars;		/* how much to skip after edit */
+static int	revins_legal;		/* was the last char 'legal'? */
+static int	revins_scol;		/* start column of revins session */
 #endif
 
 #if defined(FEAT_MBYTE) && defined(MACOS_CLASSIC)
@@ -5432,9 +5432,9 @@ echeck_abbr(c)
  * characters will be left on the stack above the newly inserted character.
  */
 
-char_u	*replace_stack = NULL;
-long	replace_stack_nr = 0;	    /* next entry in replace stack */
-long	replace_stack_len = 0;	    /* max. number of entries */
+static char_u	*replace_stack = NULL;
+static long	replace_stack_nr = 0;	    /* next entry in replace stack */
+static long	replace_stack_len = 0;	    /* max. number of entries */
 
     void
 replace_push(c)

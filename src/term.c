@@ -144,7 +144,7 @@ static char_u *vim_tgetstr __ARGS((char *s, char_u **pp));
 
 static int  detected_8bit = FALSE;	/* detected 8-bit terminal */
 
-struct builtin_term builtin_termcaps[] =
+static struct builtin_term builtin_termcaps[] =
 {
 
 #if defined(FEAT_GUI)
@@ -2418,9 +2418,9 @@ tltoa(i)
  * minimal tgoto() implementation.
  * no padding and we only parse for %i %d and %+char
  */
-char *tgoto __ARGS((char *, int, int));
+static char *tgoto __ARGS((char *, int, int));
 
-    char *
+    static char *
 tgoto(cm, x, y)
     char *cm;
     int x, y;
@@ -3491,7 +3491,7 @@ scroll_region_reset()
  * List of terminal codes that are currently recognized.
  */
 
-struct termcode
+static struct termcode
 {
     char_u  name[2];	    /* termcap name of entry */
     char_u  *code;	    /* terminal code (in allocated memory) */

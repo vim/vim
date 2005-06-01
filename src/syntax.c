@@ -7432,16 +7432,16 @@ hl_do_font(idx, arg, do_normal, do_menu, do_tooltip)
  * Note that this table is used by ALL buffers.  This is required because the
  * GUI can redraw at any time for any buffer.
  */
-garray_T	term_attr_table = {0, 0, 0, 0, NULL};
+static garray_T	term_attr_table = {0, 0, 0, 0, NULL};
 
 #define TERM_ATTR_ENTRY(idx) ((attrentry_T *)term_attr_table.ga_data)[idx]
 
-garray_T	cterm_attr_table = {0, 0, 0, 0, NULL};
+static garray_T	cterm_attr_table = {0, 0, 0, 0, NULL};
 
 #define CTERM_ATTR_ENTRY(idx) ((attrentry_T *)cterm_attr_table.ga_data)[idx]
 
 #ifdef FEAT_GUI
-garray_T	gui_attr_table = {0, 0, 0, 0, NULL};
+static garray_T	gui_attr_table = {0, 0, 0, 0, NULL};
 
 #define GUI_ATTR_ENTRY(idx) ((attrentry_T *)gui_attr_table.ga_data)[idx]
 #endif
