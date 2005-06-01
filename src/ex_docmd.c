@@ -39,7 +39,7 @@ typedef struct ucmd
 
 #define UC_BUFFER	1	/* -buffer: local to current buffer */
 
-garray_T ucmds = {0, 0, sizeof(ucmd_T), 4, NULL};
+static garray_T ucmds = {0, 0, sizeof(ucmd_T), 4, NULL};
 
 #define USER_CMD(i) (&((ucmd_T *)(ucmds.ga_data))[i])
 #define USER_CMD_GA(gap, i) (&((ucmd_T *)((gap)->ga_data))[i])
@@ -452,7 +452,7 @@ static void	ex_folddo __ARGS((exarg_T *eap));
 /*
  * Table used to quickly search for a command, based on its first character.
  */
-cmdidx_T cmdidxs[27] =
+static cmdidx_T cmdidxs[27] =
 {
 	CMD_append,
 	CMD_buffer,
@@ -7812,12 +7812,16 @@ ex_redir(eap)
 		redir_reg = *arg++;
 		if (*arg == '>' && arg[1] == '>')
 		    arg += 2;
-		else if (*arg == NUL && (islower(redir_reg)
+		else if ((*arg == NUL || (*arg == '>' && arg[1] == NUL)) &&
+			 (islower(redir_reg)
 # ifdef FEAT_CLIPBOARD
 			    || redir_reg == '*'
 # endif
 			    || redir_reg == '"'))
 		{
+		    if (*arg == '>')
+			arg++;
+
 		    /* make register empty */
 		    write_reg_contents(redir_reg, (char_u *)"", -1, FALSE);
 		}
