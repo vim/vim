@@ -120,7 +120,7 @@ static dictitem_T	globvars_var;
  * Old Vim variables such as "v:version" are also available without the "v:".
  * Also in functions.  We need a special hashtable for them.
  */
-hashtab_T		compat_hashtab;
+static hashtab_T	compat_hashtab;
 
 /*
  * Array to hold the hashtab with variables local to each sourced script.
@@ -188,7 +188,7 @@ struct ufunc
 /*
  * All user-defined functions are found in this hash table.
  */
-hashtab_T	func_hashtab;
+static hashtab_T	func_hashtab;
 
 /* From user function to hashitem and back. */
 static ufunc_T dumuf;
