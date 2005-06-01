@@ -3204,7 +3204,7 @@ typedef unsigned long  ulg;	/* unsigned 32-bit value */
 
 static void make_crc_tab __ARGS((void));
 
-ulg crc_32_tab[256];
+static ulg crc_32_tab[256];
 
 /*
  * Fill the CRC table.

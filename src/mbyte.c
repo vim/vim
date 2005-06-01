@@ -1949,7 +1949,7 @@ typedef struct
     int offset;
 } convertStruct;
 
-convertStruct foldCase[] =
+static convertStruct foldCase[] =
 {
 	{0x41,0x5a,1,32}, {0xc0,0xd6,1,32}, {0xd8,0xde,1,32},
 	{0x100,0x12e,2,1}, {0x130,0x130,-1,-199}, {0x132,0x136,2,1},
@@ -2040,7 +2040,7 @@ utf_fold(a)
  * from 0x41 to 0x5a inclusive, stepping by 1, are switched to lower (for
  * example) by adding 32.
  */
-convertStruct toLower[] =
+static convertStruct toLower[] =
 {
 	{0x41,0x5a,1,32}, {0xc0,0xd6,1,32}, {0xd8,0xde,1,32},
 	{0x100,0x12e,2,1}, {0x130,0x130,-1,-199}, {0x132,0x136,2,1},
@@ -2075,7 +2075,7 @@ convertStruct toLower[] =
 	{0x212b,0x212b,-1,-8262}, {0xff21,0xff3a,1,32}, {0x10400,0x10427,1,40}
 };
 
-convertStruct toUpper[] =
+static convertStruct toUpper[] =
 {
 	{0x61,0x7a,1,-32}, {0xb5,0xb5,-1,743}, {0xe0,0xf6,1,-32},
 	{0xf8,0xfe,1,-32}, {0xff,0xff,-1,121}, {0x101,0x12f,2,-1},
@@ -3134,8 +3134,8 @@ iconv_string(vcp, str, slen, unconvlenp)
 #ifndef DYNAMIC_ICONV	    /* just generating prototypes */
 # define HINSTANCE int
 #endif
-HINSTANCE hIconvDLL = 0;
-HINSTANCE hMsvcrtDLL = 0;
+static HINSTANCE hIconvDLL = 0;
+static HINSTANCE hMsvcrtDLL = 0;
 
 #  ifndef DYNAMIC_ICONV_DLL
 #   define DYNAMIC_ICONV_DLL "iconv.dll"

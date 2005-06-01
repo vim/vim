@@ -49,7 +49,7 @@ struct qfline_S
  */
 #define LISTCOUNT   10
 
-struct qf_list
+static struct qf_list
 {
     qfline_T	*qf_start;	/* pointer to the first error */
     qfline_T	*qf_ptr;	/* pointer to the current error */

@@ -149,7 +149,7 @@ typedef BOOL (__stdcall *PFNGCKLN)(LPSTR);
 #else
 typedef WINBASEAPI BOOL (WINAPI *PFNGCKLN)(LPSTR);
 #endif
-PFNGCKLN    s_pfnGetConsoleKeyboardLayoutName = NULL;
+static PFNGCKLN    s_pfnGetConsoleKeyboardLayoutName = NULL;
 #endif
 
 #if defined(__BORLANDC__)
@@ -470,7 +470,7 @@ win32ssynch_cb(HWND hwnd, LPARAM lparam)
  * combinations of function/arrow/etc keys.
  */
 
-const static struct
+static const struct
 {
     WORD    wVirtKey;
     BOOL    fAnsiKey;

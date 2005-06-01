@@ -6110,7 +6110,7 @@ typedef struct
 
 
 /* 0xfb20 - 0xfb4f */
-decomp_T decomp_table[0xfb4f-0xfb20+1] =
+static decomp_T decomp_table[0xfb4f-0xfb20+1] =
 {
     {0x5e2,0,0},		/* 0xfb20	alt ayin */
     {0x5d0,0,0},		/* 0xfb21	alt alef */

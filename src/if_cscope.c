@@ -1726,6 +1726,7 @@ cs_file_results(f, nummatches_a)
  *
  * get parsed cscope output and calls cs_make_vim_style_matches to convert
  * into ctags format
+ * When there are no matches sets "*matches_p" to NULL.
  */
     static void
 cs_fill_results(tagstr, totmatches, nummatches_a, matches_p, cntxts_p, matched)
@@ -1790,9 +1791,18 @@ cs_fill_results(tagstr, totmatches, nummatches_a, matches_p, cntxts_p, matched)
     } /* for all cscope connections */
 
 parse_out:
+    if (totsofar == 0)
+    {
+	/* No matches, free the arrays and return NULL in "*matches_p". */
+	vim_free(matches);
+	matches = NULL;
+	vim_free(cntxts);
+	cntxts = NULL;
+    }
     *matched = totsofar;
     *matches_p = matches;
     *cntxts_p = cntxts;
+
     vim_free(buf);
 } /* cs_fill_results */
 

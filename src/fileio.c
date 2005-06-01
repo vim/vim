@@ -6753,12 +6753,12 @@ typedef struct AutoPatCmd
     struct AutoPatCmd   *next;	/* chain of active apc-s for auto-invalidation*/
 } AutoPatCmd;
 
-AutoPatCmd *active_apc_list = NULL;	/* stack of active autocommands */
+static AutoPatCmd *active_apc_list = NULL; /* stack of active autocommands */
 
 /*
  * augroups stores a list of autocmd group names.
  */
-garray_T augroups = {0, 0, sizeof(char_u *), 10, NULL};
+static garray_T augroups = {0, 0, sizeof(char_u *), 10, NULL};
 #define AUGROUP_NAME(i) (((char_u **)augroups.ga_data)[i])
 
 /*
