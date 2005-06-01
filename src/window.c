@@ -50,7 +50,6 @@ static void frame_insert __ARGS((frame_T *before, frame_T *frp));
 static void frame_remove __ARGS((frame_T *frp));
 #ifdef FEAT_VERTSPLIT
 static void win_new_width __ARGS((win_T *wp, int width));
-static int win_minheight __ARGS((win_T *wp));
 static void win_goto_ver __ARGS((int up, long count));
 static void win_goto_hor __ARGS((int left, long count));
 #endif
@@ -1079,43 +1078,6 @@ win_split_ins(size, flags, newwin, dir)
 }
 
 #endif /* FEAT_WINDOWS */
-
-#ifdef FEAT_VERTSPLIT
-/*
- * Return minimal height for window "wp" and windows east of it.
- * Takes into account the eastbound windws can be split, each of them
- * requireing p_wmh lines.  Doesn't count status lines.
- */
-    static int
-win_minheight(wp)
-    win_T	*wp;
-{
-    int		minheight = p_wmh;
-    int		n;
-    win_T	*wp1, *wp2;
-
-    wp1 = wp;
-    for (;;)
-    {
-	wp1 = wp1->w_next;
-	if (wp1 == NULL)
-	    break;
-	n = p_wmh;
-	wp2 = wp1;
-	for (;;)
-	{
-	    wp2 = wp2->w_next;
-	    if (wp2 == NULL)
-		break;
-	    n += win_minheight(wp2);
-	}
-	if (n > minheight)
-	    minheight = n;
-    }
-    return minheight;
-}
-
-#endif
 
 #if defined(FEAT_WINDOWS) || defined(PROTO)
 /*
