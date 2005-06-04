@@ -2,7 +2,7 @@
 " Language:		Mail file
 " Previous Maintainer:	Felix von Leitner <leitner@math.fu-berlin.de>
 " Maintainer:		Gautam Iyer <gautam@math.uchicago.edu>
-" Last Change:		2005 Mar 23
+" Last Change:		Wed 01 Jun 2005 02:11:07 PM CDT
 
 " Quit when a syntax file was already loaded
 if exists("b:current_syntax")
@@ -22,7 +22,7 @@ syn cluster mailQuoteExps	contains=mailQuoteExp1,mailQuoteExp2,mailQuoteExp3,mai
 syn case match
 " For "From " matching case is required. The "From " is not matched in quoted
 " emails
-syn region	mailHeader	contains=@mailHeaderFields start="^From " skip="^\s" end="\v^[-A-Za-z0-9]*([^-A-Za-z0-9:]|$)"me=s-1
+syn region	mailHeader	contains=@mailHeaderFields,@NoSpell start="^From " skip="^\s" end="\v^[-A-Za-z0-9]*([^-A-Za-z0-9:]|$)"me=s-1
 syn match	mailHeaderKey	contained contains=mailEmail,@NoSpell "^From\s.*$"
 
 syn case ignore
@@ -32,18 +32,20 @@ syn region	mailHeader	keepend contains=@mailHeaderFields,@mailQuoteExps,@NoSpell
 
 syn region	mailHeaderKey	contained contains=mailHeaderEmail,mailEmail,@mailQuoteExps,@NoSpell start="\v(^(\> ?)*)@<=(to|b?cc):" skip=",$" end="$"
 syn match	mailHeaderKey	contained contains=mailHeaderEmail,mailEmail,@NoSpell "\v(^(\> ?)*)@<=(from|reply-to):.*$"
-syn match	mailHeaderKey	contained "\v(^(\> ?)*)@<=date:"
-syn match	mailSubject	contained "\v(^(\> ?)*)@<=subject:.*$"
+syn match	mailHeaderKey	contained contains=@NoSpell "\v(^(\> ?)*)@<=date:"
+syn match	mailSubject	contained "\v^subject:.*$"
+syn match	mailSubject	contained contains=@NoSpell "\v(^(\> ?)+)@<=subject:.*$"
 
 " Anything in the header between < and > is an email address
-syn match	mailHeaderEmail	contained "<.\{-}>" contains=@NoSpell
+syn match	mailHeaderEmail	contained contains=@NoSpell "<.\{-}>"
 
 " Mail Signatures. (Begin with "-- ", end with change in quote level)
-syn region	mailSignature	keepend contains=@mailLinks,@mailQuoteExps start="^\z(\(> \?\)*\)-- $" end="^\z1$" end="^\z1\@!"me=s-1 end="^\z1\(> \?\)\+"me=s-1
+syn region	mailSignature	keepend contains=@mailLinks,@mailQuoteExps start="^--\s$" end="^$" end="^\(> \?\)\+"me=s-1
+syn region	mailSignature	keepend contains=@mailLinks,@mailQuoteExps,@NoSpell start="^\z(\(> \?\)\+\)--\s$" end="^\z1$" end="^\z1\@!"me=s-1 end="^\z1\(> \?\)\+"me=s-1
 
 " URLs start with a known protocol or www,web,w3.
-syn match mailURL `\v<(((https?|ftp|gopher)://|(mailto|file|news):)[^' 	<>"]+|(www|web|w3)[a-z0-9_-]*\.[a-z0-9._-]+\.[^' 	<>"]+)[a-z0-9/]` contains=@NoSpell
-syn match mailEmail "\v[_=a-z\./+0-9-]+\@[a-z0-9._-]+\a{2}" contains=@NoSpell
+syn match mailURL contains=@NoSpell `\v<(((https?|ftp|gopher)://|(mailto|file|news):)[^' 	<>"]+|(www|web|w3)[a-z0-9_-]*\.[a-z0-9._-]+\.[^' 	<>"]+)[a-z0-9/]`
+syn match mailEmail contains=@NoSpell "\v[_=a-z\./+0-9-]+\@[a-z0-9._-]+\a{2}"
 
 " Make sure quote markers in regions (header / signature) have correct color
 syn match mailQuoteExp1	contained "\v^(\> ?)"
@@ -54,12 +56,12 @@ syn match mailQuoteExp5	contained "\v^(\> ?){5}"
 syn match mailQuoteExp6	contained "\v^(\> ?){6}"
 
 " Even and odd quoted lines. order is imporant here!
-syn match mailQuoted1	contains=mailHeader,@mailLinks,mailSignature "^\([a-z]\+>\|[]|}>]\).*$"
-syn match mailQuoted2	contains=mailHeader,@mailLinks,mailSignature "^\(\([a-z]\+>\|[]|}>]\)[ \t]*\)\{2}.*$"
-syn match mailQuoted3	contains=mailHeader,@mailLinks,mailSignature "^\(\([a-z]\+>\|[]|}>]\)[ \t]*\)\{3}.*$"
-syn match mailQuoted4	contains=mailHeader,@mailLinks,mailSignature "^\(\([a-z]\+>\|[]|}>]\)[ \t]*\)\{4}.*$"
-syn match mailQuoted5	contains=mailHeader,@mailLinks,mailSignature "^\(\([a-z]\+>\|[]|}>]\)[ \t]*\)\{5}.*$"
-syn match mailQuoted6	contains=mailHeader,@mailLinks,mailSignature "^\(\([a-z]\+>\|[]|}>]\)[ \t]*\)\{6}.*$"
+syn match mailQuoted1	contains=mailHeader,@mailLinks,mailSignature,@NoSpell "^\([a-z]\+>\|[]|}>]\).*$"
+syn match mailQuoted2	contains=mailHeader,@mailLinks,mailSignature,@NoSpell "^\(\([a-z]\+>\|[]|}>]\)[ \t]*\)\{2}.*$"
+syn match mailQuoted3	contains=mailHeader,@mailLinks,mailSignature,@NoSpell "^\(\([a-z]\+>\|[]|}>]\)[ \t]*\)\{3}.*$"
+syn match mailQuoted4	contains=mailHeader,@mailLinks,mailSignature,@NoSpell "^\(\([a-z]\+>\|[]|}>]\)[ \t]*\)\{4}.*$"
+syn match mailQuoted5	contains=mailHeader,@mailLinks,mailSignature,@NoSpell "^\(\([a-z]\+>\|[]|}>]\)[ \t]*\)\{5}.*$"
+syn match mailQuoted6	contains=mailHeader,@mailLinks,mailSignature,@NoSpell "^\(\([a-z]\+>\|[]|}>]\)[ \t]*\)\{6}.*$"
 
 " Need to sync on the header. Assume we can do that within 100 lines
 if exists("mail_minlines")

@@ -1840,6 +1840,20 @@ skipdigits(p)
     return p;
 }
 
+#if defined(FEAT_SYN_HL) || defined(PROTO)
+/*
+ * skip over digits and hex characters
+ */
+    char_u *
+skiphex(p)
+    char_u	*p;
+{
+    while (vim_isxdigit(*p))	/* skip to next non-digit */
+	++p;
+    return p;
+}
+#endif
+
 #if defined(FEAT_EX_EXTRA) || defined(PROTO)
 /*
  * skip to digit (or NUL after the string)

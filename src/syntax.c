@@ -3143,6 +3143,8 @@ syntax_clear(buf)
     for (i = buf->b_syn_clusters.ga_len; --i >= 0; )
 	syn_clear_cluster(buf, i);
     ga_clear(&buf->b_syn_clusters);
+    buf->b_spell_cluster_id = 0;
+    buf->b_nospell_cluster_id = 0;
 
     buf->b_syn_sync_flags = 0;
     buf->b_syn_sync_minlines = 0;
@@ -6003,7 +6005,6 @@ static char *(highlight_init_both[]) =
 	"StatusLine term=reverse,bold cterm=reverse,bold gui=reverse,bold",
 	"StatusLineNC term=reverse cterm=reverse gui=reverse",
 	"VertSplit term=reverse cterm=reverse gui=reverse",
-	"Visual term=reverse cterm=reverse gui=reverse guifg=Grey guibg=fg",
 	"VisualNOS term=underline,bold cterm=underline,bold gui=underline,bold",
 	"DiffText term=reverse cterm=bold ctermbg=Red gui=bold guibg=Red",
 	NULL
@@ -6027,6 +6028,7 @@ static char *(highlight_init_light[]) =
 	"Folded term=standout ctermbg=Grey ctermfg=DarkBlue guibg=LightGrey guifg=DarkBlue",
 	"FoldColumn term=standout ctermbg=Grey ctermfg=DarkBlue guibg=Grey guifg=DarkBlue",
 	"SignColumn term=standout ctermbg=Grey ctermfg=DarkBlue guibg=Grey guifg=DarkBlue",
+	"Visual term=reverse ctermbg=Blue guibg=Blue",
 	"DiffAdd term=bold ctermbg=LightBlue guibg=LightBlue",
 	"DiffChange term=bold ctermbg=LightMagenta guibg=LightMagenta",
 	"DiffDelete term=bold ctermfg=Blue ctermbg=LightCyan gui=bold guifg=Blue guibg=LightCyan",
@@ -6051,6 +6053,7 @@ static char *(highlight_init_dark[]) =
 	"Folded term=standout ctermbg=DarkGrey ctermfg=Cyan guibg=DarkGrey guifg=Cyan",
 	"FoldColumn term=standout ctermbg=DarkGrey ctermfg=Cyan guibg=Grey guifg=Cyan",
 	"SignColumn term=standout ctermbg=DarkGrey ctermfg=Cyan guibg=Grey guifg=Cyan",
+	"Visual term=reverse ctermbg=Blue guibg=Blue",
 	"DiffAdd term=bold ctermbg=DarkBlue guibg=DarkBlue",
 	"DiffChange term=bold ctermbg=DarkMagenta guibg=DarkMagenta",
 	"DiffDelete term=bold ctermfg=Blue ctermbg=DarkCyan gui=bold guifg=Blue guibg=DarkCyan",
@@ -7764,6 +7767,8 @@ highlight_list_one(id)
 				    0, sgp->sg_gui_fg_name, "guifg");
     didh = highlight_list_arg(id, didh, LIST_STRING,
 				    0, sgp->sg_gui_bg_name, "guibg");
+    didh = highlight_list_arg(id, didh, LIST_STRING,
+				    0, sgp->sg_gui_sp_name, "guisp");
     didh = highlight_list_arg(id, didh, LIST_STRING,
 				    0, sgp->sg_font_name, "font");
 #endif

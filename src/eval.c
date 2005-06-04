@@ -5086,7 +5086,7 @@ list_idx_of_item(l, item)
 	++idx;
     if (li == NULL)
 	return -1;
-    return idx;;
+    return idx;
 }
 
 /*
@@ -14820,6 +14820,8 @@ find_var_ht(name, varname)
     char_u  *name;
     char_u  **varname;
 {
+    hashitem_T	*hi;
+
     if (name[1] != ':')
     {
 	/* The name must not start with a colon or #. */
@@ -14828,7 +14830,8 @@ find_var_ht(name, varname)
 	*varname = name;
 
 	/* "version" is "v:version" in all scopes */
-	if (!HASHITEM_EMPTY(hash_find(&compat_hashtab, name)))
+	hi = hash_find(&compat_hashtab, name);
+	if (!HASHITEM_EMPTY(hi))
 	    return &compat_hashtab;
 
 	if (current_funccal == NULL)
@@ -17650,7 +17653,7 @@ shortpath_for_invalid_fname(fname, bufp, fnamelen)
 {
     char_u	*s, *p, *pbuf2, *pbuf3;
     char_u	ch;
-    int		l,len,len2,plen,slen;
+    int		len, len2, plen, slen;
 
     /* Make a copy */
     len2 = *fnamelen;
@@ -17661,7 +17664,6 @@ shortpath_for_invalid_fname(fname, bufp, fnamelen)
     slen = 1;
     plen = len2;
 
-    l = 0;
     if (after_pathsep(pbuf2, s + 1))
     {
 	--s;

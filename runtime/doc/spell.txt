@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Apr 24
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -140,13 +140,19 @@ find them here:
 	http://lingucomponent.openoffice.org/spell_dic.html
 
 :mksp[ell] [-ascii] {outname} {inname} ...		*:mksp* *:mkspell*
-			Generate spell file {outname}.spl from Myspell files
-			{inname}.aff and {inname}.dic.
+			Generate spell file {outname}.spl.
+
 			When the [-ascii] argument is present, words with
 			non-ascii characters are skipped.  The resulting file
 			ends in "ascii.spl".  Otherwise the resulting file
 			ends in "ENC.spl", where ENC is the value of
 			'encoding'.
+
+			The input can be the Myspell format files {inname}.aff
+			and {inname}.dic.  If {inname}.aff does not exist then
+			{inname} is used as the file name of a plain word
+			list.
+
 			Multiple {inname} arguments can be given to combine
 			regions into one Vim spell file.  Example: >
 		:mkspell ~/.vim/spell/en /tmp/en_US /tmp/en_CA /tmp/en_AU
@@ -186,6 +192,27 @@ spelling we need a list of words that are OK, thus need not to be highlighted.
 Names will not appear in a dictionary, but do appear in a word list.  And
 some old words are rarely used and are common misspellings.  These do appear
 in a dictionary but not in a word list.
+
+There are two formats: one with affix compression and one without.  The files
+with affix compression are used by Myspell (Mozilla and OpenOffice.org).  This
+requires two files, one with .aff and one with .dic extension.  The second
+format is a list of words.
+
+
+FORMAT OF WORD LIST
+
+The words must appear one per line.  That is all that is required.  Optional
+items are:
+- Empty and blank lines are ignored.
+- Lines starting with a # are ignored (comment lines).
+- A line starting with "=encoding=" before any word.  After the second '='
+  comes an encoding name.  This tells Vim to setup conversion from the
+  specified encoding to 'encoding'.
+- Other lines starting with '=' are special.  The ones that are not recognized
+  are ignored (but you do get a warning message).
+
+
+FORMAT WITH AFFIX COMPRESSION
 
 There are two files: the basic word list and an affix file.  The affixes are
 used to modify the basic words to get the full word list.  This significantly

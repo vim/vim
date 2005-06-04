@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.0aa.  Last change: 2005 May 18
+*syntax.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3636,6 +3636,8 @@ the same syntax file on all terminals, and use the optimal highlighting.
 
 1. highlight arguments for normal terminals
 
+					*bold* *underline* *undercurl*
+					*inverse* *italic* *standout*
 term={attr-list}			*attr-list* *highlight-term* *E418*
 	attr-list is a comma separated list (without spaces) of the
 	following items (in any order):

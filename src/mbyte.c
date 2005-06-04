@@ -426,9 +426,6 @@ mb_init()
     vimconv_T	vimconv;
     char_u	*p;
 #endif
-#ifdef WIN32
-    int		prev_enc_utf8 = enc_utf8;
-#endif
 
     if (p_enc == NULL)
     {

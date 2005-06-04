@@ -375,11 +375,13 @@ ignorecase(pat)
 #endif
 		if (*p == '\\' && p[1] != NUL)	/* skip "\S" et al. */
 		    p += 2;
-		else if (isupper(*p++))
+		else if (isupper(*p))
 		{
 		    ic = FALSE;
 		    break;
 		}
+		else
+		    ++p;
 	}
     }
     no_smartcase = FALSE;

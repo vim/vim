@@ -4568,6 +4568,7 @@ auto_format(trailblank, prev_line)
     char_u	*old;
     char_u	*new, *pnew;
     int		wasatend;
+    int		cc;
 
     if (!has_format_option(FO_AUTO))
 	return;
@@ -4587,11 +4588,12 @@ auto_format(trailblank, prev_line)
     if (*old != NUL && !trailblank && wasatend)
     {
 	dec_cursor();
-	if (!WHITECHAR(gchar_cursor())
-		&& curwin->w_cursor.col > 0
-		&& has_format_option(FO_ONE_LETTER))
+	cc = gchar_cursor();
+	if (!WHITECHAR(cc) && curwin->w_cursor.col > 0
+					  && has_format_option(FO_ONE_LETTER))
 	    dec_cursor();
-	if (WHITECHAR(gchar_cursor()))
+	cc = gchar_cursor();
+	if (WHITECHAR(cc))
 	{
 	    curwin->w_cursor = pos;
 	    return;
@@ -4672,10 +4674,12 @@ check_auto_format(end_insert)
     int		end_insert;	    /* TRUE when ending Insert mode */
 {
     int		c = ' ';
+    int		cc;
 
     if (did_add_space)
     {
-	if (!WHITECHAR(gchar_cursor()))
+	cc = gchar_cursor();
+	if (!WHITECHAR(cc))
 	    /* Somehow the space was removed already. */
 	    did_add_space = FALSE;
 	else

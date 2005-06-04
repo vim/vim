@@ -1,5 +1,5 @@
 /* spell.c */
-int spell_check __ARGS((win_T *wp, char_u *line, char_u *ptr, int *attrp));
+int spell_check __ARGS((win_T *wp, char_u *ptr, int *attrp));
 int spell_move_to __ARGS((int dir, int allwords));
 char_u *did_set_spelllang __ARGS((buf_T *buf));
 void spell_reload __ARGS((void));

@@ -1813,7 +1813,7 @@ write_viminfo(file, forceit)
     if (fp_out == NULL)
     {
 	EMSG2(_("E138: Can't write viminfo file %s!"),
-		       (fp_in == NULL || tempname == NUL) ? fname : tempname);
+		       (fp_in == NULL || tempname == NULL) ? fname : tempname);
 	if (fp_in != NULL)
 	    fclose(fp_in);
 	goto end;

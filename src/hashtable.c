@@ -275,6 +275,7 @@ hash_lock(ht)
     ++ht->ht_locked;
 }
 
+#if 0	    /* currently not used */
 /*
  * Lock a hashtable at the specified number of entries.
  * Caller must make sure no more than "size" entries will be added.
@@ -288,6 +289,7 @@ hash_lock_size(ht, size)
     (void)hash_may_resize(ht, size);
     ++ht->ht_locked;
 }
+#endif
 
 /*
  * Unlock a hashtable: allow ht_array changes again.

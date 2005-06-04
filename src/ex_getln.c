@@ -5297,7 +5297,7 @@ write_viminfo_history(fp)
 		p = history[type][i].hisstr;
 		if (p != NULL)
 		{
-		    putc(hist_type2char(type, TRUE), fp);
+		    fputc(hist_type2char(type, TRUE), fp);
 		    /* For the search history: put the separator in the second
 		     * column; use a space if there isn't one. */
 		    if (type == HIST_SEARCH)

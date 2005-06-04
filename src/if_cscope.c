@@ -559,7 +559,7 @@ cs_check_for_connections()
     static int
 cs_check_for_tags()
 {
-    return (p_tags[0] != NUL && curbuf->b_p_tags != NUL);
+    return (p_tags[0] != NUL && curbuf->b_p_tags != NULL);
 } /* cs_check_for_tags */
 
 
@@ -1202,6 +1202,9 @@ clear_csinfo(i)
     csinfo[i].pid    = -1;
     csinfo[i].fr_fp  = NULL;
     csinfo[i].to_fp  = NULL;
+#if defined(WIN32)
+    csinfo[i].hProc = NULL;
+#endif
 }
 
 #ifndef UNIX
@@ -2090,7 +2093,7 @@ cs_release_csp(i, freefnpp)
 	(void)fflush(csinfo[i].to_fp);
     }
     /* give cscope chance to exit normally */
-    if (csinfo[i].hProc > 0
+    if (csinfo[i].hProc != NULL
 	    && WaitForSingleObject(csinfo[i].hProc, 1000) == WAIT_TIMEOUT)
 	TerminateProcess(csinfo[i].hProc, 0);
 #endif

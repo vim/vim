@@ -765,6 +765,7 @@ readfile(fname, sfname, from, lines_to_skip, lines_to_read, eap, flags)
     else if (curbuf->b_help)
     {
 	char_u	    firstline[80];
+	int	    fc;
 
 	/* Help files are either utf-8 or latin1.  Try utf-8 first, if this
 	 * fails it must be latin1.
@@ -774,18 +775,22 @@ readfile(fname, sfname, from, lines_to_skip, lines_to_read, eap, flags)
 	 * That is only in *.??x files. */
 	fenc = (char_u *)"latin1";
 	c = enc_utf8;
-	if (!c && !read_stdin && TOLOWER_ASC(fname[STRLEN(fname) - 1]) == 'x')
+	if (!c && !read_stdin)
 	{
-	    /* Read the first line (and a bit more).  Immediately rewind to
-	     * the start of the file.  If the read() fails "len" is -1. */
-	    len = vim_read(fd, firstline, 80);
-	    lseek(fd, (off_t)0L, SEEK_SET);
-	    for (p = firstline; p < firstline + len; ++p)
-		if (*p >= 0x80)
-		{
-		    c = TRUE;
-		    break;
-		}
+	    fc = fname[STRLEN(fname) - 1];
+	    if (TOLOWER_ASC(fc) == 'x')
+	    {
+		/* Read the first line (and a bit more).  Immediately rewind to
+		 * the start of the file.  If the read() fails "len" is -1. */
+		len = vim_read(fd, firstline, 80);
+		lseek(fd, (off_t)0L, SEEK_SET);
+		for (p = firstline; p < firstline + len; ++p)
+		    if (*p >= 0x80)
+		    {
+			c = TRUE;
+			break;
+		    }
+	    }
 	}
 
 	if (c)

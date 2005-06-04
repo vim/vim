@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 01
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,6 +30,12 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Patch in if_cscope.c also in 6.3?  (Froloff)
+    Sergey says it's OK.
+
+Now that search HL combines with existing color, ctermfg=white doesn't work.
+(Gautam Iyer)
+
 Add extra list of file locations.  Can be used with:
     :ltag	      list of matching tags, like :tselect
 
@@ -39,20 +45,19 @@ Add extra list of file locations.  Can be used with:
     :lNfile :lpfile   location in previous file
     :lrewind :lfirst  first location
     :llast	      last location
-    :lq [N]	      go to location N (current one if N omitted)
+    :ll [N]	      go to location N (current one if N omitted)
     :lwindow	      open window with locations (separate from quickfix window)
     :lopen	      open window with locations
     :lclose	      close window with locations
     :llist	      list locations
     :lfile	      read locations from file using 'errorformat'
     :lgetfile	      idem, don't jump to first one
+    :lbuffer	      idem, from current buffer.
 
 Win32: Balloon text can't contain line break.
     Hints for multiline tooltips from Alexei Alexandrov (2005 Mar 26)
     Patch from Sergey Khorev, 2005 Apr 11
     Add has("balloon_multiline")
-
-Patch in if_cscope.c also in 6.3?  (Froloff)
 
 Mac unicode patch (Da Woon Jung):
 - selecting proportional font breaks display
@@ -92,9 +97,10 @@ Still seems to fail 15% of the time.
 PLANNED FOR VERSION 7.0:
 
 -   Add SPELLCHECKER, with support for many languages.
-    - Use "engspchk" from Charles Campbell for ideas.
-    - Is it worth trying the trie structure (see code from Olaf Seibert, 2005
-      May 9)
+    - Use "engspchk" from Charles Campbell for ideas (commands, rare words).
+    - Should quickly return if there is no word with the character.
+      Use array with flags, indicating if there is a word starting with this
+      byte.  Quickly skip bytes where no word can start.
     - Spell checking code todo's:
 	- Implement user and project word lists.  Commands to add words and to
 	  mark words as wrong.
@@ -107,14 +113,10 @@ PLANNED FOR VERSION 7.0:
 	    :set spelllang=en_us,en-rare/SpellRare,en-math/SpellMath
 	- How about making suggestions?  Use an external program like aspell?
 	  Or include the myspell suggestion code in Vim?
-	- Some word lists are inefficient.  Remove affixes from a word when it
-	  results in another basic word.
-    - References MySpell library (in OpenOffice.org).
+    - References: MySpell library (in OpenOffice.org).
 	http://spellchecker.mozdev.org/source.html
 	http://whiteboard.openoffice.org/source/browse/whiteboard/lingucomponent/source/spellcheck/myspell/
       author: Kevin Hendricks <kevin.hendricks@sympatico.ca>
-    - Alternative: use aspell library.
-      ispell is replaced by aspell, thus forget about ispell.
     - More complicated: Regions with different languages?  E.g. comments in
       English, strings in German (po file).
     - Commands required:
@@ -136,11 +138,6 @@ PLANNED FOR VERSION 7.0:
       items.
     - Install spell files with src/main.aap.
     Alternatives using ispell or aspell:
-    8   Add spell checking.  Use "ispell -a" somehow.
-	~/vim/patches/wm_vim-5_4d.zip  can be used as an example (includes
-	ispell inside Vim).  Gautam Iyer has an example with "aspell".
-    Patch from Marcin Dalecki, uses pipe to aspell.
-
 
 -   REFACTORING: The main() function is very long.  Move parts to separate
     functions, especially loops.  Ideas from Walter Briscoe (2003 Apr 3, 2004

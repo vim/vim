@@ -243,7 +243,7 @@ redraw_all_later(type)
 }
 
 /*
- * Mark all windows that are editing the current buffer to be udpated later.
+ * Mark all windows that are editing the current buffer to be updated later.
  */
     void
 redraw_curbuf_later(type)
@@ -725,7 +725,7 @@ updateWindow(wp)
  * VALID	1. scroll up/down to adjust for a changed w_topline
  *		2. update lines at the top when scrolled down
  *		3. redraw changed text:
- *		   - if wp->w_buffer->b_mod_set set, udpate lines between
+ *		   - if wp->w_buffer->b_mod_set set, update lines between
  *		     b_mod_top and b_mod_bot.
  *		   - if wp->w_redraw_top non-zero, redraw lines between
  *		     wp->w_redraw_top and wp->w_redr_bot.
@@ -2504,8 +2504,6 @@ win_line(wp, lnum, startrow, endrow)
     int		has_spell = FALSE;	/* this buffer has spell checking */
     int		spell_attr = 0;		/* attributes desired by spelling */
     int		word_end = 0;		/* last byte with same spell_attr */
-    int		iswordc;		/* prev. char was a word character */
-    int		prev_iswordc = FALSE;	/* prev. char was a word character */
 #endif
     int		extra_check;		/* has syntax or linebreak */
 #ifdef FEAT_MBYTE
@@ -3246,11 +3244,6 @@ win_line(wp, lnum, startrow, endrow)
 	    else
 		char_attr = search_attr;
 
-#ifdef FEAT_SYN_HL
-	    if (spell_attr != 0)
-		char_attr = hl_combine_attr(char_attr, spell_attr);
-#endif
-
 #ifdef FEAT_DIFF
 	    if (diff_hlf != (enum hlf_value)0 && n_extra == 0)
 	    {
@@ -3586,9 +3579,11 @@ win_line(wp, lnum, startrow, endrow)
 
 		    if (area_attr == 0 && search_attr == 0)
 			char_attr = syntax_attr;
+		    else
+			char_attr = hl_combine_attr(char_attr, syntax_attr);
 		}
 
-		/* Check spelling at the start of a word.
+		/* Check spelling (unless at the end of the line).
 		 * Only do this when there is no syntax highlighting, there is
 		 * on @Spell cluster or the current syntax item contains the
 		 * @Spell cluster. */
@@ -3597,33 +3592,27 @@ win_line(wp, lnum, startrow, endrow)
 		    spell_attr = 0;
 		    if (area_attr == 0 && search_attr == 0)
 			char_attr = syntax_attr;
-		    if (!has_syntax || can_spell)
+		    if (c != 0 && (!has_syntax || can_spell))
 		    {
-			char_u	*prev_ptr = ptr - (
 # ifdef FEAT_MBYTE
-							has_mbyte ? mb_l :
+			char_u	*prev_ptr = ptr - (has_mbyte ? mb_l : 1);
+# else
+			char_u	*prev_ptr = ptr - 1;
 # endif
-									    1);
+			word_end = v + spell_check(wp, prev_ptr, &spell_attr);
 
-			iswordc = spell_iswordc(prev_ptr);
-			if (iswordc && !prev_iswordc)
-			{
-			    word_end = v + spell_check(wp, line, prev_ptr,
-								 &spell_attr);
-			    /* In Insert mode only highlight a word that
-			     * doesn't touch the cursor. */
-			    if (spell_attr != 0
-				    && (State & INSERT) != 0
-				    && wp->w_cursor.lnum == lnum
-				    && wp->w_cursor.col >=
+			/* In Insert mode only highlight a word that
+			 * doesn't touch the cursor. */
+			if (spell_attr != 0
+				&& (State & INSERT) != 0
+				&& wp->w_cursor.lnum == lnum
+				&& wp->w_cursor.col >=
 						    (colnr_T)(prev_ptr - line)
-				    && wp->w_cursor.col < (colnr_T)word_end)
-			    {
-				spell_attr = 0;
-				spell_redraw_lnum = lnum;
-			    }
+				&& wp->w_cursor.col < (colnr_T)word_end)
+			{
+			    spell_attr = 0;
+			    spell_redraw_lnum = lnum;
 			}
-			prev_iswordc = iswordc;
 		    }
 		}
 		if (spell_attr != 0)

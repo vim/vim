@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 May 31
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jun 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -149,7 +149,8 @@ The "guisp" color can be used to give it a color different from foreground and
 background.
 The number of possible different highlight attributes was raised from about
 220 to over 30000.  This allows for the attributes of spelling to be combined
-with syntax highlighting attributes.
+with syntax highlighting attributes.  This is also used for syntax
+highlighting.
 
 Much more info here: |spell|.
 
