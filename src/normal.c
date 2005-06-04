@@ -2823,6 +2823,7 @@ do_mouse(oap, c, dir, count, fixindent)
 	if ((mod_mask & MOD_MASK_MULTI_CLICK) == MOD_MASK_2CLICK)
 	{
 	    pos_T	*pos = NULL;
+	    int		gc;
 
 	    if (is_click)
 	    {
@@ -2830,7 +2831,7 @@ do_mouse(oap, c, dir, count, fixindent)
 		 * not a word character, try finding a match and select a (),
 		 * {}, [], #if/#endif, etc. block. */
 		end_visual = curwin->w_cursor;
-		while (vim_iswhite(gchar_pos(&end_visual)))
+		while (gc = gchar_pos(&end_visual), vim_iswhite(gc))
 		    inc(&end_visual);
 		if (oap != NULL)
 		    oap->motion_type = MCHAR;

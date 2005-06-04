@@ -1445,6 +1445,7 @@ removable(name)
     char_u  *p;
     char_u  part[51];
     int	    retval = FALSE;
+    int	    n;
 
     name = home_replace_save(NULL, name);
     if (name != NULL)
@@ -1452,11 +1453,14 @@ removable(name)
 	for (p = p_viminfo; *p; )
 	{
 	    copy_option_part(&p, part, 51, ", ");
-	    if (part[0] == 'r'
-			&& MB_STRNICMP(part + 1, name, STRLEN(part + 1)) == 0)
+	    if (part[0] == 'r')
 	    {
-		retval = TRUE;
-		break;
+		n = STRLEN(part + 1);
+		if (MB_STRNICMP(part + 1, name, n) == 0)
+		{
+		    retval = TRUE;
+		    break;
+		}
 	    }
 	}
 	vim_free(name);

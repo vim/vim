@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.0aa.  Last change: 2005 Mar 29
+*map.txt*       For Vim version 7.0aa.  Last change: 2005 Jun 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1032,6 +1032,7 @@ The valid escape sequences are
 If the first two characters of an escape sequence are "q-" (for example,
 <q-args>) then the value is quoted in such a way as to make it a valid value
 for use in an expression.  This uses the argument as one single value.
+When there is no argument <q-args> is an empty string.
 
 To allow commands to pass their arguments on to a user-defined function, there
 is a special form <f-args> ("function args").  This splits the command

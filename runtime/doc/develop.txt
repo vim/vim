@@ -1,4 +1,4 @@
-*develop.txt*   For Vim version 7.0aa.  Last change: 2005 Mar 29
+*develop.txt*   For Vim version 7.0aa.  Last change: 2005 Jun 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -381,10 +381,10 @@ checking engine in Vim, for various reasons:
   fly (while redrawing), just like syntax highlighting.  But the mechanisms
   used by other code are much slower.  Myspell uses a simplistic hashtable,
   for example.
-- For a program like aspell a communication mechanism would have to be setup.
-  That's complicated to do in a portable way (Unix-only would be relatively
-  simple, but that's not good enough).  And performance will become a problem
-  (lots of process switching involved).
+- For using an external program like aspell a communication mechanism would
+  have to be setup.  That's complicated to do in a portable way (Unix-only
+  would be relatively simple, but that's not good enough).  And performance
+  will become a problem (lots of process switching involved).
 - Missing support for words with non-word characters, such as "Etten-Leur" and
   "et al.", would require marking the pieces of them OK, lowering the
   reliability.

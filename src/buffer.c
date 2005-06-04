@@ -854,11 +854,11 @@ do_bufdel(command, arg, addr_count, start_bnr, end_bnr, forceit)
 	if (deleted == 0)
 	{
 	    if (command == DOBUF_UNLOAD)
-		sprintf((char *)IObuff, _("E515: No buffers were unloaded"));
+		STRCPY(IObuff, _("E515: No buffers were unloaded"));
 	    else if (command == DOBUF_DEL)
-		sprintf((char *)IObuff, _("E516: No buffers were deleted"));
+		STRCPY(IObuff, _("E516: No buffers were deleted"));
 	    else
-		sprintf((char *)IObuff, _("E517: No buffers were wiped out"));
+		STRCPY(IObuff, _("E517: No buffers were wiped out"));
 	    errormsg = IObuff;
 	}
 	else if (deleted >= p_report)
@@ -2450,7 +2450,7 @@ buflist_list(eap)
 	else
 	    home_replace(buf, buf->b_fname, NameBuff, MAXPATHL, TRUE);
 
-	sprintf((char *)IObuff, "%3d%c%c%c%c%c \"",
+	vim_snprintf((char *)IObuff, IOSIZE - 20, "%3d%c%c%c%c%c \"%s\"",
 		buf->b_fnum,
 		buf->b_p_bl ? ' ' : 'u',
 		buf == curbuf ? '%' :
@@ -2459,18 +2459,11 @@ buflist_list(eap)
 			(buf->b_nwindows == 0 ? 'h' : 'a'),
 		!buf->b_p_ma ? '-' : (buf->b_p_ro ? '=' : ' '),
 		(buf->b_flags & BF_READERR) ? 'x'
-					    : (bufIsChanged(buf) ? '+' : ' ')
-		);
-
-	len = (int)STRLEN(IObuff);
-	STRNCPY(IObuff + len, NameBuff, IOSIZE - 20 - len);
-	IObuff[IOSIZE - 20 - len] = NUL;    /* make sure it's terminated */
-
-	len = (int)STRLEN(IObuff);
-	IObuff[len++] = '"';
+					    : (bufIsChanged(buf) ? '+' : ' '),
+		NameBuff);
 
 	/* put "line 999" in column 40 or after the file name */
-	IObuff[len] = NUL;
+	len = STRLEN(IObuff);
 	i = 40 - vim_strsize(IObuff);
 	do
 	{

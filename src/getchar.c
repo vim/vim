@@ -4342,7 +4342,7 @@ put_escstr(fd, strstart, what)
 	if (p != NULL)
 	{
 	    while (*p != NUL)
-		if (putc(*p++, fd) < 0)
+		if (fputc(*p++, fd) < 0)
 		    return FAIL;
 	    --str;
 	    continue;
