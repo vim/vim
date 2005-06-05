@@ -4247,7 +4247,6 @@ fork			Compiled to use fork()/exec() instead of system().
 gettext			Compiled with message translation |multi-lang|
 gui			Compiled with GUI enabled.
 gui_athena		Compiled with Athena GUI.
-gui_beos		Compiled with BeOS GUI.
 gui_gtk			Compiled with GTK+ GUI (any version).
 gui_gtk2		Compiled with GTK+ 2 GUI (gui_gtk is also defined).
 gui_kde			Compiled with KDE GUI |KVim|

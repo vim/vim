@@ -1005,7 +1005,6 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 ++opt	editing.txt	/*++opt*
 +ARP	various.txt	/*+ARP*
 +GUI_Athena	various.txt	/*+GUI_Athena*
-+GUI_BeOS	various.txt	/*+GUI_BeOS*
 +GUI_GTK	various.txt	/*+GUI_GTK*
 +GUI_Motif	various.txt	/*+GUI_Motif*
 +GUI_Photon	various.txt	/*+GUI_Photon*
@@ -4224,6 +4223,7 @@ blockwise-examples	visual.txt	/*blockwise-examples*
 blockwise-operators	visual.txt	/*blockwise-operators*
 blockwise-register	change.txt	/*blockwise-register*
 blockwise-visual	visual.txt	/*blockwise-visual*
+bold	syntax.txt	/*bold*
 book	intro.txt	/*book*
 bookmark	usr_03.txt	/*bookmark*
 boolean	options.txt	/*boolean*
@@ -5121,7 +5121,6 @@ hebrew	hebrew.txt	/*hebrew*
 hebrew.txt	hebrew.txt	/*hebrew.txt*
 help	various.txt	/*help*
 help-context	help.txt	/*help-context*
-help-tags	tags	1
 help-translated	various.txt	/*help-translated*
 help-xterm-window	various.txt	/*help-xterm-window*
 help.txt	help.txt	/*help.txt*
@@ -5391,11 +5390,13 @@ internal-variables	eval.txt	/*internal-variables*
 internet	intro.txt	/*internet*
 intro	intro.txt	/*intro*
 intro.txt	intro.txt	/*intro.txt*
+inverse	syntax.txt	/*inverse*
 ip	motion.txt	/*ip*
 iquote	motion.txt	/*iquote*
 is	motion.txt	/*is*
 isdirectory()	eval.txt	/*isdirectory()*
 islocked()	eval.txt	/*islocked()*
+italic	syntax.txt	/*italic*
 items()	eval.txt	/*items()*
 iw	motion.txt	/*iw*
 i{	motion.txt	/*i{*
@@ -6268,6 +6269,7 @@ sqlinformix.vim	syntax.txt	/*sqlinformix.vim*
 sscanf	eval.txt	/*sscanf*
 standard-plugin	usr_05.txt	/*standard-plugin*
 standard-plugin-list	help.txt	/*standard-plugin-list*
+standout	syntax.txt	/*standout*
 star	pattern.txt	/*star*
 start-of-file	pattern.txt	/*start-of-file*
 starting	starting.txt	/*starting*
@@ -6618,6 +6620,8 @@ typecorr.txt	usr_41.txt	/*typecorr.txt*
 u	undo.txt	/*u*
 uganda	uganda.txt	/*uganda*
 uganda.txt	uganda.txt	/*uganda.txt*
+undercurl	syntax.txt	/*undercurl*
+underline	syntax.txt	/*underline*
 undo	undo.txt	/*undo*
 undo-commands	undo.txt	/*undo-commands*
 undo-redo	undo.txt	/*undo-redo*

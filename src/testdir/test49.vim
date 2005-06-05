@@ -147,7 +147,7 @@ endif
 " The Xpath/Xloop commands can be used for computing the eXecution path by
 " adding (different) powers of 2 from those script lines, for which the
 " execution should be checked.  Xloop provides different addends for each
-" execution of a loop.  Permittable values are 2^0 to 2^30, so that 31 execution
+" execution of a loop.  Permitted values are 2^0 to 2^30, so that 31 execution
 " points (multiply counted inside loops) can be tested.
 "
 " Note that the arguments of the following commands can be generated
@@ -257,18 +257,17 @@ com! -count	    Xcheck	let Xresult = "*** Test " .
 				    \ let Xtest = Xtest + 1
 
 if exists("g:ExtraVimResult")
-    com! -nargs=+    Xout	exec "exec \"!echo @R:'\" ."
-				    \ 'substitute(substitute("' . <args> .
-				    \ '", "' . "'" . '", ' . "'" . '&\\&&' . "'"
-				    \ . ', "g"), "\n", "@NL@", "g")'
-				    \ ". \"' >>\" . g:ExtraVimResult"
+    com! -nargs=+    Xoutq	exec "!echo @R:'" .
+				    \ substitute(substitute(<q-args>,
+				    \ "'", '&\\&&', "g"), "\n", "@NL@", "g")
+				    \ . "' >>" . g:ExtraVimResult
 else
-    com! -nargs=+    Xout	exec 'let @R = "--- Test ' .
+    com! -nargs=+    Xoutq	let @R = "--- Test " .
 				    \ (g:Xtest<10?"  ":g:Xtest<100?" ":"") .
-				    \ g:Xtest . ": " .
-				    \ '" . substitute("' . <args> .
-				    \ '", "\n", "&\t      ", "g") . "\n"'
+				    \ g:Xtest . ": " . substitute(<q-args>,
+				    \ "\n", "&\t      ", "g") . "\n"
 endif
+com! -nargs=+	    Xout	exec 'Xoutq' <args>
 
 " Switch off storing of lines for undoing changes.  Speeds things up a little.
 set undolevels=-1
@@ -458,7 +457,7 @@ function! ExtraVim(...)
     " resultfile in ExtraVimResult.  Redirect messages to the file specified as
     " argument if any.  Use ":debuggreedy" so that the commands provided on the
     " pipe are consumed at the debug prompt.  Use "-N" to enable command-line
-    " contiunation ("C" in 'cpo').  Add "nviminfo" to 'viminfo' to avoid
+    " continuation ("C" in 'cpo').  Add "nviminfo" to 'viminfo' to avoid
     " messing up the user's viminfo file.
     let redirect = a:0 ?
 	\ " -c 'au VimLeave * redir END' -c 'redir\\! >" . a:1 . "'" : ""
@@ -502,7 +501,7 @@ endfunction
 
 " ExtraVimThrowpoint() - Relative throwpoint in ExtraVim script		    {{{2
 "
-" Evaluates v:throwpoint and returns the throwpoint relativ to the beginning of
+" Evaluates v:throwpoint and returns the throwpoint relative to the beginning of
 " an ExtraVim script as passed by ExtraVim() in ExtraVimBegin.
 "
 " EXTRA_VIM_START - do not change or remove this line.
@@ -4142,7 +4141,7 @@ Xcheck 756255461
 
 
 "-------------------------------------------------------------------------------
-" Test 49:  Throwing exceptions accross functions			    {{{1
+" Test 49:  Throwing exceptions across functions			    {{{1
 "
 "	    When an exception is thrown but not caught inside a function, the
 "	    caller is checked for a matching :catch clause.
@@ -4224,7 +4223,7 @@ Xcheck 179000669
 
 
 "-------------------------------------------------------------------------------
-" Test 50:  Throwing exceptions accross script files			    {{{1
+" Test 50:  Throwing exceptions across script files			    {{{1
 "
 "	    When an exception is thrown but not caught inside a script file,
 "	    the sourcing script or function is checked for a matching :catch
@@ -4293,7 +4292,7 @@ Xcheck 363550045
 
 
 "-------------------------------------------------------------------------------
-" Test 51:  Throwing exceptions accross :execute and user commands	    {{{1
+" Test 51:  Throwing exceptions across :execute and user commands	    {{{1
 "
 "	    A :throw command may be executed under an ":execute" or from
 "	    a user command.
@@ -5435,7 +5434,7 @@ if ExtraVim()
 	let line      = a:0 != 0 ? a:3 : 0	" fourth parameter (optional)
 	let error = 0
 	if emsg != ""
-	    " exception is the error number, emsg the english error message text
+	    " exception is the error number, emsg the English error message text
 	    if exception !~ '^E\d\+$'
 		Xout "TODO: Add message number for:" emsg
 	    elseif v:lang == "C" || v:lang =~ '^[Ee]n'
@@ -6306,7 +6305,7 @@ function! Foo()
 		    Xpath 4194304		" X: 0
 		endif
 		silent! call S(5)			" X: 3 * 256
-		" Break out of try conds that cover ":silent!".  This also
+		" Break out of try conditionals that cover ":silent!".  This also
 		" discards the aborting error when $VIMNOERRTHROW is non-zero.
 		break
 	    endtry
@@ -6720,7 +6719,7 @@ Xcheck 5464
 
 
 "-------------------------------------------------------------------------------
-" Test 67:  :throw accross :call command				    {{{1
+" Test 67:  :throw across :call command					    {{{1
 "
 "	    On a call command, an exception might be thrown when evaluating the
 "	    function name, during evaluation of the arguments, or when the
@@ -6732,104 +6731,170 @@ XpathINIT
 
 function! THROW(x, n)
     if a:n == 1
-	Xpath 1					" X: 1
+	Xpath 1						" X: 1
     elseif a:n == 2
-	Xpath 2					" X: 2
+	Xpath 2						" X: 2
     elseif a:n == 3
-	Xpath 4					" X: 4
+	Xpath 4						" X: 4
     endif
     throw a:x
 endfunction
 
 function! NAME(x, n)
     if a:n == 1
-	Xpath 8					" X: 0
+	Xpath 8						" X: 0
     elseif a:n == 2
-	Xpath 16				" X: 16
+	Xpath 16					" X: 16
     elseif a:n == 3
-	Xpath 32				" X: 32
+	Xpath 32					" X: 32
     elseif a:n == 4
-	Xpath 64				" X: 64
+	Xpath 64					" X: 64
     endif
     return a:x
 endfunction
 
 function! ARG(x, n)
     if a:n == 1
-	Xpath 128				" X: 0
+	Xpath 128					" X: 0
     elseif a:n == 2
-	Xpath 256				" X: 0
+	Xpath 256					" X: 0
     elseif a:n == 3
-	Xpath 512				" X: 512
+	Xpath 512					" X: 512
     elseif a:n == 4
-	Xpath 1024				" X: 1024
+	Xpath 1024					" X: 1024
     endif
     return a:x
 endfunction
 
 function! F(x, n)
     if a:n == 2
-	Xpath 2048				" X: 0
+	Xpath 2048					" X: 0
     elseif a:n == 4
-	Xpath 4096				" X: 4096
+	Xpath 4096					" X: 4096
     endif
 endfunction
 
-try
-
+while 1
     try
-	Xpath 8192				" X: 8192
-	call {NAME(THROW("name", 1), 1)}(ARG(4711, 1), 1)
-	Xpath 16384				" X: 0
-    catch /^name$/
-	Xpath 32768				" X: 32768
-    catch /.*/
-	Xpath 65536				" X: 0
-	Xout "1:" v:exception "in" v:throwpoint
-    endtry
+	let error = 0
+	let v:errmsg = ""
 
-    try
-	Xpath 131072				" X: 131072
-	call {NAME("F", 2)}(ARG(THROW("arg", 2), 2), 2)
-	Xpath 262144				" X: 0
-    catch /^arg$/
-	Xpath 524288				" X: 524288
-    catch /.*/
-	Xpath 1048576				" X: 0
-	Xout "2:" v:exception "in" v:throwpoint
-    endtry
+	while 1
+	    try
+		Xpath 8192				" X: 8192
+		call {NAME(THROW("name", 1), 1)}(ARG(4711, 1), 1)
+		Xpath 16384				" X: 0
+	    catch /^name$/
+		Xpath 32768				" X: 32768
+	    catch /.*/
+		let error = 1
+		Xout "1:" v:exception "in" v:throwpoint
+	    finally
+		if !error && $VIMNOERRTHROW && v:errmsg != ""
+		    let error = 1
+		    Xout "1:" v:errmsg
+		endif
+		if error
+		    Xpath 65536				" X: 0
+		endif
+		let error = 0
+		let v:errmsg = ""
+		break		" discard error for $VIMNOERRTHROW
+	    endtry
+	endwhile
 
-    try
-	Xpath 2097152				" X: 2097152
-	call {NAME("THROW", 3)}(ARG("call", 3), 3)
-	Xpath 4194304				" X: 0
-    catch /^call$/
-	Xpath 8388608				" X: 8388608
+	while 1
+	    try
+		Xpath 131072				" X: 131072
+		call {NAME("F", 2)}(ARG(THROW("arg", 2), 2), 2)
+		Xpath 262144				" X: 0
+	    catch /^arg$/
+		Xpath 524288				" X: 524288
+	    catch /.*/
+		let error = 1
+		Xout "2:" v:exception "in" v:throwpoint
+	    finally
+		if !error && $VIMNOERRTHROW && v:errmsg != ""
+		    let error = 1
+		    Xout "2:" v:errmsg
+		endif
+		if error
+		    Xpath 1048576			" X: 0
+		endif
+		let error = 0
+		let v:errmsg = ""
+		break		" discard error for $VIMNOERRTHROW
+	    endtry
+	endwhile
+
+	while 1
+	    try
+		Xpath 2097152				" X: 2097152
+		call {NAME("THROW", 3)}(ARG("call", 3), 3)
+		Xpath 4194304				" X: 0
+	    catch /^call$/
+		Xpath 8388608				" X: 8388608
+	    catch /^0$/	    " default return value
+		Xpath 16777216				" X: 0
+		Xout "3:" v:throwpoint
+	    catch /.*/
+		let error = 1
+		Xout "3:" v:exception "in" v:throwpoint
+	    finally
+		if !error && $VIMNOERRTHROW && v:errmsg != ""
+		    let error = 1
+		    Xout "3:" v:errmsg
+		endif
+		if error
+		    Xpath 33554432			" X: 0
+		endif
+		let error = 0
+		let v:errmsg = ""
+		break		" discard error for $VIMNOERRTHROW
+	    endtry
+	endwhile
+
+	while 1
+	    try
+		Xpath 67108864				" X: 67108864
+		call {NAME("F", 4)}(ARG(4711, 4), 4)
+		Xpath 134217728				" X: 134217728
+	    catch /.*/
+		let error = 1
+		Xout "4:" v:exception "in" v:throwpoint
+	    finally
+		if !error && $VIMNOERRTHROW && v:errmsg != ""
+		    let error = 1
+		    Xout "4:" v:errmsg
+		endif
+		if error
+		    Xpath 268435456			" X: 0
+		endif
+		let error = 0
+		let v:errmsg = ""
+		break		" discard error for $VIMNOERRTHROW
+	    endtry
+	endwhile
+
     catch /^0$/	    " default return value
-	Xpath 16777216				" X: 0
-	Xout "3:" v:throwpoint
+	Xpath 536870912					" X: 0
+	Xout v:throwpoint
     catch /.*/
-	Xpath 33554432				" X: 0
-	Xout "3:" v:exception "in" v:throwpoint
+	let error = 1
+	Xout v:exception "in" v:throwpoint
+    finally
+	if !error && $VIMNOERRTHROW && v:errmsg != ""
+	    let error = 1
+	    Xout v:errmsg
+	endif
+	if error
+	    Xpath 1073741824				" X: 0
+	endif
+	break		" discard error for $VIMNOERRTHROW
     endtry
+endwhile
 
-    try
-	Xpath 67108864				" X: 67108864
-	call {NAME("F", 4)}(ARG(4711, 4), 4)
-	Xpath 134217728				" X: 134217728
-    catch /.*/
-	Xpath 268435456				" X: 0
-	Xout "4:" v:exception "in" v:throwpoint
-    endtry
-
-catch /^0$/	    " default return value
-    Xpath 536870912				" X: 0
-    Xout v:throwpoint
-catch /.*/
-    Xpath 1073741824				" X: 0
-    Xout v:exception "in" v:throwpoint
-endtry
-
+unlet error
 delfunction F
 
 Xcheck 212514423
@@ -6838,7 +6903,7 @@ Xcheck 212514423
 
 
 "-------------------------------------------------------------------------------
-" Test 68:  :throw accross function calls in expressions		    {{{1
+" Test 68:  :throw across function calls in expressions			    {{{1
 "
 "	    On a function call within an expression, an exception might be
 "	    thrown when evaluating the function name, during evaluation of the
@@ -6853,74 +6918,139 @@ XpathINIT
 
 function! F(x, n)
     if a:n == 2
-	Xpath 2048				" X: 0
+	Xpath 2048					" X: 0
     elseif a:n == 4
-	Xpath 4096				" X: 4096
+	Xpath 4096					" X: 4096
     endif
     return a:x
 endfunction
 
 unlet! var1 var2 var3 var4
 
-try
-
+while 1
     try
-	Xpath 8192				" X: 8192
-	let var1 = {NAME(THROW("name", 1), 1)}(ARG(4711, 1), 1)
-	Xpath 16384				" X: 0
-    catch /^name$/
-	Xpath 32768				" X: 32768
-    catch /.*/
-	Xpath 65536				" X: 0
-	Xout "1:" v:exception "in" v:throwpoint
-    endtry
+	let error = 0
+	let v:errmsg = ""
 
-    try
-	Xpath 131072				" X: 131072
-	let var2 = {NAME("F", 2)}(ARG(THROW("arg", 2), 2), 2)
-	Xpath 262144				" X: 0
-    catch /^arg$/
-	Xpath 524288				" X: 524288
-    catch /.*/
-	Xpath 1048576				" X: 0
-	Xout "2:" v:exception "in" v:throwpoint
-    endtry
+	while 1
+	    try
+		Xpath 8192				" X: 8192
+		let var1 = {NAME(THROW("name", 1), 1)}(ARG(4711, 1), 1)
+		Xpath 16384				" X: 0
+	    catch /^name$/
+		Xpath 32768				" X: 32768
+	    catch /.*/
+		let error = 1
+		Xout "1:" v:exception "in" v:throwpoint
+	    finally
+		if !error && $VIMNOERRTHROW && v:errmsg != ""
+		    let error = 1
+		    Xout "1:" v:errmsg
+		endif
+		if error
+		    Xpath 65536				" X: 0
+		endif
+		let error = 0
+		let v:errmsg = ""
+		break		" discard error for $VIMNOERRTHROW
+	    endtry
+	endwhile
 
-    try
-	Xpath 2097152				" X: 2097152
-	let var3 = {NAME("THROW", 3)}(ARG("call", 3), 3)
-	Xpath 4194304				" X: 0
-    catch /^call$/
-	Xpath 8388608				" X: 8388608
+	while 1
+	    try
+		Xpath 131072				" X: 131072
+		let var2 = {NAME("F", 2)}(ARG(THROW("arg", 2), 2), 2)
+		Xpath 262144				" X: 0
+	    catch /^arg$/
+		Xpath 524288				" X: 524288
+	    catch /.*/
+		let error = 1
+		Xout "2:" v:exception "in" v:throwpoint
+	    finally
+		if !error && $VIMNOERRTHROW && v:errmsg != ""
+		    let error = 1
+		    Xout "2:" v:errmsg
+		endif
+		if error
+		    Xpath 1048576			" X: 0
+		endif
+		let error = 0
+		let v:errmsg = ""
+		break		" discard error for $VIMNOERRTHROW
+	    endtry
+	endwhile
+
+	while 1
+	    try
+		Xpath 2097152				" X: 2097152
+		let var3 = {NAME("THROW", 3)}(ARG("call", 3), 3)
+		Xpath 4194304				" X: 0
+	    catch /^call$/
+		Xpath 8388608				" X: 8388608
+	    catch /^0$/	    " default return value
+		Xpath 16777216				" X: 0
+		Xout "3:" v:throwpoint
+	    catch /.*/
+		let error = 1
+		Xout "3:" v:exception "in" v:throwpoint
+	    finally
+		if !error && $VIMNOERRTHROW && v:errmsg != ""
+		    let error = 1
+		    Xout "3:" v:errmsg
+		endif
+		if error
+		    Xpath 33554432			" X: 0
+		endif
+		let error = 0
+		let v:errmsg = ""
+		break		" discard error for $VIMNOERRTHROW
+	    endtry
+	endwhile
+
+	while 1
+	    try
+		Xpath 67108864				" X: 67108864
+		let var4 = {NAME("F", 4)}(ARG(4711, 4), 4)
+		Xpath 134217728				" X: 134217728
+	    catch /.*/
+		let error = 1
+		Xout "4:" v:exception "in" v:throwpoint
+	    finally
+		if !error && $VIMNOERRTHROW && v:errmsg != ""
+		    let error = 1
+		    Xout "4:" v:errmsg
+		endif
+		if error
+		    Xpath 268435456			" X: 0
+		endif
+		let error = 0
+		let v:errmsg = ""
+		break		" discard error for $VIMNOERRTHROW
+	    endtry
+	endwhile
+
     catch /^0$/	    " default return value
-	Xpath 16777216				" X: 0
-	Xout "3:" v:throwpoint
+	Xpath 536870912					" X: 0
+	Xout v:throwpoint
     catch /.*/
-	Xpath 33554432				" X: 0
-	Xout "3:" v:exception "in" v:throwpoint
+	let error = 1
+	Xout v:exception "in" v:throwpoint
+    finally
+	if !error && $VIMNOERRTHROW && v:errmsg != ""
+	    let error = 1
+	    Xout v:errmsg
+	endif
+	if error
+	    Xpath 1073741824				" X: 0
+	endif
+	break		" discard error for $VIMNOERRTHROW
     endtry
-
-    try
-	Xpath 67108864				" X: 67108864
-	let var4 = {NAME("F", 4)}(ARG(4711, 4), 4)
-	Xpath 134217728				" X: 134217728
-    catch /.*/
-	Xpath 268435456				" X: 0
-	Xout "4:" v:exception "in" v:throwpoint
-    endtry
-
-catch /^0$/	    " default return value
-    Xpath 536870912				" X: 0
-    Xout v:throwpoint
-catch /.*/
-    Xpath 1073741824				" X: 0
-    Xout v:exception "in" v:throwpoint
-endtry
+endwhile
 
 if exists("var1") || exists("var2") || exists("var3") ||
 	    \ !exists("var4") || var4 != 4711
     " The Xpath command does not accept 2^31 (negative); add explicitly:
-    let Xpath = Xpath + 2147483648		" X: 0
+    let Xpath = Xpath + 2147483648			" X: 0
     if exists("var1")
 	Xout "var1 =" var1
     endif
@@ -6937,7 +7067,7 @@ if exists("var1") || exists("var2") || exists("var3") ||
     endif
 endif
 
-unlet! var1 var2 var3 var4
+unlet! error var1 var2 var3 var4
 delfunction THROW
 delfunction NAME
 delfunction ARG
@@ -6947,7 +7077,7 @@ Xcheck 212514423
 
 
 "-------------------------------------------------------------------------------
-" Test 69:  :throw accross :if, :elseif, :while				    {{{1
+" Test 69:  :throw across :if, :elseif, :while				    {{{1
 "
 "	    On an :if, :elseif, or :while command, an exception might be thrown
 "	    during evaluation of the expression to test.  The exception can be
@@ -7028,7 +7158,7 @@ Xcheck 8995471
 
 
 "-------------------------------------------------------------------------------
-" Test 70:  :throw accross :return or :throw				    {{{1
+" Test 70:  :throw across :return or :throw				    {{{1
 "
 "	    On a :return or :throw command, an exception might be thrown during
 "	    evaluation of the expression to return or throw, respectively.  The
@@ -7146,7 +7276,7 @@ Xcheck 69544277
 
 
 "-------------------------------------------------------------------------------
-" Test 71:  :throw accross :echo variants and :execute			    {{{1
+" Test 71:  :throw across :echo variants and :execute			    {{{1
 "
 "	    On an :echo, :echon, :echomsg, :echoerr, or :execute command, an
 "	    exception might be thrown during evaluation of the arguments to
@@ -7253,7 +7383,7 @@ Xcheck 34886997
 
 
 "-------------------------------------------------------------------------------
-" Test 72:  :throw accross :let or :unlet				    {{{1
+" Test 72:  :throw across :let or :unlet				    {{{1
 "
 "	    On a :let command, an exception might be thrown during evaluation
 "	    of the expression to assign.  On an :let or :unlet command, the
@@ -7412,7 +7542,7 @@ Xcheck 1789569365
 
 
 "-------------------------------------------------------------------------------
-" Test 73:  :throw accross :function, :delfunction			    {{{1
+" Test 73:  :throw across :function, :delfunction			    {{{1
 "
 "	    The :function and :delfunction commands may cause an expression
 "	    specified in braces to be evaluated.  During evaluation, an
@@ -7516,7 +7646,7 @@ Xcheck 9032615
 
 
 "-------------------------------------------------------------------------------
-" Test 74:  :throw accross builtin functions and commands		    {{{1
+" Test 74:  :throw across builtin functions and commands		    {{{1
 "
 "	    Some functions like exists(), searchpair() take expression
 "	    arguments, other functions or commands like substitute() or
@@ -7896,7 +8026,7 @@ Xcheck 2000403408
 
 
 "-------------------------------------------------------------------------------
-" Test 76:  Errors, interupts, :throw during expression evaluation	    {{{1
+" Test 76:  Errors, interrupts, :throw during expression evaluation	    {{{1
 "
 "	    When a function call made during expression evaluation is aborted
 "	    due to an error inside a :try/:endtry region or due to an interrupt
@@ -8155,7 +8285,7 @@ Xcheck 1610087935
 
 
 "-------------------------------------------------------------------------------
-" Test 77:  Errors, interupts, :throw in name{brace-expression}		    {{{1
+" Test 77:  Errors, interrupts, :throw in name{brace-expression}	    {{{1
 "
 "	    When a function call made during evaluation of an expression in
 "	    braces as part of a function name after ":function" is aborted due
@@ -8371,15 +8501,11 @@ if ExtraVim()
 		    \ '^Vim\((\a\+)\)\=:', '', "")
 		let caught = 1
 	    finally
-		if !caught	" no error exceptions ($VIMNOERRTHROW set)
-		    if t <= 8 && t != 3
-			call MSG(t, 'E475', 'Invalid argument\>')
-		    else
-			call MSG(t, 'E15', "Invalid expression")
-		    endif
+		if t <= 8 && t != 3 && t != 7
+		    call MSG(t, 'E475', 'Invalid argument\>')
 		else
-		    if t <= 2 || t == 4 || t == 5 || t == 6 || t == 8
-			call MSG(t, 'E475', 'Invalid argument\>')
+		    if !caught	" no error exceptions ($VIMNOERRTHROW set)
+			call MSG(t, 'E15', "Invalid expression")
 		    else
 			call MSG(t, 'E121', "Undefined variable")
 		    endif
@@ -9058,7 +9184,7 @@ Xcheck 2835
 "	    exception is propagated to the caller.
 "
 "	    For the FuncUndefined event under a function call expression or
-"	    :call command, the function is not exexecuted, even when it has
+"	    :call command, the function is not executed, even when it has
 "	    been defined by the autocommands before the exception occurred.
 "-------------------------------------------------------------------------------
 

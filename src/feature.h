@@ -1111,8 +1111,7 @@
 
 /*
  * +GUI_Athena		To compile Vim with or without the GUI (gvim) you have
- * +GUI_BeOS		to edit the Makefile.
- * +GUI_Motif
+ * +GUI_Motif		to edit the Makefile.
  */
 
 /*

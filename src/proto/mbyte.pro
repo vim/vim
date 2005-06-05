@@ -39,7 +39,7 @@ int utf_toupper __ARGS((int a));
 int utf_islower __ARGS((int a));
 int utf_tolower __ARGS((int a));
 int utf_isupper __ARGS((int a));
-int mb_strnicmp __ARGS((char_u *s1, char_u *s2, int n));
+int mb_strnicmp __ARGS((char_u *s1, char_u *s2, size_t nn));
 void show_utf8 __ARGS((void));
 int latin_head_off __ARGS((char_u *base, char_u *p));
 int dbcs_head_off __ARGS((char_u *base, char_u *p));

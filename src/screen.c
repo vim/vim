@@ -3580,7 +3580,7 @@ win_line(wp, lnum, startrow, endrow)
 		    if (area_attr == 0 && search_attr == 0)
 			char_attr = syntax_attr;
 		    else
-			char_attr = hl_combine_attr(char_attr, syntax_attr);
+			char_attr = hl_combine_attr(syntax_attr, char_attr);
 		}
 
 		/* Check spelling (unless at the end of the line).

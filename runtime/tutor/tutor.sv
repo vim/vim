@@ -825,6 +825,6 @@ Notera: Detta undviker att behöva skriva  i , det sista tecknet, texten att
   Colorado State University.  E-post: bware@mines.colorado.edu.
 
   Modifierad för Vim av Bram Moolenaar.
-  Översatt av Johan Svedberg <johan@svedberg.pp.se>
+  Översatt av Johan Svedberg <johan@svedberg.com>
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

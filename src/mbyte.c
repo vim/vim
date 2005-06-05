@@ -2186,12 +2186,13 @@ utf_isupper(a)
  * two characters otherwise.
  */
     int
-mb_strnicmp(s1, s2, n)
+mb_strnicmp(s1, s2, nn)
     char_u	*s1, *s2;
-    int		n;
+    size_t	nn;
 {
     int		i, j, l;
     int		cdiff;
+    int		n = nn;
 
     for (i = 0; i < n; i += l)
     {
