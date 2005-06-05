@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 04
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -32,9 +32,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 Patch in if_cscope.c also in 6.3?  (Froloff)
     Sergey says it's OK.
-
-Now that search HL combines with existing color, ctermfg=white doesn't work.
-(Gautam Iyer)
 
 Add extra list of file locations.  Can be used with:
     :ltag	      list of matching tags, like :tselect
@@ -104,9 +101,14 @@ PLANNED FOR VERSION 7.0:
     - Spell checking code todo's:
 	- Implement user and project word lists.  Commands to add words and to
 	  mark words as wrong.
+	- Also allow replacing a word list.  Need some mechanism to tell
+	  wether a spell file adds or replaces one found later in
+	  'runtimepath'.
 	- Implement = flag in .dic: KEEPCASE for lower case word.
 	    's morgens/=  does not match 'S morgens
 	- Implement compound words?
+	- When @Spell and @NoSpell are both used only do spell checking for
+	  @Spell items, not where they both appear.  Useful for Perl pod.
 	- Make "en-rare" spell file.
 	  Convention: use en_US (language_region) and en-rare (language-field)
           Add hl groups to 'spelllang'?

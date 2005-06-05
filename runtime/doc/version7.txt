@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jun 02
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jun 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -21,6 +21,8 @@ NEW FEATURES				|new-7|
 Vim script enhancements			|new-vim-script|
 Spell checking				|new-spell|
 KDE support				|new-KDE|
+MzScheme interface			|new-MzScheme|
+Printing multi-byte text		|new-print-multi-byte|
 Translated manual pages			|new-manpage-trans|
 Internal grep				|new-vimgrep|
 POSIX compatibility			|new-posix|
