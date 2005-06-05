@@ -288,7 +288,6 @@ N  *+folding*		|folding|
 N  *+gettext*		message translations |multi-lang|
    *+GUI_Athena*	Unix only: Athena |GUI|
    *+GUI_neXtaw*	Unix only: neXtaw |GUI|
-   *+GUI_BeOS*		BeOS only: BeOS |GUI|
    *+GUI_GTK*		Unix only: GTK+ |GUI|
    *+GUI_Motif*		Unix only: Motif |GUI|
    *+GUI_Photon*	QNX only:  Photon |GUI|
