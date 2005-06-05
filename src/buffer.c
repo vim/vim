@@ -2450,7 +2450,7 @@ buflist_list(eap)
 	else
 	    home_replace(buf, buf->b_fname, NameBuff, MAXPATHL, TRUE);
 
-	vim_snprintf((char *)IObuff, IOSIZE - 20, "%3d%c%c%c%c%c \"%s\"",
+	len = vim_snprintf((char *)IObuff, IOSIZE - 20, "%3d%c%c%c%c%c \"%s\"",
 		buf->b_fnum,
 		buf->b_p_bl ? ' ' : 'u',
 		buf == curbuf ? '%' :
@@ -2463,7 +2463,6 @@ buflist_list(eap)
 		NameBuff);
 
 	/* put "line 999" in column 40 or after the file name */
-	len = STRLEN(IObuff);
 	i = 40 - vim_strsize(IObuff);
 	do
 	{

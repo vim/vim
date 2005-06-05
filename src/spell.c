@@ -353,7 +353,7 @@ find_word(mip, keepcap)
     char_u	*p;
 #endif
     int		res;
-    int		valid;
+    int		valid = FALSE;
     slang_T	*slang = mip->mi_lp->lp_slang;
     unsigned	flags;
     char_u	*byts;
@@ -1328,6 +1328,7 @@ typedef struct spellinfo_S
     int		si_ascii;	/* handling only ASCII words */
     int		si_region;	/* region mask */
     vimconv_T	si_conv;	/* for conversion to 'encoding' */
+    int		si_memtot;	/* runtime memory used */
 } spellinfo_T;
 
 static afffile_T *spell_read_aff __ARGS((char_u *fname, spellinfo_T *spin));
@@ -1459,6 +1460,10 @@ spell_read_aff(fname, spin)
 							       p_enc) == FAIL)
 		    smsg((char_u *)_("Conversion in %s not supported: from %s to %s"),
 					       fname, aff->af_enc, p_enc);
+	    }
+	    else if (STRCMP(items[0], "NOSPLITSUGS") == 0 && itemcnt == 1)
+	    {
+		/* ignored */
 	    }
 	    else if (STRCMP(items[0], "TRY") == 0 && itemcnt == 2
 						       && aff->af_try == NULL)
@@ -2420,6 +2425,8 @@ write_vim_spell(fname, spin, regcount, regchars)
      *  TODO.  Only write a zero length for now. */
     put_bytes(fd, 0L, 4);			/* <suggestlen> */
 
+    spin->si_memtot = 0;
+
     /*
      * <LWORDTREE>  <KWORDTREE>
      */
@@ -2434,6 +2441,7 @@ write_vim_spell(fname, spin, regcount, regchars)
 
 	/* number of nodes in 4 bytes */
 	put_bytes(fd, (long_u)nodecount, 4);	/* <nodecount> */
+	spin->si_memtot += nodecount + nodecount * sizeof(int);
 
 	/* Write the nodes. */
 	(void)put_tree(fd, tree, 0, regionmask);
@@ -2699,6 +2707,9 @@ ex_mkspell(eap)
 	    out_flush();
 	    write_vim_spell(wfname, &spin, fcount - 1, region_name);
 	    MSG(_("Done!"));
+
+	    smsg((char_u *)_("Estimated runtime memory use: %d bytes"),
+							      spin.si_memtot);
 	    out_flush();
 	}
 

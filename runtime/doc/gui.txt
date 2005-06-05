@@ -25,8 +25,8 @@ Other GUI documentation:
 
 First you must make sure you actually have a version of Vim with the GUI code
 included.  You can check this with the ":version" command, it should include
-"+GUI_Athena", "+GUI_BeOS", "+GUI_GTK", "+GUI_KDE", "+GUI_Motif" or
-"MS-Windows ... bit GUI version".
+"+GUI_Athena", "+GUI_GTK", "+GUI_KDE", "+GUI_Motif" or "MS-Windows ... bit
+GUI version".
 
 How to start the GUI depends on the system used.  Mostly you can run the
 GUI version of Vim with:

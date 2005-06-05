@@ -165,7 +165,7 @@ Stuff that does not work yet:
   when it flashes)
 
 
-The $VIM directory					*beos-vimdir*
+6. The $VIM directory					*beos-vimdir*
 
 $VIM is the symbolic name for the place where Vims support files are stored.
 The default value for $VIM is set at compile time and can be determined with >

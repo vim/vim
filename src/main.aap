@@ -152,17 +152,6 @@ prefix = `os.path.expanduser(prefix)`
 	GUI_TARGETS	= installglinks
 	GUI_MAN_TARGETS	= installghelplinks
 	GUI_TESTTARGET	= gui
-    BEOSGUI
-	GUI_SRC		= gui.c gui_beos.cc pty.c
-	GUI_OBJ		=
-	GUI_DEFS	= -DFEAT_GUI_BEOS
-	GUI_IPATH	=
-	GUI_LIBS_DIR	=
-	GUI_LIBS1	= -lbe -lroot
-	GUI_LIBS2	=
-	GUI_TARGETS	= installglinks
-	GUI_MAN_TARGETS	= installghelplinks
-	GUI_TESTTARGET	= gui
     PHOTONGUI
 	GUI_SRC		= gui.c gui_photon.c pty.c
 	GUI_OBJ		=
