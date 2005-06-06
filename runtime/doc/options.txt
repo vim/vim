@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 May 31
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4294,7 +4294,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 		h	all previous modes when editing a help file
 		a	all previous modes
 		r	for |hit-enter| and |more-prompt| prompt
-		A	auto-select in Visual mode
 	Normally you would enable the mouse in all four modes with: >
 		:set mouse=a
 <	When the mouse is not enabled, the GUI will still use the mouse for

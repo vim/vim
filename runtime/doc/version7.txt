@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jun 05
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jun 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -255,7 +255,8 @@ Items that were fixed for both Vi and POSIX compatibilty:
 - Autoindent for ":change" is using the first changed line.
 - Editing Ex command lines is not done in cooked mode, because CTRL-D and
   CTRL-T cannot be handled then.
-- In Ex mode, "1,3" prints three lines.
+- In Ex mode, "1,3" prints three lines.  "%" prints all lines.
+- In Ex mode "undo" would undo all changes since Ex mode was started.
 - Implemented the 'prompt' option.
 
 

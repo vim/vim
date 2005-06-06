@@ -2192,6 +2192,7 @@ mb_strnicmp(s1, s2, nn)
 {
     int		i, j, l;
     int		cdiff;
+    int		incomplete = FALSE;
     int		n = nn;
 
     for (i = 0; i < n; i += l)
@@ -2202,7 +2203,10 @@ mb_strnicmp(s1, s2, nn)
 	{
 	    l = utf_byte2len(s1[i]);
 	    if (l > n - i)
+	    {
 		l = n - i;		    /* incomplete character */
+		incomplete = TRUE;
+	    }
 	    /* Check directly first, it's faster. */
 	    for (j = 0; j < l; ++j)
 		if (s1[i + j] != s2[i + j])
@@ -2210,7 +2214,7 @@ mb_strnicmp(s1, s2, nn)
 	    if (j < l)
 	    {
 		/* If one of the two characters is incomplete return -1. */
-		if (i + utf_byte2len(s1[i]) > n || i + utf_byte2len(s2[i]) > n)
+		if (incomplete || i + utf_byte2len(s2[i]) > n)
 		    return -1;
 		cdiff = utf_fold(utf_ptr2char(s1 + i))
 					     - utf_fold(utf_ptr2char(s2 + i));

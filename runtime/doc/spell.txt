@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 04
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -160,6 +160,9 @@ find them here:
 			into one en.spl file.
 			Up to eight regions can be combined. *E754* *755*
 
+			When the spell file was written all currently used
+			spell files will be reloaded.
+
 Since you might want to change the word list for use with Vim the following
 procedure is recommended:
 
@@ -205,10 +208,14 @@ The words must appear one per line.  That is all that is required.  Optional
 items are:
 - Empty and blank lines are ignored.
 - Lines starting with a # are ignored (comment lines).
-- A line starting with "=encoding=" before any word.  After the second '='
-  comes an encoding name.  This tells Vim to setup conversion from the
-  specified encoding to 'encoding'.
-- Other lines starting with '=' are special.  The ones that are not recognized
+- A line starting with "/encoding=", before any word, specifies the encoding
+  of the file.  After the second '=' comes an encoding name.  This tells Vim
+  to setup conversion from the specified encoding to 'encoding'.
+- A line starting with "/?" specifies a word that should be marked as rare.
+- A line starting with "/!" specifies a word that should be marked as bad.
+- A line starting with "/=" specifies a word where case must match exactly.
+  A "?" or "!" may be following: "/=?" and "/=!".
+- Other lines starting with '/' are special.  The ones that are not recognized
   are ignored (but you do get a warning message).
 
 
@@ -273,6 +280,9 @@ The same word with all upper-case characters will always be OK.
 	ALS		ALS			als Als ALs AlS aLs aLS
 	AlS		AlS ALS			als Als ALs aLs aLS
 
+The HUH affix ID can be used to specifically match a word in identical case
+only, see below.
+
 Note in line 5 to 7 that non-word characters are used.  You can include
 any character in a word.  When checking the text a word still only matches
 when it appears with a non-word character before and after it.  For Myspell a
@@ -282,9 +292,10 @@ After the word there is an optional slash and flags.  Most of these flags are
 letters that indicate the affixes that can be used with this word.
 
 							*spell-affix-vim*
-A flag that Vim adds and is not in Myspell is the "=" flag.  This has the
-meaning that case matters.  This can be used if the word does not have the
-first letter in upper case at the start of a sentence.  Example:
+A flag that Vim adds and is not in Myspell is the flag defined with HUH in the
+affix file.  This has the meaning that case matters.  This can be used if the
+word does not have the first letter in upper case at the start of a sentence.
+Example:
 
 	word list	matches			does not match ~
 	's morgens/=	's morgens		'S morgens 's Morgens
@@ -311,9 +322,9 @@ example when using "cp1250" on Unix.
 							*E761* *E762*
 Three lines in the affix file are needed.  Simplistic example:
 
-	FOL  áëñáëñ
-	LOW  áëñáëñ
-	UPP  áëñÁËÑ
+	FOL  áëñáëñ ~
+	LOW  áëñáëñ ~
+	UPP  áëñÁËÑ ~
 
 All three lines must have exactly the same number of characters.
 
@@ -336,6 +347,24 @@ All spell files for the same encoding must use the same word characters,
 otherwise they can't be combined without errors.  The XX.ascii.spl spell file
 generated with the "-ascii" argument will not contain the table with
 characters, so that it can be combine with spell files for any encoding.
+
+
+In the affix file a HUH line can be used to define the affix name used for
+keep-case words.  Example:
+
+	HUH = ~
+
+See above for an example |spell-affix-vim|.
+
+
+In the affix file a RAR line can be used to define the affix name used for
+rare words.  Example:
+
+	RAR ? ~
+
+Rare words are highlighted differently from bad words.  This is to be used for
+words that are correct for the language, but are hardly ever used and could be
+a typing mistake anyway.
 
 
  vim:tw=78:sw=4:ts=8:ft=help:norl:

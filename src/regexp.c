@@ -322,9 +322,9 @@ toggle_Magic(x)
 
 /* Used for an error (down from) vim_regcomp(): give the error message, set
  * rc_did_emsg and return NULL */
-#define EMSG_RET_NULL(m) { EMSG(m); rc_did_emsg = TRUE; return NULL; }
-#define EMSG_M_RET_NULL(m, c) { EMSG2(m, c ? "" : "\\"); rc_did_emsg = TRUE; return NULL; }
-#define EMSG_RET_FAIL(m) { EMSG(m); rc_did_emsg = TRUE; return FAIL; }
+#define EMSG_RET_NULL(m) return (EMSG(m), rc_did_emsg = TRUE, NULL)
+#define EMSG_M_RET_NULL(m, c) return (EMSG2((m), (c) ? "" : "\\"), rc_did_emsg = TRUE, NULL)
+#define EMSG_RET_FAIL(m) return (EMSG(m), rc_did_emsg = TRUE, FAIL)
 #define EMSG_ONE_RET_NULL EMSG_M_RET_NULL(_("E369: invalid item in %s%%[]"), reg_magic == MAGIC_ALL)
 
 #define MAX_LIMIT	(32767L << 16L)
@@ -1246,20 +1246,20 @@ reg(paren, flagp)
     {
 #ifdef FEAT_SYN_HL
 	if (paren == REG_ZPAREN)
-	    EMSG_RET_NULL(_("E52: Unmatched \\z("))
+	    EMSG_RET_NULL(_("E52: Unmatched \\z("));
 	else
 #endif
 	    if (paren == REG_NPAREN)
-	    EMSG_M_RET_NULL(_("E53: Unmatched %s%%("), reg_magic == MAGIC_ALL)
+	    EMSG_M_RET_NULL(_("E53: Unmatched %s%%("), reg_magic == MAGIC_ALL);
 	else
-	    EMSG_M_RET_NULL(_("E54: Unmatched %s("), reg_magic == MAGIC_ALL)
+	    EMSG_M_RET_NULL(_("E54: Unmatched %s("), reg_magic == MAGIC_ALL);
     }
     else if (paren == REG_NOPAREN && peekchr() != NUL)
     {
 	if (curchr == Magic(')'))
-	    EMSG_M_RET_NULL(_("E55: Unmatched %s)"), reg_magic == MAGIC_ALL)
+	    EMSG_M_RET_NULL(_("E55: Unmatched %s)"), reg_magic == MAGIC_ALL);
 	else
-	    EMSG_RET_NULL(_(e_trailing))	/* "Can't happen". */
+	    EMSG_RET_NULL(_(e_trailing));	/* "Can't happen". */
 	/* NOTREACHED */
     }
     /*
@@ -2985,7 +2985,6 @@ typedef struct
 	char_u	*ptr;
 	lpos_T	pos;
     } se_u;
-    int		se_len;
 } save_se_T;
 
 static char_u	*reg_getline __ARGS((linenr_T lnum));

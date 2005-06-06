@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 05
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -99,12 +99,16 @@ PLANNED FOR VERSION 7.0:
       Use array with flags, indicating if there is a word starting with this
       byte.  Quickly skip bytes where no word can start.
     - Spell checking code todo's:
-	- Implement user and project word lists.  Commands to add words and to
-	  mark words as wrong.
 	- Also allow replacing a word list.  Need some mechanism to tell
 	  wether a spell file adds or replaces one found later in
 	  'runtimepath'.
-	- Implement = flag in .dic: KEEPCASE for lower case word.
+	- Is "-" to be considered a word character?  "last-minute".
+	  No, in Dutch it can be added optionally.  Then make English
+	  dictionaries consistent.
+	- Implement user and project word lists.  Commands to add words and to
+	  mark words as wrong.
+	- In .aff use RAR to define affix name for rare word.
+	- In .aff use HUH to define affix name for keep-case word.
 	    's morgens/=  does not match 'S morgens
 	- Implement compound words?
 	- When @Spell and @NoSpell are both used only do spell checking for
@@ -413,8 +417,6 @@ quote. (Nieko Maatjes, 2005 Jan 4)
 
 
 Vi incompatibility:
-9   In Ex mode, "u" undoes all changes, not just the last one. (John Cowan)
-8   In Ex mode, an empty file doesn't have a first line, "1p" should fail.
 8   With undo/redo only marks in the changed lines should be changed.  Other
     marks should be kept.  Vi keeps each mark at the same text, even when it
     is deleted or restored. (Webb)

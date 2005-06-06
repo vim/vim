@@ -2,7 +2,7 @@
 "
 " Language:	Logtalk
 " Maintainer:	Paulo Moura <pmoura@logtalk.org>
-" Last Change:	May 30, 2005
+" Last Change:	June 6, 2005
 
 
 " Quit when a syntax file was already loaded:
@@ -48,23 +48,25 @@ syn region	logtalkExtCall		matchgroup=logtalkExtCallTag		start="{"		matchgroup=l
 
 " Logtalk opening entity directives
 
-syn region	logtalkOpenEntityDir	matchgroup=logtalkOpenEntityDirTag	start=":- object("	matchgroup=logtalkOpenEntityDirTag	end=")\."	contains=ALL
-syn region	logtalkOpenEntityDir	matchgroup=logtalkOpenEntityDirTag	start=":- protocol("	matchgroup=logtalkOpenEntityDirTag	end=")\."	contains=ALL
-syn region	logtalkOpenEntityDir	matchgroup=logtalkOpenEntityDirTag	start=":- category("	matchgroup=logtalkOpenEntityDirTag	end=")\."	contains=ALL
+syn region	logtalkOpenEntityDir	matchgroup=logtalkOpenEntityDirTag	start=":- object("	matchgroup=logtalkOpenEntityDirTag	end=")\."	contains=logtalkEntity,logtalkVariable,logtalkNumber,logtalkOperator,logtalkEntityRel
+syn region	logtalkOpenEntityDir	matchgroup=logtalkOpenEntityDirTag	start=":- protocol("	matchgroup=logtalkOpenEntityDirTag	end=")\."	contains=logtalkEntity,logtalkVariable,logtalkNumber,logtalkOperator,logtalkEntityRel
+syn region	logtalkOpenEntityDir	matchgroup=logtalkOpenEntityDirTag	start=":- category("	matchgroup=logtalkOpenEntityDirTag	end=")\."	contains=logtalkEntity,logtalkVariable,logtalkNumber,logtalkOperator,logtalkEntityRel
 
 
 " Logtalk closing entity directives
 
-syn match	logtalkCloseEntityDir	":- end_\(object\|protocol\|category\)\."
+syn match	logtalkCloseEntityDir	":- end_object\."
+syn match	logtalkCloseEntityDir	":- end_protocol\."
+syn match	logtalkCloseEntityDir	":- end_category\."
 
 
 " Logtalk entity relations
 
-syn region	logtalkEntityRel	matchgroup=logtalkEntityRelTag	start="instantiates("	matchgroup=logtalkEntityRelTag	end=")"		contains=logtalkEntity		contained
-syn region	logtalkEntityRel	matchgroup=logtalkEntityRelTag	start="specializes("	matchgroup=logtalkEntityRelTag	end=")"		contains=logtalkEntity		contained
-syn region	logtalkEntityRel	matchgroup=logtalkEntityRelTag	start="extends("	matchgroup=logtalkEntityRelTag	end=")"		contains=logtalkEntity		contained
-syn region	logtalkEntityRel	matchgroup=logtalkEntityRelTag	start="imports("	matchgroup=logtalkEntityRelTag	end=")"		contains=logtalkEntity		contained
-syn region	logtalkEntityRel	matchgroup=logtalkEntityRelTag	start="implements("	matchgroup=logtalkEntityRelTag	end=")"		contains=logtalkEntity		contained
+syn region	logtalkEntityRel	matchgroup=logtalkEntityRelTag	start="instantiates("	matchgroup=logtalkEntityRelTag	end=")"		contains=logtalkEntity,logtalkVariable,logtalkNumber,logtalkOperator	contained
+syn region	logtalkEntityRel	matchgroup=logtalkEntityRelTag	start="specializes("	matchgroup=logtalkEntityRelTag	end=")"		contains=logtalkEntity,logtalkVariable,logtalkNumber,logtalkOperator	contained
+syn region	logtalkEntityRel	matchgroup=logtalkEntityRelTag	start="extends("	matchgroup=logtalkEntityRelTag	end=")"		contains=logtalkEntity,logtalkVariable,logtalkNumber,logtalkOperator	contained
+syn region	logtalkEntityRel	matchgroup=logtalkEntityRelTag	start="imports("	matchgroup=logtalkEntityRelTag	end=")"		contains=logtalkEntity,logtalkVariable,logtalkNumber,logtalkOperator	contained
+syn region	logtalkEntityRel	matchgroup=logtalkEntityRelTag	start="implements("	matchgroup=logtalkEntityRelTag	end=")"		contains=logtalkEntity,logtalkVariable,logtalkNumber,logtalkOperator	contained
 
 
 " Logtalk directives
@@ -297,9 +299,9 @@ syn match	logtalkNumber		"\<\d\+\>"
 syn match	logtalkNumber		"\<\d\+\.\d\+\>"
 syn match	logtalkNumber		"\<\d\+[eE][-+]\=\d\+\>"
 syn match	logtalkNumber		"\<\d\+\.\d\+[eE][-+]\=\d\+\>"
-syn match	logtalkNumber		"\<0'[0-9a-zA-Z]\>"
+syn match	logtalkNumber		"\<0'.\>"
 syn match	logtalkNumber		"\<0b[0-1]\+\>"
-syn match	logtalkNumber		"\<0o[0-7]\+\>"
+syn match	logtalkNumber		"\<0o\o\+\>"
 syn match	logtalkNumber		"\<0x\x\+\>"
 
 
@@ -310,8 +312,15 @@ syn match	logtalkOperator		"\."
 
 " Logtalk comments
 
-syn region	logtalkBlockComment	start="/\*"	end="\*/"
+syn region	logtalkBlockComment	start="/\*"	end="\*/"	fold
 syn match	logtalkLineComment	"%.*"
+
+
+" Logtalk entity folding
+
+syn region logtalkEntity transparent fold keepend start=":- object(" end=":- end_object\." contains=ALL
+syn region logtalkEntity transparent fold keepend start=":- protocol(" end=":- end_protocol\." contains=ALL
+syn region logtalkEntity transparent fold keepend start=":- category(" end=":- end_category\." contains=ALL
 
 
 syn sync ccomment logtalkBlockComment maxlines=50
@@ -370,3 +379,5 @@ endif
 let b:current_syntax = "logtalk"
 
 setlocal ts=4
+setlocal fdm=syntax
+setlocal fdc=2

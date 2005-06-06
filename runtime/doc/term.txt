@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 7.0aa.  Last change: 2005 Mar 14
+*term.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -594,7 +594,6 @@ be used by Vim:
 		h	all previous modes when in a help file
 		a	all previous modes
 		r	for |hit-enter| prompt
-		A	auto-select in Visual mode
 
 The default for 'mouse' is empty, the mouse is not used.  Normally you would
 do: >
