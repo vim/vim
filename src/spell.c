@@ -36,13 +36,13 @@
  *
  * <fileID>     10 bytes    "VIMspell05"
  * <regioncnt>  1 byte	    number of regions following (8 supported)
- * <regionname>	2 bytes     Region name: ca, au, etc.
+ * <regionname>	2 bytes     Region name: ca, au, etc.  Lower case.
  *			    First <regionname> is region 1.
  *
  * <charflagslen> 1 byte    Number of bytes in <charflags> (should be 128).
  * <charflags>  N bytes     List of flags (first one is for character 128):
  *			    0x01  word character
- *			    0x01  upper-case character
+ *			    0x02  upper-case character
  * <fcharslen>  2 bytes     Number of bytes in <fchars>.
  * <fchars>     N bytes	    Folded characters, first one is for character 128.
  *
@@ -114,8 +114,9 @@
 #define WF_ONECAP   0x02	/* word with one capital (or all capitals) */
 #define WF_ALLCAP   0x04	/* word must be all capitals */
 #define WF_RARE	    0x08	/* rare word */
+#define WF_BANNED   0x10	/* bad word */
 
-#define WF_KEEPCAP  0x100	/* keep-case word */
+#define WF_KEEPCAP  0x100	/* keep-case word (not stored in file) */
 
 #define BY_NOFLAGS  0		/* end of word without flags or region */
 #define BY_FLAGS    1		/* end of word, flag byte follows */
@@ -165,9 +166,6 @@ struct slang_S
  * languages. */
 static slang_T *first_lang = NULL;
 
-#define REGION_ALL 0xff
-
-
 /*
  * Structure used in "b_langp", filled from 'spelllang'.
  */
@@ -179,10 +177,14 @@ typedef struct langp_S
 
 #define LANGP_ENTRY(ga, i)	(((langp_T *)(ga).ga_data) + (i))
 
+#define REGION_ALL 0xff		/* word valid in all regions */
+
+/* Result values.  Lower number is accepted over higher one. */
+#define SP_BANNED	-1
 #define SP_OK		0
-#define SP_BAD		1
-#define SP_RARE		2
-#define SP_LOCAL	3
+#define SP_RARE		1
+#define SP_LOCAL	2
+#define SP_BAD		3
 
 #define VIMSPELLMAGIC "VIMspell05"  /* string at start of Vim spell file */
 #define VIMSPELLMAGICL 10
@@ -211,14 +213,56 @@ typedef struct matchinf_S
     int		mi_capflags;		/* WF_ONECAP WF_ALLCAP WF_KEEPCAP */
 } matchinf_T;
 
+/*
+ * The tables used for recognizing word characters according to spelling.
+ * These are only used for the first 256 characters of 'encoding'.
+ */
+typedef struct spelltab_S
+{
+    char_u  st_isw[256];	/* flags: is word char */
+    char_u  st_isu[256];	/* flags: is uppercase char */
+    char_u  st_fold[256];	/* chars: folded case */
+} spelltab_T;
+
+static spelltab_T   spelltab;
+static int	    did_set_spelltab;
+
+#define SPELL_ISWORD	1
+#define SPELL_ISUPPER	2
+
+static void clear_spell_chartab __ARGS((spelltab_T *sp));
+static int set_spell_finish __ARGS((spelltab_T	*new_st));
+
+/*
+ * Return TRUE if "p" points to a word character or "c" is a word character
+ * for spelling.
+ * Checking for a word character is done very often, avoid the function call
+ * overhead.
+ */
+#ifdef FEAT_MBYTE
+# define SPELL_ISWORDP(p) ((has_mbyte && MB_BYTE2LEN(*(p)) > 1) \
+		? (mb_get_class(p) >= 2) : spelltab.st_isw[*(p)])
+#else
+# define SPELL_ISWORDP(p) (spelltab.st_isw[*(p)])
+#endif
+
 static slang_T *slang_alloc __ARGS((char_u *lang));
 static void slang_free __ARGS((slang_T *lp));
 static void find_word __ARGS((matchinf_T *mip, int keepcap));
-static slang_T *spell_load_lang __ARGS((char_u *lang));
+static void spell_load_lang __ARGS((char_u *lang));
 static void spell_load_file __ARGS((char_u *fname, void *cookie));
 static int read_tree __ARGS((FILE *fd, char_u *byts, int *idxs, int maxidx, int startidx));
 static int find_region __ARGS((char_u *rp, char_u *region));
 static int captype __ARGS((char_u *word, char_u *end));
+static int set_spell_charflags __ARGS((char_u *flags, int cnt, char_u *upp));
+#ifdef FEAT_MBYTE
+static int set_spell_chartab __ARGS((char_u *fol, char_u *low, char_u *upp));
+static void write_spell_chartab __ARGS((FILE *fd));
+#endif
+static int spell_isupper __ARGS((int c));
+static int spell_casefold __ARGS((char_u *p, int len, char_u *buf, int buflen));
+
+static char *e_format = N_("E759: Format error in spell file");
 
 /*
  * Main spell-checking function.
@@ -238,9 +282,10 @@ spell_check(wp, ptr, attrp)
     matchinf_T	mi;		/* Most things are put in "mi" so that it can
 				   be passed to functions quickly. */
 
-    /* Find the end of the word. */
-    mi.mi_word = ptr;
-    mi.mi_end = ptr;
+    /* A word never starts at a space or a control character.  Return quickly
+     * then, skipping over the character. */
+    if (*ptr <= ' ')
+	return 1;
 
     /* A word starting with a number is always OK.  Also skip hexadecimal
      * numbers 0xFF99 and 0X99FF. */
@@ -253,36 +298,38 @@ spell_check(wp, ptr, attrp)
     }
     else
     {
+	/* Find the end of the word. */
+	mi.mi_word = ptr;
 	mi.mi_fend = ptr;
-	if (spell_iswordc(mi.mi_fend))
+	if (SPELL_ISWORDP(mi.mi_fend))
 	{
 	    /* Make case-folded copy of the characters until the next non-word
 	     * character. */
 	    do
 	    {
 		mb_ptr_adv(mi.mi_fend);
-	    } while (*mi.mi_fend != NUL && spell_iswordc(mi.mi_fend));
-
-	    (void)spell_casefold(ptr, (int)(mi.mi_fend - ptr), mi.mi_fword,
-								 MAXWLEN + 1);
-	    mi.mi_fwordlen = STRLEN(mi.mi_fword);
+	    } while (*mi.mi_fend != NUL && SPELL_ISWORDP(mi.mi_fend));
 
 	    /* Check the caps type of the word. */
 	    mi.mi_capflags = captype(ptr, mi.mi_fend);
-
-	    /* We always use the characters up to the next non-word character,
-	     * also for bad words. */
-	    mi.mi_end = mi.mi_fend;
 	}
 	else
-	{
-	    /* No word characters.  Don't case-fold anything, we may quickly
-	     * find out this is not a word (but it could be!). */
-	    mi.mi_fwordlen = 0;
+	    /* No word characters, caps type is always zero. */
 	    mi.mi_capflags = 0;
-	}
 
+	/* We always use the characters up to the next non-word character,
+	 * also for bad words. */
+	mi.mi_end = mi.mi_fend;
 	mi.mi_cend = mi.mi_fend;
+
+	/* Include one non-word character so that we can check for the
+	 * word end. */
+	if (*mi.mi_fend != NUL)
+	    mb_ptr_adv(mi.mi_fend);
+
+	(void)spell_casefold(ptr, (int)(mi.mi_fend - ptr), mi.mi_fword,
+								 MAXWLEN + 1);
+	mi.mi_fwordlen = STRLEN(mi.mi_fword);
 
 	/* The word is bad unless we recognize it. */
 	mi.mi_result = SP_BAD;
@@ -306,7 +353,7 @@ spell_check(wp, ptr, attrp)
 	{
 	    /* When we are at a non-word character there is no error, just
 	     * skip over the character (try looking for a word after it). */
-	    if (!spell_iswordc(ptr))
+	    if (!SPELL_ISWORDP(ptr))
 	    {
 #ifdef FEAT_MBYTE
 		if (has_mbyte)
@@ -315,7 +362,7 @@ spell_check(wp, ptr, attrp)
 		return 1;
 	    }
 
-	    if (mi.mi_result == SP_BAD)
+	    if (mi.mi_result == SP_BAD || mi.mi_result == SP_BANNED)
 		*attrp = highlight_attr[HLF_SPB];
 	    else if (mi.mi_result == SP_RARE)
 		*attrp = highlight_attr[HLF_SPR];
@@ -350,10 +397,10 @@ find_word(mip, keepcap)
     unsigned	lo, hi, m;
 #ifdef FEAT_MBYTE
     char_u	*s;
-    char_u	*p;
 #endif
-    int		res;
-    int		valid = FALSE;
+    char_u	*p;
+    int		res = SP_BAD;
+    int		valid;
     slang_T	*slang = mip->mi_lp->lp_slang;
     unsigned	flags;
     char_u	*byts;
@@ -380,8 +427,10 @@ find_word(mip, keepcap)
 	return;			/* array is empty */
 
     /*
-     * Repeat advancing in the tree until there is a byte that doesn't match,
-     * we reach the end of the tree or we reach the end of the line.
+     * Repeat advancing in the tree until:
+     * - there is a byte that doesn't match,
+     * - we reach the end of the tree,
+     * - or we reach the end of the line.
      */
     for (;;)
     {
@@ -389,20 +438,20 @@ find_word(mip, keepcap)
 	{
 	    /* Need to fold at least one more character.  Do until next
 	     * non-word character for efficiency. */
+	    p = mip->mi_fend;
 	    do
 	    {
-#ifdef FEAT_MBYTE
-		if (has_mbyte)
-		    flen += mb_ptr2len_check(mip->mi_fend + flen);
-		else
-#endif
-		    ++flen;
-	    } while (spell_iswordc(mip->mi_fend + flen));
+		mb_ptr_adv(mip->mi_fend);
+	    } while (*mip->mi_fend != NUL && SPELL_ISWORDP(mip->mi_fend));
 
-	    (void)spell_casefold(mip->mi_fend, flen,
+	    /* Include the non-word character so that we can check for the
+	     * word end. */
+	    if (*mip->mi_fend != NUL)
+		mb_ptr_adv(mip->mi_fend);
+
+	    (void)spell_casefold(p, (int)(mip->mi_fend - p),
 				     mip->mi_fword + mip->mi_fwordlen,
 				     MAXWLEN - mip->mi_fwordlen);
-	    mip->mi_fend += flen;
 	    flen = STRLEN(mip->mi_fword + mip->mi_fwordlen);
 	    mip->mi_fwordlen += flen;
 	}
@@ -413,6 +462,12 @@ find_word(mip, keepcap)
 	 * Remember this index, we first check for the longest word. */
 	if (byts[arridx] == 0)
 	{
+	    if (endidxcnt == MAXWLEN)
+	    {
+		/* Must be a corrupted spell file. */
+		EMSG(_(e_format));
+		return;
+	    }
 	    endlen[endidxcnt] = wlen;
 	    endidx[endidxcnt++] = arridx++;
 	    --len;
@@ -474,7 +529,7 @@ find_word(mip, keepcap)
 	if ((*mb_head_off)(ptr, ptr + wlen) > 0)
 	    continue;	    /* not at first byte of character */
 #endif
-	if (spell_iswordc(ptr + wlen))
+	if (SPELL_ISWORDP(ptr + wlen))
 	    continue;	    /* next char is a word character */
 
 #ifdef FEAT_MBYTE
@@ -491,7 +546,6 @@ find_word(mip, keepcap)
 
 	/* Check flags and region.  Repeat this if there are more
 	 * flags/region alternatives until there is a match. */
-	res = SP_BAD;
 	for (len = byts[arridx - 1]; len > 0 && byts[arridx] == 0; --len)
 	{
 	    flags = idxs[arridx];
@@ -518,9 +572,11 @@ find_word(mip, keepcap)
 				|| mip->mi_capflags == WF_ONECAP)));
 	    }
 
-	    if (valid && res != SP_OK)
+	    if (valid)
 	    {
-		if (flags & WF_REGION)
+		if (flags & WF_BANNED)
+		    res = SP_BANNED;
+		else if (flags & WF_REGION)
 		{
 		    /* Check region. */
 		    if ((mip->mi_lp->lp_region & (flags >> 8)) != 0)
@@ -532,22 +588,28 @@ find_word(mip, keepcap)
 		    res = SP_RARE;
 		else
 		    res = SP_OK;
-	    }
 
-	    if (res == SP_OK)
-		break;
+		/* Always use the longest match and the best result. */
+		if (mip->mi_result > res)
+		{
+		    mip->mi_result = res;
+		    mip->mi_end = mip->mi_word + wlen;
+		}
+		else if (mip->mi_result == res
+					 && mip->mi_end < mip->mi_word + wlen)
+		    mip->mi_end = mip->mi_word + wlen;
+
+		if (res == SP_OK)
+		    break;
+	    }
+	    else
+		res = SP_BAD;
+
 	    ++arridx;
 	}
 
-	if (valid)
-	{
-	    /* Valid word!  Always use the longest match. */
-	    if (mip->mi_end < mip->mi_word + wlen)
-		mip->mi_end = mip->mi_word + wlen;
-	    if (mip->mi_result != SP_OK)
-		mip->mi_result = res;
+	if (res == SP_OK)
 	    break;
-	}
     }
 }
 
@@ -683,57 +745,45 @@ spell_move_to(dir, allwords)
 }
 
 /*
- * Load word list for "lang" from a Vim spell file.
- * "lang" must be the language without the region: "en" or "en-rare".
+ * Load word list(s) for "lang" from Vim spell file(s).
+ * "lang" must be the language without the region: "en".
  */
-    static slang_T *
+    static void
 spell_load_lang(lang)
     char_u	*lang;
 {
-    slang_T	*lp;
     char_u	fname_enc[80];
     char_u	*p;
     int		r;
+    char_u	langcp[MAXWLEN + 1];
 
-    lp = slang_alloc(lang);
-    if (lp != NULL)
-    {
-	/* Find all spell files for "lang" in 'runtimepath' and load them.
-	 * Use 'encoding', except that we use "latin1" for "latin9". */
+    /* Copy the language name to pass it to spell_load_file() as a cookie.
+     * It's truncated when an error is detected. */
+    STRCPY(langcp, lang);
+
+    /* Find all spell files for "lang" in 'runtimepath' and load them.
+     * Use 'encoding', except that we use "latin1" for "latin9". */
 #ifdef FEAT_MBYTE
-	if (STRLEN(p_enc) < 60 && STRCMP(p_enc, "iso-8859-15") != 0)
-	    p = p_enc;
-	else
+    if (STRLEN(p_enc) < 60 && STRCMP(p_enc, "iso-8859-15") != 0)
+	p = p_enc;
+    else
 #endif
-	    p = (char_u *)"latin1";
-	vim_snprintf((char *)fname_enc, sizeof(fname_enc),
+	p = (char_u *)"latin1";
+    vim_snprintf((char *)fname_enc, sizeof(fname_enc),
 						  "spell/%s.%s.spl", lang, p);
+    r = do_in_runtimepath(fname_enc, TRUE, spell_load_file, &langcp);
 
-	r = do_in_runtimepath(fname_enc, TRUE, spell_load_file, lp);
-	if (r == FAIL && !lp->sl_error)
-	{
-	    /* Try loading the ASCII version. */
-	    vim_snprintf((char *)fname_enc, sizeof(fname_enc),
+    if (r == FAIL && *langcp != NUL)
+    {
+	/* Try loading the ASCII version. */
+	vim_snprintf((char *)fname_enc, sizeof(fname_enc),
 						  "spell/%s.ascii.spl", lang);
-
-	    r = do_in_runtimepath(fname_enc, TRUE, spell_load_file, lp);
-	}
-	if (r == FAIL || lp->sl_error)
-	{
-	    slang_free(lp);
-	    lp = NULL;
-	    if (r == FAIL)
-		smsg((char_u *)_("Warning: Cannot find word list \"%s\""),
-							       fname_enc + 6);
-	}
-	else
-	{
-	    lp->sl_next = first_lang;
-	    first_lang = lp;
-	}
+	r = do_in_runtimepath(fname_enc, TRUE, spell_load_file, &langcp);
     }
 
-    return lp;
+    if (r == FAIL)
+	smsg((char_u *)_("Warning: Cannot find word list \"%s\""),
+							       fname_enc + 6);
 }
 
 /*
@@ -773,15 +823,15 @@ slang_free(lp)
 }
 
 /*
- * Load one spell file into an slang_T.
+ * Load one spell file and store the info into a slang_T.
  * Invoked through do_in_runtimepath().
  */
     static void
 spell_load_file(fname, cookie)
     char_u	*fname;
-    void	*cookie;	    /* points to the slang_T to be filled */
+    void	*cookie;	    /* points to the language name */
 {
-    slang_T	*lp = cookie;
+    char_u	*lang = cookie;
     FILE	*fd;
     char_u	buf[MAXWLEN + 1];
     char_u	*p;
@@ -792,6 +842,7 @@ spell_load_file(fname, cookie)
     linenr_T	save_sourcing_lnum = sourcing_lnum;
     int		cnt, ccnt;
     char_u	*fol;
+    slang_T	*lp = NULL;
 
     fd = fopen((char *)fname, "r");
     if (fd == NULL)
@@ -799,6 +850,10 @@ spell_load_file(fname, cookie)
 	EMSG2(_(e_notopen), fname);
 	goto endFAIL;
     }
+
+    lp = slang_alloc(lang);
+    if (lp == NULL)
+	goto endFAIL;
 
     /* Set sourcing_name, so that error messages mention the file name. */
     sourcing_name = fname;
@@ -824,7 +879,7 @@ truncerr:
     if (cnt > 8)
     {
 formerr:
-	EMSG(_("E759: Format error in spell file"));
+	EMSG(_(e_format));
 	goto endFAIL;
     }
     for (i = 0; i < cnt; ++i)
@@ -923,10 +978,16 @@ formerr:
 	}
     }
 
+    lp->sl_next = first_lang;
+    first_lang = lp;
+
     goto endOK;
 
 endFAIL:
-    lp->sl_error = TRUE;
+    /* truncating the name signals the error to spell_load_lang() */
+    *lang = NUL;
+    if (lp != NULL)
+	slang_free(lp);
 
 endOK:
     if (fd != NULL)
@@ -1061,6 +1122,7 @@ did_set_spelllang(buf)
 		region = lang + 3;
 	}
 
+	/* Check if we loaded this language before. */
 	for (lp = first_lang; lp != NULL; lp = lp->sl_next)
 	    if (STRNICMP(lp->sl_name, lang, 2) == 0)
 		break;
@@ -1072,38 +1134,43 @@ did_set_spelllang(buf)
 	    lbuf[e - lang] = NUL;
 	    if (region != NULL)
 		mch_memmove(lbuf + 2, lbuf + 5, e - lang - 4);
-	    lp = spell_load_lang(lbuf);
+	    spell_load_lang(lbuf);
 	}
 
-	if (lp != NULL)
-	{
-	    if (region == NULL)
-		region_mask = REGION_ALL;
-	    else
+	/*
+	 * Loop over the languages, there can be several files for each.
+	 */
+	for (lp = first_lang; lp != NULL; lp = lp->sl_next)
+	    if (STRNICMP(lp->sl_name, lang, 2) == 0)
 	    {
-		/* find region in sl_regions */
-		c = find_region(lp->sl_regions, region);
-		if (c == REGION_ALL)
-		{
-		    c = *e;
-		    *e = NUL;
-		    smsg((char_u *)_("Warning: region %s not supported"), lang);
-		    *e = c;
+		if (region == NULL)
 		    region_mask = REGION_ALL;
-		}
 		else
-		    region_mask = 1 << c;
-	    }
+		{
+		    /* find region in sl_regions */
+		    c = find_region(lp->sl_regions, region);
+		    if (c == REGION_ALL)
+		    {
+			c = *e;
+			*e = NUL;
+			smsg((char_u *)_("Warning: region %s not supported"),
+									lang);
+			*e = c;
+			region_mask = REGION_ALL;
+		    }
+		    else
+			region_mask = 1 << c;
+		}
 
-	    if (ga_grow(&ga, 1) == FAIL)
-	    {
-		ga_clear(&ga);
-		return e_outofmem;
+		if (ga_grow(&ga, 1) == FAIL)
+		{
+		    ga_clear(&ga);
+		    return e_outofmem;
+		}
+		LANGP_ENTRY(ga, ga.ga_len)->lp_slang = lp;
+		LANGP_ENTRY(ga, ga.ga_len)->lp_region = region_mask;
+		++ga.ga_len;
 	    }
-	    LANGP_ENTRY(ga, ga.ga_len)->lp_slang = lp;
-	    LANGP_ENTRY(ga, ga.ga_len)->lp_region = region_mask;
-	    ++ga.ga_len;
-	}
 
 	if (*e == ',')
 	    ++e;
@@ -1166,7 +1233,7 @@ captype(word, end)
     int		past_second = FALSE;	/* past second word char */
 
     /* find first letter */
-    for (p = word; !spell_iswordc(p); mb_ptr_adv(p))
+    for (p = word; !SPELL_ISWORDP(p); mb_ptr_adv(p))
 	if (p >= end)
 	    return 0;	    /* only non-word characters, illegal word */
 #ifdef FEAT_MBYTE
@@ -1181,7 +1248,7 @@ captype(word, end)
      * But a word with an upper char only at start is a ONECAP.
      */
     for ( ; p < end; mb_ptr_adv(p))
-	if (spell_iswordc(p))
+	if (SPELL_ISWORDP(p))
 	{
 #ifdef FEAT_MBYTE
 	    c = mb_ptr2char(p);
@@ -1211,7 +1278,7 @@ captype(word, end)
 # if defined(FEAT_MBYTE) || defined(PROTO)
 /*
  * Clear all spelling tables and reload them.
- * Used after 'encoding' is set.
+ * Used after 'encoding' is set and when ":mkspell" was used.
  */
     void
 spell_reload()
@@ -1219,7 +1286,7 @@ spell_reload()
     buf_T	*buf;
     slang_T	*lp;
 
-    /* Initialize the table for spell_iswordc(). */
+    /* Initialize the table for SPELL_ISWORDP(). */
     init_spell_chartab();
 
     /* Unload all allocated memory. */
@@ -1256,6 +1323,8 @@ typedef struct afffile_S
 {
     char_u	*af_enc;	/* "SET", normalized, alloc'ed string or NULL */
     char_u	*af_try;	/* "TRY" line in "af_enc" encoding */
+    int		af_rar;		/* ID for rare word */
+    int		af_huh;		/* ID for keep-case word */
     hashtab_T	af_pref;	/* hashtable for prefixes, affheader_T */
     hashtab_T	af_suff;	/* hashtable for suffixes, affheader_T */
     garray_T	af_rep;		/* list of repentry_T entries from REP lines */
@@ -1335,13 +1404,13 @@ static afffile_T *spell_read_aff __ARGS((char_u *fname, spellinfo_T *spin));
 static int has_non_ascii __ARGS((char_u *s));
 static void spell_free_aff __ARGS((afffile_T *aff));
 static int spell_read_dic __ARGS((char_u *fname, spellinfo_T *spin, afffile_T *affile));
-static int store_aff_word __ARGS((char_u *word, spellinfo_T *spin, char_u *afflist, hashtab_T *ht, hashtab_T *xht, int comb));
+static int store_aff_word __ARGS((char_u *word, spellinfo_T *spin, char_u *afflist, hashtab_T *ht, hashtab_T *xht, int comb, int flags));
 static int spell_read_wordfile __ARGS((char_u *fname, spellinfo_T *spin));
 static void *getroom __ARGS((sblock_T **blp, size_t len));
 static char_u *getroom_save __ARGS((sblock_T **blp, char_u *s));
 static void free_blocks __ARGS((sblock_T *bl));
 static wordnode_T *wordtree_alloc __ARGS((sblock_T **blp));
-static int store_word __ARGS((char_u *word, spellinfo_T *spin));
+static int store_word __ARGS((char_u *word, spellinfo_T *spin, int flags));
 static int tree_add_word __ARGS((char_u *word, wordnode_T *tree, int flags, int region, sblock_T **blp));
 static void wordtree_compress __ARGS((wordnode_T *root));
 static int node_compress __ARGS((wordnode_T *node, hashtab_T *ht, int *tot));
@@ -1373,6 +1442,7 @@ spell_read_aff(fname, spin)
     char_u	*low = NULL;
     char_u	*fol = NULL;
     char_u	*upp = NULL;
+    static char *e_affname = N_("Affix name too long in %s line %d: %s");
 
     /*
      * Open the file.
@@ -1470,6 +1540,20 @@ spell_read_aff(fname, spin)
 	    {
 		aff->af_try = getroom_save(&spin->si_blocks, items[1]);
 	    }
+	    else if (STRCMP(items[0], "RAR") == 0 && itemcnt == 2
+						       && aff->af_rar == 0)
+	    {
+		aff->af_rar = items[1][0];
+		if (items[1][1] != NUL)
+		    smsg((char_u *)_(e_affname), fname, lnum, items[1]);
+	    }
+	    else if (STRCMP(items[0], "HUH") == 0 && itemcnt == 2
+						       && aff->af_huh == 0)
+	    {
+		aff->af_huh = items[1][0];
+		if (items[1][1] != NUL)
+		    smsg((char_u *)_(e_affname), fname, lnum, items[1]);
+	    }
 	    else if ((STRCMP(items[0], "PFX") == 0
 					      || STRCMP(items[0], "SFX") == 0)
 		    && aff_todo == 0
@@ -1483,8 +1567,7 @@ spell_read_aff(fname, spin)
 		cur_aff->ah_key[0] = *items[1];
 		cur_aff->ah_key[1] = NUL;
 		if (items[1][1] != NUL)
-		    smsg((char_u *)_("Affix name too long in %s line %d: %s"),
-						       fname, lnum, items[1]);
+		    smsg((char_u *)_(e_affname), fname, lnum, items[1]);
 		if (*items[2] == 'Y')
 		    cur_aff->ah_combine = TRUE;
 		else if (*items[2] != 'N')
@@ -1694,6 +1777,7 @@ spell_read_dic(fname, spin, affile)
     int		non_ascii = 0;
     int		retval = OK;
     char_u	message[MAXLINELEN + MAXWLEN];
+    int		flags;
 
     /*
      * Open the file.
@@ -1794,8 +1878,21 @@ spell_read_dic(fname, spin, affile)
 	else
 	    hash_add_item(&ht, hi, dw, hash);
 
+	flags = 0;
+	if (afflist != NULL)
+	{
+	    /* Check for affix name that stands for keep-case word and stands
+	     * for rare word (if defined). */
+	    if (affile->af_huh != NUL
+		    && vim_strchr(afflist, affile->af_huh) != NULL)
+		flags |= WF_KEEPCAP;
+	    if (affile->af_rar != NUL
+		    && vim_strchr(afflist, affile->af_rar) != NULL)
+		flags |= WF_RARE;
+	}
+
 	/* Add the word to the word tree(s). */
-	if (store_word(dw, spin) == FAIL)
+	if (store_word(dw, spin, flags) == FAIL)
 	    retval = FAIL;
 
 	if (afflist != NULL)
@@ -1803,12 +1900,13 @@ spell_read_dic(fname, spin, affile)
 	    /* Find all matching suffixes and add the resulting words.
 	     * Additionally do matching prefixes that combine. */
 	    if (store_aff_word(dw, spin, afflist,
-			   &affile->af_suff, &affile->af_pref, FALSE) == FAIL)
+			   &affile->af_suff, &affile->af_pref,
+							FALSE, flags) == FAIL)
 		retval = FAIL;
 
 	    /* Find all matching prefixes and add the resulting words. */
 	    if (store_aff_word(dw, spin, afflist,
-				       &affile->af_pref, NULL, FALSE) == FAIL)
+				&affile->af_pref, NULL, FALSE, flags) == FAIL)
 		retval = FAIL;
 	}
     }
@@ -1832,13 +1930,14 @@ spell_read_dic(fname, spin, affile)
  * Returns FAIL when out of memory.
  */
     static int
-store_aff_word(word, spin, afflist, ht, xht, comb)
+store_aff_word(word, spin, afflist, ht, xht, comb, flags)
     char_u	*word;		/* basic word start */
     spellinfo_T	*spin;		/* spell info */
     char_u	*afflist;	/* list of names of supported affixes */
     hashtab_T	*ht;
     hashtab_T	*xht;
     int		comb;		/* only use affixes that combine */
+    int		flags;		/* flags for the word */
 {
     int		todo;
     hashitem_T	*hi;
@@ -1906,14 +2005,14 @@ store_aff_word(word, spin, afflist, ht, xht, comb)
 			}
 
 			/* Store the modified word. */
-			if (store_word(newword, spin) == FAIL)
+			if (store_word(newword, spin, flags) == FAIL)
 			    retval = FAIL;
 
 			/* When added a suffix and combining is allowed also
 			 * try adding prefixes additionally. */
 			if (xht != NULL && ah->ah_combine)
 			    if (store_aff_word(newword, spin, afflist,
-						     xht, NULL, TRUE) == FAIL)
+					      xht, NULL, TRUE, flags) == FAIL)
 				retval = FAIL;
 		    }
 		}
@@ -1942,6 +2041,7 @@ spell_read_wordfile(fname, spin)
     int		did_word = FALSE;
     int		non_ascii = 0;
     char_u	*enc;
+    int		flags;
 
     /*
      * Open the file.
@@ -1995,9 +2095,12 @@ spell_read_wordfile(fname, spin)
 	    line = rline;
 	}
 
-	if (*line == '=')
+	flags = 0;
+
+	if (*line == '/')
 	{
-	    if (STRNCMP(line + 1, "encoding=", 9) == 0)
+	    ++line;
+	    if (STRNCMP(line, "encoding=", 9) == 0)
 	    {
 		if (spin->si_conv.vc_type != CONV_NONE)
 		    smsg((char_u *)_("Duplicate =encoding= line ignored in %s line %d: %s"),
@@ -2016,11 +2119,35 @@ spell_read_wordfile(fname, spin)
 						   fname, line + 10, p_enc);
 		    vim_free(enc);
 		}
+		continue;
 	    }
-	    else
-		smsg((char_u *)_("= line ignored in %s line %d: %s"),
+
+	    if (*line == '=')
+	    {
+		/* keep-case word */
+		flags |= WF_KEEPCAP;
+		++line;
+	    }
+
+	    if (*line == '!')
+	    {
+		/* Bad, bad, wicked word. */
+		flags |= WF_BANNED;
+		++line;
+	    }
+	    else if (*line == '?')
+	    {
+		/* Rare word. */
+		flags |= WF_RARE;
+		++line;
+	    }
+
+	    if (flags == 0)
+	    {
+		smsg((char_u *)_("/ line ignored in %s line %d: %s"),
 							   fname, lnum, line);
-	    continue;
+		continue;
+	    }
 	}
 
 	/* Skip non-ASCII words when "spin->si_ascii" is TRUE. */
@@ -2031,7 +2158,7 @@ spell_read_wordfile(fname, spin)
 	}
 
 	/* Normal word: store it. */
-	if (store_word(line, spin) == FAIL)
+	if (store_word(line, spin, flags) == FAIL)
 	{
 	    retval = FAIL;
 	    break;
@@ -2125,25 +2252,34 @@ wordtree_alloc(blp)
 
 /*
  * Store a word in the tree(s).
- * Always store it in the case-folded tree.
+ * Always store it in the case-folded tree.  A keep-case word can also be used
+ * with all caps.
  * For a keep-case word also store it in the keep-case tree.
  */
     static int
-store_word(word, spin)
+store_word(word, spin, flags)
     char_u	*word;
     spellinfo_T	*spin;
+    int		flags;		/* extra flags, WF_BANNED */
 {
     int		len = STRLEN(word);
     int		ct = captype(word, word + len);
     char_u	foldword[MAXWLEN];
     int		res;
 
-    (void)spell_casefold(word, len, foldword, MAXWLEN);
-    res = tree_add_word(foldword, spin->si_foldroot, ct, spin->si_region,
-							    &spin->si_blocks);
-    if (res == OK && ct == WF_KEEPCAP)
-	res = tree_add_word(word, spin->si_keeproot, ct, spin->si_region,
-							    &spin->si_blocks);
+    if (flags & WF_KEEPCAP)
+	res = OK;	/* keep-case specified, don't add as fold-case */
+    else
+    {
+	(void)spell_casefold(word, len, foldword, MAXWLEN);
+	res = tree_add_word(foldword, spin->si_foldroot,
+		(ct == WF_KEEPCAP ? WF_ALLCAP : ct) | flags,
+					   spin->si_region, &spin->si_blocks);
+    }
+
+    if (res == OK && (ct == WF_KEEPCAP || flags & WF_KEEPCAP))
+	res = tree_add_word(word, spin->si_keeproot, flags,
+					   spin->si_region, &spin->si_blocks);
     return res;
 }
 
@@ -2173,7 +2309,7 @@ tree_add_word(word, root, flags, region, blp)
 	 * flags are equal, there is a separate zero byte for each flag value.
 	 */
 	while (node != NULL && (node->wn_byte < word[i]
-			  || (node->wn_byte == 0 && node->wn_flags != flags)))
+		 || (node->wn_byte == 0 && node->wn_flags != (flags & 0xff))))
 	{
 	    prev = &node->wn_sibling;
 	    node = *prev;
@@ -2711,6 +2847,9 @@ ex_mkspell(eap)
 	    smsg((char_u *)_("Estimated runtime memory use: %d bytes"),
 							      spin.si_memtot);
 	    out_flush();
+
+	    /* May need to reload spell dictionaries */
+	    spell_reload();
 	}
 
 	/* Free the allocated memory. */
@@ -2727,6 +2866,348 @@ theend:
 }
 
 #endif  /* FEAT_MBYTE */
+
+
+/*
+ * Init the chartab used for spelling for ASCII.
+ * EBCDIC is not supported!
+ */
+    static void
+clear_spell_chartab(sp)
+    spelltab_T	*sp;
+{
+    int	    i;
+
+    /* Init everything to FALSE. */
+    vim_memset(sp->st_isw, FALSE, sizeof(sp->st_isw));
+    vim_memset(sp->st_isu, FALSE, sizeof(sp->st_isu));
+    for (i = 0; i < 256; ++i)
+	sp->st_fold[i] = i;
+
+    /* We include digits.  A word shouldn't start with a digit, but handling
+     * that is done separately. */
+    for (i = '0'; i <= '9'; ++i)
+	sp->st_isw[i] = TRUE;
+    for (i = 'A'; i <= 'Z'; ++i)
+    {
+	sp->st_isw[i] = TRUE;
+	sp->st_isu[i] = TRUE;
+	sp->st_fold[i] = i + 0x20;
+    }
+    for (i = 'a'; i <= 'z'; ++i)
+	sp->st_isw[i] = TRUE;
+}
+
+/*
+ * Init the chartab used for spelling.  Only depends on 'encoding'.
+ * Called once while starting up and when 'encoding' changes.
+ * The default is to use isalpha(), but the spell file should define the word
+ * characters to make it possible that 'encoding' differs from the current
+ * locale.
+ */
+    void
+init_spell_chartab()
+{
+    int	    i;
+
+    did_set_spelltab = FALSE;
+    clear_spell_chartab(&spelltab);
+
+#ifdef FEAT_MBYTE
+    if (enc_dbcs)
+    {
+	/* DBCS: assume double-wide characters are word characters. */
+	for (i = 128; i <= 255; ++i)
+	    if (MB_BYTE2LEN(i) == 2)
+		spelltab.st_isw[i] = TRUE;
+    }
+    else
+#endif
+    {
+	/* Rough guess: use isalpha() and isupper() for characters above 128. */
+	for (i = 128; i < 256; ++i)
+	{
+	    spelltab.st_isw[i] = MB_ISUPPER(i) || MB_ISLOWER(i);
+	    if (MB_ISUPPER(i))
+	    {
+		spelltab.st_isu[i] = TRUE;
+		spelltab.st_fold[i] = MB_TOLOWER(i);
+	    }
+	}
+    }
+}
+
+#if defined(FEAT_MBYTE) || defined(PROTO)
+static char *e_affform = N_("E761: Format error in affix file FOL, LOW or UPP");
+static char *e_affrange = N_("E762: Character in FOL, LOW or UPP is out of range");
+
+/*
+ * Set the spell character tables from strings in the affix file.
+ */
+    static int
+set_spell_chartab(fol, low, upp)
+    char_u	*fol;
+    char_u	*low;
+    char_u	*upp;
+{
+    /* We build the new tables here first, so that we can compare with the
+     * previous one. */
+    spelltab_T	new_st;
+    char_u	*pf = fol, *pl = low, *pu = upp;
+    int		f, l, u;
+
+    clear_spell_chartab(&new_st);
+
+    while (*pf != NUL)
+    {
+	if (*pl == NUL || *pu == NUL)
+	{
+	    EMSG(_(e_affform));
+	    return FAIL;
+	}
+#ifdef FEAT_MBYTE
+	f = mb_ptr2char_adv(&pf);
+	l = mb_ptr2char_adv(&pl);
+	u = mb_ptr2char_adv(&pu);
+#else
+	f = *pf++;
+	l = *pl++;
+	u = *pu++;
+#endif
+	/* Every character that appears is a word character. */
+	if (f < 256)
+	    new_st.st_isw[f] = TRUE;
+	if (l < 256)
+	    new_st.st_isw[l] = TRUE;
+	if (u < 256)
+	    new_st.st_isw[u] = TRUE;
+
+	/* if "LOW" and "FOL" are not the same the "LOW" char needs
+	 * case-folding */
+	if (l < 256 && l != f)
+	{
+	    if (f >= 256)
+	    {
+		EMSG(_(e_affrange));
+		return FAIL;
+	    }
+	    new_st.st_fold[l] = f;
+	}
+
+	/* if "UPP" and "FOL" are not the same the "UPP" char needs
+	 * case-folding and it's upper case. */
+	if (u < 256 && u != f)
+	{
+	    if (f >= 256)
+	    {
+		EMSG(_(e_affrange));
+		return FAIL;
+	    }
+	    new_st.st_fold[u] = f;
+	    new_st.st_isu[u] = TRUE;
+	}
+    }
+
+    if (*pl != NUL || *pu != NUL)
+    {
+	EMSG(_(e_affform));
+	return FAIL;
+    }
+
+    return set_spell_finish(&new_st);
+}
+#endif
+
+/*
+ * Set the spell character tables from strings in the .spl file.
+ */
+    static int
+set_spell_charflags(flags, cnt, upp)
+    char_u	*flags;
+    int		cnt;
+    char_u	*upp;
+{
+    /* We build the new tables here first, so that we can compare with the
+     * previous one. */
+    spelltab_T	new_st;
+    int		i;
+    char_u	*p = upp;
+
+    clear_spell_chartab(&new_st);
+
+    for (i = 0; i < cnt; ++i)
+    {
+	new_st.st_isw[i + 128] = (flags[i] & SPELL_ISWORD) != 0;
+	new_st.st_isu[i + 128] = (flags[i] & SPELL_ISUPPER) != 0;
+
+	if (*p == NUL)
+	    return FAIL;
+#ifdef FEAT_MBYTE
+	new_st.st_fold[i + 128] = mb_ptr2char_adv(&p);
+#else
+	new_st.st_fold[i + 128] = *p++;
+#endif
+    }
+
+    return set_spell_finish(&new_st);
+}
+
+    static int
+set_spell_finish(new_st)
+    spelltab_T	*new_st;
+{
+    int		i;
+
+    if (did_set_spelltab)
+    {
+	/* check that it's the same table */
+	for (i = 0; i < 256; ++i)
+	{
+	    if (spelltab.st_isw[i] != new_st->st_isw[i]
+		    || spelltab.st_isu[i] != new_st->st_isu[i]
+		    || spelltab.st_fold[i] != new_st->st_fold[i])
+	    {
+		EMSG(_("E763: Word characters differ between spell files"));
+		return FAIL;
+	    }
+	}
+    }
+    else
+    {
+	/* copy the new spelltab into the one being used */
+	spelltab = *new_st;
+	did_set_spelltab = TRUE;
+    }
+
+    return OK;
+}
+
+#if defined(FEAT_MBYTE) || defined(PROTO)
+/*
+ * Write the current tables into the .spl file.
+ * This makes sure the same characters are recognized as word characters when
+ * generating an when using a spell file.
+ */
+    static void
+write_spell_chartab(fd)
+    FILE	*fd;
+{
+    char_u	charbuf[256 * 4];
+    int		len = 0;
+    int		flags;
+    int		i;
+
+    fputc(128, fd);				    /* <charflagslen> */
+    for (i = 128; i < 256; ++i)
+    {
+	flags = 0;
+	if (spelltab.st_isw[i])
+	    flags |= SPELL_ISWORD;
+	if (spelltab.st_isu[i])
+	    flags |= SPELL_ISUPPER;
+	fputc(flags, fd);			    /* <charflags> */
+
+	len += mb_char2bytes(spelltab.st_fold[i], charbuf + len);
+    }
+
+    put_bytes(fd, (long_u)len, 2);		    /* <fcharlen> */
+    fwrite(charbuf, (size_t)len, (size_t)1, fd);    /* <fchars> */
+}
+#endif
+
+/*
+ * Return TRUE if "c" is an upper-case character for spelling.
+ */
+    static int
+spell_isupper(c)
+    int		c;
+{
+# ifdef FEAT_MBYTE
+    if (enc_utf8)
+    {
+	/* For Unicode we can call utf_isupper(), but don't do that for ASCII,
+	 * because we don't want to use 'casemap' here. */
+	if (c >= 128)
+	    return utf_isupper(c);
+    }
+    else if (has_mbyte && c > 256)
+    {
+	/* For characters above 255 we don't have something specfied.
+	 * Fall back to locale-dependent iswupper().  If not available
+	 * simply return FALSE. */
+#  ifdef HAVE_ISWUPPER
+	return iswupper(c);
+#  else
+	return FALSE;
+#  endif
+    }
+# endif
+    return spelltab.st_isu[c];
+}
+
+/*
+ * Case-fold "p[len]" into "buf[buflen]".  Used for spell checking.
+ * When using a multi-byte 'encoding' the length may change!
+ * Returns FAIL when something wrong.
+ */
+    static int
+spell_casefold(p, len, buf, buflen)
+    char_u	*p;
+    int		len;
+    char_u	*buf;
+    int		buflen;
+{
+    int		i;
+
+    if (len >= buflen)
+    {
+	buf[0] = NUL;
+	return FAIL;		/* result will not fit */
+    }
+
+#ifdef FEAT_MBYTE
+    if (has_mbyte)
+    {
+	int	c;
+	int	outi = 0;
+
+	/* Fold one character at a time. */
+	for (i = 0; i < len; i += mb_ptr2len_check(p + i))
+	{
+	    c = mb_ptr2char(p + i);
+	    if (enc_utf8)
+		/* For Unicode case folding is always the same, no need to use
+		 * the table from the spell file. */
+		c = utf_fold(c);
+	    else if (c < 256)
+		/* Use the table from the spell file. */
+		c = spelltab.st_fold[c];
+# ifdef HAVE_TOWLOWER
+	    else
+		/* We don't know what to do, fall back to towlower(), it
+		 * depends on the current locale. */
+		c = towlower(c);
+# endif
+	    if (outi + MB_MAXBYTES > buflen)
+	    {
+		buf[outi] = NUL;
+		return FAIL;
+	    }
+	    outi += mb_char2bytes(c, buf + outi);
+	}
+	buf[outi] = NUL;
+    }
+    else
+#endif
+    {
+	/* Be quick for non-multibyte encodings. */
+	for (i = 0; i < len; ++i)
+	    buf[i] = spelltab.st_fold[p[i]];
+	buf[i] = NUL;
+    }
+
+    return OK;
+}
 
 
 #endif  /* FEAT_SYN_HL */
