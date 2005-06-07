@@ -4665,6 +4665,27 @@ dozet:
 
 #endif /* FEAT_FOLDING */
 
+#ifdef FEAT_SYN_HL
+    case 'g':	/* "zg": add good word to word list */
+    case 'w':	/* "zw": add wrong word to word list */
+		{
+		    char_u  *ptr = NULL;
+		    int	    len;
+
+		    if (checkclearop(cap->oap))
+			break;
+# ifdef FEAT_VISUAL
+		    if (VIsual_active && get_visual_text(cap, &ptr, &len)
+								      == FAIL)
+			return;
+# endif
+		    if (ptr == NULL && (len = find_ident_under_cursor(&ptr,
+							    FIND_IDENT)) == 0)
+			return;
+		    spell_add_word(ptr, len, nchar == 'w');
+		}
+#endif
+
     default:	clearopbeep(cap->oap);
     }
 

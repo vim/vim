@@ -222,8 +222,7 @@ static void	ex_popup __ARGS((exarg_T *eap));
 #endif
 #ifndef FEAT_SYN_HL
 # define ex_syntax		ex_ni
-#endif
-#if !defined(FEAT_SYN_HL) || !defined(FEAT_MBYTE)
+# define ex_spell		ex_ni
 # define ex_mkspell		ex_ni
 #endif
 #ifndef FEAT_MZSCHEME
@@ -9906,7 +9905,7 @@ ex_viminfo(eap)
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG) || defined(PROTO)
 /*
  * Make a dialog message in "buff[IOSIZE]".
- * "format" must contain "%.*s".
+ * "format" must contain "%s".
  */
     void
 dialog_msg(buff, format, fname)
@@ -9914,15 +9913,9 @@ dialog_msg(buff, format, fname)
     char	*format;
     char_u	*fname;
 {
-    int		len;
-
     if (fname == NULL)
 	fname = (char_u *)_("Untitled");
-    len = (int)STRLEN(format) + (int)STRLEN(fname);
-    if (len >= IOSIZE)
-	sprintf((char *)buff, format, (int)(IOSIZE - STRLEN(format)), fname);
-    else
-	sprintf((char *)buff, format, (int)STRLEN(fname), fname);
+    vim_snprintf((char *)buff, IOSIZE, format, fname);
 }
 #endif
 
