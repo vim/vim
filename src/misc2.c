@@ -5592,3 +5592,41 @@ vimpty_getenv(string)
 # endif
 
 #endif /* !defined(HAVE_SETENV) && !defined(HAVE_PUTENV) */
+
+#if defined(FEAT_EVAL) || defined(FEAT_SYN_HL) || defined(PROTO)
+/*
+ * Return 0 for not writable, 1 for writable file, 2 for a dir which we have
+ * rights to write into.
+ */
+    int
+filewritable(fname)
+    char_u	*fname;
+{
+    int		retval = 0;
+#if defined(UNIX) || defined(VMS)
+    int		perm = 0;
+#endif
+
+#if defined(UNIX) || defined(VMS)
+    perm = mch_getperm(fname);
+#endif
+#ifndef MACOS_CLASSIC /* TODO: get either mch_writable or mch_access */
+    if (
+# ifdef WIN3264
+	    mch_writable(fname) &&
+# else
+# if defined(UNIX) || defined(VMS)
+	    (perm & 0222) &&
+#  endif
+# endif
+	    mch_access((char *)fname, W_OK) == 0
+       )
+#endif
+    {
+	++retval;
+	if (mch_isdir(fname))
+	    ++retval;
+    }
+    return retval;
+}
+#endif
