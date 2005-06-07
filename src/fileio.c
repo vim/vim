@@ -6156,146 +6156,8 @@ buf_check_timestamp(buf, focus)
     }
 
     if (reload)
-    {
-	exarg_T		ea;
-	pos_T		old_cursor;
-	linenr_T	old_topline;
-	int		old_ro = buf->b_p_ro;
-	buf_T		*savebuf;
-	int		saved = OK;
-#ifdef FEAT_AUTOCMD
-	aco_save_T	aco;
-
-	/* set curwin/curbuf for "buf" and save some things */
-	aucmd_prepbuf(&aco, buf);
-#else
-	buf_T	*save_curbuf = curbuf;
-
-	curbuf = buf;
-	curwin->w_buffer = buf;
-#endif
-
-	/* We only want to read the text from the file, not reset the syntax
-	 * highlighting, clear marks, diff status, etc.  Force the fileformat
-	 * and encoding to be the same. */
-	if (prep_exarg(&ea, buf) == OK)
-	{
-	    old_cursor = curwin->w_cursor;
-	    old_topline = curwin->w_topline;
-
-	    /*
-	     * To behave like when a new file is edited (matters for
-	     * BufReadPost autocommands) we first need to delete the current
-	     * buffer contents.  But if reading the file fails we should keep
-	     * the old contents.  Can't use memory only, the file might be
-	     * too big.  Use a hidden buffer to move the buffer contents to.
-	     */
-	    if (bufempty())
-		savebuf = NULL;
-	    else
-	    {
-		/* Allocate a buffer without putting it in the buffer list. */
-		savebuf = buflist_new(NULL, NULL, (linenr_T)1, BLN_DUMMY);
-		if (savebuf != NULL)
-		{
-		    /* Open the memline. */
-		    curbuf = savebuf;
-		    curwin->w_buffer = savebuf;
-		    saved = ml_open();
-		    curbuf = buf;
-		    curwin->w_buffer = buf;
-		}
-		if (savebuf == NULL || saved == FAIL
-					  || move_lines(buf, savebuf) == FAIL)
-		{
-		    EMSG2(_("E462: Could not prepare for reloading \"%s\""),
-								buf->b_fname);
-		    saved = FAIL;
-		}
-	    }
-
-	    if (saved == OK)
-	    {
-		curbuf->b_flags |= BF_CHECK_RO;	/* check for RO again */
-#ifdef FEAT_AUTOCMD
-		keep_filetype = TRUE;		/* don't detect 'filetype' */
-#endif
-		if (readfile(buf->b_ffname, buf->b_fname, (linenr_T)0,
-			    (linenr_T)0,
-			    (linenr_T)MAXLNUM, &ea, READ_NEW) == FAIL)
-		{
-#if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
-		    if (!aborting())
-#endif
-			EMSG2(_("E321: Could not reload \"%s\""), buf->b_fname);
-		    if (savebuf != NULL)
-		    {
-			/* Put the text back from the save buffer.  First
-			 * delete any lines that readfile() added. */
-			while (!bufempty())
-			    if (ml_delete(curbuf->b_ml.ml_line_count, FALSE)
-								      == FAIL)
-				break;
-			(void)move_lines(savebuf, buf);
-		    }
-		}
-		else
-		{
-		    /* Mark the buffer as unmodified and free undo info. */
-		    unchanged(buf, TRUE);
-		    u_blockfree(buf);
-		    u_clearall(buf);
-		}
-	    }
-	    vim_free(ea.cmd);
-
-	    if (savebuf != NULL)
-		wipe_buffer(savebuf, FALSE);
-
-#ifdef FEAT_DIFF
-	    /* Invalidate diff info if necessary. */
-	    diff_invalidate();
-#endif
-
-	    /* Restore the topline and cursor position and check it (lines may
-	     * have been removed). */
-	    if (old_topline > curbuf->b_ml.ml_line_count)
-		curwin->w_topline = curbuf->b_ml.ml_line_count;
-	    else
-		curwin->w_topline = old_topline;
-	    curwin->w_cursor = old_cursor;
-	    check_cursor();
-	    update_topline();
-#ifdef FEAT_AUTOCMD
-	    keep_filetype = FALSE;
-#endif
-#ifdef FEAT_FOLDING
-	    {
-		win_T *wp;
-
-		/* Update folds unless they are defined manually. */
-		FOR_ALL_WINDOWS(wp)
-		    if (wp->w_buffer == curwin->w_buffer
-			    && !foldmethodIsManual(wp))
-			foldUpdateAll(wp);
-	    }
-#endif
-	    /* If the mode didn't change and 'readonly' was set, keep the old
-	     * value; the user probably used the ":view" command.  But don't
-	     * reset it, might have had a read error. */
-	    if (orig_mode == curbuf->b_orig_mode)
-		curbuf->b_p_ro |= old_ro;
-	}
-
-#ifdef FEAT_AUTOCMD
-	/* restore curwin/curbuf and a few other things */
-	aucmd_restbuf(&aco);
-	/* Careful: autocommands may have made "buf" invalid! */
-#else
-	curwin->w_buffer = save_curbuf;
-	curbuf = save_curbuf;
-#endif
-    }
+	/* Reload the buffer. */
+	buf_reload(buf);
 
 #ifdef FEAT_GUI
     /* restore this in case an autocommand has set it; it would break
@@ -6304,6 +6166,155 @@ buf_check_timestamp(buf, focus)
 #endif
 
     return retval;
+}
+
+/*
+ * Reload a buffer that is already loaded.
+ * Used when the file was changed outside of Vim.
+ */
+    void
+buf_reload(buf)
+    buf_T	*buf;
+{
+    exarg_T	ea;
+    pos_T	old_cursor;
+    linenr_T	old_topline;
+    int		old_ro = buf->b_p_ro;
+    int		orig_mode = buf->b_orig_mode;
+    buf_T	*savebuf;
+    int		saved = OK;
+#ifdef FEAT_AUTOCMD
+    aco_save_T	aco;
+
+    /* set curwin/curbuf for "buf" and save some things */
+    aucmd_prepbuf(&aco, buf);
+#else
+    buf_T	*save_curbuf = curbuf;
+
+    curbuf = buf;
+    curwin->w_buffer = buf;
+#endif
+
+    /* We only want to read the text from the file, not reset the syntax
+     * highlighting, clear marks, diff status, etc.  Force the fileformat
+     * and encoding to be the same. */
+    if (prep_exarg(&ea, buf) == OK)
+    {
+	old_cursor = curwin->w_cursor;
+	old_topline = curwin->w_topline;
+
+	/*
+	 * To behave like when a new file is edited (matters for
+	 * BufReadPost autocommands) we first need to delete the current
+	 * buffer contents.  But if reading the file fails we should keep
+	 * the old contents.  Can't use memory only, the file might be
+	 * too big.  Use a hidden buffer to move the buffer contents to.
+	 */
+	if (bufempty())
+	    savebuf = NULL;
+	else
+	{
+	    /* Allocate a buffer without putting it in the buffer list. */
+	    savebuf = buflist_new(NULL, NULL, (linenr_T)1, BLN_DUMMY);
+	    if (savebuf != NULL)
+	    {
+		/* Open the memline. */
+		curbuf = savebuf;
+		curwin->w_buffer = savebuf;
+		saved = ml_open();
+		curbuf = buf;
+		curwin->w_buffer = buf;
+	    }
+	    if (savebuf == NULL || saved == FAIL
+				      || move_lines(buf, savebuf) == FAIL)
+	    {
+		EMSG2(_("E462: Could not prepare for reloading \"%s\""),
+							    buf->b_fname);
+		saved = FAIL;
+	    }
+	}
+
+	if (saved == OK)
+	{
+	    curbuf->b_flags |= BF_CHECK_RO;	/* check for RO again */
+#ifdef FEAT_AUTOCMD
+	    keep_filetype = TRUE;		/* don't detect 'filetype' */
+#endif
+	    if (readfile(buf->b_ffname, buf->b_fname, (linenr_T)0,
+			(linenr_T)0,
+			(linenr_T)MAXLNUM, &ea, READ_NEW) == FAIL)
+	    {
+#if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
+		if (!aborting())
+#endif
+		    EMSG2(_("E321: Could not reload \"%s\""), buf->b_fname);
+		if (savebuf != NULL)
+		{
+		    /* Put the text back from the save buffer.  First
+		     * delete any lines that readfile() added. */
+		    while (!bufempty())
+			if (ml_delete(curbuf->b_ml.ml_line_count, FALSE)
+								  == FAIL)
+			    break;
+		    (void)move_lines(savebuf, buf);
+		}
+	    }
+	    else
+	    {
+		/* Mark the buffer as unmodified and free undo info. */
+		unchanged(buf, TRUE);
+		u_blockfree(buf);
+		u_clearall(buf);
+	    }
+	}
+	vim_free(ea.cmd);
+
+	if (savebuf != NULL)
+	    wipe_buffer(savebuf, FALSE);
+
+#ifdef FEAT_DIFF
+	/* Invalidate diff info if necessary. */
+	diff_invalidate();
+#endif
+
+	/* Restore the topline and cursor position and check it (lines may
+	 * have been removed). */
+	if (old_topline > curbuf->b_ml.ml_line_count)
+	    curwin->w_topline = curbuf->b_ml.ml_line_count;
+	else
+	    curwin->w_topline = old_topline;
+	curwin->w_cursor = old_cursor;
+	check_cursor();
+	update_topline();
+#ifdef FEAT_AUTOCMD
+	keep_filetype = FALSE;
+#endif
+#ifdef FEAT_FOLDING
+	{
+	    win_T *wp;
+
+	    /* Update folds unless they are defined manually. */
+	    FOR_ALL_WINDOWS(wp)
+		if (wp->w_buffer == curwin->w_buffer
+			&& !foldmethodIsManual(wp))
+		    foldUpdateAll(wp);
+	}
+#endif
+	/* If the mode didn't change and 'readonly' was set, keep the old
+	 * value; the user probably used the ":view" command.  But don't
+	 * reset it, might have had a read error. */
+	if (orig_mode == curbuf->b_orig_mode)
+	    curbuf->b_p_ro |= old_ro;
+    }
+
+#ifdef FEAT_AUTOCMD
+    /* restore curwin/curbuf and a few other things */
+    aucmd_restbuf(&aco);
+    /* Careful: autocommands may have made "buf" invalid! */
+#else
+    curwin->w_buffer = save_curbuf;
+    curbuf = save_curbuf;
+#endif
 }
 
 /*ARGSUSED*/
