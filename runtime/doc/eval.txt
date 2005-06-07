@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 May 31
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -4309,7 +4309,8 @@ sniff			Compiled with SNiFF interface support.
 statusline		Compiled with support for 'statusline', 'rulerformat'
 			and special formats of 'titlestring' and 'iconstring'.
 sun_workshop		Compiled with support for Sun |workshop|.
-syntax			Compiled with syntax highlighting support.
+spell			Compiled with spell checking support |spell|.
+syntax			Compiled with syntax highlighting support |syntax|.
 syntax_items		There are active syntax highlighting items for the
 			current buffer.
 system			Compiled to use system() instead of fork()/exec().

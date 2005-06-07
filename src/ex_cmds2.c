@@ -1303,7 +1303,7 @@ dialog_changed(buf, checkall)
     int		ret;
     buf_T	*buf2;
 
-    dialog_msg(buff, _("Save changes to \"%.*s\"?"),
+    dialog_msg(buff, _("Save changes to \"%s\"?"),
 			(buf->b_fname != NULL) ?
 			buf->b_fname : (char_u *)_("Untitled"));
     if (checkall)

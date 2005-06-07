@@ -1341,6 +1341,7 @@ struct file_buffer
     int		b_p_swf;	/* 'swapfile' */
 #ifdef FEAT_SYN_HL
     char_u	*b_p_syn;	/* 'syntax' */
+    char_u	*b_p_spf;	/* 'spellfile' */
     char_u	*b_p_spl;	/* 'spelllang' */
 #endif
     long	b_p_ts;		/* 'tabstop' */

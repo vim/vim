@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 06
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -8,7 +8,7 @@ Spell checking						*spell*
 
 1. Quick start			|spell-quickstart|
 2. Generating a spell file	|spell-mkspell|
-9. Spell file format		|spell-file-format|
+3. Spell file format		|spell-file-format|
 
 {Vi does not have any of these commands}
 
@@ -49,6 +49,27 @@ To search for the next misspelled word:
 
 							*[S*
 [S			Like "]S" but search backwards.
+
+
+To add words to your own word list:
+
+							*zg*
+zg			Add word under the cursor as a good word to
+			'spellfile'.  In Visual mode the selected characters
+			are added as a word (including white space!).
+
+							*zw*
+zw			Add word under the cursor as a wrong (bad) word to
+			'spellfile'.  In Visual mode the selected characters
+			are added as a word (including white space!).
+
+							*:spellg* *:spellgood*
+:spellg[ood] {word}	Add [word} as a good word to 'spellfile'.
+
+:spellw[rong] {word}	Add [word} as a wrong (bad) word to 'spellfile'.
+
+After adding a word to 'spellfile' its associated ".spl" file will
+automatically be updated.
 
 
 PERFORMANCE
@@ -138,15 +159,21 @@ You can create a Vim spell file from the .aff and .dic files that Myspell
 uses.  Myspell is used by OpenOffice.org and Mozilla.  You should be able to
 find them here:
 	http://lingucomponent.openoffice.org/spell_dic.html
+You can also use a plain word list.
 
 :mksp[ell] [-ascii] {outname} {inname} ...		*:mksp* *:mkspell*
-			Generate spell file {outname}.spl.
+			Generate a Vim spell file word lists.  Example: >
+		:mkspell nl nl_NL.words
+<
+			When {outname} ends in ".spl" it is used as the output
+			file name.  Otherwise it should be a language name,
+			such as "en".  The file written will be
+			{outname}.{encoding}.spl.  {encoding} is the value of
+			the 'encoding' option.
 
 			When the [-ascii] argument is present, words with
 			non-ascii characters are skipped.  The resulting file
-			ends in "ascii.spl".  Otherwise the resulting file
-			ends in "ENC.spl", where ENC is the value of
-			'encoding'.
+			ends in "ascii.spl".
 
 			The input can be the Myspell format files {inname}.aff
 			and {inname}.dic.  If {inname}.aff does not exist then
@@ -163,8 +190,13 @@ find them here:
 			When the spell file was written all currently used
 			spell files will be reloaded.
 
-Since you might want to change the word list for use with Vim the following
-procedure is recommended:
+:mksp[ell] [-ascii] {add-name}
+			Like ":mkspell" above, using {add-name} as the input
+			file and producing an output file that has ".spl"
+			appended.
+
+Since you might want to change a Myspell word list for use with Vim the
+following procedure is recommended:
 
 1. Obtain the xx_YY.aff and xx_YY.dic files from Myspell.
 2. Make a copy of these files to xx_YY.orig.aff and xx_YY.orig.dic.
@@ -204,8 +236,8 @@ format is a list of words.
 
 FORMAT OF WORD LIST
 
-The words must appear one per line.  That is all that is required.  Optional
-items are:
+The words must appear one per line.  That is all that is required.
+Additionally the following items are recognized:
 - Empty and blank lines are ignored.
 - Lines starting with a # are ignored (comment lines).
 - A line starting with "/encoding=", before any word, specifies the encoding
@@ -215,8 +247,8 @@ items are:
 - A line starting with "/!" specifies a word that should be marked as bad.
 - A line starting with "/=" specifies a word where case must match exactly.
   A "?" or "!" may be following: "/=?" and "/=!".
-- Other lines starting with '/' are special.  The ones that are not recognized
-  are ignored (but you do get a warning message).
+- Other lines starting with '/' are reserved for future use.  The ones that
+  are not recognized are ignored (but you do get a warning message).
 
 
 FORMAT WITH AFFIX COMPRESSION
@@ -231,6 +263,7 @@ Myspell uses (the spell checker of Mozilla and OpenOffice.org).  A description
 can be found here:
 	http://lingucomponent.openoffice.org/affix.readme ~
 Note that affixes are case sensitive, this isn't obvious from the description.
+
 Vim supports a few extras.  Hopefully Myspell will support these too some day.
 See |spell-affix-vim|.
 
@@ -259,10 +292,11 @@ A very short example, with line numbers:
 	9	kado/1
 	10	cadeau/2
 
-The first line contains the number of words.  Vim ignores it.  *E760*
+The first line contains the number of words.  Vim ignores it, but you do get
+an error message if it's not there.  *E760*
 
-What follows is one word per line.  There should be no white space after the
-word.
+What follows is one word per line.  There should be no white space before or
+after the word.
 
 When the word only has lower-case letters it will also match with the word
 starting with an upper-case letter.
@@ -280,7 +314,7 @@ The same word with all upper-case characters will always be OK.
 	ALS		ALS			als Als ALs AlS aLs aLS
 	AlS		AlS ALS			als Als ALs aLs aLS
 
-The HUH affix ID can be used to specifically match a word in identical case
+The KEP affix ID can be used to specifically match a word with identical case
 only, see below.
 
 Note in line 5 to 7 that non-word characters are used.  You can include
@@ -292,10 +326,10 @@ After the word there is an optional slash and flags.  Most of these flags are
 letters that indicate the affixes that can be used with this word.
 
 							*spell-affix-vim*
-A flag that Vim adds and is not in Myspell is the flag defined with HUH in the
+A flag that Vim adds and is not in Myspell is the flag defined with KEP in the
 affix file.  This has the meaning that case matters.  This can be used if the
 word does not have the first letter in upper case at the start of a sentence.
-Example:
+Example (assuming that = was used for KEP):
 
 	word list	matches			does not match ~
 	's morgens/=	's morgens		'S morgens 's Morgens
@@ -309,15 +343,11 @@ something else, any encoding that "iconv" supports.  The "SET" line must
 specify the name of the encoding.  When using a multi-byte encoding it's
 possible to use more different affixes.
 
-Performance hint: Although using affixes reduces the number of words, it
-reduces the speed.  It's a good idea to put all the often used words in the
-word list with the affixes prepended/appended.
-
 							*spell-affix-chars*
-The affix file should define the word characters when using an 8-bit encoding
-(as specified with ENC).  This is because the system where ":mkspell" is used
-may not support a locale with this encoding and isalpha() won't work.  For
-example when using "cp1250" on Unix.
+When using an 8-bit encoding the affix file should define what characters are
+word characters (as specified with ENC).  This is because the system where
+":mkspell" is used may not support a locale with this encoding and isalpha()
+won't work.  For example when using "cp1250" on Unix.
 
 							*E761* *E762*
 Three lines in the affix file are needed.  Simplistic example:
@@ -348,15 +378,15 @@ otherwise they can't be combined without errors.  The XX.ascii.spl spell file
 generated with the "-ascii" argument will not contain the table with
 characters, so that it can be combine with spell files for any encoding.
 
-
-In the affix file a HUH line can be used to define the affix name used for
+							*spell-affix-KEP*
+In the affix file a KEP line can be used to define the affix name used for
 keep-case words.  Example:
 
-	HUH = ~
+	KEP = ~
 
 See above for an example |spell-affix-vim|.
 
-
+							*spell-affix-RAR*
 In the affix file a RAR line can be used to define the affix name used for
 rare words.  Example:
 

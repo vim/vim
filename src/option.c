@@ -121,6 +121,7 @@ typedef enum
     , PV_SI
     , PV_SN
     , PV_SPELL
+    , PV_SPF
     , PV_SPL
     , PV_STL
     , PV_STS
@@ -234,6 +235,7 @@ static long	p_sw;
 static int	p_swf;
 #ifdef FEAT_SYN_HL
 static char_u	*p_syn;
+static char_u	*p_spf;
 static char_u	*p_spl;
 #endif
 static long	p_ts;
@@ -2029,10 +2031,19 @@ static struct vimoption
 			    (char_u *)NULL, PV_NONE,
 #endif
 			    {(char_u *)FALSE, (char_u *)0L}},
+    {"spellfile",   "spf",  P_STRING|P_EXPAND|P_ALLOCED|P_VI_DEF|P_SECURE,
+#ifdef FEAT_SYN_HL
+			    (char_u *)&p_spf, PV_SPF,
+			    {(char_u *)"", (char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)0L, (char_u *)0L}
+#endif
+			    },
     {"spelllang",   "spl",  P_STRING|P_ALLOCED|P_VI_DEF|P_COMMA|P_RBUF,
 #ifdef FEAT_SYN_HL
 			    (char_u *)&p_spl, PV_SPL,
-			    {(char_u *)"", (char_u *)0L}
+			    {(char_u *)"en", (char_u *)0L}
 #else
 			    (char_u *)NULL, PV_NONE,
 			    {(char_u *)0L, (char_u *)0L}
@@ -4612,6 +4623,7 @@ check_buf_options(buf)
 #endif
 #ifdef FEAT_SYN_HL
     check_string_option(&buf->b_p_syn);
+    check_string_option(&buf->b_p_spf);
     check_string_option(&buf->b_p_spl);
 #endif
 #ifdef FEAT_SEARCHPATH
@@ -8313,6 +8325,7 @@ get_varp(p)
 	case PV_SWF:	return (char_u *)&(curbuf->b_p_swf);
 #ifdef FEAT_SYN_HL
 	case PV_SYN:	return (char_u *)&(curbuf->b_p_syn);
+	case PV_SPF:	return (char_u *)&(curbuf->b_p_spf);
 	case PV_SPL:	return (char_u *)&(curbuf->b_p_spl);
 #endif
 	case PV_SW:	return (char_u *)&(curbuf->b_p_sw);
@@ -8623,6 +8636,7 @@ buf_copy_options(buf, flags)
 #ifdef FEAT_SYN_HL
 	    /* Don't copy 'syntax', it must be set */
 	    buf->b_p_syn = empty_option;
+	    buf->b_p_spf = vim_strsave(p_spf);
 	    buf->b_p_spl = vim_strsave(p_spl);
 #endif
 #if defined(FEAT_CINDENT) && defined(FEAT_EVAL)

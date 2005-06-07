@@ -15,6 +15,7 @@ int tag_fgets __ARGS((char_u *buf, int size, FILE *fp));
 int vim_rename __ARGS((char_u *from, char_u *to));
 int check_timestamps __ARGS((int focus));
 int buf_check_timestamp __ARGS((buf_T *buf, int focus));
+void buf_reload __ARGS((buf_T *buf));
 void buf_store_time __ARGS((buf_T *buf, struct stat *st, char_u *fname));
 void write_lnum_adjust __ARGS((linenr_T offset));
 void vim_deltempdir __ARGS((void));

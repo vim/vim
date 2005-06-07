@@ -2241,8 +2241,12 @@ dialog_key_press_event_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
     DialogInfo *di = (DialogInfo *)data;
 
     /* Ignore hitting "Enter" if there is no default button. */
-    if (di->ignore_enter && event->keyval == GDK_Return)
+    if (event->keyval == GDK_Return)
+    {
+	if (!di->ignore_enter)
+	    gtk_dialog_response(di->dialog, GTK_RESPONSE_ACCEPT);
 	return TRUE;
+    }
 
     /* Close the dialog when hitting "Esc". */
     if (event->keyval == GDK_Escape)
@@ -2326,6 +2330,8 @@ gui_mch_dialog(int	type,	    /* type of dialog */
     /* GTK_RESPONSE_NONE means the dialog was programmatically destroyed. */
     if (response != GTK_RESPONSE_NONE)
     {
+	if (response == GTK_RESPONSE_ACCEPT)	    /* Enter pressed */
+	    response = def_but;
 	if (textfield != NULL)
 	{
 	    text = (char_u *)gtk_entry_get_text(GTK_ENTRY(entry));

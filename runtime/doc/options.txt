@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 06
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5633,8 +5633,20 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When on spell checking will be done.  See |spell|.
 	The languages are specified with 'spelllang'.
 
+						*'spellfile'* *'spf'*
+'spellfile' 'spf'	string	(default empty)
+			local to buffer
+			{not in Vi}
+			{not available when compiled without the |+syntax|
+			feature}
+	Name of the word list file where words are added for the |zg| and |zw|
+	commands.  It must end in ".add".
+	When a word is added while this option is empty Vim will set it for
+	you: Using the first "spell" directory in 'runtimepath' that is
+	writable and the first language name that appears in 'spelllang'.
+
 						*'spelllang'* *'spl'*
-'spelllang' 'spl'	string	(default empty)
+'spelllang' 'spl'	string	(default "en")
 			local to buffer
 			{not in Vi}
 			{not available when compiled without the |+syntax|

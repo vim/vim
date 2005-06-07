@@ -2,7 +2,7 @@
 " You can also use this as a start for your own set of menus.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Mar 15
+" Last Change:	2005 Jun 07
 
 " Note that ":an" (short for ":anoremenu") is often used to make a menu work
 " in all modes and avoid side effects from mappings defined by the user.
@@ -403,9 +403,58 @@ vnoremenu &Tools.&Jump\ to\ this\ tag<Tab>g^]	g<C-]>
 an 40.310 &Tools.Jump\ &back<Tab>^T		<C-T>
 an 40.320 &Tools.Build\ &Tags\ File		:exe "!" . g:ctags_command<CR>
 
+if has("folding") || has("spell")
+  an 40.330 &Tools.-SEP1-						<Nop>
+endif
+
+" Tools.Spellsing Menu
+if has("spell")
+  an 40.335.110 &Tools.&Spelling.&Spell\ Check\ On		:set spell<CR>
+  an 40.335.120 &Tools.&Spelling.Spell\ Check\ &Off		:set nospell<CR>
+  an 40.335.130 &Tools.&Spelling.To\ &Next\ error<Tab>]s	]s
+  an 40.335.130 &Tools.&Spelling.To\ &Pevious\ error<Tab>[s	[s
+  an 40.335.200 &Tools.&Spelling.-SEP1-				<Nop>
+  an 40.335.210 &Tools.&Spelling.Set\ language\ to\ "en"	:set spl=en spell<CR>
+  an 40.335.220 &Tools.&Spelling.Set\ language\ to\ "en_au"	:set spl=en_au spell<CR>
+  an 40.335.230 &Tools.&Spelling.Set\ language\ to\ "en_ca"	:set spl=en_ca spell<CR>
+  an 40.335.240 &Tools.&Spelling.Set\ language\ to\ "en_gb"	:set spl=en_gb spell<CR>
+  an 40.335.250 &Tools.&Spelling.Set\ language\ to\ "en_nz"	:set spl=en_nz spell<CR>
+  an 40.335.260 &Tools.&Spelling.Set\ language\ to\ "en_us"	:set spl=en_us spell<CR>
+  an <silent> 40.335.270 &Tools.&Spelling.&Find\ More\ Languages	:call <SID>SpellLang()<CR>
+
+  func! s:SpellLang()
+    silent! aun &Tools.&Spelling.&Find\ More\ Languages
+    if &enc == "iso-8859-15"
+      let enc = "latin1"
+    else
+      let enc = &enc
+    endif
+    let found = 0
+    let s = globpath(&rtp, "spell/*." . enc . ".spl")
+    if s != ""
+      let n = 300
+      for f in split(s, "\n")
+	let nm = substitute(f, '.*spell[/\\]\(..\)\.[^/\\]*\.spl', '\1', "")
+	if nm != "en"
+	  exe 'an 40.335.' . n . ' &Tools.&Spelling.Set\ language\ to\ "' . nm . '" :set spl=' . nm . ' spell<CR>'
+	  let found += 1
+	endif
+	let n += 10
+      endfor
+    endif
+    if found == 0
+      echomsg "Could not find other spell files"
+    elseif found == 1
+      echomsg "Found spell file " . nm
+    else
+      echomsg "Found " . found . " more spell files"
+    endif
+  endfun
+
+endif
+
 " Tools.Fold Menu
 if has("folding")
-  an 40.330 &Tools.-SEP1-						<Nop>
   " open close folds
   an 40.340.110 &Tools.&Folding.&Enable/Disable\ folds<Tab>zi		zi
   an 40.340.120 &Tools.&Folding.&View\ Cursor\ Line<Tab>zv		zv
@@ -520,7 +569,7 @@ while strlen(s:n) > 0
   endif
   " Ignore case for VMS and windows
   let s:name = substitute(s:name, '\c.*[/\\:\]]\([^/\\:]*\)\.vim', '\1', '')
-  exe "an 30.440." . s:idx . ' &Tools.&Set\ Compiler.' . s:name . " :compiler " . s:name . "<CR>"
+  exe "an 30.440." . s:idx . ' &Tools.se&T\ Compiler.' . s:name . " :compiler " . s:name . "<CR>"
   unlet s:name
   unlet s:i
   let s:idx = s:idx + 10
