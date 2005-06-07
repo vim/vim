@@ -2625,7 +2625,8 @@ mb_prevptr(line, p)
 }
 
 /*
- * Return the character length of "str".  multi-byte characters counts as one.
+ * Return the character length of "str".  Each multi-byte character counts as
+ * one.
  */
     int
 mb_charlen(str)
