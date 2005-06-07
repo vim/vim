@@ -2433,7 +2433,7 @@ do_write(eap)
 	{
 	    /* Overwriting a file that is loaded in another buffer is not a
 	     * good idea. */
-	    EMSG(_("E139: File is loaded in another buffer"));
+	    EMSG(_(e_bufloaded));
 	    goto theend;
 	}
     }
@@ -2591,7 +2591,7 @@ check_overwrite(eap, buf, fname, ffname, other)
 	{
 	    char_u	buff[IOSIZE];
 
-	    dialog_msg(buff, _("Overwrite existing file \"%.*s\"?"), fname);
+	    dialog_msg(buff, _("Overwrite existing file \"%s\"?"), fname);
 	    if (vim_dialog_yesno(VIM_QUESTION, NULL, buff, 2) != VIM_YES)
 		return FAIL;
 	    eap->forceit = TRUE;
@@ -2721,7 +2721,7 @@ check_readonly(forceit, buf)
 	{
 	    char_u	buff[IOSIZE];
 
-	    dialog_msg(buff, _("'readonly' option is set for \"%.*s\".\nDo you wish to write anyway?"),
+	    dialog_msg(buff, _("'readonly' option is set for \"%s\".\nDo you wish to write anyway?"),
 		    buf->b_fname);
 
 	    if (vim_dialog_yesno(VIM_QUESTION, NULL, buff, 2) == VIM_YES)

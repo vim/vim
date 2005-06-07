@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jun 06
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jun 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -427,6 +427,8 @@ SQL-Informix syntax file. (Dean L Hill)
 PHP compiler plugin. (Doug Kearns)
 
 Sive syntax file. (Nikolai Weibull)
+
+Pascal indent file. (Neil Carter)
 
 Moved all the indent settings from the filetype plugin to the indent file.
 Implemented b:undo_indent to undo indent settings when setting 'filetype' to a

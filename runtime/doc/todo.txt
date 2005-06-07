@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 06
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,9 +29,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
-
-Patch in if_cscope.c also in 6.3?  (Froloff)
-    Sergey says it's OK.
 
 Add extra list of file locations.  Can be used with:
     :ltag	      list of matching tags, like :tselect
@@ -95,21 +92,10 @@ PLANNED FOR VERSION 7.0:
 
 -   Add SPELLCHECKER, with support for many languages.
     - Use "engspchk" from Charles Campbell for ideas (commands, rare words).
-    - Should quickly return if there is no word with the character.
-      Use array with flags, indicating if there is a word starting with this
-      byte.  Quickly skip bytes where no word can start.
     - Spell checking code todo's:
-	- Also allow replacing a word list.  Need some mechanism to tell
-	  wether a spell file adds or replaces one found later in
-	  'runtimepath'.
 	- Is "-" to be considered a word character?  "last-minute".
 	  No, in Dutch it can be added optionally.  Then make English
 	  dictionaries consistent.
-	- Implement user and project word lists.  Commands to add words and to
-	  mark words as wrong.
-	- In .aff use RAR to define affix name for rare word.
-	- In .aff use HUH to define affix name for keep-case word.
-	    's morgens/=  does not match 'S morgens
 	- Implement compound words?
 	- When @Spell and @NoSpell are both used only do spell checking for
 	  @Spell items, not where they both appear.  Useful for Perl pod.
@@ -125,11 +111,8 @@ PLANNED FOR VERSION 7.0:
       author: Kevin Hendricks <kevin.hendricks@sympatico.ca>
     - More complicated: Regions with different languages?  E.g. comments in
       English, strings in German (po file).
-    - Commands required:
-	add word to private dict: wrong and OK (in popup menu for evim)
-	    :spell good <word>	    zg
-	    :spell wrong <word>	    zw
-    - Update option window for 'verbosefile', 'spell' and 'spelllang'.
+    - Update option window for 'verbosefile', 'spell', 'spellfile' and
+      'spelllang'.
     - Distribution: Need wordlists for many languages; "language pack"
       Put them on the ftp site, ready to download.  Include README for
       copyrights.
@@ -143,7 +126,8 @@ PLANNED FOR VERSION 7.0:
       cluster" but change the contains list directly for matching syntax
       items.
     - Install spell files with src/main.aap.
-    Alternatives using ispell or aspell:
+    - Alternate Dutch word list at www.nederlandsewoorden.nl (use script to
+      obtain).
 
 -   REFACTORING: The main() function is very long.  Move parts to separate
     functions, especially loops.  Ideas from Walter Briscoe (2003 Apr 3, 2004

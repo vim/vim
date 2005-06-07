@@ -7931,7 +7931,7 @@ f_filereadable(argvars, rettv)
 }
 
 /*
- * return 0 for not writable, 1 for writable file, 2 for a dir which we have
+ * Return 0 for not writable, 1 for writable file, 2 for a dir which we have
  * rights to write into.
  */
     static void
@@ -7939,34 +7939,7 @@ f_filewritable(argvars, rettv)
     typval_T	*argvars;
     typval_T	*rettv;
 {
-    char_u	*p;
-    int		retval = 0;
-#if defined(UNIX) || defined(VMS)
-    int		perm = 0;
-#endif
-
-    p = get_tv_string(&argvars[0]);
-#if defined(UNIX) || defined(VMS)
-    perm = mch_getperm(p);
-#endif
-#ifndef MACOS_CLASSIC /* TODO: get either mch_writable or mch_access */
-    if (
-# ifdef WIN3264
-	    mch_writable(p) &&
-# else
-# if defined(UNIX) || defined(VMS)
-	    (perm & 0222) &&
-#  endif
-# endif
-	    mch_access((char *)p, W_OK) == 0
-       )
-#endif
-    {
-	++retval;
-	if (mch_isdir(p))
-	    ++retval;
-    }
-    rettv->vval.v_number = retval;
+    rettv->vval.v_number = filewritable(get_tv_string(&argvars[0]));
 }
 
 static void findfilendir __ARGS((typval_T *argvars, typval_T *rettv, int dir));
@@ -9490,6 +9463,9 @@ f_has(argvars, rettv)
 #endif
 #ifdef FEAT_NETBEANS_INTG
 	"netbeans_intg",
+#endif
+#ifdef FEAT_SYN_HL
+	"spell",
 #endif
 #ifdef FEAT_SYN_HL
 	"syntax",
