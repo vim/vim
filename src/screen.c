@@ -3584,9 +3584,9 @@ win_line(wp, lnum, startrow, endrow)
 		}
 
 		/* Check spelling (unless at the end of the line).
-		 * Only do this when there is no syntax highlighting, there is
-		 * on @Spell cluster or the current syntax item contains the
-		 * @Spell cluster. */
+		 * Only do this when there is no syntax highlighting, the
+		 * @Spell cluster is not used or the current syntax item
+		 * contains the @Spell cluster. */
 		if (has_spell && v >= word_end)
 		{
 		    spell_attr = 0;

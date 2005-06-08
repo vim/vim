@@ -2,7 +2,7 @@
 " You can also use this as a start for your own set of menus.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Jun 07
+" Last Change:	2005 Jun 08
 
 " Note that ":an" (short for ":anoremenu") is often used to make a menu work
 " in all modes and avoid side effects from mappings defined by the user.
@@ -407,7 +407,7 @@ if has("folding") || has("spell")
   an 40.330 &Tools.-SEP1-						<Nop>
 endif
 
-" Tools.Spellsing Menu
+" Tools.Spelling Menu
 if has("spell")
   an 40.335.110 &Tools.&Spelling.&Spell\ Check\ On		:set spell<CR>
   an 40.335.120 &Tools.&Spelling.Spell\ Check\ &Off		:set nospell<CR>

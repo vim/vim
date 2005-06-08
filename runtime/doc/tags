@@ -729,7 +729,9 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'sourceany'	vi_diff.txt	/*'sourceany'*
 'sp'	options.txt	/*'sp'*
 'spell'	options.txt	/*'spell'*
+'spellfile'	options.txt	/*'spellfile'*
 'spelllang'	options.txt	/*'spelllang'*
+'spf'	options.txt	/*'spf'*
 'spl'	options.txt	/*'spl'*
 'splitbelow'	options.txt	/*'splitbelow'*
 'splitright'	options.txt	/*'splitright'*
@@ -2403,6 +2405,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :source	repeat.txt	/*:source*
 :source_crnl	repeat.txt	/*:source_crnl*
 :sp	windows.txt	/*:sp*
+:spellg	spell.txt	/*:spellg*
+:spellgood	spell.txt	/*:spellgood*
 :split	windows.txt	/*:split*
 :split_f	windows.txt	/*:split_f*
 :spr	windows.txt	/*:spr*
@@ -6244,6 +6248,8 @@ spec_chglog_release_info	pi_spec.txt	/*spec_chglog_release_info*
 special-buffers	windows.txt	/*special-buffers*
 speed-up	tips.txt	/*speed-up*
 spell	spell.txt	/*spell*
+spell-affix-KEP	spell.txt	/*spell-affix-KEP*
+spell-affix-RAR	spell.txt	/*spell-affix-RAR*
 spell-affix-chars	spell.txt	/*spell-affix-chars*
 spell-affix-mbyte	spell.txt	/*spell-affix-mbyte*
 spell-affix-vim	spell.txt	/*spell-affix-vim*
@@ -7094,6 +7100,7 @@ zc	fold.txt	/*zc*
 zd	fold.txt	/*zd*
 ze	scroll.txt	/*ze*
 zf	fold.txt	/*zf*
+zg	spell.txt	/*zg*
 zh	scroll.txt	/*zh*
 zi	fold.txt	/*zi*
 zj	fold.txt	/*zj*
@@ -7106,6 +7113,7 @@ zr	fold.txt	/*zr*
 zs	scroll.txt	/*zs*
 zt	scroll.txt	/*zt*
 zv	fold.txt	/*zv*
+zw	spell.txt	/*zw*
 zx	fold.txt	/*zx*
 zz	scroll.txt	/*zz*
 {	motion.txt	/*{*
