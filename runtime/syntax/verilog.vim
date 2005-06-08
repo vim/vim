@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Verilog
 " Maintainer:	Mun Johl <mun_johl@sierralogic.com>
-" Last Update:  Tue Nov  4 09:39:40 PST 2003
+" Last Update:  Tue Jun  7 14:27:10 PDT 2005
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -52,8 +52,8 @@ syn keyword verilogTodo contained TODO
 
 syn match   verilogOperator "[&|~><!)(*#%@+/=?:;}{,.\^\-\[\]]"
 
-syn region  verilogComment start="/\*" end="\*/" contains=verilogTodo
-syn match   verilogComment "//.*" contains=verilogTodo
+syn region  verilogComment start="/\*" end="\*/" contains=verilogTodo,@Spell
+syn match   verilogComment "//.*" contains=verilogTodo,@Spell
 
 "syn match   verilogGlobal "`[a-zA-Z0-9_]\+\>"
 syn match verilogGlobal "`celldefine"
@@ -82,7 +82,7 @@ syn match   verilogNumber "\(\<\d\+\|\)'[dD]\s*[0-9_xXzZ?]\+\>"
 syn match   verilogNumber "\(\<\d\+\|\)'[hH]\s*[0-9a-fA-F_xXzZ?]\+\>"
 syn match   verilogNumber "\<[+-]\=[0-9_]\+\(\.[0-9_]*\|\)\(e[0-9_]*\|\)\>"
 
-syn region  verilogString start=+"+ skip=+\\"+ end=+"+ contains=verilogEscape
+syn region  verilogString start=+"+ skip=+\\"+ end=+"+ contains=verilogEscape,@Spell
 syn match   verilogEscape +\\[nt"\\]+ contained
 syn match   verilogEscape "\\\o\o\=\o\=" contained
 
@@ -97,7 +97,7 @@ syn region  verilogDirective   start="//\s*\$s dc_script_begin\>" end="//\s*\$s 
 
 "Modify the following as needed.  The trade-off is performance versus
 "functionality.
-syn sync lines=50
+syn sync minlines=50
 
 " Define the default highlighting.
 " For version 5.7 and earlier: only when not done already

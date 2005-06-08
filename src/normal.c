@@ -4684,6 +4684,7 @@ dozet:
 			return;
 		    spell_add_word(ptr, len, nchar == 'w');
 		}
+		break;
 #endif
 
     default:	clearopbeep(cap->oap);

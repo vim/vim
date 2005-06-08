@@ -295,8 +295,8 @@ spell_check(wp, ptr, attrp)
      * numbers 0xFF99 and 0X99FF. */
     if (*ptr >= '0' && *ptr <= '9')
     {
-	if (*ptr == '0' && (ptr[1] == 'x' || ptr[2] == 'X'))
-	    mi.mi_end = skiphex(ptr);
+	if (*ptr == '0' && (ptr[1] == 'x' || ptr[1] == 'X'))
+	    mi.mi_end = skiphex(ptr + 2);
 	else
 	    mi.mi_end = skipdigits(ptr);
     }
@@ -1219,20 +1219,21 @@ did_set_spelllang(buf)
 	for (lp = first_lang; lp != NULL; lp = lp->sl_next)
 	    if (STRNICMP(lp->sl_name, lang, 2) == 0)
 	    {
-		if (region == NULL || lp->sl_add)
-		    region_mask = REGION_ALL;
-		else
+		region_mask = REGION_ALL;
+		if (region != NULL)
 		{
 		    /* find region in sl_regions */
 		    c = find_region(lp->sl_regions, region);
 		    if (c == REGION_ALL)
 		    {
-			c = *e;
-			*e = NUL;
-			smsg((char_u *)_("Warning: region %s not supported"),
+			if (!lp->sl_add)
+			{
+			    c = *e;
+			    *e = NUL;
+			    smsg((char_u *)_("Warning: region %s not supported"),
 									lang);
-			*e = c;
-			region_mask = REGION_ALL;
+			    *e = c;
+			}
 		    }
 		    else
 			region_mask = 1 << c;
@@ -1362,6 +1363,7 @@ spell_reload()
 {
     buf_T	*buf;
     slang_T	*lp;
+    win_T	*wp;
 
     /* Initialize the table for SPELL_ISWORDP(). */
     init_spell_chartab();
@@ -1378,8 +1380,20 @@ spell_reload()
     for (buf = firstbuf; buf != NULL; buf = buf->b_next)
     {
 	ga_clear(&buf->b_langp);
+
+	/* Only load the wordlists when 'spelllang' is set and there is a
+	 * window for this buffer in which 'spell' is set. */
 	if (*buf->b_p_spl != NUL)
-	    did_set_spelllang(buf);
+	{
+	    FOR_ALL_WINDOWS(wp)
+		if (wp->w_buffer == buf && wp->w_p_spell)
+		{
+		    (void)did_set_spelllang(buf);
+# ifdef FEAT_WINDOWS
+		    break;
+# endif
+		}
+	}
     }
 }
 # endif
@@ -1493,6 +1507,9 @@ typedef struct spellinfo_S
     vimconv_T	si_conv;	/* for conversion to 'encoding' */
     int		si_memtot;	/* runtime memory used */
     int		si_verbose;	/* verbose messages */
+    int		si_region_count; /* number of regions supported (1 when there
+				    are no regions) */
+    char_u	si_region_name[16]; /* region names (if count > 1) */
 } spellinfo_T;
 
 static afffile_T *spell_read_aff __ARGS((char_u *fname, spellinfo_T *spin));
@@ -1505,19 +1522,19 @@ static void *getroom __ARGS((sblock_T **blp, size_t len));
 static char_u *getroom_save __ARGS((sblock_T **blp, char_u *s));
 static void free_blocks __ARGS((sblock_T *bl));
 static wordnode_T *wordtree_alloc __ARGS((sblock_T **blp));
-static int store_word __ARGS((char_u *word, spellinfo_T *spin, int flags));
+static int store_word __ARGS((char_u *word, spellinfo_T *spin, int flags, int region));
 static int tree_add_word __ARGS((char_u *word, wordnode_T *tree, int flags, int region, sblock_T **blp));
 static void wordtree_compress __ARGS((wordnode_T *root, spellinfo_T *spin));
 static int node_compress __ARGS((wordnode_T *node, hashtab_T *ht, int *tot));
 static int node_equal __ARGS((wordnode_T *n1, wordnode_T *n2));
-static void write_vim_spell __ARGS((char_u *fname, spellinfo_T *spin, int regcount, char_u *regchars));
+static void write_vim_spell __ARGS((char_u *fname, spellinfo_T *spin));
 static int put_tree __ARGS((FILE *fd, wordnode_T *node, int index, int regionmask));
 static void mkspell __ARGS((int fcount, char_u **fnames, int ascii, int overwrite, int verbose));
 static void init_spellfile __ARGS((void));
 
 /*
  * Read an affix ".aff" file.
- * Returns an afffile_T, NULL for failure.
+ * Returns an afffile_T, NULL for complete failure.
  */
     static afffile_T *
 spell_read_aff(fname, spin)
@@ -1788,14 +1805,22 @@ spell_read_aff(fname, spin)
 
     if (fol != NULL || low != NULL || upp != NULL)
     {
-	/* Don't write a word table for an ASCII file, so that we don't check
-	 * for conflicts with a word table that matches 'encoding'. */
-	if (!spin->si_ascii)
+	/*
+	 * Don't write a word table for an ASCII file, so that we don't check
+	 * for conflicts with a word table that matches 'encoding'.
+	 * Don't write one for utf-8 either, we use utf_isupper() and
+	 * mb_get_class(), the list of chars in the file will be incomplete.
+	 */
+	if (!spin->si_ascii
+#ifdef FEAT_MBYTE
+		&& !enc_utf8
+#endif
+		)
 	{
 	    if (fol == NULL || low == NULL || upp == NULL)
 		smsg((char_u *)_("Missing FOL/LOW/UPP line in %s"), fname);
 	    else
-		set_spell_chartab(fol, low, upp);
+		(void)set_spell_chartab(fol, low, upp);
 	}
 
 	vim_free(fol);
@@ -2011,7 +2036,7 @@ spell_read_dic(fname, spin, affile)
 	}
 
 	/* Add the word to the word tree(s). */
-	if (store_word(dw, spin, flags) == FAIL)
+	if (store_word(dw, spin, flags, spin->si_region) == FAIL)
 	    retval = FAIL;
 
 	if (afflist != NULL)
@@ -2138,7 +2163,8 @@ store_aff_word(word, spin, afflist, ht, xht, comb, flags)
 			}
 
 			/* Store the modified word. */
-			if (store_word(newword, spin, flags) == FAIL)
+			if (store_word(newword, spin,
+					      flags, spin->si_region) == FAIL)
 			    retval = FAIL;
 
 			/* When added a suffix and combining is allowed also
@@ -2174,6 +2200,7 @@ spell_read_wordfile(fname, spin)
     int		did_word = FALSE;
     int		non_ascii = 0;
     int		flags;
+    int		regionmask;
 
     /*
      * Open the file.
@@ -2237,34 +2264,57 @@ spell_read_wordfile(fname, spin)
 	}
 
 	flags = 0;
+	regionmask = spin->si_region;
 
 	if (*line == '/')
 	{
 	    ++line;
+
 	    if (STRNCMP(line, "encoding=", 9) == 0)
 	    {
 		if (spin->si_conv.vc_type != CONV_NONE)
-		    smsg((char_u *)_("Duplicate =encoding= line ignored in %s line %d: %s"),
-						       fname, lnum, line);
+		    smsg((char_u *)_("Duplicate /encoding= line ignored in %s line %d: %s"),
+						       fname, lnum, line - 1);
 		else if (did_word)
-		    smsg((char_u *)_("=encoding= line after word ignored in %s line %d: %s"),
-						       fname, lnum, line);
+		    smsg((char_u *)_("/encoding= line after word ignored in %s line %d: %s"),
+						       fname, lnum, line - 1);
 		else
 		{
 #ifdef FEAT_MBYTE
 		    char_u	*enc;
 
 		    /* Setup for conversion to 'encoding'. */
-		    enc = enc_canonize(line + 10);
+		    line += 10;
+		    enc = enc_canonize(line);
 		    if (enc != NULL && !spin->si_ascii
 			    && convert_setup(&spin->si_conv, enc,
 							       p_enc) == FAIL)
 			smsg((char_u *)_("Conversion in %s not supported: from %s to %s"),
-						   fname, line + 10, p_enc);
+							  fname, line, p_enc);
 		    vim_free(enc);
 #else
 		    smsg((char_u *)_("Conversion in %s not supported"), fname);
 #endif
+		}
+		continue;
+	    }
+
+	    if (STRNCMP(line, "regions=", 8) == 0)
+	    {
+		if (spin->si_region_count > 1)
+		    smsg((char_u *)_("Duplicate /regions= line ignored in %s line %d: %s"),
+						       fname, lnum, line);
+		else
+		{
+		    line += 8;
+		    if (STRLEN(line) > 16)
+			smsg((char_u *)_("Too many regions in %s line %d: %s"),
+						       fname, lnum, line);
+		    else
+		    {
+			spin->si_region_count = STRLEN(line) / 2;
+			STRCPY(spin->si_region_name, line);
+		    }
 		}
 		continue;
 	    }
@@ -2289,6 +2339,25 @@ spell_read_wordfile(fname, spin)
 		++line;
 	    }
 
+	    if (VIM_ISDIGIT(*line))
+	    {
+		/* region number(s) */
+		regionmask = 0;
+		while (VIM_ISDIGIT(*line))
+		{
+		    l = *line - '0';
+		    if (l > spin->si_region_count)
+		    {
+			smsg((char_u *)_("Invalid region nr in %s line %d: %s"),
+							   fname, lnum, line);
+			break;
+		    }
+		    regionmask |= 1 << (l - 1);
+		    ++line;
+		}
+		flags |= WF_REGION;
+	    }
+
 	    if (flags == 0)
 	    {
 		smsg((char_u *)_("/ line ignored in %s line %d: %s"),
@@ -2305,7 +2374,7 @@ spell_read_wordfile(fname, spin)
 	}
 
 	/* Normal word: store it. */
-	if (store_word(line, spin, flags) == FAIL)
+	if (store_word(line, spin, flags, regionmask) == FAIL)
 	{
 	    retval = FAIL;
 	    break;
@@ -2410,10 +2479,11 @@ wordtree_alloc(blp)
  * For a keep-case word also store it in the keep-case tree.
  */
     static int
-store_word(word, spin, flags)
+store_word(word, spin, flags, region)
     char_u	*word;
     spellinfo_T	*spin;
     int		flags;		/* extra flags, WF_BANNED */
+    int		region;		/* supported region(s) */
 {
     int		len = STRLEN(word);
     int		ct = captype(word, word + len);
@@ -2427,12 +2497,12 @@ store_word(word, spin, flags)
 	(void)spell_casefold(word, len, foldword, MAXWLEN);
 	res = tree_add_word(foldword, spin->si_foldroot,
 		(ct == WF_KEEPCAP ? WF_ALLCAP : ct) | flags,
-					   spin->si_region, &spin->si_blocks);
+						    region, &spin->si_blocks);
     }
 
     if (res == OK && (ct == WF_KEEPCAP || flags & WF_KEEPCAP))
 	res = tree_add_word(word, spin->si_keeproot, flags,
-					   spin->si_region, &spin->si_blocks);
+						    region, &spin->si_blocks);
     return res;
 }
 
@@ -2665,11 +2735,9 @@ put_bytes(fd, nr, len)
  * Write the Vim spell file "fname".
  */
     static void
-write_vim_spell(fname, spin, regcount, regchars)
+write_vim_spell(fname, spin)
     char_u	*fname;
     spellinfo_T	*spin;
-    int		regcount;	/* number of regions */
-    char_u	*regchars;	/* region names */
 {
     FILE	*fd;
     int		regionmask;
@@ -2692,11 +2760,12 @@ write_vim_spell(fname, spin, regcount, regchars)
 	EMSG(_(e_write));
 
     /* write the region names if there is more than one */
-    if (regcount > 1)
+    if (spin->si_region_count > 1)
     {
-	putc(regcount, fd);	    /* <regioncnt> <regionname> ... */
-	fwrite(regchars, (size_t)(regcount * 2), (size_t)1, fd);
-	regionmask = (1 << regcount) - 1;
+	putc(spin->si_region_count, fd);   /* <regioncnt> <regionname> ... */
+	fwrite(spin->si_region_name, (size_t)(spin->si_region_count * 2),
+							       (size_t)1, fd);
+	regionmask = (1 << spin->si_region_count) - 1;
     }
     else
     {
@@ -2899,7 +2968,6 @@ mkspell(fcount, fnames, ascii, overwrite, verbose)
     afffile_T	*(afile[8]);
     int		i;
     int		len;
-    char_u	region_name[16];
     struct stat	st;
     int		error = FALSE;
     spellinfo_T spin;
@@ -2970,7 +3038,7 @@ mkspell(fcount, fnames, ascii, overwrite, verbose)
 	{
 	    afile[i] = NULL;
 
-	    if (fcount > 2)
+	    if (incount > 1)
 	    {
 		len = STRLEN(innames[i]);
 		if (STRLEN(gettail(innames[i])) < 5
@@ -2979,10 +3047,12 @@ mkspell(fcount, fnames, ascii, overwrite, verbose)
 		    EMSG2(_("E755: Invalid region in %s"), innames[i]);
 		    return;
 		}
-		region_name[i * 2] = TOLOWER_ASC(innames[i][len - 2]);
-		region_name[i * 2 + 1] = TOLOWER_ASC(innames[i][len - 1]);
+		spin.si_region_name[i * 2] = TOLOWER_ASC(innames[i][len - 2]);
+		spin.si_region_name[i * 2 + 1] =
+					     TOLOWER_ASC(innames[i][len - 1]);
 	    }
 	}
+	spin.si_region_count = incount;
 
 	if (!spin.si_add)
 	    /* Clear the char type tables, don't want to use any of the
@@ -3077,7 +3147,7 @@ mkspell(fcount, fnames, ascii, overwrite, verbose)
 		    verbose_leave();
 	    }
 
-	    write_vim_spell(wfname, &spin, incount, region_name);
+	    write_vim_spell(wfname, &spin);
 
 	    if (verbose || p_verbose > 2)
 	    {
@@ -3186,11 +3256,13 @@ init_spellfile()
 	    copy_option_part(&rtp, buf, MAXPATHL, ",");
 	    if (filewritable(buf) == 2)
 	    {
+		/* Use the first language name from 'spelllang' and the
+		 * encoding used in the first loaded .spl file. */
 		sl = LANGP_ENTRY(curbuf->b_langp, 0)->lp_slang;
 		l = STRLEN(buf);
 		vim_snprintf((char *)buf + l, MAXPATHL - l,
-			"/spell/%.2s.%s.add",
-			sl->sl_name,
+			"/spell/%.*s.%s.add",
+			2, curbuf->b_p_spl,
 			strstr((char *)gettail(sl->sl_fname), ".ascii.") != NULL
 					   ? (char_u *)"ascii" : spell_enc());
 		set_option_value((char_u *)"spellfile", 0L, buf, OPT_LOCAL);
