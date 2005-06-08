@@ -3605,7 +3605,8 @@ ex_append(eap)
 		break;
 	}
 	if ((p[0] == '.' && p[1] == NUL)
-			     || (!did_undo && u_save(lnum, lnum + 1) == FAIL))
+		|| (!did_undo && u_save(lnum, lnum + 1 + (empty ? 1 : 0))
+								     == FAIL))
 	{
 	    vim_free(theline);
 	    break;

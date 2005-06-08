@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 07
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,6 +29,8 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+New menu file doesn't work with older vim.  exists("spell") doesn't work?
 
 Add extra list of file locations.  Can be used with:
     :ltag	      list of matching tags, like :tselect
@@ -91,35 +93,30 @@ Still seems to fail 15% of the time.
 PLANNED FOR VERSION 7.0:
 
 -   Add SPELLCHECKER, with support for many languages.
-    - Use "engspchk" from Charles Campbell for ideas (commands, rare words).
     - Spell checking code todo's:
-	- Is "-" to be considered a word character?  "last-minute".
-	  No, in Dutch it can be added optionally.  Then make English
-	  dictionaries consistent.
-	- Implement compound words?
-	- When @Spell and @NoSpell are both used only do spell checking for
-	  @Spell items, not where they both appear.  Useful for Perl pod.
+	- How about making suggestions?  Use an external program like aspell?
+	  Or include the myspell suggestion code in Vim?
+	- Support for approximate-regexps will help with finding similar words
+	  (agrep http://www.tgries.de/agrep/).
 	- Make "en-rare" spell file.
 	  Convention: use en_US (language_region) and en-rare (language-field)
           Add hl groups to 'spelllang'?
 	    :set spelllang=en_us,en-rare/SpellRare,en-math/SpellMath
-	- How about making suggestions?  Use an external program like aspell?
-	  Or include the myspell suggestion code in Vim?
+    - Use "engspchk" from Charles Campbell for ideas (commands, rare words).
     - References: MySpell library (in OpenOffice.org).
 	http://spellchecker.mozdev.org/source.html
 	http://whiteboard.openoffice.org/source/browse/whiteboard/lingucomponent/source/spellcheck/myspell/
       author: Kevin Hendricks <kevin.hendricks@sympatico.ca>
-    - More complicated: Regions with different languages?  E.g. comments in
-      English, strings in German (po file).
     - Update option window for 'verbosefile', 'spell', 'spellfile' and
       'spelllang'.
     - Distribution: Need wordlists for many languages; "language pack"
       Put them on the ftp site, ready to download.  Include README for
       copyrights.
+    - More complicated: Regions with different languages?  E.g. comments in
+      English, strings in German (po file).
     - Work together with OpenOffice.org to update the wordlists.  (Adri
       Verhoef, Aad Nales)  Setup vim-spell maillist?
-    - Support for approximate-regexps will help with finding similar words
-      (agrep http://www.tgries.de/agrep/).
+    - Insert mode completion mechanism that uses the spell word lists.
     - Charles Campbell asks for method to add "contained" groups to
       existing syntax items (to add @Spell).
       Add ":syntax contains {pattern} add=@Spell" command?  A bit like ":syn
@@ -128,6 +125,12 @@ PLANNED FOR VERSION 7.0:
     - Install spell files with src/main.aap.
     - Alternate Dutch word list at www.nederlandsewoorden.nl (use script to
       obtain).
+    - The English dictionaries for different regions are not consistent in
+      their use of words with a dash.
+    Later:
+    - Implement compound words when it works for Myspell.  Current idea has
+      the problem that "foo/X" always allows "foofoo", there is no way to
+      specify a word can only be at the start or end.
 
 -   REFACTORING: The main() function is very long.  Move parts to separate
     functions, especially loops.  Ideas from Walter Briscoe (2003 Apr 3, 2004
@@ -433,6 +436,8 @@ Vi incompatibility:
 7   The ":undo" command works differently in Ex mode.  Edit a file, make some
     changes, "Q", "undo" and _all_ changes are undone, like the ":visual"
     command was one command.
+    On the other hand, an ":undo" command in an Ex script only undoes the last
+    change (e.g., use two :append commands, then :undo).
 7   The ":map" command output overwrites the command.  Perhaps it should keep
     the ":map" when it's used without arguments?
 7   CTRL-L is not the end of a section?  It is for Posix!  Make it an option.
