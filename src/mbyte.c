@@ -1583,20 +1583,21 @@ utfc_ptr2len_check(p)
     char_u	*p;
 {
     int		len;
+    int		b0 = *p;
 #ifdef FEAT_ARABIC
     int		prevlen;
 #endif
 
-    if (*p == NUL)
+    if (b0 == NUL)
 	return 0;
-    if (p[0] < 0x80 && p[1] < 0x80)	/* be quick for ASCII */
+    if (b0 < 0x80 && p[1] < 0x80)	/* be quick for ASCII */
 	return 1;
 
     /* Skip over first UTF-8 char, stopping at a NUL byte. */
     len = utf_ptr2len_check(p);
 
     /* Check for illegal byte. */
-    if (len == 1 && p[0] >= 0x80)
+    if (len == 1 && b0 >= 0x80)
 	return 1;
 
     /*
