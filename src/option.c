@@ -3048,7 +3048,7 @@ set_option_default(opt_idx, opt_flags, compatible)
 
     varp = get_varp_scope(&(options[opt_idx]), both ? OPT_LOCAL : opt_flags);
     flags = options[opt_idx].flags;
-    if (varp != NULL)	    /* nothing to do for hidden option */
+    if (varp != NULL)	    /* skip hidden option, nothing to do for it */
     {
 	dvi = ((flags & P_VI_DEF) || compatible) ? VI_DEFAULT : VIM_DEFAULT;
 	if (flags & P_STRING)
@@ -6678,6 +6678,7 @@ set_bool_option(opt_idx, varp, value, opt_flags)
 	if (curwin->w_p_spell)
 	{
 	    char_u	*errmsg = did_set_spelllang(curbuf);
+
 	    if (errmsg != NULL)
 		EMSG(_(errmsg));
 	}

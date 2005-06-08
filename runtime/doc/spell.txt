@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 07
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -69,17 +69,19 @@ zw			Add word under the cursor as a wrong (bad) word to
 :spellw[rong] {word}	Add [word} as a wrong (bad) word to 'spellfile'.
 
 After adding a word to 'spellfile' its associated ".spl" file will
-automatically be updated.
+automatically be updated.  More details about the 'spellfile' format below
+|spell-wordlist-format|.
 
 
 PERFORMANCE
 
-Note that Vim does on-the-fly spellchecking.  To make this work fast the
+Note that Vim does on-the-fly spell checking.  To make this work fast the
 word list is loaded in memory.  Thus this uses a lot of memory (1 Mbyte or
-more).  There might also be a noticable delay when the word list is loaded,
-which happens when 'spelllang' is set.  Each word list is only loaded once,
-they are not deleted when 'spelllang' is made empty.  When 'encoding' is set
-the word lists are reloaded, thus you may notice a delay then too.
+more).  There might also be a noticeable delay when the word list is loaded,
+which happens when 'spelllang' or 'spell' is set.  Each word list is only
+loaded once, they are not deleted when 'spelllang' is made empty or 'spell' is
+reset.  When 'encoding' is set the word lists are reloaded, thus you may
+notice a delay then too.
 
 
 REGIONS
@@ -95,18 +97,25 @@ comes in (at least) these variants:
 	en_us		USA
 
 Words that are not used in one region but are used in another region are
-highlighted with SpellLocal.
+highlighted with |SpellLocal|.
 
 Always use lowercase letters for the language and region names.
+
+When adding a word with |zg| or another command it's always added for all
+regions.  You can change that by manually editing the 'spellfile'.  See
+|spell-wordlist-format|.
 
 
 SPELL FILES
 
 Vim searches for spell files in the "spell" subdirectory of the directories in
-'runtimepath'.  The name is: LL-XXX.EEE.spl, where:
+'runtimepath'.  The name is: LL.EEE.spl, where:
 	LL	the language name
-	-XXX	optional addition
 	EEE	the value of 'encoding'
+
+Only the first file is loaded, the one that is first in 'runtimepath'.  If
+this succeeds then additionally files with the name LL.EEE.add.spl are loaded.
+All the ones that are found are used.
 
 Exceptions:
 - Vim uses "latin1" when 'encoding' is "iso-8859-15".  The euro sign doesn't
@@ -114,7 +123,33 @@ Exceptions:
 - When no spell file for 'encoding' is found "ascii" is tried.  This only
   works for languages where nearly all words are ASCII, such as English.  It
   helps when 'encoding' is not "latin1", such as iso-8859-2, and English text
-  is being edited.
+  is being edited.  For the ".add" files the same name as the found main
+  spell file is used.
+
+For example, with these values:
+	'runtimepath' is "~/.vim,/usr/share/vim70,~/.vim/after"
+	'encoding'    is "iso-8859-2"
+	'spelllang'   is "pl"
+
+Vim will look for:
+1. ~/.vim/spell/pl.iso-8859-2.spl
+2. /usr/share/vim70/spell/pl.iso-8859-2.spl
+3. ~/.vim/spell/pl.iso-8859-2.add.spl
+4. /usr/share/vim70/spell/pl.iso-8859-2.add.spl
+5. ~/.vim/after/spell/pl.iso-8859-2.add.spl
+
+This assumes 1. is not found and 2. is found.
+
+If 'encoding' is "latin1" Vim will look for:
+1. ~/.vim/spell/pl.latin1.spl
+2. /usr/share/vim70/spell/pl.latin1.spl
+3. ~/.vim/after/spell/pl.latin1.spl
+4. ~/.vim/spell/pl.ascii.spl
+5. /usr/share/vim70/spell/pl.ascii.spl
+6. ~/.vim/after/spell/pl.ascii.spl
+
+This assumes none of them are found (Polish doesn't make sense when leaving
+out the non-ASCII characters).
 
 Spelling for EBCDIC is currently not supported.
 
@@ -135,7 +170,8 @@ Vim uses a fixed method to recognize a word.  This is independent of
 include characters like '-' in 'iskeyword'.  The word characters do depend on
 'encoding'.
 
-A word that starts with a digit is always ignored.
+A word that starts with a digit is always ignored.  That includes hex numbers
+in the form 0xff and 0XFF.
 
 
 SYNTAX HIGHLIGHTING					*spell-syntax*
@@ -143,11 +179,13 @@ SYNTAX HIGHLIGHTING					*spell-syntax*
 Files that use syntax highlighting can specify where spell checking should be
 done:
 
-   everywhere			   default
-   in specific items		   use "contains=@Spell"
-   everywhere but specific items   use "contains=@NoSpell"
+1.  everywhere			   default
+2.  in specific items		   use "contains=@Spell"
+3.  everywhere but specific items  use "contains=@NoSpell"
 
-Note that mixing @Spell and @NoSpell doesn't make sense.
+For the second method adding the @NoSpell cluster will disable spell checking
+again.  This can be used, for example, to add @Spell to the comments of a
+program, and add @NoSpell for items that shouldn't be checked.
 
 ==============================================================================
 2. Generating a spell file				*spell-mkspell*
@@ -234,7 +272,7 @@ requires two files, one with .aff and one with .dic extension.  The second
 format is a list of words.
 
 
-FORMAT OF WORD LIST
+FORMAT OF WORD LIST				*spell-wordlist-format*
 
 The words must appear one per line.  That is all that is required.
 Additionally the following items are recognized:
@@ -243,12 +281,29 @@ Additionally the following items are recognized:
 - A line starting with "/encoding=", before any word, specifies the encoding
   of the file.  After the second '=' comes an encoding name.  This tells Vim
   to setup conversion from the specified encoding to 'encoding'.
+- A line starting with "/regions=" specifies the region names that are
+  supported.  Each region name must be two ASCII letters.  The first one is
+  region 1.  Thus "/regions=usca" has region 1 "us" and region 2 "ca".
+  In an addition word list the list should be equal to the main word list!
 - A line starting with "/?" specifies a word that should be marked as rare.
 - A line starting with "/!" specifies a word that should be marked as bad.
 - A line starting with "/=" specifies a word where case must match exactly.
   A "?" or "!" may be following: "/=?" and "/=!".
+- Digits after "/" indicate the regions in which the word is valid.  If no
+  regions are specified the word is valid in all regions.
 - Other lines starting with '/' are reserved for future use.  The ones that
   are not recognized are ignored (but you do get a warning message).
+
+Example:
+
+	# This is an example word list		comment
+	/encoding=latin1			encoding of the file
+	/regions=uscagb				regions "us", "ca" and "gb"
+	example					word for all regions
+	/1blah					word for region 1 "us"
+	/!Vim					bad word
+	/?3Campbell				rare word in region 3 "gb"
+	/='s mornings				keep-case word
 
 
 FORMAT WITH AFFIX COMPRESSION
@@ -277,7 +332,7 @@ them before the Vim word list is made.  The tools for this can be found in the
 "src/spell" directory.
 
 
-WORD LIST FORMAT					*spell-wordlist-format*
+WORD LIST FORMAT				*spell-dic-format*
 
 A very short example, with line numbers:
 

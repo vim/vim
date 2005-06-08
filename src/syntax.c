@@ -2202,10 +2202,10 @@ syn_current_attr(syncing, displaying, can_spell)
 	     * done in the current item.
 	     */
 
-	    /* If there is no @Spell cluster: Do spelling for items without
-	     * @NoSpell.  Otherwise only in items with @Spell */
 	    if (syn_buf->b_spell_cluster_id == 0)
 	    {
+		/* There is no @Spell cluster: Do spelling for items without
+		 * @NoSpell cluster. */
 		if (syn_buf->b_nospell_cluster_id == 0 || current_trans_id == 0)
 		    *can_spell = TRUE;
 		else
@@ -2216,14 +2216,26 @@ syn_current_attr(syncing, displaying, can_spell)
 		    *can_spell = !in_id_list(sip, sip->si_cont_list, &sps, 0);
 		}
 	    }
-	    else if (current_trans_id == 0)
-		*can_spell = FALSE;
 	    else
 	    {
-		sps.inc_tag = 0;
-		sps.id = syn_buf->b_spell_cluster_id;
-		sps.cont_in_list = NULL;
-		*can_spell = in_id_list(sip, sip->si_cont_list, &sps, 0);
+		/* The @Spell cluster is defined: Do spelling in items with
+		 * the @Spell cluster.  But not when @NoSpell is also there. */
+		if (current_trans_id == 0)
+		    *can_spell = FALSE;
+		else
+		{
+		    sps.inc_tag = 0;
+		    sps.id = syn_buf->b_spell_cluster_id;
+		    sps.cont_in_list = NULL;
+		    *can_spell = in_id_list(sip, sip->si_cont_list, &sps, 0);
+
+		    if (syn_buf->b_nospell_cluster_id != 0)
+		    {
+			sps.id = syn_buf->b_nospell_cluster_id;
+			if (in_id_list(sip, sip->si_cont_list, &sps, 0))
+			    *can_spell = FALSE;
+		    }
+		}
 	    }
 	}
 
