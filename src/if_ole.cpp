@@ -467,12 +467,14 @@ CVimCF::Release()
     return ref;
 }
 
+/*ARGSUSED*/
 STDMETHODIMP
 CVimCF::CreateInstance(IUnknown *punkOuter, REFIID riid, void **ppv)
 {
     return app->QueryInterface(riid, ppv);
 }
 
+/*ARGSUSED*/
 STDMETHODIMP
 CVimCF::LockServer(BOOL lock)
 {
