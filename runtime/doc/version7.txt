@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jun 07
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jun 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -144,6 +144,11 @@ with scripts, but they were slow and/or required an external program.
 
 The 'spell' option is used to switch spell checking on or off.
 The 'spelllang' option is used to specify the languages that are accepted.
+The 'spellfile' option specifies where new words are added.
+
+The |[s| and |]s| commands can be used to move to the next or previous error.
+The |zg| and |zw| commands can be used to add good and wrong words.
+The |z?| command can be used to correct the word.
 
 The "undercurl" highlighting attribute was added to nicely point out spelling
 mistakes in the GUI (based on patch from Marcin Dalecki).
@@ -649,6 +654,9 @@ Added the "%s" item to 'errorformat'. (Yegappan Lakshmanan)
 GTK GUI: use the GTK file dialog when it's available.  Mix from patches by
 Grahame Bowland and Evan Webb.
 
+Added ":scriptnames" to bugreport.vim, so that we can see what plugins were
+used.
+
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*
 
@@ -1074,6 +1082,7 @@ reallocating the buffer every time. (Alexei Alexandrov)
 
 When using a Python "atexit" function it was not invoked when Vim exits.  Now
 call Py_Finalize() for that. (Ugo Di Girolamo)
+This breaks the thread stuff though, fixed by Ugo.
 
 GTK GUI: using a .vimrc with "set cmdheight=2 lines=43" and ":split" right
 after startup, the window layout is messed up. (Michael Schaap)  Added

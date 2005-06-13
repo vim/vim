@@ -2997,10 +2997,10 @@ nextwild(xp, type, options)
 	    v = OK;
 	if (v == OK)
 	{
-	    vim_strncpy(&ccline.cmdbuff[ccline.cmdpos + difflen],
-					       &ccline.cmdbuff[ccline.cmdpos],
-		    ccline.cmdlen - ccline.cmdpos + 1);
-	    STRNCPY(&ccline.cmdbuff[i], p2, STRLEN(p2));
+	    mch_memmove(&ccline.cmdbuff[ccline.cmdpos + difflen],
+		    &ccline.cmdbuff[ccline.cmdpos],
+		    (size_t)(ccline.cmdlen - ccline.cmdpos + 1));
+	    mch_memmove(&ccline.cmdbuff[i], p2, STRLEN(p2));
 	    ccline.cmdlen += difflen;
 	    ccline.cmdpos += difflen;
 	}

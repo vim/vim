@@ -1,4 +1,4 @@
-*usr_11.txt*	For Vim version 7.0aa.  Last change: 2005 Apr 01
+*usr_11.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 09
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -34,7 +34,7 @@ messages (with different file names, of course):
 
 	Using swap file ".help.txt.swp" ~
 	Original file "~/vim/runtime/doc/help.txt" ~
-	Recovery completed.  You should check if everything is OK. ~
+	Recovery completed. You should check if everything is OK. ~
 	(You might want to write out this file under another name ~
 	and run diff with the original file to check for changes) ~
 	Delete the .swp file afterwards. ~

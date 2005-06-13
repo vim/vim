@@ -38,6 +38,7 @@ void _cdecl SaveInst(HINSTANCE hInst);
 void (_cdecl *pSaveInst)(HINSTANCE);
 #endif
 
+/*ARGSUSED*/
     int WINAPI
 WinMain(
     HINSTANCE	hInstance,

@@ -1680,6 +1680,7 @@ read_from_input_buf(buf, maxlen)
     return (int)maxlen;
 }
 
+/*ARGSUSED*/
     void
 fill_input_buf(exit_on_error)
     int	exit_on_error;

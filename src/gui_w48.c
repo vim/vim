@@ -314,7 +314,7 @@ static LOGFONT norm_logfont;
 static LRESULT _OnImeNotify(HWND hWnd, DWORD dwCommand, DWORD dwData);
 #endif
 
-#ifdef DEBUG
+#ifdef DEBUG_PRINT_ERROR
 /*
  * Print out the last Windows error message
  */
@@ -330,7 +330,7 @@ print_windows_error(void)
     TRACE1("Error: %s\n", lpMsgBuf);
     LocalFree(lpMsgBuf);
 }
-#endif /* DEBUG */
+#endif
 
 /*
  * Cursor blink functions.
@@ -445,6 +445,7 @@ gui_mch_start_blink(void)
  * Call-back routines.
  */
 
+/*ARGSUSED*/
     static VOID CALLBACK
 _OnTimer(
     HWND hwnd,
@@ -467,6 +468,7 @@ _OnTimer(
 	s_wait_timer = 0;
 }
 
+/*ARGSUSED*/
     static void
 _OnDeadChar(
     HWND hwnd,
@@ -555,6 +557,7 @@ char_to_string(int ch, char_u *string, int slen)
 /*
  * Key hit, add it to the input buffer.
  */
+/*ARGSUSED*/
     static void
 _OnChar(
     HWND hwnd,
@@ -577,6 +580,7 @@ _OnChar(
 /*
  * Alt-Key hit, add it to the input buffer.
  */
+/*ARGSUSED*/
     static void
 _OnSysChar(
     HWND hwnd,
@@ -656,6 +660,7 @@ _OnMouseEvent(
     gui_send_mouse_event(button, x, y, repeated_click, vim_modifiers);
 }
 
+/*ARGSUSED*/
     static void
 _OnMouseButtonDown(
     HWND hwnd,
@@ -756,6 +761,7 @@ _OnMouseButtonDown(
     }
 }
 
+/*ARGSUSED*/
     static void
 _OnMouseMoveOrRelease(
     HWND hwnd,
@@ -832,6 +838,7 @@ gui_mswin_find_menu(
     return pMenu;
 }
 
+/*ARGSUSED*/
     static void
 _OnMenu(
     HWND	hwnd,
@@ -1255,6 +1262,7 @@ gui_mch_get_font(
  * Return the name of font "font" in allocated memory.
  * Don't know how to get the actual name, thus use the provided name.
  */
+/*ARGSUSED*/
     char_u *
 gui_mch_get_fontname(font, name)
     GuiFont font;
@@ -1937,6 +1945,7 @@ gui_mch_enable_menu(int flag)
 #endif
 }
 
+/*ARGSUSED*/
     void
 gui_mch_set_menu_pos(
     int	    x,
@@ -2291,6 +2300,7 @@ _OnEndSession(void)
  * Get this message when the user clicks on the cross in the top right corner
  * of a Windows95 window.
  */
+/*ARGSUSED*/
     static void
 _OnClose(
     HWND hwnd)
@@ -2344,6 +2354,7 @@ _OnPaint(
     }
 }
 
+/*ARGSUSED*/
     static void
 _OnSize(
     HWND hwnd,
@@ -2588,6 +2599,7 @@ gui_mch_insert_lines(
 }
 
 
+/*ARGSUSED*/
     void
 gui_mch_exit(int rc)
 {
@@ -2657,6 +2669,7 @@ logfont2name(LOGFONT lf)
  * Initialise vim to use the font with the given name.
  * Return FAIL if the font could not be loaded, OK otherwise.
  */
+/*ARGSUSED*/
     int
 gui_mch_init_font(char_u *font_name, int fontset)
 {
@@ -2761,6 +2774,7 @@ gui_mch_newfont()
 /*
  * Set the window title
  */
+/*ARGSUSED*/
     void
 gui_mch_settitle(
     char_u  *title,
@@ -3162,6 +3176,7 @@ gui_mch_browse(
 }
 #endif /* FEAT_BROWSE */
 
+/*ARGSUSED*/
     static void
 _OnDropFiles(
     HWND hwnd,
@@ -3229,6 +3244,7 @@ _OnDropFiles(
 #endif
 }
 
+/*ARGSUSED*/
     static int
 _OnScroll(
     HWND hwnd,
@@ -3361,6 +3377,7 @@ _OnScroll(
  * Return pointer to buffer in "tofree".
  * Returns zero when out of memory.
  */
+/*ARGSUSED*/
     int
 get_cmd_args(char *prog, char *cmdline, char ***argvp, char **tofree)
 {
@@ -3473,7 +3490,7 @@ get_cmd_args(char *prog, char *cmdline, char ***argvp, char **tofree)
 		}
 	    }
 
-	    if (pnew != NUL)
+	    if (pnew != NULL)
 		*pnew++ = NUL;
 	    while (*p == ' ' || *p == '\t')
 		++p;		    /* advance until a non-space */

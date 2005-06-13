@@ -740,17 +740,8 @@ do_tag(tag, type, count, forceit, verbose)
 	    {
 		/*
 		 * Ask to select a tag from the list.
-		 * When using ":silent" assume that <CR> was entered.
 		 */
-		MSG_PUTS(_("Enter nr of choice (<CR> to abort): "));
-		i = get_number(TRUE);
-		if (KeyTyped)		/* don't call wait_return() now */
-		{
-		    msg_putchar('\n');
-		    cmdline_row = msg_row - 1;
-		    need_wait_return = FALSE;
-		    msg_didany = FALSE;
-		}
+		i = prompt_for_number();
 		if (i <= 0 || i > num_matches || got_int)
 		{
 		    /* no valid choice: don't change anything */

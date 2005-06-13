@@ -5683,20 +5683,32 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 #endif
 
 #ifdef FEAT_SYN_HL
-    /* When 'spelllang' is set and there is a window for this buffer in which
-     * 'spell' is set load the wordlists. */
-    else if (varp == &(curbuf->b_p_spl))
+    /* When 'spelllang' or 'spellfile' is set and there is a window for this
+     * buffer in which 'spell' is set load the wordlists. */
+    else if (varp == &(curbuf->b_p_spl) || varp == &(curbuf->b_p_spf))
     {
 	win_T	    *wp;
+	int	    l;
 
-	FOR_ALL_WINDOWS(wp)
-	    if (wp->w_buffer == curbuf && wp->w_p_spell)
-	    {
-		errmsg = did_set_spelllang(curbuf);
+	if (varp == &(curbuf->b_p_spf))
+	{
+	    l = STRLEN(curbuf->b_p_spf);
+	    if (l > 0 && (l < 4 || STRCMP(curbuf->b_p_spf + l - 4,
+								".add") != 0))
+		errmsg = e_invarg;
+	}
+
+	if (errmsg == NULL)
+	{
+	    FOR_ALL_WINDOWS(wp)
+		if (wp->w_buffer == curbuf && wp->w_p_spell)
+		{
+		    errmsg = did_set_spelllang(curbuf);
 # ifdef FEAT_WINDOWS
-		break;
+		    break;
 # endif
-	    }
+		}
+	}
     }
 #endif
 

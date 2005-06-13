@@ -3137,6 +3137,27 @@ get_number(colon)
     return n;
 }
 
+/*
+ * Ask the user to enter a number.
+ */
+    int
+prompt_for_number()
+{
+    int		i;
+
+    /* When using ":silent" assume that <CR> was entered. */
+    MSG_PUTS(_("Choice number (<Enter> cancels): "));
+    i = get_number(TRUE);
+    if (KeyTyped)		/* don't call wait_return() now */
+    {
+	msg_putchar('\n');
+	cmdline_row = msg_row - 1;
+	need_wait_return = FALSE;
+	msg_didany = FALSE;
+    }
+    return i;
+}
+
     void
 msgmore(n)
     long n;

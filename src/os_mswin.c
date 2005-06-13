@@ -332,6 +332,7 @@ mch_settitle(
  *  2: Just restore icon (which we don't have)
  *  3: Restore title and icon (which we don't have)
  */
+/*ARGSUSED*/
     void
 mch_restore_title(
     int which)
@@ -370,6 +371,7 @@ mch_can_restore_icon()
  * When 'shellslash' set do it the other way around.
  * Return OK or FAIL.
  */
+/*ARGSUSED*/
     int
 mch_FullName(
     char_u	*fname,
@@ -525,6 +527,7 @@ vim_stat(const char *name, struct stat *stp)
 }
 
 #if defined(FEAT_GUI_MSWIN) || defined(PROTO)
+/*ARGSUSED*/
     void
 mch_settmode(int tmode)
 {
@@ -701,6 +704,7 @@ mch_chdir(char *path)
  * Switching off termcap mode is only allowed when Columns is 80, otherwise a
  * crash may result.  It's always allowed on NT or when running the GUI.
  */
+/*ARGSUSED*/
     int
 can_end_termcap_mode(
     int give_msg)
@@ -732,6 +736,7 @@ mch_char_avail()
 /*
  * set screen mode, always fails.
  */
+/*ARGSUSED*/
     int
 mch_screenmode(
     char_u *arg)
@@ -1028,6 +1033,7 @@ typedef struct
 /*
  * Make vim the owner of the current selection.  Return OK upon success.
  */
+/*ARGSUSED*/
     int
 clip_mch_own_selection(VimClipboard *cbd)
 {
@@ -1041,6 +1047,7 @@ clip_mch_own_selection(VimClipboard *cbd)
 /*
  * Make vim NOT the owner of the current selection.
  */
+/*ARGSUSED*/
     void
 clip_mch_lose_selection(VimClipboard *cbd)
 {
@@ -1228,7 +1235,6 @@ clip_mch_request_selection(VimClipboard *cbd)
 #ifdef FEAT_MBYTE
     HGLOBAL		rawh = NULL;
 #endif
-    char_u		*hMemStr = NULL;
     int			str_size = 0;
     int			maxlen;
     size_t		n;
@@ -1327,7 +1333,7 @@ clip_mch_request_selection(VimClipboard *cbd)
     {
 	if ((hMem = GetClipboardData(CF_TEXT)) != NULL)
 	{
-	    str = hMemStr = (char_u *)GlobalLock(hMem);
+	    str = (char_u *)GlobalLock(hMem);
 
 	    /* The length is either what our metadata says or the strlen().
 	     * But limit it to the GlobalSize() for safety. */
@@ -1587,6 +1593,7 @@ clip_mch_set_selection(VimClipboard *cbd)
 /*
  * Debugging helper: expose the MCH_WRITE_DUMP stuff to other modules
  */
+/*ARGSUSED*/
     void
 DumpPutS(
     const char *psz)
@@ -1736,6 +1743,7 @@ swap_me(COLORREF colorref)
     return colorref;
 }
 
+/*ARGSUSED*/
     static BOOL CALLBACK
 PrintDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -1798,6 +1806,7 @@ PrintDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     return FALSE;
 }
 
+/*ARGSUSED*/
     static BOOL CALLBACK
 AbortProc(HDC hdcPrn, int iCode)
 {
@@ -2247,6 +2256,7 @@ mch_print_begin(prt_settings_T *psettings)
     return (ret > 0);
 }
 
+/*ARGSUSED*/
     void
 mch_print_end(prt_settings_T *psettings)
 {
@@ -2935,8 +2945,7 @@ typedef struct
     HWND	server;		/* server window */
     char_u	*reply;		/* reply string */
     int		expr_result;	/* 0 for REPLY, 1 for RESULT 2 for error */
-}
-reply_T;
+} reply_T;
 
 static garray_T reply_list = {0, 0, sizeof(reply_T), 5, 0};
 
@@ -3186,6 +3195,7 @@ points_to_pixels(char_u *str, char_u **end, int vertical, int pprinter_dc)
     return pixels;
 }
 
+/*ARGSUSED*/
     static int CALLBACK
 font_enumproc(
     ENUMLOGFONT	    *elf,

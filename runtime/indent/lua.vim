@@ -2,7 +2,13 @@
 " Language:	Lua script
 " Maintainer:	Marcus Aurelius Farias <marcus.cf 'at' bol.com.br>
 " First Author:	Max Ischenko <mfi 'at' ukr.net>
-" Last Change:	2004 Aug 29
+" Last Change:	2005 Jun 09
+
+" Only load this indent file when no other was loaded.
+if exists("b:did_indent")
+  finish
+endif
+let b:did_indent = 1
 
 " Only define the function once.
 if exists("*GetLuaIndent")

@@ -2835,6 +2835,7 @@ Athena	gui_x11.txt	/*Athena*
 B	motion.txt	/*B*
 BeBox	os_beos.txt	/*BeBox*
 BeOS	os_beos.txt	/*BeOS*
+Bram	intro.txt	/*Bram*
 BufAdd	autocmd.txt	/*BufAdd*
 BufCreate	autocmd.txt	/*BufCreate*
 BufDelete	autocmd.txt	/*BufDelete*
@@ -3805,6 +3806,7 @@ Mac-format-write	editing.txt	/*Mac-format-write*
 Macintosh	os_mac.txt	/*Macintosh*
 Mark	motion.txt	/*Mark*
 MiNT	os_mint.txt	/*MiNT*
+Moolenaar	intro.txt	/*Moolenaar*
 MorphOS	os_amiga.txt	/*MorphOS*
 Motif	gui_x11.txt	/*Motif*
 MzScheme	if_mzsch.txt	/*MzScheme*
@@ -5125,6 +5127,7 @@ hebrew	hebrew.txt	/*hebrew*
 hebrew.txt	hebrew.txt	/*hebrew.txt*
 help	various.txt	/*help*
 help-context	help.txt	/*help-context*
+help-tags	tags	1
 help-translated	various.txt	/*help-translated*
 help-xterm-window	various.txt	/*help-xterm-window*
 help.txt	help.txt	/*help.txt*
@@ -6250,9 +6253,12 @@ speed-up	tips.txt	/*speed-up*
 spell	spell.txt	/*spell*
 spell-affix-KEP	spell.txt	/*spell-affix-KEP*
 spell-affix-RAR	spell.txt	/*spell-affix-RAR*
+spell-affix-REP	spell.txt	/*spell-affix-REP*
+spell-affix-SAL	spell.txt	/*spell-affix-SAL*
 spell-affix-chars	spell.txt	/*spell-affix-chars*
 spell-affix-mbyte	spell.txt	/*spell-affix-mbyte*
 spell-affix-vim	spell.txt	/*spell-affix-vim*
+spell-dic-format	spell.txt	/*spell-dic-format*
 spell-file-format	spell.txt	/*spell-file-format*
 spell-mkspell	spell.txt	/*spell-mkspell*
 spell-quickstart	spell.txt	/*spell-quickstart*
@@ -7070,6 +7076,7 @@ z/OS	os_390.txt	/*z\/OS*
 z<CR>	scroll.txt	/*z<CR>*
 z<Left>	scroll.txt	/*z<Left>*
 z<Right>	scroll.txt	/*z<Right>*
+z?	spell.txt	/*z?*
 zA	fold.txt	/*zA*
 zC	fold.txt	/*zC*
 zD	fold.txt	/*zD*

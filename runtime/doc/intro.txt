@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 7.0aa.  Last change: 2005 Mar 29
+*intro.txt*     For Vim version 7.0aa.  Last change: 2005 Jun 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -198,7 +198,7 @@ The user may create scripts for Vim that use external commands.  These might
 introduce Y2K problems, but those are not really part of Vim itself.
 
 ==============================================================================
-3. Credits						*credits* *author*
+3. Credits				*credits* *author* *Bram* *Moolenaar*
 
 Most of Vim was written by Bram Moolenaar <Bram@vim.org>.
 

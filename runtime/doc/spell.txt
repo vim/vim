@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 08
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -51,7 +51,7 @@ To search for the next misspelled word:
 [S			Like "]S" but search backwards.
 
 
-To add words to your own word list:
+To add words to your own word list:				*E764*
 
 							*zg*
 zg			Add word under the cursor as a good word to
@@ -71,6 +71,21 @@ zw			Add word under the cursor as a wrong (bad) word to
 After adding a word to 'spellfile' its associated ".spl" file will
 automatically be updated.  More details about the 'spellfile' format below
 |spell-wordlist-format|.
+
+
+Finding suggestions for bad words:
+
+							*z?*
+z?			For the badly spelled word under the cursor suggest
+			the correctly spelled word.
+			When there is no badly spelled word under the cursor
+			use the one after the cursor, in the same line.
+			The results are sorted on similarity to the badly
+			spelled word.
+			This may take a long time.  Hit CTRL-C when you are
+			bored.
+			You can enter the number of your choice or press
+			<Enter> if you don't want to replace.
 
 
 PERFORMANCE
@@ -170,6 +185,10 @@ Vim uses a fixed method to recognize a word.  This is independent of
 include characters like '-' in 'iskeyword'.  The word characters do depend on
 'encoding'.
 
+The table with word characters is stored in the main .spl file.  Therefore it
+matters what the current locale is when generating it!  A .add.spl file does
+not contain a word table.
+
 A word that starts with a digit is always ignored.  That includes hex numbers
 in the form 0xff and 0XFF.
 
@@ -224,6 +243,9 @@ You can also use a plain word list.
 <			This combines the English word lists for US, CA and AU
 			into one en.spl file.
 			Up to eight regions can be combined. *E754* *755*
+			The REP and SAL items of the first .aff file where
+			they appear are used. |spell-affix-REP|
+			|spell-affix-SAL|
 
 			When the spell file was written all currently used
 			spell files will be reloaded.
@@ -451,5 +473,54 @@ Rare words are highlighted differently from bad words.  This is to be used for
 words that are correct for the language, but are hardly ever used and could be
 a typing mistake anyway.
 
+
+REPLACEMENTS						*spell-affix-REP*
+
+In the affix file REP items can be used to define common mistakes.  This is
+used to make spelling suggestions.  The items define the "from" text and the
+"to" replacement.  Example:
+
+	REP 4 ~
+	REP f ph ~
+	REP ph f ~
+	REP k ch ~
+	REP ch k ~
+
+The first line specifies the number of REP lines following.  Vim ignores it.
+
+
+SIMILAR CHARACTERS					*spell-affix-MAP*
+
+In the affix file MAP items can be used to define letters that very much
+alike.  This is mostly used for a letter with different accents.  This is used
+to prefer suggestions with these letters substituted.  Example:
+
+	MAP 2 ~
+	MAP eéëêè ~
+	MAP uüùúû ~
+
+The first line specifies the number of MAP lines following.  Vim ignores it.
+
+
+SOUNDS-A-LIKE						*spell-affix-SAL*
+
+In the affix file SAL items can be used to define the sounds-a-like mechanism
+to be used.  The main items define the "from" text and the "to" replacement.
+Example:
+
+	SAL CIA                  X ~
+	SAL CH                   X ~
+	SAL C                    K ~
+	SAL K                    K ~
+
+TODO: explain how it works.
+
+There are a few special items:
+
+	SAL followup		true ~
+	SAL collapse_result	true ~
+	SAL remove_accents	true ~
+
+"1" has the same meaning as "true".  Any other value means "false".
 
  vim:tw=78:sw=4:ts=8:ft=help:norl:

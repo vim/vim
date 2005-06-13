@@ -110,7 +110,8 @@
 
 TARGETOS = BOTH
 
-# Select one of eight object code directories, depends on GUI, OLE and DEBUG.
+# Select one of eight object code directories, depends on GUI, OLE, DEBUG and
+# interfaces.
 # If you change something else, do "make clean" first!
 !if "$(GUI)" == "yes"
 OBJDIR = .\ObjG
@@ -119,6 +120,18 @@ OBJDIR = .\ObjC
 !endif
 !if "$(OLE)" == "yes"
 OBJDIR = $(OBJDIR)O
+!endif
+!ifdef PERL
+OBJDIR = $(OBJDIR)L
+!endif
+!ifdef PYTHON
+OBJDIR = $(OBJDIR)Y
+!endif
+!ifdef TCL
+OBJDIR = $(OBJDIR)T
+!endif
+!ifdef RUBY
+OBJDIR = $(OBJDIR)R
 !endif
 !ifdef MZSCHEME
 OBJDIR = $(OBJDIR)Z

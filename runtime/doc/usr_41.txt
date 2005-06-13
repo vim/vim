@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 7.0aa.  Last change: 2005 May 18
+*usr_41.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 09
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -612,13 +612,13 @@ List manipulation:
 	join()			join List items into a String
 	string()		String representation of a List
 	call()			call a function with List as arguments
-	index()			index of a value in a list
+	index()			index of a value in a List
 	max()			maximum value in a List
 	min()			minimum value in a List
 	count()			count number of times a value appears in a List
 
 Dictionary manipulation:
-	get()			get an entries without error for wrong key
+	get()			get an entry without an error for a wrong key
 	len()			number of entries in a Dictionary
 	has_key()		check whether a key appears in a Dictionary
 	empty()			check if Dictionary is empty
@@ -1117,7 +1117,7 @@ over them: >
 	one ~
 	two ~
 
-The will notice the items are not ordered.  You can sort the list to get a
+The will notice the keys are not ordered.  You can sort the list to get a
 specific order: >
 
 	:for key in sort(keys(uk2nl))
@@ -2237,8 +2237,8 @@ That script must define the "mylib#myfunction()" function.
 
 You can put many other functions in the mylib.vim script, you are free to
 organize your functions in library scripts.  But you must use function names
-where the part before the colon matches the script name.  Otherwise Vim
-would not know what script to load.
+where the part before the '#' matches the script name.  Otherwise Vim would
+not know what script to load.
 
 If you get really enthousiastic and write lots of library scripts, you may
 want to use subdirectories.  Example: >
@@ -2256,7 +2256,7 @@ Where the function is defined like this: >
 	endfunction
 
 Notice that the name the function is defined with is exactly the same as the
-name used for calling the function.  And the part before the last colon
+name used for calling the function.  And the part before the last '#'
 exactly matches the subdirectory and script name.
 
 You can use the same mechanism for variables: >

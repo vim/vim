@@ -4685,6 +4685,11 @@ dozet:
 		    spell_add_word(ptr, len, nchar == 'w');
 		}
 		break;
+
+    case '?':	/* "z?": suggestions for a badly spelled word  */
+		if (!checkclearopq(cap->oap))
+		    spell_suggest();
+		break;
 #endif
 
     default:	clearopbeep(cap->oap);
@@ -6106,7 +6111,7 @@ nv_brackets(cap)
 	setpcmark();
 	for (n = 0; n < cap->count1; ++n)
 	    if (spell_move_to(cap->cmdchar == ']' ? FORWARD : BACKWARD,
-				    cap->nchar == 's' ? TRUE : FALSE) == FAIL)
+			     cap->nchar == 's' ? TRUE : FALSE, FALSE) == FAIL)
 	    {
 		clearopbeep(cap->oap);
 		break;

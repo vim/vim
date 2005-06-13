@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 08
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,7 +30,15 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-New menu file doesn't work with older vim.  exists("spell") doesn't work?
+Range(0) should return an empty list (Servatius Brandt).
+
+a few builtin functions call set_var() internally to set a variable.  They do
+not check for a valid variable name.  Example: setbufvar(1, ";", 1) sets a
+variable named ";". (Servatius Brandt)
+
+Patch for if_python to make exit work better with threads. (ugo)
+Still seems to fail 15% of the time.
+Vim 7 breaks, works OK with 6.3 version of if_python (Thakkar)
 
 Add extra list of file locations.  Can be used with:
     :ltag	      list of matching tags, like :tselect
@@ -86,18 +94,25 @@ Awaiting response:
 -   Win32: tearoff menu window should have a scrollbar when it's taller than
     the screen.
 
-Patch for if_python to make exit work better with threads. (ugo)
-Still seems to fail 15% of the time.
 
 
 PLANNED FOR VERSION 7.0:
 
 -   Add SPELLCHECKER, with support for many languages.
     - Spell checking code todo's:
-	- How about making suggestions?  Use an external program like aspell?
-	  Or include the myspell suggestion code in Vim?
-	- Support for approximate-regexps will help with finding similar words
-	  (agrep http://www.tgries.de/agrep/).
+	- Code for making suggestions:
+	  - Also need to store "toupper" in the .spl file.
+	  - Give better score for words that sound like the bad word?
+	  - "sounds-like" matching: Also try variants of the soundslike word.
+	  - Aspell has the "special" character, useful?
+	  - Support for approximate-regexps will help with finding similar
+	    words (agrep http://www.tgries.de/agrep/).
+	- Give a warning for ":mkspell it_IT wordfile", thus using a region
+	  name with only one input file.
+	- Also put list of word characters in word list file.  Otherwise the
+	  one for Italian may differ from the one used for English.
+	- Somehow mark "frequent" words, so that suggestions with "a" and
+	  "the" can be preferred?
 	- Make "en-rare" spell file.
 	  Convention: use en_US (language_region) and en-rare (language-field)
           Add hl groups to 'spelllang'?
@@ -130,7 +145,8 @@ PLANNED FOR VERSION 7.0:
     Later:
     - Implement compound words when it works for Myspell.  Current idea has
       the problem that "foo/X" always allows "foofoo", there is no way to
-      specify a word can only be at the start or end.
+      specify a word can only be at the start or end, or that only certain
+      words combine.
 
 -   REFACTORING: The main() function is very long.  Move parts to separate
     functions, especially loops.  Ideas from Walter Briscoe (2003 Apr 3, 2004
@@ -266,7 +282,7 @@ on MS-Windows. (George Reilly)
 Add strtol() to avoid the problems with leading zero causing octal conversion.
 
 Try new POSIX tests, made after my comments. (Geoff Clare, 2005 April 7)
-Before April 23 if possible.
+Version 1.5 is in ~/src/posix/1.5. (Lynne Canal)
 
 Add a 'tool' window: behaves like a preview window but there can be several.
 Don't count it in only_one_window(). (Alexei Alexandrov)
@@ -2342,6 +2358,9 @@ Insert mode:
 
 
 'cindent', 'smartindent':
+8   Wrong indent below ? : with ():
+	if ((a ? (b) : c) != 0)
+		       aligns with ":".
 8   Wrong indent for ":" after a method with line break in arguments:
 	Foo::Foo (int one,
 		    int two)
@@ -2927,12 +2946,8 @@ Options:
 8   When using ":mksession", also store a command to reset all options to
     their default value, before setting the options that are not at their
     default value.
-8   Should ":mksession" restore the current directory when writing the
-    session, or the directory where the session file is?  Probably need a word
-    in 'sessionoptions' to make a choice:
-    "curdir" (cd to current directory when session file was generated)
-    "sessiondir" (cd to directory of session file)
-    "nodir" (don't cd at all)
+7   With ":mksession" also store the tag stack and jump history. (Michal
+    Malecki)
 8   Make "old" number options that really give a number of effects into string
     options that are a comma separated list.  The old number values should
     also be supported.

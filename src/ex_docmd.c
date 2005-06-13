@@ -8139,6 +8139,7 @@ theend:
 
 #if ((defined(FEAT_SESSION) || defined(FEAT_EVAL)) && defined(vim_mkdir)) \
 	|| defined(PROTO)
+/*ARGSUSED*/
     int
 vim_mkdir_emsg(name, prot)
     char_u	*name;

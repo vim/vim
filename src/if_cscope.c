@@ -1226,11 +1226,13 @@ GetWin32Error()
     return msg;
 }
 #endif
+
 /*
  * PRIVATE: cs_insert_filelist
  *
  * insert a new cscope database filename into the filelist
  */
+/*ARGSUSED*/
     static int
 cs_insert_filelist(fname, ppath, flags, sb)
     char *fname;

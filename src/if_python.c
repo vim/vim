@@ -384,10 +384,13 @@ static int initialised = 0;
 
 #if PYTHON_API_VERSION < 1007 /* Python 1.4 */
 typedef PyObject PyThreadState;
-#endif /* Python 1.4 */
+#endif
 
-#ifndef PY_CAN_RECURSE
+#ifdef PY_CAN_RECURSE
+static PyGILState_STATE pygilstate = PyGILState_UNLOCKED;
+#else
 static PyThreadState *saved_python_thread = NULL;
+#endif
 
 /*
  * Suspend a thread of the Python interpreter, other threads are allowed to
@@ -396,7 +399,11 @@ static PyThreadState *saved_python_thread = NULL;
     static void
 Python_SaveThread(void)
 {
+#ifdef PY_CAN_RECURSE
+    PyGILState_Release(pygilstate);
+#else
     saved_python_thread = PyEval_SaveThread();
+#endif
 }
 
 /*
@@ -406,10 +413,13 @@ Python_SaveThread(void)
     static void
 Python_RestoreThread(void)
 {
+#ifdef PY_CAN_RECURSE
+    pygilstate = PyGILState_Ensure();
+#else
     PyEval_RestoreThread(saved_python_thread);
     saved_python_thread = NULL;
-}
 #endif
+}
 
 /*
  * obtain a lock on the Vim data structures
@@ -430,11 +440,17 @@ python_end()
 {
 #ifdef DYNAMIC_PYTHON
     if (hinstPython && Py_IsInitialized())
+    {
+        Python_RestoreThread();	    /* enter python */
         Py_Finalize();
+    }
     end_dynamic_python();
 #else
     if (Py_IsInitialized())
+    {
+        Python_RestoreThread();	    /* enter python */
         Py_Finalize();
+    }
 #endif
 }
 
@@ -470,11 +486,7 @@ Python_Init(void)
 	    goto fail;
 
 	/* the first python thread is vim's, release the lock */
-#ifdef PY_CAN_RECURSE
-	PyEval_SaveThread();
-#else
 	Python_SaveThread();
-#endif
 
 	initialised = 1;
     }
@@ -497,9 +509,7 @@ fail:
     static void
 DoPythonCommand(exarg_T *eap, const char *cmd)
 {
-#ifdef PY_CAN_RECURSE
-    PyGILState_STATE	pygilstate;
-#else
+#ifndef PY_CAN_RECURSE
     static int		recursive = 0;
 #endif
 #if defined(MACOS) && !defined(MACOS_X_UNIX)
@@ -544,19 +554,11 @@ DoPythonCommand(exarg_T *eap, const char *cmd)
     }
 #endif
 
-#ifdef PY_CAN_RECURSE
-    pygilstate = PyGILState_Ensure();
-#else
     Python_RestoreThread();	    /* enter python */
-#endif
 
     PyRun_SimpleString((char *)(cmd));
 
-#ifdef PY_CAN_RECURSE
-    PyGILState_Release(pygilstate);
-#else
     Python_SaveThread();	    /* leave python */
-#endif
 
 #if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
     if (saved_locale != NULL)

@@ -1082,6 +1082,69 @@ vim_strup(p)
     }
 }
 
+#if defined(FEAT_EVAL) || defined(FEAT_SYN_HL) || defined(PROTO)
+/*
+ * Make string "s" all upper-case and return it in allocated memory.
+ * Handles multi-byte characters as well as possible.
+ * Returns NULL when out of memory.
+ */
+    char_u *
+strup_save(orig)
+    char_u	*orig;
+{
+    char_u	*p;
+    char_u	*res;
+
+    res = p = vim_strsave(orig);
+
+    if (res != NULL)
+	while (*p != NUL)
+	{
+# ifdef FEAT_MBYTE
+	    int		l;
+
+	    if (enc_utf8)
+	    {
+		int	c, uc;
+		int	nl;
+		char_u	*s;
+
+		c = utf_ptr2char(p);
+		uc = utf_toupper(c);
+
+		/* Reallocate string when byte count changes.  This is rare,
+		 * thus it's OK to do another malloc()/free(). */
+		l = utf_ptr2len_check(p);
+		nl = utf_char2len(uc);
+		if (nl != l)
+		{
+		    s = alloc((unsigned)STRLEN(res) + 1 + nl - l);
+		    if (s == NULL)
+			break;
+		    mch_memmove(s, res, p - res);
+		    STRCPY(s + (p - res) + nl, p + l);
+		    p = s + (p - res);
+		    vim_free(res);
+		    res = s;
+		}
+
+		utf_char2bytes(uc, p);
+		p += nl;
+	    }
+	    else if (has_mbyte && (l = (*mb_ptr2len_check)(p)) > 1)
+		p += l;		/* skip multi-byte character */
+	    else
+# endif
+	    {
+		*p = TOUPPER_LOC(*p); /* note that toupper() can be a macro */
+		p++;
+	    }
+	}
+
+    return res;
+}
+#endif
+
 /*
  * copy a space a number of times
  */
@@ -1131,43 +1194,16 @@ del_trailing_spaces(ptr)
 }
 
 /*
- * This is here because strncpy() does not guarantee successful results when
- * the to and from strings overlap.  It is only currently called from
- * nextwild() which copies part of the command line to another part of the
- * command line.  This produced garbage when expanding files etc in the middle
- * of the command line (on my terminal, anyway) -- webb.
- * Note: strncpy() pads the remainder of the buffer with NUL bytes,
- * vim_strncpy() doesn't do that.
+ * Like strncpy(), but always terminate the result with one NUL.
  */
     void
 vim_strncpy(to, from, len)
-    char_u *to;
-    char_u *from;
-    int len;
+    char_u	*to;
+    char_u	*from;
+    int		len;
 {
-    int i;
-
-    if (to <= from)
-    {
-	while (len-- && *from)
-	    *to++ = *from++;
-	if (len >= 0)
-	    *to = *from;    /* Copy NUL */
-    }
-    else
-    {
-	for (i = 0; i < len; i++)
-	{
-	    to++;
-	    if (*from++ == NUL)
-	    {
-		i++;
-		break;
-	    }
-	}
-	for (; i > 0; i--)
-	    *--to = *--from;
-    }
+    STRNCPY(to, from, len);
+    to[len] = NUL;
 }
 
 /*

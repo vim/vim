@@ -42,6 +42,7 @@ void change_warning __ARGS((int col));
 int ask_yesno __ARGS((char_u *str, int direct));
 int get_keystroke __ARGS((void));
 int get_number __ARGS((int colon));
+int prompt_for_number __ARGS((void));
 void msgmore __ARGS((long n));
 void beep_flush __ARGS((void));
 void vim_beep __ARGS((void));

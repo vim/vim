@@ -2,7 +2,7 @@
 :" information about the environment of a possible bug in Vim.
 :"
 :" Maintainer:	Bram Moolenaar <Bram@vim.org>
-:" Last change:	2001 Feb 02
+:" Last change:	2005 Jun 12
 :"
 :" To use inside Vim:
 :"	:so $VIMRUNTIME/bugreport.vim
@@ -49,6 +49,8 @@
 :  call <SID>CheckFile($VIMRUNTIME . "/syntax/synload.vim")
 :  delfun <SID>CheckDir
 :  delfun <SID>CheckFile
+:  echo "--- Scripts sourced ---"
+:  scriptnames
 :endif
 :set all
 :set termcap

@@ -556,7 +556,6 @@ _OnWindowPosChanged(
 
     static int
 _DuringSizing(
-    HWND hwnd,
     UINT fwSide,
     LPRECT lprc)
 {
@@ -681,7 +680,7 @@ _WndProc(
 #endif
 
     case WM_SIZING:	/* HANDLE_MSG doesn't seem to handle this one */
-	return _DuringSizing(hwnd, (UINT)wParam, (LPRECT)lParam);
+	return _DuringSizing((UINT)wParam, (LPRECT)lParam);
 
     case WM_MOUSEWHEEL:
 	_OnMouseWheel(hwnd, HIWORD(wParam));
@@ -842,12 +841,14 @@ gui_mch_set_parent(char *title)
     }
 }
 
+#ifndef FEAT_OLE
     static void
 ole_error(char *arg)
 {
     EMSG2(_("E243: Argument not supported: \"-%s\"; Use the OLE version."),
 									 arg);
 }
+#endif
 
 /*
  * Parse the GUI related command-line arguments.  Any arguments used are
@@ -1260,6 +1261,7 @@ get_work_area(RECT *spi_rect)
 /*
  * Set the size of the window to the given width and height in pixels.
  */
+/*ARGSUSED*/
     void
 gui_mch_set_shellsize(int width, int height,
 	int min_width, int min_height, int base_width, int base_height)
@@ -2045,7 +2047,7 @@ gui_mch_draw_string(
     {
 	int			x;
 	int			offset;
-	const static int	val[8] = {1, 0, 0, 0, 1, 2, 2, 2 };
+	static const int	val[8] = {1, 0, 0, 0, 1, 2, 2, 2 };
 
 	y = FILL_Y(row + 1) - 1;
 	for (x = FILL_X(col); x < FILL_X(col + len); ++x)
@@ -2451,6 +2453,7 @@ gui_mch_menu_grey(
  * pressed, return that button's ID - IDCANCEL (2), which is the button's
  * number.
  */
+/*ARGSUSED*/
     static LRESULT CALLBACK
 dialog_callback(
     HWND hwnd,
@@ -4037,6 +4040,7 @@ delete_tooltip(beval)
     DestroyWindow(beval->balloon);
 }
 
+/*ARGSUSED*/
     static VOID CALLBACK
 BevalTimerProc(hwnd, uMsg, idEvent, dwTime)
     HWND    hwnd;
@@ -4078,6 +4082,7 @@ BevalTimerProc(hwnd, uMsg, idEvent, dwTime)
     }
 }
 
+/*ARGSUSED*/
     void
 gui_mch_disable_beval_area(beval)
     BalloonEval	*beval;
@@ -4087,6 +4092,7 @@ gui_mch_disable_beval_area(beval)
     // TRACE0("gui_mch_disable_beval_area }}}");
 }
 
+/*ARGSUSED*/
     void
 gui_mch_enable_beval_area(beval)
     BalloonEval	*beval;
@@ -4162,6 +4168,7 @@ gui_mch_create_beval_area(target, mesg, mesgCB, clientData)
     return beval;
 }
 
+/*ARGSUSED*/
     static void
 Handle_WM_Notify(hwnd, pnmh)
     HWND hwnd;

@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 07
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -234,6 +234,18 @@ the same value. >
 <	0 >
 	:echo alist == blist
 <	1
+
+Note about comparing lists: Two lists are considered equal if they have the
+same length and all items compare equal, as with using "==".  There is one
+exception: When comparing a number with a string and the string contains extra
+characters beside the number they are not equal. Example: >
+	echo 4 == "4x"
+<	1 >
+	echo [4] == ["4x"]
+<	0
+
+This is to fix the odd behavior of == that can't be changed for backward
+compatibility reasons.
 
 
 List unpack ~
@@ -2593,7 +2605,8 @@ getwinposy()	The result is a Number, which is the Y coordinate in pixels of
 
 getwinvar({nr}, {varname})				*getwinvar()*
 		The result is the value of option or local window variable
-		{varname} in window {nr}.
+		{varname} in window {nr}.  When {nr} is zero the current
+		window is used.
 		This also works for a global option, buffer-local option and
 		window-local option, but it doesn't work for a global variable
 		or buffer-local variable.
@@ -3692,7 +3705,7 @@ setreg({regname}, {value} [,{options}])
 
 setwinvar({nr}, {varname}, {val})			*setwinvar()*
 		Set option or local variable {varname} in window {nr} to
-		{val}.
+		{val}.  When {nr} is zero the current window is used.
 		This also works for a global or local buffer option, but it
 		doesn't work for a global or local buffer variable.
 		For a local buffer option the global value is unchanged.
@@ -3804,6 +3817,7 @@ string({expr})	Return {expr} converted to a String.  If {expr} is a Number,
 			Number		123
 			Funcref		function('name')
 			List		[item, item]
+			Dictionary	{key: value, key: value}
 		Note that in String values the ' character is doubled.
 
 							*strlen()*
