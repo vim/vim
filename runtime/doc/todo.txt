@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 13
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -31,6 +31,8 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 -------------------- Known bugs and current work -----------------------
 
 Range(0) should return an empty list (Servatius Brandt).
+
+:let @= 'asdf' gives confusing error message.  Make @= writable?
 
 a few builtin functions call set_var() internally to set a variable.  They do
 not check for a valid variable name.  Example: setbufvar(1, ";", 1) sets a
@@ -101,22 +103,19 @@ PLANNED FOR VERSION 7.0:
 -   Add SPELLCHECKER, with support for many languages.
     - Spell checking code todo's:
 	- Code for making suggestions:
-	  - Also need to store "toupper" in the .spl file.
-	  - Give better score for words that sound like the bad word?
-	  - "sounds-like" matching: Also try variants of the soundslike word.
 	  - Aspell has the "special" character, useful?
-	  - Support for approximate-regexps will help with finding similar
-	    words (agrep http://www.tgries.de/agrep/).
-	- Give a warning for ":mkspell it_IT wordfile", thus using a region
-	  name with only one input file.
+	  - The score is a bit wrong for substituting multi-byte characters.
+	  - similar_chars() is too slow.
+	  - Swapping works with bytes instead of characters.
+	  - The sound-folding doesn't work for multi-byte characters.
 	- Also put list of word characters in word list file.  Otherwise the
 	  one for Italian may differ from the one used for English.
-	- Somehow mark "frequent" words, so that suggestions with "a" and
-	  "the" can be preferred?
 	- Make "en-rare" spell file.
 	  Convention: use en_US (language_region) and en-rare (language-field)
           Add hl groups to 'spelllang'?
 	    :set spelllang=en_us,en-rare/SpellRare,en-math/SpellMath
+	- Give a warning for ":mkspell it_IT wordfile", thus using a region
+	  name with only one input file.
     - Use "engspchk" from Charles Campbell for ideas (commands, rare words).
     - References: MySpell library (in OpenOffice.org).
 	http://spellchecker.mozdev.org/source.html
@@ -288,6 +287,8 @@ Add a 'tool' window: behaves like a preview window but there can be several.
 Don't count it in only_one_window(). (Alexei Alexandrov)
 
 Win32: Patch for Korean IME. (Yusung, 2005 March 21)
+
+When "= evaluation results in a list, use it as a sequence of lines.
 
 Support ":set syntax=cpp.doxygen"?  Suggested patch by Michael Geddes (9 Aug
 2004).  Should also work for 'filetype'.
@@ -2705,6 +2706,8 @@ Searching:
     Here $paren is evaluated when it's encountered.  This is like a regexp
     inside a regexp.  In the above terms it would be:
 	    \@((\([^()]\|\@g\)*)\)
+7   Support for approximate-regexps to find similar words (agrep
+    http://www.tgries.de/agrep/ tre: http://laurikari.net/tre/index.html).
 8   Add an item for a big character range, so that one can search for a
     chinese character: \z[234-1234]  or \z[XX-YY] or \z[0x23-0x234].
 7   Add an item stack to allow matching ().  One side is "push X on
