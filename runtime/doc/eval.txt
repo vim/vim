@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 11
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -440,7 +440,8 @@ Dictionary: >
 	:echo onedict['a']
 	11
 
-For more info see |list-identity|.
+Two Dictionaries compare equal if all the key-value pairs compare equal.  For
+more info see |list-identity|.
 
 
 Dictionary modification ~

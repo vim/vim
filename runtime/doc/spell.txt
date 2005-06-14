@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 13
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -86,6 +86,11 @@ z?			For the badly spelled word under the cursor suggest
 			bored.
 			You can enter the number of your choice or press
 			<Enter> if you don't want to replace.
+			If 'verbose' is non-zero a score will be displayed to
+			indicate the likeliness to the badly spelled word (the
+			higher the score the more different).
+			The score may be slightly wrong for words with
+			multi-byte characters.
 
 
 PERFORMANCE
