@@ -84,10 +84,10 @@
  * don't use them for negative values.
  */
 #ifdef FEAT_MBYTE
-# define MB_ISLOWER(c)	(enc_utf8 && (c) > 0x80 ? utf_islower(c) : (has_mbyte && c > 255 ? FALSE : islower(c)))
-# define MB_ISUPPER(c)	(enc_utf8 && (c) > 0x80 ? utf_isupper(c) : (has_mbyte && c > 255 ? FALSE : isupper(c)))
-# define MB_TOLOWER(c)	(enc_utf8 && (c) > 0x80 ? utf_tolower(c) : (has_mbyte && c > 255 ? c : TOLOWER_LOC(c)))
-# define MB_TOUPPER(c)	(enc_utf8 && (c) > 0x80 ? utf_toupper(c) : (has_mbyte && c > 255 ? c : TOUPPER_LOC(c)))
+# define MB_ISLOWER(c)	(enc_utf8 && (c) >= 0x80 ? utf_islower(c) : (has_mbyte && c > 255 ? FALSE : islower(c)))
+# define MB_ISUPPER(c)	(enc_utf8 && (c) >= 0x80 ? utf_isupper(c) : (has_mbyte && c > 255 ? FALSE : isupper(c)))
+# define MB_TOLOWER(c)	(enc_utf8 && (c) >= 0x80 ? utf_tolower(c) : (has_mbyte && c > 255 ? c : TOLOWER_LOC(c)))
+# define MB_TOUPPER(c)	(enc_utf8 && (c) >= 0x80 ? utf_toupper(c) : (has_mbyte && c > 255 ? c : TOUPPER_LOC(c)))
 #else
 # define MB_ISLOWER(c)	islower(c)
 # define MB_ISUPPER(c)	isupper(c)

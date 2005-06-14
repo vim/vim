@@ -517,8 +517,7 @@ typedef enum
     VW_POS_MOUSE,
     VW_POS_CENTER,
     VW_POS_TOP_CENTER
-}
-gui_win_pos_T;
+} gui_win_pos_T;
 
 #ifdef FIND_REPLACE_DIALOG
 /*
