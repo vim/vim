@@ -3708,6 +3708,7 @@ E760	spell.txt	/*E760*
 E761	spell.txt	/*E761*
 E762	spell.txt	/*E762*
 E763	spell.txt	/*E763*
+E764	spell.txt	/*E764*
 E77	message.txt	/*E77*
 E78	motion.txt	/*E78*
 E79	message.txt	/*E79*
@@ -5127,7 +5128,6 @@ hebrew	hebrew.txt	/*hebrew*
 hebrew.txt	hebrew.txt	/*hebrew.txt*
 help	various.txt	/*help*
 help-context	help.txt	/*help-context*
-help-tags	tags	1
 help-translated	various.txt	/*help-translated*
 help-xterm-window	various.txt	/*help-xterm-window*
 help.txt	help.txt	/*help.txt*
@@ -6252,6 +6252,7 @@ special-buffers	windows.txt	/*special-buffers*
 speed-up	tips.txt	/*speed-up*
 spell	spell.txt	/*spell*
 spell-affix-KEP	spell.txt	/*spell-affix-KEP*
+spell-affix-MAP	spell.txt	/*spell-affix-MAP*
 spell-affix-RAR	spell.txt	/*spell-affix-RAR*
 spell-affix-REP	spell.txt	/*spell-affix-REP*
 spell-affix-SAL	spell.txt	/*spell-affix-SAL*
