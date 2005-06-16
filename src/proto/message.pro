@@ -8,8 +8,6 @@ void trunc_string __ARGS((char_u *s, char_u *buf, int room));
 void msg_source __ARGS((int attr));
 int emsg __ARGS((char_u *s));
 int emsg2 __ARGS((char_u *s, char_u *a1));
-int emsg3 __ARGS((char_u *s, char_u *a1, char_u *a2));
-int emsgn __ARGS((char_u *s, long n));
 void emsg_invreg __ARGS((int name));
 char_u *msg_trunc_attr __ARGS((char_u *s, int force, int attr));
 char_u *msg_may_trunc __ARGS((int force, char_u *s));

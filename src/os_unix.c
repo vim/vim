@@ -143,7 +143,7 @@ static int  RealWaitForChar __ARGS((int, long, int *));
 
 #ifdef FEAT_XCLIPBOARD
 static int do_xterm_trace __ARGS((void));
-#define XT_TRACE_DELAY	50	/* delay for xterm tracing */
+# define XT_TRACE_DELAY	50	/* delay for xterm tracing */
 #endif
 
 static void handle_resize __ARGS((void));
