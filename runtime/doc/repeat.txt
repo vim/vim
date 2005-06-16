@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 7.0aa.  Last change: 2005 Apr 01
+*repeat.txt*    For Vim version 7.0aa.  Last change: 2005 Jun 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -290,7 +290,7 @@ first line has something like ":map <F1> :help^M", where "^M" is a <CR>.  If
 the first line ends in a <CR>, but following ones don't, you will get an error
 message, because the <CR> from the first lines will be lost.
 
-Macintosh: Files that are read with ":source" normally have <CR> <EOL>s.
+Mac Classic: Files that are read with ":source" normally have <CR> <EOL>s.
 These always work.  If you are using a file with <NL> <EOL>s (for example, a
 file made on Unix), this will be recognized if 'fileformats' is not empty and
 the first line does not end in a <CR>.  Be careful not to use a file with <NL>

@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 14
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -25,9 +25,9 @@ This command switches on spell checking: >
 This switches on the 'spell' option and specifies to check for US English.
 
 The words that are not recognized are highlighted with one of these:
-	SpellBad	word not recognized
-	SpellRare	rare word
-	SpellLocal	wrong spelling for selected region
+	SpellBad	word not recognized			|hl-SpellBad|
+	SpellRare	rare word				|hl-SpellRare|
+	SpellLocal	wrong spelling for selected region	|hl-SpellLocal|
 
 Vim only checks words for spelling, there is no grammar check.
 
@@ -63,9 +63,10 @@ zw			Add word under the cursor as a wrong (bad) word to
 			'spellfile'.  In Visual mode the selected characters
 			are added as a word (including white space!).
 
-							*:spellg* *:spellgood*
-:spellg[ood] {word}	Add [word} as a good word to 'spellfile'.
+							*:spe* *:spellgood*
+:spe[llgood] {word}	Add [word} as a good word to 'spellfile'.
 
+							*:spellw* *:spellwrong*
 :spellw[rong] {word}	Add [word} as a wrong (bad) word to 'spellfile'.
 
 After adding a word to 'spellfile' its associated ".spl" file will
@@ -117,7 +118,7 @@ comes in (at least) these variants:
 	en_us		USA
 
 Words that are not used in one region but are used in another region are
-highlighted with |SpellLocal|.
+highlighted with SpellLocal |hl-SpellLocal|.
 
 Always use lowercase letters for the language and region names.
 
@@ -223,7 +224,7 @@ find them here:
 	http://lingucomponent.openoffice.org/spell_dic.html
 You can also use a plain word list.
 
-:mksp[ell] [-ascii] {outname} {inname} ...		*:mksp* *:mkspell*
+:mksp[ell][!] [-ascii] {outname} {inname} ...		*:mksp* *:mkspell*
 			Generate a Vim spell file word lists.  Example: >
 		:mkspell nl nl_NL.words
 <
@@ -232,6 +233,9 @@ You can also use a plain word list.
 			such as "en".  The file written will be
 			{outname}.{encoding}.spl.  {encoding} is the value of
 			the 'encoding' option.
+
+			When the output file already exists [!] must be added
+			to overwrite it.
 
 			When the [-ascii] argument is present, words with
 			non-ascii characters are skipped.  The resulting file

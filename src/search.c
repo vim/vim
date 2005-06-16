@@ -2224,7 +2224,7 @@ check_linecomment(line)
 	    int instr = FALSE;	/* inside of string */
 
 	    p = line;		/* scan from start */
-	    while ((p = vim_strpbrk(p, "\";")) != NULL)
+	    while ((p = vim_strpbrk(p, (char_u *)"\";")) != NULL)
 	    {
 		if (*p == '"')
 		{

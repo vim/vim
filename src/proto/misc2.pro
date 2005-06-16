@@ -94,4 +94,6 @@ void sort_strings __ARGS((char_u **files, int count));
 int pathcmp __ARGS((const char *p, const char *q, int maxlen));
 char_u *parse_list_options __ARGS((char_u *option_str, option_table_T *table, int table_size));
 int filewritable __ARGS((char_u *fname));
+int emsg3 __ARGS((char_u *s, char_u *a1, char_u *a2));
+int emsgn __ARGS((char_u *s, long n));
 /* vim: set ft=c : */

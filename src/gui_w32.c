@@ -498,6 +498,18 @@ _OnMouseWheel(
 	_OnScroll(hwnd, hwndCtl, zDelta >= 0 ? SB_PAGEUP : SB_PAGEDOWN, 0);
 }
 
+/*
+ * Invoked when a setting was changed.
+ */
+    static LRESULT CALLBACK
+_OnSettingChange(UINT n)
+{
+    if (n == SPI_SETWHEELSCROLLLINES)
+	SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0,
+		&mouse_scroll_lines, 0);
+    return 0;
+}
+
 #if 0	/* disabled, a gap appears below and beside the window, and the window
 	   can be moved (in a strange way) */
 /*
@@ -685,6 +697,10 @@ _WndProc(
     case WM_MOUSEWHEEL:
 	_OnMouseWheel(hwnd, HIWORD(wParam));
 	break;
+
+	/* Notification for change in SystemParametersInfo() */
+    case WM_SETTINGCHANGE:
+	return _OnSettingChange((UINT)wParam);
 
 #ifdef FEAT_TOOLBAR
     case WM_NOTIFY:

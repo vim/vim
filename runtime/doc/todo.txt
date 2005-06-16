@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 14
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,6 +29,8 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+synID() no longer works.
 
 Range(0) should return an empty list (Servatius Brandt).
 
@@ -77,6 +79,9 @@ changed.
 Include new PHP indent script from John Wellesz?
     http://www.vim.org/scripts/download_script.php?src_id=4330
 
+In Vim indenting use synID() to avoid recognizing "|en" in a string as
+"|endif".
+
 autoload:
 - Add a Vim script in $VIMRUNTIME/tools that takes a file with a list of
   script names and a help file and produces a script that can be sourced to
@@ -87,6 +92,9 @@ autoload:
     script autoload/yourlib.vim
     helpfile doc/myscript.txt
   For the "helpfile" item ":helptags" is run.
+
+For List comparing, consider [4] and ['4'] different? (Servatius Brandt)
+Also allows strict comparing for ordinary variables.
 
 Patch to alternate fold highlighting.  (Anthony Iano-Fletcher, 2005 May 12)
 More levels?
@@ -105,9 +113,18 @@ PLANNED FOR VERSION 7.0:
 	- Code for making suggestions:
 	  - Aspell has the "special" character, useful?
 	  - The score is a bit wrong for substituting multi-byte characters.
+	    At the head byte remember how may bytes are still to follow, do
+	    the scoring at the tail byte.  But don't even try when the score
+	    plus the minimal penalty (similar char) goes over maximum.
 	  - similar_chars() is too slow.
-	  - Swapping works with bytes instead of characters.
-	  - The sound-folding doesn't work for multi-byte characters.
+		use a lookuptable for single-byte
+		use a hashtable for multi-byte
+		support letter appearing in several lists?
+	  - When putting map string in .spl file check for duplicate chars.
+	  - GUI: Selecting text doesn't work at the prompt.
+	  - Should "z?" replacement be redo-able with "."?
+	  - The sound-folding doesn't work for multi-byte characters.  It's
+	    very slow too.  Prepare the table (remove alternatives)?
 	- Also put list of word characters in word list file.  Otherwise the
 	  one for Italian may differ from the one used for English.
 	- Make "en-rare" spell file.
@@ -182,6 +199,7 @@ PLANNED FOR VERSION 7.0:
     - Put the list of choices right under the place where they would be
       inserted.
     - Pre-expand abbreviations, show which abbrevs would match?
+    - Completion in .NET framework SharpDevelop: http://www.icsharpcode.net
 -   UNDO TREE: keep all states of the text, don't delete undo info.
     When making a change, instead of clearing any future undo (thus redo)
     info, make a new branch.
@@ -288,7 +306,7 @@ Don't count it in only_one_window(). (Alexei Alexandrov)
 
 Win32: Patch for Korean IME. (Yusung, 2005 March 21)
 
-When "= evaluation results in a list, use it as a sequence of lines.
+When "= evaluation results in a List, use it as a sequence of lines.
 
 Support ":set syntax=cpp.doxygen"?  Suggested patch by Michael Geddes (9 Aug
 2004).  Should also work for 'filetype'.
