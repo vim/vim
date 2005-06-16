@@ -300,7 +300,7 @@ vms_read(char *inbuf, size_t nbytes)
 {
     int		status, function, len;
     TT_MODE	tt_mode;
-    ITEM	itmlst[2];
+    ITEM	itmlst[3];
     static long trm_mask[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
 
     /* whatever happened earlier we need an iochan here */
@@ -308,10 +308,11 @@ vms_read(char *inbuf, size_t nbytes)
 	tt_mode = get_tty();
 
     vul_item(&itmlst[0], 0, TRM$_MODIFIERS,
-	     (char *)( TRM$M_TM_ESCAPE  | TRM$M_TM_TIMED    | TRM$M_TM_NOECHO |
-                       TRM$M_TM_NOEDIT  | TRM$M_TM_NOFILTR  |
-                       TRM$M_TM_NORECALL| TRM$M_TM_TRMNOECHO), 0);
-    vul_item(&itmlst[1], sizeof(trm_mask), TRM$_TERM, (char *)&trm_mask, 0);
+	     (char *)( TRM$M_TM_ESCAPE	| TRM$M_TM_TIMED    | TRM$M_TM_NOECHO |
+		       TRM$M_TM_NOEDIT	| TRM$M_TM_NOFILTR  |
+		       TRM$M_TM_NORECALL| TRM$M_TM_TRMNOECHO), 0);
+    vul_item(&itmlst[1], 0, TRM$_TIMEOUT, (char *) 1, 0 );
+    vul_item(&itmlst[2], sizeof(trm_mask), TRM$_TERM, (char *)&trm_mask, 0);
 
     function = (IO$_READLBLK | IO$M_EXTEND);
     memset(inbuf, 0, nbytes);

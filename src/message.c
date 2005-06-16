@@ -657,40 +657,7 @@ emsg2(s, a1)
     return emsg3(s, a1, NULL);
 }
 
-/*
- * Print an error message with one or two "%s" and one or two string arguments.
- */
-    int
-emsg3(s, a1, a2)
-    char_u *s, *a1, *a2;
-{
-    if ((emsg_off > 0 && vim_strchr(p_debug, 'm') == NULL)
-#ifdef FEAT_EVAL
-	    || emsg_skip > 0
-#endif
-	    )
-	return TRUE;		/* no error messages at the moment */
-    vim_snprintf((char *)IObuff, IOSIZE, (char *)s, (char *)a1, (char *)a2);
-    return emsg(IObuff);
-}
-
-/*
- * Print an error message with one "%ld" and one long int argument.
- */
-    int
-emsgn(s, n)
-    char_u	*s;
-    long	n;
-{
-    if ((emsg_off > 0 && vim_strchr(p_debug, 'm') == NULL)
-#ifdef FEAT_EVAL
-	    || emsg_skip > 0
-#endif
-	    )
-	return TRUE;		/* no error messages at the moment */
-    vim_snprintf((char *)IObuff, IOSIZE, (char *)s, n);
-    return emsg(IObuff);
-}
+/* emsg3() and emsgn() are in misc2.c to avoid warnings for the prototypes. */
 
     void
 emsg_invreg(name)
@@ -3965,7 +3932,7 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 
 	    /* zero padding as requested by the precision or by the minimal
 	     * field width for numeric conversions required? */
-	    if (number_of_zeros_to_pad <= 0)
+	    if (number_of_zeros_to_pad == 0)
 	    {
 		/* will not copy first part of numeric right now, *
 		 * force it to be copied later in its entirety    */

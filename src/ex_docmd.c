@@ -4146,7 +4146,7 @@ expand_filename(eap, cmdlinep, errormsgp)
 
 	/* For a shell command a '!' must be escaped. */
 	if ((eap->usefilter || eap->cmdidx == CMD_bang)
-					&& vim_strpbrk(repl, "!&;()") != NULL)
+			      && vim_strpbrk(repl, (char_u *)"!&;()") != NULL)
 	{
 	    char_u	*l;
 

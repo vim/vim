@@ -189,9 +189,6 @@ typedef long idx_T;
 
 #define WF_CAPMASK (WF_ONECAP | WF_ALLCAP | WF_KEEPCAP)
 
-#define WF_USED	    0x10000	/* Word was found in text. Must be in separate
-				   byte before region and flags. */
-
 #define BY_NOFLAGS  0		/* end of word without flags or region */
 #define BY_FLAGS    1		/* end of word, flag byte follows */
 #define BY_INDEX    2		/* child is shared, index follows */
@@ -243,7 +240,13 @@ struct slang_S
     int		sl_followup;	/* SAL followup */
     int		sl_collapse;	/* SAL collapse_result */
     int		sl_rem_accents;	/* SAL remove_accents */
-    char_u	*sl_map;	/* string with similar chars from MAP lines */
+    int		sl_has_map;	/* TRUE if there is a MAP line */
+#ifdef FEAT_MBYTE
+    hashtab_T	sl_map_hash;	/* MAP for multi-byte chars */
+    int		sl_map_array[256]; /* MAP for first 256 chars */
+#else
+    char_u	sl_map_array[256]; /* MAP for first 256 chars */
+#endif
 };
 
 /* First language that is loaded, start of the linked list of loaded
@@ -329,7 +332,6 @@ typedef struct suggest_S
 #define SCORE_ALLCAP	120	/* need all-cap case */
 #define SCORE_REGION	70	/* word is for different region */
 #define SCORE_RARE	180	/* rare word */
-#define SCORE_NOTUSED	11	/* word not found in text yet */
 
 /* score for edit distance */
 #define SCORE_SWAP	90	/* swap two characters */
@@ -402,21 +404,58 @@ static int set_spell_finish __ARGS((spelltab_T	*new_st));
 #endif
 
 /*
+ * For finding suggestion: At each node in the tree these states are tried:
+ */
+typedef enum
+{
+    STATE_START = 0,	/* At start of node, check if word may end or
+			 * split word. */
+    STATE_SPLITUNDO,	/* Undo word split. */
+    STATE_ENDNUL,	/* Past NUL bytes at start of the node. */
+    STATE_PLAIN,	/* Use each byte of the node. */
+    STATE_DEL,		/* Delete a byte from the bad word. */
+    STATE_INS,		/* Insert a byte in the bad word. */
+    STATE_SWAP,		/* Swap two bytes. */
+    STATE_UNSWAP,	/* Undo swap two bytes. */
+    STATE_SWAP3,	/* Swap two bytes over three. */
+    STATE_UNSWAP3,	/* Undo Swap two bytes over three. */
+    STATE_ROT3L,	/* Rotate three bytes left */
+    STATE_UNROT3L,	/* Undo rotate three bytes left */
+    STATE_ROT3R,	/* Rotate three bytes right */
+    STATE_UNROT3R,	/* Undo rotate three bytes right */
+    STATE_REP_INI,	/* Prepare for using REP items. */
+    STATE_REP,		/* Use matching REP items from the .aff file. */
+    STATE_REP_UNDO,	/* Undo a REP item replacement. */
+    STATE_FINAL		/* End of this node. */
+} state_T;
+
+/*
  * Struct to keep the state at each level in spell_try_change().
  */
 typedef struct trystate_S
 {
-    int		ts_state;	/* state at this level, STATE_ */
+    state_T	ts_state;	/* state at this level, STATE_ */
     int		ts_score;	/* score */
-    int		ts_curi;	/* index in list of child nodes */
-    int		ts_fidx;	/* index in fword[], case-folded bad word */
-    int		ts_fidxtry;	/* ts_fidx at which bytes may be changed */
-    int		ts_twordlen;	/* valid length of tword[] */
+    short	ts_curi;	/* index in list of child nodes */
+    char_u	ts_fidx;	/* index in fword[], case-folded bad word */
+    char_u	ts_fidxtry;	/* ts_fidx at which bytes may be changed */
+    char_u	ts_twordlen;	/* valid length of tword[] */
+#ifdef FEAT_MBYTE
+    char_u	ts_tcharlen;	/* number of bytes in tword character */
+    char_u	ts_tcharidx;	/* current byte index in tword character */
+    char_u	ts_isdiff;	/* DIFF_ values */
+    char_u	ts_fcharstart;	/* index in fword where badword char started */
+#endif
     idx_T	ts_arridx;	/* index in tree array, start of node */
     char_u	ts_save_prewordlen; /* saved "prewordlen" */
-    int		ts_save_splitoff;   /* su_splitoff saved here */
-    int		ts_save_badflags;   /* badflags saved here */
+    char_u	ts_save_splitoff;   /* su_splitoff saved here */
+    char_u	ts_save_badflags;   /* badflags saved here */
 } trystate_T;
+
+/* values for ts_isdiff */
+#define DIFF_NONE	0	/* no different byte (yet) */
+#define DIFF_YES	1	/* different byte found */
+#define DIFF_INSERT	2	/* inserting character */
 
 static slang_T *slang_alloc __ARGS((char_u *lang));
 static void slang_free __ARGS((slang_T *lp));
@@ -441,9 +480,8 @@ static int try_deeper __ARGS((suginfo_T *su, trystate_T *stack, int depth, int s
 static void find_keepcap_word __ARGS((slang_T *slang, char_u *fword, char_u *kword));
 static void spell_try_soundalike __ARGS((suginfo_T *su));
 static void make_case_word __ARGS((char_u *fword, char_u *cword, int flags));
-#if 0
+static void set_map_str __ARGS((slang_T *lp, char_u *map));
 static int similar_chars __ARGS((slang_T *slang, int c1, int c2));
-#endif
 #ifdef RESCORE
 static void add_suggestion __ARGS((suginfo_T *su, char_u *goodword, int use_score, int had_bonus));
 #else
@@ -792,10 +830,6 @@ find_word(mip, keepcap)
 	{
 	    flags = idxs[arridx];
 
-	    /* Set a flag for words that were used.  The region and case
-	     * doesn't matter here, it's only used to rate the suggestions. */
-	    idxs[arridx] = flags | WF_USED;
-
 	    if (keepcap)
 	    {
 		/* For "keepcap" tree the case is always right. */
@@ -1128,8 +1162,20 @@ slang_clear(lp)
 	ga_clear(gap);
     }
 
-    vim_free(lp->sl_map);
-    lp->sl_map = NULL;
+#ifdef FEAT_MBYTE
+    {
+	int	    todo = lp->sl_map_hash.ht_used;
+	hashitem_T  *hi;
+
+	for (hi = lp->sl_map_hash.ht_array; todo > 0; ++hi)
+	    if (!HASHITEM_EMPTY(hi))
+	    {
+		--todo;
+		vim_free(hi->hi_key);
+	    }
+    }
+    hash_clear(&lp->sl_map_hash);
+#endif
 }
 
 /*
@@ -1369,7 +1415,8 @@ formerr:
     for (i = 0; i < cnt; ++i)
 	p[i] = getc(fd);			/* <mapstr> */
     p[i] = NUL;
-    lp->sl_map = p;
+    set_map_str(lp, p);
+    vim_free(p);
 
 
     /* round 1: <LWORDTREE>
@@ -4414,6 +4461,12 @@ allcap_copy(word, wcopy)
 
 /*
  * Try finding suggestions by adding/removing/swapping letters.
+ *
+ * This uses a state machine.  At each node in the tree we try various
+ * operations.  When trying if an operation work "depth" is increased and the
+ * stack[] is used to store info.  This allows combinations, thus insert one
+ * character, replace one and delete another.  The number of changes is
+ * limited by su->su_maxscore, checked in try_deeper().
  */
     static void
 spell_try_change(su)
@@ -4432,8 +4485,8 @@ spell_try_change(su)
     char_u	*byts;
     idx_T	*idxs;
     int		depth;
-    int		c;
-    int		n;
+    int		c, c2, c3;
+    int		n = 0;
     int		flags;
     int		badflags;
     garray_T	*gap;
@@ -4441,7 +4494,7 @@ spell_try_change(su)
     int		len;
     char_u	*p;
     fromto_T	*ftp;
-    int		fl, tl;
+    int		fl = 0, tl;
 
     /* get caps flags for bad word */
     badflags = captype(su->su_badptr, su->su_badptr + su->su_badlen);
@@ -4449,26 +4502,6 @@ spell_try_change(su)
     /* We make a copy of the case-folded bad word, so that we can modify it
      * to find matches (esp. REP items). */
     STRCPY(fword, su->su_fbadword);
-
-    /*
-     * At each node in the tree these states are tried:
-     */
-#define STATE_START	0	/* At start of node, check if word may end or
-				 * split word. */
-#define STATE_SPLITUNDO	1	/* Undo word split. */
-#define STATE_ENDNUL	2	/* Past NUL bytes at start of the node. */
-#define STATE_PLAIN	3	/* Use each byte of the node. */
-#define STATE_DEL	4	/* Delete a byte from the bad word. */
-#define STATE_INS	5	/* Insert a byte in the bad word. */
-#define STATE_SWAP	6	/* Swap two bytes. */
-#define STATE_SWAP3A	7	/* Swap two bytes over three. */
-#define STATE_ROT3L	8	/* Rotate three bytes left */
-#define STATE_ROT3R	9	/* Rotate three bytes right */
-#define STATE_ROT_UNDO	10	/* undo rotating */
-#define STATE_REP_INI	11	/* Prepare for using REP items. */
-#define STATE_REP	12	/* Use matching REP items from the .aff file. */
-#define STATE_REP_UNDO	13	/* Undo a REP item replacement. */
-#define STATE_FINAL	99	/* End of this node. */
 
 
     for (lp = LANGP_ENTRY(curwin->w_buffer->b_langp, 0);
@@ -4498,7 +4531,17 @@ spell_try_change(su)
 	stack[0].ts_fidxtry = 0;
 	stack[0].ts_twordlen = 0;
 	stack[0].ts_arridx = 0;
+#ifdef FEAT_MBYTE
+	stack[0].ts_tcharlen = 0;
+#endif
 
+	/*
+	 * Loop to find all suggestions.  At each round we either:
+	 * - For the current state try one operation, advance "ts_curi",
+	 *   increase "depth".
+	 * - When a state is done go to the next, set "ts_state".
+	 * - When all states are tried decrease "depth".
+	 */
 	while (depth >= 0 && !got_int)
 	{
 	    sp = &stack[depth];
@@ -4559,10 +4602,6 @@ spell_try_change(su)
 		if (flags & WF_RARE)
 		    newscore += SCORE_RARE;
 
-		/* Words that were not found in the text get a penalty. */
-		if ((flags & WF_USED) == 0)
-		    newscore += SCORE_NOTUSED;
-
 		if (!spell_valid_case(badflags,
 					 captype(preword + prewordlen, NULL)))
 		    newscore += SCORE_ICASE;
@@ -4576,7 +4615,12 @@ spell_try_change(su)
 #endif
 			    );
 		}
-		else if (sp->ts_fidx >= sp->ts_fidxtry)
+		else if (sp->ts_fidx >= sp->ts_fidxtry
+#ifdef FEAT_MBYTE
+			/* Don't split halfway a character. */
+			&& (!has_mbyte || sp->ts_tcharlen == 0)
+#endif
+			)
 		{
 		    /* The word in the tree ends but the badword
 		     * continues: try inserting a space and check that a valid
@@ -4663,165 +4707,420 @@ spell_try_change(su)
 		    /* Normal byte, go one level deeper.  If it's not equal to
 		     * the byte in the bad word adjust the score.  But don't
 		     * even try when the byte was already changed. */
-		    if (c == fword[sp->ts_fidx])
-			newscore = 0;
-
-		    /* TODO: this is too slow and comparing bytes isn't right
-		     * for multi-byte characters. */
-#if 0
-		    else if (lp->lp_slang->sl_map != NULL
-					&& similar_chars(lp->lp_slang,
-						       c, fword[sp->ts_fidx]))
-			newscore = SCORE_SIMILAR;
+		    if (c == fword[sp->ts_fidx]
+#ifdef FEAT_MBYTE
+			    || (sp->ts_tcharlen > 0
+						&& sp->ts_isdiff != DIFF_NONE)
 #endif
+			    )
+			newscore = 0;
 		    else
 			newscore = SCORE_SUBST;
 		    if ((newscore == 0 || sp->ts_fidx >= sp->ts_fidxtry)
 				    && try_deeper(su, stack, depth, newscore))
 		    {
 			++depth;
-			++stack[depth].ts_fidx;
-			tword[stack[depth].ts_twordlen++] = c;
-			stack[depth].ts_arridx = idxs[arridx];
+			sp = &stack[depth];
+			++sp->ts_fidx;
+			tword[sp->ts_twordlen++] = c;
+			sp->ts_arridx = idxs[arridx];
+#ifdef FEAT_MBYTE
+			if (newscore == SCORE_SUBST)
+			    sp->ts_isdiff = DIFF_YES;
+			if (has_mbyte)
+			{
+			    /* Multi-byte characters are a bit complicated to
+			     * handle: They differ when any of the bytes
+			     * differ and then their length may also differ. */
+			    if (sp->ts_tcharlen == 0)
+			    {
+				/* First byte. */
+				sp->ts_tcharidx = 0;
+				sp->ts_tcharlen = MB_BYTE2LEN(c);
+				sp->ts_fcharstart = sp->ts_fidx - 1;
+				sp->ts_isdiff = (newscore != 0)
+						       ? DIFF_YES : DIFF_NONE;
+			    }
+			    else if (sp->ts_isdiff == DIFF_INSERT)
+				/* When inserting trail bytes don't advance in
+				 * the bad word. */
+				--sp->ts_fidx;
+			    if (++sp->ts_tcharidx == sp->ts_tcharlen)
+			    {
+				/* Last byte of character. */
+				if (sp->ts_isdiff == DIFF_YES)
+				{
+				    /* Correct ts_fidx for the byte length of
+				     * the character (we didn't check that
+				     * before). */
+				    sp->ts_fidx = sp->ts_fcharstart
+						+ MB_BYTE2LEN(
+						    fword[sp->ts_fcharstart]);
+
+				    /* For a similar character adjust score
+				     * from SCORE_SUBST to SCORE_SIMILAR. */
+				    if (lp->lp_slang->sl_has_map
+					    && similar_chars(lp->lp_slang,
+						mb_ptr2char(tword
+						    + sp->ts_twordlen
+							   - sp->ts_tcharlen),
+						mb_ptr2char(fword
+							+ sp->ts_fcharstart)))
+					sp->ts_score -=
+						  SCORE_SUBST - SCORE_SIMILAR;
+				}
+
+				/* Starting a new char, reset the length. */
+				sp->ts_tcharlen = 0;
+			    }
+			}
+			else
+#endif
+			{
+			    /* If we found a similar char adjust the score.
+			     * We do this after calling try_deeper() because
+			     * it's slow. */
+			    if (newscore != 0
+				    && lp->lp_slang->sl_has_map
+				    && similar_chars(lp->lp_slang,
+						   c, fword[sp->ts_fidx - 1]))
+				sp->ts_score -= SCORE_SUBST - SCORE_SIMILAR;
+			}
 		    }
 		}
 		break;
 
 	    case STATE_DEL:
-		/* Try skipping one byte in the bad word (delete it). */
+#ifdef FEAT_MBYTE
+		/* When past the first byte of a multi-byte char don't try
+		 * delete/insert/swap a character. */
+		if (has_mbyte && sp->ts_tcharlen > 0)
+		{
+		    sp->ts_state = STATE_FINAL;
+		    break;
+		}
+#endif
+		/*
+		 * Try skipping one character in the bad word (delete it).
+		 */
 		sp->ts_state = STATE_INS;
 		sp->ts_curi = 1;
 		if (fword[sp->ts_fidx] != NUL
 			&& try_deeper(su, stack, depth, SCORE_DEL))
 		{
 		    ++depth;
-		    ++stack[depth].ts_fidx;
+#ifdef FEAT_MBYTE
+		    if (has_mbyte)
+			stack[depth].ts_fidx += MB_BYTE2LEN(fword[sp->ts_fidx]);
+		    else
+#endif
+			++stack[depth].ts_fidx;
 		    break;
 		}
 		/*FALLTHROUGH*/
 
 	    case STATE_INS:
-		/* Insert one byte.  Do this for each possible bytes at this
+		/* Insert one byte.  Do this for each possible byte at this
 		 * node. */
 		n = sp->ts_arridx;
 		if (sp->ts_curi > byts[n])
 		{
 		    /* Done all bytes at this node, do next state. */
 		    sp->ts_state = STATE_SWAP;
-		    sp->ts_curi = 1;
 		}
 		else
 		{
-		    /* Do one more byte at this node. */
+		    /* Do one more byte at this node.  Skip NUL bytes. */
 		    n += sp->ts_curi++;
 		    c = byts[n];
 		    if (c != 0 && try_deeper(su, stack, depth, SCORE_INS))
 		    {
 			++depth;
-			tword[stack[depth].ts_twordlen++] = c;
-			stack[depth].ts_arridx = idxs[n];
+			sp = &stack[depth];
+			tword[sp->ts_twordlen++] = c;
+			sp->ts_arridx = idxs[n];
+#ifdef FEAT_MBYTE
+			if (has_mbyte)
+			{
+			    fl = MB_BYTE2LEN(c);
+			    if (fl > 1)
+			    {
+				/* There are following bytes for the same
+				 * character.  We must find all bytes before
+				 * trying delete/insert/swap/etc. */
+				sp->ts_tcharlen = fl;
+				sp->ts_tcharidx = 1;
+				sp->ts_isdiff = DIFF_INSERT;
+			    }
+			}
+#endif
 		    }
 		}
 		break;
 
 	    case STATE_SWAP:
-		/* Swap two bytes: "12" -> "21".  This means looking for the
-		 * following byte at the current node and the current byte at
-		 * its child node.  We change "fword" here, it's changed back
-		 * afterwards.  TODO: should swap characters instead of bytes.
-		 * */
-		c = fword[sp->ts_fidx];
-		if (c != NUL && fword[sp->ts_fidx + 1] != NUL
-				  && try_deeper(su, stack, depth, SCORE_SWAP))
+		/*
+		 * Swap two bytes in the bad word: "12" -> "21".
+		 * We change "fword" here, it's changed back afterwards.
+		 */
+		p = fword + sp->ts_fidx;
+		c = *p;
+		if (c == NUL)
 		{
-		    sp->ts_state = STATE_SWAP3A;
+		    /* End of word, can't swap or replace. */
+		    sp->ts_state = STATE_FINAL;
+		    break;
+		}
+#ifdef FEAT_MBYTE
+		if (has_mbyte)
+		{
+		    n = mb_ptr2len_check(p);
+		    c = mb_ptr2char(p);
+		    c2 = mb_ptr2char(p + n);
+		}
+		else
+#endif
+		    c2 = p[1];
+		if (c == c2)
+		{
+		    /* Characters are identical, swap won't do anything. */
+		    sp->ts_state = STATE_SWAP3;
+		    break;
+		}
+		if (c2 != NUL && try_deeper(su, stack, depth, SCORE_SWAP))
+		{
+		    sp->ts_state = STATE_UNSWAP;
 		    ++depth;
-		    fword[sp->ts_fidx] = fword[sp->ts_fidx + 1];
-		    fword[sp->ts_fidx + 1] = c;
-		    stack[depth].ts_fidxtry = sp->ts_fidx + 2;
+#ifdef FEAT_MBYTE
+		    if (has_mbyte)
+		    {
+			fl = mb_char2len(c2);
+			mch_memmove(p, p + n, fl);
+			mb_char2bytes(c, p + fl);
+			stack[depth].ts_fidxtry = sp->ts_fidx + n + fl;
+		    }
+		    else
+#endif
+		    {
+			p[0] = c2;
+			p[1] = c;
+			stack[depth].ts_fidxtry = sp->ts_fidx + 2;
+		    }
 		}
 		else
 		    /* If this swap doesn't work then SWAP3 won't either. */
 		    sp->ts_state = STATE_REP_INI;
 		break;
 
-	    case STATE_SWAP3A:
-		/* First undo the STATE_SWAP swap: "21" -> "12". */
-		c = fword[sp->ts_fidx];
-		fword[sp->ts_fidx] = fword[sp->ts_fidx + 1];
-		fword[sp->ts_fidx + 1] = c;
-
-		/* Swap two bytes, skipping one: "123" -> "321".  We change
-		 * "fword" here, it's changed back afterwards.  TODO: should
-		 * swap characters instead of bytes. */
-		c = fword[sp->ts_fidx];
-		if (c != NUL && fword[sp->ts_fidx + 1] != NUL
-			&& fword[sp->ts_fidx + 2] != NUL
-				  && try_deeper(su, stack, depth, SCORE_SWAP3))
+	    case STATE_UNSWAP:
+		/* Undo the STATE_SWAP swap: "21" -> "12". */
+		p = fword + sp->ts_fidx;
+#ifdef FEAT_MBYTE
+		if (has_mbyte)
 		{
-		    sp->ts_state = STATE_ROT3L;
+		    n = MB_BYTE2LEN(*p);
+		    c = mb_ptr2char(p + n);
+		    mch_memmove(p + MB_BYTE2LEN(p[n]), p, n);
+		    mb_char2bytes(c, p);
+		}
+		else
+#endif
+		{
+		    c = *p;
+		    *p = p[1];
+		    p[1] = c;
+		}
+		/*FALLTHROUGH*/
+
+	    case STATE_SWAP3:
+		/* Swap two bytes, skipping one: "123" -> "321".  We change
+		 * "fword" here, it's changed back afterwards. */
+		p = fword + sp->ts_fidx;
+#ifdef FEAT_MBYTE
+		if (has_mbyte)
+		{
+		    n = mb_ptr2len_check(p);
+		    c = mb_ptr2char(p);
+		    fl = mb_ptr2len_check(p + n);
+		    c2 = mb_ptr2char(p + n);
+		    c3 = mb_ptr2char(p + n + fl);
+		}
+		else
+#endif
+		{
+		    c = *p;
+		    c2 = p[1];
+		    c3 = p[2];
+		}
+
+		/* When characters are identical: "121" then SWAP3 result is
+		 * identical, ROT3L result is same as SWAP: "211", ROT3L
+		 * result is same as SWAP on next char: "112".  Thus skip all
+		 * swapping.  Also skip when c3 is NUL.  */
+		if (c == c3 || c3 == NUL)
+		{
+		    sp->ts_state = STATE_REP_INI;
+		    break;
+		}
+		if (try_deeper(su, stack, depth, SCORE_SWAP3))
+		{
+		    sp->ts_state = STATE_UNSWAP3;
 		    ++depth;
-		    fword[sp->ts_fidx] = fword[sp->ts_fidx + 2];
-		    fword[sp->ts_fidx + 2] = c;
-		    stack[depth].ts_fidxtry = sp->ts_fidx + 3;
+#ifdef FEAT_MBYTE
+		    if (has_mbyte)
+		    {
+			tl = mb_char2len(c3);
+			mch_memmove(p, p + n + fl, tl);
+			mb_char2bytes(c2, p + tl);
+			mb_char2bytes(c, p + fl + tl);
+			stack[depth].ts_fidxtry = sp->ts_fidx + n + fl + tl;
+		    }
+		    else
+#endif
+		    {
+			p[0] = p[2];
+			p[2] = c;
+			stack[depth].ts_fidxtry = sp->ts_fidx + 3;
+		    }
 		}
 		else
 		    sp->ts_state = STATE_REP_INI;
 		break;
+
+	    case STATE_UNSWAP3:
+		/* Undo STATE_SWAP3: "321" -> "123" */
+		p = fword + sp->ts_fidx;
+#ifdef FEAT_MBYTE
+		if (has_mbyte)
+		{
+		    n = MB_BYTE2LEN(*p);
+		    c2 = mb_ptr2char(p + n);
+		    fl = MB_BYTE2LEN(p[n]);
+		    c = mb_ptr2char(p + n + fl);
+		    tl = MB_BYTE2LEN(p[n + fl]);
+		    mch_memmove(p + fl + tl, p, n);
+		    mb_char2bytes(c, p);
+		    mb_char2bytes(c2, p + tl);
+		}
+		else
+#endif
+		{
+		    c = *p;
+		    *p = p[2];
+		    p[2] = c;
+		}
+		/*FALLTHROUGH*/
 
 	    case STATE_ROT3L:
-		/* First undo STATE_SWAP3A: "321" -> "123" */
-		c = fword[sp->ts_fidx];
-		fword[sp->ts_fidx] = fword[sp->ts_fidx + 2];
-		fword[sp->ts_fidx + 2] = c;
-
-		/* Rotate three bytes left: "123" -> "231".  We change
-		 * "fword" here, it's changed back afterwards.  TODO: should
-		 * swap characters instead of bytes. */
+		/* Rotate three characters left: "123" -> "231".  We change
+		 * "fword" here, it's changed back afterwards. */
 		if (try_deeper(su, stack, depth, SCORE_SWAP3))
 		{
-		    sp->ts_state = STATE_ROT3R;
+		    sp->ts_state = STATE_UNROT3L;
 		    ++depth;
-		    c = fword[sp->ts_fidx];
-		    fword[sp->ts_fidx] = fword[sp->ts_fidx + 1];
-		    fword[sp->ts_fidx + 1] = fword[sp->ts_fidx + 2];
-		    fword[sp->ts_fidx + 2] = c;
-		    stack[depth].ts_fidxtry = sp->ts_fidx + 3;
+		    p = fword + sp->ts_fidx;
+#ifdef FEAT_MBYTE
+		    if (has_mbyte)
+		    {
+			n = mb_ptr2len_check(p);
+			c = mb_ptr2char(p);
+			fl = mb_ptr2len_check(p + n);
+			fl += mb_ptr2len_check(p + n + fl);
+			mch_memmove(p, p + n, fl);
+			mb_char2bytes(c, p + fl);
+			stack[depth].ts_fidxtry = sp->ts_fidx + n + fl;
+		    }
+		    else
+#endif
+		    {
+			c = *p;
+			*p = p[1];
+			p[1] = p[2];
+			p[2] = c;
+			stack[depth].ts_fidxtry = sp->ts_fidx + 3;
+		    }
 		}
 		else
 		    sp->ts_state = STATE_REP_INI;
 		break;
+
+	    case STATE_UNROT3L:
+		/* Undo STATE_ROT3L: "231" -> "123" */
+		p = fword + sp->ts_fidx;
+#ifdef FEAT_MBYTE
+		if (has_mbyte)
+		{
+		    n = MB_BYTE2LEN(*p);
+		    n += MB_BYTE2LEN(p[n]);
+		    c = mb_ptr2char(p + n);
+		    tl = MB_BYTE2LEN(p[n]);
+		    mch_memmove(p + tl, p, n);
+		    mb_char2bytes(c, p);
+		}
+		else
+#endif
+		{
+		    c = p[2];
+		    p[2] = p[1];
+		    p[1] = *p;
+		    *p = c;
+		}
+		/*FALLTHROUGH*/
 
 	    case STATE_ROT3R:
-		/* First undo STATE_ROT3L: "231" -> "123" */
-		c = fword[sp->ts_fidx + 2];
-		fword[sp->ts_fidx + 2] = fword[sp->ts_fidx + 1];
-		fword[sp->ts_fidx + 1] = fword[sp->ts_fidx];
-		fword[sp->ts_fidx] = c;
-
 		/* Rotate three bytes right: "123" -> "312".  We change
-		 * "fword" here, it's changed back afterwards.  TODO: should
-		 * swap characters instead of bytes. */
+		 * "fword" here, it's changed back afterwards. */
 		if (try_deeper(su, stack, depth, SCORE_SWAP3))
 		{
-		    sp->ts_state = STATE_ROT_UNDO;
+		    sp->ts_state = STATE_UNROT3R;
 		    ++depth;
-		    c = fword[sp->ts_fidx + 2];
-		    fword[sp->ts_fidx + 2] = fword[sp->ts_fidx + 1];
-		    fword[sp->ts_fidx + 1] = fword[sp->ts_fidx];
-		    fword[sp->ts_fidx] = c;
-		    stack[depth].ts_fidxtry = sp->ts_fidx + 3;
+		    p = fword + sp->ts_fidx;
+#ifdef FEAT_MBYTE
+		    if (has_mbyte)
+		    {
+			n = mb_ptr2len_check(p);
+			n += mb_ptr2len_check(p + n);
+			c = mb_ptr2char(p + n);
+			tl = mb_ptr2len_check(p + n);
+			mch_memmove(p + tl, p, n);
+			mb_char2bytes(c, p);
+			stack[depth].ts_fidxtry = sp->ts_fidx + n + tl;
+		    }
+		    else
+#endif
+		    {
+			c = p[2];
+			p[2] = p[1];
+			p[1] = *p;
+			*p = c;
+			stack[depth].ts_fidxtry = sp->ts_fidx + 3;
+		    }
 		}
 		else
 		    sp->ts_state = STATE_REP_INI;
 		break;
 
-	    case STATE_ROT_UNDO:
+	    case STATE_UNROT3R:
 		/* Undo STATE_ROT3R: "312" -> "123" */
-		c = fword[sp->ts_fidx];
-		fword[sp->ts_fidx] = fword[sp->ts_fidx + 1];
-		fword[sp->ts_fidx + 1] = fword[sp->ts_fidx + 2];
-		fword[sp->ts_fidx + 2] = c;
+		p = fword + sp->ts_fidx;
+#ifdef FEAT_MBYTE
+		if (has_mbyte)
+		{
+		    c = mb_ptr2char(p);
+		    tl = MB_BYTE2LEN(*p);
+		    n = MB_BYTE2LEN(p[tl]);
+		    n += MB_BYTE2LEN(p[tl + n]);
+		    mch_memmove(p, p + tl, n);
+		    mb_char2bytes(c, p + n);
+		}
+		else
+#endif
+		{
+		    c = *p;
+		    *p = p[1];
+		    p[1] = p[2];
+		    p[2] = c;
+		}
 		/*FALLTHROUGH*/
 
 	    case STATE_REP_INI:
@@ -4837,7 +5136,7 @@ spell_try_change(su)
 		}
 
 		/* Use the first byte to quickly find the first entry that
-		 * matches.  If the index is -1 there is none. */
+		 * may match.  If the index is -1 there is none. */
 		sp->ts_curi = lp->lp_slang->sl_rep_first[fword[sp->ts_fidx]];
 		if (sp->ts_curi < 0)
 		{
@@ -4850,8 +5149,8 @@ spell_try_change(su)
 
 	    case STATE_REP:
 		/* Try matching with REP items from the .aff file.  For each
-		 * match replace the charactes and check if the resulting word
-		 * is valid. */
+		 * match replace the characters and check if the resulting
+		 * word is valid. */
 		p = fword + sp->ts_fidx;
 
 		gap = &lp->lp_slang->sl_rep;
@@ -4878,6 +5177,9 @@ spell_try_change(su)
 			    mch_memmove(p + tl, p + fl, STRLEN(p + fl) + 1);
 			mch_memmove(p, ftp->ft_to, tl);
 			stack[depth].ts_fidxtry = sp->ts_fidx + tl;
+#ifdef FEAT_MBYTE
+			stack[depth].ts_tcharlen = 0;
+#endif
 			break;
 		    }
 		}
@@ -4928,13 +5230,10 @@ try_deeper(su, stack, depth, score_add)
     if (newscore >= su->su_maxscore)
 	return FALSE;
 
+    stack[depth + 1] = stack[depth];
     stack[depth + 1].ts_state = STATE_START;
     stack[depth + 1].ts_score = newscore;
     stack[depth + 1].ts_curi = 1;	/* start just after length byte */
-    stack[depth + 1].ts_fidx = stack[depth].ts_fidx;
-    stack[depth + 1].ts_fidxtry = stack[depth].ts_fidxtry;
-    stack[depth + 1].ts_twordlen = stack[depth].ts_twordlen;
-    stack[depth + 1].ts_arridx = stack[depth].ts_arridx;
     return TRUE;
 }
 
@@ -5286,7 +5585,90 @@ make_case_word(fword, cword, flags)
 	STRCPY(cword, fword);
 }
 
-#if 0
+/*
+ * Use map string "map" for languages "lp".
+ */
+    static void
+set_map_str(lp, map)
+    slang_T	*lp;
+    char_u	*map;
+{
+    char_u	*p;
+    int		headc = 0;
+    int		c;
+    int		i;
+
+    if (*map == NUL)
+    {
+	lp->sl_has_map = FALSE;
+	return;
+    }
+    lp->sl_has_map = TRUE;
+
+    /* Init the array and hash table empty. */
+    for (i = 0; i < 256; ++i)
+	lp->sl_map_array[i] = 0;
+#ifdef FEAT_MBYTE
+    hash_init(&lp->sl_map_hash);
+#endif
+
+    /*
+     * The similar characters are stored separated with slashes:
+     * "aaa/bbb/ccc/".  Fill sl_map_array[c] with the character before c and
+     * before the same slash.  For characters above 255 sl_map_hash is used.
+     */
+    for (p = map; *p != NUL; )
+    {
+#ifdef FEAT_MBYTE
+	c = mb_ptr2char_adv(&p);
+#else
+	c = *p++;
+#endif
+	if (c == '/')
+	    headc = 0;
+	else
+	{
+	    if (headc == 0)
+		 headc = c;
+
+#ifdef FEAT_MBYTE
+	    /* Characters above 255 don't fit in sl_map_array[], put them in
+	     * the hash table.  Each entry is the char, a NUL the headchar and
+	     * a NUL. */
+	    if (c >= 256)
+	    {
+		int	    cl = mb_char2len(c);
+		int	    headcl = mb_char2len(headc);
+		char_u	    *b;
+		hash_T	    hash;
+		hashitem_T  *hi;
+
+		b = alloc((unsigned)(cl + headcl + 2));
+		if (b == NULL)
+		    return;
+		mb_char2bytes(c, b);
+		b[cl] = NUL;
+		mb_char2bytes(headc, b + cl + 1);
+		b[cl + 1 + headcl] = NUL;
+		hash = hash_hash(b);
+		hi = hash_lookup(&lp->sl_map_hash, b, hash);
+		if (HASHITEM_EMPTY(hi))
+		    hash_add_item(&lp->sl_map_hash, hi, b, hash);
+		else
+		{
+		    /* This should have been checked when generating the .spl
+		     * file. */
+		    EMSG(_("E999: duplicate char in MAP entry"));
+		    vim_free(b);
+		}
+	    }
+	    else
+#endif
+		lp->sl_map_array[c] = headc;
+	}
+    }
+}
+
 /*
  * Return TRUE if "c1" and "c2" are similar characters according to the MAP
  * lines in the .aff file.
@@ -5297,21 +5679,43 @@ similar_chars(slang, c1, c2)
     int		c1;
     int		c2;
 {
-    char_u	*p1;
-    char_u	*p2;
+    int		m1, m2;
+#ifdef FEAT_MBYTE
+    char_u	buf[MB_MAXBYTES];
+    hashitem_T  *hi;
 
-    /* The similar characters are stored separated with slashes:
-     * "aaa/bbb/ccc/".  Search for each character and if the next slash is the
-     * same one they are in the same MAP entry. */
-    p1 = vim_strchr(slang->sl_map, c1);
-    if (p1 == NULL)
-	return FALSE;
-    p2 = vim_strchr(slang->sl_map, c2);
-    if (p2 == NULL)
-	return FALSE;
-    return vim_strchr(p1, '/') == vim_strchr(p2, '/');
-}
+    if (c1 >= 256)
+    {
+	buf[mb_char2bytes(c1, buf)] = 0;
+	hi = hash_find(&slang->sl_map_hash, buf);
+	if (HASHITEM_EMPTY(hi))
+	    m1 = 0;
+	else
+	    m1 = mb_ptr2char(hi->hi_key + STRLEN(hi->hi_key) + 1);
+    }
+    else
 #endif
+	m1 = slang->sl_map_array[c1];
+    if (m1 == 0)
+	return FALSE;
+
+
+#ifdef FEAT_MBYTE
+    if (c2 >= 256)
+    {
+	buf[mb_char2bytes(c2, buf)] = 0;
+	hi = hash_find(&slang->sl_map_hash, buf);
+	if (HASHITEM_EMPTY(hi))
+	    m2 = 0;
+	else
+	    m2 = mb_ptr2char(hi->hi_key + STRLEN(hi->hi_key) + 1);
+    }
+    else
+#endif
+	m2 = slang->sl_map_array[c2];
+
+    return m1 == m2;
+}
 
 /*
  * Add a suggestion to the list of suggestions.
