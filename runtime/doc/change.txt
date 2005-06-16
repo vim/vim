@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.0aa.  Last change: 2005 May 31
+*change.txt*    For Vim version 7.0aa.  Last change: 2005 Jun 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1074,9 +1074,12 @@ normal command-line editing commands are available, including a special
 history for expressions.  When you end the command-line by typing <CR>, Vim
 computes the result of the expression.  If you end it with <Esc>, Vim abandons
 the expression.  If you do not enter an expression, Vim uses the previous
-expression (like with the "/" command).  If the "= register is used for the
-"p" command, the string is split up at <NL> characters.  If the string ends in
-a <NL>, it is regarded as a linewise register.  {not in Vi}
+expression (like with the "/" command).  The expression must evaluate to a
+string.  If the result is a number it's turned into a string.  A List,
+Dictionary or FuncRef results in an error message (use string() to convert).
+If the "= register is used for the "p" command, the string is split up at <NL>
+characters.  If the string ends in a <NL>, it is regarded as a linewise
+register.  {not in Vi}
 
 7. Selection and drop registers "*, "+ and "~ 
 Use these register for storing and retrieving the selected text for the GUI.

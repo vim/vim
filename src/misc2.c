@@ -5666,3 +5666,41 @@ filewritable(fname)
     return retval;
 }
 #endif
+
+/*
+ * Print an error message with one or two "%s" and one or two string arguments.
+ * This is not in message.c to avoid a warning for prototypes.
+ */
+    int
+emsg3(s, a1, a2)
+    char_u *s, *a1, *a2;
+{
+    if ((emsg_off > 0 && vim_strchr(p_debug, 'm') == NULL)
+#ifdef FEAT_EVAL
+	    || emsg_skip > 0
+#endif
+	    )
+	return TRUE;		/* no error messages at the moment */
+    vim_snprintf((char *)IObuff, IOSIZE, (char *)s, (long)a1, (long)a2);
+    return emsg(IObuff);
+}
+
+/*
+ * Print an error message with one "%ld" and one long int argument.
+ * This is not in message.c to avoid a warning for prototypes.
+ */
+    int
+emsgn(s, n)
+    char_u	*s;
+    long	n;
+{
+    if ((emsg_off > 0 && vim_strchr(p_debug, 'm') == NULL)
+#ifdef FEAT_EVAL
+	    || emsg_skip > 0
+#endif
+	    )
+	return TRUE;		/* no error messages at the moment */
+    vim_snprintf((char *)IObuff, IOSIZE, (char *)s, n);
+    return emsg(IObuff);
+}
+
