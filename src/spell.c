@@ -1956,7 +1956,9 @@ struct wordnode_S
 typedef struct spellinfo_S
 {
     wordnode_T	*si_foldroot;	/* tree with case-folded words */
+    long	si_foldwcount;	/* nr of words in si_foldroot */
     wordnode_T	*si_keeproot;	/* tree with keep-case words */
+    long	si_keepwcount;	/* nr of words in si_keeproot */
     sblock_T	*si_blocks;	/* memory blocks used */
     int		si_ascii;	/* handling only ASCII words */
     int		si_add;		/* addition file */
@@ -2012,7 +2014,8 @@ spell_read_aff(fname, spin)
     char_u	rline[MAXLINELEN];
     char_u	*line;
     char_u	*pc = NULL;
-    char_u	*(items[6]);
+#define MAXITEMCNT  7
+    char_u	*(items[MAXITEMCNT]);
     int		itemcnt;
     char_u	*p;
     int		lnum = 0;
@@ -2109,7 +2112,7 @@ spell_read_aff(fname, spin)
 		++p;
 	    if (*p == NUL)
 		break;
-	    if (itemcnt == 6)	    /* too many items */
+	    if (itemcnt == MAXITEMCNT)	    /* too many items */
 		break;
 	    items[itemcnt++] = p;
 	    while (*p > ' ')	    /* skip until white space or CR/NL */
@@ -2162,8 +2165,14 @@ spell_read_aff(fname, spin)
 	    else if ((STRCMP(items[0], "PFX") == 0
 					      || STRCMP(items[0], "SFX") == 0)
 		    && aff_todo == 0
-		    && itemcnt == 4)
+		    && itemcnt >= 4)
 	    {
+		/* Myspell allows extra text after the item, but that might
+		 * mean mistakes go unnoticed.  Require a comment-starter. */
+		if (itemcnt > 4 && *items[4] != '#')
+		    smsg((char_u *)_("Trailing text in %s line %d: %s"),
+						       fname, lnum, items[4]);
+
 		/* New affix letter. */
 		cur_aff = (affheader_T *)getroom(&spin->si_blocks,
 							 sizeof(affheader_T));
@@ -2197,9 +2206,15 @@ spell_read_aff(fname, spin)
 					      || STRCMP(items[0], "SFX") == 0)
 		    && aff_todo > 0
 		    && STRCMP(cur_aff->ah_key, items[1]) == 0
-		    && itemcnt == 5)
+		    && itemcnt >= 5)
 	    {
 		affentry_T	*aff_entry;
+
+		/* Myspell allows extra text after the item, but that might
+		 * mean mistakes go unnoticed.  Require a comment-starter. */
+		if (itemcnt > 5 && *items[5] != '#')
+		    smsg((char_u *)_("Trailing text in %s line %d: %s"),
+						       fname, lnum, items[5]);
 
 		/* New item for an affix letter. */
 		--aff_todo;
@@ -2477,6 +2492,9 @@ spell_read_dic(fname, spin, affile)
     /* The hashtable is only used to detect duplicated words. */
     hash_init(&ht);
 
+    spin->si_foldwcount = 0;
+    spin->si_keepwcount = 0;
+
     if (spin->si_verbose || p_verbose > 2)
     {
 	if (!spin->si_verbose)
@@ -2515,7 +2533,8 @@ spell_read_dic(fname, spin, affile)
 	if (spin->si_verbose && (lnum & 0x3ff) == 0)
 	{
 	    vim_snprintf((char *)message, sizeof(message),
-					      _("line %6d - %s"), lnum, line);
+		    _("line %6d, word %6d - %s"),
+		       lnum, spin->si_foldwcount + spin->si_keepwcount, line);
 	    msg_start();
 	    msg_outtrans_attr(message, 0);
 	    msg_clr_eos();
@@ -3045,10 +3064,14 @@ store_word(word, spin, flags, region)
     (void)spell_casefold(word, len, foldword, MAXWLEN);
     res = tree_add_word(foldword, spin->si_foldroot, ct | flags,
 						region, &spin->si_blocks);
+    ++spin->si_foldwcount;
 
     if (res == OK && (ct == WF_KEEPCAP || flags & WF_KEEPCAP))
+    {
 	res = tree_add_word(word, spin->si_keeproot, flags,
 						    region, &spin->si_blocks);
+	++spin->si_keepwcount;
+    }
     return res;
 }
 
