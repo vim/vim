@@ -1903,7 +1903,7 @@ utf_class(c)
     /* First quick check for Latin1 characters, use 'iskeyword'. */
     if (c < 0x100)
     {
-	if (c == ' ' || c == '\t' || c == NUL)
+	if (c == ' ' || c == '\t' || c == NUL || c == 0xa0)
 	    return 0;	    /* blank */
 	if (vim_iswordc(c))
 	    return 2;	    /* word character */
