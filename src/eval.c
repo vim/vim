@@ -107,7 +107,7 @@ static char *e_funcref = N_("E718: Funcref required");
 static char *e_dictrange = N_("E719: Cannot use [:] with a Dictionary");
 static char *e_letwrong = N_("E734: Wrong variable type for %s=");
 static char *e_nofunc = N_("E130: Unknown function: %s");
-
+static char *e_illvar = N_("E461: Illegal variable name: %s");
 /*
  * All user-defined global variables are stored in dictionary "globvardict".
  * "globvars_var" is the variable that is used for "g:".
@@ -1553,15 +1553,17 @@ skip_var_list(arg, var_count, semicolon)
 }
 
 /*
- * Skip one (assignable) variable name, includig $VAR, d.key, l[idx].
+ * Skip one (assignable) variable name, includig @r, $VAR, &option, d.key,
+ * l[idx].
  */
     static char_u *
 skip_var_one(arg)
     char_u	*arg;
 {
-    if (vim_strchr((char_u *)"$@&", *arg) != NULL)
-	++arg;
-    return find_name_end(arg, NULL, NULL, FNE_INCL_BR | FNE_CHECK_START);
+    if (*arg == '@' && arg[1] != NUL)
+	return arg + 2;
+    return find_name_end(*arg == '$' || *arg == '&' ? arg + 1 : arg,
+				   NULL, NULL, FNE_INCL_BR | FNE_CHECK_START);
 }
 
 /*
@@ -1886,7 +1888,7 @@ ex_let_one(arg, tv, copy, endchars, op)
 	    p = get_tv_string_chk(tv);
 	    if (p != NULL && op != NULL && *op == '.')
 	    {
-		s = get_reg_contents(*arg == '@' ? '"' : *arg, FALSE, FALSE);
+		s = get_reg_contents(*arg == '@' ? '"' : *arg, TRUE, TRUE);
 		if (s != NULL)
 		{
 		    p = tofree = concat_str(s, p);
@@ -4173,8 +4175,7 @@ eval7(arg, rettv, evaluate)
 		if (evaluate)
 		{
 		    rettv->v_type = VAR_STRING;
-		    rettv->vval.v_string = get_reg_contents(**arg,
-								FALSE, FALSE);
+		    rettv->vval.v_string = get_reg_contents(**arg, TRUE, TRUE);
 		}
 		if (**arg != NUL)
 		    ++*arg;
@@ -11415,7 +11416,7 @@ f_range(argvars, rettv)
 	return;		/* type error; errmsg already given */
     if (stride == 0)
 	EMSG(_("E726: Stride is zero"));
-    else if (stride > 0 ? end < start : end > start)
+    else if (stride > 0 ? end + 1 < start : end - 1 > start)
 	EMSG(_("E727: Start past end"));
     else
     {
@@ -12585,7 +12586,6 @@ f_setbufvar(argvars, rettv)
 	return;
     (void)get_tv_number(&argvars[0]);	    /* issue errmsg if type error */
     varname = get_tv_string_chk(&argvars[1]);
-    ++emsg_off;
     buf = get_buf_tv(&argvars[0]);
     varp = &argvars[2];
 
@@ -12606,10 +12606,8 @@ f_setbufvar(argvars, rettv)
 	    int		error = FALSE;
 
 	    ++varname;
-	    --emsg_off;
 	    numval = get_tv_number_chk(varp, &error);
 	    strval = get_tv_string_buf_chk(varp, nbuf);
-	    ++emsg_off;
 	    if (!error && strval != NULL)
 		set_option_value(varname, numval, strval, OPT_LOCAL);
 	}
@@ -12632,7 +12630,6 @@ f_setbufvar(argvars, rettv)
 	curbuf = save_curbuf;
 #endif
     }
-    --emsg_off;
 }
 
 /*
@@ -12844,7 +12841,6 @@ f_setwinvar(argvars, rettv)
 	return;
     win = find_win_by_nr(&argvars[0]);
     varname = get_tv_string_chk(&argvars[1]);
-    ++emsg_off;
     varp = &argvars[2];
 
     if (win != NULL && varname != NULL && varp != NULL)
@@ -12863,10 +12859,8 @@ f_setwinvar(argvars, rettv)
 	    int		error = FALSE;
 
 	    ++varname;
-	    --emsg_off;
 	    numval = get_tv_number_chk(varp, &error);
 	    strval = get_tv_string_buf_chk(varp, nbuf);
-	    ++emsg_off;
 	    if (!error && strval != NULL)
 		set_option_value(varname, numval, strval, OPT_LOCAL);
 	}
@@ -12892,7 +12886,6 @@ f_setwinvar(argvars, rettv)
 	}
 #endif
     }
-    --emsg_off;
 }
 
 /*
@@ -13459,7 +13452,7 @@ f_synID(argvars, rettv)
     long	lnum;
     long	col;
     int		trans;
-    int		transerr;
+    int		transerr = FALSE;
 
     lnum = get_tv_lnum(argvars);		/* -1 on type error */
     col = get_tv_number(&argvars[1]) - 1;	/* -1 on type error */
@@ -15443,6 +15436,7 @@ set_var(name, tv, copy)
     dictitem_T	*v;
     char_u	*varname;
     hashtab_T	*ht;
+    char_u	*p;
 
     if (tv->v_type == VAR_FUNC)
     {
@@ -15464,7 +15458,7 @@ set_var(name, tv, copy)
     ht = find_var_ht(name, &varname);
     if (ht == NULL || *varname == NUL)
     {
-	EMSG2(_("E461: Illegal variable name: %s"), name);
+	EMSG2(_(e_illvar), name);
 	return;
     }
 
@@ -15514,6 +15508,14 @@ set_var(name, tv, copy)
     }
     else		    /* add a new variable */
     {
+	/* Make sure the variable name is valid. */
+	for (p = varname; *p != NUL; ++p)
+	    if (!eval_isnamec1(*p) && (p == varname || !VIM_ISDIGIT(*p)))
+	    {
+		EMSG2(_(e_illvar), varname);
+		return;
+	    }
+
 	v = (dictitem_T *)alloc((unsigned)(sizeof(dictitem_T)
 							  + STRLEN(varname)));
 	if (v == NULL)
