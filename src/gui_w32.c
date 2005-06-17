@@ -415,6 +415,9 @@ init_mouse_wheel(void)
 #ifndef SPI_GETWHEELSCROLLLINES
 # define SPI_GETWHEELSCROLLLINES    104
 #endif
+#ifndef SPI_SETWHEELSCROLLLINES
+# define SPI_SETWHEELSCROLLLINES    105
+#endif
 
 #define VMOUSEZ_CLASSNAME  "MouseZ"		/* hidden wheel window class */
 #define VMOUSEZ_TITLE      "Magellan MSWHEEL"	/* hidden wheel window title */

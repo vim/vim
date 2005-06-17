@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Jun 16
+" Last Change:	2005 Jun 17
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -1439,7 +1439,7 @@ au BufNewFile,BufRead *.sim			setf simula
 au BufNewFile,BufRead *.sin,*.s85		setf sinda
 
 " SKILL
-au BufNewFile,BufRead *.il			setf skill
+au BufNewFile,BufRead *.il,*.ils,*.cdf		setf skill
 
 " SLRN
 au BufNewFile,BufRead .slrnrc			setf slrnrc

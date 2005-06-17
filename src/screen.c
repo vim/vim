@@ -3594,11 +3594,16 @@ win_line(wp, lnum, startrow, endrow)
 			char_attr = syntax_attr;
 		    if (c != 0 && (!has_syntax || can_spell))
 		    {
+			char_u	*prev_ptr;
 # ifdef FEAT_MBYTE
-			char_u	*prev_ptr = ptr - (has_mbyte ? mb_l : 1);
-# else
-			char_u	*prev_ptr = ptr - 1;
+			if (has_mbyte)
+			{
+			    prev_ptr = ptr - mb_l;
+			    v -= mb_l - 1;
+			}
+			else
 # endif
+			    prev_ptr = ptr - 1;
 			word_end = v + spell_check(wp, prev_ptr, &spell_attr);
 
 			/* In Insert mode only highlight a word that

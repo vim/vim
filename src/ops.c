@@ -5717,12 +5717,37 @@ write_reg_contents_ex(name, str, maxlen, must_append, yank_type, block_len)
     struct yankreg  *old_y_previous, *old_y_current;
     long	    len;
 
+    if (maxlen >= 0)
+	len = maxlen;
+    else
+	len = (long)STRLEN(str);
+
     /* Special case: '/' search pattern */
     if (name == '/')
     {
 	set_last_search_pat(str, RE_SEARCH, TRUE, TRUE);
 	return;
     }
+
+#ifdef FEAT_EVAL
+    if (name == '=')
+    {
+	char_u	    *p, *s;
+
+	p = vim_strnsave(str, (int)len);
+	if (p == NULL)
+	    return;
+	if (must_append)
+	{
+	    s = concat_str(get_expr_line_src(), p);
+	    vim_free(p);
+	    p = s;
+
+	}
+	set_expr_line(p);
+	return;
+    }
+#endif
 
     if (!valid_yank_reg(name, TRUE))	    /* check for valid reg name */
     {
@@ -5740,10 +5765,6 @@ write_reg_contents_ex(name, str, maxlen, must_append, yank_type, block_len)
     get_yank_register(name, TRUE);
     if (!y_append && !must_append)
 	free_yank_all();
-    if (maxlen >= 0)
-	len = maxlen;
-    else
-	len = (long)STRLEN(str);
 #ifndef FEAT_VISUAL
     /* Just in case - make sure we don't use MBLOCK */
     if (yank_type == MBLOCK)

@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 16
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -401,7 +401,7 @@ The same word with all upper-case characters will always be OK.
 	AlS		AlS ALS			als Als ALs aLs aLS
 
 The KEP affix ID can be used to specifically match a word with identical case
-only, see below.
+only, see below |spell-affix-KEP|.
 
 Note in line 5 to 7 that non-word characters are used.  You can include
 any character in a word.  When checking the text a word still only matches
@@ -435,7 +435,8 @@ word characters (as specified with ENC).  This is because the system where
 ":mkspell" is used may not support a locale with this encoding and isalpha()
 won't work.  For example when using "cp1250" on Unix.
 
-							*E761* *E762*
+					*E761* *E762* *spell-affix-FOL*
+					*spell-affix-LOW* *spell-affix-UPP*
 Three lines in the affix file are needed.  Simplistic example:
 
 	FOL  בכסבכס ~
@@ -463,6 +464,11 @@ All spell files for the same encoding must use the same word characters,
 otherwise they can't be combined without errors.  The XX.ascii.spl spell file
 generated with the "-ascii" argument will not contain the table with
 characters, so that it can be combine with spell files for any encoding.
+
+					    *spell-affix-PFX* *spell-affix-SFX*
+The usual PFX (prefix) and SFX (suffix) lines are supported.  Note that
+Myspell ignores any extra text after the relevant info.  Vim requires this
+text to start with a "#" so that mistakes don't go unnoticed.
 
 							*spell-affix-KEP*
 In the affix file a KEP line can be used to define the affix name used for
@@ -509,6 +515,9 @@ to prefer suggestions with these letters substituted.  Example:
 	MAP uüשתû ~
 
 The first line specifies the number of MAP lines following.  Vim ignores it.
+
+A letter must only appear in one of the MAP items.  It's a bit more efficient
+if the first letter is ASCII or at least one without accents.
 
 
 SOUNDS-A-LIKE						*spell-affix-SAL*

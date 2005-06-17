@@ -15,6 +15,9 @@ pl: $(SPELLDIR)/pl.iso-8859-2.spl \
 nl: $(SPELLDIR)/nl.latin1.spl \
 	$(SPELLDIR)/nl.utf-8.spl
 
+de: $(SPELLDIR)/de.latin1.spl \
+	$(SPELLDIR)/de.utf-8.spl
+
 fr: $(SPELLDIR)/fr.latin1.spl \
 	$(SPELLDIR)/fr.utf-8.spl
 
@@ -35,6 +38,9 @@ diff:
 	
 	-diff -a -C 1 pl_PL.orig.aff pl_PL.aff >pl_PL.diff
 	-diff -a -C 1 pl_PL.orig.dic pl_PL.dic >>pl_PL.diff
+	
+	-diff -a -C 1 de_DE.orig.aff de_DE.aff >de_DE.diff
+	-diff -a -C 1 de_DE.orig.dic de_DE.dic >>de_DE.diff
 	
 	-diff -a -C 1 fr_FR.orig.aff fr_FR.aff >fr_FR.diff
 	-diff -a -C 1 fr_FR.orig.dic fr_FR.dic >>fr_FR.diff
@@ -83,6 +89,14 @@ $(SPELLDIR)/nl.latin1.spl : $(VIM) \
 $(SPELLDIR)/nl.utf-8.spl : $(VIM) \
 			nl_NL.aff nl_NL.dic
 	env LANG=nl_NL.UTF-8 $(VIM) -e -c "mkspell! $(SPELLDIR)/nl nl_NL" -c q
+
+$(SPELLDIR)/de.latin1.spl : $(VIM) \
+			de_DE.aff de_DE.dic
+	env LANG=de_DE.ISO8859-1 $(VIM) -e -c "mkspell! $(SPELLDIR)/de de_DE" -c q
+
+$(SPELLDIR)/de.utf-8.spl : $(VIM) \
+			de_DE.aff de_DE.dic
+	env LANG=de_DE.UTF-8 $(VIM) -e -c "mkspell! $(SPELLDIR)/de de_DE" -c q
 
 $(SPELLDIR)/fr.latin1.spl : $(VIM) \
 			fr_FR.aff fr_FR.dic

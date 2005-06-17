@@ -1,6 +1,6 @@
 " Vim script language tests
 " Author:	Servatius Brandt <Servatius.Brandt@fujitsu-siemens.com>
-" Last Change:	2005 May 18
+" Last Change:	2005 Jun 17
 
 "-------------------------------------------------------------------------------
 " Test environment							    {{{1
@@ -8069,7 +8069,7 @@ if ExtraVim()
     function! MSG(n)
 	let g:taken = g:taken . "M" . a:n
 	if (a:n >= 10 && a:n <= 27) ? v:errmsg != "" : v:errmsg !~ "asdf"
-	    let g:taken = g:taken . "x"
+	    let g:taken = g:taken . v:errmsg
 	endif
 	let v:errmsg = ""
     endfunction
@@ -8225,13 +8225,13 @@ if ExtraVim()
     let var = ERR(36) + CONT(36)
     call MSG(36)
 
-    let v{ERRabort(37) + CONT(37)} = 0
+    let v{ERRabort(37) + CONT(37) . 'asdf'} = 0
     call MSG(37)
-    let v{ERRabort(38) + CONT(38)}
+    let v{ERRabort(38) + CONT(38) . 'asdf'}
     call MSG(38)
     let var = exists('v{ERRabort(39) + CONT(39)}')
     call MSG(39)
-    unlet v{ERRabort(40) + CONT(40)}
+    unlet v{ERRabort(40) + CONT(40) . 'asdf'}
     call MSG(40)
     function F{ERRabort(41) + CONT(41)}()
     endfunction

@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 07
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5644,6 +5644,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When a word is added while this option is empty Vim will set it for
 	you: Using the first "spell" directory in 'runtimepath' that is
 	writable and the first language name that appears in 'spelllang'.
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
 
 						*'spelllang'* *'spl'*
 'spelllang' 'spl'	string	(default "en")

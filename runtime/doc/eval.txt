@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 14
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -948,8 +948,11 @@ register						*expr-register*
 
 The result is the contents of the named register, as a single string.
 Newlines are inserted where required.  To get the contents of the unnamed
-register use @" or @@.  The '=' register can not be used here.  See
-|registers| for an explanation of the available registers.
+register use @" or @@.  See |registers| for an explanation of the available
+registers.
+
+When using the '=' register you get the expression itself, not what it
+evaluates to.  Use |eval()| to evaluate it.
 
 
 nesting							*expr-nesting* *E110*
@@ -3290,11 +3293,16 @@ range({expr} [, {max} [, {stride}]])				*range()*
 		- If {stride} is specified: [{expr}, {expr} + {stride}, ...,
 		  {max}] (increasing {expr} with {stride} each time, not
 		  producing a value past {max}).
+		When the maximum is one before the start the result is an
+		empty list.  When the maximum is more than one before the
+		start this is an error.
 		Examples: >
 			range(4) 		" [0, 1, 2, 3]
 			range(2, 4)		" [2, 3, 4]
 			range(2, 9, 3)		" [2, 5, 8]
 			range(2, -2, -1) 	" [2, 1, 0, -1, -2]
+			range(0)		" []
+			range(2, 0)		" error!
 <
 							*readfile()*
 readfile({fname} [, {binary} [, {max}]])
