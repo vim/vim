@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jun 15
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jun 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -661,6 +661,9 @@ Win32: If the user changes the setting for the number of lines a scroll wheel
 click scrolls it is now used immediately.  Previously Vim would need to be
 restarted.
 
+When using @= in an expression the value is expression @= contains.  ":let @=
+= value" can be used to set the register contents.
+
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*
 
@@ -1130,5 +1133,9 @@ When 'shortmess' is empty and 'keymap' set to accents, in Insert mode CTRL-N
 may cause the hit-enter prompt.  Typing 'a then didn't result in the accented
 character.  Put the character typed at the prompt back in the typeahead buffer
 so that mapping is done in the right mode.
+
+setbufvar() and setwinvar() did not give error messages.
+
+It was possible to set a variable with an illegal name, e.g. with setbufvar().
 
  vim:tw=78:ts=8:ft=help:norl:

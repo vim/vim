@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 16
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,20 +29,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
-
-synID() no longer works.
-
-Range(0) should return an empty list (Servatius Brandt).
-
-:let @= 'asdf' gives confusing error message.  Make @= writable?
-
-a few builtin functions call set_var() internally to set a variable.  They do
-not check for a valid variable name.  Example: setbufvar(1, ";", 1) sets a
-variable named ";". (Servatius Brandt)
-
-Patch for if_python to make exit work better with threads. (ugo)
-Still seems to fail 15% of the time.
-Vim 7 breaks, works OK with 6.3 version of if_python (Thakkar)
 
 Add extra list of file locations.  Can be used with:
     :ltag	      list of matching tags, like :tselect
@@ -111,15 +97,9 @@ PLANNED FOR VERSION 7.0:
 -   Add SPELLCHECKER, with support for many languages.
     - Spell checking code todo's:
 	- Code for making suggestions:
+	  - Hebrew runs out of memory.
+	  - When 'spellfile' directory doesn't exist, ask user to create it?
 	  - Aspell has the "special" character, useful?
-	  - The score is a bit wrong for substituting multi-byte characters.
-	    At the head byte remember how may bytes are still to follow, do
-	    the scoring at the tail byte.  But don't even try when the score
-	    plus the minimal penalty (similar char) goes over maximum.
-	  - similar_chars() is too slow.
-		use a lookuptable for single-byte
-		use a hashtable for multi-byte
-		support letter appearing in several lists?
 	  - When putting map string in .spl file check for duplicate chars.
 	  - GUI: Selecting text doesn't work at the prompt.
 	  - Should "z?" replacement be redo-able with "."?
