@@ -46,7 +46,7 @@ test1.out: test1.in
 	-rm -rf X* viminfo
 
 .in.out:
-	-rm -f $*.failed test.ok X*
+	-rm -f $*.failed test.ok X* viminfo
 	cp $*.ok test.ok
 	# Sleep a moment to avoid that the xterm title is messed up
 	@-sleep .2
