@@ -1331,7 +1331,7 @@ enum hlf_value
 #define MSG_PUTS(s)		    msg_puts((char_u *)(s))
 #define MSG_PUTS_ATTR(s, a)	    msg_puts_attr((char_u *)(s), (a))
 #define MSG_PUTS_TITLE(s)	    msg_puts_title((char_u *)(s))
-#define MSG_PUTS_LONG(s)	    msg_puts_long((char_u *)(s))
+#define MSG_PUTS_LONG(s)	    msg_puts_long_attr((char_u *)(s), 0)
 #define MSG_PUTS_LONG_ATTR(s, a)    msg_puts_long_attr((char_u *)(s), (a))
 
 /* Prefer using emsg3(), because perror() may send the output to the wrong

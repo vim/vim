@@ -31,9 +31,15 @@
  *	len = byts[i]
  *	find that byts[i + 1] is 0, idxs[i + 1] has flags for "vi".
  *
- * There are two trees: one with case-folded words and one with words in
+ * There are two word trees: one with case-folded words and one with words in
  * original case.  The second one is only used for keep-case words and is
  * usually small.
+ *
+ * There is one additional tree for when prefixes are not applied when
+ * generating the .spl file.  This tree stores all the possible prefixes, as
+ * if they were words.  At each word (prefix) end the prefix nr is stored, the
+ * following word must support this prefix nr.  And the condition nr is
+ * stored, used to lookup the condition that the word must match with.
  *
  * Thanks to Olaf Seibert for providing an example implementation of this tree
  * and the compression mechanism.
@@ -60,12 +66,19 @@
  */
 
 /*
- * Vim spell file format:  <HEADER> <SUGGEST> <LWORDTREE> <KWORDTREE>
+ * Vim spell file format: <HEADER>
+ *			  <SUGGEST>
+ *			  <LWORDTREE>
+ *			  <KWORDTREE>
+ *			  <PREFIXTREE>
  *
- * <HEADER>: <fileID> <regioncnt> <regionname> ...
- *		 <charflagslen> <charflags> <fcharslen> <fchars>
+ * <HEADER>: <fileID>
+ *		<regioncnt> <regionname> ...
+ *		<charflagslen> <charflags>
+ *		<fcharslen> <fchars>
+ *		<prefcondcnt> <prefcond> ...
  *
- * <fileID>     10 bytes    "VIMspell06"
+ * <fileID>     10 bytes    "VIMspell07"
  * <regioncnt>  1 byte	    number of regions following (8 supported)
  * <regionname>	2 bytes     Region name: ca, au, etc.  Lower case.
  *			    First <regionname> is region 1.
@@ -76,6 +89,14 @@
  *			    0x02  upper-case character	CF_UPPER
  * <fcharslen>  2 bytes     Number of bytes in <fchars>.
  * <fchars>     N bytes	    Folded characters, first one is for character 128.
+ *
+ * <prefcondcnt> 2 bytes    Number of <prefcond> items following.
+ *
+ * <prefcond> : <condlen> <condstr>
+ *
+ * <condlen>	1 byte	    Length of <condstr>.
+ *
+ * <condstr>	N bytes	    Condition for the prefix.
  *
  *
  * <SUGGEST> : <repcount> <rep> ...
@@ -117,6 +138,11 @@
  *
  * <LWORDTREE>: <wordtree>
  *
+ * <KWORDTREE>: <wordtree>
+ *
+ * <PREFIXTREE>: <wordtree>
+ *
+ *
  * <wordtree>: <nodecount> <nodedata> ...
  *
  * <nodecount>	4 bytes	    Number of nodes following.  MSB first.
@@ -126,12 +152,16 @@
  * <siblingcount> 1 byte    Number of siblings in this node.  The siblings
  *			    follow in sorted order.
  *
- * <sibling>: <byte> [<nodeidx> <xbyte> | <flags> [<region>]]
+ * <sibling>: <byte> [ <nodeidx> <xbyte>
+ *		      | <flags> [<region>] [<prefixID>]
+ *		      | <prefixID> <prefcondnr> ]
  *
  * <byte>	1 byte	    Byte value of the sibling.  Special cases:
  *			    BY_NOFLAGS: End of word without flags and for all
  *					regions.
- *			    BY_FLAGS: End of word, <flags> follow.
+ *			    BY_FLAGS: End of word, <flags> follow.  For
+ *					PREFIXTREE <prefixID> and <prefcondnr>
+ *					follow.
  *			    BY_INDEX: Child of sibling is shared, <nodeidx>
  *					and <xbyte> follow.
  *
@@ -144,12 +174,17 @@
  *			    WF_ONECAP   first char of word must be capital
  *			    WF_RARE	rare word
  *			    WF_REGION	<region> follows
+ *			    WF_PFX	<prefixID> follows
  *
  * <region>	1 byte	    Bitmask for regions in which word is valid.  When
  *			    omitted it's valid in all regions.
  *			    Lowest bit is for region 1.
  *
- * <KWORDTREE>: <wordtree>
+ * <prefixID>	1 byte	    ID of prefix that can be used with this word.  For
+ *			    PREFIXTREE used for the required prefix ID.
+ *
+ * <prefcondnr>	2 bytes	    Prefix condition number, index in <prefcond> list
+ *			    from HEADER.
  *
  * All text characters are in 'encoding', but stored as single bytes.
  */
@@ -185,6 +220,7 @@ typedef long idx_T;
 #define WF_ALLCAP   0x04	/* word must be all capitals */
 #define WF_RARE	    0x08	/* rare word */
 #define WF_BANNED   0x10	/* bad word */
+#define WF_PFX	    0x20	/* prefix ID list follows */
 #define WF_KEEPCAP  0x80	/* keep-case word */
 
 #define WF_CAPMASK (WF_ONECAP | WF_ALLCAP | WF_KEEPCAP)
@@ -225,11 +261,18 @@ struct slang_S
     char_u	*sl_name;	/* language name "en", "en.rare", "nl", etc. */
     char_u	*sl_fname;	/* name of .spl file */
     int		sl_add;		/* TRUE if it's a .add file. */
+
     char_u	*sl_fbyts;	/* case-folded word bytes */
     idx_T	*sl_fidxs;	/* case-folded word indexes */
     char_u	*sl_kbyts;	/* keep-case word bytes */
     idx_T	*sl_kidxs;	/* keep-case word indexes */
+    char_u	*sl_pbyts;	/* prefix tree word bytes */
+    idx_T	*sl_pidxs;	/* prefix tree word indexes */
+
     char_u	sl_regions[17];	/* table with up to 8 region names plus NUL */
+
+    int		sl_prefixcnt;	/* number of items in "sl_prefprog" */
+    regprog_T	**sl_prefprog;	/* table with regprogs for prefixes */
 
     garray_T	sl_rep;		/* list of fromto_T entries from REP lines */
     short	sl_rep_first[256];  /* indexes where byte first appears, -1 if
@@ -278,7 +321,7 @@ typedef struct langp_S
 #define SP_LOCAL	2
 #define SP_BAD		3
 
-#define VIMSPELLMAGIC "VIMspell06"  /* string at start of Vim spell file */
+#define VIMSPELLMAGIC "VIMspell07"  /* string at start of Vim spell file */
 #define VIMSPELLMAGICL 10
 
 /*
@@ -288,8 +331,6 @@ typedef struct suginfo_S
 {
     garray_T	su_ga;		    /* suggestions, contains "suggest_T" */
     int		su_maxscore;	    /* maximum score for adding to su_ga */
-    int		su_icase;	    /* accept words with wrong case */
-    int		su_icase_add;	    /* add matches while ignoring case */
     char_u	*su_badptr;	    /* start of bad word in line */
     int		su_badlen;	    /* length of detected bad word in line */
     char_u	su_badword[MAXWLEN]; /* bad word truncated at su_badlen */
@@ -329,7 +370,6 @@ typedef struct suggest_S
 /* score for various changes */
 #define SCORE_SPLIT	99	/* split bad word */
 #define SCORE_ICASE	52	/* slightly different case */
-#define SCORE_ALLCAP	120	/* need all-cap case */
 #define SCORE_REGION	70	/* word is for different region */
 #define SCORE_RARE	180	/* rare word */
 
@@ -355,7 +395,7 @@ typedef struct matchinf_S
 
     /* pointers to original text to be checked */
     char_u	*mi_word;		/* start of word being checked */
-    char_u	*mi_end;		/* end of matching word */
+    char_u	*mi_end;		/* end of matching word so far */
     char_u	*mi_fend;		/* next char to be added to mi_fword */
     char_u	*mi_cend;		/* char after what was used for
 					   mi_capflags */
@@ -363,6 +403,12 @@ typedef struct matchinf_S
     /* case-folded text */
     char_u	mi_fword[MAXWLEN + 1];	/* mi_word case-folded */
     int		mi_fwordlen;		/* nr of valid bytes in mi_fword */
+
+    /* for when checking word after a prefix */
+    int		mi_prefarridx;		/* index in sl_pidxs with list of
+					   prefixID/condition */
+    int		mi_prefcnt;		/* number of entries at mi_prefarridx */
+    int		mi_prefixlen;		/* byte length of prefix */
 
     /* others */
     int		mi_result;		/* result so far: SP_BAD, SP_OK, etc. */
@@ -389,6 +435,7 @@ static int	    did_set_spelltab;
 
 static void clear_spell_chartab __ARGS((spelltab_T *sp));
 static int set_spell_finish __ARGS((spelltab_T	*new_st));
+static void write_spell_prefcond __ARGS((FILE *fd, garray_T *gap));
 
 /*
  * Return TRUE if "p" points to a word character or "c" is a word character
@@ -457,16 +504,23 @@ typedef struct trystate_S
 #define DIFF_YES	1	/* different byte found */
 #define DIFF_INSERT	2	/* inserting character */
 
+/* mode values for find_word */
+#define FIND_FOLDWORD	0	/* find word case-folded */
+#define FIND_KEEPWORD	1	/* find keep-case word */
+#define FIND_PREFIX	2	/* find word after prefix */
+
 static slang_T *slang_alloc __ARGS((char_u *lang));
 static void slang_free __ARGS((slang_T *lp));
 static void slang_clear __ARGS((slang_T *lp));
-static void find_word __ARGS((matchinf_T *mip, int keepcap));
+static void find_word __ARGS((matchinf_T *mip, int mode));
+static void find_prefix __ARGS((matchinf_T *mip));
+static int fold_more __ARGS((matchinf_T *mip));
 static int spell_valid_case __ARGS((int origflags, int treeflags));
 static void spell_load_lang __ARGS((char_u *lang));
 static char_u *spell_enc __ARGS((void));
 static void spell_load_cb __ARGS((char_u *fname, void *cookie));
 static slang_T *spell_load_file __ARGS((char_u *fname, char_u *lang, slang_T *old_lp, int silent));
-static idx_T read_tree __ARGS((FILE *fd, char_u *byts, idx_T *idxs, int maxidx, int startidx));
+static idx_T read_tree __ARGS((FILE *fd, char_u *byts, idx_T *idxs, int maxidx, int startidx, int prefixtree, int maxprefcondnr));
 static int find_region __ARGS((char_u *rp, char_u *region));
 static int captype __ARGS((char_u *word, char_u *end));
 static void spell_reload_one __ARGS((char_u *fname, int added_word));
@@ -623,10 +677,13 @@ spell_check(wp, ptr, attrp)
 				       mi.mi_lp->lp_slang != NULL; ++mi.mi_lp)
 	{
 	    /* Check for a matching word in case-folded words. */
-	    find_word(&mi, FALSE);
+	    find_word(&mi, FIND_FOLDWORD);
 
 	    /* Check for a matching word in keep-case words. */
-	    find_word(&mi, TRUE);
+	    find_word(&mi, FIND_KEEPWORD);
+
+	    /* Check for matching prefixes. */
+	    find_prefix(&mi);
 	}
 
 	if (mi.mi_result != SP_OK)
@@ -656,14 +713,17 @@ spell_check(wp, ptr, attrp)
 
 /*
  * Check if the word at "mip->mi_word" is in the tree.
- * When "keepcap" is TRUE check in keep-case word tree.
+ * When "mode" is FIND_FOLDWORD check in fold-case word tree.
+ * When "mode" is FIND_KEEPWORD check in keep-case word tree.
+ * When "mode" is FIND_PREFIX check for word after prefix in fold-case word
+ * tree.
  *
  * For a match mip->mi_result is updated.
  */
     static void
-find_word(mip, keepcap)
+find_word(mip, mode)
     matchinf_T	*mip;
-    int		keepcap;
+    int		mode;
 {
     idx_T	arridx = 0;
     int		endlen[MAXWLEN];    /* length at possible word endings */
@@ -677,16 +737,21 @@ find_word(mip, keepcap)
     idx_T	lo, hi, m;
 #ifdef FEAT_MBYTE
     char_u	*s;
-#endif
     char_u	*p;
+#endif
     int		res = SP_BAD;
     int		valid;
     slang_T	*slang = mip->mi_lp->lp_slang;
     unsigned	flags;
     char_u	*byts;
     idx_T	*idxs;
+    int		prefcnt;
+    int		pidx;
+    regmatch_T	regmatch;
+    regprog_T	*rp;
+    int		prefid;
 
-    if (keepcap)
+    if (mode == FIND_KEEPWORD)
     {
 	/* Check for word with matching case in keep-case tree. */
 	ptr = mip->mi_word;
@@ -701,6 +766,13 @@ find_word(mip, keepcap)
 	flen = mip->mi_fwordlen;    /* available case-folded bytes */
 	byts = slang->sl_fbyts;
 	idxs = slang->sl_fidxs;
+
+	if (mode == FIND_PREFIX)
+	{
+	    /* Skip over the prefix. */
+	    wlen = mip->mi_prefixlen;
+	    flen -= mip->mi_prefixlen;
+	}
     }
 
     if (byts == NULL)
@@ -715,26 +787,7 @@ find_word(mip, keepcap)
     for (;;)
     {
 	if (flen == 0 && *mip->mi_fend != NUL)
-	{
-	    /* Need to fold at least one more character.  Do until next
-	     * non-word character for efficiency. */
-	    p = mip->mi_fend;
-	    do
-	    {
-		mb_ptr_adv(mip->mi_fend);
-	    } while (*mip->mi_fend != NUL && SPELL_ISWORDP(mip->mi_fend));
-
-	    /* Include the non-word character so that we can check for the
-	     * word end. */
-	    if (*mip->mi_fend != NUL)
-		mb_ptr_adv(mip->mi_fend);
-
-	    (void)spell_casefold(p, (int)(mip->mi_fend - p),
-				     mip->mi_fword + mip->mi_fwordlen,
-				     MAXWLEN - mip->mi_fwordlen);
-	    flen = STRLEN(mip->mi_fword + mip->mi_fwordlen);
-	    mip->mi_fwordlen += flen;
-	}
+	    flen = fold_more(mip);
 
 	len = byts[arridx++];
 
@@ -813,31 +866,37 @@ find_word(mip, keepcap)
 	    continue;	    /* next char is a word character */
 
 #ifdef FEAT_MBYTE
-	if (!keepcap && has_mbyte)
+	if (mode != FIND_KEEPWORD && has_mbyte)
 	{
 	    /* Compute byte length in original word, length may change
-	     * when folding case. */
+	     * when folding case.  This can be slow, take a shortcut when the
+	     * case-folded word is equal to the keep-case word. */
 	    p = mip->mi_word;
-	    for (s = ptr; s < ptr + wlen; mb_ptr_adv(s))
-		mb_ptr_adv(p);
-	    wlen = p - mip->mi_word;
+	    if (STRNCMP(ptr, p, wlen) != 0)
+	    {
+		for (s = ptr; s < ptr + wlen; mb_ptr_adv(s))
+		    mb_ptr_adv(p);
+		wlen = p - mip->mi_word;
+	    }
 	}
 #endif
 
-	/* Check flags and region.  Repeat this if there are more
-	 * flags/region alternatives until there is a match. */
-	for (len = byts[arridx - 1]; len > 0 && byts[arridx] == 0; --len)
+	/* Check flags and region.  For FIND_PREFIX check the condition and
+	 * prefix ID.
+	 * Repeat this if there are more flags/region alternatives until there
+	 * is a match. */
+	res = SP_BAD;
+	for (len = byts[arridx - 1]; len > 0 && byts[arridx] == 0;
+							      --len, ++arridx)
 	{
 	    flags = idxs[arridx];
 
-	    if (keepcap)
+	    /* For the fold-case tree check that the case of the checked word
+	     * matches with what the word in the tree requires.
+	     * For keep-case tree the case is always right.  For prefixes we
+	     * don't bother to check. */
+	    if (mode == FIND_FOLDWORD)
 	    {
-		/* For "keepcap" tree the case is always right. */
-		valid = TRUE;
-	    }
-	    else
-	    {
-		/* Check that the word is in the required case. */
 		if (mip->mi_cend != mip->mi_word + wlen)
 		{
 		    /* mi_capflags was set for a different word length, need
@@ -846,48 +905,215 @@ find_word(mip, keepcap)
 		    mip->mi_capflags = captype(mip->mi_word, mip->mi_cend);
 		}
 
-		valid = spell_valid_case(mip->mi_capflags, flags);
+		if (!spell_valid_case(mip->mi_capflags, flags))
+		    continue;
 	    }
 
-	    if (valid)
+	    /* When mode is FIND_PREFIX the word must support the prefix:
+	     * check the prefix ID and the condition.  Do that for the list at
+	     * mip->mi_prefarridx. */
+	    if (mode == FIND_PREFIX)
 	    {
-		if (flags & WF_BANNED)
-		    res = SP_BANNED;
-		else if (flags & WF_REGION)
-		{
-		    /* Check region. */
-		    if ((mip->mi_lp->lp_region & (flags >> 8)) != 0)
-			res = SP_OK;
-		    else
-			res = SP_LOCAL;
-		}
-		else if (flags & WF_RARE)
-		    res = SP_RARE;
-		else
-		    res = SP_OK;
+		/* The prefix ID is stored two bytes above the flags. */
+		prefid = (unsigned)flags >> 16;
 
-		/* Always use the longest match and the best result. */
-		if (mip->mi_result > res)
+		valid = FALSE;
+		for (prefcnt = mip->mi_prefcnt - 1; prefcnt >= 0; --prefcnt)
 		{
-		    mip->mi_result = res;
-		    mip->mi_end = mip->mi_word + wlen;
-		}
-		else if (mip->mi_result == res
-					 && mip->mi_end < mip->mi_word + wlen)
-		    mip->mi_end = mip->mi_word + wlen;
+		    pidx = slang->sl_pidxs[mip->mi_prefarridx + prefcnt];
 
-		if (res == SP_OK)
+		    /* Check the prefix ID. */
+		    if (prefid != (pidx & 0xff))
+			continue;
+
+		    /* Check the condition, if there is one.  The
+		     * condition index is stored above the prefix ID byte.
+		     */
+		    rp = slang->sl_prefprog[(unsigned)pidx >> 8];
+		    if (rp != NULL)
+		    {
+			regmatch.regprog = rp;
+			regmatch.rm_ic = FALSE;
+			if (!vim_regexec(&regmatch, mip->mi_fword,
+						  (colnr_T)mip->mi_prefixlen))
+			    continue;
+		    }
+
+		    /* It's a match, use it. */
+		    valid = TRUE;
 		    break;
-	    }
-	    else
-		res = SP_BAD;
+		}
 
-	    ++arridx;
+		if (!valid)
+		    continue;
+	    }
+
+	    if (flags & WF_BANNED)
+		res = SP_BANNED;
+	    else if (flags & WF_REGION)
+	    {
+		/* Check region. */
+		if ((mip->mi_lp->lp_region & (flags >> 8)) != 0)
+		    res = SP_OK;
+		else
+		    res = SP_LOCAL;
+	    }
+	    else if (flags & WF_RARE)
+		res = SP_RARE;
+	    else
+		res = SP_OK;
+
+	    /* Always use the longest match and the best result. */
+	    if (mip->mi_result > res)
+	    {
+		mip->mi_result = res;
+		mip->mi_end = mip->mi_word + wlen;
+	    }
+	    else if (mip->mi_result == res
+				 && mip->mi_end < mip->mi_word + wlen)
+		mip->mi_end = mip->mi_word + wlen;
+
+	    if (res == SP_OK)
+		break;
 	}
 
 	if (res == SP_OK)
 	    break;
     }
+}
+
+/*
+ * Check if the word at "mip->mi_word" has a matching prefix.
+ * If it does, then check the following word.
+ *
+ * For a match mip->mi_result is updated.
+ */
+    static void
+find_prefix(mip)
+    matchinf_T	*mip;
+{
+    idx_T	arridx = 0;
+    int		len;
+    int		wlen = 0;
+    int		flen;
+    int		c;
+    char_u	*ptr;
+    idx_T	lo, hi, m;
+    slang_T	*slang = mip->mi_lp->lp_slang;
+    char_u	*byts;
+    idx_T	*idxs;
+
+    /* We use the case-folded word here, since prefixes are always
+     * case-folded. */
+    ptr = mip->mi_fword;
+    flen = mip->mi_fwordlen;    /* available case-folded bytes */
+    byts = slang->sl_pbyts;
+    idxs = slang->sl_pidxs;
+
+    if (byts == NULL)
+	return;			/* array is empty */
+
+    /*
+     * Repeat advancing in the tree until:
+     * - there is a byte that doesn't match,
+     * - we reach the end of the tree,
+     * - or we reach the end of the line.
+     */
+    for (;;)
+    {
+	if (flen == 0 && *mip->mi_fend != NUL)
+	    flen = fold_more(mip);
+
+	len = byts[arridx++];
+
+	/* If the first possible byte is a zero the prefix could end here.
+	 * Check if the following word matches and supports the prefix. */
+	if (byts[arridx] == 0)
+	{
+	    /* There can be several prefixes with different conditions.  We
+	     * try them all, since we don't know which one will give the
+	     * longest match.  The word is the same each time, pass the list
+	     * of possible prefixes to find_word(). */
+	    mip->mi_prefarridx = arridx;
+	    mip->mi_prefcnt = len;
+	    while (len > 0 && byts[arridx] == 0)
+	    {
+		++arridx;
+		--len;
+	    }
+	    mip->mi_prefcnt -= len;
+
+	    /* Find the word that comes after the prefix. */
+	    mip->mi_prefixlen = wlen;
+	    find_word(mip, FIND_PREFIX);
+
+
+	    if (len == 0)
+		break;	    /* no children, word must end here */
+	}
+
+	/* Stop looking at end of the line. */
+	if (ptr[wlen] == NUL)
+	    break;
+
+	/* Perform a binary search in the list of accepted bytes. */
+	c = ptr[wlen];
+	lo = arridx;
+	hi = arridx + len - 1;
+	while (lo < hi)
+	{
+	    m = (lo + hi) / 2;
+	    if (byts[m] > c)
+		hi = m - 1;
+	    else if (byts[m] < c)
+		lo = m + 1;
+	    else
+	    {
+		lo = hi = m;
+		break;
+	    }
+	}
+
+	/* Stop if there is no matching byte. */
+	if (hi < lo || byts[lo] != c)
+	    break;
+
+	/* Continue at the child (if there is one). */
+	arridx = idxs[lo];
+	++wlen;
+	--flen;
+    }
+}
+
+/*
+ * Need to fold at least one more character.  Do until next non-word character
+ * for efficiency.
+ * Return the length of the folded chars in bytes.
+ */
+    static int
+fold_more(mip)
+    matchinf_T	*mip;
+{
+    int		flen;
+    char_u	*p;
+
+    p = mip->mi_fend;
+    do
+    {
+	mb_ptr_adv(mip->mi_fend);
+    } while (*mip->mi_fend != NUL && SPELL_ISWORDP(mip->mi_fend));
+
+    /* Include the non-word character so that we can check for the
+     * word end. */
+    if (*mip->mi_fend != NUL)
+	mb_ptr_adv(mip->mi_fend);
+
+    (void)spell_casefold(p, (int)(mip->mi_fend - p),
+			     mip->mi_fword + mip->mi_fwordlen,
+			     MAXWLEN - mip->mi_fwordlen);
+    flen = STRLEN(mip->mi_fword + mip->mi_fwordlen);
+    mip->mi_fwordlen += flen;
+    return flen;
 }
 
 /*
@@ -1137,18 +1363,24 @@ slang_free(lp)
 slang_clear(lp)
     slang_T	*lp;
 {
-    garray_T	    *gap;
-    fromto_T	    *ftp;
-    int		    round;
+    garray_T	*gap;
+    fromto_T	*ftp;
+    int		round;
+    int		i;
 
     vim_free(lp->sl_fbyts);
     lp->sl_fbyts = NULL;
     vim_free(lp->sl_kbyts);
     lp->sl_kbyts = NULL;
+    vim_free(lp->sl_pbyts);
+    lp->sl_pbyts = NULL;
+
     vim_free(lp->sl_fidxs);
     lp->sl_fidxs = NULL;
     vim_free(lp->sl_kidxs);
     lp->sl_kidxs = NULL;
+    vim_free(lp->sl_pidxs);
+    lp->sl_pidxs = NULL;
 
     for (round = 1; round <= 2; ++round)
     {
@@ -1161,6 +1393,10 @@ slang_clear(lp)
 	}
 	ga_clear(gap);
     }
+
+    for (i = 0; i < lp->sl_prefixcnt; ++i)
+	vim_free(lp->sl_prefprog[i]);
+    vim_free(lp->sl_prefprog);
 
 #ifdef FEAT_MBYTE
     {
@@ -1210,7 +1446,10 @@ spell_load_file(fname, lang, old_lp, silent)
     FILE	*fd;
     char_u	buf[MAXWLEN + 1];
     char_u	*p;
+    char_u	*bp;
+    idx_T	*ip;
     int		i;
+    int		n;
     int		len;
     int		round;
     char_u	*save_sourcing_name = sourcing_name;
@@ -1265,8 +1504,12 @@ spell_load_file(fname, lang, old_lp, silent)
     sourcing_name = fname;
     sourcing_lnum = 0;
 
-    /* <HEADER>: <fileID> <regioncnt> <regionname> ...
-     *		 <charflagslen> <charflags>  <fcharslen> <fchars> */
+    /* <HEADER>: <fileID>
+     *		<regioncnt> <regionname> ...
+     *		<charflagslen> <charflags>
+     *		<fcharslen> <fchars>
+     *		<prefcondcnt> <prefcond> ...
+     */
     for (i = 0; i < VIMSPELLMAGICL; ++i)
 	buf[i] = getc(fd);				/* <fileID> */
     if (STRNCMP(buf, VIMSPELLMAGIC, VIMSPELLMAGICL) != 0)
@@ -1335,9 +1578,44 @@ formerr:
 	    goto formerr;
     }
 
+    /* <prefcondcnt> <prefcond> ... */
+    cnt = (getc(fd) << 8) + getc(fd);			/* <prefcondcnt> */
+    if (cnt > 0)
+    {
+	lp->sl_prefprog = (regprog_T **)alloc_clear(
+					 (unsigned)sizeof(regprog_T *) * cnt);
+	if (lp->sl_prefprog == NULL)
+	    goto endFAIL;
+	lp->sl_prefixcnt = cnt;
+
+	for (i = 0; i < cnt; ++i)
+	{
+	    /* <prefcond> : <condlen> <condstr> */
+	    n = getc(fd);				/* <condlen> */
+	    if (n < 0)
+		goto formerr;
+	    /* When <condlen> is zero we have an empty condition.  Otherwise
+	     * compile the regexp program used to check for the condition. */
+	    if (n > 0)
+	    {
+		p = buf;
+		while (n-- > 0)
+		    *p++ = getc(fd);			/* <condstr> */
+		*p = NUL;
+		lp->sl_prefprog[i] = vim_regcomp(buf, RE_MAGIC + RE_STRING);
+	    }
+	}
+    }
+
+
     /* <SUGGEST> : <repcount> <rep> ...
      *             <salflags> <salcount> <sal> ...
      *             <maplen> <mapstr> */
+
+    /*
+     * round 1: rep items
+     * round 2: sal items
+     */
     for (round = 1; round <= 2; ++round)
     {
 	if (round == 1)
@@ -1420,8 +1698,9 @@ formerr:
 
 
     /* round 1: <LWORDTREE>
-     * round 2: <KWORDTREE> */
-    for (round = 1; round <= 2; ++round)
+     * round 2: <KWORDTREE>
+     * round 3: <PREFIXTREE> */
+    for (round = 1; round <= 3; ++round)
     {
 	/* The tree size was computed when writing the file, so that we can
 	 * allocate it as one long block. <nodecount> */
@@ -1431,29 +1710,29 @@ formerr:
 	if (len > 0)
 	{
 	    /* Allocate the byte array. */
-	    p = lalloc((long_u)len, TRUE);
-	    if (p == NULL)
+	    bp = lalloc((long_u)len, TRUE);
+	    if (bp == NULL)
 		goto endFAIL;
 	    if (round == 1)
-		lp->sl_fbyts = p;
+		lp->sl_fbyts = bp;
+	    else if (round == 2)
+		lp->sl_kbyts = bp;
 	    else
-		lp->sl_kbyts = p;
+		lp->sl_pbyts = bp;
 
 	    /* Allocate the index array. */
-	    p = lalloc_clear((long_u)(len * sizeof(int)), TRUE);
-	    if (p == NULL)
+	    ip = (idx_T *)lalloc_clear((long_u)(len * sizeof(int)), TRUE);
+	    if (ip == NULL)
 		goto endFAIL;
 	    if (round == 1)
-		lp->sl_fidxs = (idx_T *)p;
+		lp->sl_fidxs = ip;
+	    else if (round == 2)
+		lp->sl_kidxs = ip;
 	    else
-		lp->sl_kidxs = (idx_T *)p;
-
+		lp->sl_pidxs = ip;
 
 	    /* Read the tree and store it in the array. */
-	    idx = read_tree(fd,
-			round == 1 ? lp->sl_fbyts : lp->sl_kbyts,
-			round == 1 ? lp->sl_fidxs : lp->sl_kidxs,
-			len, 0);
+	    idx = read_tree(fd, bp, ip, len, 0, round == 3, lp->sl_prefixcnt);
 	    if (idx == -1)
 		goto truncerr;
 	    if (idx < 0)
@@ -1500,12 +1779,14 @@ endOK:
  * Returns -2 if there is a format error.
  */
     static idx_T
-read_tree(fd, byts, idxs, maxidx, startidx)
+read_tree(fd, byts, idxs, maxidx, startidx, prefixtree, maxprefcondnr)
     FILE	*fd;
     char_u	*byts;
     idx_T	*idxs;
     int		maxidx;		    /* size of arrays */
     idx_T	startidx;	    /* current index in "byts" and "idxs" */
+    int		prefixtree;	    /* TRUE for reading PREFIXTREE */
+    int		maxprefcondnr;	    /* maximum for <prefcondnr> */
 {
     int		len;
     int		i;
@@ -1538,10 +1819,29 @@ read_tree(fd, byts, idxs, maxidx, startidx)
 	    }
 	    else if (c == BY_FLAGS)
 	    {
-		/* Read flags and option region. */
-		c = getc(fd);				/* <flags> */
-		if (c & WF_REGION)
-		    c = (getc(fd) << 8) + c;		/* <region> */
+		if (prefixtree)
+		{
+		    /* Read the prefix ID and the condition nr.  In idxs[]
+		     * store the prefix ID in the low byte, the condition
+		     * index shifted up 8 bits. */
+		    c = getc(fd);			/* <prefixID> */
+		    n = (getc(fd) << 8) + getc(fd);	/* <prefcondnr> */
+		    if (n >= maxprefcondnr)
+			return -2;
+		    c = (n << 8) + c;
+		}
+		else
+		{
+		    /* Read flags and optional region and prefix ID.  In
+		     * idxs[] the flags go in the low byte, region above that
+		     * and prefix ID above the region. */
+		    c = getc(fd);			/* <flags> */
+		    if (c & WF_REGION)
+			c = (getc(fd) << 8) + c;	/* <region> */
+		    if (c & WF_PFX)
+			c = (getc(fd) << 16) + c;	/* <prefixID> */
+		}
+
 		idxs[idx] = c;
 		c = 0;
 	    }
@@ -1569,7 +1869,8 @@ read_tree(fd, byts, idxs, maxidx, startidx)
 	    else
 	    {
 		idxs[startidx + i] = idx;
-		idx = read_tree(fd, byts, idxs, maxidx, idx);
+		idx = read_tree(fd, byts, idxs, maxidx, idx,
+						     prefixtree, maxprefcondnr);
 		if (idx < 0)
 		    break;
 	    }
@@ -1890,6 +2191,7 @@ typedef struct afffile_S
     char_u	*af_enc;	/* "SET", normalized, alloc'ed string or NULL */
     int		af_rar;		/* RAR ID for rare word */
     int		af_kep;		/* KEP ID for keep-case word */
+    int		af_pfxpostpone;	/* postpone prefixes without chop string */
     hashtab_T	af_pref;	/* hashtable for prefixes, affheader_T */
     hashtab_T	af_suff;	/* hashtable for suffixes, affheader_T */
 } afffile_T;
@@ -1909,6 +2211,7 @@ struct affentry_S
 typedef struct affheader_S
 {
     char_u	ah_key[2];	/* key for hashtable == name of affix entry */
+    int		ah_newID;	/* prefix ID after renumbering */
     int		ah_combine;	/* suffix may combine with prefix */
     affentry_T	*ah_first;	/* first affix entry */
 } affheader_T;
@@ -1945,7 +2248,9 @@ struct wordnode_S
 				   round) */
     char_u	wn_byte;	/* Byte for this node. NUL for word end */
     char_u	wn_flags;	/* when wn_byte is NUL: WF_ flags */
-    char_u	wn_region;	/* when wn_byte is NUL: region mask */
+    short	wn_region;	/* when wn_byte is NUL: region mask; for
+				   PREFIXTREE it's the prefcondnr */
+    char_u	wn_prefixID;	/* supported/required prefix ID or 0 */
 };
 
 #define HI2WN(hi)    (wordnode_T *)((hi)->hi_key)
@@ -1959,6 +2264,7 @@ typedef struct spellinfo_S
     long	si_foldwcount;	/* nr of words in si_foldroot */
     wordnode_T	*si_keeproot;	/* tree with keep-case words */
     long	si_keepwcount;	/* nr of words in si_keeproot */
+    wordnode_T	*si_prefroot;	/* tree with postponed prefixes */
     sblock_T	*si_blocks;	/* memory blocks used */
     int		si_ascii;	/* handling only ASCII words */
     int		si_add;		/* addition file */
@@ -1976,27 +2282,32 @@ typedef struct spellinfo_S
     int		si_collapse;	/* soundsalike: ? */
     int		si_rem_accents;	/* soundsalike: remove accents */
     garray_T	si_map;		/* MAP info concatenated */
+    garray_T	si_prefcond;	/* table with conditions for postponed
+				 * prefixes, each stored as a string */
+    int		si_newID;	/* current value for ah_newID */
 } spellinfo_T;
 
 static afffile_T *spell_read_aff __ARGS((char_u *fname, spellinfo_T *spin));
+static int str_equal __ARGS((char_u *s1, char_u	*s2));
 static void add_fromto __ARGS((spellinfo_T *spin, garray_T *gap, char_u	*from, char_u *to));
 static int sal_to_bool __ARGS((char_u *s));
 static int has_non_ascii __ARGS((char_u *s));
 static void spell_free_aff __ARGS((afffile_T *aff));
 static int spell_read_dic __ARGS((char_u *fname, spellinfo_T *spin, afffile_T *affile));
-static int store_aff_word __ARGS((char_u *word, spellinfo_T *spin, char_u *afflist, hashtab_T *ht, hashtab_T *xht, int comb, int flags));
+static char_u *get_pfxlist __ARGS((afffile_T *affile, char_u *afflist, sblock_T	**blp));
+static int store_aff_word __ARGS((char_u *word, spellinfo_T *spin, char_u *afflist, afffile_T *affile, hashtab_T *ht, hashtab_T *xht, int comb, int flags, char_u *pfxlist));
 static int spell_read_wordfile __ARGS((char_u *fname, spellinfo_T *spin));
 static void *getroom __ARGS((sblock_T **blp, size_t len));
 static char_u *getroom_save __ARGS((sblock_T **blp, char_u *s));
 static void free_blocks __ARGS((sblock_T *bl));
 static wordnode_T *wordtree_alloc __ARGS((sblock_T **blp));
-static int store_word __ARGS((char_u *word, spellinfo_T *spin, int flags, int region));
-static int tree_add_word __ARGS((char_u *word, wordnode_T *tree, int flags, int region, sblock_T **blp));
+static int store_word __ARGS((char_u *word, spellinfo_T *spin, int flags, int region, char_u *pfxlist));
+static int tree_add_word __ARGS((char_u *word, wordnode_T *tree, int flags, int region, int prefixID, sblock_T **blp));
 static void wordtree_compress __ARGS((wordnode_T *root, spellinfo_T *spin));
 static int node_compress __ARGS((wordnode_T *node, hashtab_T *ht, int *tot));
 static int node_equal __ARGS((wordnode_T *n1, wordnode_T *n2));
 static void write_vim_spell __ARGS((char_u *fname, spellinfo_T *spin));
-static int put_tree __ARGS((FILE *fd, wordnode_T *node, int index, int regionmask));
+static int put_tree __ARGS((FILE *fd, wordnode_T *node, int index, int regionmask, int prefixtree));
 static void mkspell __ARGS((int fcount, char_u **fnames, int ascii, int overwrite, int added_word));
 static void init_spellfile __ARGS((void));
 
@@ -2162,6 +2473,10 @@ spell_read_aff(fname, spin)
 		if (items[1][1] != NUL)
 		    smsg((char_u *)_(e_affname), fname, lnum, items[1]);
 	    }
+	    else if (STRCMP(items[0], "PFXPOSTPONE") == 0 && itemcnt == 1)
+	    {
+		aff->af_pfxpostpone = TRUE;
+	    }
 	    else if ((STRCMP(items[0], "PFX") == 0
 					      || STRCMP(items[0], "SFX") == 0)
 		    && aff_todo == 0
@@ -2178,7 +2493,7 @@ spell_read_aff(fname, spin)
 							 sizeof(affheader_T));
 		if (cur_aff == NULL)
 		    break;
-		cur_aff->ah_key[0] = *items[1];
+		cur_aff->ah_key[0] = *items[1];	/* TODO: multi-byte? */
 		cur_aff->ah_key[1] = NUL;
 		if (items[1][1] != NUL)
 		    smsg((char_u *)_(e_affname), fname, lnum, items[1]);
@@ -2187,8 +2502,15 @@ spell_read_aff(fname, spin)
 		else if (*items[2] != 'N')
 		    smsg((char_u *)_("Expected Y or N in %s line %d: %s"),
 						       fname, lnum, items[2]);
+
 		if (*items[0] == 'P')
+		{
 		    tp = &aff->af_pref;
+		    /* Use a new number in the .spl file later, to be able to
+		     * handle multiple .aff files. */
+		    if (aff->af_pfxpostpone)
+			cur_aff->ah_newID = spin->si_newID++;
+		}
 		else
 		    tp = &aff->af_suff;
 		aff_todo = atoi((char *)items[3]);
@@ -2250,6 +2572,42 @@ spell_read_aff(fname, spin)
 			    sprintf((char *)buf, "%s$", items[4]);
 			aff_entry->ae_prog = vim_regcomp(buf,
 							RE_MAGIC + RE_STRING);
+		    }
+
+		    /* For postponed prefixes we need an entry in si_prefcond
+		     * for the condition.  Use an existing one if possible. */
+		    if (*items[0] == 'P' && aff->af_pfxpostpone
+						&& aff_entry->ae_chop == NULL)
+		    {
+			int	idx;
+			char_u	**pp;
+
+			for (idx = spin->si_prefcond.ga_len - 1; idx >= 0;
+									--idx)
+			{
+			    p = ((char_u **)spin->si_prefcond.ga_data)[idx];
+			    if (str_equal(p, aff_entry->ae_cond))
+				break;
+			}
+			if (idx < 0 && ga_grow(&spin->si_prefcond, 1) == OK)
+			{
+			    /* Not found, add a new condition. */
+			    idx = spin->si_prefcond.ga_len++;
+			    pp = ((char_u **)spin->si_prefcond.ga_data) + idx;
+			    if (aff_entry->ae_cond == NULL)
+				*pp = NULL;
+			    else
+				*pp = getroom_save(&spin->si_blocks,
+							  aff_entry->ae_cond);
+			}
+
+			/* Add the prefix to the prefix tree. */
+			if (aff_entry->ae_add == NULL)
+			    p = (char_u *)"";
+			else
+			    p = aff_entry->ae_add;
+			tree_add_word(p, spin->si_prefroot, -1, idx,
+					 cur_aff->ah_newID, &spin->si_blocks);
 		    }
 		}
 	    }
@@ -2365,6 +2723,20 @@ spell_read_aff(fname, spin)
 }
 
 /*
+ * Return TRUE if strings "s1" and "s2" are equal.  Also consider both being
+ * NULL as equal.
+ */
+    static int
+str_equal(s1, s2)
+    char_u	*s1;
+    char_u	*s2;
+{
+    if (s1 == NULL || s2 == NULL)
+	return s1 == s2;
+    return STRCMP(s1, s2) == 0;
+}
+
+/*
  * Add a from-to item to "gap".  Used for REP and SAL items.
  * They are stored case-folded.
  */
@@ -2431,7 +2803,7 @@ spell_free_aff(aff)
 
     vim_free(aff->af_enc);
 
-    /* All this trouble to foree the "ae_prog" items... */
+    /* All this trouble to free the "ae_prog" items... */
     for (ht = &aff->af_pref; ; ht = &aff->af_suff)
     {
 	todo = ht->ht_used;
@@ -2466,6 +2838,7 @@ spell_read_dic(fname, spin, affile)
     hashtab_T	ht;
     char_u	line[MAXLINELEN];
     char_u	*afflist;
+    char_u	*pfxlist;
     char_u	*dw;
     char_u	*pc;
     char_u	*w;
@@ -2529,20 +2902,6 @@ spell_read_dic(fname, spin, affile)
 	    continue;	/* empty line */
 	line[l] = NUL;
 
-	/* This takes time, print a message now and then. */
-	if (spin->si_verbose && (lnum & 0x3ff) == 0)
-	{
-	    vim_snprintf((char *)message, sizeof(message),
-		    _("line %6d, word %6d - %s"),
-		       lnum, spin->si_foldwcount + spin->si_keepwcount, line);
-	    msg_start();
-	    msg_outtrans_attr(message, 0);
-	    msg_clr_eos();
-	    msg_didout = FALSE;
-	    msg_col = 0;
-	    out_flush();
-	}
-
 	/* Find the optional affix names. */
 	afflist = vim_strchr(line, '/');
 	if (afflist != NULL)
@@ -2575,6 +2934,20 @@ spell_read_dic(fname, spin, affile)
 	    w = line;
 	}
 
+	/* This takes time, print a message now and then. */
+	if (spin->si_verbose && (lnum & 0x3ff) == 0)
+	{
+	    vim_snprintf((char *)message, sizeof(message),
+		    _("line %6d, word %6d - %s"),
+		       lnum, spin->si_foldwcount + spin->si_keepwcount, w);
+	    msg_start();
+	    msg_puts_long_attr(message, 0);
+	    msg_clr_eos();
+	    msg_didout = FALSE;
+	    msg_col = 0;
+	    out_flush();
+	}
+
 	/* Store the word in the hashtable to be able to find duplicates. */
 	dw = (char_u *)getroom_save(&spin->si_blocks, w);
 	if (dw == NULL)
@@ -2587,11 +2960,12 @@ spell_read_dic(fname, spin, affile)
 	hi = hash_lookup(&ht, dw, hash);
 	if (!HASHITEM_EMPTY(hi))
 	    smsg((char_u *)_("Duplicate word in %s line %d: %s"),
-							   fname, lnum, line);
+							      fname, lnum, w);
 	else
 	    hash_add_item(&ht, hi, dw, hash);
 
 	flags = 0;
+	pfxlist = NULL;
 	if (afflist != NULL)
 	{
 	    /* Check for affix name that stands for keep-case word and stands
@@ -2602,24 +2976,29 @@ spell_read_dic(fname, spin, affile)
 	    if (affile->af_rar != NUL
 		    && vim_strchr(afflist, affile->af_rar) != NULL)
 		flags |= WF_RARE;
+
+	    if (affile->af_pfxpostpone)
+		/* Need to store the list of prefix IDs with the word. */
+		pfxlist = get_pfxlist(affile, afflist, &spin->si_blocks);
 	}
 
 	/* Add the word to the word tree(s). */
-	if (store_word(dw, spin, flags, spin->si_region) == FAIL)
+	if (store_word(dw, spin, flags, spin->si_region, pfxlist) == FAIL)
 	    retval = FAIL;
 
 	if (afflist != NULL)
 	{
 	    /* Find all matching suffixes and add the resulting words.
 	     * Additionally do matching prefixes that combine. */
-	    if (store_aff_word(dw, spin, afflist,
+	    if (store_aff_word(dw, spin, afflist, affile,
 			   &affile->af_suff, &affile->af_pref,
-							FALSE, flags) == FAIL)
+					       FALSE, flags, pfxlist) == FAIL)
 		retval = FAIL;
 
 	    /* Find all matching prefixes and add the resulting words. */
-	    if (store_aff_word(dw, spin, afflist,
-				&affile->af_pref, NULL, FALSE, flags) == FAIL)
+	    if (store_aff_word(dw, spin, afflist, affile,
+			  &affile->af_pref, NULL,
+					       FALSE, flags, pfxlist) == FAIL)
 		retval = FAIL;
 	}
     }
@@ -2634,6 +3013,55 @@ spell_read_dic(fname, spin, affile)
 }
 
 /*
+ * Get the list of prefix IDs from the affix list "afflist".
+ * Used for PFXPOSTPONE.
+ * Returns a string allocated with getroom(). NULL when there are no prefixes
+ * or when out of memory.
+ */
+    static char_u *
+get_pfxlist(affile, afflist, blp)
+    afffile_T	*affile;
+    char_u	*afflist;
+    sblock_T	**blp;
+{
+    char_u	*p;
+    int		cnt;
+    int		round;
+    char_u	*res = NULL;
+    char_u	key[2];
+    hashitem_T	*hi;
+
+    key[1] = NUL;
+
+    /* round 1: count the number of prefix IDs.
+     * round 2: move prefix IDs to "res" */
+    for (round = 1; round <= 2; ++round)
+    {
+	cnt = 0;
+	for (p = afflist; *p != NUL; ++p)
+	{
+	    key[0] = *p;
+	    hi = hash_find(&affile->af_pref, key);
+	    if (!HASHITEM_EMPTY(hi))
+	    {
+		/* This is a prefix ID, use the new number. */
+		if (round == 2)
+		    res[cnt] = HI2AH(hi)->ah_newID;
+		++cnt;
+	    }
+	}
+	if (round == 1 && cnt > 0)
+	    res = getroom(blp, cnt + 1);
+	if (res == NULL)
+	    break;
+    }
+
+    if (res != NULL)
+	res[cnt] = NUL;
+    return res;
+}
+
+/*
  * Apply affixes to a word and store the resulting words.
  * "ht" is the hashtable with affentry_T that need to be applied, either
  * prefixes or suffixes.
@@ -2643,14 +3071,16 @@ spell_read_dic(fname, spin, affile)
  * Returns FAIL when out of memory.
  */
     static int
-store_aff_word(word, spin, afflist, ht, xht, comb, flags)
+store_aff_word(word, spin, afflist, affile, ht, xht, comb, flags, pfxlist)
     char_u	*word;		/* basic word start */
     spellinfo_T	*spin;		/* spell info */
     char_u	*afflist;	/* list of names of supported affixes */
+    afffile_T	*affile;
     hashtab_T	*ht;
     hashtab_T	*xht;
     int		comb;		/* only use affixes that combine */
     int		flags;		/* flags for the word */
+    char_u	*pfxlist;	/* list of prefix IDs */
 {
     int		todo;
     hashitem_T	*hi;
@@ -2680,11 +3110,15 @@ store_aff_word(word, spin, afflist, ht, xht, comb, flags)
 		{
 		    /* Check the condition.  It's not logical to match case
 		     * here, but it is required for compatibility with
-		     * Myspell. */
+		     * Myspell.
+		     * For prefixes, when "PFXPOSTPONE" was used, only do
+		     * prefixes with a chop string. */
 		    regmatch.regprog = ae->ae_prog;
 		    regmatch.rm_ic = FALSE;
-		    if (ae->ae_prog == NULL
-				  || vim_regexec(&regmatch, word, (colnr_T)0))
+		    if ((xht != NULL || !affile->af_pfxpostpone
+				|| ae->ae_chop != NULL)
+			    && (ae->ae_prog == NULL
+				|| vim_regexec(&regmatch, word, (colnr_T)0)))
 		    {
 			/* Match.  Remove the chop and add the affix. */
 			if (xht == NULL)
@@ -2735,14 +3169,14 @@ store_aff_word(word, spin, afflist, ht, xht, comb, flags)
 
 			/* Store the modified word. */
 			if (store_word(newword, spin,
-					      flags, spin->si_region) == FAIL)
+				     flags, spin->si_region, pfxlist) == FAIL)
 			    retval = FAIL;
 
 			/* When added a suffix and combining is allowed also
 			 * try adding prefixes additionally. */
 			if (xht != NULL && ah->ah_combine)
-			    if (store_aff_word(newword, spin, afflist,
-					      xht, NULL, TRUE, flags) == FAIL)
+			    if (store_aff_word(newword, spin, afflist, affile,
+				     xht, NULL, TRUE, flags, pfxlist) == FAIL)
 				retval = FAIL;
 		    }
 		}
@@ -2945,7 +3379,7 @@ spell_read_wordfile(fname, spin)
 	}
 
 	/* Normal word: store it. */
-	if (store_word(line, spin, flags, regionmask) == FAIL)
+	if (store_word(line, spin, flags, regionmask, NULL) == FAIL)
 	{
 	    retval = FAIL;
 	    break;
@@ -3048,28 +3482,41 @@ wordtree_alloc(blp)
  * Always store it in the case-folded tree.  A keep-case word can also be used
  * with all caps.
  * For a keep-case word also store it in the keep-case tree.
+ * When "pfxlist" is not NULL store the word for each prefix ID.
  */
     static int
-store_word(word, spin, flags, region)
+store_word(word, spin, flags, region, pfxlist)
     char_u	*word;
     spellinfo_T	*spin;
     int		flags;		/* extra flags, WF_BANNED */
     int		region;		/* supported region(s) */
+    char_u	*pfxlist;	/* list of prefix IDs or NULL */
 {
     int		len = STRLEN(word);
     int		ct = captype(word, word + len);
     char_u	foldword[MAXWLEN];
-    int		res;
+    int		res = OK;
+    char_u	*p;
 
     (void)spell_casefold(word, len, foldword, MAXWLEN);
-    res = tree_add_word(foldword, spin->si_foldroot, ct | flags,
-						region, &spin->si_blocks);
+    for (p = pfxlist; res == OK; ++p)
+    {
+	res = tree_add_word(foldword, spin->si_foldroot, ct | flags,
+				region, p == NULL ? 0 : *p, &spin->si_blocks);
+	if (p == NULL || *p == NUL)
+	    break;
+    }
     ++spin->si_foldwcount;
 
     if (res == OK && (ct == WF_KEEPCAP || flags & WF_KEEPCAP))
     {
-	res = tree_add_word(word, spin->si_keeproot, flags,
-						    region, &spin->si_blocks);
+	for (p = pfxlist; res == OK; ++p)
+	{
+	    res = tree_add_word(word, spin->si_keeproot, flags,
+				region, p == NULL ? 0 : *p, &spin->si_blocks);
+	    if (p == NULL || *p == NUL)
+		break;
+	}
 	++spin->si_keepwcount;
     }
     return res;
@@ -3077,14 +3524,17 @@ store_word(word, spin, flags, region)
 
 /*
  * Add word "word" to a word tree at "root".
+ * When "flags" is -1 we are adding to the prefix tree where flags don't
+ * matter and "region" is the condition nr.
  * Returns FAIL when out of memory.
  */
     static int
-tree_add_word(word, root, flags, region, blp)
+tree_add_word(word, root, flags, region, prefixID, blp)
     char_u	*word;
     wordnode_T	*root;
     int		flags;
     int		region;
+    int		prefixID;
     sblock_T	**blp;
 {
     wordnode_T	*node = root;
@@ -3097,16 +3547,27 @@ tree_add_word(word, root, flags, region, blp)
     {
 	/* Look for the sibling that has the same character.  They are sorted
 	 * on byte value, thus stop searching when a sibling is found with a
-	 * higher byte value.  For zero bytes (end of word) check that the
-	 * flags are equal, there is a separate zero byte for each flag value.
+	 * higher byte value.  For zero bytes (end of word) the sorting is
+	 * done on flags and then on prefixID
 	 */
-	while (node != NULL && (node->wn_byte < word[i]
-		 || (node->wn_byte == 0 && node->wn_flags != (flags & 0xff))))
+	while (node != NULL
+		&& (node->wn_byte < word[i]
+		    || (node->wn_byte == NUL
+			&& (flags < 0
+			    ? node->wn_prefixID < prefixID
+			    : node->wn_flags < (flags & 0xff)
+				|| (node->wn_flags == (flags & 0xff)
+				    && node->wn_prefixID < prefixID)))))
 	{
 	    prev = &node->wn_sibling;
 	    node = *prev;
 	}
-	if (node == NULL || node->wn_byte != word[i])
+	if (node == NULL
+		|| node->wn_byte != word[i]
+		|| (word[i] == NUL
+		    && (flags < 0
+			|| node->wn_flags != (flags & 0xff)
+			|| node->wn_prefixID != prefixID)))
 	{
 	    /* Allocate a new node. */
 	    np = (wordnode_T *)getroom(blp, sizeof(wordnode_T));
@@ -3122,6 +3583,7 @@ tree_add_word(word, root, flags, region, blp)
 	{
 	    node->wn_flags = flags;
 	    node->wn_region |= region;
+	    node->wn_prefixID = prefixID;
 	    break;
 	}
 	prev = &node->wn_child;
@@ -3240,8 +3702,8 @@ node_compress(node, ht, tot)
     for (np = node; np != NULL; np = np->wn_sibling)
     {
 	if (np->wn_byte == NUL)
-	    /* end node: only use wn_flags and wn_region */
-	    n = np->wn_flags + (np->wn_region << 8);
+	    /* end node: use wn_flags, wn_region and wn_prefixID */
+	    n = np->wn_flags + (np->wn_region << 8) + (np->wn_prefixID << 16);
 	else
 	    /* byte node: use the byte value and the child pointer */
 	    n = np->wn_byte + ((long_u)np->wn_child << 8);
@@ -3278,7 +3740,8 @@ node_equal(n1, n2)
 	if (p1->wn_byte != p2->wn_byte
 		|| (p1->wn_byte == NUL
 		    ? (p1->wn_flags != p2->wn_flags
-					    || p1->wn_region != p2->wn_region)
+			|| p1->wn_region != p2->wn_region
+			|| p1->wn_prefixID != p2->wn_prefixID)
 		    : (p1->wn_child != p2->wn_child)))
 	    break;
 
@@ -3351,7 +3814,9 @@ write_vim_spell(fname, spin)
     }
 
     /* <HEADER>: <fileID> <regioncnt> <regionname> ...
-     *		 <charflagslen> <charflags> <fcharslen> <fchars> */
+     *		 <charflagslen> <charflags>
+     *		 <fcharslen> <fchars>
+     *		 <prefcondcnt> <prefcond> ... */
 
 							    /* <fileID> */
     if (fwrite(VIMSPELLMAGIC, VIMSPELLMAGICL, (size_t)1, fd) != 1)
@@ -3387,6 +3852,9 @@ write_vim_spell(fname, spin)
     }
     else
 	write_spell_chartab(fd);
+
+    /* Write the prefix conditions. */
+    write_spell_prefcond(fd, &spin->si_prefcond);
 
     /* Sort the REP items. */
     qsort(spin->si_rep.ga_data, (size_t)spin->si_rep.ga_len,
@@ -3435,24 +3903,29 @@ write_vim_spell(fname, spin)
 							       (size_t)1, fd);
 
     /*
-     * <LWORDTREE>  <KWORDTREE>
+     * <LWORDTREE>  <KWORDTREE>  <PREFIXTREE>
      */
     spin->si_memtot = 0;
-    for (round = 1; round <= 2; ++round)
+    for (round = 1; round <= 3; ++round)
     {
-	tree = (round == 1) ? spin->si_foldroot : spin->si_keeproot;
+	if (round == 1)
+	    tree = spin->si_foldroot;
+	else if (round == 2)
+	    tree = spin->si_keeproot;
+	else
+	    tree = spin->si_prefroot;
 
 	/* Count the number of nodes.  Needed to be able to allocate the
 	 * memory when reading the nodes.  Also fills in the index for shared
 	 * nodes. */
-	nodecount = put_tree(NULL, tree, 0, regionmask);
+	nodecount = put_tree(NULL, tree, 0, regionmask, round == 3);
 
 	/* number of nodes in 4 bytes */
 	put_bytes(fd, (long_u)nodecount, 4);	/* <nodecount> */
 	spin->si_memtot += nodecount + nodecount * sizeof(int);
 
 	/* Write the nodes. */
-	(void)put_tree(fd, tree, 0, regionmask);
+	(void)put_tree(fd, tree, 0, regionmask, round == 3);
     }
 
     fclose(fd);
@@ -3471,11 +3944,12 @@ write_vim_spell(fname, spin)
  * Returns the number of nodes used.
  */
     static int
-put_tree(fd, node, index, regionmask)
-    FILE	*fd;	    /* NULL when only counting */
+put_tree(fd, node, index, regionmask, prefixtree)
+    FILE	*fd;		/* NULL when only counting */
     wordnode_T	*node;
     int		index;
     int		regionmask;
+    int		prefixtree;	/* TRUE for PREFIXTREE */
 {
     int		newindex = index;
     int		siblingcount = 0;
@@ -3504,22 +3978,37 @@ put_tree(fd, node, index, regionmask)
 	{
 	    if (fd != NULL)
 	    {
-		/* For a NUL byte (end of word) instead of the byte itself
-		 * we write the flag/region items. */
-		flags = np->wn_flags;
-		if (regionmask != 0 && np->wn_region != regionmask)
-		    flags |= WF_REGION;
-		if (flags == 0)
+		/* For a NUL byte (end of word) write the flags etc. */
+		if (prefixtree)
 		{
-		    /* word without flags or region */
-		    putc(BY_NOFLAGS, fd);		/* <byte> */
+		    /* In PREFIXTREE write the required prefixID and the
+		     * associated condition nr (stored in wn_region). */
+		    putc(BY_FLAGS, fd);			/* <byte> */
+		    putc(np->wn_prefixID, fd);		/* <prefixID> */
+		    put_bytes(fd, (long_u)np->wn_region, 2); /* <prefcondnr> */
 		}
 		else
 		{
-		    putc(BY_FLAGS, fd);		/* <byte> */
-		    putc(flags, fd);		/* <flags> */
-		    if (flags & WF_REGION)
-			putc(np->wn_region, fd);	/* <regionmask> */
+		    /* For word trees we write the flag/region items. */
+		    flags = np->wn_flags;
+		    if (regionmask != 0 && np->wn_region != regionmask)
+			flags |= WF_REGION;
+		    if (np->wn_prefixID != 0)
+			flags |= WF_PFX;
+		    if (flags == 0)
+		    {
+			/* word without flags or region */
+			putc(BY_NOFLAGS, fd);			/* <byte> */
+		    }
+		    else
+		    {
+			putc(BY_FLAGS, fd);			/* <byte> */
+			putc(flags, fd);			/* <flags> */
+			if (flags & WF_REGION)
+			    putc(np->wn_region, fd);		/* <region> */
+			if (flags & WF_PFX)
+			    putc(np->wn_prefixID, fd);		/* <prefixID> */
+		    }
 		}
 	    }
 	}
@@ -3555,7 +4044,8 @@ put_tree(fd, node, index, regionmask)
     /* Recursively dump the children of each sibling. */
     for (np = node; np != NULL; np = np->wn_sibling)
 	if (np->wn_byte != 0 && np->wn_child->wn_wnode == node)
-	    newindex = put_tree(fd, np->wn_child, newindex, regionmask);
+	    newindex = put_tree(fd, np->wn_child, newindex, regionmask,
+								  prefixtree);
 
     return newindex;
 }
@@ -3622,6 +4112,7 @@ mkspell(fcount, fnames, ascii, overwrite, added_word)
     ga_init2(&spin.si_rep, (int)sizeof(fromto_T), 20);
     ga_init2(&spin.si_sal, (int)sizeof(fromto_T), 20);
     ga_init2(&spin.si_map, (int)sizeof(char_u), 100);
+    ga_init2(&spin.si_prefcond, (int)sizeof(char_u *), 50);
 
     /* default: fnames[0] is output file, following are input files */
     innames = &fnames[1];
@@ -3707,7 +4198,10 @@ mkspell(fcount, fnames, ascii, overwrite, added_word)
 
 	spin.si_foldroot = wordtree_alloc(&spin.si_blocks);
 	spin.si_keeproot = wordtree_alloc(&spin.si_blocks);
-	if (spin.si_foldroot == NULL || spin.si_keeproot == NULL)
+	spin.si_prefroot = wordtree_alloc(&spin.si_blocks);
+	if (spin.si_foldroot == NULL
+		|| spin.si_keeproot == NULL
+		|| spin.si_prefroot == NULL)
 	{
 	    error = TRUE;
 	    return;
@@ -3761,6 +4255,7 @@ mkspell(fcount, fnames, ascii, overwrite, added_word)
 	     */
 	    spin.si_foldroot = spin.si_foldroot->wn_sibling;
 	    spin.si_keeproot = spin.si_keeproot->wn_sibling;
+	    spin.si_prefroot = spin.si_prefroot->wn_sibling;
 
 	    /*
 	     * Combine tails in the tree.
@@ -3776,6 +4271,7 @@ mkspell(fcount, fnames, ascii, overwrite, added_word)
 	    }
 	    wordtree_compress(spin.si_foldroot, &spin);
 	    wordtree_compress(spin.si_keeproot, &spin);
+	    wordtree_compress(spin.si_prefroot, &spin);
 	}
 
 	if (!error)
@@ -3812,15 +4308,18 @@ mkspell(fcount, fnames, ascii, overwrite, added_word)
 	}
 
 	/* Free the allocated memory. */
-	free_blocks(spin.si_blocks);
 	ga_clear(&spin.si_rep);
 	ga_clear(&spin.si_sal);
 	ga_clear(&spin.si_map);
+	ga_clear(&spin.si_prefcond);
 
 	/* Free the .aff file structures. */
 	for (i = 0; i < incount; ++i)
 	    if (afile[i] != NULL)
 		spell_free_aff(afile[i]);
+
+	/* Free all the bits and pieces at once. */
+	free_blocks(spin.si_blocks);
     }
 }
 
@@ -4162,6 +4661,35 @@ set_spell_finish(new_st)
     }
 
     return OK;
+}
+
+/*
+ * Write the table with prefix conditions to the .spl file.
+ */
+    static void
+write_spell_prefcond(fd, gap)
+    FILE	*fd;
+    garray_T	*gap;
+{
+    int		i;
+    char_u	*p;
+    int		len;
+
+    put_bytes(fd, (long_u)gap->ga_len, 2);	    /* <prefcondcnt> */
+
+    for (i = 0; i < gap->ga_len; ++i)
+    {
+	/* <prefcond> : <condlen> <condstr> */
+	p = ((char_u **)gap->ga_data)[i];
+	if (p == NULL)
+	    fputc(0, fd);
+	else
+	{
+	    len = STRLEN(p);
+	    fputc(len, fd);
+	    fwrite(p, (size_t)len, (size_t)1, fd);
+	}
+    }
 }
 
 /*

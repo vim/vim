@@ -1644,19 +1644,6 @@ msg_puts_title(s)
     msg_puts_attr(s, hl_attr(HLF_T));
 }
 
-#if defined(FEAT_CSCOPE) || defined(PROTO)
-/*
- * if printing a string will exceed the screen width, print "..." in the
- * middle.
- */
-    void
-msg_puts_long(longstr)
-    char_u	*longstr;
-{
-    msg_puts_long_len_attr(longstr, (int)strlen((char *)longstr), 0);
-}
-#endif
-
 /*
  * Show a message in such a way that it always fits in the line.  Cut out a
  * part in the middle and replace it with "..." when necessary.
