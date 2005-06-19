@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 17
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,6 +29,9 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+Can define a function with illegal name (Servatius Brandt):
+    function F{-1}()
 
 Add extra list of file locations.  Can be used with:
     :ltag	      list of matching tags, like :tselect
@@ -97,7 +100,7 @@ PLANNED FOR VERSION 7.0:
 -   Add SPELLCHECKER, with support for many languages.
     - Spell checking code todo's:
 	- Code for making suggestions:
-	  - Hebrew runs out of memory.
+	  - Hebrew: also use prefixes for suggestions.
 	  - When 'spellfile' directory doesn't exist, ask user to create it?
 	  - Aspell has the "special" character, useful?
 	  - When putting map string in .spl file check for duplicate chars.
@@ -3072,6 +3075,8 @@ Writing files:
 
 
 Substitute:
+8   Substitute with hex/unicode number "\%xff" and "\%uabcd".  Just like
+    "\%uabcd" in search pattern.
 8   Make it easier to replace in all files in the argument list.  E.g.:
     ":argsub/oldword/newword/".  Works like ":argdo %s/oldword/newword/g|w".
 -   :s///p prints the line after a substitution.
