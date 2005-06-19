@@ -3,7 +3,7 @@
 SPELLDIR = ../../runtime/spell
 VIM	 = ../vim
 
-all: en
+all: en pl nl de fr
 	
 en: $(SPELLDIR)/en.latin1.spl \
 	$(SPELLDIR)/en.utf-8.spl \
@@ -20,6 +20,8 @@ de: $(SPELLDIR)/de.latin1.spl \
 
 fr: $(SPELLDIR)/fr.latin1.spl \
 	$(SPELLDIR)/fr.utf-8.spl
+
+he: $(SPELLDIR)/he.utf-8.spl
 
 diff:
 	-diff -a -C 1 en_US.orig.aff en_US.aff >en_US.diff
@@ -105,3 +107,8 @@ $(SPELLDIR)/fr.latin1.spl : $(VIM) \
 $(SPELLDIR)/fr.utf-8.spl : $(VIM) \
 			fr_FR.aff fr_FR.dic
 	env LANG=fr_FR.UTF-8 $(VIM) -e -c "mkspell! $(SPELLDIR)/fr fr_FR" -c q
+
+
+$(SPELLDIR)/he.utf-8.spl : $(VIM) \
+			he_IL.aff he_IL.dic
+	env LANG=he_IL.UTF-8 $(VIM) -e -c "mkspell! $(SPELLDIR)/he he_IL" -c q

@@ -6258,6 +6258,7 @@ spell-affix-KEP	spell.txt	/*spell-affix-KEP*
 spell-affix-LOW	spell.txt	/*spell-affix-LOW*
 spell-affix-MAP	spell.txt	/*spell-affix-MAP*
 spell-affix-PFX	spell.txt	/*spell-affix-PFX*
+spell-affix-PFXPOSTPONE	spell.txt	/*spell-affix-PFXPOSTPONE*
 spell-affix-RAR	spell.txt	/*spell-affix-RAR*
 spell-affix-REP	spell.txt	/*spell-affix-REP*
 spell-affix-SAL	spell.txt	/*spell-affix-SAL*

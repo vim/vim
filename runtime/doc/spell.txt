@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 17
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -224,6 +224,11 @@ find them here:
 	http://lingucomponent.openoffice.org/spell_dic.html
 You can also use a plain word list.
 
+Make sure your current locale is set properly, otherwise Vim doesn't know what
+characters are upper/lower case letters.  If the locale isn't available (e.g.,
+when using an MS-Windows codepage on Unix) add tables to the .aff file
+|spell-affix-chars|.
+
 :mksp[ell][!] [-ascii] {outname} {inname} ...		*:mksp* *:mkspell*
 			Generate a Vim spell file word lists.  Example: >
 		:mkspell nl nl_NL.words
@@ -429,6 +434,8 @@ something else, any encoding that "iconv" supports.  The "SET" line must
 specify the name of the encoding.  When using a multi-byte encoding it's
 possible to use more different affixes.
 
+
+CHARACTER TABLES
 							*spell-affix-chars*
 When using an 8-bit encoding the affix file should define what characters are
 word characters (as specified with ENC).  This is because the system where
@@ -439,9 +446,9 @@ won't work.  For example when using "cp1250" on Unix.
 					*spell-affix-LOW* *spell-affix-UPP*
 Three lines in the affix file are needed.  Simplistic example:
 
-	FOL  áëñáëñ ~
-	LOW  áëñáëñ ~
-	UPP  áëñÁËÑ ~
+	FOL  áëñ ~
+	LOW  áëñ ~
+	UPP  ÁËÑ ~
 
 All three lines must have exactly the same number of characters.
 
@@ -465,11 +472,30 @@ otherwise they can't be combined without errors.  The XX.ascii.spl spell file
 generated with the "-ascii" argument will not contain the table with
 characters, so that it can be combine with spell files for any encoding.
 
-					    *spell-affix-PFX* *spell-affix-SFX*
-The usual PFX (prefix) and SFX (suffix) lines are supported.  Note that
-Myspell ignores any extra text after the relevant info.  Vim requires this
-text to start with a "#" so that mistakes don't go unnoticed.
 
+AFFIXES
+					    *spell-affix-PFX* *spell-affix-SFX*
+The usual PFX (prefix) and SFX (suffix) lines are supported (see the Myspell
+documentation).  Note that Myspell ignores any extra text after the relevant
+info.  Vim requires this text to start with a "#" so that mistakes don't go
+unnoticed.  Example:
+
+	SFX F 0 in [^i]n      # Spion > Spionin  ~
+
+						    *spell-affix-PFXPOSTPONE*
+When an affix file has very many prefixes that apply to many words it's not
+possible to build the whole word list in memory.  This applies to Hebrew (a
+list with all words is over a Gbyte).  In that case applying prefixes must be
+postponed.  This makes spell checking slower.  It is indicated by this keyword
+in the .aff file:
+
+	PFXPOSTPONE ~
+
+Only prefixes without a chop string can be postponed, prefixes with a chop
+string will still be included in the word list.
+
+
+KEEP-CASE WORDS
 							*spell-affix-KEP*
 In the affix file a KEP line can be used to define the affix name used for
 keep-case words.  Example:
@@ -478,6 +504,8 @@ keep-case words.  Example:
 
 See above for an example |spell-affix-vim|.
 
+
+RARE WORDS
 							*spell-affix-RAR*
 In the affix file a RAR line can be used to define the affix name used for
 rare words.  Example:

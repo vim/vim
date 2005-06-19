@@ -1,6 +1,6 @@
 " Vim script language tests
 " Author:	Servatius Brandt <Servatius.Brandt@fujitsu-siemens.com>
-" Last Change:	2005 Jun 17
+" Last Change:	2005 Jun 18
 
 "-------------------------------------------------------------------------------
 " Test environment							    {{{1
@@ -8049,7 +8049,13 @@ if ExtraVim()
     function! ERRabort(n) abort
 	let g:taken = g:taken . "A" . a:n
 	asdf
-    endfunction	" returns -1
+    endfunction	" returns -1; may cause follow-up msg for illegal var/func name
+
+    function! WRAP(n, arg)
+	let g:taken = g:taken . "W" . a:n
+	let g:saved_errmsg = v:errmsg
+	return arg
+    endfunction
 
     function! INT(n)
 	let g:taken = g:taken . "I" . a:n
@@ -8068,10 +8074,14 @@ if ExtraVim()
 
     function! MSG(n)
 	let g:taken = g:taken . "M" . a:n
-	if (a:n >= 10 && a:n <= 27) ? v:errmsg != "" : v:errmsg !~ "asdf"
-	    let g:taken = g:taken . v:errmsg
+	let errmsg = (a:n >= 37 && a:n <= 44) ? g:saved_errmsg : v:errmsg
+	let msgptn = (a:n >= 10 && a:n <= 27) ? "^$" : "asdf"
+	if errmsg !~ msgptn
+	    let g:taken = g:taken . "x"
+	    Xout "Expr" a:n.": Unexpected message:" v:errmsg
 	endif
 	let v:errmsg = ""
+	let g:saved_errmsg = ""
     endfunction
 
     let v:errmsg = ""
@@ -8225,22 +8235,24 @@ if ExtraVim()
     let var = ERR(36) + CONT(36)
     call MSG(36)
 
-    let v{ERRabort(37) + CONT(37) . 'asdf'} = 0
+    let saved_errmsg = ""
+
+    let v{WRAP(37, ERRabort(37)) + CONT(37)} = 0
     call MSG(37)
-    let v{ERRabort(38) + CONT(38) . 'asdf'}
+    let v{WRAP(38, ERRabort(38)) + CONT(38)}
     call MSG(38)
-    let var = exists('v{ERRabort(39) + CONT(39)}')
+    let var = exists('v{WRAP(39, ERRabort(39)) + CONT(39)}')
     call MSG(39)
-    unlet v{ERRabort(40) + CONT(40) . 'asdf'}
+    unlet v{WRAP(40, ERRabort(40)) + CONT(40)}
     call MSG(40)
-    function F{ERRabort(41) + CONT(41)}()
+    function F{WRAP(41, ERRabort(41)) + CONT(41)}()
     endfunction
     call MSG(41)
-    function F{ERRabort(42) + CONT(42)}
+    function F{WRAP(42, ERRabort(42)) + CONT(42)}
     call MSG(42)
-    let var = exists('*F{ERRabort(43) + CONT(43)}')
+    let var = exists('*F{WRAP(43, ERRabort(43)) + CONT(43)}')
     call MSG(43)
-    delfunction F{ERRabort(44) + CONT(44)}
+    delfunction F{WRAP(44, ERRabort(44)) + CONT(44)}
     call MSG(44)
     let var = ERRabort(45) + CONT(45)
     call MSG(45)
@@ -8253,8 +8265,8 @@ if ExtraVim()
 	\ . "T19M19T20M20T21M21T22M22T23M23T24M24T25M25T26M26T27M27"
 	\ . "E28C28M28E29C29M29E30C30M30E31C31M31E32C32M32E33C33M33"
 	\ . "E34C34M34E35C35M35E36C36M36"
-	\ . "A37C37M37A38C38M38A39C39M39A40C40M40A41C41M41A42C42M42"
-	\ . "A43C43M43A44C44M44A45C45M45"
+	\ . "A37W37C37M37A38W38C38M38A39W39C39M39A40W40C40M40A41W41C41M41"
+	\ . "A42W42C42M42A43W43C43M43A44W44C44M44A45C45M45"
 
     if taken != expected
 	" The Xpath command does not accept 2^31 (negative); display explicitly:
@@ -8270,7 +8282,7 @@ if ExtraVim()
 	endif
     endif
 
-    unlet! var taken expected
+    unlet! v var saved_errmsg taken expected
     call delete(WA_t5)
     call delete(WA_t14)
     call delete(WA_t23)
