@@ -5130,6 +5130,7 @@ hebrew	hebrew.txt	/*hebrew*
 hebrew.txt	hebrew.txt	/*hebrew.txt*
 help	various.txt	/*help*
 help-context	help.txt	/*help-context*
+help-tags	tags	1
 help-translated	various.txt	/*help-translated*
 help-xterm-window	various.txt	/*help-xterm-window*
 help.txt	help.txt	/*help.txt*
@@ -6274,6 +6275,8 @@ spell-quickstart	spell.txt	/*spell-quickstart*
 spell-syntax	spell.txt	/*spell-syntax*
 spell-wordlist-format	spell.txt	/*spell-wordlist-format*
 spell.txt	spell.txt	/*spell.txt*
+spellbadword()	eval.txt	/*spellbadword()*
+spellsuggest()	eval.txt	/*spellsuggest()*
 split()	eval.txt	/*split()*
 splitfind	windows.txt	/*splitfind*
 splitview	windows.txt	/*splitview*

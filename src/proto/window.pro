@@ -31,6 +31,7 @@ void win_drag_vsep_line __ARGS((win_T *dragwin, int offset));
 void win_comp_scroll __ARGS((win_T *wp));
 void command_height __ARGS((long old_p_ch));
 void last_status __ARGS((int morewin));
+char_u *grab_file_name __ARGS((long count));
 char_u *file_name_at_cursor __ARGS((int options, long count));
 char_u *file_name_in_line __ARGS((char_u *line, int col, int options, long count, char_u *rel_fname));
 char_u *find_file_name_in_path __ARGS((char_u *ptr, int len, int options, long count, char_u *rel_fname));

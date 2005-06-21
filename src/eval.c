@@ -540,6 +540,8 @@ static void f_setreg __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_setwinvar __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_simplify __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_sort __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_spellbadword __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_spellsuggest __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_split __ARGS((typval_T *argvars, typval_T *rettv));
 #ifdef HAVE_STRFTIME
 static void f_strftime __ARGS((typval_T *argvars, typval_T *rettv));
@@ -6351,6 +6353,8 @@ static struct fst
     {"setwinvar",	3, 3, f_setwinvar},
     {"simplify",	1, 1, f_simplify},
     {"sort",		1, 2, f_sort},
+    {"spellbadword",	0, 0, f_spellbadword},
+    {"spellsuggest",	1, 2, f_spellsuggest},
     {"split",		1, 3, f_split},
 #ifdef HAVE_STRFTIME
     {"strftime",	1, 2, f_strftime},
@@ -13071,6 +13075,91 @@ f_sort(argvars, rettv)
     }
 }
 
+/*
+ * "spellbadword()" function
+ */
+/* ARGSUSED */
+    static void
+f_spellbadword(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    int		attr;
+    char_u	*ptr;
+    int		len;
+
+    rettv->vval.v_string = NULL;
+    rettv->v_type = VAR_STRING;
+
+#ifdef FEAT_SYN_HL
+    /* Find the start of the badly spelled word. */
+    if (spell_move_to(FORWARD, TRUE, TRUE) == FAIL)
+	return;
+
+    /* Get the length of the word and copy it. */
+    ptr = ml_get_cursor();
+    len = spell_check(curwin, ptr, &attr);
+    rettv->vval.v_string = vim_strnsave(ptr, len);
+#endif
+}
+
+/*
+ * "spellsuggest()" function
+ */
+    static void
+f_spellsuggest(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    char_u	*str;
+    int		maxcount;
+    garray_T	ga;
+    list_T	*l;
+    listitem_T	*li;
+    int		i;
+
+    l = list_alloc();
+    if (l == NULL)
+	return;
+    rettv->v_type = VAR_LIST;
+    rettv->vval.v_list = l;
+    ++l->lv_refcount;
+
+#ifdef FEAT_SYN_HL
+    if (curwin->w_p_spell && *curbuf->b_p_spl != NUL)
+    {
+	str = get_tv_string(&argvars[0]);
+	if (argvars[1].v_type != VAR_UNKNOWN)
+	{
+	    maxcount = get_tv_number(&argvars[1]);
+	    if (maxcount <= 0)
+		return;
+	}
+	else
+	    maxcount = 25;
+
+	spell_suggest_list(&ga, str, maxcount);
+
+	for (i = 0; i < ga.ga_len; ++i)
+	{
+	    str = ((char_u **)ga.ga_data)[i];
+
+	    li = listitem_alloc();
+	    if (li == NULL)
+		vim_free(str);
+	    else
+	    {
+		li->li_tv.v_type = VAR_STRING;
+		li->li_tv.v_lock = 0;
+		li->li_tv.vval.v_string = str;
+		list_append(l, li);
+	    }
+	}
+	ga_clear(&ga);
+    }
+#endif
+}
+
     static void
 f_split(argvars, rettv)
     typval_T	*argvars;
@@ -16002,7 +16091,7 @@ ex_function(eap)
      *		    "name" == NULL, "fudi.fd_dict" set,
      *		    "fudi.fd_di" == NULL, "fudi.fd_newkey" == func
      * dict.func    existing dict entry with a Funcref
-     *		    "name" == fname, "fudi.fd_dict" set,
+     *		    "name" == func, "fudi.fd_dict" set,
      *		    "fudi.fd_di" set, "fudi.fd_newkey" == NULL
      * dict.func    existing dict entry that's not a Funcref
      *		    "name" == NULL, "fudi.fd_dict" set,
@@ -16096,6 +16185,27 @@ ex_function(eap)
     ga_init2(&newargs, (int)sizeof(char_u *), 3);
     ga_init2(&newlines, (int)sizeof(char_u *), 3);
 
+    if (!eap->skip)
+    {
+	/* Check the name of the function. */
+	if (name != NULL)
+	    arg = name;
+	else
+	    arg = fudi.fd_newkey;
+	if (arg != NULL)
+	{
+	    if (*arg == K_SPECIAL)
+		j = 3;
+	    else
+		j = 0;
+	    while (arg[j] != NUL && (j == 0 ? eval_isnamec1(arg[j])
+						      : eval_isnamec(arg[j])))
+		++j;
+	    if (arg[j] != NUL)
+		emsg_funcname(_(e_invarg2), arg);
+	}
+    }
+
     /*
      * Isolate the arguments: "arg1, arg2, ...)"
      */
@@ -16186,6 +16296,9 @@ ex_function(eap)
 	    else if (name != NULL && find_func(name) != NULL)
 		emsg_funcname(e_funcexts, name);
 	}
+
+	if (!eap->skip && did_emsg)
+	    goto erret;
 
 	msg_putchar('\n');	    /* don't overwrite the function name */
 	cmdline_row = msg_row;

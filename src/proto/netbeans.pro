@@ -1,5 +1,4 @@
 /* netbeans.c */
-void netbeans_w32_connect __ARGS((void));
 void messageFromNetbeansW32 __ARGS((void));
 int isNetbeansBuffer __ARGS((buf_T *bufp));
 int isNetbeansModified __ARGS((buf_T *bufp));

@@ -172,6 +172,9 @@ typedef int GtkWidget;
 static void entry_activate_cb(GtkWidget *widget, gpointer data);
 static void entry_changed_cb(GtkWidget *entry, GtkWidget *dialog);
 static void find_replace_cb(GtkWidget *widget, gpointer data);
+#ifndef HAVE_GTK2
+static void gui_gtk_position_in_parent(GtkWidget *parent, GtkWidget *child, gui_win_pos_T where);
+#endif
 
 #if defined(FEAT_TOOLBAR) && defined(HAVE_GTK2)
 /*
@@ -3093,7 +3096,7 @@ ex_helpfind(eap)
  *
  *  brent -- dbv
  */
-    void
+    static void
 gui_gtk_position_in_parent(
 	GtkWidget	*parent,
 	GtkWidget	*child,

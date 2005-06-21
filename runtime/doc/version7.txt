@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jun 17
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jun 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1137,5 +1137,8 @@ so that mapping is done in the right mode.
 setbufvar() and setwinvar() did not give error messages.
 
 It was possible to set a variable with an illegal name, e.g. with setbufvar().
+It was possible to define a function with illegal name, e.t. ":func F{-1}()"
+
+CTRL-W F and "gf" didn't use the same method to get the file name.
 
  vim:tw=78:ts=8:ft=help:norl:

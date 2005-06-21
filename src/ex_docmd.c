@@ -135,6 +135,9 @@ static void	ex_script_ni __ARGS((exarg_T *eap));
 #endif
 static char_u	*invalid_range __ARGS((exarg_T *eap));
 static void	correct_range __ARGS((exarg_T *eap));
+#ifdef FEAT_QUICKFIX
+static char_u	*replace_makeprg __ARGS((exarg_T *eap, char_u *p, char_u **cmdlinep));
+#endif
 static char_u	*repl_cmdline __ARGS((exarg_T *eap, char_u *src, int srclen, char_u *repl, char_u **cmdlinep));
 static void	ex_highlight __ARGS((exarg_T *eap));
 static void	ex_colorscheme __ARGS((exarg_T *eap));
@@ -2187,71 +2190,10 @@ do_one_cmd(cmdlinep, sourcing,
     /*
      * For the ":make" and ":grep" commands we insert the 'makeprg'/'grepprg'
      * option here, so things like % get expanded.
-     * Don't do it when ":vimgrep" is used for ":grep".
      */
-    if ((ea.cmdidx == CMD_make
-			 || ea.cmdidx == CMD_grep || ea.cmdidx == CMD_grepadd)
-	    && !grep_internal(ea.cmdidx))
-    {
-	char_u		*new_cmdline;
-	char_u		*program;
-	char_u		*pos;
-	char_u		*ptr;
-	int		len;
-	int		i;
-
-	if (ea.cmdidx == CMD_grep || ea.cmdidx == CMD_grepadd)
-	{
-	    if (*curbuf->b_p_gp == NUL)
-		program = p_gp;
-	    else
-		program = curbuf->b_p_gp;
-	}
-	else
-	{
-	    if (*curbuf->b_p_mp == NUL)
-		program = p_mp;
-	    else
-		program = curbuf->b_p_mp;
-	}
-
-	p = skipwhite(p);
-
-	if ((pos = (char_u *)strstr((char *)program, "$*")) != NULL)
-	{				/* replace $* by given arguments */
-	    i = 1;
-	    while ((pos = (char_u *)strstr((char *)pos + 2, "$*")) != NULL)
-		++i;
-	    len = (int)STRLEN(p);
-	    new_cmdline = alloc((int)(STRLEN(program) + i * (len - 2) + 1));
-	    if (new_cmdline == NULL)
-		goto doend;		    /* out of memory */
-	    ptr = new_cmdline;
-	    while ((pos = (char_u *)strstr((char *)program, "$*")) != NULL)
-	    {
-		i = (int)(pos - program);
-		STRNCPY(ptr, program, i);
-		STRCPY(ptr += i, p);
-		ptr += len;
-		program = pos + 2;
-	    }
-	    STRCPY(ptr, program);
-	}
-	else
-	{
-	    new_cmdline = alloc((int)(STRLEN(program) + STRLEN(p) + 2));
-	    if (new_cmdline == NULL)
-		goto doend;		    /* out of memory */
-	    STRCPY(new_cmdline, program);
-	    STRCAT(new_cmdline, " ");
-	    STRCAT(new_cmdline, p);
-	}
-	msg_make(p);
-	/* 'ea.cmd' is not set here, because it is not used at CMD_make */
-	vim_free(*cmdlinep);
-	*cmdlinep = new_cmdline;
-	p = new_cmdline;
-    }
+    p = replace_makeprg(&ea, p, cmdlinep);
+    if (p == NULL)
+	goto doend;
 #endif
 
     /*
@@ -4028,6 +3970,87 @@ skip_grep_pat(eap)
 	p = skip_vimgrep_pat(p, NULL, NULL);
 	if (p == NULL)
 	    p = eap->arg;
+    }
+    return p;
+}
+
+/*
+ * For the ":make" and ":grep" commands insert the 'makeprg'/'grepprg' option
+ * in the command line, so that things like % get expanded.
+ */
+    static char_u *
+replace_makeprg(eap, p, cmdlinep)
+    exarg_T	*eap;
+    char_u	*p;
+    char_u	**cmdlinep;
+{
+    char_u	*new_cmdline;
+    char_u	*program;
+    char_u	*pos;
+    char_u	*ptr;
+    int		len;
+    int		i;
+
+    /*
+     * Don't do it when ":vimgrep" is used for ":grep".
+     */
+    if ((eap->cmdidx == CMD_make
+		     || eap->cmdidx == CMD_grep || eap->cmdidx == CMD_grepadd)
+	    && !grep_internal(eap->cmdidx))
+    {
+	if (eap->cmdidx == CMD_grep || eap->cmdidx == CMD_grepadd)
+	{
+	    if (*curbuf->b_p_gp == NUL)
+		program = p_gp;
+	    else
+		program = curbuf->b_p_gp;
+	}
+	else
+	{
+	    if (*curbuf->b_p_mp == NUL)
+		program = p_mp;
+	    else
+		program = curbuf->b_p_mp;
+	}
+
+	p = skipwhite(p);
+
+	if ((pos = (char_u *)strstr((char *)program, "$*")) != NULL)
+	{
+	    /* replace $* by given arguments */
+	    i = 1;
+	    while ((pos = (char_u *)strstr((char *)pos + 2, "$*")) != NULL)
+		++i;
+	    len = (int)STRLEN(p);
+	    new_cmdline = alloc((int)(STRLEN(program) + i * (len - 2) + 1));
+	    if (new_cmdline == NULL)
+		return NULL;			/* out of memory */
+	    ptr = new_cmdline;
+	    while ((pos = (char_u *)strstr((char *)program, "$*")) != NULL)
+	    {
+		i = (int)(pos - program);
+		STRNCPY(ptr, program, i);
+		STRCPY(ptr += i, p);
+		ptr += len;
+		program = pos + 2;
+	    }
+	    STRCPY(ptr, program);
+	}
+	else
+	{
+	    new_cmdline = alloc((int)(STRLEN(program) + STRLEN(p) + 2));
+	    if (new_cmdline == NULL)
+		return NULL;			/* out of memory */
+	    STRCPY(new_cmdline, program);
+	    STRCAT(new_cmdline, " ");
+	    STRCAT(new_cmdline, p);
+	}
+	msg_make(p);
+
+	/* 'eap->cmd' is not set here, because it is not used at CMD_make */
+	vim_free(*cmdlinep);
+	*cmdlinep = new_cmdline;
+	p = new_cmdline;
     }
     return p;
 }

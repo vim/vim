@@ -258,18 +258,18 @@ typedef struct tagCOMPOSITIONFORM {
 typedef HANDLE HIMC;
 # endif
 
-HINSTANCE hLibImm = NULL;
-LONG (WINAPI *pImmGetCompositionStringA)(HIMC, DWORD, LPVOID, DWORD);
-LONG (WINAPI *pImmGetCompositionStringW)(HIMC, DWORD, LPVOID, DWORD);
-HIMC (WINAPI *pImmGetContext)(HWND);
-HIMC (WINAPI *pImmAssociateContext)(HWND, HIMC);
-BOOL (WINAPI *pImmReleaseContext)(HWND, HIMC);
-BOOL (WINAPI *pImmGetOpenStatus)(HIMC);
-BOOL (WINAPI *pImmSetOpenStatus)(HIMC, BOOL);
-BOOL (WINAPI *pImmGetCompositionFont)(HIMC, LPLOGFONTA);
-BOOL (WINAPI *pImmSetCompositionFont)(HIMC, LPLOGFONTA);
-BOOL (WINAPI *pImmSetCompositionWindow)(HIMC, LPCOMPOSITIONFORM);
-BOOL (WINAPI *pImmGetConversionStatus)(HIMC, LPDWORD, LPDWORD);
+static HINSTANCE hLibImm = NULL;
+static LONG (WINAPI *pImmGetCompositionStringA)(HIMC, DWORD, LPVOID, DWORD);
+static LONG (WINAPI *pImmGetCompositionStringW)(HIMC, DWORD, LPVOID, DWORD);
+static HIMC (WINAPI *pImmGetContext)(HWND);
+static HIMC (WINAPI *pImmAssociateContext)(HWND, HIMC);
+static BOOL (WINAPI *pImmReleaseContext)(HWND, HIMC);
+static BOOL (WINAPI *pImmGetOpenStatus)(HIMC);
+static BOOL (WINAPI *pImmSetOpenStatus)(HIMC, BOOL);
+static BOOL (WINAPI *pImmGetCompositionFont)(HIMC, LPLOGFONTA);
+static BOOL (WINAPI *pImmSetCompositionFont)(HIMC, LPLOGFONTA);
+static BOOL (WINAPI *pImmSetCompositionWindow)(HIMC, LPCOMPOSITIONFORM);
+static BOOL (WINAPI *pImmGetConversionStatus)(HIMC, LPDWORD, LPDWORD);
 static void dyn_imm_load(void);
 #else
 # define pImmGetCompositionStringA ImmGetCompositionStringA
@@ -1443,6 +1443,7 @@ gui_mch_set_sp_color(guicolor_T color)
 /*
  * handle WM_IME_NOTIFY message
  */
+/*ARGSUSED*/
     static LRESULT
 _OnImeNotify(HWND hWnd, DWORD dwCommand, DWORD dwData)
 {
@@ -1492,6 +1493,7 @@ _OnImeNotify(HWND hWnd, DWORD dwCommand, DWORD dwData)
     return lResult;
 }
 
+/*ARGSUSED*/
     static LRESULT
 _OnImeComposition(HWND hwnd, WPARAM dbcs, LPARAM param)
 {
@@ -4147,6 +4149,7 @@ gui_mch_post_balloon(beval, mesg)
     // TRACE0("gui_mch_post_balloon }}}");
 }
 
+/*ARGSUSED*/
     BalloonEval *
 gui_mch_create_beval_area(target, mesg, mesgCB, clientData)
     void	*target;	/* ignored, always use s_textArea */

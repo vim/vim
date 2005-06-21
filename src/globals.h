@@ -85,8 +85,6 @@ EXTERN int	cmdline_star INIT(= FALSE);	/* cmdline is crypted */
 #endif
 EXTERN int	exec_from_reg INIT(= FALSE);	/* executing register */
 
-EXTERN int	global_changedtick INIT(= 0);	/* incremented for each
-						   change, also for undo */
 EXTERN int	screen_cleared INIT(= FALSE);	/* screen has been cleared */
 
 /*
@@ -960,10 +958,6 @@ EXTERN int	keep_help_flag INIT(= FALSE); /* doing :ta from help file */
  * everywhere.
  */
 EXTERN char_u	*empty_option INIT(= (char_u *)"");
-
-#ifdef DEBUG
-EXTERN FILE *debugfp INIT(= NULL);
-#endif
 
 EXTERN int  redir_off INIT(= FALSE);	/* no redirection for a moment */
 EXTERN FILE *redir_fd INIT(= NULL);	/* message redirection file */

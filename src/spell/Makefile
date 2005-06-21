@@ -46,6 +46,9 @@ diff:
 	
 	-diff -a -C 1 fr_FR.orig.aff fr_FR.aff >fr_FR.diff
 	-diff -a -C 1 fr_FR.orig.dic fr_FR.dic >>fr_FR.diff
+	
+	-diff -a -C 1 he_IL.orig.aff he_IL.aff >he_IL.diff
+	-diff -a -C 1 he_IL.orig.dic he_IL.dic >>he_IL.diff
 
 $(SPELLDIR)/en.latin1.spl : $(VIM) \
 			en_US.aff en_US.dic \

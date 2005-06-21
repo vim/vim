@@ -2461,7 +2461,6 @@ changed()
 #endif
     }
     ++curbuf->b_changedtick;
-    ++global_changedtick;
 }
 
 static void changedOneline __ARGS((buf_T *buf, linenr_T lnum));
@@ -2851,7 +2850,6 @@ unchanged(buf, ff)
 #endif
     }
     ++buf->b_changedtick;
-    ++global_changedtick;
 #ifdef FEAT_NETBEANS_INTG
     netbeans_unmodified(buf);
 #endif
@@ -3144,9 +3142,18 @@ get_number(colon)
 prompt_for_number()
 {
     int		i;
+    int		save_cmdline_row;
+    int		save_State;
 
     /* When using ":silent" assume that <CR> was entered. */
     MSG_PUTS(_("Choice number (<Enter> cancels): "));
+
+    /* Set the state such that text can be selected/copied/pasted. */
+    save_cmdline_row = cmdline_row;
+    cmdline_row = Rows - 1;
+    save_State = State;
+    State = CMDLINE;
+
     i = get_number(TRUE);
     if (KeyTyped)		/* don't call wait_return() now */
     {
@@ -3155,6 +3162,10 @@ prompt_for_number()
 	need_wait_return = FALSE;
 	msg_didany = FALSE;
     }
+    else
+	cmdline_row = save_cmdline_row;
+    State = save_State;
+
     return i;
 }
 

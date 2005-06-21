@@ -81,9 +81,6 @@ static void	nv_ctrlo __ARGS((cmdarg_T *cap));
 static void	nv_hat __ARGS((cmdarg_T *cap));
 static void	nv_Zet __ARGS((cmdarg_T *cap));
 static void	nv_ident __ARGS((cmdarg_T *cap));
-#ifdef FEAT_VISUAL
-static int	get_visual_text __ARGS((cmdarg_T *cap, char_u **pp, int *lenp));
-#endif
 static void	nv_tagpop __ARGS((cmdarg_T *cap));
 static void	nv_scroll __ARGS((cmdarg_T *cap));
 static void	nv_right __ARGS((cmdarg_T *cap));
@@ -5167,12 +5164,12 @@ nv_ident(cap)
     vim_free(buf);
 }
 
-#ifdef FEAT_VISUAL
+#if defined(FEAT_VISUAL) || defined(PROTO)
 /*
  * Get visually selected text, within one line only.
  * Returns FAIL if more than one line selected.
  */
-    static int
+    int
 get_visual_text(cap, pp, lenp)
     cmdarg_T	*cap;
     char_u	**pp;	    /* return: start of selected text */
@@ -5182,7 +5179,8 @@ get_visual_text(cap, pp, lenp)
 	unadjust_for_sel();
     if (VIsual.lnum != curwin->w_cursor.lnum)
     {
-	clearopbeep(cap->oap);
+	if (cap != NULL)
+	    clearopbeep(cap->oap);
 	return FAIL;
     }
     if (VIsual_mode == 'V')
@@ -5592,24 +5590,7 @@ nv_gotofile(cap)
     }
 #endif
 
-# ifdef FEAT_VISUAL
-    /*
-     * In Visual mode, use the selected text as a file name.
-     * Don't allow selection across multiple lines.
-     */
-    if (VIsual_active)
-    {
-	int	len;
-
-	if (get_visual_text(cap, &ptr, &len) == FAIL)
-	    return;
-	ptr = find_file_name_in_path(ptr, len,
-	       FNAME_MESS|FNAME_EXP|FNAME_REL, cap->count1, curbuf->b_ffname);
-    }
-    else
-# endif
-	ptr = file_name_at_cursor(FNAME_MESS|FNAME_HYP|FNAME_EXP|FNAME_REL,
-								 cap->count1);
+    ptr = grab_file_name(cap->count1);
 
     if (ptr != NULL)
     {

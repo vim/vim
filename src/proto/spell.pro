@@ -9,4 +9,5 @@ void ex_spell __ARGS((exarg_T *eap));
 void spell_add_word __ARGS((char_u *word, int len, int bad));
 void init_spell_chartab __ARGS((void));
 void spell_suggest __ARGS((void));
+void spell_suggest_list __ARGS((garray_T *gap, char_u *word, int maxcount));
 /* vim: set ft=c : */

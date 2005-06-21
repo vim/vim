@@ -1,16 +1,13 @@
 " Vim syntax file
 " Language:	Model
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2001 Apr 25
+" Last Change:	2005 Jun 20
 
 " very basic things only (based on the vgrindefs file).
 " If you use this language, please improve it, and send me the patches!
 
-" For version 5.x: Clear all syntax items
-" For version 6.x: Quit when a syntax file was already loaded
-if version < 600
-  syntax clear
-elseif exists("b:current_syntax")
+" Quit when a (custom) syntax file was already loaded
+if exists("b:current_syntax")
   finish
 endif
 
@@ -36,23 +33,11 @@ syn region modelString start=+"+ end=+"+
 syn match modelString "'."
 
 " Define the default highlighting.
-" For version 5.7 and earlier: only when not done already
-" For version 5.8 and later: only when an item doesn't have highlighting yet
-if version >= 508 || !exists("did_model_syntax_inits")
-  if version < 508
-    let did_model_syntax_inits = 1
-    command -nargs=+ HiLink hi link <args>
-  else
-    command -nargs=+ HiLink hi def link <args>
-  endif
-
-  HiLink modelKeyword	Statement
-  HiLink modelBlock	PreProc
-  HiLink modelComment	Comment
-  HiLink modelString	String
-
-  delcommand HiLink
-endif
+" Only used when an item doesn't have highlighting yet
+hi def link modelKeyword	Statement
+hi def link modelBlock		PreProc
+hi def link modelComment	Comment
+hi def link modelString		String
 
 let b:current_syntax = "model"
 

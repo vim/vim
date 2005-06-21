@@ -1,13 +1,10 @@
 " Vim syntax file
 " Language:	Vim help file
 " Maintainer:	Bram Moolenaar (Bram@vim.org)
-" Last Change:	2005 Mar 31
+" Last Change:	2005 Jun 20
 
-" For version 5.x: Clear all syntax items
-" For version 6.x: Quit when a syntax file was already loaded
-if version < 600
-  syntax clear
-elseif exists("b:current_syntax")
+" Quit when a (custom) syntax file was already loaded
+if exists("b:current_syntax")
   finish
 endif
 
@@ -120,67 +117,55 @@ syn sync minlines=40
 
 
 " Define the default highlighting.
-" For version 5.7 and earlier: only when not done already
-" For version 5.8 and later: only when an item doesn't have highlighting yet
-if version >= 508 || !exists("did_help_syntax_inits")
-  if version < 508
-    let did_help_syntax_inits = 1
-    command -nargs=+ HiLink hi link <args>
-  else
-    command -nargs=+ HiLink hi def link <args>
-  endif
+" Only used when an item doesn't have highlighting yet
+hi def link helpExampleStart	helpIgnore
+hi def link helpIgnore		Ignore
+hi def link helpHyperTextJump	Subtitle
+hi def link helpHyperTextEntry	String
+hi def link helpHeadline	Statement
+hi def link helpHeader		PreProc
+hi def link helpSectionDelim	PreProc
+hi def link helpVim		Identifier
+hi def link helpExample		Comment
+hi def link helpOption		Type
+hi def link helpNotVi		Special
+hi def link helpSpecial		Special
+hi def link helpNote		Todo
+hi def link Subtitle		Identifier
 
-  HiLink helpExampleStart	helpIgnore
-  HiLink helpIgnore		Ignore
-  HiLink helpHyperTextJump	Subtitle
-  HiLink helpHyperTextEntry	String
-  HiLink helpHeadline		Statement
-  HiLink helpHeader		PreProc
-  HiLink helpSectionDelim	PreProc
-  HiLink helpVim		Identifier
-  HiLink helpExample		Comment
-  HiLink helpOption		Type
-  HiLink helpNotVi		Special
-  HiLink helpSpecial		Special
-  HiLink helpNote		Todo
-  HiLink Subtitle		Identifier
-
-  HiLink helpComment		Comment
-  HiLink helpConstant		Constant
-  HiLink helpString		String
-  HiLink helpCharacter		Character
-  HiLink helpNumber		Number
-  HiLink helpBoolean		Boolean
-  HiLink helpFloat		Float
-  HiLink helpIdentifier		Identifier
-  HiLink helpFunction		Function
-  HiLink helpStatement		Statement
-  HiLink helpConditional	Conditional
-  HiLink helpRepeat		Repeat
-  HiLink helpLabel		Label
-  HiLink helpOperator		Operator
-  HiLink helpKeyword		Keyword
-  HiLink helpException		Exception
-  HiLink helpPreProc		PreProc
-  HiLink helpInclude		Include
-  HiLink helpDefine		Define
-  HiLink helpMacro		Macro
-  HiLink helpPreCondit		PreCondit
-  HiLink helpType		Type
-  HiLink helpStorageClass	StorageClass
-  HiLink helpStructure		Structure
-  HiLink helpTypedef		Typedef
-  HiLink helpSpecialChar	SpecialChar
-  HiLink helpTag		Tag
-  HiLink helpDelimiter		Delimiter
-  HiLink helpSpecialComment	SpecialComment
-  HiLink helpDebug		Debug
-  HiLink helpUnderlined		Underlined
-  HiLink helpError		Error
-  HiLink helpTodo		Todo
-
-  delcommand HiLink
-endif
+hi def link helpComment		Comment
+hi def link helpConstant	Constant
+hi def link helpString		String
+hi def link helpCharacter	Character
+hi def link helpNumber		Number
+hi def link helpBoolean		Boolean
+hi def link helpFloat		Float
+hi def link helpIdentifier	Identifier
+hi def link helpFunction	Function
+hi def link helpStatement	Statement
+hi def link helpConditional	Conditional
+hi def link helpRepeat		Repeat
+hi def link helpLabel		Label
+hi def link helpOperator	Operator
+hi def link helpKeyword		Keyword
+hi def link helpException	Exception
+hi def link helpPreProc		PreProc
+hi def link helpInclude		Include
+hi def link helpDefine		Define
+hi def link helpMacro		Macro
+hi def link helpPreCondit	PreCondit
+hi def link helpType		Type
+hi def link helpStorageClass	StorageClass
+hi def link helpStructure	Structure
+hi def link helpTypedef		Typedef
+hi def link helpSpecialChar	SpecialChar
+hi def link helpTag		Tag
+hi def link helpDelimiter	Delimiter
+hi def link helpSpecialComment	SpecialComment
+hi def link helpDebug		Debug
+hi def link helpUnderlined	Underlined
+hi def link helpError		Error
+hi def link helpTodo		Todo
 
 let b:current_syntax = "help"
 

@@ -3178,11 +3178,11 @@ iconv_enabled(verbose)
 	return FALSE;
     }
 
-    *((FARPROC*)&iconv)		= GetProcAddress(hIconvDLL, "libiconv");
-    *((FARPROC*)&iconv_open)	= GetProcAddress(hIconvDLL, "libiconv_open");
-    *((FARPROC*)&iconv_close)	= GetProcAddress(hIconvDLL, "libiconv_close");
-    *((FARPROC*)&iconvctl)	= GetProcAddress(hIconvDLL, "libiconvctl");
-    *((FARPROC*)&iconv_errno)	= GetProcAddress(hMsvcrtDLL, "_errno");
+    iconv	= (void *)GetProcAddress(hIconvDLL, "libiconv");
+    iconv_open	= (void *)GetProcAddress(hIconvDLL, "libiconv_open");
+    iconv_close	= (void *)GetProcAddress(hIconvDLL, "libiconv_close");
+    iconvctl	= (void *)GetProcAddress(hIconvDLL, "libiconvctl");
+    iconv_errno	= (void *)GetProcAddress(hMsvcrtDLL, "_errno");
     if (iconv == NULL || iconv_open == NULL || iconv_close == NULL
 	    || iconvctl == NULL || iconv_errno == NULL)
     {

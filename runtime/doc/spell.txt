@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 19
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -92,6 +92,12 @@ z?			For the badly spelled word under the cursor suggest
 			higher the score the more different).
 			The score may be slightly wrong for words with
 			multi-byte characters.
+			When a word was replaced the redo command "." will
+			repeat the word replacement.  This works like "ciw",
+			the good word and <Esc>.
+
+The 'spellsuggest' option influences how the list of suggestions is generated
+and sorted.  See |'spellsuggest'|.
 
 
 PERFORMANCE
@@ -337,7 +343,7 @@ Example:
 	/regions=uscagb				regions "us", "ca" and "gb"
 	example					word for all regions
 	/1blah					word for region 1 "us"
-	/!Vim					bad word
+	/!vim					bad word
 	/?3Campbell				rare word in region 3 "gb"
 	/='s mornings				keep-case word
 

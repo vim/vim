@@ -1,13 +1,10 @@
 " Vim syntax file
 " Language:	C
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Jan 26
+" Last Change:	2005 Jun 20
 
-" For version 5.x: Clear all syntax items
-" For version 6.x: Quit when a syntax file was already loaded
-if version < 600
-  syntax clear
-elseif exists("b:current_syntax")
+" Quit when a (custom) syntax file was already loaded
+if exists("b:current_syntax")
   finish
 endif
 
@@ -298,63 +295,51 @@ endif
 exec "syn sync ccomment cComment minlines=" . b:c_minlines
 
 " Define the default highlighting.
-" For version 5.7 and earlier: only when not done already
-" For version 5.8 and later: only when an item doesn't have highlighting yet
-if version >= 508 || !exists("did_c_syn_inits")
-  if version < 508
-    let did_c_syn_inits = 1
-    command -nargs=+ HiLink hi link <args>
-  else
-    command -nargs=+ HiLink hi def link <args>
-  endif
-
-  HiLink cFormat		cSpecial
-  HiLink cCppString		cString
-  HiLink cCommentL		cComment
-  HiLink cCommentStart		cComment
-  HiLink cLabel			Label
-  HiLink cUserLabel		Label
-  HiLink cConditional		Conditional
-  HiLink cRepeat		Repeat
-  HiLink cCharacter		Character
-  HiLink cSpecialCharacter	cSpecial
-  HiLink cNumber		Number
-  HiLink cOctal			Number
-  HiLink cOctalZero		PreProc	 " link this to Error if you want
-  HiLink cFloat			Float
-  HiLink cOctalError		cError
-  HiLink cParenError		cError
-  HiLink cErrInParen		cError
-  HiLink cErrInBracket		cError
-  HiLink cCommentError		cError
-  HiLink cCommentStartError	cError
-  HiLink cSpaceError		cError
-  HiLink cSpecialError		cError
-  HiLink cOperator		Operator
-  HiLink cStructure		Structure
-  HiLink cStorageClass		StorageClass
-  HiLink cInclude		Include
-  HiLink cPreProc		PreProc
-  HiLink cDefine		Macro
-  HiLink cIncluded		cString
-  HiLink cError			Error
-  HiLink cStatement		Statement
-  HiLink cPreCondit		PreCondit
-  HiLink cType			Type
-  HiLink cConstant		Constant
-  HiLink cCommentString		cString
-  HiLink cComment2String	cString
-  HiLink cCommentSkip		cComment
-  HiLink cString		String
-  HiLink cComment		Comment
-  HiLink cSpecial		SpecialChar
-  HiLink cTodo			Todo
-  HiLink cCppSkip		cCppOut
-  HiLink cCppOut2		cCppOut
-  HiLink cCppOut		Comment
-
-  delcommand HiLink
-endif
+" Only used when an item doesn't have highlighting yet
+hi def link cFormat		cSpecial
+hi def link cCppString		cString
+hi def link cCommentL		cComment
+hi def link cCommentStart	cComment
+hi def link cLabel		Label
+hi def link cUserLabel		Label
+hi def link cConditional	Conditional
+hi def link cRepeat		Repeat
+hi def link cCharacter		Character
+hi def link cSpecialCharacter	cSpecial
+hi def link cNumber		Number
+hi def link cOctal		Number
+hi def link cOctalZero		PreProc	 " link this to Error if you want
+hi def link cFloat		Float
+hi def link cOctalError		cError
+hi def link cParenError		cError
+hi def link cErrInParen		cError
+hi def link cErrInBracket	cError
+hi def link cCommentError	cError
+hi def link cCommentStartError	cError
+hi def link cSpaceError		cError
+hi def link cSpecialError	cError
+hi def link cOperator		Operator
+hi def link cStructure		Structure
+hi def link cStorageClass	StorageClass
+hi def link cInclude		Include
+hi def link cPreProc		PreProc
+hi def link cDefine		Macro
+hi def link cIncluded		cString
+hi def link cError		Error
+hi def link cStatement		Statement
+hi def link cPreCondit		PreCondit
+hi def link cType		Type
+hi def link cConstant		Constant
+hi def link cCommentString	cString
+hi def link cComment2String	cString
+hi def link cCommentSkip	cComment
+hi def link cString		String
+hi def link cComment		Comment
+hi def link cSpecial		SpecialChar
+hi def link cTodo		Todo
+hi def link cCppSkip		cCppOut
+hi def link cCppOut2		cCppOut
+hi def link cCppOut		Comment
 
 let b:current_syntax = "c"
 

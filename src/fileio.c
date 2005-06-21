@@ -3183,7 +3183,7 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 	    struct stat	st_new;
 	    char_u	*dirp;
 	    char_u	*rootname;
-#ifndef SHORT_FNAME
+#if defined(UNIX) && !defined(SHORT_FNAME)
 	    int		did_set_shortname;
 #endif
 
@@ -3226,7 +3226,7 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 		    goto nobackup;
 		}
 
-#ifndef SHORT_FNAME
+#if defined(UNIX) && !defined(SHORT_FNAME)
 		did_set_shortname = FALSE;
 #endif
 

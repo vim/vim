@@ -188,7 +188,7 @@ netbeans_disconnect(void)
 #endif /* FEAT_GUI_GTK */
 
 #if defined(FEAT_GUI_W32) || defined(PROTO)
-    void
+    static void
 netbeans_w32_connect(void)
 {
     netbeans_connect();
@@ -742,7 +742,7 @@ messageFromNetbeans(gpointer clientData, gint unused1,
 	nbdebug(("messageFromNetbeans: Error in read() from socket\n"));
 	if (len < 0)
 	    PERROR(_("read from Netbeans socket"));
-	return; /* don't try to parse it */;
+	return; /* don't try to parse it */
     }
 
     /* Parse the messages, but avoid recursion. */
@@ -863,8 +863,8 @@ struct nbbuf_struct
 typedef struct nbbuf_struct nbbuf_T;
 
 static nbbuf_T *buf_list = 0;
-int buf_list_size = 0;	/* size of buf_list */
-int buf_list_used = 0;	/* nr of entries in buf_list actually in use */
+static int buf_list_size = 0;	/* size of buf_list */
+static int buf_list_used = 0;	/* nr of entries in buf_list actually in use */
 
 static char **globalsignmap;
 static int globalsignmaplen;

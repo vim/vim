@@ -706,6 +706,16 @@ EXTERN int	p_sta;		/* 'smarttab' */
 #ifdef FEAT_WINDOWS
 EXTERN int	p_sb;		/* 'splitbelow' */
 #endif
+#ifdef FEAT_SYN_HL
+EXTERN char_u	*p_sps;		/* 'spellsuggest' */
+EXTERN unsigned sps_flags;
+# ifdef IN_OPTION_C
+static char *(p_sps_values[]) = {"best", "fast", "double", NULL};
+# endif
+# define SPS_BEST		0x01
+# define SPS_FAST		0x02
+# define SPS_DOUBLE		0x04
+#endif
 #ifdef FEAT_VERTSPLIT
 EXTERN int	p_spr;		/* 'splitright' */
 #endif

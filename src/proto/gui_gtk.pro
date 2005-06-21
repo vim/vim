@@ -20,5 +20,4 @@ void gui_mch_find_dialog __ARGS((exarg_T *eap));
 void gui_mch_replace_dialog __ARGS((exarg_T *eap));
 void gui_gtk_synch_fonts __ARGS((void));
 void ex_helpfind __ARGS((exarg_T *eap));
-void gui_gtk_position_in_parent __ARGS((GtkWidget *parent, GtkWidget *child, gui_win_pos_T where));
 /* vim: set ft=c : */

@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 17
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5661,6 +5661,25 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When 'encoding' is set the word lists are reloaded.  Thus it's a good
 	idea to set 'spelllang' after setting 'encoding'.
 	More info at |spell|.
+
+						*'spellsuggest'* *'sps'*
+'spellsuggest' 'sps'	string	(default "best")
+			global
+			{not in Vi}
+			{not available when compiled without the |+syntax|
+			feature}
+	Method used for spelling suggestions |z?|.  Can be one of these
+	values:
+
+	best		Method that works best for English.  Finds small
+			changes and uses some sound-a-like scoring.
+	double		Uses two methods and mixes the results.  The first
+			method is finding small changes, the other method
+			computes how much the suggestion sounds like the bad
+			word.  Can be slow and doesn't always give better
+			results.
+	fast		Only check for small changes.
+
 
 			*'splitbelow'* *'sb'* *'nosplitbelow'* *'nosb'*
 'splitbelow' 'sb'	boolean	(default off)

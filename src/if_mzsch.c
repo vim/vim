@@ -225,7 +225,7 @@ static void (*dll_scheme_dont_gc_ptr)(void *p);
 static Scheme_Object *(*dll_scheme_eval)(Scheme_Object *obj, Scheme_Env *env);
 static Scheme_Object *(*dll_scheme_eval_string)(const char *str,
 	Scheme_Env *env);
-static Scheme_Object *(*dll_scheme_eval_string_all)(const char *str, 
+static Scheme_Object *(*dll_scheme_eval_string_all)(const char *str,
 	Scheme_Env *env, int all);
 static void (*dll_scheme_finish_primitive_module)(Scheme_Env *env);
 # if MZSCHEME_VERSION_MAJOR < 299
@@ -253,7 +253,7 @@ static Scheme_Object *(*dll_scheme_make_closed_prim_w_arity)
 static Scheme_Object *(*dll_scheme_make_integer_value)(long i);
 static Scheme_Object *(*dll_scheme_make_namespace)(int argc,
 	Scheme_Object *argv[]);
-static Scheme_Object *(*dll_scheme_make_pair)(Scheme_Object *car, 
+static Scheme_Object *(*dll_scheme_make_pair)(Scheme_Object *car,
 	Scheme_Object *cdr);
 static Scheme_Object *(*dll_scheme_make_prim_w_arity)(Scheme_Prim *prim,
 	const char *name, mzshort mina, mzshort maxa);
@@ -294,7 +294,7 @@ static void (*dll_scheme_signal_error)(const char *msg, ...);
 static void (*dll_scheme_wrong_type)(const char *name, const char *expected,
 	int which, int argc, Scheme_Object **argv);
 # if MZSCHEME_VERSION_MAJOR >= 299
-static void (*dll_scheme_set_param)(Scheme_Config *c, int pos, 
+static void (*dll_scheme_set_param)(Scheme_Config *c, int pos,
 	Scheme_Object *o);
 static Scheme_Config *(*dll_scheme_current_config)(void);
 static Scheme_Object *(*dll_scheme_char_string_to_byte_string)
@@ -411,7 +411,7 @@ static Thunk_Info mzsch_imports[] = {
     {"scheme_current_thread", (void **)&dll_scheme_current_thread_ptr},
     {"scheme_console_printf", (void **)&dll_scheme_console_printf_ptr},
     {"scheme_console_output", (void **)&dll_scheme_console_output_ptr},
-    {"scheme_notify_multithread", 
+    {"scheme_notify_multithread",
 	(void **)&dll_scheme_notify_multithread_ptr},
     {"scheme_add_global", (void **)&dll_scheme_add_global},
     {"scheme_add_global_symbol", (void **)&dll_scheme_add_global_symbol},
@@ -424,7 +424,7 @@ static Thunk_Info mzsch_imports[] = {
     {"scheme_check_threads", (void **)&dll_scheme_check_threads},
     {"scheme_close_input_port", (void **)&dll_scheme_close_input_port},
     {"scheme_count_lines", (void **)&dll_scheme_count_lines},
-    {"scheme_current_continuation_marks", 
+    {"scheme_current_continuation_marks",
 	(void **)&dll_scheme_current_continuation_marks},
     {"scheme_display", (void **)&dll_scheme_display},
     {"scheme_display_to_string", (void **)&dll_scheme_display_to_string},
@@ -434,7 +434,7 @@ static Thunk_Info mzsch_imports[] = {
     {"scheme_eval", (void **)&dll_scheme_eval},
     {"scheme_eval_string", (void **)&dll_scheme_eval_string},
     {"scheme_eval_string_all", (void **)&dll_scheme_eval_string_all},
-    {"scheme_finish_primitive_module", 
+    {"scheme_finish_primitive_module",
 	(void **)&dll_scheme_finish_primitive_module},
 # if MZSCHEME_VERSION_MAJOR < 299
     {"scheme_format", (void **)&dll_scheme_format},
@@ -444,15 +444,15 @@ static Thunk_Info mzsch_imports[] = {
 #endif
     {"scheme_gc_ptr_ok", (void **)&dll_scheme_gc_ptr_ok},
 # if MZSCHEME_VERSION_MAJOR < 299
-    {"scheme_get_sized_string_output", 
+    {"scheme_get_sized_string_output",
 	(void **)&dll_scheme_get_sized_string_output},
 # else
-    {"scheme_get_sized_byte_string_output", 
+    {"scheme_get_sized_byte_string_output",
 	(void **)&dll_scheme_get_sized_byte_string_output},
 #endif
     {"scheme_intern_symbol", (void **)&dll_scheme_intern_symbol},
     {"scheme_lookup_global", (void **)&dll_scheme_lookup_global},
-    {"scheme_make_closed_prim_w_arity", 
+    {"scheme_make_closed_prim_w_arity",
 	(void **)&dll_scheme_make_closed_prim_w_arity},
     {"scheme_make_integer_value", (void **)&dll_scheme_make_integer_value},
     {"scheme_make_namespace", (void **)&dll_scheme_make_namespace},
@@ -460,14 +460,14 @@ static Thunk_Info mzsch_imports[] = {
     {"scheme_make_prim_w_arity", (void **)&dll_scheme_make_prim_w_arity},
 # if MZSCHEME_VERSION_MAJOR < 299
     {"scheme_make_string", (void **)&dll_scheme_make_string},
-    {"scheme_make_string_output_port", 
+    {"scheme_make_string_output_port",
 	(void **)&dll_scheme_make_string_output_port},
 # else
     {"scheme_make_byte_string", (void **)&dll_scheme_make_byte_string},
-    {"scheme_make_byte_string_output_port", 
+    {"scheme_make_byte_string_output_port",
 	(void **)&dll_scheme_make_byte_string_output_port},
 # endif
-    {"scheme_make_struct_instance", 
+    {"scheme_make_struct_instance",
 	(void **)&dll_scheme_make_struct_instance},
     {"scheme_make_struct_names", (void **)&dll_scheme_make_struct_names},
     {"scheme_make_struct_type", (void **)&dll_scheme_make_struct_type},
@@ -525,7 +525,7 @@ mzscheme_runtime_link_init(char *sch_dll, char *gc_dll, int verbose)
 
     for (thunk = mzsch_imports; thunk->name; thunk++)
     {
-	if ((*thunk->ptr = 
+	if ((*thunk->ptr =
 		    (void *)GetProcAddress(hMzSch, thunk->name)) == NULL)
 	{
 	    FreeLibrary(hMzSch);
@@ -539,7 +539,7 @@ mzscheme_runtime_link_init(char *sch_dll, char *gc_dll, int verbose)
     }
     for (thunk = mzgc_imports; thunk->name; thunk++)
     {
-	if ((*thunk->ptr = 
+	if ((*thunk->ptr =
 		    (void *)GetProcAddress(hMzGC, thunk->name)) == NULL)
 	{
 	    FreeLibrary(hMzSch);
@@ -2655,7 +2655,7 @@ make_modules(Scheme_Env *env)
     scheme_add_global("global-namespace", (Scheme_Object *)environment, mod);
     scheme_finish_primitive_module(mod);
 }
-    
+
 #ifdef HAVE_SANDBOX
 static Scheme_Object *M_write = NULL;
 static Scheme_Object *M_read = NULL;
@@ -2669,7 +2669,7 @@ sandbox_check()
 	raise_vim_exn(_("not allowed in the Vim sandbox"));
 }
 
-/* security guards to force Vim's sandbox restrictions on MzScheme level */ 
+/* security guards to force Vim's sandbox restrictions on MzScheme level */
     static Scheme_Object *
 sandbox_file_guard(int argc, Scheme_Object **argv)
 {

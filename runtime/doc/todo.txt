@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 19
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,9 +30,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Can define a function with illegal name (Servatius Brandt):
-    function F{-1}()
-
 Add extra list of file locations.  Can be used with:
     :ltag	      list of matching tags, like :tselect
 
@@ -55,6 +52,8 @@ Win32: Balloon text can't contain line break.
     Hints for multiline tooltips from Alexei Alexandrov (2005 Mar 26)
     Patch from Sergey Khorev, 2005 Apr 11
     Add has("balloon_multiline")
+
+Win32: Crash when pasting Simplified Chinese in utf-8. (rainux, 2005 June 20)
 
 Mac unicode patch (Da Woon Jung):
 - selecting proportional font breaks display
@@ -100,14 +99,22 @@ PLANNED FOR VERSION 7.0:
 -   Add SPELLCHECKER, with support for many languages.
     - Spell checking code todo's:
 	- Code for making suggestions:
-	  - Hebrew: also use prefixes for suggestions.
+	  - ":mkspell" runs out of memory for Polish with utf-8.
 	  - When 'spellfile' directory doesn't exist, ask user to create it?
+	  - When 'spelllang' has more than one language only .add file of
+	    first is used?
 	  - Aspell has the "special" character, useful?
+	  - Can "the the" be added as a bad word?
+		Add BAD item in .aff file, set WF_BANNED flag.
+	  - Simple and fast sound-a-like: mapping list for first char and rest
+		    vowel as first char: *
+		    remove other vowels
+	  - How about words that are split over two lines?  E.g., "et al.".
 	  - When putting map string in .spl file check for duplicate chars.
-	  - GUI: Selecting text doesn't work at the prompt.
-	  - Should "z?" replacement be redo-able with "."?
+	  - Hebrew: also use prefixes for suggestions.  See message from
+	    Kaminsky (June 20) for ideas.
 	  - The sound-folding doesn't work for multi-byte characters.  It's
-	    very slow too.  Prepare the table (remove alternatives)?
+	    very slow too.
 	- Also put list of word characters in word list file.  Otherwise the
 	  one for Italian may differ from the one used for English.
 	- Make "en-rare" spell file.
@@ -121,8 +128,8 @@ PLANNED FOR VERSION 7.0:
 	http://spellchecker.mozdev.org/source.html
 	http://whiteboard.openoffice.org/source/browse/whiteboard/lingucomponent/source/spellcheck/myspell/
       author: Kevin Hendricks <kevin.hendricks@sympatico.ca>
-    - Update option window for 'verbosefile', 'spell', 'spellfile' and
-      'spelllang'.
+    - Update option window for 'verbosefile', 'spell', 'spellfile',
+      'spellsuggest' and 'spelllang'.
     - Distribution: Need wordlists for many languages; "language pack"
       Put them on the ftp site, ready to download.  Include README for
       copyrights.

@@ -1,12 +1,12 @@
 *** nl_NL.orig.aff	Wed Apr 20 11:48:16 2005
---- nl_NL.aff	Sat Apr 23 16:48:27 2005
+--- nl_NL.aff	Tue Jun 21 11:08:32 2005
 ***************
 *** 3,4 ****
 --- 3,8 ----
   
-+ FOL  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏ÿ
-+ LOW  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏ÿ
-+ UPP  ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞ‗אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏ÿ
++ FOL  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗
++ LOW  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗
++ UPP  ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞ‗
 + 
   NOSPLITSUGS
 ***************
@@ -111,43 +111,380 @@
 ! REP kontekst context
 ! REP korrekt correct
   REP kritikus criticus
+***************
+*** 333 ****
+--- 337,458 ----
+  REP aflassen afgelasten
++ 
++ MAP 5
++ MAP aאבגדהו
++ MAP eטיךכ
++ MAP iלםמן
++ MAP oעףפץצ
++ MAP uשתûü
++ MAP nס
++ MAP cח
++ MAP yÿ‎
++ MAP s‗
++ 
++ # This comes from Aspell en_phonet.dat, version 1.1, 2000-01-07
++ 
++ SAL AH(AEIOUY)-^         *H
++ SAL AR(AEIOUY)-^         *R
++ SAL A(HR)^               *
++ SAL A^                   *
++ SAL AH(AEIOUY)-          H
++ SAL AR(AEIOUY)-          R
++ SAL A(HR)                _
++ SAL À^                   *
++ SAL Å^                   *
++ SAL BB-                  _
++ SAL B                    B
++ SAL CQ-                  _
++ SAL CIA                  X
++ SAL CH                   X
++ SAL C(EIY)-              S
++ SAL CK                   K
++ SAL COUGH^               KF
++ SAL CC<                  C
++ SAL C                    K
++ SAL DG(EIY)              K
++ SAL DD-                  _
++ SAL D                    T
++ SAL É<                   E
++ SAL EH(AEIOUY)-^         *H
++ SAL ER(AEIOUY)-^         *R
++ SAL E(HR)^               *
++ SAL ENOUGH^$             *NF
++ SAL E^                   *
++ SAL EH(AEIOUY)-          H
++ SAL ER(AEIOUY)-          R
++ SAL E(HR)                _
++ SAL FF-                  _
++ SAL F                    F
++ SAL GN^                  N
++ SAL GN$                  N
++ SAL GNS$                 NS
++ SAL GNED$                N
++ SAL GH(AEIOUY)-          K
++ SAL GH                   _
++ SAL GG9                  K
++ SAL G                    K
++ SAL H                    H
++ SAL IH(AEIOUY)-^         *H
++ SAL IR(AEIOUY)-^         *R
++ SAL I(HR)^               *
++ SAL I^                   *
++ SAL ING6                 N
++ SAL IH(AEIOUY)-          H
++ SAL IR(AEIOUY)-          R
++ SAL I(HR)                _
++ SAL J                    K
++ SAL KN^                  N
++ SAL KK-                  _
++ SAL K                    K
++ SAL LAUGH^               LF
++ SAL LL-                  _
++ SAL L                    L
++ SAL MB$                  M
++ SAL MM                   M
++ SAL M                    M
++ SAL NN-                  _
++ SAL N                    N
++ SAL OH(AEIOUY)-^         *H
++ SAL OR(AEIOUY)-^         *R
++ SAL O(HR)^               *
++ SAL O^                   *
++ SAL OH(AEIOUY)-          H
++ SAL OR(AEIOUY)-          R
++ SAL O(HR)                _
++ SAL PH                   F
++ SAL PN^                  N
++ SAL PP-                  _
++ SAL P                    P
++ SAL Q                    K
++ SAL RH^                  R
++ SAL ROUGH^               RF
++ SAL RR-                  _
++ SAL R                    R
++ SAL SCH(EOU)-            SK
++ SAL SC(IEY)-             S
++ SAL SH                   X
++ SAL SI(AO)-              X
++ SAL SS-                  _
++ SAL S                    S
++ SAL TI(AO)-              X
++ SAL TH                   @
++ SAL TCH--                _
++ SAL TOUGH^               TF
++ SAL TT-                  _
++ SAL T                    T
++ SAL UH(AEIOUY)-^         *H
++ SAL UR(AEIOUY)-^         *R
++ SAL U(HR)^               *
++ SAL U^                   *
++ SAL UH(AEIOUY)-          H
++ SAL UR(AEIOUY)-          R
++ SAL U(HR)                _
++ SAL V^                   W
++ SAL V                    F
++ SAL WR^                  R
++ SAL WH^                  W
++ SAL W(AEIOU)-            W
++ SAL X^                   S
++ SAL X                    KS
++ SAL Y(AEIOU)-            Y
++ SAL ZZ-                  _
++ SAL Z                    S
 *** nl_NL.orig.dic	Tue Apr 19 21:03:15 2005
---- nl_NL.dic	Wed Apr 20 18:47:07 2005
+--- nl_NL.dic	Wed Jun 15 10:36:20 2005
+***************
+*** 8,9 ****
+--- 8,11 ----
+  's-Hertogenbosch
++ fietsstandaard
++ fietslantaarn
+  A4
 ***************
 *** 91,93 ****
   Athene
 - Athene
   Atjees/E
---- 91,92 ----
+--- 93,94 ----
 ***************
 *** 216,217 ****
---- 215,218 ----
+--- 217,220 ----
   Brussels/E
 + BTW
 + B.T.W.
   Budel
 ***************
 *** 325,326 ****
---- 326,328 ----
+--- 328,330 ----
   Duurstede
 + DVD
   Dwingeloo
 ***************
-*** 813,814 ****
---- 815,817 ----
-  Montfort
-+ Moolenaar/X
-  Moordrecht
+*** 7485,7486 ****
+--- 7489,7493 ----
+  avond/SN
++ 's avonds
++ 's middags
++ 's ochtends
+  avondappטl/S
+***************
+*** 20681,20682 ****
+--- 20688,20690 ----
+  cytostatica
++ d.m.v.
+  daad/P
 ***************
 *** 46300,46301 ****
---- 46303,46305 ----
+--- 46308,46310 ----
   informaticus
 + informatie/S
   informatie-uitwisseling
 ***************
-*** 60206,60207 ****
---- 60210,60213 ----
+*** 60206,60208 ****
+--- 60215,60222 ----
   lצss
 + m.a.w.
 + m.b.t.
++ m.n.
   ma/JW
++ mm
++ mg
+  maag
+***************
+*** 97474,97475 ****
+--- 97488,97490 ----
+  suןciderisico/X
++ s.v.p.
+  swagger/S
+***************
+*** 101428,101429 ****
+--- 101443,101446 ----
+  toezichthouder/S
++ toezichthoudersaansprakelijkheidsverzekering
++ toezichthoudersaansprakelijkheidsverzekeringen
+  toezie/N
+***************
+*** 103707,103708 ****
+--- 103724,103726 ----
+  tךte-א-tךte/S
++ u
+  uchtend/N
+***************
+*** 119938 ****
+--- 119956,120126 ----
+  überhaupt
++ Christiaan/X
++ Fred/X
++ Jansen/X
++ Janssen/X
++ Moolenaar/X
++ Renee/X
++ Renי/X
++ Renיe/X
++ Walter/X
++ # toevoegingen uit de Woordenlijst van 30 mei 1996
++ a capella
++ a fortiori
++ a priori
++ a vista
++ ad hominem
++ afrikaan
++ afterpil
++ alma mater
++ anorexia nervosa
++ apelazerus
++ art nouveau
++ au bain marie
++ auctor intellectualis
++ auctor intellectualis
++ avant la lettre
++ bal masquי
++ basso continuo
++ batavier
++ benefit of the doubt
++ black box
++ black jack
++ black power
++ blue jeans
++ boogie woogie
++ bric א brac
++ bungee jumping
++ capita selecta
++ chaise longue
++ chinezen
++ coming man
++ comme il faut
++ commedia dell' arte
++ communis opinio
++ consilium abeundi
++ couleur locale
++ coûte que coûte
++ dalai lama
++ de jure
++ deus ex machina
++ domus Dei
++ dramatis personae
++ eigener beweging
++ en plein public
++ en profil
++ enfant terrible
++ entre nous
++ fait accompli
++ faux pas
++ femme fatale
++ filet d'anvers
++ fin de siטcle
++ finishing touch
++ franse
++ fransman
++ gotisch
++ happy few
++ hora est
++ hors d'oeuvre
++ in absentia
++ in abstracto
++ in allen gevalle
++ in extenso
++ in koelen bloede
++ in memoriam
++ in statu nascendi
++ in triplo
++ in voce
++ invite
++ ipso facto
++ jalousie de mיtier
++ jehova
++ jeune premier
++ joint venture
++ jus d'orange
++ kalis
++ kousjer
++ laisser faire
++ laissez passer
++ lapis lazuli
++ latino
++ logos
++ maמtre d'hפtel
++ minimal art
++ naar den vleze
++ non sequitur
++ off line
++ om den brode
++ on line
++ oratio pro domo
++ orchestreren
++ pain א la grecque
++ par excellence
++ pas de deux
++ paso doble
++ patates frites
++ peau de pךche
++ perpetuum mobile
++ plat du jour
++ pool
++ poste restante
++ pot au feu
++ procesverbaal
++ promilitair
++ public relations
++ pur sang
++ qualitate qua
++ questionnaire
++ rector magnificus
++ remedial teacher
++ remedial teaching
++ rigor mortis
++ romein
++ self-fulfilling prophecy
++ septic tank
++ short story
++ sotto voce
++ stehgeiger
++ sub rosa
++ sur place
++ t-bonesteak
++ te bestemder plaatse
++ te bestemder tijd
++ te elfder ure
++ te eniger tijd
++ te gelde maken
++ te onzen voordele
++ ten algemenen nutte
++ ten anderen male
++ ten besluite
++ ten bewijze
++ ten derde male
++ ten geschenke geven
++ ten geschenke krijgen
++ ten tweede male
++ ten vervolge op
++ ter aangehaalder plaatse
++ ter bestemder plaatse
++ ter bestemder tijd
++ ter beurze
++ ter eenre zijde
++ ter elfder ure
++ ter kerke
++ ter ore
++ terneerliggen
++ terneerslaan
++ terneervallen
++ tertiair
++ top secret
++ tot bloedens toe
++ total loss
++ turken
++ upper ten
++ ups and downs
++ van koninklijken bloede
++ van zinnens zijn
++ viola da gamba
++ white spirit
++ wishful thinking
++ א gogo
++ א propos

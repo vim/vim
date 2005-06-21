@@ -1,13 +1,10 @@
 " Vim syntax file
 " Language:	Diff (context or unified)
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2003 Apr 02
+" Last Change:	2005 Jun 20
 
-" For version 5.x: Clear all syntax items
-" For version 6.x: Quit when a syntax file was already loaded
-if version < 600
-  syntax clear
-elseif exists("b:current_syntax")
+" Quit when a (custom) syntax file was already loaded
+if exists("b:current_syntax")
   finish
 endif
 
@@ -43,35 +40,23 @@ syn match diffNewFile	"^--- .*"
 syn match diffComment	"^#.*"
 
 " Define the default highlighting.
-" For version 5.7 and earlier: only when not done already
-" For version 5.8 and later: only when an item doesn't have highlighting yet
-if version >= 508 || !exists("did_diff_syntax_inits")
-  if version < 508
-    let did_diff_syntax_inits = 1
-    command -nargs=+ HiLink hi link <args>
-  else
-    command -nargs=+ HiLink hi def link <args>
-  endif
-
-  HiLink diffOldFile	diffFile
-  HiLink diffNewFile	diffFile
-  HiLink diffFile	Type
-  HiLink diffOnly	Constant
-  HiLink diffIdentical	Constant
-  HiLink diffDiffer	Constant
-  HiLink diffBDiffer	Constant
-  HiLink diffIsA	Constant
-  HiLink diffNoEOL	Constant
-  HiLink diffCommon	Constant
-  HiLink diffRemoved	Special
-  HiLink diffChanged	PreProc
-  HiLink diffAdded	Identifier
-  HiLink diffLine	Statement
-  HiLink diffSubname	PreProc
-  HiLink diffComment	Comment
-
-  delcommand HiLink
-endif
+" Only used when an item doesn't have highlighting yet
+hi def link diffOldFile		diffFile
+hi def link diffNewFile		diffFile
+hi def link diffFile		Type
+hi def link diffOnly		Constant
+hi def link diffIdentical	Constant
+hi def link diffDiffer		Constant
+hi def link diffBDiffer		Constant
+hi def link diffIsA		Constant
+hi def link diffNoEOL		Constant
+hi def link diffCommon		Constant
+hi def link diffRemoved		Special
+hi def link diffChanged		PreProc
+hi def link diffAdded		Identifier
+hi def link diffLine		Statement
+hi def link diffSubname		PreProc
+hi def link diffComment		Comment
 
 let b:current_syntax = "diff"
 

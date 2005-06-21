@@ -1,12 +1,14 @@
 *** en_US.orig.aff	Fri Apr 15 13:20:36 2005
---- en_US.aff	Sat Apr 23 19:57:52 2005
+--- en_US.aff	Tue Jun 21 20:46:52 2005
 ***************
 *** 3,4 ****
---- 3,8 ----
+--- 3,10 ----
   
-+ FOL  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏ÿ
-+ LOW  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏ÿ
-+ UPP  ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞ‗אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏ÿ
++ FOL  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗
++ LOW  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗
++ UPP  ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞ‗
++ 
++ RAR ?
 + 
   PFX A Y 1
 ***************
@@ -15,7 +17,7 @@
 ! SFX N   y     ication    y 
 ! SFX N   0     en         [^ey] 
   
---- 34,37 ----
+--- 36,39 ----
   SFX N   e     ion        e
 ! SFX N   y     ication    y
 ! SFX N   0     en         [^ey]
@@ -25,7 +27,7 @@
   SFX H   y     ieth       y
 ! SFX H   0     th         [^y] 
   
---- 44,46 ----
+--- 46,48 ----
   SFX H   y     ieth       y
 ! SFX H   0     th         [^y]
   
@@ -34,69 +36,334 @@
   SFX G   e     ing        e
 ! SFX G   0     ing        [^e] 
   
---- 51,53 ----
+--- 53,55 ----
   SFX G   e     ing        e
 ! SFX G   0     ing        [^e]
   
+***************
+*** 137,138 ****
+--- 143,146 ----
+  REP uy i
++ REP y ie
++ REP ie y
+  REP i ee
+***************
+*** 188 ****
+--- 196,317 ----
+  REP shun cion
++ 
++ MAP 5
++ MAP aאבגדהו
++ MAP eטיךכ
++ MAP iלםמן
++ MAP oעףפץצ
++ MAP uשתûü
++ MAP nס
++ MAP cח
++ MAP yÿ‎
++ MAP s‗
++ 
++ # This comes from Aspell en_phonet.dat, version 1.1, 2000-01-07
++ 
++ SAL AH(AEIOUY)-^         *H
++ SAL AR(AEIOUY)-^         *R
++ SAL A(HR)^               *
++ SAL A^                   *
++ SAL AH(AEIOUY)-          H
++ SAL AR(AEIOUY)-          R
++ SAL A(HR)                _
++ SAL À^                   *
++ SAL Å^                   *
++ SAL BB-                  _
++ SAL B                    B
++ SAL CQ-                  _
++ SAL CIA                  X
++ SAL CH                   X
++ SAL C(EIY)-              S
++ SAL CK                   K
++ SAL COUGH^               KF
++ SAL CC<                  C
++ SAL C                    K
++ SAL DG(EIY)              K
++ SAL DD-                  _
++ SAL D                    T
++ SAL É<                   E
++ SAL EH(AEIOUY)-^         *H
++ SAL ER(AEIOUY)-^         *R
++ SAL E(HR)^               *
++ SAL ENOUGH^$             *NF
++ SAL E^                   *
++ SAL EH(AEIOUY)-          H
++ SAL ER(AEIOUY)-          R
++ SAL E(HR)                _
++ SAL FF-                  _
++ SAL F                    F
++ SAL GN^                  N
++ SAL GN$                  N
++ SAL GNS$                 NS
++ SAL GNED$                N
++ SAL GH(AEIOUY)-          K
++ SAL GH                   _
++ SAL GG9                  K
++ SAL G                    K
++ SAL H                    H
++ SAL IH(AEIOUY)-^         *H
++ SAL IR(AEIOUY)-^         *R
++ SAL I(HR)^               *
++ SAL I^                   *
++ SAL ING6                 N
++ SAL IH(AEIOUY)-          H
++ SAL IR(AEIOUY)-          R
++ SAL I(HR)                _
++ SAL J                    K
++ SAL KN^                  N
++ SAL KK-                  _
++ SAL K                    K
++ SAL LAUGH^               LF
++ SAL LL-                  _
++ SAL L                    L
++ SAL MB$                  M
++ SAL MM                   M
++ SAL M                    M
++ SAL NN-                  _
++ SAL N                    N
++ SAL OH(AEIOUY)-^         *H
++ SAL OR(AEIOUY)-^         *R
++ SAL O(HR)^               *
++ SAL O^                   *
++ SAL OH(AEIOUY)-          H
++ SAL OR(AEIOUY)-          R
++ SAL O(HR)                _
++ SAL PH                   F
++ SAL PN^                  N
++ SAL PP-                  _
++ SAL P                    P
++ SAL Q                    K
++ SAL RH^                  R
++ SAL ROUGH^               RF
++ SAL RR-                  _
++ SAL R                    R
++ SAL SCH(EOU)-            SK
++ SAL SC(IEY)-             S
++ SAL SH                   X
++ SAL SI(AO)-              X
++ SAL SS-                  _
++ SAL S                    S
++ SAL TI(AO)-              X
++ SAL TH                   @
++ SAL TCH--                _
++ SAL TOUGH^               TF
++ SAL TT-                  _
++ SAL T                    T
++ SAL UH(AEIOUY)-^         *H
++ SAL UR(AEIOUY)-^         *R
++ SAL U(HR)^               *
++ SAL U^                   *
++ SAL UH(AEIOUY)-          H
++ SAL UR(AEIOUY)-          R
++ SAL U(HR)                _
++ SAL V^                   W
++ SAL V                    F
++ SAL WR^                  R
++ SAL WH^                  W
++ SAL W(AEIOU)-            W
++ SAL X^                   S
++ SAL X                    KS
++ SAL Y(AEIOU)-            Y
++ SAL ZZ-                  _
++ SAL Z                    S
 *** en_US.orig.dic	Fri Apr 15 13:20:36 2005
---- en_US.dic	Tue Apr 19 23:08:36 2005
+--- en_US.dic	Tue Jun 21 20:26:22 2005
+***************
+*** 5944,5946 ****
+  bk
+! b/KGD
+  Bk/M
+--- 5944,5947 ----
+  bk
+! probing
+! probed
+  Bk/M
+***************
+*** 9233,9235 ****
+  cetacean/S
+- cetera/S
+  Cetus/M
+--- 9234,9235 ----
+***************
+*** 14038,14043 ****
+  dazzling/Y
+- db
+- DB
+  dbl
+  dB/M
+  DBMS
+--- 14038,14044 ----
+  dazzling/Y
+  dbl
+  dB/M
++ dBi
++ dBm
++ dBd
+  DBMS
 ***************
 *** 16911,16912 ****
---- 16911,16913 ----
+--- 16912,16914 ----
   dusty/RPT
 + Farsi
   Dutch/M
+***************
+*** 18780,18782 ****
+  estuary/SM
+! et
+  ET
+--- 18782,18785 ----
+  estuary/SM
+! et cetera/S
+! et al.
+  ET
+***************
+*** 18785,18787 ****
+  eta/SM
+! etc
+  etcetera/SM
+--- 18788,18790 ----
+  eta/SM
+! etc.
+  etcetera/SM
 ***************
 *** 25963,25965 ****
   hobbing
 ! hobbit
   hobbler/M
---- 25964,25966 ----
+--- 25966,25968 ----
   hobbing
 ! hobbit/MS
   hobbler/M
 ***************
+*** 26524,26526 ****
+  HST
+- ht
+  HTML
+--- 26527,26528 ----
+***************
+*** 34746,34747 ****
+--- 34748,34751 ----
+  Mb
++ Mbyte
++ Mbit
+  MB
+***************
 *** 36605,36606 ****
---- 36606,36608 ----
+--- 36609,36611 ----
   Moog
 + Moolenaar/M
   moo/GSD
 ***************
 *** 38871,38873 ****
   NSF
-! n/T
+- n/T
   NT
---- 38873,38875 ----
-  NSF
-! n
-  NT
+--- 38876,38877 ----
+***************
+*** 39532,39534 ****
+  om/XN
+- ON
+  onanism/M
+--- 39536,39537 ----
+***************
+*** 42508,42510 ****
+  pinfeather/SM
+! ping/GDRM
+  pinheaded/P
+--- 42511,42513 ----
+  pinfeather/SM
+! ping/GDRMS
+  pinheaded/P
+***************
+*** 42983,42984 ****
+--- 42986,42988 ----
+  pneumonia/MS
++ pneumonic
+  PO
+***************
+*** 43216,43218 ****
+  pompom/SM
+! pompon's
+  pomposity/MS
+--- 43220,43222 ----
+  pompom/SM
+! pompon/M
+  pomposity/MS
+***************
+*** 44940,44942 ****
+  PX
+- p/XTGJ
+  Pygmalion/M
+--- 44944,44945 ----
 ***************
 *** 46507,46509 ****
   Renault/MS
 - rend
   renderer/M
---- 46509,46510 ----
+--- 46510,46511 ----
+***************
+*** 47258,47260 ****
+  ringer/M
+! ring/GZJDRM
+  ringing/Y
+--- 47260,47262 ----
+  ringer/M
+! ring/GZJDRMS
+  ringing/Y
+***************
+*** 47857,47862 ****
+  rt
+- rte
+  Rte
+  RTFM
+- r/TGVJ
+  Rubaiyat/M
+--- 47859,47862 ----
 ***************
 *** 48085,48087 ****
   Ryun/M
 - S
   SA
---- 48086,48087 ----
+--- 48085,48086 ----
 ***************
 *** 54450,54452 ****
   swung
 ! s/XJBG
   sybarite/MS
---- 54450,54452 ----
+--- 54449,54451 ----
   swung
 ! sings
   sybarite/MS
+***************
+*** 57809,57811 ****
+  Tzeltal/M
+- u
+  U
+--- 57808,57809 ----
+***************
+*** 58494,58495 ****
+--- 58492,58494 ----
+  unsearchable
++ searchable
+  unseasonal
 ***************
 *** 59538,59540 ****
   vi/MDR
 ! vim/MS
   vinaigrette/MS
---- 59538,59540 ----
+--- 59537,59539 ----
   vi/MDR
 ! Vim/MS
   vinaigrette/MS
+***************
+*** 62077 ****
+--- 62076,62078 ----
+  zymurgy/S
++ the the/?
++ nd

@@ -1325,6 +1325,7 @@ tgetch(int *pmodifiers, char_u *pch2)
  * If time == -1, wait forever for characters.
  * Returns the number of characters read into buf.
  */
+/*ARGSUSED*/
     int
 mch_inchar(
     char_u	*buf,
@@ -4190,6 +4191,7 @@ mch_breakcheck(void)
  * How much memory is available?
  * Return sum of available physical and page file memory.
  */
+/*ARGSUSED*/
     long_u
 mch_avail_mem(int special)
 {
@@ -4867,7 +4869,7 @@ myresetstkoflw(void)
 /*
  * The command line arguments in UCS2
  */
-static DWORD	nArgsW = 0;
+static int	nArgsW = 0;
 static LPWSTR	*ArglistW = NULL;
 static int	global_argc = 0;
 static char	**global_argv;
@@ -4994,7 +4996,7 @@ fix_arg_enc(void)
      * - the file name arguments must have been located.
      * - the length of the argument list wasn't changed by the user.
      */
-    if (global_argc != (int)nArgsW
+    if (global_argc != nArgsW
 	    || ArglistW == NULL
 	    || used_file_indexes == NULL
 	    || used_file_count == 0

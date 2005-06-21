@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 17
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1603,6 +1603,8 @@ setreg( {n}, {v}[, {opt}])	Number	set register to value and type
 setwinvar( {nr}, {varname}, {val})	set {varname} in window {nr} to {val}
 simplify( {filename})		String	simplify filename as much as possible
 sort( {list} [, {func}])	List	sort {list}, using {func} to compare
+spellbadword()			String	badly spelled word at cursor
+spellsuggest({word} [, {max}])	List	spelling suggestions
 split( {expr} [, {pat} [, {keepempty}]])
 				List	make List from {pat} separated {expr}
 strftime( {format}[, {time}])	String	time in specified format
@@ -3757,6 +3759,27 @@ sort({list} [, {func}])					*sort()* *E702*
 			   return a:i1 == a:i2 ? 0 : a:i1 > a:i2 ? 1 : -1
 			endfunc
 			let sortedlist = sort(mylist, "MyCompare")
+<
+
+							*spellbadword()*
+spellbadword()	Return the badly spelled word under or after the cursor.
+		The cursor is advanced to the start of the bad word.
+		When no bad word is found in the cursor line an empty String
+		is returned and the cursor doesn't move.
+
+							*spellsuggest()*
+spellsuggest({word} [, {max}])
+		Return a List with spelling suggestions to replace {word}.
+		When {max} is given up to this number of suggestions are
+		returned.  Otherwise up to 25 suggestions are returned.
+
+		{word} can be a badly spelled word followed by other text.
+		This allows for joining two words that were split.  The
+		suggestions then also include the following text.
+
+		The spelling information for the current window is used.  The
+		'spell' option must be set and 'spelllang' is relevant.
+
 
 split({expr} [, {pattern} [, {keepempty}]])			*split()*
 		Make a List out of {expr}.  When {pattern} is omitted or empty

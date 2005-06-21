@@ -814,16 +814,16 @@ static struct builtin_term builtin_termcaps[] =
     {(int)KS_CCO,	"8"},			/* allow 8 colors */
     {(int)KS_ME,	IF_EB("\033[0m", ESC_STR "[0m")},
     {(int)KS_MR,	IF_EB("\033[7m", ESC_STR "[7m")},
-    {(int)KS_MD,        IF_EB("\033[1m", ESC_STR "[1m")},  /* bold mode */
-    {(int)KS_SE,        IF_EB("\033[22m", ESC_STR "[22m")},/* normal mode */
-    {(int)KS_UE,        IF_EB("\033[24m", ESC_STR "[24m")},/* exit underscore mode */
-    {(int)KS_US,        IF_EB("\033[4m", ESC_STR "[4m")},  /* underscore mode */
-    {(int)KS_CZH,       IF_EB("\033[34;43m", ESC_STR "[34;43m" )},  /* italic mode: blue text on yellow */
-    {(int)KS_CZR,       IF_EB("\033[0m", ESC_STR "[0m")},           /* italic mode end */
-    {(int)KS_CAB,       IF_EB("\033[4%dm", ESC_STR "[4%dm" )},      /* set background color (ANSI) */
-    {(int)KS_CAF,       IF_EB("\033[3%dm", ESC_STR "[3%dm" )},      /* set foreground color (ANSI) */
-    {(int)KS_CSB,       IF_EB("\033[102;%dm", ESC_STR "[102;%dm" )},    /* set screen background color */
-    {(int)KS_CSF,       IF_EB("\033[101;%dm", ESC_STR "[101;%dm" )},    /* set screen foreground color */
+    {(int)KS_MD,	IF_EB("\033[1m", ESC_STR "[1m")},  /* bold mode */
+    {(int)KS_SE,	IF_EB("\033[22m", ESC_STR "[22m")},/* normal mode */
+    {(int)KS_UE,	IF_EB("\033[24m", ESC_STR "[24m")},/* exit underscore mode */
+    {(int)KS_US,	IF_EB("\033[4m", ESC_STR "[4m")},  /* underscore mode */
+    {(int)KS_CZH,	IF_EB("\033[34;43m", ESC_STR "[34;43m")},  /* italic mode: blue text on yellow */
+    {(int)KS_CZR,	IF_EB("\033[0m", ESC_STR "[0m")},	    /* italic mode end */
+    {(int)KS_CAB,	IF_EB("\033[4%dm", ESC_STR "[4%dm")},	    /* set background color (ANSI) */
+    {(int)KS_CAF,	IF_EB("\033[3%dm", ESC_STR "[3%dm")},	    /* set foreground color (ANSI) */
+    {(int)KS_CSB,	IF_EB("\033[102;%dm", ESC_STR "[102;%dm")},	/* set screen background color */
+    {(int)KS_CSF,	IF_EB("\033[101;%dm", ESC_STR "[101;%dm")},	/* set screen foreground color */
     {(int)KS_MS,	"y"},
     {(int)KS_UT,	"y"},
     {(int)KS_LE,	"\b"},
@@ -842,13 +842,17 @@ static struct builtin_term builtin_termcaps[] =
     {K_DOWN,		IF_EB("\033[B", ESC_STR "[B")},
     {K_RIGHT,		IF_EB("\033[C", ESC_STR "[C")},
     {K_LEFT,		IF_EB("\033[D", ESC_STR "[D")},
+    {K_F1,		IF_EB("\033[11~", ESC_STR "[11~")},
+    {K_F2,		IF_EB("\033[12~", ESC_STR "[12~")},
+    {K_F3,		IF_EB("\033[13~", ESC_STR "[13~")},
+    {K_F4,		IF_EB("\033[14~", ESC_STR "[14~")},
+    {K_F5,		IF_EB("\033[15~", ESC_STR "[15~")},
     {K_F6,		IF_EB("\033[17~", ESC_STR "[17~")},
     {K_F7,		IF_EB("\033[18~", ESC_STR "[18~")},
     {K_F8,		IF_EB("\033[19~", ESC_STR "[19~")},
     {K_F9,		IF_EB("\033[20~", ESC_STR "[20~")},
     {K_F10,		IF_EB("\033[21~", ESC_STR "[21~")},
-/*  {K_F11,		IF_EB("\033[23~", ESC_STR "[23~")},
-			*  (ESC) should not define, sometimes does not work */
+    {K_F11,		IF_EB("\033[23~", ESC_STR "[23~")},
     {K_F12,		IF_EB("\033[24~", ESC_STR "[24~")},
     {K_F13,		IF_EB("\033[25~", ESC_STR "[25~")},
     {K_F14,		IF_EB("\033[26~", ESC_STR "[26~")},

@@ -1,5 +1,5 @@
 *** en_AU.orig.aff	Fri Apr 15 13:20:36 2005
---- en_AU.aff	Sat Apr 23 19:57:40 2005
+--- en_AU.aff	Sat Jun 18 19:42:07 2005
 ***************
 *** 7,9 ****
   SET ISO8859-1
@@ -9,9 +9,9 @@
   SET ISO8859-1
 ! TRY esiaיnrtolcdugmphbyfvkw-'.zqjxSNRTLCGDMPHBEAUYOFIVKWצגפZQJXÅחטמךאןüהס
 ! 
-! FOL  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏ÿ
-! LOW  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏ÿ
-! UPP  ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞ‗אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏ÿ
+! FOL  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗
+! LOW  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗
+! UPP  ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞ‗
 ! 
 ! 
   REP 24
@@ -2227,49 +2227,161 @@
 ! SFX 3 o ist's o
 ! SFX 3 0 ist's [^eoy]
 *** en_AU.orig.dic	Fri Apr 15 13:20:36 2005
---- en_AU.dic	Tue Apr 19 22:19:18 2005
+--- en_AU.dic	Tue Jun 21 20:24:15 2005
+***************
+*** 912,914 ****
+  Alaska/M
+! al/AY
+  albacore/MS
+--- 912,914 ----
+  Alaska/M
+! really
+  albacore/MS
+***************
+*** 4885,4887 ****
+  bozo/SM
+- b/pb
+  bpi
+--- 4885,4886 ----
 ***************
 *** 4921,4922 ****
---- 4921,4923 ----
+--- 4920,4922 ----
   Brahms
 + Bram/M
   braid/DGS
 ***************
+*** 10288,10289 ****
+--- 10288,10292 ----
+  dB/M
++ dBi
++ dBm
++ dBd
+  DBMS
+***************
 *** 12468,12469 ****
---- 12469,12471 ----
+--- 12471,12473 ----
   Dutch/5m
 + Farsi
   Dutchwomen/M
+***************
+*** 13779,13781 ****
+  estuary/MS
+! et
+  ETA
+--- 13783,13786 ----
+  estuary/MS
+! et cetera
+! et al.
+  ETA
 ***************
 *** 19214,19216 ****
   Hobbes
 ! hobbit
   hobble/RGSD
---- 19216,19218 ----
+--- 19219,19221 ----
   Hobbes
 ! hobbit/MS
   hobble/RGSD
 ***************
+*** 22885,22887 ****
+  lass/SM
+- last-ditch
+  lasted/e
+--- 22890,22891 ----
+***************
+*** 22890,22892 ****
+  last/kJYDSG
+- last-minute
+  lasts/e
+--- 22894,22895 ----
+***************
 *** 26417,26418 ****
---- 26419,26421 ----
+--- 26420,26422 ----
   Moolawatana
 + Moolenaar/M
   Moomba
+***************
+*** 27188,27192 ****
+  nationals/4
+! national/sQq3S
+  nationhood/M
+! nation/M
+  nationwide
+--- 27192,27196 ----
+  nationals/4
+! national/sQq3SZ
+  nationhood/M
+! nation/MS
+  nationwide
+***************
+*** 27194,27195 ****
+--- 27198,27201 ----
+  nativity/MS
++ natively
++ nativeness
+  NATO/M
+***************
+*** 31035,31037 ****
+  Pk
+- p/KF
+  pl.
+--- 31041,31042 ----
+***************
+*** 31288,31289 ****
+--- 31293,31295 ----
+  pneumonia/MS
++ pneumonic
+  PO
+***************
+*** 31460,31461 ****
+--- 31466,31468 ----
+  pompom/MS
++ pompon/M
+  pomposity/MS
+***************
+*** 33378,33380 ****
+  razzmatazz
+- r/d
+  Rd/M
+--- 33385,33386 ----
+***************
+*** 34979,34981 ****
+  RSPCA
+- rte
+  rub-a-dub
+--- 34985,34986 ----
 ***************
 *** 36012,36014 ****
   sec.
 ! s/eca
   secant/MS
---- 36015,36017 ----
+--- 36017,36019 ----
   sec.
 ! outs
   secant/MS
+***************
+*** 42616,42618 ****
+  Tyson/M
+- u
+  ubiquitousness
+--- 42621,42622 ----
+***************
+*** 42990,42991 ****
+--- 42994,42996 ----
+  unscrupulous
++ searchable
+  unsearchable
 ***************
 *** 43749,43751 ****
   Vilnius/M
 ! vim/M
   vinaigrette/MS
---- 43752,43754 ----
+--- 43754,43756 ----
   Vilnius/M
 ! Vim/M
   vinaigrette/MS
+***************
+*** 45655 ****
+--- 45660,45661 ----
+  zymurgy/S
++ nd

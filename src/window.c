@@ -458,11 +458,8 @@ do_window(nchar, Prenum, xchar)
     case 'f':
     case Ctrl_F:
 		CHECK_CMDWIN
-#ifdef FEAT_VISUAL
-		reset_VIsual_and_resel();	/* stop Visual mode */
-#endif
-		ptr = file_name_at_cursor(FNAME_MESS|FNAME_HYP|FNAME_EXP,
-								     Prenum1);
+
+		ptr = grab_file_name(Prenum1);
 		if (ptr != NULL)
 		{
 #ifdef FEAT_GUI
@@ -4477,6 +4474,30 @@ last_status_rec(fr, statusline)
 #endif /* FEAT_WINDOWS */
 
 #if defined(FEAT_SEARCHPATH) || defined(PROTO)
+/*
+ * Get the file name at the cursor.
+ * If Visual mode is active, use the selected text if it's in one line.
+ * Returns the name in allocated memory, NULL for failure.
+ */
+    char_u *
+grab_file_name(count)
+    long count;
+{
+# ifdef FEAT_VISUAL
+    if (VIsual_active)
+    {
+	int	len;
+	char_u	*ptr;
+
+	if (get_visual_text(NULL, &ptr, &len) == FAIL)
+	    return NULL;
+	return find_file_name_in_path(ptr, len,
+		     FNAME_MESS|FNAME_EXP|FNAME_REL, count, curbuf->b_ffname);
+    }
+# endif
+    return file_name_at_cursor(FNAME_MESS|FNAME_HYP|FNAME_EXP|FNAME_REL, count);
+}
+
 /*
  * Return the file name under or after the cursor.
  *

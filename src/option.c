@@ -2049,6 +2049,15 @@ static struct vimoption
 			    {(char_u *)0L, (char_u *)0L}
 #endif
 			    },
+    {"spellsuggest", "sps", P_STRING|P_VI_DEF,
+#ifdef FEAT_SYN_HL
+			    (char_u *)&p_sps, PV_NONE,
+			    {(char_u *)"best", (char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)0L, (char_u *)0L}
+#endif
+    },
     {"splitbelow",  "sb",   P_BOOL|P_VI_DEF,
 #ifdef FEAT_WINDOWS
 			    (char_u *)&p_sb, PV_NONE,
@@ -4552,6 +4561,9 @@ didset_options()
 #if defined(FEAT_MOUSE) && (defined(UNIX) || defined(VMS))
     (void)opt_strings_flags(p_ttym, p_ttym_values, &ttym_flags, FALSE);
 #endif
+#ifdef FEAT_SYN_HL
+    (void)opt_strings_flags(p_sps, p_sps_values, &sps_flags, FALSE);
+#endif
 #if defined(FEAT_TOOLBAR) && !defined(FEAT_GUI_W32)
     (void)opt_strings_flags(p_toolbar, p_toolbar_values, &toolbar_flags, TRUE);
 #endif
@@ -5709,6 +5721,12 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 # endif
 		}
 	}
+    }
+    /* 'spellsuggest' */
+    else if (varp == &p_sps)
+    {
+	if (opt_strings_flags(p_sps, p_sps_values, &sps_flags, FALSE) != OK)
+	    errmsg = e_invarg;
     }
 #endif
 

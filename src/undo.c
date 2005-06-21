@@ -79,7 +79,8 @@ static long	u_newcount, u_oldcount;
 static int	undo_undoes = FALSE;
 
 /*
- * save the current line for both the "u" and "U" command
+ * Save the current line for both the "u" and "U" command.
+ * Returns OK or FAIL.
  */
     int
 u_save_cursor()

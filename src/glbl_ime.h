@@ -14,15 +14,15 @@
 extern "C" {
 #endif /* __cplusplus */
     void global_ime_init(ATOM, HWND);
-    void global_ime_end();
+    void global_ime_end(void);
     LRESULT WINAPI global_ime_DefWindowProc(HWND, UINT, WPARAM, LPARAM);
     BOOL WINAPI global_ime_TranslateMessage(CONST MSG *);
     void WINAPI global_ime_set_position(POINT*);
     void WINAPI global_ime_set_font(LOGFONT*);
-    void WINAPI global_ime_status_evacuate();
-    void WINAPI global_ime_status_restore();
+    void WINAPI global_ime_status_evacuate(void);
+    void WINAPI global_ime_status_restore(void);
     void WINAPI global_ime_set_status(int status);
-    int WINAPI global_ime_get_status();
+    int WINAPI global_ime_get_status(void);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
