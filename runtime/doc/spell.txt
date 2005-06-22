@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 21
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -41,7 +41,9 @@ To search for the next misspelled word:
 
 							*[s*
 [s			Like "]s" but search backwards, find the misspelled
-			word before the cursor.
+			word before the cursor.  Doesn't recognize words
+			split over two lines, thus may stop at words that are
+			not highlighted as bad.
 
 							*]S*
 ]S			Like "]s" but only stop at bad words, not at rare
@@ -77,12 +79,11 @@ automatically be updated.  More details about the 'spellfile' format below
 Finding suggestions for bad words:
 
 							*z?*
-z?			For the badly spelled word under the cursor suggest
-			the correctly spelled word.
-			When there is no badly spelled word under the cursor
-			use the one after the cursor, in the same line.
-			The results are sorted on similarity to the badly
-			spelled word.
+z?			For the word under/after the cursor suggest correctly
+			spelled words.  This also works to find alternative
+			for words that are not highlighted as bad words.
+			The results are sorted on similarity to the word
+			under/after the cursor.
 			This may take a long time.  Hit CTRL-C when you are
 			bored.
 			You can enter the number of your choice or press
@@ -90,8 +91,6 @@ z?			For the badly spelled word under the cursor suggest
 			If 'verbose' is non-zero a score will be displayed to
 			indicate the likeliness to the badly spelled word (the
 			higher the score the more different).
-			The score may be slightly wrong for words with
-			multi-byte characters.
 			When a word was replaced the redo command "." will
 			repeat the word replacement.  This works like "ciw",
 			the good word and <Esc>.
@@ -205,6 +204,25 @@ A word that starts with a digit is always ignored.  That includes hex numbers
 in the form 0xff and 0XFF.
 
 
+WORD COMBINATIONS
+
+It is possible to spell-check words that include a space.  This is used to
+recognize words that are invalid when used by themselves, e.g. for "et al.".
+It can also be used to recognize "the the" and highlight it.
+
+The number of spaces is irrelevant.  In most cases a line break may also
+appear.  However, this makes it difficult to find out where to start checking
+for spelling mistakes.  When you make a change to one line and only that line
+is redrawn Vim won't look in the previous line, thus when "et" is at the end
+of the previous line "al." will be flagged as an error.  And when you type
+"the<CR>the" the highlighting doesn't appear until the first line is redrawn.
+Use |CTRL-L| to redraw right away.  "[s" will also stop at a word combination
+with a line break.
+
+When encountering a line break Vim skips characters such as '*', '>' and '"',
+so that comments in C, shell and Vim code can be spell checked.
+
+
 SYNTAX HIGHLIGHTING					*spell-syntax*
 
 Files that use syntax highlighting can specify where spell checking should be
@@ -218,6 +236,15 @@ For the second method adding the @NoSpell cluster will disable spell checking
 again.  This can be used, for example, to add @Spell to the comments of a
 program, and add @NoSpell for items that shouldn't be checked.
 
+
+VIM SCRIPTS
+
+If you want to write a Vim script that does something with spelling, you may
+find these functions useful:
+
+    spellbadword()	find badly spelled word at the cursor
+    spellsuggest()	get list of spelling suggestions
+
 ==============================================================================
 2. Generating a spell file				*spell-mkspell*
 
@@ -228,7 +255,8 @@ You can create a Vim spell file from the .aff and .dic files that Myspell
 uses.  Myspell is used by OpenOffice.org and Mozilla.  You should be able to
 find them here:
 	http://lingucomponent.openoffice.org/spell_dic.html
-You can also use a plain word list.
+You can also use a plain word list.  The results are the same, the choice
+depends on what you find.
 
 Make sure your current locale is set properly, otherwise Vim doesn't know what
 characters are upper/lower case letters.  If the locale isn't available (e.g.,
@@ -266,6 +294,10 @@ when using an MS-Windows codepage on Unix) add tables to the .aff file
 			The REP and SAL items of the first .aff file where
 			they appear are used. |spell-affix-REP|
 			|spell-affix-SAL|
+
+			This command uses a lot of memory, required to find
+			the optimal word tree (Polish requires a few hundred
+			Mbyte).  The final result will be much smaller.
 
 			When the spell file was written all currently used
 			spell files will be reloaded.
@@ -520,7 +552,20 @@ rare words.  Example:
 
 Rare words are highlighted differently from bad words.  This is to be used for
 words that are correct for the language, but are hardly ever used and could be
-a typing mistake anyway.
+a typing mistake anyway.  When the same word is found as good it won't be
+highlighted as rare.
+
+
+BAD WORDS
+							*spell-affix-BAD*
+In the affix file a BAD line can be used to define the affix name used for
+bad words.  Example:
+
+	BAD ! ~
+
+This can be used to exclude words that would otherwise be good.  For example
+"the the".  Once a word has been marked as bad it won't be undone by
+encountering the same word as good.
 
 
 REPLACEMENTS						*spell-affix-REP*

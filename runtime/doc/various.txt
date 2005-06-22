@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.0aa.  Last change: 2005 May 31
+*various.txt*   For Vim version 7.0aa.  Last change: 2005 Jun 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -14,7 +14,8 @@ Various commands					*various*
 1. Various commands					*various-cmds*
 
 							*CTRL-L*
-CTRL-L			Clear and redraw the screen (later).
+CTRL-L			Clear and redraw the screen.  The redraw may happen
+			later, after processing typeahead.
 
 							*:redr* *:redraw*
 :redr[aw][!]		Redraw the screen right now.  When ! is included it is

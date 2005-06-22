@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	C
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Mar 27
+" Last Change:	2005 Jun 22
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -12,6 +12,7 @@ endif
 let b:did_ftplugin = 1
 
 " Using line continuation here.
+let s:cpo_save = &cpo
 set cpo-=C
 
 let b:undo_ftplugin = "setl fo< com< | if has('vms') | setl isk< | endif"
@@ -48,3 +49,6 @@ if has("gui_win32") && !exists("b:browsefilter")
 	  \ "All Files (*.*)\t*.*\n"
   endif
 endif
+
+let &cpo = s:cpo_save
+unlet s:cpo_save

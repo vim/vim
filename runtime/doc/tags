@@ -731,11 +731,13 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'spell'	options.txt	/*'spell'*
 'spellfile'	options.txt	/*'spellfile'*
 'spelllang'	options.txt	/*'spelllang'*
+'spellsuggest'	options.txt	/*'spellsuggest'*
 'spf'	options.txt	/*'spf'*
 'spl'	options.txt	/*'spl'*
 'splitbelow'	options.txt	/*'splitbelow'*
 'splitright'	options.txt	/*'splitright'*
 'spr'	options.txt	/*'spr'*
+'sps'	options.txt	/*'sps'*
 'sr'	options.txt	/*'sr'*
 'srr'	options.txt	/*'srr'*
 'ss'	options.txt	/*'ss'*
@@ -5130,7 +5132,6 @@ hebrew	hebrew.txt	/*hebrew*
 hebrew.txt	hebrew.txt	/*hebrew.txt*
 help	various.txt	/*help*
 help-context	help.txt	/*help-context*
-help-tags	tags	1
 help-translated	various.txt	/*help-translated*
 help-xterm-window	various.txt	/*help-xterm-window*
 help.txt	help.txt	/*help.txt*

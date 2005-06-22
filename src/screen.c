@@ -2502,8 +2502,17 @@ win_line(wp, lnum, startrow, endrow)
     int		has_syntax = FALSE;	/* this buffer has syntax highl. */
     int		save_did_emsg;
     int		has_spell = FALSE;	/* this buffer has spell checking */
+# define SPWORDLEN 150
+    char_u	nextline[SPWORDLEN * 2];/* text with start of the next line */
+    int		nextlinecol;		/* column where nextline[] starts */
+    int		nextline_idx;		/* index in nextline[] where next line
+					   starts */
     int		spell_attr = 0;		/* attributes desired by spelling */
     int		word_end = 0;		/* last byte with same spell_attr */
+    static linenr_T  checked_lnum = 0;	/* line number for checked_col */
+    static int	checked_col = 0;	/* column in checked_lnum up to which
+					 * there are no spell errors */
+    int		cur_checked_col = 0;	/* checked column for current line */
 #endif
     int		extra_check;		/* has syntax or linebreak */
 #ifdef FEAT_MBYTE
@@ -2609,6 +2618,22 @@ win_line(wp, lnum, startrow, endrow)
 	/* Prepare for spell checking. */
 	has_spell = TRUE;
 	extra_check = TRUE;
+
+	/* Get the start of the next line, so that words that wrap to the next
+	 * line are found too: "et<line-break>al.".
+	 * Trick: skip a few chars for C/shell/Vim comments */
+	nextline[SPWORDLEN] = NUL;
+	if (lnum < wp->w_buffer->b_ml.ml_line_count)
+	{
+	    line = ml_get_buf(wp->w_buffer, lnum + 1, FALSE);
+	    spell_cat_line(nextline + SPWORDLEN, line, SPWORDLEN);
+	}
+
+	/* When a word wrapped from the previous line the start of the current
+	 * line is valid. */
+	if (lnum == checked_lnum)
+	    cur_checked_col = checked_col;
+	checked_lnum = 0;
     }
 #endif
 
@@ -2773,6 +2798,42 @@ win_line(wp, lnum, startrow, endrow)
 
     line = ml_get_buf(wp->w_buffer, lnum, FALSE);
     ptr = line;
+
+#ifdef FEAT_SYN_HL
+    if (has_spell)
+    {
+	/* To be able to spell-check over line boundaries copy the end of the
+	 * current line into nextline[].  Above the start of the next line was
+	 * copied to nextline[SPWORDLEN]. */
+	if (nextline[SPWORDLEN] == NUL)
+	{
+	    /* No next line or it is empty. */
+	    nextlinecol = MAXCOL;
+	    nextline_idx = 0;
+	}
+	else
+	{
+	    v = STRLEN(line);
+	    if (v < SPWORDLEN)
+	    {
+		/* Short line, use it completely and append the start of the
+		 * next line. */
+		nextlinecol = 0;
+		mch_memmove(nextline, line, (size_t)v);
+		mch_memmove(nextline + v, nextline + SPWORDLEN,
+					    STRLEN(nextline + SPWORDLEN) + 1);
+		nextline_idx = v + 1;
+	    }
+	    else
+	    {
+		/* Long line, use only the last SPWORDLEN bytes. */
+		nextlinecol = v - SPWORDLEN;
+		mch_memmove(nextline, line + nextlinecol, SPWORDLEN);
+		nextline_idx = SPWORDLEN + 1;
+	    }
+	}
+    }
+#endif
 
     /* find start of trailing whitespace */
     if (wp->w_p_list && lcs_trail)
@@ -3587,14 +3648,15 @@ win_line(wp, lnum, startrow, endrow)
 		 * Only do this when there is no syntax highlighting, the
 		 * @Spell cluster is not used or the current syntax item
 		 * contains the @Spell cluster. */
-		if (has_spell && v >= word_end)
+		if (has_spell && v >= word_end && v > cur_checked_col)
 		{
 		    spell_attr = 0;
 		    if (area_attr == 0 && search_attr == 0)
 			char_attr = syntax_attr;
 		    if (c != 0 && (!has_syntax || can_spell))
 		    {
-			char_u	*prev_ptr;
+			char_u	*prev_ptr, *p;
+			int	len;
 # ifdef FEAT_MBYTE
 			if (has_mbyte)
 			{
@@ -3604,7 +3666,15 @@ win_line(wp, lnum, startrow, endrow)
 			else
 # endif
 			    prev_ptr = ptr - 1;
-			word_end = v + spell_check(wp, prev_ptr, &spell_attr);
+
+			/* Use nextline[] if possible, it has the start of the
+			 * next line concatenated. */
+			if ((prev_ptr - line) - nextlinecol >= 0)
+			    p = nextline + (prev_ptr - line) - nextlinecol;
+			else
+			    p = prev_ptr;
+			len = spell_check(wp, p, &spell_attr);
+			word_end = v + len;
 
 			/* In Insert mode only highlight a word that
 			 * doesn't touch the cursor. */
@@ -3618,10 +3688,24 @@ win_line(wp, lnum, startrow, endrow)
 			    spell_attr = 0;
 			    spell_redraw_lnum = lnum;
 			}
+
+			if (spell_attr == 0 && p != prev_ptr
+				       && (p - nextline) + len > nextline_idx)
+			{
+			    /* Remember that the good word continues at the
+			     * start of the next line. */
+			    checked_lnum = lnum + 1;
+			    checked_col = (p - nextline) + len - nextline_idx;
+			}
 		    }
 		}
 		if (spell_attr != 0)
-		    char_attr = hl_combine_attr(char_attr, spell_attr);
+		{
+		    if (area_attr == 0 && search_attr == 0)
+			char_attr = hl_combine_attr(char_attr, spell_attr);
+		    else
+			char_attr = hl_combine_attr(spell_attr, char_attr);
+		}
 #endif
 #ifdef FEAT_LINEBREAK
 		/*

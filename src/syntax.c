@@ -7591,26 +7591,27 @@ get_attr_entry(table, aep)
 
 #if defined(FEAT_SYN_HL) || defined(PROTO)
 /*
- * Combine the spelling attributes with other attributes.  "spell_attr"
- * overrules "char_attr".
+ * Combine special attributes (e.g., for spelling) with other attributes
+ * (e.g., for syntax highlighting).
+ * "prim_attr" overrules "char_attr".
  * This creates a new group when required.
  * Since we expect there to be few spelling mistakes we don't cache the
  * result.
  * Return the resulting attributes.
  */
     int
-hl_combine_attr(char_attr, spell_attr)
+hl_combine_attr(char_attr, prim_attr)
     int	    char_attr;
-    int	    spell_attr;
+    int	    prim_attr;
 {
     attrentry_T *char_aep = NULL;
     attrentry_T *spell_aep;
     attrentry_T new_en;
 
     if (char_attr == 0)
-	return spell_attr;
-    if (char_attr <= HL_ALL && spell_attr <= HL_ALL)
-	return char_attr | spell_attr;
+	return prim_attr;
+    if (char_attr <= HL_ALL && prim_attr <= HL_ALL)
+	return char_attr | prim_attr;
 #ifdef FEAT_GUI
     if (gui.in_use)
     {
@@ -7625,11 +7626,11 @@ hl_combine_attr(char_attr, spell_attr)
 		new_en.ae_attr = char_attr;
 	}
 
-	if (spell_attr <= HL_ALL)
-	    new_en.ae_attr |= spell_attr;
+	if (prim_attr <= HL_ALL)
+	    new_en.ae_attr |= prim_attr;
 	else
 	{
-	    spell_aep = syn_gui_attr2entry(spell_attr);
+	    spell_aep = syn_gui_attr2entry(prim_attr);
 	    if (spell_aep != NULL)
 	    {
 		new_en.ae_attr |= spell_aep->ae_attr;
@@ -7664,11 +7665,11 @@ hl_combine_attr(char_attr, spell_attr)
 		new_en.ae_attr = char_attr;
 	}
 
-	if (spell_attr <= HL_ALL)
-	    new_en.ae_attr |= spell_attr;
+	if (prim_attr <= HL_ALL)
+	    new_en.ae_attr |= prim_attr;
 	else
 	{
-	    spell_aep = syn_cterm_attr2entry(spell_attr);
+	    spell_aep = syn_cterm_attr2entry(prim_attr);
 	    if (spell_aep != NULL)
 	    {
 		new_en.ae_attr |= spell_aep->ae_attr;
@@ -7692,11 +7693,11 @@ hl_combine_attr(char_attr, spell_attr)
 	    new_en.ae_attr = char_attr;
     }
 
-    if (spell_attr <= HL_ALL)
-	new_en.ae_attr |= spell_attr;
+    if (prim_attr <= HL_ALL)
+	new_en.ae_attr |= prim_attr;
     else
     {
-	spell_aep = syn_cterm_attr2entry(spell_attr);
+	spell_aep = syn_cterm_attr2entry(prim_attr);
 	if (spell_aep != NULL)
 	{
 	    new_en.ae_attr |= spell_aep->ae_attr;
