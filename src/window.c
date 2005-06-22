@@ -4540,7 +4540,7 @@ file_name_in_line(line, col, options, count, rel_fname)
      */
     ptr = line + col;
     while (*ptr != NUL && !vim_isfilec(*ptr))
-	++ptr;
+	mb_ptr_adv(ptr);
     if (*ptr == NUL)		/* nothing found */
     {
 	if (options & FNAME_MESS)
