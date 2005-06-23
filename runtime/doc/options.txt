@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 21
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5640,10 +5640,17 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not available when compiled without the |+syntax|
 			feature}
 	Name of the word list file where words are added for the |zg| and |zw|
-	commands.  It must end in ".add".
+	commands.  It must end in ".{encoding}.add".
 	When a word is added while this option is empty Vim will set it for
 	you: Using the first "spell" directory in 'runtimepath' that is
-	writable and the first language name that appears in 'spelllang'.
+	writable and the first language name that appears in 'spelllang',
+	ignoring the region.
+	The resulting ".spl" file will be used for spell checking, it does not
+	have to appear in 'spelllang'.
+	Normally one file is used for all regions, but you can add the region
+	name if you want to.  However, it will then only be used when
+	'spellfile' is set to it, for entries in 'spelllang' only files
+	without region name will be found.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
@@ -5653,14 +5660,22 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not in Vi}
 			{not available when compiled without the |+syntax|
 			feature}
-	A comma separated list of languages.  when the 'spell' option is on
-	spellchecking will be done for these languages.  Example: >
-		set spelllang=en_us,nl
-<	This means both US English and Dutch words are recognized.  Words that
-	are not recognized will be highlighted.
+	A comma separated list of word list names.  When the 'spell' option is
+	on spellchecking will be done for these languages.  Example: >
+		set spelllang=en_us,nl,medical
+<	This means US English, Dutch and medical words are recognized.  Words
+	that are not recognized will be highlighted.
+	The word list name must not include a comma or dot.  Using a dash is
+	recommended to separate the two letter language name from a
+	specification.  Thus "en-rare" is used for rare English words.
+	A region name must come last and have the form "_xx", where "xx" is
+	the two-letter, lower case region name.  You can use more than one
+	region by listing them: "en_us,en_ca" supports both US and Canadian
+	English, but not words specific for Australia, New Zealand or Great
+	Britain.
 	When 'encoding' is set the word lists are reloaded.  Thus it's a good
 	idea to set 'spelllang' after setting 'encoding'.
-	More info at |spell|.
+	How the related spell files are found is explained here: |spell-load|.
 
 						*'spellsuggest'* *'sps'*
 'spellsuggest' 'sps'	string	(default "best")

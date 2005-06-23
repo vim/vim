@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 22
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -104,10 +104,10 @@ PERFORMANCE
 Note that Vim does on-the-fly spell checking.  To make this work fast the
 word list is loaded in memory.  Thus this uses a lot of memory (1 Mbyte or
 more).  There might also be a noticeable delay when the word list is loaded,
-which happens when 'spelllang' or 'spell' is set.  Each word list is only
-loaded once, they are not deleted when 'spelllang' is made empty or 'spell' is
-reset.  When 'encoding' is set the word lists are reloaded, thus you may
-notice a delay then too.
+which happens when 'spell' is set and when 'spelllang' is set while 'spell'
+was already set.  Each word list is only loaded once, they are not deleted
+when 'spelllang' is made empty or 'spell' is reset.  When 'encoding' is set
+all the word lists are reloaded, thus you may notice a delay then too.
 
 
 REGIONS
@@ -132,16 +132,26 @@ regions.  You can change that by manually editing the 'spellfile'.  See
 |spell-wordlist-format|.
 
 
-SPELL FILES
+SPELL FILES						*spell-load*
 
 Vim searches for spell files in the "spell" subdirectory of the directories in
 'runtimepath'.  The name is: LL.EEE.spl, where:
 	LL	the language name
 	EEE	the value of 'encoding'
 
+The value for "LL" comes from 'spelllang', but excludes the region name.
+Examples:
+	'spelllang'	LL ~
+	en_us		en
+	en-rare		en-rare
+	medical_ca	medical
+
 Only the first file is loaded, the one that is first in 'runtimepath'.  If
 this succeeds then additionally files with the name LL.EEE.add.spl are loaded.
 All the ones that are found are used.
+
+Additionally, the file related to 'spellfile' is loaded.  This is the file
+that |zg| and |zw| add good and wrong words to.
 
 Exceptions:
 - Vim uses "latin1" when 'encoding' is "iso-8859-15".  The euro sign doesn't
@@ -261,17 +271,20 @@ depends on what you find.
 Make sure your current locale is set properly, otherwise Vim doesn't know what
 characters are upper/lower case letters.  If the locale isn't available (e.g.,
 when using an MS-Windows codepage on Unix) add tables to the .aff file
-|spell-affix-chars|.
+|spell-affix-chars|.  If the .aff file doesn't define a table then the word
+table of the currently active spelling is used.  If spelling is not active
+then Vim will try to guess.
 
-:mksp[ell][!] [-ascii] {outname} {inname} ...		*:mksp* *:mkspell*
+							*:mksp* *:mkspell*
+:mksp[ell][!] [-ascii] {outname} {inname} ...
 			Generate a Vim spell file word lists.  Example: >
 		:mkspell nl nl_NL.words
-<
+<								*E751*
 			When {outname} ends in ".spl" it is used as the output
 			file name.  Otherwise it should be a language name,
-			such as "en".  The file written will be
-			{outname}.{encoding}.spl.  {encoding} is the value of
-			the 'encoding' option.
+			such as "en", without the region name.  The file
+			written will be "{outname}.{encoding}.spl", where
+			{encoding} is the value of the 'encoding' option.
 
 			When the output file already exists [!] must be added
 			to overwrite it.
@@ -327,8 +340,29 @@ When the Myspell files are updated you can merge the differences:
    You may also need to change xx_YY.aff.
 4. Rename xx_YY.new.dic to xx_YY.orig.dic and xx_YY.new.aff to xx_YY.new.aff.
 
+
+SPELL FILE DUMP
+
+If for some reason you want to check what words are supported by the currently
+used spelling files, use this command:
+
+							*:spelldump* *:spelld*
+:spelld[ump]		Open a new window and fill it with all currently valid
+			words.
+			Note: For some languages the result may be huge and
+			Vim may run out of memory.
+
+The format of the word list is used |spell-wordlist-format|.  You should be
+able to read it with ":mkspell" to generate one .spl file that includes all
+the words.
+
+Only words for the current region are included.  No "/regions" line is
+generated.
+
+Comment lines are used to indicate which .spl file the words came from.
+
 ==============================================================================
-9. Spell file format					*spell-file-format*
+3. Spell file format					*spell-file-format*
 
 This is the format of the files that are used by the person who creates and
 maintains a word list.
@@ -505,10 +539,16 @@ ASCII characters should be omitted, Vim always handles these in the same way.
 When the encoding is UTF-8 no word characters need to be specified.
 
 							*E763*
-All spell files for the same encoding must use the same word characters,
-otherwise they can't be combined without errors.  The XX.ascii.spl spell file
-generated with the "-ascii" argument will not contain the table with
-characters, so that it can be combine with spell files for any encoding.
+Vim allows you to use spell checking for several languages in the same file.
+You can list them in the 'spelllang' option.  As a consequence all spell files
+for the same encoding must use the same word characters, otherwise they can't
+be combined without errors.  If you get a warning that the word tables differ
+you may need to generate the .spl file again with |:mkspell|.  Check the FOL,
+LOW and UPP lines in the used .aff file.
+
+The XX.ascii.spl spell file generated with the "-ascii" argument will not
+contain the table with characters, so that it can be combine with spell files
+for any encoding.  The .add.spl files also do not contain the table.
 
 
 AFFIXES

@@ -6255,6 +6255,7 @@ spec_chglog_release_info	pi_spec.txt	/*spec_chglog_release_info*
 special-buffers	windows.txt	/*special-buffers*
 speed-up	tips.txt	/*speed-up*
 spell	spell.txt	/*spell*
+spell-affix-BAD	spell.txt	/*spell-affix-BAD*
 spell-affix-FOL	spell.txt	/*spell-affix-FOL*
 spell-affix-KEP	spell.txt	/*spell-affix-KEP*
 spell-affix-LOW	spell.txt	/*spell-affix-LOW*

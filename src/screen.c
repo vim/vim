@@ -2504,8 +2504,8 @@ win_line(wp, lnum, startrow, endrow)
     int		has_spell = FALSE;	/* this buffer has spell checking */
 # define SPWORDLEN 150
     char_u	nextline[SPWORDLEN * 2];/* text with start of the next line */
-    int		nextlinecol;		/* column where nextline[] starts */
-    int		nextline_idx;		/* index in nextline[] where next line
+    int		nextlinecol = 0;	/* column where nextline[] starts */
+    int		nextline_idx = 0;	/* index in nextline[] where next line
 					   starts */
     int		spell_attr = 0;		/* attributes desired by spelling */
     int		word_end = 0;		/* last byte with same spell_attr */
