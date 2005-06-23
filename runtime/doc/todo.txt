@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 22
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -98,31 +98,19 @@ PLANNED FOR VERSION 7.0:
 
 -   Add SPELLCHECKER, with support for many languages.
     - Spell checking code todo's:
+	- Make "en-rare" spell file?
+        - Add hl groups to 'spelllang'?
+	    :set spelllang=en_us,en-rare/SpellRare,en-math/SpellMath
+	  More complicated: Regions with different languages?  E.g.  comments
+	  in English, strings in German (po file).
 	- Code for making suggestions:
 	  - Hebrew: also use prefixes for suggestions.  See message from
 	    Kaminsky (June 20) for ideas.
-	  - When "tn" has been marked as bad word it's sometimes still used
-	    for suggestions.  Depends on the order.
-	  - Suggestions for "t he": works well when 'spellsuggest' is "fast",
-	    not when it's "best" or "double".  Sound of "the" is "@", for "t
-	    he" it is "t h".
 	  - The sound-folding doesn't work for multi-byte characters.  It's
 	    very slow too.
 	  - Simple and fast sound-a-like: mapping list for first char and rest
 		    vowel as first char: *
 		    remove other vowels
-	- When 'spellfile' directory doesn't exist, ask user to create it?
-	- When 'spelllang' has more than one language only .add file of
-	  first is used?
-	- Also put list of word characters in word list file.  Otherwise the
-	  one for Italian may differ from the one used for English.
-	- Make "en-rare" spell file.  Support additional files, e.g.
-	  "medical".
-	  Convention: use en_US (language_region) and en-rare (language-field)
-          Add hl groups to 'spelllang'?
-	    :set spelllang=en_us,en-rare/SpellRare,en-math/SpellMath
-	- Give a warning for ":mkspell it_IT wordfile", thus using a region
-	  name with only one input file.
     - Use "engspchk" from Charles Campbell for ideas (commands, rare words).
     - References: MySpell library (in OpenOffice.org).
 	http://spellchecker.mozdev.org/source.html
@@ -133,8 +121,6 @@ PLANNED FOR VERSION 7.0:
     - Distribution: Need wordlists for many languages; "language pack"
       Put them on the ftp site, ready to download.  Include README for
       copyrights.
-    - More complicated: Regions with different languages?  E.g. comments in
-      English, strings in German (po file).
     - Work together with OpenOffice.org to update the wordlists.  (Adri
       Verhoef, Aad Nales)  Setup vim-spell maillist?
     - Insert mode completion mechanism that uses the spell word lists.
@@ -145,7 +131,7 @@ PLANNED FOR VERSION 7.0:
       items.
     - Install spell files with src/main.aap.
     - Alternate Dutch word list at www.nederlandsewoorden.nl (use script to
-      obtain).
+      obtain).  But new Myspell wordlist will come (Hagen)
     - The English dictionaries for different regions are not consistent in
       their use of words with a dash.
     Later:
