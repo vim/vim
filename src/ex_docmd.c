@@ -227,6 +227,7 @@ static void	ex_popup __ARGS((exarg_T *eap));
 # define ex_syntax		ex_ni
 # define ex_spell		ex_ni
 # define ex_mkspell		ex_ni
+# define ex_spelldump		ex_ni
 #endif
 #ifndef FEAT_MZSCHEME
 # define ex_mzscheme		ex_script_ni
