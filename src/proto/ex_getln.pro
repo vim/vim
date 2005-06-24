@@ -25,6 +25,7 @@ void set_cmd_context __ARGS((expand_T *xp, char_u *str, int len, int col));
 int expand_cmdline __ARGS((expand_T *xp, char_u *str, int col, int *matchcount, char_u ***matches));
 int ExpandGeneric __ARGS((expand_T *xp, regmatch_T *regmatch, int *num_file, char_u ***file, char_u *((*func)(expand_T *, int))));
 char_u *globpath __ARGS((char_u *path, char_u *file));
+void init_history __ARGS((void));
 int get_histtype __ARGS((char_u *name));
 void add_to_history __ARGS((int histype, char_u *new_entry, int in_map, int sep));
 int get_history_idx __ARGS((int histype));

@@ -46,7 +46,6 @@ static garray_T ucmds = {0, 0, sizeof(ucmd_T), 4, NULL};
 
 static void do_ucmd __ARGS((exarg_T *eap));
 static void ex_command __ARGS((exarg_T *eap));
-static void ex_comclear __ARGS((exarg_T *eap));
 static void ex_delcommand __ARGS((exarg_T *eap));
 # ifdef FEAT_CMDL_COMPL
 static char_u *get_user_command_name __ARGS((int idx));
@@ -5390,12 +5389,10 @@ ex_command(eap)
 
 /*
  * ":comclear"
- */
-/*ARGSUSED*/
-/*
  * Clear all user commands, global and for current buffer.
  */
-    static void
+/*ARGSUSED*/
+    void
 ex_comclear(eap)
     exarg_T	*eap;
 {

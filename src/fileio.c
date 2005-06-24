@@ -7093,6 +7093,17 @@ do_augroup(arg, del_group)
     }
 }
 
+#if defined(EXITFREE) || defined(PROTO)
+    void
+free_all_autocmds()
+{
+    for (current_augroup = -1; current_augroup < augroups.ga_len;
+							    ++current_augroup)
+	do_autocmd((char_u *)"", TRUE);
+    ga_clear_strings(&augroups);
+}
+#endif
+
 /*
  * Return the event number for event name "start".
  * Return NUM_EVENTS if the event name was not found.
@@ -7632,9 +7643,9 @@ do_autocmd_event(event, pat, nested, cmd, forceit, group)
 							 &ap->allow_dirs, TRUE);
 		    if (reg_pat != NULL)
 			ap->reg_prog = vim_regcomp(reg_pat, RE_MAGIC);
+		    vim_free(reg_pat);
 		    if (reg_pat == NULL || ap->reg_prog == NULL)
 		    {
-			vim_free(reg_pat);
 			vim_free(ap->pat);
 			vim_free(ap);
 			return FAIL;

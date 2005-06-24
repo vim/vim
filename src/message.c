@@ -743,13 +743,8 @@ add_msg_hist(s, len, attr)
 
     /* Don't let the message history get too big */
     while (msg_hist_len > 20)
-    {
-	p = first_msg_hist;
-	first_msg_hist = p->next;
-	vim_free(p->msg);
-	vim_free(p);
-	--msg_hist_len;
-    }
+	(void)delete_first_msg();
+
     /* allocate an entry and add the message at the end of the history */
     p = (struct msg_hist *)alloc((int)sizeof(struct msg_hist));
     if (p != NULL)
@@ -774,6 +769,25 @@ add_msg_hist(s, len, attr)
 	    first_msg_hist = last_msg_hist;
 	++msg_hist_len;
     }
+}
+
+/*
+ * Delete the first (oldest) message from the history.
+ * Returns FAIL if there are no messages.
+ */
+    int
+delete_first_msg()
+{
+    struct msg_hist *p;
+
+    if (msg_hist_len <= 0)
+	return FAIL;
+    p = first_msg_hist;
+    first_msg_hist = p->next;
+    vim_free(p->msg);
+    vim_free(p);
+    --msg_hist_len;
+    return OK;
 }
 
 /*

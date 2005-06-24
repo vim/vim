@@ -2699,6 +2699,24 @@ mch_early_init()
 #endif
 }
 
+#if defined(EXITFREE) || defined(PROTO)
+    void
+mch_free_mem()
+{
+# if defined(HAVE_SIGALTSTACK) || defined(HAVE_SIGSTACK)
+    vim_free(signal_stack);
+# endif
+# if (defined(FEAT_X11) && defined(FEAT_XCLIPBOARD)) || defined(PROTO)
+    if (xterm_Shell != (Widget)0)
+	XtDestroyWidget(xterm_Shell);
+    if (xterm_dpy != NULL)
+	XtCloseDisplay(xterm_dpy);
+    if (app_context != (XtAppContext)NULL)
+	XtDestroyApplicationContext(app_context);
+# endif
+}
+#endif
+
 static void exit_scroll __ARGS((void));
 
 /*
@@ -2796,6 +2814,11 @@ mch_exit(r)
     if (usingNetbeans)
 	netbeans_send_disconnect();
 #endif
+
+#ifdef EXITFREE
+    free_all_mem();
+#endif
+
     exit(r);
 }
 

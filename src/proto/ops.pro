@@ -29,6 +29,7 @@ int swapchar __ARGS((int op_type, pos_T *pos));
 void op_insert __ARGS((oparg_T *oap, long count1));
 int op_change __ARGS((oparg_T *oap));
 void init_yank __ARGS((void));
+void clear_registers __ARGS((void));
 int op_yank __ARGS((oparg_T *oap, int deleting, int mess));
 void do_put __ARGS((int regname, int dir, long count, int flags));
 int preprocs_left __ARGS((void));

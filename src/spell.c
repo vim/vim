@@ -2098,6 +2098,7 @@ did_set_spelllang(buf)
     garray_T	ga;
     char_u	*splp;
     char_u	*region;
+    int		filename;
     int		region_mask;
     slang_T	*lp;
     int		c;
@@ -2125,34 +2126,55 @@ did_set_spelllang(buf)
 	/* Get one language name. */
 	copy_option_part(&splp, lang, MAXWLEN, ",");
 
-	/* If there is a region name let "region" point to it and remove it
-	 * from the name. */
 	region = NULL;
 	len = STRLEN(lang);
-	if (len > 3 && lang[len - 3] == '_')
-	{
-	    region = lang + len - 2;
-	    len -= 3;
-	    lang[len] = NUL;
-	}
 
-	/* Check if we loaded this language before. */
-	for (lp = first_lang; lp != NULL; lp = lp->sl_next)
-	    if (STRICMP(lp->sl_name, lang) == 0)
-		break;
+	/* If the name ends in ".spl" use it as the name of the spell file.
+	 * If there is a region name let "region" point to it and remove it
+	 * from the name. */
+	if (len > 4 && fnamecmp(lang + len - 4, ".spl") == 0)
+	{
+	    filename = TRUE;
+
+	    /* Check if we loaded this language before. */
+	    for (lp = first_lang; lp != NULL; lp = lp->sl_next)
+		if (fullpathcmp(lang, lp->sl_fname, FALSE) == FPC_SAME)
+		    break;
+	}
+	else
+	{
+	    filename = FALSE;
+	    if (len > 3 && lang[len - 3] == '_')
+	    {
+		region = lang + len - 2;
+		len -= 3;
+		lang[len] = NUL;
+	    }
+
+	    /* Check if we loaded this language before. */
+	    for (lp = first_lang; lp != NULL; lp = lp->sl_next)
+		if (STRICMP(lang, lp->sl_name) == 0)
+		    break;
+	}
 
 	/* If not found try loading the language now. */
 	if (lp == NULL)
-	    spell_load_lang(lang);
+	{
+	    if (filename)
+		(void)spell_load_file(lang, lang, NULL, FALSE);
+	    else
+		spell_load_lang(lang);
+	}
 
 	/*
 	 * Loop over the languages, there can be several files for "lang".
 	 */
 	for (lp = first_lang; lp != NULL; lp = lp->sl_next)
-	    if (STRICMP(lp->sl_name, lang) == 0)
+	    if (filename ? fullpathcmp(lang, lp->sl_fname, FALSE) == FPC_SAME
+			 : STRICMP(lang, lp->sl_name) == 0)
 	    {
 		region_mask = REGION_ALL;
-		if (region != NULL)
+		if (!filename && region != NULL)
 		{
 		    /* find region in sl_regions */
 		    c = find_region(lp->sl_regions, region);
@@ -2311,6 +2333,29 @@ captype(word, end)
     return 0;
 }
 
+# if defined(FEAT_MBYTE) || defined(EXITFREE) || defined(PROTO)
+/*
+ * Free all languages.
+ */
+    void
+spell_free_all()
+{
+    slang_T	*lp;
+    buf_T	*buf;
+
+    /* Go through all buffers and handle 'spelllang'. */
+    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+	ga_clear(&buf->b_langp);
+
+    while (first_lang != NULL)
+    {
+	lp = first_lang;
+	first_lang = lp->sl_next;
+	slang_free(lp);
+    }
+}
+# endif
+
 # if defined(FEAT_MBYTE) || defined(PROTO)
 /*
  * Clear all spelling tables and reload them.
@@ -2320,25 +2365,17 @@ captype(word, end)
 spell_reload()
 {
     buf_T	*buf;
-    slang_T	*lp;
     win_T	*wp;
 
     /* Initialize the table for SPELL_ISWORDP(). */
     init_spell_chartab();
 
     /* Unload all allocated memory. */
-    while (first_lang != NULL)
-    {
-	lp = first_lang;
-	first_lang = lp->sl_next;
-	slang_free(lp);
-    }
+    spell_free_all();
 
     /* Go through all buffers and handle 'spelllang'. */
     for (buf = firstbuf; buf != NULL; buf = buf->b_next)
     {
-	ga_clear(&buf->b_langp);
-
 	/* Only load the wordlists when 'spelllang' is set and there is a
 	 * window for this buffer in which 'spell' is set. */
 	if (*buf->b_p_spl != NUL)
@@ -5290,6 +5327,8 @@ spell_find_suggest(badptr, su, maxcount)
     vim_memset(su, 0, sizeof(suginfo_T));
     ga_init2(&su->su_ga, (int)sizeof(suggest_T), 10);
     ga_init2(&su->su_sga, (int)sizeof(suggest_T), 10);
+    if (*badptr == NUL)
+	return;
     hash_init(&su->su_banned);
 
     su->su_badptr = badptr;
@@ -7047,6 +7086,8 @@ add_banned(su, word)
 	hi = hash_lookup(&su->su_banned, s, hash);
 	if (HASHITEM_EMPTY(hi))
 	    hash_add_item(&su->su_banned, hi, s, hash);
+	else
+	    vim_free(s);
     }
 }
 
@@ -7920,10 +7961,15 @@ ex_spelldump(eap)
 						       & lp->lp_region) != 0))
 			{
 			    word[depth] = NUL;
-			    dump_word(word, round, flags, lnum++);
+
+			    /* Dump the basic word if there is no prefix or
+			     * when it's the first one. */
+			    c = (unsigned)flags >> 16;
+			    if (c == 0 || curi[depth] == 2)
+				dump_word(word, round, flags, lnum++);
 
 			    /* Apply the prefix, if there is one. */
-			    if ((unsigned)flags >> 16 != 0)
+			    if (c != 0)
 				lnum = apply_prefixes(slang, word, round,
 								 flags, lnum);
 			}

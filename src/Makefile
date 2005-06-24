@@ -533,6 +533,14 @@ LINT_OPTIONS = -beprxzF
 #PROFILE_CFLAGS = -pg -g
 #PROFILE_LIBS = -pg
 
+# MEMORY LEAK DETECTION
+# Requires installing the ccmalloc library.
+# Configuration is in the .ccmalloc file.
+# Doesn't work very well, since memory linked to from global variables
+# (indirectly) is also marked as leaked memory.
+#PROFILE_CFLAGS = -DEXITFREE
+#PROFILE_LIBS = -lccmalloc
+
 #####################################################
 ###  Specific systems, check if yours is listed!  ### {{{
 #####################################################

@@ -15,6 +15,7 @@ int ends_excmd __ARGS((int c));
 char_u *find_nextcmd __ARGS((char_u *p));
 char_u *check_nextcmd __ARGS((char_u *p));
 char_u *get_command_name __ARGS((expand_T *xp, int idx));
+void ex_comclear __ARGS((exarg_T *eap));
 void uc_clear __ARGS((garray_T *gap));
 char_u *get_user_commands __ARGS((expand_T *xp, int idx));
 char_u *get_user_cmd_flags __ARGS((expand_T *xp, int idx));

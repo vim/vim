@@ -26,6 +26,7 @@ static void win_exchange __ARGS((long));
 static void win_rotate __ARGS((int, int));
 static void win_totop __ARGS((int size, int flags));
 static void win_equal_rec __ARGS((win_T *next_curwin, int current, frame_T *topfr, int dir, int col, int row, int width, int height));
+static win_T *win_free_mem __ARGS((win_T *win, int *dirp));
 static win_T *winframe_remove __ARGS((win_T *win, int *dirp));
 static frame_T *win_altframe __ARGS((win_T *win));
 static win_T *frame2win __ARGS((frame_T *frp));
@@ -1808,7 +1809,6 @@ win_close(win, free_buf)
     int		other_buffer = FALSE;
 #endif
     int		close_curwin = FALSE;
-    frame_T	*frp;
     int		dir;
     int		help_window = FALSE;
 
@@ -1864,14 +1864,8 @@ win_close(win, free_buf)
     if (!win_valid(win) || firstwin == lastwin)
 	return;
 
-    /* reduce the reference count to the argument list. */
-    alist_unlink(win->w_alist);
-
-    /* remove the window and its frame from the tree of frames. */
-    frp = win->w_frame;
-    wp = winframe_remove(win, &dir);
-    vim_free(frp);
-    win_free(win);
+    /* Free the memory used for the window. */
+    wp = win_free_mem(win, &dir);
 
     /* Make sure curwin isn't invalid.  It can cause severe trouble when
      * printing an error message.  For win_equal() curbuf needs to be valid
@@ -1950,6 +1944,41 @@ win_close(win, free_buf)
 }
 
 /*
+ * Free the memory used for a window.
+ * Returns a pointer to the window that got the freed up space.
+ */
+    static win_T *
+win_free_mem(win, dirp)
+    win_T	*win;
+    int		*dirp;		/* set to 'v' or 'h' for direction if 'ea' */
+{
+    frame_T	*frp;
+    win_T	*wp;
+
+    /* reduce the reference count to the argument list. */
+    alist_unlink(win->w_alist);
+
+    /* remove the window and its frame from the tree of frames. */
+    frp = win->w_frame;
+    wp = winframe_remove(win, dirp);
+    vim_free(frp);
+    win_free(win);
+
+    return wp;
+}
+
+#if defined(EXITFREE) || defined(PROTO)
+    void
+win_free_all()
+{
+    int		dummy;
+
+    while (firstwin != NULL)
+	(void)win_free_mem(firstwin, &dummy);
+}
+#endif
+
+/*
  * Remove a window and its frame from the tree of frames.
  * Returns a pointer to the window that got the freed up space.
  */
@@ -1968,6 +1997,9 @@ winframe_remove(win, dirp)
      * Remove the window from its frame.
      */
     frp2 = win_altframe(win);
+    if (frp2 == NULL)
+	return NULL;	    /* deleted the last frame */
+
     wp = frame2win(frp2);
 
     /* Remove this frame from the list of frames. */
@@ -2068,7 +2100,7 @@ win_altframe(win)
 
     frp = win->w_frame;
 #ifdef FEAT_VERTSPLIT
-    if (frp->fr_parent->fr_layout == FR_ROW)
+    if (frp->fr_parent != NULL && frp->fr_parent->fr_layout == FR_ROW)
 	b = p_spr;
     else
 #endif
