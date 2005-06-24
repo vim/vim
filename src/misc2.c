@@ -921,6 +921,103 @@ do_outofmem_msg(size)
     }
 }
 
+#if defined(EXITFREE) || defined(PROTO)
+/*
+ * Free everything that we allocated.
+ * Can be used to detect memory leaks, e.g., with ccmalloc.
+ * Doesn't do nearly all that is required...
+ */
+    void
+free_all_mem()
+{
+    buf_T	*buf, *nextbuf;
+
+    ++autocmd_block;	    /* don't want to trigger autocommands here */
+
+# if defined(FEAT_SYN_HL)
+    /* Free all spell info. */
+    spell_free_all();
+# endif
+
+#if defined(FEAT_USR_CMDS)
+    /* Clear user commands (before deleting buffers). */
+    ex_comclear(NULL);
+#endif
+
+# ifdef FEAT_MENU
+    /* Clear menus. */
+    do_cmdline_cmd((char_u *)"aunmenu *");
+# endif
+
+    /* Clear mappings and abbreviations. */
+    do_cmdline_cmd((char_u *)"mapclear");
+    do_cmdline_cmd((char_u *)"mapclear!");
+    do_cmdline_cmd((char_u *)"abclear");
+
+    /* Obviously named calls. */
+# if defined(FEAT_EVAL)
+    free_scriptnames();
+    free_all_functions();
+# endif
+# if defined(FEAT_AUTOCMD)
+    free_all_autocmds();
+# endif
+    clear_termcodes();
+
+    /* Clear cmdline history. */
+    p_hi = 0;
+    init_history();
+
+    /* Free all buffers. */
+    for (buf = firstbuf; buf != NULL; )
+    {
+	nextbuf = buf->b_next;
+	close_buffer(NULL, buf, DOBUF_WIPE);
+	if (buf_valid(buf))
+	    buf = nextbuf;	/* didn't work, try next one */
+	else
+	    buf = firstbuf;
+    }
+
+#if defined(FEAT_WINDOWS)
+    /* Destroy all windows. */
+    win_free_all();
+#endif
+
+    /* Clear registers. */
+    clear_registers();
+    ResetRedobuff();
+    ResetRedobuff();
+
+    /* highlight info */
+    free_highlight();
+
+# ifdef UNIX
+    /* Machine-specific free. */
+    mch_free_mem();
+# endif
+
+    /* message history */
+    for (;;)
+	if (delete_first_msg() == FAIL)
+	    break;
+
+# ifdef FEAT_EVAL
+    eval_clear();
+# endif
+
+    /* screenlines (can't display anything now!) */
+    free_screenlines();
+
+#if defined(USE_XSMP)
+    xsmp_close();
+#endif
+
+    vim_free(IObuff);
+    vim_free(NameBuff);
+}
+#endif
+
 /*
  * copy a string into newly allocated memory
  */

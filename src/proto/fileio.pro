@@ -23,6 +23,7 @@ char_u *vim_tempname __ARGS((int extra_char));
 void forward_slash __ARGS((char_u *fname));
 void aubuflocal_remove __ARGS((buf_T *buf));
 void do_augroup __ARGS((char_u *arg, int del_group));
+void free_all_autocmds __ARGS((void));
 int check_ei __ARGS((void));
 char_u *au_event_disable __ARGS((char *what));
 void au_event_restore __ARGS((char_u *old_ei));

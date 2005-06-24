@@ -7067,6 +7067,18 @@ do_highlight(line, forceit, init)
     need_highlight_changed = TRUE;
 }
 
+#if defined(EXITFREE) || defined(PROTO)
+    void
+free_highlight()
+{
+    int	    i;
+
+    for (i = 0; i < highlight_ga.ga_len; ++i)
+	highlight_clear(i);
+    ga_clear(&highlight_ga);
+}
+#endif
+
 /*
  * Reset the cterm colors to what they were before Vim was started, if
  * possible.  Otherwise reset them to zero.

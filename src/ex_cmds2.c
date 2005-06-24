@@ -3020,6 +3020,7 @@ theend:
 }
 
 #if defined(FEAT_EVAL) || defined(PROTO)
+
 /*
  * ":scriptnames"
  */
@@ -3067,6 +3068,18 @@ get_scriptname(id)
 	return (char_u *)"environment variable";
     return SCRIPT_ITEM(id).sn_name;
 }
+
+# if defined(EXITFREE) || defined(PROTO)
+    void
+free_scriptnames()
+{
+    int			i;
+
+    for (i = script_items.ga_len; i > 0; --i)
+	vim_free(SCRIPT_ITEM(i).sn_name);
+    ga_clear(&script_items);
+}
+# endif
 
 #endif
 

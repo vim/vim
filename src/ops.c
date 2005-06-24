@@ -2602,6 +2602,21 @@ init_yank()
 	y_regs[i].y_array = NULL;
 }
 
+#if defined(EXITFREE) || defined(PROTO)
+    void
+clear_registers()
+{
+    int		i;
+
+    for (i = 0; i < NUM_REGISTERS; ++i)
+    {
+	y_current = &y_regs[i];
+	if (y_current->y_array != NULL)
+	    free_yank_all();
+    }
+}
+#endif
+
 /*
  * Free "n" lines from the current yank register.
  * Called for normal freeing and in case of error.

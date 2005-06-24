@@ -55,7 +55,6 @@ static int	hisnum[HIST_COUNT] = {0, 0, 0, 0, 0};
 static int	hislen = 0;		/* actual length of history tables */
 
 static int	hist_char2type __ARGS((int c));
-static void	init_history __ARGS((void));
 
 static int	in_history __ARGS((int, char_u *, int));
 # ifdef FEAT_EVAL
@@ -4423,7 +4422,7 @@ static char *(history_names[]) =
  * init_history() - Initialize the command line history.
  * Also used to re-allocate the history when the size changes.
  */
-    static void
+    void
 init_history()
 {
     int		newlen;	    /* new length of history table */

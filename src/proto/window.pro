@@ -8,6 +8,7 @@ void win_move_after __ARGS((win_T *win1, win_T *win2));
 void win_equal __ARGS((win_T *next_curwin, int current, int dir));
 void close_windows __ARGS((buf_T *buf));
 void win_close __ARGS((win_T *win, int free_buf));
+void win_free_all __ARGS((void));
 void close_others __ARGS((int message, int forceit));
 void win_init __ARGS((win_T *wp));
 void win_alloc_first __ARGS((void));

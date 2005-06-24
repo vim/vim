@@ -6798,16 +6798,8 @@ screenalloc(clear)
 	current_ScreenLine = new_ScreenLines + Rows * Columns;
     }
 
-    vim_free(ScreenLines);
-#ifdef FEAT_MBYTE
-    vim_free(ScreenLinesUC);
-    vim_free(ScreenLinesC1);
-    vim_free(ScreenLinesC2);
-    vim_free(ScreenLines2);
-#endif
-    vim_free(ScreenAttrs);
-    vim_free(LineOffset);
-    vim_free(LineWraps);
+    free_screenlines();
+
     ScreenLines = new_ScreenLines;
 #ifdef FEAT_MBYTE
     ScreenLinesUC = new_ScreenLinesUC;
@@ -6852,6 +6844,21 @@ screenalloc(clear)
 #endif
 
     entered = FALSE;
+}
+
+    void
+free_screenlines()
+{
+    vim_free(ScreenLines);
+#ifdef FEAT_MBYTE
+    vim_free(ScreenLinesUC);
+    vim_free(ScreenLinesC1);
+    vim_free(ScreenLinesC2);
+    vim_free(ScreenLines2);
+#endif
+    vim_free(ScreenAttrs);
+    vim_free(LineOffset);
+    vim_free(LineWraps);
 }
 
     void

@@ -1,5 +1,6 @@
 /* eval.c */
 void eval_init __ARGS((void));
+void eval_clear __ARGS((void));
 char_u *func_name __ARGS((void *cookie));
 linenr_T *func_breakpoint __ARGS((void *cookie));
 int *func_dbg_tick __ARGS((void *cookie));
@@ -60,6 +61,7 @@ void ex_echo __ARGS((exarg_T *eap));
 void ex_echohl __ARGS((exarg_T *eap));
 void ex_execute __ARGS((exarg_T *eap));
 void ex_function __ARGS((exarg_T *eap));
+void free_all_functions __ARGS((void));
 void func_dump_profile __ARGS((FILE *fd));
 char_u *get_user_func_name __ARGS((expand_T *xp, int idx));
 void ex_delfunction __ARGS((exarg_T *eap));

@@ -949,7 +949,7 @@ u_saveline(lnum)
 {
     if (lnum == curbuf->b_u_line_lnum)	    /* line is already saved */
 	return;
-    if (lnum < 1 || lnum > curbuf->b_ml.ml_line_count)	/* should never happen */
+    if (lnum < 1 || lnum > curbuf->b_ml.ml_line_count) /* should never happen */
 	return;
     u_clearline();
     curbuf->b_u_line_lnum = lnum;
