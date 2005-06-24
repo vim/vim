@@ -61,6 +61,7 @@ linenr_T *source_breakpoint __ARGS((void *cookie));
 int *source_dbg_tick __ARGS((void *cookie));
 int source_level __ARGS((void *cookie));
 int do_source __ARGS((char_u *fname, int check_other, int is_vimrc));
+void free_scriptnames __ARGS((void));
 void ex_scriptnames __ARGS((exarg_T *eap));
 void scriptnames_slash_adjust __ARGS((void));
 char_u *get_scriptname __ARGS((scid_T id));

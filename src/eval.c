@@ -708,6 +708,32 @@ eval_init()
     }
 }
 
+#if defined(EXITFREE) || defined(PROTO)
+    void
+eval_clear()
+{
+    int		    i;
+    struct vimvar   *p;
+
+    for (i = 0; i < VV_LEN; ++i)
+    {
+	p = &vimvars[i];
+	if (p->vv_di.di_tv.v_type == VAR_STRING)
+	    vim_free(p->vv_di.di_tv.vval.v_string);
+    }
+    hash_clear(&vimvarht);
+    hash_clear(&compat_hashtab);
+
+    /* script-local variables */
+    for (i = 1; i <= ga_scripts.ga_len; ++i)
+	vars_clear(&SCRIPT_VARS(i));
+    ga_clear(&ga_scripts);
+
+    /* global variables */
+    vars_clear(&globvarht);
+}
+#endif
+
 /*
  * Return the name of the executed function.
  */
@@ -16406,7 +16432,21 @@ ex_function(eap)
 
 	/* Add the line to the function. */
 	if (ga_grow(&newlines, 1) == FAIL)
+	{
+	    vim_free(theline);
 	    goto erret;
+	}
+
+	/* Copy the line to newly allocated memory.  get_one_sourceline()
+	 * allocates 250 bytes per line, this saves 80% on average.  The cost
+	 * is an extra alloc/free. */
+	p = vim_strsave(theline);
+	if (p != NULL)
+	{
+	    vim_free(theline);
+	    theline = p;
+	}
+
 	((char_u **)(newlines.ga_data))[newlines.ga_len] = theline;
 	newlines.ga_len++;
     }
@@ -16807,6 +16847,24 @@ find_func(name)
 	return HI2UF(hi);
     return NULL;
 }
+
+#if defined(EXITFREE) || defined(PROTO)
+    void
+free_all_functions()
+{
+    hashitem_T	*hi;
+
+    /* Need to start all over every time, because func_free() may change the
+     * hash table. */
+    while (func_hashtab.ht_used > 0)
+	for (hi = func_hashtab.ht_array; ; ++hi)
+	    if (!HASHITEM_EMPTY(hi))
+	    {
+		func_free(HI2UF(hi));
+		break;
+	    }
+}
+#endif
 
 /*
  * Return TRUE if a function "name" exists.

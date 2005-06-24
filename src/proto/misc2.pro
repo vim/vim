@@ -24,6 +24,7 @@ char_u *lalloc_clear __ARGS((long_u size, int message));
 char_u *lalloc __ARGS((long_u size, int message));
 void *mem_realloc __ARGS((void *ptr, size_t size));
 void do_outofmem_msg __ARGS((long_u size));
+void free_all_mem __ARGS((void));
 char_u *vim_strsave __ARGS((char_u *string));
 char_u *vim_strnsave __ARGS((char_u *string, int len));
 char_u *vim_strsave_escaped __ARGS((char_u *string, char_u *esc_chars));

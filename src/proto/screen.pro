@@ -29,6 +29,7 @@ void screen_fill __ARGS((int start_row, int end_row, int start_col, int end_col,
 void check_for_delay __ARGS((int check_msg_scroll));
 int screen_valid __ARGS((int clear));
 void screenalloc __ARGS((int clear));
+void free_screenlines __ARGS((void));
 void screenclear __ARGS((void));
 int can_clear __ARGS((char_u *p));
 void screen_start __ARGS((void));

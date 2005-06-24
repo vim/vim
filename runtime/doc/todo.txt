@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 23
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -98,7 +98,6 @@ PLANNED FOR VERSION 7.0:
 
 -   Add SPELLCHECKER, with support for many languages.
     - Spell checking code todo's:
-	- Make "en-rare" spell file?
         - Add hl groups to 'spelllang'?
 	    :set spelllang=en_us,en-rare/SpellRare,en-math/SpellMath
 	  More complicated: Regions with different languages?  E.g.  comments
@@ -111,7 +110,9 @@ PLANNED FOR VERSION 7.0:
 	  - Simple and fast sound-a-like: mapping list for first char and rest
 		    vowel as first char: *
 		    remove other vowels
+	- Cleanup spell help.
     - Use "engspchk" from Charles Campbell for ideas (commands, rare words).
+    - Make "en-rare" spell file?  Ask Charles Campbell.
     - References: MySpell library (in OpenOffice.org).
 	http://spellchecker.mozdev.org/source.html
 	http://whiteboard.openoffice.org/source/browse/whiteboard/lingucomponent/source/spellcheck/myspell/
