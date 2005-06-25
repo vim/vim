@@ -1284,6 +1284,18 @@ set_last_cursor(win)
     win->w_buffer->b_last_cursor = win->w_cursor;
 }
 
+#if defined(EXITFREE) || defined(PROTO)
+    void
+free_all_marks()
+{
+    int		i;
+
+    for (i = 0; i < NMARKS + EXTRA_MARKS; i++)
+	if (namedfm[i].fmark.mark.lnum != 0)
+	    vim_free(namedfm[i].fname);
+}
+#endif
+
 #if defined(FEAT_VIMINFO) || defined(PROTO)
     int
 read_viminfo_filemark(virp, force)

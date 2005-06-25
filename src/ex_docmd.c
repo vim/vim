@@ -7215,6 +7215,17 @@ ex_read(eap)
     }
 }
 
+static char_u	*prev_dir = NULL;
+
+#if defined(EXITFREE) || defined(PROTO)
+    void
+free_cd_dir()
+{
+    vim_free(prev_dir);
+}
+#endif
+
+
 /*
  * ":cd", ":lcd", ":chdir" and ":lchdir".
  */
@@ -7222,7 +7233,6 @@ ex_read(eap)
 ex_cd(eap)
     exarg_T	*eap;
 {
-    static char_u	*prev_dir = NULL;
     char_u		*new_dir;
     char_u		*tofree;
 

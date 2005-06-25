@@ -396,7 +396,9 @@ typedef struct suggest_S
 #define SCORE_SUBST	93	/* substitute a character */
 #define SCORE_SIMILAR	33	/* substitute a similar character */
 #define SCORE_DEL	94	/* delete a character */
+#define SCORE_DELDUP	64	/* delete a duplicated character */
 #define SCORE_INS	96	/* insert a character */
+#define SCORE_INSDUP	66	/* insert a duplicate character */
 
 #define SCORE_MAXINIT	350	/* Initial maximum score: higher == slower.
 				 * 350 allows for about three changes. */
@@ -453,11 +455,12 @@ static int	    did_set_spelltab;
 
 static void clear_spell_chartab __ARGS((spelltab_T *sp));
 static int set_spell_finish __ARGS((spelltab_T	*new_st));
+static int spell_iswordp __ARGS((char_u *p));
 static void write_spell_prefcond __ARGS((FILE *fd, garray_T *gap));
 
 /*
- * Return TRUE if "p" points to a word character or "c" is a word character
- * for spelling.
+ * Return TRUE if "p" points to a word character.  Like spell_iswordp() but
+ * without the special handling of a single quote.
  * Checking for a word character is done very often, avoid the function call
  * overhead.
  */
@@ -547,7 +550,7 @@ static int set_spell_charflags __ARGS((char_u *flags, int cnt, char_u *upp));
 static int set_spell_chartab __ARGS((char_u *fol, char_u *low, char_u *upp));
 static void write_spell_chartab __ARGS((FILE *fd));
 static int spell_casefold __ARGS((char_u *p, int len, char_u *buf, int buflen));
-static void spell_find_suggest __ARGS((char_u *badptr, suginfo_T *su, int maxcount));
+static void spell_find_suggest __ARGS((char_u *badptr, suginfo_T *su, int maxcount, int banbadword));
 static void spell_find_cleanup __ARGS((suginfo_T *su));
 static void onecap_copy __ARGS((char_u *word, char_u *wcopy, int upper));
 static void allcap_copy __ARGS((char_u *word, char_u *wcopy));
@@ -656,7 +659,7 @@ spell_check(wp, ptr, attrp)
 	    mi.mi_end = skipdigits(ptr);
 	    nrlen = mi.mi_end - ptr;
 	}
-	if (!SPELL_ISWORDP(mi.mi_end))
+	if (!spell_iswordp(mi.mi_end))
 	    return (int)(mi.mi_end - ptr);
 
 	/* Try including the digits in the word. */
@@ -667,12 +670,12 @@ spell_check(wp, ptr, attrp)
 
     /* Find the normal end of the word (until the next non-word character). */
     mi.mi_word = ptr;
-    if (SPELL_ISWORDP(mi.mi_fend))
+    if (spell_iswordp(mi.mi_fend))
     {
 	do
 	{
 	    mb_ptr_adv(mi.mi_fend);
-	} while (*mi.mi_fend != NUL && SPELL_ISWORDP(mi.mi_fend));
+	} while (*mi.mi_fend != NUL && spell_iswordp(mi.mi_fend));
     }
 
     /* We always use the characters up to the next non-word character,
@@ -908,7 +911,7 @@ find_word(mip, mode)
 	if ((*mb_head_off)(ptr, ptr + wlen) > 0)
 	    continue;	    /* not at first byte of character */
 #endif
-	if (SPELL_ISWORDP(ptr + wlen))
+	if (spell_iswordp(ptr + wlen))
 	    continue;	    /* next char is a word character */
 
 #ifdef FEAT_MBYTE
@@ -1163,7 +1166,7 @@ fold_more(mip)
     do
     {
 	mb_ptr_adv(mip->mi_fend);
-    } while (*mip->mi_fend != NUL && SPELL_ISWORDP(mip->mi_fend));
+    } while (*mip->mi_fend != NUL && spell_iswordp(mip->mi_fend));
 
     /* Include the non-word character so that we can check for the
      * word end. */
@@ -2290,7 +2293,7 @@ captype(word, end)
     int		past_second = FALSE;	/* past second word char */
 
     /* find first letter */
-    for (p = word; !SPELL_ISWORDP(p); mb_ptr_adv(p))
+    for (p = word; !spell_iswordp(p); mb_ptr_adv(p))
 	if (end == NULL ? *p == NUL : p >= end)
 	    return 0;	    /* only non-word characters, illegal word */
 #ifdef FEAT_MBYTE
@@ -2306,7 +2309,7 @@ captype(word, end)
      * But a word with an upper char only at start is a ONECAP.
      */
     for ( ; end == NULL ? *p != NUL : p < end; mb_ptr_adv(p))
-	if (SPELL_ISWORDP(p))
+	if (spell_iswordp(p))
 	{
 #ifdef FEAT_MBYTE
 	    c = mb_ptr2char(p);
@@ -2367,7 +2370,7 @@ spell_reload()
     buf_T	*buf;
     win_T	*wp;
 
-    /* Initialize the table for SPELL_ISWORDP(). */
+    /* Initialize the table for spell_iswordp(). */
     init_spell_chartab();
 
     /* Unload all allocated memory. */
@@ -5017,6 +5020,28 @@ set_spell_finish(new_st)
 }
 
 /*
+ * Return TRUE if "p" points to a word character.
+ * As a special case we see a single quote as a word character when it is
+ * followed by a word character.  This finds they'there but not 'they there'.
+ */
+    static int
+spell_iswordp(p)
+    char_u	*p;
+{
+    char_u	*s;
+
+    if (*p == '\'')
+	s = p + 1;
+    else
+	s = p;
+#ifdef FEAT_MBYTE
+    if (has_mbyte && MB_BYTE2LEN(*s) > 1)
+	return mb_get_class(s) >= 2;
+#endif
+    return spelltab.st_isw[*s];
+}
+
+/*
  * Write the table with prefix conditions to the .spl file.
  */
     static void
@@ -5181,7 +5206,7 @@ spell_suggest()
     line = ml_get_curline();
 
     /* Get the list of suggestions */
-    spell_find_suggest(line + curwin->w_cursor.col, &sug, (int)Rows - 2);
+    spell_find_suggest(line + curwin->w_cursor.col, &sug, (int)Rows - 2, TRUE);
 
     if (sug.su_ga.ga_len == 0)
 	MSG(_("Sorry, no suggestions"));
@@ -5281,7 +5306,7 @@ spell_suggest_list(gap, word, maxcount)
     suggest_T	*stp;
     char_u	*wcopy;
 
-    spell_find_suggest(word, &sug, maxcount);
+    spell_find_suggest(word, &sug, maxcount, FALSE);
 
     /* Make room in "gap". */
     ga_init2(gap, sizeof(char_u *), sug.su_ga.ga_len + 1);
@@ -5314,10 +5339,11 @@ spell_suggest_list(gap, word, maxcount)
  * This is based on the mechanisms of Aspell, but completely reimplemented.
  */
     static void
-spell_find_suggest(badptr, su, maxcount)
+spell_find_suggest(badptr, su, maxcount, banbadword)
     char_u	*badptr;
     suginfo_T	*su;
     int		maxcount;
+    int		banbadword;	/* don't include badword in suggestions */
 {
     int		attr;
 
@@ -5344,7 +5370,8 @@ spell_find_suggest(badptr, su, maxcount)
     su->su_badflags = captype(su->su_badptr, su->su_badptr + su->su_badlen);
 
     /* Ban the bad word itself.  It may appear in another region. */
-    add_banned(su, su->su_badword);
+    if (banbadword)
+	add_banned(su, su->su_badword);
 
     /*
      * 1. Try special cases, such as repeating a word: "the the" -> "the".
@@ -5688,7 +5715,7 @@ suggest_try_change(su)
 		    newscore += SCORE_ICASE;
 
 		if ((fword[sp->ts_fidx] == NUL
-				       || !SPELL_ISWORDP(fword + sp->ts_fidx))
+				       || !spell_iswordp(fword + sp->ts_fidx))
 			&& sp->ts_fidx >= sp->ts_fidxtry)
 		{
 		    /* The badword also ends: add suggestions, */
@@ -5851,6 +5878,20 @@ suggest_try_change(su)
 					sp->ts_score -=
 						  SCORE_SUBST - SCORE_SIMILAR;
 				}
+				else if (sp->ts_isdiff == DIFF_INSERT
+					&& sp->ts_twordlen > sp->ts_tcharlen)
+				{
+				    /* If the previous character was the same,
+				     * thus doubling a character, give a bonus
+				     * to the score. */
+				    p = tword + sp->ts_twordlen
+							    - sp->ts_tcharlen;
+				    c = mb_ptr2char(p);
+				    mb_ptr_back(tword, p);
+				    if (c == mb_ptr2char(p))
+					sp->ts_score -= SCORE_INS
+							       - SCORE_INSDUP;
+				}
 
 				/* Starting a new char, reset the length. */
 				sp->ts_tcharlen = 0;
@@ -5891,12 +5932,25 @@ suggest_try_change(su)
 			&& try_deeper(su, stack, depth, SCORE_DEL))
 		{
 		    ++depth;
+
+		    /* Advance over the character in fword[]. Give a bonus to
+		     * the score if the same character is following "nn" ->
+		     * "n". */
 #ifdef FEAT_MBYTE
 		    if (has_mbyte)
+		    {
+			c = mb_ptr2char(fword + sp->ts_fidx);
 			stack[depth].ts_fidx += MB_BYTE2LEN(fword[sp->ts_fidx]);
+			if (c == mb_ptr2char(fword + stack[depth].ts_fidx))
+			    stack[depth].ts_score -= SCORE_DEL - SCORE_DELDUP;
+		    }
 		    else
 #endif
+		    {
 			++stack[depth].ts_fidx;
+			if (fword[sp->ts_fidx] == fword[sp->ts_fidx + 1])
+			    stack[depth].ts_score -= SCORE_DEL - SCORE_DELDUP;
+		    }
 		    break;
 		}
 		/*FALLTHROUGH*/
@@ -5935,7 +5989,18 @@ suggest_try_change(su)
 				sp->ts_isdiff = DIFF_INSERT;
 			    }
 			}
+			else
+			    fl = 1;
+			if (fl == 1)
 #endif
+			{
+			    /* If the previous character was the same, thus
+			     * doubling a character, give a bonus to the
+			     * score. */
+			    if (sp->ts_twordlen >= 2
+					   && tword[sp->ts_twordlen - 2] == c)
+				sp->ts_score -= SCORE_INS - SCORE_INSDUP;
+			}
 		    }
 		}
 		break;
@@ -7264,7 +7329,7 @@ spell_soundfold(slang, inword, res)
 	    else if (has_mbyte)
 	    {
 		l = mb_ptr2len_check(s);
-		if (SPELL_ISWORDP(s))
+		if (spell_iswordp(s))
 		{
 		    mch_memmove(t, s, l);
 		    t += l;
@@ -7276,7 +7341,7 @@ spell_soundfold(slang, inword, res)
 #endif
 	    else
 	    {
-		if (SPELL_ISWORDP(s))
+		if (spell_iswordp(s))
 		    *t++ = *s;
 		++s;
 	    }
@@ -7376,12 +7441,12 @@ spell_soundfold(slang, inword, res)
 		if (*s == NUL
 			|| (*s == '^'
 			    && (i == 0 || !(word[i - 1] == ' '
-					      || SPELL_ISWORDP(word + i - 1)))
+					      || spell_iswordp(word + i - 1)))
 			    && (*(s + 1) != '$'
-				|| (!SPELL_ISWORDP(word + i + k0))))
+				|| (!spell_iswordp(word + i + k0))))
 			|| (*s == '$' && i > 0
-			    && SPELL_ISWORDP(word + i - 1)
-			    && (!SPELL_ISWORDP(word + i + k0))))
+			    && spell_iswordp(word + i - 1)
+			    && (!spell_iswordp(word + i + k0))))
 		{
 		    /* search for followup rules, if:    */
 		    /* followup and k > 1  and  NO '-' in searchstring */
@@ -7443,7 +7508,7 @@ spell_soundfold(slang, inword, res)
 			    if (*s == NUL
 				    /* *s == '^' cuts */
 				    || (*s == '$'
-					    && !SPELL_ISWORDP(word + i + k0)))
+					    && !spell_iswordp(word + i + k0)))
 			    {
 				if (k0 == k)
 				    /* this is just a piece of the string */

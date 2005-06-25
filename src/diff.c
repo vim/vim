@@ -69,7 +69,6 @@ static int diff_check_sanity __ARGS((diff_T *dp));
 static void diff_redraw __ARGS((int dofold));
 static int diff_write __ARGS((buf_T *buf, char_u *fname));
 static void diff_file __ARGS((char_u *tmp_orig, char_u *tmp_new, char_u *tmp_diff));
-static void diff_clear __ARGS((void));
 static int diff_equal_entry __ARGS((diff_T *dp, int idx1, int idx2));
 static int diff_cmp __ARGS((char_u *s1, char_u *s2));
 #ifdef FEAT_FOLDING
@@ -1336,7 +1335,7 @@ diff_copy_entry(dprev, dp, idx_orig, idx_new)
 /*
  * Clear the list of diffblocks.
  */
-    static void
+    void
 diff_clear()
 {
     diff_T	*p, *next_p;

@@ -1955,6 +1955,10 @@ win_free_mem(win, dirp)
     frame_T	*frp;
     win_T	*wp;
 
+#ifdef FEAT_FOLDING
+    clearFolding(win);
+#endif
+
     /* reduce the reference count to the argument list. */
     alist_unlink(win->w_alist);
 

@@ -1390,6 +1390,15 @@ closescript()
 	--curscript;
 }
 
+#if defined(EXITFREE) || defined(PROTO)
+    void
+close_all_scripts()
+{
+    while (scriptin[0] != NULL)
+	closescript();
+}
+#endif
+
 #if defined(FEAT_INS_EXPAND) || defined(PROTO)
 /*
  * Return TRUE when reading keys from a script file.

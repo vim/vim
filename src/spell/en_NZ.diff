@@ -1,17 +1,20 @@
 *** en_NZ.orig.aff	Fri Apr 15 13:20:36 2005
---- en_NZ.aff	Sat Jun 18 19:42:31 2005
+--- en_NZ.aff	Thu Jun 23 17:43:34 2005
 ***************
 *** 7,9 ****
   SET ISO8859-1
 ! TRY esiaיnrtolcdugmphbyfvkw-'.zqjxSNRTLCGDMPHBEAUYOFIVKWצגפZQJXÅחטמךאןüהס 
   REP 66
---- 7,14 ----
+--- 7,17 ----
   SET ISO8859-1
 ! TRY esiaיnrtolcdugmphbyfvkw-'.zqjxSNRTLCGDMPHBEAUYOFIVKWצגפZQJXÅחטמךאןüהס
 ! 
-! FOL  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗
-! LOW  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗
-! UPP  ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞ‗
+! FOL  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗ÿ
+! LOW  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗ÿ
+! UPP  ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞ‗ÿ
+! 
+! RAR ?
+! BAD !
 ! 
   REP 66
 ***************
@@ -36,7 +39,7 @@
   PFX E Y 1
 ! PFX E 0 dis . 
   PFX F Y 5
---- 81,100 ----
+--- 84,103 ----
   PFX A Y 2
 ! PFX A 0 re [^e]
 ! PFX A 0 re- e
@@ -454,7 +457,7 @@
   SFX T y iest [^aeiou]y
 ! SFX T 0 er [aeiou]y 
   SFX T 0 est [aeiou]y
---- 104,498 ----
+--- 107,501 ----
   PFX F 0 col l
 ! PFX F 0 con [^abehilmopru].
   PFX K Y 1
@@ -1539,7 +1542,7 @@
 ! SFX 3 o ist's o 
 ! SFX 3 0 ist's [^eoy] 
 \ No newline at end of file
---- 505,1190 ----
+--- 508,1314 ----
   SFX R Y 72
 ! SFX R 0 r e
 ! SFX R 0 rs e
@@ -2226,33 +2229,151 @@
 ! SFX 3 0 ist's [aeioubp]y
 ! SFX 3 o ist's o
 ! SFX 3 0 ist's [^eoy]
+! 
+! MAP 5
+! MAP aאבגדהו
+! MAP eטיךכ
+! MAP iלםמן
+! MAP oעףפץצ
+! MAP uשתûü
+! MAP nס
+! MAP cח
+! MAP yÿ‎
+! MAP s‗
+! 
+! # This comes from Aspell en_phonet.dat, version 1.1, 2000-01-07
+! 
+! SAL AH(AEIOUY)-^         *H
+! SAL AR(AEIOUY)-^         *R
+! SAL A(HR)^               *
+! SAL A^                   *
+! SAL AH(AEIOUY)-          H
+! SAL AR(AEIOUY)-          R
+! SAL A(HR)                _
+! SAL À^                   *
+! SAL Å^                   *
+! SAL BB-                  _
+! SAL B                    B
+! SAL CQ-                  _
+! SAL CIA                  X
+! SAL CH                   X
+! SAL C(EIY)-              S
+! SAL CK                   K
+! SAL COUGH^               KF
+! SAL CC<                  C
+! SAL C                    K
+! SAL DG(EIY)              K
+! SAL DD-                  _
+! SAL D                    T
+! SAL É<                   E
+! SAL EH(AEIOUY)-^         *H
+! SAL ER(AEIOUY)-^         *R
+! SAL E(HR)^               *
+! SAL ENOUGH^$             *NF
+! SAL E^                   *
+! SAL EH(AEIOUY)-          H
+! SAL ER(AEIOUY)-          R
+! SAL E(HR)                _
+! SAL FF-                  _
+! SAL F                    F
+! SAL GN^                  N
+! SAL GN$                  N
+! SAL GNS$                 NS
+! SAL GNED$                N
+! SAL GH(AEIOUY)-          K
+! SAL GH                   _
+! SAL GG9                  K
+! SAL G                    K
+! SAL H                    H
+! SAL IH(AEIOUY)-^         *H
+! SAL IR(AEIOUY)-^         *R
+! SAL I(HR)^               *
+! SAL I^                   *
+! SAL ING6                 N
+! SAL IH(AEIOUY)-          H
+! SAL IR(AEIOUY)-          R
+! SAL I(HR)                _
+! SAL J                    K
+! SAL KN^                  N
+! SAL KK-                  _
+! SAL K                    K
+! SAL LAUGH^               LF
+! SAL LL-                  _
+! SAL L                    L
+! SAL MB$                  M
+! SAL MM                   M
+! SAL M                    M
+! SAL NN-                  _
+! SAL N                    N
+! SAL OH(AEIOUY)-^         *H
+! SAL OR(AEIOUY)-^         *R
+! SAL O(HR)^               *
+! SAL O^                   *
+! SAL OH(AEIOUY)-          H
+! SAL OR(AEIOUY)-          R
+! SAL O(HR)                _
+! SAL PH                   F
+! SAL PN^                  N
+! SAL PP-                  _
+! SAL P                    P
+! SAL Q                    K
+! SAL RH^                  R
+! SAL ROUGH^               RF
+! SAL RR-                  _
+! SAL R                    R
+! SAL SCH(EOU)-            SK
+! SAL SC(IEY)-             S
+! SAL SH                   X
+! SAL SI(AO)-              X
+! SAL SS-                  _
+! SAL S                    S
+! SAL TI(AO)-              X
+! SAL TH                   @
+! SAL TCH--                _
+! SAL TOUGH^               TF
+! SAL TT-                  _
+! SAL T                    T
+! SAL UH(AEIOUY)-^         *H
+! SAL UR(AEIOUY)-^         *R
+! SAL U(HR)^               *
+! SAL U^                   *
+! SAL UH(AEIOUY)-          H
+! SAL UR(AEIOUY)-          R
+! SAL U(HR)                _
+! SAL V^                   W
+! SAL V                    F
+! SAL WR^                  R
+! SAL WH^                  W
+! SAL W(AEIOU)-            W
+! SAL X^                   S
+! SAL X                    KS
+! SAL Y(AEIOU)-            Y
+! SAL ZZ-                  _
+! SAL Z                    S
 *** en_NZ.orig.dic	Fri Apr 15 13:20:36 2005
---- en_NZ.dic	Tue Jun 21 20:14:24 2005
+--- en_NZ.dic	Wed Jun 22 14:06:51 2005
 ***************
-*** 1,6 ****
-  47141
-- 3GPP
-- 2YA
-- 2ZB
+*** 4,6 ****
+  2ZB
 - A
   a/o
---- 1,2 ----
+--- 4,5 ----
 ***************
 *** 927,929 ****
   Al-Zawahiri
 - al/FAC
   Al/M
---- 923,924 ----
+--- 926,927 ----
 ***************
 *** 2941,2944 ****
   B.Sc.
 - bless
 - bible
   baa/GSD
---- 2936,2937 ----
+--- 2939,2940 ----
 ***************
 *** 4974,4975 ****
---- 4967,4969 ----
+--- 4970,4972 ----
   Brampton/M
 + Bram/M
   bran/SDGM
@@ -2261,7 +2382,7 @@
   C.Lit.
 ! cation/SM
   Ca/y
---- 5701,5703 ----
+--- 5704,5706 ----
   C.Lit.
 ! cation/MWS
   Ca/y
@@ -2270,22 +2391,28 @@
   Cathy
 - cation/MW
   catkin/SM
---- 6444,6445 ----
+--- 6447,6448 ----
+***************
+*** 8589,8590 ****
+--- 8585,8587 ----
+  coniferous
++ conj.
+  conjectural
 ***************
 *** 10153,10155 ****
   red's
 - dally
   dab/TSGD
---- 10146,10147 ----
+--- 10150,10151 ----
 ***************
 *** 10360,10361 ****
---- 10352,10354 ----
+--- 10356,10358 ----
   dBm
 + dBd
   DBMS
 ***************
 *** 12535,12536 ****
---- 12528,12530 ----
+--- 12532,12534 ----
   Dutchwomen/M
 + Farsi
   duteous/Y
@@ -2294,13 +2421,13 @@
   duvet/SM
 - duxes
   DVD/MS
---- 12536,12537 ----
+--- 12540,12541 ----
 ***************
 *** 13901,13903 ****
   estuary/MS
 ! et
   ETA
---- 13894,13897 ----
+--- 13898,13901 ----
   estuary/MS
 ! et cetera
 ! et al.
@@ -2311,13 +2438,13 @@
 - fable
 - fist/MS
   fa/M
---- 14525,14526 ----
+--- 14529,14530 ----
 ***************
 *** 15323,15325 ****
   fissure/DSMG
 ! fist/6GD
   fistfight/MS
---- 15315,15317 ----
+--- 15319,15321 ----
   fissure/DSMG
 ! fist/6GDMS
   fistfight/MS
@@ -2326,44 +2453,44 @@
   g's
 - gable
   gist/MS
---- 16598,16599 ----
+--- 16602,16603 ----
 ***************
 *** 16797,16799 ****
   Garvey
 - Gary/M
   gas-permeable
---- 16788,16789 ----
+--- 16792,16793 ----
 ***************
 *** 18177,18179 ****
   gyroscope/SWM
 - dish
   ha
---- 18167,18168 ----
+--- 18171,18172 ----
 ***************
 *** 22321,22323 ****
   K-factor
 - disk/MS
   kabob's
---- 22310,22311 ----
+--- 22314,22315 ----
 ***************
 *** 23129,23132 ****
   lassoer/M
 - last-ditch
 - last-minute
   last/YSDGkJ
---- 23117,23118 ----
+--- 23121,23122 ----
 ***************
 *** 26396,26398 ****
   Missy
 ! mist/CDRGS
   mistakable/U
---- 26382,26384 ----
+--- 26386,26388 ----
   Missy
 ! mist/CDRGSM
   mistakable/U
 ***************
 *** 26745,26746 ****
---- 26731,26733 ----
+--- 26735,26737 ----
   Moog
 + Moolenaar/M
   moon/MGpDS
@@ -2372,7 +2499,7 @@
   mozzarella/SM
 - MP3
   mpg
---- 27005,27006 ----
+--- 27009,27010 ----
 ***************
 *** 27365,27372 ****
   N'Djamena
@@ -2383,7 +2510,7 @@
 - national
 - nationally
   Na/M
---- 27351,27355 ----
+--- 27355,27359 ----
   N'Djamena
 ! native/SP
   natively
@@ -2394,7 +2521,7 @@
   Nathaniel/M
 ! nation/M
   national/sQ3Sq
---- 27490,27492 ----
+--- 27494,27496 ----
   Nathaniel/M
 ! nation/MS
   national/sQ3Sq
@@ -2403,7 +2530,7 @@
   nationwide
 - native/SP
   nativity/SM
---- 27504,27505 ----
+--- 27508,27509 ----
 ***************
 *** 29852,29857 ****
   P.O.
@@ -2412,16 +2539,16 @@
 - imply
 - comply
   pa/oM
---- 29834,29835 ----
+--- 29838,29839 ----
 ***************
 *** 31702,31703 ****
---- 31680,31682 ----
+--- 31684,31686 ----
   pneumonia/MS
 + pneumonic
   PO
 ***************
 *** 31885,31886 ****
---- 31864,31866 ----
+--- 31868,31870 ----
   pompom/SM
 + pompon/M
   pomposity/SM
@@ -2430,30 +2557,30 @@
   qwertys
 - r/d
   Ra
---- 33541,33542 ----
+--- 33545,33546 ----
 ***************
 *** 35456,35458 ****
   rt
 - rte
   Ru/M
---- 35435,35436 ----
+--- 35439,35440 ----
 ***************
 *** 35619,35622 ****
   singly
 - sable
 - sally/DSG
   SA
---- 35597,35598 ----
+--- 35601,35602 ----
 ***************
 *** 40763,40766 ****
   T's
 - mist/MS
 - overt
   Ta
---- 40739,40740 ----
+--- 40743,40744 ----
 ***************
 *** 43574,43575 ****
---- 43548,43550 ----
+--- 43552,43554 ----
   unsearchable
 + searchable
   unseeing/Y
@@ -2462,7 +2589,7 @@
   Vilnius/M
 ! vim/M
   vinaigrette/MS
---- 44309,44311 ----
+--- 44313,44315 ----
   Vilnius/M
 ! Vim/M
   vinaigrette/MS
@@ -2471,73 +2598,78 @@
   y'all
 - prey/M
   yacht/M5SmGD
---- 45881,45882 ----
+--- 45885,45886 ----
 ***************
 *** 46198,46200 ****
   rata/M
 - kaka/M
   waka/M
---- 46172,46173 ----
+--- 46176,46177 ----
 ***************
 *** 46216,46218 ****
   jandal/MS
 - Swanndri/M
   hoon/MS
---- 46189,46190 ----
+--- 46193,46194 ----
 ***************
 *** 46242,46244 ****
   Invercargill/M
 - Te
   Alexandra/M
---- 46214,46215 ----
+--- 46218,46219 ----
 ***************
 *** 46261,46263 ****
   Kawerau/M
 - Kerikeri/M
   Lyttelton/M
---- 46232,46233 ----
+--- 46236,46237 ----
 ***************
 *** 46491,46493 ****
   Waianakarua
 - Hakatere
   Swin
---- 46461,46462 ----
+--- 46465,46466 ----
 ***************
 *** 46690,46692 ****
   Omarama/M
 - Wairarapa/M
   Kilda/M
---- 46659,46660 ----
+--- 46663,46664 ----
 ***************
 *** 46711,46713 ****
   Wellsford/M
 - Akaroa/M
   Avonhead/M
---- 46679,46680 ----
+--- 46683,46684 ----
 ***************
 *** 46838,46840 ****
   Ballantyne's
 - DB
   Monteith's
---- 46805,46806 ----
+--- 46809,46810 ----
 ***************
 *** 46920,46922 ****
   Egmont/M
 - Waitaki/M
   katipo/M
---- 46886,46887 ----
+--- 46890,46891 ----
 ***************
 *** 46956,46958 ****
   Sunnyside/M
 - Wairau/M
   Waikoropupu
---- 46921,46922 ----
+--- 46925,46926 ----
 ***************
 *** 47141,47142 ****
   Burkina
 ! Faso/M
 \ No newline at end of file
---- 47105,47107 ----
+--- 47109,47116 ----
   Burkina
 ! Faso/M
 ! nd
+! the the/!
+! a a/!
+! a an/!
+! an a/!
+! an an/!

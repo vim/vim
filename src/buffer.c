@@ -3177,6 +3177,16 @@ resettitle()
 {
     mch_settitle(lasttitle, lasticon);
 }
+
+# if defined(EXITFREE) || defined(PROTO)
+    void
+free_titles()
+{
+    vim_free(lasttitle);
+    vim_free(lasticon);
+}
+# endif
+
 #endif /* FEAT_TITLE */
 
 #if defined(FEAT_STL_OPT) || defined(PROTO)

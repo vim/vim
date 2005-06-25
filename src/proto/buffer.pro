@@ -39,6 +39,7 @@ void fileinfo __ARGS((int fullname, int shorthelp, int dont_truncate));
 void col_print __ARGS((char_u *buf, int col, int vcol));
 void maketitle __ARGS((void));
 void resettitle __ARGS((void));
+void free_titles __ARGS((void));
 int build_stl_str_hl __ARGS((win_T *wp, char_u *out, size_t outlen, char_u *fmt, int fillchar, int maxwidth, struct stl_hlrec *hl));
 void get_rel_pos __ARGS((win_T *wp, char_u *str));
 int append_arg_number __ARGS((win_T *wp, char_u *buf, int add_file, int maxlen));

@@ -949,6 +949,7 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 #define DT_HELP		8	/* like DT_TAG, but no wildcards */
 #define DT_JUMP		9	/* jump to new tag or selection from list */
 #define DT_CSCOPE	10	/* cscope find command (like tjump) */
+#define DT_FREE		99	/* free cached matches */
 
 /*
  * flags for find_tags().
