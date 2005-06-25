@@ -1,4 +1,5 @@
 /* regexp.c */
+void free_regexp_stuff __ARGS((void));
 int re_multiline __ARGS((regprog_T *prog));
 int re_lookbehind __ARGS((regprog_T *prog));
 char_u *skip_regexp __ARGS((char_u *startp, int dirc, int magic, char_u **newp));

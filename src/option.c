@@ -3165,6 +3165,34 @@ set_number_default(name, val)
     options[findoption((char_u *)name)].def_val[VI_DEFAULT] = (char_u *)val;
 }
 
+#if defined(EXITFREE) || defined(PROTO)
+/*
+ * Free all options.
+ */
+    void
+free_all_options()
+{
+    int		i;
+
+    for (i = 0; !istermoption(&options[i]); i++)
+    {
+	if (options[i].indir == PV_NONE)
+	{
+	    /* global option: free value and default value. */
+	    if (options[i].flags & P_ALLOCED && options[i].var != NULL)
+		free_string_option(*(char_u **)options[i].var);
+	    if (options[i].flags & P_DEF_ALLOCED)
+		free_string_option(options[i].def_val[VI_DEFAULT]);
+	}
+	else if (options[i].var != VAR_WIN
+		&& (options[i].flags & P_STRING))
+	    /* buffer-local option: free global value */
+	    free_string_option(*(char_u **)options[i].var);
+    }
+}
+#endif
+
+
 /*
  * Initialize the options, part two: After getting Rows and Columns and
  * setting 'term'.
@@ -8001,8 +8029,6 @@ put_setbool(fd, cmd, name, value)
     void
 clear_termoptions()
 {
-    struct vimoption   *p;
-
     /*
      * Reset a few things before clearing the old options. This may cause
      * outputting a few things that the terminal doesn't understand, but the
@@ -8027,6 +8053,14 @@ clear_termoptions()
     if (can_end_termcap_mode(FALSE) == TRUE)
 #endif
 	stoptermcap();			/* stop termcap mode */
+
+    free_termoptions();
+}
+
+    void
+free_termoptions()
+{
+    struct vimoption   *p;
 
     for (p = &options[0]; p->fullname != NULL; p++)
 	if (istermoption(p))

@@ -104,6 +104,7 @@ main
 #endif
     int		n_commands = 0;		/* no. of commands from + or -c */
     char_u	*commands[MAX_ARG_CMDS]; /* commands from + or -c option */
+    char_u	cmds_tofree[MAX_ARG_CMDS];  /* commands that need free() */
 #ifdef FEAT_PRECOMMANDS
     int		p_commands = 0;		/* no. of commands from --cmd */
     char_u	*pre_commands[MAX_ARG_CMDS]; /* commands from --cmd option */
@@ -190,6 +191,8 @@ main
     gui_prepare(&argc, argv);	/* Prepare for possibly starting GUI sometime */
     TIME_MSG("GUI prepared");
 #endif
+
+    vim_memset(cmds_tofree, 0, sizeof(cmds_tofree));
 
     /* Init the table of Normal mode commands. */
     init_normal_cmds();
@@ -930,6 +933,7 @@ main
 			if (p == NULL)
 			    mch_exit(2);
 			sprintf((char *)p, "so %s", a);
+			cmds_tofree[n_commands] = TRUE;
 			commands[n_commands++] = p;
 		    }
 		    else
@@ -2013,7 +2017,11 @@ scripterror:
 	current_SID = SID_CARG;
 #endif
 	for (i = 0; i < n_commands; ++i)
+	{
 	    do_cmdline_cmd(commands[i]);
+	    if (cmds_tofree[i])
+		vim_free(commands[i]);
+	}
 	sourcing_name = NULL;
 #ifdef FEAT_EVAL
 	current_SID = 0;

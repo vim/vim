@@ -11,6 +11,7 @@ void ex_diffsplit __ARGS((exarg_T *eap));
 void ex_diffthis __ARGS((exarg_T *eap));
 void diff_win_options __ARGS((win_T *wp, int addbuf));
 void ex_diffoff __ARGS((exarg_T *eap));
+void diff_clear __ARGS((void));
 int diff_check __ARGS((win_T *wp, linenr_T lnum));
 int diff_check_fill __ARGS((win_T *wp, linenr_T lnum));
 void diff_set_topline __ARGS((win_T *fromwin, win_T *towin));

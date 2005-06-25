@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jun 21
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jun 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -680,6 +680,11 @@ file.
 
 When running the tests and one of them fails to produce "test.out" the
 following tests are still executed.  This helps when running out of memory.
+
+When compiling with EXITFREE defined and the ccmalloc library it is possible
+to detect memory leaks.  Some memory will always reported as leaked, such as
+allocated by X11 library functions and the memory allocated in alloc_cmdbuff()
+to store the ":quit" command.
 
 ==============================================================================
 BUG FIXES						*bug-fixes-7*

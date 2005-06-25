@@ -789,6 +789,16 @@ ex_copy(line1, line2, n)
     msgmore((long)count);
 }
 
+static char_u	*prevcmd = NULL;	/* the previous command */
+
+#if defined(EXITFREE) || defined(PROTO)
+    void
+free_prev_shellcmd()
+{
+    vim_free(prevcmd);
+}
+#endif
+
 /*
  * Handle the ":!cmd" command.	Also for ":r !cmd" and ":w !cmd"
  * Bangs in the argument are replaced with the previously entered command.
@@ -807,7 +817,6 @@ do_bang(addr_count, eap, forceit, do_in, do_out)
     char_u		*arg = eap->arg;	/* command */
     linenr_T		line1 = eap->line1;	/* start of range */
     linenr_T		line2 = eap->line2;	/* end of range */
-    static char_u	*prevcmd = NULL;	/* the previous command */
     char_u		*newcmd = NULL;		/* the new command */
     int			free_newcmd = FALSE;    /* need to free() newcmd */
     int			ins_prevcmd;
@@ -5000,6 +5009,14 @@ write_viminfo_sub_string(fp)
     }
 }
 #endif /* FEAT_VIMINFO */
+
+#if defined(EXITFREE) || defined(PROTO)
+    void
+free_old_sub()
+{
+    vim_free(old_sub);
+}
+#endif
 
 #if (defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)) || defined(PROTO)
 /*

@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 20
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -3775,10 +3775,16 @@ spellsuggest({word} [, {max}])
 
 		{word} can be a badly spelled word followed by other text.
 		This allows for joining two words that were split.  The
-		suggestions then also include the following text.
+		suggestions also include the following text, thus you can
+		replace a line.
+
+		{word} may also be a good word.  Similar words will then be
+		returned.  {word} itself is also included, most likely as the
+		first entry, thus this can be used to check spelling.
 
 		The spelling information for the current window is used.  The
-		'spell' option must be set and 'spelllang' is relevant.
+		'spell' option must be set and the value of 'spelllang' is
+		used.
 
 
 split({expr} [, {pattern} [, {keepempty}]])			*split()*

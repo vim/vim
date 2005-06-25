@@ -4985,6 +4985,15 @@ set_last_insert(c)
     }
 }
 
+#if defined(EXITFREE) || defined(PROTO)
+    void
+free_last_insert()
+{
+    vim_free(last_insert);
+    last_insert = NULL;
+}
+#endif
+
 /*
  * Add character "c" to buffer "s".  Escape the special meaning of K_SPECIAL
  * and CSI.  Handle multi-byte characters.

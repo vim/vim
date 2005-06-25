@@ -1,12 +1,14 @@
 *** nl_NL.orig.aff	Wed Apr 20 11:48:16 2005
---- nl_NL.aff	Tue Jun 21 11:08:32 2005
+--- nl_NL.aff	Thu Jun 23 20:52:18 2005
 ***************
 *** 3,4 ****
---- 3,8 ----
+--- 3,10 ----
   
-+ FOL  àáâãäåæçèéêëìíîïğñòóôõöøùúûüışß
-+ LOW  àáâãäåæçèéêëìíîïğñòóôõöøùúûüışß
-+ UPP  ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏĞÑÒÓÔÕÖØÙÚÛÜİŞß
++ FOL  àáâãäåæçèéêëìíîïğñòóôõöøùúûüışßÿ
++ LOW  àáâãäåæçèéêëìíîïğñòóôõöøùúûüışßÿ
++ UPP  ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏĞÑÒÓÔÕÖØÙÚÛÜİŞßÿ
++ 
++ KEP =
 + 
   NOSPLITSUGS
 ***************
@@ -31,7 +33,7 @@
 ! SFX J 0 je [aeiou][bcdfgkpt] 
 ! SFX J 0 jes [aeiou][bcdfgkpt] 
   
---- 37,56 ----
+--- 39,58 ----
   SFX J N 18
 ! SFX J 0 tje [aeiou][aeiou]
 ! SFX J 0 tjes [aeiou][aeiou]
@@ -57,7 +59,7 @@
   REP ubi ibu
 ! REP croc krok 
   REP ten than
---- 257,259 ----
+--- 259,261 ----
   REP ubi ibu
 ! REP croc krok
   REP ten than
@@ -66,7 +68,7 @@
   REP capucino cappuccino
 ! REP celcius Celsius 
   REP kado cadeau
---- 292,294 ----
+--- 294,296 ----
   REP capucino cappuccino
 ! REP celcius Celsius
   REP kado cadeau
@@ -79,7 +81,7 @@
   REP kommittee comité
 ! REP kwis quiz 
   REP kwissen quizzen
---- 298,304 ----
+--- 300,306 ----
   REP committee comité
 ! REP komitee comité
 ! REP komittee comité
@@ -92,7 +94,7 @@
   REP copy kopij
 ! REP pitoresque pittoreske 
   REP reikweite reikwijdte
---- 306,308 ----
+--- 308,310 ----
   REP copy kopij
 ! REP pitoresque pittoreske
   REP reikweite reikwijdte
@@ -104,7 +106,7 @@
 ! REP kontekst context 
 ! REP korrekt correct 
   REP kritikus criticus
---- 318,323 ----
+--- 320,325 ----
   REP klup club
 ! REP wiskid whizzkid
 ! REP kontakt contact
@@ -113,8 +115,10 @@
   REP kritikus criticus
 ***************
 *** 333 ****
---- 337,458 ----
+--- 339,462 ----
   REP aflassen afgelasten
++ REP svp s.v.p.
++ REP zoz z.o.z.
 + 
 + MAP 5
 + MAP aàáâãäå
@@ -237,7 +241,16 @@
 + SAL ZZ-                  _
 + SAL Z                    S
 *** nl_NL.orig.dic	Tue Apr 19 21:03:15 2005
---- nl_NL.dic	Wed Jun 15 10:36:20 2005
+--- nl_NL.dic	Fri Jun 24 15:42:29 2005
+***************
+*** 1,3 ****
+  119937
+! 'Versie-12-8-2003. Copyright (c) Nederlandse Tex Gebruikersgroep en S.Brouwer'
+  's-Graveland
+--- 1,3 ----
+  119937
+! #Versie-12-8-2003. Copyright (c) Nederlandse Tex Gebruikersgroep en S.Brouwer'
+  's-Graveland
 ***************
 *** 8,9 ****
 --- 8,11 ----
@@ -266,27 +279,32 @@
   Dwingeloo
 ***************
 *** 7485,7486 ****
---- 7489,7493 ----
+--- 7489,7498 ----
   avond/SN
-+ 's avonds
-+ 's middags
-+ 's ochtends
++ 's avonds/=
++ 's middags/=
++ 's ochtends/=
++ 's morgens/=
++ 's Avonds
++ 's Middags
++ 's Ochtends
++ 's Morgens
   avondappèl/S
 ***************
 *** 20681,20682 ****
---- 20688,20690 ----
+--- 20693,20695 ----
   cytostatica
 + d.m.v.
   daad/P
 ***************
 *** 46300,46301 ****
---- 46308,46310 ----
+--- 46313,46315 ----
   informaticus
 + informatie/S
   informatie-uitwisseling
 ***************
 *** 60206,60208 ****
---- 60215,60222 ----
+--- 60220,60227 ----
   löss
 + m.a.w.
 + m.b.t.
@@ -297,26 +315,27 @@
   maag
 ***************
 *** 97474,97475 ****
---- 97488,97490 ----
+--- 97493,97496 ----
   suïciderisico/X
 + s.v.p.
++ z.o.z.
   swagger/S
 ***************
 *** 101428,101429 ****
---- 101443,101446 ----
+--- 101449,101452 ----
   toezichthouder/S
 + toezichthoudersaansprakelijkheidsverzekering
 + toezichthoudersaansprakelijkheidsverzekeringen
   toezie/N
 ***************
 *** 103707,103708 ****
---- 103724,103726 ----
+--- 103730,103732 ----
   tête-à-tête/S
 + u
   uchtend/N
 ***************
 *** 119938 ****
---- 119956,120126 ----
+--- 119962,120136 ----
   überhaupt
 + Christiaan/X
 + Fred/X
@@ -488,3 +507,7 @@
 + wishful thinking
 + à gogo
 + à propos
++ ca.
++ evt.
++ enz.
++ bijv.

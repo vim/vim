@@ -411,6 +411,8 @@ u_savecommon(top, bot, newbot)
 	    }
 	}
     }
+    else
+	uep->ue_array = NULL;
     uep->ue_next = curbuf->b_u_newhead->uh_entry;
     curbuf->b_u_newhead->uh_entry = uep;
     curbuf->b_u_synced = FALSE;
@@ -923,6 +925,7 @@ u_freeentry(uep, n)
 {
     while (n)
 	U_FREE_LINE(uep->ue_array[--n]);
+    U_FREE_LINE((char_u *)uep->ue_array);
     U_FREE_LINE((char_u *)uep);
 }
 
@@ -1047,6 +1050,7 @@ u_blockfree(buf)
 {
     while (buf->b_u_newhead != NULL)
 	u_freelist(buf, buf->b_u_newhead);
+    U_FREE_LINE(buf->b_u_line_ptr);
 }
 
 #else

@@ -22,6 +22,7 @@ char_u *hl_get_font_name __ARGS((void));
 void hl_set_font_name __ARGS((char_u *font_name));
 void hl_set_bg_color_name __ARGS((char_u *name));
 void hl_set_fg_color_name __ARGS((char_u *name));
+void clear_hl_tables __ARGS((void));
 int hl_combine_attr __ARGS((int char_attr, int prim_attr));
 attrentry_T *syn_gui_attr2entry __ARGS((int attr));
 attrentry_T *syn_term_attr2entry __ARGS((int attr));

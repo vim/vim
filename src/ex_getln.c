@@ -2307,6 +2307,18 @@ realloc_cmdbuff(len)
     return OK;
 }
 
+#if defined(FEAT_ARABIC) || defined(PROTO)
+static char_u	*arshape_buf = NULL;
+
+# if defined(EXITFREE) || defined(PROTO)
+    void
+free_cmdline_buf()
+{
+    vim_free(arshape_buf);
+}
+# endif
+#endif
+
 /*
  * Draw part of the cmdline at the current cursor position.  But draw stars
  * when cmdline_star is TRUE.
@@ -2333,7 +2345,6 @@ draw_cmdline(start, len)
 #ifdef FEAT_ARABIC
 	if (p_arshape && !p_tbidi && enc_utf8 && len > 0)
     {
-	static char_u	*buf;
 	static int	buflen = 0;
 	char_u		*p;
 	int		j;
@@ -2354,10 +2365,10 @@ draw_cmdline(start, len)
 	{
 	    /* Re-allocate the buffer.  We keep it around to avoid a lot of
 	     * alloc()/free() calls. */
-	    vim_free(buf);
+	    vim_free(arshape_buf);
 	    buflen = len * 2;
-	    buf = alloc(buflen);
-	    if (buf == NULL)
+	    arshape_buf = alloc(buflen);
+	    if (arshape_buf == NULL)
 		return;	/* out of memory */
 	}
 
@@ -2394,23 +2405,24 @@ draw_cmdline(start, len)
 
 		u8c = arabic_shape(u8c, NULL, &u8c_c1, pc, pc1, nc);
 
-		newlen += (*mb_char2bytes)(u8c, buf + newlen);
+		newlen += (*mb_char2bytes)(u8c, arshape_buf + newlen);
 		if (u8c_c1 != 0)
 		{
-		    newlen += (*mb_char2bytes)(u8c_c1, buf + newlen);
+		    newlen += (*mb_char2bytes)(u8c_c1, arshape_buf + newlen);
 		    if (u8c_c2 != 0)
-			newlen += (*mb_char2bytes)(u8c_c2, buf + newlen);
+			newlen += (*mb_char2bytes)(u8c_c2,
+							arshape_buf + newlen);
 		}
 	    }
 	    else
 	    {
 		prev_c = u8c;
-		mch_memmove(buf + newlen, p, mb_l);
+		mch_memmove(arshape_buf + newlen, p, mb_l);
 		newlen += mb_l;
 	    }
 	}
 
-	msg_outtrans_len(buf, newlen);
+	msg_outtrans_len(arshape_buf, newlen);
     }
     else
 #endif

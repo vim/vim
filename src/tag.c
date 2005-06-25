@@ -122,7 +122,8 @@ static taggy_T ptag_entry = {NULL};
  * type == DT_LAST:	jump to last match of same tag
  * type == DT_SELECT:	":tselect [tag]", select tag from a list of all matches
  * type == DT_JUMP:	":tjump [tag]", jump to tag or select tag from a list
- * type == DT_CSCOPE:	use cscope to find the tag.
+ * type == DT_CSCOPE:	use cscope to find the tag
+ * type == DT_FREE:	free cached matches
  *
  * for cscope, returns TRUE if we jumped to tag or aborted, FALSE otherwise
  */
@@ -172,6 +173,19 @@ do_tag(tag, type, count, forceit, verbose)
     static int		max_num_matches = 0;  /* limit used for match search */
     static char_u	**matches = NULL;
     static int		flags;
+
+#ifdef EXITFREE
+    if (type == DT_FREE)
+    {
+	/* remove the list of matches */
+	FreeWild(num_matches, matches);
+# ifdef FEAT_CSCOPE
+	cs_free_tags();
+# endif
+	num_matches = 0;
+	return FALSE;
+    }
+#endif
 
     if (type == DT_HELP)
     {
@@ -2108,7 +2122,8 @@ line_read_in:
 			 * other tag: <mtt><tag_fname><NUL><NUL><lbuf>
 			 * without Emacs tags: <mtt><tag_fname><NUL><lbuf>
 			 */
-			len = (int)STRLEN(tag_fname) + (int)STRLEN(lbuf_line) + 3;
+			len = (int)STRLEN(tag_fname)
+						 + (int)STRLEN(lbuf_line) + 3;
 #ifdef FEAT_EMACS_TAGS
 			if (is_etag)
 			    len += (int)STRLEN(ebuf) + 1;
@@ -2345,6 +2360,17 @@ found_tagfile_cb(fname, cookie)
 							   vim_strsave(fname);
 }
 
+static void	*search_ctx = NULL;
+
+#if defined(EXITFREE) || defined(PROTO)
+    void
+free_tag_stuff()
+{
+    vim_findfile_cleanup(search_ctx);
+    do_tag(NULL, DT_FREE, 0, 0, 0);
+}
+#endif
+
 /*
  * Get the next name of a tag file from the tag file list.
  * For help files, use "tags" file only.
@@ -2356,7 +2382,6 @@ get_tagfname(first, buf)
     int		first;	/* TRUE when first file name is wanted */
     char_u	*buf;	/* pointer to buffer of MAXPATHL chars */
 {
-    static void		*search_ctx = NULL;
     static char_u	*np = NULL;
     static int		did_filefind_init;
     static int		hf_idx = 0;

@@ -2703,8 +2703,11 @@ mch_early_init()
     void
 mch_free_mem()
 {
-# if defined(HAVE_SIGALTSTACK) || defined(HAVE_SIGSTACK)
-    vim_free(signal_stack);
+# if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
+    if (clip_star.owned)
+	clip_lose_selection(&clip_star);
+    if (clip_plus.owned)
+	clip_lose_selection(&clip_plus);
 # endif
 # if (defined(FEAT_X11) && defined(FEAT_XCLIPBOARD)) || defined(PROTO)
     if (xterm_Shell != (Widget)0)
@@ -2713,6 +2716,18 @@ mch_free_mem()
 	XtCloseDisplay(xterm_dpy);
     if (app_context != (XtAppContext)NULL)
 	XtDestroyApplicationContext(app_context);
+# endif
+# ifdef FEAT_X11
+    if (x11_display != NULL && x11_display != xterm_dpy)
+	XCloseDisplay(x11_display);
+# endif
+# if defined(HAVE_SIGALTSTACK) || defined(HAVE_SIGSTACK)
+    vim_free(signal_stack);
+    signal_stack = NULL;
+# endif
+# ifdef FEAT_TITLE
+    vim_free(oldtitle);
+    vim_free(oldicon);
 # endif
 }
 #endif

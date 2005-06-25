@@ -598,6 +598,14 @@ gui_mch_prepare(int *argc, char **argv)
     gui_argv[gui_argc] = NULL;
 }
 
+#if defined(EXITFREE) || defined(PROTO)
+    void
+gui_mch_free_all()
+{
+    vim_free(gui_argv);
+}
+#endif
+
 /*
  * This should be maybe completely removed.
  * Doesn't seem possible, since check_copy_area() relies on

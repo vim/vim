@@ -2,6 +2,7 @@
 void set_init_1 __ARGS((void));
 void set_string_default __ARGS((char *name, char_u *val));
 void set_number_default __ARGS((char *name, long val));
+void free_all_options __ARGS((void));
 void set_init_2 __ARGS((void));
 void set_init_3 __ARGS((void));
 void set_helplang_default __ARGS((char_u *lang));
@@ -26,6 +27,7 @@ char_u *get_encoding_default __ARGS((void));
 int makeset __ARGS((FILE *fd, int opt_flags, int local_only));
 int makefoldset __ARGS((FILE *fd));
 void clear_termoptions __ARGS((void));
+void free_termoptions __ARGS((void));
 void set_term_defaults __ARGS((void));
 void comp_col __ARGS((void));
 char_u *get_equalprg __ARGS((void));

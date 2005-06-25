@@ -600,6 +600,7 @@ ex_breakdel(eap)
     struct debuggy *bp, *bpi;
     int		nr;
     int		todel = -1;
+    int		del_all = FALSE;
     int		i;
     linenr_T	best_lnum = 0;
 
@@ -613,6 +614,11 @@ ex_breakdel(eap)
 		todel = i;
 		break;
 	    }
+    }
+    else if (*eap->arg == '*')
+    {
+	todel = 0;
+	del_all = TRUE;
     }
     else
     {
@@ -640,15 +646,18 @@ ex_breakdel(eap)
     if (todel < 0)
 	EMSG2(_("E161: Breakpoint not found: %s"), eap->arg);
     else
-    {
-	vim_free(BREAKP(todel).dbg_name);
-	vim_free(BREAKP(todel).dbg_prog);
-	--dbg_breakp.ga_len;
-	if (todel < dbg_breakp.ga_len)
-	    mch_memmove(&BREAKP(todel), &BREAKP(todel + 1),
-		    (dbg_breakp.ga_len - todel) * sizeof(struct debuggy));
-	++debug_tick;
-    }
+	while (dbg_breakp.ga_len > 0)
+	{
+	    vim_free(BREAKP(todel).dbg_name);
+	    vim_free(BREAKP(todel).dbg_prog);
+	    --dbg_breakp.ga_len;
+	    if (todel < dbg_breakp.ga_len)
+		mch_memmove(&BREAKP(todel), &BREAKP(todel + 1),
+			(dbg_breakp.ga_len - todel) * sizeof(struct debuggy));
+	    ++debug_tick;
+	    if (!del_all)
+		break;
+	}
 }
 
 /*

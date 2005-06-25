@@ -98,6 +98,12 @@ PLANNED FOR VERSION 7.0:
 
 -   Add SPELLCHECKER, with support for many languages.
     - Spell checking code todo's:
+	- Special handling of ' and -: define in the .aff file.
+	    Aspell does this with "special".
+	- Support user function to make suggestions:
+	    :set spellsuggest=MySuggest,fast
+	  Also support a list with common mistakes?
+	- For "z?" a "replace all" mechanism would be welcome.
         - Add hl groups to 'spelllang'?
 	    :set spelllang=en_us,en-rare/SpellRare,en-math/SpellMath
 	  More complicated: Regions with different languages?  E.g.  comments

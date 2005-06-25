@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 23
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -71,9 +71,15 @@ zw			Add word under the cursor as a wrong (bad) word to
 							*:spellw* *:spellwrong*
 :spellw[rong] {word}	Add [word} as a wrong (bad) word to 'spellfile'.
 
-After adding a word to 'spellfile' its associated ".spl" file will
-automatically be updated.  More details about the 'spellfile' format below
-|spell-wordlist-format|.
+After adding a word to 'spellfile' with the above commands its associated
+".spl" file will automatically be updated.  If you edit 'spellfile' manually
+you need to use the |:mkspell| command.  This sequence of commands mostly
+works well: >
+	:exe 'e ' . &spellfile
+<	(make changes to the spell file) >
+	:mkspell! %
+
+More details about the 'spellfile' format below |spell-wordlist-format|.
 
 
 Finding suggestions for bad words:
@@ -208,7 +214,7 @@ include characters like '-' in 'iskeyword'.  The word characters do depend on
 
 The table with word characters is stored in the main .spl file.  Therefore it
 matters what the current locale is when generating it!  A .add.spl file does
-not contain a word table.
+not contain a word table though.
 
 A word that starts with a digit is always ignored.  That includes hex numbers
 in the form 0xff and 0XFF.

@@ -2408,6 +2408,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :source_crnl	repeat.txt	/*:source_crnl*
 :sp	windows.txt	/*:sp*
 :spe	spell.txt	/*:spe*
+:spelld	spell.txt	/*:spelld*
+:spelldump	spell.txt	/*:spelldump*
 :spellgood	spell.txt	/*:spellgood*
 :spellw	spell.txt	/*:spellw*
 :spellwrong	spell.txt	/*:spellwrong*
@@ -3703,6 +3705,7 @@ E748	repeat.txt	/*E748*
 E749	eval.txt	/*E749*
 E75	vi_diff.txt	/*E75*
 E750	repeat.txt	/*E750*
+E751	spell.txt	/*E751*
 E754	spell.txt	/*E754*
 E756	spell.txt	/*E756*
 E758	spell.txt	/*E758*
@@ -6272,6 +6275,7 @@ spell-affix-mbyte	spell.txt	/*spell-affix-mbyte*
 spell-affix-vim	spell.txt	/*spell-affix-vim*
 spell-dic-format	spell.txt	/*spell-dic-format*
 spell-file-format	spell.txt	/*spell-file-format*
+spell-load	spell.txt	/*spell-load*
 spell-mkspell	spell.txt	/*spell-mkspell*
 spell-quickstart	spell.txt	/*spell-quickstart*
 spell-syntax	spell.txt	/*spell-syntax*

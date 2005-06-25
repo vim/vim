@@ -3,6 +3,7 @@ int search_regcomp __ARGS((char_u *pat, int pat_save, int pat_use, int options, 
 char_u *get_search_pat __ARGS((void));
 void save_search_patterns __ARGS((void));
 void restore_search_patterns __ARGS((void));
+void free_search_patterns __ARGS((void));
 int ignorecase __ARGS((char_u *pat));
 char_u *last_search_pat __ARGS((void));
 void reset_search_dir __ARGS((void));

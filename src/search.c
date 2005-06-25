@@ -338,6 +338,15 @@ restore_search_patterns()
 }
 #endif
 
+#if defined(EXITFREE) || defined(PROTO)
+    void
+free_search_patterns()
+{
+    vim_free(spats[0].pat);
+    vim_free(spats[1].pat);
+}
+#endif
+
 /*
  * Return TRUE when case should be ignored for search pattern "pat".
  * Uses the 'ignorecase' and 'smartcase' options.

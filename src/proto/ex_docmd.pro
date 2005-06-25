@@ -33,6 +33,7 @@ void alist_add __ARGS((alist_T *al, char_u *fname, int set_fnum));
 void alist_slash_adjust __ARGS((void));
 void ex_splitview __ARGS((exarg_T *eap));
 void do_exedit __ARGS((exarg_T *eap, win_T *old_curwin));
+void free_cd_dir __ARGS((void));
 void do_sleep __ARGS((long msec));
 int vim_mkdir_emsg __ARGS((char_u *name, int prot));
 FILE *open_exfile __ARGS((char_u *fname, int forceit, char *mode));

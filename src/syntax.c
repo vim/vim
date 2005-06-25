@@ -7074,7 +7074,11 @@ free_highlight()
     int	    i;
 
     for (i = 0; i < highlight_ga.ga_len; ++i)
+    {
 	highlight_clear(i);
+	vim_free(HL_TABLE()[i].sg_name);
+	vim_free(HL_TABLE()[i].sg_name_u);
+    }
     ga_clear(&highlight_ga);
 }
 #endif
@@ -7485,7 +7489,7 @@ get_attr_entry(table, aep)
     attrentry_T	*aep;
 {
     int		i;
-    attrentry_T	*gap;
+    attrentry_T	*taep;
     static int	recursive = FALSE;
 
     /*
@@ -7499,35 +7503,39 @@ get_attr_entry(table, aep)
      */
     for (i = 0; i < table->ga_len; ++i)
     {
-	gap = &(((attrentry_T *)table->ga_data)[i]);
-	if (	   aep->ae_attr == gap->ae_attr
+	taep = &(((attrentry_T *)table->ga_data)[i]);
+	if (	   aep->ae_attr == taep->ae_attr
 		&& (
 #ifdef FEAT_GUI
 		       (table == &gui_attr_table
-			&& (aep->ae_u.gui.fg_color == gap->ae_u.gui.fg_color
-			    && aep->ae_u.gui.bg_color == gap->ae_u.gui.bg_color
-			    && aep->ae_u.gui.sp_color == gap->ae_u.gui.sp_color
-			    && aep->ae_u.gui.font == gap->ae_u.gui.font
+			&& (aep->ae_u.gui.fg_color == taep->ae_u.gui.fg_color
+			    && aep->ae_u.gui.bg_color
+						    == taep->ae_u.gui.bg_color
+			    && aep->ae_u.gui.sp_color
+						    == taep->ae_u.gui.sp_color
+			    && aep->ae_u.gui.font == taep->ae_u.gui.font
 #  ifdef FEAT_XFONTSET
-			    && aep->ae_u.gui.fontset == gap->ae_u.gui.fontset
+			    && aep->ae_u.gui.fontset == taep->ae_u.gui.fontset
 #  endif
 			    ))
 		    ||
 #endif
 		       (table == &term_attr_table
-			&& (aep->ae_u.term.start == NULL) ==
-						(gap->ae_u.term.start == NULL)
+			&& (aep->ae_u.term.start == NULL)
+					    == (taep->ae_u.term.start == NULL)
 			&& (aep->ae_u.term.start == NULL
 			    || STRCMP(aep->ae_u.term.start,
-						   gap->ae_u.term.start) == 0)
-			&& (aep->ae_u.term.stop == NULL) ==
-						 (gap->ae_u.term.stop == NULL)
+						  taep->ae_u.term.start) == 0)
+			&& (aep->ae_u.term.stop == NULL)
+					     == (taep->ae_u.term.stop == NULL)
 			&& (aep->ae_u.term.stop == NULL
 			    || STRCMP(aep->ae_u.term.stop,
-						   gap->ae_u.term.stop) == 0))
+						  taep->ae_u.term.stop) == 0))
 		    || (table == &cterm_attr_table
-			&& aep->ae_u.cterm.fg_color == gap->ae_u.cterm.fg_color
-			&& aep->ae_u.cterm.bg_color == gap->ae_u.cterm.bg_color)
+			    && aep->ae_u.cterm.fg_color
+						  == taep->ae_u.cterm.fg_color
+			    && aep->ae_u.cterm.bg_color
+						 == taep->ae_u.cterm.bg_color)
 		     ))
 
 	return i + ATTR_OFF;
@@ -7547,11 +7555,8 @@ get_attr_entry(table, aep)
 	}
 	recursive = TRUE;
 
-#ifdef FEAT_GUI
-	ga_clear(&gui_attr_table);
-#endif
-	ga_clear(&term_attr_table);
-	ga_clear(&cterm_attr_table);
+	clear_hl_tables();
+
 	must_redraw = CLEAR;
 
 	for (i = 0; i < highlight_ga.ga_len; ++i)
@@ -7566,39 +7571,61 @@ get_attr_entry(table, aep)
     if (ga_grow(table, 1) == FAIL)
 	return 0;
 
-    gap = &(((attrentry_T *)table->ga_data)[table->ga_len]);
-    vim_memset(gap, 0, sizeof(attrentry_T));
-    gap->ae_attr = aep->ae_attr;
+    taep = &(((attrentry_T *)table->ga_data)[table->ga_len]);
+    vim_memset(taep, 0, sizeof(attrentry_T));
+    taep->ae_attr = aep->ae_attr;
 #ifdef FEAT_GUI
     if (table == &gui_attr_table)
     {
-	gap->ae_u.gui.fg_color = aep->ae_u.gui.fg_color;
-	gap->ae_u.gui.bg_color = aep->ae_u.gui.bg_color;
-	gap->ae_u.gui.sp_color = aep->ae_u.gui.sp_color;
-	gap->ae_u.gui.font = aep->ae_u.gui.font;
+	taep->ae_u.gui.fg_color = aep->ae_u.gui.fg_color;
+	taep->ae_u.gui.bg_color = aep->ae_u.gui.bg_color;
+	taep->ae_u.gui.sp_color = aep->ae_u.gui.sp_color;
+	taep->ae_u.gui.font = aep->ae_u.gui.font;
 # ifdef FEAT_XFONTSET
-	gap->ae_u.gui.fontset = aep->ae_u.gui.fontset;
+	taep->ae_u.gui.fontset = aep->ae_u.gui.fontset;
 # endif
     }
 #endif
     if (table == &term_attr_table)
     {
 	if (aep->ae_u.term.start == NULL)
-	    gap->ae_u.term.start = NULL;
+	    taep->ae_u.term.start = NULL;
 	else
-	    gap->ae_u.term.start = vim_strsave(aep->ae_u.term.start);
+	    taep->ae_u.term.start = vim_strsave(aep->ae_u.term.start);
 	if (aep->ae_u.term.stop == NULL)
-	    gap->ae_u.term.stop = NULL;
+	    taep->ae_u.term.stop = NULL;
 	else
-	    gap->ae_u.term.stop = vim_strsave(aep->ae_u.term.stop);
+	    taep->ae_u.term.stop = vim_strsave(aep->ae_u.term.stop);
     }
     else if (table == &cterm_attr_table)
     {
-	gap->ae_u.cterm.fg_color = aep->ae_u.cterm.fg_color;
-	gap->ae_u.cterm.bg_color = aep->ae_u.cterm.bg_color;
+	taep->ae_u.cterm.fg_color = aep->ae_u.cterm.fg_color;
+	taep->ae_u.cterm.bg_color = aep->ae_u.cterm.bg_color;
     }
     ++table->ga_len;
     return (table->ga_len - 1 + ATTR_OFF);
+}
+
+/*
+ * Clear all highlight tables.
+ */
+    void
+clear_hl_tables()
+{
+    int		i;
+    attrentry_T	*taep;
+
+#ifdef FEAT_GUI
+    ga_clear(&gui_attr_table);
+#endif
+    for (i = 0; i < term_attr_table.ga_len; ++i)
+    {
+	taep = &(((attrentry_T *)term_attr_table.ga_data)[i]);
+	vim_free(taep->ae_u.term.start);
+	vim_free(taep->ae_u.term.stop);
+    }
+    ga_clear(&term_attr_table);
+    ga_clear(&cterm_attr_table);
 }
 
 #if defined(FEAT_SYN_HL) || defined(PROTO)

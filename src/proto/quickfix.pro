@@ -1,5 +1,6 @@
 /* quickfix.c */
 int qf_init __ARGS((char_u *efile, char_u *errorformat, int newlist));
+void qf_free_all __ARGS((void));
 void qf_jump __ARGS((int dir, int errornr, int forceit));
 void qf_list __ARGS((exarg_T *eap));
 void qf_age __ARGS((exarg_T *eap));

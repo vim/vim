@@ -16,6 +16,10 @@
 # include <fcntl.h>	    /* for chdir() */
 #endif
 
+static char_u	*username = NULL; /* cached result of mch_get_user_name() */
+
+static char_u	*ff_expand_buffer = NULL; /* used for expanding filenames */
+
 #if defined(FEAT_VIRTUALEDIT) || defined(PROTO)
 static int coladvance2 __ARGS((pos_T *pos, int addspaces, int finetune, colnr_T wcol));
 
@@ -922,15 +926,29 @@ do_outofmem_msg(size)
 }
 
 #if defined(EXITFREE) || defined(PROTO)
+
+# if defined(FEAT_SEARCHPATH)
+static void free_findfile __ARGS((void));
+# endif
+
 /*
  * Free everything that we allocated.
  * Can be used to detect memory leaks, e.g., with ccmalloc.
- * Doesn't do nearly all that is required...
+ * NOTE: This is tricky!  Things are freed that functions depend on.  Don't be
+ * surprised if Vim crashes...
+ * Some things can't be freed, esp. things local to a library function.
  */
     void
 free_all_mem()
 {
     buf_T	*buf, *nextbuf;
+    static int	entered = FALSE;
+
+    /* When we cause a crash here it is caught and Vim tries to exit cleanly.
+     * Don't try freeing everything again. */
+    if (entered)
+	return;
+    entered = TRUE;
 
     ++autocmd_block;	    /* don't want to trigger autocommands here */
 
@@ -939,20 +957,30 @@ free_all_mem()
     spell_free_all();
 # endif
 
-#if defined(FEAT_USR_CMDS)
+# if defined(FEAT_USR_CMDS)
     /* Clear user commands (before deleting buffers). */
     ex_comclear(NULL);
-#endif
+# endif
 
 # ifdef FEAT_MENU
     /* Clear menus. */
     do_cmdline_cmd((char_u *)"aunmenu *");
 # endif
 
-    /* Clear mappings and abbreviations. */
+    /* Clear mappings, abbreviations, breakpoints. */
     do_cmdline_cmd((char_u *)"mapclear");
     do_cmdline_cmd((char_u *)"mapclear!");
     do_cmdline_cmd((char_u *)"abclear");
+# if defined(FEAT_EVAL)
+    do_cmdline_cmd((char_u *)"breakdel *");
+# endif
+
+# ifdef FEAT_TITLE
+    free_titles();
+# endif
+# if defined(FEAT_SEARCHPATH)
+    free_findfile();
+# endif
 
     /* Obviously named calls. */
 # if defined(FEAT_EVAL)
@@ -963,10 +991,43 @@ free_all_mem()
     free_all_autocmds();
 # endif
     clear_termcodes();
+    free_all_options();
+    free_all_marks();
+    alist_clear(&global_alist);
+    free_homedir();
+    free_search_patterns();
+    free_old_sub();
+    free_last_insert();
+    free_prev_shellcmd();
+    free_regexp_stuff();
+    free_tag_stuff();
+    free_cd_dir();
+    set_expr_line(NULL);
+    diff_clear();
+
+    /* Free some global vars. */
+    vim_free(username);
+    vim_free(clip_exclude_prog);
+    vim_free(last_cmdline);
+    vim_free(new_last_cmdline);
+    vim_free(keep_msg);
+    vim_free(ff_expand_buffer);
 
     /* Clear cmdline history. */
     p_hi = 0;
     init_history();
+
+#ifdef FEAT_QUICKFIX
+    qf_free_all();
+#endif
+
+    /* Close all script inputs. */
+    close_all_scripts();
+
+#if defined(FEAT_WINDOWS)
+    /* Destroy all windows.  Must come before freeing buffers. */
+    win_free_all();
+#endif
 
     /* Free all buffers. */
     for (buf = firstbuf; buf != NULL; )
@@ -979,15 +1040,18 @@ free_all_mem()
 	    buf = firstbuf;
     }
 
-#if defined(FEAT_WINDOWS)
-    /* Destroy all windows. */
-    win_free_all();
+#ifdef FEAT_ARABIC
+    free_cmdline_buf();
 #endif
 
     /* Clear registers. */
     clear_registers();
     ResetRedobuff();
     ResetRedobuff();
+
+#ifdef FEAT_CLIENTSERVER
+    vim_free(serverDelayedStartName);
+#endif
 
     /* highlight info */
     free_highlight();
@@ -1006,12 +1070,18 @@ free_all_mem()
     eval_clear();
 # endif
 
+    free_termoptions();
+
     /* screenlines (can't display anything now!) */
     free_screenlines();
 
 #if defined(USE_XSMP)
     xsmp_close();
 #endif
+#ifdef FEAT_GUI_GTK
+    gui_mch_free_all();
+#endif
+    clear_hl_tables();
 
     vim_free(IObuff);
     vim_free(NameBuff);
@@ -3642,11 +3712,9 @@ typedef struct ff_search_ctx_T
      char_u			**ffsc_stopdirs_v;
 #endif
      int			ffsc_need_dir;
-}ff_search_ctx_T;
-static ff_search_ctx_T *ff_search_ctx = NULL;
+} ff_search_ctx_T;
 
-/* used for expanding filenames */
-static char_u		*ff_expand_buffer = NULL;
+static ff_search_ctx_T *ff_search_ctx = NULL;
 
 /* locally needed functions */
 #ifdef FEAT_PATH_EXTRA
@@ -3994,8 +4062,7 @@ vim_findfile_init(path, filename, stopdirs, level, free_visited, need_dir,
 		ff_expand_buffer[len++] = *wc_part++;
 	}
 	ff_expand_buffer[len] = NUL;
-	ff_search_ctx->ffsc_wc_path =
-	    vim_strsave(ff_expand_buffer);
+	ff_search_ctx->ffsc_wc_path = vim_strsave(ff_expand_buffer);
 
 	if (ff_search_ctx->ffsc_wc_path == NULL)
 	    goto error_return;
@@ -4085,7 +4152,7 @@ vim_findfile_stopdir(buf)
 vim_findfile_cleanup(ctx)
     void	*ctx;
 {
-    if (NULL == ctx)
+    if (ctx == NULL)
 	return;
 
     ff_search_ctx = ctx;
@@ -4452,8 +4519,8 @@ vim_findfile(search_ctx)
 		     * still wildcards left, push the directories for further
 		     * search
 		     */
-		    for (i = ctx->ffs_filearray_cur; i < ctx->ffs_filearray_size;
-									  ++i)
+		    for (i = ctx->ffs_filearray_cur;
+					     i < ctx->ffs_filearray_size; ++i)
 		    {
 			if (!mch_isdir(ctx->ffs_filearray[i]))
 			    continue;	/* not a directory */
@@ -4474,7 +4541,8 @@ vim_findfile(search_ctx)
 	     */
 	    if (STRNCMP(ctx->ffs_wc_path, "**", 2) == 0)
 	    {
-		for (i = ctx->ffs_filearray_cur; i < ctx->ffs_filearray_size; ++i)
+		for (i = ctx->ffs_filearray_cur;
+					     i < ctx->ffs_filearray_size; ++i)
 		{
 		    if (fnamecmp(ctx->ffs_filearray[i], ctx->ffs_fix_path) == 0)
 			continue; /* don't repush same directory */
@@ -4875,8 +4943,7 @@ ff_push(ctx)
     ff_stack_T *ctx;
 {
     /* check for NULL pointer, not to return an error to the user, but
-     * to prevent a crash
-     */
+     * to prevent a crash */
     if (ctx != NULL)
     {
 	ctx->ffs_prev   = ff_search_ctx->ffsc_stack_ptr;
@@ -5045,6 +5112,18 @@ find_file_in_path(ptr, len, options, first, rel_fname)
 	    FALSE, rel_fname);
 }
 
+static char_u	*ff_file_to_find = NULL;
+static void	*fdip_search_ctx = NULL;
+
+#if defined(EXITFREE)
+    static void
+free_findfile()
+{
+    vim_free(ff_file_to_find);
+    vim_findfile_cleanup(fdip_search_ctx);
+}
+#endif
+
 /*
  * Find the directory name "ptr[len]" in the path.
  *
@@ -5076,9 +5155,7 @@ find_file_in_path_option(ptr, len, options, first, path_option, need_dir, rel_fn
     int		need_dir;	/* looking for directory name */
     char_u	*rel_fname;	/* file name we are looking relative to. */
 {
-    static void		*search_ctx = NULL;
     static char_u	*dir;
-    static char_u	*file_to_find = NULL;
     static int		did_findfile_init = FALSE;
     char_u		save_char;
     char_u		*file_name = NULL;
@@ -5100,33 +5177,33 @@ find_file_in_path_option(ptr, len, options, first, path_option, need_dir, rel_fn
 	expand_env(ptr, NameBuff, MAXPATHL);
 	ptr[len] = save_char;
 
-	vim_free(file_to_find);
-	file_to_find = vim_strsave(NameBuff);
-	if (file_to_find == NULL)	/* out of memory */
+	vim_free(ff_file_to_find);
+	ff_file_to_find = vim_strsave(NameBuff);
+	if (ff_file_to_find == NULL)	/* out of memory */
 	{
 	    file_name = NULL;
 	    goto theend;
 	}
     }
 
-    rel_to_curdir = (file_to_find[0] == '.'
-		    && (file_to_find[1] == NUL
-			|| vim_ispathsep(file_to_find[1])
-			|| (file_to_find[1] == '.'
-			    && (file_to_find[2] == NUL
-				|| vim_ispathsep(file_to_find[2])))));
-    if (vim_isAbsName(file_to_find)
+    rel_to_curdir = (ff_file_to_find[0] == '.'
+		    && (ff_file_to_find[1] == NUL
+			|| vim_ispathsep(ff_file_to_find[1])
+			|| (ff_file_to_find[1] == '.'
+			    && (ff_file_to_find[2] == NUL
+				|| vim_ispathsep(ff_file_to_find[2])))));
+    if (vim_isAbsName(ff_file_to_find)
 	    /* "..", "../path", "." and "./path": don't use the path_option */
 	    || rel_to_curdir
 #if defined(MSWIN) || defined(MSDOS) || defined(OS2)
 	    /* handle "\tmp" as absolute path */
-	    || vim_ispathsep(file_to_find[0])
+	    || vim_ispathsep(ff_file_to_find[0])
 	    /* handle "c:name" as absulute path */
-	    || (file_to_find[0] != NUL && file_to_find[1] == ':')
+	    || (ff_file_to_find[0] != NUL && ff_file_to_find[1] == ':')
 #endif
 #ifdef AMIGA
 	    /* handle ":tmp" as absolute path */
-	    || file_to_find[0] == ':'
+	    || ff_file_to_find[0] == ':'
 #endif
        )
     {
@@ -5140,9 +5217,9 @@ find_file_in_path_option(ptr, len, options, first, path_option, need_dir, rel_fn
 	    int		l;
 	    int		run;
 
-	    if (path_with_url(file_to_find))
+	    if (path_with_url(ff_file_to_find))
 	    {
-		file_name = vim_strsave(file_to_find);
+		file_name = vim_strsave(ff_file_to_find);
 		goto theend;
 	    }
 
@@ -5150,7 +5227,7 @@ find_file_in_path_option(ptr, len, options, first, path_option, need_dir, rel_fn
 	     * Otherwise or when this fails use the current directory. */
 	    for (run = 1; run <= 2; ++run)
 	    {
-		l = (int)STRLEN(file_to_find);
+		l = (int)STRLEN(ff_file_to_find);
 		if (run == 1
 			&& rel_to_curdir
 			&& (options & FNAME_REL)
@@ -5158,12 +5235,12 @@ find_file_in_path_option(ptr, len, options, first, path_option, need_dir, rel_fn
 			&& STRLEN(rel_fname) + l < MAXPATHL)
 		{
 		    STRCPY(NameBuff, rel_fname);
-		    STRCPY(gettail(NameBuff), file_to_find);
+		    STRCPY(gettail(NameBuff), ff_file_to_find);
 		    l = (int)STRLEN(NameBuff);
 		}
 		else
 		{
-		    STRCPY(NameBuff, file_to_find);
+		    STRCPY(NameBuff, ff_file_to_find);
 		    run = 2;
 		}
 
@@ -5203,7 +5280,7 @@ find_file_in_path_option(ptr, len, options, first, path_option, need_dir, rel_fn
 	if (first == TRUE)
 	{
 	    /* vim_findfile_free_visited can handle a possible NULL pointer */
-	    vim_findfile_free_visited(search_ctx);
+	    vim_findfile_free_visited(fdip_search_ctx);
 	    dir = path_option;
 	    did_findfile_init = FALSE;
 	}
@@ -5213,7 +5290,7 @@ find_file_in_path_option(ptr, len, options, first, path_option, need_dir, rel_fn
 	    if (did_findfile_init)
 	    {
 		ff_search_ctx->ffsc_need_dir = need_dir;
-		file_name = vim_findfile(search_ctx);
+		file_name = vim_findfile(fdip_search_ctx);
 		ff_search_ctx->ffsc_need_dir = FALSE;
 		if (file_name != NULL)
 		    break;
@@ -5228,8 +5305,8 @@ find_file_in_path_option(ptr, len, options, first, path_option, need_dir, rel_fn
 		{
 		    /* We searched all paths of the option, now we can
 		     * free the search context. */
-		    vim_findfile_cleanup(search_ctx);
-		    search_ctx = NULL;
+		    vim_findfile_cleanup(fdip_search_ctx);
+		    fdip_search_ctx = NULL;
 		    break;
 		}
 
@@ -5246,9 +5323,10 @@ find_file_in_path_option(ptr, len, options, first, path_option, need_dir, rel_fn
 #else
 		r_ptr = NULL;
 #endif
-		search_ctx = vim_findfile_init(buf, file_to_find, r_ptr, 100,
-				   FALSE, TRUE, search_ctx, FALSE, rel_fname);
-		if (search_ctx != NULL)
+		fdip_search_ctx = vim_findfile_init(buf, ff_file_to_find,
+					    r_ptr, 100, FALSE, TRUE,
+					   fdip_search_ctx, FALSE, rel_fname);
+		if (fdip_search_ctx != NULL)
 		    did_findfile_init = TRUE;
 		vim_free(buf);
 	    }
@@ -5260,19 +5338,19 @@ find_file_in_path_option(ptr, len, options, first, path_option, need_dir, rel_fn
 	{
 	    if (need_dir)
 		EMSG2(_("E344: Can't find directory \"%s\" in cdpath"),
-			file_to_find);
+			ff_file_to_find);
 	    else
 		EMSG2(_("E345: Can't find file \"%s\" in path"),
-			file_to_find);
+			ff_file_to_find);
 	}
 	else
 	{
 	    if (need_dir)
 		EMSG2(_("E346: No more directory \"%s\" found in cdpath"),
-			file_to_find);
+			ff_file_to_find);
 	    else
 		EMSG2(_("E347: No more file \"%s\" found in path"),
-			file_to_find);
+			ff_file_to_find);
 	}
     }
 
@@ -5320,16 +5398,14 @@ get_user_name(buf, len)
     char_u	*buf;
     int		len;
 {
-    static char_u	*name = NULL;
-
-    if (name == NULL)
+    if (username == NULL)
     {
 	if (mch_get_user_name(buf, len) == FAIL)
 	    return FAIL;
-	name = vim_strsave(buf);
+	username = vim_strsave(buf);
     }
     else
-	STRNCPY(buf, name, len);
+	STRNCPY(buf, username, len);
     return OK;
 }
 

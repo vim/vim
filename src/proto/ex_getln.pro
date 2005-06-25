@@ -6,6 +6,7 @@ char_u *getexmodeline __ARGS((int promptc, void *dummy, int indent));
 int cmdline_overstrike __ARGS((void));
 int cmdline_at_end __ARGS((void));
 colnr_T cmdline_getvcol_cursor __ARGS((void));
+void free_cmdline_buf __ARGS((void));
 void putcmdline __ARGS((int c, int shift));
 void unputcmdline __ARGS((void));
 int put_on_cmdline __ARGS((char_u *str, int len, int redraw));

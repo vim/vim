@@ -47,6 +47,7 @@ void msgmore __ARGS((long n));
 void beep_flush __ARGS((void));
 void vim_beep __ARGS((void));
 void init_homedir __ARGS((void));
+void free_homedir __ARGS((void));
 void expand_env __ARGS((char_u *src, char_u *dst, int dstlen));
 void expand_env_esc __ARGS((char_u *src, char_u *dst, int dstlen, int esc));
 char_u *vim_getenv __ARGS((char_u *name, int *mustfree));

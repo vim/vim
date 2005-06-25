@@ -917,8 +917,8 @@ ex_endif(eap)
 	 * Doing this here prevents an exception for a parsing error being
 	 * discarded by throwing the interrupt exception later on.
 	 */
-	if (!(eap->cstack->cs_flags[eap->cstack->cs_idx] & CSF_TRUE) &&
-		dbg_check_skipped(eap))
+	if (!(eap->cstack->cs_flags[eap->cstack->cs_idx] & CSF_TRUE)
+						    && dbg_check_skipped(eap))
 	    (void)do_intthrow(eap->cstack);
 
 	--eap->cstack->cs_idx;
@@ -2108,8 +2108,7 @@ cleanup_conditionals(cstack, searched_cond, inclusive)
 	     * ":return", or ":finish" before the finally clause.  We must not
 	     * discard it, unless an error or interrupt occurred afterwards.
 	     */
-	    if (did_emsg || got_int ||
-		    (cstack->cs_flags[idx] & CSF_FINALLY))
+	    if (did_emsg || got_int || (cstack->cs_flags[idx] & CSF_FINALLY))
 	    {
 		switch (cstack->cs_pending[idx])
 		{
@@ -2194,7 +2193,7 @@ cleanup_conditionals(cstack, searched_cond, inclusive)
 	 * memory used to store it.
 	 */
 	if ((cstack->cs_flags[idx] & CSF_TRY)
-	    && (cstack->cs_flags[idx] & CSF_SILENT))
+		&& (cstack->cs_flags[idx] & CSF_SILENT))
 	{
 	    eslist_T	*elem;
 

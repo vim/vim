@@ -19,6 +19,7 @@ void mark_col_adjust __ARGS((linenr_T lnum, colnr_T mincol, long lnum_amount, lo
 void copy_jumplist __ARGS((win_T *from, win_T *to));
 void free_jumplist __ARGS((win_T *wp));
 void set_last_cursor __ARGS((win_T *win));
+void free_all_marks __ARGS((void));
 int read_viminfo_filemark __ARGS((vir_T *virp, int force));
 void write_viminfo_filemarks __ARGS((FILE *fp));
 int removable __ARGS((char_u *name));

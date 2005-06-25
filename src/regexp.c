@@ -373,7 +373,15 @@ re_multi_type(c)
  */
 #define JUST_CALC_SIZE	((char_u *) -1)
 
-static char_u		*reg_prev_sub;
+static char_u		*reg_prev_sub = NULL;
+
+#if defined(EXITFREE) || defined(PROTO)
+    void
+free_regexp_stuff()
+{
+    vim_free(reg_prev_sub);
+}
+#endif
 
 /*
  * REGEXP_INRANGE contains all characters which are always special in a []
@@ -1700,7 +1708,7 @@ regatom(flagp)
 	/* NOTREACHED */
 
       case Magic('~'):		/* previous substitute pattern */
-	    if (reg_prev_sub)
+	    if (reg_prev_sub != NULL)
 	    {
 		char_u	    *lp;
 

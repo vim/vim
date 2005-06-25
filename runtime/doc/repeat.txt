@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 7.0aa.  Last change: 2005 Jun 16
+*repeat.txt*    For Vim version 7.0aa.  Last change: 2005 Jun 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -514,6 +514,9 @@ DELETING BREAKPOINTS
 :breakd[el] {nr}
 		Delete breakpoint {nr}.  Use |:breaklist| to see the number of
 		each breakpoint.
+
+:breakd[el] *
+		Delete all breakpoints.
 
 :breakd[el] func [lnum] {name}
 		Delete a breakpoint in a function.

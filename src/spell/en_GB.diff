@@ -1,17 +1,20 @@
 *** en_GB.orig.aff	Fri Apr 15 13:20:36 2005
---- en_GB.aff	Sat Jun 18 19:42:24 2005
+--- en_GB.aff	Thu Jun 23 17:43:30 2005
 ***************
 *** 7,9 ****
   SET ISO8859-1
 ! TRY esiaיnrtolcdugmphbyfvkw-'.zqjxSNRTLCGDMPHBEAUYOFIVKWצגפZQJXÅחטמךאןüהס 
   REP 24
---- 7,14 ----
+--- 7,17 ----
   SET ISO8859-1
 ! TRY esiaיnrtolcdugmphbyfvkw-'.zqjxSNRTLCGDMPHBEAUYOFIVKWצגפZQJXÅחטמךאןüהס
 ! 
-! FOL  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗
-! LOW  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗
-! UPP  ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞ‗
+! FOL  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗ÿ
+! LOW  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗ÿ
+! UPP  ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞ‗ÿ
+! 
+! RAR ?
+! BAD !
 ! 
   REP 24
 ***************
@@ -36,7 +39,7 @@
   PFX E Y 1
 ! PFX E 0 dis . 
   PFX F Y 5
---- 39,58 ----
+--- 42,61 ----
   PFX A Y 2
 ! PFX A 0 re [^e]
 ! PFX A 0 re- e
@@ -454,7 +457,7 @@
   SFX T y iest [^aeiou]y
 ! SFX T 0 er [aeiou]y 
   SFX T 0 est [aeiou]y
---- 62,456 ----
+--- 65,459 ----
   PFX F 0 col l
 ! PFX F 0 con [^abehilmopru].
   PFX K Y 1
@@ -1538,7 +1541,7 @@
 ! SFX 3 0 ist's [aeioubp]y 
 ! SFX 3 o ist's o 
 ! SFX 3 0 ist's [^eoy] 
---- 463,1148 ----
+--- 466,1272 ----
   SFX R Y 72
 ! SFX R 0 r e
 ! SFX R 0 rs e
@@ -2225,14 +2228,147 @@
 ! SFX 3 0 ist's [aeioubp]y
 ! SFX 3 o ist's o
 ! SFX 3 0 ist's [^eoy]
+! 
+! MAP 5
+! MAP aאבגדהו
+! MAP eטיךכ
+! MAP iלםמן
+! MAP oעףפץצ
+! MAP uשתûü
+! MAP nס
+! MAP cח
+! MAP yÿ‎
+! MAP s‗
+! 
+! # This comes from Aspell en_phonet.dat, version 1.1, 2000-01-07
+! 
+! SAL AH(AEIOUY)-^         *H
+! SAL AR(AEIOUY)-^         *R
+! SAL A(HR)^               *
+! SAL A^                   *
+! SAL AH(AEIOUY)-          H
+! SAL AR(AEIOUY)-          R
+! SAL A(HR)                _
+! SAL À^                   *
+! SAL Å^                   *
+! SAL BB-                  _
+! SAL B                    B
+! SAL CQ-                  _
+! SAL CIA                  X
+! SAL CH                   X
+! SAL C(EIY)-              S
+! SAL CK                   K
+! SAL COUGH^               KF
+! SAL CC<                  C
+! SAL C                    K
+! SAL DG(EIY)              K
+! SAL DD-                  _
+! SAL D                    T
+! SAL É<                   E
+! SAL EH(AEIOUY)-^         *H
+! SAL ER(AEIOUY)-^         *R
+! SAL E(HR)^               *
+! SAL ENOUGH^$             *NF
+! SAL E^                   *
+! SAL EH(AEIOUY)-          H
+! SAL ER(AEIOUY)-          R
+! SAL E(HR)                _
+! SAL FF-                  _
+! SAL F                    F
+! SAL GN^                  N
+! SAL GN$                  N
+! SAL GNS$                 NS
+! SAL GNED$                N
+! SAL GH(AEIOUY)-          K
+! SAL GH                   _
+! SAL GG9                  K
+! SAL G                    K
+! SAL H                    H
+! SAL IH(AEIOUY)-^         *H
+! SAL IR(AEIOUY)-^         *R
+! SAL I(HR)^               *
+! SAL I^                   *
+! SAL ING6                 N
+! SAL IH(AEIOUY)-          H
+! SAL IR(AEIOUY)-          R
+! SAL I(HR)                _
+! SAL J                    K
+! SAL KN^                  N
+! SAL KK-                  _
+! SAL K                    K
+! SAL LAUGH^               LF
+! SAL LL-                  _
+! SAL L                    L
+! SAL MB$                  M
+! SAL MM                   M
+! SAL M                    M
+! SAL NN-                  _
+! SAL N                    N
+! SAL OH(AEIOUY)-^         *H
+! SAL OR(AEIOUY)-^         *R
+! SAL O(HR)^               *
+! SAL O^                   *
+! SAL OH(AEIOUY)-          H
+! SAL OR(AEIOUY)-          R
+! SAL O(HR)                _
+! SAL PH                   F
+! SAL PN^                  N
+! SAL PP-                  _
+! SAL P                    P
+! SAL Q                    K
+! SAL RH^                  R
+! SAL ROUGH^               RF
+! SAL RR-                  _
+! SAL R                    R
+! SAL SCH(EOU)-            SK
+! SAL SC(IEY)-             S
+! SAL SH                   X
+! SAL SI(AO)-              X
+! SAL SS-                  _
+! SAL S                    S
+! SAL TI(AO)-              X
+! SAL TH                   @
+! SAL TCH--                _
+! SAL TOUGH^               TF
+! SAL TT-                  _
+! SAL T                    T
+! SAL UH(AEIOUY)-^         *H
+! SAL UR(AEIOUY)-^         *R
+! SAL U(HR)^               *
+! SAL U^                   *
+! SAL UH(AEIOUY)-          H
+! SAL UR(AEIOUY)-          R
+! SAL U(HR)                _
+! SAL V^                   W
+! SAL V                    F
+! SAL WR^                  R
+! SAL WH^                  W
+! SAL W(AEIOU)-            W
+! SAL X^                   S
+! SAL X                    KS
+! SAL Y(AEIOU)-            Y
+! SAL ZZ-                  _
+! SAL Z                    S
 *** en_GB.orig.dic	Sun Apr 17 18:08:50 2005
---- en_GB.dic	Tue Jun 21 20:26:11 2005
+--- en_GB.dic	Wed Jun 22 14:06:46 2005
 ***************
 *** 187,189 ****
   aitch/SM
 - al/FAC
   al-Jazeera
 --- 187,188 ----
+***************
+*** 1795,1796 ****
+--- 1794,1796 ----
+  conic/S
++ conj.
+  conjectural
+***************
+*** 2103,2105 ****
+  czarship
+- d/o
+  d'art
+--- 2103,2104 ----
 ***************
 *** 2148,2150 ****
   dazzle/DRkGJS
@@ -2283,8 +2419,14 @@
 + dBd
   DCB
 ***************
+*** 11591,11593 ****
+  dיrailleur/SM
+- e
+  e'en
+--- 11590,11591 ----
+***************
 *** 14591,14592 ****
---- 14590,14592 ----
+--- 14589,14591 ----
   native/SP
 + natively
   nativity/SM
@@ -2293,22 +2435,34 @@
   RSPCA
 - rte
   rubati
---- 16172,16173 ----
+--- 16171,16172 ----
+***************
+*** 17251,17253 ****
+  sיance/SM
+- t/ac
+  T'ang
+--- 17249,17250 ----
 ***************
 *** 17808,17809 ****
---- 17807,17809 ----
+--- 17805,17807 ----
   unsearchable
 + searchable
   unshakable/Y
 ***************
+*** 18268,18270 ****
+  xylophone/SM
+- y/K
+  yachters
+--- 18266,18267 ----
+***************
 *** 18322,18323 ****
---- 18322,18324 ----
+--- 18319,18321 ----
   יmigrי/S
 + nd
   3GPP
 ***************
 *** 19303,19304 ****
---- 19304,19306 ----
+--- 19301,19303 ----
   Brampton/M
 + Bram/M
   brand/MRDGSZ
@@ -2317,14 +2471,26 @@
   estimative
 ! et
   etalon
---- 21099,21102 ----
+--- 21096,21099 ----
   estimative
 ! et cetera
 ! et al.
   etalon
 ***************
+*** 21228,21230 ****
+  Ezra
+- f/37
+  Faber/M
+--- 21228,21229 ----
+***************
+*** 22734,22736 ****
+  justification/M
+- k/E
+  Kabul
+--- 22733,22734 ----
+***************
 *** 23632,23633 ****
---- 23635,23637 ----
+--- 23630,23632 ----
   Moog
 + Moolenaar/M
   moonlight/GRDSM
@@ -2333,40 +2499,103 @@
   oxygenation/M
 - p/FYAI
   Pablo/M
---- 24246,24247 ----
+--- 24241,24242 ----
 ***************
 *** 27223,27225 ****
   Villiers
 ! vim/M
   Vinci/M
---- 27226,27228 ----
+--- 27221,27223 ----
   Villiers
 ! Vim/M
   Vinci/M
+***************
+*** 27568,27570 ****
+  Yvette
+- z/d
+  Zealanders
+--- 27566,27567 ----
 ***************
 *** 28174,28176 ****
   Aztec/M
 - b/bp
   Baal/M
---- 28177,28178 ----
+--- 28171,28172 ----
+***************
+*** 28890,28892 ****
+  Cathy
+! cation/MW
+  catnip/SM
+--- 28886,28888 ----
+  Cathy
+! cation/MWS
+  catnip/SM
+***************
+*** 30587,30589 ****
+  fissionable/S
+! fist/6GD
+  fit/6TRGMYJPSDj
+--- 30583,30585 ----
+  fissionable/S
+! fist/6GDMS
+  fit/6TRGMYJPSDj
+***************
+*** 30846,30848 ****
+  fuzzy/TP
+- g/73
+  Ga/y
+--- 30842,30843 ----
 ***************
 *** 31409,31411 ****
   hob/MDGZS
 ! hobbit
   Hobbs
---- 31411,31413 ----
+--- 31404,31406 ----
   hob/MDGZS
 ! hobbit/MS
   Hobbs
+***************
+*** 32110,32112 ****
+  kWh
+! l/F
+  lab/MoS
+--- 32105,32107 ----
+  kWh
+! coll
+  lab/MoS
 ***************
 *** 32174,32176 ****
   lasso/GMDS
 - last-ditch
   Laszlo/M
---- 32176,32177 ----
+--- 32169,32170 ----
+***************
+*** 34188,34190 ****
+  pגtי/M
+- q
+  Qatar
+--- 34182,34183 ----
+***************
+*** 36324,36326 ****
+  uttermost
+- v
+  vacate/nDGNS
+--- 36317,36318 ----
+***************
+*** 37916,37918 ****
+  bys
+- c/nN
+  Ca/y
+--- 37908,37909 ----
+***************
+*** 40468,40470 ****
+  Gצdel/M
+- h/E
+  ha'p'orth
+--- 40459,40460 ----
 ***************
 *** 43275,43276 ****
---- 43276,43278 ----
+--- 43265,43267 ----
   pneumonia/MS
 + pneumonic
   PO
@@ -2375,4 +2604,13 @@
   qwerty
 - r/d
   Ra
---- 43667,43668 ----
+--- 43656,43657 ----
+***************
+*** 46148 ****
+--- 46138,46143 ----
+  א
++ the the/!
++ a a/!
++ a an/!
++ an a/!
++ an an/!

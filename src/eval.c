@@ -2588,7 +2588,10 @@ eval_for_line(arg, errp, nextcmdp, skip)
 	{
 	    l = tv.vval.v_list;
 	    if (tv.v_type != VAR_LIST || l == NULL)
+	    {
 		EMSG(_(e_listreq));
+		clear_tv(&tv);
+	    }
 	    else
 	    {
 		fi->fi_list = l;
@@ -2640,7 +2643,10 @@ free_for_info(fi_void)
     forinfo_T    *fi = (forinfo_T *)fi_void;
 
     if (fi != NULL && fi->fi_list != NULL)
+    {
 	list_rem_watch(fi->fi_list, &fi->fi_lw);
+	list_unref(fi->fi_list);
+    }
     vim_free(fi);
 }
 

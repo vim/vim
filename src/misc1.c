@@ -3406,6 +3406,14 @@ init_homedir()
     }
 }
 
+#if defined(EXITFREE) || defined(PROTO)
+    void
+free_homedir()
+{
+    vim_free(homedir);
+}
+#endif
+
 /*
  * Expand environment variable with path name.
  * "~/" is also expanded, using $HOME.	For Unix "~user/" is expanded.

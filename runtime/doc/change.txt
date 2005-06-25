@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.0aa.  Last change: 2005 Jun 16
+*change.txt*    For Vim version 7.0aa.  Last change: 2005 Jun 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1526,5 +1526,9 @@ found here: |sort()|.
 <
 Note that using ":sort" with ":global" doesn't sort the matching lines, it's
 quite useless.
+
+The details about sorting depend on the library function used.  There is no
+guarantee that sorting is "stable" or obeys the current locale.  You will have
+to try it out.
 
  vim:tw=78:ts=8:ft=help:norl:

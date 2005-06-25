@@ -732,6 +732,17 @@ qf_new_list()
     qf_lists[qf_curlist].qf_count = 0;
 }
 
+#if defined(EXITFREE) || defined(PROTO)
+    void
+qf_free_all()
+{
+    int		i;
+
+    for (i = 0; i < qf_listcount; ++i)
+	qf_free(i);
+}
+#endif
+
 /*
  * Add an entry to the end of the list of errors.
  * Returns OK or FAIL.
