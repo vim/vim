@@ -974,6 +974,9 @@ free_all_mem()
 # if defined(FEAT_EVAL)
     do_cmdline_cmd((char_u *)"breakdel *");
 # endif
+# if defined(FEAT_PROFILE)
+    do_cmdline_cmd((char_u *)"profdel *");
+# endif
 
 # ifdef FEAT_TITLE
     free_titles();
@@ -983,10 +986,6 @@ free_all_mem()
 # endif
 
     /* Obviously named calls. */
-# if defined(FEAT_EVAL)
-    free_scriptnames();
-    free_all_functions();
-# endif
 # if defined(FEAT_AUTOCMD)
     free_all_autocmds();
 # endif
@@ -1010,7 +1009,7 @@ free_all_mem()
     vim_free(clip_exclude_prog);
     vim_free(last_cmdline);
     vim_free(new_last_cmdline);
-    vim_free(keep_msg);
+    set_keep_msg(NULL);
     vim_free(ff_expand_buffer);
 
     /* Clear cmdline history. */
@@ -1055,6 +1054,8 @@ free_all_mem()
 
     /* highlight info */
     free_highlight();
+
+    reset_last_sourcing();
 
 # ifdef UNIX
     /* Machine-specific free. */
