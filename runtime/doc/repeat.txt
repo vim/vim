@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 7.0aa.  Last change: 2005 Jun 25
+*repeat.txt*    For Vim version 7.0aa.  Last change: 2005 Jun 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -577,6 +577,11 @@ It is only included when Vim was compiled with "huge" features.
 		When the [!] is added then all functions defined in the script
 		will also be profiled.  But only if the script is loaded after
 		this command.
+
+
+:profd[el] ...						*:profd* *:profdel*
+		Stop profiling for the arguments specified. See |:breakdel|
+		for the arguments.
 
 
 You must always start with a ":profile start fname" command.  The resulting

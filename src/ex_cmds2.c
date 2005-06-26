@@ -591,7 +591,7 @@ ex_debuggreedy(eap)
 }
 
 /*
- * ":breakdel".
+ * ":breakdel" and ":profdel".
  */
     void
 ex_breakdel(eap)
@@ -603,13 +603,20 @@ ex_breakdel(eap)
     int		del_all = FALSE;
     int		i;
     linenr_T	best_lnum = 0;
+    garray_T	*gap;
+
+    gap = &dbg_breakp;
+#ifdef FEAT_PROFILE
+    if (eap->cmdidx == CMD_profdel)
+	gap = &prof_ga;
+#endif
 
     if (vim_isdigit(*eap->arg))
     {
 	/* ":breakdel {nr}" */
 	nr = atol((char *)eap->arg);
-	for (i = 0; i < dbg_breakp.ga_len; ++i)
-	    if (BREAKP(i).dbg_nr == nr)
+	for (i = 0; i < gap->ga_len; ++i)
+	    if (DEBUGGY(gap, i).dbg_nr == nr)
 	    {
 		todel = i;
 		break;
@@ -623,12 +630,12 @@ ex_breakdel(eap)
     else
     {
 	/* ":breakdel {func|file} [lnum] {name}" */
-	if (dbg_parsearg(eap->arg, &dbg_breakp) == FAIL)
+	if (dbg_parsearg(eap->arg, gap) == FAIL)
 	    return;
-	bp = &BREAKP(dbg_breakp.ga_len);
-	for (i = 0; i < dbg_breakp.ga_len; ++i)
+	bp = &DEBUGGY(gap, gap->ga_len);
+	for (i = 0; i < gap->ga_len; ++i)
 	{
-	    bpi = &BREAKP(i);
+	    bpi = &DEBUGGY(gap, i);
 	    if (bp->dbg_type == bpi->dbg_type
 		    && STRCMP(bp->dbg_name, bpi->dbg_name) == 0
 		    && (bp->dbg_lnum == bpi->dbg_lnum
@@ -646,18 +653,27 @@ ex_breakdel(eap)
     if (todel < 0)
 	EMSG2(_("E161: Breakpoint not found: %s"), eap->arg);
     else
-	while (dbg_breakp.ga_len > 0)
+    {
+	while (gap->ga_len > 0)
 	{
-	    vim_free(BREAKP(todel).dbg_name);
-	    vim_free(BREAKP(todel).dbg_prog);
-	    --dbg_breakp.ga_len;
-	    if (todel < dbg_breakp.ga_len)
-		mch_memmove(&BREAKP(todel), &BREAKP(todel + 1),
-			(dbg_breakp.ga_len - todel) * sizeof(struct debuggy));
-	    ++debug_tick;
+	    vim_free(DEBUGGY(gap, todel).dbg_name);
+	    vim_free(DEBUGGY(gap, todel).dbg_prog);
+	    --gap->ga_len;
+	    if (todel < gap->ga_len)
+		mch_memmove(&DEBUGGY(gap, todel), &DEBUGGY(gap, todel + 1),
+			      (gap->ga_len - todel) * sizeof(struct debuggy));
+#ifdef FEAT_PROFILE
+	    if (eap->cmdidx == CMD_breakdel)
+#endif
+		++debug_tick;
 	    if (!del_all)
 		break;
 	}
+
+	/* If all breakpoints were removed clear the array. */
+	if (gap->ga_len == 0)
+	    ga_clear(gap);
+    }
 }
 
 /*

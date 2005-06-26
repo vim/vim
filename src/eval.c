@@ -123,6 +123,12 @@ static dictitem_T	globvars_var;
 static hashtab_T	compat_hashtab;
 
 /*
+ * When recursively copying lists and dicts we need to remember which ones we
+ * have done to avoid endless recursiveness.  This unique ID is used for that.
+ */
+static int current_copyID = 0;
+
+/*
  * Array to hold the hashtab with variables local to each sourced script.
  * Each item holds a variable (nameless) that points to the dict_T.
  */
@@ -184,6 +190,8 @@ struct ufunc
 #define FC_ABORT    1		/* abort function on error */
 #define FC_RANGE    2		/* function accepts range */
 #define FC_DICT	    4		/* Dict function, uses "self" */
+
+#define DEL_REFCOUNT	999999	/* list/dict is being deleted */
 
 /*
  * All user-defined functions are found in this hash table.
@@ -373,6 +381,11 @@ static list_T *list_copy __ARGS((list_T *orig, int deep, int copyID));
 static void list_remove __ARGS((list_T *l, listitem_T *item, listitem_T *item2));
 static char_u *list2string __ARGS((typval_T *tv));
 static int list_join __ARGS((garray_T *gap, list_T *l, char_u *sep, int echo));
+
+static int count_self_ref __ARGS((void *p, int type));
+static int count_ref_in_dict __ARGS((dict_T *d, void *rp, int copyID, garray_T *gap));
+static int count_ref_in_list __ARGS((list_T *l, void *rp, int copyID, garray_T *gap));
+static int count_ref_item __ARGS((typval_T *tv, void *rp, int copyID, garray_T *gap));
 
 static void dict_unref __ARGS((dict_T *d));
 static void dict_free __ARGS((dict_T *d));
@@ -719,7 +732,10 @@ eval_clear()
     {
 	p = &vimvars[i];
 	if (p->vv_di.di_tv.v_type == VAR_STRING)
+	{
 	    vim_free(p->vv_di.di_tv.vval.v_string);
+	    p->vv_di.di_tv.vval.v_string = NULL;
+	}
     }
     hash_clear(&vimvarht);
     hash_clear(&compat_hashtab);
@@ -728,9 +744,12 @@ eval_clear()
     for (i = 1; i <= ga_scripts.ga_len; ++i)
 	vars_clear(&SCRIPT_VARS(i));
     ga_clear(&ga_scripts);
+    free_scriptnames();
 
     /* global variables */
     vars_clear(&globvarht);
+
+    free_all_functions();
 }
 #endif
 
@@ -4937,8 +4956,23 @@ list_alloc()
 list_unref(l)
     list_T *l;
 {
-    if (l != NULL && --l->lv_refcount <= 0)
-	list_free(l);
+    int		selfref;
+
+    if (l != NULL && l->lv_refcount != DEL_REFCOUNT)
+    {
+	if (--l->lv_refcount > 0)
+	{
+	    /* Check if the dict contains references to itself.  These need to
+	     * be subtracted from the reference count to find out if we can
+	     * delete the dict. */
+	    selfref = count_self_ref(l, VAR_LIST);
+	}
+	else
+	    selfref = 0;
+	if (l->lv_refcount - selfref == 0)
+	    /* No references to the list now, free it. */
+	    list_free(l);
+    }
 }
 
 /*
@@ -4950,11 +4984,14 @@ list_free(l)
     list_T *l;
 {
     listitem_T *item;
-    listitem_T *next;
 
-    for (item = l->lv_first; item != NULL; item = next)
+    /* Avoid that recursive reference to the list frees us again. */
+    l->lv_refcount = DEL_REFCOUNT;
+
+    for (item = l->lv_first; item != NULL; item = l->lv_first)
     {
-	next = item->li_next;
+	/* Remove the item before deleting it. */
+	l->lv_first = item->li_next;
 	listitem_free(item);
     }
     vim_free(l);
@@ -5531,6 +5568,160 @@ list_join(gap, l, sep, echo)
 }
 
 /*
+ * Count the number of references for list/dict "p" inside itself.
+ * This is used to find out if there are no more references elsewhere.
+ * The tricky bit is that we must not count references in lists/dicts that are
+ * used elsewhere, but we can only know by counting their references...
+ * This is a bit slow, but required to avoid leaking memory.
+ */
+    static int
+count_self_ref(p, type)
+    void	*p;
+    int		type;
+{
+    garray_T	ga;
+    typval_T	*tv;
+    int		selfref;
+    int		i;
+    int		n;
+
+    ga_init2(&ga, sizeof(typval_T *), 10);
+    if (type == VAR_DICT)
+	selfref = count_ref_in_dict(p, p, ++current_copyID, &ga);
+    else
+	selfref = count_ref_in_list(p, p, ++current_copyID, &ga);
+    for (i = 0; i < ga.ga_len; ++i)
+    {
+	tv = ((typval_T **)ga.ga_data)[i];
+	if (tv->v_type == VAR_DICT)
+	{
+	    n = count_ref_in_dict(tv->vval.v_dict, tv->vval.v_dict,
+						      ++current_copyID, NULL);
+	    if (n < tv->vval.v_dict->dv_refcount)
+	    {
+		selfref = 0;
+		break;
+	    }
+	}
+	else
+	{
+	    n = count_ref_in_list(tv->vval.v_list, tv->vval.v_list,
+						      ++current_copyID, NULL);
+	    if (n < tv->vval.v_list->lv_refcount)
+	    {
+		selfref = 0;
+		break;
+	    }
+	}
+    }
+
+    ga_clear(&ga);
+    return selfref;
+}
+
+/*
+ * Count number of references to "rp" in dictionary "d" and its members.
+ * We use "copyID" to avoid recursing into the same list/dict twice.
+ */
+    static int
+count_ref_in_dict(d, rp, copyID, gap)
+    dict_T	*d;
+    void	*rp;
+    int		copyID;
+    garray_T	*gap;
+{
+    int		todo;
+    hashitem_T	*hi;
+    int		n = 0;
+
+    todo = d->dv_hashtab.ht_used;
+    for (hi = d->dv_hashtab.ht_array; todo > 0; ++hi)
+	if (!HASHITEM_EMPTY(hi))
+	{
+	    --todo;
+	    n += count_ref_item(&HI2DI(hi)->di_tv, rp, copyID, gap);
+	}
+    return n;
+}
+
+/*
+ * Count number of references to "rp" in list "l" and its members.
+ * We use "copyID" to avoid recursing into the same list/dict twice.
+ */
+    static int
+count_ref_in_list(l, rp, copyID, gap)
+    list_T	*l;
+    void	*rp;
+    int		copyID;
+    garray_T	*gap;
+{
+    listitem_T *li;
+    int		n = 0;
+
+    for (li = l->lv_first; li != NULL; li = li->li_next)
+	n += count_ref_item(&li->li_tv, rp, copyID, gap);
+    return n;
+}
+
+/*
+ * Count number of references to "rp" in item "tv" and any members.
+ * We use "copyID" to avoid recursing into the same list/dict twice.
+ * When "gap" is not NULL store items that require checking for only
+ * references inside the structure.
+ */
+    static int
+count_ref_item(tv, rp, copyID, gap)
+    typval_T	*tv;
+    void	*rp;
+    int		copyID;
+    garray_T	*gap;
+{
+    dict_T	*dd;
+    list_T	*ll;
+    int		n;
+
+    switch (tv->v_type)
+    {
+	case VAR_DICT:
+	    dd = tv->vval.v_dict;
+	    if (dd == rp)
+		return 1;	/* match, count it */
+	    if (dd->dv_copyID == copyID)
+		return 0;	/* already inspected this dict */
+	    dd->dv_copyID = copyID;
+	    n = count_ref_in_dict(dd, rp, copyID, gap);
+	    if (n > 0 && gap != NULL && dd->dv_refcount > 1)
+	    {
+		/* We must later check that the references to this dict are
+		 * all in the structure we are freeing. */
+		if (ga_grow(gap, 1) == FAIL)
+		    return 0;
+		((typval_T **)gap->ga_data)[gap->ga_len++] = tv;
+	    }
+	    return n;
+
+	case VAR_LIST:
+	    ll = tv->vval.v_list;
+	    if (ll == rp)
+		return 1;	/* match, count it */
+	    if (ll->lv_copyID == copyID)
+		return 0;	/* already inspected this list */
+	    ll->lv_copyID = copyID;
+	    n = count_ref_in_list(ll, rp, copyID, gap);
+	    if (n > 0 && gap != NULL && ll->lv_refcount > 1)
+	    {
+		/* We must later check that the references to this list are
+		 * all in the structure we are freeing. */
+		if (ga_grow(gap, 1) == FAIL)
+		    return 0;
+		((typval_T **)gap->ga_data)[gap->ga_len++] = tv;
+	    }
+	    return n;
+    }
+    return 0;
+}
+
+/*
  * Allocate an empty header for a dictionary.
  */
     dict_T *
@@ -5557,8 +5748,23 @@ dict_alloc()
 dict_unref(d)
     dict_T *d;
 {
-    if (d != NULL && --d->dv_refcount <= 0)
-	dict_free(d);
+    int		selfref;
+
+    if (d != NULL && d->dv_refcount != DEL_REFCOUNT)
+    {
+	if (--d->dv_refcount > 0)
+	{
+	    /* Check if the dict contains references to itself.  These need to
+	     * be subtracted from the reference count to find out if we can
+	     * delete the dict. */
+	    selfref = count_self_ref(d, VAR_DICT);
+	}
+	else
+	    selfref = 0;
+	if (d->dv_refcount - selfref == 0)
+	    /* No references to the dict now, free it. */
+	    dict_free(d);
+    }
 }
 
 /*
@@ -5571,15 +5777,24 @@ dict_free(d)
 {
     int		todo;
     hashitem_T	*hi;
+    dictitem_T	*di;
 
-    /* Careful: we free the dictitems while they still appear in the
-     * hashtab.  Must not try to resize the hashtab! */
+    /* Avoid that recursive reference to the dict frees us again. */
+    d->dv_refcount = DEL_REFCOUNT;
+
+    /* Lock the hashtab, we don't want it to resize while looping through it.
+     * */
+    hash_lock(&d->dv_hashtab);
     todo = d->dv_hashtab.ht_used;
     for (hi = d->dv_hashtab.ht_array; todo > 0; ++hi)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{
-	    dictitem_free(HI2DI(hi));
+	    /* Remove the item before deleting it, just in case there is
+	     * something recursive causing trouble. */
+	    di = HI2DI(hi);
+	    hash_remove(&d->dv_hashtab, hi);
+	    dictitem_free(di);
 	    --todo;
 	}
     }
@@ -7663,7 +7878,6 @@ f_deepcopy(argvars, rettv)
     typval_T	*argvars;
     typval_T	*rettv;
 {
-    static int copyID = 0;
     int		noref = 0;
 
     if (argvars[1].v_type != VAR_UNKNOWN)
@@ -7671,7 +7885,7 @@ f_deepcopy(argvars, rettv)
     if (noref < 0 || noref > 1)
 	EMSG(_(e_invarg));
     else
-	item_copy(&argvars[0], rettv, TRUE, noref == 0 ? ++copyID : 0);
+	item_copy(&argvars[0], rettv, TRUE, noref == 0 ? ++current_copyID : 0);
 }
 
 /*
@@ -8040,7 +8254,6 @@ f_extend(argvars, rettv)
 		item = NULL;
 	    list_extend(l1, l2, item);
 
-	    ++l1->lv_refcount;
 	    copy_tv(&argvars[0], rettv);
 	}
     }
@@ -8106,7 +8319,6 @@ f_extend(argvars, rettv)
 		}
 	    }
 
-	    ++d1->dv_refcount;
 	    copy_tv(&argvars[0], rettv);
 	}
     }
@@ -10421,7 +10633,6 @@ f_insert(argvars, rettv)
 	if (l != NULL)
 	{
 	    list_insert_tv(l, &argvars[1], item);
-	    ++l->lv_refcount;
 	    copy_tv(&argvars[0], rettv);
 	}
     }
@@ -14934,6 +15145,7 @@ handle_subscript(arg, rettv, evaluate, verbose)
     dict_T	*selfdict = NULL;
     char_u	*s;
     int		len;
+    typval_T	functv;
 
     while (ret == OK
 	    && (**arg == '['
@@ -14943,12 +15155,19 @@ handle_subscript(arg, rettv, evaluate, verbose)
     {
 	if (**arg == '(')
 	{
-	    s = rettv->vval.v_string;
+	    /* need to copy the funcref so that we can clear rettv */
+	    functv = *rettv;
+	    rettv->v_type = VAR_UNKNOWN;
 
 	    /* Invoke the function.  Recursive! */
+	    s = functv.vval.v_string;
 	    ret = get_func_tv(s, STRLEN(s), rettv, arg,
-		    curwin->w_cursor.lnum, curwin->w_cursor.lnum,
-		    &len, evaluate, selfdict);
+			curwin->w_cursor.lnum, curwin->w_cursor.lnum,
+			&len, evaluate, selfdict);
+
+	    /* Clear the funcref afterwards, so that deleting it while
+	     * evaluating the arguments is possible (see test55). */
+	    clear_tv(&functv);
 
 	    /* Stop the expression evaluation when immediately aborting on
 	     * error, or when an interrupt occurred or an exception was thrown

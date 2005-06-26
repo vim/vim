@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 25
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,6 +29,9 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+Is the fix for memory leaks in unreferencing dict/list correct?  Is there a
+situation where a reference from outside of the structure is not counted?
 
 Add extra list of file locations.  Can be used with:
     :ltag	      list of matching tags, like :tselect
@@ -116,7 +119,7 @@ PLANNED FOR VERSION 7.0:
 	  - Simple and fast sound-a-like: mapping list for first char and rest
 		    vowel as first char: *
 		    remove other vowels
-	- Cleanup spell help.
+	- Proofread and cleanup spell help.
     - Use "engspchk" from Charles Campbell for ideas (commands, rare words).
     - Make "en-rare" spell file?  Ask Charles Campbell.
     - References: MySpell library (in OpenOffice.org).
