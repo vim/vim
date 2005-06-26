@@ -19,7 +19,6 @@
 # include <stdarg.h>
 #endif
 
-static void reset_last_sourcing __ARGS((void));
 static int other_sourcing_name __ARGS((void));
 static char_u *get_emsg_source __ARGS((void));
 static char_u *get_emsg_lnum __ARGS((void));
@@ -416,7 +415,7 @@ static char_u   *last_sourcing_name = NULL;
  * Reset the last used sourcing name/lnum.  Makes sure it is displayed again
  * for the next error message;
  */
-    static void
+    void
 reset_last_sourcing()
 {
     vim_free(last_sourcing_name);
