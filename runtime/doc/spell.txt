@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 25
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -266,7 +266,7 @@ find these functions useful:
 
 Vim uses a binary file format for spelling.  This greatly speeds up loading
 the word list and keeps it small.
-
+						    *.aff* *.dic* *Myspell*
 You can create a Vim spell file from the .aff and .dic files that Myspell
 uses.  Myspell is used by OpenOffice.org and Mozilla.  You should be able to
 find them here:
@@ -321,9 +321,14 @@ then Vim will try to guess.
 			When the spell file was written all currently used
 			spell files will be reloaded.
 
-:mksp[ell] [-ascii] {add-name}
-			Like ":mkspell" above, using {add-name} as the input
-			file and producing an output file that has ".spl"
+:mksp[ell] [-ascii] {name}.{enc}.add
+			Like ":mkspell" above, using {name}.{enc}.add as the
+			input file and producing an output file that has
+			".spl" appended.
+
+:mksp[ell] [-ascii] {name}
+			Like ":mkspell" above, using {name} as the input file
+			and producing an output file that has ".{enc}.spl"
 			appended.
 
 Since you might want to change a Myspell word list for use with Vim the
@@ -557,14 +562,43 @@ contain the table with characters, so that it can be combine with spell files
 for any encoding.  The .add.spl files also do not contain the table.
 
 
+MID-WORD CHARACTERS
+							*spell-midword*
+Some characters are only to be considered word characters if they are used in
+between two ordinary word characters.  An example is the single quote: It is
+often used to put text in quotes, thus it can't be recognized as a word
+character, but when it appears in between word characters it must be part of
+the word.  This is needed to detect a spelling error such as they'are.  That
+should be they're, but since "they" and "are" are words themselves that would
+go unnoticed.
+
+These characters are defined with MIDWORD in the .aff file:
+
+	MIDWORD	'- ~
+
+
 AFFIXES
 					    *spell-affix-PFX* *spell-affix-SFX*
 The usual PFX (prefix) and SFX (suffix) lines are supported (see the Myspell
-documentation).  Note that Myspell ignores any extra text after the relevant
-info.  Vim requires this text to start with a "#" so that mistakes don't go
-unnoticed.  Example:
+documentation or the Aspell manual:
+http://aspell.net/man-html/Affix-Compression.html).
 
-	SFX F 0 in [^i]n      # Spion > Spionin  ~
+Note that Myspell ignores any extra text after the relevant info.  Vim
+requires this text to start with a "#" so that mistakes don't go unnoticed.
+Example:
+
+	SFX F 0 in   [^i]n      # Spion > Spionin  ~
+	SFX F 0 nen  in         # Bauerin > Bauerinnen ~
+
+An extra item for Vim is the "rare" flag.  It must come after the other
+fields, before a comment.  When used then all words that use the affix will be
+marked as rare words.  Example:
+
+	PFX F 0 nene  .   rare ~
+	SFX F 0 oin   n   rare   # hardly ever used ~
+
+However, if the word also appears as a good word in another way it won't be
+marked as rare.
 
 						    *spell-affix-PFXPOSTPONE*
 When an affix file has very many prefixes that apply to many words it's not
@@ -610,8 +644,12 @@ bad words.  Example:
 	BAD ! ~
 
 This can be used to exclude words that would otherwise be good.  For example
-"the the".  Once a word has been marked as bad it won't be undone by
-encountering the same word as good.
+"the the" in the .dic file:
+
+	the the/! ~
+
+Once a word has been marked as bad it won't be undone by encountering the same
+word as good.
 
 
 REPLACEMENTS						*spell-affix-REP*

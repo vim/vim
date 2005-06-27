@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 26
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,8 +30,7 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Is the fix for memory leaks in unreferencing dict/list correct?  Is there a
-situation where a reference from outside of the structure is not counted?
+send fixes for ccmalloc port to FreeBSD.
 
 Add extra list of file locations.  Can be used with:
     :ltag	      list of matching tags, like :tselect
@@ -101,8 +100,6 @@ PLANNED FOR VERSION 7.0:
 
 -   Add SPELLCHECKER, with support for many languages.
     - Spell checking code todo's:
-	- Special handling of ' and -: define in the .aff file.
-	    Aspell does this with "special".
 	- Support user function to make suggestions:
 	    :set spellsuggest=MySuggest,fast
 	  Also support a list with common mistakes?

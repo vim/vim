@@ -3199,6 +3199,9 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags)
 #ifdef FEAT_DIFF
 	curwin->w_p_diff = FALSE;	/* No 'diff' */
 #endif
+#ifdef FEAT_SYN_HL
+	curwin->w_p_spell = FALSE;	/* No spell checking */
+#endif
 
 #ifdef FEAT_AUTOCMD
 	buf = curbuf;

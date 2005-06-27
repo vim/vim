@@ -250,7 +250,7 @@ hash_set(hi, key)
 
 /*
  * Remove item "hi" from  hashtable "ht".  "hi" must have been obtained with
- * hash_lookup() and point to an empty item.
+ * hash_lookup().
  * The caller must take care of freeing the item itself.
  */
     void

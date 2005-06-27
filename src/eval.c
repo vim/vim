@@ -194,9 +194,13 @@ struct ufunc
 #define DEL_REFCOUNT	999999	/* list/dict is being deleted */
 
 /*
- * All user-defined functions are found in this hash table.
+ * All user-defined functions are found in this hashtable.
  */
 static hashtab_T	func_hashtab;
+
+/* list heads for garbage collection */
+static dict_T		*first_dict = NULL;	/* list of all dicts */
+static list_T		*first_list = NULL;	/* list of all lists */
 
 /* From user function to hashitem and back. */
 static ufunc_T dumuf;
@@ -212,7 +216,9 @@ static ufunc_T dumuf;
 #define FIXVAR_CNT	12	/* number of fixed variables */
 
 /* structure to hold info for a function that is currently being executed. */
-typedef struct funccall_S
+typedef struct funccall_S funccall_T;
+
+struct funccall_S
 {
     ufunc_T	*func;		/* function being called */
     int		linenr;		/* next line to be executed */
@@ -235,7 +241,8 @@ typedef struct funccall_S
 #ifdef FEAT_PROFILE
     proftime_T	prof_child;	/* time spent in a child */
 #endif
-} funccall_T;
+    funccall_T	*caller;	/* calling function or NULL */
+};
 
 /*
  * Info used by a ":for" loop.
@@ -382,10 +389,9 @@ static void list_remove __ARGS((list_T *l, listitem_T *item, listitem_T *item2))
 static char_u *list2string __ARGS((typval_T *tv));
 static int list_join __ARGS((garray_T *gap, list_T *l, char_u *sep, int echo));
 
-static int count_self_ref __ARGS((void *p, int type));
-static int count_ref_in_dict __ARGS((dict_T *d, void *rp, int copyID, garray_T *gap));
-static int count_ref_in_list __ARGS((list_T *l, void *rp, int copyID, garray_T *gap));
-static int count_ref_item __ARGS((typval_T *tv, void *rp, int copyID, garray_T *gap));
+static void set_ref_in_ht __ARGS((hashtab_T *ht, int copyID));
+static void set_ref_in_list __ARGS((list_T *l, int copyID));
+static void set_ref_in_item __ARGS((typval_T *tv, int copyID));
 
 static void dict_unref __ARGS((dict_T *d));
 static void dict_free __ARGS((dict_T *d));
@@ -460,6 +466,7 @@ static void f_foldtext __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_foldtextresult __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_foreground __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_function __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_garbagecollect __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_get __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getbufvar __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getchar __ARGS((typval_T *argvars, typval_T *rettv));
@@ -749,7 +756,12 @@ eval_clear()
     /* global variables */
     vars_clear(&globvarht);
 
+    /* functions */
     free_all_functions();
+    hash_clear(&func_hashtab);
+
+    /* unreferenced lists and dicts */
+    (void)garbage_collect();
 }
 #endif
 
@@ -4945,7 +4957,19 @@ failret:
     static list_T *
 list_alloc()
 {
-    return (list_T *)alloc_clear(sizeof(list_T));
+    list_T  *l;
+
+    l = (list_T *)alloc_clear(sizeof(list_T));
+    if (l != NULL)
+    {
+	/* Prepend the list to the list of lists for garbage collection. */
+	if (first_list != NULL)
+	    first_list->lv_used_prev = l;
+	l->lv_used_prev = NULL;
+	l->lv_used_next = first_list;
+	first_list = l;
+    }
+    return l;
 }
 
 /*
@@ -4956,23 +4980,8 @@ list_alloc()
 list_unref(l)
     list_T *l;
 {
-    int		selfref;
-
-    if (l != NULL && l->lv_refcount != DEL_REFCOUNT)
-    {
-	if (--l->lv_refcount > 0)
-	{
-	    /* Check if the dict contains references to itself.  These need to
-	     * be subtracted from the reference count to find out if we can
-	     * delete the dict. */
-	    selfref = count_self_ref(l, VAR_LIST);
-	}
-	else
-	    selfref = 0;
-	if (l->lv_refcount - selfref == 0)
-	    /* No references to the list now, free it. */
-	    list_free(l);
-    }
+    if (l != NULL && l->lv_refcount != DEL_REFCOUNT && --l->lv_refcount <= 0)
+	list_free(l);
 }
 
 /*
@@ -4987,6 +4996,14 @@ list_free(l)
 
     /* Avoid that recursive reference to the list frees us again. */
     l->lv_refcount = DEL_REFCOUNT;
+
+    /* Remove the list from the list of lists for garbage collection. */
+    if (l->lv_used_prev == NULL)
+	first_list = l->lv_used_next;
+    else
+	l->lv_used_prev->lv_used_next = l->lv_used_next;
+    if (l->lv_used_next != NULL)
+	l->lv_used_next->lv_used_prev = l->lv_used_prev;
 
     for (item = l->lv_first; item != NULL; item = l->lv_first)
     {
@@ -5568,157 +5585,168 @@ list_join(gap, l, sep, echo)
 }
 
 /*
- * Count the number of references for list/dict "p" inside itself.
- * This is used to find out if there are no more references elsewhere.
- * The tricky bit is that we must not count references in lists/dicts that are
- * used elsewhere, but we can only know by counting their references...
- * This is a bit slow, but required to avoid leaking memory.
+ * Garbage collection for lists and dictionaries.
+ *
+ * We use reference counts to be able to free most items right away when they
+ * are no longer used.  But for composite items it's possible that it becomes
+ * unused while the reference count is > 0: When there is a recursive
+ * reference.  Example:
+ *	:let l = [1, 2, 3]
+ *	:let d = {9: l}
+ *	:let l[1] = d
+ *
+ * Since this is quite unusual we handle this with garbage collection: every
+ * once in a while find out which lists and dicts are not referenced from any
+ * variable.
+ *
+ * Here is a good reference text about garbage collection (refers to Python
+ * but it applies to all reference-counting mechanisms):
+ *	http://python.ca/nas/python/gc/
  */
-    static int
-count_self_ref(p, type)
-    void	*p;
-    int		type;
-{
-    garray_T	ga;
-    typval_T	*tv;
-    int		selfref;
-    int		i;
-    int		n;
-
-    ga_init2(&ga, sizeof(typval_T *), 10);
-    if (type == VAR_DICT)
-	selfref = count_ref_in_dict(p, p, ++current_copyID, &ga);
-    else
-	selfref = count_ref_in_list(p, p, ++current_copyID, &ga);
-    for (i = 0; i < ga.ga_len; ++i)
-    {
-	tv = ((typval_T **)ga.ga_data)[i];
-	if (tv->v_type == VAR_DICT)
-	{
-	    n = count_ref_in_dict(tv->vval.v_dict, tv->vval.v_dict,
-						      ++current_copyID, NULL);
-	    if (n < tv->vval.v_dict->dv_refcount)
-	    {
-		selfref = 0;
-		break;
-	    }
-	}
-	else
-	{
-	    n = count_ref_in_list(tv->vval.v_list, tv->vval.v_list,
-						      ++current_copyID, NULL);
-	    if (n < tv->vval.v_list->lv_refcount)
-	    {
-		selfref = 0;
-		break;
-	    }
-	}
-    }
-
-    ga_clear(&ga);
-    return selfref;
-}
 
 /*
- * Count number of references to "rp" in dictionary "d" and its members.
- * We use "copyID" to avoid recursing into the same list/dict twice.
+ * Do garbage collection for lists and dicts.
+ * Return TRUE if some memory was freed.
  */
-    static int
-count_ref_in_dict(d, rp, copyID, gap)
-    dict_T	*d;
-    void	*rp;
-    int		copyID;
-    garray_T	*gap;
-{
-    int		todo;
-    hashitem_T	*hi;
-    int		n = 0;
-
-    todo = d->dv_hashtab.ht_used;
-    for (hi = d->dv_hashtab.ht_array; todo > 0; ++hi)
-	if (!HASHITEM_EMPTY(hi))
-	{
-	    --todo;
-	    n += count_ref_item(&HI2DI(hi)->di_tv, rp, copyID, gap);
-	}
-    return n;
-}
-
-/*
- * Count number of references to "rp" in list "l" and its members.
- * We use "copyID" to avoid recursing into the same list/dict twice.
- */
-    static int
-count_ref_in_list(l, rp, copyID, gap)
-    list_T	*l;
-    void	*rp;
-    int		copyID;
-    garray_T	*gap;
-{
-    listitem_T *li;
-    int		n = 0;
-
-    for (li = l->lv_first; li != NULL; li = li->li_next)
-	n += count_ref_item(&li->li_tv, rp, copyID, gap);
-    return n;
-}
-
-/*
- * Count number of references to "rp" in item "tv" and any members.
- * We use "copyID" to avoid recursing into the same list/dict twice.
- * When "gap" is not NULL store items that require checking for only
- * references inside the structure.
- */
-    static int
-count_ref_item(tv, rp, copyID, gap)
-    typval_T	*tv;
-    void	*rp;
-    int		copyID;
-    garray_T	*gap;
+    int
+garbage_collect()
 {
     dict_T	*dd;
     list_T	*ll;
-    int		n;
+    int		copyID = ++current_copyID;
+    buf_T	*buf;
+    win_T	*wp;
+    int		i;
+    funccall_T	*fc;
+    int		did_free = FALSE;
+
+    /*
+     * 1. Go through all accessible variables and mark all lists and dicts
+     *    with copyID.
+     */
+    /* script-local variables */
+    for (i = 1; i <= ga_scripts.ga_len; ++i)
+	set_ref_in_ht(&SCRIPT_VARS(i), copyID);
+
+    /* buffer-local variables */
+    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+	set_ref_in_ht(&buf->b_vars.dv_hashtab, copyID);
+
+    /* window-local variables */
+    FOR_ALL_WINDOWS(wp)
+	set_ref_in_ht(&wp->w_vars.dv_hashtab, copyID);
+
+    /* global variables */
+    set_ref_in_ht(&globvarht, copyID);
+
+    /* function-local variables */
+    for (fc = current_funccal; fc != NULL; fc = fc->caller)
+    {
+	set_ref_in_ht(&fc->l_vars.dv_hashtab, copyID);
+	set_ref_in_ht(&fc->l_avars.dv_hashtab, copyID);
+    }
+
+    /*
+     * 2. Go through the list of dicts and free items without the copyID.
+     */
+    for (dd = first_dict; dd != NULL; )
+	if (dd->dv_copyID != copyID)
+	{
+	    dict_free(dd);
+	    did_free = TRUE;
+
+	    /* restart, next dict may also have been freed */
+	    dd = first_dict;
+	}
+	else
+	    dd = dd->dv_used_next;
+
+    /*
+     * 3. Go through the list of lists and free items without the copyID.
+     */
+    for (ll = first_list; ll != NULL; )
+	if (ll->lv_copyID != copyID)
+	{
+	    list_free(ll);
+	    did_free = TRUE;
+
+	    /* restart, next dict may also have been freed */
+	    ll = first_list;
+	}
+	else
+	    ll = ll->lv_used_next;
+
+    return did_free;
+}
+
+/*
+ * Mark all lists and dicts referenced through hashtab "ht" with "copyID".
+ */
+    static void
+set_ref_in_ht(ht, copyID)
+    hashtab_T	*ht;
+    int		copyID;
+{
+    int		todo;
+    hashitem_T	*hi;
+
+    todo = ht->ht_used;
+    for (hi = ht->ht_array; todo > 0; ++hi)
+	if (!HASHITEM_EMPTY(hi))
+	{
+	    --todo;
+	    set_ref_in_item(&HI2DI(hi)->di_tv, copyID);
+	}
+}
+
+/*
+ * Mark all lists and dicts referenced through list "l" with "copyID".
+ */
+    static void
+set_ref_in_list(l, copyID)
+    list_T	*l;
+    int		copyID;
+{
+    listitem_T *li;
+
+    for (li = l->lv_first; li != NULL; li = li->li_next)
+	set_ref_in_item(&li->li_tv, copyID);
+}
+
+/*
+ * Mark all lists and dicts referenced through typval "tv" with "copyID".
+ */
+    static void
+set_ref_in_item(tv, copyID)
+    typval_T	*tv;
+    int		copyID;
+{
+    dict_T	*dd;
+    list_T	*ll;
 
     switch (tv->v_type)
     {
 	case VAR_DICT:
 	    dd = tv->vval.v_dict;
-	    if (dd == rp)
-		return 1;	/* match, count it */
-	    if (dd->dv_copyID == copyID)
-		return 0;	/* already inspected this dict */
-	    dd->dv_copyID = copyID;
-	    n = count_ref_in_dict(dd, rp, copyID, gap);
-	    if (n > 0 && gap != NULL && dd->dv_refcount > 1)
+	    if (dd->dv_copyID != copyID)
 	    {
-		/* We must later check that the references to this dict are
-		 * all in the structure we are freeing. */
-		if (ga_grow(gap, 1) == FAIL)
-		    return 0;
-		((typval_T **)gap->ga_data)[gap->ga_len++] = tv;
+		/* Didn't see this dict yet. */
+		dd->dv_copyID = copyID;
+		set_ref_in_ht(&dd->dv_hashtab, copyID);
 	    }
-	    return n;
+	    break;
 
 	case VAR_LIST:
 	    ll = tv->vval.v_list;
-	    if (ll == rp)
-		return 1;	/* match, count it */
-	    if (ll->lv_copyID == copyID)
-		return 0;	/* already inspected this list */
-	    ll->lv_copyID = copyID;
-	    n = count_ref_in_list(ll, rp, copyID, gap);
-	    if (n > 0 && gap != NULL && ll->lv_refcount > 1)
+	    if (ll->lv_copyID != copyID)
 	    {
-		/* We must later check that the references to this list are
-		 * all in the structure we are freeing. */
-		if (ga_grow(gap, 1) == FAIL)
-		    return 0;
-		((typval_T **)gap->ga_data)[gap->ga_len++] = tv;
+		/* Didn't see this list yet. */
+		ll->lv_copyID = copyID;
+		set_ref_in_list(ll, copyID);
 	    }
-	    return n;
+	    break;
     }
-    return 0;
+    return;
 }
 
 /*
@@ -5732,6 +5760,12 @@ dict_alloc()
     d = (dict_T *)alloc(sizeof(dict_T));
     if (d != NULL)
     {
+	/* Add the list to the hashtable for garbage collection. */
+	if (first_dict != NULL)
+	    first_dict->dv_used_prev = d;
+	d->dv_used_next = first_dict;
+	d->dv_used_prev = NULL;
+
 	hash_init(&d->dv_hashtab);
 	d->dv_lock = 0;
 	d->dv_refcount = 0;
@@ -5748,23 +5782,8 @@ dict_alloc()
 dict_unref(d)
     dict_T *d;
 {
-    int		selfref;
-
-    if (d != NULL && d->dv_refcount != DEL_REFCOUNT)
-    {
-	if (--d->dv_refcount > 0)
-	{
-	    /* Check if the dict contains references to itself.  These need to
-	     * be subtracted from the reference count to find out if we can
-	     * delete the dict. */
-	    selfref = count_self_ref(d, VAR_DICT);
-	}
-	else
-	    selfref = 0;
-	if (d->dv_refcount - selfref == 0)
-	    /* No references to the dict now, free it. */
-	    dict_free(d);
-    }
+    if (d != NULL && d->dv_refcount != DEL_REFCOUNT && --d->dv_refcount <= 0)
+	dict_free(d);
 }
 
 /*
@@ -5782,8 +5801,15 @@ dict_free(d)
     /* Avoid that recursive reference to the dict frees us again. */
     d->dv_refcount = DEL_REFCOUNT;
 
-    /* Lock the hashtab, we don't want it to resize while looping through it.
-     * */
+    /* Remove the dict from the list of dicts for garbage collection. */
+    if (d->dv_used_prev == NULL)
+	first_dict = d->dv_used_next;
+    else
+	d->dv_used_prev->dv_used_next = d->dv_used_next;
+    if (d->dv_used_next != NULL)
+	d->dv_used_next->dv_used_prev = d->dv_used_prev;
+
+    /* Lock the hashtab, we don't want it to resize while freeing items. */
     hash_lock(&d->dv_hashtab);
     todo = d->dv_hashtab.ht_used;
     for (hi = d->dv_hashtab.ht_array; todo > 0; ++hi)
@@ -6505,6 +6531,7 @@ static struct fst
     {"foldtextresult",	1, 1, f_foldtextresult},
     {"foreground",	0, 0, f_foreground},
     {"function",	1, 1, f_function},
+    {"garbagecollect",	0, 0, f_garbagecollect},
     {"get",		2, 3, f_get},
     {"getbufvar",	2, 2, f_getbufvar},
     {"getchar",		0, 1, f_getchar},
@@ -8883,6 +8910,18 @@ f_function(argvars, rettv)
 	rettv->vval.v_string = vim_strsave(s);
 	rettv->v_type = VAR_FUNC;
     }
+}
+
+/*
+ * "garbagecollect()" function
+ */
+/*ARGSUSED*/
+    static void
+f_garbagecollect(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    garbage_collect();
 }
 
 /*
@@ -15506,8 +15545,10 @@ find_var_in_ht(ht, varname, writing)
 	    case 'v': return &vimvars_var;
 	    case 'b': return &curbuf->b_bufvar;
 	    case 'w': return &curwin->w_winvar;
-	    case 'l': return &current_funccal->l_vars_var;
-	    case 'a': return &current_funccal->l_avars_var;
+	    case 'l': return current_funccal == NULL
+					? NULL : &current_funccal->l_vars_var;
+	    case 'a': return current_funccal == NULL
+				       ? NULL : &current_funccal->l_avars_var;
 	}
 	return NULL;
     }
@@ -15689,6 +15730,7 @@ vars_clear_ext(ht, free_val)
 	}
     }
     hash_clear(ht);
+    ht->ht_used = 0;
 }
 
 /*
@@ -15789,7 +15831,7 @@ set_var(name, tv, copy)
 	}
 	if (function_exists(name))
 	{
-	    EMSG2(_("705: Variable name conflicts with existing function: %s"),
+	    EMSG2(_("E705: Variable name conflicts with existing function: %s"),
 									name);
 	    return;
 	}
@@ -17569,7 +17611,6 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
     linenr_T	save_sourcing_lnum;
     scid_T	save_current_SID;
     funccall_T	fc;
-    funccall_T	*save_fcp = current_funccal;
     int		save_did_emsg;
     static int	depth = 0;
     dictitem_T	*v;
@@ -17594,6 +17635,7 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
 
     line_breakcheck();		/* check for CTRL-C hit */
 
+    fc.caller = current_funccal;
     current_funccal = &fc;
     fc.func = fp;
     fc.rettv = rettv;
@@ -17752,7 +17794,7 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
 	if (!fp->uf_profiling && has_profiling(FALSE, fp->uf_name, NULL))
 	    func_do_profile(fp);
 	if (fp->uf_profiling
-		       || (save_fcp != NULL && &save_fcp->func->uf_profiling))
+		       || (fc.caller != NULL && &fc.caller->func->uf_profiling))
 	{
 	    ++fp->uf_tm_count;
 	    profile_start(&fp->uf_tm_start);
@@ -17782,17 +17824,17 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
     }
 
 #ifdef FEAT_PROFILE
-    if (fp->uf_profiling || (save_fcp != NULL && &save_fcp->func->uf_profiling))
+    if (fp->uf_profiling || (fc.caller != NULL && &fc.caller->func->uf_profiling))
     {
 	profile_end(&fp->uf_tm_start);
 	profile_sub_wait(&wait_start, &fp->uf_tm_start);
 	profile_add(&fp->uf_tm_total, &fp->uf_tm_start);
 	profile_add(&fp->uf_tm_self, &fp->uf_tm_start);
 	profile_sub(&fp->uf_tm_self, &fp->uf_tm_children);
-	if (save_fcp != NULL && &save_fcp->func->uf_profiling)
+	if (fc.caller != NULL && &fc.caller->func->uf_profiling)
 	{
-	    profile_add(&save_fcp->func->uf_tm_children, &fp->uf_tm_start);
-	    profile_add(&save_fcp->func->uf_tml_children, &fp->uf_tm_start);
+	    profile_add(&fc.caller->func->uf_tm_children, &fp->uf_tm_start);
+	    profile_add(&fc.caller->func->uf_tml_children, &fp->uf_tm_start);
 	}
     }
 #endif
@@ -17850,7 +17892,7 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
     }
 
     did_emsg |= save_did_emsg;
-    current_funccal = save_fcp;
+    current_funccal = fc.caller;
 
     /* The a: variables typevals were not alloced, only free the allocated
      * variables. */
