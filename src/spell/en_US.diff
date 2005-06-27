@@ -1,12 +1,14 @@
 *** en_US.orig.aff	Fri Apr 15 13:20:36 2005
---- en_US.aff	Thu Jun 23 17:42:05 2005
+--- en_US.aff	Mon Jun 27 19:42:49 2005
 ***************
 *** 3,4 ****
---- 3,11 ----
+--- 3,13 ----
   
 + FOL  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗ÿ
 + LOW  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗ÿ
 + UPP  ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞ‗ÿ
++ 
++ MIDWORD	'
 + 
 + RAR ?
 + BAD !
@@ -18,7 +20,7 @@
 ! SFX N   y     ication    y 
 ! SFX N   0     en         [^ey] 
   
---- 37,40 ----
+--- 39,42 ----
   SFX N   e     ion        e
 ! SFX N   y     ication    y
 ! SFX N   0     en         [^ey]
@@ -28,7 +30,7 @@
   SFX H   y     ieth       y
 ! SFX H   0     th         [^y] 
   
---- 47,49 ----
+--- 49,51 ----
   SFX H   y     ieth       y
 ! SFX H   0     th         [^y]
   
@@ -37,20 +39,20 @@
   SFX G   e     ing        e
 ! SFX G   0     ing        [^e] 
   
---- 54,56 ----
+--- 56,58 ----
   SFX G   e     ing        e
 ! SFX G   0     ing        [^e]
   
 ***************
 *** 137,138 ****
---- 144,147 ----
+--- 146,149 ----
   REP uy i
 + REP y ie
 + REP ie y
   REP i ee
 ***************
 *** 188 ****
---- 197,318 ----
+--- 199,320 ----
   REP shun cion
 + 
 + MAP 5
@@ -174,7 +176,7 @@
 + SAL ZZ-                  _
 + SAL Z                    S
 *** en_US.orig.dic	Fri Apr 15 13:20:36 2005
---- en_US.dic	Wed Jun 22 14:06:29 2005
+--- en_US.dic	Mon Jun 27 09:31:21 2005
 ***************
 *** 5944,5946 ****
   bk
@@ -534,7 +536,7 @@
   Zubenelgenubi/M
 ***************
 *** 62077 ****
---- 62076,62082 ----
+--- 62076,62083 ----
   zymurgy/S
 + nd
 + the the/!
@@ -542,3 +544,4 @@
 + a an/!
 + an a/!
 + an an/!
++ PayPal

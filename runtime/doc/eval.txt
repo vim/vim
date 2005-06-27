@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 25
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -36,7 +36,7 @@ done, the features in this document are not available.  See |+eval| and
 
 1.1 Variable types ~
 							*E712*
-There are four types of variables:
+There are five types of variables:
 
 Number		A 32 bit signed number.
 		Examples:  -123  0x10  0177
@@ -49,6 +49,10 @@ Funcref		A reference to a function |Funcref|.
 
 List		An ordered sequence of items |List|.
 		Example: [1, 2, ['a', 'b']]
+
+Dictionary	An associative, unordered array: Each entry has a key and a
+		value. |Dictionary|
+		Example: {'blue': "#0000ff", 'red': "#ff0000"}
 
 The Number and String types are converted automatically, depending on how they
 are used.
@@ -2375,6 +2379,17 @@ function({name})					*function()* *E700*
 		Return a Funcref variable that refers to function {name}.
 		{name} can be a user defined function or an internal function.
 
+
+garbagecollect()					*garbagecollect()*
+		Cleanup unused Lists and Dictionaries that have circular
+		references.  There is hardly ever a need to invoke this
+		function, as it is automatically done when Vim runs out of
+		memory or is waiting for the user to press a key after
+		'updatetime'.  Items without circular references are always
+		freed when they become unused.
+		This is useful if you have deleted a very big List and/or
+		Dictionary with circular references in a script that runs for
+		a long time.
 
 get({list}, {idx} [, {default}])			*get()*
 		Get item {idx} from List {list}.  When this item is not

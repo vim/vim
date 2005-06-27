@@ -33,6 +33,7 @@ void restore_typeahead __ARGS((tasave_T *tp));
 void openscript __ARGS((char_u *name, int directly));
 void close_all_scripts __ARGS((void));
 int using_script __ARGS((void));
+void before_blocking __ARGS((void));
 void updatescript __ARGS((int c));
 int vgetc __ARGS((void));
 int safe_vgetc __ARGS((void));

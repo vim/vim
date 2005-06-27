@@ -1020,16 +1020,18 @@ struct listwatch_S
  */
 struct listvar_S
 {
-    int		lv_refcount;	/* reference count */
-    int		lv_len;		/* number of items */
     listitem_T	*lv_first;	/* first item, NULL if none */
     listitem_T	*lv_last;	/* last item, NULL if none */
+    int		lv_refcount;	/* reference count */
+    int		lv_len;		/* number of items */
     listwatch_T	*lv_watch;	/* first watcher, NULL if none */
     int		lv_idx;		/* cached index of an item */
     listitem_T	*lv_idx_item;	/* when not NULL item at index "lv_idx" */
     int		lv_copyID;	/* ID used by deepcopy() */
     list_T	*lv_copylist;	/* copied list used by deepcopy() */
     char	lv_lock;	/* zero, VAR_LOCKED, VAR_FIXED */
+    list_T	*lv_used_next;	/* next list in used dicts list */
+    list_T	*lv_used_prev;	/* previous list in used lists list */
 };
 
 /*
@@ -1061,6 +1063,8 @@ struct dictvar_S
     int		dv_copyID;	/* ID used by deepcopy() */
     dict_T	*dv_copydict;	/* copied dict used by deepcopy() */
     char	dv_lock;	/* zero, VAR_LOCKED, VAR_FIXED */
+    dict_T	*dv_used_next;	/* next dict in used dicts list */
+    dict_T	*dv_used_prev;	/* previous dict in used dicts list */
 };
 
 

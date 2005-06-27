@@ -871,6 +871,9 @@ lalloc(size, message)
 	    break;
 	releasing = TRUE;
 	try_again = mf_release_all();
+#ifdef FEAT_EVAL
+	try_again |= garbage_collect();
+#endif
 	releasing = FALSE;
 	if (!try_again)
 	    break;
