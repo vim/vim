@@ -367,7 +367,7 @@ mch_inchar(buf, maxlen, wtime, tb_change_cnt)
 		return 3;
 	    }
 #endif
-	    updatescript(0);
+	    before_blocking();
 	}
     }
 
