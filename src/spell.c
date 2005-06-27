@@ -86,9 +86,10 @@
  *		<regioncnt> <regionname> ...
  *		<charflagslen> <charflags>
  *		<fcharslen> <fchars>
+ *		<midwordlen> <midword>
  *		<prefcondcnt> <prefcond> ...
  *
- * <fileID>     10 bytes    "VIMspell07"
+ * <fileID>     10 bytes    "VIMspell08"
  * <regioncnt>  1 byte	    number of regions following (8 supported)
  * <regionname>	2 bytes     Region name: ca, au, etc.  Lower case.
  *			    First <regionname> is region 1.
@@ -99,6 +100,10 @@
  *			    0x02  upper-case character	CF_UPPER
  * <fcharslen>  2 bytes     Number of bytes in <fchars>.
  * <fchars>     N bytes	    Folded characters, first one is for character 128.
+ *
+ * <midwordlen> 2 bytes     Number of bytes in <midword>.
+ * <midword>    N bytes	    Characters that are word characters only when used
+ *			    in the middle of a word.
  *
  * <prefcondcnt> 2 bytes    Number of <prefcond> items following.
  *
@@ -169,9 +174,11 @@
  * <byte>	1 byte	    Byte value of the sibling.  Special cases:
  *			    BY_NOFLAGS: End of word without flags and for all
  *					regions.
- *			    BY_FLAGS: End of word, <flags> follow.  For
- *					PREFIXTREE <prefixID> and <prefcondnr>
- *					follow.
+ *					For PREFIXTREE <prefixID> and
+ *					<prefcondnr> follow.
+ *			    BY_FLAGS: End of word, <flags> follow.
+ *					For PREFIXTREE <prefixID> and
+ *					<prefcondnr> follow for rare prefix.
  *			    BY_INDEX: Child of sibling is shared, <nodeidx>
  *					and <xbyte> follow.
  *
@@ -234,6 +241,10 @@ typedef long idx_T;
 #define WF_KEEPCAP  0x80	/* keep-case word */
 
 #define WF_CAPMASK (WF_ONECAP | WF_ALLCAP | WF_KEEPCAP)
+
+#define WF_RAREPFX  0x1000000	/* in sl_pidxs: flag for rare postponed
+				   prefix; must be above prefixID (one byte)
+				   and prefcondnr (two bytes) */
 
 #define BY_NOFLAGS  0		/* end of word without flags or region */
 #define BY_FLAGS    1		/* end of word, flag byte follows */
@@ -343,7 +354,7 @@ typedef struct langp_S
 #define SP_LOCAL	2
 #define SP_BAD		3
 
-#define VIMSPELLMAGIC "VIMspell07"  /* string at start of Vim spell file */
+#define VIMSPELLMAGIC "VIMspell08"  /* string at start of Vim spell file */
 #define VIMSPELLMAGICL 10
 
 /*
@@ -399,6 +410,7 @@ typedef struct suggest_S
 #define SCORE_DELDUP	64	/* delete a duplicated character */
 #define SCORE_INS	96	/* insert a character */
 #define SCORE_INSDUP	66	/* insert a duplicate character */
+#define SCORE_NONWORD	103	/* change non-word to word char */
 
 #define SCORE_MAXINIT	350	/* Initial maximum score: higher == slower.
 				 * 350 allows for about three changes. */
@@ -449,6 +461,10 @@ typedef struct spelltab_S
 
 static spelltab_T   spelltab;
 static int	    did_set_spelltab;
+static char_u	    spell_ismw[256];		/* flags: is midword char */
+#ifdef FEAT_MBYTE
+static char_u	    *spell_ismw_mb = NULL;	/* multi-byte midword chars */
+#endif
 
 #define CF_WORD		0x01
 #define CF_UPPER	0x02
@@ -961,15 +977,20 @@ find_word(mip, mode)
 
 	    /* When mode is FIND_PREFIX the word must support the prefix:
 	     * check the prefix ID and the condition.  Do that for the list at
-	     * mip->mi_prefarridx. */
+	     * mip->mi_prefarridx that find_prefix() filled. */
 	    if (mode == FIND_PREFIX)
 	    {
 		/* The prefix ID is stored two bytes above the flags. */
 		prefid = (unsigned)flags >> 16;
-		if (!valid_word_prefix(mip->mi_prefcnt, mip->mi_prefarridx,
+		c = valid_word_prefix(mip->mi_prefcnt, mip->mi_prefarridx,
 				   prefid, mip->mi_fword + mip->mi_prefixlen,
-								       slang))
+								       slang);
+		if (c == 0)
 		    continue;
+
+		/* Use the WF_RARE flag for a rare prefix. */
+		if (c & WF_RAREPFX)
+		    flags |= WF_RARE;
 	    }
 
 	    if (flags & WF_BANNED)
@@ -1006,8 +1027,9 @@ find_word(mip, mode)
 }
 
 /*
- * Return TRUE if the prefix indicated by "mip->mi_prefarridx" matches with
- * the prefix ID "prefid" for the word "word".
+ * Return non-zero if the prefix indicated by "mip->mi_prefarridx" matches
+ * with the prefix ID "prefid" for the word "word".
+ * The WF_RAREPFX flag is included in the return value for a rare prefix.
  */
     static int
 valid_word_prefix(totprefcnt, arridx, prefid, word, slang)
@@ -1031,8 +1053,8 @@ valid_word_prefix(totprefcnt, arridx, prefid, word, slang)
 	    continue;
 
 	/* Check the condition, if there is one.  The condition index is
-	 * stored above the prefix ID byte.  */
-	rp = slang->sl_prefprog[(unsigned)pidx >> 8];
+	 * stored in the two bytes above the prefix ID byte.  */
+	rp = slang->sl_prefprog[((unsigned)pidx >> 8) & 0xffff];
 	if (rp != NULL)
 	{
 	    regmatch.regprog = rp;
@@ -1041,10 +1063,10 @@ valid_word_prefix(totprefcnt, arridx, prefid, word, slang)
 		continue;
 	}
 
-	/* It's a match! */
-	return TRUE;
+	/* It's a match!  Return the WF_RAREPFX flag. */
+	return pidx;
     }
-    return FALSE;
+    return 0;
 }
 
 /*
@@ -1647,6 +1669,7 @@ spell_load_file(fname, lang, old_lp, silent)
      *		<regioncnt> <regionname> ...
      *		<charflagslen> <charflags>
      *		<fcharslen> <fchars>
+     *		<midwordlen> <midword>
      *		<prefcondcnt> <prefcond> ...
      */
     for (i = 0; i < VIMSPELLMAGICL; ++i)
@@ -1717,6 +1740,52 @@ formerr:
 	cnt = (getc(fd) << 8) + getc(fd);
 	if (cnt != 0)
 	    goto formerr;
+    }
+
+    /* <midwordlen> <midword> */
+    cnt = (getc(fd) << 8) + getc(fd);
+    if (cnt < 0)
+	goto truncerr;
+    if (cnt > 0)
+    {
+	for (i = 0; i < cnt; ++i)
+	    if (i < MAXWLEN)	    /* truncate at reasonable length */
+		buf[i] = getc(fd);
+	if (i < MAXWLEN)
+	    buf[i] = NUL;
+	else
+	    buf[MAXWLEN] = NUL;
+
+	/* The midword characters add up to any midword characters from other
+	 * .spel files. */
+	for (p = buf; *p != NUL; )
+#ifdef FEAT_MBYTE
+	    if (has_mbyte)
+	    {
+		c = mb_ptr2char(p);
+		i = mb_ptr2len_check(p);
+		if (c < 256)
+		    spell_ismw[c] = TRUE;
+		else if (spell_ismw_mb == NULL)
+		    /* First multi-byte char in "spell_ismw_mb". */
+		    spell_ismw_mb = vim_strnsave(p, i);
+		else
+		{
+		    /* Append multi-byte chars to "spell_ismw_mb". */
+		    n = STRLEN(spell_ismw_mb);
+		    bp = vim_strnsave(spell_ismw_mb, n + i);
+		    if (bp != NULL)
+		    {
+			vim_free(spell_ismw_mb);
+			spell_ismw_mb = bp;
+			vim_strncpy(bp + n, p, i);
+		    }
+		}
+		p += i;
+	    }
+	    else
+#endif
+		spell_ismw[*p++] = TRUE;
     }
 
     /* <prefcondcnt> <prefcond> ... */
@@ -2004,6 +2073,7 @@ read_tree(fd, byts, idxs, maxidx, startidx, prefixtree, maxprefcondnr)
     int		n;
     idx_T	idx = startidx;
     int		c;
+    int		c2;
 #define SHARED_MASK	0x8000000
 
     len = getc(fd);					/* <siblingcount> */
@@ -2022,24 +2092,28 @@ read_tree(fd, byts, idxs, maxidx, startidx, prefixtree, maxprefcondnr)
 	    return -1;
 	if (c <= BY_SPECIAL)
 	{
-	    if (c == BY_NOFLAGS)
+	    if (c == BY_NOFLAGS && !prefixtree)
 	    {
 		/* No flags, all regions. */
 		idxs[idx] = 0;
 		c = 0;
 	    }
-	    else if (c == BY_FLAGS)
+	    else if (c == BY_FLAGS || c == BY_NOFLAGS)
 	    {
 		if (prefixtree)
 		{
 		    /* Read the prefix ID and the condition nr.  In idxs[]
 		     * store the prefix ID in the low byte, the condition
 		     * index shifted up 8 bits. */
-		    c = getc(fd);			/* <prefixID> */
+		    c2 = getc(fd);			/* <prefixID> */
 		    n = (getc(fd) << 8) + getc(fd);	/* <prefcondnr> */
 		    if (n >= maxprefcondnr)
 			return -2;
-		    c = (n << 8) + c;
+		    c2 += (n << 8);
+		    if (c == BY_NOFLAGS)
+			c = c2;
+		    else
+			c = c2 | WF_RAREPFX;
 		}
 		else
 		{
@@ -2356,6 +2430,8 @@ spell_free_all()
 	first_lang = lp->sl_next;
 	slang_free(lp);
     }
+
+    init_spell_chartab();
 }
 # endif
 
@@ -2452,6 +2528,7 @@ struct affentry_S
     char_u	*ae_add;	/* text to add to basic word (can be NULL) */
     char_u	*ae_cond;	/* condition (NULL for ".") */
     regprog_T	*ae_prog;	/* regexp program for ae_cond or NULL */
+    int		ae_rare;	/* rare affix */
 };
 
 /* Affix header from ".aff" file.  Used for af_pref and af_suff. */
@@ -2536,6 +2613,7 @@ typedef struct spellinfo_S
     int		si_collapse;	/* soundsalike: ? */
     int		si_rem_accents;	/* soundsalike: remove accents */
     garray_T	si_map;		/* MAP info concatenated */
+    char_u	*si_midword;	/* MIDWORD chars, alloc'ed string or NULL  */
     garray_T	si_prefcond;	/* table with conditions for postponed
 				 * prefixes, each stored as a string */
     int		si_newID;	/* current value for ah_newID */
@@ -2595,6 +2673,7 @@ spell_read_aff(fname, spin)
     int		do_rep;
     int		do_sal;
     int		do_map;
+    int		do_midword;
     int		found_map = FALSE;
     hashitem_T	*hi;
 
@@ -2612,7 +2691,7 @@ spell_read_aff(fname, spin)
     {
 	if (!spin->si_verbose)
 	    verbose_enter();
-	smsg((char_u *)_("Reading affix file %s..."), fname);
+	smsg((char_u *)_("Reading affix file %s ..."), fname);
 	out_flush();
 	if (!spin->si_verbose)
 	    verbose_leave();
@@ -2626,6 +2705,9 @@ spell_read_aff(fname, spin)
 
     /* Only do MAP lines when not done in another .aff file already. */
     do_map = spin->si_map.ga_len == 0;
+
+    /* Only do MIDWORD line when not done in another .aff file already */
+    do_midword = spin->si_midword == NULL;
 
     /*
      * Allocate and init the afffile_T structure.
@@ -2705,6 +2787,11 @@ spell_read_aff(fname, spin)
 #else
 		    smsg((char_u *)_("Conversion in %s not supported"), fname);
 #endif
+	    }
+	    else if (STRCMP(items[0], "MIDWORD") == 0 && itemcnt == 2)
+	    {
+		if (do_midword)
+		    spin->si_midword = vim_strsave(items[1]);
 	    }
 	    else if (STRCMP(items[0], "NOSPLITSUGS") == 0 && itemcnt == 1)
 	    {
@@ -2793,12 +2880,21 @@ spell_read_aff(fname, spin)
 		    && itemcnt >= 5)
 	    {
 		affentry_T	*aff_entry;
+		int		rare = FALSE;
+		int		lasti = 5;
+
+		/* Check for "rare" after the other info. */
+		if (itemcnt > 5 && STRICMP(items[5], "rare") == 0)
+		{
+		    rare = TRUE;
+		    lasti = 6;
+		}
 
 		/* Myspell allows extra text after the item, but that might
 		 * mean mistakes go unnoticed.  Require a comment-starter. */
-		if (itemcnt > 5 && *items[5] != '#')
+		if (itemcnt > lasti && *items[lasti] != '#')
 		    smsg((char_u *)_("Trailing text in %s line %d: %s"),
-						       fname, lnum, items[5]);
+						   fname, lnum, items[lasti]);
 
 		/* New item for an affix letter. */
 		--aff_todo;
@@ -2806,6 +2902,7 @@ spell_read_aff(fname, spin)
 							  sizeof(affentry_T));
 		if (aff_entry == NULL)
 		    break;
+		aff_entry->ae_rare = rare;
 
 		if (STRCMP(items[2], "0") != 0)
 		    aff_entry->ae_chop = getroom_save(&spin->si_blocks,
@@ -2868,8 +2965,8 @@ spell_read_aff(fname, spin)
 			    p = (char_u *)"";
 			else
 			    p = aff_entry->ae_add;
-			tree_add_word(p, spin->si_prefroot, -1, idx,
-					 cur_aff->ah_newID, &spin->si_blocks);
+			tree_add_word(p, spin->si_prefroot, rare ? -2 : -1,
+				    idx, cur_aff->ah_newID, &spin->si_blocks);
 		    }
 		}
 	    }
@@ -3160,7 +3257,7 @@ spell_read_dic(fname, spin, affile)
     {
 	if (!spin->si_verbose)
 	    verbose_enter();
-	smsg((char_u *)_("Reading dictionary file %s..."), fname);
+	smsg((char_u *)_("Reading dictionary file %s ..."), fname);
 	out_flush();
 	if (!spin->si_verbose)
 	    verbose_leave();
@@ -3384,6 +3481,7 @@ store_aff_word(word, spin, afflist, affile, ht, xht, comb, flags, pfxlist)
     int		retval = OK;
     int		i;
     char_u	*p;
+    int		use_flags;
 
     todo = ht->ht_used;
     for (hi = ht->ht_array; todo > 0 && retval == OK; ++hi)
@@ -3460,16 +3558,23 @@ store_aff_word(word, spin, afflist, affile, ht, xht, comb, flags, pfxlist)
 				STRCAT(newword, ae->ae_add);
 			}
 
+			/* Obey the "rare" flag of the affix. */
+			if (ae->ae_rare)
+			    use_flags = flags | WF_RARE;
+			else
+			    use_flags = flags;
+
 			/* Store the modified word. */
-			if (store_word(newword, spin,
-				     flags, spin->si_region, pfxlist) == FAIL)
+			if (store_word(newword, spin, use_flags,
+					    spin->si_region, pfxlist) == FAIL)
 			    retval = FAIL;
 
 			/* When added a suffix and combining is allowed also
 			 * try adding prefixes additionally. */
 			if (xht != NULL && ah->ah_combine)
 			    if (store_aff_word(newword, spin, afflist, affile,
-				     xht, NULL, TRUE, flags, pfxlist) == FAIL)
+					  xht, NULL, TRUE, use_flags, pfxlist)
+								      == FAIL)
 				retval = FAIL;
 		    }
 		}
@@ -3514,7 +3619,7 @@ spell_read_wordfile(fname, spin)
     {
 	if (!spin->si_verbose)
 	    verbose_enter();
-	smsg((char_u *)_("Reading word file %s..."), fname);
+	smsg((char_u *)_("Reading word file %s ..."), fname);
 	out_flush();
 	if (!spin->si_verbose)
 	    verbose_leave();
@@ -3817,8 +3922,8 @@ store_word(word, spin, flags, region, pfxlist)
 
 /*
  * Add word "word" to a word tree at "root".
- * When "flags" is -1 we are adding to the prefix tree where flags don't
- * matter and "region" is the condition nr.
+ * When "flags" < 0 we are adding to the prefix tree where flags is used for
+ * "rare" and "region" is the condition nr.
  * Returns FAIL when out of memory.
  */
     static int
@@ -4109,6 +4214,7 @@ write_vim_spell(fname, spin)
     /* <HEADER>: <fileID> <regioncnt> <regionname> ...
      *		 <charflagslen> <charflags>
      *		 <fcharslen> <fchars>
+     *		 <midwordlen> <midword>
      *		 <prefcondcnt> <prefcond> ... */
 
 							    /* <fileID> */
@@ -4146,16 +4252,28 @@ write_vim_spell(fname, spin)
     else
 	write_spell_chartab(fd);
 
+
+    if (spin->si_midword == NULL)
+	put_bytes(fd, 0L, 2);			/* <midwordlen> */
+    else
+    {
+	i = STRLEN(spin->si_midword);
+	put_bytes(fd, (long_u)i, 2);		/* <midwordlen> */
+	fwrite(spin->si_midword, (size_t)i, (size_t)1, fd); /* <midword> */
+    }
+
+
     /* Write the prefix conditions. */
     write_spell_prefcond(fd, &spin->si_prefcond);
+
+    /* <SUGGEST> : <repcount> <rep> ...
+     *             <salflags> <salcount> <sal> ...
+     *             <maplen> <mapstr> */
 
     /* Sort the REP items. */
     qsort(spin->si_rep.ga_data, (size_t)spin->si_rep.ga_len,
 					       sizeof(fromto_T), rep_compare);
 
-    /* <SUGGEST> : <repcount> <rep> ...
-     *             <salflags> <salcount> <sal> ...
-     *             <maplen> <mapstr> */
     for (round = 1; round <= 2; ++round)
     {
 	if (round == 1)
@@ -4302,7 +4420,10 @@ put_node(fd, node, index, regionmask, prefixtree)
 		{
 		    /* In PREFIXTREE write the required prefixID and the
 		     * associated condition nr (stored in wn_region). */
-		    putc(BY_FLAGS, fd);			/* <byte> */
+		    if (np->wn_flags == (char_u)-2)
+			putc(BY_FLAGS, fd);		/* <byte> rare */
+		    else
+			putc(BY_NOFLAGS, fd);		/* <byte> */
 		    putc(np->wn_prefixID, fd);		/* <prefixID> */
 		    put_bytes(fd, (long_u)np->wn_region, 2); /* <prefcondnr> */
 		}
@@ -4448,6 +4569,14 @@ mkspell(fcount, fnames, ascii, overwrite, added_word)
 	    innames = &fnames[0];
 	    incount = 1;
 	    vim_snprintf((char *)wfname, sizeof(wfname), "%s.spl", fnames[0]);
+	}
+	else if (fcount == 1)
+	{
+	    /* For ":mkspell path/vim" output file is "path/vim.latin1.spl". */
+	    innames = &fnames[0];
+	    incount = 1;
+	    vim_snprintf((char *)wfname, sizeof(wfname), "%s.%s.spl", fnames[0],
+			     spin.si_ascii ? (char_u *)"ascii" : spell_enc());
 	}
 	else if (len > 4 && STRCMP(fnames[0] + len - 4, ".spl") == 0)
 	{
@@ -4608,7 +4737,7 @@ mkspell(fcount, fnames, ascii, overwrite, added_word)
 	    {
 		if (added_word)
 		    verbose_enter();
-		smsg((char_u *)_("Writing spell file %s..."), wfname);
+		smsg((char_u *)_("Writing spell file %s ..."), wfname);
 		out_flush();
 		if (added_word)
 		    verbose_leave();
@@ -4637,6 +4766,7 @@ mkspell(fcount, fnames, ascii, overwrite, added_word)
 	ga_clear(&spin.si_sal);
 	ga_clear(&spin.si_map);
 	ga_clear(&spin.si_prefcond);
+	vim_free(spin.si_midword);
 
 	/* Free the .aff file structures. */
 	for (i = 0; i < incount; ++i)
@@ -4829,8 +4959,11 @@ init_spell_chartab()
 
     did_set_spelltab = FALSE;
     clear_spell_chartab(&spelltab);
-
+    vim_memset(spell_ismw, FALSE, sizeof(spell_ismw));
 #ifdef FEAT_MBYTE
+    vim_free(spell_ismw_mb);
+    spell_ismw_mb = NULL;
+
     if (enc_dbcs)
     {
 	/* DBCS: assume double-wide characters are word characters. */
@@ -5021,24 +5154,50 @@ set_spell_finish(new_st)
 
 /*
  * Return TRUE if "p" points to a word character.
- * As a special case we see a single quote as a word character when it is
+ * As a special case we see "midword" characters as word character when it is
  * followed by a word character.  This finds they'there but not 'they there'.
+ * Thus this only works properly when past the first character of the word.
  */
     static int
 spell_iswordp(p)
     char_u	*p;
 {
-    char_u	*s;
-
-    if (*p == '\'')
-	s = p + 1;
-    else
-	s = p;
 #ifdef FEAT_MBYTE
-    if (has_mbyte && MB_BYTE2LEN(*s) > 1)
-	return mb_get_class(s) >= 2;
+    char_u	*s;
+    int		l;
+    int		c;
+
+    if (has_mbyte)
+    {
+	l = MB_BYTE2LEN(*p);
+	s = p;
+	if (l == 1)
+	{
+	    /* be quick for ASCII */
+	    if (spell_ismw[*p])
+	    {
+		s = p + 1;		/* skip a mid-word character */
+		l = MB_BYTE2LEN(*s);
+	    }
+	}
+	else
+	{
+	    c = mb_ptr2char(p);
+	    if (c < 256 ? spell_ismw[c] : (spell_ismw_mb != NULL
+				     && vim_strchr(spell_ismw_mb, c) != NULL))
+	    {
+		s = p + l;
+		l = MB_BYTE2LEN(*s);
+	    }
+	}
+
+	if (l > 1)
+	    return mb_get_class(s) >= 2;
+	return spelltab.st_isw[*s];
+    }
 #endif
-    return spelltab.st_isw[*s];
+
+    return spelltab.st_isw[spell_ismw[*p] ? p[1] : p[0]];
 }
 
 /*
@@ -5718,7 +5877,29 @@ suggest_try_change(su)
 				       || !spell_iswordp(fword + sp->ts_fidx))
 			&& sp->ts_fidx >= sp->ts_fidxtry)
 		{
-		    /* The badword also ends: add suggestions, */
+		    /* The badword also ends: add suggestions.  Give a penalty
+		     * when changing non-word char to word char, e.g., "thes,"
+		     * -> "these". */
+		    p = fword + sp->ts_fidx;
+#ifdef FEAT_MBYTE
+		    if (has_mbyte)
+			mb_ptr_back(fword, p);
+		    else
+#endif
+			--p;
+		    if (!spell_iswordp(p))
+		    {
+			p = preword + STRLEN(preword);
+#ifdef FEAT_MBYTE
+			if (has_mbyte)
+			    mb_ptr_back(preword, p);
+			else
+#endif
+			    --p;
+			if (spell_iswordp(p))
+			    newscore += SCORE_NONWORD;
+		    }
+
 		    add_suggestion(su, &su->su_ga, preword,
 			    sp->ts_fidx - repextra,
 					   sp->ts_score + newscore, 0, FALSE);
@@ -7093,10 +7274,13 @@ add_suggestion(su, gap, goodword, badlen, score, altscore, had_bonus)
 
     if (score <= su->su_maxscore)
     {
-	/* Check if the word is already there. */
+	/* Check if the word is already there.  Also check the length that is
+	 * being replaced "thes," -> "these" is a different suggestion from
+	 * "thes" -> "these". */
 	stp = &SUG(*gap, 0);
 	for (i = gap->ga_len - 1; i >= 0; --i)
-	    if (STRCMP(stp[i].st_word, goodword) == 0)
+	    if (STRCMP(stp[i].st_word, goodword) == 0
+						&& stp[i].st_orglen == badlen)
 	    {
 		/* Found it.  Remember the lowest score. */
 		if (stp[i].st_score > score)
@@ -8164,10 +8348,13 @@ apply_prefixes(slang, word, round, flags, startlnum)
 			    break;
 		    curi[depth] += i - 1;
 
-		    if (valid_word_prefix(i, n, prefid, word, slang))
+		    i = valid_word_prefix(i, n, prefid, word, slang);
+		    if (i != 0)
 		    {
 			vim_strncpy(prefix + depth, word, MAXWLEN - depth);
-			dump_word(prefix, round, flags, lnum++);
+			dump_word(prefix, round,
+				(i & WF_RAREPFX) ? (flags | WF_RARE)
+							     : flags, lnum++);
 		    }
 		}
 		else
