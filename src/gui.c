@@ -2668,7 +2668,7 @@ gui_wait_for_chars(wtime)
     if (retval == FAIL)
     {
 	/* Blocking wait. */
-	updatescript(0);
+	before_blocking();
 	retval = gui_mch_wait_for_chars(-1L);
     }
 

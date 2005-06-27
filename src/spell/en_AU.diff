@@ -1,17 +1,19 @@
 *** en_AU.orig.aff	Fri Apr 15 13:20:36 2005
---- en_AU.aff	Thu Jun 23 17:43:22 2005
+--- en_AU.aff	Mon Jun 27 19:42:32 2005
 ***************
 *** 7,9 ****
   SET ISO8859-1
 ! TRY esiaénrtolcdugmphbyfvkw-'.zqjxSNRTLCGDMPHBEAUYOFIVKWöâôZQJXÅçèîêàïüäñ 
   REP 24
---- 7,17 ----
+--- 7,19 ----
   SET ISO8859-1
 ! TRY esiaénrtolcdugmphbyfvkw-'.zqjxSNRTLCGDMPHBEAUYOFIVKWöâôZQJXÅçèîêàïüäñ
 ! 
 ! FOL  àáâãäåæçèéêëìíîïğñòóôõöøùúûüışßÿ
 ! LOW  àáâãäåæçèéêëìíîïğñòóôõöøùúûüışßÿ
 ! UPP  ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏĞÑÒÓÔÕÖØÙÚÛÜİŞßÿ
+! 
+! MIDWORD	'
 ! 
 ! RAR ?
 ! BAD !
@@ -39,7 +41,7 @@
   PFX E Y 1
 ! PFX E 0 dis . 
   PFX F Y 5
---- 42,61 ----
+--- 44,63 ----
   PFX A Y 2
 ! PFX A 0 re [^e]
 ! PFX A 0 re- e
@@ -457,7 +459,7 @@
   SFX T y iest [^aeiou]y
 ! SFX T 0 er [aeiou]y 
   SFX T 0 est [aeiou]y
---- 65,459 ----
+--- 67,461 ----
   PFX F 0 col l
 ! PFX F 0 con [^abehilmopru].
   PFX K Y 1
@@ -1541,7 +1543,7 @@
 ! SFX 3 0 ist's [aeioubp]y 
 ! SFX 3 o ist's o 
 ! SFX 3 0 ist's [^eoy] 
---- 466,1272 ----
+--- 468,1274 ----
   SFX R Y 72
 ! SFX R 0 r e
 ! SFX R 0 rs e
@@ -2350,7 +2352,7 @@
 ! SAL ZZ-                  _
 ! SAL Z                    S
 *** en_AU.orig.dic	Fri Apr 15 13:20:36 2005
---- en_AU.dic	Wed Jun 22 14:06:35 2005
+--- en_AU.dic	Mon Jun 27 09:31:13 2005
 ***************
 *** 912,914 ****
   Alaska/M
@@ -2619,7 +2621,7 @@
 --- 45578,45579 ----
 ***************
 *** 45655 ****
---- 45646,45652 ----
+--- 45646,45653 ----
   zymurgy/S
 + nd
 + the the/!
@@ -2627,3 +2629,4 @@
 + a an/!
 + an a/!
 + an an/!
++ PayPal

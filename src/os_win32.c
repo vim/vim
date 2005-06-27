@@ -1391,9 +1391,8 @@ mch_inchar(
 		buf[2] = (int)KE_CURSORHOLD;
 		return 3;
 	    }
-	    else
 #endif
-	    updatescript(0);
+	    before_blocking();
 	}
     }
 
