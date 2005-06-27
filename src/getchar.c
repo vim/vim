@@ -1411,6 +1411,19 @@ using_script()
 #endif
 
 /*
+ * This function is called just before doing a blocking wait.  Thus after
+ * waiting 'updatetime' for a character to arrive.
+ */
+    void
+before_blocking()
+{
+    updatescript(0);
+#ifdef FEAT_EVAL
+    garbage_collect();
+#endif
+}
+
+/*
  * updatescipt() is called when a character can be written into the script file
  * or when we have waited some time for a character (c == 0)
  *
