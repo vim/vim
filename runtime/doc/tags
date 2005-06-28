@@ -1226,6 +1226,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 -y	starting.txt	/*-y*
 .	repeat.txt	/*.*
 .Xdefaults	gui_x11.txt	/*.Xdefaults*
+.aff	spell.txt	/*.aff*
+.dic	spell.txt	/*.dic*
 .exrc	starting.txt	/*.exrc*
 .gvimrc	gui.txt	/*.gvimrc*
 .vimrc	starting.txt	/*.vimrc*
@@ -2230,6 +2232,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :print	various.txt	/*:print*
 :pro	change.txt	/*:pro*
 :prof	repeat.txt	/*:prof*
+:profd	repeat.txt	/*:profd*
+:profdel	repeat.txt	/*:profdel*
 :profile	repeat.txt	/*:profile*
 :promptfind	change.txt	/*:promptfind*
 :promptr	change.txt	/*:promptr*
@@ -3817,6 +3821,7 @@ MiNT	os_mint.txt	/*MiNT*
 Moolenaar	intro.txt	/*Moolenaar*
 MorphOS	os_amiga.txt	/*MorphOS*
 Motif	gui_x11.txt	/*Motif*
+Myspell	spell.txt	/*Myspell*
 MzScheme	if_mzsch.txt	/*MzScheme*
 N	pattern.txt	/*N*
 N%	motion.txt	/*N%*
@@ -4994,6 +4999,7 @@ g_CTRL-]	tagsrch.txt	/*g_CTRL-]*
 g`	motion.txt	/*g`*
 g`a	motion.txt	/*g`a*
 ga	various.txt	/*ga*
+garbagecollect()	eval.txt	/*garbagecollect()*
 gd	pattern.txt	/*gd*
 ge	motion.txt	/*ge*
 get()	eval.txt	/*get()*
@@ -6276,6 +6282,7 @@ spell-affix-vim	spell.txt	/*spell-affix-vim*
 spell-dic-format	spell.txt	/*spell-dic-format*
 spell-file-format	spell.txt	/*spell-file-format*
 spell-load	spell.txt	/*spell-load*
+spell-midword	spell.txt	/*spell-midword*
 spell-mkspell	spell.txt	/*spell-mkspell*
 spell-quickstart	spell.txt	/*spell-quickstart*
 spell-syntax	spell.txt	/*spell-syntax*

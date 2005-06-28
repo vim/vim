@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 27
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -100,23 +100,13 @@ PLANNED FOR VERSION 7.0:
 
 -   Add SPELLCHECKER, with support for many languages.
     - Spell checking code todo's:
-	- Support user function to make suggestions:
-	    :set spellsuggest=MySuggest,fast
-	  Also support a list with common mistakes?
-	- For "z?" a "replace all" mechanism would be welcome.
-        - Add hl groups to 'spelllang'?
-	    :set spelllang=en_us,en-rare/SpellRare,en-math/SpellMath
-	  More complicated: Regions with different languages?  E.g.  comments
-	  in English, strings in German (po file).
 	- Code for making suggestions:
 	  - Hebrew: also use prefixes for suggestions.  See message from
 	    Kaminsky (June 20) for ideas.
-	  - The sound-folding doesn't work for multi-byte characters.  It's
-	    very slow too.
 	  - Simple and fast sound-a-like: mapping list for first char and rest
 		    vowel as first char: *
 		    remove other vowels
-	- Proofread and cleanup spell help.
+    - Proofread and cleanup spell help.
     - Use "engspchk" from Charles Campbell for ideas (commands, rare words).
     - Make "en-rare" spell file?  Ask Charles Campbell.
     - References: MySpell library (in OpenOffice.org).
@@ -142,6 +132,10 @@ PLANNED FOR VERSION 7.0:
     - The English dictionaries for different regions are not consistent in
       their use of words with a dash.
     Later:
+    - Add hl groups to 'spelllang'?
+	:set spelllang=en_us,en-rare/SpellRare,en-math/SpellMath
+      More complicated: Regions with different languages?  E.g.  comments
+      in English, strings in German (po file).
     - Implement compound words when it works for Myspell.  Current idea has
       the problem that "foo/X" always allows "foofoo", there is no way to
       specify a word can only be at the start or end, or that only certain
@@ -2944,6 +2938,8 @@ Options:
 8   Make ":mksession" store buffer-specific options for the specific buffer.
 8   With ":mksession" always store the 'sessionoptions' option, even when
     "options" isn't in it. (St-Amant)
+7   ":with option=value | command": temporarily set an option value and
+    restore it after the command has executed.
 7   Setting an option always sets "w_set_curswant", while this is only
     required for a few options.  Only do it for those options to avoid the
     side effect.

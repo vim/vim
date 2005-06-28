@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 27
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1147,10 +1147,10 @@ v:beval_lnum	The number of the line, over which the mouse pointer is. Only
 		valid while evaluating the 'balloonexpr' option.
 
 					*v:beval_text* *beval_text-variable*
-v:beval_text	The text under or after the mouse pointer.  Usually a word as it is
-		useful for debugging a C program.  'iskeyword' applies, but a
-		dot and "->" before the position is included.  When on a ']'
-		the text before it is used, including the matching '[' and
+v:beval_text	The text under or after the mouse pointer.  Usually a word as
+		it is useful for debugging a C program.  'iskeyword' applies,
+		but a dot and "->" before the position is included.  When on a
+		']' the text before it is used, including the matching '[' and
 		word before it.  When on a Visual area within one line the
 		highlighted text is used.
 		Only valid while evaluating the 'balloonexpr' option.
@@ -1607,6 +1607,7 @@ setreg( {n}, {v}[, {opt}])	Number	set register to value and type
 setwinvar( {nr}, {varname}, {val})	set {varname} in window {nr} to {val}
 simplify( {filename})		String	simplify filename as much as possible
 sort( {list} [, {func}])	List	sort {list}, using {func} to compare
+soundfold( {word})		String	sound-fold {word}
 spellbadword()			String	badly spelled word at cursor
 spellsuggest({word} [, {max}])	List	spelling suggestions
 split( {expr} [, {pat} [, {keepempty}]])
@@ -3775,6 +3776,15 @@ sort({list} [, {func}])					*sort()* *E702*
 			endfunc
 			let sortedlist = sort(mylist, "MyCompare")
 <
+
+							*soundfold()*
+soundfold({word})
+		Return the sound-folded equivalent of {word}.  Uses the first
+		language in 'spellang' for the current window that supports
+		soundfolding.  When no sound folding is possible the {word}
+		is returned unmodified.
+		This can be used for making spelling suggestions.  Note that
+		the method can be quite slow.
 
 							*spellbadword()*
 spellbadword()	Return the badly spelled word under or after the cursor.

@@ -880,7 +880,7 @@ ml_recover()
 	    (void)recover_names(&fname, TRUE, 0);
 	    msg_putchar('\n');
 	    MSG_PUTS(_("Enter number of swap file to use (0 to quit): "));
-	    i = get_number(FALSE);
+	    i = get_number(FALSE, NULL);
 	    if (i < 1 || i > len)
 		goto theend;
 	}

@@ -367,7 +367,6 @@ static int get_string_tv __ARGS((char_u **arg, typval_T *rettv, int evaluate));
 static int get_lit_string_tv __ARGS((char_u **arg, typval_T *rettv, int evaluate));
 static int get_list_tv __ARGS((char_u **arg, typval_T *rettv, int evaluate));
 static list_T *list_alloc __ARGS((void));
-static void list_unref __ARGS((list_T *l));
 static void list_free __ARGS((list_T *l));
 static listitem_T *listitem_alloc __ARGS((void));
 static void listitem_free __ARGS((listitem_T *item));
@@ -560,6 +559,7 @@ static void f_setreg __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_setwinvar __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_simplify __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_sort __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_soundfold __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_spellbadword __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_spellsuggest __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_split __ARGS((typval_T *argvars, typval_T *rettv));
@@ -596,6 +596,8 @@ static void f_winrestcmd __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_winwidth __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_writefile __ARGS((typval_T *argvars, typval_T *rettv));
 
+static void prepare_vimvar __ARGS((int idx, typval_T *save_tv));
+static void restore_vimvar __ARGS((int idx, typval_T *save_tv));
 static win_T *find_win_by_nr __ARGS((typval_T *vp));
 static pos_T *var2fpos __ARGS((typval_T *varp, int lnum));
 static int get_env_len __ARGS((char_u **arg));
@@ -1205,6 +1207,69 @@ eval_to_number(expr)
 
     return retval;
 }
+
+#if defined(FEAT_SYN_HL) || defined(PROTO)
+/*
+ * Evaluate an expression to a list with suggestions.
+ * For the "expr:" part of 'spellsuggest'.
+ */
+    list_T *
+eval_spell_expr(badword, expr)
+    char_u	*badword;
+    char_u	*expr;
+{
+    typval_T	save_val;
+    typval_T	rettv;
+    list_T	*list = NULL;
+    char_u	*p = skipwhite(expr);
+
+    /* Set "v:val" to the bad word. */
+    prepare_vimvar(VV_VAL, &save_val);
+    vimvars[VV_VAL].vv_type = VAR_STRING;
+    vimvars[VV_VAL].vv_str = badword;
+    if (p_verbose == 0)
+	++emsg_off;
+
+    if (eval1(&p, &rettv, TRUE) == OK)
+    {
+	if (rettv.v_type != VAR_LIST)
+	    clear_tv(&rettv);
+	else
+	    list = rettv.vval.v_list;
+    }
+
+    if (p_verbose == 0)
+	--emsg_off;
+    vimvars[VV_VAL].vv_str = NULL;
+    restore_vimvar(VV_VAL, &save_val);
+
+    return list;
+}
+
+/*
+ * "list" is supposed to contain two items: a word and a number.  Return the
+ * word in "pp" and the number as the return value.
+ * Return -1 if anything isn't right.
+ * Used to get the good word and score from the eval_spell_expr() result.
+ */
+    int
+get_spellword(list, pp)
+    list_T	*list;
+    char_u	**pp;
+{
+    listitem_T	*li;
+
+    li = list->lv_first;
+    if (li == NULL)
+	return -1;
+    *pp = get_tv_string(&li->li_tv);
+
+    li = li->li_next;
+    if (li == NULL)
+	return -1;
+    return get_tv_number(&li->li_tv);
+}
+#endif
 
 #if (defined(FEAT_USR_CMDS) && defined(FEAT_CMDL_COMPL)) || defined(PROTO)
 /*
@@ -4976,7 +5041,7 @@ list_alloc()
  * Unreference a list: decrement the reference count and free it when it
  * becomes zero.
  */
-    static void
+    void
 list_unref(l)
     list_T *l;
 {
@@ -6627,6 +6692,7 @@ static struct fst
     {"setwinvar",	3, 3, f_setwinvar},
     {"simplify",	1, 1, f_simplify},
     {"sort",		1, 2, f_sort},
+    {"soundfold",	1, 1, f_soundfold},
     {"spellbadword",	0, 0, f_spellbadword},
     {"spellsuggest",	1, 2, f_spellsuggest},
     {"split",		1, 3, f_split},
@@ -8442,8 +8508,6 @@ findfilendir(argvars, rettv, dir)
     rettv->v_type = VAR_STRING;
 }
 
-static void prepare_vimvar __ARGS((int idx, typval_T *save_tv));
-static void restore_vimvar __ARGS((int idx, typval_T *save_tv));
 static void filter_map __ARGS((typval_T *argvars, typval_T *rettv, int map));
 static int filter_map_one __ARGS((typval_T *tv, char_u *expr, int map, int *remp));
 
@@ -13355,6 +13419,25 @@ f_sort(argvars, rettv)
 
 	vim_free(ptrs);
     }
+}
+
+/*
+ * "soundfold({word})" function
+ */
+    static void
+f_soundfold(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    char_u	*s;
+
+    rettv->v_type = VAR_STRING;
+    s = get_tv_string(&argvars[0]);
+#ifdef FEAT_SYN_HL
+    rettv->vval.v_string = eval_soundfold(s);
+#else
+    rettv->vval.v_string = vim_strsave(s);
+#endif
 }
 
 /*

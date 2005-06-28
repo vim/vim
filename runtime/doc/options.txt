@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 24
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5686,17 +5686,55 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not in Vi}
 			{not available when compiled without the |+syntax|
 			feature}
-	Method used for spelling suggestions |z?|.  Can be one of these
-	values:
+	Methods used for spelling suggestions.  Both for the |z?| command and
+	the |spellsuggest()| function.  This is a comma-separated list of
+	items:
 
-	best		Method that works best for English.  Finds small
-			changes and uses some sound-a-like scoring.
-	double		Uses two methods and mixes the results.  The first
-			method is finding small changes, the other method
+	best		Internal method that works best for English.  Finds
+			changes like "fast" and uses a bit of sound-a-like
+			scoring to improve the ordering.
+
+	double		Internal method that uses two methods and mixes the
+			results.  The first method is "fast", the other method
 			computes how much the suggestion sounds like the bad
-			word.  Can be slow and doesn't always give better
-			results.
-	fast		Only check for small changes.
+			word.  That only works when the language specifies
+			sound folding.  Can be slow and doesn't always give
+			better results.
+
+	fast		Internal method that only checks for simple changes:
+			character inserts/deletes/swaps.  Works well for
+			simple typing mistakes.
+
+	file:{filename} Read file {filename}, which must have two columns,
+			separated by a slash.  The first column contains the
+			bad word, the second column the suggested good word.
+			Example:
+				theribal/terrible ~
+			Use this for common mistakes that do not appear at the
+			top of the suggestion list with the internal methods.
+			Lines without a slash are ignored, use this for
+			comments.
+			The file is used for all languages.
+
+	expr:{expr}	Evaluate expression {expr}.  Use a function to avoid
+			trouble with spaces.  |v:val| holds the badly spelled
+			word.  The expression must evaluate to a List of
+			Lists, each with a suggestion and a score.
+			Example:
+				[['the', 33], ['that', 44]]
+			Set 'verbose' and use |z?| to see the scores that the
+			internal methods use.  A lower score is better.
+			This may invoke |spellsuggest()| if you temporarily
+			set 'spellsuggest' to exclude the "expr:" part.
+			Errors are silently ignored, unless you set the
+			'verbose' option to a non-zero value.
+
+	Only one of "best", "double" or "fast" may be used.  The others may
+	appear several times in any order.  Example: >
+		:set sps=file:~/.vim/sugg,best,expr:MySuggest()
+<
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
 
 
 			*'splitbelow'* *'sb'* *'nosplitbelow'* *'nosb'*

@@ -3085,14 +3085,19 @@ get_keystroke()
 }
 
 /*
- * get a number from the user
+ * Get a number from the user.
+ * When "mouse_used" is not NULL allow using the mouse.
  */
     int
-get_number(colon)
-    int	colon;			/* allow colon to abort */
+get_number(colon, mouse_used)
+    int	    colon;			/* allow colon to abort */
+    int	    *mouse_used;
 {
     int	n = 0;
     int	c;
+
+    if (mouse_used != NULL)
+	*mouse_used = FALSE;
 
     /* When not printing messages, the user won't know what to type, return a
      * zero (as if CR was hit). */
@@ -3118,6 +3123,14 @@ get_number(colon)
 	    n /= 10;
 	    MSG_PUTS("\b \b");
 	}
+#ifdef FEAT_MOUSE
+	else if (mouse_used != NULL && c == K_LEFTMOUSE)
+	{
+	    *mouse_used = TRUE;
+	    n = mouse_row + 1;
+	    break;
+	}
+#endif
 	else if (n == 0 && c == ':' && colon)
 	{
 	    stuffcharReadbuff(':');
@@ -3137,9 +3150,12 @@ get_number(colon)
 
 /*
  * Ask the user to enter a number.
+ * When "mouse_used" is not NULL allow using the mouse and in that case return
+ * the line number.
  */
     int
-prompt_for_number()
+prompt_for_number(mouse_used)
+    int		*mouse_used;
 {
     int		i;
     int		save_cmdline_row;
@@ -3152,12 +3168,16 @@ prompt_for_number()
     save_cmdline_row = cmdline_row;
     cmdline_row = Rows - 1;
     save_State = State;
-    State = CMDLINE;
+    if (mouse_used == NULL)
+	State = CMDLINE;
+    else
+	State = NORMAL;
 
-    i = get_number(TRUE);
-    if (KeyTyped)		/* don't call wait_return() now */
+    i = get_number(TRUE, mouse_used);
+    if (KeyTyped)
     {
-	msg_putchar('\n');
+	/* don't call wait_return() now */
+	/* msg_putchar('\n'); */
 	cmdline_row = msg_row - 1;
 	need_wait_return = FALSE;
 	msg_didany = FALSE;
@@ -3426,24 +3446,30 @@ expand_env(src, dst, dstlen)
     char_u	*dst;		/* where to put the result */
     int		dstlen;		/* maximum length of the result */
 {
-    expand_env_esc(src, dst, dstlen, FALSE);
+    expand_env_esc(src, dst, dstlen, FALSE, NULL);
 }
 
     void
-expand_env_esc(src, dst, dstlen, esc)
-    char_u	*src;		/* input string e.g. "$HOME/vim.hlp" */
+expand_env_esc(srcp, dst, dstlen, esc, startstr)
+    char_u	*srcp;		/* input string e.g. "$HOME/vim.hlp" */
     char_u	*dst;		/* where to put the result */
     int		dstlen;		/* maximum length of the result */
     int		esc;		/* escape spaces in expanded variables */
+    char_u	*startstr;	/* start again after this (can be NULL) */
 {
+    char_u	*src;
     char_u	*tail;
     int		c;
     char_u	*var;
     int		copy_char;
     int		mustfree;	/* var was allocated, need to free it later */
     int		at_start = TRUE; /* at start of a name */
+    int		startstr_len = 0;
 
-    src = skipwhite(src);
+    if (startstr != NULL)
+	startstr_len = STRLEN(startstr);
+
+    src = skipwhite(srcp);
     --dstlen;		    /* leave one char space for "\," */
     while (*src && dstlen > 0)
     {
@@ -3679,6 +3705,10 @@ expand_env_esc(src, dst, dstlen, esc)
 		at_start = TRUE;
 	    *dst++ = *src++;
 	    --dstlen;
+
+	    if (startstr != NULL && src - startstr_len >= srcp
+		    && STRNCMP(src - startstr_len, startstr, startstr_len) == 0)
+		at_start = TRUE;
 	}
     }
     *dst = NUL;

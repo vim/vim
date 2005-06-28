@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 27
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -87,13 +87,20 @@ Finding suggestions for bad words:
 							*z?*
 z?			For the word under/after the cursor suggest correctly
 			spelled words.  This also works to find alternative
-			for words that are not highlighted as bad words.
+			for words that are not highlighted as bad words, e.g.,
+			when the word after it is bad.
 			The results are sorted on similarity to the word
 			under/after the cursor.
 			This may take a long time.  Hit CTRL-C when you are
 			bored.
+			This does not work when there is a line break halfway
+			a bad word (e.g., "the the").
 			You can enter the number of your choice or press
-			<Enter> if you don't want to replace.
+			<Enter> if you don't want to replace.  You can also
+			use the mouse to click on your choice (only works if
+			the mouse can be used in Normal mode and when there
+			are no line wraps!).  Click on the first (header) line
+			to cancel.
 			If 'verbose' is non-zero a score will be displayed to
 			indicate the likeliness to the badly spelled word (the
 			higher the score the more different).
@@ -101,19 +108,24 @@ z?			For the word under/after the cursor suggest correctly
 			repeat the word replacement.  This works like "ciw",
 			the good word and <Esc>.
 
+					*:spellr* *:spellrepall* *E752* *E753*
+:spellr[epall]		Repeat the replacement done by |z?| for all matches
+			with the replaced word in the current window.
+
 The 'spellsuggest' option influences how the list of suggestions is generated
 and sorted.  See |'spellsuggest'|.
 
 
 PERFORMANCE
 
-Note that Vim does on-the-fly spell checking.  To make this work fast the
-word list is loaded in memory.  Thus this uses a lot of memory (1 Mbyte or
-more).  There might also be a noticeable delay when the word list is loaded,
-which happens when 'spell' is set and when 'spelllang' is set while 'spell'
-was already set.  Each word list is only loaded once, they are not deleted
-when 'spelllang' is made empty or 'spell' is reset.  When 'encoding' is set
-all the word lists are reloaded, thus you may notice a delay then too.
+Note that Vim does on-the-fly spell checking.  To make this work fast the word
+list is loaded in memory.  Thus this uses a lot of memory (1 Mbyte or more).
+There might also be a noticeable delay when the word list is loaded, which
+happens when 'spell' is set and when 'spelllang' is set while 'spell' was
+already set.  To minimize the delay each word list is only loaded once, it
+is not deleted when 'spelllang' is made empty or 'spell' is reset.  When
+'encoding' is set all the word lists are reloaded, thus you may notice a delay
+then too.
 
 
 REGIONS

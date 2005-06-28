@@ -2040,7 +2040,7 @@ static struct vimoption
 			    {(char_u *)0L, (char_u *)0L}
 #endif
 			    },
-    {"spelllang",   "spl",  P_STRING|P_ALLOCED|P_VI_DEF|P_COMMA|P_RBUF,
+    {"spelllang",   "spl",  P_STRING|P_ALLOCED|P_VI_DEF|P_COMMA|P_RBUF|P_EXPAND,
 #ifdef FEAT_SYN_HL
 			    (char_u *)&p_spl, PV_SPL,
 			    {(char_u *)"en", (char_u *)0L}
@@ -2049,7 +2049,7 @@ static struct vimoption
 			    {(char_u *)0L, (char_u *)0L}
 #endif
 			    },
-    {"spellsuggest", "sps", P_STRING|P_VI_DEF,
+    {"spellsuggest", "sps", P_STRING|P_VI_DEF|P_EXPAND|P_SECURE,
 #ifdef FEAT_SYN_HL
 			    (char_u *)&p_sps, PV_NONE,
 			    {(char_u *)"best", (char_u *)0L}
@@ -4554,9 +4554,14 @@ option_expand(opt_idx, val)
      * Expanding this with NameBuff, expand_env() must not be passed IObuff.
      * Escape spaces when expanding 'tags', they are used to separate file
      * names.
+     * For 'spellsuggest' expand after "file:".
      */
     expand_env_esc(val, NameBuff, MAXPATHL,
-				  (char_u **)options[opt_idx].var == &p_tags);
+	    (char_u **)options[opt_idx].var == &p_tags,
+#ifdef FEAT_SYN_HL
+	    (char_u **)options[opt_idx].var == &p_sps ? (char_u *)"file:" :
+#endif
+				  NULL);
     if (STRCMP(NameBuff, val) == 0)   /* they are the same */
 	return NULL;
 
@@ -4590,7 +4595,7 @@ didset_options()
     (void)opt_strings_flags(p_ttym, p_ttym_values, &ttym_flags, FALSE);
 #endif
 #ifdef FEAT_SYN_HL
-    (void)opt_strings_flags(p_sps, p_sps_values, &sps_flags, FALSE);
+    (void)spell_check_sps();
 #endif
 #if defined(FEAT_TOOLBAR) && !defined(FEAT_GUI_W32)
     (void)opt_strings_flags(p_toolbar, p_toolbar_values, &toolbar_flags, TRUE);
@@ -5753,7 +5758,7 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
     /* 'spellsuggest' */
     else if (varp == &p_sps)
     {
-	if (opt_strings_flags(p_sps, p_sps_values, &sps_flags, FALSE) != OK)
+	if (spell_check_sps() != OK)
 	    errmsg = e_invarg;
     }
 #endif
@@ -9013,6 +9018,16 @@ set_context_in_set_cmd(xp, arg, opt_flags)
 		break;
 	    }
 	}
+
+#ifdef FEAT_SYN_HL
+	/* for 'spellsuggest' start at "file:" */
+	if (options[opt_idx].var == (char_u *)&p_sps
+					       && STRNCMP(p, "file:", 5) == 0)
+	{
+	    xp->xp_pattern = p + 5;
+	    break;
+	}
+#endif
     }
 
     return;
