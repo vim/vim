@@ -227,6 +227,7 @@ static void	ex_popup __ARGS((exarg_T *eap));
 # define ex_spell		ex_ni
 # define ex_mkspell		ex_ni
 # define ex_spelldump		ex_ni
+# define ex_spellrepall		ex_ni
 #endif
 #ifndef FEAT_MZSCHEME
 # define ex_mzscheme		ex_script_ni
@@ -4266,7 +4267,8 @@ expand_filename(eap, cmdlinep, errormsgp)
 		    if (vim_strchr(eap->arg, '$') != NULL
 			    || vim_strchr(eap->arg, '~') != NULL)
 		    {
-			expand_env_esc(eap->arg, NameBuff, MAXPATHL, TRUE);
+			expand_env_esc(eap->arg, NameBuff, MAXPATHL,
+								 TRUE, NULL);
 			has_wildcards = mch_has_wildcard(NameBuff);
 			p = NameBuff;
 		    }

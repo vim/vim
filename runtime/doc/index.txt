@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 7.0aa.  Last change: 2005 Jun 23
+*index.txt*     For Vim version 7.0aa.  Last change: 2005 Jun 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1359,6 +1359,7 @@ The commands are sorted on the non-optional part of their name.
 |:source|	:so[urce]	read Vim or Ex commands from a file
 |:spelldump|	:spelld[ump]	split window and fill with all correct words
 |:spellgood|	:spe[llgood]	add good word for spelling
+|:spellrepall|	:spellr[epall]	replace all bad words like last |z?|
 |:spellwrong|	:spellw[rong]	add spelling mistake
 |:split|	:sp[lit]	split current window
 |:sprevious|	:spr[evious]	split window and go to previous file in the

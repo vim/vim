@@ -24,16 +24,19 @@ Most code can be found in a file with an obvious name (incomplete list):
 	fold.c		folding
 	getchar.c	getting characters and key mapping
 	mark.c		marks
+	mbyte.c		multy-byte character handling
 	memfile.c	storing lines for buffers in a swapfile
 	memline.c	storing lines for buffers in memory
 	menu.c		menus
 	message.c	(error) messages
-	mbyte.c		multy-byte character handling
 	ops.c		handling operators ("d", "y", "p")
 	option.c	options
 	quickfix.c	quickfix commands (":make", ":cn")
+	regexp.c	pattern matching
 	screen.c	updating the windows
 	search.c	pattern searching
+	spell.c		spell checking
+	syntax.c	syntax and other highlighting
 	tag.c		tags
 	term.c		terminal handling, termcap codes
 	undo.c		undo and redo
