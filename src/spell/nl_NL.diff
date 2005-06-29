@@ -1,12 +1,15 @@
 *** nl_NL.orig.aff	Wed Apr 20 11:48:16 2005
---- nl_NL.aff	Mon Jun 27 22:07:02 2005
+--- nl_NL.aff	Wed Jun 29 17:29:49 2005
 ***************
 *** 3,4 ****
---- 3,14 ----
+--- 3,17 ----
   
 + FOL  àáâãäåæçèéêëìíîïğñòóôõöøùúûüışßÿ
 + LOW  àáâãäåæçèéêëìíîïğñòóôõöøùúûüışßÿ
 + UPP  ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏĞÑÒÓÔÕÖØÙÚÛÜİŞßÿ
++ 
++ SOFOFROM abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZàáâãäåæçèéêëìíîïğñòóôõöøùúûüışßÿÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏĞÑÒÓÔÕÖØÙÚÛÜİŞ¿
++ SOFOTO   ebctefghejklnnepkrstevvkesebctefghejklnnepkrstevvkeseeeeeeeceeeeeeeedneeeeeeeeeeepseeeeeeeeceeeeeeeedneeeeeeeeeeep?
 + 
 + MIDWORD	'-
 + 
@@ -37,7 +40,7 @@
 ! SFX J 0 je [aeiou][bcdfgkpt] 
 ! SFX J 0 jes [aeiou][bcdfgkpt] 
   
---- 43,62 ----
+--- 46,65 ----
   SFX J N 18
 ! SFX J 0 tje [aeiou][aeiou]
 ! SFX J 0 tjes [aeiou][aeiou]
@@ -63,7 +66,7 @@
   REP ubi ibu
 ! REP croc krok 
   REP ten than
---- 263,265 ----
+--- 266,268 ----
   REP ubi ibu
 ! REP croc krok
   REP ten than
@@ -72,7 +75,7 @@
   REP capucino cappuccino
 ! REP celcius Celsius 
   REP kado cadeau
---- 298,300 ----
+--- 301,303 ----
   REP capucino cappuccino
 ! REP celcius Celsius
   REP kado cadeau
@@ -85,7 +88,7 @@
   REP kommittee comité
 ! REP kwis quiz 
   REP kwissen quizzen
---- 304,310 ----
+--- 307,313 ----
   REP committee comité
 ! REP komitee comité
 ! REP komittee comité
@@ -98,7 +101,7 @@
   REP copy kopij
 ! REP pitoresque pittoreske 
   REP reikweite reikwijdte
---- 312,314 ----
+--- 315,317 ----
   REP copy kopij
 ! REP pitoresque pittoreske
   REP reikweite reikwijdte
@@ -110,7 +113,7 @@
 ! REP kontekst context 
 ! REP korrekt correct 
   REP kritikus criticus
---- 324,329 ----
+--- 327,332 ----
   REP klup club
 ! REP wiskid whizzkid
 ! REP kontakt contact
@@ -119,7 +122,7 @@
   REP kritikus criticus
 ***************
 *** 333 ****
---- 343,466 ----
+--- 346,359 ----
   REP aflassen afgelasten
 + REP svp s.v.p.
 + REP zoz z.o.z.
@@ -134,116 +137,6 @@
 + MAP cç
 + MAP yÿı
 + MAP sß
-+ 
-+ # This comes from Aspell en_phonet.dat, version 1.1, 2000-01-07
-+ 
-+ SAL AH(AEIOUY)-^         *H
-+ SAL AR(AEIOUY)-^         *R
-+ SAL A(HR)^               *
-+ SAL A^                   *
-+ SAL AH(AEIOUY)-          H
-+ SAL AR(AEIOUY)-          R
-+ SAL A(HR)                _
-+ SAL À^                   *
-+ SAL Å^                   *
-+ SAL BB-                  _
-+ SAL B                    B
-+ SAL CQ-                  _
-+ SAL CIA                  X
-+ SAL CH                   X
-+ SAL C(EIY)-              S
-+ SAL CK                   K
-+ SAL COUGH^               KF
-+ SAL CC<                  C
-+ SAL C                    K
-+ SAL DG(EIY)              K
-+ SAL DD-                  _
-+ SAL D                    T
-+ SAL É<                   E
-+ SAL EH(AEIOUY)-^         *H
-+ SAL ER(AEIOUY)-^         *R
-+ SAL E(HR)^               *
-+ SAL ENOUGH^$             *NF
-+ SAL E^                   *
-+ SAL EH(AEIOUY)-          H
-+ SAL ER(AEIOUY)-          R
-+ SAL E(HR)                _
-+ SAL FF-                  _
-+ SAL F                    F
-+ SAL GN^                  N
-+ SAL GN$                  N
-+ SAL GNS$                 NS
-+ SAL GNED$                N
-+ SAL GH(AEIOUY)-          K
-+ SAL GH                   _
-+ SAL GG9                  K
-+ SAL G                    K
-+ SAL H                    H
-+ SAL IH(AEIOUY)-^         *H
-+ SAL IR(AEIOUY)-^         *R
-+ SAL I(HR)^               *
-+ SAL I^                   *
-+ SAL ING6                 N
-+ SAL IH(AEIOUY)-          H
-+ SAL IR(AEIOUY)-          R
-+ SAL I(HR)                _
-+ SAL J                    K
-+ SAL KN^                  N
-+ SAL KK-                  _
-+ SAL K                    K
-+ SAL LAUGH^               LF
-+ SAL LL-                  _
-+ SAL L                    L
-+ SAL MB$                  M
-+ SAL MM                   M
-+ SAL M                    M
-+ SAL NN-                  _
-+ SAL N                    N
-+ SAL OH(AEIOUY)-^         *H
-+ SAL OR(AEIOUY)-^         *R
-+ SAL O(HR)^               *
-+ SAL O^                   *
-+ SAL OH(AEIOUY)-          H
-+ SAL OR(AEIOUY)-          R
-+ SAL O(HR)                _
-+ SAL PH                   F
-+ SAL PN^                  N
-+ SAL PP-                  _
-+ SAL P                    P
-+ SAL Q                    K
-+ SAL RH^                  R
-+ SAL ROUGH^               RF
-+ SAL RR-                  _
-+ SAL R                    R
-+ SAL SCH(EOU)-            SK
-+ SAL SC(IEY)-             S
-+ SAL SH                   X
-+ SAL SI(AO)-              X
-+ SAL SS-                  _
-+ SAL S                    S
-+ SAL TI(AO)-              X
-+ SAL TH                   @
-+ SAL TCH--                _
-+ SAL TOUGH^               TF
-+ SAL TT-                  _
-+ SAL T                    T
-+ SAL UH(AEIOUY)-^         *H
-+ SAL UR(AEIOUY)-^         *R
-+ SAL U(HR)^               *
-+ SAL U^                   *
-+ SAL UH(AEIOUY)-          H
-+ SAL UR(AEIOUY)-          R
-+ SAL U(HR)                _
-+ SAL V^                   W
-+ SAL V                    F
-+ SAL WR^                  R
-+ SAL WH^                  W
-+ SAL W(AEIOU)-            W
-+ SAL X^                   S
-+ SAL X                    KS
-+ SAL Y(AEIOU)-            Y
-+ SAL ZZ-                  _
-+ SAL Z                    S
 *** nl_NL.orig.dic	Tue Apr 19 21:03:15 2005
 --- nl_NL.dic	Mon Jun 27 20:38:35 2005
 ***************

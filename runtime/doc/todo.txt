@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 28
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,8 +29,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
-
-send fixes for ccmalloc port to FreeBSD.
 
 Add extra list of file locations.  Can be used with:
     :ltag	      list of matching tags, like :tselect
@@ -99,13 +97,9 @@ Awaiting response:
 PLANNED FOR VERSION 7.0:
 
 -   Add SPELLCHECKER, with support for many languages.
-    - Spell checking code todo's:
-	- Code for making suggestions:
-	  - Hebrew: also use prefixes for suggestions.  See message from
-	    Kaminsky (June 20) for ideas.
-	  - Simple and fast sound-a-like: mapping list for first char and rest
-		    vowel as first char: *
-		    remove other vowels
+  - Spell checking code todo's:
+    - Dutch: badword "voorjaarsconferentie"; "najaarsconferentie" gets zero
+      soundfold score.
     - Proofread and cleanup spell help.
     - Use "engspchk" from Charles Campbell for ideas (commands, rare words).
     - Make "en-rare" spell file?  Ask Charles Campbell.

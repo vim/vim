@@ -1,27 +1,21 @@
 " Vim indent file
-" Language:	    Tcl
-" Maintainer:	    Nikolai Weibull <source@pcppopper.org>
-" URL:		    http://www.pcppopper.org/vim/indent/pcp/tcl/
-" Latest Revision:  2004-05-21
-" arch-tag:	    64fab1fa-d670-40ab-a191-55678f20ceb0
+" Language:         Tcl
+" Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
+" Latest Revision:  2005-06-29
 
-" only load this indent file when no other was loaded.
 if exists("b:did_indent")
   finish
 endif
-
 let b:did_indent = 1
 
 setlocal indentexpr=GetTclIndent()
-setlocal indentkeys-=:,0#
-setlocal indentkeys+=0]
+setlocal indentkeys=0{,0},!^F,o,O,0]
 
-" only define the function once.
 if exists("*GetTclIndent")
   finish
 endif
 
-function s:PrevNonBlankNonComment(lnum)
+function s:prevnonblanknoncomment(lnum)
   let lnum = prevnonblank(a:lnum)
   while lnum > 0
     let line = getline(lnum)
@@ -33,91 +27,44 @@ function s:PrevNonBlankNonComment(lnum)
   return lnum
 endfunction
 
-function! GetTclIndent()
-  let lnum = s:PrevNonBlankNonComment(v:lnum - 1)
+function s:count_braces(lnum, count_open)
+  let n_open = 0
+  let n_close = 0
+  let line = getline(a:lnum)
+  let pattern = '\\\@<![{}]'
+  let i = match(line, pattern)
+  while i != -1
+    if synIDattr(synID(a:lnum, i + 1, 1), 'name') !~ 'tcl\%(Comment\|String\)'
+      if line[i] == '{'
+        let n_open += 1
+      elseif line[i] == '}'
+        if n_open > 0
+          let n_open -= 1
+        else
+          let n_close += 1
+        endif
+      endif
+    endif
+    let i = match(line, pattern, i + 1)
+  endwhile
+  return a:count_open ? n_open : n_close
+endfunction
 
-  if lnum == 0
+function GetTclIndent()
+  let pnum = s:prevnonblanknoncomment(v:lnum - 1)
+  if pnum == 0
     return 0
   endif
 
-  let line = getline(lnum)
-  let ind = indent(lnum)
+  let ind = indent(pnum) + s:count_braces(pnum, 1) * &sw
+  if getline(pnum) =~ '\\$'
+    let ind += &sw
+  endif
 
-  " TODO: Possible improvement, check that 'begin' and 'end' aren't inside a
-  " comment or string.  This will mess it up.  As I am pressed for time and
-  " stuff like this is unlikely to happen I won't deal with it in this
-  " version.
-  let open = 0
-  let begin = match(line, '{', 0)
-  while begin > -1
-    let end = match(line, '}', begin + 1)
-    if end < 0
-      let open = open + 1
-    else
-      let tmp = match(line, '{', begin + 1)
-      if tmp != -1 && tmp < end
-	let open = open + 1
-      endif
-    endif
-    let begin = match(line, '{', begin + 1)
-  endwhile
+  let pnum = s:prevnonblanknoncomment(pnum - 1)
+  if pnum > 0 && getline(pnum) =~ '\\$'
+    let ind -= &sw
+  endif
 
-  let begin = match(line, '[', 0)
-  while begin > -1
-    let end = match(line, ']', begin + 1)
-    if end < 0
-      let open = open + 1
-    else
-      let tmp = match(line, '{', begin + 1)
-      if tmp != -1 && tmp < end
-	let open = open + 1
-      endif
-    endif
-    let begin = match(line, '{', begin + 1)
-  endwhile
-
-  let close = 0
-  let prev = 0
-  let end = matchend(line, '^\s*}.*}', prev)
-  while end > -1
-    let begin = match(line, '{', prev + 1)
-    if begin < 0 || begin > prev
-      let close = close + 1
-    endif
-    let prev = end
-    let end = match(line, '}', prev + 1)
-  endwhile
-
-  let prev = 0
-  let end = match(line, ']', prev)
-  while end > -1
-    let begin = match(line, '[', prev + 1)
-    if begin < 0 || begin > prev
-      let close = close + 1
-    endif
-    let prev = end
-    let end = match(line, ']', prev + 1)
-  endwhile
-
-  let ind = ind + (open - close) * &sw
-
-  let line = getline(v:lnum)
-
-  let close = 0
-  let prev = 0
-  let end = match(line, '}', prev)
-  while end > -1
-    let begin = match(line, '{', prev + 1)
-    if begin < 0 || begin > prev
-      let close = close + 1
-    endif
-    let prev = end
-    let end = match(line, '}', prev + 1)
-  endwhile
-
-  let ind = ind - close * &sw
-
-  return ind >= 0 ? ind : 0
+  return ind - s:count_braces(v:lnum, 0) * &sw
 endfunction
-
-" vim: set sts=2 sw=2:

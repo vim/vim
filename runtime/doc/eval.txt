@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 28
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -3781,8 +3781,8 @@ sort({list} [, {func}])					*sort()* *E702*
 soundfold({word})
 		Return the sound-folded equivalent of {word}.  Uses the first
 		language in 'spellang' for the current window that supports
-		soundfolding.  When no sound folding is possible the {word}
-		is returned unmodified.
+		soundfolding.  'spell' must be set.  When no sound folding is
+		possible the {word} is returned unmodified.
 		This can be used for making spelling suggestions.  Note that
 		the method can be quite slow.
 
@@ -3808,8 +3808,8 @@ spellsuggest({word} [, {max}])
 		first entry, thus this can be used to check spelling.
 
 		The spelling information for the current window is used.  The
-		'spell' option must be set and the value of 'spelllang' is
-		used.
+		'spell' option must be set and the values of 'spelllang' and
+		'spellsuggest' are used.
 
 
 split({expr} [, {pattern} [, {keepempty}]])			*split()*

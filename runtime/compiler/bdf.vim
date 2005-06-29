@@ -1,16 +1,14 @@
 " Vim compiler file
-" Compiler:	    BDF to PCF Conversion
-" Maintainer:	    Nikolai Weibull <sourc@pcppopper.org>
-" URL:		    http://www.pcppopper.org/vim/compiler/pcp/bdf/
-" Latest Revision:  2004-05-22
-" arch-tag:	    2e2f3a55-199b-468c-aa2e-d6b1a7b87806
+" Compiler:         BDF to PCF Conversion
+" Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
+" Latest Revision:  2005-06-29
 
 if exists("current_compiler")
   finish
 endif
 let current_compiler = "bdf"
 
-if exists(":CompilerSet") != 2          " older Vim always used :setlocal
+if exists(":CompilerSet") != 2
   command -nargs=* CompilerSet setlocal <args>
 endif
 
@@ -26,5 +24,3 @@ CompilerSet errorformat=%ABDF\ %trror\ on\ line\ %l:\ %m,
 
 let &cpo = s:cpo_save
 unlet s:cpo_save
-
-" vim: set sts=2 sw=2:

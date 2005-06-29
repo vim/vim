@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 28
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -706,7 +706,8 @@ Example:
 	SAL C                    K ~
 	SAL K                    K ~
 
-TODO: explain how it works.
+An explantion how it works can be found in the Aspell manual:
+http://aspell.net/man-html/Phonetic-Code.html.
 
 There are a few special items:
 
@@ -715,5 +716,33 @@ There are a few special items:
 	SAL remove_accents	true ~
 
 "1" has the same meaning as "true".  Any other value means "false".
+
+
+SIMPLE SOUNDFOLDING		*spell-affix-SOFOFROM* *spell-affix-SOFOTO*
+
+The SAL mechanism is complex and slow.  A simpler mechanism is mapping all
+characters to another character, mapping similar sounding characters to the
+same character.  At the same time this does case folding.  You can not have
+SAL items at the same time.
+
+There are two items required: one to speficy the characters that are mapped
+and one that specifies the characters they are mapped to.  They must have
+exactly the same number of characters.  Example:
+
+    SOFOFROM abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ~
+    SOFOTO   ebctefghejklnnepkrstevvkesebctefghejklnnepkrstevvkes ~
+
+In the example all vowels are mapped to the same character 'e'.  Another
+method is to leave out all vowels.  Some characters that sound nearly the same
+and are often mixed up, such as 'm' and 'n', are mapped to the same character.
+Don't do this too much, all words will start looking alike.
+
+Characters that do not appear in SOFOFROM will be left out, except that all
+white space is replaced by one space.  Sequences of the same character in
+SOFOFROM are replaced by one.
+
+You can use the |soundfold()| function to try out the results.  Or set the
+'verbose' option to see the score in the output of the |z?| command.
+
 
  vim:tw=78:sw=4:ts=8:ft=help:norl:

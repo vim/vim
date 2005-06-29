@@ -1,72 +1,51 @@
 " Vim syntax file
-" Language:	    ALSA configuration file
-" Maintainer:	    Nikolai Weibull <source@pcppopper.org>
-" URL:		    http://www.pcppopper.org/
-" Latest Revision:  2004-09-10
-" arch-tag:	    3e06fe53-28d5-44a1-871d-279f22e7aed4
+" Language:         alsaconf(8) configuration file
+" Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
+" Latest Revision:  2005-06-29
 
-if version < 600
-  syntax clear
-elseif exists("b:current_syntax")
+if exists("b:current_syntax")
   finish
 endif
 
-" todo
-syn keyword alsoconfTodo      contained FIXME TODO XXX NOTE
+let s:cpo_save = &cpo
+set cpo&vim
 
-" comments
-syn region  alsaconfComment   matchgroup=alsaconfComment start="#" end="$"
-			      \ contains=alsaconfTodo
+syn keyword alsoconfTodo        contained FIXME TODO XXX NOTE
 
-" special characters
-syn match   alsaconfSpecialChar	contained "\\[ntvbrf]"
-syn match   alsaconfSpecialChar	contained "\\\o\+"
+syn region  alsaconfComment     matchgroup=alsaconfComment
+                                \ start='#' end='$'
+                                \ contains=alsaconfTodo,@Spell
 
-" strings
-syn region  alsaconfString    matchgroup=alsaconfString start=+"+ skip=+\\$+
-			      \ end=+"+ end=+$+ contains=alsaconfSpecialChar
+syn match   alsaconfSpecialChar contained display '\\[ntvbrf]'
+syn match   alsaconfSpecialChar contained display '\\\o\+'
 
-" preprocessor special
-syn match   alsaconfSpecial   contained "confdir:"
+syn region  alsaconfString      matchgroup=alsaconfString
+                                \ start=+"+ skip=+\\$+ end=+"+ end=+$+
+                                \ contains=alsaconfSpecialChar
 
-" preprocessor
-syn region  alsaconfPreProc   matchgroup=alsaconfPreProc start="<" end=">"
-			      \ contains=alsaconfSpecial
+syn match   alsaconfSpecial     contained display 'confdir:'
 
-" modes
-syn match   alsaconfMode      "[+?!-]"
+syn region  alsaconfPreProc     matchgroup=alsaconfPreProc start='<' end='>'
+                                \ contains=alsaconfSpecial
 
-" keywords
-syn keyword alsaconfKeyword   card default device errors files func strings
-syn keyword alsaconfKeyword   subdevice type vars
+syn match   alsaconfMode        display '[+?!-]'
 
-" variables
-syn match   alsaconfVariables "@\(hooks\|func\|args\)"
+syn keyword alsaconfKeyword     card default device errors files func strings
+syn keyword alsaconfKeyword     subdevice type vars
 
-" Define the default highlighting.
-" For version 5.7 and earlier: only when not done already
-" For version 5.8 and later: only when an item doesn't have highlighting yet
-if version >= 508 || !exists("did_alsaconf_syn_inits")
-  if version < 508
-    let did_dircolors_syn_inits = 1
-    command -nargs=+ HiLink hi link <args>
-  else
-    command -nargs=+ HiLink hi def link <args>
-  endif
+syn match   alsaconfVariables   display '@\(hooks\|func\|args\)'
 
-  HiLink alsoconfTodo	      Todo
-  HiLink alsaconfComment      Comment
-  HiLink alsaconfSpecialChar  SpecialChar
-  HiLink alsaconfString	      String
-  HiLink alsaconfSpecial      Special
-  HiLink alsaconfPreProc      PreProc
-  HiLink alsaconfMode	      Special
-  HiLink alsaconfKeyword      Keyword
-  HiLink alsaconfVariables    Identifier
-
-  delcommand HiLink
-endif
+hi def link alsoconfTodo        Todo
+hi def link alsaconfComment     Comment
+hi def link alsaconfSpecialChar SpecialChar
+hi def link alsaconfString      String
+hi def link alsaconfSpecial     Special
+hi def link alsaconfPreProc     PreProc
+hi def link alsaconfMode        Special
+hi def link alsaconfKeyword     Keyword
+hi def link alsaconfVariables   Identifier
 
 let b:current_syntax = "alsaconf"
 
-" vim: set sts=2 sw=2:
+let &cpo = s:cpo_save
+unlet s:cpo_save

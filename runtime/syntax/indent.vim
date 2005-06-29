@@ -1,101 +1,178 @@
 " Vim syntax file
-" Language:	    indent RC File
-" Maintainer:	    Nikolai Weibull <source@pcppopper.org>
-" URL:		    http://www.pcppopper.org/vim/syntax/pcp/indent/
-" Latest Revision:  2004-05-22
-" arch-tag:	    23c11190-79fa-4493-9fc5-36435402a20d
+" Language:         indent(1) configuration file
+" Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
+" Latest Revision:  2005-06-29
+"   indent_is_bsd:  If exists, will change somewhat to match BSD implementation
+"
 " TODO: is the deny-all (a la lilo.vim nice or no?)...
-"	irritating to be wrong to the last char...
-"	would be sweet if right until one char fails
+"       irritating to be wrong to the last char...
+"       would be sweet if right until one char fails
 
-if version < 600
-  syntax clear
-elseif exists("b:current_syntax")
+if exists("b:current_syntax")
   finish
 endif
 
-" Set iskeyword since we need `-' (and potentially others) in keywords.
-" For version 5.x: Set it globally
-" For version 6.x: Set it locally
-if version >= 600
-  command -nargs=1 SetIsk setlocal iskeyword=<args>
-else
-  command -nargs=1 SetIsk set iskeyword=<args>
+let s:cpo_save = &cpo
+set cpo&vim
+
+setlocal iskeyword=@,48-57,-,_
+
+syn match   indentError   '\S\+'
+
+syn keyword indentTodo    contained TODO FIXME XXX NOTE
+
+syn region  indentComment matchgroup=indentComment
+                          \ start='/\*' end='\*/'
+                          \ contains=indentTodo,@Spell
+syn region  indentComment matchgroup=indentComment
+                          \ start='//' skip='\\$' end='$'
+                          \ contains=indentTodo,@Spell
+
+syn keyword indentOptions -bacc --blank-lines-after-ifdefs
+                        \ -bad --blank-lines-after-declarations
+                        \ -badp --blank-lines-after-procedure-declarations
+                        \ -bap --blank-lines-after-procedures
+                        \ -bbb --blank-lines-before-block-comments
+                        \ -bbo --break-before-boolean-operator
+                        \ -bc --blank-lines-after-commas
+                        \ -bfda --break-function-decl-args
+                        \ -bfde --break-function-decl-args-end
+                        \ -bl --braces-after-if-line
+                        \ -blf --braces-after-func-def-line
+                        \ -bls --braces-after-struct-decl-line
+                        \ -br --braces-on-if-line
+                        \ -brf --braces-on-func-def-line
+                        \ -brs --braces-on-struct-decl-line
+                        \ -bs --Bill-Shannon
+                        \ -bs --blank-before-sizeof
+                        \ -c++ --c-plus-plus
+                        \ -cdb --comment-delimiters-on-blank-lines
+                        \ -cdw --cuddle-do-while
+                        \ -ce --cuddle-else
+                        \ -cs --space-after-cast
+                        \ -dj --left-justify-declarations
+                        \ -eei --extra-expression-indentation
+                        \ -fc1 --format-first-column-comments
+                        \ -fca --format-all-comments
+                        \ -gnu --gnu-style
+                        \ -h --help
+                        \ -h --usage
+                        \ -hnl --honour-newlines
+                        \ -kr --k-and-r-style
+                        \ -kr --kernighan-and-ritchie
+                        \ -kr --kernighan-and-ritchie-style
+                        \ -lp --continue-at-parentheses
+                        \ -lps --leave-preprocessor-space
+                        \ -nbacc --no-blank-lines-after-ifdefs
+                        \ -nbad --no-blank-lines-after-declarations
+                        \ -nbadp --no-blank-lines-after-procedure-declarations
+                        \ -nbap --no-blank-lines-after-procedures
+                        \ -nbbb --no-blank-lines-before-block-comments
+                        \ -nbbo --break-after-boolean-operator
+                        \ -nbc --no-blank-lines-after-commas
+                        \ -nbfda --dont-break-function-decl-args
+                        \ -nbfde --dont-break-function-decl-args-end
+                        \ -nbs --no-Bill-Shannon
+                        \ -nbs --no-blank-before-sizeof
+                        \ -ncdb --no-comment-delimiters-on-blank-lines
+                        \ -ncdw --dont-cuddle-do-while
+                        \ -nce --dont-cuddle-else
+                        \ -ncs --no-space-after-casts
+                        \ -ndj --dont-left-justify-declarations
+                        \ -neei --no-extra-expression-indentation
+                        \ -nfc1 --dont-format-first-column-comments
+                        \ -nfca --dont-format-comments
+                        \ -nhnl --ignore-newlines
+                        \ -nip --dont-indent-parameters
+                        \ -nip --no-parameter-indentation
+                        \ -nlp --dont-line-up-parentheses
+                        \ -nlps --remove-preprocessor-space
+                        \ -npcs --no-space-after-function-call-names
+                        \ -npro --ignore-profile
+                        \ -nprs --no-space-after-parentheses
+                        \ -npsl --dont-break-procedure-type
+                        \ -nsaf --no-space-after-for
+                        \ -nsai --no-space-after-if
+                        \ -nsaw --no-space-after-while
+                        \ -nsc --dont-star-comments
+                        \ -nsob --leave-optional-blank-lines
+                        \ -nss --dont-space-special-semicolon
+                        \ -nut --no-tabs
+                        \ -nv --no-verbosity
+                        \ -o --output
+                        \ -o --output-file
+                        \ -orig --berkeley
+                        \ -orig --berkeley-style
+                        \ -orig --original
+                        \ -orig --original-style
+                        \ -pcs --space-after-procedure-calls
+                        \ -pmt --preserve-mtime
+                        \ -prs --space-after-parentheses
+                        \ -psl --procnames-start-lines
+                        \ -saf --space-after-for
+                        \ -sai --space-after-if
+                        \ -saw --space-after-while
+                        \ -sc --start-left-side-of-comments
+                        \ -sob --swallow-optional-blank-lines
+                        \ -ss --space-special-semicolon
+                        \ -st --standard-output
+                        \ -ut --use-tabs
+                        \ -v --verbose
+                        \ -version --version
+
+syn keyword indentOptions -bli --brace-indent
+                        \ -c --comment-indentation
+                        \ -bli --brace-indent
+                        \ -c --comment-indentation
+                        \ -cbi --case-brace-indentation
+                        \ -cd --declaration-comment-column
+                        \ -ci --continuation-indentation
+                        \ -cli --case-indentation
+                        \ -cp --else-endif-column
+                        \ -d --line-comments-indentation
+                        \ -di --declaration-indentation
+                        \ -i --indent-level
+                        \ -ip --parameter-indentation
+                        \ -l --line-length
+                        \ -lc --comment-line-length
+                        \ -pi --paren-indentation
+                        \ -ppi --preprocessor-indentation
+                        \ -sbi --struct-brace-indentation
+                        \ -ts --tab-size
+                        \ nextgroup=indenNumber skipwhite
+if !exists("indent_is_bsd")
+  syn keyword indentOptions -i --indentation-level
+                          \ nextgroup=indentNumber skipwhite
 endif
-SetIsk 48-57,65-90,97-122,-,_
-delcommand SetIsk
 
-" errors
-syn match   indentError "\S\+"
+syn match   indentNumber  display '\<\d\+\>'
 
-" todo
-syn keyword indentTodo contained TODO FIXME XXX NOTE
+syn keyword indentOptions -T nextgroup=indentIdent skipwhite
 
-" comments
-syn region  indentComment matchgroup=indentComment start="/\*" end="\*/" contains=indentTodo
+syn match   indentIdent   display '\<\h\w*\>'
 
-" keywords (command-line switches)
-syn match   indentOptions "\<--\(no-\)\=blank-\(before-sizeof\|Bill-Shannon\|lines-\(after-\(commas\|declarations\|procedures\)\|before-block-comments\)\)\>"
-syn match   indentOptions "\<--brace-indent\s*\d\+\>"
-syn match   indentOptions "\<--braces-\(after\|on\)-\(if\|struct-decl\)-line\>"
-syn match   indentOptions "\<--break-\(\(after\|before\)-boolean-operator\|function-decl-args\)\>"
-syn match   indentOptions "\<--\(case\(-brace\)\=\|comment\|continuation\|declaration\|line-comments\|parameter\|paren\|struct-brace\)-indentation\s*\d\+\>"
-syn match   indentOptions "\<--\(no-\)\=comment-delimiters-on-blank-lines\>"
-syn match   indentOptions "\<--\(dont-\)\=cuddle-\(do-while\|else\)\>"
-syn match   indentOptions "\<--\(declaration-comment\|else-endif\)-column\s*\d\+\>"
-syn match   indentOptions "\<--dont-break-\(function-decl-args\|procedure-type\)\>"
-syn match   indentOptions "\<--\(dont-\)\=\(format\(-first-column\)\=\|star\)-comments\>"
-syn match   indentOptions "\<--\(honour\|ignore\)-newlines\>"
-syn match   indentOptions "\<--\(indent-level\|\(comment-\)\=line-length\)\s*\d\+\>"
-syn match   indentOptions "\<--\(leave\|remove\)-preprocessor-space\>"
-"not 100%, since casts\= should always be cast if no- isn't given
-syn match   indentOptions "\<--\(no-\)\=space-after-\(parentheses\|casts\=\|for\|if\|while\)\>"
-syn match   indentOptions "\<--\(dont-\)\=space-special-semicolon\>"
-syn match   indentOptions "\<--\(leave\|swallow\)-optional-blank-lines\>"
-syn match   indentOptions "\<--tab-size\s*\d\+\>"
-syn match   indentOptions "\<--\(no\|use\)-tabs\>"
-syn keyword indentOptions --gnu-style --ignore-profile --k-and-r-style --original
-syn keyword indentOptions --preserve-mtime --no-verbosity --verbose --output-file
-syn keyword indentOptions --no-parameter-indentation --procnames-start-lines
-syn keyword indentOptions --standard-output --start-left-side-of-comments
-syn keyword indentOptions --space-after-procedure-calls
-" this also here since the gnu indent fellas aren't consistent. (ever read
-" the code to `indent'? you'll know what i mean if you have)
-syn match   indentOptions "\<-\(bli\|cbi\|cd\|ci\|cli\|c\|cp\|di\|d\|i\|ip\|l\|lc\|pi\|sbi\|ts\)\s*\d\+\>"
-syn match   indentOptions "\<-T\s\+\w\+\>"
-syn keyword indentOptions --format-all-comments --continue-at-parentheses --dont-line-up-parentheses
-syn keyword indentOptions --no-space-after-function-call-names
-syn keyword indentOptions -bad -bap -bbb -bbo -bc -bfda -bl -br -bs -nbs -cdb -cdw -ce -cs -dce -fc1 -fca
-syn keyword indentOptions -gnu -hnl -kr -lp -lps -nbad -nbap -nbbb -nbbo -nbc -nbfda -ncdb -ncdw -nprs
-syn keyword indentOptions -nce -ncs -nfc1 -nfca -nhnl -nip -nlp -nlps -npcs -npmt -npro -npsl -nsaf -nsai
-syn keyword indentOptions -nsaw -nsc -nsob -nss -nv -o -orig -pcs -pmt -prs -psl -saf -sai -saw -sc
-syn keyword indentOptions -sob -ss -st -v -version -bls -brs -ut -nut
-
-if exists("indent_minlines")
-    let b:indent_minlines = indent_minlines
-else
-    let b:indent_minlines = 50
+if exists("indent_is_bsd")
+  syn keyword indentOptions -ip -nip -dj -ndj -ei -nei
 endif
-exec "syn sync minlines=" . b:indent_minlines
 
-" Define the default highlighting.
-" For version 5.7 and earlier: only when not done already
-" For version 5.8 and later: only when an item doesn't have highlighting yet
-if version >= 508 || !exists("did_indent_syn_inits")
-  if version < 508
-    let did_indent_syn_inits = 1
-    command -nargs=+ HiLink hi link <args>
+if exists("c_minlines")
+  let b:c_minlines = c_minlines
+else
+  if !exists("c_no_if0")
+    let b:c_minlines = 50       " #if 0 constructs can be long
   else
-    command -nargs=+ HiLink hi def link <args>
+    let b:c_minlines = 15       " mostly for () constructs
   endif
-
-  HiLink indentError	Error
-  HiLink indentComment	Comment
-  HiLink indentTodo	Todo
-  HiLink indentOptions	Keyword
-  delcommand HiLink
 endif
+
+hi def link indentError   Error
+hi def link indentComment Comment
+hi def link indentTodo    Todo
+hi def link indentOptions Keyword
+hi def link indentNumber  Number
+hi def link indentIdent   Identifier
 
 let b:current_syntax = "indent"
 
-" vim: set sts=2 sw=2:
+let &cpo = s:cpo_save
+unlet s:cpo_save

@@ -1,21 +1,16 @@
 " Vim indent file
-" Language:	    Makefile
-" Maintainer:	    Nikolai Weibull <source@pcppopper.org>
-" URL:		    http://www.pcppopper.org/vim/indent/pcp/make/
-" Latest Revision:  2004-04-25
-" arch-tag:	    b539e147-a05c-4860-98af-1d2436db2f4b
+" Language:         Makefile
+" Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
+" Latest Revision:  2005-06-29
 
-" Only load this indent file when no other was loaded.
 if exists("b:did_indent")
   finish
 endif
-
 let b:did_indent = 1
 
 setlocal indentexpr=GetMakeIndent()
 setlocal indentkeys=!^F,o,O
 
-" Only define the function once.
 if exists("*GetMakeIndent")
   finish
 endif
@@ -23,35 +18,28 @@ endif
 function s:GetStringWidth(line, str)
   let end = matchend(a:line, a:str)
   let width = 0
-  let i = 0
-  while i < end
-    if a:line[i] != "\t"
-      let width = width + 1
+  for c in a:line
+    if c == "\t"
+      let width += &ts - (width % &ts)
     else
-      let width = width + &ts - (width % &ts)
+      let width += 1
     endif
-    let i = i + 1
-  endwhile
+  endfor
   return width
 endfunction
 
 function GetMakeIndent()
-  if v:lnum == 1
+  let lnum = v:lnum - 1
+  if lnum == 0
     return 0
   endif
 
-  let ind = indent(v:lnum - 1)
-  let line = getline(v:lnum - 1)
-
+  let line = getline(lnum)
   if line == ''
-    let ind = 0
-  elseif line =~ '^[^ \t#:][^#:]*:\{1,2}\([^=:]\|$\)'
-    let ind = ind + &ts
-  elseif line =~ '^\s*\h\w*\s*=\s*.\+\\$'
-    let ind = s:GetStringWidth(line, '=\s*')
+    return 0
+  elseif line =~ '^[^ \t#:][^#:]*:\{1,2}\%([^=:]\|$\)'
+    return indent(lnum) + &ts
+  elseif line =~ '^\s*\h\w*\s*+\==\s*.\+\\$'
+    return s:GetStringWidth(line, '+\==\s*')
   endif
-
-  return ind
 endfunction
-
-" vim: set sts=2 sw=2:

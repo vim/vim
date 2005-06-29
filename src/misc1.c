@@ -3162,7 +3162,10 @@ prompt_for_number(mouse_used)
     int		save_State;
 
     /* When using ":silent" assume that <CR> was entered. */
-    MSG_PUTS(_("Choice number (<Enter> cancels): "));
+    if (mouse_used != NULL)
+	MSG_PUTS(_("Type number or click with mouse (<Enter> cancels): "));
+    else
+	MSG_PUTS(_("Choice number (<Enter> cancels): "));
 
     /* Set the state such that text can be selected/copied/pasted. */
     save_cmdline_row = cmdline_row;

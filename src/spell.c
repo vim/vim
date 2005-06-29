@@ -134,14 +134,17 @@
  *			    SAL_F0LLOWUP
  *			    SAL_COLLAPSE
  *			    SAL_REM_ACCENTS
+ *			    SAL_SOFO: SOFOFROM and SOFOTO used instead of SAL
+ *
+ * <salcount>   2 bytes	    number of <sal> items following
  *
  * <sal> : <salfromlen> <salfrom> <saltolen> <salto>
  *
- * <salfromlen>	1 byte	    length of <salfrom>
+ * <salfromlen>	1-2 bytes    length of <salfrom> (2 bytes for SAL_SOFO)
  *
  * <salfrom>	N bytes	    "from" part of soundsalike
  *
- * <saltolen>	1 byte	    length of <salto>
+ * <saltolen>	1-2 bytes    length of <salto> (2 bytes for SAL_SOFO)
  *
  * <salto>	N bytes	    "to" part of soundsalike
  *
@@ -267,15 +270,21 @@ typedef struct salitem_S
 {
     char_u	*sm_lead;	/* leading letters */
     int		sm_leadlen;	/* length of "sm_lead" */
-    char_u	*sm_oneoff;	/* letters from () or NULL */
+    char_u	*sm_oneof;	/* letters from () or NULL */
     char_u	*sm_rules;	/* rules like ^, $, priority */
     char_u	*sm_to;		/* replacement. */
 #ifdef FEAT_MBYTE
     int		*sm_lead_w;	/* wide character copy of "sm_lead" */
-    int		*sm_oneoff_w;	/* wide character copy of "sm_oneoff" */
+    int		*sm_oneof_w;	/* wide character copy of "sm_oneof" */
     int		*sm_to_w;	/* wide character copy of "sm_to" */
 #endif
 } salitem_T;
+
+#ifdef FEAT_MBYTE
+typedef int salfirst_T;
+#else
+typedef short salfirst_T;
+#endif
 
 /*
  * Structure used to store words and other info for one language, loaded from
@@ -316,8 +325,11 @@ struct slang_S
     short	sl_rep_first[256];  /* indexes where byte first appears, -1 if
 				       there is none */
     garray_T	sl_sal;		/* list of salitem_T entries from SAL lines */
-    short	sl_sal_first[256];  /* indexes where byte first appears, -1 if
+    salfirst_T	sl_sal_first[256];  /* indexes where byte first appears, -1 if
 				       there is none */
+    int		sl_sofo;	/* SOFOFROM and SOFOTO instead of SAL items:
+				 * "sl_sal_first" maps chars, when has_mbyte
+				 * "sl_sal" is a list of wide char lists. */
     int		sl_followup;	/* SAL followup */
     int		sl_collapse;	/* SAL collapse_result */
     int		sl_rem_accents;	/* SAL remove_accents */
@@ -338,6 +350,7 @@ static slang_T *first_lang = NULL;
 #define SAL_F0LLOWUP		1
 #define SAL_COLLAPSE		2
 #define SAL_REM_ACCENTS		4
+#define SAL_SOFO		8   /* SOFOFROM and SOFOTO instead of SAL */
 
 /*
  * Structure used in "b_langp", filled from 'spelllang'.
@@ -501,6 +514,7 @@ typedef enum
     STATE_START = 0,	/* At start of node check for NUL bytes (goodword
 			 * ends); if badword ends there is a match, otherwise
 			 * try splitting word. */
+    STATE_NOPREFIX,	/* try without prefix */
     STATE_SPLITUNDO,	/* Undo splitting. */
     STATE_ENDNUL,	/* Past NUL bytes at start of the node. */
     STATE_PLAIN,	/* Use each byte of the node. */
@@ -530,6 +544,8 @@ typedef struct trystate_S
     char_u	ts_fidx;	/* index in fword[], case-folded bad word */
     char_u	ts_fidxtry;	/* ts_fidx at which bytes may be changed */
     char_u	ts_twordlen;	/* valid length of tword[] */
+    char_u	ts_prefixdepth;	/* stack depth for end of prefix or PREFIXTREE
+				 * or NOPREFIX */
 #ifdef FEAT_MBYTE
     char_u	ts_tcharlen;	/* number of bytes in tword character */
     char_u	ts_tcharidx;	/* current byte index in tword character */
@@ -545,6 +561,10 @@ typedef struct trystate_S
 #define DIFF_NONE	0	/* no different byte (yet) */
 #define DIFF_YES	1	/* different byte found */
 #define DIFF_INSERT	2	/* inserting character */
+
+/* special values ts_prefixdepth */
+#define PREFIXTREE	0xfe	/* walking through the prefix tree */
+#define NOPREFIX	0xff	/* not using prefixes */
 
 /* mode values for find_word */
 #define FIND_FOLDWORD	0	/* find word case-folded */
@@ -601,9 +621,11 @@ static int was_banned __ARGS((suginfo_T *su, char_u *word));
 static void free_banned __ARGS((suginfo_T *su));
 static void rescore_suggestions __ARGS((suginfo_T *su));
 static int cleanup_suggestions __ARGS((garray_T *gap, int maxscore, int keep));
-static void spell_soundfold __ARGS((slang_T *slang, char_u *inword, char_u *res));
+static void spell_soundfold __ARGS((slang_T *slang, char_u *inword, int folded, char_u *res));
+static void spell_soundfold_sofo __ARGS((slang_T *slang, char_u *inword, char_u *res));
+static void spell_soundfold_sal __ARGS((slang_T *slang, char_u *inword, char_u *res));
 #ifdef FEAT_MBYTE
-static void spell_soundfold_w __ARGS((slang_T *slang, char_u *inword, char_u *res));
+static void spell_soundfold_wsal __ARGS((slang_T *slang, char_u *inword, char_u *res));
 #endif
 static int soundalike_score __ARGS((char_u *goodsound, char_u *badsound));
 static int spell_edit_score __ARGS((char_u *badword, char_u *goodword));
@@ -1107,15 +1129,15 @@ find_prefix(mip)
     char_u	*byts;
     idx_T	*idxs;
 
+    byts = slang->sl_pbyts;
+    if (byts == NULL)
+	return;			/* array is empty */
+
     /* We use the case-folded word here, since prefixes are always
      * case-folded. */
     ptr = mip->mi_fword;
     flen = mip->mi_fwordlen;    /* available case-folded bytes */
-    byts = slang->sl_pbyts;
     idxs = slang->sl_pidxs;
-
-    if (byts == NULL)
-	return;			/* array is empty */
 
     /*
      * Repeat advancing in the tree until:
@@ -1562,12 +1584,24 @@ slang_clear(lp)
     ga_clear(gap);
 
     gap = &lp->sl_sal;
-    while (gap->ga_len > 0)
-    {
-	smp = &((salitem_T *)gap->ga_data)[--gap->ga_len];
-	vim_free(smp->sm_lead);
-	vim_free(smp->sm_to);
-    }
+    if (lp->sl_sofo)
+	/* SOFOFROM and SOFOTO items: free lists of wide characters. */
+	for (i = 0; i < gap->ga_len; ++i)
+	    vim_free(((int **)gap->ga_data)[i]);
+    else
+	/* SAL items: free salitem_T items */
+	while (gap->ga_len > 0)
+	{
+	    smp = &((salitem_T *)gap->ga_data)[--gap->ga_len];
+	    vim_free(smp->sm_lead);
+	    /* Don't free sm_oneof and sm_rules, they point into sm_lead. */
+	    vim_free(smp->sm_to);
+#ifdef FEAT_MBYTE
+	    vim_free(smp->sm_lead_w);
+	    vim_free(smp->sm_oneof_w);
+	    vim_free(smp->sm_to_w);
+#endif
+	}
     ga_clear(gap);
 
     for (i = 0; i < lp->sl_prefixcnt; ++i)
@@ -1638,6 +1672,7 @@ spell_load_file(fname, lang, old_lp, silent)
     salitem_T	*smp;
     int		rr;
     short	*first;
+    salfirst_T	*sfirst;
     idx_T	idx;
     int		c = 0;
 
@@ -1895,150 +1930,281 @@ formerr:
 	lp->sl_collapse = TRUE;
     if (i & SAL_REM_ACCENTS)
 	lp->sl_rem_accents = TRUE;
+    if (i & SAL_SOFO)
+	lp->sl_sofo = TRUE;
 
     cnt = (getc(fd) << 8) + getc(fd);		/* <salcount> */
     if (cnt < 0)
 	goto formerr;
 
-    gap = &lp->sl_sal;
-    if (ga_grow(gap, cnt) == FAIL)
-	goto endFAIL;
-
-    /* <sal> : <salfromlen> <salfrom> <saltolen> <salto> */
-    for (; gap->ga_len < cnt; ++gap->ga_len)
+    if (lp->sl_sofo)
     {
-	smp = &((salitem_T *)gap->ga_data)[gap->ga_len];
-	ccnt = getc(fd);			/* <salfromlen> */
-	if (ccnt < 0)
+	/*
+	 * SOFOFROM and SOFOTO items come in one <salfrom> and <salto>
+	 */
+	if (cnt != 1)
 	    goto formerr;
-	if ((p = alloc(ccnt + 2)) == NULL)
+
+	cnt = (getc(fd) << 8) + getc(fd);		/* <salfromlen> */
+	if (cnt < 0)
+	    goto formerr;
+	if ((bp = alloc(cnt + 1)) == NULL)
 	    goto endFAIL;
-	smp->sm_lead = p;
+	for (i = 0; i < cnt; ++i)
+	    bp[i] = getc(fd);				/* <salfrom> */
+	bp[i] = NUL;
 
-	/* Read up to the first special char into sm_lead. */
-	for (i = 0; i < ccnt; ++i)
+	ccnt = (getc(fd) << 8) + getc(fd);		/* <saltolen> */
+	if (ccnt < 0)
 	{
-	    c = getc(fd);			/* <salfrom> */
-	    if (vim_strchr((char_u *)"0123456789(-<^$", c) != NULL)
-		break;
-	    *p++ = c;
+	    vim_free(bp);
+	    goto formerr;
 	}
-	smp->sm_leadlen = p - smp->sm_lead;
-	*p++ = NUL;
-
-	/* Put optional chars in sm_oneoff, if any. */
-	if (c == '(')
+	if ((fol = alloc(ccnt + 1)) == NULL)
 	{
-	    smp->sm_oneoff = p;
-	    for (++i; i < ccnt; ++i)
+	    vim_free(bp);
+	    goto endFAIL;
+	}
+	for (i = 0; i < ccnt; ++i)
+	    fol[i] = getc(fd);				/* <salto> */
+	fol[i] = NUL;
+
+#ifdef FEAT_MBYTE
+	if (has_mbyte)
+	{
+	    char_u	*s;
+
+	    /* Use "sl_sal" as an array with 256 pointers to a list of wide
+	     * characters.  The index is the low byte of the character.
+	     * The list contains from-to pairs with a terminating NUL.
+	     * sl_sal_first[] is used for latin1 "from" characters. */
+	    gap = &lp->sl_sal;
+	    ga_init2(gap, sizeof(int *), 1);
+	    if (ga_grow(gap, 256) == FAIL)
+	    {
+sofoFAIL:
+		vim_free(bp);
+		vim_free(fol);
+		goto endFAIL;
+	    }
+	    vim_memset(gap->ga_data, 0, sizeof(int *) * 256);
+	    gap->ga_len = 256;
+
+	    /* First count the number of items for each list.  Temporarily use
+	     * sl_sal_first[] for this. */
+	    for (p = bp, s = fol; *p != NUL && *s != NUL; )
+	    {
+		c = mb_ptr2char_adv(&p);
+		mb_ptr_adv(s);
+		if (c >= 256)
+		    ++lp->sl_sal_first[c & 0xff];
+	    }
+	    if (*p != NUL || *s != NUL)	    /* lengths differ */
+		goto sofoerr;
+
+	    /* Allocate the lists. */
+	    for (i = 0; i < 256; ++i)
+		if (lp->sl_sal_first[i] > 0)
+		{
+		    p = alloc(sizeof(int) * (lp->sl_sal_first[i] * 2 + 1));
+		    if (p == NULL)
+			goto sofoFAIL;
+		    ((int **)gap->ga_data)[i] = (int *)p;
+		    *(int *)p = 0;
+		}
+
+	    /* Put the characters in sl_sal_first[] or a sl_sal list. */
+	    vim_memset(lp->sl_sal_first, 0, sizeof(salfirst_T) * 256);
+	    for (p = bp, s = fol; *p != NUL && *s != NUL; )
+	    {
+		c = mb_ptr2char_adv(&p);
+		i = mb_ptr2char_adv(&s);
+		if (c >= 256)
+		{
+		    int	*inp;
+
+		    /* Append the from-to chars at the end of the list with
+		     * the low byte. */
+		    inp = ((int **)gap->ga_data)[c & 0xff];
+		    while (*inp != 0)
+			++inp;
+		    *inp++ = c;		/* from char */
+		    *inp++ = i;		/* to char */
+		    *inp++ = NUL;	/* NUL at the end */
+		}
+		else
+		    /* mapping byte to char is done in sl_sal_first[] */
+		    lp->sl_sal_first[c] = i;
+	    }
+	}
+	else
+#endif
+	{
+	    /* mapping bytes to bytes is done in sl_sal_first[] */
+	    if (cnt != ccnt)
+	    {
+#ifdef FEAT_MBYTE
+sofoerr:
+#endif
+		vim_free(bp);
+		vim_free(fol);
+		goto formerr;
+	    }
+	    for (i = 0; i < cnt; ++i)
+		lp->sl_sal_first[bp[i]] = fol[i];
+	    lp->sl_sal.ga_len = 1;	/* indicates we have soundfolding */
+	}
+	vim_free(bp);
+	vim_free(fol);
+    }
+    else
+    {
+	/*
+	 * SAL items
+	 */
+	gap = &lp->sl_sal;
+	if (ga_grow(gap, cnt) == FAIL)
+	    goto endFAIL;
+
+	/* <sal> : <salfromlen> <salfrom> <saltolen> <salto> */
+	for (; gap->ga_len < cnt; ++gap->ga_len)
+	{
+	    smp = &((salitem_T *)gap->ga_data)[gap->ga_len];
+	    ccnt = getc(fd);			/* <salfromlen> */
+	    if (ccnt < 0)
+		goto formerr;
+	    if ((p = alloc(ccnt + 2)) == NULL)
+		goto endFAIL;
+	    smp->sm_lead = p;
+
+	    /* Read up to the first special char into sm_lead. */
+	    for (i = 0; i < ccnt; ++i)
 	    {
 		c = getc(fd);			/* <salfrom> */
-		if (c == ')')
+		if (vim_strchr((char_u *)"0123456789(-<^$", c) != NULL)
 		    break;
 		*p++ = c;
 	    }
+	    smp->sm_leadlen = p - smp->sm_lead;
 	    *p++ = NUL;
-	    if (++i < ccnt)
-		c = getc(fd);
-	}
-	else
-	    smp->sm_oneoff = NULL;
 
-	/* Any following chars go in sm_rules. */
-	smp->sm_rules = p;
-	if (i < ccnt)
-	    *p++ = c;
-	for (++i; i < ccnt; ++i)
-	    *p++ = getc(fd);			/* <salfrom> */
-	*p++ = NUL;
-
-	ccnt = getc(fd);			/* <saltolen> */
-	if (ccnt < 0)
-	{
-	    vim_free(smp->sm_lead);
-	    goto formerr;
-	}
-	if ((p = alloc(ccnt + 1)) == NULL)
-	{
-	    vim_free(smp->sm_lead);
-	    goto endFAIL;
-	}
-	smp->sm_to = p;
-
-	for (i = 0; i < ccnt; ++i)
-	    *p++ = getc(fd);			/* <salto> */
-	*p++ = NUL;
-
-#ifdef FEAT_MBYTE
-	if (has_mbyte)
-	{
-	    /* convert the multi-byte strings to wide char strings */
-	    smp->sm_lead_w = mb_str2wide(smp->sm_lead);
-	    smp->sm_leadlen = mb_charlen(smp->sm_lead);
-	    if (smp->sm_oneoff == NULL)
-		smp->sm_oneoff_w = NULL;
+	    /* Put (abc) chars in sm_oneof, if any. */
+	    if (c == '(')
+	    {
+		smp->sm_oneof = p;
+		for (++i; i < ccnt; ++i)
+		{
+		    c = getc(fd);			/* <salfrom> */
+		    if (c == ')')
+			break;
+		    *p++ = c;
+		}
+		*p++ = NUL;
+		if (++i < ccnt)
+		    c = getc(fd);
+	    }
 	    else
-		smp->sm_oneoff_w = mb_str2wide(smp->sm_oneoff);
-	    smp->sm_to_w = mb_str2wide(smp->sm_to);
-	    if (smp->sm_lead_w == NULL
-		    || (smp->sm_oneoff_w == NULL && smp->sm_oneoff != NULL)
-		    || smp->sm_to_w == NULL)
+		smp->sm_oneof = NULL;
+
+	    /* Any following chars go in sm_rules. */
+	    smp->sm_rules = p;
+	    if (i < ccnt)
+		/* store the char we got while checking for end of sm_lead */
+		*p++ = c;
+	    for (++i; i < ccnt; ++i)
+		*p++ = getc(fd);			/* <salfrom> */
+	    *p++ = NUL;
+
+	    ccnt = getc(fd);			/* <saltolen> */
+	    if (ccnt < 0)
 	    {
 		vim_free(smp->sm_lead);
-		vim_free(smp->sm_to);
-		vim_free(smp->sm_lead_w);
-		vim_free(smp->sm_oneoff_w);
-		vim_free(smp->sm_to_w);
+		goto formerr;
+	    }
+	    if ((p = alloc(ccnt + 1)) == NULL)
+	    {
+		vim_free(smp->sm_lead);
 		goto endFAIL;
 	    }
-	}
-#endif
-    }
+	    smp->sm_to = p;
 
-    /* Fill the first-index table. */
-    first = lp->sl_sal_first;
-    for (i = 0; i < 256; ++i)
-	first[i] = -1;
-    for (i = 0; i < gap->ga_len; ++i)
-    {
-	smp = &((salitem_T *)gap->ga_data)[i];
-#ifdef FEAT_MBYTE
-	if (has_mbyte)
-	    /* Use the lowest byte of the first character. */
-	    c = *smp->sm_lead_w & 0xff;
-	else
-#endif
-	    c = *smp->sm_lead;
-	if (first[c] == -1)
-	{
-	    first[c] = i;
+	    for (i = 0; i < ccnt; ++i)
+		*p++ = getc(fd);			/* <salto> */
+	    *p++ = NUL;
+
 #ifdef FEAT_MBYTE
 	    if (has_mbyte)
 	    {
-		int	j;
-
-		/* Make sure all entries with this byte are following each
-		 * other.  Move the ones down that are in the wrong position.
-		 * Do keep the right sequence. */
-		while (i + 1 < gap->ga_len && (*smp[1].sm_lead_w & 0xff) == c)
+		/* convert the multi-byte strings to wide char strings */
+		smp->sm_lead_w = mb_str2wide(smp->sm_lead);
+		smp->sm_leadlen = mb_charlen(smp->sm_lead);
+		if (smp->sm_oneof == NULL)
+		    smp->sm_oneof_w = NULL;
+		else
+		    smp->sm_oneof_w = mb_str2wide(smp->sm_oneof);
+		smp->sm_to_w = mb_str2wide(smp->sm_to);
+		if (smp->sm_lead_w == NULL
+			|| (smp->sm_oneof_w == NULL && smp->sm_oneof != NULL)
+			|| smp->sm_to_w == NULL)
 		{
-		    ++i;
-		    ++smp;
+		    vim_free(smp->sm_lead);
+		    vim_free(smp->sm_to);
+		    vim_free(smp->sm_lead_w);
+		    vim_free(smp->sm_oneof_w);
+		    vim_free(smp->sm_to_w);
+		    goto endFAIL;
 		}
-		for (j = 1; i + j < gap->ga_len; ++j)
-		    if ((*smp[j].sm_lead_w & 0xff) == c)
-		    {
-			salitem_T  tsal;
-
-			++i;
-			++smp;
-			--j;
-			tsal = smp[j];
-			mch_memmove(smp + 1, smp, sizeof(salitem_T) * j);
-			*smp = tsal;
-		    }
 	    }
 #endif
+	}
+
+	/* Fill the first-index table. */
+	sfirst = lp->sl_sal_first;
+	for (i = 0; i < 256; ++i)
+	    sfirst[i] = -1;
+	smp = (salitem_T *)gap->ga_data;
+	for (i = 0; i < gap->ga_len; ++i)
+	{
+#ifdef FEAT_MBYTE
+	    if (has_mbyte)
+		/* Use the lowest byte of the first character.  For latin1 it's
+		 * the character, for other encodings it should differ for most
+		 * characters. */
+		c = *smp[i].sm_lead_w & 0xff;
+	    else
+#endif
+		c = *smp[i].sm_lead;
+	    if (sfirst[c] == -1)
+	    {
+		sfirst[c] = i;
+#ifdef FEAT_MBYTE
+		if (has_mbyte)
+		{
+		    /* Make sure all entries with this byte are following each
+		     * other.  Move the ones that are in the wrong position.  Do
+		     * keep the same ordering! */
+		    while (i + 1 < gap->ga_len
+					   && (*smp[i + 1].sm_lead_w & 0xff) == c)
+			/* Skip over entry with same index byte. */
+			++i;
+
+		    for (n = 1; i + n < gap->ga_len; ++n)
+			if ((*smp[i + n].sm_lead_w & 0xff) == c)
+			{
+			    salitem_T  tsal;
+
+			    /* Move entry with same index byte after the entries
+			     * we already found. */
+			    ++i;
+			    --n;
+			    tsal = smp[i + n];
+			    mch_memmove(smp + i + 1, smp + i,
+							   sizeof(salitem_T) * n);
+			    smp[i] = tsal;
+			}
+		}
+#endif
+	    }
 	}
     }
 
@@ -2711,6 +2877,8 @@ typedef struct spellinfo_S
 
     garray_T	si_rep;		/* list of fromto_T entries from REP lines */
     garray_T	si_sal;		/* list of fromto_T entries from SAL lines */
+    char_u	*si_sofofr;	/* SOFOFROM text */
+    char_u	*si_sofoto;	/* SOFOTO text */
     int		si_followup;	/* soundsalike: ? */
     int		si_collapse;	/* soundsalike: ? */
     int		si_rem_accents;	/* soundsalike: remove accents */
@@ -2776,6 +2944,7 @@ spell_read_aff(fname, spin)
     int		do_sal;
     int		do_map;
     int		do_midword;
+    int		do_sofo;
     int		found_map = FALSE;
     hashitem_T	*hi;
 
@@ -2810,6 +2979,9 @@ spell_read_aff(fname, spin)
 
     /* Only do MIDWORD line when not done in another .aff file already */
     do_midword = spin->si_midword == NULL;
+
+    /* Only do SOFOFROM and SOFOTO when not done in another .aff file already */
+    do_sofo = spin->si_sofofr == NULL;
 
     /*
      * Allocate and init the afffile_T structure.
@@ -2886,6 +3058,7 @@ spell_read_aff(fname, spin)
 							       p_enc) == FAIL)
 		    smsg((char_u *)_("Conversion in %s not supported: from %s to %s"),
 					       fname, aff->af_enc, p_enc);
+		spin->si_conv.vc_fail = TRUE;
 #else
 		    smsg((char_u *)_("Conversion in %s not supported"), fname);
 #endif
@@ -3165,11 +3338,29 @@ spell_read_aff(fname, spin)
 								: items[2]);
 		}
 	    }
+	    else if (STRCMP(items[0], "SOFOFROM") == 0 && itemcnt == 2
+				     && (!do_sofo || spin->si_sofofr == NULL))
+	    {
+		if (do_sofo)
+		    spin->si_sofofr = vim_strsave(items[1]);
+	    }
+	    else if (STRCMP(items[0], "SOFOTO") == 0 && itemcnt == 2
+				     && (!do_sofo || spin->si_sofoto == NULL))
+	    {
+		if (do_sofo)
+		    spin->si_sofoto = vim_strsave(items[1]);
+	    }
 	    else
 		smsg((char_u *)_("Unrecognized item in %s line %d: %s"),
 						       fname, lnum, items[0]);
 	}
     }
+
+    if (do_sofo && (spin->si_sofofr == NULL) != (spin->si_sofoto == NULL))
+	smsg((char_u *)_("Missing SOFO%s line in %s"),
+			      spin->si_sofofr == NULL ? "FROM" : "TO", fname);
+    if (spin->si_sofofr != NULL && spin->si_sal.ga_len > 0)
+	smsg((char_u *)_("Both SAL and SOFO lines in %s"), fname);
 
     if (fol != NULL || low != NULL || upp != NULL)
     {
@@ -3449,7 +3640,7 @@ spell_read_dic(fname, spin, affile)
 	hi = hash_lookup(&ht, dw, hash);
 	if (!HASHITEM_EMPTY(hi))
 	    smsg((char_u *)_("Duplicate word in %s line %d: %s"),
-							      fname, lnum, w);
+							     fname, lnum, dw);
 	else
 	    hash_add_item(&ht, hi, dw, hash);
 
@@ -3797,6 +3988,7 @@ spell_read_wordfile(fname, spin)
 			smsg((char_u *)_("Conversion in %s not supported: from %s to %s"),
 							  fname, line, p_enc);
 		    vim_free(enc);
+		    spin->si_conv.vc_fail = TRUE;
 #else
 		    smsg((char_u *)_("Conversion in %s not supported"), fname);
 #endif
@@ -4376,6 +4568,8 @@ write_vim_spell(fname, spin)
     qsort(spin->si_rep.ga_data, (size_t)spin->si_rep.ga_len,
 					       sizeof(fromto_T), rep_compare);
 
+    /* round 1: REP items
+     * round 2: SAL items (unless SOFO is used) */
     for (round = 1; round <= 2; ++round)
     {
 	if (round == 1)
@@ -4391,7 +4585,11 @@ write_vim_spell(fname, spin)
 		i |= SAL_COLLAPSE;
 	    if (spin->si_rem_accents)
 		i |= SAL_REM_ACCENTS;
+	    if (spin->si_sofofr != NULL && spin->si_sofoto != NULL)
+		i |= SAL_SOFO;
 	    putc(i, fd);			/* <salflags> */
+	    if (i & SAL_SOFO)
+		break;
 	}
 
 	put_bytes(fd, (long_u)gap->ga_len, 2);	/* <repcount> or <salcount> */
@@ -4408,6 +4606,20 @@ write_vim_spell(fname, spin)
 		fwrite(p, l, (size_t)1, fd);
 	    }
 	}
+    }
+
+    /* SOFOFROM and SOFOTO */
+    if (spin->si_sofofr != NULL && spin->si_sofoto != NULL)
+    {
+	put_bytes(fd, 1L, 2);				/* <salcount> */
+
+	l = STRLEN(spin->si_sofofr);
+	put_bytes(fd, (long_u)l, 2);			/* <salfromlen> */
+	fwrite(spin->si_sofofr, l, (size_t)1, fd);	/* <salfrom> */
+
+	l = STRLEN(spin->si_sofoto);
+	put_bytes(fd, (long_u)l, 2);			/* <saltolen> */
+	fwrite(spin->si_sofoto, l, (size_t)1, fd);	/* <salto> */
     }
 
     put_bytes(fd, (long_u)spin->si_map.ga_len, 2);	/* <maplen> */
@@ -4869,6 +5081,8 @@ mkspell(fcount, fnames, ascii, overwrite, added_word)
 	ga_clear(&spin.si_map);
 	ga_clear(&spin.si_prefcond);
 	vim_free(spin.si_midword);
+	vim_free(spin.si_sofofr);
+	vim_free(spin.si_sofoto);
 
 	/* Free the .aff file structures. */
 	for (i = 0; i < incount; ++i)
@@ -5535,7 +5749,7 @@ spell_suggest()
 	while (p > line && SPELL_ISWORDP(p))
 	    mb_ptr_back(line, p);
 	/* Forward to start of word. */
-	while (!SPELL_ISWORDP(p))
+	while (*p != NUL && !SPELL_ISWORDP(p))
 	    mb_ptr_adv(p);
 
 	if (!SPELL_ISWORDP(p))		/* No word found. */
@@ -5813,8 +6027,8 @@ spell_find_suggest(badptr, su, maxcount, banbadword)
 	if (STRNCMP(buf, "expr:", 5) == 0)
 	{
 #ifdef FEAT_EVAL
-	    /* Evaluate an expression.  Skip this when called recursively
-	     * (using spellsuggest() in the expression). */
+	    /* Evaluate an expression.  Skip this when called recursively,
+	     * when using spellsuggest() in the expression. */
 	    if (!expr_busy)
 	    {
 		expr_busy = TRUE;
@@ -6151,8 +6365,8 @@ suggest_try_change(su)
     trystate_T	*sp;
     int		newscore;
     langp_T	*lp;
-    char_u	*byts;
-    idx_T	*idxs;
+    char_u	*byts, *fbyts, *pbyts;
+    idx_T	*idxs, *fidxs, *pidxs;
     int		depth;
     int		c, c2, c3;
     int		n = 0;
@@ -6182,20 +6396,40 @@ suggest_try_change(su)
 	 * "fword[]" the word we are trying to match with (initially the bad
 	 * word).
 	 */
-	byts = lp->lp_slang->sl_fbyts;
-	idxs = lp->lp_slang->sl_fidxs;
-
 	depth = 0;
-	stack[0].ts_state = STATE_START;
-	stack[0].ts_score = 0;
-	stack[0].ts_curi = 1;
-	stack[0].ts_fidx = 0;
-	stack[0].ts_fidxtry = 0;
-	stack[0].ts_twordlen = 0;
-	stack[0].ts_arridx = 0;
+	sp = &stack[0];
+	sp->ts_state = STATE_START;
+	sp->ts_score = 0;
+	sp->ts_curi = 1;
+	sp->ts_fidx = 0;
+	sp->ts_fidxtry = 0;
+	sp->ts_twordlen = 0;
+	sp->ts_arridx = 0;
 #ifdef FEAT_MBYTE
-	stack[0].ts_tcharlen = 0;
+	sp->ts_tcharlen = 0;
 #endif
+
+	/*
+	 * When there are postponed prefixes we need to use these first.  At
+	 * the end of the prefix we continue in the case-fold tree.
+	 */
+	fbyts = lp->lp_slang->sl_fbyts;
+	fidxs = lp->lp_slang->sl_fidxs;
+	pbyts = lp->lp_slang->sl_pbyts;
+	pidxs = lp->lp_slang->sl_pidxs;
+	if (pbyts != NULL)
+	{
+	    byts = pbyts;
+	    idxs = pidxs;
+	    sp->ts_prefixdepth = PREFIXTREE;
+	    sp->ts_state = STATE_NOPREFIX;	/* try without prefix first */
+	}
+	else
+	{
+	    byts = fbyts;
+	    idxs = fidxs;
+	    sp->ts_prefixdepth = NOPREFIX;
+	}
 
 	/*
 	 * Loop to find all suggestions.  At each round we either:
@@ -6210,6 +6444,7 @@ suggest_try_change(su)
 	    switch (sp->ts_state)
 	    {
 	    case STATE_START:
+	    case STATE_NOPREFIX:
 		/*
 		 * Start of node: Deal with NUL bytes, which means
 		 * tword[] may end here.
@@ -6217,6 +6452,40 @@ suggest_try_change(su)
 		arridx = sp->ts_arridx;	    /* current node in the tree */
 		len = byts[arridx];	    /* bytes in this node */
 		arridx += sp->ts_curi;	    /* index of current byte */
+
+		if (sp->ts_prefixdepth == PREFIXTREE)
+		{
+		    /* Skip over the NUL bytes, we use them later. */
+		    for (n = 0; n < len && byts[arridx + n] == 0; ++n)
+			;
+		    sp->ts_curi += n;
+
+		    /* At end of a prefix or at start of prefixtree: check for
+		     * following word. */
+		    if (byts[arridx] == 0 || sp->ts_state == STATE_NOPREFIX)
+		    {
+			sp->ts_state = STATE_START;
+			++depth;
+			stack[depth] = stack[depth - 1];
+			sp = &stack[depth];
+			sp->ts_prefixdepth = depth - 1;
+			byts = fbyts;
+			idxs = fidxs;
+			sp->ts_state = STATE_START;
+			sp->ts_curi = 1;   /* start just after length byte */
+			sp->ts_arridx = 0;
+
+			/* Move the prefix to preword[] so that
+			 * find_keepcap_word() works. */
+			prewordlen = splitoff = sp->ts_twordlen;
+			mch_memmove(preword, tword, splitoff);
+			break;
+		    }
+
+		    /* Always past NUL bytes now. */
+		    sp->ts_state = STATE_ENDNUL;
+		    break;
+		}
 
 		if (sp->ts_curi > len || byts[arridx] != 0)
 		{
@@ -6231,6 +6500,31 @@ suggest_try_change(su)
 		++sp->ts_curi;		/* eat one NUL byte */
 
 		flags = (int)idxs[arridx];
+
+		if (sp->ts_prefixdepth < MAXWLEN)
+		{
+		    /* There was a prefix before the word.  Check that the
+		     * prefix can be used with this word. */
+		    /* Count the length of the NULs in the prefix.  If there
+		     * are none this must be the first try without a prefix.
+		     */
+		    n = stack[sp->ts_prefixdepth].ts_arridx;
+		    len = pbyts[n++];
+		    for (c = 0; c < len && pbyts[n + c] == 0; ++c)
+			;
+		    if (c > 0)
+		    {
+			/* The prefix ID is stored two bytes above the flags. */
+			c = valid_word_prefix(c, n, (unsigned)flags >> 16,
+					      tword + splitoff, lp->lp_slang);
+			if (c == 0)
+			    break;
+
+			/* Use the WF_RARE flag for a rare prefix. */
+			if (c & WF_RAREPFX)
+			    flags |= WF_RARE;
+		    }
+		}
 
 		/*
 		 * Form the word with proper case in preword.
@@ -6945,6 +7239,14 @@ suggest_try_change(su)
 		/* Did all possible states at this level, go up one level. */
 		--depth;
 
+		if (depth >= 0 && stack[depth].ts_prefixdepth == PREFIXTREE)
+		{
+		    /* Continue in or go back to the prefix tree. */
+		    byts = pbyts;
+		    idxs = pidxs;
+		    splitoff = 0;
+		}
+
 		/* Don't check for CTRL-C too often, it takes time. */
 		line_breakcheck();
 	    }
@@ -7161,7 +7463,7 @@ score_comp_sal(su)
 	if (lp->lp_slang->sl_sal.ga_len > 0)
 	{
 	    /* soundfold the bad word */
-	    spell_soundfold(lp->lp_slang, su->su_fbadword, badsound);
+	    spell_soundfold(lp->lp_slang, su->su_fbadword, TRUE, badsound);
 
 	    for (i = 0; i < su->su_ga.ga_len; ++i)
 	    {
@@ -7213,7 +7515,7 @@ score_combine(su)
 	if (lp->lp_slang->sl_sal.ga_len > 0)
 	{
 	    /* soundfold the bad word */
-	    spell_soundfold(lp->lp_slang, su->su_fbadword, badsound);
+	    spell_soundfold(lp->lp_slang, su->su_fbadword, TRUE, badsound);
 
 	    for (i = 0; i < su->su_ga.ga_len; ++i)
 	    {
@@ -7320,14 +7622,12 @@ stp_sal_score(stp, su, slang, badsound)
 	    for (p = fword; *(p = skiptowhite(p)) != NUL; )
 		mch_memmove(p, p + 1, STRLEN(p));
 
-	spell_soundfold(slang, fword, badsound2);
+	spell_soundfold(slang, fword, TRUE, badsound2);
 	p = badsound2;
     }
 
-    /* Case-fold the word, sound-fold the word and compute the score for the
-     * difference. */
-    (void)spell_casefold(stp->st_word, STRLEN(stp->st_word), fword, MAXWLEN);
-    spell_soundfold(slang, fword, goodsound);
+    /* Sound-fold the word and compute the score for the difference. */
+    spell_soundfold(slang, stp->st_word, FALSE, goodsound);
 
     return soundalike_score(goodsound, p);
 }
@@ -7341,7 +7641,6 @@ suggest_try_soundalike(su)
 {
     char_u	salword[MAXWLEN];
     char_u	tword[MAXWLEN];
-    char_u	tfword[MAXWLEN];
     char_u	tsalword[MAXWLEN];
     idx_T	arridx[MAXWLEN];
     int		curi[MAXWLEN];
@@ -7362,7 +7661,7 @@ suggest_try_soundalike(su)
 	if (lp->lp_slang->sl_sal.ga_len > 0)
 	{
 	    /* soundfold the bad word */
-	    spell_soundfold(lp->lp_slang, su->su_fbadword, salword);
+	    spell_soundfold(lp->lp_slang, su->su_fbadword, TRUE, salword);
 
 	    /*
 	     * Go through the whole tree, soundfold each word and compare.
@@ -7406,18 +7705,10 @@ suggest_try_soundalike(su)
 			    if (round == 2 || (flags & WF_KEEPCAP) == 0)
 			    {
 				tword[depth] = NUL;
-				if (round == 1)
-				    spell_soundfold(lp->lp_slang,
-							     tword, tsalword);
-				else
-				{
-				    /* In keep-case tree need to case-fold the
-				     * word. */
-				    (void)spell_casefold(tword, depth,
-							     tfword, MAXWLEN);
-				    spell_soundfold(lp->lp_slang,
-							    tfword, tsalword);
-				}
+				/* Sound-fold.  Only in keep-case tree need to
+				 * case-fold the word. */
+				spell_soundfold(lp->lp_slang, tword,
+							round == 1, tsalword);
 
 				/* Compute the edit distance between the
 				 * sound-a-like words. */
@@ -7812,7 +8103,7 @@ rescore_suggestions(su)
 	if (lp->lp_slang->sl_sal.ga_len > 0)
 	{
 	    /* soundfold the bad word */
-	    spell_soundfold(lp->lp_slang, su->su_fbadword, sal_badword);
+	    spell_soundfold(lp->lp_slang, su->su_fbadword, TRUE, sal_badword);
 
 	    for (i = 0; i < su->su_ga.ga_len; ++i)
 	    {
@@ -7896,7 +8187,6 @@ eval_soundfold(word)
     char_u	*word;
 {
     langp_T	*lp;
-    char_u	fword[MAXWLEN];
     char_u	sound[MAXWLEN];
 
     if (curwin->w_p_spell && *curbuf->b_p_spl != NUL)
@@ -7905,11 +8195,8 @@ eval_soundfold(word)
 						   lp->lp_slang != NULL; ++lp)
 	    if (lp->lp_slang->sl_sal.ga_len > 0)
 	    {
-		/* word most be case-folded first. */
-		(void)spell_casefold(word, STRLEN(word), fword, MAXWLEN);
-
 		/* soundfold the word */
-		spell_soundfold(lp->lp_slang, fword, sound);
+		spell_soundfold(lp->lp_slang, word, FALSE, sound);
 		return vim_strsave(sound);
 	    }
 
@@ -7922,14 +8209,125 @@ eval_soundfold(word)
  * Turn "inword" into its sound-a-like equivalent in "res[MAXWLEN]".
  */
     static void
-spell_soundfold(slang, inword, res)
+spell_soundfold(slang, inword, folded, res)
+    slang_T	*slang;
+    char_u	*inword;
+    int		folded;	    /* "inword" is already case-folded */
+    char_u	*res;
+{
+    char_u	fword[MAXWLEN];
+    char_u	*word;
+
+    if (slang->sl_sofo)
+	/* SOFOFROM and SOFOTO used */
+	spell_soundfold_sofo(slang, inword, res);
+    else
+    {
+	/* SAL items used.  Requires the word to be case-folded. */
+	if (folded)
+	    word = inword;
+	else
+	{
+	    (void)spell_casefold(inword, STRLEN(inword), fword, MAXWLEN);
+	    word = fword;
+	}
+
+#ifdef FEAT_MBYTE
+	if (has_mbyte)
+	    spell_soundfold_wsal(slang, word, res);
+	else
+#endif
+	    spell_soundfold_sal(slang, word, res);
+    }
+}
+
+/*
+ * Perform sound folding of "inword" into "res" according to SOFOFROM and
+ * SOFOTO lines.
+ */
+    static void
+spell_soundfold_sofo(slang, inword, res)
+    slang_T	*slang;
+    char_u	*inword;
+    char_u	*res;
+{
+    char_u	*s;
+    int		ri = 0;
+    int		c;
+
+#ifdef FEAT_MBYTE
+    if (has_mbyte)
+    {
+	int	prevc = 0;
+	int	*ip;
+
+	/* The sl_sal_first[] table contains the translation for chars up to
+	 * 255, sl_sal the rest. */
+	for (s = inword; *s != NUL; )
+	{
+	    c = mb_ptr2char_adv(&s);
+	    if (enc_utf8 ? utf_class(c) == 0 : vim_iswhite(c))
+		c = ' ';
+	    else if (c < 256)
+		c = slang->sl_sal_first[c];
+	    else
+	    {
+		ip = ((int **)slang->sl_sal.ga_data)[c & 0xff];
+		if (ip == NULL)		/* empty list, can't match */
+		    c = NUL;
+		else
+		    for (;;)		/* find "c" in the list */
+		    {
+			if (*ip == 0)	/* not found */
+			{
+			    c = NUL;
+			    break;
+			}
+			if (*ip == c)	/* match! */
+			{
+			    c = ip[1];
+			    break;
+			}
+			ip += 2;
+		    }
+	    }
+
+	    if (c != NUL && c != prevc)
+	    {
+		ri += mb_char2bytes(c, res + ri);
+		if (ri + MB_MAXBYTES > MAXWLEN)
+		    break;
+		prevc = c;
+	    }
+	}
+    }
+    else
+#endif
+    {
+	/* The sl_sal_first[] table contains the translation. */
+	for (s = inword; (c = *s) != NUL; ++s)
+	{
+	    if (vim_iswhite(c))
+		c = ' ';
+	    else
+		c = slang->sl_sal_first[c];
+	    if (c != NUL && (ri == 0 || res[ri - 1] != c))
+		res[ri++] = c;
+	}
+    }
+
+    res[ri] = NUL;
+}
+
+    static void
+spell_soundfold_sal(slang, inword, res)
     slang_T	*slang;
     char_u	*inword;
     char_u	*res;
 {
     salitem_T	*smp;
     char_u	word[MAXWLEN];
-    char_u	*s;
+    char_u	*s = inword;
     char_u	*t;
     char_u	*pf;
     int		i, j, z;
@@ -7943,21 +8341,12 @@ spell_soundfold(slang, inword, res)
     int		p0 = -333;
     int		c0;
 
-#ifdef FEAT_MBYTE
-    if (has_mbyte)
-    {
-	/* Call the multi-byte version of this. */
-	spell_soundfold_w(slang, inword, res);
-	return;
-    }
-#endif
-
     /* Remove accents, if wanted.  We actually remove all non-word characters.
-     * But keep white space. */
+     * But keep white space.  We need a copy, the word may be changed here. */
     if (slang->sl_rem_accents)
     {
 	t = word;
-	for (s = inword; *s != NUL; )
+	while (*s != NUL)
 	{
 	    if (vim_iswhite(*s))
 	    {
@@ -7974,7 +8363,7 @@ spell_soundfold(slang, inword, res)
 	*t = NUL;
     }
     else
-	STRCPY(word, inword);
+	STRCPY(word, s);
 
     smp = (salitem_T *)slang->sl_sal.ga_data;
 
@@ -8011,9 +8400,9 @@ spell_soundfold(slang, inword, res)
 		    }
 		}
 
-		if ((pf = smp[n].sm_oneoff) != NULL)
+		if ((pf = smp[n].sm_oneof) != NULL)
 		{
-		    /* Check for match with one of the chars in "sm_oneoff". */
+		    /* Check for match with one of the chars in "sm_oneof". */
 		    while (*pf != NUL && *pf != word[i + k])
 			++pf;
 		    if (*pf == NUL)
@@ -8081,10 +8470,10 @@ spell_soundfold(slang, inword, res)
 			    }
 			    k0 += k - 1;
 
-			    if ((pf = smp[n0].sm_oneoff) != NULL)
+			    if ((pf = smp[n0].sm_oneof) != NULL)
 			    {
 				/* Check for match with one of the chars in
-				 * "sm_oneoff". */
+				 * "sm_oneof". */
 				while (*pf != NUL && *pf != word[i + k0])
 				    ++pf;
 				if (*pf == NUL)
@@ -8211,12 +8600,12 @@ spell_soundfold(slang, inword, res)
  * Multi-byte version of spell_soundfold().
  */
     static void
-spell_soundfold_w(slang, inword, res)
+spell_soundfold_wsal(slang, inword, res)
     slang_T	*slang;
     char_u	*inword;
     char_u	*res;
 {
-    salitem_T	*smp;
+    salitem_T	*smp = (salitem_T *)slang->sl_sal.ga_data;
     int		word[MAXWLEN];
     int		wres[MAXWLEN];
     int		l;
@@ -8266,8 +8655,6 @@ spell_soundfold_w(slang, inword, res)
     }
     word[n] = NUL;
 
-    smp = (salitem_T *)slang->sl_sal.ga_data;
-
     /*
      * This comes from Aspell phonet.cpp.
      * Converted from C++ to C.  Added support for multi-byte chars.
@@ -8282,11 +8669,13 @@ spell_soundfold_w(slang, inword, res)
 
 	if (n >= 0)
 	{
-	    /* check all rules for the same letter */
+	    /* check all rules for the same index byte */
 	    for (; ((ws = smp[n].sm_lead_w)[0] & 0xff) == (c & 0xff); ++n)
 	    {
 		/* Quickly skip entries that don't match the word.  Most
 		 * entries are less then three chars, optimize for that. */
+		if (c != ws[0])
+		    continue;
 		k = smp[n].sm_leadlen;
 		if (k > 1)
 		{
@@ -8302,9 +8691,9 @@ spell_soundfold_w(slang, inword, res)
 		    }
 		}
 
-		if ((pf = smp[n].sm_oneoff_w) != NULL)
+		if ((pf = smp[n].sm_oneof_w) != NULL)
 		{
-		    /* Check for match with one of the chars in "sm_oneoff". */
+		    /* Check for match with one of the chars in "sm_oneof". */
 		    while (*pf != NUL && *pf != word[i + k])
 			++pf;
 		    if (*pf == NUL)
@@ -8350,12 +8739,15 @@ spell_soundfold_w(slang, inword, res)
 		    if (slang->sl_followup && k > 1 && n0 >= 0
 					   && p0 != '-' && word[i + k] != NUL)
 		    {
-			/* test follow-up rule for "word[i + k]" */
+			/* Test follow-up rule for "word[i + k]"; loop over
+			 * all entries with the same index byte. */
 			for ( ; ((ws = smp[n0].sm_lead_w)[0] & 0xff)
 							 == (c0 & 0xff); ++n0)
 			{
 			    /* Quickly skip entries that don't match the word.
-			     * */
+			     */
+			    if (c0 != ws[0])
+				continue;
 			    k0 = smp[n0].sm_leadlen;
 			    if (k0 > 1)
 			    {
@@ -8373,10 +8765,10 @@ spell_soundfold_w(slang, inword, res)
 			    }
 			    k0 += k - 1;
 
-			    if ((pf = smp[n0].sm_oneoff_w) != NULL)
+			    if ((pf = smp[n0].sm_oneof_w) != NULL)
 			    {
 				/* Check for match with one of the chars in
-				 * "sm_oneoff". */
+				 * "sm_oneof". */
 				while (*pf != NUL && *pf != word[i + k0])
 				    ++pf;
 				if (*pf == NUL)

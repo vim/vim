@@ -1,200 +1,428 @@
 " Vim syntax file
-" Language:	    Eterm configuration file
-" Maintainer:	    Nikolai Weibull <source@pcppopper.org>
-" URL:		    http://www.pcppopper.org/vim/syntax/pcp/eterm/
-" Latest Revision:  2004-05-06
-" arch-tag:	    f4c58caf-2b91-4fc4-96af-e3cad7c70e6b
+" Language:         eterm(1) configuration file
+" Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
+" Latest Revision:  2005-06-29
 
-if version < 600
-  syntax clear
-elseif exists("b:current_syntax")
+if exists("b:current_syntax")
   finish
 endif
 
-" magic number
-syn match   etermMagic		display "^<Eterm-[0-9.]\+>$"
+let s:cpo_save = &cpo
+set cpo&vim
 
-" comments
-syn region  etermComment	matchgroup=etermComment start="^#" end="$" contains=etermTodo
+syn keyword etermTodo             contained TODO FIXME XXX NOTE
 
-" todo
-syn keyword etermTodo		contained TODO FIXME XXX NOTE
+syn region  etermComment          matchgroup=etermComment start='^#' end='$'
+                                  \ contains=etermTodo,@Spell
 
-" numbers
-syn match   etermNumber		contained display "\<\(\d\+\|0x\x\{1,2}\)\>"
+syn match   etermMagic            display display '^<Eterm-[0-9.]\+>$'
 
-" strings
-syn region  etermString		contained display oneline start=+"+ skip=+\\"+ end=+"+
+syn match   etermNumber           contained display '\<\(\d\+\|0x\x\{1,2}\)\>'
 
-" booleans
-syn keyword etermBoolean	contained on off true false yes no
+syn region  etermString           contained display oneline start=+"+
+                                  \ skip=+\\"+ end=+"+
 
-" colors (not pretty, but can't figure out better way...)
-syn match   etermColor		contained display "\s\+#\x\{6}\>"
-syn keyword etermColor		contained white black
+syn keyword etermBoolean          contained on off true false yes no
 
-" preproc
-syn match   etermPreProc	contained "%\(appname\|exec\|get\|put\|random\|version\|include\|preproc\)("he=e-1
+syn keyword etermPreProc          contained appname exec get put random version
+                                  \ include preproc
 
-" functions
-syn match   etermFunctions	contained "\<\(copy\|exit\|kill\|nop\|paste\|save\|scroll\|search\|spawn\)("
+syn keyword etermFunctions        contained copy exit kill nop paste save
+                                  \ scroll search spawn
 
-" and make it easy to refer to the above...
-syn cluster etermGeneral	contains=etermComment,etermNumber,etermString,etermBoolean,etermColor,etermFunction,etermPreProc
+syn cluster etermGeneral          contains=etermComment,etermFunction,
+                                  \ etermPreProc
 
-" key modifiers
-syn keyword etermKeyMod		contained ctrl shift lock mod1 mod2 mod3 mod4 mod5 alt meta anymod
-syn keyword etermKeyMod		contained button1 button2 button3 button4 button5
+syn keyword etermKeyMod           contained ctrl shift lock mod1 mod2 mod3 mod4
+                                  \ mod5 alt meta anymod
+syn keyword etermKeyMod           contained button1 button2 button3 button4
+                                  \ button5
 
-" color context
-syn region  etermColorOptions	contained oneline matchgroup=etermOption start="^\s*video\>" matchgroup=etermType end="\<\(normal\|reverse\)\>"
-syn region  etermColorOptions	contained oneline matchgroup=etermOption start="^\s*color\>" matchgroup=etermType end="\<\(bd\|ul\|[0-9]\|1[0-5]\)\>"
-syn keyword etermColorOptions	contained foreground background cursor cursor_text pointer
+syn keyword etermColorOptions     contained video nextgroup=etermVideoOptions
+                                  \ skipwhite
 
-syn region  etermColorContext	fold transparent  matchgroup=etermContext start="^\s*begin\s\+color\s*$" end="^\s*end\>\(\s\+.\{-0,}\)\=$" contains=@etermGeneral,etermColorOptions
+syn keyword etermVideoType        contained normal reverse
 
-" attributes context
-syn region  etermAttrOptions	contained oneline matchgroup=etermOption start="^\s*geometry\>" matchgroup=etermType end="\<\d\+x\d\++\d\++\d\+\>"
-syn region  etermAttrOptions	contained oneline matchgroup=etermOption start="^\s*scrollbar_type\>" matchgroup=etermType end="\<\(motif\|xterm\|next\)\>"
-syn region  etermAttrOptions	contained oneline matchgroup=etermOption start="^\s*font\>" matchgroup=etermType end="\<\(bold\|default\|proportional\|fx\|[0-5]\)\>"
-syn keyword etermAttrOptions	contained title name iconname desktop scrollbar_width
+syn keyword etermColorOptions     contained foreground background cursor
+                                  \ cursor_text pointer
+                                  \ nextgroup=etermColorType skipwhite
 
-syn region  etermAttrContext	fold transparent  matchgroup=etermContext start="^\s*begin\s\+attributes\s*$" end="^\s*end\>\(\s\+.\{-0,}\)\=$" contains=@etermGeneral,etermAttrOptions
+syn keyword etermColorType        contained bd ul
+syn match   etermColorType        contained display '\<\%(\d\|1[0-5]\)'
 
-" image context
-" image types
-syn keyword etermImageTypes	contained background trough anchor up_arrow
-syn keyword etermImageTypes	contained left_arrow right_arrow menu menuitem
-syn keyword etermImageTypes	contained submenu button buttonbar down_arrow
-syn region  etermImageOptions	contained transparent oneline matchgroup=etermOption start="^\s*type\>" end="$" contains=etermImageTypes
-" image modes
-syn keyword etermImageModes	contained image trans viewport auto solid
-syn keyword etermImageModesAllow contained allow
-syn region  etermImageOptions	contained transparent oneline matchgroup=etermOption start="^\s*mode\>" end="$" contains=etermImageModes,etermImageModesAllow
-" image states
-syn region  etermImageOptions	contained transparent oneline matchgroup=etermOption start="^\s*state\>" matchgroup=etermType end="\<\(normal\|selected\|clicked\|disabled\)\>"
-" image geometry
-syn region  etermImageOptions	contained transparent oneline matchgroup=etermOption start="^\s*geom\>" matchgroup=etermType end="\s\+\(\d\+x\d\++\d\++\d\+\)\=:\(\(tile\|scale\|hscale\|vscale\|propscale\)d\=\)\="
-" image color modification
-syn region  etermImageOptions	contained transparent oneline matchgroup=etermOption start="^\s*\(cmod\|colormod\)\>" matchgroup=etermType end="\<\(image\|red\|green\|blue\)\>"
-" other keywords
-syn keyword etermImageOptions	contained file padding border bevel color
+syn keyword etermColorOptions     contained color
+                                  \ nextgroup=etermColorNumber skipwhite
 
-syn region  etermImageContext	contained transparent fold matchgroup=etermContext start="^\s*begin\s\+image\s*$" end="^\s*end\>\(\s\+.\{-0,}\)\=$" contains=@etermGeneral,etermImageOptions
+syn keyword etermColorNumber      contained bd ul nextgroup=etermColorSpec
+                                  \ skipwhite
+syn match   etermColorNumber      contained display '\<\%(\d\|1[0-5]\)'
+                                  \ nextgroup=etermColorSpec skipwhite
 
-" imageclasses context
-syn keyword etermIClassOptions	contained icon cache path anim
+syn match   etermColorSpec        contained display '\S\+'
 
-syn region  etermIClassContext	fold transparent  matchgroup=etermContext start="^\s*begin\s\+imageclasses\s*$" end="^\s*end\>\(\s\+.\{-0,}\)\=$" contains=@etermGeneral,etermImageContext,etermIClassOptions
+syn region  etermColorContext     fold transparent matchgroup=etermContext
+                                  \ start='^\s*begin\s\+color'
+                                  \ end='^\s*end\>'
+                                  \ contains=@etermGeneral,etermColorOptions
 
-" menuitem context
-syn region  etermMenuItemOptions contained transparent oneline matchgroup=etermOption start="^\s*action\>" matchgroup=etermType end="\<string\|echo\|submenu\|script\|separator\>"
-syn keyword etermMenuItemOptions contained text rtext
+syn keyword etermAttrOptions      contained geometry nextgroup=etermGeometry
+                                  \ skipwhite
 
-syn region  etermMenuItemContext fold transparent matchgroup=etermContext start="^\s*begin\s\+menuitem\s*$" end="^\s*end\>\(\s\+.\{-0,}\)\=$" contains=@etermGeneral,etermMenuItemOptions
+syn match   etermGeometry         contained display '\d\+x\d++\d\++\d\+'
 
-" menu context (should contain - as well, but no...)
-syn keyword etermMenuOptions    contained title font_name sep
+syn keyword etermAttrOptions      contained scrollbar_type
+                                  \ nextgroup=etermScrollbarType skipwhite
 
-syn region  etermMenuContext    fold transparent  matchgroup=etermContext start="^\s*begin\s\+menu\s*$" end="^\s*end\>\(\s\+.\{-0,}\)\=$" contains=@etermGeneral,etermMenuOptions,etermMenuItemContext
+syn keyword etermScrollbarType    contained motif xterm next
 
-" action context
-syn match   etermActionDef	contained "\<\(to\|string\|echo\|menu\|script\)\>"
-syn region  etermActionsOptions	contained transparent oneline matchgroup=etermOption start="^\s*bind\>" end="$" contains=etermActionDef,etermKeyMod
+syn keyword etermAttrOptions      contained font nextgroup=etermFontType
+                                  \ skipwhite
 
-syn region  etermActionsContext	fold transparent  matchgroup=etermContext start="^\s*begin\s\+actions\s*$" end="^\s*end\>\(\s\+.\{-0,}\)\=$" contains=@etermGeneral,etermActionsOptions
+syn keyword etermFontType         contained bold nextgroup=etermFont skipwhite
+syn match   etermFontType         contained display '[0-5]' nextgroup=etermFont
+                                  \ skipwhite
 
-" button bar context
-syn match   etermButtonDef	contained "\<\(action\|string\|echo\|menu\|scrupt\)\>"
-syn region  etermButtonOptions	contained transparent oneline matchgroup=etermOption start="^\s*button\>" end="$" contains=etermButtonDef
-syn keyword etermButtonOptions	contained font visible dock
+syn match   etermFont             contained display '\S\+'
 
-syn region  etermButtonContext	fold transparent  matchgroup=etermContext start="^\s*begin\s\+button_bar\s*$" end="^\s*end\>\(\s\+.\{-0,}\)\=$" contains=@etermGeneral,etermButtonOptions
+syn keyword etermFontType         contained default nextgroup=etermNumber
+                                  \ skipwhite
 
-" multichar context
-syn keyword etermMultiOptions	contained encoding font
+syn keyword etermFontType         contained proportional nextgroup=etermBoolean
+                                  \ skipwhite
 
-syn region  etermMultiContext	fold transparent  matchgroup=etermContext start="^\s*begin\s\+multichar\s*$" end="^\s*end\>\(\s\+.\{-0,}\)\=$" contains=@etermGeneral,etermMultiOptions
+syn keyword etermFontType         contained fx nextgroup=etermString skipwhite
 
-" xim context
-syn keyword etermXimOptions     contained input_method preedit_type
+syn keyword etermAttrOptions      contained title name iconname
+                                  \ nextgroup=etermString skipwhite
 
-syn region  etermXimContext	fold transparent  matchgroup=etermContext start="^\s*begin\s\+xim\s*$" end="^\s*end\>\(\s\+.\{-0,}\)\=$" contains=@etermGeneral,etermXimOptions
+syn keyword etermAttrOptions      contained scrollbar_width desktop
+                                  \ nextgroup=etermNumber skipwhite
 
-" toggles context
-syn keyword etermTogOptions	contained map_alert visual_bell login_shell scrollbar utmp_logging meta8 iconic no_input
-syn keyword etermTogOptions	contained home_on_output home_on_input scrollbar_floating scrollbar_right scrollbar_popup
-syn keyword etermTogOptions	contained borderless double_buffer no_cursor pause xterm_select select_line
-syn keyword etermTogOptions	contained select_trailing_spaces report_as_keysyms itrans immotile_trans buttonbar
-syn keyword etermTogOptions	contained resize_gravity
+syn region  etermAttrContext      fold transparent matchgroup=etermContext
+                                  \ start='^\s*begin\s\+attributes\'
+                                  \ end='^\s*end\>'
+                                  \ contains=@etermGeneral,etermAttrOptions
 
-syn region  etermTogContext	fold transparent  matchgroup=etermContext start="^\s*begin\s\+toggles\s*$" end="^\s*end\>\(\s\+.\{-0,}\)\=$" contains=@etermGeneral,etermTogOptions
+syn keyword etermIClassOptions    contained icon path nextgroup=etermString
+                                  \ skipwhite
+syn keyword etermIClassOptions    contained cache nextgroup=etermNumber
+                                  \ skipwhite
+syn keyword etermIClassOptions    contained anim nextgroup=etermNumber
+                                  \ skipwhite
 
-" keyboard context
-syn keyword etermKeyboardOptions contained smallfont_key bigfont_key keysym meta_mod alt_mod
-syn keyword etermKeyboardOptions contained greek numlock_mod app_keypad app_cursor
+syn region  etermIClassContext    fold transparent matchgroup=etermContext
+                                  \ start='^\s*begin\s\+imageclasses'
+                                  \ end='^\s*end\>'
+                                  \ contains=@etermGeneral,etermImageContext,
+                                  \ etermIClassOptions
 
-syn region  etermKeyboardContext fold transparent  matchgroup=etermContext start="^\s*begin\s\+keyboard\s*$" end="^\s*end\>\(\s\+.\{-0,}\)\=$" contains=@etermGeneral,etermKeyboardOptions
+syn keyword etermImageOptions     contained type nextgroup=etermImageType
+                                  \ skipwhite
 
-" misc context
-syn keyword etermMiscOptions	contained print_pipe save_lines cut_chars min_anchor_size
-syn keyword etermMiscOptions	contained border_width line_space finished_title term_name
-syn keyword etermMiscOptions	contained finished_text exec
+syn keyword etermImageTypes       contained background trough anchor up_arrow
+                                  \ left_arrow right_arrow menu menuitem
+                                  \ submenu button buttonbar down_arrow
 
-syn region  etermMiscContext	fold transparent  matchgroup=etermContext start="^\s*begin\s\+misc\s*$" end="^\s*end\>\(\s\+.\{-0,}\)\=$" contains=@etermGeneral,etermMiscOptions
+syn keyword etermImageOptions     contained mode nextgroup=etermImageModes
+                                  \ skipwhite
+
+syn keyword etermImageModes       contained image trans viewport auto solid
+                                  \ nextgroup=etermImageModesAllow skipwhite
+syn keyword etermImageModesAllow  contained allow nextgroup=etermImageModesR
+                                  \ skipwhite
+syn keyword etermImageModesR      contained image trans viewport auto solid
+
+syn keyword etermImageOptions     contained state nextgroup=etermImageState
+                                  \ skipwhite
+
+syn keyword etermImageState       contained normal selected clicked disabled
+
+syn keyword etermImageOptions     contained color nextgroup=etermImageColorFG
+                                  \ skipwhite
+
+syn keyword etermImageColorFG     contained '\S\+' nextgroup=etermImageColorBG
+                                  \ skipwhite
+
+syn keyword etermImageColorBG     contained '\S\+'
+
+syn keyword etermImageOptions     contained file nextgroup=etermString
+                                  \ skipwhite
+
+syn keyword etermImageOptions     contained geom nextgroup=etermImageGeom
+                                  \ skipwhite
+
+syn match   etermImageGeom        contained display
+                                  \ '\s\+\%(\d\+x\d\++\d\++\d\+\)\=:\%(\%(tie\|scale\|hscale\|vscale\|propscale\)d\=\)\='
+
+syn keyword etermImageOptions     contained cmod colormod
+                                  \ nextgroup=etermImageCmod skipwhite
+
+syn keyword etermImageCmod        contained image red green blue
+                                  \ nextgroup=etermImageBrightness skipwhite
+
+syn match   etermImageBrightness  contained display '\<\(\d\+\|0x\x\{1,2}\)\>'
+                                  \ nextgroup=etermImageContrast skipwhite
+
+syn match   etermImageContrast    contained display '\<\(\d\+\|0x\x\{1,2}\)\>'
+                                  \ nextgroup=etermImageGamma skipwhite
+
+syn match   etermImageGamma       contained display '\<\(\d\+\|0x\x\{1,2}\)\>'
+                                  \ nextgroup=etermImageGamma skipwhite
+
+syn region  etermImageOptions     contained matchgroup=etermImageOptions
+                                  \ start='border\|bevel\%(\s\+\%(up\|down\)\)\|padding'
+                                  \ end='$' contains=etermNumber
+
+syn region  etermImageContext     contained fold transparent
+                                  \ matchgroup=etermContext
+                                  \ start='^\s*begin\s\+image'
+                                  \ end='^\s*end\>'
+                                  \ contains=@etermGeneral,etermImageOptions
+
+syn keyword etermMenuItemOptions  contained action
+                                  \ nextgroup=etermMenuItemAction skipwhite
+
+syn keyword etermMenuItemAction   contained string echo submenu script
+                                  \ nextgroup=etermString skipwhite
+
+syn keyword etermMenuItemAction   contained separator
+
+syn keyword etermMenuItemOptions  contained text rtext nextgroup=etermString
+                                  \ skipwhite
+
+syn region  etermMenuItemContext  contained fold transparent
+                                  \ matchgroup=etermContext
+                                  \ start='^\s*begin\s\+menuitem'
+                                  \ end='^\s*end\>'
+                                  \ contains=@etermGeneral,etermMenuItemOptions
+
+syn keyword etermMenuOptions      contained title nextgroup=etermString
+                                  \ skipwhite
+
+syn keyword etermMenuOptions      contained font_name nextgroup=etermFont
+                                  \ skipwhite
+
+syn match   etermMenuOptions      contained display '\<sep\>\|-'
+
+syn region  etermMenuContext      fold transparent matchgroup=etermContext
+                                  \ start='^\s*begin\s\+menu'
+                                  \ end='^\s*end\>'
+                                  \ contains=@etermGeneral,etermMenuOptions,
+                                  \ etermMenuItemContext
+
+syn keyword etermBind             contained bind nextgroup=etermBindMods
+                                  \ skipwhite
+
+syn keyword etermBindMods         contained ctrl shift lock mod1 mod2 mod3 mod4
+                                  \ mod5 alt meta anymod
+                                  \ nextgroup=etermBindMods skipwhite
+
+syn keyword etermBindTo           contained to nextgroup=etermBindType
+                                  \ skipwhite
+
+syn keyword etermBindType         contained string echo menu script
+                                  \ nextgroup=etermBindParam skipwhite
+
+syn match   etermBindParam        contained display '\S\+'
+
+syn region  etermActionsContext   fold transparent matchgroup=etermContext
+                                  \ start='^\s*begin\s\+actions'
+                                  \ end='^\s*end\>'
+                                  \ contains=@etermGeneral,etermActionsOptions
+
+syn keyword etermButtonOptions    contained font nextgroup=etermFont skipwhite
+syn keyword etermButtonOptions    contained visible nextgroup=etermBoolean
+                                  \ skipwhite
+syn keyword etermButtonOptions    contained dock nextgroup=etermDockOption
+                                  \ skipwhite
+
+syn keyword etermDockOption       contained top bottom no
+
+syn keyword etermButton           contained button nextgroup=etermButtonText
+                                  \ skipwhite
+
+syn region  etermButtonText       contained display oneline start=+"+
+                                  \ skip=+\\"+ end=+"+
+                                  \ nextgroup=etermButtonIcon skipwhite
+
+syn keyword etermButtonIcon       contained icon nextgroup=etermButtonIconFile
+                                  \ skipwhite
+
+syn keyword etermButtonIconFile   contained '\S\+' nextgroup=etermButtonAction
+                                  \ skipwhite
+
+syn keyword etermButtonAction     contained action nextgroup=etermBindType
+                                  \ skipwhite
+
+syn region  etermButtonContext    fold transparent matchgroup=etermContext
+                                  \ start='^\s*begin\s\+button_bar'
+                                  \ end='^\s*end\>'
+                                  \ contains=@etermGeneral,etermButtonOptions
+
+syn keyword etermMultiOptions     contained encoding nextgroup=etermEncoding
+                                  \ skipwhite
+
+syn keyword etermEncoding         eucj sjis euckr big5 gb
+syn match   etermEncoding         display 'iso-10646'
+
+syn keyword etermMultiOptions     contained font nextgroup=etermFontType
+                                  \ skipwhite
+
+syn region  etermMultiContext     fold transparent matchgroup=etermContext
+                                  \ start='^\s*begin\s\+multichar'
+                                  \ end="^\s*end\>'
+                                  \ contains=@etermGeneral,etermMultiOptions
+
+syn keyword etermXimOptions       contained input_method
+                                  \ nextgroup=etermInputMethod skipwhite
+
+syn match   etermInputMethod      contained display '\S+'
+
+syn keyword etermXimOptions       contained preedit_type
+                                  \ nextgroup=etermPreeditType skipwhite
+
+syn keyword etermPreeditType      contained OverTheSpot OffTheSpot Root
+
+syn region  etermXimContext       fold transparent matchgroup=etermContext
+                                  \ start='^\s*begin\s\+xim'
+                                  \ end="^\s*end\>'
+                                  \ contains=@etermGeneral,etermXimOptions
+
+syn keyword etermTogOptions       contained map_alert visual_bell login_shell
+                                  \ scrollbar utmp_logging meta8 iconic
+                                  \ no_input home_on_output home_on_input
+                                  \ scrollbar_floating scrollbar_right
+                                  \ scrollbar_popup borderless double_buffer
+                                  \ no_cursor pause xterm_select select_line
+                                  \ select_trailing_spaces report_as_keysyms
+                                  \ itrans immotile_trans buttonbar
+                                  \ resize_gravity nextgroup=etermBoolean
+                                  \ skipwhite
+
+syn region  etermTogContext       fold transparent matchgroup=etermContext
+                                  \ start='^\s*begin\s\+toggles'
+                                  \ end='^\s*end\>'
+                                  \ contains=@etermGeneral,etermTogOptions
+
+syn keyword etermKeyboardOptions  contained smallfont_key bigfont_key keysym
+                                  \ nextgroup=etermKeysym skipwhite
+
+syn keyword etermKeysym           contained '\S\+' nextgroup=etermString
+                                  \ skipwhite
+
+syn keyword etermKeyboardOptions  contained meta_mod alt_mod numlock_mod
+                                  \ nextgroup=etermNumber skipwhite
+
+syn keyword etermKeyboardOptions  contained greek app_keypad app_cursor
+                                  \ nextgroup=etermBoolean skipwhite
+
+syn region  etermKeyboardContext  fold transparent matchgroup=etermContext
+                                  \ start='^\s*begin\s\+keyboard'
+                                  \ end='^\s*end\>'
+                                  \ contains=@etermGeneral,etermKeyboardOptions
+
+syn keyword etermMiscOptions      contained print_pipe cut_chars finished_title
+                                  \ finished_text term_name exec
+                                  \ nextgroup=etermString skipwhite
+
+syn keyword etermMiscOptions      contained save_lines min_anchor_size
+                                  \ border_width line_space
+
+syn region  etermMiscContext      fold transparent matchgroup=etermContext
+                                  \ start='^\s*begin\s\+misc'
+                                  \ end='^\s*end\>'
+                                  \ contains=@etermGeneral,etermMiscOptions
+
+syn keyword etermEScreenOptions   contained url nextgroup=etermURL skipwhite
+
+syn match   etermURL              contained display
+                                  \ '\<\%(screen\|twin\)://\%([^@:/]\+\%(@[^:/]\+\%(:[^/]\+\)\=\)\=\)\=/\S\+'
+
+syn keyword etermEScreenOptions   contained firewall
+
+syn keyword etermEScreenOptions   contained delay nextgroup=etermNumber
+                                  \ skipwhite
+
+syn keyword etermEScreenOptions   contained bbar_font nextgroup=etermFont
+                                  \ skipwhite
+
+syn keyword etermEScreenOptions   contained bbar_dock nextgroup=etermDockOption
+                                  \ skipwhite
+
+syn region  etermEScreenContext   fold transparent matchgroup=etermContext
+                                  \ start='^\s*begin\s\+escreen'
+                                  \ end='^\s*end\>'
+                                  \ contains=@etermGeneral,etermEScreenOptions
 
 if exists("eterm_minlines")
   let b:eterm_minlines = eterm_minlines
 else
-  let b:eterm_minlines = 30
+  let b:eterm_minlines = 50
 endif
 exec "syn sync minlines=" . b:eterm_minlines
 
-" Define the default highlighting.
-" For version 5.7 and earlier: only when not done already
-" For version 5.8 and later: only when an item doesn't have highlighting yet
-if version >= 508 || !exists("did_eterm_syn_inits")
-  if version < 508
-    let did_eterm_syn_inits = 1
-    command -nargs=+ HiLink hi link <args>
-  else
-    command -nargs=+ HiLink hi def link <args>
-  endif
-
-  HiLink etermMagic		Special
-  HiLink etermComment		Comment
-  HiLink etermTodo		Todo
-  HiLink etermNumber		Number
-  HiLink etermString		String
-  HiLink etermBoolean		Boolean
-  HiLink etermColor		Number
-  HiLink etermPreProc		PreProc
-  HiLink etermFunctions    	Function
-  HiLink etermKeyMod		Special
-  HiLink etermContext		Keyword
-  HiLink etermOption		Keyword
-  HiLink etermType		Type
-  HiLink etermColorOptions	Keyword
-  HiLink etermAttrOptions	Keyword
-  HiLink etermIClassOptions	Keyword
-  HiLink etermImageTypes	Type
-  HiLink etermImageModes	Type
-  HiLink etermImageModesAllow	Keyword
-  HiLink etermImageOptions	Keyword
-  HiLink etermMenuOptions	Keyword
-  HiLink etermMenuItemOptions	Keyword
-  HiLink etermActionDef	Type
-  HiLink etermActionsOptions	Keyword
-  HiLink etermButtonDef	Type
-  HiLink etermButtonOptions	Keyword
-  HiLink etermMultiOptions	Keyword
-  HiLink etermXimOptions	Keyword
-  HiLink etermTogOptions	Keyword
-  HiLink etermKeyboardOptions	Keyword
-  HiLink etermMiscOptions	Keyword
-  delcommand HiLink
-endif
+hi def link etermTodo             Todo
+hi def link etermComment          Comment
+hi def link etermMagic            PreProc
+hi def link etermNumber           Number
+hi def link etermString           String
+hi def link etermBoolean          Boolean
+hi def link etermPreProc          PreProc
+hi def link etermFunctions        Function
+hi def link etermKeyMod           Constant
+hi def link etermOption           Keyword
+hi def link etermColorOptions     etermOption
+hi def link etermColor            String
+hi def link etermVideoType        Type
+hi def link etermColorType        Type
+hi def link etermColorNumber      Number
+hi def link etermColorSpec        etermColor
+hi def link etermContext          Keyword
+hi def link etermAttrOptions      etermOption
+hi def link etermGeometry         String
+hi def link etermScrollbarType    Type
+hi def link etermFontType         Type
+hi def link etermIClassOptions    etermOption
+hi def link etermImageOptions     etermOption
+hi def link etermImageTypes       Type
+hi def link etermImageModes       Type
+hi def link etermImageModesAllow  Keyword
+hi def link etermImageModesR      Type
+hi def link etermImageState       Keyword
+hi def link etermImageColorFG     etermColor
+hi def link etermImageColorBG     etermColor
+hi def link etermImageGeom        String
+hi def link etermImageCmod        etermOption
+hi def link etermImageBrightness  Number
+hi def link etermImageContrast    Number
+hi def link etermImageGamma       Number
+hi def link etermMenuItemOptions  etermOption
+hi def link etermMenuItemAction   Keyword
+hi def link etermMenuOptions      etermOption
+hi def link etermBind             Keyword
+hi def link etermBindMods         Identifier
+hi def link etermBindTo           Keyword
+hi def link etermBindType         Type
+hi def link etermBindParam        String
+hi def link etermButtonOptions    etermOption
+hi def link etermDockOption       etermOption
+hi def link etermButtonText       String
+hi def link etermButtonIcon       String
+hi def link etermButtonIconFile   String
+hi def link etermButtonAction     Keyword
+hi def link etermMultiOptions     etermOption
+hi def link etermEncoding         Identifier
+hi def link etermXimOptions       etermOption
+hi def link etermInputMethod      Identifier
+hi def link etermPreeditType      Type
+hi def link etermTogOptions       etermOption
+hi def link etermKeyboardOptions  etermOption
+hi def link etermKeysym           Constant
+hi def link etermMiscOptions      etermOption
+hi def link etermEScreenOptions   etermOption
+hi def link etermURL              Identifier
 
 let b:current_syntax = "eterm"
 
-" vim: set sts=2 sw=2:
+let &cpo = s:cpo_save
+unlet s:cpo_save

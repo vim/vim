@@ -1,49 +1,39 @@
 " Vim syntax file
-" Language:	    CVS RC File
-" Maintainer:	    Nikolai Weibull <source@pcppopper.org>
-" URL:		    http://www.pcppopper.org/syntax/pcp/cvsrc/
-" Latest Revision:  2004-05-06
-" arch-tag:	    1910f2a8-66f4-4dde-9d1a-297566934535
+" Language:         cvs(1) RC file
+" Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
+" Latest Revision:  2005-06-29
 
-if version < 600
-  syntax clear
-elseif exists("b:current_syntax")
+if exists("b:current_syntax")
   finish
 endif
 
-" strings
-syn region  cvsrcString	    start=+"+ skip=+\\\\\|\\\\"+ end=+"\|$+
-syn region  cvsrcString	    start=+'+ skip=+\\\\\|\\\\'+ end=+'\|$+
+let s:cpo_save = &cpo
+set cpo&vim
 
-" numbers
-syn match   cvsrcNumber	    "\<\d\+\>"
+syn region  cvsrcString   display start=+"+ skip=+\\\\\|\\\\"+ end=+"\|$+
+syn region  cvsrcString   display start=+'+ skip=+\\\\\|\\\\'+ end=+'\|$+
 
-" commands
-syn match   cvsrcBegin	    "^" nextgroup=cvsrcCommand skipwhite
+syn match   cvsrcNumber   display '\<\d\+\>'
 
-syn region  cvsrcCommand    contained transparent matchgroup=cvsrcCommand start="add\|admin\|checkout\|commit\|cvs\|diff\|export\|history\|import\|init\|log\|rdiff\|release\|remove\|rtag\|status\|tag\|update" end="$" contains=cvsrcOption,cvsrcString,cvsrcNumber keepend
+syn match   cvsrcBegin    display '^' nextgroup=cvsrcCommand skipwhite
 
-" options
-syn match   cvsrcOption	    "-\a\+"
+syn region  cvsrcCommand  contained transparent matchgroup=cvsrcCommand
+                          \ start='add\|admin\|checkout\|commit\|cvs\|diff'
+                          \ start='export\|history\|import\|init\|log'
+                          \ start='rdiff\|release\|remove\|rtag\|status\|tag'
+                          \ start='update'
+                          \ end='$'
+                          \ contains=cvsrcOption,cvsrcString,cvsrcNumber
+                          \ keepend
 
-" Define the default highlighting.
-" For version 5.7 and earlier: only when not done already
-" For version 5.8 and later: only when an item doesn't have highlighting yet
-if version >= 508 || !exists("did_cvsrc_syn_inits")
-  if version < 508
-    let did_cvsrc_syn_inits = 1
-    command -nargs=+ HiLink hi link <args>
-  else
-    command -nargs=+ HiLink hi def link <args>
-  endif
+syn match   cvsrcOption   contained display '-\a\+'
 
-  HiLink cvsrcString	String
-  HiLink cvsrcNumber	Number
-  HiLink cvsrcCommand	Keyword
-  HiLink cvsrcOption	Identifier
-  delcommand HiLink
-endif
+hi def link cvsrcString   String
+hi def link cvsrcNumber   Number
+hi def link cvsrcCommand  Keyword
+hi def link cvsrcOption   Identifier
 
 let b:current_syntax = "cvsrc"
 
-" vim: set sts=2 sw=2:
+let &cpo = s:cpo_save
+unlet s:cpo_save

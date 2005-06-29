@@ -1,86 +1,97 @@
 " Vim syntax file
-" Language:	    BDF Font definition
-" Maintainer:	    Nikolai Weibull <source@pcppopper.org>
-" URL:		    http://www.pcppopper.org/vim/syntax/pcp/bdf/
-" Latest Revision:  2004-05-06
-" arch-tag:	    b696b6ba-af24-41ba-b4eb-d248495eca68
+" Language:         BDF font definition
+" Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
+" Latest Revision:  2005-06-27
 
-if version < 600
-  syntax clear
-elseif exists("b:current_syntax")
+if exists("b:current_syntax")
   finish
 endif
 
-" numbers
-syn match   bdfNumber	    display "\<\(\x\+\|\d\+\.\d\+\)\>"
+let s:cpo_save = &cpo
+set cpo&vim
 
-" comments
-syn region  bdfComment	    start="^COMMENT\>" end="$" contains=bdfTodo
+syn region  bdfFontDefinition transparent matchgroup=bdfKeyword
+                              \ start='^STARTFONT\>' end='^ENDFONT\>'
+                              \ contains=bdfComment,bdfFont,bdfSize,
+                              \ bdfBoundingBox,bdfProperties,bdfChars,bdfChar
 
-" todo
-syn keyword bdfTodo	    contained TODO FIXME XXX NOTE
+syn match   bdfNumber         contained display
+                              \ '\<\%(\x\+\|[+-]\=\d\+\%(\.\d\+\)*\)'
 
-" strings
-syn region  bdfString	    start=+"+ skip=+""+ end=+"+
+syn keyword bdfTodo           contained FIXME TODO XXX NOTE
 
-" properties
-syn keyword bdfProperties   contained FONT SIZE FONTBOUNDINGBOX CHARS
+syn region  bdfComment        contained start='^COMMENT\>' end='$'
+                              \ contains=bdfTodo,@Spell
 
-" X11 properties
-syn keyword bdfXProperties  contained FONT_ASCENT FONT_DESCENT DEFAULT_CHAR
-syn keyword bdfXProperties  contained FONTNAME_REGISTRY FOUNDRY FAMILY_NAME
-syn keyword bdfXProperties  contained WEIGHT_NAME SLANT SETWIDTH_NAME PIXEL_SIZE
-syn keyword bdfXProperties  contained POINT_SIZE RESOLUTION_X RESOLUTION_Y SPACING
-syn keyword bdfXProperties  contained CHARSET_REGISTRY CHARSET_ENCODING COPYRIGHT
-syn keyword bdfXProperties  contained ADD_STYLE_NAME WEIGHT RESOLUTION X_HEIGHT
-syn keyword bdfXProperties  contained QUAD_WIDTH FONT AVERAGE_WIDTH
+syn region  bdfFont           contained matchgroup=bdfKeyword
+                              \ start='^FONT\>' end='$'
 
-syn region  bdfDefinition   transparent matchgroup=bdfDelim start="^STARTPROPERTIES\>" end="^ENDPROPERTIES\>" contains=bdfXProperties,bdfNumber,bdfString
+syn region  bdfSize           contained transparent matchgroup=bdfKeyword
+                              \ start='^SIZE\>' end='$' contains=bdfNumber
 
-" characters
-syn keyword bdfCharProperties contained ENCODING SWIDTH DWIDTH BBX ATTRIBUTES BITMAP
+syn region  bdfBoundingBox    contained transparent matchgroup=bdfKeyword
+                              \ start='^FONTBOUNDINGBOX' end='$'
+                              \ contains=bdfNumber
 
-syn match   bdfCharName	    contained display "\<[0-9a-zA-Z]\{1,14}\>"
-syn match   bdfCharNameError contained display "\<[0-9a-zA-Z]\{15,}\>"
+syn region  bdfProperties     contained transparent matchgroup=bdfKeyword
+                              \ start='^STARTPROPERTIES' end='^ENDPROPERTIES'
+                              \ contains=bdfNumber,bdfString,bdfProperty,
+                              \ bdfXProperty
 
-syn region  bdfStartChar    transparent matchgroup=bdfDelim start="\<STARTCHAR\>" end="$" contains=bdfCharName,bdfCharNameError
+syn keyword bdfProperty       contained FONT_ASCENT FONT_DESCENT DEFAULT_CHAR
+syn match   bdfProperty       contained '^\S\+'
 
-syn region  bdfCharDefinition transparent start="^STARTCHAR\>" matchgroup=bdfDelim end="^ENDCHAR\>" contains=bdfCharProperties,bdfNumber,bdfStartChar
+syn keyword bdfXProperty      contained FONT_ASCENT FONT_DESCENT DEFAULT_CHAR
+                              \ FONTNAME_REGISTRY FOUNDRY FAMILY_NAME
+                              \ WEIGHT_NAME SLANT SETWIDTH_NAME PIXEL_SIZE
+                              \ POINT_SIZE RESOLUTION_X RESOLUTION_Y SPACING
+                              \ CHARSET_REGISTRY CHARSET_ENCODING COPYRIGHT
+                              \ ADD_STYLE_NAME WEIGHT RESOLUTION X_HEIGHT
+                              \ QUAD_WIDTH FONT AVERAGE_WIDTH
 
-" font
-syn region  bdfFontDefinition transparent matchgroup=bdfDelim start="^STARTFONT\>" end="^ENDFONT\>" contains=bdfProperties,bdfDefinition,bdfCharDefinition,bdfNumber,bdfComment
+syn region  bdfString         contained start=+"+ skip=+""+ end=+"+
+
+syn region  bdfChars          contained display transparent
+                              \ matchgroup=bdfKeyword start='^CHARS' end='$'
+                              \ contains=bdfNumber
+
+syn region  bdfChar           transparent matchgroup=bdfKeyword
+                              \ start='^STARTCHAR' end='^ENDCHAR'
+                              \ contains=bdfEncoding,bdfWidth,bdfAttributes,
+                              \ bdfBitmap
+
+syn region  bdfEncoding       contained transparent matchgroup=bdfKeyword
+                              \ start='^ENCODING' end='$' contains=bdfNumber
+
+syn region  bdfWidth          contained transparent matchgroup=bdfKeyword
+                              \ start='^SWIDTH\|DWIDTH\|BBX' end='$'
+                              \ contains=bdfNumber
+
+syn region  bdfAttributes     contained transparent matchgroup=bdfKeyword
+                              \ start='^ATTRIBUTES' end='$'
+
+syn keyword bdfBitmap         contained BITMAP
 
 if exists("bdf_minlines")
   let b:bdf_minlines = bdf_minlines
 else
-  let b:bdf_minlines = 50
+  let b:bdf_minlines = 30
 endif
-exec "syn sync minlines=" . b:bdf_minlines
+exec "syn sync ccomment bdfChar minlines=" . b:bdf_minlines
 
-" Define the default highlighting.
-" For version 5.7 and earlier: only when not done already
-" For version 5.8 and later: only when an item doesn't have highlighting yet
-if version >= 508 || !exists("did_bdf_syn_inits")
-  if version < 508
-    let did_bdf_syn_inits = 1
-    command -nargs=+ HiLink hi link <args>
-  else
-    command -nargs=+ HiLink hi def link <args>
-  endif
 
-  HiLink bdfComment		Comment
-  HiLink bdfTodo		Todo
-  HiLink bdfNumber		Number
-  HiLink bdfString		String
-  HiLink bdfProperties	Keyword
-  HiLink bdfXProperties	Keyword
-  HiLink bdfCharProperties	Structure
-  HiLink bdfDelim		Delimiter
-  HiLink bdfCharName		String
-  HiLink bdfCharNameError	Error
-  delcommand HiLink
-endif
+hi def link bdfKeyword        Keyword
+hi def link bdfNumber         Number
+hi def link bdfTodo           Todo
+hi def link bdfComment        Comment
+hi def link bdfFont           String
+hi def link bdfProperty       Identifier
+hi def link bdfXProperty      Identifier
+hi def link bdfString         String
+hi def link bdfChars          Keyword
+hi def link bdfBitmap         Keyword
 
 let b:current_syntax = "bdf"
 
-" vim: set sts=2 sw=2:
+let &cpo = s:cpo_save
+unlet s:cpo_save

@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Jun 17
+" Last Change:	2005 Jun 29
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -193,6 +193,9 @@ au BufNewFile,BufRead *.atl,*.as		setf atlas
 
 " Automake
 au BufNewFile,BufRead [mM]akefile.am		setf automake
+
+" Autotest .at files are actually m4
+au BufNewFile,BufRead *.at			setf m4
 
 " Avenue
 au BufNewFile,BufRead *.ave			setf ave
@@ -733,11 +736,17 @@ au BufNewFile,BufRead *.ace,*.ACE		setf lace
 " Latte
 au BufNewFile,BufRead *.latte,*.lte		setf latte
 
+" Limits
+au BufNewFile,BufRead /etc/limits		setf limits
+
 " LambdaProlog (*.mod too, see Modsim)
 au BufNewFile,BufRead *.sig			setf lprolog
 
 " LDAP LDIF
 au BufNewFile,BufRead *.ldif			setf ldif
+
+" Ld loader
+au BufNewFile,BufRead *.ld			setf ld
 
 " Lex
 au BufNewFile,BufRead *.lex,*.l			setf lex
@@ -761,8 +770,17 @@ else
   au BufNewFile,BufRead *.lsp,*.lisp,*.el,*.cl,*.jl,.emacs,.sawfishrc setf lisp
 endif
 
+" SBCL implementation of Common Lisp
+au BufNewFile,BufRead sbclrc,.sbclrc		setf lisp
+
 " Lite
 au BufNewFile,BufRead *.lite,*.lt		setf lite
+
+" Login access
+au BufNewFile,BufRead /etc/login.access		setf loginaccess
+
+" Login defs
+au BufNewFile,BufRead /etc/login.defs		setf logindefs
 
 " Logtalk
 au BufNewFile,BufRead *.lgt			setf logtalk
@@ -989,6 +1007,9 @@ au BufNewFile,BufRead *.ora			setf ora
 
 " Packet filter conf
 au BufNewFile,BufRead pf.conf			setf pf
+
+" Pam conf
+au BufNewFile,BufRead /etc/pam.conf		setf pamconf
 
 " PApp
 au BufNewFile,BufRead *.papp,*.pxml,*.pxsl	setf papp
@@ -1535,6 +1556,9 @@ au BufNewFile,BufRead *.stp			setf stp
 " Standard ML
 au BufNewFile,BufRead *.sml			setf sml
 
+" Sysctl
+au BufNewFile,BufRead /etc/sysctl.conf		setf sysctl
+
 " Sudoers
 au BufNewFile,BufRead /etc/sudoers,sudoers.tmp	setf sudoers
 
@@ -1593,12 +1617,15 @@ au BufNewFile,BufRead *.uit,*.uil		setf uil
 " UnrealScript
 au BufNewFile,BufRead *.uc			setf uc
 
+" Updatedb
+au BufNewFile,BufRead /etc/updatedb.conf	setf updatedb
+
 " Verilog HDL
 au BufNewFile,BufRead *.v			setf verilog
 
 " VHDL
 au BufNewFile,BufRead *.hdl,*.vhd,*.vhdl,*.vbe,*.vst  setf vhdl
-au BufNewFile,BufRead *.vhdl_[0-9]*  		call s:StarSetf('vhdl')
+au BufNewFile,BufRead *.vhdl_[0-9]*		call s:StarSetf('vhdl')
 
 " Vim script
 au BufNewFile,BufRead *.vim,.exrc,_exrc		setf vim
@@ -1673,6 +1700,9 @@ au BufNewFile,BufRead XF86Config
 " Xorg config
 au BufNewFile,BufRead xorg.conf,xorg.conf-4	let b:xf86c_xfree86_version = 4 | setf xf86conf
 
+" Xinetd conf
+au BufNewFile,BufRead /etc/xinetd.conf		setf xinetd
+
 " XS Perl extension interface language
 au BufNewFile,BufRead *.xs			setf xs
 
@@ -1709,7 +1739,23 @@ au BufNewFile,BufRead *.xsd			setf xsd
 au BufNewFile,BufRead *.xsl,*.xslt		setf xslt
 
 " Yacc
-au BufNewFile,BufRead *.y,*.yy			setf yacc
+au BufNewFile,BufRead *.yy			setf yacc
+
+" Yacc or racc
+au BufNewFile,BufRead *.y			call s:FTy()
+
+fun! s:FTy()
+  let n = 1
+  while n < 10
+    if getline(n) =~ '^\s*\(#\|class\>\)'
+      setf racc
+      return
+    endif
+    let n = n + 1
+  endwhile
+  setf yacc
+endfun
+
 
 " Yaml
 au BufNewFile,BufRead *.yaml,*.yml		setf yaml
@@ -1794,6 +1840,9 @@ au BufNewFile,BufRead muttrc*,Muttrc*		call s:StarSetf('muttrc')
 " Nroff macros
 au BufNewFile,BufRead tmac.*			call s:StarSetf('nroff')
 
+" Pam conf
+au BufNewFile,BufRead /etc/pam.d/*		call s:StarSetf('pamconf')
+
 " Printcap and Termcap
 au BufNewFile,BufRead *printcap*
 	\ if !did_filetype()
@@ -1824,6 +1873,9 @@ au BufNewFile,BufRead XF86Config*
 
 " X11 xmodmap
 au BufNewFile,BufRead *xmodmap*			call s:StarSetf('xmodmap')
+
+" Xinetd conf
+au BufNewFile,BufRead /etc/xinetd.d/*		call s:StarSetf('xinetd')
 
 " Z-Shell script
 au BufNewFile,BufRead zsh*,zlog*		call s:StarSetf('zsh')

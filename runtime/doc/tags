@@ -2415,6 +2415,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :spelld	spell.txt	/*:spelld*
 :spelldump	spell.txt	/*:spelldump*
 :spellgood	spell.txt	/*:spellgood*
+:spellr	spell.txt	/*:spellr*
+:spellrepall	spell.txt	/*:spellrepall*
 :spellw	spell.txt	/*:spellw*
 :spellwrong	spell.txt	/*:spellwrong*
 :split	windows.txt	/*:split*
@@ -3710,6 +3712,8 @@ E749	eval.txt	/*E749*
 E75	vi_diff.txt	/*E75*
 E750	repeat.txt	/*E750*
 E751	spell.txt	/*E751*
+E752	spell.txt	/*E752*
+E753	spell.txt	/*E753*
 E754	spell.txt	/*E754*
 E756	spell.txt	/*E756*
 E758	spell.txt	/*E758*
@@ -5141,6 +5145,7 @@ hebrew	hebrew.txt	/*hebrew*
 hebrew.txt	hebrew.txt	/*hebrew.txt*
 help	various.txt	/*help*
 help-context	help.txt	/*help-context*
+help-tags	tags	1
 help-translated	various.txt	/*help-translated*
 help-xterm-window	various.txt	/*help-xterm-window*
 help.txt	help.txt	/*help.txt*
@@ -6253,6 +6258,7 @@ sniff-compiling	if_sniff.txt	/*sniff-compiling*
 sniff-intro	if_sniff.txt	/*sniff-intro*
 sort()	eval.txt	/*sort()*
 sorting	change.txt	/*sorting*
+soundfold()	eval.txt	/*soundfold()*
 space	intro.txt	/*space*
 spec-customizing	pi_spec.txt	/*spec-customizing*
 spec-how-to-use-it	pi_spec.txt	/*spec-how-to-use-it*
@@ -6275,6 +6281,8 @@ spell-affix-RAR	spell.txt	/*spell-affix-RAR*
 spell-affix-REP	spell.txt	/*spell-affix-REP*
 spell-affix-SAL	spell.txt	/*spell-affix-SAL*
 spell-affix-SFX	spell.txt	/*spell-affix-SFX*
+spell-affix-SOFOFROM	spell.txt	/*spell-affix-SOFOFROM*
+spell-affix-SOFOTO	spell.txt	/*spell-affix-SOFOTO*
 spell-affix-UPP	spell.txt	/*spell-affix-UPP*
 spell-affix-chars	spell.txt	/*spell-affix-chars*
 spell-affix-mbyte	spell.txt	/*spell-affix-mbyte*

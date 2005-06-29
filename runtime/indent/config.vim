@@ -1,18 +1,17 @@
 " Vim indent file
-" Language:	    Autoconf configure.{ac,in} file
-" Maintainer:	    Nikolai Weibull <source@pcppopper.org>
-" URL:		    http://www.pcppopper.org/vim/indent/pcp/config/
-" Latest Revision:  2004-04-25
-" arch-tag:	    7779c341-796f-408e-80e4-a55c26b519a4
-" TODO:		    how about nested [()]'s in one line
-"		    what's wrong with '\\\@!'?
+" Language:         Autoconf configure.{ac,in} file
+" Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
+" URL:              http://www.pcppopper.org/vim/indent/pcp/config/
+" Latest Revision:  2005-06-29
+" TODO:             how about nested [()]'s in one line
+"                   what's wrong with '\\\@!'?
 
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")
   finish
 endif
 
-source <sfile>:p:h/sh.vim       " will set b:did_indent
+runtime! indent/sh.vim          " will set b:did_indent
 
 setlocal indentexpr=GetConfigIndent()
 setlocal indentkeys=!^F,o,O,=then,=do,=else,=elif,=esac,=fi,=fin,=fil,=done

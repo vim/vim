@@ -1,94 +1,68 @@
 " Vim syntax file
-" Language:	    Relax NG compact syntax
-" Maintainer:	    Nikolai Weibull <source@pcppopper.org>
-" URL:		    http://www.pcppopper.org/vim/syntax/pcp/rnc/
-" Latest Revision:  2004-05-22
-" arch-tag:	    061ee0a2-9efa-4e2a-b1a9-14cf5172d645
+" Language:         Relax NG compact syntax
+" Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
+" Latest Revision:  2005-06-27
 
-if version < 600
-  syntax clear
-elseif exists("b:current_syntax")
+if exists("b:current_syntax")
   finish
 endif
 
-" Set iskeyword since we need `-' (and potentially others) in keywords.
-" For version 5.x: Set it globally
-" For version 6.x: Set it locally
-if version >= 600
-  command -nargs=1 SetIsk setlocal iskeyword=<args>
-else
-  command -nargs=1 SetIsk set iskeyword=<args>
-endif
-SetIsk @,48-57,_,-,.
-delcommand SetIsk
+let s:cpo_save = &cpo
+set cpo&vim
 
-" Todo
-syn keyword rncTodo	    contained TODO FIXME XXX NOTE
+setlocal iskeyword=@,48-57,_,-,.
 
-" Comments
-syn region  rncComment	    matchgroup=rncComment start='^\s*#' end='$' contains=rncTodo
+syn keyword rncTodo         contained TODO FIXME XXX NOTE
 
-" Operators
-syn match   rncOperator	    '[-|,&+?*~]'
-syn match   rncOperator	    '\%(|&\)\=='
-syn match   rncOperator	    '>>'
+syn region  rncComment      matchgroup=rncComment start='^\s*#' end='$'
+                            \ contains=rncTodo,@Spell
 
-" Namespaces
-syn match   rncNamespace    '\<\k\+:'
+syn match   rncOperator     display '[-|,&+?*~]'
+syn match   rncOperator     display '\%(|&\)\=='
+syn match   rncOperator     display '>>'
 
-" Quoted Identifier
-syn match   rncQuoted	    '\\\k\+\>'
+syn match   rncNamespace    display '\<\k\+:'
 
-" Special Characters
-syn match   rncSpecial	    '\\x{\x\+}'
+syn match   rncQuoted       display '\\\k\+\>'
 
-" Annotations
-syn region Annotation	    transparent start='\[' end='\]' contains=ALLBUT,rncComment,rncTodo
+syn match   rncSpecial      display '\\x{\x\+}'
 
-" Literals
-syn region  rncLiteral	    matchgroup=rncLiteral oneline start=+"+ end=+"+ contains=rncSpecial
-syn region  rncLiteral	    matchgroup=rncLiteral oneline start=+'+ end=+'+
-syn region  rncLiteral	    matchgroup=rncLiteral start=+"""+ end=+"""+ contains=rncSpecial
-syn region  rncLiteral	    matchgroup=rncLiteral start=+'''+ end=+'''+
+syn region rncAnnotation    transparent start='\[' end='\]'
+                            \ contains=ALLBUT,rncComment,rncTodo
 
-" Delimiters
-syn match   rncDelimiter    '[{},()]'
+syn region  rncLiteral      matchgroup=rncLiteral oneline start=+"+ end=+"+
+                            \ contains=rncSpecial
+syn region  rncLiteral      matchgroup=rncLiteral oneline start=+'+ end=+'+
+syn region  rncLiteral      matchgroup=rncLiteral start=+"""+ end=+"""+
+                            \ contains=rncSpecial
+syn region  rncLiteral      matchgroup=rncLiteral start=+'''+ end=+'''+
 
-" Keywords
-syn keyword rncKeyword	    datatypes default div empty external grammar
-syn keyword rncKeyword	    include inherit list mixed name namespace
-syn keyword rncKeyword	    notAllowed parent start string text token
+syn match   rncDelimiter    display '[{},()]'
 
-" Identifiers
-syn match   rncIdentifier   '\k\+\_s*\%(=\|&=\||=\)\@=' nextgroup=rncOperator
-syn keyword rncKeyword	    nextgroup=rncIdName skipwhite skipempty element attribute
-syn match   rncIdentifier   contained '\k\+'
+syn keyword rncKeyword      datatypes default div empty external grammar
+syn keyword rncKeyword      include inherit list mixed name namespace
+syn keyword rncKeyword      notAllowed parent start string text token
 
-" Define the default highlighting.
-" For version 5.7 and earlier: only when not done already
-" For version 5.8 and later: only when an item doesn't have highlighting yet
-if version >= 508 || !exists("did_rnc_syn_inits")
-  if version < 508
-    let did_rnc_syn_inits = 1
-    command -nargs=+ HiLink hi link <args>
-  else
-    command -nargs=+ HiLink hi def link <args>
-  endif
+syn match   rncIdentifier   display '\k\+\_s*\%(=\|&=\||=\)\@='
+                            \ nextgroup=rncOperator
+syn keyword rncKeyword      element attribute
+                            \ nextgroup=rncIdName skipwhite skipempty
+syn match   rncIdName       contained '\k\+'
 
-  HiLink rncTodo	Todo
-  HiLink rncComment	Comment
-  HiLink rncOperator	Operator
-  HiLink rncNamespace	Identifier
-  HiLink rncQuoted	Special
-  HiLink rncSpecial	SpecialChar
-  HiLink rncLiteral	String
-  HiLink rncDelimiter	Delimiter
-  HiLink rncKeyword	Keyword
-  HiLink rncIdentifier	Identifier
-
-  delcommand HiLink
-endif
+hi def link rncTodo         Todo
+hi def link rncComment      Comment
+hi def link rncOperator     Operator
+hi def link rncNamespace    Identifier
+hi def link rncQuoted       Special
+hi def link rncSpecial      SpecialChar
+hi def link rncAnnotation   Special
+hi def link rncLiteral      String
+hi def link rncDelimiter    Delimiter
+hi def link rncKeyword      Keyword
+hi def link rncIdentifier   Identifier
+hi def link rncIdName       Identifier
 
 let b:current_syntax = "rnc"
 
-" vim: set sts=2 sw=2:
+let &cpo = s:cpo_save
+unlet s:cpo_save

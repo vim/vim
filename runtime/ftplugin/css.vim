@@ -1,20 +1,15 @@
 " Vim filetype plugin file
-" Language:	    CSS
-" Maintainer:	    Nikolai Weibull <source@pcppopper.org>
-" URL:		    http://www.pcppopper.org/vim/ftplugin/pcp/css/
-" Latest Revision:  2004-04-25
-" arch-tag:	    5fa7c74f-bf1a-47c4-b06f-6efe8f48db3b
+" Language:         CSS
+" Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
+" Latest Revision:  2005-06-29
 
-" Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
   finish
 endif
-
-" Don't load another plugin for this buffer
 let b:did_ftplugin = 1
 
-let b:undo_ftplugin = "setl com<"
+let b:undo_ftplugin = "setl com< cms< inc<"
 
-setlocal comments=s1:/*,mb:*,ex:*/
+setlocal comments=s1:/*,mb:*,ex:*/ commentstring&
 
-" vim: set sts=2 sw=2:
+let &l:include = '^\s*@import\s\+\%(url(\)\='

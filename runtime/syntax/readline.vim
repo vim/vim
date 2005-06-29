@@ -1,152 +1,176 @@
 " Vim syntax file
-" Language:	    readline configuration file
-" Maintainer:	    Nikolai Weibull <source@pcppopper.org>
-" URL:		    http://www.pcppopper.org/vim/syntax/pcp/readline/
-" Latest Revision:  2004-05-22
-" arch-tag:	    6d8e7da4-b39c-4bf7-8e6a-d9135f993457
-" Variables:
+" Language:         readline(3) configuration file
+" Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
+" Latest Revision:  2005-06-29
 "   readline_has_bash - if defined add support for bash specific
-"			settings/functions
+"                       settings/functions
 
-if version < 600
-  syntax clear
-elseif exists("b:current_syntax")
+if exists("b:current_syntax")
   finish
 endif
 
-" Set iskeyword since we need `-' (and potentially others) in keywords.
-" For version 5.x: Set it globally
-" For version 6.x: Set it locally
-if version >= 600
-  command -nargs=1 SetIsk setlocal iskeyword=<args>
-else
-  command -nargs=1 SetIsk set iskeyword=<args>
-endif
-SetIsk 48-57,65-90,97-122,-
-delcommand SetIsk
+let s:cpo_save = &cpo
+set cpo&vim
 
-" comments
-syn region  readlineComment	display oneline matchgroup=readlineComment start="^\s*#" end="$" contains=readlineTodo
+setlocal iskeyword=@,48-57,-
 
-" todo
-syn keyword readlineTodo	contained TODO FIXME XXX NOTE
+syn keyword readlineTodo        contained TODO FIXME XXX NOTE
 
-" strings (argh...not the way i want it, but fine..."
-syn match   readlineString	"^\s*[A-Za-z-]\+:"me=e-1 contains=readlineKeys
-syn region  readlineString	display oneline start=+"+ skip=+\\\\\|\\"+ end=+"+ contains=readlineKeysTwo
+syn region  readlineComment     display oneline matchgroup=readlineComment
+                                \ start='^\s*#' end='$'
+                                \ contains=readlineTodo,@Spell
 
-" special key
+syn match   readlineString      '^\s*[A-Za-z-]\+:'me=e-1 contains=readlineKeys
+syn region  readlineString      display oneline start=+"+ skip=+\\\\\|\\"+
+                                \ end=+"+ contains=readlineKeysTwo
+
 syn case ignore
-syn keyword readlineKeys	contained Control Meta Del Esc Escape LFD Newline Ret Return Rubout Space Spc Tab
+syn keyword readlineKeys        contained Control Meta Del Esc Escape LFD
+                                \ Newline Ret Return Rubout Space Spc Tab
 syn case match
 
-syn match   readlineKeysTwo	contained +\\\([CM]-\|[e\\"'abdfnrtv]\|\o\{3}\|x\x\{3}\)+
+syn match   readlineKeysTwo     contained display
+                                \ +\\\([CM]-\|[e\\"'abdfnrtv]\|\o\{3}\|x\x\{3}\)+
 
-" keymaps
-syn match   readlineKeymaps	contained "emacs\(-standard\|-meta\|-ctlx\)\="
-syn match   readlineKeymaps	contained "vi\(-move\|-command\|-insert\)\="
+syn match   readlineKeymaps     contained display
+                                \ 'emacs\(-standard\|-meta\|-ctlx\)\='
+syn match   readlineKeymaps     contained display
+                                \ 'vi\(-move\|-command\|-insert\)\='
 
-" bell styles
-syn keyword readlineBellStyles	contained audible visible none
+syn keyword readlineBellStyles  contained audible visible none
 
-" numbers
-syn match   readlineNumber	contained "\<\d\+\>"
+syn match   readlineNumber      contained display '\<\d\+\>'
 
-" booleans
 syn case ignore
-syn keyword readlineBoolean	contained on off
+syn keyword readlineBoolean     contained on off
 syn case match
 
-" conditionals
-syn keyword readlineIfOps	contained mode term
+syn keyword readlineIfOps       contained mode term
 
-syn region  readlineConditional display oneline transparent matchgroup=readlineConditional start="^\s*$if" end="$" contains=readlineIfOps,readlineKeymaps
-syn match   readlineConditional	"^\s*$\(else\|endif\)\>"
+syn region  readlineConditional display oneline transparent
+                                \ matchgroup=readlineConditional
+                                \ start='^\s*$if' end="$"
+                                \ contains=readlineIfOps,readlineKeymaps
+syn match   readlineConditional display '^\s*$\(else\|endif\)\>'
 
-" include
-syn match   readlineInclude	"^\s*$include\>"
+syn match   readlineInclude     display '^\s*$include\>'
 
-" settings
+syn region  readlineSet         display oneline transparent
+                                \ matchgroup=readlineKeyword start='^\s*set\>'
+                                \ end="$"me=e-1 contains=readlineNumber,
+                                \ readlineBoolean,readlineKeymaps,
+                                \ readlineBellStyles,readlineSettings
 
-syn region  readlineSet		display oneline transparent matchgroup=readlineKeyword start="^\s*set\>" end="$"me=e-1 contains=readlineNumber,readlineBoolean,readlineKeymaps,readlineBellStyles,readlineSettings
+syn keyword readlineSettings    contained bell-style comment-begin
+                                \ completion-ignore-case completion-query-items
+                                \ convert-meta disable-completion editing-mode
+                                \ enable-keypad expand-tilde
+                                \ horizontal-scroll-mode mark-directories
+                                \ keymap mark-modified-lines meta-flag
+                                \ input-meta output-meta
+                                \ print-completions-horizontally
+                                \ show-all-if-ambiguous visible-stats
+                                \ prefer-visible-bell blink-matching-paren
+                                \ match-hidden-files history-preserve-point
+                                \ isearch-terminators
 
-syn keyword readlineSettings	contained bell-style comment-begin completion-ignore-case
-syn keyword readlineSettings	contained completion-query-items convert-meta disable-completion editing-mode enable-keypad
-syn keyword readlineSettings	contained expand-tilde horizontal-scroll-mode mark-directories keymap mark-modified-lines meta-flag
-syn keyword readlineSettings	contained input-meta output-meta print-completions-horizontally show-all-if-ambiguous visible-stats
-syn keyword readlineSettings	contained prefer-visible-bell blink-matching-paren
-syn keyword readlineSettings	contained match-hidden-files history-preserve-point isearch-terminators
+syn region  readlineBinding     display oneline transparent
+                                \ matchgroup=readlineKeyword start=':' end='$'
+                                \ contains=readlineKeys,readlineFunctions
 
-" bash extensions
+syn keyword readlineFunctions   contained display
+                                \ beginning-of-line end-of-line forward-char
+                                \ backward-char forward-word backward-word
+                                \ clear-screen redraw-current-line
+                                \ accept-line previous-history
+                                \ next-history beginning-of-history
+                                \ end-of-history reverse-search-history
+                                \ forward-search-history
+                                \ non-incremental-reverse-search-history
+                                \ non-incremental-forward-search-history
+                                \ history-search-forward
+                                \ history-search-backward
+                                \ yank-nth-arg yank-last-arg
+                                \ delete-char backward-delete-char
+                                \ forward-backward-delete-char quoted-insert
+                                \ tab-insert self-insert transpose-chars
+                                \ transpose-words upcase-word downcase-word
+                                \ capitalize-word overwrite-mode kill-line
+                                \ backward-kill-line unix-line-discard
+                                \ kill-whole-line kill-word backward-kill-word
+                                \ unix-word-rubout unix-filename-rubout
+                                \ delete-horizontal-space kill-region
+                                \ copy-region-as-kill copy-backward-word
+                                \ copy-forward-word yank yank-pop
+                                \ digit-argument universal-argument complete
+                                \ possible-completions insert-completions
+                                \ menu-complete delete-char-or-list
+                                \ start-kbd-macro end-kbd-macro
+                                \ call-last-kbd-macro re-read-init-file
+                                \ abort do-uppercase-version prefix-meta
+                                \ undo revert-line tilde-expand set-mark
+                                \ exchange-point-and-mark character-search
+                                \ character-search-backward insert-comment
+                                \ dump-functions dump-variables dump-macros
+                                \ emacs-editing-mode vi-editing-mode
+                                \ vi-complete vi-char-search vi-redo
+                                \ vi-search vi-arg-digit vi-append-eol
+                                \ vi-prev-word vi-change-to vi-delete-to
+                                \ vi-end-word vi-fetch-history vi-insert-beg
+                                \ vi-search-again vi-put vi-replace
+                                \ vi-subst vi-yank-to vi-first-print
+                                \ vi-yank-arg vi-goto-mark vi-append-mode
+                                \ vi-insertion-mode prev-history vi-set-mark
+                                \ vi-search-again vi-put vi-change-char
+                                \ vi-subst vi-delete vi-yank-to
+                                \ vi-column vi-change-case vi-overstrike
+                                \ vi-overstrike-delete do-lowercase-version
+                                \ delete-char-or-list tty-status
+                                \ arrow-key-prefix vi-back-to-indent vi-bword
+                                \ vi-bWord vi-eword vi-eWord vi-fword vi-fWord
+                                \ vi-next-word
+
 if exists("readline_has_bash")
-  "syn keyword readlineSettings	contained
+  syn keyword readlineFunctions contained
+                                \ shell-expand-line history-expand-line
+                                \ magic-space alias-expand-line
+                                \ history-and-alias-expand-line
+                                \ insert-last-argument operate-and-get-next
+                                \ forward-backward-delete-char
+                                \ delete-char-or-list complete-filename
+                                \ possible-filename-completions
+                                \ complete-username
+                                \ possible-username-completions
+                                \ complete-variable
+                                \ possible-variable-completions
+                                \ complete-hostname
+                                \ possible-hostname-completions
+                                \ complete-command
+                                \ possible-command-completions
+                                \ dynamic-complete-history
+                                \ complete-into-braces
+                                \ glob-expand-word glob-list-expansions
+                                \ display-shell-version glob-complete-word
+                                \ edit-and-execute-command
 endif
 
-" key bindings
-syn region  readlineBinding	display oneline transparent matchgroup=readlineKeyword start=":" end="$" contains=readlineKeys,readlineFunctions
-
-syn match   readlineFunctions	contained "\<\(beginning\|end\)-of-line\>"
-syn match   readlineFunctions	contained "\<\(backward\|forward\)-\(char\|word\)\>"
-syn match   readlineFunctions	contained "\<\(previous\|next\|\(beginning\|end\)-of\|\(non-incremental-\)\=\(reverse\|forward\)-search\)-history\>"
-syn match   readlineFunctions	contained "\<history-search-\(forward\|backward\)\>"
-syn match   readlineFunctions	contained "\<yank-\(nth\|last\)-arg\>"
-syn match   readlineFunctions	contained "\<\(backward-\)\=kill-\(\(whole-\)\=line\|word\)\>"
-syn match   readlineFunctions	contained "\<\(start\|end\|call-last\)-kbd-macro\>"
-syn match   readlineFunctions	contained "\<dump-\(functions\|variables\|macros\)\>"
-syn match   readlineFunctions	contained "\<non-incremental-\(reverse\|forward\)-search-history-again\>"
-syn keyword readlineFunctions	contained clear-screen redraw-current-line accept-line delete-char backward-delete-char quoted-insert tab-insert
-syn keyword readlineFunctions	contained self-insert transpose-chars transpose-words downcase-word capitalize-word unix-word-rubout
-syn keyword readlineFunctions	contained delete-horizontal-space kill-region copy-region-as-kill copy-backward-word copy-forward-word yank yank-pop
-syn keyword readlineFunctions	contained digit-argument universal-argument complete possible-completions insert-completions menu-complete
-syn keyword readlineFunctions	contained re-read-init-file abort do-uppercase-version prefix-meta undo revert-line tilde-expand set-mark
-syn keyword readlineFunctions	contained exchange-point-and-mark character-search character-search-backward insert-comment emacs-editing-mode vi-editing-mode
-syn keyword readlineFunctions	contained unix-line-discard upcase-word backward-delete-word vi-eof-maybe vi-movement-mode vi-match vi-tilde-expand
-syn keyword readlineFunctions	contained vi-complete vi-char-search vi-redo vi-search vi-arg-digit vi-append-eol vi-prev-word vi-change-to vi-delete-to
-syn keyword readlineFunctions	contained vi-end-word vi-fetch-history vi-insert-beg vi-search-again vi-put vi-replace vi-subst vi-yank-to vi-first-print
-syn keyword readlineFunctions	contained vi-yank-arg vi-goto-mark vi-append-mode vi-insertion-mode prev-history vi-set-mark vi-search-again vi-put vi-change-char
-syn keyword readlineFunctions	contained vi-subst vi-delete vi-yank-to vi-column vi-change-case vi-overstrike vi-overstrike-delete
-syn keyword readlineFunctions	contained do-lowercase-version delete-char-or-list tty-status arrow-key-prefix
-syn keyword readlineFunctions	contained vi-back-to-indent vi-bword vi-bWord vi-eword vi-eWord vi-fword vi-fWord vi-next-word
-
-" bash extensions
-if exists("readline_has_bash")
-  syn keyword readlineFunctions	contained shell-expand-line history-expand-line magic-space alias-expand-line history-and-alias-expand-line insert-last-argument
-  syn keyword readlineFunctions	contained operate-and-get-next forward-backward-delete-char delete-char-or-list complete-filename possible-filename-completions
-  syn keyword readlineFunctions	contained complete-username possible-username-completions complete-variable possible-variable-completions complete-hostname
-  syn keyword readlineFunctions	contained possible-hostname-completions complete-command possible-command-completions dynamic-complete-history complete-into-braces
-  syn keyword readlineFunctions	contained glob-expand-word glob-list-expansions display-shell-version
-  syn keyword readlineFunctions	contained glob-complete-word edit-and-execute-command
-endif
-
-" Define the default highlighting.
-" For version 5.7 and earlier: only when not done already
-" For version 5.8 and later: only when an item doesn't have highlighting yet
-if version >= 508 || !exists("did_readline_syn_inits")
-  if version < 508
-    let did_readline_syn_inits = 1
-    command -nargs=+ HiLink hi link <args>
-  else
-    command -nargs=+ HiLink hi def link <args>
-  endif
-
-  HiLink readlineComment	Comment
-  HiLink readlineTodo		Todo
-  HiLink readlineString		String
-  HiLink readlineKeys		SpecialChar
-  HiLink readlineKeysTwo	SpecialChar
-  HiLink readlineKeymaps	Constant
-  HiLink readlineBellStyles	Constant
-  HiLink readlineNumber		Number
-  HiLink readlineBoolean	Boolean
-  HiLink readlineIfOps		Type
-  HiLink readlineConditional	Conditional
-  HiLink readlineInclude	Include
-  HiLink readlineKeyword	Keyword
-  HiLink readlineSettings	Type
-  HiLink readlineFunctions	Type
-  delcommand HiLink
-endif
+hi def link readlineComment     Comment
+hi def link readlineTodo        Todo
+hi def link readlineString      String
+hi def link readlineKeys        SpecialChar
+hi def link readlineKeysTwo     SpecialChar
+hi def link readlineKeymaps     Constant
+hi def link readlineBellStyles  Constant
+hi def link readlineNumber      Number
+hi def link readlineBoolean     Boolean
+hi def link readlineIfOps       Type
+hi def link readlineConditional Conditional
+hi def link readlineInclude     Include
+hi def link readlineKeyword     Keyword
+hi def link readlineSettings    Type
+hi def link readlineFunctions   Type
 
 let b:current_syntax = "readline"
 
-" vim: set sts=2 sw=2:
+let &cpo = s:cpo_save
+unlet s:cpo_save

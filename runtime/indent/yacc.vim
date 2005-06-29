@@ -1,9 +1,7 @@
 " Vim indent file
-" Language:	    YACC input file
-" Maintainer:	    Nikolai Weibull <source@pcppopper.org>
-" URL:		    http://www.pcppopper.org/vim/indent/pcp/yacc/
-" Latest Revision:  2004-04-25
-" arch-tag:	    629aa719-8fe4-4787-adb7-ae94ca801610
+" Language:         YACC input file
+" Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
+" Latest Revision:  2005-06-29
 
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")
@@ -40,5 +38,3 @@ function GetYaccIndent()
 
   return ind
 endfunction
-
-" vim: set sts=2 sw=2:

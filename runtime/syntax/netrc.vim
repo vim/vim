@@ -1,55 +1,51 @@
 " Vim syntax file
-" Maintainer:	    Nikolai Weibull <source@pcppopper.org>
-" URL:		    http://www.pcppopper.org/
-" Latest Revision:  2004-12-16
-" arch-tag:	    4f6ecb37-d10c-4eca-add0-77991559414a
+" Language:         netrc(5) configuration file
+" Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
+" Latest Revision:  2005-06-27
 
-if version < 600
-  syntax clear
-elseif exists("b:current_syntax")
+if exists("b:current_syntax")
   finish
 endif
 
-" Keywords
-syn keyword netrcKeyword      machine password nextgroup=netrcName skipwhite skipnl
-syn keyword netrcKeyword      login nextgroup=netrcName,netrcSpecial skipwhite skipnl
-syn keyword netrcKeyword      default
-syn keyword netrcKeyword      macdef nextgroup=netrcInit,netrcMacroName skipwhite skipnl
-syn region  netrcMacro	      contained start='.' end='^$'
+let s:cpo_save = &cpo
+set cpo&vim
 
-" Names
-syn match   netrcName	      contained display '\S\+'
-syn match   netrcName	      contained display '"[^\\"]*\(\\.[^\\"]*\)*'
-syn match   netrcMacroName    contained display '\S\+' nextgroup=netrcMacro skipwhite skipnl
-syn match   netrcMacroName    contained display '"[^\\"]*\(\\.[^\\"]*\)*' nextgroup=netrcMacro skipwhite skipnl
+syn keyword netrcKeyword    machine nextgroup=netrcMachine skipwhite skipnl
+syn keyword netrcKeyword    login nextgroup=netrcLogin,netrcSpecial
+                            \ skipwhite skipnl
+syn keyword netrcKeyword    password nextgroup=netrcPassword skipwhite skipnl
+syn keyword netrcKeyword    default
+syn keyword netrcKeyword    macdef nextgroup=netrcInit,netrcMacroName
+                            \ skipwhite skipnl
+syn region  netrcMacro      contained start='.' end='^$'
 
-" Special
-syn keyword netrcSpecial      contained anonymous
-syn match   netrcInit	      contained '\<init$' nextgroup=netrcMacro skipwhite skipnl
+syn match   netrcMachine    contained display '\S\+'
+syn match   netrcMachine    contained display '"[^\\"]*\(\\.[^\\"]*\)*"'
+syn match   netrcLogin      contained display '\S\+'
+syn match   netrcLogin      contained display '"[^\\"]*\(\\.[^\\"]*\)*"'
+syn match   netrcPassword   contained display '\S\+'
+syn match   netrcPassword   contained display '"[^\\"]*\(\\.[^\\"]*\)*"'
+syn match   netrcMacroName  contained display '\S\+' nextgroup=netrcMacro
+                            \ skipwhite skipnl
+syn match   netrcMacroName  contained display '"[^\\"]*\(\\.[^\\"]*\)*"'
+                            \ nextgroup=netrcMacro skipwhite skipnl
+
+syn keyword netrcSpecial    contained anonymous
+syn match   netrcInit       contained '\<init$' nextgroup=netrcMacro
+                            \ skipwhite skipnl
 
 syn sync fromstart
 
-" Define the default highlighting.
-" For version 5.7 and earlier: only when not done already
-" For version 5.8 and later: only when an item doesn't have highlighting yet
-if version >= 508 || !exists("did_netrc_syn_inits")
-  if version < 508
-    let did_netrc_syn_inits = 1
-    command -nargs=+ HiLink hi link <args>
-  else
-    command -nargs=+ HiLink hi def link <args>
-  endif
-
-  HiLink netrcKeyword	Keyword
-  HiLink netrcMacro	PreProc
-  HiLink netrcName	String
-  HiLink netrcMacroName	String
-  HiLink netrcSpecial	Special
-  HiLink netrcInit	Special
-
-  delcommand HiLink
-endif
+hi def link netrcKeyword    Keyword
+hi def link netrcMacro      PreProc
+hi def link netrcMachine    Identifier
+hi def link netrcLogin      String
+hi def link netrcPassword   String
+hi def link netrcMacroName  String
+hi def link netrcSpecial    Special
+hi def link netrcInit       Special
 
 let b:current_syntax = "netrc"
 
-" vim: set sts=2 sw=2:
+let &cpo = s:cpo_save
+unlet s:cpo_save

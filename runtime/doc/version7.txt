@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jun 25
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jun 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -305,6 +305,7 @@ Options: ~
 			(idea by Hugo Haas)
 'spell'			switch spell checking on/off
 'spelllang'		languages to check spelling for
+'spellsuggest'		methods for spell suggestions
 'verbosefile'		Log messages in a file.
 
 
@@ -377,7 +378,10 @@ New functions: ~
 |reverse()|		reverse the order of a List
 |setqflist()|		create a quickfix list (Yegappan Lakshmanan)
 |sort()|		sort a List
+|soundfold()|		get the sound-a-like equivalent of a word
 |split()|		split a String into a List
+|spellbadword()|	get a badly spelled word
+|spellsuggest()|	get suggestions for correct spelling
 |string()|		String representation of a List or Dictionary
 |system()|		Filters {input} through a shell command.
 |taglist()|		Get list of matching tags. (Yegappan Lakshmanan)
@@ -434,6 +438,8 @@ PHP compiler plugin. (Doug Kearns)
 Sive syntax file. (Nikolai Weibull)
 
 Pascal indent file. (Neil Carter)
+
+Many filetype plugins and others from Nikolai Weibull.
 
 Moved all the indent settings from the filetype plugin to the indent file.
 Implemented b:undo_indent to undo indent settings when setting 'filetype' to a
@@ -1145,5 +1151,12 @@ It was possible to set a variable with an illegal name, e.g. with setbufvar().
 It was possible to define a function with illegal name, e.t. ":func F{-1}()"
 
 CTRL-W F and "gf" didn't use the same method to get the file name.
+
+When reporting a conversion error the line number of the last error could be
+given.  Now report the first encountered error.
+
+When using ":e ++enc=name file" and iconv() was used for conversion an error
+caused a fallback to no conversion.  Now replace a character with '?' and
+continue.
 
  vim:tw=78:ts=8:ft=help:norl:

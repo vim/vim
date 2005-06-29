@@ -1,16 +1,14 @@
 " Vim compiler file
-" Compiler:	    reStructuredText Documentation Format
-" Maintainer:	    Nikolai Weibull <source@pcppopper.org>
-" URL:		    http://www.pcppopper.org/vim/compiler/pcp/rst/
-" Latest Revision:  2004-05-22
-" arch-tag:	    ac64a95a-5d45-493d-a9f9-f96fc8568657
+" Compiler:         reStructuredText Documentation Format
+" Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
+" Latest Revision:  2005-06-29
 
 if exists("current_compiler")
   finish
 endif
 let current_compiler = "rst"
 
-if exists(":CompilerSet") != 2          " older Vim always used :setlocal
+if exists(":CompilerSet") != 2
   command -nargs=* CompilerSet setlocal <args>
 endif
 
@@ -29,5 +27,3 @@ CompilerSet errorformat=
 
 let &cpo = s:cpo_save
 unlet s:cpo_save
-
-" vim: set sts=2 sw=2:

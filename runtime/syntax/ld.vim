@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         ld(1) script
 " Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2005-06-28
+" Latest Revision:  2005-06-29
 
 if exists("b:current_syntax")
   finish
@@ -16,7 +16,7 @@ syn region  ldComment       start='/\*' end='\*/' contains=ldTodo,@Spell
 
 syn region  ldFileName      start=+"+ end=+"+
 
-syn keyword ldPreProc       SECTIONS MEMORY OVERLAY PHDRS VERSION
+syn keyword ldPreProc       SECTIONS MEMORY OVERLAY PHDRS VERSION INCLUDE
 syn match   ldPreProc       '\<VERS_\d\+\.\d\+'
 
 syn keyword ldFunction      ABSOLUTE ADDR ALIGN BLOCK DATA_SEGMENT_ALIGN
@@ -24,7 +24,7 @@ syn keyword ldFunction      ABSOLUTE ADDR ALIGN BLOCK DATA_SEGMENT_ALIGN
                             \ LOADADDR MAX MIN NEXT SIZEOF SIZEOF_HEADERS
                             \ sizeof_headers
 
-syn keyword ldKeyword       ENTRY INCLUDE INPUT GROUP OUTPUT
+syn keyword ldKeyword       ENTRY INPUT GROUP OUTPUT
                             \ SEARCH_DIR STARTUP OUTPUT_FORMAT TARGET
                             \ ASSERT EXTERN FORCE_COMMON_ALLOCATION
                             \ INHIBIT_COMMON_ALLOCATION NOCROSSREFS OUTPUT_ARCH

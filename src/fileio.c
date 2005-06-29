@@ -1344,8 +1344,11 @@ retry:
 			    == (size_t)-1 && ICONV_ERRNO != ICONV_EINVAL)
 						  || from_size > CONV_RESTLEN)
 		{
-		    if (!keep_dest_enc)
+		    if (!keep_dest_enc && can_retry)
 			goto rewind_retry;
+		    if (!keep_dest_enc)
+			conv_error = TRUE;
+
 		    /* Ignore a byte and try again. */
 		    ++fromp;
 		    --from_size;
@@ -1761,6 +1764,7 @@ rewind_retry:
 			conv_error = TRUE;
 		    else
 # endif
+		    if (illegal_byte == 0)  /* Keep the first linenr */
 		    {
 			char_u		*s;
 

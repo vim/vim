@@ -1,7 +1,7 @@
 " Vim indent file
 " Language:         ld(1) script
 " Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2005-06-28
+" Latest Revision:  2005-06-29
 
 if exists("b:did_indent")
   finish
