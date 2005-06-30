@@ -80,9 +80,6 @@
 #ifndef GVIMRC_FILE
 # define GVIMRC_FILE	"/gvimrc"
 #endif
-#ifndef VIEW_FILE
-# define VIEW_FILE	"/View"
-#endif
 #ifndef USR_VIMRC_FILE
 # define USR_VIMRC_FILE	"Vim:Evim"
 #endif

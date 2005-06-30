@@ -30,7 +30,7 @@ DESCRIPTION
 
 OPTIONS
        Vertical  splits  are  used to align the lines, as if the "-O" argument
-       was used.  To use horizontal splits intead, use the "-o" argument.
+       was used.  To use horizontal splits instead, use the "-o" argument.
 
        For all other arguments see vim(1).
 

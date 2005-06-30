@@ -501,13 +501,6 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 #define CLEAR			50  /* screen messed up, clear it */
 
 /*
- * Hints used to optimize screen updating.
- */
-#define HINT_NONE	0	    /* no current hint */
-#define HINT_DEL_CHAR	1	    /* delete character */
-#define HINT_INS_CHAR	2	    /* insert character */
-
-/*
  * Flags for w_valid.
  * These are set when something in a window structure becomes invalid, except
  * when the cursor is moved.  Call check_cursor_moved() before testing one of
@@ -622,7 +615,6 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 /*
  * values for xp_context when doing command line completion
  */
-#define CONTEXT_UNKNOWN		(-3)
 #define EXPAND_UNSUCCESSFUL	(-2)
 #define EXPAND_OK		(-1)
 #define EXPAND_NOTHING		0
@@ -734,7 +726,6 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 # endif
 # define SST_FIX_STATES	 7	/* size of sst_stack[]. */
 # define SST_DIST	 16	/* normal distance between entries */
-# define SST_INVALID	(synstate_T *)-1	/* invalid syn_state pointer */
 #endif
 
 /* Values for 'options' argument in do_search() and searchit() */
@@ -981,7 +972,6 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 /*
  * Return values for functions like gui_yesnocancel()
  */
-#define VIM_OK		1
 #define VIM_YES		2
 #define VIM_NO		3
 #define VIM_CANCEL	4
@@ -1853,7 +1843,6 @@ typedef int proftime_T;	    /* dummy for function prototypes */
 # include "nbdebug.h"
 #else
 # define nbdebug(a)
-# define nbprint(a)
 #endif
 
 #ifdef IN_PERL_FILE

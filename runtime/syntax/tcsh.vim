@@ -1,6 +1,6 @@
 " Vim syntax file
 " Language:		C-shell (tcsh)
-" Maintainor:		Gautam Iyer <gautam@math.uchicago.edu>
+" Maintainer:		Gautam Iyer <gautam@math.uchicago.edu>
 " Last Modified:	Mon 23 Feb 2004 02:28:51 PM CST
 "
 " Description: We break up each statement into a "command" and an "end" part.

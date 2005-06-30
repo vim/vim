@@ -105,14 +105,14 @@ INTDIR=.\oleRel
 VIM=gvim
 EXTRAS="$(INTDIR)/if_ole.obj" "$(INTDIR)/vim.res" "$(INTDIR)/gui.obj" "$(INTDIR)/gui_w32.obj" "$(INTDIR)/gui_beval.obj" "$(INTDIR)/os_w32exe.obj"
 
-CPP_PROJ=$(CPP_PROJ) /O2 /D "NDEBUG" /D "FEAT_GUI_W32" /D "DYNAMIC_GETTEXT" /D "FEAT_OLE" /Fd.\oleRel/ /Fo.\oleRel/
-# ADD CPP            /O2 /D "NDEBUG" /D "FEAT_GUI_W32" /D "DYNAMIC_GETTEXT" /D "FEAT_OLE" /Fd.\oleRel/ /Fo.\oleRel/
+CPP_PROJ=$(CPP_PROJ) /Zi /O2 /D "NDEBUG" /D "FEAT_GUI_W32" /D "DYNAMIC_GETTEXT" /D "FEAT_OLE" /Fd.\oleRel/ /Fo.\oleRel/
+# ADD CPP            /Zi /O2 /D "NDEBUG" /D "FEAT_GUI_W32" /D "DYNAMIC_GETTEXT" /D "FEAT_OLE" /Fd.\oleRel/ /Fo.\oleRel/
 
 RSC_PROJ=$(RSC_PROJ) /I ".\oleRel" /d "NDEBUG" /d "FEAT_OLE" /fo.\oleRel\vim.res
 # ADD RSC            /I ".\oleRel" /d "NDEBUG" /d "FEAT_OLE" /fo.\oleRel\vim.res
 
-LINK32_FLAGS=$(LINK32_FLAGS) /pdb:none libc.lib oleaut32.lib /subsystem:windows /out:.\gvim.exe
-# ADD LINK32                 /pdb:none libc.lib oleaut32.lib /subsystem:windows /out:.\gvim.exe
+LINK32_FLAGS=$(LINK32_FLAGS) /pdb:.\oleRel/gvim.pdb -debug:full -debugtype:cv,fixup /map:.\oleDbg\gvim.map libc.lib oleaut32.lib /subsystem:windows /out:.\gvim.exe
+# ADD LINK32                 /pdb:.\oleRel/gvim.pdb -debug:full -debugtype:cv,fixup /map:.\oleDbg\gvim.map libc.lib oleaut32.lib /subsystem:windows /out:.\gvim.exe
 
 !ELSEIF  "$(CFG)" == "Vim - Win32 Debug gvim OLE"
 
@@ -130,8 +130,8 @@ CPP_PROJ=$(CPP_PROJ) /Zi /Od /D "_DEBUG" /D "FEAT_GUI_W32" /D "DYNAMIC_GETTEXT" 
 RSC_PROJ=$(RSC_PROJ) /I .\oleDbg /d "_DEBUG" /d "FEAT_OLE" /fo.\oleDbg\vim.res
 # ADD RSC            /I .\oleDbg /d "_DEBUG" /d "FEAT_OLE" /fo.\oleDbg\vim.res
 
-LINK32_FLAGS=$(LINK32_FLAGS) libcd.lib oleaut32.lib /subsystem:windows /debug /profile /pdb:.\oleDbg/gvimd.pdb /map:.\oleDbg\gvimd.map /out:.\gvimd.exe
-# ADD LINK32                 libcd.lib oleaut32.lib /subsystem:windows /debug /profile /pdb:.\oleDbg/gvimd.pdb /map:.\oleDbg\gvimd.map /out:.\gvimd.exe
+LINK32_FLAGS=$(LINK32_FLAGS) libcd.lib oleaut32.lib /subsystem:windows /debug /profile /pdb:.\oleDbg/gvimd.pdb -debug:full -debugtype:cv,fixup /map:.\oleDbg\gvimd.map /out:.\gvimd.exe
+# ADD LINK32                 libcd.lib oleaut32.lib /subsystem:windows /debug /profile /pdb:.\oleDbg/gvimd.pdb -debug:full -debugtype:cv,fixup /map:.\oleDbg\gvimd.map /out:.\gvimd.exe
 
 
 !ELSEIF  "$(CFG)" == "Vim - Win32 Release gvim"
@@ -144,14 +144,14 @@ INTDIR=.\gRel
 VIM=gvim
 EXTRAS="$(INTDIR)/vim.res" "$(INTDIR)/gui.obj" "$(INTDIR)/gui_w32.obj" "$(INTDIR)/gui_beval.obj" "$(INTDIR)/os_w32exe.obj"
 
-CPP_PROJ=$(CPP_PROJ) /O2 /D "NDEBUG" /D "FEAT_GUI_W32" /Fd.\gRel/ /Fo.\gRel/
-# ADD CPP            /O2 /D "NDEBUG" /D "FEAT_GUI_W32" /Fd.\gRel/ /Fo.\gRel/
+CPP_PROJ=$(CPP_PROJ) /Zi /O2 /D "NDEBUG" /D "FEAT_GUI_W32" /Fd.\gRel/ /Fo.\gRel/
+# ADD CPP            /Zi /O2 /D "NDEBUG" /D "FEAT_GUI_W32" /Fd.\gRel/ /Fo.\gRel/
 
 RSC_PROJ=$(RSC_PROJ) /d "NDEBUG" /fo.\gRel\vim.res
 # ADD RSC            /d "NDEBUG" /fo.\gRel\vim.res
 
-LINK32_FLAGS=$(LINK32_FLAGS) /pdb:none libc.lib /subsystem:windows /out:.\gvim.exe
-# ADD LINK32                 /pdb:none libc.lib /subsystem:windows /out:.\gvim.exe
+LINK32_FLAGS=$(LINK32_FLAGS) /pdb:.\gRel/gvim.pdb -debug:full -debugtype:cv,fixup /map:.\oleDbg\gvim.map libc.lib /subsystem:windows /out:.\gvim.exe
+# ADD LINK32                 /pdb:.\gRel/gvim.pdb -debug:full -debugtype:cv,fixup /map:.\oleDbg\gvim.map libc.lib /subsystem:windows /out:.\gvim.exe
 
 !ELSEIF  "$(CFG)" == "Vim - Win32 Debug gvim"
 
@@ -169,8 +169,8 @@ CPP_PROJ=$(CPP_PROJ) /Zi /Od /D "_DEBUG" /D "FEAT_GUI_W32" /Fd.\gDbg/ /Fo.\gDbg/
 RSC_PROJ=$(RSC_PROJ) /d "_DEBUG" /fo.\gDbg\vim.res
 # ADD RSC            /d "_DEBUG" /fo.\gDbg\vim.res
 
-LINK32_FLAGS=$(LINK32_FLAGS) libcd.lib /subsystem:windows /debug /profile /pdb:.\gDbg/gvimd.pdb /map:.\gDbg\gvimd.map /out:.\gvimd.exe
-# ADD LINK32                 libcd.lib /subsystem:windows /debug /profile /pdb:.\gDbg/gvimd.pdb /map:.\gDbg\gvimd.map /out:.\gvimd.exe
+LINK32_FLAGS=$(LINK32_FLAGS) libcd.lib /subsystem:windows /debug /profile /pdb:.\gDbg/gvimd.pdb -debug:full -debugtype:cv,fixup /map:.\gDbg\gvimd.map /out:.\gvimd.exe
+# ADD LINK32                 libcd.lib /subsystem:windows /debug /profile /pdb:.\gDbg/gvimd.pdb -debug:full -debugtype:cv,fixup /map:.\gDbg\gvimd.map /out:.\gvimd.exe
 
 !ELSEIF  "$(CFG)" == "Vim - Win32 Release vim"
 
@@ -182,11 +182,11 @@ INTDIR=.\Rel
 VIM=vim
 EXTRAS=
 
-CPP_PROJ=$(CPP_PROJ) /O2 /D "NDEBUG" /Fd.\Rel/ /Fo.\Rel/
-# ADD CPP            /O2 /D "NDEBUG" /Fd.\Rel/ /Fo.\Rel/
+CPP_PROJ=$(CPP_PROJ) /Zi /O2 /D "NDEBUG" /Fd.\Rel/ /Fo.\Rel/
+# ADD CPP            /Zi /O2 /D "NDEBUG" /Fd.\Rel/ /Fo.\Rel/
 
-LINK32_FLAGS=$(LINK32_FLAGS) /pdb:none libc.lib /subsystem:console /out:.\vim.exe
-# ADD LINK32                 /pdb:none libc.lib /subsystem:console /out:.\vim.exe
+LINK32_FLAGS=$(LINK32_FLAGS) /pdb:.\Rel/vim.pdb -debug:full -debugtype:cv,fixup /map:.\oleDbg\vim.map libc.lib /subsystem:console /out:.\vim.exe
+# ADD LINK32                 /pdb:.\Rel/vim.pdb -debug:full -debugtype:cv,fixup /map:.\oleDbg\vim.map libc.lib /subsystem:console /out:.\vim.exe
 
 !ELSEIF  "$(CFG)" == "Vim - Win32 Debug vim"
 
@@ -201,8 +201,8 @@ EXTRAS=
 CPP_PROJ=$(CPP_PROJ) /Zi /Od /D "_DEBUG" /Fd.\Dbg/ /Fo.\Dbg/
 # ADD CPP            /Zi /Od /D "_DEBUG" /Fd.\Dbg/ /Fo.\Dbg/
 
-LINK32_FLAGS=$(LINK32_FLAGS) libcd.lib /subsystem:console /debug /profile /pdb:.\Dbg/vimd.pdb /map:.\Dbg/vimd.map /out:.\vimd.exe
-# ADD LINK32                 libcd.lib /subsystem:console /debug /profile /pdb:.\Dbg/vimd.pdb /map:.\Dbg/vimd.map /out:.\vimd.exe
+LINK32_FLAGS=$(LINK32_FLAGS) libcd.lib /subsystem:console /debug /profile /pdb:.\Dbg/vimd.pdb -debug:full -debugtype:cv,fixup /map:.\Dbg/vimd.map /out:.\vimd.exe
+# ADD LINK32                 libcd.lib /subsystem:console /debug /profile /pdb:.\Dbg/vimd.pdb -debug:full -debugtype:cv,fixup /map:.\Dbg/vimd.map /out:.\vimd.exe
 
 !ENDIF
 
@@ -450,7 +450,7 @@ SOURCE=.\if_ole.cpp
 # Begin Custom Build
 
 "$(INTDIR)\if_ole.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\if_ole.h"
- cl.exe /nologo /MT /W3 /GX /I ".\proto" /D "WIN32" /c /O2 /D "NDEBUG" /D "FEAT_GUI_W32" /D "FEAT_OLE" /Fd.\oleRel/ /Fo.\oleRel/ /I ".\oleRel" .\if_ole.cpp
+ cl.exe /nologo /MT /W3 /GX /I ".\proto" /D "WIN32" /c /Zi /O2 /D "NDEBUG" /D "FEAT_GUI_W32" /D "FEAT_OLE" /Fd.\oleRel/ /Fo.\oleRel/ /I ".\oleRel" .\if_ole.cpp
  @rem This is the default rule with /I "$(IntDir)" added
 
 # End Custom Build

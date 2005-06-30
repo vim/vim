@@ -503,7 +503,6 @@ buf_clear_file(buf)
     buf->b_ml.ml_flags = ML_EMPTY;		/* empty buffer */
 #ifdef FEAT_NETBEANS_INTG
     netbeans_deleted_all_lines(buf);
-    netbeansOpenFile = 0;  /* reset in netbeans_file_opened() */
 #endif
 }
 

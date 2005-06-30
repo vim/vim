@@ -200,9 +200,10 @@ global_ime_set_font(LOGFONT *pFont)
     }
 }
 
+#if 0
 /*
  * for IME control.  Save current status of IME, and set force new-status to
- * Engllish (turn off).
+ * English (turn off).
  */
     void WINAPI
 global_ime_status_evacuate()
@@ -231,6 +232,7 @@ global_ime_status_restore()
 	pIApp->ReleaseContext(s_hWnd, hImc);
     }
 }
+#endif
 
     void WINAPI
 global_ime_set_status(int status)
