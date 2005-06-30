@@ -375,14 +375,14 @@ gui_init()
 	     * The first that exists is used, the rest is ignored.
 	     */
 	    if (process_env((char_u *)"GVIMINIT", FALSE) == FAIL
-		 && do_source((char_u *)USR_GVIMRC_FILE, TRUE, FALSE) == FAIL
+		 && do_source((char_u *)USR_GVIMRC_FILE, TRUE, TRUE) == FAIL
 #ifdef USR_GVIMRC_FILE2
-		 && do_source((char_u *)USR_GVIMRC_FILE2, TRUE, FALSE) == FAIL
+		 && do_source((char_u *)USR_GVIMRC_FILE2, TRUE, TRUE) == FAIL
 #endif
 				)
 	    {
 #ifdef USR_GVIMRC_FILE3
-		(void)do_source((char_u *)USR_GVIMRC_FILE3, TRUE, FALSE);
+		(void)do_source((char_u *)USR_GVIMRC_FILE3, TRUE, TRUE);
 #endif
 	    }
 
@@ -426,7 +426,7 @@ gui_init()
 				     (char_u *)GVIMRC_FILE, FALSE) != FPC_SAME
 #endif
 			)
-		    do_source((char_u *)GVIMRC_FILE, TRUE, FALSE);
+		    do_source((char_u *)GVIMRC_FILE, TRUE, TRUE);
 
 		if (secure == 2)
 		    need_wait_return = TRUE;

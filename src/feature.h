@@ -723,15 +723,9 @@
 
 /*
  * +browse		":browse" command.
- *
- * BROWSE_CURRBUF	Open file browser in the directory of the current
- *			buffer, instead of the current directory.
  */
 #if defined(FEAT_NORMAL) && (defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_KDE) || defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_MAC))
 # define FEAT_BROWSE
-#endif
-#if defined(FEAT_NORMAL) && defined(FEAT_GUI_MSWIN)
-# define BROWSE_CURRBUF
 #endif
 
 /*
@@ -827,11 +821,6 @@
  * GVIMRC_FILE		Name of the .gvimrc file in current dir.
  */
 /* #define GVIMRC_FILE	".gvimrc" */
-
-/*
- * VIEW_FILE		Name of the default ":mkview" file.
- */
-#define VIEW_FILE	"View.vim"
 
 /*
  * SESSION_FILE		Name of the default ":mksession" file.

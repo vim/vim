@@ -214,10 +214,6 @@
 
 #ifdef FEAT_CRYPT
 
-#ifndef __MINGW32__
-# define PWLEN 80
-#endif
-
 /* encode byte c, using temp t.  Warning: c must not have side effects. */
 # define ZENCODE(c, t)  (t = decrypt_byte(), update_keys(c), t^(c))
 
@@ -257,13 +253,13 @@
  * MB_COPY_CHAR(f, t): copy one char from "f" to "t" and advance the pointers.
  */
 #ifdef FEAT_MBYTE
-# define mb_ptr_adv(p) p += has_mbyte ? (*mb_ptr2len_check)(p) : 1
-# define mb_ptr_back(s, p) p -= has_mbyte ? ((*mb_head_off)(s, p - 1) + 1) : 1
+# define mb_ptr_adv(p)	    p += has_mbyte ? (*mb_ptr2len_check)(p) : 1
+# define mb_ptr_back(s, p)  p -= has_mbyte ? ((*mb_head_off)(s, p - 1) + 1) : 1
 # define MB_COPY_CHAR(f, t) if (has_mbyte) mb_copy_char(&f, &t); else *t++ = *f++
-# define MB_CHARLEN(p) mb_charlen(p)
+# define MB_CHARLEN(p)	    (has_mbyte ? mb_charlen(p) : STRLEN(p))
 #else
-# define mb_ptr_adv(p) ++p
-# define mb_ptr_back(s, p) --p
+# define mb_ptr_adv(p)	    ++p
+# define mb_ptr_back(s, p)  --p
 # define MB_COPY_CHAR(f, t) *t++ = *f++
-# define MB_CHARLEN(p) STRLEN(p)
+# define MB_CHARLEN(p)	    STRLEN(p)
 #endif

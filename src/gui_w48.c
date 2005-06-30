@@ -3500,7 +3500,10 @@ get_cmd_args(char *prog, char *cmdline, char ***argvp, char **tofree)
 	{
 	    argv = (char **)malloc((argc + 1) * sizeof(char *));
 	    if (argv == NULL )
+	    {
+		vim_free(newcmdline);
 		return 0;		   /* malloc error */
+	    }
 	    pnew = newcmdline;
 	}
     }

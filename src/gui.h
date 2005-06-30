@@ -7,10 +7,6 @@
  * Do ":help credits" in Vim to see a list of people who contributed.
  */
 
-/* For debugging */
-/* #define D(x)	printf x; */
-#define D(x)
-
 #ifdef FEAT_GUI_MOTIF
 # define FEAT_GUI_X11
 # include <Xm/Xm.h>
