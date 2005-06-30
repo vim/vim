@@ -14,7 +14,6 @@
 
 #define BINARY_FILE_IO
 #define USE_EXE_NAME		/* use argv[0] for $VIM */
-#define NO_COOKED_INPUT		/* mch_inchar() doesn't return whole lines */
 #define SYNC_DUP_CLOSE		/* sync() a file with dup() and close() */
 #define USE_TERM_CONSOLE
 #define HAVE_STRING_H
@@ -106,8 +105,6 @@ typedef long off_t;
 #  define ASSERT(f) assert(f)
 # endif
 
-# define VERIFY(f)		ASSERT(f)
-# define DEBUG_ONLY(f)		(f)
 # define TRACE			Trace
 # define TRACE0(sz)		Trace(_T("%s"), _T(sz))
 # define TRACE1(sz, p1)		Trace(_T(sz), p1)
@@ -122,8 +119,6 @@ Trace(char *pszFormat, ...);
 
   /* These macros should all compile away to nothing */
 # define ASSERT(f)		((void)0)
-# define VERIFY(f)		((void)f)
-# define DEBUG_ONLY(f)		((void)0)
 # define TRACE			1 ? (void)0 : printf
 # define TRACE0(sz)
 # define TRACE1(sz, p1)

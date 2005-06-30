@@ -47,7 +47,6 @@
 #define CTRL_F_STR	"\006"
 #define CTRL_H_STR	"\010"
 #define CTRL_V_STR	"\026"
-#define CTRL_W_STR	"\027"
 
 #define Ctrl_AT		0   /* @ */
 #define Ctrl_A		1
@@ -76,7 +75,7 @@
 #define Ctrl_X		24
 #define Ctrl_Y		25
 #define Ctrl_Z		26
-#define Ctrl_LSB	27  /* [ Left Square Bracket */
+			    /* CTRL- [ Left Square Bracket == ESC*/
 #define Ctrl_BSL	28  /* \ BackSLash */
 #define Ctrl_RSB	29  /* ] Right Square Bracket */
 #define Ctrl_HAT	30  /* ^ */
@@ -129,7 +128,6 @@
 #define CTRL_F_STR	"\056"
 #define CTRL_H_STR	"\026"
 #define CTRL_V_STR	"\062"
-#define CTRL_W_STR	"\046"
 
 #define Ctrl_AT		0x00   /* @ */
 #define Ctrl_A		0x01
@@ -158,7 +156,7 @@
 #define Ctrl_X		0x18
 #define Ctrl_Y		0x19
 #define Ctrl_Z		0x3F
-#define Ctrl_LSB	0x27  /* [ Left Square Bracket */
+			    /* CTRL- [ Left Square Bracket == ESC*/
 #define Ctrl_RSB	0x1D  /* ] Right Square Bracket */
 #define Ctrl_BSL	0x1C  /* \ BackSLash */
 #define Ctrl_HAT	0x1E  /* ^ */

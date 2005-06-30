@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 29
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -98,9 +98,7 @@ PLANNED FOR VERSION 7.0:
 
 -   Add SPELLCHECKER, with support for many languages.
   - Spell checking code todo's:
-    - Dutch: badword "voorjaarsconferentie"; "najaarsconferentie" gets zero
-      soundfold score.
-    - Proofread and cleanup spell help.
+    - ":spelldump" doesn't put region numbers in the list.
     - Use "engspchk" from Charles Campbell for ideas (commands, rare words).
     - Make "en-rare" spell file?  Ask Charles Campbell.
     - References: MySpell library (in OpenOffice.org).

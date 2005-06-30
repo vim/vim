@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jun 29
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jun 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -111,6 +111,9 @@ translated to <Home>, both for the keys and for mappings.  Also for <xEnd>,
 
 ":put" now leaves the cursor on the last inserted line.
 
+When a .gvimrc file exists then 'compatible' is off, just like when a ".vimrc"
+file exists.
+
 ==============================================================================
 NEW FEATURES						*new-7*
 
@@ -145,10 +148,12 @@ with scripts, but they were slow and/or required an external program.
 The 'spell' option is used to switch spell checking on or off.
 The 'spelllang' option is used to specify the languages that are accepted.
 The 'spellfile' option specifies where new words are added.
+The 'spellsuggest' option specifies the methods used for making suggestions
 
 The |[s| and |]s| commands can be used to move to the next or previous error.
 The |zg| and |zw| commands can be used to add good and wrong words.
 The |z?| command can be used to correct the word.
+The |:mkspell| command is used to generate a Vim spell file from word lists.
 
 The "undercurl" highlighting attribute was added to nicely point out spelling
 mistakes in the GUI (based on patch from Marcin Dalecki).

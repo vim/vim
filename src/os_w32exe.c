@@ -28,14 +28,14 @@ VimMain
     main
 #endif
 	__ARGS((int argc, char **argv));
-int (_cdecl *pmain)(int, char **);
+static int (_cdecl *pmain)(int, char **);
 
 #ifndef PROTO
 #ifdef FEAT_GUI
 #ifndef VIMDLL
 void _cdecl SaveInst(HINSTANCE hInst);
 #endif
-void (_cdecl *pSaveInst)(HINSTANCE);
+static void (_cdecl *pSaveInst)(HINSTANCE);
 #endif
 
 /*ARGSUSED*/

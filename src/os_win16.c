@@ -81,11 +81,11 @@ int _stricoll(char *a, char *b);
 int _cdecl
 VimMain
 __ARGS((int argc, char **argv));
-int (_cdecl *pmain)(int, char **);
+static int (_cdecl *pmain)(int, char **);
 
 #ifndef PROTO
 void _cdecl SaveInst(HINSTANCE hInst);
-void (_cdecl *pSaveInst)(HINSTANCE);
+static void (_cdecl *pSaveInst)(HINSTANCE);
 
 int WINAPI
 WinMain(
