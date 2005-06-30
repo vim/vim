@@ -1469,7 +1469,10 @@ struct file_buffer
 
     /* for spell checking */
     garray_T	b_langp;	/* list of pointers to slang_T, see spell.c */
-
+    char_u	b_spell_ismw[256];/* flags: is midword char */
+# ifdef FEAT_MBYTE
+    char_u	*b_spell_ismw_mb; /* multi-byte midword chars */
+# endif
 #endif /* FEAT_SYN_HL */
 
 #ifdef FEAT_SIGNS

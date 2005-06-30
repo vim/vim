@@ -14,7 +14,6 @@
 
 #define BINARY_FILE_IO
 #define USE_EXE_NAME		/* use argv[0] for $VIM */
-#define NO_COOKED_INPUT		/* mch_inchar() doesn't return whole lines */
 #define SYNC_DUP_CLOSE		/* sync() a file with dup() and close() */
 #define USE_TERM_CONSOLE
 #ifdef DJGPP

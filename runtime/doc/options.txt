@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 28
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1443,7 +1443,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|fold-marker|.
 
 			*'compatible'* *'cp'* *'nocompatible'* *'nocp'*
-'compatible' 'cp'	boolean	(default on, off when a .vimrc file is found)
+'compatible' 'cp'	boolean	(default on, off when a .vimrc or .gvimrc file
+								is found)
 			global
 			{not in Vi}
 	This option has the effect of making Vim either more Vi-compatible, or
@@ -1458,12 +1459,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 	options.  This default was chosen for those people who want to use Vim
 	just like Vi, and don't even (want to) know about the 'compatible'
 	option.
-	When a ".vimrc" file is found while Vim is starting up, this option is
-	switched off, and all options that have not been modified will be set
-	to the Vim defaults.  Effectively, this means that when a ".vimrc"
-	file exists, Vim will use the Vim defaults, otherwise it will use the
-	Vi defaults.  (Note: This doesn't happen for the system-wide vimrc
-	file).  Also see |compatible-default| and |posix-compliance|.
+	When a ".vimrc" or ".gvimrc" file is found while Vim is starting up,
+	this option is switched off, and all options that have not been
+	modified will be set to the Vim defaults.  Effectively, this means
+	that when a ".vimrc" or ".gvimrc" file exists, Vim will use the Vim
+	defaults, otherwise it will use the Vi defaults.  (Note: This doesn't
+	happen for the system-wide vimrc or gvimrc file).  Also see
+	|compatible-default| and |posix-compliance|.
 	You can also set this option with the "-C" argument, and reset it with
 	"-N".  See |-C| and |-N|.
 	Switching this option off makes the Vim defaults be used for options

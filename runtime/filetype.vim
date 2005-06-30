@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Jun 29
+" Last Change:	2005 Jun 30
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -1585,7 +1585,27 @@ au BufNewFile,BufRead *.slt			setf tsalt
 au BufNewFile,BufRead *.ti			setf terminfo
 
 " TeX
-au BufNewFile,BufRead *.tex,*.latex,*.sty,*.dtx,*.ltx,*.bbl	setf tex
+au BufNewFile,BufRead *.latex,*.sty,*.dtx,*.ltx,*.bbl	setf tex
+au BufNewFile,BufRead *.tex			call s:FTtex()
+
+fun! s:FTtex()
+  let n = 1
+  while n < 10 && n < line("$")
+    let line = getline(n)
+    if line =~ '^\s*\\\%(documentclass\>\|usepackage\>\|begin{\)'
+      setf tex
+      return
+    elseif line =~ '^\s*\\\%(start\l\+\|setup\l\+\|usemodule\)\>'
+      setf context
+      return
+    endif
+    let n = n + 1
+  endwhile
+  setf tex
+endfun
+
+" Context
+au BufNewFile,BufRead tex/context/*/*.tex	setf context
 
 " Texinfo
 au BufNewFile,BufRead *.texinfo,*.texi,*.txi	setf texinfo
@@ -1746,7 +1766,7 @@ au BufNewFile,BufRead *.y			call s:FTy()
 
 fun! s:FTy()
   let n = 1
-  while n < 10
+  while n < 10 && n < line("$")
     if getline(n) =~ '^\s*\(#\|class\>\)'
       setf racc
       return

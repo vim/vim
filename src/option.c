@@ -6645,14 +6645,12 @@ set_bool_option(opt_idx, varp, value, opt_flags)
 	    psepc = '/';
 	    psepcN = '\\';
 	    pseps[0] = '/';
-	    psepsN[0] = '\\';
 	}
 	else
 	{
 	    psepc = '\\';
 	    psepcN = '/';
 	    pseps[0] = '\\';
-	    psepsN[0] = '/';
 	}
 
 	/* need to adjust the file name arguments and buffer names. */

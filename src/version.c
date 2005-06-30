@@ -27,8 +27,8 @@
 
 #include "version.h"
 
-char	*Version = VIM_VERSION_SHORT;
-char	*mediumVersion = VIM_VERSION_MEDIUM;
+char		*Version = VIM_VERSION_SHORT;
+static char	*mediumVersion = VIM_VERSION_MEDIUM;
 
 #if defined(HAVE_DATE_TIME) || defined(PROTO)
 # if (defined(VMS) && defined(VAXC)) || defined(PROTO)

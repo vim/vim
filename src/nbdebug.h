@@ -24,7 +24,6 @@
 #endif
 
 #define nbdebug(a) nbdbg##a
-#define nbprint(a) nbprt##a
 
 #define NB_TRACE		0x00000001
 #define NB_TRACE_VERBOSE	0x00000002

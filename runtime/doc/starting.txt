@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.0aa.  Last change: 2005 May 31
+*starting.txt*  For Vim version 7.0aa.  Last change: 2005 Jun 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -890,7 +890,8 @@ set, it will be set to 'nocompatible'.  This has the side effect of setting or
 resetting other options (see 'compatible').  But only the options that have
 not been set or reset will be changed.  This has the same effect like the
 value of 'compatible' had this value when starting Vim.  Note that this
-doesn't happen for the system-wide vimrc file.
+doesn't happen for the system-wide vimrc file.  It does also happen for gvimrc
+files.
 
 But there is a side effect of setting or resetting 'compatible' at the moment
 a .vimrc file is found: Mappings are interpreted the moment they are

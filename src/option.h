@@ -467,7 +467,9 @@ static char *(p_fdo_values[]) = {"all", "block", "hor", "mark", "percent",
 # define FDO_JUMP		0x400
 #endif
 EXTERN char_u	*p_fp;		/* 'formatprg' */
+#ifdef HAVE_FSYNC
 EXTERN int	p_fs;		/* 'fsync' */
+#endif
 EXTERN int	p_gd;		/* 'gdefault' */
 #ifdef FEAT_PRINTER
 EXTERN char_u	*p_pdev;	/* 'printdevice' */

@@ -6293,6 +6293,7 @@ spell-load	spell.txt	/*spell-load*
 spell-midword	spell.txt	/*spell-midword*
 spell-mkspell	spell.txt	/*spell-mkspell*
 spell-quickstart	spell.txt	/*spell-quickstart*
+spell-remarks	spell.txt	/*spell-remarks*
 spell-syntax	spell.txt	/*spell-syntax*
 spell-wordlist-format	spell.txt	/*spell-wordlist-format*
 spell.txt	spell.txt	/*spell.txt*

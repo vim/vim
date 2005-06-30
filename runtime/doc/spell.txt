@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 29
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -7,8 +7,9 @@
 Spell checking						*spell*
 
 1. Quick start			|spell-quickstart|
-2. Generating a spell file	|spell-mkspell|
-3. Spell file format		|spell-file-format|
+2. Remarks on spell checking	|spell-remarks|
+3. Generating a spell file	|spell-mkspell|
+4. Spell file format		|spell-file-format|
 
 {Vi does not have any of these commands}
 
@@ -36,8 +37,6 @@ To search for the next misspelled word:
 							*]s* *E756*
 ]s			Move to next misspelled word after the cursor.
 			A count before the command can be used to repeat.
-			This uses the @Spell and @NoSpell clusters from syntax
-			highlighting, see |spell-syntax|.
 
 							*[s*
 [s			Like "]s" but search backwards, find the misspelled
@@ -72,9 +71,9 @@ zw			Add word under the cursor as a wrong (bad) word to
 :spellw[rong] {word}	Add [word} as a wrong (bad) word to 'spellfile'.
 
 After adding a word to 'spellfile' with the above commands its associated
-".spl" file will automatically be updated.  If you edit 'spellfile' manually
-you need to use the |:mkspell| command.  This sequence of commands mostly
-works well: >
+".spl" file will automatically be updated and reloaded.  If you change
+'spellfile' manually you need to use the |:mkspell| command.  This sequence of
+commands mostly works well: >
 	:exe 'e ' . &spellfile
 <	(make changes to the spell file) >
 	:mkspell! %
@@ -83,12 +82,11 @@ More details about the 'spellfile' format below |spell-wordlist-format|.
 
 
 Finding suggestions for bad words:
-
 							*z?*
 z?			For the word under/after the cursor suggest correctly
-			spelled words.  This also works to find alternative
-			for words that are not highlighted as bad words, e.g.,
-			when the word after it is bad.
+			spelled words.  This also works to find alternatives
+			for a word that is not highlighted as a bad word,
+			e.g., when the word after it is bad.
 			The results are sorted on similarity to the word
 			under/after the cursor.
 			This may take a long time.  Hit CTRL-C when you are
@@ -99,7 +97,7 @@ z?			For the word under/after the cursor suggest correctly
 			<Enter> if you don't want to replace.  You can also
 			use the mouse to click on your choice (only works if
 			the mouse can be used in Normal mode and when there
-			are no line wraps!).  Click on the first (header) line
+			are no line wraps).  Click on the first (header) line
 			to cancel.
 			If 'verbose' is non-zero a score will be displayed to
 			indicate the likeliness to the badly spelled word (the
@@ -115,17 +113,18 @@ z?			For the word under/after the cursor suggest correctly
 The 'spellsuggest' option influences how the list of suggestions is generated
 and sorted.  See |'spellsuggest'|.
 
+==============================================================================
+2. Remarks on spell checking				*spell-remarks*
 
 PERFORMANCE
 
-Note that Vim does on-the-fly spell checking.  To make this work fast the word
-list is loaded in memory.  Thus this uses a lot of memory (1 Mbyte or more).
-There might also be a noticeable delay when the word list is loaded, which
-happens when 'spell' is set and when 'spelllang' is set while 'spell' was
-already set.  To minimize the delay each word list is only loaded once, it
-is not deleted when 'spelllang' is made empty or 'spell' is reset.  When
-'encoding' is set all the word lists are reloaded, thus you may notice a delay
-then too.
+Vim does on-the-fly spell checking.  To make this work fast the word list is
+loaded in memory.  Thus this uses a lot of memory (1 Mbyte or more).  There
+might also be a noticeable delay when the word list is loaded, which happens
+when 'spell' is set and when 'spelllang' is set while 'spell' was already set.
+To minimize the delay each word list is only loaded once, it is not deleted
+when 'spelllang' is made empty or 'spell' is reset.  When 'encoding' is set
+all the word lists are reloaded, thus you may notice a delay then too.
 
 
 REGIONS
@@ -272,9 +271,10 @@ find these functions useful:
 
     spellbadword()	find badly spelled word at the cursor
     spellsuggest()	get list of spelling suggestions
+    soundfold()		get the sound-a-like version of a word
 
 ==============================================================================
-2. Generating a spell file				*spell-mkspell*
+3. Generating a spell file				*spell-mkspell*
 
 Vim uses a binary file format for spelling.  This greatly speeds up loading
 the word list and keeps it small.
@@ -284,7 +284,7 @@ uses.  Myspell is used by OpenOffice.org and Mozilla.  You should be able to
 find them here:
 	http://lingucomponent.openoffice.org/spell_dic.html
 You can also use a plain word list.  The results are the same, the choice
-depends on what you find.
+depends on what word lists you can find.
 
 Make sure your current locale is set properly, otherwise Vim doesn't know what
 characters are upper/lower case letters.  If the locale isn't available (e.g.,
@@ -296,7 +296,7 @@ then Vim will try to guess.
 							*:mksp* *:mkspell*
 :mksp[ell][!] [-ascii] {outname} {inname} ...
 			Generate a Vim spell file word lists.  Example: >
-		:mkspell nl nl_NL.words
+		:mkspell /tmp/nl nl_NL.words
 <								*E751*
 			When {outname} ends in ".spl" it is used as the output
 			file name.  Otherwise it should be a language name,
@@ -304,7 +304,7 @@ then Vim will try to guess.
 			written will be "{outname}.{encoding}.spl", where
 			{encoding} is the value of the 'encoding' option.
 
-			When the output file already exists [!] must be added
+			When the output file already exists [!] must be used
 			to overwrite it.
 
 			When the [-ascii] argument is present, words with
@@ -330,18 +330,18 @@ then Vim will try to guess.
 			the optimal word tree (Polish requires a few hundred
 			Mbyte).  The final result will be much smaller.
 
-			When the spell file was written all currently used
-			spell files will be reloaded.
+			After the spell file was written and it was being used
+			in a buffer it will be reloaded automatically.
 
 :mksp[ell] [-ascii] {name}.{enc}.add
 			Like ":mkspell" above, using {name}.{enc}.add as the
-			input file and producing an output file that has
-			".spl" appended.
+			input file and producing an output file in the same
+			directory that has ".spl" appended.
 
 :mksp[ell] [-ascii] {name}
 			Like ":mkspell" above, using {name} as the input file
-			and producing an output file that has ".{enc}.spl"
-			appended.
+			and producing an output file in the same directory
+			that has ".{enc}.spl" appended.
 
 Since you might want to change a Myspell word list for use with Vim the
 following procedure is recommended:
@@ -351,9 +351,11 @@ following procedure is recommended:
 3. Change the xx_YY.aff and xx_YY.dic files to remove bad words, add missing
    words, define word characters with FOL/LOW/UPP, etc.  The distributed
    "src/spell/*.diff" files can be used.
-4. Set 'encoding' to the desired encoding and use |:mkspell| to generate the
-   Vim spell file.
-5. Try out the spell file with ":set spell spelllang=xx_YY".
+4. Start Vim with the right locale and use |:mkspell| to generate the Vim
+   spell file.
+5. Try out the spell file with ":set spell spelllang=xx" if you wrote it in
+   a spell directory in 'runtimepath, or ":set spelllang=xx.enc.spl" if you
+   wrote it somewhere else.
 
 When the Myspell files are updated you can merge the differences:
 1. Obtain the new Myspell files as xx_YY.new.aff and xx_UU.new.dic.
@@ -372,8 +374,8 @@ used spelling files, use this command:
 							*:spelldump* *:spelld*
 :spelld[ump]		Open a new window and fill it with all currently valid
 			words.
-			Note: For some languages the result may be huge and
-			Vim may run out of memory.
+			Note: For some languages the result may be enormous,
+			causing Vim to run out of memory.
 
 The format of the word list is used |spell-wordlist-format|.  You should be
 able to read it with ":mkspell" to generate one .spl file that includes all
@@ -382,46 +384,59 @@ the words.
 Only words for the current region are included.  No "/regions" line is
 generated.
 
-Comment lines are used to indicate which .spl file the words came from.
+Comment lines with the name of the .spl file are used as a header above the
+words that were generated from that .spl file.
 
 ==============================================================================
-3. Spell file format					*spell-file-format*
+4. Spell file format					*spell-file-format*
 
 This is the format of the files that are used by the person who creates and
 maintains a word list.
 
 Note that we avoid the word "dictionary" here.  That is because the goal of
 spell checking differs from writing a dictionary (as in the book).  For
-spelling we need a list of words that are OK, thus need not to be highlighted.
-Names will not appear in a dictionary, but do appear in a word list.  And
-some old words are rarely used and are common misspellings.  These do appear
-in a dictionary but not in a word list.
+spelling we need a list of words that are OK, thus should not to be
+highlighted.  Person and company names will not appear in a dictionary, but do
+appear in a word list.  And some old words are rarely used while they are
+common misspellings.  These do appear in a dictionary but not in a word list.
 
-There are two formats: one with affix compression and one without.  The files
-with affix compression are used by Myspell (Mozilla and OpenOffice.org).  This
-requires two files, one with .aff and one with .dic extension.  The second
-format is a list of words.
+There are two formats: A straigth list of words and a list using affix
+compression.  The files with affix compression are used by Myspell (Mozilla
+and OpenOffice.org).  This requires two files, one with .aff and one with .dic
+extension.
 
 
-FORMAT OF WORD LIST				*spell-wordlist-format*
+FORMAT OF STRAIGHT WORD LIST				*spell-wordlist-format*
 
 The words must appear one per line.  That is all that is required.
+
 Additionally the following items are recognized:
+
 - Empty and blank lines are ignored.
+
 - Lines starting with a # are ignored (comment lines).
+
 - A line starting with "/encoding=", before any word, specifies the encoding
   of the file.  After the second '=' comes an encoding name.  This tells Vim
-  to setup conversion from the specified encoding to 'encoding'.
+  to setup conversion from the specified encoding to 'encoding'.  Thus you can
+  use one word list for several target encodings.
+
 - A line starting with "/regions=" specifies the region names that are
   supported.  Each region name must be two ASCII letters.  The first one is
   region 1.  Thus "/regions=usca" has region 1 "us" and region 2 "ca".
-  In an addition word list the list should be equal to the main word list!
+  In an addition word list the region names should be equal to the main word
+  list!
+
 - A line starting with "/?" specifies a word that should be marked as rare.
+
 - A line starting with "/!" specifies a word that should be marked as bad.
+
 - A line starting with "/=" specifies a word where case must match exactly.
   A "?" or "!" may be following: "/=?" and "/=!".
+
 - Digits after "/" indicate the regions in which the word is valid.  If no
   regions are specified the word is valid in all regions.
+
 - Other lines starting with '/' are reserved for future use.  The ones that
   are not recognized are ignored (but you do get a warning message).
 
@@ -492,7 +507,7 @@ is required at this position.  The same word with a lower-case letter at this
 position will not match. When some of the other letters are upper-case it will
 not match either.
 
-The same word with all upper-case characters will always be OK.
+The word with all upper-case characters will always be OK.
 
 	word list	matches			does not match ~
 	als		als Als ALS		ALs AlS aLs aLS
@@ -509,7 +524,9 @@ when it appears with a non-word character before and after it.  For Myspell a
 word starting with a non-word character probably won't work.
 
 After the word there is an optional slash and flags.  Most of these flags are
-letters that indicate the affixes that can be used with this word.
+letters that indicate the affixes that can be used with this word.  These are
+specified with SFX and PFX lines in the .aff file.  See the Myspell
+documentation.
 
 							*spell-affix-vim*
 A flag that Vim adds and is not in Myspell is the flag defined with KEP in the
@@ -527,7 +544,8 @@ the affix file.  The affix file must always be in the same encoding as the
 word list.  This is compatible with Myspell.  For Vim the encoding may also be
 something else, any encoding that "iconv" supports.  The "SET" line must
 specify the name of the encoding.  When using a multi-byte encoding it's
-possible to use more different affixes.
+possible to use more different affixes (but Myspell doesn't support that, thus
+you may not want to use it anyway).
 
 
 CHARACTER TABLES
@@ -677,11 +695,14 @@ used to make spelling suggestions.  The items define the "from" text and the
 	REP ch k ~
 
 The first line specifies the number of REP lines following.  Vim ignores it.
+Don't include simple one-character replacements or swaps.  Vim will try these
+anyway.  You can include whole words if you want to, but you might want to use
+the "file:" item in 'spellsuggest' instead.
 
 
 SIMILAR CHARACTERS					*spell-affix-MAP*
 
-In the affix file MAP items can be used to define letters that very much
+In the affix file MAP items can be used to define letters that are very much
 alike.  This is mostly used for a letter with different accents.  This is used
 to prefer suggestions with these letters substituted.  Example:
 
@@ -691,22 +712,23 @@ to prefer suggestions with these letters substituted.  Example:
 
 The first line specifies the number of MAP lines following.  Vim ignores it.
 
-A letter must only appear in one of the MAP items.  It's a bit more efficient
-if the first letter is ASCII or at least one without accents.
+Each letter must appear in only one of the MAP items.  It's a bit more
+efficient if the first letter is ASCII or at least one without accents.
 
 
-SOUNDS-A-LIKE						*spell-affix-SAL*
+SOUND-A-LIKE						*spell-affix-SAL*
 
 In the affix file SAL items can be used to define the sounds-a-like mechanism
 to be used.  The main items define the "from" text and the "to" replacement.
-Example:
+Simplistic example:
 
 	SAL CIA                  X ~
 	SAL CH                   X ~
 	SAL C                    K ~
 	SAL K                    K ~
 
-An explantion how it works can be found in the Aspell manual:
+There are a few rules and this can become quite complicated.  An explantion
+how it works can be found in the Aspell manual:
 http://aspell.net/man-html/Phonetic-Code.html.
 
 There are a few special items:
@@ -723,7 +745,7 @@ SIMPLE SOUNDFOLDING		*spell-affix-SOFOFROM* *spell-affix-SOFOTO*
 The SAL mechanism is complex and slow.  A simpler mechanism is mapping all
 characters to another character, mapping similar sounding characters to the
 same character.  At the same time this does case folding.  You can not have
-SAL items at the same time.
+both SAL items and simple soundfolding.
 
 There are two items required: one to speficy the characters that are mapped
 and one that specifies the characters they are mapped to.  They must have
@@ -733,9 +755,9 @@ exactly the same number of characters.  Example:
     SOFOTO   ebctefghejklnnepkrstevvkesebctefghejklnnepkrstevvkes ~
 
 In the example all vowels are mapped to the same character 'e'.  Another
-method is to leave out all vowels.  Some characters that sound nearly the same
-and are often mixed up, such as 'm' and 'n', are mapped to the same character.
-Don't do this too much, all words will start looking alike.
+method would be to leave out all vowels.  Some characters that sound nearly
+the same and are often mixed up, such as 'm' and 'n', are mapped to the same
+character.  Don't do this too much, all words will start looking alike.
 
 Characters that do not appear in SOFOFROM will be left out, except that all
 white space is replaced by one space.  Sequences of the same character in

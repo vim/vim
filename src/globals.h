@@ -989,7 +989,6 @@ EXTERN char	breakat_flags[256];	/* which characters are in 'breakat' */
 
 /* these are in version.c */
 extern char *Version;
-extern char *mediumVersion;
 #if defined(HAVE_DATE_TIME) && defined(VMS) && defined(VAXC)
 extern char longVersion[];
 #else
@@ -1200,11 +1199,6 @@ EXTERN char	pseps[2]		/* normal path separator string */
 			= {'\\', 0}
 # endif
 			;
-EXTERN char	psepsN[2]		/* abnormal path separator string */
-# ifdef DO_INIT
-			= {'/', 0}
-# endif
-			;
 #endif
 
 #ifdef FEAT_VIRTUALEDIT
@@ -1244,7 +1238,6 @@ EXTERN char *netbeansArg INIT(= NULL);	/* the -nb[:host:port:passwd] arg */
 EXTERN int netbeansCloseFile INIT(= 0);	/* send killed if != 0 */
 EXTERN int netbeansFireChanges INIT(= 1); /* send buffer changes if != 0 */
 EXTERN int netbeansForcedQuit INIT(= 0);/* don't write modified files */
-EXTERN int netbeansOpenFile INIT(= 1);	/* send fileOpened if != 0 */
 EXTERN int netbeansReadFile INIT(= 1);	/* OK to read from disk if != 0 */
 EXTERN int netbeansSuppressNoLines INIT(= 0); /* skip "No lines in buffer" */
 EXTERN int usingNetbeans INIT(= 0);	/* set if -nb flag is used */

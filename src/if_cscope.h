@@ -29,7 +29,6 @@
 
 #define	CSCOPE_DBFILE		"cscope.out"
 #define	CSCOPE_PROMPT		">> "
-#define	CSCOPE_QUERIES		"sgdct efi"
 
 /*
  * s 0name	Find this C symbol

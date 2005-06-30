@@ -4829,7 +4829,7 @@ struct prt_dsc_line_S
 
 
 #define SIZEOF_CSTR(s)      (sizeof(s) - 1)
-struct prt_dsc_comment_S prt_dsc_table[] =
+static struct prt_dsc_comment_S prt_dsc_table[] =
 {
     {PRT_DSC_TITLE,       SIZEOF_CSTR(PRT_DSC_TITLE),     PRT_DSC_TITLE_TYPE},
     {PRT_DSC_VERSION,     SIZEOF_CSTR(PRT_DSC_VERSION),
@@ -4876,6 +4876,7 @@ static int prt_next_dsc __ARGS((struct prt_dsc_line_S *p_dsc_line));
 #ifdef FEAT_MBYTE
 static int prt_build_cid_fontname __ARGS((int font, char_u *name, int name_len));
 static void prt_def_cidfont __ARGS((char *new_name, int height, char *cidfont));
+static void prt_dup_cidfont __ARGS((char *original_name, char *new_name));
 static int prt_match_encoding __ARGS((char *p_encoding, struct prt_ps_mbfont_S *p_cmap, struct prt_ps_encoding_S **pp_mbenc));
 static int prt_match_charset __ARGS((char *p_charset, struct prt_ps_mbfont_S *p_cmap, struct prt_ps_charset_S **pp_mbchar));
 #endif

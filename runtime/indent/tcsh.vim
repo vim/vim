@@ -1,6 +1,6 @@
 " Vim indent file
 " Language:		C-shell (tcsh)
-" Maintainor:		Gautam Iyer <gautam@math.uchicago.edu>
+" Maintainer:		Gautam Iyer <gautam@math.uchicago.edu>
 " Last Modified:	Wed 04 Feb 2004 04:36:07 PM CST
 
 " Only load this indent file when no other was loaded.

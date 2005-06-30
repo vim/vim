@@ -19,8 +19,10 @@ extern "C" {
     BOOL WINAPI global_ime_TranslateMessage(CONST MSG *);
     void WINAPI global_ime_set_position(POINT*);
     void WINAPI global_ime_set_font(LOGFONT*);
+#if 0
     void WINAPI global_ime_status_evacuate(void);
     void WINAPI global_ime_status_restore(void);
+#endif
     void WINAPI global_ime_set_status(int status);
     int WINAPI global_ime_get_status(void);
 #ifdef __cplusplus

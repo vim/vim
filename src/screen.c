@@ -2509,8 +2509,8 @@ win_line(wp, lnum, startrow, endrow)
 					   starts */
     int		spell_attr = 0;		/* attributes desired by spelling */
     int		word_end = 0;		/* last byte with same spell_attr */
-    static linenr_T  checked_lnum = 0;	/* line number for checked_col */
-    static int	checked_col = 0;	/* column in checked_lnum up to which
+    static linenr_T  checked_lnum = 0;	/* line number for "checked_col" */
+    static int	checked_col = 0;	/* column in "checked_lnum" up to which
 					 * there are no spell errors */
     int		cur_checked_col = 0;	/* checked column for current line */
 #endif
