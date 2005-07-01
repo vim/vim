@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 30
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jul 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -59,16 +59,27 @@ zg			Add word under the cursor as a good word to
 			'spellfile'.  In Visual mode the selected characters
 			are added as a word (including white space!).
 
+							*zG*
+zG			Like "zg" but add the word to the internal word list.
+
 							*zw*
 zw			Add word under the cursor as a wrong (bad) word to
 			'spellfile'.  In Visual mode the selected characters
 			are added as a word (including white space!).
 
+							*zW*
+zW			Like "zw" but add the word to the internal word list.
+
 							*:spe* *:spellgood*
 :spe[llgood] {word}	Add [word} as a good word to 'spellfile'.
 
+:spe[llgood]! {word}	Add [word} as a good word to the internal word list.
+
 							*:spellw* *:spellwrong*
 :spellw[rong] {word}	Add [word} as a wrong (bad) word to 'spellfile'.
+
+:spellw[rong]! {word}	Add [word} as a wrong (bad) word to the internal word
+			list.
 
 After adding a word to 'spellfile' with the above commands its associated
 ".spl" file will automatically be updated and reloaded.  If you change
@@ -79,6 +90,10 @@ commands mostly works well: >
 	:mkspell! %
 
 More details about the 'spellfile' format below |spell-wordlist-format|.
+
+The internal word list is used for all buffers where 'spell' is set.  It is
+not stored, it is lost when you exit Vim.  It is also cleared when 'encoding'
+is set.
 
 
 Finding suggestions for bad words:
@@ -381,8 +396,9 @@ The format of the word list is used |spell-wordlist-format|.  You should be
 able to read it with ":mkspell" to generate one .spl file that includes all
 the words.
 
-Only words for the current region are included.  No "/regions" line is
-generated.
+When all entries to 'spelllang' use the same regions or no regions at all then
+the region information is included in the dumped words.  Otherwise only words
+for the current region are included and no "/regions" line is generated.
 
 Comment lines with the name of the .spl file are used as a header above the
 words that were generated from that .spl file.
@@ -427,18 +443,15 @@ Additionally the following items are recognized:
   In an addition word list the region names should be equal to the main word
   list!
 
-- A line starting with "/?" specifies a word that should be marked as rare.
-
-- A line starting with "/!" specifies a word that should be marked as bad.
-
-- A line starting with "/=" specifies a word where case must match exactly.
-  A "?" or "!" may be following: "/=?" and "/=!".
-
-- Digits after "/" indicate the regions in which the word is valid.  If no
-  regions are specified the word is valid in all regions.
-
 - Other lines starting with '/' are reserved for future use.  The ones that
   are not recognized are ignored (but you do get a warning message).
+
+- A "/" may follow the word with the following items:
+    =   	Case must match exactly.
+    ?		Rare word.
+    !		Bad (wrong) word.
+    digit	A region in which the word is valid.  If no regions are
+    		specified the word is valid in all regions.
 
 Example:
 
@@ -446,10 +459,10 @@ Example:
 	/encoding=latin1			encoding of the file
 	/regions=uscagb				regions "us", "ca" and "gb"
 	example					word for all regions
-	/1blah					word for region 1 "us"
-	/!vim					bad word
-	/?3Campbell				rare word in region 3 "gb"
-	/='s mornings				keep-case word
+	blah/12					word for regions "us" and "ca"
+	vim/!					bad word
+	Campbell/?3				rare word in region 3 "gb"
+	's mornings/=				keep-case word
 
 
 FORMAT WITH AFFIX COMPRESSION

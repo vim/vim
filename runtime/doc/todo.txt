@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 30
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -96,34 +96,33 @@ Awaiting response:
 
 PLANNED FOR VERSION 7.0:
 
--   Add SPELLCHECKER, with support for many languages.
-  - Spell checking code todo's:
-    - ":spelldump" doesn't put region numbers in the list.
-    - Use "engspchk" from Charles Campbell for ideas (commands, rare words).
-    - Make "en-rare" spell file?  Ask Charles Campbell.
-    - References: MySpell library (in OpenOffice.org).
-	http://spellchecker.mozdev.org/source.html
-	http://whiteboard.openoffice.org/source/browse/whiteboard/lingucomponent/source/spellcheck/myspell/
-      author: Kevin Hendricks <kevin.hendricks@sympatico.ca>
-    - Update option window for 'verbosefile', 'spell', 'spellfile',
-      'spellsuggest' and 'spelllang'.
+- Spell checking todo's:
+    - When "zW" and "zG" are repeated with the same word it stops working
+    - More ideas:
+	- Support project word list?
+	- Check for Cap after punctuation "..." or char in ".!?"
     - Distribution: Need wordlists for many languages; "language pack"
       Put them on the ftp site, ready to download.  Include README for
       copyrights.
     - Work together with OpenOffice.org to update the wordlists.  (Adri
       Verhoef, Aad Nales)  Setup vim-spell maillist?
-    - Insert mode completion mechanism that uses the spell word lists.
     - Charles Campbell asks for method to add "contained" groups to
       existing syntax items (to add @Spell).
       Add ":syntax contains {pattern} add=@Spell" command?  A bit like ":syn
       cluster" but change the contains list directly for matching syntax
       items.
     - Install spell files with src/main.aap.
-    - Alternate Dutch word list at www.nederlandsewoorden.nl (use script to
-      obtain).  But new Myspell wordlist will come (Hagen)
+    Later:
+    - References: MySpell library (in OpenOffice.org).
+	http://spellchecker.mozdev.org/source.html
+	http://whiteboard.openoffice.org/source/browse/whiteboard/lingucomponent/source/spellcheck/myspell/
+      author: Kevin Hendricks <kevin.hendricks@sympatico.ca>
+    - Make "en-rare" spell file?  Ask Charles Campbell.
     - The English dictionaries for different regions are not consistent in
       their use of words with a dash.
-    Later:
+    - Alternate Dutch word list at www.nederlandsewoorden.nl (use script to
+      obtain).  But new Myspell wordlist will come (Hagen)
+    - Insert mode completion mechanism that uses the spell word lists.
     - Add hl groups to 'spelllang'?
 	:set spelllang=en_us,en-rare/SpellRare,en-math/SpellMath
       More complicated: Regions with different languages?  E.g.  comments
@@ -133,6 +132,8 @@ PLANNED FOR VERSION 7.0:
       specify a word can only be at the start or end, or that only certain
       words combine.
 
+-   Support using "**" in filename for ":next", ":vimgrep", etc., so that a
+    directory tree can be searched.
 -   REFACTORING: The main() function is very long.  Move parts to separate
     functions, especially loops.  Ideas from Walter Briscoe (2003 Apr 3, 2004
     Feb 9).
@@ -140,8 +141,6 @@ PLANNED FOR VERSION 7.0:
 -   Improve the interface between the generic GUI code and the system-specific
     code.  Generic code handles text window with scrollbars, system-specific
     code menu, toolbar, etc.
--   Support using "**" in filename for ":next", ":vimgrep", etc., so that a
-    directory tree can be searched.
 -   Store messages to allow SCROLLING BACK for all commands.  And other "less"
     like commands.
 -   "INTELLISENSE".  First cleanup the Insert-mode completion.

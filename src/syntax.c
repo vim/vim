@@ -1182,7 +1182,7 @@ syn_stack_apply_changes(buf)
     prev = NULL;
     for (p = buf->b_sst_first; p != NULL; )
     {
-	if (p->sst_lnum + syn_buf->b_syn_sync_linebreaks > buf->b_mod_top)
+	if (p->sst_lnum + buf->b_syn_sync_linebreaks > buf->b_mod_top)
 	{
 	    n = p->sst_lnum + buf->b_mod_xlines;
 	    if (n <= buf->b_mod_bot)

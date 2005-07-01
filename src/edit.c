@@ -2632,7 +2632,7 @@ ins_compl_next_buf(buf, flag)
 #ifdef FEAT_WINDOWS
 	if (buf == curbuf)	/* first call for this flag/expansion */
 	    wp = curwin;
-	while ((wp = wp->w_next != NULL ? wp->w_next : firstwin) != curwin
+	while ((wp = (wp->w_next != NULL ? wp->w_next : firstwin)) != curwin
 		&& wp->w_buffer->b_scanned)
 	    ;
 	buf = wp->w_buffer;
@@ -2644,7 +2644,7 @@ ins_compl_next_buf(buf, flag)
 	/* 'b' (just loaded buffers), 'u' (just non-loaded buffers) or 'U'
 	 * (unlisted buffers)
 	 * When completing whole lines skip unloaded buffers. */
-	while ((buf = buf->b_next != NULL ? buf->b_next : firstbuf) != curbuf
+	while ((buf = (buf->b_next != NULL ? buf->b_next : firstbuf)) != curbuf
 		&& ((flag == 'U'
 			? buf->b_p_bl
 			: (!buf->b_p_bl
