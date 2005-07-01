@@ -78,7 +78,7 @@ class CVim : public IVim
 {
 public:
     ~CVim();
-    static CVim *Create(int* pbDoRestart);
+    static CVim *Create(int *pbDoRestart);
 
     // IUnknown members
     STDMETHOD(QueryInterface)(REFIID riid, void ** ppv);
@@ -88,14 +88,14 @@ public:
     // IDispatch members
     STDMETHOD(GetTypeInfoCount)(UINT *pCount);
     STDMETHOD(GetTypeInfo)(UINT iTypeInfo, LCID, ITypeInfo **ppITypeInfo);
-    STDMETHOD(GetIDsOfNames)(const IID& iid, OLECHAR** names, UINT n, LCID, DISPID *dispids);
-    STDMETHOD(Invoke)(DISPID member, const IID& iid, LCID, WORD flags, DISPPARAMS *dispparams, VARIANT *result, EXCEPINFO *excepinfo, UINT *argerr);
+    STDMETHOD(GetIDsOfNames)(const IID &iid, OLECHAR **names, UINT n, LCID, DISPID *dispids);
+    STDMETHOD(Invoke)(DISPID member, const IID &iid, LCID, WORD flags, DISPPARAMS *dispparams, VARIANT *result, EXCEPINFO *excepinfo, UINT *argerr);
 
     // IVim members
     STDMETHOD(SendKeys)(BSTR keys);
     STDMETHOD(Eval)(BSTR expr, BSTR *result);
     STDMETHOD(SetForeground)(void);
-    STDMETHOD(GetHwnd)(UINT* result);
+    STDMETHOD(GetHwnd)(UINT *result);
 
 private:
     // Constructor is private - create using CVim::Create()
@@ -112,7 +112,7 @@ private:
  * --------------
  */
 
-CVim *CVim::Create(int* pbDoRestart)
+CVim *CVim::Create(int *pbDoRestart)
 {
     HRESULT hr;
     CVim *me = 0;
@@ -187,6 +187,7 @@ CVim::~CVim()
 {
     if (typeinfo && vim_parent_hwnd == NULL)
 	typeinfo->Release();
+    typeinfo = 0;
 }
 
 STDMETHODIMP
@@ -242,8 +243,8 @@ CVim::GetTypeInfo(UINT iTypeInfo, LCID, ITypeInfo **ppITypeInfo)
 
 STDMETHODIMP
 CVim::GetIDsOfNames(
-	const IID& iid,
-	OLECHAR** names,
+	const IID &iid,
+	OLECHAR **names,
 	UINT n,
 	LCID,
 	DISPID *dispids)
@@ -257,7 +258,7 @@ CVim::GetIDsOfNames(
 STDMETHODIMP
 CVim::Invoke(
 	DISPID member,
-	const IID& iid,
+	const IID &iid,
 	LCID,
 	WORD flags,
 	DISPPARAMS *dispparams,
@@ -275,7 +276,7 @@ CVim::Invoke(
 }
 
 STDMETHODIMP
-CVim::GetHwnd(UINT* result)
+CVim::GetHwnd(UINT *result)
 {
     *result = (UINT) s_hwnd;
     return S_OK;
@@ -486,9 +487,9 @@ CVimCF::LockServer(BOOL lock)
 *****************************************************************************/
 
 // Internal use only
-static void SetKeyAndValue(const char* path, const char* subkey, const char* value);
-static void GUIDtochar(const GUID& guid, char* GUID, int length);
-static void RecursiveDeleteKey(HKEY hKeyParent, const char* child);
+static void SetKeyAndValue(const char *path, const char *subkey, const char *value);
+static void GUIDtochar(const GUID &guid, char *GUID, int length);
+static void RecursiveDeleteKey(HKEY hKeyParent, const char *child);
 static const int GUID_STRING_SIZE = 39;
 
 // Register the component in the registry
@@ -607,7 +608,7 @@ extern "C" void UnregisterMe(int bNotifyUser)
 /****************************************************************************/
 
 // Convert a GUID to a char string
-static void GUIDtochar(const GUID& guid, char* GUID, int length)
+static void GUIDtochar(const GUID &guid, char *GUID, int length)
 {
     // Get wide string version
     LPOLESTR wGUID = NULL;
@@ -621,7 +622,7 @@ static void GUIDtochar(const GUID& guid, char* GUID, int length)
 }
 
 // Delete a key and all of its descendents
-static void RecursiveDeleteKey(HKEY hKeyParent, const char* child)
+static void RecursiveDeleteKey(HKEY hKeyParent, const char *child)
 {
     // Open the child
     HKEY hKeyChild;
@@ -650,7 +651,7 @@ static void RecursiveDeleteKey(HKEY hKeyParent, const char* child)
 }
 
 // Create a key and set its value
-static void SetKeyAndValue(const char* key, const char* subkey, const char* value)
+static void SetKeyAndValue(const char *key, const char subkey, const char *value)
 {
     HKEY hKey;
     char buffer[1024];
@@ -684,7 +685,7 @@ static void SetKeyAndValue(const char* key, const char* subkey, const char* valu
 /*****************************************************************************
  5. OLE Initialisation and shutdown processing
 *****************************************************************************/
-extern "C" void InitOLE(int* pbDoRestart)
+extern "C" void InitOLE(int *pbDoRestart)
 {
     HRESULT hr;
 
