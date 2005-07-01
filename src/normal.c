@@ -4665,6 +4665,8 @@ dozet:
 #ifdef FEAT_SYN_HL
     case 'g':	/* "zg": add good word to word list */
     case 'w':	/* "zw": add wrong word to word list */
+    case 'G':	/* "zG": add good word to temp word list */
+    case 'W':	/* "zW": add wrong word to temp word list */
 		{
 		    char_u  *ptr = NULL;
 		    int	    len;
@@ -4679,7 +4681,8 @@ dozet:
 		    if (ptr == NULL && (len = find_ident_under_cursor(&ptr,
 							    FIND_IDENT)) == 0)
 			return;
-		    spell_add_word(ptr, len, nchar == 'w');
+		    spell_add_word(ptr, len, nchar == 'w' || nchar == 'W',
+						nchar == 'G' || nchar == 'W');
 		}
 		break;
 

@@ -3,73 +3,100 @@
 # It builds on Windows 95 and all four NT platforms: i386, Alpha, MIPS, and
 # PowerPC.  The NT/i386 binary and the Windows 95 binary are identical.
 #
+# To build using Borland C++, use Make_bc3.mak or Make_bc5.mak.
+#
 # This makefile can build the console, GUI, OLE-enable, Perl-enabled and
 # Python-enabled versions of vim for Win32 platforms.
 #
-# When compiling different versions, do "nmake clean" first!
-#
 # The basic command line to build vim is:
+#
 #	nmake -f Make_mvc.mak
+#
 # This will build the console version of vim with no additional interfaces.
-# To add interfaces, define any of the following:
+# To add features, define any of the following:
+#
+#	!!!!  After changing features do "nmake clean" first  !!!!
+#
+#       Feature Set: FEATURES=[TINY, SMALL, NORMAL, BIG, HUGE] (default is BIG)
+#
 #	GUI interface: GUI=yes (default is no)
+#
 #	OLE interface: OLE=yes (usually with GUI=yes)
+#
 #	Multibyte support: MBYTE=yes
+#
 #	IME support: IME=yes	(requires GUI=yes)
 #	  DYNAMIC_IME=[yes or no]  (to load the imm32.dll dynamically, default
 #	  is yes)
 #	Global IME support: GIME=yes (requires GUI=yes)
+#
 #	MzScheme interface:
 #	  MZSCHEME=[Path to MzScheme directory]
 #	  DYNAMIC_MZSCHEME=yes (to load the MzScheme DLLs dynamically)
 #	  MZSCHEME_VER=[version, 205_000, ...]
+#
 #	Perl interface:
 #	  PERL=[Path to Perl directory]
 #	  DYNAMIC_PERL=yes (to load the Perl DLL dynamically)
-#	  PERL_VER=[Perl version, in the form 55 (5.005), 56 (5.6.x), etc] (default is 56)
+#	  PERL_VER=[Perl version, in the form 55 (5.005), 56 (5.6.x), etc]
+#	  (default is 56)
+#
 #	Python interface:
 #	  PYTHON=[Path to Python directory]
 #	  DYNAMIC_PYTHON=yes (to load the Python DLL dynamically)
 #	  PYTHON_VER=[Python version, eg 15, 20]  (default is 22)
+#
 #	Ruby interface:
 #	  RUBY=[Path to Ruby directory]
 #	  DYNAMIC_RUBY=yes (to load the Ruby DLL dynamically)
 #	  RUBY_VER=[Ruby version, eg 16, 17] (default is 18)
 #	  RUBY_VER_LONG=[Ruby version, eg 1.6, 1.7] (default is 1.8)
 #	    You must set RUBY_VER_LONG when change RUBY_VER.
+#
 #	Tcl interface:
 #	  TCL=[Path to Tcl directory]
 #	  DYNAMIC_TCL=yes (to load the Tcl DLL dynamically)
 #	  TCL_VER=[Tcl version, e.g. 80, 83]  (default is 83)
 #	  TCL_VER_LONG=[Tcl version, eg 8.3] (default is 8.3)
 #	    You must set TCL_VER_LONG when you set TCL_VER.
+#
+#	SNiFF+ interface: SNIFF=yes
+#
+#	Cscope support: CSCOPE=yes
+#
+#	Iconv library support (always dynamically loaded):
+#	  ICONV=[yes or no]  (default is yes)
+#
+#	Intl library support (always dynamically loaded):
+#	  GETTEXT=[yes or no]  (default is yes)
+#	See http://sourceforge.net/projects/gettext/
+#
+#       PostScript printing: POSTSCRIPT=yes (default is no)
+#
+#       Netbeans Support: NETBEANS=[yes or no] (default is yes if GUI is yes)
+#
+#       XPM Image Support: XPM=[path to XPM directory]
+#
+#       Optimization: OPTIMIZE=[SPACE, SPEED, MAXSPEED] (default is MAXSPEED)
+#
+#       Processor Version: CPUNR=[i386, i486, i586, i686, pentium4] (default is
+#       i386)
+#
+#       Version Support: WINVER=[0x0400, 0x0500] (default is 0x0400)
+#
 #	Debug version: DEBUG=yes
 #	Mapfile: MAP=[no, yes or lines] (default is yes)
 #	  no:    Don't write a mapfile.
 #	  yes:   Write a normal mapfile.
 #	  lines: Write a mapfile with line numbers (only for VC6 and later)
-#	SNiFF+ interface: SNIFF=yes
-#	Cscope support: CSCOPE=yes
-#	Iconv library support (always dynamically loaded):
-#	  ICONV=[yes or no]  (default is yes)
-#	Intl library support (always dynamically loaded):
-#	  GETTEXT=[yes or no]  (default is yes)
-#	See http://sourceforge.net/projects/gettext/
-#       PostScript printing: POSTSCRIPT=yes (default is no)
-#       Feature Set: FEATURES=[TINY, SMALL, NORMAL, BIG, HUGE] (default is BIG)
-#       Version Support: WINVER=[0x0400, 0x0500] (default is 0x0400)
-#       Processor Version: CPUNR=[i386, i486, i586, i686, pentium4] (default is i386)
-#       Optimization: OPTIMIZE=[SPACE, SPEED, MAXSPEED] (default is MAXSPEED)
-#       Netbeans Support: NETBEANS=[yes or no] (default is yes if GUI is yes)
-#       Netbeans Debugging Support: NBDEBUG=[yes or no] (default is no)
-#       XPM Image Support: XPM=[path to XPM directory]
+#
+#       Netbeans Debugging Support: NBDEBUG=[yes or no] (should be no, yes
+#       doesn't work)
 #
 # You can combine any of these interfaces
 #
 # Example: To build the non-debug, GUI version with Perl interface:
 #	nmake -f Make_mvc.mak GUI=yes PERL=C:\Perl
-#
-# To build using Borland C++, use Make_bc3.mak or Make_bc5.mak.
 #
 # DEBUG with Make_mvc.mak and Make_dvc.mak:
 #	This makefile gives a fineness of control which is not supported in

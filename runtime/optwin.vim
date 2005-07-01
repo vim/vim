@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Mar 07
+" Last Change:	2005 Jul 01
 
 " If there already is an option window, jump to that one.
 if bufwinnr("option-window") > 0
@@ -368,7 +368,7 @@ if has("linebreak")
 endif
 
 
-call <SID>Header("syntax and highlighting")
+call <SID>Header("syntax, highlighting and spelling")
 call append("$", "background\t\"dark\" or \"light\"; the background color brightness")
 call <SID>OptionG("bg", &bg)
 if has("autocmd")
@@ -385,6 +385,19 @@ call append("$", "highlight\twhich highlighting to use for various occasions")
 call <SID>OptionG("hl", &hl)
 call append("$", "hlsearch\thighlight all matches for the last used search pattern")
 call <SID>BinOptionG("hls", &hls)
+if has("syntax")
+  call append("$", "spell\thighlight spelling mistakes")
+  call append("$", "\t(local to window)")
+  call <SID>BinOptionL("spell")
+  call append("$", "spelllang\tlist of accepted languages")
+  call append("$", "\t(local to buffer)")
+  call <SID>OptionL("spl")
+  call append("$", "spellfile\tfile that \"zg\" adds good words to")
+  call append("$", "\t(local to buffer)")
+  call <SID>OptionL("spf")
+  call append("$", "spellsuggest\tmethods used to suggest corrections")
+  call <SID>OptionG("sps", &sps)
+endif
 
 
 call <SID>Header("multiple windows")
@@ -614,6 +627,8 @@ call append("$", "report\tthreshold for reporting number of changed lines")
 call append("$", " \tset report=" . &report)
 call append("$", "verbose\tthe higher the more messages are given")
 call append("$", " \tset vbs=" . &vbs)
+call append("$", "verbosefile\tfile to write messages in")
+call <SID>OptionG("vfile", &vfile)
 call append("$", "more\tpause listings when the screen is full")
 call <SID>BinOptionG("more", &more)
 if has("dialog_con") || has("dialog_gui")

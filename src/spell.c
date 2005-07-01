@@ -377,6 +377,9 @@ typedef struct langp_S
 #define VIMSPELLMAGIC "VIMspell08"  /* string at start of Vim spell file */
 #define VIMSPELLMAGICL 10
 
+/* file used for "zG" and "zW" */
+static char_u	*temp_wordlist = NULL;
+
 /*
  * Information used when looking for suggestions.
  */
@@ -574,10 +577,6 @@ typedef struct trystate_S
 #define FIND_KEEPWORD	1	/* find keep-case word */
 #define FIND_PREFIX	2	/* find word after prefix */
 
-/* values for read_cnt_string() */
-#define ERR_NOMEM	-1
-#define ERR_TRUNC	-2
-
 static slang_T *slang_alloc __ARGS((char_u *lang));
 static void slang_free __ARGS((slang_T *lp));
 static void slang_clear __ARGS((slang_T *lp));
@@ -592,6 +591,8 @@ static char_u *spell_enc __ARGS((void));
 static void spell_load_cb __ARGS((char_u *fname, void *cookie));
 static slang_T *spell_load_file __ARGS((char_u *fname, char_u *lang, slang_T *old_lp, int silent));
 static char_u *read_cnt_string __ARGS((FILE *fd, int cnt_bytes, int *errp));
+static int set_sofo __ARGS((slang_T *lp, char_u *from, char_u *to));
+static void set_sal_first __ARGS((slang_T *lp));
 #ifdef FEAT_MBYTE
 static int *mb_str2wide __ARGS((char_u *s));
 #endif
@@ -601,7 +602,7 @@ static void use_midword __ARGS((slang_T *lp, buf_T *buf));
 static int find_region __ARGS((char_u *rp, char_u *region));
 static int captype __ARGS((char_u *word, char_u *end));
 static void spell_reload_one __ARGS((char_u *fname, int added_word));
-static int set_spell_charflags __ARGS((char_u *flags, int cnt, char_u *upp));
+static int set_spell_charflags __ARGS((char_u *flags, char_u *upp));
 static int set_spell_chartab __ARGS((char_u *fol, char_u *low, char_u *upp));
 static void write_spell_chartab __ARGS((FILE *fd));
 static int spell_casefold __ARGS((char_u *p, int len, char_u *buf, int buflen));
@@ -683,6 +684,7 @@ static linenr_T apply_prefixes __ARGS((slang_T *slang, char_u *word, int round, 
 
 
 static char *e_format = N_("E759: Format error in spell file");
+static char *e_spell_trunc = N_("E758: Truncated spell file");
 
 /*
  * Main spell-checking function.
@@ -1690,9 +1692,7 @@ spell_load_file(fname, lang, old_lp, silent)
     garray_T	*gap;
     fromto_T	*ftp;
     salitem_T	*smp;
-    int		rr;
     short	*first;
-    salfirst_T	*sfirst;
     idx_T	idx;
     int		c = 0;
 
@@ -1756,7 +1756,7 @@ spell_load_file(fname, lang, old_lp, silent)
     if (cnt < 0)
     {
 truncerr:
-	EMSG(_("E758: Truncated spell file"));
+	EMSG(_(e_spell_trunc));
 	goto endFAIL;
     }
     if (cnt > 8)
@@ -1772,48 +1772,33 @@ formerr:
     }
     lp->sl_regions[cnt * 2] = NUL;
 
-    cnt = getc(fd);					/* <charflagslen> */
-    if (cnt > 0)
+    /* <charflagslen> <charflags> */
+    p = read_cnt_string(fd, 1, &cnt);
+    if (cnt == FAIL)
+	goto endFAIL;
+
+    /* <fcharslen> <fchars> */
+    fol = read_cnt_string(fd, 2, &cnt);
+    if (cnt == FAIL)
     {
-	p = alloc((unsigned)cnt);
-	if (p == NULL)
-	    goto endFAIL;
-	for (i = 0; i < cnt; ++i)
-	    p[i] = getc(fd);				/* <charflags> */
-
-	/* <fcharslen> <fchars> */
-	fol = read_cnt_string(fd, 2, &ccnt);
-	if (ccnt != 0)
-	{
-	    vim_free(p);
-	    if (ccnt == ERR_NOMEM)
-		goto endFAIL;
-	    if (ccnt == ERR_TRUNC)
-		goto formerr;
-	}
-
-	/* Set the word-char flags and fill SPELL_ISUPPER() table. */
-	i = set_spell_charflags(p, cnt, fol);
 	vim_free(p);
-	vim_free(fol);
-#if 0	/* tolerate the differences */
-	if (i == FAIL)
-	    goto formerr;
-#endif
+	goto endFAIL;
     }
-    else
-    {
-	/* When <charflagslen> is zero then <fcharlen> must also be zero. */
-	cnt = (getc(fd) << 8) + getc(fd);
-	if (cnt != 0)
-	    goto formerr;
-    }
+
+    /* Set the word-char flags and fill SPELL_ISUPPER() table. */
+    if (p != NULL && fol != NULL)
+	i = set_spell_charflags(p, fol);
+
+    vim_free(p);
+    vim_free(fol);
+
+    /* When <charflagslen> is zero then <fcharlen> must also be zero. */
+    if ((p == NULL) != (fol == NULL))
+	goto formerr;
 
     /* <midwordlen> <midword> */
     lp->sl_midword = read_cnt_string(fd, 2, &cnt);
-    if (cnt == ERR_TRUNC)
-	goto truncerr;
-    if (cnt == ERR_NOMEM)
+    if (cnt == FAIL)
 	goto endFAIL;
 
     /* <prefcondcnt> <prefcond> ... */
@@ -1863,28 +1848,14 @@ formerr:
     for (; gap->ga_len < cnt; ++gap->ga_len)
     {
 	ftp = &((fromto_T *)gap->ga_data)[gap->ga_len];
-	for (rr = 1; rr <= 2; ++rr)
+	ftp->ft_from = read_cnt_string(fd, 1, &i);
+	if (i == FAIL)
+	    goto endFAIL;
+	ftp->ft_to = read_cnt_string(fd, 1, &i);
+	if (i == FAIL)
 	{
-	    ccnt = getc(fd);
-	    if (ccnt < 0)
-	    {
-		if (rr == 2)
-		    vim_free(ftp->ft_from);
-		goto formerr;
-	    }
-	    if ((p = alloc(ccnt + 1)) == NULL)
-	    {
-		if (rr == 2)
-		    vim_free(ftp->ft_from);
-		goto endFAIL;
-	    }
-	    for (i = 0; i < ccnt; ++i)
-		p[i] = getc(fd);		/* <repfrom> or <repto> */
-	    p[i] = NUL;
-	    if (rr == 1)
-		ftp->ft_from = p;
-	    else
-		ftp->ft_to = p;
+	    vim_free(ftp->ft_from);
+	    goto endFAIL;
 	}
     }
 
@@ -1921,117 +1892,26 @@ formerr:
 	if (cnt != 1)
 	    goto formerr;
 
-	cnt = (getc(fd) << 8) + getc(fd);		/* <salfromlen> */
-	if (cnt < 0)
-	    goto formerr;
-	if ((bp = alloc(cnt + 1)) == NULL)
+	/* <salfromlen> <salfrom> */
+	bp = read_cnt_string(fd, 2, &cnt);
+	if (cnt == FAIL)
 	    goto endFAIL;
-	for (i = 0; i < cnt; ++i)
-	    bp[i] = getc(fd);				/* <salfrom> */
-	bp[i] = NUL;
 
-	ccnt = (getc(fd) << 8) + getc(fd);		/* <saltolen> */
-	if (ccnt < 0)
-	{
-	    vim_free(bp);
-	    goto formerr;
-	}
-	if ((fol = alloc(ccnt + 1)) == NULL)
+	/* <saltolen> <salto> */
+	fol = read_cnt_string(fd, 2, &cnt);
+	if (cnt == FAIL)
 	{
 	    vim_free(bp);
 	    goto endFAIL;
 	}
-	for (i = 0; i < ccnt; ++i)
-	    fol[i] = getc(fd);				/* <salto> */
-	fol[i] = NUL;
 
-#ifdef FEAT_MBYTE
-	if (has_mbyte)
-	{
-	    char_u	*s;
+	/* Store the info in lp->sl_sal and/or lp->sl_sal_first. */
+	i = set_sofo(lp, bp, fol);
 
-	    /* Use "sl_sal" as an array with 256 pointers to a list of wide
-	     * characters.  The index is the low byte of the character.
-	     * The list contains from-to pairs with a terminating NUL.
-	     * sl_sal_first[] is used for latin1 "from" characters. */
-	    gap = &lp->sl_sal;
-	    ga_init2(gap, sizeof(int *), 1);
-	    if (ga_grow(gap, 256) == FAIL)
-	    {
-sofoFAIL:
-		vim_free(bp);
-		vim_free(fol);
-		goto endFAIL;
-	    }
-	    vim_memset(gap->ga_data, 0, sizeof(int *) * 256);
-	    gap->ga_len = 256;
-
-	    /* First count the number of items for each list.  Temporarily use
-	     * sl_sal_first[] for this. */
-	    for (p = bp, s = fol; *p != NUL && *s != NUL; )
-	    {
-		c = mb_ptr2char_adv(&p);
-		mb_ptr_adv(s);
-		if (c >= 256)
-		    ++lp->sl_sal_first[c & 0xff];
-	    }
-	    if (*p != NUL || *s != NUL)	    /* lengths differ */
-		goto sofoerr;
-
-	    /* Allocate the lists. */
-	    for (i = 0; i < 256; ++i)
-		if (lp->sl_sal_first[i] > 0)
-		{
-		    p = alloc(sizeof(int) * (lp->sl_sal_first[i] * 2 + 1));
-		    if (p == NULL)
-			goto sofoFAIL;
-		    ((int **)gap->ga_data)[i] = (int *)p;
-		    *(int *)p = 0;
-		}
-
-	    /* Put the characters in sl_sal_first[] or a sl_sal list. */
-	    vim_memset(lp->sl_sal_first, 0, sizeof(salfirst_T) * 256);
-	    for (p = bp, s = fol; *p != NUL && *s != NUL; )
-	    {
-		c = mb_ptr2char_adv(&p);
-		i = mb_ptr2char_adv(&s);
-		if (c >= 256)
-		{
-		    int	*inp;
-
-		    /* Append the from-to chars at the end of the list with
-		     * the low byte. */
-		    inp = ((int **)gap->ga_data)[c & 0xff];
-		    while (*inp != 0)
-			++inp;
-		    *inp++ = c;		/* from char */
-		    *inp++ = i;		/* to char */
-		    *inp++ = NUL;	/* NUL at the end */
-		}
-		else
-		    /* mapping byte to char is done in sl_sal_first[] */
-		    lp->sl_sal_first[c] = i;
-	    }
-	}
-	else
-#endif
-	{
-	    /* mapping bytes to bytes is done in sl_sal_first[] */
-	    if (cnt != ccnt)
-	    {
-#ifdef FEAT_MBYTE
-sofoerr:
-#endif
-		vim_free(bp);
-		vim_free(fol);
-		goto formerr;
-	    }
-	    for (i = 0; i < cnt; ++i)
-		lp->sl_sal_first[bp[i]] = fol[i];
-	    lp->sl_sal.ga_len = 1;	/* indicates we have soundfolding */
-	}
 	vim_free(bp);
 	vim_free(fol);
+	if (i == FAIL)
+	    goto formerr;
     }
     else
     {
@@ -2091,22 +1971,13 @@ sofoerr:
 		*p++ = getc(fd);			/* <salfrom> */
 	    *p++ = NUL;
 
-	    ccnt = getc(fd);			/* <saltolen> */
-	    if (ccnt < 0)
+	    /* <saltolen> <salto> */
+	    smp->sm_to = read_cnt_string(fd, 1, &ccnt);
+	    if (ccnt == FAIL)
 	    {
 		vim_free(smp->sm_lead);
 		goto formerr;
 	    }
-	    if ((p = alloc(ccnt + 1)) == NULL)
-	    {
-		vim_free(smp->sm_lead);
-		goto endFAIL;
-	    }
-	    smp->sm_to = p;
-
-	    for (i = 0; i < ccnt; ++i)
-		*p++ = getc(fd);			/* <salto> */
-	    *p++ = NUL;
 
 #ifdef FEAT_MBYTE
 	    if (has_mbyte)
@@ -2135,64 +2006,13 @@ sofoerr:
 	}
 
 	/* Fill the first-index table. */
-	sfirst = lp->sl_sal_first;
-	for (i = 0; i < 256; ++i)
-	    sfirst[i] = -1;
-	smp = (salitem_T *)gap->ga_data;
-	for (i = 0; i < gap->ga_len; ++i)
-	{
-#ifdef FEAT_MBYTE
-	    if (has_mbyte)
-		/* Use the lowest byte of the first character.  For latin1 it's
-		 * the character, for other encodings it should differ for most
-		 * characters. */
-		c = *smp[i].sm_lead_w & 0xff;
-	    else
-#endif
-		c = *smp[i].sm_lead;
-	    if (sfirst[c] == -1)
-	    {
-		sfirst[c] = i;
-#ifdef FEAT_MBYTE
-		if (has_mbyte)
-		{
-		    /* Make sure all entries with this byte are following each
-		     * other.  Move the ones that are in the wrong position.  Do
-		     * keep the same ordering! */
-		    while (i + 1 < gap->ga_len
-					   && (*smp[i + 1].sm_lead_w & 0xff) == c)
-			/* Skip over entry with same index byte. */
-			++i;
-
-		    for (n = 1; i + n < gap->ga_len; ++n)
-			if ((*smp[i + n].sm_lead_w & 0xff) == c)
-			{
-			    salitem_T  tsal;
-
-			    /* Move entry with same index byte after the entries
-			     * we already found. */
-			    ++i;
-			    --n;
-			    tsal = smp[i + n];
-			    mch_memmove(smp + i + 1, smp + i,
-							   sizeof(salitem_T) * n);
-			    smp[i] = tsal;
-			}
-		}
-#endif
-	    }
-	}
+	set_sal_first(lp);
     }
 
-    cnt = (getc(fd) << 8) + getc(fd);		/* <maplen> */
-    if (cnt < 0)
-	goto formerr;
-    p = alloc(cnt + 1);
-    if (p == NULL)
+    /* <maplen> <mapstr> */
+    p = read_cnt_string(fd, 2, &cnt);
+    if (cnt == FAIL)
 	goto endFAIL;
-    for (i = 0; i < cnt; ++i)
-	p[i] = getc(fd);			/* <mapstr> */
-    p[i] = NUL;
     set_map_str(lp, p);
     vim_free(p);
 
@@ -2270,10 +2090,9 @@ endOK:
 
 /*
  * Read a length field from "fd" in "cnt_bytes" bytes.
- * Allocate memory and read the string into it.
+ * Allocate memory, read the string into it and add a NUL at the end.
  * Returns NULL when the count is zero.
- * Sets "errp" to ERR_TRUNC when reading failed, ERR_NOMEM when out of
- * memory, zero when OK.
+ * Sets "*errp" to FAIL when there is an error, OK otherwise.
  */
     static char_u *
 read_cnt_string(fd, cnt_bytes, errp)
@@ -2290,7 +2109,8 @@ read_cnt_string(fd, cnt_bytes, errp)
 	cnt = (cnt << 8) + getc(fd);
     if (cnt < 0)
     {
-	*errp = ERR_TRUNC;
+	EMSG(_(e_spell_trunc));
+	*errp = FAIL;
 	return NULL;
     }
 
@@ -2298,10 +2118,10 @@ read_cnt_string(fd, cnt_bytes, errp)
     str = alloc((unsigned)cnt + 1);
     if (str == NULL)
     {
-	*errp = ERR_NOMEM;
+	*errp = FAIL;
 	return NULL;
     }
-    *errp = 0;
+    *errp = OK;
 
     /* Read the string.  Doesn't check for truncated file. */
     for (i = 0; i < cnt; ++i)
@@ -2311,6 +2131,162 @@ read_cnt_string(fd, cnt_bytes, errp)
     return str;
 }
 
+/*
+ * Set the SOFOFROM and SOFOTO items in language "lp".
+ * Returns FAIL when there is something wrong.
+ */
+    static int
+set_sofo(lp, from, to)
+    slang_T	*lp;
+    char_u	*from;
+    char_u	*to;
+{
+    int		i;
+
+#ifdef FEAT_MBYTE
+    garray_T	*gap;
+    char_u	*s;
+    char_u	*p;
+    int		c;
+    int		*inp;
+
+    if (has_mbyte)
+    {
+	/* Use "sl_sal" as an array with 256 pointers to a list of wide
+	 * characters.  The index is the low byte of the character.
+	 * The list contains from-to pairs with a terminating NUL.
+	 * sl_sal_first[] is used for latin1 "from" characters. */
+	gap = &lp->sl_sal;
+	ga_init2(gap, sizeof(int *), 1);
+	if (ga_grow(gap, 256) == FAIL)
+	    return FAIL;
+	vim_memset(gap->ga_data, 0, sizeof(int *) * 256);
+	gap->ga_len = 256;
+
+	/* First count the number of items for each list.  Temporarily use
+	 * sl_sal_first[] for this. */
+	for (p = from, s = to; *p != NUL && *s != NUL; )
+	{
+	    c = mb_ptr2char_adv(&p);
+	    mb_ptr_adv(s);
+	    if (c >= 256)
+		++lp->sl_sal_first[c & 0xff];
+	}
+	if (*p != NUL || *s != NUL)	    /* lengths differ */
+	    return FAIL;
+
+	/* Allocate the lists. */
+	for (i = 0; i < 256; ++i)
+	    if (lp->sl_sal_first[i] > 0)
+	    {
+		p = alloc(sizeof(int) * (lp->sl_sal_first[i] * 2 + 1));
+		if (p == NULL)
+		    return FAIL;
+		((int **)gap->ga_data)[i] = (int *)p;
+		*(int *)p = 0;
+	    }
+
+	/* Put the characters up to 255 in sl_sal_first[] the rest in a sl_sal
+	 * list. */
+	vim_memset(lp->sl_sal_first, 0, sizeof(salfirst_T) * 256);
+	for (p = from, s = to; *p != NUL && *s != NUL; )
+	{
+	    c = mb_ptr2char_adv(&p);
+	    i = mb_ptr2char_adv(&s);
+	    if (c >= 256)
+	    {
+		/* Append the from-to chars at the end of the list with
+		 * the low byte. */
+		inp = ((int **)gap->ga_data)[c & 0xff];
+		while (*inp != 0)
+		    ++inp;
+		*inp++ = c;		/* from char */
+		*inp++ = i;		/* to char */
+		*inp++ = NUL;		/* NUL at the end */
+	    }
+	    else
+		/* mapping byte to char is done in sl_sal_first[] */
+		lp->sl_sal_first[c] = i;
+	}
+    }
+    else
+#endif
+    {
+	/* mapping bytes to bytes is done in sl_sal_first[] */
+	if (STRLEN(from) != STRLEN(to))
+	    return FAIL;
+
+	for (i = 0; to[i] != NUL; ++i)
+	    lp->sl_sal_first[from[i]] = to[i];
+	lp->sl_sal.ga_len = 1;		/* indicates we have soundfolding */
+    }
+
+    return OK;
+}
+
+/*
+ * Fill the first-index table for "lp".
+ */
+    static void
+set_sal_first(lp)
+    slang_T	*lp;
+{
+    salfirst_T	*sfirst;
+    int		i;
+    salitem_T	*smp;
+    int		c;
+    garray_T	*gap = &lp->sl_sal;
+
+    sfirst = lp->sl_sal_first;
+    for (i = 0; i < 256; ++i)
+	sfirst[i] = -1;
+    smp = (salitem_T *)gap->ga_data;
+    for (i = 0; i < gap->ga_len; ++i)
+    {
+#ifdef FEAT_MBYTE
+	if (has_mbyte)
+	    /* Use the lowest byte of the first character.  For latin1 it's
+	     * the character, for other encodings it should differ for most
+	     * characters. */
+	    c = *smp[i].sm_lead_w & 0xff;
+	else
+#endif
+	    c = *smp[i].sm_lead;
+	if (sfirst[c] == -1)
+	{
+	    sfirst[c] = i;
+#ifdef FEAT_MBYTE
+	    if (has_mbyte)
+	    {
+		int		n;
+
+		/* Make sure all entries with this byte are following each
+		 * other.  Move the ones that are in the wrong position.  Do
+		 * keep the same ordering! */
+		while (i + 1 < gap->ga_len
+				       && (*smp[i + 1].sm_lead_w & 0xff) == c)
+		    /* Skip over entry with same index byte. */
+		    ++i;
+
+		for (n = 1; i + n < gap->ga_len; ++n)
+		    if ((*smp[i + n].sm_lead_w & 0xff) == c)
+		    {
+			salitem_T  tsal;
+
+			/* Move entry with same index byte after the entries
+			 * we already found. */
+			++i;
+			--n;
+			tsal = smp[i + n];
+			mch_memmove(smp + i + 1, smp + i,
+						       sizeof(salitem_T) * n);
+			smp[i] = tsal;
+		    }
+	    }
+#endif
+	}
+    }
+}
 
 #ifdef FEAT_MBYTE
 /*
@@ -2472,6 +2448,7 @@ did_set_spelllang(buf)
     int		load_spf;
     int		len;
     char_u	*p;
+    int		round;
 
     ga_init2(&ga, sizeof(langp_T), 2);
     clear_midword(buf);
@@ -2572,12 +2549,26 @@ did_set_spelllang(buf)
 	    }
     }
 
-    /*
-     * Make sure the 'spellfile' file is loaded.  It may be in 'runtimepath',
-     * then it's probably loaded above already.  Otherwise load it here.
-     */
-    if (load_spf)
+    /* round 1: load 'spellfile', if needed.
+     * round 2: load temp_wordlist, if possible. */
+    for (round = 1; round <= 2; ++round)
     {
+	if (round == 1)
+	{
+	    /* Make sure the 'spellfile' file is loaded.  It may be in
+	     * 'runtimepath', then it's probably loaded above already.
+	     * Otherwise load it here. */
+	    if (!load_spf)
+		continue;
+	}
+	else
+	{
+	    if (temp_wordlist == NULL)
+		continue;
+	    vim_snprintf((char *)spf_name, sizeof(spf_name), "%s.%s.spl",
+						  temp_wordlist, spell_enc());
+	}
+
 	/* Check if it was loaded already. */
 	for (lp = first_lang; lp != NULL; lp = lp->sl_next)
 	    if (fullpathcmp(spf_name, lp->sl_fname, FALSE) == FPC_SAME)
@@ -2585,11 +2576,17 @@ did_set_spelllang(buf)
 	if (lp == NULL)
 	{
 	    /* Not loaded, try loading it now.  The language name includes the
-	     * region name, the region is ignored otherwise. */
-	    vim_strncpy(lang, gettail(buf->b_p_spf), MAXWLEN);
-	    p = vim_strchr(lang, '.');
-	    if (p != NULL)
-		*p = NUL;	/* truncate at ".encoding.add" */
+	     * region name, the region is ignored otherwise.  for
+	     * temp_wordlist use an arbitrary name. */
+	    if (round == 1)
+	    {
+		vim_strncpy(lang, gettail(buf->b_p_spf), MAXWLEN);
+		p = vim_strchr(lang, '.');
+		if (p != NULL)
+		    *p = NUL;	/* truncate at ".encoding.add" */
+	    }
+	    else
+		STRCPY(lang, "temp wordlist");
 	    lp = spell_load_file(spf_name, lang, NULL, TRUE);
 	}
 	if (lp != NULL && ga_grow(&ga, 1) == OK)
@@ -2678,7 +2675,7 @@ use_midword(lp, buf)
 /*
  * Find the region "region[2]" in "rp" (points to "sl_regions").
  * Each region is simply stored as the two characters of it's name.
- * Returns the index if found, REGION_ALL if not found.
+ * Returns the index if found (first is 0), REGION_ALL if not found.
  */
     static int
 find_region(rp, region)
@@ -2778,6 +2775,13 @@ spell_free_all()
 	lp = first_lang;
 	first_lang = lp->sl_next;
 	slang_free(lp);
+    }
+
+    if (temp_wordlist != NULL)
+    {
+	mch_remove(temp_wordlist);
+	vim_free(temp_wordlist);
+	temp_wordlist = NULL;
     }
 
     init_spell_chartab();
@@ -3967,6 +3971,7 @@ spell_read_wordfile(fname, spin)
     char_u	rline[MAXLINELEN];
     char_u	*line;
     char_u	*pc = NULL;
+    char_u	*p;
     int		l;
     int		retval = OK;
     int		did_word = FALSE;
@@ -4035,13 +4040,9 @@ spell_read_wordfile(fname, spin)
 	    line = rline;
 	}
 
-	flags = 0;
-	regionmask = spin->si_region;
-
 	if (*line == '/')
 	{
 	    ++line;
-
 	    if (STRNCMP(line, "encoding=", 9) == 0)
 	    {
 		if (spin->si_conv.vc_type != CONV_NONE)
@@ -4092,50 +4093,49 @@ spell_read_wordfile(fname, spin)
 		continue;
 	    }
 
-	    if (*line == '=')
-	    {
-		/* keep-case word */
-		flags |= WF_KEEPCAP;
-		++line;
-	    }
+	    smsg((char_u *)_("/ line ignored in %s line %d: %s"),
+						       fname, lnum, line - 1);
+	    continue;
+	}
 
-	    if (*line == '!')
-	    {
-		/* Bad, bad, wicked word. */
-		flags |= WF_BANNED;
-		++line;
-	    }
-	    else if (*line == '?')
-	    {
-		/* Rare word. */
-		flags |= WF_RARE;
-		++line;
-	    }
+	flags = 0;
+	regionmask = spin->si_region;
 
-	    if (VIM_ISDIGIT(*line))
+	/* Check for flags and region after a slash. */
+	p = vim_strchr(line, '/');
+	if (p != NULL)
+	{
+	    *p++ = NUL;
+	    while (*p != NUL)
 	    {
-		/* region number(s) */
-		regionmask = 0;
-		while (VIM_ISDIGIT(*line))
+		if (*p == '=')		/* keep-case word */
+		    flags |= WF_KEEPCAP;
+		else if (*p == '!')	/* Bad, bad, wicked word. */
+		    flags |= WF_BANNED;
+		else if (*p == '?')	/* Rare word. */
+		    flags |= WF_RARE;
+		else if (VIM_ISDIGIT(*p)) /* region number(s) */
 		{
-		    l = *line - '0';
+		    if ((flags & WF_REGION) == 0)   /* first one */
+			regionmask = 0;
+		    flags |= WF_REGION;
+
+		    l = *p - '0';
 		    if (l > spin->si_region_count)
 		    {
 			smsg((char_u *)_("Invalid region nr in %s line %d: %s"),
-							   fname, lnum, line);
+							  fname, lnum, p);
 			break;
 		    }
 		    regionmask |= 1 << (l - 1);
-		    ++line;
 		}
-		flags |= WF_REGION;
-	    }
-
-	    if (flags == 0)
-	    {
-		smsg((char_u *)_("/ line ignored in %s line %d: %s"),
-							   fname, lnum, line);
-		continue;
+		else
+		{
+		    smsg((char_u *)_("Unrecognized flags in %s line %d: %s"),
+							      fname, lnum, p);
+		    break;
+		}
+		++p;
 	    }
 	}
 
@@ -5179,80 +5179,99 @@ mkspell(fcount, fnames, ascii, overwrite, added_word)
 ex_spell(eap)
     exarg_T *eap;
 {
-    spell_add_word(eap->arg, STRLEN(eap->arg), eap->cmdidx == CMD_spellwrong);
+    spell_add_word(eap->arg, STRLEN(eap->arg), eap->cmdidx == CMD_spellwrong,
+								eap->forceit);
 }
 
 /*
  * Add "word[len]" to 'spellfile' as a good or bad word.
  */
     void
-spell_add_word(word, len, bad)
+spell_add_word(word, len, bad, temp)
     char_u	*word;
     int		len;
     int		bad;
+    int		temp;	    /* "zG" and "zW": use temp word list */
 {
     FILE	*fd;
     buf_T	*buf;
     int		new_spf = FALSE;
     struct stat	st;
+    char_u	*fname;
 
-    /* If 'spellfile' isn't set figure out a good default value. */
-    if (*curbuf->b_p_spf == NUL)
+    if (temp)	    /* use temp word list */
     {
-	init_spellfile();
-	new_spf = TRUE;
+	if (temp_wordlist == NULL)
+	{
+	    temp_wordlist = vim_tempname('s');
+	    if (temp_wordlist == NULL)
+		return;
+	}
+	fname = temp_wordlist;
     }
-
-    if (*curbuf->b_p_spf == NUL)
-	EMSG(_("E764: 'spellfile' is not set"));
     else
     {
+	/* If 'spellfile' isn't set figure out a good default value. */
+	if (*curbuf->b_p_spf == NUL)
+	{
+	    init_spellfile();
+	    new_spf = TRUE;
+	}
+
+	if (*curbuf->b_p_spf == NUL)
+	{
+	    EMSG(_("E764: 'spellfile' is not set"));
+	    return;
+	}
+
 	/* Check that the user isn't editing the .add file somewhere. */
 	buf = buflist_findname_exp(curbuf->b_p_spf);
 	if (buf != NULL && buf->b_ml.ml_mfp == NULL)
 	    buf = NULL;
 	if (buf != NULL && bufIsChanged(buf))
-	    EMSG(_(e_bufloaded));
-	else
 	{
-	    fd = mch_fopen((char *)curbuf->b_p_spf, "a");
-	    if (fd == NULL && new_spf)
-	    {
-		/* We just initialized the 'spellfile' option and can't open
-		 * the file.  We may need to create the "spell" directory
-		 * first.  We already checked the runtime directory is
-		 * writable in init_spellfile(). */
-		STRCPY(NameBuff, curbuf->b_p_spf);
-		*gettail_sep(NameBuff) = NUL;
-		if (mch_stat((char *)NameBuff, &st) < 0)
-		{
-		    /* The directory doesn't exist.  Try creating it and
-		     * opening the file again. */
-		    vim_mkdir(NameBuff, 0755);
-		    fd = mch_fopen((char *)curbuf->b_p_spf, "a");
-		}
-	    }
-
-	    if (fd == NULL)
-		EMSG2(_(e_notopen), curbuf->b_p_spf);
-	    else
-	    {
-		if (bad)
-		    fprintf(fd, "/!%.*s\n", len, word);
-		else
-		    fprintf(fd, "%.*s\n", len, word);
-		fclose(fd);
-
-		/* Update the .add.spl file. */
-		mkspell(1, &curbuf->b_p_spf, FALSE, TRUE, TRUE);
-
-		/* If the .add file is edited somewhere, reload it. */
-		if (buf != NULL)
-		    buf_reload(buf);
-
-		redraw_all_later(NOT_VALID);
-	    }
+	    EMSG(_(e_bufloaded));
+	    return;
 	}
+
+	fname = curbuf->b_p_spf;
+    }
+
+    fd = mch_fopen((char *)fname, "a");
+    if (fd == NULL && new_spf)
+    {
+	/* We just initialized the 'spellfile' option and can't open the file.
+	 * We may need to create the "spell" directory first.  We already
+	 * checked the runtime directory is writable in init_spellfile(). */
+	STRCPY(NameBuff, fname);
+	*gettail_sep(NameBuff) = NUL;
+	if (mch_stat((char *)NameBuff, &st) < 0)
+	{
+	    /* The directory doesn't exist.  Try creating it and opening the
+	     * file again. */
+	    vim_mkdir(NameBuff, 0755);
+	    fd = mch_fopen((char *)fname, "a");
+	}
+    }
+
+    if (fd == NULL)
+	EMSG2(_(e_notopen), fname);
+    else
+    {
+	if (bad)
+	    fprintf(fd, "%.*s/!\n", len, word);
+	else
+	    fprintf(fd, "%.*s\n", len, word);
+	fclose(fd);
+
+	/* Update the .add.spl file. */
+	mkspell(1, &fname, FALSE, TRUE, TRUE);
+
+	/* If the .add file is edited somewhere, reload it. */
+	if (buf != NULL)
+	    buf_reload(buf);
+
+	redraw_all_later(NOT_VALID);
     }
 }
 
@@ -5475,9 +5494,8 @@ set_spell_chartab(fol, low, upp)
  * Set the spell character tables from strings in the .spl file.
  */
     static int
-set_spell_charflags(flags, cnt, upp)
+set_spell_charflags(flags, upp)
     char_u	*flags;
-    int		cnt;
     char_u	*upp;
 {
     /* We build the new tables here first, so that we can compare with the
@@ -5489,7 +5507,7 @@ set_spell_charflags(flags, cnt, upp)
 
     clear_spell_chartab(&new_st);
 
-    for (i = 0; i < cnt; ++i)
+    for (i = 0; flags[i] != NUL; ++i)
     {
 	new_st.st_isw[i + 128] = (flags[i] & CF_WORD) != 0;
 	new_st.st_isu[i + 128] = (flags[i] & CF_UPPER) != 0;
@@ -9362,6 +9380,9 @@ ex_spelldump(eap)
     int		depth;
     int		n;
     int		flags;
+    char_u	*region_names = NULL;	    /* region names being used */
+    int		do_region = TRUE;	    /* dump region names and numbers */
+    char_u	*p;
 
     if (no_spell_checking())
 	return;
@@ -9371,6 +9392,34 @@ ex_spelldump(eap)
     if (!bufempty() || !buf_valid(buf))
 	return;
 
+    /* Find out if we can support regions: All languages must support the same
+     * regions or none at all. */
+    for (lp = LANGP_ENTRY(buf->b_langp, 0); lp->lp_slang != NULL; ++lp)
+    {
+	p = lp->lp_slang->sl_regions;
+	if (p[0] != 0)
+	{
+	    if (region_names == NULL)	    /* first language with regions */
+		region_names = p;
+	    else if (STRCMP(region_names, p) != 0)
+	    {
+		do_region = FALSE;	    /* region names are different */
+		break;
+	    }
+	}
+    }
+
+    if (do_region && region_names != NULL)
+    {
+	vim_snprintf((char *)IObuff, IOSIZE, "/regions=%s", region_names);
+	ml_append(lnum++, IObuff, (colnr_T)0, FALSE);
+    }
+    else
+	do_region = FALSE;
+
+    /*
+     * Loop over all files loaded for the entries in 'spelllang'.
+     */
     for (lp = LANGP_ENTRY(buf->b_langp, 0); lp->lp_slang != NULL; ++lp)
     {
 	slang = lp->lp_slang;
@@ -9420,11 +9469,14 @@ ex_spelldump(eap)
 			 * Only use the word when the region matches. */
 			flags = (int)idxs[n];
 			if ((round == 2 || (flags & WF_KEEPCAP) == 0)
-				&& ((flags & WF_REGION) == 0
-					|| (((unsigned)flags >> 8)
+				&& (do_region
+				    || (flags & WF_REGION) == 0
+				    || (((unsigned)flags >> 8)
 						       & lp->lp_region) != 0))
 			{
 			    word[depth] = NUL;
+			    if (!do_region)
+				flags &= ~WF_REGION;
 
 			    /* Dump the basic word if there is no prefix or
 			     * when it's the first one. */
@@ -9470,7 +9522,8 @@ dump_word(word, round, flags, lnum)
     int		keepcap = FALSE;
     char_u	*p;
     char_u	cword[MAXWLEN];
-    char_u	badword[MAXWLEN + 3];
+    char_u	badword[MAXWLEN + 10];
+    int		i;
 
     if (round == 1 && (flags & WF_CAPMASK) != 0)
     {
@@ -9485,18 +9538,21 @@ dump_word(word, round, flags, lnum)
 	    keepcap = TRUE;
     }
 
-    /* Bad word is preceded by "/!" and some other
-     * flags. */
-    if ((flags & (WF_BANNED | WF_RARE)) || keepcap)
+    /* Add flags and regions after a slash. */
+    if ((flags & (WF_BANNED | WF_RARE | WF_REGION)) || keepcap)
     {
-	STRCPY(badword, "/");
+	STRCPY(badword, p);
+	STRCAT(badword, "/");
 	if (keepcap)
 	    STRCAT(badword, "=");
 	if (flags & WF_BANNED)
 	    STRCAT(badword, "!");
 	else if (flags & WF_RARE)
 	    STRCAT(badword, "?");
-	STRCAT(badword, p);
+	if (flags & WF_REGION)
+	    for (i = 0; i < 7; ++i)
+		if (flags & (0x100 << i))
+		    sprintf((char *)badword + STRLEN(badword), "%d", i + 1);
 	p = badword;
     }
 
