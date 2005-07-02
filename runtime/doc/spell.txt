@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jul 01
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jul 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -27,6 +27,7 @@ This switches on the 'spell' option and specifies to check for US English.
 
 The words that are not recognized are highlighted with one of these:
 	SpellBad	word not recognized			|hl-SpellBad|
+	SpellCap	word not capatilized			|hl-SpellCap|
 	SpellRare	rare word				|hl-SpellRare|
 	SpellLocal	wrong spelling for selected region	|hl-SpellLocal|
 
@@ -42,7 +43,8 @@ To search for the next misspelled word:
 [s			Like "]s" but search backwards, find the misspelled
 			word before the cursor.  Doesn't recognize words
 			split over two lines, thus may stop at words that are
-			not highlighted as bad.
+			not highlighted as bad.  Does not stop at word with
+			missing capital at the start of a line.
 
 							*]S*
 ]S			Like "]s" but only stop at bad words, not at rare
@@ -55,28 +57,40 @@ To search for the next misspelled word:
 To add words to your own word list:				*E764*
 
 							*zg*
-zg			Add word under the cursor as a good word to
-			'spellfile'.  In Visual mode the selected characters
-			are added as a word (including white space!).
+zg			Add word under the cursor as a good word to the first
+			name in 'spellfile'.  In Visual mode the selected
+			characters are added as a word (including white
+			space!).  If the word is explicitly marked as bad word
+			in another spell file the result is unpredictable.
+			A count may precede the command to indicate the entry
+			in 'spellfile' to be used.  A count of two uses the
+			second entry.
 
 							*zG*
-zG			Like "zg" but add the word to the internal word list.
+zG			Like "zg" but add the word to the internal word list
+			|internal-wordlist|.
 
 							*zw*
-zw			Add word under the cursor as a wrong (bad) word to
-			'spellfile'.  In Visual mode the selected characters
-			are added as a word (including white space!).
+zw			Like "zg" but mark the word as a wrong (bad) word.
 
 							*zW*
-zW			Like "zw" but add the word to the internal word list.
+zW			Like "zw" but add the word to the internal word list
+			|internal-wordlist|.
 
 							*:spe* *:spellgood*
-:spe[llgood] {word}	Add [word} as a good word to 'spellfile'.
+:[count]spe[llgood] {word}
+			Add [word} as a good word to 'spellfile', like with
+			"zg".  Without count the first name is used, with a
+			count of two the second entry, etc.
 
-:spe[llgood]! {word}	Add [word} as a good word to the internal word list.
+:spe[llgood]! {word}	Add [word} as a good word to the internal word list,
+			like with "zG".
 
 							*:spellw* *:spellwrong*
-:spellw[rong] {word}	Add [word} as a wrong (bad) word to 'spellfile'.
+:[count]spellw[rong] {word}
+			Add [word} as a wrong (bad) word to 'spellfile', as
+			with "zw".  Without count the first name is used, with
+			a count of two the second entry, etc.
 
 :spellw[rong]! {word}	Add [word} as a wrong (bad) word to the internal word
 			list.
@@ -85,12 +99,13 @@ After adding a word to 'spellfile' with the above commands its associated
 ".spl" file will automatically be updated and reloaded.  If you change
 'spellfile' manually you need to use the |:mkspell| command.  This sequence of
 commands mostly works well: >
-	:exe 'e ' . &spellfile
+	:edit <file in 'spellfile'>
 <	(make changes to the spell file) >
 	:mkspell! %
 
 More details about the 'spellfile' format below |spell-wordlist-format|.
 
+							*internal-wordlist*
 The internal word list is used for all buffers where 'spell' is set.  It is
 not stored, it is lost when you exit Vim.  It is also cleared when 'encoding'
 is set.
@@ -127,6 +142,11 @@ z?			For the word under/after the cursor suggest correctly
 
 The 'spellsuggest' option influences how the list of suggestions is generated
 and sorted.  See |'spellsuggest'|.
+
+The 'spellcapcheck' option is used to check the first word of a sentence
+starts with a capital.  This doesn't work for the first word in the file.
+When there is a line break right after a sentence the highlighting of the next
+line may be postponed.  Use |CTRL-L| when needed.
 
 ==============================================================================
 2. Remarks on spell checking				*spell-remarks*
@@ -182,8 +202,8 @@ Only the first file is loaded, the one that is first in 'runtimepath'.  If
 this succeeds then additionally files with the name LL.EEE.add.spl are loaded.
 All the ones that are found are used.
 
-Additionally, the file related to 'spellfile' is loaded.  This is the file
-that |zg| and |zw| add good and wrong words to.
+Additionally, the files related to the names in 'spellfile' are loaded.  These
+are the files that |zg| and |zw| add good and wrong words to.
 
 Exceptions:
 - Vim uses "latin1" when 'encoding' is "iso-8859-15".  The euro sign doesn't

@@ -2512,6 +2512,8 @@ win_line(wp, lnum, startrow, endrow)
     static linenr_T  checked_lnum = 0;	/* line number for "checked_col" */
     static int	checked_col = 0;	/* column in "checked_lnum" up to which
 					 * there are no spell errors */
+    static int	cap_col = -1;		/* column to check for Cap word */
+    static linenr_T capcol_lnum = 0;	/* line number where "cap_col" used */
     int		cur_checked_col = 0;	/* checked column for current line */
 #endif
     int		extra_check;		/* has syntax or linebreak */
@@ -2634,6 +2636,15 @@ win_line(wp, lnum, startrow, endrow)
 	if (lnum == checked_lnum)
 	    cur_checked_col = checked_col;
 	checked_lnum = 0;
+
+	/* When there was a sentence end in the previous line may require a
+	 * word starting with capital in this line.  In line 1 always check
+	 * the first word. */
+	if (lnum != capcol_lnum)
+	    cap_col = -1;
+	if (lnum == 1)
+	    cap_col = 0;
+	capcol_lnum = 0;
     }
 #endif
 
@@ -2802,6 +2813,10 @@ win_line(wp, lnum, startrow, endrow)
 #ifdef FEAT_SYN_HL
     if (has_spell)
     {
+	/* For checking first word with a capital skip white space. */
+	if (cap_col == 0)
+	    cap_col = skipwhite(line) - line;
+
 	/* To be able to spell-check over line boundaries copy the end of the
 	 * current line into nextline[].  Above the start of the next line was
 	 * copied to nextline[SPWORDLEN]. */
@@ -3673,7 +3688,8 @@ win_line(wp, lnum, startrow, endrow)
 			    p = nextline + (prev_ptr - line) - nextlinecol;
 			else
 			    p = prev_ptr;
-			len = spell_check(wp, p, &spell_attr);
+			cap_col -= (prev_ptr - line);
+			len = spell_check(wp, p, &spell_attr, &cap_col);
 			word_end = v + len;
 
 			/* In Insert mode only highlight a word that
@@ -3696,6 +3712,22 @@ win_line(wp, lnum, startrow, endrow)
 			     * start of the next line. */
 			    checked_lnum = lnum + 1;
 			    checked_col = (p - nextline) + len - nextline_idx;
+			}
+
+			if (cap_col > 0)
+			{
+			    if (p != prev_ptr
+				   && (p - nextline) + cap_col >= nextline_idx)
+			    {
+				/* Remember that the word in the next line
+				 * must start with a capital. */
+				capcol_lnum = lnum + 1;
+				cap_col = (p - nextline) + cap_col
+							       - nextline_idx;
+			    }
+			    else
+				/* Compute the actual column. */
+				cap_col += (prev_ptr - line);
 			}
 		    }
 		}
@@ -4366,6 +4398,15 @@ win_line(wp, lnum, startrow, endrow)
 	}
 
     }	/* for every character in the line */
+
+#ifdef FEAT_SYN_HL
+    /* After an empty line check first word for capital. */
+    if (*skipwhite(line) == NUL)
+    {
+	capcol_lnum = lnum + 1;
+	cap_col = 0;
+    }
+#endif
 
     return row;
 }

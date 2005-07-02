@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 30
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Jul 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3318,7 +3318,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 				     t:Title,v:Visual,w:WarningMsg,W:WildMenu,
 				     f:Folded,F:FoldColumn,A:DiffAdd,
 				     C:DiffChange,D:DiffDelete,T:DiffText,
-				     >:SignColumn")
+				     >:SignColumn,B:SpellBad,P:SpellCap,
+				     R:SpellRare,L:SpellLocal")
 			global
 			{not in Vi}
 	This option can be used to set highlighting mode for various
@@ -3350,8 +3351,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|hl-WildMenu|	 W  wildcard matches displayed for 'wildmenu'
 	|hl-Folded|	 f  line used for closed folds
 	|hl-FoldColumn|	 F  'foldcolumn'
+	|hl-DiffAdd|	 A  added line in diff mode
+	|hl-DiffChange|	 C  changed line in diff mode
+	|hl-DiffDelete|	 D  deleted line in diff mode
+	|hl-DiffText|	 T  inserted text in diff mode
 	|hl-SignColumn|	 >  column used for |signs|
 	|hl-SpellBad|	 B  misspelled word |spell|
+	|hl-SpellCap|	 P  word that should start with capital|spell|
 	|hl-SpellRare|	 R  rare word |spell|
 	|hl-SpellLocal|	 L  word from other region |spell|
 
@@ -5635,6 +5641,18 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When on spell checking will be done.  See |spell|.
 	The languages are specified with 'spelllang'.
 
+						*'spellcapcheck'* *'spc'*
+'spellcapcheck' 'spc'	string	(default "[.?!][])'" \t\n]\+")
+			local to buffer
+			{not in Vi}
+			{not available when compiled without the |+syntax|
+			feature}
+	Pattern to locate the end of a sentence.  The following word will be
+	checked to start with a capital letter.  If not then it is highlighted
+	with SpellCap |hl-SpellCap|.
+	When this check is not wanted make this option empty.
+	Only used when 'spell' is set.
+
 						*'spellfile'* *'spf'*
 'spellfile' 'spf'	string	(default empty)
 			local to buffer
@@ -5643,6 +5661,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 			feature}
 	Name of the word list file where words are added for the |zg| and |zw|
 	commands.  It must end in ".{encoding}.add".
+								*E765*
+	It may also be a comma separated list of names.  A count before the
+	|zg| and |zw| commands can be used to access each.  This allows using
+	a personal word list file and a project word list file.
 	When a word is added while this option is empty Vim will set it for
 	you: Using the first "spell" directory in 'runtimepath' that is
 	writable and the first language name that appears in 'spelllang',

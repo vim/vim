@@ -728,7 +728,9 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'sol'	options.txt	/*'sol'*
 'sourceany'	vi_diff.txt	/*'sourceany'*
 'sp'	options.txt	/*'sp'*
+'spc'	options.txt	/*'spc'*
 'spell'	options.txt	/*'spell'*
+'spellcapcheck'	options.txt	/*'spellcapcheck'*
 'spellfile'	options.txt	/*'spellfile'*
 'spelllang'	options.txt	/*'spelllang'*
 'spellsuggest'	options.txt	/*'spellsuggest'*
@@ -3724,6 +3726,7 @@ E761	spell.txt	/*E761*
 E762	spell.txt	/*E762*
 E763	spell.txt	/*E763*
 E764	spell.txt	/*E764*
+E765	options.txt	/*E765*
 E77	message.txt	/*E77*
 E78	motion.txt	/*E78*
 E79	message.txt	/*E79*
@@ -5412,6 +5415,7 @@ intel-itanium	syntax.txt	/*intel-itanium*
 intellimouse-wheel-problems	gui_w32.txt	/*intellimouse-wheel-problems*
 interfaces-5.2	version5.txt	/*interfaces-5.2*
 internal-variables	eval.txt	/*internal-variables*
+internal-wordlist	spell.txt	/*internal-wordlist*
 internet	intro.txt	/*internet*
 intro	intro.txt	/*intro*
 intro.txt	intro.txt	/*intro.txt*

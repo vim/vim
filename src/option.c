@@ -121,6 +121,7 @@ typedef enum
     , PV_SI
     , PV_SN
     , PV_SPELL
+    , PV_SPC
     , PV_SPF
     , PV_SPL
     , PV_STL
@@ -235,6 +236,7 @@ static long	p_sw;
 static int	p_swf;
 #ifdef FEAT_SYN_HL
 static char_u	*p_syn;
+static char_u	*p_spc;
 static char_u	*p_spf;
 static char_u	*p_spl;
 #endif
@@ -1113,7 +1115,7 @@ static struct vimoption
 			    {(char_u *)FALSE, (char_u *)0L}},
     {"highlight",   "hl",   P_STRING|P_VI_DEF|P_RCLR|P_COMMA|P_NODUP,
 			    (char_u *)&p_hl, PV_NONE,
-			    {(char_u *)"8:SpecialKey,@:NonText,d:Directory,e:ErrorMsg,i:IncSearch,l:Search,m:MoreMsg,M:ModeMsg,n:LineNr,r:Question,s:StatusLine,S:StatusLineNC,c:VertSplit,t:Title,v:Visual,V:VisualNOS,w:WarningMsg,W:WildMenu,f:Folded,F:FoldColumn,A:DiffAdd,C:DiffChange,D:DiffDelete,T:DiffText,>:SignColumn,B:SpellBad,R:SpellRare,L:SpellLocal",
+			    {(char_u *)"8:SpecialKey,@:NonText,d:Directory,e:ErrorMsg,i:IncSearch,l:Search,m:MoreMsg,M:ModeMsg,n:LineNr,r:Question,s:StatusLine,S:StatusLineNC,c:VertSplit,t:Title,v:Visual,V:VisualNOS,w:WarningMsg,W:WildMenu,f:Folded,F:FoldColumn,A:DiffAdd,C:DiffChange,D:DiffDelete,T:DiffText,>:SignColumn,B:SpellBad,P:SpellCap,R:SpellRare,L:SpellLocal",
 				(char_u *)0L}},
     {"history",	    "hi",   P_NUM|P_VIM,
 			    (char_u *)&p_hi, PV_NONE,
@@ -2031,7 +2033,16 @@ static struct vimoption
 			    (char_u *)NULL, PV_NONE,
 #endif
 			    {(char_u *)FALSE, (char_u *)0L}},
-    {"spellfile",   "spf",  P_STRING|P_EXPAND|P_ALLOCED|P_VI_DEF|P_SECURE,
+    {"spellcapcheck", "spc", P_STRING|P_ALLOCED|P_VI_DEF|P_SECURE|P_RBUF,
+#ifdef FEAT_SYN_HL
+			    (char_u *)&p_spc, PV_SPC,
+			    {(char_u *)"[.?!][])'\" \\t\\n]\\+", (char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)0L, (char_u *)0L}
+#endif
+			    },
+    {"spellfile",   "spf",  P_STRING|P_EXPAND|P_ALLOCED|P_VI_DEF|P_SECURE|P_COMMA,
 #ifdef FEAT_SYN_HL
 			    (char_u *)&p_spf, PV_SPF,
 			    {(char_u *)"", (char_u *)0L}
@@ -2592,6 +2603,9 @@ static char_u *did_set_string_option __ARGS((int opt_idx, char_u **varp, int new
 static char_u *set_chars_option __ARGS((char_u **varp));
 #ifdef FEAT_CLIPBOARD
 static char_u *check_clipboard_option __ARGS((void));
+#endif
+#ifdef FEAT_SYN_HL
+static char_u *compile_cap_prog __ARGS((void));
 #endif
 static char_u *set_bool_option __ARGS((int opt_idx, char_u *varp, int value, int opt_flags));
 static char_u *set_num_option __ARGS((int opt_idx, char_u *varp, long value, char_u *errbuf, size_t errbuflen, int opt_flags));
@@ -4596,6 +4610,7 @@ didset_options()
 #endif
 #ifdef FEAT_SYN_HL
     (void)spell_check_sps();
+    (void)compile_cap_prog();
 #endif
 #if defined(FEAT_TOOLBAR) && !defined(FEAT_GUI_W32)
     (void)opt_strings_flags(p_toolbar, p_toolbar_values, &toolbar_flags, TRUE);
@@ -4668,6 +4683,7 @@ check_buf_options(buf)
 #endif
 #ifdef FEAT_SYN_HL
     check_string_option(&buf->b_p_syn);
+    check_string_option(&buf->b_p_spc);
     check_string_option(&buf->b_p_spf);
     check_string_option(&buf->b_p_spl);
 #endif
@@ -5755,6 +5771,11 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 		}
 	}
     }
+    /* When 'spellcapcheck' is set compile the regexp program. */
+    else if (varp == &(curbuf->b_p_spc))
+    {
+	errmsg = compile_cap_prog();
+    }
     /* 'spellsuggest' */
     else if (varp == &p_sps)
     {
@@ -6407,6 +6428,37 @@ check_clipboard_option()
 	vim_free(new_exclude_prog);
 
     return errmsg;
+}
+#endif
+
+#ifdef FEAT_SYN_HL
+/*
+ * Set curbuf->b_cap_prog to the regexp program for 'spellcapcheck'.
+ * Return error message when failed, NULL when OK.
+ */
+    static char_u *
+compile_cap_prog()
+{
+    regprog_T   *rp = curbuf->b_cap_prog;
+
+    if (*curbuf->b_p_spc == NUL)
+    {
+	curbuf->b_cap_prog = NULL;
+	vim_free(rp);
+	return NULL;
+    }
+
+    /* Prepend a ^ so that we only match at one column */
+    vim_snprintf((char *)IObuff, IOSIZE, "^%s", curbuf->b_p_spc);
+    curbuf->b_cap_prog = vim_regcomp(IObuff, RE_MAGIC);
+    if (curbuf->b_cap_prog == NULL)
+    {
+	curbuf->b_cap_prog = rp;
+	return e_invarg;
+    }
+
+    vim_free(rp);
+    return NULL;
 }
 #endif
 
@@ -8393,6 +8445,7 @@ get_varp(p)
 	case PV_SWF:	return (char_u *)&(curbuf->b_p_swf);
 #ifdef FEAT_SYN_HL
 	case PV_SYN:	return (char_u *)&(curbuf->b_p_syn);
+	case PV_SPC:	return (char_u *)&(curbuf->b_p_spc);
 	case PV_SPF:	return (char_u *)&(curbuf->b_p_spf);
 	case PV_SPL:	return (char_u *)&(curbuf->b_p_spl);
 #endif
@@ -8704,6 +8757,7 @@ buf_copy_options(buf, flags)
 #ifdef FEAT_SYN_HL
 	    /* Don't copy 'syntax', it must be set */
 	    buf->b_p_syn = empty_option;
+	    buf->b_p_spc = vim_strsave(p_spc);
 	    buf->b_p_spf = vim_strsave(p_spf);
 	    buf->b_p_spl = vim_strsave(p_spl);
 #endif
