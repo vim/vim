@@ -1137,6 +1137,7 @@ enum hlf_value
     , HLF_TXD	    /* Text Changed in diff line */
     , HLF_SC	    /* Sign column */
     , HLF_SPB	    /* SpellBad */
+    , HLF_SPC	    /* SpellCap */
     , HLF_SPR	    /* SpellRare */
     , HLF_SPL	    /* SpellLocal */
     , HLF_COUNT	    /* MUST be the last one */
@@ -1145,7 +1146,7 @@ enum hlf_value
 /* the HL_FLAGS must be in the same order as the HLF_ enums! */
 #define HL_FLAGS {'8', '@', 'd', 'e', 'h', 'i', 'l', 'm', 'M', \
 		  'n', 'r', 's', 'S', 'c', 't', 'v', 'V', 'w', 'W', \
-		  'f', 'F', 'A', 'C', 'D', 'T', '>', 'B', 'R', 'L'}
+		  'f', 'F', 'A', 'C', 'D', 'T', '>', 'B', 'P', 'R', 'L'}
 
 /*
  * Boolean constants

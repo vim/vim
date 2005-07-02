@@ -378,7 +378,7 @@ typedef struct langp_S
 #define VIMSPELLMAGICL 10
 
 /* file used for "zG" and "zW" */
-static char_u	*temp_wordlist = NULL;
+static char_u	*int_wordlist = NULL;
 
 /*
  * Information used when looking for suggestions.
@@ -588,6 +588,7 @@ static int spell_valid_case __ARGS((int origflags, int treeflags));
 static int no_spell_checking __ARGS((void));
 static void spell_load_lang __ARGS((char_u *lang));
 static char_u *spell_enc __ARGS((void));
+static void int_wordlist_spl __ARGS((char_u *fname));
 static void spell_load_cb __ARGS((char_u *fname, void *cookie));
 static slang_T *spell_load_file __ARGS((char_u *fname, char_u *lang, slang_T *old_lp, int silent));
 static char_u *read_cnt_string __ARGS((FILE *fd, int cnt_bytes, int *errp));
@@ -693,21 +694,25 @@ static char *e_spell_trunc = N_("E758: Truncated spell file");
  * or when it's OK it remains unchanged.
  * This must only be called when 'spelllang' is not empty.
  *
- * "sug" is normally NULL.  When looking for suggestions it points to
- * suginfo_T.  It's passed as a void pointer to keep the struct local.
+ * "capcol" is used to check for a Capitalised word after the end of a
+ * sentence.  If it's zero then perform the check.  Return the column where to
+ * check next, or -1 when no sentence end was found.  If it's NULL then don't
+ * worry.
  *
  * Returns the length of the word in bytes, also when it's OK, so that the
  * caller can skip over the word.
  */
     int
-spell_check(wp, ptr, attrp)
+spell_check(wp, ptr, attrp, capcol)
     win_T	*wp;		/* current window */
     char_u	*ptr;
     int		*attrp;
+    int		*capcol;	/* column to check for Capital */
 {
     matchinf_T	mi;		/* Most things are put in "mi" so that it can
 				   be passed to functions quickly. */
     int		nrlen = 0;	/* found a number first */
+    int		c;
 
     /* A word never starts at a space or a control character.  Return quickly
      * then, skipping over the character. */
@@ -743,7 +748,24 @@ spell_check(wp, ptr, attrp)
 	{
 	    mb_ptr_adv(mi.mi_fend);
 	} while (*mi.mi_fend != NUL && spell_iswordp(mi.mi_fend, wp->w_buffer));
+
+	if (capcol != NULL && *capcol == 0 && wp->w_buffer->b_cap_prog != NULL)
+	{
+	    /* Check word starting with capital letter. */
+#ifdef FEAT_MBYTE
+	    c = mb_ptr2char(ptr);
+#else
+	    c = *ptr;
+#endif
+	    if (!SPELL_ISUPPER(c))
+	    {
+		*attrp = highlight_attr[HLF_SPC];
+		return (int)(mi.mi_fend - ptr);
+	    }
+	}
     }
+    if (capcol != NULL)
+	*capcol = -1;
 
     /* We always use the characters up to the next non-word character,
      * also for bad words. */
@@ -798,6 +820,17 @@ spell_check(wp, ptr, attrp)
 	 * skip over the character (try looking for a word after it). */
 	else if (!SPELL_ISWORDP(ptr))
 	{
+	    if (capcol != NULL && wp->w_buffer->b_cap_prog != NULL)
+	    {
+		regmatch_T	regmatch;
+
+		/* Check for end of sentence. */
+		regmatch.regprog = wp->w_buffer->b_cap_prog;
+		regmatch.rm_ic = FALSE;
+		if (vim_regexec(&regmatch, ptr, 0))
+		    *capcol = (int)(regmatch.endp[0] - ptr);
+	    }
+
 #ifdef FEAT_MBYTE
 	    if (has_mbyte)
 		return mb_ptr2len_check(ptr);
@@ -1307,6 +1340,7 @@ spell_move_to(dir, allwords, curline)
     char_u	*buf = NULL;
     int		buflen = 0;
     int		skip = 0;
+    int		capcol = -1;
 
     if (no_spell_checking())
 	return FAIL;
@@ -1339,6 +1373,14 @@ spell_move_to(dir, allwords, curline)
 		break;
 	}
 
+	/* In first line check first word for Capital. */
+	if (lnum == 1)
+	    capcol = 0;
+
+	/* For checking first word with a capital skip white space. */
+	if (capcol == 0)
+	    capcol = skipwhite(line) - line;
+
 	/* Copy the line into "buf" and append the start of the next line if
 	 * possible. */
 	STRCPY(buf, line);
@@ -1357,7 +1399,7 @@ spell_move_to(dir, allwords, curline)
 
 	    /* start of word */
 	    attr = 0;
-	    len = spell_check(curwin, p, &attr);
+	    len = spell_check(curwin, p, &attr, &capcol);
 
 	    if (attr != 0)
 	    {
@@ -1403,6 +1445,7 @@ spell_move_to(dir, allwords, curline)
 
 	    /* advance to character after the word */
 	    p += len;
+	    capcol -= len;
 	}
 
 	if (curline)
@@ -1421,6 +1464,7 @@ spell_move_to(dir, allwords, curline)
 	    if (lnum == 1)
 		break;
 	    --lnum;
+	    capcol = -1;
 	}
 	else
 	{
@@ -1434,6 +1478,13 @@ spell_move_to(dir, allwords, curline)
 		skip = p - endp;
 	    else
 		skip = 0;
+
+	    /* Capscol skips over the inserted space. */
+	    --capcol;
+
+	    /* But after empty line check first word in next line */
+	    if (*skipwhite(line) == NUL)
+		capcol = 0;
 	}
 
 	line_breakcheck();
@@ -1526,6 +1577,18 @@ spell_enc()
 	return p_enc;
 #endif
     return (char_u *)"latin1";
+}
+
+/*
+ * Get the name of the .spl file for the internal wordlist into
+ * "fname[MAXPATHL]".
+ */
+    static void
+int_wordlist_spl(fname)
+    char_u	    *fname;
+{
+    vim_snprintf((char *)fname, MAXPATHL, "%s.%s.spl",
+						  int_wordlist, spell_enc());
 }
 
 /*
@@ -2445,23 +2508,13 @@ did_set_spelllang(buf)
     int		c;
     char_u	lang[MAXWLEN + 1];
     char_u	spf_name[MAXPATHL];
-    int		load_spf;
     int		len;
     char_u	*p;
     int		round;
+    char_u	*spf;
 
     ga_init2(&ga, sizeof(langp_T), 2);
     clear_midword(buf);
-
-    /* Make the name of the .spl file associated with 'spellfile'. */
-    if (*buf->b_p_spf == NUL)
-	load_spf = FALSE;
-    else
-    {
-	vim_snprintf((char *)spf_name, sizeof(spf_name), "%s.spl",
-								buf->b_p_spf);
-	load_spf = TRUE;
-    }
 
     /* loop over comma separated language names. */
     for (splp = buf->b_p_spl; *splp != NUL; )
@@ -2541,32 +2594,37 @@ did_set_spelllang(buf)
 		LANGP_ENTRY(ga, ga.ga_len)->lp_region = region_mask;
 		++ga.ga_len;
 		use_midword(lp, buf);
-
-		/* Check if this is the spell file related to 'spellfile'. */
-		if (load_spf && fullpathcmp(spf_name, lp->sl_fname, FALSE)
-								  == FPC_SAME)
-		    load_spf = FALSE;
 	    }
     }
 
-    /* round 1: load 'spellfile', if needed.
-     * round 2: load temp_wordlist, if possible. */
-    for (round = 1; round <= 2; ++round)
+    /* round 0: load int_wordlist, if possible.
+     * round 1: load first name in 'spellfile'.
+     * round 2: load second name in 'spellfile.
+     * etc. */
+    spf = curbuf->b_p_spf;
+    for (round = 0; round == 0 || *spf != NUL; ++round)
     {
-	if (round == 1)
+	if (round == 0)
 	{
-	    /* Make sure the 'spellfile' file is loaded.  It may be in
-	     * 'runtimepath', then it's probably loaded above already.
-	     * Otherwise load it here. */
-	    if (!load_spf)
+	    /* Internal wordlist, if there is one. */
+	    if (int_wordlist == NULL)
 		continue;
+	    int_wordlist_spl(spf_name);
 	}
 	else
 	{
-	    if (temp_wordlist == NULL)
+	    /* One entry in 'spellfile'. */
+	    copy_option_part(&spf, spf_name, MAXPATHL - 5, ",");
+	    STRCAT(spf_name, ".spl");
+
+	    /* If it was already found above then skip it. */
+	    for (c = 0; c < ga.ga_len; ++c)
+		if (fullpathcmp(spf_name,
+				       LANGP_ENTRY(ga, c)->lp_slang->sl_fname,
+							   FALSE) == FPC_SAME)
+		    break;
+	    if (c < ga.ga_len)
 		continue;
-	    vim_snprintf((char *)spf_name, sizeof(spf_name), "%s.%s.spl",
-						  temp_wordlist, spell_enc());
 	}
 
 	/* Check if it was loaded already. */
@@ -2576,17 +2634,17 @@ did_set_spelllang(buf)
 	if (lp == NULL)
 	{
 	    /* Not loaded, try loading it now.  The language name includes the
-	     * region name, the region is ignored otherwise.  for
-	     * temp_wordlist use an arbitrary name. */
-	    if (round == 1)
+	     * region name, the region is ignored otherwise.  for int_wordlist
+	     * use an arbitrary name. */
+	    if (round == 0)
+		STRCPY(lang, "internal wordlist");
+	    else
 	    {
-		vim_strncpy(lang, gettail(buf->b_p_spf), MAXWLEN);
+		vim_strncpy(lang, gettail(spf_name), MAXWLEN);
 		p = vim_strchr(lang, '.');
 		if (p != NULL)
 		    *p = NUL;	/* truncate at ".encoding.add" */
 	    }
-	    else
-		STRCPY(lang, "temp wordlist");
 	    lp = spell_load_file(spf_name, lang, NULL, TRUE);
 	}
 	if (lp != NULL && ga_grow(&ga, 1) == OK)
@@ -2765,6 +2823,7 @@ spell_free_all()
 {
     slang_T	*lp;
     buf_T	*buf;
+    char_u	fname[MAXPATHL];
 
     /* Go through all buffers and handle 'spelllang'. */
     for (buf = firstbuf; buf != NULL; buf = buf->b_next)
@@ -2777,11 +2836,14 @@ spell_free_all()
 	slang_free(lp);
     }
 
-    if (temp_wordlist != NULL)
+    if (int_wordlist != NULL)
     {
-	mch_remove(temp_wordlist);
-	vim_free(temp_wordlist);
-	temp_wordlist = NULL;
+	/* Delete the internal wordlist and its .spl file */
+	mch_remove(int_wordlist);
+	int_wordlist_spl(fname);
+	mch_remove(fname);
+	vim_free(int_wordlist);
+	int_wordlist = NULL;
     }
 
     init_spell_chartab();
@@ -5172,42 +5234,48 @@ mkspell(fcount, fnames, ascii, overwrite, added_word)
 
 
 /*
- * ":spellgood  {word}"
- * ":spellwrong  {word}"
+ * ":[count]spellgood  {word}"
+ * ":[count]spellwrong  {word}"
  */
     void
 ex_spell(eap)
     exarg_T *eap;
 {
     spell_add_word(eap->arg, STRLEN(eap->arg), eap->cmdidx == CMD_spellwrong,
-								eap->forceit);
+				    eap->forceit ? 0 : (int)eap->line2);
 }
 
 /*
  * Add "word[len]" to 'spellfile' as a good or bad word.
  */
     void
-spell_add_word(word, len, bad, temp)
+spell_add_word(word, len, bad, index)
     char_u	*word;
     int		len;
     int		bad;
-    int		temp;	    /* "zG" and "zW": use temp word list */
+    int		index;	    /* "zG" and "zW": zero, otherwise index in
+			       'spellfile' */
 {
     FILE	*fd;
-    buf_T	*buf;
+    buf_T	*buf = NULL;
     int		new_spf = FALSE;
     struct stat	st;
     char_u	*fname;
+    char_u	fnamebuf[MAXPATHL];
+    char_u	line[MAXWLEN * 2];
+    long	fpos, fpos_next = 0;
+    int		i;
+    char_u	*spf;
 
-    if (temp)	    /* use temp word list */
+    if (index == 0)	    /* use internal wordlist */
     {
-	if (temp_wordlist == NULL)
+	if (int_wordlist == NULL)
 	{
-	    temp_wordlist = vim_tempname('s');
-	    if (temp_wordlist == NULL)
+	    int_wordlist = vim_tempname('s');
+	    if (int_wordlist == NULL)
 		return;
 	}
-	fname = temp_wordlist;
+	fname = int_wordlist;
     }
     else
     {
@@ -5224,8 +5292,20 @@ spell_add_word(word, len, bad, temp)
 	    return;
 	}
 
+	for (spf = curbuf->b_p_spf, i = 1; *spf != NUL; ++i)
+	{
+	    copy_option_part(&spf, fnamebuf, MAXPATHL, ",");
+	    if (i == index)
+		break;
+	    if (*spf == NUL)
+	    {
+		EMSGN(_("E765: 'spellfile' does not have %ld enties"), index);
+		return;
+	    }
+	}
+
 	/* Check that the user isn't editing the .add file somewhere. */
-	buf = buflist_findname_exp(curbuf->b_p_spf);
+	buf = buflist_findname_exp(fnamebuf);
 	if (buf != NULL && buf->b_ml.ml_mfp == NULL)
 	    buf = NULL;
 	if (buf != NULL && bufIsChanged(buf))
@@ -5234,7 +5314,37 @@ spell_add_word(word, len, bad, temp)
 	    return;
 	}
 
-	fname = curbuf->b_p_spf;
+	fname = fnamebuf;
+    }
+
+    if (bad)
+    {
+	/* When the word also appears as good word we need to remove that one,
+	 * since its flags sort before the one with WF_BANNED. */
+	fd = mch_fopen((char *)fname, "r");
+	if (fd != NULL)
+	{
+	    while (!vim_fgets(line, MAXWLEN * 2, fd))
+	    {
+		fpos = fpos_next;
+		fpos_next = ftell(fd);
+		if (STRNCMP(word, line, len) == 0
+			&& (line[len] == '/' || line[len] < ' '))
+		{
+		    /* Found duplicate word.  Remove it by writing a '#' at
+		     * the start of the line.  Mixing reading and writing
+		     * doesn't work for all systems, close the file first. */
+		    fclose(fd);
+		    fd = mch_fopen((char *)fname, "r+");
+		    if (fd == NULL)
+			break;
+		    if (fseek(fd, fpos, SEEK_SET) == 0)
+			fputc('#', fd);
+		    fseek(fd, fpos_next, SEEK_SET);
+		}
+	    }
+	    fclose(fd);
+	}
     }
 
     fd = mch_fopen((char *)fname, "a");
@@ -6088,7 +6198,7 @@ spell_find_suggest(badptr, su, maxcount, banbadword)
     int		maxcount;
     int		banbadword;	/* don't include badword in suggestions */
 {
-    int		attr;
+    int		attr = 0;
     char_u	buf[MAXPATHL];
     char_u	*p;
     int		do_combine = FALSE;
@@ -6096,6 +6206,7 @@ spell_find_suggest(badptr, su, maxcount, banbadword)
 #ifdef FEAT_EVAL
     static int	expr_busy = FALSE;
 #endif
+    int		c;
 
     /*
      * Set the info in "*su".
@@ -6108,7 +6219,7 @@ spell_find_suggest(badptr, su, maxcount, banbadword)
     hash_init(&su->su_banned);
 
     su->su_badptr = badptr;
-    su->su_badlen = spell_check(curwin, su->su_badptr, &attr);
+    su->su_badlen = spell_check(curwin, su->su_badptr, &attr, NULL);
     su->su_maxcount = maxcount;
     su->su_maxscore = SCORE_MAXINIT;
 
@@ -6119,6 +6230,21 @@ spell_find_suggest(badptr, su, maxcount, banbadword)
 						    su->su_fbadword, MAXWLEN);
     /* get caps flags for bad word */
     su->su_badflags = captype(su->su_badptr, su->su_badptr + su->su_badlen);
+
+    /* If the word is not capitalised and spell_check() doesn't consider the
+     * word to be bad then it might need to be capitalised.  Add a suggestion
+     * for that. */
+#ifdef FEAT_MBYTE
+    c = mb_ptr2char(su->su_badptr);
+#else
+    c = *p;
+#endif
+    if (!SPELL_ISUPPER(c) && attr == 0)
+    {
+	make_case_word(su->su_badword, buf, WF_ONECAP);
+	add_suggestion(su, &su->su_ga, buf, su->su_badlen, SCORE_ICASE,
+								     0, TRUE);
+    }
 
     /* Ban the bad word itself.  It may appear in another region. */
     if (banbadword)

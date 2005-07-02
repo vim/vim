@@ -4682,7 +4682,8 @@ dozet:
 							    FIND_IDENT)) == 0)
 			return;
 		    spell_add_word(ptr, len, nchar == 'w' || nchar == 'W',
-						nchar == 'G' || nchar == 'W');
+					    (nchar == 'G' || nchar == 'W') ? 0
+							  : (int)cap->count1);
 		}
 		break;
 
