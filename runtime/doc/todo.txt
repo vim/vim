@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 01
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -97,10 +97,8 @@ Awaiting response:
 PLANNED FOR VERSION 7.0:
 
 - Spell checking todo's:
-    - When "zW" and "zG" are repeated with the same word it stops working
-    - More ideas:
-	- Support project word list?
-	- Check for Cap after punctuation "..." or char in ".!?"
+    - When making suggestions check for 'spellcapcheck' and empty line to
+      figure out the word should be capitalised.
     - Distribution: Need wordlists for many languages; "language pack"
       Put them on the ftp site, ready to download.  Include README for
       copyrights.
@@ -125,7 +123,7 @@ PLANNED FOR VERSION 7.0:
     - Insert mode completion mechanism that uses the spell word lists.
     - Add hl groups to 'spelllang'?
 	:set spelllang=en_us,en-rare/SpellRare,en-math/SpellMath
-      More complicated: Regions with different languages?  E.g.  comments
+      More complicated: Regions with different languages?  E.g., comments
       in English, strings in German (po file).
     - Implement compound words when it works for Myspell.  Current idea has
       the problem that "foo/X" always allows "foofoo", there is no way to
@@ -358,7 +356,7 @@ Awaiting updated patches:
     7   Add "DefaultFG" and "DefaultBG" for the colors of the menu. (Marcin
 	Dalecki has a patch for Motif and Carbon)
     -   Add possibility to highlight specific columns (for Fortran).  Or put a
-	line in between columns (e.g. for 'textwidth').
+	line in between columns (e.g., for 'textwidth').
 	Patch to add 'hlcolumn' from Vit Stradal, 2004 May 20.
     8   Add functions:
 	confirm()		add "flags" argument, with 'v' for vertical
@@ -652,7 +650,7 @@ GUI:
 9   On Solaris, creating the popup menu causes the right mouse button no
     longer to work for extending the selection. (Halevy)
 9   When running an external program, it can't always be killed with CTRL-C.
-    e.g. on Solaris 5.5, when using "K" (Keech).  Other 'guipty' problems on
+    e.g., on Solaris 5.5, when using "K" (Keech).  Other 'guipty' problems on
     Solaris 2.6. (Marley)
 9   On Solaris: Using a "-geometry" argument, bigger than the window where Vim
     is started from, causes empty lines below the cmdline. (raf)
@@ -747,7 +745,7 @@ MSDOS/DJGPP:
     sort of sleep, to avoid eating 50% of the CPU time.  Test on an unpatched
     Windows 95 system!
 8   DJGPP: when shell is bash, make fails. (Donahoe)
-7   Hitting CTRL-P twice quickly (e.g. in keyword completion) on a 8088
+7   Hitting CTRL-P twice quickly (e.g., in keyword completion) on a 8088
     machine, starts printer echo! (John Mullin).
 7   MSDOS 16 bit version can't work with COMSPEC that has an argument, e.g.:
     COMSPEC=C:\WINDOWS\COMMAND.COM /E:4096    (Bradley)
@@ -1306,6 +1304,9 @@ User Friendlier:
     Alternative: use BufEnter and BufLeave autocommands.
 8   make a vimtutor script for Amiga and other systems.
 7   Add the arguments for configure to the ":version" output?
+7   When Vim detects a file is being edited elsewhere and it's a gvim session
+    of the same user it should offer a "Raise" button, so that the other gvim
+    window can be displayed. (Eduard)
 
 
 Diff mode:

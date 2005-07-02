@@ -13463,7 +13463,7 @@ f_spellbadword(argvars, rettv)
 
     /* Get the length of the word and copy it. */
     ptr = ml_get_cursor();
-    len = spell_check(curwin, ptr, &attr);
+    len = spell_check(curwin, ptr, &attr, NULL);
     rettv->vval.v_string = vim_strnsave(ptr, len);
 #endif
 }
