@@ -679,16 +679,16 @@ LINKARGS2 = $(CON_LIB) $(GUI_LIB) $(LIBC) $(OLE_LIB)  user32.lib $(SNIFF_LIB) \
 		$(MZSCHEME_LIB) $(PERL_LIB) $(PYTHON_LIB) $(RUBY_LIB) $(TCL_LIB) \
 		$(NETBEANS_LIB) $(XPM_LIB) $(LINK_PDB)
 
-all:	$(VIM) vimrun.exe install.exe uninstal.exe xxd/xxd.exe GvimExt/gvimext.dll
+all:	$(VIM).exe vimrun.exe install.exe uninstal.exe xxd/xxd.exe GvimExt/gvimext.dll
 
-$(VIM): $(OUTDIR) $(OBJ) $(GUI_OBJ) $(OLE_OBJ) $(OLE_IDL) $(MZSCHEME_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(RUBY_OBJ) $(TCL_OBJ) $(SNIFF_OBJ) $(CSCOPE_OBJ) $(NETBEANS_OBJ) $(XPM_OBJ) version.c version.h
+$(VIM).exe: $(OUTDIR) $(OBJ) $(GUI_OBJ) $(OLE_OBJ) $(OLE_IDL) $(MZSCHEME_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(RUBY_OBJ) $(TCL_OBJ) $(SNIFF_OBJ) $(CSCOPE_OBJ) $(NETBEANS_OBJ) $(XPM_OBJ) version.c version.h
 	$(CC) $(CFLAGS)  version.c /Fo$(OUTDIR)/version.obj $(PDB)
-	$(link) $(LINKARGS1) -out:$*.exe $(OBJ) $(GUI_OBJ) $(OLE_OBJ) \
+	$(link) $(LINKARGS1) -out:$* $(OBJ) $(GUI_OBJ) $(OLE_OBJ) \
 		$(MZSCHEME_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(RUBY_OBJ) $(TCL_OBJ) $(SNIFF_OBJ) \
 		$(CSCOPE_OBJ) $(NETBEANS_OBJ) $(XPM_OBJ) \
 		$(OUTDIR)\version.obj $(LINKARGS2)
 
-$(VIM).exe: $(VIM)
+$(VIM): $(VIM).exe
 
 $(OUTDIR):
 	if not exist $(OUTDIR)/nul  mkdir $(OUTDIR)
@@ -907,11 +907,11 @@ $(OUTDIR)/xpm_w32.obj: $(OUTDIR) xpm_w32.c
 $(OUTDIR)/vim.res:	$(OUTDIR) vim.rc version.h tools.bmp tearoff.bmp vim.ico vim_error.ico vim_alert.ico vim_info.ico vim_quest.ico
 	$(RC) /l 0x409 /Fo$(OUTDIR)/vim.res $(RCFLAGS) vim.rc
 
-iid_ole.c if_ole.h vim.tlb: if_ole.idl $(INTDIR) $(OUTDIR)
-	midl /nologo /proxy nul /iid iid_ole.c /tlb vim.tlb /header if_ole.h if_ole.idl
+iid_ole.c if_ole.h vim.tlb: if_ole.idl
+	midl /nologo /error none /proxy nul /iid iid_ole.c /tlb vim.tlb /header if_ole.h if_ole.idl
 
 dimm.h dimm_i.c: dimm.idl
-	midl /nologo /proxy nul dimm.idl
+	midl /nologo /error none /proxy nul dimm.idl
 
 $(OUTDIR)/dimm_i.obj: $(OUTDIR) dimm_i.c $(INCL)
 

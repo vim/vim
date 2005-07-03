@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 29
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -241,15 +241,23 @@ the same value. >
 
 Note about comparing lists: Two lists are considered equal if they have the
 same length and all items compare equal, as with using "==".  There is one
-exception: When comparing a number with a string and the string contains extra
-characters beside the number they are not equal. Example: >
-	echo 4 == "4x"
+exception: When comparing a number with a string they are considered
+different.  There is no automatic type conversion, as with using "==" on
+variables.  Example: >
+	echo 4 == "4"
 <	1 >
-	echo [4] == ["4x"]
+	echo [4] == ["4"]
 <	0
 
-This is to fix the odd behavior of == that can't be changed for backward
-compatibility reasons.
+Thus comparing Lists is more strict than comparing numbers and strings.  You
+can compare simple values this way too by putting them in a string: >
+
+	:let a = 5
+	:let b = "5"
+	echo a == b
+<	1 >
+	echo [a] == [b]
+<	0
 
 
 List unpack ~

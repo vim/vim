@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 02
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -81,9 +81,6 @@ autoload:
     helpfile doc/myscript.txt
   For the "helpfile" item ":helptags" is run.
 
-For List comparing, consider [4] and ['4'] different? (Servatius Brandt)
-Also allows strict comparing for ordinary variables.
-
 Patch to alternate fold highlighting.  (Anthony Iano-Fletcher, 2005 May 12)
 More levels?
 
@@ -95,40 +92,6 @@ Awaiting response:
 
 
 PLANNED FOR VERSION 7.0:
-
-- Spell checking todo's:
-    - When making suggestions check for 'spellcapcheck' and empty line to
-      figure out the word should be capitalised.
-    - Distribution: Need wordlists for many languages; "language pack"
-      Put them on the ftp site, ready to download.  Include README for
-      copyrights.
-    - Work together with OpenOffice.org to update the wordlists.  (Adri
-      Verhoef, Aad Nales)  Setup vim-spell maillist?
-    - Charles Campbell asks for method to add "contained" groups to
-      existing syntax items (to add @Spell).
-      Add ":syntax contains {pattern} add=@Spell" command?  A bit like ":syn
-      cluster" but change the contains list directly for matching syntax
-      items.
-    - Install spell files with src/main.aap.
-    Later:
-    - References: MySpell library (in OpenOffice.org).
-	http://spellchecker.mozdev.org/source.html
-	http://whiteboard.openoffice.org/source/browse/whiteboard/lingucomponent/source/spellcheck/myspell/
-      author: Kevin Hendricks <kevin.hendricks@sympatico.ca>
-    - Make "en-rare" spell file?  Ask Charles Campbell.
-    - The English dictionaries for different regions are not consistent in
-      their use of words with a dash.
-    - Alternate Dutch word list at www.nederlandsewoorden.nl (use script to
-      obtain).  But new Myspell wordlist will come (Hagen)
-    - Insert mode completion mechanism that uses the spell word lists.
-    - Add hl groups to 'spelllang'?
-	:set spelllang=en_us,en-rare/SpellRare,en-math/SpellMath
-      More complicated: Regions with different languages?  E.g., comments
-      in English, strings in German (po file).
-    - Implement compound words when it works for Myspell.  Current idea has
-      the problem that "foo/X" always allows "foofoo", there is no way to
-      specify a word can only be at the start or end, or that only certain
-      words combine.
 
 -   Support using "**" in filename for ":next", ":vimgrep", etc., so that a
     directory tree can be searched.
@@ -1307,6 +1270,33 @@ User Friendlier:
 7   When Vim detects a file is being edited elsewhere and it's a gvim session
     of the same user it should offer a "Raise" button, so that the other gvim
     window can be displayed. (Eduard)
+
+
+Spell checking:
+9   Work together with OpenOffice.org to update the wordlists.  (Adri Verhoef,
+    Aad Nales)  Setup vim-spell maillist?
+8   Charles Campbell asks for method to add "contained" groups to existing
+    syntax items (to add @Spell).
+    Add ":syntax contains {pattern} add=@Spell" command?  A bit like ":syn
+    cluster" but change the contains list directly for matching syntax items.
+8   Install spell files with src/main.aap.
+-   References: MySpell library (in OpenOffice.org).
+	http://spellchecker.mozdev.org/source.html
+	http://whiteboard.openoffice.org/source/browse/whiteboard/lingucomponent/source/spellcheck/myspell/
+      author: Kevin Hendricks <kevin.hendricks@sympatico.ca>
+8   Make "en-rare" spell file?  Ask Charles Campbell.
+8   The English dictionaries for different regions are not consistent in their
+    use of words with a dash.
+8   Alternate Dutch word list at www.nederlandsewoorden.nl (use script to
+    obtain).  But new Myspell wordlist will come (Hagen)
+7   Insert mode completion mechanism that uses the spell word lists.
+8   Add hl groups to 'spelllang'?
+	:set spelllang=en_us,en-rare/SpellRare,en-math/SpellMath
+    More complicated: Regions with different languages?  E.g., comments
+    in English, strings in German (po file).
+8   Implement compound words when it works for Myspell.  Current idea has the
+    problem that "foo/X" always allows "foofoo", there is no way to specify a
+    word can only be at the start or end, or that only certain words combine.
 
 
 Diff mode:

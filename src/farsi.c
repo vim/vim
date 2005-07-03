@@ -1939,7 +1939,7 @@ lrFswap(cmdbuf, len)
 }
 
 /*
- * Reverse the characters in the seach path and substitude section accordingly
+ * Reverse the characters in the search path and substitute section accordingly
  */
     char_u *
 lrF_sub(ibuf)
@@ -1950,8 +1950,8 @@ lrF_sub(ibuf)
 
     p = ibuf;
 
-    /* Find the boundry of the search path */
-    while (((p = vim_strchr(++p, '/')) != NULL) && p[-1] == '\\')
+    /* Find the boundary of the search path */
+    while (++p, ((p = vim_strchr(p, '/')) != NULL) && p[-1] == '\\')
 	;
 
     if (p == NULL)
@@ -1960,7 +1960,7 @@ lrF_sub(ibuf)
     /* Reverse the Farsi characters in the search path. */
     lrFswap(ibuf, (int)(p-ibuf));
 
-    /* Now find the boundry of the substitute section */
+    /* Now find the boundary of the substitute section */
     if ((ep = (char_u *)strrchr((char *)++p, '/')) != NULL)
 	cnt = (int)(ep - p);
     else

@@ -1,26 +1,22 @@
-*** en_AU.orig.aff	Fri Apr 15 13:20:36 2005
---- en_AU.aff	Mon Jun 27 19:42:32 2005
+*** en_GB.orig.aff	Sun Jul  3 17:53:13 2005
+--- en_GB.aff	Sun Jul  3 17:59:15 2005
 ***************
-*** 7,9 ****
-  SET ISO8859-1
-! TRY esiaÈnrtolcdugmphbyfvkw-'.zqjxSNRTLCGDMPHBEAUYOFIVKWˆ‚ÙZQJX≈ÁËÓÍ‡Ô¸‰Ò 
-  REP 24
---- 7,19 ----
-  SET ISO8859-1
-! TRY esiaÈnrtolcdugmphbyfvkw-'.zqjxSNRTLCGDMPHBEAUYOFIVKWˆ‚ÙZQJX≈ÁËÓÍ‡Ô¸‰Ò
-! 
-! FOL  ‡·‚„‰ÂÊÁËÈÍÎÏÌÓÔÒÚÛÙıˆ¯˘˙˚¸˝˛ﬂˇ
-! LOW  ‡·‚„‰ÂÊÁËÈÍÎÏÌÓÔÒÚÛÙıˆ¯˘˙˚¸˝˛ﬂˇ
-! UPP  ¿¡¬√ƒ≈∆«»… ÀÃÕŒœ–—“”‘’÷ÿŸ⁄€‹›ﬁﬂˇ
-! 
-! MIDWORD	'
-! 
-! RAR ?
-! BAD !
-! 
-  REP 24
+*** 8,9 ****
+--- 8,19 ----
+  TRY esiaÈnrtolcdugmfphbyvkw-'.zqjxSNRTLCGDMFPHBEAUYOIVKWÛˆ‚ÙZQJX≈ÁËÓÍ‡Ô¸‰Ò
++ 
++ FOL  ‡·‚„‰ÂÊÁËÈÍÎÏÌÓÔÒÚÛÙıˆ¯˘˙˚¸˝˛ﬂˇ
++ LOW  ‡·‚„‰ÂÊÁËÈÍÎÏÌÓÔÒÚÛÙıˆ¯˘˙˚¸˝˛ﬂˇ
++ UPP  ¿¡¬√ƒ≈∆«»… ÀÃÕŒœ–—“”‘’÷ÿŸ⁄€‹›ﬁﬂˇ
++ 
++ MIDWORD	'
++ 
++ RAR ?
++ BAD !
++ 
+  REP 27
 ***************
-*** 34,53 ****
+*** 37,56 ****
   PFX A Y 2
 ! PFX A 0 re [^e] 
 ! PFX A 0 re- e 
@@ -41,7 +37,7 @@
   PFX E Y 1
 ! PFX E 0 dis . 
   PFX F Y 5
---- 44,63 ----
+--- 47,66 ----
   PFX A Y 2
 ! PFX A 0 re [^e]
 ! PFX A 0 re- e
@@ -63,7 +59,7 @@
 ! PFX E 0 dis .
   PFX F Y 5
 ***************
-*** 57,451 ****
+*** 60,454 ****
   PFX F 0 col l
 ! PFX F 0 con [^abehilmopru]. 
   PFX K Y 1
@@ -459,7 +455,7 @@
   SFX T y iest [^aeiou]y
 ! SFX T 0 er [aeiou]y 
   SFX T 0 est [aeiou]y
---- 67,461 ----
+--- 70,464 ----
   PFX F 0 col l
 ! PFX F 0 con [^abehilmopru].
   PFX K Y 1
@@ -856,7 +852,7 @@
 ! SFX T 0 er [aeiou]y
   SFX T 0 est [aeiou]y
 ***************
-*** 458,1143 ****
+*** 461,1150 ****
   SFX R Y 72
 ! SFX R 0 r e 
 ! SFX R 0 rs e 
@@ -1023,7 +1019,7 @@
 ! SFX p 0 ess ll 
 ! SFX p 0 less [^l]l 
 ! SFX p 0 less [^ly] 
-  SFX Q Y 88
+  SFX Q Y 44
 ! SFX Q 0 tise a 
 ! SFX Q e ise [^l]e 
 ! SFX Q le ilise [^aeiou]le 
@@ -1068,51 +1064,52 @@
 ! SFX Q y ising [^aeiou]y 
 ! SFX Q 0 ising [aeiou]y 
 ! SFX Q 0 ising [^aemsy] 
-! SFX Q 0 tize a 
-! SFX Q e ize [^l]e 
-! SFX Q le ilize [^aeiou]le 
-! SFX Q e ize [aeiou]le 
-! SFX Q um ize um 
-! SFX Q 0 ize [^u]m 
-! SFX Q s ze is 
-! SFX Q 0 ize [^i]s 
-! SFX Q y ize [^aeiou]y 
-! SFX Q 0 ize [aeiou]y 
-! SFX Q 0 ize [^aemsy] 
-! SFX Q 0 tizes a 
-! SFX Q e izes [^l]e 
-! SFX Q le ilizes [^aeiou]le 
-! SFX Q e izes [aeiou]le 
-! SFX Q um izes um 
-! SFX Q 0 izes [^u]m 
-! SFX Q s zes is 
-! SFX Q 0 izes [^i]s 
-! SFX Q y izes [^aeiou]y 
-! SFX Q 0 izes [aeiou]y 
-! SFX Q 0 izes [^aemsy] 
-! SFX Q 0 tized a 
-! SFX Q e ized [^l]e 
-! SFX Q le ilized [^aeiou]le 
-! SFX Q e ized [aeiou]le 
-! SFX Q um ized um 
-! SFX Q 0 ized [^u]m 
-! SFX Q s zed is 
-! SFX Q 0 ized [^i]s 
-! SFX Q y ized [^aeiou]y 
-! SFX Q 0 ized [aeiou]y 
-! SFX Q 0 ized [^aemsy] 
-! SFX Q 0 tizing a 
-! SFX Q e izing [^l]e 
-! SFX Q le ilizing [^aeiou]le 
-! SFX Q e izing [aeiou]le 
-! SFX Q um izing um 
-! SFX Q 0 izing [^u]m 
-! SFX Q s zing is 
-! SFX Q 0 izing [^i]s 
-! SFX Q y izing [^aeiou]y 
-! SFX Q 0 izing [aeiou]y 
-! SFX Q 0 izing [^aemsy] 
-  SFX q Y 44
+  SFX 8 Y 44
+! SFX 8 0 tize a 
+! SFX 8 e ize [^l]e 
+! SFX 8 le ilize [^aeiou]le 
+! SFX 8 e ize [aeiou]le 
+! SFX 8 um ize um 
+! SFX 8 0 ize [^u]m 
+! SFX 8 s ze is 
+! SFX 8 0 ize [^i]s 
+! SFX 8 y ize [^aeiou]y 
+! SFX 8 0 ize [aeiou]y 
+! SFX 8 0 ize [^aemsy] 
+! SFX 8 0 tizes a 
+! SFX 8 e izes [^l]e 
+! SFX 8 le ilizes [^aeiou]le 
+! SFX 8 e izes [aeiou]le 
+! SFX 8 um izes um 
+! SFX 8 0 izes [^u]m 
+! SFX 8 s zes is 
+! SFX 8 0 izes [^i]s 
+! SFX 8 y izes [^aeiou]y 
+! SFX 8 0 izes [aeiou]y 
+! SFX 8 0 izes [^aemsy] 
+! SFX 8 0 tized a 
+! SFX 8 e ized [^l]e 
+! SFX 8 le ilized [^aeiou]le 
+! SFX 8 e ized [aeiou]le 
+! SFX 8 um ized um 
+! SFX 8 0 ized [^u]m 
+! SFX 8 s zed is 
+! SFX 8 0 ized [^i]s 
+! SFX 8 y ized [^aeiou]y 
+! SFX 8 0 ized [aeiou]y 
+! SFX 8 0 ized [^aemsy] 
+! SFX 8 0 tizing a 
+! SFX 8 e izing [^l]e 
+! SFX 8 le ilizing [^aeiou]le 
+! SFX 8 e izing [aeiou]le 
+! SFX 8 um izing um 
+! SFX 8 0 izing [^u]m 
+! SFX 8 s zing is 
+! SFX 8 0 izing [^i]s 
+! SFX 8 y izing [^aeiou]y 
+! SFX 8 0 izing [aeiou]y 
+! SFX 8 0 izing [^aemsy] 
+  SFX q Y 22
 ! SFX q 0 tisation a 
 ! SFX q e isation [^l]e 
 ! SFX q le ilisation [^aeiou]le 
@@ -1135,29 +1132,30 @@
 ! SFX q y isations [^aeiou]y 
 ! SFX q 0 isations [aeiou]y 
 ! SFX q 0 isations [^aemsy] 
-! SFX q 0 tization a 
-! SFX q e ization [^l]e 
-! SFX q le ilization [^aeiou]le 
-! SFX q e ization [aeiou]le 
-! SFX q um ization um 
-! SFX q 0 ization [^u]m 
-! SFX q s zation is 
-! SFX q 0 ization [^i]s 
-! SFX q y ization [^aeiou]y 
-! SFX q 0 ization [aeiou]y 
-! SFX q 0 ization [^aemsy] 
-! SFX q 0 tizations a 
-! SFX q e izations [^l]e 
-! SFX q le ilizations [^aeiou]le 
-! SFX q e izations [aeiou]le 
-! SFX q um izations um 
-! SFX q 0 izations [^u]m 
-! SFX q s zations is 
-! SFX q 0 izations [^i]s 
-! SFX q y izations [^aeiou]y 
-! SFX q 0 izations [aeiou]y 
-! SFX q 0 izations [^aemsy] 
-  SFX s Y 66
+  SFX - Y 22
+! SFX - 0 tization a 
+! SFX - e ization [^l]e 
+! SFX - le ilization [^aeiou]le 
+! SFX - e ization [aeiou]le 
+! SFX - um ization um 
+! SFX - 0 ization [^u]m 
+! SFX - s zation is 
+! SFX - 0 ization [^i]s 
+! SFX - y ization [^aeiou]y 
+! SFX - 0 ization [aeiou]y 
+! SFX - 0 ization [^aemsy] 
+! SFX - 0 tizations a 
+! SFX - e izations [^l]e 
+! SFX - le ilizations [^aeiou]le 
+! SFX - e izations [aeiou]le 
+! SFX - um izations um 
+! SFX - 0 izations [^u]m 
+! SFX - s zations is 
+! SFX - 0 izations [^i]s 
+! SFX - y izations [^aeiou]y 
+! SFX - 0 izations [aeiou]y 
+! SFX - 0 izations [^aemsy] 
+  SFX s Y 33
 ! SFX s 0 tiser a 
 ! SFX s e iser [^l]e 
 ! SFX s le iliser [^aeiou]le 
@@ -1191,40 +1189,41 @@
 ! SFX s y iser's [^aeiou]y 
 ! SFX s 0 iser's [aeiou]y 
 ! SFX s 0 iser's [^aemsy] 
-! SFX s 0 tizer a 
-! SFX s e izer [^l]e 
-! SFX s le ilizer [^aeiou]le 
-! SFX s e izer [aeiou]le 
-! SFX s um izer um 
-! SFX s 0 izer [^u]m 
-! SFX s s zer is 
-! SFX s 0 izer [^i]s 
-! SFX s y izer [^aeiou]y 
-! SFX s 0 izer [aeiou]y 
-! SFX s 0 izer [^aemsy] 
-! SFX s 0 tizers a 
-! SFX s e izers [^l]e 
-! SFX s le ilizers [^aeiou]le 
-! SFX s e izers [aeiou]le 
-! SFX s um izers um 
-! SFX s 0 izers [^u]m 
-! SFX s s zers is 
-! SFX s 0 izers [^i]s 
-! SFX s y izers [^aeiou]y 
-! SFX s 0 izers [aeiou]y 
-! SFX s 0 izers [^aemsy] 
-! SFX s 0 tizer's a 
-! SFX s e izer's [^l]e 
-! SFX s le ilizer's [^aeiou]le 
-! SFX s e izer's [aeiou]le 
-! SFX s um izer's um 
-! SFX s 0 izer's [^u]m 
-! SFX s s zer's is 
-! SFX s 0 izer's [^i]s 
-! SFX s y izer's [^aeiou]y 
-! SFX s 0 izer's [aeiou]y 
-! SFX s 0 izer's [^aemsy] 
-  SFX t Y 44
+  SFX 9 Y 33
+! SFX 9 0 tizer a 
+! SFX 9 e izer [^l]e 
+! SFX 9 le ilizer [^aeiou]le 
+! SFX 9 e izer [aeiou]le 
+! SFX 9 um izer um 
+! SFX 9 0 izer [^u]m 
+! SFX 9 s zer is 
+! SFX 9 0 izer [^i]s 
+! SFX 9 y izer [^aeiou]y 
+! SFX 9 0 izer [aeiou]y 
+! SFX 9 0 izer [^aemsy] 
+! SFX 9 0 tizers a 
+! SFX 9 e izers [^l]e 
+! SFX 9 le ilizers [^aeiou]le 
+! SFX 9 e izers [aeiou]le 
+! SFX 9 um izers um 
+! SFX 9 0 izers [^u]m 
+! SFX 9 s zers is 
+! SFX 9 0 izers [^i]s 
+! SFX 9 y izers [^aeiou]y 
+! SFX 9 0 izers [aeiou]y 
+! SFX 9 0 izers [^aemsy] 
+! SFX 9 0 tizer's a 
+! SFX 9 e izer's [^l]e 
+! SFX 9 le ilizer's [^aeiou]le 
+! SFX 9 e izer's [aeiou]le 
+! SFX 9 um izer's um 
+! SFX 9 0 izer's [^u]m 
+! SFX 9 s zer's is 
+! SFX 9 0 izer's [^i]s 
+! SFX 9 y izer's [^aeiou]y 
+! SFX 9 0 izer's [aeiou]y 
+! SFX 9 0 izer's [^aemsy] 
+  SFX t Y 22
 ! SFX t 0 tisable a 
 ! SFX t e isable [^l]e 
 ! SFX t le ilisable [^aeiou]le 
@@ -1236,17 +1235,6 @@
 ! SFX t y isable [^aeiou]y 
 ! SFX t 0 isable [aeiou]y 
 ! SFX t 0 isable [^aemsy] 
-! SFX t 0 tizable a 
-! SFX t e izable [^l]e 
-! SFX t le ilizable [^aeiou]le 
-! SFX t e izable [aeiou]le 
-! SFX t um izable um 
-! SFX t 0 izable [^u]m 
-! SFX t s zable is 
-! SFX t 0 izable [^i]s 
-! SFX t y izable [^aeiou]y 
-! SFX t 0 izable [aeiou]y 
-! SFX t 0 izable [^aemsy] 
 ! SFX t 0 tisability a 
 ! SFX t e isability [^l]e 
 ! SFX t le ilisability [^aeiou]le 
@@ -1258,17 +1246,29 @@
 ! SFX t y isability [^aeiou]y 
 ! SFX t 0 isability [aeiou]y 
 ! SFX t 0 isability [^aemsy] 
-! SFX t 0 tizability a 
-! SFX t e izability [^l]e 
-! SFX t le ilizability [^aeiou]le 
-! SFX t e izability [aeiou]le 
-! SFX t um izability um 
-! SFX t 0 izability [^u]m 
-! SFX t s zability is 
-! SFX t 0 izability [^i]s 
-! SFX t y izability [^aeiou]y 
-! SFX t 0 izability [aeiou]y 
-! SFX t 0 izability [^aemsy] 
+  SFX + Y 22
+! SFX + 0 tizable a 
+! SFX + e izable [^l]e 
+! SFX + le ilizable [^aeiou]le 
+! SFX + e izable [aeiou]le 
+! SFX + um izable um 
+! SFX + 0 izable [^u]m 
+! SFX + s zable is 
+! SFX + 0 izable [^i]s 
+! SFX + y izable [^aeiou]y 
+! SFX + 0 izable [aeiou]y 
+! SFX + 0 izable [^aemsy] 
+! SFX + 0 tizability a 
+! SFX + e izability [^l]e 
+! SFX + le ilizability [^aeiou]le 
+! SFX + e izability [aeiou]le 
+! SFX + um izability um 
+! SFX + 0 izability [^u]m 
+! SFX + s zability is 
+! SFX + 0 izability [^i]s 
+! SFX + y izability [^aeiou]y 
+! SFX + 0 izability [aeiou]y 
+! SFX + 0 izability [^aemsy] 
   SFX M Y 1
 ! SFX M 0 's . 
   SFX B Y 48
@@ -1467,7 +1467,7 @@
 ! SFX O 0 al [^ipux]t 
 ! SFX O 0 al [^aebcrtxmy] 
   SFX o Y 12
-! SFZ o 0 lly a 
+! SFX o 0 lly a 
 ! SFX o e ally [^bcgv]e 
 ! SFX o e ially [bcgv]e 
 ! SFX o 0 ially [bcrx] 
@@ -1543,7 +1543,7 @@
 ! SFX 3 0 ist's [aeioubp]y 
 ! SFX 3 o ist's o 
 ! SFX 3 0 ist's [^eoy] 
---- 468,1274 ----
+--- 471,1281 ----
   SFX R Y 72
 ! SFX R 0 r e
 ! SFX R 0 rs e
@@ -1710,7 +1710,7 @@
 ! SFX p 0 ess ll
 ! SFX p 0 less [^l]l
 ! SFX p 0 less [^ly]
-  SFX Q Y 88
+  SFX Q Y 44
 ! SFX Q 0 tise a
 ! SFX Q e ise [^l]e
 ! SFX Q le ilise [^aeiou]le
@@ -1755,51 +1755,52 @@
 ! SFX Q y ising [^aeiou]y
 ! SFX Q 0 ising [aeiou]y
 ! SFX Q 0 ising [^aemsy]
-! SFX Q 0 tize a
-! SFX Q e ize [^l]e
-! SFX Q le ilize [^aeiou]le
-! SFX Q e ize [aeiou]le
-! SFX Q um ize um
-! SFX Q 0 ize [^u]m
-! SFX Q s ze is
-! SFX Q 0 ize [^i]s
-! SFX Q y ize [^aeiou]y
-! SFX Q 0 ize [aeiou]y
-! SFX Q 0 ize [^aemsy]
-! SFX Q 0 tizes a
-! SFX Q e izes [^l]e
-! SFX Q le ilizes [^aeiou]le
-! SFX Q e izes [aeiou]le
-! SFX Q um izes um
-! SFX Q 0 izes [^u]m
-! SFX Q s zes is
-! SFX Q 0 izes [^i]s
-! SFX Q y izes [^aeiou]y
-! SFX Q 0 izes [aeiou]y
-! SFX Q 0 izes [^aemsy]
-! SFX Q 0 tized a
-! SFX Q e ized [^l]e
-! SFX Q le ilized [^aeiou]le
-! SFX Q e ized [aeiou]le
-! SFX Q um ized um
-! SFX Q 0 ized [^u]m
-! SFX Q s zed is
-! SFX Q 0 ized [^i]s
-! SFX Q y ized [^aeiou]y
-! SFX Q 0 ized [aeiou]y
-! SFX Q 0 ized [^aemsy]
-! SFX Q 0 tizing a
-! SFX Q e izing [^l]e
-! SFX Q le ilizing [^aeiou]le
-! SFX Q e izing [aeiou]le
-! SFX Q um izing um
-! SFX Q 0 izing [^u]m
-! SFX Q s zing is
-! SFX Q 0 izing [^i]s
-! SFX Q y izing [^aeiou]y
-! SFX Q 0 izing [aeiou]y
-! SFX Q 0 izing [^aemsy]
-  SFX q Y 44
+  SFX 8 Y 44
+! SFX 8 0 tize a
+! SFX 8 e ize [^l]e
+! SFX 8 le ilize [^aeiou]le
+! SFX 8 e ize [aeiou]le
+! SFX 8 um ize um
+! SFX 8 0 ize [^u]m
+! SFX 8 s ze is
+! SFX 8 0 ize [^i]s
+! SFX 8 y ize [^aeiou]y
+! SFX 8 0 ize [aeiou]y
+! SFX 8 0 ize [^aemsy]
+! SFX 8 0 tizes a
+! SFX 8 e izes [^l]e
+! SFX 8 le ilizes [^aeiou]le
+! SFX 8 e izes [aeiou]le
+! SFX 8 um izes um
+! SFX 8 0 izes [^u]m
+! SFX 8 s zes is
+! SFX 8 0 izes [^i]s
+! SFX 8 y izes [^aeiou]y
+! SFX 8 0 izes [aeiou]y
+! SFX 8 0 izes [^aemsy]
+! SFX 8 0 tized a
+! SFX 8 e ized [^l]e
+! SFX 8 le ilized [^aeiou]le
+! SFX 8 e ized [aeiou]le
+! SFX 8 um ized um
+! SFX 8 0 ized [^u]m
+! SFX 8 s zed is
+! SFX 8 0 ized [^i]s
+! SFX 8 y ized [^aeiou]y
+! SFX 8 0 ized [aeiou]y
+! SFX 8 0 ized [^aemsy]
+! SFX 8 0 tizing a
+! SFX 8 e izing [^l]e
+! SFX 8 le ilizing [^aeiou]le
+! SFX 8 e izing [aeiou]le
+! SFX 8 um izing um
+! SFX 8 0 izing [^u]m
+! SFX 8 s zing is
+! SFX 8 0 izing [^i]s
+! SFX 8 y izing [^aeiou]y
+! SFX 8 0 izing [aeiou]y
+! SFX 8 0 izing [^aemsy]
+  SFX q Y 22
 ! SFX q 0 tisation a
 ! SFX q e isation [^l]e
 ! SFX q le ilisation [^aeiou]le
@@ -1822,29 +1823,30 @@
 ! SFX q y isations [^aeiou]y
 ! SFX q 0 isations [aeiou]y
 ! SFX q 0 isations [^aemsy]
-! SFX q 0 tization a
-! SFX q e ization [^l]e
-! SFX q le ilization [^aeiou]le
-! SFX q e ization [aeiou]le
-! SFX q um ization um
-! SFX q 0 ization [^u]m
-! SFX q s zation is
-! SFX q 0 ization [^i]s
-! SFX q y ization [^aeiou]y
-! SFX q 0 ization [aeiou]y
-! SFX q 0 ization [^aemsy]
-! SFX q 0 tizations a
-! SFX q e izations [^l]e
-! SFX q le ilizations [^aeiou]le
-! SFX q e izations [aeiou]le
-! SFX q um izations um
-! SFX q 0 izations [^u]m
-! SFX q s zations is
-! SFX q 0 izations [^i]s
-! SFX q y izations [^aeiou]y
-! SFX q 0 izations [aeiou]y
-! SFX q 0 izations [^aemsy]
-  SFX s Y 66
+  SFX - Y 22
+! SFX - 0 tization a
+! SFX - e ization [^l]e
+! SFX - le ilization [^aeiou]le
+! SFX - e ization [aeiou]le
+! SFX - um ization um
+! SFX - 0 ization [^u]m
+! SFX - s zation is
+! SFX - 0 ization [^i]s
+! SFX - y ization [^aeiou]y
+! SFX - 0 ization [aeiou]y
+! SFX - 0 ization [^aemsy]
+! SFX - 0 tizations a
+! SFX - e izations [^l]e
+! SFX - le ilizations [^aeiou]le
+! SFX - e izations [aeiou]le
+! SFX - um izations um
+! SFX - 0 izations [^u]m
+! SFX - s zations is
+! SFX - 0 izations [^i]s
+! SFX - y izations [^aeiou]y
+! SFX - 0 izations [aeiou]y
+! SFX - 0 izations [^aemsy]
+  SFX s Y 33
 ! SFX s 0 tiser a
 ! SFX s e iser [^l]e
 ! SFX s le iliser [^aeiou]le
@@ -1878,40 +1880,41 @@
 ! SFX s y iser's [^aeiou]y
 ! SFX s 0 iser's [aeiou]y
 ! SFX s 0 iser's [^aemsy]
-! SFX s 0 tizer a
-! SFX s e izer [^l]e
-! SFX s le ilizer [^aeiou]le
-! SFX s e izer [aeiou]le
-! SFX s um izer um
-! SFX s 0 izer [^u]m
-! SFX s s zer is
-! SFX s 0 izer [^i]s
-! SFX s y izer [^aeiou]y
-! SFX s 0 izer [aeiou]y
-! SFX s 0 izer [^aemsy]
-! SFX s 0 tizers a
-! SFX s e izers [^l]e
-! SFX s le ilizers [^aeiou]le
-! SFX s e izers [aeiou]le
-! SFX s um izers um
-! SFX s 0 izers [^u]m
-! SFX s s zers is
-! SFX s 0 izers [^i]s
-! SFX s y izers [^aeiou]y
-! SFX s 0 izers [aeiou]y
-! SFX s 0 izers [^aemsy]
-! SFX s 0 tizer's a
-! SFX s e izer's [^l]e
-! SFX s le ilizer's [^aeiou]le
-! SFX s e izer's [aeiou]le
-! SFX s um izer's um
-! SFX s 0 izer's [^u]m
-! SFX s s zer's is
-! SFX s 0 izer's [^i]s
-! SFX s y izer's [^aeiou]y
-! SFX s 0 izer's [aeiou]y
-! SFX s 0 izer's [^aemsy]
-  SFX t Y 44
+  SFX 9 Y 33
+! SFX 9 0 tizer a
+! SFX 9 e izer [^l]e
+! SFX 9 le ilizer [^aeiou]le
+! SFX 9 e izer [aeiou]le
+! SFX 9 um izer um
+! SFX 9 0 izer [^u]m
+! SFX 9 s zer is
+! SFX 9 0 izer [^i]s
+! SFX 9 y izer [^aeiou]y
+! SFX 9 0 izer [aeiou]y
+! SFX 9 0 izer [^aemsy]
+! SFX 9 0 tizers a
+! SFX 9 e izers [^l]e
+! SFX 9 le ilizers [^aeiou]le
+! SFX 9 e izers [aeiou]le
+! SFX 9 um izers um
+! SFX 9 0 izers [^u]m
+! SFX 9 s zers is
+! SFX 9 0 izers [^i]s
+! SFX 9 y izers [^aeiou]y
+! SFX 9 0 izers [aeiou]y
+! SFX 9 0 izers [^aemsy]
+! SFX 9 0 tizer's a
+! SFX 9 e izer's [^l]e
+! SFX 9 le ilizer's [^aeiou]le
+! SFX 9 e izer's [aeiou]le
+! SFX 9 um izer's um
+! SFX 9 0 izer's [^u]m
+! SFX 9 s zer's is
+! SFX 9 0 izer's [^i]s
+! SFX 9 y izer's [^aeiou]y
+! SFX 9 0 izer's [aeiou]y
+! SFX 9 0 izer's [^aemsy]
+  SFX t Y 22
 ! SFX t 0 tisable a
 ! SFX t e isable [^l]e
 ! SFX t le ilisable [^aeiou]le
@@ -1923,17 +1926,6 @@
 ! SFX t y isable [^aeiou]y
 ! SFX t 0 isable [aeiou]y
 ! SFX t 0 isable [^aemsy]
-! SFX t 0 tizable a
-! SFX t e izable [^l]e
-! SFX t le ilizable [^aeiou]le
-! SFX t e izable [aeiou]le
-! SFX t um izable um
-! SFX t 0 izable [^u]m
-! SFX t s zable is
-! SFX t 0 izable [^i]s
-! SFX t y izable [^aeiou]y
-! SFX t 0 izable [aeiou]y
-! SFX t 0 izable [^aemsy]
 ! SFX t 0 tisability a
 ! SFX t e isability [^l]e
 ! SFX t le ilisability [^aeiou]le
@@ -1945,17 +1937,29 @@
 ! SFX t y isability [^aeiou]y
 ! SFX t 0 isability [aeiou]y
 ! SFX t 0 isability [^aemsy]
-! SFX t 0 tizability a
-! SFX t e izability [^l]e
-! SFX t le ilizability [^aeiou]le
-! SFX t e izability [aeiou]le
-! SFX t um izability um
-! SFX t 0 izability [^u]m
-! SFX t s zability is
-! SFX t 0 izability [^i]s
-! SFX t y izability [^aeiou]y
-! SFX t 0 izability [aeiou]y
-! SFX t 0 izability [^aemsy]
+  SFX + Y 22
+! SFX + 0 tizable a
+! SFX + e izable [^l]e
+! SFX + le ilizable [^aeiou]le
+! SFX + e izable [aeiou]le
+! SFX + um izable um
+! SFX + 0 izable [^u]m
+! SFX + s zable is
+! SFX + 0 izable [^i]s
+! SFX + y izable [^aeiou]y
+! SFX + 0 izable [aeiou]y
+! SFX + 0 izable [^aemsy]
+! SFX + 0 tizability a
+! SFX + e izability [^l]e
+! SFX + le ilizability [^aeiou]le
+! SFX + e izability [aeiou]le
+! SFX + um izability um
+! SFX + 0 izability [^u]m
+! SFX + s zability is
+! SFX + 0 izability [^i]s
+! SFX + y izability [^aeiou]y
+! SFX + 0 izability [aeiou]y
+! SFX + 0 izability [^aemsy]
   SFX M Y 1
 ! SFX M 0 's .
   SFX B Y 48
@@ -2351,279 +2355,200 @@
 ! SAL Y(AEIOU)-            Y
 ! SAL ZZ-                  _
 ! SAL Z                    S
-*** en_AU.orig.dic	Fri Apr 15 13:20:36 2005
---- en_AU.dic	Mon Jun 27 09:31:13 2005
+*** en_GB.orig.dic	Sun Jul  3 18:05:07 2005
+--- en_GB.dic	Sun Jul  3 18:19:25 2005
 ***************
-*** 912,914 ****
-  Alaska/M
-! al/AY
-  albacore/MS
---- 912,914 ----
-  Alaska/M
-! really
-  albacore/MS
+*** 630,632 ****
+  Byrne/M
+- c/nN
+  cab/GMDXVSN
+--- 630,631 ----
 ***************
-*** 4885,4887 ****
-  bozo/SM
-- b/pb
-  bpi
---- 4885,4886 ----
-***************
-*** 4921,4922 ****
---- 4920,4922 ----
-  Brahms
-+ Bram/M
-  braid/DGS
-***************
-*** 5753,5755 ****
-  cad/ZSM
-- c/aE
-  CAE
---- 5753,5754 ----
-***************
-*** 8535,8537 ****
-  coniferous
-- conj
-  conjectural
---- 8534,8535 ----
-***************
-*** 8544,8545 ****
---- 8542,8544 ----
-  conjunctiva/MS
-+ conj.
-  conjunctive/S
-***************
-*** 10288,10289 ****
---- 10287,10291 ----
-  dB/M
-+ dBi
-+ dBm
-+ dBd
-  DBMS
-***************
-*** 11781,11783 ****
-  DNA
-- d/o
-  DOB
---- 11783,11784 ----
-***************
-*** 12468,12469 ****
---- 12469,12471 ----
-  Dutch/5m
-+ Farsi
-  Dutchwomen/M
-***************
-*** 12516,12518 ****
-  dystrophy/M
-- e
-  ea
---- 12518,12519 ----
-***************
-*** 13779,13781 ****
-  estuary/MS
-! et
-  ETA
---- 13780,13783 ----
-  estuary/MS
-! et cetera
-! et al.
-  ETA
-***************
-*** 15296,15298 ****
-  fjord/SM
-! f/K
-  flab/2zZM
---- 15298,15300 ----
-  fjord/SM
-! pref
-  flab/2zZM
-***************
-*** 16480,16482 ****
-  FYI
-- g/7
-  gabardine/SM
---- 16482,16483 ----
-***************
-*** 18599,18601 ****
-  HDTV
-- h/E
-  headache/SM
---- 18600,18601 ----
-***************
-*** 19214,19216 ****
-  Hobbes
-! hobbit
-  hobble/RGSD
---- 19214,19216 ----
-  Hobbes
-! hobbit/MS
-  hobble/RGSD
-***************
-*** 21791,21793 ****
-  jive/DSMG
-- j/k
-  jnr.
---- 21791,21792 ----
-***************
-*** 22125,22127 ****
-  kcal
-- k/E
-  Keane
---- 22124,22125 ----
-***************
-*** 22606,22608 ****
-  Kyushu/M
+*** 2588,2590 ****
+  KwaZulu
 - l/3
-  label/AGaSD
---- 22604,22605 ----
+  lab/oMS
+--- 2587,2588 ----
 ***************
-*** 22885,22887 ****
-  lass/SM
-- last-ditch
-  lasted/e
---- 22882,22883 ----
+*** 5221,5223 ****
+  Ajax
+- al/AFC
+  Alabamian/M
+--- 5219,5220 ----
 ***************
-*** 22890,22892 ****
-  last/kJYDSG
-- last-minute
-  lasts/e
---- 22886,22887 ----
+*** 6256,6258 ****
+  czarist
+- d/to
+  damaged/U
+--- 6253,6254 ----
 ***************
-*** 26417,26418 ****
---- 26412,26414 ----
-  Moolawatana
-+ Moolenaar/M
-  Moomba
-***************
-*** 27188,27192 ****
-  nationals/4
-! national/sQq3S
-  nationhood/M
+*** 8168,8170 ****
+  Natasha/M
 ! nation/M
-  nationwide
---- 27184,27188 ----
-  nationals/4
-! national/sQq3SZ
-  nationhood/M
+  navigable/P
+--- 8164,8166 ----
+  Natasha/M
 ! nation/MS
-  nationwide
+  navigable/P
 ***************
-*** 27194,27195 ****
---- 27190,27193 ----
-  nativity/MS
-+ natively
-+ nativeness
-  NATO/M
-***************
-*** 28365,28367 ****
-  nuzzle/SDG
-- n/xvuNVn
-  Nyah
---- 28363,28364 ----
-***************
-*** 29464,29466 ****
-  oz
-- o/z
-  Ozark/MS
---- 29461,29462 ----
-***************
-*** 31035,31037 ****
-  Pk
-- p/KF
-  pl.
---- 31031,31032 ----
-***************
-*** 31288,31289 ****
---- 31283,31285 ----
-  pneumonia/MS
-+ pneumonic
-  PO
-***************
-*** 31460,31461 ****
---- 31456,31458 ----
-  pompom/MS
-+ pompon/M
-  pomposity/MS
-***************
-*** 32865,32867 ****
-  pyx/S
-- q
-  Qatar
---- 32862,32863 ----
-***************
-*** 33378,33380 ****
-  razzmatazz
-- r/d
-  Rd/M
---- 33374,33375 ----
-***************
-*** 34979,34981 ****
-  RSPCA
-- rte
-  rub-a-dub
---- 34974,34975 ----
-***************
-*** 36012,36014 ****
-  sec.
-! s/eca
-  secant/MS
---- 36006,36008 ----
-  sec.
-! outs
-  secant/MS
-***************
-*** 40242,40244 ****
-  Szechwan/M
-! t/7k
-  Ta
---- 40236,40238 ----
-  Szechwan/M
-! tingly
-  Ta
-***************
-*** 42616,42618 ****
-  Tyson/M
-- u
-  ubiquitousness
---- 42610,42611 ----
-***************
-*** 42990,42991 ****
---- 42983,42985 ----
-  unscrupulous
-+ searchable
-  unsearchable
-***************
-*** 43252,43254 ****
-  Uzi/M
+*** 9959,9961 ****
+  Uzbekistan/M
 - v
-  vacancy/MS
---- 43246,43247 ----
+  vacation/M
+--- 9955,9956 ----
 ***************
-*** 43749,43751 ****
-  Vilnius/M
-! vim/M
-  vinaigrette/MS
---- 43742,43744 ----
-  Vilnius/M
-! Vim/M
-  vinaigrette/MS
+*** 11546,11548 ****
+  DZ
+- e
+  each
+--- 11541,11542 ----
 ***************
-*** 45494,45496 ****
-  yippee
+*** 13189,13191 ****
+  mythology/SQM31w
+- n/NnxVvu
+  nacho/S
+--- 13183,13184 ----
+***************
+*** 16038,16040 ****
+  Catholics
+! cation/MW
+  catnap/DMSG
+--- 16031,16033 ----
+  Catholics
+! cation/MWS
+  catnap/DMSG
+***************
+*** 16954,16956 ****
+  eyewash/SM
+- f/F7
+  fabricator/SM
+--- 16947,16948 ----
+***************
+*** 17874,17877 ****
+  lass/MS
+- last-ditch
+- last-minute
+  latchkey/SM
+--- 17866,17867 ----
+***************
+*** 22365,22367 ****
+  futuristic/S
+- g/7
+  gabbiness/S
+--- 22355,22356 ----
+***************
+*** 22692,22694 ****
+  HMS
+! hobbit
+  hobnob/DGS
+--- 22681,22683 ----
+  HMS
+! hobbit/MS
+  hobnob/DGS
+***************
+*** 23909,23911 ****
+  ozone/M
+- p/AYFI
+  p.a.
+--- 23898,23899 ----
+***************
+*** 24558,24560 ****
+  Rt.
+- rte
+  Ru/M
+--- 24546,24547 ----
+***************
+*** 25697,25699 ****
+  xylem/SM
 - y/K
-  YMCA
---- 45487,45488 ----
+  Yamaha/M
+--- 25684,25685 ----
 ***************
-*** 45586,45588 ****
-  zap/SGRD
+*** 27778,27780 ****
+  gyrfalcon/MS
+- h/E
+  habitual/YP
+--- 27764,27765 ----
+***************
+*** 29532,29534 ****
+  pyrotechny/Ww
+- q
+  QoS
+--- 29517,29518 ----
+***************
+*** 30776,30778 ****
+  villein/SM
+! vim/M
+  vindaloo/S
+--- 30760,30763 ----
+  villein/SM
+! vim/M?
+! Vim/M
+  vindaloo/S
+***************
+*** 30956,30958 ****
+  YWCA
 - z/d
-  Zealanders
---- 45578,45579 ----
+  Zamia
+--- 30941,30942 ----
 ***************
-*** 45655 ****
---- 45646,45653 ----
-  zymurgy/S
+*** 34732,34734 ****
+  quizzes
+- r/sd
+  rabbet/SMd
+--- 34716,34717 ----
+***************
+*** 37265,37266 ****
+--- 37248,37250 ----
+  dBi
++ dBd
+  dBW
+***************
+*** 37691,37693 ****
+  establishment/A
+- et
+  eternity/SM
+--- 37675,37676 ----
+***************
+*** 39974,39976 ****
+  rustproof/GD
+! s/ko7
+  Sabine/M
+--- 39957,39959 ----
+  rustproof/GD
+! singly
+  Sabine/M
+***************
+*** 41473,41475 ****
+  azalea/MS
+- b/pb
+  Baal/M
+--- 41456,41457 ----
+***************
+*** 43612,43614 ****
+  justnesses
+- k/k
+  kabob's
+--- 43594,43595 ----
+***************
+*** 45690,45692 ****
+  syringe/SMGD
+- t/7k
+  Tabasco/M
+--- 45671,45672 ----
+***************
+*** 46281 ****
+--- 46261,46276 ----
+  Zurich/M
++ conj.
++ pompon
++ natively
 + nd
++ Bram/M
++ et al.
++ et cetera
++ Moolenaar/M
++ pneumonic
 + the the/!
 + a a/!
 + a an/!

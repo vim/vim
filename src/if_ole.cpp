@@ -651,7 +651,7 @@ static void RecursiveDeleteKey(HKEY hKeyParent, const char *child)
 }
 
 // Create a key and set its value
-static void SetKeyAndValue(const char *key, const char subkey, const char *value)
+static void SetKeyAndValue(const char *key, const char *subkey, const char *value)
 {
     HKEY hKey;
     char buffer[1024];

@@ -375,7 +375,6 @@ static long list_len __ARGS((list_T *l));
 static int list_equal __ARGS((list_T *l1, list_T *l2, int ic));
 static int dict_equal __ARGS((dict_T *d1, dict_T *d2, int ic));
 static int tv_equal __ARGS((typval_T *tv1, typval_T *tv2, int ic));
-static int string_isa_number __ARGS((char_u *s));
 static listitem_T *list_find __ARGS((list_T *l, long n));
 static long list_idx_of_item __ARGS((list_T *l, listitem_T *item));
 static void list_append __ARGS((list_T *l, listitem_T *item));
@@ -5179,7 +5178,8 @@ dict_equal(d1, d2, ic)
 
 /*
  * Return TRUE if "tv1" and "tv2" have the same value.
- * Compares the items just like "==" would compare them.
+ * Compares the items just like "==" would compare them, but strings and
+ * numbers are different.
  */
     static int
 tv_equal(tv1, tv2, ic)
@@ -5190,61 +5190,35 @@ tv_equal(tv1, tv2, ic)
     char_u	buf1[NUMBUFLEN], buf2[NUMBUFLEN];
     char_u	*s1, *s2;
 
-    if (tv1->v_type == VAR_LIST || tv2->v_type == VAR_LIST)
+    if (tv1->v_type != tv2->v_type)
+	return FALSE;
+
+    switch (tv1->v_type)
     {
-	/* recursive! */
-	if (tv1->v_type != tv2->v_type
-		   || !list_equal(tv1->vval.v_list, tv2->vval.v_list, ic))
-	    return FALSE;
+	case VAR_LIST:
+	    /* recursive! */
+	    return list_equal(tv1->vval.v_list, tv2->vval.v_list, ic);
+
+	case VAR_DICT:
+	    /* recursive! */
+	    return dict_equal(tv1->vval.v_dict, tv2->vval.v_dict, ic);
+
+	case VAR_FUNC:
+	    return (tv1->vval.v_string != NULL
+		    && tv2->vval.v_string != NULL
+		    && STRCMP(tv1->vval.v_string, tv2->vval.v_string) == 0);
+
+	case VAR_NUMBER:
+	    return tv1->vval.v_number == tv2->vval.v_number;
+
+	case VAR_STRING:
+	    s1 = get_tv_string_buf(tv1, buf1);
+	    s2 = get_tv_string_buf(tv2, buf2);
+	    return ((ic ? MB_STRICMP(s1, s2) : STRCMP(s1, s2)) == 0);
     }
-    else if (tv1->v_type == VAR_DICT || tv2->v_type == VAR_DICT)
-    {
-	/* recursive! */
-	if (tv1->v_type != tv2->v_type
-		   || !dict_equal(tv1->vval.v_dict, tv2->vval.v_dict, ic))
-	    return FALSE;
-    }
-    else if (tv1->v_type == VAR_FUNC || tv2->v_type == VAR_FUNC)
-    {
-	if (tv1->v_type != tv2->v_type
-		|| tv1->vval.v_string == NULL
-		|| tv2->vval.v_string == NULL
-		|| STRCMP(tv1->vval.v_string, tv2->vval.v_string) != 0)
-	    return FALSE;
-    }
-    else if (tv1->v_type == VAR_NUMBER || tv2->v_type == VAR_NUMBER)
-    {
-	/* "4" is equal to 4.  But don't consider 'a' and zero to be equal.
-	 * Don't consider "4x" to be equal to 4. */
-	if ((tv1->v_type == VAR_STRING
-				    && !string_isa_number(tv1->vval.v_string))
-		|| (tv2->v_type == VAR_STRING
-				   && !string_isa_number(tv2->vval.v_string)))
-	    return FALSE;
-	if (get_tv_number(tv1) != get_tv_number(tv2))
-	    return FALSE;
-    }
-    else
-    {
-	s1 = get_tv_string_buf(tv1, buf1);
-	s2 = get_tv_string_buf(tv2, buf2);
-	if ((ic ? MB_STRICMP(s1, s2) : STRCMP(s1, s2)) != 0)
-	    return FALSE;
-    }
+
+    EMSG2(_(e_intern2), "tv_equal()");
     return TRUE;
-}
-
-/*
- * Return TRUE if "tv" is a number without other non-white characters.
- */
-    static int
-string_isa_number(s)
-    char_u	*s;
-{
-    int		len;
-
-    vim_str2nr(s, NULL, &len, TRUE, TRUE, NULL, NULL);
-    return len > 0 && *skipwhite(s + len) == NUL;
 }
 
 /*

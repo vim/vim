@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jul 02
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jul 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -27,7 +27,7 @@ This switches on the 'spell' option and specifies to check for US English.
 
 The words that are not recognized are highlighted with one of these:
 	SpellBad	word not recognized			|hl-SpellBad|
-	SpellCap	word not capatilized			|hl-SpellCap|
+	SpellCap	word not capitalised			|hl-SpellCap|
 	SpellRare	rare word				|hl-SpellRare|
 	SpellLocal	wrong spelling for selected region	|hl-SpellLocal|
 
@@ -321,6 +321,10 @@ find them here:
 You can also use a plain word list.  The results are the same, the choice
 depends on what word lists you can find.
 
+If you install Aap (from www.a-a-p.org) you can use the recipes in the
+runtime/spell/??/ directories.  Aap will take care of downloading the files,
+apply patches needed for Vim and build the .spl file.
+
 Make sure your current locale is set properly, otherwise Vim doesn't know what
 characters are upper/lower case letters.  If the locale isn't available (e.g.,
 when using an MS-Windows codepage on Unix) add tables to the .aff file
@@ -389,7 +393,7 @@ following procedure is recommended:
 4. Start Vim with the right locale and use |:mkspell| to generate the Vim
    spell file.
 5. Try out the spell file with ":set spell spelllang=xx" if you wrote it in
-   a spell directory in 'runtimepath, or ":set spelllang=xx.enc.spl" if you
+   a spell directory in 'runtimepath', or ":set spelllang=xx.enc.spl" if you
    wrote it somewhere else.
 
 When the Myspell files are updated you can merge the differences:
@@ -436,7 +440,7 @@ highlighted.  Person and company names will not appear in a dictionary, but do
 appear in a word list.  And some old words are rarely used while they are
 common misspellings.  These do appear in a dictionary but not in a word list.
 
-There are two formats: A straigth list of words and a list using affix
+There are two formats: A straight list of words and a list using affix
 compression.  The files with affix compression are used by Myspell (Mozilla
 and OpenOffice.org).  This requires two files, one with .aff and one with .dic
 extension.
@@ -760,7 +764,7 @@ Simplistic example:
 	SAL C                    K ~
 	SAL K                    K ~
 
-There are a few rules and this can become quite complicated.  An explantion
+There are a few rules and this can become quite complicated.  An explanation
 how it works can be found in the Aspell manual:
 http://aspell.net/man-html/Phonetic-Code.html.
 
@@ -780,7 +784,7 @@ characters to another character, mapping similar sounding characters to the
 same character.  At the same time this does case folding.  You can not have
 both SAL items and simple soundfolding.
 
-There are two items required: one to speficy the characters that are mapped
+There are two items required: one to specify the characters that are mapped
 and one that specifies the characters they are mapped to.  They must have
 exactly the same number of characters.  Example:
 

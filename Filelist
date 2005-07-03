@@ -122,8 +122,6 @@ SRC_ALL2 =	\
 		src/proto/undo.pro \
 		src/proto/version.pro \
 		src/proto/window.pro \
-		src/spell/*.diff \
-		src/spell/Makefile \
 
 
 # source files for Unix only
@@ -684,6 +682,9 @@ LANG_GEN = \
 		runtime/tutor/tutor.ru.* \
 		runtime/tutor/tutor.zh.* \
 		runtime/spell/README.txt \
+		runtime/spell/??/*.diff \
+		runtime/spell/??/main.aap \
+		runtime/spell/main.aap \
 
 # generic language files, binary
 LANG_GEN_BIN = \

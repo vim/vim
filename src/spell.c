@@ -607,7 +607,7 @@ static int set_spell_charflags __ARGS((char_u *flags, char_u *upp));
 static int set_spell_chartab __ARGS((char_u *fol, char_u *low, char_u *upp));
 static void write_spell_chartab __ARGS((FILE *fd));
 static int spell_casefold __ARGS((char_u *p, int len, char_u *buf, int buflen));
-static void spell_find_suggest __ARGS((char_u *badptr, suginfo_T *su, int maxcount, int banbadword));
+static void spell_find_suggest __ARGS((char_u *badptr, suginfo_T *su, int maxcount, int banbadword, int need_cap));
 #ifdef FEAT_EVAL
 static void spell_suggest_expr __ARGS((suginfo_T *su, char_u *expr));
 #endif
@@ -5952,6 +5952,10 @@ spell_suggest()
     suginfo_T	sug;
     suggest_T	*stp;
     int		mouse_used;
+    int		need_cap;
+    regmatch_T	regmatch;
+    int		endcol;
+    char_u	*line_copy = NULL;
 
     /* Find the start of the badly spelled word. */
     if (spell_move_to(FORWARD, TRUE, TRUE) == FAIL
@@ -5983,8 +5987,62 @@ spell_suggest()
     /* Get the word and its length. */
     line = ml_get_curline();
 
+    /* Figure out if the word should be capitalised. */
+    need_cap = FALSE;
+    if (curbuf->b_cap_prog != NULL)
+    {
+	endcol = 0;
+	if (skipwhite(line) - line == curwin->w_cursor.col)
+	{
+	    /* At start of line, check if previous line is empty or sentence
+	     * ends there. */
+	    if (curwin->w_cursor.lnum == 1)
+		need_cap = TRUE;
+	    else
+	    {
+		line = ml_get(curwin->w_cursor.lnum - 1);
+		if (*skipwhite(line) == NUL)
+		    need_cap = TRUE;
+		else
+		{
+		    /* Append a space in place of the line break. */
+		    line_copy = concat_str(line, (char_u *)" ");
+		    line = line_copy;
+		    endcol = STRLEN(line);
+		}
+	    }
+	}
+	else
+	    endcol = curwin->w_cursor.col;
+
+	if (endcol > 0)
+	{
+	    /* Check if sentence ends before the bad word. */
+	    regmatch.regprog = curbuf->b_cap_prog;
+	    regmatch.rm_ic = FALSE;
+	    p = line + endcol;
+	    for (;;)
+	    {
+		mb_ptr_back(line, p);
+		if (p == line || SPELL_ISWORDP(p))
+		    break;
+		if (vim_regexec(&regmatch, p, 0)
+					 && regmatch.endp[0] == line + endcol)
+		{
+		    need_cap = TRUE;
+		    break;
+		}
+	    }
+	}
+
+	/* get the line again, we may have been using the previous one */
+	line = ml_get_curline();
+	vim_free(line_copy);
+    }
+
     /* Get the list of suggestions */
-    spell_find_suggest(line + curwin->w_cursor.col, &sug, (int)Rows - 2, TRUE);
+    spell_find_suggest(line + curwin->w_cursor.col, &sug, (int)Rows - 2,
+							      TRUE, need_cap);
 
     if (sug.su_ga.ga_len == 0)
 	MSG(_("Sorry, no suggestions"));
@@ -6159,7 +6217,7 @@ spell_suggest_list(gap, word, maxcount)
     suggest_T	*stp;
     char_u	*wcopy;
 
-    spell_find_suggest(word, &sug, maxcount, FALSE);
+    spell_find_suggest(word, &sug, maxcount, FALSE, FALSE);
 
     /* Make room in "gap". */
     ga_init2(gap, sizeof(char_u *), sug.su_ga.ga_len + 1);
@@ -6192,11 +6250,12 @@ spell_suggest_list(gap, word, maxcount)
  * This is based on the mechanisms of Aspell, but completely reimplemented.
  */
     static void
-spell_find_suggest(badptr, su, maxcount, banbadword)
+spell_find_suggest(badptr, su, maxcount, banbadword, need_cap)
     char_u	*badptr;
     suginfo_T	*su;
     int		maxcount;
     int		banbadword;	/* don't include badword in suggestions */
+    int		need_cap;	/* word should start with capital */
 {
     int		attr = 0;
     char_u	buf[MAXPATHL];
@@ -6230,6 +6289,8 @@ spell_find_suggest(badptr, su, maxcount, banbadword)
 						    su->su_fbadword, MAXWLEN);
     /* get caps flags for bad word */
     su->su_badflags = captype(su->su_badptr, su->su_badptr + su->su_badlen);
+    if (need_cap)
+	su->su_badflags |= WF_ONECAP;
 
     /* If the word is not capitalised and spell_check() doesn't consider the
      * word to be bad then it might need to be capitalised.  Add a suggestion
@@ -6237,7 +6298,7 @@ spell_find_suggest(badptr, su, maxcount, banbadword)
 #ifdef FEAT_MBYTE
     c = mb_ptr2char(su->su_badptr);
 #else
-    c = *p;
+    c = *su->su_badptr;
 #endif
     if (!SPELL_ISUPPER(c) && attr == 0)
     {
@@ -7972,6 +8033,7 @@ suggest_try_soundalike(su)
 				    char_u	*p;
 				    int		score;
 
+				    flags |= su->su_badflags;
 				    if (round == 1 && (flags & WF_CAPMASK) != 0)
 				    {
 					/* Need to fix case according to

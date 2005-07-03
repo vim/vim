@@ -1,0 +1,14 @@
+*** de_DE.orig.aff	Fri Feb 25 12:50:10 2005
+--- de_DE.aff	Sun Jul  3 19:04:32 2005
+***************
+*** 2,3 ****
+--- 2,10 ----
+  TRY esianrtolcdugmphbyfvkwהüצ‗ביךאגסESIANRTOLCDUGMPHBYFVKWÄÜÖ
++ 
++ FOL  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗ÿ
++ LOW  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗ÿ
++ UPP  ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞ‗ÿ
++ 
++ MIDWORD	'
++ 
+  #

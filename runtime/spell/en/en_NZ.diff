@@ -1,10 +1,10 @@
-*** en_GB.orig.aff	Fri Apr 15 13:20:36 2005
---- en_GB.aff	Mon Jun 27 19:42:42 2005
+*** en_NZ.orig.aff	Fri Apr 15 13:20:36 2005
+--- en_NZ.aff	Sun Jul  3 17:11:34 2005
 ***************
 *** 7,9 ****
   SET ISO8859-1
 ! TRY esiaénrtolcdugmphbyfvkw-'.zqjxSNRTLCGDMPHBEAUYOFIVKWöâôZQJXÅçèîêàïüäñ 
-  REP 24
+  REP 66
 --- 7,19 ----
   SET ISO8859-1
 ! TRY esiaénrtolcdugmphbyfvkw-'.zqjxSNRTLCGDMPHBEAUYOFIVKWöâôZQJXÅçèîêàïüäñ
@@ -18,9 +18,9 @@
 ! RAR ?
 ! BAD !
 ! 
-  REP 24
+  REP 66
 ***************
-*** 34,53 ****
+*** 76,95 ****
   PFX A Y 2
 ! PFX A 0 re [^e] 
 ! PFX A 0 re- e 
@@ -41,7 +41,7 @@
   PFX E Y 1
 ! PFX E 0 dis . 
   PFX F Y 5
---- 44,63 ----
+--- 86,105 ----
   PFX A Y 2
 ! PFX A 0 re [^e]
 ! PFX A 0 re- e
@@ -63,7 +63,7 @@
 ! PFX E 0 dis .
   PFX F Y 5
 ***************
-*** 57,451 ****
+*** 99,493 ****
   PFX F 0 col l
 ! PFX F 0 con [^abehilmopru]. 
   PFX K Y 1
@@ -459,7 +459,7 @@
   SFX T y iest [^aeiou]y
 ! SFX T 0 er [aeiou]y 
   SFX T 0 est [aeiou]y
---- 67,461 ----
+--- 109,503 ----
   PFX F 0 col l
 ! PFX F 0 con [^abehilmopru].
   PFX K Y 1
@@ -856,7 +856,7 @@
 ! SFX T 0 er [aeiou]y
   SFX T 0 est [aeiou]y
 ***************
-*** 458,1143 ****
+*** 500,1185 ****
   SFX R Y 72
 ! SFX R 0 r e 
 ! SFX R 0 rs e 
@@ -1543,7 +1543,8 @@
 ! SFX 3 0 ist's [aeioubp]y 
 ! SFX 3 o ist's o 
 ! SFX 3 0 ist's [^eoy] 
---- 468,1274 ----
+\ No newline at end of file
+--- 510,1316 ----
   SFX R Y 72
 ! SFX R 0 r e
 ! SFX R 0 rs e
@@ -2351,269 +2352,327 @@
 ! SAL Y(AEIOU)-            Y
 ! SAL ZZ-                  _
 ! SAL Z                    S
-*** en_GB.orig.dic	Sun Apr 17 18:08:50 2005
---- en_GB.dic	Mon Jun 27 09:31:17 2005
+*** en_NZ.orig.dic	Fri Apr 15 13:20:36 2005
+--- en_NZ.dic	Sun Jul  3 17:11:34 2005
 ***************
-*** 187,189 ****
-  aitch/SM
+*** 4,6 ****
+  2ZB
+- A
+  a/o
+--- 4,5 ----
+***************
+*** 927,929 ****
+  Al-Zawahiri
 - al/FAC
-  al-Jazeera
---- 187,188 ----
+  Al/M
+--- 926,927 ----
 ***************
-*** 1795,1796 ****
---- 1794,1796 ----
-  conic/S
+*** 2941,2944 ****
+  B.Sc.
+- bless
+- bible
+  baa/GSD
+--- 2939,2940 ----
+***************
+*** 4974,4975 ****
+--- 4970,4972 ----
+  Brampton/M
++ Bram/M
+  bran/SDGM
+***************
+*** 5707,5709 ****
+  C.Lit.
+! cation/SM
+  Ca/y
+--- 5704,5706 ----
+  C.Lit.
+! cation/MWS
+  Ca/y
+***************
+*** 6450,6452 ****
+  Cathy
+- cation/MW
+  catkin/SM
+--- 6447,6448 ----
+***************
+*** 8589,8590 ****
+--- 8585,8587 ----
+  coniferous
 + conj.
   conjectural
 ***************
-*** 2103,2105 ****
-  czarship
-- d/o
-  d'art
---- 2103,2104 ----
+*** 10153,10155 ****
+  red's
+- dally
+  dab/TSGD
+--- 10150,10151 ----
 ***************
-*** 2148,2150 ****
-  dazzle/DRkGJS
-- dBm
-  DC
---- 2147,2148 ----
-***************
-*** 4637,4639 ****
-  lass/MS
-- last-minute
-  lasts/e
---- 4635,4636 ----
-***************
-*** 5470,5472 ****
-  Münchhausen/M
-- n/NxnVvu
-  N'Djamena
---- 5467,5468 ----
-***************
-*** 5499,5501 ****
-  natch
-! nation/M
-  nationalises/A
---- 5495,5497 ----
-  natch
-! nation/MS
-  nationalises/A
-***************
-*** 6316,6317 ****
---- 6312,6314 ----
-  pompom/SM
-+ pompon/M
-  ponce/M
-***************
-*** 7048,7050 ****
-  régime/SM
-! s/ok7
-  Saab/M
---- 7045,7047 ----
-  régime/SM
-! singly
-  Saab/M
-***************
-*** 11148,11149 ****
---- 11145,11148 ----
-  dBi
-+ dBm
+*** 10360,10361 ****
+--- 10356,10358 ----
+  dBm
 + dBd
-  DCB
+  DBMS
 ***************
-*** 11591,11593 ****
-  dérailleur/SM
-- e
-  e'en
---- 11590,11591 ----
+*** 12535,12536 ****
+--- 12532,12534 ----
+  Dutchwomen/M
++ Farsi
+  duteous/Y
 ***************
-*** 14591,14592 ****
---- 14589,14591 ----
-  native/SP
-+ natively
-  nativity/SM
+*** 12542,12544 ****
+  duvet/SM
+- duxes
+  DVD/MS
+--- 12540,12541 ----
 ***************
-*** 16172,16174 ****
-  RSPCA
-- rte
-  rubati
---- 16171,16172 ----
-***************
-*** 17251,17253 ****
-  séance/SM
-- t/ac
-  T'ang
---- 17249,17250 ----
-***************
-*** 17808,17809 ****
---- 17805,17807 ----
-  unsearchable
-+ searchable
-  unshakable/Y
-***************
-*** 18268,18270 ****
-  xylophone/SM
-- y/K
-  yachters
---- 18266,18267 ----
-***************
-*** 18322,18323 ****
---- 18319,18321 ----
-  émigré/S
-+ nd
-  3GPP
-***************
-*** 19303,19304 ****
---- 19301,19303 ----
-  Brampton/M
-+ Bram/M
-  brand/MRDGSZ
-***************
-*** 21097,21099 ****
-  estimative
+*** 13901,13903 ****
+  estuary/MS
 ! et
-  etalon
---- 21096,21099 ----
-  estimative
+  ETA
+--- 13898,13901 ----
+  estuary/MS
 ! et cetera
 ! et al.
-  etalon
+  ETA
 ***************
-*** 21228,21230 ****
-  Ezra
-- f/37
-  Faber/M
---- 21228,21229 ----
+*** 14531,14534 ****
+  f-stop/S
+- fable
+- fist/MS
+  fa/M
+--- 14529,14530 ----
 ***************
-*** 22734,22736 ****
-  justification/M
-- k/E
-  Kabul
---- 22733,22734 ----
+*** 15323,15325 ****
+  fissure/DSMG
+! fist/6GD
+  fistfight/MS
+--- 15319,15321 ----
+  fissure/DSMG
+! fist/6GDMS
+  fistfight/MS
 ***************
-*** 23632,23633 ****
---- 23630,23632 ----
+*** 16606,16608 ****
+  g's
+- gable
+  gist/MS
+--- 16602,16603 ----
+***************
+*** 16797,16799 ****
+  Garvey
+- Gary/M
+  gas-permeable
+--- 16792,16793 ----
+***************
+*** 18177,18179 ****
+  gyroscope/SWM
+- dish
+  ha
+--- 18171,18172 ----
+***************
+*** 22321,22323 ****
+  K-factor
+- disk/MS
+  kabob's
+--- 22314,22315 ----
+***************
+*** 23129,23132 ****
+  lassoer/M
+- last-ditch
+- last-minute
+  last/YSDGkJ
+--- 23121,23122 ----
+***************
+*** 26396,26398 ****
+  Missy
+! mist/CDRGS
+  mistakable/U
+--- 26386,26388 ----
+  Missy
+! mist/CDRGSM
+  mistakable/U
+***************
+*** 26745,26746 ****
+--- 26735,26737 ----
   Moog
 + Moolenaar/M
-  moonlight/GRDSM
+  moon/MGpDS
 ***************
-*** 24242,24244 ****
-  oxygenation/M
-- p/FYAI
-  Pablo/M
---- 24241,24242 ----
+*** 27018,27020 ****
+  mozzarella/SM
+- MP3
+  mpg
+--- 27009,27010 ----
 ***************
-*** 27223,27225 ****
-  Villiers
-! vim/M
-  Vinci/M
---- 27221,27223 ----
-  Villiers
-! Vim/M
-  Vinci/M
+*** 27365,27372 ****
+  N'Djamena
+! native
+  natively
+  nativeness
+- nation/MS
+- national
+- nationally
+  Na/M
+--- 27355,27359 ----
+  N'Djamena
+! native/SP
+  natively
+  nativeness
+  Na/M
 ***************
-*** 27568,27570 ****
-  Yvette
-- z/d
-  Zealanders
---- 27566,27567 ----
+*** 27507,27509 ****
+  Nathaniel/M
+! nation/M
+  national/sQ3Sq
+--- 27494,27496 ----
+  Nathaniel/M
+! nation/MS
+  national/sQ3Sq
 ***************
-*** 28174,28176 ****
-  Aztec/M
-- b/bp
-  Baal/M
---- 28171,28172 ----
+*** 27521,27523 ****
+  nationwide
+- native/SP
+  nativity/SM
+--- 27508,27509 ----
 ***************
-*** 28890,28892 ****
-  Cathy
-! cation/MW
-  catnip/SM
---- 28886,28888 ----
-  Cathy
-! cation/MWS
-  catnip/SM
+*** 29852,29857 ****
+  P.O.
+- ply
+- reply
+- imply
+- comply
+  pa/oM
+--- 29838,29839 ----
 ***************
-*** 30587,30589 ****
-  fissionable/S
-! fist/6GD
-  fit/6TRGMYJPSDj
---- 30583,30585 ----
-  fissionable/S
-! fist/6GDMS
-  fit/6TRGMYJPSDj
-***************
-*** 30846,30848 ****
-  fuzzy/TP
-- g/73
-  Ga/y
---- 30842,30843 ----
-***************
-*** 31409,31411 ****
-  hob/MDGZS
-! hobbit
-  Hobbs
---- 31404,31406 ----
-  hob/MDGZS
-! hobbit/MS
-  Hobbs
-***************
-*** 32110,32112 ****
-  kWh
-! l/F
-  lab/MoS
---- 32105,32107 ----
-  kWh
-! coll
-  lab/MoS
-***************
-*** 32174,32176 ****
-  lasso/GMDS
-- last-ditch
-  Laszlo/M
---- 32169,32170 ----
-***************
-*** 34188,34190 ****
-  pâté/M
-- q
-  Qatar
---- 34182,34183 ----
-***************
-*** 36324,36326 ****
-  uttermost
-- v
-  vacate/nDGNS
---- 36317,36318 ----
-***************
-*** 37916,37918 ****
-  bys
-- c/nN
-  Ca/y
---- 37908,37909 ----
-***************
-*** 40468,40470 ****
-  Gödel/M
-- h/E
-  ha'p'orth
---- 40459,40460 ----
-***************
-*** 43275,43276 ****
---- 43265,43267 ----
+*** 31702,31703 ****
+--- 31684,31686 ----
   pneumonia/MS
 + pneumonic
   PO
 ***************
-*** 43665,43667 ****
-  qwerty
+*** 31885,31886 ****
+--- 31868,31870 ----
+  pompom/SM
++ pompon/M
+  pomposity/SM
+***************
+*** 33561,33563 ****
+  qwertys
 - r/d
   Ra
---- 43656,43657 ----
+--- 33545,33546 ----
 ***************
-*** 46148 ****
---- 46138,46144 ----
-  à
-+ the the/!
-+ a a/!
-+ a an/!
-+ an a/!
-+ an an/!
-+ PayPal
+*** 35456,35458 ****
+  rt
+- rte
+  Ru/M
+--- 35439,35440 ----
+***************
+*** 35619,35622 ****
+  singly
+- sable
+- sally/DSG
+  SA
+--- 35601,35602 ----
+***************
+*** 40763,40766 ****
+  T's
+- mist/MS
+- overt
+  Ta
+--- 40743,40744 ----
+***************
+*** 43574,43575 ****
+--- 43552,43554 ----
+  unsearchable
++ searchable
+  unseeing/Y
+***************
+*** 44334,44336 ****
+  Vilnius/M
+! vim/M
+  vinaigrette/MS
+--- 44313,44315 ----
+  Vilnius/M
+! Vim/M
+  vinaigrette/MS
+***************
+*** 45906,45908 ****
+  y'all
+- prey/M
+  yacht/M5SmGD
+--- 45885,45886 ----
+***************
+*** 46198,46200 ****
+  rata/M
+- kaka/M
+  waka/M
+--- 46176,46177 ----
+***************
+*** 46216,46218 ****
+  jandal/MS
+- Swanndri/M
+  hoon/MS
+--- 46193,46194 ----
+***************
+*** 46242,46244 ****
+  Invercargill/M
+- Te
+  Alexandra/M
+--- 46218,46219 ----
+***************
+*** 46261,46263 ****
+  Kawerau/M
+- Kerikeri/M
+  Lyttelton/M
+--- 46236,46237 ----
+***************
+*** 46491,46493 ****
+  Waianakarua
+- Hakatere
+  Swin
+--- 46465,46466 ----
+***************
+*** 46690,46692 ****
+  Omarama/M
+- Wairarapa/M
+  Kilda/M
+--- 46663,46664 ----
+***************
+*** 46711,46713 ****
+  Wellsford/M
+- Akaroa/M
+  Avonhead/M
+--- 46683,46684 ----
+***************
+*** 46838,46840 ****
+  Ballantyne's
+- DB
+  Monteith's
+--- 46809,46810 ----
+***************
+*** 46920,46922 ****
+  Egmont/M
+- Waitaki/M
+  katipo/M
+--- 46890,46891 ----
+***************
+*** 46956,46958 ****
+  Sunnyside/M
+- Wairau/M
+  Waikoropupu
+--- 46925,46926 ----
+***************
+*** 47141,47142 ****
+  Burkina
+! Faso/M
+\ No newline at end of file
+--- 47109,47117 ----
+  Burkina
+! Faso/M
+! nd
+! the the/!
+! a a/!
+! a an/!
+! an a/!
+! an an/!
+! PayPal
