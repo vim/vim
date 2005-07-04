@@ -1,8 +1,7 @@
 " Vim indent file
 " Language:         Autoconf configure.{ac,in} file
 " Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" URL:              http://www.pcppopper.org/vim/indent/pcp/config/
-" Latest Revision:  2005-06-29
+" Latest Revision:  2005-06-30
 " TODO:             how about nested [()]'s in one line
 "                   what's wrong with '\\\@!'?
 

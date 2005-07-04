@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         calendar(1) input file
 " Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2005-06-29
+" Latest Revision:  2005-07-04
 
 if exists("b:current_syntax")
   finish
@@ -12,8 +12,7 @@ set cpo&vim
 
 syn keyword calendarTodo          contained TODO FIXME XXX NOTE
 
-syn region  calendarComment       matchgroup=calendarComment
-                                  \ start='/\*' end='\*/'
+syn region  calendarComment       start='/\*' end='\*/'
                                   \ contains=calendarTodo,@Spell
 
 syn region  calendarCppString     start=+L\="+ skip=+\\\\\|\\"\|\\$+ excludenl

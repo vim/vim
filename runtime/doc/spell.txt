@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jul 03
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jul 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -181,7 +181,9 @@ Always use lowercase letters for the language and region names.
 
 When adding a word with |zg| or another command it's always added for all
 regions.  You can change that by manually editing the 'spellfile'.  See
-|spell-wordlist-format|.
+|spell-wordlist-format|.  Note that the regions as specified in the files in
+'spellfile' are only used when all entries in "spelllang" specify the same
+region (not counting files specified by their .spl name).
 
 
 SPELL FILES						*spell-load*
@@ -488,6 +490,10 @@ Example:
 	Campbell/?3				rare word in region 3 "gb"
 	's mornings/=				keep-case word
 
+Note that when "/=" is used the same word with all upper-case letters is not
+accepted.  This is different from a word with mixed case that is automatically
+marked as keep-case, those words may appear in all upper-case letters.
+
 
 FORMAT WITH AFFIX COMPRESSION
 
@@ -571,9 +577,12 @@ affix file.  This has the meaning that case matters.  This can be used if the
 word does not have the first letter in upper case at the start of a sentence.
 Example (assuming that = was used for KEP):
 
-	word list	matches			does not match ~
-	's morgens/=	's morgens		'S morgens 's Morgens
-	's Morgens	's Morgens		'S morgens 's morgens
+    word list	    matches		    does not match ~
+    's morgens/=    's morgens		    'S morgens 's Morgens 'S MORGENS
+    's Morgens	    's Morgens 'S MORGENS   'S morgens 's morgens
+
+The flag can also be used to avoid that the word matches when it is in all
+upper-case letters.
 
 							*spell-affix-mbyte*
 The basic word list is normally in an 8-bit encoding, which is mentioned in

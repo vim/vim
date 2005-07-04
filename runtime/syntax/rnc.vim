@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         Relax NG compact syntax
 " Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2005-06-27
+" Latest Revision:  2005-07-04
 
 if exists("b:current_syntax")
   finish
@@ -14,7 +14,7 @@ setlocal iskeyword=@,48-57,_,-,.
 
 syn keyword rncTodo         contained TODO FIXME XXX NOTE
 
-syn region  rncComment      matchgroup=rncComment start='^\s*#' end='$'
+syn region  rncComment      display oneline start='^\s*#' end='$'
                             \ contains=rncTodo,@Spell
 
 syn match   rncOperator     display '[-|,&+?*~]'
@@ -30,12 +30,12 @@ syn match   rncSpecial      display '\\x{\x\+}'
 syn region rncAnnotation    transparent start='\[' end='\]'
                             \ contains=ALLBUT,rncComment,rncTodo
 
-syn region  rncLiteral      matchgroup=rncLiteral oneline start=+"+ end=+"+
+syn region  rncLiteral      display oneline start=+"+ end=+"+
                             \ contains=rncSpecial
-syn region  rncLiteral      matchgroup=rncLiteral oneline start=+'+ end=+'+
-syn region  rncLiteral      matchgroup=rncLiteral start=+"""+ end=+"""+
+syn region  rncLiteral      display oneline start=+'+ end=+'+
+syn region  rncLiteral      display oneline start=+"""+ end=+"""+
                             \ contains=rncSpecial
-syn region  rncLiteral      matchgroup=rncLiteral start=+'''+ end=+'''+
+syn region  rncLiteral      display oneline start=+'''+ end=+'''+
 
 syn match   rncDelimiter    display '[{},()]'
 

@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         CRM114
 " Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2005-06-27
+" Latest Revision:  2005-07-04
 
 if exists("b:current_syntax")
   finish
@@ -12,7 +12,7 @@ set cpo&vim
 
 syn keyword crmTodo       contained TODO FIXME XXX NOTE
 
-syn region  crmComment    matchgroup=crmComment start='#' end='$' end='\\#'
+syn region  crmComment    display oneline start='#' end='\\#'
                           \ contains=crmTodo,@Spell
 
 syn match   crmVariable   display ':[*#@]:[^:]\{-1,}:'
@@ -23,8 +23,7 @@ syn keyword crmStatement  insert noop accept alius alter classify eval exit
 syn keyword crmStatement  fail fault goto hash intersect isolate input learn
 syn keyword crmStatement  liaf match output syscall trap union window
 
-syn region  crmRegex      matchgroup=crmRegex start='/' skip='\\/' end='/'
-                          \ contains=crmVariable
+syn region  crmRegex      start='/' skip='\\/' end='/' contains=crmVariable
 
 syn match   crmLabel      display '^\s*:[[:graph:]]\+:'
 

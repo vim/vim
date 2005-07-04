@@ -8,14 +8,10 @@ if exists("current_compiler")
 endif
 let current_compiler = "rst"
 
-if exists(":CompilerSet") != 2
-  command -nargs=* CompilerSet setlocal <args>
-endif
-
 let s:cpo_save = &cpo
 set cpo-=C
 
-CompilerSet errorformat=
+setlocal errorformat=
       \%f:%l:\ (%tEBUG/0)\ %m,
       \%f:%l:\ (%tNFO/1)\ %m,
       \%f:%l:\ (%tARNING/2)\ %m,

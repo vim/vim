@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         GNU Arch inventory file
 " Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2005-06-29
+" Latest Revision:  2005-07-04
 
 if exists("b:current_syntax")
   finish
@@ -14,19 +14,25 @@ setlocal iskeyword=@,48-57,_,-
 
 syn keyword archTodo    TODO FIXME XXX NOTE
 
-syn region  archComment display matchgroup=archComment
-                        \ start='^\%(#\|\s\)' end='$' contains=archTodo,@Spell
+syn region  archComment display start='^\%(#\|\s\)' end='$'
+                        \ contains=archTodo,@Spell
 
-syn keyword archKeyword implicit tagline explicit names
-syn keyword archKeyword untagged-source
-syn keyword archKeyword exclude junk backup precious unrecognized source
-                        \ skipwhite nextgroup=archRegex
+syn match   argBegin    display '^' nextgroup=archKeyword,archComment
+
+syn keyword archKeyword contained implicit tagline explicit names
+syn keyword archKeyword contained untagged-source
+                        \ nextgroup=archTMethod skipwhite
+syn keyword archKeyword contained exclude junk backup precious unrecognized
+                        \ source nextgroup=archRegex skipwhite
+
+syn keyword archTMethod contained source precious backup junk unrecognized
 
 syn match   archRegex   contained '\s*\zs.*'
 
 hi def link archTodo    Todo
 hi def link archComment Comment
 hi def link archKeyword Keyword
+hi def link archTMethod Type
 hi def link archRegex   String
 
 let b:current_syntax = "arch"

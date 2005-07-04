@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         mplayer(1) configuration file
 " Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2005-06-27
+" Latest Revision:  2005-07-04
 
 if exists("b:current_syntax")
   finish
@@ -14,8 +14,7 @@ setlocal iskeyword=@,48-57,-
 
 syn keyword mplayerconfTodo     contained TODO FIXME XXX NOTE
 
-syn region mplayerconfComment   display matchgroup=mplayerconfComment
-                                \ start='#' end='$'
+syn region mplayerconfComment   display oneline start='#' end='$'
                                 \ contains=mplayerconfTodo,@Spell
 
 syn keyword mplayerconfPreProc  include

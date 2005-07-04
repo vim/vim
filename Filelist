@@ -699,6 +699,7 @@ LANG_SRC = \
 		src/po/README_mvc.txt \
 		src/po/cleanup.vim \
 		src/po/Makefile \
+		src/po/Make_cyg.mak \
 		src/po/Make_ming.mak \
 		src/po/Make_mvc.mak \
 		src/po/sjiscorr.c \

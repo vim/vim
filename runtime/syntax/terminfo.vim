@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         terminfo(5) definition
 " Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2005-06-29
+" Latest Revision:  2005-07-04
 
 if exists("b:current_syntax")
   finish
@@ -14,7 +14,7 @@ syn match terminfoKeywords      '[,=#|]'
 
 syn keyword terminfoTodo        contained TODO FIXME XXX NOTE
 
-syn region  terminfoComment     matchgroup=terminfoComment start='^#' end='$'
+syn region  terminfoComment     display oneline start='^#' end='$'
                                 \ contains=terminfoTodo,@Spell
 
 syn match   terminfoNumbers     '\<[0-9]\+\>'

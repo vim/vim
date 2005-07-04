@@ -1,16 +1,14 @@
-" Vim filetype plugin
-" Language:	METAFONT
-" Maintainer:	Dorai Sitaram <ds26@gte.com>
-" URL:		http://www.ccs.neu.edu/~dorai/vimplugins/vimplugins.html
-" Last Change:	May 27, 2003
+" Vim filetype plugin file
+" Language:         MetaFont
+" Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
+" Latest Revision:  2005-07-04
 
-" Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
   finish
 endif
-
-" Don't load another plugin for this buffer
 let b:did_ftplugin = 1
 
-setl com=:%
-setl fo-=t
+let b:undo_ftplugin = "setl com< cms< fo<"
+
+setlocal comments=:% commentstring=%\ %s formatoptions-=t formatoptions+=croql
+

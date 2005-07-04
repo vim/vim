@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         xinetd.conf(5) configuration file
 " Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2005-06-29
+" Latest Revision:  2005-06-30
 
 if exists("b:current_syntax")
   finish

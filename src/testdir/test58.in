@@ -1,0 +1,320 @@
+Tests for spell checking.     vim: set ft=vim :
+
+STARTTEST
+:so small.vim
+:"
+:" First generate a .spl file from a .dic and a .aff file.
+:set enc=latin1
+:/^affstart1/+1,/affend1/-1w Xtest.aff
+:/^dicstart/+1,/dicend/-1w Xtest.dic
+:mkspell Xtest Xtest
+:"
+:" use that spell file
+:set spl=Xtest.latin1.spl
+:set spell
+/^test1:
+]smm:let str = spellbadword()
+:$put =str
+`m:let lst = spellsuggest(str, 4)
+:$put =string(lst)
+`m]smm:let str = spellbadword()
+:$put =str
+`m:let lst = spellsuggest(str, 2)
+:$put =string(lst)
+`m]smm:let str = spellbadword()
+:$put =str
+`m:let lst = spellsuggest(str, 2)
+:$put =string(lst)
+`m]smm:let str = spellbadword()
+:$put =str
+`m:let lst = spellsuggest(str, 2)
+:$put =string(lst)
+`m]smm:let str = spellbadword()
+:$put =str
+`m:let lst = spellsuggest(str, 2)
+:$put =string(lst)
+`m]smm:let str = spellbadword()
+:$put =str
+`m:let lst = spellsuggest(str, 2)
+:$put =string(lst)
+:spelldump
+1GyG:q
+:$put
+:$put =soundfold('goobledygoook')
+:$put =soundfold('kóopërÿnôven')
+:$put =soundfold('oeverloos gezwets edale')
+:"
+:" and now with SAL instead of SOFO items; test automatic reloading
+gg:/^affstart2/+1,/^affend2/-1w! Xtest.aff
+:mkspell! Xtest Xtest
+:$put =soundfold('goobledygoook')
+:$put =soundfold('kóopërÿnôven')
+:$put =soundfold('oeverloos gezwets edale')
+:"
+:" also use an addition file
+gg:/^addstart/+1,/^addend/-1w! Xtest.latin1.add
+:mkspell! Xtest.latin1.add.spl Xtest.latin1.add
+:set spl=en
+:set spellfile=Xtest.latin1.add
+/^test2:
+]s:let str = spellbadword()
+:$put =str
+:set spl=en_us
+/^test2:
+]smm:let str = spellbadword()
+:$put =str
+`m]s:let str = spellbadword()
+:$put =str
+:set spl=en_gb
+/^test2:
+]smm:let str = spellbadword()
+:$put =str
+`m]s:let str = spellbadword()
+:$put =str
+:set spl=en_nz
+/^test2:
+]smm:let str = spellbadword()
+:$put =str
+`m]s:let str = spellbadword()
+:$put =str
+:set spl=en_ca
+/^test2:
+]smm:let str = spellbadword()
+:$put =str
+`m]s:let str = spellbadword()
+:$put =str
+:"
+gg:/^test output:/,$wq! test.out
+ENDTEST
+
+affstart1
+SET ISO8859-1
+TRY esianrtolcdugmphbyfvkwjkqxz-ëéèêïîäàâöüû'ESIANRTOLCDUGMPHBYFVKWJKQXZ
+
+FOL  àáâãäåæçèéêëìíîïğñòóôõöøùúûüışßÿ
+LOW  àáâãäåæçèéêëìíîïğñòóôõöøùúûüışßÿ
+UPP  ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏĞÑÒÓÔÕÖØÙÚÛÜİŞßÿ
+
+SOFOFROM abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZàáâãäåæçèéêëìíîïğñòóôõöøùúûüışßÿÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏĞÑÒÓÔÕÖØÙÚÛÜİŞ¿
+SOFOTO   ebctefghejklnnepkrstevvkesebctefghejklnnepkrstevvkeseeeeeeeceeeeeeeedneeeeeeeeeeepseeeeeeeeceeeeeeeedneeeeeeeeeeep?
+
+MIDWORD	'-
+
+KEP =
+RAR ?
+BAD !
+
+NOSPLITSUGS
+
+PFX I N 1
+PFX I 0 in .
+
+PFX O Y 1
+PFX O 0 out .
+
+SFX S Y 2
+SFX S 0 s [^s]
+SFX S 0 es s
+
+REP 3
+REP g ch
+REP ch g
+REP svp s.v.p.
+
+MAP 9
+MAP aàáâãäå
+MAP eèéêë
+MAP iìíîï
+MAP oòóôõö
+MAP uùúûü
+MAP nñ
+MAP cç
+MAP yÿı
+MAP sß
+affend1
+
+affstart2
+SET ISO8859-1
+TRY esianrtolcdugmphbyfvkwjkqxz-ëéèêïîäàâöüû'ESIANRTOLCDUGMPHBYFVKWJKQXZ
+
+FOL  àáâãäåæçèéêëìíîïğñòóôõöøùúûüışßÿ
+LOW  àáâãäåæçèéêëìíîïğñòóôõöøùúûüışßÿ
+UPP  ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏĞÑÒÓÔÕÖØÙÚÛÜİŞßÿ
+
+MIDWORD	'-
+
+KEP =
+RAR ?
+BAD !
+
+NOSPLITSUGS
+
+PFX I N 1
+PFX I 0 in .
+
+PFX O Y 1
+PFX O 0 out .
+
+SFX S Y 2
+SFX S 0 s [^s]
+SFX S 0 es s
+
+REP 3
+REP g ch
+REP ch g
+REP svp s.v.p.
+
+MAP 9
+MAP aàáâãäå
+MAP eèéêë
+MAP iìíîï
+MAP oòóôõö
+MAP uùúûü
+MAP nñ
+MAP cç
+MAP yÿı
+MAP sß
+
+SAL AH(AEIOUY)-^         *H
+SAL AR(AEIOUY)-^         *R
+SAL A(HR)^               *
+SAL A^                   *
+SAL AH(AEIOUY)-          H
+SAL AR(AEIOUY)-          R
+SAL A(HR)                _
+SAL À^                   *
+SAL Å^                   *
+SAL BB-                  _
+SAL B                    B
+SAL CQ-                  _
+SAL CIA                  X
+SAL CH                   X
+SAL C(EIY)-              S
+SAL CK                   K
+SAL COUGH^               KF
+SAL CC<                  C
+SAL C                    K
+SAL DG(EIY)              K
+SAL DD-                  _
+SAL D                    T
+SAL É<                   E
+SAL EH(AEIOUY)-^         *H
+SAL ER(AEIOUY)-^         *R
+SAL E(HR)^               *
+SAL ENOUGH^$             *NF
+SAL E^                   *
+SAL EH(AEIOUY)-          H
+SAL ER(AEIOUY)-          R
+SAL E(HR)                _
+SAL FF-                  _
+SAL F                    F
+SAL GN^                  N
+SAL GN$                  N
+SAL GNS$                 NS
+SAL GNED$                N
+SAL GH(AEIOUY)-          K
+SAL GH                   _
+SAL GG9                  K
+SAL G                    K
+SAL H                    H
+SAL IH(AEIOUY)-^         *H
+SAL IR(AEIOUY)-^         *R
+SAL I(HR)^               *
+SAL I^                   *
+SAL ING6                 N
+SAL IH(AEIOUY)-          H
+SAL IR(AEIOUY)-          R
+SAL I(HR)                _
+SAL J                    K
+SAL KN^                  N
+SAL KK-                  _
+SAL K                    K
+SAL LAUGH^               LF
+SAL LL-                  _
+SAL L                    L
+SAL MB$                  M
+SAL MM                   M
+SAL M                    M
+SAL NN-                  _
+SAL N                    N
+SAL OH(AEIOUY)-^         *H
+SAL OR(AEIOUY)-^         *R
+SAL O(HR)^               *
+SAL O^                   *
+SAL OH(AEIOUY)-          H
+SAL OR(AEIOUY)-          R
+SAL O(HR)                _
+SAL PH                   F
+SAL PN^                  N
+SAL PP-                  _
+SAL P                    P
+SAL Q                    K
+SAL RH^                  R
+SAL ROUGH^               RF
+SAL RR-                  _
+SAL R                    R
+SAL SCH(EOU)-            SK
+SAL SC(IEY)-             S
+SAL SH                   X
+SAL SI(AO)-              X
+SAL SS-                  _
+SAL S                    S
+SAL TI(AO)-              X
+SAL TH                   @
+SAL TCH--                _
+SAL TOUGH^               TF
+SAL TT-                  _
+SAL T                    T
+SAL UH(AEIOUY)-^         *H
+SAL UR(AEIOUY)-^         *R
+SAL U(HR)^               *
+SAL U^                   *
+SAL UH(AEIOUY)-          H
+SAL UR(AEIOUY)-          R
+SAL U(HR)                _
+SAL V^                   W
+SAL V                    F
+SAL WR^                  R
+SAL WH^                  W
+SAL W(AEIOU)-            W
+SAL X^                   S
+SAL X                    KS
+SAL Y(AEIOU)-            Y
+SAL ZZ-                  _
+SAL Z                    S
+affend2
+
+dicstart
+123456
+test
+# comment
+wrong
+Comment
+OK
+uk
+put/ISO
+the end
+deol
+déôr
+dicend
+
+addstart
+/regions=usgbnz
+elequint/2
+elekwint/3
+addend
+
+test1:
+inputs	wrong
+comment	wrong
+puts	OK
+ok	wrong
+Ok	wrong
+the end.  test wrong
+déôl
+
+test2:
+elequint test elekwint test elekwent asdf
+
+
+test output:

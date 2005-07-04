@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         pinfo(1) configuration file
 " Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2005-06-28
+" Latest Revision:  2005-07-04
 
 if exists("b:current_syntax")
   finish
@@ -73,8 +73,7 @@ syn keyword pinfoSpecialKeys      KEY_BREAK KEY_DOWN KEY_UP KEY_LEFT KEY_RIGHT
                                   \ KEY_PPAGE KEY_END KEY_IC KEY_DC
 syn region  pinfoSpecialKeys      matchgroup=pinfoSpecialKeys transparent
                                   \ start=+KEY_\%(F\|CTRL\|ALT\)(+ end=+)+
-syn region  pinfoSimpleKey        matchgroup=pinfoSimpleKey start=+'+
-                                  \ skip=+\\'+ end=+'+
+syn region  pinfoSimpleKey        start=+'+ skip=+\\'+ end=+'+
                                   \ contains=pinfoSimpleKeyEscape
 syn match   pinfoSimpleKeyEscape  +\\[\\nt']+
 syn match   pinfoKeycode          '\<\d\+\>'

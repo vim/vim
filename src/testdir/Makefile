@@ -14,7 +14,7 @@ SCRIPTS = test1.out test2.out test3.out test4.out test5.out test6.out \
 		test38.out test39.out test40.out test41.out test42.out \
 		test43.out test44.out test45.out test46.out test47.out \
 		test48.out test49.out test51.out test52.out test53.out \
-		test54.out test55.out test56.out test57.out
+		test54.out test55.out test56.out test57.out test58.out
 
 SCRIPTS_GUI = test16.out
 
@@ -46,7 +46,7 @@ test1.out: test1.in
 	-rm -rf X* viminfo
 
 .in.out:
-	-rm -f $*.failed test.ok X* viminfo
+	-rm -rf $*.failed test.ok X* viminfo
 	cp $*.ok test.ok
 	# Sleep a moment to avoid that the xterm title is messed up
 	@-sleep .2
@@ -58,7 +58,8 @@ test1.out: test1.in
 		  fi \
 		else echo $* NO OUTPUT >>test.log; \
 		fi"
-	-rm -rf X* test.ok viminfo
+	# Keep the files to make debugging easier.
+	# -rm -rf X* test.ok viminfo
 
 nolog:
 	-echo Test results: >test.log

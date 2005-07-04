@@ -8,16 +8,12 @@ if exists("current_compiler")
 endif
 let current_compiler = "bdf"
 
-if exists(":CompilerSet") != 2
-  command -nargs=* CompilerSet setlocal <args>
-endif
-
 let s:cpo_save = &cpo
 set cpo-=C
 
-CompilerSet makeprg=bdftopcf\ $*
+setlocal makeprg=bdftopcf\ $*
 
-CompilerSet errorformat=%ABDF\ %trror\ on\ line\ %l:\ %m,
+setlocal errorformat=%ABDF\ %trror\ on\ line\ %l:\ %m,
       \%-Z%p^,
       \%Cbdftopcf:\ bdf\ input\\,\ %f\\,\ corrupt,
       \%-G%.%#

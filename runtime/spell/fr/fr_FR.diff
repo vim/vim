@@ -1,19 +1,22 @@
-*** fr_FR.orig.aff	Sun Apr 14 17:18:22 2002
---- fr_FR.aff	Mon Jun 27 19:42:54 2005
+*** fr_FR.orig.aff	Sun Jul  3 19:34:20 2005
+--- fr_FR.aff	Sun Jul  3 20:09:20 2005
 ***************
 *** 3,4 ****
---- 3,10 ----
+--- 3,13 ----
   
 + FOL  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗ÿ
 + LOW  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗ÿ
 + UPP  ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞ‗ÿ
++ 
++ SOFOFROM abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZאבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗ÿÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞ¿
++ SOFOTO   ebctefghejklnnepkrstevvkesebctefghejklnnepkrstevvkeseeeeeeeceeeeeeeedneeeeeeeeeeepseeeeeeeeceeeeeeeedneeeeeeeeeeep?
 + 
 + MIDWORD	'
 + 
   PFX A Y 10
 ***************
 *** 691,692 ****
---- 697,709 ----
+--- 700,712 ----
   
 + 
 + MAP 5

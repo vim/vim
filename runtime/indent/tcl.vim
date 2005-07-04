@@ -1,7 +1,7 @@
 " Vim indent file
-" Language:         Tcl
-" Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2005-06-29
+" Language:	    Tcl
+" Maintainer:	    Nikolai Weibull <nikolai+work.vim@bitwi.se>
+" Latest Revision:  2005-06-30
 
 if exists("b:did_indent")
   finish
@@ -31,10 +31,10 @@ function s:count_braces(lnum, count_open)
   let n_open = 0
   let n_close = 0
   let line = getline(a:lnum)
-  let pattern = '\\\@<![{}]'
+  let pattern = '[{}]'
   let i = match(line, pattern)
   while i != -1
-    if synIDattr(synID(a:lnum, i + 1, 1), 'name') !~ 'tcl\%(Comment\|String\)'
+    if synIDattr(synID(a:lnum, i + 1, 0), 'name') !~ 'tcl\%(Comment\|String\)'
       if line[i] == '{'
         let n_open += 1
       elseif line[i] == '}'
@@ -51,20 +51,24 @@ function s:count_braces(lnum, count_open)
 endfunction
 
 function GetTclIndent()
+  let line = getline(v:lnum)
+  if line =~ '^\s*\*'
+    return cindent(v:lnum)
+  elseif line =~ '^\s*}'
+    return indent(v:lnum) - &sw
+  endif
+
   let pnum = s:prevnonblanknoncomment(v:lnum - 1)
   if pnum == 0
     return 0
   endif
 
   let ind = indent(pnum) + s:count_braces(pnum, 1) * &sw
-  if getline(pnum) =~ '\\$'
-    let ind += &sw
+
+  let pline = getline(pnum)
+  if pline =~ '}\s*$'
+    let ind -= (s:count_braces(pnum, 0) - (pline =~ '^\s*}' ? 1 : 0)) * &sw
   endif
 
-  let pnum = s:prevnonblanknoncomment(pnum - 1)
-  if pnum > 0 && getline(pnum) =~ '\\$'
-    let ind -= &sw
-  endif
-
-  return ind - s:count_braces(v:lnum, 0) * &sw
+  return ind
 endfunction

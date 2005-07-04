@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:         ConTeXt typesetting engine
 " Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2005-06-29
+" Latest Revision:  2005-07-04
 
 if exists("b:did_ftplugin")
   finish
@@ -11,9 +11,9 @@ let b:did_ftplugin = 1
 let s:cpo_save = &cpo
 set cpo&vim
 
-let b:undo_ftplugin = "setl com< cms< def< inc< sua<"
+let b:undo_ftplugin = "setl com< cms< def< inc< sua< fo<"
 
-setlocal comments=:%,b:%D,b:%C,b:%M commentstring=%\ %s
+setlocal comments=:%,b:%D,b:%C,b:%M commentstring=%\ %s formatoptions+=tcroql
 
 let &l:define='\\\%([egx]\|char\|mathchar\|count\|dimen\|muskip\|skip\|toks\)\='
         \ .     'def\|\\font\|\\\%(future\)\=let'

@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         reStructuredText documentation format
 " Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2005-06-29
+" Latest Revision:  2005-07-04
 
 if exists("b:current_syntax")
   finish
@@ -14,8 +14,7 @@ syn keyword     rstTodo             contained FIXME TODO XXX NOTE
 
 syn case ignore
 
-syn region      rstComment          matchgroup=rstComment
-                                    \ start='^\.\.\%( \%([a-z0-9_.-]\+::\)\@!\|$\)'
+syn region      rstComment          start='^\.\.\%( \%([a-z0-9_.-]\+::\)\@!\|$\)'
                                     \ end='^\s\@!' contains=rstTodo
 
 syn cluster     rstCruft            contains=rstFootnoteLabel,rstCitationLabel,

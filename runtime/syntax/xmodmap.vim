@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         xmodmap(1) definition file
 " Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2005-06-29
+" Latest Revision:  2005-07-04
 
 if exists("b:current_syntax")
   finish
@@ -12,8 +12,8 @@ set cpo&vim
 
 syn keyword xmodmapTodo       contained TODO FIXME XXX NOTE
 
-syn region  xmodmapComment    display oneline matchgroup=xmodmapComment
-                              \ start=/^!/ end=/$/ contains=xmodmapTodo,@Spell
+syn region  xmodmapComment    display oneline start='^!' end='$'
+                              \ contains=xmodmapTodo,@Spell
 
 syn case ignore
 syn match   xmodmapInt        display '\<\d\+\>'

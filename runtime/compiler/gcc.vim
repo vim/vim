@@ -8,14 +8,10 @@ if exists("current_compiler")
 endif
 let current_compiler = "gcc"
 
-if exists(":CompilerSet") != 2
-  command -nargs=* CompilerSet setlocal <args>
-endif
-
 let s:cpo_save = &cpo
 set cpo-=C
 
-CompilerSet errorformat=
+setlocal errorformat=
       \%*[^\"]\"%f\"%*\\D%l:\ %m,
       \\"%f\"%*\\D%l:\ %m,
       \%-G%f:%l:\ %trror:\ (Each\ undeclared\ identifier\ is\ reported\ only\ once,

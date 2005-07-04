@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         libao.conf(5) configuration file
 " Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2005-06-29
+" Latest Revision:  2005-07-04
 
 if exists("b:current_syntax")
   finish
@@ -12,7 +12,7 @@ set cpo&vim
 
 syn keyword libaoTodo     contained TODO FIXME XXX NOTE
 
-syn region  libaoComment  matchgroup=libaoComment start='^\s*#' end='$'
+syn region  libaoComment  display oneline start='^\s*#' end='$'
                           \ contains=libaoTodo,@Spell
 
 syn keyword libaoKeyword  default_driver

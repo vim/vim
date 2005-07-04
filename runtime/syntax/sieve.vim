@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         Sieve filtering language input file
 " Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2005-06-29
+" Latest Revision:  2005-07-04
 
 if exists("b:current_syntax")
   finish
@@ -12,9 +12,8 @@ set cpo&vim
 
 syn keyword sieveTodo         contained TODO FIXME XXX NOTE
 
-syn region  sieveComment      matchgroup=sieveComment start='/\*' end='\*/'
-                              \ contains=sieveTodo,@Spell
-syn region  sieveComment      matchgroup=sieveComment start='#' end='$'
+syn region  sieveComment      start='/\*' end='\*/' contains=sieveTodo,@Spell
+syn region  sieveComment      display oneline start='#' end='$'
                               \ contains=sieveTodo,@Spell
 
 syn case ignore
@@ -25,9 +24,9 @@ syn match   sieveNumber       display '\<\d\+[KMG]\=\>'
 
 syn match   sieveSpecial      display '\\["\\]'
 
-syn region  sieveString       matchgroup=sieveString start=+"+
-                              \ skip=+\\\\\|\\"+ end=+"+ contains=sieveSpecial
-syn region  sieveString       matchgroup=sieveString start='text:' end='\n.\n'
+syn region  sieveString       start=+"+ skip=+\\\\\|\\"+ end=+"+
+                              \ contains=sieveSpecial
+syn region  sieveString       start='text:' end='\n.\n'
 
 syn keyword sieveConditional  if elsif else
 syn keyword sieveTest         address allof anyof envelope exists false header

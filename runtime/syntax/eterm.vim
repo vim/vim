@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         eterm(1) configuration file
 " Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2005-06-29
+" Latest Revision:  2005-07-04
 
 if exists("b:current_syntax")
   finish
@@ -12,10 +12,10 @@ set cpo&vim
 
 syn keyword etermTodo             contained TODO FIXME XXX NOTE
 
-syn region  etermComment          matchgroup=etermComment start='^#' end='$'
+syn region  etermComment          display oneline start='^#' end='$'
                                   \ contains=etermTodo,@Spell
 
-syn match   etermMagic            display display '^<Eterm-[0-9.]\+>$'
+syn match   etermMagic            display '^<Eterm-[0-9.]\+>$'
 
 syn match   etermNumber           contained display '\<\(\d\+\|0x\x\{1,2}\)\>'
 
@@ -169,7 +169,8 @@ syn match   etermImageContrast    contained display '\<\(\d\+\|0x\x\{1,2}\)\>'
 syn match   etermImageGamma       contained display '\<\(\d\+\|0x\x\{1,2}\)\>'
                                   \ nextgroup=etermImageGamma skipwhite
 
-syn region  etermImageOptions     contained matchgroup=etermImageOptions
+syn region  etermImageOptions     contained display oneline
+                                  \ matchgroup=etermImageOptions
                                   \ start='border\|bevel\%(\s\+\%(up\|down\)\)\|padding'
                                   \ end='$' contains=etermNumber
 

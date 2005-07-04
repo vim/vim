@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 03
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar

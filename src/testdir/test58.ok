@@ -1,0 +1,42 @@
+test output:
+inputs
+['input', 'puts', 'outputs', 'put']
+comment
+['Comment']
+ok
+['OK', 'uk']
+Ok
+['OK', 'Uk']
+test
+['test', 'Test']
+déôl
+['deol', 'déôr']
+# file: Xtest.latin1.spl
+Comment
+deol
+déôr
+input
+OK
+output
+outputs
+put
+puts
+test
+the end
+uk
+wrong
+gebletegek
+kepereneven
+everles gesvets etele
+kbltykk
+kprnfn
+*fls kswts tl
+elekwent
+elequint
+elekwint
+elekwint
+elekwent
+elequint
+elekwent
+elequint
+elekwint

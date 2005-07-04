@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Jul 02
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Jul 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5642,7 +5642,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	The languages are specified with 'spelllang'.
 
 						*'spellcapcheck'* *'spc'*
-'spellcapcheck' 'spc'	string	(default "[.?!][])'" \t\n]\+")
+'spellcapcheck' 'spc'	string	(default "[.?!]\_[\])'" \t]\+")
 			local to buffer
 			{not in Vi}
 			{not available when compiled without the |+syntax|
@@ -5652,6 +5652,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	with SpellCap |hl-SpellCap|.
 	When this check is not wanted make this option empty.
 	Only used when 'spell' is set.
+	Be careful with special characters, see |option-backslash| about
+	including spaces and backslashes.
 
 						*'spellfile'* *'spf'*
 'spellfile' 'spf'	string	(default empty)

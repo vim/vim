@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         indent(1) configuration file
 " Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2005-06-29
+" Latest Revision:  2005-07-04
 "   indent_is_bsd:  If exists, will change somewhat to match BSD implementation
 "
 " TODO: is the deny-all (a la lilo.vim nice or no?)...
@@ -21,11 +21,9 @@ syn match   indentError   '\S\+'
 
 syn keyword indentTodo    contained TODO FIXME XXX NOTE
 
-syn region  indentComment matchgroup=indentComment
-                          \ start='/\*' end='\*/'
+syn region  indentComment start='/\*' end='\*/'
                           \ contains=indentTodo,@Spell
-syn region  indentComment matchgroup=indentComment
-                          \ start='//' skip='\\$' end='$'
+syn region  indentComment start='//' skip='\\$' end='$'
                           \ contains=indentTodo,@Spell
 
 syn keyword indentOptions -bacc --blank-lines-after-ifdefs

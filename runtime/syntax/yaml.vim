@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         YAML (YAML Ain't Markup Language)
 " Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2005-06-27
+" Latest Revision:  2005-07-04
 
 if exists("b:current_syntax")
   finish
@@ -12,8 +12,8 @@ set cpo&vim
 
 syn keyword yamlTodo            contained TODO FIXME XXX NOTE
 
-syn region  yamlComment         matchgroup=yamlComment start='\%(^\|\s\)#'
-                                \ end='$' contains=yamlTodo,@Spell
+syn region  yamlComment         display oneline start='\%(^\|\s\)#' end='$'
+                                \ contains=yamlTodo,@Spell
 
 syn match   yamlNodeProperty    '!\%(![^\\^%     ]\+\|[^!][^:/   ]*\)'
 

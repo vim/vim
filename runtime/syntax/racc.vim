@@ -1,7 +1,7 @@
 " Vim default file
 " Language:         Racc input file
 " Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2005-06-29
+" Latest Revision:  2005-07-04
 
 if exists("b:current_syntax")
   finish
@@ -12,9 +12,9 @@ set cpo&vim
 
 syn keyword raccTodo        contained TODO FIXME XXX NOTE
 
-syn region  raccComment     matchgroup=raccComment start='/\*' end='\*/'
+syn region  raccComment     start='/\*' end='\*/'
                             \ contains=raccTodo,@Spell
-syn region  raccComment     matchgroup=raccComment start='#' end='$'
+syn region  raccComment     display oneline start='#' end='$'
                             \ contains=raccTodo,@Spell
 
 syn region  raccClass       transparent matchgroup=raccKeyword
@@ -77,10 +77,10 @@ syn match   raccTargetS     contained '\<\l[a-z0-9]*\>'
 
 syn match   raccSpecial     contained '\\["'\\]'
 
-syn region  raccString      matchgroup=raccString start=+"+ skip=+\\\\\|\\"+
-                            \ end=+"+ contains=raccSpecial
-syn region  raccString      matchgroup=raccString start=+'+ skip=+\\\\\|\\'+
-                            \ end=+'+ contains=raccSpecial
+syn region  raccString      start=+"+ skip=+\\\\\|\\"+ end=+"+
+                            \ contains=raccSpecial
+syn region  raccString      start=+'+ skip=+\\\\\|\\'+ end=+'+
+                            \ contains=raccSpecial
 
 syn region  raccRules       transparent matchgroup=raccKeyword start='\<rule\>'
                             \ end='\<end\>' contains=raccComment,raccString,

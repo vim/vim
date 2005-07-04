@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         updatedb.conf(5) configuration file
 " Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2005-06-29
+" Latest Revision:  2005-07-04
 
 if exists("b:current_syntax")
   finish
@@ -23,9 +23,7 @@ syn keyword updatedbName    contained PRUNEFS PRUNEPATHS
 
 syn match   updatedbNameEq  contained display '=' nextgroup=updatedbValue
 
-syn region  updatedbValue   contained display oneline
-                            \ matchgroup=updatedbValue start='"'
-                            \ matchgroup=updatedbValue end='"'
+syn region  updatedbValue   contained display oneline start='"' end='"'
 
 hi def link updatedbTodo    Todo
 hi def link updatedbComment Comment

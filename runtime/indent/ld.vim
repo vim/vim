@@ -1,7 +1,7 @@
 " Vim indent file
 " Language:         ld(1) script
 " Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2005-06-29
+" Latest Revision:  2005-06-30
 
 if exists("b:did_indent")
   finish
@@ -14,6 +14,27 @@ setlocal indentkeys=0{,0},!^F,o,O
 if exists("*GetLDIndent")
   finish
 endif
+
+function s:prevnonblanknoncomment(lnum)
+  let lnum = a:lnum
+  while lnum > 1
+    let lnum = prevnonblank(lnum)
+    let line = getline(lnum)
+    if line =~ '\*/'
+      while lnum > 1 && line !~ '/\*'
+        let lnum -= 1
+      endwhile
+      if line =~ '^\s*/\*'
+        let lnum -= 1
+      else
+        break
+      endif
+    else
+      break
+    endif
+  endwhile
+  return lnum
+endfunction
 
 function s:count_braces(lnum, count_open)
   let n_open = 0
@@ -39,11 +60,24 @@ function s:count_braces(lnum, count_open)
 endfunction
 
 function GetLDIndent()
-  let pnum = prevnonblank(v:lnum - 1)
+  let line = getline(v:lnum)
+  if line =~ '^\s*\*'
+    return cindent(v:lnum)
+  elseif line =~ '^\s*}'
+    return indent(v:lnum) - &sw
+  endif
+
+  let pnum = s:prevnonblanknoncomment(v:lnum - 1)
   if pnum == 0
     return 0
   endif
 
-  return indent(pnum) + s:count_braces(pnum, 1) * &sw
-        \ - s:count_braces(v:lnum, 0) * &sw
+  let ind = indent(pnum) + s:count_braces(pnum, 1) * &sw
+
+  let pline = getline(pnum)
+  if pline =~ '}\s*$'
+    let ind -= (s:count_braces(pnum, 0) - (pline =~ '^\s*}' ? 1 : 0)) * &sw
+  endif
+
+  return ind
 endfunction

@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         alsaconf(8) configuration file
 " Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2005-06-29
+" Latest Revision:  2005-07-04
 
 if exists("b:current_syntax")
   finish
@@ -12,21 +12,19 @@ set cpo&vim
 
 syn keyword alsoconfTodo        contained FIXME TODO XXX NOTE
 
-syn region  alsaconfComment     matchgroup=alsaconfComment
+syn region  alsaconfComment     display oneline
                                 \ start='#' end='$'
                                 \ contains=alsaconfTodo,@Spell
 
 syn match   alsaconfSpecialChar contained display '\\[ntvbrf]'
 syn match   alsaconfSpecialChar contained display '\\\o\+'
 
-syn region  alsaconfString      matchgroup=alsaconfString
-                                \ start=+"+ skip=+\\$+ end=+"+ end=+$+
+syn region  alsaconfString      start=+"+ skip=+\\$+ end=+"\|$+
                                 \ contains=alsaconfSpecialChar
 
 syn match   alsaconfSpecial     contained display 'confdir:'
 
-syn region  alsaconfPreProc     matchgroup=alsaconfPreProc start='<' end='>'
-                                \ contains=alsaconfSpecial
+syn region  alsaconfPreProc     start='<' end='>' contains=alsaconfSpecial
 
 syn match   alsaconfMode        display '[+?!-]'
 

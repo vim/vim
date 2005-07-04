@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Jun 30
+" Last Change:	2005 Jul 04
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -70,6 +70,9 @@ endfun
 
 " A-A-P recipe
 au BufNewFile,BufRead *.aap			setf aap
+
+" A2ps printing utility
+au BufNewFile,BufRead etc/a2ps.cfg,etc/a2ps/*.cfg,a2psrc,.a2psrc setf a2ps
 
 " ABAB/4
 au BufNewFile,BufRead *.abap			setf abap
@@ -451,6 +454,12 @@ au BufNewFile,BufRead *.d			setf d
 " Desktop files
 au BufNewFile,BufRead *.desktop,.directory	setf desktop
 
+" Dict config
+au BufNewFile,BufRead dict.conf,.dictrc		setf dictconf
+
+" Dictd config
+au BufNewFile,BufRead dictd.conf		setf dictdconf
+
 " Diff files
 au BufNewFile,BufRead *.diff,*.rej,*.patch	setf diff
 
@@ -600,6 +609,9 @@ au BufNewFile,BufRead *.groovy			setf groovy
 " GNU Server Pages
 au BufNewFile,BufRead *.gsp			setf gsp
 
+" Group file
+au BufNewFile,BufRead /etc/group		setf group
+
 " GTK RC
 au BufNewFile,BufRead .gtkrc,gtkrc		setf gtkrc
 
@@ -671,6 +683,9 @@ au BufNewFile,BufRead */.icewm/menu		setf icemenu
 
 " IDL (Interactive Data Language)
 au BufNewFile,BufRead *.pro			setf idlang
+
+" Indent RC
+au BufNewFile,BufRead indentrc			setf indentrc
 
 " Inform
 au BufNewFile,BufRead .indent.pro		setf indent
@@ -754,6 +769,9 @@ au BufNewFile,BufRead *.lex,*.l			setf lex
 " Libao
 au BufNewFile,BufRead /etc/libao.conf,*/.libao	setf libao
 
+" Libsensors
+au BufNewFile,BufRead /etc/sensors.conf		setf sensors
+
 " LFTP
 au BufNewFile,BufRead lftp.conf,.lftprc,*lftp/rc	setf lftp
 
@@ -818,6 +836,9 @@ au BufNewFile,BufRead *.ist,*.mst		setf ist
 
 " Manpage
 au BufNewFile,BufRead *.man			setf man
+
+" Man config
+au BufNewFile,BufRead /etc/man.conf		setf manconf
 
 " Maple V
 au BufNewFile,BufRead *.mv,*.mpl,*.mws		setf maple
@@ -935,6 +956,9 @@ au BufNewFile,BufRead *.mush			setf mush
 au BufNewFile,BufRead Muttrc			setf muttrc
 au BufNewFile,BufRead .muttrc*,*/.mutt/muttrc*	call s:StarSetf('muttrc')
 
+" Nano
+au BufNewFile,BufRead /etc/nanorc,.nanorc	setf nanorc
+
 " Nastran input/DMAP
 "au BufNewFile,BufRead *.dat			setf nastran
 
@@ -1013,6 +1037,9 @@ au BufNewFile,BufRead /etc/pam.conf		setf pamconf
 
 " PApp
 au BufNewFile,BufRead *.papp,*.pxml,*.pxsl	setf papp
+
+" Password file
+au BufNewFile,BufRead /etc/passwd,/etc/shadow,/etc/shadow- setf passwd
 
 " Pascal (also *.p)
 au BufNewFile,BufRead *.pas			setf pascal
@@ -1225,6 +1252,9 @@ au BufNewFile,BufRead INDEX,INFO
 " Prolog
 au BufNewFile,BufRead *.pdb			setf prolog
 
+" Protocols
+au BufNewFile,BufRead /etc/protocols		setf protocols
+
 " Pyrex
 au BufNewFile,BufRead *.pyx,*.pxd		setf pyrex
 
@@ -1343,6 +1373,21 @@ au BufNewFile,BufRead sendmail.cf		setf sm
 
 " Sendmail .mc files are actually m4
 au BufNewFile,BufRead *.mc			setf m4
+
+" Services
+au BufNewFile,BufRead /etc/services		setf services
+
+" Service Location config
+au BufNewFile,BufRead /etc/slp.conf		setf slpconf
+
+" Service Location registration
+au BufNewFile,BufRead /etc/slp.reg		setf slpreg
+
+" Service Location SPI
+au BufNewFile,BufRead /etc/slp.spi		setf slpspi
+
+" Setserial config
+au BufNewFile,BufRead /etc/serial.conf		setf setserial
 
 " SGML
 au BufNewFile,BufRead *.sgm,*.sgml
@@ -1634,6 +1679,18 @@ au BufNewFile,BufReadPost *.tsscl		setf tsscl
 " Motif UIT/UIL files
 au BufNewFile,BufRead *.uit,*.uil		setf uil
 
+" Udev conf
+au BufNewFile,BufRead /etc/udev/udev.conf	setf udevconf
+
+" Udev rules
+au BufNewFile,BufRead /etc/udev/rules.d/*.rules setf udevrules
+
+" Udev permissions
+au BufNewFile,BufRead /etc/udev/permissions.d/*.permissions setf udevperm
+"
+" Udev symlinks config
+au BufNewFile,BufRead /etc/udev/cdsymlinks.conf	setf sh
+
 " UnrealScript
 au BufNewFile,BufRead *.uc			setf uc
 
@@ -1752,6 +1809,9 @@ au BufNewFile,BufRead *.csproj,*.csproj.user	setf xml
 " Qt Linguist translation source and Qt User Interface Files are XML
 au BufNewFile,BufRead *.ts,*.ui			setf xml
 
+" Xdg menus
+au BufNewFile,BufRead /etc/xdg/menus/*.menu	setf xml
+
 " XSD
 au BufNewFile,BufRead *.xsd			setf xsd
 
@@ -1850,6 +1910,9 @@ au! BufNewFile,BufRead *jarg*
 
 " Makefile
 au BufNewFile,BufRead [mM]akefile*		call s:StarSetf('make')
+
+" Modconf
+au BufNewFile,BufRead /etc/modprobe.*		call s:StarSetf('modconf')
 
 " Ruby Makefile
 au BufNewFile,BufRead [rR]akefile*		call s:StarSetf('ruby')

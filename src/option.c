@@ -2036,7 +2036,7 @@ static struct vimoption
     {"spellcapcheck", "spc", P_STRING|P_ALLOCED|P_VI_DEF|P_SECURE|P_RBUF,
 #ifdef FEAT_SYN_HL
 			    (char_u *)&p_spc, PV_SPC,
-			    {(char_u *)"[.?!][])'\" \\t\\n]\\+", (char_u *)0L}
+			    {(char_u *)"[.?!]\\_[\\])'\"	 ]\\+", (char_u *)0L}
 #else
 			    (char_u *)NULL, PV_NONE,
 			    {(char_u *)0L, (char_u *)0L}
@@ -2605,7 +2605,7 @@ static char_u *set_chars_option __ARGS((char_u **varp));
 static char_u *check_clipboard_option __ARGS((void));
 #endif
 #ifdef FEAT_SYN_HL
-static char_u *compile_cap_prog __ARGS((void));
+static char_u *compile_cap_prog __ARGS((buf_T *buf));
 #endif
 static char_u *set_bool_option __ARGS((int opt_idx, char_u *varp, int value, int opt_flags));
 static char_u *set_num_option __ARGS((int opt_idx, char_u *varp, long value, char_u *errbuf, size_t errbuflen, int opt_flags));
@@ -4610,7 +4610,7 @@ didset_options()
 #endif
 #ifdef FEAT_SYN_HL
     (void)spell_check_sps();
-    (void)compile_cap_prog();
+    (void)compile_cap_prog(curbuf);
 #endif
 #if defined(FEAT_TOOLBAR) && !defined(FEAT_GUI_W32)
     (void)opt_strings_flags(p_toolbar, p_toolbar_values, &toolbar_flags, TRUE);
@@ -5774,7 +5774,7 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
     /* When 'spellcapcheck' is set compile the regexp program. */
     else if (varp == &(curbuf->b_p_spc))
     {
-	errmsg = compile_cap_prog();
+	errmsg = compile_cap_prog(curbuf);
     }
     /* 'spellsuggest' */
     else if (varp == &p_sps)
@@ -6437,23 +6437,24 @@ check_clipboard_option()
  * Return error message when failed, NULL when OK.
  */
     static char_u *
-compile_cap_prog()
+compile_cap_prog(buf)
+    buf_T	*buf;
 {
-    regprog_T   *rp = curbuf->b_cap_prog;
+    regprog_T   *rp = buf->b_cap_prog;
 
-    if (*curbuf->b_p_spc == NUL)
+    if (*buf->b_p_spc == NUL)
     {
-	curbuf->b_cap_prog = NULL;
+	buf->b_cap_prog = NULL;
 	vim_free(rp);
 	return NULL;
     }
 
     /* Prepend a ^ so that we only match at one column */
-    vim_snprintf((char *)IObuff, IOSIZE, "^%s", curbuf->b_p_spc);
-    curbuf->b_cap_prog = vim_regcomp(IObuff, RE_MAGIC);
-    if (curbuf->b_cap_prog == NULL)
+    vim_snprintf((char *)IObuff, IOSIZE, "^%s", buf->b_p_spc);
+    buf->b_cap_prog = vim_regcomp(IObuff, RE_MAGIC);
+    if (buf->b_cap_prog == NULL)
     {
-	curbuf->b_cap_prog = rp;
+	buf->b_cap_prog = rp;
 	return e_invarg;
     }
 
@@ -8758,6 +8759,7 @@ buf_copy_options(buf, flags)
 	    /* Don't copy 'syntax', it must be set */
 	    buf->b_p_syn = empty_option;
 	    buf->b_p_spc = vim_strsave(p_spc);
+	    (void)compile_cap_prog(buf);
 	    buf->b_p_spf = vim_strsave(p_spf);
 	    buf->b_p_spl = vim_strsave(p_spl);
 #endif

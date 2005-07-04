@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         screen(1) configuration file
 " Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2005-06-29
+" Latest Revision:  2005-07-04
 
 if exists("b:current_syntax")
   finish
@@ -14,15 +14,13 @@ syn match   screenEscape    '\\.'
 
 syn keyword screenTodo      contained TODO FIXME XXX NOTE
 
-syn region  screenComment   display oneline matchgroup=screenComment
-                            \ start='#' end='$' contains=screenTodo,@Spell
+syn region  screenComment   display oneline start='#' end='$'
+                            \ contains=screenTodo,@Spell
 
-syn region  screenString    display oneline matchgroup=screenString
-                            \ start=+"+ skip=+\\"+ end=+"\|$+
+syn region  screenString    display oneline start=+"+ skip=+\\"+ end=+"+
                             \ contains=screenVariable,screenSpecial
 
-syn region  screenLiteral   display oneline matchgroup=screenLiteral
-                            \ start=+'+ skip=+\\'+ end=+'\|$+
+syn region  screenLiteral   display oneline start=+'+ skip=+\\'+ end=+'+
 
 syn match   screenVariable  contained display '$\(\h\w*\|{\h\w*}\)'
 

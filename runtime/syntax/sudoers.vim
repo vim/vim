@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         sudoers(5) configuration files
 " Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2005-06-29
+" Latest Revision:  2005-07-04
 
 if exists("b:current_syntax")
   finish
@@ -23,7 +23,7 @@ syn cluster sudoersCmndSpecList       contains=sudoersUserRunasBegin,sudoersPASS
 
 syn keyword sudoersTodo               contained TODO FIXME XXX NOTE
 
-syn region  sudoersComment            matchgroup=sudoersComment start='#' end='$' contains=sudoersTodo
+syn region  sudoersComment            display oneline start='#' end='$' contains=sudoersTodo
 
 syn keyword sudoersAlias              User_Alias Runas_Alias nextgroup=sudoersUserAlias skipwhite skipnl
 syn keyword sudoersAlias              Host_Alias nextgroup=sudoersHostAlias skipwhite skipnl

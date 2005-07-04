@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         cvs(1) RC file
 " Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2005-06-29
+" Latest Revision:  2005-07-04
 
 if exists("b:current_syntax")
   finish
@@ -10,8 +10,8 @@ endif
 let s:cpo_save = &cpo
 set cpo&vim
 
-syn region  cvsrcString   display start=+"+ skip=+\\\\\|\\\\"+ end=+"\|$+
-syn region  cvsrcString   display start=+'+ skip=+\\\\\|\\\\'+ end=+'\|$+
+syn region  cvsrcString   display oneline start=+"+ skip=+\\\\\|\\\\"+ end=+"+
+syn region  cvsrcString   display oneline start=+'+ skip=+\\\\\|\\\\'+ end=+'+
 
 syn match   cvsrcNumber   display '\<\d\+\>'
 

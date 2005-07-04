@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         ConTeXt typesetting engine
 " Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2005-06-29
+" Latest Revision:  2005-07-04
 
 if exists("b:current_syntax")
   finish
@@ -12,10 +12,10 @@ set cpo&vim
 
 syn keyword contextTodo       TODO FIXME XXX NOTE
 
-syn region  contextComment    display oneline matchgroup=contextComment
-                              \ start='%' end='$' contains=contextTodo
-syn region  contextComment    display oneline matchgroup=contextComment
-                              \ start='^\s*%[CDM]' end='$' contains=ALL
+syn region  contextComment    display oneline start='%' end='$'
+                              \ contains=contextTodo
+syn region  contextComment    display oneline start='^\s*%[CDM]' end='$'
+                              \ contains=ALL
 
 syn match   contextStatement  display '\\[a-zA-Z@]\+' contains=@NoSpell
 

@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         elinks(1) configuration file
 " Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2005-06-27
+" Latest Revision:  2005-07-04
 
 if exists("b:current_syntax")
   finish
@@ -14,13 +14,13 @@ setlocal iskeyword=@,48-57,_,-
 
 syn keyword elinksTodo      contained TODO FIXME XXX NOTE
 
-syn region  elinksComment   matchgroup=elinksComment start='#' end='$'
-                            \ contains=elinksTodo
+syn region  elinksComment   display oneline start='#' end='$'
+                            \ contains=elinksTodo,@Spell
 
 syn match   elinksNumber    '\<\d\+\>'
 
-syn region  elinksString    matchgroup=elinksString start=+"+
-                            \ skip=+\\\\\|\\"+ end=+"+ contains=@elinksColor
+syn region  elinksString    start=+"+ skip=+\\\\\|\\"+ end=+"+
+                            \ contains=@elinksColor
 
 syn keyword elinksKeyword   set bind
 

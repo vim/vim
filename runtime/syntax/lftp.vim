@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         lftp(1) configuration file
 " Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2005-06-27
+" Latest Revision:  2005-07-04
 
 if exists("b:current_syntax")
   finish
@@ -12,8 +12,8 @@ set cpo&vim
 
 setlocal iskeyword=@,48-57,-
 
-syn region  lftpComment         display oneline matchgroup=lftpComment
-                                \ start='#' end='$' contains=lftpTodo,@Spell
+syn region  lftpComment         display oneline start='#' end='$'
+                                \ contains=lftpTodo,@Spell
 
 syn keyword lftpTodo            contained TODO FIXME XXX NOTE
 
