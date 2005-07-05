@@ -1,16 +1,17 @@
-Tests for spell checking.     vim: set ft=vim :
+Tests for spell checking with 'encoding' set to "utf-8".  vim: set ft=vim :
 
 STARTTEST
 :so small.vim
+:so mbyte.vim
 :"
 :" First generate a .spl file from a .dic and a .aff file.
-:set enc=latin1
+:set enc=utf-8
 :/^affstart1/+1,/affend1/-1w Xtest.aff
 :/^dicstart/+1,/dicend/-1w Xtest.dic
 :mkspell Xtest Xtest
 :"
 :" use that spell file
-:set spl=Xtest.latin1.spl
+:set spl=Xtest.utf-8.spl
 :set spell
 :func SpellTest()
 /^test1:
@@ -56,21 +57,21 @@ endfunc
 1GyG:q
 :$put
 :$put =soundfold('goobledygoook')
-:$put =soundfold('kóopërÿnôven')
+:$put =soundfold('kÃ³opÃ«rÃ¿nÃ´ven')
 :$put =soundfold('oeverloos gezwets edale')
 :"
 :" and now with SAL instead of SOFO items; test automatic reloading
 gg:/^affstart2/+1,/^affend2/-1w! Xtest.aff
 :mkspell! Xtest Xtest
 :$put =soundfold('goobledygoook')
-:$put =soundfold('kóopërÿnôven')
+:$put =soundfold('kÃ³opÃ«rÃ¿nÃ´ven')
 :$put =soundfold('oeverloos gezwets edale')
 :"
 :" also use an addition file
-gg:/^addstart/+1,/^addend/-1w! Xtest.latin1.add
-:mkspell! Xtest.latin1.add.spl Xtest.latin1.add
+gg:/^addstart/+1,/^addend/-1w! Xtest.utf-8.add
+:mkspell! Xtest.utf-8.add.spl Xtest.utf-8.add
 :set spl=en
-:set spellfile=Xtest.latin1.add
+:set spellfile=Xtest.utf-8.add
 /^test2:
 ]s:let str = spellbadword()
 :$put =str
@@ -103,7 +104,7 @@ gg:/^addstart/+1,/^addend/-1w! Xtest.latin1.add
 gg:/^affstart3/+1,/^affend3/-1w! Xtest.aff
 :mkspell! Xtest Xtest
 :set spellfile=
-:set spl=Xtest.latin1.spl
+:set spl=Xtest.utf-8.spl
 :mess
 :spelldump
 1GyG:q
@@ -396,7 +397,7 @@ puts	OK
 ok	wrong
 Ok	wrong
 the end.  test wrong
-déôl
+dÃ©Ã´l
 
 test2:
 elequint test elekwint test elekwent asdf

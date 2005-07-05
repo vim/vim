@@ -5148,6 +5148,7 @@ hebrew	hebrew.txt	/*hebrew*
 hebrew.txt	hebrew.txt	/*hebrew.txt*
 help	various.txt	/*help*
 help-context	help.txt	/*help-context*
+help-tags	tags	1
 help-translated	various.txt	/*help-translated*
 help-xterm-window	various.txt	/*help-xterm-window*
 help.txt	help.txt	/*help.txt*
@@ -5207,6 +5208,7 @@ hl-Search	syntax.txt	/*hl-Search*
 hl-SignColumn	syntax.txt	/*hl-SignColumn*
 hl-SpecialKey	syntax.txt	/*hl-SpecialKey*
 hl-SpellBad	syntax.txt	/*hl-SpellBad*
+hl-SpellCap	syntax.txt	/*hl-SpellCap*
 hl-SpellLocal	syntax.txt	/*hl-SpellLocal*
 hl-SpellRare	syntax.txt	/*hl-SpellRare*
 hl-StatusLine	syntax.txt	/*hl-StatusLine*

@@ -2,7 +2,7 @@
 " Language:    Pascal
 " Maintainer:  Neil Carter <n.carter@swansea.ac.uk>
 " Created:     2004 Jul 13
-" Last Change: 2005 Jun 15
+" Last Change: 2005 Jul 05
 
 
 if exists("b:did_indent")

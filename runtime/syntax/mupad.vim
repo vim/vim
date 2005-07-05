@@ -53,7 +53,7 @@ syn keyword mupadDefine		Unquoted	NoNL	KeepOrder	Typeset
 syn keyword mupadStatement	domain	begin	end_domain	end
 syn keyword mupadIdentifier	inherits	category	axiom	info	doc interface
 " basic programming statements
-syn keyword mupadStatement	proc	begin	end_proc	
+syn keyword mupadStatement	proc	begin	end_proc
 syn keyword mupadUnderlined	name	local	option	save
 syn keyword mupadConditional	if	then	elif	else	end_if
 syn keyword mupadConditional	case	of	do	break	end_case
@@ -117,10 +117,10 @@ syn keyword mupadFunction	poly	poly2list	polylog	powermod	print
 syn keyword mupadFunction	product	protect	psi	quit	_quit	radsimp	random	rationalize
 syn keyword mupadFunction	rec	rectform	register	reset	return	revert
 syn keyword mupadFunction	rewrite	select	series	setuserinfo	share	sign	signIm
-syn keyword mupadFunction	simplify	
+syn keyword mupadFunction	simplify
 syn keyword mupadFunction	sin	cos	tan	csc	sec	cot
 syn keyword mupadFunction	sinh	cosh	tanh	csch	sech	coth
-syn keyword mupadFunction	slot	solve	
+syn keyword mupadFunction	slot	solve
 syn keyword mupadFunction	pdesolve	matlinsolve	matlinsolveLU	toeplitzSolve
 syn keyword mupadFunction	vandermondeSolve	fsolve	odesolve	odesolve2
 syn keyword mupadFunction	polyroots	polysysroots	odesolveGeometric
@@ -266,7 +266,7 @@ syn keyword mupadIdentifier	InterpolationStyle	Shading	UseNormals
 syn keyword mupadIdentifier	TipAngle	TipLength	TipStyle	TubeDiameter
 syn keyword mupadIdentifier	Tubular
 " graphics  meta-documentation Attributes
-syn keyword mupadIdentifier	objectGroupsListed	
+syn keyword mupadIdentifier	objectGroupsListed
 
 if version >= 508 || !exists("did_mupad_syntax_inits")
   if version < 508

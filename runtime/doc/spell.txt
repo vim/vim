@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jul 04
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jul 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -79,20 +79,20 @@ zW			Like "zw" but add the word to the internal word list
 
 							*:spe* *:spellgood*
 :[count]spe[llgood] {word}
-			Add [word} as a good word to 'spellfile', like with
+			Add {word} as a good word to 'spellfile', like with
 			"zg".  Without count the first name is used, with a
 			count of two the second entry, etc.
 
-:spe[llgood]! {word}	Add [word} as a good word to the internal word list,
+:spe[llgood]! {word}	Add {word} as a good word to the internal word list,
 			like with "zG".
 
 							*:spellw* *:spellwrong*
 :[count]spellw[rong] {word}
-			Add [word} as a wrong (bad) word to 'spellfile', as
+			Add {word} as a wrong (bad) word to 'spellfile', as
 			with "zw".  Without count the first name is used, with
 			a count of two the second entry, etc.
 
-:spellw[rong]! {word}	Add [word} as a wrong (bad) word to the internal word
+:spellw[rong]! {word}	Add {word} as a wrong (bad) word to the internal word
 			list.
 
 After adding a word to 'spellfile' with the above commands its associated

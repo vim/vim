@@ -516,6 +516,8 @@ CClink = $(CC)
 # EFENCE - Electric-Fence malloc debugging: catches memory accesses beyond
 # allocated memory (and makes every malloc()/free() very slow).
 # Electric Fence is free (search ftp sites).
+# You may want to set the EF_PROTECT_BELOW environment variable to check the
+# other side of allocated memory.
 # On FreeBSD you might need to enlarge the number of mmaps allowed.  Do this
 # as root: sysctl -w vm.max_proc_mmap=30000
 #EXTRA_LIBS = /usr/local/lib/libefence.a

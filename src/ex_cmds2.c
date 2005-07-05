@@ -1186,9 +1186,9 @@ script_dump_profile(fd)
     int
 prof_def_func()
 {
-    scriptitem_T    *si = &SCRIPT_ITEM(current_SID);
-
-    return si->sn_pr_force;
+    if (current_SID > 0)
+	return SCRIPT_ITEM(current_SID).sn_pr_force;
+    return FALSE;
 }
 
 # endif

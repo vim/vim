@@ -9,12 +9,12 @@ Ok
 ['OK', 'Uk']
 test
 ['test', 'Test']
-déôl
-['deol', 'déôr']
-# file: Xtest.latin1.spl
+dÃ©Ã´l
+['deol', 'dÃ©Ã´r']
+# file: Xtest.utf-8.spl
 Comment
 deol
-déôr
+dÃ©Ã´r
 input
 OK
 output
@@ -43,10 +43,10 @@ elequint
 elekwent
 elequint
 elekwint
-# file: Xtest.latin1.spl
+# file: Xtest.utf-8.spl
 Comment
 deol
-déôr
+dÃ©Ã´r
 OK
 put
 input
@@ -70,5 +70,5 @@ Ok
 ['OK', 'Uk']
 test
 ['test', 'Test']
-déôl
-['deol', 'déôr']
+dÃ©Ã´l
+['deol', 'dÃ©Ã´r']

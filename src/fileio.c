@@ -5435,25 +5435,27 @@ buf_modname(shortname, fname, ext, prepend_dot)
      * Then truncate what is after the '/', '\' or ':' to 8 characters for
      * MSDOS and 26 characters for AMIGA, a lot more for UNIX.
      */
-    for (ptr = retval + fnamelen; ptr >= retval; mb_ptr_back(retval, ptr))
+    for (ptr = retval + fnamelen; ptr > retval; mb_ptr_back(retval, ptr))
     {
 #ifndef RISCOS
 	if (*ext == '.'
-#ifdef USE_LONG_FNAME
+# ifdef USE_LONG_FNAME
 		    && (!USE_LONG_FNAME || shortname)
-#else
-# ifndef SHORT_FNAME
+# else
+#  ifndef SHORT_FNAME
 		    && shortname
+#  endif
 # endif
-#endif
 								)
 	    if (*ptr == '.')	/* replace '.' by '_' */
 		*ptr = '_';
-#endif /* RISCOS */
+#endif
 	if (vim_ispathsep(*ptr))
+	{
+	    ++ptr;
 	    break;
+	}
     }
-    ptr++;
 
     /* the file name has at most BASENAMELEN characters. */
 #ifndef SHORT_FNAME

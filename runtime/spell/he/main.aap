@@ -9,11 +9,15 @@
 SPELLDIR = ..
 FILES    = he_IL.aff he_IL.dic
 
-all: $(SPELLDIR)/he.utf-8.spl ../README_he.txt
+all: $(SPELLDIR)/he.utf-8.spl $(SPELLDIR)/he.iso-8859-8.spl ../README_he.txt
 
 $(SPELLDIR)/he.utf-8.spl : $(VIM) $(FILES)
         :sys env LANG=he_IL.UTF-8
 		$(VIM) -e -c "mkspell! $(SPELLDIR)/he he_IL" -c q
+
+$(SPELLDIR)/he.iso-8859-8.spl : $(VIM) $(FILES)
+        :sys $(VIM) -e -c "set enc=iso-8859-8"
+                        -c "mkspell! $(SPELLDIR)/he he_IL" -c q
 
 ../README_he.txt : README_he_IL.txt
         :copy $source $target
