@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 05
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,6 +29,8 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+Test59 crashes occasionally (but not in the debugger....)
 
 Add extra list of file locations.  Can be used with:
     :ltag	      list of matching tags, like :tselect
@@ -67,9 +69,6 @@ changed.
 Include new PHP indent script from John Wellesz?
     http://www.vim.org/scripts/download_script.php?src_id=4330
 
-In Vim indenting use synID() to avoid recognizing "|en" in a string as
-"|endif".
-
 autoload:
 - Add a Vim script in $VIMRUNTIME/tools that takes a file with a list of
   script names and a help file and produces a script that can be sourced to
@@ -85,7 +84,6 @@ Patch to alternate fold highlighting.  (Anthony Iano-Fletcher, 2005 May 12)
 More levels?
 
 Awaiting response:
--   Patch for mch_FullName() also in Vim 6.3?  os_mswin.c
 -   Win32: tearoff menu window should have a scrollbar when it's taller than
     the screen.
 

@@ -59,8 +59,7 @@ test1.out: test1.in
 		  fi \
 		else echo $* NO OUTPUT >>test.log; \
 		fi"
-	# Keep the files to make debugging easier.
-	# -rm -rf X* test.ok viminfo
+	-rm -rf X* test.ok viminfo
 
 nolog:
 	-echo Test results: >test.log

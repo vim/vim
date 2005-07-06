@@ -1951,7 +1951,7 @@ lrF_sub(ibuf)
     p = ibuf;
 
     /* Find the boundary of the search path */
-    while (++p, ((p = vim_strchr(p, '/')) != NULL) && p[-1] == '\\')
+    while (((p = vim_strchr(p + 1, '/')) != NULL) && p[-1] == '\\')
 	;
 
     if (p == NULL)
