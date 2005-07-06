@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 03
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -6470,7 +6470,7 @@ These items are not allowed in the sandbox:
 This is not guaranteed 100% secure, but it should block most attacks.
 
 							*:san* *:sandbox*
-:sandbox {cmd}		Execute {cmd} in the sandbox.  Useful to evaluate an
+:san[dbox] {cmd		Execute {cmd} in the sandbox.  Useful to evaluate an
 			option that may have been set from a modeline, e.g.
 			'foldexpr'.
 

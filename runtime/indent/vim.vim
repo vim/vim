@@ -1,7 +1,7 @@
 " Vim indent file
 " Language:	Vim script
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Jun 16
+" Last Change:	2005 Jul 06
 
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")
@@ -52,8 +52,13 @@ function GetVimIndent()
 
   " If the previous line contains an "end" after a pipe, but not in an ":au"
   " command.  And not when there is a backslash before the pipe.
-  if getline(lnum) =~ '[^\\]|\s*\(ene\@!\)' && getline(lnum) !~ '^\s*au\%[tocmd]'
-    let ind = ind - &sw
+  " And when syntax HL is enabled avoid a match inside a string.
+  let line = getline(lnum)
+  let i = match(line, '[^\\]|\s*\(ene\@!\)')
+  if i > 0 && line !~ '^\s*au\%[tocmd]'
+    if !has('syntax_items') || synIDattr(synID(lnum, i + 2, 1), "name") !~ '\(Comment\|String\)$'
+      let ind = ind - &sw
+    endif
   endif
 
 
