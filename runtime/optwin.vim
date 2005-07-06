@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Jul 01
+" Last Change:	2005 Jul 06
 
 " If there already is an option window, jump to that one.
 if bufwinnr("option-window") > 0
@@ -395,6 +395,9 @@ if has("syntax")
   call append("$", "spellfile\tfile that \"zg\" adds good words to")
   call append("$", "\t(local to buffer)")
   call <SID>OptionL("spf")
+  call append("$", "spellcapcheck\tpattern to locate the end of a sentence")
+  call append("$", "\t(local to buffer)")
+  call <SID>OptionL("spc")
   call append("$", "spellsuggest\tmethods used to suggest corrections")
   call <SID>OptionG("sps", &sps)
 endif
@@ -989,6 +992,8 @@ call append("$", "shellcmdflag\targument for 'shell' to execute a command")
 call <SID>OptionG("shcf", &shcf)
 call append("$", "shellredir\tused to redirect command output to a file")
 call <SID>OptionG("srr", &srr)
+call append("$", "shelltemp\tuse a temp file for shell commands instead of using a pipe")
+call <SID>BinOptionG("stmp", &stmp)
 call append("$", "equalprg\tprogram used for \"=\" command")
 call append("$", "\t(global or local to buffer)")
 call <SID>OptionG("ep", &ep)

@@ -4107,7 +4107,8 @@ store_aff_word(word, spin, afflist, affile, ht, xht, comb, flags, pfxlist)
 			use_pfxlist = pfxlist;
 
 			/* When there are postponed prefixes... */
-			if (spin->si_prefroot != NULL)
+			if (spin->si_prefroot != NULL
+				&& spin->si_prefroot->wn_sibling != NULL)
 			{
 			    /* ... add a flag to indicate an affix was used. */
 			    use_flags |= WF_HAS_AFF;
