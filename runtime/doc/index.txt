@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 7.0aa.  Last change: 2005 Jun 28
+*index.txt*     For Vim version 7.0aa.  Last change: 2005 Jul 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1137,6 +1137,7 @@ The commands are sorted on the non-optional part of their name.
 |:elseif|	:elsei[f]	part of an :if command
 |:emenu|	:em[enu]	execute a menu by name
 |:endif|	:en[dif]	end previous :if
+|:endfor|	:endfo[r]	end previous :for
 |:endfunction|	:endf[unction]	end of a user function
 |:endtry|	:endt[ry]	end previous :try
 |:endwhile|	:endw[hile]	end previous :while
@@ -1158,11 +1159,12 @@ The commands are sorted on the non-optional part of their name.
 |:folddoopen|	:foldd[oopen]	execute command on lines not in a closed fold
 |:folddoclosed|	:folddoc[losed]	execute command on lines in a closed fold
 |:foldopen|	:foldo[pen]	open folds
+|:for|		:for		for loop
 |:function|	:fu[nction]	define a user function
 |:global|	:g[lobal]	execute commands for matching lines
 |:goto|		:go[to]		go to byte in the buffer
 |:grep|		:gr[ep]		run 'grepprg' and jump to first match
-|:grepadd|	:grepa[dd]	like grep, but append to current list
+|:grepadd|	:grepa[dd]	like :grep, but append to current list
 |:gui|		:gu[i]		start the GUI
 |:gvim|		:gv[im]		start the GUI
 |:hardcopy|	:ha[rdcopy]	send text to the printer
@@ -1195,6 +1197,7 @@ The commands are sorted on the non-optional part of their name.
 |:join|		:j[oin]		join lines
 |:jumps|	:ju[mps]	print the jump list
 |:k|		:k		set a mark
+|:keepalt|	:keepa[lt]	following command keeps the alternate file
 |:keepmarks|	:kee[pmarks]	following command keeps marks where they are
 |:keepjumps|	:keepj[jumps]	following command keeps jumplist and marks
 |:list|		:l[ist]		print lines
@@ -1233,6 +1236,7 @@ The commands are sorted on the non-optional part of their name.
 |:mode|		:mod[e]		show or change the screen mode
 |:mzscheme|	:mz[scheme]	execute MzScheme command
 |:mzfile|	:mzf[ile]	execute MzScheme script file
+|:nbkey|	:nb[key]	pass a key to Netbeans
 |:next|		:n[ext]		go to next file in the argument list
 |:new|		:new		create a new empty window
 |:nmap|		:nm[ap]		like ":map" but for Normal mode
@@ -1263,6 +1267,7 @@ The commands are sorted on the non-optional part of their name.
 |:pedit|	:ped[it]	edit file in the preview window
 |:perl|		:pe[rl]		execute Perl command
 |:print|	:p[rint]	print lines
+|:profdel|	:profd[el]	stop profiling a function or script
 |:profile|	:prof[ile]	profiling functions and scripts
 |:promptfind|	:pro[mtfind]	open GUI dialog for searching
 |:promptrepl| 	:promtr[epl]	open GUI dialog for search/replace
@@ -1312,6 +1317,7 @@ The commands are sorted on the non-optional part of their name.
 |:substitute|	:s[ubstitute]	find and replace text
 |:sNext|	:sN[ext]	split window and go to previous file in
 				argument list
+|:sandbox|	:san[dbox]	execute a command in the sandbox
 |:sargument|	:sa[rgument]	split window and go to specific file in
 				argument list
 |:sall|		:sal[l]		open a window for each file in argument list
@@ -1413,6 +1419,8 @@ The commands are sorted on the non-optional part of their name.
 |:version|	:ve[rsion]	print version number and other info
 |:verbose|	:verb[ose]	execute command with 'verbose' set
 |:vertical|	:vert[ical]	make following command split vertically
+|:vimgrep|	:vim[grep]	search for pattern in files
+|:vimgrepadd|	:vimgrepa[dd]	like :vimgrep, but append to current list
 |:visual|	:vi[sual]	same as ":edit", but turns off "Ex" mode
 |:viusage|	:viu[sage]	overview of Normal mode commands
 |:view|		:vie[w]		edit a file read-only
