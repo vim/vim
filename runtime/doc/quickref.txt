@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 7.0aa.  Last change: 2005 Apr 01
+*quickref.txt*  For Vim version 7.0aa.  Last change: 2005 Jul 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -686,8 +686,10 @@ Short explanation of each option:		*option-list*
 |'foldnestmax'|   |'fdn'|    maximum fold depth
 |'foldopen'|	  |'fdo'|    for which commands a fold will be opened
 |'foldtext'|	  |'fdt'|    expression used to display for a closed fold
+|'formatlistpat'| |'flp'|    pattern used to recognize a list header
 |'formatoptions'| |'fo'|     how automatic formatting is to be done
 |'formatprg'|	  |'fp'|     name of external program used with "gq" command
+|'fsync'|	  |'fs'|     whether to invoke fsync() after file write
 |'gdefault'|	  |'gd'|     the ":substitute" flag 'g' is default on
 |'grepformat'|	  |'gfm'|    format of 'grepprg' output
 |'grepprg'|	  |'gp'|     program to use for ":grep"
@@ -814,6 +816,7 @@ Short explanation of each option:		*option-list*
 |'shellquote'|	  |'shq'|    quote character(s) for around shell command
 |'shellredir'|	  |'srr'|    string to put output of filter in a temp file
 |'shellslash'|	  |'ssl'|    use forward slash for shell file names
+|'shelltemp'|	  |'stmp'|   whether to use a temp file for shell commands
 |'shelltype'|	  |'st'|     Amiga: influences how to use a shell
 |'shellxquote'|	  |'sxq'|    like 'shellquote', but include redirection
 |'shiftround'|	  |'sr'|     round indent to multiple of shiftwidth
@@ -831,6 +834,11 @@ Short explanation of each option:		*option-list*
 |'smartindent'|   |'si'|     smart autoindenting for C programs
 |'smarttab'|	  |'sta'|    use 'shiftwidth' when inserting <Tab>
 |'softtabstop'|	  |'sts'|    number of spaces that <Tab> uses while editing
+|'spell'|		     enable spell checking
+|'spellcapcheck'| |'spc'|    pattern to locate end of a sentence
+|'spellfile'|	  |'spf'|    files where |zg| and |zw| store words
+|'spelllang'|	  |'spl'|    language(s) to do spell checking for
+|'spellsuggest'|  |'sps'|    method(s) used to suggest spelling corrections
 |'splitbelow'|	  |'sb'|     new window from split is below the current one
 |'splitright'|	  |'spr'|    new window is put right of the current one
 |'startofline'|   |'sol'|    commands move cursor to first blank in line
@@ -875,6 +883,7 @@ Short explanation of each option:		*option-list*
 |'updatecount'|   |'uc'|     after this many characters flush swap file
 |'updatetime'|	  |'ut'|     after this many milliseconds flush swap file
 |'verbose'|	  |'vbs'|    give informative messages
+|'verbosefile'|	  |'vfile'|  file to write messages in
 |'viewdir'|	  |'vdir'|   directory where to store files with :mkview
 |'viewoptions'|   |'vop'|    specifies what to save for :mkview
 |'viminfo'|	  |'vi'|     use .viminfo file upon startup and exiting
@@ -888,6 +897,7 @@ Short explanation of each option:		*option-list*
 |'wildignore'|	  |'wig'|    files matching these patterns are not completed
 |'wildmenu'|	  |'wmnu'|   use menu for command line completion
 |'wildmode'|	  |'wim'|    mode for 'wildchar' command-line expansion
+|'wildoptions'|   |'wop'|    specifies how command line completion is done.
 |'winaltkeys'|	  |'wak'|    when the windows system handles ALT keys
 |'winheight'|	  |'wh'|     minimum number of lines for the current window
 |'winfixheight'|  |'wfh'|    keep window height when opening/closing windows
