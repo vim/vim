@@ -15,5 +15,5 @@ void gui_mch_show_popupmenu __ARGS((vimmenu_T *menu));
 void gui_mch_find_dialog __ARGS((exarg_T *eap));
 void gui_mch_replace_dialog __ARGS((exarg_T *eap));
 void ex_helpfind __ARGS((exarg_T *eap));
-void gui_make_popup __ARGS((char_u *path_name));
+void gui_make_popup __ARGS((char_u *path_name, int mouse_pos));
 /* vim: set ft=cpp : */
