@@ -9,7 +9,8 @@
 SPELLDIR = ..
 FILES    = pl_PL.aff pl_PL.dic
 
-all: $(SPELLDIR)/pl.iso-8859-2.spl $(SPELLDIR)/pl.utf-8.spl ../README_pl.txt
+all: $(SPELLDIR)/pl.iso-8859-2.spl $(SPELLDIR)/pl.utf-8.spl \
+        $(SPELLDIR)/pl.cp1250.spl ../README_pl.txt
 
 $(SPELLDIR)/pl.iso-8859-2.spl : $(VIM) $(FILES)
         :sys env LANG=pl_PL.ISO8859-2 $(VIM) -e -c "mkspell! $(SPELLDIR)/pl pl_PL" -c q
@@ -17,22 +18,47 @@ $(SPELLDIR)/pl.iso-8859-2.spl : $(VIM) $(FILES)
 $(SPELLDIR)/pl.utf-8.spl : $(VIM) $(FILES)
         :sys env LANG=pl_PL.UTF-8 $(VIM) -e -c "mkspell! $(SPELLDIR)/pl pl_PL" -c q
 
+# On Unix 'encoding' can't be "cp1250", use "8bit-cp1250" instead.
+$(SPELLDIR)/pl.cp1250.spl : $(VIM) $(FILES)
+        :sys $(VIM) -e -c "set enc=8bit-cp1250" -c "mkspell! $(SPELLDIR)/pl pl_PL" -c q
+        :move {f} $(SPELLDIR)/pl.8bit-cp1250.spl $(SPELLDIR)/pl.cp1250.spl
+
 ../README_pl.txt: README_pl_PL.txt
         :copy $source $target
 
 #
 # Fetching the files from OpenOffice.org.
 #
-OODIR = http://ftp.services.openoffice.org/pub/OpenOffice.org/contrib/dictionaries
-:attr {fetch = $(OODIR)/%file%} pl_PL.zip
+#OODIR = http://ftp.services.openoffice.org/pub/OpenOffice.org/contrib/dictionaries
+#:attr {fetch = $(OODIR)/%file%} pl_PL.zip
+
+#
+# Fetching the files from
+#
+HTTPDIR = http://www.kurnik.pl/slownik/ort/
 
 # The files don't depend on the .zip file so that we can delete it.
 # Only download the zip file if the targets don't exist.
+# This is a bit tricky, since the file name includes the date.
 pl_PL.aff pl_PL.dic: {buildcheck=}
-        :assertpkg unzip patch
-        :fetch pl_PL.zip
-        :sys $(UNZIP) pl_PL.zip
-        :delete pl_PL.zip
+        :assertpkg tar bunzip2
+        @from time import strftime, gmtime, time
+        @for day in range(20):
+            date = `strftime('%Y%m%d', gmtime(time() - day * 24 * 60 * 60))`
+            base =  alt-myspell-pl-$(date)
+            fname = $(base).tar.bz2
+            :attr {fetch = $(HTTPDIR)/%file%} $(fname)
+            @try:
+                :fetch $(fname)
+                ok = 1
+            @except:
+                ok = 0
+            @if ok:
+                @break
+        :sys bunzip2 -c $(fname) | tar xf -
+        :move $(base)/* .
+        :deldir $(base)
+        :delete $(fname)
         @if not os.path.exists('pl_PL.orig.aff'):
                 :copy pl_PL.aff pl_PL.orig.aff
         @if not os.path.exists('pl_PL.orig.dic'):
