@@ -7,7 +7,6 @@ void hash_debug_results __ARGS((void));
 int hash_add __ARGS((hashtab_T *ht, char_u *key));
 int hash_add_item __ARGS((hashtab_T *ht, hashitem_T *hi, char_u *key, hash_T hash));
 void hash_remove __ARGS((hashtab_T *ht, hashitem_T *hi));
-int hash_delete __ARGS((hashtab_T *ht, char_u *key));
 void hash_lock __ARGS((hashtab_T *ht));
 void hash_unlock __ARGS((hashtab_T *ht));
 hash_T hash_hash __ARGS((char_u *key));
