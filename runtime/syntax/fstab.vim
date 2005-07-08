@@ -3,7 +3,7 @@
 " Maintaner:	Radu Dineiu <littledragon@altern.org>
 " URL:		http://ld.yi.org/vim/fstab.vim
 " ChangeLog:	http://ld.yi.org/vim/fstab.ChangeLog
-" Last Change:	2003 Apr 30
+" Last Change:	2005 Jul 07
 " Version:	0.61
 
 if version < 600
@@ -32,7 +32,7 @@ syn keyword fsMountPointKeyword contained none swap
 " Type
 syn cluster fsTypeCluster contains=fsTypeKeyword,fsTypeError
 syn match fsTypeError /\s\+\zs\w\+/ contained
-syn keyword fsTypeKeyword contained adfs affs auto autofs cd9660 coda cramfs devfs devpts efs ext2 ext3 fdesc hfs hpfs iso9660 kernfs linprocfs mfs minix msdos ncpfs nfs ntfs nwfs null portal proc procfs qnx4 reiserfs romfs smbfs std sysv swap tmpfs udf ufs umap umsdos union vfat xfs
+syn keyword fsTypeKeyword contained adfs affs auto autofs cd9660 coda cramfs devfs devpts efs ext2 ext3 fdesc hfs hpfs iso9660 kernfs linprocfs mfs minix msdos ncpfs nfs ntfs nwfs null portal proc procfs qnx4 reiserfs romfs smbfs std sysv swap tmpfs udf ufs umap umsdos union usbfs vfat xfs
 
 " Options
 " -------
