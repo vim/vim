@@ -2411,6 +2411,10 @@ gui_mch_show_popupmenu(vimmenu_T *menu)
 		   3U, (guint32)GDK_CURRENT_TIME);
 }
 
+/* Ugly global variable to pass "mouse_pos" flag from gui_make_popup() to
+ * popup_menu_position_func(). */
+static int popup_mouse_pos;
+
 /*
  * Menu position callback; used by gui_make_popup() to place the menu
  * at the current text cursor position.
@@ -2427,10 +2431,18 @@ popup_menu_position_func(GtkMenu *menu,
 # endif
 			 gpointer user_data)
 {
-    if (curwin != NULL && gui.drawarea != NULL && gui.drawarea->window != NULL)
-    {
-	gdk_window_get_origin(gui.drawarea->window, x, y);
+    gdk_window_get_origin(gui.drawarea->window, x, y);
 
+    if (popup_mouse_pos)
+    {
+	int	mx, my;
+
+	gui_mch_getmouse(&mx, &my);
+	*x += mx;
+	*y += my;
+    }
+    else if (curwin != NULL && gui.drawarea != NULL && gui.drawarea->window != NULL)
+    {
 	/* Find the cursor position in the current window */
 	*x += FILL_X(W_WINCOL(curwin) + curwin->w_wcol + 1) + 1;
 	*y += FILL_Y(W_WINROW(curwin) + curwin->w_wrow + 1) + 1;
@@ -2438,9 +2450,11 @@ popup_menu_position_func(GtkMenu *menu,
 }
 
     void
-gui_make_popup(char_u *path_name)
+gui_make_popup(char_u *path_name, int mouse_pos)
 {
     vimmenu_T *menu;
+
+    popup_mouse_pos = mouse_pos;
 
     menu = gui_find_menu(path_name);
 

@@ -15,7 +15,7 @@ char_u *gui_mch_browse __ARGS((int saving, char_u *title, char_u *dflt, char_u *
 char_u *gui_mch_browsedir __ARGS((char_u *title, char_u *initdir));
 int gui_mch_dialog __ARGS((int type, char_u *title, char_u *message, char_u *buttons, int def_but, char_u *textfield));
 void gui_mch_show_popupmenu __ARGS((vimmenu_T *menu));
-void gui_make_popup __ARGS((char_u *path_name));
+void gui_make_popup __ARGS((char_u *path_name, int mouse_pos));
 void gui_mch_find_dialog __ARGS((exarg_T *eap));
 void gui_mch_replace_dialog __ARGS((exarg_T *eap));
 void gui_gtk_synch_fonts __ARGS((void));

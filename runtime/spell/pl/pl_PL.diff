@@ -1,5 +1,5 @@
-*** pl_PL.orig.aff	Wed Mar 30 06:50:02 2005
---- pl_PL.aff	Sat Jun 18 19:45:45 2005
+*** pl_PL.orig.aff	Fri Jul  8 06:50:06 2005
+--- pl_PL.aff	Fri Jul  8 23:03:48 2005
 ***************
 *** 3,4 ****
 --- 3,7 ----
@@ -8,24 +8,3 @@
 + LOW ±Ά³µ¶¨ΉΊ»ΌΎΏ±²³΄µ¶·ΈΉΊ»Ό½ΎΏΰαβγδεζηθικλμνξοπρςστυφψωϊϋόύώίÿ
 + UPP ΅Ά£¥¦¨©ª«¬®―±²³΄µ¶·ΈΉΊ»Ό½ΎΏΐΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡÒΣΤΥΦΨΩΪΫάέήίÿ
   
-***************
-*** 6614 ****
---- 6617,6634 ----
-  SFX y   y         ie        jmy
-+ 
-+ # REP entries proposed by Mikolaj Machowski:
-+ REP 14
-+ REP b   p
-+ REP p   b
-+ REP Ώ   rz
-+ REP rz  Ώ
-+ REP w   f
-+ REP f   w
-+ REP σ   u
-+ REP u   σ
-+ REP ci  ζ
-+ REP ζ   ci
-+ REP si  ¶
-+ REP ¶   si
-+ REP ni  ρ
-+ REP ρ   ni

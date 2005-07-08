@@ -2206,7 +2206,7 @@ gui_mch_show_popupmenu(vimmenu_T *menu)
 }
 
     void
-gui_make_popup(char_u *path_name)
+gui_make_popup(char_u *path_name, int mouse_pos)
 {
     vimmenu_T	*menu = gui_find_menu(path_name);
 
@@ -2216,7 +2216,15 @@ gui_make_popup(char_u *path_name)
 
 	/* Find the position of the current cursor */
 	GetDCOrgEx(s_hdc, &p);
-	if (curwin != NULL)
+	if (mouse_pos)
+	{
+	    int	mx, my;
+
+	    gui_mch_getmouse(&mx, &my);
+	    p.x += mx;
+	    p.y += my;
+	}
+	else if (curwin != NULL)
 	{
 	    p.x += TEXT_X(W_WINCOL(curwin) + curwin->w_wcol + 1);
 	    p.y += TEXT_Y(W_WINROW(curwin) + curwin->w_wrow + 1);

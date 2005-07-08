@@ -2,7 +2,7 @@
 " You can also use this as a start for your own set of menus.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Jul 06
+" Last Change:	2005 Jul 08
 
 " Note that ":an" (short for ":anoremenu") is often used to make a menu work
 " in all modes and avoid side effects from mappings defined by the user.
@@ -571,7 +571,7 @@ while strlen(s:n) > 0
   endif
   " Ignore case for VMS and windows
   let s:name = substitute(s:name, '\c.*[/\\:\]]\([^/\\:]*\)\.vim', '\1', '')
-  exe "an 30.440." . s:idx . ' &Tools.se&T\ Compiler.' . s:name . " :compiler " . s:name . "<CR>"
+  exe "an 30.440." . s:idx . ' &Tools.Se&T\ Compiler.' . s:name . " :compiler " . s:name . "<CR>"
   unlet s:name
   unlet s:i
   let s:idx = s:idx + 10
