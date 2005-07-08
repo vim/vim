@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 07
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,8 +30,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Test59 crashes occasionally (but not in the debugger....)
-
 Add extra list of file locations.  Can be used with:
     :ltag	      list of matching tags, like :tselect
 
@@ -56,6 +54,10 @@ Win32: Balloon text can't contain line break.
     Add has("balloon_multiline")
 
 Win32: Crash when pasting Simplified Chinese in utf-8. (rainux, 2005 June 20)
+
+Netrw plugin problems:
+- when 'autochdir' is set the current dir is wrong (Salman Halim)
+- "cd -" doesn't work. (Suresh Govindachar)
 
 Mac unicode patch (Da Woon Jung):
 - selecting proportional font breaks display

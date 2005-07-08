@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jun 30
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jul 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -675,6 +675,9 @@ restarted.
 When using @= in an expression the value is expression @= contains.  ":let @=
 = value" can be used to set the register contents.
 
+A ! can be added to ":popup" to have the popup menu appear at the mouse
+pointer position instead of the text cursor.
+
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*
 
@@ -1163,5 +1166,8 @@ given.  Now report the first encountered error.
 When using ":e ++enc=name file" and iconv() was used for conversion an error
 caused a fallback to no conversion.  Now replace a character with '?' and
 continue.
+
+When opening a new buffer the local value of 'bomb' was not initialized from
+the global value.
 
  vim:tw=78:ts=8:ft=help:norl:
