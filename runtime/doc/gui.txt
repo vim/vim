@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 7.0aa.  Last change: 2005 Apr 11
+*gui.txt*       For Vim version 7.0aa.  Last change: 2005 Jul 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -897,9 +897,13 @@ it behaves in a strange way.
 				appear on the menu-bar (see |hidden-menus|).
 				{only available for Win32 and GTK GUI}
 
+:popu[p]! {name}		Like above, but use the position of the mouse
+				pointer instead of the cursor.
+
 Example: >
 	:popup File
-will make the "File" menu (if there is one) appear at the text cursor. >
+will make the "File" menu (if there is one) appear at the text cursor (mouse
+pointer if ! was used). >
 
 	:amenu ]Toolbar.Make	:make<CR>
 	:popup ]Toolbar

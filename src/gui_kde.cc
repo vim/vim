@@ -612,8 +612,9 @@ gui_mch_show_popupmenu(vimmenu_T *menu)//{{{
     menu->widget->popup(QCursor::pos());
 }//}}}
 
+/* TODO: use mouse_pos */
 void
-gui_make_popup (char_u *pathname)//{{{
+gui_make_popup (char_u *pathname, int mouse_pos)//{{{
 {
     vimmenu_T *menu = gui_find_menu(pathname);
 

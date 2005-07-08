@@ -66,7 +66,7 @@ void gui_mch_draw_string __ARGS((int row, int col, char_u *text, int len, int fl
 void gui_mch_flush __ARGS((void));
 void gui_mch_add_menu __ARGS((vimmenu_T *menu, int pos));
 void gui_mch_show_popupmenu __ARGS((vimmenu_T *menu));
-void gui_make_popup __ARGS((char_u *path_name));
+void gui_make_popup __ARGS((char_u *path_name, int mouse_pos));
 void gui_mch_add_menu_item __ARGS((vimmenu_T *menu, int idx));
 void gui_mch_destroy_menu __ARGS((vimmenu_T *menu));
 void gui_mch_menu_grey __ARGS((vimmenu_T *menu, int grey));

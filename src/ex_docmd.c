@@ -7043,7 +7043,7 @@ ex_tearoff(eap)
 ex_popup(eap)
     exarg_T	*eap;
 {
-    gui_make_popup(eap->arg);
+    gui_make_popup(eap->arg, eap->forceit);
 }
 #endif
 

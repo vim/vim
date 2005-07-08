@@ -6143,7 +6143,7 @@ spell_suggest()
     if (curbuf->b_cap_prog != NULL)
     {
 	endcol = 0;
-	if (skipwhite(line) - line == curwin->w_cursor.col)
+	if ((int)(skipwhite(line) - line) == (int)curwin->w_cursor.col)
 	{
 	    /* At start of line, check if previous line is empty or sentence
 	     * ends there. */
@@ -9622,10 +9622,10 @@ spell_edit_score(badword, goodword)
 	 * int array for easy access. */
 	for (p = badword, badlen = 0; *p != NUL; )
 	    wbadword[badlen++] = mb_ptr2char_adv(&p);
-	++badlen;
+	wbadword[badlen++] = 0;
 	for (p = goodword, goodlen = 0; *p != NUL; )
 	    wgoodword[goodlen++] = mb_ptr2char_adv(&p);
-	++goodlen;
+	wgoodword[goodlen++] = 0;
     }
     else
 #endif
