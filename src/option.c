@@ -8705,6 +8705,9 @@ buf_copy_options(buf, flags)
 	    buf->b_p_wm_nopaste = p_wm_nopaste;
 	    buf->b_p_wm_nobin = p_wm_nobin;
 	    buf->b_p_bin = p_bin;
+#ifdef FEAT_MBYTE
+	    buf->b_p_bomb = p_bomb;
+#endif
 	    buf->b_p_et = p_et;
 	    buf->b_p_et_nobin = p_et_nobin;
 	    buf->b_p_ml = p_ml;
