@@ -100,6 +100,7 @@ static int	expand_showtail __ARGS((expand_T *xp));
 static int	ExpandRTDir __ARGS((char_u *pat, int *num_file, char_u ***file, char *dirname));
 # if defined(FEAT_USR_CMDS) && defined(FEAT_EVAL)
 static int	ExpandUserDefined __ARGS((expand_T *xp, regmatch_T *regmatch, int *num_file, char_u ***file));
+static int	ExpandUserList __ARGS((expand_T *xp, int *num_file, char_u ***file));
 # endif
 #endif
 
@@ -3702,7 +3703,8 @@ addstar(fname, len, context)
 
 		/* Custom expansion takes care of special things, match
 		 * backslashes literally (perhaps also for other types?) */
-		if (context == EXPAND_USER_DEFINED && fname[i] == '\\')
+		if ((context == EXPAND_USER_DEFINED ||
+		     context == EXPAND_USER_LIST) && fname[i] == '\\')
 		    new_len++;		/* '\' becomes "\\" */
 	    }
 	    retval = alloc(new_len);
@@ -3715,7 +3717,9 @@ addstar(fname, len, context)
 		    /* Skip backslash.  But why?  At least keep it for custom
 		     * expansion. */
 		    if (context != EXPAND_USER_DEFINED
-					    && fname[i] == '\\' && ++i == len)
+			    && context != EXPAND_USER_LIST
+			    && fname[i] == '\\'
+			    && ++i == len)
 			break;
 
 		    switch (fname[i])
@@ -3729,7 +3733,8 @@ addstar(fname, len, context)
 			case '.':   if (context == EXPAND_BUFFERS)
 					retval[j++] = '\\';
 				    break;
-			case '\\':  if (context == EXPAND_USER_DEFINED)
+			case '\\':  if (context == EXPAND_USER_DEFINED
+					    || context == EXPAND_USER_LIST)
 					retval[j++] = '\\';
 				    break;
 		    }
@@ -4029,6 +4034,10 @@ ExpandFromContext(xp, pat, num_file, file, options)
 	return ExpandRTDir(pat, num_file, file, "colors");
     if (xp->xp_context == EXPAND_COMPILER)
 	return ExpandRTDir(pat, num_file, file, "compiler");
+# if defined(FEAT_USR_CMDS) && defined(FEAT_EVAL)
+    if (xp->xp_context == EXPAND_USER_LIST)
+        return ExpandUserList(xp, num_file, file);
+# endif
 
     regmatch.regprog = vim_regcomp(pat, p_magic ? RE_MAGIC : 0);
     if (regmatch.regprog == NULL)
@@ -4185,27 +4194,25 @@ ExpandGeneric(xp, regmatch, num_file, file, func)
 
 # if defined(FEAT_USR_CMDS) && defined(FEAT_EVAL)
 /*
- * Expand names with a function defined by the user.
+ * call "user_expand_func()" to invoke a user defined VimL function and return
+ * the result (either a string or a List).
  */
-    static int
-ExpandUserDefined(xp, regmatch, num_file, file)
+    static void *
+call_user_expand_func(user_expand_func, xp, num_file, file)
+    void	*(*user_expand_func) __ARGS((char_u *, int, char_u **, int));
     expand_T	*xp;
-    regmatch_T	*regmatch;
     int		*num_file;
     char_u	***file;
 {
+    char_u	keep;
+    char_u	num[50];
     char_u	*args[3];
-    char_u	*all;
-    char_u	*s;
-    char_u	*e;
-    char_u      keep;
-    char_u      num[50];
-    garray_T	ga;
     int		save_current_SID = current_SID;
+    void	*ret;
     struct cmdline_info	    save_ccline;
 
     if (xp->xp_arg == NULL || xp->xp_arg[0] == '\0')
-	return FAIL;
+	return NULL;
     *num_file = 0;
     *file = NULL;
 
@@ -4222,17 +4229,38 @@ ExpandUserDefined(xp, regmatch, num_file, file)
     ccline.cmdprompt = NULL;
     current_SID = xp->xp_scriptID;
 
-    all = call_vim_function(xp->xp_arg, 3, args, FALSE);
+    ret = user_expand_func(xp->xp_arg, 3, args, FALSE);
 
     ccline = save_ccline;
     current_SID = save_current_SID;
 
     ccline.cmdbuff[ccline.cmdlen] = keep;
-    if (all == NULL)
+
+    return ret;
+}
+
+/*
+ * Expand names with a function defined by the user.
+ */
+    static int
+ExpandUserDefined(xp, regmatch, num_file, file)
+    expand_T	*xp;
+    regmatch_T	*regmatch;
+    int		*num_file;
+    char_u	***file;
+{
+    char_u	*retstr;
+    char_u	*s;
+    char_u	*e;
+    char_u      keep;
+    garray_T	ga;
+
+    retstr = call_user_expand_func(call_func_retstr, xp, num_file, file);
+    if (retstr == NULL)
 	return FAIL;
 
     ga_init2(&ga, (int)sizeof(char *), 3);
-    for (s = all; *s != NUL; s = e)
+    for (s = retstr; *s != NUL; s = e)
     {
 	e = vim_strchr(s, '\n');
 	if (e == NULL)
@@ -4258,7 +4286,45 @@ ExpandUserDefined(xp, regmatch, num_file, file)
 	if (*e != NUL)
 	    ++e;
     }
-    vim_free(all);
+    vim_free(retstr);
+    *file = ga.ga_data;
+    *num_file = ga.ga_len;
+    return OK;
+}
+
+/*
+ * Expand names with a list returned by a function defined by the user.
+ */
+    static int
+ExpandUserList(xp, num_file, file)
+    expand_T	*xp;
+    int		*num_file;
+    char_u	***file;
+{
+    list_T      *retlist;
+    listitem_T	*li;
+    garray_T	ga;
+
+    retlist = call_user_expand_func(call_func_retlist, xp, num_file, file);
+    if (retlist == NULL)
+	return FAIL;
+
+    ga_init2(&ga, (int)sizeof(char *), 3);
+    /* Loop over the items in the list. */
+    for (li = retlist->lv_first; li != NULL; li = li->li_next)
+    {
+	if (li->li_tv.v_type != VAR_STRING)
+	    continue;  /* Skip non-string items */
+
+	if (ga_grow(&ga, 1) == FAIL)
+	    break;
+
+	((char_u **)ga.ga_data)[ga.ga_len] =
+	    vim_strsave(li->li_tv.vval.v_string);
+	++ga.ga_len;
+    }
+    list_unref(retlist);
+
     *file = ga.ga_data;
     *num_file = ga.ga_len;
     return OK;

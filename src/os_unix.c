@@ -4432,7 +4432,7 @@ RealWaitForChar(fd, msec, check_for_gpm)
 #endif
 
 #ifdef MAY_LOOP
-    while (1)
+    for (;;)
 #endif
     {
 #ifdef MAY_LOOP

@@ -18,10 +18,8 @@ $(SPELLDIR)/pl.iso-8859-2.spl : $(VIM) $(FILES)
 $(SPELLDIR)/pl.utf-8.spl : $(VIM) $(FILES)
         :sys env LANG=pl_PL.UTF-8 $(VIM) -e -c "mkspell! $(SPELLDIR)/pl pl_PL" -c q
 
-# On Unix 'encoding' can't be "cp1250", use "8bit-cp1250" instead.
 $(SPELLDIR)/pl.cp1250.spl : $(VIM) $(FILES)
-        :sys $(VIM) -e -c "set enc=8bit-cp1250" -c "mkspell! $(SPELLDIR)/pl pl_PL" -c q
-        :move {f} $(SPELLDIR)/pl.8bit-cp1250.spl $(SPELLDIR)/pl.cp1250.spl
+        :sys $(VIM) -e -c "set enc=cp1250" -c "mkspell! $(SPELLDIR)/pl pl_PL" -c q
 
 ../README_pl.txt: README_pl_PL.txt
         :copy $source $target

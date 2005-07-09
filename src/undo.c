@@ -1372,7 +1372,7 @@ u_alloc_line(size)
     /* In this block find a chunk with enough space. */
     mprev = curbuf->b_m_search;
     mp = curbuf->b_m_search->m_next;
-    while (1)
+    for (;;)
     {
 	if (mp == NULL)			    /* at end of the list */
 	    mp = &(mbp->mb_info);	    /* wrap around to begin */
