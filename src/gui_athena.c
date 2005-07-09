@@ -2309,7 +2309,7 @@ gui_mch_dialog(type, title, message, buttons, dfltbutton, textfield)
 
     XtPopup(dialogshell, XtGrabNonexclusive);
 
-    while (1)
+    for (;;)
     {
 	XtAppNextEvent(app, &event);
 	XtDispatchEvent(&event);
