@@ -3562,7 +3562,7 @@ ex_append(eap)
     if (curbuf->b_p_iminsert == B_IMODE_LMAP)
 	State |= LANGMAP;
 
-    while (1)
+    for (;;)
     {
 	msg_scroll = TRUE;
 	need_wait_return = FALSE;

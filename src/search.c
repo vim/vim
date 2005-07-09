@@ -3745,7 +3745,7 @@ find_next_quote(line, col, quotechar, escape)
 {
     int		c;
 
-    while (1)
+    for (;;)
     {
 	c = line[col];
 	if (c == NUL)
@@ -3886,7 +3886,7 @@ current_quote(oap, count, include, quotechar)
 	 * Also do this when there is a Visual area, a' may leave the cursor
 	 * in between two strings. */
 	col_start = 0;
-	while (1)
+	for (;;)
 	{
 	    /* Find open quote character. */
 	    col_start = find_next_quote(line, col_start, quotechar, NULL);

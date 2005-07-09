@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 08
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,6 +29,11 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+9   Editing a XML file with a long line is extremely slow.  Example file from
+    Randy Parker (Dec 13).  Editing the dictionaries for engspchk plugin with
+    syntax highlighting is also very slow.
+    Limit the searching for items to a few hundred characters?
 
 Add extra list of file locations.  Can be used with:
     :ltag	      list of matching tags, like :tselect
@@ -862,10 +867,6 @@ Macintosh:
     Alternate one: http://www.pramodx.20m.com/tee_for_win32.htm, but Walter
     Briscoe says it's not as good.
 8   'fillchars' doesn't work for multi-byte characters.
-9   Editing a XML file with a long line is extremely slow.  Example file from
-    Randy Parker (Dec 13).  Editing the dictionaries for engspchk plugin with
-    syntax highlighting is also very slow.
-    Limit the searching for items to a few hundred characters?
 8   Command line completion: buffers "foo.txt" and "../b/foo.txt", completing
     ":buf foo<Tab>" doesn't find the second one. (George V. Reilly)
 7   Output for ":scriptnames" and ":breaklist" should shorten the file names:
@@ -2339,6 +2340,11 @@ Insert mode:
 8   Wrong indent below ? : with ():
 	if ((a ? (b) : c) != 0)
 		       aligns with ":".
+8   Using "+" part of 'cinoptions' where it's not expected (Alexei Alexandrov):
+	if (a)
+	{
+	} else
+			asdf;
 8   Wrong indent for ":" after a method with line break in arguments:
 	Foo::Foo (int one,
 		    int two)

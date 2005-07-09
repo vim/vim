@@ -1272,28 +1272,29 @@ get_spellword(list, pp)
 
 #if (defined(FEAT_USR_CMDS) && defined(FEAT_CMDL_COMPL)) || defined(PROTO)
 /*
- * Call some vimL function and return the result as a string
+ * Call some vimL function and return the result in "*rettv".
  * Uses argv[argc] for the function arguments.
+ * Returns OK or FAIL.
  */
-    char_u *
-call_vim_function(func, argc, argv, safe)
+    static int
+call_vim_function(func, argc, argv, safe, rettv)
     char_u      *func;
     int		argc;
     char_u      **argv;
     int		safe;		/* use the sandbox */
+    typval_T	*rettv;
 {
-    char_u	*retval = NULL;
-    typval_T	rettv;
     typval_T	*argvars;
     long	n;
     int		len;
     int		i;
     int		doesrange;
     void	*save_funccalp = NULL;
+    int		ret;
 
     argvars = (typval_T *)alloc((unsigned)(argc * sizeof(typval_T)));
     if (argvars == NULL)
-	return NULL;
+	return FAIL;
 
     for (i = 0; i < argc; i++)
     {
@@ -1325,22 +1326,72 @@ call_vim_function(func, argc, argv, safe)
 	++sandbox;
     }
 
-    rettv.v_type = VAR_UNKNOWN;		/* clear_tv() uses this */
-    if (call_func(func, (int)STRLEN(func), &rettv, argc, argvars,
+    rettv->v_type = VAR_UNKNOWN;		/* clear_tv() uses this */
+    ret = call_func(func, (int)STRLEN(func), rettv, argc, argvars,
 		    curwin->w_cursor.lnum, curwin->w_cursor.lnum,
-		    &doesrange, TRUE, NULL) == OK)
-	retval = vim_strsave(get_tv_string(&rettv));
-
-    clear_tv(&rettv);
-    vim_free(argvars);
-
+		    &doesrange, TRUE, NULL);
     if (safe)
     {
 	--sandbox;
 	restore_funccal(save_funccalp);
     }
+    vim_free(argvars);
+
+    if (ret == FAIL)
+	clear_tv(rettv);
+
+    return ret;
+}
+
+/*
+ * Call some vimL function and return the result as a string
+ * Uses argv[argc] for the function arguments.
+ */
+    void *
+call_func_retstr(func, argc, argv, safe)
+    char_u      *func;
+    int		argc;
+    char_u      **argv;
+    int		safe;		/* use the sandbox */
+{
+    typval_T	rettv;
+    char_u	*retval = NULL;
+
+    if (call_vim_function(func, argc, argv, safe, &rettv) == FAIL)
+	return NULL;
+
+    retval = vim_strsave(get_tv_string(&rettv));
+
+    clear_tv(&rettv);
+
     return retval;
 }
+
+/*
+ * Call some vimL function and return the result as a list
+ * Uses argv[argc] for the function arguments.
+ */
+    void *
+call_func_retlist(func, argc, argv, safe)
+    char_u      *func;
+    int		argc;
+    char_u      **argv;
+    int		safe;		/* use the sandbox */
+{
+    typval_T	rettv;
+
+    if (call_vim_function(func, argc, argv, safe, &rettv) == FAIL)
+	return NULL;
+
+    if (rettv.v_type != VAR_LIST)
+    {
+	clear_tv(&rettv);
+	return NULL;
+    }
+
+    return rettv.vval.v_list;
+}
+
 #endif
 
 /*
@@ -1640,7 +1691,7 @@ skip_var_list(arg, var_count, semicolon)
     {
 	/* "[var, var]": find the matching ']'. */
 	p = arg;
-	while (1)
+	for (;;)
 	{
 	    p = skipwhite(p + 1);	/* skip whites after '[', ';' or ',' */
 	    s = skip_var_one(p);
@@ -11315,7 +11366,7 @@ find_some_match(argvars, rettv, type)
     {
 	regmatch.rm_ic = p_ic;
 
-	while (1)
+	for (;;)
 	{
 	    if (l != NULL)
 	    {
@@ -11472,7 +11523,7 @@ max_min(argvars, rettv, domax)
 	    if (li != NULL)
 	    {
 		n = get_tv_number_chk(&li->li_tv, &error);
-		while (1)
+		for (;;)
 		{
 		    li = li->li_next;
 		    if (li == NULL)

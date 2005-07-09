@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jul 08
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jul 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -677,6 +677,14 @@ When using @= in an expression the value is expression @= contains.  ":let @=
 
 A ! can be added to ":popup" to have the popup menu appear at the mouse
 pointer position instead of the text cursor.
+
+The table with encodings has been expanded with many MS-Windows codepages,
+such as cp1250 and cp737, so that these can also be used on Unix without
+prepending "8bit-".
+
+Added the "customlist" completion argument to a user-defined command.  The
+user-defined completion function should return the completion candidates as a
+Vim List and the returned results are not filtered by Vim.
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*

@@ -5158,7 +5158,7 @@ cin_ispreproc_cont(pp, lnump)
     linenr_T	lnum = *lnump;
     int		retval = FALSE;
 
-    while (1)
+    for (;;)
     {
 	if (cin_ispreproc(line))
 	{

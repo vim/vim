@@ -2683,7 +2683,7 @@ call_completefunc(line, base, col, preproc)
     args[1] = base;
     args[2] = colbuf;
     args[3] = (char_u *)(preproc ? "1" : "0");
-    return call_vim_function(curbuf->b_p_cfu, 4, args, FALSE);
+    return (char_u *)call_func_retstr(curbuf->b_p_cfu, 4, args, FALSE);
 }
 
 /*
