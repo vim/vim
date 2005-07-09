@@ -317,7 +317,7 @@ vms_read(char *inbuf, size_t nbytes)
     function = (IO$_READLBLK | IO$M_EXTEND);
     memset(inbuf, 0, nbytes);
 
-    while (1)
+    for (;;)
     {
 	status = sys$qiow(0, iochan, function, &iosb, 0, 0, inbuf, nbytes - 1,
 					       0, 0, &itmlst, sizeof(itmlst));

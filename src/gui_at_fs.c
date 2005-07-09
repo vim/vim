@@ -2855,7 +2855,7 @@ vim_SelFile(toplevel, prompt, init_path, show_entry, x, y, fg, bg, scroll_fg, sc
     SFdirModTimerId = XtAppAddTimeOut(SFapp, (unsigned long) 1000,
 	    SFdirModTimer, (XtPointer) NULL);
 
-    while (1)
+    for (;;)
     {
 	XtAppNextEvent(SFapp, &event);
 	XtDispatchEvent(&event);

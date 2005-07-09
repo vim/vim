@@ -932,26 +932,36 @@ completion can be enabled:
 	-complete=tag_listfiles	tags, file names are shown when CTRL-D is hit
 	-complete=var		user variables
 	-complete=custom,{func} custom completion, defined via {func}
+	-complete=customlist,{func} custom completion, defined via {func}
 
 Custom completion			    *:command-completion-custom*
 							*E467* *E468*
 It is possible to define customized completion schemes via the "custom,{func}"
-completion argument.  The {func} part should be a function with the following
-prototype >
+or the "customlist,{func}" completion argument.  The {func} part should be a
+function with the following prototype >
 
 	:function {func}(ArgLead, CmdLine, CursorPos)
 
-The function need not use all these arguments, but it should provide the
-completion candidates as the return value, one per line in a newline separated
-string.  The function arguments are:
+The function need not use all these arguments. The function should provide the
+completion candidates as the return value.
+
+For the "custom" argument, the function should return the completion
+candidates one per line in a newline separated string.
+
+For the "customlist" argument, the function should return the completion
+candidates as a Vim List. Non-string items in the list are ignored.
+
+The function arguments are:
 	ArgLead		the leading portion of the argument currently being
 			completed on
 	CmdLine		the entire command line
 	CursorPos	the cursor position in it
-The function may use these for determining context.  It is not necessary to
-filter candidates against the (implicit pattern in) ArgLead.  Vim will do
-filter the candidates with its regexp engine after function return, and this
-is probably more efficient in most cases.
+The function may use these for determining context.  For the "custom"
+argument, it is not necessary to filter candidates against the (implicit
+pattern in) ArgLead.  Vim will do filter the candidates with its regexp engine
+after function return, and this is probably more efficient in most cases. For
+the "customlist" argument, Vim will not filter the returned completion
+candidates and the user supplied function should filter the candidates.
 
 The following example lists user names to a Finger command >
     :com -complete=custom,ListUsers -nargs=1 Finger !finger <args>
@@ -959,6 +969,14 @@ The following example lists user names to a Finger command >
     :    return system("cut -d: -f1 /etc/passwd")
     :endfun
 
+The following example completes filenames from the directories specified in
+the 'path' option: >
+    :com -nargs=1 -bang -complete=customlist,EditFileComplete
+			\ EditFile edit<bang> <args>
+    :fun EditFileComplete(A,L,P)
+    :    return split(globpath(&path, a:ArgLead))
+    :endfun
+<
 Range handling						*E177* *E178*
 
 By default, user-defined commands do not accept a line number range.  However,

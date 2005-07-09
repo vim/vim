@@ -648,6 +648,7 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 #define EXPAND_COLORS		28
 #define EXPAND_COMPILER		29
 #define EXPAND_USER_DEFINED	30
+#define EXPAND_USER_LIST	31
 
 /* Values for exmode_active (0 is no exmode) */
 #define EXMODE_NORMAL		1

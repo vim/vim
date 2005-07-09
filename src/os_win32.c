@@ -4828,7 +4828,7 @@ myresetstkoflw(void)
 	 * committed block. */
 	BYTE *pBlock = pStackBase;
 
-	while (1)
+	for (;;)
 	{
 	    if (VirtualQuery(pBlock, &mbi, sizeof mbi) == 0)
 		return 0;

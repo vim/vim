@@ -13,10 +13,12 @@ VIMRUNTIME = ../../runtime
 endif
 
 LANGUAGES =	af ca cs de en_GB es fr ga it ja ko no pl ru sk sv uk vi zh_TW \
-		zh_TW.UTF-8 zh_CN zh_CN.UTF-8
+		cs.cp1250 ja.sjis pl.cp1250 ru.cp1251 sk.cp1250 uk.cp1251 \
+		zh_TW.UTF-8 zh_CN zh_CN.cp936 zh_CN.UTF-8
 MOFILES =	af.mo ca.mo cs.mo de.mo en_GB.mo es.mo fr.mo ga.mo it.mo ja.mo \
 		ko.mo no.mo pl.mo ru.mo sk.mo sv.mo uk.mo vi.mo \
-		zh_TW.mo zh_TW.UTF-8.mo zh_CN.mo zh_CN.UTF-8.mo
+		cs.cp1250.mo ja.sjis.mo pl.cp1250.mo ru.cp1251.mo sk.cp1250.mo uk.cp1251.mo \
+		zh_TW.mo zh_TW.UTF-8.mo zh_CN.mo zh_CN.cp936.mo zh_CN.UTF-8.mo
 
 PACKAGE = vim
 

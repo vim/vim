@@ -3252,7 +3252,7 @@ set_one_cmd_context(xp, buff)
 		++xp->xp_pattern;
 #if defined(FEAT_USR_CMDS) && defined(FEAT_CMDL_COMPL)
 		/* Avoid that the assignment uses EXPAND_FILES again. */
-		if (compl != EXPAND_USER_DEFINED)
+		if (compl != EXPAND_USER_DEFINED && compl != EXPAND_USER_LIST)
 		    compl = EXPAND_ENV_VARS;
 #endif
 	    }
@@ -4992,6 +4992,7 @@ static struct
     {EXPAND_COMMANDS, "command"},
 #if defined(FEAT_EVAL) && defined(FEAT_CMDL_COMPL)
     {EXPAND_USER_DEFINED, "custom"},
+    {EXPAND_USER_LIST, "customlist"},
 #endif
     {EXPAND_DIRECTORIES, "dir"},
     {EXPAND_ENV_VARS, "environment"},
@@ -5301,7 +5302,8 @@ invalid_count:
 		return FAIL;
 	    }
 #if defined(FEAT_EVAL) && defined(FEAT_CMDL_COMPL)
-	    if (*compl != EXPAND_USER_DEFINED && arg != NULL)
+	    if (*compl != EXPAND_USER_DEFINED && *compl != EXPAND_USER_LIST &&
+		arg != NULL)
 #else
 	    if (arg != NULL)
 #endif
@@ -5310,7 +5312,8 @@ invalid_count:
 		return FAIL;
 	    }
 #if defined(FEAT_EVAL) && defined(FEAT_CMDL_COMPL)
-	    if (*compl == EXPAND_USER_DEFINED && arg == NULL)
+	    if ((*compl == EXPAND_USER_DEFINED || *compl == EXPAND_USER_LIST) &&
+		arg == NULL)
 	    {
 		EMSG(_("E467: Custom completion requires a function argument"));
 		return FAIL;
