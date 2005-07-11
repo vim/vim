@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Jul 06
+" Last Change:	2005 Jul 11
 
 " If there already is an option window, jump to that one.
 if bufwinnr("option-window") > 0
@@ -380,6 +380,9 @@ if has("syntax")
   call append("$", "syntax\tname of syntax highlighting used")
   call append("$", "\t(local to buffer)")
   call <SID>OptionL("syn")
+  call append("$", "synmaxcol\tmaximum column to look for syntax items")
+  call append("$", "\t(local to buffer)")
+  call <SID>OptionL("smc")
 endif
 call append("$", "highlight\twhich highlighting to use for various occasions")
 call <SID>OptionG("hl", &hl)
