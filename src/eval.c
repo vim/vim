@@ -353,6 +353,35 @@ static dict_T		vimvardict;
 static dictitem_T	vimvars_var;
 #define vimvarht  vimvardict.dv_hashtab
 
+static void prepare_vimvar __ARGS((int idx, typval_T *save_tv));
+static void restore_vimvar __ARGS((int idx, typval_T *save_tv));
+#if defined(FEAT_USR_CMDS) && defined(FEAT_CMDL_COMPL)
+static int call_vim_function __ARGS((char_u *func, int argc, char_u **argv, int safe, typval_T *rettv));
+#endif
+static int ex_let_vars __ARGS((char_u *arg, typval_T *tv, int copy, int semicolon, int var_count, char_u *nextchars));
+static char_u *skip_var_list __ARGS((char_u *arg, int *var_count, int *semicolon));
+static char_u *skip_var_one __ARGS((char_u *arg));
+static void list_hashtable_vars __ARGS((hashtab_T *ht, char_u *prefix, int empty));
+static void list_glob_vars __ARGS((void));
+static void list_buf_vars __ARGS((void));
+static void list_win_vars __ARGS((void));
+static void list_vim_vars __ARGS((void));
+static char_u *list_arg_vars __ARGS((exarg_T *eap, char_u *arg));
+static char_u *ex_let_one __ARGS((char_u *arg, typval_T *tv, int copy, char_u *endchars, char_u *op));
+static int check_changedtick __ARGS((char_u *arg));
+static char_u *get_lval __ARGS((char_u *name, typval_T *rettv, lval_T *lp, int unlet, int skip, int quiet, int fne_flags));
+static void clear_lval __ARGS((lval_T *lp));
+static void set_var_lval __ARGS((lval_T *lp, char_u *endp, typval_T *rettv, int copy, char_u *op));
+static int tv_op __ARGS((typval_T *tv1, typval_T *tv2, char_u  *op));
+static void list_add_watch __ARGS((list_T *l, listwatch_T *lw));
+static void list_rem_watch __ARGS((list_T *l, listwatch_T *lwrem));
+static void list_fix_watch __ARGS((list_T *l, listitem_T *item));
+static void ex_unletlock __ARGS((exarg_T *eap, char_u *argstart, int deep));
+static int do_unlet_var __ARGS((lval_T *lp, char_u *name_end, int forceit));
+static int do_lock_var __ARGS((lval_T *lp, char_u *name_end, int deep, int lock));
+static void item_lock __ARGS((typval_T *tv, int deep, int lock));
+static int tv_islocked __ARGS((typval_T *tv));
+
 static int eval0 __ARGS((char_u *arg,  typval_T *rettv, char_u **nextcmd, int evaluate));
 static int eval1 __ARGS((char_u **arg, typval_T *rettv, int evaluate));
 static int eval2 __ARGS((char_u **arg, typval_T *rettv, int evaluate));
@@ -361,6 +390,7 @@ static int eval4 __ARGS((char_u **arg, typval_T *rettv, int evaluate));
 static int eval5 __ARGS((char_u **arg, typval_T *rettv, int evaluate));
 static int eval6 __ARGS((char_u **arg, typval_T *rettv, int evaluate));
 static int eval7 __ARGS((char_u **arg, typval_T *rettv, int evaluate));
+
 static int eval_index __ARGS((char_u **arg, typval_T *rettv, int evaluate, int verbose));
 static int get_option_tv __ARGS((char_u **arg, typval_T *rettv, int evaluate));
 static int get_string_tv __ARGS((char_u **arg, typval_T *rettv, int evaluate));
@@ -386,11 +416,9 @@ static list_T *list_copy __ARGS((list_T *orig, int deep, int copyID));
 static void list_remove __ARGS((list_T *l, listitem_T *item, listitem_T *item2));
 static char_u *list2string __ARGS((typval_T *tv));
 static int list_join __ARGS((garray_T *gap, list_T *l, char_u *sep, int echo));
-
 static void set_ref_in_ht __ARGS((hashtab_T *ht, int copyID));
 static void set_ref_in_list __ARGS((list_T *l, int copyID));
 static void set_ref_in_item __ARGS((typval_T *tv, int copyID));
-
 static void dict_unref __ARGS((dict_T *d));
 static void dict_free __ARGS((dict_T *d));
 static dictitem_T *dictitem_alloc __ARGS((char_u *key));
@@ -403,7 +431,6 @@ static long dict_len __ARGS((dict_T *d));
 static dictitem_T *dict_find __ARGS((dict_T *d, char_u *key, int len));
 static char_u *dict2string __ARGS((typval_T *tv));
 static int get_dict_tv __ARGS((char_u **arg, typval_T *rettv, int evaluate));
-
 static char_u *echo_string __ARGS((typval_T *tv, char_u **tofree, char_u *numbuf));
 static char_u *tv2string __ARGS((typval_T *tv, char_u **tofree, char_u *numbuf));
 static char_u *string_quote __ARGS((char_u *str, int function));
@@ -595,9 +622,6 @@ static void f_winrestcmd __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_winwidth __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_writefile __ARGS((typval_T *argvars, typval_T *rettv));
 
-static void prepare_vimvar __ARGS((int idx, typval_T *save_tv));
-static void restore_vimvar __ARGS((int idx, typval_T *save_tv));
-static win_T *find_win_by_nr __ARGS((typval_T *vp));
 static pos_T *var2fpos __ARGS((typval_T *varp, int lnum));
 static int get_env_len __ARGS((char_u **arg));
 static int get_id_len __ARGS((char_u **arg));
@@ -606,6 +630,7 @@ static char_u *find_name_end __ARGS((char_u *arg, char_u **expr_start, char_u **
 #define FNE_INCL_BR	1	/* find_name_end(): include [] in name */
 #define FNE_CHECK_START	2	/* find_name_end(): check name starts with
 				   valid character */
+static char_u * make_expanded_name __ARGS((char_u *in_start, char_u *expr_start, char_u *expr_end, char_u *in_end));
 static int eval_isnamec __ARGS((int c));
 static int eval_isnamec1 __ARGS((int c));
 static int get_var_tv __ARGS((char_u *name, int len, typval_T *rettv, int verbose));
@@ -619,8 +644,8 @@ static long get_tv_number __ARGS((typval_T *varp));
 static long get_tv_number_chk __ARGS((typval_T *varp, int *denote));
 static linenr_T get_tv_lnum __ARGS((typval_T *argvars));
 static char_u *get_tv_string __ARGS((typval_T *varp));
-static char_u *get_tv_string_chk __ARGS((typval_T *varp));
 static char_u *get_tv_string_buf __ARGS((typval_T *varp, char_u *buf));
+static char_u *get_tv_string_chk __ARGS((typval_T *varp));
 static char_u *get_tv_string_buf_chk __ARGS((typval_T *varp, char_u *buf));
 static dictitem_T *find_var __ARGS((char_u *name, hashtab_T **htp));
 static dictitem_T *find_var_in_ht __ARGS((hashtab_T *ht, char_u *varname, int writing));
@@ -639,7 +664,6 @@ static char_u *trans_function_name __ARGS((char_u **pp, int skip, int flags, fun
 static int eval_fname_script __ARGS((char_u *p));
 static int eval_fname_sid __ARGS((char_u *p));
 static void list_func_head __ARGS((ufunc_T *fp, int indent));
-static void cat_func_name __ARGS((char_u *buf, ufunc_T *fp));
 static ufunc_T *find_func __ARGS((char_u *name));
 static int function_exists __ARGS((char_u *name));
 static int builtin_function __ARGS((char_u *name));
@@ -660,37 +684,12 @@ static int
 #endif
 static int script_autoload __ARGS((char_u *name));
 static char_u *autoload_name __ARGS((char_u *name));
+static void cat_func_name __ARGS((char_u *buf, ufunc_T *fp));
 static void func_free __ARGS((ufunc_T *fp));
 static void func_unref __ARGS((char_u *name));
 static void func_ref __ARGS((char_u *name));
 static void call_user_func __ARGS((ufunc_T *fp, int argcount, typval_T *argvars, typval_T *rettv, linenr_T firstline, linenr_T lastline, dict_T *selfdict));
 static void add_nr_var __ARGS((dict_T *dp, dictitem_T *v, char *name, varnumber_T nr));
-
-static char_u * make_expanded_name __ARGS((char_u *in_start,  char_u *expr_start,  char_u *expr_end,  char_u *in_end));
-
-static int ex_let_vars __ARGS((char_u *arg, typval_T *tv, int copy, int semicolon, int var_count, char_u *nextchars));
-static char_u *skip_var_list __ARGS((char_u *arg, int *var_count, int *semicolon));
-static char_u *skip_var_one __ARGS((char_u *arg));
-static void list_hashtable_vars __ARGS((hashtab_T *ht, char_u *prefix, int empty));
-static void list_glob_vars __ARGS((void));
-static void list_buf_vars __ARGS((void));
-static void list_win_vars __ARGS((void));
-static void list_vim_vars __ARGS((void));
-static char_u *list_arg_vars __ARGS((exarg_T *eap, char_u *arg));
-static char_u *ex_let_one __ARGS((char_u *arg, typval_T *tv, int copy, char_u *endchars, char_u *op));
-static int check_changedtick __ARGS((char_u *arg));
-static char_u *get_lval __ARGS((char_u *name, typval_T *rettv, lval_T *lp, int unlet, int skip, int quiet, int fne_flags));
-static void clear_lval __ARGS((lval_T *lp));
-static void set_var_lval __ARGS((lval_T *lp, char_u *endp, typval_T *rettv, int copy, char_u *op));
-static int tv_op __ARGS((typval_T *tv1, typval_T *tv2, char_u  *op));
-static void list_add_watch __ARGS((list_T *l, listwatch_T *lw));
-static void list_rem_watch __ARGS((list_T *l, listwatch_T *lwrem));
-static void list_fix_watch __ARGS((list_T *l, listitem_T *item));
-static void ex_unletlock __ARGS((exarg_T *eap, char_u *argstart, int deep));
-static int do_unlet_var __ARGS((lval_T *lp, char_u *name_end, int forceit));
-static int do_lock_var __ARGS((lval_T *lp, char_u *name_end, int deep, int lock));
-static void item_lock __ARGS((typval_T *tv, int deep, int lock));
-static int tv_islocked __ARGS((typval_T *tv));
 
 /* Character used as separated in autoload function/variable names. */
 #define AUTOLOAD_CHAR '#'
@@ -1205,6 +1204,44 @@ eval_to_number(expr)
     --emsg_off;
 
     return retval;
+}
+
+/*
+ * Prepare v: variable "idx" to be used.
+ * Save the current typeval in "save_tv".
+ * When not used yet add the variable to the v: hashtable.
+ */
+    static void
+prepare_vimvar(idx, save_tv)
+    int		idx;
+    typval_T	*save_tv;
+{
+    *save_tv = vimvars[idx].vv_tv;
+    if (vimvars[idx].vv_type == VAR_UNKNOWN)
+	hash_add(&vimvarht, vimvars[idx].vv_di.di_key);
+}
+
+/*
+ * Restore v: variable "idx" to typeval "save_tv".
+ * When no longer defined, remove the variable from the v: hashtable.
+ */
+    static void
+restore_vimvar(idx, save_tv)
+    int		idx;
+    typval_T	*save_tv;
+{
+    hashitem_T	*hi;
+
+    clear_tv(&vimvars[idx].vv_tv);
+    vimvars[idx].vv_tv = *save_tv;
+    if (vimvars[idx].vv_type == VAR_UNKNOWN)
+    {
+	hi = hash_find(&vimvarht, vimvars[idx].vv_di.di_key);
+	if (HASHITEM_EMPTY(hi))
+	    EMSG2(_(e_intern2), "restore_vimvar()");
+	else
+	    hash_remove(&vimvarht, hi);
+    }
 }
 
 #if defined(FEAT_SYN_HL) || defined(PROTO)
@@ -3312,6 +3349,23 @@ item_lock(tv, deep, lock)
 	    }
     }
     --recurse;
+}
+
+/*
+ * Return TRUE if typeval "tv" is locked: Either tha value is locked itself or
+ * it refers to a List or Dictionary that is locked.
+ */
+    static int
+tv_islocked(tv)
+    typval_T	*tv;
+{
+    return (tv->v_lock & VAR_LOCKED)
+	|| (tv->v_type == VAR_LIST
+		&& tv->vval.v_list != NULL
+		&& (tv->vval.v_list->lv_lock & VAR_LOCKED))
+	|| (tv->v_type == VAR_DICT
+		&& tv->vval.v_dict != NULL
+		&& (tv->vval.v_dict->dv_lock & VAR_LOCKED));
 }
 
 #if (defined(FEAT_MENU) && defined(FEAT_MULTI_LANG)) || defined(PROTO)
@@ -8537,44 +8591,6 @@ static void filter_map __ARGS((typval_T *argvars, typval_T *rettv, int map));
 static int filter_map_one __ARGS((typval_T *tv, char_u *expr, int map, int *remp));
 
 /*
- * Prepare v: variable "idx" to be used.
- * Save the current typeval in "save_tv".
- * When not used yet add the variable to the v: hashtable.
- */
-    static void
-prepare_vimvar(idx, save_tv)
-    int		idx;
-    typval_T	*save_tv;
-{
-    *save_tv = vimvars[idx].vv_tv;
-    if (vimvars[idx].vv_type == VAR_UNKNOWN)
-	hash_add(&vimvarht, vimvars[idx].vv_di.di_key);
-}
-
-/*
- * Restore v: variable "idx" to typeval "save_tv".
- * When no longer defined, remove the variable from the v: hashtable.
- */
-    static void
-restore_vimvar(idx, save_tv)
-    int		idx;
-    typval_T	*save_tv;
-{
-    hashitem_T	*hi;
-
-    clear_tv(&vimvars[idx].vv_tv);
-    vimvars[idx].vv_tv = *save_tv;
-    if (vimvars[idx].vv_type == VAR_UNKNOWN)
-    {
-	hi = hash_find(&vimvarht, vimvars[idx].vv_di.di_key);
-	if (HASHITEM_EMPTY(hi))
-	    EMSG2(_(e_intern2), "restore_vimvar()");
-	else
-	    hash_remove(&vimvarht, hi);
-    }
-}
-
-/*
  * Implementation of map() and filter().
  */
     static void
@@ -9639,6 +9655,36 @@ f_getwinposy(argvars, rettv)
 	if (gui_mch_get_winpos(&x, &y) == OK)
 	    rettv->vval.v_number = y;
     }
+#endif
+}
+
+static win_T *find_win_by_nr __ARGS((typval_T *vp));
+
+    static win_T *
+find_win_by_nr(vp)
+    typval_T	*vp;
+{
+#ifdef FEAT_WINDOWS
+    win_T	*wp;
+#endif
+    int		nr;
+
+    nr = get_tv_number_chk(vp, NULL);
+
+#ifdef FEAT_WINDOWS
+    if (nr < 0)
+	return NULL;
+    if (nr == 0)
+	return curwin;
+
+    for (wp = firstwin; wp != NULL; wp = wp->w_next)
+	if (--nr <= 0)
+	    break;
+    return wp;
+#else
+    if (nr == 0 || nr == 1)
+	return curwin;
+    return NULL;
 #endif
 }
 
@@ -10775,23 +10821,6 @@ f_isdirectory(argvars, rettv)
     typval_T	*rettv;
 {
     rettv->vval.v_number = mch_isdir(get_tv_string(&argvars[0]));
-}
-
-/*
- * Return TRUE if typeval "tv" is locked: Either tha value is locked itself or
- * it refers to a List or Dictionary that is locked.
- */
-    static int
-tv_islocked(tv)
-    typval_T	*tv;
-{
-    return (tv->v_lock & VAR_LOCKED)
-	|| (tv->v_type == VAR_LIST
-		&& tv->vval.v_list != NULL
-		&& (tv->vval.v_list->lv_lock & VAR_LOCKED))
-	|| (tv->v_type == VAR_DICT
-		&& tv->vval.v_dict != NULL
-		&& (tv->vval.v_dict->dv_lock & VAR_LOCKED));
 }
 
 /*
@@ -14629,34 +14658,6 @@ f_winwidth(argvars, rettv)
 	rettv->vval.v_number = wp->w_width;
 #else
 	rettv->vval.v_number = Columns;
-#endif
-}
-
-    static win_T *
-find_win_by_nr(vp)
-    typval_T	*vp;
-{
-#ifdef FEAT_WINDOWS
-    win_T	*wp;
-#endif
-    int		nr;
-
-    nr = get_tv_number_chk(vp, NULL);
-
-#ifdef FEAT_WINDOWS
-    if (nr < 0)
-	return NULL;
-    if (nr == 0)
-	return curwin;
-
-    for (wp = firstwin; wp != NULL; wp = wp->w_next)
-	if (--nr <= 0)
-	    break;
-    return wp;
-#else
-    if (nr == 0 || nr == 1)
-	return curwin;
-    return NULL;
 #endif
 }
 
