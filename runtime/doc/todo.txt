@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 09
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,11 +29,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
-
-9   Editing a XML file with a long line is extremely slow.  Example file from
-    Randy Parker (Dec 13).  Editing the dictionaries for engspchk plugin with
-    syntax highlighting is also very slow.
-    Limit the searching for items to a few hundred characters?
 
 Add extra list of file locations.  Can be used with:
     :ltag	      list of matching tags, like :tselect

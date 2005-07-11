@@ -866,8 +866,8 @@ skip_anyof(p)
     int		l;
 #endif
 
-    cpo_lit = (!reg_syn && vim_strchr(p_cpo, CPO_LITERAL) != NULL);
-    cpo_bsl = (!reg_syn && vim_strchr(p_cpo, CPO_BACKSL) != NULL);
+    cpo_lit = vim_strchr(p_cpo, CPO_LITERAL) != NULL;
+    cpo_bsl = vim_strchr(p_cpo, CPO_BACKSL) != NULL;
 
     if (*p == '^')	/* Complement of range. */
 	++p;
@@ -1573,8 +1573,8 @@ regatom(flagp)
     int		    extra = 0;
 
     *flagp = WORST;		/* Tentatively. */
-    cpo_lit = (!reg_syn && vim_strchr(p_cpo, CPO_LITERAL) != NULL);
-    cpo_bsl = (!reg_syn && vim_strchr(p_cpo, CPO_BACKSL) != NULL);
+    cpo_lit = vim_strchr(p_cpo, CPO_LITERAL) != NULL;
+    cpo_bsl = vim_strchr(p_cpo, CPO_BACKSL) != NULL;
 
     c = getchr();
     switch (c)
@@ -3044,6 +3044,12 @@ static int	ireg_icombine;
 #endif
 
 /*
+ * Copy of "rmm_maxcol": maximum column to search for a match.  Zero when
+ * there is no maximum.
+ */
+static int	ireg_maxcol;
+
+/*
  * Sometimes need to save a copy of a line.  Since alloc()/free() is very
  * slow, we keep one allocated piece of memory and only re-allocate it when
  * it's too small.  It's freed in vim_regexec_both() when finished.
@@ -3203,6 +3209,7 @@ vim_regexec(rmp, line, col)
 #ifdef FEAT_MBYTE
     ireg_icombine = FALSE;
 #endif
+    ireg_maxcol = 0;
     return (vim_regexec_both(line, col) != 0);
 }
 
@@ -3226,6 +3233,7 @@ vim_regexec_nl(rmp, line, col)
 #ifdef FEAT_MBYTE
     ireg_icombine = FALSE;
 #endif
+    ireg_maxcol = 0;
     return (vim_regexec_both(line, col) != 0);
 }
 #endif
@@ -3260,6 +3268,7 @@ vim_regexec_multi(rmp, win, buf, lnum, col)
 #ifdef FEAT_MBYTE
     ireg_icombine = FALSE;
 #endif
+    ireg_maxcol = rmp->rmm_maxcol;
 
     /* Need to switch to buffer "buf" to make vim_iswordc() work. */
     curbuf = buf;
@@ -3315,6 +3324,10 @@ vim_regexec_both(line, col)
 
     /* Check validity of program. */
     if (prog_magic_wrong())
+	goto theend;
+
+    /* If the start column is past the maximum column: no need to try. */
+    if (ireg_maxcol > 0 && col >= ireg_maxcol)
 	goto theend;
 
     /* If pattern contains "\c" or "\C": overrule value of ireg_ic */
@@ -3426,6 +3439,13 @@ vim_regexec_both(line, col)
 		    break;
 		}
 		col = (int)(s - regline);
+	    }
+
+	    /* Check for maximum column to try. */
+	    if (ireg_maxcol > 0 && col >= ireg_maxcol)
+	    {
+		retval = 0;
+		break;
 	    }
 
 	    retval = regtry(prog, col);

@@ -463,8 +463,6 @@ syntax_start(wp, lnum)
     int		dist;
     static int	changedtick = 0;	/* remember the last change ID */
 
-    reg_syn = TRUE;	/* let vim_regexec() know we're using syntax */
-
     /*
      * After switching buffers, invalidate current_state.
      * Also do this when a change was made, the current state may be invalid
@@ -483,7 +481,7 @@ syntax_start(wp, lnum)
      */
     syn_stack_alloc();
     if (syn_buf->b_sst_array == NULL)
-	goto theend;		/* out of memory */
+	return;		/* out of memory */
     syn_buf->b_sst_lasttick = display_tick;
 
     /*
@@ -607,9 +605,6 @@ syntax_start(wp, lnum)
     }
 
     syn_start_line();
-
-theend:
-    reg_syn = FALSE;
 }
 
 /*
@@ -1604,8 +1599,6 @@ syntax_check_changed(lnum)
     int		retval = TRUE;
     synstate_T	*sp;
 
-    reg_syn = TRUE;	/* let vim_regexec() know we're using syntax */
-
     /*
      * Check the state stack when:
      * - lnum is just below the previously syntaxed line.
@@ -1638,8 +1631,6 @@ syntax_check_changed(lnum)
 	    (void)store_current_state(NULL);
 	}
     }
-
-    reg_syn = FALSE;
 
     return retval;
 }
@@ -1707,8 +1698,6 @@ get_syntax_attr(col, can_spell)
     if (syn_buf->b_sst_array == NULL)
 	return 0;
 
-    reg_syn = TRUE;	/* let vim_regexec() know we're using syntax */
-
     /* Make sure current_state is valid */
     if (INVALID_STATE(&current_state))
 	validate_current_state();
@@ -1722,7 +1711,6 @@ get_syntax_attr(col, can_spell)
 	++current_col;
     }
 
-    reg_syn = FALSE;
     return attr;
 }
 
@@ -2999,7 +2987,7 @@ syn_getcurline()
 }
 
 /*
- * Call vim_regexec() to match in syn_buf.
+ * Call vim_regexec() to find a match with "rmp" in "syn_buf".
  * Returns TRUE when there is a match.
  */
     static int
@@ -3008,6 +2996,7 @@ syn_regexec(rmp, lnum, col)
     linenr_T	lnum;
     colnr_T	col;
 {
+    rmp->rmm_maxcol = syn_buf->b_p_smc;
     if (vim_regexec_multi(rmp, syn_win, syn_buf, lnum, col) > 0)
     {
 	rmp->startpos[0].lnum += lnum;

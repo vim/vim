@@ -129,6 +129,7 @@ typedef enum
     , PV_SUA
     , PV_SW
     , PV_SWF
+    , PV_SMC
     , PV_SYN
     , PV_TAGS
     , PV_TS
@@ -235,6 +236,7 @@ static char_u	*p_sua;
 static long	p_sw;
 static int	p_swf;
 #ifdef FEAT_SYN_HL
+static long	p_smc;
 static char_u	*p_syn;
 static char_u	*p_spc;
 static char_u	*p_spf;
@@ -2115,6 +2117,15 @@ static struct vimoption
     {"switchbuf",   "swb",  P_STRING|P_VI_DEF|P_COMMA|P_NODUP,
 			    (char_u *)&p_swb, PV_NONE,
 			    {(char_u *)"", (char_u *)0L}},
+    {"synmaxcol",   "smc",  P_NUM|P_VI_DEF|P_RBUF,
+#ifdef FEAT_SYN_HL
+			    (char_u *)&p_smc, PV_SMC,
+			    {(char_u *)3000L, (char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)0L, (char_u *)0L}
+#endif
+			    },
     {"syntax",	    "syn",  P_STRING|P_ALLOCED|P_VI_DEF|P_NOGLOB|P_NFNAME,
 #ifdef FEAT_SYN_HL
 			    (char_u *)&p_syn, PV_SYN,
@@ -8445,6 +8456,7 @@ get_varp(p)
 #endif
 	case PV_SWF:	return (char_u *)&(curbuf->b_p_swf);
 #ifdef FEAT_SYN_HL
+	case PV_SMC:	return (char_u *)&(curbuf->b_p_smc);
 	case PV_SYN:	return (char_u *)&(curbuf->b_p_syn);
 	case PV_SPC:	return (char_u *)&(curbuf->b_p_spc);
 	case PV_SPF:	return (char_u *)&(curbuf->b_p_spf);
@@ -8761,6 +8773,7 @@ buf_copy_options(buf, flags)
 #ifdef FEAT_SYN_HL
 	    /* Don't copy 'syntax', it must be set */
 	    buf->b_p_syn = empty_option;
+	    buf->b_p_smc = p_smc;
 	    buf->b_p_spc = vim_strsave(p_spc);
 	    (void)compile_cap_prog(buf);
 	    buf->b_p_spf = vim_strsave(p_spf);

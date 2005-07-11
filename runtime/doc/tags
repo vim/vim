@@ -721,6 +721,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'smartcase'	options.txt	/*'smartcase'*
 'smartindent'	options.txt	/*'smartindent'*
 'smarttab'	options.txt	/*'smarttab'*
+'smc'	options.txt	/*'smc'*
 'smd'	options.txt	/*'smd'*
 'sn'	options.txt	/*'sn'*
 'so'	options.txt	/*'so'*
@@ -765,6 +766,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'sws'	options.txt	/*'sws'*
 'sxq'	options.txt	/*'sxq'*
 'syn'	options.txt	/*'syn'*
+'synmaxcol'	options.txt	/*'synmaxcol'*
 'syntax'	options.txt	/*'syntax'*
 't_#2'	term.txt	/*'t_#2'*
 't_#4'	term.txt	/*'t_#4'*

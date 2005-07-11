@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jul 09
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jul 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -311,6 +311,8 @@ Options: ~
 'spell'			switch spell checking on/off
 'spelllang'		languages to check spelling for
 'spellsuggest'		methods for spell suggestions
+'synmaxcol'		maximum column to look for syntax items; avoids very
+			slow redrawing when there are very long lines
 'verbosefile'		Log messages in a file.
 
 

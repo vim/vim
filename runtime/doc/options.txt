@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Jul 08
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Jul 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -6015,6 +6015,20 @@ A jump table for the options with a short description can be found at |Q_op|.
 			a buffer.  Otherwise: do not split, use current window.
 			Supported in |quickfix| commands that display errors.
 
+						*'synmaxcol'* *'smc'*
+'synmaxcol' 'smc'	number	(default 3000)
+			local to buffer
+			{not in Vi}
+			{not available when compiled without the |+syntax|
+			feature}
+	Maximum column in which to search for syntax items.  With longer lines
+	some parts may not be highlighted and following text may not be
+	highlighted correctly (e.g., when the start or end of a region is not
+	recognized because it is beyond 'synmaxcol').
+	This helps to avoid very slow redrawing for an XML file that is one
+	long line.
+	Set to zero to remove the limit.
+
 						*'syntax'* *'syn'*
 'syntax' 'syn'		string	(default empty)
 			local to buffer
@@ -6026,7 +6040,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Otherwise this option does not always reflect the current syntax (the
 	b:current_syntax variable does).
 	This option is most useful in a modeline, for a file which syntax is
-	not automatically recognized.  Example, for in an IDL file: >
+	not automatically recognized.  Example, in an IDL file: >
 		/* vim: set syntax=idl : */
 <	To switch off syntax highlighting for the current file, use: >
 		:set syntax=OFF

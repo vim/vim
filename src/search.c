@@ -215,6 +215,7 @@ search_regcomp(pat, pat_save, pat_use, options, regmatch)
     }
 
     regmatch->rmm_ic = ignorecase(pat);
+    regmatch->rmm_maxcol = 0;
     regmatch->regprog = vim_regcomp(pat, magic ? RE_MAGIC : 0);
     if (regmatch->regprog == NULL)
 	return FAIL;

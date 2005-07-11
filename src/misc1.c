@@ -400,6 +400,7 @@ get_number_indent(lnum)
     if (regmatch.regprog != NULL)
     {
 	regmatch.rmm_ic = FALSE;
+	regmatch.rmm_maxcol = 0;
 	if (vim_regexec_multi(&regmatch, curwin, curbuf, lnum, (colnr_T)0))
 	{
 	    pos.lnum = regmatch.endpos[0].lnum + lnum;

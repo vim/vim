@@ -1344,6 +1344,7 @@ struct file_buffer
 #endif
     int		b_p_swf;	/* 'swapfile' */
 #ifdef FEAT_SYN_HL
+    long	b_p_smc;	/* 'synmaxcol' */
     char_u	*b_p_syn;	/* 'syntax' */
     char_u	*b_p_spc;	/* 'spellcapcheck' */
     regprog_T	*b_cap_prog;	/* program for 'spellcapcheck' */

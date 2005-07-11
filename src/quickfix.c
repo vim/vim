@@ -2399,6 +2399,7 @@ ex_vimgrep(eap)
     if (regmatch.regprog == NULL)
 	goto theend;
     regmatch.rmm_ic = p_ic;
+    regmatch.rmm_maxcol = 0;
 
     p = skipwhite(p);
     if (*p == NUL)

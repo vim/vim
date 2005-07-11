@@ -4193,6 +4193,8 @@ ExpandGeneric(xp, regmatch, num_file, file, func)
 }
 
 # if defined(FEAT_USR_CMDS) && defined(FEAT_EVAL)
+static void * call_user_expand_func __ARGS((void *(*user_expand_func) __ARGS((char_u *, int, char_u **, int)), expand_T	*xp, int *num_file, char_u ***file));
+
 /*
  * call "user_expand_func()" to invoke a user defined VimL function and return
  * the result (either a string or a List).
