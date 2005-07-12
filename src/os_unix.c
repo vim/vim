@@ -929,7 +929,7 @@ deathtrap SIGDEFARG(sigarg)
 		|| sigarg == SIGUSR2
 # endif
 		)
-	    && !handle_signal(sigarg))
+	    && !vim_handle_signal(sigarg))
 	SIGRETURN;
 #endif
 
@@ -1223,7 +1223,7 @@ catch_signals(func_deadly, func_other)
  * Returns TRUE when Vim should exit.
  */
     int
-handle_signal(sig)
+vim_handle_signal(sig)
     int		sig;
 {
     static int got_signal = 0;

@@ -1273,18 +1273,19 @@ find_tags(pat, num_matches, matchesp, flags, mincount, buf_ffname)
     vim_memset(&search_info, 0, (size_t)1);
 #endif
 
-/*
- * When finding a specified number of matches, first try with matching case,
- * so binary search can be used, and try ignore-case matches in a second loop.
- * When finding all matches, 'tagbsearch' is off, or there is no fixed string
- * to look for, ignore case right away to avoid going though the tags files
- * twice.
- * When the tag file is case-fold sorted, it is either one or the other.
- * Only ignore case when TAG_NOIC not used or 'ignorecase' set.
- */
+    /*
+     * When finding a specified number of matches, first try with matching
+     * case, so binary search can be used, and try ignore-case matches in a
+     * second loop.
+     * When finding all matches, 'tagbsearch' is off, or there is no fixed
+     * string to look for, ignore case right away to avoid going though the
+     * tags files twice.
+     * When the tag file is case-fold sorted, it is either one or the other.
+     * Only ignore case when TAG_NOIC not used or 'ignorecase' set.
+     */
 #ifdef FEAT_TAG_BINS
     pats->regmatch.rm_ic = ((p_ic || !noic)
-				   && (findall || pats->headlen == 0 || !p_tbs));
+				&& (findall || pats->headlen == 0 || !p_tbs));
     for (round = 1; round <= 2; ++round)
     {
       linear = (pats->headlen == 0 || !p_tbs || round == 2);
@@ -2270,9 +2271,8 @@ line_read_in:
       } /* end of for-each-file loop */
 
 #ifdef FEAT_TAG_BINS
-      /* stop searching when already did a linear search, or when
-       * TAG_NOIC used, and 'ignorecase' not set
-       * or already did case-ignore search */
+      /* stop searching when already did a linear search, or when TAG_NOIC
+       * used, and 'ignorecase' not set or already did case-ignore search */
       if (stop_searching || linear || (!p_ic && noic) || pats->regmatch.rm_ic)
 	  break;
 # ifdef FEAT_CSCOPE
