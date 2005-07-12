@@ -38,10 +38,14 @@ STGMEDIUM medium;
 HRESULT hres = 0;
 UINT cbFiles = 0;
 
+/* The buffers size used to be MAX_PATH (256 bytes), but that's not always
+ * enough */
+#define BUFSIZE 1100
+
 //
 // Get the name of the Gvim executable to use, with the path.
 // When "runtime" is non-zero, we were called to find the runtime directory.
-// Returns the path in name[MAX_PATH].  It's empty when it fails.
+// Returns the path in name[BUFSIZE].  It's empty when it fails.
 //
     static void
 getGvimName(char *name, int runtime)
@@ -54,7 +58,7 @@ getGvimName(char *name, int runtime)
     if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, "Software\\Vim\\Gvim", 0,
 				       KEY_READ, &keyhandle) == ERROR_SUCCESS)
     {
-	hlen = MAX_PATH;
+	hlen = BUFSIZE;
 	if (RegQueryValueEx(keyhandle, "path", 0, NULL, (BYTE *)name, &hlen)
 							     != ERROR_SUCCESS)
 	    name[0] = 0;
@@ -82,7 +86,7 @@ getGvimName(char *name, int runtime)
 }
 
 //
-// Get the Vim runtime directory into buf[MAX_PATH].
+// Get the Vim runtime directory into buf[BUFSIZE].
 // The result is empty when it failed.
 // When it works, the path ends in a slash or backslash.
 //
@@ -218,8 +222,8 @@ null_libintl_textdomain(const char* domainname)
     static void
 dyn_gettext_load(void)
 {
-    char    szBuff[MAX_PATH];
-    char    szLang[MAX_PATH];
+    char    szBuff[BUFSIZE];
+    char    szLang[BUFSIZE];
     DWORD   len;
     HKEY    keyhandle;
     int	    gotlang = 0;
@@ -231,7 +235,7 @@ dyn_gettext_load(void)
     if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, "Software\\Vim\\Gvim", 0,
 				       KEY_READ, &keyhandle) == ERROR_SUCCESS)
     {
-	len = MAX_PATH;
+	len = BUFSIZE;
 	if (RegQueryValueEx(keyhandle, "lang", 0, NULL, (BYTE*)szBuff, &len)
 							     == ERROR_SUCCESS)
 	{
@@ -249,7 +253,7 @@ dyn_gettext_load(void)
 	// LOCALE_SABBREVLANGNAME gives us three letters, like "enu", we use
 	// only the first two.
 	len = GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SABBREVLANGNAME,
-						    (LPTSTR)szBuff, MAX_PATH);
+						    (LPTSTR)szBuff, BUFSIZE);
 	if (len >= 2 && _strnicmp(szBuff, "en", 2) != 0)
 	{
 	    // There are a few exceptions (probably more)
@@ -615,11 +619,11 @@ STDMETHODIMP CShellExt::QueryContextMenu(HMENU hMenu,
     // Now display all the vim instances
     for (int i = 0; i < m_cntOfHWnd; i++)
     {
-	char title[MAX_PATH];
-	char temp[MAX_PATH];
+	char title[BUFSIZE];
+	char temp[BUFSIZE];
 
 	// Obtain window title, continue if can not
-	if (GetWindowText(m_hWnd[i], title, MAX_PATH - 1) == 0)
+	if (GetWindowText(m_hWnd[i], title, BUFSIZE - 1) == 0)
 	    continue;
 	// Truncate the title before the path, keep the file name
 	char *pos = strchr(title, '(');
@@ -630,8 +634,8 @@ STDMETHODIMP CShellExt::QueryContextMenu(HMENU hMenu,
 	    *pos = 0;
 	}
 	// Now concatenate
-	strncpy(temp, _("Edit with existing Vim - "), MAX_PATH - 1);
-	strncat(temp, title, MAX_PATH - 1);
+	strncpy(temp, _("Edit with existing Vim - "), BUFSIZE - 1);
+	strncat(temp, title, BUFSIZE - 1);
 	InsertMenu(hMenu,
 		indexMenu++,
 		MF_STRING|MF_BYPOSITION,
@@ -750,7 +754,7 @@ STDMETHODIMP CShellExt::GetCommandString(UINT idCmd,
 
 BOOL CALLBACK CShellExt::EnumWindowsProc(HWND hWnd, LPARAM lParam)
 {
-    char temp[MAX_PATH];
+    char temp[BUFSIZE];
 
     // First do a bunch of check
     // No invisible window
@@ -807,8 +811,8 @@ PlatformId(void)
     static char *
 searchpath(char *name)
 {
-    static char widename[2 * MAX_PATH];
-    static char location[2 * MAX_PATH + 2];
+    static char widename[2 * BUFSIZE];
+    static char location[2 * BUFSIZE + 2];
 
     // There appears to be a bug in FindExecutableA() on Windows NT.
     // Use FindExecutableW() instead...
@@ -816,12 +820,12 @@ searchpath(char *name)
     if (g_PlatformId == VER_PLATFORM_WIN32_NT)
     {
 	MultiByteToWideChar(CP_ACP, 0, (LPCTSTR)name, -1,
-		(LPWSTR)widename, MAX_PATH);
+		(LPWSTR)widename, BUFSIZE);
 	if (FindExecutableW((LPCWSTR)widename, (LPCWSTR)"",
 		    (LPWSTR)location) > (HINSTANCE)32)
 	{
 	    WideCharToMultiByte(CP_ACP, 0, (LPWSTR)location, -1,
-		    (LPSTR)widename, 2 * MAX_PATH, NULL, NULL);
+		    (LPSTR)widename, 2 * BUFSIZE, NULL, NULL);
 	    return widename;
 	}
     }
@@ -842,8 +846,8 @@ STDMETHODIMP CShellExt::InvokeGvim(HWND hParent,
 				   LPCSTR pszParam,
 				   int iShowCmd)
 {
-    char m_szFileUserClickedOn[MAX_PATH];
-    char cmdStr[MAX_PATH];
+    char m_szFileUserClickedOn[BUFSIZE];
+    char cmdStr[BUFSIZE];
     UINT i;
 
     for (i = 0; i < cbFiles; i++)
@@ -856,7 +860,7 @@ STDMETHODIMP CShellExt::InvokeGvim(HWND hParent,
 	getGvimName(cmdStr, 0);
 	strcat(cmdStr, " \"");
 
-	if ((strlen(cmdStr) + strlen(m_szFileUserClickedOn) + 2) < MAX_PATH)
+	if ((strlen(cmdStr) + strlen(m_szFileUserClickedOn) + 2) < BUFSIZE)
 	{
 	    strcat(cmdStr, m_szFileUserClickedOn);
 	    strcat(cmdStr, "\"");
@@ -913,13 +917,13 @@ STDMETHODIMP CShellExt::InvokeSingleGvim(HWND hParent,
 				   int iShowCmd,
 				   int useDiff)
 {
-    char	m_szFileUserClickedOn[MAX_PATH];
+    char	m_szFileUserClickedOn[BUFSIZE];
     char	*cmdStr;
     size_t	cmdlen;
     size_t	len;
     UINT i;
 
-    cmdlen = MAX_PATH;
+    cmdlen = BUFSIZE;
     cmdStr = (char *)malloc(cmdlen);
     getGvimName(cmdStr, 0);
     if (useDiff)
@@ -934,7 +938,7 @@ STDMETHODIMP CShellExt::InvokeSingleGvim(HWND hParent,
 	len = strlen(cmdStr) + strlen(m_szFileUserClickedOn) + 4;
 	if (len > cmdlen)
 	{
-	    cmdlen = len + MAX_PATH;
+	    cmdlen = len + BUFSIZE;
 	    cmdStr = (char *)realloc(cmdStr, cmdlen);
 	}
 	strcat(cmdStr, " \"");

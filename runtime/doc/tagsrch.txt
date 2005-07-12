@@ -1,4 +1,4 @@
-*tagsrch.txt*   For Vim version 7.0aa.  Last change: 2005 Apr 01
+*tagsrch.txt*   For Vim version 7.0aa.  Last change: 2005 Jul 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -352,6 +352,8 @@ Examples: >
 When the argument both exists literally, and match when used as a regexp, a
 literal match has a higher priority.  For example, ":tag /open" matches "open"
 before "open_file" and "file_open".
+When using a pattern case is ignored.  If you want to match case use "\C" in
+the pattern.
 
 							*tag-!*
 If the tag is in the current file this will always work.  Otherwise the

@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jul 11
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jul 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1179,5 +1179,8 @@ continue.
 
 When opening a new buffer the local value of 'bomb' was not initialized from
 the global value.
+
+Win32: When using the "Edit with Vim" entry the file name was limited to about
+200 characters.
 
  vim:tw=78:ts=8:ft=help:norl:

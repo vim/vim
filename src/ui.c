@@ -184,10 +184,12 @@ ui_inchar(buf, maxlen, wtime, tb_change_cnt)
 # endif
     {
 	if (wtime == -1 || wtime > 100L)
-	    (void)handle_signal(SIGNAL_UNBLOCK);  /* allow signals to kill us */
+	    /* allow signals to kill us */
+	    (void)vim_handle_signal(SIGNAL_UNBLOCK);
 	retval = mch_inchar(buf, maxlen, wtime, tb_change_cnt);
 	if (wtime == -1 || wtime > 100L)
-	    (void)handle_signal(SIGNAL_BLOCK);    /* block SIGHUP et al. */
+	    /* block SIGHUP et al. */
+	    (void)vim_handle_signal(SIGNAL_BLOCK);
     }
 #endif
 

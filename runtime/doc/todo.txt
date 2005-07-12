@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 11
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,6 +29,10 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+Use vim_strncpy() in more places.
+
+When going over 'synmaxcol' don't highlight anything, stop regions.
 
 Add extra list of file locations.  Can be used with:
     :ltag	      list of matching tags, like :tselect
