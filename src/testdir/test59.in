@@ -4,10 +4,15 @@ STARTTEST
 :so small.vim
 :so mbyte.vim
 :"
+:" Don't want to depend on the locale from the environment.  The .aff and .dic
+:" text is in latin1, the test text is utf-8.
+:set enc=latin1
+:e!
+:set fenc=
 :" First generate a .spl file from a .dic and a .aff file.
+gg:/^affstart1/+1,/^affend1/-1w Xtest.aff
+gg:/^dicstart/+1,/^dicend/-1w Xtest.dic
 :set enc=utf-8
-:/^affstart1/+1,/affend1/-1w Xtest.aff
-:/^dicstart/+1,/dicend/-1w Xtest.dic
 :mkspell Xtest Xtest
 :"
 :" use that spell file

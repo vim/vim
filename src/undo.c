@@ -656,6 +656,8 @@ u_undoredo()
 		ml_delete(lnum, FALSE);
 	    }
 	}
+	else
+	    newarray = NULL;
 
 	/* insert the lines in u_array between top and bot */
 	if (newsize)
@@ -923,7 +925,7 @@ u_freeentry(uep, n)
     u_entry_T	*uep;
     long	    n;
 {
-    while (n)
+    while (n > 0)
 	U_FREE_LINE(uep->ue_array[--n]);
     U_FREE_LINE((char_u *)uep->ue_array);
     U_FREE_LINE((char_u *)uep);

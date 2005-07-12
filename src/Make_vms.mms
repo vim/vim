@@ -2,9 +2,9 @@
 # Makefile for Vim on OpenVMS
 #
 # Maintainer:   Zoltan Arpadffy <arpadffy@polarhome.com>
-# Last change:  2005 Mar 19
+# Last change:  2005 Jul 12
 #
-# This has script been tested on VMS 6.2 to 7.3 on DEC Alpha, VAX and IA64
+# This has script been tested on VMS 6.2 to 8.2 on DEC Alpha, VAX and IA64
 # with MMS and MMK
 #
 # The following could be built:
@@ -49,6 +49,10 @@ GUI = YES
 # GUI with GTK
 # If you have GTK installed you might want to enable this option.
 # GTK = YES
+
+# GUI/Motif with XPM
+# If you have XPM installed you might want to build Motif version with toolbar
+# XPM = YES
 
 # Comment out if you want the compiler version with :ver command.
 # NOTE: This part can make some complications if you're using some
@@ -133,8 +137,10 @@ CONFIG_H = os_vms_conf.h
 
 .IFDEF GTK
 .IFDEF GUI
+.IFDEF XPM
 .ELSE
 GUI = YES
+.ENDIF
 .ENDIF
 .ENDIF
 
@@ -142,23 +148,30 @@ GUI = YES
 # X/Motif/GTK executable  (also works in terminal mode )
 
 .IFDEF GTK
+# define GTK root directory
+# please note: directory should end with . in order to /trans=conc work
+# example: GTK_DIR  = $1$DGA104:[USERS.ZAY.WORK.GTK1210.]
 GTK_DIR  = ALPHA$DKA0:[GTK128.]
 DEFS     = "HAVE_CONFIG_H","FEAT_GUI_GTK"
 LIBS     = ,OS_VMS_GTK.OPT/OPT
 GUI_FLAG = /name=(as_is,short)/float=ieee/ieee=denorm
-GUI_SRC  = gui.c gui_gtk.c gui_gtk_f.c gui_gtk_x11.c pty.c
-GUI_OBJ  = gui.obj gui_gtk.obj gui_gtk_f.obj gui_gtk_x11.obj pty.obj
+GUI_SRC  = gui.c gui_gtk.c gui_gtk_f.c gui_gtk_x11.c gui_beval.c pty.c
+GUI_OBJ  = gui.obj gui_gtk.obj gui_gtk_f.obj gui_gtk_x11.obj gui_beval.obj pty.obj
 GUI_INC  = ,"/gtk_root/gtk","/gtk_root/glib"
 # GUI_INC_VER is used just for :ver information
 # this string should escape from C and DCL in the same time
 GUI_INC_VER= ,\""/gtk_root/gtk\"",\""/gtk_root/glib\""
-.else
+.ELSE
 MOTIF	 = YES
+.IFDEF XPM
+DEFS     = "HAVE_CONFIG_H","FEAT_GUI_MOTIF","HAVE_XPM"
+.ELSE
 DEFS     = "HAVE_CONFIG_H","FEAT_GUI_MOTIF"
+.ENDIF
 LIBS     = ,OS_VMS_MOTIF.OPT/OPT
 GUI_FLAG =
-GUI_SRC  = gui.c gui_motif.c gui_x11.c
-GUI_OBJ  = gui.obj gui_motif.obj gui_x11.obj
+GUI_SRC  = gui.c gui_motif.c gui_x11.c gui_beval.c gui_xmdlg.c gui_xmebw.c
+GUI_OBJ  = gui.obj gui_motif.obj gui_x11.obj gui_beval.obj gui_xmdlg.obj gui_xmebw.obj
 GUI_INC  =
 .ENDIF
 
@@ -360,7 +373,11 @@ check_ccver :
 
 .IFDEF MOTIF
 motif_env :
-	-@ write sys$output "using DECW/Motif environment."
+.IFDEF XPM
+	-@ write sys$output "using DECW/Motif/XPM environment."
+.ELSE
+        -@ write sys$output "using DECW/Motif environment."
+.ENDIF
 	-@ write sys$output "creating OS_VMS_MOTIF.OPT file."
 	-@ open/write opt_file OS_VMS_MOTIF.OPT
 	-@ write opt_file "sys$share:decw$xmlibshr12.exe/share,-"
@@ -741,3 +758,5 @@ netbeans.obj : netbeans.c vim.h [.auto]config.h feature.h os_unix.h \
  ascii.h keymap.h term.h macros.h structs.h regexp.h \
  gui.h gui_beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
  globals.h farsi.h arabic.h version.h
+gui_xmdlg.obj : gui_xmdlg.c
+gui_xmebw.obj : gui_xmebw.c
