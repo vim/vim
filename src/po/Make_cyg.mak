@@ -13,26 +13,31 @@ VIMRUNTIME = ../../runtime
 endif
 
 LANGUAGES =	af ca cs de en_GB es fr ga it ja ko no pl ru sk sv uk vi zh_TW \
-		cs.cp1250 ja.sjis pl.cp1250 ru.cp1251 sk.cp1250 uk.cp1251 \
-		zh_TW.UTF-8 zh_CN zh_CN.cp936 zh_CN.UTF-8
+		cs.cp1250 pl.cp1250 ru.cp1251 sk.cp1250 uk.cp1251 \
+		zh_TW.UTF-8 zh_CN zh_CN.cp936 zh_CN.UTF-8 ja.sjis
 MOFILES =	af.mo ca.mo cs.mo de.mo en_GB.mo es.mo fr.mo ga.mo it.mo ja.mo \
 		ko.mo no.mo pl.mo ru.mo sk.mo sv.mo uk.mo vi.mo \
-		cs.cp1250.mo ja.sjis.mo pl.cp1250.mo ru.cp1251.mo sk.cp1250.mo uk.cp1251.mo \
-		zh_TW.mo zh_TW.UTF-8.mo zh_CN.mo zh_CN.cp936.mo zh_CN.UTF-8.mo
+		cs.cp1250.mo pl.cp1250.mo ru.cp1251.mo sk.cp1250.mo uk.cp1251.mo \
+		zh_TW.mo zh_TW.UTF-8.mo zh_CN.mo zh_CN.cp936.mo zh_CN.UTF-8.mo \
+		ja.sjis.mo
 
 PACKAGE = vim
 
 # Uncomment one of the lines below or modify it to put the path to your
-# gettex binaries; I use the first
+# gettext binaries
 ifndef GETTEXT_PATH
 #GETTEXT_PATH = C:/gettext.win32/bin/
 #GETTEXT_PATH = C:/gettext-0.10.35-w32/win32/Release/
 GETTEXT_PATH = /bin/
 endif
 
-MSGFMT = $(GETTEXT_PATH)msgfmt
-XGETTEXT = $(GETTEXT_PATH)xgettext
-MSGMERGE = $(GETTEXT_PATH)msgmerge
+# The OLD_PO_FILE_INPUT and OLD_PO_FILE_OUTPUT are for the new GNU gettext
+# tools 0.10.37, which use a slightly different .po file format that is not
+# compatible with Solaris (and old gettext implementations) unless these are
+# set.  gettext 0.10.36 will not work!
+MSGFMT = OLD_PO_FILE_INPUT=yes $(GETTEXT_PATH)msgfmt -v
+XGETTEXT = OLD_PO_FILE_INPUT=yes OLD_PO_FILE_OUTPUT=yes $(GETTEXT_PATH)xgettext
+MSGMERGE = OLD_PO_FILE_INPUT=yes OLD_PO_FILE_OUTPUT=yes $(GETTEXT_PATH)msgmerge
 
 # MV = move
 # CP = copy

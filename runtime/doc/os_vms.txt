@@ -1,4 +1,4 @@
-*os_vms.txt*    For Vim version 7.0aa.  Last change: 2005 Apr 01
+*os_vms.txt*    For Vim version 7.0aa.  Last change: 2005 Jul 12
 
 
 		  VIM REFERENCE MANUAL
@@ -47,16 +47,19 @@ You can download precompiled executables from:
 
 To use the precompiled binary version, you need one of these archives:
 
-  vim-XX-exe-alpha-gui.zip      Alpha GUI/Motif executables
-  vim-XX-exe-alpha-gtk.zip      Alpha GUI/GTK executables
-  vim-XX-exe-alpha-term.zip     Alpha console executables
+  vim-XX-exe-ia64-gui.zip       IA64 GUI/Motif executables
+  vim-XX-exe-ia64-gtk.zip       IA64 GUI/GTK executables
+  vim-XX-exe-ia64-term.zip      IA64 console executables
+  vim-XX-exe-axp-gui.zip        Alpha GUI/Motif executables
+  vim-XX-exe-axp-gtk.zip        Alpha GUI/GTK executables
+  vim-XX-exe-axp-term.zip       Alpha console executables
   vim-XX-exe-vax-gui.zip	VAX GUI executables
   vim-XX-exe-vax-term.zip       VAX console executables
 
 and of course
   vim-XX-runtime.zip		runtime files
 
-The binary archives contain: vim.exe, ctags.exe, xxd.exe, mms_vim.exe files.
+The binary archives contain: vim.exe, ctags.exe, xxd.exe files.
 
 ==============================================================================
 
@@ -68,8 +71,8 @@ See the file [.SRC]INSTALLVMS.TXT.
 
 4. Problems						*vms-problems*
 
-The code has been tested under Open VMS 6.2 - 7.3 on Alpha and VAX platforms
-with the DEC C compiler.  It should work without bigger problems.
+The code has been tested under Open VMS 6.2 - 8.2 on Alpha, VAX and IA64
+platforms with the DEC C compiler.  It should work without bigger problems.
 If your system does not have some include libraries you can tune up in
 OS_VMS_CONF.H file.
 
@@ -77,6 +80,8 @@ If you decided to build Vim with +perl, +python, etc. options, first you need
 to download OpenVMS distributions of Perl and Python.  Build and deploy the
 libraries and change adequate lines in MAKE_VMS.MMS file.  There should not be
 a problem from Vim side.
+
+Also GTK, XPM library paths should be configured in MAKE_VMS.MMS
 
 Note: Under VAX it should work with the DEC C compiler without problems.  The
 VAX C compiler is not fully ANSI C compatible in pre-processor directives
@@ -250,7 +255,7 @@ you will get errors that some shareable libraries are missing.
 
 Third: If you choose to run Vim with extra features such as GUI/GTK then you
 need a GTK installation too or at least a GTK runtime environment (LIBGTK
-etc.).
+can be downloaded from http://www.polarhome.com/vim/).
 
 1) If you are working on the VMS X/Motif console:
    Start Vim with the command: >
@@ -647,6 +652,17 @@ start it with: >
 ==============================================================================
 
 9. VMS related changes					*vms-changes*
+
+Version 7.0
+- GTKLIB and Vim build on IA64
+- colors in terminal mode
+- syntax highlighting in terminal mode
+- write problem fixed (extra CR)
+- ESC and ESC sequence recognition in terminal mode
+- make file changed to support new MMS version
+- env variable expansion in path corrected
+- printing problems corrected
+- help text added for case insensitive arguments
 
 Version 6.3 (2004 May 10)
 - Improved vms_read function

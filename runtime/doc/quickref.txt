@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 7.0aa.  Last change: 2005 Jul 06
+*quickref.txt*  For Vim version 7.0aa.  Last change: 2005 Jul 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -848,6 +848,7 @@ Short explanation of each option:		*option-list*
 |'swapfile'|	  |'swf'|    whether to use a swapfile for a buffer
 |'swapsync'|	  |'sws'|    how to sync the swap file
 |'switchbuf'|	  |'swb'|    sets behavior when switching to another buffer
+|'synmaxcol'|	  |'smc'|    maximum column to find syntax items
 |'syntax'|	  |'syn'|    syntax to be loaded for current buffer
 |'tabstop'|	  |'ts'|     number of spaces that <Tab> in file uses
 |'tagbsearch'|	  |'tbs'|    use binary searching in tags files

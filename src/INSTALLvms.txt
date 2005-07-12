@@ -1,7 +1,7 @@
 INSTALLvms.txt - Installation of Vim on OpenVMS
 
-Maintainer:   Zoltan Arpadffy <arpadffy@polarfox.com>
-Last change:  2003 May 04
+Maintainer:   Zoltan Arpadffy <arpadffy@polarhome.com>
+Last change:  2005 Jul 12
 
 This file contains instructions for compiling Vim on Openvms.
 If you already have an executable version of Vim, you don't need this.
@@ -58,10 +58,11 @@ Contents:
 NOTE: procedure in chapter 1 describes source code preparation from multi OS
 code,however it is available OpenVMS oprimized (and tested) source code from:
 ftp://ftp.polarhome.com/pub/vim/source/vms/
+(http://www.polarhome.com/vim/files/source/vms/)
 
 Current OpenVMS source code as .zip or .tar.gz file is possible to download
 from CVS mirror ftp://ftp.polarhome.com/pub/cvs/SOURCE/
-
+(http://www.polarhome.com/cvs/SOURCE/)
 
 2.   Configuration
 
@@ -97,6 +98,13 @@ from CVS mirror ftp://ftp.polarhome.com/pub/cvs/SOURCE/
 			  It enables features as toolbar etc.
 	Options:	: YES - GTK executable
 			  Uncommented - without GTK
+	Default		: Uncommented
+
+	Parameter name	: XPM
+	Description	: Enable XPM libraries in GUI/Motif mode.
+			  It enables features as toolbar etc.
+	Options:	: YES - GUI executable
+			  Uncommented - without XPM
 	Default		: Uncommented
 
 	Parameter name	: DECC
@@ -290,7 +298,7 @@ perl_env :
 7.2  GTK
 
      To build VIM with GTK you have to install GTK on your OpenVMS.
-     So far it works just on Alphas. More information at:
+     So far it works just on Alpha and IA64. More information at:
      http://www.openvms.compaq.com/openvms/products/ips/gtk.html
 
      You need also the OpenVMS Porting Library:
@@ -372,4 +380,4 @@ perl_env :
 
 9.   Authors
 
-     Initial version, 2000 Jul 19, Zoltan Arpadffy <arpadffy@polarfox.com>
+     Initial version, 2000 Jul 19, Zoltan Arpadffy <arpadffy@polarhome.com>

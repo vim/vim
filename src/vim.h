@@ -1894,11 +1894,11 @@ typedef int proftime_T;	    /* dummy for function prototypes */
 # include <XSUB.h>
 #endif
 
-/* values for handle_signal() that are not a signal */
+/* values for vim_handle_signal() that are not a signal */
 #define SIGNAL_BLOCK	-1
 #define SIGNAL_UNBLOCK  -2
 #ifndef UNIX
-# define handle_signal(x) 0
+# define vim_handle_signal(x) 0
 #endif
 
 /* flags for skip_vimgrep_pat() */
