@@ -396,6 +396,7 @@ static char_u *syn_getcurline __ARGS((void));
 static int syn_regexec __ARGS((regmmatch_T *rmp, linenr_T lnum, colnr_T col));
 static int check_keyword_id __ARGS((char_u *line, int startcol, int *endcol, long *flags, short **next_list, stateitem_T *cur_si));
 static void syn_cmd_case __ARGS((exarg_T *eap, int syncing));
+static void syn_cmd_spell __ARGS((exarg_T *eap, int syncing));
 static void syntax_sync_clear __ARGS((void));
 static void syn_remove_pattern __ARGS((buf_T *buf, int idx));
 static void syn_clear_pattern __ARGS((buf_T *buf, int i));
@@ -1698,6 +1699,17 @@ get_syntax_attr(col, can_spell)
     if (syn_buf->b_sst_array == NULL)
 	return 0;
 
+    /* After 'synmaxcol' the attribute is always zero. */
+    if (syn_buf->b_p_smc > 0 && col >= syn_buf->b_p_smc)
+    {
+	clear_current_state();
+#ifdef FEAT_EVAL
+	current_id = 0;
+	current_trans_id = 0;
+#endif
+	return 0;
+    }
+
     /* Make sure current_state is valid */
     if (INVALID_STATE(&current_state))
 	validate_current_state();
@@ -2189,13 +2201,12 @@ syn_current_attr(syncing, displaying, can_spell)
 	     * set "can_spell" to TRUE if spell checking is supposed to be
 	     * done in the current item.
 	     */
-
 	    if (syn_buf->b_spell_cluster_id == 0)
 	    {
 		/* There is no @Spell cluster: Do spelling for items without
 		 * @NoSpell cluster. */
 		if (syn_buf->b_nospell_cluster_id == 0 || current_trans_id == 0)
-		    *can_spell = TRUE;
+		    *can_spell = (syn_buf->b_syn_spell != SYNSPL_NOTOP);
 		else
 		{
 		    sps.inc_tag = 0;
@@ -2207,9 +2218,11 @@ syn_current_attr(syncing, displaying, can_spell)
 	    else
 	    {
 		/* The @Spell cluster is defined: Do spelling in items with
-		 * the @Spell cluster.  But not when @NoSpell is also there. */
+		 * the @Spell cluster.  But not when @NoSpell is also there.
+		 * At the toplevel only spell check when ":syn spell toplevel"
+		 * was used. */
 		if (current_trans_id == 0)
-		    *can_spell = FALSE;
+		    *can_spell = (syn_buf->b_syn_spell == SYNSPL_TOP);
 		else
 		{
 		    sps.inc_tag = 0;
@@ -2248,8 +2261,11 @@ syn_current_attr(syncing, displaying, can_spell)
 	}
     }
     else if (can_spell != NULL)
-	/* Only do spelling when there is no @Spell cluster. */
-	*can_spell = (syn_buf->b_spell_cluster_id == 0);
+	/* Default: Only do spelling when there is no @Spell cluster or when
+	 * ":syn spell toplevel" was used. */
+	*can_spell = syn_buf->b_syn_spell == SYNSPL_DEFAULT
+		    ? (syn_buf->b_spell_cluster_id == 0)
+		    : (syn_buf->b_syn_spell == SYNSPL_TOP);
 
     /* nextgroup ends at end of line, unless "skipnl" or "skipemtpy" present */
     if (current_next_list != NULL
@@ -3050,8 +3066,7 @@ check_keyword_id(line, startcol, endcolp, flagsp, next_listp, cur_si)
      * Must make a copy of the keyword, so we can add a NUL and make it
      * lowercase.
      */
-    STRNCPY(keyword, kwp, kwlen);
-    keyword[kwlen] = NUL;
+    vim_strncpy(keyword, kwp, kwlen);
 
     /*
      * Try twice:
@@ -3120,6 +3135,33 @@ syn_cmd_case(eap, syncing)
 }
 
 /*
+ * Handle ":syntax spell" command.
+ */
+/* ARGSUSED */
+    static void
+syn_cmd_spell(eap, syncing)
+    exarg_T	*eap;
+    int		syncing;	    /* not used */
+{
+    char_u	*arg = eap->arg;
+    char_u	*next;
+
+    eap->nextcmd = find_nextcmd(arg);
+    if (eap->skip)
+	return;
+
+    next = skiptowhite(arg);
+    if (STRNICMP(arg, "toplevel", 8) == 0 && next - arg == 8)
+	curbuf->b_syn_spell = SYNSPL_TOP;
+    else if (STRNICMP(arg, "notoplevel", 10) == 0 && next - arg == 10)
+	curbuf->b_syn_spell = SYNSPL_NOTOP;
+    else if (STRNICMP(arg, "default", 4) == 0 && next - arg == 4)
+	curbuf->b_syn_spell = SYNSPL_DEFAULT;
+    else
+	EMSG2(_("E390: Illegal argument: %s"), arg);
+}
+
+/*
  * Clear all syntax info for one buffer.
  */
     void
@@ -3129,6 +3171,7 @@ syntax_clear(buf)
     int i;
 
     buf->b_syn_ic = FALSE;	    /* Use case, by default */
+    buf->b_syn_spell = SYNSPL_DEFAULT; /* default spell checking */
     buf->b_syn_containedin = FALSE;
 
     /* free the keywords */
@@ -5519,8 +5562,7 @@ get_id_list(arg, keylen, list)
 		failed = TRUE;
 		break;
 	    }
-	    STRNCPY(name + 1, p, end - p);
-	    name[end - p + 1] = NUL;
+	    vim_strncpy(name + 1, p, end - p);
 	    if (       STRCMP(name + 1, "ALLBUT") == 0
 		    || STRCMP(name + 1, "ALL") == 0
 		    || STRCMP(name + 1, "TOP") == 0
@@ -5806,6 +5848,7 @@ static struct subcommand subcommands[] =
     {"off",		syn_cmd_off},
     {"region",		syn_cmd_region},
     {"reset",		syn_cmd_reset},
+    {"spell",		syn_cmd_spell},
     {"sync",		syn_cmd_sync},
     {"",		syn_cmd_list},
     {NULL, NULL}
@@ -8131,8 +8174,7 @@ syn_name2id(name)
     /* Avoid using stricmp() too much, it's slow on some systems */
     /* Avoid alloc()/free(), these are slow too.  ID names over 200 chars
      * don't deserve to be found! */
-    STRNCPY(name_u, name, 199);
-    name_u[199] = NUL;
+    vim_strncpy(name_u, name, 199);
     vim_strup(name_u);
     for (i = highlight_ga.ga_len; --i >= 0; )
 	if (HL_TABLE()[i].sg_name_u != NULL

@@ -148,8 +148,7 @@ clip_mch_set_selection( VimClipboard *cbd )
 #endif
 	    }
 
-	    STRNCPY( text_clip, str, len );
-	    text_clip[ len ] = NUL;
+	    vim_strncpy( text_clip, str, len );
 
 	    vim_clip[ 1 ] = NUL;
 

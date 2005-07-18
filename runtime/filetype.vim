@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Jul 04
+" Last Change:	2005 Jul 13
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -1811,6 +1811,9 @@ au BufNewFile,BufRead *.ts,*.ui			setf xml
 
 " Xdg menus
 au BufNewFile,BufRead /etc/xdg/menus/*.menu	setf xml
+
+" Xquery
+au BufNewFile,BufRead *.xq,*.xql,*.xqm,*.xquery,*.xqy	setf xquery
 
 " XSD
 au BufNewFile,BufRead *.xsd			setf xsd

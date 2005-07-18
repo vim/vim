@@ -1067,6 +1067,11 @@ struct dictvar_S
     dict_T	*dv_used_prev;	/* previous dict in used dicts list */
 };
 
+/* values for b_syn_spell: what to do with toplevel text */
+#define SYNSPL_DEFAULT	0	/* spell check if @Spell not defined */
+#define SYNSPL_TOP	1	/* spell check toplevel text */
+#define SYNSPL_NOTOP	2	/* don't spell check toplevel text */
+
 
 /*
  * buffer: structure that holds information about one file
@@ -1429,6 +1434,7 @@ struct file_buffer
     hashtab_T	b_keywtab;		/* syntax keywords hash table */
     hashtab_T	b_keywtab_ic;		/* idem, ignore case */
     int		b_syn_ic;		/* ignore case for :syn cmds */
+    int		b_syn_spell;		/* SYNSPL_ values */
     garray_T	b_syn_patterns;		/* table for syntax patterns */
     garray_T	b_syn_clusters;		/* table for syntax clusters */
     int		b_spell_cluster_id;	/* @Spell cluster ID or 0 */

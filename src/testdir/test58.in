@@ -7,9 +7,9 @@ STARTTEST
 :set enc=latin1
 :e!
 :" First generate a .spl file from a .dic and a .aff file.
-gg:/^affstart1/+1,/^affend1/-1w Xtest.aff
-gg:/^dicstart/+1,/^dicend/-1w Xtest.dic
-:mkspell Xtest Xtest
+gg:/^affstart1/+1,/^affend1/-1w! Xtest.aff
+gg:/^dicstart/+1,/^dicend/-1w! Xtest.dic
+:mkspell! Xtest Xtest
 :"
 :" use that spell file
 :set spl=Xtest.latin1.spl
@@ -71,30 +71,29 @@ gg:/^affstart2/+1,/^affend2/-1w! Xtest.aff
 :" also use an addition file
 gg:/^addstart/+1,/^addend/-1w! Xtest.latin1.add
 :mkspell! Xtest.latin1.add.spl Xtest.latin1.add
-:set spl=en
 :set spellfile=Xtest.latin1.add
 /^test2:
 ]s:let str = spellbadword()
 :$put =str
-:set spl=en_us
+:set spl=Xtest_us.latin1.spl
 /^test2:
 ]smm:let str = spellbadword()
 :$put =str
 `m]s:let str = spellbadword()
 :$put =str
-:set spl=en_gb
+:set spl=Xtest_gb.latin1.spl
 /^test2:
 ]smm:let str = spellbadword()
 :$put =str
 `m]s:let str = spellbadword()
 :$put =str
-:set spl=en_nz
+:set spl=Xtest_nz.latin1.spl
 /^test2:
 ]smm:let str = spellbadword()
 :$put =str
 `m]s:let str = spellbadword()
 :$put =str
-:set spl=en_ca
+:set spl=Xtest_ca.latin1.spl
 /^test2:
 ]smm:let str = spellbadword()
 :$put =str

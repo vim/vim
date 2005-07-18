@@ -1476,8 +1476,7 @@ dlg_destroy(GtkWidget *dlg)
 	const char *text;
 
 	text = gtk_entry_get_text(GTK_ENTRY(dialog_textentry));
-	STRNCPY(dialog_textfield, text, IOSIZE);
-	dialog_textfield[IOSIZE - 1] = NUL;
+	vim_strncpy(dialog_textfield, (char_u *)text, IOSIZE - 1);
     }
 
     /* Destroy the dialog, will break the waiting loop. */
@@ -2340,8 +2339,7 @@ gui_mch_dialog(int	type,	    /* type of dialog */
 	    text = (char_u *)gtk_entry_get_text(GTK_ENTRY(entry));
 	    text = CONVERT_FROM_UTF8(text);
 
-	    STRNCPY(textfield, text, IOSIZE);
-	    textfield[IOSIZE - 1] = NUL;
+	    vim_strncpy(textfield, text, IOSIZE - 1);
 
 	    CONVERT_FROM_UTF8_FREE(text);
 	}

@@ -1809,10 +1809,7 @@ foldAddMarker(lnum, marker, markerlen)
 	    return;
 	STRCPY(newline, line);
 	if (p == NULL)
-	{
-	    STRNCPY(newline + line_len, marker, markerlen);
-	    newline[line_len + markerlen] = NUL;
-	}
+	    vim_strncpy(newline + line_len, marker, markerlen);
 	else
 	{
 	    STRCPY(newline + line_len, cms);

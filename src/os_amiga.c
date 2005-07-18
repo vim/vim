@@ -626,7 +626,7 @@ mch_get_host_name(s, len)
     char_u  *s;
     int	    len;
 {
-    STRNCPY(s, "Amiga", len);
+    vim_strncpy(s, "Amiga", len - 1);
 }
 
 /*
@@ -690,7 +690,7 @@ mch_FullName(fname, buf, len, force)
 		{
 		    if (i < len - 1 && (i == 0 || buf[i - 1] != ':'))
 			buf[i++] = '/';
-		    STRNCPY(buf + i, fname, len - i);
+		    vim_strncpy(buf + i, fname, len - i - 1);
 		}
 	    }
 	}

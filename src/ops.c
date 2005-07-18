@@ -2532,8 +2532,7 @@ op_change(oap)
 	{
 	    if ((ins_text = alloc_check((unsigned)(ins_len + 1))) != NULL)
 	    {
-		STRNCPY(ins_text, firstline + bd.textcol, ins_len);
-		ins_text[ins_len] = NUL;
+		vim_strncpy(ins_text, firstline + bd.textcol, (size_t)ins_len);
 		for (linenr = oap->start.lnum + 1; linenr <= oap->end.lnum;
 								     linenr++)
 		{

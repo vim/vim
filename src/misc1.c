@@ -976,8 +976,7 @@ open_line(dir, flags, old_indent)
 		lead_len = 0;
 	    else
 	    {
-		STRNCPY(leader, saved_line, lead_len);
-		leader[lead_len] = NUL;
+		vim_strncpy(leader, saved_line, lead_len);
 
 		/*
 		 * Replace leader with lead_repl, right or left adjusted
@@ -3345,8 +3344,7 @@ init_homedir()
 	p = vim_strchr(var + 1, '%');
 	if (p != NULL)
 	{
-	    STRNCPY(NameBuff, var + 1, p - (var + 1));
-	    NameBuff[p - (var + 1)] = NUL;
+	    vim_strncpy(NameBuff, var + 1, p - (var + 1));
 	    exp = mch_getenv(NameBuff);
 	    if (exp != NULL && *exp != NUL
 					&& STRLEN(exp) + STRLEN(p) < MAXPATHL)

@@ -3592,8 +3592,7 @@ gui_mch_tearoff(
 	if (label == NULL)
 	    break;
 
-	STRNCPY(text, menu->name, nameLen);
-	text[nameLen] = NUL;
+	vim_strncpy(text, menu->name, nameLen);
 	text = vim_strchr(text, TAB);	    /* stop at TAB before actext */
 	if (text == NULL)
 	    text = label + nameLen;	    /* no actext, use whole name */

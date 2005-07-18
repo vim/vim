@@ -3239,10 +3239,7 @@ ExpandOne(xp, str, orig, options, mode)
 	}
 	ss = alloc((unsigned)len + 1);
 	if (ss)
-	{
-	    STRNCPY(ss, xp->xp_files[0], len);
-	    ss[len] = NUL;
-	}
+	    vim_strncpy(ss, xp->xp_files[0], (size_t)len);
 	findex = -1;			    /* next p_wc gets first one */
     }
 
@@ -3749,8 +3746,7 @@ addstar(fname, len, context)
 	retval = alloc(len + 4);
 	if (retval != NULL)
 	{
-	    STRNCPY(retval, fname, len);
-	    retval[len] = NUL;
+	    vim_strncpy(retval, fname, len);
 
 	    /*
 	     * Don't add a star to ~, ~user, $var or `cmd`.

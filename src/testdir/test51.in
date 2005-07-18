@@ -29,6 +29,8 @@ STARTTEST
 :%s/ctermbg=\d*/ctermbg=3/
 :" filter out possibly translated error message
 :%s/E475: [^:]*:/E475:/
+:" fix the fileformat
+:set ff&
 :wq!
 ENDTEST
 

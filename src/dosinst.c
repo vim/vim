@@ -2080,7 +2080,7 @@ print_cmd_line_help(void)
     printf("    or $HOME directory\n");
 #ifdef WIN3264
     printf("-register-OLE");
-    printf("    Register gvim for OLE\n");
+    printf("    Ignored\n");
 #endif
     printf("\n");
 }

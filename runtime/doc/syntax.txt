@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.0aa.  Last change: 2005 Jul 05
+*syntax.txt*	For Vim version 7.0aa.  Last change: 2005 Jul 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2516,17 +2516,17 @@ It will look much better with a font in a quadratic cell size, e.g. for X: >
 
 Vim understands three types of syntax items:
 
-1. Keyword.
+1. Keyword
    It can only contain keyword characters, according to the 'iskeyword'
    option.  It cannot contain other syntax items.  It will only match with a
    complete word (there are no keyword characters before or after the match).
    The keyword "if" would match in "if(a=b)", but not in "ifdef x", because
    "(" is not a keyword character and "d" is.
 
-2. Match.
+2. Match
    This is a match with a single regexp pattern.
 
-3. Region.
+3. Region
    This starts at a match of the "start" regexp pattern and ends with a match
    with the "end" regexp pattern.  Any other text can appear in between.  A
    "skip" regexp pattern can be used to avoid matching the "end" pattern.
@@ -2565,11 +2565,28 @@ When several syntax items may match, these rules are used:
 
 DEFINING CASE						*:syn-case* *E390*
 
-:sy[ntax] case [match|ignore]
+:sy[ntax] case [match | ignore]
 	This defines if the following ":syntax" commands will work with
 	matching case, when using "match", or with ignoring case, when using
 	"ignore".  Note that any items before this are not affected, and all
 	items until the next ":syntax case" command are affected.
+
+
+SPELL CHECKING						*:syn-spell*
+
+:sy[ntax] spell [toplevel | notoplevel | default]
+	This defines where spell checking is to be done for text that is not
+	in a syntax item:
+
+	toplevel:	Text is spell checked.
+	notoplevel:	Text is not spell checked.
+	default:	When there is a @Spell cluster no spell checking.
+
+	For text in syntax items use the @Spell and @NoSpell clusters
+	|spell-syntax|.  When there is no @Spell and no @NoSpell cluster then
+	spell checking is done for "default" and "toplevel".
+
+	To activate spell checking the 'spell' option must be set.
 
 
 DEFINING KEYWORDS					*:syn-keyword*

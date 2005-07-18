@@ -5511,16 +5511,14 @@ prt_open_resource(resource)
         switch (dsc_line.type)
         {
         case PRT_DSC_TITLE_TYPE:
-            STRNCPY(resource->title, dsc_line.string, dsc_line.len);
-            resource->title[dsc_line.len] = '\0';
+            vim_strncpy(resource->title, dsc_line.string, dsc_line.len);
             seen_title = TRUE;
             if (seen_version)
                 seen_all = TRUE;
             break;
 
         case PRT_DSC_VERSION_TYPE:
-            STRNCPY(resource->version, dsc_line.string, dsc_line.len);
-            resource->version[dsc_line.len] = '\0';
+            vim_strncpy(resource->version, dsc_line.string, dsc_line.len);
             seen_version = TRUE;
             if (seen_title)
                 seen_all = TRUE;
@@ -5862,8 +5860,7 @@ prt_build_cid_fontname(font, name, name_len)
     fontname = (char *)alloc(name_len + 1);
     if (fontname == NULL)
         return FALSE;
-    STRNCPY(fontname, name, name_len);
-    fontname[name_len] = '\0';
+    vim_strncpy((char_u *)fontname, name, name_len);
     prt_ps_mb_font.ps_fontname[font] = fontname;
 
     return TRUE;
@@ -5977,7 +5974,6 @@ mch_print_init(psettings, jobname, forceit)
     double      bottom;
 #ifdef FEAT_MBYTE
     int         cmap;
-    int         pmcs_len;
     char_u	*p_encoding;
     struct prt_ps_encoding_S *p_mbenc;
     struct prt_ps_encoding_S *p_mbenc_first;
@@ -6035,7 +6031,7 @@ mch_print_init(psettings, jobname, forceit)
     if (prt_out_mbyte)
     {
         /* Build CMap name - will be same for all multi-byte fonts used */
-        prt_cmap[0] = '\0';
+        prt_cmap[0] = NUL;
 
         prt_custom_cmap = prt_out_mbyte && p_mbchar == NULL;
 
@@ -6051,26 +6047,26 @@ mch_print_init(psettings, jobname, forceit)
             /* Add charset name if not empty */
             if (p_mbchar->cmap_charset != NULL)
             {
-                STRCAT(prt_cmap, p_mbchar->cmap_charset);
+                vim_strncpy((char_u *)prt_cmap,
+		      (char_u *)p_mbchar->cmap_charset, sizeof(prt_cmap) - 3);
                 STRCAT(prt_cmap, "-");
             }
         }
         else
         {
             /* Add custom CMap character set name */
-            pmcs_len = STRLEN(p_pmcs);
-            if (pmcs_len == 0)
+            if (*p_pmcs == NUL)
             {
                 EMSG(_("E674: printmbcharset cannot be empty with multi-byte encoding."));
                 return FALSE;
             }
-            STRNCPY(prt_cmap, p_pmcs, STRLEN(p_pmcs));
-            prt_cmap[pmcs_len] = '\0';
+            vim_strncpy((char_u *)prt_cmap, p_pmcs, sizeof(prt_cmap) - 3);
             STRCAT(prt_cmap, "-");
         }
 
         /* CMap name ends with (optional) encoding name and -H for horizontal */
-        if (p_mbenc->cmap_encoding != NULL)
+        if (p_mbenc->cmap_encoding != NULL && STRLEN(prt_cmap)
+		      + STRLEN(p_mbenc->cmap_encoding) + 3 < sizeof(prt_cmap))
         {
             STRCAT(prt_cmap, p_mbenc->cmap_encoding);
             STRCAT(prt_cmap, "-");

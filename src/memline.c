@@ -698,8 +698,7 @@ set_b0_fname(b0p, buf)
 	/* Systems that cannot translate "~user" back into a path: copy the
 	 * file name unmodified.  Do use slashes instead of backslashes for
 	 * portability. */
-	STRNCPY(b0p->b0_fname, buf->b_ffname, B0_FNAME_SIZE);
-	b0p->b0_fname[B0_FNAME_SIZE - 1] = NUL;
+	vim_strncpy(b0p->b0_fname, buf->b_ffname, B0_FNAME_SIZE - 1);
 # ifdef BACKSLASH_IN_FILENAME
 	forward_slash(b0p->b0_fname);
 # endif
@@ -721,10 +720,7 @@ set_b0_fname(b0p, buf)
 	    /* If there is no user name or it is too long, don't use "~/" */
 	    if (get_user_name(uname, B0_UNAME_SIZE) == FAIL
 			 || (ulen = STRLEN(uname)) + flen > B0_FNAME_SIZE - 1)
-	    {
-		STRNCPY(b0p->b0_fname, buf->b_ffname, B0_FNAME_SIZE);
-		b0p->b0_fname[B0_FNAME_SIZE - 1] = NUL;
-	    }
+		vim_strncpy(b0p->b0_fname, buf->b_ffname, B0_FNAME_SIZE - 1);
 	    else
 	    {
 		mch_memmove(b0p->b0_fname + ulen + 1, b0p->b0_fname + 1, flen);

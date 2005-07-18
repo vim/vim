@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jul 12
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jul 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -447,6 +447,8 @@ Sive syntax file. (Nikolai Weibull)
 Pascal indent file. (Neil Carter)
 
 Many filetype plugins and others from Nikolai Weibull.
+
+Xquery syntax file. (Jean-Marc Vanel)
 
 Moved all the indent settings from the filetype plugin to the indent file.
 Implemented b:undo_indent to undo indent settings when setting 'filetype' to a

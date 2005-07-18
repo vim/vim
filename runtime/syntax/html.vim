@@ -2,7 +2,7 @@
 " Language:	HTML
 " Maintainer:	Claudio Fleiner <claudio@fleiner.com>
 " URL:		http://www.fleiner.com/vim/syntax/html.vim
-" Last Change:  2005 Jul 05
+" Last Change:  2005 Jul 18
 
 " Please check :help html.vim for some comments and a description of the options
 
@@ -27,6 +27,8 @@ endif
 
 syn case ignore
 
+syn spell toplevel
+
 " mark illegal characters
 syn match htmlError "[<>&]"
 
@@ -35,8 +37,8 @@ syn match htmlError "[<>&]"
 syn region  htmlString   contained start=+"+ end=+"+ contains=htmlSpecialChar,javaScriptExpression,@htmlPreproc
 syn region  htmlString   contained start=+'+ end=+'+ contains=htmlSpecialChar,javaScriptExpression,@htmlPreproc
 syn match   htmlValue    contained "=[\t ]*[^'" \t>][^ \t>]*"hs=s+1   contains=javaScriptExpression,@htmlPreproc
-syn region  htmlEndTag		   start=+</+	   end=+>+ contains=htmlTagN,htmlTagError,@NoSpell
-syn region  htmlTag		   start=+<[^/]+   end=+>+ contains=htmlTagN,htmlString,htmlArg,htmlValue,htmlTagError,htmlEvent,htmlCssDefinition,@htmlPreproc,@htmlArgCluster,@NoSpell
+syn region  htmlEndTag		   start=+</+	   end=+>+ contains=htmlTagN,htmlTagError
+syn region  htmlTag		   start=+<[^/]+   end=+>+ contains=htmlTagN,htmlString,htmlArg,htmlValue,htmlTagError,htmlEvent,htmlCssDefinition,@htmlPreproc,@htmlArgCluster
 syn match   htmlTagN     contained +<\s*[-a-zA-Z0-9]\++hs=s+1 contains=htmlTagName,htmlSpecialTagName,@htmlTagNameCluster
 syn match   htmlTagN     contained +</\s*[-a-zA-Z0-9]\++hs=s+2 contains=htmlTagName,htmlSpecialTagName,@htmlTagNameCluster
 syn match   htmlTagError contained "[^>]<"ms=s+1
@@ -116,7 +118,7 @@ syn match htmlPreProcAttrName contained "\(expr\|errmsg\|sizefmt\|timefmt\|var\|
 
 if !exists("html_no_rendering")
   " rendering
-  syn cluster htmlTop contains=htmlTag,htmlEndTag,htmlSpecialChar,htmlPreProc,htmlComment,htmlLink,javaScript,@htmlPreproc
+  syn cluster htmlTop contains=@Spell,htmlTag,htmlEndTag,htmlSpecialChar,htmlPreProc,htmlComment,htmlLink,javaScript,@htmlPreproc
 
   syn region htmlBold start="<b\>" end="</b>"me=e-4 contains=@htmlTop,htmlBoldUnderline,htmlBoldItalic
   syn region htmlBold start="<strong\>" end="</strong>"me=e-9 contains=@htmlTop,htmlBoldUnderline,htmlBoldItalic
@@ -146,7 +148,7 @@ if !exists("html_no_rendering")
   syn region htmlItalicUnderlineBold contained start="<b\>" end="</b>"me=e-4 contains=@htmlTop
   syn region htmlItalicUnderlineBold contained start="<strong\>" end="</strong>"me=e-9 contains=@htmlTop
 
-  syn region htmlLink start="<a\>\_[^>]*\<href\>" end="</a>"me=e-4 contains=htmlTag,htmlEndTag,htmlSpecialChar,htmlPreProc,htmlComment,javaScript,@htmlPreproc
+  syn region htmlLink start="<a\>\_[^>]*\<href\>" end="</a>"me=e-4 contains=@Spell,htmlTag,htmlEndTag,htmlSpecialChar,htmlPreProc,htmlComment,javaScript,@htmlPreproc
   syn region htmlH1 start="<h1\>" end="</h1>"me=e-5 contains=@htmlTop
   syn region htmlH2 start="<h2\>" end="</h2>"me=e-5 contains=@htmlTop
   syn region htmlH3 start="<h3\>" end="</h3>"me=e-5 contains=@htmlTop
@@ -154,7 +156,7 @@ if !exists("html_no_rendering")
   syn region htmlH5 start="<h5\>" end="</h5>"me=e-5 contains=@htmlTop
   syn region htmlH6 start="<h6\>" end="</h6>"me=e-5 contains=@htmlTop
   syn region htmlHead start="<head\>" end="</head>"me=e-7 end="<body\>"me=e-5 end="<h[1-6]\>"me=e-3 contains=htmlTag,htmlEndTag,htmlSpecialChar,htmlPreProc,htmlComment,htmlLink,htmlTitle,javaScript,cssStyle,@htmlPreproc
-  syn region htmlTitle start="<title\>" end="</title>"me=e-8 contains=htmlTag,htmlEndTag,htmlSpecialChar,htmlPreProc,htmlComment,javaScript,@htmlPreproc
+  syn region htmlTitle start="<title\>" end="</title>"me=e-8 contains=@Spell,htmlTag,htmlEndTag,htmlSpecialChar,htmlPreProc,htmlComment,javaScript,@htmlPreproc
 endif
 
 syn keyword htmlTagName		contained noscript

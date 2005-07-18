@@ -1970,8 +1970,7 @@ ins_compl_add_infercase(str, len, fname, dir, reuse)
     {
 	/* Infer case of completed part -- webb */
 	/* Use IObuff, str would change text in buffer! */
-	STRNCPY(IObuff, str, len);
-	IObuff[len] = NUL;
+	vim_strncpy(IObuff, str, len);
 
 	/* Rule 1: Were any chars converted to lower? */
 	for (idx = 0; idx < completion_length; ++idx)
@@ -2010,7 +2009,7 @@ ins_compl_add_infercase(str, len, fname, dir, reuse)
 	}
 
 	/* Copy the original case of the part we typed */
-	STRNCPY(IObuff, original_text, completion_length);
+	vim_strncpy(IObuff, original_text, completion_length);
 
 	return ins_compl_add(IObuff, len, fname, dir, reuse);
     }
@@ -3053,17 +3052,17 @@ ins_compl_get_exp(ini, dir)
 			    tmp_ptr = find_word_end(tmp_ptr);
 			    if (tmp_ptr > ptr)
 			    {
-				if (*ptr != ')' && IObuff[len-1] != TAB)
+				if (*ptr != ')' && IObuff[len - 1] != TAB)
 				{
-				    if (IObuff[len-1] != ' ')
+				    if (IObuff[len - 1] != ' ')
 					IObuff[len++] = ' ';
 				    /* IObuf =~ "\k.* ", thus len >= 2 */
 				    if (p_js
-					&& (IObuff[len-2] == '.'
+					&& (IObuff[len - 2] == '.'
 					    || (vim_strchr(p_cpo, CPO_JOINSP)
 								       == NULL
-						&& (IObuff[len-2] == '?'
-						    || IObuff[len-2] == '!'))))
+						&& (IObuff[len - 2] == '?'
+						 || IObuff[len - 2] == '!'))))
 					IObuff[len++] = ' ';
 				}
 				/* copy as much as posible of the new word */
@@ -3741,8 +3740,7 @@ ins_complete(c)
 				      curr_match->number, completion_matches);
 		else
 		    sprintf((char *)IObuff, _("match %d"), curr_match->number);
-		STRNCPY(match_ref, IObuff, 30 );
-		match_ref[30] = '\0';
+		vim_strncpy(match_ref, IObuff, 30);
 		edit_submode_extra = match_ref;
 		edit_submode_highl = HLF_R;
 		if (dollar_vcol)

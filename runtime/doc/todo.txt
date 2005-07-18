@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 13
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,9 +30,11 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Use vim_strncpy() in more places.
+"at" and "it" text objects: recognize HTML/SGML/XML tag pairs <b>asdf</b>
 
-When going over 'synmaxcol' don't highlight anything, stop regions.
+":e *.foo" completion with file name starting with "+" should be escaped.
+
+VMS patch for term.c also in Vim 6.3 (Zoltan Arpadffy)
 
 Add extra list of file locations.  Can be used with:
     :ltag	      list of matching tags, like :tselect
@@ -93,6 +95,7 @@ Awaiting response:
 -   Win32: tearoff menu window should have a scrollbar when it's taller than
     the screen.
 
+mblen(NULL, 0) also in Vim 6.3?
 
 
 PLANNED FOR VERSION 7.0:
@@ -1242,6 +1245,8 @@ Help:
 
 
 User Friendlier:
+8   Windows install with NSIS: make it possible to do a silent install, see
+    http://nsis.sourceforge.net/Docs/Chapter4.html#4.12
 8   Windows install with install.exe: Use .exe instead of .bat files for
     links, so that command line arguments are passed on unmodified? (Walter
     Briscoe)
@@ -2079,12 +2084,6 @@ GUI:
 -   Would it be useful to be able to quit the GUI and go back to the terminal
     where it was started from?
 7   Support "-visual <type>" command line argument.
-
-
-VMS:
--   Improvement: rewrite term/TTY handling.
--   Improvement: create VMS GTK runtime libraries on OpenVMS 7.1-2 (today GTK
-    works just on 7.3).
 
 
 Autocommands:

@@ -1159,11 +1159,9 @@ do_intro_line(row, mesg, add_version, attr)
 
     if (*mesg == ' ')
     {
-	STRNCPY(modby, _("Modified by "), MODBY_LEN);
-	modby[MODBY_LEN - 1] = NUL;
+	vim_strncpy(modby, _("Modified by "), MODBY_LEN - 1);
 	l = STRLEN(modby);
-	STRNCPY(modby + l, MODIFIED_BY, MODBY_LEN - l);
-	modby[MODBY_LEN - 1] = NUL;
+	vim_strncpy(modby + l, MODIFIED_BY, MODBY_LEN - l - 1);
 	mesg = modby;
     }
 #endif

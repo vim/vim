@@ -2325,9 +2325,9 @@ sm_client_die(GnomeClient *client, gpointer data)
     /* Don't write messages to the GUI anymore */
     full_screen = FALSE;
 
-    STRNCPY(IObuff, _("Vim: Received \"die\" request from session manager\n"),
-	    IOSIZE);
-    IObuff[IOSIZE - 1] = NUL;
+    vim_strncpy(IObuff,
+		    _("Vim: Received \"die\" request from session manager\n"),
+	    IOSIZE - 1);
     preserve_exit();
 }
 
@@ -3527,9 +3527,9 @@ mainwin_destroy_cb(GtkObject *object, gpointer data)
 
     if (!exiting) /* only do anything if the destroy was unexpected */
     {
-	STRNCPY(IObuff, _("Vim: Main window unexpectedly destroyed\n"),
-		IOSIZE);
-	IObuff[IOSIZE - 1] = NUL;
+	vim_strncpy(IObuff,
+		(char_u *)_("Vim: Main window unexpectedly destroyed\n"),
+		IOSIZE - 1);
 	preserve_exit();
     }
 }

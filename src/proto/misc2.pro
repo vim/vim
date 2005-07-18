@@ -36,7 +36,7 @@ char_u *strup_save __ARGS((char_u *orig));
 void copy_spaces __ARGS((char_u *ptr, size_t count));
 void copy_chars __ARGS((char_u *ptr, size_t count, int c));
 void del_trailing_spaces __ARGS((char_u *ptr));
-void vim_strncpy __ARGS((char_u *to, char_u *from, int len));
+void vim_strncpy __ARGS((char_u *to, char_u *from, size_t len));
 int copy_option_part __ARGS((char_u **option, char_u *buf, int maxlen, char *sep_chars));
 void vim_free __ARGS((void *x));
 int vim_stricmp __ARGS((char *s1, char *s2));

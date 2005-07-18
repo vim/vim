@@ -1258,8 +1258,7 @@ set_context_in_menu_cmd(xp, cmd, arg, forceit)
 	    path_name = alloc((unsigned)(after_dot - arg));
 	    if (path_name == NULL)
 		return NULL;
-	    STRNCPY(path_name, arg, after_dot - arg - 1);
-	    path_name[after_dot - arg - 1] = NUL;
+	    vim_strncpy(path_name, arg, after_dot - arg - 1);
 	}
 	name = path_name;
 	while (name != NULL && *name)

@@ -6197,8 +6197,7 @@ dict_find(d, key, len)
     else
     {
 	/* Avoid a malloc/free by using buf[]. */
-	STRNCPY(buf, key, len);
-	buf[len] = NUL;
+	vim_strncpy(buf, key, len);
 	akey = buf;
     }
 
@@ -10681,10 +10680,7 @@ f_inputdialog(argvars, rettv)
 	message = get_tv_string_chk(&argvars[0]);
 	if (argvars[1].v_type != VAR_UNKNOWN
 	    && (defstr = get_tv_string_buf_chk(&argvars[1], buf)) != NULL)
-	{
-	    STRNCPY(IObuff, defstr, IOSIZE);
-	    IObuff[IOSIZE - 1] = NUL;
-	}
+	    vim_strncpy(IObuff, defstr, IOSIZE - 1);
 	else
 	    IObuff[0] = NUL;
 	if (message != NULL && defstr != NULL
