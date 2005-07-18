@@ -2,7 +2,7 @@
 " Language:	Perl
 " Author:	Rafael Garcia-Suarez <rgarciasuarez@free.fr>
 " URL:		http://rgarciasuarez.free.fr/vim/indent/perl.vim
-" Last Change:	2003 Apr 25
+" Last Change:	2005 Jul 15
 
 " Suggestions and improvements by :
 "   Aaron J. Sherman (use syntax for hints)
@@ -28,9 +28,6 @@ let b:did_indent = 1
 " Is syntax highlighting active ?
 let b:indent_use_syntax = has("syntax") && &syntax == "perl"
 
-let s:cpo_save = &cpo
-set cpo-=C
-
 setlocal indentexpr=GetPerlIndent()
 setlocal indentkeys+=0=,0),0=or,0=and
 if !b:indent_use_syntax
@@ -41,6 +38,9 @@ endif
 if exists("*GetPerlIndent")
   finish
 endif
+
+let s:cpo_save = &cpo
+set cpo-=C
 
 function GetPerlIndent()
 

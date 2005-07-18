@@ -7286,7 +7286,7 @@ ex_cd(eap)
 	    if (p == NULL || *p == NUL)	/* empty is the same as not set */
 		NameBuff[0] = NUL;
 	    else
-		STRNCPY(NameBuff, p, MAXPATHL);
+		vim_strncpy(NameBuff, p, MAXPATHL - 1);
 # else
 	    expand_env((char_u *)"$HOME", NameBuff, MAXPATHL);
 # endif

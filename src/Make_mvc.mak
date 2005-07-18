@@ -216,7 +216,7 @@ CTAGS = ctags
 # SNIFF - Include support for SNiFF+.
 SNIFF_INCL  = if_sniff.h
 SNIFF_OBJ   = $(OBJDIR)/if_sniff.obj
-SNIFF_LIB    = shell32.lib
+SNIFF_LIB   = shell32.lib
 SNIFF_DEFS  = -DFEAT_SNIFF
 # The SNiFF integration needs multithreaded libraries!
 MULTITHREADED = yes
@@ -250,7 +250,7 @@ NBDEBUG_DEFS	= -DNBDEBUG
 NBDEBUG_INCL	= nbdebug.h
 NBDEBUG_SRC	= nbdebug.c
 !endif
-NETBEANS_LIB   = WSock32.lib
+NETBEANS_LIB	= WSock32.lib
 !endif
 
 !ifdef XPM
@@ -294,7 +294,8 @@ WINVER = 0x0400
 CFLAGS = -c /W3 /nologo $(CVARS) -I. -Iproto -DHAVE_PATHDEF -DWIN32 \
 		$(SNIFF_DEFS) $(CSCOPE_DEFS) $(NETBEANS_DEFS) \
 		$(NBDEBUG_DEFS) $(XPM_DEFS) \
-		$(DEFINES) -DWINVER=$(WINVER) -D_WIN32_WINNT=$(WINVER)
+		$(DEFINES) -DWINVER=$(WINVER) -D_WIN32_WINNT=$(WINVER) \
+		/Fo$(OUTDIR)/ 
 
 #>>>>> end of choices
 ###########################################################################
@@ -500,7 +501,8 @@ TCL_VER_LONG = 8.3
 !if "$(DYNAMIC_TCL)" == "yes"
 !message Tcl DLL will be loaded dynamically
 TCL_DLL = tcl$(TCL_VER).dll
-CFLAGS  = $(CFLAGS) -DFEAT_TCL -DDYNAMIC_TCL -DDYNAMIC_TCL_DLL=\"$(TCL_DLL)\" -DDYNAMIC_TCL_VER=\"$(TCL_VER_LONG)\"
+CFLAGS  = $(CFLAGS) -DFEAT_TCL -DDYNAMIC_TCL -DDYNAMIC_TCL_DLL=\"$(TCL_DLL)\" \
+		-DDYNAMIC_TCL_VER=\"$(TCL_VER_LONG)\"
 TCL_OBJ	= $(OUTDIR)\if_tcl.obj
 TCL_INC	= /I "$(TCL)\Include" /I "$(TCL)"
 TCL_LIB = $(TCL)\lib\tclstub$(TCL_VER).lib
@@ -525,7 +527,8 @@ CFLAGS = $(CFLAGS) -DFEAT_PYTHON
 PYTHON_OBJ = $(OUTDIR)\if_python.obj
 PYTHON_INC = /I "$(PYTHON)\Include" /I "$(PYTHON)\PC"
 !if "$(DYNAMIC_PYTHON)" == "yes"
-CFLAGS = $(CFLAGS) -DDYNAMIC_PYTHON -DDYNAMIC_PYTHON_DLL=\"python$(PYTHON_VER).dll\"
+CFLAGS = $(CFLAGS) -DDYNAMIC_PYTHON \
+		-DDYNAMIC_PYTHON_DLL=\"python$(PYTHON_VER).dll\"
 PYTHON_LIB = /nodefaultlib:python$(PYTHON_VER).lib
 !else
 PYTHON_LIB = $(PYTHON)\libs\python$(PYTHON_VER).lib
@@ -541,9 +544,12 @@ MZSCHEME_VER = 205_000
 CFLAGS = $(CFLAGS) -DFEAT_MZSCHEME -I $(MZSCHEME)\include
 !if "$(DYNAMIC_MZSCHEME)" == "yes"
 !message MzScheme DLLs will be loaded dynamically
-CFLAGS = $(CFLAGS) -DDYNAMIC_MZSCHEME -DDYNAMIC_MZSCH_DLL=\"libmzsch$(MZSCHEME_VER).dll\" -DDYNAMIC_MZGC_DLL=\"libmzgc$(MZSCHEME_VER).dll\"
+CFLAGS = $(CFLAGS) -DDYNAMIC_MZSCHEME \
+		-DDYNAMIC_MZSCH_DLL=\"libmzsch$(MZSCHEME_VER).dll\" \
+		-DDYNAMIC_MZGC_DLL=\"libmzgc$(MZSCHEME_VER).dll\"
 !else
-MZSCHEME_LIB = $(MZSCHEME)\lib\msvc\libmzgc$(MZSCHEME_VER).lib $(MZSCHEME)\lib\msvc\libmzsch$(MZSCHEME_VER).lib
+MZSCHEME_LIB = $(MZSCHEME)\lib\msvc\libmzgc$(MZSCHEME_VER).lib \
+		$(MZSCHEME)\lib\msvc\libmzsch$(MZSCHEME_VER).lib
 !endif
 MZSCHEME_OBJ = $(OUTDIR)\if_mzsch.obj
 !endif
@@ -631,7 +637,8 @@ RUBY_LIB = $(RUBY)\lib\$(RUBY_INSTALL_NAME).lib
 # Do we want to load Ruby dynamically?
 !if "$(DYNAMIC_RUBY)" == "yes"
 !message Ruby DLL will be loaded dynamically
-CFLAGS = $(CFLAGS) -DDYNAMIC_RUBY -DDYNAMIC_RUBY_DLL=\"$(RUBY_INSTALL_NAME).dll\" -DDYNAMIC_RUBY_VER=$(RUBY_VER)
+CFLAGS = $(CFLAGS) -DDYNAMIC_RUBY -DDYNAMIC_RUBY_VER=$(RUBY_VER) \
+		-DDYNAMIC_RUBY_DLL=\"$(RUBY_INSTALL_NAME).dll\" 
 !undef RUBY_LIB
 !endif
 !endif # RUBY
@@ -655,8 +662,7 @@ CFLAGS = $(CFLAGS) -DFEAT_$(FEATURES)
 # Always generate the .pdb file, so that we get debug symbols that can be used
 # on a crash (doesn't add overhead to the executable).
 #
-CFLAGS = $(CFLAGS) /Zi
-PDB = /Fd$(OUTDIR)/
+CFLAGS = $(CFLAGS) /Zi /Fd$(OUTDIR)/
 LINK_PDB = /PDB:$(OUTDIR)/$(VIM).pdb -debug:full -debugtype:cv,fixup
 
 #
@@ -676,17 +682,20 @@ conflags = $(conflags) /map /mapinfo:lines
 
 LINKARGS1 = $(linkdebug) $(conflags) /nodefaultlib:libc
 LINKARGS2 = $(CON_LIB) $(GUI_LIB) $(LIBC) $(OLE_LIB)  user32.lib $(SNIFF_LIB) \
-		$(MZSCHEME_LIB) $(PERL_LIB) $(PYTHON_LIB) $(RUBY_LIB) $(TCL_LIB) \
-		$(NETBEANS_LIB) $(XPM_LIB) $(LINK_PDB)
+		$(MZSCHEME_LIB) $(PERL_LIB) $(PYTHON_LIB) $(RUBY_LIB) \
+		$(TCL_LIB) $(NETBEANS_LIB) $(XPM_LIB) $(LINK_PDB)
 
-all:	$(VIM).exe vimrun.exe install.exe uninstal.exe xxd/xxd.exe GvimExt/gvimext.dll
+all:	$(VIM).exe vimrun.exe install.exe uninstal.exe xxd/xxd.exe \
+		GvimExt/gvimext.dll
 
-$(VIM).exe: $(OUTDIR) $(OBJ) $(GUI_OBJ) $(OLE_OBJ) $(OLE_IDL) $(MZSCHEME_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(RUBY_OBJ) $(TCL_OBJ) $(SNIFF_OBJ) $(CSCOPE_OBJ) $(NETBEANS_OBJ) $(XPM_OBJ) version.c version.h
-	$(CC) $(CFLAGS)  version.c /Fo$(OUTDIR)/version.obj $(PDB)
+$(VIM).exe: $(OUTDIR) $(OBJ) $(GUI_OBJ) $(OLE_OBJ) $(OLE_IDL) $(MZSCHEME_OBJ) \
+		$(PERL_OBJ) $(PYTHON_OBJ) $(RUBY_OBJ) $(TCL_OBJ) $(SNIFF_OBJ) \
+		$(CSCOPE_OBJ) $(NETBEANS_OBJ) $(XPM_OBJ) version.c version.h
+	$(CC) $(CFLAGS) version.c
 	$(link) $(LINKARGS1) -out:$(VIM).exe $(OBJ) $(GUI_OBJ) $(OLE_OBJ) \
-		$(MZSCHEME_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(RUBY_OBJ) $(TCL_OBJ) $(SNIFF_OBJ) \
-		$(CSCOPE_OBJ) $(NETBEANS_OBJ) $(XPM_OBJ) \
-		$(OUTDIR)\version.obj $(LINKARGS2)
+		$(MZSCHEME_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(RUBY_OBJ) \
+		$(TCL_OBJ) $(SNIFF_OBJ) $(CSCOPE_OBJ) $(NETBEANS_OBJ) \
+		$(XPM_OBJ) $(OUTDIR)\version.obj $(LINKARGS2)
 
 $(VIM): $(VIM).exe
 
@@ -694,7 +703,8 @@ $(OUTDIR):
 	if not exist $(OUTDIR)/nul  mkdir $(OUTDIR)
 
 install.exe: dosinst.c
-	$(CC) /nologo -DNDEBUG -DWIN32 dosinst.c kernel32.lib shell32.lib ole32.lib advapi32.lib uuid.lib
+	$(CC) /nologo -DNDEBUG -DWIN32 dosinst.c kernel32.lib shell32.lib \
+		ole32.lib advapi32.lib uuid.lib
 	- if exist install.exe del install.exe
 	ren dosinst.exe install.exe
 
@@ -767,7 +777,7 @@ testclean:
 !ELSE
 .c{$(OUTDIR)/}.obj::
 !ENDIF
-	$(CC) $(CFLAGS) /Fo$(OUTDIR)/ $(PDB) $<
+	$(CC) $(CFLAGS) $<
 
 # Create a default rule for transforming .cpp files to .obj files in $(OUTDIR)
 # Batch compilation is supported by nmake 1.62 (part of VS 5.0) and later)
@@ -776,7 +786,7 @@ testclean:
 !ELSE
 .cpp{$(OUTDIR)/}.obj::
 !ENDIF
-	$(CC) $(CFLAGS) /Fo$(OUTDIR)/ $(PDB) $<
+	$(CC) $(CFLAGS) $<
 
 $(OUTDIR)/buffer.obj:	$(OUTDIR) buffer.c  $(INCL)
 
@@ -817,30 +827,32 @@ $(OUTDIR)/gui_w32.obj:	$(OUTDIR) gui_w32.c gui_w48.c $(INCL) $(GUI_INCL)
 $(OUTDIR)/if_cscope.obj: $(OUTDIR) if_cscope.c  $(INCL)
 
 if_perl.c : if_perl.xs typemap
-	$(PERL_EXE) $(XSUBPP) -prototypes -typemap $(XSUBPP_TYPEMAP) -typemap typemap if_perl.xs > if_perl.c
+	$(PERL_EXE) $(XSUBPP) -prototypes -typemap $(XSUBPP_TYPEMAP) \
+		-typemap typemap if_perl.xs > if_perl.c
 
 $(OUTDIR)/if_perl.obj: $(OUTDIR) if_perl.c  $(INCL)
-	$(CC) $(CFLAGS) $(PERL_INC) if_perl.c /Fo$(OUTDIR)/if_perl.obj $(PDB)
+	$(CC) $(CFLAGS) $(PERL_INC) if_perl.c
 
 $(OUTDIR)/if_perlsfio.obj: $(OUTDIR) if_perlsfio.c  $(INCL)
-	$(CC) $(CFLAGS) $(PERL_INC) if_perlsfio.c /Fo$(OUTDIR)/if_perlsfio.obj $(PDB)
+	$(CC) $(CFLAGS) $(PERL_INC) if_perlsfio.c
 
 $(OUTDIR)/if_mzsch.obj: $(OUTDIR) if_mzsch.c  $(INCL)
-	$(CC) $(CFLAGS) $(PERL_INC) if_mzsch.c /Fo$(OUTDIR)/if_mzsch.obj $(PDB) -DMZSCHEME_COLLECTS=\"$(MZSCHEME:\=\\)\\collects\"
+	$(CC) $(CFLAGS) $(PERL_INC) if_mzsch.c
+		-DMZSCHEME_COLLECTS=\"$(MZSCHEME:\=\\)\\collects\"
 
 $(OUTDIR)/if_python.obj: $(OUTDIR) if_python.c  $(INCL)
-	$(CC) $(CFLAGS) $(PYTHON_INC) if_python.c /Fo$(OUTDIR)/if_python.obj $(PDB)
+	$(CC) $(CFLAGS) $(PYTHON_INC) if_python.c
 
 $(OUTDIR)/if_ole.obj: $(OUTDIR) if_ole.cpp  $(INCL) if_ole.h
 
 $(OUTDIR)/if_ruby.obj: $(OUTDIR) if_ruby.c  $(INCL)
-	$(CC) $(CFLAGS) $(RUBY_INC) if_ruby.c /Fo$(OUTDIR)/if_ruby.obj $(PDB)
+	$(CC) $(CFLAGS) $(RUBY_INC) if_ruby.c
 
 $(OUTDIR)/if_sniff.obj:	$(OUTDIR) if_sniff.c  $(INCL)
-	$(CC) $(CFLAGS) if_sniff.c /Fo$(OUTDIR)/if_sniff.obj $(PDB)
+	$(CC) $(CFLAGS) if_sniff.c
 
 $(OUTDIR)/if_tcl.obj: $(OUTDIR) if_tcl.c  $(INCL)
-	$(CC) $(CFLAGS) $(TCL_INC) if_tcl.c /Fo$(OUTDIR)/if_tcl.obj $(PDB)
+	$(CC) $(CFLAGS) $(TCL_INC) if_tcl.c
 
 $(OUTDIR)/main.obj:	$(OUTDIR) main.c  $(INCL)
 
@@ -877,7 +889,7 @@ $(OUTDIR)/os_win32.obj:	$(OUTDIR) os_win32.c  $(INCL) os_win32.h
 $(OUTDIR)/os_w32exe.obj:	$(OUTDIR) os_w32exe.c  $(INCL)
 
 $(OUTDIR)/pathdef.obj:	$(OUTDIR) auto/pathdef.c  $(INCL)
-	$(CC) $(CFLAGS) auto/pathdef.c /Fo$(OUTDIR)/pathdef.obj $(PDB)
+	$(CC) $(CFLAGS) auto/pathdef.c
 
 $(OUTDIR)/quickfix.obj:	$(OUTDIR) quickfix.c  $(INCL)
 
@@ -902,13 +914,15 @@ $(OUTDIR)/undo.obj:	$(OUTDIR) undo.c  $(INCL)
 $(OUTDIR)/window.obj:	$(OUTDIR) window.c  $(INCL)
 
 $(OUTDIR)/xpm_w32.obj: $(OUTDIR) xpm_w32.c
-	$(CC) $(CFLAGS) $(XPM_INC) xpm_w32.c /Fo$(OUTDIR)/xpm_w32.obj $(PDB)
+	$(CC) $(CFLAGS) $(XPM_INC) xpm_w32.c
 
-$(OUTDIR)/vim.res:	$(OUTDIR) vim.rc version.h tools.bmp tearoff.bmp vim.ico vim_error.ico vim_alert.ico vim_info.ico vim_quest.ico
+$(OUTDIR)/vim.res:	$(OUTDIR) vim.rc version.h tools.bmp tearoff.bmp \
+		vim.ico vim_error.ico vim_alert.ico vim_info.ico vim_quest.ico
 	$(RC) /l 0x409 /Fo$(OUTDIR)/vim.res $(RCFLAGS) vim.rc
 
 iid_ole.c if_ole.h vim.tlb: if_ole.idl
-	midl /nologo /error none /proxy nul /iid iid_ole.c /tlb vim.tlb /header if_ole.h if_ole.idl
+	midl /nologo /error none /proxy nul /iid iid_ole.c /tlb vim.tlb \
+		/header if_ole.h if_ole.idl
 
 dimm.h dimm_i.c: dimm.idl
 	midl /nologo /error none /proxy nul dimm.idl

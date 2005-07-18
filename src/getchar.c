@@ -257,8 +257,7 @@ add_buff(buf, s, slen)
     if (buf->bh_space >= (int)slen)
     {
 	len = (long_u)STRLEN(buf->bh_curr->b_str);
-	STRNCPY(buf->bh_curr->b_str + len, s, slen);
-	buf->bh_curr->b_str[len + slen] = NUL;
+	vim_strncpy(buf->bh_curr->b_str + len, s, (size_t)slen);
 	buf->bh_space -= slen;
     }
     else
@@ -272,8 +271,7 @@ add_buff(buf, s, slen)
 	if (p == NULL)
 	    return; /* no space, just forget it */
 	buf->bh_space = len - slen;
-	STRNCPY(p->b_str, s, slen);
-	p->b_str[slen] = NUL;
+	vim_strncpy(p->b_str, s, (size_t)slen);
 
 	p->b_next = buf->bh_curr->b_next;
 	buf->bh_curr->b_next = p;

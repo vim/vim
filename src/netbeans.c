@@ -2769,8 +2769,7 @@ netbeans_inserted(
 
     /* send the "insert" EVT */
     newtxt = alloc(newlen + 1);
-    STRNCPY(newtxt, txt, newlen);
-    newtxt[newlen] = '\0';
+    vim_strncpy(newtxt, txt, newlen);
     p = nb_quote(newtxt);
     if (p != NULL)
     {

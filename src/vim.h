@@ -1897,7 +1897,7 @@ typedef int proftime_T;	    /* dummy for function prototypes */
 /* values for vim_handle_signal() that are not a signal */
 #define SIGNAL_BLOCK	-1
 #define SIGNAL_UNBLOCK  -2
-#ifndef UNIX
+#if !defined(UNIX) && !defined(VMS)
 # define vim_handle_signal(x) 0
 #endif
 

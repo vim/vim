@@ -3036,9 +3036,8 @@ maketitle()
 	    else
 	    {
 		p = transstr(gettail(curbuf->b_fname));
-		STRNCPY(buf, p, IOSIZE - 100);
+		vim_strncpy(buf, p, IOSIZE - 100);
 		vim_free(p);
-		buf[IOSIZE - 100] = NUL; /* in case it was too long */
 	    }
 
 	    switch (bufIsChanged(curbuf)
@@ -3071,15 +3070,15 @@ maketitle()
 		p = gettail_sep(buf + off);
 		if (p == buf + off)
 		    /* must be a help buffer */
-		    STRCPY(buf + off, _("help"));
+		    vim_strncpy(buf + off, (char_u *)_("help"),
+							    IOSIZE - off - 1);
 		else
 		    *p = NUL;
 
 		/* translate unprintable chars */
 		p = transstr(buf + off);
-		STRNCPY(buf + off, p, IOSIZE - off);
+		vim_strncpy(buf + off, p, IOSIZE - off - 1);
 		vim_free(p);
-		buf[IOSIZE - 1] = NUL;  /* in case it was too long */
 		STRCAT(buf, ")");
 	    }
 

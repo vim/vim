@@ -523,7 +523,7 @@ mch_get_host_name(s, len)
     if (xswi(OS_ReadVarVal, "Machine$Name", s, len, 0, 3) & v_flag)
     {
 	/* Variable does not exist (normal operation) */
-	STRNCPY(s, "(unknown)", len);
+	vim_strncpy(s, "(unknown)", len - 1);
     }
 }
 

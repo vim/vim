@@ -2545,6 +2545,7 @@ did_set_spelllang(buf)
     garray_T	ga;
     char_u	*splp;
     char_u	*region;
+    char_u	region_cp[3];
     int		filename;
     int		region_mask;
     slang_T	*lp;
@@ -2577,6 +2578,19 @@ did_set_spelllang(buf)
 	{
 	    filename = TRUE;
 
+	    /* Locate a region and remove it from the file name. */
+	    p = vim_strchr(gettail(lang), '_');
+	    if (p != NULL && ASCII_ISALPHA(p[1]) && ASCII_ISALPHA(p[2])
+						      && !ASCII_ISALPHA(p[3]))
+	    {
+		vim_strncpy(region_cp, p + 1, 2);
+		mch_memmove(p, p + 3, len - (p - lang) - 2);
+		len -= 3;
+		region = region_cp;
+	    }
+	    else
+		dont_use_region = TRUE;
+
 	    /* Check if we loaded this language before. */
 	    for (lp = first_lang; lp != NULL; lp = lp->sl_next)
 		if (fullpathcmp(lang, lp->sl_fname, FALSE) == FPC_SAME)
@@ -2590,12 +2604,6 @@ did_set_spelllang(buf)
 		region = lang + len - 2;
 		len -= 3;
 		lang[len] = NUL;
-
-		/* If the region differs from what was used before then don't
-		 * use it for 'spellfile'. */
-		if (use_region != NULL && STRCMP(region, use_region) != 0)
-		    dont_use_region = TRUE;
-		use_region = region;
 	    }
 	    else
 		dont_use_region = TRUE;
@@ -2604,6 +2612,15 @@ did_set_spelllang(buf)
 	    for (lp = first_lang; lp != NULL; lp = lp->sl_next)
 		if (STRICMP(lang, lp->sl_name) == 0)
 		    break;
+	}
+
+	if (region != NULL)
+	{
+	    /* If the region differs from what was used before then don't
+	     * use it for 'spellfile'. */
+	    if (use_region != NULL && STRCMP(region, use_region) != 0)
+		dont_use_region = TRUE;
+	    use_region = region;
 	}
 
 	/* If not found try loading the language now. */

@@ -4788,8 +4788,7 @@ vim_FullName(fname, buf, len, force)
     if (url || retval == FAIL)
     {
 	/* something failed; use the file name (truncate when too long) */
-	STRNCPY(buf, fname, len);
-	buf[len - 1] = NUL;
+	vim_strncpy(buf, fname, len - 1);
     }
 #if defined(MACOS_CLASSIC) || defined(OS2) || defined(MSDOS) || defined(MSWIN)
     slash_adjust(buf);

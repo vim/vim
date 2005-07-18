@@ -211,8 +211,7 @@ mac_expandpath(
 
 	if (gErr == noErr)
 	{
-	    STRNCPY (cfilename, &dirname[1], dirname[0]);
-	    cfilename[dirname[0]] = 0;
+	    vim_strncpy(cfilename, &dirname[1], dirname[0]);
 	    if (vim_regexec(&regmatch, cfilename, (colnr_T)0))
 	    {
 		if (s[-1] != ':')
@@ -261,8 +260,7 @@ mac_expandpath(
 	    gErr = PBHGetVInfo (&gMyHPBlock,false);
 	    if (gErr == noErr)
 	    {
-		STRNCPY (cfilename, &dirname[1], dirname[0]);
-		cfilename[dirname[0]] = 0;
+		vim_strncpy(cfilename, &dirname[1], dirname[0]);
 		if (vim_regexec(&regmatch, cfilename, (colnr_T)0))
 		{
 		    STRCPY(s, cfilename);
@@ -681,8 +679,7 @@ mch_get_user_name(s, len)
     if ((pw = getpwuid(uid)) != NULL
 	    && pw->pw_name != NULL && *(pw->pw_name) != NUL)
     {
-	STRNCPY(s, pw->pw_name, len);
-	s[len - 1] = NUL;
+	vim_strncpy(s, pw->pw_name, len - 1);
 	return OK;
     }
 #endif
@@ -700,16 +697,15 @@ mch_get_host_name(s, len)
     int		len;
 {
 #if defined(__MRC__) || defined(__SC__) || defined(__APPLE_CC__)
-    STRNCPY(s, "Mac", len); /* TODO: use Gestalt information */
+    vim_strncpy(s, "Mac", len - 1); /* TODO: use Gestalt information */
 #else
     struct utsname vutsname;
 
     if (uname(&vutsname) < 0)
 	*s = NUL;
     else
-	STRNCPY(s, vutsname.nodename, len);
+	vim_strncpy(s, vutsname.nodename, len - 1);
 #endif
-    s[len - 1] = NUL;	/* make sure it's terminated */
 }
 
 /*
@@ -950,8 +946,7 @@ mch_FullName(fname, buf, len, force)
     }
     else
     {
-	STRNCPY(buf, fname, len);
-	buf[len - 1] = NUL;
+	vim_strncpy(buf, fname, len - 1);
 	slash_n_colon_adjust(buf);
     }
 
