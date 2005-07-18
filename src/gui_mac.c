@@ -3865,8 +3865,7 @@ gui_mch_init_font(font_name, fontset)
     else
     {
 	font = gui_mac_find_font(font_name);
-	STRNCPY(used_font_name, font_name, sizeof(used_font_name));
-	used_font_name[sizeof(used_font_name) - 1] = NUL;
+	vim_strncpy(used_font_name, font_name, sizeof(used_font_name) - 1);
 
 	if (font == NOFONT)
 	    return FAIL;
@@ -6201,8 +6200,7 @@ gui_mch_dialog(
 	if (name[0] > IOSIZE)
 	    name[0] = IOSIZE - 1;
 #endif
-	STRNCPY(textfield, &name[1], name[0]);
-	textfield[name[0]] = NUL;
+	vim_strncpy(textfield, &name[1], name[0]);
     }
 
     /* Restore the original graphical port */
@@ -6522,8 +6520,7 @@ char_u *FullPathFromFSSpec_save(FSSpec file)
 #endif
 
     /* Start filling fname with file.name  */
-    STRNCPY(filenamePtr, &file.name[1], file.name[0]);
-    filenamePtr[file.name[0]] = 0; /* NULL terminate the string */
+    vim_strncpy(filenamePtr, &file.name[1], file.name[0]);
 
     /* Get the info about the file specified in FSSpec */
     theCPB.dirInfo.ioFDirIndex = 0;
@@ -6625,8 +6622,7 @@ char_u *FullPathFromFSSpec_save(FSSpec file)
 
 	/* Put the new directoryName in front of the current fname */
 	STRCPY(temporaryPtr, filenamePtr);
-	STRNCPY(filenamePtr, &directoryName[1], directoryName[0]);
-	filenamePtr[directoryName[0]] = 0; /* NULL terminate the string */
+	vim_strncpy(filenamePtr, &directoryName[1], directoryName[0]);
 	STRCAT(filenamePtr, ":");
 	STRCAT(filenamePtr, temporaryPtr);
     }
@@ -6660,8 +6656,7 @@ char_u *FullPathFromFSSpec_save(FSSpec file)
     {
 	/* Add the volume name */
 	STRCPY(temporaryPtr, filenamePtr);
-	STRNCPY(filenamePtr, &directoryName[1], directoryName[0]);
-	filenamePtr[directoryName[0]] = 0; /* NULL terminate the string */
+	vim_strncpy(filenamePtr, &directoryName[1], directoryName[0]);
 	STRCAT(filenamePtr, ":");
 	STRCAT(filenamePtr, temporaryPtr);
 

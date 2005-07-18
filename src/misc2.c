@@ -1372,7 +1372,7 @@ del_trailing_spaces(ptr)
 vim_strncpy(to, from, len)
     char_u	*to;
     char_u	*from;
-    int		len;
+    size_t	len;
 {
     STRNCPY(to, from, len);
     to[len] = NUL;
@@ -2957,8 +2957,7 @@ vim_chdirfile(fname)
 {
     char_u	dir[MAXPATHL];
 
-    STRNCPY(dir, fname, MAXPATHL);
-    dir[MAXPATHL - 1] = NUL;
+    vim_strncpy(dir, fname, MAXPATHL - 1);
     *gettail_sep(dir) = NUL;
     return mch_chdir((char *)dir) == 0 ? OK : FAIL;
 }
@@ -3907,8 +3906,7 @@ vim_findfile_init(path, filename, stopdirs, level, free_visited, need_dir,
 	if (!vim_isAbsName(rel_fname) && len + 1 < MAXPATHL)
 	{
 	    /* Make the start dir an absolute path name. */
-	    STRNCPY(ff_expand_buffer, rel_fname, len);
-	    ff_expand_buffer[len] = NUL;
+	    vim_strncpy(ff_expand_buffer, rel_fname, len);
 	    ff_search_ctx->ffsc_start_dir = FullName_save(ff_expand_buffer,
 								       FALSE);
 	}
@@ -4810,7 +4808,7 @@ ff_check_visited(visited_list, fname
      * device/inode (unix) or the full path name (not Unix). */
     if (path_with_url(fname))
     {
-	STRNCPY(ff_expand_buffer, fname, MAXPATHL);
+	vim_strncpy(ff_expand_buffer, fname, MAXPATHL - 1);
 #ifdef UNIX
 	url = TRUE;
 #endif
@@ -5393,9 +5391,10 @@ vim_chdir(new_dir)
 }
 
 /*
- * Get user name from machine-specific function and cache it.
+ * Get user name from machine-specific function.
  * Returns the user name in "buf[len]".
- * Some systems are quite slow in obtaining the user name (Windows NT).
+ * Some systems are quite slow in obtaining the user name (Windows NT), thus
+ * cache the result.
  * Returns OK or FAIL.
  */
     int
@@ -5410,7 +5409,7 @@ get_user_name(buf, len)
 	username = vim_strsave(buf);
     }
     else
-	STRNCPY(buf, username, len);
+	vim_strncpy(buf, username, len - 1);
     return OK;
 }
 

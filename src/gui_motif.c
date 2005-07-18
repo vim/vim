@@ -2620,10 +2620,7 @@ gui_mch_dialog(type, title, message, button_names, dfltbutton, textfield)
 	if (p == NULL || dialogStatus < 0)
 	    *textfield = NUL;
 	else
-	{
-	    STRNCPY(textfield, p, IOSIZE);
-	    textfield[IOSIZE - 1] = NUL;
-	}
+	    vim_strncpy(textfield, p, IOSIZE - 1);
     }
 
     suppress_dialog_mnemonics(dialogform);

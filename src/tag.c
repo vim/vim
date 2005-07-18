@@ -1558,8 +1558,8 @@ line_read_in:
 				{
 				    if (STRLEN(fullpath_ebuf) > LSIZE)
 					  EMSG2(_("E430: Tag file path truncated for %s\n"), ebuf);
-				    STRNCPY(tag_fname, fullpath_ebuf, LSIZE);
-				    tag_fname[LSIZE] = NUL;
+				    vim_strncpy(tag_fname, fullpath_ebuf,
+								    MAXPATHL);
 				    ++incstack_idx;
 				    is_etag = 0; /* we can include anything */
 				}
@@ -2090,8 +2090,7 @@ line_read_in:
 				{
 				    mfp->len = len + 1; /* include the NUL */
 				    p = mfp->match;
-				    STRNCPY(p, tagp.command + 2, len);
-				    p[len] = NUL;
+				    vim_strncpy(p, tagp.command + 2, len);
 				}
 			    }
 			    else
@@ -2107,8 +2106,7 @@ line_read_in:
 			    {
 				mfp->len = len + 1; /* include the NUL */
 				p = mfp->match;
-				STRNCPY(p, tagp.tagname, len);
-				p[len] = NUL;
+				vim_strncpy(p, tagp.tagname, len);
 			    }
 
 			    /* if wanted, re-read line to get long form too */
@@ -2436,10 +2434,8 @@ get_tagfname(first, buf)
 	    STRCPY(gettail(buf), "tags");
 	}
 	else
-	{
-	    STRNCPY(buf, ((char_u **)(tag_fnames.ga_data))[hf_idx++], MAXPATHL);
-	    buf[MAXPATHL - 1] = NUL;
-	}
+	    vim_strncpy(buf, ((char_u **)(tag_fnames.ga_data))[hf_idx++],
+								MAXPATHL - 1);
     }
     else
     {
@@ -3186,8 +3182,8 @@ expand_tag_fname(fname, tag_fname, expand)
 	if (retval != NULL)
 	{
 	    STRCPY(retval, tag_fname);
-	    STRNCPY(retval + (p - tag_fname), fname,
-						  MAXPATHL - (p - tag_fname));
+	    vim_strncpy(retval + (p - tag_fname), fname,
+					      MAXPATHL - (p - tag_fname) - 1);
 	    /*
 	     * Translate names like "src/a/../b/file.c" into "src/b/file.c".
 	     */
@@ -3586,7 +3582,7 @@ add_tag_field(dict, field_name, start, end)
 	len = end - start;
 	if (len > sizeof(buf) - 1)
 	    len = sizeof(buf) - 1;
-	STRNCPY(buf, start, len);
+	vim_strncpy(buf, start, len);
     }
     buf[len] = NUL;
     return dict_add_nr_str(dict, field_name, 0L, buf);

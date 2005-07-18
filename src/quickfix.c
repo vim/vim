@@ -443,7 +443,8 @@ qf_init_ext(efile, buf, errorformat, newlist, lnumfirst, lnumlast)
 	{
 	    if (buflnum > lnumlast)
 		break;
-	    STRNCPY(IObuff, ml_get_buf(buf, buflnum++, FALSE), CMDBUFFSIZE - 2);
+	    vim_strncpy(IObuff, ml_get_buf(buf, buflnum++, FALSE),
+							     CMDBUFFSIZE - 2);
 	}
 	else if (fgets((char *)IObuff, CMDBUFFSIZE - 2, fd) == NULL)
 	    break;
@@ -516,8 +517,7 @@ restofline:
 		else if ((i = (int)fmt_ptr->addr[5]) > 0)	/* %m */
 		{
 		    len = (int)(regmatch.endp[i] - regmatch.startp[i]);
-		    STRNCPY(errmsg, regmatch.startp[i], len);
-		    errmsg[len] = NUL;
+		    vim_strncpy(errmsg, regmatch.startp[i], len);
 		}
 		if ((i = (int)fmt_ptr->addr[6]) > 0)		/* %r */
 		    tail = regmatch.startp[i];

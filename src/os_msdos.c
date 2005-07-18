@@ -1515,8 +1515,7 @@ mch_FullName(
 {
     if (!force && mch_isFullName(fname))	/* already expanded */
     {
-	STRNCPY(buf, fname, len);
-	buf[len - 1] = NUL;
+	vim_strncpy(buf, fname, len - 1);
 	slash_adjust(buf);
 	return OK;
     }
@@ -1533,8 +1532,7 @@ mch_FullName(
 	if (!_truename(fname, fullpath))
 	    return FAIL;
 	slash_adjust(fullpath);	    /* Only needed when 'shellslash' set */
-	STRNCPY(buf, fullpath, len);
-	buf[len - 1] = NUL;
+	vim_strncpy(buf, fullpath, len - 1);
 	return OK;
 
 # else  /* Old code, to be deleted... */
@@ -3074,9 +3072,8 @@ mch_get_host_name(
     int		len)
 {
 #ifdef DJGPP
-    STRNCPY(s, "PC (32 bits Vim)", len);
+    vim_strncpy(s, "PC (32 bits Vim)", len - 1);
 #else
-    STRNCPY(s, "PC (16 bits Vim)", len);
+    vim_strncpy(s, "PC (16 bits Vim)", len - 1);
 #endif
-    s[len - 1] = NUL;	/* make sure it's terminated */
 }

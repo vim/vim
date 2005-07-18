@@ -2072,7 +2072,7 @@ mch_get_user_name(s, len)
     int	    len;
 {
 #ifdef VMS
-    STRNCPY((char *)s, cuserid(NULL), len);
+    vim_strncpy((char *)s, cuserid(NULL), len - 1);
     return OK;
 #else
     return mch_get_uname(getuid(), s, len);
@@ -2095,8 +2095,7 @@ mch_get_uname(uid, s, len)
     if ((pw = getpwuid(uid)) != NULL
 	    && pw->pw_name != NULL && *(pw->pw_name) != NUL)
     {
-	STRNCPY(s, pw->pw_name, len);
-	s[len - 1] = NUL;
+	vim_strncpy(s, (char_u *)pw->pw_name, len - 1);
 	return OK;
     }
 #endif
@@ -2119,8 +2118,7 @@ mch_get_host_name(s, len)
     if (uname(&vutsname) < 0)
 	*s = NUL;
     else
-	STRNCPY(s, vutsname.nodename, len);
-    s[len - 1] = NUL;	/* make sure it's terminated */
+	vim_strncpy(s, (char_u *)vutsname.nodename, len - 1);
 }
 #else /* HAVE_SYS_UTSNAME_H */
 
@@ -2300,8 +2298,7 @@ mch_FullName(fname, buf, len, force)
 		    retval = FAIL;
 		else
 		{
-		    STRNCPY(buf, fname, p - fname);
-		    buf[p - fname] = NUL;
+		    vim_strncpy(buf, fname, p - fname);
 		    if (mch_chdir((char *)buf))
 			retval = FAIL;
 		    else
@@ -2630,8 +2627,7 @@ mch_can_exe(name)
 	    STRCPY(buf, "./");
 	else
 	{
-	    STRNCPY(buf, p, e - p);
-	    buf[e - p] = NUL;
+	    vim_strncpy(buf, p, e - p);
 	    add_pathsep(buf);
 	}
 	STRCAT(buf, name);

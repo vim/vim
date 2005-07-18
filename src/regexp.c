@@ -3047,7 +3047,7 @@ static int	ireg_icombine;
  * Copy of "rmm_maxcol": maximum column to search for a match.  Zero when
  * there is no maximum.
  */
-static int	ireg_maxcol;
+static colnr_T	ireg_maxcol;
 
 /*
  * Sometimes need to save a copy of a line.  Since alloc()/free() is very
@@ -6866,10 +6866,7 @@ reg_submatch(no)
 		len = submatch_mmatch->endpos[no].col
 					  - submatch_mmatch->startpos[no].col;
 		if (round == 2)
-		{
-		    STRNCPY(retval, s, len);
-		    retval[len] = NUL;
-		}
+		    vim_strncpy(retval, s, len);
 		++len;
 	    }
 	    else
