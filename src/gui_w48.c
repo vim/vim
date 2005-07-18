@@ -2194,9 +2194,8 @@ initialise_findrep(char_u *initial_string)
 	s_findrep_struct.Flags |= FR_WHOLEWORD;
     if (entry_text != NULL && *entry_text != NUL)
     {
-	STRNCPY(s_findrep_struct.lpstrFindWhat, entry_text,
-					       s_findrep_struct.wFindWhatLen);
-	s_findrep_struct.lpstrFindWhat[s_findrep_struct.wFindWhatLen - 1] = NUL;
+	vim_strncpy(s_findrep_struct.lpstrFindWhat, entry_text,
+					   s_findrep_struct.wFindWhatLen - 1);
 	s_findrep_struct.lpstrReplaceWith[0] = NUL;
     }
     vim_free(entry_text);
@@ -3102,10 +3101,7 @@ gui_mch_browse(
     if (dflt == NULL)
 	fileBuf[0] = NUL;
     else
-    {
-	STRNCPY(fileBuf, dflt, MAXPATHL - 1);
-	fileBuf[MAXPATHL - 1] = NUL;
-    }
+	vim_strncpy(fileBuf, dflt, MAXPATHL - 1);
 
     /* Convert the filter to Windows format. */
     filterp = convert_filter(filter);

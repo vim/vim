@@ -410,8 +410,7 @@ mch_FullName(
 		cname = ucs2_to_enc((short_u *)wbuf, NULL);
 		if (cname != NULL)
 		{
-		    STRNCPY(buf, cname, len);
-		    buf[len - 1] = NUL;
+		    vim_strncpy(buf, cname, len - 1);
 		    nResult = OK;
 		}
 	    }
@@ -423,8 +422,8 @@ mch_FullName(
 	{
 	    if (_fullpath(buf, fname, len - 1) == NULL)
 	    {
-		STRNCPY(buf, fname, len);   /* failed, use relative path name */
-		buf[len - 1] = NUL;
+		/* failed, use relative path name */
+		vim_strncpy(buf, fname, len - 1);
 	    }
 	    else
 		nResult = OK;
@@ -493,8 +492,7 @@ vim_stat(const char *name, struct stat *stp)
     char	buf[_MAX_PATH + 1];
     char	*p;
 
-    STRNCPY(buf, name, _MAX_PATH);
-    buf[_MAX_PATH] = NUL;
+    vim_strncpy(buf, name, _MAX_PATH);
     p = buf + strlen(buf);
     if (p > buf)
 	mb_ptr_back(buf, p);
@@ -1527,8 +1525,7 @@ clip_mch_set_selection(VimClipboard *cbd)
 
 	if (lpszMem)
 	{
-	    STRNCPY(lpszMem, str, metadata.txtlen);
-	    lpszMem[metadata.txtlen] = NUL;
+	    vim_strncpy(lpszMem, str, metadata.txtlen);
 	    GlobalUnlock(hMem);
 	}
     }

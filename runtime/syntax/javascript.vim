@@ -2,7 +2,7 @@
 " Language:	JavaScript
 " Maintainer:	Claudio Fleiner <claudio@fleiner.com>
 " URL:		http://www.fleiner.com/vim/syntax/javascript.vim
-" Last Change:	2004 Nov 20
+" Last Change:	2005 Jul 13
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -64,7 +64,7 @@ syn sync maxlines=100
 
 " catch errors caused by wrong parenthesis
 syn region  javaScriptParen       transparent start="(" end=")" contains=javaScriptParen,javaScriptComment,javaScriptSpecial,javaScriptStringD,javaScriptStringS,javaScriptSpecialCharacter,javaScriptNumber,javaScriptRegexpString,javaScriptBoolean,javaScriptBraces,javaScriptFunction,javaScriptFunctionFold,javaScriptConditional,javaScriptRepeat,javaScriptBranch,javaScriptOperator,javaScriptType,javaScriptStatement,javaScriptBoolean,javaScriptConstant
- syn region  javaScriptParen       transparent start="(" end=")" contains=javaScriptParen,javaScriptComment,javaScriptSpecial,javaScriptStringD,javaScriptStringS,javaScriptSpecialCharacter,javaScriptNumber,javaScriptRegexpString,javaScriptBoolean,javaScriptBraces
+" syn region  javaScriptParen       transparent start="(" end=")" contains=javaScriptParen,javaScriptComment,javaScriptSpecial,javaScriptStringD,javaScriptStringS,javaScriptSpecialCharacter,javaScriptNumber,javaScriptRegexpString,javaScriptBoolean,javaScriptBraces
 syn match   javaScrParenError  ")"
 
 if main_syntax == "javascript"

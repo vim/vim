@@ -2356,7 +2356,7 @@ mch_get_user_name(
 
     if (GetUserName(szUserName, &cch))
     {
-	STRNCPY(s, szUserName, len);
+	vim_strncpy(s, szUserName, len - 1);
 	return OK;
     }
     s[0] = NUL;
@@ -2375,10 +2375,7 @@ mch_get_host_name(
     DWORD cch = len;
 
     if (!GetComputerName(s, &cch))
-    {
-	STRNCPY(s, "PC (Win32 Vim)", len);
-	s[len - 1] = NUL;	/* make sure it's terminated */
-    }
+	vim_strncpy(s, "PC (Win32 Vim)", len - 1);
 }
 
 
@@ -2418,8 +2415,7 @@ mch_dirname(
 
 	    if (p != NULL)
 	    {
-		STRNCPY(buf, p, len - 1);
-		buf[len - 1] = NUL;
+		vim_strncpy(buf, p, len - 1);
 		vim_free(p);
 		return OK;
 	    }
@@ -2591,7 +2587,7 @@ mch_can_exe(char_u *name)
     /*
      * Loop over all extensions in $PATHEXT.
      */
-    STRNCPY(buf, name, _MAX_PATH);
+    vim_strncpy(buf, name, _MAX_PATH - 1);
     p = mch_getenv("PATHEXT");
     if (p == NULL)
 	p = (char_u *)".com;.exe;.bat;.cmd";
@@ -4452,7 +4448,7 @@ mch_access(char *n, int p)
 		char		    *pch;
 		WIN32_FIND_DATA	    d;
 
-		STRNCPY(TempName, n, _MAX_PATH);
+		vim_strncpy(TempName, n, _MAX_PATH);
 		pch = TempName + STRLEN(TempName) - 1;
 		if (*pch != '\\' && *pch != '/')
 		    *++pch = '\\';
