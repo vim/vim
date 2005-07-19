@@ -5086,7 +5086,11 @@ mch_expand_wildcards(num_pat, pat, num_file, file, flags)
     /*
      * Don't allow the use of backticks in secure and restricted mode.
      */
-    if (secure || restricted)
+    if (secure || restricted
+# ifdef HAVE_SANDBOX
+	    || sandbox != 0
+# endif
+       )
 	for (i = 0; i < num_pat; ++i)
 	    if (vim_strchr(pat[i], '`') != NULL
 		    && (check_restricted() || check_secure()))
