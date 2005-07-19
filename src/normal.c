@@ -8389,6 +8389,9 @@ nv_object(cap)
 	case '>':
 		flag = current_block(cap->oap, cap->count1, include, '<', '>');
 		break;
+	case 't': /* "at" = a tag block (xml and html) */
+		flag = current_tagblock(cap->oap, cap->count1, include);
+		break;
 	case 'p': /* "ap" = a paragraph */
 		flag = current_par(cap->oap, cap->count1, include, 'p');
 		break;
