@@ -3407,6 +3407,10 @@ extend:
     return OK;
 }
 
+/*
+ * Find block under the cursor, cursor at end.
+ * "what" and "other" are two matching parenthesis/paren/etc.
+ */
     int
 current_block(oap, count, include, what, other)
     oparg_T	*oap;
@@ -3421,10 +3425,10 @@ current_block(oap, count, include, what, other)
     pos_T	*end_pos;
     pos_T	old_start, old_end;
     char_u	*save_cpo;
-    int		sol = FALSE;	/* { at start of line */
+    int		sol = FALSE;		/* '{' at start of line */
 
     old_pos = curwin->w_cursor;
-    old_end = curwin->w_cursor;		    /* remember where we started */
+    old_end = curwin->w_cursor;		/* remember where we started */
     old_start = old_end;
 
     /*
@@ -3435,11 +3439,12 @@ current_block(oap, count, include, what, other)
 #endif
     {
 	setpcmark();
-	if (what == '{')		    /* ignore indent */
+	if (what == '{')		/* ignore indent */
 	    while (inindent(1))
 		if (inc_cursor() != 0)
 		    break;
-	if (gchar_cursor() == what)	    /* cursor on '(' or '{' */
+	if (gchar_cursor() == what)
+	    /* cursor on '(' or '{', move cursor just after it */
 	    ++curwin->w_cursor.col;
     }
 #ifdef FEAT_VISUAL
@@ -3455,7 +3460,7 @@ current_block(oap, count, include, what, other)
     /*
      * Search backwards for unclosed '(', '{', etc..
      * Put this position in start_pos.
-     * Ignory quotes here.
+     * Ignore quotes here.
      */
     save_cpo = p_cpo;
     p_cpo = (char_u *)"%";
@@ -3552,6 +3557,273 @@ current_block(oap, count, include, what, other)
     }
 
     return OK;
+}
+
+static int in_html_tag __ARGS((int));
+
+/*
+ * Return TRUE if the cursor is on a "<aaa>" tag.  Ignore "<aaa/>".
+ * When "end_tag" is TRUE return TRUE if the cursor is on "</aaa>".
+ */
+    static int
+in_html_tag(end_tag)
+    int		end_tag;
+{
+    char_u	*line = ml_get_curline();
+    char_u	*p;
+    int		c;
+    int		lc = NUL;
+    pos_T	pos;
+
+#ifdef FEAT_MBYTE
+    if (enc_dbcs)
+    {
+	char_u	*lp = NULL;
+
+	/* We search forward until the cursor, because searching backwards is
+	 * very slow for DBCS encodings. */
+	for (p = line; p < line + curwin->w_cursor.col; mb_ptr_adv(p))
+	    if (*p == '>' || *p == '<')
+	    {
+		lc = *p;
+		lp = p;
+	    }
+	if (*p != '<')	    /* check for '<' under cursor */
+	{
+	    if (lc != '<')
+		return FALSE;
+	    p = lp;
+	}
+    }
+    else
+#endif
+    {
+	for (p = line + curwin->w_cursor.col; p > line; )
+	{
+	    if (*p == '<')	/* find '<' under/before cursor */
+		break;
+	    mb_ptr_back(line, p);
+	    if (*p == '>')	/* find '>' before cursor */
+		break;
+	}
+	if (*p != '<')
+	    return FALSE;
+    }
+
+    pos.lnum = curwin->w_cursor.lnum;
+    pos.col = p - line;
+
+    mb_ptr_adv(p);
+    if (end_tag)
+	/* check that there is a '/' after the '<' */
+	return *p == '/';
+
+    /* check that there is no '/' after the '<' */
+    if (*p == '/')
+	return FALSE;
+
+    /* check that the matching '>' is not preceded by '/' */
+    for (;;)
+    {
+	if (inc(&pos) < 0)
+	    return FALSE;
+	c = *ml_get_pos(&pos);
+	if (c == '>')
+	    break;
+	lc = c;
+    }
+    return lc != '/';
+}
+
+/*
+ * Find tag block under the cursor, cursor at end.
+ */
+    int
+current_tagblock(oap, count_arg, include)
+    oparg_T	*oap;
+    long	count_arg;
+    int		include;	/* TRUE == include white space */
+{
+    long	count = count_arg;
+    long	n;
+    pos_T	old_pos;
+    pos_T	start_pos;
+    pos_T	end_pos;
+    pos_T	old_start, old_end;
+    char_u	*spat, *epat;
+    char_u	*p;
+    char_u	*cp;
+    int		len;
+    int		r;
+    int		do_include = include;
+    int		save_p_ws = p_ws;
+    int		retval = FAIL;
+
+    p_ws = FALSE;
+
+    old_pos = curwin->w_cursor;
+    old_end = curwin->w_cursor;		    /* remember where we started */
+    old_start = old_end;
+
+    /*
+     * If we start on "<aaa>" use the whole block inclusive.
+     */
+#ifdef FEAT_VISUAL
+    if (!VIsual_active || equalpos(VIsual, curwin->w_cursor))
+#endif
+    {
+	setpcmark();
+
+	/* ignore indent */
+	while (inindent(1))
+	    if (inc_cursor() != 0)
+		break;
+
+	if (in_html_tag(FALSE))
+	{
+	    /* cursor on start tag, move to just after it */
+	    while (*ml_get_cursor() != '>')
+		if (inc_cursor() < 0)
+		    break;
+	}
+	else if (in_html_tag(TRUE))
+	{
+	    /* cursor on end tag, move to just before it */
+	    while (*ml_get_cursor() != '<')
+		if (dec_cursor() < 0)
+		    break;
+	    dec_cursor();
+	    old_end = curwin->w_cursor;
+	}
+    }
+#ifdef FEAT_VISUAL
+    else if (lt(VIsual, curwin->w_cursor))
+    {
+	old_start = VIsual;
+	curwin->w_cursor = VIsual;	    /* cursor at low end of Visual */
+    }
+    else
+	old_end = VIsual;
+#endif
+
+again:
+    /*
+     * Search backwards for unclosed "<aaa>".
+     * Put this position in start_pos.
+     */
+    for (n = 0; n < count; ++n)
+    {
+	if (do_searchpair((char_u *)"<[^ \t>/!]\\+\\%(\\_s\\_[^>]\\{-}[^/]>\\|$\\|>\\)",
+		    (char_u *)"",
+		    (char_u *)"</[^>]*>", BACKWARD, (char_u *)"", 0) <= 0)
+	{
+	    curwin->w_cursor = old_pos;
+	    goto theend;
+	}
+    }
+    start_pos = curwin->w_cursor;
+
+    /*
+     * Search for matching "</aaa>".  First isolate the "aaa".
+     */
+    inc_cursor();
+    p = ml_get_cursor();
+    for (cp = p; *cp != NUL && *cp != '>' && !vim_iswhite(*cp); mb_ptr_adv(cp))
+	;
+    len = cp - p;
+    if (len == 0)
+    {
+	curwin->w_cursor = old_pos;
+	goto theend;
+    }
+    spat = alloc(len + 29);
+    epat = alloc(len + 9);
+    if (spat == NULL || epat == NULL)
+    {
+	vim_free(spat);
+	vim_free(epat);
+	curwin->w_cursor = old_pos;
+	goto theend;
+    }
+    sprintf((char *)spat, "<%.*s\\%%(\\_[^>]\\{-}[^/]>\\|>\\)\\c", len, p);
+    sprintf((char *)epat, "</%.*s>\\c", len, p);
+
+    r = do_searchpair(spat, (char_u *)"", epat, FORWARD, (char_u *)"", 0);
+
+    vim_free(spat);
+    vim_free(epat);
+
+    if (r < 1 || lt(curwin->w_cursor, old_end))
+    {
+	/* Can't find other end or it's before the previous end.  Could be a
+	 * HTML tag that doesn't have a matching end.  Search backwards for
+	 * another starting tag. */
+	count = 1;
+	curwin->w_cursor = start_pos;
+	goto again;
+    }
+
+    if (do_include || r < 1)
+    {
+	/* Include up to the '>'. */
+	while (*ml_get_cursor() != '>')
+	    if (inc_cursor() < 0)
+		break;
+    }
+    else
+    {
+	/* Exclude the '<' of the end tag. */
+	if (*ml_get_cursor() == '<')
+	    dec_cursor();
+    }
+    end_pos = curwin->w_cursor;
+
+    if (!do_include)
+    {
+	/* Exclude the start tag. */
+	curwin->w_cursor = start_pos;
+	while (inc_cursor() >= 0)
+	    if (*ml_get_cursor() == '>' && lt(curwin->w_cursor, end_pos))
+	    {
+		inc_cursor();
+		start_pos = curwin->w_cursor;
+		break;
+	    }
+	curwin->w_cursor = end_pos;
+
+	/* If we now have the same start as before reset "do_include" and try
+	 * again. */
+	if (equalpos(start_pos, old_start))
+	{
+	    do_include = TRUE;
+	    curwin->w_cursor = old_start;
+	    count = count_arg;
+	    goto again;
+	}
+    }
+
+#ifdef FEAT_VISUAL
+    if (VIsual_active)
+    {
+	if (*p_sel == 'e')
+	    ++curwin->w_cursor.col;
+	VIsual = start_pos;
+	VIsual_mode = 'v';
+	redraw_curbuf_later(INVERTED);	/* update the inversion */
+	showmode();
+    }
+    else
+#endif
+    {
+	oap->start = start_pos;
+	oap->motion_type = MCHAR;
+	oap->inclusive = TRUE;
+    }
+    retval = OK;
+
+theend:
+    p_ws = save_p_ws;
+    return retval;
 }
 
     int
