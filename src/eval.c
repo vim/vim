@@ -12765,29 +12765,14 @@ f_searchpair(argvars, rettv)
 {
     char_u	*spat, *mpat, *epat;
     char_u	*skip;
-    char_u	*pat, *pat2 = NULL, *pat3 = NULL;
-    pos_T	pos;
-    pos_T	firstpos;
-    pos_T	foundpos;
-    pos_T	save_cursor;
-    pos_T	save_pos;
     int		save_p_ws = p_ws;
-    char_u	*save_cpo;
     int		dir;
     int		flags = 0;
     char_u	nbuf1[NUMBUFLEN];
     char_u	nbuf2[NUMBUFLEN];
     char_u	nbuf3[NUMBUFLEN];
-    int		n;
-    int		r;
-    int		nest = 1;
-    int		err;
 
     rettv->vval.v_number = 0;	/* default: FAIL */
-
-    /* Make 'cpoptions' empty, the 'l' flag should not be used here. */
-    save_cpo = p_cpo;
-    p_cpo = (char_u *)"";
 
     /* Get the three pattern arguments: start, middle, end. */
     spat = get_tv_string_chk(&argvars[0]);
@@ -12795,19 +12780,6 @@ f_searchpair(argvars, rettv)
     epat = get_tv_string_buf_chk(&argvars[2], nbuf2);
     if (spat == NULL || mpat == NULL || epat == NULL)
 	goto theend;	    /* type error */
-
-    /* Make two search patterns: start/end (pat2, for in nested pairs) and
-     * start/middle/end (pat3, for the top pair). */
-    pat2 = alloc((unsigned)(STRLEN(spat) + STRLEN(epat) + 15));
-    pat3 = alloc((unsigned)(STRLEN(spat) + STRLEN(mpat) + STRLEN(epat) + 23));
-    if (pat2 == NULL || pat3 == NULL)
-	goto theend;
-    sprintf((char *)pat2, "\\(%s\\m\\)\\|\\(%s\\m\\)", spat, epat);
-    if (*mpat == NUL)
-	STRCPY(pat3, pat2);
-    else
-	sprintf((char *)pat3, "\\(%s\\m\\)\\|\\(%s\\m\\)\\|\\(%s\\m\\)",
-							    spat, epat, mpat);
 
     /* Handle the optional fourth argument: flags */
     dir = get_search_arg(&argvars[3], &flags); /* may set p_ws */
@@ -12822,6 +12794,56 @@ f_searchpair(argvars, rettv)
 	skip = get_tv_string_buf_chk(&argvars[4], nbuf3);
     if (skip == NULL)
 	goto theend;	    /* type error */
+
+    rettv->vval.v_number = do_searchpair(spat, mpat, epat, dir, skip, flags);
+
+theend:
+    p_ws = save_p_ws;
+}
+
+/*
+ * Search for a start/middle/end thing.
+ * Used by searchpair(), see its documentation for the details.
+ * Returns 0 or -1 for no match,
+ */
+    long
+do_searchpair(spat, mpat, epat, dir, skip, flags)
+    char_u	*spat;	    /* start pattern */
+    char_u	*mpat;	    /* middle pattern */
+    char_u	*epat;	    /* end pattern */
+    int		dir;	    /* BACKWARD or FORWARD */
+    char_u	*skip;	    /* skip expression */
+    int		flags;	    /* SP_RETCOUNT, SP_REPEAT, SP_NOMOVE */
+{
+    char_u	*save_cpo;
+    char_u	*pat, *pat2 = NULL, *pat3 = NULL;
+    long	retval = 0;
+    pos_T	pos;
+    pos_T	firstpos;
+    pos_T	foundpos;
+    pos_T	save_cursor;
+    pos_T	save_pos;
+    int		n;
+    int		r;
+    int		nest = 1;
+    int		err;
+
+    /* Make 'cpoptions' empty, the 'l' flag should not be used here. */
+    save_cpo = p_cpo;
+    p_cpo = (char_u *)"";
+
+    /* Make two search patterns: start/end (pat2, for in nested pairs) and
+     * start/middle/end (pat3, for the top pair). */
+    pat2 = alloc((unsigned)(STRLEN(spat) + STRLEN(epat) + 15));
+    pat3 = alloc((unsigned)(STRLEN(spat) + STRLEN(mpat) + STRLEN(epat) + 23));
+    if (pat2 == NULL || pat3 == NULL)
+	goto theend;
+    sprintf((char *)pat2, "\\(%s\\m\\)\\|\\(%s\\m\\)", spat, epat);
+    if (*mpat == NUL)
+	STRCPY(pat3, pat2);
+    else
+	sprintf((char *)pat3, "\\(%s\\m\\)\\|\\(%s\\m\\)\\|\\(%s\\m\\)",
+							    spat, epat, mpat);
 
     save_cursor = curwin->w_cursor;
     pos = curwin->w_cursor;
@@ -12861,7 +12883,7 @@ f_searchpair(argvars, rettv)
 	    {
 		/* Evaluating {skip} caused an error, break here. */
 		curwin->w_cursor = save_cursor;
-		rettv->vval.v_number = -1;
+		retval = -1;
 		break;
 	    }
 	    if (r)
@@ -12887,9 +12909,9 @@ f_searchpair(argvars, rettv)
 	{
 	    /* Found the match: return matchcount or line number. */
 	    if (flags & SP_RETCOUNT)
-		++rettv->vval.v_number;
+		++retval;
 	    else
-		rettv->vval.v_number = pos.lnum;
+		retval = pos.lnum;
 	    curwin->w_cursor = pos;
 	    if (!(flags & SP_REPEAT))
 		break;
@@ -12898,14 +12920,15 @@ f_searchpair(argvars, rettv)
     }
 
     /* If 'n' flag is used or search failed: restore cursor position. */
-    if ((flags & SP_NOMOVE) || rettv->vval.v_number == 0)
+    if ((flags & SP_NOMOVE) || retval == 0)
 	curwin->w_cursor = save_cursor;
 
 theend:
     vim_free(pat2);
     vim_free(pat3);
-    p_ws = save_p_ws;
     p_cpo = save_cpo;
+
+    return retval;
 }
 
 /*ARGSUSED*/
