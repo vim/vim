@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jul 13
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jul 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -288,6 +288,9 @@ i", i' and i'		(Taro Muraoka)
 
 CTRL-W <Enter>		In the quickfix window: opens a new window to show the
 			location of the error under the cursor.
+
+|at| and |it| text objects select a block of text between HTML or XML tags.
+
 
 Options: ~
 

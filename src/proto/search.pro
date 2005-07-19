@@ -26,6 +26,7 @@ int bckend_word __ARGS((long count, int bigword, int eol));
 int current_word __ARGS((oparg_T *oap, long count, int include, int bigword));
 int current_sent __ARGS((oparg_T *oap, long count, int include));
 int current_block __ARGS((oparg_T *oap, long count, int include, int what, int other));
+int current_tagblock __ARGS((oparg_T *oap, long count, int include));
 int current_par __ARGS((oparg_T *oap, long count, int include, int type));
 int current_quote __ARGS((oparg_T *oap, long count, int include, int quotechar));
 int linewhite __ARGS((linenr_T lnum));
