@@ -1580,6 +1580,7 @@ struct window
     colnr_T	w_old_cursor_fcol;  /* first column for block visual part */
     colnr_T	w_old_cursor_lcol;  /* last column for block visual part */
     linenr_T	w_old_visual_lnum;  /* last known start of visual part */
+    colnr_T	w_old_visual_col;   /* last known start of visual part */
     colnr_T	w_old_curswant;	    /* last known value of Curswant */
 #endif
 

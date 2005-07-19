@@ -1,4 +1,4 @@
-*motion.txt*    For Vim version 7.0aa.  Last change: 2005 Apr 04
+*motion.txt*    For Vim version 7.0aa.  Last change: 2005 Jul 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -595,6 +595,20 @@ i<			"inner <> block", select [count] <> blocks, from
 			'>', excluding the '<' and '>'.
 			When used in Visual mode it is made characterwise.
 
+						*v_at* *at*
+at			"a tag block", select [count] tag blocks, from the
+			[count]'th unmatched "<aaa>" backwards to the matching
+			"</aaa>", including the "<aaa>" and "</aaa>".
+			See |tag-blocks| about the details.
+			When used in Visual mode it is made characterwise.
+
+						*v_it* *it*
+it			"inner tag block", select [count] tag blocks, from the
+			[count]'th unmatched "<aaa>" backwards to the matching
+			"</aaa>", excluding the "<aaa>" and "</aaa>".
+			See |tag-blocks| about the details.
+			When used in Visual mode it is made characterwise.
+
 a}							*v_a}* *a}* *a{*
 a{							*v_aB* *v_a{* *aB*
 aB			"a Block", select [count] Blocks, from "[count] [{" to
@@ -678,6 +692,25 @@ takes us.  When using an object the whole object is operated upon, no matter
 where on the object the cursor is.  For example, compare "dw" and "daw": "dw"
 deletes from the cursor position to the start of the next word, "daw" deletes
 the word under the cursor and the space after or before it.
+
+
+Tag blocks						*tag-blocks*
+
+For the "it" and "at" text objects an attempt is done to select blocks between
+matching tags for HTML and XML.  But since these are not completely compatible
+there are a few restrictions.
+
+The normal method is to select a <tag> until the matching </tag>.  For "at"
+the tags are included, for "it" they are excluded.  But when "it" is repeated
+the tags will be included (otherwise nothing would change).
+
+"<aaa/>" items are skipped.  Case is ignored, also for XML where case does
+matter.
+
+In HTML it is possible to have a tag like <br> or <meta ...> without a
+matching end tag.  These are ignored.
+
+The text objects are tolerant about mistakes.  Stray end tags are ignored.
 
 ==============================================================================
 7. Marks					*mark-motions* *E20* *E78*

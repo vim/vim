@@ -4177,6 +4177,7 @@ asmh8300-syntax	syntax.txt	/*asmh8300-syntax*
 asmh8300.vim	syntax.txt	/*asmh8300.vim*
 aspperl-syntax	syntax.txt	/*aspperl-syntax*
 aspvbs-syntax	syntax.txt	/*aspvbs-syntax*
+at	motion.txt	/*at*
 athena-intellimouse	gui.txt	/*athena-intellimouse*
 attr-list	syntax.txt	/*attr-list*
 author	intro.txt	/*author*
@@ -5429,6 +5430,7 @@ iquote	motion.txt	/*iquote*
 is	motion.txt	/*is*
 isdirectory()	eval.txt	/*isdirectory()*
 islocked()	eval.txt	/*islocked()*
+it	motion.txt	/*it*
 italic	syntax.txt	/*italic*
 items()	eval.txt	/*items()*
 iw	motion.txt	/*iw*
@@ -6550,6 +6552,7 @@ tag	tagsrch.txt	/*tag*
 tag-!	tagsrch.txt	/*tag-!*
 tag-any-white	tagsrch.txt	/*tag-any-white*
 tag-binary-search	tagsrch.txt	/*tag-binary-search*
+tag-blocks	motion.txt	/*tag-blocks*
 tag-commands	tagsrch.txt	/*tag-commands*
 tag-details	tagsrch.txt	/*tag-details*
 tag-highlight	syntax.txt	/*tag-highlight*
@@ -6828,6 +6831,7 @@ v_ab	motion.txt	/*v_ab*
 v_ap	motion.txt	/*v_ap*
 v_aquote	motion.txt	/*v_aquote*
 v_as	motion.txt	/*v_as*
+v_at	motion.txt	/*v_at*
 v_aw	motion.txt	/*v_aw*
 v_a{	motion.txt	/*v_a{*
 v_a}	motion.txt	/*v_a}*
@@ -6871,6 +6875,7 @@ v_ib	motion.txt	/*v_ib*
 v_ip	motion.txt	/*v_ip*
 v_iquote	motion.txt	/*v_iquote*
 v_is	motion.txt	/*v_is*
+v_it	motion.txt	/*v_it*
 v_iw	motion.txt	/*v_iw*
 v_i{	motion.txt	/*v_i{*
 v_i}	motion.txt	/*v_i}*

@@ -49,6 +49,7 @@ char_u *get_dict_string __ARGS((dict_T *d, char_u *key));
 long get_dict_number __ARGS((dict_T *d, char_u *key));
 char_u *get_function_name __ARGS((expand_T *xp, int idx));
 char_u *get_expr_name __ARGS((expand_T *xp, int idx));
+long do_searchpair __ARGS((char_u *spat, char_u *mpat, char_u *epat, int dir, char_u *skip, int flags));
 void set_vim_var_nr __ARGS((int idx, long val));
 long get_vim_var_nr __ARGS((int idx));
 char_u *get_vim_var_str __ARGS((int idx));

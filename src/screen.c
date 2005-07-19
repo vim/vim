@@ -1253,7 +1253,8 @@ win_update(wp)
 			from = to;
 		}
 
-		if (VIsual.lnum != wp->w_old_visual_lnum)
+		if (VIsual.lnum != wp->w_old_visual_lnum
+					|| VIsual.col != wp->w_old_visual_col)
 		{
 		    if (wp->w_old_visual_lnum < from
 						&& wp->w_old_visual_lnum != 0)
@@ -1379,6 +1380,7 @@ win_update(wp)
 	wp->w_old_visual_mode = VIsual_mode;
 	wp->w_old_cursor_lnum = curwin->w_cursor.lnum;
 	wp->w_old_visual_lnum = VIsual.lnum;
+	wp->w_old_visual_col = VIsual.col;
 	wp->w_old_curswant = curwin->w_curswant;
     }
     else
@@ -1386,6 +1388,7 @@ win_update(wp)
 	wp->w_old_visual_mode = 0;
 	wp->w_old_cursor_lnum = 0;
 	wp->w_old_visual_lnum = 0;
+	wp->w_old_visual_col = 0;
     }
 #endif /* FEAT_VISUAL */
 
