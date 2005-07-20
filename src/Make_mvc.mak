@@ -355,12 +355,13 @@ LIBC =
 ! else
 LIBC = /fixed:no
 ! endif
-
-! ifndef USE_MSVCRT
-LIBC = $(LIBC) libcd.lib
-! else
+! ifdef USE_MSVCRT
 CFLAGS = $(CFLAGS) -MDd
 LIBC = $(LIBC) msvcrtd.lib
+! elseif defined(MULTITHREADED)
+LIBC = $(LIBC) libcmtd.lib
+! else
+LIBC = $(LIBC) libcd.lib
 ! endif
 !endif # DEBUG
 
@@ -837,7 +838,7 @@ $(OUTDIR)/if_perlsfio.obj: $(OUTDIR) if_perlsfio.c  $(INCL)
 	$(CC) $(CFLAGS) $(PERL_INC) if_perlsfio.c
 
 $(OUTDIR)/if_mzsch.obj: $(OUTDIR) if_mzsch.c  $(INCL)
-	$(CC) $(CFLAGS) $(PERL_INC) if_mzsch.c
+	$(CC) $(CFLAGS) if_mzsch.c \
 		-DMZSCHEME_COLLECTS=\"$(MZSCHEME:\=\\)\\collects\"
 
 $(OUTDIR)/if_python.obj: $(OUTDIR) if_python.c  $(INCL)

@@ -817,15 +817,16 @@ HandleSniffRequest(buffer)
 		vi_open_file(file);
 	    else if (buf!=curbuf)
 	    {
-		vim_snprintf(VICommand, sizeof(VICommand), SelectBuf, file);
+		vim_snprintf(VICommand, sizeof(VICommand),
+						     (char *)SelectBuf, file);
 		vi_exec_cmd(VICommand);
 	    }
 	    if (command == 'o')
 		vi_set_cursor_pos((long)position);
 	    else
 	    {
-		vim_snprintf(VICommand, sizeof(VICommand), GotoLine,
-							       (int)position);
+		vim_snprintf(VICommand, sizeof(VICommand),
+					     (char *)GotoLine, (int)position);
 		vi_exec_cmd(VICommand);
 	    }
 	    checkpcmark();	/* [mark.c] */
@@ -854,7 +855,8 @@ HandleSniffRequest(buffer)
 	    buf = vi_find_buffer(file);
 	    if (buf && !buf->b_changed) /* delete buffer only if not modified */
 	    {
-		vim_snprintf(VICommand, sizeof(VICommand), DeleteBuf, file);
+		vim_snprintf(VICommand, sizeof(VICommand),
+						     (char *)DeleteBuf, file);
 		vi_exec_cmd(VICommand);
 	    }
 	    vi_open_file(new_path);
@@ -876,8 +878,8 @@ HandleSniffRequest(buffer)
 		    buf->b_flags |= BF_CHECK_RO + BF_NEVERLOADED;
 		    if (writable && !buf->b_changed)
 		    {
-			vim_snprintf(VICommand, sizeof(VICommand), UnloadBuf,
-									file);
+			vim_snprintf(VICommand, sizeof(VICommand),
+						     (char *)UnloadBuf, file);
 			vi_exec_cmd(VICommand);
 		    }
 		}
@@ -897,7 +899,8 @@ HandleSniffRequest(buffer)
 
 	    if (tab_width > 0 && tab_width <= 16)
 	    {
-		vim_snprintf(VICommand, sizeof(VICommand), SetTab, tab_width);
+		vim_snprintf(VICommand, sizeof(VICommand),
+						   (char *)SetTab, tab_width);
 		vi_exec_cmd(VICommand);
 	    }
 	    break;
@@ -912,12 +915,12 @@ HandleSniffRequest(buffer)
 	}
 	case 'A' :  /* Warning/Info msg */
 	    vi_msg(arguments);
-	    if (!strncmp(arguments, "Disconnected", 12)) /* "Disconnected ..." */
+	    if (!strncmp(arguments, "Disconnected", 12))
 		sniff_disconnect(1);	/* unexpected disconnection */
 	    break;
 	case 'a' :  /* Error msg */
 	    vi_error_msg(arguments);
-	    if (!strncmp(arguments, "Cannot connect", 14)) /* "Cannot connect ..." */
+	    if (!strncmp(arguments, "Cannot connect", 14))
 		sniff_disconnect(1);
 	    break;
 
