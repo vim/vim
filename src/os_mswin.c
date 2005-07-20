@@ -492,7 +492,7 @@ vim_stat(const char *name, struct stat *stp)
     char	buf[_MAX_PATH + 1];
     char	*p;
 
-    vim_strncpy(buf, name, _MAX_PATH);
+    vim_strncpy((char_u *)buf, (char_u *)name, _MAX_PATH);
     p = buf + strlen(buf);
     if (p > buf)
 	mb_ptr_back(buf, p);
