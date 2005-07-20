@@ -351,8 +351,8 @@ New functions: ~
 
 |add()|			append an item to a List
 |append()|		append List of lines to the buffer
-|browsedir()|		Dialog to select a directory.
-|byteidx()| 		Index of a character. (Ilya Sher)
+|browsedir()|		dialog to select a directory
+|byteidx()| 		index of a character (Ilya Sher)
 |call()|		call a function with List as arguments
 |copy()|		make a shallow copy of a List or Dictionary
 |count()|		count nr of times a value is in a List or Dictionary
@@ -362,15 +362,17 @@ New functions: ~
 |extend()|		append one List to another or add items from one
 			Dictionary to another
 |filter()|		remove selected items from a List or Dictionary
-|finddir()|		Find a directory in 'path'.
-|findfile()|		Find a file in 'path'. (Johannes Zellner)
-|foldtextresult()|  	The text displayed for a closed fold at line "lnum".
+|finddir()|		find a directory in 'path'
+|findfile()|		find a file in 'path' (Johannes Zellner)
+|foldtextresult()|  	the text displayed for a closed fold at line "lnum"
 |function()|		make a Funcref out of a function name
 |get()|			get an item from a List or Dictionary
-|getfontname()| 	Get actual font name being used.
-|getfperm()|		Get file permission string. (Nikolai Weibull)
-|getftype()|		Get type of file. (Nikolai Weibull)
-|getline()|		With second argument: get List with buffer lines
+|getbufline()|		get a line or list of lines from a specified buffer
+			(Yegappan Lakshmanan)
+|getfontname()| 	get actual font name being used
+|getfperm()|		get file permission string (Nikolai Weibull)
+|getftype()|		get type of file (Nikolai Weibull)
+|getline()|		with second argument: get List with buffer lines
 |has_key()|		check whether a key appears in a Dictionary
 |insert()|		insert an item somewhere in a List
 |items()|		get List of Dictionary key-value pairs
@@ -384,7 +386,7 @@ New functions: ~
 |mkdir()|		create a directory
 |readfile()|		read a file into a list of lines
 |remove()|		remove one or more items from a List or Dictionary
-|repeat()| 		Repeat "expr" "count" times.  (Christophe Poucet)
+|repeat()| 		repeat "expr" "count" times (Christophe Poucet)
 |reverse()|		reverse the order of a List
 |setqflist()|		create a quickfix list (Yegappan Lakshmanan)
 |sort()|		sort a List
@@ -392,10 +394,10 @@ New functions: ~
 |split()|		split a String into a List
 |spellbadword()|	get a badly spelled word
 |spellsuggest()|	get suggestions for correct spelling
-|string()|		String representation of a List or Dictionary
-|system()|		Filters {input} through a shell command.
-|taglist()|		Get list of matching tags. (Yegappan Lakshmanan)
-|tr()|			Translate characters. (Ron Aaron)
+|string()|		string representation of a List or Dictionary
+|system()|		filters {input} through a shell command
+|taglist()|		get list of matching tags (Yegappan Lakshmanan)
+|tr()|			translate characters (Ron Aaron)
 |values()|		get List of Dictionary values
 |writefile()|		write a list of lines into a file
 

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 19
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,9 +30,13 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+About HTML tag pairing: http://www.w3.org/TR/html4/index/elements.html
+
 ":e *.foo" completion with file name starting with "+" should be escaped.
 
 VMS patch for term.c also in Vim 6.3 (Zoltan Arpadffy)
+
+Make_cyg.mak files for Vim 6.3 from Tony Mechelynck?
 
 Add extra list of file locations.  Can be used with:
     :ltag	      list of matching tags, like :tselect
@@ -379,11 +383,6 @@ Vi incompatibility:
     Also: A mark is lost after: make change, undo, redo and undo.
     Example: "{d''" then "u" then "d''": deletes an extra line, because the ''
     position is one line down. (Veselinovic)
-8   ":change" in a single-line file adds an empty line.  When the file used to
-    be longer a "~" line is displayed, but there really is an empty line.
-    (Haakon Riiser, 2003 Dec 3 and Dec 16)
-8   ":append" and ":insert" in an empty file add an extra empty line. (Haakon
-    Riiser, 2003 Dec 3)  Test for ML_EMPTY.
 8   When stdin is not a tty, and Vim reads commands from it, an error should
     make Vim exit.
 7   Unix Vim (not gvim): Typing CTRL-C in Ex mode should finish the line
@@ -1820,8 +1819,6 @@ Messages:
     lines that aren't executed?  Perhaps move the echoing to do_cmdline()?
 8   Use 'report' for ":bdel"?  (Krishna)  To avoid these messages when using a
     script.
-8   "vim --version" output goes to stderr, should be stdout.  Can all output
-    from messages using printf() go to stdout?
 -   Delete message after new command has been entered and have waited for key.
     Perhaps after ten seconds?
 -   Make message history available in "msg" variables: msg1, msg2, .. msg9.
@@ -3138,6 +3135,8 @@ Debug mode:
 
 
 Various improvements:
+7   [t to move to previous xml/html tag (like "vatov"), ]t to move to next
+    ("vatv").
 8   Add ":rename" command: rename the file of the current buffer and rename
     the buffer.  Buffer may be modified.
 -   Perhaps ":cexpr" could read errors from a list?

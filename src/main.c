@@ -1478,7 +1478,7 @@ scripterror:
 	 * directory.  This is only done if the 'exrc' option is set.
 	 * Because of security reasons we disallow shell and write commands
 	 * now, except for unix if the file is owned by the user or 'secure'
-	 * option has been reset in environmet of global ".exrc" or ".vimrc".
+	 * option has been reset in environment of global ".exrc" or ".vimrc".
 	 * Only do this if VIMRC_FILE is not the same as USR_VIMRC_FILE or
 	 * SYS_VIMRC_FILE.
 	 */
