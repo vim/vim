@@ -5083,14 +5083,16 @@ mch_expand_wildcards(num_pat, pat, num_file, file, flags)
     if (!have_wildcard(num_pat, pat))
 	return save_patterns(num_pat, pat, num_file, file);
 
+# ifdef HAVE_SANDBOX
+    /* Don't allow any shell command in the sandbox. */
+    if (sandbox != 0 && check_secure())
+	return FAIL;
+# endif
+
     /*
      * Don't allow the use of backticks in secure and restricted mode.
      */
-    if (secure || restricted
-# ifdef HAVE_SANDBOX
-	    || sandbox != 0
-# endif
-       )
+    if (secure || restricted)
 	for (i = 0; i < num_pat; ++i)
 	    if (vim_strchr(pat[i], '`') != NULL
 		    && (check_restricted() || check_secure()))
