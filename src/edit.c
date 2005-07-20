@@ -2009,7 +2009,7 @@ ins_compl_add_infercase(str, len, fname, dir, reuse)
 	}
 
 	/* Copy the original case of the part we typed */
-	vim_strncpy(IObuff, original_text, completion_length);
+	STRNCPY(IObuff, original_text, completion_length);
 
 	return ins_compl_add(IObuff, len, fname, dir, reuse);
     }

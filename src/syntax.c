@@ -1700,7 +1700,7 @@ get_syntax_attr(col, can_spell)
 	return 0;
 
     /* After 'synmaxcol' the attribute is always zero. */
-    if (syn_buf->b_p_smc > 0 && col >= syn_buf->b_p_smc)
+    if (syn_buf->b_p_smc > 0 && col >= (colnr_T)syn_buf->b_p_smc)
     {
 	clear_current_state();
 #ifdef FEAT_EVAL
