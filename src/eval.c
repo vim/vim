@@ -493,6 +493,7 @@ static void f_foreground __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_function __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_garbagecollect __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_get __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_getbufline __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getbufvar __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getchar __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getcharmod __ARGS((typval_T *argvars, typval_T *rettv));
@@ -6676,6 +6677,7 @@ static struct fst
     {"function",	1, 1, f_function},
     {"garbagecollect",	0, 0, f_garbagecollect},
     {"get",		2, 3, f_get},
+    {"getbufline",	2, 3, f_getbufline},
     {"getbufvar",	2, 2, f_getbufvar},
     {"getchar",		0, 1, f_getchar},
     {"getcharmod",	0, 0, f_getcharmod},
@@ -9076,6 +9078,101 @@ f_get(argvars, rettv)
 	copy_tv(tv, rettv);
 }
 
+static void get_buffer_lines __ARGS((buf_T *buf, linenr_T start, linenr_T end, typval_T *rettv));
+
+/*
+ * Get line or list of lines from buffer "buf" into "rettv".
+ */
+    static void
+get_buffer_lines(buf, start, end, rettv)
+    buf_T	*buf;
+    linenr_T	start;
+    linenr_T	end;
+    typval_T	*rettv;
+{
+    char_u	*p;
+    list_T	*l;
+    listitem_T	*li;
+
+    if (start < 0)
+	rettv->vval.v_number = 0; /* failure; error message already given */
+    else if (end == 0)
+    {
+	/* getline(lnum): return one line as a string */
+	if (start >= 1 && start <= buf->b_ml.ml_line_count)
+	    p = ml_get_buf(buf, start, FALSE);
+	else
+	    p = (char_u *)"";
+
+	rettv->v_type = VAR_STRING;
+	rettv->vval.v_string = vim_strsave(p);
+    }
+    else
+    {
+	if (end < start)
+	{
+	    if (end >= 0)	    /* else: error message already given */
+		EMSG(_(e_invrange));
+	    rettv->vval.v_number = 0;
+	}
+	else
+	{
+	    l = list_alloc();
+	    if (l != NULL)
+	    {
+		if (start < 1)
+		    start = 1;
+		if (end > buf->b_ml.ml_line_count)
+		    end = buf->b_ml.ml_line_count;
+		while (start <= end)
+		{
+		    li = listitem_alloc();
+		    if (li == NULL)
+			break;
+		    list_append(l, li);
+		    li->li_tv.v_type = VAR_STRING;
+		    li->li_tv.v_lock = 0;
+		    li->li_tv.vval.v_string =
+			vim_strsave(ml_get_buf(buf, start++, FALSE));
+		}
+		rettv->vval.v_list = l;
+		rettv->v_type = VAR_LIST;
+		++l->lv_refcount;
+	    }
+	}
+    }
+}
+
+/*
+ * "getbufline()" function
+ */
+    static void
+f_getbufline(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    linenr_T	lnum;
+    linenr_T	end;
+    buf_T	*buf;
+
+    (void)get_tv_number(&argvars[0]);	    /* issue errmsg if type error */
+    ++emsg_off;
+    buf = get_buf_tv(&argvars[0]);
+    --emsg_off;
+
+    if (buf == NULL || buf->b_ml.ml_mfp == NULL)
+	rettv->vval.v_number = 0;
+    else
+    {
+	lnum = get_tv_lnum(&argvars[1]);
+	if (argvars[2].v_type == VAR_UNKNOWN)
+	    end = lnum;
+	else
+	    end = get_tv_lnum(&argvars[2]);
+	get_buffer_lines(buf, lnum, end, rettv);
+    }
+}
+
 /*
  * "getbufvar()" function
  */
@@ -9444,7 +9541,7 @@ f_getftype(argvars, rettv)
 }
 
 /*
- * "getline(lnum)" function
+ * "getline(lnum, [end])" function
  */
     static void
 f_getline(argvars, rettv)
@@ -9453,57 +9550,14 @@ f_getline(argvars, rettv)
 {
     linenr_T	lnum;
     linenr_T	end;
-    char_u	*p;
-    list_T	*l;
-    listitem_T	*li;
 
     lnum = get_tv_lnum(argvars);
-    if (lnum < 0)
-	rettv->vval.v_number = 0;   /* failure; error message already given */
-    else if (argvars[1].v_type == VAR_UNKNOWN)
-    {
-	if (lnum >= 1 && lnum <= curbuf->b_ml.ml_line_count)
-	    p = ml_get(lnum);
-	else
-	    p = (char_u *)"";
-
-	rettv->v_type = VAR_STRING;
-	rettv->vval.v_string = vim_strsave(p);
-    }
+    if (argvars[1].v_type == VAR_UNKNOWN)
+	end = 0;
     else
-    {
 	end = get_tv_lnum(&argvars[1]);
-	if (end < lnum)
-	{
-	    if (end >= 0)	    /* else: error message already given */
-		EMSG(_(e_invrange));
-	    rettv->vval.v_number = 0;
-	}
-	else
-	{
-	    l = list_alloc();
-	    if (l != NULL)
-	    {
-		if (lnum < 1)
-		    lnum = 1;
-		if (end > curbuf->b_ml.ml_line_count)
-		    end = curbuf->b_ml.ml_line_count;
-		while (lnum <= end)
-		{
-		    li = listitem_alloc();
-		    if (li == NULL)
-			break;
-		    list_append(l, li);
-		    li->li_tv.v_type = VAR_STRING;
-		    li->li_tv.v_lock = 0;
-		    li->li_tv.vval.v_string = vim_strsave(ml_get(lnum++));
-		}
-		rettv->vval.v_list = l;
-		rettv->v_type = VAR_LIST;
-		++l->lv_refcount;
-	    }
-	}
-    }
+
+    get_buffer_lines(curbuf, lnum, end, rettv);
 }
 
 /*

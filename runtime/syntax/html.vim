@@ -2,7 +2,7 @@
 " Language:	HTML
 " Maintainer:	Claudio Fleiner <claudio@fleiner.com>
 " URL:		http://www.fleiner.com/vim/syntax/html.vim
-" Last Change:  2005 Jul 18
+" Last Change:  2005 Jul 20
 
 " Please check :help html.vim for some comments and a description of the options
 
@@ -27,7 +27,9 @@ endif
 
 syn case ignore
 
-syn spell toplevel
+if main_syntax == "html"
+  syn spell toplevel
+endif
 
 " mark illegal characters
 syn match htmlError "[<>&]"
