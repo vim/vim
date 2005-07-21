@@ -9078,27 +9078,44 @@ f_get(argvars, rettv)
 	copy_tv(tv, rettv);
 }
 
-static void get_buffer_lines __ARGS((buf_T *buf, linenr_T start, linenr_T end, typval_T *rettv));
+static void get_buffer_lines __ARGS((buf_T *buf, linenr_T start, linenr_T end, int retlist, typval_T *rettv));
 
 /*
  * Get line or list of lines from buffer "buf" into "rettv".
+ * Return a range (from start to end) of lines in rettv from the specified
+ * buffer.
+ * If 'retlist' is TRUE, then the lines are returned as a Vim List.
  */
     static void
-get_buffer_lines(buf, start, end, rettv)
+get_buffer_lines(buf, start, end, retlist, rettv)
     buf_T	*buf;
     linenr_T	start;
     linenr_T	end;
+    int		retlist;
     typval_T	*rettv;
 {
     char_u	*p;
-    list_T	*l;
+    list_T	*l = NULL;
     listitem_T	*li;
 
-    if (start < 0)
-	rettv->vval.v_number = 0; /* failure; error message already given */
-    else if (end == 0)
+    if (retlist)
     {
-	/* getline(lnum): return one line as a string */
+	l = list_alloc();
+	if (l == NULL)
+	    return;
+
+	rettv->vval.v_list = l;
+	rettv->v_type = VAR_LIST;
+	++l->lv_refcount;
+    }
+    else
+	rettv->vval.v_number = 0;
+
+    if (buf == NULL || buf->b_ml.ml_mfp == NULL || start < 0)
+	return;
+
+    if (!retlist)
+    {
 	if (start >= 1 && start <= buf->b_ml.ml_line_count)
 	    p = ml_get_buf(buf, start, FALSE);
 	else
@@ -9110,35 +9127,22 @@ get_buffer_lines(buf, start, end, rettv)
     else
     {
 	if (end < start)
+	    return;
+
+	if (start < 1)
+	    start = 1;
+	if (end > buf->b_ml.ml_line_count)
+	    end = buf->b_ml.ml_line_count;
+	while (start <= end)
 	{
-	    if (end >= 0)	    /* else: error message already given */
-		EMSG(_(e_invrange));
-	    rettv->vval.v_number = 0;
-	}
-	else
-	{
-	    l = list_alloc();
-	    if (l != NULL)
-	    {
-		if (start < 1)
-		    start = 1;
-		if (end > buf->b_ml.ml_line_count)
-		    end = buf->b_ml.ml_line_count;
-		while (start <= end)
-		{
-		    li = listitem_alloc();
-		    if (li == NULL)
-			break;
-		    list_append(l, li);
-		    li->li_tv.v_type = VAR_STRING;
-		    li->li_tv.v_lock = 0;
-		    li->li_tv.vval.v_string =
-			vim_strsave(ml_get_buf(buf, start++, FALSE));
-		}
-		rettv->vval.v_list = l;
-		rettv->v_type = VAR_LIST;
-		++l->lv_refcount;
-	    }
+	    li = listitem_alloc();
+	    if (li == NULL)
+		break;
+	    list_append(l, li);
+	    li->li_tv.v_type = VAR_STRING;
+	    li->li_tv.v_lock = 0;
+	    li->li_tv.vval.v_string =
+		vim_strsave(ml_get_buf(buf, start++, FALSE));
 	}
     }
 }
@@ -9160,17 +9164,12 @@ f_getbufline(argvars, rettv)
     buf = get_buf_tv(&argvars[0]);
     --emsg_off;
 
-    if (buf == NULL || buf->b_ml.ml_mfp == NULL)
-	rettv->vval.v_number = 0;
+    lnum = get_tv_lnum(&argvars[1]);
+    if (argvars[2].v_type == VAR_UNKNOWN)
+	end = lnum;
     else
-    {
-	lnum = get_tv_lnum(&argvars[1]);
-	if (argvars[2].v_type == VAR_UNKNOWN)
-	    end = lnum;
-	else
-	    end = get_tv_lnum(&argvars[2]);
-	get_buffer_lines(buf, lnum, end, rettv);
-    }
+	end = get_tv_lnum(&argvars[2]);
+    get_buffer_lines(buf, lnum, end, TRUE, rettv);
 }
 
 /*
@@ -9338,7 +9337,8 @@ f_getcwd(argvars, rettv)
     {
 	rettv->vval.v_string = vim_strsave(cwd);
 #ifdef BACKSLASH_IN_FILENAME
-	slash_adjust(rettv->vval.v_string);
+	if (rettv->vval.v_string != NULL)
+	    slash_adjust(rettv->vval.v_string);
 #endif
     }
 }
@@ -9550,14 +9550,21 @@ f_getline(argvars, rettv)
 {
     linenr_T	lnum;
     linenr_T	end;
+    int		retlist;
 
     lnum = get_tv_lnum(argvars);
     if (argvars[1].v_type == VAR_UNKNOWN)
+    {
 	end = 0;
+	retlist = FALSE;
+    }
     else
+    {
 	end = get_tv_lnum(&argvars[1]);
+	retlist = TRUE;
+    }
 
-    get_buffer_lines(curbuf, lnum, end, rettv);
+    get_buffer_lines(curbuf, lnum, end, retlist, rettv);
 }
 
 /*
@@ -9905,6 +9912,9 @@ f_has(argvars, rettv)
 #endif
 #ifdef FEAT_BEVAL
 	"balloon_eval",
+# ifndef FEAT_GUI_W32 /* other GUIs always have multiline balloons */
+	"balloon_multiline",
+# endif
 #endif
 #if defined(SOME_BUILTIN_TCAPS) || defined(ALL_BUILTIN_TCAPS)
 	"builtin_terms",
@@ -10285,6 +10295,10 @@ f_has(argvars, rettv)
 	    n = has_patch(atoi((char *)name + 5));
 	else if (STRICMP(name, "vim_starting") == 0)
 	    n = (starting != 0);
+#if defined(FEAT_BEVAL) && defined(FEAT_GUI_W32)
+	else if (STRICMP(name, "balloon_multiline") == 0)
+	    n = multiline_balloon_available();
+#endif
 #ifdef DYNAMIC_TCL
 	else if (STRICMP(name, "tcl") == 0)
 	    n = tcl_enabled(FALSE);
@@ -14388,9 +14402,9 @@ f_tr(argvars, rettv)
     char_u	*tostr;
     char_u	*p;
 #ifdef FEAT_MBYTE
-    int	        inlen;
-    int	        fromlen;
-    int	        tolen;
+    int		inlen;
+    int		fromlen;
+    int		tolen;
     int		idx;
     char_u	*cpstr;
     int		cplen;

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 20
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,37 +29,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
-
-About HTML tag pairing: http://www.w3.org/TR/html4/index/elements.html
-
-":e *.foo" completion with file name starting with "+" should be escaped.
-
-VMS patch for term.c also in Vim 6.3 (Zoltan Arpadffy)
-
-Make_cyg.mak files for Vim 6.3 from Tony Mechelynck?
-
-Add extra list of file locations.  Can be used with:
-    :ltag	      list of matching tags, like :tselect
-
-    :lnext	      next location
-    :lprevious :lNext previous location
-    :lnfile	      location in next file
-    :lNfile :lpfile   location in previous file
-    :lrewind :lfirst  first location
-    :llast	      last location
-    :ll [N]	      go to location N (current one if N omitted)
-    :lwindow	      open window with locations (separate from quickfix window)
-    :lopen	      open window with locations
-    :lclose	      close window with locations
-    :llist	      list locations
-    :lfile	      read locations from file using 'errorformat'
-    :lgetfile	      idem, don't jump to first one
-    :lbuffer	      idem, from current buffer.
-
-Win32: Balloon text can't contain line break.
-    Hints for multiline tooltips from Alexei Alexandrov (2005 Mar 26)
-    Patch from Sergey Khorev, 2005 Apr 11
-    Add has("balloon_multiline")
 
 Win32: Crash when pasting Simplified Chinese in utf-8. (rainux, 2005 June 20)
 
@@ -267,6 +236,25 @@ Mathias Michaelis (2004 Sep 6)
 Also place vimtutor.bat in %windir%?
 
 Add gui_mch_browsedir() for Motif, KDE and Mac OS/X.
+
+Add extra list of file locations.  A bit like the quickfix list, but there is
+one per window.  Can be used with:
+    :ltag	      list of matching tags, like :tselect
+Commands to use the location list:
+    :lnext	      next location
+    :lprevious :lNext previous location
+    :lnfile	      location in next file
+    :lNfile :lpfile   location in previous file
+    :lrewind :lfirst  first location
+    :llast	      last location
+    :ll [N]	      go to location N (current one if N omitted)
+    :lwindow	      open window with locations (separate from quickfix window)
+    :lopen	      open window with locations
+    :lclose	      close window with locations
+    :llist	      list locations
+    :lfile	      read locations from file using 'errorformat'
+    :lgetfile	      idem, don't jump to first one
+    :lbuffer	      idem, from current buffer.
 
 7   Add a ":cstring" command.  Works like ":cfile" but reads from a string
     variable.  Also accept a list variable?  Patch from Yegappan Lakshmanan.
@@ -3137,6 +3125,8 @@ Debug mode:
 Various improvements:
 7   [t to move to previous xml/html tag (like "vatov"), ]t to move to next
     ("vatv").
+7   [< to move to previous xml/html tag, e.g., previous <li>. ]< to move to
+    next <li>, ]< to next </li>, [< to previous </li>.
 8   Add ":rename" command: rename the file of the current buffer and rename
     the buffer.  Buffer may be modified.
 -   Perhaps ":cexpr" could read errors from a list?

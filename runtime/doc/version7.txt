@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jul 20
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jul 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -367,7 +367,7 @@ New functions: ~
 |foldtextresult()|  	the text displayed for a closed fold at line "lnum"
 |function()|		make a Funcref out of a function name
 |get()|			get an item from a List or Dictionary
-|getbufline()|		get a line or list of lines from a specified buffer
+|getbufline()|		get a list of lines from a specified buffer
 			(Yegappan Lakshmanan)
 |getfontname()| 	get actual font name being used
 |getfperm()|		get file permission string (Nikolai Weibull)
@@ -694,6 +694,9 @@ prepending "8bit-".
 Added the "customlist" completion argument to a user-defined command.  The
 user-defined completion function should return the completion candidates as a
 Vim List and the returned results are not filtered by Vim.
+
+Win32: Balloons can have multiple lines if common controls supports it.
+(Sergey Khorev)
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*
@@ -1189,5 +1192,9 @@ the global value.
 
 Win32: When using the "Edit with Vim" entry the file name was limited to about
 200 characters.
+
+When using command line completion for ":e *foo" and the file "+foo" exists
+the resulting command ":e +foo" doesn't work.  Now insert a backslash: ":e
+\+foo".
 
  vim:tw=78:ts=8:ft=help:norl:

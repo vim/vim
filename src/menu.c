@@ -63,7 +63,7 @@ static char_u	menu_mode_chars[] = {'n', 'v', 'o', 'i', 'c', 't'};
 
 static char_u e_notsubmenu[] = N_("E327: Part of menu-item path is not sub-menu");
 static char_u e_othermode[] = N_("E328: Menu only exists in another mode");
-static char_u e_nomenu[] = N_("E329: No menu of that name");
+static char_u e_nomenu[] = N_("E329: No menu \"%s\"");
 
 #ifdef FEAT_TOOLBAR
 static const char *toolbar_names[] =
@@ -841,7 +841,7 @@ menu_nable_recurse(menu, name, modes, enable)
     }
     if (*name != NUL && *name != '*' && menu == NULL)
     {
-	EMSG(_(e_nomenu));
+	EMSG2(_(e_nomenu), name);
 	return FAIL;
     }
 
@@ -934,7 +934,7 @@ remove_menu(menup, name, modes, silent)
 	if (menu == NULL)
 	{
 	    if (!silent)
-		EMSG(_(e_nomenu));
+		EMSG2(_(e_nomenu), name);
 	    return FAIL;
 	}
 
@@ -1079,7 +1079,7 @@ show_menus(path_name, modes)
 	}
 	if (menu == NULL)
 	{
-	    EMSG(_(e_nomenu));
+	    EMSG2(_(e_nomenu), name);
 	    vim_free(path_name);
 	    return FAIL;
 	}
@@ -1396,6 +1396,7 @@ get_menu_names(xp, idx)
 /*
  * Skip over this element of the menu path and return the start of the next
  * element.  Any \ and ^Vs are removed from the current element.
+ * "name" may be modified.
  */
     char_u *
 menu_name_skip(name)
@@ -1871,6 +1872,16 @@ gui_show_popupmenu()
     if (mode == MENU_INDEX_INVALID)
 	return;
     mode = menu_mode_chars[mode];
+
+#ifdef FEAT_AUTOCMD
+    {
+	char_u	    ename[2];
+
+	ename[0] = mode;
+	ename[1] = NUL;
+	apply_autocmds(EVENT_MENUPOPUP, ename, NULL, FALSE, curbuf);
+    }
+#endif
 
     for (menu = root_menu; menu != NULL; menu = menu->next)
 	if (STRNCMP("PopUp", menu->name, 5) == 0 && menu->name[5] == mode)

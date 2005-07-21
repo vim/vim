@@ -2917,7 +2917,8 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags)
 # ifdef USE_LONG_FNAME
 	if (USE_LONG_FNAME)
 # endif
-	    fname_case(sfname, 0);   /* set correct case for short file name */
+	    if (sfname != NULL)
+		fname_case(sfname, 0);   /* set correct case for sfname */
 #endif
 
 #ifdef FEAT_LISTCMDS
