@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jul 05
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jul 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -32,6 +32,11 @@ The words that are not recognized are highlighted with one of these:
 	SpellLocal	wrong spelling for selected region	|hl-SpellLocal|
 
 Vim only checks words for spelling, there is no grammar check.
+
+If the 'mousemodel' option is set to "popup" and the cursor is on a badly
+spelled word or it is "popup_setpos" and the mouse pointer is on a badly
+spelled word, then the popup menu will contain an submenu to replace the bad
+word.  Note: this slows down the appearance of the popup menu.
 
 To search for the next misspelled word:
 

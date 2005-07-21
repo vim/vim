@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.0aa.  Last change: 2005 Mar 04
+*autocmd.txt*   For Vim version 7.0aa.  Last change: 2005 Jul 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -542,6 +542,18 @@ QuickFixCmdPre						*QuickFixCmdPre*
 QuickFixCmdPost						*QuickFixCmdPost*
 				like QuickFixCmdPre, but after a quickfix
 				command is run.
+							*MenuPopup*
+MenuPopup			Just before showing the popup menu (under the
+				right mouse button).  Useful for adjusting the
+				menu for what is under the cursor or mouse
+				pointer.
+				The pattern is matched against a single
+				character representing the mode:
+					n	Normal
+					v	Visual
+					o	Operator-pending
+					i	Insert
+					c	Commmand line
 							*UserGettingBored*
 UserGettingBored		When the user hits CTRL-C.  Just kidding! :-)
 							*User*

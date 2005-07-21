@@ -188,7 +188,60 @@ static VOID CALLBACK BevalTimerProc __ARGS((HWND hwnd, UINT uMsg, UINT idEvent, 
 static BalloonEval  *cur_beval = NULL;
 static UINT	    BevalTimerId = 0;
 static DWORD	    LastActivity = 0;
+
+/*
+ * excerpts from headers since this may not be presented
+ * in the extremelly old compilers
+ */
+#include <pshpack1.h>
+
+typedef struct _DllVersionInfo
+{
+    DWORD cbSize;
+    DWORD dwMajorVersion;
+    DWORD dwMinorVersion;
+    DWORD dwBuildNumber;
+    DWORD dwPlatformID;
+} DLLVERSIONINFO;
+
+typedef struct tagTOOLINFOA_NEW
+{
+	UINT cbSize;
+	UINT uFlags;
+	HWND hwnd;
+	UINT uId;
+	RECT rect;
+	HINSTANCE hinst;
+	LPSTR lpszText;
+	LPARAM lParam;
+} TOOLINFO_NEW;
+
+typedef struct tagNMTTDISPINFO_NEW
+{
+    NMHDR      hdr;
+    LPTSTR     lpszText;
+    char       szText[80];
+    HINSTANCE  hinst;
+    UINT       uFlags;
+    LPARAM     lParam;
+} NMTTDISPINFO_NEW;
+
+#include <poppack.h>
+
+typedef HRESULT (WINAPI* DLLGETVERSIONPROC)(DLLVERSIONINFO *);
+#ifndef TTM_SETMAXTIPWIDTH
+# define TTM_SETMAXTIPWIDTH	 (WM_USER+24)
 #endif
+
+#ifndef TTF_DI_SETITEM
+# define TTF_DI_SETITEM          0x8000
+#endif
+
+#ifndef TTN_GETDISPINFO
+# define TTN_GETDISPINFO        (TTN_FIRST - 0)
+#endif
+
+#endif /* defined(FEAT_BEVAL) */
 
 /* Local variables: */
 
@@ -4021,13 +4074,93 @@ gui_mch_destroy_sign(sign)
  * 5) WM_NOTOFY:TTN_POP destroys created tooltip
  */
 
+/*
+ * determine whether installed Common Controls support multiline tooltips
+ * (i.e. their version is >= 4.70
+ */
+    int
+multiline_balloon_available(void)
+{
+    HINSTANCE hDll;
+    static char comctl_dll[] = "comctl32.dll";
+    static int multiline_tip = MAYBE;
+
+    if (multiline_tip != MAYBE)
+	return multiline_tip;
+
+    hDll = GetModuleHandle(comctl_dll);
+    if (hDll != NULL)
+    {
+        DLLGETVERSIONPROC pGetVer;
+        pGetVer = (DLLGETVERSIONPROC)GetProcAddress(hDll, "DllGetVersion");
+
+        if (pGetVer != NULL)
+        {
+            DLLVERSIONINFO dvi;
+            HRESULT hr;
+
+            ZeroMemory(&dvi, sizeof(dvi));
+            dvi.cbSize = sizeof(dvi);
+
+            hr = (*pGetVer)(&dvi);
+
+            if (SUCCEEDED(hr)
+		    && (dvi.dwMajorVersion > 4
+		    || (dvi.dwMajorVersion == 4 && dvi.dwMinorVersion >= 70)))
+	    {
+		multiline_tip = TRUE;
+		return multiline_tip;
+	    }
+        }
+	else
+	{
+	    /* there is chance we have ancient CommCtl 4.70
+	       which doesn't export DllGetVersion */
+	    DWORD dwHandle = 0;
+	    DWORD len = GetFileVersionInfoSize(comctl_dll, &dwHandle);
+	    if (len > 0)
+	    {
+		VS_FIXEDFILEINFO *ver;
+		UINT vlen = 0;
+		void *data = alloc(len);
+
+		if (data != NULL
+			&& GetFileVersionInfo(comctl_dll, 0, len, data)
+			&& VerQueryValue(data, "\\", (void **)&ver, &vlen)
+			&& vlen
+			&& HIWORD(ver->dwFileVersionMS) > 4
+			|| (HIWORD(ver->dwFileVersionMS) == 4
+			    && LOWORD(ver->dwFileVersionMS) >= 70))
+		{
+		    vim_free(data);
+		    multiline_tip = TRUE;
+		    return multiline_tip;
+		}
+		vim_free(data);
+	    }
+	}
+    }
+    multiline_tip = FALSE;
+    return multiline_tip;
+}
+
     static void
 make_tooltip(beval, text, pt)
     BalloonEval *beval;
     char *text;
     POINT pt;
 {
-    TOOLINFO	ti;
+    TOOLINFO	*pti;
+    int		ToolInfoSize;
+
+    if (multiline_balloon_available() == TRUE)
+	ToolInfoSize = sizeof(TOOLINFO_NEW);
+    else
+	ToolInfoSize = sizeof(TOOLINFO);
+
+    pti = (TOOLINFO *)alloc(ToolInfoSize);
+    if (pti == NULL)
+	return;
 
     beval->balloon = CreateWindowEx(WS_EX_TOPMOST, TOOLTIPS_CLASS,
 	    NULL, WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP,
@@ -4037,20 +4170,32 @@ make_tooltip(beval, text, pt)
     SetWindowPos(beval->balloon, HWND_TOPMOST, 0, 0, 0, 0,
 	    SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 
-    ti.cbSize = sizeof(TOOLINFO);
-    ti.uFlags = TTF_SUBCLASS;
-    ti.hwnd = beval->target;
-    ti.hinst = 0; /* Don't use string resources */
-    ti.uId = ID_BEVAL_TOOLTIP;
-    ti.lpszText = text;
+    pti->cbSize = ToolInfoSize;
+    pti->uFlags = TTF_SUBCLASS;
+    pti->hwnd = beval->target;
+    pti->hinst = 0; /* Don't use string resources */
+    pti->uId = ID_BEVAL_TOOLTIP;
+
+    if (multiline_balloon_available() == TRUE)
+    {
+	RECT rect;
+	TOOLINFO_NEW *ptin = (TOOLINFO_NEW *)pti;
+	pti->lpszText = LPSTR_TEXTCALLBACK;
+	ptin->lParam = (LPARAM)text;
+	if (GetClientRect(s_textArea, &rect)) /* switch multiline tooltips on */
+	    SendMessage(beval->balloon, TTM_SETMAXTIPWIDTH, 0,
+		    (LPARAM)rect.right);
+    }
+    else
+	pti->lpszText = text; /* do this old way */
 
     /* Limit ballooneval bounding rect to CursorPos neighbourhood */
-    ti.rect.left = pt.x - 3;
-    ti.rect.top = pt.y - 3;
-    ti.rect.right = pt.x + 3;
-    ti.rect.bottom = pt.y + 3;
+    pti->rect.left = pt.x - 3;
+    pti->rect.top = pt.y - 3;
+    pti->rect.right = pt.x + 3;
+    pti->rect.bottom = pt.y + 3;
 
-    SendMessage(beval->balloon, TTM_ADDTOOL, 0, (LPARAM)&ti);
+    SendMessage(beval->balloon, TTM_ADDTOOL, 0, (LPARAM)pti);
     /* Make tooltip appear sooner */
     SendMessage(beval->balloon, TTM_SETDELAYTIME, TTDT_INITIAL, 10);
     /*
@@ -4059,6 +4204,7 @@ make_tooltip(beval, text, pt)
      */
     mouse_event(MOUSEEVENTF_MOVE, 1, 1, 0, 0);
     mouse_event(MOUSEEVENTF_MOVE, (DWORD)-1, (DWORD)-1, 0, 0);
+    vim_free(pti);
 }
 
     static void
@@ -4187,7 +4333,6 @@ gui_mch_create_beval_area(target, mesg, mesgCB, clientData)
 	beval->clientData = clientData;
 
 	InitCommonControls();
-
 	cur_beval = beval;
 
 	if (p_beval)
@@ -4208,19 +4353,28 @@ Handle_WM_Notify(hwnd, pnmh)
 
     if (cur_beval != NULL)
     {
-	if (pnmh->code == TTN_SHOW)
+	switch (pnmh->code)
 	{
+	case TTN_SHOW:
 	    // TRACE0("TTN_SHOW {{{");
 	    // TRACE0("TTN_SHOW }}}");
-	}
-	else if (pnmh->code == TTN_POP) /* Before tooltip disappear */
-	{
+	    break;
+	case TTN_POP: /* Before tooltip disappear */
 	    // TRACE0("TTN_POP {{{");
 	    delete_tooltip(cur_beval);
 	    gui_mch_enable_beval_area(cur_beval);
 	    // TRACE0("TTN_POP }}}");
 
 	    cur_beval->showState = ShS_NEUTRAL;
+	    break;
+	case TTN_GETDISPINFO:
+	{
+	    /* if you get there then we have new common controls */
+	    NMTTDISPINFO_NEW *info = (NMTTDISPINFO_NEW *)pnmh;
+	    info->lpszText = (LPSTR)info->lParam;
+	    info->uFlags |= TTF_DI_SETITEM;
+	}
+	    break;
 	}
     }
 }

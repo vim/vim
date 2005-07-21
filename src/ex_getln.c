@@ -92,6 +92,7 @@ static void	redrawcmdprompt __ARGS((void));
 static void	cursorcmd __ARGS((void));
 static int	ccheck_abbr __ARGS((int));
 static int	nextwild __ARGS((expand_T *xp, int type, int options));
+static void	escape_fname __ARGS((char_u **pp));
 static int	showmatches __ARGS((expand_T *xp, int wildmenu));
 static void	set_expand_context __ARGS((expand_T *xp));
 static int	ExpandFromContext __ARGS((expand_T *xp, char_u *, int *, char_u ***, int));
@@ -3365,18 +3366,14 @@ ExpandEscape(xp, str, numfiles, files, options)
 		/* If 'str' starts with "\~", replace "~" at start of
 		 * files[i] with "\~". */
 		if (str[0] == '\\' && str[1] == '~' && files[i][0] == '~')
-		{
-		    p = alloc((unsigned)(STRLEN(files[i]) + 2));
-		    if (p != NULL)
-		    {
-			p[0] = '\\';
-			STRCPY(p + 1, files[i]);
-			vim_free(files[i]);
-			files[i] = p;
-		    }
-		}
+		    escape_fname(&files[i]);
 	    }
 	    xp->xp_backslash = XP_BS_NONE;
+
+	    /* If the first file starts with a '+' escape it.  Otherwise it
+	     * could be seen as "+cmd". */
+	    if (*files[0] == '+')
+		escape_fname(&files[0]);
 	}
 	else if (xp->xp_context == EXPAND_TAGS)
 	{
@@ -3394,6 +3391,25 @@ ExpandEscape(xp, str, numfiles, files, options)
 		}
 	    }
 	}
+    }
+}
+
+/*
+ * Put a backslash before the file name in "pp", which is in allocated memory.
+ */
+    static void
+escape_fname(pp)
+    char_u **pp;
+{
+    char_u	*p;
+
+    p = alloc((unsigned)(STRLEN(*pp) + 2));
+    if (p != NULL)
+    {
+	p[0] = '\\';
+	STRCPY(p + 1, *pp);
+	vim_free(*pp);
+	*pp = p;
     }
 }
 

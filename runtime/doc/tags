@@ -3827,6 +3827,7 @@ Mac-format	editing.txt	/*Mac-format*
 Mac-format-write	editing.txt	/*Mac-format-write*
 Macintosh	os_mac.txt	/*Macintosh*
 Mark	motion.txt	/*Mark*
+MenuPopup	autocmd.txt	/*MenuPopup*
 MiNT	os_mint.txt	/*MiNT*
 Moolenaar	intro.txt	/*Moolenaar*
 MorphOS	os_amiga.txt	/*MorphOS*
@@ -5014,6 +5015,7 @@ garbagecollect()	eval.txt	/*garbagecollect()*
 gd	pattern.txt	/*gd*
 ge	motion.txt	/*ge*
 get()	eval.txt	/*get()*
+getbufline()	eval.txt	/*getbufline()*
 getbufvar()	eval.txt	/*getbufvar()*
 getchar()	eval.txt	/*getchar()*
 getcharmod()	eval.txt	/*getcharmod()*

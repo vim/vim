@@ -2,7 +2,7 @@
 " You can also use this as a start for your own set of menus.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Jul 08
+" Last Change:	2005 Jul 21
 
 " Note that ":an" (short for ":anoremenu") is often used to make a menu work
 " in all modes and avoid side effects from mappings defined by the user.
@@ -873,6 +873,61 @@ noremenu  <script> <silent> 1.100 PopUp.Select\ &All	:<C-U>call <SID>SelectAll()
 inoremenu <script> <silent> 1.100 PopUp.Select\ &All	<C-O>:call <SID>SelectAll()<CR>
 cnoremenu <script> <silent> 1.100 PopUp.Select\ &All	<C-U>call <SID>SelectAll()<CR>
 
+if has("spell")
+  " Spell suggestions in the popup menu.  Note that this will slow down the
+  " appearance of the menu!
+  func! <SID>SpellPopup()
+    if exists("s:changeitem") && s:changeitem != ''
+      call <SID>SpellDel()
+    endif
+
+    let curcol = col('.')
+    let w = spellbadword()
+    if col('.') > curcol		" don't use word after the cursor
+      let w = ''
+      call cursor(0, curcol)	" put the cursor back where it was
+    endif
+    if w != ''
+      let s:suglist = spellsuggest(w, 10)
+      if len(s:suglist) <= 0
+	call cursor(0, curcol)	" put the cursor back where it was
+      else
+	let s:changeitem = 'change\ "' . escape(w, ' .'). '"\ to'
+	let s:fromword = w
+	let pri = 1
+	for sug in s:suglist
+	  exe 'amenu 1.5.' . pri . ' PopUp.' . s:changeitem . '.' . escape(sug, ' .')
+		\ . ' :call <SID>SpellReplace(' . pri . ')<CR>'
+	  let pri += 1
+	endfor
+
+	let s:additem = 'add\ "' . escape(w, ' .') . '"\ to\ word\ list'
+	exe 'amenu 1.6 PopUp.' . s:additem . ' :spellgood ' . w . '<CR>'
+
+	let s:ignoreitem = 'ignore\ "' . escape(w, ' .') . '"'
+	exe 'amenu 1.7 PopUp.' . s:ignoreitem . ' :spellgood! ' . w . '<CR>'
+
+	amenu 1.8 PopUp.-SpellSep- :
+      endif
+    endif
+  endfunc
+
+  func! <SID>SpellReplace(n)
+    let l = getline('.')
+    call setline('.', strpart(l, 0, col('.') - 1) . s:suglist[a:n - 1]
+	  \ . strpart(l, col('.') + len(s:fromword) - 1))
+  endfunc
+
+  func! <SID>SpellDel()
+    exe "aunmenu PopUp." . s:changeitem
+    exe "aunmenu PopUp." . s:additem
+    exe "aunmenu PopUp." . s:ignoreitem
+    aunmenu PopUp.-SpellSep-
+    let s:changeitem = ''
+  endfun
+
+  au! MenuPopup * call <SID>SpellPopup()
+endif
 
 " The GUI toolbar (for MS-Windows and GTK)
 if has("toolbar")

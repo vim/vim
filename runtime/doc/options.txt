@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Jul 18
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Jul 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1013,7 +1013,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	The evaluation of the expression must not have side effects!
 	Example: >
     function! MyBalloonExpr()
-	return 'Cursor is at line ' . v:beval_lnum . 
+	return 'Cursor is at line ' . v:beval_lnum .
 		\', column ' . v:beval_col .
 		\ ' of file ' .  bufname(v:beval_bufnr) .
 		\ ' on word "' . v:beval_text . '"'
@@ -1026,6 +1026,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Vim does not try to send a message to an external debugger (Netbeans
 	or Sun Workshop).
 
+	To check wether line breaks in the balloon text work use this check: >
+		if has("balloon_multiline")
+<
 				     *'binary'* *'bin'* *'nobinary'* *'nobin'*
 'binary' 'bin'		boolean	(default off)
 			local to buffer

@@ -3666,7 +3666,7 @@ current_tagblock(oap, count_arg, include)
     old_start = old_end;
 
     /*
-     * If we start on "<aaa>" use the whole block inclusive.
+     * If we start on "<aaa>" select that block.
      */
 #ifdef FEAT_VISUAL
     if (!VIsual_active || equalpos(VIsual, curwin->w_cursor))
@@ -3713,7 +3713,7 @@ again:
      */
     for (n = 0; n < count; ++n)
     {
-	if (do_searchpair((char_u *)"<[^ \t>/!]\\+\\%(\\_s\\_[^>]\\{-}[^/]>\\|$\\|>\\)",
+	if (do_searchpair((char_u *)"<[^ \t>/!]\\+\\%(\\_s\\_[^>]\\{-}[^/]>\\|$\\|\\_s\\=>\\)",
 		    (char_u *)"",
 		    (char_u *)"</[^>]*>", BACKWARD, (char_u *)"", 0) <= 0)
 	{
@@ -3791,9 +3791,9 @@ again:
 	    }
 	curwin->w_cursor = end_pos;
 
-	/* If we now have the same start as before reset "do_include" and try
+	/* If we now have the same text as before reset "do_include" and try
 	 * again. */
-	if (equalpos(start_pos, old_start))
+	if (equalpos(start_pos, old_start) && equalpos(end_pos, old_end))
 	{
 	    do_include = TRUE;
 	    curwin->w_cursor = old_start;

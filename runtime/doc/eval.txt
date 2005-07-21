@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 18
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1511,6 +1511,8 @@ foreground( )			Number	bring the Vim window to the foreground
 function( {name})		Funcref reference to function {name}
 get( {list}, {idx} [, {def}])	any	get item {idx} from {list} or {def}
 get( {dict}, {key} [, {def}])	any	get item {key} from {dict} or {def}
+getbufline( {expr}, {lnum} [, {end}])
+				List	lines {lnum} to {end} of buffer {expr}
 getchar( [expr])		Number	get one character from the user
 getcharmod( )			Number	modifiers for the last typed character
 getbufvar( {expr}, {varname})		variable {varname} in buffer {expr}
@@ -2409,6 +2411,35 @@ get({dict}, {key} [, {default}])
 		item is not available return {default}.  Return zero when
 		{default} is omitted.
 
+							*getbufline()*
+getbufline({expr}, {lnum} [, {end}])
+		Return the lines starting from {lnum} to {end} in the buffer
+		{expr} as a List. If {end} is omitted, only the line {lnum}
+		is returned.
+
+		For the use of {expr}, see |bufname()| above.
+
+		When {lnum} is a String that doesn't start with a
+		digit, line() is called to translate the String into a Number.
+
+		{end} is used in the same way as {lnum}.
+
+		When {lnum} is smaller than 1 or bigger than the number of
+		lines in the buffer, an empty List is returned.
+
+		When {end} is greater than the number of lines in the buffer,
+		it is treated as {end} is set to the number of lines in the
+		buffer.
+
+		When non-existing line ranges are specified, an empty List is
+		returned.  When {end} is before {lnum} an empty List is
+		returned.
+
+		This function works only for loaded buffers. For unloaded and
+		non-existing buffers, an empty List is returned.
+
+		Example: >
+			:let lines = getbufline(bufnr("myfile"), 1, "$")
 
 getbufvar({expr}, {varname})				*getbufvar()*
 		The result is the value of option or local buffer variable
@@ -2572,7 +2603,7 @@ getline({lnum} [, {end}])
 		including line {end}.
 		{end} is used in the same way as {lnum}.
 		Non-existing lines are silently omitted.
-		When {end} is before {lnum} an error is given.
+		When {end} is before {lnum} an empty List is returned.
 		Example: >
 			:let start = line('.')
 			:let end = search("^$") - 1
@@ -4290,6 +4321,7 @@ arabic			Compiled with Arabic support |Arabic|.
 arp			Compiled with ARP support (Amiga).
 autocmd			Compiled with autocommands support.
 balloon_eval		Compiled with |balloon-eval| support.
+balloon_multiline	GUI supports multiline balloons.
 beos			BeOS version of Vim.
 browse			Compiled with |:browse| support, and browse() will
 			work.
