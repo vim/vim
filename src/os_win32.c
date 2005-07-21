@@ -2251,7 +2251,7 @@ fname_case(
     HANDLE		hFind;
     int			c;
 
-    flen = (name != NULL) ? (int)STRLEN(name) : 0;
+    flen = (int)STRLEN(name);
     if (flen == 0 || flen > _MAX_PATH)
 	return;
 

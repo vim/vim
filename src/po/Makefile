@@ -4,11 +4,53 @@
 # Note: ja.sjis, *.cp1250 and zh_CN.cp936 are only for MS-Windows, they are
 # not installed on Unix
 
-LANGUAGES =	af ca cs de en_GB es fr ga it ja ko no pl ru sk sv uk vi zh_TW \
-		zh_TW.UTF-8 zh_CN zh_CN.UTF-8
-MOFILES =	af.mo ca.mo cs.mo de.mo en_GB.mo es.mo fr.mo ga.mo it.mo ja.mo \
-		ko.mo no.mo pl.mo ru.mo sk.mo sv.mo uk.mo vi.mo \
-		zh_TW.mo zh_TW.UTF-8.mo zh_CN.mo zh_CN.UTF-8.mo
+LANGUAGES = \
+		af \
+		ca \
+		cs \
+		de \
+		en_GB \
+		es \
+		fr \
+		ga \
+		it \
+		ja \
+		ko \
+		no \
+		pl \
+		ru \
+		sk \
+		sv \
+		uk \
+		vi \
+		zh_CN \
+		zh_CN.UTF-8 \
+		zh_TW \
+		zh_TW.UTF-8 \
+
+MOFILES = \
+		af.mo \
+		ca.mo \
+		cs.mo \
+		de.mo \
+		en_GB.mo \
+		es.mo \
+		fr.mo \
+		ga.mo \
+		it.mo \
+		ja.mo \
+		ko.mo \
+		no.mo \
+		pl.mo \
+		ru.mo \
+		sk.mo \
+		sv.mo \
+		uk.mo \
+		vi.mo \
+		zh_CN.UTF-8.mo \
+		zh_CN.mo \
+		zh_TW.UTF-8.mo \
+		zh_TW.mo \
 
 PACKAGE = vim
 SHELL = /bin/sh
@@ -55,8 +97,14 @@ uninstall:
 	  rm -f $(LOCALEDIR)/$$lang/LC_MESSAGES/$(PACKAGE).mo; \
 	done
 
-converted: ja.sjis.mo cs.cp1250.mo pl.cp1250.mo sk.cp1250.mo zh_CN.cp936.mo \
-		ru.cp1251.mo uk.cp1251.mo
+converted: \
+		cs.cp1250.mo \
+		ja.sjis.mo \
+		pl.cp1250.mo \
+		ru.cp1251.mo \
+		sk.cp1250.mo \
+		uk.cp1251.mo \
+		zh_CN.cp936.mo \
 
 # Convert ja.po to create ja.sjis.po.  Requires doubling backslashes in the
 # second byte.  Don't depend on sjiscorr, it should only be compiled when

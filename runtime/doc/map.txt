@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.0aa.  Last change: 2005 Jun 03
+*map.txt*       For Vim version 7.0aa.  Last change: 2005 Jul 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -974,7 +974,7 @@ the 'path' option: >
     :com -nargs=1 -bang -complete=customlist,EditFileComplete
 			\ EditFile edit<bang> <args>
     :fun EditFileComplete(A,L,P)
-    :    return split(globpath(&path, a:ArgLead))
+    :    return split(globpath(&path, a:ArgLead), "\n")
     :endfun
 <
 Range handling						*E177* *E178*

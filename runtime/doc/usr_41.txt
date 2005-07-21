@@ -692,6 +692,7 @@ Buffers, windows and the argument list:
 	winnr()			get the window number for the current window
 	bufwinnr()		get the window number of a specific buffer
 	winbufnr()		get the buffer number of a specific window
+	getbufline()		get a list of lines from the specified buffer
 	getbufvar()		get a variable value from a specific buffer
 	setbufvar()		set a variable in a specific buffer
 	getwinvar()		get a variable value from a specific window

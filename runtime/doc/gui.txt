@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 7.0aa.  Last change: 2005 Jul 07
+*gui.txt*       For Vim version 7.0aa.  Last change: 2005 Jul 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -736,9 +736,9 @@ from the main menu bar.  You must then use the |:popup| or |:tearoff| command
 to display it.
 
 							*popup-menu*
-In the Win32, KDE, GTK+, Motif, Athena and Photon GUI, you can define the special
-menu "PopUp".  This is the menu that is displayed when the right mouse button
-is pressed, if 'mousemodel' is set to popup or popup_setpos.
+In the Win32, KDE, GTK+, Motif, Athena and Photon GUI, you can define the
+special menu "PopUp".  This is the menu that is displayed when the right mouse
+button is pressed, if 'mousemodel' is set to popup or popup_setpos.
 
 
 5.3 Showing What Menus Are Mapped To			*showing-menus*

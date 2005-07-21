@@ -4341,6 +4341,7 @@ repl_cmdline(eap, src, srclen, repl, cmdlinep)
      */
     i = (int)(src - *cmdlinep);	/* length of part before match */
     mch_memmove(new_cmdline, *cmdlinep, (size_t)i);
+
     mch_memmove(new_cmdline + i, repl, (size_t)len);
     i += len;				/* remember the end of the string */
     STRCPY(new_cmdline + i, src + srclen);

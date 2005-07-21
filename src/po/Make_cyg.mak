@@ -12,14 +12,65 @@ ifndef VIMRUNTIME
 VIMRUNTIME = ../../runtime
 endif
 
-LANGUAGES =	af ca cs de en_GB es fr ga it ja ko no pl ru sk sv uk vi zh_TW \
-		cs.cp1250 pl.cp1250 ru.cp1251 sk.cp1250 uk.cp1251 \
-		zh_TW.UTF-8 zh_CN zh_CN.cp936 zh_CN.UTF-8 ja.sjis
-MOFILES =	af.mo ca.mo cs.mo de.mo en_GB.mo es.mo fr.mo ga.mo it.mo ja.mo \
-		ko.mo no.mo pl.mo ru.mo sk.mo sv.mo uk.mo vi.mo \
-		cs.cp1250.mo pl.cp1250.mo ru.cp1251.mo sk.cp1250.mo uk.cp1251.mo \
-		zh_TW.mo zh_TW.UTF-8.mo zh_CN.mo zh_CN.cp936.mo zh_CN.UTF-8.mo \
-		ja.sjis.mo
+LANGUAGES =	af \
+		ca \
+		cs \
+		cs.cp1250 \
+		de \
+		en_GB \
+		es \
+		fr \
+		ga \
+		it \
+		ja \
+		ja.sjis \
+		ko \
+		no \
+		pl \
+		pl.cp1250 \
+		ru \
+		ru.cp1251 \
+		sk \
+		sk.cp1250 \
+		sv \
+		uk \
+		uk.cp1251 \
+		vi \
+		zh_CN \
+		zh_CN.UTF-8 \
+		zh_CN.cp936 \
+		zh_TW \
+		zh_TW.UTF-8 \
+
+MOFILES =	af.mo \
+		ca.mo \
+		cs.cp1250.mo \
+		cs.mo \
+		de.mo \
+		en_GB.mo \
+		es.mo \
+		fr.mo \
+		ga.mo \
+		it.mo \
+		ja.mo \
+		ja.sjis.mo \
+		ko.mo \
+		no.mo \
+		pl.cp1250.mo \
+		pl.mo \
+		ru.cp1251.mo \
+		ru.mo \
+		sk.cp1250.mo \
+		sk.mo \
+		sv.mo \
+		uk.cp1251.mo \
+		uk.mo \
+		vi.mo \
+		zh_CN.UTF-8.mo \
+		zh_CN.cp936.mo \
+		zh_CN.mo \
+		zh_TW.UTF-8.mo \
+		zh_TW.mo \
 
 PACKAGE = vim
 

@@ -469,7 +469,7 @@ GUI_OBJ = \
 	$(OUTDIR)\gui_w32.obj \
 	$(OUTDIR)\os_w32exe.obj
 GUI_LIB = \
-	oldnames.lib kernel32.lib gdi32.lib $(IME_LIB) \
+	oldnames.lib kernel32.lib gdi32.lib version.lib $(IME_LIB) \
 	winspool.lib comctl32.lib advapi32.lib shell32.lib \
 	/machine:$(CPU) /nodefaultlib
 !else

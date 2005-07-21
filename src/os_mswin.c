@@ -473,13 +473,12 @@ mch_isFullName(char_u *fname)
 slash_adjust(p)
     char_u  *p;
 {
-    if (p != NULL)
-	while (*p)
-	{
-	    if (*p == psepcN)
-		*p = psepc;
-	    mb_ptr_adv(p);
-	}
+    while (*p)
+    {
+	if (*p == psepcN)
+	    *p = psepc;
+	mb_ptr_adv(p);
+    }
 }
 
 
