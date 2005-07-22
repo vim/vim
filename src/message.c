@@ -3349,6 +3349,9 @@ do_browse(flags, title, dflt, ext, initdir, filter, buf)
  * Length modifiers 'h' (short int) and 'l' (long int) are supported.
  * 'll' (long long int) is not supported.
  *
+ * The locale is not used, the string is used as a byte string.  This is only
+ * relevant for double-byte encodings where the second byte may be '%'.
+ *
  * It is permitted for str_m to be zero, and it is permitted to specify NULL
  * pointer for resulting string argument if str_m is zero (as per ISO C99).
  *
@@ -3417,6 +3420,7 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 	    char    *q = strchr(p + 1, '%');
 	    size_t  n = (q == NULL) ? STRLEN(p) : (q - p);
 
+	    /* Copy up to the next '%' or NUL without any changes. */
 	    if (str_l < str_m)
 	    {
 		size_t avail = str_m - str_l;
@@ -4014,13 +4018,13 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 
     if (str_m > 0)
     {
-	/* make sure the string is null-terminated even at the expense of
+	/* make sure the string is nul-terminated even at the expense of
 	 * overwriting the last character (shouldn't happen, but just in case)
 	 * */
 	str[str_l <= str_m - 1 ? str_l : str_m - 1] = '\0';
     }
 
-    /* Return the number of characters formatted (excluding trailing null
+    /* Return the number of characters formatted (excluding trailing nul
      * character), that is, the number of characters that would have been
      * written to the buffer if it were large enough. */
     return (int)str_l;
