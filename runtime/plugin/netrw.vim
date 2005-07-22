@@ -1839,12 +1839,8 @@ fun! <SID>NetMakeDir(usrhost)
 "    call Dret("NetMakeDir : file<".newdirname."> exists previously")
     return
    endif
-   let netrw_origdir= s:NetGetcwd(1)
-   exe 'cd '.b:netrw_curdir
-"   call Decho("netrw_origdir<".netrw_origdir."> b:netrw_curdir<".b:netrw_curdir.">")
-"   call Decho("exe silent! !".g:netrw_local_mkdir.' "'.newdirname.'"')
-   exe "silent! !".g:netrw_local_mkdir.' "'.newdirname.'"'
-   if g:netrw_keepdir | exe 'keepjumps cd '.netrw_origdir | endif
+"   call Decho("exe silent! !".g:netrw_local_mkdir.' "'.fullnewdir.'"')
+   exe "silent! !".g:netrw_local_mkdir.' "'.fullnewdir.'"'
 
    if v:shell_error == 0
     " refresh listing
@@ -2008,11 +2004,21 @@ fun! <SID>LocalBrowse(dirname)
 
   " record and change current directory
   let netrw_origdir= s:NetGetcwd(1)
+  try
+    cd -
+    let netrw_altdir= s:NetGetcwd(1)
+    cd -
+  catch
+    let netrw_altdir= ''
+  endtry
   exe 'cd '.escape(substitute(a:dirname,'\\','/','ge'),s:netrw_cd_escape)
 "  call Decho("dirname<".a:dirname."> buf#".bufnr("%")." winnr=".winnr())
 
   " make this buffer modifiable
   setlocal ma
+
+  " disable 'autochdir', it breaks things
+  set noautochdir
 
   " ---------------------------
   "  Perform Directory Listing:
@@ -2044,7 +2050,12 @@ fun! <SID>LocalBrowse(dirname)
    if a:dirname != "." && line("$") >= 5 && exists("b:netrw_curdir")
     if b:netrw_curdir == dirname
 "     call Dret("LocalBrowse : buffer already exists with info, #".dirnamenr)
-     if g:netrw_keepdir | exe 'keepjumps cd '.netrw_origdir | endif
+     if g:netrw_keepdir
+       if netrw_altdir != ''
+	 exe 'keepjumps cd '.netrw_altdir
+       endif
+       exe 'keepjumps cd '.netrw_origdir
+     endif
      return
     endif
    endif
@@ -2056,7 +2067,6 @@ fun! <SID>LocalBrowse(dirname)
    if curdir != dirname
     " set standard browser options on buffer
     setlocal bt=nofile bh=hide nobl noswf
-    exe "setlocal ts=".g:netrw_maxfilenamelen
     exe 'silent file '.escape(dirname,s:netrw_cd_escape)
 "    call Decho("errmsg1<".v:errmsg.">")
 "    call Decho("renamed buffer to<".escape(dirname,s:netrw_cd_escape).">")
@@ -2067,12 +2077,13 @@ fun! <SID>LocalBrowse(dirname)
    silent! enew!
    " set standard browser options on buffer
    setlocal bt=nofile bh=hide nobl noswf nonu
-   exe "setlocal ts=".g:netrw_maxfilenamelen
    exe 'silent file '.substitute(escape(dirname,s:netrw_cd_escape),'[\/]$','','e')
 "   call Decho("errmsg2<".v:errmsg.">")
 "   call Decho("renamed buffer to<".substitute(escape(dirname,s:netrw_cd_escape),'[\/]$','','e').">")
 "   call Decho("yielding actual bufname<".bufname("%").">")
   endif
+  exe "setlocal ts=".g:netrw_maxfilenamelen
+
   if bufname("#") == "" && bufnr("#") != -1
    " the file command produces a lot of [No File] buffers
 "   call Decho("wiping out nofile buffer#".bufnr("#"))
@@ -2182,7 +2193,12 @@ fun! <SID>LocalBrowse(dirname)
   exe s:netrw_bannercnt
 
   setlocal noma nomod nonu
-  if g:netrw_keepdir | exe 'keepjumps cd '.netrw_origdir | endif
+  if g:netrw_keepdir
+    if netrw_altdir != ''
+      exe 'keepjumps cd '.netrw_altdir
+    endif
+    exe 'keepjumps cd '.netrw_origdir
+  endif
 
 "  call Dret("LocalBrowse : file<".expand("%:p")."> bufname<".bufname("%").">")
 endfun
@@ -2330,8 +2346,6 @@ fun! <SID>LocalBrowseRm(path) range
   " preparation for removing multiple files/directories
   let ctr           = a:firstline
   let ret           = 0
-  let netrw_origdir = s:NetGetcwd(1)
-  exe 'cd '.b:netrw_curdir
   let all= 0
 
   " remove multiple files and directories
@@ -2423,7 +2437,6 @@ fun! <SID>LocalBrowseRm(path) range
 
   " refresh the directory
   let curline= line(".")
-  if g:netrw_keepdir | exe 'keepjumps cd '.netrw_origdir | endif
 "  call Decho("refresh the directory")
   call <SID>LocalBrowse(<SID>LocalBrowseChgDir(b:netrw_curdir,'./'))
   exe curline

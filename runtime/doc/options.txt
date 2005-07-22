@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Jul 21
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Jul 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -657,12 +657,14 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not in Vi}
 			{only available when compiled with the
 			|+netbeans_intg| or |+sun_workshop| feature}
-	When on, Vim will change its value for the current working directory
-	whenever you open a file, switch buffers, delete a buffer or
-	open/close a window.  It will change to the directory containing the
-	file which was opened or selected.  This option is provided for
-	backward compatibility with the Vim released with Sun ONE Studio 4
-	Enterprise Edition.
+	When on, Vim will change the current working directory whenever you
+	open a file, switch buffers, delete a buffer or open/close a window.
+	It will change to the directory containing the file which was opened
+	or selected.
+	This option is provided for backward compatibility with the Vim
+	released with Sun ONE Studio 4 Enterprise Edition.
+	Note: When this option is on some plugins may not work.  The directory
+	browser sets if off.
 
 				*'arabic'* *'arab'* *'noarabic'* *'noarab'*
 'arabic' 'arab'		boolean (default off)

@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 21
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -4091,7 +4091,8 @@ system({expr} [, {input}])				*system()* *E677*
 
 taglist({expr})							*taglist()*
 		Returns a list of tags matching the regular expression {expr}.
-		Each list item is a dictionary with the following entries:
+		Each list item is a dictionary with at least the following
+		entries:
 			name		name of the tag.
 			filename	name of the file where the tag is
 					defined.
