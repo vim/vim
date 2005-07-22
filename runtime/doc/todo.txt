@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 21
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,20 +30,17 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Win32: Crash when pasting Simplified Chinese in utf-8. (rainux, 2005 June 20)
+Make a script to check message translations not to change the % items in
+strings.
 
-Netrw plugin problems:
+Fixed Netrw plugin problems:
 - when 'autochdir' is set the current dir is wrong (Salman Halim)
 - "cd -" doesn't work. (Suresh Govindachar)
+Send to Charles Campbell
 
 Mac unicode patch (Da Woon Jung):
 - selecting proportional font breaks display
 - UTF-8 text causes display problems.  Font replacement causes this.
-
-Should we always set LC_CTYPE to "C", so that all library functions work on
-bytes?  Avoids problems with sprintf() on MS-Windows. (Yongwei)
-Problem noticed: tooltips are messed up.  Depends on the moment 'encoding' is
-changed.
 
 Include new PHP indent script from John Wellesz?
     http://www.vim.org/scripts/download_script.php?src_id=4330
@@ -67,6 +64,8 @@ Awaiting response:
     the screen.
 
 mblen(NULL, 0) also in Vim 6.3?
+
+Win32: Crash when pasting Simplified Chinese in utf-8. (rainux, 2005 June 20)
 
 
 PLANNED FOR VERSION 7.0:
@@ -197,6 +196,10 @@ PLANNED FOR VERSION 7.0:
     Mattias Flodin (2004 Jul 30)
 -   In a :s command multi-byte characters should also be upper/lower cased
     with \u, \U, etc.
+8   Add a command to jump to a certain kind of tag.  Allow the user to specify
+    values for the optional fields.  E.g., ":tag size type=m".
+    Also allow specifying the file and command, so that the result of
+    taglist() can be used.
 
 Adjust src/main.aap for installing manpages like in Makefile.
 
@@ -1602,8 +1605,7 @@ Built-in script language:
        .vim file.  Problem: distribution.
     3. Use a cache directory for each user.  How to recognize which cached
        file belongs to a sourced script?
-7   Add "n" flag to search() function, just like searchpair(). (Alexey
-    Marinichev)
+7   Add "m" flag to search() and searchpair() function to set the '' mark.
 7   Add argument to winwidth() to subtract the space taken by 'foldcolumn',
     signs and/or 'number'.
 8   Add functions:
@@ -1635,7 +1637,6 @@ Built-in script language:
 	inputrl()		like input() but right-to-left
 	virtualmode()		add argument to obtain whether "$" was used in
 				Visual block mode.
-	tagtype(tag)		get type of tag (also checks if it exists)
 	getacp()		Win32: get codepage (Glenn Maynard)
 	getbufline()		get line from any buffer
 	deletebufline()		delete line in any buffer
@@ -1907,8 +1908,6 @@ Shared libraries:
 
 
 Tags:
-8   Add a command to jump to a certain kind of tag.  Allow the user to specify
-    values for the optional fields.  E.g., ":tag size type=m".
 8   Add a function that returns the line in the tags file for a matching tag.
     Can be used to extract more info (class name, inheritance, etc.) (Rico
     Hendriks)
