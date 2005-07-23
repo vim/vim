@@ -29,6 +29,15 @@
 # include <limits.h>
 #endif
 
+/* Struct for various parameters passed between main() and other functions. */
+typedef struct
+{
+    int		serverArg;		/* TRUE when argument for a server */
+    char_u	*serverName_arg;	/* cmdline arg for server name */
+    int		evim_mode;		/* started as "evim" */
+    char_u	*use_vimrc;		/* vimrc from -u option */
+} mparm_T;
+
 #if defined(UNIX) || defined(VMS)
 static int file_owned __ARGS((char *fname));
 #endif
@@ -36,6 +45,9 @@ static void mainerr __ARGS((int, char_u *));
 static void main_msg __ARGS((char *s));
 static void usage __ARGS((void));
 static int get_number_arg __ARGS((char_u *p, int *idx, int def));
+static void early_arg_scan __ARGS((int argc, char **argv, mparm_T *parmp));
+static void exe_pre_commands __ARGS((char_u **cmds, int cnt));
+static void source_startup_scripts __ARGS((mparm_T *parmp));
 static void main_start_gui __ARGS((void));
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
 static void check_swap_exists_action __ARGS((void));
@@ -49,8 +61,6 @@ static char_u *serverMakeName __ARGS((char_u *arg, char *cmd));
 #ifdef STARTUPTIME
 static FILE *time_fd = NULL;
 #endif
-
-#define FEAT_PRECOMMANDS
 
 /*
  * Different types of error messages.
@@ -95,7 +105,6 @@ main
     char_u	*term = NULL;		/* specified terminal name */
     char_u	*fname = NULL;		/* file name from command line */
     char_u	*tagname = NULL;	/* tag from -t option */
-    char_u	*use_vimrc = NULL;	/* vimrc from -u option */
 #ifdef FEAT_QUICKFIX
     char_u	*use_ef = NULL;		/* 'errorfile' from -q option */
 #endif
@@ -105,10 +114,8 @@ main
     int		n_commands = 0;		/* no. of commands from + or -c */
     char_u	*commands[MAX_ARG_CMDS]; /* commands from + or -c option */
     char_u	cmds_tofree[MAX_ARG_CMDS];  /* commands that need free() */
-#ifdef FEAT_PRECOMMANDS
-    int		p_commands = 0;		/* no. of commands from --cmd */
+    int		n_pre_commands = 0;	/* no. of commands from --cmd */
     char_u	*pre_commands[MAX_ARG_CMDS]; /* commands from --cmd option */
-#endif
     int		no_swap_file = FALSE;   /* "-n" option used */
     int		c;
     int		i;
@@ -135,7 +142,6 @@ main
 #ifdef FEAT_DIFF
     int		diff_mode = FALSE;	/* start with 'diff' set */
 #endif
-    int		evim_mode = FALSE;	/* started as "evim" */
     int		stdout_isatty;		/* is stdout a terminal? */
     int		input_isatty;		/* is active input a terminal? */
 #ifdef MSWIN
@@ -144,19 +150,21 @@ main
 #ifdef FEAT_CLIENTSERVER
     char_u	*serverStr = NULL;	/* remote server command */
     char_u	*serverStrEnc = NULL;	/* encoding of serverStr */
-    char_u	*serverName_arg = NULL;	/* cmdline arg for server name */
-    int		serverArg = FALSE;	/* TRUE when argument for a server */
     char_u	*servername = NULL;	/* allocated name for our server */
 #endif
 #if (!defined(UNIX) && !defined(__EMX__)) || defined(ARCHIE)
     int		literal = FALSE;	/* don't expand file names */
 #endif
+    mparm_T	params;			/* various parameters passed between
+					 * main() and other functions. */
 
     /*
      * Do any system-specific initialisations.  These can NOT use IObuff or
      * NameBuff.  Thus emsg2() cannot be called!
      */
     mch_early_init();
+
+    vim_memset(&params, 0, sizeof(params));
 
 #ifdef FEAT_TCL
     vim_tcl_init(argv[0]);
@@ -198,7 +206,7 @@ main
     init_normal_cmds();
 
 #if defined(HAVE_DATE_TIME) && defined(VMS) && defined(VAXC)
-    make_version();
+    make_version();	/* Construct the long version string. */
 #endif
 
     /*
@@ -255,75 +263,13 @@ main
     gui.dofork = TRUE;		    /* default is to use fork() */
 #endif
 
-#if defined(FEAT_XCLIPBOARD) || defined(FEAT_CLIENTSERVER)
     /*
-     * Get the name of the display, before gui_prepare() removes it from
-     * argv[].  Used for the xterm-clipboard display.
-     *
-     * Also find the --server... arguments
+     * Do a first scan of the arguments in "argv[]":
+     *   -display
+     *   --server...
+     *   --socketid
      */
-    for (i = 1; i < argc; i++)
-    {
-	if (STRCMP(argv[i], "--") == 0)
-	    break;
-# ifdef FEAT_XCLIPBOARD
-	else if (STRICMP(argv[i], "-display") == 0
-#  if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_KDE)
-		|| STRICMP(argv[i], "--display") == 0
-#  endif
-		)
-	{
-	    if (i == argc - 1)
-		mainerr_arg_missing((char_u *)argv[i]);
-	    xterm_display = argv[++i];
-	}
-# endif
-# ifdef FEAT_CLIENTSERVER
-	else if (STRICMP(argv[i], "--servername") == 0)
-	{
-	    if (i == argc - 1)
-		mainerr_arg_missing((char_u *)argv[i]);
-	    serverName_arg = (char_u *)argv[++i];
-	}
-	else if (STRICMP(argv[i], "--serverlist") == 0
-		 || STRICMP(argv[i], "--remote-send") == 0
-		 || STRICMP(argv[i], "--remote-expr") == 0
-		 || STRICMP(argv[i], "--remote") == 0
-		 || STRICMP(argv[i], "--remote-silent") == 0)
-	    serverArg = TRUE;
-	else if (STRICMP(argv[i], "--remote-wait") == 0
-		|| STRICMP(argv[i], "--remote-wait-silent") == 0)
-	{
-	    serverArg = TRUE;
-#ifdef FEAT_GUI
-	    /* don't fork() when starting the GUI to edit the files ourself */
-	    gui.dofork = FALSE;
-#endif
-	}
-# endif
-# ifdef FEAT_GUI_GTK
-	else if (STRICMP(argv[i], "--socketid") == 0)
-	{
-	    unsigned int    socket_id;
-	    int		    count;
-
-	    if (i == argc - 1)
-		mainerr_arg_missing((char_u *)argv[i]);
-	    if (STRNICMP(argv[i+1], "0x", 2) == 0)
-		count = sscanf(&(argv[i + 1][2]), "%x", &socket_id);
-	    else
-		count = sscanf(argv[i+1], "%u", &socket_id);
-	    if (count != 1)
-		mainerr(ME_INVALID_ARG, (char_u *)argv[i]);
-	    else
-		gtk_socket_id = socket_id;
-	    i++;
-	}
-	else if (STRICMP(argv[i], "--echo-wid") == 0)
-	    echo_wid_arg = TRUE;
-# endif
-    }
-#endif
+    early_arg_scan(argc, argv, &params);
 
 #ifdef FEAT_SUN_WORKSHOP
     findYourself(argv[0]);
@@ -376,7 +322,7 @@ main
     /*
      * Do the client-server stuff, unless "--servername ''" was used.
      */
-    if (serverName_arg == NULL || *serverName_arg != NUL)
+    if (params.serverName_arg == NULL || *params.serverName_arg != NUL)
     {
 # ifdef WIN32
 	/* Initialise the client/server messaging infrastructure. */
@@ -388,9 +334,9 @@ main
 	 * exit Vim when it was successful.  Otherwise it's executed further
 	 * on.  Remember the encoding used here in "serverStrEnc".
 	 */
-	if (serverArg)
+	if (params.serverArg)
 	{
-	    cmdsrv_main(&argc, argv, serverName_arg, &serverStr);
+	    cmdsrv_main(&argc, argv, params.serverName_arg, &serverStr);
 # ifdef FEAT_MBYTE
 	    serverStrEnc = vim_strsave(p_enc);
 # endif
@@ -399,7 +345,7 @@ main
 	/* If we're still running, get the name to register ourselves.
 	 * On Win32 can register right now, for X11 need to setup the
 	 * clipboard first, it's further down. */
-	servername = serverMakeName(serverName_arg, argv[0]);
+	servername = serverMakeName(params.serverName_arg, argv[0]);
 # ifdef WIN32
 	if (servername != NULL)
 	{
@@ -453,7 +399,7 @@ main
 #ifdef FEAT_GUI
 	gui.starting = TRUE;
 #endif
-	evim_mode = TRUE;
+	params.evim_mode = TRUE;
 	++initstr;
     }
 
@@ -588,13 +534,11 @@ main
 		}
 		else if (STRNICMP(argv[0] + argv_idx, "noplugin", 8) == 0)
 		    p_lpl = FALSE;
-#ifdef FEAT_PRECOMMANDS
 		else if (STRNICMP(argv[0] + argv_idx, "cmd", 3) == 0)
 		{
 		    want_argument = TRUE;
 		    argv_idx += 3;
 		}
-#endif
 #ifdef FEAT_CLIENTSERVER
 		else if (STRNICMP(argv[0] + argv_idx, "serverlist", 10) == 0)
 		    ; /* already processed -- no arg */
@@ -724,7 +668,7 @@ main
 #ifdef FEAT_GUI
 		gui.starting = TRUE;	/* start GUI a bit later */
 #endif
-		evim_mode = TRUE;
+		params.evim_mode = TRUE;
 		break;
 
 	    case 'N':		/* "-N"  Nocompatible */
@@ -940,13 +884,11 @@ main
 			commands[n_commands++] = (char_u *)argv[0];
 		    break;
 
-#ifdef FEAT_PRECOMMANDS
 		case '-':	/* "--cmd {command}" execute command */
-		    if (p_commands >= MAX_ARG_CMDS)
+		    if (n_pre_commands >= MAX_ARG_CMDS)
 			mainerr(ME_EXTRA_CMD, NULL);
-		    pre_commands[p_commands++] = (char_u *)argv[0];
+		    pre_commands[n_pre_commands++] = (char_u *)argv[0];
 		    break;
-#endif
 
 	    /*	case 'd':   -d {device} is handled in mch_check_win() for the
 	     *		    Amiga */
@@ -1002,7 +944,7 @@ scripterror:
 		    break;
 
 		case 'u':	/* "-u {vimrc}" vim inits file */
-		    use_vimrc = (char_u *)argv[0];
+		    params.use_vimrc = (char_u *)argv[0];
 		    break;
 
 		case 'U':	/* "-U {gvimrc}" gvim inits file */
@@ -1151,7 +1093,7 @@ scripterror:
 
 	/* When running "evim" or "gvim -y" we need the menus, exit if we
 	 * don't have them. */
-	if (evim_mode)
+	if (params.evim_mode)
 	    mch_exit(1);
     }
 # endif
@@ -1365,176 +1307,17 @@ scripterror:
 
     init_highlight(TRUE, FALSE); /* set the default highlight groups */
     TIME_MSG("init highlight");
-#ifdef CURSOR_SHAPE
-    parse_shape_opt(SHAPE_CURSOR); /* set cursor shapes from 'guicursor' */
-#endif
-#ifdef FEAT_MOUSESHAPE
-    parse_shape_opt(SHAPE_MOUSE);  /* set mouse shapes from 'mouseshape' */
-#endif
-#ifdef FEAT_PRINTER
-    parse_list_options(p_popt, printer_opts, OPT_PRINT_NUM_OPTIONS);
-#endif
 
 #ifdef FEAT_EVAL
     /* Set the break level after the terminal is initialized. */
     debug_break_level = use_debug_break_level;
 #endif
 
-#ifdef FEAT_PRECOMMANDS
-    if (p_commands > 0)
-    {
-	curwin->w_cursor.lnum = 0; /* just in case.. */
-	sourcing_name = (char_u *)_("pre-vimrc command line");
-# ifdef FEAT_EVAL
-	current_SID = SID_CMDARG;
-# endif
-	for (i = 0; i < p_commands; ++i)
-	    do_cmdline_cmd(pre_commands[i]);
-	sourcing_name = NULL;
-# ifdef FEAT_EVAL
-	current_SID = 0;
-# endif
-    }
-#endif
+    /* Execute --cmd arguments. */
+    exe_pre_commands(pre_commands, n_pre_commands);
 
-    /*
-     * For "evim" source evim.vim first of all, so that the user can overrule
-     * any things he doesn't like.
-     */
-    if (evim_mode)
-    {
-	(void)do_source((char_u *)EVIM_FILE, FALSE, FALSE);
-	TIME_MSG("source evim file");
-    }
-
-    /*
-     * If -u option given, use only the initializations from that file and
-     * nothing else.
-     */
-    if (use_vimrc != NULL)
-    {
-	if (STRCMP(use_vimrc, "NONE") == 0 || STRCMP(use_vimrc, "NORC") == 0)
-	{
-#ifdef FEAT_GUI
-	    if (use_gvimrc == NULL)	    /* don't load gvimrc either */
-		use_gvimrc = use_vimrc;
-#endif
-	    if (use_vimrc[2] == 'N')
-		p_lpl = FALSE;		    /* don't load plugins either */
-	}
-	else
-	{
-	    if (do_source(use_vimrc, FALSE, FALSE) != OK)
-		EMSG2(_("E282: Cannot read from \"%s\""), use_vimrc);
-	}
-    }
-    else if (!silent_mode)
-    {
-#ifdef AMIGA
-	struct Process	*proc = (struct Process *)FindTask(0L);
-	APTR		save_winptr = proc->pr_WindowPtr;
-
-	/* Avoid a requester here for a volume that doesn't exist. */
-	proc->pr_WindowPtr = (APTR)-1L;
-#endif
-
-	/*
-	 * Get system wide defaults, if the file name is defined.
-	 */
-#ifdef SYS_VIMRC_FILE
-	(void)do_source((char_u *)SYS_VIMRC_FILE, FALSE, FALSE);
-#endif
-
-	/*
-	 * Try to read initialization commands from the following places:
-	 * - environment variable VIMINIT
-	 * - user vimrc file (s:.vimrc for Amiga, ~/.vimrc otherwise)
-	 * - second user vimrc file ($VIM/.vimrc for Dos)
-	 * - environment variable EXINIT
-	 * - user exrc file (s:.exrc for Amiga, ~/.exrc otherwise)
-	 * - second user exrc file ($VIM/.exrc for Dos)
-	 * The first that exists is used, the rest is ignored.
-	 */
-	if (process_env((char_u *)"VIMINIT", TRUE) != OK)
-	{
-	    if (do_source((char_u *)USR_VIMRC_FILE, TRUE, TRUE) == FAIL
-#ifdef USR_VIMRC_FILE2
-		&& do_source((char_u *)USR_VIMRC_FILE2, TRUE, TRUE) == FAIL
-#endif
-#ifdef USR_VIMRC_FILE3
-		&& do_source((char_u *)USR_VIMRC_FILE3, TRUE, TRUE) == FAIL
-#endif
-		&& process_env((char_u *)"EXINIT", FALSE) == FAIL
-		&& do_source((char_u *)USR_EXRC_FILE, FALSE, FALSE) == FAIL)
-	    {
-#ifdef USR_EXRC_FILE2
-		(void)do_source((char_u *)USR_EXRC_FILE2, FALSE, FALSE);
-#endif
-	    }
-	}
-
-	/*
-	 * Read initialization commands from ".vimrc" or ".exrc" in current
-	 * directory.  This is only done if the 'exrc' option is set.
-	 * Because of security reasons we disallow shell and write commands
-	 * now, except for unix if the file is owned by the user or 'secure'
-	 * option has been reset in environment of global ".exrc" or ".vimrc".
-	 * Only do this if VIMRC_FILE is not the same as USR_VIMRC_FILE or
-	 * SYS_VIMRC_FILE.
-	 */
-	if (p_exrc)
-	{
-#if defined(UNIX) || defined(VMS)
-	    /* If ".vimrc" file is not owned by user, set 'secure' mode. */
-	    if (!file_owned(VIMRC_FILE))
-#endif
-		secure = p_secure;
-
-	    i = FAIL;
-	    if (fullpathcmp((char_u *)USR_VIMRC_FILE,
-				      (char_u *)VIMRC_FILE, FALSE) != FPC_SAME
-#ifdef USR_VIMRC_FILE2
-		    && fullpathcmp((char_u *)USR_VIMRC_FILE2,
-				      (char_u *)VIMRC_FILE, FALSE) != FPC_SAME
-#endif
-#ifdef USR_VIMRC_FILE3
-		    && fullpathcmp((char_u *)USR_VIMRC_FILE3,
-				      (char_u *)VIMRC_FILE, FALSE) != FPC_SAME
-#endif
-#ifdef SYS_VIMRC_FILE
-		    && fullpathcmp((char_u *)SYS_VIMRC_FILE,
-				      (char_u *)VIMRC_FILE, FALSE) != FPC_SAME
-#endif
-				)
-		i = do_source((char_u *)VIMRC_FILE, TRUE, TRUE);
-
-	    if (i == FAIL)
-	    {
-#if defined(UNIX) || defined(VMS)
-		/* if ".exrc" is not owned by user set 'secure' mode */
-		if (!file_owned(EXRC_FILE))
-		    secure = p_secure;
-		else
-		    secure = 0;
-#endif
-		if (	   fullpathcmp((char_u *)USR_EXRC_FILE,
-				      (char_u *)EXRC_FILE, FALSE) != FPC_SAME
-#ifdef USR_EXRC_FILE2
-			&& fullpathcmp((char_u *)USR_EXRC_FILE2,
-				      (char_u *)EXRC_FILE, FALSE) != FPC_SAME
-#endif
-				)
-		    (void)do_source((char_u *)EXRC_FILE, FALSE, FALSE);
-	    }
-	}
-	if (secure == 2)
-	    need_wait_return = TRUE;
-	secure = 0;
-#ifdef AMIGA
-	proc->pr_WindowPtr = save_winptr;
-#endif
-    }
-    TIME_MSG("sourcing vimrc file(s)");
+    /* Source startup scripts. */
+    source_startup_scripts(&params);
 
 #ifdef FEAT_EVAL
     /*
@@ -1599,7 +1382,7 @@ scripterror:
 
 	/* When running "evim" or "gvim -y" we need the menus, exit if we
 	 * don't have them. */
-	if (!gui.in_use && evim_mode)
+	if (!gui.in_use && params.evim_mode)
 	    mch_exit(1);
     }
 #endif
@@ -1690,7 +1473,7 @@ scripterror:
 # ifdef FEAT_GUI
 		gui.in_use ||
 # endif
-		serverName_arg != NULL))
+		params.serverName_arg != NULL))
     {
 	(void)serverRegisterName(X_DISPLAY, servername);
 	vim_free(servername);
@@ -1778,8 +1561,7 @@ scripterror:
 #endif
     if (scroll_region)
 	scroll_region_reset();		/* In case Rows changed */
-
-    scroll_start();
+    scroll_start();	/* may scroll the screen to the right position */
 
     /*
      * Don't clear the screen when starting in Ex mode, unless using the GUI.
@@ -2439,6 +2221,262 @@ get_number_arg(p, idx, def)
 }
 
 /*
+ * Get the name of the display, before gui_prepare() removes it from
+ * argv[].  Used for the xterm-clipboard display.
+ *
+ * Also find the --server... arguments and --socketid
+ */
+/*ARGSUSED*/
+    static void
+early_arg_scan(argc, argv, parmp)
+    int		argc;
+    char	**argv;
+    mparm_T	*parmp;
+{
+#if defined(FEAT_XCLIPBOARD) || defined(FEAT_CLIENTSERVER)
+    int		i;
+
+    for (i = 1; i < argc; i++)
+    {
+	if (STRCMP(argv[i], "--") == 0)
+	    break;
+# ifdef FEAT_XCLIPBOARD
+	else if (STRICMP(argv[i], "-display") == 0
+#  if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_KDE)
+		|| STRICMP(argv[i], "--display") == 0
+#  endif
+		)
+	{
+	    if (i == argc - 1)
+		mainerr_arg_missing((char_u *)argv[i]);
+	    xterm_display = argv[++i];
+	}
+# endif
+# ifdef FEAT_CLIENTSERVER
+	else if (STRICMP(argv[i], "--servername") == 0)
+	{
+	    if (i == argc - 1)
+		mainerr_arg_missing((char_u *)argv[i]);
+	    parmp->serverName_arg = (char_u *)argv[++i];
+	}
+	else if (STRICMP(argv[i], "--serverlist") == 0
+		|| STRICMP(argv[i], "--remote-send") == 0
+		|| STRICMP(argv[i], "--remote-expr") == 0
+		|| STRICMP(argv[i], "--remote") == 0
+		|| STRICMP(argv[i], "--remote-silent") == 0)
+	    parmp->serverArg = TRUE;
+	else if (STRICMP(argv[i], "--remote-wait") == 0
+		|| STRICMP(argv[i], "--remote-wait-silent") == 0)
+	{
+	    parmp->serverArg = TRUE;
+#ifdef FEAT_GUI
+	    /* don't fork() when starting the GUI to edit the files ourself */
+	    gui.dofork = FALSE;
+#endif
+	}
+# endif
+# ifdef FEAT_GUI_GTK
+	else if (STRICMP(argv[i], "--socketid") == 0)
+	{
+	    unsigned int    socket_id;
+	    int		    count;
+
+	    if (i == argc - 1)
+		mainerr_arg_missing((char_u *)argv[i]);
+	    if (STRNICMP(argv[i+1], "0x", 2) == 0)
+		count = sscanf(&(argv[i + 1][2]), "%x", &socket_id);
+	    else
+		count = sscanf(argv[i+1], "%u", &socket_id);
+	    if (count != 1)
+		mainerr(ME_INVALID_ARG, (char_u *)argv[i]);
+	    else
+		gtk_socket_id = socket_id;
+	    i++;
+	}
+	else if (STRICMP(argv[i], "--echo-wid") == 0)
+	    echo_wid_arg = TRUE;
+# endif
+    }
+#endif
+}
+
+/*
+ * Execute the commands from --cmd arguments "cmds[cnt]".
+ */
+    static void
+exe_pre_commands(cmds, cnt)
+    char_u	**cmds;
+    int		cnt;
+{
+    int		i;
+
+    if (cnt > 0)
+    {
+	curwin->w_cursor.lnum = 0; /* just in case.. */
+	sourcing_name = (char_u *)_("pre-vimrc command line");
+# ifdef FEAT_EVAL
+	current_SID = SID_CMDARG;
+# endif
+	for (i = 0; i < cnt; ++i)
+	    do_cmdline_cmd(cmds[i]);
+	sourcing_name = NULL;
+# ifdef FEAT_EVAL
+	current_SID = 0;
+# endif
+	TIME_MSG("--cmd commands");
+    }
+}
+
+/*
+ * Source startup scripts.
+ */
+    static void
+source_startup_scripts(parmp)
+    mparm_T	*parmp;
+{
+    int		i;
+
+    /*
+     * For "evim" source evim.vim first of all, so that the user can overrule
+     * any things he doesn't like.
+     */
+    if (parmp->evim_mode)
+    {
+	(void)do_source((char_u *)EVIM_FILE, FALSE, FALSE);
+	TIME_MSG("source evim file");
+    }
+
+    /*
+     * If -u option given, use only the initializations from that file and
+     * nothing else.
+     */
+    if (parmp->use_vimrc != NULL)
+    {
+	if (STRCMP(parmp->use_vimrc, "NONE") == 0 || STRCMP(parmp->use_vimrc, "NORC") == 0)
+	{
+#ifdef FEAT_GUI
+	    if (use_gvimrc == NULL)	    /* don't load gvimrc either */
+		use_gvimrc = parmp->use_vimrc;
+#endif
+	    if (parmp->use_vimrc[2] == 'N')
+		p_lpl = FALSE;		    /* don't load plugins either */
+	}
+	else
+	{
+	    if (do_source(parmp->use_vimrc, FALSE, FALSE) != OK)
+		EMSG2(_("E282: Cannot read from \"%s\""), parmp->use_vimrc);
+	}
+    }
+    else if (!silent_mode)
+    {
+#ifdef AMIGA
+	struct Process	*proc = (struct Process *)FindTask(0L);
+	APTR		save_winptr = proc->pr_WindowPtr;
+
+	/* Avoid a requester here for a volume that doesn't exist. */
+	proc->pr_WindowPtr = (APTR)-1L;
+#endif
+
+	/*
+	 * Get system wide defaults, if the file name is defined.
+	 */
+#ifdef SYS_VIMRC_FILE
+	(void)do_source((char_u *)SYS_VIMRC_FILE, FALSE, FALSE);
+#endif
+
+	/*
+	 * Try to read initialization commands from the following places:
+	 * - environment variable VIMINIT
+	 * - user vimrc file (s:.vimrc for Amiga, ~/.vimrc otherwise)
+	 * - second user vimrc file ($VIM/.vimrc for Dos)
+	 * - environment variable EXINIT
+	 * - user exrc file (s:.exrc for Amiga, ~/.exrc otherwise)
+	 * - second user exrc file ($VIM/.exrc for Dos)
+	 * The first that exists is used, the rest is ignored.
+	 */
+	if (process_env((char_u *)"VIMINIT", TRUE) != OK)
+	{
+	    if (do_source((char_u *)USR_VIMRC_FILE, TRUE, TRUE) == FAIL
+#ifdef USR_VIMRC_FILE2
+		&& do_source((char_u *)USR_VIMRC_FILE2, TRUE, TRUE) == FAIL
+#endif
+#ifdef USR_VIMRC_FILE3
+		&& do_source((char_u *)USR_VIMRC_FILE3, TRUE, TRUE) == FAIL
+#endif
+		&& process_env((char_u *)"EXINIT", FALSE) == FAIL
+		&& do_source((char_u *)USR_EXRC_FILE, FALSE, FALSE) == FAIL)
+	    {
+#ifdef USR_EXRC_FILE2
+		(void)do_source((char_u *)USR_EXRC_FILE2, FALSE, FALSE);
+#endif
+	    }
+	}
+
+	/*
+	 * Read initialization commands from ".vimrc" or ".exrc" in current
+	 * directory.  This is only done if the 'exrc' option is set.
+	 * Because of security reasons we disallow shell and write commands
+	 * now, except for unix if the file is owned by the user or 'secure'
+	 * option has been reset in environment of global ".exrc" or ".vimrc".
+	 * Only do this if VIMRC_FILE is not the same as USR_VIMRC_FILE or
+	 * SYS_VIMRC_FILE.
+	 */
+	if (p_exrc)
+	{
+#if defined(UNIX) || defined(VMS)
+	    /* If ".vimrc" file is not owned by user, set 'secure' mode. */
+	    if (!file_owned(VIMRC_FILE))
+#endif
+		secure = p_secure;
+
+	    i = FAIL;
+	    if (fullpathcmp((char_u *)USR_VIMRC_FILE,
+				      (char_u *)VIMRC_FILE, FALSE) != FPC_SAME
+#ifdef USR_VIMRC_FILE2
+		    && fullpathcmp((char_u *)USR_VIMRC_FILE2,
+				      (char_u *)VIMRC_FILE, FALSE) != FPC_SAME
+#endif
+#ifdef USR_VIMRC_FILE3
+		    && fullpathcmp((char_u *)USR_VIMRC_FILE3,
+				      (char_u *)VIMRC_FILE, FALSE) != FPC_SAME
+#endif
+#ifdef SYS_VIMRC_FILE
+		    && fullpathcmp((char_u *)SYS_VIMRC_FILE,
+				      (char_u *)VIMRC_FILE, FALSE) != FPC_SAME
+#endif
+				)
+		i = do_source((char_u *)VIMRC_FILE, TRUE, TRUE);
+
+	    if (i == FAIL)
+	    {
+#if defined(UNIX) || defined(VMS)
+		/* if ".exrc" is not owned by user set 'secure' mode */
+		if (!file_owned(EXRC_FILE))
+		    secure = p_secure;
+		else
+		    secure = 0;
+#endif
+		if (	   fullpathcmp((char_u *)USR_EXRC_FILE,
+				      (char_u *)EXRC_FILE, FALSE) != FPC_SAME
+#ifdef USR_EXRC_FILE2
+			&& fullpathcmp((char_u *)USR_EXRC_FILE2,
+				      (char_u *)EXRC_FILE, FALSE) != FPC_SAME
+#endif
+				)
+		    (void)do_source((char_u *)EXRC_FILE, FALSE, FALSE);
+	    }
+	}
+	if (secure == 2)
+	    need_wait_return = TRUE;
+	secure = 0;
+#ifdef AMIGA
+	proc->pr_WindowPtr = save_winptr;
+#endif
+    }
+    TIME_MSG("sourcing vimrc file(s)");
+}
+
+/*
  * Setup to start using the GUI.  Exit with an error when not available.
  */
     static void
@@ -2656,9 +2694,7 @@ usage()
     main_msg(_("-O[N]\t\tLike -o but split vertically"));
     main_msg(_("+\t\t\tStart at end of file"));
     main_msg(_("+<lnum>\t\tStart at line <lnum>"));
-#ifdef FEAT_PRECOMMANDS
     main_msg(_("--cmd <command>\tExecute <command> before loading any vimrc file"));
-#endif
     main_msg(_("-c <command>\t\tExecute <command> after loading the first file"));
     main_msg(_("-S <session>\t\tSource file <session> after loading the first file"));
     main_msg(_("-s <scriptin>\tRead Normal mode commands from file <scriptin>"));

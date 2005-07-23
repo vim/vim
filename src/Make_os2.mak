@@ -53,6 +53,7 @@ OBJ = \
 	fileio.o \
 	fold.o \
 	getchar.o \
+	hardcopy.o \
 	hashtable.o \
 	main.o \
 	mark.o \
@@ -124,6 +125,7 @@ ex_getln.o:	ex_getln.c  $(INCL)
 fileio.o:	fileio.c  $(INCL)
 fold.o:		fold.c  $(INCL)
 getchar.o:	getchar.c  $(INCL)
+hardcopy.o:	hardcopy.c  $(INCL)
 hashtable.o:	hashtable.c  $(INCL)
 main.o:		main.c  $(INCL)
 mark.o:		mark.c  $(INCL)

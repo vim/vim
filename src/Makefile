@@ -1343,6 +1343,7 @@ BASIC_SRC = \
 	fileio.c \
 	fold.c \
 	getchar.c \
+	hardcopy.c \
 	hashtable.c \
 	if_cscope.c \
 	if_xcmdsrv.c \
@@ -1411,6 +1412,7 @@ OBJ = \
 	objects/fileio.o \
 	objects/fold.o \
 	objects/getchar.o \
+	objects/hardcopy.o \
 	objects/hashtable.o \
 	$(HANGULIN_OBJ) \
 	objects/if_cscope.o \
@@ -1468,6 +1470,7 @@ PRO_AUTO = \
 	fileio.pro \
 	fold.pro \
 	getchar.pro \
+	hardcopy.pro \
 	hashtable.pro \
 	hangulin.pro \
 	if_cscope.pro \
@@ -1599,7 +1602,9 @@ xxd/xxd$(EXEEXT): xxd/xxd.c
 # Generate the converted .mo files separately, it's no problem if this fails.
 languages:
 	@if test -n "$(MAKEMO)" -a -f $(PODIR)/Makefile; then \
-		cd $(PODIR); CC="$(CC)" $(MAKE) prefix=$(DESTDIR)$(prefix); \
+		cd $(PODIR); \
+		CC="$(CC)" $(MAKE) check; \
+		CC="$(CC)" $(MAKE) prefix=$(DESTDIR)$(prefix); \
 	fi
 	-@if test -n "$(MAKEMO)" -a -f $(PODIR)/Makefile; then \
 		cd $(PODIR); CC="$(CC)" $(MAKE) prefix=$(DESTDIR)$(prefix) converted; \
@@ -2285,6 +2290,9 @@ objects/fold.o: fold.c
 objects/getchar.o: getchar.c
 	$(CCC) -o $@ getchar.c
 
+objects/hardcopy.o: hardcopy.c
+	$(CCC) -o $@ hardcopy.c
+
 objects/hashtable.o: hashtable.c
 	$(CCC) -o $@ hashtable.c
 
@@ -2634,6 +2642,10 @@ objects/fold.o: fold.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h \
  proto/gui_beval.pro option.h ex_cmds.h proto.h globals.h farsi.h \
  arabic.h
 objects/getchar.o: getchar.c vim.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h macros.h structs.h regexp.h \
+ gui.h gui_beval.h proto/gui_beval.pro option.h ex_cmds.h proto.h \
+ globals.h farsi.h arabic.h
+objects/hardcopy.o: hardcopy.c vim.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h structs.h regexp.h \
  gui.h gui_beval.h proto/gui_beval.pro option.h ex_cmds.h proto.h \
  globals.h farsi.h arabic.h

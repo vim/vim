@@ -52,8 +52,49 @@ MOFILES = \
 		zh_TW.UTF-8.mo \
 		zh_TW.mo \
 
+CONVERTED = \
+		cs.cp1250.mo \
+		ja.sjis.mo \
+		pl.cp1250.mo \
+		ru.cp1251.mo \
+		sk.cp1250.mo \
+		uk.cp1251.mo \
+		zh_CN.cp936.mo \
+
+CHECKFILES = \
+		af.ck \
+		ca.ck \
+		cs.ck \
+		de.ck \
+		en_GB.ck \
+		es.ck \
+		fr.ck \
+		ga.ck \
+		it.ck \
+		ja.ck \
+		ko.ck \
+		no.ck \
+		pl.ck \
+		ru.ck \
+		sk.ck \
+		sv.ck \
+		uk.ck \
+		vi.ck \
+		zh_CN.UTF-8.ck \
+		zh_CN.ck \
+		zh_TW.UTF-8.ck \
+		zh_TW.ck \
+		cs.cp1250.ck \
+		ja.sjis.ck \
+		pl.cp1250.ck \
+		ru.cp1251.ck \
+		sk.cp1250.ck \
+		uk.cp1251.ck \
+		zh_CN.cp936.ck \
+
 PACKAGE = vim
 SHELL = /bin/sh
+VIM = ../vim
 
 # The OLD_PO_FILE_INPUT and OLD_PO_FILE_OUTPUT are for the new GNU gettext
 # tools 0.10.37, which use a slightly different .po file format that is not
@@ -64,16 +105,22 @@ XGETTEXT = OLD_PO_FILE_INPUT=yes OLD_PO_FILE_OUTPUT=yes xgettext
 MSGMERGE = OLD_PO_FILE_INPUT=yes OLD_PO_FILE_OUTPUT=yes msgmerge
 
 .SUFFIXES:
-.SUFFIXES: .po .mo .pot
-.PHONY: all install uninstall check clean distclean $(LANGUAGES)
+.SUFFIXES: .po .mo .pot .ck
+.PHONY: all install uninstall prefixcheck check clean distclean $(LANGUAGES)
 
 .po.mo:
 	$(MSGFMT) -o $@ $<
 
+.po.ck:
+	$(VIM) -u NONE -e -S check.vim -c "if error == 0 | q | endif" -c cq $<
+	touch $@
+
 all: $(MOFILES)
 
+check: $(CHECKFILES)
+
 install: $(MOFILES)
-	@$(MAKE) check
+	@$(MAKE) prefixcheck
 	for lang in $(LANGUAGES); do \
 	  dir=$(LOCALEDIR)/$$lang/; \
 	  if test ! -x "$$dir"; then \
@@ -90,21 +137,14 @@ install: $(MOFILES)
 	done
 
 uninstall:
-	@$(MAKE) check
+	@$(MAKE) prefixcheck
 	for cat in $(MOFILES); do \
 	  cat=`basename $$cat`; \
 	  lang=`echo $$cat | sed 's/\$(CATOBJEXT)$$//'`; \
 	  rm -f $(LOCALEDIR)/$$lang/LC_MESSAGES/$(PACKAGE).mo; \
 	done
 
-converted: \
-		cs.cp1250.mo \
-		ja.sjis.mo \
-		pl.cp1250.mo \
-		ru.cp1251.mo \
-		sk.cp1250.mo \
-		uk.cp1251.mo \
-		zh_CN.cp936.mo \
+converted: $(CONVERTED)
 
 # Convert ja.po to create ja.sjis.po.  Requires doubling backslashes in the
 # second byte.  Don't depend on sjiscorr, it should only be compiled when
@@ -154,7 +194,7 @@ uk.cp1251.po: uk.po
 	iconv -f koi8-u -t cp1251 uk.po | \
 		sed -e 's/charset=koi8-u/charset=cp1251/' -e 's/# Original translations/# Generated from uk.po, DO NOT EDIT/' > uk.cp1251.po
 
-check:
+prefixcheck:
 	@if test "x" = "x$(prefix)"; then \
 	  echo "******************************************"; \
 	  echo "  please use make from the src directory  "; \
@@ -163,7 +203,7 @@ check:
 	fi
 
 clean:
-	rm -f core core.* *.old.po *.mo *.pot sjiscorr
+	rm -f core core.* *.old.po *.mo *.ck *.pot sjiscorr
 
 distclean: clean
 

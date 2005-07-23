@@ -74,6 +74,7 @@ the same as in the Unix case, only the commands change):
 
 (4) Check:
 
+	vim -S check.vim xx.po
 	make -f Make_ming.mak xx.mo
 
     Look out for syntax errors and fix them.

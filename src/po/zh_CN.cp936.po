@@ -2118,7 +2118,7 @@ msgstr "E256: Hangul automata ´íÎó"
 #: if_cscope.c:26
 #, c-format
 msgid "Usage: cs[cope] %s"
-msgstr ""
+msgstr "Usage: cs[cope] %s"
 
 #: if_cscope.c:67
 msgid "Add a new database"

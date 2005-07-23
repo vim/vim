@@ -65,6 +65,7 @@ EXE_dependencies = \
 	fileio.obj \
 	fold.obj \
 	getchar.obj \
+	hardcopy.obj \
 	hashtable.obj \
 	main.obj \
 	mark.obj \

@@ -224,6 +224,7 @@ LINK32_OBJS= \
 	"$(INTDIR)/fileio.obj" \
 	"$(INTDIR)/fold.obj" \
 	"$(INTDIR)/getchar.obj" \
+	"$(INTDIR)/hardcopy.obj" \
 	"$(INTDIR)/hashtable.obj" \
 	"$(INTDIR)/main.obj" \
 	"$(INTDIR)/mark.obj" \
@@ -375,6 +376,10 @@ SOURCE=.\fold.c
 # Begin Source File
 
 SOURCE=.\getchar.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\hardcopy.c
 # End Source File
 # Begin Source File
 

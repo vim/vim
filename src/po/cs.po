@@ -2351,12 +2351,12 @@ msgstr "umístìní kurzoru mimo buffer"
 #: if_python.c:1824
 #, c-format
 msgid "<window object (deleted) at %.8lX>"
-msgstr "<objekt okna (smazán) na %8lX>"
+msgstr "<objekt okna (smazán) na %.8lX>"
 
 #: if_python.c:1836
 #, c-format
 msgid "<window object (unknown) at %.8lX>"
-msgstr "<objekt okna (neznámý) na %8lX>"
+msgstr "<objekt okna (neznámý) na %.8lX>"
 
 #: if_python.c:1838
 #, c-format

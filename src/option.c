@@ -3269,6 +3269,16 @@ set_init_2()
 	}
     }
 #endif
+
+#ifdef CURSOR_SHAPE
+    parse_shape_opt(SHAPE_CURSOR); /* set cursor shapes from 'guicursor' */
+#endif
+#ifdef FEAT_MOUSESHAPE
+    parse_shape_opt(SHAPE_MOUSE);  /* set mouse shapes from 'mouseshape' */
+#endif
+#ifdef FEAT_PRINTER
+    (void)parse_printoptions();	    /* parse 'printoptions' default value */
+#endif
 }
 
 /*
@@ -5598,13 +5608,10 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 
 #ifdef FEAT_PRINTER
     else if (varp == &p_popt)
-	errmsg = parse_list_options(p_popt, printer_opts,
-						       OPT_PRINT_NUM_OPTIONS);
-
+	errmsg = parse_printoptions();
 # if defined(FEAT_MBYTE) && defined(FEAT_POSTSCRIPT)
     else if (varp == &p_pmfn)
-	errmsg = parse_list_options(p_pmfn, mbfont_opts,
-						      OPT_MBFONT_NUM_OPTIONS);
+	errmsg = parse_printmbfont();
 # endif
 #endif
 

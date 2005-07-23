@@ -729,7 +729,7 @@ msgstr "Нічого друкувати"
 
 #: ex_cmds2.c:2913
 msgid "Printing page %d (%d%%)"
-msgstr "Друкується сторінка %d (%d)"
+msgstr "Друкується сторінка %d (%d%%)"
 
 #: ex_cmds2.c:2922
 #, c-format
@@ -894,7 +894,7 @@ msgstr "E140: Використовуйте ! для запису частини буфера"
 #: ex_cmds.c:2244
 #, c-format
 msgid "Overwrite existing file \"%.*s\"?"
-msgstr "Перезаписати існуючий файл \"%*.s\"?"
+msgstr "Перезаписати існуючий файл \"%.*s\"?"
 
 #: ex_cmds.c:2315
 #, c-format

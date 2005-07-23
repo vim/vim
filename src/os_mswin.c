@@ -2357,6 +2357,8 @@ mch_print_set_fg(unsigned long fgcol)
 
 #endif /*FEAT_PRINTER && !FEAT_POSTSCRIPT*/
 
+
+
 #if defined(FEAT_SHORTCUT) || defined(PROTO)
 # include <shlobj.h>
 

@@ -371,6 +371,7 @@ OBJ = \
 	$(OUTDIR)/fileio.o \
 	$(OUTDIR)/fold.o \
 	$(OUTDIR)/getchar.o \
+	$(OUTDIR)/hardcopy.o \
 	$(OUTDIR)/hashtable.o \
 	$(OUTDIR)/main.o \
 	$(OUTDIR)/mark.o \

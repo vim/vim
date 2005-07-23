@@ -48,6 +48,7 @@ SRC =	buffer.c \
 	fileio.c \
 	fold.c \
 	getchar.c \
+	hardcopy.c \
 	hashtable.c \
 	main.c \
 	mark.c \
@@ -92,6 +93,7 @@ OBJ =	obj/buffer.o \
 	obj/fileio.o \
 	obj/fold.o \
 	obj/getchar.o \
+	obj/hardcopy.o \
 	obj/hashtable.o \
 	obj/main.o \
 	obj/mark.o \
@@ -134,6 +136,7 @@ PRO =	proto/buffer.pro \
 	proto/fileio.pro \
 	proto/fold.pro \
 	proto/getchar.pro \
+	proto/hardcopy.pro \
 	proto/hashtable.pro \
 	proto/main.pro \
 	proto/mark.pro \
@@ -248,6 +251,9 @@ obj/fold.o:	fold.c
 
 obj/getchar.o:	getchar.c
 	$(CCSYM) $@ getchar.c
+
+obj/hardcopy.o:	hardcopy.c
+	$(CCSYM) $@ hardcopy.c
 
 obj/hashtable.o:	hashtable.c
 	$(CCSYM) $@ hashtable.c

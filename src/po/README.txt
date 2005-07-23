@@ -99,6 +99,7 @@ language.
 
 (4) Check:
 
+	vim -S check.vim xx.po
 	make xx.mo
 
     Look out for syntax errors and fix them.

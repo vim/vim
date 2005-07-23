@@ -384,6 +384,7 @@ OBJ = \
 	$(OUTDIR)\fileio.obj \
 	$(OUTDIR)\fold.obj \
 	$(OUTDIR)\getchar.obj \
+	$(OUTDIR)\hardcopy.obj \
 	$(OUTDIR)\hashtable.obj \
 	$(OUTDIR)\main.obj \
 	$(OUTDIR)\mark.obj \
@@ -817,6 +818,8 @@ $(OUTDIR)/fold.obj:	$(OUTDIR) fold.c  $(INCL)
 
 $(OUTDIR)/getchar.obj:	$(OUTDIR) getchar.c  $(INCL)
 
+$(OUTDIR)/hardcopy.obj:	$(OUTDIR) hardcopy.c  $(INCL)
+
 $(OUTDIR)/hashtable.obj:	$(OUTDIR) hashtable.c  $(INCL)
 
 $(OUTDIR)/gui.obj:	$(OUTDIR) gui.c  $(INCL) $(GUI_INCL)
@@ -965,6 +968,7 @@ proto.h: \
 	proto/ex_getln.pro \
 	proto/fileio.pro \
 	proto/getchar.pro \
+	proto/hardcopy.pro \
 	proto/hashtable.pro \
 	proto/main.pro \
 	proto/mark.pro \
