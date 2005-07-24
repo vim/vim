@@ -679,6 +679,7 @@ syn_sync(wp, start_lnum, last_valid)
     linenr_T	found_current_lnum = 0;
     int		found_current_col= 0;
     lpos_T	found_m_endpos;
+    colnr_T	prev_current_col;
 
     /*
      * Clear any current state that might be hanging around.
@@ -849,10 +850,13 @@ syn_sync(wp, start_lnum, last_valid)
 			    ++current_col;
 
 			/* syn_current_attr() will have skipped the check for
-			 * an item that ends here, need to do that now. */
-			++current_col;
+			 * an item that ends here, need to do that now.  Be
+			 * careful not to go past the NUL. */
+			prev_current_col = current_col;
+			if (syn_getcurline()[current_col] != NUL)
+			    ++current_col;
 			check_state_ends();
-			--current_col;
+			current_col = prev_current_col;
 		    }
 		    else
 			break;
@@ -1647,6 +1651,7 @@ syn_finish_line(syncing)
     int	    syncing;		/* called for syncing */
 {
     stateitem_T	*cur_si;
+    colnr_T	prev_current_col;
 
     if (!current_finished)
     {
@@ -1668,10 +1673,13 @@ syn_finish_line(syncing)
 		    return TRUE;
 
 		/* syn_current_attr() will have skipped the check for an item
-		 * that ends here, need to do that now. */
-		++current_col;
+		 * that ends here, need to do that now.  Be careful not to go
+		 * past the NUL. */
+		prev_current_col = current_col;
+		if (syn_getcurline()[current_col] != NUL)
+		    ++current_col;
 		check_state_ends();
-		--current_col;
+		current_col = prev_current_col;
 	    }
 	    ++current_col;
 	}
@@ -2252,7 +2260,8 @@ syn_current_attr(syncing, displaying, can_spell)
 	if (!syncing)
 	{
 	    check_state_ends();
-	    if (current_state.ga_len > 0)
+	    if (current_state.ga_len > 0
+				      && syn_getcurline()[current_col] != NUL)
 	    {
 		++current_col;
 		check_state_ends();

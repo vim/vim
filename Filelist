@@ -30,6 +30,7 @@ SRC_ALL1 =	\
 		src/gui.h \
 		src/gui_beval.c \
 		src/gui_beval.h \
+		src/hardcopy.c \
 		src/hashtable.c \
 		src/keymap.h \
 		src/macros.h \
@@ -94,6 +95,7 @@ SRC_ALL2 =	\
 		src/proto/getchar.pro \
 		src/proto/gui.pro \
 		src/proto/gui_beval.pro \
+		src/proto/hardcopy.pro \
 		src/proto/hashtable.pro \
 		src/proto/main.pro \
 		src/proto/mark.pro \

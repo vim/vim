@@ -790,17 +790,17 @@ EXTERN int	finish_op INIT(= FALSE);/* TRUE while an operator is pending */
 EXTERN int exmode_active INIT(= 0);	/* zero, EXMODE_NORMAL or EXMODE_VIM */
 EXTERN int ex_no_reprint INIT(= FALSE); /* no need to print after z or p */
 
-EXTERN int	Recording INIT(= FALSE);/* TRUE when recording into a reg. */
-EXTERN int	Exec_reg INIT(= FALSE);	/* TRUE when executing a register */
+EXTERN int Recording INIT(= FALSE);	/* TRUE when recording into a reg. */
+EXTERN int Exec_reg INIT(= FALSE);	/* TRUE when executing a register */
 
-EXTERN int	no_mapping INIT(= FALSE);   /* currently no mapping allowed */
-EXTERN int	no_zero_mapping INIT(= 0);  /* mapping zero not allowed */
-EXTERN int	allow_keys INIT(= FALSE);   /* allow key codes when no_mapping
+EXTERN int no_mapping INIT(= FALSE);	/* currently no mapping allowed */
+EXTERN int no_zero_mapping INIT(= 0);	/* mapping zero not allowed */
+EXTERN int allow_keys INIT(= FALSE);	/* allow key codes when no_mapping
 					     * is set */
-EXTERN int	no_u_sync INIT(= 0);	/* Don't call u_sync() */
+EXTERN int no_u_sync INIT(= 0);		/* Don't call u_sync() */
 
-EXTERN int	restart_edit INIT(= 0);	/* call edit when next cmd finished */
-EXTERN int	arrow_used;		/* Normally FALSE, set to TRUE after
+EXTERN int restart_edit INIT(= 0);	/* call edit when next cmd finished */
+EXTERN int arrow_used;			/* Normally FALSE, set to TRUE after
 					 * hitting cursor key in insert mode.
 					 * Used by vgetorpeek() to decide when
 					 * to call u_sync() */
