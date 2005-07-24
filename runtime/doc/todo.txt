@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 23
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -58,9 +58,7 @@ Win32: Crash when pasting Simplified Chinese in utf-8. (rainux, 2005 June 20)
 
 PLANNED FOR VERSION 7.0:
 
--   REFACTORING: The main() function is very long.  Move parts to separate
-    functions, especially loops.  Ideas from Walter Briscoe (2003 Apr 3, 2004
-    Feb 9).
+-   REFACTORING:
     Improve the interface between the generic GUI code and the system-specific
     code.  Generic code handles text window with scrollbars, system-specific
     code menu, toolbar, etc.
