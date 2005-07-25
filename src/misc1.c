@@ -8158,24 +8158,33 @@ namelowcpy(
 # endif
 
 /*
- * Recursively build up a list of files in "gap" matching the first wildcard
- * in `path'.  Called by expand_wildcards().
+ * Recursively expand one path component into all matching files and/or
+ * directories.  Adds matches to "gap".  Handles "*", "?", "[a-z]", "**", etc.
  * Return the number of matches found.
  * "path" has backslashes before chars that are not to be expanded, starting
  * at "path[wildoff]".
+ * Return the number of matches found.
+ * NOTE: much of this is identical to unix_expandpath(), keep in sync!
  */
     static int
 dos_expandpath(
     garray_T	*gap,
     char_u	*path,
     int		wildoff,
-    int		flags)		/* EW_* flags */
+    int		flags,		/* EW_* flags */
+    int		didstar)	/* expaneded "**" once already */
 {
-    char_u		*buf;
-    char_u		*path_end;
-    char_u		*p, *s, *e;
-    int			start_len = gap->ga_len;
-    int			ok;
+    char_u	*buf;
+    char_u	*path_end;
+    char_u	*p, *s, *e;
+    int		start_len = gap->ga_len;
+    char_u	*pat;
+    regmatch_T	regmatch;
+    int		starts_with_dot;
+    int		matches;
+    int		len;
+    int		starstar = FALSE;
+    static int	stardepth = 0;	    /* depth for "**" expansion */
 #ifdef WIN3264
     WIN32_FIND_DATA	fb;
     HANDLE		hFind = (HANDLE)0;
@@ -8186,15 +8195,19 @@ dos_expandpath(
 #else
     struct ffblk	fb;
 #endif
-    int			matches;
-    int			starts_with_dot;
-    int			len;
-    char_u		*pat;
-    regmatch_T		regmatch;
     char_u		*matchname;
+    int			ok;
+
+    /* Expanding "**" may take a long time, check for CTRL-C. */
+    if (stardepth > 0)
+    {
+	ui_breakcheck();
+	if (got_int)
+	    return 0;
+    }
 
     /* make room for file name */
-    buf = alloc((unsigned int)STRLEN(path) + BASENAMELEN + 5);
+    buf = alloc((int)STRLEN(path) + BASENAMELEN + 5);
     if (buf == NULL)
 	return 0;
 
@@ -8247,6 +8260,11 @@ dos_expandpath(
 	    --s;
 	}
 
+    /* Check for "**" between "s" and "e". */
+    for (p = s; p < e; ++p)
+	if (p[0] == '*' && p[1] == '*')
+	    starstar = TRUE;
+
     starts_with_dot = (*s == '.');
     pat = file_pat_to_reg_pat(s, e, NULL, FALSE);
     if (pat == NULL)
@@ -8268,6 +8286,17 @@ dos_expandpath(
 
     /* remember the pattern or file name being looked for */
     matchname = vim_strsave(s);
+
+    /* If "**" is by itself, this is the first time we encounter it and more
+     * is following then find matches without any directory. */
+    if (!didstar && stardepth < 100 && starstar && e - s == 2
+							  && *path_end == '/')
+    {
+	STRCPY(s, path_end + 1);
+	++stardepth;
+	(void)dos_expandpath(gap, buf, (int)(s - buf), flags, TRUE);
+	--stardepth;
+    }
 
     /* Scan all files in the directory with "dir/ *.*" */
     STRCPY(s, "*.*");
@@ -8325,12 +8354,24 @@ dos_expandpath(
 	    namelowcpy(s, p);
 #endif
 	    len = (int)STRLEN(buf);
+
+	    if (starstar && stardepth < 100)
+	    {
+		/* For "**" in the pattern first go deeper in the tree to
+		 * find matches. */
+		STRCPY(buf + len, "/**");
+		STRCPY(buf + len + 3, path_end);
+		++stardepth;
+		(void)dos_expandpath(gap, buf, len + 1, flags, TRUE);
+		--stardepth;
+	    }
+
 	    STRCPY(buf + len, path_end);
 	    if (mch_has_exp_wildcard(path_end))
 	    {
 		/* need to expand another component of the path */
 		/* remove backslashes for the remaining components only */
-		(void)dos_expandpath(gap, buf, len + 1, flags);
+		(void)dos_expandpath(gap, buf, len + 1, flags, FALSE);
 	    }
 	    else
 	    {
@@ -8408,9 +8449,231 @@ mch_expandpath(
     char_u	*path,
     int		flags)		/* EW_* flags */
 {
-    return dos_expandpath(gap, path, 0, flags);
+    return dos_expandpath(gap, path, 0, flags, FALSE);
 }
 # endif /* MSDOS || FEAT_GUI_W16 || WIN3264 */
+
+#if (defined(UNIX) && !defined(VMS)) || defined(USE_UNIXFILENAME) \
+	|| defined(PROTO)
+/*
+ * Unix style wildcard expansion code.
+ * It's here because it's used both for Unix and Mac.
+ */
+static int	pstrcmp __ARGS((const void *, const void *));
+
+    static int
+pstrcmp(a, b)
+    const void *a, *b;
+{
+    return (pathcmp(*(char **)a, *(char **)b, -1));
+}
+
+/*
+ * Recursively expand one path component into all matching files and/or
+ * directories.  Adds matches to "gap".  Handles "*", "?", "[a-z]", "**", etc.
+ * "path" has backslashes before chars that are not to be expanded, starting
+ * at "path + wildoff".
+ * Return the number of matches found.
+ * NOTE: much of this is identical to dos_expandpath(), keep in sync!
+ */
+    int
+unix_expandpath(gap, path, wildoff, flags, didstar)
+    garray_T	*gap;
+    char_u	*path;
+    int		wildoff;
+    int		flags;		/* EW_* flags */
+    int		didstar;	/* expanded "**" once already */
+{
+    char_u	*buf;
+    char_u	*path_end;
+    char_u	*p, *s, *e;
+    int		start_len = gap->ga_len;
+    char_u	*pat;
+    regmatch_T	regmatch;
+    int		starts_with_dot;
+    int		matches;
+    int		len;
+    int		starstar = FALSE;
+    static int	stardepth = 0;	    /* depth for "**" expansion */
+
+    DIR		*dirp;
+    struct dirent *dp;
+
+    /* Expanding "**" may take a long time, check for CTRL-C. */
+    if (stardepth > 0)
+    {
+	ui_breakcheck();
+	if (got_int)
+	    return 0;
+    }
+
+    /* make room for file name */
+    buf = alloc((int)STRLEN(path) + BASENAMELEN + 5);
+    if (buf == NULL)
+	return 0;
+
+    /*
+     * Find the first part in the path name that contains a wildcard.
+     * Copy it into "buf", including the preceding characters.
+     */
+    p = buf;
+    s = buf;
+    e = NULL;
+    path_end = path;
+    while (*path_end != NUL)
+    {
+	/* May ignore a wildcard that has a backslash before it; it will
+	 * be removed by rem_backslash() or file_pat_to_reg_pat() below. */
+	if (path_end >= path + wildoff && rem_backslash(path_end))
+	    *p++ = *path_end++;
+	else if (*path_end == '/')
+	{
+	    if (e != NULL)
+		break;
+	    s = p + 1;
+	}
+	else if (path_end >= path + wildoff
+			 && vim_strchr((char_u *)"*?[{~$", *path_end) != NULL)
+	    e = p;
+#ifdef FEAT_MBYTE
+	if (has_mbyte)
+	{
+	    len = (*mb_ptr2len_check)(path_end);
+	    STRNCPY(p, path_end, len);
+	    p += len;
+	    path_end += len;
+	}
+	else
+#endif
+	    *p++ = *path_end++;
+    }
+    e = p;
+    *e = NUL;
+
+    /* now we have one wildcard component between "s" and "e" */
+    /* Remove backslashes between "wildoff" and the start of the wildcard
+     * component. */
+    for (p = buf + wildoff; p < s; ++p)
+	if (rem_backslash(p))
+	{
+	    STRCPY(p, p + 1);
+	    --e;
+	    --s;
+	}
+
+    /* Check for "**" between "s" and "e". */
+    for (p = s; p < e; ++p)
+	if (p[0] == '*' && p[1] == '*')
+	    starstar = TRUE;
+
+    /* convert the file pattern to a regexp pattern */
+    starts_with_dot = (*s == '.');
+    pat = file_pat_to_reg_pat(s, e, NULL, FALSE);
+    if (pat == NULL)
+    {
+	vim_free(buf);
+	return 0;
+    }
+
+    /* compile the regexp into a program */
+#ifdef MACOS_X /* Can/Should we use CASE_INSENSITIVE_FILENAME instead ?*/
+    regmatch.rm_ic = TRUE;		/* Behave like Terminal.app */
+#else
+    regmatch.rm_ic = FALSE;		/* Don't ever ignore case */
+#endif
+    regmatch.regprog = vim_regcomp(pat, RE_MAGIC);
+    vim_free(pat);
+
+    if (regmatch.regprog == NULL)
+    {
+	vim_free(buf);
+	return 0;
+    }
+
+    /* If "**" is by itself, this is the first time we encounter it and more
+     * is following then find matches without any directory. */
+    if (!didstar && stardepth < 100 && starstar && e - s == 2
+							  && *path_end == '/')
+    {
+	STRCPY(s, path_end + 1);
+	++stardepth;
+	(void)unix_expandpath(gap, buf, (int)(s - buf), flags, TRUE);
+	--stardepth;
+    }
+
+    /* open the directory for scanning */
+    *s = NUL;
+    dirp = opendir(*buf == NUL ? "." : (char *)buf);
+
+    /* Find all matching entries */
+    if (dirp != NULL)
+    {
+	for (;;)
+	{
+	    dp = readdir(dirp);
+	    if (dp == NULL)
+		break;
+	    if ((dp->d_name[0] != '.' || starts_with_dot)
+		    && vim_regexec(&regmatch, (char_u *)dp->d_name, (colnr_T)0))
+	    {
+		STRCPY(s, dp->d_name);
+		len = STRLEN(buf);
+
+		if (starstar && stardepth < 100)
+		{
+		    /* For "**" in the pattern first go deeper in the tree to
+		     * find matches. */
+		    STRCPY(buf + len, "/**");
+		    STRCPY(buf + len + 3, path_end);
+		    ++stardepth;
+		    (void)unix_expandpath(gap, buf, len + 1, flags, TRUE);
+		    --stardepth;
+		}
+
+		STRCPY(buf + len, path_end);
+		if (mch_has_exp_wildcard(path_end)) /* handle more wildcards */
+		{
+		    /* need to expand another component of the path */
+		    /* remove backslashes for the remaining components only */
+		    (void)unix_expandpath(gap, buf, len + 1, flags, FALSE);
+		}
+		else
+		{
+		    /* no more wildcards, check if there is a match */
+		    /* remove backslashes for the remaining components only */
+		    if (*path_end != NUL)
+			backslash_halve(buf + len + 1);
+		    if (mch_getperm(buf) >= 0)	/* add existing file */
+		    {
+#if defined(MACOS_X) && defined(FEAT_MBYTE)
+			size_t precomp_len = STRLEN(buf)+1;
+			char_u *precomp_buf =
+			    mac_precompose_path(buf, precomp_len, &precomp_len);
+			if (precomp_buf)
+			{
+			    mch_memmove(buf, precomp_buf, precomp_len);
+			    vim_free(precomp_buf);
+			}
+#endif
+			addfile(gap, buf, flags);
+		    }
+		}
+	    }
+	}
+
+	closedir(dirp);
+    }
+
+    vim_free(buf);
+    vim_free(regmatch.regprog);
+
+    matches = gap->ga_len - start_len;
+    if (matches > 0)
+	qsort(((char_u **)gap->ga_data) + start_len, matches,
+						   sizeof(char_u *), pstrcmp);
+    return matches;
+}
+#endif
 
 /*
  * Generic wildcard expansion code.

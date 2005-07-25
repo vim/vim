@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 24
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52,18 +52,12 @@ Awaiting response:
 -   Win32: tearoff menu window should have a scrollbar when it's taller than
     the screen.
 -   mblen(NULL, 0) also in Vim 6.3?
-
-Win32: Crash when pasting Simplified Chinese in utf-8. (rainux, 2005 June 20)
+-   Win32: Crash when pasting Simplified Chinese in utf-8. (rainux, 2005 June
+    20)
 
 
 PLANNED FOR VERSION 7.0:
 
--   REFACTORING:
-    Improve the interface between the generic GUI code and the system-specific
-    code.  Generic code handles text window with scrollbars, system-specific
-    code menu, toolbar, etc.
--   Support using "**" in filename for ":next", ":vimgrep", etc., so that a
-    directory tree can be searched.
 -   Store messages to allow SCROLLING BACK for all commands.  And other "less"
     like commands.
 -   "INTELLISENSE".  First cleanup the Insert-mode completion.
@@ -313,6 +307,7 @@ Awaiting updated patches:
 				(2003 May 13)
 	raisewin()		raise gvim window (see HierAssist patch for
 				Tcl implementation ~/vim/HierAssist/ )
+    7   Make globpath() also work with upwards search. (Brian Medley)
     7   Add patch from Benoit Cerrina to integrate Vim and Perl functions
 	better.  Now also works for Ruby (2001 Nov 10)
     -   Patch from Herculano de Lima Einloft Neto for better formatting of the
@@ -1573,7 +1568,6 @@ Built-in script language:
     Alternative: Support packages.  {package-name}:{function-name}().
     Packages are loaded automatically when first used, from
     $VIMRUNTIME/packages (or use a search path).
-7   Make globpath() also work with "**" and upwards search. (Brian Medley)
 7   Add the markclear() function to delete a mark in another buffer.  Charles
     Campbell (2004 Jan 9)
     http://mysite.verizon.net/astronaut/vim/index.html#Patch
@@ -3156,7 +3150,6 @@ Various improvements:
 9   Support ACLs on more systems.
 7   Add ModeMsgVisual, ModeMsgInsert, etc. so that each mode message can be
     highlighted differently.
-8   Allow using "**" as a wildcard in commands like ":next" and ":args".
 7   Add a message area for the user.  Set some option to reserve space (above
     the command line?).  Use an ":echouser" command to display the message
     (truncated to fit in the space).

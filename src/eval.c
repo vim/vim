@@ -12724,6 +12724,7 @@ f_reverse(argvars, rettv)
 #define SP_NOMOVE	1	/* don't move cursor */
 #define SP_REPEAT	2	/* repeat to find outer pair */
 #define SP_RETCOUNT	4	/* return matchcount */
+#define SP_SETPCMARK	8       /* set previous context mark */
 
 static int get_search_arg __ARGS((typval_T *varp, int *flagsp));
 
@@ -12761,6 +12762,7 @@ get_search_arg(varp, flagsp)
 				 case 'n': mask = SP_NOMOVE; break;
 				 case 'r': mask = SP_REPEAT; break;
 				 case 'm': mask = SP_RETCOUNT; break;
+				 case 's': mask = SP_SETPCMARK; break;
 			     }
 			  if (mask == 0)
 			  {
@@ -12799,7 +12801,14 @@ f_search(argvars, rettv)
     dir = get_search_arg(&argvars[1], &flags);	/* may set p_ws */
     if (dir == 0)
 	goto theend;
-    if ((flags & ~SP_NOMOVE) != 0)
+    /*
+     * This function accepts only SP_NOMOVE and SP_SETPCMARK flags.
+     * Check to make sure only those flags are set.
+     * Also, Only the SP_NOMOVE or the SP_SETPCMARK flag can be set. Both
+     * flags cannot be set. Check for that condition also.
+     */
+    if (((flags & ~(SP_NOMOVE | SP_SETPCMARK)) != 0) ||
+	((flags & SP_NOMOVE) && (flags & SP_SETPCMARK)))
     {
 	EMSG2(_(e_invarg2), get_tv_string(&argvars[1]));
 	goto theend;
@@ -12810,6 +12819,8 @@ f_search(argvars, rettv)
 					      SEARCH_KEEP, RE_SEARCH) != FAIL)
     {
 	rettv->vval.v_number = pos.lnum;
+	if (flags & SP_SETPCMARK)
+	    setpcmark();
 	curwin->w_cursor = pos;
 	/* "/$" will put the cursor after the end of the line, may need to
 	 * correct that here */
@@ -12853,6 +12864,14 @@ f_searchpair(argvars, rettv)
     dir = get_search_arg(&argvars[3], &flags); /* may set p_ws */
     if (dir == 0)
 	goto theend;
+    /*
+     * Only one of the SP_NOMOVE or SP_SETPCMARK flags can be set.
+     */
+    if ((flags & SP_NOMOVE) && (flags & SP_SETPCMARK))
+    {
+	EMSG2(_(e_invarg2), get_tv_string(&argvars[1]));
+	goto theend;
+    }
 
     /* Optional fifth argument: skip expresion */
     if (argvars[3].v_type == VAR_UNKNOWN
@@ -12980,6 +12999,8 @@ do_searchpair(spat, mpat, epat, dir, skip, flags)
 		++retval;
 	    else
 		retval = pos.lnum;
+	    if (flags & SP_SETPCMARK)
+		setpcmark();
 	    curwin->w_cursor = pos;
 	    if (!(flags & SP_REPEAT))
 		break;

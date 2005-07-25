@@ -632,15 +632,14 @@ gui_x11_expose_cb(w, dud, event, dum)
 #if (defined(FEAT_NETBEANS_INTG) || defined(FEAT_SUN_WORKSHOP)) \
 	|| defined(PROTO)
 /*
- *	This function fills in the XRectangle object with the current
- *	x,y coordinates and height, width so that an XtVaSetValues to
- *	the same shell of those resources will restore the window to its
- *	formar position and dimensions.
+ * This function fills in the XRectangle object with the current x,y
+ * coordinates and height, width so that an XtVaSetValues to the same shell of
+ * those resources will restore the window to its formar position and
+ * dimensions.
  *
- *	Note: This function may fail, in which case the XRectangle will
- *	be unchanged.  Be sure to have the XRectangle set with the
- *	proper values for a failed condition prior to calling this
- *	function.
+ * Note: This function may fail, in which case the XRectangle will be
+ * unchanged.  Be sure to have the XRectangle set with the proper values for a
+ * failed condition prior to calling this function.
  */
     static void
 shellRectangle(Widget shell, XRectangle *r)
@@ -1807,7 +1806,7 @@ gui_mch_set_shellsize(width, height, min_width, min_height,
 }
 
 /*
- * Allow 10 pixels for horizontal borders, 30 for vertical borders.
+ * Allow 10 pixels for horizontal borders, 'guiheadroom' for vertical borders.
  * Is there no way in X to find out how wide the borders really are?
  */
     void
@@ -2019,8 +2018,11 @@ gui_mch_get_fontname(font, name)
 }
 #endif
 
+/*
+ * Adjust gui.char_height (after 'linespace' was changed).
+ */
     int
-gui_mch_adjust_charsize()
+gui_mch_adjust_charheight()
 {
 #ifdef FEAT_XFONTSET
     if (gui.fontset != NOFONTSET)
@@ -2073,24 +2075,6 @@ gui_mch_set_fontset(fontset)
 {
     current_fontset = (XFontSet)fontset;
     gui.char_ascent = fontset_ascent(current_fontset) + p_linespace / 2;
-}
-#endif
-
-#if 0 /* not used */
-/*
- * Return TRUE if the two fonts given are equivalent.
- */
-    int
-gui_mch_same_font(f1, f2)
-    GuiFont	f1;
-    GuiFont	f2;
-{
-#ifdef FEAT_XFONTSET
-    if (gui.fontset != NULL)
-	return f1 == f2;
-    else
-#endif
-    return ((XFontStruct *)f1)->fid == ((XFontStruct *)f2)->fid;
 }
 #endif
 

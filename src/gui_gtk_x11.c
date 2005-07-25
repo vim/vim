@@ -4066,8 +4066,11 @@ is_cjk_font(PangoFontDescription *font_desc)
 }
 #endif /* HAVE_GTK2 */
 
+/*
+ * Adjust gui.char_height (after 'linespace' was changed).
+ */
     int
-gui_mch_adjust_charsize(void)
+gui_mch_adjust_charheight(void)
 {
 #ifdef HAVE_GTK2
     PangoFontMetrics	*metrics;
@@ -4082,14 +4085,14 @@ gui_mch_adjust_charsize(void)
     pango_font_metrics_unref(metrics);
 
     gui.char_height = (ascent + descent + PANGO_SCALE - 1) / PANGO_SCALE
-		      + p_linespace;
+								+ p_linespace;
     /* LINTED: avoid warning: bitwise operation on signed value */
     gui.char_ascent = PANGO_PIXELS(ascent + p_linespace * PANGO_SCALE / 2);
 
 #else /* !HAVE_GTK2 */
 
     gui.char_height = gui.current_font->ascent + gui.current_font->descent
-		      + p_linespace;
+								+ p_linespace;
     gui.char_ascent = gui.current_font->ascent + p_linespace / 2;
 
 #endif /* !HAVE_GTK2 */
@@ -4553,7 +4556,7 @@ gui_mch_init_font(char_u *font_name, int fontset)
     if (gui.char_width <= 0)
 	gui.char_width = 8;
 
-    gui_mch_adjust_charsize();
+    gui_mch_adjust_charheight();
 
     /* Set the fontname, which will be used for information purposes */
     hl_set_font_name(font_name);

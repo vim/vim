@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jul 21
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jul 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -221,6 +221,10 @@ patterns, this also allows grepping in compressed and remote files.
 
 If you want to use the search results in a script you can use the
 |getqflist()| function.
+
+To search in files in various directories the "**" pattern can be used.  It
+expands into an arbitrary depth of directories.  "**" can be used in all
+places where file names are expanded, thus also with |:next| and |:args|.
 
 
 POSIX compatibility					*new-posix*
@@ -614,7 +618,7 @@ invalid characters after the register name. |:redir|
 ":redir => variable" and ":redir =>> variable" write or append to a variable.
 (Yegappan Lakshmanan) |:redir|
 
-":redir @{a-z}>>" appends to register a to z.
+":redir @{a-z}>>" appends to register a to z. (Yegappan Lakshmanan)
 
 The 'verbosefile' option can be used to log messages in a file.  Verbose
 messages are not displayed then.  The "-V{filename}" argument can be used to
@@ -693,10 +697,14 @@ prepending "8bit-".
 
 Added the "customlist" completion argument to a user-defined command.  The
 user-defined completion function should return the completion candidates as a
-Vim List and the returned results are not filtered by Vim.
+Vim List and the returned results are not filtered by Vim. (Yegappan
+Lakshmanan)
 
 Win32: Balloons can have multiple lines if common controls supports it.
 (Sergey Khorev)
+
+The 's' flag is added to the search() and searchpair() function to set the
+' mark if the cursor is moved. (Yegappan Lakshmanan)
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*
@@ -719,6 +727,15 @@ When compiling with EXITFREE defined and the ccmalloc library it is possible
 to detect memory leaks.  Some memory will always reported as leaked, such as
 allocated by X11 library functions and the memory allocated in alloc_cmdbuff()
 to store the ":quit" command.
+
+Moved the code for printing to src/hardcopy.c.
+
+Moved some code from main() to separate functions to make it easier to see
+what is being done.  Use a structure to avoid a lot of arguments to the
+functions.
+
+Moved unix_expandpath() to misc1.c, so that it can also be used by os_mac.c
+without copying the code.
 
 ==============================================================================
 BUG FIXES						*bug-fixes-7*

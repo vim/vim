@@ -15,7 +15,7 @@ void gui_mch_set_shellsize __ARGS((int width, int height, int min_width, int min
 void gui_mch_get_screen_dimensions __ARGS((int *screen_w, int *screen_h));
 int gui_mch_init_font __ARGS((char_u *font_name, int do_fontset));
 GuiFont gui_mch_get_font __ARGS((char_u *name, int giveErrorIfMissing));
-int gui_mch_adjust_charsize __ARGS((void));
+int gui_mch_adjust_charheight __ARGS((void));
 void gui_mch_set_font __ARGS((GuiFont font));
 void gui_mch_set_fontset __ARGS((GuiFontset fontset));
 void gui_mch_free_font __ARGS((GuiFont font));

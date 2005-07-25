@@ -39,7 +39,6 @@ typedef struct
     char	**argv;
 
     int		evim_mode;		/* started as "evim" */
-    int		bin_mode;		/* -b argument used */
     char_u	*use_vimrc;		/* vimrc from -u argument */
 
     int		n_commands;		     /* no. of commands from + or -c */
@@ -367,15 +366,6 @@ main
 # endif
 #endif
 
-    /* "-b" argument used.  Check before expanding file names, because for
-     * Win32 this makes us edit a shortcut file itself, instead of the file it
-     * links to. */
-    if (params.bin_mode)
-    {
-	set_options_bin(curbuf->b_p_bin, 1, 0);
-	curbuf->b_p_bin = 1;	    /* binary file I/O */
-    }
-
     if (GARGCOUNT > 0)
     {
 #if (!defined(UNIX) && !defined(__EMX__)) || defined(ARCHIE)
@@ -420,8 +410,13 @@ main
     TIME_MSG("expanding arguments");
 
 #ifdef FEAT_DIFF
-    if (params.diff_mode && params.window_count == -1)
-	params.window_count = 0;	/* open up to 3 files in a window */
+    if (params.diff_mode)
+    {
+	if (params.window_count == -1)
+	    params.window_count = 0;	/* open up to 3 windows */
+	if (params.vert_windows == MAYBE)
+	    params.vert_windows = TRUE;	/* use vertical split */
+    }
 #endif
 
     /* Don't redraw until much later. */
@@ -1453,7 +1448,7 @@ command_line_scan(parmp)
     int		had_minmin = FALSE;	/* found "--" argument */
     int		want_argument;		/* option argument with argument */
     int		c;
-    char_u	*p;
+    char_u	*p = NULL;
     long	n;
 
     --argc;
@@ -1597,7 +1592,11 @@ command_line_scan(parmp)
 		break;
 
 	    case 'b':		/* "-b" binary mode */
-		parmp->bin_mode = TRUE;    /* postpone to after reading .exrc files */
+		/* Needs to be effective before expanding file names, because
+		 * for Win32 this makes us edit a shortcut file itself,
+		 * instead of the file it links to. */
+		set_options_bin(curbuf->b_p_bin, 1, 0);
+		curbuf->b_p_bin = 1;	    /* binary file I/O */
 		break;
 
 	    case 'C':		/* "-C"  Compatible */
@@ -1691,7 +1690,8 @@ command_line_scan(parmp)
 	    case 'o':		/* "-o[N]" open N horizontal split windows */
 #ifdef FEAT_WINDOWS
 		/* default is 0: open window for each file */
-		parmp->window_count = get_number_arg((char_u *)argv[0], &argv_idx, 0);
+		parmp->window_count = get_number_arg((char_u *)argv[0],
+								&argv_idx, 0);
 		parmp->vert_windows = FALSE;
 #endif
 		break;
@@ -1699,7 +1699,8 @@ command_line_scan(parmp)
 		case 'O':	/* "-O[N]" open N vertical split windows */
 #if defined(FEAT_VERTSPLIT) && defined(FEAT_WINDOWS)
 		/* default is 0: open window for each file */
-		parmp->window_count = get_number_arg((char_u *)argv[0], &argv_idx, 0);
+		parmp->window_count = get_number_arg((char_u *)argv[0],
+								&argv_idx, 0);
 		parmp->vert_windows = TRUE;
 #endif
 		break;
@@ -1817,7 +1818,8 @@ command_line_scan(parmp)
 		{
 		    if (parmp->n_commands >= MAX_ARG_CMDS)
 			mainerr(ME_EXTRA_CMD, NULL);
-		    parmp->commands[parmp->n_commands++] = (char_u *)argv[0] + argv_idx;
+		    parmp->commands[parmp->n_commands++] = (char_u *)argv[0]
+								   + argv_idx;
 		    argv_idx = -1;
 		    break;
 		}
@@ -1890,13 +1892,15 @@ command_line_scan(parmp)
 			parmp->commands[parmp->n_commands++] = p;
 		    }
 		    else
-			parmp->commands[parmp->n_commands++] = (char_u *)argv[0];
+			parmp->commands[parmp->n_commands++] =
+							    (char_u *)argv[0];
 		    break;
 
 		case '-':	/* "--cmd {command}" execute command */
 		    if (parmp->n_pre_commands >= MAX_ARG_CMDS)
 			mainerr(ME_EXTRA_CMD, NULL);
-		    parmp->pre_commands[parmp->n_pre_commands++] = (char_u *)argv[0];
+		    parmp->pre_commands[parmp->n_pre_commands++] =
+							    (char_u *)argv[0];
 		    break;
 
 	    /*	case 'd':   -d {device} is handled in mch_check_win() for the
@@ -2052,7 +2056,7 @@ scripterror:
 #endif
 	    alist_add(&global_alist, p,
 #if (!defined(UNIX) && !defined(__EMX__)) || defined(ARCHIE)
-		    parmp->literal ? 2 : 0	/* add buffer number after expanding */
+		    parmp->literal ? 2 : 0	/* add buffer nr after exp. */
 #else
 		    2		/* add buffer number now and use curbuf */
 #endif
@@ -2425,7 +2429,8 @@ source_startup_scripts(parmp)
      */
     if (parmp->use_vimrc != NULL)
     {
-	if (STRCMP(parmp->use_vimrc, "NONE") == 0 || STRCMP(parmp->use_vimrc, "NORC") == 0)
+	if (STRCMP(parmp->use_vimrc, "NONE") == 0
+				     || STRCMP(parmp->use_vimrc, "NORC") == 0)
 	{
 #ifdef FEAT_GUI
 	    if (use_gvimrc == NULL)	    /* don't load gvimrc either */

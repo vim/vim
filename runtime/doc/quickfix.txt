@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 7.0aa.  Last change: 2005 May 20
+*quickfix.txt*  For Vim version 7.0aa.  Last change: 2005 Jul 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -334,6 +334,8 @@ advantages are:
 			Examples: >
 				:vimgrep /an error/ *.c
 				:vimgrep /\<FileName\>/ *.h include/*
+				:vimgrep /myfunc/ **/*.c
+<			For the use of "**" see |starstar-wildcard|.
 
 :vim[grep][!] {pattern} {file} ...
 			Like above, but instead of enclosing the pattern in a
