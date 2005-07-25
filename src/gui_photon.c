@@ -3004,8 +3004,11 @@ gui_mch_init_font(char_u *vim_font_name, int fontset)
     return( OK );
 }
 
+/*
+ * Adjust gui.char_height (after 'linespace' was changed).
+ */
     int
-gui_mch_adjust_charsize(void)
+gui_mch_adjust_charheight(void)
 {
     FontQueryInfo info;
 

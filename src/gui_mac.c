@@ -3936,8 +3936,11 @@ gui_mch_init_font(font_name, fontset)
 
 }
 
+/*
+ * Adjust gui.char_height (after 'linespace' was changed).
+ */
     int
-gui_mch_adjust_charsize()
+gui_mch_adjust_charheight()
 {
     FontInfo    font_info;
 
@@ -4091,19 +4094,6 @@ gui_mch_set_font(font)
     TextSize(font >> 16);
     TextFont(font & 0xFFFF);
 }
-
-#if 0 /* not used */
-/*
- * Return TRUE if the two fonts given are equivalent.
- */
-    int
-gui_mch_same_font(f1, f2)
-    GuiFont	f1;
-    GuiFont	f2;
-{
-    return f1 == f2;
-}
-#endif
 
 /*
  * If a font is not going to be used, free its structure.
@@ -5107,10 +5097,7 @@ gui_mch_enable_menu(flag)
     int		flag;
 {
     /*
-     * Menu is always active in itself
-     * (maybe we should only disable a vim menu
-     *	and keep standard menu)
-     *
+     * Menu is always active.
      */
 }
 
@@ -5122,9 +5109,7 @@ gui_mch_set_menu_pos(x, y, w, h)
     int		h;
 {
     /*
-     * The menu is always at the top of the screen
-     * Maybe a futur version will permit a menu in the window
-     *
+     * The menu is always at the top of the screen.
      */
 }
 

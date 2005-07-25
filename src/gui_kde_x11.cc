@@ -1412,8 +1412,11 @@ mch_set_mouse_shape (int shape)//{{{
 }//}}}
 #endif
 
+/*
+ * Adjust gui.char_height (after 'linespace' was changed).
+ */
     int
-gui_mch_adjust_charsize ()//{{{
+gui_mch_adjust_charheight ()//{{{
 {
     QFont f(*(gui.current_font));
     QFontMetrics fm(f);

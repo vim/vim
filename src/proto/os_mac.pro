@@ -36,7 +36,6 @@ int stat __ARGS((char *p, struct stat *p_st));
 int mch_call_shell __ARGS((char_u *cmd, int options));
 int mch_has_wildcard __ARGS((char_u *s));
 int mch_expandpath __ARGS((struct growarray *gap, char_u *path, int flags));
-int mac_expandpath __ARGS((struct growarray *gap, char_u *path, int flags, short start_at, short as_full));
 /*int vim_chdir __ARGS((char *path));*/
 void mch_delay __ARGS((long msec, int ignoreinput));
 void mch_breakcheck __ARGS((void));

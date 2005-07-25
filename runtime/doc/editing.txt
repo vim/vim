@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.0aa.  Last change: 2005 May 21
+*editing.txt*   For Vim version 7.0aa.  Last change: 2005 Jul 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -354,14 +354,32 @@ file1 file2") embedded spaces must be escaped with a backslash.
 							*wildcard*
 Wildcards in {file} are expanded.  Which wildcards are supported depends on
 the system.  These are the common ones:
-	*	matches anything, including nothing
 	?	matches one character
+	*	matches anything, including nothing
+	**	matches anything, including nothing, recurses into directories
 	[abc]	match 'a', 'b' or 'c'
+
 To avoid the special meaning of the wildcards prepend a backslash.  However,
 on MS-Windows the backslash is a path separator and "path\[abc]" is still seen
 as a wildcard when "[" is in the 'isfname' option.  A simple way to avoid this
 is to use "path\[[]abc]".  Then the file "path[abc]" literally.
 
+					*starstar-wildcard*
+Expanding "**" is possible on Unix, Win32, Mac OS/X and a few other systems.
+This allows searching a directory tree.  This goes up to 100 directories deep.
+Example: >
+	:n **/*.txt
+Finds files:
+	ttt.txt
+	subdir/ttt.txt
+	a/b/c/d/ttt.txt
+When non-wildcard characters are used these are only matched in the first
+directory.  Example: >
+	:n /usr/inc**/*.h
+Finds files:
+	/usr/include/types.h
+	/usr/include/sys/types.h
+	/usr/inc_old/types.h
 					*backtick-expansion* *`-expansion*
 On Unix and a few other systems you can also use backticks in the file name,
 for example: >
@@ -1406,7 +1424,7 @@ problem goes away the next day.
 The file searching is currently used for the 'path', 'cdpath' and 'tags'
 options.  There are three different types of searching:
 
-1) Downward search:
+1) Downward search:					*starstar*
    Downward search uses the wildcards '*', '**' and possibly others
    supported by your operating system.  '*' and '**' are handled inside Vim, so
    they work on all operating systems.

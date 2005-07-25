@@ -1022,8 +1022,11 @@ gui_mch_init_font(char_u *font_name, int fontset)
     return OK;
 }
 
+/*
+ * Adjust gui.char_height (after 'linespace' was changed).
+ */
     int
-gui_mch_adjust_charsize()
+gui_mch_adjust_charheight()
 {
     return FAIL;
 }
@@ -1082,17 +1085,6 @@ gui_mch_set_font(GuiFont font)
 	swi(Font_SetFont, font);
     }
 }
-
-#if 0 /* not used */
-/*
- * Return TRUE if the two fonts given are equivalent.
- */
-    int
-gui_mch_same_font(GuiFont f1, GuiFont f2)
-{
-    return f1 == f2;
-}
-#endif
 
 /*
  * If a font is not going to be used, free its structure.

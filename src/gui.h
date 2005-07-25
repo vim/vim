@@ -318,8 +318,9 @@ typedef struct Gui
     scrollbar_T bottom_sbar;	    /* Bottom scrollbar */
     int		which_scrollbars[3];/* Which scrollbar boxes are active? */
     int		prev_wrap;	    /* For updating the horizontal scrollbar */
-    int		char_width;	    /* Width of char in pixels */
-    int		char_height;	    /* Height of char in pixels + 'linespace' */
+    int		char_width;	    /* Width of char cell in pixels */
+    int		char_height;	    /* Height of char cell in pixels, includes
+				       'linespace' */
     int		char_ascent;	    /* Ascent of char in pixels */
     int		border_width;	    /* Width of our border around text area */
     int		border_offset;	    /* Total pixel offset for all borders */

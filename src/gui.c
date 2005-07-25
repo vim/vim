@@ -1175,6 +1175,9 @@ gui_position_components(total_width)
     --hold_gui_events;
 }
 
+/*
+ * Get the width of the widgets and decorations to the side of the text area.
+ */
     int
 gui_get_base_width()
 {
@@ -1188,6 +1191,9 @@ gui_get_base_width()
     return base_width;
 }
 
+/*
+ * Get the height of the widgets and decorations above and below the text area.
+ */
     int
 gui_get_base_height()
 {
@@ -1331,6 +1337,8 @@ gui_get_shellsize()
 
 /*
  * Set the size of the Vim shell according to Rows and Columns.
+ * If "fit_to_display" is TRUE then the size may be reduced to fit the window
+ * on the screen.
  */
 /*ARGSUSED*/
     void

@@ -1113,7 +1113,6 @@ gui_mch_set_text_area_pos(int x, int y, int w, int h)
 	oldx = x;
 	oldy = y;
     }
-
 }
 
 
@@ -1141,7 +1140,8 @@ gui_mch_set_scrollbar_pos(
     int		w,
     int		h)
 {
-    SetWindowPos(sb->id, NULL, x, y, w, h, SWP_NOZORDER | SWP_NOACTIVATE | SWP_SHOWWINDOW);
+    SetWindowPos(sb->id, NULL, x, y, w, h,
+			      SWP_NOZORDER | SWP_NOACTIVATE | SWP_SHOWWINDOW);
 }
 
     void
@@ -1194,17 +1194,20 @@ GetFontSize(GuiFont font)
 
     gui.char_height = tm.tmHeight
 #ifndef MSWIN16_FASTTEXT
-	+ p_linespace
+				+ p_linespace
 #endif
-	;
+				;
 
     SelectFont(hdc, hfntOld);
 
     ReleaseDC(hwnd, hdc);
 }
 
+/*
+ * Adjust gui.char_height (after 'linespace' was changed).
+ */
     int
-gui_mch_adjust_charsize(void)
+gui_mch_adjust_charheight(void)
 {
     GetFontSize(gui.norm_font);
     return OK;

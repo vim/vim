@@ -8937,6 +8937,8 @@ file_pat_to_reg_pat(pat, pat_end, allow_dirs, no_bslash)
 	    case '*':
 		reg_pat[i++] = '.';
 		reg_pat[i++] = '*';
+		while (p[1] == '*')	/* "**" matches like "*" */
+		    ++p;
 		break;
 	    case '.':
 #ifdef RISCOS

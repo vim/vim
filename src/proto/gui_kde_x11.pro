@@ -14,7 +14,7 @@ void gui_mch_set_shellsize __ARGS((int width, int height, int min_width, int min
 void gui_mch_get_screen_dimensions __ARGS((int *screen_w, int *screen_h));
 void gui_mch_enable_menu __ARGS((int flag));
 void gui_mch_show_toolbar __ARGS((int showit));
-int gui_mch_adjust_charsize __ARGS((void));
+int gui_mch_adjust_charheight __ARGS((void));
 GuiFontset gui_mch_get_fontset __ARGS((char_u *name, int report_error, int fixed_width));
 int gui_mch_init_font __ARGS((char_u *font_name, int fontset));
 GuiFont gui_mch_get_font __ARGS((char_u *name, int report_error));

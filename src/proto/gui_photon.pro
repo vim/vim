@@ -59,7 +59,7 @@ void gui_mch_show_popupmenu __ARGS((vimmenu_T *menu));
 void gui_mch_toggle_tearoffs __ARGS((int enable));
 void gui_mch_show_toolbar __ARGS((int showit));
 int gui_mch_init_font __ARGS((char_u *vim_font_name, int fontset));
-int gui_mch_adjust_charsize __ARGS((void));
+int gui_mch_adjust_charheight __ARGS((void));
 GuiFont gui_mch_get_font __ARGS((char_u *vim_font_name, int report_error));
 char_u *gui_mch_get_fontname __ARGS((GuiFont font, char_u *name));
 void gui_mch_set_font __ARGS((GuiFont font));
