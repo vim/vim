@@ -37,6 +37,7 @@ void windgoto __ARGS((int row, int col));
 void setcursor __ARGS((void));
 int win_ins_lines __ARGS((win_T *wp, int row, int line_count, int invalid, int mayclear));
 int win_del_lines __ARGS((win_T *wp, int row, int line_count, int invalid, int mayclear));
+int screen_ins_lines __ARGS((int off, int row, int line_count, int end, win_T *wp));
 int screen_del_lines __ARGS((int off, int row, int line_count, int end, int force, win_T *wp));
 int showmode __ARGS((void));
 void unshowmode __ARGS((int force));

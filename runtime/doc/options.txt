@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Jul 22
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Jul 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1028,7 +1028,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Vim does not try to send a message to an external debugger (Netbeans
 	or Sun Workshop).
 
-	To check wether line breaks in the balloon text work use this check: >
+	To check whether line breaks in the balloon text work use this check: >
 		if has("balloon_multiline")
 <
 				     *'binary'* *'bin'* *'nobinary'* *'nobin'*
@@ -1066,7 +1066,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'bioskey' 'biosk'	boolean	(default on)
 			global
 			{not in Vi}  {only for MS-DOS}
-	When on the bios is called to obtain a keyboard character.  This works
+	When on the BIOS is called to obtain a keyboard character.  This works
 	better to detect CTRL-C, but only works for the console.  When using a
 	terminal over a serial port reset this option.
 	Also see |'conskey'|.

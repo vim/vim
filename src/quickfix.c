@@ -88,7 +88,7 @@ struct eformat
 				/*   '-' do not include this line */
 };
 
-static int qf_init_ext __ARGS((char_u *efile, buf_T *buf, char_u *errorformat, int newlist, linenr_T lnumfirst, linenr_T lnumlast));
+static int	qf_init_ext __ARGS((char_u *efile, buf_T *buf, typval_T *tv, char_u *errorformat, int newlist, linenr_T lnumfirst, linenr_T lnumlast));
 static void	qf_new_list __ARGS((void));
 static int	qf_add_entry __ARGS((qfline_T **prevp, char_u *dir, char_u *fname, char_u *mesg, long lnum, int col, int vis_col, char_u *pattern, int nr, int type, int valid));
 static void	qf_msg __ARGS((void));
@@ -124,7 +124,7 @@ qf_init(efile, errorformat, newlist)
 {
     if (efile == NULL)
 	return FAIL;
-    return qf_init_ext(efile, curbuf, errorformat, newlist,
+    return qf_init_ext(efile, curbuf, NULL, errorformat, newlist,
 						    (linenr_T)0, (linenr_T)0);
 }
 
@@ -137,9 +137,10 @@ qf_init(efile, errorformat, newlist)
  * Return -1 for error, number of errors for success.
  */
     static int
-qf_init_ext(efile, buf, errorformat, newlist, lnumfirst, lnumlast)
+qf_init_ext(efile, buf, tv, errorformat, newlist, lnumfirst, lnumlast)
     char_u	    *efile;
     buf_T	    *buf;
+    typval_T	    *tv;
     char_u	    *errorformat;
     int		    newlist;		/* TRUE: start a new error list */
     linenr_T	    lnumfirst;		/* first line number to use */
@@ -176,6 +177,8 @@ qf_init_ext(efile, buf, errorformat, newlist, lnumfirst, lnumlast)
     char_u	    *directory = NULL;
     char_u	    *currfile = NULL;
     char_u	    *tail = NULL;
+    char_u	    *p_str = NULL;
+    listitem_T	    *p_li = NULL;
     struct dir_stack_T  *file_stack = NULL;
     regmatch_T	    regmatch;
     static struct fmtpattern
@@ -222,7 +225,7 @@ qf_init_ext(efile, buf, errorformat, newlist, lnumfirst, lnumlast)
  * regex prog.  Only a few % characters are allowed.
  */
     /* Use the local value of 'errorformat' if it's set. */
-    if (errorformat == p_efm && *buf->b_p_efm != NUL)
+    if (errorformat == p_efm && tv == NULL && *buf->b_p_efm != NUL)
 	efm = buf->b_p_efm;
     else
 	efm = errorformat;
@@ -432,6 +435,14 @@ qf_init_ext(efile, buf, errorformat, newlist, lnumfirst, lnumlast)
     /* Always ignore case when looking for a matching error. */
     regmatch.rm_ic = TRUE;
 
+    if (tv != NULL)
+    {
+	if (tv->v_type == VAR_STRING)
+	    p_str = tv->vval.v_string;
+	else if (tv->v_type == VAR_LIST)
+	    p_li = tv->vval.v_list->lv_first;
+    }
+
     /*
      * Read the lines in the error file one by one.
      * Try to recognize one of the error formats in each line.
@@ -441,10 +452,57 @@ qf_init_ext(efile, buf, errorformat, newlist, lnumfirst, lnumlast)
 	/* Get the next line. */
 	if (fd == NULL)
 	{
-	    if (buflnum > lnumlast)
-		break;
-	    vim_strncpy(IObuff, ml_get_buf(buf, buflnum++, FALSE),
-							     CMDBUFFSIZE - 2);
+	    if (tv != NULL)
+	    {
+		int len;
+
+		if (tv->v_type == VAR_STRING)
+		{
+		    /* Get the next line from the supplied string */
+		    char_u *p;
+
+		    if (!*p_str) /* Reached the end of the string */
+			break;
+
+		    p = vim_strchr(p_str, '\n');
+		    if (p)
+			len = p - p_str + 1;
+		    else
+			len = STRLEN(p_str);
+
+		    if (len > CMDBUFFSIZE - 2)
+			vim_strncpy(IObuff, p_str, CMDBUFFSIZE - 2);
+		    else
+			vim_strncpy(IObuff, p_str, len);
+
+		    p_str += len;
+		}
+		else if (tv->v_type == VAR_LIST)
+		{
+		    /* Get the next line from the supplied list */
+		    while (p_li && p_li->li_tv.v_type != VAR_STRING)
+			p_li = p_li->li_next;	/* Skip non-string items */
+
+		    if (!p_li)			/* End of the list */
+			break;
+
+		    len = STRLEN(p_li->li_tv.vval.v_string);
+		    if (len > CMDBUFFSIZE - 2)
+			len = CMDBUFFSIZE - 2;
+
+		    vim_strncpy(IObuff, p_li->li_tv.vval.v_string, len);
+
+		    p_li = p_li->li_next;	/* next item */
+		}
+	    }
+	    else
+	    {
+		/* Get the next line from the supplied buffer */
+		if (buflnum > lnumlast)
+		    break;
+		vim_strncpy(IObuff, ml_get_buf(buf, buflnum++, FALSE),
+			    CMDBUFFSIZE - 2);
+	    }
 	}
 	else if (fgets((char *)IObuff, CMDBUFFSIZE - 2, fd) == NULL)
 	    break;
@@ -1446,7 +1504,6 @@ qf_list(eap)
     int		idx1 = 1;
     int		idx2 = -1;
     int		need_return = TRUE;
-    int		last_printed = 1;
     char_u	*arg = eap->arg;
     int		all = eap->forceit;	/* if not :cl!, only show
 						   recognised errors */
@@ -1467,7 +1524,6 @@ qf_list(eap)
     if (idx2 < 0)
 	idx2 = (-idx2 > i) ? 0 : idx2 + i + 1;
 
-    more_back_used = TRUE;
     if (qf_lists[qf_curlist].qf_nonevalid)
 	all = TRUE;
     qfp = qf_lists[qf_curlist].qf_start;
@@ -1478,79 +1534,59 @@ qf_list(eap)
 	    if (need_return)
 	    {
 		msg_putchar('\n');
+		if (got_int)
+		    break;
 		need_return = FALSE;
 	    }
-	    if (more_back == 0)
-	    {
-		fname = NULL;
-		if (qfp->qf_fnum != 0
-			      && (buf = buflist_findnr(qfp->qf_fnum)) != NULL)
-		{
-		    fname = buf->b_fname;
-		    if (qfp->qf_type == 1)	/* :helpgrep */
-			fname = gettail(fname);
-		}
-		if (fname == NULL)
-		    sprintf((char *)IObuff, "%2d", i);
-		else
-		    vim_snprintf((char *)IObuff, IOSIZE, "%2d %s",
-							    i, (char *)fname);
-		msg_outtrans_attr(IObuff, i == qf_lists[qf_curlist].qf_index
-			? hl_attr(HLF_L) : hl_attr(HLF_D));
-		if (qfp->qf_lnum == 0)
-		    IObuff[0] = NUL;
-		else if (qfp->qf_col == 0)
-		    sprintf((char *)IObuff, ":%ld", qfp->qf_lnum);
-		else
-		    sprintf((char *)IObuff, ":%ld col %d",
-						   qfp->qf_lnum, qfp->qf_col);
-		sprintf((char *)IObuff + STRLEN(IObuff), "%s:",
-				  (char *)qf_types(qfp->qf_type, qfp->qf_nr));
-		msg_puts_attr(IObuff, hl_attr(HLF_N));
-		if (qfp->qf_pattern != NULL)
-		{
-		    qf_fmt_text(qfp->qf_pattern, IObuff, IOSIZE);
-		    STRCAT(IObuff, ":");
-		    msg_puts(IObuff);
-		}
-		msg_puts((char_u *)" ");
 
-		/* Remove newlines and leading whitespace from the text.
-		 * For an unrecognized line keep the indent, the compiler may
-		 * mark a word with ^^^^. */
-		qf_fmt_text((fname != NULL || qfp->qf_lnum != 0)
+	    fname = NULL;
+	    if (qfp->qf_fnum != 0
+			      && (buf = buflist_findnr(qfp->qf_fnum)) != NULL)
+	    {
+		fname = buf->b_fname;
+		if (qfp->qf_type == 1)	/* :helpgrep */
+		    fname = gettail(fname);
+	    }
+	    if (fname == NULL)
+		sprintf((char *)IObuff, "%2d", i);
+	    else
+		vim_snprintf((char *)IObuff, IOSIZE, "%2d %s",
+							    i, (char *)fname);
+	    msg_outtrans_attr(IObuff, i == qf_lists[qf_curlist].qf_index
+					   ? hl_attr(HLF_L) : hl_attr(HLF_D));
+	    if (qfp->qf_lnum == 0)
+		IObuff[0] = NUL;
+	    else if (qfp->qf_col == 0)
+		sprintf((char *)IObuff, ":%ld", qfp->qf_lnum);
+	    else
+		sprintf((char *)IObuff, ":%ld col %d",
+						   qfp->qf_lnum, qfp->qf_col);
+	    sprintf((char *)IObuff + STRLEN(IObuff), "%s:",
+				  (char *)qf_types(qfp->qf_type, qfp->qf_nr));
+	    msg_puts_attr(IObuff, hl_attr(HLF_N));
+	    if (qfp->qf_pattern != NULL)
+	    {
+		qf_fmt_text(qfp->qf_pattern, IObuff, IOSIZE);
+		STRCAT(IObuff, ":");
+		msg_puts(IObuff);
+	    }
+	    msg_puts((char_u *)" ");
+
+	    /* Remove newlines and leading whitespace from the text.  For an
+	     * unrecognized line keep the indent, the compiler may mark a word
+	     * with ^^^^. */
+	    qf_fmt_text((fname != NULL || qfp->qf_lnum != 0)
 				     ? skipwhite(qfp->qf_text) : qfp->qf_text,
 							      IObuff, IOSIZE);
-		msg_prt_line(IObuff, FALSE);
-		out_flush();		/* show one line at a time */
-		need_return = TRUE;
-		last_printed = i;
-	    }
+	    msg_prt_line(IObuff, FALSE);
+	    out_flush();		/* show one line at a time */
+	    need_return = TRUE;
 	}
-	if (more_back)
-	{
-	    /* scrolling backwards from the more-prompt */
-	    /* TODO: compute the number of items from the screen lines */
-	    more_back = more_back * 2 - 1;
-	    while (i > last_printed - more_back && i > idx1)
-	    {
-		do
-		{
-		    qfp = qfp->qf_prev;
-		    --i;
-		}
-		while (i > idx1 && !qfp->qf_valid && !all);
-	    }
-	    more_back = 0;
-	}
-	else
-	{
-	    qfp = qfp->qf_next;
-	    ++i;
-	}
+
+	qfp = qfp->qf_next;
+	++i;
 	ui_breakcheck();
     }
-    more_back_used = FALSE;
 }
 
 /*
@@ -2330,7 +2366,7 @@ ex_cnext(eap)
 }
 
 /*
- * ":cfile" command.
+ * ":cfile"/":cgetfile"/":caddfile" commands.
  */
     void
 ex_cfile(eap)
@@ -2338,7 +2374,19 @@ ex_cfile(eap)
 {
     if (*eap->arg != NUL)
 	set_string_option_direct((char_u *)"ef", -1, eap->arg, OPT_FREE);
-    if (qf_init(p_ef, p_efm, TRUE) > 0 && eap->cmdidx == CMD_cfile)
+
+    /*
+     * This function is used by the :cfile, :cgetfile and :caddfile
+     * commands.
+     * :cfile always creates a new quickfix list and jumps to the
+     * first error.
+     * :cgetfile creates a new quickfix list but doesn't jump to the
+     * first error.
+     * :caddfile adds to an existing quickfix list. If there is no
+     * quickfix list then a new list is created.
+     */
+    if (qf_init(p_ef, p_efm, eap->cmdidx != CMD_caddfile) > 0
+						  && eap->cmdidx == CMD_cfile)
 	qf_jump(0, 0, eap->forceit);		/* display first error */
 }
 
@@ -2917,8 +2965,29 @@ ex_cbuffer(eap)
 		|| eap->line2 < 1 || eap->line2 > buf->b_ml.ml_line_count)
 	    EMSG(_(e_invrange));
 	else
-	    qf_init_ext(NULL, buf, p_efm, TRUE, eap->line1, eap->line2);
+	    qf_init_ext(NULL, buf, NULL, p_efm, TRUE, eap->line1, eap->line2);
     }
+}
+
+/*
+ * ":cexpr {expr}" command.
+ */
+    void
+ex_cexpr(eap)
+    exarg_T	*eap;
+{
+    typval_T	*tv;
+
+    tv = eval_expr(eap->arg, NULL);
+    if (!tv || (tv->v_type != VAR_STRING && tv->v_type != VAR_LIST) ||
+	(tv->v_type == VAR_STRING && !tv->vval.v_string) ||
+	(tv->v_type == VAR_LIST && !tv->vval.v_list))
+	return;
+
+    if (qf_init_ext(NULL, NULL, tv, p_efm, TRUE, (linenr_T)0, (linenr_T)0) > 0)
+	qf_jump(0, 0, eap->forceit);		/* display first error */
+
+    clear_tv(tv);
 }
 
 /*

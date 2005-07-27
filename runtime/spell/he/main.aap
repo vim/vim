@@ -1,4 +1,4 @@
-# Aap recipe for Dutch Vim spell files.
+# Aap recipe for Hebrew Vim spell files.
 
 # Use a freshly compiled Vim if it exists.
 @if os.path.exists('../../../src/vim'):

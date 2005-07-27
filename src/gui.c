@@ -455,6 +455,7 @@ gui_init()
      * where Vim was started. */
     emsg_on_display = FALSE;
     msg_scrolled = 0;
+    clear_sb_text();
     need_wait_return = FALSE;
     msg_didany = FALSE;
 

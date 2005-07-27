@@ -169,7 +169,6 @@ static void redraw_block __ARGS((int row, int end, win_T *wp));
 #endif
 static int win_do_lines __ARGS((win_T *wp, int row, int line_count, int mayclear, int del));
 static void win_rest_invalid __ARGS((win_T *wp));
-static int screen_ins_lines __ARGS((int, int, int, int, win_T *wp));
 static void msg_pos_mode __ARGS((void));
 #if defined(FEAT_WINDOWS) || defined(FEAT_WILDMENU) || defined(FEAT_STL_OPT)
 static int fillchar_status __ARGS((int *attr, int is_curwin));
@@ -7618,7 +7617,7 @@ win_rest_invalid(wp)
  *
  * return FAIL for failure, OK for success.
  */
-    static int
+    int
 screen_ins_lines(off, row, line_count, end, wp)
     int		off;
     int		row;

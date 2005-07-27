@@ -25,7 +25,6 @@
  * The current implementation remembers all file names ever used.
  */
 
-
 #include "vim.h"
 
 #if defined(FEAT_CMDL_COMPL) || defined(FEAT_LISTCMDS) || defined(FEAT_EVAL) || defined(FEAT_PERL)

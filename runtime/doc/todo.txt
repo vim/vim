@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 25
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -58,13 +58,13 @@ Awaiting response:
 
 PLANNED FOR VERSION 7.0:
 
--   Store messages to allow SCROLLING BACK for all commands.  And other "less"
-    like commands.
 -   "INTELLISENSE".  First cleanup the Insert-mode completion.
 	http://www.vim.org/scripts/script.php?script_id=747
 	www.vim.org script 1213 (Java Development Environment) (Fuchuan Wang)
 	http://sourceforge.net/projects/insenvim
 	    of http://insenvim.sourceforge.net
+	IComplete: http://www.vim.org/scripts/script.php?script_id=1265
+	    and http://stud4.tuwien.ac.at/~e0125672/icomplete/
 	http://cedet.sourceforge.net/intellisense.shtml (for Emacs)
 	Ivan Villanueva has something for Java.
 	Ideas from Emads:
@@ -104,12 +104,21 @@ PLANNED FOR VERSION 7.0:
     keep undo: "3h", "1d", "2w", "1y", etc.  For the file use dot and
     extension: ".filename.un~" (like swapfile but "un~" instead of "swp").
 7   Support WINDOW TABS.  Works like several pages, each with their own
-    split windows.  Patch for GTK 1.2 passed on by Christian Michon, 2004 Jan 6.
-    Don't forget to provide an "X" to close a tab.
-    Also for the console!
+    split windows.
     In Emacs these are called frames.  Could also call them "pages".
-    Use "1gt" - "99gt" to switch to a tab?
+    Use the name of the first buffer in the tab (ignoring the help window,
+    unless it's the only one).  Add a number for the window count.
+    First make it work on the console.  Use a line of text with highlighting.
+    Then add GUI Tabs for some systems.
+    Patch for GTK 1.2 passed on by Christian Michon, 2004 Jan 6.
     Simple patch for GTK by Luis M (nov 7).
+    Don't forget to provide an "X" to close a tab.
+    Implementation: keep the list of windows as-is.  When switching to another
+    tab make the buffers in the current windows hidden, save the window
+    layout, buildup the other window layout and fill with buffers.
+    Need to be able to search the windows in inactive tabs, e.g. for the
+    quickfix window.
+    Use "1gt" - "99gt" to switch to a tab?
 -   EMBEDDING: Make it possible to run Vim inside a window of another program.
     For Xwindows this can be done with XReparentWindow().
     For GTK Neil Bird has a patch to use Vim like a widget.
@@ -237,10 +246,6 @@ Commands to use the location list:
     :lfile	      read locations from file using 'errorformat'
     :lgetfile	      idem, don't jump to first one
     :lbuffer	      idem, from current buffer.
-
-7   Add a ":cstring" command.  Works like ":cfile" but reads from a string
-    variable.  Also accept a list variable?  Patch from Yegappan Lakshmanan.
-    2005 Feb 17  Now it's ":cexpr".
 
 HTML indenting can be slow, find out why.  Any way to do some kind of
 profiling for Vim script?  At least add a function to get the current time in

@@ -29,7 +29,12 @@ static void msg_home_replace_attr __ARGS((char_u *fname, int attr));
 static char_u *screen_puts_mbyte __ARGS((char_u *s, int l, int attr));
 #endif
 static void msg_puts_attr_len __ARGS((char_u *str, int maxlen, int attr));
-static void t_puts __ARGS((int t_col, char_u *t_s, char_u *s, int attr));
+static void msg_puts_display __ARGS((char_u *str, int maxlen, int attr, int recurse));
+static void msg_scroll_up __ARGS((void));
+static void store_sb_text __ARGS((char_u **sb_str, char_u *s, int attr, int *sb_col, int finish));
+static void t_puts __ARGS((int *t_col, char_u *t_s, char_u *s, int attr));
+static void msg_puts_printf __ARGS((char_u *str, int maxlen));
+static int do_more_prompt __ARGS((int typed_char));
 static void msg_screen_putchar __ARGS((int c, int attr));
 static int  msg_check_screen __ARGS((void));
 static void redir_write __ARGS((char_u *s, int maxlen));
@@ -924,6 +929,22 @@ wait_return(redraw)
 		c = K_IGNORE;
 	    }
 #endif
+	    if (p_more && !p_cp && (c == 'b' || c == 'k' || c == 'u'))
+	    {
+		/* scroll back to show older messages */
+		do_more_prompt(c);
+		if (quit_more)
+		{
+		    c = CAR;		/* just pretend CR was hit */
+		    quit_more = FALSE;
+		    got_int = FALSE;
+		}
+		else
+		{
+		    c = K_IGNORE;
+		    hit_return_msg();
+		}
+	    }
 	} while ((had_got_int && c == Ctrl_C)
 				|| c == K_IGNORE
 #ifdef FEAT_GUI
@@ -1031,14 +1052,18 @@ wait_return(redraw)
     static void
 hit_return_msg()
 {
-    if (msg_didout)		    /* start on a new line */
+    int		save_p_more = p_more;
+
+    p_more = FALSE;	/* don't want see this message when scrolling back */
+    if (msg_didout)	/* start on a new line */
 	msg_putchar('\n');
     if (got_int)
 	MSG_PUTS(_("Interrupt: "));
 
-    MSG_PUTS_ATTR(_("Hit ENTER or type command to continue"), hl_attr(HLF_R));
+    MSG_PUTS_ATTR(_("Press ENTER or type command to continue"), hl_attr(HLF_R));
     if (!msg_use_printf())
 	msg_clr_eos();
+    p_more = save_p_more;
 }
 
 /*
@@ -1515,7 +1540,7 @@ msg_prt_line(s, list)
     if (*s == NUL && !(list && lcs_eol != NUL))
 	msg_putchar(' ');
 
-    for (;;)
+    while (!got_int)
     {
 	if (n_extra)
 	{
@@ -1711,22 +1736,10 @@ msg_puts_attr_len(str, maxlen, attr)
     int		maxlen;
     int		attr;
 {
-    int		oldState;
-    char_u	*s = str;
-    char_u	*p;
-    char_u	buf[4];
-    char_u	*t_s = str;	/* string from "t_s" to "s" is still todo */
-    int		t_col = 0;	/* screen cells todo, 0 when "t_s" not used */
-#ifdef FEAT_MBYTE
-    int		l;
-    int		cw;
-#endif
-    int		c;
-
     /*
      * If redirection is on, also write to the redirection file.
      */
-    redir_write(s, maxlen);
+    redir_write(str, maxlen);
 
     /*
      * Don't print anything when using ":silent cmd".
@@ -1737,7 +1750,7 @@ msg_puts_attr_len(str, maxlen, attr)
     /* if MSG_HIST flag set, add message to history */
     if ((attr & MSG_HIST) && maxlen < 0)
     {
-	add_msg_hist(s, -1, attr);
+	add_msg_hist(str, -1, attr);
 	attr &= ~MSG_HIST;
     }
 
@@ -1759,72 +1772,42 @@ msg_puts_attr_len(str, maxlen, attr)
      * cursor is.
      */
     if (msg_use_printf())
-    {
-#ifdef WIN3264
-	if (!(silent_mode && p_verbose == 0))
-	    mch_settmode(TMODE_COOK);	/* handle '\r' and '\n' correctly */
-#endif
-	while (*s != NUL && (maxlen < 0 || (int)(s - str) < maxlen))
-	{
-	    if (!(silent_mode && p_verbose == 0))
-	    {
-		p = &buf[0];
-		/* NL --> CR NL translation (for Unix, not for "--version") */
-		/* NL --> CR translation (for Mac) */
-		if (*s == '\n' && !info_message)
-		    *p++ = '\r';
-#if defined(USE_CR) && !defined(MACOS_X_UNIX)
-		else
-#endif
-		    *p++ = *s;
-		*p = '\0';
-		if (info_message)	/* informative message, not an error */
-		    mch_msg((char *)buf);
-		else
-		    mch_errmsg((char *)buf);
-	    }
+	msg_puts_printf(str, maxlen);
+    else
+	msg_puts_display(str, maxlen, attr, FALSE);
+}
 
-	    /* primitive way to compute the current column */
-#ifdef FEAT_RIGHTLEFT
-	    if (cmdmsg_rl)
-	    {
-		if (*s == '\r' || *s == '\n')
-		    msg_col = Columns - 1;
-		else
-		    --msg_col;
-	    }
-	    else
+/*
+ * The display part of msg_puts_attr_len().
+ * May be called recursively to display scroll-back text.
+ */
+    static void
+msg_puts_display(str, maxlen, attr, recurse)
+    char_u	*str;
+    int		maxlen;
+    int		attr;
+    int		recurse;
+{
+    char_u	*s = str;
+    char_u	*t_s = str;	/* string from "t_s" to "s" is still todo */
+    int		t_col = 0;	/* screen cells todo, 0 when "t_s" not used */
+#ifdef FEAT_MBYTE
+    int		l;
+    int		cw;
 #endif
-	    {
-		if (*s == '\r' || *s == '\n')
-		    msg_col = 0;
-		else
-		    ++msg_col;
-	    }
-	    ++s;
-	}
-	msg_didout = TRUE;	    /* assume that line is not empty */
-
-#ifdef WIN3264
-	if (!(silent_mode && p_verbose == 0))
-	    mch_settmode(TMODE_RAW);
-#endif
-	return;
-    }
+    char_u	*sb_str = str;
+    int		sb_col = msg_col;
+    int		wrap;
 
     did_wait_return = FALSE;
     while (*s != NUL && (maxlen < 0 || (int)(s - str) < maxlen))
     {
 	/*
-	 * The screen is scrolled up when:
-	 * - When outputting a newline in the last row
-	 * - when outputting a character in the last column of the last row
-	 *   (some terminals scroll automatically, some don't. To avoid
-	 *   problems we scroll ourselves)
+	 * We are at the end of the screen line when:
+	 * - When outputting a newline.
+	 * - When outputting a character in the last column.
 	 */
-	if (msg_row >= Rows - 1
-		&& (*s == '\n'
-		    || (
+	if (!recurse && msg_row >= Rows - 1 && (*s == '\n' || (
 #ifdef FEAT_RIGHTLEFT
 		    cmdmsg_rl
 		    ? (
@@ -1844,47 +1827,55 @@ msg_puts_attr_len(str, maxlen, attr)
 # endif
 		      ))))
 	{
+	    /*
+	     * The screen is scrolled up when at the last row (some terminals
+	     * scroll automatically, some don't.  To avoid problems we scroll
+	     * ourselves).
+	     */
 	    if (t_col > 0)
-	    {
 		/* output postponed text */
-		t_puts(t_col, t_s, s, attr);
-		t_col = 0;
-	    }
+		t_puts(&t_col, t_s, s, attr);
 
 	    /* When no more prompt an no more room, truncate here */
 	    if (msg_no_more && lines_left == 0)
 		break;
-#ifdef FEAT_GUI
-	    /* Remove the cursor before scrolling, ScreenLines[] is going to
-	     * become invalid. */
-	    if (gui.in_use)
-		gui_undraw_cursor();
-#endif
-	    /* scrolling up always works */
-	    screen_del_lines(0, 0, 1, (int)Rows, TRUE, NULL);
 
-	    if (!can_clear((char_u *)" "))
-	    {
-		/* Scrolling up doesn't result in the right background.  Set
-		 * the background here.  It's not efficient, but avoids that
-		 * we have to do it all over the code. */
-		screen_fill((int)Rows - 1, (int)Rows, 0,
-						   (int)Columns, ' ', ' ', 0);
-
-		/* Also clear the last char of the last but one line if it was
-		 * not cleared before to avoid a scroll-up. */
-		if (ScreenAttrs[LineOffset[Rows - 2] + Columns - 1]
-							       == (sattr_T)-1)
-		    screen_fill((int)Rows - 2, (int)Rows - 1,
-				 (int)Columns - 1, (int)Columns, ' ', ' ', 0);
-	    }
+	    /* Scroll the screen up one line. */
+	    msg_scroll_up();
 
 	    msg_row = Rows - 2;
 	    if (msg_col >= Columns)	/* can happen after screen resize */
 		msg_col = Columns - 1;
 
+	    /* Display char in last column before showing more-prompt. */
+	    if (*s >= ' '
+#ifdef FEAT_RIGHTLEFT
+		    && !cmdmsg_rl
+#endif
+	       )
+	    {
+#ifdef FEAT_MBYTE
+		if (has_mbyte)
+		{
+		    if (enc_utf8 && maxlen >= 0)
+			/* avoid including composing chars after the end */
+			l = utfc_ptr2len_check_len(s,
+						   (int)((str + maxlen) - s));
+		    else
+			l = (*mb_ptr2len_check)(s);
+		    s = screen_puts_mbyte(s, l, attr);
+		}
+		else
+#endif
+		    msg_screen_putchar(*s++, attr);
+	    }
+
+	    if (p_more)
+		/* store text for scrolling back */
+		store_sb_text(&sb_str, s, attr, &sb_col, TRUE);
+
 	    ++msg_scrolled;
-	    need_wait_return = TRUE;	/* may need wait_return in main() */
+	    need_wait_return = TRUE; /* may need wait_return in main() */
 	    if (must_redraw < VALID)
 		must_redraw = VALID;
 	    redraw_cmdline = TRUE;
@@ -1892,170 +1883,38 @@ msg_puts_attr_len(str, maxlen, attr)
 		--cmdline_row;
 
 	    /*
-	     * if screen is completely filled wait for a character
+	     * If screen is completely filled and 'more' is set then wait
+	     * for a character.
 	     */
 	    if (p_more && --lines_left == 0 && State != HITRETURN
 					    && !msg_no_more && !exmode_active)
 	    {
-		oldState = State;
-		State = ASKMORE;
-#ifdef FEAT_MOUSE
-		setmouse();
-#endif
-		msg_moremsg(FALSE);
-		for (;;)
-		{
-		    /*
-		     * Get a typed character directly from the user.
-		     */
-		    c = get_keystroke();
-
-#if defined(FEAT_MENU) && defined(FEAT_GUI)
-		    if (c == K_MENU)
-		    {
-			int idx = get_menu_index(current_menu, ASKMORE);
-
-			/* Used a menu.  If it starts with CTRL-Y, it must
-			 * be a "Copy" for the clipboard.  Otherwise
-			 * assume that we end */
-			if (idx == MENU_INDEX_INVALID)
-			    continue;
-			c = *current_menu->strings[idx];
-			if (c != NUL && current_menu->strings[idx][1] != NUL)
-			    ins_typebuf(current_menu->strings[idx] + 1,
-				    current_menu->noremap[idx], 0, TRUE,
-				    current_menu->silent[idx]);
-		    }
-#endif
-
-		    switch (c)
-		    {
-		    case BS:
-		    case 'k':
-		    case K_UP:
-			if (!more_back_used)
-			{
-			    msg_moremsg(TRUE);
-			    continue;
-			}
-			more_back = 1;
-			lines_left = 1;
-			break;
-		    case CAR:		/* one extra line */
-		    case NL:
-		    case 'j':
-		    case K_DOWN:
-			lines_left = 1;
-			break;
-		    case ':':		/* start new command line */
 #ifdef FEAT_CON_DIALOG
-			if (!confirm_msg_used)
-#endif
-			{
-			    /* Since got_int is set all typeahead will be
-			     * flushed, but we want to keep this ':', remember
-			     * that in a special way. */
-			    typeahead_noflush(':');
-			    cmdline_row = Rows - 1;   /* put ':' on this line */
-			    skip_redraw = TRUE;	      /* skip redraw once */
-			    need_wait_return = FALSE; /* don't wait in main() */
-			}
-			/*FALLTHROUGH*/
-		    case 'q':		/* quit */
-		    case Ctrl_C:
-		    case ESC:
-#ifdef FEAT_CON_DIALOG
-			if (confirm_msg_used)
-			{
-			    /* Jump to the choices of the dialog. */
-			    s = confirm_msg_tail;
-			    lines_left = Rows - 1;
-			}
-			else
-#endif
-			{
-			    got_int = TRUE;
-			    quit_more = TRUE;
-			}
-			break;
-		    case 'u':		/* Up half a page */
-		    case K_PAGEUP:
-			if (!more_back_used)
-			{
-			    msg_moremsg(TRUE);
-			    continue;
-			}
-			more_back = Rows / 2;
-			/*FALLTHROUGH*/
-		    case 'd':		/* Down half a page */
-			lines_left = Rows / 2;
-			break;
-		    case 'b':		/* one page back */
-			if (!more_back_used)
-			{
-			    msg_moremsg(TRUE);
-			    continue;
-			}
-			more_back = Rows - 1;
-			/*FALLTHROUGH*/
-		    case ' ':		/* one extra page */
-		    case K_PAGEDOWN:
-		    case K_LEFTMOUSE:
-			lines_left = Rows - 1;
-			break;
-
-#ifdef FEAT_CLIPBOARD
-		    case Ctrl_Y:
-			/* Strange way to allow copying (yanking) a modeless
-			 * selection at the more prompt.  Use CTRL-Y,
-			 * because the same is used in Cmdline-mode and at the
-			 * hit-enter prompt.  However, scrolling one line up
-			 * might be expected... */
-			if (clip_star.state == SELECT_DONE)
-			    clip_copy_modeless_selection(TRUE);
-			continue;
-#endif
-		    default:		/* no valid response */
-			msg_moremsg(TRUE);
-			continue;
-		    }
-		    break;
-		}
-
-		/* clear the --more-- message */
-		screen_fill((int)Rows - 1, (int)Rows,
-						0, (int)Columns, ' ', ' ', 0);
-		State = oldState;
-#ifdef FEAT_MOUSE
-		setmouse();
+		if (do_more_prompt(NUL))
+		    s = confirm_msg_tail;
+#else
+		(void)do_more_prompt(NUL);
 #endif
 		if (quit_more)
-		{
-		    msg_row = Rows - 1;
-		    msg_col = 0;
-		    return;	    /* the string is not displayed! */
-		}
-#ifdef FEAT_RIGHTLEFT
-		if (cmdmsg_rl)
-		    msg_col = Columns - 1;
-#endif
+		    return;
 	    }
 	}
 
-	if (t_col > 0
-		&& (vim_strchr((char_u *)"\n\r\b\t", *s) != NULL
-		    || *s == BELL
+	wrap = *s == '\n'
 		    || msg_col + t_col >= Columns
 #ifdef FEAT_MBYTE
 		    || (has_mbyte && (*mb_ptr2cells)(s) > 1
 					    && msg_col + t_col >= Columns - 1)
 #endif
-		    ))
-	{
+		    ;
+	if (t_col > 0 && (wrap || *s == '\r' || *s == '\b'
+						 || *s == '\t' || *s == BELL))
 	    /* output any postponed text */
-	    t_puts(t_col, t_s, s, attr);
-	    t_col = 0;
-	}
+	    t_puts(&t_col, t_s, s, attr);
+
+	if (wrap && p_more && !recurse)
+	    /* store text for scrolling back */
+	    store_sb_text(&sb_str, s, attr, &sb_col, TRUE);
 
 	if (*s == '\n')		    /* go to next line */
 	{
@@ -2073,7 +1932,7 @@ msg_puts_attr_len(str, maxlen, attr)
 	    if (msg_col)
 		--msg_col;
 	}
-	else if (*s == TAB)	    /* translate into spaces */
+	else if (*s == TAB)	    /* translate Tab into spaces */
 	{
 	    do
 		msg_screen_putchar(' ', attr);
@@ -2141,9 +2000,164 @@ msg_puts_attr_len(str, maxlen, attr)
 
     /* output any postponed text */
     if (t_col > 0)
-	t_puts(t_col, t_s, s, attr);
+	t_puts(&t_col, t_s, s, attr);
+    if (p_more && !recurse)
+	store_sb_text(&sb_str, s, attr, &sb_col, FALSE);
 
     msg_check();
+}
+
+/*
+ * Scroll the screen up one line for displaying the next message line.
+ */
+    static void
+msg_scroll_up()
+{
+#ifdef FEAT_GUI
+    /* Remove the cursor before scrolling, ScreenLines[] is going
+     * to become invalid. */
+    if (gui.in_use)
+	gui_undraw_cursor();
+#endif
+    /* scrolling up always works */
+    screen_del_lines(0, 0, 1, (int)Rows, TRUE, NULL);
+
+    if (!can_clear((char_u *)" "))
+    {
+	/* Scrolling up doesn't result in the right background.  Set the
+	 * background here.  It's not efficient, but avoids that we have to do
+	 * it all over the code. */
+	screen_fill((int)Rows - 1, (int)Rows, 0, (int)Columns, ' ', ' ', 0);
+
+	/* Also clear the last char of the last but one line if it was not
+	 * cleared before to avoid a scroll-up. */
+	if (ScreenAttrs[LineOffset[Rows - 2] + Columns - 1] == (sattr_T)-1)
+	    screen_fill((int)Rows - 2, (int)Rows - 1,
+				 (int)Columns - 1, (int)Columns, ' ', ' ', 0);
+    }
+}
+
+/*
+ * To be able to scroll back at the "more" and "hit-enter" prompts we need to
+ * store the displayed text and remember where screen lines start.
+ */
+typedef struct msgchunk_S msgchunk_T;
+struct msgchunk_S
+{
+    msgchunk_T	*sb_next;
+    msgchunk_T	*sb_prev;
+    char	sb_eol;		/* TRUE when line ends after this text */
+    int		sb_msg_col;	/* column in which text starts */
+    int		sb_attr;	/* text attributes */
+    char_u	sb_text[1];	/* text to be displayed, actually longer */
+};
+
+static msgchunk_T *last_msgchunk = NULL; /* last displayed text */
+
+static msgchunk_T *msg_sb_start __ARGS((msgchunk_T *mps));
+static msgchunk_T *disp_sb_line __ARGS((int row, msgchunk_T *smp));
+
+/*
+ * Store part of a printed message for displaying when scrolling back.
+ */
+    static void
+store_sb_text(sb_str, s, attr, sb_col, finish)
+    char_u	**sb_str;	/* start of string */
+    char_u	*s;		/* just after string */
+    int		attr;
+    int		*sb_col;
+    int		finish;		/* line ends */
+{
+    msgchunk_T	*mp;
+
+    if (s > *sb_str)
+    {
+	mp = (msgchunk_T *)alloc((int)(sizeof(msgchunk_T) + (s - *sb_str)));
+	if (mp != NULL)
+	{
+	    mp->sb_eol = finish;
+	    mp->sb_msg_col = *sb_col;
+	    mp->sb_attr = attr;
+	    vim_strncpy(mp->sb_text, *sb_str, s - *sb_str);
+
+	    if (last_msgchunk == NULL)
+	    {
+		last_msgchunk = mp;
+		mp->sb_prev = NULL;
+	    }
+	    else
+	    {
+		mp->sb_prev = last_msgchunk;
+		last_msgchunk->sb_next = mp;
+		last_msgchunk = mp;
+	    }
+	    mp->sb_next = NULL;
+	}
+    }
+    else if (finish && last_msgchunk != NULL)
+	last_msgchunk->sb_eol = TRUE;
+
+    *sb_str = s;
+    *sb_col = 0;
+}
+
+/*
+ * Clear any text remembered for scrolling back.
+ * Called when redrawing the screen.
+ */
+    void
+clear_sb_text()
+{
+    msgchunk_T	*mp;
+
+    while (last_msgchunk != NULL)
+    {
+	mp = last_msgchunk->sb_prev;
+	vim_free(last_msgchunk);
+	last_msgchunk = mp;
+    }
+    last_msgchunk = NULL;
+}
+
+/*
+ * Move to the start of screen line in already displayed text.
+ */
+    static msgchunk_T *
+msg_sb_start(mps)
+    msgchunk_T *mps;
+{
+    msgchunk_T *mp = mps;
+
+    while (mp != NULL && mp->sb_prev != NULL && !mp->sb_prev->sb_eol)
+	mp = mp->sb_prev;
+    return mp;
+}
+
+/*
+ * Display a screen line from previously displayed text at row "row".
+ * Returns a pointer to the text for the next line (can be NULL).
+ */
+    static msgchunk_T *
+disp_sb_line(row, smp)
+    int		row;
+    msgchunk_T	*smp;
+{
+    msgchunk_T	*mp = smp;
+    char_u	*p;
+
+    for (;;)
+    {
+	msg_row = row;
+	msg_col = mp->sb_msg_col;
+	p = mp->sb_text;
+	if (*p == '\n')	    /* don't display the line break */
+	    ++p;
+	msg_puts_display(p, -1, mp->sb_attr, TRUE);
+	if (mp->sb_eol || mp->sb_next == NULL)
+	    break;
+	mp = mp->sb_next;
+    }
+    return mp->sb_next;
 }
 
 /*
@@ -2151,7 +2165,7 @@ msg_puts_attr_len(str, maxlen, attr)
  */
     static void
 t_puts(t_col, t_s, s, attr)
-    int		t_col;
+    int		*t_col;
     char_u	*t_s;
     char_u	*s;
     int		attr;
@@ -2159,7 +2173,8 @@ t_puts(t_col, t_s, s, attr)
     /* output postponed text */
     msg_didout = TRUE;		/* remember that line is not empty */
     screen_puts_len(t_s, (int)(s - t_s), msg_row, msg_col, attr);
-    msg_col += t_col;
+    msg_col += *t_col;
+    *t_col = 0;
 #ifdef FEAT_MBYTE
     /* If the string starts with a composing character don't increment the
      * column position for it. */
@@ -2172,7 +2187,6 @@ t_puts(t_col, t_s, s, attr)
 	++msg_row;
     }
 }
-
 
 /*
  * Returns TRUE when messages should be printed with mch_errmsg().
@@ -2191,6 +2205,309 @@ msg_use_printf()
 #endif
 	    || (swapping_screen() && !termcap_active)
 	       );
+}
+
+/*
+ * Print a message when there is no valid screen.
+ */
+    static void
+msg_puts_printf(str, maxlen)
+    char_u	*str;
+    int		maxlen;
+{
+    char_u	*s = str;
+    char_u	buf[4];
+    char_u	*p;
+
+#ifdef WIN3264
+    if (!(silent_mode && p_verbose == 0))
+	mch_settmode(TMODE_COOK);	/* handle '\r' and '\n' correctly */
+#endif
+    while (*s != NUL && (maxlen < 0 || (int)(s - str) < maxlen))
+    {
+	if (!(silent_mode && p_verbose == 0))
+	{
+	    /* NL --> CR NL translation (for Unix, not for "--version") */
+	    /* NL --> CR translation (for Mac) */
+	    p = &buf[0];
+	    if (*s == '\n' && !info_message)
+		*p++ = '\r';
+#if defined(USE_CR) && !defined(MACOS_X_UNIX)
+	    else
+#endif
+		*p++ = *s;
+	    *p = '\0';
+	    if (info_message)	/* informative message, not an error */
+		mch_msg((char *)buf);
+	    else
+		mch_errmsg((char *)buf);
+	}
+
+	/* primitive way to compute the current column */
+#ifdef FEAT_RIGHTLEFT
+	if (cmdmsg_rl)
+	{
+	    if (*s == '\r' || *s == '\n')
+		msg_col = Columns - 1;
+	    else
+		--msg_col;
+	}
+	else
+#endif
+	{
+	    if (*s == '\r' || *s == '\n')
+		msg_col = 0;
+	    else
+		++msg_col;
+	}
+	++s;
+    }
+    msg_didout = TRUE;	    /* assume that line is not empty */
+
+#ifdef WIN3264
+    if (!(silent_mode && p_verbose == 0))
+	mch_settmode(TMODE_RAW);
+#endif
+}
+
+/*
+ * Show the more-prompt and handle the user response.
+ * This takes care of scrolling back and displaying previously displayed text.
+ * When at hit-enter prompt "typed_char" is the already typed character.
+ * Returns TRUE when jumping ahead to "confirm_msg_tail".
+ */
+    static int
+do_more_prompt(typed_char)
+    int		typed_char;
+{
+    int		used_typed_char = typed_char;
+    int		oldState = State;
+    int		c;
+#ifdef FEAT_CON_DIALOG
+    int		retval = FALSE;
+#endif
+    int		scroll;
+    msgchunk_T	*mp_last = NULL;
+    msgchunk_T	*mp;
+    int		i;
+
+    State = ASKMORE;
+#ifdef FEAT_MOUSE
+    setmouse();
+#endif
+    msg_moremsg(FALSE);
+    for (;;)
+    {
+	/*
+	 * Get a typed character directly from the user.
+	 */
+	if (used_typed_char != NUL)
+	{
+	    c = used_typed_char;	/* was typed at hit-enter prompt */
+	    used_typed_char = NUL;
+	}
+	else
+	    c = get_keystroke();
+
+#if defined(FEAT_MENU) && defined(FEAT_GUI)
+	if (c == K_MENU)
+	{
+	    int idx = get_menu_index(current_menu, ASKMORE);
+
+	    /* Used a menu.  If it starts with CTRL-Y, it must
+	     * be a "Copy" for the clipboard.  Otherwise
+	     * assume that we end */
+	    if (idx == MENU_INDEX_INVALID)
+		continue;
+	    c = *current_menu->strings[idx];
+	    if (c != NUL && current_menu->strings[idx][1] != NUL)
+		ins_typebuf(current_menu->strings[idx] + 1,
+				current_menu->noremap[idx], 0, TRUE,
+						   current_menu->silent[idx]);
+	}
+#endif
+
+	scroll = 0;
+	switch (c)
+	{
+	case BS:		/* scroll one line back */
+	case K_BS:
+	case 'k':
+	case K_UP:
+	    scroll = -1;
+	    break;
+
+	case CAR:		/* one extra line */
+	case NL:
+	case 'j':
+	case K_DOWN:
+	    scroll = 1;
+	    break;
+
+	case 'u':		/* Up half a page */
+	case K_PAGEUP:
+	    scroll = -(Rows / 2);
+	    break;
+
+	case 'd':		/* Down half a page */
+	    scroll = Rows / 2;
+	    break;
+
+	case 'b':		/* one page back */
+	    scroll = -(Rows - 1);
+	    break;
+
+	case ' ':		/* one extra page */
+	case K_PAGEDOWN:
+	case K_LEFTMOUSE:
+	    scroll = Rows - 1;
+	    break;
+
+	case ':':		/* start new command line */
+#ifdef FEAT_CON_DIALOG
+	    if (!confirm_msg_used)
+#endif
+	    {
+		/* Since got_int is set all typeahead will be flushed, but we
+		 * want to keep this ':', remember that in a special way. */
+		typeahead_noflush(':');
+		cmdline_row = Rows - 1;		/* put ':' on this line */
+		skip_redraw = TRUE;		/* skip redraw once */
+		need_wait_return = FALSE;	/* don't wait in main() */
+	    }
+	    /*FALLTHROUGH*/
+	case 'q':		/* quit */
+	case Ctrl_C:
+	case ESC:
+#ifdef FEAT_CON_DIALOG
+	    if (confirm_msg_used)
+	    {
+		/* Jump to the choices of the dialog. */
+		retval = TRUE;
+		lines_left = Rows - 1;
+	    }
+	    else
+#endif
+	    {
+		got_int = TRUE;
+		quit_more = TRUE;
+	    }
+	    break;
+
+#ifdef FEAT_CLIPBOARD
+	case Ctrl_Y:
+	    /* Strange way to allow copying (yanking) a modeless
+	     * selection at the more prompt.  Use CTRL-Y,
+	     * because the same is used in Cmdline-mode and at the
+	     * hit-enter prompt.  However, scrolling one line up
+	     * might be expected... */
+	    if (clip_star.state == SELECT_DONE)
+		clip_copy_modeless_selection(TRUE);
+	    continue;
+#endif
+	default:		/* no valid response */
+	    msg_moremsg(TRUE);
+	    continue;
+	}
+
+	if (scroll != 0)
+	{
+	    if (scroll < 0)
+	    {
+		/* go to start of last line */
+		if (mp_last == NULL)
+		    mp = msg_sb_start(last_msgchunk);
+		else if (mp_last->sb_prev != NULL)
+		    mp = msg_sb_start(mp_last->sb_prev);
+		else
+		    mp = NULL;
+
+		/* go to start of line at top of the screen */
+		for (i = 0; i < Rows - 2 && mp != NULL && mp->sb_prev != NULL;
+									  ++i)
+		    mp = msg_sb_start(mp->sb_prev);
+
+		if (mp != NULL && mp->sb_prev != NULL)
+		{
+		    /* Find line to be displayed at top. */
+		    for (i = 0; i > scroll; --i)
+		    {
+			if (mp == NULL || mp->sb_prev == NULL)
+			    break;
+			mp = msg_sb_start(mp->sb_prev);
+			if (mp_last == NULL)
+			    mp_last = msg_sb_start(last_msgchunk);
+			else
+			    mp_last = msg_sb_start(mp_last->sb_prev);
+		    }
+
+		    if (scroll == -1 && screen_ins_lines(0, 0, 1,
+						       (int)Rows, NULL) == OK)
+		    {
+			/* clear last line, display line at top */
+			screen_fill((int)Rows - 1, (int)Rows, 0,
+						   (int)Columns, ' ', ' ', 0);
+			(void)disp_sb_line(0, mp);
+		    }
+		    else
+		    {
+			/* redisplay */
+			screenclear();
+			for (i = 0; i < Rows - 1; ++i)
+			    mp = disp_sb_line(i, mp);
+		    }
+		    scroll = 0;
+		}
+	    }
+	    else
+	    {
+		/* First display any text that we scrolled back. */
+		while (scroll > 0 && mp_last != NULL)
+		{
+		    /* scroll up, display line at bottom */
+		    msg_scroll_up();
+		    screen_fill((int)Rows - 2, (int)Rows - 1, 0,
+						   (int)Columns, ' ', ' ', 0);
+		    mp_last = disp_sb_line((int)Rows - 2, mp_last);
+		    --scroll;
+		}
+	    }
+
+	    if (scroll <= 0)
+	    {
+		/* displayed the requested text, more prompt again */
+		msg_moremsg(FALSE);
+		continue;
+	    }
+
+	    /* display more text, return to caller */
+	    lines_left = scroll;
+	}
+
+	break;
+    }
+
+    /* clear the --more-- message */
+    screen_fill((int)Rows - 1, (int)Rows, 0, (int)Columns, ' ', ' ', 0);
+    State = oldState;
+#ifdef FEAT_MOUSE
+    setmouse();
+#endif
+    if (quit_more)
+    {
+	msg_row = Rows - 1;
+	msg_col = 0;
+    }
+#ifdef FEAT_RIGHTLEFT
+    else if (cmdmsg_rl)
+	msg_col = Columns - 1;
+#endif
+
+#ifdef FEAT_CON_DIALOG
+    return retval;
+#else
+    return FALSE;
+#endif
 }
 
 #if defined(USE_MCH_ERRMSG) || defined(PROTO)
@@ -2344,15 +2661,15 @@ msg_screen_putchar(c, attr)
 msg_moremsg(full)
     int	    full;
 {
-    int	    attr;
+    int		attr;
+    char_u	*s = (char_u *)_("-- More --");
 
     attr = hl_attr(HLF_M);
-    screen_puts((char_u *)_("-- More --"), (int)Rows - 1, 0, attr);
+    screen_puts(s, (int)Rows - 1, 0, attr);
     if (full)
-	screen_puts(more_back_used
-	    ? (char_u *)_(" (RET/BS: line, SPACE/b: page, d/u: half page, q: quit)")
-	    : (char_u *)_(" (RET: line, SPACE: page, d: half page, q: quit)"),
-	    (int)Rows - 1, 10, attr);
+	screen_puts((char_u *)
+		_(" SPACE/d/j: screen/page/line down, b/u/k: up, q: quit "),
+		(int)Rows - 1, vim_strsize(s), attr);
 }
 
 /*

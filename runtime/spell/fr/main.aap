@@ -1,4 +1,4 @@
-# Aap recipe for Dutch Vim spell files.
+# Aap recipe for French Vim spell files.
 
 # Use a freshly compiled Vim if it exists.
 @if os.path.exists('../../../src/vim'):
@@ -19,7 +19,7 @@ $(SPELLDIR)/fr.utf-8.spl : $(VIM) $(FILES)
         :sys env LANG=fr_FR.UTF-8
 		$(VIM) -e -c "mkspell! $(SPELLDIR)/fr fr_FR" -c q
 
-../README_fr.txt : lisez-moi.txt
+../README_fr.txt : README_fr_FR.txt
         :copy $source $target
 
 #

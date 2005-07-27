@@ -166,8 +166,6 @@ EXTERN int	need_maketitle INIT(= TRUE); /* call maketitle() soon */
 #endif
 
 EXTERN int	quit_more INIT(= FALSE);    /* 'q' hit at "--more--" msg */
-EXTERN int	more_back INIT(= 0);	    /* 'b' or 'u' at "--more--" msg */
-EXTERN int	more_back_used INIT(= FALSE); /* using more_back */
 #if defined(UNIX) || defined(__EMX__) || defined(VMS) || defined(MACOS_X)
 EXTERN int	newline_on_exit INIT(= FALSE);	/* did msg in altern. screen */
 EXTERN int	intr_char INIT(= 0);	    /* extra interrupt character */

@@ -770,11 +770,6 @@ do_tag(tag, type, count, forceit, verbose)
 #endif
 		    break;
 		}
-#if 0
-		/* avoid the need to hit <CR> when jumping to another file */
-		msg_scrolled = 0;
-		redraw_all_later(NOT_VALID);
-#endif
 		cur_match = i - 1;
 	    }
 

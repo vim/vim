@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0aa.  Last change: 2005 Apr 08
+*insert.txt*    For Vim version 7.0aa.  Last change: 2005 Jul 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1004,6 +1004,7 @@ NOTE: ":append" and ":insert" don't work properly in between ":if" and
 			Note that when using this command in a function or
 			script, the insertion only starts after the function
 			or script is finished.
+			This command does not work from |:normal|.
 			{not in Vi}
 			{not available when compiled without the +ex_extra
 			feature}

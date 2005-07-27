@@ -1753,6 +1753,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :cabbrev	map.txt	/*:cabbrev*
 :cabc	map.txt	/*:cabc*
 :cabclear	map.txt	/*:cabclear*
+:cad	quickfix.txt	/*:cad*
+:caddfile	quickfix.txt	/*:caddfile*
 :cal	eval.txt	/*:cal*
 :call	eval.txt	/*:call*
 :cat	eval.txt	/*:cat*
@@ -1766,6 +1768,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :cd-	editing.txt	/*:cd-*
 :ce	change.txt	/*:ce*
 :center	change.txt	/*:center*
+:cex	quickfix.txt	/*:cex*
+:cexpr	quickfix.txt	/*:cexpr*
 :cf	quickfix.txt	/*:cf*
 :cfile	quickfix.txt	/*:cfile*
 :cfir	quickfix.txt	/*:cfir*
@@ -5188,6 +5192,7 @@ histget()	eval.txt	/*histget()*
 histnr()	eval.txt	/*histnr()*
 history	cmdline.txt	/*history*
 hit-enter	message.txt	/*hit-enter*
+hit-enter-prompt	message.txt	/*hit-enter-prompt*
 hit-return	message.txt	/*hit-return*
 hitest.vim	syntax.txt	/*hitest.vim*
 hjkl	usr_02.txt	/*hjkl*
@@ -5828,6 +5833,7 @@ new-printing	version6.txt	/*new-printing*
 new-runtime-dir	version5.txt	/*new-runtime-dir*
 new-script	version5.txt	/*new-script*
 new-script-5.4	version5.txt	/*new-script-5.4*
+new-scroll-back	version7.txt	/*new-scroll-back*
 new-search-path	version6.txt	/*new-search-path*
 new-searchpat	version6.txt	/*new-searchpat*
 new-session-files	version5.txt	/*new-session-files*

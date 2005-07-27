@@ -1580,9 +1580,15 @@ op_delete(oap)
 	    && *ml_get(oap->start.lnum) == NUL)
     {
 	/*
-	 * It's an error to operate on an empty region, when 'E' inclucded in
+	 * It's an error to operate on an empty region, when 'E' included in
 	 * 'cpoptions' (Vi compatible).
 	 */
+#ifdef FEAT_VIRTUALEDIT
+	if (virtual_op)
+	    /* Virtual editing: Nothing gets deleted, but we set the '[ and ']
+	     * marks as if it happened. */
+	    goto setmarks;
+#endif
 	if (vim_strchr(p_cpo, CPO_EMPTYREGION) != NULL)
 	    beep_flush();
 	return OK;
@@ -1858,6 +1864,9 @@ op_delete(oap)
 
     msgmore(curbuf->b_ml.ml_line_count - old_lcount);
 
+#ifdef FEAT_VIRTUALEDIT
+setmarks:
+#endif
 #ifdef FEAT_VISUAL
     if (oap->block_mode)
     {

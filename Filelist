@@ -511,6 +511,8 @@ RT_SCRIPTS =	\
 		runtime/delmenu.vim \
 		runtime/synmenu.vim \
 		runtime/makemenu.vim \
+		runtime/autoload/*.vim \
+		runtime/autoload/README.txt \
 		runtime/colors/*.vim \
 		runtime/colors/README.txt \
 		runtime/compiler/*.vim \
@@ -690,6 +692,7 @@ LANG_GEN = \
 
 # generic language files, binary
 LANG_GEN_BIN = \
+		runtime/spell/README_en.txt \
 		runtime/spell/en.ascii.spl \
 		runtime/spell/en.latin1.spl \
 		runtime/spell/en.utf-8.spl \

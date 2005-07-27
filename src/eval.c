@@ -639,7 +639,6 @@ static int handle_subscript __ARGS((char_u **arg, typval_T *rettv, int evaluate,
 static typval_T *alloc_tv __ARGS((void));
 static typval_T *alloc_string_tv __ARGS((char_u *string));
 static void free_tv __ARGS((typval_T *varp));
-static void clear_tv __ARGS((typval_T *varp));
 static void init_tv __ARGS((typval_T *varp));
 static long get_tv_number __ARGS((typval_T *varp));
 static long get_tv_number_chk __ARGS((typval_T *varp, int *denote));
@@ -683,7 +682,7 @@ static int
 # endif
 	prof_self_cmp __ARGS((const void *s1, const void *s2));
 #endif
-static int script_autoload __ARGS((char_u *name));
+static int script_autoload __ARGS((char_u *name, int reload));
 static char_u *autoload_name __ARGS((char_u *name));
 static void cat_func_name __ARGS((char_u *buf, ufunc_T *fp));
 static void func_free __ARGS((ufunc_T *fp));
@@ -1307,6 +1306,30 @@ get_spellword(list, pp)
     return get_tv_number(&li->li_tv);
 }
 #endif
+
+/*
+ * Top level evaluation function, 
+ */
+    typval_T *
+eval_expr(arg, nextcmd)
+    char_u	*arg;
+    char_u	**nextcmd;
+{
+    typval_T	*tv;
+
+    tv = (typval_T *)alloc(sizeof(typval_T));
+    if (!tv)
+	return NULL;
+
+    if (eval0(arg, tv, nextcmd, TRUE) == FAIL)
+    {
+	vim_free(tv);
+	return NULL;
+    }
+
+    return tv;
+}
+
 
 #if (defined(FEAT_USR_CMDS) && defined(FEAT_CMDL_COMPL)) || defined(PROTO)
 /*
@@ -7101,7 +7124,7 @@ call_func(name, len, rettv, argcount, argvars, firstline, lastline,
 	    }
 #endif
 	    /* Try loading a package. */
-	    if (fp == NULL && script_autoload(fname) && !aborting())
+	    if (fp == NULL && script_autoload(fname, TRUE) && !aborting())
 	    {
 		/* loaded a package, search for the function again */
 		fp = find_func(fname);
@@ -15528,7 +15551,7 @@ free_tv(varp)
 /*
  * Free the memory for a variable value and set the value to NULL or 0.
  */
-    static void
+    void
 clear_tv(varp)
     typval_T *varp;
 {
@@ -15774,9 +15797,11 @@ find_var_in_ht(ht, varname, writing)
     if (HASHITEM_EMPTY(hi))
     {
 	/* For global variables we may try auto-loading the script.  If it
-	 * worked find the variable again. */
+	 * worked find the variable again.  Don't auto-load a script if it was
+	 * loaded already, otherwise it would be loaded every time when
+	 * checking if a function name is a Funcref variable. */
 	if (ht == &globvarht && !writing
-				   && script_autoload(varname) && !aborting())
+			    && script_autoload(varname, FALSE) && !aborting())
 	    hi = hash_find(ht, varname);
 	if (HASHITEM_EMPTY(hi))
 	    return NULL;
@@ -17566,29 +17591,52 @@ prof_self_cmp(s1, s2)
 
 #endif
 
+/* The names of packages that once were loaded is remembered. */
+static garray_T	    ga_loaded = {0, 0, sizeof(char_u *), 4, NULL};
+
 /*
  * If "name" has a package name try autoloading the script for it.
  * Return TRUE if a package was loaded.
  */
     static int
-script_autoload(name)
-    char_u *name;
+script_autoload(name, reload)
+    char_u	*name;
+    int		reload;	    /* load script again when already loaded */
 {
     char_u	*p;
-    char_u	*scriptname;
+    char_u	*scriptname, *tofree;
     int		ret = FALSE;
+    int		i;
 
-    /* If there is no colon after name[1] there is no package name. */
+    /* If there is no '#' after name[0] there is no package name. */
     p = vim_strchr(name, AUTOLOAD_CHAR);
-    if (p == NULL || p <= name + 2)
+    if (p == NULL || p == name)
 	return FALSE;
 
-    /* Try loading the package from $VIMRUNTIME/autoload/<name>.vim */
-    scriptname = autoload_name(name);
-    if (cmd_runtime(scriptname, FALSE) == OK)
-	ret = TRUE;
+    tofree = scriptname = autoload_name(name);
 
-    vim_free(scriptname);
+    /* Find the name in the list of previously loaded package names.  Skip
+     * "autoload/", it's always the same. */
+    for (i = 0; i < ga_loaded.ga_len; ++i)
+	if (STRCMP(((char_u **)ga_loaded.ga_data)[i] + 9, scriptname + 9) == 0)
+	    break;
+    if (!reload && i < ga_loaded.ga_len)
+	ret = FALSE;	    /* was loaded already */
+    else
+    {
+	/* Remember the name if it wasn't loaded already. */
+	if (i == ga_loaded.ga_len && ga_grow(&ga_loaded, 1) == OK)
+	{
+	    ((char_u **)ga_loaded.ga_data)[ga_loaded.ga_len++] = scriptname;
+	    tofree = NULL;
+	}
+
+	/* Try loading the package from $VIMRUNTIME/autoload/<name>.vim */
+	if (cmd_runtime(scriptname, FALSE) == OK)
+	    ret = TRUE;
+    }
+
+    vim_free(tofree);
     return ret;
 }
 

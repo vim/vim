@@ -879,6 +879,7 @@ HELPSUBDIR = /doc
 COLSUBDIR = /colors
 SYNSUBDIR = /syntax
 INDSUBDIR = /indent
+AUTOSUBDIR = /autoload
 PLUGSUBDIR = /plugin
 FTPLUGSUBDIR = /ftplugin
 LANGSUBDIR = /lang
@@ -899,6 +900,7 @@ PODIR = po
 ### COLSUBLOC	location for colorscheme files
 ### SYNSUBLOC	location for syntax files
 ### INDSUBLOC	location for indent files
+### AUTOSUBLOC	location for standard autoload files
 ### PLUGSUBLOC	location for standard plugin files
 ### FTPLUGSUBLOC  location for ftplugin files
 ### LANGSUBLOC	location for language files
@@ -919,6 +921,7 @@ HELPSUBLOC	= $(VIMRTLOC)$(HELPSUBDIR)
 COLSUBLOC	= $(VIMRTLOC)$(COLSUBDIR)
 SYNSUBLOC	= $(VIMRTLOC)$(SYNSUBDIR)
 INDSUBLOC	= $(VIMRTLOC)$(INDSUBDIR)
+AUTOSUBLOC	= $(VIMRTLOC)$(AUTOSUBDIR)
 PLUGSUBLOC	= $(VIMRTLOC)$(PLUGSUBDIR)
 FTPLUGSUBLOC	= $(VIMRTLOC)$(FTPLUGSUBDIR)
 LANGSUBLOC	= $(VIMRTLOC)$(LANGSUBDIR)
@@ -1016,6 +1019,9 @@ SYNSOURCE = ../runtime/syntax
 
 # Where to copy the indent files from
 INDSOURCE = ../runtime/indent
+
+# Where to copy the standard plugin files from
+AUTOSOURCE = ../runtime/autoload
 
 # Where to copy the standard plugin files from
 PLUGSOURCE = ../runtime/plugin
@@ -1290,6 +1296,7 @@ DEST_HELP = $(DESTDIR)$(HELPSUBLOC)
 DEST_COL = $(DESTDIR)$(COLSUBLOC)
 DEST_SYN = $(DESTDIR)$(SYNSUBLOC)
 DEST_IND = $(DESTDIR)$(INDSUBLOC)
+DEST_AUTO = $(DESTDIR)$(AUTOSUBLOC)
 DEST_PLUG = $(DESTDIR)$(PLUGSUBLOC)
 DEST_FTP = $(DESTDIR)$(FTPLUGSUBLOC)
 DEST_LANG = $(DESTDIR)$(LANGSUBLOC)
@@ -1739,7 +1746,8 @@ INSTALLMANARGS = $(VIMLOC) $(SCRIPTLOC) $(VIMRCLOC) $(HELPSOURCE) $(MANMOD) \
 # install the help files; first adjust the contents for the final location
 installruntime: $(HELPSOURCE)/vim.1 $(DEST_VIM) $(DEST_RT) \
 		$(DEST_HELP) $(DEST_PRINT) $(DEST_COL) $(DEST_SYN) $(DEST_IND) \
-		$(DEST_FTP) $(DEST_PLUG) $(DEST_TUTOR) $(DEST_SPELL) $(DEST_COMP)
+		$(DEST_FTP) $(DEST_AUTO) $(DEST_PLUG) $(DEST_TUTOR) \
+		$(DEST_SPELL) $(DEST_COMP)
 	-$(SHELL) ./installman.sh install $(DEST_MAN) "" $(INSTALLMANARGS)
 	@echo generating help tags
 # Generate the help tags with ":helptags" to handle all languages.
@@ -1801,6 +1809,9 @@ installruntime: $(HELPSOURCE)/vim.1 $(DEST_VIM) $(DEST_RT) \
 # install the indent files
 	cd $(INDSOURCE); $(INSTALL_DATA) *.vim README.txt $(DEST_IND)
 	cd $(DEST_IND); chmod $(HELPMOD) *.vim README.txt
+# install the standard autoload files
+	cd $(AUTOSOURCE); $(INSTALL_DATA) *.vim README.txt $(DEST_AUTO)
+	cd $(DEST_AUTO); chmod $(HELPMOD) *.vim README.txt
 # install the standard plugin files
 	cd $(PLUGSOURCE); $(INSTALL_DATA) *.vim README.txt $(DEST_PLUG)
 	cd $(DEST_PLUG); chmod $(HELPMOD) *.vim README.txt
@@ -1965,7 +1976,7 @@ $(DESTDIR)$(exec_prefix) $(DEST_BIN) \
 		$(DEST_PRINT) $(DEST_COL) $(DEST_SYN) $(DEST_IND) $(DEST_FTP) \
 		$(DEST_LANG) $(DEST_KMAP) $(DEST_COMP) \
 		$(DEST_MACRO) $(DEST_TOOLS) $(DEST_TUTOR) $(DEST_SPELL) \
-		$(DEST_PLUG):
+		$(DEST_AUTO) $(DEST_PLUG):
 	-$(SHELL) ./mkinstalldirs $@
 	-chmod $(DIRMOD) $@
 
@@ -2103,8 +2114,9 @@ uninstall_runtime:
 	-rm -f $(DEST_PRINT)/*.ps
 	-rmdir $(DEST_HELP) $(DEST_PRINT) $(DEST_COL) $(DEST_SYN) $(DEST_IND)
 	-rm -rf $(DEST_FTP)/*.vim $(DEST_FTP)/README.txt
+	-rm -f $(DEST_AUTO)/*.vim $(DEST_AUTO)/README.txt
 	-rm -f $(DEST_PLUG)/*.vim $(DEST_PLUG)/README.txt
-	-rmdir $(DEST_FTP) $(DEST_PLUG) $(DEST_RT)
+	-rmdir $(DEST_FTP) $(DEST_AUTO) $(DEST_PLUG) $(DEST_RT)
 #	This will fail when other Vim versions are installed, no worries.
 	-rmdir $(DEST_VIM)
 

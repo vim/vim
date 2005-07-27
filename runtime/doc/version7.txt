@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jul 25
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jul 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -25,6 +25,7 @@ MzScheme interface			|new-MzScheme|
 Printing multi-byte text		|new-print-multi-byte|
 Translated manual pages			|new-manpage-trans|
 Internal grep				|new-vimgrep|
+Scroll back in messages			|new-scroll-back|
 POSIX compatibility			|new-posix|
 Debugger support			|new-debug-support|
 Various new items			|new-items-7|
@@ -227,6 +228,17 @@ expands into an arbitrary depth of directories.  "**" can be used in all
 places where file names are expanded, thus also with |:next| and |:args|.
 
 
+Scroll back in messages					*new-scroll-back*
+-----------------------
+
+When displaying messages, at the |more-prompt| and the |hit-enter-prompt|, The
+'k', 'u' and 'b' keys can be used to scroll back to previous messages.  This
+is especially useful for commands such as ":syntax", ":autocommand" and
+":highlight".  This is implemented in a generic way thus it works for all
+commands and highlighting is kept.  Only works when the 'more' option is set.
+Previously it only partly worked for ":clist".
+
+
 POSIX compatibility					*new-posix*
 -------------------
 
@@ -349,6 +361,12 @@ Win32: The ":winpos" command now also works in the console. (Vipin Aravind)
 
 |:sort|			Sort lines in the buffer without depending on an
 			external command.
+
+|:caddfile|		Add error messages to an existing quickfix list
+			(Yegappan Lakshmanan).
+
+|:cexpr|		Read error messages from a Vim expression (Yegappan
+			Lakshmanan).
 
 
 New functions: ~
@@ -1213,5 +1231,13 @@ Win32: When using the "Edit with Vim" entry the file name was limited to about
 When using command line completion for ":e *foo" and the file "+foo" exists
 the resulting command ":e +foo" doesn't work.  Now insert a backslash: ":e
 \+foo".
+
+When the translation of "-- More --" was not 10 characters long the following
+message would be in the wrong position.
+
+At the more-prompt the last character in the last line wasn't drawn.
+
+When deleting non-existing text while 'virtualedit' is set the '[ and '] marks
+were not set.
 
  vim:tw=78:ts=8:ft=help:norl:
