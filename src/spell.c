@@ -672,6 +672,9 @@ static linenr_T apply_prefixes __ARGS((slang_T *slang, char_u *word, int round, 
 # define SPELL_TOUPPER(c) ((c) < 256 ? spelltab.st_upper[c] : (c))
 # define SPELL_ISUPPER(c) ((c) < 256 ? spelltab.st_isu[c] : FALSE)
 #else
+# if defined(HAVE_WCHAR_H)
+#  include <wchar.h>	    /* for towupper() and towlower() */
+# endif
 /* Multi-byte implementation.  For Unicode we can call utf_*(), but don't do
  * that for ASCII, because we don't want to use 'casemap' here.  Otherwise use
  * the "w" library function for characters above 255 if available. */
@@ -3147,7 +3150,7 @@ static int spell_read_dic __ARGS((char_u *fname, spellinfo_T *spin, afffile_T *a
 static char_u *get_pfxlist __ARGS((afffile_T *affile, char_u *afflist, sblock_T	**blp));
 static int store_aff_word __ARGS((char_u *word, spellinfo_T *spin, char_u *afflist, afffile_T *affile, hashtab_T *ht, hashtab_T *xht, int comb, int flags, char_u *pfxlist));
 static int spell_read_wordfile __ARGS((char_u *fname, spellinfo_T *spin));
-static void *getroom __ARGS((sblock_T **blp, size_t len));
+static void *getroom __ARGS((sblock_T **blp, size_t len, int align));
 static char_u *getroom_save __ARGS((sblock_T **blp, char_u *s));
 static void free_blocks __ARGS((sblock_T *bl));
 static wordnode_T *wordtree_alloc __ARGS((sblock_T **blp));
@@ -3240,7 +3243,7 @@ spell_read_aff(fname, spin)
     /*
      * Allocate and init the afffile_T structure.
      */
-    aff = (afffile_T *)getroom(&spin->si_blocks, sizeof(afffile_T));
+    aff = (afffile_T *)getroom(&spin->si_blocks, sizeof(afffile_T), TRUE);
     if (aff == NULL)
 	return NULL;
     hash_init(&aff->af_pref);
@@ -3368,7 +3371,7 @@ spell_read_aff(fname, spin)
 
 		/* New affix letter. */
 		cur_aff = (affheader_T *)getroom(&spin->si_blocks,
-							 sizeof(affheader_T));
+						   sizeof(affheader_T), TRUE);
 		if (cur_aff == NULL)
 		    break;
 		cur_aff->ah_key[0] = *items[1];	/* TODO: multi-byte? */
@@ -3428,7 +3431,7 @@ spell_read_aff(fname, spin)
 		/* New item for an affix letter. */
 		--aff_todo;
 		aff_entry = (affentry_T *)getroom(&spin->si_blocks,
-							  sizeof(affentry_T));
+						    sizeof(affentry_T), TRUE);
 		if (aff_entry == NULL)
 		    break;
 		aff_entry->ae_rare = rare;
@@ -4003,7 +4006,7 @@ get_pfxlist(affile, afflist, blp)
 	    }
 	}
 	if (round == 1 && cnt > 0)
-	    res = getroom(blp, cnt + 1);
+	    res = getroom(blp, cnt + 1, FALSE);
 	if (res == NULL)
 	    break;
     }
@@ -4379,12 +4382,19 @@ spell_read_wordfile(fname, spin)
  * Returns NULL when out of memory.
  */
     static void *
-getroom(blp, len)
+getroom(blp, len, align)
     sblock_T	**blp;
-    size_t	len;	    /* length needed */
+    size_t	len;		/* length needed */
+    int		align;		/* align for pointer */
 {
     char_u	*p;
     sblock_T	*bl = *blp;
+
+    if (align && bl != NULL)
+	/* Round size up for alignment.  On some systems structures need to be
+	 * aligned to the size of a pointer (e.g., SPARC). */
+	bl->sb_used = (bl->sb_used + sizeof(char *) - 1)
+						      & ~(sizeof(char *) - 1);
 
     if (bl == NULL || bl->sb_used + len > SBLOCKSIZE)
     {
@@ -4413,7 +4423,7 @@ getroom_save(blp, s)
 {
     char_u	*sc;
 
-    sc = (char_u *)getroom(blp, STRLEN(s) + 1);
+    sc = (char_u *)getroom(blp, STRLEN(s) + 1, FALSE);
     if (sc != NULL)
 	STRCPY(sc, s);
     return sc;
@@ -4444,7 +4454,7 @@ free_blocks(bl)
 wordtree_alloc(blp)
     sblock_T	**blp;
 {
-    return (wordnode_T *)getroom(blp, sizeof(wordnode_T));
+    return (wordnode_T *)getroom(blp, sizeof(wordnode_T), TRUE);
 }
 
 /*
@@ -4541,7 +4551,7 @@ tree_add_word(word, root, flags, region, prefixID, blp)
 			|| node->wn_prefixID != prefixID)))
 	{
 	    /* Allocate a new node. */
-	    np = (wordnode_T *)getroom(blp, sizeof(wordnode_T));
+	    np = (wordnode_T *)getroom(blp, sizeof(wordnode_T), TRUE);
 	    if (np == NULL)
 		return FAIL;
 	    np->wn_byte = word[i];

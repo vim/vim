@@ -929,7 +929,8 @@ wait_return(redraw)
 		c = K_IGNORE;
 	    }
 #endif
-	    if (p_more && !p_cp && (c == 'b' || c == 'k' || c == 'u'))
+	    if (p_more && !p_cp && (c == 'b' || c == 'k' || c == 'u'
+						    || c == 'g' || c == K_UP))
 	    {
 		/* scroll back to show older messages */
 		do_more_prompt(c);
@@ -2057,6 +2058,8 @@ static msgchunk_T *last_msgchunk = NULL; /* last displayed text */
 static msgchunk_T *msg_sb_start __ARGS((msgchunk_T *mps));
 static msgchunk_T *disp_sb_line __ARGS((int row, msgchunk_T *smp));
 
+static int do_clear_sb_text = FALSE;	/* clear text on next msg */
+
 /*
  * Store part of a printed message for displaying when scrolling back.
  */
@@ -2069,6 +2072,12 @@ store_sb_text(sb_str, s, attr, sb_col, finish)
     int		finish;		/* line ends */
 {
     msgchunk_T	*mp;
+
+    if (do_clear_sb_text)
+    {
+	clear_sb_text();
+	do_clear_sb_text = FALSE;
+    }
 
     if (s > *sb_str)
     {
@@ -2102,6 +2111,15 @@ store_sb_text(sb_str, s, attr, sb_col, finish)
 }
 
 /*
+ * Finished showing messages, clear the scroll-back text on the next message.
+ */
+    void
+may_clear_sb_text()
+{
+    do_clear_sb_text = TRUE;
+}
+
+/*
  * Clear any text remembered for scrolling back.
  * Called when redrawing the screen.
  */
@@ -2117,6 +2135,26 @@ clear_sb_text()
 	last_msgchunk = mp;
     }
     last_msgchunk = NULL;
+}
+
+/*
+ * "g<" command.
+ */
+    void
+show_sb_text()
+{
+    msgchunk_T	*mp;
+
+    /* Only show somethign if there is more than one line, otherwise it looks
+     * weird, typing a command without output results in one line. */
+    mp = msg_sb_start(last_msgchunk);
+    if (mp == NULL || mp->sb_prev == NULL)
+	vim_beep();
+    else
+    {
+	do_more_prompt('G');
+	wait_return(FALSE);
+    }
 }
 
 /*
@@ -2273,7 +2311,8 @@ msg_puts_printf(str, maxlen)
 /*
  * Show the more-prompt and handle the user response.
  * This takes care of scrolling back and displaying previously displayed text.
- * When at hit-enter prompt "typed_char" is the already typed character.
+ * When at hit-enter prompt "typed_char" is the already typed character,
+ * otherwise it's NUL.
  * Returns TRUE when jumping ahead to "confirm_msg_tail".
  */
     static int
@@ -2291,11 +2330,21 @@ do_more_prompt(typed_char)
     msgchunk_T	*mp;
     int		i;
 
+    if (typed_char == 'G')
+    {
+	/* "g<": Find first line on the last page. */
+	mp_last = msg_sb_start(last_msgchunk);
+	for (i = 0; i < Rows - 2 && mp_last != NULL
+					     && mp_last->sb_prev != NULL; ++i)
+	    mp_last = msg_sb_start(mp_last->sb_prev);
+    }
+
     State = ASKMORE;
 #ifdef FEAT_MOUSE
     setmouse();
 #endif
-    msg_moremsg(FALSE);
+    if (typed_char == NUL)
+	msg_moremsg(FALSE);
     for (;;)
     {
 	/*
@@ -2361,6 +2410,15 @@ do_more_prompt(typed_char)
 	case K_PAGEDOWN:
 	case K_LEFTMOUSE:
 	    scroll = Rows - 1;
+	    break;
+
+	case 'g':		/* all the way back to the start */
+	    scroll = -999999;
+	    break;
+
+	case 'G':		/* all the way to the end */
+	    scroll = 999999;
+	    lines_left = 999999;
 	    break;
 
 	case ':':		/* start new command line */
@@ -2444,14 +2502,12 @@ do_more_prompt(typed_char)
 		    if (scroll == -1 && screen_ins_lines(0, 0, 1,
 						       (int)Rows, NULL) == OK)
 		    {
-			/* clear last line, display line at top */
-			screen_fill((int)Rows - 1, (int)Rows, 0,
-						   (int)Columns, ' ', ' ', 0);
+			/* display line at top */
 			(void)disp_sb_line(0, mp);
 		    }
 		    else
 		    {
-			/* redisplay */
+			/* redisplay all lines */
 			screenclear();
 			for (i = 0; i < Rows - 1; ++i)
 			    mp = disp_sb_line(i, mp);
@@ -2466,6 +2522,7 @@ do_more_prompt(typed_char)
 		{
 		    /* scroll up, display line at bottom */
 		    msg_scroll_up();
+		    ++msg_scrolled;
 		    screen_fill((int)Rows - 2, (int)Rows - 1, 0,
 						   (int)Columns, ' ', ' ', 0);
 		    mp_last = disp_sb_line((int)Rows - 2, mp_last);
@@ -2473,9 +2530,11 @@ do_more_prompt(typed_char)
 		}
 	    }
 
-	    if (scroll <= 0)
+	    if (scroll < 0 || (scroll == 0 && mp_last != NULL))
 	    {
 		/* displayed the requested text, more prompt again */
+		screen_fill((int)Rows - 1, (int)Rows, 0,
+						   (int)Columns, ' ', ' ', 0);
 		msg_moremsg(FALSE);
 		continue;
 	    }

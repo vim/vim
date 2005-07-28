@@ -7564,6 +7564,10 @@ nv_g_cmd(cap)
 	break;
 #endif
 
+    case '<':
+	show_sb_text();
+	break;
+
     /*
      * "gg": Goto the first line in file.  With a count it goes to
      * that line number like for "G". -- webb

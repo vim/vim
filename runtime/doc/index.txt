@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 7.0aa.  Last change: 2005 Jul 27
+*index.txt*     For Vim version 7.0aa.  Last change: 2005 Jul 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -684,6 +684,7 @@ tag		char	      note action in Normal mode	~
 				   of the current screen line
 |g8|		g8		   print hex value of bytes used in UTF-8
 				   character under the cursor
+|g<|		g<		   display previous command output
 |g?|		g?		2  Rot13 encoding operator
 |g?g?|		g??		2  Rot13 encode current line
 |g?g?|		g?g?		2  Rot13 encode current line
