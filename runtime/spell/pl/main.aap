@@ -13,13 +13,13 @@ all: $(SPELLDIR)/pl.iso-8859-2.spl $(SPELLDIR)/pl.utf-8.spl \
         $(SPELLDIR)/pl.cp1250.spl ../README_pl.txt
 
 $(SPELLDIR)/pl.iso-8859-2.spl : $(VIM) $(FILES)
-        :sys env LANG=pl_PL.ISO8859-2 $(VIM) -e -c "mkspell! $(SPELLDIR)/pl pl_PL" -c q
+        :sys env LANG=pl_PL.ISO8859-2 $(VIM) -u NONE -e -c "mkspell! $(SPELLDIR)/pl pl_PL" -c q
 
 $(SPELLDIR)/pl.utf-8.spl : $(VIM) $(FILES)
-        :sys env LANG=pl_PL.UTF-8 $(VIM) -e -c "mkspell! $(SPELLDIR)/pl pl_PL" -c q
+        :sys env LANG=pl_PL.UTF-8 $(VIM) -u NONE -e -c "mkspell! $(SPELLDIR)/pl pl_PL" -c q
 
 $(SPELLDIR)/pl.cp1250.spl : $(VIM) $(FILES)
-        :sys $(VIM) -e -c "set enc=cp1250" -c "mkspell! $(SPELLDIR)/pl pl_PL" -c q
+        :sys $(VIM) -u NONE -e -c "set enc=cp1250" -c "mkspell! $(SPELLDIR)/pl pl_PL" -c q
 
 ../README_pl.txt: README_pl_PL.txt
         :copy $source $target

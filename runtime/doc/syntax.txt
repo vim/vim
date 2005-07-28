@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.0aa.  Last change: 2005 Jul 18
+*syntax.txt*	For Vim version 7.0aa.  Last change: 2005 Jul 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3641,6 +3641,15 @@ specified field is used, and settings are merged with previous ones.  So, the
 result is like this single command has been used: >
    :hi Comment	term=bold ctermfg=Cyan guifg=#80a0ff gui=bold
 <
+When listing a highlight group and 'verbose' is non-zero, the listing will
+also tell where it was last set.  Example: >
+	:verbose hi Comment
+<	Comment        xxx term=bold ctermfg=4 guifg=Blue ~
+           Last set from /home/mool/vim/vim7/runtime/syntax/syncolor.vim ~
+
+For details about when this message is given and when it's valid see
+|:set-verbose|.
+
 					*highlight-args* *E416* *E417* *E423*
 There are three types of terminals for highlighting:
 term	a normal terminal (vt100, xterm)

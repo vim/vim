@@ -14,11 +14,11 @@ all: $(SPELLDIR)/de.latin1.spl $(SPELLDIR)/de.utf-8.spl ../README_de.txt
 
 $(SPELLDIR)/de.latin1.spl : $(VIM) $(FILES)
         :sys env LANG=de_DE.ISO8859-1
-		$(VIM) -e -c "mkspell! $(SPELLDIR)/de de_DE" -c q
+		$(VIM) -u NONE -e -c "mkspell! $(SPELLDIR)/de de_DE" -c q
 
 $(SPELLDIR)/de.utf-8.spl : $(VIM) $(FILES)
         :sys env LANG=de_DE.UTF-8
-		$(VIM) -e -c "mkspell! $(SPELLDIR)/de de_DE" -c q
+		$(VIM) -u NONE -e -c "mkspell! $(SPELLDIR)/de de_DE" -c q
 
 ../README_de.txt: README_de_DE_comb.txt
         :copy $source $target

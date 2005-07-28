@@ -86,6 +86,7 @@ int func_has_abort __ARGS((void *cookie));
 int read_viminfo_varlist __ARGS((vir_T *virp, int writing));
 void write_viminfo_varlist __ARGS((FILE *fp));
 int store_session_globals __ARGS((FILE *fd));
+void last_set_msg __ARGS((scid_T scriptID));
 int modify_fname __ARGS((char_u *src, int *usedlen, char_u **fnamep, char_u **bufp, int *fnamelen));
 char_u *do_string_sub __ARGS((char_u *str, char_u *pat, char_u *sub, char_u *flags));
 /* vim: set ft=c : */

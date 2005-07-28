@@ -4984,6 +4984,7 @@ g:netrw_rmdir_cmd	pi_netrw.txt	/*g:netrw_rmdir_cmd*
 g:netrw_rmf_cmd	pi_netrw.txt	/*g:netrw_rmf_cmd*
 g:var	eval.txt	/*g:var*
 g;	motion.txt	/*g;*
+g<	message.txt	/*g<*
 g<Down>	motion.txt	/*g<Down>*
 g<End>	motion.txt	/*g<End>*
 g<Home>	motion.txt	/*g<Home>*
@@ -6746,6 +6747,7 @@ usr_44.txt	usr_44.txt	/*usr_44.txt*
 usr_45.txt	usr_45.txt	/*usr_45.txt*
 usr_90.txt	usr_90.txt	/*usr_90.txt*
 usr_toc.txt	usr_toc.txt	/*usr_toc.txt*
+utf-16	options.txt	/*utf-16*
 utf-8	mbyte.txt	/*utf-8*
 utf-8-char-arg	mbyte.txt	/*utf-8-char-arg*
 utf-8-in-xwindows	mbyte.txt	/*utf-8-in-xwindows*

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 27
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,6 +30,8 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Is it simple to let ":verbose hi mailSubject" mention where it was last set?
+
 Mac unicode patch (Da Woon Jung):
 - selecting proportional font breaks display
 - UTF-8 text causes display problems.  Font replacement causes this.
@@ -52,8 +54,6 @@ Awaiting response:
 -   Win32: tearoff menu window should have a scrollbar when it's taller than
     the screen.
 -   mblen(NULL, 0) also in Vim 6.3?
--   Win32: Crash when pasting Simplified Chinese in utf-8. (rainux, 2005 June
-    20)
 
 
 PLANNED FOR VERSION 7.0:

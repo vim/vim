@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jul 27
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jul 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -237,6 +237,9 @@ is especially useful for commands such as ":syntax", ":autocommand" and
 ":highlight".  This is implemented in a generic way thus it works for all
 commands and highlighting is kept.  Only works when the 'more' option is set.
 Previously it only partly worked for ":clist".
+
+The |g<| command can be used to see the last page of messages after you have
+hit <Enter> at the |hit-enter-prompt|.  Then you can scroll further back.
 
 
 POSIX compatibility					*new-posix*
@@ -723,6 +726,9 @@ Win32: Balloons can have multiple lines if common controls supports it.
 
 The 's' flag is added to the search() and searchpair() function to set the
 ' mark if the cursor is moved. (Yegappan Lakshmanan)
+
+When 'verbose' is set the output of ":highlight" will show where a highlight
+item was last set.
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*

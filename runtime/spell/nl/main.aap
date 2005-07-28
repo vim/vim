@@ -13,11 +13,11 @@ all: $(SPELLDIR)/nl.latin1.spl $(SPELLDIR)/nl.utf-8.spl ../README_nl.txt
 
 $(SPELLDIR)/nl.latin1.spl : $(VIM) $(FILES)
         :sys env LANG=nl_NL.ISO8859-1
-		$(VIM) -e -c "mkspell! $(SPELLDIR)/nl nl_NL" -c q
+		$(VIM) -u NONE -e -c "mkspell! $(SPELLDIR)/nl nl_NL" -c q
 
 $(SPELLDIR)/nl.utf-8.spl : $(VIM) $(FILES)
         :sys env LANG=nl_NL.UTF-8
-		$(VIM) -e -c "mkspell! $(SPELLDIR)/nl nl_NL" -c q
+		$(VIM) -u NONE -e -c "mkspell! $(SPELLDIR)/nl nl_NL" -c q
 
 ../README_nl.txt : README_nl_NL.txt
         :copy $source $target

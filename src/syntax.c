@@ -51,6 +51,9 @@ struct hl_group
 #endif
     int		sg_link;	/* link to this highlight group ID */
     int		sg_set;		/* combination of SG_* flags */
+#ifdef FEAT_EVAL
+    scid_T	sg_scriptID;	/* script in which the group was last set */
+#endif
 };
 
 #define SG_TERM		1	/* term has been set */
@@ -6352,6 +6355,9 @@ do_highlight(line, forceit, init)
 		if (!init)
 		    HL_TABLE()[from_id - 1].sg_set |= SG_LINK;
 		HL_TABLE()[from_id - 1].sg_link = to_id;
+#ifdef FEAT_EVAL
+		HL_TABLE()[from_id - 1].sg_scriptID = current_SID;
+#endif
 		redraw_all_later(NOT_VALID);
 	    }
 	}
@@ -7101,6 +7107,9 @@ do_highlight(line, forceit, init)
 #endif
 	else
 	    set_hl_attr(idx);
+#ifdef FEAT_EVAL
+	HL_TABLE()[idx].sg_scriptID = current_SID;
+#endif
 	redraw_all_later(NOT_VALID);
     }
     vim_free(key);
@@ -7200,6 +7209,12 @@ highlight_clear(idx)
     vim_free(HL_TABLE()[idx].sg_font_name);
     HL_TABLE()[idx].sg_font_name = NULL;
     HL_TABLE()[idx].sg_gui_attr = 0;
+#endif
+#ifdef FEAT_EVAL
+    /* Clear the script ID only when there is no link, since that is not
+     * cleared. */
+    if (HL_TABLE()[idx].sg_link == 0)
+	HL_TABLE()[idx].sg_scriptID = 0;
 #endif
 }
 
@@ -7868,13 +7883,19 @@ highlight_list_one(id)
 				    0, sgp->sg_font_name, "font");
 #endif
 
-    if (sgp->sg_link)
+    if (sgp->sg_link && !got_int)
     {
 	(void)syn_list_header(didh, 9999, id);
+	didh = TRUE;
 	msg_puts_attr((char_u *)"links to", hl_attr(HLF_D));
 	msg_putchar(' ');
 	msg_outtrans(HL_TABLE()[HL_TABLE()[id - 1].sg_link - 1].sg_name);
     }
+
+#ifdef FEAT_EVAL
+    if (didh && p_verbose > 0)
+	last_set_msg(sgp->sg_scriptID);
+#endif
 }
 
     static int
@@ -7890,6 +7911,8 @@ highlight_list_arg(id, didh, type, iarg, sarg, name)
     char_u	*ts;
     int		i;
 
+    if (got_int)
+	return FALSE;
     if (type == LIST_STRING ? (sarg != NULL) : (iarg != 0))
     {
 	ts = buf;
@@ -7915,10 +7938,12 @@ highlight_list_arg(id, didh, type, iarg, sarg, name)
 	(void)syn_list_header(didh,
 			       (int)(vim_strsize(ts) + STRLEN(name) + 1), id);
 	didh = TRUE;
-
-	MSG_PUTS_ATTR(name, hl_attr(HLF_D));
-	MSG_PUTS_ATTR("=", hl_attr(HLF_D));
-	msg_outtrans(ts);
+	if (!got_int)
+	{
+	    MSG_PUTS_ATTR(name, hl_attr(HLF_D));
+	    MSG_PUTS_ATTR("=", hl_attr(HLF_D));
+	    msg_outtrans(ts);
+	}
     }
     return didh;
 }
@@ -8068,11 +8093,17 @@ syn_list_header(did_header, outlen, id)
     if (!did_header)
     {
 	msg_putchar('\n');
+	if (got_int)
+	    return TRUE;
 	msg_outtrans(HL_TABLE()[id - 1].sg_name);
 	endcol = 15;
     }
     else if (msg_col + outlen + 1 >= Columns)
+    {
 	msg_putchar('\n');
+	if (got_int)
+	    return TRUE;
+    }
     else
     {
 	if (msg_col >= endcol)	/* wrap around is like starting a new line */

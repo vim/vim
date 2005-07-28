@@ -3814,15 +3814,7 @@ do_set(arg, opt_flags)
 		    showoneopt(&options[opt_idx], opt_flags);
 #ifdef FEAT_EVAL
 		    if (p_verbose > 0)
-		    {
-			if (options[opt_idx].scriptID != 0)
-			{
-			    verbose_enter();
-			    MSG_PUTS(_("\n\tLast set from "));
-			    MSG_PUTS(get_scriptname(options[opt_idx].scriptID));
-			    verbose_leave();
-			}
-		    }
+			last_set_msg(options[opt_idx].scriptID);
 #endif
 		}
 		else

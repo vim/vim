@@ -643,6 +643,7 @@ static void init_tv __ARGS((typval_T *varp));
 static long get_tv_number __ARGS((typval_T *varp));
 static long get_tv_number_chk __ARGS((typval_T *varp, int *denote));
 static linenr_T get_tv_lnum __ARGS((typval_T *argvars));
+static linenr_T get_tv_lnum_buf __ARGS((typval_T *argvars, buf_T *buf));
 static char_u *get_tv_string __ARGS((typval_T *varp));
 static char_u *get_tv_string_buf __ARGS((typval_T *varp, char_u *buf));
 static char_u *get_tv_string_chk __ARGS((typval_T *varp));
@@ -9187,11 +9188,12 @@ f_getbufline(argvars, rettv)
     buf = get_buf_tv(&argvars[0]);
     --emsg_off;
 
-    lnum = get_tv_lnum(&argvars[1]);
+    lnum = get_tv_lnum_buf(&argvars[1], buf);
     if (argvars[2].v_type == VAR_UNKNOWN)
 	end = lnum;
     else
-	end = get_tv_lnum(&argvars[2]);
+	end = get_tv_lnum_buf(&argvars[2], buf);
+
     get_buffer_lines(buf, lnum, end, TRUE, rettv);
 }
 
@@ -15651,7 +15653,8 @@ get_tv_number_chk(varp, denote)
 }
 
 /*
- * Get the lnum from the first argument.  Also accepts ".", "$", etc.
+ * Get the lnum from the first argument.
+ * Also accepts ".", "$", etc., but that only works for the current buffer.
  * Returns -1 on error.
  */
     static linenr_T
@@ -15670,6 +15673,24 @@ get_tv_lnum(argvars)
 	clear_tv(&rettv);
     }
     return lnum;
+}
+
+/*
+ * Get the lnum from the first argument.
+ * Also accepts "$", then "buf" is used.
+ * Returns 0 on error.
+ */
+    static linenr_T
+get_tv_lnum_buf(argvars, buf)
+    typval_T	*argvars;
+    buf_T	*buf;
+{
+    if (argvars[0].v_type == VAR_STRING
+	    && argvars[0].vval.v_string != NULL
+	    && argvars[0].vval.v_string[0] == '$'
+	    && buf != NULL)
+	return buf->b_ml.ml_line_count;
+    return get_tv_number_chk(&argvars[0], NULL);
 }
 
 /*
@@ -18677,6 +18698,23 @@ store_session_globals(fd)
     return OK;
 }
 #endif
+
+/*
+ * Display script name where an item was last set.
+ * Should only be invoked when 'verbose' is non-zero.
+ */
+    void
+last_set_msg(scriptID)
+    scid_T scriptID;
+{
+    if (scriptID != 0)
+    {
+	verbose_enter();
+	MSG_PUTS(_("\n\tLast set from "));
+	MSG_PUTS(get_scriptname(scriptID));
+	verbose_leave();
+    }
+}
 
 #endif /* FEAT_EVAL */
 

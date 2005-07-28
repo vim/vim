@@ -1034,7 +1034,7 @@ main_loop(cmdwin, noexmode)
 	    emsg_on_display = FALSE;	/* can delete error message now */
 	    did_emsg = FALSE;
 	    msg_didany = FALSE;		/* reset lines_left in msg_start() */
-	    clear_sb_text();		/* clear scroll-back text */
+	    may_clear_sb_text();	/* clear scroll-back text on next msg */
 	    showruler(FALSE);
 
 	    setcursor();

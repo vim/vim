@@ -18,16 +18,16 @@ all: $(SPELLDIR)/en.latin1.spl $(SPELLDIR)/en.utf-8.spl \
 
 $(SPELLDIR)/en.latin1.spl : $(VIM) $(FILES)
         :sys env LANG=en_US.ISO8859-1
-		$(VIM) -e -c "mkspell! $(SPELLDIR)/en en_US en_AU en_CA en_GB
-			en_NZ" -c q
+		$(VIM) -u NONE -e -c "mkspell! $(SPELLDIR)/en
+                        en_US en_AU en_CA en_GB en_NZ" -c q
 
 $(SPELLDIR)/en.utf-8.spl : $(VIM) $(FILES)
         :sys env LANG=en_US.UTF-8
-		$(VIM) -e -c "mkspell! $(SPELLDIR)/en en_US en_AU en_CA en_GB
-			en_NZ" -c q
+		$(VIM) -u NONE -e -c "mkspell! $(SPELLDIR)/en
+                        en_US en_AU en_CA en_GB en_NZ" -c q
 
 $(SPELLDIR)/en.ascii.spl : $(VIM) $(FILES)
-        :sys $(VIM) -e -c "mkspell! -ascii $(SPELLDIR)/en
+        :sys $(VIM) -u NONE -e -c "mkspell! -ascii $(SPELLDIR)/en
                         en_US en_AU en_CA en_GB en_NZ" -c q
  
 ../README_en.txt: README_en_US.txt README_en_AU.txt

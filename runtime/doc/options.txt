@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Jul 26
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Jul 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2282,9 +2282,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|viminfo-file|.  And Vim expects the terminal to use utf-8 too.  Thus
 	setting 'encoding' to one of these values instead of utf-8 only has
 	effect for encoding used for files when 'fileencoding' is empty.
+	"utf-16" is NOT supported (and probably never will be, since it's such
+	an ugly encoding). *utf-16*
 
-	 When 'encoding' is set to a Unicode encoding, and 'fileencodings' was
-	 not set yet, the default for 'fileencodings' is changed.
+	When 'encoding' is set to a Unicode encoding, and 'fileencodings' was
+	not set yet, the default for 'fileencodings' is changed.
 
 			*'endofline'* *'eol'* *'noendofline'* *'noeol'*
 'endofline' 'eol'	boolean	(default on)
