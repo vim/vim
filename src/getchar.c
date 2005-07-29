@@ -1946,7 +1946,7 @@ vgetorpeek(advance)
 			    && State != CONFIRM
 #ifdef FEAT_INS_EXPAND
 			    && !((ctrl_x_mode != 0 && vim_is_ctrl_x_key(c1))
-				    || ((continue_status & CONT_LOCAL)
+				    || ((compl_cont_status & CONT_LOCAL)
 					&& (c1 == Ctrl_N || c1 == Ctrl_P)))
 #endif
 			    )

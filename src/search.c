@@ -1357,15 +1357,16 @@ search_for_exact_line(buf, pos, dir, pat)
 
 	/* when adding lines the matching line may be empty but it is not
 	 * ignored because we are interested in the next line -- Acevedo */
-	if ((continue_status & CONT_ADDING) && !(continue_status & CONT_SOL))
+	if ((compl_cont_status & CONT_ADDING)
+					   && !(compl_cont_status & CONT_SOL))
 	{
 	    if ((p_ic ? MB_STRICMP(p, pat) : STRCMP(p, pat)) == 0)
 		return OK;
 	}
 	else if (*p != NUL)	/* ignore empty lines */
 	{	/* expanding lines or words */
-	    if ((p_ic ? MB_STRNICMP(p, pat, completion_length)
-				   : STRNCMP(p, pat, completion_length)) == 0)
+	    if ((p_ic ? MB_STRNICMP(p, pat, compl_length)
+				   : STRNCMP(p, pat, compl_length)) == 0)
 		return OK;
 	}
     }
@@ -4283,7 +4284,7 @@ linewhite(lnum)
 #if defined(FEAT_FIND_ID) || defined(PROTO)
 /*
  * Find identifiers or defines in included files.
- * if p_ic && (continue_status & CONT_SOL) then ptr must be in lowercase.
+ * if p_ic && (compl_cont_status & CONT_SOL) then ptr must be in lowercase.
  */
 /*ARGSUSED*/
     void
@@ -4353,7 +4354,7 @@ find_pattern_in_path(ptr, dir, len, whole, skip_comments,
 #ifdef FEAT_INS_EXPAND
 	/* when CONT_SOL is set compare "ptr" with the beginning of the line
 	 * is faster than quote_meta/regcomp/regexec "ptr" -- Acevedo */
-	    && !(continue_status & CONT_SOL)
+	    && !(compl_cont_status & CONT_SOL)
 #endif
        )
     {
@@ -4601,7 +4602,7 @@ search_line:
 	    {
 		if (define_matched
 #ifdef FEAT_INS_EXPAND
-			|| (continue_status & CONT_SOL)
+			|| (compl_cont_status & CONT_SOL)
 #endif
 		    )
 		{
@@ -4679,9 +4680,9 @@ search_line:
 		    break;
 		found = TRUE;
 		aux = p = startp;
-		if (continue_status & CONT_ADDING)
+		if (compl_cont_status & CONT_ADDING)
 		{
-		    p += completion_length;
+		    p += compl_length;
 		    if (vim_iswordp(p))
 			goto exit_matched;
 		    p = find_word_start(p);
@@ -4689,10 +4690,10 @@ search_line:
 		p = find_word_end(p);
 		i = (int)(p - aux);
 
-		if ((continue_status & CONT_ADDING) && i == completion_length)
+		if ((compl_cont_status & CONT_ADDING) && i == compl_length)
 		{
 		    /* get the next line */
-		    /* IOSIZE > completion_length, so the STRNCPY works */
+		    /* IOSIZE > compl_length, so the STRNCPY works */
 		    STRNCPY(IObuff, aux, i);
 		    if (!(     depth < 0
 			    && lnum < end_lnum
@@ -4732,7 +4733,7 @@ search_line:
 		    IObuff[i] = NUL;
 		    aux = IObuff;
 
-		    if (i == completion_length)
+		    if (i == compl_length)
 			goto exit_matched;
 		}
 
@@ -4864,7 +4865,7 @@ exit_matched:
 	    if (def_regmatch.regprog == NULL
 #ifdef FEAT_INS_EXPAND
 		    && action == ACTION_EXPAND
-		    && !(continue_status & CONT_SOL)
+		    && !(compl_cont_status & CONT_SOL)
 #endif
 		    && *(p = startp + 1))
 		goto search_line;
@@ -4873,7 +4874,7 @@ exit_matched:
 #ifdef FEAT_INS_EXPAND
 	if (action == ACTION_EXPAND)
 	    ins_compl_check_keys();
-	if (got_int || completion_interrupted)
+	if (got_int || compl_interrupted)
 #else
 	if (got_int)
 #endif
@@ -4936,7 +4937,7 @@ exit_matched:
 						)
     {
 #ifdef FEAT_INS_EXPAND
-	if (got_int || completion_interrupted)
+	if (got_int || compl_interrupted)
 #else
 	if (got_int)
 #endif

@@ -97,6 +97,10 @@ language.
     Background: on Solaris an empty msgstr results in an empty message; GNU
     gettext ignores empty strings and items marked with "#, fuzzy".
 
+    This also removes the line numbers from the file, so that patches are not
+    messed up by changes in line numbers and show the actual changes in the
+    text.
+
 (4) Check:
 
 	vim -S check.vim xx.po

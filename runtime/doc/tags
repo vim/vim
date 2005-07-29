@@ -1596,6 +1596,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 45.4	usr_45.txt	/*45.4*
 45.5	usr_45.txt	/*45.5*
 755	spell.txt	/*755*
+767	eval.txt	/*767*
 90.1	usr_90.txt	/*90.1*
 90.2	usr_90.txt	/*90.2*
 90.3	usr_90.txt	/*90.3*
@@ -3734,6 +3735,7 @@ E762	spell.txt	/*E762*
 E763	spell.txt	/*E763*
 E764	spell.txt	/*E764*
 E765	options.txt	/*E765*
+E766	eval.txt	/*E766*
 E77	message.txt	/*E77*
 E78	motion.txt	/*E78*
 E79	message.txt	/*E79*
@@ -4449,6 +4451,7 @@ compl-filename	insert.txt	/*compl-filename*
 compl-function	insert.txt	/*compl-function*
 compl-generic	insert.txt	/*compl-generic*
 compl-keyword	insert.txt	/*compl-keyword*
+compl-occult	insert.txt	/*compl-occult*
 compl-tag	insert.txt	/*compl-tag*
 compl-vim	insert.txt	/*compl-vim*
 compl-whole-line	insert.txt	/*compl-whole-line*
@@ -5334,6 +5337,7 @@ i_CTRL-X_CTRL-I	insert.txt	/*i_CTRL-X_CTRL-I*
 i_CTRL-X_CTRL-K	insert.txt	/*i_CTRL-X_CTRL-K*
 i_CTRL-X_CTRL-L	insert.txt	/*i_CTRL-X_CTRL-L*
 i_CTRL-X_CTRL-N	insert.txt	/*i_CTRL-X_CTRL-N*
+i_CTRL-X_CTRL-O	insert.txt	/*i_CTRL-X_CTRL-O*
 i_CTRL-X_CTRL-P	insert.txt	/*i_CTRL-X_CTRL-P*
 i_CTRL-X_CTRL-T	insert.txt	/*i_CTRL-X_CTRL-T*
 i_CTRL-X_CTRL-U	insert.txt	/*i_CTRL-X_CTRL-U*
@@ -5996,6 +6000,7 @@ print-intro	print.txt	/*print-intro*
 print-options	print.txt	/*print-options*
 print.txt	print.txt	/*print.txt*
 printcap-syntax	syntax.txt	/*printcap-syntax*
+printf()	eval.txt	/*printf()*
 printing	print.txt	/*printing*
 printing-formfeed	print.txt	/*printing-formfeed*
 profile	repeat.txt	/*profile*

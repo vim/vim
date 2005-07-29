@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Jul 28
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Jul 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1585,7 +1585,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			local to buffer
 			{not in Vi}
 	This option specifies a completion function to be used for CTRL-X
-	CTRL-X.  The function will be invoked with four arguments:
+	CTRL-U.  The function will be invoked with four arguments:
 	   a:line	the text of the current line
 	   a:base	the text with which matches should match
 	   a:col        column in a:line where the cursor is, first column is
@@ -2282,8 +2282,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|viminfo-file|.  And Vim expects the terminal to use utf-8 too.  Thus
 	setting 'encoding' to one of these values instead of utf-8 only has
 	effect for encoding used for files when 'fileencoding' is empty.
-	"utf-16" is NOT supported (and probably never will be, since it's such
-	an ugly encoding). *utf-16*
 
 	When 'encoding' is set to a Unicode encoding, and 'fileencodings' was
 	not set yet, the default for 'fileencodings' is changed.

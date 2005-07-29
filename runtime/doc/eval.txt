@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 28
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1585,6 +1585,7 @@ mode()				String	current editing mode
 nextnonblank( {lnum})		Number	line nr of non-blank line >= {lnum}
 nr2char( {expr})		String	single char with ASCII value {expr}
 prevnonblank( {lnum})		Number	line nr of non-blank line <= {lnum}
+printf( {fmt}, {expr1}...)	String  format text
 range( {expr} [, {max} [, {stride}]])
 				List	items from {expr} to {max}
 readfile({fname} [, {binary} [, {max}]])
@@ -3336,6 +3337,127 @@ nr2char({expr})						*nr2char()*
 		nr2char(10), because NULs are represented with newline
 		characters.  nr2char(0) is a real NUL and terminates the
 		string, thus results in an empty string.
+
+printf({fmt}, {expr1} ...)				*printf()*
+		Return a String with {fmt}, where "%" items are replaced by
+		the formatted form of their respective arguments.  Example: >
+			:echo printf("%4d: E%d %.30s", lnum, err, text)
+<		May result in:
+			  99: E42 asdfasdfasdfasdfasdfasdfasdfas ~
+
+		Often used items are:
+		  %s   	string
+		  %6s	string right-aligned in 6 characters
+		  %c    character
+		  %d    decimal number
+		  %5d   decimal number padded with spaces to 5 characters
+		  %x    hex number
+		  %04x  hex number padded with zeros to at least 4 characters
+		  %X    hex number using upper case letters
+		  %o    octal number
+		  %%    the % character
+
+		Conversion specifications start with '%' and end with the
+		conversion type.  All other characters are copied unchanged to
+		the result.
+
+		The "%" starts a conversion specification.  The following
+		arguments appear in sequence.  Overview:
+
+			%  flags  min-field-width  .precision  type
+
+	        -   Zero or more of the following flags:
+                
+		    #	      The value should be converted to an "alternate
+			      form".  For c, d, and s conversions, this option
+			      has no effect.  For o conversions, the precision
+			      of the number is increased to force the first
+			      character of the output string to a zero (except
+			      if a zero value is printed with an explicit
+			      precision of zero).
+			      For x and X conversions, a non-zero result has
+			      the string "0x" (or "0X" for X conversions)
+			      prepended to it.
+                
+		    0 (zero)  Zero padding.  For all conversions the converted
+			      value is padded on the left with zeros rather
+			      than blanks.  If a precision is given with a
+			      numeric conversion (d, o, x, and X), the 0 flag
+			      is ignored.
+                
+		    -	      A negative field width flag; the converted value
+			      is to be left adjusted on the field boundary.
+			      The converted value is padded on the right with
+			      blanks, rather than on the left with blanks or
+			      zeros.  A - overrides a 0 if both are given.
+                
+		    ' ' (space)  A blank should be left before a positive
+			      number produced by a signed conversion (d).
+                
+		    +	      A sign must always be placed before a number
+			      produced by a signed conversion.  A + overrides
+			      a space if both are used.
+                
+		-   An optional decimal digit string specifying a minimum
+		    field width.  If the converted value has fewer characters
+		    than the field width, it will be padded with spaces on the
+		    left (or right, if the left-adjustment flag has been
+		    given) to fill out the field width.
+                
+		-   An optional precision, in the form of a period '.'
+		    followed by an optional digit string.  If the digit string
+		    is omitted, the precision is taken as zero.  This gives
+		    the minimum number of digits to appear for d, o, x, and X
+		    conversions, or the maximum number of characters to be
+		    printed from a string for s conversions.
+                
+		-   A character that specifies the type of conversion to be
+		    applied, see below.
+                
+		A field width or precision, or both, may be indicated by an
+		asterisk '*' instead of a digit string.  In this case, a
+		Number argument supplies the field width or precision.  A
+		negative field width is treated as a left adjustment flag
+		followed by a positive field width; a negative precision is
+		treated as though it were missing.  Example: >
+			:echo printf("%d: %.*s", nr, columns, line)
+<		This limits the length of the text used from "line" to
+		"columns" bytes.
+
+	        The conversion specifiers and their meanings are:
+                
+		doxX    The Number argument is converted to signed decimal
+			(d), unsigned octal (o), or unsigned hexadecimal (x
+			and X) notation.  The letters "abcdef" are used for
+			x conversions; the letters "ABCDEF" are used for X
+			conversions.  The precision, if any, gives the minimum
+			number of digits that must appear; if the converted
+			value requires fewer digits, it is padded on the left
+			with zeros.
+                
+		c	The Number argument is converted to a byte, and
+			the resulting character is written.
+                
+		s	The String argument is used.  If a precision is
+			specified, no more bytes than the number specified are
+			written.
+                
+		%	A '%' is written.  No argument is converted.  The
+			complete conversion specification is "%%".
+                
+		Each argument can be Number or String and is converted
+		automatically to fit the conversion specifier.
+
+		In no case does a non-existent or small field width cause
+		truncation of a numeric field; if the result of a conversion
+		is wider than the field width, the field is expanded to
+		contain the conversion result.
+
+							*E766* *767*
+		The number of {exprN} arguments must exactly match the number
+		of "%" items.  If there are not sufficient or too many
+		arguments an error is given.
+
 
 prevnonblank({lnum})					*prevnonblank()*
 		Return the line number of the first line at or above {lnum}

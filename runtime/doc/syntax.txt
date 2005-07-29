@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.0aa.  Last change: 2005 Jul 28
+*syntax.txt*	For Vim version 7.0aa.  Last change: 2005 Jul 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3648,7 +3648,8 @@ also tell where it was last set.  Example: >
            Last set from /home/mool/vim/vim7/runtime/syntax/syncolor.vim ~
 
 For details about when this message is given and when it's valid see
-|:set-verbose|.
+|:set-verbose|.  When ":hi clear" is used then the script where this command
+is used will be mentioned for the default values.
 
 					*highlight-args* *E416* *E417* *E423*
 There are three types of terminals for highlighting:

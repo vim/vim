@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jul 28
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jul 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -409,6 +409,7 @@ New functions: ~
 |max()|			maximum value in a List or Dictionary
 |min()|			minimum value in a List or Dictionary
 |mkdir()|		create a directory
+|printf()|		format text
 |readfile()|		read a file into a list of lines
 |remove()|		remove one or more items from a List or Dictionary
 |repeat()| 		repeat "expr" "count" times (Christophe Poucet)

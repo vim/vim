@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0aa.  Last change: 2005 Jul 26
+*insert.txt*    For Vim version 7.0aa.  Last change: 2005 Jul 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -547,7 +547,7 @@ entering new data while keeping all the columns aligned.
 ==============================================================================
 7. Insert mode completion				*ins-completion*
 
-In Insert and Replace modes, there are several commands to complete part of a
+In Insert and Replace mode, there are several commands to complete part of a
 keyword or line that has been typed.  This is useful if you are using
 complicated keywords (e.g., function names with capitals and underscores).
 
@@ -565,7 +565,9 @@ Completion can be done for:
 7. file names						|i_CTRL-X_CTRL-F|
 8. definitions or macros				|i_CTRL-X_CTRL-D|
 9. Vim command-line					|i_CTRL-X_CTRL-V|
-10. keywords in 'complete'				|i_CTRL-N|
+10. User defined completion				|i_CTRL-X_CTRL-U|
+11. Occult completion					|i_CTRL-X_CTRL-O|
+12. keywords in 'complete'				|i_CTRL-N|
 
 All these (except 2) are done in CTRL-X mode.  This is a sub-mode of Insert
 and Replace modes.  You enter CTRL-X mode by typing CTRL-X and one of the
@@ -839,7 +841,8 @@ CTRL-X CTRL-D		Search in the current and included files for the
 Completing Vim commands					*compl-vim*
 
 Completion is context-sensitive.  It works like on the Command-line.  It
-completes an Ex command as well as its arguments.
+completes an Ex command as well as its arguments.  This is useful when writing
+a Vim script.
 
 							*i_CTRL-X_CTRL-V*
 CTRL-X CTRL-V		Guess what kind of item is in front of the cursor and
@@ -858,7 +861,7 @@ CTRL-X CTRL-V		Guess what kind of item is in front of the cursor and
 			completion, for example: >
 				:imap <Tab> <C-X><C-V>
 
-User defined completing					*compl-function*
+User defined completion					*compl-function*
 
 Completion is done by a function that can be defined by the user with the
 'completefunc' option.  See the option for how the function is called and an
@@ -868,6 +871,21 @@ example.
 CTRL-X CTRL-U		Guess what kind of item is in front of the cursor and
 			find the first match for it.
 	CTRL-U	or
+	CTRL-N		Use the next match.  This match replaces the previous
+			one.
+
+	CTRL-P		Use the previous match.  This match replaces the
+			previous one.
+
+
+Occult completion					*compl-occult*
+
+Completion is done by a supernatural being.
+
+							*i_CTRL-X_CTRL-O*
+CTRL-X CTRL-O		Guess what kind of item is in front of the cursor and
+			find the first match for it.
+	CTRL-O	or
 	CTRL-N		Use the next match.  This match replaces the previous
 			one.
 

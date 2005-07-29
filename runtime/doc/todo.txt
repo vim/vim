@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 28
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,8 +30,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Is it simple to let ":verbose hi mailSubject" mention where it was last set?
-
 Mac unicode patch (Da Woon Jung):
 - selecting proportional font breaks display
 - UTF-8 text causes display problems.  Font replacement causes this.
@@ -55,10 +53,31 @@ Awaiting response:
     the screen.
 -   mblen(NULL, 0) also in Vim 6.3?
 
+Implement printf("blah %d: %s", nr, str)?  Use vim_snprintf code.
 
 PLANNED FOR VERSION 7.0:
 
--   "INTELLISENSE".  First cleanup the Insert-mode completion.
+-   Occult completion: Understands the programming language and finds matches
+    that make sense.  Esp. members of classes/structs.
+
+    It's not much different from other Insert-mode completion, use the same
+    mechanism.  Use CTRL-X CTRL-O.
+    
+    Separately develop the completion logic and the UI.  When adding UI stuff
+    make it work for all completion methods.
+
+    First cleanup the Insert-mode completion.
+
+    UI:
+    - Use 'wildmenu' kind of thing.
+    - Put the list of choices right under the place where they would be
+      inserted.
+
+    Completion logic:
+	Use 'coupler' option to list items that connect words.  For C: ".,->".
+	In function arguments suggest variables of expected type.
+
+	Ideas from others:
 	http://www.vim.org/scripts/script.php?script_id=747
 	www.vim.org script 1213 (Java Development Environment) (Fuchuan Wang)
 	http://sourceforge.net/projects/insenvim
@@ -67,24 +86,22 @@ PLANNED FOR VERSION 7.0:
 	    and http://stud4.tuwien.ac.at/~e0125672/icomplete/
 	http://cedet.sourceforge.net/intellisense.shtml (for Emacs)
 	Ivan Villanueva has something for Java.
-	Ideas from Emads:
-	    http://www.xref-tech.com/xrefactory/more_c_completion.html
-    Can't call it Intellisense, it is a trademark by Microsoft.
-    Ideas from the Vim 7 BOF at SANE:
-    - It's not possible to have one solution for all languages.  Design an
-      interface for completion plugins.  The matches can be done in a
-      Vim-script list.
-    - For interpreted languages, use the interpreter to obtain information.
-      Should work for Java (Eclipse does this), Python, Tcl, etc.
-      Richard Emberson mentioned working on an interface to Java.
-    - Check Readline for its completion interface.
-    - Use ctags for other languages.  Writing a file could trigger running
-      ctags, merging the tags of the changed file.
-    Also see "Visual Assist" http://www.wholetomato.com/products:
-    - Put the list of choices right under the place where they would be
-      inserted.
+	Emads: http://www.xref-tech.com/xrefactory/more_c_completion.html
+	Ideas from the Vim 7 BOF at SANE:
+	- It's not possible to have one solution for all languages.  Design an
+	  interface for completion plugins.  The matches can be done in a
+	  Vim-script list.
+	- For interpreted languages, use the interpreter to obtain information.
+	  Should work for Java (Eclipse does this), Python, Tcl, etc.
+	  Richard Emberson mentioned working on an interface to Java.
+	- Check Readline for its completion interface.
+	- Use ctags for other languages.  Writing a file could trigger running
+	  ctags, merging the tags of the changed file.
+	"Visual Assist" http://www.wholetomato.com/products:
+	Completion in .NET framework SharpDevelop: http://www.icsharpcode.net
+
     - Pre-expand abbreviations, show which abbrevs would match?
-    - Completion in .NET framework SharpDevelop: http://www.icsharpcode.net
+
 -   UNDO TREE: keep all states of the text, don't delete undo info.
     When making a change, instead of clearing any future undo (thus redo)
     info, make a new branch.

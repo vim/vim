@@ -1009,6 +1009,7 @@ ex_diffsplit(eap)
     {
 	/* Pretend it was a ":split fname" command */
 	eap->cmdidx = CMD_split;
+	curwin->w_p_diff = TRUE;
 	do_exedit(eap, old_curwin);
 
 	if (curwin != old_curwin)		/* split must have worked */

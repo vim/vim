@@ -61,6 +61,8 @@ char_u *v_exception __ARGS((char_u *oldval));
 char_u *v_throwpoint __ARGS((char_u *oldval));
 char_u *set_cmdarg __ARGS((exarg_T *eap, char_u *oldarg));
 void clear_tv __ARGS((typval_T *varp));
+long get_tv_number_chk __ARGS((typval_T *varp, int *denote));
+char_u *get_tv_string_chk __ARGS((typval_T *varp));
 char_u *get_var_value __ARGS((char_u *name));
 void new_script_vars __ARGS((scid_T id));
 void init_var_dict __ARGS((dict_T *dict, dictitem_T *dict_var));

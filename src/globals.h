@@ -97,22 +97,28 @@ EXTERN colnr_T	dollar_vcol INIT(= 0);
 
 #ifdef FEAT_INS_EXPAND
 /*
- * used for Insert mode completion
+ * Variables for Insert mode completion.
  */
-EXTERN int	completion_length INIT(= 0);
-EXTERN int	continue_status   INIT(= 0);
-EXTERN int	completion_interrupted INIT(= FALSE);
 
-/* flags for continue_status */
-#define CONT_ADDING	1	/* "normal" or "adding" expansion */
-#define CONT_INTRPT	(2 + 4)	/* a ^X interrupted the current expansion */
+/* length of the text being completed (this is deleted to be replaced by the
+ * match) */
+EXTERN int	compl_length INIT(= 0);
+
+/* Set when character typed while looking for matches and it means we should
+ * stop looking for matches. */
+EXTERN int	compl_interrupted INIT(= FALSE);
+
+/* List of flags for method of completion. */
+EXTERN int	compl_cont_status INIT(= 0);
+# define CONT_ADDING	1	/* "normal" or "adding" expansion */
+# define CONT_INTRPT	(2 + 4)	/* a ^X interrupted the current expansion */
 				/* it's set only iff N_ADDS is set */
-#define CONT_N_ADDS	4	/* next ^X<> will add-new or expand-current */
-#define CONT_S_IPOS	8	/* next ^X<> will set initial_pos?
+# define CONT_N_ADDS	4	/* next ^X<> will add-new or expand-current */
+# define CONT_S_IPOS	8	/* next ^X<> will set initial_pos?
 				 * if so, word-wise-expansion will set SOL */
-#define CONT_SOL	16	/* pattern includes start of line, just for
+# define CONT_SOL	16	/* pattern includes start of line, just for
 				 * word-wise expansion, not set for ^X^L */
-#define CONT_LOCAL	32	/* for ctrl_x_mode 0, ^X^P/^X^N do a local
+# define CONT_LOCAL	32	/* for ctrl_x_mode 0, ^X^P/^X^N do a local
 				 * expansion, (eg use complete=.) */
 #endif
 
@@ -1389,7 +1395,8 @@ EXTERN char_u e_invexprmsg[]	INIT(=N_("E449: Invalid expression received"));
 EXTERN char_u e_guarded[]	INIT(=N_("E463: Region is guarded, cannot modify"));
 EXTERN char_u e_nbreadonly[]	INIT(=N_("E744: NetBeans does not allow changes in read-only files"));
 #endif
-#if defined(FEAT_EVAL) || defined(FEAT_SYN_HL) || defined(PROTO)
+#if defined(FEAT_INS_EXPAND) || defined(FEAT_EVAL) || defined(FEAT_SYN_HL) \
+	    || defined(PROTO)
 EXTERN char_u e_intern2[]	INIT(=N_("E685: Internal error: %s"));
 #endif
 EXTERN char_u e_maxmempat[]	INIT(=N_("E363: pattern uses more memory than 'maxmempattern'"));

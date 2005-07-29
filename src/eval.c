@@ -562,6 +562,7 @@ static void f_mode __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_nextnonblank __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_nr2char __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_prevnonblank __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_printf __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_range __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_readfile __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_remote_expr __ARGS((typval_T *argvars, typval_T *rettv));
@@ -641,12 +642,10 @@ static typval_T *alloc_string_tv __ARGS((char_u *string));
 static void free_tv __ARGS((typval_T *varp));
 static void init_tv __ARGS((typval_T *varp));
 static long get_tv_number __ARGS((typval_T *varp));
-static long get_tv_number_chk __ARGS((typval_T *varp, int *denote));
 static linenr_T get_tv_lnum __ARGS((typval_T *argvars));
 static linenr_T get_tv_lnum_buf __ARGS((typval_T *argvars, buf_T *buf));
 static char_u *get_tv_string __ARGS((typval_T *varp));
 static char_u *get_tv_string_buf __ARGS((typval_T *varp, char_u *buf));
-static char_u *get_tv_string_chk __ARGS((typval_T *varp));
 static char_u *get_tv_string_buf_chk __ARGS((typval_T *varp, char_u *buf));
 static dictitem_T *find_var __ARGS((char_u *name, hashtab_T **htp));
 static dictitem_T *find_var_in_ht __ARGS((hashtab_T *ht, char_u *varname, int writing));
@@ -6772,6 +6771,7 @@ static struct fst
     {"nextnonblank",	1, 1, f_nextnonblank},
     {"nr2char",		1, 1, f_nr2char},
     {"prevnonblank",	1, 1, f_prevnonblank},
+    {"printf",		2, 19, f_printf},
     {"range",		1, 3, f_range},
     {"readfile",	1, 3, f_readfile},
     {"remote_expr",	2, 3, f_remote_expr},
@@ -11876,6 +11876,42 @@ f_prevnonblank(argvars, rettv)
 }
 
 /*
+ * "printf()" function
+ */
+    static void
+f_printf(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = NULL;
+#ifdef HAVE_STDARG_H
+    {
+	char_u	buf[NUMBUFLEN];
+	int	len;
+	char_u	*s;
+	int	saved_did_emsg = did_emsg;
+	char	*fmt;
+
+	/* Get the required length, allocate the buffer and do it for real. */
+	did_emsg = FALSE;
+	fmt = (char *)get_tv_string_buf(&argvars[0], buf);
+	len = vim_vsnprintf(NULL, 0, fmt, NULL, argvars + 1);
+	if (!did_emsg)
+	{
+	    s = alloc(len + 1);
+	    if (s != NULL)
+	    {
+		rettv->vval.v_string = s;
+		(void)vim_vsnprintf((char *)s, len + 1, fmt, NULL, argvars + 1);
+	    }
+	}
+	did_emsg |= saved_did_emsg;
+    }
+#endif
+}
+
+/*
  * "range()" function
  */
     static void
@@ -15616,7 +15652,7 @@ get_tv_number(varp)
     return get_tv_number_chk(varp, &error);	/* return 0L on error */
 }
 
-    static long
+    long
 get_tv_number_chk(varp, denote)
     typval_T	*varp;
     int		*denote;
@@ -15722,7 +15758,7 @@ get_tv_string_buf(varp, buf)
     return res != NULL ? res : (char_u *)"";
 }
 
-    static char_u *
+    char_u *
 get_tv_string_chk(varp)
     typval_T	*varp;
 {
