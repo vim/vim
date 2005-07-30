@@ -1405,7 +1405,8 @@ call_vim_function(func, argc, argv, safe, rettv)
 }
 
 /*
- * Call some vimL function and return the result as a string
+ * Call vimL function "func" and return the result as a string.
+ * Returns NULL when calling the function fails.
  * Uses argv[argc] for the function arguments.
  */
     void *
@@ -1416,20 +1417,43 @@ call_func_retstr(func, argc, argv, safe)
     int		safe;		/* use the sandbox */
 {
     typval_T	rettv;
-    char_u	*retval = NULL;
+    char_u	*retval;
 
     if (call_vim_function(func, argc, argv, safe, &rettv) == FAIL)
 	return NULL;
 
     retval = vim_strsave(get_tv_string(&rettv));
-
     clear_tv(&rettv);
-
     return retval;
 }
 
+#if defined(FEAT_COMPL_FUNC) || defined(PROTO)
 /*
- * Call some vimL function and return the result as a list
+ * Call vimL function "func" and return the result as a number.
+ * Returns -1 when calling the function fails.
+ * Uses argv[argc] for the function arguments.
+ */
+    long
+call_func_retnr(func, argc, argv, safe)
+    char_u      *func;
+    int		argc;
+    char_u      **argv;
+    int		safe;		/* use the sandbox */
+{
+    typval_T	rettv;
+    long	retval;
+
+    if (call_vim_function(func, argc, argv, safe, &rettv) == FAIL)
+	return -1;
+
+    retval = get_tv_number_chk(&rettv, NULL);
+    clear_tv(&rettv);
+    return retval;
+}
+#endif
+
+/*
+ * Call vimL function "func" and return the result as a list
  * Uses argv[argc] for the function arguments.
  */
     void *

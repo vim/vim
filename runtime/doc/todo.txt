@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 29
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -53,7 +53,6 @@ Awaiting response:
     the screen.
 -   mblen(NULL, 0) also in Vim 6.3?
 
-Implement printf("blah %d: %s", nr, str)?  Use vim_snprintf code.
 
 PLANNED FOR VERSION 7.0:
 
@@ -69,9 +68,10 @@ PLANNED FOR VERSION 7.0:
     First cleanup the Insert-mode completion.
 
     UI:
-    - Use 'wildmenu' kind of thing.
-    - Put the list of choices right under the place where they would be
-      inserted.
+    - At first: use 'wildmenu' kind of thing.
+    - Nicer: Display the list of choices right under the place where they
+      would be inserted in a kind of meny (use scrollbar when there are many
+      alternatives).
 
     Completion logic:
 	Use 'coupler' option to list items that connect words.  For C: ".,->".
@@ -1628,7 +1628,6 @@ Built-in script language:
 	mapname({idx}, mode)	return the name of the idx'th mapping.
 				Patch by Ilya Sher, 2004 Mar 4.
 				Return a list instead.
-	printf(format, arg, ..) How to prevent a crash???
 	char2hex()		convert char string to hex string.
 	attributes()		return file protection flags "drwxrwxrwx"
 	filecopy(from, to)	Copy a file
