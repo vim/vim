@@ -2,7 +2,7 @@
 " You can also use this as a start for your own set of menus.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Jul 22
+" Last Change:	2005 Jul 30
 
 " Note that ":an" (short for ":anoremenu") is often used to make a menu work
 " in all modes and avoid side effects from mappings defined by the user.
@@ -424,22 +424,30 @@ if has("spell")
   an 40.335.260 &Tools.&Spelling.Set\ language\ to\ "en_us"	:set spl=en_us spell<CR>
   an <silent> 40.335.270 &Tools.&Spelling.&Find\ More\ Languages	:call <SID>SpellLang()<CR>
 
+  let s:undo_spellang = ['aun &Tools.&Spelling.&Find\ More\ Languages']
   func! s:SpellLang()
-    silent! aun &Tools.&Spelling.&Find\ More\ Languages
+    for cmd in s:undo_spellang
+      exe "silent! " . cmd
+    endfor
+    let s:undo_spellang = []
+
     if &enc == "iso-8859-15"
       let enc = "latin1"
     else
       let enc = &enc
     endif
+
     let found = 0
     let s = globpath(&rtp, "spell/*." . enc . ".spl")
     if s != ""
       let n = 300
       for f in split(s, "\n")
 	let nm = substitute(f, '.*spell[/\\]\(..\)\.[^/\\]*\.spl', '\1', "")
-	if nm != "en"
-	  exe 'an 40.335.' . n . ' &Tools.&Spelling.Set\ language\ to\ "' . nm . '" :set spl=' . nm . ' spell<CR>'
+	if nm != "en" && nm !~ '/'
 	  let found += 1
+	  let menuname = '&Tools.&Spelling.Set\ language\ to\ "' . nm . '"'
+	  exe 'an 40.335.' . n . ' ' . menuname . ' :set spl=' . nm . ' spell<CR>'
+	  let s:undo_spellang += ['aun ' . menuname]
 	endif
 	let n += 10
       endfor
@@ -451,6 +459,10 @@ if has("spell")
     else
       echomsg "Found " . found . " more spell files"
     endif
+    " Need to redo this when 'encoding' is changed.
+    augroup spellmenu
+    au! EncodingChanged * call <SID>SpellLang()
+    augroup END
   endfun
 
 endif

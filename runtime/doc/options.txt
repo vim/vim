@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Jul 29
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Jul 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1584,46 +1584,54 @@ A jump table for the options with a short description can be found at |Q_op|.
 'completefunc' 'cfu'	string	(default: empty)
 			local to buffer
 			{not in Vi}
-	This option specifies a completion function to be used for CTRL-X
-	CTRL-U.  The function will be invoked with four arguments:
-	   a:line	the text of the current line
-	   a:base	the text with which matches should match
-	   a:col        column in a:line where the cursor is, first column is
-	   		zero
+			{not available when compiled without the +eval
+			or +insert_expand feature}
+	This option specifies a function to be used for CTRL-X CTRL-U
+	completion. |i_CTRL-X_CTRL-U|
+
+	The function will be invoked with three arguments:
 	   a:findstart  either 1 or 0
+	   a:col        column in the cursor line where the completion ends,
+			first column is zero
+	   a:base	the text with which matches should match
+
 	When the a:findstart argument is 1, the function must return the
 	column of where the completion starts.  It must be a number between
-	zero and "a:col".  This involves looking at the characters in a:line
-	before column a:col and include those characters that could be part of
-	the completed item.
-	When the a:findstart argument is 0 the function must return a string
-	with the matching words, separated by newlines.  When there are no
-	matches return an empty string.
+	zero and "a:col".  This involves looking at the characters in the
+	cursor line before column a:col and include those characters that
+	could be part of the completed item.  The text between this column and
+	a:col will be replaced with the matches.  Return -1 if no completion
+	can be done.
+
+	When the a:findstart argument is 0 the function must return a List
+	with the matching words.  These matches should include the "a:base"
+	text.  When there are no matches return an empty List.
+
+	The function must not move the cursor!
+
 	An example that completes the names of the months: >
-		fun! CompleteMonths(line, base, col, findstart)
+		fun! CompleteMonths(findstart, col, base)
 		  if a:findstart
-		    " locate start column of word
+		    " locate the start of the word
+		    let line = getline('.')
 		    let start = a:col
-		    while start > 0 && a:line[start - 1] =~ '\a'
-		      let start = start - 1
+		    while start > 0 && line[start - 1] =~ '\a'
+		      let start -= 1
 		    endwhile
 		    return start
 		  else
 		    " find months matching with "a:base"
-		    let res = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec"
-		    if a:base != ''
-		      let res = substitute(res, '\c\<\(\(' . a:base . '.\{-}\>\)\|.\{-}\>\)', '\2', 'g')
-		    endif
-		    let res = substitute(res, ' \+', "\n", 'g')
+		    let res = []
+		    for m in split("Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec")
+		      if m =~ '^' . a:base
+			call add(res, m)
+		      endif
+		    endfor
 		    return res
 		  endif
 		endfun
 		set completefunc=CompleteMonths
-<	Note that a substitute() function is used to reduce the list of
-	possible values and remove the ones that don't match the base.  The
-	part before the "\|" matches the base, the part after it is used
-	when there is no match.  The "\2" in the replacement is empty if the
-	part before the "\|" does not match.
+<
 
 				*'confirm'* *'cf'* *'noconfirm'* *'nocf'*
 'confirm' 'cf'		boolean (default off)

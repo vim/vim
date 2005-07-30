@@ -2550,85 +2550,56 @@ ins_compl_next_buf(buf, flag)
 }
 
 #ifdef FEAT_COMPL_FUNC
-static char_u *call_completefunc __ARGS((char_u *line, char_u *base, int col, int preproc));
-static int expand_by_function __ARGS((linenr_T lnum, int col, char_u *base, char_u ***matches));
+static int expand_by_function __ARGS((int col, char_u *base, char_u ***matches));
 
 /*
- * Execute user defined complete function 'completefunc'.
- * Return NULL if some error occurs.
- */
-    static char_u *
-call_completefunc(line, base, col, preproc)
-    char_u	*line;
-    char_u	*base;
-    int		col;
-    int		preproc;
-{
-    char_u	colbuf[30];
-    char_u	*args[4];
-
-    /* Return NULL when 'completefunc' isn't set. */
-    if (*curbuf->b_p_cfu == NUL)
-	return NULL;
-
-    sprintf((char *)colbuf, "%d", col + (base ? (int)STRLEN(base) : 0));
-    args[0] = line;
-    args[1] = base;
-    args[2] = colbuf;
-    args[3] = (char_u *)(preproc ? "1" : "0");
-    return (char_u *)call_func_retstr(curbuf->b_p_cfu, 4, args, FALSE);
-}
-
-/*
- * Execute user defined complete function 'completefunc', and get candidates
- * are separeted with "\n".  Return value is number of candidates and array
- * of candidates as "matches".
+ * Execute user defined complete function 'completefunc', and get matches in
+ * "matches".
+ * Return value is number of matches.
  */
     static int
-expand_by_function(lnum, col, base, matches)
-    linenr_T	lnum;
+expand_by_function(col, base, matches)
     int		col;
     char_u	*base;
     char_u	***matches;
 {
-    char_u	*matchstr = NULL;
-    char_u	*line_copy = vim_strsave(ml_get(lnum));
+    list_T      *matchlist;
+    char_u	colbuf[30];
+    char_u	*args[3];
+    listitem_T	*li;
+    garray_T    ga;
+    char_u	*p;
 
-    /* Execute 'completefunc' and get the result */
-    matchstr = call_completefunc(line_copy, base, col, 0);
-    vim_free(line_copy);
+    if (*curbuf->b_p_cfu == NUL)
+	return 0;
 
-    /* Parse returned string */
-    if (matchstr != NULL)
+    /* Call 'completefunc' to obtain the list of matches. */
+    args[0] = (char_u *)"0";
+    sprintf((char *)colbuf, "%d", col + (int)STRLEN(base));
+    args[1] = colbuf;
+    args[2] = base;
+
+    matchlist = call_func_retlist(curbuf->b_p_cfu, 3, args, FALSE);
+    if (matchlist == NULL)
+	return 0;
+
+    /* Go through the List with matches and put them in an array. */
+    ga_init2(&ga, (int)sizeof(char_u *), 8);
+    for (li = matchlist->lv_first; li != NULL; li = li->li_next)
     {
-	garray_T    ga;
-	char_u	    *p, *pnext;
-
-	ga_init2(&ga, (int)sizeof(char*), 8);
-	for (p = matchstr; *p != NUL; p = pnext)
+	p = get_tv_string_chk(&li->li_tv);
+	if (p != NULL && *p != NUL)
 	{
-	    int len;
-
-	    pnext = vim_strchr(p, '\n');
-	    if (pnext == NULL)
-		pnext = p + STRLEN(p);
-	    len = pnext - p;
-	    if (len > 0)
-	    {
-		if (ga_grow(&ga, 1) == FAIL)
-		    break;
-		((char_u **)ga.ga_data)[ga.ga_len] = vim_strnsave(p, len);
-		++ga.ga_len;
-	    }
-	    if (*pnext != NUL)
-		++pnext;
+	    if (ga_grow(&ga, 1) == FAIL)
+		break;
+	    ((char_u **)ga.ga_data)[ga.ga_len] = vim_strsave(p);
+	    ++ga.ga_len;
 	}
-	vim_free(matchstr);
-	if (ga.ga_len > 0)
-	    *matches = (char_u**)ga.ga_data;
-	return ga.ga_len;
     }
-    return 0;
+
+    list_unref(matchlist);
+    *matches = (char_u **)ga.ga_data;
+    return ga.ga_len;
 }
 #endif /* FEAT_COMPL_FUNC */
 
@@ -2868,8 +2839,8 @@ ins_compl_get_exp(ini, dir)
 
 #ifdef FEAT_COMPL_FUNC
 	case CTRL_X_FUNCTION:
-	    num_matches = expand_by_function(first_match_pos.lnum,
-				 first_match_pos.col, compl_pattern, &matches);
+	    num_matches = expand_by_function(first_match_pos.col,
+						     compl_pattern, &matches);
 	    if (num_matches > 0)
 		ins_compl_add_matches(num_matches, matches, dir);
 	    break;
@@ -3477,31 +3448,33 @@ ins_complete(c)
 	else if (ctrl_x_mode == CTRL_X_FUNCTION)
 	{
 	    /*
-	     * Call user defined function 'completefunc' with line content,
-	     * cursor column number and preproc is 1.  Obtain length of text
-	     * to use for completion.
+	     * Call user defined function 'completefunc' with "a:findstart" is
+	     * 1 to obtain the length of text to use for completion.
 	     */
-	    char_u  *lenstr;
-	    int	    keeplen = 0;
-	    char_u  *line_copy = vim_strsave(line);
+	    char_u	colbuf[30];
+	    char_u	*args[3];
+	    int		col;
 
 	    /* Call 'completefunc' and get pattern length as a string */
-	    lenstr = call_completefunc(line_copy, NULL, curs_col, 1);
-	    vim_free(line_copy);
-	    if (lenstr == NULL)
+	    if (*curbuf->b_p_cfu == NUL)
 		return FAIL;
-	    keeplen = atoi((char *)lenstr);
-	    vim_free(lenstr);
-	    if (keeplen < 0)
+
+	    args[0] = (char_u *)"1";
+	    sprintf((char *)colbuf, "%d", (int)curs_col);
+	    args[1] = colbuf;
+	    args[2] = NULL;
+
+	    col = call_func_retnr(curbuf->b_p_cfu, 3, args, FALSE);
+	    if (col < 0)
 		return FAIL;
-	    if ((colnr_T)keeplen > curs_col)
-		keeplen = curs_col;
+	    compl_col = col;
+	    if ((colnr_T)compl_col > curs_col)
+		compl_col = curs_col;
 
 	    /* Setup variables for completion.  Need to obtain "line" again,
 	     * it may have become invalid. */
 	    line = ml_get(curwin->w_cursor.lnum);
-	    compl_col = keeplen;
-	    compl_length = curs_col - keeplen;
+	    compl_length = curs_col - compl_col;
 	    compl_pattern = vim_strnsave(line + compl_col, compl_length);
 	    if (compl_pattern == NULL)
 		return FAIL;
@@ -3510,7 +3483,7 @@ ins_complete(c)
 	else if (ctrl_x_mode == CTRL_X_OCCULT)
 	{
 	    /* TODO: let language-specific function handle locating the text
-	     * to be completed or use 'coupler' option. */
+	     * to be completed. */
 	    while (--startcol >= 0 && vim_isIDc(line[startcol]))
 		;
 	    compl_col += ++startcol;

@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.0aa.  Last change: 2005 Jul 21
+*autocmd.txt*   For Vim version 7.0aa.  Last change: 2005 Jul 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -487,7 +487,7 @@ VimLeave			Before exiting Vim, just after writing the
 				VimLeavePre.
 				To detect an abnormal exit use |v:dying|.
 							*EncodingChanged*
-EncodingChanged			Fires off when the 'encoding' option is
+EncodingChanged			Fires off after the 'encoding' option has been
 				changed.  Useful to set up fonts, for example.
 							*InsertEnter*
 InsertEnter			When starting Insert mode.  Also for Replace

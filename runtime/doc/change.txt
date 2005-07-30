@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.0aa.  Last change: 2005 Jun 25
+*change.txt*    For Vim version 7.0aa.  Last change: 2005 Jul 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -682,8 +682,8 @@ For the definition of a pattern, see |pattern|.
 
 					*sub-replace-special* *:s\=*
 When the {string} starts with "\=" it is evaluated as an expression, see
-|sub-replace-expression|.  Otherwise these characters in {string} have a
-special meaning:
+|sub-replace-expression|.  You can use that for any special characters.
+Otherwise these characters in {string} have a special meaning:
 								*:s%*
 When {string} is equal to "%" and '/' is included with the 'cpotions' option,
 then the {string} of the previous substitute command is used. |cpo-/|
@@ -771,9 +771,12 @@ Be careful: The separation character must not appear in the expression!
 Consider using a character like "@" or ":".  There is no problem if the result
 of the expression contains the separation character.
 
-Example: >
+Examples: >
 	:s@\n@\="\r" . expand("$HOME") . "\r"@
-This replaces an end-of-line with a new line containing the value of $HOME.
+This replaces an end-of-line with a new line containing the value of $HOME. >
+
+	s/E/\="\<Char-0x20ac>"/g
+This replaces 'E' characters with an euro sign. Read more in |<Char->|.
 
 
 4.3 Search and replace					*search-replace*

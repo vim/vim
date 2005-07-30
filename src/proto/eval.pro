@@ -24,6 +24,7 @@ list_T *eval_spell_expr __ARGS((char_u *badword, char_u *expr));
 int get_spellword __ARGS((list_T *list, char_u **pp));
 typval_T *eval_expr __ARGS((char_u *arg, char_u **nextcmd));
 void *call_func_retstr __ARGS((char_u *func, int argc, char_u **argv, int safe));
+long call_func_retnr __ARGS((char_u *func, int argc, char_u **argv, int safe));
 void *call_func_retlist __ARGS((char_u *func, int argc, char_u **argv, int safe));
 void *save_funccal __ARGS((void));
 void restore_funccal __ARGS((void *vfc));
