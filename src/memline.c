@@ -230,7 +230,6 @@ static bhdr_T *ml_new_data __ARGS((memfile_T *, int, int));
 static bhdr_T *ml_new_ptr __ARGS((memfile_T *));
 static bhdr_T *ml_find_line __ARGS((buf_T *, linenr_T, int));
 static int ml_add_stack __ARGS((buf_T *));
-static char_u *makeswapname __ARGS((buf_T *, char_u *));
 static void ml_lineadd __ARGS((buf_T *, int));
 static int b0_magic_wrong __ARGS((ZERO_BL *));
 #ifdef CHECK_INODE
@@ -3384,10 +3383,14 @@ ml_lineadd(buf, count)
 }
 
 /*
- * make swap file name out of the file name and a directory name
+ * Make swap file name out of the file name and a directory name.
+ * Returns pointer to allocated memory or NULL.
  */
-    static char_u *
-makeswapname(buf, dir_name)
+/*ARGSUSED*/
+    char_u *
+makeswapname(fname, ffname, buf, dir_name)
+    char_u	*fname;
+    char_u	*ffname;
     buf_T	*buf;
     char_u	*dir_name;
 {
@@ -3398,7 +3401,7 @@ makeswapname(buf, dir_name)
     if (after_pathsep(dir_name, s) && s[-1] == s[-2])
     {			       /* Ends with '//', Use Full path */
 	r = NULL;
-	if ((s = make_percent_swname(dir_name, buf->b_fname)) != NULL)
+	if ((s = make_percent_swname(dir_name, fname)) != NULL)
 	{
 	    r = modname(s, (char_u *)".swp", FALSE);
 	    vim_free(s);
@@ -3415,9 +3418,9 @@ makeswapname(buf, dir_name)
 #endif
 #ifdef RISCOS
 	    /* Avoid problems if fname has special chars, eg <Wimp$Scrap> */
-	    buf->b_ffname,
+	    ffname,
 #else
-	    buf->b_fname,
+	    fname,
 #endif
 	    (char_u *)
 #if defined(VMS) || defined(RISCOS)
@@ -3495,6 +3498,7 @@ get_file_in_dir(fname, dname)
  * Find out what name to use for the swap file for buffer 'buf'.
  *
  * Several names are tried to find one that does not exist
+ * Returns the name in allocated memory or NULL.
  *
  * Note: If BASENAMELEN is not correct, you will get error messages for
  *	 not being able to open the swapfile
@@ -3547,7 +3551,7 @@ findswapname(buf, dirp, old_fname)
     if (dir_name == NULL)	    /* out of memory */
 	fname = NULL;
     else
-	fname = makeswapname(buf, dir_name);
+	fname = makeswapname(buf->b_fname, buf->b_ffname, buf, dir_name);
 
     for (;;)
     {
@@ -3649,7 +3653,8 @@ findswapname(buf, dirp, old_fname)
 		    {
 			buf->b_shortname = TRUE;
 			vim_free(fname);
-			fname = makeswapname(buf, dir_name);
+			fname = makeswapname(buf->b_fname, buf->b_ffname,
+							       buf, dir_name);
 			continue;	/* try again with b_shortname set */
 		    }
 		}
@@ -3719,7 +3724,8 @@ findswapname(buf, dirp, old_fname)
 		{
 		    buf->b_shortname = TRUE;
 		    vim_free(fname);
-		    fname = makeswapname(buf, dir_name);
+		    fname = makeswapname(buf->b_fname, buf->b_ffname,
+							       buf, dir_name);
 		    continue;	    /* try again with '.' replaced with '_' */
 		}
 	    }

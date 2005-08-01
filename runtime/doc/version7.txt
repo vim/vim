@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Jul 29
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Aug 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -61,6 +61,9 @@ double quotes and it is incompatible with some versions of Vi.
 In a |literal-string| a single quote can be doubled to get one.
 ":echo 'a''b'" would result in "a b", but now that two quotes stand for one it
 results in "a'b".
+
+When overwriting a file with ":w! fname" there was no warning for when "fname"
+was being edited by another Vim.  Vim now gives an error message |E768|.
 
 
 Minor incompatibilities:

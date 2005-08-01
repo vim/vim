@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 31
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Aug 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,11 +29,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
-
-Spell: For Italian we also need to postpone prefixes with a chop string.
-Or handle upper/lower case specially?
-
-":w! /tmp/tt" gives ATTENTION message but no prompt.
 
 Mac unicode patch (Da Woon Jung):
 - selecting proportional font breaks display
@@ -1008,6 +1003,7 @@ Macintosh:
     ":w!!" for that.
     Or ask for permission to overwrite it (if file can be made writable) and
     restore file to readonly afterwards.
+    Overwriting a file for which a swap file exists is similar issue.
 7   When compiled with "xterm_clipboard", startup can be slower and might get
     error message for invalid $DISPLAY.  Try connecting to the X server in the
     background (forked), so that Vim starts up quicker?  Connect as soon as
@@ -1619,7 +1615,6 @@ Built-in script language:
        .vim file.  Problem: distribution.
     3. Use a cache directory for each user.  How to recognize which cached
        file belongs to a sourced script?
-7   Add "m" flag to search() and searchpair() function to set the '' mark.
 7   Add argument to winwidth() to subtract the space taken by 'foldcolumn',
     signs and/or 'number'.
 8   Add functions:
@@ -1651,7 +1646,6 @@ Built-in script language:
 	virtualmode()		add argument to obtain whether "$" was used in
 				Visual block mode.
 	getacp()		Win32: get codepage (Glenn Maynard)
-	getbufline()		get line from any buffer
 	deletebufline()		delete line in any buffer
 	appendbufline()		append line in any buffer
 	libcall()		Allow more than one argument.
@@ -3207,13 +3201,6 @@ Various improvements:
 6   Add ":timer" command, to set a command to be executed at a certain
     interval, or once after some time has elapsed. (Aaron)
 8   Add ":confirm" handling in open_exfile(), for when file already exists.
-8   Use confirm/dialog stuff to ask the user, when a file has changed outside
-    of Vim, if he wants to reload it.  Triggered when focus gained, after
-    shell command, when entering another buffer, etc..
-    Also do this when editing a new file, and another application creates
-    the file before doing ":w" in Vim.
-    Also check if the file protection has changed.  When checking a file into
-    RCS it is made read-only, when checking out it is made read-write.
 8   When quitting with changed files, make the dialog list the changed file
     and allow "write all", "discard all", "write some".  The last one would
     then ask "write" or "discard" for each changed file.  Patch in HierAssist

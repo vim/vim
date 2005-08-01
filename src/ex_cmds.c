@@ -2582,34 +2582,83 @@ check_overwrite(eap, buf, fname, ffname, other)
 		|| ((buf->b_flags & BF_NEW)
 		    && vim_strchr(p_cpo, CPO_OVERNEW) == NULL)
 		|| (buf->b_flags & BF_READERR))
-	    && !eap->forceit
-	    && !eap->append
 	    && !p_wa
 	    && vim_fexists(ffname))
     {
-#ifdef UNIX
-	    /* with UNIX it is possible to open a directory */
-	if (mch_isdir(ffname))
+	if (!eap->forceit && !eap->append)
 	{
-	    EMSG2(_(e_isadir2), ffname);
-	    return FAIL;
-	}
+#ifdef UNIX
+		/* with UNIX it is possible to open a directory */
+	    if (mch_isdir(ffname))
+	    {
+		EMSG2(_(e_isadir2), ffname);
+		return FAIL;
+	    }
 #endif
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
-	if (p_confirm || cmdmod.confirm)
-	{
-	    char_u	buff[IOSIZE];
+	    if (p_confirm || cmdmod.confirm)
+	    {
+		char_u	buff[IOSIZE];
 
-	    dialog_msg(buff, _("Overwrite existing file \"%s\"?"), fname);
-	    if (vim_dialog_yesno(VIM_QUESTION, NULL, buff, 2) != VIM_YES)
-		return FAIL;
-	    eap->forceit = TRUE;
-	}
-	else
+		dialog_msg(buff, _("Overwrite existing file \"%s\"?"), fname);
+		if (vim_dialog_yesno(VIM_QUESTION, NULL, buff, 2) != VIM_YES)
+		    return FAIL;
+		eap->forceit = TRUE;
+	    }
+	    else
 #endif
+	    {
+		EMSG(_(e_exists));
+		return FAIL;
+	    }
+	}
+
+	/* For ":w! filename" check that no swap file exists for "filename". */
+	if (other && !emsg_silent)
 	{
-	    EMSG(_(e_exists));
-	    return FAIL;
+	    char_u	dir[MAXPATHL];
+	    char_u	*p;
+	    int		r;
+	    char_u	*swapname;
+
+	    /* We only try the first entry in 'directory', without checking if
+	     * it's writable.  If the "." directory is not writable the write
+	     * will probably fail anyway.
+	     * Use 'shortname' of the current buffer, since there is no buffer
+	     * for the written file. */
+	    if (*p_dir == NUL)
+		STRCPY(dir, ".");
+	    else
+	    {
+		p = p_dir;
+		copy_option_part(&p, dir, MAXPATHL, ",");
+	    }
+	    swapname = makeswapname(fname, ffname, curbuf, dir);
+	    r = vim_fexists(swapname);
+	    vim_free(swapname);
+	    if (r)
+	    {
+#if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
+		if (p_confirm || cmdmod.confirm)
+		{
+		    char_u	buff[IOSIZE];
+
+		    dialog_msg(buff,
+			    _("Swap file \"%s\" exists, overwrite anyway?"),
+								    swapname);
+		    if (vim_dialog_yesno(VIM_QUESTION, NULL, buff, 2)
+								   != VIM_YES)
+			return FAIL;
+		    eap->forceit = TRUE;
+		}
+		else
+#endif
+		{
+		    EMSG2(_("E768: Swap file exists: %s (:silent! overrides)"),
+								    swapname);
+		    return FAIL;
+		}
+	    }
 	}
     }
     return OK;
