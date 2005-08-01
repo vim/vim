@@ -1,4 +1,4 @@
-*message.txt*   For Vim version 7.0aa.  Last change: 2005 Jul 28
+*message.txt*   For Vim version 7.0aa.  Last change: 2005 Aug 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -287,6 +287,19 @@ Example: >
 changes to: >
 	:w! /tmp/test
 <
+							*E768*  >
+  Swap file exists: {filename} (:silent! overrides)
+
+You are protected from overwriting a file that is being edited by Vim.  This
+happens when you use ":w! filename" and a swapfile is found.
+- If the swapfile was left over from an old crashed edit session you may want
+  to delete the swapfile.  Edit {filename} to find out information about the
+  swapfile.
+- If you want to write anyway prepend ":silent!" to the command.  For example: >
+  	:silent! w! /tmp/test
+< The special command is needed, since you already added the ! for overwriting
+  an existing file.
+
 							*E139*  >
   File is loaded in another buffer
 
