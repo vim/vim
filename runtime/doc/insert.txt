@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0aa.  Last change: 2005 Jul 29
+*insert.txt*    For Vim version 7.0aa.  Last change: 2005 Aug 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -614,12 +614,12 @@ Completing whole lines					*compl-whole-line*
 
 							*i_CTRL-X_CTRL-L*
 CTRL-X CTRL-L		Search backwards for a line that starts with the
-			same characters as in the current line before the
-			cursor.  Indent is ignored.  The found line is
+			same characters as those in the current line before
+			the cursor.  Indent is ignored.  The matching line is
 			inserted in front of the cursor.
-			The 'complete' option is used to decide in which
-			buffers a match is searched for.  But only loaded
-			buffers are used.
+			The 'complete' option is used to decide which buffers
+			are searched for a match.  Only loaded buffers are
+			used.
 	CTRL-L	or
 	CTRL-P		Search backwards for next matching line.  This line
 			replaces the previous matching line.

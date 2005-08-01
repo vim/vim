@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 6.3.  Last change: Oct 08, 2004
+*pi_netrw.txt*  For Vim version 6.3.  Last change: Jul 09, 2005
 
 
 		VIM REFERENCE MANUAL    by Charles E. Campbell, Jr.
@@ -10,17 +10,48 @@
 ==============================================================================
 0. Contents						*netrw-contents*
 
-1.  Netrw Reference.....................................|netrw-ref|
-2.  Network-Oriented File Transfer......................|netrw-xfer|
-3.  Activation..........................................|netrw-activate|
-4.  Transparent File Transfer...........................|netrw-transparent|
-5.  Ex Commands.........................................|netrw-ex|
-6.  Variables and Options...............................|netrw-var|
-7.  Directory Browser...................................|netrw-browse|
-8.  Problems and Fixes..................................|netrw-problems|
-9.  Debugging...........................................|netrw-debug|
-10. History.............................................|netrw-history|
-11. Credits.............................................|netrw-credits|
+1.  Netrw Reference......................................|netrw-ref|
+2.  Network-Oriented File Transfer.......................|netrw-xfer|
+      NETRC..............................................|netrw-netrc|
+      PASSWORD...........................................|netrw-passwd|
+3.  Activation...........................................|netrw-activate|
+4.  Transparent File Transfer............................|netrw-transparent|
+5.  Ex Commands..........................................|netrw-ex|
+6.  Variables and Options................................|netrw-var|
+7.  Directory Browser....................................|netrw-browse| {{{1
+      Maps...............................................|netrw-maps|
+      Exploring..........................................|netrw-explore-cmds|
+      Quick Reference Commands Table.....................|netrw-browse-cmds|
+      Netrw Browser Variables............................|netrw-browse-var|
+      Introduction To Directory Browsing.................|netrw-browse-intro|
+      Directory Exploring Commands.......................|netrw-explore|
+      Refreshing The Listing.............................|netrw-ctrl-l|
+      Going Up...........................................|netrw--|
+      Browsing...........................................|netrw-cr|
+      Long Vs Short Listing..............................|netrw-i|
+      Making A New Directory.............................|netrw-d|
+      Deleting Files Or Directories......................|netrw-delete|
+      Renaming Files Or Directories......................|netrw-move|
+      Hiding Files Or Directories........................|g:netrw-a|
+      Edit File Or Directory Hiding List.................|netrw-h|
+      Browsing With A Horizontally Split Window..........|netrw-o|
+      Preview Window.....................................|netrw-p|
+      Selecting Sorting Style............................|netrw-s|
+      Editing The Sorting Sequence.......................|netrw-S|
+      Reversing Sorting Order............................|netrw-r|
+      Changing To A Predecessor Directory................|netrw-u|
+      Changing To A Successor Directory..................|netrw-U|
+      Browsing With A Vertically Split Window............|netrw-v|
+      Customizing Browsing With A User Function..........|netrw-x|
+      Making The Browsing Directory The Current Directory|netrw-c|
+      Bookmarking A Directory............................|netrw-b|
+      Changing To A Bookmarked Directory.................|netrw-B|
+      Listing Bookmarks And History......................|netrw-q|
+      Improving Directory Browsing.......................|netrw-list-hack| }}}1
+8.  Problems and Fixes...................................|netrw-problems|
+9.  Debugging............................................|netrw-debug|
+10. History..............................................|netrw-history|
+11. Credits..............................................|netrw-credits|
 
 The functionality mentioned here is done via using |standard-plugin|
 techniques.  This plugin is only available if
@@ -177,16 +208,16 @@ by setting a variable (ex. scp uses the variable g:netrw_scp_cmd,
 which is defaulted to "scp -q").
 
 Ftp, an old protocol, seems to be blessed by numerous implementations.
-Unfortunately, some implementations are noisy (i.e., add junk to the end
+Unfortunately, some implementations are noisy (ie., add junk to the end
 of the file).  Thus, concerned users may decide to write a NetReadFixup()
 function that will clean up after reading with their ftp.  Some Unix systems
-(i.e., FreeBSD) provide a utility called "fetch" which uses the ftp protocol
+(ie., FreeBSD) provide a utility called "fetch" which uses the ftp protocol
 but is not noisy and more convenient, actually, for <netrw.vim> to use.
 Consequently, if "fetch" is executable, it will be used to do reads for
 ftp://... (and http://...) .  See |netrw-var| for more about this.
 
 For rcp, scp, sftp, and http, one may use network-oriented file transfers
-transparently; i.e.
+transparently; ie.
 >
 	vim rcp://[user@]machine/path
 	vim scp://[user@]machine/path
@@ -198,7 +229,7 @@ that file.  Your ftp must be able to use the <.netrc> file on its own, however.
 	vim ftp://[user@]machine[[:#]portnumber]/path
 <
 However, ftp will often need to query the user for the userid and password.
-The latter will be done "silently"; i.e. asterisks will show up instead of
+The latter will be done "silently"; ie. asterisks will show up instead of
 the actually-typed-in password.  Netrw will retain the userid and password
 for subsequent read/writes from the most recent transfer so subsequent
 transfers (read/write) to or from that machine will take place without
@@ -482,7 +513,7 @@ To handle the SSL certificate dialog for untrusted servers, one may pull
 down the certificate and place it into /usr/ssl/cert.pem.  This operation
 renders the server treatment as "trusted".
 
-							 	*netrw-fixup*
+					 	*netrw-fixup* *netreadfixup*
 If your ftp for whatever reason generates unwanted lines (such as AUTH
 messages) you may write a NetReadFixup(tmpfile) function:
 >
@@ -521,30 +552,38 @@ from <netrw.vim> itself:
 
 ==============================================================================
 7. Directory Browser	*netrw-browse* *netrw-dir* *netrw-list* *netrw-help*
-     ?..........Help....................................|netrw-help|
-     <cr>.......Browsing................................|netrw-cr|
-     <del>......Deleting Files or Directories...........|netrw-delete|
-     -..........Going Up................................|netrw--|
-     a..........Hiding Files or Directories.............|netrw-a|
-     b..........Bookmarking a Directory.................|netrw-b|
-     B..........Changing to a Bookmarked Directory......|netrw-B|
-     c..........Make Browsing Directory The Current Dir.|netrw-c|
-     d..........Make A New Directory....................|netrw-d|
-     D..........Deleting Files or Directories...........|netrw-D|
-     <c-h>......Edit File/Directory Hiding List.........|netrw-h|
-     i..........Long Listing............................|netrw-i|
-     <c-l>......Refreshing the Listing..................|netrw-ctrl-l|
-     o..........Browsing with a Horizontal Split........|netrw-o|
-     p..........Preview Window..........................|netrw-p|
-     q..........Listing Bookmarks and History...........|netrw-q|
-     r..........Reversing Sorting Order.................|netrw-r|
-     R..........Renaming Files or Directories...........|netrw-R|
-     s..........Selecting Sorting Style.................|netrw-s|
-     S..........Editing the Sorting Sequence............|netrw-S|
-     u..........Changing to a Predecessor Directory.....|netrw-u|
-     U..........Changing to a Successor Directory.......|netrw-U|
-     v..........Browsing with a Vertical Split..........|netrw-v|
-     x..........Customizing Browsing....................|netrw-x|
+
+MAPS   								*netrw-maps*
+     ?................Help.......................................|netrw-help|
+     <cr>.............Browsing...................................|netrw-cr|
+     <del>............Deleting Files or Directories..............|netrw-delete|
+     -................Going Up...................................|netrw--|
+     a................Hiding Files or Directories................|netrw-a|
+     b................Bookmarking a Directory....................|netrw-b|
+     B................Changing to a Bookmarked Directory.........|netrw-B|
+     c................Make Browsing Directory The Current Dir....|netrw-c|
+     d................Make A New Directory.......................|netrw-d|
+     D................Deleting Files or Directories..............|netrw-D|
+     <c-h>............Edit File/Directory Hiding List............|netrw-h|
+     i................Long Listing...............................|netrw-i|
+     <c-l>............Refreshing the Listing.....................|netrw-ctrl-l|
+     o................Browsing with a Horizontal Split...........|netrw-o|
+     p................Preview Window.............................|netrw-p|
+     q................Listing Bookmarks and History..............|netrw-q|
+     r................Reversing Sorting Order....................|netrw-r|
+     R................Renaming Files or Directories..............|netrw-R|
+     s................Selecting Sorting Style....................|netrw-s|
+     S................Editing the Sorting Sequence...............|netrw-S|
+     u................Changing to a Predecessor Directory........|netrw-u|
+     U................Changing to a Successor Directory..........|netrw-U|
+     v................Browsing with a Vertical Split.............|netrw-v|
+     x................Customizing Browsing.......................|netrw-x|
+
+    COMMANDS						*netrw-explore-cmds*
+     :Explore[!]  [dir].Explore directory of current file........|netrw-explore|
+     :Sexplore[!] [dir].Split & Explore directory of current file|netrw-explore|
+     :Hexplore[!] [dir].Horizontal Split & Explore...............|netrw-explore|
+     :Vexplore[!] [dir].Vertical Split & Explore.................|netrw-explore|
 
 QUICK REFERENCE COMMANDS TABLE     			*netrw-browse-cmds*
 >
@@ -581,51 +620,103 @@ NETRW BROWSER VARIABLES					*netrw-browse-var*
 <	g:netrw_alto			change from above splitting to
 					below splitting by setting this
 					variable (see |netrw-o|)
+					 default: =0
+
 	g:netrw_altv			change from left splitting to
 					right splitting by setting this
 					variable (see |netrw-v|)
+					 default: =0
+
 	g:netrw_ftp_browse_reject	ftp can produce a number of errors
 					and warnings that can show up as
 					"directories" and "files" in the
 					listing.  This pattern is used to
-					remove such embedded messages.
+					remove such embedded messages.  By
+					default its value is:
+					 '^total\s\+\d\+$\|
+					 ^Trying\s\+\d\+.*$\|
+					 ^KERBEROS_V\d rejected\|
+					 ^Security extensions not\|
+					 No such file\|
+					 : connect to address [0-9a-fA-F:]*
+					 : No route to host$'
+
+	g:netrw_ssh_browse_reject	ssh can sometimes produce unwanted
+					lines/messages/banners/and whatnot
+					that one doesn't want masquerading
+					as "directories" and "files".  Use
+					this pattern to remove such embedded
+					messages.  By default its value is:
+ 					 '^total\s\+\d\+$'
+
 	g:netrw_keepdir			=1 (default) keep current directory
 					immune from the browsing directory.
 					=0 keep the current directory the
 					same as the browsing directory.
 					The browsing directory is contained in
 					b:netrw_curdir
+
 	g:netrw_list_cmd		command for listing remote directories
+					 default: (if ssh is executable)
+					          "ssh HOSTNAME ls -FLa"
+
 	g:netrw_longlist		if =1, then long listing will be default
+
 	g:netrw_ftp_list_cmd		options for passing along to ftp for
 					directory listing.  Defaults:
 					 unix or g:netrw_cygwin set: : "ls -lF"
 					 otherwise                     "dir"
+
 	g:netrw_list_hide		comma separated list of patterns for
 					hiding files
+					 default: ""
+
 	g:netrw_local_mkdir		command for making a local directory
+					 default: "ssh HOSTNAME mkdir"
+
 	g:netrw_local_rmdir		remove directory command (rmdir)
-	g:netrw_local_rename		rename file/directory command
-					unix-default: rm    win32-default: ren
+					 default: "rmdir"
+
 	g:netrw_maxfilenamelen		=32 by default, selected so as to make
 					long listings fit on 80 column displays.
 					If your screen is wider, and you have
 					file/directory names longer than 32 bytes,
 					you may set this option to keep listings
 					columnar.
+
 	g:netrw_mkdir_cmd		command for making a remote directory
+					 default: "ssh HOSTNAME mkdir"
+
 	g:netrw_rm_cmd			command for removing files
+					 default: "ssh HOSTNAME rm"
+
 	g:netrw_rmdir_cmd		command for removing directories
+					 default: "ssh HOSTNAME rmdir"
+
 	g:netrw_rmf_cmd			command for removing softlinks
+					 default: "ssh HOSTNAME rm -f"
+
 	g:netrw_hide			if true, the hiding list is used
+					 default: =0
+
 	g:netrw_sort_by			sort by "name", "time", or "size"
+					 default: "name"
+
 	g:netrw_sort_direction		sorting direction: "normal" or "reverse"
+					 default: "normal"
+
 	g:netrw_sort_sequence		when sorting by name, first sort by the
 					comma-separated pattern sequence
-	g:netrw_timefmt			specify format string to strftime() (%c)
-	g:netrw_winsize			specify initial size of new o/v windows
+					 default: '[\/]$,*,\.bak$,\.o$,\.h$,
+					           \.info$,\.swp$,\.obj$'
 
-INTRODUCTION TO DIRECTORY BROWSING			*file-explorer*
+	g:netrw_timefmt			specify format string to strftime() (%c)
+					 default: "%c"
+
+	g:netrw_winsize			specify initial size of new o/v windows
+					 default: ""
+
+INTRODUCTION TO DIRECTORY BROWSING			*netrw-browse-intro*
 
 Netrw supports the browsing of directories on the local system and on remote
 hosts, including generating listing directories, entering directories, editing
@@ -646,6 +737,31 @@ trailing slash and it will be interpreted as a request to list a directory:
 
 If you'd like to avoid entering the password in for directory listings, scp,
 ssh interaction, etc, see |netrw-list-hack|.
+
+
+DIRECTORY EXPLORING COMMANDS						*netrw-explore*
+
+     :Explore[!]   [dir].Explore directory of current file
+     :Sexplore[!]  [dir].Split & Explore directory of current file
+     :Hexplore[!]  [dir].Horizontal Split & Explore
+     :Vexplore[!]  [dir].Vertical Split & Explore
+
+The Explore command will open the local-directory browser on the current
+file's directory (or on directory [dir] if specified).  The window
+will be split only if the file has been modified, otherwise the
+browsing window will take over that window.  Normally the splitting is
+taken horizontally; the optional ! will use vertical splitting.
+
+Sexplore will always split the window before invoking the local-directory
+browser.  As with Explore, the splitting is normally done horizontally,
+but with the optional ! the splitting will be done vertically.
+
+Hexplore does an Explore with |belowright| horizontal splitting; the
+optional ! does the Explore with |aboveleft| horizontal splitting.
+
+Vexplore does an Explore with |leftabove| vertical splitting; the optiona
+! does an Explore with |topleft| vertical splitting.
+
 
 REFRESHING THE LISTING					*netrw-ctrl-l*
 
@@ -677,6 +793,7 @@ Hitting the <cr> (the return key) will select the file or directory.
 Directories will themselves be listed, and files will be opened using the
 protocol given in the original read request.
 
+
 LONG VS SHORT LISTING						*netrw-i*
 
 The short listing format gives just the files' and directories' names.
@@ -693,6 +810,7 @@ the global variable g:netrw_local_mkdir).  Netrw will issue a request for the
 new directory's name.  A bare <CR> at that point will abort the making of the
 directory.  Attempts to make a local directory that already exists (as either
 a file or a directory) will be detected, reported on, and ignored.
+
 
 DELETING FILES OR DIRECTORIES			*netrw-delete* *netrw-D*
 
@@ -740,15 +858,22 @@ One may rename a block of files and directories by selecting them with
 the V (|linewise-visual|).
 
 
-HIDING FILES OR DIRECTORIES		*netrw-a* *g:netrw_list_hide*
+HIDING FILES OR DIRECTORIES		*g:netrw-a* *g:netrw_list_hide*
 
 Netrw's browsing facility allows one to use the hiding list in one of
 three ways: ignore it, hide files which match, and show only those files
-which match.  The g:netrw_list_hide variable holds a comma delimited list
-of patterns (ex. \.obj) which specify the hiding list. (also see |netrw-h|)
+which match.  The "a" map allows the user to cycle about these three ways.
+
+The g:netrw_list_hide variable holds a comma delimited list of patterns
+(ex. \.obj) which specify the hiding list. (also see |netrw-h|)  To
+set the hiding list, use the <c-h> map.  As an example, to hide files
+which begin with a ".", one may use the <c-h> map to set the hiding
+list to '^\..*' (or one may put  let g:netrw_list_hide= '^\..*' in
+one's <.vimrc>).  One may then use the "a" key to show all files,
+hide matching files, or to show only the matching files.
 
 
-EDIT FILE OR DIRECTORY HIDING LIST				*netrw-h*
+EDIT FILE OR DIRECTORY HIDING LIST		*netrw-h* *netrw-edithide*
 
 The "<ctrl-h>" map brings up a requestor allowing the user to change the
 file/directory hiding list.  The hiding list consists of one or more patterns
@@ -756,7 +881,7 @@ delimited by commas.  Files and/or directories satisfying these patterns will
 either be hidden (ie. not shown) or be the only ones displayed (see |netrw-a|).
 
 
-BROWSING WITH A HORIZONTALLY SPLIT WINDOW			*netrw-o*
+BROWSING WITH A HORIZONTALLY SPLIT WINDOW		*netrw-o* *netrw-horiz*
 
 Normally one enters a file or directory using the <cr>.  However, the "o" map
 allows one to open a new window to hold the new directory listing or file.  A
@@ -770,20 +895,21 @@ with the new window and cursor at the bottom, have
 
 in your <.vimrc>.
 
-PREVIEW WINDOW
+
+PREVIEW WINDOW					*netrw-p* *netrw-preview*
 
 One may use a preview window (currently only for local browsing) by using
 the "p" key when the cursor is atop the desired filename to be previewed.
 
 
-SELECTING SORTING STYLE						*netrw-s*
+SELECTING SORTING STYLE				*netrw-s* *netrw-sort*
 
 One may select the sorting style by name, time, or (file) size.  The
 "s" map allows one to circulate among the three choices; the directory
 listing will automatically be refreshed to reflect the selected style.
 
 
-EDITING THE SORTING SEQUENCE					*netrw-S*
+EDITING THE SORTING SEQUENCE		*netrw-S* *netrw-sortsequence*
 
 When "Sorted by" is name, one may specify priority via the sorting
 sequence (g:netrw_sort_sequence).  The sorting sequence typically
@@ -798,13 +924,13 @@ the g:netrw_sort_sequence variable (either manually or in your <.vimrc>)
 or by using the "S" map.
 
 
-REVERSING SORTING ORDER						*netrw-r*
+REVERSING SORTING ORDER			*netrw-r* *netrw-reverse*
 
 One may toggle between normal and reverse sorting order by pressing the
 "r" key.
 
 
-CHANGING TO A PREDECESSOR DIRECTORY				*netrw-u*
+CHANGING TO A PREDECESSOR DIRECTORY		*netrw-u* *netrw-updir*
 
 Every time you change to a new directory (new for the current session),
 netrw will save the directory in a recently-visited directory history
@@ -813,7 +939,7 @@ list (unless g:netrw_dirhistmax is zero; by default, its ten).  With the
 the opposite, see |netrw-U|.
 
 
-CHANGING TO A SUCCESSOR DIRECTORY				*netrw-U*
+CHANGING TO A SUCCESSOR DIRECTORY		*netrw-U* *netrw-downdir*
 
 With the "U" map, one can change to a later directory (successor).
 This map is the opposite of the "u" map. (see |netrw-u|)  Use the
@@ -835,7 +961,7 @@ with the new window and cursor at the right, have
 in your <.vimrc>.
 
 
-CUSTOMIZING BROWSING WITH A USER FUNCTION			*netrw-x*
+CUSTOMIZING BROWSING WITH A USER FUNCTION		*netrw-x* *netrw-handler*
 
 One may "enter" a file with a special handler, thereby firing up a browser or
 other application, for example, on a file by hitting the "x" key.  Presumably
@@ -886,13 +1012,13 @@ Any count may be used to reference any of the bookmarks.  See |netrw-b|
 for how to bookmark a directory and |netrw-q| for how to list them.
 
 
-LISTING BOOKMARKS AND HISTORY					*netrw-q*
+LISTING BOOKMARKS AND HISTORY			*netrw-q* *netrw-listbookmark*
 
 Pressing "q" will list the bookmarked directories and directory traversal
 history (query). (see |netrw-b|, |netrw-B|, |netrw-u|, and |netrw-U|)
 
 
-IMPROVING DIRECTORY BROWSING				*netrw-list-hack*
+IMPROVING DIRECTORY BROWSING				*netrw-listhack*
 
 Especially with the remote directory browser, constantly entering the password
 is tedious.
@@ -1017,6 +1143,23 @@ which is loaded automatically at startup (assuming :set nocp).
 ==============================================================================
 10. History						*netrw-history*
 
+	v56: * LocalBrowse now saves autochdir setting, unsets it, and
+	       restores it before returning.
+	     * using vim's rename() instead of system + local_rename variable
+	v55: * -bar used with :Explore :Sexplore etc to allow multiple
+	       commands to be separated by |s
+	     * browser listings now use the "nowrap" option
+	     * browser: some unuseful error messages now suppressed
+	v54: * For backwards compatibility, Explore and Sexplore have been
+	       implemented.  In addition, Hexplore and Vexplore commands
+	       are available, too.
+	     * <amatch> used instead of <afile> in the transparency
+	       support (BufReadCmd, FileReadCmd, FileWriteCmd)
+	     * ***netrw*** prepended to various error messages netrw may emit
+	     * g:netrw_port used instead of b:netrw_port for scp
+	     * any leading [:#] is removed from port numbers
+	v53: * backslashes as well as slashes placed in various patterns
+	       (ex. g:netrw_sort_sequence) to better support Windows
 	v52: * nonumber'ing now set for browsing buffers
 	     * when the hiding list hid all files, error messages ensued. Fixed
 	     * when browsing, swf is set, but directory is not set, when netrw
@@ -1120,4 +1263,4 @@ which is loaded automatically at startup (assuming :set nocp).
 	Doug Claar		-- modifications to test for success with ftp operation
 
 ==============================================================================
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:ft=help:norl:fdm=marker

@@ -1384,7 +1384,7 @@ vim_strncpy(to, from, len)
 /*
  * Isolate one part of a string option where parts are separated with
  * "sep_chars".
- * The part is copied into buf[maxlen].
+ * The part is copied into "buf[maxlen]".
  * "*option" is advanced to the next part.
  * The length is returned.
  */

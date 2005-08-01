@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 30
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Aug 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -3460,7 +3460,7 @@ printf({fmt}, {expr1} ...)				*printf()*
 		automatically to fit the conversion specifier.  Any other
 		argument type results in an error message.
 
-							*E766* *767*
+							*E766* *E767*
 		The number of {exprN} arguments must exactly match the number
 		of "%" items.  If there are not sufficient or too many
 		arguments an error is given.  Up to 18 arguments can be used.
