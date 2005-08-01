@@ -251,15 +251,18 @@
  * mb_ptr_back(): backup a pointer to the previous character, taking care of
  * multi-byte characters if needed.
  * MB_COPY_CHAR(f, t): copy one char from "f" to "t" and advance the pointers.
+ * PTR2CHAR(): get character from pointer.
  */
 #ifdef FEAT_MBYTE
 # define mb_ptr_adv(p)	    p += has_mbyte ? (*mb_ptr2len_check)(p) : 1
 # define mb_ptr_back(s, p)  p -= has_mbyte ? ((*mb_head_off)(s, p - 1) + 1) : 1
 # define MB_COPY_CHAR(f, t) if (has_mbyte) mb_copy_char(&f, &t); else *t++ = *f++
 # define MB_CHARLEN(p)	    (has_mbyte ? mb_charlen(p) : STRLEN(p))
+# define PTR2CHAR(p)	    (has_mbyte ? mb_ptr2char(p) : *(p))
 #else
-# define mb_ptr_adv(p)	    ++p
-# define mb_ptr_back(s, p)  --p
-# define MB_COPY_CHAR(f, t) *t++ = *f++
-# define MB_CHARLEN(p)	    STRLEN(p)
+# define mb_ptr_adv(p)		++p
+# define mb_ptr_back(s, p)	--p
+# define MB_COPY_CHAR(f, t)	*t++ = *f++
+# define MB_CHARLEN(p)		STRLEN(p)
+# define PTR2CHAR(p)		(*(p))
 #endif

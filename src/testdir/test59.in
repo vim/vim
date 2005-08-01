@@ -346,7 +346,7 @@ PFX I N 1
 PFX I 0 in .
 
 PFX O Y 1
-PFX O 0 out .
+PFX O 0 out [a-z]
 
 SFX S Y 2
 SFX S 0 s [^s]

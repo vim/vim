@@ -1,8 +1,8 @@
 *** en_US.orig.aff	Fri Apr 15 13:20:36 2005
---- en_US.aff	Sun Jul  3 16:59:28 2005
+--- en_US.aff	Sun Jul 31 22:17:40 2005
 ***************
 *** 3,4 ****
---- 3,13 ----
+--- 3,134 ----
   
 + FOL  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗ÿ
 + LOW  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗ÿ
@@ -13,49 +13,7 @@
 + RAR ?
 + BAD !
 + 
-  PFX A Y 1
-***************
-*** 30,33 ****
-  SFX N   e     ion        e
-! SFX N   y     ication    y 
-! SFX N   0     en         [^ey] 
-  
---- 39,42 ----
-  SFX N   e     ion        e
-! SFX N   y     ication    y
-! SFX N   0     en         [^ey]
-  
-***************
-*** 40,42 ****
-  SFX H   y     ieth       y
-! SFX H   0     th         [^y] 
-  
---- 49,51 ----
-  SFX H   y     ieth       y
-! SFX H   0     th         [^y]
-  
-***************
-*** 47,49 ****
-  SFX G   e     ing        e
-! SFX G   0     ing        [^e] 
-  
---- 56,58 ----
-  SFX G   e     ing        e
-! SFX G   0     ing        [^e]
-  
-***************
-*** 137,138 ****
---- 146,149 ----
-  REP uy i
-+ REP y ie
-+ REP ie y
-  REP i ee
-***************
-*** 188 ****
---- 199,320 ----
-  REP shun cion
-+ 
-+ MAP 5
++ MAP 9
 + MAP aאבגדהו
 + MAP eטיךכ
 + MAP iלםמן
@@ -175,6 +133,44 @@
 + SAL Y(AEIOU)-            Y
 + SAL ZZ-                  _
 + SAL Z                    S
++ 
+  PFX A Y 1
+***************
+*** 30,33 ****
+  SFX N   e     ion        e
+! SFX N   y     ication    y 
+! SFX N   0     en         [^ey] 
+  
+--- 160,163 ----
+  SFX N   e     ion        e
+! SFX N   y     ication    y
+! SFX N   0     en         [^ey]
+  
+***************
+*** 40,42 ****
+  SFX H   y     ieth       y
+! SFX H   0     th         [^y] 
+  
+--- 170,172 ----
+  SFX H   y     ieth       y
+! SFX H   0     th         [^y]
+  
+***************
+*** 47,49 ****
+  SFX G   e     ing        e
+! SFX G   0     ing        [^e] 
+  
+--- 177,179 ----
+  SFX G   e     ing        e
+! SFX G   0     ing        [^e]
+  
+***************
+*** 137,138 ****
+--- 267,270 ----
+  REP uy i
++ REP y ie
++ REP ie y
+  REP i ee
 *** en_US.orig.dic	Fri Apr 15 13:20:36 2005
 --- en_US.dic	Sun Jul  3 16:59:28 2005
 ***************

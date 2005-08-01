@@ -27,8 +27,6 @@
 
 #ifdef NBDEBUG
 
-#include <stdarg.h>
-
 #include "vim.h"
 
 FILE		*nb_debug = NULL;

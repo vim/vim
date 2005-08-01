@@ -4,7 +4,7 @@
 @if os.path.exists('../../../src/vim'):
     VIM = ../../../src/vim
 @else:
-    VIM = vim
+    :progsearch VIM vim
 
 SPELLDIR = ..
 FILES    = en_US.aff en_US.dic
@@ -63,8 +63,9 @@ en_US.aff en_US.dic: {buildcheck=}
         @if not os.path.exists('en_US.orig.aff'):
                 :copy en_US.aff en_US.orig.aff
         @if not os.path.exists('en_US.orig.dic'):
-                :copy en_US.aff en_US.orig.dic
-        :sys patch <en_US.diff
+                :copy en_US.dic en_US.orig.dic
+        @if os.path.exists('en_US.diff'):
+            :sys patch <en_US.diff
 
 en_AU.aff en_AU.dic: {buildcheck=}
         :assertpkg unzip patch
@@ -74,8 +75,9 @@ en_AU.aff en_AU.dic: {buildcheck=}
         @if not os.path.exists('en_AU.orig.aff'):
                 :copy en_AU.aff en_AU.orig.aff
         @if not os.path.exists('en_AU.orig.dic'):
-                :copy en_AU.aff en_AU.orig.dic
-        :sys patch <en_AU.diff
+                :copy en_AU.dic en_AU.orig.dic
+        @if os.path.exists('en_AU.diff'):
+            :sys patch <en_AU.diff
 
 en_CA.aff en_CA.dic: {buildcheck=}
         :assertpkg unzip patch
@@ -85,8 +87,9 @@ en_CA.aff en_CA.dic: {buildcheck=}
         @if not os.path.exists('en_CA.orig.aff'):
                 :copy en_CA.aff en_CA.orig.aff
         @if not os.path.exists('en_CA.orig.dic'):
-                :copy en_CA.aff en_CA.orig.dic
-        :sys patch <en_CA.diff
+                :copy en_CA.dic en_CA.orig.dic
+        @if os.path.exists('en_CA.diff'):
+            :sys patch <en_CA.diff
 
 en_GB.aff en_GB.dic: {buildcheck=}
         :assertpkg unzip patch
@@ -97,8 +100,9 @@ en_GB.aff en_GB.dic: {buildcheck=}
         @if not os.path.exists('en_GB.orig.aff'):
                 :copy en_GB.aff en_GB.orig.aff
         @if not os.path.exists('en_GB.orig.dic'):
-                :copy en_GB.aff en_GB.orig.dic
-        :sys patch <en_GB.diff
+                :copy en_GB.dic en_GB.orig.dic
+        @if os.path.exists('en_GB.diff'):
+            :sys patch <en_GB.diff
 
 en_NZ.aff en_NZ.dic: {buildcheck=}
         :assertpkg unzip patch
@@ -108,8 +112,9 @@ en_NZ.aff en_NZ.dic: {buildcheck=}
         @if not os.path.exists('en_NZ.orig.aff'):
                 :copy en_NZ.aff en_NZ.orig.aff
         @if not os.path.exists('en_NZ.orig.dic'):
-                :copy en_NZ.aff en_NZ.orig.dic
-        :sys patch <en_NZ.diff
+                :copy en_NZ.dic en_NZ.orig.dic
+        @if os.path.exists('en_NZ.diff'):
+            :sys patch <en_NZ.diff
 
 
 # Generate diff files, so that others can get the OpenOffice files and apply

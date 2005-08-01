@@ -4,7 +4,7 @@
 @if os.path.exists('../../../src/vim'):
     VIM = ../../../src/vim
 @else:
-    VIM = vim
+    :progsearch VIM vim
 
 SPELLDIR = ..
 FILES    = pl_PL.aff pl_PL.dic
@@ -60,8 +60,9 @@ pl_PL.aff pl_PL.dic: {buildcheck=}
         @if not os.path.exists('pl_PL.orig.aff'):
                 :copy pl_PL.aff pl_PL.orig.aff
         @if not os.path.exists('pl_PL.orig.dic'):
-                :copy pl_PL.aff pl_PL.orig.dic
-        :sys patch <pl_PL.diff
+                :copy pl_PL.dic pl_PL.orig.dic
+        @if os.path.exists('pl_PL.diff'):
+            :sys patch <pl_PL.diff
 
 
 # Generate diff files, so that others can get the OpenOffice files and apply

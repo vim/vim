@@ -1,8 +1,8 @@
 *** en_GB.orig.aff	Sun Jul  3 17:53:13 2005
---- en_GB.aff	Sun Jul  3 17:59:15 2005
+--- en_GB.aff	Sun Jul 31 22:17:09 2005
 ***************
 *** 8,9 ****
---- 8,19 ----
+--- 8,140 ----
   TRY esiaйnrtolcdugmfphbyvkw-'.zqjxSNRTLCGDMFPHBEAUYOIVKWуцвфZQJXЕзиокапьдс
 + 
 + FOL  абвгдежзийклмнопрстуфхцшщъыьэюЯя
@@ -13,6 +13,127 @@
 + 
 + RAR ?
 + BAD !
++ 
++ MAP 9
++ MAP aабвгде
++ MAP eийкл
++ MAP iмноп
++ MAP oтуфхц
++ MAP uщъыь
++ MAP nс
++ MAP cз
++ MAP yяэ
++ MAP sЯ
++ 
++ # This comes from Aspell en_phonet.dat, version 1.1, 2000-01-07
++ 
++ SAL AH(AEIOUY)-^         *H
++ SAL AR(AEIOUY)-^         *R
++ SAL A(HR)^               *
++ SAL A^                   *
++ SAL AH(AEIOUY)-          H
++ SAL AR(AEIOUY)-          R
++ SAL A(HR)                _
++ SAL А^                   *
++ SAL Е^                   *
++ SAL BB-                  _
++ SAL B                    B
++ SAL CQ-                  _
++ SAL CIA                  X
++ SAL CH                   X
++ SAL C(EIY)-              S
++ SAL CK                   K
++ SAL COUGH^               KF
++ SAL CC<                  C
++ SAL C                    K
++ SAL DG(EIY)              K
++ SAL DD-                  _
++ SAL D                    T
++ SAL Й<                   E
++ SAL EH(AEIOUY)-^         *H
++ SAL ER(AEIOUY)-^         *R
++ SAL E(HR)^               *
++ SAL ENOUGH^$             *NF
++ SAL E^                   *
++ SAL EH(AEIOUY)-          H
++ SAL ER(AEIOUY)-          R
++ SAL E(HR)                _
++ SAL FF-                  _
++ SAL F                    F
++ SAL GN^                  N
++ SAL GN$                  N
++ SAL GNS$                 NS
++ SAL GNED$                N
++ SAL GH(AEIOUY)-          K
++ SAL GH                   _
++ SAL GG9                  K
++ SAL G                    K
++ SAL H                    H
++ SAL IH(AEIOUY)-^         *H
++ SAL IR(AEIOUY)-^         *R
++ SAL I(HR)^               *
++ SAL I^                   *
++ SAL ING6                 N
++ SAL IH(AEIOUY)-          H
++ SAL IR(AEIOUY)-          R
++ SAL I(HR)                _
++ SAL J                    K
++ SAL KN^                  N
++ SAL KK-                  _
++ SAL K                    K
++ SAL LAUGH^               LF
++ SAL LL-                  _
++ SAL L                    L
++ SAL MB$                  M
++ SAL MM                   M
++ SAL M                    M
++ SAL NN-                  _
++ SAL N                    N
++ SAL OH(AEIOUY)-^         *H
++ SAL OR(AEIOUY)-^         *R
++ SAL O(HR)^               *
++ SAL O^                   *
++ SAL OH(AEIOUY)-          H
++ SAL OR(AEIOUY)-          R
++ SAL O(HR)                _
++ SAL PH                   F
++ SAL PN^                  N
++ SAL PP-                  _
++ SAL P                    P
++ SAL Q                    K
++ SAL RH^                  R
++ SAL ROUGH^               RF
++ SAL RR-                  _
++ SAL R                    R
++ SAL SCH(EOU)-            SK
++ SAL SC(IEY)-             S
++ SAL SH                   X
++ SAL SI(AO)-              X
++ SAL SS-                  _
++ SAL S                    S
++ SAL TI(AO)-              X
++ SAL TH                   @
++ SAL TCH--                _
++ SAL TOUGH^               TF
++ SAL TT-                  _
++ SAL T                    T
++ SAL UH(AEIOUY)-^         *H
++ SAL UR(AEIOUY)-^         *R
++ SAL U(HR)^               *
++ SAL U^                   *
++ SAL UH(AEIOUY)-          H
++ SAL UR(AEIOUY)-          R
++ SAL U(HR)                _
++ SAL V^                   W
++ SAL V                    F
++ SAL WR^                  R
++ SAL WH^                  W
++ SAL W(AEIOU)-            W
++ SAL X^                   S
++ SAL X                    KS
++ SAL Y(AEIOU)-            Y
++ SAL ZZ-                  _
++ SAL Z                    S
 + 
   REP 27
 ***************
@@ -37,7 +158,7 @@
   PFX E Y 1
 ! PFX E 0 dis . 
   PFX F Y 5
---- 47,66 ----
+--- 168,187 ----
   PFX A Y 2
 ! PFX A 0 re [^e]
 ! PFX A 0 re- e
@@ -455,7 +576,7 @@
   SFX T y iest [^aeiou]y
 ! SFX T 0 er [aeiou]y 
   SFX T 0 est [aeiou]y
---- 70,464 ----
+--- 191,585 ----
   PFX F 0 col l
 ! PFX F 0 con [^abehilmopru].
   PFX K Y 1
@@ -1543,7 +1664,7 @@
 ! SFX 3 0 ist's [aeioubp]y 
 ! SFX 3 o ist's o 
 ! SFX 3 0 ist's [^eoy] 
---- 471,1281 ----
+--- 592,1281 ----
   SFX R Y 72
 ! SFX R 0 r e
 ! SFX R 0 rs e
@@ -2234,127 +2355,6 @@
 ! SFX 3 0 ist's [aeioubp]y
 ! SFX 3 o ist's o
 ! SFX 3 0 ist's [^eoy]
-! 
-! MAP 5
-! MAP aабвгде
-! MAP eийкл
-! MAP iмноп
-! MAP oтуфхц
-! MAP uщъыь
-! MAP nс
-! MAP cз
-! MAP yяэ
-! MAP sЯ
-! 
-! # This comes from Aspell en_phonet.dat, version 1.1, 2000-01-07
-! 
-! SAL AH(AEIOUY)-^         *H
-! SAL AR(AEIOUY)-^         *R
-! SAL A(HR)^               *
-! SAL A^                   *
-! SAL AH(AEIOUY)-          H
-! SAL AR(AEIOUY)-          R
-! SAL A(HR)                _
-! SAL А^                   *
-! SAL Е^                   *
-! SAL BB-                  _
-! SAL B                    B
-! SAL CQ-                  _
-! SAL CIA                  X
-! SAL CH                   X
-! SAL C(EIY)-              S
-! SAL CK                   K
-! SAL COUGH^               KF
-! SAL CC<                  C
-! SAL C                    K
-! SAL DG(EIY)              K
-! SAL DD-                  _
-! SAL D                    T
-! SAL Й<                   E
-! SAL EH(AEIOUY)-^         *H
-! SAL ER(AEIOUY)-^         *R
-! SAL E(HR)^               *
-! SAL ENOUGH^$             *NF
-! SAL E^                   *
-! SAL EH(AEIOUY)-          H
-! SAL ER(AEIOUY)-          R
-! SAL E(HR)                _
-! SAL FF-                  _
-! SAL F                    F
-! SAL GN^                  N
-! SAL GN$                  N
-! SAL GNS$                 NS
-! SAL GNED$                N
-! SAL GH(AEIOUY)-          K
-! SAL GH                   _
-! SAL GG9                  K
-! SAL G                    K
-! SAL H                    H
-! SAL IH(AEIOUY)-^         *H
-! SAL IR(AEIOUY)-^         *R
-! SAL I(HR)^               *
-! SAL I^                   *
-! SAL ING6                 N
-! SAL IH(AEIOUY)-          H
-! SAL IR(AEIOUY)-          R
-! SAL I(HR)                _
-! SAL J                    K
-! SAL KN^                  N
-! SAL KK-                  _
-! SAL K                    K
-! SAL LAUGH^               LF
-! SAL LL-                  _
-! SAL L                    L
-! SAL MB$                  M
-! SAL MM                   M
-! SAL M                    M
-! SAL NN-                  _
-! SAL N                    N
-! SAL OH(AEIOUY)-^         *H
-! SAL OR(AEIOUY)-^         *R
-! SAL O(HR)^               *
-! SAL O^                   *
-! SAL OH(AEIOUY)-          H
-! SAL OR(AEIOUY)-          R
-! SAL O(HR)                _
-! SAL PH                   F
-! SAL PN^                  N
-! SAL PP-                  _
-! SAL P                    P
-! SAL Q                    K
-! SAL RH^                  R
-! SAL ROUGH^               RF
-! SAL RR-                  _
-! SAL R                    R
-! SAL SCH(EOU)-            SK
-! SAL SC(IEY)-             S
-! SAL SH                   X
-! SAL SI(AO)-              X
-! SAL SS-                  _
-! SAL S                    S
-! SAL TI(AO)-              X
-! SAL TH                   @
-! SAL TCH--                _
-! SAL TOUGH^               TF
-! SAL TT-                  _
-! SAL T                    T
-! SAL UH(AEIOUY)-^         *H
-! SAL UR(AEIOUY)-^         *R
-! SAL U(HR)^               *
-! SAL U^                   *
-! SAL UH(AEIOUY)-          H
-! SAL UR(AEIOUY)-          R
-! SAL U(HR)                _
-! SAL V^                   W
-! SAL V                    F
-! SAL WR^                  R
-! SAL WH^                  W
-! SAL W(AEIOU)-            W
-! SAL X^                   S
-! SAL X                    KS
-! SAL Y(AEIOU)-            Y
-! SAL ZZ-                  _
-! SAL Z                    S
 *** en_GB.orig.dic	Sun Jul  3 18:05:07 2005
 --- en_GB.dic	Sun Jul  3 18:19:25 2005
 ***************

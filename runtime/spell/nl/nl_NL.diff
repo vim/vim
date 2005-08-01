@@ -1,8 +1,8 @@
-*** nl_NL.orig.aff	Wed Apr 20 11:48:16 2005
---- nl_NL.aff	Wed Jun 29 17:29:49 2005
+*** nl_NL.orig.aff	Sun Jul  3 18:24:07 2005
+--- nl_NL.aff	Sun Jul 31 22:18:15 2005
 ***************
-*** 3,4 ****
---- 3,17 ----
+*** 3,6 ****
+--- 3,30 ----
   
 + FOL  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗ÿ
 + LOW  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗ÿ
@@ -18,6 +18,19 @@
 + BAD !
 + 
   NOSPLITSUGS
+  
++ MAP 9
++ MAP aאבגדהו
++ MAP eטיךכ
++ MAP iלםמן
++ MAP oעףפץצ
++ MAP uשתûü
++ MAP nס
++ MAP cח
++ MAP yÿ‎
++ MAP s‗
++ 
+  PFX A Y 1
 ***************
 *** 33,52 ****
   SFX J N 18
@@ -40,7 +53,7 @@
 ! SFX J 0 je [aeiou][bcdfgkpt] 
 ! SFX J 0 jes [aeiou][bcdfgkpt] 
   
---- 46,65 ----
+--- 57,76 ----
   SFX J N 18
 ! SFX J 0 tje [aeiou][aeiou]
 ! SFX J 0 tjes [aeiou][aeiou]
@@ -66,7 +79,7 @@
   REP ubi ibu
 ! REP croc krok 
   REP ten than
---- 266,268 ----
+--- 277,279 ----
   REP ubi ibu
 ! REP croc krok
   REP ten than
@@ -75,7 +88,7 @@
   REP capucino cappuccino
 ! REP celcius Celsius 
   REP kado cadeau
---- 301,303 ----
+--- 312,314 ----
   REP capucino cappuccino
 ! REP celcius Celsius
   REP kado cadeau
@@ -88,7 +101,7 @@
   REP kommittee comitי
 ! REP kwis quiz 
   REP kwissen quizzen
---- 307,313 ----
+--- 318,324 ----
   REP committee comitי
 ! REP komitee comitי
 ! REP komittee comitי
@@ -101,7 +114,7 @@
   REP copy kopij
 ! REP pitoresque pittoreske 
   REP reikweite reikwijdte
---- 315,317 ----
+--- 326,328 ----
   REP copy kopij
 ! REP pitoresque pittoreske
   REP reikweite reikwijdte
@@ -113,7 +126,7 @@
 ! REP kontekst context 
 ! REP korrekt correct 
   REP kritikus criticus
---- 327,332 ----
+--- 338,343 ----
   REP klup club
 ! REP wiskid whizzkid
 ! REP kontakt contact
@@ -122,23 +135,12 @@
   REP kritikus criticus
 ***************
 *** 333 ****
---- 346,359 ----
+--- 357,359 ----
   REP aflassen afgelasten
 + REP svp s.v.p.
 + REP zoz z.o.z.
-+ 
-+ MAP 5
-+ MAP aאבגדהו
-+ MAP eטיךכ
-+ MAP iלםמן
-+ MAP oעףפץצ
-+ MAP uשתûü
-+ MAP nס
-+ MAP cח
-+ MAP yÿ‎
-+ MAP s‗
-*** nl_NL.orig.dic	Tue Apr 19 21:03:15 2005
---- nl_NL.dic	Mon Jun 27 20:38:35 2005
+*** nl_NL.orig.dic	Sun Jul  3 18:24:07 2005
+--- nl_NL.dic	Thu Jul 21 11:06:07 2005
 ***************
 *** 1,3 ****
   119937
@@ -174,6 +176,15 @@
   Duurstede
 + DVD
   Dwingeloo
+***************
+*** 2998,3000 ****
+  achterwagen/S
+! achterwand
+  achterweg/NE
+--- 3002,3004 ----
+  achterwagen/S
+! achterwand/N
+  achterweg/NE
 ***************
 *** 7485,7486 ****
 --- 7489,7498 ----
@@ -211,6 +222,15 @@
 + mg
   maag
 ***************
+*** 80310,80312 ****
+  programmablad
+! programmaboekje
+  programmacode
+--- 80329,80331 ----
+  programmablad
+! programmaboekje/S
+  programmacode
+***************
 *** 97474,97475 ****
 --- 97493,97496 ----
   suןciderisico/X
@@ -231,8 +251,14 @@
 + u
   uchtend/N
 ***************
+*** 110847,110848 ****
+--- 110871,110873 ----
+  voorjaarscollectie/S
++ voorjaarsconferentie/S
+  voorjaarsmoeheid
+***************
 *** 119938 ****
---- 119962,120135 ----
+--- 119963,120137 ----
   überhaupt
 + Christiaan/X
 + Fred/X
@@ -407,3 +433,4 @@
 + evt.
 + enz.
 + bijv.
++ Gerard

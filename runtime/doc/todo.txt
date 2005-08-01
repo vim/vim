@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 30
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Jul 31
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,6 +29,11 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+Spell: For Italian we also need to postpone prefixes with a chop string.
+Or handle upper/lower case specially?
+
+":w! /tmp/tt" gives ATTENTION message but no prompt.
 
 Mac unicode patch (Da Woon Jung):
 - selecting proportional font breaks display
@@ -66,6 +71,8 @@ PLANNED FOR VERSION 7.0:
     make it work for all completion methods.
 
     First cleanup the Insert-mode completion.
+    - check security of 'completefunc'.
+    - use callback to interrupt searching for matches.
 
     UI:
     - At first: use 'wildmenu' kind of thing.
@@ -207,6 +214,12 @@ PLANNED FOR VERSION 7.0:
     taglist() can be used.
 
 Adjust src/main.aap for installing manpages like in Makefile.
+
+When editing a file with both utf-8 and latin1 text Vim always falls back to
+latin1.  Add a command to convert the latin1 characters to utf-8?
+    :unmix utf-8,latin1 filename
+Would only work when 'encoding' is utf-8.
+Also: command to search for illegal utf-8 byte sequence?
 
 Also generate the .pdb file that can be used to generate a useful crash report
 on MS-Windows. (George Reilly)

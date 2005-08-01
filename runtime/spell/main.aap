@@ -1,6 +1,10 @@
-:child de/main.aap
-:child en/main.aap
-:child fr/main.aap
-:child he/main.aap
-:child nl/main.aap
-:child pl/main.aap
+# "aap": generate all the .spl files
+# "aap diff" create all the diff files
+
+LANG = de en fr he it nl pl
+
+diff: $*LANG/diff
+        :print done
+
+@for l in string.split(_no.LANG):
+        :child $l/main.aap

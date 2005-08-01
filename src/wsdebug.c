@@ -31,8 +31,6 @@
 
 #ifdef WSDEBUG
 
-#include <stdarg.h>
-
 #include "vim.h"
 
 FILE		*ws_debug = NULL;

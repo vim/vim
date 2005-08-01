@@ -2902,7 +2902,7 @@ dnl -i+m to test for older Exuberant ctags
 AC_MSG_CHECKING(how to create tags)
 test -f tags && mv tags tags.save
 if (eval ctags --version /dev/null | grep Exuberant) < /dev/null 1>&AC_FD_CC 2>&1; then
-  TAGPRG="ctags"
+  TAGPRG="ctags -I INIT+"
 else
   (eval etags	   /dev/null) < /dev/null 1>&AC_FD_CC 2>&1 && TAGPRG="etags"
   (eval etags -c   /dev/null) < /dev/null 1>&AC_FD_CC 2>&1 && TAGPRG="etags -c"

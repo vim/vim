@@ -19,8 +19,6 @@
 
 #include "vim.h"
 
-#include <stdio.h>
-#include <stdarg.h>
 #include <limits.h>
 
 /* Python.h defines _POSIX_THREADS itself (if needed) */

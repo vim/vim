@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jul 21
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Jul 31
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -691,7 +691,10 @@ in the .aff file:
 	PFXPOSTPONE ~
 
 Only prefixes without a chop string can be postponed, prefixes with a chop
-string will still be included in the word list.
+string will still be included in the word list.  An exception if the chop
+string is one character and equal to the last character of the added string,
+but in lower case.  Thus when the chop string is used to allow the following
+word to start with an upper case letter.
 
 
 KEEP-CASE WORDS
