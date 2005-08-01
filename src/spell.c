@@ -89,7 +89,7 @@
  *		<midwordlen> <midword>
  *		<prefcondcnt> <prefcond> ...
  *
- * <fileID>     10 bytes    "VIMspell08"
+ * <fileID>     10 bytes    "VIMspell09"
  * <regioncnt>  1 byte	    number of regions following (8 supported)
  * <regionname>	2 bytes     Region name: ca, au, etc.  Lower case.
  *			    First <regionname> is region 1.
@@ -171,8 +171,8 @@
  *			    follow in sorted order.
  *
  * <sibling>: <byte> [ <nodeidx> <xbyte>
- *		      | <flags> [<region>] [<prefixID>]
- *		      | <prefixID> <prefcondnr> ]
+ *		      | <flags> [<flags2>] [<region>] [<prefixID>]
+ *		      | [<pflags>] <prefixID> <prefcondnr> ]
  *
  * <byte>	1 byte	    Byte value of the sibling.  Special cases:
  *			    BY_NOFLAGS: End of word without flags and for all
@@ -180,16 +180,10 @@
  *					For PREFIXTREE <prefixID> and
  *					<prefcondnr> follow.
  *			    BY_FLAGS:   End of word, <flags> follow.
- *					For PREFIXTREE <prefixID> and
- *					<prefcondnr> follow for rare prefix.
+ *					For PREFIXTREE <pflags>, <prefixID>
+ *					and <prefcondnr> follow.
  *			    BY_FLAGS2:  End of word, <flags> and <flags2>
  *					follow.  Not used in PREFIXTREE.
- *			    BY_PFX_NC:  For PREFIXTREE <prefixID> and
- *					<prefcondnr> follow for non-combining
- *					prefix.
- *			    BY_PFX_RNC: For PREFIXTREE <prefixID> and
- *					<prefcondnr> follow for non-combining
- *					rare prefix.
  *			    BY_INDEX:   Child of sibling is shared, <nodeidx>
  *					and <xbyte> follow.
  *
@@ -210,6 +204,11 @@
  * <flags2>	1 byte	    Only used when there are postponed prefixes.
  *			    Bitmask of:
  *			    WF_HAS_AFF >> 8   word includes affix
+ *
+ * <pflags>	1 byte	    bitmask of:
+ *			    WFP_RARE	rare prefix
+ *			    WFP_NC	non-combining prefix
+ *			    WFP_UP	letter after prefix made upper case
  *
  * <region>	1 byte	    Bitmask for regions in which word is valid.  When
  *			    omitted it's valid in all regions.
@@ -264,25 +263,30 @@ typedef long idx_T;
 
 #define WF_CAPMASK (WF_ONECAP | WF_ALLCAP | WF_KEEPCAP | WF_FIXCAP)
 
+/* flags for <pflags> */
+#define WFP_RARE    0x01	/* rare prefix */
+#define WFP_NC	    0x02	/* prefix is not combining */
+#define WFP_UP	    0x04	/* to-upper prefix */
+
 /* flags for postponed prefixes.  Must be above prefixID (one byte)
  * and prefcondnr (two bytes). */
-#define WF_RAREPFX  0x1000000	/* in sl_pidxs: flag for rare postponed
-				 * prefix */
-#define WF_PFX_NC   0x2000000	/* in sl_pidxs: flag for non-combining
-				 * postponed prefix */
+#define WF_RAREPFX  (WFP_RARE << 24)	/* in sl_pidxs: flag for rare
+					 * postponed prefix */
+#define WF_PFX_NC   (WFP_NC << 24)	/* in sl_pidxs: flag for non-combining
+					 * postponed prefix */
+#define WF_PFX_UP   (WFP_UP << 24)	/* in sl_pidxs: flag for to-upper
+					 * postponed prefix */
 
 /* Special byte values for <byte>.  Some are only used in the tree for
  * postponed prefixes, some only in the other trees.  This is a bit messy... */
 #define BY_NOFLAGS	0	/* end of word without flags or region; for
-				 * postponed prefix: not rare, combining */
-#define BY_FLAGS	1	/* end of word, flags byte follows; for
-				 * postponed prefix: rare, combining */
-#define BY_INDEX	2	/* child is shared, index follows */
-#define BY_FLAGS2	3	/* end of word, two flags bytes follow; never
-				 * used in prefix tree */
-#define BY_PFX_NC	3	/* postponed prefix: not rare, not combining */
-#define BY_PFX_RNC	4	/* postponed prefix: rare, not combining */
-#define BY_SPECIAL  BY_PFX_RNC	/* highest special byte value */
+				 * postponed prefix: no <pflags> */
+#define BY_INDEX	1	/* child is shared, index follows */
+#define BY_FLAGS	2	/* end of word, <flags> byte follows; for
+				 * postponed prefix: <pflags> follows */
+#define BY_FLAGS2	3	/* end of word, <flags> and <flags2> bytes
+				 * follow; never used in prefix tree */
+#define BY_SPECIAL  BY_FLAGS2	/* highest special byte value */
 
 /* Info from "REP" and "SAL" entries in ".aff" file used in si_rep, sl_rep,
  * and si_sal.  Not for sl_sal!
@@ -404,7 +408,7 @@ typedef struct langp_S
 #define SP_LOCAL	2
 #define SP_BAD		3
 
-#define VIMSPELLMAGIC "VIMspell08"  /* string at start of Vim spell file */
+#define VIMSPELLMAGIC "VIMspell09"  /* string at start of Vim spell file */
 #define VIMSPELLMAGICL 10
 
 /* file used for "zG" and "zW" */
@@ -495,6 +499,12 @@ typedef struct matchinf_S
 					   prefixID/condition */
     int		mi_prefcnt;		/* number of entries at mi_prefarridx */
     int		mi_prefixlen;		/* byte length of prefix */
+#ifdef FEAT_MBYTE
+    int		mi_cprefixlen;		/* byte length of prefix in original
+					   case */
+#else
+# define mi_cprefixlen mi_prefixlen	/* it's the same value */
+#endif
 
     /* others */
     int		mi_result;		/* result so far: SP_BAD, SP_OK, etc. */
@@ -598,7 +608,7 @@ static slang_T *slang_alloc __ARGS((char_u *lang));
 static void slang_free __ARGS((slang_T *lp));
 static void slang_clear __ARGS((slang_T *lp));
 static void find_word __ARGS((matchinf_T *mip, int mode));
-static int valid_word_prefix __ARGS((int totprefcnt, int arridx, int flags, char_u *word, slang_T *slang));
+static int valid_word_prefix __ARGS((int totprefcnt, int arridx, int flags, char_u *word, slang_T *slang, int cond_req));
 static void find_prefix __ARGS((matchinf_T *mip));
 static int fold_more __ARGS((matchinf_T *mip));
 static int spell_valid_case __ARGS((int wordflags, int treeflags));
@@ -636,6 +646,9 @@ static void allcap_copy __ARGS((char_u *word, char_u *wcopy));
 static void suggest_try_special __ARGS((suginfo_T *su));
 static void suggest_try_change __ARGS((suginfo_T *su));
 static int try_deeper __ARGS((suginfo_T *su, trystate_T *stack, int depth, int score_add));
+#ifdef FEAT_MBYTE
+static int nofold_len __ARGS((char_u *fword, int flen, char_u *word));
+#endif
 static void find_keepcap_word __ARGS((slang_T *slang, char_u *fword, char_u *kword));
 static void score_comp_sal __ARGS((suginfo_T *su));
 static void score_combine __ARGS((suginfo_T *su));
@@ -772,11 +785,7 @@ spell_check(wp, ptr, attrp, capcol)
 	if (capcol != NULL && *capcol == 0 && wp->w_buffer->b_cap_prog != NULL)
 	{
 	    /* Check word starting with capital letter. */
-#ifdef FEAT_MBYTE
-	    c = mb_ptr2char(ptr);
-#else
-	    c = *ptr;
-#endif
+	    c = PTR2CHAR(ptr);
 	    if (!SPELL_ISUPPER(c))
 	    {
 		*attrp = highlight_attr[HLF_SPC];
@@ -1087,7 +1096,8 @@ find_word(mip, mode)
 		/* The prefix ID is stored two bytes above the flags. */
 		c = valid_word_prefix(mip->mi_prefcnt, mip->mi_prefarridx,
 				    flags,
-				    mip->mi_fword + mip->mi_prefixlen, slang);
+				    mip->mi_word + mip->mi_cprefixlen, slang,
+				    FALSE);
 		if (c == 0)
 		    continue;
 
@@ -1135,12 +1145,13 @@ find_word(mip, mode)
  * The WF_RAREPFX flag is included in the return value for a rare prefix.
  */
     static int
-valid_word_prefix(totprefcnt, arridx, flags, word, slang)
+valid_word_prefix(totprefcnt, arridx, flags, word, slang, cond_req)
     int		totprefcnt;	/* nr of prefix IDs */
     int		arridx;		/* idx in sl_pidxs[] */
     int		flags;
     char_u	*word;
     slang_T	*slang;
+    int		cond_req;	/* only use prefixes with a condition */
 {
     int		prefcnt;
     int		pidx;
@@ -1172,8 +1183,10 @@ valid_word_prefix(totprefcnt, arridx, flags, word, slang)
 	    if (!vim_regexec(&regmatch, word, 0))
 		continue;
 	}
+	else if (cond_req)
+	    continue;
 
-	/* It's a match!  Return the WF_RAREPFX flag. */
+	/* It's a match!  Return the WF_ flags. */
 	return pidx;
     }
     return 0;
@@ -1242,6 +1255,16 @@ find_prefix(mip)
 
 	    /* Find the word that comes after the prefix. */
 	    mip->mi_prefixlen = wlen;
+#ifdef FEAT_MBYTE
+	    if (has_mbyte)
+	    {
+		/* Case-folded length may differ from original length. */
+		mip->mi_cprefixlen = nofold_len(mip->mi_fword, wlen,
+								mip->mi_word);
+	    }
+	    else
+		mip->mi_cprefixlen = wlen;
+#endif
 	    find_word(mip, FIND_PREFIX);
 
 
@@ -2468,22 +2491,21 @@ read_tree(fd, byts, idxs, maxidx, startidx, prefixtree, maxprefcondnr)
 	    {
 		if (prefixtree)
 		{
-		    /* Read the prefix ID and the condition nr.  In idxs[]
-		     * store the prefix ID in the low byte, the condition
-		     * index shifted up 8 bits. */
-		    c2 = getc(fd);			/* <prefixID> */
+		    /* Read the optional pflags byte, the prefix ID and the
+		     * condition nr.  In idxs[] store the prefix ID in the low
+		     * byte, the condition index shifted up 8 bits, the flags
+		     * shifted up 24 bits. */
+		    if (c == BY_FLAGS)
+			c = getc(fd) << 24;		/* <pflags> */
+		    else
+			c = 0;
+
+		    c |= getc(fd);			/* <prefixID> */
+
 		    n = (getc(fd) << 8) + getc(fd);	/* <prefcondnr> */
 		    if (n >= maxprefcondnr)
 			return -2;
-		    c2 += (n << 8);
-
-		    /* the byte value is misused to pass two flags: rare
-		     * and non-combining. */
-		    if (c == BY_FLAGS || c == BY_PFX_RNC)
-			c2 |= WF_RAREPFX;
-		    if (c == BY_PFX_NC || c == BY_PFX_RNC)
-			c2 |= WF_PFX_NC;
-		    c = c2;
+		    c |= (n << 8);
 		}
 		else /* c must be BY_FLAGS or BY_FLAGS2 */
 		{
@@ -2891,11 +2913,7 @@ captype(word, end)
     for ( ; end == NULL ? *p != NUL : p < end; mb_ptr_adv(p))
 	if (spell_iswordp_nmw(p))
 	{
-#ifdef FEAT_MBYTE
-	    c = mb_ptr2char(p);
-#else
-	    c = *p;
-#endif
+	    c = PTR2CHAR(p);
 	    if (!SPELL_ISUPPER(c))
 	    {
 		/* UUl -> KEEPCAP */
@@ -3048,10 +3066,17 @@ struct affentry_S
     int		ae_rare;	/* rare affix */
 };
 
+#define AH_KEY_LEN 10
+
 /* Affix header from ".aff" file.  Used for af_pref and af_suff. */
 typedef struct affheader_S
 {
-    char_u	ah_key[2];	/* key for hashtable == name of affix entry */
+				/* key for hashtable == name of affix entry */
+#ifdef FEAT_MBYTE
+    char_u	ah_key[AH_KEY_LEN];	/* multi-byte char plus NUL */
+#else
+    char_u	ah_key[2];		/* one byte char plus NUL */
+#endif
     int		ah_newID;	/* prefix ID after renumbering */
     int		ah_combine;	/* suffix may combine with prefix */
     affentry_T	*ah_first;	/* first affix entry */
@@ -3165,11 +3190,10 @@ static int put_node __ARGS((FILE *fd, wordnode_T *node, int index, int regionmas
 static void mkspell __ARGS((int fcount, char_u **fnames, int ascii, int overwrite, int added_word));
 static void init_spellfile __ARGS((void));
 
-/* values for wn_flags used in the postponed prefixes tree */
-#define PFX_FLAGS	-1	/* not rare, combining */
-#define PFX_FLAGS_R	-2	/* rare, combining */
-#define PFX_FLAGS_NC	-3	/* not rare, not combining */
-#define PFX_FLAGS_RNC	-4	/* rare, not combining */
+/* In the postponed prefixes tree wn_flags is used to store the WFP_ flags,
+ * but it must be negative to indicate the prefix tree to tree_add_word().
+ * Use a negative number with the lower 8 bits zero. */
+#define PFX_FLAGS	-256
 
 /*
  * Read the affix file "fname".
@@ -3204,6 +3228,7 @@ spell_read_aff(fname, spin)
     int		do_sofo;
     int		found_map = FALSE;
     hashitem_T	*hi;
+    int		l;
 
     /*
      * Open the file.
@@ -3374,9 +3399,23 @@ spell_read_aff(fname, spin)
 						   sizeof(affheader_T), TRUE);
 		if (cur_aff == NULL)
 		    break;
-		cur_aff->ah_key[0] = *items[1];	/* TODO: multi-byte? */
-		cur_aff->ah_key[1] = NUL;
-		if (items[1][1] != NUL)
+#ifdef FEAT_MBYTE
+		if (has_mbyte)
+		{
+		    l = mb_ptr2len_check(items[1]);
+		    if (l >= AH_KEY_LEN)
+			l = 1;	/* too long, must be an overlong sequence */
+		    else
+			mch_memmove(cur_aff->ah_key, items[1], l);
+		}
+		else
+#endif
+		{
+		    *cur_aff->ah_key = *items[1];
+		    l = 1;
+		}
+		cur_aff->ah_key[l] = NUL;
+		if (items[1][l] != NUL)
 		    smsg((char_u *)_(e_affname), fname, lnum, items[1]);
 		if (*items[2] == 'Y')
 		    cur_aff->ah_combine = TRUE;
@@ -3413,6 +3452,7 @@ spell_read_aff(fname, spin)
 	    {
 		affentry_T	*aff_entry;
 		int		rare = FALSE;
+		int		upper = FALSE;
 		int		lasti = 5;
 
 		/* Check for "rare" after the other info. */
@@ -3467,53 +3507,112 @@ spell_read_aff(fname, spin)
 
 		    /* For postponed prefixes we need an entry in si_prefcond
 		     * for the condition.  Use an existing one if possible. */
-		    if (*items[0] == 'P' && aff->af_pfxpostpone
-						&& aff_entry->ae_chop == NULL)
+		    if (*items[0] == 'P' && aff->af_pfxpostpone)
 		    {
-			int	idx;
-			char_u	**pp;
-			int	n;
+			/* When the chop string is one lower-case letter and
+			 * the add string ends in the upper-case letter we set
+			 * the "upper" flag, clear "ae_chop" and remove the
+			 * letters from "ae_add".  The condition must either
+			 * be empty or start with the same letter. */
+			if (aff_entry->ae_chop != NULL
+				&& aff_entry->ae_add != NULL
+#ifdef FEAT_MBYTE
+				&& aff_entry->ae_chop[mb_ptr2len_check(
+						   aff_entry->ae_chop)] == NUL
+#else
+				&& aff_entry->ae_chop[1] == NUL
+#endif
+				)
+			{
+			    int		c, c_up;
 
-			for (idx = spin->si_prefcond.ga_len - 1; idx >= 0;
-									--idx)
-			{
-			    p = ((char_u **)spin->si_prefcond.ga_data)[idx];
-			    if (str_equal(p, aff_entry->ae_cond))
-				break;
-			}
-			if (idx < 0 && ga_grow(&spin->si_prefcond, 1) == OK)
-			{
-			    /* Not found, add a new condition. */
-			    idx = spin->si_prefcond.ga_len++;
-			    pp = ((char_u **)spin->si_prefcond.ga_data) + idx;
-			    if (aff_entry->ae_cond == NULL)
-				*pp = NULL;
-			    else
-				*pp = getroom_save(&spin->si_blocks,
+			    c = PTR2CHAR(aff_entry->ae_chop);
+			    c_up = SPELL_TOUPPER(c);
+			    if (c_up != c
+				    && (aff_entry->ae_cond == NULL
+					|| PTR2CHAR(aff_entry->ae_cond) == c))
+			    {
+				p = aff_entry->ae_add
+						  + STRLEN(aff_entry->ae_add);
+				mb_ptr_back(aff_entry->ae_add, p);
+				if (PTR2CHAR(p) == c_up)
+				{
+				    upper = TRUE;
+				    aff_entry->ae_chop = NULL;
+				    *p = NUL;
+
+				    /* The condition is matched with the
+				     * actual word, thus must check for the
+				     * upper-case letter. */
+				    if (aff_entry->ae_cond != NULL)
+				    {
+					char_u	buf[MAXLINELEN];
+#ifdef FEAT_MBYTE
+					if (has_mbyte)
+					{
+					    onecap_copy(items[4], buf, TRUE);
+					    aff_entry->ae_cond = getroom_save(
+						       &spin->si_blocks, buf);
+					}
+					else
+#endif
+					    *aff_entry->ae_cond = c_up;
+					if (aff_entry->ae_cond != NULL)
+					{
+					    sprintf((char *)buf, "^%s",
 							  aff_entry->ae_cond);
+					    vim_free(aff_entry->ae_prog);
+					    aff_entry->ae_prog = vim_regcomp(
+						    buf, RE_MAGIC + RE_STRING);
+					}
+				    }
+				}
+			    }
 			}
 
-			/* Add the prefix to the prefix tree. */
-			if (aff_entry->ae_add == NULL)
-			    p = (char_u *)"";
-			else
-			    p = aff_entry->ae_add;
-			if (rare)
+			if (aff_entry->ae_chop == NULL)
 			{
-			    if (cur_aff->ah_combine)
-				n = PFX_FLAGS_R;
+			    int		idx;
+			    char_u	**pp;
+			    int		n;
+
+			    for (idx = spin->si_prefcond.ga_len - 1; idx >= 0;
+									--idx)
+			    {
+				p = ((char_u **)spin->si_prefcond.ga_data)[idx];
+				if (str_equal(p, aff_entry->ae_cond))
+				    break;
+			    }
+			    if (idx < 0 && ga_grow(&spin->si_prefcond, 1) == OK)
+			    {
+				/* Not found, add a new condition. */
+				idx = spin->si_prefcond.ga_len++;
+				pp = ((char_u **)spin->si_prefcond.ga_data)
+									+ idx;
+				if (aff_entry->ae_cond == NULL)
+				    *pp = NULL;
+				else
+				    *pp = getroom_save(&spin->si_blocks,
+							  aff_entry->ae_cond);
+			    }
+
+			    /* Add the prefix to the prefix tree. */
+			    if (aff_entry->ae_add == NULL)
+				p = (char_u *)"";
 			    else
-				n = PFX_FLAGS_RNC;
-			}
-			else
-			{
-			    if (cur_aff->ah_combine)
-				n = PFX_FLAGS;
-			    else
-				n = PFX_FLAGS_NC;
-			}
-			tree_add_word(p, spin->si_prefroot, n,
+				p = aff_entry->ae_add;
+			    /* PFX_FLAGS is a negative number, so that
+			     * tree_add_word() knows this is the prefix tree. */
+			    n = PFX_FLAGS;
+			    if (rare)
+				n |= WFP_RARE;
+			    if (!cur_aff->ah_combine)
+				n |= WFP_NC;
+			    if (upper)
+				n |= WFP_UP;
+			    tree_add_word(p, spin->si_prefroot, n,
 				    idx, cur_aff->ah_newID, &spin->si_blocks);
+			}
 		    }
 		}
 	    }
@@ -3842,7 +3941,7 @@ spell_read_dic(fname, spin, affile)
     {
 	line_breakcheck();
 	++lnum;
-	if (line[0] == '#')
+	if (line[0] == '#' || line[0] == '/')
 	    continue;	/* comment line */
 
 	/* Remove CR, LF and white space from the end.  White space halfway
@@ -4048,6 +4147,7 @@ store_aff_word(word, spin, afflist, affile, ht, xht, comb, flags, pfxlist)
     char_u	*p;
     int		use_flags;
     char_u	*use_pfxlist;
+    int		c;
 
     todo = ht->ht_used;
     for (hi = ht->ht_array; todo > 0 && retval == OK; ++hi)
@@ -4059,8 +4159,8 @@ store_aff_word(word, spin, afflist, affile, ht, xht, comb, flags, pfxlist)
 
 	    /* Check that the affix combines, if required, and that the word
 	     * supports this affix. */
-	    if ((!comb || ah->ah_combine)
-				  && vim_strchr(afflist, *ah->ah_key) != NULL)
+	    c = PTR2CHAR(ah->ah_key);
+	    if ((!comb || ah->ah_combine) && vim_strchr(afflist, c) != NULL)
 	    {
 		/* Loop over all affix entries with this name. */
 		for (ae = ah->ah_first; ae != NULL; ae = ae->ae_next)
@@ -5025,14 +5125,13 @@ put_node(fd, node, index, regionmask, prefixtree)
 		     * associated condition nr (stored in wn_region).  The
 		     * byte value is misused to store the "rare" and "not
 		     * combining" flags */
-		    if (np->wn_flags == (short_u)PFX_FLAGS_R)
-			putc(BY_FLAGS, fd);		/* <byte> */
-		    else if (np->wn_flags == (short_u)PFX_FLAGS_NC)
-			putc(BY_PFX_NC, fd);
-		    else if (np->wn_flags == (short_u)PFX_FLAGS_RNC)
-			putc(BY_PFX_RNC, fd);
+		    if (np->wn_flags == (short_u)PFX_FLAGS)
+			putc(BY_NOFLAGS, fd);		/* <byte> */
 		    else
-			putc(BY_NOFLAGS, fd);
+		    {
+			putc(BY_FLAGS, fd);		/* <byte> */
+			putc(np->wn_flags, fd);		/* <pflags> */
+		    }
 		    putc(np->wn_prefixID, fd);		/* <prefixID> */
 		    put_bytes(fd, (long_u)np->wn_region, 2); /* <prefcondnr> */
 		}
@@ -6473,11 +6572,7 @@ spell_find_suggest(badptr, su, maxcount, banbadword, need_cap)
     /* If the word is not capitalised and spell_check() doesn't consider the
      * word to be bad then it might need to be capitalised.  Add a suggestion
      * for that. */
-#ifdef FEAT_MBYTE
-    c = mb_ptr2char(su->su_badptr);
-#else
-    c = *su->su_badptr;
-#endif
+    c = PTR2CHAR(su->su_badptr);
     if (!SPELL_ISUPPER(c) && attr == 0)
     {
 	make_case_word(su->su_badword, buf, WF_ONECAP);
@@ -6938,11 +7033,25 @@ suggest_try_change(su)
 		    /* Always past NUL bytes now. */
 		    n = (int)sp->ts_state;
 		    sp->ts_state = STATE_ENDNUL;
+		    sp->ts_save_badflags = su->su_badflags;
 
 		    /* At end of a prefix or at start of prefixtree: check for
 		     * following word. */
 		    if (byts[arridx] == 0 || n == (int)STATE_NOPREFIX)
 		    {
+			/* Set su->su_badflags to the caps type at this
+			 * position.  Use the caps type until here for the
+			 * prefix itself. */
+#ifdef FEAT_MBYTE
+			if (has_mbyte)
+			    n = nofold_len(fword, sp->ts_fidx, su->su_badptr);
+			else
+#endif
+			    n = sp->ts_fidx;
+			flags = captype(su->su_badptr, su->su_badptr + n);
+			su->su_badflags = captype(su->su_badptr + n,
+					       su->su_badptr + su->su_badlen);
+
 			++depth;
 			stack[depth] = stack[depth - 1];
 			sp = &stack[depth];
@@ -6953,10 +7062,12 @@ suggest_try_change(su)
 			sp->ts_curi = 1;   /* start just after length byte */
 			sp->ts_arridx = 0;
 
-			/* Move the prefix to preword[] so that
-			 * find_keepcap_word() works. */
-			prewordlen = splitoff = sp->ts_twordlen;
-			mch_memmove(preword, tword, splitoff);
+			/* Move the prefix to preword[] with the right case
+			 * and make find_keepcap_word() works. */
+			splitoff = sp->ts_twordlen;
+			tword[splitoff] = NUL;
+			make_case_word(tword, preword, flags);
+			prewordlen = STRLEN(preword);
 		    }
 		    break;
 		}
@@ -6965,6 +7076,7 @@ suggest_try_change(su)
 		{
 		    /* Past bytes in node and/or past NUL bytes. */
 		    sp->ts_state = STATE_ENDNUL;
+		    sp->ts_save_badflags = su->su_badflags;
 		    break;
 		}
 
@@ -6991,7 +7103,7 @@ suggest_try_change(su)
 			/* The prefix ID is stored three bytes above the
 			 * flags. */
 			c = valid_word_prefix(c, n, flags,
-					      tword + splitoff, lp->lp_slang);
+				       tword + splitoff, lp->lp_slang, FALSE);
 			if (c == 0)
 			    break;
 
@@ -7120,25 +7232,18 @@ suggest_try_change(su)
 #endif
 				++sp->ts_fidx;
 			}
+
+			/* set su->su_badflags to the caps type at this
+			 * position */
+
 #ifdef FEAT_MBYTE
 			if (has_mbyte)
-			{
-			    int		i = 0;
-
-			    /* Case-folding may change the number of bytes:
-			     * Count nr of chars in fword[ts_fidx] and
-			     * advance that many chars in su->su_badptr. */
-			    for (p = fword; p < fword + sp->ts_fidx;
-								mb_ptr_adv(p))
-				++i;
-			    for (p = su->su_badptr; i > 0; mb_ptr_adv(p))
-				--i;
-			}
+			    n = nofold_len(fword, sp->ts_fidx, su->su_badptr);
 			else
 #endif
-			    p = su->su_badptr + sp->ts_fidx;
-			su->su_badflags = captype(p, su->su_badptr
-							     + su->su_badlen);
+			    n = sp->ts_fidx;
+			su->su_badflags = captype(su->su_badptr + n,
+					       su->su_badptr + su->su_badlen);
 
 			/* Restart at top of the tree. */
 			sp->ts_arridx = 0;
@@ -7158,6 +7263,7 @@ suggest_try_change(su)
 
 	    case STATE_ENDNUL:
 		/* Past the NUL bytes in the node. */
+		su->su_badflags = sp->ts_save_badflags;
 		if (fword[sp->ts_fidx] == NUL)
 		{
 		    /* The badword ends, can't use the bytes in this node. */
@@ -7768,6 +7874,28 @@ try_deeper(su, stack, depth, score_add)
     stack[depth + 1].ts_curi = 1;	/* start just after length byte */
     return TRUE;
 }
+
+#ifdef FEAT_MBYTE
+/*
+ * Case-folding may change the number of bytes: Count nr of chars in
+ * fword[flen] and return the byte length of that many chars in "word".
+ */
+    static int
+nofold_len(fword, flen, word)
+    char_u	*fword;
+    int		flen;
+    char_u	*word;
+{
+    char_u	*p;
+    int		i = 0;
+
+    for (p = fword; p < fword + flen; mb_ptr_adv(p))
+	++i;
+    for (p = word; i > 0; mb_ptr_adv(p))
+	--i;
+    return (int)(p - word);
+}
+#endif
 
 /*
  * "fword" is a good word with case folded.  Find the matching keep-case
@@ -9953,6 +10081,8 @@ apply_prefixes(slang, word, round, flags, startlnum)
     idx_T	arridx[MAXWLEN];
     int		curi[MAXWLEN];
     char_u	prefix[MAXWLEN];
+    char_u	word_up[MAXWLEN];
+    int		has_word_up = FALSE;
     int		c;
     char_u	*byts;
     idx_T	*idxs;
@@ -9961,6 +10091,15 @@ apply_prefixes(slang, word, round, flags, startlnum)
     int		n;
     int		len;
     int		i;
+
+    /* if the word starts with a lower-case letter make the word with an
+     * upper-case letter in word_up[]. */
+    c = PTR2CHAR(word);
+    if (SPELL_TOUPPER(c) != c)
+    {
+	onecap_copy(word, word_up, TRUE);
+	has_word_up = TRUE;
+    }
 
     byts = slang->sl_pbyts;
     idxs = slang->sl_pidxs;
@@ -9997,13 +10136,30 @@ apply_prefixes(slang, word, round, flags, startlnum)
 			    break;
 		    curi[depth] += i - 1;
 
-		    i = valid_word_prefix(i, n, flags, word, slang);
-		    if (i != 0)
+		    c = valid_word_prefix(i, n, flags, word, slang, FALSE);
+		    if (c != 0)
 		    {
 			vim_strncpy(prefix + depth, word, MAXWLEN - depth - 1);
 			dump_word(prefix, round,
-				(i & WF_RAREPFX) ? (flags | WF_RARE)
+				(c & WF_RAREPFX) ? (flags | WF_RARE)
 							     : flags, lnum++);
+		    }
+
+		    /* Check for prefix that matches the word when the
+		     * first letter is upper-case, but only if the prefix has
+		     * a condition. */
+		    if (has_word_up)
+		    {
+			c = valid_word_prefix(i, n, flags, word_up, slang,
+									TRUE);
+			if (c != 0)
+			{
+			    vim_strncpy(prefix + depth, word_up,
+							 MAXWLEN - depth - 1);
+			    dump_word(prefix, round,
+				    (c & WF_RAREPFX) ? (flags | WF_RARE)
+							     : flags, lnum++);
+			}
 		    }
 		}
 		else

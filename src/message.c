@@ -15,10 +15,6 @@
 
 #include "vim.h"
 
-#ifdef HAVE_STDARG_H
-# include <stdarg.h>
-#endif
-
 static int other_sourcing_name __ARGS((void));
 static char_u *get_emsg_source __ARGS((void));
 static char_u *get_emsg_lnum __ARGS((void));

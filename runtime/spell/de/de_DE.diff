@@ -1,14 +1,28 @@
 *** de_DE.orig.aff	Fri Feb 25 12:50:10 2005
---- de_DE.aff	Sun Jul  3 19:04:32 2005
+--- de_DE.aff	Sun Jul 31 22:15:49 2005
 ***************
 *** 2,3 ****
---- 2,10 ----
+--- 2,24 ----
   TRY esianrtolcdugmphbyfvkwהüצ‗ביךאגסESIANRTOLCDUGMPHBYFVKWÄÜÖ
 + 
 + FOL  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗ÿ
 + LOW  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗ÿ
 + UPP  ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞ‗ÿ
 + 
++ SOFOFROM abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZאבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗ÿÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞ¿
++ SOFOTO   ebctefghejklnnepkrstevvkesebctefghejklnnepkrstevvkeseeeeeeeceeeeeeeedneeeeeeeeeeepseeeeeeeeceeeeeeeedneeeeeeeeeeep?
++ 
 + MIDWORD	'
++ 
++ MAP 9
++ MAP aאבגדהו
++ MAP eטיךכ
++ MAP iלםמן
++ MAP oעףפץצ
++ MAP uשתûü
++ MAP nס
++ MAP cח
++ MAP yÿ‎
++ MAP s‗
 + 
   #

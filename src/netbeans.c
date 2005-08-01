@@ -21,7 +21,6 @@
 #if defined(FEAT_NETBEANS_INTG) || defined(PROTO)
 
 /* Note: when making changes here also adjust configure.in. */
-# include <stdarg.h>
 # include <fcntl.h>
 #ifdef WIN32
 # ifdef DEBUG

@@ -413,6 +413,9 @@ typedef unsigned short u8char_T;
 #ifdef HAVE_WCTYPE_H
 # include <wctype.h>
 #endif
+#ifdef HAVE_STDARG_H
+# include <stdarg.h>
+#endif
 
 /* ================ end of the header file puzzle =============== */
 
