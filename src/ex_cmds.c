@@ -2952,11 +2952,25 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags)
 #ifdef FEAT_BROWSE
 	if (cmdmod.browse)
 	{
-	    browse_file = do_browse(0, (char_u *)_("Edit File"), ffname,
+	    if (
+# ifdef FEAT_GUI
+		!gui.in_use &&
+# endif
+		    au_has_group((char_u *)"FileExplorer"))
+	    {
+		/* No browsing supported but we do have the file explorer:
+		 * Edit the directory. */
+		if (ffname == NULL || !mch_isdir(ffname))
+		    ffname = (char_u *)".";
+	    }
+	    else
+	    {
+		browse_file = do_browse(0, (char_u *)_("Edit File"), ffname,
 						    NULL, NULL, NULL, curbuf);
-	    if (browse_file == NULL)
-		goto theend;
-	    ffname = browse_file;
+		if (browse_file == NULL)
+		    goto theend;
+		ffname = browse_file;
+	    }
 	}
 #endif
 	/* if no short name given, use ffname for short name */
