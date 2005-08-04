@@ -7059,6 +7059,18 @@ au_find_group(name)
     return AUGROUP_ERROR;
 }
 
+#if defined(FEAT_BROWSE) || defined(PROTO)
+/*
+ * Return TRUE if augroup "name" exists.
+ */
+    int
+au_has_group(name)
+    char_u	*name;
+{
+    return au_find_group(name) != AUGROUP_ERROR;
+}
+#endif
+
 /*
  * ":augroup {name}".
  */

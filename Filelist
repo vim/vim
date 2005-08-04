@@ -702,6 +702,7 @@ LANG_SRC = \
 		src/po/README.txt \
 		src/po/README_mingw.txt \
 		src/po/README_mvc.txt \
+		src/po/check.vim \
 		src/po/cleanup.vim \
 		src/po/Makefile \
 		src/po/Make_cyg.mak \

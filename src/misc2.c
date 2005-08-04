@@ -4058,7 +4058,7 @@ vim_findfile_init(path, filename, stopdirs, level, free_visited, need_dir,
 		else
 		    ff_expand_buffer[len++] = FF_MAX_STAR_STAR_EXPAND;
 		wc_part = (char_u *)errpt;
-		if (*wc_part != PATHSEP && *wc_part != NUL)
+		if (*wc_part != NUL && !vim_ispathsep(*wc_part))
 		{
 		    EMSG2(_("E343: Invalid path: '**[number]' must be at the end of the path or be followed by '%s'."), PATHSEPSTR);
 		    goto error_return;
@@ -4582,10 +4582,10 @@ vim_findfile(search_ctx)
 
 	    /* cut of last dir */
 	    while (path_end > ff_search_ctx->ffsc_start_dir
-		    && *path_end == PATHSEP)
+		    && vim_ispathsep(*path_end))
 		path_end--;
 	    while (path_end > ff_search_ctx->ffsc_start_dir
-		    && *(path_end-1) != PATHSEP)
+		    && !vim_ispathsep(path_end[-1]))
 		path_end--;
 	    *path_end = 0;
 	    path_end--;
@@ -5050,7 +5050,7 @@ ff_path_in_stoplist(path, path_len, stopdirs_v)
     int		i = 0;
 
     /* eat up trailing path separators, except the first */
-    while (path_len > 1 && path[path_len - 1] == PATHSEP)
+    while (path_len > 1 && vim_ispathsep(path[path_len - 1]))
 	path_len--;
 
     /* if no path consider it as match */
@@ -5066,7 +5066,7 @@ ff_path_in_stoplist(path, path_len, stopdirs_v)
 	     * '/home/r' would also match '/home/rks'
 	     */
 	    if (fnamencmp(stopdirs_v[i], path, path_len) == 0
-		    && stopdirs_v[i][path_len] == PATHSEP)
+		    && vim_ispathsep(stopdirs_v[i][path_len]))
 		return TRUE;
 	}
 	else

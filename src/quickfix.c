@@ -323,13 +323,12 @@ qf_init_ext(efile, buf, tv, errorformat, newlist, lnumfirst, lnumlast)
 					 && efmp[1] != '\\' && efmp[1] != '%')
 		    {
 			/* A file name may contain spaces, but this isn't in
-			 * "\f".  use "[^x]\+" instead (x is next character) */
-			*ptr++ = '[';
-			*ptr++ = '^';
-			*ptr++ = efmp[1];
-			*ptr++ = ']';
-			*ptr++ = '\\';
-			*ptr++ = '+';
+			 * "\f".  For "%f:%l:%m" there may be a ":" in the
+			 * file name.  Use ".\{-1,}x" instead (x is the next
+			 * character), the requirement that :999: follows
+			 * should work. */
+			STRCPY(ptr, ".\\{-1,}");
+			ptr += 7;
 		    }
 		    else
 		    {

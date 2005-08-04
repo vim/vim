@@ -1596,7 +1596,6 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 45.4	usr_45.txt	/*45.4*
 45.5	usr_45.txt	/*45.5*
 755	spell.txt	/*755*
-767	eval.txt	/*767*
 90.1	usr_90.txt	/*90.1*
 90.2	usr_90.txt	/*90.2*
 90.3	usr_90.txt	/*90.3*
@@ -3736,6 +3735,8 @@ E763	spell.txt	/*E763*
 E764	spell.txt	/*E764*
 E765	options.txt	/*E765*
 E766	eval.txt	/*E766*
+E767	eval.txt	/*E767*
+E768	message.txt	/*E768*
 E77	message.txt	/*E77*
 E78	motion.txt	/*E78*
 E79	message.txt	/*E79*
@@ -5840,6 +5841,7 @@ new-line-continuation	version5.txt	/*new-line-continuation*
 new-manpage-trans	version7.txt	/*new-manpage-trans*
 new-multi-byte	version5.txt	/*new-multi-byte*
 new-multi-lang	version6.txt	/*new-multi-lang*
+new-netrw-explore	version7.txt	/*new-netrw-explore*
 new-network-files	version6.txt	/*new-network-files*
 new-operator-mod	version6.txt	/*new-operator-mod*
 new-options-5.2	version5.txt	/*new-options-5.2*

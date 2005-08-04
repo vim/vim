@@ -6665,11 +6665,25 @@ ex_splitview(eap)
 #endif
 	    && eap->cmdidx != CMD_new)
     {
-	fname = do_browse(0, (char_u *)_("Edit File in new window"),
+	if (
+# ifdef FEAT_GUI
+	    !gui.in_use &&
+# endif
+		au_has_group((char_u *)"FileExplorer"))
+	{
+	    /* No browsing supported but we do have the file explorer:
+	     * Edit the directory. */
+	    if (*eap->arg == NUL || !mch_isdir(eap->arg))
+		eap->arg = (char_u *)".";
+	}
+	else
+	{
+	    fname = do_browse(0, (char_u *)_("Edit File in new window"),
 					  eap->arg, NULL, NULL, NULL, curbuf);
-	if (fname == NULL)
-	    goto theend;
-	eap->arg = fname;
+	    if (fname == NULL)
+		goto theend;
+	    eap->arg = fname;
+	}
     }
     cmdmod.browse = FALSE;	/* Don't browse again in do_ecmd(). */
 #endif

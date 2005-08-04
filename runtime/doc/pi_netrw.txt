@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 6.3.  Last change: Jul 09, 2005
+*pi_netrw.txt*  For Vim version 7.0.  Last change: Aug 01, 2005
 
 
 		VIM REFERENCE MANUAL    by Charles E. Campbell, Jr.
@@ -1143,9 +1143,15 @@ which is loaded automatically at startup (assuming :set nocp).
 ==============================================================================
 10. History						*netrw-history*
 
+	v57: * Explore and relatives can now handle RO files
+	     * reverse sort restored with vim7's sort command
+	     * g:netrw_keepdir now being used to keep the current directory
+	       unchanged as intended (sense change)
+	     * vim 6.3 still supported
 	v56: * LocalBrowse now saves autochdir setting, unsets it, and
 	       restores it before returning.
 	     * using vim's rename() instead of system + local_rename variable
+	     * avoids changing directory when g:netrw_keepdir is false
 	v55: * -bar used with :Explore :Sexplore etc to allow multiple
 	       commands to be separated by |s
 	     * browser listings now use the "nowrap" option
