@@ -1382,7 +1382,7 @@ find_tags(pat, num_matches, matchesp, flags, mincount, buf_ffname)
 	    line_breakcheck();	    /* check for CTRL-C typed */
 #ifdef FEAT_INS_EXPAND
 	    if ((flags & TAG_INS_COMP))	/* Double brackets for gcc */
-		ins_compl_check_keys();
+		ins_compl_check_keys(30);
 	    if (got_int || compl_interrupted)
 #else
 	    if (got_int)

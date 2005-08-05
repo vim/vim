@@ -460,6 +460,10 @@ static void f_call __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_char2nr __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_cindent __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_col __ARGS((typval_T *argvars, typval_T *rettv));
+#if defined(FEAT_INS_EXPAND)
+static void f_complete_add __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_complete_check __ARGS((typval_T *argvars, typval_T *rettv));
+#endif
 static void f_confirm __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_copy __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_count __ARGS((typval_T *argvars, typval_T *rettv));
@@ -6690,6 +6694,10 @@ static struct fst
     {"char2nr",		1, 1, f_char2nr},
     {"cindent",		1, 1, f_cindent},
     {"col",		1, 1, f_col},
+#if defined(FEAT_INS_EXPAND)
+    {"complete_add",	1, 1, f_complete_add},
+    {"complete_check",	0, 0, f_complete_check},
+#endif
     {"confirm",		1, 4, f_confirm},
     {"copy",		1, 1, f_copy},
     {"count",		2, 4, f_count},
@@ -7870,6 +7878,41 @@ f_col(argvars, rettv)
     }
     rettv->vval.v_number = col;
 }
+
+#if defined(FEAT_INS_EXPAND)
+/*
+ * "complete_add()" function
+ */
+/*ARGSUSED*/
+    static void
+f_complete_add(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    char_u	*s;
+
+    s = get_tv_string_chk(&argvars[0]);
+    if (s != NULL)
+	rettv->vval.v_number = ins_compl_add(s, -1, NULL, FORWARD, 0);
+}
+
+/*
+ * "complete_check()" function
+ */
+/*ARGSUSED*/
+    static void
+f_complete_check(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    int		saved = RedrawingDisabled;
+
+    RedrawingDisabled = 0;
+    ins_compl_check_keys(0);
+    rettv->vval.v_number = compl_interrupted;
+    RedrawingDisabled = saved;
+}
+#endif
 
 /*
  * "confirm(message, buttons[, default [, type]])" function

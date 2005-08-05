@@ -2,8 +2,8 @@
 " Language:		shell (sh) Korn shell (ksh) bash (sh)
 " Maintainer:		Dr. Charles E. Campbell, Jr.  <NdrOchipS@PcampbellAfamily.Mbiz>
 " Previous Maintainer:	Lennart Schultz <Lennart.Schultz@ecmwf.int>
-" Last Change:		Mar 24, 2005
-" Version:		74
+" Last Change:		Jul 01, 2005
+" Version:		75
 " URL:		http://www.erols.com/astronaut/vim/index.html#vimlinks_syntax
 "
 " Using the following VIM variables: {{{1
@@ -71,6 +71,7 @@ syn cluster shCaseEsacList	contains=shCaseStart,shCase,shCaseBar,shCaseIn,shComm
 syn cluster shCaseList	contains=@shCommandSubList,shCaseEsac,shColon,shCommandSub,shCommandSub,shComment,shDo,shEcho,shExpr,shFor,shHereDoc,shIf,shRedir,shSetList,shSource,shStatement,shVariable,shSpecial
 syn cluster shColonList	contains=@shCaseList
 syn cluster shCommandSubList	contains=shArithmetic,shDeref,shDerefSimple,shNumber,shOperator,shPosnParm,shSpecial,shExSingleQuote,shSingleQuote,shDoubleQuote,shStatement,shVariable,shSubSh,shAlias,shTest
+syn cluster shCurlyList	contains=shNumber,shComma,shDeref,shDerefSimple,shDerefSpecial
 syn cluster shDblQuoteList	contains=shCommandSub,shDeref,shDerefSimple,shSpecial,shPosnParm
 syn cluster shDerefList	contains=shDeref,shDerefSimple,shDerefVar,shDerefSpecial,shDerefWordError
 syn cluster shDerefVarList	contains=shDerefOp,shDerefVarArray,shDerefOpError
@@ -154,7 +155,7 @@ syn match   shCharClass	contained	"\[:\(backspace\|escape\|return\|xdigit\|alnum
 " ======
 syn region shDo		transparent matchgroup=shConditional start="\<do\>" matchgroup=shConditional end="\<done\>" contains=@shLoopList
 syn region shIf		transparent matchgroup=shConditional start="\<if\>" matchgroup=shConditional end="\<;\_s*then\>" end="\<fi\>"   contains=@shLoopList,shDblBrace,shDblParen
-syn region shFor	matchgroup=shLoop start="\<for\>" end="\<in\>" end="\<do\>"me=e-2	contains=@shLoopList,shDblParen
+syn region shFor	matchgroup=shLoop start="\<for\>" end="\<in\>" end="\<do\>"me=e-2	contains=@shLoopList,shDblParen skipwhite nextgroup=shCurlyIn
 if exists("b:is_kornshell") || exists("b:is_bash")
  syn cluster shCaseList add=shRepeat
  syn region shRepeat   matchgroup=shLoop   start="\<while\>" end="\<in\>" end="\<do\>"me=e-2	contains=@shLoopList,shDblParen,shDblBrace
@@ -164,6 +165,8 @@ else
  syn region shRepeat   matchgroup=shLoop   start="\<while\>" end="\<do\>"me=e-2		contains=@shLoopList
  syn region shRepeat   matchgroup=shLoop   start="\<until\>" end="\<do\>"me=e-2		contains=@shLoopList
 endif
+syn region shCurlyIn   contained	matchgroup=Delimiter start="{" end="}" contains=@shCurlyList
+syn match  shComma     contained	","
 
 " Case: case...esac {{{1
 " ====

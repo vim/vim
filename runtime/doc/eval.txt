@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Aug 01
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Aug 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1474,6 +1474,8 @@ call( {func}, {arglist} [, {dict}])
 char2nr( {expr})		Number	ASCII value of first char in {expr}
 cindent( {lnum})		Number	C indent for line {lnum}
 col( {expr})			Number	column nr of cursor or mark
+complete_add( {expr})		Number	add completion match
+complete_check()		Number  check for key typed during completion
 confirm( {msg} [, {choices} [, {default} [, {type}]]])
 				Number	number of choice picked by user
 copy( {expr})			any	make a shallow copy of {expr}
@@ -1886,6 +1888,22 @@ col({expr})	The result is a Number, which is the byte index of the column
 				\<C-O>:echo col(".") . "\n" <Bar>
 				\let &ve = save_ve<CR>
 <
+
+complete_add({expr})				*complete_add()*
+		Add {expr} to the list of matches.  Only to be used by the
+		function specified with the 'completefunc' option.
+		Returns 0 for failure (empty string or out of memory),
+		1 when the match was added, 2 when the match was already in
+		the list.
+
+complete_check()				*complete_check()*
+		Check for a key typed while looking for completion matches.
+		This is to be used when looking for matches takes some time.
+		Returns non-zero when searching for matches is to be aborted,
+		zero otherwise.
+		Only to be used by the function specified with the
+		'completefunc' option.
+
 						*confirm()*
 confirm({msg} [, {choices} [, {default} [, {type}]]])
 		Confirm() offers the user a dialog, from which a choice can be
@@ -5233,8 +5251,8 @@ This would call the function "my_func_whizz(parameter)".
 			value of each item.
 			When an error is detected for a command inside the
 			loop, execution continues after the "endfor".
-			Changing {list} affects what items are used.  Make a
-			copy if this is unwanted: >
+			Changing {list} inside the loop affects what items are
+			used.  Make a copy if this is unwanted: >
 				:for item in copy(mylist)
 <			When not making a copy, Vim stores a reference to the
 			next item in the list, before executing the commands
@@ -5251,12 +5269,6 @@ This would call the function "my_func_whizz(parameter)".
 			identical to avoid errors for the type of {var}
 			changing.  Unlet the variable at the end of the loop
 			to allow multiple item types.
-
-:for {var} in {string}
-:endfo[r]		Like ":for" above, but use each character in {string}
-			as a list item.
-			Composing characters are used as separate characters.
-			A Number is first converted to a String.
 
 :for [{var1}, {var2}, ...] in {listlist}
 :endfo[r]

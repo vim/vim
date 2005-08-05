@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 7.0.  Last change: Aug 01, 2005
+*pi_netrw.txt*  For Vim version 7.0.  Last change: Aug 04, 2005
 
 
 		VIM REFERENCE MANUAL    by Charles E. Campbell, Jr.
@@ -584,6 +584,8 @@ MAPS   								*netrw-maps*
      :Sexplore[!] [dir].Split & Explore directory of current file|netrw-explore|
      :Hexplore[!] [dir].Horizontal Split & Explore...............|netrw-explore|
      :Vexplore[!] [dir].Vertical Split & Explore.................|netrw-explore|
+     :Pexplore[!] [dir].Vertical Split & Explore.................|netrw-explore|
+     :Nexplore[!] [dir].Vertical Split & Explore.................|netrw-explore|
 
 QUICK REFERENCE COMMANDS TABLE     			*netrw-browse-cmds*
 >
@@ -606,6 +608,7 @@ QUICK REFERENCE COMMANDS TABLE     			*netrw-browse-cmds*
 	 <c-l>	Causes Netrw to refresh the directory listing
 	   o	Enter the file/directory under the cursor in a new browser
 	   	window.  A horizontal split is used.
+	   p	Preview the file
 	   r	Reverse sorting order
 	   s	Select sorting style: by name, time, or file size
 	   v	Enter the file/directory under the cursor in a new browser
@@ -741,10 +744,12 @@ ssh interaction, etc, see |netrw-list-hack|.
 
 DIRECTORY EXPLORING COMMANDS						*netrw-explore*
 
-     :Explore[!]   [dir].Explore directory of current file
-     :Sexplore[!]  [dir].Split & Explore directory of current file
-     :Hexplore[!]  [dir].Horizontal Split & Explore
-     :Vexplore[!]  [dir].Vertical Split & Explore
+     :Explore[!]   [dir]... Explore directory of current file
+     :Sexplore[!]  [dir]... Split & Explore directory of current file
+     :Hexplore[!]  [dir]... Horizontal Split & Explore
+     :Vexplore[!]  [dir]... Vertical Split & Explore
+     :Nexplore............. used with **/patterns; go to next matching file
+     :Pexplore............. used with **/patterns; go to previous matching file
 
 The Explore command will open the local-directory browser on the current
 file's directory (or on directory [dir] if specified).  The window
@@ -762,6 +767,23 @@ optional ! does the Explore with |aboveleft| horizontal splitting.
 Vexplore does an Explore with |leftabove| vertical splitting; the optiona
 ! does an Explore with |topleft| vertical splitting.
 
+(Following needs v7.0 or later)
+When Explore, Sexplore, Hexplore, or Vexplore are used with
+**/filename-patterns, netrw will attempt to find a (sub)directory which
+matches the filename pattern.  The Nexplore and Pexplore commands enable
+one to proceed to the next/previous matching file, respectively.  If your
+console or gui produce recognizable shift-up or shift-down sequences, then
+
+	<s-down>  == Nexplore, and
+	<s-up>    == Pexplore.
+
+As an example, consider >
+
+	:Explore **/*.c
+	:Nexplore
+	:Nexplore
+	:Pexplore
+<
 
 REFRESHING THE LISTING					*netrw-ctrl-l*
 
@@ -993,10 +1015,10 @@ the current directory to the current browsing directory.
 
 BOOKMARKING A DIRECTORY		*netrw-b* *netrw-bookmark* *netrw-bookmarks*
 
-One may easily "bookmark" a directory by using
+One may easily "bookmark" a directory by using >
 
 	{cnt}b
-
+<
 Any count may be used.  One may use viminfo's "!" option to retain bookmarks
 between vim sessions.  See |netrw-B| for how to return to a bookmark and
 |netrw-q| for how to list them.
@@ -1143,6 +1165,21 @@ which is loaded automatically at startup (assuming :set nocp).
 ==============================================================================
 10. History						*netrw-history*
 
+	v58: * Explore and relatives can now handle **/somefilepattern (v7)
+	     * Nexplore and Pexplore introduced (v7).  shift-down and shift-up
+	       cursor keys will invoke Nexplore and Pexplore, respectively.
+	     * bug fixed with o and v
+	     * autochdir only worked around for vim when it has been
+	       compiled with either |+netbeans_intg| or |+sun_workshop|
+	     * Under Windows, all directories and files were being preceded
+	       with a "/" when local browsing.  Fixed.
+	     * When: syntax highlighting is off, laststatus=2, and remote
+	       browsing is used, sometimes the laststatus highlighting
+	       bleeds into the entire display.  Work around - do an extra
+	       redraw in that case.
+	     * Bugfix: when g:netrw_keepdir=0, due to re-use of buffers,
+	       netrw didn't change the directory when it should've
+	     * Bugfix: D and R commands work again
 	v57: * Explore and relatives can now handle RO files
 	     * reverse sort restored with vim7's sort command
 	     * g:netrw_keepdir now being used to keep the current directory

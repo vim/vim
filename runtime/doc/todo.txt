@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Aug 02
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Aug 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -66,8 +66,6 @@ PLANNED FOR VERSION 7.0:
     make it work for all completion methods.
 
     First cleanup the Insert-mode completion.
-    - check security of 'completefunc'.
-    - use callback to interrupt searching for matches.
 
     UI:
     - At first: use 'wildmenu' kind of thing.
@@ -76,7 +74,8 @@ PLANNED FOR VERSION 7.0:
       alternatives).
 
     Completion logic:
-	Use 'coupler' option to list items that connect words.  For C: ".,->".
+	Use something like 'completefunc'?
+	runtime/complete/{filetype}.vim files?
 	In function arguments suggest variables of expected type.
 
 	Ideas from others:
@@ -102,7 +101,7 @@ PLANNED FOR VERSION 7.0:
 	"Visual Assist" http://www.wholetomato.com/products:
 	Completion in .NET framework SharpDevelop: http://www.icsharpcode.net
 
-    - Pre-expand abbreviations, show which abbrevs would match?
+        - Pre-expand abbreviations, show which abbrevs would match?
 
 -   UNDO TREE: keep all states of the text, don't delete undo info.
     When making a change, instead of clearing any future undo (thus redo)

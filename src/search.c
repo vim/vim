@@ -4743,7 +4743,7 @@ search_line:
 		if (add_r == OK)
 		    /* if dir was BACKWARD then honor it just once */
 		    dir = FORWARD;
-		else if (add_r == RET_ERROR)
+		else if (add_r == FAIL)
 		    break;
 	    }
 	    else
@@ -4873,7 +4873,7 @@ exit_matched:
 	line_breakcheck();
 #ifdef FEAT_INS_EXPAND
 	if (action == ACTION_EXPAND)
-	    ins_compl_check_keys();
+	    ins_compl_check_keys(30);
 	if (got_int || compl_interrupted)
 #else
 	if (got_int)

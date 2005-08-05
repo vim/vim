@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Aug 04
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Aug 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -399,6 +399,8 @@ New functions: ~
 |browsedir()|		dialog to select a directory
 |byteidx()| 		index of a character (Ilya Sher)
 |call()|		call a function with List as arguments
+|complete_add()|	add match for 'completefunc'
+|complete_check()|	check for key pressed, for 'completefunc'
 |copy()|		make a shallow copy of a List or Dictionary
 |count()|		count nr of times a value is in a List or Dictionary
 |deepcopy()|		make a full copy of a List or Dictionary

@@ -34,8 +34,6 @@
 #define CTRL_X_OCCULT		13
 #define CTRL_X_LOCAL_MSG	14	/* only used in "ctrl_x_msgs" */
 
-#define CHECK_KEYS_TIME		30
-
 #define CTRL_X_MSG(i) ctrl_x_msgs[(i) & ~CTRL_X_WANT_IDENT]
 
 static char *ctrl_x_msgs[] =
@@ -62,18 +60,18 @@ static char_u e_hitend[] = N_("Hit end of paragraph");
 /*
  * Structure used to store one match for insert completion.
  */
+typedef struct Completion compl_T;
 struct Completion
 {
-    struct Completion	*next;
-    struct Completion	*prev;
-    char_u		*str;	  /* matched text */
-    char_u		*fname;	  /* file containing the match */
-    int			original; /* ORIGINAL_TEXT, CONT_S_IPOS or FREE_FNAME */
-    int			number;	  /* sequence number */
+    compl_T	*cp_next;
+    compl_T	*cp_prev;
+    char_u	*cp_str;	/* matched text */
+    char_u	*cp_fname;	/* file containing the match */
+    int		cp_flags;	/* ORIGINAL_TEXT, CONT_S_IPOS or FREE_FNAME */
+    int		cp_number;	/* sequence number */
 };
 
-/* the original text when the expansion begun */
-#define ORIGINAL_TEXT	(1)
+#define ORIGINAL_TEXT	(1)   /* the original text when the expansion begun */
 #define FREE_FNAME	(2)
 
 /*
@@ -83,31 +81,30 @@ struct Completion
  * "compl_shown_match" is different from compl_curr_match during
  * ins_compl_get_exp().
  */
-static struct Completion    *compl_first_match = NULL;
-static struct Completion    *compl_curr_match = NULL;
-static struct Completion    *compl_shown_match = NULL;
+static compl_T    *compl_first_match = NULL;
+static compl_T    *compl_curr_match = NULL;
+static compl_T    *compl_shown_match = NULL;
 
 /* When the first completion is done "compl_started" is set.  When it's
  * FALSE the word to be completed must be located. */
 static int		    compl_started = FALSE;
 
-static int		    compl_matches = 0;
-static char_u		    *compl_pattern = NULL;
-static int		    compl_direction = FORWARD;
-static int		    compl_shows_dir = FORWARD;
-static int		    compl_pending = FALSE;
-static pos_T		    compl_startpos;
-static colnr_T		    compl_col = 0;	/* column where the text starts
-						   that is being completed */
-static int		    save_sm = -1;
-static char_u		    *compl_orig_text = NULL;  /* text as it was before
-							 completion started */
-static int		    compl_cont_mode = 0;
-static expand_T		    compl_xp;
+static int	  compl_matches = 0;
+static char_u	  *compl_pattern = NULL;
+static int	  compl_direction = FORWARD;
+static int	  compl_shows_dir = FORWARD;
+static int	  compl_pending = FALSE;
+static pos_T	  compl_startpos;
+static colnr_T	  compl_col = 0;	    /* column where the text starts
+					     * that is being completed */
+static int	  save_sm = -1;
+static char_u	  *compl_orig_text = NULL;  /* text as it was before
+					     * completion started */
+static int	  compl_cont_mode = 0;
+static expand_T	  compl_xp;
 
 static void ins_ctrl_x __ARGS((void));
 static int  has_compl_option __ARGS((int dict_opt));
-static int  ins_compl_add __ARGS((char_u *str, int len, char_u *, int dir, int reuse));
 static void ins_compl_add_matches __ARGS((int num_matches, char_u **matches, int dir));
 static int  ins_compl_make_cyclic __ARGS((void));
 static void ins_compl_dictionaries __ARGS((char_u *dict, char_u *pat, int dir, int flags, int thesaurus));
@@ -657,7 +654,8 @@ edit(cmdchar, startln, count)
 #ifdef FEAT_INS_EXPAND
 	/* Prepare for or stop CTRL-X mode.  This doesn't do completion, but
 	 * it does fix up the text when finishing completion. */
-	ins_compl_prep(c);
+	if (c != K_IGNORE)
+	    ins_compl_prep(c);
 #endif
 
 	/* CTRL-\ CTRL-N goes to Normal mode, CTRL-\ CTRL-G goes to mode
@@ -800,20 +798,6 @@ doESCkey:
 	    }
 	    continue;
 
-	case K_INS:	/* toggle insert/replace mode */
-	case K_KINS:
-	    ins_insert(replaceState);
-	    break;
-
-#ifdef FEAT_INS_EXPAND
-	case Ctrl_X:	/* Enter CTRL-X mode */
-	    ins_ctrl_x();
-	    break;
-#endif
-
-	case K_SELECT:	/* end of Select mode mapping - ignore */
-	    break;
-
 	case Ctrl_Z:	/* suspend when 'insertmode' set */
 	    if (!p_im)
 		goto normalchar;	/* insert CTRL-Z as normal char */
@@ -831,6 +815,14 @@ doESCkey:
 	    ins_ctrl_o();
 	    count = 0;
 	    goto doESCkey;
+
+	case K_INS:	/* toggle insert/replace mode */
+	case K_KINS:
+	    ins_insert(replaceState);
+	    break;
+
+	case K_SELECT:	/* end of Select mode mapping - ignore */
+	    break;
 
 #ifdef FEAT_SNIFF
 	case K_SNIFF:	/* Sniff command received */
@@ -1112,6 +1104,10 @@ doESCkey:
 #endif
 
 #ifdef FEAT_INS_EXPAND
+	case Ctrl_X:	/* Enter CTRL-X mode */
+	    ins_ctrl_x();
+	    break;
+
 	case Ctrl_RSB:	/* Tag name completion after ^X */
 	    if (ctrl_x_mode != CTRL_X_TAGS)
 		goto normalchar;
@@ -1803,7 +1799,7 @@ vim_is_ctrl_x_key(c)
 		    || c == Ctrl_L || c == Ctrl_F || c == Ctrl_RSB
 		    || c == Ctrl_I || c == Ctrl_D || c == Ctrl_P
 		    || c == Ctrl_N || c == Ctrl_T || c == Ctrl_V
-		    || c == Ctrl_Q);
+		    || c == Ctrl_Q || c == Ctrl_U || c == Ctrl_O);
 	case CTRL_X_SCROLL:
 	    return (c == Ctrl_Y || c == Ctrl_E);
 	case CTRL_X_WHOLE_LINE:
@@ -1844,12 +1840,12 @@ vim_is_ctrl_x_key(c)
  * TODO: make this work for multi-byte characters.
  */
     int
-ins_compl_add_infercase(str, len, fname, dir, reuse)
+ins_compl_add_infercase(str, len, fname, dir, flags)
     char_u	*str;
     int		len;
     char_u	*fname;
     int		dir;
-    int		reuse;
+    int		flags;
 {
     int		has_lower = FALSE;
     int		was_letter = FALSE;
@@ -1900,30 +1896,35 @@ ins_compl_add_infercase(str, len, fname, dir, reuse)
 	/* Copy the original case of the part we typed */
 	STRNCPY(IObuff, compl_orig_text, compl_length);
 
-	return ins_compl_add(IObuff, len, fname, dir, reuse);
+	return ins_compl_add(IObuff, len, fname, dir, flags);
     }
-    return ins_compl_add(str, len, fname, dir, reuse);
+    return ins_compl_add(str, len, fname, dir, flags);
 }
 
 /*
  * Add a match to the list of matches.
  * If the given string is already in the list of completions, then return
  * FAIL, otherwise add it to the list and return OK.  If there is an error,
- * maybe because alloc returns NULL, then RET_ERROR is returned -- webb.
+ * maybe because alloc() returns NULL, then RET_ERROR is returned -- webb.
+ *
+ * New:
+ * If the given string is already in the list of completions, then return
+ * NOTDONE, otherwise add it to the list and return OK.  If there is an error,
+ * maybe because alloc() returns NULL, then FAIL is returned -- webb.
  */
-    static int
-ins_compl_add(str, len, fname, dir, reuse)
+    int
+ins_compl_add(str, len, fname, dir, flags)
     char_u	*str;
     int		len;
     char_u	*fname;
     int		dir;
-    int		reuse;
+    int		flags;
 {
-    struct Completion *match;
+    compl_T	*match;
 
     ui_breakcheck();
     if (got_int)
-	return RET_ERROR;
+	return FAIL;
     if (len < 0)
 	len = (int)STRLEN(str);
 
@@ -1935,11 +1936,11 @@ ins_compl_add(str, len, fname, dir, reuse)
 	match = compl_first_match;
 	do
 	{
-	    if (    !(match->original & ORIGINAL_TEXT)
-		    && STRNCMP(match->str, str, (size_t)len) == 0
-		    && match->str[len] == NUL)
-		return FAIL;
-	    match = match->next;
+	    if (    !(match->cp_flags & ORIGINAL_TEXT)
+		    && STRNCMP(match->cp_str, str, (size_t)len) == 0
+		    && match->cp_str[len] == NUL)
+		return NOTDONE;
+	    match = match->cp_next;
 	} while (match != NULL && match != compl_first_match);
     }
 
@@ -1947,52 +1948,52 @@ ins_compl_add(str, len, fname, dir, reuse)
      * Allocate a new match structure.
      * Copy the values to the new match structure.
      */
-    match = (struct Completion *)alloc((unsigned)sizeof(struct Completion));
+    match = (compl_T *)alloc((unsigned)sizeof(compl_T));
     if (match == NULL)
-	return RET_ERROR;
-    match->number = -1;
-    if (reuse & ORIGINAL_TEXT)
+	return FAIL;
+    match->cp_number = -1;
+    if (flags & ORIGINAL_TEXT)
     {
-	match->number = 0;
-	match->str = compl_orig_text;
+	match->cp_number = 0;
+	match->cp_str = compl_orig_text;
     }
-    else if ((match->str = vim_strnsave(str, len)) == NULL)
+    else if ((match->cp_str = vim_strnsave(str, len)) == NULL)
     {
 	vim_free(match);
-	return RET_ERROR;
+	return FAIL;
     }
     /* match-fname is:
-     * - compl_curr_match->fname if it is a string equal to fname.
+     * - compl_curr_match->cp_fname if it is a string equal to fname.
      * - a copy of fname, FREE_FNAME is set to free later THE allocated mem.
      * - NULL otherwise.	--Acevedo */
-    if (fname && compl_curr_match && compl_curr_match->fname
-	      && STRCMP(fname, compl_curr_match->fname) == 0)
-	match->fname = compl_curr_match->fname;
-    else if (fname && (match->fname = vim_strsave(fname)) != NULL)
-	reuse |= FREE_FNAME;
+    if (fname && compl_curr_match && compl_curr_match->cp_fname
+	      && STRCMP(fname, compl_curr_match->cp_fname) == 0)
+	match->cp_fname = compl_curr_match->cp_fname;
+    else if (fname && (match->cp_fname = vim_strsave(fname)) != NULL)
+	flags |= FREE_FNAME;
     else
-	match->fname = NULL;
-    match->original = reuse;
+	match->cp_fname = NULL;
+    match->cp_flags = flags;
 
     /*
      * Link the new match structure in the list of matches.
      */
     if (compl_first_match == NULL)
-	match->next = match->prev = NULL;
+	match->cp_next = match->cp_prev = NULL;
     else if (dir == FORWARD)
     {
-	match->next = compl_curr_match->next;
-	match->prev = compl_curr_match;
+	match->cp_next = compl_curr_match->cp_next;
+	match->cp_prev = compl_curr_match;
     }
     else	/* BACKWARD */
     {
-	match->next = compl_curr_match;
-	match->prev = compl_curr_match->prev;
+	match->cp_next = compl_curr_match;
+	match->cp_prev = compl_curr_match->cp_prev;
     }
-    if (match->next)
-	match->next->prev = match;
-    if (match->prev)
-	match->prev->next = match;
+    if (match->cp_next)
+	match->cp_next->cp_prev = match;
+    if (match->cp_prev)
+	match->cp_prev->cp_next = match;
     else	/* if there's nothing before, it is the first match */
 	compl_first_match = match;
     compl_curr_match = match;
@@ -2014,7 +2015,7 @@ ins_compl_add_matches(num_matches, matches, dir)
     int		add_r = OK;
     int		ldir = dir;
 
-    for (i = 0; i < num_matches && add_r != RET_ERROR; i++)
+    for (i = 0; i < num_matches && add_r != FAIL; i++)
 	if ((add_r = ins_compl_add(matches[i], -1, NULL, ldir, 0)) == OK)
 	    /* if dir was BACKWARD then honor it just once */
 	    ldir = FORWARD;
@@ -2027,7 +2028,7 @@ ins_compl_add_matches(num_matches, matches, dir)
     static int
 ins_compl_make_cyclic()
 {
-    struct Completion *match;
+    compl_T *match;
     int	    count = 0;
 
     if (compl_first_match != NULL)
@@ -2037,13 +2038,13 @@ ins_compl_make_cyclic()
 	 */
 	match = compl_first_match;
 	/* there's always an entry for the compl_orig_text, it doesn't count. */
-	while (match->next != NULL && match->next != compl_first_match)
+	while (match->cp_next != NULL && match->cp_next != compl_first_match)
 	{
-	    match = match->next;
+	    match = match->cp_next;
 	    ++count;
 	}
-	match->next = compl_first_match;
-	compl_first_match->prev = match;
+	match->cp_next = compl_first_match;
+	compl_first_match->cp_prev = match;
     }
     return count;
 }
@@ -2168,7 +2169,7 @@ ins_compl_dictionaries(dict, pat, dir, flags, thesaurus)
 			if (add_r == OK)
 			    /* if dir was BACKWARD then honor it just once */
 			    dir = FORWARD;
-			else if (add_r == RET_ERROR)
+			else if (add_r == FAIL)
 			    break;
 			/* avoid expensive call to vim_regexec() when at end
 			 * of line */
@@ -2176,7 +2177,7 @@ ins_compl_dictionaries(dict, pat, dir, flags, thesaurus)
 			    break;
 		    }
 		    line_breakcheck();
-		    ins_compl_check_keys();
+		    ins_compl_check_keys(50);
 		}
 		fclose(fp);
 	    }
@@ -2245,7 +2246,7 @@ find_word_end(ptr)
     static void
 ins_compl_free()
 {
-    struct Completion *match;
+    compl_T *match;
 
     vim_free(compl_pattern);
     compl_pattern = NULL;
@@ -2256,11 +2257,11 @@ ins_compl_free()
     do
     {
 	match = compl_curr_match;
-	compl_curr_match = compl_curr_match->next;
-	vim_free(match->str);
+	compl_curr_match = compl_curr_match->cp_next;
+	vim_free(match->cp_str);
 	/* several entries may use the same fname, free it just once. */
-	if (match->original & FREE_FNAME)
-	    vim_free(match->fname);
+	if (match->cp_flags & FREE_FNAME)
+	    vim_free(match->cp_fname);
 	vim_free(match);
     } while (compl_curr_match != NULL && compl_curr_match != compl_first_match);
     compl_first_match = compl_curr_match = NULL;
@@ -2280,6 +2281,7 @@ ins_compl_clear()
 
 /*
  * Prepare for Insert mode completion, or stop it.
+ * Called just after typing a character in Insert mode.
  */
     static void
 ins_compl_prep(c)
@@ -2430,7 +2432,7 @@ ins_compl_prep(c)
 		 * the redo buffer.  We add as few as necessary to delete
 		 * just the part of the original text that has changed.
 		 */
-		ptr = compl_curr_match->str;
+		ptr = compl_curr_match->cp_str;
 		p = compl_orig_text;
 		while (*p && *p == *ptr)
 		{
@@ -2647,20 +2649,20 @@ ins_compl_get_exp(ini, dir)
 						   certain type. */
     static buf_T	*ins_buf = NULL;	/* buffer being scanned */
 
-    pos_T		*pos;
-    char_u		**matches;
-    int			save_p_scs;
-    int			save_p_ws;
-    int			save_p_ic;
-    int			i;
-    int			num_matches;
-    int			len;
-    int			found_new_match;
-    int			type = ctrl_x_mode;
-    char_u		*ptr;
-    char_u		*dict = NULL;
-    int			dict_f = 0;
-    struct Completion	*old_match;
+    pos_T	*pos;
+    char_u	**matches;
+    int		save_p_scs;
+    int		save_p_ws;
+    int		save_p_ic;
+    int		i;
+    int		num_matches;
+    int		len;
+    int		found_new_match;
+    int		type = ctrl_x_mode;
+    char_u	*ptr;
+    char_u	*dict = NULL;
+    int		dict_f = 0;
+    compl_T	*old_match;
 
     if (!compl_started)
     {
@@ -2872,7 +2874,7 @@ ins_compl_get_exp(ini, dir)
 		p_ws = TRUE;
 	    for (;;)
 	    {
-		int	reuse = 0;
+		int	flags = 0;
 
 		/* ctrl_x_mode == CTRL_X_WHOLE_LINE || word-wise search that has
 		 * added a word that was at the beginning of the line */
@@ -2973,7 +2975,7 @@ ins_compl_get_exp(ini, dir)
 				    tmp_ptr = ptr + IOSIZE - len - 1;
 				STRNCPY(IObuff + len, ptr, tmp_ptr - ptr);
 				len += (int)(tmp_ptr - ptr);
-				reuse |= CONT_S_IPOS;
+				flags |= CONT_S_IPOS;
 			    }
 			    IObuff[len] = NUL;
 			    ptr = IObuff;
@@ -2984,7 +2986,7 @@ ins_compl_get_exp(ini, dir)
 		}
 		if (ins_compl_add_infercase(ptr, len,
 			    ins_buf == curbuf ?  NULL : ins_buf->b_sfname,
-							  dir, reuse) != FAIL)
+						       dir, flags) != NOTDONE)
 		{
 		    found_new_match = OK;
 		    break;
@@ -3024,7 +3026,7 @@ ins_compl_get_exp(ini, dir)
     /* If several matches were added (FORWARD) or the search failed and has
      * just been made cyclic then we have to move compl_curr_match to the next
      * or previous entry (if any) -- Acevedo */
-    compl_curr_match = dir == FORWARD ? old_match->next : old_match->prev;
+    compl_curr_match = dir == FORWARD ? old_match->cp_next : old_match->cp_prev;
     if (compl_curr_match == NULL)
 	compl_curr_match = old_match;
     return i;
@@ -3049,24 +3051,24 @@ ins_compl_delete()
     static void
 ins_compl_insert()
 {
-    ins_bytes(compl_shown_match->str + curwin->w_cursor.col - compl_col);
+    ins_bytes(compl_shown_match->cp_str + curwin->w_cursor.col - compl_col);
 }
 
 /*
  * Fill in the next completion in the current direction.
- * If allow_get_expansion is TRUE, then we may call ins_compl_get_exp() to get
- * more completions.  If it is FALSE, then we just do nothing when there are
- * no more completions in a given direction.  The latter case is used when we
- * are still in the middle of finding completions, to allow browsing through
- * the ones found so far.
+ * If "allow_get_expansion" is TRUE, then we may call ins_compl_get_exp() to
+ * get more completions.  If it is FALSE, then we just do nothing when there
+ * are no more completions in a given direction.  The latter case is used when
+ * we are still in the middle of finding completions, to allow browsing
+ * through the ones found so far.
  * Return the total number of matches, or -1 if still unknown -- webb.
  *
  * compl_curr_match is currently being used by ins_compl_get_exp(), so we use
  * compl_shown_match here.
  *
  * Note that this function may be called recursively once only.  First with
- * allow_get_expansion TRUE, which calls ins_compl_get_exp(), which in turn
- * calls this function with allow_get_expansion FALSE.
+ * "allow_get_expansion" TRUE, which calls ins_compl_get_exp(), which in turn
+ * calls this function with "allow_get_expansion" FALSE.
  */
     static int
 ins_compl_next(allow_get_expansion)
@@ -3081,10 +3083,10 @@ ins_compl_next(allow_get_expansion)
 	ins_compl_delete();
     }
     compl_pending = FALSE;
-    if (compl_shows_dir == FORWARD && compl_shown_match->next != NULL)
-	compl_shown_match = compl_shown_match->next;
-    else if (compl_shows_dir == BACKWARD && compl_shown_match->prev != NULL)
-	compl_shown_match = compl_shown_match->prev;
+    if (compl_shows_dir == FORWARD && compl_shown_match->cp_next != NULL)
+	compl_shown_match = compl_shown_match->cp_next;
+    else if (compl_shows_dir == BACKWARD && compl_shown_match->cp_prev != NULL)
+	compl_shown_match = compl_shown_match->cp_prev;
     else
     {
 	compl_pending = TRUE;
@@ -3119,15 +3121,15 @@ ins_compl_next(allow_get_expansion)
      * Show the file name for the match (if any)
      * Truncate the file name to avoid a wait for return.
      */
-    if (compl_shown_match->fname != NULL)
+    if (compl_shown_match->cp_fname != NULL)
     {
 	STRCPY(IObuff, "match in file ");
-	i = (vim_strsize(compl_shown_match->fname) + 16) - sc_col;
+	i = (vim_strsize(compl_shown_match->cp_fname) + 16) - sc_col;
 	if (i <= 0)
 	    i = 0;
 	else
 	    STRCAT(IObuff, "<");
-	STRCAT(IObuff, compl_shown_match->fname + i);
+	STRCAT(IObuff, compl_shown_match->cp_fname + i);
 	msg(IObuff);
 	redraw_cmdline = FALSE;	    /* don't overwrite! */
     }
@@ -3140,9 +3142,11 @@ ins_compl_next(allow_get_expansion)
  * that should change the currently displayed completion, or exit completion
  * mode.  Also, when compl_pending is TRUE, show a completion as soon as
  * possible. -- webb
+ * "frequency" specifies out of how many calls we actually check.
  */
     void
-ins_compl_check_keys()
+ins_compl_check_keys(frequency)
+    int		frequency;
 {
     static int	count = 0;
 
@@ -3154,7 +3158,7 @@ ins_compl_check_keys()
 	return;
 
     /* Only do this at regular intervals */
-    if (++count < CHECK_KEYS_TIME)
+    if (++count < frequency)
 	return;
     count = 0;
 
@@ -3577,7 +3581,7 @@ ins_complete(c)
     }
 
     /* we found no match if the list has only the "compl_orig_text"-entry */
-    if (compl_first_match == compl_first_match->next)
+    if (compl_first_match == compl_first_match->cp_next)
     {
 	edit_submode_extra = (compl_cont_status & CONT_ADDING)
 			&& compl_length > 1
@@ -3595,14 +3599,14 @@ ins_complete(c)
 	    compl_cont_status &= ~CONT_N_ADDS;
     }
 
-    if (compl_curr_match->original & CONT_S_IPOS)
+    if (compl_curr_match->cp_flags & CONT_S_IPOS)
 	compl_cont_status |= CONT_S_IPOS;
     else
 	compl_cont_status &= ~CONT_S_IPOS;
 
     if (edit_submode_extra == NULL)
     {
-	if (compl_curr_match->original & ORIGINAL_TEXT)
+	if (compl_curr_match->cp_flags & ORIGINAL_TEXT)
 	{
 	    edit_submode_extra = (char_u *)_("Back at original");
 	    edit_submode_highl = HLF_W;
@@ -3612,7 +3616,7 @@ ins_complete(c)
 	    edit_submode_extra = (char_u *)_("Word from other line");
 	    edit_submode_highl = HLF_COUNT;
 	}
-	else if (compl_curr_match->next == compl_curr_match->prev)
+	else if (compl_curr_match->cp_next == compl_curr_match->cp_prev)
 	{
 	    edit_submode_extra = (char_u *)_("The only match");
 	    edit_submode_highl = HLF_COUNT;
@@ -3620,64 +3624,68 @@ ins_complete(c)
 	else
 	{
 	    /* Update completion sequence number when needed. */
-	    if (compl_curr_match->number == -1)
+	    if (compl_curr_match->cp_number == -1)
 	    {
-		int		    number = 0;
-		struct Completion   *match;
+		int		number = 0;
+		compl_T		*match;
 
 		if (compl_direction == FORWARD)
 		{
 		    /* search backwards for the first valid (!= -1) number.
 		     * This should normally succeed already at the first loop
 		     * cycle, so it's fast! */
-		    for (match = compl_curr_match->prev; match != NULL
-			   && match != compl_first_match; match = match->prev)
-			if (match->number != -1)
+		    for (match = compl_curr_match->cp_prev; match != NULL
+			    && match != compl_first_match;
+						       match = match->cp_prev)
+			if (match->cp_number != -1)
 			{
-			    number = match->number;
+			    number = match->cp_number;
 			    break;
 			}
 		    if (match != NULL)
 			/* go up and assign all numbers which are not assigned
 			 * yet */
-			for (match = match->next; match
-				  && match->number == -1; match = match->next)
-			    match->number = ++number;
+			for (match = match->cp_next; match
+				&& match->cp_number == -1;
+						       match = match->cp_next)
+			    match->cp_number = ++number;
 		}
 		else /* BACKWARD */
 		{
 		    /* search forwards (upwards) for the first valid (!= -1)
 		     * number.  This should normally succeed already at the
 		     * first loop cycle, so it's fast! */
-		    for (match = compl_curr_match->next; match != NULL
-			   && match != compl_first_match; match = match->next)
-			if (match->number != -1)
+		    for (match = compl_curr_match->cp_next; match != NULL
+			    && match != compl_first_match;
+						       match = match->cp_next)
+			if (match->cp_number != -1)
 			{
-			    number = match->number;
+			    number = match->cp_number;
 			    break;
 			}
 		    if (match != NULL)
 			/* go down and assign all numbers which are not
 			 * assigned yet */
-			for (match = match->prev; match
-				  && match->number == -1; match = match->prev)
-			    match->number = ++number;
+			for (match = match->cp_prev; match
+				&& match->cp_number == -1;
+						       match = match->cp_prev)
+			    match->cp_number = ++number;
 		}
 	    }
 
 	    /* The match should always have a sequnce number now, this is just
 	     * a safety check. */
-	    if (compl_curr_match->number != -1)
+	    if (compl_curr_match->cp_number != -1)
 	    {
 		/* Space for 10 text chars. + 2x10-digit no.s */
 		static char_u match_ref[31];
 
 		if (compl_matches > 0)
 		    sprintf((char *)IObuff, _("match %d of %d"),
-				compl_curr_match->number, compl_matches);
+				compl_curr_match->cp_number, compl_matches);
 		else
 		    sprintf((char *)IObuff, _("match %d"),
-						    compl_curr_match->number);
+						 compl_curr_match->cp_number);
 		vim_strncpy(match_ref, IObuff, 30);
 		edit_submode_extra = match_ref;
 		edit_submode_highl = HLF_R;
@@ -3742,7 +3750,7 @@ quote_meta(dest, src, len)
 	}
 	if (dest != NULL)
 	    *dest++ = *src;
-#ifdef FEAT_MBYTE
+# ifdef FEAT_MBYTE
 	/* Copy remaining bytes of a multibyte character. */
 	if (has_mbyte)
 	{
@@ -3758,7 +3766,7 @@ quote_meta(dest, src, len)
 			*dest++ = *src;
 		}
 	}
-#endif
+# endif
     }
     if (dest != NULL)
 	*dest = NUL;
