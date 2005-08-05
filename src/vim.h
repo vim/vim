@@ -1163,9 +1163,6 @@ enum hlf_value
 
 #define MAYBE	2	    /* sometimes used for a variant on TRUE */
 
-/* May be returned by add_new_completion(): */
-#define RET_ERROR		(-1)
-
 /*
  * Operator IDs; The order must correspond to opchars[] in ops.c!
  */
