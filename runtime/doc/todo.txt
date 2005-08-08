@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Aug 05
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Aug 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,6 +29,8 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+Spell checking: code for pre-compressing tree. (Olaf Seibert)
 
 Mac unicode patch (Da Woon Jung):
 - selecting proportional font breaks display

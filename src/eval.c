@@ -15161,8 +15161,26 @@ find_name_end(arg, expr_start, expr_end, flags)
 			|| *p == '{'
 			|| ((flags & FNE_INCL_BR) && (*p == '[' || *p == '.'))
 			|| mb_nest != 0
-			|| br_nest != 0); ++p)
+			|| br_nest != 0); mb_ptr_adv(p))
     {
+	if (*p == '\'')
+	{
+	    /* skip over 'string' to avoid counting [ and ] inside it. */
+	    for (p = p + 1; *p != NUL && *p != '\''; mb_ptr_adv(p))
+		;
+	    if (*p == NUL)
+		break;
+	}
+	else if (*p == '"')
+	{
+	    /* skip over "str\"ing" to avoid counting [ and ] inside it. */
+	    for (p = p + 1; *p != NUL && *p != '"'; mb_ptr_adv(p))
+		if (*p == '\\' && p[1] != NUL)
+		    ++p;
+	    if (*p == NUL)
+		break;
+	}
+
 	if (mb_nest == 0)
 	{
 	    if (*p == '[')
@@ -15170,6 +15188,7 @@ find_name_end(arg, expr_start, expr_end, flags)
 	    else if (*p == ']')
 		--br_nest;
 	}
+
 	if (br_nest == 0)
 	{
 	    if (*p == '{')
