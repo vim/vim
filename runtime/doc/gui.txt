@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 7.0aa.  Last change: 2005 Jul 21
+*gui.txt*       For Vim version 7.0aa.  Last change: 2005 Aug 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -79,7 +79,7 @@ All this happens AFTER the normal Vim initializations, like reading your
 But the GUI window is only opened after all the initializations have been
 carried out.  If you want some commands to be executed just after opening the
 GUI window, use the |GUIEnter| autocommand event.  Example: >
-	:autocommand GUIEnter * winpos 100 50
+	:autocmd GUIEnter * winpos 100 50
 
 You can use the gvimrc files to set up your own customized menus (see |:menu|)
 and initialize other things that you may want to set up differently from the
