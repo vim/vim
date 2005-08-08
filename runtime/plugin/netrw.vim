@@ -1,7 +1,7 @@
 " netrw.vim: Handles file transfer and remote directory listing across a network
-" Last Change:	Aug 05, 2005
+" Last Change:	Aug 08, 2005
 " Maintainer:	Charles E Campbell, Jr <drchipNOSPAM at campbellfamily dot biz>
-" Version:	58e	ASTRO-ONLY
+" Version:	59
 " License:	Vim License  (see vim's :help license)
 " Copyright:    Copyright (C) 1999-2005 Charles E. Campbell, Jr.
 "               Permission is hereby granted to use and distribute this code,
@@ -22,7 +22,7 @@
 if exists("g:loaded_netrw") || &cp
   finish
 endif
-let g:loaded_netrw  = "v58e"
+let g:loaded_netrw  = "v59"
 let loaded_explorer = 1
 let s:keepcpo       = &cpo
 set cpo&vim
@@ -2150,7 +2150,11 @@ fun! <SID>LocalBrowse(dirname)
 
   " make this buffer modifiable and hidden
   setlocal ma hidden nonu
-  keepalt silent! %d
+  if v:version < 700
+   silent! %d
+  else
+   keepalt silent! %d
+  endif
 
   " ---------------------------
   "  Perform Directory Listing:
@@ -2650,31 +2654,40 @@ fun! s:Explore(indx,dosplit,style,...)
   elseif a:1 =~ '\*\*/' || a:indx < 0
 
    if has("path_extra")
-    if !exists("s:indx")
-     let s:indx= 0
+    if !exists("s:explore_indx")
+     let s:explore_indx= 0
     endif
     let indx = a:indx
     if indx == -1
-     let indx= s:indx + 1
+     let indx= s:explore_indx + 1
     elseif indx == -2
-     let indx= s:indx - 1
+     let indx= s:explore_indx - 1
     else
-     let s:indx        = 0
-     let s:explorelist = split(expand(b:netrw_curdir."/".a:1),'\n')
-     let s:listlen     = len(s:explorelist)
-     if s:listlen == 1 && s:explorelist[0] =~ '\*\*\/'
+     let s:explore_indx    = 0
+     if !exists("b:netrw_curdir")
+       let b:netrw_curdir = "."
+     endif
+     let s:explorelist     = split(expand(b:netrw_curdir."/".a:1),'\n')
+     let s:explore_listlen = len(s:explorelist)
+     if s:explore_listlen == 1 && s:explorelist[0] =~ '\*\*\/'
       echohl WarningMsg | echo "***netrw*** no files matched" | echohl None
       call inputsave()|call input("Press <cr> to continue")|call inputrestore()
 "      call Dret("Explore")
       return
      endif
     endif
-    let s:indx = indx
-"    call Decho("explorelist<".join(s:explorelist,',')."> len=".s:listlen)
+
+    " NetrwStatusLine support
+    let s:explore_indx  = indx
+    if !exists("s:netrw_explore_stl")
+     let s:netrw_explore_stl= &stl
+    endif
+    set stl=%f\ %h%m%r%=%{NetrwStatusLine()}
+"    call Decho("explorelist<".join(s:explorelist,',')."> len=".s:explore_listlen)
 
     " sanity check
-    if indx >= s:listlen || indx < 0
-     let indx= (indx < 0)? 0 : ( s:listlen - 1 )
+    if indx >= s:explore_listlen || indx < 0
+     let indx= (indx < 0)? 0 : ( s:explore_listlen - 1 )
      echohl WarningMsg | echo "***netrw*** no more files match Explore pattern" | echohl None
      call inputsave()|call input("Press <cr> to continue")|call inputrestore()
 "     call Dret("Explore")
@@ -2688,6 +2701,9 @@ fun! s:Explore(indx,dosplit,style,...)
 "    call Decho("calling LocalBrowse(newdir<".newdir.">)")
     call s:LocalBrowse(newdir)
     call search(substitute(dirfile,"^.*/","",""),"W")
+    let s:explore_mtchcnt = indx + 1
+    let s:explore_bufnr   = bufnr(".")
+    let s:explore_line    = line(".")
 
    else
     if v:version < 700
@@ -2705,6 +2721,19 @@ fun! s:Explore(indx,dosplit,style,...)
   endif
 
 "  call Dret("Explore")
+endfun
+
+" ---------------------------------------------------------------------
+" NetrwStatusLine: {{{2
+fun! NetrwStatusLine()
+  let g:explore_bufnr= s:explore_bufnr
+  let g:explore_line= s:explore_line
+  if !exists("s:explore_bufnr") || s:explore_bufnr != bufnr(".") || !exists("s:explore_line") || s:explore_line != line(".")
+   let &stl= s:netrw_explore_stl
+   return ""
+  else
+   return "Match ".s:explore_mtchcnt." of ".s:explore_listlen
+  endif
 endfun
 
 " ---------------------------------------------------------------------
