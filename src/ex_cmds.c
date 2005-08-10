@@ -596,7 +596,7 @@ ex_retab(eap)
 	    vcol += chartabsize(ptr + col, (colnr_T)vcol);
 #ifdef FEAT_MBYTE
 	    if (has_mbyte)
-		col += (*mb_ptr2len_check)(ptr + col);
+		col += (*mb_ptr2len)(ptr + col);
 	    else
 #endif
 		++col;
@@ -4643,7 +4643,7 @@ do_sub(eap)
 		    }
 #ifdef FEAT_MBYTE
 		    else if (has_mbyte)
-			p1 += (*mb_ptr2len_check)(p1) - 1;
+			p1 += (*mb_ptr2len)(p1) - 1;
 #endif
 		}
 
@@ -5715,7 +5715,7 @@ fix_help_buffer()
 						int	l;
 
 						this_utf = TRUE;
-						l = utf_ptr2len_check(s);
+						l = utf_ptr2len(s);
 						if (l == 1)
 						    this_utf = FALSE;
 						s += l - 1;
@@ -6010,7 +6010,7 @@ helptags_one(dir, ext, tagfname)
 			int l;
 
 			this_utf8 = TRUE;
-			l = utf_ptr2len_check(s);
+			l = utf_ptr2len(s);
 			if (l == 1)
 			{
 			    /* Illegal UTF-8 byte sequence. */
@@ -6333,7 +6333,7 @@ ex_sign(eap)
 			if (has_mbyte)
 			{
 			    cells = 0;
-			    for (s = arg; s < p; s += (*mb_ptr2len_check)(s))
+			    for (s = arg; s < p; s += (*mb_ptr2len)(s))
 			    {
 				if (!vim_isprintc((*mb_ptr2char)(s)))
 				    break;

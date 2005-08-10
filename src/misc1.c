@@ -1072,7 +1072,7 @@ open_line(dir, flags, old_indent)
 
 			    for (i = 0; p[i] != NUL && i < lead_len; i += l)
 			    {
-				l = mb_ptr2len_check(p + i);
+				l = (*mb_ptr2len)(p + i);
 				if (vim_strnsize(p, i + l) > repl_size)
 				    break;
 			    }
@@ -1102,7 +1102,7 @@ open_line(dir, flags, old_indent)
 				else
 				{
 #ifdef FEAT_MBYTE
-				    int	    l = mb_ptr2len_check(p);
+				    int	    l = (*mb_ptr2len)(p);
 
 				    if (l > 1)
 				    {
@@ -1840,7 +1840,7 @@ ins_bytes_len(p, len)
 
     for (i = 0; i < len; i += n)
     {
-	n = (*mb_ptr2len_check)(p + i);
+	n = (*mb_ptr2len)(p + i);
 	ins_char_bytes(p + i, n);
     }
 # else
@@ -1952,7 +1952,7 @@ ins_char_bytes(buf, charlen)
 		if (vcol > new_vcol && oldp[col + oldlen] == TAB)
 		    break;
 #ifdef FEAT_MBYTE
-		oldlen += (*mb_ptr2len_check)(oldp + col + oldlen);
+		oldlen += (*mb_ptr2len)(oldp + col + oldlen);
 #else
 		++oldlen;
 #endif
@@ -1968,7 +1968,7 @@ ins_char_bytes(buf, charlen)
 	{
 	    /* normal replace */
 #ifdef FEAT_MBYTE
-	    oldlen = (*mb_ptr2len_check)(oldp + col);
+	    oldlen = (*mb_ptr2len)(oldp + col);
 #else
 	    oldlen = 1;
 #endif
@@ -1983,7 +1983,7 @@ ins_char_bytes(buf, charlen)
 	for (i = 0; i < oldlen; ++i)
 	{
 #ifdef FEAT_MBYTE
-	    l = (*mb_ptr2len_check)(oldp + col + i) - 1;
+	    l = (*mb_ptr2len)(oldp + col + i) - 1;
 	    for (j = l; j >= 0; --j)
 		replace_push(oldp[col + i + j]);
 	    i += l;
@@ -2130,7 +2130,7 @@ del_chars(count, fixpos)
     p = ml_get_cursor();
     for (i = 0; i < count && *p != NUL; ++i)
     {
-	l = (*mb_ptr2len_check)(p);
+	l = (*mb_ptr2len)(p);
 	bytes += l;
 	p += l;
     }
@@ -2169,7 +2169,7 @@ del_bytes(count, fixpos)
 #ifdef FEAT_MBYTE
     /* If 'delcombine' is set and deleting (less than) one character, only
      * delete the last combining character. */
-    if (p_deco && enc_utf8 && utfc_ptr2len_check(oldp + col) >= count)
+    if (p_deco && enc_utf8 && utfc_ptr2len(oldp + col) >= count)
     {
 	int	c1, c2;
 	int	n;
@@ -2182,7 +2182,7 @@ del_bytes(count, fixpos)
 	    do
 	    {
 		col = n;
-		count = utf_ptr2len_check(oldp + n);
+		count = utf_ptr2len(oldp + n);
 		n += count;
 	    } while (UTF_COMPOSINGLIKE(oldp + col, oldp + n));
 	    fixpos = 0;
@@ -8237,7 +8237,7 @@ dos_expandpath(
 #ifdef FEAT_MBYTE
 	if (has_mbyte)
 	{
-	    len = (*mb_ptr2len_check)(path_end);
+	    len = (*mb_ptr2len)(path_end);
 	    STRNCPY(p, path_end, len);
 	    p += len;
 	    path_end += len;
@@ -8538,7 +8538,7 @@ unix_expandpath(gap, path, wildoff, flags, didstar)
 #ifdef FEAT_MBYTE
 	if (has_mbyte)
 	{
-	    len = (*mb_ptr2len_check)(path_end);
+	    len = (*mb_ptr2len)(path_end);
 	    STRNCPY(p, path_end, len);
 	    p += len;
 	    path_end += len;

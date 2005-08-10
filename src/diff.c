@@ -1513,8 +1513,8 @@ diff_cmp(s1, s2)
 	else
 	{
 #ifdef FEAT_MBYTE
-	    l  = (*mb_ptr2len_check)(p1);
-	    if (l != (*mb_ptr2len_check)(p2))
+	    l  = (*mb_ptr2len)(p1);
+	    if (l != (*mb_ptr2len)(p2))
 		break;
 	    if (l > 1)
 	    {

@@ -126,7 +126,7 @@
 static int enc_canon_search __ARGS((char_u *name));
 static int dbcs_char2len __ARGS((int c));
 static int dbcs_char2bytes __ARGS((int c, char_u *buf));
-static int dbcs_ptr2len_check __ARGS((char_u *p));
+static int dbcs_ptr2len __ARGS((char_u *p));
 static int dbcs_char2cells __ARGS((int c));
 static int dbcs_ptr2char __ARGS((char_u *p));
 
@@ -589,7 +589,7 @@ codepage_invalid:
      */
     if (enc_utf8)
     {
-	mb_ptr2len_check = utfc_ptr2len_check;
+	mb_ptr2len = utfc_ptr2len;
 	mb_char2len = utf_char2len;
 	mb_char2bytes = utf_char2bytes;
 	mb_ptr2cells = utf_ptr2cells;
@@ -600,7 +600,7 @@ codepage_invalid:
     }
     else if (enc_dbcs != 0)
     {
-	mb_ptr2len_check = dbcs_ptr2len_check;
+	mb_ptr2len = dbcs_ptr2len;
 	mb_char2len = dbcs_char2len;
 	mb_char2bytes = dbcs_char2bytes;
 	mb_ptr2cells = dbcs_ptr2cells;
@@ -611,7 +611,7 @@ codepage_invalid:
     }
     else
     {
-	mb_ptr2len_check = latin_ptr2len_check;
+	mb_ptr2len = latin_ptr2len;
 	mb_char2len = latin_char2len;
 	mb_char2bytes = latin_char2bytes;
 	mb_ptr2cells = latin_ptr2cells;
@@ -1054,21 +1054,21 @@ dbcs_char2bytes(c, buf)
 }
 
 /*
- * mb_ptr2len_check() function pointer.
+ * mb_ptr2len() function pointer.
  * Get byte length of character at "*p" but stop at a NUL.
  * For UTF-8 this includes following composing characters.
  * Returns 0 when *p is NUL.
  *
  */
     int
-latin_ptr2len_check(p)
+latin_ptr2len(p)
     char_u	*p;
 {
     return MB_BYTE2LEN(*p);
 }
 
     static int
-dbcs_ptr2len_check(p)
+dbcs_ptr2len(p)
     char_u	*p;
 {
     int		len;
@@ -1255,7 +1255,7 @@ utf_ptr2cells(p)
     {
 	c = utf_ptr2char(p);
 	/* An illegal byte is displayed as <xx>. */
-	if (utf_ptr2len_check(p) == 1 || c == NUL)
+	if (utf_ptr2len(p) == 1 || c == NUL)
 	    return 4;
 	/* If the char is ASCII it must be an overlong sequence. */
 	if (c < 0x80)
@@ -1411,7 +1411,25 @@ mb_ptr2char_adv(pp)
     int		c;
 
     c = (*mb_ptr2char)(*pp);
-    *pp += (*mb_ptr2len_check)(*pp);
+    *pp += (*mb_ptr2len)(*pp);
+    return c;
+}
+
+/*
+ * Get character at **pp and advance *pp to the next character.
+ * Note: composing characters are returned as separate characters.
+ */
+    int
+mb_cptr2char_adv(pp)
+    char_u	**pp;
+{
+    int		c;
+
+    c = (*mb_ptr2char)(*pp);
+    if (enc_utf8)
+	*pp += utf_ptr2len(*pp);
+    else
+	*pp += (*mb_ptr2len)(*pp);
     return c;
 }
 
@@ -1482,14 +1500,14 @@ utfc_ptr2char(p, p1, p2)
     int		cc;
 
     c = utf_ptr2char(p);
-    len = utf_ptr2len_check(p);
+    len = utf_ptr2len(p);
     /* Only accept a composing char when the first char isn't illegal. */
     if ((len > 1 || *p < 0x80)
 	    && p[len] >= 0x80
 	    && UTF_COMPOSINGLIKE(p, p + len))
     {
 	*p1 = utf_ptr2char(p + len);
-	len += utf_ptr2len_check(p + len);
+	len += utf_ptr2len(p + len);
 	if (p[len] >= 0x80 && utf_iscomposing(cc = utf_ptr2char(p + len)))
 	    *p2 = cc;
 	else
@@ -1519,7 +1537,7 @@ utfc_ptr2char_len(p, p1, p2, maxlen)
     int		cc;
 
     c = utf_ptr2char(p);
-    len = utf_ptr2len_check_len(p, maxlen);
+    len = utf_ptr2len_len(p, maxlen);
     /* Only accept a composing char when the first char isn't illegal. */
     if ((len > 1 || *p < 0x80)
 	    && len < maxlen
@@ -1527,7 +1545,7 @@ utfc_ptr2char_len(p, p1, p2, maxlen)
 	    && UTF_COMPOSINGLIKE(p, p + len))
     {
 	*p1 = utf_ptr2char(p + len);
-	len += utf_ptr2len_check_len(p + len, maxlen - len);
+	len += utf_ptr2len_len(p + len, maxlen - len);
 	if (len < maxlen
 		&& p[len] >= 0x80
 		&& utf_iscomposing(cc = utf_ptr2char(p + len)))
@@ -1573,7 +1591,7 @@ utfc_char2bytes(off, buf)
  * Returns 1 for an illegal byte sequence.
  */
     int
-utf_ptr2len_check(p)
+utf_ptr2len(p)
     char_u	*p;
 {
     int		len;
@@ -1607,7 +1625,7 @@ utf_byte2len(b)
  * Returns number > "size" for an incomplete byte sequence.
  */
     int
-utf_ptr2len_check_len(p, size)
+utf_ptr2len_len(p, size)
     char_u	*p;
     int		size;
 {
@@ -1630,7 +1648,7 @@ utf_ptr2len_check_len(p, size)
  * This includes following composing characters.
  */
     int
-utfc_ptr2len_check(p)
+utfc_ptr2len(p)
     char_u	*p;
 {
     int		len;
@@ -1645,7 +1663,7 @@ utfc_ptr2len_check(p)
 	return 1;
 
     /* Skip over first UTF-8 char, stopping at a NUL byte. */
-    len = utf_ptr2len_check(p);
+    len = utf_ptr2len(p);
 
     /* Check for illegal byte. */
     if (len == 1 && b0 >= 0x80)
@@ -1667,7 +1685,7 @@ utfc_ptr2len_check(p)
 #ifdef FEAT_ARABIC
 	prevlen = len;
 #endif
-	len += utf_ptr2len_check(p + len);
+	len += utf_ptr2len(p + len);
     }
 }
 
@@ -1677,7 +1695,7 @@ utfc_ptr2len_check(p)
  * Returns 1 for an illegal char or an incomplete byte sequence.
  */
     int
-utfc_ptr2len_check_len(p, size)
+utfc_ptr2len_len(p, size)
     char_u	*p;
     int		size;
 {
@@ -1692,7 +1710,7 @@ utfc_ptr2len_check_len(p, size)
 	return 1;
 
     /* Skip over first UTF-8 char, stopping at a NUL byte. */
-    len = utf_ptr2len_check_len(p, size);
+    len = utf_ptr2len_len(p, size);
 
     /* Check for illegal byte and incomplete byte sequence. */
     if ((len == 1 && p[0] >= 0x80) || len > size)
@@ -1714,7 +1732,7 @@ utfc_ptr2len_check_len(p, size)
 #ifdef FEAT_ARABIC
 	prevlen = len;
 #endif
-	len += utf_ptr2len_check_len(p + len, size - len);
+	len += utf_ptr2len_len(p + len, size - len);
     }
     return len;
 }
@@ -2276,7 +2294,7 @@ mb_strnicmp(s1, s2, nn)
 	}
 	else
 	{
-	    l = (*mb_ptr2len_check)(s1 + i);
+	    l = (*mb_ptr2len)(s1 + i);
 	    if (l <= 1)
 	    {
 		/* Single byte: first check normally, then with ignore case. */
@@ -2317,7 +2335,7 @@ show_utf8()
     /* Get the byte length of the char under the cursor, including composing
      * characters. */
     line = ml_get_cursor();
-    len = utfc_ptr2len_check(line);
+    len = utfc_ptr2len(line);
     if (len == 0)
     {
 	MSG("NUL");
@@ -2335,7 +2353,7 @@ show_utf8()
 		STRCPY(IObuff + rlen, "+ ");
 		rlen += 2;
 	    }
-	    clen = utf_ptr2len_check(line + i);
+	    clen = utf_ptr2len(line + i);
 	}
 	sprintf((char *)IObuff + rlen, "%02x ", line[i]);
 	--clen;
@@ -2377,7 +2395,7 @@ dbcs_head_off(base, p)
      * byte we are looking for.  Return 1 when we went past it, 0 otherwise. */
     q = base;
     while (q < p)
-	q += dbcs_ptr2len_check(q);
+	q += dbcs_ptr2len(q);
     return (q == p) ? 0 : 1;
 }
 
@@ -2413,7 +2431,7 @@ dbcs_screen_head_off(base, p)
 	if (enc_dbcs == DBCS_JPNU && *q == 0x8e)
 	    ++q;
 	else
-	    q += dbcs_ptr2len_check(q);
+	    q += dbcs_ptr2len(q);
     }
     return (q == p) ? 0 : 1;
 }
@@ -2485,7 +2503,7 @@ mb_copy_char(fp, tp)
     char_u	**fp;
     char_u	**tp;
 {
-    int	    l = (*mb_ptr2len_check)(*fp);
+    int	    l = (*mb_ptr2len)(*fp);
 
     mch_memmove(*tp, *fp, (size_t)l);
     *tp += l;
@@ -2677,8 +2695,8 @@ mb_prevptr(line, p)
 }
 
 /*
- * Return the character length of "str".  Each multi-byte character counts as
- * one.
+ * Return the character length of "str".  Each multi-byte character (with
+ * following composing characters) counts as one.
  */
     int
 mb_charlen(str)
@@ -2690,7 +2708,7 @@ mb_charlen(str)
 	return 0;
 
     for (count = 0; *str != NUL; count++)
-	str += (*mb_ptr2len_check)(str);
+	str += (*mb_ptr2len)(str);
 
     return count;
 }
@@ -2742,7 +2760,7 @@ mb_unescape(pp)
 
 	/* Return a multi-byte character if it's found.  An illegal sequence
 	 * will result in a 1 here. */
-	if ((*mb_ptr2len_check)(buf) > 1)
+	if ((*mb_ptr2len)(buf) > 1)
 	{
 	    *pp = str + n + 1;
 	    return buf;
@@ -3158,10 +3176,10 @@ iconv_string(vcp, str, slen, unconvlenp)
 	    if ((*mb_ptr2cells)((char_u *)from) > 1)
 		*to++ = '?';
 	    if (enc_utf8)
-		l = utfc_ptr2len_check_len((char_u *)from, fromlen);
+		l = utfc_ptr2len_len((char_u *)from, fromlen);
 	    else
 	    {
-		l = (*mb_ptr2len_check)((char_u *)from);
+		l = (*mb_ptr2len)((char_u *)from);
 		if (l > (int)fromlen)
 		    l = fromlen;
 	    }
@@ -3465,7 +3483,7 @@ im_commit_cb(GtkIMContext *context, const gchar *str, gpointer data)
     else
 	im_str = (char_u *)str;
     clen = 0;
-    for (p = im_str; p < im_str + len; p += (*mb_ptr2len_check)(p))
+    for (p = im_str; p < im_str + len; p += (*mb_ptr2len)(p))
 	clen += (*mb_ptr2cells)(p);
     if (input_conv.vc_type != CONV_NONE)
 	vim_free(im_str);
@@ -3731,7 +3749,7 @@ im_get_feedback_attr(int col)
 
 	/* Get the byte index as used by PangoAttrIterator */
 	for (index = 0; col > 0 && preedit_string[index] != '\0'; --col)
-	    index += utfc_ptr2len_check((char_u *)preedit_string + index);
+	    index += utfc_ptr2len((char_u *)preedit_string + index);
 
 	if (preedit_string[index] != '\0')
 	{
@@ -5233,7 +5251,7 @@ preedit_draw_cbproc(XIC xic, XPointer client_data, XPointer call_data)
 		    }
 		}
 		if (has_mbyte)
-		    ptr += mb_ptr2len_check(ptr);
+		    ptr += (*mb_ptr2len)(ptr);
 		else
 #endif
 		    ptr++;
@@ -5846,7 +5864,7 @@ string_convert_ext(vcp, ptr, lenp, unconvlenp)
 	    d = retval;
 	    for (i = 0; i < len; ++i)
 	    {
-		l = utf_ptr2len_check(ptr + i);
+		l = utf_ptr2len(ptr + i);
 		if (l == 0)
 		    *d++ = NUL;
 		else if (l == 1)

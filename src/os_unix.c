@@ -3980,7 +3980,7 @@ mch_call_shell(cmd, options)
 				ta_buf[i] = '\n';
 # ifdef FEAT_MBYTE
 			    if (has_mbyte)
-				i += (*mb_ptr2len_check)(ta_buf + i) - 1;
+				i += (*mb_ptr2len)(ta_buf + i) - 1;
 # endif
 			}
 
@@ -3997,7 +3997,7 @@ mch_call_shell(cmd, options)
 # ifdef FEAT_MBYTE
 				else if (has_mbyte)
 				{
-				    int l = (*mb_ptr2len_check)(ta_buf + i);
+				    int l = (*mb_ptr2len)(ta_buf + i);
 
 				    msg_outtrans_len(ta_buf + i, l);
 				    i += l - 1;
@@ -4097,10 +4097,7 @@ mch_call_shell(cmd, options)
 			     * round. */
 			    for (p = buffer; p < buffer + len; p += l)
 			    {
-				if (enc_utf8)	/* exclude composing chars */
-				    l = utf_ptr2len_check(p);
-				else
-				    l = (*mb_ptr2len_check)(p);
+				l = mb_cptr2len(p);
 				if (l == 0)
 				    l = 1;  /* NUL byte? */
 				else if (MB_BYTE2LEN(*p) != l)

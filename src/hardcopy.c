@@ -513,7 +513,7 @@ prt_header(psettings, pagenum, lnum)
     {
 	if (mch_print_text_out(p,
 #ifdef FEAT_MBYTE
-		(l = (*mb_ptr2len_check)(p))
+		(l = (*mb_ptr2len)(p))
 #else
 		1
 #endif
@@ -867,7 +867,7 @@ hardcopy_line(psettings, page_line, ppos)
     {
 	outputlen = 1;
 #ifdef FEAT_MBYTE
-	if (has_mbyte && (outputlen = (*mb_ptr2len_check)(line + col)) < 1)
+	if (has_mbyte && (outputlen = (*mb_ptr2len)(line + col)) < 1)
 	    outputlen = 1;
 #endif
 #ifdef FEAT_SYN_HL

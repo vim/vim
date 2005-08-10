@@ -7712,7 +7712,7 @@ f_byteidx(argvars, rettv)
     {
 	if (*t == NUL)		/* EOL reached */
 	    return;
-	t += mb_ptr2len_check(t);
+	t += (*mb_ptr2len)(t);
     }
     rettv->vval.v_number = t - str;
 #else
@@ -7865,7 +7865,7 @@ f_col(argvars, rettv)
 # ifdef FEAT_MBYTE
 		    int		l;
 
-		    if (*p != NUL && p[(l = (*mb_ptr2len_check)(p))] == NUL)
+		    if (*p != NUL && p[(l = (*mb_ptr2len)(p))] == NUL)
 			col += l;
 # else
 		    if (*p != NUL && p[1] == NUL)
@@ -11582,7 +11582,7 @@ find_some_match(argvars, rettv, type)
 	    else
 	    {
 #ifdef FEAT_MBYTE
-		str = regmatch.startp[0] + mb_ptr2len_check(regmatch.startp[0]);
+		str = regmatch.startp[0] + (*mb_ptr2len)(regmatch.startp[0]);
 #else
 		str = regmatch.startp[0] + 1;
 #endif
@@ -13892,7 +13892,7 @@ f_split(argvars, rettv)
 	    {
 		/* Don't get stuck at the same match. */
 #ifdef FEAT_MBYTE
-		col = mb_ptr2len_check(regmatch.endp[0]);
+		col = (*mb_ptr2len)(regmatch.endp[0]);
 #else
 		col = 1;
 #endif
@@ -14509,13 +14509,13 @@ f_tolower(argvars, rettv)
 
 		c = utf_ptr2char(p);
 		lc = utf_tolower(c);
-		l = utf_ptr2len_check(p);
+		l = utf_ptr2len(p);
 		/* TODO: reallocate string when byte count changes. */
 		if (utf_char2len(lc) == l)
 		    utf_char2bytes(lc, p);
 		p += l;
 	    }
-	    else if (has_mbyte && (l = (*mb_ptr2len_check)(p)) > 1)
+	    else if (has_mbyte && (l = (*mb_ptr2len)(p)) > 1)
 		p += l;		/* skip multi-byte character */
 	    else
 #endif
@@ -14594,18 +14594,18 @@ error:
 #ifdef FEAT_MBYTE
 	if (has_mbyte)
 	{
-	    inlen = mb_ptr2len_check(instr);
+	    inlen = (*mb_ptr2len)(instr);
 	    cpstr = instr;
 	    cplen = inlen;
 	    idx = 0;
 	    for (p = fromstr; *p != NUL; p += fromlen)
 	    {
-		fromlen = mb_ptr2len_check(p);
+		fromlen = (*mb_ptr2len)(p);
 		if (fromlen == inlen && STRNCMP(instr, p, inlen) == 0)
 		{
 		    for (p = tostr; *p != NUL; p += tolen)
 		    {
-			tolen = mb_ptr2len_check(p);
+			tolen = (*mb_ptr2len)(p);
 			if (idx-- == 0)
 			{
 			    cplen = tolen;
@@ -14628,7 +14628,7 @@ error:
 		first = FALSE;
 		for (p = tostr; *p != NUL; p += tolen)
 		{
-		    tolen = mb_ptr2len_check(p);
+		    tolen = (*mb_ptr2len)(p);
 		    --idx;
 		}
 		if (idx != 0)
@@ -16539,7 +16539,7 @@ ex_echo(eap)
 #ifdef FEAT_MBYTE
 			if (has_mbyte)
 			{
-			    int i = (*mb_ptr2len_check)(p);
+			    int i = (*mb_ptr2len)(p);
 
 			    (void)msg_outtrans_len_attr(p, i, echo_attr);
 			    p += i - 1;

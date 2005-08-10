@@ -5255,7 +5255,7 @@ gui_gtk2_draw_string(int row, int col, char_u *s, int len, int flags)
 	 * compensate for that. */
 	for (sp = s, bp = conv_buf; sp < s + len && bp < conv_buf + convlen; )
 	{
-	    plen = utf_ptr2len_check(bp);
+	    plen = utf_ptr2len(bp);
 	    if ((*mb_ptr2cells)(sp) == 2 && utf_ptr2cells(bp) == 1)
 	    {
 		new_conv_buf = alloc(convlen + 2);
@@ -5272,7 +5272,7 @@ gui_gtk2_draw_string(int row, int col, char_u *s, int len, int flags)
 		bp = conv_buf + plen;
 		plen = 1;
 	    }
-	    sp += (*mb_ptr2len_check)(sp);
+	    sp += (*mb_ptr2len)(sp);
 	    bp += plen;
 	}
 	s = conv_buf;
@@ -5541,7 +5541,7 @@ gui_mch_draw_string(int row, int col, char_u *s, int len, int flags)
 		    c = 0xbf;
 		buf[textlen].byte1 = c >> 8;
 		buf[textlen].byte2 = c;
-		p += utf_ptr2len_check(p);
+		p += utf_ptr2len(p);
 		width += utf_char2cells(c);
 	    }
 	    else
@@ -5565,7 +5565,7 @@ gui_mch_draw_string(int row, int col, char_u *s, int len, int flags)
 	if (has_mbyte)
 	{
 	    width = 0;
-	    for (p = s; p < s + len; p += (*mb_ptr2len_check)(p))
+	    for (p = s; p < s + len; p += (*mb_ptr2len)(p))
 		width += (*mb_ptr2cells)(p);
 	}
 	else

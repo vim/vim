@@ -296,7 +296,7 @@ trans_characters(buf, bufsize)
     {
 # ifdef FEAT_MBYTE
 	/* Assume a multi-byte character doesn't need translation. */
-	if (has_mbyte && (trs_len = (*mb_ptr2len_check)(buf)) > 1)
+	if (has_mbyte && (trs_len = (*mb_ptr2len)(buf)) > 1)
 	    len -= trs_len;
 	else
 # endif
@@ -342,7 +342,7 @@ transstr(s)
 	p = s;
 	while (*p != NUL)
 	{
-	    if ((l = (*mb_ptr2len_check)(p)) > 1)
+	    if ((l = (*mb_ptr2len)(p)) > 1)
 	    {
 		c = (*mb_ptr2char)(p);
 		p += l;
@@ -375,7 +375,7 @@ transstr(s)
 	while (*p != NUL)
 	{
 #ifdef FEAT_MBYTE
-	    if (has_mbyte && (l = (*mb_ptr2len_check)(p)) > 1)
+	    if (has_mbyte && (l = (*mb_ptr2len)(p)) > 1)
 	    {
 		c = (*mb_ptr2char)(p);
 		if (vim_isprintc(c))
@@ -488,7 +488,7 @@ str_foldcase(str, orglen, buf, buflen)
 		}
 	    }
 	    /* skip to next multi-byte char */
-	    i += (*mb_ptr2len_check)(STR_PTR(i));
+	    i += (*mb_ptr2len)(STR_PTR(i));
 	}
 	else
 #endif
@@ -772,7 +772,7 @@ vim_strnsize(s, len)
 #ifdef FEAT_MBYTE
 	if (has_mbyte)
 	{
-	    int	    l = (*mb_ptr2len_check)(s);
+	    int	    l = (*mb_ptr2len)(s);
 
 	    size += ptr2cells(s);
 	    s += l;

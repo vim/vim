@@ -881,7 +881,7 @@ getcmdline(firstc, count, indent)
 			    while (p > ccline.cmdbuff && mb_get_class(p) == i)
 				p = mb_prevptr(ccline.cmdbuff, p);
 			    if (mb_get_class(p) != i)
-				p += (*mb_ptr2len_check)(p);
+				p += (*mb_ptr2len)(p);
 			}
 		    }
 		    else
@@ -1115,7 +1115,7 @@ getcmdline(firstc, count, indent)
 		    ccline.cmdspos += i;
 #ifdef FEAT_MBYTE
 		    if (has_mbyte)
-			ccline.cmdpos += (*mb_ptr2len_check)(ccline.cmdbuff
+			ccline.cmdpos += (*mb_ptr2len)(ccline.cmdbuff
 							     + ccline.cmdpos);
 		    else
 #endif
@@ -1241,7 +1241,7 @@ getcmdline(firstc, count, indent)
 		    {
 			/* Count ">" for double-wide char that doesn't fit. */
 			correct_cmdspos(ccline.cmdpos, i);
-			ccline.cmdpos += (*mb_ptr2len_check)(ccline.cmdbuff
+			ccline.cmdpos += (*mb_ptr2len)(ccline.cmdbuff
 							 + ccline.cmdpos) - 1;
 		    }
 #endif
@@ -1861,7 +1861,7 @@ set_cmdspos_cursor()
 	}
 #ifdef FEAT_MBYTE
 	if (has_mbyte)
-	    i += (*mb_ptr2len_check)(ccline.cmdbuff + i) - 1;
+	    i += (*mb_ptr2len)(ccline.cmdbuff + i) - 1;
 #endif
     }
 }
@@ -1876,7 +1876,7 @@ correct_cmdspos(idx, cells)
     int		idx;
     int		cells;
 {
-    if ((*mb_ptr2len_check)(ccline.cmdbuff + idx) > 1
+    if ((*mb_ptr2len)(ccline.cmdbuff + idx) > 1
 		&& (*mb_ptr2cells)(ccline.cmdbuff + idx) > 1
 		&& ccline.cmdspos % Columns + cells > Columns)
 	ccline.cmdspos++;
@@ -2184,7 +2184,7 @@ cmdline_getvcol_cursor()
 	int	i = 0;
 
 	for (col = 0; i < ccline.cmdpos; ++col)
-	    i += (*mb_ptr2len_check)(ccline.cmdbuff + i);
+	    i += (*mb_ptr2len)(ccline.cmdbuff + i);
 
 	return col;
     }
@@ -2225,7 +2225,7 @@ redrawcmd_preedit()
 			  && cmdpos < ccline.cmdlen; ++col)
 	    {
 		cmdspos += (*mb_ptr2cells)(ccline.cmdbuff + cmdpos);
-		cmdpos  += (*mb_ptr2len_check)(ccline.cmdbuff + cmdpos);
+		cmdpos  += (*mb_ptr2len)(ccline.cmdbuff + cmdpos);
 	    }
 	}
 	else
@@ -2251,7 +2251,7 @@ redrawcmd_preedit()
 
 # ifdef FEAT_MBYTE
 	    if (has_mbyte)
-		char_len = (*mb_ptr2len_check)(ccline.cmdbuff + cmdpos);
+		char_len = (*mb_ptr2len)(ccline.cmdbuff + cmdpos);
 	    else
 # endif
 		char_len = 1;
@@ -2339,7 +2339,7 @@ draw_cmdline(start, len)
 	    msg_putchar('*');
 # ifdef FEAT_MBYTE
 	    if (has_mbyte)
-		i += (*mb_ptr2len_check)(ccline.cmdbuff + start + i) - 1;
+		i += (*mb_ptr2len)(ccline.cmdbuff + start + i) - 1;
 # endif
 	}
     else
@@ -2378,7 +2378,7 @@ draw_cmdline(start, len)
 	{
 	    p = ccline.cmdbuff + j;
 	    u8c = utfc_ptr2char_len(p, &u8c_c1, &u8c_c2, start + len - j);
-	    mb_l = utfc_ptr2len_check_len(p, start + len - j);
+	    mb_l = utfc_ptr2len_len(p, start + len - j);
 	    if (ARABIC_CHAR(u8c))
 	    {
 		/* Do Arabic shaping. */
@@ -2511,12 +2511,12 @@ put_on_cmdline(str, len, redraw)
 	    {
 		/* Count nr of characters in the new string. */
 		m = 0;
-		for (i = 0; i < len; i += (*mb_ptr2len_check)(str + i))
+		for (i = 0; i < len; i += (*mb_ptr2len)(str + i))
 		    ++m;
 		/* Count nr of bytes in cmdline that are overwritten by these
 		 * characters. */
 		for (i = ccline.cmdpos; i < ccline.cmdlen && m > 0;
-				 i += (*mb_ptr2len_check)(ccline.cmdbuff + i))
+				 i += (*mb_ptr2len)(ccline.cmdbuff + i))
 		    --m;
 		if (i < ccline.cmdlen)
 		{
@@ -2619,7 +2619,7 @@ put_on_cmdline(str, len, redraw)
 #ifdef FEAT_MBYTE
 		if (has_mbyte)
 		{
-		    c = (*mb_ptr2len_check)(ccline.cmdbuff + ccline.cmdpos) - 1;
+		    c = (*mb_ptr2len)(ccline.cmdbuff + ccline.cmdpos) - 1;
 		    if (c > len - i - 1)
 			c = len - i - 1;
 		    ccline.cmdpos += c;

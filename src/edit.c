@@ -444,7 +444,7 @@ edit(cmdchar, startln, count)
 #ifdef FEAT_MBYTE
 	    else if (has_mbyte)
 	    {
-		i = (*mb_ptr2len_check)(ptr);
+		i = (*mb_ptr2len)(ptr);
 		if (ptr[i] == NUL)
 		    curwin->w_cursor.col += i;
 	    }
@@ -1561,7 +1561,7 @@ change_indent(type, amount, round, replaced)
 	    last_vcol = vcol;
 #ifdef FEAT_MBYTE
 	    if (has_mbyte && new_cursor_col >= 0)
-		new_cursor_col += (*mb_ptr2len_check)(ptr + new_cursor_col);
+		new_cursor_col += (*mb_ptr2len)(ptr + new_cursor_col);
 	    else
 #endif
 		++new_cursor_col;
@@ -2153,7 +2153,7 @@ ins_compl_dictionaries(dict, pat, dir, flags, thesaurus)
 				     * with single-byte non-word characters. */
 				    while (*ptr != NUL)
 				    {
-					int l = (*mb_ptr2len_check)(ptr);
+					int l = (*mb_ptr2len)(ptr);
 
 					if (l < 2 && !vim_iswordc(*ptr))
 					    break;
@@ -2203,7 +2203,7 @@ find_word_start(ptr)
 #ifdef FEAT_MBYTE
     if (has_mbyte)
 	while (*ptr != NUL && *ptr != '\n' && mb_get_class(ptr) <= 1)
-	    ptr += (*mb_ptr2len_check)(ptr);
+	    ptr += (*mb_ptr2len)(ptr);
     else
 #endif
 	while (*ptr != NUL && *ptr != '\n' && !vim_iswordc(*ptr))
@@ -2228,7 +2228,7 @@ find_word_end(ptr)
 	if (start_class > 1)
 	    while (*ptr != NUL)
 	    {
-		ptr += (*mb_ptr2len_check)(ptr);
+		ptr += (*mb_ptr2len)(ptr);
 		if (mb_get_class(ptr) != start_class)
 		    break;
 	    }
@@ -3756,7 +3756,7 @@ quote_meta(dest, src, len)
 	{
 	    int i, mb_len;
 
-	    mb_len = (*mb_ptr2len_check)(src) - 1;
+	    mb_len = (*mb_ptr2len)(src) - 1;
 	    if (mb_len > 0 && len >= mb_len)
 		for (i = 0; i < mb_len; ++i)
 		{
@@ -4166,7 +4166,7 @@ insertchar(c, flags, second_indent)
 #ifdef FEAT_MBYTE
 		    if (has_mbyte)
 			foundcol = curwin->w_cursor.col
-				       + (*mb_ptr2len_check)(ml_get_cursor());
+					     + (*mb_ptr2len)(ml_get_cursor());
 		    else
 #endif
 			foundcol = curwin->w_cursor.col + 1;
@@ -5053,7 +5053,7 @@ oneright()
 
     ptr = ml_get_cursor();
 #ifdef FEAT_MBYTE
-    if (has_mbyte && (l = (*mb_ptr2len_check)(ptr)) > 1)
+    if (has_mbyte && (l = (*mb_ptr2len)(ptr)) > 1)
     {
 	/* The character under the cursor is a multi-byte character, move
 	 * several bytes right, but don't end up on the NUL. */
@@ -5633,7 +5633,7 @@ replace_do_bs()
 	    {
 		vcol += chartabsize(p + i, vcol);
 #ifdef FEAT_MBYTE
-		i += (*mb_ptr2len_check)(p) - 1;
+		i += (*mb_ptr2len)(p) - 1;
 #endif
 	    }
 	    vcol -= start_vcol;
@@ -7288,7 +7288,7 @@ ins_right()
 	{
 #ifdef FEAT_MBYTE
 	    if (has_mbyte)
-		curwin->w_cursor.col += (*mb_ptr2len_check)(ml_get_cursor());
+		curwin->w_cursor.col += (*mb_ptr2len)(ml_get_cursor());
 	    else
 #endif
 		++curwin->w_cursor.col;

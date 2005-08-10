@@ -5066,7 +5066,7 @@ replace_termcodes(from, bufp, from_part, do_lt)
 
 #ifdef FEAT_MBYTE
 	/* skip multibyte char correctly */
-	for (i = (*mb_ptr2len_check)(src); i > 0; --i)
+	for (i = (*mb_ptr2len)(src); i > 0; --i)
 #endif
 	{
 	    /*

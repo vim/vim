@@ -1402,7 +1402,7 @@ retry:
 		    p = ptr;
 		    for (flen = from_size; flen > 0; flen -= l)
 		    {
-			l = utf_ptr2len_check_len(p, flen);
+			l = utf_ptr2len_len(p, flen);
 			if (l > flen)			/* incomplete char */
 			{
 			    if (l > CONV_RESTLEN)
@@ -1467,7 +1467,7 @@ retry:
 		    p = ptr;
 		    for (flen = from_size; flen > 0; flen -= l)
 		    {
-			l = utf_ptr2len_check_len(p, flen);
+			l = utf_ptr2len_len(p, flen);
 			u8c = utf_ptr2char(p);
 			ucsp[needed * 2] = (u8c & 0xff);
 			ucsp[needed * 2 + 1] = (u8c >> 8);
@@ -1726,7 +1726,7 @@ retry:
 		{
 		    if (*p >= 0x80)
 		    {
-			len = utf_ptr2len_check(p);
+			len = utf_ptr2len(p);
 			/* A length of 1 means it's an illegal byte.  Accept
 			 * an incomplete character at the end though, the next
 			 * read() will get the next bytes, we'll check it
@@ -4614,7 +4614,7 @@ buf_write_bytes(ip)
 		    if (l > len)
 			l = len;
 		    mch_memmove(ip->bw_rest + ip->bw_restlen, buf, (size_t)l);
-		    n = utf_ptr2len_check_len(ip->bw_rest, ip->bw_restlen + l);
+		    n = utf_ptr2len_len(ip->bw_rest, ip->bw_restlen + l);
 		    if (n > ip->bw_restlen + len)
 		    {
 			/* We have an incomplete byte sequence at the end to
@@ -4644,7 +4644,7 @@ buf_write_bytes(ip)
 		}
 		else
 		{
-		    n = utf_ptr2len_check_len(buf + wlen, len - wlen);
+		    n = utf_ptr2len_len(buf + wlen, len - wlen);
 		    if (n > len - wlen)
 		    {
 			/* We have an incomplete byte sequence at the end to
@@ -4711,7 +4711,7 @@ buf_write_bytes(ip)
 		 * The buffer has been allocated to be big enough. */
 		while (fromlen > 0)
 		{
-		    n = utf_ptr2len_check_len(from, fromlen);
+		    n = utf_ptr2len_len(from, fromlen);
 		    if (n > (int)fromlen)	/* incomplete byte sequence */
 			break;
 		    u8c = utf_ptr2char(from);
@@ -6599,7 +6599,7 @@ forward_slash(fname)
     for (p = fname; *p != NUL; ++p)
 # ifdef  FEAT_MBYTE
 	/* The Big5 encoding can have '\' in the trail byte. */
-	if (enc_dbcs != 0 && (*mb_ptr2len_check)(p) > 1)
+	if (enc_dbcs != 0 && (*mb_ptr2len)(p) > 1)
 	    ++p;
 	else
 # endif
@@ -8908,7 +8908,7 @@ file_pat_to_reg_pat(pat, pat_end, allow_dirs, no_bslash)
 	    default:
 		size++;
 # ifdef  FEAT_MBYTE
-		if (enc_dbcs != 0 && (*mb_ptr2len_check)(p) > 1)
+		if (enc_dbcs != 0 && (*mb_ptr2len)(p) > 1)
 		{
 		    ++p;
 		    ++size;
@@ -9045,7 +9045,7 @@ file_pat_to_reg_pat(pat, pat_end, allow_dirs, no_bslash)
 		break;
 	    default:
 # ifdef  FEAT_MBYTE
-		if (enc_dbcs != 0 && (*mb_ptr2len_check)(p) > 1)
+		if (enc_dbcs != 0 && (*mb_ptr2len)(p) > 1)
 		    reg_pat[i++] = *p++;
 		else
 # endif

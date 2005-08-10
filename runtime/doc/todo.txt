@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Aug 09
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Aug 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,18 +30,8 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Spell checking: code for pre-compressing tree. (Olaf Seibert)
-Any problems with the reference counting?
-
-spell checking for Yiddish: (Raphael Finkel)
-- use ~/tmp/yiddish.uspell.dat
-- suggestions are not displayed with 'rightleft'
-- suggestions don't have composing characters
-- out-of-mem error when using suggestion?
-
-Spell suggestion for "WOrd" should be "Word" instead of "word".
-
 Spell checking: default value for 'spellcapcheck' in spell file?
+For Hebrew and Yiddish it should be empty.
 
 When 'insertmode' is set, CTRL-L no longer moves the cursor left.  What
 compatibility problems does this cause?

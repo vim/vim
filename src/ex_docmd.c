@@ -8324,7 +8324,7 @@ ex_normal(eap)
 	    if (*p == CSI)  /* leadbyte CSI */
 		len += 2;
 # endif
-	    for (l = (*mb_ptr2len_check)(p) - 1; l > 0; --l)
+	    for (l = (*mb_ptr2len)(p) - 1; l > 0; --l)
 		if (*++p == K_SPECIAL	  /* trailbyte K_SPECIAL or CSI */
 # ifdef FEAT_GUI
 			|| *p == CSI
@@ -8348,7 +8348,7 @@ ex_normal(eap)
 			arg[len++] = (int)KE_CSI;
 		    }
 # endif
-		    for (l = (*mb_ptr2len_check)(p) - 1; l > 0; --l)
+		    for (l = (*mb_ptr2len)(p) - 1; l > 0; --l)
 		    {
 			arg[len++] = *++p;
 			if (*p == K_SPECIAL)
@@ -9772,7 +9772,7 @@ ses_put_fname(fd, name, flagp)
 	{
 	    int l;
 
-	    if (has_mbyte && (l = (*mb_ptr2len_check)(name)) > 1)
+	    if (has_mbyte && (l = (*mb_ptr2len)(name)) > 1)
 	    {
 		/* copy a multibyte char */
 		while (--l >= 0)

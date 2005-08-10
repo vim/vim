@@ -2284,7 +2284,7 @@ fname_case(
 
 	    if (enc_dbcs)
 	    {
-		l = (*mb_ptr2len_check)(porig);
+		l = (*mb_ptr2len)(porig);
 		while (--l >= 0)
 		    *ptrue++ = *porig++;
 	    }

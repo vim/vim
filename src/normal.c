@@ -1731,7 +1731,7 @@ do_pending_operator(cap, old_col, gui_yank)
 	{
 	    int		l;
 
-	    l = (*mb_ptr2len_check)(ml_get_pos(&oap->end));
+	    l = (*mb_ptr2len)(ml_get_pos(&oap->end));
 	    if (l > 1)
 		oap->end.col += l - 1;
 	}
@@ -2866,7 +2866,7 @@ do_mouse(oap, c, dir, count, fixindent)
 		    if (*p_sel == 'e' && *ml_get_cursor() != NUL)
 #ifdef FEAT_MBYTE
 			curwin->w_cursor.col +=
-					 (*mb_ptr2len_check)(ml_get_cursor());
+					 (*mb_ptr2len)(ml_get_cursor());
 #else
 			++curwin->w_cursor.col;
 #endif
@@ -2940,7 +2940,7 @@ find_end_of_word(pos)
     while (line[pos->col] != NUL)
     {
 #ifdef FEAT_MBYTE
-	col = pos->col + (*mb_ptr2len_check)(line + pos->col);
+	col = pos->col + (*mb_ptr2len)(line + pos->col);
 #else
 	col = pos->col + 1;
 #endif
@@ -3210,7 +3210,7 @@ find_ident_at_pos(wp, lnum, startcol, string, find_type)
 		this_class = mb_get_class(ptr + col);
 		if (this_class != 0 && (i == 1 || this_class != 1))
 		    break;
-		col += (*mb_ptr2len_check)(ptr + col);
+		col += (*mb_ptr2len)(ptr + col);
 	    }
 	}
 	else
@@ -3332,7 +3332,7 @@ find_ident_at_pos(wp, lnum, startcol, string, find_type)
 			&& find_is_eval_item(ptr + col, &col, &bn, FORWARD))
 # endif
 		))
-	    col += (*mb_ptr2len_check)(ptr + col);
+	    col += (*mb_ptr2len)(ptr + col);
     }
     else
 #endif
@@ -5135,7 +5135,7 @@ nv_ident(cap)
 	if (has_mbyte)
 	{
 	    int i;
-	    int len = (*mb_ptr2len_check)(ptr) - 1;
+	    int len = (*mb_ptr2len)(ptr) - 1;
 
 	    for (i = 0; i < len && n >= 1; ++i, --n)
 		*p++ = *ptr++;
@@ -5207,7 +5207,7 @@ get_visual_text(cap, pp, lenp)
 #ifdef FEAT_MBYTE
 	if (has_mbyte)
 	    /* Correct the length to include the whole last character. */
-	    *lenp += (*mb_ptr2len_check)(*pp + (*lenp - 1)) - 1;
+	    *lenp += (*mb_ptr2len)(*pp + (*lenp - 1)) - 1;
 #endif
     }
     reset_VIsual_and_resel();
@@ -5430,7 +5430,7 @@ nv_right(cap)
 # ifdef FEAT_MBYTE
 		if (has_mbyte)
 		    curwin->w_cursor.col +=
-					 (*mb_ptr2len_check)(ml_get_cursor());
+					 (*mb_ptr2len)(ml_get_cursor());
 		else
 # endif
 		    ++curwin->w_cursor.col;

@@ -1954,7 +1954,7 @@ get_foldtext(wp, lnum, lnume, foldinfo, buf)
 # ifdef FEAT_MBYTE
 		int	len;
 
-		if (has_mbyte && (len = (*mb_ptr2len_check)(p)) > 1)
+		if (has_mbyte && (len = (*mb_ptr2len)(p)) > 1)
 		{
 		    if (!vim_isprintc((*mb_ptr2char)(p)))
 			break;

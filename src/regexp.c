@@ -714,7 +714,7 @@ get_equi_class(pp)
     {
 #ifdef FEAT_MBYTE
 	if (has_mbyte)
-	    l = mb_ptr2len_check(p + 2);
+	    l = (*mb_ptr2len)(p + 2);
 #endif
 	if (p[l + 2] == '=' && p[l + 3] == ']')
 	{
@@ -833,7 +833,7 @@ get_coll_element(pp)
     {
 #ifdef FEAT_MBYTE
 	if (has_mbyte)
-	    l = mb_ptr2len_check(p + 2);
+	    l = (*mb_ptr2len)(p + 2);
 #endif
 	if (p[l + 2] == '.' && p[l + 3] == ']')
 	{
@@ -876,7 +876,7 @@ skip_anyof(p)
     while (*p != NUL && *p != ']')
     {
 #ifdef FEAT_MBYTE
-	if (has_mbyte && (l = (*mb_ptr2len_check)(p)) > 1)
+	if (has_mbyte && (l = (*mb_ptr2len)(p)) > 1)
 	    p += l;
 	else
 #endif
@@ -2231,7 +2231,7 @@ collection:
 			    /* produce a multibyte character, including any
 			     * following composing characters */
 			    startc = mb_ptr2char(regparse);
-			    len = (*mb_ptr2len_check)(regparse);
+			    len = (*mb_ptr2len)(regparse);
 			    if (enc_utf8 && utf_char2len(startc) != len)
 				startc = -1;	/* composing chars */
 			    while (--len >= 0)
@@ -2309,7 +2309,7 @@ collection:
 			    off = 0;
 			for (;;)
 			{
-			    l = utf_ptr2len_check(regparse + off);
+			    l = utf_ptr2len(regparse + off);
 			    if (!UTF_COMPOSINGLIKE(regparse + off,
 							  regparse + off + l))
 				break;
@@ -2721,7 +2721,7 @@ skipchr()
     {
 #ifdef FEAT_MBYTE
 	if (has_mbyte)
-	    prevchr_len += (*mb_ptr2len_check)(regparse + prevchr_len);
+	    prevchr_len += (*mb_ptr2len)(regparse + prevchr_len);
 	else
 #endif
 	    ++prevchr_len;
@@ -3462,7 +3462,7 @@ vim_regexec_both(line, col)
 		break;
 #ifdef FEAT_MBYTE
 	    if (has_mbyte)
-		col += (*mb_ptr2len_check)(regline + col);
+		col += (*mb_ptr2len)(regline + col);
 	    else
 #endif
 		++col;
@@ -4100,7 +4100,7 @@ regmatch(scan)
 		opnd = OPERAND(scan);
 		/* Safety check (just in case 'encoding' was changed since
 		 * compiling the program). */
-		if ((len = (*mb_ptr2len_check)(opnd)) < 2)
+		if ((len = (*mb_ptr2len)(opnd)) < 2)
 		{
 		    status = RA_NOMATCH;
 		    break;
@@ -5278,7 +5278,7 @@ do_class:
 		    break;
 	    }
 #ifdef FEAT_MBYTE
-	    else if (has_mbyte && (l = (*mb_ptr2len_check)(scan)) > 1)
+	    else if (has_mbyte && (l = (*mb_ptr2len)(scan)) > 1)
 	    {
 		if (testval != 0)
 		    break;
@@ -5399,7 +5399,7 @@ do_class:
 
 	    /* Safety check (just in case 'encoding' was changed since
 	     * compiling the program). */
-	    if ((len = (*mb_ptr2len_check)(opnd)) > 1)
+	    if ((len = (*mb_ptr2len)(opnd)) > 1)
 	    {
 		if (ireg_ic && enc_utf8)
 		    cf = utf_fold(utf_ptr2char(opnd));
@@ -5443,7 +5443,7 @@ do_class:
 	    else if (reg_line_lbr && *scan == '\n' && WITH_NL(OP(p)))
 		++scan;
 #ifdef FEAT_MBYTE
-	    else if (has_mbyte && (len = (*mb_ptr2len_check)(scan)) > 1)
+	    else if (has_mbyte && (len = (*mb_ptr2len)(scan)) > 1)
 	    {
 		if ((cstrchr(opnd, (*mb_ptr2char)(scan)) == NULL) == testval)
 		    break;
@@ -6306,7 +6306,7 @@ cstrchr(s, c)
 #ifdef FEAT_MBYTE
     if (has_mbyte)
     {
-	for (p = s; *p != NUL; p += (*mb_ptr2len_check)(p))
+	for (p = s; *p != NUL; p += (*mb_ptr2len)(p))
 	{
 	    if (enc_utf8 && c > 0x80)
 	    {
@@ -6453,7 +6453,7 @@ regtilde(source, magic)
 		++p;
 #ifdef FEAT_MBYTE
 	    if (has_mbyte)
-		p += (*mb_ptr2len_check)(p) - 1;
+		p += (*mb_ptr2len)(p) - 1;
 #endif
 	}
     }
@@ -6694,7 +6694,7 @@ vim_regsub_both(source, dest, copy, magic, backslash)
 
 	    /* Write to buffer, if copy is set. */
 #ifdef FEAT_MBYTE
-	    if (has_mbyte && (l = (*mb_ptr2len_check)(src - 1)) > 1)
+	    if (has_mbyte && (l = (*mb_ptr2len)(src - 1)) > 1)
 	    {
 		/* TODO: should use "func" here. */
 		if (copy)
@@ -6789,7 +6789,7 @@ vim_regsub_both(source, dest, copy, magic, backslash)
 			    dst += 2;
 			}
 #ifdef FEAT_MBYTE
-			else if (has_mbyte && (l = (*mb_ptr2len_check)(s)) > 1)
+			else if (has_mbyte && (l = (*mb_ptr2len)(s)) > 1)
 			{
 			    /* TODO: should use "func" here. */
 			    if (copy)

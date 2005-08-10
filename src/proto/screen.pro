@@ -10,6 +10,7 @@ void update_curbuf __ARGS((int type));
 void update_screen __ARGS((int type));
 void update_debug_sign __ARGS((buf_T *buf, linenr_T lnum));
 void updateWindow __ARGS((win_T *wp));
+void rl_mirror __ARGS((char_u *str));
 void status_redraw_all __ARGS((void));
 void status_redraw_curbuf __ARGS((void));
 void redraw_statuslines __ARGS((void));

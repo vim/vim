@@ -1203,7 +1203,7 @@ do_intro_line(row, mesg, add_version, attr)
 	    if (has_mbyte)
 	    {
 		clen += ptr2cells(p + l);
-		l += (*mb_ptr2len_check)(p + l) - 1;
+		l += (*mb_ptr2len)(p + l) - 1;
 	    }
 	    else
 #endif

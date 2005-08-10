@@ -944,7 +944,7 @@ VimWidget::imComposeEvent(QIMEvent *e)
 	else
 	    draw_feedback[n] = XIMReverse;
 	preedit_end_col += (*mb_ptr2cells)(p);
-	p += (*mb_ptr2len_check)(p);
+	p += (*mb_ptr2len)(p);
     }
     im_preedit_cursor = e->cursorPos();
     im_preedit_trailing = preedit_buf_len - im_preedit_cursor;

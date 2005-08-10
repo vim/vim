@@ -717,8 +717,11 @@ EXTERN vimconv_T output_conv;			/* type of output conversion */
  * (DBCS).
  * The value is set in mb_init();
  */
-EXTERN int (*mb_ptr2len_check) __ARGS((char_u *p)) INIT(= latin_ptr2len_check);
+/* length of char in bytes, including following composing chars */
+EXTERN int (*mb_ptr2len) __ARGS((char_u *p)) INIT(= latin_ptr2len);
+/* byte length of char */
 EXTERN int (*mb_char2len) __ARGS((int c)) INIT(= latin_char2len);
+/* convert char to bytes, return the length */
 EXTERN int (*mb_char2bytes) __ARGS((int c, char_u *buf)) INIT(= latin_char2bytes);
 EXTERN int (*mb_ptr2cells) __ARGS((char_u *p)) INIT(= latin_ptr2cells);
 EXTERN int (*mb_char2cells) __ARGS((int c)) INIT(= latin_char2cells);

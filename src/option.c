@@ -4121,7 +4121,7 @@ do_set(arg, opt_flags)
 				    ++arg;	/* remove backslash */
 #ifdef FEAT_MBYTE
 				if (has_mbyte
-					&& (i = (*mb_ptr2len_check)(arg)) > 1)
+					&& (i = (*mb_ptr2len)(arg)) > 1)
 				{
 				    /* copy multibyte char */
 				    mch_memmove(s, arg, (size_t)i);

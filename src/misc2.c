@@ -364,7 +364,7 @@ inc(lp)
 #ifdef FEAT_MBYTE
 	if (has_mbyte)
 	{
-	    int l = (*mb_ptr2len_check)(p);
+	    int l = (*mb_ptr2len)(p);
 
 	    lp->col += l;
 	    return ((p[l] != NUL) ? 0 : 2);
@@ -1168,7 +1168,7 @@ vim_strsave_escaped_ext(string, esc_chars, cc, bsl)
     for (p = string; *p; p++)
     {
 #ifdef FEAT_MBYTE
-	if (has_mbyte && (l = (*mb_ptr2len_check)(p)) > 1)
+	if (has_mbyte && (l = (*mb_ptr2len)(p)) > 1)
 	{
 	    length += l;		/* count a multibyte char */
 	    p += l - 1;
@@ -1186,7 +1186,7 @@ vim_strsave_escaped_ext(string, esc_chars, cc, bsl)
 	for (p = string; *p; p++)
 	{
 #ifdef FEAT_MBYTE
-	    if (has_mbyte && (l = (*mb_ptr2len_check)(p)) > 1)
+	    if (has_mbyte && (l = (*mb_ptr2len)(p)) > 1)
 	    {
 		mch_memmove(p2, p, (size_t)l);
 		p2 += l;
@@ -1288,7 +1288,7 @@ strup_save(orig)
 
 		/* Reallocate string when byte count changes.  This is rare,
 		 * thus it's OK to do another malloc()/free(). */
-		l = utf_ptr2len_check(p);
+		l = utf_ptr2len(p);
 		nl = utf_char2len(uc);
 		if (nl != l)
 		{
@@ -1305,7 +1305,7 @@ strup_save(orig)
 		utf_char2bytes(uc, p);
 		p += nl;
 	    }
-	    else if (has_mbyte && (l = (*mb_ptr2len_check)(p)) > 1)
+	    else if (has_mbyte && (l = (*mb_ptr2len)(p)) > 1)
 		p += l;		/* skip multi-byte character */
 	    else
 # endif
@@ -1604,7 +1604,7 @@ vim_strchr(string, c)
 	{
 	    if (utf_ptr2char(p) == c)
 		return p;
-	    p += (*mb_ptr2len_check)(p);
+	    p += (*mb_ptr2len)(p);
 	}
 	return NULL;
     }
@@ -1617,7 +1617,7 @@ vim_strchr(string, c)
 	{
 	    if (b == c && p[1] == n2)
 		return p;
-	    p += (*mb_ptr2len_check)(p);
+	    p += (*mb_ptr2len)(p);
 	}
 	return NULL;
     }
@@ -1627,7 +1627,7 @@ vim_strchr(string, c)
 	{
 	    if (b == c)
 		return p;
-	    p += (*mb_ptr2len_check)(p);
+	    p += (*mb_ptr2len)(p);
 	}
 	return NULL;
     }

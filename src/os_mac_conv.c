@@ -129,7 +129,7 @@ mac_string_convert(ptr, len, lenp, fail_on_error, from_enc, to_enc, unconvlenp)
 	for (d = retval, in = 0, out = 0; in < len && out < buflen - 1;)
 	{
 	    if (from == kCFStringEncodingUTF8)
-		l = utf_ptr2len_check(ptr + in);
+		l = utf_ptr2len(ptr + in);
 	    else
 		l = 1;
 	    cfstr = CFStringCreateWithBytes(NULL, ptr + in, l, from, 0);

@@ -562,14 +562,8 @@ AppendToRedobuffLit(s)
 	    /* Handle a special or multibyte character. */
 #ifdef FEAT_MBYTE
 	    if (has_mbyte)
-	    {
-		c = (*mb_ptr2char)(s);
-		if (enc_utf8)
-		    /* Handle composing chars as well. */
-		    s += utf_ptr2len_check(s);
-		else
-		    s += (*mb_ptr2len_check)(s);
-	    }
+		/* Handle composing chars separately. */
+		c = mb_cptr2char_adv(&s);
 	    else
 #endif
 		c = *s++;
@@ -2025,7 +2019,7 @@ vgetorpeek(advance)
 				 * multi-byte char.  Happens when mapping
 				 * <M-a> and then changing 'encoding'. */
 				if (has_mbyte && MB_BYTE2LEN(c1)
-					    > (*mb_ptr2len_check)(mp->m_keys))
+						  > (*mb_ptr2len)(mp->m_keys))
 				    mlen = 0;
 #endif
 				/*
@@ -2413,7 +2407,7 @@ vgetorpeek(advance)
 							       (colnr_T)vcol);
 #ifdef FEAT_MBYTE
 				    if (has_mbyte)
-					col += (*mb_ptr2len_check)(ptr + col);
+					col += (*mb_ptr2len)(ptr + col);
 				    else
 #endif
 					++col;
@@ -3105,7 +3099,7 @@ do_map(maptype, arg, mode, abbrev)
 
 		first = vim_iswordp(keys);
 		last = first;
-		p = keys + mb_ptr2len_check(keys);
+		p = keys + (*mb_ptr2len)(keys);
 		n = 1;
 		while (p < keys + len)
 		{
@@ -3113,7 +3107,7 @@ do_map(maptype, arg, mode, abbrev)
 		    last = vim_iswordp(p);	/* type of last char */
 		    if (same == -1 && last != first)
 			same = n - 1;		/* count of same char type */
-		    p += mb_ptr2len_check(p);
+		    p += (*mb_ptr2len)(p);
 		}
 		if (last && n > 2 && same >= 0 && same < n - 1)
 		{
@@ -4045,7 +4039,7 @@ check_abbr(c, ptr, col, mincol)
 	    p = mb_prevptr(ptr, p);
 	    if (vim_isspace(*p) || (!vim_abbr && is_id != vim_iswordp(p)))
 	    {
-		p += (*mb_ptr2len_check)(p);
+		p += (*mb_ptr2len)(p);
 		break;
 	    }
 	    ++clen;

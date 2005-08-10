@@ -3064,7 +3064,7 @@ check_keyword_id(line, startcol, endcolp, flagsp, next_listp, cur_si)
     {
 #ifdef FEAT_MBYTE
 	if (has_mbyte)
-	    kwlen += (*mb_ptr2len_check)(kwp + kwlen);
+	    kwlen += (*mb_ptr2len)(kwp + kwlen);
 	else
 #endif
 	    ++kwlen;
@@ -4519,7 +4519,7 @@ syn_cmd_keyword(eap, syncing)
 #ifdef FEAT_MBYTE
 			if (has_mbyte)
 			{
-			    int l = (*mb_ptr2len_check)(p + 1);
+			    int l = (*mb_ptr2len)(p + 1);
 
 			    mch_memmove(p, p + 1, l);
 			    p += l;

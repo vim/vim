@@ -254,15 +254,23 @@
  * PTR2CHAR(): get character from pointer.
  */
 #ifdef FEAT_MBYTE
-# define mb_ptr_adv(p)	    p += has_mbyte ? (*mb_ptr2len_check)(p) : 1
+/* Advance multi-byte pointer, skip over composing chars. */
+# define mb_ptr_adv(p)	    p += has_mbyte ? (*mb_ptr2len)(p) : 1
+/* Advance multi-byte pointer, do not skip over composing chars. */
+# define mb_cptr_adv(p)	    p += enc_utf8 ? utf_ptr2len(p) : has_mbyte ? (*mb_ptr2len)(p) : 1
+/* Backup multi-byte pointer. */
 # define mb_ptr_back(s, p)  p -= has_mbyte ? ((*mb_head_off)(s, p - 1) + 1) : 1
+/* get length of multi-byte char, not including composing chars */
+# define mb_cptr2len(p)	    (enc_utf8 ? utf_ptr2len(p) : (*mb_ptr2len)(p))
+
 # define MB_COPY_CHAR(f, t) if (has_mbyte) mb_copy_char(&f, &t); else *t++ = *f++
 # define MB_CHARLEN(p)	    (has_mbyte ? mb_charlen(p) : STRLEN(p))
-# define PTR2CHAR(p)	    (has_mbyte ? mb_ptr2char(p) : *(p))
+# define PTR2CHAR(p)	    (has_mbyte ? mb_ptr2char(p) : (int)*(p))
 #else
 # define mb_ptr_adv(p)		++p
+# define mb_cptr_adv(p)		++p
 # define mb_ptr_back(s, p)	--p
 # define MB_COPY_CHAR(f, t)	*t++ = *f++
 # define MB_CHARLEN(p)		STRLEN(p)
-# define PTR2CHAR(p)		(*(p))
+# define PTR2CHAR(p)		((int)*(p))
 #endif

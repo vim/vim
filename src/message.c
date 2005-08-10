@@ -263,7 +263,7 @@ trunc_string(s, buf, room)
 	buf[e] = s[e];
 #ifdef FEAT_MBYTE
 	if (has_mbyte)
-	    for (n = (*mb_ptr2len_check)(s + e); --n > 0; )
+	    for (n = (*mb_ptr2len)(s + e); --n > 0; )
 	    {
 		++e;
 		buf[e] = s[e];
@@ -283,7 +283,7 @@ trunc_string(s, buf, room)
 	while (len + n > room)
 	{
 	    n -= ptr2cells(s + i);
-	    i += (*mb_ptr2len_check)(s + i);
+	    i += (*mb_ptr2len)(s + i);
 	}
     }
     else if (enc_utf8)
@@ -718,7 +718,7 @@ msg_may_trunc(force, s)
 	    for (n = 0; size >= room; )
 	    {
 		size -= (*mb_ptr2cells)(s + n);
-		n += (*mb_ptr2len_check)(s + n);
+		n += (*mb_ptr2len)(s + n);
 	    }
 	    --n;
 	}
@@ -1243,7 +1243,7 @@ msg_outtrans_one(p, attr)
 #ifdef FEAT_MBYTE
     int		l;
 
-    if (has_mbyte && (l = (*mb_ptr2len_check)(p)) > 1)
+    if (has_mbyte && (l = (*mb_ptr2len)(p)) > 1)
     {
 	msg_outtrans_len_attr(p, l, attr);
 	return p + l;
@@ -1291,9 +1291,9 @@ msg_outtrans_len_attr(msgstr, len, attr)
 #ifdef FEAT_MBYTE
 	if (enc_utf8)
 	    /* Don't include composing chars after the end. */
-	    mb_l = utfc_ptr2len_check_len(str, len + 1);
+	    mb_l = utfc_ptr2len_len(str, len + 1);
 	else if (has_mbyte)
-	    mb_l = (*mb_ptr2len_check)(str);
+	    mb_l = (*mb_ptr2len)(str);
 	else
 	    mb_l = 1;
 	if (has_mbyte && mb_l > 1)
@@ -1403,7 +1403,7 @@ msg_outtrans_special(strstart, from)
 	/* Highlight special keys */
 	msg_puts_attr(string, len > 1
 #ifdef FEAT_MBYTE
-		&& (*mb_ptr2len_check)(string) <= 1
+		&& (*mb_ptr2len)(string) <= 1
 #endif
 		? attr : 0);
 	retval += len;
@@ -1463,7 +1463,7 @@ str2special(sp, from)
 
 #ifdef FEAT_MBYTE
     /* For multi-byte characters check for an illegal byte. */
-    if (has_mbyte && MB_BYTE2LEN(*str) > (*mb_ptr2len_check)(str))
+    if (has_mbyte && MB_BYTE2LEN(*str) > (*mb_ptr2len)(str))
     {
 	transchar_nonprint(buf, c);
 	return buf;
@@ -1547,7 +1547,7 @@ msg_prt_line(s, list)
 		c = *p_extra++;
 	}
 #ifdef FEAT_MBYTE
-	else if (has_mbyte && (l = (*mb_ptr2len_check)(s)) > 1)
+	else if (has_mbyte && (l = (*mb_ptr2len)(s)) > 1)
 	{
 	    col += (*mb_ptr2cells)(s);
 	    mch_memmove(buf, s, (size_t)l);
@@ -1855,10 +1855,9 @@ msg_puts_display(str, maxlen, attr, recurse)
 		{
 		    if (enc_utf8 && maxlen >= 0)
 			/* avoid including composing chars after the end */
-			l = utfc_ptr2len_check_len(s,
-						   (int)((str + maxlen) - s));
+			l = utfc_ptr2len_len(s, (int)((str + maxlen) - s));
 		    else
-			l = (*mb_ptr2len_check)(s);
+			l = (*mb_ptr2len)(s);
 		    s = screen_puts_mbyte(s, l, attr);
 		}
 		else
@@ -1915,7 +1914,12 @@ msg_puts_display(str, maxlen, attr, recurse)
 	if (*s == '\n')		    /* go to next line */
 	{
 	    msg_didout = FALSE;	    /* remember that line is empty */
-	    msg_col = 0;
+#ifdef FEAT_RIGHTLEFT
+	    if (cmdmsg_rl)
+		msg_col = Columns - 1;
+	    else
+#endif
+		msg_col = 0;
 	    if (++msg_row >= Rows)  /* safety check */
 		msg_row = Rows - 1;
 	}
@@ -1944,9 +1948,9 @@ msg_puts_display(str, maxlen, attr, recurse)
 		cw = (*mb_ptr2cells)(s);
 		if (enc_utf8 && maxlen >= 0)
 		    /* avoid including composing chars after the end */
-		    l = utfc_ptr2len_check_len(s, (int)((str + maxlen) - s));
+		    l = utfc_ptr2len_len(s, (int)((str + maxlen) - s));
 		else
-		    l = (*mb_ptr2len_check)(s);
+		    l = (*mb_ptr2len)(s);
 	    }
 	    else
 	    {
@@ -3125,8 +3129,14 @@ msg_advance(col)
     }
     if (col >= Columns)		/* not enough room */
 	col = Columns - 1;
-    while (msg_col < col)
-	msg_putchar(' ');
+#ifdef FEAT_RIGHTLEFT
+    if (cmdmsg_rl)
+	while (msg_col > Columns - col)
+	    msg_putchar(' ');
+    else
+#endif
+	while (msg_col < col)
+	    msg_putchar(' ');
 }
 
 #if defined(FEAT_CON_DIALOG) || defined(PROTO)
@@ -3229,7 +3239,7 @@ do_dialog(type, title, message, buttons, dfltbutton, textfield)
 		    {
 			if ((*mb_ptr2char)(hotkeys + i) == c)
 			    break;
-			i += (*mb_ptr2len_check)(hotkeys + i) - 1;
+			i += (*mb_ptr2len)(hotkeys + i) - 1;
 		    }
 		    else
 #endif
@@ -3283,7 +3293,7 @@ copy_char(from, to, lowercase)
 	}
 	else
 	{
-	    len = (*mb_ptr2len_check)(from);
+	    len = (*mb_ptr2len)(from);
 	    mch_memmove(to, from, (size_t)len);
 	    return len;
 	}
@@ -3353,7 +3363,7 @@ msg_show_console_dialog(message, buttons, dfltbutton)
 		    /* advance to next hotkey and set default hotkey */
 #ifdef FEAT_MBYTE
 		    if (has_mbyte)
-			hotkp += (*mb_ptr2len_check)(hotkp);
+			hotkp += (*mb_ptr2len)(hotkp);
 		    else
 #endif
 			++hotkp;

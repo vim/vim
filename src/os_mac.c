@@ -118,7 +118,7 @@ mac_expandpath(
 #ifdef FEAT_MBYTE
 	if (has_mbyte)
 	{
-	    int len = (*mb_ptr2len_check)(path);
+	    int len = (*mb_ptr2len)(path);
 
 	    STRNCPY(p, path, len);
 	    p += len;

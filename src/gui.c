@@ -1783,7 +1783,7 @@ gui_outstr(s, len)
 		cells += (*mb_ptr2cells)(s + this_len);
 		if (gui.col + cells > Columns)
 		    break;
-		this_len += (*mb_ptr2len_check)(s + this_len);
+		this_len += (*mb_ptr2len)(s + this_len);
 	    }
 	    if (this_len > len)
 		this_len = len;	    /* don't include following composing char */
@@ -1847,7 +1847,7 @@ gui_screenchar(off, flags, fg, bg, back)
 
     /* Draw non-multi-byte character or DBCS character. */
     return gui_outstr_nowrap(ScreenLines + off,
-	    enc_dbcs ? (*mb_ptr2len_check)(ScreenLines + off) : 1,
+	    enc_dbcs ? (*mb_ptr2len)(ScreenLines + off) : 1,
 							 flags, fg, bg, back);
 #else
     return gui_outstr_nowrap(ScreenLines + off, 1, flags, fg, bg, back);
@@ -2190,7 +2190,7 @@ gui_outstr_nowrap(s, len, flags, fg, bg, back)
 	    comping = utf_iscomposing(c);
 	    if (!comping)	/* count cells from non-composing chars */
 		cells += cn;
-	    cl = utf_ptr2len_check(s + i);
+	    cl = utf_ptr2len(s + i);
 	    if (cl == 0)	/* hit end of string */
 		len = i + cl;	/* len must be wrong "cannot happen" */
 
@@ -2274,7 +2274,7 @@ gui_outstr_nowrap(s, len, flags, fg, bg, back)
 
 	    /* Get the length in display cells, this can be different from the
 	     * number of bytes for "euc-jp". */
-	    for (i = 0; i < len; i += (*mb_ptr2len_check)(s + i))
+	    for (i = 0; i < len; i += (*mb_ptr2len)(s + i))
 		clen += (*mb_ptr2cells)(s + i);
 	    len = clen;
 	}
@@ -2508,7 +2508,7 @@ gui_redraw_block(row1, col1, row2, col2, flags)
 			/* Stop at a double-byte single-width char. */
 			if (ScreenLines[off + idx] == 0x8e)
 			    break;
-			if (len > 1 && (*mb_ptr2len_check)(ScreenLines
+			if (len > 1 && (*mb_ptr2len)(ScreenLines
 							    + off + idx) == 2)
 			    ++idx;  /* skip second byte of double-byte char */
 		    }
@@ -4559,7 +4559,7 @@ concat_esc(gap, text, what)
     while (*text != NUL)
     {
 #ifdef FEAT_MBYTE
-	int l = (*mb_ptr2len_check)(text);
+	int l = (*mb_ptr2len)(text);
 	if (l > 1)
 	{
 	    while (--l >= 0)

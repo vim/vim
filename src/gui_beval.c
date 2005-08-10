@@ -910,7 +910,7 @@ set_printable_label_text(GtkLabel *label, char_u *msg)
 	}
 	else
 	{
-	    charlen = utf_ptr2len_check(p);
+	    charlen = utf_ptr2len(p);
 	    uc = utf_ptr2char(p);
 
 	    if (charlen != utf_char2len(uc))
@@ -956,7 +956,7 @@ set_printable_label_text(GtkLabel *label, char_u *msg)
 	    }
 	    else
 	    {
-		charlen = utf_ptr2len_check(p);
+		charlen = utf_ptr2len(p);
 		uc = utf_ptr2char(p);
 
 		if (charlen != utf_char2len(uc))

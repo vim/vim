@@ -143,9 +143,6 @@ static void screen_line __ARGS((int row, int coloff, int endcol, int clear_width
 static void screen_line __ARGS((int row, int coloff, int endcol, int clear_width));
 # define SCREEN_LINE(r, o, e, c, rl)    screen_line((r), (o), (e), (c))
 #endif
-#ifdef FEAT_RIGHTLEFT
-static void rl_mirror __ARGS((char_u *str));
-#endif
 #ifdef FEAT_VERTSPLIT
 static void draw_vsep_win __ARGS((win_T *wp, int row));
 #endif
@@ -2178,7 +2175,7 @@ fold_line(wp, fold_count, foldinfo, lnum, row)
 	for (p = text; *p != NUL; )
 	{
 	    cells = (*mb_ptr2cells)(p);
-	    c_len = (*mb_ptr2len_check)(p);
+	    c_len = (*mb_ptr2len)(p);
 	    if (col + cells > W_WIDTH(wp)
 # ifdef FEAT_RIGHTLEFT
 		    - (wp->w_p_rl ? col : 0)
@@ -2981,7 +2978,7 @@ win_line(wp, lnum, startrow, endrow)
 		{
 #ifdef FEAT_MBYTE
 		    if (has_mbyte && line[shl->endcol] != NUL)
-			shl->endcol += (*mb_ptr2len_check)(line + shl->endcol);
+			shl->endcol += (*mb_ptr2len)(line + shl->endcol);
 		    else
 #endif
 			++shl->endcol;
@@ -3287,7 +3284,7 @@ win_line(wp, lnum, startrow, endrow)
 				     * it */
 #ifdef FEAT_MBYTE
 				    if (has_mbyte)
-					shl->endcol += (*mb_ptr2len_check)(line
+					shl->endcol += (*mb_ptr2len)(line
 							       + shl->endcol);
 				    else
 #endif
@@ -3378,7 +3375,7 @@ win_line(wp, lnum, startrow, endrow)
 		    {
 			/* If the UTF-8 character is more than one byte:
 			 * Decode it into "mb_c". */
-			mb_l = (*mb_ptr2len_check)(p_extra);
+			mb_l = (*mb_ptr2len)(p_extra);
 			mb_utf8 = FALSE;
 			if (mb_l > n_extra)
 			    mb_l = 1;
@@ -3441,7 +3438,7 @@ win_line(wp, lnum, startrow, endrow)
 		{
 		    /* If the UTF-8 character is more than one byte: Decode it
 		     * into "mb_c". */
-		    mb_l = (*mb_ptr2len_check)(ptr);
+		    mb_l = (*mb_ptr2len)(ptr);
 		    mb_utf8 = FALSE;
 		    if (mb_l > 1)
 		    {
@@ -4822,11 +4819,12 @@ screen_line(row, coloff, endcol, clear_width
     }
 }
 
-#ifdef FEAT_RIGHTLEFT
+#if defined(FEAT_RIGHTLEFT) || defined(PROTO)
 /*
- * Mirror text "str" for right-lieft displaying.
+ * Mirror text "str" for right-left displaying.
+ * Only works for single-byte characters (e.g., numbers).
  */
-    static void
+    void
 rl_mirror(str)
     char_u	*str;
 {
@@ -5128,7 +5126,7 @@ win_redr_status_matches(xp, num_matches, matches, match, showtail)
 		++s;
 	    clen += ptr2cells(s);
 #ifdef FEAT_MBYTE
-	    if (has_mbyte && (l = (*mb_ptr2len_check)(s)) > 1)
+	    if (has_mbyte && (l = (*mb_ptr2len)(s)) > 1)
 	    {
 		STRNCPY(buf + len, s, l);
 		s += l - 1;
@@ -5315,12 +5313,12 @@ win_redr_status(wp)
 		int	clen = 0, i;
 
 		/* Count total number of display cells. */
-		for (i = 0; p[i] != NUL; i += (*mb_ptr2len_check)(p + i))
+		for (i = 0; p[i] != NUL; i += (*mb_ptr2len)(p + i))
 		    clen += (*mb_ptr2cells)(p + i);
 		/* Find first character that will fit.
 		 * Going from start to end is much faster for DBCS. */
 		for (i = 0; p[i] != NUL && clen >= this_ru_col - 1;
-					      i += (*mb_ptr2len_check)(p + i))
+					      i += (*mb_ptr2len)(p + i))
 		    clen -= (*mb_ptr2cells)(p + i);
 		len = clen;
 		if (i > 0)
@@ -5679,10 +5677,9 @@ screen_puts_len(text, len, row, col, attr)
 	if (has_mbyte)
 	{
 	    if (enc_utf8 && len > 0)
-		mbyte_blen = utfc_ptr2len_check_len(ptr,
-						   (int)((text + len) - ptr));
+		mbyte_blen = utfc_ptr2len_len(ptr, (int)((text + len) - ptr));
 	    else
-		mbyte_blen = (*mb_ptr2len_check)(ptr);
+		mbyte_blen = (*mb_ptr2len)(ptr);
 	    if (enc_dbcs == DBCS_JPNU && c == 0x8e)
 		mbyte_cells = 1;
 	    else if (enc_dbcs != 0)
@@ -8583,7 +8580,7 @@ win_redr_ruler(wp, always)
 	if (has_mbyte)
 	{
 	    o = 0;
-	    for (i = 0; buffer[i] != NUL; i += (*mb_ptr2len_check)(buffer + i))
+	    for (i = 0; buffer[i] != NUL; i += (*mb_ptr2len)(buffer + i))
 	    {
 		o += (*mb_ptr2cells)(buffer + i);
 		if (this_ru_col + o > WITH_WIDTH(width))

@@ -259,7 +259,7 @@ reverse_text(s)
 	    {
 		int	mb_len;
 
-		mb_len = (*mb_ptr2len_check)(s + s_i);
+		mb_len = (*mb_ptr2len)(s + s_i);
 		rev_i -= mb_len;
 		mch_memmove(rev + rev_i, s + s_i, mb_len);
 		s_i += mb_len - 1;
@@ -372,7 +372,7 @@ ignorecase(pat)
 #ifdef FEAT_MBYTE
 	    int		l;
 
-	    if (has_mbyte && (l = (*mb_ptr2len_check)(p)) > 1)
+	    if (has_mbyte && (l = (*mb_ptr2len)(p)) > 1)
 	    {
 		if (enc_utf8 && utf_isupper(utf_ptr2char(p)))
 		{
@@ -544,7 +544,7 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use)
     /* Watch out for the "col" being MAXCOL - 2, used in a closed fold. */
     else if (has_mbyte && pos->lnum >= 1 && pos->lnum <= buf->b_ml.ml_line_count
 						     && pos->col < MAXCOL - 2)
-	extra_col = (*mb_ptr2len_check)(ml_get_buf(buf, pos->lnum, FALSE)
+	extra_col = (*mb_ptr2len)(ml_get_buf(buf, pos->lnum, FALSE)
 								  + pos->col);
 #endif
     else
@@ -647,7 +647,7 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use)
 #ifdef FEAT_MBYTE
 				    if (has_mbyte)
 					matchcol +=
-					  (*mb_ptr2len_check)(ptr + matchcol);
+					  (*mb_ptr2len)(ptr + matchcol);
 				    else
 #endif
 					++matchcol;
@@ -660,7 +660,7 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use)
 				{
 #ifdef FEAT_MBYTE
 				    if (has_mbyte)
-					matchcol += (*mb_ptr2len_check)(ptr
+					matchcol += (*mb_ptr2len)(ptr
 								  + matchcol);
 				    else
 #endif
@@ -750,7 +750,7 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use)
 #ifdef FEAT_MBYTE
 				    if (has_mbyte)
 					matchcol +=
-					  (*mb_ptr2len_check)(ptr + matchcol);
+					  (*mb_ptr2len)(ptr + matchcol);
 				    else
 #endif
 					++matchcol;
@@ -767,7 +767,7 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use)
 #ifdef FEAT_MBYTE
 				    if (has_mbyte)
 					matchcol +=
-					  (*mb_ptr2len_check)(ptr + matchcol);
+					  (*mb_ptr2len)(ptr + matchcol);
 				    else
 #endif
 					++matchcol;
@@ -1447,7 +1447,7 @@ searchc(cap, t_cmd)
 	    {
 		if (dir > 0)
 		{
-		    col += (*mb_ptr2len_check)(p + col);
+		    col += (*mb_ptr2len)(p + col);
 		    if (col >= len)
 			return FAIL;
 		}
@@ -1747,7 +1747,7 @@ findmatchlimit(oap, initc, flags, maxtravel)
 			break;
 #ifdef FEAT_MBYTE
 		    if (has_mbyte)
-			pos.col += (*mb_ptr2len_check)(linep + pos.col);
+			pos.col += (*mb_ptr2len)(linep + pos.col);
 		    else
 #endif
 			++pos.col;
@@ -1950,7 +1950,7 @@ findmatchlimit(oap, initc, flags, maxtravel)
 	    {
 #ifdef FEAT_MBYTE
 		if (has_mbyte)
-		    pos.col += (*mb_ptr2len_check)(linep + pos.col);
+		    pos.col += (*mb_ptr2len)(linep + pos.col);
 		else
 #endif
 		    ++pos.col;
@@ -4030,7 +4030,7 @@ find_next_quote(line, col, quotechar, escape)
 	    break;
 #ifdef FEAT_MBYTE
 	if (has_mbyte)
-	    col += (*mb_ptr2len_check)(line + col);
+	    col += (*mb_ptr2len)(line + col);
 	else
 #endif
 	    ++col;

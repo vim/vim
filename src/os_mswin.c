@@ -919,7 +919,7 @@ utf8_to_ucs2(char_u *instr, int inlen, short_u *outstr, int *unconvlenp)
     while (todo > 0)
     {
 	/* Only convert if we have a complete sequence. */
-	l = utf_ptr2len_check_len(p, todo);
+	l = utf_ptr2len_len(p, todo);
 	if (l > todo)
 	{
 	    /* Return length of incomplete sequence. */

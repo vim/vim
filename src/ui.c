@@ -432,7 +432,7 @@ clip_update_selection()
 	    end = curwin->w_cursor;
 #ifdef FEAT_MBYTE
 	    if (has_mbyte)
-		end.col += (*mb_ptr2len_check)(ml_get_cursor()) - 1;
+		end.col += (*mb_ptr2len)(ml_get_cursor()) - 1;
 #endif
 	}
 	else

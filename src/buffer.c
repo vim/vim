@@ -3346,7 +3346,7 @@ build_stl_str_hl(wp, out, outlen, fmt, fillchar, maxwidth, hl)
 		    while (l >= item[groupitem[groupdepth]].maxwid)
 		    {
 			l -= ptr2cells(t + n);
-			n += (*mb_ptr2len_check)(t + n);
+			n += (*mb_ptr2len)(t + n);
 		    }
 		}
 		else
@@ -3708,7 +3708,7 @@ build_stl_str_hl(wp, out, outlen, fmt, fillchar, maxwidth, hl)
 		    if (has_mbyte)
 		    {
 			l -= ptr2cells(t);
-			t += (*mb_ptr2len_check)(t);
+			t += (*mb_ptr2len)(t);
 		    }
 		    else
 #endif
@@ -3836,7 +3836,7 @@ build_stl_str_hl(wp, out, outlen, fmt, fillchar, maxwidth, hl)
 		    width += ptr2cells(s);
 		    if (width >= maxwidth)
 			break;
-		    s += (*mb_ptr2len_check)(s);
+		    s += (*mb_ptr2len)(s);
 		}
 		/* Fill up for half a double-wide character. */
 		while (++width < maxwidth)
@@ -3861,7 +3861,7 @@ build_stl_str_hl(wp, out, outlen, fmt, fillchar, maxwidth, hl)
 		while (width >= maxwidth)
 		{
 		    width -= ptr2cells(s + n);
-		    n += (*mb_ptr2len_check)(s + n);
+		    n += (*mb_ptr2len)(s + n);
 		}
 	    }
 	    else

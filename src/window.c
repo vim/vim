@@ -4611,7 +4611,7 @@ file_name_in_line(line, col, options, count, rel_fname)
 			 || ((options & FNAME_HYP) && path_is_url(ptr + len)))
 #ifdef FEAT_MBYTE
 	if (has_mbyte)
-	    len += (*mb_ptr2len_check)(ptr + len);
+	    len += (*mb_ptr2len)(ptr + len);
 	else
 #endif
 	    ++len;

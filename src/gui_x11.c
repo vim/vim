@@ -2530,7 +2530,7 @@ gui_mch_draw_string(row, col, s, len, flags)
 	    buf[wlen].byte2 = c;
 	    ++wlen;
 	    cells += utf_char2cells(c);
-	    p += utf_ptr2len_check(p);
+	    p += utf_ptr2len(p);
 	}
     }
     else if (has_mbyte)
@@ -2539,7 +2539,7 @@ gui_mch_draw_string(row, col, s, len, flags)
 	for (p = s; p < s + len; )
 	{
 	    cells += ptr2cells(p);
-	    p += (*mb_ptr2len_check)(p);
+	    p += (*mb_ptr2len)(p);
 	}
     }
 

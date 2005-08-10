@@ -420,7 +420,7 @@ shift_block(oap, amount)
 	{
 #ifdef FEAT_MBYTE
 	    if (has_mbyte)
-		bd.textstart += (*mb_ptr2len_check)(bd.textstart);
+		bd.textstart += (*mb_ptr2len)(bd.textstart);
 #endif
 	    ++bd.textstart;
 	}
@@ -3324,7 +3324,7 @@ do_put(regname, dir, count, flags)
 #ifdef FEAT_MBYTE
 	    if (has_mbyte)
 		/* move to start of next multi-byte character */
-		curwin->w_cursor.col += (*mb_ptr2len_check)(ml_get_cursor());
+		curwin->w_cursor.col += (*mb_ptr2len)(ml_get_cursor());
 	    else
 #endif
 #ifdef FEAT_VIRTUALEDIT
@@ -3490,7 +3490,7 @@ do_put(regname, dir, count, flags)
 #ifdef FEAT_MBYTE
 		if (has_mbyte)
 		{
-		    int bytelen = (*mb_ptr2len_check)(ml_get_cursor());
+		    int bytelen = (*mb_ptr2len)(ml_get_cursor());
 
 		    /* put it on the next of the multi-byte character. */
 		    col += bytelen;
@@ -3842,7 +3842,7 @@ ex_display(eap)
 		for (p = yb->y_array[j]; *p && (n -= ptr2cells(p)) >= 0; ++p)
 		{
 #ifdef FEAT_MBYTE
-		    clen = (*mb_ptr2len_check)(p);
+		    clen = (*mb_ptr2len)(p);
 #endif
 		    msg_outtrans_len(p, clen);
 #ifdef FEAT_MBYTE
@@ -3945,7 +3945,7 @@ dis_msg(p, skip_esc)
 	    && (n -= ptr2cells(p)) >= 0)
     {
 #ifdef FEAT_MBYTE
-	if (has_mbyte && (l = (*mb_ptr2len_check)(p)) > 1)
+	if (has_mbyte && (l = (*mb_ptr2len)(p)) > 1)
 	{
 	    msg_outtrans_len(p, l);
 	    p += l;
@@ -5974,7 +5974,7 @@ line_count_info(line, wc, cc, limit, eol_size)
 	    is_word = 1;
 	++chars;
 #ifdef FEAT_MBYTE
-	i += mb_ptr2len_check(line + i);
+	i += (*mb_ptr2len)(line + i);
 #else
 	++i;
 #endif

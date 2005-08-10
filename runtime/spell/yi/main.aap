@@ -1,0 +1,33 @@
+# Aap recipe for Hebrew Vim spell files.
+
+# Use a freshly compiled Vim if it exists.
+@if os.path.exists('../../../src/vim'):
+    VIM = ../../../src/vim
+@else:
+    :progsearch VIM vim
+
+SPELLDIR = ..
+FILE    = wordlist.utf8.txt
+
+all: $SPELLDIR/yi.utf-8.spl ../README_yi.txt
+
+$SPELLDIR/yi.utf-8.spl : $VIM $FILE
+    :sys $VIM -u NONE -e -c "set enc=utf-8"
+            -c "mkspell! $(SPELLDIR)/yi $FILE" -c q
+
+../README_yi.txt : README.txt
+    :copy $source $target
+
+#
+# Fetch the word list when needed.
+#
+URLDIR = http://www.cs.uky.edu/~raphael/yiddish
+:attr {fetch = $URLDIR/%file%} $FILE
+
+
+# There is no diff file, the word list is used as-is
+diff:
+    :print No diff file.
+
+
+# vim: set sts=4 sw=4 :

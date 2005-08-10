@@ -2039,7 +2039,7 @@ gui_mch_draw_string(
 		unicodepdy[clen] = cw * gui.char_width;
 	    }
 	    cells += cw;
-	    i += utfc_ptr2len_check_len(text + i, len - i);
+	    i += utfc_ptr2len_len(text + i, len - i);
 	    ++clen;
 	}
 	ExtTextOutW(s_hdc, TEXT_X(col), TEXT_Y(row),
@@ -2818,7 +2818,7 @@ gui_mch_dialog(
 	for (pend = pstart; *pend != NUL && *pend != '\n'; )
 	{
 #ifdef FEAT_MBYTE
-	    l = mb_ptr2len_check(pend);
+	    l = (*mb_ptr2len)(pend);
 #else
 	    l = 1;
 #endif
