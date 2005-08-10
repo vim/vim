@@ -152,7 +152,7 @@ static int cindent_on __ARGS((void));
 static void ins_reg __ARGS((void));
 static void ins_ctrl_g __ARGS((void));
 static void ins_ctrl_hat __ARGS((void));
-static int  ins_esc __ARGS((long *count, int cmdchar));
+static int  ins_esc __ARGS((long *count, int cmdchar, int c));
 #ifdef FEAT_RIGHTLEFT
 static void ins_ctrl_ __ARGS((void));
 #endif
@@ -787,7 +787,7 @@ doESCkey:
 	    if (ins_at_eol && gchar_cursor() == NUL)
 		o_lnum = curwin->w_cursor.lnum;
 
-	    if (ins_esc(&count, cmdchar))
+	    if (ins_esc(&count, cmdchar, c))
 	    {
 #ifdef FEAT_AUTOCMD
 		if (cmdchar != 'r' && cmdchar != 'v')
@@ -6272,9 +6272,10 @@ ins_ctrl_hat()
  * insert.
  */
     static int
-ins_esc(count, cmdchar)
+ins_esc(count, cmdchar, c)
     long	*count;
     int		cmdchar;
+    int		c;	    /* typed character */
 {
     int		temp;
     static int	disabled_redraw = FALSE;
@@ -6352,12 +6353,13 @@ ins_esc(count, cmdchar)
 
     /*
      * The cursor should end up on the last inserted character.
+     * Don't do it for CTRL-O or CTRL-L.
      */
     if ((curwin->w_cursor.col != 0
 #ifdef FEAT_VIRTUALEDIT
 		|| curwin->w_cursor.coladd > 0
 #endif
-	) && (restart_edit == NUL
+	) && ((restart_edit == NUL && c != Ctrl_L)
 		|| (gchar_cursor() == NUL
 #ifdef FEAT_VISUAL
 		    && !VIsual_active
