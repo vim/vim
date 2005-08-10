@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Aug 08
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Aug 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -31,6 +31,22 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 -------------------- Known bugs and current work -----------------------
 
 Spell checking: code for pre-compressing tree. (Olaf Seibert)
+Any problems with the reference counting?
+
+spell checking for Yiddish: (Raphael Finkel)
+- use ~/tmp/yiddish.uspell.dat
+- suggestions are not displayed with 'rightleft'
+- suggestions don't have composing characters
+- out-of-mem error when using suggestion?
+
+Spell suggestion for "WOrd" should be "Word" instead of "word".
+
+Spell checking: default value for 'spellcapcheck' in spell file?
+
+When 'insertmode' is set, CTRL-L no longer moves the cursor left.  What
+compatibility problems does this cause?
+
+Using "@:" has two problems (Tim Chase, 2005 Aug 9)
 
 Mac unicode patch (Da Woon Jung):
 - selecting proportional font breaks display
@@ -2022,9 +2038,9 @@ GUI:
 7   X11: Support cursorColor resource and "-cr" argument.
 8   X11 (and others): CTRL-; is not different from ';'.  Set the modifier mask
     to include CTRL for keys where CTRL produces the same ASCII code.
-7   Add some code to handle proportional fonts?  Need to draw each character
-    separately (like xterm).  Also for when a double-width font is not exactly
-    double-width. (Maeda)
+7   Add some code to handle proportional fonts on more systems?  Need to draw
+    each character separately (like xterm).  Also for when a double-width font
+    is not exactly double-width. (Maeda)
 8   Should take font from xterm where gvim was started (if no other default).
 8   Selecting font names in X11 is difficult, make a script or something to
     select one.
@@ -2173,12 +2189,12 @@ Insert mode completion/expansion:
 9   ^X^L completion doesn't repeat correctly.  It uses the first match with
     the last added line, instead of continuing where the last match ended.
     (Webb)
-8   The code has become too complex.  Redesign it, or at least add proper
-    comments.
 8   Add option to set different behavior for Insert mode completion:
     - ignore/match case
     - different characters than 'iskeyword'
 8   Add a command to undo the completion, go back to the original text.
+7   Completion of an abbreviation: Can leave letters out, like what Instant
+    text does: www.textware.com
 8   Use the class information in the tags file to do context-sensitive
     completion.  After "foo." complete all member functions/variables of
     "foo".  Need to search backwards for the class definition of foo.
