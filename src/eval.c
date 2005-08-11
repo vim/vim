@@ -13793,7 +13793,7 @@ f_spellsuggest(argvars, rettv)
 	else
 	    maxcount = 25;
 
-	spell_suggest_list(&ga, str, maxcount);
+	spell_suggest_list(&ga, str, maxcount, FALSE);
 
 	for (i = 0; i < ga.ga_len; ++i)
 	{
