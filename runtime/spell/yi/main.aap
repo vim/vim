@@ -6,14 +6,15 @@
 @else:
     :progsearch VIM vim
 
-SPELLDIR = ..
-FILE    = wordlist.utf8.txt
+SPELLDIR  = ..
+FILES     = yi.dic yi.aff
+WORDFILE  = wordlist.utf8.txt
 
 all: $SPELLDIR/yi.utf-8.spl ../README_yi.txt
 
-$SPELLDIR/yi.utf-8.spl : $VIM $FILE
+$SPELLDIR/yi.utf-8.spl : $VIM $FILES
     :sys $VIM -u NONE -e -c "set enc=utf-8"
-            -c "mkspell! $(SPELLDIR)/yi $FILE" -c q
+            -c "mkspell! $(SPELLDIR)/yi yi" -c q
 
 ../README_yi.txt : README.txt
     :copy $source $target
@@ -22,12 +23,25 @@ $SPELLDIR/yi.utf-8.spl : $VIM $FILE
 # Fetch the word list when needed.
 #
 URLDIR = http://www.cs.uky.edu/~raphael/yiddish
-:attr {fetch = $URLDIR/%file%} $FILE
+:attr {fetch = $URLDIR/%file%} $WORDFILE
 
+# We use the word list as a .dic file, so that we can use an affix file to
+# define a few extra things.
+$FILES: {buildcheck=}
+        :assertpkg patch
+        :fetch $WORDFILE
+        :copy $WORDFILE yi.dic
+        :touch {force} yi.aff
+        @if os.path.exists('yi.diff'):
+            :sys patch < yi.diff
 
-# There is no diff file, the word list is used as-is
 diff:
-    :print No diff file.
+    :assertpkg diff
+    :delete yi.diff
+    # Using a context of two lines to work around a bug in FreeBSD patch.
+    :sys {force} diff -a -C 2 $WORDFILE yi.dic >yi.diff
+    :sys {force} diff -a -N -C 1 /dev/null yi.aff >>yi.diff
+
 
 
 # vim: set sts=4 sw=4 :
