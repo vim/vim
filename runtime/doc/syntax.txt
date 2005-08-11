@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.0aa.  Last change: 2005 Jul 29
+*syntax.txt*	For Vim version 7.0aa.  Last change: 2005 Aug 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -399,7 +399,7 @@ Go back to the default to use 'number' by deleting the variable: >
    :unlet html_number_lines
 
 Closed folds are put in the HTML as they are displayed.  If you don't want
-this, use the "zR" command before invoking 2html, or use: >
+this, use the |zR| command before invoking 2html, or use: >
    :let html_ignore_folding = 1
 
 By default, HTML optimized for old browsers is generated.  If you prefer using
@@ -426,16 +426,13 @@ To go back to the automatic mechanism, delete the g:html_use_encoding
 variable: >
    :unlet html_use_encoding
 <
-Closed folds are kept as they are displayed.  If you don't want closed folds
-in the HTML use the |zR| command before converting.
-
 For diff mode a sequence of more than 3 filler lines is displayed as three
 lines with the middle line mentioning the total number of inserted lines.  If
 you prefer to see all the inserted lines use: >
     :let html_whole_filler = 1
 And to go back to displaying up to three lines again: >
     :unlet html_whole_filler
-
+<
 					    *convert-to-XML* *convert-to-XHTML*
 An alternative is to have the script generate XHTML (XML compliant HTML).  To
 do this set the "use_xhtml" variable: >
@@ -2355,18 +2352,30 @@ number is that redrawing can become slow.
 
 TEX						*tex.vim* *tex-syntax*
 
+*tex-folding*
+Want Syntax Folding? ~
+
+As of version 28 of <syntax/tex.vim>, syntax-based folding of parts, chapters,
+sections, subsections, etc are supported.  Put >
+	let g:tex_fold_enabled=1
+in your <.vimrc>, and :set fdm=syntax.  I suggest doing the latter via a
+modeline at the end of your LaTeX file: >
+	% vim: fdm=syntax
+<
+*tex-runon*
 Run-on Comments/Math? ~
 
-The tex highlighting supports TeX, LaTeX, and some AmsTeX.  The
-highlighting supports three primary zones: normal, texZone, and texMathZone.
-Although a considerable effort has been made to have these zones terminate
-properly, zones delineated by $..$ and $$..$$ cannot be synchronized as
-there's no difference between start and end patterns.  Consequently, a
+The <syntax/tex.vim> highlighting supports TeX, LaTeX, and some AmsTeX.  The
+highlighting supports three primary zones/regions: normal, texZone, and
+texMathZone.  Although considerable effort has been made to have these zones
+terminate properly, zones delineated by $..$ and $$..$$ cannot be synchronized
+as there's no difference between start and end patterns.  Consequently, a
 special "TeX comment" has been provided >
 	%stopzone
 which will forcibly terminate the highlighting of either a texZone or a
 texMathZone.
 
+*tex-slow*
 Slow Syntax Highlighting? ~
 
 If you have a slow computer, you may wish to reduce the values for >
@@ -2376,6 +2385,7 @@ If you have a slow computer, you may wish to reduce the values for >
 increase them.	This primarily affects synchronizing (i.e. just what group,
 if any, is the text at the top of the screen supposed to be in?).
 
+*tex-error*
 Excessive Error Highlighting? ~
 
 The <tex.vim> supports lexical error checking of various sorts.  Thus,
@@ -2383,28 +2393,24 @@ although the error checking is ofttimes very useful, it can indicate
 errors where none actually are.  If this proves to be a problem for you,
 you may put in your <.vimrc> the following statement: >
 	let tex_no_error=1
-and all error checking by <tex.vim> will be suppressed.
+and all error checking by <syntax/tex.vim> will be suppressed.
 
+*tex-math*
 Need a new Math Group? ~
 
 If you want to include a new math group in your LaTeX, the following
 code shows you an example as to how you might do so: >
+	call TexNewMathZone(sfx,mathzone,starform)
+You'll want to provide the new math group with a unique suffix
+(currently, A-L and V-Z are taken by <syntax/tex.vim> itself).
+As an example, consider how eqnarray is set up by <syntax/tex.vim>: >
+	call TexNewMathZone("D","eqnarray",1)
+You'll need to change "mathzone" to the name of your new math group,
+and then to the call to it in .vim/after/syntax/tex.vim.
+The "starform" variable, if true, implies that your new math group
+has a starred form (ie. eqnarray*).
 
-    syn cluster texMathZones add=texMathZoneLOCAL
-    syn region texMathZoneLOCAL start="\\begin\s*{\s*LOCALMATH\s*}"
-       \ end="\\end\s*{\s*LOCALMATH\s*}" keepend
-       \ contains=@texMathZoneGroup
-    if !exists("tex_no_math")
-     syn sync match texSyncMathZoneLOCAL grouphere texMathZoneLOCAL
-       \ "\\begin\s*{\s*LOCALMATH\*\s*}"
-     syn sync match texSyncMathZoneLOCAL groupthere NONE
-       \ "\\end\s*{\s*LOCALMATH\*\s*}"
-    endif
-    hi link texMathZoneLOCAL texMath
-<
-You'll need to change LOCALMATH to the name of your new math group,
-and then to put it into .vim/after/syntax/tex.vim.
-
+*tex-style*
 Starting a New Style? ~
 
 One may use "\makeatletter" in *.tex files, thereby making the use of "@" in

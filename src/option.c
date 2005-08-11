@@ -2035,7 +2035,7 @@ static struct vimoption
 			    (char_u *)NULL, PV_NONE,
 #endif
 			    {(char_u *)FALSE, (char_u *)0L}},
-    {"spellcapcheck", "spc", P_STRING|P_ALLOCED|P_VI_DEF|P_SECURE|P_RBUF,
+    {"spellcapcheck", "spc", P_STRING|P_ALLOCED|P_VI_DEF|P_RBUF,
 #ifdef FEAT_SYN_HL
 			    (char_u *)&p_spc, PV_SPC,
 			    {(char_u *)"[.?!]\\_[\\])'\"	 ]\\+", (char_u *)0L}

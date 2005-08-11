@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Aug 10
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Aug 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -32,9 +32,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 Spell checking: default value for 'spellcapcheck' in spell file?
 For Hebrew and Yiddish it should be empty.
-
-When 'insertmode' is set, CTRL-L no longer moves the cursor left.  What
-compatibility problems does this cause?
 
 Using "@:" has two problems (Tim Chase, 2005 Aug 9)
 

@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Aug 05
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Aug 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -3983,7 +3983,7 @@ soundfold({word})
 
 							*spellbadword()*
 spellbadword()	Return the badly spelled word under or after the cursor.
-		The cursor is advanced to the start of the bad word.
+		The cursor is moved to the start of the bad word.
 		When no bad word is found in the cursor line an empty String
 		is returned and the cursor doesn't move.
 

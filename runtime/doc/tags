@@ -4453,6 +4453,7 @@ compl-function	insert.txt	/*compl-function*
 compl-generic	insert.txt	/*compl-generic*
 compl-keyword	insert.txt	/*compl-keyword*
 compl-occult	insert.txt	/*compl-occult*
+compl-spelling	insert.txt	/*compl-spelling*
 compl-tag	insert.txt	/*compl-tag*
 compl-vim	insert.txt	/*compl-vim*
 compl-whole-line	insert.txt	/*compl-whole-line*
@@ -5317,7 +5318,7 @@ i_CTRL-H	insert.txt	/*i_CTRL-H*
 i_CTRL-I	insert.txt	/*i_CTRL-I*
 i_CTRL-J	insert.txt	/*i_CTRL-J*
 i_CTRL-K	insert.txt	/*i_CTRL-K*
-i_CTRL-L	options.txt	/*i_CTRL-L*
+i_CTRL-L	insert.txt	/*i_CTRL-L*
 i_CTRL-M	insert.txt	/*i_CTRL-M*
 i_CTRL-N	insert.txt	/*i_CTRL-N*
 i_CTRL-O	insert.txt	/*i_CTRL-O*
@@ -5342,17 +5343,20 @@ i_CTRL-X_CTRL-L	insert.txt	/*i_CTRL-X_CTRL-L*
 i_CTRL-X_CTRL-N	insert.txt	/*i_CTRL-X_CTRL-N*
 i_CTRL-X_CTRL-O	insert.txt	/*i_CTRL-X_CTRL-O*
 i_CTRL-X_CTRL-P	insert.txt	/*i_CTRL-X_CTRL-P*
+i_CTRL-X_CTRL-S	insert.txt	/*i_CTRL-X_CTRL-S*
 i_CTRL-X_CTRL-T	insert.txt	/*i_CTRL-X_CTRL-T*
 i_CTRL-X_CTRL-U	insert.txt	/*i_CTRL-X_CTRL-U*
 i_CTRL-X_CTRL-V	insert.txt	/*i_CTRL-X_CTRL-V*
 i_CTRL-X_CTRL-Y	insert.txt	/*i_CTRL-X_CTRL-Y*
 i_CTRL-X_CTRL-]	insert.txt	/*i_CTRL-X_CTRL-]*
 i_CTRL-X_index	index.txt	/*i_CTRL-X_index*
+i_CTRL-X_s	insert.txt	/*i_CTRL-X_s*
 i_CTRL-Y	insert.txt	/*i_CTRL-Y*
 i_CTRL-Z	options.txt	/*i_CTRL-Z*
 i_CTRL-[	insert.txt	/*i_CTRL-[*
 i_CTRL-\_CTRL-G	intro.txt	/*i_CTRL-\\_CTRL-G*
 i_CTRL-\_CTRL-N	intro.txt	/*i_CTRL-\\_CTRL-N*
+i_CTRL-\_CTRL-O	insert.txt	/*i_CTRL-\\_CTRL-O*
 i_CTRL-]	insert.txt	/*i_CTRL-]*
 i_CTRL-^	insert.txt	/*i_CTRL-^*
 i_CTRL-_	insert.txt	/*i_CTRL-_*
@@ -5764,6 +5768,7 @@ netrw-ftp	pi_netrw.txt	/*netrw-ftp*
 netrw-h	pi_netrw.txt	/*netrw-h*
 netrw-handler	pi_netrw.txt	/*netrw-handler*
 netrw-help	pi_netrw.txt	/*netrw-help*
+netrw-hexplore	pi_netrw.txt	/*netrw-hexplore*
 netrw-history	pi_netrw.txt	/*netrw-history*
 netrw-horiz	pi_netrw.txt	/*netrw-horiz*
 netrw-i	pi_netrw.txt	/*netrw-i*
@@ -5773,6 +5778,7 @@ netrw-listhack	pi_netrw.txt	/*netrw-listhack*
 netrw-maps	pi_netrw.txt	/*netrw-maps*
 netrw-move	pi_netrw.txt	/*netrw-move*
 netrw-netrc	pi_netrw.txt	/*netrw-netrc*
+netrw-nexplore	pi_netrw.txt	/*netrw-nexplore*
 netrw-nread	pi_netrw.txt	/*netrw-nread*
 netrw-nwrite	pi_netrw.txt	/*netrw-nwrite*
 netrw-o	pi_netrw.txt	/*netrw-o*
@@ -5780,6 +5786,7 @@ netrw-options	pi_netrw.txt	/*netrw-options*
 netrw-p	pi_netrw.txt	/*netrw-p*
 netrw-passwd	pi_netrw.txt	/*netrw-passwd*
 netrw-path	pi_netrw.txt	/*netrw-path*
+netrw-pexplore	pi_netrw.txt	/*netrw-pexplore*
 netrw-preview	pi_netrw.txt	/*netrw-preview*
 netrw-problems	pi_netrw.txt	/*netrw-problems*
 netrw-protocol	pi_netrw.txt	/*netrw-protocol*
@@ -5790,8 +5797,10 @@ netrw-ref	pi_netrw.txt	/*netrw-ref*
 netrw-rename	pi_netrw.txt	/*netrw-rename*
 netrw-reverse	pi_netrw.txt	/*netrw-reverse*
 netrw-s	pi_netrw.txt	/*netrw-s*
+netrw-sexplore	pi_netrw.txt	/*netrw-sexplore*
 netrw-sort	pi_netrw.txt	/*netrw-sort*
 netrw-sortsequence	pi_netrw.txt	/*netrw-sortsequence*
+netrw-starstar	pi_netrw.txt	/*netrw-starstar*
 netrw-transparent	pi_netrw.txt	/*netrw-transparent*
 netrw-u	pi_netrw.txt	/*netrw-u*
 netrw-uidpass	pi_netrw.txt	/*netrw-uidpass*
@@ -5800,6 +5809,7 @@ netrw-urls	pi_netrw.txt	/*netrw-urls*
 netrw-v	pi_netrw.txt	/*netrw-v*
 netrw-var	pi_netrw.txt	/*netrw-var*
 netrw-variables	pi_netrw.txt	/*netrw-variables*
+netrw-vexplore	pi_netrw.txt	/*netrw-vexplore*
 netrw-write	pi_netrw.txt	/*netrw-write*
 netrw-x	pi_netrw.txt	/*netrw-x*
 netrw-xfer	pi_netrw.txt	/*netrw-xfer*

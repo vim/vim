@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Aug 09
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Aug 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -330,6 +330,11 @@ CTRL-W <Enter>		In the quickfix window: opens a new window to show the
 
 |at| and |it| text objects select a block of text between HTML or XML tags.
 
+
+Insert mode commands: ~
+
+CTRL-\ CTRL-O		Execute a Normal mode command.  Like CTRL-O but
+			without moving the cursor.
 
 Options: ~
 
@@ -1273,8 +1278,5 @@ When deleting non-existing text while 'virtualedit' is set the '[ and '] marks
 were not set.
 
 Win32: Could not use "**/" in 'path', it had to be "**\".
-
-When 'insertmode' is set CTRL-L would move the cursor.  That wasn't supposed
-to happen, CTRL-O doesn't do it either.
 
  vim:tw=78:ts=8:ft=help:norl:

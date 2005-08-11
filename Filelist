@@ -688,6 +688,7 @@ LANG_GEN = \
 		runtime/spell/README.txt \
 		runtime/spell/??/*.diff \
 		runtime/spell/??/main.aap \
+		runtime/spell/yi/README.txt \
 		runtime/spell/main.aap \
 
 # generic language files, binary

@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0aa.  Last change: 2005 Aug 01
+*insert.txt*    For Vim version 7.0aa.  Last change: 2005 Aug 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -354,6 +354,8 @@ CTRL-G CTRL-J	cursor one line down, insert start column    *i_CTRL-G_CTRL-J*
 <MouseUp>	scroll three lines up			     *i_<MouseUp>*
 <S-MouseUp>	scroll a full page up			     *i_<S-MouseUp>*
 CTRL-O		execute one command, return to Insert mode   *i_CTRL-O*
+CTRL-\ CTRL-O   like CTRL-O but don't move the cursor        *i_CTRL-\_CTRL-O*
+CTRL-L		when 'insertmode' is set: go to Normal mode  *i_CTRL-L*
 CTRL-G u	break undo sequence, start new change	     *i_CTRL-G_u*
 -----------------------------------------------------------------------
 
@@ -363,7 +365,8 @@ option.
 The CTRL-O command sometimes has a side effect: If the cursor was beyond the
 end of the line, it will be put on the last character in the line.  In
 mappings it's often better to use <Esc> (first put an "x" in the text, <Esc>
-will then always put the cursor on it).
+will then always put the cursor on it).  Or use CTRL-\ CTRL-O, but then
+beware of the cursor possibly being beyond the end of the line.
 
 The shifted cursor keys are not available on all terminals.
 
@@ -567,7 +570,8 @@ Completion can be done for:
 9. Vim command-line					|i_CTRL-X_CTRL-V|
 10. User defined completion				|i_CTRL-X_CTRL-U|
 11. Occult completion					|i_CTRL-X_CTRL-O|
-12. keywords in 'complete'				|i_CTRL-N|
+12. Spelling suggestions				|i_CTRL-X_s|
+13. keywords in 'complete'				|i_CTRL-N|
 
 All these (except 2) are done in CTRL-X mode.  This is a sub-mode of Insert
 and Replace modes.  You enter CTRL-X mode by typing CTRL-X and one of the
@@ -890,6 +894,25 @@ CTRL-X CTRL-O		Guess what kind of item is in front of the cursor and
 			one.
 
 	CTRL-P		Use the previous match.  This match replaces the
+			previous one.
+
+
+Spelling suggestions					*compl-spelling*
+
+The word in front of the cursor is located and correctly spelled words are
+suggested to replace it.  The word doesn't actually have to be badly spelled.
+NOTE: CTRL-S suspends display in many Unix terminals.  Use 's' instead.  Type
+CTRL-Q to resume displaying.
+
+						*i_CTRL-X_CTRL-S* *i_CTRL-X_s*
+CTRL-X CTRL-S   or
+CTRL-X s		Locate the word in front of the cursor and find the
+			first spell suggestion for it.
+	CTRL-S	or
+	CTRL-N		Use the next suggestion.  This replaces the previous
+			one.  Note that you can't use 's' here.
+
+	CTRL-P		Use the previous suggestion.  This replaces the
 			previous one.
 
 

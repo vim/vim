@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Aug 05
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Aug 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3732,9 +3732,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	- Use CTRL-O to execute one Normal mode command |i_CTRL-O|).  When
 	  this is a mapping, it is executed as if 'insertmode' was off.
 	  Normal mode remains active until the mapping is finished.
-								*i_CTRL-L*
 	- Use CTRL-L to execute a number of Normal mode commands, then use
-	  <Esc> to get back to Insert mode.
+	  <Esc> to get back to Insert mode.  Note that CTRL-L moves the cursor
+	  left, like <Esc> does when 'insertmode' isn't set.  |i_CTRL-L|
 
 	These items change when 'insertmode' is set:
 	- when starting to edit of a file, Vim goes to Insert mode.

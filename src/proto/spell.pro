@@ -13,7 +13,9 @@ void init_spell_chartab __ARGS((void));
 int spell_check_sps __ARGS((void));
 void spell_suggest __ARGS((void));
 void ex_spellrepall __ARGS((exarg_T *eap));
-void spell_suggest_list __ARGS((garray_T *gap, char_u *word, int maxcount));
+void spell_suggest_list __ARGS((garray_T *gap, char_u *word, int maxcount, int need_cap));
 char_u *eval_soundfold __ARGS((char_u *word));
 void ex_spelldump __ARGS((exarg_T *eap));
+int spell_word_start __ARGS((int startcol));
+int expand_spelling __ARGS((linenr_T lnum, int col, char_u *pat, char_u ***matchp));
 /* vim: set ft=c : */

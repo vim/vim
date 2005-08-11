@@ -32,14 +32,15 @@
 #define CTRL_X_CMDLINE		11
 #define CTRL_X_FUNCTION		12
 #define CTRL_X_OCCULT		13
-#define CTRL_X_LOCAL_MSG	14	/* only used in "ctrl_x_msgs" */
+#define CTRL_X_SPELL		14
+#define CTRL_X_LOCAL_MSG	15	/* only used in "ctrl_x_msgs" */
 
 #define CTRL_X_MSG(i) ctrl_x_msgs[(i) & ~CTRL_X_WANT_IDENT]
 
 static char *ctrl_x_msgs[] =
 {
     N_(" Keyword completion (^N^P)"), /* ctrl_x_mode == 0, ^P/^N compl. */
-    N_(" ^X mode (^E^Y^L^]^F^I^K^D^U^V^N^P)"),
+    N_(" ^X mode (^]^D^E^F^I^K^L^N^O^P^S^U^V^Y)"),
     NULL,
     N_(" Whole line completion (^L^N^P)"),
     N_(" File name completion (^F^N^P)"),
@@ -52,6 +53,7 @@ static char *ctrl_x_msgs[] =
     N_(" Command-line completion (^V^N^P)"),
     N_(" User defined completion (^U^N^P)"),
     N_(" Occult completion (^O^N^P)"),
+    N_(" Spelling suggestion (^S^N^P)"),
     N_(" Keyword Local completion (^N^P)"),
 };
 
@@ -152,7 +154,7 @@ static int cindent_on __ARGS((void));
 static void ins_reg __ARGS((void));
 static void ins_ctrl_g __ARGS((void));
 static void ins_ctrl_hat __ARGS((void));
-static int  ins_esc __ARGS((long *count, int cmdchar, int c));
+static int  ins_esc __ARGS((long *count, int cmdchar, int nomove));
 #ifdef FEAT_RIGHTLEFT
 static void ins_ctrl_ __ARGS((void));
 #endif
@@ -266,6 +268,7 @@ edit(cmdchar, startln, count)
     int		inserted_space = FALSE;     /* just inserted a space */
     int		replaceState = REPLACE;
     int		did_restart_edit = restart_edit;
+    int		nomove = FALSE;		    /* don't move cursor on return */
 
     /* sleep before redrawing, needed for "CTRL-O :" that results in an
      * error message */
@@ -658,8 +661,9 @@ edit(cmdchar, startln, count)
 	    ins_compl_prep(c);
 #endif
 
-	/* CTRL-\ CTRL-N goes to Normal mode, CTRL-\ CTRL-G goes to mode
-	 * selected with 'insertmode'.  */
+	/* CTRL-\ CTRL-N goes to Normal mode,
+	 * CTRL-\ CTRL-G goes to mode selected with 'insertmode',
+	 * CTRL-\ CTRL-O is like CTRL-O but without moving the cursor.  */
 	if (c == Ctrl_BSL)
 	{
 	    /* may need to redraw when no more chars available now */
@@ -669,8 +673,9 @@ edit(cmdchar, startln, count)
 	    c = safe_vgetc();
 	    --no_mapping;
 	    --allow_keys;
-	    if (c != Ctrl_N && c != Ctrl_G)	/* it's something else */
+	    if (c != Ctrl_N && c != Ctrl_G && c != Ctrl_O)
 	    {
+		/* it's something else */
 		vungetc(c);
 		c = Ctrl_BSL;
 	    }
@@ -678,6 +683,12 @@ edit(cmdchar, startln, count)
 		continue;
 	    else
 	    {
+		if (c == Ctrl_O)
+		{
+		    ins_ctrl_o();
+		    ins_at_eol = FALSE;	/* cursor keeps its column */
+		    nomove = TRUE;
+		}
 		count = 0;
 		goto doESCkey;
 	    }
@@ -787,7 +798,7 @@ doESCkey:
 	    if (ins_at_eol && gchar_cursor() == NUL)
 		o_lnum = curwin->w_cursor.lnum;
 
-	    if (ins_esc(&count, cmdchar, c))
+	    if (ins_esc(&count, cmdchar, nomove))
 	    {
 #ifdef FEAT_AUTOCMD
 		if (cmdchar != 'r' && cmdchar != 'v')
@@ -1115,6 +1126,12 @@ doESCkey:
 
 	case Ctrl_F:	/* File name completion after ^X */
 	    if (ctrl_x_mode != CTRL_X_FILES)
+		goto normalchar;
+	    goto docomplete;
+
+	case 's':	/* Spelling completion after ^X */
+	case Ctrl_S:
+	    if (ctrl_x_mode != CTRL_X_SPELL)
 		goto normalchar;
 	    goto docomplete;
 #endif
@@ -1799,7 +1816,8 @@ vim_is_ctrl_x_key(c)
 		    || c == Ctrl_L || c == Ctrl_F || c == Ctrl_RSB
 		    || c == Ctrl_I || c == Ctrl_D || c == Ctrl_P
 		    || c == Ctrl_N || c == Ctrl_T || c == Ctrl_V
-		    || c == Ctrl_Q || c == Ctrl_U || c == Ctrl_O);
+		    || c == Ctrl_Q || c == Ctrl_U || c == Ctrl_O
+		    || c == Ctrl_S || c == 's');
 	case CTRL_X_SCROLL:
 	    return (c == Ctrl_Y || c == Ctrl_E);
 	case CTRL_X_WHOLE_LINE:
@@ -1827,6 +1845,8 @@ vim_is_ctrl_x_key(c)
 #endif
 	case CTRL_X_OCCULT:
 	    return (c == Ctrl_O || c == Ctrl_P || c == Ctrl_N);
+	case CTRL_X_SPELL:
+	    return (c == Ctrl_S || c == Ctrl_P || c == Ctrl_N);
     }
     EMSG(_(e_internal));
     return FALSE;
@@ -2342,6 +2362,10 @@ ins_compl_prep(c)
 	    case Ctrl_O:
 		ctrl_x_mode = CTRL_X_OCCULT;
 		break;
+	    case 's':
+	    case Ctrl_S:
+		ctrl_x_mode = CTRL_X_SPELL;
+		break;
 	    case Ctrl_RSB:
 		ctrl_x_mode = CTRL_X_TAGS;
 		break;
@@ -2853,6 +2877,15 @@ ins_compl_get_exp(ini, dir)
 				 first_match_pos.col, compl_pattern, &matches);
 	    if (num_matches > 0)
 		ins_compl_add_matches(num_matches, matches, dir);
+	    break;
+
+	case CTRL_X_SPELL:
+#ifdef FEAT_SYN_HL
+	    num_matches = expand_spelling(first_match_pos.lnum,
+				 first_match_pos.col, compl_pattern, &matches);
+	    if (num_matches > 0)
+		ins_compl_add_matches(num_matches, matches, dir);
+#endif
 	    break;
 
 	default:	/* normal ^P/^N and ^X^L */
@@ -3494,6 +3527,18 @@ ins_complete(c)
 	    compl_length = (int)curs_col - startcol;
 	    compl_pattern = vim_strnsave(line + compl_col, compl_length);
 	    if (compl_pattern == NULL)
+		return FAIL;
+	}
+	else if (ctrl_x_mode == CTRL_X_SPELL)
+	{
+#ifdef FEAT_SYN_HL
+	    compl_col = spell_word_start(startcol);
+	    if (compl_col == startcol)
+		return FAIL;
+	    compl_length = (int)curs_col - compl_col;
+	    compl_pattern = vim_strnsave(line + compl_col, compl_length);
+	    if (compl_pattern == NULL)
+#endif
 		return FAIL;
 	}
 	else
@@ -6272,10 +6317,10 @@ ins_ctrl_hat()
  * insert.
  */
     static int
-ins_esc(count, cmdchar, c)
+ins_esc(count, cmdchar, nomove)
     long	*count;
     int		cmdchar;
-    int		c;	    /* typed character */
+    int		nomove;	    /* don't move cursor */
 {
     int		temp;
     static int	disabled_redraw = FALSE;
@@ -6353,18 +6398,20 @@ ins_esc(count, cmdchar, c)
 
     /*
      * The cursor should end up on the last inserted character.
-     * Don't do it for CTRL-O or CTRL-L.
+     * Don't do it for CTRL-O, unless past the end of the line.
      */
-    if ((curwin->w_cursor.col != 0
+    if (!nomove
+	    && (curwin->w_cursor.col != 0
 #ifdef FEAT_VIRTUALEDIT
 		|| curwin->w_cursor.coladd > 0
 #endif
-	) && ((restart_edit == NUL && c != Ctrl_L)
-		|| (gchar_cursor() == NUL
+	       )
+	    && (restart_edit == NUL
+		   || (gchar_cursor() == NUL
 #ifdef FEAT_VISUAL
-		    && !VIsual_active
+		       && !VIsual_active
 #endif
-		    ))
+		      ))
 #ifdef FEAT_RIGHTLEFT
 	    && !revins_on
 #endif

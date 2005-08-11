@@ -1,9 +1,9 @@
 " Vim syntax file
 " Language:	TeX
-" Maintainer:	Dr. Charles E. Campbell, Jr. <NdrOchipS@PcampbellAfamily.Mbiz>
-" Last Change:	Mar 02, 2005
-" Version:	27
-" URL:		http://www.erols.com/astronaut/vim/index.html#vimlinks_syntax
+" Maintainer:	Dr. Charles E. Campbell, Jr. <NdrchipO@ScampbellPfamily.AbizM>
+" Last Change:	Aug 11, 2005
+" Version:	28
+" URL:		http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 "
 " Notes: {{{1
 "
@@ -80,7 +80,6 @@ if g:tex_fold_enabled && &fdm == "manual"
  set fdm=syntax
 endif
 
-
 " (La)TeX keywords: only use the letters a-zA-Z {{{1
 " but _ is the only one that causes problems.
 if version < 600
@@ -102,6 +101,7 @@ if !exists("g:tex_no_error")
  syn cluster texCmdGroup	add=texMathError
 endif
 syn cluster texEnvGroup		contains=texMatcher,texMathDelim,texSpecialChar,texStatement
+syn cluster texFoldGroup	contains=texAccent,texBadMath,texComment,texDefCmd,texDelimiter,texDocType,texInput,texInputFile,texLength,texLigature,texMatcher,texMathZoneV,texMathZoneW,texMathZoneX,texMathZoneY,texMathZoneZ,texNewCmd,texNewEnv,texOnlyMath,texOption,texParen,texRefZone,texSection,texSectionMarker,texSectionZone,texSpaceCode,texSpecialChar,texStatement,texString,texTypeSize,texTypeStyle,texZone,@texMathZones,texTitle,texAbstract
 syn cluster texMatchGroup	contains=texAccent,texBadMath,texComment,texDefCmd,texDelimiter,texDocType,texInput,texLength,texLigature,texMatcher,texNewCmd,texNewEnv,texOnlyMath,texParen,texRefZone,texSection,texSpecialChar,texStatement,texString,texTypeSize,texTypeStyle,texZone,texInputFile,texOption
 syn cluster texRefGroup		contains=texMatcher,texComment,texDelimiter
 if !exists("tex_no_math")
@@ -246,12 +246,29 @@ syn match texSpaceCodeChar    "`\\\=.\(\^.\)\==\(\d\|\"\x\{1,6}\|`.\)"	contained
 
 " Sections, subsections, etc: {{{1
 if g:tex_fold_enabled && has("folding")
- syn region texSectionZone	matchgroup=texSection start="\\\(sub\)*\(section\|author\|part\|chapter\|paragraph\)\*\=\>"	end="\ze\\\(sub\)*\(section\|author\|part\|chapter\|paragraph\)\*\=\>" end="%\s*stopzone\>"	contains=TOP fold
- syn region texSectionZone	matchgroup=texSection start="\\begin\s*{\s*abstract\s*}"	end="\\end\s*{\s*abstract\s*}"  contains=TOP fold
+ syn cluster texDocGroup		contains=texPartZone,@texPartGroup
+ syn cluster texPartGroup		contains=texChapterZone,texSectionZone,texParaZone
+ syn cluster texChapterGroup		contains=texSectionZone,texParaZone
+ syn cluster texSectionGroup		contains=texSubSectionZone,texParaZone
+ syn cluster texSubSectionGroup		contains=texSubSubSectionZone,texParaZone
+ syn cluster texSubSubSectionGroup	contains=texParaZone
+ syn cluster texParaGroup		contains=texSubParaZone
+
+ syn region texDocZone			matchgroup=texSection start='\\begin\s*{\s*document\s*}' end='\\end\s*{\s*document\s*}'	fold keepend contains=@texFoldGroup,@texDocGroup
+ syn region texPartZone			matchgroup=texSection start='\\part\>'		end='\n\ze\s*\\part\>'		fold keepend contains=@texFoldGroup,@texPartGroup
+ syn region texChapterZone		matchgroup=texSection start='\\chapter\>'	end='\n\ze\s*\\chapter\>'	fold keepend contains=@texFoldGroup,@texChapterGroup
+ syn region texSectionZone		matchgroup=texSection start='\\section\>'	end='\n\ze\s*\\section\>'	fold keepend contains=@texFoldGroup,@texSectionGroup
+ syn region texSubSectionZone		matchgroup=texSection start='\\subsection\>'	end='\n\ze\s*\\subsection\>'	fold keepend contains=@texFoldGroup,@texSubSectionGroup
+ syn region texSubSubSectionZone	matchgroup=texSection start='\\subsubsection\>'	end='\n\ze\s*\\subsubsection\>'	fold keepend contains=@texFoldGroup,@texSubSubSectionGroup
+ syn region texParaZone			matchgroup=texSection start='\\paragraph\>'	end='\n\ze\s*\\paragraph\>'	fold keepend contains=@texFoldGroup,@texParaGroup
+ syn region texSubParaZone		matchgroup=texSection start='\\subparagraph\>'	end='\n\ze\s*\\subparagraph\>'	fold keepend contains=@texFoldGroup
+ syn region texTitle			matchgroup=texSection start='\\\%(author\|title\)\>\s*{' end='}'		fold contains=@texFoldGroup
+ syn region texAbstract			matchgroup=texSection start='\\begin\s*{\s*abstract\s*}' end='\\end\s*{\s*abstract\s*}'	fold contains=@texFoldGroup
 else
- syn match texSection		"\\\(sub\)*section\*\=\>"
- syn match texSection		"\\\(title\|author\|part\|chapter\|paragraph\|subparagraph\)\>"
- syn match texSection		"\\begin\s*{\s*abstract\s*}\|\\end\s*{\s*abstract\s*}"
+ syn match texSection			"\\\(sub\)*section\*\=\>"
+ syn match texSection			"\\\(part\|chapter\|paragraph\|subparagraph\)\>"
+ syn region texTitle			matchgroup=texSection start='\\\%(author\|title\)\>\s*\ze{' end='}'		contains=@texFoldGroup
+ syn match texSection			"\\begin\s*{\s*abstract\s*}\|\\end\s*{\s*abstract\s*}"
 endif
 
 " Bad Math (mismatched): {{{1
@@ -263,7 +280,7 @@ endif
 
 " Math Zones: {{{1
 if !exists("tex_no_math")
- " TexNewMathZone: creates a mathzone with the given suffix and mathzone name. {{{2
+ " TexNewMathZone: function creates a mathzone with the given suffix and mathzone name. {{{2
  "                 Starred forms are created if starform is true.  Starred
  "                 forms have syntax group and synchronization groups with a
  "                 "S" appended.  Handles: cluster, syntax, sync, and HiLink.

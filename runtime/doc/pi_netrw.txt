@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 7.0.  Last change: Aug 08, 2005
+*pi_netrw.txt*  For Vim version 7.0.  Last change: Aug 09, 2005
 
 
 		VIM REFERENCE MANUAL    by Charles E. Campbell, Jr.
@@ -580,12 +580,12 @@ MAPS   								*netrw-maps*
      x................Customizing Browsing.......................|netrw-x|
 
     COMMANDS						*netrw-explore-cmds*
-     :Explore[!]  [dir].Explore directory of current file........|netrw-explore|
-     :Sexplore[!] [dir].Split & Explore directory of current file|netrw-explore|
-     :Hexplore[!] [dir].Horizontal Split & Explore...............|netrw-explore|
-     :Vexplore[!] [dir].Vertical Split & Explore.................|netrw-explore|
-     :Pexplore[!] [dir].Vertical Split & Explore.................|netrw-explore|
-     :Nexplore[!] [dir].Vertical Split & Explore.................|netrw-explore|
+     :Explore[!]  [dir] Explore directory of current file........|netrw-explore|
+     :Sexplore[!] [dir] Split & Explore directory ...............|netrw-explore|
+     :Hexplore[!] [dir] Horizontal Split & Explore...............|netrw-explore|
+     :Vexplore[!] [dir] Vertical Split & Explore.................|netrw-explore|
+     :Pexplore[!] [dir] Vertical Split & Explore.................|netrw-explore|
+     :Nexplore[!] [dir] Vertical Split & Explore.................|netrw-explore|
 
 QUICK REFERENCE COMMANDS TABLE     			*netrw-browse-cmds*
 >
@@ -745,28 +745,32 @@ ssh interaction, etc, see |netrw-list-hack|.
 				*netrw-hexplore* *netrw-sexplore*
 DIRECTORY EXPLORING COMMANDS	*netrw-nexplore* *netrw-vexplore*
 
-     :Explore[!]   [dir]... Explore directory of current file
-     :Sexplore[!]  [dir]... Split & Explore directory of current file
-     :Hexplore[!]  [dir]... Horizontal Split & Explore
-     :Vexplore[!]  [dir]... Vertical Split & Explore
-     :Nexplore............. used with **/patterns; go to next matching file
-     :Pexplore............. used with **/patterns; go to previous matching file
+     :Explore[!]   [dir]... Explore directory of current file       *:Explore*
+     :Sexplore[!]  [dir]... Split&Explore directory of current file *:Sexplore*
+     :Hexplore[!]  [dir]... Horizontal Split & Explore              *:Hexplore*
+     :Vexplore[!]  [dir]... Vertical   Split & Explore              *:Vexplore*
 
-The Explore command will open the local-directory browser on the current
-file's directory (or on directory [dir] if specified).  The window will be
-split only if the file has been modified, otherwise the browsing window will
-take over that window.  Normally the splitting is taken horizontally; the
-optional ! will use vertical splitting.
+     Used with :Explore **/pattern :
+     :Nexplore............. go to next matching file                *:Nexplore*
+     :Pexplore............. go to previous matching file            *:Pexplore*
 
-Sexplore will always split the window before invoking the local-directory
-browser.  As with Explore, the splitting is normally done horizontally, but
-with the optional ! the splitting will be done vertically.
+:Explore  will open the local-directory browser on the current file's
+          directory (or on directory [dir] if specified).  The window will be
+	  split only if the file has been modified, otherwise the browsing
+	  window will take over that window.  Normally the splitting is taken
+	  horizontally.
+:Explore! is like :Explore, but will use vertical splitting.
+:Sexplore will always split the window before invoking the local-directory
+          browser.  As with Explore, the splitting is normally done
+	  horizontally.
+:Sexplore! [dir] is like :Sexplore, but the splitting will be done vertically.
+:Hexplore  [dir] does an :Explore with |:belowright| horizontal splitting.
+:Hexplore! [dir] does an :Explore with |:aboveleft|  horizontal splitting.
+:Vexplore  [dir] does an :Explore with |:leftabove|  vertical splitting.
+:Vexplore! [dir] does an :Explore with |:rightbelow| vertical splitting.
 
-Hexplore does an Explore with |belowright| horizontal splitting; the
-optional ! does the Explore with |aboveleft| horizontal splitting.
-
-Vexplore does an Explore with |leftabove| vertical splitting; the
-optional "!" does an Explore with |topleft| vertical splitting.
+By default, these commands use the current file's directory.  However, one
+may explicitly provide a directory (path) to use.
 
 (Following needs v7.0 or later)			*netrw-starstar*
 When Explore, Sexplore, Hexplore, or Vexplore are used like
@@ -941,7 +945,7 @@ the "p" key when the cursor is atop the desired filename to be previewed.
 SELECTING SORTING STYLE				*netrw-s* *netrw-sort*
 
 One may select the sorting style by name, time, or (file) size.  The
-"s" map allows one to circulate among the three choices; the directory
+"s" map allows one to circulate amongst the three choices; the directory
 listing will automatically be refreshed to reflect the selected style.
 
 
@@ -952,7 +956,7 @@ sequence (g:netrw_sort_sequence).  The sorting sequence typically
 prioritizes the name-listing by suffix, although any pattern will do.
 Patterns are delimited by commas.  The default sorting sequence is:
 >
-	/$,*,\.bak$,\.o$,\.h$,\.info$,\.swp$,\.obj$
+	[\/]$,*,\.bak$,\.o$,\.h$,\.info$,\.swp$,\.obj$
 <
 The lone * is where all filenames not covered by one of the other
 patterns will end up.  One may change the sorting sequence by modifying
@@ -1072,7 +1076,7 @@ the associated security issues.
 
 	(This section is likely to grow as I get feedback)
 	(also see |netrw-debug|)
-
+								*netrw-p1*
 	P1. I use windows 95, and my ftp dumps four blank lines at the
 	    end of every read.
 
@@ -1081,8 +1085,7 @@ the associated security issues.
 
 			let g:netrw_win95ftp= 1
 
-
-
+								*netrw-p2*
 	P2. I use windows, and my network browsing with ftp doesn't sort by
 	    time or size
 
@@ -1100,6 +1103,7 @@ the associated security issues.
 
 			let g:netrw_cygwin= 1
 
+								*netrw-p3*
 	P3. I tried rcp://user@host/ (or protocol other than ftp) and netrw
 	    used ssh!  That wasn't what I asked for...
 
@@ -1108,6 +1112,7 @@ the associated security issues.
 		When it comes time to do download a file (not just a directory
 		listing), netrw will use the given protocol to do so.
 
+								*netrw-p4*
 	P4. I would like long listings to be the default.
 
 			let g:netrw_longlist=1
@@ -1115,6 +1120,7 @@ the associated security issues.
 		Check out |netrw-browse-var| for more customizations that
 		you can set.
 
+								*netrw-p5*
 	P5. My times come up oddly in local browsing
 
 		Does your system's strftime() accept the "%c" to yield dates
@@ -1123,6 +1129,7 @@ the associated security issues.
 		your <.vimrc>:
 			let g:netrw_timefmt= "%X"  (where X is the option)
 
+								*netrw-p6*
 	P6. I want my current directory to track my browsing.
 	    How do I do that?
 
@@ -1133,9 +1140,11 @@ the associated security issues.
 9. Debugging						*netrw-debug*
 
 The <netrw.vim> script is typically available as:
-
+>
 	/usr/local/share/vim/vim6x/plugin/netrw.vim
-
+< -or- >
+	/usr/local/share/vim/vim7x/plugin/netrw.vim
+<
 which is loaded automatically at startup (assuming :set nocp).
 
 	1. Get the <Decho.vim> script, available as:
@@ -1179,6 +1188,12 @@ which is loaded automatically at startup (assuming :set nocp).
 ==============================================================================
 10. History						*netrw-history*
 
+	v60: * when using the i map to switch between long and short listings,
+	       netrw will now keep cursor on same line
+	     * "Match # of #" now uses status line
+	     * :Explore **/*.c  will now work from a non-netrw-browser window
+	     * :Explore **/patterns can now be run in separate browser windows
+	     * active banner (hit <cr> will cause various things to happen)
 	v59: * bugfix -- another keepalt work-around installed (for vim6.3)
 	     * "Match # of #" for Explore **/pattern matches
 	v58: * Explore and relatives can now handle **/somefilepattern (v7)
