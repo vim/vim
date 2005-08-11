@@ -478,6 +478,7 @@ typedef struct suggest_S
 #define SCORE_DELDUP	64	/* delete a duplicated character */
 #define SCORE_INS	96	/* insert a character */
 #define SCORE_INSDUP	66	/* insert a duplicate character */
+#define SCORE_INSCOMP	30	/* insert a composing character */
 #define SCORE_NONWORD	103	/* change non-word to word char */
 
 #define SCORE_FILE	30	/* suggestion from a file */
@@ -646,6 +647,7 @@ static int set_spell_charflags __ARGS((char_u *flags, int cnt, char_u *upp));
 static int set_spell_chartab __ARGS((char_u *fol, char_u *low, char_u *upp));
 static void write_spell_chartab __ARGS((FILE *fd));
 static int spell_casefold __ARGS((char_u *p, int len, char_u *buf, int buflen));
+static int check_need_cap __ARGS((linenr_T lnum, colnr_T col));
 static void spell_find_suggest __ARGS((char_u *badptr, suginfo_T *su, int maxcount, int banbadword, int need_cap));
 #ifdef FEAT_EVAL
 static void spell_suggest_expr __ARGS((suginfo_T *su, char_u *expr));
@@ -2959,6 +2961,7 @@ badword_captype(word, end)
     char_u	*end;
 {
     int		flags = captype(word, end);
+    int		c;
     int		l, u;
     int		first;
     char_u	*p;
@@ -2970,7 +2973,8 @@ badword_captype(word, end)
 	first = FALSE;
 	for (p = word; p < end; mb_ptr_adv(p))
 	{
-	    if (SPELL_ISUPPER(PTR2CHAR(p)))
+	    c = PTR2CHAR(p);
+	    if (SPELL_ISUPPER(c))
 	    {
 		++u;
 		if (p == word)
@@ -6568,9 +6572,6 @@ spell_suggest()
     suggest_T	*stp;
     int		mouse_used;
     int		need_cap;
-    regmatch_T	regmatch;
-    int		endcol;
-    char_u	*line_copy = NULL;
 
     /* Find the start of the badly spelled word. */
     if (spell_move_to(FORWARD, TRUE, TRUE) == FAIL
@@ -6600,60 +6601,11 @@ spell_suggest()
     }
 
     /* Get the word and its length. */
-    line = ml_get_curline();
 
     /* Figure out if the word should be capitalised. */
-    need_cap = FALSE;
-    if (curbuf->b_cap_prog != NULL)
-    {
-	endcol = 0;
-	if ((int)(skipwhite(line) - line) == (int)curwin->w_cursor.col)
-	{
-	    /* At start of line, check if previous line is empty or sentence
-	     * ends there. */
-	    if (curwin->w_cursor.lnum == 1)
-		need_cap = TRUE;
-	    else
-	    {
-		line = ml_get(curwin->w_cursor.lnum - 1);
-		if (*skipwhite(line) == NUL)
-		    need_cap = TRUE;
-		else
-		{
-		    /* Append a space in place of the line break. */
-		    line_copy = concat_str(line, (char_u *)" ");
-		    line = line_copy;
-		    endcol = STRLEN(line);
-		}
-	    }
-	}
-	else
-	    endcol = curwin->w_cursor.col;
+    need_cap = check_need_cap(curwin->w_cursor.lnum, curwin->w_cursor.col);
 
-	if (endcol > 0)
-	{
-	    /* Check if sentence ends before the bad word. */
-	    regmatch.regprog = curbuf->b_cap_prog;
-	    regmatch.rm_ic = FALSE;
-	    p = line + endcol;
-	    for (;;)
-	    {
-		mb_ptr_back(line, p);
-		if (p == line || spell_iswordp_nmw(p))
-		    break;
-		if (vim_regexec(&regmatch, p, 0)
-					 && regmatch.endp[0] == line + endcol)
-		{
-		    need_cap = TRUE;
-		    break;
-		}
-	    }
-	}
-
-	/* get the line again, we may have been using the previous one */
-	line = ml_get_curline();
-	vim_free(line_copy);
-    }
+    line = ml_get_curline();
 
     /* Get the list of suggestions */
     spell_find_suggest(line + curwin->w_cursor.col, &sug, (int)Rows - 2,
@@ -6787,6 +6739,76 @@ spell_suggest()
 }
 
 /*
+ * Check if the word at line "lnum" column "col" is required to start with a
+ * capital.  This uses 'spellcapcheck' of the current buffer.
+ */
+    static int
+check_need_cap(lnum, col)
+    linenr_T	lnum;
+    colnr_T	col;
+{
+    int		need_cap = FALSE;
+    char_u	*line;
+    char_u	*line_copy = NULL;
+    char_u	*p;
+    colnr_T	endcol;
+    regmatch_T	regmatch;
+
+    if (curbuf->b_cap_prog == NULL)
+	return FALSE;
+
+    line = ml_get_curline();
+    endcol = 0;
+    if ((int)(skipwhite(line) - line) >= (int)col)
+    {
+	/* At start of line, check if previous line is empty or sentence
+	 * ends there. */
+	if (lnum == 1)
+	    need_cap = TRUE;
+	else
+	{
+	    line = ml_get(lnum - 1);
+	    if (*skipwhite(line) == NUL)
+		need_cap = TRUE;
+	    else
+	    {
+		/* Append a space in place of the line break. */
+		line_copy = concat_str(line, (char_u *)" ");
+		line = line_copy;
+		endcol = STRLEN(line);
+	    }
+	}
+    }
+    else
+	endcol = col;
+
+    if (endcol > 0)
+    {
+	/* Check if sentence ends before the bad word. */
+	regmatch.regprog = curbuf->b_cap_prog;
+	regmatch.rm_ic = FALSE;
+	p = line + endcol;
+	for (;;)
+	{
+	    mb_ptr_back(line, p);
+	    if (p == line || spell_iswordp_nmw(p))
+		break;
+	    if (vim_regexec(&regmatch, p, 0)
+					 && regmatch.endp[0] == line + endcol)
+	    {
+		need_cap = TRUE;
+		break;
+	    }
+	}
+    }
+
+    vim_free(line_copy);
+
+    return need_cap;
+}
+
+
+/*
  * ":spellrepall"
  */
 /*ARGSUSED*/
@@ -6854,17 +6876,18 @@ ex_spellrepall(eap)
  * a list of allocated strings.
  */
     void
-spell_suggest_list(gap, word, maxcount)
+spell_suggest_list(gap, word, maxcount, need_cap)
     garray_T	*gap;
     char_u	*word;
     int		maxcount;	/* maximum nr of suggestions */
+    int		need_cap;	/* 'spellcapcheck' matched */
 {
     suginfo_T	sug;
     int		i;
     suggest_T	*stp;
     char_u	*wcopy;
 
-    spell_find_suggest(word, &sug, maxcount, FALSE, FALSE);
+    spell_find_suggest(word, &sug, maxcount, FALSE, need_cap);
 
     /* Make room in "gap". */
     ga_init2(gap, sizeof(char_u *), sug.su_ga.ga_len + 1);
@@ -7732,16 +7755,26 @@ suggest_try_change(su)
 				else if (sp->ts_isdiff == DIFF_INSERT
 					&& sp->ts_twordlen > sp->ts_tcharlen)
 				{
-				    /* If the previous character was the same,
-				     * thus doubling a character, give a bonus
-				     * to the score. */
 				    p = tword + sp->ts_twordlen
 							    - sp->ts_tcharlen;
 				    c = mb_ptr2char(p);
-				    mb_ptr_back(tword, p);
-				    if (c == mb_ptr2char(p))
+				    if (enc_utf8 && utf_iscomposing(c))
+				    {
+					/* Inserting a composing char doesn't
+					 * count that much. */
 					sp->ts_score -= SCORE_INS
+							      - SCORE_INSCOMP;
+				    }
+				    else
+				    {
+					/* If the previous character was the
+					 * same, thus doubling a character,
+					 * give a bonus to the score. */
+					mb_ptr_back(tword, p);
+					if (c == mb_ptr2char(p))
+					    sp->ts_score -= SCORE_INS
 							       - SCORE_INSDUP;
+				    }
 				}
 
 				/* Starting a new char, reset the length. */
@@ -10546,5 +10579,74 @@ apply_prefixes(slang, word, round, flags, startlnum)
 
     return lnum;
 }
+
+#if defined(FEAT_INS_EXPAND) || defined(PROTO)
+static int spell_expand_need_cap;
+
+/*
+ * Find start of the word in front of the cursor.  We don't check if it is
+ * badly spelled, with completion we can only change the word in front of the
+ * cursor.
+ * Used for Insert mode completion CTRL-X ?.
+ * Returns the column number of the word.
+ */
+    int
+spell_word_start(startcol)
+    int		startcol;
+{
+    char_u	*line;
+    char_u	*p;
+    int		col = 0;
+
+    if (no_spell_checking())
+	return startcol;
+
+    /* Find a word character before "startcol". */
+    line = ml_get_curline();
+    for (p = line + startcol; p > line; )
+    {
+	mb_ptr_back(line, p);
+	if (spell_iswordp_nmw(p))
+	    break;
+    }
+
+    /* Go back to start of the word. */
+    while (p > line)
+    {
+	col = p - line;
+	mb_ptr_back(line, p);
+	if (!spell_iswordp(p, curbuf))
+	    break;
+	col = 0;
+    }
+
+    /* Need to check for 'spellcapcheck' now, the word is removed before
+     * expand_spelling() is called.  Therefore the ugly global variable. */
+    spell_expand_need_cap = check_need_cap(curwin->w_cursor.lnum, col);
+
+    return col;
+}
+
+/*
+ * Get list of spelling suggestions.
+ * Used for Insert mode completion CTRL-X ?.
+ * Returns the number of matches.  The matches are in "matchp[]", array of
+ * allocated strings.
+ */
+/*ARGSUSED*/
+    int
+expand_spelling(lnum, col, pat, matchp)
+    linenr_T	lnum;
+    int		col;
+    char_u	*pat;
+    char_u	***matchp;
+{
+    garray_T	ga;
+
+    spell_suggest_list(&ga, pat, 100, spell_expand_need_cap);
+    *matchp = ga.ga_data;
+    return ga.ga_len;
+}
+#endif
 
 #endif  /* FEAT_SYN_HL */
