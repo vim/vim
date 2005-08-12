@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 7.0.  Last change: Aug 09, 2005
+*pi_netrw.txt*  For Vim version 7.0.  Last change: Aug 11, 2005
 
 
 		VIM REFERENCE MANUAL    by Charles E. Campbell, Jr.
@@ -80,19 +80,19 @@ in your <.vimrc> file: >
 	  want it ignored, then set this variable as shown.  Its mere
 	  existence is enough to cause <.netrc> to be ignored.
 
-	Controlling External Applications
+	Controlling External Applications		*netrw-externapp*
 
 	 Protocol  Variable	     Default Value
 	 --------  ----------------  -------------
-	    dav:    g:netrw_dav_cmd  = "cadaver"
-	  fetch:  g:netrw_fetch_cmd  = "fetch -o"
-	    ftp:    g:netrw_ftp_cmd  = "ftp"
-           http:   g:netrw_http_cmd  = "fetch -o"    if fetch is available
-	   http:   g:netrw_http_cmd  = "wget -q -O"  If wget  is available
-	    rcp:    g:netrw_rcp_cmd  = "rcp"
-	  rsync:  g:netrw_rsync_cmd  = "rsync -a"
-	    scp:    g:netrw_scp_cmd  = "scp -q"
-	   sftp:   g:netrw_sftp_cmd  = "sftp"
+	    dav:    *g:netrw_dav_cmd*  = "cadaver"
+	  fetch:  *g:netrw_fetch_cmd*  = "fetch -o"
+	    ftp:    *g:netrw_ftp_cmd*  = "ftp"
+           http:   *g:netrw_http_cmd*  = "fetch -o"    if fetch is available
+	   http:    g:netrw_http_cmd   = "wget -q -O"  If wget  is available
+	    rcp:    *g:netrw_rcp_cmd*  = "rcp"
+	  rsync:  *g:netrw_rsync_cmd*  = "rsync -a"
+	    scp:    *g:netrw_scp_cmd*  = "scp -q"
+	   sftp:   *g:netrw_sftp_cmd*  = "sftp"
 
     READING					*netrw-read* *netrw-nread*
 	:Nread ?					give help
@@ -136,31 +136,41 @@ in your <.vimrc> file: >
 	:call NetUserPass("uid","password")	-- sets global uid and password
 
     VARIABLES						*netrw-variables*
-	b:netrw_lastfile last file Network-read/written retained on
+	*b:netrw_lastfile*
+	                  last file Network-read/written retained on
 			  a per-buffer basis		(supports plain :Nw )
-	s:netrw_line	  during Nw/NetWrite, holds current line   number
-	s:netrw_col	  during Nw/NetWrite, holds current column number
+	*s:netrw_line*
+	                  during :Nw/NetWrite, holds current line number
+	*s:netrw_col*
+	                  during :Nw/NetWrite, holds current column number
 			  s:netrw_line and s:netrw_col are used to
 			  restore the cursor position on writes
-	g:netrw_ftp	  if it doesn't exist, use default ftp
+	*g:netrw_ftp*
+	                     if it doesn't exist, use default ftp
 			  =0 use default ftp		       (uid password)
 			  =1 use alternate ftp method	  (user uid password)
-	g:netrw_ftpmode   ="binary"				    (default)
+	*g:netrw_ftpmode*
+	                  ="binary"				    (default)
 			  ="ascii"
-	g:netrw_uid	  (ftp) user-id,      retained on a per-session basis
-	g:netrw_passwd	  (ftp) password,     retained on a per-session basis
-	g:netrw_win95ftp  =1 if using Win95, will remove four trailing blank
+	*g:netrw_uid*
+	                     (ftp) user-id,      retained on a per-session basis
+	*g:netrw_passwd*
+	                     (ftp) password,     retained on a per-session basis
+	*g:netrw_win95ftp*
+	                  =1 if using Win95, will remove four trailing blank
 	                     lines that o/s's ftp "provides" on transfers
 			  =0 force normal ftp behavior (no trailing line
 			     removal)
-	g:netrw_cygwin	  =1 assume scp under windows is from cygwin
+	*g:netrw_cygwin*
+	                  =1 assume scp under windows is from cygwin
 	                     Also permits network browsing to use
 			     ls with time and size sorting
 							 (default if windows)
 			  =0 assume Windows' scp accepts windows-style paths
 			     Network browsing uses dir instead of ls
 			  This option is ignored if you're using unix
-	g:netrw_use_nt_rcp=0 don't use the rcp of WinNT, Win2000 and WinXP
+	*g:netrw_use_nt_rcp*
+	                  =0 don't use the rcp of WinNT, Win2000 and WinXP
 			  =1 use WinNT's rcp in binary mode         (default)
 
     PATHS							*netrw-path*
@@ -620,17 +630,17 @@ NETRW BROWSER VARIABLES					*netrw-browse-var*
 	---				-----------
 	Var				Explanation
 	---				-----------
-<	g:netrw_alto			change from above splitting to
+<	*g:netrw_alto*			change from above splitting to
 					below splitting by setting this
 					variable (see |netrw-o|)
 					 default: =0
 
-	g:netrw_altv			change from left splitting to
+	*g:netrw_altv*			change from left splitting to
 					right splitting by setting this
 					variable (see |netrw-v|)
 					 default: =0
 
-	g:netrw_ftp_browse_reject	ftp can produce a number of errors
+	*g:netrw_ftp_browse_reject*	ftp can produce a number of errors
 					and warnings that can show up as
 					"directories" and "files" in the
 					listing.  This pattern is used to
@@ -644,7 +654,7 @@ NETRW BROWSER VARIABLES					*netrw-browse-var*
 					 : connect to address [0-9a-fA-F:]*
 					 : No route to host$'
 
-	g:netrw_ssh_browse_reject	ssh can sometimes produce unwanted
+	*g:netrw_ssh_browse_reject*	ssh can sometimes produce unwanted
 					lines/messages/banners/and whatnot
 					that one doesn't want masquerading
 					as "directories" and "files".  Use
@@ -652,71 +662,71 @@ NETRW BROWSER VARIABLES					*netrw-browse-var*
 					messages.  By default its value is:
  					 '^total\s\+\d\+$'
 
-	g:netrw_keepdir			=1 (default) keep current directory
+	*g:netrw_keepdir*		=1 (default) keep current directory
 					immune from the browsing directory.
 					=0 keep the current directory the
 					same as the browsing directory.
 					The browsing directory is contained in
 					b:netrw_curdir
 
-	g:netrw_list_cmd		command for listing remote directories
+	*g:netrw_list_cmd*		command for listing remote directories
 					 default: (if ssh is executable)
 					          "ssh HOSTNAME ls -FLa"
 
-	g:netrw_longlist		if =1, then long listing will be default
+	*g:netrw_longlist*		if =1, then long listing will be default
 
-	g:netrw_ftp_list_cmd		options for passing along to ftp for
+	*g:netrw_ftp_list_cmd*		options for passing along to ftp for
 					directory listing.  Defaults:
 					 unix or g:netrw_cygwin set: : "ls -lF"
 					 otherwise                     "dir"
 
-	g:netrw_list_hide		comma separated list of patterns for
+	*g:netrw_list_hide*		comma separated list of patterns for
 					hiding files
 					 default: ""
 
-	g:netrw_local_mkdir		command for making a local directory
+	*g:netrw_local_mkdir*		command for making a local directory
 					 default: "ssh HOSTNAME mkdir"
 
-	g:netrw_local_rmdir		remove directory command (rmdir)
+	*g:netrw_local_rmdir*		remove directory command (rmdir)
 					 default: "rmdir"
 
-	g:netrw_maxfilenamelen		=32 by default, selected so as to make
+	*g:netrw_maxfilenamelen*	=32 by default, selected so as to make
 					long listings fit on 80 column displays.
 					If your screen is wider, and you have
 					file/directory names longer than 32 bytes,
 					you may set this option to keep listings
 					columnar.
 
-	g:netrw_mkdir_cmd		command for making a remote directory
+	*g:netrw_mkdir_cmd*		command for making a remote directory
 					 default: "ssh HOSTNAME mkdir"
 
-	g:netrw_rm_cmd			command for removing files
+	*g:netrw_rm_cmd*		command for removing files
 					 default: "ssh HOSTNAME rm"
 
-	g:netrw_rmdir_cmd		command for removing directories
+	*g:netrw_rmdir_cmd*		command for removing directories
 					 default: "ssh HOSTNAME rmdir"
 
-	g:netrw_rmf_cmd			command for removing softlinks
+	*g:netrw_rmf_cmd*		 command for removing softlinks
 					 default: "ssh HOSTNAME rm -f"
 
-	g:netrw_hide			if true, the hiding list is used
+	*g:netrw_hide*			if true, the hiding list is used
 					 default: =0
 
-	g:netrw_sort_by			sort by "name", "time", or "size"
+	*g:netrw_sort_by*		sort by "name", "time", or "size"
 					 default: "name"
 
-	g:netrw_sort_direction		sorting direction: "normal" or "reverse"
+	*g:netrw_sort_direction*	sorting direction: "normal" or "reverse"
 					 default: "normal"
 
-	g:netrw_sort_sequence		when sorting by name, first sort by the
+	*g:netrw_sort_sequence*		when sorting by name, first sort by the
 					comma-separated pattern sequence
 					 default: '[\/]$,*,\.bak$,\.o$,\.h$,
 					           \.info$,\.swp$,\.obj$'
 
-	g:netrw_timefmt			specify format string to strftime() (%c)
+	*g:netrw_timefmt*		specify format string to strftime() (%c)
 					 default: "%c"
 
-	g:netrw_winsize			specify initial size of new o/v windows
+	*g:netrw_winsize*		specify initial size of new o/v windows
 					 default: ""
 
 INTRODUCTION TO DIRECTORY BROWSING			*netrw-browse-intro*
@@ -815,7 +825,7 @@ GOING UP						*netrw--*
 To go up a directory, press - or his the <cr> when atop the ../ directory
 entry in the listing.
 
-Netrw will modify the command in *g:netrw_list_cmd* to perform the directory
+Netrw will modify the command in |g:netrw_list_cmd| to perform the directory
 listing operation.  By default the command is:
 
 	ssh HOSTNAME ls -FLa
@@ -862,20 +872,17 @@ succeeding.  Netrw will ask for confirmation before doing the removal(s).
 You may select a range of lines with the "V" command (visual selection),
 and then pressing "D".
 
-							*g:netrw_rm_cmd*
 The g:netrw_rm_cmd, g:netrw_rmf_cmd, and g:netrw_rmdir_cmd variables are used
 to control the attempts to remove files and directories.  The g:netrw_rm_cmd
 is used with files, and its default value is:
 
 	g:netrw_rm_cmd: ssh HOSTNAME rm
 
-							*g:netrw_rmdir_cmd*
 The g:netrw_rmdir_cmd variable is used to support the removal of directories.
 Its default value is:
 
 	g:netrw_rmdir_cmd: ssh HOSTNAME rmdir
 
-							*g:netrw_rmf_cmd*
 If removing a directory fails with g:netrw_rmdir_cmd, netrw then will attempt
 to remove it again using the g:netrw_rmf_cmd variable.  Its default value is:
 
@@ -898,7 +905,7 @@ One may rename a block of files and directories by selecting them with
 the V (|linewise-visual|).
 
 
-HIDING FILES OR DIRECTORIES		*g:netrw-a* *g:netrw_list_hide*
+HIDING FILES OR DIRECTORIES				*g:netrw-a*
 
 Netrw's browsing facility allows one to use the hiding list in one of
 three ways: ignore it, hide files which match, and show only those files
@@ -1188,6 +1195,11 @@ which is loaded automatically at startup (assuming :set nocp).
 ==============================================================================
 10. History						*netrw-history*
 
+	v61: * document upgrade -- netrw variable-based settings all should
+	       have tags.  Supports NetrwSettings command.
+	     * several important variables are window-oriented.  Netrw has
+	       to transfer these across a window split.  See s:BufWinVars()
+	       and s:UseBufWinVars().
 	v60: * when using the i map to switch between long and short listings,
 	       netrw will now keep cursor on same line
 	     * "Match # of #" now uses status line

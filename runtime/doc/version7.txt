@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Aug 11
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Aug 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -761,6 +761,9 @@ could not contain ":".  Now include the first ":" where the rest of the
 pattern matches.  In the example a ":" not followed by a line number is
 included in the file name. (suggested by Emanuele Giaquinta)
 
+For command-line completion the matches for various types of arguments are now
+sorted: user commands, variables, syntax names, etc.
+
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*
 
@@ -848,7 +851,8 @@ When converting a string with a hex or octal number the leading '-' was
 ignored.  ":echo '-05' + 0" resulted in 5 instead of -5.
 
 Using "@:" to repeat a command line didn't work when it contains control
-characters.
+characters.  Also remove "'<,'>" when in Visual mode to avoid that it appears
+twice.
 
 When using file completion for a user command, it would not expand environment
 variables like for a regular command with a file argument.

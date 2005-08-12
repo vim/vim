@@ -1160,7 +1160,14 @@ do_execreg(regname, colon, addcr)
 	p = vim_strsave_escaped_ext(last_cmdline,
 		(char_u *)"\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037", Ctrl_V, FALSE);
 	if (p != NULL)
-	    retval = put_in_typebuf(p, TRUE);
+	{
+	    /* When in Visual mode "'<,'>" will be prepended to the command.
+	     * Remove it when it's already there. */
+	    if (VIsual_active && STRNCMP(p, "'<,'>", 5) == 0)
+		retval = put_in_typebuf(p + 5, TRUE);
+	    else
+		retval = put_in_typebuf(p, TRUE);
+	}
 	vim_free(p);
     }
 #endif

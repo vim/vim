@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Aug 11
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Aug 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -155,7 +155,8 @@ and sorted.  See |'spellsuggest'|.
 The 'spellcapcheck' option is used to check the first word of a sentence
 starts with a capital.  This doesn't work for the first word in the file.
 When there is a line break right after a sentence the highlighting of the next
-line may be postponed.  Use |CTRL-L| when needed.
+line may be postponed.  Use |CTRL-L| when needed.  Also see |set-spc-auto| for
+how it can be set automatically when 'spelllang' is set.
 
 ==============================================================================
 2. Remarks on spell checking				*spell-remarks*
@@ -318,6 +319,21 @@ find these functions useful:
     spellbadword()	find badly spelled word at the cursor
     spellsuggest()	get list of spelling suggestions
     soundfold()		get the sound-a-like version of a word
+
+
+SETTING 'spellcapcheck' AUTOMATICALLY			*set-spc-auto*
+
+After the 'spelllang' option has been set successfully, Vim will source the
+files "spell/LANG.vim" in 'runtimepath'.  "LANG" is the value of 'spelllang'
+up to the first comma, dot or underscore.  This can be used to set options
+specifically for the language, especially 'spellcapcheck'.
+
+The distribution includes a few of these files.  Use this command to see what
+they do: >
+	:next $VIMRUNTIME/spell/*.vim
+
+Note that the default scripts don't set 'spellcapcheck' if it was changed from
+the default value.  This assumes the user prefers another value then.
 
 ==============================================================================
 3. Generating a spell file				*spell-mkspell*

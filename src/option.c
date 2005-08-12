@@ -5793,25 +5793,6 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
     }
 #endif
 
-#ifdef FEAT_AUTOCMD
-# ifdef FEAT_SYN_HL
-    /* When 'syntax' is set, load the syntax of that name */
-    else if (varp == &(curbuf->b_p_syn))
-    {
-	apply_autocmds(EVENT_SYNTAX, curbuf->b_p_syn,
-					     curbuf->b_fname, TRUE, curbuf);
-    }
-# endif
-
-    /* When 'filetype' is set, trigger the FileType autocommands of that name */
-    else if (varp == &(curbuf->b_p_ft))
-    {
-	did_filetype = TRUE;
-	apply_autocmds(EVENT_FILETYPE, curbuf->b_p_ft,
-					     curbuf->b_fname, TRUE, curbuf);
-    }
-#endif
-
 #ifdef FEAT_QUICKFIX
     /* When 'bufhidden' is set, check for valid value. */
     else if (gvarp == &p_bh)
@@ -6159,6 +6140,46 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 	/* May set global value for local option. */
 	else if (!(opt_flags & OPT_LOCAL) && opt_flags != OPT_GLOBAL)
 	    set_string_option_global(opt_idx, varp);
+
+#ifdef FEAT_AUTOCMD
+	/*
+	 * Trigger the autocommand only after setting the flags.
+	 */
+# ifdef FEAT_SYN_HL
+	/* When 'syntax' is set, load the syntax of that name */
+	if (varp == &(curbuf->b_p_syn))
+	{
+	    apply_autocmds(EVENT_SYNTAX, curbuf->b_p_syn,
+					       curbuf->b_fname, TRUE, curbuf);
+	}
+# endif
+	else if (varp == &(curbuf->b_p_ft))
+	{
+	    /* 'filetype' is set, trigger the FileType autocommand */
+	    did_filetype = TRUE;
+	    apply_autocmds(EVENT_FILETYPE, curbuf->b_p_ft,
+					       curbuf->b_fname, TRUE, curbuf);
+	}
+#endif
+#ifdef FEAT_SYN_HL
+	if (varp == &(curbuf->b_p_spl))
+	{
+	    char_u	fname[200];
+
+	    /*
+	     * Source the spell/LANG.vim in 'runtimepath'.
+	     * They could set 'spellcapcheck' depending on the language.
+	     * Use the first name in 'spelllang' up to '_region' or
+	     * '.encoding'.
+	     */
+	    for (p = curbuf->b_p_spl; *p != NUL; ++p)
+		if (vim_strchr((char_u *)"_.,", *p) != NULL)
+		    break;
+	    vim_snprintf((char *)fname, 200, "spell/%.*s.vim",
+				 (int)(p - curbuf->b_p_spl), curbuf->b_p_spl);
+	    source_runtime(fname, TRUE);
+	}
+#endif
     }
 
 #ifdef FEAT_MOUSE

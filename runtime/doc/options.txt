@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Aug 11
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Aug 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5701,6 +5701,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Only used when 'spell' is set.
 	Be careful with special characters, see |option-backslash| about
 	including spaces and backslashes.
+	To set this option automatically depending on the language, see
+	|set-spc-auto|.
 
 						*'spellfile'* *'spf'*
 'spellfile' 'spf'	string	(default empty)
@@ -5756,6 +5758,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 	idea to set 'spelllang' after setting 'encoding' to avoid loading the
 	files twice.
 	How the related spell files are found is explained here: |spell-load|.
+
+	After this option has been set successfully, Vim will source the files
+	"spell/LANG.vim" in 'runtimepath'.  "LANG" is the value of 'spelllang'
+	up to the first comma, dot or underscore.  See |set-spc-auto|.
+
 
 						*'spellsuggest'* *'sps'*
 'spellsuggest' 'sps'	string	(default "best")

@@ -2391,7 +2391,7 @@ ex_compiler(eap)
 	    do_unlet((char_u *)"b:current_compiler", TRUE);
 
 	    sprintf((char *)buf, "compiler/%s.vim", eap->arg);
-	    if (cmd_runtime(buf, TRUE) == FAIL)
+	    if (source_runtime(buf, TRUE) == FAIL)
 		EMSG2(_("E666: compiler not supported: %s"), eap->arg);
 	    vim_free(buf);
 
@@ -2426,7 +2426,7 @@ ex_compiler(eap)
 ex_runtime(eap)
     exarg_T	*eap;
 {
-    cmd_runtime(eap->arg, eap->forceit);
+    source_runtime(eap->arg, eap->forceit);
 }
 
 static void source_callback __ARGS((char_u *fname, void *cookie));
@@ -2447,7 +2447,7 @@ source_callback(fname, cookie)
  * return FAIL when no file could be sourced, OK otherwise.
  */
     int
-cmd_runtime(name, all)
+source_runtime(name, all)
     char_u	*name;
     int		all;
 {

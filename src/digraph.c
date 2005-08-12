@@ -2367,12 +2367,12 @@ keymap_init()
 # ifdef FEAT_MBYTE
 	/* try finding "keymap/'keymap'_'encoding'.vim"  in 'runtimepath' */
 	sprintf((char *)buf, "keymap/%s_%s.vim", curbuf->b_p_keymap, p_enc);
-	if (cmd_runtime(buf, FALSE) == FAIL)
+	if (source_runtime(buf, FALSE) == FAIL)
 # endif
 	{
 	    /* try finding "keymap/'keymap'.vim" in 'runtimepath'  */
 	    sprintf((char *)buf, "keymap/%s.vim", curbuf->b_p_keymap);
-	    if (cmd_runtime(buf, FALSE) == FAIL)
+	    if (source_runtime(buf, FALSE) == FAIL)
 	    {
 		vim_free(buf);
 		return (char_u *)N_("E544: Keymap file not found");

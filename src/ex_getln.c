@@ -4151,14 +4151,14 @@ ExpandGeneric(xp, regmatch, num_file, file, func)
 {
     int		i;
     int		count = 0;
-    int		loop;
+    int		round;
     char_u	*str;
 
     /* do this loop twice:
-     * loop == 0: count the number of matching names
-     * loop == 1: copy the matching names into allocated memory
+     * round == 0: count the number of matching names
+     * round == 1: copy the matching names into allocated memory
      */
-    for (loop = 0; loop <= 1; ++loop)
+    for (round = 0; round <= 1; ++round)
     {
 	for (i = 0; ; ++i)
 	{
@@ -4170,7 +4170,7 @@ ExpandGeneric(xp, regmatch, num_file, file, func)
 
 	    if (vim_regexec(regmatch, str, (colnr_T)0))
 	    {
-		if (loop)
+		if (round)
 		{
 		    str = vim_strsave_escaped(str, (char_u *)" \t\\.");
 		    (*file)[count] = str;
@@ -4187,7 +4187,7 @@ ExpandGeneric(xp, regmatch, num_file, file, func)
 		++count;
 	    }
 	}
-	if (loop == 0)
+	if (round == 0)
 	{
 	    if (count == 0)
 		return OK;
@@ -4201,6 +4201,10 @@ ExpandGeneric(xp, regmatch, num_file, file, func)
 	    count = 0;
 	}
     }
+
+    /* Sort the results. */
+    sort_strings(*file, *num_file);
+
     return OK;
 }
 

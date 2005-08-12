@@ -605,7 +605,7 @@ msgid "E742: Cannot change value of %s"
 msgstr "E742: Non riesco a cambiare il valore di %s"
 
 msgid "E698: variable nested too deep for making a copy"
-msgstr "E698 Variabile troppo nidificata per poterla copiare"
+msgstr "E698: Variabile troppo nidificata per poterla copiare"
 
 #, c-format
 msgid "E124: Missing '(': %s"

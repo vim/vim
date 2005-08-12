@@ -4421,7 +4421,7 @@ syn_cmd_include(eap, syncing)
     prev_toplvl_grp = curbuf->b_syn_topgrp;
     curbuf->b_syn_topgrp = sgl_id;
     if (source ? do_source(eap->arg, FALSE, FALSE) == FAIL
-					: cmd_runtime(eap->arg, TRUE) == FAIL)
+				     : source_runtime(eap->arg, TRUE) == FAIL)
 	EMSG2(_(e_notopen), eap->arg);
     curbuf->b_syn_topgrp = prev_toplvl_grp;
     current_syn_inc_tag = prev_syn_inc_tag;
@@ -6174,7 +6174,7 @@ init_highlight(both, reset)
 	else
 	{
 	    ++recursive;
-	    (void)cmd_runtime((char_u *)"syntax/syncolor.vim", TRUE);
+	    (void)source_runtime((char_u *)"syntax/syncolor.vim", TRUE);
 	    --recursive;
 	}
     }
@@ -6204,7 +6204,7 @@ load_colors(name)
     if (buf != NULL)
     {
 	sprintf((char *)buf, "colors/%s.vim", name);
-	retval = cmd_runtime(buf, FALSE);
+	retval = source_runtime(buf, FALSE);
 	vim_free(buf);
 #ifdef FEAT_AUTOCMD
 	apply_autocmds(EVENT_COLORSCHEME, NULL, NULL, FALSE, curbuf);
