@@ -1,4 +1,4 @@
-*uganda.txt*    For Vim version 7.0aa.  Last change: 2005 Feb 24
+*uganda.txt*    For Vim version 7.0aa.  Last change: 2005 Aug 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -249,10 +249,11 @@ Europe:		Use a bank transfer if possible.  Your bank should have a form
 Credit Card:	You can use PayPal to send money with a Credit card.  This is
 		the most widely used Internet based payment system.  It's
 		really simple to use.  Use this link to find more info:
-			https://www.paypal.com/affil/pal=Bram%40moolenaar.net
+		    https://www.paypal.com/affil/pal=Bram%40iccf-holland.org
 		The e-mail address for sending the money to is:
-			Bram@iccf-holland.org
-		For amounts above $150 sending a cheque is preferred.
+		    Bram@iccf-holland.org
+		For amounts above 400 Euro ($500) sending a cheque is
+		preferred.
 
 Others:		Transfer to one of these accounts if possible:
 		    Postbank, account 4548774

@@ -474,8 +474,10 @@ typedef struct suggest_S
 #define SCORE_REP	87	/* REP replacement */
 #define SCORE_SUBST	93	/* substitute a character */
 #define SCORE_SIMILAR	33	/* substitute a similar character */
+#define SCORE_SUBCOMP	33	/* substitute a composing character */
 #define SCORE_DEL	94	/* delete a character */
 #define SCORE_DELDUP	64	/* delete a duplicated character */
+#define SCORE_DELCOMP	28	/* delete a composing character */
 #define SCORE_INS	96	/* insert a character */
 #define SCORE_INSDUP	66	/* insert a duplicate character */
 #define SCORE_INSCOMP	30	/* insert a composing character */
@@ -7740,9 +7742,23 @@ suggest_try_change(su)
 						+ MB_BYTE2LEN(
 						    fword[sp->ts_fcharstart]);
 
+				    /* For changing a composing character
+				     * adjust the score from SCORE_SUBST to
+				     * SCORE_SUBCOMP. */
+				    if (enc_utf8
+					    && utf_iscomposing(
+						mb_ptr2char(tword
+						    + sp->ts_twordlen
+							   - sp->ts_tcharlen))
+					    && utf_iscomposing(
+						mb_ptr2char(fword
+							+ sp->ts_fcharstart)))
+					sp->ts_score -=
+						  SCORE_SUBST - SCORE_SUBCOMP;
+
 				    /* For a similar character adjust score
 				     * from SCORE_SUBST to SCORE_SIMILAR. */
-				    if (lp->lp_slang->sl_has_map
+				    else if (lp->lp_slang->sl_has_map
 					    && similar_chars(lp->lp_slang,
 						mb_ptr2char(tword
 						    + sp->ts_twordlen
@@ -7825,7 +7841,9 @@ suggest_try_change(su)
 		    {
 			c = mb_ptr2char(fword + sp->ts_fidx);
 			stack[depth].ts_fidx += MB_BYTE2LEN(fword[sp->ts_fidx]);
-			if (c == mb_ptr2char(fword + stack[depth].ts_fidx))
+			if (enc_utf8 && utf_iscomposing(c))
+			    stack[depth].ts_score -= SCORE_DEL - SCORE_DELCOMP;
+			else if (c == mb_ptr2char(fword + stack[depth].ts_fidx))
 			    stack[depth].ts_score -= SCORE_DEL - SCORE_DELDUP;
 		    }
 		    else

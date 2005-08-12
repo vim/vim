@@ -10051,16 +10051,16 @@ ex_filetype(eap)
     {
 	if (*arg == 'o' || !filetype_detect)
 	{
-	    cmd_runtime((char_u *)FILETYPE_FILE, TRUE);
+	    source_runtime((char_u *)FILETYPE_FILE, TRUE);
 	    filetype_detect = TRUE;
 	    if (plugin)
 	    {
-		cmd_runtime((char_u *)FTPLUGIN_FILE, TRUE);
+		source_runtime((char_u *)FTPLUGIN_FILE, TRUE);
 		filetype_plugin = TRUE;
 	    }
 	    if (indent)
 	    {
-		cmd_runtime((char_u *)INDENT_FILE, TRUE);
+		source_runtime((char_u *)INDENT_FILE, TRUE);
 		filetype_indent = TRUE;
 	    }
 	}
@@ -10076,18 +10076,18 @@ ex_filetype(eap)
 	{
 	    if (plugin)
 	    {
-		cmd_runtime((char_u *)FTPLUGOF_FILE, TRUE);
+		source_runtime((char_u *)FTPLUGOF_FILE, TRUE);
 		filetype_plugin = FALSE;
 	    }
 	    if (indent)
 	    {
-		cmd_runtime((char_u *)INDOFF_FILE, TRUE);
+		source_runtime((char_u *)INDOFF_FILE, TRUE);
 		filetype_indent = FALSE;
 	    }
 	}
 	else
 	{
-	    cmd_runtime((char_u *)FTOFF_FILE, TRUE);
+	    source_runtime((char_u *)FTOFF_FILE, TRUE);
 	    filetype_detect = FALSE;
 	}
     }
