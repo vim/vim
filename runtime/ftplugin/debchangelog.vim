@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	Debian Changelog
 " Maintainer:	Michael Piefel <piefel@informatik.hu-berlin.de>
-" Last Change:	23 March 2004
+" Last Change:	15 August 2005
 
 if exists("g:did_changelog_ftplugin")
   finish
@@ -30,7 +30,7 @@ function <SID>Email()
     elseif exists("$EMAIL")
 	return $EMAIL
     elseif exists("g:debianemail")
-	return g:debianfullemail
+	return g:debianemail
     else
 	return "your@email.address"
     endif

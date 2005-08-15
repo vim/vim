@@ -2876,6 +2876,10 @@ enc_canonize(enc)
 	/* Skip "2byte-" and "8bit-". */
 	p = enc_skip(r);
 
+	/* Change "microsoft-cp" to "cp".  Used in some spell files. */
+	if (STRNCMP(p, "microsoft-cp", 12) == 0)
+	    mch_memmove(p, p + 10, STRLEN(p + 10) + 1);
+
 	/* "iso8859" -> "iso-8859" */
 	if (STRNCMP(p, "iso8859", 7) == 0)
 	{

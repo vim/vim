@@ -35,7 +35,7 @@
  * original case.  The second one is only used for keep-case words and is
  * usually small.
  *
- * There is one additional tree for when prefixes are not applied when
+ * There is one additional tree for when not all prefixes are applied when
  * generating the .spl file.  This tree stores all the possible prefixes, as
  * if they were words.  At each word (prefix) end the prefix nr is stored, the
  * following word must support this prefix nr.  And the condition nr is
@@ -72,21 +72,6 @@
 #define RESCORE(word_score, sound_score) ((3 * word_score + sound_score) / 4)
 
 /*
- * The double scoring mechanism is based on the principle that there are two
- * kinds of spelling mistakes:
- * 1. You know how to spell the word, but mistype something.  This results in
- *    a small editing distance (character swapped/omitted/inserted) and
- *    possibly a word that sounds completely different.
- * 2. You don't know how to spell the word and type something that sounds
- *    right.  The edit distance can be big but the word is similar after
- *    sound-folding.
- * Since scores for these two mistakes will be very different we use a list
- * for each.
- * The sound-folding is slow, only do double scoring when 'spellsuggest' is
- * "double".
- */
-
-/*
  * Vim spell file format: <HEADER>
  *			  <SUGGEST>
  *			  <LWORDTREE>
@@ -98,9 +83,10 @@
  *		<charflagslen> <charflags>
  *		<fcharslen> <fchars>
  *		<midwordlen> <midword>
+ *		<compoundlen> <compoundtype> <compoundinfo>
  *		<prefcondcnt> <prefcond> ...
  *
- * <fileID>     10 bytes    "VIMspell09"
+ * <fileID>     10 bytes    "VIMspell10"
  * <regioncnt>  1 byte	    number of regions following (8 supported)
  * <regionname>	2 bytes     Region name: ca, au, etc.  Lower case.
  *			    First <regionname> is region 1.
@@ -115,6 +101,17 @@
  * <midwordlen> 2 bytes     Number of bytes in <midword>.
  * <midword>    N bytes	    Characters that are word characters only when used
  *			    in the middle of a word.
+ *
+ * <compoundlen> 2 bytes    Number of bytes following for compound info (can
+ *			    be used to skip it when it's not understood).
+ *
+ * <compoundtype 1 byte	    1: compound words using <comp1minlen> and
+ *			    <comp1flags>
+ *
+ * <comp1minlen> 1 byte     minimal word length for compounding
+ *
+ * <comp1flags>  N bytes    flags used for compounding words
+ *
  *
  * <prefcondcnt> 2 bytes    Number of <prefcond> items following.
  *
@@ -182,16 +179,16 @@
  *			    follow in sorted order.
  *
  * <sibling>: <byte> [ <nodeidx> <xbyte>
- *		      | <flags> [<flags2>] [<region>] [<prefixID>]
- *		      | [<pflags>] <prefixID> <prefcondnr> ]
+ *		      | <flags> [<flags2>] [<region>] [<affixID>]
+ *		      | [<pflags>] <affixID> <prefcondnr> ]
  *
  * <byte>	1 byte	    Byte value of the sibling.  Special cases:
  *			    BY_NOFLAGS: End of word without flags and for all
  *					regions.
- *					For PREFIXTREE <prefixID> and
+ *					For PREFIXTREE <affixID> and
  *					<prefcondnr> follow.
  *			    BY_FLAGS:   End of word, <flags> follow.
- *					For PREFIXTREE <pflags>, <prefixID>
+ *					For PREFIXTREE <pflags>, <affixID>
  *					and <prefcondnr> follow.
  *			    BY_FLAGS2:  End of word, <flags> and <flags2>
  *					follow.  Not used in PREFIXTREE.
@@ -210,7 +207,7 @@
  *			    WF_RARE	rare word
  *			    WF_BANNED	bad word
  *			    WF_REGION	<region> follows
- *			    WF_PFX	<prefixID> follows
+ *			    WF_AFX	<affixID> follows
  *
  * <flags2>	1 byte	    Only used when there are postponed prefixes.
  *			    Bitmask of:
@@ -225,7 +222,7 @@
  *			    omitted it's valid in all regions.
  *			    Lowest bit is for region 1.
  *
- * <prefixID>	1 byte	    ID of prefix that can be used with this word.  For
+ * <affixID>	1 byte	    ID of affix that can be used with this word.  In
  *			    PREFIXTREE used for the required prefix ID.
  *
  * <prefcondnr>	2 bytes	    Prefix condition number, index in <prefcond> list
@@ -265,7 +262,7 @@ typedef long idx_T;
 #define WF_ALLCAP   0x04	/* word must be all capitals */
 #define WF_RARE	    0x08	/* rare word */
 #define WF_BANNED   0x10	/* bad word */
-#define WF_PFX	    0x20	/* prefix ID follows */
+#define WF_AFX	    0x20	/* affix ID follows */
 #define WF_FIXCAP   0x40	/* keep-case word, allcap not allowed */
 #define WF_KEEPCAP  0x80	/* keep-case word */
 
@@ -279,7 +276,7 @@ typedef long idx_T;
 #define WFP_NC	    0x02	/* prefix is not combining */
 #define WFP_UP	    0x04	/* to-upper prefix */
 
-/* flags for postponed prefixes.  Must be above prefixID (one byte)
+/* Flags for postponed prefixes.  Must be above affixID (one byte)
  * and prefcondnr (two bytes). */
 #define WF_RAREPFX  (WFP_RARE << 24)	/* in sl_pidxs: flag for rare
 					 * postponed prefix */
@@ -343,8 +340,8 @@ typedef short salfirst_T;
  * The "idxs" array stores the index of the child node corresponding to the
  * byte in "byts".
  * Exception: when the byte is zero, the word may end here and "idxs" holds
- * the flags, region mask and prefixID for the word.  There may be several
- * zeros in sequence for alternative flag/region combinations.
+ * the flags, region mask and affixID for the word.  There may be several
+ * zeros in sequence for alternative flag/region/affixID combinations.
  */
 typedef struct slang_S slang_T;
 struct slang_S
@@ -364,6 +361,9 @@ struct slang_S
     char_u	sl_regions[17];	/* table with up to 8 region names plus NUL */
 
     char_u	*sl_midword;	/* MIDWORD string or NULL */
+
+    int		sl_compminlen;	/* COMPOUNDMIN */
+    char_u	*sl_compflags;	/* COMPOUNDFLAGS (NULL when no compounding) */
 
     int		sl_prefixcnt;	/* number of items in "sl_prefprog" */
     regprog_T	**sl_prefprog;	/* table with regprogs for prefixes */
@@ -419,7 +419,7 @@ typedef struct langp_S
 #define SP_LOCAL	2
 #define SP_BAD		3
 
-#define VIMSPELLMAGIC "VIMspell09"  /* string at start of Vim spell file */
+#define VIMSPELLMAGIC "VIMspell10"  /* string at start of Vim spell file */
 #define VIMSPELLMAGICL 10
 
 /* file used for "zG" and "zW" */
@@ -510,7 +510,7 @@ typedef struct matchinf_S
 
     /* for when checking word after a prefix */
     int		mi_prefarridx;		/* index in sl_pidxs with list of
-					   prefixID/condition */
+					   affixID/condition */
     int		mi_prefcnt;		/* number of entries at mi_prefarridx */
     int		mi_prefixlen;		/* byte length of prefix */
 #ifdef FEAT_MBYTE
@@ -519,6 +519,9 @@ typedef struct matchinf_S
 #else
 # define mi_cprefixlen mi_prefixlen	/* it's the same value */
 #endif
+
+    /* for when checking a compound word */
+    int		mi_compoff;		/* start of following word offset */
 
     /* others */
     int		mi_result;		/* result so far: SP_BAD, SP_OK, etc. */
@@ -614,9 +617,11 @@ typedef struct trystate_S
 #define NOPREFIX	0xff	/* not using prefixes */
 
 /* mode values for find_word */
-#define FIND_FOLDWORD	0	/* find word case-folded */
-#define FIND_KEEPWORD	1	/* find keep-case word */
-#define FIND_PREFIX	2	/* find word after prefix */
+#define FIND_FOLDWORD	    0	/* find word case-folded */
+#define FIND_KEEPWORD	    1	/* find keep-case word */
+#define FIND_PREFIX	    2	/* find word after prefix */
+#define FIND_COMPOUND	    3	/* find case-folded compound word */
+#define FIND_KEEPCOMPOUND   4	/* find keep-case compound word */
 
 static slang_T *slang_alloc __ARGS((char_u *lang));
 static void slang_free __ARGS((slang_T *lp));
@@ -928,14 +933,19 @@ find_word(mip, mode)
     unsigned	flags;
     char_u	*byts;
     idx_T	*idxs;
+    int		word_ends;
 
-    if (mode == FIND_KEEPWORD)
+    if (mode == FIND_KEEPWORD || mode == FIND_KEEPCOMPOUND)
     {
 	/* Check for word with matching case in keep-case tree. */
 	ptr = mip->mi_word;
 	flen = 9999;		    /* no case folding, always enough bytes */
 	byts = slang->sl_kbyts;
 	idxs = slang->sl_kidxs;
+
+	if (mode == FIND_KEEPCOMPOUND)
+	    /* Skip over the previously found word(s). */
+	    wlen += mip->mi_compoff;
     }
     else
     {
@@ -951,6 +961,13 @@ find_word(mip, mode)
 	    wlen = mip->mi_prefixlen;
 	    flen -= mip->mi_prefixlen;
 	}
+	else if (mode == FIND_COMPOUND)
+	{
+	    /* Skip over the previously found word(s). */
+	    wlen = mip->mi_compoff;
+	    flen -= mip->mi_compoff;
+	}
+
     }
 
     if (byts == NULL)
@@ -1058,7 +1075,13 @@ find_word(mip, mode)
 	    continue;	    /* not at first byte of character */
 #endif
 	if (spell_iswordp(ptr + wlen, mip->mi_buf))
-	    continue;	    /* next char is a word character */
+	{
+	    if (slang->sl_compflags == NULL)
+		continue;	    /* next char is a word character */
+	    word_ends = FALSE;
+	}
+	else
+	    word_ends = TRUE;
 
 #ifdef FEAT_MBYTE
 	if (mode != FIND_KEEPWORD && has_mbyte)
@@ -1108,9 +1131,8 @@ find_word(mip, mode)
 	    /* When mode is FIND_PREFIX the word must support the prefix:
 	     * check the prefix ID and the condition.  Do that for the list at
 	     * mip->mi_prefarridx that find_prefix() filled. */
-	    if (mode == FIND_PREFIX)
+	    else if (mode == FIND_PREFIX)
 	    {
-		/* The prefix ID is stored two bytes above the flags. */
 		c = valid_word_prefix(mip->mi_prefcnt, mip->mi_prefarridx,
 				    flags,
 				    mip->mi_word + mip->mi_cprefixlen, slang,
@@ -1121,6 +1143,58 @@ find_word(mip, mode)
 		/* Use the WF_RARE flag for a rare prefix. */
 		if (c & WF_RAREPFX)
 		    flags |= WF_RARE;
+	    }
+
+	    if (mode == FIND_COMPOUND || mode == FIND_KEEPCOMPOUND
+								|| !word_ends)
+	    {
+		/* Makes you wonder why someone puts a compound flag on a word
+		 * that's too short...  Myspell compatibility requires this
+		 * anyway. */
+		if (wlen < slang->sl_compminlen)
+		    continue;
+
+		/* The word doesn't end or it comes after another: it must
+		 * have a compound flag. */
+		/* TODO: check more flags */
+		if (*slang->sl_compflags != ((unsigned)flags >> 24))
+		    continue;
+	    }
+
+	    if (!word_ends)
+	    {
+		/* Check that a valid word follows.  If there is one, it will
+		 * set "mi_result", thus we are always finished here.
+		 * Recursive! */
+
+		/* Find following word in case-folded tree. */
+		mip->mi_compoff = endlen[endidxcnt];
+#ifdef FEAT_MBYTE
+		if (has_mbyte && mode == FIND_KEEPWORD)
+		{
+		    /* Compute byte length in case-folded word from "wlen":
+		     * byte length in keep-case word.  Length may change when
+		     * folding case.  This can be slow, take a shortcut when
+		     * the case-folded word is equal to the keep-case word. */
+		    p = mip->mi_fword;
+		    if (STRNCMP(ptr, p, wlen) != 0)
+		    {
+			for (s = ptr; s < ptr + wlen; mb_ptr_adv(s))
+			    mb_ptr_adv(p);
+			mip->mi_compoff = p - mip->mi_fword;
+		    }
+		}
+#endif
+		find_word(mip, FIND_COMPOUND);
+		if (mip->mi_result == SP_OK)
+		    break;
+
+		/* Find following word in keep-case tree. */
+		mip->mi_compoff = wlen;
+		find_word(mip, FIND_KEEPCOMPOUND);
+		if (mip->mi_result == SP_OK)
+		    break;
+		continue;
 	    }
 
 	    if (flags & WF_BANNED)
@@ -1758,6 +1832,9 @@ slang_clear(lp)
     vim_free(lp->sl_midword);
     lp->sl_midword = NULL;
 
+    vim_free(lp->sl_compflags);
+    lp->sl_compflags = NULL;
+
 #ifdef FEAT_MBYTE
     {
 	int	    todo = lp->sl_map_hash.ht_used;
@@ -1870,6 +1947,7 @@ spell_load_file(fname, lang, old_lp, silent)
      *		<charflagslen> <charflags>
      *		<fcharslen> <fchars>
      *		<midwordlen> <midword>
+     *		<compoundlen> <compoundtype> <compoundinfo>
      *		<prefcondcnt> <prefcond> ...
      */
     for (i = 0; i < VIMSPELLMAGICL; ++i)
@@ -1929,6 +2007,41 @@ formerr:
     if (cnt < 0)
 	goto endFAIL;
 
+    /* <compoundlen> <compoundtype> <compoundinfo> */
+    cnt = (getc(fd) << 8) + getc(fd);			/* <compoundlen> */
+    if (cnt < 0)
+	goto endFAIL;
+    if (cnt > 0)
+    {
+	--cnt;
+	c = getc(fd);					/* <compoundtype> */
+	if (c != 1)
+	{
+	    /* Unknown kind of compound words, skip the info. */
+	    while (cnt-- > 0)
+		getc(fd);
+	}
+	else if (cnt < 2)
+	    goto formerr;
+	else
+	{
+	    --cnt;
+	    c = getc(fd);				/* <comp1minlen> */
+	    if (c < 1 || c > 50)
+		c = 3;
+	    lp->sl_compminlen = c;
+
+	    p = alloc(cnt + 1);
+	    if (p == NULL)
+		goto endFAIL;
+	    lp->sl_compflags = p;
+	    while (cnt-- > 0)
+		*p++ = getc(fd);			/* <comp1flags> */
+	    *p = NUL;
+	}
+    }
+
+
     /* <prefcondcnt> <prefcond> ... */
     cnt = (getc(fd) << 8) + getc(fd);			/* <prefcondcnt> */
     if (cnt > 0)
@@ -1943,7 +2056,7 @@ formerr:
 	{
 	    /* <prefcond> : <condlen> <condstr> */
 	    n = getc(fd);				/* <condlen> */
-	    if (n < 0)
+	    if (n < 0 || n >= MAXWLEN)
 		goto formerr;
 	    /* When <condlen> is zero we have an empty condition.  Otherwise
 	     * compile the regexp program used to check for the condition. */
@@ -2518,7 +2631,7 @@ read_tree(fd, byts, idxs, maxidx, startidx, prefixtree, maxprefcondnr)
 		    else
 			c = 0;
 
-		    c |= getc(fd);			/* <prefixID> */
+		    c |= getc(fd);			/* <affixID> */
 
 		    n = (getc(fd) << 8) + getc(fd);	/* <prefcondnr> */
 		    if (n >= maxprefcondnr)
@@ -2536,8 +2649,8 @@ read_tree(fd, byts, idxs, maxidx, startidx, prefixtree, maxprefcondnr)
 			c = (getc(fd) << 8) + c;	/* <flags2> */
 		    if (c & WF_REGION)
 			c = (getc(fd) << 16) + c;	/* <region> */
-		    if (c & WF_PFX)
-			c = (getc(fd) << 24) + c;	/* <prefixID> */
+		    if (c & WF_AFX)
+			c = (getc(fd) << 24) + c;	/* <affixID> */
 		}
 
 		idxs[idx] = c;
@@ -3110,9 +3223,12 @@ spell_reload_one(fname, added_word)
 typedef struct afffile_S
 {
     char_u	*af_enc;	/* "SET", normalized, alloc'ed string or NULL */
+    int		af_slash;	/* character used in word for slash */
     int		af_rar;		/* RAR ID for rare word */
     int		af_kep;		/* KEP ID for keep-case word */
     int		af_bad;		/* BAD ID for banned word */
+    char_u	*af_compflags;	/* COMPOUNDFLAG or COMPOUNDFLAGS */
+    int		af_compminlen;	/* COMPOUNDMIN */
     int		af_pfxpostpone;	/* postpone prefixes without chop string */
     hashtab_T	af_pref;	/* hashtable for prefixes, affheader_T */
     hashtab_T	af_suff;	/* hashtable for suffixes, affheader_T */
@@ -3187,7 +3303,7 @@ struct wordnode_S
 				   siblings, in following siblings it is
 				   always one. */
     char_u	wn_byte;	/* Byte for this node. NUL for word end */
-    char_u	wn_prefixID;	/* when "wn_byte" is NUL: supported/required
+    char_u	wn_affixID;	/* when "wn_byte" is NUL: supported/required
 				   prefix ID or 0 */
     short_u	wn_flags;	/* when "wn_byte" is NUL: WF_ flags */
     short	wn_region;	/* when "wn_byte" is NUL: region mask; for
@@ -3245,6 +3361,8 @@ typedef struct spellinfo_S
     int		si_rem_accents;	/* soundsalike: remove accents */
     garray_T	si_map;		/* MAP info concatenated */
     char_u	*si_midword;	/* MIDWORD chars, alloc'ed string or NULL  */
+    int		si_compminlen;	/* minimal length for compounding */
+    char_u	*si_compflags;	/* flags used for compounding */
     garray_T	si_prefcond;	/* table with conditions for postponed
 				 * prefixes, each stored as a string */
     int		si_newID;	/* current value for ah_newID */
@@ -3258,6 +3376,7 @@ static int has_non_ascii __ARGS((char_u *s));
 static void spell_free_aff __ARGS((afffile_T *aff));
 static int spell_read_dic __ARGS((spellinfo_T *spin, char_u *fname, afffile_T *affile));
 static char_u *get_pfxlist __ARGS((spellinfo_T *spin, afffile_T *affile, char_u *afflist));
+static char_u *get_compflags __ARGS((spellinfo_T *spin, char_u *afflist));
 static int store_aff_word __ARGS((spellinfo_T *spin, char_u *word, char_u *afflist, afffile_T *affile, hashtab_T *ht, hashtab_T *xht, int comb, int flags, char_u *pfxlist));
 static int spell_read_wordfile __ARGS((spellinfo_T *spin, char_u *fname));
 static void *getroom __ARGS((spellinfo_T *spin, size_t len, int align));
@@ -3265,7 +3384,7 @@ static char_u *getroom_save __ARGS((spellinfo_T *spin, char_u *s));
 static void free_blocks __ARGS((sblock_T *bl));
 static wordnode_T *wordtree_alloc __ARGS((spellinfo_T *spin));
 static int store_word __ARGS((spellinfo_T *spin, char_u *word, int flags, int region, char_u *pfxlist));
-static int tree_add_word __ARGS((spellinfo_T *spin, char_u *word, wordnode_T *tree, int flags, int region, int prefixID));
+static int tree_add_word __ARGS((spellinfo_T *spin, char_u *word, wordnode_T *tree, int flags, int region, int affixID));
 static wordnode_T *get_wordnode __ARGS((spellinfo_T *spin));
 static void deref_wordnode __ARGS((spellinfo_T *spin, wordnode_T *node));
 static void free_wordnode __ARGS((spellinfo_T *spin, wordnode_T *n));
@@ -3547,6 +3666,14 @@ spell_read_aff(spin, fname)
 	    {
 		/* ignored, we look in the tree for what chars may appear */
 	    }
+	    else if (STRCMP(items[0], "SLASH") == 0 && itemcnt == 2
+							&& aff->af_slash == 0)
+	    {
+		aff->af_slash = items[1][0];
+		if (items[1][1] != NUL)
+		    smsg((char_u *)_("Character used for SLASH must be ASCII; in %s line %d: %s"),
+			    fname, lnum, items[1]);
+	    }
 	    else if (STRCMP(items[0], "RAR") == 0 && itemcnt == 2
 						       && aff->af_rar == 0)
 	    {
@@ -3567,6 +3694,26 @@ spell_read_aff(spin, fname)
 		aff->af_bad = items[1][0];
 		if (items[1][1] != NUL)
 		    smsg((char_u *)_(e_affname), fname, lnum, items[1]);
+	    }
+	    else if (STRCMP(items[0], "COMPOUNDFLAG") == 0 && itemcnt == 2
+						    && aff->af_compflags == 0)
+	    {
+		aff->af_compflags = getroom_save(spin, items[1]);
+		if (items[1][1] != NUL)
+		    smsg((char_u *)_(e_affname), fname, lnum, items[1]);
+	    }
+	    else if (STRCMP(items[0], "COMPOUNDFLAGS") == 0 && itemcnt == 2
+						    && aff->af_compflags == 0)
+	    {
+		aff->af_compflags = getroom_save(spin, items[1]);
+	    }
+	    else if (STRCMP(items[0], "COMPOUNDMIN") == 0 && itemcnt == 2
+						   && aff->af_compminlen == 0)
+	    {
+		aff->af_compminlen = atoi((char *)items[1]);
+		if (aff->af_compminlen == 0)
+		    smsg((char_u *)_("Wrong COMPOUNDMIN value in %s line %d: %s"),
+						       fname, lnum, items[1]);
 	    }
 	    else if (STRCMP(items[0], "PFXPOSTPONE") == 0 && itemcnt == 1)
 	    {
@@ -3688,7 +3835,10 @@ spell_read_aff(spin, fname)
 			else
 			    sprintf((char *)buf, "%s$", items[4]);
 			aff_entry->ae_prog = vim_regcomp(buf,
-							RE_MAGIC + RE_STRING);
+					    RE_MAGIC + RE_STRING + RE_STRICT);
+			if (aff_entry->ae_prog == NULL)
+			    smsg((char_u *)_("Broken condition in %s line %d: %s"),
+						       fname, lnum, items[4]);
 		    }
 
 		    /* For postponed prefixes we need an entry in si_prefcond
@@ -3908,7 +4058,7 @@ spell_read_aff(spin, fname)
 		    spin->si_sofoto = vim_strsave(items[1]);
 	    }
 	    else
-		smsg((char_u *)_("Unrecognized item in %s line %d: %s"),
+		smsg((char_u *)_("Unrecognized or duplicate item in %s line %d: %s"),
 						       fname, lnum, items[0]);
 	}
     }
@@ -3950,6 +4100,28 @@ spell_read_aff(spin, fname)
 	vim_free(fol);
 	vim_free(low);
 	vim_free(upp);
+    }
+
+    /* Use compound specifications of the .aff file for the spell info. */
+    if (aff->af_compminlen != 0)
+    {
+	if (spin->si_compminlen != 0
+				 && spin->si_compminlen != aff->af_compminlen)
+	    smsg((char_u *)_("COMPOUNDMIN value differs from what is used in another .aff file"));
+	else
+	    spin->si_compminlen = aff->af_compminlen;
+    }
+
+    if (aff->af_compflags != NULL)
+    {
+	if (spin->si_compflags != NULL
+		&& STRCMP(spin->si_compflags, aff->af_compflags) != 0)
+	    smsg((char_u *)_("COMPOUNDFLAG(S) value differs from what is used in another .aff file"));
+	else
+	    spin->si_compflags = aff->af_compflags;
+
+	if (aff->af_pfxpostpone)
+	    smsg((char_u *)_("Cannot use both PFXPOSTPONE and COMPOUNDFLAG(S)"));
     }
 
     vim_free(pc);
@@ -4072,8 +4244,9 @@ spell_read_dic(spin, fname, affile)
 {
     hashtab_T	ht;
     char_u	line[MAXLINELEN];
+    char_u	*p;
     char_u	*afflist;
-    char_u	*pfxlist;
+    char_u	*store_afflist;
     char_u	*dw;
     char_u	*pc;
     char_u	*w;
@@ -4086,6 +4259,7 @@ spell_read_dic(spin, fname, affile)
     int		retval = OK;
     char_u	message[MAXLINELEN + MAXWLEN];
     int		flags;
+    int		duplicate = 0;
 
     /*
      * Open the file.
@@ -4139,10 +4313,20 @@ spell_read_dic(spin, fname, affile)
 	    continue;	/* empty line */
 	line[l] = NUL;
 
-	/* Find the optional affix names. */
-	afflist = vim_strchr(line, '/');
-	if (afflist != NULL)
-	    *afflist++ = NUL;
+	/* Find the optional affix names.  Replace the SLASH character by a
+	 * slash. */
+	afflist = NULL;
+	for (p = line; *p != NUL; mb_ptr_adv(p))
+	{
+	    if (*p == affile->af_slash)
+		*p = '/';
+	    else if (*p == '/')
+	    {
+		*p = NUL;
+		afflist = p + 1;
+		break;
+	    }
+	}
 
 	/* Skip non-ASCII words when "spin->si_ascii" is TRUE. */
 	if (spin->si_ascii && has_non_ascii(line))
@@ -4197,13 +4381,20 @@ spell_read_dic(spin, fname, affile)
 	hash = hash_hash(dw);
 	hi = hash_lookup(&ht, dw, hash);
 	if (!HASHITEM_EMPTY(hi))
-	    smsg((char_u *)_("Duplicate word in %s line %d: %s"),
+	{
+	    if (p_verbose > 0)
+		smsg((char_u *)_("Duplicate word in %s line %d: %s"),
 							     fname, lnum, dw);
+	    else if (duplicate == 0)
+		smsg((char_u *)_("First duplicate word in %s line %d: %s"),
+							     fname, lnum, dw);
+	    ++duplicate;
+	}
 	else
 	    hash_add_item(&ht, hi, dw, hash);
 
 	flags = 0;
-	pfxlist = NULL;
+	store_afflist = NULL;
 	if (afflist != NULL)
 	{
 	    /* Check for affix name that stands for keep-case word and stands
@@ -4220,11 +4411,15 @@ spell_read_dic(spin, fname, affile)
 
 	    if (affile->af_pfxpostpone)
 		/* Need to store the list of prefix IDs with the word. */
-		pfxlist = get_pfxlist(spin, affile, afflist);
+		store_afflist = get_pfxlist(spin, affile, afflist);
+	    else if (spin->si_compflags)
+		/* Need to store the list of affix IDs for compounding with
+		 * the word. */
+		store_afflist = get_compflags(spin, afflist);
 	}
 
 	/* Add the word to the word tree(s). */
-	if (store_word(spin, dw, flags, spin->si_region, pfxlist) == FAIL)
+	if (store_word(spin, dw, flags, spin->si_region, store_afflist) == FAIL)
 	    retval = FAIL;
 
 	if (afflist != NULL)
@@ -4233,20 +4428,22 @@ spell_read_dic(spin, fname, affile)
 	     * Additionally do matching prefixes that combine. */
 	    if (store_aff_word(spin, dw, afflist, affile,
 			   &affile->af_suff, &affile->af_pref,
-					       FALSE, flags, pfxlist) == FAIL)
+					 FALSE, flags, store_afflist) == FAIL)
 		retval = FAIL;
 
 	    /* Find all matching prefixes and add the resulting words. */
 	    if (store_aff_word(spin, dw, afflist, affile,
 			  &affile->af_pref, NULL,
-					       FALSE, flags, pfxlist) == FAIL)
+					 FALSE, flags, store_afflist) == FAIL)
 		retval = FAIL;
 	}
     }
 
+    if (duplicate > 0)
+	smsg((char_u *)_("%d duplicate word(s) in %s"), duplicate, fname);
     if (spin->si_ascii && non_ascii > 0)
-	smsg((char_u *)_("Ignored %d words with non-ASCII characters"),
-								   non_ascii);
+	smsg((char_u *)_("Ignored %d word(s) with non-ASCII characters in %s"),
+							    non_ascii, fname);
     hash_clear(&ht);
 
     fclose(fd);
@@ -4303,6 +4500,49 @@ get_pfxlist(spin, affile, afflist)
 }
 
 /*
+ * Get the list of affix IDs from the affix list "afflist" that are used for
+ * compound words.
+ * Returns a string allocated with getroom().  NULL when there are no relevant
+ * affixes or when out of memory.
+ */
+    static char_u *
+get_compflags(spin, afflist)
+    spellinfo_T	*spin;
+    char_u	*afflist;
+{
+    char_u	*p;
+    int		cnt;
+    int		round;
+    char_u	*res = NULL;
+
+    /* round 1: count the number of affix IDs.
+     * round 2: move affix IDs to "res" */
+    for (round = 1; round <= 2; ++round)
+    {
+	cnt = 0;
+	for (p = afflist; *p != NUL; ++p)
+	{
+	    if (*p != ',' && *p != '-'
+				&& vim_strchr(spin->si_compflags, *p) != NULL)
+	    {
+		/* This is a compount affix ID. */
+		if (round == 2)
+		    res[cnt] = *p;
+		++cnt;
+	    }
+	}
+	if (round == 1 && cnt > 0)
+	    res = getroom(spin, cnt + 1, FALSE);
+	if (res == NULL)
+	    break;
+    }
+
+    if (res != NULL)
+	res[cnt] = NUL;
+    return res;
+}
+
+/*
  * Apply affixes to a word and store the resulting words.
  * "ht" is the hashtable with affentry_T that need to be applied, either
  * prefixes or suffixes.
@@ -4335,6 +4575,7 @@ store_aff_word(spin, word, afflist, affile, ht, xht, comb, flags, pfxlist)
     int		use_flags;
     char_u	*use_pfxlist;
     int		c;
+    int		wordlen = STRLEN(word);
 
     todo = ht->ht_used;
     for (hi = ht->ht_array; todo > 0 && retval == OK; ++hi)
@@ -4355,12 +4596,16 @@ store_aff_word(spin, word, afflist, affile, ht, xht, comb, flags, pfxlist)
 		    /* Check the condition.  It's not logical to match case
 		     * here, but it is required for compatibility with
 		     * Myspell.
+		     * Another requirement from Myspell is that the chop
+		     * string is shorter than the word itself.
 		     * For prefixes, when "PFXPOSTPONE" was used, only do
 		     * prefixes with a chop string. */
 		    regmatch.regprog = ae->ae_prog;
 		    regmatch.rm_ic = FALSE;
 		    if ((xht != NULL || !affile->af_pfxpostpone
 				|| ae->ae_chop != NULL)
+			    && (ae->ae_chop == NULL
+				|| STRLEN(ae->ae_chop) < wordlen)
 			    && (ae->ae_prog == NULL
 				|| vim_regexec(&regmatch, word, (colnr_T)0)))
 		    {
@@ -4798,13 +5043,13 @@ store_word(spin, word, flags, region, pfxlist)
  * Returns FAIL when out of memory.
  */
     static int
-tree_add_word(spin, word, root, flags, region, prefixID)
+tree_add_word(spin, word, root, flags, region, affixID)
     spellinfo_T	*spin;
     char_u	*word;
     wordnode_T	*root;
     int		flags;
     int		region;
-    int		prefixID;
+    int		affixID;
 {
     wordnode_T	*node = root;
     wordnode_T	*np;
@@ -4836,7 +5081,7 @@ tree_add_word(spin, word, root, flags, region, prefixID)
 		{
 		    np->wn_flags = copyp->wn_flags;
 		    np->wn_region = copyp->wn_region;
-		    np->wn_prefixID = copyp->wn_prefixID;
+		    np->wn_affixID = copyp->wn_affixID;
 		}
 
 		/* Link the new node in the list, there will be one ref. */
@@ -4853,15 +5098,15 @@ tree_add_word(spin, word, root, flags, region, prefixID)
 	/* Look for the sibling that has the same character.  They are sorted
 	 * on byte value, thus stop searching when a sibling is found with a
 	 * higher byte value.  For zero bytes (end of word) the sorting is
-	 * done on flags and then on prefixID. */
+	 * done on flags and then on affixID. */
 	while (node != NULL
 		&& (node->wn_byte < word[i]
 		    || (node->wn_byte == NUL
 			&& (flags < 0
-			    ? node->wn_prefixID < prefixID
+			    ? node->wn_affixID < affixID
 			    : node->wn_flags < (flags & WN_MASK)
 				|| (node->wn_flags == (flags & WN_MASK)
-				    && node->wn_prefixID < prefixID)))))
+				    && node->wn_affixID < affixID)))))
 	{
 	    prev = &node->wn_sibling;
 	    node = *prev;
@@ -4871,7 +5116,7 @@ tree_add_word(spin, word, root, flags, region, prefixID)
 		|| (word[i] == NUL
 		    && (flags < 0
 			|| node->wn_flags != (flags & WN_MASK)
-			|| node->wn_prefixID != prefixID)))
+			|| node->wn_affixID != affixID)))
 	{
 	    /* Allocate a new node. */
 	    np = get_wordnode(spin);
@@ -4899,7 +5144,7 @@ tree_add_word(spin, word, root, flags, region, prefixID)
 	{
 	    node->wn_flags = flags;
 	    node->wn_region |= region;
-	    node->wn_prefixID = prefixID;
+	    node->wn_affixID = affixID;
 	    break;
 	}
 	prev = &node->wn_child;
@@ -5134,8 +5379,8 @@ node_compress(spin, node, ht, tot)
     for (np = node; np != NULL; np = np->wn_sibling)
     {
 	if (np->wn_byte == NUL)
-	    /* end node: use wn_flags, wn_region and wn_prefixID */
-	    n = np->wn_flags + (np->wn_region << 8) + (np->wn_prefixID << 16);
+	    /* end node: use wn_flags, wn_region and wn_affixID */
+	    n = np->wn_flags + (np->wn_region << 8) + (np->wn_affixID << 16);
 	else
 	    /* byte node: use the byte value and the child pointer */
 	    n = np->wn_byte + ((long_u)np->wn_child << 8);
@@ -5173,7 +5418,7 @@ node_equal(n1, n2)
 		|| (p1->wn_byte == NUL
 		    ? (p1->wn_flags != p2->wn_flags
 			|| p1->wn_region != p2->wn_region
-			|| p1->wn_prefixID != p2->wn_prefixID)
+			|| p1->wn_affixID != p2->wn_affixID)
 		    : (p1->wn_child != p2->wn_child)))
 	    break;
 
@@ -5249,6 +5494,7 @@ write_vim_spell(spin, fname)
      *		 <charflagslen> <charflags>
      *		 <fcharslen> <fchars>
      *		 <midwordlen> <midword>
+     *		 <compoundlen> <compoundtype> <compoundinfo>
      *		 <prefcondcnt> <prefcond> ... */
 
 							    /* <fileID> */
@@ -5294,6 +5540,20 @@ write_vim_spell(spin, fname)
 	i = STRLEN(spin->si_midword);
 	put_bytes(fd, (long_u)i, 2);		/* <midwordlen> */
 	fwrite(spin->si_midword, (size_t)i, (size_t)1, fd); /* <midword> */
+    }
+
+
+    /* Write the compound info. */
+    if (spin->si_compflags == NULL)
+	put_bytes(fd, 0L, 2);			/* <compoundlen> */
+    else
+    {
+	l = STRLEN(spin->si_compflags);
+	put_bytes(fd, (long_u)(l + 2), 2);	/* <compoundlen> */
+	putc(1, fd);				/* <compoundtype> */
+	putc(spin->si_compminlen, fd);		/* <comp1minlen> */
+	fwrite(spin->si_compflags, (size_t)l, (size_t)1, fd);
+						/* <comp1flags> */
     }
 
 
@@ -5472,7 +5732,7 @@ put_node(fd, node, index, regionmask, prefixtree)
 		/* For a NUL byte (end of word) write the flags etc. */
 		if (prefixtree)
 		{
-		    /* In PREFIXTREE write the required prefixID and the
+		    /* In PREFIXTREE write the required affixID and the
 		     * associated condition nr (stored in wn_region).  The
 		     * byte value is misused to store the "rare" and "not
 		     * combining" flags */
@@ -5483,7 +5743,7 @@ put_node(fd, node, index, regionmask, prefixtree)
 			putc(BY_FLAGS, fd);		/* <byte> */
 			putc(np->wn_flags, fd);		/* <pflags> */
 		    }
-		    putc(np->wn_prefixID, fd);		/* <prefixID> */
+		    putc(np->wn_affixID, fd);		/* <affixID> */
 		    put_bytes(fd, (long_u)np->wn_region, 2); /* <prefcondnr> */
 		}
 		else
@@ -5492,8 +5752,8 @@ put_node(fd, node, index, regionmask, prefixtree)
 		    flags = np->wn_flags;
 		    if (regionmask != 0 && np->wn_region != regionmask)
 			flags |= WF_REGION;
-		    if (np->wn_prefixID != 0)
-			flags |= WF_PFX;
+		    if (np->wn_affixID != 0)
+			flags |= WF_AFX;
 		    if (flags == 0)
 		    {
 			/* word without flags or region */
@@ -5514,8 +5774,8 @@ put_node(fd, node, index, regionmask, prefixtree)
 			}
 			if (flags & WF_REGION)
 			    putc(np->wn_region, fd);		/* <region> */
-			if (flags & WF_PFX)
-			    putc(np->wn_prefixID, fd);		/* <prefixID> */
+			if (flags & WF_AFX)
+			    putc(np->wn_affixID, fd);		/* <affixID> */
 		    }
 		}
 	    }

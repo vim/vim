@@ -3325,6 +3325,9 @@ do_map(maptype, arg, mode, abbrev)
 				mp->m_noremap = noremap;
 				mp->m_silent = silent;
 				mp->m_mode = mode;
+#ifdef FEAT_EVAL
+				mp->m_script_ID = current_SID;
+#endif
 				did_it = TRUE;
 			    }
 			}
@@ -3407,6 +3410,9 @@ do_map(maptype, arg, mode, abbrev)
     mp->m_noremap = noremap;
     mp->m_silent = silent;
     mp->m_mode = mode;
+#ifdef FEAT_EVAL
+    mp->m_script_ID = current_SID;
+#endif
 
     /* add the new entry in front of the abbrlist or maphash[] list */
     if (abbrev)
@@ -3676,6 +3682,10 @@ showmap(mp, local)
 	msg_puts_attr((char_u *)"<Nop>", hl_attr(HLF_8));
     else
 	msg_outtrans_special(mp->m_str, FALSE);
+#ifdef FEAT_EVAL
+    if (p_verbose > 0)
+	last_set_msg(mp->m_script_ID);
+#endif
     out_flush();			/* show one line at a time */
 }
 

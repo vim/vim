@@ -404,6 +404,12 @@ u_savecommon(top, bot, newbot)
 	}
 	for (i = 0, lnum = top + 1; i < size; ++i)
 	{
+	    fast_breakcheck();
+	    if (got_int)
+	    {
+		u_freeentry(uep, i);
+		return FAIL;
+	    }
 	    if ((uep->ue_array[i] = u_save_line(lnum++)) == NULL)
 	    {
 		u_freeentry(uep, i);

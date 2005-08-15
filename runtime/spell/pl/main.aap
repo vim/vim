@@ -9,17 +9,17 @@
 SPELLDIR = ..
 FILES    = pl_PL.aff pl_PL.dic
 
-all: $(SPELLDIR)/pl.iso-8859-2.spl $(SPELLDIR)/pl.utf-8.spl \
-        $(SPELLDIR)/pl.cp1250.spl ../README_pl.txt
+all: $SPELLDIR/pl.iso-8859-2.spl $SPELLDIR/pl.utf-8.spl \
+        $SPELLDIR/pl.cp1250.spl ../README_pl.txt
 
-$(SPELLDIR)/pl.iso-8859-2.spl : $(VIM) $(FILES)
-        :sys env LANG=pl_PL.ISO8859-2 $(VIM) -u NONE -e -c "mkspell! $(SPELLDIR)/pl pl_PL" -c q
+$SPELLDIR/pl.iso-8859-2.spl : $VIM $FILES
+        :sys env LANG=pl_PL.ISO8859-2 $VIM -u NONE -e -c "mkspell! $SPELLDIR/pl pl_PL" -c q
 
-$(SPELLDIR)/pl.utf-8.spl : $(VIM) $(FILES)
-        :sys env LANG=pl_PL.UTF-8 $(VIM) -u NONE -e -c "mkspell! $(SPELLDIR)/pl pl_PL" -c q
+$SPELLDIR/pl.utf-8.spl : $VIM $FILES
+        :sys env LANG=pl_PL.UTF-8 $VIM -u NONE -e -c "mkspell! $SPELLDIR/pl pl_PL" -c q
 
-$(SPELLDIR)/pl.cp1250.spl : $(VIM) $(FILES)
-        :sys $(VIM) -u NONE -e -c "set enc=cp1250" -c "mkspell! $(SPELLDIR)/pl pl_PL" -c q
+$SPELLDIR/pl.cp1250.spl : $VIM $FILES
+        :sys $VIM -u NONE -e -c "set enc=cp1250" -c "mkspell! $SPELLDIR/pl pl_PL" -c q
 
 ../README_pl.txt: README_pl_PL.txt
         :copy $source $target
@@ -28,7 +28,7 @@ $(SPELLDIR)/pl.cp1250.spl : $(VIM) $(FILES)
 # Fetching the files from OpenOffice.org.
 #
 #OODIR = http://ftp.services.openoffice.org/pub/OpenOffice.org/contrib/dictionaries
-#:attr {fetch = $(OODIR)/%file%} pl_PL.zip
+#:attr {fetch = $OODIR/%file%} pl_PL.zip
 
 #
 # Fetching the files from
@@ -43,24 +43,24 @@ pl_PL.aff pl_PL.dic: {buildcheck=}
         @from time import strftime, gmtime, time
         @for day in range(20):
             date = `strftime('%Y%m%d', gmtime(time() - day * 24 * 60 * 60))`
-            base =  alt-myspell-pl-$(date)
-            fname = $(base).tar.bz2
-            :attr {fetch = $(HTTPDIR)/%file%} $(fname)
+            base =  alt-myspell-pl-$date
+            fname = $base.tar.bz2
+            :attr {fetch = $HTTPDIR/%file%} $fname
             @try:
-                :fetch $(fname)
+                :fetch $fname
                 ok = 1
             @except:
                 ok = 0
             @if ok:
                 @break
-        :sys bunzip2 -c $(fname) | tar xf -
-        :move $(base)/* .
-        :deldir $(base)
-        :delete $(fname)
+        :sys bunzip2 -c $fname | tar xf -
+        :move $base/* .
+        :deldir $base
+        :delete $fname
         @if not os.path.exists('pl_PL.orig.aff'):
-                :copy pl_PL.aff pl_PL.orig.aff
+            :copy pl_PL.aff pl_PL.orig.aff
         @if not os.path.exists('pl_PL.orig.dic'):
-                :copy pl_PL.dic pl_PL.orig.dic
+            :copy pl_PL.dic pl_PL.orig.dic
         @if os.path.exists('pl_PL.diff'):
             :sys patch <pl_PL.diff
 
@@ -74,17 +74,29 @@ diff:
         :sys {force} diff -a -C 1 pl_PL.orig.dic pl_PL.dic >>pl_PL.diff
 
 
-# Check for updated OpenOffice spell files.  When there are changes the
+# Check for updated spell files.  When there are changes the
 # ".new.aff" and ".new.dic" files are left behind for manual inspection.
 
 check:
-        :assertpkg unzip diff
-        :fetch pl_PL.zip
-        :mkdir tmp
-        :cd tmp
+        :assertpkg tar bunzip2 diff
+        @from time import strftime, gmtime, time
+        @for day in range(20):
+            date = `strftime('%Y%m%d', gmtime(time() - day * 24 * 60 * 60))`
+            base =  alt-myspell-pl-$date
+            fname = $base.tar.bz2
+            :attr {fetch = $HTTPDIR/%file%} $fname
+            @try:
+                :fetch $fname
+                ok = 1
+            @except:
+                ok = 0
+            @if ok:
+                @break
+        :sys bunzip2 -c $fname | tar xf -
+        :cd $base
         @try:
             @import stat
-            :sys $(UNZIP) ../pl_PL.zip
+            :sys $UNZIP ../pl_PL.zip
             :sys {force} diff ../pl_PL.orig.aff pl_PL.aff >d
             @if os.stat('d')[stat.ST_SIZE] > 0:
                 :copy pl_PL.aff ../pl_PL.new.aff
@@ -93,8 +105,8 @@ check:
                 :copy pl_PL.dic ../pl_PL.new.dic
         @finally:
             :cd ..
-            :delete {r}{f}{q} tmp
-            :delete pl_PL.zip
+            :delete {r}{f}{q} $base
+            :delete $fname
 
 
 # vim: set sts=4 sw=4 :

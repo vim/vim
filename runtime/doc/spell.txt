@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Aug 12
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Aug 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -195,6 +195,14 @@ regions.  You can change that by manually editing the 'spellfile'.  See
 'spellfile' are only used when all entries in "spelllang" specify the same
 region (not counting files specified by their .spl name).
 
+Specific exception: For German these special regions are used:
+	de		all German words accepted
+	de_de		old and new spelling
+	de_19		old spelling
+	de_20		new spelling
+	de_at		Austria
+	de_ch		Switzerland
+
 
 SPELL FILES						*spell-load*
 
@@ -335,6 +343,27 @@ they do: >
 Note that the default scripts don't set 'spellcapcheck' if it was changed from
 the default value.  This assumes the user prefers another value then.
 
+
+DOUBLE SCORING						*spell-double-scoring*
+
+The 'spellsuggest' option can be used to select "double" scoring.  This
+mechanism is based on the principle that there are two kinds of spelling
+mistakes:
+
+1. You know how to spell the word, but mistype something.  This results in a
+   small editing distance (character swapped/omitted/inserted) and possibly a
+   word that sounds completely different.
+
+2. You don't know how to spell the word and type something that sounds right.
+   The edit distance can be big but the word is similar after sound-folding.
+
+Since scores for these two mistakes will be very different we use a list
+for each and mix them.
+
+The sound-folding is slow and people that know the language won't make the
+second kind of mistakes.  Therefore 'spellsuggest' can be set to select the
+preferred method for scoring the suggestions.
+
 ==============================================================================
 3. Generating a spell file				*spell-mkspell*
 
@@ -408,6 +437,11 @@ then Vim will try to guess.
 			Like ":mkspell" above, using {name} as the input file
 			and producing an output file in the same directory
 			that has ".{enc}.spl" appended.
+
+Vim will report the number of duplicate words.  This might be a mistake in the
+list of words.  But sometimes it is used to have different prefixes and
+suffixes for the same basic word to avoid them combining (e.g. Czech uses
+this).
 
 Since you might want to change a Myspell word list for use with Vim the
 following procedure is recommended:
@@ -716,9 +750,27 @@ string is one character and equal to the last character of the added string,
 but in lower case.  Thus when the chop string is used to allow the following
 word to start with an upper case letter.
 
+It is not possible to use PFXPOSTPONE together with COMPOUNDFLAG or
+COMPOUNDFLAGS.
 
-KEEP-CASE WORDS
-							*spell-affix-KEP*
+
+WORDS WITH A SLASH					*spell-affix-SLASH*
+
+The slash is used in the .dic file to separate the basic word from the affix
+letters that can be used.  Unfortunately, this means you cannot use a slash in
+a word.  Thus "TCP/IP" cannot be a word.  To work around that you can define a
+replacement character for the slash.  Example:
+
+	SLASH , ~
+
+Now you can use "TCP,IP" to add the word "TCP/IP".
+
+Of course, the letter used should itself not appear in any word!  The letter
+must be ASCII, thus a single byte.
+
+
+KEEP-CASE WORDS						*spell-affix-KEP*
+
 In the affix file a KEP line can be used to define the affix name used for
 keep-case words.  Example:
 
@@ -727,8 +779,8 @@ keep-case words.  Example:
 See above for an example |spell-affix-vim|.
 
 
-RARE WORDS
-							*spell-affix-RAR*
+RARE WORDS						*spell-affix-RAR*
+
 In the affix file a RAR line can be used to define the affix name used for
 rare words.  Example:
 
@@ -740,8 +792,8 @@ a typing mistake anyway.  When the same word is found as good it won't be
 highlighted as rare.
 
 
-BAD WORDS
-							*spell-affix-BAD*
+BAD WORDS						*spell-affix-BAD*
+
 In the affix file a BAD line can be used to define the affix name used for
 bad words.  Example:
 
@@ -754,6 +806,125 @@ This can be used to exclude words that would otherwise be good.  For example
 
 Once a word has been marked as bad it won't be undone by encountering the same
 word as good.
+
+
+COMPOUND WORDS						*spell-affix-compound*
+
+A compound word is a longer word made by concatenating words.  To specify
+which words may be concatenated a character is used.  This character is put in
+the list of affixes after the word.  We will call this character a flag here.
+Obviously these flags must be different from any affix IDs used.
+
+							*spell-COMPOUNDFLAG*
+The Myspell compatible method uses one flag, specified with COMPOUNDFLAG.
+All words with this flag combine in any order and without limit in length.
+This means there is no control over which word comes first.  Example:
+	COMPOUNDFLAG c ~
+
+							*spell-COMPOUNDFLAGS*
+The method added by Vim allows specifying which words can be prepended to
+other words, and which words can be appended to other words.  This is a list
+of comma separated items.  Each item may contain zero or more dashes and plus
+signs.
+
+NOTE: At this moment COMPOUNDFLAGS has not been implemented yet!
+
+An item without dashes specifies words that combine in any order and as often
+as possible.  Example:
+	COMPOUNDFLAGS c,m ~
+
+This allows all words with the "c" flag to be combined and all words with the
+"m" flag to be combined, but a word with the "c" flag doesn't combine with a
+word with the "m" flag.
+
+Flags that are put together, without a separating comma, are considered
+interchangable.  Example:
+	COMPOUNDFLAGS cm ~
+
+This allows all words with the "c" and/or "m" flag to be combined.
+
+An item with one dash specifies flags for a leading word and flags for a
+trailing word.  Thus only two-word combinations are made.  Example:
+	COMPOUNDFLAGS f-d ~
+
+Here the 'f' flag can be used for food and 'd' for dishes, such that you can
+use these words in the dictionary:
+	tomato/f ~
+	onion/f~
+	soup/d~
+	salat/d~
+
+Which makes the words:
+	tomato
+	onion
+	soup
+	salat
+	tomatosoup
+	tomatosalat
+	onionsoup
+	onionsalat
+
+Note that something like "souptomato" is not possible.  And that it's actually
+easier to list all the words if you have only this few.
+
+More dashes can be used to allow more words to combine.  For example:
+	COMPOUNDFLAGS f-d,f-f-d ~
+
+Would allow "tomatoonionsoup" (OK, so this is a bad example, but you get the
+idea).
+
+When a word can be used an undetermined number of times use a plus instead of
+a dash.  Example:
+	COMPOUNDFLAGS f+d ~
+
+Then you can make tasty "oniononiontomatotomatosoup".
+
+The "+" may also appear at the end, which means that the last flags can be
+repeated many times.  Example:
+	COMPOUNDFLAGS f-d+ ~
+
+Which allows the use of "onionsoupsoupsoupsoupsoupsoup".
+
+							*spell-COMPOUNDMIN*
+The minimal length of a word used for concatenation is specified with
+COMPOUNDMIN.  Example:
+	COMPOUNDMIN 5 ~
+
+When omitted a minimal length of 3 bytes is used.  Obviously you could just
+leave out the compound flag from short words instead, this feature is present
+for compatibility with Myspell.
+
+							*spell-CMP*
+NOTE: At this moment CMP has not been implemented yet!
+
+Sometimes it is necessary to change a word when concatenating it to another,
+by removing a few letters, inserting something or both.  It can also be useful
+to restrict concatenation to words that match a pattern.  For this purpose CMP
+items can be used.  They look like this:
+	CMP {flag} {strip} {add} {cond} {cond2}
+
+	{flag}		the flag, as used in COMPOUNDFLAGS for the lead word
+	{strip}		text to remove from the end of the lead word (zero
+			for no stripping)
+	{add}		text to insert between the words (zero for no
+			addition)
+	{cond}		condition to match at the end of the lead word
+	{cond2}		condition to match at the start of the following word
+
+This is exactly the same as what is used for SFX and PFX items, except there
+is an extra condition.  Example:
+	CMP f 0 - . . ~
+
+When used with the food and dish word list above, this means that a dash is
+inserted after each food item.  Thus you get "onion-soup" and
+"onion-tomato-salat".
+
+When there are CMP items for a compound flag the concatenation is only done
+when a CMP item matches.
+
+When there are no CMP items for a compound flag, then all words will be
+concatenated, as if there was an item:
+	CMP {flag} 0 0 . .
 
 
 REPLACEMENTS						*spell-affix-REP*

@@ -273,6 +273,19 @@ with a space.
 Note: When using mappings for Visual mode, you can use the "'<" mark, which
 is the start of the last selected Visual area in the current buffer |'<|.
 
+							*:map-verbose*
+When 'verbose' is non-zero, listing a key map will also display where it was
+last defined.  Example: >
+
+	:verbose map <C-W>*
+	n  <C-W>*      * <C-W><C-S>*
+	        Last set from /home/abcd/.vimrc
+
+When the map was defined by hand there is no "Last set" message.  When the map
+was defined while executing a function, user command or autocommand, the
+script in which it was defined is reported.
+{not available when compiled without the +eval feature}
+
 							*map_backslash*
 Note that only CTRL-V is mentioned here as a special character for mappings
 and abbreviations.  When 'cpoptions' does not contain 'B', a backslash can

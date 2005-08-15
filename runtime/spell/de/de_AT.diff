@@ -1,10 +1,9 @@
-*** de_DE.orig.aff	Mon Aug 15 22:45:33 2005
---- de_DE.aff	Mon Aug 15 22:45:33 2005
+*** de_AT.orig.aff	Mon Aug 15 22:59:43 2005
+--- de_AT.aff	Mon Aug 15 23:00:25 2005
 ***************
-*** 2,3 ****
---- 2,24 ----
-  TRY esianrtolcdugmphbyfvkwהüצ‗ביךאגסESIANRTOLCDUGMPHBYFVKWÄÜÖ
-+ 
+*** 3,4 ****
+--- 3,24 ----
+  
 + FOL  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗ÿ
 + LOW  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗ÿ
 + UPP  ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞ‗ÿ
@@ -25,4 +24,21 @@
 + MAP yÿ‎
 + MAP s‗
 + 
-  #
+  
+*** de_AT.orig.dic	Mon Aug 15 22:59:43 2005
+--- de_AT.dic	Mon Aug 15 23:03:19 2005
+***************
+*** 18,20 ****
+  Fleischbהnke/N
+- Fleischbank
+  Fleischhauer/NS
+--- 18,19 ----
+***************
+*** 151,153 ****
+  zulieb
+! 77857
+  Äbte/N
+--- 150,152 ----
+  zulieb
+! 
+  Äbte/N

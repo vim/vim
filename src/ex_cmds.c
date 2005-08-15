@@ -425,6 +425,11 @@ ex_sort(eap)
 	    nrs[lnum - eap->line1].col_nr = col;
 
 	nrs[lnum - eap->line1].lnum = lnum;
+
+	if (regmatch.regprog != NULL)
+	    fast_breakcheck();
+	if (got_int)
+	    goto theend;
     }
 
     /* Allocate a buffer that can hold the longest line. */
@@ -432,7 +437,7 @@ ex_sort(eap)
     if (sortbuf == NULL)
 	goto theend;
 
-    /* sort the array of line numbers */
+    /* Sort the array of line numbers.  Note: can't be interrupted! */
     qsort((void *)nrs, count, sizeof(sorti_T), sort_compare);
 
     /* Insert the lines in the sorted order below the last one. */
@@ -448,6 +453,9 @@ ex_sort(eap)
 	    if (unique)
 		STRCPY(sortbuf, s);
 	}
+	fast_breakcheck();
+	if (got_int)
+	    goto theend;
     }
 
     /* delete the original lines if appending worked */
@@ -472,6 +480,8 @@ theend:
     vim_free(nrs);
     vim_free(sortbuf);
     vim_free(regmatch.regprog);
+    if (got_int)
+	EMSG(_(e_interr));
 }
 
 /*

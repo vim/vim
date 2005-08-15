@@ -2014,6 +2014,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :highlight-default	syntax.txt	/*:highlight-default*
 :highlight-link	syntax.txt	/*:highlight-link*
 :highlight-normal	syntax.txt	/*:highlight-normal*
+:highlight-verbose	syntax.txt	/*:highlight-verbose*
 :history	cmdline.txt	/*:history*
 :history-indexing	cmdline.txt	/*:history-indexing*
 :i	insert.txt	/*:i*
@@ -2124,6 +2125,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :map-silent	map.txt	/*:map-silent*
 :map-special-keys	map.txt	/*:map-special-keys*
 :map-undo	map.txt	/*:map-undo*
+:map-verbose	map.txt	/*:map-verbose*
 :map_l	map.txt	/*:map_l*
 :map_l!	map.txt	/*:map_l!*
 :mapc	map.txt	/*:mapc*
@@ -4242,6 +4244,7 @@ balloon-eval	debugger.txt	/*balloon-eval*
 bar	motion.txt	/*bar*
 bars	help.txt	/*bars*
 base_font_name_list	mbyte.txt	/*base_font_name_list*
+bash-syntax	syntax.txt	/*bash-syntax*
 basic-syntax	syntax.txt	/*basic-syntax*
 basic.vim	syntax.txt	/*basic.vim*
 beep	options.txt	/*beep*
@@ -5205,7 +5208,6 @@ hebrew	hebrew.txt	/*hebrew*
 hebrew.txt	hebrew.txt	/*hebrew.txt*
 help	various.txt	/*help*
 help-context	help.txt	/*help-context*
-help-tags	tags	1
 help-translated	various.txt	/*help-translated*
 help-xterm-window	various.txt	/*help-xterm-window*
 help.txt	help.txt	/*help.txt*
@@ -5532,6 +5534,7 @@ keypad-plus	intro.txt	/*keypad-plus*
 keypad-point	intro.txt	/*keypad-point*
 keys()	eval.txt	/*keys()*
 known-bugs	todo.txt	/*known-bugs*
+ksh-syntax	syntax.txt	/*ksh-syntax*
 l	motion.txt	/*l*
 l:var	eval.txt	/*l:var*
 lace-syntax	syntax.txt	/*lace-syntax*
@@ -6372,6 +6375,9 @@ spec_chglog_release_info	pi_spec.txt	/*spec_chglog_release_info*
 special-buffers	windows.txt	/*special-buffers*
 speed-up	tips.txt	/*speed-up*
 spell	spell.txt	/*spell*
+spell-COMPOUNDFLAG	spell.txt	/*spell-COMPOUNDFLAG*
+spell-COMPOUNDFLAGS	spell.txt	/*spell-COMPOUNDFLAGS*
+spell-COMPOUNDMIN	spell.txt	/*spell-COMPOUNDMIN*
 spell-affix-BAD	spell.txt	/*spell-affix-BAD*
 spell-affix-FOL	spell.txt	/*spell-affix-FOL*
 spell-affix-KEP	spell.txt	/*spell-affix-KEP*
@@ -6383,10 +6389,12 @@ spell-affix-RAR	spell.txt	/*spell-affix-RAR*
 spell-affix-REP	spell.txt	/*spell-affix-REP*
 spell-affix-SAL	spell.txt	/*spell-affix-SAL*
 spell-affix-SFX	spell.txt	/*spell-affix-SFX*
+spell-affix-SLASH	spell.txt	/*spell-affix-SLASH*
 spell-affix-SOFOFROM	spell.txt	/*spell-affix-SOFOFROM*
 spell-affix-SOFOTO	spell.txt	/*spell-affix-SOFOTO*
 spell-affix-UPP	spell.txt	/*spell-affix-UPP*
 spell-affix-chars	spell.txt	/*spell-affix-chars*
+spell-affix-compound	spell.txt	/*spell-affix-compound*
 spell-affix-mbyte	spell.txt	/*spell-affix-mbyte*
 spell-affix-vim	spell.txt	/*spell-affix-vim*
 spell-dic-format	spell.txt	/*spell-dic-format*

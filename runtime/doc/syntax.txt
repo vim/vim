@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.0aa.  Last change: 2005 Aug 11
+*syntax.txt*	For Vim version 7.0aa.  Last change: 2005 Aug 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2234,7 +2234,7 @@ vimrc file: >
 (Adapted from the html.vim help text by Claudio Fleiner <claudio@fleiner.com>)
 
 
-SH						*sh.vim* *sh-syntax*
+SH			*sh.vim* *sh-syntax* *bash-syntax* *ksh-syntax*
 
 This covers the "normal" Unix (Bourne) sh, bash and the Korn shell.
 
@@ -3647,6 +3647,7 @@ specified field is used, and settings are merged with previous ones.  So, the
 result is like this single command has been used: >
    :hi Comment	term=bold ctermfg=Cyan guifg=#80a0ff gui=bold
 <
+						    	*:highlight-verbose*
 When listing a highlight group and 'verbose' is non-zero, the listing will
 also tell where it was last set.  Example: >
 	:verbose hi Comment

@@ -1,10 +1,9 @@
-*** de_DE.orig.aff	Mon Aug 15 22:45:33 2005
---- de_DE.aff	Mon Aug 15 22:45:33 2005
+*** de_CH.orig.aff	Mon Aug 15 22:45:43 2005
+--- de_CH.aff	Mon Aug 15 22:54:21 2005
 ***************
-*** 2,3 ****
---- 2,24 ----
-  TRY esianrtolcdugmphbyfvkwהüצ‗ביךאגסESIANRTOLCDUGMPHBYFVKWÄÜÖ
-+ 
+*** 3,4 ****
+--- 3,24 ----
+  
 + FOL  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗ÿ
 + LOW  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗ÿ
 + UPP  ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞ‗ÿ
@@ -25,4 +24,4 @@
 + MAP yÿ‎
 + MAP s‗
 + 
-  #
+  

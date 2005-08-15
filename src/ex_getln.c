@@ -1647,16 +1647,21 @@ cmdline_changed:
 
 	    if (i != 0)
 	    {
+		pos_T	    save_pos = curwin->w_cursor;
+
 		/*
 		 * First move cursor to end of match, then to start.  This
 		 * moves the whole match onto the screen when 'nowrap' is set.
 		 */
-		i = curwin->w_cursor.col;
 		curwin->w_cursor.lnum += search_match_lines;
 		curwin->w_cursor.col = search_match_endcol;
+		if (curwin->w_cursor.lnum > curbuf->b_ml.ml_line_count)
+		{
+		    curwin->w_cursor.lnum = curbuf->b_ml.ml_line_count;
+		    coladvance((colnr_T)MAXCOL);
+		}
 		validate_cursor();
-		curwin->w_cursor.lnum -= search_match_lines;
-		curwin->w_cursor.col = i;
+		curwin->w_cursor = save_pos;
 	    }
 	    validate_cursor();
 

@@ -606,6 +606,7 @@ static int	reg_magic;	/* magicness of the pattern: */
 
 static int	reg_string;	/* matching with a string instead of a buffer
 				   line */
+static int	reg_strict;	/* "[abc" is illegal */
 
 /*
  * META contains all characters that may be magic, except '^' and '$'.
@@ -1132,6 +1133,7 @@ regcomp_start(expr, re_flags)
     else
 	reg_magic = MAGIC_OFF;
     reg_string = (re_flags & RE_STRING);
+    reg_strict = (re_flags & RE_STRICT);
 
     num_complex_braces = 0;
     regnpar = 1;
@@ -2253,6 +2255,9 @@ collection:
 		*flagp |= HASWIDTH | SIMPLE;
 		break;
 	    }
+	    else if (reg_strict)
+		EMSG_M_RET_NULL(_("E769: Missing ] after %s["),
+						       reg_magic > MAGIC_OFF);
 	}
 	/* FALLTHROUGH */
 
@@ -3172,6 +3177,9 @@ reg_getline(lnum)
      * can't go before line 1 */
     if (reg_firstlnum + lnum < 1)
 	return NULL;
+    if (reg_firstlnum + lnum > reg_buf->b_ml.ml_line_count)
+	/* Must have matched the "\n" in the last line. */
+	return (char_u *)"";
     return ml_get_buf(reg_buf, reg_firstlnum + lnum, FALSE);
 }
 
@@ -3455,8 +3463,8 @@ vim_regexec_both(line, col)
 	    /* if not currently on the first line, get it again */
 	    if (reglnum != 0)
 	    {
-		regline = reg_getline((linenr_T)0);
 		reglnum = 0;
+		regline = reg_getline((linenr_T)0);
 	    }
 	    if (regline[col] == NUL)
 		break;
@@ -3723,7 +3731,8 @@ regmatch(scan)
 
 	op = OP(scan);
 	/* Check for character class with NL added. */
-	if (WITH_NL(op) && *reginput == NUL && reglnum < reg_maxline)
+	if (!reg_line_lbr && WITH_NL(op) && *reginput == NUL
+						    && reglnum <= reg_maxline)
 	{
 	    reg_nextline();
 	}
@@ -4369,7 +4378,7 @@ regmatch(scan)
 				}
 				if (clnum == reg_endpos[no].lnum)
 				    break;		/* match and at end! */
-				if (reglnum == reg_maxline)
+				if (reglnum >= reg_maxline)
 				{
 				    status = RA_NOMATCH;  /* text too short */
 				    break;
@@ -4672,7 +4681,7 @@ regmatch(scan)
 	    break;
 
 	  case NEWL:
-	    if ((c != NUL || reglnum == reg_maxline)
+	    if ((c != NUL || reglnum > reg_maxline || reg_line_lbr)
 					      && (c != '\n' || !reg_line_lbr))
 		status = RA_NOMATCH;
 	    else if (reg_line_lbr)
@@ -5133,7 +5142,8 @@ regrepeat(p, maxcount)
 		++count;
 		mb_ptr_adv(scan);
 	    }
-	    if (!WITH_NL(OP(p)) || reglnum == reg_maxline || count == maxcount)
+	    if (!WITH_NL(OP(p)) || reglnum > reg_maxline || reg_line_lbr
+							 || count == maxcount)
 		break;
 	    ++count;		/* count the line-break */
 	    reg_nextline();
@@ -5157,7 +5167,7 @@ regrepeat(p, maxcount)
 	    }
 	    else if (*scan == NUL)
 	    {
-		if (!WITH_NL(OP(p)) || reglnum == reg_maxline)
+		if (!WITH_NL(OP(p)) || reglnum > reg_maxline || reg_line_lbr)
 		    break;
 		reg_nextline();
 		scan = reginput;
@@ -5186,7 +5196,7 @@ regrepeat(p, maxcount)
 	    }
 	    else if (*scan == NUL)
 	    {
-		if (!WITH_NL(OP(p)) || reglnum == reg_maxline)
+		if (!WITH_NL(OP(p)) || reglnum > reg_maxline || reg_line_lbr)
 		    break;
 		reg_nextline();
 		scan = reginput;
@@ -5215,7 +5225,7 @@ regrepeat(p, maxcount)
 	    }
 	    else if (*scan == NUL)
 	    {
-		if (!WITH_NL(OP(p)) || reglnum == reg_maxline)
+		if (!WITH_NL(OP(p)) || reglnum > reg_maxline || reg_line_lbr)
 		    break;
 		reg_nextline();
 		scan = reginput;
@@ -5240,7 +5250,7 @@ regrepeat(p, maxcount)
 	{
 	    if (*scan == NUL)
 	    {
-		if (!WITH_NL(OP(p)) || reglnum == reg_maxline)
+		if (!WITH_NL(OP(p)) || reglnum > reg_maxline || reg_line_lbr)
 		    break;
 		reg_nextline();
 		scan = reginput;
@@ -5270,7 +5280,7 @@ do_class:
 #endif
 	    if (*scan == NUL)
 	    {
-		if (!WITH_NL(OP(p)) || reglnum == reg_maxline)
+		if (!WITH_NL(OP(p)) || reglnum > reg_maxline || reg_line_lbr)
 		    break;
 		reg_nextline();
 		scan = reginput;
@@ -5433,7 +5443,7 @@ do_class:
 #endif
 	    if (*scan == NUL)
 	    {
-		if (!WITH_NL(OP(p)) || reglnum == reg_maxline)
+		if (!WITH_NL(OP(p)) || reglnum > reg_maxline || reg_line_lbr)
 		    break;
 		reg_nextline();
 		scan = reginput;
@@ -5462,7 +5472,7 @@ do_class:
 
       case NEWL:
 	while (count < maxcount
-		&& ((*scan == NUL && reglnum < reg_maxline)
+		&& ((*scan == NUL && reglnum <= reg_maxline && !reg_line_lbr)
 		    || (*scan == '\n' && reg_line_lbr)))
 	{
 	    count++;

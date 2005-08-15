@@ -14,7 +14,7 @@ all: $SPELLDIR/yi.utf-8.spl ../README_yi.txt
 
 $SPELLDIR/yi.utf-8.spl : $VIM $FILES
     :sys $VIM -u NONE -e -c "set enc=utf-8"
-            -c "mkspell! $(SPELLDIR)/yi yi" -c q
+            -c "mkspell! $SPELLDIR/yi yi" -c q
 
 ../README_yi.txt : README.txt
     :copy $source $target

@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.0aa.  Last change: 2005 Jul 30
+*change.txt*    For Vim version 7.0aa.  Last change: 2005 Aug 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1533,5 +1533,9 @@ quite useless.
 The details about sorting depend on the library function used.  There is no
 guarantee that sorting is "stable" or obeys the current locale.  You will have
 to try it out.
+
+The sorting itself cannot be interrupted, because of using a system library
+function.  You can interrupt the preparation (for undo) and putting the sorted
+lines into the buffer.  In the last case you may end up with duplicated lines.
 
  vim:tw=78:ts=8:ft=help:norl:

@@ -544,8 +544,13 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use)
     /* Watch out for the "col" being MAXCOL - 2, used in a closed fold. */
     else if (has_mbyte && pos->lnum >= 1 && pos->lnum <= buf->b_ml.ml_line_count
 						     && pos->col < MAXCOL - 2)
-	extra_col = (*mb_ptr2len)(ml_get_buf(buf, pos->lnum, FALSE)
-								  + pos->col);
+    {
+	ptr = ml_get_buf(buf, pos->lnum, FALSE) + pos->col;
+	if (*ptr == NUL)
+	    extra_col = 1;
+	else
+	    extra_col = (*mb_ptr2len)(ptr);
+    }
 #endif
     else
 	extra_col = 1;

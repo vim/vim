@@ -901,9 +901,8 @@ struct mapblock
     int		m_mode;		/* valid mode */
     int		m_noremap;	/* if non-zero no re-mapping for m_str */
     char	m_silent;	/* <silent> used, don't echo commands */
-#if 0  /* Not used yet */
-    scid_T	m_script_ID;	/* ID of script where map was defined,
-				   used for s: variables and functions */
+#ifdef FEAT_EVAL
+    scid_T	m_script_ID;	/* ID of script where map was defined */
 #endif
 };
 

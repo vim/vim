@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Aug 12
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Aug 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,6 +29,11 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+Spelling:
+- suggestions for compound words.
+- Implement multiple flags for compound words.  Await comments from other
+  spell checking authors.
 
 Mac unicode patch (Da Woon Jung):
 - selecting proportional font breaks display
@@ -77,12 +82,26 @@ PLANNED FOR VERSION 7.0:
 	Use something like 'completefunc'?
 	runtime/complete/{filetype}.vim files?
 	In function arguments suggest variables of expected type.
+	List of completions is a Dictionary with items:
+	    complist[0]['text'] = completion text
+	    complist[0]['type'] = type of completion (e.g. function, var, arg)
+	    complist[0]['help'] = help text (e.g. function declaration)
+	    complist[0]['helpfunc'] = function that shows help text
+	    etc.
 
 	Ideas from others:
 	http://www.vim.org/scripts/script.php?script_id=747
+	    http://sourceforge.net/projects/insenvim
+		of http://insenvim.sourceforge.net
+	    Java, XML, HTML, C++, JSP, SQL, C#
+	    MS-Windows only, lots of dependencies (e.g. Perl, Internet
+		explorer), uses .dll shared libraries.
+	    for C++ uses $INCLUDE environment var
+	    UI: popup menu with list of alternatives, icon to indicate type
+		optional popup window with info about selected alternative
+	    Unrelated settings are changed (e.g. 'mousemodel').
+
 	www.vim.org script 1213 (Java Development Environment) (Fuchuan Wang)
-	http://sourceforge.net/projects/insenvim
-	    of http://insenvim.sourceforge.net
 	IComplete: http://www.vim.org/scripts/script.php?script_id=1265
 	    and http://stud4.tuwien.ac.at/~e0125672/icomplete/
 	http://cedet.sourceforge.net/intellisense.shtml (for Emacs)
@@ -2571,16 +2590,12 @@ More advanced repeating commands:
 
 
 Mappings and Abbreviations:
-8   Let ":verbose map xx" report where the mapping was set, just like with
-    ":verbose set".
 8   When "0" is mapped (it is a movement command) this mapping should not be
     used after typing another number, e.g. "20l". (Charles Campbell)
     Is this possible without disabling the mapping of the following command?
 8   Should mapping <C-A> and <C-S-A> both work?
 7   ":abbr b byte", append "b " to an existing word still expands to "byte".
     This is Vi compatible, but can we avoid it anyway?
-8   ":verbose map" could show the script where the mapping was defined.
-    m_script_ID can be used.
 8   To make a mapping work with a prepended "x to select a register, store the
     last _typed_ register name and access it with "&.
 8   Add ":amap", like ":amenu".
@@ -2592,8 +2607,6 @@ Mappings and Abbreviations:
 8   Allow mapping of CTRL-@ (anywhere in the LHS).
 8   Give a warning when using CTRL-C in the lhs of a mapping.  It will never
     (?) work.
-7   ":verbose map" should display where a mapping was defined, like ":verbose
-    set".
 8   Add a way to save a current mapping and restore it later.  Use a function
     that returns the mapping command to restore it: mapcmd()?  mapcheck() is
     not fool proof.  How to handle ambiguous mappings?

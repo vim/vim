@@ -2,7 +2,7 @@
 " Language:	PHP
 " Author:	John Wellesz <John.wellesz (AT) teaser (DOT) fr>
 " URL:		http://www.2072productions.com/vim/indent/php.vim
-" Last Change: 2005 June 30th
+" Last Change: 2005 Aug 15
 " Version: 1.17
 "
 " For a complete change log and lots of comments in the code, download the script on

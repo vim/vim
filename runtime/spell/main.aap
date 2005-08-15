@@ -1,7 +1,7 @@
 # "aap": generate all the .spl files
 # "aap diff" create all the diff files
 
-LANG = de en fr he it nl pl yi
+LANG = af bg ca cs da de en fr he hr it nl ny pl sk yi
 
 diff: $*LANG/diff
         :print done

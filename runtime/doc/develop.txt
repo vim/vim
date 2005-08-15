@@ -1,4 +1,4 @@
-*develop.txt*   For Vim version 7.0aa.  Last change: 2005 Jun 13
+*develop.txt*   For Vim version 7.0aa.  Last change: 2005 Aug 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -123,7 +123,8 @@ VIM IS... MAINTAINABLE					*design-maintain*
 
 - The source code should not become a mess.  It should be reliable code.
 - Use the same layout in all files to make it easy to read |coding-style|.
-- Use comments in a useful way!
+- Use comments in a useful way!  Quoting the function name and argument names
+  is NOT useful.  Do explain what they are for.
 - Porting to another platform should be made easy, without having to change
   too much platform-independent code.
 - Use the object-oriented spirit: Put data and code together.  Minimize the
