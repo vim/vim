@@ -11,11 +11,11 @@ FILES    = he_IL.aff he_IL.dic
 
 all: $SPELLDIR/he.utf-8.spl $SPELLDIR/he.iso-8859-8.spl ../README_he.txt
 
-$SPELLDIR/he.utf-8.spl : $VIM $FILES
+$SPELLDIR/he.utf-8.spl : $FILES
         :sys env LANG=he_IL.UTF-8
 		$VIM -u NONE -e -c "mkspell! $SPELLDIR/he he_IL" -c q
 
-$SPELLDIR/he.iso-8859-8.spl : $VIM $FILES
+$SPELLDIR/he.iso-8859-8.spl : $FILES
         :sys $VIM -u NONE -e -c "set enc=iso-8859-8"
                         -c "mkspell! $SPELLDIR/he he_IL" -c q
 

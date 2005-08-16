@@ -1432,6 +1432,7 @@ struct file_buffer
 #ifdef FEAT_SYN_HL
     hashtab_T	b_keywtab;		/* syntax keywords hash table */
     hashtab_T	b_keywtab_ic;		/* idem, ignore case */
+    int		b_syn_error;		/* TRUE when error occured in HL */
     int		b_syn_ic;		/* ignore case for :syn cmds */
     int		b_syn_spell;		/* SYNSPL_ values */
     garray_T	b_syn_patterns;		/* table for syntax patterns */

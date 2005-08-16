@@ -1827,6 +1827,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :command	map.txt	/*:command*
 :command-completion	map.txt	/*:command-completion*
 :command-completion-custom	map.txt	/*:command-completion-custom*
+:command-verbose	map.txt	/*:command-verbose*
 :comment	eval.txt	/*:comment*
 :comp	quickfix.txt	/*:comp*
 :compiler	quickfix.txt	/*:compiler*
@@ -1982,6 +1983,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :for	eval.txt	/*:for*
 :fu	eval.txt	/*:fu*
 :function	eval.txt	/*:function*
+:function-verbose	eval.txt	/*:function-verbose*
 :g	repeat.txt	/*:g*
 :global	repeat.txt	/*:global*
 :go	motion.txt	/*:go*
@@ -5006,6 +5008,7 @@ g:netrw_ftp_list_cmd	pi_netrw.txt	/*g:netrw_ftp_list_cmd*
 g:netrw_ftpmode	pi_netrw.txt	/*g:netrw_ftpmode*
 g:netrw_hide	pi_netrw.txt	/*g:netrw_hide*
 g:netrw_http_cmd	pi_netrw.txt	/*g:netrw_http_cmd*
+g:netrw_ignorenetrc	pi_netrw.txt	/*g:netrw_ignorenetrc*
 g:netrw_keepdir	pi_netrw.txt	/*g:netrw_keepdir*
 g:netrw_list_cmd	pi_netrw.txt	/*g:netrw_list_cmd*
 g:netrw_list_hide	pi_netrw.txt	/*g:netrw_list_hide*
@@ -5208,6 +5211,7 @@ hebrew	hebrew.txt	/*hebrew*
 hebrew.txt	hebrew.txt	/*hebrew.txt*
 help	various.txt	/*help*
 help-context	help.txt	/*help-context*
+help-tags	tags	1
 help-translated	various.txt	/*help-translated*
 help-xterm-window	various.txt	/*help-xterm-window*
 help.txt	help.txt	/*help.txt*
@@ -5790,6 +5794,7 @@ netrw-browse-intro	pi_netrw.txt	/*netrw-browse-intro*
 netrw-browse-var	pi_netrw.txt	/*netrw-browse-var*
 netrw-c	pi_netrw.txt	/*netrw-c*
 netrw-cadaver	pi_netrw.txt	/*netrw-cadaver*
+netrw-chgup	pi_netrw.txt	/*netrw-chgup*
 netrw-contents	pi_netrw.txt	/*netrw-contents*
 netrw-cr	pi_netrw.txt	/*netrw-cr*
 netrw-credits	pi_netrw.txt	/*netrw-credits*
@@ -5799,6 +5804,7 @@ netrw-d	pi_netrw.txt	/*netrw-d*
 netrw-debug	pi_netrw.txt	/*netrw-debug*
 netrw-delete	pi_netrw.txt	/*netrw-delete*
 netrw-dir	pi_netrw.txt	/*netrw-dir*
+netrw-dirlist	pi_netrw.txt	/*netrw-dirlist*
 netrw-downdir	pi_netrw.txt	/*netrw-downdir*
 netrw-edithide	pi_netrw.txt	/*netrw-edithide*
 netrw-ex	pi_netrw.txt	/*netrw-ex*
@@ -5846,6 +5852,7 @@ netrw-ref	pi_netrw.txt	/*netrw-ref*
 netrw-rename	pi_netrw.txt	/*netrw-rename*
 netrw-reverse	pi_netrw.txt	/*netrw-reverse*
 netrw-s	pi_netrw.txt	/*netrw-s*
+netrw-settings	pi_netrw.txt	/*netrw-settings*
 netrw-sexplore	pi_netrw.txt	/*netrw-sexplore*
 netrw-sort	pi_netrw.txt	/*netrw-sort*
 netrw-sortsequence	pi_netrw.txt	/*netrw-sortsequence*
@@ -6375,6 +6382,7 @@ spec_chglog_release_info	pi_spec.txt	/*spec_chglog_release_info*
 special-buffers	windows.txt	/*special-buffers*
 speed-up	tips.txt	/*speed-up*
 spell	spell.txt	/*spell*
+spell-CMP	spell.txt	/*spell-CMP*
 spell-COMPOUNDFLAG	spell.txt	/*spell-COMPOUNDFLAG*
 spell-COMPOUNDFLAGS	spell.txt	/*spell-COMPOUNDFLAGS*
 spell-COMPOUNDMIN	spell.txt	/*spell-COMPOUNDMIN*
@@ -6398,7 +6406,9 @@ spell-affix-compound	spell.txt	/*spell-affix-compound*
 spell-affix-mbyte	spell.txt	/*spell-affix-mbyte*
 spell-affix-vim	spell.txt	/*spell-affix-vim*
 spell-dic-format	spell.txt	/*spell-dic-format*
+spell-double-scoring	spell.txt	/*spell-double-scoring*
 spell-file-format	spell.txt	/*spell-file-format*
+spell-german	spell.txt	/*spell-german*
 spell-load	spell.txt	/*spell-load*
 spell-midword	spell.txt	/*spell-midword*
 spell-mkspell	spell.txt	/*spell-mkspell*
@@ -6406,6 +6416,7 @@ spell-quickstart	spell.txt	/*spell-quickstart*
 spell-remarks	spell.txt	/*spell-remarks*
 spell-syntax	spell.txt	/*spell-syntax*
 spell-wordlist-format	spell.txt	/*spell-wordlist-format*
+spell-yiddish	spell.txt	/*spell-yiddish*
 spell.txt	spell.txt	/*spell.txt*
 spellbadword()	eval.txt	/*spellbadword()*
 spellsuggest()	eval.txt	/*spellsuggest()*

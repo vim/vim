@@ -4590,6 +4590,7 @@ gui_do_findrepl(flags, find_text, repl_text, down)
     int		type = (flags & FRD_TYPE_MASK);
     char_u	*p;
     regmatch_T	regmatch;
+    int		save_did_emsg = did_emsg;
 
     ga_init2(&ga, 1, 100);
     if (type == FRD_REPLACEALL)
@@ -4665,6 +4666,10 @@ gui_do_findrepl(flags, find_text, repl_text, down)
 						    SEARCH_MSG + SEARCH_MARK);
 	msg_scroll = i;	    /* don't let an error message set msg_scroll */
     }
+
+    /* Don't want to pass did_emsg to other code, it may cause disabling
+     * syntax HL if we were busy redrawing. */
+    did_emsg = save_did_emsg;
 
     if (State & (NORMAL | INSERT))
     {

@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Aug 15
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Aug 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -561,8 +561,8 @@ For xterm most combinations of modifiers with function keys are recognized.
 
 When 'verbose' is set the output of ":highlight" will show where a highlight
 item was last set.
-When 'verbose' is set the output of ":map" will show where a key map was
-last defined. (Yegappan Lakshmanan)
+When 'verbose' is set the output of ":map", ":command" and ":function"
+commands will show where it was last defined. (Yegappan Lakshmanan)
 
 ==============================================================================
 IMPROVEMENTS						*improvements-7*
@@ -1291,5 +1291,10 @@ The search pattern "\n" did not match at the end of the last line.
 Searching for a pattern backwards, starting on the NUL at the end of the line
 and 'encoding' is "utf-8" would match the pattern just before it incorrectly.
 Affected searchpair('/\*', '', '\*/').
+
+For the Find/Replace dialog it was possible that not finding the text resulted
+in an error message while redrawing, which cleared the syntax highlighting
+while it was being used, resulting in a crash.  Now don't clear syntax
+highlighting, disable it with b_syn_error.
 
  vim:tw=78:ts=8:ft=help:norl:

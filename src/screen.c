@@ -2594,7 +2594,7 @@ win_line(wp, lnum, startrow, endrow)
     extra_check = 0;
 #endif
 #ifdef FEAT_SYN_HL
-    if (syntax_present(wp->w_buffer))
+    if (syntax_present(wp->w_buffer) && !wp->w_buffer->b_syn_error)
     {
 	/* Prepare for syntax highlighting in this line.  When there is an
 	 * error, stop syntax highlighting. */
@@ -2602,7 +2602,7 @@ win_line(wp, lnum, startrow, endrow)
 	did_emsg = FALSE;
 	syntax_start(wp, lnum);
 	if (did_emsg)
-	    syntax_clear(wp->w_buffer);
+	    wp->w_buffer->b_syn_error = TRUE;
 	else
 	{
 	    did_emsg = save_did_emsg;
@@ -3643,7 +3643,10 @@ win_line(wp, lnum, startrow, endrow)
 					       has_spell ? &can_spell : NULL);
 
 		    if (did_emsg)
-			syntax_clear(wp->w_buffer);
+		    {
+			wp->w_buffer->b_syn_error = TRUE;
+			has_syntax = FALSE;
+		    }
 		    else
 			did_emsg = save_did_emsg;
 

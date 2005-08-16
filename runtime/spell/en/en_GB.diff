@@ -2356,7 +2356,7 @@
 ! SFX 3 o ist's o
 ! SFX 3 0 ist's [^eoy]
 *** en_GB.orig.dic	Sun Jul  3 18:05:07 2005
---- en_GB.dic	Sun Jul  3 18:19:25 2005
+--- en_GB.dic	Tue Aug 16 17:05:18 2005
 ***************
 *** 630,632 ****
   Byrne/M
@@ -2482,7 +2482,7 @@
   vindaloo/S
 --- 30760,30763 ----
   villein/SM
-! vim/M?
+! vim/?
 ! Vim/M
   vindaloo/S
 ***************

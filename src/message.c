@@ -3800,7 +3800,7 @@ tv_str(tvs, idxp)
  * When va_list is not supported we only define vim_snprintf().
  *
  * vim_vsnprintf() can be invoked with either "va_list" or a list of
- * "typval_T".  The other must be NULL.
+ * "typval_T".  When the latter is not used it must be NULL.
  */
 
 /* When generating prototypes all of this is skipped, cproto doesn't
@@ -3937,7 +3937,7 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 		    get_a_arg(arg_idx);
 #else
 # if defined(FEAT_EVAL)
-		    ap == NULL ? tv_nr(tvs, &arg_idx) :
+		    tvs != NULL ? tv_nr(tvs, &arg_idx) :
 # endif
 			va_arg(ap, int);
 #endif
@@ -3974,7 +3974,7 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 			get_a_arg(arg_idx);
 #else
 # if defined(FEAT_EVAL)
-			ap == NULL ? tv_nr(tvs, &arg_idx) :
+			tvs != NULL ? tv_nr(tvs, &arg_idx) :
 # endif
 			    va_arg(ap, int);
 #endif
@@ -4050,7 +4050,7 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 			    get_a_arg(arg_idx);
 #else
 # if defined(FEAT_EVAL)
-			    ap == NULL ? tv_nr(tvs, &arg_idx) :
+			    tvs != NULL ? tv_nr(tvs, &arg_idx) :
 # endif
 				va_arg(ap, int);
 #endif
@@ -4066,7 +4066,7 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 				(char *)get_a_arg(arg_idx);
 #else
 # if defined(FEAT_EVAL)
-				ap == NULL ? tv_str(tvs, &arg_idx) :
+				tvs != NULL ? tv_str(tvs, &arg_idx) :
 # endif
 				    va_arg(ap, char *);
 #endif
@@ -4127,10 +4127,10 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 			length_modifier = '\0';
 			ptr_arg =
 #ifndef HAVE_STDARG_H
-				    (void *)get_a_arg(arg_idx);
+				 (void *)get_a_arg(arg_idx);
 #else
 # if defined(FEAT_EVAL)
-				    ap == NULL ? (void *)tv_str(tvs, &arg_idx) :
+				 tvs != NULL ? (void *)tv_str(tvs, &arg_idx) :
 # endif
 					va_arg(ap, void *);
 #endif
@@ -4150,7 +4150,7 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 					get_a_arg(arg_idx);
 #else
 # if defined(FEAT_EVAL)
-					ap == NULL ? tv_nr(tvs, &arg_idx) :
+					tvs != NULL ? tv_nr(tvs, &arg_idx) :
 # endif
 					    va_arg(ap, int);
 #endif
@@ -4165,7 +4165,7 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 					get_a_arg(arg_idx);
 #else
 # if defined(FEAT_EVAL)
-					ap == NULL ? tv_nr(tvs, &arg_idx) :
+					tvs != NULL ? tv_nr(tvs, &arg_idx) :
 # endif
 					    va_arg(ap, long int);
 #endif
@@ -4188,7 +4188,7 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 					    get_a_arg(arg_idx);
 #else
 # if defined(FEAT_EVAL)
-					    ap == NULL ? tv_nr(tvs, &arg_idx) :
+					    tvs != NULL ? tv_nr(tvs, &arg_idx) :
 # endif
 						va_arg(ap, unsigned int);
 #endif
@@ -4201,7 +4201,7 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 					    get_a_arg(arg_idx);
 #else
 # if defined(FEAT_EVAL)
-					    ap == NULL ? tv_nr(tvs, &arg_idx) :
+					    tvs != NULL ? tv_nr(tvs, &arg_idx) :
 # endif
 						va_arg(ap, unsigned long int);
 #endif
@@ -4484,7 +4484,7 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
     }
 
 #ifdef HAVE_STDARG_H
-    if (ap == NULL && tvs[arg_idx - 1].v_type != VAR_UNKNOWN)
+    if (tvs != NULL && tvs[arg_idx - 1].v_type != VAR_UNKNOWN)
 	EMSG(_("E767: Too many arguments to printf()"));
 #endif
 

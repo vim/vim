@@ -1,4 +1,4 @@
-# Aap recipe for Polish Vim spell files.
+# Aap recipe for Croatian Vim spell files.
 
 # Use a freshly compiled Vim if it exists.
 @if os.path.exists('../../../src/vim'):
@@ -12,13 +12,13 @@ FILES    = hr_HR.aff hr_HR.dic
 all: $SPELLDIR/hr.iso-8859-2.spl $SPELLDIR/pl.utf-8.spl \
         $SPELLDIR/hr.cp1250.spl ../README_pl.txt
 
-$SPELLDIR/hr.iso-8859-2.spl : $VIM $FILES
+$SPELLDIR/hr.iso-8859-2.spl : $FILES
         :sys env LANG=hr_HR.ISO8859-2 $VIM -u NONE -e -c "mkspell! $SPELLDIR/hr hr_HR" -c q
 
-$SPELLDIR/hr.utf-8.spl : $VIM $FILES
+$SPELLDIR/hr.utf-8.spl : $FILES
         :sys env LANG=hr_HR.UTF-8 $VIM -u NONE -e -c "mkspell! $SPELLDIR/hr hr_HR" -c q
 
-$SPELLDIR/hr.cp1250.spl : $VIM $FILES
+$SPELLDIR/hr.cp1250.spl : $FILES
         :sys $VIM -u NONE -e -c "set enc=cp1250" -c "mkspell! $SPELLDIR/hr hr_HR" -c q
 
 ../README_hr.txt: README_hr_HR.txt

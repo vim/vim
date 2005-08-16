@@ -12,13 +12,13 @@ FILES    = pl_PL.aff pl_PL.dic
 all: $SPELLDIR/pl.iso-8859-2.spl $SPELLDIR/pl.utf-8.spl \
         $SPELLDIR/pl.cp1250.spl ../README_pl.txt
 
-$SPELLDIR/pl.iso-8859-2.spl : $VIM $FILES
+$SPELLDIR/pl.iso-8859-2.spl : $FILES
         :sys env LANG=pl_PL.ISO8859-2 $VIM -u NONE -e -c "mkspell! $SPELLDIR/pl pl_PL" -c q
 
-$SPELLDIR/pl.utf-8.spl : $VIM $FILES
+$SPELLDIR/pl.utf-8.spl : $FILES
         :sys env LANG=pl_PL.UTF-8 $VIM -u NONE -e -c "mkspell! $SPELLDIR/pl pl_PL" -c q
 
-$SPELLDIR/pl.cp1250.spl : $VIM $FILES
+$SPELLDIR/pl.cp1250.spl : $FILES
         :sys $VIM -u NONE -e -c "set enc=cp1250" -c "mkspell! $SPELLDIR/pl pl_PL" -c q
 
 ../README_pl.txt: README_pl_PL.txt

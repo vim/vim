@@ -11,11 +11,11 @@ FILES    = fr_FR.aff fr_FR.dic
 
 all: $SPELLDIR/fr.latin1.spl $SPELLDIR/fr.utf-8.spl ../README_fr.txt
 
-$SPELLDIR/fr.latin1.spl : $VIM $FILES
+$SPELLDIR/fr.latin1.spl : $FILES
         :sys env LANG=fr_FR.ISO8859-1
 		$VIM -u NONE -e -c "mkspell! $SPELLDIR/fr fr_FR" -c q
 
-$SPELLDIR/fr.utf-8.spl : $VIM $FILES
+$SPELLDIR/fr.utf-8.spl : $FILES
         :sys env LANG=fr_FR.UTF-8
 		$VIM -u NONE -e -c "mkspell! $SPELLDIR/fr fr_FR" -c q
 

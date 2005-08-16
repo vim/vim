@@ -1,0 +1,16 @@
+*** da_DK.orig.aff	Sun Aug 14 20:04:31 2005
+--- da_DK.aff	Mon Aug 15 14:03:06 2005
+***************
+*** 6,7 ****
+--- 6,16 ----
+  
++ FOL  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗ÿ
++ LOW  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗ÿ
++ UPP  ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞ‗ÿ
++ 
++ SOFOFROM abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZאבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗ÿÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞ¿
++ SOFOTO   ebctefghejklnnepkrstevvkesebctefghejklnnepkrstevvkeseeeeeeeceeeeeeeedneeeeeeeeeeepseeeeeeeeceeeeeeeedneeeeeeeeeeep?
++ 
++ MIDWORD	'-
++ 
+  # Foranstilling af u-

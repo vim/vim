@@ -11959,18 +11959,24 @@ f_printf(argvars, rettv)
 	char_u	*s;
 	int	saved_did_emsg = did_emsg;
 	char	*fmt;
+	va_list	ap; /* dummy */
+
+# ifdef LINT
+	/* avoid warning for "ap" used before set; it is unused. */
+	va_start(ap, rettv);
+# endif
 
 	/* Get the required length, allocate the buffer and do it for real. */
 	did_emsg = FALSE;
 	fmt = (char *)get_tv_string_buf(&argvars[0], buf);
-	len = vim_vsnprintf(NULL, 0, fmt, NULL, argvars + 1);
+	len = vim_vsnprintf(NULL, 0, fmt, ap, argvars + 1);
 	if (!did_emsg)
 	{
 	    s = alloc(len + 1);
 	    if (s != NULL)
 	    {
 		rettv->vval.v_string = s;
-		(void)vim_vsnprintf((char *)s, len + 1, fmt, NULL, argvars + 1);
+		(void)vim_vsnprintf((char *)s, len + 1, fmt, ap, argvars + 1);
 	    }
 	}
 	did_emsg |= saved_did_emsg;
@@ -17482,6 +17488,10 @@ list_func_head(fp, indent)
 	MSG_PUTS("...");
     }
     msg_putchar(')');
+#ifdef FEAT_EVAL
+    if (p_verbose > 0)
+	last_set_msg(fp->uf_script_ID);
+#endif
 }
 
 /*

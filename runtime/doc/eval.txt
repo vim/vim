@@ -4683,7 +4683,21 @@ instead of "s:" when the mapping is expanded outside of the script.
 			{name} can also be a Dictionary entry that is a
 			Funcref: >
 				:function dict.init
-<							*E124* *E125*
+<
+							*:function-verbose*
+When 'verbose' is non-zero, listing a function will also display where it was
+last defined. Example: >
+
+    :verbose function SetFileTypeSH
+	function SetFileTypeSH(name)
+	    Last set from /usr/share/vim/vim-7.0/filetype.vim
+<
+When the function was defined by hand there is no "Last set" message.  When
+the function was defined while executing a function, user command or
+autocommand, the script in which it was defined is reported.
+{not available when compiled without the +eval feature}
+
+ 							*E124* *E125*
 :fu[nction][!] {name}([arguments]) [range] [abort] [dict]
 			Define a new function by the name {name}.  The name
 			must be made of alphanumeric characters and '_', and

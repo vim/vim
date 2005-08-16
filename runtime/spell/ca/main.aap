@@ -11,11 +11,11 @@ FILES    = ca_ES.aff ca_ES.dic
 
 all: $SPELLDIR/ca.latin1.spl $SPELLDIR/ca.utf-8.spl ../README_ca.txt
 
-$SPELLDIR/ca.latin1.spl : $VIM $FILES
+$SPELLDIR/ca.latin1.spl : $FILES
         :sys env LANG=ca_ES.ISO8859-1
 		$VIM -u NONE -e -c "mkspell! $SPELLDIR/ca ca_ES" -c q
 
-$SPELLDIR/ca.utf-8.spl : $VIM $FILES
+$SPELLDIR/ca.utf-8.spl : $FILES
         :sys env LANG=ca_ES.UTF-8
 		$VIM -u NONE -e -c "mkspell! $SPELLDIR/ca ca_ES" -c q
 

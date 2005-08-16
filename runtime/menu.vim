@@ -2,7 +2,7 @@
 " You can also use this as a start for your own set of menus.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Jul 30
+" Last Change:	2005 Aug 16
 
 " Note that ":an" (short for ":anoremenu") is often used to make a menu work
 " in all modes and avoid side effects from mappings defined by the user.
@@ -198,10 +198,10 @@ an 20.405	 &Edit.-SEP2-				<Nop>
 if has("win32")  || has("win16") || has("gui_gtk") || has("gui_kde") || has("gui_motif")
   an 20.410	 &Edit.&Find\.\.\.			:promptfind<CR>
   vunmenu	 &Edit.&Find\.\.\.
-  vnoremenu	 &Edit.&Find\.\.\.			y:promptfind <C-R>"<CR>
+  vnoremenu <silent>	 &Edit.&Find\.\.\.			y:call <SID>FixFText()<CR>:promptfind <C-R>"<CR>
   an 20.420	 &Edit.Find\ and\ Rep&lace\.\.\.	:promptrepl<CR>
   vunmenu	 &Edit.Find\ and\ Rep&lace\.\.\.
-  vnoremenu	 &Edit.Find\ and\ Rep&lace\.\.\.	y:promptrepl <C-R>"<CR>
+  vnoremenu <silent>	 &Edit.Find\ and\ Rep&lace\.\.\.	y:call <SID>FixFText()<CR>:promptrepl <C-R>"<CR>
 else
   an 20.410	 &Edit.&Find<Tab>/			/
   an 20.420	 &Edit.Find\ and\ Rep&lace<Tab>:%s	:%s/
@@ -211,6 +211,11 @@ endif
 
 an 20.425	 &Edit.-SEP3-				<Nop>
 an 20.430	 &Edit.Settings\ &Window		:options<CR>
+
+fun! s:FixFText()
+  " Fix text in nameless register to be used with :promptfind.
+  let @" = substitute(@", "[\r\n]", '\\n', 'g')
+endfun
 
 " Edit/Global Settings
 an 20.440.100 &Edit.&Global\ Settings.Toggle\ Pattern\ &Highlight<Tab>:set\ hls!	:set hls! hls?<CR>

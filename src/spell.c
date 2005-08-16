@@ -51,15 +51,20 @@
  */
 
 /* Use SPELL_PRINTTREE for debugging: dump the word tree after adding a word.
- * Only use it for small word lists!
- * SPELL_COMPRESS_CNT is in how many words we compress the tree to limit the
- * amount of memory used (esp. for Italian). */
+ * Only use it for small word lists! */
 #if 0
 # define SPELL_PRINTTREE
-# define SPELL_COMPRESS_CNT 1
-#else
-# define SPELL_COMPRESS_CNT 1000000
 #endif
+
+/* SPELL_COMPRESS_CNT is after how many allocated blocks we compress the tree
+ * to limit the amount of memory used (esp. for Italian and Hungarian).  The
+ * amount of memory used for nodes then is SPELL_COMPRESS_CNT times
+ * SBLOCKSIZE.
+ * Then compress again after allocating SPELL_COMPRESS_INC more blocks or
+ * adding SPELL_COMPRESS_ADDED words and running out of memory again.  */
+#define SPELL_COMPRESS_CNT 30000
+#define SPELL_COMPRESS_INC 100
+#define SPELL_COMPRESS_ADDED 500000
 
 /*
  * Use this to adjust the score after finding suggestions, based on the
@@ -594,8 +599,9 @@ typedef struct trystate_S
     char_u	ts_fidx;	/* index in fword[], case-folded bad word */
     char_u	ts_fidxtry;	/* ts_fidx at which bytes may be changed */
     char_u	ts_twordlen;	/* valid length of tword[] */
-    char_u	ts_prefixdepth;	/* stack depth for end of prefix or PREFIXTREE
-				 * or NOPREFIX */
+    char_u	ts_prefixdepth;	/* stack depth for end of prefix or
+				 * PFD_PREFIXTREE or PFD_NOPREFIX or
+				 * PFD_COMPOUND */
 #ifdef FEAT_MBYTE
     char_u	ts_tcharlen;	/* number of bytes in tword character */
     char_u	ts_tcharidx;	/* current byte index in tword character */
@@ -613,8 +619,9 @@ typedef struct trystate_S
 #define DIFF_INSERT	2	/* inserting character */
 
 /* special values ts_prefixdepth */
-#define PREFIXTREE	0xfe	/* walking through the prefix tree */
-#define NOPREFIX	0xff	/* not using prefixes */
+#define PFD_COMPOUND	0xfd	/* prefixed is a compound word */
+#define PFD_PREFIXTREE	0xfe	/* walking through the prefix tree */
+#define PFD_NOPREFIX	0xff	/* not using prefixes */
 
 /* mode values for find_word */
 #define FIND_FOLDWORD	    0	/* find word case-folded */
@@ -627,6 +634,7 @@ static slang_T *slang_alloc __ARGS((char_u *lang));
 static void slang_free __ARGS((slang_T *lp));
 static void slang_clear __ARGS((slang_T *lp));
 static void find_word __ARGS((matchinf_T *mip, int mode));
+static int can_compound __ARGS((slang_T *slang, int flags));
 static int valid_word_prefix __ARGS((int totprefcnt, int arridx, int flags, char_u *word, slang_T *slang, int cond_req));
 static void find_prefix __ARGS((matchinf_T *mip));
 static int fold_more __ARGS((matchinf_T *mip));
@@ -740,6 +748,7 @@ static linenr_T apply_prefixes __ARGS((slang_T *slang, char_u *word, int round, 
 
 static char *e_format = N_("E759: Format error in spell file");
 static char *e_spell_trunc = N_("E758: Truncated spell file");
+static char *e_afftrailing = N_("Trailing text in %s line %d: %s");
 static char *msg_compressing = N_("Compressing word tree...");
 
 /*
@@ -1156,8 +1165,7 @@ find_word(mip, mode)
 
 		/* The word doesn't end or it comes after another: it must
 		 * have a compound flag. */
-		/* TODO: check more flags */
-		if (*slang->sl_compflags != ((unsigned)flags >> 24))
+		if (!can_compound(slang, flags))
 		    continue;
 	    }
 
@@ -1228,6 +1236,19 @@ find_word(mip, mode)
 	if (res == SP_OK)
 	    break;
     }
+}
+
+/*
+ * Return TRUE if "flags" has a valid compound flag.
+ * TODO: check flags in a more advanced way.
+ */
+    static int
+can_compound(slang, flags)
+    slang_T	*slang;
+    int		flags;
+{
+    return slang->sl_compflags != NULL
+			   && *slang->sl_compflags == ((unsigned)flags >> 24);
 }
 
 /*
@@ -3324,17 +3345,19 @@ typedef struct spellinfo_S
 {
     wordnode_T	*si_foldroot;	/* tree with case-folded words */
     long	si_foldwcount;	/* nr of words in si_foldroot */
-    int		si_fold_added;	/* nr of words added since compressing */
 
     wordnode_T	*si_keeproot;	/* tree with keep-case words */
     long	si_keepwcount;	/* nr of words in si_keeproot */
-    int		si_keep_added;	/* nr of words added since compressing */
 
     wordnode_T	*si_prefroot;	/* tree with postponed prefixes */
 
     sblock_T	*si_blocks;	/* memory blocks used */
+    long	si_blocks_cnt;	/* memory blocks allocated */
+    long	si_compress_cnt;    /* words to add before lowering
+				       compression limit */
     wordnode_T	*si_first_free; /* List of nodes that have been freed during
 				   compression, linked by "wn_child" field. */
+    long	si_free_count;	/* number of nodes in si_first_free */
 #ifdef SPELL_PRINTTREE
     int		si_wordnode_nr;	/* sequence nr for nodes */
 #endif
@@ -3801,8 +3824,7 @@ spell_read_aff(spin, fname)
 		/* Myspell allows extra text after the item, but that might
 		 * mean mistakes go unnoticed.  Require a comment-starter. */
 		if (itemcnt > lasti && *items[lasti] != '#')
-		    smsg((char_u *)_("Trailing text in %s line %d: %s"),
-						   fname, lnum, items[lasti]);
+		    smsg((char_u *)_(e_afftrailing), fname, lnum, items[lasti]);
 
 		/* New item for an affix letter. */
 		--aff_todo;
@@ -3983,9 +4005,13 @@ spell_read_aff(spin, fname)
 		    smsg((char_u *)_("Expected REP count in %s line %d"),
 								 fname, lnum);
 	    }
-	    else if (STRCMP(items[0], "REP") == 0 && itemcnt == 3)
+	    else if (STRCMP(items[0], "REP") == 0 && itemcnt >= 3)
 	    {
 		/* REP item */
+		/* Myspell ignores extra arguments, we require it starts with
+		 * # to detect mistakes. */
+		if (itemcnt > 3 && items[3][0] != '#')
+		    smsg((char_u *)_(e_afftrailing), fname, lnum, items[3]);
 		if (do_rep)
 		    add_fromto(spin, &spin->si_rep, items[1], items[2]);
 	    }
@@ -4119,9 +4145,6 @@ spell_read_aff(spin, fname)
 	    smsg((char_u *)_("COMPOUNDFLAG(S) value differs from what is used in another .aff file"));
 	else
 	    spin->si_compflags = aff->af_compflags;
-
-	if (aff->af_pfxpostpone)
-	    smsg((char_u *)_("Cannot use both PFXPOSTPONE and COMPOUNDFLAG(S)"));
     }
 
     vim_free(pc);
@@ -4412,10 +4435,32 @@ spell_read_dic(spin, fname, affile)
 	    if (affile->af_pfxpostpone)
 		/* Need to store the list of prefix IDs with the word. */
 		store_afflist = get_pfxlist(spin, affile, afflist);
-	    else if (spin->si_compflags)
-		/* Need to store the list of affix IDs for compounding with
-		 * the word. */
-		store_afflist = get_compflags(spin, afflist);
+
+	    if (spin->si_compflags)
+	    {
+		/* Need to store the list of compound flags with the word. */
+		p = get_compflags(spin, afflist);
+		if (p != NULL)
+		{
+		    if (store_afflist != NULL)
+		    {
+			char_u *s;
+
+			/* Concatenate the prefix IDs with the compound flags.
+			 */
+			s = getroom(spin, STRLEN(store_afflist)
+						      + STRLEN(p) + 1, FALSE);
+			if (s != NULL)
+			{
+			    STRCPY(s, store_afflist);
+			    STRCAT(s, p);
+			    store_afflist = s;
+			}
+		    }
+		    else
+			store_afflist = p;
+		}
+	    }
 	}
 
 	/* Add the word to the word tree(s). */
@@ -4938,6 +4983,7 @@ getroom(spin, len, align)
 	bl->sb_next = spin->si_blocks;
 	spin->si_blocks = bl;
 	bl->sb_used = 0;
+	++spin->si_blocks_cnt;
     }
 
     p = bl->sb_data + bl->sb_used;
@@ -4996,7 +5042,8 @@ wordtree_alloc(spin)
  * useful when the word can also be used with all caps (no WF_FIXCAP flag) and
  * used to find suggestions.
  * For a keep-case word also store it in the keep-case tree.
- * When "pfxlist" is not NULL store the word for each postponed prefix ID.
+ * When "pfxlist" is not NULL store the word for each postponed prefix ID and
+ * compound flag.
  */
     static int
 store_word(spin, word, flags, region, pfxlist)
@@ -5158,29 +5205,38 @@ tree_add_word(spin, word, root, flags, region, affixID)
     /* count nr of words added since last message */
     ++spin->si_msg_count;
 
+    if (spin->si_compress_cnt > 1)
+    {
+	if (--spin->si_compress_cnt == 1)
+	    /* Did enough words to lower the block count limit. */
+	    spin->si_blocks_cnt += SPELL_COMPRESS_INC;
+    }
+
     /*
-     * Every so many words compress the tree, so that we don't use too much
-     * memory.
+     * When we have allocated lots of memory we need to compress the word tree
+     * to free up some room.  But compression is slow, and we might actually
+     * need that room, thus only compress in the following situations:
+     * 1. When not compressed before (si_compress_cnt == 0): when using
+     *    SPELL_COMPRESS_CNT blocks.
+     * 2. When compressed before and used SPELL_COMPRESS_INC blocks before
+     *    adding SPELL_COMPRESS_ADDED words (si_compress_cnt > 1).
+     * 3. When compressed before, added SPELL_COMPRESS_ADDED words
+     *    (si_compress_cnt == 1) and the number of free nodes drops below the
+     *    maximum word length.
      */
-    i = FALSE;
-    if (root == spin->si_foldroot)
+#ifndef SPELL_PRINTTREE
+    if (spin->si_compress_cnt == 1
+	    ? spin->si_free_count < MAXWLEN
+	    : spin->si_blocks_cnt >= SPELL_COMPRESS_CNT)
+#endif
     {
-	if (++spin->si_fold_added >= SPELL_COMPRESS_CNT)
-	{
-	    i = TRUE;
-	    spin->si_fold_added = 0;
-	}
-    }
-    else if (root == spin->si_keeproot)
-    {
-	if (++spin->si_keep_added >= SPELL_COMPRESS_CNT)
-	{
-	    i = TRUE;
-	    spin->si_keep_added = 0;
-	}
-    }
-    if (i)
-    {
+	/* Decrement the block counter.  The effect is that we compress again
+	 * when the freed up room has been used and another SPELL_COMPRESS_INC
+	 * blocks have been allocated.  Unless SPELL_COMPRESS_ADDED words have
+	 * been added, then the limit is put back again. */
+	spin->si_blocks_cnt -= SPELL_COMPRESS_INC;
+	spin->si_compress_cnt = SPELL_COMPRESS_ADDED;
+
 	if (spin->si_verbose)
 	{
 	    msg_start();
@@ -5190,7 +5246,12 @@ tree_add_word(spin, word, root, flags, region, affixID)
 	    msg_col = 0;
 	    out_flush();
 	}
-	wordtree_compress(spin, root);
+
+	/* Compress both trees.  Either they both have many nodes, which makes
+	 * compression useful, or one of them is small, which means
+	 * compression goes fast. */
+	wordtree_compress(spin, spin->si_foldroot);
+	wordtree_compress(spin, spin->si_keeproot);
     }
 
     return OK;
@@ -5213,6 +5274,7 @@ get_wordnode(spin)
 	n = spin->si_first_free;
 	spin->si_first_free = n->wn_child;
 	vim_memset(n, 0, sizeof(wordnode_T));
+	--spin->si_free_count;
     }
 #ifdef SPELL_PRINTTREE
     n->wn_nr = ++spin->si_wordnode_nr;
@@ -5252,6 +5314,7 @@ free_wordnode(spin, n)
 {
     n->wn_child = spin->si_first_free;
     spin->si_first_free = n;
+    ++spin->si_free_count;
 }
 
 /*
@@ -5282,6 +5345,8 @@ wordtree_compress(spin, root)
 		verbose_enter();
 	    if (tot > 1000000)
 		perc = (tot - n) / (tot / 100);
+	    else if (tot == 0)
+		perc = 0;
 	    else
 		perc = (tot - n) * 100 / tot;
 	    smsg((char_u *)_("Compressed %d of %d nodes; %d%% remaining"),
@@ -5323,7 +5388,7 @@ node_compress(spin, node, ht, tot)
      * Note that with "child" we mean not just the node that is pointed to,
      * but the whole list of siblings, of which the node is the first.
      */
-    for (np = node; np != NULL; np = np->wn_sibling)
+    for (np = node; np != NULL && !got_int; np = np->wn_sibling)
     {
 	++len;
 	if ((child = np->wn_child) != NULL)
@@ -5397,6 +5462,9 @@ node_compress(spin, node, ht, tot)
     n = (nr >> 24) & 0xff;
     node->wn_u1.hashkey[4] = n == 0 ? 1 : n;
     node->wn_u1.hashkey[5] = NUL;
+
+    /* Check for CTRL-C pressed now and then. */
+    fast_breakcheck();
 
     return compressed;
 }
@@ -7604,6 +7672,8 @@ suggest_try_change(su)
     fromto_T	*ftp;
     int		fl = 0, tl;
     int		repextra = 0;	    /* extra bytes in fword[] from REP item */
+    slang_T	*slang;
+    int		fword_ends;
 
     /* We make a copy of the case-folded bad word, so that we can modify it
      * to find matches (esp. REP items).  Append some more text, changing
@@ -7616,6 +7686,8 @@ suggest_try_change(su)
     for (lp = LANGP_ENTRY(curwin->w_buffer->b_langp, 0);
 						   lp->lp_slang != NULL; ++lp)
     {
+	slang = lp->lp_slang;
+
 	/*
 	 * Go through the whole case-fold tree, try changes at each node.
 	 * "tword[]" contains the word collected from nodes in the tree.
@@ -7639,22 +7711,22 @@ suggest_try_change(su)
 	 * When there are postponed prefixes we need to use these first.  At
 	 * the end of the prefix we continue in the case-fold tree.
 	 */
-	fbyts = lp->lp_slang->sl_fbyts;
-	fidxs = lp->lp_slang->sl_fidxs;
-	pbyts = lp->lp_slang->sl_pbyts;
-	pidxs = lp->lp_slang->sl_pidxs;
+	fbyts = slang->sl_fbyts;
+	fidxs = slang->sl_fidxs;
+	pbyts = slang->sl_pbyts;
+	pidxs = slang->sl_pidxs;
 	if (pbyts != NULL)
 	{
 	    byts = pbyts;
 	    idxs = pidxs;
-	    sp->ts_prefixdepth = PREFIXTREE;
+	    sp->ts_prefixdepth = PFD_PREFIXTREE;
 	    sp->ts_state = STATE_NOPREFIX;	/* try without prefix first */
 	}
 	else
 	{
 	    byts = fbyts;
 	    idxs = fidxs;
-	    sp->ts_prefixdepth = NOPREFIX;
+	    sp->ts_prefixdepth = PFD_NOPREFIX;
 	}
 
 	/*
@@ -7679,7 +7751,7 @@ suggest_try_change(su)
 		len = byts[arridx];	    /* bytes in this node */
 		arridx += sp->ts_curi;	    /* index of current byte */
 
-		if (sp->ts_prefixdepth == PREFIXTREE)
+		if (sp->ts_prefixdepth == PFD_PREFIXTREE)
 		{
 		    /* Skip over the NUL bytes, we use them later. */
 		    for (n = 0; n < len && byts[arridx + n] == 0; ++n)
@@ -7743,7 +7815,17 @@ suggest_try_change(su)
 
 		flags = (int)idxs[arridx];
 
-		if (sp->ts_prefixdepth < MAXWLEN)
+		if (sp->ts_prefixdepth == PFD_COMPOUND)
+		{
+		    /* There was a compound word before this word.  If this
+		     * word does not support compounding then give up
+		     * (splitting is tried for the word without compound
+		     * flag). */
+		    if (sp->ts_twordlen - splitoff < slang->sl_compminlen
+					       || !can_compound(slang, flags))
+			break;
+		}
+		else if (sp->ts_prefixdepth < MAXWLEN)
 		{
 		    /* There was a prefix before the word.  Check that the
 		     * prefix can be used with this word. */
@@ -7756,10 +7838,8 @@ suggest_try_change(su)
 			;
 		    if (c > 0)
 		    {
-			/* The prefix ID is stored three bytes above the
-			 * flags. */
 			c = valid_word_prefix(c, n, flags,
-				       tword + splitoff, lp->lp_slang, FALSE);
+					      tword + splitoff, slang, FALSE);
 			if (c == 0)
 			    break;
 
@@ -7776,7 +7856,7 @@ suggest_try_change(su)
 		tword[sp->ts_twordlen] = NUL;
 		if (flags & WF_KEEPCAP)
 		    /* Must find the word in the keep-case tree. */
-		    find_keepcap_word(lp->lp_slang, tword + splitoff,
+		    find_keepcap_word(slang, tword + splitoff,
 							preword + prewordlen);
 		else
 		{
@@ -7818,9 +7898,9 @@ suggest_try_change(su)
 					 captype(preword + prewordlen, NULL)))
 		    newscore += SCORE_ICASE;
 
-		if ((fword[sp->ts_fidx] == NUL
-			       || !spell_iswordp(fword + sp->ts_fidx, curbuf))
-			&& sp->ts_fidx >= sp->ts_fidxtry)
+		fword_ends = (fword[sp->ts_fidx] == NUL
+			       || !spell_iswordp(fword + sp->ts_fidx, curbuf));
+		if (fword_ends && sp->ts_fidx >= sp->ts_fidxtry)
 		{
 		    /* The badword also ends: add suggestions.  Give a penalty
 		     * when changing non-word char to word char, e.g., "thes,"
@@ -7849,17 +7929,38 @@ suggest_try_change(su)
 			    sp->ts_fidx - repextra,
 					   sp->ts_score + newscore, 0, FALSE);
 		}
-		else if (sp->ts_fidx >= sp->ts_fidxtry
+		else if ((sp->ts_fidx >= sp->ts_fidxtry || fword_ends)
 #ifdef FEAT_MBYTE
 			/* Don't split halfway a character. */
 			&& (!has_mbyte || sp->ts_tcharlen == 0)
 #endif
 			)
 		{
-		    /* The word in the tree ends but the badword
-		     * continues: try inserting a space and check that a valid
-		     * words starts at fword[sp->ts_fidx]. */
-		    if (try_deeper(su, stack, depth, newscore + SCORE_SPLIT))
+		    int	    try_compound;
+
+		    /* Get here in two situations:
+		     * 1. The word in the tree ends but the badword continues:
+		     *    If the word allows compounding try that.  Otherwise
+		     *    try a split by inserting a space.  For both check
+		     *    that a valid words starts at fword[sp->ts_fidx].
+		     * 2. The badword does end, but it was due to a change
+		     *    (e.g., a swap).  No need to split, but do check that
+		     *    the following word is valid.
+		     */
+		    if (!fword_ends
+			    && spell_iswordp(fword + sp->ts_fidx, curbuf)
+			    && sp->ts_twordlen - splitoff
+						      >= slang->sl_compminlen
+			    && can_compound(slang, flags))
+			try_compound = TRUE;
+		    else
+		    {
+			try_compound = FALSE;
+			if (!fword_ends)
+			    newscore += SCORE_SPLIT;
+		    }
+
+		    if (try_deeper(su, stack, depth, newscore))
 		    {
 			/* Save things to be restored at STATE_SPLITUNDO. */
 			sp->ts_save_prewordlen = prewordlen;
@@ -7870,28 +7971,49 @@ suggest_try_change(su)
 			++depth;
 			sp = &stack[depth];
 
-			/* Append a space to preword. */
-			STRCAT(preword, " ");
+			/* Append a space to preword when splitting. */
+			if (!try_compound && !fword_ends)
+			    STRCAT(preword, " ");
 			prewordlen = STRLEN(preword);
 			splitoff = sp->ts_twordlen;
 
 			/* If the badword has a non-word character at this
 			 * position skip it.  That means replacing the
-			 * non-word character with a space. */
-			if (!spell_iswordp_nmw(fword + sp->ts_fidx))
+			 * non-word character with a space.  Always skip a
+			 * character when the word ends. */
+			if ((!try_compound
+				   && !spell_iswordp_nmw(fword + sp->ts_fidx))
+				|| fword_ends)
 			{
-			    sp->ts_score -= SCORE_SPLIT - SCORE_SUBST;
+			    int	    l;
+
 #ifdef FEAT_MBYTE
 			    if (has_mbyte)
-				sp->ts_fidx += MB_BYTE2LEN(fword[sp->ts_fidx]);
+				l = MB_BYTE2LEN(fword[sp->ts_fidx]);
 			    else
 #endif
-				++sp->ts_fidx;
+				l = 1;
+			    if (fword_ends)
+			    {
+				/* Copy the skipped character to preword. */
+				mch_memmove(preword + prewordlen,
+						      fword + sp->ts_fidx, l);
+				prewordlen += l;
+				preword[prewordlen] = NUL;
+			    }
+			    else
+				sp->ts_score -= SCORE_SPLIT - SCORE_SUBST;
+			    sp->ts_fidx += l;
 			}
+
+			/* set flag to check compound flag on following word */
+			if (try_compound)
+			    sp->ts_prefixdepth = PFD_COMPOUND;
+			else
+			    sp->ts_prefixdepth = PFD_NOPREFIX;
 
 			/* set su->su_badflags to the caps type at this
 			 * position */
-
 #ifdef FEAT_MBYTE
 			if (has_mbyte)
 			    n = nofold_len(fword, sp->ts_fidx, su->su_badptr);
@@ -7908,10 +8030,10 @@ suggest_try_change(su)
 		break;
 
 	    case STATE_SPLITUNDO:
-		/* Undo the changes done for word split. */
+		/* Undo the changes done for word split or compound word. */
 		su->su_badflags = sp->ts_save_badflags;
 		splitoff = sp->ts_save_splitoff;
-		prewordlen =  sp->ts_save_prewordlen;
+		prewordlen = sp->ts_save_prewordlen;
 
 		/* Continue looking for NUL bytes. */
 		sp->ts_state = STATE_START;
@@ -8018,8 +8140,8 @@ suggest_try_change(su)
 
 				    /* For a similar character adjust score
 				     * from SCORE_SUBST to SCORE_SIMILAR. */
-				    else if (lp->lp_slang->sl_has_map
-					    && similar_chars(lp->lp_slang,
+				    else if (slang->sl_has_map
+					    && similar_chars(slang,
 						mb_ptr2char(tword
 						    + sp->ts_twordlen
 							   - sp->ts_tcharlen),
@@ -8064,8 +8186,8 @@ suggest_try_change(su)
 			     * We do this after calling try_deeper() because
 			     * it's slow. */
 			    if (newscore != 0
-				    && lp->lp_slang->sl_has_map
-				    && similar_chars(lp->lp_slang,
+				    && slang->sl_has_map
+				    && similar_chars(slang,
 						   c, fword[sp->ts_fidx - 1]))
 				sp->ts_score -= SCORE_SUBST - SCORE_SIMILAR;
 			}
@@ -8432,7 +8554,7 @@ suggest_try_change(su)
 		/* Check if matching with REP items from the .aff file would
 		 * work.  Quickly skip if there are no REP items or the score
 		 * is going to be too high anyway. */
-		gap = &lp->lp_slang->sl_rep;
+		gap = &slang->sl_rep;
 		if (gap->ga_len == 0
 			       || sp->ts_score + SCORE_REP >= su->su_maxscore)
 		{
@@ -8442,7 +8564,7 @@ suggest_try_change(su)
 
 		/* Use the first byte to quickly find the first entry that
 		 * may match.  If the index is -1 there is none. */
-		sp->ts_curi = lp->lp_slang->sl_rep_first[fword[sp->ts_fidx]];
+		sp->ts_curi = slang->sl_rep_first[fword[sp->ts_fidx]];
 		if (sp->ts_curi < 0)
 		{
 		    sp->ts_state = STATE_FINAL;
@@ -8458,7 +8580,7 @@ suggest_try_change(su)
 		 * word is valid. */
 		p = fword + sp->ts_fidx;
 
-		gap = &lp->lp_slang->sl_rep;
+		gap = &slang->sl_rep;
 		while (sp->ts_curi < gap->ga_len)
 		{
 		    ftp = (fromto_T *)gap->ga_data + sp->ts_curi++;
@@ -8500,8 +8622,7 @@ suggest_try_change(su)
 
 	    case STATE_REP_UNDO:
 		/* Undo a REP replacement and continue with the next one. */
-		ftp = (fromto_T *)lp->lp_slang->sl_rep.ga_data
-							    + sp->ts_curi - 1;
+		ftp = (fromto_T *)slang->sl_rep.ga_data + sp->ts_curi - 1;
 		fl = STRLEN(ftp->ft_from);
 		tl = STRLEN(ftp->ft_to);
 		p = fword + sp->ts_fidx;
@@ -8518,7 +8639,7 @@ suggest_try_change(su)
 		/* Did all possible states at this level, go up one level. */
 		--depth;
 
-		if (depth >= 0 && stack[depth].ts_prefixdepth == PREFIXTREE)
+		if (depth >= 0 && stack[depth].ts_prefixdepth == PFD_PREFIXTREE)
 		{
 		    /* Continue in or go back to the prefix tree. */
 		    byts = pbyts;

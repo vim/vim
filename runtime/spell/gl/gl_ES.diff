@@ -1,0 +1,15 @@
+*** gl_ES.orig.aff	Tue Aug 16 17:55:38 2005
+--- gl_ES.aff	Tue Aug 16 17:57:03 2005
+***************
+*** 2,3 ****
+--- 2,11 ----
+  TRY ביםףתesianrtolcdugmphbfvס
++ 
++ FOL  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗ÿ
++ LOW  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗ÿ
++ UPP  ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞ‗ÿ
++ 
++ SOFOFROM abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZאבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗ÿÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞ¿
++ SOFOTO   ebctefghejklnnepkrstevvkesebctefghejklnnepkrstevvkeseeeeeeeceeeeeeeedneeeeeeeeeeepseeeeeeeeceeeeeeeedneeeeeeeeeeep?
++ 
+  # COMPOUNDMIN 3

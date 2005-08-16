@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Aug 15
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Aug 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -195,6 +195,7 @@ regions.  You can change that by manually editing the 'spellfile'.  See
 'spellfile' are only used when all entries in "spelllang" specify the same
 region (not counting files specified by their .spl name).
 
+							*spell-german*
 Specific exception: For German these special regions are used:
 	de		all German words accepted
 	de_de		old and new spelling
@@ -202,6 +203,16 @@ Specific exception: For German these special regions are used:
 	de_20		new spelling
 	de_at		Austria
 	de_ch		Switzerland
+
+							*spell-yiddish*
+Yiddish requires using "utf-8" encoding, because of the special characters
+used.  If you are using latin1 Vim will use transliterated (romanized) Yiddish
+instead.  If you want to use transliterated Yiddish with utf-8 use "yi-tr".
+In a table:
+	'encoding'	'spelllang'
+	utf-8		yi		Yiddish
+	latin1		yi		transliterated Yiddish
+	utf-8		yi-tr		transliterated Yiddish
 
 
 SPELL FILES						*spell-load*
@@ -901,9 +912,11 @@ Sometimes it is necessary to change a word when concatenating it to another,
 by removing a few letters, inserting something or both.  It can also be useful
 to restrict concatenation to words that match a pattern.  For this purpose CMP
 items can be used.  They look like this:
-	CMP {flag} {strip} {add} {cond} {cond2}
+	CMP {flag} {flags} {strip} {add} {cond} {cond2}
 
 	{flag}		the flag, as used in COMPOUNDFLAGS for the lead word
+	{flags}		accepted flags for the following word ('.' to accept
+			all)
 	{strip}		text to remove from the end of the lead word (zero
 			for no stripping)
 	{add}		text to insert between the words (zero for no
@@ -911,9 +924,9 @@ items can be used.  They look like this:
 	{cond}		condition to match at the end of the lead word
 	{cond2}		condition to match at the start of the following word
 
-This is exactly the same as what is used for SFX and PFX items, except there
-is an extra condition.  Example:
-	CMP f 0 - . . ~
+This is the same as what is used for SFX and PFX items, with the extra {flags}
+and {cond2} fields.  Example:
+	CMP f mrt 0 - . . ~
 
 When used with the food and dish word list above, this means that a dash is
 inserted after each food item.  Thus you get "onion-soup" and
@@ -924,7 +937,7 @@ when a CMP item matches.
 
 When there are no CMP items for a compound flag, then all words will be
 concatenated, as if there was an item:
-	CMP {flag} 0 0 . .
+	CMP {flag} . 0 0 . .
 
 
 REPLACEMENTS						*spell-affix-REP*

@@ -1,4 +1,4 @@
-# Aap recipe for Dutch Vim spell files.
+# Aap recipe for Chichewa Vim spell files.
 
 # Use a freshly compiled Vim if it exists.
 @if os.path.exists('../../../src/vim'):
@@ -12,15 +12,15 @@ FILES    = ny_MW.aff ny_MW.dic
 all: $SPELLDIR/ny.iso-8859-14.spl $SPELLDIR/ny.utf-8.spl \
         $SPELLDIR/ny.ascii.spl ../README_ny.txt
 
-$SPELLDIR/ny.iso-8859-14.spl : $VIM $FILES
+$SPELLDIR/ny.iso-8859-14.spl : $FILES
         :sys $VIM -u NONE -e -c "set enc=iso-8859-14" 
                 -c "mkspell! $SPELLDIR/ny ny_MW" -c q
 
-$SPELLDIR/ny.utf-8.spl : $VIM $FILES
+$SPELLDIR/ny.utf-8.spl : $FILES
         :sys $VIM -u NONE -e -c "set enc=utf-8"
                 -c "mkspell! $SPELLDIR/ny ny_MW" -c q
 
-$SPELLDIR/ny.ascii.spl : $VIM $FILES
+$SPELLDIR/ny.ascii.spl : $FILES
         :sys $VIM -u NONE -e -c "mkspell! -ascii $SPELLDIR/ny ny_MW" -c q
  
 ../README_ny.txt : README_ny_MW.txt

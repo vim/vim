@@ -12,13 +12,13 @@ FILES    = cs_CZ.aff cs_CZ.dic
 all: $SPELLDIR/cs.iso-8859-2.spl $SPELLDIR/cs.utf-8.spl \
         $SPELLDIR/cs.cp1250.spl ../README_cs.txt
 
-$SPELLDIR/cs.iso-8859-2.spl : $VIM $FILES
+$SPELLDIR/cs.iso-8859-2.spl : $FILES
         :sys env LANG=cs_CZ.ISO8859-2 $VIM -u NONE -e -c "mkspell! $SPELLDIR/cs cs_CZ" -c q
 
-$SPELLDIR/cs.utf-8.spl : $VIM $FILES
+$SPELLDIR/cs.utf-8.spl : $FILES
         :sys env LANG=cs_CZ.UTF-8 $VIM -u NONE -e -c "mkspell! $SPELLDIR/cs cs_CZ" -c q
 
-$SPELLDIR/cs.cp1250.spl : $VIM $FILES
+$SPELLDIR/cs.cp1250.spl : $FILES
         :sys $VIM -u NONE -e -c "set enc=cp1250" -c "mkspell! $SPELLDIR/cs cs_CZ" -c q
 
 ../README_cs.txt: README_cs_CZ.txt

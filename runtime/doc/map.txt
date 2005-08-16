@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.0aa.  Last change: 2005 Jul 21
+*map.txt*       For Vim version 7.0aa.  Last change: 2005 Aug 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -868,6 +868,20 @@ scripts.
 
 :com[mand] {cmd}	List the user-defined commands that start with {cmd}
 
+							*:command-verbose*
+When 'verbose' is non-zero, listing a command will also display where it was
+last defined. Example: >
+
+    :verbose command TOhtml
+	Name        Args Range Complete  Definition
+	TOhtml      0    %               :call Convert2HTML(<line1>, <line2>)
+	    Last set from /usr/share/vim/vim-7.0/plugin/tohtml.vim
+<
+When the command was defined by hand there is no "Last set" message.  When the
+command was defined while executing a function, user command or autocommand,
+the script in which it was defined is reported.
+{not available when compiled without the +eval feature}
+
 							*E174* *E182*
 :com[mand][!] [{attr}...] {cmd} {rep}
 			Define a user command.  The name of the command is
@@ -1069,8 +1083,7 @@ To allow commands to pass their arguments on to a user-defined function, there
 is a special form <f-args> ("function args").  This splits the command
 arguments at spaces and Tabs, quotes each argument individually, and the
 <f-args> sequence is replaced by the comma-separated list of quoted arguments.
-See the Mycmd example below.  When there is no argument, <f-args> also has no
-argument.
+See the Mycmd example below.  If no arguments are given <f-args> is removed. 
 
 Examples >
 

@@ -16,17 +16,17 @@ FILES    = en_US.aff en_US.dic
 all: $SPELLDIR/en.latin1.spl $SPELLDIR/en.utf-8.spl \
         $SPELLDIR/en.ascii.spl ../README_en.txt
 
-$SPELLDIR/en.latin1.spl : $VIM $FILES
+$SPELLDIR/en.latin1.spl : $FILES
         :sys env LANG=en_US.ISO8859-1
 		$VIM -u NONE -e -c "mkspell! $SPELLDIR/en
                         en_US en_AU en_CA en_GB en_NZ" -c q
 
-$SPELLDIR/en.utf-8.spl : $VIM $FILES
+$SPELLDIR/en.utf-8.spl : $FILES
         :sys env LANG=en_US.UTF-8
 		$VIM -u NONE -e -c "mkspell! $SPELLDIR/en
                         en_US en_AU en_CA en_GB en_NZ" -c q
 
-$SPELLDIR/en.ascii.spl : $VIM $FILES
+$SPELLDIR/en.ascii.spl : $FILES
         :sys $VIM -u NONE -e -c "mkspell! -ascii $SPELLDIR/en
                         en_US en_AU en_CA en_GB en_NZ" -c q
  

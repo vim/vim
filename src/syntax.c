@@ -3182,6 +3182,7 @@ syntax_clear(buf)
 {
     int i;
 
+    buf->b_syn_error = FALSE;	    /* clear previous error */
     buf->b_syn_ic = FALSE;	    /* Use case, by default */
     buf->b_syn_spell = SYNSPL_DEFAULT; /* default spell checking */
     buf->b_syn_containedin = FALSE;

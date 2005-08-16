@@ -1,4 +1,4 @@
-# Aap recipe for Czech Vim spell files.
+# Aap recipe for Bulgarian Vim spell files.
 
 # Use a freshly compiled Vim if it exists.
 @if os.path.exists('../../../src/vim'):
@@ -11,14 +11,15 @@ FILES    = bg_BG.aff bg_BG.dic
 
 all: $SPELLDIR/bg.cp1251.spl $SPELLDIR/bg.utf-8.spl ../README_bg.txt
 
-$SPELLDIR/bg.cp1251.spl : $VIM $FILES
+$SPELLDIR/bg.cp1251.spl : $FILES
         :sys env LANG=bg_BG.CP1251 $VIM -u NONE -e -c "mkspell! $SPELLDIR/bg bg_BG" -c q
 
-$SPELLDIR/bg.utf-8.spl : $VIM $FILES
+$SPELLDIR/bg.utf-8.spl : $FILES
         :sys env LANG=bg_BG.UTF-8 $VIM -u NONE -e -c "mkspell! $SPELLDIR/bg bg_BG" -c q
 
 ../README_bg.txt: README_bg_BG.txt
         :copy $source $target
+        :sys $VIM $target -e -c "set ff=unix" -c wq
 
 #
 # Fetching the files from OpenOffice.org.

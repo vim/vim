@@ -3177,7 +3177,7 @@ reg_getline(lnum)
      * can't go before line 1 */
     if (reg_firstlnum + lnum < 1)
 	return NULL;
-    if (reg_firstlnum + lnum > reg_buf->b_ml.ml_line_count)
+    if (lnum > reg_maxline)
 	/* Must have matched the "\n" in the last line. */
 	return (char_u *)"";
     return ml_get_buf(reg_buf, reg_firstlnum + lnum, FALSE);

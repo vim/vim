@@ -1,4 +1,4 @@
-# Aap recipe for Czech Vim spell files.
+# Aap recipe for Slovak Vim spell files.
 
 # Use a freshly compiled Vim if it exists.
 @if os.path.exists('../../../src/vim'):
@@ -12,13 +12,13 @@ FILES    = sk_SK.aff sk_SK.dic
 all: $SPELLDIR/sk.iso-8859-2.spl $SPELLDIR/sk.utf-8.spl \
         $SPELLDIR/sk.cp1250.spl ../README_sk.txt
 
-$SPELLDIR/sk.iso-8859-2.spl : $VIM $FILES
+$SPELLDIR/sk.iso-8859-2.spl : $FILES
         :sys env LANG=sk_SK.ISO8859-2 $VIM -u NONE -e -c "mkspell! $SPELLDIR/sk sk_SK" -c q
 
-$SPELLDIR/sk.utf-8.spl : $VIM $FILES
+$SPELLDIR/sk.utf-8.spl : $FILES
         :sys env LANG=sk_SK.UTF-8 $VIM -u NONE -e -c "mkspell! $SPELLDIR/sk sk_SK" -c q
 
-$SPELLDIR/sk.cp1250.spl : $VIM $FILES
+$SPELLDIR/sk.cp1250.spl : $FILES
         :sys $VIM -u NONE -e -c "set enc=cp1250" -c "mkspell! $SPELLDIR/sk sk_SK" -c q
 
 ../README_sk.txt: README_sk_SK.txt

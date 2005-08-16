@@ -1,4 +1,4 @@
-# Aap recipe for French Vim spell files.
+# Aap recipe for Italian Vim spell files.
 
 # Use a freshly compiled Vim if it exists.
 @if os.path.exists('../../../src/vim'):
@@ -11,11 +11,11 @@ FILES    = it_IT.aff it_IT.dic
 
 all: $SPELLDIR/it.latin1.spl $SPELLDIR/it.utf-8.spl ../README_it.txt
 
-$SPELLDIR/it.latin1.spl : $VIM $FILES
+$SPELLDIR/it.latin1.spl : $FILES
         :sys env LANG=it_IT.ISO8859-1
 		$VIM -u NONE -e -c "mkspell! $SPELLDIR/it it_IT" -c q
 
-$SPELLDIR/it.utf-8.spl : $VIM $FILES
+$SPELLDIR/it.utf-8.spl : $FILES
         :sys env LANG=it_IT.UTF-8
 		$VIM -u NONE -e -c "mkspell! $SPELLDIR/it it_IT" -c q
 

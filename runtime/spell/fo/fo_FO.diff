@@ -1,0 +1,14 @@
+*** fo_FO.orig.aff	Tue Aug 16 17:39:22 2005
+--- fo_FO.aff	Tue Aug 16 17:41:00 2005
+***************
+*** 6 ****
+--- 6,14 ----
+  
++ FOL  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗ÿ
++ LOW  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗ÿ
++ UPP  ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞ‗ÿ
++ 
++ SOFOFROM abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZאבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗ÿÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞ¿
++ SOFOTO   ebctefghejklnnepkrstevvkesebctefghejklnnepkrstevvkeseeeeeeeceeeeeeeedneeeeeeeeeeepseeeeeeeeceeeeeeeedneeeeeeeeeeep?
++ 
++ MIDWORD	'-

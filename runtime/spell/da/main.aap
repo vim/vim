@@ -1,4 +1,4 @@
-# Aap recipe for French Vim spell files.
+# Aap recipe for Danish Vim spell files.
 
 # Use a freshly compiled Vim if it exists.
 @if os.path.exists('../../../src/vim'):
@@ -11,11 +11,11 @@ FILES    = da_DK.aff da_DK.dic
 
 all: $SPELLDIR/da.latin1.spl $SPELLDIR/da.utf-8.spl ../README_da.txt
 
-$SPELLDIR/da.latin1.spl : $VIM $FILES
+$SPELLDIR/da.latin1.spl : $FILES
         :sys env LANG=da_DK.ISO8859-1
 		$VIM -u NONE -e -c "mkspell! $SPELLDIR/da da_DK" -c q
 
-$SPELLDIR/da.utf-8.spl : $VIM $FILES
+$SPELLDIR/da.utf-8.spl : $FILES
         :sys env LANG=da_DK.UTF-8
 		$VIM -u NONE -e -c "mkspell! $SPELLDIR/da da_DK" -c q
 

@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	TeX
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrchipO@ScampbellPfamily.AbizM>
-" Last Change:	Aug 11, 2005
-" Version:	28
+" Last Change:	Aug 15, 2005
+" Version:	29
 " URL:		http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 "
 " Notes: {{{1
@@ -102,7 +102,7 @@ if !exists("g:tex_no_error")
 endif
 syn cluster texEnvGroup		contains=texMatcher,texMathDelim,texSpecialChar,texStatement
 syn cluster texFoldGroup	contains=texAccent,texBadMath,texComment,texDefCmd,texDelimiter,texDocType,texInput,texInputFile,texLength,texLigature,texMatcher,texMathZoneV,texMathZoneW,texMathZoneX,texMathZoneY,texMathZoneZ,texNewCmd,texNewEnv,texOnlyMath,texOption,texParen,texRefZone,texSection,texSectionMarker,texSectionZone,texSpaceCode,texSpecialChar,texStatement,texString,texTypeSize,texTypeStyle,texZone,@texMathZones,texTitle,texAbstract
-syn cluster texMatchGroup	contains=texAccent,texBadMath,texComment,texDefCmd,texDelimiter,texDocType,texInput,texLength,texLigature,texMatcher,texNewCmd,texNewEnv,texOnlyMath,texParen,texRefZone,texSection,texSpecialChar,texStatement,texString,texTypeSize,texTypeStyle,texZone,texInputFile,texOption
+syn cluster texMatchGroup	contains=texAccent,texBadMath,texComment,texDefCmd,texDelimiter,texDocType,texInput,texLength,texLigature,texMatcher,texNewCmd,texNewEnv,texOnlyMath,texParen,texRefZone,texSection,texSpecialChar,texStatement,texString,texTypeSize,texTypeStyle,texZone,texInputFile,texOption,@Spell
 syn cluster texRefGroup		contains=texMatcher,texComment,texDelimiter
 if !exists("tex_no_math")
  syn cluster texMathZones	contains=texMathZoneV,texMathZoneW,texMathZoneX,texMathZoneY,texMathZoneZ
@@ -114,6 +114,16 @@ if !exists("tex_no_math")
   syn cluster texMathMatchGroup	add=texMathError
   syn cluster texMathZoneGroup	add=texMathError
  endif
+ syn cluster texMathZoneGroup add=@NoSpell
+ " following used in the \part \chapter \section \subsection \subsubsection
+ " \paragraph \subparagraph \author \title highlighting
+ syn cluster texDocGroup		contains=texPartZone,@texPartGroup
+ syn cluster texPartGroup		contains=texChapterZone,texSectionZone,texParaZone
+ syn cluster texChapterGroup		contains=texSectionZone,texParaZone
+ syn cluster texSectionGroup		contains=texSubSectionZone,texParaZone
+ syn cluster texSubSectionGroup		contains=texSubSubSectionZone,texParaZone
+ syn cluster texSubSubSectionGroup	contains=texParaZone
+ syn cluster texParaGroup		contains=texSubParaZone
 endif
 
 " Try to flag {} and () mismatches: {{{1
@@ -246,29 +256,27 @@ syn match texSpaceCodeChar    "`\\\=.\(\^.\)\==\(\d\|\"\x\{1,6}\|`.\)"	contained
 
 " Sections, subsections, etc: {{{1
 if g:tex_fold_enabled && has("folding")
- syn cluster texDocGroup		contains=texPartZone,@texPartGroup
- syn cluster texPartGroup		contains=texChapterZone,texSectionZone,texParaZone
- syn cluster texChapterGroup		contains=texSectionZone,texParaZone
- syn cluster texSectionGroup		contains=texSubSectionZone,texParaZone
- syn cluster texSubSectionGroup		contains=texSubSubSectionZone,texParaZone
- syn cluster texSubSubSectionGroup	contains=texParaZone
- syn cluster texParaGroup		contains=texSubParaZone
-
- syn region texDocZone			matchgroup=texSection start='\\begin\s*{\s*document\s*}' end='\\end\s*{\s*document\s*}'	fold keepend contains=@texFoldGroup,@texDocGroup
- syn region texPartZone			matchgroup=texSection start='\\part\>'		end='\n\ze\s*\\part\>'		fold keepend contains=@texFoldGroup,@texPartGroup
- syn region texChapterZone		matchgroup=texSection start='\\chapter\>'	end='\n\ze\s*\\chapter\>'	fold keepend contains=@texFoldGroup,@texChapterGroup
- syn region texSectionZone		matchgroup=texSection start='\\section\>'	end='\n\ze\s*\\section\>'	fold keepend contains=@texFoldGroup,@texSectionGroup
- syn region texSubSectionZone		matchgroup=texSection start='\\subsection\>'	end='\n\ze\s*\\subsection\>'	fold keepend contains=@texFoldGroup,@texSubSectionGroup
- syn region texSubSubSectionZone	matchgroup=texSection start='\\subsubsection\>'	end='\n\ze\s*\\subsubsection\>'	fold keepend contains=@texFoldGroup,@texSubSubSectionGroup
- syn region texParaZone			matchgroup=texSection start='\\paragraph\>'	end='\n\ze\s*\\paragraph\>'	fold keepend contains=@texFoldGroup,@texParaGroup
- syn region texSubParaZone		matchgroup=texSection start='\\subparagraph\>'	end='\n\ze\s*\\subparagraph\>'	fold keepend contains=@texFoldGroup
- syn region texTitle			matchgroup=texSection start='\\\%(author\|title\)\>\s*{' end='}'		fold contains=@texFoldGroup
- syn region texAbstract			matchgroup=texSection start='\\begin\s*{\s*abstract\s*}' end='\\end\s*{\s*abstract\s*}'	fold contains=@texFoldGroup
+ syn region texDocZone			matchgroup=texSection start='\\begin\s*{\s*document\s*}' end='\\end\s*{\s*document\s*}'	fold keepend contains=@texFoldGroup,@texDocGroup,@Spell
+ syn region texPartZone			matchgroup=texSection start='\\part\>'			 end='\n\ze\s*\\part\>'		fold keepend contains=@texFoldGroup,@texPartGroup,@Spell
+ syn region texChapterZone		matchgroup=texSection start='\\chapter\>'		 end='\n\ze\s*\\chapter\>'	fold keepend contains=@texFoldGroup,@texChapterGroup,@Spell
+ syn region texSectionZone		matchgroup=texSection start='\\section\>'		 end='\n\ze\s*\\section\>'	fold keepend contains=@texFoldGroup,@texSectionGroup,@Spell
+ syn region texSubSectionZone		matchgroup=texSection start='\\subsection\>'		 end='\n\ze\s*\\subsection\>'	fold keepend contains=@texFoldGroup,@texSubSectionGroup,@Spell
+ syn region texSubSubSectionZone	matchgroup=texSection start='\\subsubsection\>'		end='\n\ze\s*\\subsubsection\>'	fold keepend contains=@texFoldGroup,@texSubSubSectionGroup,@Spell
+ syn region texParaZone			matchgroup=texSection start='\\paragraph\>'		 end='\n\ze\s*\\paragraph\>'	fold keepend contains=@texFoldGroup,@texParaGroup,@Spell
+ syn region texSubParaZone		matchgroup=texSection start='\\subparagraph\>'		 end='\n\ze\s*\\subparagraph\>'	fold keepend contains=@texFoldGroup,@Spell
+ syn region texTitle			matchgroup=texSection start='\\\%(author\|title\)\>\s*{' end='}'		fold contains=@texFoldGroup,@Spell
+ syn region texAbstract			matchgroup=texSection start='\\begin\s*{\s*abstract\s*}' end='\\end\s*{\s*abstract\s*}'	fold contains=@texFoldGroup,@Spell
 else
- syn match texSection			"\\\(sub\)*section\*\=\>"
- syn match texSection			"\\\(part\|chapter\|paragraph\|subparagraph\)\>"
- syn region texTitle			matchgroup=texSection start='\\\%(author\|title\)\>\s*\ze{' end='}'		contains=@texFoldGroup
- syn match texSection			"\\begin\s*{\s*abstract\s*}\|\\end\s*{\s*abstract\s*}"
+ syn region texDocZone			matchgroup=texSection start='\\begin\s*{\s*document\s*}' end='\\end\s*{\s*document\s*}'	keepend contains=@texFoldGroup,@texDocGroup,@Spell
+ syn region texPartZone			matchgroup=texSection start='\\part\>'			 end='\n\ze\s*\\part\>'		keepend contains=@texFoldGroup,@texPartGroup,@Spell
+ syn region texChapterZone		matchgroup=texSection start='\\chapter\>'		 end='\n\ze\s*\\chapter\>'	keepend contains=@texFoldGroup,@texChapterGroup,@Spell
+ syn region texSectionZone		matchgroup=texSection start='\\section\>'		 end='\n\ze\s*\\section\>'	keepend contains=@texFoldGroup,@texSectionGroup,@Spell
+ syn region texSubSectionZone		matchgroup=texSection start='\\subsection\>'		 end='\n\ze\s*\\subsection\>'	keepend contains=@texFoldGroup,@texSubSectionGroup,@Spell
+ syn region texSubSubSectionZone	matchgroup=texSection start='\\subsubsection\>'		end='\n\ze\s*\\subsubsection\>'	keepend contains=@texFoldGroup,@texSubSubSectionGroup,@Spell
+ syn region texParaZone			matchgroup=texSection start='\\paragraph\>'		 end='\n\ze\s*\\paragraph\>'	keepend contains=@texFoldGroup,@texParaGroup,@Spell
+ syn region texSubParaZone		matchgroup=texSection start='\\subparagraph\>'		 end='\n\ze\s*\\subparagraph\>'	keepend contains=@texFoldGroup,@Spell
+ syn region texTitle			matchgroup=texSection start='\\\%(author\|title\)\>\s*{' end='}'			contains=@texFoldGroup,@Spell
+ syn region texAbstract			matchgroup=texSection start='\\begin\s*{\s*abstract\s*}' end='\\end\s*{\s*abstract\s*}'	contains=@texFoldGroup,@Spell
 endif
 
 " Bad Math (mismatched): {{{1
@@ -370,7 +378,7 @@ endif
 " Separate lines used for verb` and verb# so that the end conditions {{{1
 " will appropriately terminate.  Ideally vim would let me save a
 " character from the start pattern and re-use it in the end-pattern.
-syn region texZone		start="\\begin{verbatim}"		end="\\end{verbatim}\|%stopzone\>"
+syn region texZone		start="\\begin{verbatim}"		end="\\end{verbatim}\|%stopzone\>"	contains=@Spell
 if version < 600
  syn region texZone		start="\\verb\*\=`"			end="`\|%stopzone\>"
  syn region texZone		start="\\verb\*\=#"			end="#\|%stopzone\>"

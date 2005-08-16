@@ -5117,6 +5117,10 @@ uc_list(name, name_len)
 	    msg_outtrans(IObuff);
 
 	    msg_outtrans_special(cmd->uc_rep, FALSE);
+#ifdef FEAT_EVAL
+	    if (p_verbose > 0)
+		last_set_msg(cmd->uc_scriptID);
+#endif
 	    out_flush();
 	    ui_breakcheck();
 	    if (got_int)

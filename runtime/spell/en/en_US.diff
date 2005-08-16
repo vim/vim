@@ -172,7 +172,7 @@
 + REP ie y
   REP i ee
 *** en_US.orig.dic	Fri Apr 15 13:20:36 2005
---- en_US.dic	Sun Jul  3 16:59:28 2005
+--- en_US.dic	Tue Aug 16 17:03:31 2005
 ***************
 *** 5944,5946 ****
   bk
@@ -467,6 +467,15 @@
 ! sings
   sybarite/MS
 ***************
+*** 56906,56908 ****
+  transit/SGVMD
+! transl
+  translatability/M
+--- 56905,56907 ----
+  transit/SGVMD
+! transl.
+  translatability/M
+***************
 *** 57728,57730 ****
   TX
 ! t/XTJBG
@@ -501,16 +510,17 @@
   vi/MDR
 ! vim/MS
   vinaigrette/MS
---- 59537,59539 ----
+--- 59537,59540 ----
   vi/MDR
 ! Vim/MS
+! vim/?
   vinaigrette/MS
 ***************
 *** 61534,61536 ****
   WWW
 ! w/XTJGV
   WY
---- 61533,61536 ----
+--- 61534,61537 ----
   WWW
 ! wens
 ! wings
@@ -520,19 +530,19 @@
   yew/SM
 - y/F
   Yggdrasil/M
---- 61750,61751 ----
+--- 61751,61752 ----
 ***************
 *** 62058,62060 ****
   Zsigmondy/M
 ! z/TGJ
   Zubenelgenubi/M
---- 62057,62059 ----
+--- 62058,62060 ----
   Zsigmondy/M
 ! zings
   Zubenelgenubi/M
 ***************
 *** 62077 ****
---- 62076,62083 ----
+--- 62077,62084 ----
   zymurgy/S
 + nd
 + the the/!

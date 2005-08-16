@@ -2,8 +2,8 @@
 " Language:		shell (sh) Korn shell (ksh) bash (sh)
 " Maintainer:		Dr. Charles E. Campbell, Jr.  <NdrOchipS@PcampbellAfamily.Mbiz>
 " Previous Maintainer:	Lennart Schultz <Lennart.Schultz@ecmwf.int>
-" Last Change:		Jul 01, 2005
-" Version:		75
+" Last Change:		Aug 16, 2005
+" Version:		76
 " URL:		http://www.erols.com/astronaut/vim/index.html#vimlinks_syntax
 "
 " Using the following VIM variables: {{{1
@@ -73,7 +73,7 @@ syn cluster shColonList	contains=@shCaseList
 syn cluster shCommandSubList	contains=shArithmetic,shDeref,shDerefSimple,shNumber,shOperator,shPosnParm,shSpecial,shExSingleQuote,shSingleQuote,shDoubleQuote,shStatement,shVariable,shSubSh,shAlias,shTest
 syn cluster shCurlyList	contains=shNumber,shComma,shDeref,shDerefSimple,shDerefSpecial
 syn cluster shDblQuoteList	contains=shCommandSub,shDeref,shDerefSimple,shSpecial,shPosnParm
-syn cluster shDerefList	contains=shDeref,shDerefSimple,shDerefVar,shDerefSpecial,shDerefWordError
+syn cluster shDerefList	contains=shDeref,shDerefSimple,shDerefVar,shDerefSpecial,shDerefWordError,shDerefPPS
 syn cluster shDerefVarList	contains=shDerefOp,shDerefVarArray,shDerefOpError
 syn cluster shEchoList	contains=shArithmetic,shCommandSub,shDeref,shDerefSimple,shExpr,shExSingleQuote,shSingleQuote,shDoubleQuote,shSpecial
 syn cluster shExprList1	contains=shCharClass,shNumber,shOperator,shExSingleQuote,shSingleQuote,shDoubleQuote,shSpecial,shExpr,shDblBrace,shDeref,shDerefSimple
@@ -368,24 +368,25 @@ syn match  shDerefOp	contained	":\=+"	nextgroup=@shDerefPatternList
 if exists("b:is_bash") || exists("b:is_kornshell")
  syn match  shDerefOp	contained	"#\{1,2}"	nextgroup=@shDerefPatternList
  syn match  shDerefOp	contained	"%\{1,2}"	nextgroup=@shDerefPatternList
- syn match  shDerefPattern	contained	"[^{}]\+"	contains=shDeref,shDerefSimple,shDerefPattern,shDerefString,shCommandSub nextgroup=shDerefPattern
+ syn match  shDerefPattern	contained	"[^{}]\+"	contains=shDeref,shDerefSimple,shDerefPattern,shDerefString,shCommandSub,shDerefEscape nextgroup=shDerefPattern
  syn region shDerefPattern	contained	start="{" end="}"	contains=shDeref,shDerefSimple,shDerefString,shCommandSub nextgroup=shDerefPattern
+ syn match  shDerefEscape	contained	'\%(\\\\\)*\\.'
 endif
 syn region shDerefString	contained	matchgroup=shOperator start=+'+ end=+'+		contains=shStringSpecial
 syn region shDerefString	contained	matchgroup=shOperator start=+"+ skip=+\\"+ end=+"+	contains=@shDblQuoteList,shStringSpecial
 syn match  shDerefString	contained	"\\["']"
 
-"	bash : ${parameter:offset}
-"	bash : ${parameter:offset:length}
-"	bash : ${parameter//pattern/string}
-"	bash : ${parameter//pattern}
 if exists("b:is_bash")
+ " bash : ${parameter:offset}
+ " bash : ${parameter:offset:length}
  syn region shDerefOp	contained	start=":[$[:alnum:]_]"me=e-1 end=":"me=e-1 end="}"me=e-1 contains=@shCommandSubList nextgroup=shDerefPOL
- syn match  shDerefPOL	contained	":[^}]\{1,}"	contains=@shCommandSubList
- syn match  shDerefOp	contained	"/\{1,2}"	nextgroup=shDerefPat
- syn match  shDerefPat	contained	"[^/}]\{1,}"	nextgroup=shDerefPatStringOp
- syn match  shDerefPatStringOp	contained	"/"	nextgroup=shDerefPatString
- syn match  shDerefPatString	contained	"[^}]\{1,}"
+ syn match  shDerefPOL	contained	":[^}]\+"	contains=@shCommandSubList
+
+ " bash : ${parameter//pattern/string}
+ " bash : ${parameter//pattern}
+ syn match  shDerefPPS	contained	'/\{1,2}'	nextgroup=shDerefPPSleft
+ syn region shDerefPPSleft	contained	start='.'	skip=@\%(\\\)\/@ matchgroup=shDerefOp end='/' nextgroup=shDerefPPSright contains=@shCommandSubList
+ syn region shDerefPPSright	contained	start='.'	end='\ze}'	contains=@shCommandSubList
 endif
 
 " Useful sh Keywords: {{{1
@@ -441,9 +442,8 @@ hi def link shCaseStart	shConditional
 hi def link shCmdSubRegion	shShellVariables
 hi def link shColon	shStatement
 hi def link shDerefOp	shOperator
-hi def link shDerefPatStringOp	shDerefOp
-hi def link shDerefPatString	shDerefPattern
 hi def link shDerefPOL	shDerefOp
+hi def link shDerefPPS	shDerefOp
 hi def link shDeref	shShellVariables
 hi def link shDerefSimple	shDeref
 hi def link shDerefSpecial	shDeref

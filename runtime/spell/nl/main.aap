@@ -11,11 +11,11 @@ FILES    = nl_NL.aff nl_NL.dic
 
 all: $SPELLDIR/nl.latin1.spl $SPELLDIR/nl.utf-8.spl ../README_nl.txt
 
-$SPELLDIR/nl.latin1.spl : $VIM $FILES
+$SPELLDIR/nl.latin1.spl : $FILES
         :sys env LANG=nl_NL.ISO8859-1
 		$VIM -u NONE -e -c "mkspell! $SPELLDIR/nl nl_NL" -c q
 
-$SPELLDIR/nl.utf-8.spl : $VIM $FILES
+$SPELLDIR/nl.utf-8.spl : $FILES
         :sys env LANG=nl_NL.UTF-8
 		$VIM -u NONE -e -c "mkspell! $SPELLDIR/nl nl_NL" -c q
 

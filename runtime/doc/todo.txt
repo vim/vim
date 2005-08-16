@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Aug 15
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Aug 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -31,9 +31,11 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 -------------------- Known bugs and current work -----------------------
 
 Spelling:
-- suggestions for compound words.
-- Implement multiple flags for compound words.  Await comments from other
-  spell checking authors.
+- Prefer SpellBad over SpellCap highlighting.
+- Add limit for number of suggestions to 'spellsuggest'?
+- CTRL-X s in Insert mode: move cursor back to after badly spelled word?
+- Implement multiple flags for compound words and CMP item.
+  Await comments from other spell checking authors.
 
 Mac unicode patch (Da Woon Jung):
 - selecting proportional font breaks display

@@ -32,11 +32,11 @@ READMES    = README_de_$*(REGIONS).txt
 
 all: $SPELLDIR/de.latin1.spl $SPELLDIR/de.utf-8.spl ../README_de.txt
 
-$SPELLDIR/de.latin1.spl : $VIM $FILES
+$SPELLDIR/de.latin1.spl : $FILES
         :sys env LANG=de_DE.ISO8859-1
 		$VIM -u NONE -e -c "mkspell! $SPELLDIR/de $DE_REGIONS" -c q
 
-$SPELLDIR/de.utf-8.spl : $VIM $FILES
+$SPELLDIR/de.utf-8.spl : $FILES
         :sys env LANG=de_DE.UTF-8
 		$VIM -u NONE -e -c "mkspell! $SPELLDIR/de $DE_REGIONS" -c q
 
