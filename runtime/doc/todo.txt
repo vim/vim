@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Aug 16
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Aug 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -31,11 +31,18 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 -------------------- Known bugs and current work -----------------------
 
 Spelling:
-- Prefer SpellBad over SpellCap highlighting.
-- Add limit for number of suggestions to 'spellsuggest'?
-- CTRL-X s in Insert mode: move cursor back to after badly spelled word?
-- Implement multiple flags for compound words and CMP item.
+- Test counting syllables and comparing against the maximum.
+- Test nocomp flag for affixes.
+
+- When looking for following compound word, also do postponed prefixes.
+
+- Implement multiple flags for compound words and CMP item?
   Await comments from other spell checking authors.
+
+Help tags: something to make it easy to find help about a certain filetype?
+    use ft-c-syntax ft-c-ftplugin etc.?
+
+Mac GUI: pasting lines results in ^M instead of line breaks. (Benjamin Esham)
 
 Mac unicode patch (Da Woon Jung):
 - selecting proportional font breaks display
@@ -44,7 +51,7 @@ Mac unicode patch (Da Woon Jung):
 Win32: Use the free downloadable compiler 7.1.  Figure out how to do debugging
 (with Agide?) and describe it. (George Reilly)
 
-autoload:
+Autoload:
 - Add a Vim script in $VIMRUNTIME/tools that takes a file with a list of
   script names and a help file and produces a script that can be sourced to
   install the scripts in the user's directories.

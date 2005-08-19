@@ -1506,6 +1506,15 @@ static struct vimoption
     {"mesg",	    NULL,   P_BOOL|P_VI_DEF,
 			    (char_u *)NULL, PV_NONE,
 			    {(char_u *)FALSE, (char_u *)0L}},
+    {"mkspellmem",  "msm",  P_STRING|P_VI_DEF|P_EXPAND|P_SECURE,
+#ifdef FEAT_SYN_HL
+			    (char_u *)&p_msm, PV_NONE,
+			    {(char_u *)"460000,2000,500", (char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)0L, (char_u *)0L}
+#endif
+    },
     {"modeline",    "ml",   P_BOOL|P_VIM,
 			    (char_u *)&p_ml, PV_ML,
 			    {(char_u *)FALSE, (char_u *)TRUE}},
@@ -4621,6 +4630,7 @@ didset_options()
     (void)opt_strings_flags(p_ttym, p_ttym_values, &ttym_flags, FALSE);
 #endif
 #ifdef FEAT_SYN_HL
+    (void)spell_check_msm();
     (void)spell_check_sps();
     (void)compile_cap_prog(curbuf);
 #endif
@@ -5789,6 +5799,12 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
     else if (varp == &p_sps)
     {
 	if (spell_check_sps() != OK)
+	    errmsg = e_invarg;
+    }
+    /* 'mkspellmem' */
+    else if (varp == &p_msm)
+    {
+	if (spell_check_msm() != OK)
 	    errmsg = e_invarg;
     }
 #endif

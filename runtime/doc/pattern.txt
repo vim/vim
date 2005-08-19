@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 7.0aa.  Last change: 2005 Aug 14
+*pattern.txt*   For Vim version 7.0aa.  Last change: 2005 Aug 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -943,9 +943,10 @@ x	A single character, with no special meaning, matches itself
 	"\_[^ab]" matches the end-of-line and any character but "a" and "b".
 	This makes it Vi compatible: Without the "\_" or "\n" the collection
 	does not match an end-of-line.
-
+								*E769*
 	When the ']' is not there Vim will not give an error message but
-	assume no collection is used.  Useful to search for '['.
+	assume no collection is used.  Useful to search for '['.  However, you
+	do get E769 for internal searching.
 
 	If the sequence begins with "^", it matches any single character NOT
 	in the collection: "[^xyz]" matches anything but 'x', 'y' and 'z'.

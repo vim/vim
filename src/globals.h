@@ -1057,6 +1057,14 @@ EXTERN int	cmdwin_result INIT(= 0); /* result of cmdline window or 0 */
 
 EXTERN char_u no_lines_msg[]	INIT(= N_("--No lines in buffer--"));
 
+/*
+ * When ":global" is used to number of substitutions and changed lines is
+ * accumulated until it's finished.
+ * Also used for ":spellrepall".
+ */
+EXTERN long	sub_nsubs;	/* total number of substitutions */
+EXTERN linenr_T	sub_nlines;	/* total number of lines changed */
+
 /* table to store parsed 'wildmode' */
 EXTERN char_u	wim_flags[4];
 

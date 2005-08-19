@@ -1,8 +1,8 @@
 " netrw.vim: Handles file transfer and remote directory listing across a network
 "            AUTOLOAD PORTION
-" Last Change:	Aug 16, 2005
+" Last Change:	Aug 19, 2005
 " Maintainer:	Charles E Campbell, Jr <drchipNOSPAM at campbellfamily dot biz>
-" Version:	63
+" Version:	65
 " GetLatestVimScripts: 1075 1 :AutoInstall: netrw.vim
 " Copyright:    Copyright (C) 1999-2005 Charles E. Campbell, Jr. {{{1
 "               Permission is hereby granted to use and distribute this code,
@@ -690,8 +690,6 @@ fun! s:NetGetFile(readcmd, fname, method)
    exe a:readcmd." ".v:cmdarg." ".fname
    let line1        = curline + 1
    let line2        = line("$") - lastline + 1
-   let s:netrw_line = s:netrw_line + 1
-   let s:netrw_col  = 1
   else
    " not readable
 "   call Dret("NetGetFile : fname<".fname."> not readable")
@@ -1025,6 +1023,8 @@ fun! s:NetBrowse(dirname)
    return
   endif
 
+  call s:NetOptionSave()
+
   " sanity check
   if exists("b:netrw_method") && b:netrw_method =~ '[235]'
 "   call Decho("b:netrw_method=".b:netrw_method)
@@ -1033,6 +1033,7 @@ fun! s:NetBrowse(dirname)
      echohl Error | echo "***netrw*** this system doesn't support remote directory listing via ftp" | echohl None
      call inputsave()|call input("Press <cr> to continue")|call inputrestore()
     endif
+    call s:NetOptionRestore()
 "    call Dret("NetBrowse")
     return
    endif
@@ -1042,6 +1043,7 @@ fun! s:NetBrowse(dirname)
     call inputsave()|call input("Press <cr> to continue")|call inputrestore()
    endif
 
+    call s:NetOptionRestore()
 "   call Dret("NetBrowse")
    return
   endif
@@ -1061,6 +1063,7 @@ fun! s:NetBrowse(dirname)
     echohl Error | echo "***netrw*** netrw doesn't understand your dirname<".dirname.">" | echohl None
     call inputsave()|call input("Press <cr> to continue")|call inputrestore()
    endif
+    call s:NetOptionRestore()
 "   call Dret("NetBrowse : badly formatted dirname<".dirname.">")
    return
   endif
@@ -1109,6 +1112,7 @@ fun! s:NetBrowse(dirname)
 "   call Decho("attempt transfer of symlink as file")
    call s:NetBrowse(substitute(dirname,'@$','','e'))
    redraw!
+   call s:NetOptionRestore()
 "   call Dret("NetBrowse : symlink")
    return
 
@@ -1119,7 +1123,7 @@ fun! s:NetBrowse(dirname)
    " remove any filetype indicator from end of dirname, except for the
    " "this is a directory" indicator (/).  There shouldn't be one of those,
    " anyway.
-   let path= substitute(path,'[*=@|]$','','e')
+   let path= substitute(path,'[*=@|]\r\=$','','e')
 "   call Decho("new path<".path.">")
 
    " remote-read the requested file into current buffer
@@ -1133,7 +1137,7 @@ fun! s:NetBrowse(dirname)
 
    " save certain window-oriented variables into buffer-oriented variables
    call s:BufWinVars()
-
+   call s:NetOptionRestore()
    setlocal nonu nomod noma
 
 "   call Dret("NetBrowse : file<".fname.">")
@@ -1152,6 +1156,7 @@ fun! s:NetBrowse(dirname)
 "   call Decho("buffer already exists, switching to it")
    exe "b ".bufnamenr
    if line("$") >= 5
+    call s:NetOptionRestore()
 "    call Dret("NetBrowse")
     return
    endif
@@ -1166,7 +1171,7 @@ fun! s:NetBrowse(dirname)
 "  call Decho("exe file ".escape(bufname,s:netrw_cd_escape))
   exe 'file '.escape(bufname,s:netrw_cd_escape)
 "  call Decho("renaming file to bufname<".bufname.">")
-  setlocal bh=hide nobl nonu
+  setlocal bh=hide bt=nofile nobl nonu
 
   " save current directory on directory history list
   call <SID>NetBookmarkDir(3,expand("%"))
@@ -1281,7 +1286,6 @@ fun! s:NetBrowse(dirname)
     exe "silent! g/".g:netrw_ssh_browse_reject."/keepjumps d"
    endif
   endif
-  
 
   " set up syntax highlighting
   if has("syntax")
@@ -1347,8 +1351,12 @@ fun! s:NetBrowse(dirname)
     endif
    endif
   endif
+
+  " cleanup any windows mess at end-of-line
+  keepjumps silent! %s/\r$//e
   exe "keepjumps ".w:netrw_bannercnt
 
+  call s:NetOptionRestore()
   setlocal nomod noma nonu
 
 "  call Dret("NetBrowse")
@@ -1772,6 +1780,16 @@ fun! s:NetBrowseFtpCmd(path,cmd)
    endif
   endif
 
+  " ftp's ls doesn't seem to include ./ or ../
+  if !search('^\.\/$','wn')
+   exe 'keepjumps '.curline
+   if a:path !~ '^$'
+    put ='../'
+   endif
+   put ='./'
+   exe 'keepjumps '.curline
+  endif
+
   " restore settings
   let &ff= ffkeep
 "  call Dret("NetBrowseFtpCmd")
@@ -2128,20 +2146,16 @@ fun! netrw#DirBrowse(dirname)
 "   call Dret("DirBrowse")
    return
   endif
+  call s:NetOptionSave()
 
   if v:version < 603
    if !exists("g:netrw_quiet")
     echohl Error | echo "***netrw*** vim version<".v:version."> too old for browsing with netrw" | echohl None
     call inputsave()|call input("Press <cr> to continue")|call inputrestore()
    endif
+   call s:NetOptionRestore()
 "   call Dret("DirBrowse : vim version<".v:version."> too old")
    return
-  endif
-
-  " record autochdir setting and then insure its unset (tnx to David Fishburn)
-  if has("netbeans_intg") || has("sun_workshop")
-   let keep_autochdir= &autochdir
-   set noautochdir
   endif
 
   " use buffer-oriented WinVars if buffer ones exist but window ones don't
@@ -2166,7 +2180,7 @@ fun! netrw#DirBrowse(dirname)
   endif
 
   " get cleared buffer
-  if bufnum < 0
+  if bufnum < 0 || !bufexists(bufnum)
    if v:version < 700
     enew!
    else
@@ -2185,6 +2199,7 @@ fun! netrw#DirBrowse(dirname)
 "      call Decho("change directory: cd ".b:netrw_curdir)
       exe 'cd '.escape(b:netrw_curdir,s:netrw_cd_escape)
      endif
+     call s:NetOptionRestore()
 "     call Dret("DirBrowse : reusing buffer#".bufnum."<".a:dirname.">")
      return
     endif
@@ -2201,6 +2216,11 @@ fun! netrw#DirBrowse(dirname)
   if b:netrw_curdir =~ '[/\\]$'
    let b:netrw_curdir= substitute(b:netrw_curdir,'[/\\]$','','e')
   endif
+  if b:netrw_curdir == ''
+   " under unix, when the root directory is encountered, the result
+   " from the preceding substitute is an empty string.
+   let b:netrw_curdir= '/'
+  endif
 "  call Decho("b:netrw_curdir<".b:netrw_curdir.">")
 
   " make netrw's idea of the current directory vim's if the user wishes
@@ -2214,6 +2234,7 @@ fun! netrw#DirBrowse(dirname)
     if exists("w:netrw_prvdir")
      let b:netrw_curdir= w:netrw_prvdir
     else
+     call s:NetOptionRestore()
 "     call Dret("DirBrowse : reusing buffer#".bufnum."<".a:dirname.">")
      return
     endif
@@ -2223,8 +2244,8 @@ fun! netrw#DirBrowse(dirname)
   " change the name of the buffer to reflect the b:netrw_curdir
   exe 'silent! file '.escape(b:netrw_curdir,s:netrw_cd_escape)
 
-  " make this buffer modifiable and hidden
-  setlocal ma hidden nonu bt=nofile
+  " make this buffer not-a-file, modifiable, not line-numbered, etc
+  setlocal bh=hide bt=nofile nobl ma nonu
   if v:version < 700
    silent! %d
   else
@@ -2367,11 +2388,8 @@ fun! netrw#DirBrowse(dirname)
 
   " save certain window-oriented variables into buffer-oriented variables
   call s:BufWinVars()
-
+  call s:NetOptionRestore()
   setlocal noma nomod nonu bh=hide nobl
-  if has("netbeans_intg") || has("sun_workshop")
-   let &autochdir= keep_autochdir
-  endif
 
 "  call Dret("DirBrowse : file<".expand("%:p")."> bufname<".bufname("%").">")
 endfun
@@ -2470,6 +2488,9 @@ fun! s:LocalBrowseList()
     keepjumps put=pfile
    endif
   endwhile
+  
+  " cleanup any windows mess at end-of-line
+  keepjumps silent! %s/\r$//e
   setlocal ts=32
 
 "  call Dret("LocalBrowseList")
@@ -3091,27 +3112,42 @@ endfun
 
 " ------------------------------------------------------------------------
 " NetOptionSave: save options and set to "standard" form {{{1
-fun!s:NetOptionSave()
+fun! s:NetOptionSave()
 "  call Dfunc("NetOptionSave()")
+  if !exists("w:netoptionsave")
+   let w:netoptionsave= 1
+  else
+"   call Dret("NetOptionSave : netoptionsave=".w:netoptionsave)
+   return
+  endif
 
   " Get Temporary Filename
-  let s:aikeep	= &ai
-  let s:cinkeep	= &cin
-  let s:cinokeep = &cino
-  let s:comkeep	= &com
-  let s:cpokeep	= &cpo
-  let s:dirkeep	= getcwd()
-  let s:gdkeep	= &gd
-  let s:twkeep	= &tw
+  let w:aikeep   = &ai
+  " record autochdir setting and then insure its unset (tnx to David Fishburn)
+  if has("netbeans_intg") || has("sun_workshop")
+   let w:acdkeep = &autochdir
+   set noautochdir
+  endif
+  let w:cinkeep  = &cin
+  let w:cinokeep = &cino
+  let w:comkeep  = &com
+  let w:cpokeep  = &cpo
+  if !g:netrw_keepdir
+   let w:dirkeep = getcwd()
+  endif
+  let w:gdkeep   = &gd
+  let w:repkeep  = &report
+  let w:twkeep   = &tw
   setlocal cino =
   setlocal com  =
   setlocal cpo -=aA
   setlocal nocin noai
   setlocal tw   =0
+  setlocal report=10000
   if has("win32") && !has("win95")
-   let s:swfkeep= &swf
+   let w:swfkeep= &swf
    setlocal noswf
-"  call Decho("setting s:swfkeep to <".&swf.">")
+"  call Decho("setting w:swfkeep to <".&swf.">")
   endif
 
 "  call Dret("NetOptionSave")
@@ -3121,36 +3157,50 @@ endfun
 " NetOptionRestore: restore options {{{1
 fun! s:NetOptionRestore()
 "  call Dfunc("NetOptionRestore()")
+  if !exists("w:netoptionsave")
+"   call Dret("NetOptionRestore : netoptionsave=".w:netoptionsave)
+   return
+  endif
+  unlet w:netoptionsave
  
-  let &ai	= s:aikeep
-  let &cin	= s:cinkeep
-  let &cino	= s:cinokeep
-  let &com	= s:comkeep
-  let &cpo	= s:cpokeep
-  exe "lcd ".s:dirkeep
-  let &gd	= s:gdkeep
-  let &tw	= s:twkeep
-  if exists("s:swfkeep")
+  let &ai	= w:aikeep
+  if has("netbeans_intg") || has("sun_workshop")
+   let &acd     = w:acdkeep
+  endif
+  let &cin	= w:cinkeep
+  let &cino	= w:cinokeep
+  let &com	= w:comkeep
+  let &cpo	= w:cpokeep
+  if exists("w:dirkeep")
+   exe "lcd ".w:dirkeep
+  endif
+  let &gd	= w:gdkeep
+  let &report   = w:repkeep
+  let &tw	= w:twkeep
+  if exists("w:swfkeep")
    if &directory == ""
     " user hasn't specified a swapfile directory;
     " netrw will temporarily make the swapfile
     " directory the current local one.
     let &directory   = getcwd()
-    silent! let &swf = s:swfkeep
+    silent! let &swf = w:swfkeep
     set directory=
    else
-    let &swf= s:swfkeep
+    let &swf= w:swfkeep
    endif
-   unlet s:swfkeep
+   unlet w:swfkeep
   endif
-  unlet s:aikeep
-  unlet s:cinkeep
-  unlet s:cinokeep
-  unlet s:comkeep
-  unlet s:cpokeep
-  unlet s:gdkeep
-  unlet s:twkeep
-  unlet s:dirkeep
+  unlet w:aikeep
+  unlet w:cinkeep
+  unlet w:cinokeep
+  unlet w:comkeep
+  unlet w:cpokeep
+  unlet w:gdkeep
+  unlet w:repkeep
+  unlet w:twkeep
+  if exists("w:dirkeep")
+   unlet w:dirkeep
+  endif
  
 "  call Dret("NetOptionRestore")
 endfun

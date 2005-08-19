@@ -136,6 +136,7 @@ static void redo_literal __ARGS((int c));
 static void start_arrow __ARGS((pos_T *end_insert_pos));
 #ifdef FEAT_SYN_HL
 static void check_spell_redraw __ARGS((void));
+static void spell_back_to_badword __ARGS((void));
 #endif
 static void stop_insert __ARGS((pos_T *end_insert_pos, int esc));
 static int  echeck_abbr __ARGS((int));
@@ -2365,6 +2366,9 @@ ins_compl_prep(c)
 	    case 's':
 	    case Ctrl_S:
 		ctrl_x_mode = CTRL_X_SPELL;
+#ifdef FEAT_SYN_HL
+		spell_back_to_badword();
+#endif
 		break;
 	    case Ctrl_RSB:
 		ctrl_x_mode = CTRL_X_TAGS;
@@ -3533,7 +3537,7 @@ ins_complete(c)
 	{
 #ifdef FEAT_SYN_HL
 	    compl_col = spell_word_start(startcol);
-	    if (compl_col == startcol)
+	    if (compl_col == (colnr_T)startcol)
 		return FAIL;
 	    compl_length = (int)curs_col - compl_col;
 	    compl_pattern = vim_strnsave(line + compl_col, compl_length);
@@ -4759,7 +4763,7 @@ redo_literal(c)
 
 /*
  * start_arrow() is called when an arrow key is used in insert mode.
- * It resembles hitting the <ESC> key.
+ * For undo/redo it resembles hitting the <ESC> key.
  */
     static void
 start_arrow(end_insert_pos)
@@ -4791,6 +4795,20 @@ check_spell_redraw()
 	spell_redraw_lnum = 0;
 	redrawWinline(lnum, FALSE);
     }
+}
+
+/*
+ * Called when starting CTRL_X_SPELL mode: Move backwards to a previous badly
+ * spelled word, if there is one.
+ */
+    static void
+spell_back_to_badword()
+{
+    pos_T	tpos = curwin->w_cursor;
+
+    spell_move_to(BACKWARD, TRUE, TRUE);
+    if (curwin->w_cursor.col != tpos.col)
+	start_arrow(&tpos);
 }
 #endif
 

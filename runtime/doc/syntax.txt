@@ -3654,9 +3654,8 @@ also tell where it was last set.  Example: >
 <	Comment        xxx term=bold ctermfg=4 guifg=Blue ~
            Last set from /home/mool/vim/vim7/runtime/syntax/syncolor.vim ~
 
-For details about when this message is given and when it's valid see
-|:set-verbose|.  When ":hi clear" is used then the script where this command
-is used will be mentioned for the default values.
+When ":hi clear" is used then the script where this command is used will be
+mentioned for the default values. See |:verbose-cmd| for more information.
 
 					*highlight-args* *E416* *E417* *E423*
 There are three types of terminals for highlighting:

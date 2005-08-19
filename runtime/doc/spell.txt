@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Aug 16
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Aug 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -433,8 +433,12 @@ then Vim will try to guess.
 			|spell-affix-SAL|
 
 			This command uses a lot of memory, required to find
-			the optimal word tree (Polish requires a few hundred
-			Mbyte).  The final result will be much smaller.
+			the optimal word tree (Polish, Italian and Hungarian
+			require several hundred Mbyte).  The final result will
+			be much smaller, because compression is used.  To
+			avoid running out of memory compression will be done
+			now and then.  This can be tuned with the 'mkspellmem'
+			option.
 
 			After the spell file was written and it was being used
 			in a buffer it will be reloaded automatically.
@@ -452,7 +456,8 @@ then Vim will try to guess.
 Vim will report the number of duplicate words.  This might be a mistake in the
 list of words.  But sometimes it is used to have different prefixes and
 suffixes for the same basic word to avoid them combining (e.g. Czech uses
-this).
+this).  If you want Vim to report all duplicate words set the 'verbose'
+option.
 
 Since you might want to change a Myspell word list for use with Vim the
 following procedure is recommended:
@@ -475,6 +480,25 @@ When the Myspell files are updated you can merge the differences:
 3. Take over the changes you like in xx_YY.dic.
    You may also need to change xx_YY.aff.
 4. Rename xx_YY.new.dic to xx_YY.orig.dic and xx_YY.new.aff to xx_YY.new.aff.
+
+
+SPELL FILE VERSIONS					*E770* *E771* *E772*
+
+Spell checking is a relatively new feature in Vim, thus it's possible that the
+.spl file format will be changed to support more languages.  Vim will check
+the validity of the spell file and report anything wrong.
+
+	E771: Old spell file, needs to be updated ~
+This spell file is older than your Vim.  You need to update the .spl file.
+
+	E772: Spell file is for newer version of Vim ~
+This means the spell file was made for a later version of Vim.  You need to
+update Vim.
+
+	E770: Unsupported section in spell file ~
+This means the spell file was made for a later version of Vim and contains a
+section that is required for the spell file to work.  In this case it's
+probably a good idea to upgrade your Vim.
 
 
 SPELL FILE DUMP
@@ -736,6 +760,7 @@ Example:
 	SFX F 0 in   [^i]n      # Spion > Spionin  ~
 	SFX F 0 nen  in         # Bauerin > Bauerinnen ~
 
+							*spell-affix-rare*
 An extra item for Vim is the "rare" flag.  It must come after the other
 fields, before a comment.  When used then all words that use the affix will be
 marked as rare words.  Example:
@@ -745,6 +770,22 @@ marked as rare words.  Example:
 
 However, if the word also appears as a good word in another way it won't be
 marked as rare.
+
+							*spell-affix-nocomp*
+Another extra item for Vim is the "nocomp" flag.  It must come after the other
+fields, before a comment.  It can be either before or after "rare".  When used
+then all words that use the affix will not be used for compound words.
+Example:
+	affix file:
+		COMPOUNDFLAG c ~
+		SFX a Y 2 ~
+		SFX a 0 s   . ~
+		SFX a 0 ize . nocomp ~
+	dictionary:
+		word/c ~
+		util/ac ~
+
+This allows for "wordutil" and "wordutils" but not "wordutilize".
 
 						    *spell-affix-PFXPOSTPONE*
 When an affix file has very many prefixes that apply to many words it's not
@@ -760,9 +801,6 @@ string will still be included in the word list.  An exception if the chop
 string is one character and equal to the last character of the added string,
 but in lower case.  Thus when the chop string is used to allow the following
 word to start with an upper case letter.
-
-It is not possible to use PFXPOSTPONE together with COMPOUNDFLAG or
-COMPOUNDFLAGS.
 
 
 WORDS WITH A SLASH					*spell-affix-SLASH*
@@ -818,86 +856,73 @@ This can be used to exclude words that would otherwise be good.  For example
 Once a word has been marked as bad it won't be undone by encountering the same
 word as good.
 
+							*spell-affix-NEEDAFFIX*
+The NEEDAFFIX flag is used to require that a word is used with an affix.  The
+word itself is not a good word.  Example:
+
+	NEEDAFFIX + ~
+
 
 COMPOUND WORDS						*spell-affix-compound*
 
-A compound word is a longer word made by concatenating words.  To specify
-which words may be concatenated a character is used.  This character is put in
-the list of affixes after the word.  We will call this character a flag here.
-Obviously these flags must be different from any affix IDs used.
+A compound word is a longer word made by concatenating words that appear in
+the .dic file.  To specify which words may be concatenated a character is
+used.  This character is put in the list of affixes after the word.  We will
+call this character a flag here.  Obviously these flags must be different from
+any affix IDs used.
 
 							*spell-COMPOUNDFLAG*
 The Myspell compatible method uses one flag, specified with COMPOUNDFLAG.
-All words with this flag combine in any order and without limit in length.
-This means there is no control over which word comes first.  Example:
+All words with this flag combine in any order.  This means there is no control
+over which word comes first.  Example:
 	COMPOUNDFLAG c ~
 
 							*spell-COMPOUNDFLAGS*
-The method added by Vim allows specifying which words can be prepended to
-other words, and which words can be appended to other words.  This is a list
-of comma separated items.  Each item may contain zero or more dashes and plus
-signs.
+A more advanced method to specify how compound words can be formed uses
+multiple items with multiple flags.  This is not compatible with Myspell 3.0.
+Let's start with an example:
+	COMPOUNDFLAGS c+ ~
+	COMPOUNDFLAGS se ~
 
-NOTE: At this moment COMPOUNDFLAGS has not been implemented yet!
+The first line defines that words with the "c" flag can be concatenated in any
+order.  The second line defines compound words that are made of one word with
+the "s" flag and one word with the "e" flag.  With this dictionary:
+	bork/c ~
+	onion/s ~
+	soup/e ~
 
-An item without dashes specifies words that combine in any order and as often
-as possible.  Example:
-	COMPOUNDFLAGS c,m ~
-
-This allows all words with the "c" flag to be combined and all words with the
-"m" flag to be combined, but a word with the "c" flag doesn't combine with a
-word with the "m" flag.
-
-Flags that are put together, without a separating comma, are considered
-interchangable.  Example:
-	COMPOUNDFLAGS cm ~
-
-This allows all words with the "c" and/or "m" flag to be combined.
-
-An item with one dash specifies flags for a leading word and flags for a
-trailing word.  Thus only two-word combinations are made.  Example:
-	COMPOUNDFLAGS f-d ~
-
-Here the 'f' flag can be used for food and 'd' for dishes, such that you can
-use these words in the dictionary:
-	tomato/f ~
-	onion/f~
-	soup/d~
-	salat/d~
-
-Which makes the words:
-	tomato
+You can make these words:
+	bork
+	borkbork
+	borkborkbork
+	(etc.)
 	onion
 	soup
-	salat
-	tomatosoup
-	tomatosalat
 	onionsoup
-	onionsalat
 
-Note that something like "souptomato" is not possible.  And that it's actually
-easier to list all the words if you have only this few.
+The COMPOUNDFLAGS item may appear multiple times.  The argument is made out of
+one or more groups, where each group can be:
+	one flag			e.g., c
+	alternate flags inside []	e.g., [abc]
+Optionally this may be followed by:
+	*	the group appears zero or more times, e.g., sm*e
+	+	the group appears one or more times, e.g., c+
 
-More dashes can be used to allow more words to combine.  For example:
-	COMPOUNDFLAGS f-d,f-f-d ~
+This is similar to the regexp pattern syntax (but not the same!).  A few
+examples with the sequence of word flags they require:
+    COMPOUNDFLAGS x+	    x xx xxx etc.
+    COMPOUNDFLAGS yz	    yz
+    COMPOUNDFLAGS x+z	    xz xxz xxxz etc.
+    COMPOUNDFLAGS yx+	    yx yxx yxxx etc.
 
-Would allow "tomatoonionsoup" (OK, so this is a bad example, but you get the
-idea).
-
-When a word can be used an undetermined number of times use a plus instead of
-a dash.  Example:
-	COMPOUNDFLAGS f+d ~
-
-Then you can make tasty "oniononiontomatotomatosoup".
-
-The "+" may also appear at the end, which means that the last flags can be
-repeated many times.  Example:
-	COMPOUNDFLAGS f-d+ ~
-
-Which allows the use of "onionsoupsoupsoupsoupsoupsoup".
+    COMPOUNDFLAGS [abc]z    az bz cz
+    COMPOUNDFLAGS [abc]+z   az aaz abaz bz baz bcbz cz caz cbaz etc.
+    COMPOUNDFLAGS a[xyz]+   ax axx axyz ay ayx ayzz az azy azxy etc.
+    COMPOUNDFLAGS sm*e	    se sme smme smmme etc.
+    COMPOUNDFLAGS s[xyz]*e  se sxe sxye sxyxe sye syze sze szye szyxe  etc.
 
 							*spell-COMPOUNDMIN*
-The minimal length of a word used for concatenation is specified with
+The minimal byte length of a word used for concatenation is specified with
 COMPOUNDMIN.  Example:
 	COMPOUNDMIN 5 ~
 
@@ -905,39 +930,79 @@ When omitted a minimal length of 3 bytes is used.  Obviously you could just
 leave out the compound flag from short words instead, this feature is present
 for compatibility with Myspell.
 
-							*spell-CMP*
-NOTE: At this moment CMP has not been implemented yet!
+							*spell-COMPOUNDMAX*
+The maximum number of words that can be concatenated into a compound word is
+specified with COMPOUNDMAX.  Example:
+	COMPOUNDMAX 3 ~
 
-Sometimes it is necessary to change a word when concatenating it to another,
-by removing a few letters, inserting something or both.  It can also be useful
-to restrict concatenation to words that match a pattern.  For this purpose CMP
-items can be used.  They look like this:
-	CMP {flag} {flags} {strip} {add} {cond} {cond2}
+When omitted there is no maximum.  It applies to all compound words.
 
-	{flag}		the flag, as used in COMPOUNDFLAGS for the lead word
-	{flags}		accepted flags for the following word ('.' to accept
-			all)
-	{strip}		text to remove from the end of the lead word (zero
-			for no stripping)
-	{add}		text to insert between the words (zero for no
-			addition)
-	{cond}		condition to match at the end of the lead word
-	{cond2}		condition to match at the start of the following word
+To set a limit for words with specific flags make sure the items in
+COMPOUNDFLAGS where they appear don't allow too many words.
 
-This is the same as what is used for SFX and PFX items, with the extra {flags}
-and {cond2} fields.  Example:
-	CMP f mrt 0 - . . ~
+							*spell-COMPOUNDSYLMAX*
+The maximum number of syllables that a compound word may contain is specified
+with COMPOUNDSYLMAX.  Example:
+	COMPOUNDSYLMAX 6 ~
 
-When used with the food and dish word list above, this means that a dash is
-inserted after each food item.  Thus you get "onion-soup" and
-"onion-tomato-salat".
+This has no effect if there is no SYLLABLE item.  Without COMPOUNDSYLMAX there
+is no limit on the number of syllables.
 
-When there are CMP items for a compound flag the concatenation is only done
-when a CMP item matches.
+							*spell-SYLLABLE*
+The SYLLABLE item defines characters or character sequences that are used to
+count the number of syllables in a word.  Example:
+	SYLLABLE aαeιiνoσφυuϊόϋy/aa/au/ea/ee/ei/ie/oa/oe/oo/ou/uu/ui ~
 
-When there are no CMP items for a compound flag, then all words will be
-concatenated, as if there was an item:
-	CMP {flag} . 0 0 . .
+Before the first slash is the set of characters that are counted for one
+syllable, also when repeated and mixed, until the next character that is not
+in this set.  After the slash come sequences of characters that are counted
+for one syllable.  These are preferred over using characters from the set.
+With the example "ideeen" has three syllables, counted by "i", "ee" and "e".
+
+Only case-folded letters need to be included.
+
+Above another way to restrict compounding was mentioned above: adding "nocomp"
+after an affix causes all words that are made with that affix not be be used
+for compounding. |spell-affix-nocomp|
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+NOTE: The following has not been implemented yet, because there are no word
+lists that support this.
+> 							*spell-CMP*
+> Sometimes it is necessary to change a word when concatenating it to another,
+> by removing a few letters, inserting something or both.  It can also be useful
+> to restrict concatenation to words that match a pattern.  For this purpose CMP
+> items can be used.  They look like this:
+> 	CMP {flag} {flags} {strip} {strip2} {add} {cond} {cond2}
+> 
+> 	{flag}		the flag, as used in COMPOUNDFLAGS for the lead word
+> 	{flags}		accepted flags for the following word ('.' to accept
+> 			all)
+> 	{strip}		text to remove from the end of the lead word (zero
+> 			for no stripping)
+> 	{strip2}	text to remove from the start of the following word
+> 			(zero for no stripping)
+> 	{add}		text to insert between the words (zero for no
+> 			addition)
+> 	{cond}		condition to match at the end of the lead word
+> 	{cond2}		condition to match at the start of the following word
+> 
+> This is the same as what is used for SFX and PFX items, with the extra {flags}
+> and {cond2} fields.  Example:
+> 	CMP f mrt 0 - . . ~
+> 
+> When used with the food and dish word list above, this means that a dash is
+> inserted after each food item.  Thus you get "onion-soup" and
+> "onion-tomato-salat".
+> 
+> When there are CMP items for a compound flag the concatenation is only done
+> when a CMP item matches.
+> 
+> When there are no CMP items for a compound flag, then all words will be
+> concatenated, as if there was an item:
+> 	CMP {flag} . 0 0 . .
+>
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 
 REPLACEMENTS						*spell-affix-REP*

@@ -34,6 +34,7 @@ void ex_z __ARGS((exarg_T *eap));
 int check_restricted __ARGS((void));
 int check_secure __ARGS((void));
 void do_sub __ARGS((exarg_T *eap));
+int do_sub_msg __ARGS((int count_only));
 void ex_global __ARGS((exarg_T *eap));
 void global_exe __ARGS((char_u *cmd));
 int read_viminfo_sub_string __ARGS((vir_T *virp, int force));

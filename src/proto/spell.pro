@@ -11,6 +11,7 @@ void ex_spell __ARGS((exarg_T *eap));
 void spell_add_word __ARGS((char_u *word, int len, int bad, int index));
 void init_spell_chartab __ARGS((void));
 int spell_check_sps __ARGS((void));
+int spell_check_msm __ARGS((void));
 void spell_suggest __ARGS((void));
 void ex_spellrepall __ARGS((exarg_T *eap));
 void spell_suggest_list __ARGS((garray_T *gap, char_u *word, int maxcount, int need_cap));

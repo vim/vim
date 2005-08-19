@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Aug 16
+" Last Change:	2005 Aug 17
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -823,7 +823,7 @@ au BufNewFile,BufRead *.m4
 au BufNewFile,BufRead *.mgp			setf mgp
 
 " Mail (for Elm, trn, mutt, rn, slrn)
-au BufNewFile,BufRead snd.\d\+,.letter,.letter.\d\+,.followup,.article,.article.\d\+,pico.\d\+,mutt-*-\w\+,mutt\w\{6\},ae\d\+.txt,/tmp/SLRN[0-9A-Z.]\+,*.eml setf mail
+au BufNewFile,BufRead snd.\d\+,.letter,.letter.\d\+,.followup,.article,.article.\d\+,pico.\d\+,mutt{ng,}-*-\w\+,mutt\w\{6\},ae\d\+.txt,/tmp/SLRN[0-9A-Z.]\+,*.eml setf mail
 
 " Mailcap configuration file
 au BufNewFile,BufRead .mailcap,mailcap		setf mailcap
@@ -953,8 +953,8 @@ au BufRead,BufNewFile *.mu			setf mupad
 au BufNewFile,BufRead *.mush			setf mush
 
 " Mutt setup file
-au BufNewFile,BufRead Muttrc			setf muttrc
-au BufNewFile,BufRead .muttrc*,*/.mutt/muttrc*	call s:StarSetf('muttrc')
+au BufNewFile,BufRead Mutt{ng,}rc			setf muttrc
+au BufNewFile,BufRead .mutt{ng,}rc*,*/.mutt{ng,}/mutt{ng,}rc*	call s:StarSetf('muttrc')
 
 " Nano
 au BufNewFile,BufRead /etc/nanorc,.nanorc	setf nanorc
@@ -1832,7 +1832,12 @@ au BufNewFile,BufRead *.y			call s:FTy()
 
 fun! s:FTy()
   let n = 1
-  while n < 10 && n < line("$")
+  while n < 100 && n < line("$")
+    let line = getline(n)
+    if line =~ '^\s*%'
+      setf yacc
+      return
+    endif
     if getline(n) =~ '^\s*\(#\|class\>\)' && getline(n) !~ '^\s*#\s*include'
       setf racc
       return
@@ -1924,7 +1929,7 @@ au BufNewFile,BufRead /etc/modprobe.*		call s:StarSetf('modconf')
 au BufNewFile,BufRead [rR]akefile*		call s:StarSetf('ruby')
 
 " Mutt setup file
-au BufNewFile,BufRead muttrc*,Muttrc*		call s:StarSetf('muttrc')
+au BufNewFile,BufRead mutt{ng,}rc*,Mutt{ng,}rc*		call s:StarSetf('muttrc')
 
 " Nroff macros
 au BufNewFile,BufRead tmac.*			call s:StarSetf('nroff')

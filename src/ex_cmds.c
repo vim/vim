@@ -30,7 +30,6 @@ static int check_readonly __ARGS((int *forceit, buf_T *buf));
 #ifdef FEAT_AUTOCMD
 static void delbuf_msg __ARGS((char_u *name));
 #endif
-static int do_sub_msg __ARGS((int count_only));
 static int
 #ifdef __BORLANDC__
     _RTLENTRYF
@@ -3940,13 +3939,6 @@ check_secure()
 static char_u	*old_sub = NULL;	/* previous substitute pattern */
 static int	global_need_beginline;	/* call beginline() after ":g" */
 
-/*
- * When ":global" is used to number of substitutions and changed lines is
- * accumulated until it's finished.
- */
-static long	sub_nsubs;	/* total number of substitutions */
-static linenr_T	sub_nlines;	/* total number of lines changed */
-
 /* do_sub()
  *
  * Perform a substitution from line eap->line1 to line eap->line2 using the
@@ -4829,7 +4821,7 @@ outofmem:
  * Can also be used after a ":global" command.
  * Return TRUE if a message was given.
  */
-    static int
+    int
 do_sub_msg(count_only)
     int	    count_only;		/* used 'n' flag for ":s" */
 {

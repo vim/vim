@@ -2,8 +2,7 @@
 " Language:	BibTeX (bibliographic database format for (La)TeX)
 " Maintainer:	Bernd Feige <Bernd.Feige@gmx.net>
 " Filenames:	*.bib
-" Last Change:	Apr 26, 2001
-" URL:		http://home.t-online.de/home/Bernd.Feige/bib.vim
+" Last Change:	Aug 02, 2005
 
 " Thanks to those who pointed out problems with this file or supplied fixes!
 
@@ -47,7 +46,7 @@ syn cluster bibVarContents	contains=bibUnescapedSpecial,bibBrace,bibParen
 syn match bibUnescapedSpecial contained /[^\\][%&]/hs=s+1
 syn match bibKey contained /\s*[^ \t}="]\+,/hs=s,he=e-1 nextgroup=bibField
 syn match bibVariable contained /[^{}," \t=]/
-syn region bibComment start=/^/ end=/^\s*@/me=e-1 contains=@bibCommentContents nextgroup=bibEntry
+syn region bibComment start=/./ end=/^\s*@/me=e-1 contains=@bibCommentContents nextgroup=bibEntry
 syn region bibQuote contained start=/"/ end=/"/ skip=/\(\\"\)/ contains=@bibVarContents
 syn region bibBrace contained start=/{/ end=/}/ skip=/\(\\[{}]\)/ contains=@bibVarContents
 syn region bibParen contained start=/(/ end=/)/ skip=/\(\\[()]\)/ contains=@bibVarContents
@@ -60,6 +59,7 @@ if version < 600
 else
   syn region bibEntry start=/@\S\+[{(]/ end=/^\s*[})]/ transparent fold contains=bibType,bibEntryData nextgroup=bibComment
 endif
+syn region bibComment2 start=/@Comment[{(]/ end=/^\s*@/me=e-1 contains=@bibCommentContents nextgroup=bibEntry
 
 " Synchronization
 " ===============
@@ -86,6 +86,7 @@ if version >= 508 || !exists("did_bib_syn_inits")
   HiLink bibVariable	Constant
   HiLink bibUnescapedSpecial	Error
   HiLink bibComment	Comment
+  HiLink bibComment2	Comment
   delcommand HiLink
 endif
 

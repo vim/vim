@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Aug 12
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Aug 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4284,6 +4284,45 @@ A jump table for the options with a short description can be found at |Q_op|.
 	generated from a list of items, e.g., the Buffers menu.  Changing this
 	option has no direct effect, the menu must be refreshed first.
 
+						*'mkspellmem'* *'msm'*
+'mkspellmem' 'msm'	string	(default "460000,2000,500")
+			global
+			{not in Vi}
+			{not available when compiled without the |+syntax|
+			feature}
+	Parameters for |:mkspell|.  This tunes when to start compressing the
+	word tree.  Compression can be slow when there are many words, but
+	it's needed to avoid running out of memory.  The amount of memory used
+	per word depends very much on how similar the words are, that's why
+	this tuning is complicated.
+
+	There are three numbers, separated by commas:
+		{start},{inc},{added}
+
+	For most languages the uncompressed word tree fits in memory.  {start}
+	gives the amount of memory in Kbyte that can be used before any
+	compression is done.  It should be a bit smaller than the amount of
+	memory that is available to Vim.
+
+	When going over the {start} limit the {inc} number specifies the
+	amount of memory in Kbyte that can be allocated before another
+	compression is done.  A low number means compression is done after
+	less words are added, which is slow.  A high number means more memory
+	will be allocated.
+
+	After doing compression, {added} times 1024 words can be added before
+	the {inc} limit is ignored and compression is done when any extra
+	amount of memory is needed.  A low number means there is a smaller
+	chance of hitting the {inc} limit, less memory is used but it's
+	slower.
+
+	The languages for which these numbers are important are Italian and
+	Hungarian.  The default works for when you have about 512 Mbyte.  If
+	you have 1 Gbyte you could use: >
+		:set mkspellmem=900000,3000,800
+<	If you have less than 512 Mbyte |:mkspell| may fail for some
+	languages, no matter what you set 'mkspellmem' to.
+
 				   *'modeline'* *'ml'* *'nomodeline'* *'noml'*
 'modeline' 'ml'		boolean	(Vim default: on, Vi default: off)
 			local to buffer
@@ -5696,7 +5735,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			feature}
 	Pattern to locate the end of a sentence.  The following word will be
 	checked to start with a capital letter.  If not then it is highlighted
-	with SpellCap |hl-SpellCap|.
+	with SpellCap |hl-SpellCap| (unless the word is also badly spelled).
 	When this check is not wanted make this option empty.
 	Only used when 'spell' is set.
 	Be careful with special characters, see |option-backslash| about
@@ -5749,6 +5788,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	region by listing them: "en_us,en_ca" supports both US and Canadian
 	English, but not words specific for Australia, New Zealand or Great
 	Britain.
+							*E757*
 	As a special case the name of a .spl file can be given as-is.  The
 	first "_xx" in the name is removed and used as the region name
 	(_xx is an underscore, two letters and followed by a non-letter).
@@ -5788,6 +5828,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 	fast		Internal method that only checks for simple changes:
 			character inserts/deletes/swaps.  Works well for
 			simple typing mistakes.
+
+	{number}	The maximum number of suggestions listed for |z?|.
+			Not used for |spellsuggest()|.  The number of
+			suggestions is never more than the value of 'lines'
+			minus two.
 
 	file:{filename} Read file {filename}, which must have two columns,
 			separated by a slash.  The first column contains the

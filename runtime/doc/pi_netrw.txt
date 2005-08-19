@@ -1217,6 +1217,11 @@ which is loaded automatically at startup (assuming :set nocp).
 ==============================================================================
 10. History						*netrw-history*
 
+	v64: * Browser functions now use NetOptionSave/Restore; in particular,
+	       netrw now works around the report setting
+	     * Bugfix - browsing a "/" directory (Unix) yielded buffers 
+	       named "[Scratch]" instead of "/"
+	     * Bugfix - remote browsing with ftp was omitting the ./ and ../
 	v63: * netrw now takes advantage of autoload (and requires 7.0)
 	     * Bugfix - using r (to reverse sort) working again
 	v62: * Bugfix - spaces allowed again in directory names with

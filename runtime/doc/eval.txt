@@ -4692,10 +4692,7 @@ last defined. Example: >
 	function SetFileTypeSH(name)
 	    Last set from /usr/share/vim/vim-7.0/filetype.vim
 <
-When the function was defined by hand there is no "Last set" message.  When
-the function was defined while executing a function, user command or
-autocommand, the script in which it was defined is reported.
-{not available when compiled without the +eval feature}
+See |:verbose-cmd| for more information.
 
  							*E124* *E125*
 :fu[nction][!] {name}([arguments]) [range] [abort] [dict]

@@ -1,8 +1,8 @@
 " netrw.vim: Handles file transfer and remote directory listing across a network
 "            PLUGIN PORTION
-" Last Change:	Aug 16, 2005
+" Last Change:	Aug 17, 2005
 " Maintainer:	Charles E Campbell, Jr <drchipNOSPAM at campbellfamily dot biz>
-" Version:	63
+" Version:	65a	ASTRO-ONLY
 " License:	Vim License  (see vim's :help license)
 " GetLatestVimScripts: 1075 1 :AutoInstall: netrw.vim
 " Copyright:    Copyright (C) 1999-2005 Charles E. Campbell, Jr. {{{1
@@ -28,7 +28,7 @@ if v:version < 600
  echoerr "***netrw*** doesn't support Vim version ".v:version
  finish
 endif
-let g:loaded_netrw  = "v63"
+let g:loaded_netrw  = "v65a"
 if v:version < 700
  let loaded_explorer = 1
 endif

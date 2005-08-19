@@ -594,6 +594,9 @@ EXTERN long	p_mmt;		/* 'maxmemtot' */
 #ifdef FEAT_MENU
 EXTERN long	p_mis;		/* 'menuitems' */
 #endif
+#ifdef FEAT_SYN_HL
+EXTERN char_u	*p_msm;		/* 'mkspellmem' */
+#endif
 EXTERN long	p_mls;		/* 'modelines' */
 EXTERN char_u	*p_mouse;	/* 'mouse' */
 #ifdef FEAT_GUI
