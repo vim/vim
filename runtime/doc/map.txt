@@ -281,10 +281,7 @@ last defined.  Example: >
 	n  <C-W>*      * <C-W><C-S>*
 	        Last set from /home/abcd/.vimrc
 
-When the map was defined by hand there is no "Last set" message.  When the map
-was defined while executing a function, user command or autocommand, the
-script in which it was defined is reported.
-{not available when compiled without the +eval feature}
+See |:verbose-cmd| for more information.
 
 							*map_backslash*
 Note that only CTRL-V is mentioned here as a special character for mappings
@@ -877,10 +874,7 @@ last defined. Example: >
 	TOhtml      0    %               :call Convert2HTML(<line1>, <line2>)
 	    Last set from /usr/share/vim/vim-7.0/plugin/tohtml.vim
 <
-When the command was defined by hand there is no "Last set" message.  When the
-command was defined while executing a function, user command or autocommand,
-the script in which it was defined is reported.
-{not available when compiled without the +eval feature}
+See |:verbose-cmd| for more information.
 
 							*E174* *E182*
 :com[mand][!] [{attr}...] {cmd} {rep}

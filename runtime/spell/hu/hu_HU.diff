@@ -1,5 +1,5 @@
 *** hu_HU.orig.aff	Tue Aug 16 18:21:10 2005
---- hu_HU.aff	Tue Aug 16 19:42:34 2005
+--- hu_HU.aff	Fri Aug 19 21:28:45 2005
 ***************
 *** 57,62 ****
   
@@ -16,8 +16,9 @@
 ! #VERSION Magyar 0.99.4.2
   SET ISO8859-2
 ***************
-*** 65,77 ****
-  COMPOUNDFLAG Y
+*** 64,77 ****
+  COMPOUNDMIN 2
+! COMPOUNDFLAG Y
 ! COMPOUNDWORD 2 y
 ! COMPOUNDSYLLABLE 6 aáeéiíoóöõuúüû
 ! SYLLABLENUM klmc
@@ -30,23 +31,84 @@
 ! WORDCHARS -.§%°0123456789
 ! HU_KOTOHANGZO Z
   
---- 65,80 ----
-  COMPOUNDFLAG Y
+--- 64,116 ----
+  COMPOUNDMIN 2
 ! #COMPOUNDWORD 2 y
+! COMPOUNDMAX 2
+! # I don't understand what the "y" is for; if it's to disable compounding simply
+! # remove the compound flag from the word.
+! 
 ! #COMPOUNDSYLLABLE 6 aáeéiíoóöõuúüû
+! COMPOUNDSYLMAX 6
+! SYLLABLE a/á/e/é/i/í/o/ó/ö/õ/u/ú/ü/û
+! # Strange that every vowel is counted as a syllable, that's how the hunspell
+! # code works.
+! 
 ! #SYLLABLENUM klmc
+! # Don't understand what this is for
+! 
+! #COMPOUNDFLAG Y
 ! #COMPOUNDFIRST v
 ! #COMPOUNDLAST x
+! COMPOUNDFLAGS Y+
+! COMPOUNDFLAGS vY*x
+! COMPOUNDFLAGS Y+x
+! COMPOUNDFLAGS vY+
+! 
 ! #FORBIDDENWORD w
-! BAD w
+! #  I don't understand what FORBIDDENWORD is needed for, using NEEDAFFIX
+! #  (ONLYROOT) should be sufficient.
+! 
 ! #ONLYROOT u
+! NEEDAFFIX u
+! 
 ! #ACCENT áéíóöõúüû aeiooouuu
+! MAP 5
+! MAP aáä
+! MAP eé
+! MAP ií
+! MAP oóöõ
+! MAP uúüû
+! 
 ! #CHECKNUM
+! # Vim always handles numbers in the same way.
+! 
 ! #WORDCHARS -.§%°0123456789
+! FOL ±¢³µ¶¨¹º»¼¾¿±²³´µ¶·¸¹º»¼½¾¿àáâãäåæçèéêëìíîïðñòóôõöøùúûüýþßÿ-§%°
+! LOW ±¢³µ¶¨¹º»¼¾¿±²³´µ¶·¸¹º»¼½¾¿àáâãäåæçèéêëìíîïðñòóôõöøùúûüýþßÿ-§%°
+! UPP ¡¢£¥¦¨©ª«¬®¯±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞßÿ-§%°
+! MIDWORD .
+! 
 ! #HU_KOTOHANGZO Z
 ! 
+! # There are soooo many affixes.  Postpone the prefixes to keep the time needed
+! # for generating the .spl within reasonable limits.
 ! PFXPOSTPONE
   
+***************
+*** 81,96 ****
+  
+! REP 89
+! REP í i
+! REP i í
+! REP ó o
+! REP o ó
+! REP o õ
+! REP ú u
+! REP u ú
+! REP u û
+! REP û ü
+! REP ü û
+  REP j ly
+  REP ly j
+- REP a ä # Handel->Händel
+  REP S © # Skoda->©koda
+--- 120,124 ----
+  
+! REP 78
+  REP j ly
+  REP ly j
+  REP S © # Skoda->©koda
 ***************
 *** 173,241 ****
   
@@ -118,11 +180,11 @@
 - CHR 123 U3 Û
 - 
   SFX z Y 6
---- 176,177 ----
+--- 201,202 ----
 ***************
 *** 17678,17681 ****
   PFX D   0    leg          .
 - 
 -    1
 - 
---- 17614 ----
+--- 17639 ----

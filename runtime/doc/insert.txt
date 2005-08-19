@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0aa.  Last change: 2005 Aug 11
+*insert.txt*    For Vim version 7.0aa.  Last change: 2005 Aug 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -899,8 +899,11 @@ CTRL-X CTRL-O		Guess what kind of item is in front of the cursor and
 
 Spelling suggestions					*compl-spelling*
 
-The word in front of the cursor is located and correctly spelled words are
-suggested to replace it.  The word doesn't actually have to be badly spelled.
+A word before or at the cursor is located and correctly spelled words are
+suggested to replace it.  If there is a badly spelled word in the line, before
+or under the cursor, the cursor is moved to after it.  Otherwise the word just
+before the cursor is used for suggestions, even though it isn't badly spelled.
+
 NOTE: CTRL-S suspends display in many Unix terminals.  Use 's' instead.  Type
 CTRL-Q to resume displaying.
 
