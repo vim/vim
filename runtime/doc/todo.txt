@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Aug 19
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Aug 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -31,10 +31,7 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 -------------------- Known bugs and current work -----------------------
 
 Spelling:
-- Test counting syllables and comparing against the maximum.
-- Test nocomp flag for affixes.
-
-- When looking for following compound word, also do postponed prefixes.
+- New hunspell home page: http://hunspell.sourceforge.net/
 
 - Implement multiple flags for compound words and CMP item?
   Await comments from other spell checking authors.

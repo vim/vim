@@ -105,11 +105,30 @@ gg:/^affstart3/+1,/^affend3/-1w! Xtest.aff
 :mkspell! Xtest Xtest
 :set spellfile=
 :set spl=Xtest.latin1.spl
-:mess
 :spelldump
 1GyG:q
 :$put
 :call SpellTest()
+:"
+:" Compounding
+gg:/^compaffstart/+1,/^compaffend/-1w! Xtest.aff
+gg:/^compdicstart/+1,/^compdicend/-1w! Xtest.dic
+:mkspell! Xtest Xtest
+:set spellfile=
+:set spl=Xtest.latin1.spl
+:spelldump
+1GyG:q
+:$put
+/^comptest:
+:for i in range(12)
+normal ]smm
+let str = spellbadword()
+$put =str
+normal `m
+let lst = spellsuggest(str, 3)
+$put =string(lst)
+normal `m
+endfor
 :"
 gg:/^test output:/,$wq! test.out
 ENDTEST
@@ -384,6 +403,61 @@ deol
 déôr
 dicend
 
+compaffstart
+SET ISO8859-1
+
+FOL  àáâãäåæçèéêëìíîïğñòóôõöøùúûüışßÿ
+LOW  àáâãäåæçèéêëìíîïğñòóôõöøùúûüışßÿ
+UPP  ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏĞÑÒÓÔÕÖØÙÚÛÜİŞßÿ
+
+COMPOUNDFLAGS m+
+COMPOUNDFLAGS sm*e
+COMPOUNDFLAGS sm+
+COMPOUNDMIN 3
+COMPOUNDMAX 3
+
+COMPOUNDSYLMAX 5
+SYLLABLE aáeéiíoóöõuúüûy/aa/au/ea/ee/ei/ie/oa/oe/oo/ou/uu/ui
+
+MAP 9
+MAP aàáâãäå
+MAP eèéêë
+MAP iìíîï
+MAP oòóôõö
+MAP uùúûü
+MAP nñ
+MAP cç
+MAP yÿı
+MAP sß
+
+NEEDAFFIX x
+
+PFXPOSTPONE
+
+MIDWORD '-
+
+SFX q N 1
+SFX q   0    -ok .
+
+SFX a Y 2
+SFX a 0 s .
+SFX a 0 ize . nocomp
+
+PFX p N 1
+PFX p 0 pre .
+compaffend
+
+compdicstart
+1234
+word/m
+util/am
+pro/xq
+tomato/m
+bork/mp
+start/s
+end/e
+compdicend
+
 addstart
 /regions=usgbnz
 elequint/2
@@ -402,5 +476,15 @@ déôl
 test2:
 elequint test elekwint test elekwent asdf
 
+comptest:
+word util
+wordutil wordutils wordutilize
+pro pro-ok
+bork borkbork borkborkbork borkborkborkbork borkborkborkborkbork
+tomato tomatotomato tomatotomatotomato
+startend endstart endend startstart
+startword startwordword wordstart startwordend startwordwordend
+prebork preborkprebork preborkborkprebork preborkpreborkbork
+borkpreborkpreborkbork
 
 test output:

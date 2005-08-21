@@ -612,6 +612,7 @@ static void f_synIDtrans __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_system __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_taglist __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_tempname __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_test __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_tolower __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_toupper __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_tr __ARGS((typval_T *argvars, typval_T *rettv));
@@ -6849,6 +6850,7 @@ static struct fst
     {"system",		1, 2, f_system},
     {"taglist",		1, 1, f_taglist},
     {"tempname",	0, 0, f_tempname},
+    {"test",		1, 1, f_test},
     {"tolower",		1, 1, f_tolower},
     {"toupper",		1, 1, f_toupper},
     {"tr",		3, 3, f_tr},
@@ -11952,7 +11954,7 @@ f_printf(argvars, rettv)
 {
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
-#ifdef HAVE_STDARG_H
+#ifdef HAVE_STDARG_H	    /* only very old compilers can't do this */
     {
 	char_u	buf[NUMBUFLEN];
 	int	len;
@@ -11961,10 +11963,8 @@ f_printf(argvars, rettv)
 	char	*fmt;
 	va_list	ap; /* dummy */
 
-# ifdef LINT
-	/* avoid warning for "ap" used before set; it is unused. */
+	/* Avoid warning for "ap" used before set; it's unused. */
 	va_start(ap, rettv);
-# endif
 
 	/* Get the required length, allocate the buffer and do it for real. */
 	did_emsg = FALSE;
@@ -14487,6 +14487,38 @@ f_tempname(argvars, rettv)
 		++x;
 	}
     } while (x == 'I' || x == 'O');
+}
+
+/*
+ * "test(list)" function: Just checking the walls...
+ */
+/*ARGSUSED*/
+    static void
+f_test(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    /* Used for unit testing.  Change the code below to your liking. */
+#if 0
+    listitem_T	*li;
+    list_T	*l;
+    char_u	*bad, *good;
+
+    if (argvars[0].v_type != VAR_LIST)
+	return;
+    l = argvars[0].vval.v_list;
+    if (l == NULL)
+	return;
+    li = l->lv_first;
+    if (li == NULL)
+	return;
+    bad = get_tv_string(&li->li_tv);
+    li = li->li_next;
+    if (li == NULL)
+	return;
+    good = get_tv_string(&li->li_tv);
+    rettv->vval.v_number = test_edit_score(bad, good);
+#endif
 }
 
 /*
