@@ -4689,7 +4689,7 @@ dozet:
 
     case '?':	/* "z?": suggestions for a badly spelled word  */
 		if (!checkclearopq(cap->oap))
-		    spell_suggest();
+		    spell_suggest((int)cap->count0);
 		break;
 #endif
 

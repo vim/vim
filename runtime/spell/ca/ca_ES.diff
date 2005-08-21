@@ -1,5 +1,5 @@
-*** ca_ES.orig.aff	Sat Aug 13 18:01:36 2005
---- ca_ES.aff	Sat Aug 13 18:01:32 2005
+*** ca_ES.orig.aff	Sat Aug 13 18:33:44 2005
+--- ca_ES.aff	Sat Aug 13 18:33:44 2005
 ***************
 *** 44,48 ****
   
@@ -30,8 +30,8 @@
 ! REP l l·l
 ! REP l·l l
   
-*** ca_ES.orig.dic	Sat Aug 13 18:01:55 2005
---- ca_ES.dic	Sat Aug 13 18:01:51 2005
+*** ca_ES.orig.dic	Sat Aug 13 18:33:44 2005
+--- ca_ES.dic	Sat Aug 13 18:33:44 2005
 ***************
 *** 25312,25314 ****
   caos/E

@@ -377,6 +377,7 @@ struct slang_S
     regprog_T	*sl_compprog;	/* COMPOUNDFLAGS turned into a regexp progrm
 				 * (NULL when no compounding) */
     char_u	*sl_compstartflags; /* flags for first compound word */
+    char_u	*sl_compallflags; /* all flags for compound words */
     char_u	*sl_syllable;	/* SYLLABLE repeatable chars or NULL */
     garray_T	sl_syl_items;	/* syllable items */
 
@@ -627,8 +628,8 @@ typedef struct trystate_S
     char_u	ts_fidxtry;	/* ts_fidx at which bytes may be changed */
     char_u	ts_twordlen;	/* valid length of tword[] */
     char_u	ts_prefixdepth;	/* stack depth for end of prefix or
-				 * PFD_PREFIXTREE or PFD_NOPREFIX or
-				 * PFD_COMPOUND */
+				 * PFD_PREFIXTREE or PFD_NOPREFIX */
+    char_u	ts_flags;	/* TSF_ flags */
 #ifdef FEAT_MBYTE
     char_u	ts_tcharlen;	/* number of bytes in tword character */
     char_u	ts_tcharidx;	/* current byte index in tword character */
@@ -638,6 +639,7 @@ typedef struct trystate_S
     char_u	ts_prewordlen;	/* length of word in "preword[]" */
     char_u	ts_splitoff;	/* index in "tword" after last split */
     char_u	ts_complen;	/* nr of compound words used */
+    char_u	ts_compsplit;	/* index for "compflags" where word was spit */
     char_u	ts_save_badflags;   /* su_badflags saved here */
 } trystate_T;
 
@@ -646,10 +648,14 @@ typedef struct trystate_S
 #define DIFF_YES	1	/* different byte found */
 #define DIFF_INSERT	2	/* inserting character */
 
+/* values for ts_flags */
+#define TSF_PREFIXOK	1	/* already checked that prefix is OK */
+#define TSF_DIDSPLIT	2	/* tried split at this point */
+
 /* special values ts_prefixdepth */
-#define PFD_COMPOUND	0xfd	/* prefixed is a compound word */
-#define PFD_PREFIXTREE	0xfe	/* walking through the prefix tree */
 #define PFD_NOPREFIX	0xff	/* not using prefixes */
+#define PFD_PREFIXTREE	0xfe	/* walking through the prefix tree */
+#define PFD_NOTSPECIAL	0xfd	/* first value that's not special */
 
 /* mode values for find_word */
 #define FIND_FOLDWORD	    0	/* find word case-folded */
@@ -664,7 +670,7 @@ static void slang_clear __ARGS((slang_T *lp));
 static void find_word __ARGS((matchinf_T *mip, int mode));
 static int can_compound __ARGS((slang_T *slang, char_u *word, char_u *flags));
 static int valid_word_prefix __ARGS((int totprefcnt, int arridx, int flags, char_u *word, slang_T *slang, int cond_req));
-static void find_prefix __ARGS((matchinf_T *mip));
+static void find_prefix __ARGS((matchinf_T *mip, int mode));
 static int fold_more __ARGS((matchinf_T *mip));
 static int spell_valid_case __ARGS((int wordflags, int treeflags));
 static int no_spell_checking __ARGS((void));
@@ -897,7 +903,7 @@ spell_check(wp, ptr, attrp, capcol)
 	find_word(&mi, FIND_KEEPWORD);
 
 	/* Check for matching prefixes. */
-	find_prefix(&mi);
+	find_prefix(&mi, FIND_FOLDWORD);
     }
 
     if (mi.mi_result != SP_OK)
@@ -988,6 +994,7 @@ find_word(mip, mode)
     char_u	*byts;
     idx_T	*idxs;
     int		word_ends;
+    int		prefix_found;
 
     if (mode == FIND_KEEPWORD || mode == FIND_KEEPCOMPOUND)
     {
@@ -1136,6 +1143,9 @@ find_word(mip, mode)
 	}
 	else
 	    word_ends = TRUE;
+	/* The prefix flag is before compound flags.  Once a valid prefix flag
+	 * has been found we try compound flags. */
+	prefix_found = FALSE;
 
 #ifdef FEAT_MBYTE
 	if (mode != FIND_KEEPWORD && has_mbyte)
@@ -1185,7 +1195,7 @@ find_word(mip, mode)
 	    /* When mode is FIND_PREFIX the word must support the prefix:
 	     * check the prefix ID and the condition.  Do that for the list at
 	     * mip->mi_prefarridx that find_prefix() filled. */
-	    else if (mode == FIND_PREFIX)
+	    else if (mode == FIND_PREFIX && !prefix_found)
 	    {
 		c = valid_word_prefix(mip->mi_prefcnt, mip->mi_prefarridx,
 				    flags,
@@ -1197,6 +1207,7 @@ find_word(mip, mode)
 		/* Use the WF_RARE flag for a rare prefix. */
 		if (c & WF_RAREPFX)
 		    flags |= WF_RARE;
+		prefix_found = TRUE;
 	    }
 
 	    if (mode == FIND_COMPOUND || mode == FIND_KEEPCOMPOUND
@@ -1214,10 +1225,10 @@ find_word(mip, mode)
 		if (!word_ends && mip->mi_complen + 2 > slang->sl_compmax)
 		    continue;
 
-		/* At start of word quickly check if compounding is possible
-		 * with this flag. */
-		if (mip->mi_complen == 0
-				&& vim_strchr(slang->sl_compstartflags,
+		/* Quickly check if compounding is possible with this flag. */
+		if (vim_strchr(mip->mi_complen == 0
+					? slang->sl_compstartflags
+					: slang->sl_compallflags,
 					    ((unsigned)flags >> 24)) == NULL)
 		    continue;
 
@@ -1267,17 +1278,19 @@ find_word(mip, mode)
 		    }
 		}
 #endif
+		c = mip->mi_compoff;
 		++mip->mi_complen;
 		find_word(mip, FIND_COMPOUND);
-		--mip->mi_complen;
-		if (mip->mi_result == SP_OK)
-		    break;
 
 		/* Find following word in keep-case tree. */
 		mip->mi_compoff = wlen;
-		++mip->mi_complen;
 		find_word(mip, FIND_KEEPCOMPOUND);
+
+		/* Check for following word with prefix. */
+		mip->mi_compoff = c;
+		find_prefix(mip, FIND_COMPOUND);
 		--mip->mi_complen;
+
 		if (mip->mi_result == SP_OK)
 		    break;
 		continue;
@@ -1399,11 +1412,15 @@ valid_word_prefix(totprefcnt, arridx, flags, word, slang, cond_req)
  * Check if the word at "mip->mi_word" has a matching prefix.
  * If it does, then check the following word.
  *
+ * If "mode" is "FIND_COMPOUND" then do the same after another word, find a
+ * prefix in a compound word.
+ *
  * For a match mip->mi_result is updated.
  */
     static void
-find_prefix(mip)
+find_prefix(mip, mode)
     matchinf_T	*mip;
+    int		mode;
 {
     idx_T	arridx = 0;
     int		len;
@@ -1424,6 +1441,12 @@ find_prefix(mip)
      * case-folded. */
     ptr = mip->mi_fword;
     flen = mip->mi_fwordlen;    /* available case-folded bytes */
+    if (mode == FIND_COMPOUND)
+    {
+	/* Skip over the previously found word(s). */
+	ptr += mip->mi_compoff;
+	flen -= mip->mi_compoff;
+    }
     idxs = slang->sl_pidxs;
 
     /*
@@ -1458,15 +1481,19 @@ find_prefix(mip)
 
 	    /* Find the word that comes after the prefix. */
 	    mip->mi_prefixlen = wlen;
+	    if (mode == FIND_COMPOUND)
+		/* Skip over the previously found word(s). */
+		mip->mi_prefixlen += mip->mi_compoff;
+
 #ifdef FEAT_MBYTE
 	    if (has_mbyte)
 	    {
 		/* Case-folded length may differ from original length. */
-		mip->mi_cprefixlen = nofold_len(mip->mi_fword, wlen,
-								mip->mi_word);
+		mip->mi_cprefixlen = nofold_len(mip->mi_fword,
+					     mip->mi_prefixlen, mip->mi_word);
 	    }
 	    else
-		mip->mi_cprefixlen = wlen;
+		mip->mi_cprefixlen = mip->mi_prefixlen;
 #endif
 	    find_word(mip, FIND_PREFIX);
 
@@ -1956,8 +1983,10 @@ slang_clear(lp)
 
     vim_free(lp->sl_compprog);
     vim_free(lp->sl_compstartflags);
+    vim_free(lp->sl_compallflags);
     lp->sl_compprog = NULL;
     lp->sl_compstartflags = NULL;
+    lp->sl_compallflags = NULL;
 
     vim_free(lp->sl_syllable);
     lp->sl_syllable = NULL;
@@ -2496,7 +2525,7 @@ read_sal_section(fd, slang)
     salitem_T	*smp;
     int		ccnt;
     char_u	*p;
-    int		c;
+    int		c = NUL;
 
     slang->sl_sofo = FALSE;
 
@@ -2667,6 +2696,7 @@ read_compound(fd, slang, len)
     char_u	*pat;
     char_u	*pp;
     char_u	*cp;
+    char_u	*ap;
 
     if (todo < 2)
 	return SP_FORMERROR;	/* need at least two bytes */
@@ -2696,7 +2726,8 @@ read_compound(fd, slang, len)
     if (pat == NULL)
 	return SP_ERROR;
 
-    /* We also need a list of all flags that can appear at the start. */
+    /* We also need a list of all flags that can appear at the start and one
+     * for all flags. */
     cp = alloc(todo + 1);
     if (cp == NULL)
     {
@@ -2705,6 +2736,15 @@ read_compound(fd, slang, len)
     }
     slang->sl_compstartflags = cp;
     *cp = NUL;
+
+    ap = alloc(todo + 1);
+    if (ap == NULL)
+    {
+	vim_free(pat);
+	return SP_ERROR;
+    }
+    slang->sl_compallflags = ap;
+    *ap = NUL;
 
     pp = pat;
     *pp++ = '^';
@@ -2715,6 +2755,15 @@ read_compound(fd, slang, len)
     while (todo-- > 0)
     {
 	c = getc(fd);					/* <compflags> */
+
+	/* Add all flags to "sl_compallflags". */
+	if (vim_strchr((char_u *)"+*[]/", c) == NULL
+		&& vim_strchr(slang->sl_compallflags, c) == NULL)
+	{
+	    *ap++ = c;
+	    *ap = NUL;
+	}
+
 	if (atstart != 0)
 	{
 	    /* At start of item: copy flags to "sl_compstartflags".  For a
@@ -6178,7 +6227,7 @@ write_vim_spell(spin, fname)
 	char_u	folchars[128 * 8];
 	int	flags;
 
-	putc(SN_MIDWORD, fd);				/* <sectionID> */
+	putc(SN_CHARFLAGS, fd);				/* <sectionID> */
 	putc(SNF_REQUIRED, fd);				/* <sectionflags> */
 
 	/* Form the <folchars> string first, we need to know its length. */
@@ -7545,9 +7594,11 @@ static char_u	*repl_to = NULL;
 /*
  * "z?": Find badly spelled word under or after the cursor.
  * Give suggestions for the properly spelled word.
+ * When "count" is non-zero use that suggestion.
  */
     void
-spell_suggest()
+spell_suggest(count)
+    int		count;
 {
     char_u	*line;
     pos_T	prev_cursor = curwin->w_cursor;
@@ -7560,6 +7611,7 @@ spell_suggest()
     int		mouse_used;
     int		need_cap;
     int		limit;
+    int		selected = count;
 
     /* Find the start of the badly spelled word. */
     if (spell_move_to(FORWARD, TRUE, TRUE) == FAIL
@@ -7606,6 +7658,12 @@ spell_suggest()
 
     if (sug.su_ga.ga_len == 0)
 	MSG(_("Sorry, no suggestions"));
+    else if (count > 0)
+    {
+	if (count > sug.su_ga.ga_len)
+	    smsg((char_u *)_("Sorry, only %ld suggestions"),
+						      (long)sug.su_ga.ga_len);
+    }
     else
     {
 	vim_free(repl_from);
@@ -7694,39 +7752,39 @@ spell_suggest()
 	msg_col = 0;
 #endif
 	/* Ask for choice. */
-	i = prompt_for_number(&mouse_used);
+	selected = prompt_for_number(&mouse_used);
 	if (mouse_used)
-	    i -= lines_left;
-
-	if (i > 0 && i <= sug.su_ga.ga_len && u_save_cursor() == OK)
-	{
-	    /* Save the from and to text for :spellrepall. */
-	    stp = &SUG(sug.su_ga, i - 1);
-	    repl_from = vim_strnsave(sug.su_badptr, stp->st_orglen);
-	    repl_to = vim_strsave(stp->st_word);
-
-	    /* Replace the word. */
-	    p = alloc(STRLEN(line) - stp->st_orglen + STRLEN(stp->st_word) + 1);
-	    if (p != NULL)
-	    {
-		c = sug.su_badptr - line;
-		mch_memmove(p, line, c);
-		STRCPY(p + c, stp->st_word);
-		STRCAT(p, sug.su_badptr + stp->st_orglen);
-		ml_replace(curwin->w_cursor.lnum, p, FALSE);
-		curwin->w_cursor.col = c;
-		changed_bytes(curwin->w_cursor.lnum, c);
-
-		/* For redo we use a change-word command. */
-		ResetRedobuff();
-		AppendToRedobuff((char_u *)"ciw");
-		AppendToRedobuff(stp->st_word);
-		AppendCharToRedobuff(ESC);
-	    }
-	}
-	else
-	    curwin->w_cursor = prev_cursor;
+	    selected -= lines_left;
     }
+
+    if (selected > 0 && selected <= sug.su_ga.ga_len && u_save_cursor() == OK)
+    {
+	/* Save the from and to text for :spellrepall. */
+	stp = &SUG(sug.su_ga, selected - 1);
+	repl_from = vim_strnsave(sug.su_badptr, stp->st_orglen);
+	repl_to = vim_strsave(stp->st_word);
+
+	/* Replace the word. */
+	p = alloc(STRLEN(line) - stp->st_orglen + STRLEN(stp->st_word) + 1);
+	if (p != NULL)
+	{
+	    c = sug.su_badptr - line;
+	    mch_memmove(p, line, c);
+	    STRCPY(p + c, stp->st_word);
+	    STRCAT(p, sug.su_badptr + stp->st_orglen);
+	    ml_replace(curwin->w_cursor.lnum, p, FALSE);
+	    curwin->w_cursor.col = c;
+	    changed_bytes(curwin->w_cursor.lnum, c);
+
+	    /* For redo we use a change-word command. */
+	    ResetRedobuff();
+	    AppendToRedobuff((char_u *)"ciw");
+	    AppendToRedobuff(stp->st_word);
+	    AppendCharToRedobuff(ESC);
+	}
+    }
+    else
+	curwin->w_cursor = prev_cursor;
 
     spell_find_cleanup(&sug);
 }
@@ -8317,6 +8375,13 @@ suggest_try_special(su)
  * stack[] is used to store info.  This allows combinations, thus insert one
  * character, replace one and delete another.  The number of changes is
  * limited by su->su_maxscore, checked in try_deeper().
+ *
+ * After implementing this I noticed an article by Kemal Oflazer that
+ * describes something similar: "Error-tolerant Finite State Recognition with
+ * Applications to Morphological Analysis and Spelling Correction" (1996).
+ * The implementation in the article is simplified and requires a stack of
+ * unknown depth.  The implementation here only needs a stack depth of the
+ * length of the word.
  */
     static void
 suggest_try_change(su)
@@ -8372,7 +8437,6 @@ suggest_try_change(su)
 	depth = 0;
 	sp = &stack[0];
 	vim_memset(sp, 0, sizeof(trystate_T));
-	sp->ts_state = STATE_START;
 	sp->ts_curi = 1;
 
 	/*
@@ -8395,6 +8459,7 @@ suggest_try_change(su)
 	    byts = fbyts;
 	    idxs = fidxs;
 	    sp->ts_prefixdepth = PFD_NOPREFIX;
+	    sp->ts_state = STATE_START;
 	}
 
 	/*
@@ -8460,10 +8525,12 @@ suggest_try_change(su)
 
 			/* Move the prefix to preword[] with the right case
 			 * and make find_keepcap_word() works. */
-			sp->ts_splitoff = sp->ts_twordlen;
-			tword[sp->ts_splitoff] = NUL;
-			make_case_word(tword, preword, flags);
+			tword[sp->ts_twordlen] = NUL;
+			make_case_word(tword + sp->ts_splitoff,
+						  preword + sp->ts_prewordlen,
+								       flags);
 			sp->ts_prewordlen = STRLEN(preword);
+			sp->ts_splitoff = sp->ts_twordlen;
 		    }
 		    break;
 		}
@@ -8486,22 +8553,8 @@ suggest_try_change(su)
 			       || !spell_iswordp(fword + sp->ts_fidx, curbuf));
 		tword[sp->ts_twordlen] = NUL;
 
-		if (sp->ts_prefixdepth == PFD_COMPOUND)
-		{
-		    /* There was a compound word before this word.  If this
-		     * word does not support compounding then give up
-		     * (splitting is tried for the word without compound
-		     * flag). */
-		    if (((unsigned)flags >> 24) == 0
-			    || sp->ts_twordlen - sp->ts_splitoff
-						       < slang->sl_compminlen)
-			break;
-		    compflags[sp->ts_complen] = ((unsigned)flags >> 24);
-		    compflags[sp->ts_complen + 1] = NUL;
-		    if (fword_ends && !can_compound(slang, tword, compflags))
-			break;
-		}
-		else if (sp->ts_prefixdepth < MAXWLEN)
+		if (sp->ts_prefixdepth <= PFD_NOTSPECIAL
+					&& (sp->ts_flags & TSF_PREFIXOK) == 0)
 		{
 		    /* There was a prefix before the word.  Check that the
 		     * prefix can be used with this word. */
@@ -8522,7 +8575,31 @@ suggest_try_change(su)
 			/* Use the WF_RARE flag for a rare prefix. */
 			if (c & WF_RAREPFX)
 			    flags |= WF_RARE;
+
+			/* Tricky: when checking for both prefix and
+			 * compounding we run into the prefix flag first.
+			 * Remember that it's OK, so that we accept the prefix
+			 * when arriving at a compound flag. */
+			sp->ts_flags |= TSF_PREFIXOK;
 		    }
+		}
+
+		if (sp->ts_complen > sp->ts_compsplit)
+		{
+		    /* There was a compound word before this word.  If this
+		     * word does not support compounding then give up
+		     * (splitting is tried for the word without compound
+		     * flag). */
+		    if (((unsigned)flags >> 24) == 0
+			    || sp->ts_twordlen - sp->ts_splitoff
+						       < slang->sl_compminlen)
+			break;
+		    compflags[sp->ts_complen] = ((unsigned)flags >> 24);
+		    compflags[sp->ts_complen + 1] = NUL;
+		    if (fword_ends && !can_compound(slang,
+						tword + sp->ts_splitoff,
+						compflags + sp->ts_compsplit))
+			break;
 		}
 
 		/*
@@ -8620,24 +8697,48 @@ suggest_try_change(su)
 		     *    (e.g., a swap).  No need to split, but do check that
 		     *    the following word is valid.
 		     */
+		    try_compound = FALSE;
 		    if (!fword_ends
 			    && ((unsigned)flags >> 24) != 0
 			    && sp->ts_twordlen - sp->ts_splitoff
 						      >= slang->sl_compminlen
-			    && sp->ts_complen + 1 <= slang->sl_compmax
-			    && (sp->ts_complen > 0
-				|| vim_strchr(slang->sl_compstartflags,
+			    && sp->ts_complen + 1 - sp->ts_compsplit
+							   < slang->sl_compmax
+			    && (vim_strchr(sp->ts_complen == sp->ts_compsplit
+						? slang->sl_compstartflags
+						: slang->sl_compallflags,
 					    ((unsigned)flags >> 24)) != NULL))
 		    {
 			try_compound = TRUE;
 			compflags[sp->ts_complen] = ((unsigned)flags >> 24);
 			compflags[sp->ts_complen + 1] = NUL;
 		    }
-		    else
+
+		    /* If we could add a compound word, and it's also possible
+		     * to split at this point, do the split first and set
+		     * TSF_DIDSPLIT to avoid doing it again. */
+		    if (!fword_ends
+			    && try_compound
+			    && (sp->ts_flags & TSF_DIDSPLIT) == 0)
 		    {
 			try_compound = FALSE;
-			if (!fword_ends)
-			    newscore += SCORE_SPLIT;
+			sp->ts_flags |= TSF_DIDSPLIT;
+			--sp->ts_curi;	    /* do the same NUL again */
+			compflags[sp->ts_complen] = NUL;
+		    }
+		    else
+			sp->ts_flags &= ~TSF_DIDSPLIT;
+
+		    if (!try_compound && !fword_ends)
+		    {
+			/* If we're going to split need to check that the
+			 * words so far are valid for compounding. */
+			if (sp->ts_complen > sp->ts_compsplit
+				&& !can_compound(slang,
+					    tword + sp->ts_splitoff,
+						compflags + sp->ts_compsplit))
+			    break;
+			newscore += SCORE_SPLIT;
 		    }
 
 		    if (try_deeper(su, stack, depth, newscore))
@@ -8684,14 +8785,14 @@ suggest_try_change(su)
 			    sp->ts_fidx += l;
 			}
 
-			/* set flag to check compound flag on following word */
+			/* When compounding include compound flag in
+			 * compflags[] (already set above).  When splitting we
+			 * may start compounding over again.  */
 			if (try_compound)
-			{
-			    sp->ts_prefixdepth = PFD_COMPOUND;
 			    ++sp->ts_complen;
-			}
 			else
-			    sp->ts_prefixdepth = PFD_NOPREFIX;
+			    sp->ts_compsplit = sp->ts_complen;
+			sp->ts_prefixdepth = PFD_NOPREFIX;
 
 			/* set su->su_badflags to the caps type at this
 			 * position */
@@ -8706,6 +8807,15 @@ suggest_try_change(su)
 
 			/* Restart at top of the tree. */
 			sp->ts_arridx = 0;
+
+			/* If there are postponed prefixes, try these too. */
+			if (pbyts != NULL)
+			{
+			    byts = pbyts;
+			    idxs = pidxs;
+			    sp->ts_prefixdepth = PFD_PREFIXTREE;
+			    sp->ts_state = STATE_NOPREFIX;
+			}
 		    }
 		}
 		break;
@@ -8716,6 +8826,10 @@ suggest_try_change(su)
 
 		/* Continue looking for NUL bytes. */
 		sp->ts_state = STATE_START;
+
+		/* In case we went into the prefix tree. */
+		byts = fbyts;
+		idxs = fidxs;
 		break;
 
 	    case STATE_ENDNUL:
@@ -9353,6 +9467,7 @@ try_deeper(su, stack, depth, score_add)
     stack[depth + 1].ts_state = STATE_START;
     stack[depth + 1].ts_score = newscore;
     stack[depth + 1].ts_curi = 1;	/* start just after length byte */
+    stack[depth + 1].ts_flags = 0;
     return TRUE;
 }
 
@@ -10322,6 +10437,15 @@ eval_soundfold(word)
 
 /*
  * Turn "inword" into its sound-a-like equivalent in "res[MAXWLEN]".
+ *
+ * There are many ways to turn a word into a sound-a-like representation.  The
+ * oldest is Soundex (1918!).   A nice overview can be found in "Approximate
+ * swedish name matching - survey and test of different algorithms" by Klas
+ * Erikson.
+ *
+ * We support two methods:
+ * 1. SOFOFROM/SOFOTO do a simple character mapping.
+ * 2. SAL items define a more advanced sound-folding (and much slower).
  */
     static void
 spell_soundfold(slang, inword, folded, res)
@@ -11243,9 +11367,10 @@ soundalike_score(goodstart, badstart)
  * Compute the "edit distance" to turn "badword" into "goodword".  The less
  * deletes/inserts/substitutes/swaps are required the lower the score.
  *
- * The algorithm comes from Aspell editdist.cpp, edit_distance().
- * It has been converted from C++ to C and modified to support multi-byte
- * characters.
+ * The algorithm is described by Du and Chang, 1992.
+ * The implementation of the algorithm comes from Aspell editdist.cpp,
+ * edit_distance().  It has been converted from C++ to C and modified to
+ * support multi-byte characters.
  */
     static int
 spell_edit_score(badword, goodword)
