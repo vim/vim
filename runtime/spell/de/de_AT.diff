@@ -26,7 +26,7 @@
 + 
   
 *** de_AT.orig.dic	Mon Aug 15 22:59:43 2005
---- de_AT.dic	Mon Aug 15 23:03:19 2005
+--- de_AT.dic	Mon Aug 15 23:11:02 2005
 ***************
 *** 18,20 ****
   Fleischbänke/N
@@ -42,3 +42,15 @@
   zulieb
 ! 
   Äbte/N
+***************
+*** 18792,18794 ****
+  Geschwulstherde
+- Geselchte/N
+  Geselle/N
+--- 18791,18792 ----
+***************
+*** 20472,20474 ****
+  HTML
+- Häfen
+  Häftling/EPS
+--- 20470,20471 ----

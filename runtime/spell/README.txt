@@ -69,7 +69,7 @@ This procedure should work well:
    change too much, the OpenOffice people are not stupid.  However, you may
    want to remove obvious mistakes.  And remove single-letter words that
    aren't really words, they mess up the suggestions (English has this
-   problem).
+   problem).  You can use the "fixdup" Vim script to find duplicate words.
 
 3. Make the diff file.  "aap diff" will do this for you.  If a diff would be
    too big you might consider writing a Vim script to do systematic changes.
