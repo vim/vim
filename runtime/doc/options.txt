@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Aug 18
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Aug 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1984,9 +1984,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 								*cpo-\*
 		\	Backslash in a [] range in a search pattern is taken
 			literally, only "\]" is special  See |/[]|
-			   'l' included: "/[ \t]"  finds <Space>, '\' and 't'
-			   'l' excluded: "/[ \t]"  finds <Space> and <Tab>
-			Also see |cpo-\|.
+			   '\' included: "/[ \-]"  finds <Space>, '\' and '-'
+			   '\' excluded: "/[ \-]"  finds <Space> and '-'
+			Also see |cpo-l|.
 								*cpo-/*
 		/	When "%" is used as the replacement string in a |:s|
 			command, use the previous replacement string. |:s%|

@@ -690,6 +690,8 @@ LANG_GEN = \
 		runtime/spell/??/main.aap \
 		runtime/spell/yi/README.txt \
 		runtime/spell/main.aap \
+		runtime/spell/*.vim \
+		runtime/spell/fixdup \
 
 # generic language files, binary
 LANG_GEN_BIN = \

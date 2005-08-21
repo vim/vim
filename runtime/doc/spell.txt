@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Aug 19
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Aug 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -124,19 +124,25 @@ z?			For the word under/after the cursor suggest correctly
 			e.g., when the word after it is bad.
 			The results are sorted on similarity to the word
 			under/after the cursor.
-			This may take a long time.  Hit CTRL-C when you are
+			This may take a long time.  Hit CTRL-C when you get
 			bored.
-			This does not work when there is a line break halfway
-			a bad word (e.g., "the the").
-			You can enter the number of your choice or press
-			<Enter> if you don't want to replace.  You can also
-			use the mouse to click on your choice (only works if
-			the mouse can be used in Normal mode and when there
-			are no line wraps).  Click on the first (header) line
-			to cancel.
-			If 'verbose' is non-zero a score will be displayed to
-			indicate the likeliness to the badly spelled word (the
-			higher the score the more different).
+
+			If the command is used without a count the
+			alternatives are listed and you can enter the number
+			of your choice or press <Enter> if you don't want to
+			replace.  You can also use the mouse to click on your
+			choice (only works if the mouse can be used in Normal
+			mode and when there are no line wraps).  Click on the
+			first line (the header) to cancel.
+
+			If a count is used that suggestion is used, without
+			prompting.  For example, "1z?" always takes the first
+			suggestion.
+
+			If 'verbose' is non-zero a score will be displayed
+			with the suggestions to indicate the likeliness to the
+			badly spelled word (the higher the score the more
+			different).
 			When a word was replaced the redo command "." will
 			repeat the word replacement.  This works like "ciw",
 			the good word and <Esc>.
@@ -773,8 +779,8 @@ marked as rare.
 
 							*spell-affix-nocomp*
 Another extra item for Vim is the "nocomp" flag.  It must come after the other
-fields, before a comment.  It can be either before or after "rare".  When used
-then all words that use the affix will not be used for compound words.
+fields, before a comment.  It can be either before or after "rare".  When
+present then all words that use the affix will not be part of a compound word.
 Example:
 	affix file:
 		COMPOUNDFLAG c ~

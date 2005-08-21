@@ -72,3 +72,38 @@ test
 ['test', 'Test']
 déôl
 ['deol', 'déôr']
+# file: Xtest.latin1.spl
+bork
+prebork
+end
+pro-ok
+start
+tomato
+util
+utilize
+utils
+word
+wordutilize
+['word utilize', 'wordutils', 'wordutil']
+pro
+['bork', 'end', 'word']
+borkborkborkbork
+['borkbork borkbork', 'borkborkbork bork', 'bork borkborkbork']
+borkborkborkborkbork
+['borkbork borkborkbork', 'borkborkbork borkbork', 'bork borkborkbork bork']
+tomatotomato
+['tomatotomato', 'tomato tomato']
+tomatotomatotomato
+['tomatotomatotomato', 'tomato tomatotomato', 'tomatotomato tomato']
+endstart
+['end start', 'start']
+endend
+['end end', 'end']
+startstart
+['start start']
+wordstart
+['word start', 'bork start']
+startwordwordend
+['startwordword end', 'startwordword', 'start wordword end']
+borkpreborkpreborkbork
+['bork preborkpreborkbork', 'borkpreborkprebork bork', 'borkprebork preborkbork']
