@@ -250,9 +250,9 @@
 				   Some places assume a word length fits in a
 				   byte, thus it can't be above 255. */
 
-/* Type used for indexes in the word tree need to be at least 3 bytes.  If int
+/* Type used for indexes in the word tree need to be at least 4 bytes.  If int
  * is 8 bytes we could use something smaller, but what? */
-#if SIZEOF_INT > 2
+#if SIZEOF_INT > 3
 typedef int idx_T;
 #else
 typedef long idx_T;
@@ -986,8 +986,8 @@ find_word(mip, mode)
     idx_T	lo, hi, m;
 #ifdef FEAT_MBYTE
     char_u	*s;
-    char_u	*p;
 #endif
+    char_u	*p;
     int		res = SP_BAD;
     slang_T	*slang = mip->mi_lp->lp_slang;
     unsigned	flags;
@@ -1218,11 +1218,14 @@ find_word(mip, mode)
 		 * Makes you wonder why someone puts a compound flag on a word
 		 * that's too short...  Myspell compatibility requires this
 		 * anyway. */
-		if (((unsigned)flags >> 24) == 0 || wlen < slang->sl_compminlen)
+		if (((unsigned)flags >> 24) == 0
+			     || wlen - mip->mi_compoff < slang->sl_compminlen)
 		    continue;
 
-		/* Limit the number of compound words to COMPOUNDMAX. */
-		if (!word_ends && mip->mi_complen + 2 > slang->sl_compmax)
+		/* Limit the number of compound words to COMPOUNDMAX if no
+		 * maximum for syllables is specified. */
+		if (!word_ends && mip->mi_complen + 2 > slang->sl_compmax
+					   && slang->sl_compsylmax == MAXWLEN)
 		    continue;
 
 		/* Quickly check if compounding is possible with this flag. */
@@ -1231,6 +1234,44 @@ find_word(mip, mode)
 					: slang->sl_compallflags,
 					    ((unsigned)flags >> 24)) == NULL)
 		    continue;
+
+		if (mode == FIND_COMPOUND)
+		{
+		    int	    capflags;
+
+		    /* Need to check the caps type of the appended compound
+		     * word. */
+#ifdef FEAT_MBYTE
+		    if (has_mbyte && STRNCMP(ptr, mip->mi_word,
+							mip->mi_compoff) != 0)
+		    {
+			/* case folding may have changed the length */
+			p = mip->mi_word;
+			for (s = ptr; s < ptr + mip->mi_compoff; mb_ptr_adv(s))
+			    mb_ptr_adv(p);
+		    }
+		    else
+#endif
+			p = mip->mi_word + mip->mi_compoff;
+		    capflags = captype(p, mip->mi_word + wlen);
+		    if (capflags == WF_KEEPCAP || (capflags == WF_ALLCAP
+						 && (flags & WF_FIXCAP) != 0))
+			continue;
+
+		    if (capflags != WF_ALLCAP)
+		    {
+			/* When the character before the word is a word
+			 * character we do not accept a Onecap word.  We do
+			 * accept a no-caps word, even when the dictionary
+			 * word specifies ONECAP. */
+			mb_ptr_back(mip->mi_word, p);
+			if (spell_iswordp_nmw(p)
+				? capflags == WF_ONECAP
+				: (flags & WF_ONECAP) != 0
+						     && capflags != WF_ONECAP)
+			    continue;
+		    }
+		}
 
 		/* If the word ends the sequence of compound flags of the
 		 * words must match with one of the COMPOUNDFLAGS items and
@@ -1348,10 +1389,12 @@ can_compound(slang, word, flags)
     if (!vim_regexec(&regmatch, flags, 0))
 	return FALSE;
 
-    /* Count the number of syllables.  This may be slow, do it last. */
+    /* Count the number of syllables.  This may be slow, do it last.  If there
+     * are too many syllables AND the number of compound words is above
+     * COMPOUNDMAX then compounding is not allowed. */
     if (slang->sl_compsylmax < MAXWLEN
 		       && count_syllables(slang, word) > slang->sl_compsylmax)
-	return FALSE;
+	return STRLEN(flags) < slang->sl_compmax;
     return TRUE;
 }
 
@@ -8596,11 +8639,22 @@ suggest_try_change(su)
 			break;
 		    compflags[sp->ts_complen] = ((unsigned)flags >> 24);
 		    compflags[sp->ts_complen + 1] = NUL;
-		    if (fword_ends && !can_compound(slang,
-						tword + sp->ts_splitoff,
+		    vim_strncpy(preword + sp->ts_prewordlen,
+			    tword + sp->ts_splitoff,
+			    sp->ts_twordlen - sp->ts_splitoff);
+		    p = preword;
+		    while (*skiptowhite(p) != NUL)
+			p = skipwhite(skiptowhite(p));
+		    if (fword_ends && !can_compound(slang, p,
 						compflags + sp->ts_compsplit))
 			break;
+
+		    /* Get pointer to last char of previous word. */
+		    p = preword + sp->ts_prewordlen;
+		    mb_ptr_back(preword, p);
 		}
+		else
+		    p = NULL;
 
 		/*
 		 * Form the word with proper case in preword.
@@ -8624,8 +8678,14 @@ suggest_try_change(su)
 #endif
 			    )
 			c = WF_ONECAP;
+		    c |= flags;
+
+		    /* When appending a compound word after a word character
+		     * don't use Onecap. */
+		    if (p != NULL && spell_iswordp_nmw(p))
+			c &= ~WF_ONECAP;
 		    make_case_word(tword + sp->ts_splitoff,
-				      preword + sp->ts_prewordlen, flags | c);
+					      preword + sp->ts_prewordlen, c);
 		}
 
 		/* Don't use a banned word.  It may appear again as a good
@@ -8702,8 +8762,9 @@ suggest_try_change(su)
 			    && ((unsigned)flags >> 24) != 0
 			    && sp->ts_twordlen - sp->ts_splitoff
 						      >= slang->sl_compminlen
-			    && sp->ts_complen + 1 - sp->ts_compsplit
-							   < slang->sl_compmax
+			    && (slang->sl_compsylmax < MAXWLEN
+				|| sp->ts_complen + 1 - sp->ts_compsplit
+							   < slang->sl_compmax)
 			    && (vim_strchr(sp->ts_complen == sp->ts_compsplit
 						? slang->sl_compstartflags
 						: slang->sl_compallflags,
@@ -8733,9 +8794,11 @@ suggest_try_change(su)
 		    {
 			/* If we're going to split need to check that the
 			 * words so far are valid for compounding. */
+			p = preword;
+			while (*skiptowhite(p) != NUL)
+			    p = skipwhite(skiptowhite(p));
 			if (sp->ts_complen > sp->ts_compsplit
-				&& !can_compound(slang,
-					    tword + sp->ts_splitoff,
+				&& !can_compound(slang, p,
 						compflags + sp->ts_compsplit))
 			    break;
 			newscore += SCORE_SPLIT;
