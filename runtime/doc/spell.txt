@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Aug 21
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Aug 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -927,6 +927,19 @@ examples with the sequence of word flags they require:
     COMPOUNDFLAGS sm*e	    se sme smme smmme etc.
     COMPOUNDFLAGS s[xyz]*e  se sxe sxye sxyxe sye syze sze szye szyxe  etc.
 
+A specific example: Allow a compound to be made of two words and a dash:
+	In the .aff file:
+	    COMPOUNDFLAGS sde ~
+	    NEEDAFFIX x ~
+	    COMPOUNDMAX 3 ~
+	    COMPOUNDMIN 1 ~
+	In the .dic file:
+	    start/s ~
+	    end/e ~
+	    -/xd ~
+
+This allows for the word "start-end", but not "startend".
+
 							*spell-COMPOUNDMIN*
 The minimal byte length of a word used for concatenation is specified with
 COMPOUNDMIN.  Example:
@@ -953,6 +966,10 @@ with COMPOUNDSYLMAX.  Example:
 
 This has no effect if there is no SYLLABLE item.  Without COMPOUNDSYLMAX there
 is no limit on the number of syllables.
+
+If both COMPOUNDMAX and COMPOUNDSYLMAX are defined, a compound word is
+accepted if it fits one of the criteria, thus is either made from up to
+COMPOUNDMAX words or contains up to COMPOUNDSYLMAX syllables.
 
 							*spell-SYLLABLE*
 The SYLLABLE item defines characters or character sequences that are used to

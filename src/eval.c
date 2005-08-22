@@ -11944,6 +11944,14 @@ f_prevnonblank(argvars, rettv)
     rettv->vval.v_number = lnum;
 }
 
+#ifdef HAVE_STDARG_H
+/* This dummy va_list is here because:
+ * - passing a NULL pointer doesn't work when va_list isn't a pointer
+ * - locally in the function results in a "used before set" warning
+ * - using va_start() to initialize it gives "function with fixed args" error */
+static va_list	ap;
+#endif
+
 /*
  * "printf()" function
  */
@@ -11961,10 +11969,6 @@ f_printf(argvars, rettv)
 	char_u	*s;
 	int	saved_did_emsg = did_emsg;
 	char	*fmt;
-	va_list	ap; /* dummy */
-
-	/* Avoid warning for "ap" used before set; it's unused. */
-	va_start(ap, rettv);
 
 	/* Get the required length, allocate the buffer and do it for real. */
 	did_emsg = FALSE;

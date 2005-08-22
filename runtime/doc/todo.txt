@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Aug 21
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Aug 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -31,7 +31,54 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 -------------------- Known bugs and current work -----------------------
 
 Spelling:
+- For Thai: Use longest matching word without checking that non-word character
+  is following.  If there is no match, look for character at which there is a
+  match, the chars up to there are marked as bad.
+
+- ALLCAP: for German replace sharp s with SS.  Can we do that always?
+
+- Compound word is accepted if nr of words is <= COMPOUNDMAX OR nr of
+  syllables <= COMPOUNDSYLMAX.  Specify AND in the affix file?
+
+- Much of the spell-checking code is repeated in the suggestion code.  Can
+  this be merged?
+
+- Do we need a flag for the rule that when compounding is done the following
+  word doesn't have a capital after a word character, even for Onecap words?
+
 - New hunspell home page: http://hunspell.sourceforge.net/
+- Also see tklspell: http://tkltrans.sourceforge.net/
+
+- Lots of code depends on LANG, that isn't right.  Enable each mechanism
+  in the affix file separately.
+- Make COMPOUNDMIN 3 characters instead of 3 bytes?
+- Example with compounding dash is bad, gets in the way of setting
+  COMPOUNDMIN and COMPOUNDMAX to a reasonable value.
+- COMPOUNDMAX -> COMPOUNDWORDMAX?
+- PSEUDOROOT == NEEDAFFIX
+- ONLYINCOMPOUND -> NEEDCOMPOUND (also used for affix? or use "needcomp"
+  after affix)
+- Use "comp" flag on affix to allow compounding for word that uses this
+  affix.  However, also need to define which compound flag to be used.
+  "comp/m"?  Alternative: use flags after add string.
+- CIRCUMFIX: when a word uses a prefix marked with the CIRCUMFIX flag,
+  then the word must also have a suffix marked with the CIRCUMFIX flag.
+  It's a bit primitive, since only one flag is used, which doesn't allow
+  matching specific prefixes with suffixes.
+  Alternative:
+	PSFX {flag} {pchop} {padd} {pcond} {schop} {sadd}[/flags] {scond}
+- Support two suffixes by adding "/flags" to add part of suffix.
+- When a suffix has more than one syllable, it may count as a word for
+  COMPOUNDMAX.
+- Add flags to count extra syllables in a word.  SYLLABLEADDONE
+  SYLLABLEADDTWO, etc.?  Or make it possible to specify the syllable count
+  of a word directly, after another slash: /abc/3
+- MORPHO items ignores morphological items: after word and affix
+- Support flags of two characters, numbers (comma separated) and HUH
+  flags: [^A-Z], A[^A-Z], ..., Z[^A-Z]?  Problem: room in idxs[]!
+    FLAG long
+    FLAG num
+    FLAG mix
 
 - Implement multiple flags for compound words and CMP item?
   Await comments from other spell checking authors.

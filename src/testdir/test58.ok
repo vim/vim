@@ -87,23 +87,21 @@ wordutilize
 ['word utilize', 'wordutils', 'wordutil']
 pro
 ['bork', 'end', 'word']
-borkborkborkbork
-['borkbork borkbork', 'borkborkbork bork', 'bork borkborkbork']
-borkborkborkborkbork
-['borkbork borkborkbork', 'borkborkbork borkbork', 'bork borkborkbork bork']
-tomatotomato
-['tomatotomato', 'tomato tomato']
+borkborkborkborkborkbork
+['borkbork borkborkborkbork', 'borkborkbork borkborkbork', 'borkborkborkborkbork bork']
 tomatotomatotomato
-['tomatotomatotomato', 'tomato tomatotomato', 'tomatotomato tomato']
+['tomato tomatotomato', 'tomatotomato tomato', 'tomato tomato tomato']
 endstart
 ['end start', 'start']
 endend
 ['end end', 'end']
 startstart
 ['start start']
+wordend
+['word end', 'wordword', 'word']
 wordstart
 ['word start', 'bork start']
-startwordwordend
-['startwordword end', 'startwordword', 'start wordword end']
+startwordwordwordwordend
+['startwordwordwordword end', 'startwordwordwordword', 'start wordwordwordword end']
 borkpreborkpreborkbork
-['bork preborkpreborkbork', 'borkpreborkprebork bork', 'borkprebork preborkbork']
+['borkpreborkprebork bork', 'borkprebork preborkbork', 'bork preborkpreborkbork']

@@ -1844,8 +1844,8 @@ installtutor: $(DEST_VIM) $(DEST_RT) $(DEST_TUTOR)
 # spell file is there.
 installspell: $(DEST_VIM) $(DEST_RT) $(DEST_SPELL)
 	if test -f $(SPELLSOURCE)/en.latin1.spl; then \
-	  $(INSTALL_DATA) $(SPELLSOURCE)/*.spl *.vim $(DEST_SPELL); \
-	  chmod $(HELPMOD) $(DEST_SPELL)/*.spl *.vim; \
+	  $(INSTALL_DATA) $(SPELLSOURCE)/*.spl $(SPELLSOURCE)/*.vim $(DEST_SPELL); \
+	  chmod $(HELPMOD) $(DEST_SPELL)/*.spl $(DEST_SPELL)/*.vim; \
 	fi
 
 # install helper program xxd

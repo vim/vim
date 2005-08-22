@@ -120,7 +120,7 @@ gg:/^compdicstart/+1,/^compdicend/-1w! Xtest.dic
 1GyG:q
 :$put
 /^comptest:
-:for i in range(12)
+:for i in range(11)
 normal ]smm
 let str = spellbadword()
 $put =str
@@ -481,9 +481,11 @@ word util
 wordutil wordutils wordutilize
 pro pro-ok
 bork borkbork borkborkbork borkborkborkbork borkborkborkborkbork
+borkborkborkborkborkbork
 tomato tomatotomato tomatotomatotomato
-startend endstart endend startstart
+startend endstart endend startstart wordend
 startword startwordword wordstart startwordend startwordwordend
+startwordwordwordend startwordwordwordwordend
 prebork preborkprebork preborkborkprebork preborkpreborkbork
 borkpreborkpreborkbork
 
