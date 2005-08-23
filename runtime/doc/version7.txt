@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Aug 16
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Aug 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -118,6 +118,10 @@ translated to <Home>, both for the keys and for mappings.  Also for <xEnd>,
 
 When a .gvimrc file exists then 'compatible' is off, just like when a ".vimrc"
 file exists.
+
+When making a string upper-case with "vlllU" or similar then the German sharp
+s is replaced with "SS".  This does not happen with "~" to avoid backwards
+compatibility problems and because "SS" can't be changed back to a sharp s.
 
 ==============================================================================
 NEW FEATURES						*new-7*
@@ -766,6 +770,9 @@ included in the file name. (suggested by Emanuele Giaquinta)
 
 For command-line completion the matches for various types of arguments are now
 sorted: user commands, variables, syntax names, etc.
+
+When no locale is set, thus using the "C" locale, Vim will work with latin1
+characters, using it's own isupper()/toupper()/etc. functions.
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*
