@@ -584,6 +584,10 @@ codepage_invalid:
     enc_latin9 = (STRCMP(p_enc, "iso-8859-15") == 0);
 #endif
 
+    /* Detect an encoding that uses latin1 characters. */
+    enc_latin1like = (enc_utf8 || STRCMP(p_enc, "latin1") == 0
+					|| STRCMP(p_enc, "iso-8859-15") == 0);
+
     /*
      * Set the function pointers.
      */

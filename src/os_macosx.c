@@ -85,6 +85,7 @@ get_textencoding(const char* encodename)
 	{"iso-8859-8", kTextEncodingISOLatinHebrew},
 	{"iso-8859-9", kTextEncodingISOLatin5},
 	{"iso-8859-10", kTextEncodingISOLatin6},
+	{"iso-8859-15", kTextEncodingISOLatin9},
 
 	/* Unicode encodings. */
 	/* TODO: Add other type of unicode */

@@ -742,7 +742,7 @@ reg_equi_class(c)
 {
 #ifdef FEAT_MBYTE
     if (enc_utf8 || STRCMP(p_enc, "latin1") == 0
-					      || STRCMP(p_enc, "latin9") == 0)
+					 || STRCMP(p_enc, "iso-8859-15") == 0)
 #endif
     {
 	switch (c)

@@ -162,6 +162,8 @@
  * <compflags>   N bytes    Flags from COMPOUNDFLAGS items, separated by
  *			    slashes.
  *
+ * sectionID == SN_NOBREAK: (empty, its presence is enough)
+ *
  * sectionID == SN_SYLLABLE: <syllable>
  * <syllable>    N bytes    String from SYLLABLE item.
  *
@@ -378,6 +380,7 @@ struct slang_S
 				 * (NULL when no compounding) */
     char_u	*sl_compstartflags; /* flags for first compound word */
     char_u	*sl_compallflags; /* all flags for compound words */
+    char_u	sl_nobreak;	/* When TRUE: no spaces between words */
     char_u	*sl_syllable;	/* SYLLABLE repeatable chars or NULL */
     garray_T	sl_syl_items;	/* syllable items */
 
@@ -442,6 +445,7 @@ typedef struct langp_S
 #define SN_MAP		7	/* MAP items section */
 #define SN_COMPOUND	8	/* compound words section */
 #define SN_SYLLABLE	9	/* syllable section */
+#define SN_NOBREAK	10	/* NOBREAK section */
 #define SN_END		255	/* end of sections */
 
 #define SNF_REQUIRED	1	/* <sectionflags>: required section */
@@ -560,6 +564,10 @@ typedef struct matchinf_S
     int		mi_result;		/* result so far: SP_BAD, SP_OK, etc. */
     int		mi_capflags;		/* WF_ONECAP WF_ALLCAP WF_KEEPCAP */
     buf_T	*mi_buf;		/* buffer being checked */
+
+    /* for NOBREAK */
+    int		mi_result2;		/* "mi_resul" without following word */
+    char_u	*mi_end2;		/* "mi_end" without following word */
 } matchinf_T;
 
 /*
@@ -638,6 +646,7 @@ typedef struct trystate_S
 #endif
     char_u	ts_prewordlen;	/* length of word in "preword[]" */
     char_u	ts_splitoff;	/* index in "tword" after last split */
+    char_u	ts_splitfidx;	/* "ts_fidx" at word split */
     char_u	ts_complen;	/* nr of compound words used */
     char_u	ts_compsplit;	/* index for "compflags" where word was spit */
     char_u	ts_save_badflags;   /* su_badflags saved here */
@@ -887,6 +896,7 @@ spell_check(wp, ptr, attrp, capcol)
 
     /* The word is bad unless we recognize it. */
     mi.mi_result = SP_BAD;
+    mi.mi_result2 = SP_BAD;
 
     /*
      * Loop over the languages specified in 'spelllang'.
@@ -904,6 +914,15 @@ spell_check(wp, ptr, attrp, capcol)
 
 	/* Check for matching prefixes. */
 	find_prefix(&mi, FIND_FOLDWORD);
+
+	/* For a NOBREAK language, may want to use a word without a following
+	 * word as a backup. */
+	if (mi.mi_lp->lp_slang->sl_nobreak && mi.mi_result == SP_BAD
+						   && mi.mi_result2 != SP_BAD)
+	{
+	    mi.mi_result = mi.mi_result2;
+	    mi.mi_end = mi.mi_end2;
+	}
     }
 
     if (mi.mi_result != SP_OK)
@@ -941,6 +960,33 @@ spell_check(wp, ptr, attrp, capcol)
 	    /* Always include at least one character.  Required for when there
 	     * is a mixup in "midword". */
 	    mb_ptr_adv(mi.mi_end);
+	else if (mi.mi_result == SP_BAD
+		&& LANGP_ENTRY(wp->w_buffer->b_langp, 0)->lp_slang->sl_nobreak)
+	{
+	    char_u	*p, *fp;
+	    int		save_result = mi.mi_result;
+
+	    /* First language in 'spelllang' is NOBREAK.  Find first position
+	     * at which any word would be valid. */
+	    mi.mi_lp = LANGP_ENTRY(wp->w_buffer->b_langp, 0);
+	    p = mi.mi_word;
+	    fp = mi.mi_fword;
+	    for (;;)
+	    {
+		mb_ptr_adv(p);
+		mb_ptr_adv(fp);
+		if (p >= mi.mi_end)
+		    break;
+		mi.mi_compoff = fp - mi.mi_fword;
+		find_word(&mi, FIND_COMPOUND);
+		if (mi.mi_result != SP_BAD)
+		{
+		    mi.mi_end = p;
+		    break;
+		}
+	    }
+	    mi.mi_result = save_result;
+	}
 
 	if (mi.mi_result == SP_BAD || mi.mi_result == SP_BANNED)
 	    *attrp = highlight_attr[HLF_SPB];
@@ -995,6 +1041,7 @@ find_word(mip, mode)
     idx_T	*idxs;
     int		word_ends;
     int		prefix_found;
+    int		nobreak_result;
 
     if (mode == FIND_KEEPWORD || mode == FIND_KEEPCOMPOUND)
     {
@@ -1137,7 +1184,7 @@ find_word(mip, mode)
 #endif
 	if (spell_iswordp(ptr + wlen, mip->mi_buf))
 	{
-	    if (slang->sl_compprog == NULL)
+	    if (slang->sl_compprog == NULL && !slang->sl_nobreak)
 		continue;	    /* next char is a word character */
 	    word_ends = FALSE;
 	}
@@ -1210,8 +1257,20 @@ find_word(mip, mode)
 		prefix_found = TRUE;
 	    }
 
-	    if (mode == FIND_COMPOUND || mode == FIND_KEEPCOMPOUND
-								|| !word_ends)
+	    if (slang->sl_nobreak)
+	    {
+		if ((mode == FIND_COMPOUND || mode == FIND_KEEPCOMPOUND)
+			&& (flags & WF_BANNED) == 0)
+		{
+		    /* NOBREAK: found a valid following word.  That's all we
+		     * need to know, so return. */
+		    mip->mi_result = SP_OK;
+		    break;
+		}
+	    }
+
+	    else if ((mode == FIND_COMPOUND || mode == FIND_KEEPCOMPOUND
+								|| !word_ends))
 	    {
 		/* If there is no  flag or the word is shorter than
 		 * COMPOUNDMIN reject it quickly.
@@ -1295,11 +1354,20 @@ find_word(mip, mode)
 		}
 	    }
 
+	    nobreak_result = SP_OK;
+
 	    if (!word_ends)
 	    {
-		/* Check that a valid word follows.  If there is one, it will
-		 * set "mi_result", thus we are always finished here.
+		int	save_result = mip->mi_result;
+		char_u	*save_end = mip->mi_end;
+
+		/* Check that a valid word follows.  If there is one and we
+		 * are compounding, it will set "mi_result", thus we are
+		 * always finished here.  For NOBREAK we only check that a
+		 * valid word follows.
 		 * Recursive! */
+		if (slang->sl_nobreak)
+		    mip->mi_result = SP_BAD;
 
 		/* Find following word in case-folded tree. */
 		mip->mi_compoff = endlen[endidxcnt];
@@ -1323,18 +1391,36 @@ find_word(mip, mode)
 		++mip->mi_complen;
 		find_word(mip, FIND_COMPOUND);
 
-		/* Find following word in keep-case tree. */
-		mip->mi_compoff = wlen;
-		find_word(mip, FIND_KEEPCOMPOUND);
+		/* When NOBREAK any word that matches is OK.  Otherwise we
+		 * need to find the longest match, thus try with keep-case and
+		 * prefix too. */
+		if (!slang->sl_nobreak || mip->mi_result == SP_BAD)
+		{
+		    /* Find following word in keep-case tree. */
+		    mip->mi_compoff = wlen;
+		    find_word(mip, FIND_KEEPCOMPOUND);
 
-		/* Check for following word with prefix. */
-		mip->mi_compoff = c;
-		find_prefix(mip, FIND_COMPOUND);
+		    if (!slang->sl_nobreak || mip->mi_result == SP_BAD)
+		    {
+			/* Check for following word with prefix. */
+			mip->mi_compoff = c;
+			find_prefix(mip, FIND_COMPOUND);
+		    }
+		}
 		--mip->mi_complen;
 
-		if (mip->mi_result == SP_OK)
-		    break;
-		continue;
+		if (slang->sl_nobreak)
+		{
+		    nobreak_result = mip->mi_result;
+		    mip->mi_result = save_result;
+		    mip->mi_end = save_end;
+		}
+		else
+		{
+		    if (mip->mi_result == SP_OK)
+			break;
+		    continue;
+		}
 	    }
 
 	    if (flags & WF_BANNED)
@@ -1352,8 +1438,21 @@ find_word(mip, mode)
 	    else
 		res = SP_OK;
 
-	    /* Always use the longest match and the best result. */
-	    if (mip->mi_result > res)
+	    /* Always use the longest match and the best result.  For NOBREAK
+	     * we separately keep the longest match without a following good
+	     * word as a fall-back. */
+	    if (nobreak_result == SP_BAD)
+	    {
+		if (mip->mi_result2 > res)
+		{
+		    mip->mi_result2 = res;
+		    mip->mi_end2 = mip->mi_word + wlen;
+		}
+		else if (mip->mi_result2 == res
+					&& mip->mi_end2 < mip->mi_word + wlen)
+		    mip->mi_end2 = mip->mi_word + wlen;
+	    }
+	    else if (mip->mi_result > res)
 	    {
 		mip->mi_result = res;
 		mip->mi_end = mip->mi_word + wlen;
@@ -1361,11 +1460,11 @@ find_word(mip, mode)
 	    else if (mip->mi_result == res && mip->mi_end < mip->mi_word + wlen)
 		mip->mi_end = mip->mi_word + wlen;
 
-	    if (res == SP_OK)
+	    if (mip->mi_result == SP_OK)
 		break;
 	}
 
-	if (res == SP_OK)
+	if (mip->mi_result == SP_OK)
 	    break;
     }
 }
@@ -2222,6 +2321,10 @@ spell_load_file(fname, lang, old_lp, silent)
 
 	    case SN_COMPOUND:
 		res = read_compound(fd, lp, len);
+		break;
+
+	    case SN_NOBREAK:
+		lp->sl_nobreak = TRUE;
 		break;
 
 	    case SN_SYLLABLE:
@@ -3951,6 +4054,7 @@ typedef struct spellinfo_S
     int		si_compminlen;	/* minimal length for compounding */
     int		si_compsylmax;	/* max nr of syllables for compounding */
     char_u	*si_compflags;	/* flags used for compounding */
+    char_u	si_nobreak;	/* NOBREAK */
     char_u	*si_syllable;	/* syllable string */
     garray_T	si_prefcond;	/* table with conditions for postponed
 				 * prefixes, each stored as a string */
@@ -4361,6 +4465,10 @@ spell_read_aff(spin, fname)
 						 && aff->af_syllable == NULL)
 	    {
 		aff->af_syllable = getroom_save(spin, items[1]);
+	    }
+	    else if (STRCMP(items[0], "NOBREAK") == 0 && itemcnt == 1)
+	    {
+		spin->si_nobreak = TRUE;
 	    }
 	    else if (STRCMP(items[0], "PFXPOSTPONE") == 0 && itemcnt == 1)
 	    {
@@ -6441,6 +6549,16 @@ write_vim_spell(spin, fname)
 	fwrite(spin->si_compflags, (size_t)l, (size_t)1, fd);
     }
 
+    /* SN_NOBREAK: NOBREAK flag */
+    if (spin->si_nobreak)
+    {
+	putc(SN_NOBREAK, fd);				/* <sectionID> */
+	putc(0, fd);					/* <sectionflags> */
+
+	/* It's empty, the precense of the section flags the feature. */
+	put_bytes(fd, (long_u)0, 4);			/* <sectionlen> */
+    }
+
     /* SN_SYLLABLE: syllable info.
      * We don't mark it required, when not supported syllables will not be
      * counted. */
@@ -6860,6 +6978,9 @@ mkspell(fcount, fnames, ascii, overwrite, added_word)
 	    convert_setup(&spin.si_conv, NULL, NULL);
 #endif
 	}
+
+	if (spin.si_compflags != NULL && spin.si_nobreak)
+	    MSG(_("Warning: both compounding and NOBREAK specified"));
 
 	if (!error)
 	{
@@ -8360,7 +8481,20 @@ allcap_copy(word, wcopy)
 	else
 #endif
 	    c = *s++;
-	c = SPELL_TOUPPER(c);
+
+#ifdef FEAT_MBYTE
+	/* We only change ß to SS when we are certain latin1 is used.  It
+	 * would cause weird errors in other 8-bit encodings. */
+	if (enc_latin1like && c == 0xdf)
+	{
+	    c = 'S';
+	    if (d - wcopy >= MAXWLEN - 1)
+		break;
+	    *d++ = c;
+	}
+	else
+#endif
+	    c = SPELL_TOUPPER(c);
 
 #ifdef FEAT_MBYTE
 	if (has_mbyte)
@@ -8629,29 +8763,52 @@ suggest_try_change(su)
 
 		if (sp->ts_complen > sp->ts_compsplit)
 		{
-		    /* There was a compound word before this word.  If this
-		     * word does not support compounding then give up
-		     * (splitting is tried for the word without compound
-		     * flag). */
-		    if (((unsigned)flags >> 24) == 0
-			    || sp->ts_twordlen - sp->ts_splitoff
+		    if (slang->sl_nobreak)
+		    {
+			/* There was a word before this word.  When there was
+			 * no change in this word (it was correct) add the
+			 * first word as a suggestion.  If this word was
+			 * corrected too, we need to check if a correct word
+			 * follows. */
+			if (sp->ts_fidx - sp->ts_splitfidx
+					  == sp->ts_twordlen - sp->ts_splitoff
+				&& STRNCMP(fword + sp->ts_splitfidx,
+					    tword + sp->ts_splitoff,
+					 sp->ts_fidx - sp->ts_splitfidx) == 0)
+			{
+			    preword[sp->ts_prewordlen] = NUL;
+			    add_suggestion(su, &su->su_ga, preword,
+					sp->ts_splitfidx - repextra,
+						      sp->ts_score, 0, FALSE);
+			    break;
+			}
+		    }
+		    else
+		    {
+			/* There was a compound word before this word.  If
+			 * this word does not support compounding then give up
+			 * (splitting is tried for the word without compound
+			 * flag). */
+			if (((unsigned)flags >> 24) == 0
+				|| sp->ts_twordlen - sp->ts_splitoff
 						       < slang->sl_compminlen)
-			break;
-		    compflags[sp->ts_complen] = ((unsigned)flags >> 24);
-		    compflags[sp->ts_complen + 1] = NUL;
-		    vim_strncpy(preword + sp->ts_prewordlen,
-			    tword + sp->ts_splitoff,
-			    sp->ts_twordlen - sp->ts_splitoff);
-		    p = preword;
-		    while (*skiptowhite(p) != NUL)
-			p = skipwhite(skiptowhite(p));
-		    if (fword_ends && !can_compound(slang, p,
+			    break;
+			compflags[sp->ts_complen] = ((unsigned)flags >> 24);
+			compflags[sp->ts_complen + 1] = NUL;
+			vim_strncpy(preword + sp->ts_prewordlen,
+				tword + sp->ts_splitoff,
+				sp->ts_twordlen - sp->ts_splitoff);
+			p = preword;
+			while (*skiptowhite(p) != NUL)
+			    p = skipwhite(skiptowhite(p));
+			if (fword_ends && !can_compound(slang, p,
 						compflags + sp->ts_compsplit))
-			break;
+			    break;
 
-		    /* Get pointer to last char of previous word. */
-		    p = preword + sp->ts_prewordlen;
-		    mb_ptr_back(preword, p);
+			/* Get pointer to last char of previous word. */
+			p = preword + sp->ts_prewordlen;
+			mb_ptr_back(preword, p);
+		    }
 		}
 		else
 		    p = NULL;
@@ -8753,6 +8910,8 @@ suggest_try_change(su)
 		     *    If the word allows compounding try that.  Otherwise
 		     *    try a split by inserting a space.  For both check
 		     *    that a valid words starts at fword[sp->ts_fidx].
+		     *    For NOBREAK do like compounding to be able to check
+		     *    if the next word is valid.
 		     * 2. The badword does end, but it was due to a change
 		     *    (e.g., a swap).  No need to split, but do check that
 		     *    the following word is valid.
@@ -8775,10 +8934,15 @@ suggest_try_change(su)
 			compflags[sp->ts_complen + 1] = NUL;
 		    }
 
+		    /* For NOBREAK we never try splitting, it won't make any
+		     * word valid. */
+		    if (slang->sl_nobreak)
+			try_compound = TRUE;
+
 		    /* If we could add a compound word, and it's also possible
 		     * to split at this point, do the split first and set
 		     * TSF_DIDSPLIT to avoid doing it again. */
-		    if (!fword_ends
+		    else if (!fword_ends
 			    && try_compound
 			    && (sp->ts_flags & TSF_DIDSPLIT) == 0)
 		    {
@@ -8818,6 +8982,7 @@ suggest_try_change(su)
 			    STRCAT(preword, " ");
 			sp->ts_prewordlen = STRLEN(preword);
 			sp->ts_splitoff = sp->ts_twordlen;
+			sp->ts_splitfidx = sp->ts_fidx;
 
 			/* If the badword has a non-word character at this
 			 * position skip it.  That means replacing the

@@ -1,12 +1,12 @@
 *** nl_NL.orig.aff	Sun Jul  3 18:24:07 2005
---- nl_NL.aff	Tue Aug 16 22:39:54 2005
+--- nl_NL.aff	Tue Aug 23 14:03:48 2005
 ***************
 *** 3,6 ****
 --- 3,30 ----
   
-+ FOL  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗ÿ
-+ LOW  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗ÿ
-+ UPP  ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞ‗ÿ
++ FOL  ‗אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏ÿ
++ LOW  ‗אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏ÿ
++ UPP  ‗ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞÿ
 + 
 + SOFOFROM abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZאבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗ÿÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞ¿
 + SOFOTO   ebctefghejklnnepkrstevvkesebctefghejklnnepkrstevvkeseeeeeeeceeeeeeeedneeeeeeeeeeepseeeeeeeeceeeeeeeedneeeeeeeeeeep?

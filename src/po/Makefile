@@ -26,8 +26,7 @@ LANGUAGES = \
 		zh_CN \
 		zh_CN.UTF-8 \
 		zh_TW \
-		zh_TW.UTF-8 \
-# end marker
+		zh_TW.UTF-8
 
 MOFILES = \
 		af.mo \
@@ -51,8 +50,7 @@ MOFILES = \
 		zh_CN.UTF-8.mo \
 		zh_CN.mo \
 		zh_TW.UTF-8.mo \
-		zh_TW.mo \
-# end marker
+		zh_TW.mo
 
 CONVERTED = \
 		cs.cp1250.mo \
@@ -61,8 +59,7 @@ CONVERTED = \
 		ru.cp1251.mo \
 		sk.cp1250.mo \
 		uk.cp1251.mo \
-		zh_CN.cp936.mo \
-# end marker
+		zh_CN.cp936.mo
 
 CHECKFILES = \
 		af.ck \
@@ -93,8 +90,7 @@ CHECKFILES = \
 		ru.cp1251.ck \
 		sk.cp1250.ck \
 		uk.cp1251.ck \
-		zh_CN.cp936.ck \
-# end marker
+		zh_CN.cp936.ck
 
 PACKAGE = vim
 SHELL = /bin/sh

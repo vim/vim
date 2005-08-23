@@ -1531,6 +1531,122 @@ vim_isxdigit(c)
 	|| (c >= 'A' && c <= 'F');
 }
 
+#if defined(FEAT_MBYTE) || defined(PROTO)
+/*
+ * Vim's own character class functions.  These exist because many library
+ * islower()/toupper() etc. do not work properly: they crash when used with
+ * invalid values or can't handle latin1 when the locale is C.
+ * Speed is most important here.
+ */
+#define LATIN1LOWER 'l'
+#define LATIN1UPPER 'U'
+
+/*                                                                 !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]%_'abcdefghijklmnopqrstuvwxyz{|}~                                  ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏĞÑÒÓÔÕÖ×ØÙÚÛÜİŞßàáâãäåæçèéêëìíîïğñòóôõö÷øùúûüışÿ */
+static char_u latin1flags[256] = "                                                                 UUUUUUUUUUUUUUUUUUUUUUUUUU      llllllllllllllllllllllllll                                                                     UUUUUUUUUUUUUUUUUUUUUUU UUUUUUUllllllllllllllllllllllll llllllll";
+static char_u latin1upper[256] = "                                 !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`ABCDEFGHIJKLMNOPQRSTUVWXYZ{|}~€‚ƒ„…†‡ˆ‰Š‹Œ‘’“”•–—˜™š›œŸ ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏĞÑÒÓÔÕÖ×ØÙÚÛÜİŞßÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏĞÑÒÓÔÕÖ÷ØÙÚÛÜİŞÿ";
+static char_u latin1lower[256] = "                                 !\"#$%&'()*+,-./0123456789:;<=>?@abcdefghijklmnopqrstuvwxyz[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~€‚ƒ„…†‡ˆ‰Š‹Œ‘’“”•–—˜™š›œŸ ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿àáâãäåæçèéêëìíîïğñòóôõö×øùúûüışßàáâãäåæçèéêëìíîïğñòóôõö÷øùúûüışÿ";
+
+    int
+vim_islower(c)
+    int	    c;
+{
+    if (c <= '@')
+	return FALSE;
+    if (c >= 0x80)
+    {
+	if (enc_utf8)
+	    return utf_islower(c);
+	if (c >= 0x100)
+	{
+#ifdef HAVE_ISWLOWER
+	    if (has_mbyte)
+		return iswlower(c);
+#endif
+	    /* islower() can't handle these chars and may crash */
+	    return FALSE;
+	}
+	if (enc_latin1like)
+	    return (latin1flags[c] & LATIN1LOWER) == LATIN1LOWER;
+    }
+    return islower(c);
+}
+
+    int
+vim_isupper(c)
+    int	    c;
+{
+    if (c <= '@')
+	return FALSE;
+    if (c >= 0x80)
+    {
+	if (enc_utf8)
+	    return utf_isupper(c);
+	if (c >= 0x100)
+	{
+#ifdef HAVE_ISWUPPER
+	    if (has_mbyte)
+		return iswupper(c);
+#endif
+	    /* islower() can't handle these chars and may crash */
+	    return FALSE;
+	}
+	if (enc_latin1like)
+	    return (latin1flags[c] & LATIN1UPPER) == LATIN1UPPER;
+    }
+    return isupper(c);
+}
+
+    int
+vim_toupper(c)
+    int	    c;
+{
+    if (c <= '@')
+	return c;
+    if (c >= 0x80)
+    {
+	if (enc_utf8)
+	    return utf_toupper(c);
+	if (c >= 0x100)
+	{
+#ifdef HAVE_TOWUPPER
+	    if (has_mbyte)
+		return towupper(c);
+#endif
+	    /* toupper() can't handle these chars and may crash */
+	    return c;
+	}
+	if (enc_latin1like)
+	    return latin1upper[c];
+    }
+    return TOUPPER_LOC(c);
+}
+
+    int
+vim_tolower(c)
+    int	    c;
+{
+    if (c <= '@')
+	return c;
+    if (c >= 0x80)
+    {
+	if (enc_utf8)
+	    return utf_tolower(c);
+	if (c >= 0x100)
+	{
+#ifdef HAVE_TOWLOWER
+	    if (has_mbyte)
+		return towlower(c);
+#endif
+	    /* tolower() can't handle these chars and may crash */
+	    return c;
+	}
+	if (enc_latin1like)
+	    return latin1lower[c];
+    }
+    return TOLOWER_LOC(c);
+}
+#endif
+
 /*
  * skiptowhite: skip over text until ' ' or '\t' or NUL.
  */
