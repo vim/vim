@@ -2140,12 +2140,9 @@ op_tilde(oap)
     pos_T		pos;
 #ifdef FEAT_VISUAL
     struct block_def	bd;
-    int			done;
 #endif
+    int			todo;
     int			did_change = 0;
-#ifdef FEAT_MBYTE
-    colnr_T		col;
-#endif
 
     if (u_save((linenr_T)(oap->start.lnum - 1),
 				       (linenr_T)(oap->end.lnum + 1)) == FAIL)
@@ -2159,19 +2156,15 @@ op_tilde(oap)
 	{
 	    block_prep(oap, &bd, pos.lnum, FALSE);
 	    pos.col = bd.textcol;
-	    for (done = 0; done < bd.textlen; ++done)
+	    for (todo = bd.textlen; todo > 0; --todo)
 	    {
+#ifdef FEAT_MBYTE
+		if (has_mbyte)
+		    todo -= (*mb_ptr2len)(ml_get_pos(&pos)) - 1;
+#endif
 		did_change |= swapchar(oap->op_type, &pos);
-# ifdef FEAT_MBYTE
-		col = pos.col + 1;
-# endif
 		if (inc(&pos) == -1)	    /* at end of file */
 		    break;
-# ifdef FEAT_MBYTE
-		if (pos.col > col)
-		    /* Count extra bytes of a multi-byte character. */
-		    done += pos.col - col;
-# endif
 	    }
 # ifdef FEAT_NETBEANS_INTG
 	    if (usingNetbeans && did_change)
@@ -2202,8 +2195,12 @@ op_tilde(oap)
 	else if (!oap->inclusive)
 	    dec(&(oap->end));
 
-	while (ltoreq(pos, oap->end))
+	for (todo = oap->end.col - pos.col + 1; todo > 0; --todo)
 	{
+#ifdef FEAT_MBYTE
+	    if (has_mbyte)
+		todo -= (*mb_ptr2len)(ml_get_pos(&pos)) - 1;
+#endif
 	    did_change |= swapchar(oap->op_type, &pos);
 	    if (inc(&pos) == -1)    /* at end of file */
 		break;
@@ -2282,6 +2279,19 @@ swapchar(op_type, pos)
 	return FALSE;
 
 #ifdef FEAT_MBYTE
+    if (op_type == OP_UPPER && enc_latin1like && c == 0xdf)
+    {
+	pos_T   sp = curwin->w_cursor;
+
+	/* Special handling of German sharp s: change to "SS". */
+	curwin->w_cursor = *pos;
+	del_char(FALSE);
+	ins_char('S');
+	ins_char('S');
+	curwin->w_cursor = sp;
+	inc(pos);
+    }
+
     if (enc_dbcs != 0 && c >= 0x100)	/* No lower/uppercase letter */
 	return FALSE;
 #endif

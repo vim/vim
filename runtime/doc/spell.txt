@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Aug 22
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Aug 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -145,7 +145,8 @@ z?			For the word under/after the cursor suggest correctly
 			different).
 			When a word was replaced the redo command "." will
 			repeat the word replacement.  This works like "ciw",
-			the good word and <Esc>.
+			the good word and <Esc>.  This does NOT work for Thai
+			and other languages without spaces between words.
 
 					*:spellr* *:spellrepall* *E752* *E753*
 :spellr[epall]		Repeat the replacement done by |z?| for all matches
@@ -435,8 +436,7 @@ then Vim will try to guess.
 			into one en.spl file.
 			Up to eight regions can be combined. *E754* *755*
 			The REP and SAL items of the first .aff file where
-			they appear are used. |spell-affix-REP|
-			|spell-affix-SAL|
+			they appear are used. |spell-REP| |spell-SAL|
 
 			This command uses a lot of memory, required to find
 			the optimal word tree (Polish, Italian and Hungarian
@@ -602,15 +602,6 @@ used to modify the basic words to get the full word list.  This significantly
 reduces the number of words, especially for a language like Polish.  This is
 called affix compression.
 
-The format for the affix and word list files is mostly identical to what
-Myspell uses (the spell checker of Mozilla and OpenOffice.org).  A description
-can be found here:
-	http://lingucomponent.openoffice.org/affix.readme ~
-Note that affixes are case sensitive, this isn't obvious from the description.
-
-Vim supports a few extras.  Hopefully Myspell will support these too some day.
-See |spell-affix-vim|.
-
 The basic word list and the affix file are combined and turned into a binary
 spell file.  All the preprocessing has been done, thus this file loads fast.
 The binary spell file format is described in the source code (src/spell.c).
@@ -619,6 +610,19 @@ But only developers need to know about it.
 The preprocessing also allows us to take the Myspell language files and modify
 them before the Vim word list is made.  The tools for this can be found in the
 "src/spell" directory.
+
+The format for the affix and word list files is based on what Myspell uses
+(the spell checker of Mozilla and OpenOffice.org).  A description can be found
+here:
+	http://lingucomponent.openoffice.org/affix.readme ~
+Note that affixes are case sensitive, this isn't obvious from the description.
+
+Vim does not use the TRY item, it is ignored.  For making suggestions the
+possible characters in the words are used.
+
+Vim supports quite a few extras.  They are described below |spell-affix-vim|.
+Attempts have been made to keep this compatible with other spell checkers, so
+that the same files can be used.
 
 
 WORD LIST FORMAT				*spell-dic-format*
@@ -635,6 +639,7 @@ A very short example, with line numbers:
 	8	bedel/P
 	9	kado/1
 	10	cadeau/2
+	11	TCP,IP
 
 The first line contains the number of words.  Vim ignores it, but you do get
 an error message if it's not there.  *E760*
@@ -659,7 +664,7 @@ The word with all upper-case characters will always be OK.
 	AlS		AlS ALS			als Als ALs aLs aLS
 
 The KEP affix ID can be used to specifically match a word with identical case
-only, see below |spell-affix-KEP|.
+only, see below |spell-KEP|.
 
 Note in line 5 to 7 that non-word characters are used.  You can include
 any character in a word.  When checking the text a word still only matches
@@ -670,6 +675,11 @@ After the word there is an optional slash and flags.  Most of these flags are
 letters that indicate the affixes that can be used with this word.  These are
 specified with SFX and PFX lines in the .aff file.  See the Myspell
 documentation.
+
+In line 12 the word "TCP/IP" is defined.  Since the slash has a special
+meaning the comma is used instead.  This is defined with the SLASH item in the
+affix file, see |spell-SLASH|.  Note that without this SLASH item the
+word will be "TCP,IP".
 
 							*spell-affix-vim*
 A flag that Vim adds and is not in Myspell is the flag defined with KEP in the
@@ -701,8 +711,8 @@ word characters (as specified with ENC).  This is because the system where
 ":mkspell" is used may not support a locale with this encoding and isalpha()
 won't work.  For example when using "cp1250" on Unix.
 
-					*E761* *E762* *spell-affix-FOL*
-					*spell-affix-LOW* *spell-affix-UPP*
+						*E761* *E762* *spell-FOL*
+						*spell-LOW* *spell-UPP*
 Three lines in the affix file are needed.  Simplistic example:
 
 	FOL  блс ~
@@ -721,6 +731,10 @@ the "FOL" line.
 The "UPP" line specifies the characters with upper-case.  That is, a character
 is upper-case where it's different from the character at the same position in
 "FOL".
+
+An exception is made for the German sharp s Я.  The upper-case version is
+"SS".  In the FOL/LOW/UPP lines it should be included, so that it's recognized
+as a word character, but use the Я character in all three.
 
 ASCII characters should be omitted, Vim always handles these in the same way.
 When the encoding is UTF-8 no word characters need to be specified.
@@ -754,7 +768,7 @@ These characters are defined with MIDWORD in the .aff file:
 
 
 AFFIXES
-					    *spell-affix-PFX* *spell-affix-SFX*
+					    *spell-PFX* *spell-SFX*
 The usual PFX (prefix) and SFX (suffix) lines are supported (see the Myspell
 documentation or the Aspell manual:
 http://aspell.net/man-html/Affix-Compression.html).
@@ -793,7 +807,7 @@ Example:
 
 This allows for "wordutil" and "wordutils" but not "wordutilize".
 
-						    *spell-affix-PFXPOSTPONE*
+						    *spell-PFXPOSTPONE*
 When an affix file has very many prefixes that apply to many words it's not
 possible to build the whole word list in memory.  This applies to Hebrew (a
 list with all words is over a Gbyte).  In that case applying prefixes must be
@@ -809,7 +823,7 @@ but in lower case.  Thus when the chop string is used to allow the following
 word to start with an upper case letter.
 
 
-WORDS WITH A SLASH					*spell-affix-SLASH*
+WORDS WITH A SLASH					*spell-SLASH*
 
 The slash is used in the .dic file to separate the basic word from the affix
 letters that can be used.  Unfortunately, this means you cannot use a slash in
@@ -824,7 +838,7 @@ Of course, the letter used should itself not appear in any word!  The letter
 must be ASCII, thus a single byte.
 
 
-KEEP-CASE WORDS						*spell-affix-KEP*
+KEEP-CASE WORDS						*spell-KEP*
 
 In the affix file a KEP line can be used to define the affix name used for
 keep-case words.  Example:
@@ -834,7 +848,7 @@ keep-case words.  Example:
 See above for an example |spell-affix-vim|.
 
 
-RARE WORDS						*spell-affix-RAR*
+RARE WORDS						*spell-RAR*
 
 In the affix file a RAR line can be used to define the affix name used for
 rare words.  Example:
@@ -847,7 +861,7 @@ a typing mistake anyway.  When the same word is found as good it won't be
 highlighted as rare.
 
 
-BAD WORDS						*spell-affix-BAD*
+BAD WORDS						*spell-BAD*
 
 In the affix file a BAD line can be used to define the affix name used for
 bad words.  Example:
@@ -862,14 +876,14 @@ This can be used to exclude words that would otherwise be good.  For example
 Once a word has been marked as bad it won't be undone by encountering the same
 word as good.
 
-							*spell-affix-NEEDAFFIX*
+							*spell-NEEDAFFIX*
 The NEEDAFFIX flag is used to require that a word is used with an affix.  The
 word itself is not a good word.  Example:
 
 	NEEDAFFIX + ~
 
 
-COMPOUND WORDS						*spell-affix-compound*
+COMPOUND WORDS						*spell-compound*
 
 A compound word is a longer word made by concatenating words that appear in
 the .dic file.  To specify which words may be concatenated a character is
@@ -988,6 +1002,17 @@ Above another way to restrict compounding was mentioned above: adding "nocomp"
 after an affix causes all words that are made with that affix not be be used
 for compounding. |spell-affix-nocomp|
 
+
+UNLIMITED COMPOUNDING					*spell-NOBREAK*
+
+For some languages, such as Thai, there is no space in between words.  This
+looks like all words are compounded.  To specify this use the NOBREAK item in
+the affix file, without arguments:
+	NOBREAK ~
+
+Vim will try to figure out where one word ends and a next starts.  When there
+are spelling mistakes this may not be quite right.
+
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 NOTE: The following has not been implemented yet, because there are no word
 lists that support this.
@@ -1028,7 +1053,7 @@ lists that support this.
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 
-REPLACEMENTS						*spell-affix-REP*
+REPLACEMENTS						*spell-REP*
 
 In the affix file REP items can be used to define common mistakes.  This is
 used to make spelling suggestions.  The items define the "from" text and the
@@ -1046,7 +1071,7 @@ anyway.  You can include whole words if you want to, but you might want to use
 the "file:" item in 'spellsuggest' instead.
 
 
-SIMILAR CHARACTERS					*spell-affix-MAP*
+SIMILAR CHARACTERS					*spell-MAP*
 
 In the affix file MAP items can be used to define letters that are very much
 alike.  This is mostly used for a letter with different accents.  This is used
@@ -1062,7 +1087,7 @@ Each letter must appear in only one of the MAP items.  It's a bit more
 efficient if the first letter is ASCII or at least one without accents.
 
 
-SOUND-A-LIKE						*spell-affix-SAL*
+SOUND-A-LIKE						*spell-SAL*
 
 In the affix file SAL items can be used to define the sounds-a-like mechanism
 to be used.  The main items define the "from" text and the "to" replacement.
@@ -1086,7 +1111,7 @@ There are a few special items:
 "1" has the same meaning as "true".  Any other value means "false".
 
 
-SIMPLE SOUNDFOLDING		*spell-affix-SOFOFROM* *spell-affix-SOFOTO*
+SIMPLE SOUNDFOLDING				*spell-SOFOFROM* *spell-SOFOTO*
 
 The SAL mechanism is complex and slow.  A simpler mechanism is mapping all
 characters to another character, mapping similar sounding characters to the

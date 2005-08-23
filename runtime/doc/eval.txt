@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Aug 11
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Aug 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -2013,11 +2013,12 @@ cscope_connection([{num} , {dbpath} [, {prepend}]])
 <
 cursor({lnum}, {col})					*cursor()*
 		Positions the cursor at the column {col} in the line {lnum}.
+		The first column is one.
 		Does not change the jumplist.
 		If {lnum} is greater than the number of lines in the buffer,
 		the cursor will be positioned at the last line in the buffer.
 		If {lnum} is zero, the cursor will stay in the current line.
-		If {col} is greater than the number of characters in the line,
+		If {col} is greater than the number of bytes in the line,
 		the cursor will be positioned at the last character in the
 		line.
 		If {col} is zero, the cursor will stay in the current column.

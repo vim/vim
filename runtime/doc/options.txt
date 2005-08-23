@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Aug 21
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Aug 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1200,9 +1200,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	these words, separated by a comma:
 	internal	Use internal case mapping functions, the current
 			locale does not change the case mapping.  This only
-			matters when 'encoding' is a Unicode encoding.  When
-			"internal" is omitted, the towupper() and towlower()
-			system library functions are used when available.
+			matters when 'encoding' is a Unicode encoding,
+			"latin1" or "iso-8859-15".  When "internal" is
+			omitted, the towupper() and towlower() system library
+			functions are used when available.
 	keepascii	For the ASCII characters (0x00 to 0x7f) use the US
 			case mapping, the current locale is not effective.
 			This probably only matters for Turkish.
