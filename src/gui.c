@@ -2248,7 +2248,7 @@ gui_outstr_nowrap(s, len, flags, fg, bg, back)
 	    /* Draw a composing char on top of the previous char. */
 	    if (comping)
 	    {
-#  if !defined(__APPLE_CC__) && !defined(__MRC__) && !defined(TARGET_API_MAC_CARBON)
+#  if !defined(__APPLE_CC__) && !defined(__MRC__) && !defined(TARGET_API_MAC_CARBON) && !defined(FEAT_GUI_W32)
 		gui_mch_draw_string(gui.row, scol - cn, s + i, cl,
 						    draw_flags | DRAW_TRANSP);
 #  else
