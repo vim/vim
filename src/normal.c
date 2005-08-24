@@ -6096,7 +6096,7 @@ nv_brackets(cap)
 	setpcmark();
 	for (n = 0; n < cap->count1; ++n)
 	    if (spell_move_to(cap->cmdchar == ']' ? FORWARD : BACKWARD,
-			     cap->nchar == 's' ? TRUE : FALSE, FALSE) == FAIL)
+			     cap->nchar == 's' ? TRUE : FALSE, FALSE) == 0)
 	    {
 		clearopbeep(cap->oap);
 		break;
