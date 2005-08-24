@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Aug 17
+" Last Change:	2005 Aug 24
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -629,8 +629,8 @@ au BufNewFile,BufRead *.hex,*.h32		setf hex
 " Tilde (must be before HTML)
 au BufNewFile,BufRead *.t.html			setf tilde
 
-" HTML (.shtml and .stm for server side, .rhtml for Ruby html)
-au BufNewFile,BufRead *.html,*.htm,*.shtml,*.rhtml,*.stm  call s:FThtml()
+" HTML (.shtml and .stm for server side)
+au BufNewFile,BufRead *.html,*.htm,*.shtml,*.stm  call s:FThtml()
 
 " Distinguish between HTML and XHTML
 fun! s:FThtml()
@@ -645,6 +645,8 @@ fun! s:FThtml()
   setf html
 endfun
 
+" HTML with Ruby - eRuby
+au BufNewFile,BufRead *.rhtml			setf eruby
 
 " HTML with M4
 au BufNewFile,BufRead *.html.m4			setf htmlm4

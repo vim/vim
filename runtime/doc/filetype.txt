@@ -1,4 +1,4 @@
-*filetype.txt*  For Vim version 7.0aa.  Last change: 2005 Mar 29
+*filetype.txt*  For Vim version 7.0aa.  Last change: 2005 Aug 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -401,7 +401,7 @@ Local mappings:
 Global mappings:
 			NOTE: The global mappings are accessed by sourcing the
 			ftplugin/changelog.vim file first, e.g. with >
-				runtime ftplugin/man.vim
+				runtime ftplugin/changelog.vim
 <			in your |.vimrc|.
 <Leader>o		Switches to the ChangeLog buffer opened for the
 			current directory, or opens it in a new buffer if it

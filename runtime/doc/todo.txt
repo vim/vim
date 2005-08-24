@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Aug 23
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Aug 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -31,13 +31,12 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 -------------------- Known bugs and current work -----------------------
 
 Spelling:
-- Support flags of two characters, numbers (comma separated) and HUH
-  flags: [^A-Z], A[^A-Z], ..., Z[^A-Z]?
-    FLAG long
-    FLAG num
-    FLAG mix
-  Problem: room in idxs[].  Need to translate flags for postponed prefixes and
-  compound words, these can only be 255.
+- Bug: with 'nowrap' spell checking may start halfway a word.
+
+- Use 'wrapscan' for "[s" and "]s"?
+
+- Check support of flags of two characters, numbers (comma separated) and HUH.
+  When using many compound flags, does regexp still work?
 
 - Compound word is accepted if nr of words is <= COMPOUNDMAX OR nr of
   syllables <= COMPOUNDSYLMAX.  Specify AND in the affix file?
@@ -521,6 +520,9 @@ GTK+ GUI known bugs:
 8   GTK 2: Combining UTF-8 characters not displayed properly in menus (Mikolaj
     Machowski)  They are displayed as separate characters.  Problem in
     creating a label?
+8   GTK 2: Combining UTF-8 characters are sometimes not drawn properly.
+    Depends on the font size, "monospace 13" has the problem.  Vim seems to do
+    everything right, must be a GTK bug.  Is there a way to work around it?
 9   Can't paste a Visual selection from GTK-gvim to vim in xterm or Motif gvim
     when it is longer than 4000 characters.  Works OK from gvim to gvim and
     vim to vim.  Pasting through xterm (using the shift key) also works.

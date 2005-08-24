@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Aug 23
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Aug 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -645,7 +645,11 @@ The first line contains the number of words.  Vim ignores it, but you do get
 an error message if it's not there.  *E760*
 
 What follows is one word per line.  There should be no white space before or
-after the word.
+after the word.  After the word there is an optional slash and flags.  Most of
+these flags are letters that indicate the affixes that can be used with this
+word.  These are specified with SFX and PFX lines in the .aff file.  See the
+Myspell documentation.  Vim allows using other flag types with the FLAG item
+in the affix file |spell-FLAG|.
 
 When the word only has lower-case letters it will also match with the word
 starting with an upper-case letter.
@@ -670,11 +674,6 @@ Note in line 5 to 7 that non-word characters are used.  You can include
 any character in a word.  When checking the text a word still only matches
 when it appears with a non-word character before and after it.  For Myspell a
 word starting with a non-word character probably won't work.
-
-After the word there is an optional slash and flags.  Most of these flags are
-letters that indicate the affixes that can be used with this word.  These are
-specified with SFX and PFX lines in the .aff file.  See the Myspell
-documentation.
 
 In line 12 the word "TCP/IP" is defined.  Since the slash has a special
 meaning the comma is used instead.  This is defined with the SLASH item in the
@@ -765,6 +764,29 @@ go unnoticed.
 These characters are defined with MIDWORD in the .aff file:
 
 	MIDWORD	'- ~
+
+
+FLAG TYPES						*spell-FLAG*
+
+Flags are used to specify the affixes that can be used with a word and for
+other properties of the word.  Normally single-character flags are used.  This
+limits the number of possible flags, especially for 8-bit encodings.  The FLAG
+item can be used if more affixes are to be used.  Possible values:
+
+	FLAG long	use two-character flags
+	FLAG num	use numbers, from 1 up to 65000
+	FLAG huh	use one-character flags without A-Z and two-character
+			flags that start with A-Z
+
+With "FLAG num" the numbers in a list of affixes need to be separated with a
+comma: "234,2143,1435".  This method is inefficient, but useful if the file is
+generated with a program.
+
+When using "huh" the two-character flags all start with a capital: "Aa", "B1",
+"BB", etc.  This is useful to use one-character flags for the most common
+items and two-character flags for uncommon items.
+
+Note: When using utf-8 only characters up to 65000 may be used for flags.
 
 
 AFFIXES
@@ -1065,7 +1087,9 @@ used to make spelling suggestions.  The items define the "from" text and the
 	REP k ch ~
 	REP ch k ~
 
-The first line specifies the number of REP lines following.  Vim ignores it.
+The first line specifies the number of REP lines following.  Vim ignores the
+number, but it must be there.
+
 Don't include simple one-character replacements or swaps.  Vim will try these
 anyway.  You can include whole words if you want to, but you might want to use
 the "file:" item in 'spellsuggest' instead.
@@ -1081,7 +1105,8 @@ to prefer suggestions with these letters substituted.  Example:
 	MAP eéëêè ~
 	MAP uüùúû ~
 
-The first line specifies the number of MAP lines following.  Vim ignores it.
+The first line specifies the number of MAP lines following.  Vim ignores the
+number, but the line must be there.
 
 Each letter must appear in only one of the MAP items.  It's a bit more
 efficient if the first letter is ASCII or at least one without accents.

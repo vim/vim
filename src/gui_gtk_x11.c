@@ -5328,6 +5328,9 @@ not_ascii:
 	int		cluster_width;
 	int		last_glyph_rbearing;
 	int		cells = 0;  /* cells occupied by current cluster */
+#if 0
+	int		monospace13 = STRICMP(p_guifont, "monospace 13") == 0;
+#endif
 
 	/* Safety check: pango crashes when invoked with invalid utf-8
 	 * characters. */
@@ -5446,10 +5449,17 @@ not_ascii:
 		     * characters the canonical way.  That is, setting the
 		     * width of the previous glyph to 0. */
 		    glyphs->glyphs[i - 1].geometry.width = 0;
-
 		    width = cells * gui.char_width * PANGO_SCALE;
 		    glyph->geometry.x_offset +=
 					    MAX(0, width - cluster_width) / 2;
+#if 0
+		    /* Dirty hack: for "monospace 13" font there is a bug that
+		     * draws composing chars in the wrong position.  Add
+		     * "width" to the offset to work around that. */
+		    if (monospace13)
+			glyph->geometry.x_offset = width;
+#endif
+
 		    glyph->geometry.width = width;
 		}
 		else /* i == 0 "cannot happen" */

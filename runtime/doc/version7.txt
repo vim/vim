@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Aug 23
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Aug 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1303,5 +1303,8 @@ For the Find/Replace dialog it was possible that not finding the text resulted
 in an error message while redrawing, which cleared the syntax highlighting
 while it was being used, resulting in a crash.  Now don't clear syntax
 highlighting, disable it with b_syn_error.
+
+Win32: Combining UTF-8 characters were drawn on the previous character.
+Could be noticed with a Thai font.
 
  vim:tw=78:ts=8:ft=help:norl:

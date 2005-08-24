@@ -13749,22 +13749,16 @@ f_spellbadword(argvars, rettv)
     typval_T	*argvars;
     typval_T	*rettv;
 {
-    int		attr;
-    char_u	*ptr;
     int		len;
 
     rettv->vval.v_string = NULL;
     rettv->v_type = VAR_STRING;
 
 #ifdef FEAT_SYN_HL
-    /* Find the start of the badly spelled word. */
-    if (spell_move_to(FORWARD, TRUE, TRUE) == FAIL)
-	return;
-
-    /* Get the length of the word and copy it. */
-    ptr = ml_get_cursor();
-    len = spell_check(curwin, ptr, &attr, NULL);
-    rettv->vval.v_string = vim_strnsave(ptr, len);
+    /* Find the start and length of the badly spelled word. */
+    len = spell_move_to(FORWARD, TRUE, TRUE);
+    if (len != 0)
+	rettv->vval.v_string = vim_strnsave(ml_get_cursor(), len);
 #endif
 }
 
