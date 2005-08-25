@@ -682,7 +682,7 @@ static int valid_word_prefix __ARGS((int totprefcnt, int arridx, int flags, char
 static void find_prefix __ARGS((matchinf_T *mip, int mode));
 static int fold_more __ARGS((matchinf_T *mip));
 static int spell_valid_case __ARGS((int wordflags, int treeflags));
-static int no_spell_checking __ARGS((void));
+static int no_spell_checking __ARGS((win_T *wp));
 static void spell_load_lang __ARGS((char_u *lang));
 static char_u *spell_enc __ARGS((void));
 static void int_wordlist_spl __ARGS((char_u *fname));
@@ -1749,9 +1749,10 @@ spell_valid_case(wordflags, treeflags)
  * Return TRUE if spell checking is not enabled.
  */
     static int
-no_spell_checking()
+no_spell_checking(wp)
+    win_T	*wp;
 {
-    if (!curwin->w_p_spell || *curbuf->b_p_spl == NUL)
+    if (!wp->w_p_spell || *wp->w_buffer->b_p_spl == NUL)
     {
 	EMSG(_("E756: Spell checking is not enabled"));
 	return TRUE;
@@ -1767,10 +1768,12 @@ no_spell_checking()
  * Return 0 if not found, length of the badly spelled word otherwise.
  */
     int
-spell_move_to(dir, allwords, curline)
+spell_move_to(wp, dir, allwords, curline, attrp)
+    win_T	*wp;
     int		dir;		/* FORWARD or BACKWARD */
     int		allwords;	/* TRUE for "[s" and "]s" */
     int		curline;
+    int		*attrp;		/* return: attributes of bad word or NULL */
 {
     linenr_T	lnum;
     pos_T	found_pos;
@@ -1780,7 +1783,7 @@ spell_move_to(dir, allwords, curline)
     char_u	*endp;
     int		attr;
     int		len;
-    int		has_syntax = syntax_present(curbuf);
+    int		has_syntax = syntax_present(wp->w_buffer);
     int		col;
     int		can_spell;
     char_u	*buf = NULL;
@@ -1788,7 +1791,7 @@ spell_move_to(dir, allwords, curline)
     int		skip = 0;
     int		capcol = -1;
 
-    if (no_spell_checking())
+    if (no_spell_checking(wp))
 	return 0;
 
     /*
@@ -1802,12 +1805,12 @@ spell_move_to(dir, allwords, curline)
      * (e.g. "et<line-break>cetera").  Doesn't work when searching backwards
      * though...
      */
-    lnum = curwin->w_cursor.lnum;
+    lnum = wp->w_cursor.lnum;
     found_pos.lnum = 0;
 
     while (!got_int)
     {
-	line = ml_get(lnum);
+	line = ml_get_buf(wp->w_buffer, lnum, FALSE);
 
 	len = STRLEN(line);
 	if (buflen < len + MAXWLEN + 2)
@@ -1830,7 +1833,7 @@ spell_move_to(dir, allwords, curline)
 	/* Copy the line into "buf" and append the start of the next line if
 	 * possible. */
 	STRCPY(buf, line);
-	if (lnum < curbuf->b_ml.ml_line_count)
+	if (lnum < wp->w_buffer->b_ml.ml_line_count)
 	    spell_cat_line(buf + STRLEN(buf), ml_get(lnum + 1), MAXWLEN);
 
 	p = buf + skip;
@@ -1839,13 +1842,13 @@ spell_move_to(dir, allwords, curline)
 	{
 	    /* When searching backward don't search after the cursor. */
 	    if (dir == BACKWARD
-		    && lnum == curwin->w_cursor.lnum
-		    && (colnr_T)(p - buf) >= curwin->w_cursor.col)
+		    && lnum == wp->w_cursor.lnum
+		    && (colnr_T)(p - buf) >= wp->w_cursor.col)
 		break;
 
 	    /* start of word */
 	    attr = 0;
-	    len = spell_check(curwin, p, &attr, &capcol);
+	    len = spell_check(wp, p, &attr, &capcol);
 
 	    if (attr != 0)
 	    {
@@ -1855,16 +1858,16 @@ spell_move_to(dir, allwords, curline)
 		    /* When searching forward only accept a bad word after
 		     * the cursor. */
 		    if (dir == BACKWARD
-			    || lnum > curwin->w_cursor.lnum
-			    || (lnum == curwin->w_cursor.lnum
+			    || lnum > wp->w_cursor.lnum
+			    || (lnum == wp->w_cursor.lnum
 				&& (colnr_T)(curline ? p - buf + len
 						     : p - buf)
-						  > curwin->w_cursor.col))
+						  > wp->w_cursor.col))
 		    {
 			if (has_syntax)
 			{
 			    col = p - buf;
-			    (void)syn_get_id(lnum, (colnr_T)col,
+			    (void)syn_get_id(wp, lnum, (colnr_T)col,
 						       FALSE, &can_spell);
 			}
 			else
@@ -1880,8 +1883,10 @@ spell_move_to(dir, allwords, curline)
 			    if (dir == FORWARD)
 			    {
 				/* No need to search further. */
-				curwin->w_cursor = found_pos;
+				wp->w_cursor = found_pos;
 				vim_free(buf);
+				if (attrp != NULL)
+				    *attrp = attr;
 				return len;
 			    }
 			    else if (curline)
@@ -1902,7 +1907,7 @@ spell_move_to(dir, allwords, curline)
 	if (dir == BACKWARD && found_pos.lnum != 0)
 	{
 	    /* Use the last match in the line. */
-	    curwin->w_cursor = found_pos;
+	    wp->w_cursor = found_pos;
 	    vim_free(buf);
 	    return found_len;
 	}
@@ -1920,7 +1925,7 @@ spell_move_to(dir, allwords, curline)
 	}
 	else
 	{
-	    if (lnum == curbuf->b_ml.ml_line_count)
+	    if (lnum == wp->w_buffer->b_ml.ml_line_count)
 		break;
 	    ++lnum;
 
@@ -2992,18 +2997,18 @@ read_compound(fd, slang, len)
 }
 
 /*
- * Return TRUE if "byte" appears in "str".
+ * Return TRUE if byte "n" appears in "str".
  * Like strchr() but independent of locale.
  */
     static int
-byte_in_str(str, byte)
+byte_in_str(str, n)
     char_u	*str;
-    int		byte;
+    int		n;
 {
     char_u	*p;
 
     for (p = str; *p != NUL; ++p)
-	if (*p == byte)
+	if (*p == n)
 	    return TRUE;
     return FALSE;
 }
@@ -3956,7 +3961,7 @@ spell_reload_one(fname, added_word)
 typedef struct afffile_S
 {
     char_u	*af_enc;	/* "SET", normalized, alloc'ed string or NULL */
-    int		af_flagtype;	/* AFT_CHAR, AFT_2CHAR, AFT_NUMBER or AFT_HUH */
+    int		af_flagtype;	/* AFT_CHAR, AFT_LONG, AFT_NUM or AFT_CAPLONG */
     int		af_slash;	/* character used in word for slash */
     unsigned	af_rar;		/* RAR ID for rare word */
     unsigned	af_kep;		/* KEP ID for keep-case word */
@@ -3969,9 +3974,9 @@ typedef struct afffile_S
 } afffile_T;
 
 #define AFT_CHAR	0	/* flags are one character */
-#define AFT_2CHAR	1	/* flags are two characters */
-#define AFT_HUH		2	/* flags are one or two characters */
-#define AFT_NUMBER	3	/* flags are numbers, comma separated */
+#define AFT_LONG	1	/* flags are two characters */
+#define AFT_CAPLONG	2	/* flags are one or two characters */
+#define AFT_NUM		3	/* flags are numbers, comma separated */
 
 typedef struct affentry_S affentry_T;
 /* Affix entry from ".aff" file.  Used for prefixes and suffixes. */
@@ -3989,7 +3994,7 @@ struct affentry_S
 #ifdef FEAT_MBYTE
 # define AH_KEY_LEN 17		/* 2 x 8 bytes + NUL */
 #else
-# define AH_KEY_LEN 3		/* 2 x 1 byte + NUL */
+# define AH_KEY_LEN 7		/* 6 digits + NUL */
 #endif
 
 /* Affix header from ".aff" file.  Used for af_pref and af_suff. */
@@ -3999,6 +4004,7 @@ typedef struct affheader_S
     unsigned	ah_flag;	/* affix name as number, uses "af_flagtype" */
     int		ah_newID;	/* prefix ID after renumbering; 0 if not used */
     int		ah_combine;	/* suffix may combine with prefix */
+    int		ah_follows;	/* another affix block should be following */
     affentry_T	*ah_first;	/* first affix entry */
 } affheader_T;
 
@@ -4430,11 +4436,11 @@ spell_read_aff(spin, fname)
 					      && aff->af_flagtype == AFT_CHAR)
 	    {
 		if (STRCMP(items[1], "long") == 0)
-		    aff->af_flagtype = AFT_2CHAR;
+		    aff->af_flagtype = AFT_LONG;
 		else if (STRCMP(items[1], "num") == 0)
-		    aff->af_flagtype = AFT_NUMBER;
-		else if (STRCMP(items[1], "huh") == 0)
-		    aff->af_flagtype = AFT_HUH;
+		    aff->af_flagtype = AFT_NUM;
+		else if (STRCMP(items[1], "caplong") == 0)
+		    aff->af_flagtype = AFT_CAPLONG;
 		else
 		    smsg((char_u *)_("Invalid value for FLAG in %s line %d: %s"),
 			    fname, lnum, items[1]);
@@ -4564,32 +4570,76 @@ spell_read_aff(spin, fname)
 		    && aff_todo == 0
 		    && itemcnt >= 4)
 	    {
+		int	lasti = 4;
+		char_u	key[AH_KEY_LEN];
+
+		if (*items[0] == 'P')
+		    tp = &aff->af_pref;
+		else
+		    tp = &aff->af_suff;
+
+		/* Myspell allows the same affix name to be used multiple
+		 * times.  The affix files that do this have an undocumented
+		 * "S" flag on all but the last block, thus we check for that
+		 * and store it in ah_follows. */
+		vim_strncpy(key, items[1], AH_KEY_LEN - 1);
+		hi = hash_find(tp, key);
+		if (!HASHITEM_EMPTY(hi))
+		{
+		    cur_aff = HI2AH(hi);
+		    if (cur_aff->ah_combine != (*items[2] == 'Y'))
+			smsg((char_u *)_("Different combining flag in continued affix block in %s line %d: %s"),
+						   fname, lnum, items[1]);
+		    if (!cur_aff->ah_follows)
+			smsg((char_u *)_("Duplicate affix in %s line %d: %s"),
+						       fname, lnum, items[1]);
+		}
+		else
+		{
+		    /* New affix letter. */
+		    cur_aff = (affheader_T *)getroom(spin,
+						   sizeof(affheader_T), TRUE);
+		    if (cur_aff == NULL)
+			break;
+		    cur_aff->ah_flag = affitem2flag(aff->af_flagtype, items[1],
+								 fname, lnum);
+		    if (cur_aff->ah_flag == 0 || STRLEN(items[1]) >= AH_KEY_LEN)
+			break;
+		    if (cur_aff->ah_flag == aff->af_bad
+			    || cur_aff->ah_flag == aff->af_rar
+			    || cur_aff->ah_flag == aff->af_kep
+			    || cur_aff->ah_flag == aff->af_needaffix)
+			smsg((char_u *)_("Affix also used for BAD/RAR/KEP/NEEDAFFIX in %s line %d: %s"),
+						       fname, lnum, items[1]);
+		    STRCPY(cur_aff->ah_key, items[1]);
+		    hash_add(tp, cur_aff->ah_key);
+
+		    cur_aff->ah_combine = (*items[2] == 'Y');
+		}
+
+		/* Check for the "S" flag, which apparently means that another
+		 * block with the same affix name is following. */
+		if (itemcnt > lasti && STRCMP(items[lasti], "S") == 0)
+		{
+		    ++lasti;
+		    cur_aff->ah_follows = TRUE;
+		}
+		else
+		    cur_aff->ah_follows = FALSE;
+
 		/* Myspell allows extra text after the item, but that might
 		 * mean mistakes go unnoticed.  Require a comment-starter. */
-		if (itemcnt > 4 && *items[4] != '#')
+		if (itemcnt > lasti && *items[lasti] != '#')
 		    smsg((char_u *)_("Trailing text in %s line %d: %s"),
 						       fname, lnum, items[4]);
 
-		/* New affix letter. */
-		cur_aff = (affheader_T *)getroom(spin,
-						   sizeof(affheader_T), TRUE);
-		if (cur_aff == NULL)
-		    break;
-		cur_aff->ah_flag = affitem2flag(aff->af_flagtype, items[1],
-								 fname, lnum);
-		if (cur_aff->ah_flag == 0 || STRLEN(items[1]) >= AH_KEY_LEN)
-		    break;
-		STRCPY(cur_aff->ah_key, items[1]);
-		if (*items[2] == 'Y')
-		    cur_aff->ah_combine = TRUE;
-		else if (*items[2] != 'N')
+		if (STRCMP(items[2], "Y") != 0 && STRCMP(items[2], "N") != 0)
 		    smsg((char_u *)_("Expected Y or N in %s line %d: %s"),
 						       fname, lnum, items[2]);
 
-		if (*items[0] == 'P')
+		if (*items[0] == 'P' && aff->af_pfxpostpone)
 		{
-		    tp = &aff->af_pref;
-		    if (aff->af_pfxpostpone)
+		    if (cur_aff->ah_newID == 0)
 		    {
 			/* Use a new number in the .spl file later, to be able
 			 * to handle multiple .aff files. */
@@ -4600,23 +4650,12 @@ spell_read_aff(spin, fname)
 			 * the items. */
 			did_postpone_prefix = FALSE;
 		    }
+		    else
+			/* Did use the ID in a previous block. */
+			did_postpone_prefix = TRUE;
 		}
-		else
-		    tp = &aff->af_suff;
+
 		aff_todo = atoi((char *)items[3]);
-		hi = hash_find(tp, cur_aff->ah_key);
-		if (!HASHITEM_EMPTY(hi)
-			|| cur_aff->ah_flag == aff->af_bad
-			|| cur_aff->ah_flag == aff->af_rar
-			|| cur_aff->ah_flag == aff->af_kep
-			|| cur_aff->ah_flag == aff->af_needaffix)
-		{
-		    smsg((char_u *)_("Duplicate affix in %s line %d: %s"),
-						       fname, lnum, items[1]);
-		    aff_todo = 0;
-		}
-		else
-		    hash_add(tp, cur_aff->ah_key);
 	    }
 	    else if ((STRCMP(items[0], "PFX") == 0
 					      || STRCMP(items[0], "SFX") == 0)
@@ -5032,7 +5071,7 @@ affitem2flag(flagtype, item, fname, lnum)
     res = get_affitem(flagtype, &p);
     if (res == 0)
     {
-	if (flagtype == AFT_NUMBER)
+	if (flagtype == AFT_NUM)
 	    smsg((char_u *)_("Flag is not a number in %s line %d: %s"),
 							   fname, lnum, item);
 	else
@@ -5059,11 +5098,11 @@ get_affitem(flagtype, pp)
 {
     int		res;
 
-    if (flagtype == AFT_NUMBER)
+    if (flagtype == AFT_NUM)
     {
 	if (!VIM_ISDIGIT(**pp))
 	{
-	    ++*pp;
+	    ++*pp;	/* always advance, avoid getting stuck */
 	    return 0;
 	}
 	res = getdigits(pp);
@@ -5075,7 +5114,7 @@ get_affitem(flagtype, pp)
 #else
 	res = *(*pp)++;
 #endif
-	if (flagtype == AFT_2CHAR || (flagtype == AFT_HUH
+	if (flagtype == AFT_LONG || (flagtype == AFT_CAPLONG
 						 && res >= 'A' && res <= 'Z'))
 	{
 	    if (**pp == NUL)
@@ -5167,7 +5206,7 @@ process_compflags(spin, aff, compflags)
 		}
 		*tp++ = id;
 	    }
-	    if (aff->af_flagtype == AFT_NUMBER && *p == ',')
+	    if (aff->af_flagtype == AFT_NUM && *p == ',')
 		++p;
 	}
     }
@@ -5192,8 +5231,8 @@ flag_in_afflist(flagtype, afflist, flag)
 	case AFT_CHAR:
 	    return vim_strchr(afflist, flag) != NULL;
 
-	case AFT_HUH:
-	case AFT_2CHAR:
+	case AFT_CAPLONG:
+	case AFT_LONG:
 	    for (p = afflist; *p != NUL; )
 	    {
 #ifdef FEAT_MBYTE
@@ -5201,7 +5240,7 @@ flag_in_afflist(flagtype, afflist, flag)
 #else
 		n = *p++;
 #endif
-		if ((flagtype == AFT_2CHAR || (n >= 'A' && n <= 'Z'))
+		if ((flagtype == AFT_LONG || (n >= 'A' && n <= 'Z'))
 								 && *p != NUL)
 #ifdef FEAT_MBYTE
 		    n = mb_ptr2char_adv(&p) + (n << 16);
@@ -5213,7 +5252,7 @@ flag_in_afflist(flagtype, afflist, flag)
 	    }
 	    break;
 
-	case AFT_NUMBER:
+	case AFT_NUM:
 	    for (p = afflist; *p != NUL; )
 	    {
 		n = getdigits(&p);
@@ -5619,7 +5658,7 @@ get_pfxlist(affile, afflist, store_afflist)
 		    store_afflist[cnt++] = id;
 	    }
 	}
-	if (affile->af_flagtype == AFT_NUMBER && *p == ',')
+	if (affile->af_flagtype == AFT_NUM && *p == ',')
 	    ++p;
     }
 
@@ -5655,7 +5694,7 @@ get_compflags(affile, afflist, store_afflist)
 	    if (!HASHITEM_EMPTY(hi))
 		store_afflist[cnt++] = HI2CI(hi)->ci_newID;
 	}
-	if (affile->af_flagtype == AFT_NUMBER && *p == ',')
+	if (affile->af_flagtype == AFT_NUM && *p == ',')
 	    ++p;
     }
 
@@ -8124,7 +8163,7 @@ spell_suggest(count)
     int		selected = count;
 
     /* Find the start of the badly spelled word. */
-    if (spell_move_to(FORWARD, TRUE, TRUE) == 0
+    if (spell_move_to(curwin, FORWARD, TRUE, TRUE, NULL) == 0
 	    || curwin->w_cursor.col > prev_cursor.col)
     {
 	if (!curwin->w_p_spell || *curbuf->b_p_spl == NUL)
@@ -12081,7 +12120,7 @@ ex_spelldump(eap)
     int		do_region = TRUE;	    /* dump region names and numbers */
     char_u	*p;
 
-    if (no_spell_checking())
+    if (no_spell_checking(curwin))
 	return;
 
     /* Create a new empty buffer by splitting the window. */
@@ -12368,6 +12407,21 @@ apply_prefixes(slang, word, round, flags, startlnum)
     return lnum;
 }
 
+/*
+ * Move "p" to end of word.
+ */
+    char_u *
+spell_to_word_end(start, buf)
+    char_u  *start;
+    buf_T   *buf;
+{
+    char_u  *p = start;
+
+    while (*p != NUL && spell_iswordp(p, buf))
+	mb_ptr_adv(p);
+    return p;
+}
+
 #if defined(FEAT_INS_EXPAND) || defined(PROTO)
 static int spell_expand_need_cap;
 
@@ -12386,7 +12440,7 @@ spell_word_start(startcol)
     char_u	*p;
     int		col = 0;
 
-    if (no_spell_checking())
+    if (no_spell_checking(curwin))
 	return startcol;
 
     /* Find a word character before "startcol". */

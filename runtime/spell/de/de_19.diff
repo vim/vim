@@ -1,5 +1,5 @@
-*** de_19.orig.aff	Mon Aug 15 22:45:35 2005
---- de_19.aff	Mon Aug 15 22:54:10 2005
+*** de_19.orig.aff	Thu Aug 25 11:22:08 2005
+--- de_19.aff	Thu Aug 25 11:25:21 2005
 ***************
 *** 3,4 ****
 --- 3,24 ----
@@ -24,4 +24,4 @@
 + MAP yÿý
 + MAP sß
 + 
-  
+  # (c) copyright by Bjoern Jacke <bjoern@j3e.de>
