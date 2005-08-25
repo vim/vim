@@ -1,6 +1,6 @@
 /* spell.c */
 int spell_check __ARGS((win_T *wp, char_u *ptr, int *attrp, int *capcol));
-int spell_move_to __ARGS((int dir, int allwords, int curline));
+int spell_move_to __ARGS((win_T *wp, int dir, int allwords, int curline, int *attrp));
 void spell_cat_line __ARGS((char_u *buf, char_u *line, int maxlen));
 char_u *did_set_spelllang __ARGS((buf_T *buf));
 void spell_free_all __ARGS((void));
@@ -17,6 +17,7 @@ void ex_spellrepall __ARGS((exarg_T *eap));
 void spell_suggest_list __ARGS((garray_T *gap, char_u *word, int maxcount, int need_cap));
 char_u *eval_soundfold __ARGS((char_u *word));
 void ex_spelldump __ARGS((exarg_T *eap));
+char_u *spell_to_word_end __ARGS((char_u *start, buf_T *buf));
 int spell_word_start __ARGS((int startcol));
 int expand_spelling __ARGS((linenr_T lnum, int col, char_u *pat, char_u ***matchp));
 /* vim: set ft=c : */

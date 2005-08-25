@@ -1,17 +1,15 @@
-*** de_CH.orig.aff	Thu Aug 25 11:22:18 2005
---- de_CH.aff	Thu Aug 25 11:22:18 2005
+*** es_ES.orig.aff	Thu Aug 25 19:11:20 2005
+--- es_ES.aff	Thu Aug 25 19:12:47 2005
 ***************
 *** 3,4 ****
---- 3,24 ----
+--- 3,22 ----
   
-+ FOL  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗ÿ
-+ LOW  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗ÿ
-+ UPP  ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞ‗ÿ
++ FOL  ‗אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏ÿ
++ LOW  ‗אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏ÿ
++ UPP  ‗ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞÿ
 + 
 + SOFOFROM abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZאבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗ÿÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞ¿
 + SOFOTO   ebctefghejklnnepkrstevvkesebctefghejklnnepkrstevvkeseeeeeeeceeeeeeeedneeeeeeeeeeepseeeeeeeeceeeeeeeedneeeeeeeeeeep?
-+ 
-+ MIDWORD	'
 + 
 + MAP 9
 + MAP aאבגדהו
@@ -24,4 +22,4 @@
 + MAP yÿ‎
 + MAP s‗
 + 
-  
+  SFX J Y 12

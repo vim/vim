@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Aug 24
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Aug 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -775,16 +775,16 @@ item can be used if more affixes are to be used.  Possible values:
 
 	FLAG long	use two-character flags
 	FLAG num	use numbers, from 1 up to 65000
-	FLAG huh	use one-character flags without A-Z and two-character
+	FLAG caplong	use one-character flags without A-Z and two-character
 			flags that start with A-Z
 
 With "FLAG num" the numbers in a list of affixes need to be separated with a
 comma: "234,2143,1435".  This method is inefficient, but useful if the file is
 generated with a program.
 
-When using "huh" the two-character flags all start with a capital: "Aa", "B1",
-"BB", etc.  This is useful to use one-character flags for the most common
-items and two-character flags for uncommon items.
+When using "caplong" the two-character flags all start with a capital: "Aa",
+"B1", "BB", etc.  This is useful to use one-character flags for the most
+common items and two-character flags for uncommon items.
 
 Note: When using utf-8 only characters up to 65000 may be used for flags.
 
@@ -801,6 +801,17 @@ Example:
 
 	SFX F 0 in   [^i]n      # Spion > Spionin  ~
 	SFX F 0 nen  in         # Bauerin > Bauerinnen ~
+
+Apparently Myspell allows an affix name to appear more than once.  Since this
+might also be a mistake, Vim checks for an extra "S".  The affix files for
+Myspell that use this feature apparently have this flag.  Example:
+
+	SFX a Y 1 S ~
+	SFX a 0 an . ~
+
+	SFX a Y 2 S ~
+	SFX a 0 en . ~
+	SFX a 0 on . ~
 
 							*spell-affix-rare*
 An extra item for Vim is the "rare" flag.  It must come after the other

@@ -4810,7 +4810,7 @@ spell_back_to_badword()
 {
     pos_T	tpos = curwin->w_cursor;
 
-    spell_bad_len = spell_move_to(BACKWARD, TRUE, TRUE);
+    spell_bad_len = spell_move_to(curwin, BACKWARD, TRUE, TRUE, NULL);
     if (curwin->w_cursor.col != tpos.col)
 	start_arrow(&tpos);
 }

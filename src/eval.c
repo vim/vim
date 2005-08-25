@@ -13756,7 +13756,7 @@ f_spellbadword(argvars, rettv)
 
 #ifdef FEAT_SYN_HL
     /* Find the start and length of the badly spelled word. */
-    len = spell_move_to(FORWARD, TRUE, TRUE);
+    len = spell_move_to(curwin, FORWARD, TRUE, TRUE, NULL);
     if (len != 0)
 	rettv->vval.v_string = vim_strnsave(ml_get_cursor(), len);
 #endif
@@ -14208,7 +14208,7 @@ f_synID(argvars, rettv)
 
     if (!transerr && lnum >= 1 && lnum <= curbuf->b_ml.ml_line_count
 	    && col >= 0 && col < (long)STRLEN(ml_get(lnum)))
-	id = syn_get_id(lnum, (colnr_T)col, trans, NULL);
+	id = syn_get_id(curwin, lnum, (colnr_T)col, trans, NULL);
 #endif
 
     rettv->vval.v_number = id;

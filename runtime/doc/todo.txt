@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Aug 24
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Aug 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -31,15 +31,28 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 -------------------- Known bugs and current work -----------------------
 
 Spelling:
-- Bug: with 'nowrap' spell checking may start halfway a word.
-
 - Use 'wrapscan' for "[s" and "]s"?
+
+- Is there a way to avoid compound IDs taking two utf-8 bytes?
+
+- Make COMPOUNDMIN 3 characters instead of 3 bytes.
 
 - Check support of flags of two characters, numbers (comma separated) and HUH.
   When using many compound flags, does regexp still work?
 
 - Compound word is accepted if nr of words is <= COMPOUNDMAX OR nr of
   syllables <= COMPOUNDSYLMAX.  Specify AND in the affix file?
+
+- ONLYINCOMPOUND -> NEEDCOMPOUND (also used for affix? or use "needcomp"
+  after affix)
+
+- COMPOUNDMAX -> COMPOUNDWORDMAX?
+
+- Support flags on a suffix.  Used for second level affixes.
+  The flags may also be used for compounding.  Default is an OR mechanism with
+  the flags of the word.  Adding "compset" on the affixes means the compound
+  flags of the word are not used.
+  Instead of "SFX a 0 add/FLAGS ." we could use "SFX a 0 add . /FLAGS".
 
 - Do we need a flag for the rule that when compounding is done the following
   word doesn't have a capital after a word character, even for Onecap words?
@@ -51,20 +64,15 @@ Spelling:
     - Example with compounding dash is bad, gets in the way of setting
       COMPOUNDMIN and COMPOUNDMAX to a reasonable value.
     - PSEUDOROOT == NEEDAFFIX
-- Make COMPOUNDMIN 3 characters instead of 3 bytes?
-- COMPOUNDMAX -> COMPOUNDWORDMAX?
-- ONLYINCOMPOUND -> NEEDCOMPOUND (also used for affix? or use "needcomp"
-  after affix)
-- Use "comp" flag on affix to allow compounding for word that uses this
-  affix.  However, also need to define which compound flag to be used.
-  "comp/m"?  Alternative: use flags after add string.
+    - COMPOUNDROOT -> COMPOUNDED?  For a word that already is a compound word
+	    Or use COMPOUNDED2, COMPOUNDED3, etc.
 - CIRCUMFIX: when a word uses a prefix marked with the CIRCUMFIX flag,
   then the word must also have a suffix marked with the CIRCUMFIX flag.
   It's a bit primitive, since only one flag is used, which doesn't allow
   matching specific prefixes with suffixes.
   Alternative:
 	PSFX {flag} {pchop} {padd} {pcond} {schop} {sadd}[/flags] {scond}
-- Support two suffixes by adding "/flags" to add part of suffix.
+  We might not need this at all, you can use the NEEDAFFIX flag.
 - When a suffix has more than one syllable, it may count as a word for
   COMPOUNDMAX.
 - Add flags to count extra syllables in a word.  SYLLABLEADDONE

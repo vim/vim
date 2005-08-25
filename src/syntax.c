@@ -5992,7 +5992,8 @@ get_syntax_name(xp, idx)
  * Function called for expression evaluation: get syntax ID at file position.
  */
     int
-syn_get_id(lnum, col, trans, spellp)
+syn_get_id(wp, lnum, col, trans, spellp)
+    win_T	*wp;
     long	lnum;
     colnr_T	col;
     int		trans;	    /* remove transparancy */
@@ -6000,10 +6001,10 @@ syn_get_id(lnum, col, trans, spellp)
 {
     /* When the position is not after the current position and in the same
      * line of the same buffer, need to restart parsing. */
-    if (curwin->w_buffer != syn_buf
+    if (wp->w_buffer != syn_buf
 	    || lnum != current_lnum
 	    || col < current_col)
-	syntax_start(curwin, lnum);
+	syntax_start(wp, lnum);
 
     (void)get_syntax_attr(col, spellp);
 

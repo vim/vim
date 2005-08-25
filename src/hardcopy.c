@@ -876,7 +876,7 @@ hardcopy_line(psettings, page_line, ppos)
 	 */
 	if (psettings->do_syntax)
 	{
-	    id = syn_get_id(ppos->file_line, col, 1, NULL);
+	    id = syn_get_id(curwin, ppos->file_line, col, 1, NULL);
 	    if (id > 0)
 		id = syn_get_final_id(id);
 	    else

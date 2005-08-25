@@ -2916,6 +2916,31 @@ win_line(wp, lnum, startrow, endrow)
 	if (wp->w_p_wrap)
 	    need_showbreak = TRUE;
 #endif
+#ifdef FEAT_SYN_HL
+	/* When spell checking a word we need to figure out the start of the
+	 * word and if it's badly spelled or not. */
+	if (has_spell)
+	{
+	    int		len;
+
+	    pos = wp->w_cursor;
+	    wp->w_cursor.lnum = lnum;
+	    wp->w_cursor.col = ptr - line;
+	    len = spell_move_to(wp, FORWARD, TRUE, TRUE, &spell_attr);
+	    if (len == 0 || wp->w_cursor.col > ptr - line)
+	    {
+		/* no bad word found at line start, don't check until end of a
+		 * word */
+		spell_attr = 0;
+		word_end = spell_to_word_end(ptr, wp->w_buffer) - line + 1;
+	    }
+	    else
+		/* bad word found, use attributes until end of word */
+		word_end = wp->w_cursor.col + len + 1;
+
+	    wp->w_cursor = pos;
+	}
+#endif
     }
 
     /*
