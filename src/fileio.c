@@ -6865,6 +6865,10 @@ show_autocmd(ap, event)
 	    if (got_int)
 		return;
 	    msg_outtrans(ac->cmd);
+#ifdef FEAT_EVAL
+	    if (p_verbose > 0)
+		last_set_msg(ac->scriptID);
+#endif
 	    if (got_int)
 		return;
 	    if (ac->next != NULL)

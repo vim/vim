@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Aug 24
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Aug 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -327,7 +327,7 @@ Various new items					*new-items-7*
 Normal mode commands: ~
 
 a", a' and a`		New text objects to select quoted strings. |a'|
-i", i' and i'		(Taro Muraoka)
+i", i' and i`		(Taro Muraoka)
 
 CTRL-W <Enter>		In the quickfix window: opens a new window to show the
 			location of the error under the cursor.
@@ -565,8 +565,8 @@ For xterm most combinations of modifiers with function keys are recognized.
 
 When 'verbose' is set the output of ":highlight" will show where a highlight
 item was last set.
-When 'verbose' is set the output of ":map", ":command" and ":function"
-commands will show where it was last defined. (Yegappan Lakshmanan)
+When 'verbose' is set the output of the ":map", ":command", ":function" and
+":autocmd" commands will show where it was last defined. (Yegappan Lakshmanan)
 
 ==============================================================================
 IMPROVEMENTS						*improvements-7*
@@ -773,6 +773,11 @@ sorted: user commands, variables, syntax names, etc.
 
 When no locale is set, thus using the "C" locale, Vim will work with latin1
 characters, using it's own isupper()/toupper()/etc. functions.
+
+When using an rxvt terminal emulator guess the value of 'background' using the
+COLORFGBG environment variable. (Ciaran McCreesh)
+
+Also support t_SI and t_EI on Unix with normal features. (Ciaran McCreesh)
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*

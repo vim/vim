@@ -2706,16 +2706,36 @@ mb_prevptr(line, p)
 mb_charlen(str)
     char_u	*str;
 {
-    int count;
+    char_u	*p = str;
+    int		count;
 
-    if (str == NULL)
+    if (p == NULL)
 	return 0;
 
-    for (count = 0; *str != NUL; count++)
-	str += (*mb_ptr2len)(str);
+    for (count = 0; *p != NUL; count++)
+	p += (*mb_ptr2len)(p);
 
     return count;
 }
+
+#if defined(FEAT_SYN_HL) || defined(PROTO)
+/*
+ * Like mb_charlen() but for a string with specified length.
+ */
+    int
+mb_charlen_len(str, len)
+    char_u	*str;
+    int		len;
+{
+    char_u	*p = str;
+    int		count;
+
+    for (count = 0; *p != NUL && p < str + len; count++)
+	p += (*mb_ptr2len)(p);
+
+    return count;
+}
+#endif
 
 /*
  * Try to un-escape a multi-byte character.

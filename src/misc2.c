@@ -1664,7 +1664,7 @@ vim_strbyte(string, c)
 
 /*
  * Search for last occurrence of "c" in "string".
- * return NULL if not found.
+ * Return NULL if not found.
  * Does not handle multi-byte char for "c"!
  */
     char_u  *
@@ -3289,6 +3289,8 @@ parse_shape_opt(what)
     return NULL;
 }
 
+# if defined(MCH_CURSOR_SHAPE) || defined(FEAT_GUI) \
+	|| defined(FEAT_MOUSESHAPE) || defined(PROTO)
 /*
  * Return the index into shape_table[] for the current mode.
  * When "mouse" is TRUE, consider indexes valid for the mouse pointer.
@@ -3346,6 +3348,7 @@ get_shape_idx(mouse)
 #endif
     return SHAPE_IDX_N;
 }
+#endif
 
 # if defined(FEAT_MOUSESHAPE) || defined(PROTO)
 static int old_mouse_shape = 0;

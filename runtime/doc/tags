@@ -4226,6 +4226,7 @@ autocmd-patterns	autocmd.txt	/*autocmd-patterns*
 autocmd-remove	autocmd.txt	/*autocmd-remove*
 autocmd-searchpat	autocmd.txt	/*autocmd-searchpat*
 autocmd-use	autocmd.txt	/*autocmd-use*
+autocmd-verbose	autocmd.txt	/*autocmd-verbose*
 autocmd.txt	autocmd.txt	/*autocmd.txt*
 autocmds-kept	version5.txt	/*autocmds-kept*
 autocommand	autocmd.txt	/*autocommand*

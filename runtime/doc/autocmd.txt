@@ -155,6 +155,17 @@ argument behavior differs from that for defining and removing autocommands.
 In order to list buffer-local autocommands, use a pattern in the form <buffer>
 or <buffer=N>.  See |autocmd-buflocal|.
 
+							*:autocmd-verbose*
+When 'verbose' is non-zero, listing an autocommand will also display where it
+was last defined. Example: >
+
+    :verbose autocmd BufEnter
+    FileExplorer  BufEnter
+	*         call s:LocalBrowse(expand("<amatch>"))
+	    Last set from /usr/share/vim/vim-7.0/plugin/NetrwPlugin.vim
+<
+See |:verbose-cmd| for more information.
+
 ==============================================================================
 5. Events					*autocmd-events* *E215* *E216*
 

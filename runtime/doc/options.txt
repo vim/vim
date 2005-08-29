@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Aug 23
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Aug 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1100,7 +1100,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not available when compiled without the  |+linebreak|
 			feature}
 	This option lets you choose which characters might cause a line
-	break if 'linebreak' is on.
+	break if 'linebreak' is on.  Only works for ASCII and also for 8-bit
+	characters when 'encoding' is an 8-bit encoding.
 
 						*'browsedir'* *'bsdir'*
 'browsedir' 'bsdir'	string	(default: "last")
@@ -7282,7 +7283,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 				   *'wrapscan'* *'ws'* *'nowrapscan'* *'nows'*
 'wrapscan' 'ws'		boolean	(default on)			*E384* *E385*
 			global
-	Searches wrap around the end of the file.
+	Searches wrap around the end of the file.  Also applies to |]s| and
+	|[s|, searching for spelling mistakes.
 
 						   *'write'* *'nowrite'*
 'write'			boolean	(default on)

@@ -4,7 +4,8 @@
 # aap        generate all the .spl files
 # aap diff   create all the diff files
 
-LANG = af am bg ca cs da de el en eo es fr fo gl he hr it nl ny pl sk th yi hu
+LANG = af am bg ca cs da de el en eo es fr fo gl he hr it nl ny pl ru sk
+       th yi hu
 
 # "hu" is at the end, because it takes very long.
 #

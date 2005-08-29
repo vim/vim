@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Aug 25
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Aug 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -31,20 +31,13 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 -------------------- Known bugs and current work -----------------------
 
 Spelling:
-- Use 'wrapscan' for "[s" and "]s"?
-
-- Is there a way to avoid compound IDs taking two utf-8 bytes?
-
-- Make COMPOUNDMIN 3 characters instead of 3 bytes.
-
 - Check support of flags of two characters, numbers (comma separated) and HUH.
   When using many compound flags, does regexp still work?
 
+- "zg" doesn't work for Thai?
+
 - Compound word is accepted if nr of words is <= COMPOUNDMAX OR nr of
   syllables <= COMPOUNDSYLMAX.  Specify AND in the affix file?
-
-- ONLYINCOMPOUND -> NEEDCOMPOUND (also used for affix? or use "needcomp"
-  after affix)
 
 - COMPOUNDMAX -> COMPOUNDWORDMAX?
 
@@ -53,6 +46,8 @@ Spelling:
   the flags of the word.  Adding "compset" on the affixes means the compound
   flags of the word are not used.
   Instead of "SFX a 0 add/FLAGS ." we could use "SFX a 0 add . /FLAGS".
+
+- NEEDCOMPOUND also used for affix?  Or use "needcomp" after affix?
 
 - Do we need a flag for the rule that when compounding is done the following
   word doesn't have a capital after a word character, even for Onecap words?
@@ -1482,6 +1477,10 @@ Multi-byte characters:
 7   In "-- INSERT (lang) --" show the name of the keymap used instead of
     "lang". (Ilya Dogolazky)
 -   Make 'langmap' accept multi-byte characters.
+-   Make 'breakat' accept multi-byte characters.  Problem: can't use a lookup
+    table anymore (breakat_flags[]).
+    Simplistic solution: when 'formatoptions' contains "m" also break a line
+    at a multi-byte character >= 0x100.
 -   Do we need the reverse of 'keymap', like 'langmap' but with files and
     multi-byte characters?  E.g., when using a Russian keyboard.
 -   Add the possibility to enter mappings which are used whenever normal text

@@ -10043,6 +10043,9 @@ f_has(argvars, rettv)
 #ifdef FEAT_CSCOPE
 	"cscope",
 #endif
+#ifdef CURSOR_SHAPE
+	"cursorshape",
+#endif
 #ifdef DEBUG
 	"debug",
 #endif

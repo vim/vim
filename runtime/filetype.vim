@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Aug 24
+" Last Change:	2005 Aug 29
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -1200,7 +1200,7 @@ function! s:FTprogress_asm()
   " This function checks for an assembly comment the first ten lines.
   " If not found, assume Progress.
   let lnum = 1
-  while lnum <= 10
+  while lnum <= 10 && lnum < line('$')
     let line = getline(lnum)
     if line =~ '^\s*;' || line =~ '^\*'
       call s:FTasm()
@@ -1227,9 +1227,9 @@ function! s:FTprogress_pascal()
   " Look for either an opening comment or a program start.
   " If not found, assume Progress.
   let lnum = 1
-  while lnum <= 10
+  while lnum <= 10 && lnum < line('$')
     let line = getline(lnum)
-    if line =~ '^\s*\(program\|procedure\|function\|const\|type\|var\)\>'
+    if line =~ '^\s*\(program\|unit\|procedure\|function\|const\|type\|var\)\>'
 	\ || line =~ '^\s*{' || line =~ '^\s*(\*'
       setf pascal
       return

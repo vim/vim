@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Jul 11
+" Last Change:	2005 Aug 29
 
 " If there already is an option window, jump to that one.
 if bufwinnr("option-window") > 0
@@ -403,6 +403,8 @@ if has("syntax")
   call <SID>OptionL("spc")
   call append("$", "spellsuggest\tmethods used to suggest corrections")
   call <SID>OptionG("sps", &sps)
+  call append("$", "mkspellmem\tamount of memory used by :mkspell before compressing")
+  call <SID>OptionG("msm", &msm)
 endif
 
 

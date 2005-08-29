@@ -460,10 +460,12 @@ serverSendToVim(dpy, name, cmd,  result, server, asExpr, localLoop, silent)
     /*
      * Send the command to target interpreter by appending it to the
      * comm window in the communication window.
+     * Length must be computed exactly!
      */
-    length = STRLEN(name) + STRLEN(cmd) + 14;
 #ifdef FEAT_MBYTE
-    length += STRLEN(p_enc);
+    length = STRLEN(name) + STRLEN(p_enc) + STRLEN(cmd) + 14;
+#else
+    length = STRLEN(name) + STRLEN(cmd) + 10;
 #endif
     property = (char_u *)alloc((unsigned)length + 30);
 
@@ -480,6 +482,7 @@ serverSendToVim(dpy, name, cmd,  result, server, asExpr, localLoop, silent)
     serial++;
     sprintf((char *)property + length, "%c-r %x %d",
 						0, (int_u)commWindow, serial);
+    /* Add length of what "-r %x %d" resulted in, skipping the NUL. */
     length += STRLEN(property + length + 1) + 1;
 
     res = AppendPropCarefully(dpy, w, commProperty, property, length + 1);
@@ -787,9 +790,10 @@ serverSendReply(name, str)
     if (!WindowValid(dpy, win))
 	return -1;
 
-    length = STRLEN(str) + 11;
 #ifdef FEAT_MBYTE
-    length += STRLEN(p_enc);
+    length = STRLEN(p_enc) + STRLEN(str) + 14;
+#else
+    length = STRLEN(str) + 10;
 #endif
     if ((property = (char_u *)alloc((unsigned)length + 30)) != NULL)
     {
@@ -800,6 +804,7 @@ serverSendReply(name, str)
 	sprintf((char *)property, "%cn%c-n %s%c-w %x",
 			    0, 0, str, 0, (unsigned int)commWindow);
 #endif
+	/* Add length of what "%x" resulted in. */
 	length += STRLEN(property + length);
 	res = AppendPropCarefully(dpy, win, commProperty, property, length + 1);
 	vim_free(property);
@@ -1268,11 +1273,12 @@ serverEventProc(dpy, eventPtr)
 		ga_grow(&reply, 50 + STRLEN(p_enc));
 		sprintf(reply.ga_data, "%cr%c-E %s%c-s %s%c-r ",
 						   0, 0, p_enc, 0, serial, 0);
+		reply.ga_len = 14 + STRLEN(serial);
 #else
 		ga_grow(&reply, 50);
 		sprintf(reply.ga_data, "%cr%c-s %s%c-r ", 0, 0, serial, 0);
-#endif
 		reply.ga_len = 10 + STRLEN(serial);
+#endif
 	    }
 	    res = NULL;
 	    if (serverName != NULL && STRICMP(name, serverName) == 0)

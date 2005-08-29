@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Aug 25
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Aug 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -43,6 +43,7 @@ To search for the next misspelled word:
 							*]s* *E756*
 ]s			Move to next misspelled word after the cursor.
 			A count before the command can be used to repeat.
+			'wrapscan' applies.
 
 							*[s*
 [s			Like "]s" but search backwards, find the misspelled
@@ -514,7 +515,7 @@ used spelling files, use this command:
 
 							*:spelldump* *:spelld*
 :spelld[ump]		Open a new window and fill it with all currently valid
-			words.
+			words.  Compound words are not included.
 			Note: For some languages the result may be enormous,
 			causing Vim to run out of memory.
 
@@ -915,6 +916,12 @@ word itself is not a good word.  Example:
 
 	NEEDAFFIX + ~
 
+							*spell-NEEDCOMPOUND*
+The NEEDCOMPOUND flag is used to require that a word is used as part of a
+compound word The word itself is not a good word.  Example:
+
+	NEEDCOMPOUND & ~
+
 
 COMPOUND WORDS						*spell-compound*
 
@@ -988,13 +995,13 @@ A specific example: Allow a compound to be made of two words and a dash:
 This allows for the word "start-end", but not "startend".
 
 							*spell-COMPOUNDMIN*
-The minimal byte length of a word used for concatenation is specified with
+The minimal character length of a word used for compounding is specified with
 COMPOUNDMIN.  Example:
 	COMPOUNDMIN 5 ~
 
-When omitted a minimal length of 3 bytes is used.  Obviously you could just
-leave out the compound flag from short words instead, this feature is present
-for compatibility with Myspell.
+When omitted there is no minimal length.  Obviously you could just leave out
+the compound flag from short words instead, this feature is present for
+compatibility with Myspell.
 
 							*spell-COMPOUNDMAX*
 The maximum number of words that can be concatenated into a compound word is

@@ -55,6 +55,7 @@ void mb_adjust_cursor __ARGS((void));
 void mb_adjustpos __ARGS((pos_T *lp));
 char_u *mb_prevptr __ARGS((char_u *line, char_u *p));
 int mb_charlen __ARGS((char_u *str));
+int mb_charlen_len __ARGS((char_u *str, int len));
 char_u *mb_unescape __ARGS((char_u **pp));
 int mb_lefthalve __ARGS((int row, int col));
 int mb_fix_col __ARGS((int col, int row));

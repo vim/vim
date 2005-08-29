@@ -1,16 +1,6 @@
 test output:
-inputs
-['input', 'puts', 'outputs', 'put']
-comment
-['Comment']
-ok
-['OK', 'uk']
-Ok
-['OK', 'Uk']
-test
-['test', 'Test']
-déôl
-['deol', 'déôr']
+
+test 1-1
 # file: Xtest.latin1.spl
 Comment
 deol
@@ -28,6 +18,25 @@ testn
 the end
 uk
 wrong
+-------
+bad
+['put', 'OK', 'uk']
+inputs
+['input', 'puts', 'outputs']
+comment
+['Comment']
+ok
+['OK', 'uk', 'put']
+Ok
+['OK', 'Uk', 'Put']
+test
+['test', 'Test', 'testn']
+déôl
+['deol', 'déôr', 'test']
+end
+['put', 'test', 'uk']
+the
+['put', 'uk', 'test']
 gebletegek
 kepereneven
 everles gesvets etele
@@ -43,6 +52,8 @@ elequint
 elekwent
 elequint
 elekwint
+
+test 2-1
 # file: Xtest.latin1.spl
 Comment
 deol
@@ -60,18 +71,59 @@ testn
 the end
 uk
 wrong
+-------
+bad
+['put', 'uk', 'OK']
 inputs
-['input', 'puts', 'put', 'outputs']
+['input', 'puts', 'put']
 comment
 ['Comment']
 ok
-['OK', 'uk']
+['OK', 'uk', 'put']
 Ok
-['OK', 'Uk']
+['OK', 'Uk', 'Put']
+end
+['put', 'uk', 'deol']
+the
+['put', 'uk', 'test']
 test
-['test', 'Test']
+['test', 'Test', 'testn']
 déôl
-['deol', 'déôr']
+['deol', 'déôr', 'test']
+
+test 3-3
+# file: Xtest.latin1.spl
+foo
+mï
+-------
+bad
+['foo', 'mï']
+bar
+['foobar', 'foo', 'mï']
+la
+['mï', 'foo']
+foomï
+['foo mï', 'foo', 'foofoo']
+barmï
+['bar mï', 'barfoo', 'barbar']
+mïfoo
+['mï foo', 'foo', 'foofoo']
+mïbar
+['foobar', 'barbar', 'mï']
+mïmï
+['mï mï', 'mï', 'la mï']
+lala
+['la mï']
+mïla
+['mï', 'mï mï']
+lamï
+['la mï', 'mï', 'mï mï']
+foola
+['foo', 'foobar', 'foofoo']
+labar
+['barbar', 'foobar']
+
+test 4-4
 # file: Xtest.latin1.spl
 bork
 prebork
@@ -83,6 +135,9 @@ util
 utilize
 utils
 word
+-------
+bad
+['end', 'bork', 'word']
 wordutilize
 ['word utilize', 'wordutils', 'wordutil']
 pro

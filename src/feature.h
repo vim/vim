@@ -1081,7 +1081,8 @@
 
 /* GUI and some consoles can change the shape of the cursor.  The code is also
  * needed for the 'mouseshape' option. */
-#if defined(FEAT_GUI) || defined(MCH_CURSOR_SHAPE) || defined(FEAT_MOUSESHAPE)
+#if defined(FEAT_GUI) || defined(MCH_CURSOR_SHAPE) || defined(FEAT_MOUSESHAPE) \
+	    || (defined(UNIX) && defined(FEAT_NORMAL))
 # define CURSOR_SHAPE
 #endif
 

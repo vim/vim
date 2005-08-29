@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 7.0aa.  Last change: 2005 Jun 06
+*term.txt*      For Vim version 7.0aa.  Last change: 2005 Aug 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -291,6 +291,7 @@ Added by Vim (there are no standard codes for these):
 	t_WS	set window size (height, width) in characters	*t_WS* *'t_WS'*
 	t_SI    start insert mode (bar cursor shape)            *t_SI* *'t_SI'*
 	t_EI    end insert mode (block cursor shape)            *t_EI* *'t_EI'*
+		|termcap-cursor-shape|
 	t_RV	request terminal version string (for xterm)	*t_RV* *'t_RV'*
 		|xterm-8bit| |v:termresponse| |'ttymouse'| |xterm-codes|
 
@@ -427,6 +428,7 @@ Example for an xterm, this changes the color of the cursor: >
     endif
 NOTE: When Vim exits the shape for Normal mode will remain.  The shape from
 before Vim started will not be restored.
+{not available when compiled without the +cursorshape feature}
 
 							*termcap-title*
 The 't_ts' and 't_fs' options are used to set the window title if the terminal

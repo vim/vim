@@ -8,65 +8,52 @@ STARTTEST
 :" text is in latin1, the test text is utf-8.
 :set enc=latin1
 :e!
-:set fenc=
-:" First generate a .spl file from a .dic and a .aff file.
-gg:/^affstart1/+1,/^affend1/-1w! Xtest.aff
-gg:/^dicstart/+1,/^dicend/-1w! Xtest.dic
 :set enc=utf-8
-:mkspell! Xtest Xtest
+:set fenc=
 :"
-:" use that spell file
-:set spl=Xtest.utf-8.spl
-:set spell
-:func SpellTest()
-/^test1:
-normal ]smm
-let str = spellbadword()
-$put =str
-normal `m
-let lst = spellsuggest(str, 4)
-$put =string(lst)
-normal `m]smm
-let str = spellbadword()
-$put =str
-normal `m
-let lst = spellsuggest(str, 2)
-$put =string(lst)
-normal `m]smm
-let str = spellbadword()
-$put =str
-normal `m
-let lst = spellsuggest(str, 2)
-$put =string(lst)
-normal `m]smm
-let str = spellbadword()
-$put =str
-normal `m
-let lst = spellsuggest(str, 2)
-$put =string(lst)
-normal `m]smm
-let str = spellbadword()
-$put =str
-normal `m
-let lst = spellsuggest(str, 2)
-$put =string(lst)
-normal `m]smm
-let str = spellbadword()
-$put =str
-normal `m
-let lst = spellsuggest(str, 2)
-$put =string(lst)
+:" Function to test .aff/.dic with list of good and bad words.
+:func TestOne(aff, dic)
+  set spellfile=
+  $put =''
+  $put ='test '. a:aff . '-' . a:dic
+  " Generate a .spl file from a .dic and .aff file.
+  exe '1;/^' . a:aff . 'affstart/+1,/^' . a:aff . 'affend/-1w! Xtest.aff'
+  exe '1;/^' . a:dic . 'dicstart/+1,/^' . a:dic . 'dicend/-1w! Xtest.dic'
+  mkspell! Xtest Xtest
+  " use that spell file
+  set spl=Xtest.utf-8.spl spell
+  " list all valid words
+  spelldump
+  %yank
+  quit
+  $put
+  $put ='-------'
+  " find all bad words and suggestions for them
+  exe '1;/^' . a:aff . 'good:'
+  normal 0f:]s
+  let prevbad = ''
+  while 1
+    let bad = spellbadword()
+    if bad == '' || bad == prevbad || bad == 'badend'
+      break
+    endif
+    let prevbad = bad
+    let lst = spellsuggest(bad, 3)
+    normal mm
+    $put =bad
+    $put =string(lst)
+    normal `m]s
+  endwhile
 endfunc
-:call SpellTest()
-:spelldump
-1GyG:q
-:$put
+:"
+:call TestOne('1', '1')
 :$put =soundfold('goobledygoook')
 :$put =soundfold('kÃ³opÃ«rÃ¿nÃ´ven')
 :$put =soundfold('oeverloos gezwets edale')
 :"
+:"
 :" and now with SAL instead of SOFO items; test automatic reloading
-gg:/^affstart2/+1,/^affend2/-1w! Xtest.aff
+gg:/^affstart_sal/+1,/^affend_sal/-1w! Xtest.aff
 :mkspell! Xtest Xtest
 :$put =soundfold('goobledygoook')
 :$put =soundfold('kÃ³opÃ«rÃ¿nÃ´ven')
@@ -105,20 +92,16 @@ gg:/^addstart/+1,/^addend/-1w! Xtest.utf-8.add
 :$put =str
 :"
 :" Postponed prefixes
-gg:/^affstart3/+1,/^affend3/-1w! Xtest.aff
-:mkspell! Xtest Xtest
-:set spellfile=
-:set spl=Xtest.utf-8.spl
-:mess
-:spelldump
-1GyG:q
-:$put
-:call SpellTest()
+:call TestOne('2', '1')
+:"
+:" Compound words
+:call TestOne('3', '3')
+:call TestOne('4', '4')
 :"
 gg:/^test output:/,$wq! test.out
 ENDTEST
 
-affstart1
+1affstart
 SET ISO8859-1
 TRY esianrtolcdugmphbyfvkwjkqxz-ëéèêïîäàâöüû'ESIANRTOLCDUGMPHBYFVKWJKQXZ
 
@@ -167,9 +150,9 @@ MAP nñ
 MAP cç
 MAP yÿı
 MAP sß
-affend1
+1affend
 
-affstart2
+affstart_sal
 SET ISO8859-1
 TRY esianrtolcdugmphbyfvkwjkqxz-ëéèêïîäàâöüû'ESIANRTOLCDUGMPHBYFVKWJKQXZ
 
@@ -323,9 +306,9 @@ SAL X                    KS
 SAL Y(AEIOU)-            Y
 SAL ZZ-                  _
 SAL Z                    S
-affend2
+affend_sal
 
-affstart3
+2affstart
 SET ISO8859-1
 
 FOL  àáâãäåæçèéêëìíîïğñòóôõöøùúûüışßÿ
@@ -372,9 +355,9 @@ MAP nñ
 MAP cç
 MAP yÿı
 MAP sß
-affend3
+2affend
 
-dicstart
+1dicstart
 123456
 test/NO
 # comment
@@ -386,7 +369,7 @@ put/ISO
 the end
 deol
 déôr
-dicend
+1dicend
 
 addstart
 /regions=usgbnz
@@ -394,17 +377,105 @@ elequint/2
 elekwint/3
 addend
 
-test1:
-inputs	wrong
-comment	wrong
-puts	OK
-ok	wrong
-Ok	wrong
-the end.  test wrong
-dÃ©Ã´l
+1good: wrong OK puts. Test the end
+bad:  inputs comment ok Ok. test dÃ©Ã´l end the
+badend
+
+2good: puts
+bad: inputs comment ok Ok end the. test dÃ©Ã´l
+badend
+
+Test rules for compounding.
+
+3affstart
+SET ISO8859-1
+
+COMPOUNDMIN 3
+COMPOUNDFLAGS m*
+NEEDCOMPOUND x
+3affend
+
+3dicstart
+1234
+foo/m
+bar/mx
+mï/m
+la/mx
+3dicend
+
+3good: foo mÃ¯ foobar foofoobar barfoo barbarfoo
+bad: bar la foomÃ¯ barmÃ¯ mÃ¯foo mÃ¯bar mÃ¯mÃ¯ lala mÃ¯la lamÃ¯ foola labar
+badend
+
+
+Tests for compounding.
+
+4affstart
+SET ISO8859-1
+
+FOL  àáâãäåæçèéêëìíîïğñòóôõöøùúûüışßÿ
+LOW  àáâãäåæçèéêëìíîïğñòóôõöøùúûüışßÿ
+UPP  ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏĞÑÒÓÔÕÖØÙÚÛÜİŞßÿ
+
+COMPOUNDFLAGS m+
+COMPOUNDFLAGS sm*e
+COMPOUNDFLAGS sm+
+COMPOUNDMIN 3
+COMPOUNDMAX 3
+
+COMPOUNDSYLMAX 5
+SYLLABLE aáeéiíoóöõuúüûy/aa/au/ea/ee/ei/ie/oa/oe/oo/ou/uu/ui
+
+MAP 9
+MAP aàáâãäå
+MAP eèéêë
+MAP iìíîï
+MAP oòóôõö
+MAP uùúûü
+MAP nñ
+MAP cç
+MAP yÿı
+MAP sß
+
+NEEDAFFIX x
+
+PFXPOSTPONE
+
+MIDWORD '-
+
+SFX q N 1
+SFX q   0    -ok .
+
+SFX a Y 2
+SFX a 0 s .
+SFX a 0 ize . nocomp
+
+PFX p N 1
+PFX p 0 pre .
+4affend
+
+4dicstart
+1234
+word/m
+util/am
+pro/xq
+tomato/m
+bork/mp
+start/s
+end/e
+4dicend
+
+4good: word util bork prebork start end wordutil wordutils pro-ok
+	bork borkbork borkborkbork borkborkborkbork borkborkborkborkbork
+	tomato tomatotomato startend startword startwordword startwordend
+	startwordwordend startwordwordwordend prebork preborkprebork
+	preborkborkprebork preborkpreborkbork
+bad: wordutilize pro borkborkborkborkborkbork tomatotomatotomato
+	endstart endend startstart wordend wordstart
+ 	startwordwordwordwordend borkpreborkpreborkbork
+badend
 
 test2:
 elequint test elekwint test elekwent asdf
-
 
 test output:

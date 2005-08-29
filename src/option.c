@@ -3257,6 +3257,8 @@ set_init_2()
 
 #if !((defined(MSDOS) || defined(OS2) || defined(WIN3264)) && !defined(FEAT_GUI))
     {
+	char_u	*p;
+
 	/*
 	 * If 'background' wasn't set by the user, try guessing the value,
 	 * depending on the terminal name.  Only need to check for terminals
@@ -3264,16 +3266,24 @@ set_init_2()
 	 * "linux"	    Linux console
 	 * "screen.linux"   Linux console with screen
 	 * "cygwin"	    Cygwin shell
+	 * We also check the COLORFGBG environment variable, which is set by
+	 * rxvt and derivatives. This variable contains either two or three
+	 * values separated by semicolons; we want the last value in either
+	 * case. If this value is 0-6 or 8, our background is dark.
 	 */
 	idx = findoption((char_u *)"bg");
 	if (!(options[idx].flags & P_WAS_SET)
 		&& (STRCMP(T_NAME, "linux") == 0
 		    || STRCMP(T_NAME, "screen.linux") == 0
-		    || STRCMP(T_NAME, "cygwin") == 0))
+		    || STRCMP(T_NAME, "cygwin") == 0
+		    || ((p = mch_getenv("COLORFGBG")) != NULL
+			&& (p = vim_strrchr(p, ';')) != NULL
+			&& ((p[1] >= '0' && p[1] <= '6') || p[1] == '8')
+			&& p[2] == NUL)))
 	{
 	    set_string_option_direct(NULL, idx, (char_u *)"dark", OPT_FREE);
-	    /* don't mark it as set, when starting the GUI it may be changed
-	     * again */
+	    /* don't mark it as set, when starting the GUI it may be
+	     * changed again */
 	    options[idx].flags &= ~P_WAS_SET;
 	}
     }
@@ -9777,15 +9787,15 @@ compatible_set()
     static void
 fill_breakat_flags()
 {
-    char_u	*c;
+    char_u	*p;
     int		i;
 
     for (i = 0; i < 256; i++)
 	breakat_flags[i] = FALSE;
 
     if (p_breakat != NULL)
-	for (c = p_breakat; *c; c++)
-	    breakat_flags[*c] = TRUE;
+	for (p = p_breakat; *p; p++)
+	    breakat_flags[*p] = TRUE;
 }
 
 # if defined(__BORLANDC__) && (__BORLANDC__ < 0x500)
