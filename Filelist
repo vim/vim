@@ -377,6 +377,7 @@ SRC_MAC =	\
 		src/os_mac.pbproj/project.pbxproj \
 		src/proto/gui_mac.pro \
 		src/proto/os_mac.pro \
+		src/proto/os_mac_conv.pro \
 
 # source files for VMS (in the extra archive)
 SRC_VMS =	\

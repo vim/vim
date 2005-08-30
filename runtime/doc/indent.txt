@@ -1,4 +1,4 @@
-*indent.txt*    For Vim version 7.0aa.  Last change: 2005 Mar 29
+*indent.txt*    For Vim version 7.0aa.  Last change: 2005 Aug 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -449,7 +449,7 @@ $VIMRUNTIME/indent directory for examples.
 REMARKS ABOUT SPECIFIC INDENT FILES ~
 
 
-FORTRAN							*fortran-indent*
+FORTRAN							*ft-fortran-indent*
 
 Block if, select case, and where constructs are indented.  Comments, labelled
 statements and continuation lines are indented if the Fortran is in free
@@ -457,7 +457,7 @@ source form, whereas they are not indented if the Fortran is in fixed source
 form because of the left margin requirements.  Hence manual indent corrections
 will be necessary for labelled statements and continuation lines when fixed
 source form is being used.  For further discussion of the method used for the
-detection of source format see |fortran-syntax|.
+detection of source format see |ft-fortran-syntax|.
 
 Do loops ~
 All do loops are left unindented by default.  Do loops can be unstructured in
@@ -485,7 +485,7 @@ to get do loops indented in .f90 files and left alone in Fortran files with
 other extensions such as .for.
 
 
-PYTHON							*python-indent*
+PYTHON							*ft-python-indent*
 
 The amount of indent can be set for the following situations.  The examples
 given are de the defaults.  Note that the variables are set to an expression,
@@ -499,7 +499,7 @@ Indent for a continuation line: >
 	let g:pyindent_continue = '&sw * 2'
 
 
-VERILOG							*verilog-indent*
+VERILOG							*ft-verilog-indent*
 
 General block statements such as if, for, case, always, initial, function,
 specify and begin, etc., are indented.  The module block statements (first
@@ -534,7 +534,7 @@ In addition, you can turn the verbose mode for debug issue: >
 Make sure to do ":set cmdheight=2" first to allow the display of the message.
 
 
-VIM							*vim-indent*
+VIM							*ft-vim-indent*
 
 For indenting Vim scripts there is one variable that specifies the amount of
 indent for a continuation line, a line that starts with a backslash: >

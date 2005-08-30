@@ -2994,7 +2994,7 @@ set_init_1()
 		    kLocaleRegionMask | kLocaleRegionVariantMask,
 		    sizeof buf, buf) == noErr && *buf)
 	{
-	    vim_setenv("LANG", buf);
+	    vim_setenv((char_u *)"LANG", (char_u *)buf);
 #   ifdef HAVE_LOCALE_H
 	    setlocale(LC_ALL, "");
 #   endif

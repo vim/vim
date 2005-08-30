@@ -173,17 +173,6 @@ static int  have_wildcard __ARGS((int, char_u **));
 static int  have_dollars __ARGS((int, char_u **));
 #endif
 
-#ifndef NO_EXPANDPATH
-# if defined(MACOS_X) && defined(FEAT_MBYTE)
-extern char_u	*mac_precompose_path __ARGS((char_u *decompPath, size_t decompLen, size_t *precompLen));
-# endif
-#endif
-
-#if defined(MACOS_X) && defined(FEAT_MBYTE)
-extern void	mac_conv_init __ARGS((void));
-extern void	mac_conv_cleanup __ARGS((void));
-#endif
-
 #ifndef __EMX__
 static int save_patterns __ARGS((int num_pat, char_u **pat, int *num_file, char_u ***file));
 #endif

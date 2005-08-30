@@ -1,4 +1,4 @@
-*filetype.txt*  For Vim version 7.0aa.  Last change: 2005 Aug 24
+*filetype.txt*  For Vim version 7.0aa.  Last change: 2005 Aug 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -44,15 +44,21 @@ Detail: The ":filetype on" command will load one of these files:
 	name, the file $VIMRUNTIME/scripts.vim is used to detect it from the
 	contents of the file.
 
-To add your own file types, see |new-filetype| below.
+To add your own file types, see |new-filetype| below.  To search for help on a
+filetype prepend "ft-" and optionally append "-syntax", "-indent" or
+"-plugin".  For example: >
+	:help ft-vim-indent
+	:help ft-vim-syntax
+	:help ft-man-plugin
 
 If the file type is not detected automatically, or it finds the wrong type,
 you can either set the 'filetype' option manually, or add a modeline to your
 file.  Example, for in an IDL file use the command: >
 	:set filetype=idl
-or add this |modeline| to the file: >
-	/* vim: set filetype=idl : */
-<
+
+or add this |modeline| to the file:
+	/* vim: set filetype=idl : */ ~
+
 						*:filetype-plugin-on*
 You can enable loading the plugin files for specific file types with: >
 	:filetype plugin on
@@ -132,16 +138,16 @@ kind of file it is.  This doesn't always work.  A number of global variables
 can be used to overrule the filetype used for certain extensions:
 
 	file name	variable ~
-	*.asa		g:filetype_asa	|aspvbs-syntax| |aspperl-syntax|
-	*.asp		g:filetype_asp	|aspvbs-syntax| |aspperl-syntax|
-	*.asm		g:asmsyntax	|asm-syntax|
+	*.asa		g:filetype_asa	|ft-aspvbs-syntax| |ft-aspperl-syntax|
+	*.asp		g:filetype_asp	|ft-aspvbs-syntax| |ft-aspperl-syntax|
+	*.asm		g:asmsyntax	|ft-asm-syntax|
 	*.prg		g:filetype_prg
 	*.pl		g:filetype_pl
 	*.inc		g:filetype_inc
-	*.w		g:filetype_w	|cweb-syntax|
-	*.i		g:filetype_i	|progress-syntax|
-	*.p		g:filetype_p	|pascal-syntax|
-	*.sh		g:bash_is_sh	|sh-syntax|
+	*.w		g:filetype_w	|ft-cweb-syntax|
+	*.i		g:filetype_i	|ft-progress-syntax|
+	*.p		g:filetype_p	|ft-pascal-syntax|
+	*.sh		g:bash_is_sh	|ft-sh-syntax|
 
 							*filetype-ignore*
 To avoid that certain files are being inspected, the g:ft_ignore_pat variable
@@ -380,7 +386,7 @@ ways to change this:
 3.  Docs for the default filetype plugins.		*ftplugin-docs*
 
 
-CHANGELOG						*changelog-plugin*
+CHANGELOG						*ft-changelog-plugin*
 
 Allows for easy entrance of Changelog entries in Changelog files.  There are
 some commands, mappings, and variables worth exploring:
@@ -466,7 +472,7 @@ under it.  If not found, a new entry and item is prepended to the beginning of
 the Changelog.
 
 
-FORTRAN							*fortran-plugin*
+FORTRAN							*ft-fortran-plugin*
 
 Options:
 'expandtab'	is switched on to avoid tabs as required by the Fortran
@@ -476,10 +482,10 @@ Options:
 'formatoptions' is set to break code and comment lines and to preserve long
 		lines.  You can format comments with |gq|.
 For further discussion of fortran_have_tabs and the method used for the
-detection of source format see |fortran-syntax|.
+detection of source format see |ft-fortran-syntax|.
 
 
-MAIL							*mail-plugin*
+MAIL							*ft-mail-plugin*
 
 Options:
 'modeline'	is switched off to avoid the danger of trojan horses, and to
@@ -496,7 +502,7 @@ Local mappings:
 	to the end of the file in Normal mode.  This means "> " is inserted in
 	each line.
 
-MAN							*man-plugin* *:Man*
+MAN							*ft-man-plugin* *:Man*
 
 Displays a manual page in a nice way.  Also see the user manual
 |find-manpage|.
@@ -523,7 +529,7 @@ CTRL-]		Jump to the manual page for the word under the cursor.
 CTRL-T		Jump back to the previous manual page.
 
 
-RPM SPEC						*spec-plugin*
+RPM SPEC						*ft-spec-plugin*
 
 Since the text for this plugin is rather long it has been put in a separate
 file: |pi_spec.txt|.

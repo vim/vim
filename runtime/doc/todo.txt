@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Aug 29
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Aug 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,58 +30,16 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Spelling:
-- Check support of flags of two characters, numbers (comma separated) and HUH.
-  When using many compound flags, does regexp still work?
+Mac:
+- strings.h is bogus, add configure check.
+- GUI: pasting lines results in ^M instead of line breaks. (Benjamin Esham)
+- "cp -R ../runtime appdir" may copy way too much.
 
-- "zg" doesn't work for Thai?
+cmdline_at_end() and cmdline_overstrike() may not be used.
 
-- Compound word is accepted if nr of words is <= COMPOUNDMAX OR nr of
-  syllables <= COMPOUNDSYLMAX.  Specify AND in the affix file?
+Ruby: documentation for window width (Wind)
 
-- COMPOUNDMAX -> COMPOUNDWORDMAX?
-
-- Support flags on a suffix.  Used for second level affixes.
-  The flags may also be used for compounding.  Default is an OR mechanism with
-  the flags of the word.  Adding "compset" on the affixes means the compound
-  flags of the word are not used.
-  Instead of "SFX a 0 add/FLAGS ." we could use "SFX a 0 add . /FLAGS".
-
-- NEEDCOMPOUND also used for affix?  Or use "needcomp" after affix?
-
-- Do we need a flag for the rule that when compounding is done the following
-  word doesn't have a capital after a word character, even for Onecap words?
-
-- Also see tklspell: http://tkltrans.sourceforge.net/
-- New hunspell home page: http://hunspell.sourceforge.net/
-    - Lots of code depends on LANG, that isn't right.  Enable each mechanism
-      in the affix file separately.
-    - Example with compounding dash is bad, gets in the way of setting
-      COMPOUNDMIN and COMPOUNDMAX to a reasonable value.
-    - PSEUDOROOT == NEEDAFFIX
-    - COMPOUNDROOT -> COMPOUNDED?  For a word that already is a compound word
-	    Or use COMPOUNDED2, COMPOUNDED3, etc.
-- CIRCUMFIX: when a word uses a prefix marked with the CIRCUMFIX flag,
-  then the word must also have a suffix marked with the CIRCUMFIX flag.
-  It's a bit primitive, since only one flag is used, which doesn't allow
-  matching specific prefixes with suffixes.
-  Alternative:
-	PSFX {flag} {pchop} {padd} {pcond} {schop} {sadd}[/flags] {scond}
-  We might not need this at all, you can use the NEEDAFFIX flag.
-- When a suffix has more than one syllable, it may count as a word for
-  COMPOUNDMAX.
-- Add flags to count extra syllables in a word.  SYLLABLEADDONE
-  SYLLABLEADDTWO, etc.?  Or make it possible to specify the syllable count
-  of a word directly, after another slash: /abc/3
-- MORPHO items ignores morphological items: after word and affix
-
-- Implement multiple flags for compound words and CMP item?
-  Await comments from other spell checking authors.
-
-Help tags: something to make it easy to find help about a certain filetype?
-    use ft-c-syntax ft-c-ftplugin etc.?
-
-Mac GUI: pasting lines results in ^M instead of line breaks. (Benjamin Esham)
+Add a few more languages for spell checking.
 
 Mac unicode patch (Da Woon Jung):
 - selecting proportional font breaks display
@@ -1348,6 +1306,43 @@ User Friendlier:
 Spell checking:
 9   Work together with OpenOffice.org to update the wordlists.  (Adri Verhoef,
     Aad Nales)  Setup vim-spell maillist?
+-   Compound word is accepted if nr of words is <= COMPOUNDMAX OR nr of
+    syllables <= COMPOUNDSYLMAX.  Specify using AND in the affix file?
+-   COMPOUNDMAX -> COMPOUNDWORDMAX?
+-   Support flags on a suffix.  Used for second level affixes.  The flags may
+    also be used for compounding.  Default is an OR mechanism with the flags
+    of the word.  Adding "compset" on the affixes means the compound flags of
+    the word are not used.  Instead of "SFX a 0 add/FLAGS ." we could use "SFX
+    a 0 add . /FLAGS" (or support both).
+-   NEEDCOMPOUND also used for affix?  Or use "needcomp" after affix?
+-   Do we need a flag for the rule that when compounding is done the following
+    word doesn't have a capital after a word character, even for Onecap words?
+-   New hunspell home page: http://hunspell.sourceforge.net/
+    - Lots of code depends on LANG, that isn't right.  Enable each mechanism
+      in the affix file separately.
+    - Example with compounding dash is bad, gets in the way of setting
+      COMPOUNDMIN and COMPOUNDMAX to a reasonable value.
+    - PSEUDOROOT == NEEDAFFIX
+    - COMPOUNDROOT -> COMPOUNDED?  For a word that already is a compound word
+	    Or use COMPOUNDED2, COMPOUNDED3, etc.
+-   CIRCUMFIX: when a word uses a prefix marked with the CIRCUMFIX flag, then
+    the word must also have a suffix marked with the CIRCUMFIX flag.  It's a
+    bit primitive, since only one flag is used, which doesn't allow matching
+    specific prefixes with suffixes.
+    Alternative:
+	PSFX {flag} {pchop} {padd} {pcond} {schop} {sadd}[/flags] {scond}
+    We might not need this at all, you can use the NEEDAFFIX flag and the
+    affix which is required.
+-   When a suffix has more than one syllable, it may count as a word for
+    COMPOUNDMAX.
+-   Add flags to count extra syllables in a word.  SYLLABLEADD1 SYLLABLEADD2,
+    etc.?  Or make it possible to specify the syllable count of a word
+    directly, e.g., after another slash: /abc/3
+-   MORPHO item in affix file: ignore morphological fields after word and
+    affix.
+-   Implement multiple flags for compound words and CMP item?
+    Await comments from other spell checking authors.
+-   Also see tklspell: http://tkltrans.sourceforge.net/
 8   Charles Campbell asks for method to add "contained" groups to existing
     syntax items (to add @Spell).
     Add ":syntax contains {pattern} add=@Spell" command?  A bit like ":syn

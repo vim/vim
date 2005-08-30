@@ -94,10 +94,6 @@ static EventHandlerUPP mouseWheelHandlerUPP = NULL;
 #if defined(USE_CARBONIZED) && defined(FEAT_MBYTE)
 # define USE_CARBONKEYHANDLER
 static EventHandlerUPP keyEventHandlerUPP = NULL;
-/* Defined in os_mac_conv.c */
-extern char_u *mac_utf16_to_enc __ARGS((UniChar *from, size_t fromLen, size_t *actualLen));
-extern UniChar *mac_enc_to_utf16 __ARGS((char_u *from, size_t fromLen, size_t *actualLen));
-extern CFStringRef mac_enc_to_cfstring __ARGS((char_u *from, size_t fromLen));
 #endif
 
 #ifdef MACOS_X
@@ -1618,7 +1614,7 @@ InstallFontPanelHandler()
  */
 #define FONT_STYLE_BUFFER_SIZE 32
     static void
-GetFontPanelSelection(char_u* outName)
+GetFontPanelSelection(char_u *outName)
 {
     Str255	    buf;
     ByteCount	    fontNameLen = 0;
@@ -1639,12 +1635,12 @@ GetFontPanelSelection(char_u* outName)
 	 * get an unwanted utf-16 name) */
 	if (ATSUFindFontName(fid, kFontFullName, kFontMacintoshPlatform,
 		    kFontNoScriptCode, kFontNoLanguageCode,
-		    255, outName, &fontNameLen, NULL) != noErr)
+		    255, (char *)outName, &fontNameLen, NULL) != noErr)
 	    return;
 
 	/* Only encode font size, because style (bold, italic, etc) is
 	 * already part of the font full name */
-	vim_snprintf(styleString, FONT_STYLE_BUFFER_SIZE, ":h%d",
+	vim_snprintf((char *)styleString, FONT_STYLE_BUFFER_SIZE, ":h%d",
 		gFontPanelInfo.size/*,
 		((gFontPanelInfo.style & bold)!=0 ? ":b" : ""),
 		((gFontPanelInfo.style & italic)!=0 ? ":i" : ""),
@@ -1655,7 +1651,7 @@ GetFontPanelSelection(char_u* outName)
     }
     else
     {
-	*outName = NULL;
+	*outName = NUL;
     }
 }
 #endif

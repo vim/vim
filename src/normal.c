@@ -4678,6 +4678,18 @@ dozet:
 								      == FAIL)
 			return;
 # endif
+		    if (ptr == NULL)
+		    {
+			pos_T	pos = curwin->w_cursor;
+			int	attr;
+
+			/* Find bad word under the cursor. */
+			len = spell_move_to(curwin, FORWARD, TRUE, TRUE, &attr);
+			if (len != 0 && curwin->w_cursor.col <= pos.col)
+			    ptr = ml_get_pos(&curwin->w_cursor);
+			curwin->w_cursor = pos;
+		    }
+
 		    if (ptr == NULL && (len = find_ident_under_cursor(&ptr,
 							    FIND_IDENT)) == 0)
 			return;

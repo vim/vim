@@ -1515,8 +1515,6 @@ retry:
 # ifdef MACOS_X
 	    if (fio_flags & FIO_MACROMAN)
 	    {
-		extern int macroman2enc __ARGS((char_u *ptr, long *sizep, long
-			    real_size));
 		/*
 		 * Conversion from Apple MacRoman char encoding to UTF-8 or
 		 * latin1.  This is in os_mac_conv.c.
@@ -4815,9 +4813,6 @@ buf_write_bytes(ip)
 	     */
 	    char_u	*from;
 	    size_t	fromlen;
-	    extern int enc2macroman __ARGS((char_u *from, size_t fromlen,
-			char_u *to, int *tolenp, int maxtolen, char_u *rest,
-			int *restlenp));
 
 	    if (ip->bw_restlen > 0)
 	    {

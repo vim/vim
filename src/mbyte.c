@@ -5788,11 +5788,6 @@ convert_input_safe(ptr, len, maxlen, restp, restlenp)
     return dlen;
 }
 
-#if defined(MACOS_X)
-/* This is in os_mac_conv.c. */
-extern char_u *mac_string_convert __ARGS((char_u *ptr, int len, int *lenp, int fail_on_error, int from, int to, int *unconvlenp));
-#endif
-
 /*
  * Convert text "ptr[*lenp]" according to "vcp".
  * Returns the result in allocated memory and sets "*lenp".

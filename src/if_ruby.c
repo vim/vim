@@ -191,7 +191,7 @@ static int (*dll_rb_w32_snprintf)(char*, size_t, const char*, ...);
 static HINSTANCE hinstRuby = 0; /* Instance of ruby.dll */
 
 /*
- * Table of name to function pointer of python.
+ * Table of name to function pointer of ruby.
  */
 #define RUBY_PROC FARPROC
 static struct
@@ -768,6 +768,24 @@ static VALUE window_set_height(VALUE self, VALUE height)
     return height;
 }
 
+static VALUE window_width(VALUE self)
+{
+    win_T *win = get_win(self);
+
+    return INT2NUM(win->w_width);
+}
+
+static VALUE window_set_width(VALUE self, VALUE width)
+{
+    win_T *win = get_win(self);
+    win_T *savewin = curwin;
+
+    curwin = win;
+    win_setwidth(NUM2INT(width));
+    curwin = savewin;
+    return width;
+}
+
 static VALUE window_cursor(VALUE self)
 {
     win_T *win = get_win(self);
@@ -860,6 +878,8 @@ static void ruby_vim_init(void)
     rb_define_method(cVimWindow, "buffer", window_buffer, 0);
     rb_define_method(cVimWindow, "height", window_height, 0);
     rb_define_method(cVimWindow, "height=", window_set_height, 1);
+    rb_define_method(cVimWindow, "width", window_width, 0);
+    rb_define_method(cVimWindow, "width=", window_set_width, 1);
     rb_define_method(cVimWindow, "cursor", window_cursor, 0);
     rb_define_method(cVimWindow, "cursor=", window_set_cursor, 1);
 

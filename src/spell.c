@@ -375,7 +375,7 @@ struct slang_S
     char_u	*sl_midword;	/* MIDWORD string or NULL */
 
     int		sl_compmax;	/* COMPOUNDMAX (default: MAXWLEN) */
-    int		sl_compminlen;	/* COMPOUNDMIN (default: MAXWLEN) */
+    int		sl_compminlen;	/* COMPOUNDMIN (default: 0) */
     int		sl_compsylmax;	/* COMPOUNDSYLMAX (default: MAXWLEN) */
     regprog_T	*sl_compprog;	/* COMPOUNDFLAGS turned into a regexp progrm
 				 * (NULL when no compounding) */
@@ -1299,7 +1299,7 @@ find_word(mip, mode)
 		/* For multi-byte chars check character length against
 		 * COMPOUNDMIN. */
 		if (has_mbyte
-			&& slang->sl_compminlen < MAXWLEN
+			&& slang->sl_compminlen > 0
 			&& mb_charlen_len(mip->mi_word + mip->mi_compoff,
 				wlen - mip->mi_compoff) < slang->sl_compminlen)
 			continue;
@@ -1388,6 +1388,8 @@ find_word(mip, mode)
 	    {
 		int	save_result = mip->mi_result;
 		char_u	*save_end = mip->mi_end;
+		langp_T	*save_lp = mip->mi_lp;
+		int	lpi;
 
 		/* Check that a valid word follows.  If there is one and we
 		 * are compounding, it will set "mi_result", thus we are
@@ -1417,25 +1419,43 @@ find_word(mip, mode)
 #endif
 		c = mip->mi_compoff;
 		++mip->mi_complen;
-		find_word(mip, FIND_COMPOUND);
 
-		/* When NOBREAK any word that matches is OK.  Otherwise we
-		 * need to find the longest match, thus try with keep-case and
-		 * prefix too. */
-		if (!slang->sl_nobreak || mip->mi_result == SP_BAD)
+		/* For NOBREAK we need to try all NOBREAK languages, at least
+		 * to find the ".add" file(s). */
+		for (lpi = 0; lpi < mip->mi_buf->b_langp.ga_len; ++lpi)
 		{
-		    /* Find following word in keep-case tree. */
-		    mip->mi_compoff = wlen;
-		    find_word(mip, FIND_KEEPCOMPOUND);
+		    if (slang->sl_nobreak)
+		    {
+			mip->mi_lp = LANGP_ENTRY(mip->mi_buf->b_langp, lpi);
+			if (mip->mi_lp->lp_slang->sl_fidxs == NULL
+					 || !mip->mi_lp->lp_slang->sl_nobreak)
+			    continue;
+		    }
 
+		    find_word(mip, FIND_COMPOUND);
+
+		    /* When NOBREAK any word that matches is OK.  Otherwise we
+		     * need to find the longest match, thus try with keep-case
+		     * and prefix too. */
 		    if (!slang->sl_nobreak || mip->mi_result == SP_BAD)
 		    {
-			/* Check for following word with prefix. */
-			mip->mi_compoff = c;
-			find_prefix(mip, FIND_COMPOUND);
+			/* Find following word in keep-case tree. */
+			mip->mi_compoff = wlen;
+			find_word(mip, FIND_KEEPCOMPOUND);
+
+			if (!slang->sl_nobreak || mip->mi_result == SP_BAD)
+			{
+			    /* Check for following word with prefix. */
+			    mip->mi_compoff = c;
+			    find_prefix(mip, FIND_COMPOUND);
+			}
 		    }
+
+		    if (!slang->sl_nobreak)
+			break;
 		}
 		--mip->mi_complen;
+		mip->mi_lp = save_lp;
 
 		if (slang->sl_nobreak)
 		{
@@ -2037,6 +2057,13 @@ spell_cat_line(buf, line, maxlen)
     }
 }
 
+typedef struct spelload_S
+{
+    char_u  sl_lang[MAXWLEN + 1];	/* language name */
+    slang_T *sl_slang;			/* resulting slang_T struct */
+    int	    sl_nobreak;			/* NOBREAK language found */
+} spelload_T;
+
 /*
  * Load word list(s) for "lang" from Vim spell file(s).
  * "lang" must be the language without the region: e.g., "en".
@@ -2047,35 +2074,37 @@ spell_load_lang(lang)
 {
     char_u	fname_enc[85];
     int		r;
-    char_u	langcp[MAXWLEN + 1];
+    spelload_T	sl;
 
     /* Copy the language name to pass it to spell_load_cb() as a cookie.
      * It's truncated when an error is detected. */
-    STRCPY(langcp, lang);
+    STRCPY(sl.sl_lang, lang);
+    sl.sl_slang = NULL;
+    sl.sl_nobreak = FALSE;
 
     /*
      * Find the first spell file for "lang" in 'runtimepath' and load it.
      */
     vim_snprintf((char *)fname_enc, sizeof(fname_enc) - 5,
 					"spell/%s.%s.spl", lang, spell_enc());
-    r = do_in_runtimepath(fname_enc, FALSE, spell_load_cb, &langcp);
+    r = do_in_runtimepath(fname_enc, FALSE, spell_load_cb, &sl);
 
-    if (r == FAIL && *langcp != NUL)
+    if (r == FAIL && *sl.sl_lang != NUL)
     {
 	/* Try loading the ASCII version. */
 	vim_snprintf((char *)fname_enc, sizeof(fname_enc) - 5,
 						  "spell/%s.ascii.spl", lang);
-	r = do_in_runtimepath(fname_enc, FALSE, spell_load_cb, &langcp);
+	r = do_in_runtimepath(fname_enc, FALSE, spell_load_cb, &sl);
     }
 
     if (r == FAIL)
 	smsg((char_u *)_("Warning: Cannot find word list \"%s.%s.spl\" or \"%s.ascii.spl\""),
 						     lang, spell_enc(), lang);
-    else if (*langcp != NUL)
+    else if (sl.sl_slang != NULL)
     {
-	/* Load all the additions. */
+	/* At least one file was loaded, now load all the additions. */
 	STRCPY(fname_enc + STRLEN(fname_enc) - 3, "add.spl");
-	do_in_runtimepath(fname_enc, TRUE, spell_load_cb, &langcp);
+	do_in_runtimepath(fname_enc, TRUE, spell_load_cb, &sl);
     }
 }
 
@@ -2122,7 +2151,6 @@ slang_alloc(lang)
 	lp->sl_name = vim_strsave(lang);
 	ga_init2(&lp->sl_rep, sizeof(fromto_T), 10);
 	lp->sl_compmax = MAXWLEN;
-	lp->sl_compminlen = MAXWLEN;
 	lp->sl_compsylmax = MAXWLEN;
     }
     return lp;
@@ -2237,7 +2265,7 @@ slang_clear(lp)
 #endif
 
     lp->sl_compmax = MAXWLEN;
-    lp->sl_compminlen = MAXWLEN;
+    lp->sl_compminlen = 0;
     lp->sl_compsylmax = MAXWLEN;
     lp->sl_regions[0] = NUL;
 }
@@ -2249,9 +2277,23 @@ slang_clear(lp)
     static void
 spell_load_cb(fname, cookie)
     char_u	*fname;
-    void	*cookie;	    /* points to the language name */
+    void	*cookie;
 {
-    (void)spell_load_file(fname, (char_u *)cookie, NULL, FALSE);
+    spelload_T	*slp = (spelload_T *)cookie;
+    slang_T	*slang;
+
+    slang = spell_load_file(fname, slp->sl_lang, NULL, FALSE);
+    if (slang != NULL)
+    {
+	/* When a previously loaded file has NOBREAK also use it for the
+	 * ".add" files. */
+	if (slp->sl_nobreak && slang->sl_add)
+	    slang->sl_nobreak = TRUE;
+	else if (slang->sl_nobreak)
+	    slp->sl_nobreak = TRUE;
+
+	slp->sl_slang = slang;
+    }
 }
 
 /*
@@ -2941,7 +2983,7 @@ read_compound(fd, slang, len)
     --todo;
     c = getc(fd);					/* <compminlen> */
     if (c < 1)
-	c = MAXWLEN;
+	c = 0;
     slang->sl_compminlen = c;
 
     --todo;
@@ -3508,6 +3550,7 @@ did_set_spelllang(buf)
     char_u	*spf;
     char_u	*use_region = NULL;
     int		dont_use_region = FALSE;
+    int		nobreak = FALSE;
 
     ga_init2(&ga, sizeof(langp_T), 2);
     clear_midword(buf);
@@ -3624,6 +3667,8 @@ did_set_spelllang(buf)
 		    LANGP_ENTRY(ga, ga.ga_len)->lp_region = region_mask;
 		    ++ga.ga_len;
 		    use_midword(lp, buf);
+		    if (lp->sl_nobreak)
+			nobreak = TRUE;
 		}
 	    }
     }
@@ -3678,6 +3723,11 @@ did_set_spelllang(buf)
 		    *p = NUL;	/* truncate at ".encoding.add" */
 	    }
 	    lp = spell_load_file(spf_name, lang, NULL, TRUE);
+
+	    /* If one of the languages has NOBREAK we assume the addition
+	     * files also have this. */
+	    if (lp != NULL && nobreak)
+		lp->sl_nobreak = TRUE;
 	}
 	if (lp != NULL && ga_grow(&ga, 1) == OK)
 	{
@@ -5229,8 +5279,6 @@ process_compflags(spin, aff, compflags)
 	STRCPY(p, spin->si_compflags);
 	STRCAT(p, "/");
     }
-    else
-	*p = NUL;
     spin->si_compflags = p;
     tp = p + STRLEN(p);
 
@@ -7703,37 +7751,55 @@ init_spellfile()
     char_u	*fname;
     char_u	*rtp;
     char_u	*lend;
+    int		aspath = FALSE;
+    char_u	*lstart = curbuf->b_p_spl;
 
     if (*curbuf->b_p_spl != NUL && curbuf->b_langp.ga_len > 0)
     {
-	/* Find the end of the language name.  Exclude the region. */
+	/* Find the end of the language name.  Exclude the region.  If there
+	 * is a path separator remember the start of the tail. */
 	for (lend = curbuf->b_p_spl; *lend != NUL
 			&& vim_strchr((char_u *)",._", *lend) == NULL; ++lend)
-	    ;
+	    if (vim_ispathsep(*lend))
+	    {
+		aspath = TRUE;
+		lstart = lend + 1;
+	    }
 
 	/* Loop over all entries in 'runtimepath'.  Use the first one where we
 	 * are allowed to write. */
 	rtp = p_rtp;
 	while (*rtp != NUL)
 	{
-	    /* Copy the path from 'runtimepath' to buf[]. */
-	    copy_option_part(&rtp, buf, MAXPATHL, ",");
+	    if (aspath)
+		/* Use directory of an entry with path, e.g., for
+		 * "/dir/lg.utf-8.spl" use "/dir". */
+		vim_strncpy(buf, curbuf->b_p_spl, lstart - curbuf->b_p_spl - 1);
+	    else
+		/* Copy the path from 'runtimepath' to buf[]. */
+		copy_option_part(&rtp, buf, MAXPATHL, ",");
 	    if (filewritable(buf) == 2)
 	    {
 		/* Use the first language name from 'spelllang' and the
 		 * encoding used in the first loaded .spl file. */
-		fname = LANGP_ENTRY(curbuf->b_langp, 0)->lp_slang->sl_fname;
-		if (fname == NULL)
-		    break;
+		if (aspath)
+		    vim_strncpy(buf, curbuf->b_p_spl, lend - curbuf->b_p_spl);
+		else
+		{
+		    l = STRLEN(buf);
+		    vim_snprintf((char *)buf + l, MAXPATHL - l,
+				 "/spell/%.*s", (int)(lend - lstart), lstart);
+		}
 		l = STRLEN(buf);
-		vim_snprintf((char *)buf + l, MAXPATHL - l,
-			"/spell/%.*s.%s.add",
-			(int)(lend - curbuf->b_p_spl), curbuf->b_p_spl,
-			strstr((char *)gettail(fname), ".ascii.") != NULL
-					   ? (char_u *)"ascii" : spell_enc());
+		fname = LANGP_ENTRY(curbuf->b_langp, 0)->lp_slang->sl_fname;
+		vim_snprintf((char *)buf + l, MAXPATHL - l, ".%s.add",
+			fname != NULL
+			  && strstr((char *)gettail(fname), ".ascii.") != NULL
+				       ? (char_u *)"ascii" : spell_enc());
 		set_option_value((char_u *)"spellfile", 0L, buf, OPT_LOCAL);
 		break;
 	    }
+	    aspath = FALSE;
 	}
     }
 }
@@ -9293,7 +9359,7 @@ suggest_try_change(su)
 			/* For multi-byte chars check character length against
 			 * COMPOUNDMIN. */
 			if (has_mbyte
-				&& slang->sl_compminlen < MAXWLEN
+				&& slang->sl_compminlen > 0
 				&& mb_charlen(tword + sp->ts_splitoff)
 						       < slang->sl_compminlen)
 			    break;
@@ -9430,7 +9496,7 @@ suggest_try_change(su)
 						      >= slang->sl_compminlen
 #ifdef FEAT_MBYTE
 			    && (!has_mbyte
-				|| slang->sl_compminlen == MAXWLEN
+				|| slang->sl_compminlen == 0
 				|| mb_charlen(tword + sp->ts_splitoff)
 						      >= slang->sl_compminlen)
 #endif
@@ -9470,7 +9536,12 @@ suggest_try_change(su)
 		    if (!try_compound && !fword_ends)
 		    {
 			/* If we're going to split need to check that the
-			 * words so far are valid for compounding. */
+			 * words so far are valid for compounding.  If there
+			 * is only one word it must not have the NEEDCOMPOUND
+			 * flag. */
+			if (sp->ts_complen == sp->ts_compsplit
+						     && (flags & WF_NEEDCOMP))
+			    break;
 			p = preword;
 			while (*skiptowhite(p) != NUL)
 			    p = skipwhite(skiptowhite(p));
@@ -9576,7 +9647,11 @@ suggest_try_change(su)
 	    case STATE_ENDNUL:
 		/* Past the NUL bytes in the node. */
 		su->su_badflags = sp->ts_save_badflags;
-		if (fword[sp->ts_fidx] == NUL)
+		if (fword[sp->ts_fidx] == NUL
+#ifdef FEAT_MBYTE
+			&& sp->ts_tcharlen == 0
+#endif
+		   )
 		{
 		    /* The badword ends, can't use the bytes in this node. */
 		    sp->ts_state = STATE_DEL;

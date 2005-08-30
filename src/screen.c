@@ -2939,6 +2939,10 @@ win_line(wp, lnum, startrow, endrow)
 		word_end = wp->w_cursor.col + len + 1;
 
 	    wp->w_cursor = pos;
+
+	    /* Need to restart syntax highlighting for this line. */
+	    if (has_syntax)
+		syntax_start(wp, lnum);
 	}
 #endif
     }

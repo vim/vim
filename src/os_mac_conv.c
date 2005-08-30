@@ -17,17 +17,6 @@
 #include "vim.h"
 
 #ifdef FEAT_MBYTE
-extern char_u *mac_string_convert __ARGS((char_u *ptr, int len, int *lenp, int fail_on_error, int from, int to, int *unconvlenp));
-extern int macroman2enc __ARGS((char_u *ptr, long *sizep, long real_size));
-extern int enc2macroman __ARGS((char_u *from, size_t fromlen, char_u *to, int *tolenp, int maxtolen, char_u *rest, int *restlenp));
-
-extern void	    mac_conv_init __ARGS((void));
-extern void	    mac_conv_cleanup __ARGS((void));
-extern char_u	    *mac_utf16_to_enc __ARGS((UniChar *from, size_t fromLen, size_t *actualLen));
-extern UniChar	    *mac_enc_to_utf16 __ARGS((char_u *from, size_t fromLen, size_t *actualLen));
-extern CFStringRef  mac_enc_to_cfstring __ARGS((char_u *from, size_t fromLen));
-extern char_u	    *mac_precompose_path __ARGS((char_u *decompPath, size_t decompLen, size_t *precompLen));
-
 static char_u	    *mac_utf16_to_utf8 __ARGS((UniChar *from, size_t fromLen, size_t *actualLen));
 static UniChar	    *mac_utf8_to_utf16 __ARGS((char_u *from, size_t fromLen, size_t *actualLen));
 
@@ -114,7 +103,7 @@ mac_string_convert(ptr, len, lenp, fail_on_error, from_enc, to_enc, unconvlenp)
 
     if (!CFStringGetBytes(cfstr, convertRange, to, NULL, FALSE, retval, buflen, NULL))
 #endif
-    if (!CFStringGetCString(cfstr, retval, buflen, to))
+    if (!CFStringGetCString(cfstr, (char *)retval, buflen, to))
     {
 	CFRelease(cfstr);
 	if (fail_on_error)
@@ -140,14 +129,14 @@ mac_string_convert(ptr, len, lenp, fail_on_error, from_enc, to_enc, unconvlenp)
 	    }
 	    else
 	    {
-		if (!CFStringGetCString(cfstr, d, buflen - out, to))
+		if (!CFStringGetCString(cfstr, (char *)d, buflen - out, to))
 		{
 		    *d++ = '?';
 		    out++;
 		}
 		else
 		{
-		    i = strlen(d);
+		    i = STRLEN(d);
 		    d += i;
 		    out += i;
 		}
@@ -162,7 +151,7 @@ mac_string_convert(ptr, len, lenp, fail_on_error, from_enc, to_enc, unconvlenp)
     }
     CFRelease(cfstr);
     if (lenp != NULL)
-	*lenp = strlen(retval);
+	*lenp = STRLEN(retval);
 
     return retval;
 }

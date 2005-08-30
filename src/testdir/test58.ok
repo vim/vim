@@ -105,19 +105,19 @@ la
 foomï
 ['foo mï', 'foo', 'foofoo']
 barmï
-['bar mï', 'barfoo', 'barbar']
+['barfoo', 'barbar', 'mï']
 mïfoo
 ['mï foo', 'foo', 'foofoo']
 mïbar
 ['foobar', 'barbar', 'mï']
 mïmï
-['mï mï', 'mï', 'la mï']
+['mï mï', 'mï']
 lala
-['la mï']
+[]
 mïla
 ['mï', 'mï mï']
 lamï
-['la mï', 'mï', 'mï mï']
+['mï', 'mï mï']
 foola
 ['foo', 'foobar', 'foofoo']
 labar
@@ -160,3 +160,99 @@ startwordwordwordwordend
 ['startwordwordwordword end', 'startwordwordwordword', 'start wordwordwordword end']
 borkpreborkpreborkbork
 ['borkpreborkprebork bork', 'borkprebork preborkbork', 'bork preborkpreborkbork']
+
+test 5-5
+# file: Xtest.latin1.spl
+bar
+barbork
+end
+fooa1
+fooaé
+prebar
+prebarbork
+start
+-------
+bad
+['bar', 'end', 'fooa1']
+foo
+['fooa1', 'fooaé', 'bar']
+fooa2
+['fooa1', 'fooaé', 'bar']
+prabar
+['prebar', 'bar', 'bar bar']
+probarbirk
+['prebarbork']
+middle
+[]
+startmiddle
+['startmiddleend']
+middleend
+[]
+endstart
+['end start', 'start']
+startprobar
+['startprebar', 'start prebar', 'startbar']
+
+test 6-6
+# file: Xtest.latin1.spl
+bar
+barbork
+end
+lead
+meea1
+meeaé
+prebar
+prebarbork
+-------
+bad
+['bar', 'end', 'lead']
+mee
+['meea1', 'meeaé', 'bar']
+meea2
+['meea1', 'meeaé', 'lead']
+prabar
+['prebar', 'leadbar', 'bar']
+probarbirk
+['prebarbork']
+middle
+[]
+leadmiddle
+['leadmiddleend']
+middleend
+[]
+endlead
+['end lead', 'lead', 'end end']
+leadprobar
+['leadprebar', 'lead prebar', 'leadbar']
+
+test 7-7
+# file: Xtest.latin1.spl
+bar
+barmeat
+lead
+meea1
+meeaé
+prebar
+prebarmeat
+tail
+-------
+bad
+['bar', 'lead', 'tail']
+mee
+['meea1', 'meeaé', 'bar']
+meea2
+['meea1', 'meeaé', 'lead']
+prabar
+['prebar', 'leadbar', 'bar']
+probarmaat
+['prebarmeat']
+middle
+[]
+leadmiddle
+[]
+middletail
+[]
+taillead
+['tail lead', 'tail']
+leadprobar
+['leadprebar', 'lead prebar', 'leadbar']

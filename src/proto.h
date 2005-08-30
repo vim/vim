@@ -261,6 +261,10 @@ extern char *vim_SelFile __ARGS((Widget toplevel, char *prompt, char *init_path,
 # include "if_perlsfio.pro"
 #endif
 
+#if defined(FEAT_MBYTE) && defined(MACOS_X)
+# include "os_mac_conv.pro"
+#endif
+
 #ifdef __BORLANDC__
 # define _PROTO_H
 #endif
