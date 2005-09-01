@@ -956,12 +956,12 @@ do_mzscheme_command(exarg_T *eap, void *data, Scheme_Closed_Prim *what)
     void
 mzscheme_buffer_free(buf_T *buf)
 {
-    if (buf->mzscheme_ref)
+    if (buf->b_mzscheme_ref)
     {
         vim_mz_buffer *bp;
-	bp = buf->mzscheme_ref;
+	bp = buf->b_mzscheme_ref;
 	bp->buf = INVALID_BUFFER_VALUE;
-	buf->mzscheme_ref = NULL;
+	buf->b_mzscheme_ref = NULL;
 	scheme_gc_ptr_ok(bp);
     }
 }
@@ -972,12 +972,12 @@ mzscheme_buffer_free(buf_T *buf)
     void
 mzscheme_window_free(win_T *win)
 {
-    if (win->mzscheme_ref)
+    if (win->w_mzscheme_ref)
     {
 	vim_mz_window *wp;
-	wp = win->mzscheme_ref;
+	wp = win->w_mzscheme_ref;
 	wp->win = INVALID_WINDOW_VALUE;
-	win->mzscheme_ref = NULL;
+	win->w_mzscheme_ref = NULL;
 	scheme_gc_ptr_ok(wp);
     }
 }
@@ -1462,21 +1462,21 @@ window_new(win_T *win)
     vim_mz_window *self;
 
     /* We need to handle deletion of windows underneath us.
-     * If we add a "mzscheme_ref" field to the win_T structure,
+     * If we add a "w_mzscheme_ref" field to the win_T structure,
      * then we can get at it in win_free() in vim.
      *
      * On a win_free() we set the Scheme object's win_T *field
      * to an invalid value. We trap all uses of a window
      * object, and reject them if the win_T *field is invalid.
      */
-    if (win->mzscheme_ref)
-	return win->mzscheme_ref;
+    if (win->w_mzscheme_ref != NULL)
+	return win->w_mzscheme_ref;
 
     self = scheme_malloc_fail_ok(scheme_malloc, sizeof(vim_mz_window));
 
     vim_memset(self, 0, sizeof(vim_mz_window));
     scheme_dont_gc_ptr(self);	/* because win isn't visible to GC */
-    win->mzscheme_ref = self;
+    win->w_mzscheme_ref = self;
     self->win = win;
     self->tag = mz_window_type;
 
@@ -1787,17 +1787,17 @@ buffer_new(buf_T *buf)
     vim_mz_buffer *self;
 
     /* We need to handle deletion of buffers underneath us.
-     * If we add a "mzscheme_buf" field to the buf_T structure,
+     * If we add a "b_mzscheme_ref" field to the buf_T structure,
      * then we can get at it in buf_freeall() in vim.
      */
-    if (buf->mzscheme_ref)
-        return buf->mzscheme_ref;
+    if (buf->b_mzscheme_ref)
+        return buf->b_mzscheme_ref;
 
     self = scheme_malloc_fail_ok(scheme_malloc, sizeof(vim_mz_buffer));
 
     vim_memset(self, 0, sizeof(vim_mz_buffer));
     scheme_dont_gc_ptr(self);	/* because buf isn't visible to GC */
-    buf->mzscheme_ref = self;
+    buf->b_mzscheme_ref = self;
     self->buf = buf;
     self->tag = mz_buffer_type;
 
@@ -2620,20 +2620,20 @@ static Vim_Prim prims[]=
     static vim_mz_buffer *
 get_vim_curr_buffer(void)
 {
-    if (!curbuf->mzscheme_ref)
+    if (curbuf->b_mzscheme_ref == NULL)
 	return (vim_mz_buffer *)buffer_new(curbuf);
     else
-	return (vim_mz_buffer *)curbuf->mzscheme_ref;
+	return (vim_mz_buffer *)curbuf->b_mzscheme_ref;
 }
 
 /* return MzScheme wrapper for curwin */
     static vim_mz_window *
 get_vim_curr_window(void)
 {
-    if (!curwin->mzscheme_ref)
+    if (curwin->w_mzscheme_ref == NULL)
 	return (vim_mz_window *)window_new(curwin);
     else
-	return (vim_mz_window *)curwin->mzscheme_ref;
+	return (vim_mz_window *)curwin->w_mzscheme_ref;
 }
 
     static void

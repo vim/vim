@@ -607,7 +607,9 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'number'	options.txt	/*'number'*
 'numberwidth'	options.txt	/*'numberwidth'*
 'nuw'	options.txt	/*'nuw'*
+'occultfunc'	options.txt	/*'occultfunc'*
 'oft'	options.txt	/*'oft'*
+'ofu'	options.txt	/*'ofu'*
 'op'	vi_diff.txt	/*'op'*
 'open'	vi_diff.txt	/*'open'*
 'optimize'	vi_diff.txt	/*'optimize'*
@@ -1669,6 +1671,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :abbreviate	map.txt	/*:abbreviate*
 :abbreviate-<buffer>	map.txt	/*:abbreviate-<buffer>*
 :abbreviate-local	map.txt	/*:abbreviate-local*
+:abbreviate-verbose	map.txt	/*:abbreviate-verbose*
 :abc	map.txt	/*:abc*
 :abclear	map.txt	/*:abclear*
 :abo	windows.txt	/*:abo*
@@ -4609,11 +4612,14 @@ das	motion.txt	/*das*
 dav	pi_netrw.txt	/*dav*
 daw	motion.txt	/*daw*
 dd	change.txt	/*dd*
+debug-gcc	debug.txt	/*debug-gcc*
 debug-highlight	debugger.txt	/*debug-highlight*
 debug-mode	repeat.txt	/*debug-mode*
 debug-scripts	repeat.txt	/*debug-scripts*
 debug-signs	debugger.txt	/*debug-signs*
-debug-vim	intro.txt	/*debug-vim*
+debug-vim	debug.txt	/*debug-vim*
+debug-win32	debug.txt	/*debug-win32*
+debug.txt	debug.txt	/*debug.txt*
 debugger-compilation	debugger.txt	/*debugger-compilation*
 debugger-features	debugger.txt	/*debugger-features*
 debugger-integration	debugger.txt	/*debugger-integration*

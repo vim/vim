@@ -4930,16 +4930,6 @@ clip_mch_request_selection(cbd)
 #endif
 	tempclip[scrapSize] = 0;
 
-	searchCR = (char *)tempclip;
-	while (searchCR != NULL)
-	{
-	    searchCR = strchr(searchCR, '\r');
-
-	    if (searchCR != NULL)
-		searchCR[0] = '\n';
-
-	}
-
 #if defined(FEAT_MBYTE) && defined(USE_CARBONIZED)
 	/* Convert from utf-16 (clipboard) */
 	size_t encLen = 0;
@@ -4951,6 +4941,17 @@ clip_mch_request_selection(cbd)
 	    tempclip = to;
 	}
 #endif
+
+	searchCR = (char *)tempclip;
+	while (searchCR != NULL)
+	{
+	    searchCR = strchr(searchCR, '\r');
+
+	    if (searchCR != NULL)
+		searchCR[0] = '\n';
+
+	}
+
 	clip_yank_selection(type, tempclip, scrapSize, cbd);
 
 	vim_free(tempclip);

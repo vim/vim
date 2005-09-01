@@ -666,6 +666,16 @@ used in a |filetype-plugin| file.  Example for a C plugin file: >
 			mode, '!' for both.  These are the same as for
 			mappings, see |map-listing|.
 
+						*:abbreviate-verbose*
+When 'verbose' is non-zero, listing an abbreviation will also display where it
+was last defined.  Example: >
+
+	:verbose abbreviate
+	!  teh           the
+		Last set from /home/abcd/vim/abbr.vim
+
+See |:verbose-cmd| for more information.
+
 :ab[breviate] {lhs}	list the abbreviations that start with {lhs}
 			You may need to insert a CTRL-V (type it twice) to
 			avoid that a typed {lhs} is expanded, since

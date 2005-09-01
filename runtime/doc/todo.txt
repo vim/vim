@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Aug 30
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Sep 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,16 +30,7 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Mac:
-- strings.h is bogus, add configure check.
-- GUI: pasting lines results in ^M instead of line breaks. (Benjamin Esham)
-- "cp -R ../runtime appdir" may copy way too much.
-
-cmdline_at_end() and cmdline_overstrike() may not be used.
-
-Ruby: documentation for window width (Wind)
-
-Add a few more languages for spell checking.
+Try out using the free MS compiler and debugger, using Make_mvc.mak.
 
 Mac unicode patch (Da Woon Jung):
 - selecting proportional font breaks display
@@ -71,12 +62,11 @@ PLANNED FOR VERSION 7.0:
     that make sense.  Esp. members of classes/structs.
 
     It's not much different from other Insert-mode completion, use the same
-    mechanism.  Use CTRL-X CTRL-O.
+    mechanism.  Use CTRL-X CTRL-O and 'occultfunc'.  Set 'occultfunc' in the
+    filetype plugin, define the function in the autoload directory.
     
     Separately develop the completion logic and the UI.  When adding UI stuff
     make it work for all completion methods.
-
-    First cleanup the Insert-mode completion.
 
     UI:
     - At first: use 'wildmenu' kind of thing.
@@ -85,9 +75,22 @@ PLANNED FOR VERSION 7.0:
       alternatives).
 
     Completion logic:
-	Use something like 'completefunc'?
-	runtime/complete/{filetype}.vim files?
+	Use runtime/autoload/{filetype}complete.vim files.
+
+	For a simple name can complete like with CTRL-N.
+	    get list of IDs from the tagfile?
+	    For struct or class add "." or "->"?
+
+	After a reference to a struct or class suggest members.
+	    Recognizing "var.mem" and 'var->mem" is easy.
+	    How to get the type of "var"?
+		tags file doesn't give type of typedef!  E.g., oparg_T is
+		listed with "^} oparg_T;$"
+	    How to get the members of that type?
+		tags file has struct: and class: fields
+
 	In function arguments suggest variables of expected type.
+
 	List of completions is a Dictionary with items:
 	    complist[0]['text'] = completion text
 	    complist[0]['type'] = type of completion (e.g. function, var, arg)
@@ -98,11 +101,15 @@ PLANNED FOR VERSION 7.0:
 	Ideas from others:
 	http://www.vim.org/scripts/script.php?script_id=747
 	    http://sourceforge.net/projects/insenvim
-		of http://insenvim.sourceforge.net
+		or http://insenvim.sourceforge.net
 	    Java, XML, HTML, C++, JSP, SQL, C#
 	    MS-Windows only, lots of dependencies (e.g. Perl, Internet
 		explorer), uses .dll shared libraries.
-	    for C++ uses $INCLUDE environment var
+	    For C++ uses $INCLUDE environment var.
+	    Uses Perl for C++.
+	    Uses ctags to find the info:
+		ctags -f $allTagsFile --fields=+aiKmnsSz --language-force=C++ --C++-kinds=+cefgmnpsut-dlux -u $files
+
 	    UI: popup menu with list of alternatives, icon to indicate type
 		optional popup window with info about selected alternative
 	    Unrelated settings are changed (e.g. 'mousemodel').

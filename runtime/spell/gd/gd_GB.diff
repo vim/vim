@@ -1,0 +1,26 @@
+*** gd_GB.orig.aff	Wed Aug 31 20:50:02 2005
+--- gd_GB.aff	Wed Aug 31 20:50:43 2005
+***************
+*** 19 ****
+--- 19,39 ----
+  TRY ahinrdesclgoutmbאf-עACלTשBpGSDMטIRPLNEFיO'UףÀÒÌÙHÉÈ
++ 
++ FOL  ‗אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏ÿ
++ LOW  ‗אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏ÿ
++ UPP  ‗ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞÿ
++ 
++ SOFOFROM abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZאבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗ÿÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞ¿
++ SOFOTO   ebctefghejklnnepkrstevvkesebctefghejklnnepkrstevvkeseeeeeeeceeeeeeeedneeeeeeeeeeepseeeeeeeeceeeeeeeedneeeeeeeeeeep?
++ 
++ MIDWORD	'-
++ 
++ MAP 9
++ MAP aאבגדהו
++ MAP eטיךכ
++ MAP iלםמן
++ MAP oעףפץצ
++ MAP uשתûü
++ MAP nס
++ MAP cח
++ MAP yÿ‎
++ MAP s‗

@@ -2851,7 +2851,6 @@ echo "${ECHO_T}yes" >&6;;
 echo "${ECHO_T}no" >&6;;
 esac
 
-DEFAULT_VIMNAME=vim
 echo "$as_me:$LINENO: checking for Darwin (Mac OS X)" >&5
 echo $ECHO_N "checking for Darwin (Mac OS X)... $ECHO_C" >&6
 if test "`(uname) 2>/dev/null`" = Darwin; then
@@ -3274,7 +3273,6 @@ fi
     if test "x$CARBON" = "xyes"; then
       if test -z "$with_x" -a "X$enable_gui" != Xmotif -a "X$enable_gui" != Xathena -a "X$enable_gui" != Xgtk -a "X$enable_gui" != Xgtk2; then
 	with_x=no
-	DEFAULT_VIMNAME=Vim
       fi
     fi
   fi
@@ -3316,7 +3314,7 @@ if test "${with_vim_name+set}" = set; then
   VIMNAME="$withval"; echo "$as_me:$LINENO: result: $VIMNAME" >&5
 echo "${ECHO_T}$VIMNAME" >&6
 else
-  VIMNAME="$DEFAULT_VIMNAME"; echo "$as_me:$LINENO: result: Defaulting to $VIMNAME" >&5
+  VIMNAME="vim"; echo "$as_me:$LINENO: result: Defaulting to $VIMNAME" >&5
 echo "${ECHO_T}Defaulting to $VIMNAME" >&6
 fi;
 
@@ -7521,7 +7519,7 @@ echo "${ECHO_T}found $qt_major_version.$qt_minor_version in $ROOTQT" >&6
     do
       for j in qstyle.h;
       do
-       echo "configure: 7524: $i/$j" >&5
+       echo "configure: 7522: $i/$j" >&5
        if test -r "$i/$j"; then
          echo "taking that" >&5
          qt_incdir=$i
@@ -7541,7 +7539,7 @@ echo "$as_me: error: Could not find Qt headers in $QT_INCLUDES" >&2;}
     do
       for j in kapplication.h;
       do
-       echo "configure: 7544: $i/$j" >&5
+       echo "configure: 7542: $i/$j" >&5
        if test -r "$i/$j"; then
          echo "taking that" >&5
          kde_incdir=$i
@@ -8080,6 +8078,9 @@ echo $ECHO_N "checking for Carbon GUI... $ECHO_C" >&6
     echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6;
   GUITYPE=CARBONGUI
+  if test "$VIMNAME" = "vim"; then
+    VIMNAME=Vim
+  fi
     SKIP_GTK=YES;
   SKIP_GTK2=YES;
   SKIP_GNOME=YES;
@@ -11203,7 +11204,6 @@ echo "${ECHO_T}no" >&6
 fi
 rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
 
-if test "x$MACOSX" != "xyes"; then
 
 for ac_header in strings.h
 do
@@ -11354,7 +11354,6 @@ fi
 
 done
 
-fi
 
 echo "$as_me:$LINENO: checking if strings.h can be included after string.h" >&5
 echo $ECHO_N "checking if strings.h can be included after string.h... $ECHO_C" >&6

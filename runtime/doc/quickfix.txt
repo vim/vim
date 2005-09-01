@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 7.0aa.  Last change: 2005 Jul 27
+*quickfix.txt*  For Vim version 7.0aa.  Last change: 2005 Aug 31
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -631,15 +631,13 @@ Basic items
 	%%		the single '%' character
 	%s		search text (finds a string)
 
-The "%f" conversion depends on the current 'isfname' setting.  "~/" is
+The "%f" conversion may depend on the current 'isfname' setting.  "~/" is
 expanded to the home directory and environment variables are expanded.
 
-The "%f" and "%m" conversions have to detect the end of the string.  They
-should be followed by a character that cannot be in the string.  Everything
-up to that character is included in the string.  But when the next character
-is a '%' or a backslash, "%f" will look for any 'isfname' character and "%m"
-finds anything.  If the "%f" or "%m" is at the end, everything up to the end
-of the line is included.
+The "%f" and "%m" conversions have to detect the end of the string.  This
+normally happens by matching following characters and items.  When nohting is
+following the rest of the line is matched.  If "%f" is followed by a '%' or a
+backslash, it will look for a sequence of 'isfname' characters.
 
 On MS-DOS, MS-Windows and OS/2 a leading "C:" will be included in "%f", even
 when using "%f:".  This means that a file name which is a single alphabetical

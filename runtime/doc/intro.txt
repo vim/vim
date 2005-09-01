@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 7.0aa.  Last change: 2005 Jun 12
+*intro.txt*     For Vim version 7.0aa.  Last change: 2005 Sep 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -151,31 +151,19 @@ example and try to find out which settings or other things influence the
 appearance of the bug.  Try different machines, if possible.  Send me patches
 if you can!
 
-In case of doubt, use: >
+It will help to include information about the version of Vim you are using and
+your setup.  You can get the information with this command: >
    :so $VIMRUNTIME/bugreport.vim
 This will create a file "bugreport.txt" in the current directory, with a lot
 of information of your environment.  Before sending this out, check if it
 doesn't contain any confidential information!
 
-							*debug-vim*
-When Vim crashes in one of the test files, and you are using gcc for
-compilation, here is what you can do to find out exactly where Vim crashes:
+If Vim crashes, please try to find out where.  You can find help on this here:
+|debug.txt|.
 
-1. Compile Vim with the "-g" option (there is a line in the Makefile for this,
-   which you can uncomment).
-
-2. Execute these commands (replace "11" with the test that fails): >
-	cd testdir
-	gdb ../vim
-	run -u unix.vim -U NONE -s dotest.in test11.in
-
-3. Check where Vim crashes, gdb should give a message for this.
-
-4. Get a stack trace from gdb with this command: >
-	where
-<  You can check out different places in the stack trace with: >
-	frame 3
-<  Replace "3" with one of the numbers in the stack trace.
+In case of doubt or when you wonder if the problem has already been fixed but
+you can't find a fix for it, become a member of the vim-dev maillist and ask
+your question there. |maillist|
 
 							*year-2000* *Y2K*
 Since Vim internally doesn't use dates for editing, there is no year 2000

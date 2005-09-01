@@ -113,9 +113,10 @@ static tcl_info tclinfo = { NULL, 0, 0, 0, NULL, NULL };
 
 /*
  *  List of Tcl interpreters who reference a vim window or buffer.
- *  Each buffer and window has it's own list in the tcl_ref struct member.
- *  We need this because Tcl can create sub-interpreters with the "interp"
- *  command, and each interpreter can reference all windows and buffers.
+ *  Each buffer and window has it's own list in the w_tcl_ref or b_tcl_ref
+ *  struct member.  We need this because Tcl can create sub-interpreters with
+ *  the "interp" command, and each interpreter can reference all windows and
+ *  buffers.
  */
 struct ref
 {
@@ -932,7 +933,7 @@ bufselfcmd(ref, interp, objc, objv)
 		err = TCL_ERROR;
 		break;
 	    }
-	    err = tclsetdelcmd(interp, buf->tcl_ref, (void *)buf, objv[2]);
+	    err = tclsetdelcmd(interp, buf->b_tcl_ref, (void *)buf, objv[2]);
 	    break;
 
 	default:
@@ -1058,7 +1059,7 @@ winselfcmd(ref, interp, objc, objv)
 		err = TCL_ERROR;
 		break;
 	    }
-	    err = tclsetdelcmd(interp, win->tcl_ref, (void *)win, objv[2]);
+	    err = tclsetdelcmd(interp, win->w_tcl_ref, (void *)win, objv[2]);
 	    break;
 
 	case WIN_CURSOR:
@@ -1465,7 +1466,8 @@ delref(cref)
     static char *
 tclgetref(interp, refstartP, prefix, vimobj, proc)
     Tcl_Interp	*interp;
-    void	**refstartP;	/* ptr to tcl_ref member of win_T/buf_T struct */
+    void	**refstartP;	/* ptr to w_tcl_ref/b_tcl-ref member of
+				   win_T/buf_T struct */
     char	*prefix;	/* "win" or "buf" */
     void	*vimobj;	/* win_T* or buf_T* */
     Tcl_ObjCmdProc *proc;	/* winselfcmd or bufselfcmd */
@@ -1533,7 +1535,7 @@ tclgetwindow(interp, win)
     Tcl_Interp	*interp;
     win_T	*win;
 {
-    return tclgetref(interp, &(win->tcl_ref), "win", (void *)win, winselfcmd);
+    return tclgetref(interp, &(win->w_tcl_ref), "win", (void *)win, winselfcmd);
 }
 
     static char *
@@ -1541,7 +1543,7 @@ tclgetbuffer(interp, buf)
     Tcl_Interp	*interp;
     buf_T	*buf;
 {
-    return tclgetref(interp, &(buf->tcl_ref), "buf", (void *)buf, bufselfcmd);
+    return tclgetref(interp, &(buf->b_tcl_ref), "buf", (void *)buf, bufselfcmd);
 }
 
     static int
@@ -2095,12 +2097,12 @@ tcl_buffer_free(buf)
 	return;
 #endif
 
-    reflist = (struct ref*)(buf->tcl_ref);
+    reflist = (struct ref *)(buf->b_tcl_ref);
     if (reflist != &refsdeleted)
     {
-	buf->tcl_ref = (void *)&refsdeleted;
+	buf->b_tcl_ref = (void *)&refsdeleted;
 	tcldelallrefs(reflist);
-	buf->tcl_ref = NULL;
+	buf->b_tcl_ref = NULL;
     }
 }
 
@@ -2116,12 +2118,12 @@ tcl_window_free(win)
 	return;
 #endif
 
-    reflist = (struct ref*)(win->tcl_ref);
+    reflist = (struct ref*)(win->w_tcl_ref);
     if (reflist != &refsdeleted)
     {
-	win->tcl_ref = (void *)&refsdeleted;
+	win->w_tcl_ref = (void *)&refsdeleted;
 	tcldelallrefs(reflist);
-	win->tcl_ref = NULL;
+	win->w_tcl_ref = NULL;
     }
 }
 #endif

@@ -1,0 +1,46 @@
+*** pt_BR.orig.aff	Wed Aug 31 20:05:18 2005
+--- pt_BR.aff	Wed Aug 31 20:05:18 2005
+***************
+*** 3,4 ****
+--- 3,22 ----
+  
++ FOL  ßàáâãäåæçèéêëìíîïğñòóôõöøùúûüışÿ
++ LOW  ßàáâãäåæçèéêëìíîïğñòóôõöøùúûüışÿ
++ UPP  ßÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏĞÑÒÓÔÕÖØÙÚÛÜİŞÿ
++ 
++ SOFOFROM abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZàáâãäåæçèéêëìíîïğñòóôõöøùúûüışßÿÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏĞÑÒÓÔÕÖØÙÚÛÜİŞ¿
++ SOFOTO   ebctefghejklnnepkrstevvkesebctefghejklnnepkrstevvkeseeeeeeeceeeeeeeedneeeeeeeeeeepseeeeeeeeceeeeeeeedneeeeeeeeeeep?
++ 
++ MAP 9
++ MAP aàáâãäå
++ MAP eèéêë
++ MAP iìíîï
++ MAP oòóôõö
++ MAP uùúûü
++ MAP nñ
++ MAP cç
++ MAP yÿı
++ MAP sß
++ 
+  # Plural apenas
+***************
+*** 526,534 ****
+  SFX I   ar      ês       dar
+! SFX I   iar     eia       [^]iar
+! SFX I   iar     eiam       [^]iar
+! SFX I   iar     eias       [^]iar
+! SFX I   iar     eie       [^]iar
+! SFX I   iar     eiem       [^]iar
+! SFX I   iar     eies       [^]iar
+! SFX I   iar     eio       [^]iar
+  SFX I   oiar    óia       oiar
+--- 544,552 ----
+  SFX I   ar      ês       dar
+! SFX I   iar     eia       [^o]iar
+! SFX I   iar     eiam       [^o]iar
+! SFX I   iar     eias       [^o]iar
+! SFX I   iar     eie       [^o]iar
+! SFX I   iar     eiem       [^o]iar
+! SFX I   iar     eies       [^o]iar
+! SFX I   iar     eio       [^o]iar
+  SFX I   oiar    óia       oiar

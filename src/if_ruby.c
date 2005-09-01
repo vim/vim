@@ -388,17 +388,19 @@ void ex_rubyfile(exarg_T *eap)
 
 void ruby_buffer_free(buf_T *buf)
 {
-    if (buf->ruby_ref) {
-	rb_hash_aset(objtbl, rb_obj_id((VALUE) buf->ruby_ref), Qnil);
-	RDATA(buf->ruby_ref)->data = NULL;
+    if (buf->b_ruby_ref)
+    {
+	rb_hash_aset(objtbl, rb_obj_id((VALUE) buf->b_ruby_ref), Qnil);
+	RDATA(buf->b_ruby_ref)->data = NULL;
     }
 }
 
 void ruby_window_free(win_T *win)
 {
-    if (win->ruby_ref) {
-	rb_hash_aset(objtbl, rb_obj_id((VALUE) win->ruby_ref), Qnil);
-	RDATA(win->ruby_ref)->data = NULL;
+    if (win->w_ruby_ref)
+    {
+	rb_hash_aset(objtbl, rb_obj_id((VALUE) win->w_ruby_ref), Qnil);
+	RDATA(win->w_ruby_ref)->data = NULL;
     }
 }
 
@@ -532,12 +534,14 @@ static VALUE vim_evaluate(VALUE self, VALUE str)
 
 static VALUE buffer_new(buf_T *buf)
 {
-    if (buf->ruby_ref) {
-	return (VALUE) buf->ruby_ref;
+    if (buf->b_ruby_ref)
+    {
+	return (VALUE) buf->b_ruby_ref;
     }
-    else {
+    else
+    {
 	VALUE obj = Data_Wrap_Struct(cBuffer, 0, 0, buf);
-	buf->ruby_ref = (void *) obj;
+	buf->b_ruby_ref = (void *) obj;
 	rb_hash_aset(objtbl, rb_obj_id(obj), obj);
 	return obj;
     }
@@ -688,12 +692,14 @@ static VALUE buffer_append(VALUE self, VALUE num, VALUE str)
 
 static VALUE window_new(win_T *win)
 {
-    if (win->ruby_ref) {
-	return (VALUE) win->ruby_ref;
+    if (win->w_ruby_ref)
+    {
+	return (VALUE) win->w_ruby_ref;
     }
-    else {
+    else
+    {
 	VALUE obj = Data_Wrap_Struct(cVimWindow, 0, 0, win);
-	win->ruby_ref = (void *) obj;
+	win->w_ruby_ref = (void *) obj;
 	rb_hash_aset(objtbl, rb_obj_id(obj), obj);
 	return obj;
     }

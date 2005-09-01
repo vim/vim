@@ -1288,6 +1288,7 @@ struct file_buffer
 #endif
 #ifdef FEAT_COMPL_FUNC
     char_u	*b_p_cfu;	/* 'completefunc' */
+    char_u	*b_p_ofu;	/* 'occultfunc' */
 #endif
     int		b_p_eol;	/* 'endofline' */
     int		b_p_et;		/* 'expandtab' */
@@ -1410,23 +1411,23 @@ struct file_buffer
 #endif
 
 #ifdef FEAT_MZSCHEME
-    void	*mzscheme_ref;	/* The MzScheme reference to this buffer */
+    void	*b_mzscheme_ref; /* The MzScheme reference to this buffer */
 #endif
 
 #ifdef FEAT_PERL
-    void	*perl_private;
+    void	*b_perl_private;
 #endif
 
 #ifdef FEAT_PYTHON
-    void	*python_ref;	/* The Python reference to this buffer */
+    void	*b_python_ref;	/* The Python reference to this buffer */
 #endif
 
 #ifdef FEAT_TCL
-    void	*tcl_ref;
+    void	*b_tcl_ref;
 #endif
 
 #ifdef FEAT_RUBY
-    void	*ruby_ref;
+    void	*b_ruby_ref;
 #endif
 
 #ifdef FEAT_SYN_HL
@@ -1810,31 +1811,30 @@ struct window
 
 
 #ifdef FEAT_MZSCHEME
-    void	    *mzscheme_ref;	/* The MzScheme value referring to this window */
+    void	*w_mzscheme_ref;	/* The MzScheme value for this window */
 #endif
 
 #ifdef FEAT_PERL
-    void	*perl_private;
+    void	*w_perl_private;
 #endif
 
 #ifdef FEAT_PYTHON
-    void	*python_ref;	/* The Python value referring to this
-					   window */
+    void	*w_python_ref;		/* The Python value for this window */
 #endif
 
 #ifdef FEAT_TCL
-    void	*tcl_ref;
+    void	*w_tcl_ref;
 #endif
 
 #ifdef FEAT_RUBY
-    void	*ruby_ref;
+    void	*w_ruby_ref;
 #endif
 };
 
 /*
  * Arguments for operators.
  */
-typedef struct oparg
+typedef struct oparg_S
 {
     int		op_type;	/* current pending operator type */
     int		regname;	/* register to use for the operator */
@@ -1865,7 +1865,7 @@ typedef struct oparg
 /*
  * Arguments for Normal mode commands.
  */
-typedef struct cmdarg
+typedef struct cmdarg_S
 {
     oparg_T	*oap;		/* Operator arguments */
     int		prechar;	/* prefix character (optional, always 'g') */

@@ -2150,7 +2150,8 @@ redraw:
     return (char_u *)line_ga.ga_data;
 }
 
-#ifdef CURSOR_SHAPE
+# if defined(MCH_CURSOR_SHAPE) || defined(FEAT_GUI) \
+	|| defined(FEAT_MOUSESHAPE) || defined(PROTO)
 /*
  * Return TRUE if ccline.overstrike is on.
  */

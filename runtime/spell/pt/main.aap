@@ -1,0 +1,123 @@
+# Aap recipe for Portuguese Vim spell files.
+
+# Use a freshly compiled Vim if it exists.
+@if os.path.exists('../../../src/vim'):
+    VIM = ../../../src/vim
+@else:
+    :progsearch VIM vim
+
+SPELLDIR = ..
+FILES    = pt_PT.aff pt_PT.dic
+	   pt_BR.aff pt_BR.dic
+
+all: $SPELLDIR/pt.latin1.spl $SPELLDIR/pt.utf-8.spl \
+        ../README_pt.txt
+
+$SPELLDIR/pt.latin1.spl : $FILES
+        :sys env LANG=pt_PT.ISO8859-1
+		$VIM -u NONE -e -c "mkspell! $SPELLDIR/pt pt_PT pt_BR" -c q
+
+$SPELLDIR/pt.utf-8.spl : $FILES
+        :sys env LANG=pt_PT.UTF-8
+		$VIM -u NONE -e -c "mkspell! $SPELLDIR/pt pt_PT pt_BR" -c q
+
+../README_pt.txt: README_pt_PT.txt README_pt_BR.txt
+        :print pt_PT >!$target
+        :cat README_pt_PT.txt | :eval re.sub('\r', '', stdin) >>$target
+        :print =================================================== >>$target
+        :print pt_BR: >>$target
+        :cat README_pt_BR.txt | :eval re.sub('\r', '', stdin) >>$target
+
+#
+# Fetching the files from OpenOffice.org.
+#
+OODIR = http://ftp.services.openoffice.org/pub/OpenOffice.org/contrib/dictionaries
+:attr {fetch = $OODIR/%file%} pt_PT.zip pt_BR.zip
+
+# The files don't depend on the .zip file so that we can delete it.
+# Only download the zip file if the targets don't exist.
+pt_PT.aff pt_PT.dic: {buildcheck=}
+        :assertpkg unzip patch
+        :fetch pt_PT.zip
+        :sys $UNZIP pt_PT.zip
+        :delete pt_PT.zip
+        :sys $VIM pt_PT.dic -e -c "set ff=unix" -c update -c q
+        :sys $VIM README_pt_PT.txt -e -c "set ff=unix" -c update -c q
+        @if not os.path.exists('pt_PT.orig.aff'):
+            :copy pt_PT.aff pt_PT.orig.aff
+        @if not os.path.exists('pt_PT.orig.dic'):
+            :copy pt_PT.dic pt_PT.orig.dic
+        @if os.path.exists('pt_PT.diff'):
+            :sys patch <pt_PT.diff
+
+pt_BR.aff pt_BR.dic: {buildcheck=}
+        :assertpkg unzip patch
+        :fetch pt_BR.zip
+        :sys $UNZIP pt_BR.zip
+        :delete pt_BR.zip
+        :sys $VIM pt_BR.aff -e -c "set ff=unix" -c update -c q
+        :sys $VIM pt_BR.dic -e -c "set ff=unix" -c update -c q
+        :sys $VIM README_pt_BR.txt -e -c "set ff=unix" -c update -c q
+        @if not os.path.exists('pt_BR.orig.aff'):
+            :copy pt_BR.aff pt_BR.orig.aff
+        @if not os.path.exists('pt_BR.orig.dic'):
+            :copy pt_BR.dic pt_BR.orig.dic
+        @if os.path.exists('pt_BR.diff'):
+            :sys patch <pt_BR.diff
+
+
+# Generate diff files, so that others can get the OpenOffice files and apply
+# the diffs to get the Vim versions.
+
+diff:
+        :assertpkg diff
+        :sys {force} diff -a -C 1 pt_PT.orig.aff pt_PT.aff >pt_PT.diff
+        :sys {force} diff -a -C 1 pt_PT.orig.dic pt_PT.dic >>pt_PT.diff
+        :sys {force} diff -a -C 1 pt_BR.orig.aff pt_BR.aff >pt_BR.diff
+	:sys {force} diff -a -C 1 pt_BR.orig.dic pt_BR.dic >>pt_BR.diff
+
+
+# Check for updated OpenOffice spell files.  When there are changes the
+# ".new.aff" and ".new.dic" files are left behind for manual inspection.
+
+check: check-us check-au
+
+check-us:
+        :assertpkg unzip diff
+        :fetch pt_PT.zip
+        :mkdir tmp
+        :cd tmp
+        @try:
+            @import stat
+            :sys $UNZIP ../pt_PT.zip
+            :sys {force} diff ../pt_PT.orig.aff pt_PT.aff >d
+            @if os.stat('d')[stat.ST_SIZE] > 0:
+                :copy pt_PT.aff ../pt_PT.new.aff
+            :sys {force} diff ../pt_PT.orig.dic pt_PT.dic >d
+            @if os.stat('d')[stat.ST_SIZE] > 0:
+                :copy pt_PT.dic ../pt_PT.new.dic
+        @finally:
+            :cd ..
+            :delete {r}{f}{q} tmp
+            :delete pt_PT.zip
+
+check-au:
+        :assertpkg unzip diff
+        :fetch pt_BR.zip
+        :mkdir tmp
+        :cd tmp
+        @try:
+            @import stat
+            :sys $UNZIP ../pt_BR.zip
+            :sys {force} diff ../pt_BR.orig.aff pt_BR.aff >d
+            @if os.stat('d')[stat.ST_SIZE] > 0:
+                :copy pt_BR.aff ../pt_BR.new.aff
+            :sys {force} diff ../pt_BR.orig.dic pt_BR.dic >d
+            @if os.stat('d')[stat.ST_SIZE] > 0:
+                :copy pt_BR.dic ../pt_BR.new.dic
+        @finally:
+            :cd ..
+            :delete {r}{f}{q} tmp
+            :delete pt_BR.zip
+
+# vim: set sts=4 sw=4 :

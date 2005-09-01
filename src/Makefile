@@ -119,12 +119,14 @@
 #	If you don't want to install everything, there are other targets:
 #		make installvim		only installs Vim, not the tools
 #		make installvimbin	only installs the Vim executable
-#		make installruntime	only installs the Vim help and
+#		make installruntime	installs most of the runtime files
+#		make installrtbase	only installs the Vim help and
 #							runtime files
 #		make installlinks	only installs the Vim binary links
 #		make installmanlinks	only installs the Vim manpage links
 #		make installmacros	only installs the Vim macros
-#		make installtutor	only installs the Vim tutor
+#		make installtutorbin	only installs the Vim tutor program
+#		make installtutor	only installs the Vim tutor files
 #		make installspell	only installs the spell files
 #		make installtools	only installs xxd
 #	If you install Vim, not to install for real but to prepare a package
@@ -1725,7 +1727,8 @@ install: $(GUI_INSTALL)
 
 install_normal: installvim installtools $(INSTALL_LANGS) install-icons
 
-installvim: installvimbin installruntime installlinks installmanlinks installmacros installtutor installspell
+installvim: installvimbin installtutorbin \
+		installruntime installlinks installmanlinks
 
 installvimbin: $(VIMTARGET) $(DESTDIR)$(exec_prefix) $(DEST_BIN)
 	-if test -f $(DEST_BIN)/$(VIMTARGET); then \
@@ -1743,8 +1746,11 @@ installvimbin: $(VIMTARGET) $(DESTDIR)$(exec_prefix) $(DEST_BIN)
 INSTALLMANARGS = $(VIMLOC) $(SCRIPTLOC) $(VIMRCLOC) $(HELPSOURCE) $(MANMOD) \
 		$(VIMNAME) $(VIMDIFFNAME) $(EVIMNAME)
 
+# Install most of the runtime files
+installruntime: installrtbase installmacros installtutor installspell
+	
 # install the help files; first adjust the contents for the final location
-installruntime: $(HELPSOURCE)/vim.1 $(DEST_VIM) $(DEST_RT) \
+installrtbase: $(HELPSOURCE)/vim.1 $(DEST_VIM) $(DEST_RT) \
 		$(DEST_HELP) $(DEST_PRINT) $(DEST_COL) $(DEST_SYN) $(DEST_IND) \
 		$(DEST_FTP) $(DEST_AUTO) $(DEST_PLUG) $(DEST_TUTOR) \
 		$(DEST_SPELL) $(DEST_COMP)
@@ -1834,9 +1840,11 @@ installmacros: $(DEST_VIM) $(DEST_RT) $(DEST_MACRO)
 	      fi
 
 # install the tutor files
-installtutor: $(DEST_VIM) $(DEST_RT) $(DEST_TUTOR)
+installtutorbin: $(DEST_VIM)
 	$(INSTALL_DATA) vimtutor $(DEST_BIN)/$(VIMNAME)tutor
 	chmod $(SCRIPTMOD) $(DEST_BIN)/$(VIMNAME)tutor
+
+installtutor: $(DEST_RT) $(DEST_TUTOR)
 	-$(INSTALL_DATA) $(TUTORSOURCE)/README* $(TUTORSOURCE)/tutor* $(DEST_TUTOR)
 	chmod $(HELPMOD) $(DEST_TUTOR)/*
 
@@ -2539,7 +2547,19 @@ ICONS = $(RESDIR)/$(ICON_APP)
 #ICONS = $(addprefix $(RESDIR)/, $(ICON_APP) $(ICON_DOC) $(ICON_DOCTXT))
 
 install_macosx: gui_bundle
+# Remove the link to the runtime dir, don't want to copy all of that.
+	-rm $(APPDIR)/runtime
 	$(INSTALL_DATA_R) $(APPDIR) $(DESTDIR)$(prefix)
+# Install the runtime files.  Recursive!
+	-mkdir $(DESTDIR)$(prefix)/$(APPDIR)/runtime
+	-mkdir $(DESTDIR)$(prefix)/$(APPDIR)/bin
+	srcdir=`pwd`; $(MAKE) -f Makefile installruntime \
+		VIMEXE=$$srcdir/$(VIMTARGET) \
+		prefix=$(DESTDIR)$(prefix)/$(APPDIR) \
+		VIMRTLOC=$(DESTDIR)$(prefix)/$(APPDIR)/runtime
+# Put the link back.
+	ln -s `pwd`/../runtime $(APPDIR)
+# TODO: Create the vimtutor application.
 
 gui_bundle: $(APPDIR) bundle-dir bundle-executable bundle-info bundle-resource \
 	bundle-language
@@ -2549,12 +2569,9 @@ $(APPDIR):
 
 bundle-dir: $(APPDIR)/Contents $(VIMTARGET)
 	-@srcdir=`pwd`; cd $(HELPSOURCE); $(MAKE) VIMEXE=$$srcdir/$(VIMTARGET) vimtags
-	cp -R ../runtime $(APPDIR)
-# When using CVS some CVS directories might have been copied.
-	cvs=`find $(APPDIR) \( -name CVS -o -name AAPDIR \) -print`; \
-	      if test -n "$$cvs"; then \
-		 rm -rf $$cvs; \
-	      fi
+# Make a link to the runtime directory, so that we can try out the executable
+# without installing it.
+	-ln -s `pwd`/../runtime $(APPDIR)
 
 bundle-executable: $(VIMTARGET)
 	cp $(VIMTARGET) $(APPDIR)/Contents/MacOS/$(VIMTARGET)

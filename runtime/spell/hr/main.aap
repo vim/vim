@@ -9,8 +9,8 @@
 SPELLDIR = ..
 FILES    = hr_HR.aff hr_HR.dic
 
-all: $SPELLDIR/hr.iso-8859-2.spl $SPELLDIR/pl.utf-8.spl \
-        $SPELLDIR/hr.cp1250.spl ../README_pl.txt
+all: $SPELLDIR/hr.iso-8859-2.spl $SPELLDIR/hr.utf-8.spl \
+        $SPELLDIR/hr.cp1250.spl ../README_hr.txt
 
 $SPELLDIR/hr.iso-8859-2.spl : $FILES
         :sys env LANG=hr_HR.ISO8859-2 $VIM -u NONE -e -c "mkspell! $SPELLDIR/hr hr_HR" -c q

@@ -13,8 +13,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: vim 7.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2005-07-02 18:00+0200\n"
-"PO-Revision-Date:  2005-07-02 18:00+0200\n"
+"POT-Creation-Date: 2005-08-25 09:30+0200\n"
+"PO-Revision-Date:  2005-08-29 21:30+0200\n"
 "Last-Translator:   Vlad Sandrini   <marco@sandrini.biz>\n"
 "Language-Team:     Italian"
 "                   Antonio Colombo <azc10@yahoo.com>"
@@ -224,13 +224,8 @@ msgid " Keyword completion (^N^P)"
 msgstr " Completamento Keyword (^N^P)"
 
 #. ctrl_x_mode == 0, ^P/^N compl.
-msgid " ^X mode (^E^Y^L^]^F^I^K^D^U^V^N^P)"
-msgstr " modalità ^X (^E^Y^L^]^F^I^K^D^U^V^N^P)"
-
-#. Scroll has it's own msgs, in it's place there is the msg for local
-#. * ctrl_x_mode = 0 (eg continue_status & CONT_LOCAL)  -- Acevedo
-msgid " Keyword Local completion (^N^P)"
-msgstr " Completamento Keyword Locale (^N^P)"
+msgid " ^X mode (^]^D^E^F^I^K^L^N^O^P^S^U^V^Y)"
+msgstr " modalità ^X (^]^D^E^F^I^K^L^N^O^P^S^U^V^Y)"
 
 msgid " Whole line completion (^L^N^P)"
 msgstr " Completamento Linea Intera (^L^N^P)"
@@ -259,14 +254,23 @@ msgstr " Completamento linea comandi (^V^N^P)"
 msgid " User defined completion (^U^N^P)"
 msgstr " Completamento definito dall'utente (^U^N^P)"
 
+msgid " Occult completion (^O^N^P)"
+msgstr " Completamento nascosto (^O^N^P)"
+
+msgid " Spelling suggestion (^S^N^P)"
+msgstr " Suggerimento ortografico (^S^N^P)"
+
+msgid " Keyword Local completion (^N^P)"
+msgstr " Completamento Keyword Locale (^N^P)"
+
 msgid "Hit end of paragraph"
 msgstr "Giunto alla fine del paragrafo"
 
-msgid "'thesaurus' option is empty"
-msgstr "l'opzione 'thesaurus' è vuota"
-
 msgid "'dictionary' option is empty"
 msgstr "l'opzione 'dictionary' è vuota"
+
+msgid "'thesaurus' option is empty"
+msgstr "l'opzione 'thesaurus' è vuota"
 
 #, c-format
 msgid "Scanning dictionary: %s"
@@ -669,6 +673,13 @@ msgstr ""
 "\n"
 "# variabili globali:\n"
 
+msgid ""
+"\n"
+"\tLast set from "
+msgstr ""
+"\n"
+"\tImpostata l'ultima volta da "
+
 msgid "Entering Debug mode.  Type \"cont\" to continue."
 msgstr "Entro modalità Debug.  Batti \"cont\" per continuare."
 
@@ -779,90 +790,6 @@ msgid "E168: :finish used outside of a sourced file"
 msgstr "E168: :finish usato fuori da file di comandi"
 
 #, c-format
-msgid "Page %d"
-msgstr "Pagina %d"
-
-msgid "No text to be printed"
-msgstr "Manca testo da stampare"
-
-#, c-format
-msgid "Printing page %d (%d%%)"
-msgstr "Sto stampando pagina %d (%d%%)"
-
-#, c-format
-msgid " Copy %d of %d"
-msgstr " Copia %d di %d"
-
-#, c-format
-msgid "Printed: %s"
-msgstr "Stampato: %s"
-
-msgid "Printing aborted"
-msgstr "Stampa non completata'"
-
-msgid "E455: Error writing to PostScript output file"
-msgstr "E455: Errore in scrittura a file PostScript di output"
-
-#, c-format
-msgid "E624: Can't open file \"%s\""
-msgstr "E624: Non riesco ad aprire il file \"%s\""
-
-#, c-format
-msgid "E457: Can't read PostScript resource file \"%s\""
-msgstr "E457: Non riesco a leggere file risorse PostScript \"%s\""
-
-#, c-format
-msgid "E618: file \"%s\" is not a PostScript resource file"
-msgstr "E618: file \"%s\" non è un file di risorse PostScript"
-
-#, c-format
-msgid "E619: file \"%s\" is not a supported PostScript resource file"
-msgstr "E619: file \"%s\" non è un file di risorse PostScript supportato"
-
-#, c-format
-msgid "E621: \"%s\" resource file has wrong version"
-msgstr "E621: il file di risorse \"%s\" ha una versione sbagliata"
-
-msgid "E673: Incompatible multi-byte encoding and character set."
-msgstr "E673: Codifica e set di caratteri multi-byte non compatibili."
-
-msgid "E674: printmbcharset cannot be empty with multi-byte encoding."
-msgstr "E674: printmbcharset non può essere nullo con codifica multi-byte."
-
-msgid "E675: No default font specified for multi-byte printing."
-msgstr "E675: Font predefinito non specificato per stampa multi-byte."
-
-msgid "E324: Can't open PostScript output file"
-msgstr "E324: Non riesco ad aprire file PostScript di output"
-
-#, c-format
-msgid "E456: Can't open file \"%s\""
-msgstr "E456: Non riesco ad aprire il file \"%s\""
-
-msgid "E456: Can't find PostScript resource file \"prolog.ps\""
-msgstr "E456: Non trovo file risorse PostScript \"prolog.ps\""
-
-msgid "E456: Can't find PostScript resource file \"cidfont.ps\""
-msgstr "E456: Non trovo file risorse PostScript \"cidfont.ps\""
-
-#, c-format
-msgid "E456: Can't find PostScript resource file \"%s.ps\""
-msgstr "E456: Non trovo file risorse PostScript \"%s.ps\""
-
-#, c-format
-msgid "E620: Unable to convert to print encoding \"%s\""
-msgstr "E620: Impossibile convertire a codifica di stampa \"%s\""
-
-msgid "Sending to printer..."
-msgstr "Invio a stampante..."
-
-msgid "E365: Failed to print PostScript file"
-msgstr "E365: Non riesco ad aprire file PostScript"
-
-msgid "Print job sent."
-msgstr "Richiesta di stampa inviata."
-
-#, c-format
 msgid "Current %slanguage: \"%s\""
 msgstr "Lingua %sin uso: \"%s\""
 
@@ -963,6 +890,14 @@ msgstr "E140: Usa ! per scrivere il buffer incompleto"
 #, c-format
 msgid "Overwrite existing file \"%s\"?"
 msgstr "Riscrittura del file esistente \"%s\"?"
+
+#, c-format
+msgid "Swap file \"%s\" exists, overwrite anyway?"
+msgstr "Il file swap \"%s\" esiste già, sovrascrivo?"
+
+#, c-format
+msgid "E768: Swap file exists: %s (:silent! overrides)"
+msgstr "E768: File swap esistente: %s (:silent! per sovrascriverlo)"
 
 #, c-format
 msgid "E141: No file name for buffer %ld"
@@ -1221,7 +1156,7 @@ msgstr "E182: Nome comando non valido"
 
 msgid "E183: User defined commands must start with an uppercase letter"
 msgstr ""
-"E183 I comandi definiti dall'utente devono iniziare con lettera maiuscola"
+"E183: I comandi definiti dall'utente devono iniziare con lettera maiuscola"
 
 #, c-format
 msgid "E184: No such user-defined command: %s"
@@ -2163,6 +2098,99 @@ msgstr "Dimensione:"
 msgid "E256: Hangul automata ERROR"
 msgstr "E256: ERRORE processore Hangul"
 
+msgid "E550: Missing colon"
+msgstr "E550: Manca ':'"
+
+msgid "E551: Illegal component"
+msgstr "E551: Componente non valido"
+
+msgid "E552: digit expected"
+msgstr "E552: aspettavo un numero"
+
+#, c-format
+msgid "Page %d"
+msgstr "Pagina %d"
+
+msgid "No text to be printed"
+msgstr "Manca testo da stampare"
+
+#, c-format
+msgid "Printing page %d (%d%%)"
+msgstr "Sto stampando pagina %d (%d%%)"
+
+#, c-format
+msgid " Copy %d of %d"
+msgstr " Copia %d di %d"
+
+#, c-format
+msgid "Printed: %s"
+msgstr "Stampato: %s"
+
+msgid "Printing aborted"
+msgstr "Stampa non completata'"
+
+msgid "E455: Error writing to PostScript output file"
+msgstr "E455: Errore in scrittura a file PostScript di output"
+
+#, c-format
+msgid "E624: Can't open file \"%s\""
+msgstr "E624: Non riesco ad aprire il file \"%s\""
+
+#, c-format
+msgid "E457: Can't read PostScript resource file \"%s\""
+msgstr "E457: Non riesco a leggere file risorse PostScript \"%s\""
+
+#, c-format
+msgid "E618: file \"%s\" is not a PostScript resource file"
+msgstr "E618: file \"%s\" non è un file di risorse PostScript"
+
+#, c-format
+msgid "E619: file \"%s\" is not a supported PostScript resource file"
+msgstr "E619: file \"%s\" non è un file di risorse PostScript supportato"
+
+#, c-format
+msgid "E621: \"%s\" resource file has wrong version"
+msgstr "E621: il file di risorse \"%s\" ha una versione sbagliata"
+
+msgid "E673: Incompatible multi-byte encoding and character set."
+msgstr "E673: Codifica e set di caratteri multi-byte non compatibili."
+
+msgid "E674: printmbcharset cannot be empty with multi-byte encoding."
+msgstr "E674: printmbcharset non può essere nullo con codifica multi-byte."
+
+msgid "E675: No default font specified for multi-byte printing."
+msgstr "E675: Font predefinito non specificato per stampa multi-byte."
+
+msgid "E324: Can't open PostScript output file"
+msgstr "E324: Non riesco ad aprire file PostScript di output"
+
+#, c-format
+msgid "E456: Can't open file \"%s\""
+msgstr "E456: Non riesco ad aprire il file \"%s\""
+
+msgid "E456: Can't find PostScript resource file \"prolog.ps\""
+msgstr "E456: Non trovo file risorse PostScript \"prolog.ps\""
+
+msgid "E456: Can't find PostScript resource file \"cidfont.ps\""
+msgstr "E456: Non trovo file risorse PostScript \"cidfont.ps\""
+
+#, c-format
+msgid "E456: Can't find PostScript resource file \"%s.ps\""
+msgstr "E456: Non trovo file risorse PostScript \"%s.ps\""
+
+#, c-format
+msgid "E620: Unable to convert to print encoding \"%s\""
+msgstr "E620: Impossibile convertire a codifica di stampa \"%s\""
+
+msgid "Sending to printer..."
+msgstr "Invio a stampante..."
+
+msgid "E365: Failed to print PostScript file"
+msgstr "E365: Non riesco ad aprire file PostScript"
+
+msgid "Print job sent."
+msgstr "Richiesta di stampa inviata."
+
 msgid "Add a new database"
 msgstr "Aggiungi un nuovo database"
 
@@ -2612,8 +2640,8 @@ msgstr "E573: Identificativo di server non valido: %s"
 msgid "E251: VIM instance registry property is badly formed.  Deleted!"
 msgstr "E251: Proprietà registry relative a VIM non adeguate.  Cancellate!"
 
-msgid "Unknown option"
-msgstr "Opzione inesistente"
+msgid "Unknown option argument"
+msgstr "Argomento di opzione sconosciuto"
 
 msgid "Too many edit arguments"
 msgstr "Troppi argomenti di edit"
@@ -2621,14 +2649,18 @@ msgstr "Troppi argomenti di edit"
 msgid "Argument missing after"
 msgstr "Argomento mancante dopo"
 
-msgid "Garbage after option"
-msgstr "Spazzatura dopo opzione"
+msgid "Garbage after option argument"
+msgstr "Spazzatura dopo argomento di opzione"
 
 msgid "Too many \"+command\", \"-c command\" or \"--cmd command\" arguments"
 msgstr "Troppi argomenti \"+command\", \"-c command\" o \"--cmd command\""
 
 msgid "Invalid argument for"
 msgstr "Argomento non valido per"
+
+#, c-format
+msgid "%d files to edit\n"
+msgstr "%d file da elaborare\n"
 
 msgid "This Vim was not compiled with the diff feature."
 msgstr "Vim non compilato con opzione 'diff'."
@@ -2650,10 +2682,6 @@ msgstr "Vim: Attenzione: Output non diretto a un terminale\n"
 
 msgid "Vim: Warning: Input is not from a terminal\n"
 msgstr "Vim: Attenzione: Input non proveniente da un terminale\n"
-
-#, c-format
-msgid "%d files to edit\n"
-msgstr "%d file da elaborare\n"
 
 #. just in case..
 msgid "pre-vimrc command line"
@@ -3549,8 +3577,9 @@ msgstr ""
 msgid "E328: Menu only exists in another mode"
 msgstr "E328: I Menu esistono solo in un'altra modalità"
 
-msgid "E329: No menu of that name"
-msgstr "E329: Nessun Menu con quel nome"
+#, c-format
+msgid "E329: No menu \"%s\""
+msgstr "E329: Nessun Menu \"%s\""
 
 msgid "E330: Menu path must not lead to a sub-menu"
 msgstr "E330: Il percorso del Menu non deve condurre a un sotto-Menu"
@@ -3609,17 +3638,14 @@ msgstr "Manutentore messaggi: Vlad Sandrini <marco@sandrini.biz>"
 msgid "Interrupt: "
 msgstr "Interruzione: "
 
-msgid "Hit ENTER or type command to continue"
-msgstr "Batti INVIO o un comando per proseguire"
+msgid "Press ENTER or type command to continue"
+msgstr "Premi INVIO o un comando per proseguire"
 
 msgid "-- More --"
 msgstr "-- Ancora --"
 
-msgid " (RET/BS: line, SPACE/b: page, d/u: half page, q: quit)"
-msgstr " (RET/BS: linea, SPAZIO/b: pagina, d/u: mezza pagina, q: esci)"
-
-msgid " (RET: line, SPACE: page, d: half page, q: quit)"
-msgstr " (RET: linea, SPAZIO: pagina, d: mezza pagina, q: esci)"
+msgid " SPACE/d/j: screen/page/line down, b/u/k: up, q: quit "
+msgstr " SPAZIO/d/j: schermo/pagina/riga giù, b/u/k: su, q: abbandona"
 
 msgid "Question"
 msgstr "Domanda"
@@ -3656,6 +3682,12 @@ msgstr "Apri File dialogo"
 #. TODO: non-GUI file selector here
 msgid "E338: Sorry, no file browser in console mode"
 msgstr "E338: Spiacente, niente esplorazione file in modalità console"
+
+msgid "E766: Insufficient arguments for printf()"
+msgstr "E766: Argomenti non sufficienti per printf()"
+
+msgid "E767: Too many arguments to printf()"
+msgstr "E767: Troppi argomenti per printf()"
 
 msgid "W10: Warning: Changing a readonly file"
 msgstr "W10: Attenzione: Modifica a un file in sola-lettura"
@@ -3775,15 +3807,6 @@ msgstr "E346: Nessun altra directory \"%s\" trovata nel 'cdpath'"
 #, c-format
 msgid "E347: No more file \"%s\" found in path"
 msgstr "E347: Nessun altro file \"%s\" trovato nel percorso"
-
-msgid "E550: Missing colon"
-msgstr "E550: Manca ':'"
-
-msgid "E551: Illegal component"
-msgstr "E551: Componente non valido"
-
-msgid "E552: digit expected"
-msgstr "E552: aspettavo un numero"
 
 #. Get here when the server can't be found.
 msgid "Cannot connect to Netbeans #2"
@@ -3963,13 +3986,6 @@ msgstr "E519: Opzione non supportata"
 
 msgid "E520: Not allowed in a modeline"
 msgstr "E520: Non consentito in una 'modeline'"
-
-msgid ""
-"\n"
-"\tLast set from "
-msgstr ""
-"\n"
-"\tImpostata l'ultima volta da "
 
 msgid "E521: Number required after ="
 msgstr "E521: Ci vuole un numero dopo ="
@@ -4482,6 +4498,10 @@ msgid "E71: Invalid character after %s%%"
 msgstr "E71: Carattere non ammesso dopo %s%%"
 
 #, c-format
+msgid "E769: Missing ] after %s["
+msgstr "E769: Manca ] dopo %s["
+
+#, c-format
 msgid "E554: Syntax error in %s{...}"
 msgstr "E554: Errore sintattico in %s{...}"
 
@@ -4607,27 +4627,49 @@ msgstr "E759: Errore di formato nel file ortografico"
 msgid "E758: Truncated spell file"
 msgstr "E758: File ortografico troncato"
 
+#, c-format
+msgid "Trailing text in %s line %d: %s"
+msgstr "Testo in eccesso in %s linea %d: %s"
+
+#, c-format
+msgid "Affix name too long in %s line %d: %s"
+msgstr "Nome affisso troppo lungo in %s linea %d: %s"
+
+msgid "E761: Format error in affix file FOL, LOW or UPP"
+msgstr "E761: Errore di formato nel file affissi FOL, LOW o UPP"
+
+msgid "E762: Character in FOL, LOW or UPP is out of range"
+msgstr "E762: Carattere fuori intervallo in FOL, LOW o UPP"
+
+msgid "Compressing word tree..."
+msgstr "Comprimo albero di parole..."
+
 msgid "E756: Spell checking is not enabled"
 msgstr "E756: Il controllo ortografico non è abilitato"
 
 #, c-format
-msgid "Warning: Cannot find word list \"%s\""
-msgstr "Attenzione: Non trovo lista parole \"%s\""
+msgid "Warning: Cannot find word list \"%s.%s.spl\" or \"%s.ascii.spl\""
+msgstr "Attenzione: Non trovo lista parole \"%s.%s.spl\" o \"%s.ascii.spl\""
 
 #, c-format
 msgid "Reading spell file \"%s\""
 msgstr "Lettura file ortografico \"%s\""
 
-msgid "E757: Wrong file ID in spell file"
-msgstr "E757: File ID errato nel file ortografico"
+msgid "E757: This does not look like a spell file"
+msgstr "E757: Questo non sembra un file ortografico"
+
+msgid "E771: Old spell file, needs to be updated"
+msgstr "E771: File ortografico obsoleto, necessario aggiornamento"
+
+msgid "E772: Spell file is for newer version of Vim"
+msgstr "E772: Il file ortografico è per versioni di Vim più recenti"
+
+msgid "E770: Unsupported section in spell file"
+msgstr "E770: Sezione non supportata nel file ortografico"
 
 #, c-format
 msgid "Warning: region %s not supported"
 msgstr "Attenzione: regione %s non supportata"
-
-#, c-format
-msgid "Affix name too long in %s line %d: %s"
-msgstr "Nome affisso troppo lungo in %s linea %d: %s"
 
 #, c-format
 msgid "Reading affix file %s ..."
@@ -4646,8 +4688,28 @@ msgid "Conversion in %s not supported"
 msgstr "Conversione in %s non supportata"
 
 #, c-format
-msgid "Trailing text in %s line %d: %s"
-msgstr "Testo in eccesso in %s linea %d: %s"
+msgid "Invalid value for FLAG in %s line %d: %s"
+msgstr "Valore di FLAG non valido in %s linea %d: %s"
+
+#, c-format
+msgid "FLAG after using flags in %s line %d: %s"
+msgstr "FLAG dopo l'uso di flags in %s linea %d: %s"
+
+#, c-format
+msgid "Character used for SLASH must be ASCII; in %s line %d: %s"
+msgstr "Il carattere usato per SLASH deve essere ASCII; in %s linea %d: %s"
+
+#, c-format
+msgid "Wrong COMPOUNDMAX value in %s line %d: %s"
+msgstr "Valore errato per COMPOUNDMAX in %s linea %d: %s"
+
+#, c-format
+msgid "Wrong COMPOUNDMIN value in %s line %d: %s"
+msgstr "Valore errato per COMPOUNDMIN in %s linea %d: %s"
+
+#, c-format
+msgid "Wrong COMPOUNDSYLMAX value in %s line %d: %s"
+msgstr "Valore errato per COMPOUNDSYLMAX in %s linea %d: %s"
 
 #, c-format
 msgid "Expected Y or N in %s line %d: %s"
@@ -4658,16 +4720,8 @@ msgid "Duplicate affix in %s line %d: %s"
 msgstr "Affisso duplicato in %s linea %d: %s"
 
 #, c-format
-msgid "Duplicate FOL in %s line %d"
-msgstr "FOL duplicato in %s linea %d"
-
-#, c-format
-msgid "Duplicate LOW in %s line %d"
-msgstr "LOW duplicato in %s linea %d"
-
-#, c-format
-msgid "Duplicate UPP in %s line %d"
-msgstr "UPP duplicato in %s linea %d"
+msgid "Broken condition in %s line %d: %s"
+msgstr "Condizione non rispettata in %s linea %d: %s"
 
 #, c-format
 msgid "Expected REP count in %s line %d"
@@ -4682,8 +4736,24 @@ msgid "Duplicate character in MAP in %s line %d"
 msgstr "Carattere duplicato in MAP in %s linea %d"
 
 #, c-format
-msgid "Unrecognized item in %s line %d: %s"
-msgstr "Elemento non riconosciuto in %s linea %d: %s"
+msgid "Unrecognized or duplicate item in %s line %d: %s"
+msgstr "Elemento non riconosciuto o duplicato in %s linea %d: %s"
+
+#, c-format
+msgid "Missing FOL/LOW/UPP line in %s"
+msgstr "Linea FOL/LOW/UPP mancante in %s"
+
+msgid "COMPOUNDSYLMAX used without SYLLABLE"
+msgstr "COMPOUNDSYLMAX usato senza SYLLABLE"
+
+msgid "Too many postponed prefixes"
+msgstr "Troppi prefissi posposti"
+
+msgid "Too many compound flags"
+msgstr "Troppi flag composti"
+
+msgid "Too many posponed prefixes and/or compound flags"
+msgstr "Troppi prefissi posposti e/o flag composti"
 
 #, c-format
 msgid "Missing SOFO%s line in %s"
@@ -4694,8 +4764,16 @@ msgid "Both SAL and SOFO lines in %s"
 msgstr "Linee sia SAL che SOFO in %s"
 
 #, c-format
-msgid "Missing FOL/LOW/UPP line in %s"
-msgstr "Linea FOL/LOW/UPP mancante in %s"
+msgid "Flag is not a number in %s line %d: %s"
+msgstr "Il flag non è un numero in %s linea %d: %s"
+
+#, c-format
+msgid "Illegal flag in %s line %d: %s"
+msgstr "Flag non ammesso in %s linea %d: %s"
+
+#, c-format
+msgid "%s value differs from what is used in another .aff file"
+msgstr "Il valore di %s è diverso da quello usato in un altro file .aff"
 
 #, c-format
 msgid "Reading dictionary file %s ..."
@@ -4714,8 +4792,16 @@ msgid "Duplicate word in %s line %d: %s"
 msgstr "Parola duplicata in %s linea %d: %s"
 
 #, c-format
-msgid "Ignored %d words with non-ASCII characters"
-msgstr "%d parole con caratteri non-ASCII ignorate"
+msgid "First duplicate word in %s line %d: %s"
+msgstr "Prima parola duplicata in %s linea %d: %s"
+
+#, c-format
+msgid "%d duplicate word(s) in %s"
+msgstr "%d parole duplicate in %s"
+
+#, c-format
+msgid "Ignored %d word(s) with non-ASCII characters in %s"
+msgstr "%d parole con caratteri non-ASCII ignorate in %s"
 
 #, c-format
 msgid "Reading word file %s ..."
@@ -4750,6 +4836,10 @@ msgid "Unrecognized flags in %s line %d: %s"
 msgstr "Flag non riconosciuti in %s linea %d: %s"
 
 #, c-format
+msgid "Ignored %d words with non-ASCII characters"
+msgstr "%d parole con caratteri non-ASCII ignorate"
+
+#, c-format
 msgid "Compressed %d of %d nodes; %d%% remaining"
 msgstr "%d di %d nodi compressi; ne restano %d%%"
 
@@ -4763,8 +4853,8 @@ msgstr "E754: Sono supportate fino ad 8 regioni"
 msgid "E755: Invalid region in %s"
 msgstr "E755: Regione non valida in %s"
 
-msgid "Compressing word tree..."
-msgstr "Comprimo albero di parole..."
+msgid "Warning: both compounding and NOBREAK specified"
+msgstr "Attenzione: specificati sia composizione sia NOBREAK"
 
 #, c-format
 msgid "Writing spell file %s ..."
@@ -4780,11 +4870,9 @@ msgstr "Uso stimato di memoria durante esecuzione: %d bytes"
 msgid "E764: 'spellfile' is not set"
 msgstr "E764: opzione 'spellfile' vuota"
 
-msgid "E761: Format error in affix file FOL, LOW or UPP"
-msgstr "E761: Errore di formato nel file affissi FOL, LOW o UPP"
-
-msgid "E762: Character in FOL, LOW or UPP is out of range"
-msgstr "E762: Carattere fuori intervallo in FOL, LOW o UPP"
+#, c-format
+msgid "E765: 'spellfile' does not have %ld enties"
+msgstr "E765: 'spellfile' non ha %ld elementi"
 
 msgid "E763: Word characters differ between spell files"
 msgstr "E763: Caratteri di parola differenti nei file ortografici"
@@ -4792,26 +4880,18 @@ msgstr "E763: Caratteri di parola differenti nei file ortografici"
 msgid "Sorry, no suggestions"
 msgstr "Spiacente, nessun suggerimento"
 
+#, c-format
+msgid "Sorry, only %ld suggestions"
+msgstr "Spiacente, solo %ld suggerimenti"
+
 #. avoid more prompt
 #, c-format
 msgid "Change \"%.*s\" to:"
 msgstr "Cambiare \"%.*s\" in:"
 
 #, c-format
-msgid "%2d \"%s\""
-msgstr "%2d \"%s\""
-
-#, c-format
 msgid " < \"%.*s\""
 msgstr " < \"%.*s\""
-
-#, c-format
-msgid " (%s%d - %d)"
-msgstr " (%s%d - %d)"
-
-#, c-format
-msgid " (%d)"
-msgstr " (%d)"
 
 msgid "E752: No previous spell replacement"
 msgstr "E752: Nessuna sostituzione ortografica precedente"

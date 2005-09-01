@@ -1,0 +1,79 @@
+# Aap recipe for Swedish Vim spell files.
+
+# Use a freshly compiled Vim if it exists.
+@if os.path.exists('../../../src/vim'):
+    VIM = ../../../src/vim
+@else:
+    :progsearch VIM vim
+
+SPELLDIR = ..
+FILES    = sv_SE.aff sv_SE.dic
+
+all: $SPELLDIR/sv.latin1.spl $SPELLDIR/sv.utf-8.spl ../README_sv.txt
+
+$SPELLDIR/sv.latin1.spl : $FILES
+        :sys env LANG=sv_SE.ISO8859-1
+		$VIM -u NONE -e -c "mkspell! $SPELLDIR/sv sv_SE" -c q
+
+$SPELLDIR/sv.utf-8.spl : $FILES
+        :sys env LANG=sv_SE.UTF-8
+		$VIM -u NONE -e -c "mkspell! $SPELLDIR/sv sv_SE" -c q
+
+../README_sv.txt : README_sv_SE.txt
+        :copy $source $target
+
+#
+# Fetching the files from OpenOffice.org.
+#
+OODIR = http://ftp.services.openoffice.org/pub/OpenOffice.org/contrib/dictionaries
+:attr {fetch = $OODIR/%file%} sv_SE.zip
+
+# The files don't depend on the .zip file so that we can delete it.
+# Only download the zip file if the targets don't exist.
+sv_SE.aff sv_SE.dic: {buildcheck=}
+        :assertpkg unzip patch
+        :fetch sv_SE.zip
+        :sys $UNZIP sv_SE.zip
+        :delete sv_SE.zip
+        :delete hyph_sv_SE.dic
+        @if not os.path.exists('sv_SE.orig.aff'):
+            :copy sv_SE.aff sv_SE.orig.aff
+        @if not os.path.exists('sv_SE.orig.dic'):
+            :copy sv_SE.dic sv_SE.orig.dic
+        @if os.path.exists('sv_SE.diff'):
+            :sys patch <sv_SE.diff
+
+
+# Generate diff files, so that others can get the OpenOffice files and apply
+# the diffs to get the Vim versions.
+
+diff:
+        :assertpkg diff
+        :sys {force} diff -a -C 1 sv_SE.orig.aff sv_SE.aff >sv_SE.diff
+        :sys {force} diff -a -C 1 sv_SE.orig.dic sv_SE.dic >>sv_SE.diff
+
+
+# Check for updated OpenOffice spell files.  When there are changes the
+# ".new.aff" and ".new.dic" files are left behind for manual inspection.
+
+check:
+        :assertpkg unzip diff
+        :fetch sv_SE.zip
+        :mkdir tmp
+        :cd tmp
+        @try:
+            @import stat
+            :sys $UNZIP ../sv_SE.zip
+            :sys {force} diff ../sv_SE.orig.aff sv_SE.aff >d
+            @if os.stat('d')[stat.ST_SIZE] > 0:
+                :copy sv_SE.aff ../sv_SE.new.aff
+            :sys {force} diff ../sv_SE.orig.dic sv_SE.dic >d
+            @if os.stat('d')[stat.ST_SIZE] > 0:
+                :copy sv_SE.dic ../sv_SE.new.dic
+        @finally:
+            :cd ..
+            :delete {r}{f}{q} tmp
+            :delete sv_SE.zip
+
+
+# vim: set sts=4 sw=4 :

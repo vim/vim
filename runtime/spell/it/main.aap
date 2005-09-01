@@ -19,8 +19,8 @@ $SPELLDIR/it.utf-8.spl : $FILES
         :sys env LANG=it_IT.UTF-8
 		$VIM -u NONE -e -c "mkspell! $SPELLDIR/it it_IT" -c q
 
-../README_it.txt : README_it_IT.txt
-        :copy $source $target
+../README_it.txt : README_it_IT.txt README.txt
+        :cat $source >! $target
 
 #
 # Fetching the files from OpenOffice.org.
@@ -35,6 +35,7 @@ it_IT.aff it_IT.dic: {buildcheck=}
         :fetch it_IT.zip
         :sys $UNZIP it_IT.zip
         :delete it_IT.zip
+        :delete GPL.txt history.txt license.txt notes.txt statistiche.sxc thanks.txt
         @if not os.path.exists('it_IT.orig.aff'):
             :copy it_IT.aff it_IT.orig.aff
         @if not os.path.exists('it_IT.orig.dic'):

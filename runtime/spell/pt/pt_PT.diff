@@ -1,0 +1,27 @@
+*** pt_PT.orig.aff	Wed Aug 31 20:05:16 2005
+--- pt_PT.aff	Wed Aug 31 20:05:16 2005
+***************
+*** 3,4 ****
+--- 3,24 ----
+  
++ FOL  ‗אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏ÿ
++ LOW  ‗אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏ÿ
++ UPP  ‗ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞÿ
++ 
++ SOFOFROM abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZאבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗ÿÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞ¿
++ SOFOTO   ebctefghejklnnepkrstevvkesebctefghejklnnepkrstevvkeseeeeeeeceeeeeeeedneeeeeeeeeeepseeeeeeeeceeeeeeeedneeeeeeeeeeep?
++ 
++ MIDWORD	'
++ 
++ MAP 9
++ MAP aאבגדהו
++ MAP eטיךכ
++ MAP iלםמן
++ MAP oעףפץצ
++ MAP uשתûü
++ MAP nס
++ MAP cח
++ MAP yÿ‎
++ MAP s‗
++ 
+  PFX A Y 1

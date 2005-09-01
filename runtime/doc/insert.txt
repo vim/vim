@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0aa.  Last change: 2005 Aug 17
+*insert.txt*    For Vim version 7.0aa.  Last change: 2005 Sep 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -868,8 +868,8 @@ CTRL-X CTRL-V		Guess what kind of item is in front of the cursor and
 User defined completion					*compl-function*
 
 Completion is done by a function that can be defined by the user with the
-'completefunc' option.  See the option for how the function is called and an
-example.
+'completefunc' option.  See the 'completefunc' help for how the function
+is called and an example.
 
 							*i_CTRL-X_CTRL-U*
 CTRL-X CTRL-U		Guess what kind of item is in front of the cursor and
@@ -884,7 +884,10 @@ CTRL-X CTRL-U		Guess what kind of item is in front of the cursor and
 
 Occult completion					*compl-occult*
 
-Completion is done by a supernatural being.
+Completion is done by a function that can be defined by the user with the
+'occultfunc' option.  This is to be used for filetype-specific completion.
+
+See the 'completefunc' help for how the function is called and an example.
 
 							*i_CTRL-X_CTRL-O*
 CTRL-X CTRL-O		Guess what kind of item is in front of the cursor and

@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 7.0aa.  Last change: 2005 Aug 29
+*quickref.txt*  For Vim version 7.0aa.  Last change: 2005 Sep 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -772,6 +772,7 @@ Short explanation of each option:		*option-list*
 |'nrformats'|	  |'nf'|     number formats recognized for CTRL-A command
 |'number'|	  |'nu'|     print the line number in front of each line
 |'numberwidth'|	  |'nuw'|    number of columns used for the line number
+|'occultfunc'|    |'ofu'|    function for filetype-specific completion
 |'osfiletype'|	  |'oft'|    operating system-specific filetype information
 |'paragraphs'|	  |'para'|   nroff macros that separate paragraphs
 |'paste'|		     allow pasting text

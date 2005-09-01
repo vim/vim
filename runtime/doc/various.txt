@@ -489,11 +489,11 @@ N  *+X11*		Unix only: can restore window title |X11|
 
 							*:verbose-cmd*
 When 'verbose' is non-zero, listing the value of a Vim option or a key map or
-a user-defined function or a command or a highlight group or an autocommand
-will also display where it was last defined.  If it was defined manually then
-there will be no "Last set" message.  When it was defined while executing a
-function, user command or autocommand, the script in which it was defined is
-reported.
+an abbreviation or a user-defined function or a command or a highlight group
+or an autocommand will also display where it was last defined.  If it was
+defined manually then there will be no "Last set" message.  When it was
+defined while executing a function, user command or autocommand, the script in
+which it was defined is reported.
 {not available when compiled without the +eval feature}
 
 							*K*

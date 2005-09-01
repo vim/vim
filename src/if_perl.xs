@@ -437,37 +437,50 @@ eval_to_string(arg, nextcmd)
 
 /*
  * Create a new reference to an SV pointing to the SCR structure
- * The perl_private part of the SCR structure points to the SV,
- * so there can only be one such SV for a particular SCR structure.
- * When the last reference has gone (DESTROY is called),
- * perl_private is reset; When the screen goes away before
+ * The b_perl_private/w_perl_private part of the SCR structure points to the
+ * SV, so there can only be one such SV for a particular SCR structure.  When
+ * the last reference has gone (DESTROY is called),
+ * b_perl_private/w_perl_private is reset; When the screen goes away before
  * all references are gone, the value of the SV is reset;
  * any subsequent use of any of those reference will produce
  * a warning. (see typemap)
  */
-#define newANYrv(TYPE, TNAME)					\
-static SV *							\
-new ## TNAME ## rv(rv, ptr)					\
-    SV *rv;							\
-    TYPE *ptr;							\
-{								\
-    sv_upgrade(rv, SVt_RV);					\
-    if (!ptr->perl_private)					\
-    {								\
-	ptr->perl_private = newSV(0);				\
-	sv_setiv(ptr->perl_private, (IV)ptr);			\
-    }								\
-    else							\
-	SvREFCNT_inc(ptr->perl_private);			\
-    SvRV(rv) = ptr->perl_private;				\
-    SvROK_on(rv);						\
-    return sv_bless(rv, gv_stashpv("VI" #TNAME, TRUE));		\
+
+    static SV *
+newWINrv(rv, ptr)
+    SV	    *rv;
+    win_T   *ptr;
+{
+    sv_upgrade(rv, SVt_RV);
+    if (ptr->w_perl_private == NULL)
+    {
+	ptr->w_perl_private = newSV(0);
+	sv_setiv(ptr->w_perl_private, (IV)ptr);
+    }
+    else
+	SvREFCNT_inc(ptr->w_perl_private);
+    SvRV(rv) = ptr->w_perl_private;
+    SvROK_on(rv);
+    return sv_bless(rv, gv_stashpv("VIWIN", TRUE));
 }
 
-/* LINTED: avoid warning: cast from pointer to integer of different size */
-newANYrv(win_T, WIN)
-/* LINTED: avoid warning: cast from pointer to integer of different size */
-newANYrv(buf_T, BUF)
+    static SV *
+newBUFrv(rv, ptr)
+    SV	    *rv;
+    buf_T   *ptr;
+{
+    sv_upgrade(rv, SVt_RV);
+    if (ptr->b_perl_private == NULL)
+    {
+	ptr->b_perl_private = newSV(0);
+	sv_setiv(ptr->b_perl_private, (IV)ptr);
+    }
+    else
+	SvREFCNT_inc(ptr->b_perl_private);
+    SvRV(rv) = ptr->b_perl_private;
+    SvROK_on(rv);
+    return sv_bless(rv, gv_stashpv("VIBUF", TRUE));
+}
 
 /*
  * perl_win_free
@@ -477,8 +490,8 @@ newANYrv(buf_T, BUF)
 perl_win_free(wp)
     win_T *wp;
 {
-    if (wp->perl_private)
-	sv_setiv((SV *)wp->perl_private, 0);
+    if (wp->w_perl_private)
+	sv_setiv((SV *)wp->w_perl_private, 0);
     return;
 }
 
@@ -486,8 +499,8 @@ perl_win_free(wp)
 perl_buf_free(bp)
     buf_T *bp;
 {
-    if (bp->perl_private)
-	sv_setiv((SV *)bp->perl_private, 0);
+    if (bp->b_perl_private)
+	sv_setiv((SV *)bp->b_perl_private, 0);
     return;
 }
 
@@ -915,7 +928,7 @@ DESTROY(win)
 
     CODE:
     if (win_valid(win))
-	win->perl_private = 0;
+	win->w_perl_private = 0;
 
 SV *
 Buffer(win)
@@ -979,7 +992,7 @@ DESTROY(vimbuf)
 
     CODE:
     if (buf_valid(vimbuf))
-	vimbuf->perl_private = 0;
+	vimbuf->b_perl_private = 0;
 
 void
 Name(vimbuf)

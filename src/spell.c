@@ -7654,7 +7654,7 @@ spell_add_word(word, len, bad, index)
 		break;
 	    if (*spf == NUL)
 	    {
-		EMSGN(_("E765: 'spellfile' does not have %ld enties"), index);
+		EMSGN(_("E765: 'spellfile' does not have %ld entries"), index);
 		return;
 	    }
 	}

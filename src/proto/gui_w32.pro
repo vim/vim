@@ -82,11 +82,11 @@ void gui_mch_set_foreground __ARGS((void));
 void gui_mch_drawsign __ARGS((int row, int col, int typenr));
 void *gui_mch_register_sign __ARGS((char_u *signfile));
 void gui_mch_destroy_sign __ARGS((void *sign));
+int multiline_balloon_available __ARGS((void));
 void gui_mch_disable_beval_area __ARGS((BalloonEval *beval));
 void gui_mch_enable_beval_area __ARGS((BalloonEval *beval));
 void gui_mch_post_balloon __ARGS((BalloonEval *beval, char_u *mesg));
 BalloonEval *gui_mch_create_beval_area __ARGS((void *target, char_u *mesg, void (*mesgCB)(BalloonEval *, int), void *clientData));
 void gui_mch_destroy_beval_area __ARGS((BalloonEval *beval));
 void netbeans_draw_multisign_indicator __ARGS((int row));
-int multiline_balloon_available __ARGS((void));
 /* vim: set ft=c : */

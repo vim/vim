@@ -68,6 +68,10 @@
 # ifndef HAVE_CONFIG_H
 #  define UNIX
 # endif
+# ifdef HAVE_STRINGS_H
+/* On Mac OS X strings.h exists but produces an annoying warning message. */
+#  undef HAVE_STRINGS_H
+# endif
 #endif
 #if defined(MACOS_X) || defined(MACOS_CLASSIC)
 #  define MACOS

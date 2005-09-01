@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Aug 28
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Aug 31
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -565,8 +565,9 @@ For xterm most combinations of modifiers with function keys are recognized.
 
 When 'verbose' is set the output of ":highlight" will show where a highlight
 item was last set.
-When 'verbose' is set the output of the ":map", ":command", ":function" and
-":autocmd" commands will show where it was last defined. (Yegappan Lakshmanan)
+When 'verbose' is set the output of the ":map", ":abbreviate", ":command",
+":function" and ":autocmd" commands will show where it was last defined.
+(Yegappan Lakshmanan)
 
 ==============================================================================
 IMPROVEMENTS						*improvements-7*
@@ -809,6 +810,10 @@ functions.
 
 Moved unix_expandpath() to misc1.c, so that it can also be used by os_mac.c
 without copying the code.
+
+Mac: When running "make install" the runtime files are installed as for Unix.
+Avoids that too many files are copied.  When running "make" a link to the
+runtime files is created to avoid a recursive copy that takes much time.
 
 ==============================================================================
 BUG FIXES						*bug-fixes-7*

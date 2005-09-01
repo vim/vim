@@ -1,4 +1,4 @@
-*if_ruby.txt*   For Vim version 7.0aa.  Last change: 2005 Mar 29
+*if_ruby.txt*   For Vim version 7.0aa.  Last change: 2005 Aug 31
 
 
 		  VIM REFERENCE MANUAL    by Shugo Maeda
@@ -159,6 +159,8 @@ Methods:
 buffer		Returns the buffer displayed in the window.
 height		Returns the height of the window.
 height = {n}	Sets the window height to {n}.
+width		Returns the width of the window.
+width = {n}	Sets the window width to {n}.
 cursor		Returns a [row, col] array for the cursor position.
 cursor = [{row}, {col}]
 		Sets the cursor position to {row} and {col}.

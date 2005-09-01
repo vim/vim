@@ -19,6 +19,7 @@ DOCS = \
 	change.txt \
 	cmdline.txt \
 	debugger.txt \
+	debug.txt \
 	develop.txt \
 	diff.txt \
 	digraph.txt \
@@ -139,6 +140,7 @@ HTMLS = \
 	autocmd.html \
 	change.html \
 	cmdline.html \
+	debug.html \
 	debugger.html \
 	develop.html \
 	diff.html \

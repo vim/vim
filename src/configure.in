@@ -79,7 +79,6 @@ esac
 dnl Check for Darwin and MacOS X
 dnl We do a check for MacOS X in the very beginning because there
 dnl are a lot of other things we need to change besides GUI stuff
-DEFAULT_VIMNAME=vim
 AC_MSG_CHECKING([for Darwin (Mac OS X)])
 if test "`(uname) 2>/dev/null`" = Darwin; then
   AC_MSG_RESULT(yes)
@@ -114,7 +113,6 @@ if test "`(uname) 2>/dev/null`" = Darwin; then
     if test "x$CARBON" = "xyes"; then
       if test -z "$with_x" -a "X$enable_gui" != Xmotif -a "X$enable_gui" != Xathena -a "X$enable_gui" != Xgtk -a "X$enable_gui" != Xgtk2; then
 	with_x=no
-	DEFAULT_VIMNAME=Vim
       fi
     fi
   fi
@@ -153,7 +151,7 @@ fi
 AC_MSG_CHECKING(--with-vim-name argument)
 AC_ARG_WITH(vim-name, [  --with-vim-name=NAME    what to call the Vim executable],
 	VIMNAME="$withval"; AC_MSG_RESULT($VIMNAME),
-	VIMNAME="$DEFAULT_VIMNAME"; AC_MSG_RESULT(Defaulting to $VIMNAME))
+	VIMNAME="vim"; AC_MSG_RESULT(Defaulting to $VIMNAME))
 AC_SUBST(VIMNAME)
 AC_MSG_CHECKING(--with-ex-name argument)
 AC_ARG_WITH(ex-name, [  --with-ex-name=NAME     what to call the Ex executable],
@@ -1558,6 +1556,9 @@ if test "x$MACOSX" = "xyes" -a -z "$SKIP_CARBON" -a "x$CARBON" = "xyes"; then
   dnl already did this
   AC_MSG_RESULT(yes);
   GUITYPE=CARBONGUI
+  if test "$VIMNAME" = "vim"; then
+    VIMNAME=Vim
+  fi
   dnl skip everything else
   SKIP_GTK=YES;
   SKIP_GTK2=YES;
@@ -2257,10 +2258,7 @@ AC_TRY_COMPILE([
 		      AC_DEFINE(HAVE_PTHREAD_NP_H),
 	      AC_MSG_RESULT(no))
 
-dnl On Mac OS X strings.h exists but produces a warning message :-(
-if test "x$MACOSX" != "xyes"; then
-  AC_CHECK_HEADERS(strings.h)
-fi
+AC_CHECK_HEADERS(strings.h)
 
 dnl Check if strings.h and string.h can both be included when defined.
 AC_MSG_CHECKING([if strings.h can be included after string.h])

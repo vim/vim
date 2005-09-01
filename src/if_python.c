@@ -1305,12 +1305,12 @@ static PyTypeObject BufferType = {
 BufferNew(buf_T *buf)
 {
     /* We need to handle deletion of buffers underneath us.
-     * If we add a "python_ref" field to the buf_T structure,
+     * If we add a "b_python_ref" field to the buf_T structure,
      * then we can get at it in buf_freeall() in vim. We then
      * need to create only ONE Python object per buffer - if
      * we try to create a second, just INCREF the existing one
      * and return it. The (single) Python object referring to
-     * the buffer is stored in "python_ref".
+     * the buffer is stored in "b_python_ref".
      * Question: what to do on a buf_freeall(). We'll probably
      * have to either delete the Python object (DECREF it to
      * zero - a bad idea, as it leaves dangling refs!) or
@@ -1320,9 +1320,9 @@ BufferNew(buf_T *buf)
 
     BufferObject *self;
 
-    if (buf->python_ref)
+    if (buf->b_python_ref != NULL)
     {
-	self = buf->python_ref;
+	self = buf->b_python_ref;
 	Py_INCREF(self);
     }
     else
@@ -1331,7 +1331,7 @@ BufferNew(buf_T *buf)
 	if (self == NULL)
 	    return NULL;
 	self->buf = buf;
-	buf->python_ref = self;
+	buf->b_python_ref = self;
     }
 
     return (PyObject *)(self);
@@ -1343,7 +1343,7 @@ BufferDestructor(PyObject *self)
     BufferObject *this = (BufferObject *)(self);
 
     if (this->buf && this->buf != INVALID_BUFFER_VALUE)
-	this->buf->python_ref = NULL;
+	this->buf->b_python_ref = NULL;
 
     PyMem_DEL(self);
 }
@@ -1788,12 +1788,12 @@ static PyTypeObject WindowType = {
 WindowNew(win_T *win)
 {
     /* We need to handle deletion of windows underneath us.
-     * If we add a "python_ref" field to the win_T structure,
+     * If we add a "w_python_ref" field to the win_T structure,
      * then we can get at it in win_free() in vim. We then
      * need to create only ONE Python object per window - if
      * we try to create a second, just INCREF the existing one
      * and return it. The (single) Python object referring to
-     * the window is stored in "python_ref".
+     * the window is stored in "w_python_ref".
      * On a win_free() we set the Python object's win_T* field
      * to an invalid value. We trap all uses of a window
      * object, and reject them if the win_T* field is invalid.
@@ -1801,9 +1801,9 @@ WindowNew(win_T *win)
 
     WindowObject *self;
 
-    if (win->python_ref)
+    if (win->w_python_ref)
     {
-	self = win->python_ref;
+	self = win->w_python_ref;
 	Py_INCREF(self);
     }
     else
@@ -1812,7 +1812,7 @@ WindowNew(win_T *win)
 	if (self == NULL)
 	    return NULL;
 	self->win = win;
-	win->python_ref = self;
+	win->w_python_ref = self;
     }
 
     return (PyObject *)(self);
@@ -1824,7 +1824,7 @@ WindowDestructor(PyObject *self)
     WindowObject *this = (WindowObject *)(self);
 
     if (this->win && this->win != INVALID_WINDOW_VALUE)
-	this->win->python_ref = NULL;
+	this->win->w_python_ref = NULL;
 
     PyMem_DEL(self);
 }
@@ -2144,11 +2144,11 @@ CurrentSetattr(PyObject *self, char *name, PyObject *value)
     void
 python_buffer_free(buf_T *buf)
 {
-    if (buf->python_ref)
+    if (buf->b_python_ref != NULL)
     {
-	BufferObject *bp = buf->python_ref;
+	BufferObject *bp = buf->b_python_ref;
 	bp->buf = INVALID_BUFFER_VALUE;
-	buf->python_ref = NULL;
+	buf->b_python_ref = NULL;
     }
 }
 
@@ -2156,11 +2156,11 @@ python_buffer_free(buf_T *buf)
     void
 python_window_free(win_T *win)
 {
-    if (win->python_ref)
+    if (win->w_python_ref != NULL)
     {
-	WindowObject *wp = win->python_ref;
+	WindowObject *wp = win->w_python_ref;
 	wp->win = INVALID_WINDOW_VALUE;
-	win->python_ref = NULL;
+	win->w_python_ref = NULL;
     }
 }
 #endif

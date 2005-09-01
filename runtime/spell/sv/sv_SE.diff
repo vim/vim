@@ -1,0 +1,40 @@
+*** sv_SE.orig.aff	Wed Aug 31 21:00:19 2005
+--- sv_SE.aff	Wed Aug 31 21:02:53 2005
+***************
+*** 6,7 ****
+--- 6,25 ----
+  
++ FOL  ‗אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏ÿ
++ LOW  ‗אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏ÿ
++ UPP  ‗ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞÿ
++ 
++ SOFOFROM abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZאבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗ÿÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞ¿
++ SOFOTO   ebctefghejklnnepkrstevvkesebctefghejklnnepkrstevvkeseeeeeeeceeeeeeeedneeeeeeeeeeepseeeeeeeeceeeeeeeedneeeeeeeeeeep?
++ 
++ MAP 9
++ MAP aאבגדהו
++ MAP eטיךכ
++ MAP iלםמן
++ MAP oעףפץצ
++ MAP uשתûü
++ MAP nס
++ MAP cח
++ MAP yÿ‎
++ MAP s‗
++ 
+  SFX  A  Y  1
+***************
+*** 15,17 ****
+  
+! SFX  C  Y  16
+  SFX  C  0  t  [aeiouyוהצי]
+--- 33,35 ----
+  
+! SFX  C  Y  15
+  SFX  C  0  t  [aeiouyוהצי]
+***************
+*** 30,32 ****
+  SFX  C  en nets en
+- SFX  C  0  net  nets [^e]n
+  SFX  C  0  nets  [^e]n
+--- 48,49 ----

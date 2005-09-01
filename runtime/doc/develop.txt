@@ -1,4 +1,4 @@
-*develop.txt*   For Vim version 7.0aa.  Last change: 2005 Aug 14
+*develop.txt*   For Vim version 7.0aa.  Last change: 2005 Sep 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -238,8 +238,8 @@ get_env_value()	Linux system function
 
 VARIOUS							*style-various*
 
-Typedef'ed names should end in "_t": >
-    typedef int some_t;
+Typedef'ed names should end in "_T": >
+    typedef int some_T;
 Define'ed names should be uppercase: >
     #define SOME_THING
 Features always start with "FEAT_": >

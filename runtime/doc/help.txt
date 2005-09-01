@@ -1,4 +1,4 @@
-*help.txt*	For Vim version 7.0aa.  Last change: 2005 Mar 19
+*help.txt*	For Vim version 7.0aa.  Last change: 2005 Sep 01
 
 			VIM - main help file
 									 k
@@ -97,6 +97,7 @@ General subjects ~
 |quotes.txt|	remarks from users of Vim
 |todo.txt|	known problems and desired extensions
 |develop.txt|	development of Vim
+|debug.txt|	debugging Vim itself
 |uganda.txt|	Vim distribution conditions and what to do with your money
 
 Basic editing ~

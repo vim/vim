@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Aug 23
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Aug 31
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -4081,12 +4081,12 @@ string({expr})	Return {expr} converted to a String.  If {expr} is a Number,
 
 							*strlen()*
 strlen({expr})	The result is a Number, which is the length of the String
-		{expr} in bytes.  If you want to count the number of
-		multi-byte characters use something like this: >
+		{expr} in bytes.
+		If you want to count the number of multi-byte characters (not
+		counting composing characters) use something like this: >
 
 			:let len = strlen(substitute(str, ".", "x", "g"))
-
-<		Composing characters are not counted.
+<
 		If the argument is a Number it is first converted to a String.
 		For other types an error is given.
 		Also see |len()|.

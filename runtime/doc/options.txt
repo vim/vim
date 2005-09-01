@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Aug 27
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Sep 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1591,23 +1591,29 @@ A jump table for the options with a short description can be found at |Q_op|.
 	This option specifies a function to be used for CTRL-X CTRL-U
 	completion. |i_CTRL-X_CTRL-U|
 
-	The function will be invoked with three arguments:
-	   a:findstart  either 1 or 0
-	   a:col        column in the cursor line where the completion ends,
-			first column is zero
-	   a:base	the text with which matches should match
+	The function will be invoked with two arguments.  First the function
+	is called to find the start of the text to be completed.  Secondly the
+	function is called to actually find the matches.
 
-	When the a:findstart argument is 1, the function must return the
-	column of where the completion starts.  It must be a number between
-	zero and "a:col".  This involves looking at the characters in the
-	cursor line before column a:col and include those characters that
-	could be part of the completed item.  The text between this column and
-	a:col will be replaced with the matches.  Return -1 if no completion
-	can be done.
+	On the first invocation the arguments are:
+	   a:findstart  1
+	   a:base	empty
 
-	When the a:findstart argument is 0 the function must return a List
-	with the matching words.  These matches should include the "a:base"
-	text.  When there are no matches return an empty List.
+	The function must return the column of where the completion starts.
+	It must be a number between zero and the cursor column "col('.')".
+	This involves looking at the characters just before the cursor and
+	including those characters that could be part of the completed item.
+	The text between this column and the cursor column will be replaced
+	with the matches.  Return -1 if no completion can be done.
+
+	On the second invocation the arguments are:
+	   a:findstart  0
+	   a:base	the text with which matches should match, what was
+	   		located in the first call
+
+	The function must return a List with the matching words.  These
+	matches usually include the "a:base" text.  When there are no matches
+	return an empty List.
 
 	When searching for matches takes some time call |complete_add()| to
 	add each match to the total list.  These matches should then not
@@ -1615,16 +1621,16 @@ A jump table for the options with a short description can be found at |Q_op|.
 	allow the user to press a key while still searching for matches.  Stop
 	searching when it returns non-zero.
 
-	The function must not move the cursor!
+	The function may move the cursor, it is restored afterwards.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
 	An example that completes the names of the months: >
-		fun! CompleteMonths(findstart, col, base)
+		fun! CompleteMonths(findstart, base)
 		  if a:findstart
 		    " locate the start of the word
 		    let line = getline('.')
-		    let start = a:col
+		    let start = col('.') - 1
 		    while start > 0 && line[start - 1] =~ '\a'
 		      let start -= 1
 		    endwhile
@@ -1643,11 +1649,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 		set completefunc=CompleteMonths
 <
 	The same, but now pretending searching for matches is slow: >
-		fun! CompleteMonths(findstart, col, base)
+		fun! CompleteMonths(findstart, base)
 		  if a:findstart
 		    " locate the start of the word
 		    let line = getline('.')
-		    let start = a:col
+		    let start = col('.') - 1
 		    while start > 0 && line[start - 1] =~ '\a'
 		      let start -= 1
 		    endwhile
@@ -4587,6 +4593,18 @@ A jump table for the options with a short description can be found at |Q_op|.
 	1000 lines five columns will be used.
 	The minimum value is 1, the maximum value is 10.
 	NOTE: 'numberwidth' is reset to 8 when 'compatible' is set.
+
+						*'occultfunc'* *'ofu'*
+'occultfunc' 'ofu'	string	(default: empty)
+			local to buffer
+			{not in Vi}
+			{not available when compiled without the +eval
+			or +insert_expand feature}
+	This option specifies a function to be used for CTRL-X CTRL-O
+	completion. |i_CTRL-X_CTRL-O|
+
+	For the use of the function see 'completefunc'.
+
 
 					*'osfiletype'* *'oft'* *E366*
 'osfiletype' 'oft'	string (RISC-OS default: "Text",

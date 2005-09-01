@@ -105,6 +105,7 @@ typedef int LPSTR;
 typedef int LPWINDOWPOS;
 typedef int LPWORD;
 typedef int LRESULT;
+typedef int HRESULT;
 # undef MSG
 typedef int MSG;
 typedef int NEWTEXTMETRIC;

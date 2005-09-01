@@ -35,6 +35,7 @@ fo_FO.aff fo_FO.dic: {buildcheck=}
         :fetch fo_FO.zip
         :sys $UNZIP fo_FO.zip
         :delete fo_FO.zip
+        :delete contributors fo_FO.excluded Makefile COPYING
         @if not os.path.exists('fo_FO.orig.aff'):
             :copy fo_FO.aff fo_FO.orig.aff
         @if not os.path.exists('fo_FO.orig.dic'):

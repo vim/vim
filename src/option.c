@@ -109,6 +109,7 @@ typedef enum
     , PV_NU
     , PV_NUW
     , PV_OFT
+    , PV_OFU
     , PV_PATH
     , PV_PI
     , PV_PVW
@@ -181,6 +182,7 @@ static char_u	*p_cpt;
 #endif
 #ifdef FEAT_COMPL_FUNC
 static char_u	*p_cfu;
+static char_u	*p_ofu;
 #endif
 static int	p_eol;
 static int	p_et;
@@ -1601,6 +1603,15 @@ static struct vimoption
 			    (char_u *)NULL, PV_NONE,
 #endif
 			    {(char_u *)8L, (char_u *)4L}},
+    {"occultfunc", "ofu", P_STRING|P_ALLOCED|P_VI_DEF|P_SECURE,
+#ifdef FEAT_COMPL_FUNC
+			    (char_u *)&p_ofu, PV_OFU,
+			    {(char_u *)"", (char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)0L, (char_u *)0L}
+#endif
+			    },
     {"open",	    NULL,   P_BOOL|P_VI_DEF,
 			    (char_u *)NULL, PV_NONE,
 			    {(char_u *)FALSE, (char_u *)0L}},
@@ -4740,6 +4751,7 @@ check_buf_options(buf)
 #endif
 #ifdef FEAT_COMPL_FUNC
     check_string_option(&buf->b_p_cfu);
+    check_string_option(&buf->b_p_ofu);
 #endif
 #ifdef FEAT_KEYMAP
     check_string_option(&buf->b_p_keymap);
@@ -8447,6 +8459,7 @@ get_varp(p)
 #endif
 #ifdef FEAT_COMPL_FUNC
 	case PV_CFU:	return (char_u *)&(curbuf->b_p_cfu);
+	case PV_OFU:	return (char_u *)&(curbuf->b_p_ofu);
 #endif
 	case PV_EOL:	return (char_u *)&(curbuf->b_p_eol);
 	case PV_ET:	return (char_u *)&(curbuf->b_p_et);
@@ -8778,6 +8791,7 @@ buf_copy_options(buf, flags)
 #endif
 #ifdef FEAT_COMPL_FUNC
 	    buf->b_p_cfu = vim_strsave(p_cfu);
+	    buf->b_p_ofu = vim_strsave(p_ofu);
 #endif
 	    buf->b_p_sts = p_sts;
 	    buf->b_p_sts_nopaste = p_sts_nopaste;

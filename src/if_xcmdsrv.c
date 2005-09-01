@@ -1273,7 +1273,7 @@ serverEventProc(dpy, eventPtr)
 		ga_grow(&reply, 50 + STRLEN(p_enc));
 		sprintf(reply.ga_data, "%cr%c-E %s%c-s %s%c-r ",
 						   0, 0, p_enc, 0, serial, 0);
-		reply.ga_len = 14 + STRLEN(serial);
+		reply.ga_len = 14 + STRLEN(p_enc) + STRLEN(serial);
 #else
 		ga_grow(&reply, 50);
 		sprintf(reply.ga_data, "%cr%c-s %s%c-r ", 0, 0, serial, 0);

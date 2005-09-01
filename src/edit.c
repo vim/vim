@@ -819,7 +819,7 @@ doESCkey:
 	    /*FALLTHROUGH*/
 
 	case Ctrl_O:	/* execute one command */
-#ifdef FEAT_INS_EXPAND
+#ifdef FEAT_COMPL_FUNC
 	    if (ctrl_x_mode == CTRL_X_OCCULT)
 		goto docomplete;
 #endif
@@ -1844,9 +1844,9 @@ vim_is_ctrl_x_key(c)
 #ifdef FEAT_COMPL_FUNC
 	case CTRL_X_FUNCTION:
 	    return (c == Ctrl_U || c == Ctrl_P || c == Ctrl_N);
-#endif
 	case CTRL_X_OCCULT:
 	    return (c == Ctrl_O || c == Ctrl_P || c == Ctrl_N);
+#endif
 	case CTRL_X_SPELL:
 	    return (c == Ctrl_S || c == Ctrl_P || c == Ctrl_N);
     }
@@ -2360,10 +2360,10 @@ ins_compl_prep(c)
 	    case Ctrl_U:
 		ctrl_x_mode = CTRL_X_FUNCTION;
 		break;
-#endif
 	    case Ctrl_O:
 		ctrl_x_mode = CTRL_X_OCCULT;
 		break;
+#endif
 	    case 's':
 	    case Ctrl_S:
 		ctrl_x_mode = CTRL_X_SPELL;
@@ -2581,36 +2581,38 @@ ins_compl_next_buf(buf, flag)
 }
 
 #ifdef FEAT_COMPL_FUNC
-static int expand_by_function __ARGS((int col, char_u *base, char_u ***matches));
+static int expand_by_function __ARGS((int type, char_u *base, char_u ***matches));
 
 /*
- * Execute user defined complete function 'completefunc', and get matches in
- * "matches".
+ * Execute user defined complete function 'completefunc' or 'occultfunc', and
+ * get matches in "matches".
  * Return value is number of matches.
  */
     static int
-expand_by_function(col, base, matches)
-    int		col;
+expand_by_function(type, base, matches)
+    int		type;	    /* CTRL_X_OCCULT or CTRL_X_FUNCTION */
     char_u	*base;
     char_u	***matches;
 {
     list_T      *matchlist;
-    char_u	colbuf[30];
-    char_u	*args[3];
+    char_u	*args[2];
     listitem_T	*li;
     garray_T    ga;
     char_u	*p;
+    char_u	*funcname;
+    pos_T	pos;
 
-    if (*curbuf->b_p_cfu == NUL)
+    funcname = (type == CTRL_X_FUNCTION) ? curbuf->b_p_cfu : curbuf->b_p_ofu;
+    if (*funcname == NUL)
 	return 0;
 
     /* Call 'completefunc' to obtain the list of matches. */
     args[0] = (char_u *)"0";
-    sprintf((char *)colbuf, "%d", col + (int)STRLEN(base));
-    args[1] = colbuf;
-    args[2] = base;
+    args[1] = base;
 
-    matchlist = call_func_retlist(curbuf->b_p_cfu, 3, args, FALSE);
+    pos = curwin->w_cursor;
+    matchlist = call_func_retlist(funcname, 2, args, FALSE);
+    curwin->w_cursor = pos;	/* restore the cursor position */
     if (matchlist == NULL)
 	return 0;
 
@@ -2633,30 +2635,6 @@ expand_by_function(col, base, matches)
     return ga.ga_len;
 }
 #endif /* FEAT_COMPL_FUNC */
-
-static int expand_occult __ARGS((linenr_T lnum, int col, char_u *base, char_u ***matches));
-
-/*
- * Perform occult completion'
- * Return value is number of candidates and array of candidates as "matchp".
- */
-    static int
-expand_occult(lnum, col, pat, matchp)
-    linenr_T	lnum;
-    int		col;
-    char_u	*pat;
-    char_u	***matchp;
-{
-    int	    num_matches;
-
-    /* Use tag completion for now. */
-    if (find_tags(pat, &num_matches, matchp,
-	    TAG_REGEXP | TAG_NAMES | TAG_NOIC |
-	    TAG_INS_COMP | (ctrl_x_mode ? TAG_VERBOSE : 0),
-	    TAG_MANY, curbuf->b_ffname) == FAIL)
-	return 0;
-    return num_matches;
-}
 
 /*
  * Get the next expansion(s), using "compl_pattern".
@@ -2870,19 +2848,12 @@ ins_compl_get_exp(ini, dir)
 
 #ifdef FEAT_COMPL_FUNC
 	case CTRL_X_FUNCTION:
-	    num_matches = expand_by_function(first_match_pos.col,
-						     compl_pattern, &matches);
+	case CTRL_X_OCCULT:
+	    num_matches = expand_by_function(type, compl_pattern, &matches);
 	    if (num_matches > 0)
 		ins_compl_add_matches(num_matches, matches, dir);
 	    break;
 #endif
-
-	case CTRL_X_OCCULT:
-	    num_matches = expand_occult(first_match_pos.lnum,
-				 first_match_pos.col, compl_pattern, &matches);
-	    if (num_matches > 0)
-		ins_compl_add_matches(num_matches, matches, dir);
-	    break;
 
 	case CTRL_X_SPELL:
 #ifdef FEAT_SYN_HL
@@ -3302,7 +3273,7 @@ ins_complete(c)
 		    compl_col = compl_startpos.col;
 		}
 		compl_length = curwin->w_cursor.col - (int)compl_col;
-		/* IObuf is used to add a "word from the next line" would we
+		/* IObuff is used to add a "word from the next line" would we
 		 * have enough space?  just being paranoic */
 #define	MIN_SPACE 75
 		if (compl_length > (IOSIZE - MIN_SPACE))
@@ -3486,27 +3457,31 @@ ins_complete(c)
 	    compl_col = startcol;
 	    compl_length = curs_col - startcol;
 	}
-#ifdef FEAT_COMPL_FUNC
-	else if (ctrl_x_mode == CTRL_X_FUNCTION)
+	else if (ctrl_x_mode == CTRL_X_FUNCTION || ctrl_x_mode == CTRL_X_OCCULT)
 	{
+#ifdef FEAT_COMPL_FUNC
 	    /*
-	     * Call user defined function 'completefunc' with "a:findstart" is
-	     * 1 to obtain the length of text to use for completion.
+	     * Call user defined function 'completefunc' with "a:findstart"
+	     * set to 1 to obtain the length of text to use for completion.
 	     */
-	    char_u	colbuf[30];
-	    char_u	*args[3];
+	    char_u	*args[2];
 	    int		col;
+	    char_u	*funcname;
+	    pos_T	pos;
 
-	    /* Call 'completefunc' and get pattern length as a string */
-	    if (*curbuf->b_p_cfu == NUL)
+	    /* Call 'completefunc' or 'occultfunc' and get pattern length as a
+	     * string */
+	    funcname = ctrl_x_mode == CTRL_X_FUNCTION
+					  ? curbuf->b_p_cfu : curbuf->b_p_ofu;
+	    if (*funcname == NUL)
 		return FAIL;
 
 	    args[0] = (char_u *)"1";
-	    sprintf((char *)colbuf, "%d", (int)curs_col);
-	    args[1] = colbuf;
-	    args[2] = NULL;
+	    args[1] = NULL;
+	    pos = curwin->w_cursor;
+	    col = call_func_retnr(funcname, 2, args, FALSE);
+	    curwin->w_cursor = pos;	/* restore the cursor position */
 
-	    col = call_func_retnr(curbuf->b_p_cfu, 3, args, FALSE);
 	    if (col < 0)
 		return FAIL;
 	    compl_col = col;
@@ -3519,19 +3494,7 @@ ins_complete(c)
 	    compl_length = curs_col - compl_col;
 	    compl_pattern = vim_strnsave(line + compl_col, compl_length);
 	    if (compl_pattern == NULL)
-		return FAIL;
-	}
 #endif
-	else if (ctrl_x_mode == CTRL_X_OCCULT)
-	{
-	    /* TODO: let language-specific function handle locating the text
-	     * to be completed. */
-	    while (--startcol >= 0 && vim_isIDc(line[startcol]))
-		;
-	    compl_col += ++startcol;
-	    compl_length = (int)curs_col - startcol;
-	    compl_pattern = vim_strnsave(line + compl_col, compl_length);
-	    if (compl_pattern == NULL)
 		return FAIL;
 	}
 	else if (ctrl_x_mode == CTRL_X_SPELL)

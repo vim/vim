@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	C
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Jun 22
+" Last Change:	2005 Sep 01
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -15,11 +15,16 @@ let b:did_ftplugin = 1
 let s:cpo_save = &cpo
 set cpo-=C
 
-let b:undo_ftplugin = "setl fo< com< | if has('vms') | setl isk< | endif"
+let b:undo_ftplugin = "setl fo< com< ofu< | if has('vms') | setl isk< | endif"
 
 " Set 'formatoptions' to break comment lines but not other lines,
 " and insert the comment leader when hitting <CR> or using "o".
 setlocal fo-=t fo+=croql
+
+" Set completion with CTRL-X CTRL-O to autoloaded function.
+if exists('&ofu')
+  setlocal ofu=ccomplete#Complete
+endif
 
 " Set 'comments' to format dashed lists in comments.
 setlocal comments=sO:*\ -,mO:*\ \ ,exO:*/,s1:/*,mb:*,ex:*/,://

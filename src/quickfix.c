@@ -187,7 +187,7 @@ qf_init_ext(efile, buf, tv, errorformat, newlist, lnumfirst, lnumlast)
 	char	*pattern;
     }		    fmt_pat[FMT_PATTERNS] =
 		    {
-			{'f', "\\f\\+"},
+			{'f', ".\\+"},	    /* only used when at end */
 			{'n', "\\d\\+"},
 			{'l', "\\d\\+"},
 			{'c', "\\d\\+"},
@@ -319,16 +319,25 @@ qf_init_ext(efile, buf, tv, errorformat, newlist, lnumfirst, lnumlast)
 			ptr += 10;
 		    }
 #endif
-		    if (*efmp == 'f' && efmp[1] != NUL
-					 && efmp[1] != '\\' && efmp[1] != '%')
+		    if (*efmp == 'f' && efmp[1] != NUL)
 		    {
-			/* A file name may contain spaces, but this isn't in
-			 * "\f".  For "%f:%l:%m" there may be a ":" in the
-			 * file name.  Use ".\{-1,}x" instead (x is the next
-			 * character), the requirement that :999: follows
-			 * should work. */
-			STRCPY(ptr, ".\\{-1,}");
-			ptr += 7;
+			if (efmp[1] != '\\' && efmp[1] != '%')
+			{
+			    /* A file name may contain spaces, but this isn't
+			     * in "\f".  For "%f:%l:%m" there may be a ":" in
+			     * the file name.  Use ".\{-1,}x" instead (x is
+			     * the next character), the requirement that :999:
+			     * follows should work. */
+			    STRCPY(ptr, ".\\{-1,}");
+			    ptr += 7;
+			}
+			else
+			{
+			    /* File name followed by '\\' or '%': include as
+			     * many file name chars as possible. */
+			    STRCPY(ptr, "\\f\\+");
+			    ptr += 4;
+			}
 		    }
 		    else
 		    {

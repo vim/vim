@@ -1,7 +1,7 @@
 " Menu Translations:	Italian / Italiano
 " Maintainer:		Antonio Colombo <azc10@yahoo.com>
 "			Vlad Sandrini <sator72@libero.it>
-" Last Change:	2005 Mar 16
+" Last Change:	2005 Aug 13
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")
@@ -159,6 +159,26 @@ menut &Jump\ to\ this\ tag<Tab>g^]	&Vai\ a\ questa\ Tag<Tab>g^]
 menut Jump\ &back<Tab>^T		Torna\ &indietro<Tab>^T
 menut Build\ &Tags\ File		Costruisci\ File\ &Tags\
 
+" Menu ortografia / Spelling
+menut &Spelling			&Ortografia
+
+menut &Spell\ Check\ On			Attiva\ &Controllo\ ortografico
+menut Spell\ Check\ &Off		&Disattiva\ controllo\ ortografico
+menut To\ &Next\ error<Tab>]s		Errore\ &Seguente<tab>]s
+menut To\ &Previous\ error<Tab>[s	Errore\ &Precedente<tab>[s
+menut Suggest\ &Corrections<Tab>z?	&Suggerimenti<Tab>z?
+menut &Repeat\ correction<Tab>:spellrepall	&Ripeti\ correzione<Tab>:spellrepall
+menut Set\ language\ to\ "en"		Imposta\ lingua\ a\ "en"
+menut Set\ language\ to\ "en_au"	Imposta\ lingua\ a\ "en_au"
+menut Set\ language\ to\ "en_ca"	Imposta\ lingua\ a\ "en_ca"
+menut Set\ language\ to\ "en_gb"	Imposta\ lingua\ a\ "en_gb"
+menut Set\ language\ to\ "en_nz"	Imposta\ lingua\ a\ "en_nz"
+menut Set\ language\ to\ "en_us"	Imposta\ lingua\ a\ "en_us"
+menut Set\ language\ to\ "it"		Imposta\ lingua\ a\ "it"
+menut Set\ language\ to\ "it_it"	Imposta\ lingua\ a\ "it_it"
+menut Set\ language\ to\ "it_ch"	Imposta\ lingua\ a\ "it_ch"
+menut &Find\ More\ Languages		&Trova\ altre\ lingue
+
 " Menu piegature / Fold
 if has("folding")
   menut &Folding					&Piegature
@@ -212,7 +232,7 @@ menut &Close<Tab>:cclose	&Chiudi<Tab>:cclose
 menut &Convert\ to\ HEX<Tab>:%!xxd	&Converti\ a\ Esadecimale<Tab>:%!xxd
 menut Conve&rt\ back<Tab>:%!xxd\ -r	Conve&rti\ da\ Esadecimale<Tab>:%!xxd\ -r
 
-menut &Set\ Compiler		Impo&sta\ Compilatore
+menut &SeT\ Compiler		Impo&sta\ Compilatore
 
 " Buffers / Buffer
 menut &Buffers		&Buffer
