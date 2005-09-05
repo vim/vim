@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	Verilog HDL
 " Maintainer:	Chih-Tsun Huang <cthuang@larc.ee.nthu.edu.tw>
-" Last Change:	Wed Oct 31 16:16:19 CST 2001
+" Last Change:	Mon Sep  5 11:05:54 CST 2005
 " URL:		http://larc.ee.nthu.edu.tw/~cthuang/vim/ftplugin/verilog.vim
 
 " Only do this when not done yet for this buffer
@@ -12,6 +12,10 @@ endif
 " Don't load another plugin for this buffer
 let b:did_ftplugin = 1
 
+" Undo the plugin effect
+let b:undo_ftplugin = "setlocal fo< com< tw<"
+    \ . "| unlet b:browsefilter b:match_ignorecase b:match_words"
+
 " Set 'formatoptions' to break comment lines but not other lines,
 " and insert the comment leader when hitting <CR> or using "o".
 setlocal fo-=t fo+=croqlm1
@@ -20,7 +24,9 @@ setlocal fo-=t fo+=croqlm1
 setlocal comments=sO:*\ -,mO:*\ \ ,exO:*/,s1:/*,mb:*,ex:*/,://
 
 " Format comments to be up to 78 characters long
-setlocal tw=75
+if &textwidth == 0 
+  setlocal tw=78
+endif
 
 set cpo-=C
 

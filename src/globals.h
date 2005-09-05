@@ -152,7 +152,7 @@ EXTERN int	info_message INIT(= FALSE); /* printing informative message */
 #ifdef FEAT_EVAL
 EXTERN int	emsg_skip INIT(= 0);	    /* don't display errors for
 					       expression that is skipped */
-EXTERN int	emsg_severe INIT(=FALSE);   /* use message of next of several
+EXTERN int	emsg_severe INIT(= FALSE);   /* use message of next of several
 					       emsg() calls for throw */
 EXTERN int	did_endif INIT(= FALSE);    /* just had ":endif" */
 #endif
@@ -1242,186 +1242,189 @@ EXTERN int usingNetbeans INIT(= 0);	/* set if -nb flag is used */
  * The error messages that can be shared are included here.
  * Excluded are errors that are only used once and debugging messages.
  */
-EXTERN char_u e_abort[]		INIT(=N_("E470: Command aborted"));
-EXTERN char_u e_argreq[]	INIT(=N_("E471: Argument required"));
-EXTERN char_u e_backslash[]	INIT(=N_("E10: \\ should be followed by /, ? or &"));
+EXTERN char_u e_abort[]		INIT(= N_("E470: Command aborted"));
+EXTERN char_u e_argreq[]	INIT(= N_("E471: Argument required"));
+EXTERN char_u e_backslash[]	INIT(= N_("E10: \\ should be followed by /, ? or &"));
 #ifdef FEAT_CMDWIN
-EXTERN char_u e_cmdwin[]	INIT(=N_("E11: Invalid in command-line window; <CR> executes, CTRL-C quits"));
+EXTERN char_u e_cmdwin[]	INIT(= N_("E11: Invalid in command-line window; <CR> executes, CTRL-C quits"));
 #endif
-EXTERN char_u e_curdir[]	INIT(=N_("E12: Command not allowed from exrc/vimrc in current dir or tag search"));
+EXTERN char_u e_curdir[]	INIT(= N_("E12: Command not allowed from exrc/vimrc in current dir or tag search"));
 #ifdef FEAT_EVAL
-EXTERN char_u e_endif[]		INIT(=N_("E171: Missing :endif"));
-EXTERN char_u e_endtry[]	INIT(=N_("E600: Missing :endtry"));
-EXTERN char_u e_endwhile[]	INIT(=N_("E170: Missing :endwhile"));
-EXTERN char_u e_endfor[]	INIT(=N_("E170: Missing :endfor"));
-EXTERN char_u e_while[]		INIT(=N_("E588: :endwhile without :while"));
-EXTERN char_u e_for[]		INIT(=N_("E588: :endfor without :for"));
+EXTERN char_u e_endif[]		INIT(= N_("E171: Missing :endif"));
+EXTERN char_u e_endtry[]	INIT(= N_("E600: Missing :endtry"));
+EXTERN char_u e_endwhile[]	INIT(= N_("E170: Missing :endwhile"));
+EXTERN char_u e_endfor[]	INIT(= N_("E170: Missing :endfor"));
+EXTERN char_u e_while[]		INIT(= N_("E588: :endwhile without :while"));
+EXTERN char_u e_for[]		INIT(= N_("E588: :endfor without :for"));
 #endif
-EXTERN char_u e_exists[]	INIT(=N_("E13: File exists (add ! to override)"));
-EXTERN char_u e_failed[]	INIT(=N_("E472: Command failed"));
+EXTERN char_u e_exists[]	INIT(= N_("E13: File exists (add ! to override)"));
+EXTERN char_u e_failed[]	INIT(= N_("E472: Command failed"));
 #if defined(FEAT_GUI) && defined(FEAT_XFONTSET)
-EXTERN char_u e_fontset[]	INIT(=N_("E234: Unknown fontset: %s"));
+EXTERN char_u e_fontset[]	INIT(= N_("E234: Unknown fontset: %s"));
 #endif
 #if defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK) || defined(MACOS) \
 	|| defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_MSWIN)
-EXTERN char_u e_font[]		INIT(=N_("E235: Unknown font: %s"));
+EXTERN char_u e_font[]		INIT(= N_("E235: Unknown font: %s"));
 #endif
 #if (defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK)) && !defined(HAVE_GTK2)
-EXTERN char_u e_fontwidth[]	INIT(=N_("E236: Font \"%s\" is not fixed-width"));
+EXTERN char_u e_fontwidth[]	INIT(= N_("E236: Font \"%s\" is not fixed-width"));
 #endif
-EXTERN char_u e_internal[]	INIT(=N_("E473: Internal error"));
-EXTERN char_u e_interr[]	INIT(=N_("Interrupted"));
-EXTERN char_u e_invaddr[]	INIT(=N_("E14: Invalid address"));
-EXTERN char_u e_invarg[]	INIT(=N_("E474: Invalid argument"));
-EXTERN char_u e_invarg2[]	INIT(=N_("E475: Invalid argument: %s"));
+EXTERN char_u e_internal[]	INIT(= N_("E473: Internal error"));
+EXTERN char_u e_interr[]	INIT(= N_("Interrupted"));
+EXTERN char_u e_invaddr[]	INIT(= N_("E14: Invalid address"));
+EXTERN char_u e_invarg[]	INIT(= N_("E474: Invalid argument"));
+EXTERN char_u e_invarg2[]	INIT(= N_("E475: Invalid argument: %s"));
 #ifdef FEAT_EVAL
-EXTERN char_u e_invexpr2[]	INIT(=N_("E15: Invalid expression: %s"));
+EXTERN char_u e_invexpr2[]	INIT(= N_("E15: Invalid expression: %s"));
 #endif
-EXTERN char_u e_invrange[]	INIT(=N_("E16: Invalid range"));
-EXTERN char_u e_invcmd[]	INIT(=N_("E476: Invalid command"));
+EXTERN char_u e_invrange[]	INIT(= N_("E16: Invalid range"));
+EXTERN char_u e_invcmd[]	INIT(= N_("E476: Invalid command"));
 #if defined(UNIX) || (defined(FEAT_SYN_HL) && defined(FEAT_MBYTE))
-EXTERN char_u e_isadir2[]	INIT(=N_("E17: \"%s\" is a directory"));
+EXTERN char_u e_isadir2[]	INIT(= N_("E17: \"%s\" is a directory"));
 #endif
 #ifdef FEAT_LIBCALL
-EXTERN char_u e_libcall[]	INIT(=N_("E364: Library call failed for \"%s()\""));
+EXTERN char_u e_libcall[]	INIT(= N_("E364: Library call failed for \"%s()\""));
 #endif
 #if defined(DYNAMIC_PERL) || defined(DYNAMIC_PYTHON) || defined(DYNAMIC_RUBY) \
 	|| defined(DYNAMIC_TCL) || defined(DYNAMIC_ICONV) \
 	|| defined(DYNAMIC_GETTEXT) || defined(DYNAMIC_MZSCHEME)
-EXTERN char_u e_loadlib[]	INIT(=N_("E370: Could not load library %s"));
-EXTERN char_u e_loadfunc[]	INIT(=N_("E448: Could not load library function %s"));
+EXTERN char_u e_loadlib[]	INIT(= N_("E370: Could not load library %s"));
+EXTERN char_u e_loadfunc[]	INIT(= N_("E448: Could not load library function %s"));
 #endif
-EXTERN char_u e_markinval[]	INIT(=N_("E19: Mark has invalid line number"));
-EXTERN char_u e_marknotset[]	INIT(=N_("E20: Mark not set"));
-EXTERN char_u e_modifiable[]	INIT(=N_("E21: Cannot make changes, 'modifiable' is off"));
-EXTERN char_u e_nesting[]	INIT(=N_("E22: Scripts nested too deep"));
-EXTERN char_u e_noalt[]		INIT(=N_("E23: No alternate file"));
-EXTERN char_u e_noabbr[]	INIT(=N_("E24: No such abbreviation"));
-EXTERN char_u e_nobang[]	INIT(=N_("E477: No ! allowed"));
+EXTERN char_u e_markinval[]	INIT(= N_("E19: Mark has invalid line number"));
+EXTERN char_u e_marknotset[]	INIT(= N_("E20: Mark not set"));
+EXTERN char_u e_modifiable[]	INIT(= N_("E21: Cannot make changes, 'modifiable' is off"));
+EXTERN char_u e_nesting[]	INIT(= N_("E22: Scripts nested too deep"));
+EXTERN char_u e_noalt[]		INIT(= N_("E23: No alternate file"));
+EXTERN char_u e_noabbr[]	INIT(= N_("E24: No such abbreviation"));
+EXTERN char_u e_nobang[]	INIT(= N_("E477: No ! allowed"));
 #ifndef FEAT_GUI
-EXTERN char_u e_nogvim[]	INIT(=N_("E25: GUI cannot be used: Not enabled at compile time"));
+EXTERN char_u e_nogvim[]	INIT(= N_("E25: GUI cannot be used: Not enabled at compile time"));
 #endif
 #ifndef FEAT_RIGHTLEFT
-EXTERN char_u e_nohebrew[]	INIT(=N_("E26: Hebrew cannot be used: Not enabled at compile time\n"));
+EXTERN char_u e_nohebrew[]	INIT(= N_("E26: Hebrew cannot be used: Not enabled at compile time\n"));
 #endif
 #ifndef FEAT_FKMAP
-EXTERN char_u e_nofarsi[]	INIT(=N_("E27: Farsi cannot be used: Not enabled at compile time\n"));
+EXTERN char_u e_nofarsi[]	INIT(= N_("E27: Farsi cannot be used: Not enabled at compile time\n"));
 #endif
 #ifndef FEAT_ARABIC
-EXTERN char_u e_noarabic[]	INIT(=N_("E800: Arabic cannot be used: Not enabled at compile time\n"));
+EXTERN char_u e_noarabic[]	INIT(= N_("E800: Arabic cannot be used: Not enabled at compile time\n"));
 #endif
 #if defined(FEAT_SEARCH_EXTRA) || defined(FEAT_SYN_HL)
-EXTERN char_u e_nogroup[]	INIT(=N_("E28: No such highlight group name: %s"));
+EXTERN char_u e_nogroup[]	INIT(= N_("E28: No such highlight group name: %s"));
 #endif
-EXTERN char_u e_noinstext[]	INIT(=N_("E29: No inserted text yet"));
-EXTERN char_u e_nolastcmd[]	INIT(=N_("E30: No previous command line"));
-EXTERN char_u e_nomap[]		INIT(=N_("E31: No such mapping"));
-EXTERN char_u e_nomatch[]	INIT(=N_("E479: No match"));
-EXTERN char_u e_nomatch2[]	INIT(=N_("E480: No match: %s"));
-EXTERN char_u e_noname[]	INIT(=N_("E32: No file name"));
-EXTERN char_u e_nopresub[]	INIT(=N_("E33: No previous substitute regular expression"));
-EXTERN char_u e_noprev[]	INIT(=N_("E34: No previous command"));
-EXTERN char_u e_noprevre[]	INIT(=N_("E35: No previous regular expression"));
-EXTERN char_u e_norange[]	INIT(=N_("E481: No range allowed"));
+EXTERN char_u e_noinstext[]	INIT(= N_("E29: No inserted text yet"));
+EXTERN char_u e_nolastcmd[]	INIT(= N_("E30: No previous command line"));
+EXTERN char_u e_nomap[]		INIT(= N_("E31: No such mapping"));
+EXTERN char_u e_nomatch[]	INIT(= N_("E479: No match"));
+EXTERN char_u e_nomatch2[]	INIT(= N_("E480: No match: %s"));
+EXTERN char_u e_noname[]	INIT(= N_("E32: No file name"));
+EXTERN char_u e_nopresub[]	INIT(= N_("E33: No previous substitute regular expression"));
+EXTERN char_u e_noprev[]	INIT(= N_("E34: No previous command"));
+EXTERN char_u e_noprevre[]	INIT(= N_("E35: No previous regular expression"));
+EXTERN char_u e_norange[]	INIT(= N_("E481: No range allowed"));
 #ifdef FEAT_WINDOWS
-EXTERN char_u e_noroom[]	INIT(=N_("E36: Not enough room"));
+EXTERN char_u e_noroom[]	INIT(= N_("E36: Not enough room"));
 #endif
 #ifdef FEAT_CLIENTSERVER
-EXTERN char_u e_noserver[]	INIT(=N_("E247: no registered server named \"%s\""));
+EXTERN char_u e_noserver[]	INIT(= N_("E247: no registered server named \"%s\""));
 #endif
-EXTERN char_u e_notcreate[]	INIT(=N_("E482: Can't create file %s"));
-EXTERN char_u e_notmp[]		INIT(=N_("E483: Can't get temp file name"));
-EXTERN char_u e_notopen[]	INIT(=N_("E484: Can't open file %s"));
-EXTERN char_u e_notread[]	INIT(=N_("E485: Can't read file %s"));
-EXTERN char_u e_nowrtmsg[]	INIT(=N_("E37: No write since last change (add ! to override)"));
-EXTERN char_u e_null[]		INIT(=N_("E38: Null argument"));
+EXTERN char_u e_notcreate[]	INIT(= N_("E482: Can't create file %s"));
+EXTERN char_u e_notmp[]		INIT(= N_("E483: Can't get temp file name"));
+EXTERN char_u e_notopen[]	INIT(= N_("E484: Can't open file %s"));
+EXTERN char_u e_notread[]	INIT(= N_("E485: Can't read file %s"));
+EXTERN char_u e_nowrtmsg[]	INIT(= N_("E37: No write since last change (add ! to override)"));
+EXTERN char_u e_null[]		INIT(= N_("E38: Null argument"));
 #ifdef FEAT_DIGRAPHS
-EXTERN char_u e_number_exp[]	INIT(=N_("E39: Number expected"));
+EXTERN char_u e_number_exp[]	INIT(= N_("E39: Number expected"));
 #endif
 #ifdef FEAT_QUICKFIX
-EXTERN char_u e_openerrf[]	INIT(=N_("E40: Can't open errorfile %s"));
+EXTERN char_u e_openerrf[]	INIT(= N_("E40: Can't open errorfile %s"));
 #endif
 #if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_X11)
-EXTERN char_u e_opendisp[]	INIT(=N_("E233: cannot open display"));
+EXTERN char_u e_opendisp[]	INIT(= N_("E233: cannot open display"));
 #endif
-EXTERN char_u e_outofmem[]	INIT(=N_("E41: Out of memory!"));
+EXTERN char_u e_outofmem[]	INIT(= N_("E41: Out of memory!"));
 #ifdef FEAT_INS_EXPAND
-EXTERN char_u e_patnotf[]	INIT(=N_("Pattern not found"));
+EXTERN char_u e_patnotf[]	INIT(= N_("Pattern not found"));
 #endif
-EXTERN char_u e_patnotf2[]	INIT(=N_("E486: Pattern not found: %s"));
-EXTERN char_u e_positive[]	INIT(=N_("E487: Argument must be positive"));
+EXTERN char_u e_patnotf2[]	INIT(= N_("E486: Pattern not found: %s"));
+EXTERN char_u e_positive[]	INIT(= N_("E487: Argument must be positive"));
 #if defined(UNIX) || defined(FEAT_SESSION)
-EXTERN char_u e_prev_dir[]	INIT(=N_("E459: Cannot go back to previous directory"));
+EXTERN char_u e_prev_dir[]	INIT(= N_("E459: Cannot go back to previous directory"));
 #endif
 
 #ifdef FEAT_QUICKFIX
-EXTERN char_u e_quickfix[]	INIT(=N_("E42: No Errors"));
+EXTERN char_u e_quickfix[]	INIT(= N_("E42: No Errors"));
 #endif
-EXTERN char_u e_re_damg[]	INIT(=N_("E43: Damaged match string"));
-EXTERN char_u e_re_corr[]	INIT(=N_("E44: Corrupted regexp program"));
-EXTERN char_u e_readonly[]	INIT(=N_("E45: 'readonly' option is set (add ! to override)"));
+EXTERN char_u e_re_damg[]	INIT(= N_("E43: Damaged match string"));
+EXTERN char_u e_re_corr[]	INIT(= N_("E44: Corrupted regexp program"));
+EXTERN char_u e_readonly[]	INIT(= N_("E45: 'readonly' option is set (add ! to override)"));
 #ifdef FEAT_EVAL
-EXTERN char_u e_readonlyvar[]	INIT(=N_("E46: Cannot change read-only variable \"%s\""));
-EXTERN char_u e_readonlysbx[]	INIT(=N_("E46: Cannot set variable in the sandbox: \"%s\""));
+EXTERN char_u e_readonlyvar[]	INIT(= N_("E46: Cannot change read-only variable \"%s\""));
+EXTERN char_u e_readonlysbx[]	INIT(= N_("E46: Cannot set variable in the sandbox: \"%s\""));
 #endif
 #ifdef FEAT_QUICKFIX
-EXTERN char_u e_readerrf[]	INIT(=N_("E47: Error while reading errorfile"));
+EXTERN char_u e_readerrf[]	INIT(= N_("E47: Error while reading errorfile"));
 #endif
 #ifdef HAVE_SANDBOX
-EXTERN char_u e_sandbox[]	INIT(=N_("E48: Not allowed in sandbox"));
+EXTERN char_u e_sandbox[]	INIT(= N_("E48: Not allowed in sandbox"));
 #endif
-EXTERN char_u e_secure[]	INIT(=N_("E523: Not allowed here"));
+EXTERN char_u e_secure[]	INIT(= N_("E523: Not allowed here"));
 #if defined(AMIGA) || defined(MACOS) || defined(MSWIN) || defined(RISCOS) \
 	|| defined(UNIX) || defined(VMS) || defined(OS2)
-EXTERN char_u e_screenmode[]	INIT(=N_("E359: Screen mode setting not supported"));
+EXTERN char_u e_screenmode[]	INIT(= N_("E359: Screen mode setting not supported"));
 #endif
-EXTERN char_u e_scroll[]	INIT(=N_("E49: Invalid scroll size"));
-EXTERN char_u e_shellempty[]	INIT(=N_("E91: 'shell' option is empty"));
+EXTERN char_u e_scroll[]	INIT(= N_("E49: Invalid scroll size"));
+EXTERN char_u e_shellempty[]	INIT(= N_("E91: 'shell' option is empty"));
 #if defined(FEAT_SIGN_ICONS) && !defined(HAVE_GTK2)
-EXTERN char_u e_signdata[]	INIT(=N_("E255: Couldn't read in sign data!"));
+EXTERN char_u e_signdata[]	INIT(= N_("E255: Couldn't read in sign data!"));
 #endif
-EXTERN char_u e_swapclose[]	INIT(=N_("E72: Close error on swap file"));
-EXTERN char_u e_tagstack[]	INIT(=N_("E73: tag stack empty"));
-EXTERN char_u e_toocompl[]	INIT(=N_("E74: Command too complex"));
-EXTERN char_u e_longname[]	INIT(=N_("E75: Name too long"));
-EXTERN char_u e_toomsbra[]	INIT(=N_("E76: Too many ["));
-EXTERN char_u e_toomany[]	INIT(=N_("E77: Too many file names"));
-EXTERN char_u e_trailing[]	INIT(=N_("E488: Trailing characters"));
-EXTERN char_u e_umark[]		INIT(=N_("E78: Unknown mark"));
-EXTERN char_u e_wildexpand[]	INIT(=N_("E79: Cannot expand wildcards"));
+EXTERN char_u e_swapclose[]	INIT(= N_("E72: Close error on swap file"));
+EXTERN char_u e_tagstack[]	INIT(= N_("E73: tag stack empty"));
+EXTERN char_u e_toocompl[]	INIT(= N_("E74: Command too complex"));
+EXTERN char_u e_longname[]	INIT(= N_("E75: Name too long"));
+EXTERN char_u e_toomsbra[]	INIT(= N_("E76: Too many ["));
+EXTERN char_u e_toomany[]	INIT(= N_("E77: Too many file names"));
+EXTERN char_u e_trailing[]	INIT(= N_("E488: Trailing characters"));
+EXTERN char_u e_umark[]		INIT(= N_("E78: Unknown mark"));
+EXTERN char_u e_wildexpand[]	INIT(= N_("E79: Cannot expand wildcards"));
 #ifdef FEAT_WINDOWS
-EXTERN char_u e_winheight[]	INIT(=N_("E591: 'winheight' cannot be smaller than 'winminheight'"));
+EXTERN char_u e_winheight[]	INIT(= N_("E591: 'winheight' cannot be smaller than 'winminheight'"));
 # ifdef FEAT_VERTSPLIT
-EXTERN char_u e_winwidth[]	INIT(=N_("E592: 'winwidth' cannot be smaller than 'winminwidth'"));
+EXTERN char_u e_winwidth[]	INIT(= N_("E592: 'winwidth' cannot be smaller than 'winminwidth'"));
 # endif
 #endif
-EXTERN char_u e_write[]		INIT(=N_("E80: Error while writing"));
-EXTERN char_u e_zerocount[]	INIT(=N_("Zero count"));
+EXTERN char_u e_write[]		INIT(= N_("E80: Error while writing"));
+EXTERN char_u e_zerocount[]	INIT(= N_("Zero count"));
 #ifdef FEAT_EVAL
-EXTERN char_u e_usingsid[]	INIT(=N_("E81: Using <SID> not in a script context"));
+EXTERN char_u e_usingsid[]	INIT(= N_("E81: Using <SID> not in a script context"));
 #endif
 #ifdef FEAT_CLIENTSERVER
-EXTERN char_u e_invexprmsg[]	INIT(=N_("E449: Invalid expression received"));
+EXTERN char_u e_invexprmsg[]	INIT(= N_("E449: Invalid expression received"));
 #endif
 #ifdef FEAT_NETBEANS_INTG
-EXTERN char_u e_guarded[]	INIT(=N_("E463: Region is guarded, cannot modify"));
-EXTERN char_u e_nbreadonly[]	INIT(=N_("E744: NetBeans does not allow changes in read-only files"));
+EXTERN char_u e_guarded[]	INIT(= N_("E463: Region is guarded, cannot modify"));
+EXTERN char_u e_nbreadonly[]	INIT(= N_("E744: NetBeans does not allow changes in read-only files"));
 #endif
 #if defined(FEAT_INS_EXPAND) || defined(FEAT_EVAL) || defined(FEAT_SYN_HL) \
 	    || defined(PROTO)
-EXTERN char_u e_intern2[]	INIT(=N_("E685: Internal error: %s"));
+EXTERN char_u e_intern2[]	INIT(= N_("E685: Internal error: %s"));
 #endif
-EXTERN char_u e_maxmempat[]	INIT(=N_("E363: pattern uses more memory than 'maxmempattern'"));
-EXTERN char_u e_emptybuf[]	INIT(=N_("E749: empty buffer"));
+EXTERN char_u e_maxmempat[]	INIT(= N_("E363: pattern uses more memory than 'maxmempattern'"));
+EXTERN char_u e_emptybuf[]	INIT(= N_("E749: empty buffer"));
 
 #ifdef FEAT_EX_EXTRA
-EXTERN char_u e_invalpat[]	INIT(=N_("E682: Invalid search pattern or delimiter"));
+EXTERN char_u e_invalpat[]	INIT(= N_("E682: Invalid search pattern or delimiter"));
 #endif
-EXTERN char_u e_bufloaded[]	INIT(=N_("E139: File is loaded in another buffer"));
+EXTERN char_u e_bufloaded[]	INIT(= N_("E139: File is loaded in another buffer"));
 
 #ifdef MACOS_X_UNIX
 EXTERN short disallow_gui	INIT(= FALSE);
 #endif
+
+EXTERN char top_bot_msg[] INIT(= N_("search hit TOP, continuing at BOTTOM"));
+EXTERN char bot_top_msg[] INIT(= N_("search hit BOTTOM, continuing at TOP"));
 
 /*
  * Comms. with the session manager (XSMP)

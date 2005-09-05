@@ -34,9 +34,6 @@ static void show_pat_in_path __ARGS((char_u *, int,
 static void wvsp_one __ARGS((FILE *fp, int idx, char *s, int sc));
 #endif
 
-static char_u *top_bot_msg = (char_u *)N_("search hit TOP, continuing at BOTTOM");
-static char_u *bot_top_msg = (char_u *)N_("search hit BOTTOM, continuing at TOP");
-
 /*
  * This file contains various searching-related routines. These fall into
  * three groups:
@@ -854,17 +851,12 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use)
 	     * written.
 	     */
 	    if (dir == BACKWARD)    /* start second loop at the other end */
-	    {
 		lnum = buf->b_ml.ml_line_count;
-		if (!shortmess(SHM_SEARCH) && (options & SEARCH_MSG))
-		    give_warning((char_u *)_(top_bot_msg), TRUE);
-	    }
 	    else
-	    {
 		lnum = 1;
-		if (!shortmess(SHM_SEARCH) && (options & SEARCH_MSG))
-		    give_warning((char_u *)_(bot_top_msg), TRUE);
-	    }
+	    if (!shortmess(SHM_SEARCH) && (options & SEARCH_MSG))
+		give_warning((char_u *)_(dir == BACKWARD
+					  ? top_bot_msg : bot_top_msg), TRUE);
 	}
 	if (got_int || called_emsg || break_loop)
 	    break;
@@ -2519,12 +2511,12 @@ found:
  * Return TRUE if the next paragraph or section was found.
  */
     int
-findpar(oap, dir, count, what, both)
-    oparg_T	    *oap;
-    int		    dir;
-    long	    count;
-    int		    what;
-    int		    both;
+findpar(pincl, dir, count, what, both)
+    int		*pincl;	    /* Return: TRUE if last char is to be included */
+    int		dir;
+    long	count;
+    int		what;
+    int		both;
 {
     linenr_T	curr;
     int		did_skip;   /* TRUE after separating lines have been skipped */
@@ -2586,7 +2578,7 @@ findpar(oap, dir, count, what, both)
 	if ((curwin->w_cursor.col = (colnr_T)STRLEN(ml_get(curr))) != 0)
 	{
 	    --curwin->w_cursor.col;
-	    oap->inclusive = TRUE;
+	    *pincl = TRUE;
 	}
     }
     else

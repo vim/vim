@@ -218,6 +218,12 @@ Specific exception: For German these special regions are used:
 	de_at		Austria
 	de_ch		Switzerland
 
+							*spell-russian*
+Specific exception: For Russian these special regions are used:
+	ru		all Russian words accepted
+	ru_ru		"IE" letter spelling
+	ru_yo		"YO" letter spelling
+
 							*spell-yiddish*
 Yiddish requires using "utf-8" encoding, because of the special characters
 used.  If you are using latin1 Vim will use transliterated (romanized) Yiddish

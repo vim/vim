@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Aug 31
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Sep 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1607,6 +1607,7 @@ repeat( {expr}, {count})	String	repeat {expr} {count} times
 resolve( {filename})		String	get filename a shortcut points to
 reverse( {list})		List	reverse {list} in-place
 search( {pattern} [, {flags}])	Number	search for {pattern}
+searchdecl({name} [, {global}]) Number  search for variable declaration
 searchpair( {start}, {middle}, {end} [, {flags} [, {skip}]])
 				Number	search for other end of start/end pair
 server2client( {clientid}, {string})
@@ -1622,7 +1623,7 @@ simplify( {filename})		String	simplify filename as much as possible
 sort( {list} [, {func}])	List	sort {list}, using {func} to compare
 soundfold( {word})		String	sound-fold {word}
 spellbadword()			String	badly spelled word at cursor
-spellsuggest({word} [, {max}])	List	spelling suggestions
+spellsuggest( {word} [, {max}])	List	spelling suggestions
 split( {expr} [, {pat} [, {keepempty}]])
 				List	make List from {pat} separated {expr}
 strftime( {format}[, {time}])	String	time in specified format
@@ -3709,6 +3710,18 @@ search({pattern} [, {flags}])				*search()*
 		    :  let n = n + 1
 		    :endwhile
 <
+
+searchdecl({name} [, {global}])				*searchdecl()*
+		Search for the declaration of {name}.  Without {global} or
+		with a zero {global} argument this works like |gd|.  With a
+		non-zero {global} argument it works like |gD|.
+		Moves the cursor to the found match.
+		Returns zero for success, non-zero for failure.
+		Example: >
+			if searchdecl('myvar') == 0
+			   echo getline('.')
+			endif
+<
 							*searchpair()*
 searchpair({start}, {middle}, {end} [, {flags} [, {skip}]])
 		Search for the match of a nested start-end pair.  This can be
@@ -4668,7 +4681,8 @@ builtin functions.  To prevent from using the same name in different scripts
 avoid obvious, short names.  A good habit is to start the function name with
 the name of the script, e.g., "HTMLcolor()".
 
-It's also possible to use curly braces, see |curly-braces-names|.
+It's also possible to use curly braces, see |curly-braces-names|.  And the
+|autoload| facility is useful to define a function only when it's called.
 
 							*local-function*
 A function local to a script must start with "s:".  A local script function
@@ -4684,6 +4698,10 @@ instead of "s:" when the mapping is expanded outside of the script.
 			{name} can also be a Dictionary entry that is a
 			Funcref: >
 				:function dict.init
+
+:fu[nction] /{pattern}	List functions with a name matching {pattern}.
+			Example that lists all functions ending with "File": >
+				:function /File$
 <
 							*:function-verbose*
 When 'verbose' is non-zero, listing a function will also display where it was

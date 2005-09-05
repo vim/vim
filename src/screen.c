@@ -3026,7 +3026,7 @@ win_line(wp, lnum, startrow, endrow)
     }
 #endif
 
-    off = (unsigned) (current_ScreenLine - ScreenLines);
+    off = (unsigned)(current_ScreenLine - ScreenLines);
     col = 0;
 #ifdef FEAT_RIGHTLEFT
     if (wp->w_p_rl)
@@ -3423,13 +3423,16 @@ win_line(wp, lnum, startrow, endrow)
 			else if (mb_l > 1)
 			    mb_c = (c << 8) + p_extra[1];
 		    }
+		    if (mb_l == 0)  /* at the NUL at end-of-line */
+			mb_l = 1;
+
 		    /* If a double-width char doesn't fit display a '>' in the
 		     * last column. */
-		    if (
+		    if ((
 # ifdef FEAT_RIGHTLEFT
 			    wp->w_p_rl ? (col <= 0) :
 # endif
-				    (col >= W_WIDTH(wp) - 1)
+				    (col >= W_WIDTH(wp) - 1))
 			    && (*mb_char2cells)(mb_c) == 2)
 		    {
 			c = '>';
