@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Sep 01
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Sep 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -86,6 +86,7 @@ PLANNED FOR VERSION 7.0:
 	    How to get the type of "var"?
 		tags file doesn't give type of typedef!  E.g., oparg_T is
 		listed with "^} oparg_T;$"
+		mlcscope may do it, but I can't find the sources
 	    How to get the members of that type?
 		tags file has struct: and class: fields
 

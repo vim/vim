@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Aug 31
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Sep 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -122,6 +122,10 @@ file exists.
 When making a string upper-case with "vlllU" or similar then the German sharp
 s is replaced with "SS".  This does not happen with "~" to avoid backwards
 compatibility problems and because "SS" can't be changed back to a sharp s.
+
+"gd" previously found the very first occurrence of a variable in a function,
+that could be the function argument without type.  Now it finds the position
+where the type is given.
 
 ==============================================================================
 NEW FEATURES						*new-7*
@@ -568,6 +572,8 @@ item was last set.
 When 'verbose' is set the output of the ":map", ":abbreviate", ":command",
 ":function" and ":autocmd" commands will show where it was last defined.
 (Yegappan Lakshmanan)
+
+":function /pattern" lists functions matching the pattern.
 
 ==============================================================================
 IMPROVEMENTS						*improvements-7*

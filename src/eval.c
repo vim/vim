@@ -580,6 +580,7 @@ static void f_repeat __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_resolve __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_reverse __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_search __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_searchdecl __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_searchpair __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_server2client __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_serverlist __ARGS((typval_T *argvars, typval_T *rettv));
@@ -6818,6 +6819,7 @@ static struct fst
     {"resolve",		1, 1, f_resolve},
     {"reverse",		1, 1, f_reverse},
     {"search",		1, 2, f_search},
+    {"searchdecl",	1, 2, f_searchdecl},
     {"searchpair",	3, 5, f_searchpair},
     {"server2client",	2, 2, f_server2client},
     {"serverlist",	0, 0, f_serverlist},
@@ -12976,6 +12978,28 @@ theend:
 }
 
 /*
+ * "searchdecl()" function
+ */
+    static void
+f_searchdecl(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    int		locally = 1;
+    int		error = FALSE;
+    char_u	*name;
+
+    rettv->vval.v_number = 1;	/* default: FAIL */
+
+    name = get_tv_string_chk(&argvars[0]);
+    if (argvars[1].v_type != VAR_UNKNOWN)
+	locally = get_tv_number_chk(&argvars[1], &error) == 0;
+    if (!error && name != NULL)
+	rettv->vval.v_number = find_decl(name, (int)STRLEN(name),
+						locally, SEARCH_KEEP) == FAIL;
+}
+
+/*
  * "searchpair()" function
  */
     static void
@@ -16797,6 +16821,44 @@ ex_function(eap)
 	    }
 	}
 	eap->nextcmd = check_nextcmd(eap->arg);
+	return;
+    }
+
+    /*
+     * ":function /pat": list functions matching pattern.
+     */
+    if (*eap->arg == '/')
+    {
+	p = skip_regexp(eap->arg + 1, '/', TRUE, NULL);
+	if (!eap->skip)
+	{
+	    regmatch_T	regmatch;
+
+	    c = *p;
+	    *p = NUL;
+	    regmatch.regprog = vim_regcomp(eap->arg + 1, RE_MAGIC);
+	    *p = c;
+	    if (regmatch.regprog != NULL)
+	    {
+		regmatch.rm_ic = p_ic;
+
+		todo = func_hashtab.ht_used;
+		for (hi = func_hashtab.ht_array; todo > 0 && !got_int; ++hi)
+		{
+		    if (!HASHITEM_EMPTY(hi))
+		    {
+			--todo;
+			fp = HI2UF(hi);
+			if (!isdigit(*fp->uf_name)
+				    && vim_regexec(&regmatch, fp->uf_name, 0))
+			    list_func_head(fp, FALSE);
+		    }
+		}
+	    }
+	}
+	if (*p == '/')
+	    ++p;
+	eap->nextcmd = check_nextcmd(p);
 	return;
     }
 

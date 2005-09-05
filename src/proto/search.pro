@@ -17,7 +17,7 @@ pos_T *findmatch __ARGS((oparg_T *oap, int initc));
 pos_T *findmatchlimit __ARGS((oparg_T *oap, int initc, int flags, int maxtravel));
 void showmatch __ARGS((int c));
 int findsent __ARGS((int dir, long count));
-int findpar __ARGS((oparg_T *oap, int dir, long count, int what, int both));
+int findpar __ARGS((int *pincl, int dir, long count, int what, int both));
 int startPS __ARGS((linenr_T lnum, int para, int both));
 int fwd_word __ARGS((long count, int bigword, int eol));
 int bck_word __ARGS((long count, int bigword, int stop));
