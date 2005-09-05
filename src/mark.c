@@ -318,7 +318,8 @@ getmark(c, changefile)
 
 	pos = curwin->w_cursor;
 	listcmd_busy = TRUE;	    /* avoid that '' is changed */
-	if (findpar(&oa, c == '}' ? FORWARD : BACKWARD, 1L, NUL, FALSE))
+	if (findpar(&oa.inclusive,
+			       c == '}' ? FORWARD : BACKWARD, 1L, NUL, FALSE))
 	{
 	    pos_copy = curwin->w_cursor;
 	    posp = &pos_copy;

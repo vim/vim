@@ -3921,23 +3921,45 @@ nv_page(cap)
  */
     static void
 nv_gd(oap, nchar)
-    oparg_T   *oap;
-    int	    nchar;
+    oparg_T	*oap;
+    int		nchar;
 {
     int		len;
-    char_u	*pat;
-    pos_T	old_pos;
-    int		t;
-    int		save_p_ws;
-    int		save_p_scs;
     char_u	*ptr;
 
     if ((len = find_ident_under_cursor(&ptr, FIND_IDENT)) == 0
-	    || (pat = alloc(len + 7)) == NULL)
-    {
+	    || find_decl(ptr, len, nchar == 'd', 0) == FAIL)
 	clearopbeep(oap);
-	return;
-    }
+#ifdef FEAT_FOLDING
+    else if ((fdo_flags & FDO_SEARCH) && KeyTyped && oap->op_type == OP_NOP)
+	foldOpenCursor();
+#endif
+}
+
+/*
+ * Search for variable declaration of "ptr[len]".  When "locally" is TRUE in
+ * the current function ("gd"), otherwise in the current file ("gD").
+ * Return FAIL when not found.
+ */
+    int
+find_decl(ptr, len, locally, searchflags)
+    char_u	*ptr;
+    int		len;
+    int		locally;
+    int		searchflags;	/* flags passed to searchit() */
+{
+    char_u	*pat;
+    pos_T	old_pos;
+    pos_T	par_pos;
+    pos_T	found_pos;
+    int		t;
+    int		save_p_ws;
+    int		save_p_scs;
+    int		retval = OK;
+    int		incl;
+
+    if ((pat = alloc(len + 7)) == NULL)
+	return FAIL;
 
     /* Put "\V" before the pattern to avoid that the special meaning of "."
      * and "~" causes trouble. */
@@ -3954,42 +3976,70 @@ nv_gd(oap, nchar)
      * With "gd" Search back for the start of the current function, then go
      * back until a blank line.  If this fails go to line 1.
      */
-    if (nchar == 'D' || !findpar(oap, BACKWARD, 1L, '{', FALSE))
+    if (!locally || !findpar(&incl, BACKWARD, 1L, '{', FALSE))
     {
 	setpcmark();			/* Set in findpar() otherwise */
 	curwin->w_cursor.lnum = 1;
     }
     else
     {
+	par_pos = curwin->w_cursor;
 	while (curwin->w_cursor.lnum > 1 && *skipwhite(ml_get_curline()) != NUL)
 	    --curwin->w_cursor.lnum;
     }
     curwin->w_cursor.col = 0;
 
     /* Search forward for the identifier, ignore comment lines. */
-    while ((t = searchit(curwin, curbuf, &curwin->w_cursor, FORWARD, pat, 1L, 0,
-							     RE_LAST)) != FAIL
+    found_pos.lnum = 0;
+    for (;;)
+    {
+	t = searchit(curwin, curbuf, &curwin->w_cursor, FORWARD,
+					       pat, 1L, searchflags, RE_LAST);
+	if (curwin->w_cursor.lnum >= old_pos.lnum)
+	    t = FAIL;	/* match after start is failure too */
+	if (t == FAIL)
+	{
+	    /* If we previously found a valid position, use it. */
+	    if (found_pos.lnum != 0)
+	    {
+		curwin->w_cursor = found_pos;
+		t = OK;
+	    }
+	    break;
+	}
 #ifdef FEAT_COMMENTS
-	    && get_leader_len(ml_get_curline(), NULL, FALSE) > 0
+	if (get_leader_len(ml_get_curline(), NULL, FALSE) > 0)
+	{
+	    /* Ignore this line, continue at start of next line. */
+	    ++curwin->w_cursor.lnum;
+	    curwin->w_cursor.col = 0;
+	    continue;
+	}
 #endif
-	    && old_pos.lnum > curwin->w_cursor.lnum)
-    {
-	/* Ignore this line, continue at start of next line. */
-	++curwin->w_cursor.lnum;
-	curwin->w_cursor.col = 0;
+	if (!locally)	/* global search: use first match found */
+	    break;
+	if (curwin->w_cursor.lnum >= par_pos.lnum)
+	{
+	    /* If we previously found a valid position, use it. */
+	    if (found_pos.lnum != 0)
+		curwin->w_cursor = found_pos;
+	    break;
+	}
+
+	/* For finding a local variable and the match is before the "{" search
+	 * to find a later match.  For K&R style function declarations this
+	 * skips the function header without types. */
+	found_pos = curwin->w_cursor;
     }
-    if (t == FAIL || old_pos.lnum <= curwin->w_cursor.lnum)
+
+    if (t == FAIL)
     {
-	clearopbeep(oap);
+	retval = FAIL;
 	curwin->w_cursor = old_pos;
     }
     else
     {
 	curwin->w_set_curswant = TRUE;
-#ifdef FEAT_FOLDING
-	if ((fdo_flags & FDO_SEARCH) && KeyTyped && oap->op_type == OP_NOP)
-	    foldOpenCursor();
-#endif
 	/* "n" searches forward now */
 	reset_search_dir();
     }
@@ -3997,6 +4047,8 @@ nv_gd(oap, nchar)
     vim_free(pat);
     p_ws = save_p_ws;
     p_scs = save_p_scs;
+
+    return retval;
 }
 
 /*
@@ -6014,7 +6066,7 @@ nv_brackets(cap)
 	 * Imitate strange Vi behaviour: When using "]]" with an operator
 	 * we also stop at '}'.
 	 */
-	if (!findpar(cap->oap, cap->arg, cap->count1, flag,
+	if (!findpar(&cap->oap->inclusive, cap->arg, cap->count1, flag,
 	      (cap->oap->op_type != OP_NOP
 				      && cap->arg == FORWARD && flag == '{')))
 	    clearopbeep(cap->oap);
@@ -6239,7 +6291,7 @@ nv_findpar(cap)
     cap->oap->inclusive = FALSE;
     cap->oap->use_reg_one = TRUE;
     curwin->w_set_curswant = TRUE;
-    if (!findpar(cap->oap, cap->arg, cap->count1, NUL, FALSE))
+    if (!findpar(&cap->oap->inclusive, cap->arg, cap->count1, NUL, FALSE))
 	clearopbeep(cap->oap);
     else
     {

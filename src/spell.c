@@ -423,7 +423,9 @@ static slang_T *first_lang = NULL;
  */
 typedef struct langp_S
 {
-    slang_T	*lp_slang;	/* info for this language (NULL for last one) */
+    slang_T	*lp_slang;	/* info for this language */
+    slang_T	*lp_sallang;	/* language used for sound folding or NULL */
+    slang_T	*lp_replang;	/* language used for REP items or NULL */
     int		lp_region;	/* bitmask for region or REGION_ALL */
 } langp_T;
 
@@ -476,6 +478,7 @@ typedef struct suginfo_S
     char_u	su_badword[MAXWLEN]; /* bad word truncated at su_badlen */
     char_u	su_fbadword[MAXWLEN]; /* su_badword case-folded */
     hashtab_T	su_banned;	    /* table with banned words */
+    slang_T	*su_sallang;	    /* default language for sound folding */
 } suginfo_T;
 
 /* One word suggestion.  Used in "si_ga". */
@@ -487,6 +490,7 @@ typedef struct suggest_S
     int		st_altscore;	/* used when st_score compares equal */
     int		st_salscore;	/* st_score is for soundalike */
     int		st_had_bonus;	/* bonus already included in score */
+    slang_T	*st_slang;	/* language used for sound folding */
 } suggest_T;
 
 #define SUG(ga, i) (((suggest_T *)(ga).ga_data)[i])
@@ -740,7 +744,7 @@ static void suggest_try_soundalike __ARGS((suginfo_T *su));
 static void make_case_word __ARGS((char_u *fword, char_u *cword, int flags));
 static void set_map_str __ARGS((slang_T *lp, char_u *map));
 static int similar_chars __ARGS((slang_T *slang, int c1, int c2));
-static void add_suggestion __ARGS((suginfo_T *su, garray_T *gap, char_u *goodword, int badlen, int score, int altscore, int had_bonus));
+static void add_suggestion __ARGS((suginfo_T *su, garray_T *gap, char_u *goodword, int badlen, int score, int altscore, int had_bonus, slang_T *slang));
 static void add_banned __ARGS((suginfo_T *su, char_u *word));
 static int was_banned __ARGS((suginfo_T *su, char_u *word));
 static void free_banned __ARGS((suginfo_T *su));
@@ -1985,6 +1989,8 @@ spell_move_to(wp, dir, allwords, curline, attrp)
 		 * starting line again and accept the last match. */
 		lnum = wp->w_buffer->b_ml.ml_line_count;
 		wrapped = TRUE;
+		if (!shortmess(SHM_SEARCH))
+		    give_warning((char_u *)_(top_bot_msg), TRUE);
 	    }
 	    capcol = -1;
 	}
@@ -2000,6 +2006,8 @@ spell_move_to(wp, dir, allwords, curline, attrp)
 		 * starting line again and accept the first match. */
 		lnum = 1;
 		wrapped = TRUE;
+		if (!shortmess(SHM_SEARCH))
+		    give_warning((char_u *)_(bot_top_msg), TRUE);
 	    }
 
 	    /* If we are back at the starting line and there is no match then
@@ -3540,7 +3548,7 @@ did_set_spelllang(buf)
     char_u	region_cp[3];
     int		filename;
     int		region_mask;
-    slang_T	*lp;
+    slang_T	*slang;
     int		c;
     char_u	lang[MAXWLEN + 1];
     char_u	spf_name[MAXPATHL];
@@ -3551,6 +3559,8 @@ did_set_spelllang(buf)
     char_u	*use_region = NULL;
     int		dont_use_region = FALSE;
     int		nobreak = FALSE;
+    int		i, j;
+    langp_T	*lp, *lp2;
 
     ga_init2(&ga, sizeof(langp_T), 2);
     clear_midword(buf);
@@ -3585,8 +3595,8 @@ did_set_spelllang(buf)
 		dont_use_region = TRUE;
 
 	    /* Check if we loaded this language before. */
-	    for (lp = first_lang; lp != NULL; lp = lp->sl_next)
-		if (fullpathcmp(lang, lp->sl_fname, FALSE) == FPC_SAME)
+	    for (slang = first_lang; slang != NULL; slang = slang->sl_next)
+		if (fullpathcmp(lang, slang->sl_fname, FALSE) == FPC_SAME)
 		    break;
 	}
 	else
@@ -3602,8 +3612,8 @@ did_set_spelllang(buf)
 		dont_use_region = TRUE;
 
 	    /* Check if we loaded this language before. */
-	    for (lp = first_lang; lp != NULL; lp = lp->sl_next)
-		if (STRICMP(lang, lp->sl_name) == 0)
+	    for (slang = first_lang; slang != NULL; slang = slang->sl_next)
+		if (STRICMP(lang, slang->sl_name) == 0)
 		    break;
 	}
 
@@ -3617,7 +3627,7 @@ did_set_spelllang(buf)
 	}
 
 	/* If not found try loading the language now. */
-	if (lp == NULL)
+	if (slang == NULL)
 	{
 	    if (filename)
 		(void)spell_load_file(lang, lang, NULL, FALSE);
@@ -3628,20 +3638,20 @@ did_set_spelllang(buf)
 	/*
 	 * Loop over the languages, there can be several files for "lang".
 	 */
-	for (lp = first_lang; lp != NULL; lp = lp->sl_next)
-	    if (filename ? fullpathcmp(lang, lp->sl_fname, FALSE) == FPC_SAME
-			 : STRICMP(lang, lp->sl_name) == 0)
+	for (slang = first_lang; slang != NULL; slang = slang->sl_next)
+	    if (filename ? fullpathcmp(lang, slang->sl_fname, FALSE) == FPC_SAME
+			 : STRICMP(lang, slang->sl_name) == 0)
 	    {
 		region_mask = REGION_ALL;
 		if (!filename && region != NULL)
 		{
 		    /* find region in sl_regions */
-		    c = find_region(lp->sl_regions, region);
+		    c = find_region(slang->sl_regions, region);
 		    if (c == REGION_ALL)
 		    {
-			if (lp->sl_add)
+			if (slang->sl_add)
 			{
-			    if (*lp->sl_regions != NUL)
+			    if (*slang->sl_regions != NUL)
 				/* This addition file is for other regions. */
 				region_mask = 0;
 			}
@@ -3663,11 +3673,11 @@ did_set_spelllang(buf)
 			ga_clear(&ga);
 			return e_outofmem;
 		    }
-		    LANGP_ENTRY(ga, ga.ga_len)->lp_slang = lp;
+		    LANGP_ENTRY(ga, ga.ga_len)->lp_slang = slang;
 		    LANGP_ENTRY(ga, ga.ga_len)->lp_region = region_mask;
 		    ++ga.ga_len;
-		    use_midword(lp, buf);
-		    if (lp->sl_nobreak)
+		    use_midword(slang, buf);
+		    if (slang->sl_nobreak)
 			nobreak = TRUE;
 		}
 	    }
@@ -3705,10 +3715,10 @@ did_set_spelllang(buf)
 	}
 
 	/* Check if it was loaded already. */
-	for (lp = first_lang; lp != NULL; lp = lp->sl_next)
-	    if (fullpathcmp(spf_name, lp->sl_fname, FALSE) == FPC_SAME)
+	for (slang = first_lang; slang != NULL; slang = slang->sl_next)
+	    if (fullpathcmp(spf_name, slang->sl_fname, FALSE) == FPC_SAME)
 		break;
-	if (lp == NULL)
+	if (slang == NULL)
 	{
 	    /* Not loaded, try loading it now.  The language name includes the
 	     * region name, the region is ignored otherwise.  for int_wordlist
@@ -3722,33 +3732,35 @@ did_set_spelllang(buf)
 		if (p != NULL)
 		    *p = NUL;	/* truncate at ".encoding.add" */
 	    }
-	    lp = spell_load_file(spf_name, lang, NULL, TRUE);
+	    slang = spell_load_file(spf_name, lang, NULL, TRUE);
 
 	    /* If one of the languages has NOBREAK we assume the addition
 	     * files also have this. */
-	    if (lp != NULL && nobreak)
-		lp->sl_nobreak = TRUE;
+	    if (slang != NULL && nobreak)
+		slang->sl_nobreak = TRUE;
 	}
-	if (lp != NULL && ga_grow(&ga, 1) == OK)
+	if (slang != NULL && ga_grow(&ga, 1) == OK)
 	{
 	    region_mask = REGION_ALL;
 	    if (use_region != NULL && !dont_use_region)
 	    {
 		/* find region in sl_regions */
-		c = find_region(lp->sl_regions, use_region);
+		c = find_region(slang->sl_regions, use_region);
 		if (c != REGION_ALL)
 		    region_mask = 1 << c;
-		else if (*lp->sl_regions != NUL)
+		else if (*slang->sl_regions != NUL)
 		    /* This spell file is for other regions. */
 		    region_mask = 0;
 	    }
 
 	    if (region_mask != 0)
 	    {
-		LANGP_ENTRY(ga, ga.ga_len)->lp_slang = lp;
+		LANGP_ENTRY(ga, ga.ga_len)->lp_slang = slang;
+		LANGP_ENTRY(ga, ga.ga_len)->lp_sallang = NULL;
+		LANGP_ENTRY(ga, ga.ga_len)->lp_replang = NULL;
 		LANGP_ENTRY(ga, ga.ga_len)->lp_region = region_mask;
 		++ga.ga_len;
-		use_midword(lp, buf);
+		use_midword(slang, buf);
 	    }
 	}
     }
@@ -3756,6 +3768,50 @@ did_set_spelllang(buf)
     /* Everything is fine, store the new b_langp value. */
     ga_clear(&buf->b_langp);
     buf->b_langp = ga;
+
+    /* For each language figure out what language to use for sound folding and
+     * REP items.  If the language doesn't support it itself use another one
+     * with the same name.  E.g. for "en-math" use "en". */
+    for (i = 0; i < ga.ga_len; ++i)
+    {
+	lp = LANGP_ENTRY(ga, i);
+
+	/* sound folding */
+	if (lp->lp_slang->sl_sal.ga_len > 0)
+	    /* language does sound folding itself */
+	    lp->lp_sallang = lp->lp_slang;
+	else
+	    /* find first similar language that does sound folding */
+	    for (j = 0; j < ga.ga_len; ++j)
+	    {
+		lp2 = LANGP_ENTRY(ga, j);
+		if (lp2->lp_slang->sl_sal.ga_len > 0
+			&& STRNCMP(lp->lp_slang->sl_name,
+					      lp2->lp_slang->sl_name, 2) == 0)
+		{
+		    lp->lp_sallang = lp2->lp_slang;
+		    break;
+		}
+	    }
+
+	/* REP items */
+	if (lp->lp_slang->sl_rep.ga_len > 0)
+	    /* language has REP items itself */
+	    lp->lp_replang = lp->lp_slang;
+	else
+	    /* find first similar language that does sound folding */
+	    for (j = 0; j < ga.ga_len; ++j)
+	    {
+		lp2 = LANGP_ENTRY(ga, j);
+		if (lp2->lp_slang->sl_rep.ga_len > 0
+			&& STRNCMP(lp->lp_slang->sl_name,
+					      lp2->lp_slang->sl_name, 2) == 0)
+		{
+		    lp->lp_replang = lp2->lp_slang;
+		    break;
+		}
+	    }
+    }
 
     return NULL;
 }
@@ -3954,7 +4010,7 @@ badword_captype(word, end)
     void
 spell_free_all()
 {
-    slang_T	*lp;
+    slang_T	*slang;
     buf_T	*buf;
     char_u	fname[MAXPATHL];
 
@@ -3964,9 +4020,9 @@ spell_free_all()
 
     while (first_lang != NULL)
     {
-	lp = first_lang;
-	first_lang = lp->sl_next;
-	slang_free(lp);
+	slang = first_lang;
+	first_lang = slang->sl_next;
+	slang_free(slang);
     }
 
     if (int_wordlist != NULL)
@@ -4028,17 +4084,17 @@ spell_reload_one(fname, added_word)
     char_u	*fname;
     int		added_word;	/* invoked through "zg" */
 {
-    slang_T	*lp;
+    slang_T	*slang;
     int		didit = FALSE;
 
-    for (lp = first_lang; lp != NULL; lp = lp->sl_next)
+    for (slang = first_lang; slang != NULL; slang = slang->sl_next)
     {
-	if (fullpathcmp(fname, lp->sl_fname, FALSE) == FPC_SAME)
+	if (fullpathcmp(fname, slang->sl_fname, FALSE) == FPC_SAME)
 	{
-	    slang_clear(lp);
-	    if (spell_load_file(fname, NULL, lp, FALSE) == NULL)
+	    slang_clear(slang);
+	    if (spell_load_file(fname, NULL, slang, FALSE) == NULL)
 		/* reloading failed, clear the language */
-		slang_clear(lp);
+		slang_clear(slang);
 	    redraw_all_later(NOT_VALID);
 	    didit = TRUE;
 	}
@@ -8712,6 +8768,8 @@ spell_find_suggest(badptr, su, maxcount, banbadword, need_cap)
     static int	expr_busy = FALSE;
 #endif
     int		c;
+    int		i;
+    langp_T	*lp;
 
     /*
      * Set the info in "*su".
@@ -8739,6 +8797,20 @@ spell_find_suggest(badptr, su, maxcount, banbadword, need_cap)
     if (need_cap)
 	su->su_badflags |= WF_ONECAP;
 
+    /* Find the default language for sound folding.  We simply use the first
+     * one in 'spelllang' that supports sound folding.  That's good for when
+     * using multiple files for one language, it's not that bad when mixing
+     * languages (e.g., "pl,en"). */
+    for (i = 0; i < curbuf->b_langp.ga_len; ++i)
+    {
+	lp = LANGP_ENTRY(curbuf->b_langp, i);
+	if (lp->lp_sallang != NULL)
+	{
+	    su->su_sallang = lp->lp_sallang;
+	    break;
+	}
+    }
+
     /* If the word is not capitalised and spell_check() doesn't consider the
      * word to be bad then it might need to be capitalised.  Add a suggestion
      * for that. */
@@ -8747,7 +8819,7 @@ spell_find_suggest(badptr, su, maxcount, banbadword, need_cap)
     {
 	make_case_word(su->su_badword, buf, WF_ONECAP);
 	add_suggestion(su, &su->su_ga, buf, su->su_badlen, SCORE_ICASE,
-								     0, TRUE);
+						     0, TRUE, su->su_sallang);
     }
 
     /* Ban the bad word itself.  It may appear in another region. */
@@ -8825,7 +8897,7 @@ spell_suggest_expr(su, expr)
 		score = get_spellword(li->li_tv.vval.v_list, &p);
 		if (score >= 0)
 		    add_suggestion(su, &su->su_ga, p,
-					       su->su_badlen, score, 0, TRUE);
+			       su->su_badlen, score, 0, TRUE, su->su_sallang);
 	    }
 	list_unref(list);
     }
@@ -8882,7 +8954,7 @@ spell_suggest_file(su, fname)
 	    }
 
 	    add_suggestion(su, &su->su_ga, p, su->su_badlen,
-							 SCORE_FILE, 0, TRUE);
+					 SCORE_FILE, 0, TRUE, su->su_sallang);
 	}
     }
 
@@ -9091,7 +9163,8 @@ suggest_try_special(su)
 	su->su_fbadword[len] = NUL;
 	make_case_word(su->su_fbadword, word, su->su_badflags);
 	su->su_fbadword[len] = c;
-	add_suggestion(su, &su->su_ga, word, su->su_badlen, SCORE_DEL, 0, TRUE);
+	add_suggestion(su, &su->su_ga, word, su->su_badlen, SCORE_DEL,
+						     0, TRUE, su->su_sallang);
     }
 }
 
@@ -9152,9 +9225,9 @@ suggest_try_change(su)
     p = su->su_badptr + su->su_badlen;
     (void)spell_casefold(p, STRLEN(p), fword + n, MAXWLEN - n);
 
-    for (lpi = 0; lpi < curwin->w_buffer->b_langp.ga_len; ++lpi)
+    for (lpi = 0; lpi < curbuf->b_langp.ga_len; ++lpi)
     {
-	lp = LANGP_ENTRY(curwin->w_buffer->b_langp, lpi);
+	lp = LANGP_ENTRY(curbuf->b_langp, lpi);
 	slang = lp->lp_slang;
 
 	/* If reloading a spell file fails it's still in the list but
@@ -9340,8 +9413,9 @@ suggest_try_change(su)
 			{
 			    preword[sp->ts_prewordlen] = NUL;
 			    add_suggestion(su, &su->su_ga, preword,
-					sp->ts_splitfidx - repextra,
-						      sp->ts_score, 0, FALSE);
+				    sp->ts_splitfidx - repextra,
+				    sp->ts_score, 0, FALSE,
+				    lp->lp_sallang);
 			    break;
 			}
 		    }
@@ -9466,7 +9540,8 @@ suggest_try_change(su)
 
 		    add_suggestion(su, &su->su_ga, preword,
 			    sp->ts_fidx - repextra,
-					   sp->ts_score + newscore, 0, FALSE);
+				     sp->ts_score + newscore, 0, FALSE,
+				     lp->lp_sallang);
 		}
 		else if ((sp->ts_fidx >= sp->ts_fidxtry || fword_ends)
 #ifdef FEAT_MBYTE
@@ -10161,19 +10236,22 @@ suggest_try_change(su)
 
 	    case STATE_REP_INI:
 		/* Check if matching with REP items from the .aff file would
-		 * work.  Quickly skip if there are no REP items or the score
-		 * is going to be too high anyway. */
-		gap = &slang->sl_rep;
-		if (gap->ga_len == 0
-			       || sp->ts_score + SCORE_REP >= su->su_maxscore)
+		 * work.  Quickly skip if:
+		 * - there are no REP items
+		 * - the score is going to be too high anyway
+		 * - already applied a REP item or swapped here  */
+		if (lp->lp_replang == NULL
+			|| sp->ts_score + SCORE_REP >= su->su_maxscore
+			|| sp->ts_fidx < sp->ts_fidxtry)
 		{
 		    sp->ts_state = STATE_FINAL;
 		    break;
 		}
+		gap = &lp->lp_replang->sl_rep;
 
 		/* Use the first byte to quickly find the first entry that
 		 * may match.  If the index is -1 there is none. */
-		sp->ts_curi = slang->sl_rep_first[fword[sp->ts_fidx]];
+		sp->ts_curi = lp->lp_replang->sl_rep_first[fword[sp->ts_fidx]];
 		if (sp->ts_curi < 0)
 		{
 		    sp->ts_state = STATE_FINAL;
@@ -10189,7 +10267,7 @@ suggest_try_change(su)
 		 * word is valid. */
 		p = fword + sp->ts_fidx;
 
-		gap = &slang->sl_rep;
+		gap = &lp->lp_replang->sl_rep;
 		while (sp->ts_curi < gap->ga_len)
 		{
 		    ftp = (fromto_T *)gap->ga_data + sp->ts_curi++;
@@ -10223,7 +10301,7 @@ suggest_try_change(su)
 		    }
 		}
 
-		if (sp->ts_curi >= gap->ga_len)
+		if (sp->ts_curi >= gap->ga_len && sp->ts_state == STATE_REP)
 		    /* No (more) matches. */
 		    sp->ts_state = STATE_FINAL;
 
@@ -10231,7 +10309,8 @@ suggest_try_change(su)
 
 	    case STATE_REP_UNDO:
 		/* Undo a REP replacement and continue with the next one. */
-		ftp = (fromto_T *)slang->sl_rep.ga_data + sp->ts_curi - 1;
+		ftp = (fromto_T *)lp->lp_replang->sl_rep.ga_data
+							    + sp->ts_curi - 1;
 		fl = STRLEN(ftp->ft_from);
 		tl = STRLEN(ftp->ft_to);
 		p = fword + sp->ts_fidx;
@@ -10490,9 +10569,9 @@ score_comp_sal(su)
 	return;
 
     /*	Use the sound-folding of the first language that supports it. */
-    for (lpi = 0; lpi < curwin->w_buffer->b_langp.ga_len; ++lpi)
+    for (lpi = 0; lpi < curbuf->b_langp.ga_len; ++lpi)
     {
-	lp = LANGP_ENTRY(curwin->w_buffer->b_langp, lpi);
+	lp = LANGP_ENTRY(curbuf->b_langp, lpi);
 	if (lp->lp_slang->sl_sal.ga_len > 0)
 	{
 	    /* soundfold the bad word */
@@ -10544,9 +10623,9 @@ score_combine(su)
     int		lpi;
 
     /* Add the alternate score to su_ga. */
-    for (lpi = 0; lpi < curwin->w_buffer->b_langp.ga_len; ++lpi)
+    for (lpi = 0; lpi < curbuf->b_langp.ga_len; ++lpi)
     {
-	lp = LANGP_ENTRY(curwin->w_buffer->b_langp, lpi);
+	lp = LANGP_ENTRY(curbuf->b_langp, lpi);
 	if (lp->lp_slang->sl_sal.ga_len > 0)
 	{
 	    /* soundfold the bad word */
@@ -10669,6 +10748,7 @@ stp_sal_score(stp, su, slang, badsound)
 
 /*
  * Find suggestions by comparing the word in a sound-a-like form.
+ * Note: This doesn't support postponed prefixes.
  */
     static void
 suggest_try_soundalike(su)
@@ -10690,15 +10770,17 @@ suggest_try_soundalike(su)
     int		sound_score;
     int		local_score;
     int		lpi;
+    slang_T	*slang;
 
     /* Do this for all languages that support sound folding. */
-    for (lpi = 0; lpi < curwin->w_buffer->b_langp.ga_len; ++lpi)
+    for (lpi = 0; lpi < curbuf->b_langp.ga_len; ++lpi)
     {
-	lp = LANGP_ENTRY(curwin->w_buffer->b_langp, lpi);
-	if (lp->lp_slang->sl_sal.ga_len > 0)
+	lp = LANGP_ENTRY(curbuf->b_langp, lpi);
+	slang = lp->lp_slang;
+	if (slang->sl_sal.ga_len > 0)
 	{
 	    /* soundfold the bad word */
-	    spell_soundfold(lp->lp_slang, su->su_fbadword, TRUE, salword);
+	    spell_soundfold(slang, su->su_fbadword, TRUE, salword);
 
 	    /*
 	     * Go through the whole tree, soundfold each word and compare.
@@ -10709,13 +10791,13 @@ suggest_try_soundalike(su)
 	    {
 		if (round == 1)
 		{
-		    byts = lp->lp_slang->sl_fbyts;
-		    idxs = lp->lp_slang->sl_fidxs;
+		    byts = slang->sl_fbyts;
+		    idxs = slang->sl_fidxs;
 		}
 		else
 		{
-		    byts = lp->lp_slang->sl_kbyts;
-		    idxs = lp->lp_slang->sl_kidxs;
+		    byts = slang->sl_kbyts;
+		    idxs = slang->sl_kidxs;
 		    if (byts == NULL)	    /* no keep-case words */
 			continue;
 		}
@@ -10746,7 +10828,7 @@ suggest_try_soundalike(su)
 				tword[depth] = NUL;
 				/* Sound-fold.  Only in keep-case tree need to
 				 * case-fold the word. */
-				spell_soundfold(lp->lp_slang, tword,
+				spell_soundfold(slang, tword,
 							round == 1, tsalword);
 
 				/* Compute the edit distance between the
@@ -10782,7 +10864,8 @@ suggest_try_soundalike(su)
 				    if (sps_flags & SPS_DOUBLE)
 					add_suggestion(su, &su->su_sga, p,
 						su->su_badlen,
-						       sound_score, 0, FALSE);
+						sound_score, 0, FALSE,
+						lp->lp_sallang);
 				    else
 				    {
 					/* Compute the score. */
@@ -10796,11 +10879,14 @@ suggest_try_soundalike(su)
 					    add_suggestion(su, &su->su_ga, p,
 						    su->su_badlen,
 						  RESCORE(score, sound_score),
-							   sound_score, TRUE);
+						    sound_score, TRUE,
+						    lp->lp_sallang);
 					else
 					    add_suggestion(su, &su->su_ga, p,
 						    su->su_badlen,
-					       score + sound_score, 0, FALSE);
+						    score + sound_score,
+						    0, FALSE,
+						    lp->lp_sallang);
 				    }
 				}
 			    }
@@ -10985,7 +11071,7 @@ similar_chars(slang, c1, c2)
  * with spell_edit_score().
  */
     static void
-add_suggestion(su, gap, goodword, badlen, score, altscore, had_bonus)
+add_suggestion(su, gap, goodword, badlen, score, altscore, had_bonus, slang)
     suginfo_T	*su;
     garray_T	*gap;
     char_u	*goodword;
@@ -10993,6 +11079,7 @@ add_suggestion(su, gap, goodword, badlen, score, altscore, had_bonus)
     int		score;
     int		altscore;
     int		had_bonus;	/* value for st_had_bonus */
+    slang_T	*slang;		/* language for sound folding */
 {
     suggest_T   *stp;
     int		i;
@@ -11048,6 +11135,8 @@ add_suggestion(su, gap, goodword, badlen, score, altscore, had_bonus)
 		    stp[i].st_altscore = altscore;
 		    stp[i].st_had_bonus = had_bonus;
 		}
+		if (stp[i].st_slang == NULL)
+		    stp[i].st_slang = slang;
 		break;
 	    }
 
@@ -11062,6 +11151,7 @@ add_suggestion(su, gap, goodword, badlen, score, altscore, had_bonus)
 		stp->st_altscore = altscore;
 		stp->st_had_bonus = had_bonus;
 		stp->st_orglen = badlen;
+		stp->st_slang = slang;
 		++gap->ga_len;
 
 		/* If we have too many suggestions now, sort the list and keep
@@ -11146,30 +11236,51 @@ rescore_suggestions(su)
     langp_T	*lp;
     suggest_T	*stp;
     char_u	sal_badword[MAXWLEN];
+    char_u	sal_badword2[MAXWLEN];
     int		i;
     int		lpi;
+    slang_T	*slang_first = NULL;
+    slang_T	*slang;
 
-    for (lpi = 0; lpi < curwin->w_buffer->b_langp.ga_len; ++lpi)
+    for (lpi = 0; lpi < curbuf->b_langp.ga_len; ++lpi)
     {
-	lp = LANGP_ENTRY(curwin->w_buffer->b_langp, lpi);
+	lp = LANGP_ENTRY(curbuf->b_langp, lpi);
 	if (lp->lp_slang->sl_sal.ga_len > 0)
 	{
 	    /* soundfold the bad word */
-	    spell_soundfold(lp->lp_slang, su->su_fbadword, TRUE, sal_badword);
+	    slang_first = lp->lp_slang;
+	    spell_soundfold(slang_first, su->su_fbadword, TRUE, sal_badword);
+	    break;
+	}
+    }
 
-	    for (i = 0; i < su->su_ga.ga_len; ++i)
+    if (slang_first != NULL)
+    {
+	for (i = 0; i < su->su_ga.ga_len; ++i)
+	{
+	    /* Only rescore suggestions that have no sal score yet and do have
+	     * a language. */
+	    stp = &SUG(su->su_ga, i);
+	    if (!stp->st_had_bonus && stp->st_slang != NULL)
 	    {
-		stp = &SUG(su->su_ga, i);
-		if (!stp->st_had_bonus)
+		slang = stp->st_slang;
+		if (slang->sl_sal.ga_len > 0)
 		{
-		    stp->st_altscore = stp_sal_score(stp, su,
-						   lp->lp_slang, sal_badword);
+		    if (slang == slang_first)
+			stp->st_altscore = stp_sal_score(stp, su,
+							  slang, sal_badword);
+		    else
+		    {
+			spell_soundfold(slang, su->su_fbadword,
+							  TRUE, sal_badword2);
+			stp->st_altscore = stp_sal_score(stp, su,
+							 slang, sal_badword2);
+		    }
 		    if (stp->st_altscore == SCORE_MAXMAX)
 			stp->st_altscore = SCORE_BIG;
 		    stp->st_score = RESCORE(stp->st_score, stp->st_altscore);
 		}
 	    }
-	    break;
 	}
     }
 }
@@ -11244,9 +11355,9 @@ eval_soundfold(word)
 
     if (curwin->w_p_spell && *curbuf->b_p_spl != NUL)
 	/* Use the sound-folding of the first language that supports it. */
-	for (lpi = 0; lpi < curwin->w_buffer->b_langp.ga_len; ++lpi)
+	for (lpi = 0; lpi < curbuf->b_langp.ga_len; ++lpi)
 	{
-	    lp = LANGP_ENTRY(curwin->w_buffer->b_langp, lpi);
+	    lp = LANGP_ENTRY(curbuf->b_langp, lpi);
 	    if (lp->lp_slang->sl_sal.ga_len > 0)
 	    {
 		/* soundfold the word */
