@@ -2369,15 +2369,22 @@ draw_cmdline(start, len)
 	 * Do arabic shaping into a temporary buffer.  This is very
 	 * inefficient!
 	 */
-	if (len * 2 > buflen)
+	if (len * 2 + 2 > buflen)
 	{
 	    /* Re-allocate the buffer.  We keep it around to avoid a lot of
 	     * alloc()/free() calls. */
 	    vim_free(arshape_buf);
-	    buflen = len * 2;
+	    buflen = len * 2 + 2;
 	    arshape_buf = alloc(buflen);
 	    if (arshape_buf == NULL)
 		return;	/* out of memory */
+	}
+
+	if (utf_iscomposing(utf_ptr2char(ccline.cmdbuff + start)))
+	{
+	    /* Prepend a space to draw the leading composing char on. */
+	    arshape_buf[0] = ' ';
+	    newlen = 1;
 	}
 
 	for (j = start; j < start + len; j += mb_l)

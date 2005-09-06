@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Sep 05
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Sep 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,6 +29,11 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+When ":vimgrep" lists filenames they should be shortened.  Silence messages
+for decompressing.
+
+When 'rl' is set "q/" causes hit-enter prompt.
 
 Try out using the free MS compiler and debugger, using Make_mvc.mak.
 
@@ -200,6 +205,8 @@ PLANNED FOR VERSION 7.0:
 8   Support four composing/combining characters, needed for Hebrew. (Ron Aaron)
     Add the 'maxcombining' option to set the nr. of composing characters.
     At the same time support more colors (use two bytes when necessary).
+8   Searching for a composing character by itself should work.  Perhaps "."
+    with a composing char should work too.
 -   Add a few more things to 'diffopt': "horizontal", "vertical",
     "foldcolumn". (Benji Fisher, 2004 Jun 21)
 -   FileChangedShellPost autocommand event: after (not) reloading a changed

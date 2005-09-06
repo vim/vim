@@ -3480,6 +3480,15 @@ win_line(wp, lnum, startrow, endrow)
 			if (mb_c < 0x80)
 			    c = mb_c;
 			mb_utf8 = TRUE;
+
+			/* At start of the line we can have a composing char.
+			 * Draw it as a space with a composing char. */
+			if (utf_iscomposing(mb_c))
+			{
+			    u8c_c2 = u8c_c1;
+			    u8c_c1 = mb_c;
+			    mb_c = ' ';
+			}
 		    }
 
 		    if ((mb_l == 1 && c >= 0x80)

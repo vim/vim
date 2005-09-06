@@ -1,9 +1,9 @@
 " Vim syntax file
 " Language:	rpcgen
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrOchipS@PcampbellAfamily.Mbiz>
-" Last Change:	Nov 18, 2002
-" Version:	7
-" URL:	http://www.erols.com/astronaut/vim/index.html#vimlinks_syntax
+" Last Change:	Sep 06, 2005
+" Version:	8
+" URL:	http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded

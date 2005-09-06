@@ -6355,6 +6355,7 @@ search-offset	pattern.txt	/*search-offset*
 search-pattern	pattern.txt	/*search-pattern*
 search-range	pattern.txt	/*search-range*
 search-replace	change.txt	/*search-replace*
+searchdecl()	eval.txt	/*searchdecl()*
 searchpair()	eval.txt	/*searchpair()*
 section	motion.txt	/*section*
 sed.vim	syntax.txt	/*sed.vim*

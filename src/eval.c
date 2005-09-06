@@ -17583,6 +17583,7 @@ list_func_head(fp, indent)
 	MSG_PUTS("...");
     }
     msg_putchar(')');
+    msg_clr_eos();
 #ifdef FEAT_EVAL
     if (p_verbose > 0)
 	last_set_msg(fp->uf_script_ID);
@@ -18934,12 +18935,19 @@ store_session_globals(fd)
 last_set_msg(scriptID)
     scid_T scriptID;
 {
+    char_u *p;
+
     if (scriptID != 0)
     {
-	verbose_enter();
-	MSG_PUTS(_("\n\tLast set from "));
-	MSG_PUTS(get_scriptname(scriptID));
-	verbose_leave();
+	p = home_replace_save(NULL, get_scriptname(scriptID));
+	if (p != NULL)
+	{
+	    verbose_enter();
+	    MSG_PUTS(_("\n\tLast set from "));
+	    MSG_PUTS(p);
+	    vim_free(p);
+	    verbose_leave();
+	}
     }
 }
 

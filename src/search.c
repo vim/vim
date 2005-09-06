@@ -1105,7 +1105,16 @@ do_search(oap, dirc, pat, count, options)
 	    if (msgbuf != NULL)
 	    {
 		msgbuf[0] = dirc;
-		STRCPY(msgbuf + 1, p);
+#ifdef FEAT_MBYTE
+		if (enc_utf8 && utf_iscomposing(utf_ptr2char(p)))
+		{
+		    /* Use a space to draw the composing char on. */
+		    msgbuf[1] = ' ';
+		    STRCPY(msgbuf + 2, p);
+		}
+		else
+#endif
+		    STRCPY(msgbuf + 1, p);
 		if (spats[0].off.line || spats[0].off.end || spats[0].off.off)
 		{
 		    p = msgbuf + STRLEN(msgbuf);

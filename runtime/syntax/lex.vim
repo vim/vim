@@ -1,9 +1,9 @@
 " Vim syntax file
 " Language:	Lex
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrOchipS@PcampbellAfamily.Mbiz>
-" Last Change:	Nov 26, 2004
-" Version:	6
-" URL:	http://www.erols.com/astronaut/vim/index.html#vimlinks_syntax
+" Last Change:	Sep 06, 2005
+" Version:	7
+" URL:	http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 "
 " Option:
 "   lex_uses_cpp : if this variable exists, then C++ is loaded rather than C

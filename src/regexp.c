@@ -6243,7 +6243,6 @@ cstrncmp(s1, s2, n)
     {
 	char_u	*str1, *str2;
 	int	c1, c2, c11, c12;
-	int	ix;
 	int	junk;
 
 	/* we have to handle the strcmp ourselves, since it is necessary to
@@ -6251,11 +6250,10 @@ cstrncmp(s1, s2, n)
 	str1 = s1;
 	str2 = s2;
 	c1 = c2 = 0;
-	for (ix = 0; ix < *n; )
+	while ((int)(str1 - s1) < *n)
 	{
 	    c1 = mb_ptr2char_adv(&str1);
 	    c2 = mb_ptr2char_adv(&str2);
-	    ix += utf_char2len(c1);
 
 	    /* decompose the character if necessary, into 'base' characters
 	     * because I don't care about Arabic, I will hard-code the Hebrew

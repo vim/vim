@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	php
 " Maintainer:	Dan Sharp <dwsharp at hotmail dot com>
-" Last Changed: 2004 Jul 08
+" Last Changed: 2005 Sep 05
 " URL:		http://mywebpage.netscape.com/sharppeople/vim/ftplugin
 
 if exists("b:did_ftplugin") | finish | endif
@@ -41,7 +41,7 @@ endif
 setlocal include=\\\(require\\\|include\\\)\\\(_once\\\)\\\?
 setlocal iskeyword+=$
 if exists("loaded_matchit")
-    let b:match_words = '\<switch\>:\<endswitch\>,' .
+    let b:match_words = '<php?:?>,\<switch\>:\<endswitch\>,' .
 		      \ '\<if\>:\<elseif\>:\<else\>:\<endif\>,' .
 		      \ '\<while\>:\<endwhile\>,' .
 		      \ '\<do\>:\<while\>,' .

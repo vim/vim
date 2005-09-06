@@ -1,10 +1,10 @@
 " Vim syntax file
 " Language:	exports
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrOchipS@PcampbellAfamily.Mbiz>
-" Last Change:	Sep 02, 2003
-" Version:	3
+" Last Change:	Sep 06, 2005
+" Version:	4
 " Notes:		This file includes both SysV and BSD 'isms
-" URL:	http://www.erols.com/astronaut/vim/index.html#vimlinks_syntax
+" URL:	http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
