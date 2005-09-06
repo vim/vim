@@ -1,9 +1,9 @@
 " Vim syntax file
 " Language:	xmath (a simulation tool)
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrOchipS@PcampbellAfamily.Mbiz>
-" Last Change:	Sep 02, 2003
-" Version:	3
-" URL:	http://www.erols.com/astronaut/vim/index.html#vimlinks_syntax
+" Last Change:	Sep 06, 2005
+" Version:	4
+" URL:	http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
