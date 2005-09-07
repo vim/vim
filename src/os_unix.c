@@ -2059,7 +2059,7 @@ mch_get_user_name(s, len)
     int	    len;
 {
 #ifdef VMS
-    vim_strncpy((char *)s, cuserid(NULL), len - 1);
+    vim_strncpy(s, (char_u *)cuserid(NULL), len - 1);
     return OK;
 #else
     return mch_get_uname(getuid(), s, len);
