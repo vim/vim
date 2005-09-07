@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Sep 06
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Sep 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,12 +30,11 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-When ":vimgrep" lists filenames they should be shortened.  Silence messages
-for decompressing.
+When ":vimgrep" lists filenames while searching they should be shortened.
+Silence messages for decompressing?
 
-When 'rl' is set "q/" causes hit-enter prompt.
-
-Try out using the free MS compiler and debugger, using Make_mvc.mak.
+ccomplete:
+- need list of tags files used in 'tags'.
 
 Mac unicode patch (Da Woon Jung):
 - selecting proportional font breaks display
@@ -43,6 +42,7 @@ Mac unicode patch (Da Woon Jung):
 
 Win32: Use the free downloadable compiler 7.1.  Figure out how to do debugging
 (with Agide?) and describe it. (George Reilly)
+Try out using the free MS compiler and debugger, using Make_mvc.mak.
 
 Autoload:
 - Add a Vim script in $VIMRUNTIME/tools that takes a file with a list of
@@ -91,7 +91,8 @@ PLANNED FOR VERSION 7.0:
 	    How to get the type of "var"?
 		tags file doesn't give type of typedef!  E.g., oparg_T is
 		listed with "^} oparg_T;$"
-		mlcscope may do it, but I can't find the sources
+		mlcscope may do it, but it's not very portable.
+		    http://www.exptools.com/cscope
 	    How to get the members of that type?
 		tags file has struct: and class: fields
 
