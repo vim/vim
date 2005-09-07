@@ -2831,6 +2831,8 @@ eval_for_line(arg, errp, nextcmdp, skip)
 	    }
 	    else
 	    {
+		/* No need to increment the refcount, it's already set for the
+		 * list being used in "tv". */
 		fi->fi_list = l;
 		list_add_watch(l, &fi->fi_lw);
 		fi->fi_lw.lw_item = l->lv_first;
@@ -5861,14 +5863,16 @@ garbage_collect()
 
     /*
      * 3. Go through the list of lists and free items without the copyID.
+     *    But don't free a list that has a watcher (used in a for loop), these
+     *    are not referenced anywhere.
      */
     for (ll = first_list; ll != NULL; )
-	if (ll->lv_copyID != copyID)
+	if (ll->lv_copyID != copyID && ll->lv_watch == NULL)
 	{
 	    list_free(ll);
 	    did_free = TRUE;
 
-	    /* restart, next dict may also have been freed */
+	    /* restart, next list may also have been freed */
 	    ll = first_list;
 	}
 	else
