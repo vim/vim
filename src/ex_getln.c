@@ -5478,6 +5478,9 @@ ex_window()
     int			save_restart_edit = restart_edit;
     int			save_State = State;
     int			save_exmode = exmode_active;
+#ifdef FEAT_RIGHTLEFT
+    int			save_cmdmsg_rl = cmdmsg_rl;
+#endif
 
     /* Can't do this recursively.  Can't do it when typing a password. */
     if (cmdwin_type != 0
@@ -5514,7 +5517,8 @@ ex_window()
     set_option_value((char_u *)"swf", 0L, NULL, OPT_LOCAL);
     curbuf->b_p_ma = TRUE;
 # ifdef FEAT_RIGHTLEFT
-    curwin->w_p_rl = FALSE;
+    curwin->w_p_rl = cmdmsg_rl;
+    cmdmsg_rl = FALSE;
 # endif
 # ifdef FEAT_SCROLLBIND
     curwin->w_p_scb = FALSE;
@@ -5524,6 +5528,9 @@ ex_window()
     /* Do execute autocommands for setting the filetype (load syntax). */
     --autocmd_block;
 # endif
+
+    /* Showing the prompt may have set need_wait_return, reset it. */
+    need_wait_return = FALSE;
 
     histtype = hist_char2type(ccline.cmdfirstc);
     if (histtype == HIST_CMD || histtype == HIST_DEBUG)
@@ -5565,6 +5572,8 @@ ex_window()
     ml_replace(curbuf->b_ml.ml_line_count, ccline.cmdbuff, TRUE);
     curwin->w_cursor.lnum = curbuf->b_ml.ml_line_count;
     curwin->w_cursor.col = ccline.cmdpos;
+    changed_line_abv_curs();
+    invalidate_botline();
     redraw_later(NOT_VALID);
 
     /* Save the command line info, can be used recursively. */
@@ -5625,10 +5634,24 @@ ex_window()
 # endif
 	/* Set the new command line from the cmdline buffer. */
 	vim_free(ccline.cmdbuff);
-	if (cmdwin_result == K_XF1)		/* :qa! typed */
+	if (cmdwin_result == K_XF1 || cmdwin_result == K_XF2) /* :qa[!] typed */
 	{
-	    ccline.cmdbuff = vim_strsave((char_u *)"qa!");
-	    cmdwin_result = CAR;
+	    char *p = (cmdwin_result == K_XF2) ? "qa" : "qa!";
+
+	    if (histtype == HIST_CMD)
+	    {
+		/* Execute the command directly. */
+		ccline.cmdbuff = vim_strsave((char_u *)p);
+		cmdwin_result = CAR;
+	    }
+	    else
+	    {
+		/* First need to cancel what we were doing. */
+		ccline.cmdbuff = NULL;
+		stuffcharReadbuff(':');
+		stuffReadbuff((char_u *)p);
+		stuffcharReadbuff(CAR);
+	    }
 	}
 	else if (cmdwin_result == K_XF2)	/* :qa typed */
 	{
@@ -5673,6 +5696,9 @@ ex_window()
 
     ga_clear(&winsizes);
     restart_edit = save_restart_edit;
+# ifdef FEAT_RIGHTLEFT
+    cmdmsg_rl = save_cmdmsg_rl;
+# endif
 
     State = save_State;
 # ifdef FEAT_MOUSE

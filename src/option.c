@@ -3287,7 +3287,7 @@ set_init_2()
 		&& (STRCMP(T_NAME, "linux") == 0
 		    || STRCMP(T_NAME, "screen.linux") == 0
 		    || STRCMP(T_NAME, "cygwin") == 0
-		    || ((p = mch_getenv("COLORFGBG")) != NULL
+		    || ((p = mch_getenv((char_u *)"COLORFGBG")) != NULL
 			&& (p = vim_strrchr(p, ';')) != NULL
 			&& ((p[1] >= '0' && p[1] <= '6') || p[1] == '8')
 			&& p[2] == NUL)))

@@ -1029,7 +1029,7 @@ struct listvar_S
     int		lv_copyID;	/* ID used by deepcopy() */
     list_T	*lv_copylist;	/* copied list used by deepcopy() */
     char	lv_lock;	/* zero, VAR_LOCKED, VAR_FIXED */
-    list_T	*lv_used_next;	/* next list in used dicts list */
+    list_T	*lv_used_next;	/* next list in used lists list */
     list_T	*lv_used_prev;	/* previous list in used lists list */
 };
 
