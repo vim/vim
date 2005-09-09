@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Sep 01
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Sep 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -6275,6 +6275,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	"*", "**" and other wildcards can be used to search for tags files in
 	a directory tree.  See |file-searching|.  {not available when compiled
 	without the |+path_extra| feature}
+	The |tagfiles()| function can be used to get a list of the file names
+	actually used.
 	If Vim was compiled with the |+emacs_tags| feature, Emacs-style tag
 	files are also supported.  They are automatically recognized.  The
 	default value becomes "./tags,./TAGS,tags,TAGS", unless case
