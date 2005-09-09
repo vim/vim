@@ -409,6 +409,7 @@ static listitem_T *list_find __ARGS((list_T *l, long n));
 static long list_idx_of_item __ARGS((list_T *l, listitem_T *item));
 static void list_append __ARGS((list_T *l, listitem_T *item));
 static int list_append_tv __ARGS((list_T *l, typval_T *tv));
+static int list_append_string __ARGS((list_T *l, char_u *str));
 static int list_insert_tv __ARGS((list_T *l, typval_T *tv, listitem_T *item));
 static int list_extend __ARGS((list_T	*l1, list_T *l2, listitem_T *bef));
 static int list_concat __ARGS((list_T *l1, list_T *l2, typval_T *tv));
@@ -612,6 +613,7 @@ static void f_synIDattr __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_synIDtrans __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_system __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_taglist __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_tagfiles __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_tempname __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_test __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_tolower __ARGS((typval_T *argvars, typval_T *rettv));
@@ -5178,6 +5180,7 @@ failret:
 
 /*
  * Allocate an empty header for a list.
+ * Caller should take care of the reference count.
  */
     static list_T *
 list_alloc()
@@ -5547,6 +5550,27 @@ list_append_dict(list, dict)
     li->li_tv.vval.v_dict = dict;
     list_append(list, li);
     ++dict->dv_refcount;
+    return OK;
+}
+
+/*
+ * Make a copy of "str" and append it as an item to list "l".
+ * Returns FAIL when out of memory.
+ */
+    static int
+list_append_string(l, str)
+    list_T	*l;
+    char_u	*str;
+{
+    listitem_T *li = listitem_alloc();
+
+    if (li == NULL)
+	return FAIL;
+    list_append(l, li);
+    li->li_tv.v_type = VAR_STRING;
+    li->li_tv.v_lock = 0;
+    if ((li->li_tv.vval.v_string = vim_strsave(str)) == NULL)
+	return FAIL;
     return OK;
 }
 
@@ -6854,6 +6878,7 @@ static struct fst
     {"synIDattr",	2, 3, f_synIDattr},
     {"synIDtrans",	1, 1, f_synIDtrans},
     {"system",		1, 2, f_system},
+    {"tagfiles",	0, 0, f_tagfiles},
     {"taglist",		1, 1, f_taglist},
     {"tempname",	0, 0, f_tempname},
     {"test",		1, 1, f_test},
@@ -9195,7 +9220,6 @@ get_buffer_lines(buf, start, end, retlist, rettv)
 {
     char_u	*p;
     list_T	*l = NULL;
-    listitem_T	*li;
 
     if (retlist)
     {
@@ -9233,16 +9257,8 @@ get_buffer_lines(buf, start, end, retlist, rettv)
 	if (end > buf->b_ml.ml_line_count)
 	    end = buf->b_ml.ml_line_count;
 	while (start <= end)
-	{
-	    li = listitem_alloc();
-	    if (li == NULL)
+	    if (list_append_string(l, ml_get_buf(buf, start++, FALSE)) == FAIL)
 		break;
-	    list_append(l, li);
-	    li->li_tv.v_type = VAR_STRING;
-	    li->li_tv.v_lock = 0;
-	    li->li_tv.vval.v_string =
-		vim_strsave(ml_get_buf(buf, start++, FALSE));
-	}
     }
 }
 
@@ -9685,14 +9701,10 @@ f_getqflist(argvars, rettv)
     l = list_alloc();
     if (l != NULL)
     {
-	if (get_errorlist(l) != FAIL)
-	{
-	    rettv->vval.v_list = l;
-	    rettv->v_type = VAR_LIST;
-	    ++l->lv_refcount;
-	}
-	else
-	    list_free(l);
+	rettv->vval.v_list = l;
+	rettv->v_type = VAR_LIST;
+	++l->lv_refcount;
+	(void)get_errorlist(l);
     }
 #endif
 }
@@ -14449,6 +14461,35 @@ done:
     }
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = res;
+}
+
+/*
+ * "tagfiles()" function
+ */
+/*ARGSUSED*/
+    static void
+f_tagfiles(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    char_u	fname[MAXPATHL + 1];
+    list_T	*l;
+
+    l = list_alloc();
+    if (l == NULL)
+    {
+	rettv->vval.v_number = 0;
+	return;
+    }
+    rettv->vval.v_list = l;
+    rettv->v_type = VAR_LIST;
+    ++l->lv_refcount;
+
+    get_tagfname(TRUE, NULL);
+    for (;;)
+	if (get_tagfname(FALSE, fname) == FAIL
+		|| list_append_string(l, fname) == FAIL)
+	    break;
 }
 
 /*
