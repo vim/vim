@@ -3,7 +3,7 @@ int msg __ARGS((char_u *s));
 int verb_msg __ARGS((char_u *s));
 int msg_attr __ARGS((char_u *s, int attr));
 int msg_attr_keep __ARGS((char_u *s, int attr, int keep));
-char_u *msg_strtrunc __ARGS((char_u *s));
+char_u *msg_strtrunc __ARGS((char_u *s, int force));
 void trunc_string __ARGS((char_u *s, char_u *buf, int room));
 void reset_last_sourcing __ARGS((void));
 void msg_source __ARGS((int attr));

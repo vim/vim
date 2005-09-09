@@ -68,7 +68,6 @@ static char	*mt_names[MT_COUNT/2] =
 static char_u	*nofile_fname = NULL;	/* fname for NOTAGFILE error */
 
 static void taglen_advance __ARGS((int l));
-static int get_tagfname __ARGS((int first, char_u *buf));
 
 static int jumpto_tag __ARGS((char_u *lbuf, int forceit, int keep_help));
 #ifdef FEAT_EMACS_TAGS
@@ -2370,7 +2369,7 @@ free_tag_stuff()
  *
  * Return FAIL if no more tag file names, OK otherwise.
  */
-    static int
+    int
 get_tagfname(first, buf)
     int		first;	/* TRUE when first file name is wanted */
     char_u	*buf;	/* pointer to buffer of MAXPATHL chars */
@@ -2381,14 +2380,15 @@ get_tagfname(first, buf)
     char_u		*fname = NULL;
     char_u		*r_ptr;
 
-    if (first)
+    if (curbuf->b_help)
     {
-	if (curbuf->b_help)
+	/*
+	 * For help files it's done in a completely different way:
+	 * Find "doc/tags" and "doc/tags-??" in all directories in
+	 * 'runtimepath'.
+	 */
+	if (first)
 	{
-	    /*
-	     * For a help window find "doc/tags" and "doc/tags-??" in all
-	     * directories in 'runtimepath'.
-	     */
 	    ga_clear_strings(&tag_fnames);
 	    ga_init2(&tag_fnames, (int)sizeof(char_u *), 10);
 	    do_in_runtimepath((char_u *)
@@ -2408,17 +2408,7 @@ get_tagfname(first, buf)
 					      , TRUE, found_tagfile_cb, NULL);
 	    hf_idx = 0;
 	}
-	else if (*curbuf->b_p_tags != NUL)
-	    np = curbuf->b_p_tags;
-	else
-	    np = p_tags;
-	vim_findfile_free_visited(search_ctx);
-	did_filefind_init = FALSE;
-    }
-
-    if (curbuf->b_help)
-    {
-	if (hf_idx >= tag_fnames.ga_len)
+	else if (hf_idx >= tag_fnames.ga_len)
 	{
 	    /* Not found in 'runtimepath', use 'helpfile', if it exists and
 	     * wasn't used yet, replacing "help.txt" with "tags". */
@@ -2431,12 +2421,23 @@ get_tagfname(first, buf)
 	else
 	    vim_strncpy(buf, ((char_u **)(tag_fnames.ga_data))[hf_idx++],
 								MAXPATHL - 1);
+	return OK;
+    }
+
+    if (first)
+    {
+	/* Init. */
+	if (*curbuf->b_p_tags != NUL)
+	    np = curbuf->b_p_tags;
+	else
+	    np = p_tags;
+	vim_findfile_free_visited(search_ctx);
+	did_filefind_init = FALSE;
     }
     else
     {
-	/* tried already (or bogus call) */
 	if (np == NULL)
-	    return FAIL;
+	    return FAIL;	/* tried already (or bogus call) */
 
 	/*
 	 * Loop until we have found a file name that can be used.

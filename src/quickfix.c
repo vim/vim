@@ -2491,7 +2491,7 @@ ex_vimgrep(eap)
 	    /* Display the file name every second or so. */
 	    seconds = time(NULL);
 	    msg_start();
-	    p = msg_strtrunc(fnames[fi]);
+	    p = msg_strtrunc(fnames[fi], TRUE);
 	    if (p == NULL)
 		msg_outtrans(fnames[fi]);
 	    else
@@ -2824,10 +2824,7 @@ get_errorlist(list)
     int		i;
 
     if (qf_curlist >= qf_listcount || qf_lists[qf_curlist].qf_count == 0)
-    {
-	EMSG(_(e_quickfix));
 	return FAIL;
-    }
 
     qfp = qf_lists[qf_curlist].qf_start;
     for (i = 1; !got_int && i <= qf_lists[qf_curlist].qf_count; ++i)
