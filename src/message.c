@@ -168,11 +168,11 @@ msg_attr_keep(s, attr, keep)
 	keep_msg = NULL;
 
     /* Truncate the message if needed. */
-    buf = msg_strtrunc(s);
+    msg_start();
+    buf = msg_strtrunc(s, FALSE);
     if (buf != NULL)
 	s = buf;
 
-    msg_start();
     msg_outtrans_attr(s, attr);
     msg_clr_eos();
     retval = msg_end();
@@ -194,19 +194,25 @@ msg_attr_keep(s, attr, keep)
  * Returns an allocated string or NULL when no truncating is done.
  */
     char_u *
-msg_strtrunc(s)
+msg_strtrunc(s, force)
     char_u	*s;
+    int		force;	    /* always truncate */
 {
     char_u	*buf = NULL;
     int		len;
     int		room;
 
     /* May truncate message to avoid a hit-return prompt */
-    if (!msg_scroll && !need_wait_return && shortmess(SHM_TRUNCALL)
-					 && !exmode_active && msg_silent == 0)
+    if ((!msg_scroll && !need_wait_return && shortmess(SHM_TRUNCALL)
+			       && !exmode_active && msg_silent == 0) || force)
     {
 	len = vim_strsize(s);
-	room = (int)(Rows - cmdline_row - 1) * Columns + sc_col - 1;
+	if (msg_scrolled)
+	    /* Use all the columns. */
+	    room = (int)(Rows - msg_row) * Columns - 1;
+	else
+	    /* Use up to 'showcmd' column. */
+	    room = (int)(Rows - msg_row - 1) * Columns + sc_col - 1;
 	if (len > room && room > 0)
 	{
 #ifdef FEAT_MBYTE
