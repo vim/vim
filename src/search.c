@@ -1132,7 +1132,7 @@ do_search(oap, dirc, pat, count, options)
 		}
 
 		msg_start();
-		trunc = msg_strtrunc(msgbuf);
+		trunc = msg_strtrunc(msgbuf, FALSE);
 
 #ifdef FEAT_RIGHTLEFT
 		/* The search pattern could be shown on the right in rightleft

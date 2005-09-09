@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Sep 07
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Sep 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,11 +30,10 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-When ":vimgrep" lists filenames while searching they should be shortened.
-Silence messages for decompressing?
-
 ccomplete:
-- need list of tags files used in 'tags'.
+- Publish patch for ctags to add typedecl field.
+    nameless struct/union doesn't work (TT_MODE in os_vms.c)
+- When a typedef or struct is local to a file only use it in that file?
 
 Mac unicode patch (Da Woon Jung):
 - selecting proportional font breaks display
