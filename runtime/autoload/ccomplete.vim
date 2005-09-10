@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	C
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Sep 09
+" Last Change:	2005 Sep 10
 
 
 " This function is used for the 'occultfunc' option.
@@ -144,7 +144,7 @@ function! ccomplete#StructMembers(typename, items)
   let typename = a:typename
   let qflist = []
   while 1
-    exe 'silent! vimgrep /\t' . typename . '\>/j ' . fnames
+    exe 'silent! vimgrep /\t' . typename . '\(\t\|$\)/j ' . fnames
     let qflist = getqflist()
     if len(qflist) > 0 || match(typename, "::") < 0
       break

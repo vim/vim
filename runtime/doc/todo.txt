@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Sep 09
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Sep 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -31,9 +31,10 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 -------------------- Known bugs and current work -----------------------
 
 ccomplete:
-- Publish patch for ctags to add typedecl field.
-    nameless struct/union doesn't work (TT_MODE in os_vms.c)
 - When a typedef or struct is local to a file only use it in that file?
+- How to use a popup menu?
+- when a struct reference is already complete and CTRL-X CTRL-O is used, add a
+  "." or "->"?
 
 Mac unicode patch (Da Woon Jung):
 - selecting proportional font breaks display
@@ -81,21 +82,8 @@ PLANNED FOR VERSION 7.0:
     Completion logic:
 	Use runtime/autoload/{filetype}complete.vim files.
 
-	For a simple name can complete like with CTRL-N.
-	    get list of IDs from the tagfile?
-	    For struct or class add "." or "->"?
-
-	After a reference to a struct or class suggest members.
-	    Recognizing "var.mem" and 'var->mem" is easy.
-	    How to get the type of "var"?
-		tags file doesn't give type of typedef!  E.g., oparg_T is
-		listed with "^} oparg_T;$"
-		mlcscope may do it, but it's not very portable.
-		    http://www.exptools.com/cscope
-	    How to get the members of that type?
-		tags file has struct: and class: fields
-
 	In function arguments suggest variables of expected type.
+	Tags file has "signature" field.
 
 	List of completions is a Dictionary with items:
 	    complist[0]['text'] = completion text

@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Sep 07
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Sep 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -434,6 +434,7 @@ New functions: ~
 |getftype()|		get type of file (Nikolai Weibull)
 |getline()|		with second argument: get List with buffer lines
 |has_key()|		check whether a key appears in a Dictionary
+|inputlist()|		select an entry from a list
 |insert()|		insert an item somewhere in a List
 |items()|		get List of Dictionary key-value pairs
 |join()|		join List items into a String
@@ -785,6 +786,9 @@ When using an rxvt terminal emulator guess the value of 'background' using the
 COLORFGBG environment variable. (Ciaran McCreesh)
 
 Also support t_SI and t_EI on Unix with normal features. (Ciaran McCreesh)
+
+When 'foldcolumn' is one then put as much info in it as possible.  This allows
+closing a fold with the mouse by clicking on the '-'.
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*
@@ -1331,5 +1335,8 @@ would be opened with these lines above the first window line.
 
 When using a command line window for search strings ":qa" would result in
 searching for "qa" instead of quitting all windows.
+
+GUI: When scrolling with the scrollbar and there is a line that doesn't fit
+redrawing may fail.  Make sure w_skipcol is valid before redrawing.
 
  vim:tw=78:ts=8:ft=help:norl:
