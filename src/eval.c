@@ -534,6 +534,7 @@ static void f_indent __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_index __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_input __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_inputdialog __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_inputlist __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_inputrestore __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_inputsave __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_inputsecret __ARGS((typval_T *argvars, typval_T *rettv));
@@ -6800,6 +6801,7 @@ static struct fst
     {"index",		2, 4, f_index},
     {"input",		1, 2, f_input},
     {"inputdialog",	1, 3, f_inputdialog},
+    {"inputlist",	1, 1, f_inputlist},
     {"inputrestore",	0, 0, f_inputrestore},
     {"inputsave",	0, 0, f_inputsave},
     {"inputsecret",	1, 2, f_inputsecret},
@@ -10886,6 +10888,50 @@ f_inputdialog(argvars, rettv)
 #endif
 	f_input(argvars, rettv);
 }
+
+/*
+ * "inputlist()" function
+ */
+    static void
+f_inputlist(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    listitem_T	*li;
+    int		selected;
+    int		mouse_used;
+
+    rettv->vval.v_number = 0;
+#ifdef NO_CONSOLE_INPUT
+    /* While starting up, there is no place to enter text. */
+    if (no_console_input())
+	return;
+#endif
+    if (argvars[0].v_type != VAR_LIST || argvars[0].vval.v_list == NULL)
+    {
+	EMSG2(_(e_listarg), "inputlist()");
+	return;
+    }
+
+    msg_start();
+    lines_left = Rows;	/* avoid more prompt */
+    msg_scroll = TRUE;
+    msg_clr_eos();
+
+    for (li = argvars[0].vval.v_list->lv_first; li != NULL; li = li->li_next)
+    {
+	msg_puts(get_tv_string(&li->li_tv));
+	msg_putchar('\n');
+    }
+
+    /* Ask for choice. */
+    selected = prompt_for_number(&mouse_used);
+    if (mouse_used)
+	selected -= lines_left;
+
+    rettv->vval.v_number = selected;
+}
+
 
 static garray_T	    ga_userinput = {0, 0, sizeof(tasave_T), 4, NULL};
 
