@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0aa.  Last change: 2005 Sep 01
+*insert.txt*    For Vim version 7.0aa.  Last change: 2005 Sep 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -888,6 +888,7 @@ Completion is done by a function that can be defined by the user with the
 'occultfunc' option.  This is to be used for filetype-specific completion.
 
 See the 'completefunc' help for how the function is called and an example.
+For remarks about specific filetypes see |compl-occult-filetypes|.
 
 							*i_CTRL-X_CTRL-O*
 CTRL-X CTRL-O		Guess what kind of item is in front of the cursor and
@@ -946,6 +947,37 @@ CTRL-P			Find previous match for words that start with the
 	CTRL-X CTRL-P	Further use of CTRL-X CTRL-N or CTRL-X CTRL-P will
 			copy the words following the previous expansion in
 			other contexts unless a double CTRL-X is used.
+
+
+Filetype-specific remarks for occult completion	    *compl-occult-filetypes*
+
+C							*ft-c-occult*
+
+Completion requires a tags file.  You should use Exuberant ctags, because it
+adds extra information that is needed for completion.  You can find it here:
+http://ctags.sourceforge.net/
+For version 5.5.4 you need to add a patch that adds the "typename:" field:
+ftp://ftp.vim.org/pub/vim/unstable/patches/ctags-5.5.4.patch
+
+If you want to complete system functions you can do something like this.  Use
+ctags to generate a tags file for all the system header files: >
+	% ctags -R -f ~/.vim/systags /usr/include /usr/local/include
+In your vimrc file add this tags file to the 'tags' option: >
+	set tags+=~/.vim/systags
+
+When using CTRL-X CTRL-O after a name without any "." or "->" it is completed
+from the tags file directly.  This works for any identifier, also function
+names.  If you want to complete a local variable name, which does not appear
+in the tags file, use CTRL-P instead.
+
+When using CTRL-X CTRL-O after something that has "." or "->" Vim will attempt
+to recognize the type of the variable and figure out what members it has.
+This means only members valid for the variable will be listed.
+
+Vim doesn't include a C compiler, only the most obviously formatted
+declarations are recognized.  Preprocessor stuff may cause confusion.
+When the same structure name appears in multiple places all possible members
+are included.
 
 ==============================================================================
 8. Insert mode commands					*inserting*

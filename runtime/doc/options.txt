@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Sep 08
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Sep 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -560,12 +560,20 @@ is entered, this is almost like having global options.  If 's' and 'S' are not
 present, the options are copied from the currently active buffer when the
 buffer is created.
 
-Not all options are supported in all versions.  To test if option "foo" can be
-used with ":set" use "exists('&foo')".  This doesn't mean the value is
-actually remembered and works.  Some options are hidden, which means that you
-can set them but the value is not remembered.  To test if option "foo" is
-really supported use "exists('+foo')".
+Hidden options						*hidden-options*
 
+Not all options are supported in all versions.  This depends on the supported
+features and sometimes on the system.  A remark about this is in curly braces
+below.  When an option is not supported it may still be set without getting an
+error, this is called a hidden option.  You can't get the value of a hidden
+option though, it is not stored.
+
+To test if option "foo" can be used with ":set" use something like this: >
+	if exists('&foo')
+This also returns true for a hidden option.  To test if option "foo" is really
+supported use something like this: >
+	if exists('+foo')
+<
 							*E355*
 A jump table for the options with a short description can be found at |Q_op|.
 

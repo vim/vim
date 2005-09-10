@@ -3861,6 +3861,9 @@ gui_do_scroll()
 #endif
     }
 
+    /* Make sure wp->w_leftcol and wp->w_skipcol are correct. */
+    validate_cursor();
+
     curwin = save_wp;
     curbuf = save_wp->w_buffer;
 
@@ -3869,6 +3872,7 @@ gui_do_scroll()
      * the status line!).
      */
     if (old_topline != wp->w_topline
+	    || wp->w_redr_type != 0
 #ifdef FEAT_DIFF
 	    || old_topfill != wp->w_topfill
 #endif

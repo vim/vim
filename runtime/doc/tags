@@ -4461,6 +4461,7 @@ compl-function	insert.txt	/*compl-function*
 compl-generic	insert.txt	/*compl-generic*
 compl-keyword	insert.txt	/*compl-keyword*
 compl-occult	insert.txt	/*compl-occult*
+compl-occult-filetypes	insert.txt	/*compl-occult-filetypes*
 compl-spelling	insert.txt	/*compl-spelling*
 compl-tag	insert.txt	/*compl-tag*
 compl-vim	insert.txt	/*compl-vim*
@@ -4961,6 +4962,7 @@ ft-aspperl-syntax	syntax.txt	/*ft-aspperl-syntax*
 ft-aspvbs-syntax	syntax.txt	/*ft-aspvbs-syntax*
 ft-bash-syntax	syntax.txt	/*ft-bash-syntax*
 ft-basic-syntax	syntax.txt	/*ft-basic-syntax*
+ft-c-occult	insert.txt	/*ft-c-occult*
 ft-c-syntax	syntax.txt	/*ft-c-syntax*
 ft-ch-syntax	syntax.txt	/*ft-ch-syntax*
 ft-changelog-plugin	filetype.txt	/*ft-changelog-plugin*
@@ -5077,7 +5079,6 @@ g'a	motion.txt	/*g'a*
 g,	motion.txt	/*g,*
 g0	motion.txt	/*g0*
 g8	various.txt	/*g8*
-g:netrw-a	pi_netrw.txt	/*g:netrw-a*
 g:netrw_alto	pi_netrw.txt	/*g:netrw_alto*
 g:netrw_altv	pi_netrw.txt	/*g:netrw_altv*
 g:netrw_cygwin	pi_netrw.txt	/*g:netrw_cygwin*
@@ -5291,6 +5292,7 @@ hebrew	hebrew.txt	/*hebrew*
 hebrew.txt	hebrew.txt	/*hebrew.txt*
 help	various.txt	/*help*
 help-context	help.txt	/*help-context*
+help-tags	tags	1
 help-translated	various.txt	/*help-translated*
 help-xterm-window	various.txt	/*help-xterm-window*
 help.txt	help.txt	/*help.txt*
@@ -5298,6 +5300,7 @@ hex-editing	tips.txt	/*hex-editing*
 hidden-buffer	windows.txt	/*hidden-buffer*
 hidden-changed	version5.txt	/*hidden-changed*
 hidden-menus	gui.txt	/*hidden-menus*
+hidden-options	options.txt	/*hidden-options*
 hidden-quit	windows.txt	/*hidden-quit*
 highlight-args	syntax.txt	/*highlight-args*
 highlight-changed	version4.txt	/*highlight-changed*
@@ -5532,6 +5535,7 @@ inform.vim	syntax.txt	/*inform.vim*
 initialization	starting.txt	/*initialization*
 input()	eval.txt	/*input()*
 inputdialog()	eval.txt	/*inputdialog()*
+inputlist()	eval.txt	/*inputlist()*
 inputrestore()	eval.txt	/*inputrestore()*
 inputsave()	eval.txt	/*inputsave()*
 inputsecret()	eval.txt	/*inputsecret()*
@@ -5838,6 +5842,9 @@ netrw	pi_netrw.txt	/*netrw*
 netrw--	pi_netrw.txt	/*netrw--*
 netrw-B	pi_netrw.txt	/*netrw-B*
 netrw-D	pi_netrw.txt	/*netrw-D*
+netrw-NB	pi_netrw.txt	/*netrw-NB*
+netrw-Nb	pi_netrw.txt	/*netrw-Nb*
+netrw-O	pi_netrw.txt	/*netrw-O*
 netrw-R	pi_netrw.txt	/*netrw-R*
 netrw-S	pi_netrw.txt	/*netrw-S*
 netrw-U	pi_netrw.txt	/*netrw-U*
@@ -5880,8 +5887,8 @@ netrw-history	pi_netrw.txt	/*netrw-history*
 netrw-horiz	pi_netrw.txt	/*netrw-horiz*
 netrw-i	pi_netrw.txt	/*netrw-i*
 netrw-list	pi_netrw.txt	/*netrw-list*
-netrw-list-hack	pi_netrw.txt	/*netrw-list-hack*
 netrw-listbookmark	pi_netrw.txt	/*netrw-listbookmark*
+netrw-listhack	pi_netrw.txt	/*netrw-listhack*
 netrw-maps	pi_netrw.txt	/*netrw-maps*
 netrw-move	pi_netrw.txt	/*netrw-move*
 netrw-netrc	pi_netrw.txt	/*netrw-netrc*
@@ -6719,6 +6726,7 @@ tag-search	tagsrch.txt	/*tag-search*
 tag-security	tagsrch.txt	/*tag-security*
 tag-skip-file	tagsrch.txt	/*tag-skip-file*
 tag-stack	tagsrch.txt	/*tag-stack*
+tagfiles()	eval.txt	/*tagfiles()*
 taglist()	eval.txt	/*taglist()*
 tags	tagsrch.txt	/*tags*
 tags-and-searches	tagsrch.txt	/*tags-and-searches*

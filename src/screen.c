@@ -2401,6 +2401,7 @@ fill_foldcolumn(p, wp, closed, lnum)
     int		i = 0;
     int		level;
     int		first_level;
+    int		empty;
 
     /* Init to all spaces. */
     copy_spaces(p, (size_t)wp->w_p_fdc);
@@ -2408,13 +2409,16 @@ fill_foldcolumn(p, wp, closed, lnum)
     level = win_foldinfo.fi_level;
     if (level > 0)
     {
+	/* If there is only one column put more info in it. */
+	empty = (wp->w_p_fdc == 1) ? 0 : 1;
+
 	/* If the column is too narrow, we start at the lowest level that
 	 * fits and use numbers to indicated the depth. */
-	first_level = level - wp->w_p_fdc - closed + 2;
+	first_level = level - wp->w_p_fdc - closed + 1 + empty;
 	if (first_level < 1)
 	    first_level = 1;
 
-	for (i = 0; i + 1 < wp->w_p_fdc; ++i)
+	for (i = 0; i + empty < wp->w_p_fdc; ++i)
 	{
 	    if (win_foldinfo.fi_lnum == lnum
 			      && first_level + i >= win_foldinfo.fi_low_level)

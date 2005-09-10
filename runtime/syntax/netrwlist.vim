@@ -1,7 +1,7 @@
 " Language   : Netrw Remote-Directory Listing Syntax
 " Maintainer : Charles E. Campbell, Jr.
-" Last change: Sep 08, 2004
-" Version    : 5
+" Last change: Aug 29, 2005
+" Version    : 7
 " ---------------------------------------------------------------------
 
 " Syntax Clearing: {{{1
@@ -14,23 +14,30 @@ endif
 " ---------------------------------------------------------------------
 " Directory List Syntax Highlighting: {{{1
 syn cluster NetrwGroup contains=netrwHide,netrwSortBy,netrwSortSeq,netrwQuickHelp,netrwVersion
-syn match  netrwDir				"^.*/\%(\t\|$\)"	contains=netrwClassify
-syn match  netrwClassify			"[*=|@/]\%(\t\|$\)"
-syn match  netrwSymLink				"^.*@\%(\t\|$\)"	contains=netrwClassify
-syn match  netrwComment				'".*\%(\t\|$\)'		contains=@NetrwGroup
-syn match  netrwHide				'^"\s*\(Hid\|Show\)ing:' skipwhite nextgroup=netrwHidePat
-syn match  netrwSlash	contained		"/"
-syn match  netrwHidePat	contained		"[^,]\+"		skipwhite nextgroup=netrwHideSep
-syn match  netrwHideSep	contained transparent	","			skipwhite nextgroup=netrwHidePat
-syn match  netrwSortBy	contained transparent	"Sorted by"		skipwhite nextgroup=netrwList
-syn match  netrwSortSeq	contained transparent	"Sort sequence:"	skipwhite nextgroup=netrwList
-syn match  netrwList	contained		".*$"			contains=netrwComma
-syn match  netrwComma	contained		","
-syn region netrwQuickHelp contained matchgroup=Comment start="Quick Help:\s\+" end="$" contains=netrwHelpCmd keepend
-syn match  netrwHelpCmd	contained		"\S\ze:"		skipwhite nextgroup=netrwCmdSep
-syn match  netrwCmdSep	contained		":"			nextgroup=netrwCmdNote
-syn match  netrwCmdNote	contained		".\{-}\ze  "
-syn match  netrwVersion contained		"(netrw.*)"
+
+syn match  netrwSpecial		"\%(\S\+ \)*\S\+[*|=]\ze\%(\s\{2,}\|$\)" contains=netrwClassify
+syn match  netrwDir		"\.\{1,2}/"			contains=netrwClassify
+syn match  netrwDir		"\%(\S\+ \)*\S\+/"		contains=netrwClassify
+syn match  netrwDir		"^\S*/"				contains=netrwClassify
+syn match  netrwSymLink		"\%(\S\+ \)*\S\+@\ze\%(\s\{2,}\|$\)"  contains=netrwClassify
+syn match  netrwExe		"\%(\S\+ \)*\S\+\*\ze\%(\s\{2,}\|$\)" contains=netrwClassify
+
+syn match  netrwClassify	"[*=|@/]\ze\%(\s\{2,}\|$\)"	contained
+
+syn match  netrwComment		'".*\%(\t\|$\)'			contains=@NetrwGroup
+syn match  netrwHide		'^"\s*\(Hid\|Show\)ing:'	skipwhite nextgroup=netrwHidePat
+syn match  netrwSlash		"/"				contained
+syn match  netrwHidePat		"[^,]\+"			contained skipwhite nextgroup=netrwHideSep
+syn match  netrwHideSep		","				contained transparent skipwhite nextgroup=netrwHidePat
+syn match  netrwSortBy		"Sorted by"			contained transparent skipwhite nextgroup=netrwList
+syn match  netrwSortSeq		"Sort sequence:"		contained transparent skipwhite nextgroup=netrwList
+syn match  netrwList		".*$"				contained contains=netrwComma
+syn match  netrwComma		","				contained
+syn region netrwQuickHelp	matchgroup=Comment start="Quick Help:\s\+" end="$" contains=netrwHelpCmd keepend contained
+syn match  netrwHelpCmd		"\S\ze:"			contained skipwhite nextgroup=netrwCmdSep
+syn match  netrwCmdSep		":"				contained nextgroup=netrwCmdNote
+syn match  netrwCmdNote		".\{-}\ze  "			contained
+syn match  netrwVersion		"(netrw.*)"			contained
 
 " ---------------------------------------------------------------------
 " Highlighting Links: {{{1
@@ -45,6 +52,7 @@ if !exists("did_drchip_dbg_syntax")
  hi link netrwList	Statement
  hi link netrwVersion	Identifier
  hi link netrwSymLink	Special
+ hi link netrwExe	PreProc
 
  hi link netrwComma	netrwComment
  hi link netrwHide	netrwComment
