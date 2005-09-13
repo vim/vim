@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Sep 10
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Sep 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -19,7 +19,7 @@ achieve special effects.  These options come in three forms:
 	string		has a string value
 
 ==============================================================================
-1. Setting options					*set-option*
+1. Setting options					*set-option* *E764*
 
 							*:se* *:set*
 :se[t]			Show all options that differ from their default value.
@@ -4602,8 +4602,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	The minimum value is 1, the maximum value is 10.
 	NOTE: 'numberwidth' is reset to 8 when 'compatible' is set.
 
-						*'occultfunc'* *'ofu'*
-'occultfunc' 'ofu'	string	(default: empty)
+						*'omnifunc'* *'ofu'*
+'omnifunc' 'ofu'	string	(default: empty)
 			local to buffer
 			{not in Vi}
 			{not available when compiled without the +eval

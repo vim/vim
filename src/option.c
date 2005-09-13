@@ -1603,7 +1603,7 @@ static struct vimoption
 			    (char_u *)NULL, PV_NONE,
 #endif
 			    {(char_u *)8L, (char_u *)4L}},
-    {"occultfunc", "ofu", P_STRING|P_ALLOCED|P_VI_DEF|P_SECURE,
+    {"omnifunc",    "ofu",  P_STRING|P_ALLOCED|P_VI_DEF|P_SECURE,
 #ifdef FEAT_COMPL_FUNC
 			    (char_u *)&p_ofu, PV_OFU,
 			    {(char_u *)"", (char_u *)0L}

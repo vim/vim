@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 7.0aa.  Last change: 2005 Aug 18
+*pattern.txt*   For Vim version 7.0aa.  Last change: 2005 Sep 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -116,6 +116,14 @@ gD			Goto global Declaration.  When the cursor is on a
 			command will jump to its declaration.  This works just
 			like "gd", except that the search for the keyword
 			always starts in line 1.  {not in Vi}
+
+							*1gd*
+1gd			Like "gd", but ignore matches inside a {} block that
+			ends before the cursor position. {not in Vi}
+
+							*1gD*
+1gD			Like "gD", but ignore matches inside a {} block that
+			ends before the cursor position. {not in Vi}
 
 							*CTRL-C*
 CTRL-C			Interrupt current (search) command.  Use CTRL-Break on

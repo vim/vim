@@ -1418,6 +1418,7 @@ EXTERN char_u e_emptybuf[]	INIT(= N_("E749: empty buffer"));
 EXTERN char_u e_invalpat[]	INIT(= N_("E682: Invalid search pattern or delimiter"));
 #endif
 EXTERN char_u e_bufloaded[]	INIT(= N_("E139: File is loaded in another buffer"));
+EXTERN char_u e_notset[]	INIT(= N_("E764: Option '%s' is not set"));
 
 #ifdef MACOS_X_UNIX
 EXTERN short disallow_gui	INIT(= FALSE);

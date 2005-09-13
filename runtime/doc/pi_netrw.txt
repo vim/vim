@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 7.0.  Last change: Sep 07, 2005
+*pi_netrw.txt*  For Vim version 7.0.  Last change: Sep 12, 2005
 
 
 		VIM REFERENCE MANUAL    by Charles E. Campbell, Jr.
@@ -333,6 +333,7 @@ after one has set it.
 
 Unfortunately there doesn't appear to be a way for netrw to feed a password to
 scp.  Thus every transfer via scp will require re-entry of the password.
+However, |netrw-listhack| can help with this problem.
 
 
 ==============================================================================
@@ -341,20 +342,27 @@ scp.  Thus every transfer via scp will require re-entry of the password.
 Network-oriented file transfers are available by default whenever
 |'nocompatible'| mode is enabled.  The <netrw.vim> file resides in your
 system's vim-plugin directory and is sourced automatically whenever you bring
-up vim.
-
+up vim.  I suggest that, at a minimum, you have at least the following in your
+<.vimrc> customization file: >
+	set nocp
+	if version >= 600
+	  filetype plugin indent on
+	endif
+<
 
 ==============================================================================
 4. Transparent File Transfer				*netrw-transparent*
 
 Transparent file transfers occur whenever a regular file read or write
 (invoked via an |:autocmd| for |BufReadCmd| or |BufWriteCmd| events) is made.
-Thus one may use files across networks as if they were local. >
+Thus one may use files across networks just as simply as if they were local. >
 
 	vim ftp://[user@]machine/path
 	...
 	:wq
 
+See |netrw-activate| for more on how to encourage your vim to use plugins
+such as netrw.
 
 ==============================================================================
 5. Ex Commands						*netrw-ex*
@@ -368,8 +376,7 @@ additional commands available.
 :[range]Nw {netfile} [{netfile}]...
 		Write the specified lines to the {netfile}.
 
-:Nread
-		Read the specified lines into the current
+:Nread		Read the specified lines into the current
 		buffer from the file specified in
 		b:netrw_lastfile.
 
@@ -400,10 +407,11 @@ additional commands available.
 
 The script <netrw.vim> uses several variables which can affect <netrw.vim>'s
 behavior.  These variables typically may be set in the user's <.vimrc> file:
->
-                                -------------
-                           	Netrw Options
-                                -------------
+(also see |netrw-settings|) >
+
+                        -------------
+                        Netrw Options
+                        -------------
 	Option			Meaning
 	--------------		-----------------------------------------------
 <
@@ -859,7 +867,21 @@ OBTAINING A FILE						*netrw-O*
 When browsing a remote directory, one may obtain a file under the cursor (ie.
 get a copy on your local machine, but not edit it) by pressing the O key.
 Only ftp and scp are supported for this operation (but since these two are
-available for browsing, that shouldn't be a problem).
+available for browsing, that shouldn't be a problem).  The status bar
+will then show, on its right hand side, a message like "Obtaining filename".
+The statusline will be restored after the transfer is complete.
+
+Netrw can also "obtain" a file using the local browser.  Netrw's display
+of a directory is not necessarily the same as Vim's "current directory",
+unless |g:netrw_keepdir| is set to 0 in the user's <.vimrc>.  One may select
+a file using the local browser (by putting the cursor on it) and pressing
+"O" will then "obtain" the file; ie. copy it to Vim's current directory.
+
+Related topics:
+ * To see what the current directory is, use |:pwd|
+ * To make the currently browsed directory the current directory, see |netrw-c|
+ * To automatically make the currently browsed directory the current
+   directory, see |g:netrw_keepdir|.
 
 
 THIN, LONG, AND WIDE LISTINGS					*netrw-i*
@@ -1257,6 +1279,9 @@ which is loaded automatically at startup (assuming :set nocp).
 ==============================================================================
 10. History						*netrw-history*
 
+	v70: * when using |netrw-O|, the "Obtaining filename" message is now
+	       shown using |hl-User9|.  If User9 has not been defined, netrw
+	       will define it.
 	v69: * Bugfix: win95/98 machines were experiencing a
 	       "E121: Undefined variable: g:netrw_win95ftp" message
 	v68: * double-click-leftmouse selects word under mouse

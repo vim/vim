@@ -14,6 +14,8 @@ set cpo-=C
 
 setlocal commentstring=<!--%s-->
 
+setlocal omnifunc=htmlcomplete#CompleteTags
+
 " HTML:  thanks to Johannes Zellner and Benji Fisher.
 if exists("loaded_matchit")
     let b:match_ignorecase = 1

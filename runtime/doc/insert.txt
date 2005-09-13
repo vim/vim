@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0aa.  Last change: 2005 Sep 10
+*insert.txt*    For Vim version 7.0aa.  Last change: 2005 Sep 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -569,7 +569,7 @@ Completion can be done for:
 8. definitions or macros				|i_CTRL-X_CTRL-D|
 9. Vim command-line					|i_CTRL-X_CTRL-V|
 10. User defined completion				|i_CTRL-X_CTRL-U|
-11. Occult completion					|i_CTRL-X_CTRL-O|
+11. omni completion					|i_CTRL-X_CTRL-O|
 12. Spelling suggestions				|i_CTRL-X_s|
 13. keywords in 'complete'				|i_CTRL-N|
 
@@ -673,6 +673,9 @@ at least two characters is matched.
 	    printf("(%g, %g, %g)", vector[0], vector[1], vector[2]);
 	just type:
 	    printf("(%g, %g, %g)", vector[0], ^P[1], ^P[2]);
+
+The search wraps around the end of the file, the value of 'wrapscan' is not
+used here.
 
 Multiple repeats of the same completion are skipped; thus a different match
 will be inserted at each CTRL-N and CTRL-P (unless there is only one
@@ -882,13 +885,13 @@ CTRL-X CTRL-U		Guess what kind of item is in front of the cursor and
 			previous one.
 
 
-Occult completion					*compl-occult*
+Omni completion						*compl-omni*
 
 Completion is done by a function that can be defined by the user with the
-'occultfunc' option.  This is to be used for filetype-specific completion.
+'omnifunc' option.  This is to be used for filetype-specific completion.
 
 See the 'completefunc' help for how the function is called and an example.
-For remarks about specific filetypes see |compl-occult-filetypes|.
+For remarks about specific filetypes see |compl-omni-filetypes|.
 
 							*i_CTRL-X_CTRL-O*
 CTRL-X CTRL-O		Guess what kind of item is in front of the cursor and
@@ -949,14 +952,14 @@ CTRL-P			Find previous match for words that start with the
 			other contexts unless a double CTRL-X is used.
 
 
-Filetype-specific remarks for occult completion	    *compl-occult-filetypes*
+Filetype-specific remarks for omni completion	    *compl-omni-filetypes*
 
-C							*ft-c-occult*
+C							*ft-c-omni*
 
-Completion requires a tags file.  You should use Exuberant ctags, because it
-adds extra information that is needed for completion.  You can find it here:
-http://ctags.sourceforge.net/
-For version 5.5.4 you need to add a patch that adds the "typename:" field:
+Completion of C code requires a tags file.  You should use Exuberant ctags,
+because it adds extra information that is needed for completion.  You can find
+it here: http://ctags.sourceforge.net/
+For version 5.5.4 you should add a patch that adds the "typename:" field:
 ftp://ftp.vim.org/pub/vim/unstable/patches/ctags-5.5.4.patch
 
 If you want to complete system functions you can do something like this.  Use
@@ -973,6 +976,9 @@ in the tags file, use CTRL-P instead.
 When using CTRL-X CTRL-O after something that has "." or "->" Vim will attempt
 to recognize the type of the variable and figure out what members it has.
 This means only members valid for the variable will be listed.
+
+When a member name already was complete, CTRL-X CTRL-O will add a "." or
+"->" for composite types.
 
 Vim doesn't include a C compiler, only the most obviously formatted
 declarations are recognized.  Preprocessor stuff may cause confusion.

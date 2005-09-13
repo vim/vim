@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Sep 10
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Sep 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1607,7 +1607,8 @@ repeat( {expr}, {count})	String	repeat {expr} {count} times
 resolve( {filename})		String	get filename a shortcut points to
 reverse( {list})		List	reverse {list} in-place
 search( {pattern} [, {flags}])	Number	search for {pattern}
-searchdecl({name} [, {global}]) Number  search for variable declaration
+searchdecl({name} [, {global} [, {thisblock}]])
+				Number  search for variable declaration
 searchpair( {start}, {middle}, {end} [, {flags} [, {skip}]])
 				Number	search for other end of start/end pair
 server2client( {clientid}, {string})
@@ -3730,10 +3731,17 @@ search({pattern} [, {flags}])				*search()*
 		    :endwhile
 <
 
-searchdecl({name} [, {global}])				*searchdecl()*
-		Search for the declaration of {name}.  Without {global} or
-		with a zero {global} argument this works like |gd|.  With a
-		non-zero {global} argument it works like |gD|.
+searchdecl({name} [, {global} [, {thisblock}]])			*searchdecl()*
+		Search for the declaration of {name}.
+		
+		With a non-zero {global} argument it works like |gD|, find
+		first match in the file.  Otherwise it works like |gd|, find
+		first match in the function.
+
+		With a non-zero {thisblock} argument matches in a {} block
+		that ends before the cursor position are ignored.  Avoids
+		finding variable declarations only valid in another scope.
+
 		Moves the cursor to the found match.
 		Returns zero for success, non-zero for failure.
 		Example: >

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Sep 10
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Sep 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -31,10 +31,12 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 -------------------- Known bugs and current work -----------------------
 
 ccomplete:
-- When a typedef or struct is local to a file only use it in that file?
 - How to use a popup menu?
-- when a struct reference is already complete and CTRL-X CTRL-O is used, add a
-  "." or "->"?
+- When a typedef or struct is local to a file only use it in that file?
+
+When 'foldcolumn' is 1 show more + to be able to open all folds? (Donohue)
+
+After vi" another i" should include the quotes.
 
 Mac unicode patch (Da Woon Jung):
 - selecting proportional font breaks display
@@ -63,21 +65,27 @@ Awaiting response:
 
 PLANNED FOR VERSION 7.0:
 
--   Occult completion: Understands the programming language and finds matches
+-   Omni completion: Understands the programming language and finds matches
     that make sense.  Esp. members of classes/structs.
 
     It's not much different from other Insert-mode completion, use the same
-    mechanism.  Use CTRL-X CTRL-O and 'occultfunc'.  Set 'occultfunc' in the
+    mechanism.  Use CTRL-X CTRL-O and 'omnifunc'.  Set 'omnifunc' in the
     filetype plugin, define the function in the autoload directory.
     
     Separately develop the completion logic and the UI.  When adding UI stuff
     make it work for all completion methods.
 
     UI:
-    - At first: use 'wildmenu' kind of thing.
-    - Nicer: Display the list of choices right under the place where they
+    - Display the list of choices right under the place where they
       would be inserted in a kind of meny (use scrollbar when there are many
       alternatives).
+      At first in a terminal, then add GUI implementations.
+    - When using tags, show match in preview window (function prototype,
+      struct member, etc.).
+      Or use one window for matches, another for context/info (Doug Kearns,
+      2005 Sep 13)
+    - Ideas on: http://www.wholetomato.com/
+
 
     Completion logic:
 	Use runtime/autoload/{filetype}complete.vim files.
@@ -91,6 +99,12 @@ PLANNED FOR VERSION 7.0:
 	    complist[0]['help'] = help text (e.g. function declaration)
 	    complist[0]['helpfunc'] = function that shows help text
 	    etc.
+
+	Can CTRL-] (jump to tag) include the "." and "->" to restrict the
+	number of possible matches? (Flemming Madsen)
+
+	In general: Besides completion, figure out the type of a variable
+	and use it for information.
 
 	Ideas from others:
 	http://www.vim.org/scripts/script.php?script_id=747

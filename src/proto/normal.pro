@@ -16,7 +16,7 @@ void push_showcmd __ARGS((void));
 void pop_showcmd __ARGS((void));
 void do_check_scrollbind __ARGS((int check));
 void check_scrollbind __ARGS((linenr_T topline_diff, long leftcol_diff));
-int find_decl __ARGS((char_u *ptr, int len, int locally, int searchflags));
+int find_decl __ARGS((char_u *ptr, int len, int locally, int thisblock, int searchflags));
 void scroll_redraw __ARGS((int up, long count));
 void do_nv_ident __ARGS((int c1, int c2));
 int get_visual_text __ARGS((cmdarg_T *cap, char_u **pp, int *lenp));

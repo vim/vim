@@ -1562,6 +1562,9 @@ check_prevcol(linep, col, ch, prevcol)
  *	  FM_FORWARD	search forwards (when initc is '/', '*' or '#')
  *	  FM_BLOCKSTOP	stop at start/end of block ({ or } in column 0)
  *	  FM_SKIPCOMM	skip comments (not implemented yet!)
+ *
+ * "oap" is only used to set oap->motion_type for a linewise motion, it be
+ * NULL
  */
 
     pos_T *

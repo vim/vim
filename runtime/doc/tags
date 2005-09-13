@@ -607,9 +607,9 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'number'	options.txt	/*'number'*
 'numberwidth'	options.txt	/*'numberwidth'*
 'nuw'	options.txt	/*'nuw'*
-'occultfunc'	options.txt	/*'occultfunc'*
 'oft'	options.txt	/*'oft'*
 'ofu'	options.txt	/*'ofu'*
+'omnifunc'	options.txt	/*'omnifunc'*
 'op'	vi_diff.txt	/*'op'*
 'open'	vi_diff.txt	/*'open'*
 'optimize'	vi_diff.txt	/*'optimize'*
@@ -1484,6 +1484,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 12.6	usr_12.txt	/*12.6*
 12.7	usr_12.txt	/*12.7*
 12.8	usr_12.txt	/*12.8*
+1gD	pattern.txt	/*1gD*
+1gd	pattern.txt	/*1gd*
 20.1	usr_20.txt	/*20.1*
 20.2	usr_20.txt	/*20.2*
 20.3	usr_20.txt	/*20.3*
@@ -3752,7 +3754,7 @@ E760	spell.txt	/*E760*
 E761	spell.txt	/*E761*
 E762	spell.txt	/*E762*
 E763	spell.txt	/*E763*
-E764	spell.txt	/*E764*
+E764	options.txt	/*E764*
 E765	options.txt	/*E765*
 E766	eval.txt	/*E766*
 E767	eval.txt	/*E767*
@@ -4460,8 +4462,8 @@ compl-filename	insert.txt	/*compl-filename*
 compl-function	insert.txt	/*compl-function*
 compl-generic	insert.txt	/*compl-generic*
 compl-keyword	insert.txt	/*compl-keyword*
-compl-occult	insert.txt	/*compl-occult*
-compl-occult-filetypes	insert.txt	/*compl-occult-filetypes*
+compl-omni	insert.txt	/*compl-omni*
+compl-omni-filetypes	insert.txt	/*compl-omni-filetypes*
 compl-spelling	insert.txt	/*compl-spelling*
 compl-tag	insert.txt	/*compl-tag*
 compl-vim	insert.txt	/*compl-vim*
@@ -4962,7 +4964,7 @@ ft-aspperl-syntax	syntax.txt	/*ft-aspperl-syntax*
 ft-aspvbs-syntax	syntax.txt	/*ft-aspvbs-syntax*
 ft-bash-syntax	syntax.txt	/*ft-bash-syntax*
 ft-basic-syntax	syntax.txt	/*ft-basic-syntax*
-ft-c-occult	insert.txt	/*ft-c-occult*
+ft-c-omni	insert.txt	/*ft-c-omni*
 ft-c-syntax	syntax.txt	/*ft-c-syntax*
 ft-ch-syntax	syntax.txt	/*ft-ch-syntax*
 ft-changelog-plugin	filetype.txt	/*ft-changelog-plugin*
@@ -5363,6 +5365,7 @@ hl-Title	syntax.txt	/*hl-Title*
 hl-Tooltip	syntax.txt	/*hl-Tooltip*
 hl-User1	syntax.txt	/*hl-User1*
 hl-User1..9	syntax.txt	/*hl-User1..9*
+hl-User9	syntax.txt	/*hl-User9*
 hl-VertSplit	syntax.txt	/*hl-VertSplit*
 hl-Visual	syntax.txt	/*hl-Visual*
 hl-VisualNOS	syntax.txt	/*hl-VisualNOS*
@@ -5977,6 +5980,7 @@ new-multi-byte	version5.txt	/*new-multi-byte*
 new-multi-lang	version6.txt	/*new-multi-lang*
 new-netrw-explore	version7.txt	/*new-netrw-explore*
 new-network-files	version6.txt	/*new-network-files*
+new-omni-completion	version7.txt	/*new-omni-completion*
 new-operator-mod	version6.txt	/*new-operator-mod*
 new-options-5.2	version5.txt	/*new-options-5.2*
 new-options-5.4	version5.txt	/*new-options-5.4*

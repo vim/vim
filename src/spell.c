@@ -7699,7 +7699,7 @@ spell_add_word(word, len, bad, index)
 
 	if (*curbuf->b_p_spf == NUL)
 	{
-	    EMSG(_("E764: 'spellfile' is not set"));
+	    EMSG2(_(e_notset), "spellfile");
 	    return;
 	}
 

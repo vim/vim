@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Sep 01
+" Last Change:	2005 Sep 13
 
 " If there already is an option window, jump to that one.
 if bufwinnr("option-window") > 0
@@ -704,7 +704,7 @@ if has("insert_expand")
   call append("$", "completefunc\tuser defined function for Insert mode completion")
   call append("$", "\t(local to buffer)")
   call <SID>OptionL("cfu")
-  call append("$", "occultfunc\tfunction for filetype-specific Insert mode completion")
+  call append("$", "omnifunc\tfunction for filetype-specific Insert mode completion")
   call append("$", "\t(local to buffer)")
   call <SID>OptionL("ofu")
   call append("$", "dictionary\tlist of dictionary files for keyword completion")

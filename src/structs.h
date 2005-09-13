@@ -1288,7 +1288,7 @@ struct file_buffer
 #endif
 #ifdef FEAT_COMPL_FUNC
     char_u	*b_p_cfu;	/* 'completefunc' */
-    char_u	*b_p_ofu;	/* 'occultfunc' */
+    char_u	*b_p_ofu;	/* 'omnifunc' */
 #endif
     int		b_p_eol;	/* 'endofline' */
     int		b_p_et;		/* 'expandtab' */

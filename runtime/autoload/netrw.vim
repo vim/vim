@@ -1,7 +1,7 @@
 " netrw.vim: Handles file transfer and remote directory listing across a network
 "            AUTOLOAD PORTION
-" Date:		Sep 09, 2005
-" Version:	69
+" Date:		Sep 12, 2005
+" Version:	70
 " Maintainer:	Charles E Campbell, Jr <drchipNOSPAM at campbellfamily dot biz>
 " GetLatestVimScripts: 1075 1 :AutoInstall: netrw.vim
 " Copyright:    Copyright (C) 1999-2005 Charles E. Campbell, Jr. {{{1
@@ -26,7 +26,7 @@ if v:version < 700
  echohl WarningMsg | echo "***netrw*** you need vim version 7.0 or later for version ".g:loaded_netrw." of netrw" | echohl None
  finish
 endif
-let g:loaded_netrw = "v69"
+let g:loaded_netrw = "v70"
 let s:keepcpo      = &cpo
 set cpo&vim
 " call Decho("doing autoload/netrw.vim")
@@ -1143,7 +1143,7 @@ fun! s:NetBrowse(dirname)
    keepjumps 1d
 
    " save certain window-oriented variables into buffer-oriented variables
-   call s:BufWinVars()
+   call s:SetBufWinVars()
    call s:NetOptionRestore()
    setlocal nomod
 
@@ -2237,12 +2237,10 @@ endfun
 " ---------------------------------------------------------------------
 " NetObtain: obtain file under cursor (for remote browsing support) {{{2
 fun! s:NetObtain()
-  if !exists("s:netrw_users_stl")
-   let s:netrw_users_stl= &stl
-  endif
   let fname= expand("<cWORD>")
-  exe 'set stl=%f\ %h%m%r%=Obtaining\ '.escape(fname,' ')
-  redraw!
+
+  " NetrwStatusLine support - for obtaining support
+  call s:SetupNetrwStatusLine('%f %h%m%r%=%9*Obtaining '.fname)
 
 "  call Dfunc("NetObtain() method=".w:netrw_method)
   if exists("w:netrw_method") && w:netrw_method =~ '[235]'
@@ -2320,6 +2318,8 @@ fun! s:NetObtain()
      echohl Error | echo "***netrw*** this system doesn't support ftp" | echohl None
      call inputsave()|call input("Press <cr> to continue")|call inputrestore()
     endif
+    let &stl        = s:netrw_users_stl
+    let &laststatus = s:netrw_users_ls
 "    call Dret("NetObtain")
     return
    endif
@@ -2343,7 +2343,8 @@ fun! s:NetObtain()
   endif
 
   " restore status line
-  let &stl= s:netrw_users_stl
+  let &stl        = s:netrw_users_stl
+  let &laststatus = s:netrw_users_ls
   redraw!
 
 "  call Dret("NetObtain")
@@ -2611,7 +2612,7 @@ fun! netrw#DirBrowse(dirname)
   let w:netrw_prvdir= b:netrw_curdir
 
   " save certain window-oriented variables into buffer-oriented variables
-  call s:BufWinVars()
+  call s:SetBufWinVars()
   call s:NetOptionRestore()
   setlocal noma nomod nonu bh=hide nobl
 
@@ -3042,12 +3043,8 @@ fun! netrw#Explore(indx,dosplit,style,...)
      endif
     endif
 
-    " NetrwStatusLine support
+    " NetrwStatusLine support - for exploring support
     let w:netrw_explore_indx= indx
-    if !exists("s:netrw_users_stl")
-     let s:netrw_users_stl= &stl
-    endif
-    set stl=%f\ %h%m%r%=%{NetrwStatusLine()}
 "    call Decho("explorelist<".join(w:netrw_explore_list,',')."> len=".w:netrw_explore_listlen)
 
     " sanity check
@@ -3060,15 +3057,21 @@ fun! netrw#Explore(indx,dosplit,style,...)
     endif
 
     exe "let dirfile= w:netrw_explore_list[".indx."]"
-"    call Decho("dirfile<".dirfile."> indx=".indx)
+"    call Decho("dirfile=w:netrw_explore_list[indx=".indx."]= <".dirfile.">")
     let newdir= substitute(dirfile,'/[^/]*$','','e')
 "    call Decho("newdir<".newdir.">")
+
 "    call Decho("calling LocalBrowse(newdir<".newdir.">)")
     call s:LocalBrowse(newdir)
-    call search(substitute(dirfile,"^.*/","",""),"W")
+    if w:netrw_longlist == 0 || w:netrw_longlist == 1
+     call search('^'.substitute(dirfile,"^.*/","","").'\>',"W")
+    else
+     call search('\<'.substitute(dirfile,"^.*/","","").'\>',"w")
+    endif
     let w:netrw_explore_mtchcnt = indx + 1
     let w:netrw_explore_bufnr   = bufnr(".")
     let w:netrw_explore_line    = line(".")
+    call s:SetupNetrwStatusLine('%f %h%m%r%=%9*%{NetrwStatusLine()}')
 "    call Decho("explore: mtchcnt=".w:netrw_explore_mtchcnt." bufnr=".w:netrw_explore_bufnr." line#".w:netrw_explore_line)
 
    else
@@ -3088,12 +3091,73 @@ fun! netrw#Explore(indx,dosplit,style,...)
 endfun
 
 " ---------------------------------------------------------------------
+" SetupNetrwStatusLine: {{{2
+fun! s:SetupNetrwStatusLine(statline)
+"  call Dfunc("SetupNetrwStatusLine(statline<".a:statline.">)")
+
+  if !exists("s:netrw_setup_statline")
+   let s:netrw_setup_statline= 1
+"   call Decho("do first-time status line setup")
+
+   if !exists("s:netrw_users_stl")
+    let s:netrw_users_stl= &stl
+   endif
+   if !exists("s:netrw_users_ls")
+    let s:netrw_users_ls= &laststatus
+   endif
+
+   " set up User9 highlighting as needed
+   let keepa= @a
+   redir @a
+   try
+    hi User9
+   catch /^Vim\%((\a\+)\)\=:E411/
+    if &bg == "dark"
+     hi User9 ctermfg=yellow ctermbg=blue guifg=yellow guibg=blue
+    else
+     hi User9 ctermbg=yellow ctermfg=blue guibg=yellow guifg=blue
+    endif
+   endtry
+   redir END
+   let @a= keepa
+  endif
+
+  " set up status line (may use User9 highlighting)
+  " insure that windows have a statusline
+  " make sure statusline is displayed
+  let &stl=a:statline
+  set laststatus=2
+"  call Decho("stl=".&stl)
+  redraw!
+
+"  call Dret("SetupNetrwStatusLine : stl=".&stl)
+endfun
+
+" ---------------------------------------------------------------------
 " NetrwStatusLine: {{{2
 fun! NetrwStatusLine()
-"  let g:stlmsg= "Xbufnr=".w:netrw_explore_bufnr." bufnr=".bufnr(".")." Xline#".w:netrw_explore_line." line#".line(".")
+
+  " vvv NetrwStatusLine() debugging vvv
+"  let g:stlmsg=""
+"  if !exists("w:netrw_explore_bufnr")
+"   let g:stlmsg="!X<explore_bufnr>"
+"  elseif w:netrw_explore_bufnr != bufnr(".")
+"   let g:stlmsg="explore_bufnr!=".bufnr(".")
+"  endif
+"  if !exists("w:netrw_explore_line")
+"   let g:stlmsg=" !X<explore_line>"
+"  elseif w:netrw_explore_line != line(".")
+"   let g:stlmsg=" explore_line!={line(.)<".line(".").">"
+"  endif
+"  if !exists("w:netrw_explore_list")
+"   let g:stlmsg=" !X<explore_list>"
+"  endif
+  " ^^^ NetrwStatusLine() debugging ^^^
+
   if !exists("w:netrw_explore_bufnr") || w:netrw_explore_bufnr != bufnr(".") || !exists("w:netrw_explore_line") || w:netrw_explore_line != line(".") || !exists("w:netrw_explore_list")
    " restore user's status line
-   let &stl= s:netrw_users_stl
+   let &stl        = s:netrw_users_stl
+   let &laststatus = s:netrw_users_ls
    if exists("w:netrw_explore_bufnr")|unlet w:netrw_explore_bufnr|endif
    if exists("w:netrw_explore_line")|unlet w:netrw_explore_line|endif
    return ""
@@ -3591,14 +3655,14 @@ fun! s:CopyWinVars()
 endfun
 
 " ---------------------------------------------------------------------
-" BufWinVars: (used by NetBrowse() and LocalBrowse()) {{{1
+" SetBufWinVars: (used by NetBrowse() and LocalBrowse()) {{{1
 "   To allow separate windows to have their own activities, such as
 "   Explore **/pattern, several variables have been made window-oriented.
 "   However, when the user splits a browser window (ex: ctrl-w s), these
-"   variables are not inherited by the new window.  BufWinVars() and
+"   variables are not inherited by the new window.  SetBufWinVars() and
 "   UseBufWinVars() get around that.
-fun! s:BufWinVars()
-"  call Dfunc("BufWinVars()")
+fun! s:SetBufWinVars()
+"  call Dfunc("SetBufWinVars()")
   if exists("w:netrw_longlist")       |let b:netrw_longlist        = w:netrw_longlist       |endif
   if exists("w:netrw_bannercnt")      |let b:netrw_bannercnt       = w:netrw_bannercnt      |endif
   if exists("w:netrw_method")         |let b:netrw_method          = w:netrw_method         |endif
@@ -3609,7 +3673,7 @@ fun! s:BufWinVars()
   if exists("w:netrw_explore_bufnr")  |let b:netrw_explore_bufnr   = w:netrw_explore_bufnr  |endif
   if exists("w:netrw_explore_line")   |let b:netrw_explore_line    = w:netrw_explore_line   |endif
   if exists("w:netrw_explore_list")   |let b:netrw_explore_list    = w:netrw_explore_list   |endif
-"  call Dret("BufWinVars")
+"  call Dret("SetBufWinVars")
 endfun
 
 " ---------------------------------------------------------------------

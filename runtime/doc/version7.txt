@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Sep 10
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Sep 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -20,6 +20,7 @@ NEW FEATURES				|new-7|
 
 Vim script enhancements			|new-vim-script|
 Spell checking				|new-spell|
+Omni completion				|new-omni-completion|
 KDE support				|new-KDE|
 MzScheme interface			|new-MzScheme|
 Printing multi-byte text		|new-print-multi-byte|
@@ -178,6 +179,22 @@ with syntax highlighting attributes.  This is also used for syntax
 highlighting.
 
 Much more info here: |spell|.
+
+
+Omni completion					*new-omni-completion*
+-----------------
+
+This could also be called "intellisense", but that is a trademark.  It is a
+smart kind of completion.  The text in front of the cursor is inspected to
+figure out what could be following.  This considers struct and class members,
+unions, etc.
+
+Use CTRL-X CTRL-O in Insert mode to start the completion.  |i_CTRL-X_CTRL-O|
+
+The 'omnifunc' option is set by filetype plugins to define the function that
+figures out the completion.
+
+Currently only C is supported. |ft-c-omni|
 
 
 KDE support						*new-KDE*
@@ -349,6 +366,7 @@ Options: ~
 'completefunc'		The name of a function used for user-specified Insert
 			mode completion.  CTRL-X CTRL-U can be used in Insert
 			mode to do any kind of completion.  (Taro Muraoka)
+'omnifunc'		The name of a function used for omni completion.
 'quoteescape'		Characters used to escape quotes inside a string.
 			Used for the a", a' and a` text objects. |a'|
 'numberwidth'		Minimal width of the space used for the 'number'
@@ -450,6 +468,7 @@ New functions: ~
 |remove()|		remove one or more items from a List or Dictionary
 |repeat()| 		repeat "expr" "count" times (Christophe Poucet)
 |reverse()|		reverse the order of a List
+|searchdecl()|		search for declaration of variable
 |setqflist()|		create a quickfix list (Yegappan Lakshmanan)
 |sort()|		sort a List
 |soundfold()|		get the sound-a-like equivalent of a word
@@ -575,6 +594,9 @@ When 'verbose' is set the output of the ":map", ":abbreviate", ":command",
 (Yegappan Lakshmanan)
 
 ":function /pattern" lists functions matching the pattern.
+
+"1gd" can be used like "gd" but ignores matches in a {} block that ends before
+the cursor position.  Likewise for "1gD" and "gD".
 
 ==============================================================================
 IMPROVEMENTS						*improvements-7*

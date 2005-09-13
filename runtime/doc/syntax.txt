@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.0aa.  Last change: 2005 Aug 30
+*syntax.txt*	For Vim version 7.0aa.  Last change: 2005 Sep 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3969,7 +3969,7 @@ WarningMsg	warning messages
 							*hl-WildMenu*
 WildMenu	current match in 'wildmenu' completion
 
-						*hl-User1* *hl-User1..9*
+					*hl-User1* *hl-User1..9* *hl-User9*
 The 'statusline' syntax allows the use of 9 different highlights in the
 statusline and ruler (via 'rulerformat').  The names are User1 to User9.
 

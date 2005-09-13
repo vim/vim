@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Aug 30
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Sep 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -60,7 +60,7 @@ To search for the next misspelled word:
 [S			Like "]S" but search backwards.
 
 
-To add words to your own word list:				*E764*
+To add words to your own word list:
 
 							*zg*
 zg			Add word under the cursor as a good word to the first

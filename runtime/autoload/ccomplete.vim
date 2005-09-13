@@ -1,10 +1,10 @@
 " Vim completion script
 " Language:	C
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Sep 10
+" Last Change:	2005 Sep 13
 
 
-" This function is used for the 'occultfunc' option.
+" This function is used for the 'omnifunc' option.
 function! ccomplete#Complete(findstart, base)
   if a:findstart
     " Locate the start of the item, including "." and "->".
@@ -38,12 +38,12 @@ function! ccomplete#Complete(findstart, base)
   " 2. in tags file(s) (like with ":tag")
   " 3. in current file (like with "gD")
   let res = []
-  if searchdecl(items[0]) == 0
+  if searchdecl(items[0], 0, 1) == 0
     " Found, now figure out the type.
     " TODO: join previous line if it makes sense
     let line = getline('.')
     let col = col('.')
-    let res = ccomplete#Nextitem(strpart(line, 0, col), items[1:])
+    let res = s:Nextitem(strpart(line, 0, col), items[1:])
   endif
 
   if len(res) == 0
@@ -54,7 +54,7 @@ function! ccomplete#Complete(findstart, base)
     for i in range(len(diclist))
       " New ctags has the "typename" field.
       if has_key(diclist[i], 'typename')
-	call extend(res, ccomplete#StructMembers(diclist[i]['typename'], items[1:]))
+	call extend(res, s:StructMembers(diclist[i]['typename'], items[1:]))
       endif
 
       " For a variable use the command, which must be a search pattern that
@@ -63,7 +63,7 @@ function! ccomplete#Complete(findstart, base)
 	let line = diclist[i]['cmd']
 	if line[0] == '/' && line[1] == '^'
 	  let col = match(line, items[0])
-	  call extend(res, ccomplete#Nextitem(strpart(line, 2, col - 2), items[1:])
+	  call extend(res, s:Nextitem(strpart(line, 2, col - 2), items[1:]))
 	endif
       endif
     endfor
@@ -74,19 +74,30 @@ function! ccomplete#Complete(findstart, base)
     " TODO: join previous line if it makes sense
     let line = getline('.')
     let col = col('.')
-    let res = ccomplete#Nextitem(strpart(line, 0, col), items[1:])
+    let res = s:Nextitem(strpart(line, 0, col), items[1:])
+  endif
+
+  " If the one and only match was what's already there and it is a composite
+  " type, add a "." or "->".
+  if len(res) == 1 && res[0]['match'] == items[-1] && len(s:SearchMembers(res, [''])) > 0
+    " If there is a '*' before the name use "->".
+    if match(res[0]['tagline'], '\*\s*' . res[0]['match']) > 0
+      let res[0]['match'] .= '->'
+    else
+      let res[0]['match'] .= '.'
+    endif
   endif
 
   " The basetext is up to the last "." or "->" and won't be changed.  The
   " matching members are concatenated to this.
   let basetext = matchstr(a:base, '.*\(\.\|->\)')
-  return map(res, 'basetext . v:val')
+  return map(res, 'basetext . v:val["match"]')
 endfunc
 
 " Find composing type in "lead" and match items[0] with it.
 " Repeat this recursively for items[1], if it's there.
 " Return the list of matches.
-function! ccomplete#Nextitem(lead, items)
+function! s:Nextitem(lead, items)
 
   " Use the text up to the variable name and split it in tokens.
   let tokens = split(a:lead, '\s\+\|\<')
@@ -97,7 +108,7 @@ function! ccomplete#Nextitem(lead, items)
 
     " Recognize "struct foobar" and "union foobar".
     if (tokens[tidx] == 'struct' || tokens[tidx] == 'union') && tidx + 1 < len(tokens)
-      let res = ccomplete#StructMembers(tokens[tidx] . ':' . tokens[tidx + 1], a:items)
+      let res = s:StructMembers(tokens[tidx] . ':' . tokens[tidx + 1], a:items)
       break
     endif
 
@@ -108,20 +119,42 @@ function! ccomplete#Nextitem(lead, items)
 
     " Use the tags file to find out if this is a typedef.
     let diclist = taglist('^' . tokens[tidx] . '$')
-    for i in range(len(diclist))
+    for tagidx in range(len(diclist))
       " New ctags has the "typename" field.
-      if has_key(diclist[i], 'typename')
-	call extend(res, ccomplete#StructMembers(diclist[i]['typename'], a:items))
+      if has_key(diclist[tagidx], 'typename')
+	call extend(res, s:StructMembers(diclist[tagidx]['typename'], a:items))
 	continue
       endif
 
-      " For old ctags we only recognize "typedef struct foobar" in the tags
-      " file command.
-      let cmd = diclist[i]['cmd']
-      let ci = matchend(cmd, 'typedef\s\+struct\s\+')
-      if ci > 1
-	let name = matchstr(cmd, '\w*', ci)
-	call extend(res, ccomplete#StructMembers('struct:' . name, a:items))
+      " Only handle typedefs here.
+      if diclist[tagidx]['kind'] != 't'
+	continue
+      endif
+
+      " For old ctags we recognize "typedef struct aaa" and
+      " "typedef union bbb" in the tags file command.
+      let cmd = diclist[tagidx]['cmd']
+      let ei = matchend(cmd, 'typedef\s\+')
+      if ei > 1
+	let cmdtokens = split(strpart(cmd, ei), '\s\+\|\<')
+	if len(cmdtokens) > 1
+	  if cmdtokens[0] == 'struct' || cmdtokens[0] == 'union'
+	    let name = ''
+	    " Use the first identifier after the "struct" or "union"
+	    for ti in range(len(cmdtokens) - 1)
+	      if cmdtokens[ti] =~ '^\w'
+		let name = cmdtokens[ti]
+		break
+	      endif
+	    endfor
+	    if name != ''
+	      call extend(res, s:StructMembers(cmdtokens[0] . ':' . name, a:items))
+	    endif
+	  else
+	    " Could be "typedef other_T some_T".
+	    call extend(res, s:Nextitem(cmdtokens[0], a:items))
+	  endif
+	endif
       endif
     endfor
     if len(res) > 0
@@ -133,12 +166,13 @@ function! ccomplete#Nextitem(lead, items)
 endfunction
 
 
-" Return a list with resulting matches
-function! ccomplete#StructMembers(typename, items)
+" Return a list with resulting matches.
+" Each match is a dictionary with "match" and "tagline" entries.
+function! s:StructMembers(typename, items)
   " Todo: What about local structures?
   let fnames = join(map(tagfiles(), 'escape(v:val, " \\")'))
   if fnames == ''
-    return [[], []]
+    return []
   endif
 
   let typename = a:typename
@@ -153,45 +187,49 @@ function! ccomplete#StructMembers(typename, items)
     let typename = substitute(typename, ':[^:]*::', ':', '')
   endwhile
 
-  let members = []
-  let taglines = []
+  let matches = []
   for l in qflist
     let memb = matchstr(l['text'], '[^\t]*')
     if memb =~ '^' . a:items[0]
-      call add(members, memb)
-      call add(taglines, l['text'])
+      call add(matches, {'match': memb, 'tagline': l['text']})
     endif
   endfor
 
-  if len(members) > 0
+  if len(matches) > 0
     " No further items, return the result.
     if len(a:items) == 1
-      return members
+      return matches
     endif
 
     " More items following.  For each of the possible members find the
     " matching following members.
-    let res = []
-    for i in range(len(members))
-      let line = taglines[i]
-      let e = matchend(line, '\ttypename:')
-      if e > 0
-	" Use typename field
-	let name = matchstr(line, '[^\t]*', e)
-	call extend(res, ccomplete#StructMembers(name, a:items[1:]))
-      else
-	let s = match(line, '\t\zs/^')
-	if s > 0
-	  let e = match(line, members[i], s)
-	  if e > 0
-	    call extend(res, ccomplete#Nextitem(strpart(line, s, e - s), a:items[1:]))
-	  endif
-	endif
-      endif
-    endfor
-    return res
+    return s:SearchMembers(matches, a:items[1:])
   endif
 
   " Failed to find anything.
   return []
 endfunction
+
+" For matching members, find matches for following items.
+function! s:SearchMembers(matches, items)
+  let res = []
+  for i in range(len(a:matches))
+    let line = a:matches[i]['tagline']
+    let e = matchend(line, '\ttypename:')
+    if e > 0
+      " Use typename field
+      let name = matchstr(line, '[^\t]*', e)
+      call extend(res, s:StructMembers(name, a:items))
+    else
+      " Use the search command (the declaration itself).
+      let s = match(line, '\t\zs/^')
+      if s > 0
+	let e = match(line, a:matches[i]['match'], s)
+	if e > 0
+	  call extend(res, s:Nextitem(strpart(line, s, e - s), a:items))
+	endif
+      endif
+    endif
+  endfor
+  return res
+endfunc

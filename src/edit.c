@@ -31,7 +31,7 @@
 #define CTRL_X_THESAURUS	(10 + CTRL_X_WANT_IDENT)
 #define CTRL_X_CMDLINE		11
 #define CTRL_X_FUNCTION		12
-#define CTRL_X_OCCULT		13
+#define CTRL_X_OMNI		13
 #define CTRL_X_SPELL		14
 #define CTRL_X_LOCAL_MSG	15	/* only used in "ctrl_x_msgs" */
 
@@ -52,7 +52,7 @@ static char *ctrl_x_msgs[] =
     N_(" Thesaurus completion (^T^N^P)"),
     N_(" Command-line completion (^V^N^P)"),
     N_(" User defined completion (^U^N^P)"),
-    N_(" Occult completion (^O^N^P)"),
+    N_(" Omni completion (^O^N^P)"),
     N_(" Spelling suggestion (^S^N^P)"),
     N_(" Keyword Local completion (^N^P)"),
 };
@@ -820,7 +820,7 @@ doESCkey:
 
 	case Ctrl_O:	/* execute one command */
 #ifdef FEAT_COMPL_FUNC
-	    if (ctrl_x_mode == CTRL_X_OCCULT)
+	    if (ctrl_x_mode == CTRL_X_OMNI)
 		goto docomplete;
 #endif
 	    if (echeck_abbr(Ctrl_O + ABBR_OFF))
@@ -1844,7 +1844,7 @@ vim_is_ctrl_x_key(c)
 #ifdef FEAT_COMPL_FUNC
 	case CTRL_X_FUNCTION:
 	    return (c == Ctrl_U || c == Ctrl_P || c == Ctrl_N);
-	case CTRL_X_OCCULT:
+	case CTRL_X_OMNI:
 	    return (c == Ctrl_O || c == Ctrl_P || c == Ctrl_N);
 #endif
 	case CTRL_X_SPELL:
@@ -2361,7 +2361,7 @@ ins_compl_prep(c)
 		ctrl_x_mode = CTRL_X_FUNCTION;
 		break;
 	    case Ctrl_O:
-		ctrl_x_mode = CTRL_X_OCCULT;
+		ctrl_x_mode = CTRL_X_OMNI;
 		break;
 #endif
 	    case 's':
@@ -2584,13 +2584,13 @@ ins_compl_next_buf(buf, flag)
 static int expand_by_function __ARGS((int type, char_u *base, char_u ***matches));
 
 /*
- * Execute user defined complete function 'completefunc' or 'occultfunc', and
+ * Execute user defined complete function 'completefunc' or 'omnifunc', and
  * get matches in "matches".
  * Return value is number of matches.
  */
     static int
 expand_by_function(type, base, matches)
-    int		type;	    /* CTRL_X_OCCULT or CTRL_X_FUNCTION */
+    int		type;	    /* CTRL_X_OMNI or CTRL_X_FUNCTION */
     char_u	*base;
     char_u	***matches;
 {
@@ -2848,8 +2848,11 @@ ins_compl_get_exp(ini, dir)
 
 #ifdef FEAT_COMPL_FUNC
 	case CTRL_X_FUNCTION:
-	case CTRL_X_OCCULT:
-	    num_matches = expand_by_function(type, compl_pattern, &matches);
+	case CTRL_X_OMNI:
+	    if (*compl_pattern == NUL)
+		num_matches = 0;
+	    else
+		num_matches = expand_by_function(type, compl_pattern, &matches);
 	    if (num_matches > 0)
 		ins_compl_add_matches(num_matches, matches, dir);
 	    break;
@@ -3457,7 +3460,7 @@ ins_complete(c)
 	    compl_col = startcol;
 	    compl_length = curs_col - startcol;
 	}
-	else if (ctrl_x_mode == CTRL_X_FUNCTION || ctrl_x_mode == CTRL_X_OCCULT)
+	else if (ctrl_x_mode == CTRL_X_FUNCTION || ctrl_x_mode == CTRL_X_OMNI)
 	{
 #ifdef FEAT_COMPL_FUNC
 	    /*
@@ -3469,12 +3472,16 @@ ins_complete(c)
 	    char_u	*funcname;
 	    pos_T	pos;
 
-	    /* Call 'completefunc' or 'occultfunc' and get pattern length as a
+	    /* Call 'completefunc' or 'omnifunc' and get pattern length as a
 	     * string */
 	    funcname = ctrl_x_mode == CTRL_X_FUNCTION
 					  ? curbuf->b_p_cfu : curbuf->b_p_ofu;
 	    if (*funcname == NUL)
+	    {
+		EMSG2(_(e_notset), ctrl_x_mode == CTRL_X_FUNCTION
+					     ? "completefunc" : "omnifunc");
 		return FAIL;
+	    }
 
 	    args[0] = (char_u *)"1";
 	    args[1] = NULL;
@@ -3483,7 +3490,7 @@ ins_complete(c)
 	    curwin->w_cursor = pos;	/* restore the cursor position */
 
 	    if (col < 0)
-		return FAIL;
+		col = curs_col;
 	    compl_col = col;
 	    if ((colnr_T)compl_col > curs_col)
 		compl_col = curs_col;

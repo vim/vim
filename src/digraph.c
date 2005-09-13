@@ -336,6 +336,7 @@ static digr_T digraphdefault[] =
 	{'A', 'E',   158},	/* Æ */
 	{'o', 'x',   159},	/* ¤ - currency symbol in ISO 8859-1 */
 	{'e', '=',   159},	/* ¤ - euro symbol in ISO 8859-15 */
+	{'E', 'u',   159},	/* ¤ - euro symbol in ISO 8859-15 */
 	{'j', 'u',   160},	/* µ */
 	{'y', '"',   167},	/* x XX */
 	{'~', '!',   170},	/* ¡ */
@@ -1423,6 +1424,7 @@ static digr_T digraphdefault[] =
 	{'P', 't', 0x20a7},
 	{'W', '=', 0x20a9},
 	{'=', 'e', 0x20ac}, /* euro */
+	{'E', 'u', 0x20ac}, /* euro */
 	{'o', 'C', 0x2103},
 	{'c', 'o', 0x2105},
 	{'o', 'F', 0x2109},

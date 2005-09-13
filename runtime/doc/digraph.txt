@@ -1,4 +1,4 @@
-*digraph.txt*   For Vim version 7.0aa.  Last change: 2005 Mar 06
+*digraph.txt*   For Vim version 7.0aa.  Last change: 2005 Sep 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -166,7 +166,8 @@ EURO
 Exception: RFC1345 doesn't specify the euro sign.  In Vim the digraph =e was
 added for this.  Note the difference between latin1, where the digraph Cu is
 used for the currency sign, and latin9 (iso-8859-15), where the digraph =e is
-used for the euro sign, while both of them are the character 164, 0xa4.
+used for the euro sign, while both of them are the character 164, 0xa4.  For
+compatibility with zsh Eu can also be used for the euro sign.
 
 							*digraph-table*
 char  digraph	hex	dec	official name ~

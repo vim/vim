@@ -60,7 +60,7 @@ static void	nv_error __ARGS((cmdarg_T *cap));
 static void	nv_help __ARGS((cmdarg_T *cap));
 static void	nv_addsub __ARGS((cmdarg_T *cap));
 static void	nv_page __ARGS((cmdarg_T *cap));
-static void	nv_gd __ARGS((oparg_T *oap, int nchar));
+static void	nv_gd __ARGS((oparg_T *oap, int nchar, int thisblock));
 static int	nv_screengo __ARGS((oparg_T *oap, int dir, long dist));
 #ifdef FEAT_MOUSE
 static void	nv_mousescroll __ARGS((cmdarg_T *cap));
@@ -3920,15 +3920,16 @@ nv_page(cap)
  * Implementation of "gd" and "gD" command.
  */
     static void
-nv_gd(oap, nchar)
+nv_gd(oap, nchar, thisblock)
     oparg_T	*oap;
     int		nchar;
+    int		thisblock;	/* 1 for "1gd" and "1gD" */
 {
     int		len;
     char_u	*ptr;
 
     if ((len = find_ident_under_cursor(&ptr, FIND_IDENT)) == 0
-	    || find_decl(ptr, len, nchar == 'd', 0) == FAIL)
+	    || find_decl(ptr, len, nchar == 'd', thisblock, 0) == FAIL)
 	clearopbeep(oap);
 #ifdef FEAT_FOLDING
     else if ((fdo_flags & FDO_SEARCH) && KeyTyped && oap->op_type == OP_NOP)
@@ -3937,15 +3938,18 @@ nv_gd(oap, nchar)
 }
 
 /*
- * Search for variable declaration of "ptr[len]".  When "locally" is TRUE in
- * the current function ("gd"), otherwise in the current file ("gD").
+ * Search for variable declaration of "ptr[len]".
+ * When "locally" is TRUE in the current function ("gd"), otherwise in the
+ * current file ("gD").
+ * When "thisblock" is TRUE check the {} block scope.
  * Return FAIL when not found.
  */
     int
-find_decl(ptr, len, locally, searchflags)
+find_decl(ptr, len, locally, thisblock, searchflags)
     char_u	*ptr;
     int		len;
     int		locally;
+    int		thisblock;
     int		searchflags;	/* flags passed to searchit() */
 {
     char_u	*pat;
@@ -3983,11 +3987,11 @@ find_decl(ptr, len, locally, searchflags)
     }
     else
     {
-	par_pos = curwin->w_cursor;
 	while (curwin->w_cursor.lnum > 1 && *skipwhite(ml_get_curline()) != NUL)
 	    --curwin->w_cursor.lnum;
     }
     curwin->w_cursor.col = 0;
+    par_pos = curwin->w_cursor;
 
     /* Search forward for the identifier, ignore comment lines. */
     found_pos.lnum = 0;
@@ -3997,6 +4001,19 @@ find_decl(ptr, len, locally, searchflags)
 					       pat, 1L, searchflags, RE_LAST);
 	if (curwin->w_cursor.lnum >= old_pos.lnum)
 	    t = FAIL;	/* match after start is failure too */
+
+	if (thisblock)
+	{
+	    pos_T	*pos;
+
+	    /* Check that the block the match is in doesn't end before the
+	     * position where we started the search from. */
+	    if ((pos = findmatchlimit(NULL, '}', FM_FORWARD,
+		     (int)(old_pos.lnum - curwin->w_cursor.lnum + 1))) != NULL
+		    && pos->lnum < old_pos.lnum)
+		continue;
+	}
+
 	if (t == FAIL)
 	{
 	    /* If we previously found a valid position, use it. */
@@ -7668,7 +7685,7 @@ nv_g_cmd(cap)
      */
     case 'd':
     case 'D':
-	nv_gd(oap, cap->nchar);
+	nv_gd(oap, cap->nchar, (int)cap->count0);
 	break;
 
 #ifdef FEAT_MOUSE
