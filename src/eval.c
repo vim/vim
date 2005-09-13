@@ -6849,7 +6849,7 @@ static struct fst
     {"resolve",		1, 1, f_resolve},
     {"reverse",		1, 1, f_reverse},
     {"search",		1, 2, f_search},
-    {"searchdecl",	1, 2, f_searchdecl},
+    {"searchdecl",	1, 3, f_searchdecl},
     {"searchpair",	3, 5, f_searchpair},
     {"server2client",	2, 2, f_server2client},
     {"serverlist",	0, 0, f_serverlist},
@@ -13048,6 +13048,7 @@ f_searchdecl(argvars, rettv)
     typval_T	*rettv;
 {
     int		locally = 1;
+    int		thisblock = 0;
     int		error = FALSE;
     char_u	*name;
 
@@ -13055,10 +13056,14 @@ f_searchdecl(argvars, rettv)
 
     name = get_tv_string_chk(&argvars[0]);
     if (argvars[1].v_type != VAR_UNKNOWN)
+    {
 	locally = get_tv_number_chk(&argvars[1], &error) == 0;
+	if (!error && argvars[2].v_type != VAR_UNKNOWN)
+	    thisblock = get_tv_number_chk(&argvars[2], &error) != 0;
+    }
     if (!error && name != NULL)
 	rettv->vval.v_number = find_decl(name, (int)STRLEN(name),
-						locally, SEARCH_KEEP) == FAIL;
+				     locally, thisblock, SEARCH_KEEP) == FAIL;
 }
 
 /*
