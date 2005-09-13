@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 7.0aa.  Last change: 2005 Aug 11
+*index.txt*     For Vim version 7.0aa.  Last change: 2005 Sep 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -150,7 +150,7 @@ commands in CTRL-X submode				*i_CTRL-X_index*
 |i_CTRL-X_CTRL-K|	CTRL-X CTRL-K	complete identifiers from dictionary
 |i_CTRL-X_CTRL-L|	CTRL-X CTRL-L	complete whole lines
 |i_CTRL-X_CTRL-N|	CTRL-X CTRL-N	next completion
-|i_CTRL-X_CTRL-O|	CTRL-X CTRL-O	occult completion
+|i_CTRL-X_CTRL-O|	CTRL-X CTRL-O	omni completion
 |i_CTRL-X_CTRL-P|	CTRL-X CTRL-P	previous completion
 |i_CTRL-X_CTRL-S|	CTRL-X CTRL-S	spelling suggestions
 |i_CTRL-X_CTRL-T|	CTRL-X CTRL-T	complete identifiers from thesaurus
