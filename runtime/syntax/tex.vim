@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	TeX
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrchipO@ScampbellPfamily.AbizM>
-" Last Change:	Aug 15, 2005
-" Version:	29
+" Last Change:	Sep 14, 2005
+" Version:	30
 " URL:		http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 "
 " Notes: {{{1
@@ -73,7 +73,7 @@ endif
 if !exists("g:tex_fold_enabled")
  let g:tex_fold_enabled= 0
 elseif g:tex_fold_enabled && !has("folding")
- let g:sh_fold_enabled= 0;
+ let g:tex_fold_enabled= 0
  echomsg "Ignoring g:tex_fold_enabled=".g:tex_fold_enabled."; need to re-compile vim for +fold support"
 endif
 if g:tex_fold_enabled && &fdm == "manual"

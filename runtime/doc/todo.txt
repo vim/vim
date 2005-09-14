@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Sep 13
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Sep 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -35,8 +35,6 @@ ccomplete:
 - When a typedef or struct is local to a file only use it in that file?
 
 When 'foldcolumn' is 1 show more + to be able to open all folds? (Donohue)
-
-After vi" another i" should include the quotes.
 
 Mac unicode patch (Da Woon Jung):
 - selecting proportional font breaks display

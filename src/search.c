@@ -4085,11 +4085,10 @@ find_prev_quote(line, col_start, quotechar, escape)
  * Find quote under the cursor, cursor at end.
  * Returns TRUE if found, else FALSE.
  */
-/*ARGSUSED*/
     int
 current_quote(oap, count, include, quotechar)
     oparg_T	*oap;
-    long	count;		/* not used */
+    long	count;
     int		include;	/* TRUE == include quote char */
     int		quotechar;	/* Quote character */
 {
@@ -4100,15 +4099,51 @@ current_quote(oap, count, include, quotechar)
 #ifdef FEAT_VISUAL
     int		vis_empty = TRUE;	/* Visual selection <= 1 char */
     int		vis_bef_curs = FALSE;	/* Visual starts before cursor */
+    int		inside_quotes = FALSE;	/* Looks like "i'" done before */
+    int		selected_quote = FALSE;	/* Has quote inside selection */
+    int		i;
 
     /* Correct cursor when 'selection' is exclusive */
     if (VIsual_active)
     {
+	vis_bef_curs = lt(VIsual, curwin->w_cursor);
 	if (*p_sel == 'e' && vis_bef_curs)
 	    dec_cursor();
 	vis_empty = equalpos(VIsual, curwin->w_cursor);
-	vis_bef_curs = lt(VIsual, curwin->w_cursor);
     }
+
+    if (!vis_empty)
+    {
+	/* Check if the existing selection exactly spans the text inside
+	 * quotes. */
+	if (vis_bef_curs)
+	{
+	    inside_quotes = VIsual.col > 0
+			&& line[VIsual.col - 1] == quotechar
+			&& line[curwin->w_cursor.col] != NUL
+			&& line[curwin->w_cursor.col + 1] == quotechar;
+	    i = VIsual.col;
+	    col_end = curwin->w_cursor.col;
+	}
+	else
+	{
+	    inside_quotes = curwin->w_cursor.col > 0
+			&& line[curwin->w_cursor.col - 1] == quotechar
+			&& line[VIsual.col] != NUL
+			&& line[VIsual.col + 1] == quotechar;
+	    i = curwin->w_cursor.col;
+	    col_end = VIsual.col;
+	}
+
+	/* Find out if we have a quote in the selection. */
+	while (i <= col_end)
+	    if (line[i++] == quotechar)
+	    {
+		selected_quote = TRUE;
+		break;
+	    }
+    }
+
     if (!vis_empty && line[col_start] == quotechar)
     {
 	/* Already selecting something and on a quote character.  Find the
@@ -4218,14 +4253,29 @@ current_quote(oap, count, include, quotechar)
 		--col_start;
     }
 
-    /* Set start position */
-    if (!include)
+    /* Set start position.  After vi" another i" must include the ".
+     * For v2i" include the quotes. */
+    if (!include && count < 2
+#ifdef FEAT_VISUAL
+	    && (vis_empty || !inside_quotes)
+#endif
+	    )
 	++col_start;
     curwin->w_cursor.col = col_start;
 #ifdef FEAT_VISUAL
     if (VIsual_active)
     {
-	if (vis_empty)
+	/* Set the start of the Visual area when the Visual area was empty, we
+	 * were just inside quotes or the Visual area didn't start at a quote
+	 * and didn't include a quote.
+	 */
+	if (vis_empty
+		|| (vis_bef_curs
+		    && !selected_quote
+		    && (inside_quotes
+			|| (line[VIsual.col] != quotechar
+			    && (VIsual.col == 0
+				|| line[VIsual.col - 1] != quotechar)))))
 	{
 	    VIsual = curwin->w_cursor;
 	    redraw_curbuf_later(INVERTED);
@@ -4240,7 +4290,12 @@ current_quote(oap, count, include, quotechar)
 
     /* Set end position. */
     curwin->w_cursor.col = col_end;
-    if (include && inc_cursor() == 2)
+    if ((include || count > 1
+#ifdef FEAT_VISUAL
+		/* After vi" another i" must include the ". */
+		|| (!vis_empty && inside_quotes)
+#endif
+	) && inc_cursor() == 2)
 	inclusive = TRUE;
 #ifdef FEAT_VISUAL
     if (VIsual_active)
@@ -4253,7 +4308,18 @@ current_quote(oap, count, include, quotechar)
 	}
 	else
 	{
-	    /* Cursor is at start of Visual area. */
+	    /* Cursor is at start of Visual area.  Set the end of the Visual
+	     * area when it was just inside quotes or it didn't end at a
+	     * quote. */
+	    if (inside_quotes
+		    || (!selected_quote
+			&& line[VIsual.col] != quotechar
+			&& (line[VIsual.col] == NUL
+			    || line[VIsual.col + 1] != quotechar)))
+	    {
+		dec_cursor();
+		VIsual = curwin->w_cursor;
+	    }
 	    curwin->w_cursor.col = col_start;
 	}
 	if (VIsual_mode == 'V')

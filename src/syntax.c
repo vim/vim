@@ -6163,6 +6163,12 @@ init_highlight(both, reset)
     for (i = 0; pp[i] != NULL; ++i)
 	do_highlight((char_u *)pp[i], reset, TRUE);
 
+    /* Magenta background looks ugly, but grey may not work for 8 colors.
+     * Thus let it depend on the number of colors available. */
+    if (t_colors > 8)
+	do_highlight((char_u *)(*p_bg == 'l' ? "Visual ctermbg=LightGrey"
+				   : "Visual ctermbg=DarkGrey"), reset, TRUE);
+
 #ifdef FEAT_SYN_HL
     /*
      * If syntax highlighting is enabled load the highlighting for it.
