@@ -11,7 +11,6 @@ function! htmlcomplete#CompleteTags(findstart, base)
     while start >= 0 && line[start - 1] !~ '<'
       let start -= 1
     endwhile
-	let g:st = start
     return start
   else
 	" Set attribute groups
@@ -73,6 +72,8 @@ function! htmlcomplete#CompleteTags(findstart, base)
 				let values = ["data", "ref", "object"]
 			elseif attrname == 'method'
 				let values = ["get", "post"]
+			elseif attrname == 'dir'
+				let values = ["ltr", "rtl"]
 			elseif attrname == 'frame'
 				let values = ["void", "above", "below", "hsides", "lhs", "rhs", "vsides", "box", "border"]
 			elseif attrname == 'rules'
@@ -112,7 +113,7 @@ function! htmlcomplete#CompleteTags(findstart, base)
 			let attrbase = matchstr(a:base, ".*[\"']")
 
 			for m in values
-				if m =~ '^' . entered_value
+				if m =~ entered_value
 					call add(res, attrbase . m . '" ')
 				endif
 			endfor
@@ -223,7 +224,7 @@ function! htmlcomplete#CompleteTags(findstart, base)
 		endif
 
 		for m in sort(attrs)
-			if m =~ '^' . attr
+			if m =~ attr
 				if m =~ '^\(ismap\|defer\|declare\|nohref\|checked\|disabled\|selected\|readonly\)$'
 					call add(res, sbase.' '.m)
 				else
@@ -233,8 +234,83 @@ function! htmlcomplete#CompleteTags(findstart, base)
 		endfor
 		return res
 	endif
+	" Close tag
+	if a:base =~ '^\/' && exists("*GetLastOpenTag")
+		let b:unaryTagsStack = "base meta link hr br param img area input col"
+		let opentag = GetLastOpenTag("b:unaryTagsStack")
+		return ["/".opentag.">"]
+	endif
+	" Deal with tag completion.
+	if exists("*GetLastOpenTag")
+		" set b:unaryTagsStack to proper value for xhtml 1.0 or html 4.01
+		let b:unaryTagsStack = "base meta link hr br param img area input col"
+		let opentag = GetLastOpenTag("b:unaryTagsStack")
+		" Clusters
+		let special = "br span bdo map object img"
+		let phrase =  "em strong dfn code q samp kbd var cite abbr acronym sub sup"
+		let inlineforms = "input select textarea label button"
+		let miscinline = "ins del script"
+		let inline = "a ".special." ".phrase." ".inlineforms." tt i b big small"
+		let misc = "noscript ".miscinline
+		let block = "p h1 h2 h3 h4 h5 h6 div ul ol dl pre hr blockquote address fieldset table"
+
+		if opentag == 'a'
+			let tags = split("tt i b big small ".special." ".phrase." ".inlineforms." ".miscinline)
+		elseif opentag =~ '^\(abbr\|acronym\|address\|b\|p\|h\d\|dt\|span\|bdo\|em\|strong\|dfn\|code\|samp\|kbd\|var\|cite\|q\|sub\|sup\|tt\|i\|big\|small\|label\|caption\)$'
+			let tags = split(inline." ".miscinline)
+		elseif opentag == 'pre'
+			let tags = split("a tt i b big small br span bdo map ".phrase." ".miscinline." ".inlineforms)
+		elseif opentag == 'html'
+			let tags = split("head body")
+		elseif opentag == 'legend'
+			let tags = split(inline." ".miscinline)
+		elseif opentag == 'head'
+			let tags = split("title base scipt style meta link object")
+		elseif opentag =~ '^\(noscript\|body\|blockquote\)$'
+			let tags = split("form ".block." ".misc)
+		elseif opentag =~ '^\(ul\|ol\)$'
+			let tags = ["li"]
+		elseif opentag == 'dl'
+			let tags = split("dt dd")
+		elseif opentag =~ '^\(ins\|del\|th\|td\|dd\|div\|li\)$'
+			let tags = split("form ".block." ".inline." ".misc)
+		elseif opentag == 'object'
+			let tags = split("param form ".block." ".inline." ".misc)
+		elseif opentag == 'fieldset'
+			let tags = split("legend form ".block." ".inline." ".misc)
+		elseif opentag == 'map'
+			let tags = split("area form ".block." ".misc)
+		elseif opentag == 'form'
+			let tags = split(block." ".misc)
+		elseif opentag == 'select'
+			let tags = split("optgroup option")
+		elseif opentag == 'optgroup'
+			let tags = ["option"]
+		elseif opentag == 'colgroup'
+			let tags = ["col"]
+		elseif opentag == '^\(textarea\|option\|script\|style\|title\)$'
+			let tags = []
+		elseif opentag == 'button'
+			let tags = split("p h1 h2 h3 h4 h5 h6 div ul ol dl table")
+		elseif opentag =~ '^\(thead\|tfoot\|tbody)$'
+			let tags = ["tr"]
+		elseif opentag == 'tr'
+			let tags = split("th td")
+		elseif opentag == 'table'
+			let tags = split("caption col colgroup thead tfoot tbody tr")
+		endif
+
+		for m in tags
+			if m =~ a:base
+				call add(res, m)
+			endif
+		endfor
+		return res
+
+	endif
+
     for m in split("a abbr acronym address area b base bdo big blockquote body br button caption cite code col colgroup dd del dfn div dl dt em fieldset form head h1 h2 h3 h4 h5 h6 hr html i img input ins kbd label legend li link map meta noscript object ol optgroup option p param pre q samp script select small span strong style sub sup table tbody td textarea tfoot th thead title tr tt ul var")
-		if m =~ '^' . a:base
+		if m =~ a:base
 			call add(res, m)
 		endif
     endfor
