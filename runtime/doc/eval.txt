@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Sep 12
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Sep 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -4972,7 +4972,7 @@ then define the function like this: >
 	   echo "Done!"
 	endfunction
 
-The file name and the name used before the colon in the function must match
+The file name and the name used before the # in the function must match
 exactly, and the defined function must have the name exactly as it will be
 called.
 
@@ -4982,9 +4982,6 @@ a path separator.  Thus when calling a function: >
 	:call foo#bar#func()
 
 Vim will look for the file "autoload/foo/bar.vim" in 'runtimepath'.
-
-The name before the first colon must be at least two characters long,
-otherwise it looks like a scope, such as "s:".
 
 This also works when reading a variable that has not been set yet: >
 

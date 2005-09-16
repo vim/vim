@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Sep 14
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Sep 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,6 +29,8 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+Test11 fails sometimes. (athena, huge features)
 
 ccomplete:
 - How to use a popup menu?

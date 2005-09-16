@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Sep 13
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Sep 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1360,5 +1360,8 @@ searching for "qa" instead of quitting all windows.
 
 GUI: When scrolling with the scrollbar and there is a line that doesn't fit
 redrawing may fail.  Make sure w_skipcol is valid before redrawing.
+
+"dFxd;" deleted the character under the cursor, "d;" didn't remember the
+exclusiveness of the motion.
 
  vim:tw=78:ts=8:ft=help:norl:

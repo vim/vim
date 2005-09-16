@@ -2140,8 +2140,8 @@ op_tilde(oap)
     pos_T		pos;
 #ifdef FEAT_VISUAL
     struct block_def	bd;
-#endif
     int			todo;
+#endif
     int			did_change = 0;
 
     if (u_save((linenr_T)(oap->start.lnum - 1),
@@ -2158,10 +2158,10 @@ op_tilde(oap)
 	    pos.col = bd.textcol;
 	    for (todo = bd.textlen; todo > 0; --todo)
 	    {
-#ifdef FEAT_MBYTE
+# ifdef FEAT_MBYTE
 		if (has_mbyte)
 		    todo -= (*mb_ptr2len)(ml_get_pos(&pos)) - 1;
-#endif
+# endif
 		did_change |= swapchar(oap->op_type, &pos);
 		if (inc(&pos) == -1)	    /* at end of file */
 		    break;
@@ -2195,16 +2195,13 @@ op_tilde(oap)
 	else if (!oap->inclusive)
 	    dec(&(oap->end));
 
-	for (todo = oap->end.col - pos.col + 1; todo > 0; --todo)
+	while (ltoreq(pos, oap->end))
 	{
-#ifdef FEAT_MBYTE
-	    if (has_mbyte)
-		todo -= (*mb_ptr2len)(ml_get_pos(&pos)) - 1;
-#endif
 	    did_change |= swapchar(oap->op_type, &pos);
 	    if (inc(&pos) == -1)    /* at end of file */
 		break;
 	}
+
 	if (did_change)
 	{
 	    changed_lines(oap->start.lnum, oap->start.col, oap->end.lnum + 1,

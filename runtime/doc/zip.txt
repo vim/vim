@@ -1,0 +1,31 @@
+*zip.txt*	Zip File Interface				Sep 16, 2005
+
+Author:  Charles E. Campbell, Jr.  <NdrOchip@ScampbellPfamily.AbizM>
+	  (remove NOSPAM from Campbell's email first)
+Copyright:    Copyright (C) 2005 Charles E. Campbell, Jr. {{{1 *zip-copyright*
+              Permission is hereby granted to use and distribute this code,
+	      with or without modifications, provided that this copyright
+	      notice is copied with it. Like anything else that's free,
+	      zip.vim and zipPlugin.vim are provided *as is* and comes with no
+	      warranty of any kind, either expressed or implied. By using this
+	      plugin, you agree that in no event will the copyright holder be
+	      liable for any damages resulting from the use of this software.
+
+==============================================================================
+1. Contents					*zip* *zip-contents*
+   1. Contents..................................................|zip-contents|
+   2. Usage.....................................................|zip-usage|
+   3. History...................................................|zip-history|
+
+==============================================================================
+2. Usage					*zip-usage* *zip-manual*
+
+==============================================================================
+3. History					*zip-history*
+   v2 Sep 16, 2005 * silenced some commands (avoiding hit-enter prompt)
+                   * began testing under Windows; works thus far
+		   * filetype detection fixed
+   v1 Sep 15, 2005 * Initial release, had browsin, reading, and writing
+
+==============================================================================
+vim:tw=78:ts=8:ft=help

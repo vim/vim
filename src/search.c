@@ -1440,6 +1440,11 @@ searchc(cap, t_cmd)
 	/* For multi-byte re-use last bytes[] and bytelen. */
     }
 
+    if (dir == BACKWARD)
+	cap->oap->inclusive = FALSE;
+    else
+	cap->oap->inclusive = TRUE;
+
     p = ml_get_curline();
     col = curwin->w_cursor.col;
     len = (int)STRLEN(p);

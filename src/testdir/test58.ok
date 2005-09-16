@@ -34,7 +34,7 @@ test
 déôl
 ['deol', 'déôr', 'test']
 end
-['put', 'test', 'uk']
+['put', 'OK', 'test']
 the
 ['put', 'uk', 'test']
 gebletegek
@@ -75,7 +75,7 @@ wrong
 bad
 ['put', 'uk', 'OK']
 inputs
-['input', 'puts', 'put']
+['input', 'puts', 'outputs']
 comment
 ['Comment']
 ok
@@ -143,7 +143,7 @@ wordutilize
 pro
 ['bork', 'end', 'word']
 borkborkborkborkborkbork
-['borkbork borkborkborkbork', 'borkborkbork borkborkbork', 'borkborkborkborkbork bork']
+['bork borkborkborkborkbork', 'borkbork borkborkborkbork', 'borkborkbork borkborkbork']
 tomatotomatotomato
 ['tomato tomatotomato', 'tomatotomato tomato', 'tomato tomato tomato']
 endstart
@@ -153,13 +153,13 @@ endend
 startstart
 ['start start']
 wordend
-['word end', 'wordword', 'word']
+['word end', 'word', 'wordword']
 wordstart
 ['word start', 'bork start']
 startwordwordwordwordend
 ['startwordwordwordword end', 'startwordwordwordword', 'start wordwordwordword end']
 borkpreborkpreborkbork
-['borkpreborkprebork bork', 'borkprebork preborkbork', 'bork preborkpreborkbork']
+['bork preborkpreborkbork', 'borkprebork preborkbork', 'borkpreborkprebork bork']
 
 test 5-5
 # file: Xtest.latin1.spl
@@ -211,7 +211,7 @@ mee
 meea2
 ['meea1', 'meeaé', 'lead']
 prabar
-['prebar', 'leadbar', 'bar']
+['prebar', 'bar', 'leadbar']
 probarbirk
 ['prebarbork']
 middle
@@ -243,7 +243,7 @@ mee
 meea2
 ['meea1', 'meeaé', 'lead']
 prabar
-['prebar', 'leadbar', 'bar']
+['prebar', 'bar', 'leadbar']
 probarmaat
 ['prebarmeat']
 middle

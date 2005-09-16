@@ -1,4 +1,4 @@
-*filetype.txt*  For Vim version 7.0aa.  Last change: 2005 Aug 30
+*filetype.txt*  For Vim version 7.0aa.  Last change: 2005 Sep 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -184,7 +184,8 @@ A. If you want to overrule all default file type checks.
 <  3. To use the new filetype detection you must restart Vim.
 
    The files in the "ftdetect" directory are used after all the default
-   checks, thus they can overrule a previously detected file type.
+   checks, thus they can overrule a previously detected file type.  But you
+   can also use |:setfiletype| to keep a previously detected filetype.
 
 B. If you want to detect your file after the default file type checks.
 

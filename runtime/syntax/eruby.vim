@@ -10,7 +10,6 @@
 "    but WITHOUT ANY WARRANTY; without even the implied warranty of
 "    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 "    GNU General Public License for more details.
-" ----------------------------------------------------------------------------
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -33,9 +32,12 @@ else
   syn include @rubyTop syntax/ruby.vim
 endif
 
-syn region erubyOneLiner matchgroup=erubyDelimiter start="^\s*\zs%" end="$"  contains=@rubyTop,erubyDelimiter keepend
-syn region erubyBlock    matchgroup=erubyDelimiter start="<%=\="    end="%>" contains=@rubyTop containedin=ALLBUT,erubyComment keepend 
-syn region erubyComment  matchgroup=erubyDelimiter start="<%#"      end="%>" keepend
+syn cluster erubyRegions contains=erubyOneLiner,erubyBlock,erubyExpression,erubyComment
+
+syn region  erubyOneLiner   matchgroup=erubyDelimiter start="^%%\@!" end="$"  contains=@rubyTop	       containedin=ALLBUT,@erubyRegions keepend oneline
+syn region  erubyBlock	    matchgroup=erubyDelimiter start="<%%\@!" end="%>" contains=@rubyTop	       containedin=ALLBUT,@erubyRegions
+syn region  erubyExpression matchgroup=erubyDelimiter start="<%="    end="%>" contains=@rubyTop	       containedin=ALLBUT,@erubyRegions
+syn region  erubyComment    matchgroup=erubyDelimiter start="<%#"    end="%>" contains=rubyTodo,@Spell containedin=ALLBUT,@erubyRegions keepend
 
 " Define the default highlighting.
 " For version 5.7 and earlier: only when not done already
@@ -59,4 +61,4 @@ if main_syntax == 'eruby'
   unlet main_syntax
 endif
 
-" vim: sw=2 sts=2 ts=8 ff=unix nowrap:
+" vim: nowrap sw=2 sts=2 ts=8 ff=unix:

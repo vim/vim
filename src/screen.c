@@ -2931,7 +2931,7 @@ win_line(wp, lnum, startrow, endrow)
 	    wp->w_cursor.lnum = lnum;
 	    wp->w_cursor.col = ptr - line;
 	    len = spell_move_to(wp, FORWARD, TRUE, TRUE, &spell_attr);
-	    if (len == 0 || wp->w_cursor.col > ptr - line)
+	    if (len == 0 || (int)wp->w_cursor.col > ptr - line)
 	    {
 		/* no bad word found at line start, don't check until end of a
 		 * word */
