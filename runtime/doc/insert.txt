@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0aa.  Last change: 2005 Sep 13
+*insert.txt*    For Vim version 7.0aa.  Last change: 2005 Sep 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -984,6 +984,22 @@ Vim doesn't include a C compiler, only the most obviously formatted
 declarations are recognized.  Preprocessor stuff may cause confusion.
 When the same structure name appears in multiple places all possible members
 are included.
+
+
+(X)HTML                          			*ft-html-omni*
+
+When using after CTRL-X CTRL-O after "<" it is completed with tag name
+available in current context. Inside of tag completion aids to choose
+proper attributes, and when possible choose appropriate attribute value.
+
+When used after "</" CTRL-X CTRL-O will close the last opened tag.
+
+File htmlcompletion.vim provides through autoload mechanism
+GetLastOpenTag function which can be used in XML files to get name of
+last open tag with: >
+
+	:echo htmlcompletion#GetLastOpenTag("b:unaryTagsStack")
+<
 
 ==============================================================================
 8. Insert mode commands					*inserting*

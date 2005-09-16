@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	XHTML 1.0 Strict
 " Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
-" Last Change:	2005 Sep 13
+" Last Change:	2005 Sep 15
 
 function! htmlcomplete#CompleteTags(findstart, base)
   if a:findstart
@@ -235,85 +235,206 @@ function! htmlcomplete#CompleteTags(findstart, base)
 		return res
 	endif
 	" Close tag
-	if a:base =~ '^\/' && exists("*GetLastOpenTag")
-		let b:unaryTagsStack = "base meta link hr br param img area input col"
-		let opentag = GetLastOpenTag("b:unaryTagsStack")
+	let b:unaryTagsStack = "base meta link hr br param img area input col"
+	if a:base =~ '^\/'
+		let opentag = htmlcomplete#GetLastOpenTag("b:unaryTagsStack")
 		return ["/".opentag.">"]
 	endif
 	" Deal with tag completion.
-	if exists("*GetLastOpenTag")
-		" set b:unaryTagsStack to proper value for xhtml 1.0 or html 4.01
-		let b:unaryTagsStack = "base meta link hr br param img area input col"
-		let opentag = GetLastOpenTag("b:unaryTagsStack")
-		" Clusters
-		let special = "br span bdo map object img"
-		let phrase =  "em strong dfn code q samp kbd var cite abbr acronym sub sup"
-		let inlineforms = "input select textarea label button"
-		let miscinline = "ins del script"
-		let inline = "a ".special." ".phrase." ".inlineforms." tt i b big small"
-		let misc = "noscript ".miscinline
-		let block = "p h1 h2 h3 h4 h5 h6 div ul ol dl pre hr blockquote address fieldset table"
+	let opentag = htmlcomplete#GetLastOpenTag("b:unaryTagsStack")
+	" Clusters
+	let special = "br span bdo map object img"
+	let phrase =  "em strong dfn code q samp kbd var cite abbr acronym sub sup"
+	let inlineforms = "input select textarea label button"
+	let miscinline = "ins del script"
+	let inline = "a ".special." ".phrase." ".inlineforms." tt i b big small"
+	let misc = "noscript ".miscinline
+	let block = "p h1 h2 h3 h4 h5 h6 div ul ol dl pre hr blockquote address fieldset table"
 
-		if opentag == 'a'
-			let tags = split("tt i b big small ".special." ".phrase." ".inlineforms." ".miscinline)
-		elseif opentag =~ '^\(abbr\|acronym\|address\|b\|p\|h\d\|dt\|span\|bdo\|em\|strong\|dfn\|code\|samp\|kbd\|var\|cite\|q\|sub\|sup\|tt\|i\|big\|small\|label\|caption\)$'
-			let tags = split(inline." ".miscinline)
-		elseif opentag == 'pre'
-			let tags = split("a tt i b big small br span bdo map ".phrase." ".miscinline." ".inlineforms)
-		elseif opentag == 'html'
-			let tags = split("head body")
-		elseif opentag == 'legend'
-			let tags = split(inline." ".miscinline)
-		elseif opentag == 'head'
-			let tags = split("title base scipt style meta link object")
-		elseif opentag =~ '^\(noscript\|body\|blockquote\)$'
-			let tags = split("form ".block." ".misc)
-		elseif opentag =~ '^\(ul\|ol\)$'
-			let tags = ["li"]
-		elseif opentag == 'dl'
-			let tags = split("dt dd")
-		elseif opentag =~ '^\(ins\|del\|th\|td\|dd\|div\|li\)$'
-			let tags = split("form ".block." ".inline." ".misc)
-		elseif opentag == 'object'
-			let tags = split("param form ".block." ".inline." ".misc)
-		elseif opentag == 'fieldset'
-			let tags = split("legend form ".block." ".inline." ".misc)
-		elseif opentag == 'map'
-			let tags = split("area form ".block." ".misc)
-		elseif opentag == 'form'
-			let tags = split(block." ".misc)
-		elseif opentag == 'select'
-			let tags = split("optgroup option")
-		elseif opentag == 'optgroup'
-			let tags = ["option"]
-		elseif opentag == 'colgroup'
-			let tags = ["col"]
-		elseif opentag == '^\(textarea\|option\|script\|style\|title\)$'
-			let tags = []
-		elseif opentag == 'button'
-			let tags = split("p h1 h2 h3 h4 h5 h6 div ul ol dl table")
-		elseif opentag =~ '^\(thead\|tfoot\|tbody)$'
-			let tags = ["tr"]
-		elseif opentag == 'tr'
-			let tags = split("th td")
-		elseif opentag == 'table'
-			let tags = split("caption col colgroup thead tfoot tbody tr")
-		endif
-
-		for m in tags
-			if m =~ a:base
-				call add(res, m)
-			endif
-		endfor
-		return res
-
+	if opentag == 'a'
+		let tags = split("tt i b big small ".special." ".phrase." ".inlineforms." ".miscinline)
+	elseif opentag =~ '^\(abbr\|acronym\|address\|b\|p\|h\d\|dt\|span\|bdo\|em\|strong\|dfn\|code\|samp\|kbd\|var\|cite\|q\|sub\|sup\|tt\|i\|big\|small\|label\|caption\)$'
+		let tags = split(inline." ".miscinline)
+	elseif opentag == 'pre'
+		let tags = split("a tt i b big small br span bdo map ".phrase." ".miscinline." ".inlineforms)
+	elseif opentag == 'html'
+		let tags = split("head body")
+	elseif opentag == 'legend'
+		let tags = split(inline." ".miscinline)
+	elseif opentag == 'head'
+		let tags = split("title base scipt style meta link object")
+	elseif opentag =~ '^\(noscript\|body\|blockquote\)$'
+		let tags = split("form ".block." ".misc)
+	elseif opentag =~ '^\(ul\|ol\)$'
+		let tags = ["li"]
+	elseif opentag == 'dl'
+		let tags = split("dt dd")
+	elseif opentag =~ '^\(ins\|del\|th\|td\|dd\|div\|li\)$'
+		let tags = split("form ".block." ".inline." ".misc)
+	elseif opentag == 'object'
+		let tags = split("param form ".block." ".inline." ".misc)
+	elseif opentag == 'fieldset'
+		let tags = split("legend form ".block." ".inline." ".misc)
+	elseif opentag == 'map'
+		let tags = split("area form ".block." ".misc)
+	elseif opentag == 'form'
+		let tags = split(block." ".misc)
+	elseif opentag == 'select'
+		let tags = split("optgroup option")
+	elseif opentag == 'optgroup'
+		let tags = ["option"]
+	elseif opentag == 'colgroup'
+		let tags = ["col"]
+	elseif opentag == '^\(textarea\|option\|script\|style\|title\)$'
+		let tags = []
+	elseif opentag == 'button'
+		let tags = split("p h1 h2 h3 h4 h5 h6 div ul ol dl table")
+	elseif opentag =~ '^\(thead\|tfoot\|tbody)$'
+		let tags = ["tr"]
+	elseif opentag == 'tr'
+		let tags = split("th td")
+	elseif opentag == 'table'
+		let tags = split("caption col colgroup thead tfoot tbody tr")
 	endif
 
-    for m in split("a abbr acronym address area b base bdo big blockquote body br button caption cite code col colgroup dd del dfn div dl dt em fieldset form head h1 h2 h3 h4 h5 h6 hr html i img input ins kbd label legend li link map meta noscript object ol optgroup option p param pre q samp script select small span strong style sub sup table tbody td textarea tfoot th thead title tr tt ul var")
+	for m in tags
 		if m =~ a:base
 			call add(res, m)
 		endif
-    endfor
-    return res
+	endfor
+
+	return res
+
   endif
+endfunction
+
+" MM: This is greatly reduced closetag.vim used with kind permission of Steven
+"     Mueller
+"     Changes: strip all comments; delete error messages
+" Author: Steven Mueller <diffusor@ugcs.caltech.edu>
+" Last Modified: Tue May 24 13:29:48 PDT 2005 
+" Version: 0.9.1
+
+function! htmlcomplete#GetLastOpenTag(unaryTagsStack)
+	let linenum=line(".")
+	let lineend=col(".") - 1 " start: cursor position
+	let first=1              " flag for first line searched
+	let b:TagStack=""        " main stack of tags
+	let startInComment=s:InComment()
+
+	let tagpat='</\=\(\k\|[-:]\)\+\|/>'
+	while (linenum>0)
+		let line=getline(linenum)
+		if first
+			let line=strpart(line,0,lineend)
+		else
+			let lineend=strlen(line)
+		endif
+		let b:lineTagStack=""
+		let mpos=0
+		let b:TagCol=0
+		while (mpos > -1)
+			let mpos=matchend(line,tagpat)
+			if mpos > -1
+				let b:TagCol=b:TagCol+mpos
+				let tag=matchstr(line,tagpat)
+
+				if exists("b:closetag_disable_synID") || startInComment==s:InCommentAt(linenum, b:TagCol)
+					let b:TagLine=linenum
+					call s:Push(matchstr(tag,'[^<>]\+'),"b:lineTagStack")
+				endif
+				let lineend=lineend-mpos
+				let line=strpart(line,mpos,lineend)
+			endif
+		endwhile
+		while (!s:EmptystackP("b:lineTagStack"))
+			let tag=s:Pop("b:lineTagStack")
+			if match(tag, "^/") == 0		"found end tag
+				call s:Push(tag,"b:TagStack")
+			elseif s:EmptystackP("b:TagStack") && !s:Instack(tag, a:unaryTagsStack)	"found unclosed tag
+				return tag
+			else
+				let endtag=s:Peekstack("b:TagStack")
+				if endtag == "/".tag || endtag == "/"
+				call s:Pop("b:TagStack")	"found a open/close tag pair
+			elseif !s:Instack(tag, a:unaryTagsStack) "we have a mismatch error
+				return ""
+			endif
+		endif
+	endwhile
+	let linenum=linenum-1 | let first=0
+endwhile
+return ""
+endfunction
+
+function! s:InComment()
+	return synIDattr(synID(line("."), col("."), 0), "name") =~ 'Comment'
+endfunction
+
+function! s:InCommentAt(line, col)
+	return synIDattr(synID(a:line, a:col, 0), "name") =~ 'Comment'
+endfunction
+
+
+function! s:SetKeywords()
+	let g:IsKeywordBak=&iskeyword
+	let &iskeyword="33-255"
+endfunction
+
+function! s:RestoreKeywords()
+	let &iskeyword=g:IsKeywordBak
+endfunction
+
+function! s:Push(el, sname)
+	if !s:EmptystackP(a:sname)
+		exe "let ".a:sname."=a:el.' '.".a:sname
+	else
+		exe "let ".a:sname."=a:el"
+	endif
+endfunction
+
+function! s:EmptystackP(sname)
+	exe "let stack=".a:sname
+	if match(stack,"^ *$") == 0
+		return 1
+	else
+		return 0
+	endif
+endfunction
+
+function! s:Instack(el, sname)
+	exe "let stack=".a:sname
+	call s:SetKeywords()
+	let m=match(stack, "\\<".a:el."\\>")
+	call s:RestoreKeywords()
+	if m < 0
+		return 0
+	else
+		return 1
+	endif
+endfunction
+
+function! s:Peekstack(sname)
+	call s:SetKeywords()
+	exe "let stack=".a:sname
+	let top=matchstr(stack, "\\<.\\{-1,}\\>")
+	call s:RestoreKeywords()
+	return top
+endfunction
+
+function! s:Pop(sname)
+	if s:EmptystackP(a:sname)
+		return ""
+	endif
+	exe "let stack=".a:sname
+	call s:SetKeywords()
+	let loc=matchend(stack,"\\<.\\{-1,}\\>")
+	exe "let ".a:sname."=strpart(stack, loc+1, strlen(stack))"
+	let top=strpart(stack, match(stack, "\\<"), loc)
+	call s:RestoreKeywords()
+	return top
+endfunction
+
+function! s:Clearstack(sname)
+	exe "let ".a:sname."=''"
 endfunction
