@@ -167,7 +167,7 @@ do_debug(cmd)
 	if (!debug_greedy)
 	    save_typeahead(&typeaheadbuf);
 
-	cmdline = getcmdline_prompt('>', NULL, 0);
+	cmdline = getcmdline_prompt('>', NULL, 0, EXPAND_NOTHING, NULL);
 
 	if (!debug_greedy)
 	    restore_typeahead(&typeaheadbuf);
@@ -1031,7 +1031,7 @@ profile_dump()
 
     if (profile_fname != NULL)
     {
-	fd = fopen((char *)profile_fname, "w");
+	fd = mch_fopen((char *)profile_fname, "w");
 	if (fd == NULL)
 	    EMSG2(_(e_notopen), profile_fname);
 	else
@@ -1149,7 +1149,7 @@ script_dump_profile(fd)
 	    fprintf(fd, "\n");
 	    fprintf(fd, "count  total (s)   self (s)\n");
 
-	    sfd = fopen((char *)si->sn_name, "r");
+	    sfd = mch_fopen((char *)si->sn_name, "r");
 	    if (sfd == NULL)
 		fprintf(fd, "Cannot open file!\n");
 	    else

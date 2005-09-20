@@ -3056,7 +3056,7 @@ ex_helpgrep(eap)
 					   + STRLEN(fnames[fi]) - 3, 3) == 0))
 			    continue;
 #endif
-		    fd = fopen((char *)fnames[fi], "r");
+		    fd = mch_fopen((char *)fnames[fi], "r");
 		    if (fd != NULL)
 		    {
 			lnum = 1;

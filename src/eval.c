@@ -504,6 +504,7 @@ static void f_getchar __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getcharmod __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getcmdline __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getcmdpos __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_getcmdtype __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getcwd __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getfontname __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getfperm __ARGS((typval_T *argvars, typval_T *rettv));
@@ -6769,6 +6770,7 @@ static struct fst
     {"getcharmod",	0, 0, f_getcharmod},
     {"getcmdline",	0, 0, f_getcmdline},
     {"getcmdpos",	0, 0, f_getcmdpos},
+    {"getcmdtype",	0, 0, f_getcmdtype},
     {"getcwd",		0, 0, f_getcwd},
     {"getfontname",	0, 1, f_getfontname},
     {"getfperm",	1, 1, f_getfperm},
@@ -6799,7 +6801,7 @@ static struct fst
     {"iconv",		3, 3, f_iconv},
     {"indent",		1, 1, f_indent},
     {"index",		2, 4, f_index},
-    {"input",		1, 2, f_input},
+    {"input",		1, 3, f_input},
     {"inputdialog",	1, 3, f_inputdialog},
     {"inputlist",	1, 1, f_inputlist},
     {"inputrestore",	0, 0, f_inputrestore},
@@ -9438,6 +9440,24 @@ f_getcmdpos(argvars, rettv)
 }
 
 /*
+ * "getcmdtype()" function
+ */
+/*ARGSUSED*/
+    static void
+f_getcmdtype(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = alloc(2);
+    if (rettv->vval.v_string != NULL)
+    {
+	rettv->vval.v_string[0] = get_cmdline_type();
+	rettv->vval.v_string[1] = NUL;
+    }
+}
+
+/*
  * "getcwd()" function
  */
 /*ARGSUSED*/
@@ -10794,6 +10814,8 @@ f_input(argvars, rettv)
     char_u	buf[NUMBUFLEN];
     int		cmd_silent_save = cmd_silent;
     char_u	*defstr = (char_u *)"";
+    int		xp_type = EXPAND_NOTHING;
+    char_u	*xp_arg = NULL;
 
     rettv->v_type = VAR_STRING;
 
@@ -10835,9 +10857,31 @@ f_input(argvars, rettv)
 		stuffReadbuffSpec(defstr);
 	}
 
+	if (argvars[2].v_type != VAR_UNKNOWN)
+	{
+	    char_u	*xp_name;
+	    int		xp_namelen;
+	    long	argt;
+
+	    rettv->vval.v_string = NULL;
+
+	    xp_name = get_tv_string_buf_chk(&argvars[2], buf);
+	    if (xp_name == NULL)
+		return;
+
+	    xp_namelen = STRLEN(xp_name);
+
+	    if (parse_compl_arg(xp_name, xp_namelen, &xp_type, &argt, &xp_arg)
+								      == FAIL)
+		return;
+	}
+
 	if (defstr != NULL)
 	    rettv->vval.v_string =
-		getcmdline_prompt(inputsecret_flag ? NUL : '@', p, echo_attr);
+		getcmdline_prompt(inputsecret_flag ? NUL : '@', p, echo_attr,
+				  xp_type, xp_arg);
+
+	vim_free(xp_arg);
 
 	/* since the user typed this, no need to wait for return */
 	need_wait_return = FALSE;
@@ -17680,10 +17724,8 @@ list_func_head(fp, indent)
     }
     msg_putchar(')');
     msg_clr_eos();
-#ifdef FEAT_EVAL
     if (p_verbose > 0)
 	last_set_msg(fp->uf_script_ID);
-#endif
 }
 
 /*

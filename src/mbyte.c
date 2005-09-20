@@ -161,7 +161,7 @@ xim_log(char *s, ...)
 	return;
     if (fd == NULL)
     {
-	fd = fopen("xim.log", "w");
+	fd = mch_fopen("xim.log", "w");
 	if (fd == NULL)
 	{
 	    EMSG("Cannot open xim.log");

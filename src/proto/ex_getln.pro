@@ -1,6 +1,6 @@
 /* ex_getln.c */
 char_u *getcmdline __ARGS((int firstc, long count, int indent));
-char_u *getcmdline_prompt __ARGS((int firstc, char_u *prompt, int attr));
+char_u *getcmdline_prompt __ARGS((int firstc, char_u *prompt, int attr, int xp_context, char_u *xp_arg));
 char_u *getexline __ARGS((int c, void *dummy, int indent));
 char_u *getexmodeline __ARGS((int promptc, void *dummy, int indent));
 int cmdline_overstrike __ARGS((void));
@@ -33,6 +33,7 @@ int get_history_idx __ARGS((int histype));
 char_u *get_cmdline_str __ARGS((void));
 int get_cmdline_pos __ARGS((void));
 int set_cmdline_pos __ARGS((int pos));
+int get_cmdline_type __ARGS((void));
 char_u *get_history_entry __ARGS((int histype, int idx));
 int clr_history __ARGS((int histype));
 int del_history_entry __ARGS((int histype, char_u *str));

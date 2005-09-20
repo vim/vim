@@ -201,7 +201,7 @@ main
 #endif
 
 #ifdef STARTUPTIME
-    time_fd = fopen(STARTUPTIME, "a");
+    time_fd = mch_fopen(STARTUPTIME, "a");
     TIME_MSG("--- VIM STARTING ---");
 #endif
 

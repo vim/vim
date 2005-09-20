@@ -1098,7 +1098,7 @@ cs_find_common(opt, pat, forceit, verbose)
 	FILE *f;
 	char_u *tmp = vim_tempname('c');
 
-	f = fopen((char *)tmp, "w");
+	f = mch_fopen((char *)tmp, "w");
 	cs_file_results(f, nummatches);
 	fclose(f);
 	/* '-' starts a new error list */

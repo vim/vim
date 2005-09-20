@@ -447,6 +447,8 @@ New functions: ~
 |get()|			get an item from a List or Dictionary
 |getbufline()|		get a list of lines from a specified buffer
 			(Yegappan Lakshmanan)
+|getcmdtype()|		return the current command-line type
+			(Yegappan Lakshmanan)
 |getfontname()| 	get actual font name being used
 |getfperm()|		get file permission string (Nikolai Weibull)
 |getftype()|		get type of file (Nikolai Weibull)
@@ -811,6 +813,9 @@ Also support t_SI and t_EI on Unix with normal features. (Ciaran McCreesh)
 
 When 'foldcolumn' is one then put as much info in it as possible.  This allows
 closing a fold with the mouse by clicking on the '-'.
+
+input() takes an optional completion argument to specify the type of
+completion supported for the input. (Yegappan Lakshmanan)
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*

@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0aa.  Last change: 2005 Sep 15
+*insert.txt*    For Vim version 7.0aa.  Last change: 2005 Sep 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -990,16 +990,17 @@ are included.
 
 When using after CTRL-X CTRL-O after "<" it is completed with tag name
 available in current context. Inside of tag completion aids to choose
-proper attributes, and when possible choose appropriate attribute value.
+proper attributes, and when possible choose appropriate attribute value
+including class names for CSS styles.
 
 When used after "</" CTRL-X CTRL-O will close the last opened tag.
 
-File htmlcompletion.vim provides through autoload mechanism
+File htmlcomplete.vim provides through |autoload| mechanism
 GetLastOpenTag function which can be used in XML files to get name of
 last open tag with: >
 
-	:echo htmlcompletion#GetLastOpenTag("b:unaryTagsStack")
-<
+        :echo htmlcomplete#GetLastOpenTag("b:unaryTagsStack")
+
 
 ==============================================================================
 8. Insert mode commands					*inserting*

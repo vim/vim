@@ -3034,7 +3034,7 @@ verbose_open()
 	/* Only give the error message once. */
 	verbose_did_open = TRUE;
 
-	verbose_fd = fopen((char *)p_vfile, "a");
+	verbose_fd = mch_fopen((char *)p_vfile, "a");
 	if (verbose_fd == NULL)
 	{
 	    EMSG2(_(e_notopen), p_vfile);

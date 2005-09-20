@@ -21,6 +21,7 @@ char_u *get_user_commands __ARGS((expand_T *xp, int idx));
 char_u *get_user_cmd_flags __ARGS((expand_T *xp, int idx));
 char_u *get_user_cmd_nargs __ARGS((expand_T *xp, int idx));
 char_u *get_user_cmd_complete __ARGS((expand_T *xp, int idx));
+int parse_compl_arg __ARGS((char_u *value, int vallen, int *complp, long *argt, char_u **compl_arg));
 void not_exiting __ARGS((void));
 void handle_drop __ARGS((int filec, char_u **filev, int split));
 void alist_clear __ARGS((alist_T *al));

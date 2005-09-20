@@ -668,18 +668,18 @@ ex_diffupdate(eap)
     for (;;)
     {
 	ok = FALSE;
-	fd = fopen((char *)tmp_orig, "w");
+	fd = mch_fopen((char *)tmp_orig, "w");
 	if (fd != NULL)
 	{
 	    fwrite("line1\n", (size_t)6, (size_t)1, fd);
 	    fclose(fd);
-	    fd = fopen((char *)tmp_new, "w");
+	    fd = mch_fopen((char *)tmp_new, "w");
 	    if (fd != NULL)
 	    {
 		fwrite("line2\n", (size_t)6, (size_t)1, fd);
 		fclose(fd);
 		diff_file(tmp_orig, tmp_new, tmp_diff);
-		fd = fopen((char *)tmp_diff, "r");
+		fd = mch_fopen((char *)tmp_diff, "r");
 		if (fd != NULL)
 		{
 		    char_u	linebuf[LBUFLEN];
@@ -1144,7 +1144,7 @@ diff_read(idx_orig, idx_new, fname)
     long	count_orig, count_new;
     int		notset = TRUE;	    /* block "*dp" not set yet */
 
-    fd = fopen((char *)fname, "r");
+    fd = mch_fopen((char *)fname, "r");
     if (fd == NULL)
     {
 	EMSG(_("E98: Cannot read diff output"));

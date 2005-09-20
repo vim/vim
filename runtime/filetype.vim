@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Aug 29
+" Last Change:	2005 Sep 19
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -1881,6 +1881,9 @@ au StdinReadPost * if !did_filetype() | runtime! scripts.vim | endif
 " script file.
 " Most of these should call s:StarSetf() to avoid names ending in .gz and the
 " like are used.
+
+" Asterisk config file
+au BufNewFile,BufRead *asterisk/*.conf*         call s:StarSetf('asterisk')
 
 " BIND zone
 au BufNewFile,BufRead /var/named/*		call s:StarSetf('bindzone')

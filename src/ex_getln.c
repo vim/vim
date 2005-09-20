@@ -31,6 +31,11 @@ struct cmdline_info
     int		cmdattr;	/* attributes for prompt */
     int		overstrike;	/* Typing mode on the command line.  Shared by
 				   getcmdline() and put_on_cmdline(). */
+    int		xp_context;	/* type of expansion */
+# ifdef FEAT_EVAL
+    char_u	*xp_arg;	/* user-defined expansion arg */
+    int		input_fn;	/* Invoked for input() function */
+# endif
 };
 
 static struct cmdline_info ccline;	/* current cmdline_info */
@@ -254,6 +259,15 @@ getcmdline(firstc, count, indent)
     xpc.xp_context = EXPAND_NOTHING;
     xpc.xp_backslash = XP_BS_NONE;
 
+#if defined(FEAT_EVAL)
+    if (ccline.input_fn)
+    {
+	xpc.xp_context = ccline.xp_context;
+	xpc.xp_pattern = ccline.cmdbuff;
+	xpc.xp_arg = ccline.xp_arg;
+    }
+#endif
+
     /*
      * Avoid scrolling when called by a recursive do_cmdline(), e.g. when
      * doing ":@0" when register 0 doesn't contain a CR.
@@ -414,6 +428,13 @@ getcmdline(firstc, count, indent)
 	    if (p_wmnu && wild_menu_showing != 0)
 	    {
 		int skt = KeyTyped;
+		int old_RedrawingDisabled;
+
+		if (ccline.input_fn)
+		{
+		    old_RedrawingDisabled = RedrawingDisabled;
+		    RedrawingDisabled = 0;
+		}
 
 		if (wild_menu_showing == WM_SCROLLED)
 		{
@@ -442,6 +463,8 @@ getcmdline(firstc, count, indent)
 # endif
 		    redraw_statuslines();
 		}
+		if (ccline.input_fn)
+		    RedrawingDisabled = old_RedrawingDisabled;
 		KeyTyped = skt;
 		wild_menu_showing = 0;
 	    }
@@ -1791,10 +1814,12 @@ returncmd:
  * Returns the command line in allocated memory, or NULL.
  */
     char_u *
-getcmdline_prompt(firstc, prompt, attr)
+getcmdline_prompt(firstc, prompt, attr, xp_context, xp_arg)
     int		firstc;
     char_u	*prompt;	/* command line prompt */
     int		attr;		/* attributes for prompt */
+    int		xp_context;	/* type of expansion */
+    char_u	*xp_arg;	/* user-defined expansion argument */
 {
     char_u		*s;
     struct cmdline_info	save_ccline;
@@ -1803,6 +1828,11 @@ getcmdline_prompt(firstc, prompt, attr)
     save_cmdline(&save_ccline);
     ccline.cmdprompt = prompt;
     ccline.cmdattr = attr;
+# ifdef FEAT_EVAL
+    ccline.xp_context = xp_context;
+    ccline.xp_arg = xp_arg;
+    ccline.input_fn = (firstc == '@');
+# endif
     s = getcmdline(firstc, 1L, 0);
     restore_cmdline(&save_ccline);
     /* Restore msg_col, the prompt from input() may have changed it. */
@@ -1830,7 +1860,7 @@ cmdline_charsize(idx)
     static void
 set_cmdspos()
 {
-    if (ccline.cmdfirstc)
+    if (ccline.cmdfirstc != NUL)
 	ccline.cmdspos = 1 + ccline.cmdindent;
     else
 	ccline.cmdspos = 0 + ccline.cmdindent;
@@ -2222,7 +2252,7 @@ redrawcmd_preedit()
 
 	old_row = msg_row;
 	old_col = msg_col;
-	cmdspos = ((ccline.cmdfirstc) ? 1 : 0) + ccline.cmdindent;
+	cmdspos = ((ccline.cmdfirstc != NUL) ? 1 : 0) + ccline.cmdindent;
 
 # ifdef FEAT_MBYTE
 	if (has_mbyte)
@@ -2813,14 +2843,14 @@ redrawcmdprompt()
 
     if (cmd_silent)
 	return;
-    if (ccline.cmdfirstc)
+    if (ccline.cmdfirstc != NUL)
 	msg_putchar(ccline.cmdfirstc);
     if (ccline.cmdprompt != NULL)
     {
 	msg_puts_attr(ccline.cmdprompt, ccline.cmdattr);
 	ccline.cmdindent = msg_col + (msg_row - cmdline_row) * Columns;
 	/* do the reverse of set_cmdspos() */
-	if (ccline.cmdfirstc)
+	if (ccline.cmdfirstc != NUL)
 	    --ccline.cmdindent;
     }
     else
@@ -3843,6 +3873,7 @@ set_expand_context(xp)
     if (ccline.cmdfirstc != ':'
 #ifdef FEAT_EVAL
 	    && ccline.cmdfirstc != '>' && ccline.cmdfirstc != '='
+	    && !ccline.input_fn
 #endif
 	    )
     {
@@ -3875,6 +3906,12 @@ set_cmd_context(xp, str, len, col)
     if (ccline.cmdfirstc == '=')
 	/* pass CMD_SIZE because there is no real command */
 	set_context_for_expression(xp, str, CMD_SIZE);
+    else if (ccline.input_fn)
+    {
+	xp->xp_context = ccline.xp_context;
+	xp->xp_pattern = ccline.cmdbuff;
+	xp->xp_arg = ccline.xp_arg;
+    }
     else
 #endif
 	while (nextcomm != NULL)
@@ -4835,6 +4872,22 @@ set_cmdline_pos(pos)
     else
 	new_cmdpos = pos;
     return 0;
+}
+
+/*
+ * Get the current command-line type.
+ * Returns ':' or '/' or '?' or '@' or '>'
+ * Only works when the command line is being edited.
+ * Returns NUL when something is wrong.
+ */
+    int
+get_cmdline_type()
+{
+    struct cmdline_info *p = get_ccline_ptr();
+
+    if (p == NULL)
+	return NUL;
+    return p->cmdfirstc;
 }
 
 /*

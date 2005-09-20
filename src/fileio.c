@@ -3483,12 +3483,11 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 		}
 		if (backup != NULL)
 		{
-
 		    /*
-		     * Delete any existing backup and move the current version to
-		     * the backup.	For safety, we don't remove the backup until
-		     * the write has finished successfully. And if the 'backup'
-		     * option is set, leave it around.
+		     * Delete any existing backup and move the current version
+		     * to the backup.	For safety, we don't remove the backup
+		     * until the write has finished successfully. And if the
+		     * 'backup' option is set, leave it around.
 		     */
 		    /*
 		     * If the renaming of the original file to the backup file

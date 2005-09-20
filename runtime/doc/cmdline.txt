@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 7.0aa.  Last change: 2005 Jul 05
+*cmdline.txt*   For Vim version 7.0aa.  Last change: 2005 Sep 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -153,6 +153,7 @@ CTRL-R {0-9a-z"%#:-=.}					*c_CTRL-R* *c_<C-R>*
 							*c_CTRL-R_=*
 			'='	the expression register: you are prompted to
 				enter an expression (see |expression|)
+				(doesn't work at the expression prompt)
 		See |registers| about registers.  {not in Vi}
 		Implementation detail: When using the |expression| register
 		and invoking setcmdpos(), this sets the position before
@@ -191,7 +192,8 @@ CTRL-\ e {expr}						*c_CTRL-\_e*
 		to finish it.  It's most useful in mappings though.  See
 		|expression|.
 		See |c_CTRL-R_=| for inserting the result of an expression.
-		Useful functions are |getcmdline()| and |getcmdpos()|.
+		Useful functions are |getcmdtype()|, |getcmdline()| and
+		|getcmdpos()|.
 		The cursor position is unchanged, except when the cursor was
 		at the end of the line, then it stays at the end.
 		|setcmdpos()| can be used to set the cursor position.
@@ -203,7 +205,9 @@ CTRL-\ e {expr}						*c_CTRL-\_e*
 			   :call setcmdpos(strlen(cmd))
 			   :return cmd
 			:endfunc
-<
+<		This doesn't work recursively, thus not when already editing
+		an expression.
+
 							*c_CTRL-Y*
 CTRL-Y		When there is a modeless selection, copy the selection into
 		the clipboard. |modeless-selection|

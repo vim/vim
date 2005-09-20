@@ -3512,7 +3512,8 @@ get_crypt_key(store, twice)
 	cmdline_row = msg_row;
 	p1 = getcmdline_prompt(NUL, round == 0
 		? (char_u *)_("Enter encryption key: ")
-		: (char_u *)_("Enter same key again: "), 0);
+		: (char_u *)_("Enter same key again: "), 0, EXPAND_NOTHING,
+		NULL);
 	cmdline_star = FALSE;
 
 	if (p1 == NULL)

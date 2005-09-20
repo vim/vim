@@ -1,5 +1,5 @@
 *** en_US.orig.aff	Fri Apr 15 13:20:36 2005
---- en_US.aff	Sun Jul 31 22:17:40 2005
+--- en_US.aff	Tue Sep 20 19:41:00 2005
 ***************
 *** 3,4 ****
 --- 3,134 ----
@@ -165,12 +165,35 @@
 ! SFX G   0     ing        [^e]
   
 ***************
+*** 99,101 ****
+  
+! REP 88
+  REP a ei
+--- 229,231 ----
+  
+! REP 91
+  REP a ei
+***************
 *** 137,138 ****
 --- 267,270 ----
   REP uy i
 + REP y ie
 + REP ie y
   REP i ee
+***************
+*** 174,175 ****
+--- 306,308 ----
+  REP ew ue
++ REP uf ough
+  REP uff ough
+***************
+*** 188 ****
+--- 321,325 ----
+  REP shun cion
++ REP the_the the
++ REP an_an an
++ REP an_a a
++ REP a_an an
 *** en_US.orig.dic	Fri Apr 15 13:20:36 2005
 --- en_US.dic	Tue Aug 16 17:03:31 2005
 ***************

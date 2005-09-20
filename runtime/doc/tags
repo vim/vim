@@ -4992,6 +4992,7 @@ ft-fvwm-syntax	syntax.txt	/*ft-fvwm-syntax*
 ft-groff-syntax	syntax.txt	/*ft-groff-syntax*
 ft-gsp-syntax	syntax.txt	/*ft-gsp-syntax*
 ft-haskell-syntax	syntax.txt	/*ft-haskell-syntax*
+ft-html-omni	insert.txt	/*ft-html-omni*
 ft-html-syntax	syntax.txt	/*ft-html-syntax*
 ft-htmlos-syntax	syntax.txt	/*ft-htmlos-syntax*
 ft-ia64-syntax	syntax.txt	/*ft-ia64-syntax*
@@ -5163,6 +5164,7 @@ getchar()	eval.txt	/*getchar()*
 getcharmod()	eval.txt	/*getcharmod()*
 getcmdline()	eval.txt	/*getcmdline()*
 getcmdpos()	eval.txt	/*getcmdpos()*
+getcmdtype()	eval.txt	/*getcmdtype()*
 getcwd()	eval.txt	/*getcwd()*
 getfontname()	eval.txt	/*getfontname()*
 getfperm()	eval.txt	/*getfperm()*
@@ -5294,6 +5296,7 @@ hebrew	hebrew.txt	/*hebrew*
 hebrew.txt	hebrew.txt	/*hebrew.txt*
 help	various.txt	/*help*
 help-context	help.txt	/*help-context*
+help-tags	tags	1
 help-translated	various.txt	/*help-translated*
 help-xterm-window	various.txt	/*help-xterm-window*
 help.txt	help.txt	/*help.txt*
@@ -7319,6 +7322,13 @@ zf	fold.txt	/*zf*
 zg	spell.txt	/*zg*
 zh	scroll.txt	/*zh*
 zi	fold.txt	/*zi*
+zip	zip.txt	/*zip*
+zip-contents	zip.txt	/*zip-contents*
+zip-copyright	zip.txt	/*zip-copyright*
+zip-history	zip.txt	/*zip-history*
+zip-manual	zip.txt	/*zip-manual*
+zip-usage	zip.txt	/*zip-usage*
+zip.txt	zip.txt	/*zip.txt*
 zj	fold.txt	/*zj*
 zk	fold.txt	/*zk*
 zl	scroll.txt	/*zl*

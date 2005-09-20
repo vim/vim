@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Sep 16
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Sep 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -31,6 +31,20 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 -------------------- Known bugs and current work -----------------------
 
 Test11 fails sometimes. (athena, huge features)
+
+ml_get errors: :%s/^\_s\+$//gc
+And: Insert mode in one window, long file, click in other window, short file.
+
+'scrolljump' negative used as a percentage, e.g. -50 is 50% of window height?
+
+Spelling:
+- suggestion for "a an" includes "an an", which is marked bad.  Check
+  suggestions for not being a bad word (when split)?
+- CTRL-X s doesn't consider 'spellcapcheck'.
+- Have spellbadword() return a list with bad word and reason it's bad?
+  (rare/local/bad/caps)
+- spellsuggest() needs a way to require a capital.  A flag or context?
+- Underscore in REP items stands for space.
 
 ccomplete:
 - How to use a popup menu?
@@ -1726,7 +1740,6 @@ Built-in script language:
 	filecopy(from, to)	Copy a file
 	shorten(fname)		shorten a file name, like home_replace()
 	perl(cmd)		call Perl and return string
-	input(prompt, complete)	like input() but do specified completion
 	inputrl()		like input() but right-to-left
 	virtualmode()		add argument to obtain whether "$" was used in
 				Visual block mode.

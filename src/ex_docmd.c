@@ -5267,66 +5267,15 @@ invalid_count:
 	}
 	else if (STRNICMP(attr, "complete", attrlen) == 0)
 	{
-	    char_u	*arg = NULL;
-	    size_t	arglen = 0;
-
 	    if (val == NULL)
 	    {
-		EMSG(_("E179: argument required for complete"));
+		EMSG(_("E179: argument required for -complete"));
 		return FAIL;
-	    }
-	    /* Look for any argument part - which is the part after any ',' */
-	    for (i = 0; i < (int)vallen; ++i)
-	    {
-		if (val[i] == ',')
-		{
-		    arg = &val[i + 1];
-		    arglen = vallen - i - 1;
-		    vallen = i;
-		    break;
-		}
 	    }
 
-	    for (i = 0; command_complete[i].expand != 0; ++i)
-	    {
-		if (STRLEN(command_complete[i].name) == vallen
-			&& STRNCMP(val, command_complete[i].name, vallen) == 0)
-		{
-		    *compl = command_complete[i].expand;
-		    if (command_complete[i].expand == EXPAND_BUFFERS)
-			*argt |= BUFNAME;
-		    else if (command_complete[i].expand == EXPAND_DIRECTORIES
-			    || command_complete[i].expand == EXPAND_FILES)
-			*argt |= XFILE;
-		    break;
-		}
-	    }
-
-	    if (command_complete[i].expand == 0)
-	    {
-		EMSG2(_("E180: Invalid complete value: %s"), val);
+	    if (parse_compl_arg(val, (int)vallen, compl, argt, compl_arg)
+								      == FAIL)
 		return FAIL;
-	    }
-#if defined(FEAT_EVAL) && defined(FEAT_CMDL_COMPL)
-	    if (*compl != EXPAND_USER_DEFINED && *compl != EXPAND_USER_LIST &&
-		arg != NULL)
-#else
-	    if (arg != NULL)
-#endif
-	    {
-		EMSG(_("E468: Completion argument only allowed for custom completion"));
-		return FAIL;
-	    }
-#if defined(FEAT_EVAL) && defined(FEAT_CMDL_COMPL)
-	    if ((*compl == EXPAND_USER_DEFINED || *compl == EXPAND_USER_LIST) &&
-		arg == NULL)
-	    {
-		EMSG(_("E467: Custom completion requires a function argument"));
-		return FAIL;
-	    }
-	    if (arg != NULL)
-		*compl_arg = vim_strnsave(arg, (int)arglen);
-#endif
 	}
 	else
 	{
@@ -5913,6 +5862,86 @@ get_user_cmd_complete(xp, idx)
 # endif /* FEAT_CMDL_COMPL */
 
 #endif	/* FEAT_USR_CMDS */
+
+#if defined(FEAT_USR_CMDS) || defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * Parse a completion argument "value[vallen]".
+ * The detected completion goes in "*complp", argument type in "*argt".
+ * When there is an argument, for function and user defined completion, it's
+ * copied to allocated memory and stored in "*compl_arg".
+ * Returns FAIL if something is wrong.
+ */
+    int
+parse_compl_arg(value, vallen, complp, argt, compl_arg)
+    char_u	*value;
+    int		vallen;
+    int		*complp;
+    long	*argt;
+    char_u	**compl_arg;
+{
+    char_u	*arg = NULL;
+    size_t	arglen = 0;
+    int		i;
+    int		valend = vallen;
+
+    /* Look for any argument part - which is the part after any ',' */
+    for (i = 0; i < vallen; ++i)
+    {
+	if (value[i] == ',')
+	{
+	    arg = &value[i + 1];
+	    arglen = vallen - i - 1;
+	    valend = i;
+	    break;
+	}
+    }
+
+    for (i = 0; command_complete[i].expand != 0; ++i)
+    {
+	if (STRLEN(command_complete[i].name) == valend
+		&& STRNCMP(value, command_complete[i].name, valend) == 0)
+	{
+	    *complp = command_complete[i].expand;
+	    if (command_complete[i].expand == EXPAND_BUFFERS)
+		*argt |= BUFNAME;
+	    else if (command_complete[i].expand == EXPAND_DIRECTORIES
+		    || command_complete[i].expand == EXPAND_FILES)
+		*argt |= XFILE;
+	    break;
+	}
+    }
+
+    if (command_complete[i].expand == 0)
+    {
+	EMSG2(_("E180: Invalid complete value: %s"), value);
+	return FAIL;
+    }
+
+# if defined(FEAT_EVAL) && defined(FEAT_CMDL_COMPL)
+    if (*complp != EXPAND_USER_DEFINED && *complp != EXPAND_USER_LIST
+							       && arg != NULL)
+# else
+    if (arg != NULL)
+# endif
+    {
+	EMSG(_("E468: Completion argument only allowed for custom completion"));
+	return FAIL;
+    }
+
+# if defined(FEAT_EVAL) && defined(FEAT_CMDL_COMPL)
+    if ((*complp == EXPAND_USER_DEFINED || *complp == EXPAND_USER_LIST)
+							       && arg == NULL)
+    {
+	EMSG(_("E467: Custom completion requires a function argument"));
+	return FAIL;
+    }
+
+    if (arg != NULL)
+	*compl_arg = vim_strnsave(arg, (int)arglen);
+# endif
+    return OK;
+}
+#endif
 
     static void
 ex_colorscheme(eap)

@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Sep 15
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Sep 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1520,6 +1520,7 @@ getcharmod( )			Number	modifiers for the last typed character
 getbufvar( {expr}, {varname})		variable {varname} in buffer {expr}
 getcmdline()			String	return the current command-line
 getcmdpos()			Number	return cursor position in command-line
+getcmdtype()			String	return the current command-line type
 getcwd()			String	the current working directory
 getfperm( {fname})		String	file permissions of file {fname}
 getfsize( {fname})		Number	size in bytes of file {fname}
@@ -1550,7 +1551,8 @@ iconv( {expr}, {from}, {to})	String	convert encoding of {expr}
 indent( {lnum})			Number	indent of line {lnum}
 index( {list}, {expr} [, {start} [, {ic}]])
 				Number	index in {list} where {expr} appears
-input( {prompt} [, {text}])	String	get input from the user
+input( {prompt} [, {text} [, {completion}]])
+				String	get input from the user
 inputdialog( {p} [, {t} [, {c}]]) String  like input() but in a GUI dialog
 inputrestore()			Number	restore typeahead
 inputsave()			Number	save and clear typeahead
@@ -2533,14 +2535,27 @@ getcmdline()						*getcmdline()*
 		|c_CTRL-R_=|.
 		Example: >
 			:cmap <F7> <C-\>eescape(getcmdline(), ' \')<CR>
-<		Also see |getcmdpos()| and |setcmdpos()|.
+<		Also see |getcmdtype()|, |getcmdpos()| and |setcmdpos()|.
 
 getcmdpos()						*getcmdpos()*
 		Return the position of the cursor in the command line as a
 		byte count.  The first column is 1.
 		Only works when editing the command line, thus requires use of
 		|c_CTRL-\_e| or |c_CTRL-R_=|.  Returns 0 otherwise.
-		Also see |setcmdpos()| and |getcmdline()|.
+		Also see |getcmdtype()|, |setcmdpos()| and |getcmdline()|.
+
+getcmdtype()						*getcmdtype()*
+		Return the current command-line type. Possible return values
+		are:
+		    /	Search forward command
+		    ?	Search backward command
+		    :	Ex-command mode
+		    @	Input mode
+		    >	Debug mode
+		Only works when editing the command line, thus requires use of
+		|c_CTRL-\_e| or |c_CTRL-R_=|.  Returns an empty string
+		otherwise.
+		Also see |getcmdpos()|, |setcmdpos()| and |getcmdline()|.
 
 							*getcwd()*
 getcwd()	The result is a String, which is the name of the current
@@ -2910,19 +2925,34 @@ index({list}, {expr} [, {start} [, {ic}]])			*index()*
 			:if index(numbers, 123) >= 0
 
 
-input({prompt} [, {text}])				*input()*
+input({prompt} [, {text} [, {completion}]])		*input()*
 		The result is a String, which is whatever the user typed on
 		the command-line.  The parameter is either a prompt string, or
 		a blank string (for no prompt).  A '\n' can be used in the
-		prompt to start a new line.  The highlighting set with
-		|:echohl| is used for the prompt.  The input is entered just
-		like a command-line, with the same editing commands and
-		mappings.  There is a separate history for lines typed for
-		input().
+		prompt to start a new line.
+		The highlighting set with |:echohl| is used for the prompt.
+		The input is entered just like a command-line, with the same
+		editing commands and mappings.  There is a separate history
+		for lines typed for input().
+		Example: >
+			:if input("Coffee or beer? ") == "beer"
+			:  echo "Cheers!"
+			:endif
+<
 		If the optional {text} is present, this is used for the
-		default reply, as if the user typed this.
-		NOTE: This must not be used in a startup file, for the
-		versions that only run in GUI mode (e.g., the Win32 GUI).
+		default reply, as if the user typed this.  Example: >
+			:let color = input("Color? ", "white")
+
+<		The optional {completion} argument specifies the type of
+		completion supported for the input.  Without it completion is
+		not performed.  The supported completion types are the same as
+		that can be supplied to a user-defined command using the
+		"-complete=" argument.  Refer to |:command-completion| for
+		more information.  Example: >
+			let fname = input("File: ", "", "file")
+<
+		NOTE: This function must not be used in a startup file, for
+		the versions that only run in GUI mode (e.g., the Win32 GUI).
 		Note: When input() is called from within a mapping it will
 		consume remaining characters from that mapping, because a
 		mapping is handled like the characters were typed.
@@ -2931,13 +2961,7 @@ input({prompt} [, {text}])				*input()*
 		that further characters follow in the mapping, e.g., by using
 		|:execute| or |:normal|.
 
-		Example: >
-			:if input("Coffee or beer? ") == "beer"
-			:  echo "Cheers!"
-			:endif
-<		Example with default text: >
-			:let color = input("Color? ", "white")
-<		Example with a mapping: >
+		Example with a mapping: >
 			:nmap \x :call GetFoo()<CR>:exe "/" . Foo<CR>
 			:function GetFoo()
 			:  call inputsave()
@@ -2957,6 +2981,7 @@ inputdialog({prompt} [, {text} [, {cancelreturn}]])		*inputdialog()*
 		omitted an empty string is returned.
 		Hitting <Enter> works like pressing the OK button.  Hitting
 		<Esc> works like pressing the Cancel button.
+		NOTE: Command-line completion is not supported.
 
 inputlist({textlist})					*inputlist()*
 		{textlist} must be a list of strings.  This list is displayed,
@@ -2996,6 +3021,7 @@ inputsecret({prompt} [, {text}])			*inputsecret()*
 		|history| stack.
 		The result is a String, which is whatever the user actually
 		typed on the command-line in response to the issued prompt.
+		NOTE: Command-line completion is not supported.
 
 insert({list}, {item} [, {idx}])			*insert()*
 		Insert {item} at the start of List {list}.
@@ -4450,6 +4476,8 @@ winheight({nr})						*winheight()*
 winline()	The result is a Number, which is the screen line of the cursor
 		in the window.  This is counting screen lines from the top of
 		the window.  The first line is one.
+		If the cursor was moved the view on the file will be updated
+		first, this may cause a scroll.
 
 							*winnr()*
 winnr([{arg}])	The result is a Number, which is the number of the current

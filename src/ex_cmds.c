@@ -5688,7 +5688,7 @@ fix_help_buffer()
 			{
 			    for (fi = 0; fi < fcount; ++fi)
 			    {
-				fd = fopen((char *)fnames[fi], "r");
+				fd = mch_fopen((char *)fnames[fi], "r");
 				if (fd != NULL)
 				{
 				    vim_fgets(IObuff, IOSIZE, fd);
@@ -5953,7 +5953,7 @@ helptags_one(dir, ext, tagfname)
     STRCPY(NameBuff, dir);
     add_pathsep(NameBuff);
     STRCAT(NameBuff, tagfname);
-    fd_tags = fopen((char *)NameBuff, "w");
+    fd_tags = mch_fopen((char *)NameBuff, "w");
     if (fd_tags == NULL)
     {
 	EMSG2(_("E152: Cannot open %s for writing"), NameBuff);
@@ -5988,7 +5988,7 @@ helptags_one(dir, ext, tagfname)
      */
     for (fi = 0; fi < filecount && !got_int; ++fi)
     {
-	fd = fopen((char *)files[fi], "r");
+	fd = mch_fopen((char *)files[fi], "r");
 	if (fd == NULL)
 	{
 	    EMSG2(_("E153: Unable to open %s for reading"), files[fi]);

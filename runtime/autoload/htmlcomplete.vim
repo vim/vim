@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	XHTML 1.0 Strict
 " Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
-" Last Change:	2005 Sep 15
+" Last Change:	2005 Sep 19
 
 function! htmlcomplete#CompleteTags(findstart, base)
   if a:findstart
@@ -11,26 +11,53 @@ function! htmlcomplete#CompleteTags(findstart, base)
     while start >= 0 && line[start - 1] !~ '<'
       let start -= 1
     endwhile
+	if start < 0
+		let curpos = line('.')
+		let stylestart = searchpair('<style\>', '', '<\/style\>', "bnW")
+		let styleend   = searchpair('<style\>', '', '<\/style\>', "nW")
+		if stylestart != 0 && styleend != 0 
+			if stylestart <= curpos && styleend >= curpos
+				let b:csscompl = 1
+				let start = 0
+			endif
+		endif
+	endif
     return start
   else
+	" Check if we should do CSS completion inside of <style> tag
+	if exists("b:csscompl")
+		unlet! b:csscompl
+		return csscomplete#CompleteCSS(0, a:base)
+	endif
+	if a:base =~ '>'
+		" Generally if a:base contains > it means we are outside of tag and
+		" should abandon action - with one exception: <style> span { bo
+		if a:base =~ 'style[^>]\{-}>[^<]\{-}$'
+			return csscomplete#CompleteCSS(0, a:base)
+		else
+			return []
+		endif
+	endif
+
 	" Set attribute groups
-    let g:coreattrs = ["id", "class", "style", "title"] 
-    let g:i18n = ["lang", "xml:lang", "dir"]
-    let g:events = ["onclick", "ondblclick", "onmousedown", "onmouseup", "onmousemove",
+    let coreattrs = ["id", "class", "style", "title"] 
+    let i18n = ["lang", "xml:lang", "dir=\"ltr\" ", "dir=\"rtl\" "]
+    let events = ["onclick", "ondblclick", "onmousedown", "onmouseup", "onmousemove",
     			\ "onmouseout", "onkeypress", "onkeydown", "onkeyup"]
-    let g:focus = ["accesskey", "tabindex", "onfocus", "onblur"]
-    let g:coregroup = g:coreattrs
-    let g:coregroup = extend(g:coregroup, g:i18n)
-    let g:coregroup = extend(g:coregroup, g:events)
-    " find tags matching with "a:base"
+    let focus = ["accesskey", "tabindex", "onfocus", "onblur"]
+    let coregroup = coreattrs + i18n + events
     let res = []
+    let res2 = []
+    " find tags matching with "a:base"
 	" If a:base contains > it means we are already outside of tag and we
 	" should abandon action
-	if a:base =~ '>'
-		return []
-	endif
 	" If a:base contains white space it is attribute. 
 	" It could be also value of attribute...
+	" We have to get first word to offer
+	" proper completions
+	let tag = split(a:base)[0]
+	" Get last word, it should be attr name
+	let attr = matchstr(a:base, '.*\s\zs.*')
 	" Possible situations where any prediction would be difficult:
 	" 1. Events attributes
 	if a:base =~ '\s'
@@ -40,6 +67,113 @@ function! htmlcomplete#CompleteTags(findstart, base)
 		" Also retrieving class names from current file and linked
 		" stylesheets.
 		if a:base =~ "\\(on[a-z]*\\|style\\|class\\)\\s*=\\s*[\"']"
+			if a:base =~ "class\\s*=\\s*[\"'][a-zA-Z0-9_ -]*$"
+				" Handle class name completion
+				" 1. Find lines of <link stylesheet>
+				" 1a. Check file for @import
+				" 2. Extract filename(s?) of stylesheet,
+				call cursor(1,1)
+				let head = getline(search('<head\>'), search('<\/head>'))
+				let headjoined = join(copy(head), ' ')
+				if headjoined =~ '<style'
+					let stylehead = substitute(headjoined, '+>\*[', ' ', 'g')
+					let styleheadlines = split(stylehead)
+					let headclasslines = filter(copy(styleheadlines), "v:val =~ '\\([a-zA-Z0-9:]\\+\\)\\?\\.[a-zA-Z0-9_-]\\+'")
+					let internal = 1
+				else
+					let internal = 0
+				endif
+				let styletable = []
+				let secimportfiles = []
+				let filestable = filter(copy(head), "v:val =~ '\\(@import\\|link.*stylesheet\\)'")
+				for line in filestable
+					if line =~ "@import"
+						let styletable += [matchstr(line, "import\\s\\+\\(url(\\)\\?[\"']\\?\\zs\\f\\+\\ze")]
+					elseif line =~ "<link"
+						let styletable += [matchstr(line, "href\\s*=\\s*[\"']\\zs\\f\\+\\ze")]
+					endif
+				endfor
+				for file in filestable
+					if filereadable(file)
+						let stylesheet = readfile(file)
+						let secimport = filter(copy(stylesheet), "v:val =~ '@import'")
+						if len(secimport) > 0
+							for line in secimport
+								let secimportfiles += [matchstr(line, "import\\s\\+\\(url(\\)\\?[\"']\\?\\zs\\f\\+\\ze")]
+							endfor
+						endif
+					endif
+				endfor
+				let cssfiles = styletable + secimportfiles
+				let classes = []
+				for file in cssfiles
+					if filereadable(file)
+						let stylesheet = readfile(file)
+						let stylefile = join(stylesheet)
+						let stylefile = substitute(stylefile, '+>\*[', ' ', 'g')
+						let stylesheet = split(stylefile)
+						let classlines = filter(copy(stylesheet), "v:val =~ '\\([a-zA-Z0-9:]\\+\\)\\?\\.[a-zA-Z0-9_-]\\+'")
+					endif
+					" We gathered classes definitions from all external files
+					let classes += classlines
+				endfor
+				if internal == 1
+					let classes += headclasslines
+				endif
+				let elements = {}
+				for element in classes
+					if element =~ '^\.'
+						let class = matchstr(element, '^\.\zs[a-zA-Z][a-zA-Z0-9_-]*\ze')
+						let class = substitute(class, ':.*', '', '')
+						if has_key(elements, "common")
+							let elements["common"] .= " ".class
+						else
+							let elements["common"] = class
+						endif
+					else
+						let class = matchstr(element, '[a-zA-Z1-6]*\.\zs[a-zA-Z][a-zA-Z0-9_-]*\ze')
+						let tagname = tolower(matchstr(element, '[a-zA-Z1-6]*\ze.'))
+						if tagname != ''
+							if has_key(elements, tagname)
+								let elements[tagname] .= " ".class
+							else
+								let elements[tagname] = class
+							endif
+						endif
+					endif
+				endfor
+
+				if has_key(elements, tag) && has_key(elements, "common")
+					let values = split(elements[tag]." ".elements["common"])
+				elseif has_key(elements, tag) && !has_key(elements, "common")
+					let values = split(elements[tag])
+				elseif !has_key(elements, tag) && has_key(elements, "common")
+					let values = split(elements["common"])
+				else
+					return []
+				endif
+
+				" We need special version of sbase
+				let classbase = matchstr(a:base, ".*[\"']")
+			    let classquote = matchstr(classbase, '.$')
+
+
+				let entered_class = matchstr(attr, ".*=\\s*[\"']\\zs.*")
+
+				for m in sort(values)
+					if m =~? '^'.entered_class
+						call add(res, classbase . m . classquote . ' ')
+					elseif m =~? entered_class
+						call add(res2, classbase . m . classquote . ' ')
+					endif
+				endfor
+
+				return res + res2
+
+			elseif a:base =~ "style\\s*=\\s*[\"'][^\"']*$"
+				return csscomplete#CompleteCSS(0, a:base)
+
+			endif
 			let stripbase = matchstr(a:base, ".*\\(on[a-z]*\\|style\\|class\\)\\s*=\\s*[\"']\\zs.*")
 			" Now we have a:base stripped from all chars up to style/class.
 			" It may fail with some strange style value combinations.
@@ -47,11 +181,6 @@ function! htmlcomplete#CompleteTags(findstart, base)
 				return []
 			endif
 		endif
-		" We have to get first word to offer
-		" proper attributes.
-		let tag = split(a:base)[0]
-		" Get last word, it should be attr name
-		let attr = matchstr(a:base, '.*\s\zs.*')
 		" If attr contains =\s*[\"'] we catched value of attribute
 		if attr =~ "=\s*[\"']"
 			" Let do attribute specific completion
@@ -97,7 +226,7 @@ function! htmlcomplete#CompleteTags(findstart, base)
 				endif
 			elseif attrname == 'type'
 				if a:base =~ '^input'
-					let values = ["input-text", "password", "checkbox", "radio", "submit", "reset", "input-file", "hidden", "input-image", "input-button"]
+					let values = ["text", "password", "checkbox", "radio", "submit", "reset", "file", "hidden", "image", "button"]
 				elseif a:base =~ '^button'
 					let values = ["button", "submit", "reset"]
 				endif
@@ -111,128 +240,114 @@ function! htmlcomplete#CompleteTags(findstart, base)
 
 			" We need special version of sbase
 			let attrbase = matchstr(a:base, ".*[\"']")
+			let attrquote = matchstr(attrbase, '.$')
 
 			for m in values
-				if m =~ entered_value
-					call add(res, attrbase . m . '" ')
+				" This if is needed to not offer all completions as-is
+				" alphabetically but sort them. Those beginning with entered
+				" part will be as first choices
+				if m =~ '^'.entered_value
+					call add(res, attrbase . m . attrquote.' ')
+				elseif m =~ entered_value
+					call add(res2, attrbase . m . attrquote.' ')
 				endif
 			endfor
+
+			return res + res2
+
 		endif
 		" Shorten a:base to not include last word
 		let sbase = matchstr(a:base, '.*\ze\s.*')
 		if tag =~ '^\(abbr\|acronym\|b\|bdo\|big\|caption\|cite\|code\|dd\|dfn\|div\|dl\|dt\|em\|fieldset\|h\d\|kbd\|li\|noscript\|ol\|p\|samp\|small\|span\|strong\|sub\|sup\|tt\|ul\|var\)$'
-			let attrs = g:coregroup
+			let attrs = coregroup
 		elseif tag == 'a'
-			let tagspec = ["charset", "type", "name", "href", "hreflang", "rel", "rev", "shape", "coords"]
-			let attrs = extend(tagspec, g:coregroup)
-			let attrs = extend(attrs, g:focus)
+			let attrs = coregroup + focus + ["charset", "type", "name", "href", "hreflang", "rel", "rev", "shape", "coords"]
 		elseif tag == 'area'
-			let attrs = g:coregroup
+			let attrs = coregroup
 		elseif tag == 'base'
 			let attrs = ["href", "id"]
 		elseif tag == 'blockquote'
-			let attrs = g:coregroup
-			let attrs = extend(attrs, ["cite"])
+			let attrs = coregroup + ["cite"]
 		elseif tag == 'body'
-			let attrs = g:coregroup
-			let attrs = extend(attrs, ["onload", "onunload"])
+			let attrs = coregroup + ["onload", "onunload"]
 		elseif tag == 'br'
-			let attrs = g:coreattrs
+			let attrs = coreattrs
 		elseif tag == 'button'
-			let attrs = g:coreattrs
-			let attrs = extend(attrs, g:focus)
-			let attrs = extend(attrs, ["name", "value", "type"])
+			let attrs = coreattrs + focus + ["name", "value", "type"]
 		elseif tag == '^\(col\|colgroup\)$'
-			let attrs = g:coreattrs
-			let attrs = extend(attrs, ["span", "width", "align", "char", "charoff", "valign"])
+			let attrs = coreattrs + ["span", "width", "align", "char", "charoff", "valign"]
 		elseif tag =~ '^\(del\|ins\)$'
-			let attrs = g:coreattrs
-			let attrs = extend(attrs, ["cite", "datetime"])
+			let attrs = coreattrs + ["cite", "datetime"]
 		elseif tag == 'form'
-			let attrs = g:coreattrs
-			let attrs = extend(attrs, ["action", "method", "enctype", "onsubmit", "onreset", "accept", "accept-charset"])
+			let attrs = coreattrs + ["action", "method=\"get\" ", "method=\"post\" ", "enctype", "onsubmit", "onreset", "accept", "accept-charset"]
 		elseif tag == 'head'
-			let attrs = g:i18n
-			let attrs = extend(attrs, ["id", "profile"])
+			let attrs = i18n + ["id", "profile"]
 		elseif tag == 'html'
-			let attrs = g:i18n
-			let attrs = extend(attrs, ["id", "xmlns"])
+			let attrs = i18n + ["id", "xmlns"]
 		elseif tag == 'img'
-			let attrs = g:coreattrs
-			let attrs = extend(attrs, ["src", "alt", "longdesc", "height", "width", "usemap", "ismap"])
+			let attrs = coreattrs + ["src", "alt", "longdesc", "height", "width", "usemap", "ismap"]
 		elseif tag == 'input'
-			let attrs = g:coreattrs
-			let attrs = extend(attrs, g:focus)
-			let attrs = extend(attrs, ["type", "name", "value", "checked", "disabled", "readonly", "size", "maxlength", "src", "alt", "usemap", "onselect", "onchange", "accept"])
+			let attrs = coreattrs + focus + ["type", "name", "value", "checked", "disabled", "readonly", "size", "maxlength", "src", "alt", "usemap", "onselect", "onchange", "accept"]
 		elseif tag == 'label'
-			let attrs = g:coreattrs
-			let attrs = extend(attrs, ["for", "accesskey", "onfocus", "onblur"])
+			let attrs = coreattrs + ["for", "accesskey", "onfocus", "onblur"]
 		elseif tag == 'legend'
-			let attrs = g:coreattrs
-			let attrs = extend(attrs, ["accesskey"])
+			let attrs = coreattrs + ["accesskey"]
 		elseif tag == 'link'
-			let attrs = g:coreattrs
-			let attrs = extend(attrs, ["charset", "href", "hreflang", "type", "rel", "rev", "media"])
+			let attrs = coreattrs + ["charset", "href", "hreflang", "type", "rel", "rev", "media"]
 		elseif tag == 'map'
-			let attrs = g:i18n
-			let attrs = extend(attrs, g:events)
-			let attrs = extend(attrs, ["id", "class", "style", "title", "name"])
+			let attrs = i18n + events + ["id", "class", "style", "title", "name"]
 		elseif tag == 'meta'
-			let attrs = g:i18n
-			let attrs = extend(attrs, ["id", "http-equiv", "content", "scheme", "name"])
+			let attrs = i18n + ["id", "http-equiv", "content", "scheme", "name"]
 		elseif tag == 'title'
-			let attrs = g:i18n
-			let attrs = extend(attrs, ["id"])
+			let attrs = i18n + ["id"]
 		elseif tag == 'object'
-			let attrs = g:coreattrs
-			let attrs = extend(attrs, ["declare", "classid", "codebase", "data", "type", "codetype", "archive", "standby", "height", "width", "usemap", "name", "tabindex"])
+			let attrs = coreattrs + ["declare", "classid", "codebase", "data", "type", "codetype", "archive", "standby", "height", "width", "usemap", "name", "tabindex"]
 		elseif tag == 'optgroup'
-			let attrs = g:coreattrs
-			let attrs = extend(attrs, ["disbled", "label"])
+			let attrs = coreattrs + ["disbled", "label"]
 		elseif tag == 'option'
-			let attrs = g:coreattrs
-			let attrs = extend(attrs, ["disbled", "selected", "value", "label"])
+			let attrs = coreattrs + ["disbled", "selected", "value", "label"]
 		elseif tag == 'param'
 			let attrs = ["id", "name", "value", "valuetype", "type"]
 		elseif tag == 'pre'
-			let attrs = g:coreattrs
-			let attrs = extend(attrs, ["xml:space"])
+			let attrs = coreattrs + ["xml:space"]
 		elseif tag == 'q'
-			let attrs = g:coreattrs
-			let attrs = extend(attrs, ["cite"])
+			let attrs = coreattrs + ["cite"]
 		elseif tag == 'script'
 			let attrs = ["id", "charset", "type", "src", "defer", "xml:space"]
 		elseif tag == 'select'
-			let attrs = g:coreattrs
-			let attrs = extend(attrs, ["name", "size", "multiple", "disabled", "tabindex", "onfocus", "onblur", "onchange"])
+			let attrs = coreattrs + ["name", "size", "multiple", "disabled", "tabindex", "onfocus", "onblur", "onchange"]
 		elseif tag == 'style'
-			let attrs = g:coreattrs
-			let attrs = extend(attrs, ["id", "type", "media", "title", "xml:space"])
+			let attrs = coreattrs + ["id", "type", "media", "title", "xml:space"]
 		elseif tag == 'table'
-			let attrs = g:coreattrs
-			let attrs = extend(attrs, ["summary", "width", "border", "frame", "rules" "cellspacing", "cellpadding"])
+			let attrs = coreattrs + ["summary", "width", "border", "frame", "rules", "cellspacing", "cellpadding"]
 		elseif tag =~ '^\(thead\|tfoot\|tbody\|tr\)$'
-			let attrs = g:coreattrs
-			let attrs = extend(attrs, ["align", "char", "charoff", "valign"])
+			let attrs = coreattrs + ["align", "char", "charoff", "valign"]
 		elseif tag == 'textarea'
-			let attrs = g:coreattrs
-			let attrs = extend(attrs, g:focus)
-			let attrs = extend(attrs, ["name", "rows", "cols", "disabled", "readonly", "onselect", "onchange"])
+			let attrs = coreattrs + focus + ["name", "rows", "cols", "disabled", "readonly", "onselect", "onchange"]
 		elseif tag =~ '^\(th\|td\)$'
-			let attrs = g:coreattrs
-			let attrs = extend(attrs, ["abbr", "headers", "scope", "rowspan", "colspan", "align", "char", "charoff", "valign"])
+			let attrs = coreattrs + ["abbr", "headers", "scope", "rowspan", "colspan", "align", "char", "charoff", "valign"]
+		else
+			return []
 		endif
 
 		for m in sort(attrs)
-			if m =~ attr
-				if m =~ '^\(ismap\|defer\|declare\|nohref\|checked\|disabled\|selected\|readonly\)$'
+			if m =~ '^'.attr
+				if m =~ '^\(ismap\|defer\|declare\|nohref\|checked\|disabled\|selected\|readonly\)$' || m =~ '='
 					call add(res, sbase.' '.m)
 				else
 					call add(res, sbase.' '.m.'="')
 				endif
+			elseif m =~ attr
+				if m =~ '^\(ismap\|defer\|declare\|nohref\|checked\|disabled\|selected\|readonly\)$' || m =~ '='
+					call add(res2, sbase.' '.m)
+				else
+					call add(res2, sbase.' '.m.'="')
+				endif
 			endif
 		endfor
-		return res
+
+		return res + res2
+
 	endif
 	" Close tag
 	let b:unaryTagsStack = "base meta link hr br param img area input col"
@@ -258,17 +373,17 @@ function! htmlcomplete#CompleteTags(findstart, base)
 	elseif opentag == 'pre'
 		let tags = split("a tt i b big small br span bdo map ".phrase." ".miscinline." ".inlineforms)
 	elseif opentag == 'html'
-		let tags = split("head body")
+		let tags = ["head", "body"]
 	elseif opentag == 'legend'
 		let tags = split(inline." ".miscinline)
 	elseif opentag == 'head'
-		let tags = split("title base scipt style meta link object")
+		let tags = ["title", "base", "scipt", "style", "meta", "link", "object"]
 	elseif opentag =~ '^\(noscript\|body\|blockquote\)$'
 		let tags = split("form ".block." ".misc)
 	elseif opentag =~ '^\(ul\|ol\)$'
 		let tags = ["li"]
 	elseif opentag == 'dl'
-		let tags = split("dt dd")
+		let tags = ["dt", "dd"]
 	elseif opentag =~ '^\(ins\|del\|th\|td\|dd\|div\|li\)$'
 		let tags = split("form ".block." ".inline." ".misc)
 	elseif opentag == 'object'
@@ -280,30 +395,34 @@ function! htmlcomplete#CompleteTags(findstart, base)
 	elseif opentag == 'form'
 		let tags = split(block." ".misc)
 	elseif opentag == 'select'
-		let tags = split("optgroup option")
+		let tags = ["optgroup", "option"]
 	elseif opentag == 'optgroup'
 		let tags = ["option"]
 	elseif opentag == 'colgroup'
 		let tags = ["col"]
 	elseif opentag == '^\(textarea\|option\|script\|style\|title\)$'
-		let tags = []
+		let tags = ['empty']
 	elseif opentag == 'button'
-		let tags = split("p h1 h2 h3 h4 h5 h6 div ul ol dl table")
-	elseif opentag =~ '^\(thead\|tfoot\|tbody)$'
+		let tags = ["p", "h1", "h2", "h3", "h4", "h5", "h6", "div", "ul", "ol", "dl", "table"]
+	elseif opentag =~ '^\(thead\|tfoot\|tbody\)$'
 		let tags = ["tr"]
 	elseif opentag == 'tr'
-		let tags = split("th td")
+		let tags = ["th", "td"]
 	elseif opentag == 'table'
-		let tags = split("caption col colgroup thead tfoot tbody tr")
+		let tags = ["caption", "col", "colgroup", "thead", "tfoot", "tbody", "tr"]
+	else
+		return []
 	endif
 
 	for m in tags
-		if m =~ a:base
+		if m =~ '^'.a:base
 			call add(res, m)
+		elseif m =~ a:base
+			call add(res2, m)
 		endif
 	endfor
 
-	return res
+	return res + res2
 
   endif
 endfunction
@@ -316,10 +435,10 @@ endfunction
 " Version: 0.9.1
 
 function! htmlcomplete#GetLastOpenTag(unaryTagsStack)
-	let linenum=line(".")
-	let lineend=col(".") - 1 " start: cursor position
+	let linenum=line('.')
+	let lineend=col('.') - 1 " start: cursor position
 	let first=1              " flag for first line searched
-	let b:TagStack=""        " main stack of tags
+	let b:TagStack=''        " main stack of tags
 	let startInComment=s:InComment()
 
 	let tagpat='</\=\(\k\|[-:]\)\+\|/>'
@@ -330,7 +449,7 @@ function! htmlcomplete#GetLastOpenTag(unaryTagsStack)
 		else
 			let lineend=strlen(line)
 		endif
-		let b:lineTagStack=""
+		let b:lineTagStack=''
 		let mpos=0
 		let b:TagCol=0
 		while (mpos > -1)
@@ -339,46 +458,45 @@ function! htmlcomplete#GetLastOpenTag(unaryTagsStack)
 				let b:TagCol=b:TagCol+mpos
 				let tag=matchstr(line,tagpat)
 
-				if exists("b:closetag_disable_synID") || startInComment==s:InCommentAt(linenum, b:TagCol)
+				if exists('b:closetag_disable_synID') || startInComment==s:InCommentAt(linenum, b:TagCol)
 					let b:TagLine=linenum
-					call s:Push(matchstr(tag,'[^<>]\+'),"b:lineTagStack")
+					call s:Push(matchstr(tag,'[^<>]\+'),'b:lineTagStack')
 				endif
 				let lineend=lineend-mpos
 				let line=strpart(line,mpos,lineend)
 			endif
 		endwhile
-		while (!s:EmptystackP("b:lineTagStack"))
-			let tag=s:Pop("b:lineTagStack")
-			if match(tag, "^/") == 0		"found end tag
-				call s:Push(tag,"b:TagStack")
-			elseif s:EmptystackP("b:TagStack") && !s:Instack(tag, a:unaryTagsStack)	"found unclosed tag
+		while (!s:EmptystackP('b:lineTagStack'))
+			let tag=s:Pop('b:lineTagStack')
+			if match(tag, '^/') == 0		"found end tag
+				call s:Push(tag,'b:TagStack')
+			elseif s:EmptystackP('b:TagStack') && !s:Instack(tag, a:unaryTagsStack)	"found unclosed tag
 				return tag
 			else
-				let endtag=s:Peekstack("b:TagStack")
-				if endtag == "/".tag || endtag == "/"
-				call s:Pop("b:TagStack")	"found a open/close tag pair
-			elseif !s:Instack(tag, a:unaryTagsStack) "we have a mismatch error
-				return ""
+				let endtag=s:Peekstack('b:TagStack')
+				if endtag == '/'.tag || endtag == '/'
+					call s:Pop('b:TagStack')	"found a open/close tag pair
+				elseif !s:Instack(tag, a:unaryTagsStack) "we have a mismatch error
+					return ''
+				endif
 			endif
-		endif
+		endwhile
+		let linenum=linenum-1 | let first=0
 	endwhile
-	let linenum=linenum-1 | let first=0
-endwhile
-return ""
+return ''
 endfunction
 
 function! s:InComment()
-	return synIDattr(synID(line("."), col("."), 0), "name") =~ 'Comment'
+	return synIDattr(synID(line('.'), col('.'), 0), 'name') =~ 'Comment'
 endfunction
 
 function! s:InCommentAt(line, col)
-	return synIDattr(synID(a:line, a:col, 0), "name") =~ 'Comment'
+	return synIDattr(synID(a:line, a:col, 0), 'name') =~ 'Comment'
 endfunction
-
 
 function! s:SetKeywords()
 	let g:IsKeywordBak=&iskeyword
-	let &iskeyword="33-255"
+	let &iskeyword='33-255'
 endfunction
 
 function! s:RestoreKeywords()
@@ -387,15 +505,15 @@ endfunction
 
 function! s:Push(el, sname)
 	if !s:EmptystackP(a:sname)
-		exe "let ".a:sname."=a:el.' '.".a:sname
+		exe 'let '.a:sname."=a:el.' '.".a:sname
 	else
-		exe "let ".a:sname."=a:el"
+		exe 'let '.a:sname.'=a:el'
 	endif
 endfunction
 
 function! s:EmptystackP(sname)
-	exe "let stack=".a:sname
-	if match(stack,"^ *$") == 0
+	exe 'let stack='.a:sname
+	if match(stack,'^ *$') == 0
 		return 1
 	else
 		return 0
@@ -403,9 +521,9 @@ function! s:EmptystackP(sname)
 endfunction
 
 function! s:Instack(el, sname)
-	exe "let stack=".a:sname
+	exe 'let stack='.a:sname
 	call s:SetKeywords()
-	let m=match(stack, "\\<".a:el."\\>")
+	let m=match(stack, '\<'.a:el.'\>')
 	call s:RestoreKeywords()
 	if m < 0
 		return 0
@@ -416,25 +534,25 @@ endfunction
 
 function! s:Peekstack(sname)
 	call s:SetKeywords()
-	exe "let stack=".a:sname
-	let top=matchstr(stack, "\\<.\\{-1,}\\>")
+	exe 'let stack='.a:sname
+	let top=matchstr(stack, '\<.\{-1,}\>')
 	call s:RestoreKeywords()
 	return top
 endfunction
 
 function! s:Pop(sname)
 	if s:EmptystackP(a:sname)
-		return ""
+		return ''
 	endif
-	exe "let stack=".a:sname
+	exe 'let stack='.a:sname
 	call s:SetKeywords()
-	let loc=matchend(stack,"\\<.\\{-1,}\\>")
-	exe "let ".a:sname."=strpart(stack, loc+1, strlen(stack))"
-	let top=strpart(stack, match(stack, "\\<"), loc)
+	let loc=matchend(stack,'\<.\{-1,}\>')
+	exe 'let '.a:sname.'=strpart(stack, loc+1, strlen(stack))'
+	let top=strpart(stack, match(stack, '\<'), loc)
 	call s:RestoreKeywords()
 	return top
 endfunction
 
 function! s:Clearstack(sname)
-	exe "let ".a:sname."=''"
+	exe 'let '.a:sname."=''"
 endfunction
