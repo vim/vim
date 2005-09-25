@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Sep 20
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Sep 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,21 +30,19 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Test11 fails sometimes. (athena, huge features)
-
-ml_get errors: :%s/^\_s\+$//gc
-And: Insert mode in one window, long file, click in other window, short file.
-
-'scrolljump' negative used as a percentage, e.g. -50 is 50% of window height?
-
 Spelling:
-- suggestion for "a an" includes "an an", which is marked bad.  Check
-  suggestions for not being a bad word (when split)?
+- Suggestions for "the the" includes "thee the" but not "the thee"?
 - CTRL-X s doesn't consider 'spellcapcheck'.
-- Have spellbadword() return a list with bad word and reason it's bad?
-  (rare/local/bad/caps)
+- Spellbadword() returns a list with bad word and reason it's bad.
+  This doesn't work when highlighting is the same for some mistakes.
 - spellsuggest() needs a way to require a capital.  A flag or context?
-- Underscore in REP items stands for space.
+
+Win32: Composing char appears on next position. (Tony Mechelynck)
+
+Support subdirectories in plugin directory?  (Nikolai Weibull)
+
+Change 'include' so that it can match the file name when \zs and \ze are
+included. (docs already done tentatively).
 
 ccomplete:
 - How to use a popup menu?
@@ -594,8 +592,7 @@ Win32 GUI known bugs:
     Opposite of 'linespace': 'columnspace'.
 7   At the hit-enter prompt scrolling now no longer works.  Need to use the
     keyboard to get around this.  Pretend <CR> was hit when the user tries to
-    scroll?  Need to be able to get out of hit-enter prompt with the mouse
-    anyway.
+    scroll?
 7   Scrollbar width doesn't change when selecting other windows appearance.
     Also background color of Toolbar and rectangle below vert. scrollbar.
 7   "!start /min cmd" should run in a minimized window, instead of using

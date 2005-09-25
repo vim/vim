@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Sep 15
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Sep 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -600,6 +600,9 @@ When 'verbose' is set the output of the ":map", ":abbreviate", ":command",
 "1gd" can be used like "gd" but ignores matches in a {} block that ends before
 the cursor position.  Likewise for "1gD" and "gD".
 
+'scrolljump' can be set to a negative number to scroll a percentage of the
+window height.
+
 ==============================================================================
 IMPROVEMENTS						*improvements-7*
 
@@ -816,6 +819,9 @@ closing a fold with the mouse by clicking on the '-'.
 
 input() takes an optional completion argument to specify the type of
 completion supported for the input. (Yegappan Lakshmanan)
+
+"dp" works with more than two buffers in diff mode if there is only one where
+'modifiable' is set.
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*

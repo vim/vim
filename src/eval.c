@@ -409,7 +409,8 @@ static listitem_T *list_find __ARGS((list_T *l, long n));
 static long list_idx_of_item __ARGS((list_T *l, listitem_T *item));
 static void list_append __ARGS((list_T *l, listitem_T *item));
 static int list_append_tv __ARGS((list_T *l, typval_T *tv));
-static int list_append_string __ARGS((list_T *l, char_u *str));
+static int list_append_string __ARGS((list_T *l, char_u *str, int len));
+static int list_append_number __ARGS((list_T *l, varnumber_T n));
 static int list_insert_tv __ARGS((list_T *l, typval_T *tv, listitem_T *item));
 static int list_extend __ARGS((list_T	*l1, list_T *l2, listitem_T *bef));
 static int list_concat __ARGS((list_T *l1, list_T *l2, typval_T *tv));
@@ -2551,7 +2552,6 @@ set_var_lval(lp, endp, rettv, copy, op)
     char_u	*op;
 {
     int		cc;
-    listitem_T	*ni;
     listitem_T	*ri;
     dictitem_T	*di;
 
@@ -2603,16 +2603,11 @@ set_var_lval(lp, endp, rettv, copy, op)
 	    if (lp->ll_li->li_next == NULL)
 	    {
 		/* Need to add an empty item. */
-		ni = listitem_alloc();
-		if (ni == NULL)
+		if (list_append_number(lp->ll_list, 0) == FAIL)
 		{
 		    ri = NULL;
 		    break;
 		}
-		ni->li_tv.v_type = VAR_NUMBER;
-		ni->li_tv.v_lock = 0;
-		ni->li_tv.vval.v_number = 0;
-		list_append(lp->ll_list, ni);
 	    }
 	    lp->ll_li = lp->ll_li->li_next;
 	    ++lp->ll_n1;
@@ -3598,6 +3593,7 @@ typedef enum
  * Handle zero level expression.
  * This calls eval1() and handles error message and nextcmd.
  * Put the result in "rettv" when returning OK and "evaluate" is TRUE.
+ * Note: "rettv.v_lock" is not set.
  * Return OK or FAIL.
  */
     static int
@@ -3637,6 +3633,8 @@ eval0(arg, rettv, nextcmd, evaluate)
  *
  * "arg" must point to the first non-white of the expression.
  * "arg" is advanced to the next non-white after the recognized expression.
+ *
+ * Note: "rettv.v_lock" is not set.
  *
  * Return OK or FAIL.
  */
@@ -5557,12 +5555,14 @@ list_append_dict(list, dict)
 
 /*
  * Make a copy of "str" and append it as an item to list "l".
+ * When "len" >= 0 use "str[len]".
  * Returns FAIL when out of memory.
  */
     static int
-list_append_string(l, str)
+list_append_string(l, str, len)
     list_T	*l;
     char_u	*str;
+    int		len;
 {
     listitem_T *li = listitem_alloc();
 
@@ -5571,8 +5571,30 @@ list_append_string(l, str)
     list_append(l, li);
     li->li_tv.v_type = VAR_STRING;
     li->li_tv.v_lock = 0;
-    if ((li->li_tv.vval.v_string = vim_strsave(str)) == NULL)
+    if ((li->li_tv.vval.v_string = len >= 0 ? vim_strnsave(str, len)
+						  : vim_strsave(str)) == NULL)
 	return FAIL;
+    return OK;
+}
+
+/*
+ * Append "n" to list "l".
+ * Returns FAIL when out of memory.
+ */
+    static int
+list_append_number(l, n)
+    list_T	*l;
+    varnumber_T	n;
+{
+    listitem_T	*li;
+
+    li = listitem_alloc();
+    if (li == NULL)
+	return FAIL;
+    li->li_tv.v_type = VAR_NUMBER;
+    li->li_tv.v_lock = 0;
+    li->li_tv.vval.v_number = n;
+    list_append(l, li);
     return OK;
 }
 
@@ -6864,7 +6886,7 @@ static struct fst
     {"simplify",	1, 1, f_simplify},
     {"sort",		1, 2, f_sort},
     {"soundfold",	1, 1, f_soundfold},
-    {"spellbadword",	0, 0, f_spellbadword},
+    {"spellbadword",	0, 1, f_spellbadword},
     {"spellsuggest",	1, 2, f_spellsuggest},
     {"split",		1, 3, f_split},
 #ifdef HAVE_STRFTIME
@@ -8842,6 +8864,7 @@ filter_map_one(tv, expr, map, remp)
     {
 	/* map(): replace the list item value */
 	clear_tv(tv);
+	rettv.v_lock = 0;
 	*tv = rettv;
     }
     else
@@ -9261,7 +9284,8 @@ get_buffer_lines(buf, start, end, retlist, rettv)
 	if (end > buf->b_ml.ml_line_count)
 	    end = buf->b_ml.ml_line_count;
 	while (start <= end)
-	    if (list_append_string(l, ml_get_buf(buf, start++, FALSE)) == FAIL)
+	    if (list_append_string(l, ml_get_buf(buf, start++, FALSE), -1)
+								      == FAIL)
 		break;
     }
 }
@@ -10855,25 +10879,25 @@ f_input(argvars, rettv)
 	    defstr = get_tv_string_buf_chk(&argvars[1], buf);
 	    if (defstr != NULL)
 		stuffReadbuffSpec(defstr);
-	}
 
-	if (argvars[2].v_type != VAR_UNKNOWN)
-	{
-	    char_u	*xp_name;
-	    int		xp_namelen;
-	    long	argt;
+	    if (argvars[2].v_type != VAR_UNKNOWN)
+	    {
+		char_u	*xp_name;
+		int		xp_namelen;
+		long	argt;
 
-	    rettv->vval.v_string = NULL;
+		rettv->vval.v_string = NULL;
 
-	    xp_name = get_tv_string_buf_chk(&argvars[2], buf);
-	    if (xp_name == NULL)
-		return;
+		xp_name = get_tv_string_buf_chk(&argvars[2], buf);
+		if (xp_name == NULL)
+		    return;
 
-	    xp_namelen = STRLEN(xp_name);
+		xp_namelen = STRLEN(xp_name);
 
-	    if (parse_compl_arg(xp_name, xp_namelen, &xp_type, &argt, &xp_arg)
-								      == FAIL)
-		return;
+		if (parse_compl_arg(xp_name, xp_namelen, &xp_type, &argt,
+							     &xp_arg) == FAIL)
+		    return;
+	    }
 	}
 
 	if (defstr != NULL)
@@ -11713,14 +11737,11 @@ find_some_match(argvars, rettv, type)
 		{
 		    if (regmatch.endp[i] == NULL)
 			break;
-		    li = listitem_alloc();
-		    if (li == NULL)
+		    if (list_append_string(rettv->vval.v_list,
+				regmatch.startp[i],
+				(int)(regmatch.endp[i] - regmatch.startp[i]))
+			    == FAIL)
 			break;
-		    li->li_tv.v_type = VAR_STRING;
-		    li->li_tv.v_lock = 0;
-		    li->li_tv.vval.v_string = vim_strnsave(regmatch.startp[i],
-				(int)(regmatch.endp[i] - regmatch.startp[i]));
-		    list_append(rettv->vval.v_list, li);
 		}
 	    }
 	    else if (type == 2)
@@ -12112,7 +12133,6 @@ f_range(argvars, rettv)
     long	stride = 1;
     long	i;
     list_T	*l;
-    listitem_T	*li;
     int		error = FALSE;
 
     start = get_tv_number_chk(&argvars[0], &error);
@@ -12145,15 +12165,8 @@ f_range(argvars, rettv)
 	    ++l->lv_refcount;
 
 	    for (i = start; stride > 0 ? i <= end : i >= end; i += stride)
-	    {
-		li = listitem_alloc();
-		if (li == NULL)
+		if (list_append_number(l, (varnumber_T)i) == FAIL)
 		    break;
-		li->li_tv.v_type = VAR_NUMBER;
-		li->li_tv.v_lock = 0;
-		li->li_tv.vval.v_number = i;
-		list_append(l, li);
-	    }
 	}
     }
 }
@@ -13887,17 +13900,57 @@ f_spellbadword(argvars, rettv)
     typval_T	*argvars;
     typval_T	*rettv;
 {
+    char_u	*word = (char_u *)"";
+#ifdef FEAT_SYN_HL
     int		len;
+    int		attr = 0;
+    list_T	*l;
+#endif
 
-    rettv->vval.v_string = NULL;
-    rettv->v_type = VAR_STRING;
+    l = list_alloc();
+    if (l == NULL)
+	return;
+    rettv->v_type = VAR_LIST;
+    rettv->vval.v_list = l;
+    ++l->lv_refcount;
 
 #ifdef FEAT_SYN_HL
-    /* Find the start and length of the badly spelled word. */
-    len = spell_move_to(curwin, FORWARD, TRUE, TRUE, NULL);
-    if (len != 0)
-	rettv->vval.v_string = vim_strnsave(ml_get_cursor(), len);
+    if (argvars[0].v_type == VAR_UNKNOWN)
+    {
+	/* Find the start and length of the badly spelled word. */
+	len = spell_move_to(curwin, FORWARD, TRUE, TRUE, &attr);
+	if (len != 0)
+	    word = ml_get_cursor();
+    }
+    else if (curwin->w_p_spell && *curbuf->b_p_spl != NUL)
+    {
+	char_u	*str = get_tv_string_chk(&argvars[0]);
+	int	capcol = -1;
+
+	if (str != NULL)
+	{
+	    /* Check the argument for spelling. */
+	    while (*str != NUL)
+	    {
+		len = spell_check(curwin, str, &attr, &capcol);
+		if (attr != 0)
+		{
+		    word = str;
+		    break;
+		}
+		str += len;
+	    }
+	}
+    }
 #endif
+
+    list_append_string(l, word, len);
+    list_append_string(l, (char_u *)(
+		    attr == highlight_attr[HLF_SPB] ? "bad" :
+		    attr == highlight_attr[HLF_SPR] ? "rare" :
+		    attr == highlight_attr[HLF_SPL] ? "local" :
+		    attr == highlight_attr[HLF_SPC] ? "caps" :
+		    ""), -1);
 }
 
 /*
@@ -13969,7 +14022,6 @@ f_split(argvars, rettv)
     char_u	patbuf[NUMBUFLEN];
     char_u	*save_cpo;
     int		match;
-    listitem_T	*ni;
     list_T	*l;
     colnr_T	col = 0;
     int		keepempty = FALSE;
@@ -14017,13 +14069,8 @@ f_split(argvars, rettv)
 	    if (keepempty || end > str || (l->lv_len > 0 && *str != NUL
 					  && match && end < regmatch.endp[0]))
 	    {
-		ni = listitem_alloc();
-		if (ni == NULL)
+		if (list_append_string(l, str, (int)(end - str)) == FAIL)
 		    break;
-		ni->li_tv.v_type = VAR_STRING;
-		ni->li_tv.v_lock = 0;
-		ni->li_tv.vval.v_string = vim_strnsave(str, end - str);
-		list_append(l, ni);
 	    }
 	    if (!match)
 		break;
@@ -14583,7 +14630,7 @@ f_tagfiles(argvars, rettv)
     get_tagfname(TRUE, NULL);
     for (;;)
 	if (get_tagfname(FALSE, fname) == FAIL
-		|| list_append_string(l, fname) == FAIL)
+		|| list_append_string(l, fname, -1) == FAIL)
 	    break;
 }
 

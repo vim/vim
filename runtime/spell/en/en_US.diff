@@ -195,7 +195,7 @@
 + REP an_a a
 + REP a_an an
 *** en_US.orig.dic	Fri Apr 15 13:20:36 2005
---- en_US.dic	Tue Aug 16 17:03:31 2005
+--- en_US.dic	Wed Sep 21 11:36:06 2005
 ***************
 *** 5944,5946 ****
   bk
@@ -565,12 +565,16 @@
   Zubenelgenubi/M
 ***************
 *** 62077 ****
---- 62077,62084 ----
+--- 62077,62088 ----
   zymurgy/S
 + nd
 + the the/!
 + a a/!
++ an an/!
 + a an/!
 + an a/!
-+ an an/!
++ the a/!
++ the an/!
++ a the/!
++ an the/!
 + PayPal

@@ -29,7 +29,7 @@ STARTTEST
   normal 0f:]s
   let prevbad = ''
   while 1
-    let bad = spellbadword()
+    let [bad, a] = spellbadword()
     if bad == '' || bad == prevbad || bad == 'badend'
       break
     endif
@@ -60,31 +60,31 @@ gg:/^addstart/+1,/^addend/-1w! Xtest.latin1.add
 :mkspell! Xtest.latin1.add.spl Xtest.latin1.add
 :set spellfile=Xtest.latin1.add
 /^test2:
-]s:let str = spellbadword()
+]s:let [str, a] = spellbadword()
 :$put =str
 :set spl=Xtest_us.latin1.spl
 /^test2:
-]smm:let str = spellbadword()
+]smm:let [str, a] = spellbadword()
 :$put =str
-`m]s:let str = spellbadword()
+`m]s:let [str, a] = spellbadword()
 :$put =str
 :set spl=Xtest_gb.latin1.spl
 /^test2:
-]smm:let str = spellbadword()
+]smm:let [str, a] = spellbadword()
 :$put =str
-`m]s:let str = spellbadword()
+`m]s:let [str, a] = spellbadword()
 :$put =str
 :set spl=Xtest_nz.latin1.spl
 /^test2:
-]smm:let str = spellbadword()
+]smm:let [str, a] = spellbadword()
 :$put =str
-`m]s:let str = spellbadword()
+`m]s:let [str, a] = spellbadword()
 :$put =str
 :set spl=Xtest_ca.latin1.spl
 /^test2:
-]smm:let str = spellbadword()
+]smm:let [str, a] = spellbadword()
 :$put =str
-`m]s:let str = spellbadword()
+`m]s:let [str, a] = spellbadword()
 :$put =str
 :"
 :" Postponed prefixes

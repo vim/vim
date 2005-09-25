@@ -2109,7 +2109,11 @@ ex_emenu(eap)
 
     /* Found the menu, so execute.
      * Use the Insert mode entry when returning to Insert mode. */
-    if (restart_edit && !current_SID)
+    if (restart_edit
+#ifdef FEAT_EVAL
+	    && !current_SID
+#endif
+	    )
     {
 	mode = (char_u *)"Insert";
 	idx = MENU_INDEX_INSERT;
@@ -2168,10 +2172,12 @@ ex_emenu(eap)
     {
 	/* When executing a script or function execute the commands right now.
 	 * Otherwise put them in the typeahead buffer. */
+#ifdef FEAT_En
 	if (current_SID != 0)
 	    exec_normal_cmd(menu->strings[idx], menu->noremap[idx],
 							   menu->silent[idx]);
 	else
+#endif
 	    ins_typebuf(menu->strings[idx], menu->noremap[idx], 0,
 						     TRUE, menu->silent[idx]);
     }

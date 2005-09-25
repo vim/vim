@@ -4520,6 +4520,14 @@ do_sub(eap)
 		sublen = vim_regsub_multi(&regmatch, sub_firstlnum,
 				    sub, sub_firstline, FALSE, p_magic, TRUE);
 
+		/* When the match included the "$" of the last line it may
+		 * include one line too much. */
+		if (nmatch > curbuf->b_ml.ml_line_count - sub_firstlnum + 1)
+		{
+		    nmatch = curbuf->b_ml.ml_line_count - sub_firstlnum + 1;
+		    skip_match = TRUE;
+		}
+
 		/* Need room for:
 		 * - result so far in new_start (not for first sub in line)
 		 * - original text up to match
