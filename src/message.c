@@ -3749,6 +3749,7 @@ tv_nr(tvs, idxp)
 
 /*
  * Get string argument from "idxp" entry in "tvs".  First entry is 1.
+ * Returns NULL for an error.
  */
     static char *
 tv_str(tvs, idxp)

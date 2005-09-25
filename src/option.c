@@ -7420,7 +7420,7 @@ set_num_option(opt_idx, varp, value, errbuf, errbuflen, opt_flags)
 	errmsg = e_positive;
 	p_report = 1;
     }
-    if ((p_sj < 0 || p_sj >= Rows) && full_screen)
+    if ((p_sj < -100 || p_sj >= Rows) && full_screen)
     {
 	if (Rows != old_Rows)	/* Rows changed, just adjust p_sj */
 	    p_sj = Rows / 2;

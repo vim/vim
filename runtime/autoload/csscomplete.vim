@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	CSS 2.1
 " Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
-" Last Change:	2005 Sep 19
+" Last Change:	2005 Sep 23
 
 function! csscomplete#CompleteCSS(findstart, base)
 if a:findstart
@@ -18,6 +18,8 @@ else
 	" 3. if } we are outside of css definitions
 	" 4. for comments ignoring is be the easiest but assume they are the same
 	"    as 1. 
+	" 5. if @ complete at-rule
+	" 6. if ! complete important
 	
 	let line = a:base
 	let res = []
@@ -26,14 +28,16 @@ else
 
 	" We need the last occurrence of char so reverse line
 	let revline = join(reverse(split(line, '.\zs')), '')
+
 	let openbrace  = stridx(revline, '{')
 	let closebrace = stridx(revline, '}')
-	let colon       = stridx(revline, ':')
-	let semicolon   = stridx(revline, ';')
-	let opencomm    = stridx(revline, '*/') " Line was reversed
-	let closecomm   = stridx(revline, '/*') " Line was reversed
-	let style       = stridx(revline, '=\s*elyts') " Line was reversed
-	let atrule      = stridx(revline, '@')
+	let colon      = stridx(revline, ':')
+	let semicolon  = stridx(revline, ';')
+	let opencomm   = stridx(revline, '*/') " Line was reversed
+	let closecomm  = stridx(revline, '/*') " Line was reversed
+	let style      = stridx(revline, '=\s*elyts') " Line was reversed
+	let atrule     = stridx(revline, '@')
+	let exclam     = stridx(revline, '!')
 
 	if openbrace > -1
 		let borders[openbrace] = "openbrace"
@@ -58,6 +62,9 @@ else
 	endif
 	if atrule > -1
 		let borders[atrule] = "atrule"
+	endif
+	if exclam > -1
+		let borders[exclam] = "exclam"
 	endif
 
 	if len(borders) == 0 || borders[min(keys(borders))] =~ '^\(openbrace\|semicolon\|opencomm\|closecomm\|style\)$'
@@ -318,6 +325,22 @@ else
 
 		return []
 
+	elseif borders[min(keys(borders))] == 'exclam'
+
+		" Complete values
+		let impbase = matchstr(line, '.\{-}!\s*\ze[a-zA-Z ]*$')
+		let entered_imp = matchstr(line, '.\{-}!\s*\zs[a-zA-Z ]*$')
+
+		let values = ["important"]
+
+		for m in values
+			if m =~? '^'.entered_imp
+				call add(res, impbase . m)
+			endif
+		endfor
+
+		return res
+
 	elseif borders[min(keys(borders))] == 'atrule'
 
 		let afterat = matchstr(line, '.*@\zs.*')
@@ -368,7 +391,7 @@ else
 
 		endif
 
-		let values = ["charset", "page", "media", "import"]
+		let values = ["charset", "page", "media", "import", "font-face"]
 
 		let atrulebase = matchstr(line, '.*@\ze[a-zA-Z -]*$')
 		let entered_atrule = matchstr(line, '.*@\zs[a-zA-Z-]*$')

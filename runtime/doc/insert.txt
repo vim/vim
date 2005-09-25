@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0aa.  Last change: 2005 Sep 18
+*insert.txt*    For Vim version 7.0aa.  Last change: 2005 Sep 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -988,18 +988,33 @@ are included.
 
 (X)HTML                          			*ft-html-omni*
 
-When using after CTRL-X CTRL-O after "<" it is completed with tag name
-available in current context. Inside of tag completion aids to choose
-proper attributes, and when possible choose appropriate attribute value
-including class names for CSS styles.
+CTRL-X CTRL-O provides completion of various elements of (X)HTML files.
+It is designed to support writing of XHTML 1.0 Strict files but will
+also works for other versions of HTML. Features:
 
-When used after "</" CTRL-X CTRL-O will close the last opened tag.
+- after "<" complete tag name depending on context (no div suggest
+  inside of an a tag)
+- inside of tag complete proper attributes (no width attribute for an
+  a tag)
+- when attribute has limited number of possible values help to complete
+  them
+- complete values of "class" and "id" attributes with data obtained from
+  style tag and included CSS files
+- when completing "style" attribute or working inside of "style" tag
+  switch to |ft-css-omni| completion
+- when used after "</" CTRL-X CTRL-O will close the last opened tag
 
 File htmlcomplete.vim provides through |autoload| mechanism
 GetLastOpenTag function which can be used in XML files to get name of
-last open tag with: >
+last open tag with (b:unaryTagsStack has to be defined): >
 
         :echo htmlcomplete#GetLastOpenTag("b:unaryTagsStack")
+
+
+CSS                                                     *ft-css-omni*
+
+Complete properties and their appropriate values according to CSS 2.1
+specification. 
 
 
 ==============================================================================

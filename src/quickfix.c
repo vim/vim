@@ -2215,8 +2215,10 @@ ex_make(eap)
     {
 	apply_autocmds(EVENT_QUICKFIXCMDPRE, au_name,
 					       curbuf->b_fname, TRUE, curbuf);
+# ifdef FEAT_EVAL
 	if (did_throw || force_abort)
 	    return;
+# endif
     }
 #endif
 
@@ -2974,6 +2976,7 @@ ex_cbuffer(eap)
     }
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * ":cexpr {expr}" command.
  */
@@ -2994,6 +2997,7 @@ ex_cexpr(eap)
 
     clear_tv(tv);
 }
+#endif
 
 /*
  * ":helpgrep {pattern}"

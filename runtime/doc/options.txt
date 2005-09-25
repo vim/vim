@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Sep 13
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Sep 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3647,9 +3647,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Pattern to be used to find an include command.  It is a search
 	pattern, just like for the "/" command (See |pattern|).  The default
 	value is for C programs.  This option is used for the commands "[i",
-	"]I", "[d", etc.  The 'isfname' option is used to recognize the file
-	name that comes after the matched pattern.  See |option-backslash|
-	about including spaces and backslashes.
+	"]I", "[d", etc.
+	Normally the 'isfname' option is used to recognize the file name that
+	comes after the matched pattern.  But if both "\zs" and "\ze" appear
+	in the pattern then the text spanned by them is used as the file name.
+	See |option-backslash| about including spaces and backslashes.
 
 						*'includeexpr'* *'inex'*
 'includeexpr' 'inex'	string	(default "")
@@ -5160,6 +5162,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Minimal number of lines to scroll when the cursor gets off the
 	screen (e.g., with "j").  Not used for scroll commands (e.g., CTRL-E,
 	CTRL-D).  Useful if your terminal scrolls very slowly.
+	When set to a negative number from -1 to -100 this is used as the
+	percentage of the window height.  Thus -50 scrolls half the window
+	height.
 	NOTE: This option is set to 1 when 'compatible' is set.
 
 						*'scrolloff'* *'so'*

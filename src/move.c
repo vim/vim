@@ -20,6 +20,7 @@
 #include "vim.h"
 
 static void comp_botline __ARGS((win_T *wp));
+static int scrolljump_value __ARGS((void));
 static int check_top_offset __ARGS((void));
 static void curs_rows __ARGS((win_T *wp, int do_botline));
 static void validate_botline_win __ARGS((win_T *wp));
@@ -249,7 +250,7 @@ update_topline()
 		scroll_cursor_halfway(FALSE);
 	    else
 	    {
-		scroll_cursor_top((int)p_sj, FALSE);
+		scroll_cursor_top(scrolljump_value(), FALSE);
 		check_botline = TRUE;
 	    }
 	}
@@ -341,7 +342,7 @@ update_topline()
 		    line_count = curwin->w_cursor.lnum - curwin->w_botline
 								   + 1 + p_so;
 		if (line_count <= curwin->w_height + 1)
-		    scroll_cursor_bot((int)p_sj, FALSE);
+		    scroll_cursor_bot(scrolljump_value(), FALSE);
 		else
 		    scroll_cursor_halfway(FALSE);
 	    }
@@ -374,6 +375,19 @@ update_topline()
 #ifdef FEAT_MOUSE
     p_so = save_so;
 #endif
+}
+
+/*
+ * Return the scrolljump value to use for the current window.
+ * When 'scrolljump' is positive use it as-is.
+ * When 'scrolljump' is negative use it as a percentage of the window height.
+ */
+    static int
+scrolljump_value()
+{
+    if (p_sj >= 0)
+	return (int)p_sj;
+    return (curwin->w_height * -p_sj) / 100;
 }
 
 /*

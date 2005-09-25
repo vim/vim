@@ -4973,6 +4973,7 @@ ft-chill-syntax	syntax.txt	/*ft-chill-syntax*
 ft-cobol-syntax	syntax.txt	/*ft-cobol-syntax*
 ft-coldfusion-syntax	syntax.txt	/*ft-coldfusion-syntax*
 ft-csh-syntax	syntax.txt	/*ft-csh-syntax*
+ft-css-omni	insert.txt	/*ft-css-omni*
 ft-cweb-syntax	syntax.txt	/*ft-cweb-syntax*
 ft-cynlib-syntax	syntax.txt	/*ft-cynlib-syntax*
 ft-desktop-syntax	syntax.txt	/*ft-desktop-syntax*
@@ -5082,6 +5083,7 @@ g'a	motion.txt	/*g'a*
 g,	motion.txt	/*g,*
 g0	motion.txt	/*g0*
 g8	various.txt	/*g8*
+g:netrw-a	pi_netrw.txt	/*g:netrw-a*
 g:netrw_alto	pi_netrw.txt	/*g:netrw_alto*
 g:netrw_altv	pi_netrw.txt	/*g:netrw_altv*
 g:netrw_cygwin	pi_netrw.txt	/*g:netrw_cygwin*
@@ -5705,7 +5707,7 @@ map-self-destroy	tips.txt	/*map-self-destroy*
 map-typing	map.txt	/*map-typing*
 map-which-keys	map.txt	/*map-which-keys*
 map.txt	map.txt	/*map.txt*
-map_CTRL_C	map.txt	/*map_CTRL_C*
+map_CTRL-C	map.txt	/*map_CTRL-C*
 map_backslash	map.txt	/*map_backslash*
 map_bar	map.txt	/*map_bar*
 map_empty_rhs	map.txt	/*map_empty_rhs*
@@ -5747,6 +5749,7 @@ menu-priority	gui.txt	/*menu-priority*
 menu-separator	gui.txt	/*menu-separator*
 menu.vim	gui.txt	/*menu.vim*
 menus	gui.txt	/*menus*
+merge	diff.txt	/*merge*
 message-history	message.txt	/*message-history*
 message.txt	message.txt	/*message.txt*
 messages	message.txt	/*messages*
@@ -5853,7 +5856,6 @@ netrw-O	pi_netrw.txt	/*netrw-O*
 netrw-R	pi_netrw.txt	/*netrw-R*
 netrw-S	pi_netrw.txt	/*netrw-S*
 netrw-U	pi_netrw.txt	/*netrw-U*
-netrw-a	pi_netrw.txt	/*netrw-a*
 netrw-activate	pi_netrw.txt	/*netrw-activate*
 netrw-b	pi_netrw.txt	/*netrw-b*
 netrw-bookmark	pi_netrw.txt	/*netrw-bookmark*
@@ -7322,13 +7324,6 @@ zf	fold.txt	/*zf*
 zg	spell.txt	/*zg*
 zh	scroll.txt	/*zh*
 zi	fold.txt	/*zi*
-zip	zip.txt	/*zip*
-zip-contents	zip.txt	/*zip-contents*
-zip-copyright	zip.txt	/*zip-copyright*
-zip-history	zip.txt	/*zip-history*
-zip-manual	zip.txt	/*zip-manual*
-zip-usage	zip.txt	/*zip-usage*
-zip.txt	zip.txt	/*zip.txt*
 zj	fold.txt	/*zj*
 zk	fold.txt	/*zk*
 zl	scroll.txt	/*zl*

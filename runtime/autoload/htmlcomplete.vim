@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	XHTML 1.0 Strict
 " Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
-" Last Change:	2005 Sep 19
+" Last Change:	2005 Sep 23
 
 function! htmlcomplete#CompleteTags(findstart, base)
   if a:findstart
@@ -66,8 +66,13 @@ function! htmlcomplete#CompleteTags(findstart, base)
 		" it possible?
 		" Also retrieving class names from current file and linked
 		" stylesheets.
-		if a:base =~ "\\(on[a-z]*\\|style\\|class\\)\\s*=\\s*[\"']"
-			if a:base =~ "class\\s*=\\s*[\"'][a-zA-Z0-9_ -]*$"
+		if a:base =~ "\\(on[a-z]*\\|id\\|style\\|class\\)\\s*=\\s*[\"']"
+			if a:base =~ "\\(id\\|class\\)\\s*=\\s*[\"'][a-zA-Z0-9_ -]*$"
+				if a:base =~ "class\\s*=\\s*[\"'][a-zA-Z0-9_ -]*$"
+					let search_for = "class"
+				elseif a:base =~ "id\\s*=\\s*[\"'][a-zA-Z0-9_ -]*$"
+					let search_for = "id"
+				endif
 				" Handle class name completion
 				" 1. Find lines of <link stylesheet>
 				" 1a. Check file for @import
@@ -76,9 +81,22 @@ function! htmlcomplete#CompleteTags(findstart, base)
 				let head = getline(search('<head\>'), search('<\/head>'))
 				let headjoined = join(copy(head), ' ')
 				if headjoined =~ '<style'
-					let stylehead = substitute(headjoined, '+>\*[', ' ', 'g')
-					let styleheadlines = split(stylehead)
-					let headclasslines = filter(copy(styleheadlines), "v:val =~ '\\([a-zA-Z0-9:]\\+\\)\\?\\.[a-zA-Z0-9_-]\\+'")
+					let stylehead = substitute(headjoined, '+>\*[,', ' ', 'g')
+					if search_for == 'class'
+						let styleheadlines = split(stylehead)
+						let headclasslines = filter(copy(styleheadlines), "v:val =~ '\\([a-zA-Z0-9:]\\+\\)\\?\\.[a-zA-Z0-9_-]\\+'")
+					else
+						let stylesheet = split(headjoined, '[{}]')
+						" Get all lines which fit id syntax
+						let classlines = filter(copy(stylesheet), "v:val =~ '#[a-zA-Z0-9_-]\\+'")
+						" Filter out possible color definitions
+						call filter(classlines, "v:val !~ ':\\s*#[a-zA-Z0-9_-]\\+'")
+						" Filter out complex border definitions
+						call filter(classlines, "v:val !~ '\\(none\\|hidden\\|dotted\\|dashed\\|solid\\|double\\|groove\\|ridge\\|inset\\|outset\\)\\s*#[a-zA-Z0-9_-]\\+'")
+						let templines = join(classlines, ' ')
+						let headclasslines = split(templines)
+						call filter(headclasslines, "v:val =~ '#[a-zA-Z0-9_-]\\+'")
+					endif
 					let internal = 1
 				else
 					let internal = 0
@@ -93,13 +111,15 @@ function! htmlcomplete#CompleteTags(findstart, base)
 						let styletable += [matchstr(line, "href\\s*=\\s*[\"']\\zs\\f\\+\\ze")]
 					endif
 				endfor
-				for file in filestable
+				for file in styletable
 					if filereadable(file)
 						let stylesheet = readfile(file)
 						let secimport = filter(copy(stylesheet), "v:val =~ '@import'")
 						if len(secimport) > 0
 							for line in secimport
-								let secimportfiles += [matchstr(line, "import\\s\\+\\(url(\\)\\?[\"']\\?\\zs\\f\\+\\ze")]
+								let secfile = matchstr(line, "import\\s\\+\\(url(\\)\\?[\"']\\?\\zs\\f\\+\\ze")
+								let secfile = fnamemodify(file, ":p:h").'/'.secfile
+								let secimportfiles += [secfile]
 							endfor
 						endif
 					endif
@@ -109,10 +129,24 @@ function! htmlcomplete#CompleteTags(findstart, base)
 				for file in cssfiles
 					if filereadable(file)
 						let stylesheet = readfile(file)
-						let stylefile = join(stylesheet)
-						let stylefile = substitute(stylefile, '+>\*[', ' ', 'g')
-						let stylesheet = split(stylefile)
-						let classlines = filter(copy(stylesheet), "v:val =~ '\\([a-zA-Z0-9:]\\+\\)\\?\\.[a-zA-Z0-9_-]\\+'")
+						let stylefile = join(stylesheet, ' ')
+						let stylefile = substitute(stylefile, '+>\*[,', ' ', 'g')
+						if search_for == 'class'
+							let stylesheet = split(stylefile)
+							let classlines = filter(copy(stylesheet), "v:val =~ '\\([a-zA-Z0-9:]\\+\\)\\?\\.[a-zA-Z0-9_-]\\+'")
+						else
+							let stylesheet = split(stylefile, '[{}]')
+							" Get all lines which fit id syntax
+							let classlines = filter(copy(stylesheet), "v:val =~ '#[a-zA-Z0-9_-]\\+'")
+							" Filter out possible color definitions
+							call filter(classlines, "v:val !~ ':\\s*#[a-zA-Z0-9_-]\\+'")
+							" Filter out complex border definitions
+							call filter(classlines, "v:val !~ '\\(none\\|hidden\\|dotted\\|dashed\\|solid\\|double\\|groove\\|ridge\\|inset\\|outset\\)\\s*#[a-zA-Z0-9_-]\\+'")
+							let templines = join(classlines, ' ')
+							let stylelines = split(templines)
+							let classlines = filter(stylelines, "v:val =~ '#[a-zA-Z0-9_-]\\+'")
+
+						endif
 					endif
 					" We gathered classes definitions from all external files
 					let classes += classlines
@@ -120,43 +154,71 @@ function! htmlcomplete#CompleteTags(findstart, base)
 				if internal == 1
 					let classes += headclasslines
 				endif
-				let elements = {}
-				for element in classes
-					if element =~ '^\.'
-						let class = matchstr(element, '^\.\zs[a-zA-Z][a-zA-Z0-9_-]*\ze')
-						let class = substitute(class, ':.*', '', '')
-						if has_key(elements, "common")
-							let elements["common"] .= " ".class
-						else
-							let elements["common"] = class
-						endif
-					else
-						let class = matchstr(element, '[a-zA-Z1-6]*\.\zs[a-zA-Z][a-zA-Z0-9_-]*\ze')
-						let tagname = tolower(matchstr(element, '[a-zA-Z1-6]*\ze.'))
-						if tagname != ''
-							if has_key(elements, tagname)
-								let elements[tagname] .= " ".class
+
+				if search_for == 'class'
+					let elements = {}
+					for element in classes
+						if element =~ '^\.'
+							let class = matchstr(element, '^\.\zs[a-zA-Z][a-zA-Z0-9_-]*\ze')
+							let class = substitute(class, ':.*', '', '')
+							if has_key(elements, 'common')
+								let elements['common'] .= ' '.class
 							else
-								let elements[tagname] = class
+								let elements['common'] = class
+							endif
+						else
+							let class = matchstr(element, '[a-zA-Z1-6]*\.\zs[a-zA-Z][a-zA-Z0-9_-]*\ze')
+							let tagname = tolower(matchstr(element, '[a-zA-Z1-6]*\ze.'))
+							if tagname != ''
+								if has_key(elements, tagname)
+									let elements[tagname] .= ' '.class
+								else
+									let elements[tagname] = class
+								endif
 							endif
 						endif
-					endif
-				endfor
+					endfor
 
-				if has_key(elements, tag) && has_key(elements, "common")
-					let values = split(elements[tag]." ".elements["common"])
-				elseif has_key(elements, tag) && !has_key(elements, "common")
-					let values = split(elements[tag])
-				elseif !has_key(elements, tag) && has_key(elements, "common")
-					let values = split(elements["common"])
-				else
-					return []
+					if has_key(elements, tag) && has_key(elements, 'common')
+						let values = split(elements[tag]." ".elements['common'])
+					elseif has_key(elements, tag) && !has_key(elements, 'common')
+						let values = split(elements[tag])
+					elseif !has_key(elements, tag) && has_key(elements, 'common')
+						let values = split(elements['common'])
+					else
+						return []
+					endif
+
+				elseif search_for == 'id'
+					" Find used IDs
+					" 1. Catch whole file
+					let filelines = getline(1, line('$'))
+					" 2. Find lines with possible id
+					let used_id_lines = filter(filelines, 'v:val =~ "id\\s*=\\s*[\"''][a-zA-Z0-9_-]\\+"')
+					" 3a. Join all filtered lines 
+					let id_string = join(used_id_lines, ' ')
+					" 3b. And split them to be sure each id is in separate item
+					let id_list = split(id_string, 'id\s*=\s*')
+					" 4. Extract id values
+					let used_id = map(id_list, 'matchstr(v:val, "[\"'']\\zs[a-zA-Z0-9_-]\\+\\ze")')
+					let joined_used_id = ','.join(used_id, ',').','
+
+					let allvalues = map(classes, 'matchstr(v:val, ".*#\\zs[a-zA-Z0-9_-]\\+")')
+
+					let values = []
+
+					for element in classes
+						if joined_used_id !~ ','.element.','
+							let values += [element]
+						endif
+
+					endfor
+
 				endif
 
 				" We need special version of sbase
 				let classbase = matchstr(a:base, ".*[\"']")
-			    let classquote = matchstr(classbase, '.$')
-
+				let classquote = matchstr(classbase, '.$')
 
 				let entered_class = matchstr(attr, ".*=\\s*[\"']\\zs.*")
 
@@ -229,6 +291,10 @@ function! htmlcomplete#CompleteTags(findstart, base)
 					let values = ["text", "password", "checkbox", "radio", "submit", "reset", "file", "hidden", "image", "button"]
 				elseif a:base =~ '^button'
 					let values = ["button", "submit", "reset"]
+				elseif a:base =~ '^style'
+					let values = ["text/css"]
+				elseif a:base =~ '^script'
+					let values = ["text/javascript"]
 				endif
 			else
 				return []
@@ -313,11 +379,11 @@ function! htmlcomplete#CompleteTags(findstart, base)
 		elseif tag == 'q'
 			let attrs = coreattrs + ["cite"]
 		elseif tag == 'script'
-			let attrs = ["id", "charset", "type", "src", "defer", "xml:space"]
+			let attrs = ["id", "charset", "type=\"text/javascript\"", "type", "src", "defer", "xml:space"]
 		elseif tag == 'select'
 			let attrs = coreattrs + ["name", "size", "multiple", "disabled", "tabindex", "onfocus", "onblur", "onchange"]
 		elseif tag == 'style'
-			let attrs = coreattrs + ["id", "type", "media", "title", "xml:space"]
+			let attrs = coreattrs + ["id", "type=\"text/css\"", "type", "media", "title", "xml:space"]
 		elseif tag == 'table'
 			let attrs = coreattrs + ["summary", "width", "border", "frame", "rules", "cellspacing", "cellpadding"]
 		elseif tag =~ '^\(thead\|tfoot\|tbody\|tr\)$'

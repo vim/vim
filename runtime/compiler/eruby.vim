@@ -24,13 +24,22 @@ endif
 let s:cpo_save = &cpo
 set cpo-=C
 
-CompilerSet makeprg=eruby
+if exists("eruby_compiler") && eruby_compiler == "eruby"
+  CompilerSet makeprg=eruby
+else
+  CompilerSet makeprg=erb
+endif
 
-CompilerSet errorformat=eruby:\ %f:%l:%m,
-		       \%E%f:%l:\ %m,
-		       \%-Z%p^,
-		       \%C%m,
-		       \%-G%.%#
+CompilerSet errorformat=
+    \eruby:\ %f:%l:%m,
+    \%+E%f:%l:\ parse\ error,
+    \%W%f:%l:\ warning:\ %m,
+    \%E%f:%l:in\ %*[^:]:\ %m,
+    \%E%f:%l:\ %m,
+    \%-C%\tfrom\ %f:%l:in\ %.%#,
+    \%-Z%\tfrom\ %f:%l,
+    \%-Z%p^,
+    \%-G%.%#
 
 let &cpo = s:cpo_save
 unlet s:cpo_save

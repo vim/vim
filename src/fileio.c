@@ -2796,14 +2796,22 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 	if (!buf_valid(buf))
 	    buf = NULL;
 	if (buf == NULL || (buf->b_ml.ml_mfp == NULL && !empty_memline)
-				       || did_cmd || nofile_err || aborting())
+				       || did_cmd || nofile_err
+#ifdef FEAT_EVAL
+				       || aborting()
+#endif
+				       )
 	{
 	    --no_wait_return;
 	    msg_scroll = msg_save;
 	    if (nofile_err)
 		EMSG(_("E676: No matching autocommands for acwrite buffer"));
 
-	    if (aborting() || nofile_err)
+	    if (nofile_err
+#ifdef FEAT_EVAL
+		    || aborting()
+#endif
+		    )
 		/* An aborting error, interrupt or exception in the
 		 * autocommands. */
 		return FAIL;
@@ -6021,8 +6029,10 @@ buf_check_timestamp(buf, focus)
 	     * Avoid being called recursively by setting "busy".
 	     */
 	    busy = TRUE;
+# ifdef FEAT_EVAL
 	    set_vim_var_string(VV_FCS_REASON, (char_u *)reason, -1);
 	    set_vim_var_string(VV_FCS_CHOICE, (char_u *)"", -1);
+# endif
 	    n = apply_autocmds(EVENT_FILECHANGEDSHELL,
 				      buf->b_fname, buf->b_fname, FALSE, buf);
 	    busy = FALSE;
@@ -6030,12 +6040,14 @@ buf_check_timestamp(buf, focus)
 	    {
 		if (!buf_valid(buf))
 		    EMSG(_("E246: FileChangedShell autocommand deleted buffer"));
+# ifdef FEAT_EVAL
 		s = get_vim_var_str(VV_FCS_CHOICE);
 		if (STRCMP(s, "reload") == 0 && *reason != 'd')
 		    reload = TRUE;
 		else if (STRCMP(s, "ask") == 0)
 		    n = FALSE;
 		else
+# endif
 		    return 2;
 	    }
 	    if (!n)
@@ -7978,12 +7990,18 @@ apply_autocmds_retval(event, fname, fname_io, force, buf, retval)
 {
     int		did_cmd;
 
+#ifdef FEAT_EVAL
     if (should_abort(*retval))
 	return FALSE;
+#endif
 
     did_cmd = apply_autocmds_group(event, fname, fname_io, force,
 						      AUGROUP_ALL, buf, NULL);
-    if (did_cmd && aborting())
+    if (did_cmd
+#ifdef FEAT_EVAL
+	    && aborting()
+#endif
+	    )
 	*retval = FAIL;
     return did_cmd;
 }

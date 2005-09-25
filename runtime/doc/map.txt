@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.0aa.  Last change: 2005 Aug 16
+*map.txt*       For Vim version 7.0aa.  Last change: 2005 Sep 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -306,11 +306,12 @@ If you type a space, then "foo" will get inserted, plus the space.  If you
 type "a", then "bar" will get inserted.
 {Vi does not allow ambiguous mappings}
 
-							*map_CTRL_C*
-It's not possible to use a CTRL-C in the {lhs}.  You just can't map CTRL-C.
-The reason is that CTRL-C must always be available to break a running command.
-Exception: When using the GUI version on MS-Windows CTRL-C can be mapped to
-allow a Copy command to the clipboard.  Use CTRL-Break to interrupt Vim.
+							*map_CTRL-C*
+Using CTRL-C in the {lhs} is possible, but it will only work when Vim is
+waiting for a key, not when Vim is busy with something.  When Vim is busy
+CTRL-C interrupts/breaks the command.
+When using the GUI version on MS-Windows CTRL-C can be mapped to allow a Copy
+command to the clipboard.  Use CTRL-Break to interrupt Vim.
 
 							*map_space_in_lhs*
 To include a space in {lhs} precede it with a CTRL-V (type two CTRL-Vs for

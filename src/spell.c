@@ -511,15 +511,15 @@ typedef struct suggest_S
 #define SCORE_RARE	180	/* rare word */
 #define SCORE_SWAP	90	/* swap two characters */
 #define SCORE_SWAP3	110	/* swap two characters in three */
-#define SCORE_REP	87	/* REP replacement */
+#define SCORE_REP	65	/* REP replacement */
 #define SCORE_SUBST	93	/* substitute a character */
 #define SCORE_SIMILAR	33	/* substitute a similar character */
 #define SCORE_SUBCOMP	33	/* substitute a composing character */
 #define SCORE_DEL	94	/* delete a character */
-#define SCORE_DELDUP	64	/* delete a duplicated character */
+#define SCORE_DELDUP	66	/* delete a duplicated character */
 #define SCORE_DELCOMP	28	/* delete a composing character */
 #define SCORE_INS	96	/* insert a character */
-#define SCORE_INSDUP	66	/* insert a duplicate character */
+#define SCORE_INSDUP	67	/* insert a duplicate character */
 #define SCORE_INSCOMP	30	/* insert a composing character */
 #define SCORE_NONWORD	103	/* change non-word to word char */
 
@@ -5049,7 +5049,17 @@ spell_read_aff(spin, fname)
 		if (itemcnt > 3 && items[3][0] != '#')
 		    smsg((char_u *)_(e_afftrailing), fname, lnum, items[3]);
 		if (do_rep)
+		{
+		    /* Replace underscore with space (can't include a space
+		     * directly). */
+		    for (p = items[1]; *p != NUL; mb_ptr_adv(p))
+			if (*p == '_')
+			    *p = ' ';
+		    for (p = items[2]; *p != NUL; mb_ptr_adv(p))
+			if (*p == '_')
+			    *p = ' ';
 		    add_fromto(spin, &spin->si_rep, items[1], items[2]);
+		}
 	    }
 	    else if (STRCMP(items[0], "MAP") == 0 && itemcnt == 2)
 	    {
@@ -11081,13 +11091,21 @@ add_suggestion(su, gap, goodword, badlen, score, altscore, had_bonus, slang)
     int		had_bonus;	/* value for st_had_bonus */
     slang_T	*slang;		/* language for sound folding */
 {
+    int		goodlen = STRLEN(goodword);
     suggest_T   *stp;
     int		i;
     char_u	*p = NULL;
     int		c = 0;
+    int		attr = 0;
+    char_u	longword[MAXWLEN + 1];
 
-    /* Check that the word wasn't banned. */
-    if (was_banned(su, goodword))
+    /* Check that the word really is valid.  Esp. for banned words and for
+     * split words, such as "the the".  Need to append what follows to check
+     * for that. */
+    STRCPY(longword, goodword);
+    vim_strncpy(longword + goodlen, su->su_badptr + badlen, MAXWLEN - goodlen);
+    (void)spell_check(curwin, longword, &attr, NULL);
+    if (attr != 0)
 	return;
 
     /* If past "su_badlen" and the rest is identical stop at "su_badlen".
@@ -11097,7 +11115,7 @@ add_suggestion(su, gap, goodword, badlen, score, altscore, had_bonus, slang)
     {
 	/* This assumes there was no case folding or it didn't change the
 	 * length... */
-	p = goodword + STRLEN(goodword) - i;
+	p = goodword + goodlen - i;
 	if (p > goodword && STRNICMP(su->su_badptr + su->su_badlen, p, i) == 0)
 	{
 	    badlen = su->su_badlen;
@@ -11112,7 +11130,7 @@ add_suggestion(su, gap, goodword, badlen, score, altscore, had_bonus, slang)
 	/* When replacing part of the word check that we actually change
 	 * something.  For "the the" a suggestion can be replacing the first
 	 * "the" with itself, since "the" wasn't banned. */
-	if (badlen == (int)STRLEN(goodword)
+	if (badlen == (int)goodlen
 			    && STRNCMP(su->su_badword, goodword, badlen) == 0)
 	    return;
     }

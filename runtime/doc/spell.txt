@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Sep 12
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Sep 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1123,6 +1123,10 @@ number, but it must be there.
 Don't include simple one-character replacements or swaps.  Vim will try these
 anyway.  You can include whole words if you want to, but you might want to use
 the "file:" item in 'spellsuggest' instead.
+
+You can include a space by using an underscore:
+
+	REP the_the the ~
 
 
 SIMILAR CHARACTERS					*spell-MAP*

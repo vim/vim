@@ -295,6 +295,7 @@ edit(cmdchar, startln, count)
      */
     if (cmdchar != 'r' && cmdchar != 'v')
     {
+# ifdef FEAT_EVAL
 	if (cmdchar == 'R')
 	    ptr = (char_u *)"r";
 	else if (cmdchar == 'V')
@@ -302,6 +303,7 @@ edit(cmdchar, startln, count)
 	else
 	    ptr = (char_u *)"i";
 	set_vim_var_string(VV_INSERTMODE, ptr, 1);
+# endif
 	apply_autocmds(EVENT_INSERTENTER, NULL, NULL, FALSE, curbuf);
     }
 #endif
@@ -6580,9 +6582,11 @@ ins_insert(replaceState)
 #endif
 
 #ifdef FEAT_AUTOCMD
+# ifdef FEAT_EVAL
     set_vim_var_string(VV_INSERTMODE,
 		   (char_u *)((State & REPLACE_FLAG) ? "i" :
 			    replaceState == VREPLACE ? "v" : "r"), 1);
+# endif
     apply_autocmds(EVENT_INSERTCHANGE, NULL, NULL, FALSE, curbuf);
 #endif
     if (State & REPLACE_FLAG)

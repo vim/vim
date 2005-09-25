@@ -1,4 +1,4 @@
-*diff.txt*      For Vim version 7.0aa.  Last change: 2005 Apr 26
+*diff.txt*      For Vim version 7.0aa.  Last change: 2005 Sep 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -218,7 +218,7 @@ It is an error if there is no change for the cursor to move to.
 
 ==============================================================================
 4. Diff copying			*copy-diffs* *E99* *E100* *E101* *E102* *E103*
-
+								*merge*
 There are two commands to copy text from one buffer to another.  The result is
 that the buffers will be equal within the specified range.
 
@@ -235,6 +235,8 @@ that the buffers will be equal within the specified range.
 		Modify another buffer to undo difference with the current
 		buffer.  Just like ":diffget" but the other buffer is modified
 		instead of the current one.
+		When [bufspec] is omitted and there is more than one other
+		buffer in diff mode where 'modifiable' is set this fails.
 		See below for [range].
 
 							*do*

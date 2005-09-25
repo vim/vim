@@ -79,10 +79,10 @@ syn region rubySymbol			start=":\@<!:\"" end="\"" skip="\\\\\|\\\""
 syn match  rubyBlockParameter		"\%(\%(\<do\>\|{\)\s*\)\@<=|\s*\zs[( ,a-zA-Z0-9_*)]\+\ze\s*|" display
 
 syn match rubyPredefinedVariable #$[!$&"'*+,./0:;<=>?@\`~1-9]#
-syn match rubyPredefinedVariable "$_\>"								display
-syn match rubyPredefinedVariable "$-[0FIKadilpvw]\>"						display
-syn match rubyPredefinedVariable "$\%(deferr\|defout\|stderr\|stdin\|stdout\)\>"		display
-syn match rubyPredefinedVariable "$\%(DEBUG\|FILENAME\|KCODE\|LOAD_PATH\|SAFE\|VERBOSE\)\>"	display
+syn match rubyPredefinedVariable "$_\>"											   display
+syn match rubyPredefinedVariable "$-[0FIKadilpvw]\>"									   display
+syn match rubyPredefinedVariable "$\%(deferr\|defout\|stderr\|stdin\|stdout\)\>"					   display
+syn match rubyPredefinedVariable "$\%(DEBUG\|FILENAME\|KCODE\|LOADED_FEATURES\|LOAD_PATH\|PROGRAM_NAME\|SAFE\|VERBOSE\)\>" display
 syn match rubyPredefinedConstant "\%(\%(\.\@<!\.\)\@<!\|::\)\_s*\zs\%(MatchingData\|ARGF\|ARGV\|ENV\)\>\%(\s*(\)\@!"
 syn match rubyPredefinedConstant "\%(\%(\.\@<!\.\)\@<!\|::\)\_s*\zs\%(DATA\|FALSE\|NIL\|RUBY_PLATFORM\|RUBY_RELEASE_DATE\)\>\%(\s*(\)\@!"
 syn match rubyPredefinedConstant "\%(\%(\.\@<!\.\)\@<!\|::\)\_s*\zs\%(RUBY_VERSION\|STDERR\|STDIN\|STDOUT\|TOPLEVEL_BINDING\|TRUE\)\>\%(\s*(\)\@!"
@@ -166,8 +166,8 @@ if !exists("ruby_no_expensive")
   syn region rubyNoDoBlock matchgroup=rubyControl start="\<\%(case\|begin\)\>" start="\%(^\|\.\.\.\=\|[,;=([<>~\*/%!&^|+-]\)\s*\zs\%(if\|unless\)\>" end="\<end\>" contains=ALLBUT,@rubyExtendedStringSpecial,rubyTodo fold
 
   " statement with optional *do*
-  syn region rubyOptDoLine matchgroup=rubyControl start="\<for\>" start="\%(\%(^\|\.\.\.\=\|[,;=([<>~\*/%!&^|+-]\)\s*\)\@<=\<\%(until\|while\)\>" end="\%(\<do\>\|:\)" end="\ze\%(;\|$\)" oneline contains=ALLBUT,@rubyExtendedStringSpecial,rubyTodo
-  syn region rubyOptDoBlock start="\<for\>" start="\%(\%(^\|\.\.\.\=\|[,;=([<>~\*/%!&^|+-]\)\s*\)\@<=\<\%(until\|while\)\>" matchgroup=rubyControl end="\<end\>" contains=ALLBUT,@rubyExtendedStringSpecial,rubyTodo nextgroup=rubyOptDoLine fold
+  syn region rubyOptDoLine matchgroup=rubyControl start="\<for\>" start="\%(\%(^\|\.\.\.\=\|[?:,;=([<>~\*/%!&^|+-]\|\%(\<[_[:lower:]][_[:alnum:]]*\)\@<![!=?]\)\s*\)\@<=\<\%(until\|while\)\>" end="\%(\<do\>\|:\)" end="\ze\%(;\|$\)" oneline contains=ALLBUT,@rubyExtendedStringSpecial,rubyTodo
+  syn region rubyOptDoBlock start="\<for\>" start="\%(\%(^\|\.\.\.\=\|[:,;([<>~\*/%&^|+-]\|\%(\<[_[:lower:]][_[:alnum:]]*\)\@<![!=?]\)\s*\)\@<=\<\%(until\|while\)\>" matchgroup=rubyControl end="\<end\>" contains=ALLBUT,@rubyExtendedStringSpecial,rubyTodo nextgroup=rubyOptDoLine fold
 
   if !exists("ruby_minlines")
     let ruby_minlines = 50
@@ -196,7 +196,7 @@ syn keyword rubyBeginEnd	BEGIN END
 if !exists("ruby_no_special_methods")
   syn keyword rubyAccess    public protected private
   syn keyword rubyAttribute attr attr_accessor attr_reader attr_writer
-  syn keyword rubyControl   abort at_exit exit fork loop trap
+  syn match   rubyControl   "\<\%(exit!\|\%(abort\|at_exit\|exit\|fork\|loop\|trap\)\>\)"
   syn keyword rubyEval      eval class_eval instance_eval module_eval
   syn keyword rubyException raise fail catch throw
   syn keyword rubyInclude   autoload extend include load require

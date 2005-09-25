@@ -1,7 +1,8 @@
 " netrw.vim: Handles file transfer and remote directory listing across a network
 "            PLUGIN PORTION
-" Date:		Sep 08, 2005
+" Last Change:	Aug 29, 2005
 " Maintainer:	Charles E Campbell, Jr <drchipNOSPAM at campbellfamily dot biz>
+" Version:	66
 " License:	Vim License  (see vim's :help license)
 " GetLatestVimScripts: 1075 1 :AutoInstall: netrw.vim
 " Copyright:    Copyright (C) 1999-2005 Charles E. Campbell, Jr. {{{1
@@ -20,6 +21,17 @@
 
 " ---------------------------------------------------------------------
 " Load Once: {{{1
+if exists("g:loaded_netrw") || &cp
+  finish
+endif
+if v:version < 600
+ echoerr "***netrw*** doesn't support Vim version ".v:version
+ finish
+endif
+let g:loaded_netrw  = "v66"
+if v:version < 700
+ let loaded_explorer = 1
+endif
 let s:keepcpo= &cpo
 set cpo&vim
 
@@ -126,7 +138,7 @@ endfun
 "               example and as a fix for a Windows 95 problem: in my
 "               experience, win95's ftp always dumped four blank lines
 "               at the end of the transfer.
-if has("win95") && exists("g:netrw_win95ftp") && g:netrw_win95ftp
+if has("win95") && g:netrw_win95ftp
  fun! NetReadFixup(method, line1, line2)
 "   call Dfunc("NetReadFixup(method<".a:method."> line1=".a:line1." line2=".a:line2.")")
    if method == 3   " ftp (no <.netrc>)

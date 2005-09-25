@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Sep 19
+" Last Change:	2005 Sep 25
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -16,7 +16,7 @@ set cpo&vim
 augroup filetypedetect
 
 " Ignored extensions
-au BufNewFile,BufRead *.orig,*.bak,*.old,*.new,*.rpmsave,*.rpmnew
+au BufNewFile,BufRead ?\+.orig,?\+.bak,?\+.old,?\+.new,?\+.rpmsave,?\+.rpmnew
 	\ exe "doau filetypedetect BufRead " . expand("<afile>:r")
 au BufNewFile,BufRead *~
 	\ let s:name = expand("<afile>") |
@@ -26,7 +26,7 @@ au BufNewFile,BufRead *~
 	\ endif |
 	\ unlet s:name |
 	\ unlet s:short
-au BufNewFile,BufRead *.in
+au BufNewFile,BufRead ?\+.in
 	\ if expand("<afile>:t") != "configure.in" |
 	\   exe "doau filetypedetect BufRead " . expand("<afile>:r") |
 	\ endif

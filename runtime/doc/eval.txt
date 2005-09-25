@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Sep 20
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Sep 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -2547,11 +2547,12 @@ getcmdpos()						*getcmdpos()*
 getcmdtype()						*getcmdtype()*
 		Return the current command-line type. Possible return values
 		are:
-		    /	Search forward command
-		    ?	Search backward command
-		    :	Ex-command mode
-		    @	Input mode
-		    >	Debug mode
+		    :	normal Ex command
+		    >	debug mode command |debug-mode|
+		    /	forward search command
+		    ?	backward search command
+		    @	|input()| command
+		    -	|:insert| or |:append| command
 		Only works when editing the command line, thus requires use of
 		|c_CTRL-\_e| or |c_CTRL-R_=|.  Returns an empty string
 		otherwise.
@@ -2939,8 +2940,8 @@ input({prompt} [, {text} [, {completion}]])		*input()*
 			:  echo "Cheers!"
 			:endif
 <
-		If the optional {text} is present, this is used for the
-		default reply, as if the user typed this.  Example: >
+		If the optional {text} is present and not empty, this is used
+		for the default reply, as if the user typed this.  Example: >
 			:let color = input("Color? ", "white")
 
 <		The optional {completion} argument specifies the type of
@@ -4049,10 +4050,30 @@ soundfold({word})
 		the method can be quite slow.
 
 							*spellbadword()*
-spellbadword()	Return the badly spelled word under or after the cursor.
-		The cursor is moved to the start of the bad word.
-		When no bad word is found in the cursor line an empty String
-		is returned and the cursor doesn't move.
+spellbadword([{sentence}])
+		Without argument: The result is the badly spelled word under
+		or after the cursor.  The cursor is moved to the start of the
+		bad word.  When no bad word is found in the cursor line the
+		result is an empty string and the cursor doesn't move.
+
+		With argument: The result is the first word in {sentence} that
+		is badly spelled.  If there are no spelling mistakes the
+		result is an empty string.
+
+		The return value is a list with two items:
+		- The badly spelled word or an empty string.
+		- The type of the spelling error:
+		  	"bad"		spelling mistake
+			"rare"		rare word
+			"local"		word only valid in another region
+			"caps"		word should start with Capital
+		Example: >
+			echo spellbadword("the quik brown fox")
+<			['quik', 'bad'] ~
+
+		The spelling information for the current window is used.  The
+		'spell' option must be set and the value of 'spelllang' is
+		used.
 
 							*spellsuggest()*
 spellsuggest({word} [, {max}])

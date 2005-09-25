@@ -202,13 +202,6 @@
 #endif
 
 /*
- * +textobjects		Text objects: "vaw", "das", etc.
- */
-#ifdef FEAT_NORMAL
-# define FEAT_TEXTOBJ
-#endif
-
-/*
  * +visual		Visual mode.
  * +visualextra		Extra features for Visual mode (mostly block operators).
  */
@@ -383,9 +376,17 @@
  * +profile		Profiling for functions and scripts.
  */
 #if defined(FEAT_HUGE) \
+	&& defined(FEAT_EVAL) \
 	&& ((defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)) \
 		|| defined(WIN3264))
 # define FEAT_PROFILE
+#endif
+
+/*
+ * +textobjects		Text objects: "vaw", "das", etc.
+ */
+#if defined(FEAT_NORMAL) && defined(FEAT_EVAL)
+# define FEAT_TEXTOBJ
 #endif
 
 /*

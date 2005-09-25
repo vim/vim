@@ -428,13 +428,10 @@ getcmdline(firstc, count, indent)
 	    if (p_wmnu && wild_menu_showing != 0)
 	    {
 		int skt = KeyTyped;
-		int old_RedrawingDisabled;
+		int old_RedrawingDisabled = RedrawingDisabled;
 
 		if (ccline.input_fn)
-		{
-		    old_RedrawingDisabled = RedrawingDisabled;
 		    RedrawingDisabled = 0;
-		}
 
 		if (wild_menu_showing == WM_SCROLLED)
 		{
@@ -463,10 +460,10 @@ getcmdline(firstc, count, indent)
 # endif
 		    redraw_statuslines();
 		}
-		if (ccline.input_fn)
-		    RedrawingDisabled = old_RedrawingDisabled;
 		KeyTyped = skt;
 		wild_menu_showing = 0;
+		if (ccline.input_fn)
+		    RedrawingDisabled = old_RedrawingDisabled;
 	    }
 #endif
 	}
@@ -4876,7 +4873,7 @@ set_cmdline_pos(pos)
 
 /*
  * Get the current command-line type.
- * Returns ':' or '/' or '?' or '@' or '>'
+ * Returns ':' or '/' or '?' or '@' or '>' or '-'
  * Only works when the command line is being edited.
  * Returns NUL when something is wrong.
  */
@@ -4887,6 +4884,8 @@ get_cmdline_type()
 
     if (p == NULL)
 	return NUL;
+    if (p->cmdfirstc == NUL)
+	return (p->input_fn) ? '@' : '-';
     return p->cmdfirstc;
 }
 

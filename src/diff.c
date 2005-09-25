@@ -1905,7 +1905,10 @@ ex_diffgetput(eap)
     {
 	/* No argument: Find the other buffer in the list of diff buffers. */
 	for (idx_other = 0; idx_other < DB_COUNT; ++idx_other)
-	    if (diffbuf[idx_other] != curbuf && diffbuf[idx_other] != NULL)
+	    if (diffbuf[idx_other] != curbuf
+		    && diffbuf[idx_other] != NULL
+		    && (eap->cmdidx != CMD_diffput
+					       || diffbuf[idx_other]->b_p_ma))
 		break;
 	if (idx_other == DB_COUNT)
 	{
@@ -1915,7 +1918,9 @@ ex_diffgetput(eap)
 
 	/* Check that there isn't a third buffer in the list */
 	for (i = idx_other + 1; i < DB_COUNT; ++i)
-	    if (diffbuf[i] != curbuf && diffbuf[i] != NULL)
+	    if (diffbuf[i] != curbuf
+		    && diffbuf[i] != NULL
+		    && (eap->cmdidx != CMD_diffput || diffbuf[i]->b_p_ma))
 	    {
 		EMSG(_("E101: More than two buffers in diff mode, don't know which one to use"));
 		return;

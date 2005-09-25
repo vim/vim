@@ -82,7 +82,7 @@ let s:end_start_regex = '^\s*\zs\<\%(module\|class\|def\|if\|for' .
 let s:end_middle_regex = '\<\%(ensure\|else\|\%(\%(^\|;\)\s*\)\@<=\<rescue\>\|when\|elsif\)\>'
 
 " Regex that defines the end-match for the 'end' keyword.
-let s:end_end_regex = '\%(^\|[^.]\)\@<=\<end\>'
+let s:end_end_regex = '\%(^\|[^.:]\)\@<=\<end\>'
 
 " Expression used for searchpair() call for finding match for 'end' keyword.
 let s:end_skip_expr = s:skip_expr .
@@ -244,17 +244,12 @@ function GetRubyIndent()
   " If we have a deindenting keyword, find its match and indent to its level.
   " TODO: this is messy
   if s:Match(v:lnum, s:ruby_deindent_keywords)
-"    let lnum = s:PrevNonBlankNonString(v:lnum - 1)
-"
-"    if lnum == 0
-"      return 0
-"    endif
-"
-"    return indent(v:lnum) - &sw
     call cursor(v:lnum, 1)
     if searchpair(s:end_start_regex, s:end_middle_regex, s:end_end_regex, 'bW',
             \ s:end_skip_expr) > 0
-      if strpart(getline('.'), 0, col('.') - 1) =~ '=\s*'
+      let line = getline('.')
+      if strpart(line, 0, col('.') - 1) =~ '=\s*$' &&
+       \ strpart(line, col('.') - 1, 2) !~ 'do'
         let ind = virtcol('.') - 1
       else
         let ind = indent('.')
@@ -380,5 +375,3 @@ endfunction
 
 let &cpo = s:cpo_save
 unlet s:cpo_save
-
-" vim: nowrap sw=2 sts=2 ts=8 ff=unix:
