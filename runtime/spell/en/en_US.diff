@@ -1,5 +1,5 @@
 *** en_US.orig.aff	Fri Apr 15 13:20:36 2005
---- en_US.aff	Tue Sep 20 19:41:00 2005
+--- en_US.aff	Wed Sep 28 22:06:01 2005
 ***************
 *** 3,4 ****
 --- 3,134 ----
@@ -190,9 +190,9 @@
 *** 188 ****
 --- 321,325 ----
   REP shun cion
-+ REP the_the the
-+ REP an_an an
 + REP an_a a
++ REP an_a an
++ REP a_an a
 + REP a_an an
 *** en_US.orig.dic	Fri Apr 15 13:20:36 2005
 --- en_US.dic	Wed Sep 21 11:36:06 2005

@@ -1,6 +1,6 @@
 /* spell.c */
-int spell_check __ARGS((win_T *wp, char_u *ptr, int *attrp, int *capcol));
-int spell_move_to __ARGS((win_T *wp, int dir, int allwords, int curline, int *attrp));
+int spell_check __ARGS((win_T *wp, char_u *ptr, hlf_T *attrp, int *capcol));
+int spell_move_to __ARGS((win_T *wp, int dir, int allwords, int curline, hlf_T *attrp));
 void spell_cat_line __ARGS((char_u *buf, char_u *line, int maxlen));
 char_u *did_set_spelllang __ARGS((buf_T *buf));
 void spell_free_all __ARGS((void));

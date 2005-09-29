@@ -1700,7 +1700,7 @@ cmdline_changed:
 #ifdef FEAT_RIGHTLEFT
 	if (cmdmsg_rl
 # ifdef FEAT_ARABIC
-		|| p_arshape
+		|| (p_arshape && !p_tbidi && enc_utf8)
 # endif
 		)
 	    /* Always redraw the whole command line to fix shaping and
@@ -1873,7 +1873,11 @@ set_cmdspos_cursor()
 
     set_cmdspos();
     if (KeyTyped)
+    {
 	m = Columns * Rows;
+	if (m < 0)	/* overflow, Columns or Rows at weird value */
+	    m = MAXCOL;
+    }
     else
 	m = MAXCOL;
     for (i = 0; i < ccline.cmdlen && i < ccline.cmdpos; ++i)
@@ -2641,7 +2645,11 @@ put_on_cmdline(str, len, redraw)
 #endif
 	{
 	    if (KeyTyped)
+	    {
 		m = Columns * Rows;
+		if (m < 0)	/* overflow, Columns or Rows at weird value */
+		    m = MAXCOL;
+	    }
 	    else
 		m = MAXCOL;
 	    for (i = 0; i < len; ++i)

@@ -128,7 +128,7 @@ static foldinfo_T win_foldinfo;	/* info for 'foldcolumn' */
 static schar_T	*current_ScreenLine;
 
 static void win_update __ARGS((win_T *wp));
-static void win_draw_end __ARGS((win_T *wp, int c1, int c2, int row, int endrow, enum hlf_value hl));
+static void win_draw_end __ARGS((win_T *wp, int c1, int c2, int row, int endrow, hlf_T hl));
 #ifdef FEAT_FOLDING
 static void fold_line __ARGS((win_T *wp, long fold_count, foldinfo_T *foldinfo, linenr_T lnum, int row));
 static void fill_foldcolumn __ARGS((char_u *p, win_T *wp, int closed, linenr_T lnum));
@@ -1904,7 +1904,7 @@ win_draw_end(wp, c1, c2, row, endrow, hl)
     int		c2;
     int		row;
     int		endrow;
-    enum hlf_value hl;
+    hlf_T	hl;
 {
 #if defined(FEAT_FOLDING) || defined(FEAT_SIGNS) || defined(FEAT_CMDWIN)
     int		n = 0;
@@ -2531,7 +2531,7 @@ win_line(wp, lnum, startrow, endrow)
 #ifdef FEAT_DIFF
     int		filler_lines;		/* nr of filler lines to be drawn */
     int		filler_todo;		/* nr of filler lines still to do + 1 */
-    enum hlf_value diff_hlf = (enum hlf_value)0; /* type of diff highlighting */
+    hlf_T	diff_hlf = (hlf_T)0;	/* type of diff highlighting */
     int		change_start = MAXCOL;	/* first col of changed area */
     int		change_end = -1;	/* last col of changed area */
 #endif
@@ -2926,22 +2926,28 @@ win_line(wp, lnum, startrow, endrow)
 	if (has_spell)
 	{
 	    int		len;
+	    hlf_T	spell_hlf = HLF_COUNT;
 
 	    pos = wp->w_cursor;
 	    wp->w_cursor.lnum = lnum;
 	    wp->w_cursor.col = ptr - line;
-	    len = spell_move_to(wp, FORWARD, TRUE, TRUE, &spell_attr);
+	    len = spell_move_to(wp, FORWARD, TRUE, TRUE, &spell_hlf);
 	    if (len == 0 || (int)wp->w_cursor.col > ptr - line)
 	    {
 		/* no bad word found at line start, don't check until end of a
 		 * word */
-		spell_attr = 0;
+		spell_hlf = HLF_COUNT;
 		word_end = spell_to_word_end(ptr, wp->w_buffer) - line + 1;
 	    }
 	    else
+	    {
 		/* bad word found, use attributes until end of word */
 		word_end = wp->w_cursor.col + len + 1;
 
+		/* Turn index into actual attributes. */
+		if (spell_hlf != HLF_COUNT)
+		    spell_attr = highlight_attr[spell_hlf];
+	    }
 	    wp->w_cursor = pos;
 
 	    /* Need to restart syntax highlighting for this line. */
@@ -3353,7 +3359,7 @@ win_line(wp, lnum, startrow, endrow)
 		char_attr = search_attr;
 
 #ifdef FEAT_DIFF
-	    if (diff_hlf != (enum hlf_value)0 && n_extra == 0)
+	    if (diff_hlf != (hlf_T)0 && n_extra == 0)
 	    {
 		if (diff_hlf == HLF_CHD && ptr - line >= change_start)
 		    diff_hlf = HLF_TXD;		/* changed text */
@@ -3719,6 +3725,7 @@ win_line(wp, lnum, startrow, endrow)
 		    {
 			char_u	*prev_ptr, *p;
 			int	len;
+			hlf_T	spell_hlf = HLF_COUNT;
 # ifdef FEAT_MBYTE
 			if (has_mbyte)
 			{
@@ -3736,23 +3743,23 @@ win_line(wp, lnum, startrow, endrow)
 			else
 			    p = prev_ptr;
 			cap_col -= (prev_ptr - line);
-			len = spell_check(wp, p, &spell_attr, &cap_col);
+			len = spell_check(wp, p, &spell_hlf, &cap_col);
 			word_end = v + len;
 
 			/* In Insert mode only highlight a word that
 			 * doesn't touch the cursor. */
-			if (spell_attr != 0
+			if (spell_hlf != HLF_COUNT
 				&& (State & INSERT) != 0
 				&& wp->w_cursor.lnum == lnum
 				&& wp->w_cursor.col >=
 						    (colnr_T)(prev_ptr - line)
 				&& wp->w_cursor.col < (colnr_T)word_end)
 			{
-			    spell_attr = 0;
+			    spell_hlf = HLF_COUNT;
 			    spell_redraw_lnum = lnum;
 			}
 
-			if (spell_attr == 0 && p != prev_ptr
+			if (spell_hlf == HLF_COUNT && p != prev_ptr
 				       && (p - nextline) + len > nextline_idx)
 			{
 			    /* Remember that the good word continues at the
@@ -3760,6 +3767,10 @@ win_line(wp, lnum, startrow, endrow)
 			    checked_lnum = lnum + 1;
 			    checked_col = (p - nextline) + len - nextline_idx;
 			}
+
+			/* Turn index into actual attributes. */
+			if (spell_hlf != HLF_COUNT)
+			    spell_attr = highlight_attr[spell_hlf];
 
 			if (cap_col > 0)
 			{
@@ -3889,7 +3900,7 @@ win_line(wp, lnum, startrow, endrow)
 		     * "$". */
 		    if (
 # ifdef FEAT_DIFF
-			    diff_hlf == (enum hlf_value)0
+			    diff_hlf == (hlf_T)0
 #  ifdef LINE_ATTR
 			    &&
 #  endif
@@ -3976,7 +3987,7 @@ win_line(wp, lnum, startrow, endrow)
 #if defined(FEAT_DIFF) || defined(LINE_ATTR)
 		else if ((
 # ifdef FEAT_DIFF
-			    diff_hlf != (enum hlf_value)0
+			    diff_hlf != (hlf_T)0
 #  ifdef LINE_ATTR
 			    ||
 #  endif
@@ -6398,6 +6409,10 @@ screen_draw_rectangle(row, col, height, width, invert)
     int		r, c;
     int		off;
 
+    /* Can't use ScreenLines unless initialized */
+    if (ScreenLines == NULL)
+	return;
+
     if (invert)
 	screen_char_attr = HL_INVERSE;
     for (r = row; r < row + height; ++r)
@@ -6696,6 +6711,7 @@ screenalloc(clear)
     unsigned	    *new_LineOffset;
     char_u	    *new_LineWraps;
     static int	    entered = FALSE;		/* avoid recursiveness */
+    static int	    did_outofmem_msg = FALSE;	/* did outofmem message */
 
     /*
      * Allocation of the screen buffers is done only when the size changes and
@@ -6790,7 +6806,15 @@ screenalloc(clear)
 	    || new_LineWraps == NULL
 	    || outofmem)
     {
-	do_outofmem_msg((long_u)((Rows + 1) * Columns));    /* guess the size */
+	if (ScreenLines != NULL || !did_outofmem_msg)
+	{
+	    /* guess the size */
+	    do_outofmem_msg((long_u)((Rows + 1) * Columns));
+
+	    /* Remember we did this to avoid getting outofmem messages over
+	     * and over again. */
+	    did_outofmem_msg = TRUE;
+	}
 	vim_free(new_ScreenLines);
 	new_ScreenLines = NULL;
 #ifdef FEAT_MBYTE
@@ -6812,6 +6836,8 @@ screenalloc(clear)
     }
     else
     {
+	did_outofmem_msg = FALSE;
+
 	for (new_row = 0; new_row < Rows; ++new_row)
 	{
 	    new_LineOffset[new_row] = new_row * Columns;
@@ -6844,7 +6870,7 @@ screenalloc(clear)
 		(void)vim_memset(new_ScreenAttrs + new_row * Columns,
 					0, (size_t)Columns * sizeof(sattr_T));
 		old_row = new_row + (screen_Rows - Rows);
-		if (old_row >= 0)
+		if (old_row >= 0 && ScreenLines != NULL)
 		{
 		    if (screen_Columns < Columns)
 			len = screen_Columns;

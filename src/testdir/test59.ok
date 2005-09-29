@@ -30,7 +30,7 @@ ok
 Ok
 ['OK', 'Uk', 'Put']
 test
-['test', 'Test', 'testn']
+['Test', 'testn', 'testen']
 déôl
 ['deol', 'déôr', 'test']
 end
@@ -87,7 +87,7 @@ end
 the
 ['put', 'uk', 'test']
 test
-['test', 'Test', 'testn']
+['Test', 'testn', 'testen']
 déôl
 ['deol', 'déôr', 'test']
 
@@ -99,13 +99,13 @@ mï
 bad
 ['foo', 'mï']
 bar
-['foobar', 'foo', 'mï']
+['barfoo', 'foobar', 'foo']
 la
 ['mï', 'foo']
 foomï
 ['foo mï', 'foo', 'foofoo']
 barmï
-['barfoo', 'barbar', 'mï']
+['barfoo', 'mï', 'barbar']
 mïfoo
 ['mï foo', 'foo', 'foofoo']
 mïbar

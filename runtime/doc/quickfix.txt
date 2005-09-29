@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 7.0aa.  Last change: 2005 Aug 31
+*quickfix.txt*  For Vim version 7.0aa.  Last change: 2005 Sep 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -635,7 +635,7 @@ The "%f" conversion may depend on the current 'isfname' setting.  "~/" is
 expanded to the home directory and environment variables are expanded.
 
 The "%f" and "%m" conversions have to detect the end of the string.  This
-normally happens by matching following characters and items.  When nohting is
+normally happens by matching following characters and items.  When nothing is
 following the rest of the line is matched.  If "%f" is followed by a '%' or a
 backslash, it will look for a sequence of 'isfname' characters.
 

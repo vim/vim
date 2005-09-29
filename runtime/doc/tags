@@ -5083,7 +5083,6 @@ g'a	motion.txt	/*g'a*
 g,	motion.txt	/*g,*
 g0	motion.txt	/*g0*
 g8	various.txt	/*g8*
-g:netrw-a	pi_netrw.txt	/*g:netrw-a*
 g:netrw_alto	pi_netrw.txt	/*g:netrw_alto*
 g:netrw_altv	pi_netrw.txt	/*g:netrw_altv*
 g:netrw_cygwin	pi_netrw.txt	/*g:netrw_cygwin*
@@ -5856,6 +5855,7 @@ netrw-O	pi_netrw.txt	/*netrw-O*
 netrw-R	pi_netrw.txt	/*netrw-R*
 netrw-S	pi_netrw.txt	/*netrw-S*
 netrw-U	pi_netrw.txt	/*netrw-U*
+netrw-a	pi_netrw.txt	/*netrw-a*
 netrw-activate	pi_netrw.txt	/*netrw-activate*
 netrw-b	pi_netrw.txt	/*netrw-b*
 netrw-bookmark	pi_netrw.txt	/*netrw-bookmark*

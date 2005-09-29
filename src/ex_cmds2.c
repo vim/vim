@@ -3901,7 +3901,15 @@ ex_language(eap)
 		 * FEAT_GETTEXT isn't defined, so that shell commands use this
 		 * value. */
 		if (what == LC_ALL)
+		{
 		    vim_setenv((char_u *)"LANG", name);
+# ifdef WIN32
+		    /* Apparently MS-Windows printf() may cause a crash when
+		     * we give it 8-bit text while it's expecting text in the
+		     * current locale.  This call avoids that. */
+		    setlocale(LC_CTYPE, "C");
+# endif
+		}
 		if (what != LC_CTYPE)
 		{
 		    char_u	*mname;

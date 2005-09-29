@@ -1,5 +1,5 @@
-*** es_MX.orig.aff	Thu Aug 25 19:11:21 2005
---- es_MX.aff	Thu Aug 25 19:13:08 2005
+*** es_MX.orig.aff	Thu Aug 25 19:19:45 2005
+--- es_MX.aff	Thu Aug 25 19:19:45 2005
 ***************
 *** 1,4 ****
 ! SET ISO8859-1
@@ -6959,3 +6959,17 @@
 ! SFX Z eguir iguiéndonoslas eguir
 ! SFX Z eguir iguiéndonosle eguir
 ! SFX Z eguir iguiéndonosles eguir
+*** es_MX.orig.dic	Thu Aug 25 19:19:45 2005
+--- es_MX.dic	Thu Aug 25 20:15:59 2005
+***************
+*** 1218,1220 ****
+  Internet
+- intraocular
+  Irapuato
+--- 1218,1219 ----
+***************
+*** 33345,33347 ****
+  nanear/PSVWX
+- nanche/S
+  nanjea/S
+--- 33344,33345 ----

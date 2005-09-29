@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Sep 25
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Sep 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3649,8 +3649,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 	value is for C programs.  This option is used for the commands "[i",
 	"]I", "[d", etc.
 	Normally the 'isfname' option is used to recognize the file name that
-	comes after the matched pattern.  But if both "\zs" and "\ze" appear
-	in the pattern then the text spanned by them is used as the file name.
+	comes after the matched pattern.  But if "\zs" appears in the pattern
+	then the text matched from "\zs" to the end, or until "\ze" if it
+	appears, is used as the file name.  Use this to include characters
+	that are not in 'isfname', such as a space.  You can then use
+	'includeexpr' to process the matched text.
 	See |option-backslash| about including spaces and backslashes.
 
 						*'includeexpr'* *'inex'*
@@ -3699,7 +3702,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	'smartindent' indenting.
 	When 'paste' is set this option is not used for indenting.
 	The expression is evaluated with |v:lnum| set to the line number for
-	which the indent is to be computed.  The cursor is also as this line
+	which the indent is to be computed.  The cursor is also in this line
 	when the expression is evaluated (but it may be moved around).
 	The expression must return the number of spaces worth of indent.  It
 	can return "-1" to keep the current indent (this means 'autoindent' is
@@ -5662,13 +5665,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 			{not in Vi}
 	The minimal number of screen columns to keep to the left and to the
-	right of the cursor if 'nowrap' is set.  Setting this option to a value
-	greater than 0 while having |'sidescroll'| also at a non-zero value
-	makes some context visible in the line you are scrolling in
-	horizontally (except at the end and beginning of the line).  Setting
-	this option to a large value (like 999) has the effect of keeping the
-	cursor horizontally centered in the window, as long as one does not
-	come too close to the beginning or end of the line.
+	right of the cursor if 'nowrap' is set.  Setting this option to a
+	value greater than 0 while having |'sidescroll'| also at a non-zero
+	value makes some context visible in the line you are scrolling in
+	horizontally (except at beginning of the line).  Setting this option
+	to a large value (like 999) has the effect of keeping the cursor
+	horizontally centered in the window, as long as one does not come too
+	close to the beginning of the line.
 	NOTE: This option is set to 0 when 'compatible' is set.
 
 	Example: Try this together with 'sidescroll' and 'listchars' as

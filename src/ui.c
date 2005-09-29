@@ -1142,6 +1142,10 @@ clip_copy_modeless_selection(both)
     int		row2 = clip_star.end.lnum;
     int		col2 = clip_star.end.col;
 
+    /* Can't use ScreenLines unless initialized */
+    if (ScreenLines == NULL)
+	return;
+
     /*
      * Make sure row1 <= row2, and if row1 == row2 that col1 <= col2.
      */
@@ -1312,7 +1316,7 @@ clip_get_word_boundaries(cb, row, col)
     int		mboff;
 #endif
 
-    if (row >= screen_Rows || col >= screen_Columns)
+    if (row >= screen_Rows || col >= screen_Columns || ScreenLines == NULL)
 	return;
 
     p = ScreenLines + LineOffset[row];
@@ -1367,7 +1371,7 @@ clip_get_line_end(row)
 {
     int	    i;
 
-    if (row >= screen_Rows)
+    if (row >= screen_Rows || ScreenLines == NULL)
 	return 0;
     for (i = screen_Columns; i > 0; i--)
 	if (ScreenLines[LineOffset[row] + i - 1] != ' ')
@@ -2432,7 +2436,8 @@ retnomove:
 #ifdef FEAT_FOLDING
     /* Remember the character under the mouse, it might be a '-' or '+' in the
      * fold column. */
-    if (row >= 0 && row < Rows && col >= 0 && col <= Columns)
+    if (row >= 0 && row < Rows && col >= 0 && col <= Columns
+						       && ScreenLines != NULL)
 	mouse_char = ScreenLines[LineOffset[row] + col];
     else
 	mouse_char = ' ';

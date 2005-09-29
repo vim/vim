@@ -1236,6 +1236,12 @@ get_number_arg(p, idx, def)
 init_locale()
 {
     setlocale(LC_ALL, "");
+# ifdef WIN32
+    /* Apparently MS-Windows printf() may cause a crash when we give it 8-bit
+     * text while it's expecting text in the current locale.  This call avoids
+     * that. */
+    setlocale(LC_CTYPE, "C");
+# endif
 
 # ifdef FEAT_GETTEXT
     {

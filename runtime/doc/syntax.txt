@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.0aa.  Last change: 2005 Sep 13
+*syntax.txt*	For Vim version 7.0aa.  Last change: 2005 Sep 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3562,7 +3562,7 @@ You can clear specific sync patterns with: >
 ==============================================================================
 11. Listing syntax items		*:syntax* *:sy* *:syn* *:syn-list*
 
-This commands lists all the syntax items: >
+This command lists all the syntax items: >
 
     :sy[ntax] [list]
 

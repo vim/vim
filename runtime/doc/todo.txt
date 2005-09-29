@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Sep 25
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Sep 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -31,15 +31,19 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 -------------------- Known bugs and current work -----------------------
 
 Spelling:
-- Suggestions for "the the" includes "thee the" but not "the thee"?
 - CTRL-X s doesn't consider 'spellcapcheck'.
-- Spellbadword() returns a list with bad word and reason it's bad.
-  This doesn't work when highlighting is the same for some mistakes.
 - spellsuggest() needs a way to require a capital.  A flag or context?
+- Use more phonet.dat files from Aspell.  en and de are done.
+    ftp.gnu.org/gnu/aspell/dict
 
 Win32: Composing char appears on next position. (Tony Mechelynck)
 
+Include check in set_num_option() for 'columns' and 'lines' in Vim 6.3?
+
 Support subdirectories in plugin directory?  (Nikolai Weibull)
+
+When scrolling starts, remember what script/line caused this, so that we know
+what caused the hit-enter prompt?  (Charles Campbell)
 
 Change 'include' so that it can match the file name when \zs and \ze are
 included. (docs already done tentatively).

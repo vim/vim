@@ -4410,6 +4410,7 @@ find_pattern_in_path(ptr, dir, len, whole, skip_comments,
     int		i;
     char_u	*already = NULL;
     char_u	*startp = NULL;
+    char_u	*inc_opt = NULL;
 #ifdef RISCOS
     int		previous_munging = __riscosify_control;
 #endif
@@ -4449,10 +4450,10 @@ find_pattern_in_path(ptr, dir, len, whole, skip_comments,
 	if (regmatch.regprog == NULL)
 	    goto fpip_end;
     }
-    if (*curbuf->b_p_inc != NUL || *p_inc != NUL)
+    inc_opt = (*curbuf->b_p_inc == NUL) ? p_inc : curbuf->b_p_inc;
+    if (*inc_opt != NUL)
     {
-	incl_regmatch.regprog = vim_regcomp(*curbuf->b_p_inc == NUL
-			   ? p_inc : curbuf->b_p_inc, p_magic ? RE_MAGIC : 0);
+	incl_regmatch.regprog = vim_regcomp(inc_opt, p_magic ? RE_MAGIC : 0);
 	if (incl_regmatch.regprog == NULL)
 	    goto fpip_end;
 	incl_regmatch.rm_ic = FALSE;	/* don't ignore case in incl. pat. */
@@ -4484,10 +4485,18 @@ find_pattern_in_path(ptr, dir, len, whole, skip_comments,
 	if (incl_regmatch.regprog != NULL
 		&& vim_regexec(&incl_regmatch, line, (colnr_T)0))
 	{
-	    new_fname = file_name_in_line(incl_regmatch.endp[0],
-		    0, FNAME_EXP|FNAME_INCL|FNAME_REL, 1L,
-		    curr_fname == curbuf->b_fname
-					     ? curbuf->b_ffname : curr_fname);
+	    char_u *p_fname = (curr_fname == curbuf->b_fname)
+					      ? curbuf->b_ffname : curr_fname;
+
+	    if (inc_opt != NULL && strstr((char *)inc_opt, "\\zs") != NULL)
+		/* Use text from '\zs' to '\ze' (or end) of 'include'. */
+		new_fname = find_file_name_in_path(incl_regmatch.startp[0],
+			      incl_regmatch.endp[0] - incl_regmatch.startp[0],
+				 FNAME_EXP|FNAME_INCL|FNAME_REL, 1L, p_fname);
+	    else
+		/* Use text after match with 'include'. */
+		new_fname = file_name_in_line(incl_regmatch.endp[0], 0,
+				 FNAME_EXP|FNAME_INCL|FNAME_REL, 1L, p_fname);
 	    already_searched = FALSE;
 	    if (new_fname != NULL)
 	    {

@@ -5571,8 +5571,8 @@ list_append_string(l, str, len)
     list_append(l, li);
     li->li_tv.v_type = VAR_STRING;
     li->li_tv.v_lock = 0;
-    if ((li->li_tv.vval.v_string = len >= 0 ? vim_strnsave(str, len)
-						  : vim_strsave(str)) == NULL)
+    if ((li->li_tv.vval.v_string = (len >= 0 ? vim_strnsave(str, len)
+						 : vim_strsave(str))) == NULL)
 	return FAIL;
     return OK;
 }
@@ -8271,7 +8271,7 @@ f_diff_hlID(argvars, rettv)
     static int		fnum = 0;
     static int		change_start = 0;
     static int		change_end = 0;
-    static enum hlf_value hlID = 0;
+    static hlf_T	hlID = 0;
     int			filler_lines;
     int			col;
 
@@ -8298,7 +8298,7 @@ f_diff_hlID(argvars, rettv)
 		hlID = HLF_ADD;	/* added line */
 	}
 	else
-	    hlID = (enum hlf_value)0;
+	    hlID = (hlf_T)0;
 	prev_lnum = lnum;
 	changedtick = curbuf->b_changedtick;
 	fnum = curbuf->b_fnum;
@@ -8312,7 +8312,7 @@ f_diff_hlID(argvars, rettv)
 	else
 	    hlID = HLF_CHD;			/* changed line */
     }
-    rettv->vval.v_number = hlID == (enum hlf_value)0 ? 0 : (int)hlID;
+    rettv->vval.v_number = hlID == (hlf_T)0 ? 0 : (int)hlID;
 #endif
 }
 
@@ -13902,8 +13902,8 @@ f_spellbadword(argvars, rettv)
 {
     char_u	*word = (char_u *)"";
 #ifdef FEAT_SYN_HL
-    int		len;
-    int		attr = 0;
+    int		len = 0;
+    hlf_T	attr = HLF_COUNT;
     list_T	*l;
 #endif
 
@@ -13933,7 +13933,7 @@ f_spellbadword(argvars, rettv)
 	    while (*str != NUL)
 	    {
 		len = spell_check(curwin, str, &attr, &capcol);
-		if (attr != 0)
+		if (attr != HLF_COUNT)
 		{
 		    word = str;
 		    break;
@@ -13946,11 +13946,11 @@ f_spellbadword(argvars, rettv)
 
     list_append_string(l, word, len);
     list_append_string(l, (char_u *)(
-		    attr == highlight_attr[HLF_SPB] ? "bad" :
-		    attr == highlight_attr[HLF_SPR] ? "rare" :
-		    attr == highlight_attr[HLF_SPL] ? "local" :
-		    attr == highlight_attr[HLF_SPC] ? "caps" :
-		    ""), -1);
+			attr == HLF_SPB ? "bad" :
+			attr == HLF_SPR ? "rare" :
+			attr == HLF_SPL ? "local" :
+			attr == HLF_SPC ? "caps" :
+			""), -1);
 }
 
 /*

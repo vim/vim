@@ -3277,6 +3277,7 @@ set_init_2()
 	 * "linux"	    Linux console
 	 * "screen.linux"   Linux console with screen
 	 * "cygwin"	    Cygwin shell
+	 * "putty"	    Putty program
 	 * We also check the COLORFGBG environment variable, which is set by
 	 * rxvt and derivatives. This variable contains either two or three
 	 * values separated by semicolons; we want the last value in either
@@ -3287,6 +3288,7 @@ set_init_2()
 		&& (STRCMP(T_NAME, "linux") == 0
 		    || STRCMP(T_NAME, "screen.linux") == 0
 		    || STRCMP(T_NAME, "cygwin") == 0
+		    || STRCMP(T_NAME, "putty") == 0
 		    || ((p = mch_getenv((char_u *)"COLORFGBG")) != NULL
 			&& (p = vim_strrchr(p, ';')) != NULL
 			&& ((p[1] >= '0' && p[1] <= '6') || p[1] == '8')
@@ -7343,6 +7345,11 @@ set_num_option(opt_idx, varp, value, errbuf, errbuflen, opt_flags)
 	}
 	Columns = MIN_COLUMNS;
     }
+    /* Limit the values to avoid an overflow in Rows * Columns. */
+    if (Columns > 10000)
+	Columns = 10000;
+    if (Rows > 1000)
+	Rows = 1000;
 
 #ifdef DJGPP
     /* avoid a crash by checking for a too large value of 'columns' */

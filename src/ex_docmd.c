@@ -5900,7 +5900,7 @@ parse_compl_arg(value, vallen, complp, argt, compl_arg)
 
     for (i = 0; command_complete[i].expand != 0; ++i)
     {
-	if (STRLEN(command_complete[i].name) == valend
+	if ((int)STRLEN(command_complete[i].name) == valend
 		&& STRNCMP(value, command_complete[i].name, valend) == 0)
 	{
 	    *complp = command_complete[i].expand;
@@ -9179,15 +9179,21 @@ makeopens(fd, dirnow)
      */
     if (ssop_flags & SSOP_SESDIR)
     {
-	if (put_line(fd, "exe \"cd \" . expand(\"<sfile>:p:h\")") == FAIL)
+	if (put_line(fd, "exe \"cd \" . escape(expand(\"<sfile>:p:h\"), ' ')")
+								      == FAIL)
 	    return FAIL;
     }
     else if (ssop_flags & SSOP_CURDIR)
     {
 	sname = home_replace_save(NULL, globaldir != NULL ? globaldir : dirnow);
 	if (sname == NULL
-		|| fprintf(fd, "cd %s", sname) < 0 || put_eol(fd) == FAIL)
+		|| fputs("cd ", fd) < 0
+		|| ses_put_fname(fd, sname, &ssop_flags) == FAIL
+		|| put_eol(fd) == FAIL)
+	{
+	    vim_free(sname);
 	    return FAIL;
+	}
 	vim_free(sname);
     }
 

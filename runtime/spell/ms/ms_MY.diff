@@ -1,5 +1,5 @@
-*** ms_MY.orig.aff	Wed Aug 31 18:09:58 2005
---- ms_MY.aff	Wed Aug 31 18:12:51 2005
+*** ms_MY.orig.aff	Wed Aug 31 18:14:01 2005
+--- ms_MY.aff	Wed Aug 31 18:14:01 2005
 ***************
 *** 25,26 ****
 --- 25,35 ----
@@ -14,8 +14,8 @@
 + MIDWORD -
 + 
   PFX B Y 2 
-*** ms_MY.orig.dic	Wed Aug 31 18:09:58 2005
---- ms_MY.dic	Wed Aug 31 18:12:48 2005
+*** ms_MY.orig.dic	Wed Aug 31 18:14:01 2005
+--- ms_MY.dic	Wed Aug 31 18:14:01 2005
 ***************
 *** 4939,4941 ****
   datin

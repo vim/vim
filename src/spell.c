@@ -477,6 +477,8 @@ typedef struct suginfo_S
     int		su_badflags;	    /* caps flags for bad word */
     char_u	su_badword[MAXWLEN]; /* bad word truncated at su_badlen */
     char_u	su_fbadword[MAXWLEN]; /* su_badword case-folded */
+    char_u	su_sal_badword[MAXWLEN]; /* su_badword soundfolded */
+    slang_T	*su_slang_first;    /* slang_T used for su_sal_badword */
     hashtab_T	su_banned;	    /* table with banned words */
     slang_T	*su_sallang;	    /* default language for sound folding */
 } suginfo_T;
@@ -749,6 +751,7 @@ static void add_banned __ARGS((suginfo_T *su, char_u *word));
 static int was_banned __ARGS((suginfo_T *su, char_u *word));
 static void free_banned __ARGS((suginfo_T *su));
 static void rescore_suggestions __ARGS((suginfo_T *su));
+static void rescore_one __ARGS((suginfo_T *su, suggest_T *stp));
 static int cleanup_suggestions __ARGS((garray_T *gap, int maxscore, int keep));
 static void spell_soundfold __ARGS((slang_T *slang, char_u *inword, int folded, char_u *res));
 static void spell_soundfold_sofo __ARGS((slang_T *slang, char_u *inword, char_u *res));
@@ -815,8 +818,8 @@ static char *msg_compressing = N_("Compressing word tree...");
 /*
  * Main spell-checking function.
  * "ptr" points to a character that could be the start of a word.
- * "*attrp" is set to the attributes for a badly spelled word.  For a non-word
- * or when it's OK it remains unchanged.
+ * "*attrp" is set to the highlight index for a badly spelled word.  For a
+ * non-word or when it's OK it remains unchanged.
  * This must only be called when 'spelllang' is not empty.
  *
  * "capcol" is used to check for a Capitalised word after the end of a
@@ -831,7 +834,7 @@ static char *msg_compressing = N_("Compressing word tree...");
 spell_check(wp, ptr, attrp, capcol)
     win_T	*wp;		/* current window */
     char_u	*ptr;
-    int		*attrp;
+    hlf_T	*attrp;
     int		*capcol;	/* column to check for Capital */
 {
     matchinf_T	mi;		/* Most things are put in "mi" so that it can
@@ -1008,17 +1011,17 @@ spell_check(wp, ptr, attrp, capcol)
 	}
 
 	if (mi.mi_result == SP_BAD || mi.mi_result == SP_BANNED)
-	    *attrp = highlight_attr[HLF_SPB];
+	    *attrp = HLF_SPB;
 	else if (mi.mi_result == SP_RARE)
-	    *attrp = highlight_attr[HLF_SPR];
+	    *attrp = HLF_SPR;
 	else
-	    *attrp = highlight_attr[HLF_SPL];
+	    *attrp = HLF_SPL;
     }
 
     if (wrongcaplen > 0 && (mi.mi_result == SP_OK || mi.mi_result == SP_RARE))
     {
 	/* Report SpellCap only when the word isn't badly spelled. */
-	*attrp = highlight_attr[HLF_SPC];
+	*attrp = HLF_SPC;
 	return wrongcaplen;
     }
 
@@ -1822,7 +1825,8 @@ spell_move_to(wp, dir, allwords, curline, attrp)
     int		dir;		/* FORWARD or BACKWARD */
     int		allwords;	/* TRUE for "[s"/"]s", FALSE for "[S"/"]S" */
     int		curline;
-    int		*attrp;		/* return: attributes of bad word or NULL */
+    hlf_T	*attrp;		/* return: attributes of bad word or NULL
+				   (only when "dir" is FORWARD) */
 {
     linenr_T	lnum;
     pos_T	found_pos;
@@ -1830,7 +1834,7 @@ spell_move_to(wp, dir, allwords, curline, attrp)
     char_u	*line;
     char_u	*p;
     char_u	*endp;
-    int		attr;
+    hlf_T	attr;
     int		len;
     int		has_syntax = syntax_present(wp->w_buffer);
     int		col;
@@ -1900,13 +1904,13 @@ spell_move_to(wp, dir, allwords, curline, attrp)
 		break;
 
 	    /* start of word */
-	    attr = 0;
+	    attr = HLF_COUNT;
 	    len = spell_check(wp, p, &attr, &capcol);
 
-	    if (attr != 0)
+	    if (attr != HLF_COUNT)
 	    {
 		/* We found a bad word.  Check the attribute. */
-		if (allwords || attr == highlight_attr[HLF_SPB])
+		if (allwords || attr == HLF_SPB)
 		{
 		    found_one = TRUE;
 
@@ -2017,7 +2021,7 @@ spell_move_to(wp, dir, allwords, curline, attrp)
 
 	    /* Skip the characters at the start of the next line that were
 	     * included in a match crossing line boundaries. */
-	    if (attr == 0)
+	    if (attr == HLF_COUNT)
 		skip = p - endp;
 	    else
 		skip = 0;
@@ -5098,7 +5102,9 @@ spell_read_aff(spin, fname)
 		    ga_append(&spin->si_map, '/');
 		}
 	    }
-	    else if (STRCMP(items[0], "SAL") == 0 && itemcnt == 3)
+	    /* Accept "SAL from to" and "SAL from to # comment". */
+	    else if (STRCMP(items[0], "SAL") == 0
+		    && (itemcnt == 3 || (itemcnt > 3 && items[3][0] == '#')))
 	    {
 		if (do_sal)
 		{
@@ -8769,7 +8775,7 @@ spell_find_suggest(badptr, su, maxcount, banbadword, need_cap)
     int		banbadword;	/* don't include badword in suggestions */
     int		need_cap;	/* word should start with capital */
 {
-    int		attr = 0;
+    hlf_T	attr = HLF_COUNT;
     char_u	buf[MAXPATHL];
     char_u	*p;
     int		do_combine = FALSE;
@@ -8821,11 +8827,17 @@ spell_find_suggest(badptr, su, maxcount, banbadword, need_cap)
 	}
     }
 
+    /* Soundfold the bad word with the default sound folding, so that we don't
+     * have to do this many times. */
+    if (su->su_sallang != NULL)
+	spell_soundfold(su->su_sallang, su->su_fbadword, TRUE,
+							  su->su_sal_badword);
+
     /* If the word is not capitalised and spell_check() doesn't consider the
      * word to be bad then it might need to be capitalised.  Add a suggestion
      * for that. */
     c = PTR2CHAR(su->su_badptr);
-    if (!SPELL_ISUPPER(c) && attr == 0)
+    if (!SPELL_ISUPPER(c) && attr == HLF_COUNT)
     {
 	make_case_word(su->su_badword, buf, WF_ONECAP);
 	add_suggestion(su, &su->su_ga, buf, su->su_badlen, SCORE_ICASE,
@@ -9173,8 +9185,11 @@ suggest_try_special(su)
 	su->su_fbadword[len] = NUL;
 	make_case_word(su->su_fbadword, word, su->su_badflags);
 	su->su_fbadword[len] = c;
-	add_suggestion(su, &su->su_ga, word, su->su_badlen, SCORE_DEL,
-						     0, TRUE, su->su_sallang);
+
+	/* Give a soundalike score of 0, compute the score as if deleting one
+	 * character. */
+	add_suggestion(su, &su->su_ga, word, su->su_badlen,
+			      RESCORE(SCORE_REP, 0), 0, TRUE, su->su_sallang);
     }
 }
 
@@ -9226,6 +9241,8 @@ suggest_try_change(su)
     slang_T	*slang;
     int		fword_ends;
     int		lpi;
+    int		maysplit;
+    int		goodword_ends;
 
     /* We make a copy of the case-folded bad word, so that we can modify it
      * to find matches (esp. REP items).  Append some more text, changing
@@ -9401,10 +9418,13 @@ suggest_try_change(su)
 		    }
 		}
 
-		/* Check NEEDCOMPOUND: can't use word without compounding. */
+		/* Check NEEDCOMPOUND: can't use word without compounding.  Do
+		 * try appending another compound word below. */
 		if (sp->ts_complen == sp->ts_compsplit && fword_ends
 						     && (flags & WF_NEEDCOMP))
-		    break;
+		    goodword_ends = FALSE;
+		else
+		    goodword_ends = TRUE;
 
 		if (sp->ts_complen > sp->ts_compsplit)
 		{
@@ -9508,9 +9528,15 @@ suggest_try_change(su)
 		    add_banned(su, preword + sp->ts_prewordlen);
 		    break;
 		}
-		if (was_banned(su, preword + sp->ts_prewordlen)
+		if ((sp->ts_complen == sp->ts_compsplit
+			    && was_banned(su, preword + sp->ts_prewordlen))
 						   || was_banned(su, preword))
-		    break;
+		{
+		    if (slang->sl_compprog == NULL)
+			break;
+		    /* the word so far was banned but we may try compounding */
+		    goodword_ends = FALSE;
+		}
 
 		newscore = 0;
 		if ((flags & WF_REGION)
@@ -9523,7 +9549,9 @@ suggest_try_change(su)
 				  captype(preword + sp->ts_prewordlen, NULL)))
 		    newscore += SCORE_ICASE;
 
-		if (fword_ends && sp->ts_fidx >= sp->ts_fidxtry)
+		maysplit = TRUE;
+		if (fword_ends && goodword_ends
+					     && sp->ts_fidx >= sp->ts_fidxtry)
 		{
 		    /* The badword also ends: add suggestions.  Give a penalty
 		     * when changing non-word char to word char, e.g., "thes,"
@@ -9549,11 +9577,20 @@ suggest_try_change(su)
 		    }
 
 		    add_suggestion(su, &su->su_ga, preword,
-			    sp->ts_fidx - repextra,
-				     sp->ts_score + newscore, 0, FALSE,
-				     lp->lp_sallang);
+					sp->ts_fidx - repextra,
+					sp->ts_score + newscore, 0, FALSE,
+					lp->lp_sallang);
+
+		    /* When the bad word doesn't end yet, try changing the
+		     * next word.  E.g., find suggestions for "the the" where
+		     * the second "the" is different.  It's done like a split.
+		     */
+		    if (sp->ts_fidx - repextra >= su->su_badlen)
+			maysplit = FALSE;
 		}
-		else if ((sp->ts_fidx >= sp->ts_fidxtry || fword_ends)
+
+		if (maysplit
+			&& (sp->ts_fidx >= sp->ts_fidxtry || fword_ends)
 #ifdef FEAT_MBYTE
 			/* Don't split halfway a character. */
 			&& (!has_mbyte || sp->ts_tcharlen == 0)
@@ -9574,7 +9611,7 @@ suggest_try_change(su)
 		     *    the following word is valid.
 		     */
 		    try_compound = FALSE;
-		    if (!fword_ends
+		    if ((!fword_ends || !goodword_ends)
 			    && slang->sl_compprog != NULL
 			    && ((unsigned)flags >> 24) != 0
 			    && sp->ts_twordlen - sp->ts_splitoff
@@ -9618,7 +9655,7 @@ suggest_try_change(su)
 		    else
 			sp->ts_flags &= ~TSF_DIDSPLIT;
 
-		    if (!try_compound && !fword_ends)
+		    if (!try_compound && (!fword_ends || !goodword_ends))
 		    {
 			/* If we're going to split need to check that the
 			 * words so far are valid for compounding.  If there
@@ -9656,10 +9693,12 @@ suggest_try_change(su)
 			/* If the badword has a non-word character at this
 			 * position skip it.  That means replacing the
 			 * non-word character with a space.  Always skip a
-			 * character when the word ends. */
-			if ((!try_compound
-				   && !spell_iswordp_nmw(fword + sp->ts_fidx))
+			 * character when the word ends.  But only when the
+			 * good word can end. */
+			if (((!try_compound
+				    && !spell_iswordp_nmw(fword + sp->ts_fidx))
 				|| fword_ends)
+			    && goodword_ends)
 			{
 			    int	    l;
 
@@ -10726,12 +10765,17 @@ stp_sal_score(stp, su, slang, badsound)
     char_u	*badsound;	/* sound-folded badword */
 {
     char_u	*p;
+    char_u	*pbad;
+    char_u	*pgood;
     char_u	badsound2[MAXWLEN];
     char_u	fword[MAXWLEN];
     char_u	goodsound[MAXWLEN];
+    char_u	goodword[MAXWLEN];
+    int		lendiff;
 
-    if (stp->st_orglen <= su->su_badlen)
-	p = badsound;
+    lendiff = (int)(su->su_badlen - stp->st_orglen);
+    if (lendiff >= 0)
+	pbad = badsound;
     else
     {
 	/* soundfold the bad word with more characters following */
@@ -10747,13 +10791,24 @@ stp_sal_score(stp, su, slang, badsound)
 		mch_memmove(p, p + 1, STRLEN(p));
 
 	spell_soundfold(slang, fword, TRUE, badsound2);
-	p = badsound2;
+	pbad = badsound2;
     }
 
-    /* Sound-fold the word and compute the score for the difference. */
-    spell_soundfold(slang, stp->st_word, FALSE, goodsound);
+    if (lendiff > 0)
+    {
+	/* Add part of the bad word to the good word, so that we soundfold
+	 * what replaces the bad word. */
+	STRCPY(goodword, stp->st_word);
+	STRNCAT(goodword, su->su_badptr + su->su_badlen - lendiff, lendiff);
+	pgood = goodword;
+    }
+    else
+	pgood = stp->st_word;
 
-    return soundalike_score(goodsound, p);
+    /* Sound-fold the word and compute the score for the difference. */
+    spell_soundfold(slang, pgood, FALSE, goodsound);
+
+    return soundalike_score(goodsound, pbad);
 }
 
 /*
@@ -11081,23 +11136,24 @@ similar_chars(slang, c1, c2)
  * with spell_edit_score().
  */
     static void
-add_suggestion(su, gap, goodword, badlen, score, altscore, had_bonus, slang)
+add_suggestion(su, gap, goodword, badlenarg, score, altscore, had_bonus, slang)
     suginfo_T	*su;
     garray_T	*gap;
     char_u	*goodword;
-    int		badlen;		/* length of bad word used */
+    int		badlenarg;	/* len of bad word replaced with "goodword" */
     int		score;
     int		altscore;
     int		had_bonus;	/* value for st_had_bonus */
     slang_T	*slang;		/* language for sound folding */
 {
-    int		goodlen = STRLEN(goodword);
+    int		goodlen = STRLEN(goodword); /* len of goodword changed */
+    int		badlen = badlenarg;	    /* len of bad word changed */
     suggest_T   *stp;
+    suggest_T   new_sug;
     int		i;
-    char_u	*p = NULL;
-    int		c = 0;
-    int		attr = 0;
+    hlf_T	attr = HLF_COUNT;
     char_u	longword[MAXWLEN + 1];
+    char_u	*pgood, *pbad;
 
     /* Check that the word really is valid.  Esp. for banned words and for
      * split words, such as "the the".  Need to append what follows to check
@@ -11105,36 +11161,34 @@ add_suggestion(su, gap, goodword, badlen, score, altscore, had_bonus, slang)
     STRCPY(longword, goodword);
     vim_strncpy(longword + goodlen, su->su_badptr + badlen, MAXWLEN - goodlen);
     (void)spell_check(curwin, longword, &attr, NULL);
-    if (attr != 0)
+    if (attr != HLF_COUNT)
 	return;
 
-    /* If past "su_badlen" and the rest is identical stop at "su_badlen".
-     * Remove the common part from "goodword". */
-    i = badlen - su->su_badlen;
-    if (i > 0)
+    /* Minimize "badlen" for consistency.  Avoids that changing "the the" to
+     * "thee the" is added next to changing the first "the" the "thee".  */
+    pgood = goodword + STRLEN(goodword);
+    pbad = su->su_badptr + badlen;
+    while (pgood > goodword && pbad > su->su_badptr)
     {
-	/* This assumes there was no case folding or it didn't change the
-	 * length... */
-	p = goodword + goodlen - i;
-	if (p > goodword && STRNICMP(su->su_badptr + su->su_badlen, p, i) == 0)
+	mb_ptr_back(goodword, pgood);
+	mb_ptr_back(su->su_badptr, pbad);
+#ifdef FEAT_MBYTE
+	if (has_mbyte)
 	{
-	    badlen = su->su_badlen;
-	    c = *p;
-	    *p = NUL;
+	    if (mb_ptr2char(pgood) != mb_ptr2char(pbad))
+		break;
 	}
 	else
-	    p = NULL;
+#endif
+	    if (*pgood != *pbad)
+		break;
+	badlen = pbad - su->su_badptr;
+	goodlen = pgood - goodword;
     }
-    else if (i < 0)
-    {
-	/* When replacing part of the word check that we actually change
-	 * something.  For "the the" a suggestion can be replacing the first
-	 * "the" with itself, since "the" wasn't banned. */
-	if (badlen == (int)goodlen
-			    && STRNCMP(su->su_badword, goodword, badlen) == 0)
-	    return;
-    }
-
+    if (badlen == 0 && goodlen == 0)
+	/* goodword doesn't change anything; may happen for "the the" changing
+	 * the first "the" to itself. */
+	return;
 
     if (score <= su->su_maxscore)
     {
@@ -11143,18 +11197,44 @@ add_suggestion(su, gap, goodword, badlen, score, altscore, had_bonus, slang)
 	 * "thes" -> "these". */
 	stp = &SUG(*gap, 0);
 	for (i = gap->ga_len - 1; i >= 0; --i)
-	    if (STRCMP(stp[i].st_word, goodword) == 0
+	    if (STRLEN(stp[i].st_word) == goodlen
+			&& STRNCMP(stp[i].st_word, goodword, goodlen) == 0
 						&& stp[i].st_orglen == badlen)
 	    {
-		/* Found it.  Remember the lowest score. */
-		if (stp[i].st_score > score)
-		{
-		    stp[i].st_score = score;
-		    stp[i].st_altscore = altscore;
-		    stp[i].st_had_bonus = had_bonus;
-		}
+		/*
+		 * Found it.  Remember the lowest score.
+		 */
 		if (stp[i].st_slang == NULL)
 		    stp[i].st_slang = slang;
+
+		new_sug.st_score = score;
+		new_sug.st_altscore = altscore;
+		new_sug.st_had_bonus = had_bonus;
+
+		if (stp[i].st_had_bonus != had_bonus)
+		{
+		    /* Only one of the two had the soundalike score computed.
+		     * Need to do that for the other one now, otherwise the
+		     * scores can't be compared.  This happens because
+		     * suggest_try_change() doesn't compute the soundalike
+		     * word to keep it fast. */
+		    if (had_bonus)
+			rescore_one(su, &stp[i]);
+		    else
+		    {
+			new_sug.st_word = goodword;
+			new_sug.st_slang = stp[i].st_slang;
+			new_sug.st_orglen = badlen;
+			rescore_one(su, &new_sug);
+		    }
+		}
+
+		if (stp[i].st_score > new_sug.st_score)
+		{
+		    stp[i].st_score = new_sug.st_score;
+		    stp[i].st_altscore = new_sug.st_altscore;
+		    stp[i].st_had_bonus = new_sug.st_had_bonus;
+		}
 		break;
 	    }
 
@@ -11162,7 +11242,7 @@ add_suggestion(su, gap, goodword, badlen, score, altscore, had_bonus, slang)
 	{
 	    /* Add a suggestion. */
 	    stp = &SUG(*gap, gap->ga_len);
-	    stp->st_word = vim_strsave(goodword);
+	    stp->st_word = vim_strnsave(goodword, goodlen);
 	    if (stp->st_word != NULL)
 	    {
 		stp->st_score = score;
@@ -11180,9 +11260,6 @@ add_suggestion(su, gap, goodword, badlen, score, altscore, had_bonus, slang)
 	    }
 	}
     }
-
-    if (p != NULL)
-	*p = c;		/* restore "goodword" */
 }
 
 /*
@@ -11244,62 +11321,47 @@ free_banned(su)
 }
 
 /*
- * Recompute the score if sound-folding is possible.  This is slow,
- * thus only done for the final results.
+ * Recompute the score for all suggestions if sound-folding is possible.  This
+ * is slow, thus only done for the final results.
  */
     static void
 rescore_suggestions(su)
     suginfo_T	*su;
 {
-    langp_T	*lp;
-    suggest_T	*stp;
-    char_u	sal_badword[MAXWLEN];
-    char_u	sal_badword2[MAXWLEN];
     int		i;
-    int		lpi;
-    slang_T	*slang_first = NULL;
-    slang_T	*slang;
 
-    for (lpi = 0; lpi < curbuf->b_langp.ga_len; ++lpi)
-    {
-	lp = LANGP_ENTRY(curbuf->b_langp, lpi);
-	if (lp->lp_slang->sl_sal.ga_len > 0)
-	{
-	    /* soundfold the bad word */
-	    slang_first = lp->lp_slang;
-	    spell_soundfold(slang_first, su->su_fbadword, TRUE, sal_badword);
-	    break;
-	}
-    }
-
-    if (slang_first != NULL)
-    {
+    if (su->su_sallang != NULL)
 	for (i = 0; i < su->su_ga.ga_len; ++i)
+	    rescore_one(su, &SUG(su->su_ga, i));
+}
+
+/*
+ * Recompute the score for one suggestion if sound-folding is possible.
+ */
+    static void
+rescore_one(su, stp)
+    suginfo_T *su;
+    suggest_T *stp;
+{
+    slang_T	*slang = stp->st_slang;
+    char_u	sal_badword[MAXWLEN];
+
+    /* Only rescore suggestions that have no sal score yet and do have a
+     * language. */
+    if (slang != NULL && slang->sl_sal.ga_len > 0 && !stp->st_had_bonus)
+    {
+	if (slang == su->su_sallang)
+	    stp->st_altscore = stp_sal_score(stp, su,
+						   slang, su->su_sal_badword);
+	else
 	{
-	    /* Only rescore suggestions that have no sal score yet and do have
-	     * a language. */
-	    stp = &SUG(su->su_ga, i);
-	    if (!stp->st_had_bonus && stp->st_slang != NULL)
-	    {
-		slang = stp->st_slang;
-		if (slang->sl_sal.ga_len > 0)
-		{
-		    if (slang == slang_first)
-			stp->st_altscore = stp_sal_score(stp, su,
-							  slang, sal_badword);
-		    else
-		    {
-			spell_soundfold(slang, su->su_fbadword,
-							  TRUE, sal_badword2);
-			stp->st_altscore = stp_sal_score(stp, su,
-							 slang, sal_badword2);
-		    }
-		    if (stp->st_altscore == SCORE_MAXMAX)
-			stp->st_altscore = SCORE_BIG;
-		    stp->st_score = RESCORE(stp->st_score, stp->st_altscore);
-		}
-	    }
+	    spell_soundfold(slang, su->su_fbadword, TRUE, sal_badword);
+	    stp->st_altscore = stp_sal_score(stp, su, slang, sal_badword);
 	}
+	if (stp->st_altscore == SCORE_MAXMAX)
+	    stp->st_altscore = SCORE_BIG;
+	stp->st_score = RESCORE(stp->st_score, stp->st_altscore);
+	stp->st_had_bonus = TRUE;
     }
 }
 

@@ -1116,7 +1116,7 @@ typedef enum auto_event EVENT_T;
  * When making changes, also update HL_FLAGS below!  And update the default
  * value of 'highlight' in option.c.
  */
-enum hlf_value
+typedef enum
 {
     HLF_8 = 0	    /* Meta & special keys listed with ":map", text that is
 		       displayed different from what it is */
@@ -1151,7 +1151,7 @@ enum hlf_value
     , HLF_SPR	    /* SpellRare */
     , HLF_SPL	    /* SpellLocal */
     , HLF_COUNT	    /* MUST be the last one */
-};
+} hlf_T;
 
 /* the HL_FLAGS must be in the same order as the HLF_ enums! */
 #define HL_FLAGS {'8', '@', 'd', 'e', 'h', 'i', 'l', 'm', 'M', \

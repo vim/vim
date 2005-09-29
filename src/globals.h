@@ -35,6 +35,9 @@ EXTERN long	Columns INIT(= 80);	/* nr of columns in the screen */
  *
  * "LineOffset[n]" is the offset from ScreenLines[] for the start of line 'n'.
  * The same value is used for ScreenLinesUC[] and ScreenAttrs[].
+ *
+ * Note: before the screen is initialized and when out of memory these can be
+ * NULL.
  */
 EXTERN schar_T	*ScreenLines INIT(= NULL);
 EXTERN sattr_T	*ScreenAttrs INIT(= NULL);
@@ -818,7 +821,7 @@ EXTERN int	ins_at_eol INIT(= FALSE); /* put cursor after eol when
 EXTERN char_u	*edit_submode INIT(= NULL); /* msg for CTRL-X submode */
 EXTERN char_u	*edit_submode_pre INIT(= NULL); /* prepended to edit_submode */
 EXTERN char_u	*edit_submode_extra INIT(= NULL);/* appended to edit_submode */
-EXTERN enum hlf_value	edit_submode_highl; /* highl. method for extra info */
+EXTERN hlf_T	edit_submode_highl;	/* highl. method for extra info */
 EXTERN int	ctrl_x_mode INIT(= 0);	/* Which Ctrl-X mode are we in? */
 #endif
 

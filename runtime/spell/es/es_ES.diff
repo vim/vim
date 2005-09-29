@@ -1,5 +1,5 @@
-*** es_ES.orig.aff	Thu Aug 25 19:11:20 2005
---- es_ES.aff	Thu Aug 25 19:12:47 2005
+*** es_ES.orig.aff	Thu Aug 25 19:19:44 2005
+--- es_ES.aff	Thu Aug 25 19:19:44 2005
 ***************
 *** 3,4 ****
 --- 3,22 ----
@@ -23,3 +23,59 @@
 + MAP sß
 + 
   SFX J Y 12
+*** es_ES.orig.dic	Thu Aug 25 19:19:44 2005
+--- es_ES.dic	Thu Aug 25 20:18:55 2005
+***************
+*** 485,487 ****
+  acercóse
+- acercóse
+  acería/S
+--- 485,486 ----
+***************
+*** 708,710 ****
+  acríticamente
+- acrítico
+  acrítico/PS
+--- 707,708 ----
+***************
+*** 948,950 ****
+  adónde
+- adónde
+  adondequiera
+--- 946,947 ----
+***************
+*** 1435,1437 ****
+  ah
+- ah
+  ahajar/PSTVWX
+--- 1432,1433 ----
+***************
+*** 3887,3889 ****
+  apostolado
+- apostolado
+  apostolados
+--- 3883,3884 ----
+***************
+*** 12926,12928 ****
+  dame
+- dame
+  dámelo
+--- 12921,12922 ----
+***************
+*** 15561,15563 ****
+  dime
+- dime
+  dímelo
+--- 15555,15556 ----
+***************
+*** 25133,25135 ****
+  inadaptado/PS
+- inadecuación
+  inadecuación/S
+--- 25126,25127 ----
+***************
+*** 28007,28009 ****
+  librancista/S
+- líbranos
+  líbranos
+--- 27999,28000 ----

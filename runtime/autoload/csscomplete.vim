@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	CSS 2.1
 " Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
-" Last Change:	2005 Sep 23
+" Last Change:	2005 Sep 27
 
 function! csscomplete#CompleteCSS(findstart, base)
 if a:findstart
@@ -304,7 +304,14 @@ else
 		elseif prop == 'z-index'
 			let values = ["auto"]
 		else
-			return []
+			" If no property match it is possible we are outside of {} and
+			" trying to complete pseudo-(class|element)
+			let element = tolower(matchstr(line, '\zs[a-zA-Z1-6]*\ze:[^:[:space:]]\{-}$'))
+			if ",a,abbr,acronym,address,area,b,base,bdo,big,blockquote,body,br,button,caption,cite,code,col,colgroup,dd,del,dfn,div,dl,dt,em,fieldset,form,head,h1,h2,h3,h4,h5,h6,hr,html,i,img,input,ins,kbd,label,legend,li,link,map,meta,noscript,object,ol,optgroup,option,p,param,pre,q,samp,script,select,small,span,strong,style,sub,sup,table,tbody,td,textarea,tfoot,th,thead,title,tr,tt,ul,var," =~ ','.element.','
+				let values = ["first-child", "link", "visited", "hover", "active", "focus", "lang", "first-line", "first-letter", "before", "after"]
+			else
+				return []
+			endif
 		endif
 
 		" Complete values
