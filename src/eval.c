@@ -6887,7 +6887,7 @@ static struct fst
     {"sort",		1, 2, f_sort},
     {"soundfold",	1, 1, f_soundfold},
     {"spellbadword",	0, 1, f_spellbadword},
-    {"spellsuggest",	1, 2, f_spellsuggest},
+    {"spellsuggest",	1, 3, f_spellsuggest},
     {"split",		1, 3, f_split},
 #ifdef HAVE_STRFTIME
     {"strftime",	1, 2, f_strftime},
@@ -13961,12 +13961,16 @@ f_spellsuggest(argvars, rettv)
     typval_T	*argvars;
     typval_T	*rettv;
 {
+    list_T	*l;
+#ifdef FEAT_SYN_HL
     char_u	*str;
+    int		typeerr = FALSE;
     int		maxcount;
     garray_T	ga;
-    list_T	*l;
-    listitem_T	*li;
     int		i;
+    listitem_T	*li;
+    int		need_capital = FALSE;
+#endif
 
     l = list_alloc();
     if (l == NULL)
@@ -13981,14 +13985,20 @@ f_spellsuggest(argvars, rettv)
 	str = get_tv_string(&argvars[0]);
 	if (argvars[1].v_type != VAR_UNKNOWN)
 	{
-	    maxcount = get_tv_number(&argvars[1]);
+	    maxcount = get_tv_number_chk(&argvars[1], &typeerr);
 	    if (maxcount <= 0)
 		return;
+	    if (argvars[2].v_type != VAR_UNKNOWN)
+	    {
+		need_capital = get_tv_number_chk(&argvars[2], &typeerr);
+		if (typeerr)
+		    return;
+	    }
 	}
 	else
 	    maxcount = 25;
 
-	spell_suggest_list(&ga, str, maxcount, FALSE);
+	spell_suggest_list(&ga, str, maxcount, need_capital);
 
 	for (i = 0; i < ga.ga_len; ++i)
 	{

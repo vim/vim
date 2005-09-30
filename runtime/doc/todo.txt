@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Sep 29
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Sep 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,29 +30,16 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Spelling:
-- CTRL-X s doesn't consider 'spellcapcheck'.
-- spellsuggest() needs a way to require a capital.  A flag or context?
-- Use more phonet.dat files from Aspell.  en and de are done.
-    ftp.gnu.org/gnu/aspell/dict
-
-Win32: Composing char appears on next position. (Tony Mechelynck)
-
-Include check in set_num_option() for 'columns' and 'lines' in Vim 6.3?
-
 Support subdirectories in plugin directory?  (Nikolai Weibull)
 
 When scrolling starts, remember what script/line caused this, so that we know
 what caused the hit-enter prompt?  (Charles Campbell)
 
-Change 'include' so that it can match the file name when \zs and \ze are
-included. (docs already done tentatively).
+When 'foldcolumn' is 1 show more + to be able to open all folds? (Donohue)
 
 ccomplete:
 - How to use a popup menu?
 - When a typedef or struct is local to a file only use it in that file?
-
-When 'foldcolumn' is 1 show more + to be able to open all folds? (Donohue)
 
 Mac unicode patch (Da Woon Jung):
 - selecting proportional font breaks display
@@ -1350,6 +1337,7 @@ Spell checking:
 -   Do we need a flag for the rule that when compounding is done the following
     word doesn't have a capital after a word character, even for Onecap words?
 -   New hunspell home page: http://hunspell.sourceforge.net/
+    - Version 1.1.0 is out now, look into that.
     - Lots of code depends on LANG, that isn't right.  Enable each mechanism
       in the affix file separately.
     - Example with compounding dash is bad, gets in the way of setting

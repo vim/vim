@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Sep 29
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Sep 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -822,6 +822,9 @@ completion supported for the input. (Yegappan Lakshmanan)
 
 "dp" works with more than two buffers in diff mode if there is only one where
 'modifiable' is set.
+
+When the 'include' option contains \zs the file name found is what is being
+matched from \zs to the end or \ze.  Useful to pass more to 'includeexpr'.
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*
