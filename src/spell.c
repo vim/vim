@@ -11197,12 +11197,12 @@ add_suggestion(su, gap, goodword, badlenarg, score, altscore, had_bonus, slang)
 	 * "thes" -> "these". */
 	stp = &SUG(*gap, 0);
 	for (i = gap->ga_len - 1; i >= 0; --i)
-	    if (STRLEN(stp[i].st_word) == goodlen
+	    if ((int)STRLEN(stp[i].st_word) == goodlen
 			&& STRNCMP(stp[i].st_word, goodword, goodlen) == 0
 						&& stp[i].st_orglen == badlen)
 	    {
 		/*
-		 * Found it.  Remember the lowest score.
+		 * Found it.  Remember the word with the lowest score.
 		 */
 		if (stp[i].st_slang == NULL)
 		    stp[i].st_slang = slang;
@@ -11217,7 +11217,8 @@ add_suggestion(su, gap, goodword, badlenarg, score, altscore, had_bonus, slang)
 		     * Need to do that for the other one now, otherwise the
 		     * scores can't be compared.  This happens because
 		     * suggest_try_change() doesn't compute the soundalike
-		     * word to keep it fast. */
+		     * word to keep it fast, while some special methods set
+		     * the soundalike score to zero. */
 		    if (had_bonus)
 			rescore_one(su, &stp[i]);
 		    else
@@ -11340,24 +11341,26 @@ rescore_suggestions(su)
  */
     static void
 rescore_one(su, stp)
-    suginfo_T *su;
-    suggest_T *stp;
+    suginfo_T	*su;
+    suggest_T	*stp;
 {
     slang_T	*slang = stp->st_slang;
     char_u	sal_badword[MAXWLEN];
+    char_u	*p;
 
     /* Only rescore suggestions that have no sal score yet and do have a
      * language. */
     if (slang != NULL && slang->sl_sal.ga_len > 0 && !stp->st_had_bonus)
     {
 	if (slang == su->su_sallang)
-	    stp->st_altscore = stp_sal_score(stp, su,
-						   slang, su->su_sal_badword);
+	    p = su->su_sal_badword;
 	else
 	{
 	    spell_soundfold(slang, su->su_fbadword, TRUE, sal_badword);
-	    stp->st_altscore = stp_sal_score(stp, su, slang, sal_badword);
+	    p = sal_badword;
 	}
+
+	stp->st_altscore = stp_sal_score(stp, su, slang, p);
 	if (stp->st_altscore == SCORE_MAXMAX)
 	    stp->st_altscore = SCORE_BIG;
 	stp->st_score = RESCORE(stp->st_score, stp->st_altscore);
@@ -12836,8 +12839,6 @@ spell_to_word_end(start, buf)
 }
 
 #if defined(FEAT_INS_EXPAND) || defined(PROTO)
-static int spell_expand_need_cap;
-
 /*
  * Find start of the word in front of the cursor.  We don't check if it is
  * badly spelled, with completion we can only change the word in front of the
@@ -12875,11 +12876,20 @@ spell_word_start(startcol)
 	col = 0;
     }
 
-    /* Need to check for 'spellcapcheck' now, the word is removed before
-     * expand_spelling() is called.  Therefore the ugly global variable. */
-    spell_expand_need_cap = check_need_cap(curwin->w_cursor.lnum, col);
-
     return col;
+}
+
+/*
+ * Need to check for 'spellcapcheck' now, the word is removed before
+ * expand_spelling() is called.  Therefore the ugly global variable.
+ */
+static int spell_expand_need_cap;
+
+    void
+spell_expand_check_cap(col)
+    colnr_T col;
+{
+    spell_expand_need_cap = check_need_cap(curwin->w_cursor.lnum, col);
 }
 
 /*
