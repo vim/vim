@@ -11,6 +11,9 @@ Copyright notices for specific languages are in README_??.txt.  Note that the
 files for different regions are merged, both to save space and to make it
 possible to highlight words for another region different from bad words.
 
+Most of the soundslike mappings come from Aspell ??_phonet.dat files:
+ftp://ftp.gnu.org/gnu/aspell/dict/.  Most go under the GPL or LGPL copyright.
+
 
 GENERATING .SPL FILES
 

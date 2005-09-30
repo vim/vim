@@ -2248,12 +2248,12 @@ gui_outstr_nowrap(s, len, flags, fg, bg, back)
 	    /* Draw a composing char on top of the previous char. */
 	    if (comping)
 	    {
-#  if !defined(__APPLE_CC__) && !defined(__MRC__) && !defined(TARGET_API_MAC_CARBON) && !defined(FEAT_GUI_W32)
-		gui_mch_draw_string(gui.row, scol - cn, s + i, cl,
-						    draw_flags | DRAW_TRANSP);
-#  else
+#  if (defined(__APPLE_CC__) || defined(__MRC__)) && TARGET_API_MAC_CARBON
 		/* Carbon ATSUI autodraws composing char over previous char */
 		gui_mch_draw_string(gui.row, scol, s + i, cl,
+						    draw_flags | DRAW_TRANSP);
+#  else
+		gui_mch_draw_string(gui.row, scol - cn, s + i, cl,
 						    draw_flags | DRAW_TRANSP);
 #  endif
 		start = i + cl;
