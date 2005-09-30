@@ -3515,6 +3515,7 @@ ins_complete(c)
 		compl_col = spell_word_start(startcol);
 	    if (compl_col >= (colnr_T)startcol)
 		return FAIL;
+	    spell_expand_check_cap(compl_col);
 	    compl_length = (int)curs_col - compl_col;
 	    compl_pattern = vim_strnsave(line + compl_col, compl_length);
 	    if (compl_pattern == NULL)

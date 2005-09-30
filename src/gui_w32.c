@@ -1971,7 +1971,9 @@ gui_mch_draw_string(
 	vim_free(padding);
 	pad_size = Columns;
 
-	padding = (int *)alloc(pad_size * sizeof(int));
+	/* Don't give an out-of-memory message here, it would call us
+	 * recursively. */
+	padding = (int *)lalloc(pad_size * sizeof(int), FALSE);
 	if (padding != NULL)
 	    for (i = 0; i < pad_size; i++)
 		padding[i] = gui.char_width;
@@ -2007,10 +2009,10 @@ gui_mch_draw_string(
 	    && (unicodebuf == NULL || len > unibuflen))
     {
 	vim_free(unicodebuf);
-	unicodebuf = (WCHAR *)alloc(len * sizeof(WCHAR));
+	unicodebuf = (WCHAR *)lalloc(len * sizeof(WCHAR), FALSE);
 
 	vim_free(unicodepdy);
-	unicodepdy = (int *)alloc(len * sizeof(int));
+	unicodepdy = (int *)lalloc(len * sizeof(int), FALSE);
 
 	unibuflen = len;
     }
@@ -2730,12 +2732,12 @@ gui_mch_dialog(
 	dfltbutton = -1;
 
     /* Allocate array to hold the width of each button */
-    buttonWidths = (int *) lalloc(numButtons * sizeof(int), TRUE);
+    buttonWidths = (int *)lalloc(numButtons * sizeof(int), TRUE);
     if (buttonWidths == NULL)
 	return -1;
 
     /* Allocate array to hold the X position of each button */
-    buttonPositions = (int *) lalloc(numButtons * sizeof(int), TRUE);
+    buttonPositions = (int *)lalloc(numButtons * sizeof(int), TRUE);
     if (buttonPositions == NULL)
 	return -1;
 

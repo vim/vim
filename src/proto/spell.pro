@@ -19,5 +19,6 @@ char_u *eval_soundfold __ARGS((char_u *word));
 void ex_spelldump __ARGS((exarg_T *eap));
 char_u *spell_to_word_end __ARGS((char_u *start, buf_T *buf));
 int spell_word_start __ARGS((int startcol));
+void spell_expand_check_cap __ARGS((colnr_T col));
 int expand_spelling __ARGS((linenr_T lnum, int col, char_u *pat, char_u ***matchp));
 /* vim: set ft=c : */

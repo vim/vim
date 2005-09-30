@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Sep 25
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Sep 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1626,7 +1626,8 @@ simplify( {filename})		String	simplify filename as much as possible
 sort( {list} [, {func}])	List	sort {list}, using {func} to compare
 soundfold( {word})		String	sound-fold {word}
 spellbadword()			String	badly spelled word at cursor
-spellsuggest( {word} [, {max}])	List	spelling suggestions
+spellsuggest( {word} [, {max} [, {capital}]])
+				List	spelling suggestions
 split( {expr} [, {pat} [, {keepempty}]])
 				List	make List from {pat} separated {expr}
 strftime( {format}[, {time}])	String	time in specified format
@@ -4076,10 +4077,14 @@ spellbadword([{sentence}])
 		used.
 
 							*spellsuggest()*
-spellsuggest({word} [, {max}])
+spellsuggest({word} [, {max} [, {capital}]])
 		Return a List with spelling suggestions to replace {word}.
 		When {max} is given up to this number of suggestions are
 		returned.  Otherwise up to 25 suggestions are returned.
+
+		When the {capital} argument is given and it's non-zero only
+		suggestions with a leading capital will be given.  Use this
+		after a match with 'spellcapcheck'.
 
 		{word} can be a badly spelled word followed by other text.
 		This allows for joining two words that were split.  The
@@ -4087,8 +4092,8 @@ spellsuggest({word} [, {max}])
 		replace a line.
 
 		{word} may also be a good word.  Similar words will then be
-		returned.  {word} itself is also included, most likely as the
-		first entry, thus this can be used to check spelling.
+		returned.  {word} itself is not included in the suggestions,
+		although it may appear capitalized.
 
 		The spelling information for the current window is used.  The
 		'spell' option must be set and the values of 'spelllang' and

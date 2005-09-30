@@ -1,15 +1,12 @@
 *** sv_SE.orig.aff	Wed Aug 31 21:00:19 2005
---- sv_SE.aff	Wed Aug 31 21:02:53 2005
+--- sv_SE.aff	Fri Sep 30 14:09:19 2005
 ***************
 *** 6,7 ****
---- 6,25 ----
+--- 6,22 ----
   
 + FOL  ßàáâãäåæçèéêëìíîïğñòóôõöøùúûüışÿ
 + LOW  ßàáâãäåæçèéêëìíîïğñòóôõöøùúûüışÿ
 + UPP  ßÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏĞÑÒÓÔÕÖØÙÚÛÜİŞÿ
-+ 
-+ SOFOFROM abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZàáâãäåæçèéêëìíîïğñòóôõöøùúûüışßÿÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏĞÑÒÓÔÕÖØÙÚÛÜİŞ¿
-+ SOFOTO   ebctefghejklnnepkrstevvkesebctefghejklnnepkrstevvkeseeeeeeeceeeeeeeedneeeeeeeeeeepseeeeeeeeceeeeeeeedneeeeeeeeeeep?
 + 
 + MAP 9
 + MAP aàáâãäå
@@ -28,7 +25,7 @@
   
 ! SFX  C  Y  16
   SFX  C  0  t  [aeiouyåäöé]
---- 33,35 ----
+--- 30,32 ----
   
 ! SFX  C  Y  15
   SFX  C  0  t  [aeiouyåäöé]
@@ -37,4 +34,108 @@
   SFX  C  en nets en
 - SFX  C  0  net  nets [^e]n
   SFX  C  0  nets  [^e]n
---- 48,49 ----
+--- 45,46 ----
+***************
+*** 427 ****
+--- 441,541 ----
+  SFX  T  el  la  el
++ 
++ # soundslike mapping from Aspell
++ # swedish_phonet.dat - Swedish phonetic transformation rules for aspell
++ # Copyright (C) 2000  Martin Norbäck  <d95mback@dtek.chalmers.se>
++ # distributed under GNU GPL
++ # version 0.2
++ 
++ SAL &	&
++ SAL @	@
++ SAL ANG(EIYÄÖ)-^	ANI	# förledet an- ska inte bli @-ljud
++ SAL AGNO6	AKNO	# agnostiker osv.
++ SAL AG(IE)-6	AK	# vokal+g(ie) ger ej j-ljud
++ SAL A	A
++ SAL BB-<	_
++ SAL B	P
++ SAL CCO-	K	# broccoli, piccolo
++ SAL CC	KS	# successiv, access, succé
++ SAL CH	&	# choklad osv.
++ SAL CK	K	# ck -> k som vanligt
++ SAL C(EIYÄÖ)-<	S	# c + mjuk vokal -> s
++ SAL C	K	# c + annat -> k
++ SAL DJ(UÄÖ)-	I	# djungel, djävel, adjö
++ SAL DD-	_
++ SAL D	T
++ SAL EG(IE)-6	EK	# vokal+g(ie) ger ej j-ljud
++ SAL E	E
++ SAL É	E
++ SAL FF	F
++ SAL F	F
++ SAL G(EIYÄÖ)-3	I	# g+mjuk vokal ger j-ljud
++ SAL GG6	K
++ SAL GN	@N	# ugn, lugn...
++ SAL G	K
++ SAL H(AOUÅEIYÄÖ)-^	H	# h i början av ord hörs
++ SAL H(AUOÅEIYÄÖ)-	_	# annars stumt framför vokal
++ SAL HJ	I	# hj->j (hjärta osv.)
++ SAL H	H
++ SAL IG(IE)-6	IK	# vokal+g(ie) ger ej j-ljud
++ SAL I	I
++ SAL J	I
++ SAL K(EIYÄÖ)-^	&	# k+mjuk vokal ger sje-ljud
++ SAL KJ	&	# kjol
++ SAL K	K
++ SAL LJU-	I	# ljuga, ljus
++ SAL LL-	_
++ SAL L	L
++ SAL MM-	_
++ SAL M	M
++ SAL NG6	@
++ SAL NN-	_
++ SAL N	N
++ SAL ORIGI8	ORKI	# specialfall
++ SAL OG(IE)-6	OK	# vokal+g(ie) ger ej j-ljud
++ SAL O	O
++ SAL PROJEKT	PRO&EKT	# specialfall
++ SAL PSALT<	SALT	# specialfall
++ SAL PSALM<	SALM	# specialfall
++ SAL PP-	_
++ SAL P	P
++ SAL Q	K
++ SAL RGI$6	RGI	# inget j i slutet
++ SAL RGA$6	RIA	# här är det däremot j (arga,färga)
++ SAL RGE$6	RIE	# här också (Norge, överge)
++ SAL RGS$	RIS	# rgs i slutet
++ SAL RG$	RI	# rg i slutet
++ SAL RD	T	# "blött" d
++ SAL RN	N	# "blött" n
++ SAL RT	T	# "blött" t
++ SAL RLD	T	# värld
++ SAL RL	L	# "blött" l
++ SAL RS	&	# sje-ljud (fars, gärsgård)
++ SAL RR-	_
++ SAL R	R
++ SAL SS-	_
++ SAL SCHIZ6	SKITS	# specialfall
++ SAL SCH6	&
++ SAL SKJ	&	# skjorta, skjuta
++ SAL SJ	&	# sje-ljud
++ SAL S	S
++ SAL TION9^	TION	# tionde
++ SAL TION6	&ON	# station osv.
++ SAL TT-	_
++ SAL T	T
++ SAL UG(IE)-6	UK	# vokal+g(ie) ger ej j-ljud
++ SAL U	U
++ SAL V	F
++ SAL W	F
++ SAL X9	KS
++ SAL YG(IE)-6	YK	# vokal+g(ie) ger ej j-ljud
++ SAL Y	I
++ SAL ZZ	TS
++ SAL Z	S
++ SAL ÅTTIO9	OTIO	# specialfall (ej sje-ljud)
++ SAL ÅRTION9	ORTION	# specialfall (r hörs)
++ SAL ÅG(IE)-6	OK	# vokal+g(ie) ger ej j-ljud
++ SAL Å	O
++ SAL ÄG(IE)-6	EK	# vokal+g(ie) ger ej j-ljud
++ SAL Ä	E
++ SAL ÖG(IE)-6	ÖK	# vokal+g(ie) ger ej j-ljud
++ SAL Ö	Ö
