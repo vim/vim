@@ -64,6 +64,7 @@ SRC =	buffer.c \
 	ops.c \
 	option.c \
 	os_amiga.c \
+	popupmenu.c \
 	quickfix.c \
 	regexp.c \
 	screen.c \
@@ -109,6 +110,7 @@ OBJ =	obj/buffer.o \
 	obj/ops.o \
 	obj/option.o \
 	obj/os_amiga.o \
+	obj/popupmenu.o \
 	obj/quickfix.o \
 	obj/regexp.o \
 	obj/screen.o \
@@ -152,6 +154,7 @@ PRO =	proto/buffer.pro \
 	proto/ops.pro \
 	proto/option.pro \
 	proto/os_amiga.pro \
+	proto/popupmenu.pro \
 	proto/quickfix.pro \
 	proto/regexp.pro \
 	proto/screen.pro \
@@ -302,6 +305,9 @@ obj/option.o:	option.c
 
 obj/os_amiga.o:	os_amiga.c
 	$(CCSYM) $@ os_amiga.c
+
+obj/popupmenu.o:	popupmenu.c
+	$(CCSYM) $@ popupmenu.c
 
 obj/quickfix.o:	quickfix.c
 	$(CCSYM) $@ quickfix.c

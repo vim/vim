@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0aa.  Last change: 2005 Sep 23
+*insert.txt*    For Vim version 7.0aa.  Last change: 2005 Oct 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -950,6 +950,27 @@ CTRL-P			Find previous match for words that start with the
 	CTRL-X CTRL-P	Further use of CTRL-X CTRL-N or CTRL-X CTRL-P will
 			copy the words following the previous expansion in
 			other contexts unless a double CTRL-X is used.
+
+
+INSERT COMPLETION POPUP MENU				*ins-completion-menu*
+
+Vim can display the matches in a simplistic popup menu.
+
+The menu is used when:
+- The 'completeopt' option contains "menu".
+- The terminal supports at least 8 colors.
+- There are at least two matches.
+
+While the menu is displayed these keys have a special meaning:
+<CR> and <Enter>: Accept the currently selected match
+<Up>:             Select the previous match, as if CTRL-P was used
+<Down>:           Select the next match, as if CTRL-N was used
+
+The colors of the menu can be changed with these highlight groups:
+Pmenu		normal item  |hl-Pmenu|
+PmenuSel	selected item  |hl-PmenuSel|
+PmenuSbar	scrollbar  |hl-PmenuSbar|
+PmenuThumb	thumb of the scrollbar  |hl-PmenuThumb|
 
 
 Filetype-specific remarks for omni completion	    *compl-omni-filetypes*

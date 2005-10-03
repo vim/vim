@@ -109,10 +109,14 @@ static void ins_ctrl_x __ARGS((void));
 static int  has_compl_option __ARGS((int dict_opt));
 static void ins_compl_add_matches __ARGS((int num_matches, char_u **matches, int dir));
 static int  ins_compl_make_cyclic __ARGS((void));
+static void ins_compl_upd_pum __ARGS((void));
+static void ins_compl_del_pum __ARGS((void));
+static int pum_wanted __ARGS((void));
+static void ins_compl_show_pum __ARGS((void));
 static void ins_compl_dictionaries __ARGS((char_u *dict, char_u *pat, int dir, int flags, int thesaurus));
 static void ins_compl_free __ARGS((void));
 static void ins_compl_clear __ARGS((void));
-static void ins_compl_prep __ARGS((int c));
+static int  ins_compl_prep __ARGS((int c));
 static buf_T *ins_compl_next_buf __ARGS((buf_T *buf, int flag));
 static int  ins_compl_get_exp __ARGS((pos_T *ini, int dir));
 static void ins_compl_delete __ARGS((void));
@@ -659,10 +663,19 @@ edit(cmdchar, startln, count)
 #endif
 
 #ifdef FEAT_INS_EXPAND
+	/* When the popup menu is visible cursor keys change the selection. */
+	if (c == K_UP && pum_visible())
+	    c = Ctrl_P;
+	if (c == K_DOWN && pum_visible())
+	    c = Ctrl_N;
+
 	/* Prepare for or stop CTRL-X mode.  This doesn't do completion, but
 	 * it does fix up the text when finishing completion. */
 	if (c != K_IGNORE)
-	    ins_compl_prep(c);
+	{
+	    if (ins_compl_prep(c))
+		continue;
+	}
 #endif
 
 	/* CTRL-\ CTRL-N goes to Normal mode,
@@ -1968,6 +1981,9 @@ ins_compl_add(str, len, fname, dir, flags)
 	} while (match != NULL && match != compl_first_match);
     }
 
+    /* Remove any popup menu before changing the list of matches. */
+    ins_compl_del_pum();
+
     /*
      * Allocate a new match structure.
      * Copy the values to the new match structure.
@@ -2071,6 +2087,157 @@ ins_compl_make_cyclic()
 	compl_first_match->cp_prev = match;
     }
     return count;
+}
+
+static char_u **compl_match_array = NULL;
+static int compl_match_arraysize;
+
+/*
+ * Update the screen and when there is any scrolling remove the popup menu.
+ */
+    static void
+ins_compl_upd_pum()
+{
+    int		h;
+
+    if (compl_match_array != NULL)
+    {
+	h = curwin->w_cline_height;
+	update_screen(0);
+	if (h != curwin->w_cline_height)
+	    ins_compl_del_pum();
+    }
+}
+
+/*
+ * Remove any popup menu.
+ */
+    static void
+ins_compl_del_pum()
+{
+    if (compl_match_array != NULL)
+    {
+	pum_undisplay();
+	vim_free(compl_match_array);
+	compl_match_array = NULL;
+    }
+}
+
+/*
+ * Return TRUE if the popup menu should be displayed.
+ */
+    static int
+pum_wanted()
+{
+    compl_T     *compl;
+    int		i;
+
+    /* 'completeopt' must contain "menu" */
+    if (*p_cot == NUL)
+	return FALSE;
+
+    /* The display looks bad on a B&W display. */
+    if (t_colors < 8
+#ifdef FEAT_GUI
+	    && !gui.in_use
+#endif
+	    )
+	return FALSE;
+
+    /* Don't display the popup menu if there are no matches or there is only
+     * one (ignoring the original text). */
+    compl = compl_first_match;
+    i = 0;
+    do
+    {
+	if (compl == NULL
+		      || ((compl->cp_flags & ORIGINAL_TEXT) == 0 && ++i == 2))
+	    break;
+	compl = compl->cp_next;
+    } while (compl != compl_first_match);
+
+    return (i >= 2);
+}
+
+/*
+ * Show the popup menu for the list of matches.
+ */
+    static void
+ins_compl_show_pum()
+{
+    compl_T     *compl;
+    int		i;
+    int		cur = -1;
+    colnr_T	col;
+
+    if (!pum_wanted())
+	return;
+
+    /* Update the screen before drawing the popup menu over it. */
+    update_screen(0);
+
+    if (compl_match_array == NULL)
+    {
+	/* Need to build the popup menu list. */
+	compl_match_arraysize = 0;
+	compl = compl_first_match;
+	do
+	{
+	    if ((compl->cp_flags & ORIGINAL_TEXT) == 0)
+		++compl_match_arraysize;
+	    compl = compl->cp_next;
+	} while (compl != NULL && compl != compl_first_match);
+	compl_match_array = (char_u **)alloc((unsigned)(sizeof(char_u **)
+						    * compl_match_arraysize));
+	if (compl_match_array != NULL)
+	{
+	    i = 0;
+	    compl = compl_first_match;
+	    do
+	    {
+		if ((compl->cp_flags & ORIGINAL_TEXT) == 0)
+		{
+		    if (compl == compl_shown_match)
+			cur = i;
+		    compl_match_array[i++] = compl->cp_str;
+		}
+		compl = compl->cp_next;
+	    } while (compl != NULL && compl != compl_first_match);
+	}
+    }
+    else
+    {
+	/* popup menu already exists, only need to find the current item.*/
+	i = 0;
+	compl = compl_first_match;
+	do
+	{
+	    if ((compl->cp_flags & ORIGINAL_TEXT) == 0)
+	    {
+		if (compl == compl_shown_match)
+		{
+		    cur = i;
+		    break;
+		}
+		++i;
+	    }
+	    compl = compl->cp_next;
+	} while (compl != NULL && compl != compl_first_match);
+    }
+
+    if (compl_match_array != NULL)
+    {
+	/* Compute the screen column of the start of the completed text.
+	 * Use the cursor to get all wrapping and other settings right. */
+	col = curwin->w_cursor.col;
+	curwin->w_cursor.col = compl_col;
+	validate_cursor_col();
+	pum_display(compl_match_array, compl_match_arraysize, cur,
+		  curwin->w_cline_row + W_WINROW(curwin),
+		  curwin->w_cline_height,
+		  curwin->w_wcol + W_WINCOL(curwin));
+	curwin->w_cursor.col = col;
+    }
 }
 
 #define DICT_FIRST	(1)	/* use just first element in "dict" */
@@ -2277,6 +2444,10 @@ ins_compl_free()
 
     if (compl_first_match == NULL)
 	return;
+
+    ins_compl_del_pum();
+    pum_clear();
+
     compl_curr_match = compl_first_match;
     do
     {
@@ -2306,14 +2477,16 @@ ins_compl_clear()
 /*
  * Prepare for Insert mode completion, or stop it.
  * Called just after typing a character in Insert mode.
+ * Returns TRUE when the character is not to be inserted;
  */
-    static void
+    static int
 ins_compl_prep(c)
     int	    c;
 {
     char_u	*ptr;
     int		temp;
     int		want_cindent;
+    int		retval = FALSE;
 
     /* Forget any previous 'special' messages if this is actually
      * a ^X mode key - bar ^R, in which case we wait to see what it gives us.
@@ -2323,7 +2496,7 @@ ins_compl_prep(c)
 
     /* Ignore end of Select mode mapping */
     if (c == K_SELECT)
-	return;
+	return retval;
 
     if (ctrl_x_mode == CTRL_X_NOT_DEFINED_YET)
     {
@@ -2504,6 +2677,11 @@ ins_compl_prep(c)
 
 	    auto_format(FALSE, TRUE);
 
+	    /* if the popup menu is displayed hitting Enter means accepting
+	     * the selection without inserting anything. */
+	    if ((c == CAR || c == K_KENTER || c == NL) && pum_visible())
+		retval = TRUE;
+
 	    ins_compl_free();
 	    compl_started = FALSE;
 	    compl_matches = 0;
@@ -2534,6 +2712,8 @@ ins_compl_prep(c)
 	compl_cont_status = 0;
 	compl_cont_mode = 0;
     }
+
+    return retval;
 }
 
 /*
@@ -2890,8 +3070,8 @@ ins_compl_get_exp(ini, dir)
 	    {
 		int	flags = 0;
 
-		/* ctrl_x_mode == CTRL_X_WHOLE_LINE || word-wise search that has
-		 * added a word that was at the beginning of the line */
+		/* ctrl_x_mode == CTRL_X_WHOLE_LINE || word-wise search that
+		 * has added a word that was at the beginning of the line */
 		if (	ctrl_x_mode == CTRL_X_WHOLE_LINE
 			|| (compl_cont_status & CONT_SOL))
 		    found_new_match = search_for_exact_line(ins_buf, pos,
@@ -2999,7 +3179,7 @@ ins_compl_get_exp(ini, dir)
 		    }
 		}
 		if (ins_compl_add_infercase(ptr, len,
-			    ins_buf == curbuf ?  NULL : ins_buf->b_sfname,
+				 ins_buf == curbuf ? NULL : ins_buf->b_sfname,
 						       dir, flags) != NOTDONE)
 		{
 		    found_new_match = OK;
@@ -3009,22 +3189,35 @@ ins_compl_get_exp(ini, dir)
 	    p_scs = save_p_scs;
 	    p_ws = save_p_ws;
 	}
+
 	/* check if compl_curr_match has changed, (e.g. other type of
 	 * expansion added somenthing) */
-	if (compl_curr_match != old_match)
+	if (type != 0 && compl_curr_match != old_match)
 	    found_new_match = OK;
 
 	/* break the loop for specialized modes (use 'complete' just for the
 	 * generic ctrl_x_mode == 0) or when we've found a new match */
 	if ((ctrl_x_mode != 0 && ctrl_x_mode != CTRL_X_WHOLE_LINE)
 						   || found_new_match != FAIL)
-	    break;
+	{
+	    if (got_int)
+		break;
+	    if (pum_wanted() && type != -1)
+		/* Fill the popup menu as soon as possible. */
+		ins_compl_check_keys(0);
+	    if ((ctrl_x_mode != 0 && ctrl_x_mode != CTRL_X_WHOLE_LINE)
+							 || compl_interrupted)
+		break;
+	    compl_started = TRUE;
+	}
+	else
+	{
+	    /* Mark a buffer scanned when it has been scanned completely */
+	    if (type == 0 || type == CTRL_X_PATH_PATTERNS)
+		ins_buf->b_scanned = TRUE;
 
-	/* Mark a buffer scanned when it has been scanned completely */
-	if (type == 0 || type == CTRL_X_PATH_PATTERNS)
-	    ins_buf->b_scanned = TRUE;
-
-	compl_started = FALSE;
+	    compl_started = FALSE;
+	}
     }
     compl_started = TRUE;
 
@@ -3106,8 +3299,7 @@ ins_compl_next(allow_get_expansion)
 	compl_pending = TRUE;
 	if (allow_get_expansion)
 	{
-	    num_matches = ins_compl_get_exp(&compl_startpos,
-							  compl_direction);
+	    num_matches = ins_compl_get_exp(&compl_startpos, compl_direction);
 	    if (compl_pending)
 	    {
 		if (compl_direction == compl_shows_dir)
@@ -3123,8 +3315,14 @@ ins_compl_next(allow_get_expansion)
 
     if (!allow_get_expansion)
     {
+	/* may undisplay the popup menu first */
+	ins_compl_upd_pum();
+
 	/* Display the current match. */
 	update_screen(0);
+
+	/* display the updated popup menu */
+	ins_compl_show_pum();
 
 	/* Delete old text to be replaced, since we're still searching and
 	 * don't want to match ourselves!  */
@@ -3593,6 +3791,9 @@ ins_complete(c)
      */
     n = ins_compl_next(TRUE);
 
+    /* may undisplay the popup menu */
+    ins_compl_upd_pum();
+
     if (n > 1)		/* all matches have been found */
 	compl_matches = n;
     compl_curr_match = compl_shown_match;
@@ -3671,8 +3872,8 @@ ins_complete(c)
 		    if (match != NULL)
 			/* go up and assign all numbers which are not assigned
 			 * yet */
-			for (match = match->cp_next; match
-				&& match->cp_number == -1;
+			for (match = match->cp_next;
+				match != NULL && match->cp_number == -1;
 						       match = match->cp_next)
 			    match->cp_number = ++number;
 		}
@@ -3699,8 +3900,8 @@ ins_complete(c)
 		}
 	    }
 
-	    /* The match should always have a sequnce number now, this is just
-	     * a safety check. */
+	    /* The match should always have a sequence number now, this is
+	     * just a safety check. */
 	    if (compl_curr_match->cp_number != -1)
 	    {
 		/* Space for 10 text chars. + 2x10-digit no.s */
@@ -3732,6 +3933,8 @@ ins_complete(c)
     }
     else
 	msg_clr_cmdline();	/* necessary for "noshowmode" */
+
+    ins_compl_show_pum();
 
     return OK;
 }

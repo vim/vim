@@ -68,6 +68,7 @@ OBJ = \
 	normal.o \
 	ops.o \
 	option.o \
+	popupmenu.o \
 	quickfix.o \
 	regexp.o \
 	screen.o \
@@ -140,6 +141,7 @@ mbyte.o:	mbyte.c  $(INCL)
 normal.o:	normal.c  $(INCL)
 ops.o:		ops.c  $(INCL)
 option.o:	option.c  $(INCL)
+popupmenu.o:	popupmenu.c  $(INCL)
 quickfix.o:	quickfix.c  $(INCL)
 regexp.o:	regexp.c  $(INCL)
 screen.o:	screen.c  $(INCL)

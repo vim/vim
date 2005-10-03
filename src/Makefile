@@ -1371,6 +1371,7 @@ BASIC_SRC = \
 	option.c \
 	os_unix.c \
 	auto/pathdef.c \
+	popupmenu.c \
 	quickfix.c \
 	regexp.c \
 	screen.c \
@@ -1441,6 +1442,7 @@ OBJ = \
 	objects/option.o \
 	objects/os_unix.o \
 	objects/pathdef.o \
+	objects/popupmenu.o \
 	objects/quickfix.o \
 	objects/regexp.o \
 	objects/screen.o \
@@ -1500,6 +1502,7 @@ PRO_AUTO = \
 	ops.pro \
 	option.pro \
 	os_unix.pro \
+	popupmenu.pro \
 	quickfix.pro \
 	regexp.pro \
 	screen.pro \
@@ -1611,13 +1614,18 @@ xxd/xxd$(EXEEXT): xxd/xxd.c
 # Generate the converted .mo files separately, it's no problem if this fails.
 languages:
 	@if test -n "$(MAKEMO)" -a -f $(PODIR)/Makefile; then \
+		$(MAKE) language-check; \
 		cd $(PODIR); \
-		CC="$(CC)" $(MAKE) check; \
 		CC="$(CC)" $(MAKE) prefix=$(DESTDIR)$(prefix); \
 	fi
 	-@if test -n "$(MAKEMO)" -a -f $(PODIR)/Makefile; then \
 		cd $(PODIR); CC="$(CC)" $(MAKE) prefix=$(DESTDIR)$(prefix) converted; \
 	fi
+
+# Separate target to check the po files for valitidy, because it depends on
+# ./vim.
+language-check: $(VIMTARGET)
+	cd $(PODIR); $(MAKE) check VIM=../$(VIMTARGET)
 
 # Update the *.po files for changes in the sources.  Only run manually.
 update-po:
@@ -2456,6 +2464,9 @@ objects/py_getpath.o: $(PYTHON_CONFDIR)/getpath.c
 
 objects/pty.o: pty.c
 	$(CCC) -o $@ pty.c
+
+objects/popupmenu.o: popupmenu.c
+	$(CCC) -o $@ popupmenu.c
 
 objects/quickfix.o: quickfix.c
 	$(CCC) -o $@ quickfix.c

@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Sep 29
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Oct 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1371,6 +1371,14 @@ v:progname	Contains the name (with path removed) with which Vim was
 					*v:register* *register-variable*
 v:register	The name of the register supplied to the last normal mode
 		command.  Empty if none were supplied. |getreg()| |setreg()|
+
+					*v:scrollstart* *scrollstart-variable*
+v:scrollstart	String describing the script or function that caused the
+		screen to scroll up.  It's only set when it is empty, thus the
+		first reason is remembered.  It is set to "Unknown" for a
+		typed command.
+		This can be used to find out why your script causes the
+		hit-enter prompt.
 
 					*v:servername* *servername-variable*
 v:servername	The resulting registered |x11-clientserver| name if any.

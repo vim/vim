@@ -80,6 +80,7 @@ EXE_dependencies = \
 	normal.obj \
 	ops.obj \
 	option.obj \
+	popupmenu.obj \
 	quickfix.obj \
 	regexp.obj \
 	screen.obj \

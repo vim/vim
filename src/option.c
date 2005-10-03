@@ -659,6 +659,15 @@ static struct vimoption
 			    {(char_u *)0L, (char_u *)0L}
 #endif
 			    },
+    {"completeopt",   "cot",  P_STRING|P_VI_DEF|P_COMMA|P_NODUP,
+#ifdef FEAT_INS_EXPAND
+			    (char_u *)&p_cot, PV_NONE,
+			    {(char_u *)"menu", (char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)0L, (char_u *)0L}
+#endif
+			    },
     {"confirm",     "cf",   P_BOOL|P_VI_DEF,
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
 			    (char_u *)&p_confirm, PV_NONE,
@@ -1119,7 +1128,7 @@ static struct vimoption
 			    {(char_u *)FALSE, (char_u *)0L}},
     {"highlight",   "hl",   P_STRING|P_VI_DEF|P_RCLR|P_COMMA|P_NODUP,
 			    (char_u *)&p_hl, PV_NONE,
-			    {(char_u *)"8:SpecialKey,@:NonText,d:Directory,e:ErrorMsg,i:IncSearch,l:Search,m:MoreMsg,M:ModeMsg,n:LineNr,r:Question,s:StatusLine,S:StatusLineNC,c:VertSplit,t:Title,v:Visual,V:VisualNOS,w:WarningMsg,W:WildMenu,f:Folded,F:FoldColumn,A:DiffAdd,C:DiffChange,D:DiffDelete,T:DiffText,>:SignColumn,B:SpellBad,P:SpellCap,R:SpellRare,L:SpellLocal",
+			    {(char_u *)"8:SpecialKey,@:NonText,d:Directory,e:ErrorMsg,i:IncSearch,l:Search,m:MoreMsg,M:ModeMsg,n:LineNr,r:Question,s:StatusLine,S:StatusLineNC,c:VertSplit,t:Title,v:Visual,V:VisualNOS,w:WarningMsg,W:WildMenu,f:Folded,F:FoldColumn,A:DiffAdd,C:DiffChange,D:DiffDelete,T:DiffText,>:SignColumn,B:SpellBad,P:SpellCap,R:SpellRare,L:SpellLocal,+:Pmenu,=:PmenuSel,x:PmenuSbar,X:PmenuThumb",
 				(char_u *)0L}},
     {"history",	    "hi",   P_NUM|P_VIM,
 			    (char_u *)&p_hi, PV_NONE,
@@ -2608,11 +2617,14 @@ static char *(p_bufhidden_values[]) = {"hide", "unload", "delete", "wipe", NULL}
 static char *(p_bs_values[]) = {"indent", "eol", "start", NULL};
 #ifdef FEAT_FOLDING
 static char *(p_fdm_values[]) = {"manual", "expr", "marker", "indent", "syntax",
-#ifdef FEAT_DIFF
+# ifdef FEAT_DIFF
 				"diff",
-#endif
+# endif
 				NULL};
 static char *(p_fcl_values[]) = {"all", NULL};
+#endif
+#ifdef FEAT_INS_EXPAND
+static char *(p_cot_values[]) = {"menu", NULL};
 #endif
 
 static void set_option_default __ARGS((int, int opt_flags, int compatible));
@@ -5929,6 +5941,13 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 		}
 	    }
 	}
+    }
+
+    /* 'completeopt' */
+    else if (varp == &p_cot)
+    {
+	if (check_opt_strings(p_cot, p_cot_values, TRUE) != OK)
+	    errmsg = e_invarg;
     }
 #endif /* FEAT_INS_EXPAND */
 

@@ -2,7 +2,7 @@
 " You can also use this as a start for your own set of menus.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Aug 16
+" Last Change:	2005 Oct 01
 
 " Note that ":an" (short for ":anoremenu") is often used to make a menu work
 " in all modes and avoid side effects from mappings defined by the user.
@@ -902,7 +902,7 @@ if has("spell")
     endif
 
     let curcol = col('.')
-    let w = spellbadword()
+    let [w, a] = spellbadword()
     if col('.') > curcol		" don't use word after the cursor
       let w = ''
       call cursor(0, curcol)	" put the cursor back where it was

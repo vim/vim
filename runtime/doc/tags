@@ -120,10 +120,12 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'compatible'	options.txt	/*'compatible'*
 'complete'	options.txt	/*'complete'*
 'completefunc'	options.txt	/*'completefunc'*
+'completeopt'	options.txt	/*'completeopt'*
 'confirm'	options.txt	/*'confirm'*
 'consk'	options.txt	/*'consk'*
 'conskey'	options.txt	/*'conskey'*
 'copyindent'	options.txt	/*'copyindent'*
+'cot'	options.txt	/*'cot'*
 'cp'	options.txt	/*'cp'*
 'cpo'	options.txt	/*'cpo'*
 'cpoptions'	options.txt	/*'cpoptions'*
@@ -5353,6 +5355,10 @@ hl-ModeMsg	syntax.txt	/*hl-ModeMsg*
 hl-MoreMsg	syntax.txt	/*hl-MoreMsg*
 hl-NonText	syntax.txt	/*hl-NonText*
 hl-Normal	syntax.txt	/*hl-Normal*
+hl-Pmenu	syntax.txt	/*hl-Pmenu*
+hl-PmenuSbar	syntax.txt	/*hl-PmenuSbar*
+hl-PmenuSel	syntax.txt	/*hl-PmenuSel*
+hl-PmenuThumb	syntax.txt	/*hl-PmenuThumb*
 hl-Question	syntax.txt	/*hl-Question*
 hl-Scrollbar	syntax.txt	/*hl-Scrollbar*
 hl-Search	syntax.txt	/*hl-Search*
@@ -5546,6 +5552,7 @@ inputrestore()	eval.txt	/*inputrestore()*
 inputsave()	eval.txt	/*inputsave()*
 inputsecret()	eval.txt	/*inputsecret()*
 ins-completion	insert.txt	/*ins-completion*
+ins-completion-menu	insert.txt	/*ins-completion-menu*
 ins-expandtab	insert.txt	/*ins-expandtab*
 ins-reverse	rileft.txt	/*ins-reverse*
 ins-smarttab	insert.txt	/*ins-smarttab*
@@ -6363,6 +6370,7 @@ scroll.txt	scroll.txt	/*scroll.txt*
 scrollbind-quickadj	scroll.txt	/*scrollbind-quickadj*
 scrollbind-relative	scroll.txt	/*scrollbind-relative*
 scrolling	scroll.txt	/*scrolling*
+scrollstart-variable	eval.txt	/*scrollstart-variable*
 sdl.vim	syntax.txt	/*sdl.vim*
 search()	eval.txt	/*search()*
 search-commands	pattern.txt	/*search-commands*
@@ -6948,6 +6956,7 @@ v:prevcount	eval.txt	/*v:prevcount*
 v:profiling	eval.txt	/*v:profiling*
 v:progname	eval.txt	/*v:progname*
 v:register	eval.txt	/*v:register*
+v:scrollstart	eval.txt	/*v:scrollstart*
 v:servername	eval.txt	/*v:servername*
 v:shell_error	eval.txt	/*v:shell_error*
 v:statusmsg	eval.txt	/*v:statusmsg*
@@ -7324,6 +7333,13 @@ zf	fold.txt	/*zf*
 zg	spell.txt	/*zg*
 zh	scroll.txt	/*zh*
 zi	fold.txt	/*zi*
+zip	zip.txt	/*zip*
+zip-contents	zip.txt	/*zip-contents*
+zip-copyright	zip.txt	/*zip-copyright*
+zip-history	zip.txt	/*zip-history*
+zip-manual	zip.txt	/*zip-manual*
+zip-usage	zip.txt	/*zip-usage*
+zip.txt	zip.txt	/*zip.txt*
 zj	fold.txt	/*zj*
 zk	fold.txt	/*zk*
 zl	scroll.txt	/*zl*

@@ -389,6 +389,7 @@ OBJ = \
 	$(OUTDIR)/os_win32.o \
 	$(OUTDIR)/os_mswin.o \
 	$(OUTDIR)/pathdef.o \
+	$(OUTDIR)/popupmenu.o \
 	$(OUTDIR)/quickfix.o \
 	$(OUTDIR)/regexp.o \
 	$(OUTDIR)/screen.o \

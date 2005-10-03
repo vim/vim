@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.0aa.  Last change: 2005 Jun 30
+*starting.txt*  For Vim version 7.0aa.  Last change: 2005 Oct 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -789,10 +789,11 @@ accordingly.  Vim proceeds in this order:
 
 4. Load the plugin scripts.					*load-plugins*
 	This does the same as the command: >
-		:runtime! plugin/*.vim
+		:runtime! plugin/**/*.vim
 <	The result is that all directories in the 'runtimepath' option will be
 	searched for the "plugin" sub-directory and all files ending in ".vim"
-	will be sourced (in alphabetical order per directory).
+	will be sourced (in alphabetical order per directory), also in
+	subdirectories.
 	Loading plugins won't be done when:
 	- The 'loadplugins' option was reset in a vimrc file.
 	- The |--noplugin| command line argument is used.

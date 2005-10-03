@@ -1289,7 +1289,7 @@ getcmdline(firstc, count, indent)
 		goto cmdline_not_changed;
 
 	case K_VER_SCROLLBAR:
-		if (!msg_scrolled)
+		if (msg_scrolled == 0)
 		{
 		    gui_do_scroll();
 		    redrawcmd();
@@ -1297,7 +1297,7 @@ getcmdline(firstc, count, indent)
 		goto cmdline_not_changed;
 
 	case K_HOR_SCROLLBAR:
-		if (!msg_scrolled)
+		if (msg_scrolled == 0)
 		{
 		    gui_do_horiz_scroll();
 		    redrawcmd();
@@ -2897,7 +2897,7 @@ redrawcmd()
     void
 compute_cmdrow()
 {
-    if (exmode_active || msg_scrolled)
+    if (exmode_active || msg_scrolled != 0)
 	cmdline_row = Rows - 1;
     else
 	cmdline_row = W_WINROW(lastwin) + lastwin->w_height

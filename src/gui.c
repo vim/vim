@@ -3492,7 +3492,7 @@ gui_drag_scrollbar(sb, value, still_dragging)
 	    ins_horscroll();
 	else if (State & CMDLINE)
 	{
-	    if (!msg_scrolled)
+	    if (msg_scrolled == 0)
 	    {
 		gui_do_horiz_scroll();
 		redrawcmdline();

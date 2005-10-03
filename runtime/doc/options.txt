@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Sep 28
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Oct 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1682,6 +1682,18 @@ A jump table for the options with a short description can be found at |Q_op|.
 		endfun
 		set completefunc=CompleteMonths
 <
+
+						*'completeopt'* *'cot'*
+'completeopt' 'cot'	string	(default: "menu")
+			global
+			{not in Vi}
+	Options for Insert mode completion |ins-completion|.
+	Currently the only supported value is:
+
+	   menu	    Use a popup menu to show the possible completions.  The
+		    menu is only shown when there is more than one match and
+		    sufficient colors are available.  |ins-completion-menu|
+
 
 				*'confirm'* *'cf'* *'noconfirm'* *'nocf'*
 'confirm' 'cf'		boolean (default off)
@@ -3382,7 +3394,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 				     f:Folded,F:FoldColumn,A:DiffAdd,
 				     C:DiffChange,D:DiffDelete,T:DiffText,
 				     >:SignColumn,B:SpellBad,P:SpellCap,
-				     R:SpellRare,L:SpellLocal")
+				     R:SpellRare,L:SpellLocal,
+				     +:Pmenu,=:PmenuSel,
+				     x:PmenuSbar,X:PmenuThumb")
 			global
 			{not in Vi}
 	This option can be used to set highlighting mode for various
@@ -3423,6 +3437,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|hl-SpellCap|	 P  word that should start with capital|spell|
 	|hl-SpellRare|	 R  rare word |spell|
 	|hl-SpellLocal|	 L  word from other region |spell|
+	|hl-Pmenu|       +  popup menu normal line
+	|hl-PmenuSel|    =  popup menu normal line
+	|hl-PmenuSbar|   x  popup menu scrollbar
+	|hl-PmenuThumb|  X  popup menu scrollbar thumb
 
 	The display modes are:
 		r	reverse		(termcap entry "mr" and "me")

@@ -56,6 +56,7 @@ SRC = \
 	ops.c \
 	option.c \
 	os_amiga.c \
+	popupmenu.c \
 	quickfix.c \
 	regexp.c \
 	screen.c \
@@ -99,6 +100,7 @@ OBJ =	o/buffer.o \
 	o/ops.o \
 	o/option.o \
 	o/os_amiga.o \
+	o/popupmenu.o \
 	o/quickfix.o \
 	o/regexp.o \
 	o/screen.o \
@@ -195,6 +197,8 @@ o/option.o:	option.c  $(SYMS)
 #	rename dc1 dc1-21
 
 o/os_amiga.o:	os_amiga.c  $(SYMS) os_amiga.h
+
+o/popupmenu.o:	popupmenu.c  $(SYMS)
 
 o/quickfix.o:	quickfix.c  $(SYMS)
 

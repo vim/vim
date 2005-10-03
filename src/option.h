@@ -384,6 +384,9 @@ EXTERN long	p_ch;		/* 'cmdheight' */
 EXTERN int	p_confirm;	/* 'confirm' */
 #endif
 EXTERN int	p_cp;		/* 'compatible' */
+#ifdef FEAT_INS_EXPAND
+EXTERN char_u	*p_cot;		/* 'completeopt' */
+#endif
 EXTERN char_u	*p_cpo;		/* 'cpoptions' */
 #ifdef FEAT_CSCOPE
 EXTERN char_u	*p_csprg;	/* 'cscopeprg' */

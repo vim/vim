@@ -6065,6 +6065,8 @@ static char *(highlight_init_both[]) =
 	"VertSplit term=reverse cterm=reverse gui=reverse",
 	"VisualNOS term=underline,bold cterm=underline,bold gui=underline,bold",
 	"DiffText term=reverse cterm=bold ctermbg=Red gui=bold guibg=Red",
+	"PmenuThumb cterm=reverse gui=reverse",
+	"PmenuSbar ctermbg=Grey guibg=Grey",
 	NULL
     };
 
@@ -6080,6 +6082,8 @@ static char *(highlight_init_light[]) =
 	"SpellCap term=reverse ctermbg=LightBlue guisp=Blue gui=undercurl",
 	"SpellRare term=reverse ctermbg=LightMagenta guisp=Magenta gui=undercurl",
 	"SpellLocal term=underline ctermbg=Cyan guisp=DarkCyan gui=undercurl",
+	"Pmenu ctermbg=LightMagenta guibg=LightMagenta",
+	"PmenuSel ctermbg=LightGrey guibg=Grey",
 	"SpecialKey term=bold ctermfg=DarkBlue guifg=Blue",
 	"Title term=bold ctermfg=DarkMagenta gui=bold guifg=Magenta",
 	"WarningMsg term=standout ctermfg=DarkRed guifg=Red",
@@ -6107,6 +6111,8 @@ static char *(highlight_init_dark[]) =
 	"SpellCap term=reverse ctermbg=Blue guisp=Blue gui=undercurl",
 	"SpellRare term=reverse ctermbg=Magenta guisp=Magenta gui=undercurl",
 	"SpellLocal term=underline ctermbg=Cyan guisp=Cyan gui=undercurl",
+	"Pmenu ctermbg=Magenta guibg=Magenta",
+	"PmenuSel ctermbg=Grey guibg=Grey",
 	"Title term=bold ctermfg=LightMagenta gui=bold guifg=Magenta",
 	"WarningMsg term=standout ctermfg=LightRed guifg=Red",
 	"WildMenu term=standout ctermbg=Yellow ctermfg=Black guibg=Yellow guifg=Black",

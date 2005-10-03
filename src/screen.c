@@ -5296,7 +5296,13 @@ win_redr_status(wp)
 	/* no status line, can only be last window */
 	redraw_cmdline = TRUE;
     }
-    else if (!redrawing())
+    else if (!redrawing()
+#ifdef FEAT_INS_EXPAND
+	    /* don't update status line when popup menu is visible and may be
+	     * drawn over it */
+	    || pum_visible()
+#endif
+	    )
     {
 	/* Don't redraw right now, do it later. */
 	wp->w_redr_status = TRUE;
@@ -8534,6 +8540,9 @@ win_redr_ruler(wp, always)
 # endif
 	if (edit_submode != NULL)
 	    return;
+    /* Don't draw the ruler when the popup menu is visible, it may overlap. */
+    if (pum_visible())
+	return;
 #endif
 
 #ifdef FEAT_STL_OPT

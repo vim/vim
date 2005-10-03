@@ -2193,7 +2193,7 @@ failed:
 #endif
 		p = msg_trunc_attr(IObuff, FALSE, 0);
 	    if (read_stdin || read_buffer || restart_edit != 0
-		    || (msg_scrolled && !need_wait_return))
+		    || (msg_scrolled != 0 && !need_wait_return))
 	    {
 		/* Need to repeat the message after redrawing when:
 		 * - When reading from stdin (the screen will be cleared next).
