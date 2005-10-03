@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Sep 30
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Oct 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,15 +30,13 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Support subdirectories in plugin directory?  (Nikolai Weibull)
+test32 hangs.  When 'complete' is ".,w" finding match in other window.
 
-When scrolling starts, remember what script/line caused this, so that we know
-what caused the hit-enter prompt?  (Charles Campbell)
-
+Undercurl doesn't work in HTML italic. (Michal Bozon)
 When 'foldcolumn' is 1 show more + to be able to open all folds? (Donohue)
 
 ccomplete:
-- How to use a popup menu?
+- When completing something that is a structure, add the "." or "->".
 - When a typedef or struct is local to a file only use it in that file?
 
 Mac unicode patch (Da Woon Jung):
@@ -79,10 +77,7 @@ PLANNED FOR VERSION 7.0:
     make it work for all completion methods.
 
     UI:
-    - Display the list of choices right under the place where they
-      would be inserted in a kind of meny (use scrollbar when there are many
-      alternatives).
-      At first in a terminal, then add GUI implementations.
+    - GUI implementation of the popup menu.
     - When using tags, show match in preview window (function prototype,
       struct member, etc.).
       Or use one window for matches, another for context/info (Doug Kearns,
@@ -3645,6 +3640,11 @@ From vile:
 
 
 Far future and "big" extensions:
+-   Instead of using a Makefile and autoconf, use a simple shell script to
+    find the C compiler and do everything with C code.  Translate something
+    like an Aap recipe and configure.in to C.  Avoids depending on Python,
+    thus will work everywhere.  With batch file to find the C compiler it
+    would also work on MS-Windows.
 -   Make it easy to setup Vim for groups of users: novice vi users, novice
     Vim users, C programmers, xterm users, GUI users,...
 -   Change layout of blocks in swap file: Text at the start, with '\n' in

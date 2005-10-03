@@ -1,4 +1,4 @@
-*pi_spec.txt*   For Vim version 7.0aa.  Last change: 2005 Apr 01
+*pi_spec.txt*   For Vim version 7.0aa.  Last change: 2005 Oct 03
 
 by Gustavo Niemeyer ~
 
@@ -26,13 +26,13 @@ your maplocalleader key (default is '\') plus 'c'.  If you do not have
 |spec_chglog_format| set, the plugin will ask you for an email address
 to use in this edit session.
 
-Everytime you run the plugin, it will check to see if the last entry
-in the changelog has been written today and by you.  If it's the entry
-mathes, it will just insert a new changelog item, otherwise it will
-create a new changelog entry.  If you are running with
-|spec_chglog_release_info| enabled, it will also check if the name, version
-and release matches.  The plugin is smart enough to ask you if it should
-update the package release, if you have not done so.
+Every time you run the plugin, it will check to see if the last entry in the
+changelog has been written today and by you.  If the entry matches, it will
+just insert a new changelog item, otherwise it will create a new changelog
+entry.  If you are running with |spec_chglog_release_info| enabled, it will
+also check if the name, version and release matches.  The plugin is smart
+enough to ask you if it should update the package release, if you have not
+done so.
 
 Setting a map					*spec-setting-a-map*
 -------------

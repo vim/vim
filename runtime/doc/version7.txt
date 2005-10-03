@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Sep 30
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Oct 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -194,7 +194,12 @@ Use CTRL-X CTRL-O in Insert mode to start the completion.  |i_CTRL-X_CTRL-O|
 The 'omnifunc' option is set by filetype plugins to define the function that
 figures out the completion.
 
-Currently only C is supported. |ft-c-omni|
+Currently supported languages:
+	C	|ft-c-omni|
+	XHTML	|ft-html-omni|
+
+When the 'completeopt' option contains "menu" then matches for Insert mode
+completion are displayed in a popup menu.
 
 
 KDE support						*new-KDE*
@@ -366,6 +371,7 @@ Options: ~
 'completefunc'		The name of a function used for user-specified Insert
 			mode completion.  CTRL-X CTRL-U can be used in Insert
 			mode to do any kind of completion.  (Taro Muraoka)
+'completeopt'		Enable popup menu for Insert mode completion.
 'omnifunc'		The name of a function used for omni completion.
 'quoteescape'		Characters used to escape quotes inside a string.
 			Used for the a", a' and a` text objects. |a'|
@@ -603,6 +609,9 @@ the cursor position.  Likewise for "1gD" and "gD".
 'scrolljump' can be set to a negative number to scroll a percentage of the
 window height.
 
+The |v:scrollstart| variable has been added to help finding the location in
+your script that causes the hit-enter prompt.
+
 ==============================================================================
 IMPROVEMENTS						*improvements-7*
 
@@ -825,6 +834,9 @@ completion supported for the input. (Yegappan Lakshmanan)
 
 When the 'include' option contains \zs the file name found is what is being
 matched from \zs to the end or \ze.  Useful to pass more to 'includeexpr'.
+
+Loading plugins on startup now supports subdirectories in the plugin
+directory. |load-plugins|
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*

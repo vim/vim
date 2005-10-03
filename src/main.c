@@ -550,7 +550,7 @@ main
      */
     if (p_lpl)
     {
-	source_runtime((char_u *)"plugin/*.vim", TRUE);
+	source_runtime((char_u *)"plugin/**/*.vim", TRUE);
 	TIME_MSG("loading plugins");
     }
 #endif
