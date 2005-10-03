@@ -241,6 +241,7 @@ LINK32_OBJS= \
 	"$(INTDIR)/option.obj" \
 	"$(INTDIR)/os_mswin.obj" \
 	"$(INTDIR)/os_win32.obj" \
+	"$(INTDIR)/popupmenu.obj" \
 	"$(INTDIR)/quickfix.obj" \
 	"$(INTDIR)/regexp.obj" \
 	"$(INTDIR)/screen.obj" \
@@ -594,6 +595,10 @@ SOURCE=.\os_mswin.c
 # Begin Source File
 
 SOURCE=.\os_win32.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\popupmenu.c
 # End Source File
 # Begin Source File
 

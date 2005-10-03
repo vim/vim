@@ -27,6 +27,7 @@ static char_u *screen_puts_mbyte __ARGS((char_u *s, int l, int attr));
 static void msg_puts_attr_len __ARGS((char_u *str, int maxlen, int attr));
 static void msg_puts_display __ARGS((char_u *str, int maxlen, int attr, int recurse));
 static void msg_scroll_up __ARGS((void));
+static void inc_msg_scrolled __ARGS((void));
 static void store_sb_text __ARGS((char_u **sb_str, char_u *s, int attr, int *sb_col, int finish));
 static void t_puts __ARGS((int *t_col, char_u *t_s, char_u *s, int attr));
 static void msg_puts_printf __ARGS((char_u *str, int maxlen));
@@ -207,7 +208,7 @@ msg_strtrunc(s, force)
 			       && !exmode_active && msg_silent == 0) || force)
     {
 	len = vim_strsize(s);
-	if (msg_scrolled)
+	if (msg_scrolled != 0)
 	    /* Use all the columns. */
 	    room = (int)(Rows - msg_row) * Columns - 1;
 	else
@@ -634,7 +635,7 @@ emsg(s)
     emsg_on_display = TRUE;	/* remember there is an error message */
     ++msg_scroll;		/* don't overwrite a previous message */
     attr = hl_attr(HLF_E);	/* set highlight mode for error messages */
-    if (msg_scrolled)
+    if (msg_scrolled != 0)
 	need_wait_return = TRUE;    /* needed in case emsg() is called after
 				     * wait_return has reset need_wait_return
 				     * and a redraw is expected because
@@ -1762,7 +1763,7 @@ msg_puts_attr_len(str, maxlen, attr)
      * need_wait_return after some prompt, and then outputting something
      * without scrolling
      */
-    if (msg_scrolled && !msg_scrolled_ign)
+    if (msg_scrolled != 0 && !msg_scrolled_ign)
 	need_wait_return = TRUE;
     msg_didany = TRUE;		/* remember that something was outputted */
 
@@ -1875,7 +1876,7 @@ msg_puts_display(str, maxlen, attr, recurse)
 		/* store text for scrolling back */
 		store_sb_text(&sb_str, s, attr, &sb_col, TRUE);
 
-	    ++msg_scrolled;
+	    inc_msg_scrolled();
 	    need_wait_return = TRUE; /* may need wait_return in main() */
 	    if (must_redraw < VALID)
 		must_redraw = VALID;
@@ -1899,6 +1900,15 @@ msg_puts_display(str, maxlen, attr, recurse)
 		if (quit_more)
 		    return;
 	    }
+
+	    /* When we displayed a char in last column need to check if there
+	     * is still more. */
+	    if (*s >= ' '
+#ifdef FEAT_RIGHTLEFT
+		    && !cmdmsg_rl
+#endif
+	       )
+		continue;
 	}
 
 	wrap = *s == '\n'
@@ -2041,6 +2051,41 @@ msg_scroll_up()
 	    screen_fill((int)Rows - 2, (int)Rows - 1,
 				 (int)Columns - 1, (int)Columns, ' ', ' ', 0);
     }
+}
+
+/*
+ * Increment "msg_scrolled".
+ */
+    static void
+inc_msg_scrolled()
+{
+#ifdef FEAT_EVAL
+    if (*get_vim_var_str(VV_SCROLLSTART) == NUL)
+    {
+	char_u	    *p = sourcing_name;
+	char_u	    *tofree = NULL;
+	int	    len;
+
+	/* v:scrollstart is empty, set it to the script/function name and line
+	 * number */
+	if (p == NULL)
+	    p = (char_u *)_("Unknown");
+	else
+	{
+	    len = STRLEN(p) + 40;
+	    tofree = alloc(len);
+	    if (tofree != NULL)
+	    {
+		vim_snprintf((char *)tofree, len, _("%s line %ld"),
+						      p, (long)sourcing_lnum);
+		p = tofree;
+	    }
+	}
+	set_vim_var_string(VV_SCROLLSTART, p, -1);
+	vim_free(tofree);
+    }
+#endif
+    ++msg_scrolled;
 }
 
 /*
@@ -2527,7 +2572,7 @@ do_more_prompt(typed_char)
 		{
 		    /* scroll up, display line at bottom */
 		    msg_scroll_up();
-		    ++msg_scrolled;
+		    inc_msg_scrolled();
 		    screen_fill((int)Rows - 2, (int)Rows - 1, 0,
 						   (int)Columns, ' ', ' ', 0);
 		    mp_last = disp_sb_line((int)Rows - 2, mp_last);

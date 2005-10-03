@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	CSS 2.1
 " Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
-" Last Change:	2005 Sep 27
+" Last Change:	2005 Oct 02
 
 function! csscomplete#CompleteCSS(findstart, base)
 if a:findstart
@@ -179,7 +179,7 @@ else
 		elseif prop == 'font-family'
 			let values = ["sans-serif", "serif", "monospace", "cursive", "fantasy"]
 		elseif prop == 'font-size'
-			return []
+			 let values = ["xx-small", "x-small", "small", "medium", "large", "x-large", "xx-large", "larger", "smaller"]
 		elseif prop == 'font-style'
 			let values = ["normal", "italic", "oblique"]
 		elseif prop == 'font-variant'
@@ -187,7 +187,7 @@ else
 		elseif prop == 'font-weight'
 			let values = ["normal", "bold", "bolder", "lighter", "100", "200", "300", "400", "500", "600", "700", "800", "900"]
 		elseif prop == 'font'
-			let values = ["normal", "italic", "oblique", "small-caps", "bold", "bolder", "lighter", "100", "200", "300", "400", "500", "600", "700", "800", "900", "sans-serif", "serif", "monospace", "cursive", "fantasy", "caption", "icon", "menu", "message-box", "small-caption", "status-bar"]
+			let values = ["normal", "italic", "oblique", "small-caps", "bold", "bolder", "lighter", "100", "200", "300", "400", "500", "600", "700", "800", "900", "xx-small", "x-small", "small", "medium", "large", "x-large", "xx-large", "larger", "smaller", "sans-serif", "serif", "monospace", "cursive", "fantasy", "caption", "icon", "menu", "message-box", "small-caption", "status-bar"]
 		elseif prop =~ '^\(height\|width\)$'
 			let values = ["auto"]
 		elseif prop =~ '^\(left\|rigth\)$'

@@ -3984,14 +3984,15 @@ find_decl(ptr, len, locally, thisblock, searchflags)
     {
 	setpcmark();			/* Set in findpar() otherwise */
 	curwin->w_cursor.lnum = 1;
+	par_pos = curwin->w_cursor;
     }
     else
     {
+	par_pos = curwin->w_cursor;
 	while (curwin->w_cursor.lnum > 1 && *skipwhite(ml_get_curline()) != NUL)
 	    --curwin->w_cursor.lnum;
     }
     curwin->w_cursor.col = 0;
-    par_pos = curwin->w_cursor;
 
     /* Search forward for the identifier, ignore comment lines. */
     found_pos.lnum = 0;

@@ -143,6 +143,7 @@ void qsort __ARGS((void *base, size_t elm_count, size_t elm_size, int (*cmp)(con
 # include "normal.pro"
 # include "ops.pro"
 # include "option.pro"
+# include "popupmenu.pro"
 # include "quickfix.pro"
 # include "regexp.pro"
 # include "screen.pro"
@@ -243,7 +244,7 @@ extern char *vim_SelFile __ARGS((Widget toplevel, char *prompt, char *init_path,
 # endif
 
 /*
- * The perl include files pollute the namespace, therfore proto.h must be
+ * The perl include files pollute the namespace, therefore proto.h must be
  * included before the perl include files.  But then CV is not defined, which
  * is used in if_perl.pro.  To get around this, the perl prototype files are
  * not included here for the perl files.  Use a dummy define for CV for the

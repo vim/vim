@@ -256,6 +256,7 @@ Source =
         option.c
         os_unix.c
         auto/pathdef.c
+        popupmenu.c
         quickfix.c
         regexp.c
         screen.c

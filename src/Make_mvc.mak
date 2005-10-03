@@ -402,6 +402,7 @@ OBJ = \
 	$(OUTDIR)\os_mswin.obj \
 	$(OUTDIR)\os_win32.obj \
 	$(OUTDIR)\pathdef.obj \
+	$(OUTDIR)\popupmenu.obj \
 	$(OUTDIR)\quickfix.obj \
 	$(OUTDIR)\regexp.obj \
 	$(OUTDIR)\screen.obj \
@@ -896,6 +897,8 @@ $(OUTDIR)/os_w32exe.obj:	$(OUTDIR) os_w32exe.c  $(INCL)
 $(OUTDIR)/pathdef.obj:	$(OUTDIR) auto/pathdef.c  $(INCL)
 	$(CC) $(CFLAGS) auto/pathdef.c
 
+$(OUTDIR)/popupmenu.obj:	$(OUTDIR) popupmenu.c  $(INCL)
+
 $(OUTDIR)/quickfix.obj:	$(OUTDIR) quickfix.c  $(INCL)
 
 $(OUTDIR)/regexp.obj:	$(OUTDIR) regexp.c  $(INCL)
@@ -986,6 +989,7 @@ proto.h: \
 	proto/option.pro \
 	proto/os_mswin.pro \
 	proto/os_win32.pro \
+	proto/popupmenu.pro \
 	proto/quickfix.pro \
 	proto/regexp.pro \
 	proto/screen.pro \

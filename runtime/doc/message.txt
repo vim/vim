@@ -1,4 +1,4 @@
-*message.txt*   For Vim version 7.0aa.  Last change: 2005 Sep 25
+*message.txt*   For Vim version 7.0aa.  Last change: 2005 Oct 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -767,6 +767,9 @@ To reduce the number of hit-enter prompts:
 - Set 'cmdheight' to 2 or higher.
 - Add flags to 'shortmess'.
 - Reset 'showcmd' and/or 'ruler'.
+
+If your script causes the hit-enter prompt and you don't know why, you may
+find the |v:scrollstart| variable useful.
 
 Also see 'mouse'.  The hit-enter message is highlighted with the |hl-Question|
 group.

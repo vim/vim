@@ -561,6 +561,7 @@ vimobj =  \
 	$(OBJDIR)\normal.obj \
 	$(OBJDIR)\ops.obj \
 	$(OBJDIR)\option.obj \
+	$(OBJDIR)\popupmenu.obj \
 	$(OBJDIR)\quickfix.obj \
 	$(OBJDIR)\regexp.obj \
 	$(OBJDIR)\screen.obj \

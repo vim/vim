@@ -1150,13 +1150,19 @@ typedef enum
     , HLF_SPC	    /* SpellCap */
     , HLF_SPR	    /* SpellRare */
     , HLF_SPL	    /* SpellLocal */
+    , HLF_PNI	    /* popup menu normal item */
+    , HLF_PSI	    /* popup menu selected item */
+    , HLF_PSB	    /* popup menu scrollbar */
+    , HLF_PST	    /* popup menu scrollbar thumb */
     , HLF_COUNT	    /* MUST be the last one */
 } hlf_T;
 
 /* the HL_FLAGS must be in the same order as the HLF_ enums! */
 #define HL_FLAGS {'8', '@', 'd', 'e', 'h', 'i', 'l', 'm', 'M', \
 		  'n', 'r', 's', 'S', 'c', 't', 'v', 'V', 'w', 'W', \
-		  'f', 'F', 'A', 'C', 'D', 'T', '>', 'B', 'P', 'R', 'L'}
+		  'f', 'F', 'A', 'C', 'D', 'T', '>', \
+		  'B', 'P', 'R', 'L', \
+		  '+', '=', 'x', 'X'}
 
 /*
  * Boolean constants
@@ -1566,7 +1572,8 @@ int vim_memcmp __ARGS((void *, void *, size_t));
 #define VV_BEVAL_LNUM	41
 #define VV_BEVAL_COL	42
 #define VV_BEVAL_TEXT	43
-#define VV_LEN		44	/* number of v: vars */
+#define VV_SCROLLSTART	44
+#define VV_LEN		45	/* number of v: vars */
 
 #ifdef FEAT_CLIPBOARD
 

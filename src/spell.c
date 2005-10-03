@@ -10035,19 +10035,38 @@ suggest_try_change(su)
 		    sp->ts_state = STATE_FINAL;
 		    break;
 		}
+
+		/* Don't swap if the first character is not a word character.
+		 * SWAP3 etc. also don't make sense then. */
+		if (!spell_iswordp(p, curbuf))
+		{
+		    sp->ts_state = STATE_REP_INI;
+		    break;
+		}
+
 #ifdef FEAT_MBYTE
 		if (has_mbyte)
 		{
 		    n = mb_cptr2len(p);
 		    c = mb_ptr2char(p);
-		    c2 = mb_ptr2char(p + n);
+		    if (!spell_iswordp(p + n, curbuf))
+			c2 = c; /* don't swap non-word char */
+		    else
+			c2 = mb_ptr2char(p + n);
 		}
 		else
 #endif
-		    c2 = p[1];
+		{
+		    if (!spell_iswordp(p + 1, curbuf))
+			c2 = c; /* don't swap non-word char */
+		    else
+			c2 = p[1];
+		}
+
+		/* When characters are identical, swap won't do anything.
+		 * Also get here if the second char is not a word character. */
 		if (c == c2)
 		{
-		    /* Characters are identical, swap won't do anything. */
 		    sp->ts_state = STATE_SWAP3;
 		    break;
 		}
@@ -10107,20 +10126,28 @@ suggest_try_change(su)
 		    c = mb_ptr2char(p);
 		    fl = mb_cptr2len(p + n);
 		    c2 = mb_ptr2char(p + n);
-		    c3 = mb_ptr2char(p + n + fl);
+		    if (!spell_iswordp(p + n + fl, curbuf))
+			c3 = c;	/* don't swap non-word char */
+		    else
+			c3 = mb_ptr2char(p + n + fl);
 		}
 		else
 #endif
 		{
 		    c = *p;
 		    c2 = p[1];
-		    c3 = p[2];
+		    if (!spell_iswordp(p + 2, curbuf))
+			c3 = c;	/* don't swap non-word char */
+		    else
+			c3 = p[2];
 		}
 
 		/* When characters are identical: "121" then SWAP3 result is
 		 * identical, ROT3L result is same as SWAP: "211", ROT3L
 		 * result is same as SWAP on next char: "112".  Thus skip all
-		 * swapping.  Also skip when c3 is NUL.  */
+		 * swapping.  Also skip when c3 is NUL.
+		 * Also get here when the third character is not a word
+		 * character.  Second character may any char: "a.b" -> "b.a" */
 		if (c == c3 || c3 == NUL)
 		{
 		    sp->ts_state = STATE_REP_INI;
@@ -10165,6 +10192,7 @@ suggest_try_change(su)
 		    mch_memmove(p + fl + tl, p, n);
 		    mb_char2bytes(c, p);
 		    mb_char2bytes(c2, p + tl);
+		    p = p + tl;
 		}
 		else
 #endif
@@ -10172,6 +10200,16 @@ suggest_try_change(su)
 		    c = *p;
 		    *p = p[2];
 		    p[2] = c;
+		    ++p;
+		}
+
+		if (!spell_iswordp(p, curbuf))
+		{
+		    /* Middle char is not a word char, skip the rotate.
+		     * First and third char were already checked at swap
+		     * and swap3. */
+		    sp->ts_state = STATE_REP_INI;
+		    break;
 		}
 
 		/* Rotate three characters left: "123" -> "231".  We change
