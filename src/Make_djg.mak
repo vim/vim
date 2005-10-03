@@ -49,6 +49,7 @@ OBJ = \
 	obj/ops.o \
 	obj/option.o \
 	obj/os_msdos.o \
+	obj/popupmenu.o \
 	obj/quickfix.o \
 	obj/regexp.o \
 	obj/screen.o \

@@ -337,6 +337,7 @@ static struct vimvar
     {VV_NAME("beval_lnum",	 VAR_NUMBER), VV_RO},
     {VV_NAME("beval_col",	 VAR_NUMBER), VV_RO},
     {VV_NAME("beval_text",	 VAR_STRING), VV_RO},
+    {VV_NAME("scrollstart",	 VAR_STRING), 0},
 };
 
 /* shorthand */

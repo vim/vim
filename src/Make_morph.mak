@@ -54,6 +54,7 @@ SRC =	buffer.c						\
 	ops.c							\
 	option.c						\
 	os_amiga.c						\
+	popupmenu.c						\
 	quickfix.c						\
 	regexp.c						\
 	screen.c						\
