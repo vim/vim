@@ -52,6 +52,7 @@ SRC_ALL1 =	\
 		src/ops.c \
 		src/option.c \
 		src/option.h \
+		src/popupmenu.c \
 		src/quickfix.c \
 		src/regexp.c \
 		src/regexp.h \
@@ -111,6 +112,7 @@ SRC_ALL2 =	\
 		src/proto/normal.pro \
 		src/proto/ops.pro \
 		src/proto/option.pro \
+		src/proto/popupmenu.pro \
 		src/proto/quickfix.pro \
 		src/proto/regexp.pro \
 		src/proto/screen.pro \
