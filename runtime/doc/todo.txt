@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Oct 03
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Oct 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,7 +30,10 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-test32 hangs.  When 'complete' is ".,w" finding match in other window.
+Vim 6.4:
+- Include fix for dF and then d;. (dcuaron)
+- positioning statusline when "laststatus=2" and "cmdheight=2" in the
+  .vimrc/.gvimrc when gvim is started. (Robinson)
 
 Undercurl doesn't work in HTML italic. (Michal Bozon)
 When 'foldcolumn' is 1 show more + to be able to open all folds? (Donohue)
