@@ -28,7 +28,7 @@ CompilerSet makeprg=testrb
 
 CompilerSet errorformat=\%W\ %\\+%\\d%\\+)\ Failure:,
 			\%C%m\ [%f:%l]:,
-		        \%E\ %\\+%\\d%\\+)\ Error:,
+			\%E\ %\\+%\\d%\\+)\ Error:,
 			\%C%m:,
 			\%C\ \ \ \ %f:%l:%.%#,
 			\%C%m,

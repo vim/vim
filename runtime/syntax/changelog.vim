@@ -33,10 +33,10 @@ if version < 600
   syn region	changelogFiles	start="^\s\+[([]" end=":\s" end="^$" contains=changelogBullet,changelogColon,changelogError keepend
   syn match	changelogColon	contained ":\s"
 else
-  syn region	changelogFiles	start="^\s\+[+*]\s" end=":" end="^$" contains=changelogBullet,changelogColon,changeLogFuncs,changelogError keepend
-  syn region	changelogFiles	start="^\s\+[([]" end=":" end="^$" contains=changelogBullet,changelogColon,changeLogFuncs,changelogError keepend
-  syn match	changeLogFuncs  contained "(.\{-})" extend
-  syn match	changeLogFuncs  contained "\[.\{-}]" extend
+  syn region	changelogFiles	start="^\s\+[+*]\s" end=":" end="^$" contains=changelogBullet,changelogColon,changelogFuncs,changelogError keepend
+  syn region	changelogFiles	start="^\s\+[([]" end=":" end="^$" contains=changelogBullet,changelogColon,changelogFuncs,changelogError keepend
+  syn match	changelogFuncs  contained "(.\{-})" extend
+  syn match	changelogFuncs  contained "\[.\{-}]" extend
   syn match	changelogColon	contained ":"
 endif
 syn match	changelogBullet	contained "^\s\+[+*]\s" contains=changelogError
