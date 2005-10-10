@@ -1,6 +1,6 @@
 " Menu Translations:    Swedish
 " Maintainer:		Johan Svedberg <johan@svedberg.com>
-" Last Change:		2005 April 23
+" Last Change:		2005 Oct 09
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")
@@ -22,8 +22,8 @@ menutrans &How-to\ links	&Hur-göra-länkar
 menutrans &Find\.\.\.		&Sök\.\.\.
 menutrans &Credits		&Tack
 menutrans Co&pying		&Kopieringsrättigheter
-menutrans &Sponsor/Register	&Sponsra/Registrering
-menutrans O&rphans		F&örälderlösa
+menutrans &Sponsor/Register	&Sponsra/Registrera
+menutrans O&rphans		&Föräldralösa
 menutrans &Version		&Version
 menutrans &About		&Om
 
@@ -76,7 +76,7 @@ menutrans Insert\ mode			Infogningsläge
 menutrans Block\ and\ Insert		Block\ och\ infogning
 menutrans Always			Alltid
 menutrans Toggle\ Insert\ &Mode<Tab>:set\ im!	Växla\ infogningsläge<Tab>:set\ im!
-menutrans Toggle\ Vi\ C&ompatible<Tab>:set\ cp!	Växla\ Vi-kompatibelitet<Tab>:set\ cp!
+menutrans Toggle\ Vi\ C&ompatible<Tab>:set\ cp!	Växla\ Vi-kompabilitet<Tab>:set\ cp!
 menutrans Search\ &Path\.\.\.		Sökväg\.\.\.
 menutrans Ta&g\ Files\.\.\.		Taggfiler\.\.\.
 menutrans Toggle\ &Toolbar		Växla\ verktygsrad
@@ -93,8 +93,8 @@ menutrans Toggle\ W&rap\ at\ word<Tab>:set\ lbr!	Växla\ radbrytning\ vid\ ord<ta
 menutrans Toggle\ &expand-tab<Tab>:set\ et!		Växla\ tab-expandering<Tab>:set\ et!
 menutrans Toggle\ &auto-indent<Tab>:set\ ai!		Växla\ auto-indentering<Tab>:set\ ai!
 menutrans Toggle\ &C-indenting<Tab>:set\ cin!		Växla\ C-indentering<Tab>:set\ cin!
-menutrans &Shiftwidth					&Shiftbredd
-menutrans Soft\ &Tabstop				Mjuka\ &Tabbstopp
+menutrans &Shiftwidth					Shiftbredd
+menutrans Soft &Tabstop					Mjuk tab-stopp
 menutrans Te&xt\ Width\.\.\.				Textbredd\.\.\.
 menutrans &File\ Format\.\.\.				Filformat\.\.\.
 
@@ -127,7 +127,7 @@ menutrans &Close\ all\ folds<Tab>zM	Stäng\ alla\ veck<Tab>zM
 menutrans O&pen\ more\ folds<Tab>zr	Öppna\ mer\ veck<Tab>zr
 menutrans &Open\ all\ folds<Tab>zR	Öppna\ mer\ veck<Tab>zR
 menutrans Fold\ Met&hod			Veckmetod
-menutrans M&anual			Manuell
+menutrans M&anual			Manual
 menutrans I&ndent			Indentering
 menutrans E&xpression			Uttryck
 menutrans S&yntax			Syntax
@@ -221,17 +221,15 @@ if has("toolbar")
 endif
 
 " Syntax menu
-menutrans &Syntax		&Syntax
-menutrans Set\ '&syntax'\ only	Sätt\ bara\ 'syntax'
-menutrans Set\ '&filetype'\ too	Sätt\ 'filetype'\ också
-menutrans &Off			&Av
-menutrans &Manual		&Manual
-menutrans A&utomatic		Automatiskt
+menutrans &Syntax			&Syntax
+menutrans &Show\ filetypes\ in\ menu	&Visa\ filtyper\ i\ meny
+menutrans &Off				&Av
+menutrans &Manual			&Manuellt
+menutrans A&utomatic			Automatiskt
 menutrans on/off\ for\ &This\ file	Av/På\ för\ aktuell\ fil
-menutrans Co&lor\ test		Färgtest
-menutrans &Highlight\ test	Framhävningstest
-menutrans &Convert\ to\ HTML	Konvertera\ till\ &HTML
-menutrans &Show\ individual\ choices	Visa\ individuella\ val
+menutrans Co&lor\ test			Färgtest
+menutrans &Highlight\ test		Framhävningstest
+menutrans &Convert\ to\ HTML		Konvertera\ till\ &HTML
 
 " dialog texts
 let menutrans_no_file = "[Ingen fil]"

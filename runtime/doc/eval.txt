@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Oct 02
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Oct 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1877,6 +1877,7 @@ cindent({lnum})						*cindent()*
 		relevant.  {lnum} is used just like in |getline()|.
 		When {lnum} is invalid or Vim was not compiled the |+cindent|
 		feature, -1 is returned.
+		See |C-indenting|.
 
 							*col()*
 col({expr})	The result is a Number, which is the byte index of the column

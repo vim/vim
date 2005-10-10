@@ -3031,10 +3031,7 @@ ins_compl_get_exp(ini, dir)
 #ifdef FEAT_COMPL_FUNC
 	case CTRL_X_FUNCTION:
 	case CTRL_X_OMNI:
-	    if (*compl_pattern == NUL)
-		num_matches = 0;
-	    else
-		num_matches = expand_by_function(type, compl_pattern, &matches);
+	    num_matches = expand_by_function(type, compl_pattern, &matches);
 	    if (num_matches > 0)
 		ins_compl_add_matches(num_matches, matches, dir);
 	    break;

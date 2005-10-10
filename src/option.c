@@ -6597,11 +6597,16 @@ set_bool_option(opt_idx, varp, value, opt_flags)
 	compatible_set();
     }
 
-    /* when 'readonly' is reset globally, also reset readonlymode */
     else if ((int *)varp == &curbuf->b_p_ro)
     {
+	/* when 'readonly' is reset globally, also reset readonlymode */
 	if (!curbuf->b_p_ro && (opt_flags & OPT_LOCAL) == 0)
 	    readonlymode = FALSE;
+
+	/* when 'readonly' is set may give W10 again */
+	if (curbuf->b_p_ro)
+	    curbuf->b_did_warn = FALSE;
+
 #ifdef FEAT_TITLE
 	need_maketitle = TRUE;
 #endif

@@ -14,9 +14,9 @@
 " ----------------------------------------------------------------------------
 "
 " Changelog:
-" 0.2:  script saves and restores 'cpoptions' value to prevent problems with
-"       line continuations
-" 0.1:  initial release
+" 0.2:	script saves and restores 'cpoptions' value to prevent problems with
+"	line continuations
+" 0.1:	initial release
 "
 " Contributors:
 "   Hugh Sasse <hgs@dmu.ac.uk>

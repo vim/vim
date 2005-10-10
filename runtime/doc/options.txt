@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Oct 02
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Oct 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1617,7 +1617,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	On the second invocation the arguments are:
 	   a:findstart  0
 	   a:base	the text with which matches should match, what was
-	   		located in the first call
+	   		located in the first call (can be empty)
 
 	The function must return a List with the matching words.  These
 	matches usually include the "a:base" text.  When there are no matches

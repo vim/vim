@@ -1,12 +1,19 @@
 " Vim completion script
 " Language:	CSS 2.1
 " Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
-" Last Change:	2005 Oct 02
+" Last Change:	2005 Oct 9
 
 function! csscomplete#CompleteCSS(findstart, base)
 if a:findstart
 	" We need whole line to proper checking
-	return 0
+    let line = getline('.')
+    let start = col('.') - 1
+	let compl_begin = col('.') - 2
+	while start >= 0 && line[start - 1] =~ '\(\k\|-\)'
+		let start -= 1
+	endwhile
+	let b:compl_context = getline('.')[0:compl_begin]
+	return start
 else
 	" There are few chars important for context:
 	" ^ ; : { } /* */
@@ -14,14 +21,16 @@ else
 	" Depending on their relative position to cursor we will now what should
 	" be completed. 
 	" 1. if nearest are ^ or { or ; current word is property
-	" 2. if : it is value
+	" 2. if : it is value (with exception of pseudo things)
 	" 3. if } we are outside of css definitions
 	" 4. for comments ignoring is be the easiest but assume they are the same
 	"    as 1. 
 	" 5. if @ complete at-rule
 	" 6. if ! complete important
 	
-	let line = a:base
+	let line = b:compl_context
+	unlet! b:compl_context
+
 	let res = []
 	let res2 = []
 	let borders = {}
@@ -67,19 +76,19 @@ else
 		let borders[exclam] = "exclam"
 	endif
 
+
 	if len(borders) == 0 || borders[min(keys(borders))] =~ '^\(openbrace\|semicolon\|opencomm\|closecomm\|style\)$'
 		" Complete properties
 
-		let values = split("azimuth background-attachment background-color background-image background-position background-repeat background border-collapse border-color border-spacing border-style border-top border-right border-bottom border-left border-top-color border-right-color border-bottom-color border-left-color  border-top-style border-right-style border-bottom-style border-left-style border-top-width border-right-width border-bottom-width border-left-width border-width border bottom caption-side clear clip color content counter-increment counter-reset cue-after cue-before cue cursor direction display elevation empty-cells float font-family font-size font-style font-variant font-weight font height left letter-spacing line-height list-style-image list-style-position list-style-type list-style margin-right margin-left margin-top margin-bottom max-height max-width min-height min-width orphans outline-color outline-style outline-width outline overflow padding-top padding-right padding-bottom padding-left padding page-break-after page-break-before page-break-inside pause-after pause-before pause pitch-range pitch play-during position quotes richness right speak-header speak-numeral speak-punctuation speak speech-rate stress table-layout text-align text-decoration text-indent text-transform top unicode-bidi vertical-align visibility voice-family volume white-space widows width word-spacing z-index")
+		let values = split("azimuth background background-attachment background-color background-image background-position background-repeat border bottom border-collapse border-color border-spacing border-style border-top border-right border-bottom border-left border-top-color border-right-color border-bottom-color border-left-color  border-top-style border-right-style border-bottom-style border-left-style border-top-width border-right-width border-bottom-width border-left-width border-width caption-side clear clip color content counter-increment counter-reset cue cue-after cue-before cursor display direction elevation empty-cells float font font-family font-size font-style font-variant font-weight height left letter-spacing line-height list-style list-style-image list-style-position list-style-type margin margin-right margin-left margin-top margin-bottom max-height max-width min-height min-width orphans outline outline-color outline-style outline-width overflow padding padding-top padding-right padding-bottom padding-left page-break-after page-break-before page-break-inside pause pause-after pause-before pitch pitch-range play-during position quotes right richness speak speak-header speak-numeral speak-punctuation speech-rate stress table-layout text-align text-decoration text-indent text-transform top unicode-bidi vertical-align visibility voice-family volume white-space width widows word-spacing z-index")
 
-		let propbase = matchstr(line, '.\{-}\ze[a-zA-Z-]*$')
 		let entered_property = matchstr(line, '.\{-}\zs[a-zA-Z-]*$')
 
 		for m in values
 			if m =~? '^'.entered_property
-				call add(res, propbase . m.': ')
+				call add(res, m . ':')
 			elseif m =~? entered_property
-				call add(res2, propbase . m.': ')
+				call add(res2, m . ':')
 			endif
 		endfor
 
@@ -315,14 +324,13 @@ else
 		endif
 
 		" Complete values
-		let valbase = matchstr(line, '.\{-}\ze[a-zA-Z0-9#,.(_-]*$')
 		let entered_value = matchstr(line, '.\{-}\zs[a-zA-Z0-9#,.(_-]*$')
 
 		for m in values
 			if m =~? '^'.entered_value
-				call add(res, valbase . m)
+				call add(res, m)
 			elseif m =~? entered_value
-				call add(res2, valbase . m)
+				call add(res2, m)
 			endif
 		endfor
 
@@ -335,14 +343,13 @@ else
 	elseif borders[min(keys(borders))] == 'exclam'
 
 		" Complete values
-		let impbase = matchstr(line, '.\{-}!\s*\ze[a-zA-Z ]*$')
 		let entered_imp = matchstr(line, '.\{-}!\s*\zs[a-zA-Z ]*$')
 
 		let values = ["important"]
 
 		for m in values
 			if m =~? '^'.entered_imp
-				call add(res, impbase . m)
+				call add(res, m)
 			endif
 		endfor
 
@@ -388,9 +395,9 @@ else
 
 			for m in values
 				if m =~? '^'.entered_atruleafter
-					call add(res, atruleafterbase . m)
+					call add(res, m)
 				elseif m =~? entered_atruleafter
-					call add(res2, atruleafterbase . m)
+					call add(res2, m)
 				endif
 			endfor
 
@@ -400,14 +407,13 @@ else
 
 		let values = ["charset", "page", "media", "import", "font-face"]
 
-		let atrulebase = matchstr(line, '.*@\ze[a-zA-Z -]*$')
 		let entered_atrule = matchstr(line, '.*@\zs[a-zA-Z-]*$')
 
 		for m in values
 			if m =~? '^'.entered_atrule
-				call add(res, atrulebase . m.' ')
+				call add(res, m .' ')
 			elseif m =~? entered_atrule
-				call add(res2, atrulebase . m.' ')
+				call add(res2, m .' ')
 			endif
 		endfor
 

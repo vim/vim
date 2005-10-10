@@ -1,4 +1,4 @@
-*visual.txt*    For Vim version 7.0aa.  Last change: 2005 Apr 01
+*visual.txt*    For Vim version 7.0aa.  Last change: 2005 Oct 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -86,7 +86,7 @@ Visual		    Normal	   blockwise Visual	  linewise Visual
 blockwise Visual    Visual	   Normal		  linewise Visual
 linewise Visual     Visual	   blockwise Visual	  Normal
 
-							*gv* *v_gv*
+						*gv* *v_gv* *reselect-Visual*
 gv			Start Visual mode with the same area as the previous
 			area and the same mode.
 			In Visual mode the current and the previous Visual

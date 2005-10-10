@@ -48,7 +48,8 @@ if test "$cross_compiling" = yes; then
   (cross compiling doesn't work)])
 fi
 
-dnl gcc-cpp has the wonderful -MM option to produce nicer dependencies
+dnl gcc-cpp has the wonderful -MM option to produce nicer dependencies.
+dnl But gcc 3.1 changed the meaning!  See near the end.
 test "$GCC" = yes && CPP_MM=M; AC_SUBST(CPP_MM)
 
 if test -f ./toolcheck; then
@@ -3067,6 +3068,17 @@ if test "x$MACOSX" = "xyes" && test "x$CARBON" = "xyes" \
   fi
 fi
 
+dnl gcc 3.1 changed the meaning of -MM.  The only solution appears to be to
+dnl use "-isystem" instead of "-I" for all non-Vim include dirs.
+dnl But only when making dependencies, cproto and lint don't take "-isystem".
+DEPEND_CFLAGS_FILTER=
+if test "$GCC" = yes; then
+  gccmajor=`"$CC" --version | sed -e '2,$d;s/^[[^0-9]]*\([[3-9]]\)\.[[0-9.]]*.*$/\1/g'`
+  if test "$gccmajor" != ""; then
+    DEPEND_CFLAGS_FILTER="| sed 's+-I */+-isystem /+g'"
+  fi
+fi
+AC_SUBST(DEPEND_CFLAGS_FILTER)
 
 dnl write output files
 AC_OUTPUT(auto/config.mk:config.mk.in)

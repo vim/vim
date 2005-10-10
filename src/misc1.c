@@ -2880,7 +2880,7 @@ check_status(buf)
  * If the file is readonly, give a warning message with the first change.
  * Don't do this for autocommands.
  * Don't use emsg(), because it flushes the macro buffer.
- * If we have undone all changes b_changed will be FALSE, but b_did_warn
+ * If we have undone all changes b_changed will be FALSE, but "b_did_warn"
  * will be TRUE.
  */
     void

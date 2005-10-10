@@ -7733,6 +7733,9 @@ hl_combine_attr(char_attr, prim_attr)
 	else
 	{
 	    vim_memset(&new_en, 0, sizeof(new_en));
+	    new_en.ae_u.gui.fg_color = INVALCOLOR;
+	    new_en.ae_u.gui.bg_color = INVALCOLOR;
+	    new_en.ae_u.gui.sp_color = INVALCOLOR;
 	    if (char_attr <= HL_ALL)
 		new_en.ae_attr = char_attr;
 	}

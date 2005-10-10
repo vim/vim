@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.0aa.  Last change: 2005 Jul 30
+*autocmd.txt*   For Vim version 7.0aa.  Last change: 2005 Oct 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -324,9 +324,11 @@ FileChangedRO			Before making the first change to a read-only
 				file.  Can be used to check-out the file from
 				a source control system.  Not triggered when
 				the change was caused by an autocommand.
-				WARNING: This event is triggered when making a
-				change, just before the change is applied to
-				the text.  If the autocommand moves the cursor
+				This event is triggered when making the first
+				change in a buffer or the first change after
+				'readonly' was set,
+				just before the change is applied to the text.
+				WARNING: If the autocommand moves the cursor
 				the effect of the change is undefined.
 							*FocusGained*
 FocusGained			When Vim got input focus.  Only for the GUI

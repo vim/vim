@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Oct 04
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Oct 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,17 +30,17 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Vim 6.4:
-- Include fix for dF and then d;. (dcuaron)
-- positioning statusline when "laststatus=2" and "cmdheight=2" in the
-  .vimrc/.gvimrc when gvim is started. (Robinson)
-
-Undercurl doesn't work in HTML italic. (Michal Bozon)
-When 'foldcolumn' is 1 show more + to be able to open all folds? (Donohue)
-
 ccomplete:
+- When an option is set: In completion mode and the user types (identifier)
+  characters, advance to the first match instead of removing the popup menu.
+  If there is no match remove the selection. (Yegappan Lakshmanan)
 - When completing something that is a structure, add the "." or "->".
 - When a typedef or struct is local to a file only use it in that file?
+
+spelling:
+- When a recognized word ends in a . don't have 'spellcapcheck" match it.
+- Use KEEPCAPWORD instead of "KEP" and add KEEPCAPROOT (affixes may be
+  capatalized).
 
 Mac unicode patch (Da Woon Jung):
 - selecting proportional font breaks display
@@ -60,6 +60,8 @@ Autoload:
     script autoload/yourlib.vim
     helpfile doc/myscript.txt
   For the "helpfile" item ":helptags" is run.
+
+Add ":smap", Select mode mapping?
 
 Awaiting response:
 -   Win32: tearoff menu window should have a scrollbar when it's taller than
@@ -783,7 +785,7 @@ MSDOS, OS/2 and Win32:
 8   OS/2: Add Extended Attributes support and define HAVE_ACL.
 8   OS/2: When editing a file name "foo.txt" that is actually called FOO.txt,
     writing uses "foo.txt".  Should obtain the real file name.
-8   Should $USERPROFILE be used instead of $HOMEDRIVE/$HOMEPATH?
+8   Should $USERPROFILE be preferred above $HOMEDRIVE/$HOMEPATH?
 8   Win32 console: <M-Up> and <M-Down> don't work. (Geddes)  We don't have
     special keys for these.  Should use modifier + key.
 8   Win32 console: caps-lock makes non-alpha keys work like with shift.
@@ -848,6 +850,7 @@ Amiga:
 
 
 Macintosh:
+7   Implement "undercurl".
 7   Patch to add 'transparency' option.  Disadvantage: it's slow. (Eckehard
     Berns, 2004 May 9) http://ecki.to/vim/TransBack-2004-05-09.diff
     Needs more work.  Add when someone really wants it.

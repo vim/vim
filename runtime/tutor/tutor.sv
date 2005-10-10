@@ -19,8 +19,8 @@
      kommandona!
 
      Försäkra dig nu om att din Caps-Lock tangent INTE är aktiv och tryck på
-     j-tangenten tillräckligt många gången för att förflytta markören så att
-     Lektion 1.1 fyller skärmen skärmen helt.
+     j-tangenten tillräckligt många gånger för att förflytta markören så att
+     Lektion 1.1 fyller skärmen helt.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			Lektion 1.1: FLYTTA MARKÖREN
 

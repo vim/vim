@@ -2828,7 +2828,7 @@ read_sal_section(fd, slang)
 
     gap = &slang->sl_sal;
     ga_init2(gap, sizeof(salitem_T), 10);
-    if (ga_grow(gap, cnt) == FAIL)
+    if (ga_grow(gap, cnt + 1) == FAIL)
 	return SP_OTHERERROR;
 
     /* <sal> : <salfromlen> <salfrom> <saltolen> <salto> */
@@ -2915,6 +2915,31 @@ read_sal_section(fd, slang)
 	    }
 	}
 #endif
+    }
+
+    if (gap->ga_len > 0)
+    {
+	/* Add one extra entry to mark the end with an empty sm_lead.  Avoids
+	 * that we need to check the index every time. */
+	smp = &((salitem_T *)gap->ga_data)[gap->ga_len];
+	if ((p = alloc(1)) == NULL)
+	    return SP_OTHERERROR;
+	p[0] = NUL;
+	smp->sm_lead = p;
+	smp->sm_leadlen = 0;
+	smp->sm_oneof = NULL;
+	smp->sm_rules = p;
+	smp->sm_to = NULL;
+#ifdef FEAT_MBYTE
+	if (has_mbyte)
+	{
+	    smp->sm_lead_w = mb_str2wide(smp->sm_lead);
+	    smp->sm_leadlen = 0;
+	    smp->sm_oneof_w = NULL;
+	    smp->sm_to_w = NULL;
+	}
+#endif
+	++gap->ga_len;
     }
 
     /* Fill the first-index table. */
@@ -8548,8 +8573,22 @@ spell_suggest(count)
     {
 	/* Save the from and to text for :spellrepall. */
 	stp = &SUG(sug.su_ga, selected - 1);
-	repl_from = vim_strnsave(sug.su_badptr, stp->st_orglen);
-	repl_to = vim_strsave(stp->st_word);
+	if (sug.su_badlen > stp->st_orglen)
+	{
+	    /* Replacing less than "su_badlen", append the remainder to
+	     * repl_to. */
+	    repl_from = vim_strnsave(sug.su_badptr, sug.su_badlen);
+	    vim_snprintf((char *)IObuff, IOSIZE, "%s%.*s", stp->st_word,
+		    sug.su_badlen - stp->st_orglen,
+					      sug.su_badptr + stp->st_orglen);
+	    repl_to = vim_strsave(IObuff);
+	}
+	else
+	{
+	    /* Replacing su_badlen or more, use the whole word. */
+	    repl_from = vim_strnsave(sug.su_badptr, stp->st_orglen);
+	    repl_to = vim_strsave(stp->st_word);
+	}
 
 	/* Replace the word. */
 	p = alloc(STRLEN(line) - stp->st_orglen + STRLEN(stp->st_word) + 1);

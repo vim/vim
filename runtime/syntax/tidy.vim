@@ -1,9 +1,8 @@
 " Vim syntax file
-" Filename:	tidy.vim
 " Language:	HMTL Tidy configuration file ( /etc/tidyrc ~/.tidyrc )
 " Maintainer:	Doug Kearns <djkea2@gus.gscit.monash.edu.au>
 " URL:		http://gus.gscit.monash.edu.au/~djkea2/vim/syntax/tidy.vim
-" Last Change:	2004 Nov 27
+" Last Change:	2005 Oct 06
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -33,14 +32,16 @@ syn match	tidyNewTagValue		"\<\w\+\>" contained
 syn case ignore
 syn keyword	tidyBoolean		t[rue] f[alse] y[es] n[o] contained
 syn case match
-syn match	tidyDoctype		"\<omit\|auto\|strict\|loose\|transitional\>" contained
-" NOTE: use match rather than keyword here so that tidyEncoding raw does not always have precedence over tidyOption raw
-syn match	tidyEncoding		"\<\(ascii\|latin1\|raw\|utf8\|iso2022\|mac\|utf16le\|utf16be\|utf16\|win1252\|big5\|shiftjis\)\>" contained
+syn match	tidyDoctype		"\<omit\|auto\|strict\|loose\|transitional\|user\>" contained
+" NOTE: use match rather than keyword here so that tidyEncoding 'raw' does not
+"       always have precedence over tidyOption 'raw'
+syn match	tidyEncoding		"\<\(ascii\|latin0\|latin1\|raw\|utf8\|iso2022\|mac\|utf16le\|utf16be\|utf16\|win1252\|ibm858\|big5\|shiftjis\)\>" contained
+syn match	tidyNewline		"\<\(LF\|CRLF\|CR\)\>"
 syn match	tidyNumber		"\<\d\+\>" contained
 syn match	tidyRepeat		"\<keep-first\|keep-last\>" contained
 syn region	tidyString		start=+"+ skip=+\\\\\|\\"+ end=+"+ contained oneline
 syn region	tidyString		start=+'+ skip=+\\\\\|\\'+ end=+'+ contained oneline
-syn cluster	tidyValue		contains=tidyBoolean,tidyDoctype,tidyEncoding,tidyNumber,tidyRepeat,tidyString
+syn cluster	tidyValue		contains=tidyBoolean,tidyDoctype,tidyEncoding,tidyNewline,tidyNumber,tidyRepeat,tidyString
 
 syn match	tidyOption		"^accessibility-check"		contained
 syn match	tidyOption		"^add-xml-decl"			contained
@@ -55,6 +56,7 @@ syn match	tidyOption		"^char-encoding"		contained
 syn match	tidyOption		"^clean"			contained
 syn match	tidyOption		"^css-prefix"			contained
 syn match	tidyOption		"^doctype"			contained
+syn match	tidyOption		"^doctype-mode"			contained
 syn match	tidyOption		"^drop-empty-paras"		contained
 syn match	tidyOption		"^drop-font-tags"		contained
 syn match	tidyOption		"^drop-proprietary-attributes"	contained
@@ -67,6 +69,7 @@ syn match	tidyOption		"^fix-bad-comments"		contained
 syn match	tidyOption		"^fix-uri"			contained
 syn match	tidyOption		"^force-output"			contained
 syn match	tidyOption		"^gnu-emacs"			contained
+syn match	tidyOption		"^gnu-emacs-file"		contained
 syn match	tidyOption		"^hide-comments"		contained
 syn match	tidyOption		"^hide-endtags"			contained
 syn match	tidyOption		"^indent"			contained
@@ -83,13 +86,17 @@ syn match	tidyOption		"^literal-attributes"		contained
 syn match	tidyOption		"^logical-emphasis"		contained
 syn match	tidyOption		"^lower-literals"		contained
 syn match	tidyOption		"^markup"			contained
+syn match	tidyOption		"^merge-divs"			contained
 syn match	tidyOption		"^ncr"				contained
+syn match	tidyOption		"^newline"			contained
 syn match	tidyOption		"^numeric-entities"		contained
 syn match	tidyOption		"^output-bom"			contained
 syn match	tidyOption		"^output-encoding"		contained
+syn match	tidyOption		"^output-file"			contained
 syn match	tidyOption		"^output-html"			contained
 syn match	tidyOption		"^output-xhtml"			contained
 syn match	tidyOption		"^output-xml"			contained
+syn match	tidyOption		"^punctuation-wrap"		contained
 syn match	tidyOption		"^quiet"			contained
 syn match	tidyOption		"^quote-ampersand"		contained
 syn match	tidyOption		"^quote-marks"			contained
@@ -115,6 +122,7 @@ syn match	tidyOption		"^wrap-php"			contained
 syn match	tidyOption		"^wrap-script-literals"		contained
 syn match	tidyOption		"^wrap-sections"		contained
 syn match	tidyOption		"^write-back"			contained
+syn match	tidyOption		"^vertical-space"		contained
 syn match	tidyNewTagOption	"^new-blocklevel-tags"		contained
 syn match	tidyNewTagOption	"^new-empty-tags"		contained
 syn match	tidyNewTagOption	"^new-inline-tags"		contained
@@ -136,6 +144,7 @@ if version >= 508 || !exists("did_tidy_syn_inits")
   HiLink tidyDelimiter		Special
   HiLink tidyDoctype		Constant
   HiLink tidyEncoding		Constant
+  HiLink tidyNewline		Constant
   HiLink tidyNewTagDelimiter	Special
   HiLink tidyNewTagOption	Identifier
   HiLink tidyNewTagValue	Constant

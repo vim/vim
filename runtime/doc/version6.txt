@@ -1,4 +1,4 @@
-*version6.txt*  For Vim version 7.0aa.  Last change: 2005 Apr 18
+*version6.txt*  For Vim version 7.0aa.  Last change: 2005 Oct 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -79,6 +79,11 @@ VERSION 6.3			|version-6.3|
 Changed					|changed-6.3|
 Added					|added-6.3|
 Fixed					|fixed-6.3|
+
+VERSION 6.4			|version-6.4|
+Changed					|changed-6.4|
+Added					|added-6.4|
+Fixed					|fixed-6.4|
 
 ==============================================================================
 INCOMPATIBLE CHANGES				*incompatible-6*
@@ -13840,5 +13845,631 @@ Problem:    After Visually selecting four characters, changing it to other
 	    four characters, another "." changes two characters. (Robert Webb)
 Solution:   Don't store the size of the Visual area when redo is active.
 Files:	    src/normal.c
+
+==============================================================================
+VERSION 6.4						*version-6.4*
+
+This section is about improvements made between version 6.3 and 6.4.
+
+This is a bug-fix release.  There are also a few new features.  The major
+number of new items is in the runtime files and translations.
+
+The big MS-Windows version now uses:
+	Ruby version 1.8.3
+	Perl version 5.8.7
+	Python version 2.4.2
+
+
+Changed							*changed-6.4*
+-------
+
+Nothing relevant.
+
+
+Added							*added-6.4*
+-----
+
+Netrc syntax file. (Nikolai Weibull)
+Sudoers syntax file. (Nikolai Weibull)
+SMTPrc syntax file. (Kornel Kielczewski)
+Esterel syntax file. (Maurizio Tranchero)
+
+
+Fixed							*fixed-6.4*
+-----
+
+"dFxd;" deleted the character under the cursor, "d;" didn't remember the
+exclusiveness of the motion.
+
+When using "set laststatus=2 cmdheight=2" in the .gvimrc you may only get one
+line for the cmdline. (Christian Robinson)  Invoke command_height() after the
+GUI has started up.
+
+Gcc would warn "dereferencing type-punned pointer will break strict -aliasing
+rules".  Avoid using typecasts for variable pointers.
+
+Patch 6.3.001
+Problem:    ":browse split" gives the file selection dialog twice. (Gordon
+	    Bazeley)  Same problem for ":browse diffpatch".
+Solution:   Reset cmdmod.browse before calling do_ecmd().
+Files:	    src/diff.c, src/ex_docmd.c
+
+Patch 6.3.002
+Problem:    When using translated help files with non-ASCII latin1 characters
+	    in the first line the utf-8 detection is wrong.
+Solution:   Properly detect utf-8 characters.  When a mix of encodings is
+	    detected continue with the next language and avoid a "no matches"
+	    error because of "got_int" being set.  Add the directory name to
+	    the error message for a duplicate tag.
+Files:	    src/ex_cmds.c
+
+Patch 6.3.003
+Problem:    Crash when using a console dialog and the first choice does not
+	    have a default button. (Darin Ohashi)
+Solution:   Allocate two more characters for the [] around the character for
+	    the default choice.
+Files:	    src/message.c
+
+Patch 6.3.004
+Problem:    When searching for a long string (140 chars in a 80 column
+	    terminal) get three hit-enter prompts. (Robert Webb)
+Solution:   Avoid the hit-enter prompt when giving the message for wrapping
+	    around the end of the buffer.  Don't give that message again when
+	    the string was not found.
+Files:	    src/message.c, src/search.c
+
+Patch 6.3.005
+Problem:    Crash when searching for a pattern with a character offset and
+	    starting in a closed fold. (Frank Butler)
+Solution:   Check for the column to be past the end of the line.  Also fix
+	    that a pattern with a character offset relative to the end isn't
+	    read back from the viminfo properly.
+Files:	    src/search.c
+
+Patch 6.3.006
+Problem:    ":breakadd file *foo" prepends the current directory to the file
+	    pattern. (Hari Krishna Dara)
+Solution:   Keep the pattern as-is.
+Files:	    src/ex_cmds2.c
+
+Patch 6.3.007
+Problem:    When there is a buffer with 'buftype' set to "nofile" and using a
+	    ":cd" command, the swap file is not deleted when exiting.
+Solution:   Use the full path of the swap file also for "nofile" buffers.
+Files:	    src/fileio.c
+
+Patch 6.3.008
+Problem:    Compiling fails under OS/2.
+Solution:   Include "e_screenmode" also for OS/2. (David Sanders)
+Files:	    src/globals.h
+
+Patch 6.3.009 (after 6.3.006)
+Problem:    ":breakadd file /path/foo.vim" does not match when a symbolic link
+	    is involved.  (Servatius Brandt)
+Solution:   Do expand the pattern when it does not start with "*".
+Files:	    runtime/doc/repeat.txt, src/ex_cmds2.c
+
+Patch 6.3.010
+Problem:    When writing to a named pipe there is an error for fsync()
+	    failing.
+Solution:   Ignore the fsync() error for devices.
+Files:	    src/fileio.c
+
+Patch 6.3.011
+Problem:    Crash when the completion function of a user-command uses a
+	    "normal :cmd" command.  (Hari Krishna Dara)
+Solution:   Save the command line when invoking the completion function.
+Files:	    src/ex_getln.c
+
+Patch 6.3.012
+Problem:    Internal lalloc(0) error when using a complicated multi-line
+	    pattern in a substitute command. (Luc Hermitte)
+Solution:   Avoid going past the end of a line.
+Files:	    src/ex_cmds.c
+
+Patch 6.3.013
+Problem:    Crash when editing a command line and typing CTRL-R = to evaluate
+	    a function that uses "normal :cmd". (Hari Krishna Dara)
+Solution:   Save and restore the command line when evaluating an expression
+	    for CTRL-R =.
+Files:	    src/ex_getln.c, src/ops.c, src/proto/ex_getln.pro,
+	    src/proto/ops.pro
+
+Patch 6.3.014
+Problem:    When using Chinese or Taiwanese the default for 'helplang' is
+	    wrong. (Simon Liang)
+Solution:   Use the part of the locale name after "zh_".
+Files:	    src/option.c
+
+Patch 6.3.015
+Problem:    The string that winrestcmd() returns may end in garbage.
+Solution:   NUL-terminate the string. (Walter Briscoe)
+Files:	    src/eval.c
+
+Patch 6.3.016
+Problem:    The default value for 'define' has "\s" before '#'.
+Solution:   Add a star after "\s". (Herculano de Lima Einloft Neto)
+Files:	    src/option.c
+
+Patch 6.3.017
+Problem:    "8zz" may leave the cursor beyond the end of the line. (Niko
+	    Maatjes)
+Solution:   Correct the cursor column after moving to another line.
+Files:	    src/normal.c
+
+Patch 6.3.018
+Problem:    ":0argadd zero" added the argument after the first one, instead of
+	    before it. (Adri Verhoef)
+Solution:   Accept a zero range for ":argadd".
+Files:	    src/ex_cmds.h
+
+Patch 6.3.019
+Problem:    Crash in startup for debug version. (David Rennals)
+Solution:   Move the call to nbdebug_wait() to after allocating NameBuff.
+Files:	    src/main.c
+
+Patch 6.3.020
+Problem:    When 'encoding' is "utf-8" and 'delcombine' is set, "dw" does not
+	    delete a word but only a combining character of the first
+	    character, if there is one. (Raphael Finkel)
+Solution:   Correctly check that one character is being deleted.
+Files:	    src/misc1.c
+
+Patch 6.3.021
+Problem:    When the last character of a file name is a multi-byte character
+	    and the last byte is a path separator, the file cannot be edited.
+Solution:   Check for the last byte to be part of a multi-byte character.
+	    (Taro Muraoka)
+Files:	    src/fileio.c
+
+Patch 6.3.022 (extra)
+Problem:    Win32: When the last character of a file name is a multi-byte
+	    character and the last byte is a path separator, the file cannot
+	    be written.  A trail byte that is a space makes that a file cannot
+	    be opened from the command line.
+Solution:   Recognize double-byte characters when parsing the command line.
+	    In mch_stat() check for the last byte to be part of a multi-byte
+	    character.  (Taro Muraoka)
+Files:	    src/gui_w48.c, src/os_mswin.c
+
+Patch 6.3.023
+Problem:    When the "to" part of a mapping starts with its "from" part,
+	    abbreviations for the same characters is not possible.  For
+	    example, when <Space> is mapped to something that starts with a
+	    space, typing <Space> does not expand abbreviations.
+Solution:   Only disable expanding abbreviations when a mapping is not
+	    remapped, don't disable it when the RHS of a mapping starts with
+	    the LHS.
+Files:	    src/getchar.c, src/vim.h
+
+Patch 6.3.024
+Problem:    In a few places a string in allocated memory is not terminated
+	    with a NUL.
+Solution:   Add ga_append(NUL) in script_get(), gui_do_findrepl() and
+	    serverGetVimNames().
+Files:	    src/ex_getln.c, src/gui.c, src/if_xcmdsrv.c, src/os_mswin.c
+
+Patch 6.3.025 (extra)
+Problem:    Missing NUL for list of server names.
+Solution:   Add ga_append(NUL) in serverGetVimNames().
+Files:	    src/os_mswin.c
+
+Patch 6.3.026
+Problem:    When ~/.vim/after/syntax/syncolor.vim contains a command that
+	    reloads the colors an enless loop and/or a crash may occur.
+Solution:   Only free the old value of an option when it was originally
+	    allocated.  Limit recursiveness of init_highlight() to 5 levels.
+Files:	    src/option.c, src/syntax.c
+
+Patch 6.3.027
+Problem:    VMS: Writing a file may insert extra CR characters.  Not all
+	    terminals are recognized correctly.  Vt320 doesn't support colors.
+	    Environment variables are not expanded correctly.
+Solution:   Use another method to write files.  Add vt320 termcap codes for
+	    colors.  (Zoltan Arpadffy)
+Files:	    src/fileio.c, src/misc1.c, src/os_unix.c, src/structs.h,
+	    src/term.c
+
+Patch 6.3.028
+Problem:    When appending to a file the BOM marker may be written.  (Alex
+	    Jakushev)
+Solution:   Do not write the BOM marker when appending.
+Files:	    src/fileio.c
+
+Patch 6.3.029
+Problem:    Crash when inserting a line break. (Walter Briscoe)
+Solution:   In the syntax highlighting code, don't use an old state after a
+	    change was made, current_col may be past the end of the line.
+Files:	    src/syntax.c
+
+Patch 6.3.030
+Problem:    GTK 2: Crash when sourcing a script that deletes the menus, sets
+	    'encoding' to "utf-8" and loads the menus again.  GTK error
+	    message when tooltip text is in a wrong encoding.
+Solution:   Don't copy characters from the old screen to the new screen when
+	    switching 'encoding' to utf-8, they may be invalid.  Only set the
+	    tooltip when it is valid utf-8.
+Files:	    src/gui_gtk.c, src/mbyte.c, src/proto/mbyte.pro, src/screen.c
+
+Patch 6.3.031
+Problem:    When entering a mapping and pressing Tab halfway the command line
+	    isn't redrawn properly. (Adri Verhoef)
+Solution:   Reposition the cursor after drawing over the "..." of the
+	    completion attempt.
+Files:	    src/ex_getln.c
+
+Patch 6.3.032
+Problem:    Using Python 2.3 with threads doesn't work properly.
+Solution:   Release the lock after initialization.
+Files:	    src/if_python.c
+
+Patch 6.3.033
+Problem:    When a mapping ends in a Normal mode command of more than one
+	    character Vim doesn't return to Insert mode.
+Solution:   Check that the mapping has ended after obtaining all characters of
+	    the Normal mode command.
+Files:	    src/normal.c
+
+Patch 6.3.034
+Problem:    VMS: crash when using ":help". 
+Solution:   Avoid using "tags-??", some Open VMS systems can't handle the "?"
+	    wildcard.  (Zoltan Arpadffy)
+Files:	    src/tag.c
+
+Patch 6.3.035 (extra)
+Problem:    RISC OS: Compile errors.
+Solution:   Change e_screnmode to e_screenmode.  Change the way
+	    __riscosify_control is set.  Improve the makefile.  (Andy Wingate)
+Files:	    src/os_riscos.c, src/search.c, src/Make_ro.mak
+
+Patch 6.3.036
+Problem:    ml_get errors when the whole file is a fold, switching
+	    'foldmethod' and doing "zj". (Christian J. Robinson) Was not
+	    deleting the fold but creating a fold with zero lines.
+Solution:   Delete the fold properly.
+Files:	    src/fold.c
+
+Patch 6.3.037 (after 6.3.032)
+Problem:    Warning for unused variable.
+Solution:   Change the #ifdefs for the saved thread stuff.
+Files:	    src/if_python.c
+
+Patch 6.3.038 (extra)
+Problem:    Win32: When the "file changed" dialog pops up after a click that
+	    gives gvim focus and not moving the mouse after that, the effect
+	    of the click may occur when moving the mouse later. (Ken Clark)
+	    Happened because the release event was missed.
+Solution:   Clear the s_button_pending variable when any input is received.
+Files:	    src/gui_w48.c
+
+Patch 6.3.039
+Problem:    When 'number' is set and inserting lines just above the first
+	    displayed line (in another window on the same buffer), the line
+	    numbers are not updated.  (Hitier Sylvain)
+Solution:   When 'number' is set and lines are inserted/deleted redraw all
+	    lines below the change.
+Files:	    src/screen.c
+
+Patch 6.3.040
+Problem:    Error handling does not always work properly and may cause a
+	    buffer to be marked as if it's viewed in a window while it isn't.
+	    Also when selecting "Abort" at the attention prompt.
+Solution:   Add enter_cleanup() and leave_cleanup() functions to move
+	    saving/restoring things for error handling to one place.
+	    Clear a buffer read error when it's unloaded.
+Files:	    src/buffer.c, src/ex_docmd.c, src/ex_eval.c,
+	    src/proto/ex_eval.pro, src/structs.h, src/vim.h
+
+Patch 6.3.041 (extra)
+Problem:    Win32: When the path to a file has Russian characters, ":cd %:p:h"
+	    doesn't work. (Valery Kondakoff)
+Solution:   Use a wide function to change directory.
+Files:	    src/os_mswin.c
+
+Patch 6.3.042
+Problem:    When there is a closed fold at the top of the window, CTRL-X
+	    CTRL-E in Insert mode reduces the size of the fold instead of
+	    scrolling the text up. (Gautam)
+Solution:   Scroll over the closed fold.
+Files:	    src/move.c
+
+Patch 6.3.043
+Problem:    'hlsearch' highlighting sometimes disappears when inserting text
+	    in PHP code with syntax highlighting. (Marcel Svitalsky)
+Solution:   Don't use pointers to remember where a match was found, use an
+	    index.  The pointers may become invalid when searching in other
+	    lines.
+Files:	    src/screen.c
+
+Patch 6.3.044 (extra)
+Problem:    Mac: When 'linespace' is non-zero the Insert mode cursor leaves
+	    pixels behind. (Richard Sandilands)
+Solution:   Erase the character cell before drawing the text when needed.
+Files:	    src/gui_mac.c
+
+
+Patch 6.3.045
+Problem:    Unusual characters in an option value may cause unexpected
+	    behavior, especially for a modeline. (Ciaran McCreesh)
+Solution:   Don't allow setting termcap options or 'printdevice' in a
+	    modeline.  Don't list options for "termcap" and "all" in a
+	    modeline.  Don't allow unusual characters in 'filetype', 'syntax',
+	    'backupext', 'keymap', 'patchmode' and 'langmenu'.
+Files:	    src/option.c, runtime/doc/options.txt
+
+Patch 6.3.046
+Problem:    ":registers" doesn't show multi-byte characters properly.
+	    (Valery Kondakoff)
+Solution:   Get the length of each character before displaying it.
+Files:	    src/ops.c
+
+Patch 6.3.047 (extra)
+Problem:    Win32 with Borland C 5.5 on Windows XP: A new file is created with
+	    read-only attributes. (Tony Mechelynck)
+Solution:   Don't use the _wopen() function for Borland.
+Files:	    src/os_win32.c
+
+Patch 6.3.048 (extra)
+Problem:    Build problems with VMS on IA64.
+Solution:   Add dependencies to the build file. (Zoltan Arpadffy)
+Files:	    src/Make_vms.mms
+
+Patch 6.3.049 (after 6.3.045)
+Problem:    Compiler warning for "char" vs "char_u" mixup. (Zoltan Arpadffy)
+Solution:   Add a typecast.
+Files:	    src/option.c
+
+Patch 6.3.050
+Problem:    When SIGHUP is received while busy exiting, non-reentrant
+	    functions such as free() may cause a crash.
+Solution:   Ignore SIGHUP when exiting because of an error. (Scott Anderson)
+Files:	    src/misc1.c, src/main.c
+
+Patch 6.3.051
+Problem:    When 'wildmenu' is set and completed file names contain multi-byte
+	    characters Vim may crash.
+Solution:   Reserve room for multi-byte characters. (Yasuhiro Matsumoto)
+Files:	    src/screen.c
+
+Patch 6.3.052 (extra)
+Problem:    Windows 98: typed keys that are not ASCII may not work properly.
+	    For example with a Russian input method. (Jiri Jezdinsky)
+Solution:   Assume that the characters arrive in the current codepage instead
+	    of UCS-2.  Perform conversion based on that.
+Files:	    src/gui_w48.c
+
+Patch 6.3.053
+Problem:    Win32: ":loadview" cannot find a file with non-ASCII characters.
+	    (Valerie Kondakoff)
+Solution:   Use mch_open() instead of open() to open the file.
+Files:	    src/ex_cmds2.c
+
+Patch 6.3.054
+Problem:    When 'insertmode' is set <C-L>4ixxx<C-L> hangs Vim. (Jens Paulus)
+	    Vim is actually still working but redraw is disabled.
+Solution:   When stopping Insert mode with CTRL-L don't put an Esc in the redo
+	    buffer but a CTRL-L.
+Files:	    src/edit.c
+
+Patch 6.3.055 (after 6.3.013)
+Problem:    Can't use getcmdline(), getcmdpos() or setcmdpos() with <C-R>=
+	    when editing a command line.  Using <C-\>e may crash Vim. (Peter
+	    Winters)
+Solution:   When moving ccline out of the way for recursive use, make it
+	    available to the functions that need it.  Also save and restore
+	    ccline when calling get_expr_line().  Make ccline.cmdbuf NULL at
+	    the end of getcmdline().
+Files:	    src/ex_getln.c
+
+Patch 6.3.056
+Problem:    The last characters of a multi-byte file name may not be displayed
+	    in the window title.
+Solution:   Avoid to remove a multi-byte character where the last byte looks
+	    like a path separator character. (Yasuhiro Matsumoto)
+Files:	    src/buffer.c, src/ex_getln.c
+
+Patch 6.3.057
+Problem:    When filtering lines folds are not updated. (Carl Osterwisch)
+Solution:   Update folds for filtered lines.
+Files:	    src/ex_cmds.c
+
+Patch 6.3.058
+Problem:    When 'foldcolumn' is equal to the window width and 'wrap' is on
+	    Vim may crash.  Disabling the vertical split feature breaks
+	    compiling.  (Peter Winters)
+Solution:   Check for zero room for wrapped text.  Make compiling without
+	    vertical splits possible.
+Files:	    src/move.c, src/quickfix.c, src/screen.c, src/netbeans.c
+
+Patch 6.3.059
+Problem:    Crash when expanding an ":edit" command containing several spaces
+	    with the shell. (Brian Hirt)
+Solution:   Allocate enough space for the quotes.
+Files:	    src/os_unix.c
+
+Patch 6.3.060
+Problem:    Using CTRL-R CTRL-O in Insert mode with an invalid register name
+	    still causes something to be inserted.
+Solution:   Check the register name for being valid.
+Files:	    src/edit.c
+
+Patch 6.3.061
+Problem:    When editing a utf-8 file in an utf-8 xterm and there is a
+	    multi-byte character in the last column, displaying is messed up.
+	    (Joël Rio)
+Solution:   Check for a multi-byte character, not a multi-column character.
+Files:	    src/screen.c
+
+Patch 6.3.062
+Problem:    ":normal! gQ" hangs.
+Solution:   Quit getcmdline() and do_exmode() when out of typeahead.
+Files:	    src/ex_getln.c, src/ex_docmd.c
+
+Patch 6.3.063
+Problem:    When a CursorHold autocommand changes to another window
+	    (temporarily) 'mousefocus' stops working.
+Solution:   Call gui_mouse_correct() after triggering CursorHold.
+Files:	    src/gui.c
+
+Patch 6.3.064
+Problem:    line2byte(line("$") + 1) sometimes returns the wrong number.
+	    (Charles Campbell)
+Solution:   Flush the cached line before counting the bytes.
+Files:	    src/memline.c
+
+Patch 6.3.065
+Problem:    The euro digraph doesn't always work.
+Solution:   Add an "e=" digraph for Unicode euro character and adjust the
+	    help files.
+Files:	    src/digraph.c, runtime/doc/digraph.txt
+
+Patch 6.3.066
+Problem:    Backup file may get wrong permissions.
+Solution:   Use permissions of original file for backup file in more places.
+Files:	    src/fileio.c
+
+Patch 6.3.067 (after 6.3.066)
+Problem:    Newly created file gets execute permission.
+Solution:   Check for "perm" to be negative before using it.
+Files:	    src/fileio.c
+
+Patch 6.3.068
+Problem:    When editing a compressed file xxx.gz which is a symbolic link to
+	    the actual file a ":write" renames the link.
+Solution:   Resolve the link, so that the actual file is renamed and
+	    compressed.
+Files:	    runtime/plugin/gzip.vim
+
+Patch 6.3.069
+Problem:    When converting text with illegal characters Vim may crash.
+Solution:   Avoid that too much is subtracted from the length. (Da Woon Jung)
+Files:	    src/mbyte.c
+
+Patch 6.3.070
+Problem:    After ":set number linebreak wrap" and a vertical split, moving
+	    the vertical separator far left will crash Vim. (Georg Dahn)
+Solution:   Avoid dividing by zero.
+Files:	    src/charset.c
+
+Patch 6.3.071
+Problem:    The message for CTRL-X mode is still displayed after an error for
+	    'thesaurus' or 'dictionary' being empty.
+Solution:   Clear "edit_submode".
+Files:	    src/edit.c
+
+Patch 6.3.072
+Problem:    Crash in giving substitute message when language is Chinese and
+	    encoding is utf-8. (Yongwei)
+Solution:   Make the msg_buf size larger when using multi-byte.
+Files:	    src/vim.h
+
+Patch 6.3.073
+Problem:    Win32 GUI: When the Vim window is partly above or below the
+	    screen, scrolling causes display errors when the taskbar is not on
+	    that side.
+Solution:   Use the SW_INVALIDATE flag when the Vim window is partly below or
+	    above the screen.
+Files:	    src/gui_w48.c
+
+Patch 6.3.074
+Problem:    When mswin.vim is used and 'insertmode' is set, typing text in
+	    Select mode and then using CTRL-V results in <SNR>99_Pastegi.
+	    (Georg Dahn)
+Solution:   When restart_edit is set use "d" instead of "c" to remove the
+	    selected text to avoid calling edit() twice.
+Files:	    src/normal.c
+
+Patch 6.3.075
+Problem:    After unloading another buffer, syntax highlighting in the current
+	    buffer may be wrong when it uses "containedin". (Eric Arnold)
+Solution:   Use "buf" intead of "curbuf" in syntax_clear().
+Files:	    src/syntax.c
+
+Patch 6.3.076
+Problem:    Crash when using cscope and there is a parse error (e.g., line too
+	    long). (Alexey I. Froloff)
+Solution:   Pass the actual number of matches to cs_manage_matches() and
+	    correctly handle the error situation.
+Files:	    src/if_cscope.c
+
+Patch 6.3.077 (extra)
+Problem:    VMS: First character input after ESC was not recognized.
+Solution:   Added TRM$M_TM_TIMED in vms_read().  (Zoltan Arpadffy)
+Files:	    src/os_vms.c
+
+Patch 6.3.078 (extra, after 6.3.077)
+Problem:    VMS: Performance issue after patch 6.3.077
+Solution:   Add a timeout in the itemlist.  (Zoltan Arpadffy)
+Files:	    src/os_vms.c
+
+Patch 6.3.079
+Problem:    Crash when executing a command in the command line window while
+	    syntax highlighting is enabled. (Pero Brbora)
+Solution:   Don't use a pointer to a buffer that has been deleted.
+Files:	    src/syntax.c
+
+Patch 6.3.080 (extra)
+Problem:    Win32: With 'encoding' set to utf-8 while the current codepage is
+	    Chinese editing a file with some specific characters in the name
+	    fails.
+Solution:   Use _wfullpath() instead of _fullpath() when necessary.
+Files:	    src/os_mswin.c
+
+Patch 6.3.081
+Problem:    Unix: glob() may execute a shell command when it's not wanted.
+	    (Georgi Guninski)
+Solution:   Verify the sandbox flag is not set.
+Files:	    src/os_unix.c
+
+Patch 6.3.082 (after 6.3.081)
+Problem:    Unix: expand() may execute a shell command when it's not wanted.
+	    (Georgi Guninski)
+Solution:   A more generic solution than 6.3.081.
+Files:	    src/os_unix.c
+
+Patch 6.3.083
+Problem:    VMS: The vt320 termcap entry is incomplete.
+Solution:   Add missing function keys.  (Zoltan Arpadffy)
+Files:	    src/term.c
+
+Patch 6.3.084 (extra)
+Problem:    Cygwin: compiling with DEBUG doesn't work.  Perl path was ignored.
+	    Failure when $(OUTDIR) already exists.  "po" makefile is missing.
+Solution:   Use changes tested in Vim 7. (Tony Mechelynck)
+Files:	    src/Make_cyg.mak, src/po/Make_cyg.mak
+
+Patch 6.3.085
+Problem:    Crash in syntax highlighting code. (Marc Espie)
+Solution:   Prevent current_col going past the end of the line.
+Files:	    src/syntax.c
+
+Patch 6.3.086 (extra)
+Problem:    Can't produce message translation file with msgfmt that checks
+	    printf strings.
+Solution:   Fix the Russian translation.
+Files:	    src/po/ru.po, src/po/ru.cp1251.po
+
+Patch 6.3.087
+Problem:    MS-DOS: Crash. (Jason Hood)
+Solution:   Don't call fname_case() with a NULL pointer.
+Files:	    src/ex_cmds.c
+
+Patch 6.3.088
+Problem:    Editing ".in" causes error E218. (Stefan Karlsson)
+Solution:   Require some characters before ".in".  Same for ".orig" and others.
+Files:	    runtime/filetype.vim
+
+Patch 6.3.089
+Problem:    A session file doesn't work when created while the current
+	    directory contains a space or the directory of the session files
+	    contains a space. (Paolo Giarrusso)
+Solution:   Escape spaces with a backslash.
+Files:	    src/ex_docmd.c
+
+Patch 6.3.090
+Problem:    A very big value for 'columns' or 'lines' may cause a crash.
+Solution:   Limit the values to 10000 and 1000.
+Files:	    src/option.c
+
 
  vim:tw=78:ts=8:ft=help:norl:

@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	C
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Sep 13
+" Last Change:	2005 Oct 06
 
 
 " This function is used for the 'omnifunc' option.
@@ -10,27 +10,52 @@ function! ccomplete#Complete(findstart, base)
     " Locate the start of the item, including "." and "->".
     let line = getline('.')
     let start = col('.') - 1
+    let lastword = -1
     while start > 0
-      if line[start - 1] =~ '\w\|\.'
+      if line[start - 1] =~ '\w'
+	let start -= 1
+      elseif line[start - 1] =~ '\.'
+	if lastword == -1
+	  let lastword = start
+	endif
 	let start -= 1
       elseif start > 1 && line[start - 2] == '-' && line[start - 1] == '>'
+	if lastword == -1
+	  let lastword = start
+	endif
 	let start -= 2
       else
 	break
       endif
     endwhile
-    return start
+
+    " Return the column of the last word, which is going to be changed.
+    " Remember the text that comes before it in s:prepended.
+    if lastword == -1
+      let s:prepended = ''
+      return start
+    endif
+    let s:prepended = strpart(line, start, lastword - start)
+    return lastword
   endif
 
   " Return list of matches.
 
+  let base = s:prepended . a:base
+
   " Split item in words, keep empty word after "." or "->".
   " "aa" -> ['aa'], "aa." -> ['aa', ''], "aa.bb" -> ['aa', 'bb'], etc.
-  let items = split(a:base, '\.\|->', 1)
+  let items = split(base, '\.\|->', 1)
   if len(items) <= 1
+    " Don't do anything for an empty base, would result in all the tags in the
+    " tags file.
+    if base == ''
+      return []
+    endif
+
     " Only one part, no "." or "->": complete from tags file.
     " When local completion is wanted CTRL-N would have been used.
-    return map(taglist('^' . a:base), 'v:val["name"]')
+    return map(taglist('^' . base), 'v:val["name"]')
   endif
 
   " Find the variable items[0].
@@ -88,10 +113,7 @@ function! ccomplete#Complete(findstart, base)
     endif
   endif
 
-  " The basetext is up to the last "." or "->" and won't be changed.  The
-  " matching members are concatenated to this.
-  let basetext = matchstr(a:base, '.*\(\.\|->\)')
-  return map(res, 'basetext . v:val["match"]')
+  return map(res, 'v:val["match"]')
 endfunc
 
 " Find composing type in "lead" and match items[0] with it.

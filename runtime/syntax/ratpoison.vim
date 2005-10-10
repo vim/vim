@@ -1,9 +1,8 @@
 " Vim syntax file
-" Filename:	ratpoison.vim
 " Language:	Ratpoison configuration/commands file ( /etc/ratpoisonrc ~/.ratpoisonrc )
 " Maintainer:	Doug Kearns <djkea2@gus.gscit.monash.edu.au>
 " URL:		http://gus.gscit.monash.edu.au/~djkea2/vim/syntax/ratpoison.vim
-" Last Change:	2004 Nov 27
+" Last Change:	2005 Oct 06
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -21,26 +20,27 @@ syn case ignore
 syn keyword ratpoisonBooleanArg	on off			contained
 syn case match
 
-syn keyword ratpoisonCommandArg abort addhook alias banish bind						contained
-syn keyword ratpoisonCommandArg chdir clrunmanaged colon curframe defbarborder				contained
-syn keyword ratpoisonCommandArg defbargravity defbarpadding defbgcolor defborder deffgcolor		contained
-syn keyword ratpoisonCommandArg deffont defframesels definekey definputwidth defmaxsizegravity		contained
-syn keyword ratpoisonCommandArg defpadding defresizeunit deftransgravity defwaitcursor defwinfmt	contained
-syn keyword ratpoisonCommandArg defwingravity defwinliststyle defwinname delete delkmap			contained
-syn keyword ratpoisonCommandArg echo escape exec fdump focus						contained
-syn keyword ratpoisonCommandArg focusdown focuslast focusleft focusright focusup			contained
-syn keyword ratpoisonCommandArg frestore fselect gdelete getenv gmerge					contained
-syn keyword ratpoisonCommandArg gmove gnew gnewbg gnext gprev						contained
-syn keyword ratpoisonCommandArg gravity groups gselect help hsplit					contained
-syn keyword ratpoisonCommandArg info kill lastmsg license link						contained
-syn keyword ratpoisonCommandArg listhook meta msgwait newkmap newwm					contained
-syn keyword ratpoisonCommandArg next nextscreen number only other					contained
-syn keyword ratpoisonCommandArg prev prevscreen quit readkey redisplay					contained
-syn keyword ratpoisonCommandArg remhook remove resize restart rudeness					contained
-syn keyword ratpoisonCommandArg select setenv shrink source split					contained
-syn keyword ratpoisonCommandArg startup_message time title tmpwm unalias				contained
-syn keyword ratpoisonCommandArg unbind unmanage unsetenv verbexec version				contained
-syn keyword ratpoisonCommandArg vsplit warp windows syn case ignore					contained
+syn keyword ratpoisonCommandArg abort addhook alias banish chdir		contained
+syn keyword ratpoisonCommandArg clrunmanaged cnext colon compat cother		contained
+syn keyword ratpoisonCommandArg cprev curframe dedicate definekey delete	contained
+syn keyword ratpoisonCommandArg delkmap describekey echo escape exec		contained
+syn keyword ratpoisonCommandArg fdump focus focusdown focuslast focusleft	contained
+syn keyword ratpoisonCommandArg focusprev focusright focusup frestore fselect	contained
+syn keyword ratpoisonCommandArg gdelete getenv getsel gmerge gmove		contained
+syn keyword ratpoisonCommandArg gnew gnewbg gnext gprev gravity			contained
+syn keyword ratpoisonCommandArg groups gselect help hsplit inext		contained
+syn keyword ratpoisonCommandArg info iother iprev kill lastmsg			contained
+syn keyword ratpoisonCommandArg license link listhook meta msgwait		contained
+syn keyword ratpoisonCommandArg newkmap newwm next nextscreen number		contained
+syn keyword ratpoisonCommandArg only other prev prevscreen prompt		contained
+syn keyword ratpoisonCommandArg putsel quit ratclick rathold ratrelwarp		contained
+syn keyword ratpoisonCommandArg ratwarp readkey redisplay redo remhook		contained
+syn keyword ratpoisonCommandArg remove resize restart rudeness sdump		contained
+syn keyword ratpoisonCommandArg select set setenv sfdump shrink			contained
+syn keyword ratpoisonCommandArg source sselect startup_message time title	contained
+syn keyword ratpoisonCommandArg tmpwm unalias undefinekey undo unmanage		contained
+syn keyword ratpoisonCommandArg unsetenv verbexec version vsplit warp		contained
+syn keyword ratpoisonCommandArg windows						contained
 
 syn match   ratpoisonGravityArg "\<\(n\|north\)\>"	contained
 syn match   ratpoisonGravityArg "\<\(nw\|northwest\)\>"	contained
@@ -139,8 +139,10 @@ syn match   ratpoisonStringCommand	"^\s*\zsalias\ze\s*"
 syn match   ratpoisonStringCommand	"^\s*\zsbind\ze\s*"		nextgroup=ratpoisonKeySeqArg
 syn match   ratpoisonStringCommand	"^\s*\zschdir\ze\s*"
 syn match   ratpoisonStringCommand	"^\s*\zscolon\ze\s*"		nextgroup=ratpoisonCommandArg
+syn match   ratpoisonStringCommand	"^\s*\zsdedicate\ze\s*"		nextgroup=ratpoisonNumberArg
 syn match   ratpoisonStringCommand	"^\s*\zsdefinekey\ze\s*"
 syn match   ratpoisonStringCommand	"^\s*\zsdelkmap\ze\s*"
+syn match   ratpoisonStringCommand	"^\s*\zsdescribekey\ze\s*"
 syn match   ratpoisonStringCommand	"^\s*\zsecho\ze\s*"
 syn match   ratpoisonStringCommand	"^\s*\zsescape\ze\s*"		nextgroup=ratpoisonKeySeqArg
 syn match   ratpoisonStringCommand	"^\s*\zsexec\ze\s*"
@@ -155,6 +157,11 @@ syn match   ratpoisonStringCommand	"^\s*\zslisthook\ze\s*"		nextgroup=ratpoisonH
 syn match   ratpoisonStringCommand	"^\s*\zsnewkmap\ze\s*"
 syn match   ratpoisonStringCommand	"^\s*\zsnewwm\ze\s*"
 syn match   ratpoisonStringCommand	"^\s*\zsnumber\ze\s*"		nextgroup=ratpoisonNumberArg
+syn match   ratpoisonStringCommand	"^\s*\zsprompt\ze\s*"
+syn match   ratpoisonStringCommand	"^\s*\zsratwarp\ze\s*"
+syn match   ratpoisonStringCommand	"^\s*\zsratrelwarp\ze\s*"
+syn match   ratpoisonStringCommand	"^\s*\zsratclick\ze\s*"
+syn match   ratpoisonStringCommand	"^\s*\zsrathold\ze\s*"
 syn match   ratpoisonStringCommand	"^\s*\zsreadkey\ze\s*"
 syn match   ratpoisonStringCommand	"^\s*\zsremhook\ze\s*"		nextgroup=ratpoisonHookArg
 syn match   ratpoisonStringCommand	"^\s*\zsresize\ze\s*"		nextgroup=ratpoisonNumberArg
@@ -162,11 +169,13 @@ syn match   ratpoisonStringCommand	"^\s*\zsrudeness\ze\s*"		nextgroup=ratpoisonN
 syn match   ratpoisonStringCommand	"^\s*\zsselect\ze\s*"		nextgroup=ratpoisonNumberArg
 syn match   ratpoisonStringCommand	"^\s*\zssetenv\ze\s*"
 syn match   ratpoisonStringCommand	"^\s*\zssource\ze\s*"
+syn match   ratpoisonStringCommand	"^\s*\zssselect\ze\s*"
 syn match   ratpoisonStringCommand	"^\s*\zsstartup_message\ze\s*"	nextgroup=ratpoisonBooleanArg
 syn match   ratpoisonStringCommand	"^\s*\zstitle\ze\s*"
 syn match   ratpoisonStringCommand	"^\s*\zstmpwm\ze\s*"
 syn match   ratpoisonStringCommand	"^\s*\zsunalias\ze\s*"
 syn match   ratpoisonStringCommand	"^\s*\zsunbind\ze\s*"		nextgroup=ratpoisonKeySeqArg
+syn match   ratpoisonStringCommand	"^\s*\zsundefinekey\ze\s*"
 syn match   ratpoisonStringCommand	"^\s*\zsunmanage\ze\s*"
 syn match   ratpoisonStringCommand	"^\s*\zsunsetenv\ze\s*"
 syn match   ratpoisonStringCommand	"^\s*\zsverbexec\ze\s*"
@@ -175,15 +184,21 @@ syn match   ratpoisonStringCommand	"^\s*\zswarp\ze\s*"		nextgroup=ratpoisonBoole
 syn match   ratpoisonVoidCommand	"^\s*\zsabort\ze\s*$"
 syn match   ratpoisonVoidCommand	"^\s*\zsbanish\ze\s*$"
 syn match   ratpoisonVoidCommand	"^\s*\zsclrunmanaged\ze\s*$"
+syn match   ratpoisonVoidCommand	"^\s*\zscnext\ze\s*$"
+syn match   ratpoisonVoidCommand	"^\s*\zscompat\ze\s*$"
+syn match   ratpoisonVoidCommand	"^\s*\zscother\ze\s*$"
+syn match   ratpoisonVoidCommand	"^\s*\zscprev\ze\s*$"
 syn match   ratpoisonVoidCommand	"^\s*\zscurframe\ze\s*$"
 syn match   ratpoisonVoidCommand	"^\s*\zsdelete\ze\s*$"
 syn match   ratpoisonVoidCommand	"^\s*\zsfocusdown\ze\s*$"
 syn match   ratpoisonVoidCommand	"^\s*\zsfocuslast\ze\s*$"
 syn match   ratpoisonVoidCommand	"^\s*\zsfocusleft\ze\s*$"
+syn match   ratpoisonVoidCommand	"^\s*\zsfocusprev\ze\s*$"
 syn match   ratpoisonVoidCommand	"^\s*\zsfocusright\ze\s*$"
-syn match   ratpoisonVoidCommand	"^\s*\zsfocus\ze\s*$"
 syn match   ratpoisonVoidCommand	"^\s*\zsfocusup\ze\s*$"
+syn match   ratpoisonVoidCommand	"^\s*\zsfocus\ze\s*$"
 syn match   ratpoisonVoidCommand	"^\s*\zsfselect\ze\s*$"
+syn match   ratpoisonVoidCommand	"^\s*\zsgetsel\ze\s*$"
 syn match   ratpoisonVoidCommand	"^\s*\zsgmerge\ze\s*$"
 syn match   ratpoisonVoidCommand	"^\s*\zsgmove\ze\s*$"
 syn match   ratpoisonVoidCommand	"^\s*\zsgnewbg\ze\s*$"
@@ -193,24 +208,32 @@ syn match   ratpoisonVoidCommand	"^\s*\zsgprev\ze\s*$"
 syn match   ratpoisonVoidCommand	"^\s*\zsgroups\ze\s*$"
 syn match   ratpoisonVoidCommand	"^\s*\zshelp\ze\s*$"
 syn match   ratpoisonVoidCommand	"^\s*\zshsplit\ze\s*$"
+syn match   ratpoisonVoidCommand	"^\s*\zsinext\ze\s*$"
 syn match   ratpoisonVoidCommand	"^\s*\zsinfo\ze\s*$"
+syn match   ratpoisonVoidCommand	"^\s*\zsiother\ze\s*$"
+syn match   ratpoisonVoidCommand	"^\s*\zsiprev\ze\s*$"
 syn match   ratpoisonVoidCommand	"^\s*\zskill\ze\s*$"
 syn match   ratpoisonVoidCommand	"^\s*\zslastmsg\ze\s*$"
 syn match   ratpoisonVoidCommand	"^\s*\zslicense\ze\s*$"
 syn match   ratpoisonVoidCommand	"^\s*\zsmeta\ze\s*$"
-syn match   ratpoisonVoidCommand	"^\s*\zsnext\ze\s*$"
 syn match   ratpoisonVoidCommand	"^\s*\zsnextscreen\ze\s*$"
+syn match   ratpoisonVoidCommand	"^\s*\zsnext\ze\s*$"
 syn match   ratpoisonVoidCommand	"^\s*\zsonly\ze\s*$"
 syn match   ratpoisonVoidCommand	"^\s*\zsother\ze\s*$"
-syn match   ratpoisonVoidCommand	"^\s*\zsprev\ze\s*$"
 syn match   ratpoisonVoidCommand	"^\s*\zsprevscreen\ze\s*$"
+syn match   ratpoisonVoidCommand	"^\s*\zsprev\ze\s*$"
+syn match   ratpoisonVoidCommand	"^\s*\zsputsel\ze\s*$"
 syn match   ratpoisonVoidCommand	"^\s*\zsquit\ze\s*$"
 syn match   ratpoisonVoidCommand	"^\s*\zsredisplay\ze\s*$"
+syn match   ratpoisonVoidCommand	"^\s*\zsredo\ze\s*$"
 syn match   ratpoisonVoidCommand	"^\s*\zsremove\ze\s*$"
 syn match   ratpoisonVoidCommand	"^\s*\zsrestart\ze\s*$"
+syn match   ratpoisonVoidCommand	"^\s*\zssdump\ze\s*$"
+syn match   ratpoisonVoidCommand	"^\s*\zssfdump\ze\s*$"
 syn match   ratpoisonVoidCommand	"^\s*\zsshrink\ze\s*$"
 syn match   ratpoisonVoidCommand	"^\s*\zssplit\ze\s*$"
 syn match   ratpoisonVoidCommand	"^\s*\zstime\ze\s*$"
+syn match   ratpoisonVoidCommand	"^\s*\zsundo\ze\s*$"
 syn match   ratpoisonVoidCommand	"^\s*\zsversion\ze\s*$"
 syn match   ratpoisonVoidCommand	"^\s*\zsvsplit\ze\s*$"
 syn match   ratpoisonVoidCommand	"^\s*\zswindows\ze\s*$"

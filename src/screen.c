@@ -2390,6 +2390,7 @@ copy_text_attr(off, buf, len, attr)
 
 /*
  * Fill the foldcolumn at "p" for window "wp".
+ * Only to be called when 'foldcolumn' > 0.
  */
     static void
 fill_foldcolumn(p, wp, closed, lnum)
@@ -2434,7 +2435,7 @@ fill_foldcolumn(p, wp, closed, lnum)
 	}
     }
     if (closed)
-	p[i] = '+';
+	p[i >= wp->w_p_fdc ? i - 1 : i] = '+';
 }
 #endif /* FEAT_FOLDING */
 

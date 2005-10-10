@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Oct 02
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Oct 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -838,6 +838,12 @@ matched from \zs to the end or \ze.  Useful to pass more to 'includeexpr'.
 Loading plugins on startup now supports subdirectories in the plugin
 directory. |load-plugins|
 
+In the foldcolumn always show the '+' for a closed fold, so that it can be
+opened easily.  It may overwrite another character, esp. if 'foldcolumn' is 1.
+
+It is now possible to get the W10 message again by setting 'readonly'.  Useful
+in the FileChangedRO autocommand when checking out the file fails.
+
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*
 
@@ -1065,10 +1071,6 @@ When a telnet connection is dropped Vim preserves files and exits.  While
 doing that a SIGHUP may arrive and disturbe us, thus ignore it. (Scott
 Anderson)  Also postpone SIGHUP, SIGQUIT and SIGTERM until it's safe to
 handle.  Added handle_signal().
-
-When using "set laststatus=2 cmdheight=2" in the .gvimrc you may only get one
-line for the cmdline. (Christian Robinson)  Invoke command_height() after the
-GUI has started up.
 
 When completing a file name on the command line backslashes are required for
 white space.  Was only done for a space, not for a Tab.
@@ -1386,9 +1388,6 @@ searching for "qa" instead of quitting all windows.
 
 GUI: When scrolling with the scrollbar and there is a line that doesn't fit
 redrawing may fail.  Make sure w_skipcol is valid before redrawing.
-
-"dFxd;" deleted the character under the cursor, "d;" didn't remember the
-exclusiveness of the motion.
 
 Limit the values of 'columns' and 'lines' to avoid an overflow in Rows *
 Columns.  Fixed bad effects when running out of memory (command line would be

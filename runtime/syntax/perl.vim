@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Perl
 " Maintainer:	Nick Hibma <n_hibma@van-laarhoven.org>
-" Last Change:	2004 Aug 29
+" Last Change:	2005 Oct 06
 " Location:	http://www.van-laarhoven.org/vim/syntax/perl.vim
 "
 " Please download most recent version first before mailing
@@ -87,11 +87,10 @@ else
 endif
 syn keyword perlOperator		defined undef and or not bless ref
 if exists("perl_fold")
-  " if BEGIN/END is a keyword the perlBEGINENDFold does not work
-  syn match perlControl			"\<BEGIN\>" contained
-  syn match perlControl			"\<END\>" contained
+  " if BEGIN/END would be a keyword the perlBEGINENDFold does not work
+  syn match perlControl			"\<BEGIN\|CHECK\|INIT\|END\>" contained
 else
-  syn keyword perlControl		BEGIN END
+  syn keyword perlControl		BEGIN END CHECK INIT
 endif
 
 syn keyword perlStatementStorage	my local our
@@ -182,7 +181,7 @@ syn match  perlFiledescStatement	"\u\w*" contained
 " Special characters in strings and matches
 syn match  perlSpecialString	"\\\(\d\+\|[xX]\x\+\|c\u\|.\)" contained
 syn match  perlSpecialStringU	"\\['\\]" contained
-syn match  perlSpecialMatch	"{\d\(,\d\)\=}" contained
+syn match  perlSpecialMatch	"{\d\+\(,\(\d\+\)\=\)\=}" contained
 syn match  perlSpecialMatch	"\[\(\]\|-\)\=[^\[\]]*\(\[\|\-\)\=\]" contained
 syn match  perlSpecialMatch	"[+*()?.]" contained
 syn match  perlSpecialMatch	"(?[#:=!]" contained
@@ -389,7 +388,7 @@ endif
 if exists("perl_fold")
   syn region perlPackageFold start="^package \S\+;$" end="^1;$" end="\n\+package"me=s-1 transparent fold keepend
   syn region perlSubFold     start="^\z(\s*\)\<sub\>.*[^};]$" end="^\z1}\s*$" end="^\z1}\s*\#.*$" transparent fold keepend
-  syn region perlBEGINENDFold start="^\z(\s*\)\<\(BEGIN\|END\)\>.*[^};]$" end="^\z1}\s*$" transparent fold keepend
+  syn region perlBEGINENDFold start="^\z(\s*\)\<\(BEGIN\|END\|CHECK\|INIT\)\>.*[^};]$" end="^\z1}\s*$" transparent fold keepend
 
   if exists("perl_fold_blocks")
     syn region perlIfFold start="^\z(\s*\)\(if\|unless\|for\|while\|until\)\s*(.*)\s*{\s*$" start="^\z(\s*\)foreach\s*\(\(my\|our\)\=\s*\S\+\s*\)\=(.*)\s*{\s*$" end="^\z1}\s*;\=$" transparent fold keepend
