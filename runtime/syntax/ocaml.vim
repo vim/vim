@@ -1,19 +1,23 @@
 " Vim syntax file
 " Language:     OCaml
 " Filenames:    *.ml *.mli *.mll *.mly
-" Maintainers:  Markus Mottl      <markus@oefai.at>
+" Maintainers:  Markus Mottl      <markus.mottl@gmail.com>
 "               Karl-Heinz Sylla  <Karl-Heinz.Sylla@gmd.de>
 "               Issac Trotts      <ijtrotts@ucdavis.edu>
-" URL:          http://www.oefai.at/~markus/vim/syntax/ocaml.vim
-" Last Change:  2004 Jul 26
-"               2003 Jan 19 - Added keyword "require" for scripting (MM)
-"               2002 Oct 30 - New variable "ocaml_revised" (MM)
+" URL:          http://www.ocaml.info/vim/syntax/ocaml.vim
+" Last Change:  2005 May 18 - Added 'NOTE' to highlighted comment words (MM)
+"               2005 Apr 14 - Fixed a small bug concerning 'include' (MM)
+"               2005 Mar 15 - Added a patch from David Baelde (MM)
+
+" A minor patch was applied to the official version so that object/end
+" can be distinguished from begin/end, which is used for indentation,
+" and folding. (David Baelde)
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
 if version < 600
   syntax clear
-elseif exists("b:current_syntax")
+elseif exists("b:current_syntax") && b:current_syntax != "ocaml"
   finish
 endif
 
@@ -24,7 +28,7 @@ syn case match
 syn match    ocamlComment   "^#!.*"
 
 " Scripting directives
-syn match    ocamlScript "^#\<\(quit\|labels\|warnings\|directory\|cd\|load\|use\|install_printer\|remove_printer\|require\|trace\|untrace\|untrace_all\|print_depth\|print_length\)\>"
+syn match    ocamlScript "^#\<\(quit\|labels\|warnings\|directory\|cd\|load\|use\|install_printer\|remove_printer\|require\|thread\|trace\|untrace\|untrace_all\|print_depth\|print_length\)\>"
 
 " lowercase identifier - the standard way to match
 syn match    ocamlLCIdentifier /\<\(\l\|_\)\(\w\|'\)*\>/
@@ -74,11 +78,11 @@ syn region   ocamlEncl transparent matchgroup=ocamlKeyword start="\[|" matchgrou
 
 " Comments
 syn region   ocamlComment start="(\*" end="\*)" contains=ocamlComment,ocamlTodo
-syn keyword  ocamlTodo contained TODO FIXME XXX
+syn keyword  ocamlTodo contained TODO FIXME XXX NOTE
 
 
 " Objects
-syn region   ocamlEnd matchgroup=ocamlKeyword start="\<object\>" matchgroup=ocamlKeyword end="\<end\>" contains=ALLBUT,@ocamlContained,ocamlEndErr
+syn region   ocamlEnd matchgroup=ocamlObject start="\<object\>" matchgroup=ocamlObject end="\<end\>" contains=ALLBUT,@ocamlContained,ocamlEndErr
 
 
 " Blocks
@@ -113,7 +117,7 @@ syn region   ocamlModSpec matchgroup=ocamlKeyword start="\<module\>" matchgroup=
 syn region   ocamlNone matchgroup=ocamlKeyword start="\<open\>" matchgroup=ocamlModule end="\<\u\(\w\|'\)*\(\.\u\(\w\|'\)*\)*\>" contains=@ocamlAllErrs,ocamlComment
 
 " "include"
-syn match    ocamlKeyword "\<include\>" contained skipwhite skipempty nextgroup=ocamlModParam,ocamlFullMod
+syn match    ocamlKeyword "\<include\>" skipwhite skipempty nextgroup=ocamlModParam,ocamlFullMod
 
 " "module" - somewhat complicated stuff ;-)
 syn region   ocamlModule matchgroup=ocamlKeyword start="\<module\>" matchgroup=ocamlModule end="\<\u\(\w\|'\)*\>" contains=@ocamlAllErrs,ocamlComment skipwhite skipempty nextgroup=ocamlPreDef
@@ -163,8 +167,9 @@ else
   syn match    ocamlKeyChar  "!"
 endif
 
-syn keyword  ocamlType     array bool char exn float format format4 int
-syn keyword  ocamlType     list option string unit
+syn keyword  ocamlType     array bool char exn float format format4
+syn keyword  ocamlType     int int32 int64 lazy_t list nativeint option
+syn keyword  ocamlType     string unit
 
 syn keyword  ocamlOperator asr lor lsl lsr lxor mod not
 
@@ -203,20 +208,20 @@ syn match    ocamlKeyChar      "\*"
 syn match    ocamlKeyChar      "="
 
 if exists("ocaml_revised")
-  syn match    ocamlErr		"<-"
+  syn match    ocamlErr        "<-"
 else
-  syn match    ocamlOperator	"<-"
+  syn match    ocamlOperator   "<-"
 endif
 
-syn match    ocamlNumber	"\<-\=\d\+\>"
-syn match    ocamlNumber	"\<-\=0[x|X]\x\+\>"
-syn match    ocamlNumber	"\<-\=0[o|O]\o\+\>"
-syn match    ocamlNumber	"\<-\=0[b|B][01]\+\>"
-syn match    ocamlFloat		"\<-\=\d\+\.\d*\([eE][-+]\=\d\+\)\=[fl]\=\>"
+syn match    ocamlNumber        "\<-\=\d\+[l|L]\?\>"
+syn match    ocamlNumber        "\<-\=0[x|X]\x\+[l|L]\?\>"
+syn match    ocamlNumber        "\<-\=0[o|O]\o\+[l|L]\?\>"
+syn match    ocamlNumber        "\<-\=0[b|B][01]\+[l|L]\?\>"
+syn match    ocamlFloat         "\<-\=\d\+\.\d*\([eE][-+]\=\d\+\)\=[fl]\=\>"
 
 " Labels
-syn match    ocamlLabel		"\~\(\l\|_\)\(\w\|'\)*"lc=1
-syn match    ocamlLabel		"?\(\l\|_\)\(\w\|'\)*"lc=1
+syn match    ocamlLabel        "\~\(\l\|_\)\(\w\|'\)*"lc=1
+syn match    ocamlLabel        "?\(\l\|_\)\(\w\|'\)*"lc=1
 syn region   ocamlLabel transparent matchgroup=ocamlLabel start="?(\(\l\|_\)\(\w\|'\)*"lc=2 end=")"me=e-1 contains=ALLBUT,@ocamlContained,ocamlParenErr
 
 
@@ -272,6 +277,7 @@ if version >= 508 || !exists("did_ocaml_syntax_inits")
   HiLink ocamlComment	   Comment
 
   HiLink ocamlModPath	   Include
+  HiLink ocamlObject	   Include
   HiLink ocamlModule	   Include
   HiLink ocamlModParam1    Include
   HiLink ocamlModType	   Include

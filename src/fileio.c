@@ -590,8 +590,11 @@ readfile(fname, sfname, from, lines_to_skip, lines_to_read, eap, flags)
 		}
 		else
 		{
-		    filemess(curbuf, sfname,
-				       (char_u *)_("[Permission Denied]"), 0);
+		    filemess(curbuf, sfname, (char_u *)(
+# ifdef EFBIG
+			    (errno == EFBIG) ? _("[File too big]") :
+# endif
+						_("[Permission Denied]")), 0);
 		    curbuf->b_p_ro = TRUE;	/* must use "w!" now */
 		}
 	    }
