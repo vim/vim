@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Oct 10
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Oct 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -843,6 +843,8 @@ opened easily.  It may overwrite another character, esp. if 'foldcolumn' is 1.
 
 It is now possible to get the W10 message again by setting 'readonly'.  Useful
 in the FileChangedRO autocommand when checking out the file fails.
+
+Unix: When open() returns EFBIG give an appropriate message.
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*

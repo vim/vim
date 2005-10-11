@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Oct 10
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Oct 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -39,12 +39,16 @@ ccomplete:
 
 spelling:
 - When a recognized word ends in a . don't have 'spellcapcheck" match it.
-- Use KEEPCAPWORD instead of "KEP" and add KEEPCAPROOT (affixes may be
-  capatalized).
+- Use KEEPCASE instead of "KEP".  applies to affixes too.
+- Look into hungarian dictionary:
+  http://magyarispell.sourceforge.net/rc3-beta2.zip
 
 Mac unicode patch (Da Woon Jung):
 - selecting proportional font breaks display
 - UTF-8 text causes display problems.  Font replacement causes this.
+- Command-key mappings do not work. (Alan Schmitt)
+- With 'nopaste' pasting is wrong, with 'paste' Command-V doesn't work.
+  (Alan Schmitt)
 
 Win32: Use the free downloadable compiler 7.1.  Figure out how to do debugging
 (with Agide?) and describe it. (George Reilly)
