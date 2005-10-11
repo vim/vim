@@ -4170,6 +4170,7 @@ added-5.8	version5.txt	/*added-5.8*
 added-6.1	version6.txt	/*added-6.1*
 added-6.2	version6.txt	/*added-6.2*
 added-6.3	version6.txt	/*added-6.3*
+added-6.4	version6.txt	/*added-6.4*
 added-BeOS	version5.txt	/*added-BeOS*
 added-Mac	version5.txt	/*added-Mac*
 added-VMS	version5.txt	/*added-VMS*
@@ -4405,6 +4406,7 @@ changed-5.8	version5.txt	/*changed-5.8*
 changed-6.1	version6.txt	/*changed-6.1*
 changed-6.2	version6.txt	/*changed-6.2*
 changed-6.3	version6.txt	/*changed-6.3*
+changed-6.4	version6.txt	/*changed-6.4*
 changelist	motion.txt	/*changelist*
 changelog.vim	syntax.txt	/*changelog.vim*
 changetick	eval.txt	/*changetick*
@@ -4910,6 +4912,7 @@ fixed-5.8	version5.txt	/*fixed-5.8*
 fixed-6.1	version6.txt	/*fixed-6.1*
 fixed-6.2	version6.txt	/*fixed-6.2*
 fixed-6.3	version6.txt	/*fixed-6.3*
+fixed-6.4	version6.txt	/*fixed-6.4*
 fname_diff-variable	eval.txt	/*fname_diff-variable*
 fname_in-variable	eval.txt	/*fname_in-variable*
 fname_new-variable	eval.txt	/*fname_new-variable*
@@ -6275,6 +6278,7 @@ repeat.txt	repeat.txt	/*repeat.txt*
 repeating	repeat.txt	/*repeating*
 replacing	change.txt	/*replacing*
 replacing-ex	insert.txt	/*replacing-ex*
+reselect-Visual	visual.txt	/*reselect-Visual*
 resolve()	eval.txt	/*resolve()*
 restore-position	tips.txt	/*restore-position*
 restricted-mode	starting.txt	/*restricted-mode*
@@ -7088,6 +7092,7 @@ version-5.8	version5.txt	/*version-5.8*
 version-6.1	version6.txt	/*version-6.1*
 version-6.2	version6.txt	/*version-6.2*
 version-6.3	version6.txt	/*version-6.3*
+version-6.4	version6.txt	/*version-6.4*
 version-variable	eval.txt	/*version-variable*
 version4.txt	version4.txt	/*version4.txt*
 version5.txt	version5.txt	/*version5.txt*

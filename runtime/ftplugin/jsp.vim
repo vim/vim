@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	jsp
 " Maintainer:	Dan Sharp <dwsharp at hotmail dot com>
-" Last Changed: 2004 Jul 08
+" Last Changed: 2005 Oct 10
 " URL:		http://mywebpage.netscape.com/sharppeople/vim/ftplugin
 
 if exists("b:did_ftplugin") | finish | endif
@@ -46,7 +46,7 @@ if exists ("b:browsefilter")
     let s:browsefilter = b:browsefilter . s:browsefilter
 endif
 if exists("b:match_words")
-    let s:match_words = b:match_words . ',' . s:matchwords
+    let s:match_words = b:match_words . ',' . s:match_words
 endif
 
 " Load the combined list of match_words for matchit.vim
