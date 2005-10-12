@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 7.0.  Last change: Sep 29, 2005
+*pi_netrw.txt*  For Vim version 7.0.  Last change: Oct 03, 2005
 
 		VIM REFERENCE MANUAL    by Charles E. Campbell, Jr.
 
@@ -663,12 +663,13 @@ NETRW BROWSER VARIABLES					*netrw-browse-var*
 				 : connect to address [0-9a-fA-F:]*
 				 : No route to host$'
 
-  *g:netrw_ssh_browse_reject*	ssh can sometimes produce unwanted lines,
-				messages, banners, and whatnot that one doesn't
-				want masquerading as "directories" and "files".
-				Use this pattern to remove such embedded
-				messages.  By default its value is:
- 					 '^total\s\+\d\+$'
+  *g:netrw_ftp_list_cmd*	options for passing along to ftp for directory
+				listing.  Defaults:
+				 unix or g:netrw_cygwin set: : "ls -lF"
+				 otherwise                     "dir"
+
+  *g:netrw_hide*			if true, the hiding list is used
+				 default: =0
 
   *g:netrw_keepdir*		=1 (default) keep current directory immune from
 				   the browsing directory.
@@ -683,16 +684,11 @@ NETRW BROWSER VARIABLES					*netrw-browse-var*
 
   *g:netrw_longlist*		if =1, then long listing will be default
 
-  *g:netrw_ftp_list_cmd*	options for passing along to ftp for directory
-				listing.  Defaults:
-				 unix or g:netrw_cygwin set: : "ls -lF"
-				 otherwise                     "dir"
-
   *g:netrw_list_hide*		comma separated pattern list for hiding files
 				 default: ""
 
   *g:netrw_local_mkdir*		command for making a local directory
-				 default: "ssh HOSTNAME mkdir"
+				 default: "mkdir"
 
   *g:netrw_local_rmdir*		remove directory command (rmdir)
 				 default: "rmdir"
@@ -716,9 +712,6 @@ NETRW BROWSER VARIABLES					*netrw-browse-var*
   *g:netrw_rmf_cmd*		 command for removing softlinks
 				 default: "ssh HOSTNAME rm -f"
 
-  *g:netrw_hide*			if true, the hiding list is used
-				 default: =0
-
   *g:netrw_sort_by*		sort by "name", "time", or "size"
 				 default: "name"
 
@@ -729,6 +722,18 @@ NETRW BROWSER VARIABLES					*netrw-browse-var*
 				comma-separated pattern sequence
 				 default: '[\/]$,*,\.bak$,\.o$,\.h$,
 				           \.info$,\.swp$,\.obj$'
+
+  *g:netrw_ssh_cmd*		One may specify an executable command
+  				to use instead of ssh for remote actions
+				such as listing, file removal, etc.
+				 default: ssh
+
+  *g:netrw_ssh_browse_reject*	ssh can sometimes produce unwanted lines,
+				messages, banners, and whatnot that one doesn't
+				want masquerading as "directories" and "files".
+				Use this pattern to remove such embedded
+				messages.  By default its value is:
+ 					 '^total\s\+\d\+$'
 
   *g:netrw_timefmt*		specify format string to strftime() (%c)
 				 default: "%c"
@@ -833,7 +838,7 @@ refresh a local directory by using ":e .".
 
 GOING UP						*netrw--*
 
-To go up a directory, press - or press the <cr> when atop the ../ directory
+To go up a directory, press "-" or press the <cr> when atop the ../ directory
 entry in the listing.
 
 Netrw will use the command in |g:netrw_list_cmd| to perform the directory
@@ -1072,24 +1077,24 @@ handler varies:
   * for Windows 32 or 64, the url and FileProtocolHandler dlls are used.  
   * for KDE (with kfmclient): kfmclient is used.
   * for Gnome (with gnome-open): gnome-open is used.
-  * otherwise the NetrwFileHandler plugin is used.
+  * otherwise the netrwFileHandler plugin is used.
 
 The file's suffix is used by these various approaches to determine an
 appropriate application to use to "handle" these files.  Such things as
 OpenOffice (*.sfx), visualization (*.jpg, *.gif, etc), and PostScript (*.ps,
 *.eps) can be handled.
 
-The NetrwFileHandler applies a user-defined function to a file, based on its
+The netrwFileHandler applies a user-defined function to a file, based on its
 extension.  Of course, the handler function must exist for it to be called!
 >
  Ex. mypgm.html   x ->
-                  NetrwFileHandler_html("scp://user@host/some/path/mypgm.html")
+                  netrwFileHandler_html("scp://user@host/some/path/mypgm.html")
 <
-See the <plugin/NetrwFileHandlers.vim> for an example of how to handle an html
+See the <plugin/netrwFileHandlers.vim> for an example of how to handle an html
 file with mozilla.
 
-One may write custom NetrwFileHandlers; please look at the
-plugin/NetrwFileHandlers.vim script for examples.  If its likely to be
+One may write custom netrwFileHandlers; please look at the
+plugin/netrwFileHandlers.vim script for examples.  If its likely to be
 generally useful, please feel free to forward a copy to me for future
 inclusion in the distribution.
 
@@ -1279,6 +1284,12 @@ which is loaded automatically at startup (assuming :set nocp).
 ==============================================================================
 10. History						*netrw-history*
 
+	v73: * bugfix -- scp://host/path/file was getting named incorrectly
+	     * netrw detects use of earlier-than-7.0 version of vim and issues
+	       a pertinent error message.
+	     * netrwSettings.vim is now uses autoloading.  Only
+	       <netrwPlugin.vim> is needed as a pure plugin
+	       (ie. always loaded).
 	v72: * bugfix -- formerly, one could prevent the loading of netrw
 	       by "let g:loaded_netrw=1"; when autoloading became supported,
 	       this feature was lost.  It is now restored.
@@ -1415,7 +1426,7 @@ which is loaded automatically at startup (assuming :set nocp).
 	     * special file viewing with:
 	       (windows) rundll32 url.dll (gnome)   gnome-open (kde)
 	       kfmclient If none of these are on the executable path, then
-	       NetrwFileHandlers.vim is used.
+	       netrwFileHandlers.vim is used.
 	     * directory bookmarking during both local and remote browsing
 	       implemented
 	     * one may view all, use the hiding list to suppress, or use the

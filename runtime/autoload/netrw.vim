@@ -1,7 +1,7 @@
 " netrw.vim: Handles file transfer and remote directory listing across a network
 "            AUTOLOAD PORTION
-" Date:		Sep 29, 2005
-" Version:	72
+" Date:		Oct 12, 2005
+" Version:	73
 " Maintainer:	Charles E Campbell, Jr <drchipNOSPAM at campbellfamily dot biz>
 " GetLatestVimScripts: 1075 1 :AutoInstall: netrw.vim
 " Copyright:    Copyright (C) 1999-2005 Charles E. Campbell, Jr. {{{1
@@ -23,22 +23,74 @@
 if &cp || exists("g:loaded_netrw")
   finish
 endif
+let g:loaded_netrw = "v73"
 if v:version < 700
  echohl WarningMsg | echo "***netrw*** you need vim version 7.0 or later for version ".g:loaded_netrw." of netrw" | echohl None
  finish
 endif
-let g:loaded_netrw = "v72"
 let s:keepcpo      = &cpo
 set cpo&vim
 " call Decho("doing autoload/netrw.vim")
 
 " ---------------------------------------------------------------------
-" Default values for global netrw variables {{{1
-if !exists("g:netrw_ftpmode")
- let g:netrw_ftpmode= "binary"
+" Default values for netrw's global protocol variables {{{1
+if !exists("g:netrw_dav_cmd")
+  let g:netrw_dav_cmd	= "cadaver"
 endif
-if !exists("g:netrw_win95ftp")
- let g:netrw_win95ftp= 1
+if !exists("g:netrw_fetch_cmd")
+ if executable("fetch")
+  let g:netrw_fetch_cmd	= "fetch -o"
+ else
+  let g:netrw_fetch_cmd	= ""
+ endif
+endif
+if !exists("g:netrw_ftp_cmd")
+  let g:netrw_ftp_cmd	= "ftp"
+endif
+if !exists("g:netrw_http_cmd")
+ if executable("wget")
+  let g:netrw_http_cmd	= "wget -q -O"
+ elseif executable("fetch")
+  let g:netrw_http_cmd	= "fetch -o"
+ else
+  let g:netrw_http_cmd	= ""
+ endif
+endif
+if !exists("g:netrw_rcp_cmd")
+  let g:netrw_rcp_cmd	= "rcp"
+endif
+if !exists("g:netrw_rsync_cmd")
+  let g:netrw_rsync_cmd	= "rsync"
+endif
+if !exists("g:netrw_scp_cmd")
+  let g:netrw_scp_cmd	= "scp -q"
+endif
+if !exists("g:netrw_sftp_cmd")
+  let g:netrw_sftp_cmd	= "sftp"
+endif
+if !exists("g:netrw_ssh_cmd")
+ let g:netrw_ssh_cmd= "ssh"
+endif
+
+if has("win32") || has("win95") || has("win64") || has("win16")
+  \ && exists("g:netrw_use_nt_rcp")
+  \ && g:netrw_use_nt_rcp
+  \ && executable( $SystemRoot .'/system32/rcp.exe')
+ let s:netrw_has_nt_rcp = 1
+ let s:netrw_rcpmode    = '-b'
+ else
+ let s:netrw_has_nt_rcp = 0
+ let s:netrw_rcpmode    = ''
+endif
+
+" ---------------------------------------------------------------------
+" Default values for netrw's global variables {{{1
+" Default values - a-c ---------- {{{2
+if !exists("g:netrw_alto")
+ let g:netrw_alto= 0
+endif
+if !exists("g:netrw_altv")
+ let g:netrw_altv= 0
 endif
 if !exists("g:netrw_cygwin")
  if has("win32") || has("win95") || has("win64") || has("win16")
@@ -51,14 +103,15 @@ if !exists("g:netrw_cygwin")
   let g:netrw_cygwin= 0
  endif
 endif
-if !exists("g:netrw_list_cmd")
- if executable("ssh")
-  " provide a default listing command
-  let g:netrw_list_cmd= "ssh HOSTNAME ls -FLa"
- else
-"  call Decho("ssh is not executable, can't do remote directory exploring with ssh")
-  let g:netrw_list_cmd= ""
- endif
+" Default values - d-f ---------- {{{2
+if !exists("g:NETRW_DIRHIST_CNT")
+ let g:NETRW_DIRHIST_CNT= 0
+endif
+if !exists("g:netrw_dirhistmax")
+ let g:netrw_dirhistmax= 10
+endif
+if !exists("g:netrw_ftp_browse_reject")
+ let g:netrw_ftp_browse_reject='^total\s\+\d\+$\|^Trying\s\+\d\+.*$\|^KERBEROS_V\d rejected\|^Security extensions not\|No such file\|: connect to address [0-9a-fA-F:]*: No route to host$'
 endif
 if !exists("g:netrw_ftp_list_cmd")
  if has("unix") || exists("g:netrw_cygwin")
@@ -67,75 +120,96 @@ if !exists("g:netrw_ftp_list_cmd")
   let g:netrw_ftp_list_cmd= "dir"
  endif
 endif
-if !exists("g:netrw_rm_cmd")
- let g:netrw_rm_cmd    = "ssh HOSTNAME rm"
+if !exists("g:netrw_ftpmode")
+ let g:netrw_ftpmode= "binary"
 endif
-if !exists("g:netrw_rmf_cmd")
- let g:netrw_rmf_cmd    = "ssh HOSTNAME rm -f"
+" Default values - h-lh ---------- {{{2
+if !exists("g:netrw_hide")
+ let g:netrw_hide= 1
 endif
-if !exists("g:netrw_rmdir_cmd")
- let g:netrw_rmdir_cmd = "ssh HOSTNAME rmdir"
+if !exists("g:netrw_keepdir")
+ let g:netrw_keepdir= 1
+endif
+if !exists("g:netrw_list_cmd")
+ if executable(g:netrw_ssh_cmd)
+  " provide a default listing command
+  let g:netrw_list_cmd= g:netrw_ssh_cmd." HOSTNAME ls -FLa"
+ else
+"  call Decho(g:netrw_ssh_cmd." is not executable, can't do remote directory exploring)
+  let g:netrw_list_cmd= ""
+ endif
+endif
+if !exists("g:netrw_list_hide")
+ let g:netrw_list_hide= ""
+endif
+" Default values - lh-lz ---------- {{{2
+if !exists("g:netrw_local_mkdir")
+ let g:netrw_local_mkdir= "mkdir"
+endif
+if !exists("g:netrw_local_rmdir")
+ let g:netrw_local_rmdir= "rmdir"
+endif
+if !exists("g:netrw_longlist")
+ let g:netrw_longlist= 0
+endif
+if g:netrw_longlist < 0 || g:netrw_longlist > 2
+ " sanity check
+ let g:netrw_longlist= 0
+endif
+if g:netrw_longlist == 1
+ let g:netrw_list_cmd= g:netrw_list_cmd." -l"
+endif
+" Default values - m-r ---------- {{{2
+if !exists("g:netrw_maxfilenamelen")
+ let g:netrw_maxfilenamelen= 32
+endif
+if !exists("g:netrw_mkdir_cmd")
+ let g:netrw_mkdir_cmd= g:netrw_ssh_cmd." HOSTNAME mkdir"
 endif
 if !exists("g:netrw_rename_cmd")
- let g:netrw_rename_cmd= "ssh HOSTNAME mv"
+ let g:netrw_rename_cmd= g:netrw_ssh_cmd." HOSTNAME mv"
 endif
+if !exists("g:netrw_rm_cmd")
+ let g:netrw_rm_cmd    = g:netrw_ssh_cmd." HOSTNAME rm"
+endif
+if !exists("g:netrw_rmdir_cmd")
+ let g:netrw_rmdir_cmd = g:netrw_ssh_cmd." HOSTNAME rmdir"
+endif
+if !exists("g:netrw_rmf_cmd")
+ let g:netrw_rmf_cmd    = g:netrw_ssh_cmd." HOSTNAME rm -f"
+endif
+" Default values - s ---------- {{{2
 if exists("g:netrw_silent") && g:netrw_silent != 0
  let g:netrw_silentxfer= "silent "
 else
  let g:netrw_silentxfer= ""
 endif
-if !exists("g:netrw_winsize")
- let g:netrw_winsize= ""
-endif
-if !exists("g:netrw_list_hide")
- let g:netrw_list_hide= ""
-endif
 if !exists("g:netrw_sort_by")
  " alternatives: date size
  let g:netrw_sort_by= "name"
-endif
-if !exists("g:netrw_sort_sequence")
- let g:netrw_sort_sequence= '[\/]$,*,\.bak$,\.o$,\.h$,\.info$,\.swp$,\.obj$'
 endif
 if !exists("g:netrw_sort_direction")
  " alternative: reverse  (z y x ...)
  let g:netrw_sort_direction= "normal"
 endif
-if !exists("g:netrw_longlist")
- let g:netrw_longlist= 0
-endif
-if g:netrw_longlist == 0 || g:netrw_longlist == 2
- let g:netrw_list_cmd= "ssh HOSTNAME ls -FLa"
-else
- let g:netrw_longlist= 1
- let g:netrw_list_cmd= "ssh HOSTNAME ls -FLa -l"
-endif
-if !exists("g:netrw_list_cmd")
-endif
-if !exists("g:netrw_timefmt")
- let g:netrw_timefmt= "%c"
-endif
-if !exists("g:netrw_local_rmdir")
- let g:netrw_local_rmdir= "rmdir"
-endif
-if !exists("g:netrw_local_mkdir")
- let g:netrw_local_mkdir= "mkdir"
-endif
-if !exists("g:netrw_mkdir_cmd")
- let g:netrw_mkdir_cmd= "ssh HOSTNAME mkdir"
-endif
-if !exists("g:netrw_hide")
- let g:netrw_hide= 1
-endif
-if !exists("g:netrw_ftp_browse_reject")
- let g:netrw_ftp_browse_reject='^total\s\+\d\+$\|^Trying\s\+\d\+.*$\|^KERBEROS_V\d rejected\|^Security extensions not\|No such file\|: connect to address [0-9a-fA-F:]*: No route to host$'
+if !exists("g:netrw_sort_sequence")
+ let g:netrw_sort_sequence= '[\/]$,*,\.bak$,\.o$,\.h$,\.info$,\.swp$,\.obj$'
 endif
 if !exists("g:netrw_ssh_browse_reject")
   let g:netrw_ssh_browse_reject='^total\s\+\d\+$'
 endif
-if !exists("g:netrw_keepdir")
- let g:netrw_keepdir= 1
+" Default values - t-w ---------- {{{2
+if !exists("g:netrw_timefmt")
+ let g:netrw_timefmt= "%c"
 endif
+if !exists("g:netrw_win95ftp")
+ let g:netrw_win95ftp= 1
+endif
+if !exists("g:netrw_winsize")
+ let g:netrw_winsize= ""
+endif
+" ---------------------------------------------------------------------
+" Default values for netrw's script variables: {{{1
 if !exists("s:netrw_cd_escape")
  if has("win32") || has("win95") || has("win64") || has("win16")
   let s:netrw_cd_escape="#% "
@@ -150,74 +224,11 @@ if !exists("s:netrw_glob_escape")
   let s:netrw_glob_escape= '[]*?`{~$'
  endif
 endif
-if !exists("g:netrw_alto")
- let g:netrw_alto= 0
-endif
-if !exists("g:netrw_altv")
- let g:netrw_altv= 0
-endif
-if !exists("g:netrw_maxfilenamelen")
- let g:netrw_maxfilenamelen= 32
-endif
-if !exists("g:netrw_dirhistmax")
- let g:netrw_dirhistmax= 10
-endif
-if !exists("g:NETRW_DIRHIST_CNT")
- let g:NETRW_DIRHIST_CNT= 0
-endif
 
 " BufEnter event ignored by decho when following variable is true
 "  Has a side effect that doau BufReadPost doesn't work, so
 "  files read by network transfer aren't appropriately highlighted.
 "let g:decho_bufenter = 1	"Decho
-
-" ---------------------------------------------------------------------
-" Default values for global protocol variables {{{1
-if !exists("g:netrw_rcp_cmd")
-  let g:netrw_rcp_cmd	= "rcp"
-endif
-if !exists("g:netrw_ftp_cmd")
-  let g:netrw_ftp_cmd	= "ftp"
-endif
-if !exists("g:netrw_scp_cmd")
-  let g:netrw_scp_cmd	= "scp -q"
-endif
-if !exists("g:netrw_sftp_cmd")
-  let g:netrw_sftp_cmd	= "sftp"
-endif
-if !exists("g:netrw_http_cmd")
- if executable("wget")
-  let g:netrw_http_cmd	= "wget -q -O"
- elseif executable("fetch")
-  let g:netrw_http_cmd	= "fetch -o"
- else
-  let g:netrw_http_cmd	= ""
- endif
-endif
-if !exists("g:netrw_dav_cmd")
-  let g:netrw_dav_cmd	= "cadaver"
-endif
-if !exists("g:netrw_rsync_cmd")
-  let g:netrw_rsync_cmd	= "rsync"
-endif
-if !exists("g:netrw_fetch_cmd")
- if executable("fetch")
-  let g:netrw_fetch_cmd	= "fetch -o"
- else
-  let g:netrw_fetch_cmd	= ""
- endif
-endif
-
-if has("win32") || has("win95") || has("win64") || has("win16")
-  \ && exists("g:netrw_use_nt_rcp")
-  \ && g:netrw_use_nt_rcp
-  \ && executable( $SystemRoot .'/system32/rcp.exe')
- let s:netrw_has_nt_rcp = 1
- let s:netrw_rcpmode    = '-b'
- else
- let s:netrw_has_nt_rcp = 0
- let s:netrw_rcpmode    = ''
-endif
 
 " ------------------------------------------------------------------------
 " NetSavePosn: saves position of cursor on screen {{{1
@@ -435,7 +446,7 @@ fun! netrw#NetRead(...)
       let &debug= debugkeep
      endif
      bd!
-     let result = s:NetGetFile(readcmd, tmpfile, b:netrw_method)
+     let result           = s:NetGetFile(readcmd, tmpfile, b:netrw_method)
      let b:netrw_lastfile = choice
  
    ".........................................
@@ -507,7 +518,7 @@ fun! netrw#NetRead(...)
 "     call Decho("executing: !".g:netrw_scp_cmd.useport." ".g:netrw_machine.":".escape(b:netrw_fname,' ?&')." ".tmpfile)
      exe g:netrw_silentxfer."!".g:netrw_scp_cmd.useport." ".g:netrw_machine.":".escape(b:netrw_fname,' ?&')." ".tmpfile
     endif
-    let result		= s:NetGetFile(readcmd, tmpfile, b:netrw_method)
+    let result           = s:NetGetFile(readcmd, tmpfile, b:netrw_method)
     let b:netrw_lastfile = choice
  
    ".........................................
@@ -655,6 +666,10 @@ endfun
 " NetGetFile: Function to read file "fname" with command "readcmd". {{{1
 fun! s:NetGetFile(readcmd, fname, method)
 "   call Dfunc("NetGetFile(readcmd<".a:readcmd.">,fname<".a:fname."> method<".a:method.">)")
+
+  " record remote filename
+  let rfile= bufname("%")
+"  call Decho("rfile<".rfile.">")
  
   if exists("*NetReadFixup")
    " for the use of NetReadFixup (not otherwise used internally)
@@ -678,9 +693,6 @@ fun! s:NetGetFile(readcmd, fname, method)
   if a:readcmd[0] == '0'
   " get file into buffer
 
-   " record remote filename
-   let rfile= bufname(".")
-"   call Decho("remotefile<".rfile.">")
 "   call Dredir("ls!","starting buffer list")
 
    " rename the current buffer to the temp file (ie. fname)
@@ -1064,7 +1076,7 @@ fun! s:NetBrowse(dirname)
    endif
   elseif !exists("g:netrw_list_cmd") || g:netrw_list_cmd == ''
    if !exists("g:netrw_quiet")
-    echohl Error | echo "***netrw*** this system doesn't support remote directory listing via ssh" | echohl None
+    echohl Error | echo "***netrw*** this system doesn't support remote directory listing via ".g:netrw_list_cmd | echohl None
     call inputsave()|call input("Press <cr> to continue")|call inputrestore()
    endif
 
@@ -1540,6 +1552,9 @@ fun! s:NetBrowseRm(usrhost,path) range
      let ok= input("Confirm deletion of file<".rmfile."> ","[{y(es)},n(o),a(ll),q(uit)] ")
      call inputrestore()
      echohl NONE
+     if ok == ""
+      let ok="no"
+     endif
      let ok= substitute(ok,'\[{y(es)},n(o),a(ll),q(uit)]\s*','','e')
      if ok =~ 'a\%[ll]'
       let all= 1
@@ -1566,6 +1581,9 @@ fun! s:NetBrowseRm(usrhost,path) range
      call inputsave()
      let ok= input("Confirm deletion of directory<".rmfile."> ","[{y(es)},n(o),a(ll),q(uit)] ")
      call inputrestore()
+     if ok == ""
+      let ok="no"
+     endif
      let ok= substitute(ok,'\[{y(es)},n(o),a(ll),q(uit)]\s*','','e')
      if ok =~ 'a\%[ll]'
       let all= 1
@@ -1722,7 +1740,7 @@ fun! s:NetBrowseX(fname,remote)
    exe "w! ".fname
    q
   endif
-"  call Decho("exten<".exten."> "."NetrwFileHandler_".exten."():exists=".exists("*NetrwFileHandler_".exten))
+"  call Decho("exten<".exten."> "."netrwFileHandlers#NFH_".exten."():exists=".exists("*netrwFileHandlers#NFH_".exten))
 
   " set up redirection
   if &srr =~ "%s"
@@ -1738,19 +1756,22 @@ fun! s:NetBrowseX(fname,remote)
    exe 'silent !start rundll32 url.dll,FileProtocolHandler "'.escape(fname, '%#').'"'
    let ret= v:shell_error
 
-  elseif has("unix") && executable("kfmclient")
-"   call Decho("exe silent !kfmclient exec '".escape(fname,'%#')."' ".redir)
-   exe "silent !kfmclient exec '".escape(fname,'%#')."' ".redir
-   let ret= v:shell_error
-
   elseif has("unix") && executable("gnome-open")
 "   call Decho("exe silent !gnome-open '".escape(fname,'%#')."' ".redir)
    exe "silent !gnome-open '".escape(fname,'%#')."'".redir
    let ret= v:shell_error
 
-  elseif exten != "" && exists("*NetrwFileHandler_".exten)
-"   call Decho("let ret= NetrwFileHandler_".exten.'("'.fname.'")')
-   exe "let ret= NetrwFileHandler_".exten.'("'.fname.'")'
+  elseif has("unix") && executable("kfmclient")
+"   call Decho("exe silent !kfmclient exec '".escape(fname,'%#')."' ".redir)
+   exe "silent !kfmclient exec '".escape(fname,'%#')."' ".redir
+   let ret= v:shell_error
+
+  else
+   call netrwFileHandlers#Init()
+   if exten != "" && exists("*netrwFileHandlers#NFH_".exten)
+"    call Decho("let ret= netrwFileHandlers#NFH_".exten.'("'.fname.'")')
+    exe "let ret= netrwFileHandlers#NFH_".exten.'("'.fname.'")'
+   endif
   endif
   redraw!
 
@@ -2349,6 +2370,8 @@ fun! s:NetObtain()
   ".........................................
   else
    " scp: Method#4
+   let curdir = expand("%")
+   let path   = substitute(curdir,'scp://[^/]\+/','','e')
    if exists("g:netrw_port") && g:netrw_port != ""
     let useport= " -P ".g:netrw_port
    else
@@ -2356,11 +2379,11 @@ fun! s:NetObtain()
    endif
    if g:netrw_cygwin == 1
     let cygtmpfile=substitute(tmpfile,'^\(\a\):','/cygdrive/\1/','e')
-"    call Decho("executing: !".g:netrw_scp_cmd.useport." ".g:netrw_machine.":".escape(fname,' ?&')." .")
-    exe g:netrw_silentxfer."!".g:netrw_scp_cmd.useport." ".g:netrw_machine.":".escape(fname,' ?&')." ."
+"    call Decho("executing: !".g:netrw_scp_cmd.useport." ".g:netrw_machine.":".path.escape(fname,' ?&')." .")
+    exe g:netrw_silentxfer."!".g:netrw_scp_cmd.useport." ".g:netrw_machine.":".path.escape(fname,' ?&')." ."
    else
-"    call Decho("executing: !".g:netrw_scp_cmd.useport." ".g:netrw_machine.":".escape(fname,' ?&')." .")
-    exe g:netrw_silentxfer."!".g:netrw_scp_cmd.useport." ".g:netrw_machine.":".escape(fname,' ?&')." ."
+"    call Decho("executing: !".g:netrw_scp_cmd.useport." ".g:netrw_machine.":".path.escape(fname,' ?&')." .")
+    exe g:netrw_silentxfer."!".g:netrw_scp_cmd.useport." ".g:netrw_machine.":".path.escape(fname,' ?&')." ."
    endif
   endif
 
@@ -2825,7 +2848,12 @@ fun! s:LocalBrowseRm(path) range
      let ok= input("Confirm deletion of file<".rmfile."> ","[{y(es)},n(o),a(ll),q(uit)] ")
      call inputrestore()
      echohl NONE
+     if ok == ""
+      let ok="no"
+     endif
+"     call Decho("response: ok<".ok.">")
      let ok= substitute(ok,'\[{y(es)},n(o),a(ll),q(uit)]\s*','','e')
+"     call Decho("response: ok<".ok."> (after sub)")
      if ok =~ 'a\%[ll]'
       let all= 1
      endif
@@ -2846,6 +2874,9 @@ fun! s:LocalBrowseRm(path) range
      let ok= input("Confirm deletion of directory<".rmfile."> ","[{y(es)},n(o),a(ll),q(uit)] ")
      call inputrestore()
      let ok= substitute(ok,'\[{y(es)},n(o),a(ll),q(uit)]\s*','','e')
+     if ok == ""
+      let ok="no"
+     endif
      if ok =~ 'a\%[ll]'
       let all= 1
      endif
@@ -3034,6 +3065,7 @@ fun! netrw#Explore(indx,dosplit,style,...)
 "    call Decho("calling NetBrowse(newdir<".newdir.">)")
     call s:NetBrowse(newdir)
    else
+    if newdir == ""|let newdir= "."|endif
 "    call Decho("calling LocalBrowse(newdir<".newdir.">)")
     call s:LocalBrowse(newdir)
    endif
