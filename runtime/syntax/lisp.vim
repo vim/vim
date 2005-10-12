@@ -1,21 +1,23 @@
 " Vim syntax file
 " Language:    Lisp
 " Maintainer:  Dr. Charles E. Campbell, Jr. <NdrOchipS@PcampbellAfamily.Mbiz>
-" Last Change: Sep 06, 2005
-" Version:     15
+" Last Change: Oct 12, 2005
+" Version:     16
 " URL:	       http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 "
 "  Thanks to F Xavier Noria for a list of 978 Common Lisp symbols
 "  taken from the HyperSpec
 "
 "  Options:
-"    lisp_instring : if it exists, then "(...") strings are highlighted
-"		     as if the contents were lisp.  Useful for AutoLisp.
-"		     Put    let lisp_instring=1   into your <.vimrc> if
-"		     you want this option.
+"    g:lisp_instring : if it exists, then "(...") strings are highlighted
+"		       as if the contents were lisp.  Useful for AutoLisp.
+"		       Put
+"		         let g:lisp_instring=1
+"		       into your <.vimrc> if you want this option.
 
-" For version 5.x: Clear all syntax items
-" For version 6.x: Quit when a syntax file was already loaded
+"  Load Once: {{{1
+" For vim-version 5.x: Clear all syntax items
+" For vim-version 6.x: Quit when a syntax file was already loaded
 if version < 600
   syntax clear
 elseif exists("b:current_syntax")
@@ -28,21 +30,35 @@ else
  set iskeyword=42,43,45,47-58,60-62,64-90,97-122,_
 endif
 
-" Clusters
+" Clusters: {{{1
 syn cluster			 lispAtomCluster		  contains=lispAtomBarSymbol,lispAtomList,lispAtomNmbr0,lispComment,lispDecl,lispFunc,lispLeadWhite
-syn cluster			 lispListCluster		  contains=lispAtom,lispAtomBarSymbol,lispAtomMark,lispBQList,lispBarSymbol,lispComment,lispConcat,lispDecl,lispFunc,lispKey,lispList,lispNumber,lispSpecial,lispSymbol,lispVar,lispLeadWhite
+syn cluster			 lispBaseListCluster		  contains=lispAtom,lispAtomBarSymbol,lispAtomMark,lispBQList,lispBarSymbol,lispComment,lispConcat,lispDecl,lispFunc,lispKey,lispList,lispNumber,lispSpecial,lispSymbol,lispVar,lispLeadWhite
+if exists("g:lisp_instring")
+ syn cluster			 lispListCluster		  contains=@lispBaseListCluster,lispString,lispInString,lispInStringString
+else
+ syn cluster			 lispListCluster		  contains=@lispBaseListCluster,lispString
+endif
 
-" Lists
+" Lists: {{{1
 syn match			 lispSymbol			  contained			   ![^()'`,"; \t]\+!
 syn match			 lispBarSymbol			  contained			   !|..\{-}|!
-if exists("lisp_instring")
- syn region			 lispList			  matchgroup=Delimiter start="(" skip="|.\{-}|"			    matchgroup=Delimiter end=")" contains=@lispListCluster,lispString,lispInString,lispInStringString
- syn region			 lispBQList			  matchgroup=PreProc   start="`("  skip="|.\{-}|"		    matchgroup=PreProc   end=")" contains=@lispListCluster,lispString,lispInString,lispInStringString
+if exists("g:lisp_rainbow") && g:lisp_rainbow != 0
+ syn region lispParen0           matchgroup=hlLevel0 start="`\=(" end=")" skip="|.\{-}|" contains=@lispListCluster,lispParen1 
+ syn region lispParen1 contained matchgroup=hlLevel1 start="`\=(" end=")" skip="|.\{-}|" contains=@lispListCluster,lispParen2 
+ syn region lispParen2 contained matchgroup=hlLevel2 start="`\=(" end=")" skip="|.\{-}|" contains=@lispListCluster,lispParen3 
+ syn region lispParen3 contained matchgroup=hlLevel3 start="`\=(" end=")" skip="|.\{-}|" contains=@lispListCluster,lispParen4 
+ syn region lispParen4 contained matchgroup=hlLevel4 start="`\=(" end=")" skip="|.\{-}|" contains=@lispListCluster,lispParen5 
+ syn region lispParen5 contained matchgroup=hlLevel5 start="`\=(" end=")" skip="|.\{-}|" contains=@lispListCluster,lispParen6 
+ syn region lispParen6 contained matchgroup=hlLevel6 start="`\=(" end=")" skip="|.\{-}|" contains=@lispListCluster,lispParen7 
+ syn region lispParen7 contained matchgroup=hlLevel7 start="`\=(" end=")" skip="|.\{-}|" contains=@lispListCluster,lispParen8 
+ syn region lispParen8 contained matchgroup=hlLevel8 start="`\=(" end=")" skip="|.\{-}|" contains=@lispListCluster,lispParen9 
+ syn region lispParen9 contained matchgroup=hlLevel9 start="`\=(" end=")" skip="|.\{-}|" contains=@lispListCluster,lispParen0
 else
- syn region			 lispList			  matchgroup=Delimiter start="(" skip="|.\{-}|"			    matchgroup=Delimiter end=")" contains=@lispListCluster,lispString
- syn region			 lispBQList			  matchgroup=PreProc   start="`("  skip="|.\{-}|"		    matchgroup=PreProc   end=")" contains=@lispListCluster,lispString
+ syn region			 lispList			  matchgroup=Delimiter start="("   skip="|.\{-}|"			    matchgroup=Delimiter end=")"	contains=@lispListCluster
+ syn region			 lispBQList			  matchgroup=PreProc   start="`("  skip="|.\{-}|"		    matchgroup=PreProc   end=")"		contains=@lispListCluster
 endif
-" Atoms
+
+" Atoms: {{{1
 syn match			 lispAtomMark			  "'"
 syn match			 lispAtom			  "'("me=e-1			   contains=lispAtomMark	    nextgroup=lispAtomList
 syn match			 lispAtom			  "'[^ \t()]\+"			   contains=lispAtomMark
@@ -52,7 +68,7 @@ syn region			 lispAtomList			  contained			   matchgroup=Special start="("	    s
 syn match			 lispAtomNmbr			  contained			   "\<\d\+"
 syn match			 lispLeadWhite			  contained			   "^\s\+"
 
-" Standard Lisp Functions and Macros
+" Standard Lisp Functions and Macros: {{{1
 syn keyword lispFunc		 *				  find-method			   pprint-indent
 syn keyword lispFunc		 **				  find-package			   pprint-linear
 syn keyword lispFunc		 ***				  find-restart			   pprint-logical-block
@@ -370,8 +386,7 @@ syn keyword lispFunc		 find-if-not			  pprint-fill
 
 syn match   lispFunc		 "\<c[ad]\+r\>"
 
-
-" Lisp Keywords (modifiers)
+" Lisp Keywords (modifiers): {{{1
 syn keyword lispKey		 :abort				  :from-end			   :overwrite
 syn keyword lispKey		 :adjustable			  :gensym			   :predicate
 syn keyword lispKey		 :append			  :host				   :preserve-whitespace
@@ -399,7 +414,7 @@ syn keyword lispKey		 :error				  :output			   :verbose
 syn keyword lispKey		 :escape			  :output-file			   :version
 syn keyword lispKey		 :external
 
-" Standard Lisp Variables
+" Standard Lisp Variables: {{{1
 syn keyword lispVar		 *applyhook*			  *load-pathname*		   *print-pprint-dispatch*
 syn keyword lispVar		 *break-on-signals*		  *load-print*			   *print-pprint-dispatch*
 syn keyword lispVar		 *break-on-signals*		  *load-truename*		   *print-pretty*
@@ -419,21 +434,21 @@ syn keyword lispVar		 *evalhook*			  *print-lines*			   *standard-output*
 syn keyword lispVar		 *features*			  *print-miser-width*		   *terminal-io*
 syn keyword lispVar		 *gensym-counter*		  *print-miser-width*		   *trace-output*
 
-" Strings
+" Strings: {{{1
 syn region			 lispString			  start=+"+ skip=+\\\\\|\\"+ end=+"+
-if exists("lisp_instring")
- syn region			 lispInString			  keepend matchgroup=Delimiter start=+"(+rs=s+1 skip=+|.\{-}|+ matchgroup=Delimiter end=+)"+ contains=@lispListCluster,lispInStringString
+if exists("g:lisp_instring")
+ syn region			 lispInString			  keepend matchgroup=Delimiter start=+"(+rs=s+1 skip=+|.\{-}|+ matchgroup=Delimiter end=+)"+ contains=@lispBaseListCluster,lispInStringString
  syn region			 lispInStringString		  start=+\\"+ skip=+\\\\+ end=+\\"+ contained
 endif
 
-" Shared with Xlisp, Declarations, Macros, Functions
+" Shared with Xlisp, Declarations, Macros, Functions: {{{1
 syn keyword lispDecl		 defmacro			  do-all-symbols		   labels
 syn keyword lispDecl		 defsetf			  do-external-symbols		   let
 syn keyword lispDecl		 deftype			  do-symbols			   locally
 syn keyword lispDecl		 defun				  dotimes			   macrolet
 syn keyword lispDecl		 do*				  flet				   multiple-value-bind
 
-" Numbers: supporting integers and floating point numbers
+" Numbers: supporting integers and floating point numbers {{{1
 syn match lispNumber		 "-\=\(\.\d\+\|\d\+\(\.\d*\)\=\)\(e[-+]\=\d\+\)\="
 
 syn match lispSpecial		 "\*[a-zA-Z_][a-zA-Z_0-9-]*\*"
@@ -448,7 +463,7 @@ syn match lispSpecial		 !#([^()'`,"; \t]\+)!
 syn match lispConcat		 "\s\.\s"
 syn match lispParenError	 ")"
 
-" Comments
+" Comments: {{{1
 syn cluster lispCommentGroup	 contains=lispTodo,@Spell
 syn match   lispComment		 ";.*$"				  contains=@lispCommentGroup
 syn region  lispCommentRegion	 start="#|" end="|#"		  contains=lispCommentRegion,@lispCommentGroup
@@ -456,10 +471,10 @@ syn case ignore
 syn keyword lispTodo		 contained			  combak			   combak:			    todo			     todo:
 syn case match
 
-" synchronization
+" Synchronization: {{{1
 syn sync lines=100
 
-" Define the default highlighting.
+" Define Highlighting: {{{1
 " For version 5.7 and earlier: only when not done already
 " For version 5.8 and later: only when an item doesn't have highlighting yet
 if version >= 508 || !exists("did_lisp_syntax_inits")
@@ -491,9 +506,35 @@ if version >= 508 || !exists("did_lisp_syntax_inits")
   HiLink lispTodo		 Todo
   HiLink lispVar		 Statement
 
+  if exists("g:lisp_rainbow") && g:lisp_rainbow != 0
+   if &bg == "dark"
+    hi   hlLevel0 ctermfg=red         guifg=red1
+    hi   hlLevel1 ctermfg=yellow      guifg=orange1      
+    hi   hlLevel2 ctermfg=green       guifg=yellow1      
+    hi   hlLevel3 ctermfg=cyan        guifg=greenyellow  
+    hi   hlLevel4 ctermfg=magenta     guifg=green1       
+    hi   hlLevel5 ctermfg=red         guifg=springgreen1 
+    hi   hlLevel6 ctermfg=yellow      guifg=cyan1        
+    hi   hlLevel7 ctermfg=green       guifg=slateblue1   
+    hi   hlLevel8 ctermfg=cyan        guifg=magenta1     
+    hi   hlLevel9 ctermfg=magenta     guifg=purple1
+   else
+    hi   hlLevel0 ctermfg=red         guifg=red3
+    hi   hlLevel1 ctermfg=darkyellow  guifg=orangered3
+    hi   hlLevel2 ctermfg=darkgreen   guifg=orange2
+    hi   hlLevel3 ctermfg=blue        guifg=yellow3
+    hi   hlLevel4 ctermfg=darkmagenta guifg=olivedrab4
+    hi   hlLevel5 ctermfg=red         guifg=green4
+    hi   hlLevel6 ctermfg=darkyellow  guifg=paleturquoise3
+    hi   hlLevel7 ctermfg=darkgreen   guifg=deepskyblue4
+    hi   hlLevel8 ctermfg=blue        guifg=darkslateblue
+    hi   hlLevel9 ctermfg=darkmagenta guifg=darkviolet
+   endif
+  endif
+
   delcommand HiLink
 endif
 
 let b:current_syntax = "lisp"
 
-" vim: ts=8 nowrap
+" vim: ts=8 nowrap fdm=marker

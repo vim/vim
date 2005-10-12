@@ -1,7 +1,7 @@
 " Vim support file to detect file types in scripts
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2005 Sep 20
+" Last change:	2005 Oct 12
 
 " This file is called by an autocommand for every file that has just been
 " loaded into a buffer.  It checks if the type of file can be recognized by
@@ -137,6 +137,10 @@ if s:line1 =~ "^#!"
     " Scheme scripts
   elseif s:name =~ 'scheme'
     set ft=scheme
+
+    " CFEngine scripts
+  elseif s:name =~ 'cfengine'
+    set ft=cfengine
 
   endif
   unlet s:name
