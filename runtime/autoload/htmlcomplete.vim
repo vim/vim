@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	XHTML 1.0 Strict
 " Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
-" Last Change:	2005 Oct 9
+" Last Change:	2005 Oct 12
 
 function! htmlcomplete#CompleteTags(findstart, base)
   if a:findstart
@@ -53,17 +53,15 @@ function! htmlcomplete#CompleteTags(findstart, base)
 		unlet! b:entitiescompl
 
 		" Very, very long line
-        let values = ["AElig", "Aacute", "Acirc", "Agrave", "Alpha", "Aring", "Atilde", "Auml", "Beta", "Ccedil", "Chi", "Dagger", "Delta", "ETH", "Eacute", "Ecirc", "Egrave", "Epsilon", "Eta", "Euml", "Gamma", "Iacute", "Icirc", "Igrave", "Iota", "Iuml", "Kappa", "Lambda", "Mu", "Ntilde", "Nu", "OElig", "Oacute", "Ocirc", "Ograve", "Omega", "Omicron", "Oslash", "Otilde", "Ouml", "Phi", "Pi", "Prime", "Psi", "Rho", "Scaron", "Sigma", "THORN", "TITY", "Tau", "Theta", "Uacute", "Ucirc", "Ugrave", "Upsilon", "Uuml", "Xi", "Yacute", "Yuml", "Zeta", "aacute", "acirc", "acute", "aelig", "agrave", "alefsym", "alpha", "amp", "and", "ang", "apos", "aring", "asymp", "atilde", "auml", "bdquo", "beta", "brvbar", "bull", "cap", "ccedil", "cedil", "cent", "chi", "circ", "clubs", "copy", "cong", "crarr", "cup", "curren", "dArr", "dagger", "darr", "deg", "delta", "diams", "divide", "eacute", "ecirc", "egrave", "empty", "ensp", "emsp", "epsilon", "equiv", "eta", "eth", "euro", "euml", "exist", "fnof", "forall", "frac12", "frac14", "frac34", "frasl", "gt", "gamma", "ge", "hArr", "harr", "hearts", "hellip", "iacute", "icirc", "iexcl", "igrave", "image", "infin", "int", "iota", "iquest", "isin", "iuml", "kappa", "lt", "laquo", "lArr", "lambda", "lang", "larr", "lceil", "ldquo", "le", "lfloor", "lowast", "loz", "lrm", "lsaquo", "lsquo", "macr", "mdash", "micro", "middot", "minus", "mu", "nbsp", "nabla", "ndash", "ne", "ni", "not", "notin", "nsub", "ntilde", "nu", "oacute", "ocirc", "oelig", "ograve", "oline", "omega", "omicron", "oplus", "or", "ordf", "ordm", "oslash", "otilde", "otimes", "ouml", "para", "part", "permil", "perp", "phi", "pi", "piv", "plusmn", "pound", "prime", "prod", "prop", "psi", "quot", "rArr", "raquo", "radic", "rang", "rarr", "rceil", "rdquo", "real", "reg", "rfloor", "rho", "rlm", "rsaquo", "rsquo", "sbquo", "scaron", "sdot", "sect", "shy", "sigma", "sigmaf", "sim", "spades", "sub", "sube", "sum", "sup", "sup1", "sup2", "sup3", "supe", "szlig", "tau", "there4", "theta", "thetasym", "thinsp", "thorn", "tilde", "times", "trade", "uArr", "uacute", "uarr", "ucirc", "ugrave", "uml", "upsih", "upsilon", "uuml", "weierp", "xi", "yacute", "yen", "yuml", "zeta", "zwj", "zwnj"]
+        let values = ["AElig", "Aacute", "Acirc", "Agrave", "Alpha", "Aring", "Atilde", "Auml", "Beta", "Ccedil", "Chi", "Dagger", "Delta", "ETH", "Eacute", "Ecirc", "Egrave", "Epsilon", "Eta", "Euml", "Gamma", "Iacute", "Icirc", "Igrave", "Iota", "Iuml", "Kappa", "Lambda", "Mu", "Ntilde", "Nu", "OElig", "Oacute", "Ocirc", "Ograve", "Omega", "Omicron", "Oslash", "Otilde", "Ouml", "Phi", "Pi", "Prime", "Psi", "Rho", "Scaron", "Sigma", "THORN", "TITY", "Tau", "Theta", "Uacute", "Ucirc", "Ugrave", "Upsilon", "Uuml", "Xi", "Yacute", "Yuml", "Zeta", "amp", "aacute", "acirc", "acute", "aelig", "agrave", "alefsym", "alpha", "and", "ang", "apos", "aring", "asymp", "atilde", "auml", "bdquo", "beta", "brvbar", "bull", "cap", "ccedil", "cedil", "cent", "chi", "circ", "clubs", "copy", "cong", "crarr", "cup", "curren", "dArr", "dagger", "darr", "deg", "delta", "diams", "divide", "eacute", "ecirc", "egrave", "empty", "ensp", "emsp", "epsilon", "equiv", "eta", "eth", "euro", "euml", "exist", "fnof", "forall", "frac12", "frac14", "frac34", "frasl", "gt", "gamma", "ge", "hArr", "harr", "hearts", "hellip", "iacute", "icirc", "iexcl", "igrave", "image", "infin", "int", "iota", "iquest", "isin", "iuml", "kappa", "lt", "laquo", "lArr", "lambda", "lang", "larr", "lceil", "ldquo", "le", "lfloor", "lowast", "loz", "lrm", "lsaquo", "lsquo", "macr", "mdash", "micro", "middot", "minus", "mu", "nbsp", "nabla", "ndash", "ne", "ni", "not", "notin", "nsub", "ntilde", "nu", "oacute", "ocirc", "oelig", "ograve", "oline", "omega", "omicron", "oplus", "or", "ordf", "ordm", "oslash", "otilde", "otimes", "ouml", "para", "part", "permil", "perp", "phi", "pi", "piv", "plusmn", "pound", "prime", "prod", "prop", "psi", "quot", "rArr", "raquo", "radic", "rang", "rarr", "rceil", "rdquo", "real", "reg", "rfloor", "rho", "rlm", "rsaquo", "rsquo", "sbquo", "scaron", "sdot", "sect", "shy", "sigma", "sigmaf", "sim", "spades", "sub", "sube", "sum", "sup", "sup1", "sup2", "sup3", "supe", "szlig", "tau", "there4", "theta", "thetasym", "thinsp", "thorn", "tilde", "times", "trade", "uArr", "uacute", "uarr", "ucirc", "ugrave", "uml", "upsih", "upsilon", "uuml", "weierp", "xi", "yacute", "yen", "yuml", "zeta", "zwj", "zwnj"]
 
-		for m in sort(values)
-			if m =~? '^'.a:base
+		for m in values
+			if m =~ '^'.a:base
 				call add(res, m.';')
-			elseif m =~? a:base
-				call add(res2, m.';')
 			endif
 		endfor
 
-		return res + res2
+		return res
 
 	endif
 	if context =~ '>'
@@ -289,11 +287,7 @@ function! htmlcomplete#CompleteTags(findstart, base)
 			elseif attrname == 'xml:space'
 				let values = ["preserve"]
 			elseif attrname == 'shape'
-				if context =~ '^a\>'
-					let values = ["rect"]
-				else
-					let values = ["rect", "circle", "poly", "default"]
-				endif
+				let values = ["rect", "circle", "poly", "default"]
 			elseif attrname == 'valuetype'
 				let values = ["data", "ref", "object"]
 			elseif attrname == 'method'

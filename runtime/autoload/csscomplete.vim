@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	CSS 2.1
 " Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
-" Last Change:	2005 Oct 9
+" Last Change:	2005 Oct 12
 
 function! csscomplete#CompleteCSS(findstart, base)
 if a:findstart
@@ -27,9 +27,12 @@ else
 	"    as 1. 
 	" 5. if @ complete at-rule
 	" 6. if ! complete important
-	
-	let line = b:compl_context
-	unlet! b:compl_context
+	if exists("b:compl_context")
+		let line = b:compl_context
+		unlet! b:compl_context
+	else
+		let line = a:base
+	endif
 
 	let res = []
 	let res2 = []

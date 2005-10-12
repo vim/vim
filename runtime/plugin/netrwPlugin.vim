@@ -1,8 +1,7 @@
 " netrwPlugin.vim: Handles file transfer and remote directory listing across a network
 "            PLUGIN PORTION
-" Date:		Sep 08, 2005
+" Date:		Oct 12, 2005
 " Maintainer:	Charles E Campbell, Jr <drchipNOSPAM at campbellfamily dot biz>
-" License:	Vim License  (see vim's :help license)
 " GetLatestVimScripts: 1075 1 :AutoInstall: netrw.vim
 " Copyright:    Copyright (C) 1999-2005 Charles E. Campbell, Jr. {{{1
 "               Permission is hereby granted to use and distribute this code,
@@ -21,6 +20,10 @@
 " ---------------------------------------------------------------------
 " Load Once: {{{1
 if exists("g:loaded_netrw")
+ finish
+endif
+if v:version < 700
+ echohl WarningMsg | echo "***netrw*** you need vim version 7.0 for this version of netrw" | echohl None
  finish
 endif
 let s:keepcpo= &cpo
@@ -46,8 +49,8 @@ augroup Network
  endif
  au BufReadCmd   ftp://*,rcp://*,scp://*,http://*,dav://*,rsync://*,sftp://*	exe "silent doau BufReadPre ".expand("<amatch>")|exe "Nread 0r ".expand("<amatch>")|exe "silent doau BufReadPost ".expand("<amatch>")
  au FileReadCmd  ftp://*,rcp://*,scp://*,http://*,dav://*,rsync://*,sftp://*	exe "silent doau BufReadPre ".expand("<amatch>")|exe "Nread "   .expand("<amatch>")|exe "silent doau FileReadPost ".expand("<amatch>")
- au BufWriteCmd  ftp://*,rcp://*,scp://*,dav://*,rsync://*,sftp://*    	exe "silent doau BufWritePre ".expand("<amatch>")|exe "Nwrite " .expand("<amatch>")|exe "silent doau BufWritePost ".expand("<amatch>")
- au FileWriteCmd ftp://*,rcp://*,scp://*,dav://*,rsync://*,sftp://*    	exe "silent doau BufWritePre ".expand("<amatch>")|exe "'[,']Nwrite " .expand("<amatch>")|exe "silent doau FileWritePost ".expand("<amatch>")
+ au BufWriteCmd  ftp://*,rcp://*,scp://*,dav://*,rsync://*,sftp://*		exe "silent doau BufWritePre ".expand("<amatch>")|exe "Nwrite " .expand("<amatch>")|exe "silent doau BufWritePost ".expand("<amatch>")
+ au FileWriteCmd ftp://*,rcp://*,scp://*,dav://*,rsync://*,sftp://*		exe "silent doau BufWritePre ".expand("<amatch>")|exe "'[,']Nwrite " .expand("<amatch>")|exe "silent doau FileWritePost ".expand("<amatch>")
 augroup END
 
 " Commands: :Nread, :Nwrite, :NetUserPass {{{2
@@ -56,12 +59,12 @@ com! -range=% -nargs=*	Nwrite		call netrw#NetSavePosn()<bar><line1>,<line2>call 
 com! -nargs=*		NetUserPass	call NetUserPass(<f-args>)
 
 " Commands: :Explore, :Sexplore, Hexplore, Vexplore {{{2
-com! -nargs=? -bar -bang -count=0  	Explore		call netrw#Explore(<count>,0,0+<bang>0,<q-args>)
-com! -nargs=? -bar -bang -count=0  	Sexplore	call netrw#Explore(<count>,1,0+<bang>0,<q-args>)
-com! -nargs=? -bar -bang -count=0  	Hexplore	call netrw#Explore(<count>,1,2+<bang>0,<q-args>)
-com! -nargs=? -bar -bang -count=0  	Vexplore	call netrw#Explore(<count>,1,4+<bang>0,<q-args>)
-com! -nargs=? -bar -bang   		Nexplore	call netrw#Explore(-1,0,0,<q-args>)
-com! -nargs=? -bar -bang   		Pexplore	call netrw#Explore(-2,0,0,<q-args>)
+com! -nargs=? -bar -bang -count=0	Explore		call netrw#Explore(<count>,0,0+<bang>0,<q-args>)
+com! -nargs=? -bar -bang -count=0	Sexplore	call netrw#Explore(<count>,1,0+<bang>0,<q-args>)
+com! -nargs=? -bar -bang -count=0	Hexplore	call netrw#Explore(<count>,1,2+<bang>0,<q-args>)
+com! -nargs=? -bar -bang -count=0	Vexplore	call netrw#Explore(<count>,1,4+<bang>0,<q-args>)
+com! -nargs=? -bar -bang		Nexplore	call netrw#Explore(-1,0,0,<q-args>)
+com! -nargs=? -bar -bang		Pexplore	call netrw#Explore(-2,0,0,<q-args>)
 
 " Commands: NetrwSettings {{{2
 com! -nargs=0 NetrwSettings :call netrwSettings#NetrwSettings()
