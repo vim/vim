@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Sep 25
+" Last Change:	2005 Oct 12
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -284,6 +284,9 @@ au BufNewFile,BufRead */.calendar/*,
 
 " C#
 au BufNewFile,BufRead *.cs			setf cs
+
+" Cfengine
+au BufNewFile,BufRead cfengine.conf		setf cfengine
 
 " Comshare Dimension Definition Language
 au BufNewFile,BufRead *.cdl			setf cdl
@@ -1668,6 +1671,9 @@ au BufNewFile,BufRead *.tf,.tfrc,tfrc		setf tf
 
 " TPP - Text Presentation Program
 au BufNewFile,BufReadPost *.tpp			setf tpp
+
+" Trustees
+au BufNewFile,BufRead trustees.conf		setf trustees
 
 " TSS - Geometry
 au BufNewFile,BufReadPost *.tssgm		setf tssgm

@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.0aa.  Last change: 2005 Oct 02
+*syntax.txt*	For Vim version 7.0aa.  Last change: 2005 Oct 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1458,6 +1458,25 @@ gives no clue as to what section follows.  Consequently, the value for >
 	:syn sync minlines=300
 may be changed by the user if s/he is experiencing synchronization
 difficulties (such as may happen with large lex files).
+
+
+LISP						*lisp.vim* *ft-lisp-syntax*
+
+The lisp syntax highlighting provides two options: >
+
+	g:lisp_instring : if it exists, then "(...)" strings are highlighted
+			  as if the contents of the string were lisp.
+			  Useful for AutoLisp.
+	g:lisp_rainbow  : if it exists and is nonzero, then differing levels
+			  of parenthesization will receive different
+			  highlighting.
+<
+The g:lisp_rainbow option provides 10 levels of individual colorization for
+the parentheses and backquoted parentheses.  Because of the quantity of
+colorization levels, unlike non-rainbow highlighting, the rainbow mode
+specifies its highlighting using ctermfg and guifg, thereby bypassing the
+usual colorscheme control using standard highlighting groups.  The actual
+highlighting used depends on the dark/bright setting  (see |'bg'|).
 
 
 LITE						*lite.vim* *ft-lite-syntax*

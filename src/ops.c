@@ -3724,10 +3724,13 @@ end:
 	    && curwin->w_cursor.col > 0
 	    && !(restart_edit || (State & INSERT)))
     {
-	--curwin->w_cursor.col;
+#ifdef FEAT_VIRTUALEDIT
+	col = curwin->w_cursor.col;
+#endif
+	dec_cursor();
 #ifdef FEAT_VIRTUALEDIT
 	if (ve_flags == VE_ALL)
-	    ++curwin->w_cursor.coladd;
+	    curwin->w_cursor.coladd = col - curwin->w_cursor.col;
 #endif
     }
 }
