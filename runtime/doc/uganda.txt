@@ -1,4 +1,4 @@
-*uganda.txt*    For Vim version 7.0aa.  Last change: 2005 Aug 12
+*uganda.txt*    For Vim version 7.0aa.  Last change: 2005 Oct 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -211,9 +211,26 @@ Sending money:
 Check the ICCF web site for the latest information!  See |iccf| for the URL.
 
 
-USA and Canada: Contact Kibaale Children's Fund (KCF) in Surrey, Canada.  They
+USA:		The methods mentioned below can be used.  Alternatively, you
+		can send a check to the Nehemiah Group Outreach Society
+		(NGOS).  This will reduce banking costs and you can get an IRS
+		tax receipt.  The NGOS forwards the funds directly to the
+		Kibaale project in Uganda.  Checks must be made payable to
+		NGOS but please note on the check "donation Kibaale".  Mail
+		checks to:
+			NGOS
+			P.O. Box 50862
+			Indianapolis, IN 45250
+		Questions regarding the Nehemiah Group Outreach Society (NGOS)
+		should be directed to: Ross deMerchant, Executive Director -
+		r.demerchant AT sbcglobal DOT net.
+		For sponsoring a child contact KCF in Canada (see below) and
+		send the check to NGOS in Indianapolis.
+
+Canada:		Contact Kibaale Children's Fund (KCF) in Surrey, Canada.  They
 		take care of the Canadian sponsors for the children in
-		Kibaale.  You can send them a one time donation directly.
+		Kibaale.  KCF forwards 100% of the money to the project in
+		Uganda.  You can send them a one time donation directly.
 		Please send me a note so that I know what has been donated
 		because of Vim.  Ask KCF for information about sponsorship.
 			Kibaale Children's Fund c/o Pacific Academy
@@ -223,12 +240,10 @@ USA and Canada: Contact Kibaale Children's Fund (KCF) in Surrey, Canada.  They
 			Phone: 604-581-5353
 		If you make a donation to Kibaale Children's Fund (KCF) you
 		will receive a tax receipt which can be submitted with your
-		tax return (under the Free Trade Agreement tax receipts issued
-		by an organization registered in Canada are fully accepted by
-		the IRS in the USA, with a few conditions).
+		tax return.
 
 Holland:	Transfer to the account of "Stichting ICCF Holland" in Venlo.
-		This will allow for tax deduction (if you live in Holland)!
+		This will allow for tax deduction if you live in Holland.
 			Postbank, nr. 4548774
 
 Germany:	It is possible to make donations that allow for a tax return.
@@ -252,7 +267,7 @@ Credit Card:	You can use PayPal to send money with a Credit card.  This is
 		    https://www.paypal.com/affil/pal=Bram%40iccf-holland.org
 		The e-mail address for sending the money to is:
 		    Bram@iccf-holland.org
-		For amounts above 400 Euro ($500) sending a cheque is
+		For amounts above 400 Euro ($500) sending a check is
 		preferred.
 
 Others:		Transfer to one of these accounts if possible:
@@ -264,11 +279,11 @@ Others:		Transfer to one of these accounts if possible:
 		    Rabobank Venlo, account 3765.05.117
 				Swift code: RABO NL 2U
 			under the name "Bram Moolenaar", Venlo
-		Otherwise, send a cheque in euro or US dollars to the address
+		Otherwise, send a check in euro or US dollars to the address
 		below.  Minimal amount: $70 (my bank does not accept smaller
-		amounts for foreign cheques, sorry)
+		amounts for foreign check, sorry)
 
-Address to send cheques to:
+Address to send checks to:
 			stichting ICCF Holland
 			Bram Moolenaar
 			Clematisstraat 30

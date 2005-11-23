@@ -2,21 +2,22 @@
 " Language:		shell (sh) Korn shell (ksh) bash (sh)
 " Maintainer:		Dr. Charles E. Campbell, Jr.  <NdrOchipS@PcampbellAfamily.Mbiz>
 " Previous Maintainer:	Lennart Schultz <Lennart.Schultz@ecmwf.int>
-" Last Change:		Sep 06, 2005
-" Version:		77
+" Last Change:		Oct 18, 2005
+" Version:		78
 " URL:		http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 "
 " Using the following VIM variables: {{{1
-" b:is_kornshell	if defined, enhance with kornshell syntax
+" b:is_kornshell	if defined, enhance with kornshell/POSIX syntax
 " b:is_bash		if defined, enhance with bash syntax
-"   is_kornshell	if neither b:is_kornshell or b:is_bash is
-"		defined, then if is_kornshell is set
-"		b:is_kornshell is default
-"   is_bash		if none of the previous three variables are
-"		defined, then if is_bash is set b:is_bash is default
+" g:is_kornshell	if neither b:is_kornshell or b:is_bash is
+"		defined, then if g:is_kornshell is set
+"		enhance with kornshell/POSIX syntax highlighting
+" g:is_bash		if none of the previous three variables are
+"		defined, then if g:is_bash is set enhance with
+"		bash syntax highlighting
 " g:sh_fold_enabled	if non-zero, syntax folding is enabled
-"   sh_minlines		sets up syn sync minlines  (default: 200)
-"   sh_maxlines		sets up syn sync maxlines  (default: twice sh_minlines)
+" g:sh_minlines		sets up syn sync minlines (dflt: 200)
+" g:sh_maxlines		sets up syn sync maxlines (dflt: 2x sh_minlines)
 "
 " This file includes many ideas from Éric Brunet (eric.brunet@ens.fr)
 
@@ -385,7 +386,7 @@ if exists("b:is_bash")
  " bash : ${parameter//pattern/string}
  " bash : ${parameter//pattern}
  syn match  shDerefPPS	contained	'/\{1,2}'	nextgroup=shDerefPPSleft
- syn region shDerefPPSleft	contained	start='.'	skip=@\%(\\\)\/@ matchgroup=shDerefOp end='/' nextgroup=shDerefPPSright contains=@shCommandSubList
+ syn region shDerefPPSleft	contained	start='.'	skip=@\%(\\\)\/@ matchgroup=shDerefOp end='/' end='\ze}' nextgroup=shDerefPPSright contains=@shCommandSubList
  syn region shDerefPPSright	contained	start='.'	end='\ze}'	contains=@shCommandSubList
 endif
 

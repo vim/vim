@@ -1,4 +1,4 @@
-*if_pyth.txt*   For Vim version 7.0aa.  Last change: 2005 Mar 29
+*if_pyth.txt*   For Vim version 7.0aa.  Last change: 2005 Oct 14
 
 
 		  VIM REFERENCE MANUAL    by Paul Moore
@@ -11,6 +11,7 @@ The Python Interface to Vim				*python* *Python*
 3. Buffer objects		|python-buffer|
 4. Range objects		|python-range|
 5. Window objects		|python-window|
+6. Dynamic loading		|python-dynamic|
 
 {Vi does not have any of these commands}
 
@@ -298,6 +299,23 @@ Window attributes are:
 	width (read-write)	The window width, in columns
 The height attribute is writable only if the screen is split horizontally.
 The width attribute is writable only if the screen is split vertically.
+
+==============================================================================
+6. Dynamic loading					*python-dynamic*
+
+On MS-Windows the Python library can be loaded dynamically.  The |:version|
+output then includes |+python/dyn|.
+
+This means that Vim will search for the Python DLL file only when needed.
+When you don't use the Python interface you don't need it, thus you can use
+Vim without this DLL file.
+
+To use the Python interface the Python DLL must be in your search path.  In a
+console window type "path" to see what directories are used.
+
+The name of the DLL must match the Python version Vim was compiled with.
+Currently the name is "python24.dll".  That is for Python 2.4.  To know for
+sure edit "gvim.exe" and search for "python\d*.dll\c".
 
 ==============================================================================
  vim:tw=78:ts=8:ft=help:norl:

@@ -436,6 +436,14 @@ static void Python_Release_Vim(void)
     void
 python_end()
 {
+    static int recurse = 0;
+
+    /* If a crash occurs while doing this, don't try again. */
+    if (recurse != 0)
+	return;
+
+    ++recurse;
+
 #ifdef DYNAMIC_PYTHON
     if (hinstPython && Py_IsInitialized())
     {
@@ -450,6 +458,8 @@ python_end()
         Py_Finalize();
     }
 #endif
+
+    --recurse;
 }
 
     static int

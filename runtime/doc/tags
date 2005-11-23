@@ -1062,6 +1062,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 +gettext	various.txt	/*+gettext*
 +hangul_input	various.txt	/*+hangul_input*
 +iconv	various.txt	/*+iconv*
++iconv/dyn	various.txt	/*+iconv\/dyn*
 +insert_expand	various.txt	/*+insert_expand*
 +jumplist	various.txt	/*+jumplist*
 +keymap	various.txt	/*+keymap*
@@ -1090,13 +1091,16 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 +osfiletype	various.txt	/*+osfiletype*
 +path_extra	various.txt	/*+path_extra*
 +perl	various.txt	/*+perl*
++perl/dyn	various.txt	/*+perl\/dyn*
 +postscript	various.txt	/*+postscript*
 +printer	various.txt	/*+printer*
 +profile	various.txt	/*+profile*
 +python	various.txt	/*+python*
++python/dyn	various.txt	/*+python\/dyn*
 +quickfix	various.txt	/*+quickfix*
 +rightleft	various.txt	/*+rightleft*
 +ruby	various.txt	/*+ruby*
++ruby/dyn	various.txt	/*+ruby\/dyn*
 +scrollbind	various.txt	/*+scrollbind*
 +signs	various.txt	/*+signs*
 +smartindent	various.txt	/*+smartindent*
@@ -1109,6 +1113,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 +tag_binary	various.txt	/*+tag_binary*
 +tag_old_static	various.txt	/*+tag_old_static*
 +tcl	various.txt	/*+tcl*
++tcl/dyn	various.txt	/*+tcl\/dyn*
 +terminfo	various.txt	/*+terminfo*
 +termresponse	various.txt	/*+termresponse*
 +textobjects	various.txt	/*+textobjects*
@@ -1663,6 +1668,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :TOhtml	syntax.txt	/*:TOhtml*
 :Vexplore	pi_netrw.txt	/*:Vexplore*
 :X	editing.txt	/*:X*
+:XMLent	insert.txt	/*:XMLent*
+:XMLns	insert.txt	/*:XMLns*
 :\bar	cmdline.txt	/*:\\bar*
 :_!	cmdline.txt	/*:_!*
 :_#	cmdline.txt	/*:_#*
@@ -1839,6 +1846,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :command	map.txt	/*:command*
 :command-completion	map.txt	/*:command-completion*
 :command-completion-custom	map.txt	/*:command-completion-custom*
+:command-completion-customlist	map.txt	/*:command-completion-customlist*
 :command-verbose	map.txt	/*:command-verbose*
 :comment	eval.txt	/*:comment*
 :comp	quickfix.txt	/*:comp*
@@ -5007,6 +5015,7 @@ ft-java-syntax	syntax.txt	/*ft-java-syntax*
 ft-ksh-syntax	syntax.txt	/*ft-ksh-syntax*
 ft-lace-syntax	syntax.txt	/*ft-lace-syntax*
 ft-lex-syntax	syntax.txt	/*ft-lex-syntax*
+ft-lisp-syntax	syntax.txt	/*ft-lisp-syntax*
 ft-lite-syntax	syntax.txt	/*ft-lite-syntax*
 ft-lpc-syntax	syntax.txt	/*ft-lpc-syntax*
 ft-lua-syntax	syntax.txt	/*ft-lua-syntax*
@@ -5059,6 +5068,8 @@ ft-verilog-indent	indent.txt	/*ft-verilog-indent*
 ft-vim-indent	indent.txt	/*ft-vim-indent*
 ft-vim-syntax	syntax.txt	/*ft-vim-syntax*
 ft-xf86conf-syntax	syntax.txt	/*ft-xf86conf-syntax*
+ft-xhtml-omni	insert.txt	/*ft-xhtml-omni*
+ft-xml-omni	insert.txt	/*ft-xml-omni*
 ft-xml-syntax	syntax.txt	/*ft-xml-syntax*
 ft-xpm-syntax	syntax.txt	/*ft-xpm-syntax*
 ftdetect	filetype.txt	/*ftdetect*
@@ -5302,6 +5313,7 @@ hebrew	hebrew.txt	/*hebrew*
 hebrew.txt	hebrew.txt	/*hebrew.txt*
 help	various.txt	/*help*
 help-context	help.txt	/*help-context*
+help-tags	tags	1
 help-translated	various.txt	/*help-translated*
 help-xterm-window	various.txt	/*help-xterm-window*
 help.txt	help.txt	/*help.txt*
@@ -5513,6 +5525,7 @@ icon-changed	version4.txt	/*icon-changed*
 iconise	starting.txt	/*iconise*
 iconize	starting.txt	/*iconize*
 iconv()	eval.txt	/*iconv()*
+iconv-dynamic	mbyte.txt	/*iconv-dynamic*
 ident-search	tips.txt	/*ident-search*
 if_cscop.txt	if_cscop.txt	/*if_cscop.txt*
 if_mzsch.txt	if_mzsch.txt	/*if_mzsch.txt*
@@ -5658,6 +5671,7 @@ linefeed	intro.txt	/*linefeed*
 linewise	motion.txt	/*linewise*
 linewise-register	change.txt	/*linewise-register*
 linewise-visual	visual.txt	/*linewise-visual*
+lisp.vim	syntax.txt	/*lisp.vim*
 lispindent()	eval.txt	/*lispindent()*
 list-identity	eval.txt	/*list-identity*
 list-index	eval.txt	/*list-index*
@@ -6111,6 +6125,7 @@ perl-SetHeight	if_perl.txt	/*perl-SetHeight*
 perl-SetOption	if_perl.txt	/*perl-SetOption*
 perl-Windows	if_perl.txt	/*perl-Windows*
 perl-compiling	if_perl.txt	/*perl-compiling*
+perl-dynamic	if_perl.txt	/*perl-dynamic*
 perl-editing	if_perl.txt	/*perl-editing*
 perl-overview	if_perl.txt	/*perl-overview*
 perl-patterns	pattern.txt	/*perl-patterns*
@@ -6174,6 +6189,7 @@ python-buffers	if_pyth.txt	/*python-buffers*
 python-command	if_pyth.txt	/*python-command*
 python-commands	if_pyth.txt	/*python-commands*
 python-current	if_pyth.txt	/*python-current*
+python-dynamic	if_pyth.txt	/*python-dynamic*
 python-error	if_pyth.txt	/*python-error*
 python-eval	if_pyth.txt	/*python-eval*
 python-examples	if_pyth.txt	/*python-examples*
@@ -6310,6 +6326,7 @@ ruby	if_ruby.txt	/*ruby*
 ruby-buffer	if_ruby.txt	/*ruby-buffer*
 ruby-command	if_ruby.txt	/*ruby-command*
 ruby-commands	if_ruby.txt	/*ruby-commands*
+ruby-dynamic	if_ruby.txt	/*ruby-dynamic*
 ruby-evaluate	if_ruby.txt	/*ruby-evaluate*
 ruby-globals	if_ruby.txt	/*ruby-globals*
 ruby-message	if_ruby.txt	/*ruby-message*
@@ -6774,6 +6791,7 @@ tcl-buffer-windows	if_tcl.txt	/*tcl-buffer-windows*
 tcl-bugs	if_tcl.txt	/*tcl-bugs*
 tcl-command	if_tcl.txt	/*tcl-command*
 tcl-commands	if_tcl.txt	/*tcl-commands*
+tcl-dynamic	if_tcl.txt	/*tcl-dynamic*
 tcl-ex-commands	if_tcl.txt	/*tcl-ex-commands*
 tcl-examples	if_tcl.txt	/*tcl-examples*
 tcl-expr	if_tcl.txt	/*tcl-expr*
@@ -7266,6 +7284,7 @@ xim	mbyte.txt	/*xim*
 xim-input-style	mbyte.txt	/*xim-input-style*
 xiterm	syntax.txt	/*xiterm*
 xml-folding	syntax.txt	/*xml-folding*
+xml-omni-datafile	insert.txt	/*xml-omni-datafile*
 xml.vim	syntax.txt	/*xml.vim*
 xpm.vim	syntax.txt	/*xpm.vim*
 xterm-8-bit	term.txt	/*xterm-8-bit*
@@ -7337,13 +7356,6 @@ zf	fold.txt	/*zf*
 zg	spell.txt	/*zg*
 zh	scroll.txt	/*zh*
 zi	fold.txt	/*zi*
-zip	zip.txt	/*zip*
-zip-contents	zip.txt	/*zip-contents*
-zip-copyright	zip.txt	/*zip-copyright*
-zip-history	zip.txt	/*zip-history*
-zip-manual	zip.txt	/*zip-manual*
-zip-usage	zip.txt	/*zip-usage*
-zip.txt	zip.txt	/*zip.txt*
 zj	fold.txt	/*zj*
 zk	fold.txt	/*zk*
 zl	scroll.txt	/*zl*

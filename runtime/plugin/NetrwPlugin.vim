@@ -1,17 +1,19 @@
-" netrwPlugin.vim: Handles file transfer and remote directory listing across a network
+" netrw.vim: Handles file transfer and remote directory listing across a network
 "            PLUGIN PORTION
-" Date:		Oct 27, 2005
+" Last Change:	Aug 31, 2005
 " Maintainer:	Charles E Campbell, Jr <drchipNOSPAM at campbellfamily dot biz>
+" Version:	67
+" License:	Vim License  (see vim's :help license)
 " GetLatestVimScripts: 1075 1 :AutoInstall: netrw.vim
 " Copyright:    Copyright (C) 1999-2005 Charles E. Campbell, Jr. {{{1
 "               Permission is hereby granted to use and distribute this code,
 "               with or without modifications, provided that this copyright
 "               notice is copied with it. Like anything else that's free,
-"               netrw.vim, netrwPlugin.vim, and netrwSettings.vim are provided
-"               *as is* and comes with no warranty of any kind, either
-"               expressed or implied. By using this plugin, you agree that
-"               in no event will the copyright holder be liable for any damages
-"               resulting from the use of this software.
+"               netrw.vim is provided *as is* and comes with no warranty
+"               of any kind, either expressed or implied. By using this
+"               plugin, you agree that in no event will the copyright
+"               holder be liable for any damages resulting from the use
+"               of this software.
 "
 "  But be doers of the Word, and not only hearers, deluding your own selves {{{1
 "  (James 1:22 RSV)
@@ -19,12 +21,16 @@
 
 " ---------------------------------------------------------------------
 " Load Once: {{{1
-if exists("g:loaded_netrw")
+if exists("g:loaded_netrw") || &cp
+  finish
+endif
+if v:version < 600
+ echoerr "***netrw*** doesn't support Vim version ".v:version
  finish
 endif
+let g:loaded_netrw  = "v67"
 if v:version < 700
- echohl WarningMsg | echo "***netrw*** you need vim version 7.0 for this version of netrw" | echohl None
- finish
+ let loaded_explorer = 1
 endif
 let s:keepcpo= &cpo
 set cpo&vim
@@ -42,15 +48,15 @@ augroup END
 augroup Network
  au!
  if has("win32") || has("win95") || has("win64") || has("win16")
-  au BufReadCmd  file://*		exe "silent doau BufReadPre ".netrw#RFC2396(expand("<amatch>"))|exe 'e '.substitute(netrw#RFC2396(expand("<amatch>")),'file://\(.*\)','\1',"")|exe "silent doau BufReadPost ".netrw#RFC2396(expand("<amatch>"))
+  au BufReadCmd  file://*		exe "silent doau BufReadPre ".expand("<amatch>")|exe 'e '.substitute(expand("<amatch>"),"file:/*","","")|exe "silent doau BufReadPost ".expand("<amatch>")
  else
-  au BufReadCmd  file://*		exe "silent doau BufReadPre ".netrw#RFC2396(expand("<amatch>"))|exe 'e '.substitute(netrw#RFC2396(expand("<amatch>")),'file://\(.*\)','\1',"")|exe "silent doau BufReadPost ".netrw#RFC2396(expand("<amatch>"))
-  au BufReadCmd  file://localhost/*	exe "silent doau BufReadPre ".netrw#RFC2396(expand("<amatch>"))|exe 'e '.substitute(netrw#RFC2396(expand("<amatch>")),'file://localhost/\(.*\)','\1',"")|exe "silent doau BufReadPost ".netrw#RFC2396(expand("<amatch>"))
+  au BufReadCmd  file:///*		exe "silent doau BufReadPre ".expand("<amatch>")|exe 'e /'.substitute(expand("<amatch>"),"file:/*","","")|exe "silent doau BufReadPost ".expand("<amatch>")
+  au BufReadCmd  file://localhost/*	exe "silent doau BufReadPre ".expand("<amatch>")|exe 'e /'.substitute(expand("<amatch>"),"file:/*","","")|exe "silent doau BufReadPost ".expand("<amatch>")
  endif
  au BufReadCmd   ftp://*,rcp://*,scp://*,http://*,dav://*,rsync://*,sftp://*	exe "silent doau BufReadPre ".expand("<amatch>")|exe "Nread 0r ".expand("<amatch>")|exe "silent doau BufReadPost ".expand("<amatch>")
- au FileReadCmd  ftp://*,rcp://*,scp://*,http://*,dav://*,rsync://*,sftp://*	exe "silent doau FileReadPre ".expand("<amatch>")|exe "Nread "   .expand("<amatch>")|exe "silent doau FileReadPost ".expand("<amatch>")
- au BufWriteCmd  ftp://*,rcp://*,scp://*,dav://*,rsync://*,sftp://*		exe "silent doau BufWritePre ".expand("<amatch>")|exe "Nwrite " .expand("<amatch>")|exe "silent doau BufWritePost ".expand("<amatch>")
- au FileWriteCmd ftp://*,rcp://*,scp://*,dav://*,rsync://*,sftp://*		exe "silent doau FileWritePre ".expand("<amatch>")|exe "'[,']Nwrite " .expand("<amatch>")|exe "silent doau FileWritePost ".expand("<amatch>")
+ au FileReadCmd  ftp://*,rcp://*,scp://*,http://*,dav://*,rsync://*,sftp://*	exe "silent doau BufReadPre ".expand("<amatch>")|exe "Nread "   .expand("<amatch>")|exe "silent doau FileReadPost ".expand("<amatch>")
+ au BufWriteCmd  ftp://*,rcp://*,scp://*,dav://*,rsync://*,sftp://*    	exe "silent doau BufWritePre ".expand("<amatch>")|exe "Nwrite " .expand("<amatch>")|exe "silent doau BufWritePost ".expand("<amatch>")
+ au FileWriteCmd ftp://*,rcp://*,scp://*,dav://*,rsync://*,sftp://*    	exe "silent doau BufWritePre ".expand("<amatch>")|exe "'[,']Nwrite " .expand("<amatch>")|exe "silent doau FileWritePost ".expand("<amatch>")
 augroup END
 
 " Commands: :Nread, :Nwrite, :NetUserPass {{{2
@@ -59,15 +65,15 @@ com! -range=% -nargs=*	Nwrite		call netrw#NetSavePosn()<bar><line1>,<line2>call 
 com! -nargs=*		NetUserPass	call NetUserPass(<f-args>)
 
 " Commands: :Explore, :Sexplore, Hexplore, Vexplore {{{2
-com! -nargs=? -bar -bang -count=0	Explore		call netrw#Explore(<count>,0,0+<bang>0,<q-args>)
-com! -nargs=? -bar -bang -count=0	Sexplore	call netrw#Explore(<count>,1,0+<bang>0,<q-args>)
-com! -nargs=? -bar -bang -count=0	Hexplore	call netrw#Explore(<count>,1,2+<bang>0,<q-args>)
-com! -nargs=? -bar -bang -count=0	Vexplore	call netrw#Explore(<count>,1,4+<bang>0,<q-args>)
-com! -nargs=? -bar -bang		Nexplore	call netrw#Explore(-1,0,0,<q-args>)
-com! -nargs=? -bar -bang		Pexplore	call netrw#Explore(-2,0,0,<q-args>)
+com! -nargs=? -bar -bang -count=0  	Explore		call netrw#Explore(<count>,0,0+<bang>0,<q-args>)
+com! -nargs=? -bar -bang -count=0  	Sexplore	call netrw#Explore(<count>,1,0+<bang>0,<q-args>)
+com! -nargs=? -bar -bang -count=0  	Hexplore	call netrw#Explore(<count>,1,2+<bang>0,<q-args>)
+com! -nargs=? -bar -bang -count=0  	Vexplore	call netrw#Explore(<count>,1,4+<bang>0,<q-args>)
+com! -nargs=? -bar -bang   		Nexplore	call netrw#Explore(-1,0,0,<q-args>)
+com! -nargs=? -bar -bang   		Pexplore	call netrw#Explore(-2,0,0,<q-args>)
 
 " Commands: NetrwSettings {{{2
-com! -nargs=0 NetrwSettings :call netrwSettings#NetrwSettings()
+com! -nargs=0 NetrwSettings :call NetrwSettings#NetrwSettings()
 
 " ---------------------------------------------------------------------
 " LocalBrowse: {{{2
@@ -132,7 +138,7 @@ endfun
 "               example and as a fix for a Windows 95 problem: in my
 "               experience, win95's ftp always dumped four blank lines
 "               at the end of the transfer.
-if has("win95") && exists("g:netrw_win95ftp") && g:netrw_win95ftp
+if has("win95") && g:netrw_win95ftp
  fun! NetReadFixup(method, line1, line2)
 "   call Dfunc("NetReadFixup(method<".a:method."> line1=".a:line1." line2=".a:line2.")")
    if method == 3   " ftp (no <.netrc>)
@@ -143,8 +149,8 @@ if has("win95") && exists("g:netrw_win95ftp") && g:netrw_win95ftp
  endfun
 endif
 
-" ------------------------------------------------------------------------
-" Modelines And Restoration: {{{1
 let &cpo= s:keepcpo
 unlet s:keepcpo
+" ------------------------------------------------------------------------
+" Modelines: {{{1
 " vim:ts=8 fdm=marker

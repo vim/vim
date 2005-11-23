@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	Vim 7.0 script
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrOchipS@PcampbellAfamily.Mbiz>
-" Last Change:	October 12, 2005
-" Version:	7.0-17
+" Last Change:	Nov 18, 2005
+" Version:	7.0-20
 " Automatically generated keyword lists: {{{1
 
 " Quit when a syntax file was already loaded {{{2
@@ -123,11 +123,11 @@ syn keyword vimPattern   contained	start	skip	end
 
 " Operators: {{{2
 " =========
-syn cluster vimOperGroup	contains=vimOper,vimOperParen,vimNumber,vimString,vimOperOk,vimRegister
+syn cluster vimOperGroup	contains=vimOper,vimOperParen,vimNumber,vimString,vimOperOk,vimRegister,vimContinue
 syn match  vimOper	"\(==\|!=\|>=\|<=\|=\~\|!\~\|>\|<\|=\)[?#]\{0,2}"	skipwhite nextgroup=vimString,vimSpecFile
 syn match  vimOper	"||\|&&\|[-+.]"	skipwhite nextgroup=vimString,vimSpecFile
 syn region vimOperParen oneline	matchgroup=vimOper start="(" end=")" contains=@vimOperGroup
-syn region vimOperParen oneline	matchgroup=vimSep  start="{" end="}" contains=@vimOperGroup nextgroup=vimVar
+syn region vimOperParen	matchgroup=vimSep  start="{" end="}" contains=@vimOperGroup nextgroup=vimVar
 syn match  vimOperOk	"\<[aiAIrR][()]"
 if !exists("g:vimsyntax_noerror")
  syn match  vimOperError	")"
@@ -217,7 +217,7 @@ syn match   vimCollClassErr contained	"\[:.\{-\}:\]"
 syn match   vimCollClass    contained transparent	"\[:\(alnum\|alpha\|blank\|cntrl\|digit\|graph\|lower\|print\|punct\|space\|upper\|xdigit\|return\|tab\|escape\|backspace\):\]"
 syn match   vimSubstSubstr  contained	"\\z\=\d"
 syn match   vimSubstTwoBS   contained	"\\\\"
-syn match   vimSubstFlagErr contained	"[^< \t\r]\+" contains=vimSubstFlags
+syn match   vimSubstFlagErr contained	"[^< \t\r|]\+" contains=vimSubstFlags
 syn match   vimSubstFlags   contained	"[&cegiIpr]\+"
 
 " 'String': {{{2

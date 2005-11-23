@@ -1,4 +1,4 @@
-*version6.txt*  For Vim version 7.0aa.  Last change: 2005 Oct 09
+*version6.txt*  For Vim version 7.0aa.  Last change: 2005 Oct 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -13863,16 +13863,36 @@ The big MS-Windows version now uses:
 Changed							*changed-6.4*
 -------
 
-Nothing relevant.
+Removed runtime/tools/tcltags, Exuberant ctags does it better.
 
 
 Added							*added-6.4*
 -----
 
-Netrc syntax file. (Nikolai Weibull)
-Sudoers syntax file. (Nikolai Weibull)
-SMTPrc syntax file. (Kornel Kielczewski)
-Esterel syntax file. (Maurizio Tranchero)
+Alsaconf syntax file (Nikolai Weibull)
+Eruby syntax, indent, compiler and ftplugin file (Doug Kearns)
+Esterel syntax file (Maurizio Tranchero)
+Mathematica indent file (Steve Layland)
+Netrc syntax file (Nikolai Weibull)
+PHP compiler file (Doug Kearns)
+Pascal indent file (Neil Carter)
+Prescribe syntax file (Klaus Muth)
+Rubyunit compiler file (Doug Kearns)
+SMTPrc syntax file (Kornel Kielczewski)
+Sudoers syntax file (Nikolai Weibull)
+TPP syntax file (Gerfried Fuchs)
+VHDL ftplugin file (R. Shankar)
+Verilog-AMS syntax file (S. Myles Prather)
+
+Bulgarian keymap (Alberto Mardegan)
+Canadian keymap (Eric Joanis)
+
+Hungarian menu translations in UTF-8 (Kantra Gergely)
+Ukrainian menu translations (Bohdan Vlasyuk)
+
+Irish message translations (Kevin Patrick Scannell)
+
+Configure also checks for tclsh8.4.
 
 
 Fixed							*fixed-6.4*
@@ -13887,6 +13907,10 @@ GUI has started up.
 
 Gcc would warn "dereferencing type-punned pointer will break strict -aliasing
 rules".  Avoid using typecasts for variable pointers.
+
+Gcc 3.x interprets the -MM argument differently.  Change "-I /path" to
+"-isystem /path" for "make depend".
+
 
 Patch 6.3.001
 Problem:    ":browse split" gives the file selection dialog twice. (Gordon
@@ -14056,7 +14080,7 @@ Files:	    src/os_mswin.c
 
 Patch 6.3.026
 Problem:    When ~/.vim/after/syntax/syncolor.vim contains a command that
-	    reloads the colors an enless loop and/or a crash may occur.
+	    reloads the colors an endless loop and/or a crash may occur.
 Solution:   Only free the old value of an option when it was originally
 	    allocated.  Limit recursiveness of init_highlight() to 5 levels.
 Files:	    src/option.c, src/syntax.c
@@ -14470,6 +14494,37 @@ Patch 6.3.090
 Problem:    A very big value for 'columns' or 'lines' may cause a crash.
 Solution:   Limit the values to 10000 and 1000.
 Files:	    src/option.c
+
+Patch 6.4a.001
+Problem:    The Unix Makefile contained too many dependencies and a few
+	    uncommented lines.
+Solution:   Run "make depend" with manual changes to avoid a gcc
+	    incompatibility.  Comment a few lines.
+Files:	    src/Makefile
+
+Patch 6.4b.001
+Problem:    Vim reports "Vim 6.4a" in the ":version" output.
+Solution:   Change "a" to "b". (Tony Mechelynck)
+Files:	    src/version.h
+
+Patch 6.4b.002
+Problem:    In Insert mode, pasting a multi-byte character after the end of
+	    the line leaves the cursor just before that character.
+Solution:   Make sure "gP" leaves the cursor in the right place when
+	    'virtualedit' is set.
+Files:	    src/ops.c
+
+Patch 6.4b.003 (after 6.4b.002)
+Problem:    The problem still exists when 'encoding' is set to "cp936".
+Solution:   Fix the problem in getvvcol(), compute the coladd field correctly.
+Files:	    src/charset.c, src/ops.c
+
+Patch 6.4b.004
+Problem:    Selecting a {} block with "viB" includes the '}' when there is an
+	    empty line before it.
+Solution:   Don't advance the cursor to include a line break when it's already
+	    at the line break.
+Files:	    src/search.c
 
 
  vim:tw=78:ts=8:ft=help:norl:

@@ -10,7 +10,7 @@ STARTTEST
 :hi NewGroup term=bold cterm=italic ctermfg=DarkBlue ctermbg=Grey gui= guifg=#00ff00 guibg=Cyan
 :hi Group2 term= cterm=
 :hi Group3 term=underline cterm=bold
-:redir >test.out
+:redir! >test.out
 :hi NewGroup
 :hi Group2
 :hi Group3

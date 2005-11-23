@@ -1,15 +1,14 @@
 " Vim syntax file
 "    Language: ColdFusion
 "  Maintainer: Toby Woodwark (toby.woodwark+vim@gmail.com)
-" Last Change: August 3, 2005
-" 	ColdFusion MX 7
-"	Usage: Since ColdFusion has its own version of HTML comments 
-"	(<!--- --->)
-"       make sure that you put 'let html_wrong_comments=1' in your .vimrc /
-"       _vimrc file.
+" Last Change: 2005-11-02
+"   Filenames: *.cfc *.cfm
+"     Version: Macromedia ColdFusion MX 7
+"       Usage: Note that ColdFusion has its own comment syntax
+"              i.e. <!--- --->
 
 " For version 5.x, clear all syntax items.
-" For version 6.x, quit when a syntax file was already loaded.
+" For version 6.x+, quit if a syntax file is already loaded.
 if version < 600
   syntax clear
 elseif exists("b:current_syntax")
@@ -17,11 +16,26 @@ elseif exists("b:current_syntax")
 endif
 
 " Use all the stuff from the HTML syntax file.
+" TODO remove this; CFML is not a superset of HTML
 if version < 600
   source <sfile>:p:h/html.vim
 else
   runtime! syntax/html.vim
 endif
+
+syn sync fromstart
+syn sync maxlines=200
+syn case ignore
+
+" Scopes and keywords.
+syn keyword cfScope contained cgi cffile request caller this thistag cfcatch variables application server session client form url attributes arguments
+syn keyword cfBool contained yes no true false
+
+" Operator strings.
+" Not exhaustive, since there are longhand equivalents.
+syn keyword cfOperator contained xor eqv and or lt le lte gt ge gte eq neq not is mod contains
+syn match cfOperatorMatch contained "[\+\-\*\/\\\^\&][\+\-\*\/\\\^\&]\@!"
+syn cluster cfOperatorCluster contains=cfOperator,cfOperatorMatch
 
 " Tag names.
 syn keyword cfTagName contained cfabort cfapplet cfapplication cfargument cfassociate cfbreak cfcache
@@ -90,7 +104,7 @@ syn keyword cfArg contained serviceportname sessionmanagement sessiontimeout set
 syn keyword cfArg contained setdomaincookies show3d showborder showdebugoutput showerror showlegend
 syn keyword cfArg contained showmarkers showxgridlines showygridlines size skin sort sortascendingbutton
 syn keyword cfArg contained sortcontrol sortdescendingbutton sortxaxis source spoolenable sql src start
-syn keyword cfArg contained startdate startrange startrow starttime status statuscode statust step
+syn keyword cfArg contained startdate startrange startrow starttime status statuscode statustext step
 syn keyword cfArg contained stoponerror style subject suggestions suppresswhitespace tablename tableowner
 syn keyword cfArg contained tablequalifier taglib target task template text textcolor textqualifier
 syn keyword cfArg contained thread throwonerror throwonfailure throwontimeout time timeout timespan tipbgcolor tipstyle
@@ -147,13 +161,48 @@ syn keyword cfFunctionName contained LSParseEuroCurrency Year GetEncoding LSPars
 syn keyword cfFunctionName contained LSTimeFormat GetFileFromPath LTrim 
 
 syn cluster htmlTagNameCluster add=cfTagName
-syn cluster htmlArgCluster add=cfArg,cfFunctionName
+syn cluster htmlArgCluster add=cfArg,cfHashRegion,cfScope
+syn cluster htmlPreproc add=cfHashRegion
 
-syn region cfFunctionRegion start='#' end='#' contains=cfFunctionName
+syn cluster cfExpressionCluster contains=cfFunctionName,cfScope,@cfOperatorCluster,cfScriptStringD,cfScriptStringS,cfScriptNumber,cfBool
+
+" Evaluation; skip strings ( this helps with cases like nested IIf() )
+syn region cfHashRegion start=+#+ skip=+"[^"]*"\|'[^']*'+ end=+#+ contains=@cfExpressionCluster,cfScriptParenError
+
+" <cfset>, <cfif>, <cfelseif>, <cfreturn> are analogous to hashmarks (implicit evaluation) and has 'var'
+syn region cfSetRegion start="<cfset " start="<cfreturn " start="<cfelseif " start="<cfif " end='>' keepend contains=@cfExpressionCluster,cfSetLHSRegion,cfSetTagEnd,cfScriptType
+syn region cfSetLHSRegion contained start="<cfreturn" start="<cfelseif" start="<cfif" start="<cfset" end=" " keepend contains=cfTagName,htmlTag
+syn match  cfSetTagEnd contained '>'
+
+" CF comments: similar to SGML comments
+syn region  cfComment     start='<!---' end='--->' keepend contains=cfCommentTodo
+syn keyword cfCommentTodo contained TODO FIXME XXX TBD WTF 
+
+" CFscript 
+syn match   cfScriptLineComment      contained "\/\/.*$" contains=cfCommentTodo
+syn region  cfScriptComment	     contained start="/\*"  end="\*/" contains=cfCommentTodo
+" in CF, quotes are escaped by doubling
+syn region  cfScriptStringD	     contained start=+"+  skip=+\\\\\|""+  end=+"+  extend contains=@htmlPreproc,cfHashRegion
+syn region  cfScriptStringS	     contained start=+'+  skip=+\\\\\|''+  end=+'+  extend contains=@htmlPreproc,cfHashRegion
+syn match   cfScriptNumber	     contained "-\=\<\d\+L\=\>"
+syn keyword cfScriptConditional      contained if else
+syn keyword cfScriptRepeat	     contained while for in
+syn keyword cfScriptBranch	     contained break switch case try catch continue
+syn keyword cfScriptFunction	     contained function
+syn keyword cfScriptType	     contained var
+syn match   cfScriptBraces	     contained "[{}]"
+syn keyword cfScriptStatement        contained return
+
+syn cluster cfScriptCluster contains=cfScriptParen,cfScriptLineComment,cfScriptComment,cfScriptStringD,cfScriptStringS,cfScriptFunction,cfScriptNumber,cfScriptRegexpString,cfScriptBoolean,cfScriptBraces,cfHashRegion,cfFunctionName,cfScope,@cfOperatorCluster,cfScriptConditional,cfScriptRepeat,cfScriptBranch,cfScriptType,@cfExpressionCluster,cfScriptStatement
+
+" Errors caused by wrong parenthesis; skip strings
+syn region  cfScriptParen       contained transparent skip=+"[^"]*"\|'[^']*'+ start=+(+ end=+)+ contains=@cfScriptCluster
+syn match   cfScrParenError 	contained +)+
+
+syn region cfscriptBlock matchgroup=NONE start="<cfscript>"  end="<\/cfscript>"me=s-1 keepend contains=@cfScriptCluster,cfscriptTag,cfScrParenError
+syn region  cfscriptTag contained start='<cfscript' end='>' keepend contains=cfTagName,htmlTag
 
 " Define the default highlighting.
-" For version 5.x and earlier, only when not done already.
-" For version 5.8 and later, only when an item doesn't have highlighting yet.
 if version >= 508 || !exists("did_cf_syn_inits")
   if version < 508
     let did_cf_syn_inits = 1
@@ -162,10 +211,37 @@ if version >= 508 || !exists("did_cf_syn_inits")
     command -nargs=+ HiLink hi def link <args>
   endif
 
-  HiLink cfTagName Statement
-  HiLink cfArg Type
-  HiLink cfFunctionName Function
-  HiLink cfFunctionRegion PreProc
+  HiLink cfTagName 		Statement
+  HiLink cfArg 			Type
+  HiLink cfFunctionName 	Function
+  HiLink cfHashRegion 		PreProc
+  HiLink cfComment 		Comment
+  HiLink cfCommentTodo 		Todo
+  HiLink cfOperator		Operator
+  HiLink cfOperatorMatch	Operator
+  HiLink cfScope		Title
+  HiLink cfBool			Constant
+
+  HiLink cfscriptBlock 		Special
+  HiLink cfscriptTag 		htmlTag
+  HiLink cfSetRegion 		PreProc
+  HiLink cfSetLHSRegion 	htmlTag
+  HiLink cfSetTagEnd		htmlTag
+
+  HiLink cfScriptLineComment	Comment
+  HiLink cfScriptComment	Comment
+  HiLink cfScriptStringS	String
+  HiLink cfScriptStringD	String
+  HiLink cfScriptNumber	     	cfScriptValue
+  HiLink cfScriptConditional	Conditional
+  HiLink cfScriptRepeat	     	Repeat
+  HiLink cfScriptBranch	     	Conditional
+  HiLink cfScriptType		Type
+  HiLink cfScriptStatement	Statement
+  HiLink cfScriptBraces	     	Function
+  HiLink cfScriptFunction    	Function
+  HiLink cfScriptError	     	Error
+  HiLink cfScrParenError	cfScriptError
 
   delcommand HiLink
 endif

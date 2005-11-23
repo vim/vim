@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.0aa.  Last change: 2005 Aug 27
+*various.txt*   For Vim version 7.0aa.  Last change: 2005 Oct 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -295,7 +295,8 @@ N  *+gettext*		message translations |multi-lang|
    *+GUI_Motif*		Unix only: Motif |GUI|
    *+GUI_Photon*	QNX only:  Photon |GUI|
 m  *+hangul_input*	Hangul input support |hangul|
-   *+iconv*		Compiled with the |iconv()| function, may have |/dyn|
+   *+iconv*		Compiled with the |iconv()| function
+   *+iconv/dyn*		Likewise |iconv-dynamic| |/dyn|
 N  *+insert_expand*	|insert_expand| Insert mode completion
 N  *+jumplist*		|jumplist|
 B  *+keymap*		|'keymap'|
@@ -325,14 +326,17 @@ m  *+ole*		Win32 GUI only: |ole-interface|
    *+osfiletype*	Support for the 'osfiletype' option and filetype
 			checking in automatic commands.  |autocmd-osfiletypes|
 N  *+path_extra*	Up/downwards search in 'path' and 'tags'
-m  *+perl*		Perl interface |perl|, may have |/dyn|
+m  *+perl*		Perl interface |perl|
+m  *+perl/dyn*		Perl interface |perl-dynamic| |/dyn|
    *+postscript*	|:hardcopy| writes a PostScript file
 N  *+printer*		|:hardcopy| command
 H  *+profile*		|:profile| command
-m  *+python*		Python interface |python|, may have |/dyn|
+m  *+python*		Python interface |python|
+m  *+python/dyn*	Python interface |python-dynamic| |/dyn|
 N  *+quickfix*		|:make| and |quickfix| commands
 B  *+rightleft*		Right to left typing |'rightleft'|
-m  *+ruby*		Ruby interface |ruby|, may have |/dyn|
+m  *+ruby*		Ruby interface |ruby|
+m  *+ruby/dyn*		Ruby interface |ruby-dynamic| |/dyn|
 N  *+scrollbind*	|'scrollbind'|
 B  *+signs*		|:sign|
 N  *+smartindent*	|'smartindent'|
@@ -345,7 +349,8 @@ N  *+syntax*		Syntax highlighting |syntax|
 N  *+tag_binary*	binary searching in tags file |tag-binary-search|
 N  *+tag_old_static*	old method for static tags |tag-old-static|
 m  *+tag_any_white*	any white space allowed in tags file |tag-any-white|
-m  *+tcl*		Tcl interface |tcl|, may have |/dyn|
+m  *+tcl*		Tcl interface |tcl|
+m  *+tcl/dyn*		Tcl interface |tcl-dynamic| |/dyn|
    *+terminfo*		uses |terminfo| instead of termcap
 N  *+termresponse*	support for |t_RV| and |v:termresponse|
 N  *+textobjects*	|text-objects| selection

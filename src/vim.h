@@ -1274,6 +1274,10 @@ typedef enum
 # define O_EXTRA    0
 #endif
 
+#ifndef O_NOFOLLOW
+# define O_NOFOLLOW 0
+#endif
+
 #ifndef W_OK
 # define W_OK 2		/* for systems that don't have W_OK in unistd.h */
 #endif

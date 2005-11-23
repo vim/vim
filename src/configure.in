@@ -30,8 +30,9 @@ if test -z "$CFLAGS"; then
 fi
 if test "$GCC" = yes; then
   gccversion=`"$CC" --version | sed -e '2,$d;s/^[[^0-9]]*\([[0-9]]\.[[0-9.]]*\).*$/\1/g'`
-  if test "$gccversion" = "3.0.1" -o "$gccversion" = "3.0.2"; then
-    echo 'GCC 3.0.x has a bug in the optimizer, disabling "-O#"'
+  dnl version 4.0.1 was reported to cause trouble on Macintosh by Marcin Dalecki
+  if test "$gccversion" = "3.0.1" -o "$gccversion" = "3.0.2" -o "$gccversion" = "4.0.1"; then
+    echo 'GCC [34].0.[12] has a bug in the optimizer, disabling "-O#"'
     CFLAGS=`echo "$CFLAGS" | sed 's/-O[[23456789]]/-O/'`
   else
     if test "$gccversion" = "3.1" -o "$gccversion" = "3.2" -o "$gccversion" = "3.2.1" && `echo "$CFLAGS" | grep -v fno-strength-reduce >/dev/null`; then
@@ -748,7 +749,7 @@ if test "$enable_tclinterp" = "yes"; then
 	    TCL_LIBS=`eval echo "$TCL_LIB_SPEC $TCL_LIBS"`
 	    dnl Use $TCL_DEFS for -D_THREAD_SAFE et al.  But only use the
 	    dnl "-D_ABC" items.  Watch out for -DFOO=long\ long.
-	    TCL_DEFS=`echo $TCL_DEFS | sed -e 's/\ /\X/' | tr ' ' '\012' | sed -e '/^-[[^D]]/d' -e '/-D[[^_]]/d' -e 's/-D_/ -D_/' | tr -d '\012'`
+	    TCL_DEFS=`echo $TCL_DEFS | sed -e 's/\\ /\\X/' | tr ' ' '\012' | sed -e '/^-[[^D]]/d' -e '/-D[[^_]]/d' -e 's/-D_/ -D_/' | tr -d '\012'`
 	    break
 	  fi
 	done
@@ -3071,12 +3072,18 @@ fi
 dnl gcc 3.1 changed the meaning of -MM.  The only solution appears to be to
 dnl use "-isystem" instead of "-I" for all non-Vim include dirs.
 dnl But only when making dependencies, cproto and lint don't take "-isystem".
+AC_MSG_CHECKING(for GCC 3 or later)
 DEPEND_CFLAGS_FILTER=
 if test "$GCC" = yes; then
-  gccmajor=`"$CC" --version | sed -e '2,$d;s/^[[^0-9]]*\([[3-9]]\)\.[[0-9.]]*.*$/\1/g'`
-  if test "$gccmajor" != ""; then
+  gccmajor=`"$CC" --version | sed -e '2,$d;s/^[[^0-9]]*\([[1-9]]\)\.[[0-9.]]*.*$/\1/g'`
+  if test "$gccmajor" > "2"; then
     DEPEND_CFLAGS_FILTER="| sed 's+-I */+-isystem /+g'"
   fi
+fi
+if test "$DEPEND_CFLAGS_FILTER" = ""; then
+  AC_MSG_RESULT(no)
+else
+  AC_MSG_RESULT(yes)
 fi
 AC_SUBST(DEPEND_CFLAGS_FILTER)
 

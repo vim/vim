@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	XHTML 1.0 Strict
 " Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
-" Last Change:	2005 Oct 12
+" Last Change:	2005 Now 20
 
 function! htmlcomplete#CompleteTags(findstart, base)
   if a:findstart
@@ -52,10 +52,13 @@ function! htmlcomplete#CompleteTags(findstart, base)
 	if exists("b:entitiescompl")
 		unlet! b:entitiescompl
 
-		" Very, very long line
-        let values = ["AElig", "Aacute", "Acirc", "Agrave", "Alpha", "Aring", "Atilde", "Auml", "Beta", "Ccedil", "Chi", "Dagger", "Delta", "ETH", "Eacute", "Ecirc", "Egrave", "Epsilon", "Eta", "Euml", "Gamma", "Iacute", "Icirc", "Igrave", "Iota", "Iuml", "Kappa", "Lambda", "Mu", "Ntilde", "Nu", "OElig", "Oacute", "Ocirc", "Ograve", "Omega", "Omicron", "Oslash", "Otilde", "Ouml", "Phi", "Pi", "Prime", "Psi", "Rho", "Scaron", "Sigma", "THORN", "TITY", "Tau", "Theta", "Uacute", "Ucirc", "Ugrave", "Upsilon", "Uuml", "Xi", "Yacute", "Yuml", "Zeta", "amp", "aacute", "acirc", "acute", "aelig", "agrave", "alefsym", "alpha", "and", "ang", "apos", "aring", "asymp", "atilde", "auml", "bdquo", "beta", "brvbar", "bull", "cap", "ccedil", "cedil", "cent", "chi", "circ", "clubs", "copy", "cong", "crarr", "cup", "curren", "dArr", "dagger", "darr", "deg", "delta", "diams", "divide", "eacute", "ecirc", "egrave", "empty", "ensp", "emsp", "epsilon", "equiv", "eta", "eth", "euro", "euml", "exist", "fnof", "forall", "frac12", "frac14", "frac34", "frasl", "gt", "gamma", "ge", "hArr", "harr", "hearts", "hellip", "iacute", "icirc", "iexcl", "igrave", "image", "infin", "int", "iota", "iquest", "isin", "iuml", "kappa", "lt", "laquo", "lArr", "lambda", "lang", "larr", "lceil", "ldquo", "le", "lfloor", "lowast", "loz", "lrm", "lsaquo", "lsquo", "macr", "mdash", "micro", "middot", "minus", "mu", "nbsp", "nabla", "ndash", "ne", "ni", "not", "notin", "nsub", "ntilde", "nu", "oacute", "ocirc", "oelig", "ograve", "oline", "omega", "omicron", "oplus", "or", "ordf", "ordm", "oslash", "otilde", "otimes", "ouml", "para", "part", "permil", "perp", "phi", "pi", "piv", "plusmn", "pound", "prime", "prod", "prop", "psi", "quot", "rArr", "raquo", "radic", "rang", "rarr", "rceil", "rdquo", "real", "reg", "rfloor", "rho", "rlm", "rsaquo", "rsquo", "sbquo", "scaron", "sdot", "sect", "shy", "sigma", "sigmaf", "sim", "spades", "sub", "sube", "sum", "sup", "sup1", "sup2", "sup3", "supe", "szlig", "tau", "there4", "theta", "thetasym", "thinsp", "thorn", "tilde", "times", "trade", "uArr", "uacute", "uarr", "ucirc", "ugrave", "uml", "upsih", "upsilon", "uuml", "weierp", "xi", "yacute", "yen", "yuml", "zeta", "zwj", "zwnj"]
+		if !exists("g:xmldata_xhtml10s")
+			runtime! autoload/xml/xhtml10s.vim
+		endif
 
-		for m in values
+	    let entities =  g:xmldata_xhtml10s['vimxmlentities']
+
+		for m in entities
 			if m =~ '^'.a:base
 				call add(res, m.';')
 			endif
@@ -114,6 +117,7 @@ function! htmlcomplete#CompleteTags(findstart, base)
 				let head = getline(search('<head\>'), search('<\/head>'))
 				let headjoined = join(copy(head), ' ')
 				if headjoined =~ '<style'
+					" Remove possibly confusing CSS operators
 					let stylehead = substitute(headjoined, '+>\*[,', ' ', 'g')
 					if search_for == 'class'
 						let styleheadlines = split(stylehead)
@@ -447,67 +451,17 @@ function! htmlcomplete#CompleteTags(findstart, base)
 	" Close tag
 	let b:unaryTagsStack = "base meta link hr br param img area input col"
 	if context =~ '^\/'
-		let opentag = htmlcomplete#GetLastOpenTag("b:unaryTagsStack")
+		let opentag = xmlcomplete#GetLastOpenTag("b:unaryTagsStack")
 		return [opentag.">"]
 	endif
 	" Deal with tag completion.
-	let opentag = htmlcomplete#GetLastOpenTag("b:unaryTagsStack")
-	" Clusters
-	let special = "br span bdo map object img"
-	let phrase =  "em strong dfn code q samp kbd var cite abbr acronym sub sup"
-	let inlineforms = "input select textarea label button"
-	let miscinline = "ins del script"
-	let inline = "a ".special." ".phrase." ".inlineforms." tt i b big small"
-	let misc = "noscript ".miscinline
-	let block = "p h1 h2 h3 h4 h5 h6 div ul ol dl pre hr blockquote address fieldset table"
+	let opentag = xmlcomplete#GetLastOpenTag("b:unaryTagsStack")
 
-	if opentag == 'a'
-		let tags = split("tt i b big small ".special." ".phrase." ".inlineforms." ".miscinline)
-	elseif opentag =~ '^\(abbr\|acronym\|address\|b\|p\|h\d\|dt\|span\|bdo\|em\|strong\|dfn\|code\|samp\|kbd\|var\|cite\|q\|sub\|sup\|tt\|i\|big\|small\|label\|caption\)$'
-		let tags = split(inline." ".miscinline)
-	elseif opentag == 'pre'
-		let tags = split("a tt i b big small br span bdo map ".phrase." ".miscinline." ".inlineforms)
-	elseif opentag == 'html'
-		let tags = ["head", "body"]
-	elseif opentag == 'legend'
-		let tags = split(inline." ".miscinline)
-	elseif opentag == 'head'
-		let tags = ["title", "base", "scipt", "style", "meta", "link", "object"]
-	elseif opentag =~ '^\(noscript\|body\|blockquote\)$'
-		let tags = split("form ".block." ".misc)
-	elseif opentag =~ '^\(ul\|ol\)$'
-		let tags = ["li"]
-	elseif opentag == 'dl'
-		let tags = ["dt", "dd"]
-	elseif opentag =~ '^\(ins\|del\|th\|td\|dd\|div\|li\)$'
-		let tags = split("form ".block." ".inline." ".misc)
-	elseif opentag == 'object'
-		let tags = split("param form ".block." ".inline." ".misc)
-	elseif opentag == 'fieldset'
-		let tags = split("legend form ".block." ".inline." ".misc)
-	elseif opentag == 'map'
-		let tags = split("area form ".block." ".misc)
-	elseif opentag == 'form'
-		let tags = split(block." ".misc)
-	elseif opentag == 'select'
-		let tags = ["optgroup", "option"]
-	elseif opentag == 'optgroup'
-		let tags = ["option"]
-	elseif opentag == 'colgroup'
-		let tags = ["col"]
-	elseif opentag == '^\(textarea\|option\|script\|style\|title\)$'
-		let tags = ['empty']
-	elseif opentag == 'button'
-		let tags = ["p", "h1", "h2", "h3", "h4", "h5", "h6", "div", "ul", "ol", "dl", "table"]
-	elseif opentag =~ '^\(thead\|tfoot\|tbody\)$'
-		let tags = ["tr"]
-	elseif opentag == 'tr'
-		let tags = ["th", "td"]
-	elseif opentag == 'table'
-		let tags = ["caption", "col", "colgroup", "thead", "tfoot", "tbody", "tr"]
-	else
-		return []
+	if !exists("g:xmldata_xhtml10s")
+		runtime! autoload/xml/xhtml10s.vim
 	endif
+
+	let tags = g:xmldata_xhtml10s[opentag][0]
 
 	for m in tags
 		if m =~ '^'.context
@@ -520,134 +474,4 @@ function! htmlcomplete#CompleteTags(findstart, base)
 	return res + res2
 
   endif
-endfunction
-
-" MM: This is greatly reduced closetag.vim used with kind permission of Steven
-"     Mueller
-"     Changes: strip all comments; delete error messages
-" Author: Steven Mueller <diffusor@ugcs.caltech.edu>
-" Last Modified: Tue May 24 13:29:48 PDT 2005 
-" Version: 0.9.1
-
-function! htmlcomplete#GetLastOpenTag(unaryTagsStack)
-	let linenum=line('.')
-	let lineend=col('.') - 1 " start: cursor position
-	let first=1              " flag for first line searched
-	let b:TagStack=''        " main stack of tags
-	let startInComment=s:InComment()
-
-	let tagpat='</\=\(\k\|[-:]\)\+\|/>'
-	while (linenum>0)
-		let line=getline(linenum)
-		if first
-			let line=strpart(line,0,lineend)
-		else
-			let lineend=strlen(line)
-		endif
-		let b:lineTagStack=''
-		let mpos=0
-		let b:TagCol=0
-		while (mpos > -1)
-			let mpos=matchend(line,tagpat)
-			if mpos > -1
-				let b:TagCol=b:TagCol+mpos
-				let tag=matchstr(line,tagpat)
-
-				if exists('b:closetag_disable_synID') || startInComment==s:InCommentAt(linenum, b:TagCol)
-					let b:TagLine=linenum
-					call s:Push(matchstr(tag,'[^<>]\+'),'b:lineTagStack')
-				endif
-				let lineend=lineend-mpos
-				let line=strpart(line,mpos,lineend)
-			endif
-		endwhile
-		while (!s:EmptystackP('b:lineTagStack'))
-			let tag=s:Pop('b:lineTagStack')
-			if match(tag, '^/') == 0		"found end tag
-				call s:Push(tag,'b:TagStack')
-			elseif s:EmptystackP('b:TagStack') && !s:Instack(tag, a:unaryTagsStack)	"found unclosed tag
-				return tag
-			else
-				let endtag=s:Peekstack('b:TagStack')
-				if endtag == '/'.tag || endtag == '/'
-					call s:Pop('b:TagStack')	"found a open/close tag pair
-				elseif !s:Instack(tag, a:unaryTagsStack) "we have a mismatch error
-					return ''
-				endif
-			endif
-		endwhile
-		let linenum=linenum-1 | let first=0
-	endwhile
-return ''
-endfunction
-
-function! s:InComment()
-	return synIDattr(synID(line('.'), col('.'), 0), 'name') =~ 'Comment'
-endfunction
-
-function! s:InCommentAt(line, col)
-	return synIDattr(synID(a:line, a:col, 0), 'name') =~ 'Comment'
-endfunction
-
-function! s:SetKeywords()
-	let g:IsKeywordBak=&iskeyword
-	let &iskeyword='33-255'
-endfunction
-
-function! s:RestoreKeywords()
-	let &iskeyword=g:IsKeywordBak
-endfunction
-
-function! s:Push(el, sname)
-	if !s:EmptystackP(a:sname)
-		exe 'let '.a:sname."=a:el.' '.".a:sname
-	else
-		exe 'let '.a:sname.'=a:el'
-	endif
-endfunction
-
-function! s:EmptystackP(sname)
-	exe 'let stack='.a:sname
-	if match(stack,'^ *$') == 0
-		return 1
-	else
-		return 0
-	endif
-endfunction
-
-function! s:Instack(el, sname)
-	exe 'let stack='.a:sname
-	call s:SetKeywords()
-	let m=match(stack, '\<'.a:el.'\>')
-	call s:RestoreKeywords()
-	if m < 0
-		return 0
-	else
-		return 1
-	endif
-endfunction
-
-function! s:Peekstack(sname)
-	call s:SetKeywords()
-	exe 'let stack='.a:sname
-	let top=matchstr(stack, '\<.\{-1,}\>')
-	call s:RestoreKeywords()
-	return top
-endfunction
-
-function! s:Pop(sname)
-	if s:EmptystackP(a:sname)
-		return ''
-	endif
-	exe 'let stack='.a:sname
-	call s:SetKeywords()
-	let loc=matchend(stack,'\<.\{-1,}\>')
-	exe 'let '.a:sname.'=strpart(stack, loc+1, strlen(stack))'
-	let top=strpart(stack, match(stack, '\<'), loc)
-	call s:RestoreKeywords()
-	return top
-endfunction
-
-function! s:Clearstack(sname)
-	exe 'let '.a:sname."=''"
 endfunction

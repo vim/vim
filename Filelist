@@ -687,6 +687,7 @@ LANG_GEN = \
 		runtime/tutor/tutor.ko.* \
 		runtime/tutor/tutor.pl.* \
 		runtime/tutor/tutor.ru.* \
+		runtime/tutor/tutor.sk.* \
 		runtime/tutor/tutor.zh.* \
 		runtime/spell/README.txt \
 		runtime/spell/??/*.diff \

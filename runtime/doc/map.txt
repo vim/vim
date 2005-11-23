@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.0aa.  Last change: 2005 Sep 22
+*map.txt*       For Vim version 7.0aa.  Last change: 2005 Oct 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -966,8 +966,10 @@ completion can be enabled:
 	-complete=custom,{func} custom completion, defined via {func}
 	-complete=customlist,{func} custom completion, defined via {func}
 
-Custom completion			    *:command-completion-custom*
-							*E467* *E468*
+
+Custom completion			*:command-completion-custom*
+					*:command-completion-customlist*
+					*E467* *E468*
 It is possible to define customized completion schemes via the "custom,{func}"
 or the "customlist,{func}" completion argument.  The {func} part should be a
 function with the following prototype >
@@ -981,13 +983,13 @@ For the "custom" argument, the function should return the completion
 candidates one per line in a newline separated string.
 
 For the "customlist" argument, the function should return the completion
-candidates as a Vim List. Non-string items in the list are ignored.
+candidates as a Vim List.  Non-string items in the list are ignored.
 
 The function arguments are:
 	ArgLead		the leading portion of the argument currently being
 			completed on
 	CmdLine		the entire command line
-	CursorPos	the cursor position in it
+	CursorPos	the cursor position in it (byte index)
 The function may use these for determining context.  For the "custom"
 argument, it is not necessary to filter candidates against the (implicit
 pattern in) ArgLead.  Vim will do filter the candidates with its regexp engine
@@ -1009,6 +1011,7 @@ the 'path' option: >
     :    return split(globpath(&path, a:ArgLead), "\n")
     :endfun
 <
+
 Range handling						*E177* *E178*
 
 By default, user-defined commands do not accept a line number range.  However,

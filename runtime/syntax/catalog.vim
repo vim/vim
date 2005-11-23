@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	sgml catalog file
 " Maintainer:	Johannes Zellner <johannes@zellner.org>
-" Last Change:	Tue, 27 Apr 2004 14:54:59 CEST
+" Last Change:	Fr, 04 Nov 2005 12:46:45 CET
 " Filenames:	/etc/sgml.catalog
 " $Id$
 
@@ -17,8 +17,8 @@ syn region  catalogString start=+"+ skip=+\\\\\|\\"+ end=+"+ keepend
 syn region  catalogString start=+'+ skip=+\\\\\|\\'+ end=+'+ keepend
 
 syn region  catalogComment      start=+--+   end=+--+ contains=catalogTodo
-syn keyword catalogTodo		TODO FIXME XXX contained display
-syn keyword catalogKeyword	DOCTYPE OVERRIDE PUBLIC DTDDECL ENTITY display
+syn keyword catalogTodo		TODO FIXME XXX NOTE contained
+syn keyword catalogKeyword	DOCTYPE OVERRIDE PUBLIC DTDDECL ENTITY CATALOG
 
 
 " The default highlighting.

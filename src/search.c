@@ -3550,7 +3550,7 @@ current_block(oap, count, include, what, other)
     {
 	if (*p_sel == 'e')
 	    ++curwin->w_cursor.col;
-	if (sol)
+	if (sol && gchar_cursor() != NUL)
 	    inc(&curwin->w_cursor);	/* include the line break */
 	VIsual = start_pos;
 	VIsual_mode = 'v';

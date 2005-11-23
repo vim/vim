@@ -2801,8 +2801,8 @@ if test -z "$CFLAGS"; then
 fi
 if test "$GCC" = yes; then
   gccversion=`"$CC" --version | sed -e '2,$d;s/^[^0-9]*\([0-9]\.[0-9.]*\).*$/\1/g'`
-  if test "$gccversion" = "3.0.1" -o "$gccversion" = "3.0.2"; then
-    echo 'GCC 3.0.x has a bug in the optimizer, disabling "-O#"'
+    if test "$gccversion" = "3.0.1" -o "$gccversion" = "3.0.2" -o "$gccversion" = "4.0.1"; then
+    echo 'GCC 34.0.12 has a bug in the optimizer, disabling "-O#"'
     CFLAGS=`echo "$CFLAGS" | sed 's/-O[23456789]/-O/'`
   else
     if test "$gccversion" = "3.1" -o "$gccversion" = "3.2" -o "$gccversion" = "3.2.1" && `echo "$CFLAGS" | grep -v fno-strength-reduce >/dev/null`; then
@@ -4516,7 +4516,7 @@ echo $ECHO_N "checking for location of tclConfig.sh script... $ECHO_C" >&6
 echo "${ECHO_T}$try/tclConfig.sh" >&6
 	    . $try/tclConfig.sh
 	    	    TCL_LIBS=`eval echo "$TCL_LIB_SPEC $TCL_LIBS"`
-	    	    	    TCL_DEFS=`echo $TCL_DEFS | sed -e 's/\ /\X/' | tr ' ' '\012' | sed -e '/^-[^D]/d' -e '/-D[^_]/d' -e 's/-D_/ -D_/' | tr -d '\012'`
+	    	    	    TCL_DEFS=`echo $TCL_DEFS | sed -e 's/\\ /\\X/' | tr ' ' '\012' | sed -e '/^-[^D]/d' -e '/-D[^_]/d' -e 's/-D_/ -D_/' | tr -d '\012'`
 	    break
 	  fi
 	done
@@ -16048,12 +16048,21 @@ echo "${ECHO_T}no" >&6
   fi
 fi
 
+echo "$as_me:$LINENO: checking for GCC 3 or later" >&5
+echo $ECHO_N "checking for GCC 3 or later... $ECHO_C" >&6
 DEPEND_CFLAGS_FILTER=
 if test "$GCC" = yes; then
-  gccmajor=`"$CC" --version | sed -e '2,$d;s/^[^0-9]*\([3-9]\)\.[0-9.]*.*$/\1/g'`
-  if test "$gccmajor" != ""; then
+  gccmajor=`"$CC" --version | sed -e '2,$d;s/^[^0-9]*\([1-9]\)\.[0-9.]*.*$/\1/g'`
+  if test "$gccmajor" > "2"; then
     DEPEND_CFLAGS_FILTER="| sed 's+-I */+-isystem /+g'"
   fi
+fi
+if test "$DEPEND_CFLAGS_FILTER" = ""; then
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+else
+  echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6
 fi
 
 

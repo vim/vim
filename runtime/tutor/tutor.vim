@@ -1,6 +1,6 @@
 " Vim tutor support file
 " Author: Eduardo F. Amatria <eferna1@platea.pntic.mec.es>
-" Last Change:	2005 Mar 15
+" Last Change:	2005 Oct 16
 
 " This small source file is used for detecting if a translation of the
 " tutor file exist, i.e., a tutor.xx file, where xx is the language.
@@ -80,6 +80,15 @@ if s:ext =~? '\.pl'
     let s:ext = ".pl.cp1250"
   elseif &enc =~ "utf-8$"
     let s:ext = ".pl.utf-8"
+  endif
+endif
+
+" The Turkish tutor is available in two encodings, guess which one to use
+if s:ext =~? '\.tr'
+  if &enc == "utf-8"
+    let s:ext = ".tr.utf-8"
+  elseif &enc == "iso-8859-9"
+    let s:ext = ".tr.iso9"
   endif
 endif
 

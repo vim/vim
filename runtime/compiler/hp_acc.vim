@@ -1,8 +1,8 @@
 " Vim compiler file
 " Compiler:	HP aCC
 " Maintainer:	Matthias Ulrich <matthias-ulrich@web.de>
-" URL:		http://www.subhome.de/vim/hp_acc.vim
-" Last Change:	2004 Mar 27
+" URL:          http://www.subhome.de/vim/hp_acc.vim
+" Last Change:	2005 Nov 19
 "
 "  aCC --version says: "HP ANSI C++ B3910B A.03.13"
 "  This compiler has been tested on:
@@ -10,6 +10,10 @@
 "
 "  Tim Brown's aCC is: "HP ANSI C++ B3910B A.03.33"
 "  and it also works fine...
+"  
+"  Now suggestions by aCC are supported (compile flag aCC +w).
+"  Thanks to Tim Brown again!!
+"  
 
 if exists("current_compiler")
   finish
@@ -21,6 +25,7 @@ if exists(":CompilerSet") != 2		" older Vim always used :setlocal
 endif
 
 CompilerSet errorformat=%A%trror\ %n\:\ \"%f\"\\,\ line\ %l\ \#\ %m,
+         \%A%tarning\ (suggestion)\ %n\:\ \"%f\"\\,\ line\ %l\ \#\ %m\ %#,
          \%A%tarning\ %n\:\ \"%f\"\\,\ line\ %l\ \#\ %m\ %#,
          \%Z\ \ \ \ %p^%.%#,
          \%-C%.%#

@@ -1,4 +1,4 @@
-*tagsrch.txt*   For Vim version 7.0aa.  Last change: 2005 Jul 12
+*tagsrch.txt*   For Vim version 7.0aa.  Last change: 2005 Oct 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -440,7 +440,7 @@ directory.  If it is not found there, then the file "/home/user/commontags"
 will be searched for the tag.
 
 This can be switched off by including the 'd' flag in 'cpoptions', to make
-it Vi compatible.  "./tags" will than be the tags file in the current
+it Vi compatible.  "./tags" will then be the tags file in the current
 directory, instead of the tags file in the directory where the current file
 is.
 

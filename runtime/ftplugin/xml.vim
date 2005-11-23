@@ -32,6 +32,15 @@ if exists("loaded_matchit")
      \  '<\@<=\%([^ \t>/]\+\)\%(\s\+[^/>]*\|$\):/>'
 endif
 
+"
+" For Omni completion, by Mikolaj Machowski.
+if exists('&ofu')
+  setlocal ofu=xmlcomplete#CompleteTags
+endif
+command! -nargs=+ XMLns call xmlcomplete#CreateConnection(<f-args>)
+command! -nargs=? XMLent call xmlcomplete#CreateEntConnection(<f-args>)
+
+
 " Change the :browse e filter to primarily show xml-related files.
 if has("gui_win32")
     let  b:browsefilter="XML Files (*.xml)\t*.xml\n" .

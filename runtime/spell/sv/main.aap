@@ -1,4 +1,6 @@
 # Aap recipe for Swedish Vim spell files.
+#
+# Maintainer: Stefan Karlsson <stefan.74@comhem.se>
 
 # Use a freshly compiled Vim if it exists.
 @if os.path.exists('../../../src/vim'):

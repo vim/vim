@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Oct 12
+" Last Change:	2005 Nov 23
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -1349,6 +1349,9 @@ au BufNewFile,BufRead *.rtf			setf rtf
 " Ruby
 au BufNewFile,BufRead *.rb,*.rbw,*.gem,*.gemspec	setf ruby
 
+" Rantfile is like Ruby
+au BufNewFile,BufRead [rR]antfile,*.rant	setf ruby
+
 " S-lang (or shader language!)
 au BufNewFile,BufRead *.sl			setf slang
 
@@ -1612,9 +1615,19 @@ au BufNewFile,BufRead /etc/sysctl.conf		setf sysctl
 " Sudoers
 au BufNewFile,BufRead /etc/sudoers,sudoers.tmp	setf sudoers
 
-" Tads (or Nroff)
+" If the first line starts with '#' and contains 'perl' it's probably a Perl
+" file.
+fun! s:FTperl()
+  if getline(1)[0] == '#' && getline(1) =~ 'perl'
+    setf perl
+    return 1
+  endif
+  return 0
+endfun
+
+" Tads (or Nroff or Perl test file)
 au BufNewFile,BufRead *.t
-	\ if !s:FTnroff() | setf tads | endif
+	\ if !s:FTnroff() && !s:FTperl() | setf tads | endif
 
 " Tags
 au BufNewFile,BufRead tags			setf tags
@@ -1622,8 +1635,8 @@ au BufNewFile,BufRead tags			setf tags
 " TAK
 au BufNewFile,BufRead *.tak			setf tak
 
-" Tcl
-au BufNewFile,BufRead *.tcl,*.tk,*.itcl,*.itk	setf tcl
+" Tcl (JACL too)
+au BufNewFile,BufRead *.tcl,*.tk,*.itcl,*.itk,*.jacl	setf tcl
 
 " TealInfo
 au BufNewFile,BufRead *.tli			setf tli

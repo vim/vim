@@ -1,4 +1,4 @@
-*if_ruby.txt*   For Vim version 7.0aa.  Last change: 2005 Aug 31
+*if_ruby.txt*   For Vim version 7.0aa.  Last change: 2005 Oct 14
 
 
 		  VIM REFERENCE MANUAL    by Shugo Maeda
@@ -11,6 +11,7 @@ The Ruby Interface to Vim				*ruby* *Ruby*
 3. VIM::Buffer objects		|ruby-buffer|
 4. VIM::Window objects		|ruby-window|
 5. Global variables		|ruby-globals|
+6. Dynamic loading		|ruby-dynamic|
 
 {Vi does not have any of these commands}
 			*E266* *E267* *E268* *E269* *E270* *E271* *E272* *E273*
@@ -166,12 +167,29 @@ cursor = [{row}, {col}]
 		Sets the cursor position to {row} and {col}.
 
 ==============================================================================
-4. Global variables					*ruby-globals*
+5. Global variables					*ruby-globals*
 
 There are two global variables.
 
 $curwin		The current window object.
 $curbuf		The current buffer object.
+
+==============================================================================
+6. Dynamic loading					*ruby-dynamic*
+
+On MS-Windows the Ruby library can be loaded dynamically.  The |:version|
+output then includes |+ruby/dyn|.
+
+This means that Vim will search for the Ruby DLL file only when needed.  When
+you don't use the Ruby interface you don't need it, thus you can use Vim
+without this DLL file.
+
+To use the Ruby interface the Ruby DLL must be in your search path.  In a
+console window type "path" to see what directories are used.
+
+The name of the DLL must match the Ruby version Vim was compiled with.
+Currently the name is "ruby18.dll".  That is for Ruby 1.8.  To know for sure
+edit "gvim.exe" and search for "ruby\d*.dll\c".
 
 ==============================================================================
  vim:tw=78:ts=8:ft=help:norl:

@@ -3709,6 +3709,11 @@ mch_call_shell(cmd, options)
 		putenv(envbuf_Columns);
 # endif
 
+		/*
+		 * stderr is only redirected when using the GUI, so that a
+		 * program like gpg can still access the terminal to get a
+		 * passphrase using stderr.
+		 */
 # ifdef FEAT_GUI
 		if (pty_master_fd >= 0)
 		{
@@ -3719,8 +3724,11 @@ mch_call_shell(cmd, options)
 		    dup(pty_slave_fd);
 		    close(1);
 		    dup(pty_slave_fd);
-		    close(2);
-		    dup(pty_slave_fd);
+		    if (gui.in_use)
+		    {
+			close(2);
+			dup(pty_slave_fd);
+		    }
 
 		    close(pty_slave_fd);    /* has been dupped, close it now */
 		}
@@ -3739,9 +3747,14 @@ mch_call_shell(cmd, options)
 		    dup(fd_fromshell[1]);
 		    close(fd_fromshell[1]);
 
-		    /* set up stderr for the child */
-		    close(2);
-		    dup(1);
+# ifdef FEAT_GUI
+		    if (gui.in_use)
+		    {
+			/* set up stderr for the child */
+			close(2);
+			dup(1);
+		    }
+# endif
 		}
 	    }
 

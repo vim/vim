@@ -2152,20 +2152,16 @@ do_one_cmd(cmdlinep, sourcing,
 	 */
 	if (!global_busy && ea.line1 > ea.line2)
 	{
-	    if (sourcing || exmode_active)
+	    if (msg_silent == 0)
 	    {
-		errormsg = (char_u *)_("E493: Backwards range given");
-		goto doend;
-	    }
-	    else
-	    {
-		int	msg_silent_save = msg_silent;
-
-		msg_silent = 0;
+		if (sourcing || exmode_active)
+		{
+		    errormsg = (char_u *)_("E493: Backwards range given");
+		    goto doend;
+		}
 		if (ask_yesno((char_u *)
 			_("Backwards range given, OK to swap"), FALSE) != 'y')
-		goto doend;
-		msg_silent = msg_silent_save;
+		    goto doend;
 	    }
 	    lnum = ea.line1;
 	    ea.line1 = ea.line2;

@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Oct 12
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Nov 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -5049,6 +5049,9 @@ Vim will look for the file "autoload/foo/bar.vim" in 'runtimepath'.
 This also works when reading a variable that has not been set yet: >
 
 	:let l = foo#bar#lvar
+
+However, when the autoload script was already loaded it won't be loaded again
+for an unknown variable.
 
 When assigning a value to such a variable nothing special happens.  This can
 be used to pass settings to the autoload script before it's loaded: >

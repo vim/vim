@@ -1,4 +1,4 @@
-*mbyte.txt*     For Vim version 7.0aa.  Last change: 2005 Jul 09
+*mbyte.txt*     For Vim version 7.0aa.  Last change: 2005 Oct 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar et al.
@@ -483,6 +483,12 @@ conversion needs to be done.  These conversions are supported:
 	Old versions of GNU iconv() may cause the conversion to fail (they
 	request a very large buffer, more than Vim is willing to provide).
 	Try getting another iconv() implementation.
+
+							*iconv-dynamic*
+On MS-Windows Vim can be compiled with the |+iconv/dyn| feature.  This means
+Vim will search for the "iconv.dll" and "libiconv.dll" libraries.  When
+neither of them can be found Vim will still work but some conversions won't be
+possible.
 
 ==============================================================================
 4. Using a terminal					*mbyte-terminal*

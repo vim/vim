@@ -1,16 +1,10 @@
 " Vim indent file
-" Language:     Ruby
-" Maintainer:   Gavin Sinclair <gsinclair at soyabean.com.au>
-" Developer:    Nikolai Weibull <source at pcppopper.org>
-" Info:         $Id$
-" URL:          http://vim-ruby.rubyforge.org/
-" Anon CVS:     See above site
-" Licence:      GPL (http://www.gnu.org)
-" Disclaimer:
-"    This program is distributed in the hope that it will be useful,
-"    but WITHOUT ANY WARRANTY; without even the implied warranty of
-"    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-"    GNU General Public License for more details.
+" Language:	Ruby
+" Maintainer:	Gavin Sinclair <gsinclair at soyabean.com.au>
+" Developer:	Nikolai Weibull <source at pcppopper.org>
+" Info:		$Id$
+" URL:		http://vim-ruby.rubyforge.org
+" Anon CVS:	See above site
 " ----------------------------------------------------------------------------
 
 " 0. Initialization {{{1
@@ -42,17 +36,13 @@ set cpo&vim
 let s:syng_strcom = '\<ruby\%(String\|StringDelimiter\|ASCIICode' .
       \ '\|Interpolation\|NoInterpolation\|Escape\|Comment\|Documentation\)\>'
 
-" Regex of syntax group names that are strings or comments.
-let s:syng_strcom2 = '\<ruby\%(String' .
-      \ '\|Interpolation\|NoInterpolation\|Escape\|Comment\|Documentation\)\>'
-
 " Regex of syntax group names that are strings.
 let s:syng_string =
-      \ '\<ruby\%(String\|Interpolation\|NoInterpolation\|Escape\)\>'
+      \ '\<ruby\%(String\|StringDelimiter\|Interpolation\|NoInterpolation\|Escape\)\>'
 
 " Regex of syntax group names that are strings or documentation.
 let s:syng_stringdoc =
-  \'\<ruby\%(String\|Interpolation\|NoInterpolation\|Escape\|Documentation\)\>'
+  \'\<ruby\%(String\|StringDelimiter\|Interpolation\|NoInterpolation\|Escape\|Documentation\)\>'
 
 " Expression used to check whether we should skip a match with searchpair().
 let s:skip_expr =
@@ -109,11 +99,6 @@ function s:IsInStringOrComment(lnum, col)
   return synIDattr(synID(a:lnum, a:col, 0), 'name') =~ s:syng_strcom
 endfunction
 
-" Check if the character at lnum:col is inside a string or comment.
-function s:IsInStringOrComment2(lnum, col)
-  return synIDattr(synID(a:lnum, a:col, 0), 'name') =~ s:syng_strcom2
-endfunction
-
 " Check if the character at lnum:col is inside a string.
 function s:IsInString(lnum, col)
   return synIDattr(synID(a:lnum, a:col, 0), 'name') =~ s:syng_string
@@ -134,14 +119,14 @@ function s:PrevNonBlankNonString(lnum)
     let line = getline(lnum)
     if line =~ '^=begin$'
       if in_block
-        let in_block = 0
+	let in_block = 0
       else
-        break
+	break
       endif
     elseif !in_block && line =~ '^=end$'
       let in_block = 1
     elseif !in_block && line !~ '^\s*#.*$' && !(s:IsInStringOrComment(lnum, 1)
-          \ && s:IsInStringOrComment(lnum, strlen(line)))
+	  \ && s:IsInStringOrComment(lnum, strlen(line)))
       break
     endif
     let lnum = prevnonblank(lnum - 1)
@@ -160,7 +145,7 @@ function s:GetMSL(lnum)
     let line = getline(lnum)
     let col = match(line, s:continuation_regex2) + 1
     if (col > 0 && !s:IsInStringOrComment(lnum, col))
-          \ || s:IsInString(lnum, strlen(line))
+	  \ || s:IsInString(lnum, strlen(line))
       let msl = lnum
     else
       break
@@ -181,9 +166,9 @@ function s:LineHasOpeningBrackets(lnum)
     if !s:IsInStringOrComment(a:lnum, pos + 1)
       let idx = stridx('(){}[]', line[pos])
       if idx % 2 == 0
-        let open_{idx} = open_{idx} + 1
+	let open_{idx} = open_{idx} + 1
       else
-        let open_{idx - 1} = open_{idx - 1} - 1
+	let open_{idx - 1} = open_{idx - 1} - 1
       endif
     endif
     let pos = match(line, '[][(){}]', pos + 1)
@@ -246,13 +231,13 @@ function GetRubyIndent()
   if s:Match(v:lnum, s:ruby_deindent_keywords)
     call cursor(v:lnum, 1)
     if searchpair(s:end_start_regex, s:end_middle_regex, s:end_end_regex, 'bW',
-            \ s:end_skip_expr) > 0
+	    \ s:end_skip_expr) > 0
       let line = getline('.')
       if strpart(line, 0, col('.') - 1) =~ '=\s*$' &&
        \ strpart(line, col('.') - 1, 2) !~ 'do'
-        let ind = virtcol('.') - 1
+	let ind = virtcol('.') - 1
       else
-        let ind = indent('.')
+	let ind = indent('.')
       endif
     endif
     return ind
@@ -302,12 +287,12 @@ function GetRubyIndent()
   if col > 0
     call cursor(lnum, col)
     if searchpair(s:end_start_regex, '', s:end_end_regex, 'bW',
-                \ s:end_skip_expr) > 0
+		\ s:end_skip_expr) > 0
       let n = line('.')
       let ind = indent('.')
       let msl = s:GetMSL(n)
       if msl != n
-        let ind = indent(msl)
+	let ind = indent(msl)
       end
       return ind
     endif

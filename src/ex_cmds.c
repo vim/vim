@@ -12,6 +12,9 @@
  */
 
 #include "vim.h"
+#ifdef HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
 #include "version.h"
 
 #ifdef FEAT_EX_EXTRA
@@ -1797,7 +1800,17 @@ write_viminfo(file, forceit)
 
 	if (tempname != NULL)
 	{
-	    fp_out = mch_fopen((char *)tempname, WRITEBIN);
+	    int	fd;
+
+	    /* Use mch_open() to be able to use O_NOFOLLOW and set file
+	     * protection same as original file, but strip s-bit. */
+	    fd = mch_open((char *)tempname,
+		    O_CREAT|O_EXTRA|O_EXCL|O_WRONLY|O_NOFOLLOW,
+				       (int)((st_old.st_mode & 0777) | 0600));
+	    if (fd < 0)
+		fp_out = NULL;
+	    else
+		fp_out = fdopen(fd, WRITEBIN);
 
 	    /*
 	     * If we can't create in the same directory, try creating a
@@ -1809,18 +1822,14 @@ write_viminfo(file, forceit)
 		if ((tempname = vim_tempname('o')) != NULL)
 		    fp_out = mch_fopen((char *)tempname, WRITEBIN);
 	    }
-#ifdef UNIX
+
+#if defined(UNIX) && defined(HAVE_FCHOWN)
 	    /*
-	     * Set file protection same as original file, but strip s-bit
-	     * and make sure the owner can read/write it.
+	     * Make sure the owner can read/write it.  This only works for
+	     * root.
 	     */
 	    if (fp_out != NULL)
-	    {
-		(void)mch_setperm(tempname,
-				  (long)((st_old.st_mode & 0777) | 0600));
-		/* this only works for root: */
-		(void)chown((char *)tempname, st_old.st_uid, st_old.st_gid);
-	    }
+		(void)fchown(fileno(fp_out), st_old.st_uid, st_old.st_gid);
 #endif
 	}
     }

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Oct 12
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Nov 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,18 +30,66 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Using chown() is unsafe. (Jinpeng Wei)
+    ex_cmds.c: viminfo tempfile: use mch_open(O_EXCL) and fdopen()
+    fileio.c: use fchown() instead of chown()
+    vim.h: define O_NOFOLLOW if needed.  Not in Vim 6.4?
+
+Go over all changes between 6.3 and 6.4 and make sure they are included in 7.
+
+'statusline' is drawn over the Omni menu.
+
+Cygwin and Mac OS/X may preserve case for file names but ignore case
+differences.  Use Amiga code?
+
+"make unixall": remove split in floppy-size archives.
+
+To support mapping <F4> to be used as <F4>{motion}: Add operator that
+executes a user defined function. '[ and '] marks are at start and end of
+text.  ":map <F4> :set opfunc=MyOp<CR>gy".
+
+Patch from Yasuhiro Matsumoto: ":e ++enc=xxx" keeps encoding for conversion
+errors and illegal bytes.  How about replacing bytes with '?' or not?
+
 ccomplete:
 - When an option is set: In completion mode and the user types (identifier)
   characters, advance to the first match instead of removing the popup menu.
   If there is no match remove the selection. (Yegappan Lakshmanan)
+- Complete the longest common match instead of the first match?
+- !_TAG_FILE_FORMAT and it's ilk are listed in the global completions
 - When completing something that is a structure, add the "." or "->".
 - When a typedef or struct is local to a file only use it in that file?
+- Window resize when poup is displayed
+- page-up / page-down
 
 spelling:
 - When a recognized word ends in a . don't have 'spellcapcheck" match it.
-- Use KEEPCASE instead of "KEP".  applies to affixes too.
+- Use KEEPCASE instead of "KEP".  It applies to the word including affixes
+  Hunspell also uses it.
+- Hunspell has NOSUGGEST flag (use for obscene words?)
+- Check out Hunspell 1.1.2.
 - Look into hungarian dictionary:
   http://magyarispell.sourceforge.net/rc3-beta2.zip
+- Support breakpoint character · 0xb7 and ignore it?
+- Dutch word list should be available here: http://www.woordenlijst.org/
+8   Alternate Dutch word list at www.nederlandsewoorden.nl (use script to
+    obtain).  But new Myspell wordlist will come (Hagen)
+- Finding suggestions with sound folding is slow.  Somehow store the
+  sound-folded words and link to the words it comes from?
+
+When editing a file "a" that is a symbolic link to "b", while another Vim is
+editing "b", there is no warning.  Follow symlink to make swap file name?
+Patch from Stefano Zacchiroli.
+
+In diff mode deleting lines is very slow.  E.g., when diffing two .po files
+and then sourcing po/cleaup.vim.
+
+7   Add plugins for formatting.  Should be able to make a choice depending on
+    the language of a file (English/Korean/Japanese/etc.).
+    Setting the 'langformat' option to "chinese" would load the
+    "format/chinese.vim" plugin.
+Edward L. Fox explains how it should be done for most Asian languages. (2005
+Nov 24)
 
 Mac unicode patch (Da Woon Jung):
 - selecting proportional font breaks display
@@ -52,9 +100,14 @@ Mac unicode patch (Da Woon Jung):
 - With 'nopaste' pasting is wrong, with 'paste' Command-V doesn't work.
   (Alan Schmitt)
 
+Patch to add a few flags to search(). (Benji Fisher, Nov 22)
+
 Win32: Use the free downloadable compiler 7.1.  Figure out how to do debugging
 (with Agide?) and describe it. (George Reilly)
 Try out using the free MS compiler and debugger, using Make_mvc.mak.
+
+Win32: Check that installer puts menu items in "all users" dir when possible,
+not administrator dir.
 
 Autoload:
 - Add a Vim script in $VIMRUNTIME/tools that takes a file with a list of
@@ -67,7 +120,8 @@ Autoload:
     helpfile doc/myscript.txt
   For the "helpfile" item ":helptags" is run.
 
-Add ":smap", Select mode mapping?
+Add ":smap", Select mode mapping?  Otherwise: ":sunmap", so that Visual mode
+mappings for normal keys can be removed from Select mode.
 
 Awaiting response:
 -   Win32: tearoff menu window should have a scrollbar when it's taller than
@@ -88,6 +142,10 @@ PLANNED FOR VERSION 7.0:
     make it work for all completion methods.
 
     UI:
+    - Complete longest common string first, like 'wildmode' "longest:full".
+    - Add an "auto" mode: after typing a character (or string) completion is
+      done for the longest common string.  plugin defines the possible
+      characters/strings. (Martin Stubenschrott)
     - GUI implementation of the popup menu.
     - When using tags, show match in preview window (function prototype,
       struct member, etc.).
@@ -191,9 +249,9 @@ PLANNED FOR VERSION 7.0:
     For GTK Neil Bird has a patch to use Vim like a widget.
 -   Add COLUMN NUMBERS to ":" commands ":line1,line2[col1,col2]cmd".  Block
     can be selected with CTRL-V.  Allow '$' (end of line) for col2.
--   Add DEBUGGER INTERFACE.  Implementation for gdb by Xavier de Gaye,
-    assisted by Mikolaj Machowski.  Should work like an IDE.  Try to keep it
-    generic.  Also found here: http://skawina.eu.org/mikolaj/vimgdb
+-   Add DEBUGGER INTERFACE.  Implementation for gdb by Xavier de Gaye.
+    Should work like an IDE.  Try to keep it generic.  Now found here:
+    http://clewn.sf.net.
     And the idevim plugin/script.
     To be able to start the debugger from inside Vim: For GUI run a program
     with a netbeans connection; for console: start a program that splits the
@@ -207,6 +265,7 @@ PLANNED FOR VERSION 7.0:
     implement part in Java and then connect to Vim.  Some hints from Alexandru
     Roman, 2004 Dec 15.  Should then also work with Oracle Jdeveloper, see JSR
     198 standard http://www.jcp.org/en/jsr/detail?id=198.
+    Eclim does it: http://eclim.sourceforge.net/  (Eric Van Dewoestine)
 -   STICKY CURSOR: Add a way of scrolling that leaves the cursor where it is.
     Especially when using the scrollbar.  Typing a cursor-movement command
     scrolls back to where the cursor is.
@@ -353,7 +412,9 @@ Awaiting updated patches:
 	How does this work?  Missing comments.
 	gettext()	Translate a message.  (Patch from Yasuhiro Matsumoto)
 			Update 2004 Sep 10
-			More docs.  Search in 'runtimepath'?
+			Another patch from Edward L. Fox (2005 Nov 24)
+			Search in 'runtimepath'?
+			More docs about how to use this.
 			How to get the messages into the .po files?
     --- did not respond (yet) --
     -	Patch for 'breakindent' option: repeat indent for wrapped line. (Vaclav
@@ -395,7 +456,7 @@ Awaiting updated patches:
     7   When 'rightleft' is set, the search pattern should be displayed right
 	to left as well?  See patch of Dec 26. (Nadim Shaikli)
     8   Lock all used memory so that it doesn't get swapped to disk (uncrypted).
-	Patch by Jason Holt, 2003 May 23.
+	Patch by Jason Holt, 2003 May 23.  Uses mlock.
     7   Support a stronger encryption.  Jason Holt implemented AES (May 6 2003).
     7   Add ! register, for shell commands. (patch from Grenie)
     8   In the gzip plugin, also recognize *.gz.orig, *.gz.bak, etc.  Like it's
@@ -791,7 +852,16 @@ MSDOS, OS/2 and Win32:
 8   OS/2: Add Extended Attributes support and define HAVE_ACL.
 8   OS/2: When editing a file name "foo.txt" that is actually called FOO.txt,
     writing uses "foo.txt".  Should obtain the real file name.
-8   Should $USERPROFILE be preferred above $HOMEDRIVE/$HOMEPATH?
+8   Should $USERPROFILE be preferred above $HOMEDRIVE/$HOMEPATH?  No, but it's
+    a good fallback, thus use:
+	    $HOME
+	    $HOMEDRIVE$HOMEPATH
+	    SHGetSpecialFolderPath(NULL, lpzsPath, CSIDL_APPDATA, FALSE);
+	    $USERPROFILE
+	    SHGetSpecialFolderPath(NULL, lpzsPath, CSIDL_COMMON_APPDATA, FALSE);
+	    $ALLUSERSPROFILE
+	    $SYSTEMDRIVE\
+	    C:\
 8   Win32 console: <M-Up> and <M-Down> don't work. (Geddes)  We don't have
     special keys for these.  Should use modifier + key.
 8   Win32 console: caps-lock makes non-alpha keys work like with shift.
@@ -1382,22 +1452,19 @@ Spell checking:
 8   Make "en-rare" spell file?  Ask Charles Campbell.
 8   The English dictionaries for different regions are not consistent in their
     use of words with a dash.
-8   Alternate Dutch word list at www.nederlandsewoorden.nl (use script to
-    obtain).  But new Myspell wordlist will come (Hagen)
 7   Insert mode completion mechanism that uses the spell word lists.
 8   Add hl groups to 'spelllang'?
 	:set spelllang=en_us,en-rare/SpellRare,en-math/SpellMath
     More complicated: Regions with different languages?  E.g., comments
     in English, strings in German (po file).
-8   Implement compound words when it works for Myspell.  Current idea has the
-    problem that "foo/X" always allows "foofoo", there is no way to specify a
-    word can only be at the start or end, or that only certain words combine.
 
 
 Diff mode:
 8   Use diff mode to show the changes made in a buffer (compared to the file).
     Use an unnamed buffer, like doing:
 	new | set bt=nofile | r # | 0d_ | diffthis | wincmd p | diffthis
+    Also show difference with the file when editing started?  Should show what
+    can be undone. (Tom Popovich)
 7   Add cursor-binding: when moving the cursor in one diff'ed buffer, also
     move it in other diff'ed buffers, so that CTRL-W commands go to the same
     location.
@@ -1575,6 +1642,11 @@ Syntax highlighting:
     re-insert the [] if possible.
 8   Make it possible to use color of text for Visual highlight group (like for
     the Cursor).
+8   It would be useful to make the highlight group name an expression.  Then
+    when there is a match, the expression would be evaluated to find out what
+    highlight group to use.  Could be used to check if the shell used in a
+    password file appears in /etc/shells. (Nikolai Weibull)
+	syn match =s:checkShell(v:match) contained 'pattern'
 8   Make it possible to only highlight a sub-expression of a match.  Like
     using "\1" in a ":s" command.
 8   Support for deleting syntax items:
@@ -3020,8 +3092,6 @@ Options:
 7   There is 'titleold', why is there no 'iconold'? (Chazelas)
 7   Make 'scrolloff' a global-local option, so that it can be different in the
     quickfix window, for example. (Gary Holloway)
-7   Add plugins for formatting.  Should be able to make a choice depending on
-    the language of a file (English/Korean/Japanese/etc.).
 
 
 External commands:
@@ -3349,7 +3419,8 @@ Various improvements:
 7   Add a way to define an item list with a pattern in 'formatoptions'.  The
     'n' flag doesn't work for "6.3" or "6a.".
 8   Add 'formatexpr' option: Used for formatting operator "gq" instead of the
-    builtin formatting or 'formatprg'.
+    builtin formatting or 'formatprg'.  Or use a string that starts with "="
+    in 'formatprg': "=MyFormat()".
 8   Allow using a trailing space to signal a paragraph that continues on the
     next line (MIME text/plain; format=flowed, RFC 2646).  Can be used for
     continuous formatting.  Could use 'autoformat' option, which specifies a

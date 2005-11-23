@@ -2,7 +2,7 @@
 " Language:	Cascading Style Sheets
 " Maintainer:	Claudio Fleiner <claudio@fleiner.com>
 " URL:		http://www.fleiner.com/vim/syntax/css.vim
-" Last Change:	2004 Mar 30
+" Last Change:	2005 Nov 23
 " CSS2 by Nikolai Weibull
 " Full CSS2, HTML4 support by Yeti
 
@@ -38,7 +38,12 @@ syn match cssSelectorOp "[+>.]"
 syn match cssSelectorOp2 "[~|]\?=" contained
 syn region cssAttributeSelector matchgroup=cssSelectorOp start="\[" end="]" transparent contains=cssUnicodeEscape,cssSelectorOp2,cssStringQ,cssStringQQ
 
+try
 syn match cssIdentifier "#[A-Za-zÀ-ÿ_@][A-Za-zÀ-ÿ0-9_@-]*"
+catch /^.*/
+syn match cssIdentifier "#[A-Za-z_@][A-Za-z0-9_@-]*"
+endtry
+
 
 syn match cssMedia "@media\>" nextgroup=cssMediaType skipwhite skipnl
 syn keyword cssMediaType contained screen print aural braile embosed handheld projection ty tv all nextgroup=cssMediaComma,cssMediaBlock skipwhite skipnl
@@ -269,6 +274,7 @@ let b:current_syntax = "css"
 if main_syntax == 'css'
   unlet main_syntax
 endif
+
 
 " vim: ts=8
 

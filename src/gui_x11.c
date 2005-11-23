@@ -535,7 +535,7 @@ static XrmOptionDescRec cmdline_options[] =
     {"+reverse",	"*reverseVideo",    XrmoptionNoArg,	"False"},
     {"+rv",		"*reverseVideo",    XrmoptionNoArg,	"False"},
     {"-display",	".display",	    XrmoptionSepArg,	NULL},
-    {"-iconic",		"*iconic",	    XrmoptionNoArg,	"True"},
+    {"-iconic",		".iconic",	    XrmoptionNoArg,	"True"},
     {"-name",		".name",	    XrmoptionSepArg,	NULL},
     {"-bw",		".borderWidth",	    XrmoptionSepArg,	NULL},
     {"-borderwidth",	".borderWidth",	    XrmoptionSepArg,	NULL},
@@ -1610,7 +1610,8 @@ gui_mch_new_colors()
 gui_mch_open()
 {
     /* Actually open the window */
-    XtPopup(vimShell, XtGrabNone);
+    XtRealizeWidget(vimShell);
+    XtManageChild(XtNameToWidget(vimShell, "*vimForm"));
 
     gui.wid = gui_x11_get_wid();
     gui.blank_pointer = gui_x11_create_blank_mouse();

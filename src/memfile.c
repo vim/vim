@@ -1287,7 +1287,7 @@ mf_do_open(mfp, fname, flags)
 	/*
 	 * try to open the file
 	 */
-	flags |= O_EXTRA;
+	flags |= O_EXTRA | O_NOFOLLOW;
 #ifdef WIN32
 	/* Prevent handle inheritance that cause problems with Cscope
 	 * (swap file may not be deleted if cscope connection was open after

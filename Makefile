@@ -70,8 +70,8 @@ all install uninstall tools config configure proto depend lint tags types test t
 #    compiled binaries.
 #    Before creating an archive first delete all backup files, *.orig, etc.
 
-MAJOR = 6
-MINOR = 3
+MAJOR = 7
+MINOR = 0aa
 
 # Uncomment this line if the Win32s version is to be included.
 #DOSBIN_S =  dosbin_s
@@ -423,12 +423,15 @@ dosrt: dist dist/$(COMMENT_RT) dosrt_unix2dos
 	-rm -rf dist/vim$(VERSION)rt.zip
 	cd dist && zip -9 -rD -z vim$(VERSION)rt.zip vim <$(COMMENT_RT)
 
+# Split in two parts to avoid a "argument list too long" error.
 dosrt_unix2dos: dist prepare no_title.vim
 	-rm -rf dist/vim
 	mkdir dist/vim
 	mkdir dist/vim/$(VIMRTDIR)
 	tar cf - \
 		$(RT_ALL) \
+		| (cd dist/vim/$(VIMRTDIR); tar xf -)
+	tar cf - \
 		$(RT_SCRIPTS) \
 		$(RT_DOS) \
 		$(RT_NO_UNIX) \

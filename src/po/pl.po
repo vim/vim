@@ -1,18 +1,18 @@
 # translation of pl.po to Polish
 # Polish Translation for Vim
 #
-# updated 2001 for vim-6.0
+# updated 2005 for vim-7.0
+#
 # FIRST AUTHOR Marcin Dalecki <martin@dalecki.de>, 2000.
 # Mikolaj Machowski <mikmach@wp.pl>, 2004, 2005.
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: pl\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2005-06-27 01:18+0200\n"
-"PO-Revision-Date: 2005-06-27 10:45+0200\n"
+"POT-Creation-Date: 2005-10-14 01:26+0200\n"
+"PO-Revision-Date: 2005-10-14 12:24+0200\n"
 "Last-Translator: Mikolaj Machowski <mikmach@wp.pl>\n"
-"Language-Team: Polish <kde-transl@mer.chemia.polsl.gliwice.pl>\n"
+"Language-Team: Polish <mikmach@wp.pl>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-2\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -218,13 +218,8 @@ msgid " Keyword completion (^N^P)"
 msgstr " Dope³nianie s³ów kluczowych (^N^P)"
 
 #. ctrl_x_mode == 0, ^P/^N compl.
-msgid " ^X mode (^E^Y^L^]^F^I^K^D^U^V^N^P)"
-msgstr " ^X tryb (^E^Y^L^]^F^I^K^D^U^V^N^P)"
-
-#. Scroll has it's own msgs, in it's place there is the msg for local
-#. * ctrl_x_mode = 0 (eg continue_status & CONT_LOCAL)  -- Acevedo
-msgid " Keyword Local completion (^N^P)"
-msgstr " Lokalne dope³nianie s³ów kluczowych (^N^P)"
+msgid " ^X mode (^]^D^E^F^I^K^L^N^O^P^S^U^V^Y)"
+msgstr " ^X tryb (^]^D^E^F^I^K^L^N^O^P^S^U^V^Y)"
 
 msgid " Whole line completion (^L^N^P)"
 msgstr " Dope³nianie pe³nych wierszy (^L^N^P)"
@@ -253,14 +248,23 @@ msgstr " Dope³nianie wiersza poleceñ (^V^N^P)"
 msgid " User defined completion (^U^N^P)"
 msgstr "Dope³nianie zdefiniowane przez u¿ytkownika (^U^N^P)"
 
+msgid " Omni completion (^O^N^P)"
+msgstr " Omni uzupe³nianie (^O^N^P)"
+
+msgid " Spelling suggestion (^S^N^P)"
+msgstr "Propozycja ortografii (^L^N^P)"
+
+msgid " Keyword Local completion (^N^P)"
+msgstr " Lokalne dope³nianie s³ów kluczowych (^N^P)"
+
 msgid "Hit end of paragraph"
 msgstr "Dobi³em do koñca akapitu"
 
-msgid "'thesaurus' option is empty"
-msgstr "opcja 'thesaurus' jest pusta"
-
 msgid "'dictionary' option is empty"
 msgstr "opcja 'dictionary' jest pusta"
+
+msgid "'thesaurus' option is empty"
+msgstr "opcja 'thesaurus' jest pusta"
 
 #, c-format
 msgid "Scanning dictionary: %s"
@@ -311,9 +315,8 @@ msgid "E18: Unexpected characters in :let"
 msgstr "E18: Nieoczekiwane znaki w :let"
 
 #, c-format
-#, fuzzy
-#~ msgid "E684: list index out of range: %ld"
-#~ msgstr "E684: : %ld"
+msgid "E684: list index out of range: %ld"
+msgstr "E684: Indeks listy poza zakresem: %ld"
 
 #, c-format
 msgid "E121: Undefined variable: %s"
@@ -372,11 +375,11 @@ msgstr "E130: Nieznana funkcja: %s"
 msgid "E461: Illegal variable name: %s"
 msgstr "E418: Niedozwolona nazwa zmiennej: %s"
 
-#~ msgid "E687: Less targets than List items"
-#~ msgstr ""
+msgid "E687: Less targets than List items"
+msgstr "E687: Mniej celów ni¿ elementów Listy"
 
-#~ msgid "E688: More targets than List items"
-#~ msgstr ""
+msgid "E688: More targets than List items"
+msgstr "E688: Wiêcej celów ni¿ elementów Listy"
 
 msgid "Double ; in list of variables"
 msgstr "Podwójny ; w li¶cie zmiennych"
@@ -394,11 +397,11 @@ msgstr "E708: [:] musi byæ ostatnie"
 msgid "E709: [:] requires a List value"
 msgstr "E709: [:] wymaga warto¶ci listy"
 
-#~ msgid "E710: List value has more items than target"
-#~ msgstr ""
+msgid "E710: List value has more items than target"
+msgstr "E710: Lista ma wiêcej elementów ni¿ cel"
 
-#~ msgid "E711: List value has not enough items"
-#~ msgstr ""
+msgid "E711: List value has not enough items"
+msgstr "E711: Lista nie ma wystarczaj±cej ilo¶ci elementów"
 
 msgid "E690: Missing \"in\" after :for"
 msgstr "E690: Brak \"in\" po :for"
@@ -438,9 +441,8 @@ msgstr "E694: Nieprawid³owa operacja dla Funcref"
 msgid "E110: Missing ')'"
 msgstr "E110: Brak ')'"
 
-#, fuzzy
-#~ msgid "E695: Cannot index a Funcref"
-#~ msgstr "E90: Nie mogê wy³adowaæ ostatniego bufora"
+msgid "E695: Cannot index a Funcref"
+msgstr "E695: Nie mo¿na zindeksowaæ Funcref"
 
 #, c-format
 msgid "E112: Option name missing: %s"
@@ -472,7 +474,7 @@ msgstr "E720: Brak dwukropka w S³owniku: %s"
 
 #, c-format
 msgid "E721: Duplicate key in Dictionary: \"%s\""
-msgstr "E721: Podwójny klucz w S³owniku: \"%s\""
+msgstr "E721: Powtórzony klucz w S³owniku: \"%s\""
 
 #, c-format
 msgid "E722: Missing comma in Dictionary: %s"
@@ -524,8 +526,8 @@ msgstr "E745: Zakres niedozwolony"
 msgid "E701: Invalid type for len()"
 msgstr "E701: Nieprawid³owy typ dla len()"
 
-#~ msgid "E726: Stride is zero"
-#~ msgstr ""
+msgid "E726: Stride is zero"
+msgstr "E726: Skok to zero"
 
 msgid "E727: Start past end"
 msgstr "E727: Pocz±tek po koñcu"
@@ -549,9 +551,8 @@ msgstr "E655: Za du¿o dowi±zañ symbolicznych (pêtla?)"
 msgid "E258: Unable to send to client"
 msgstr "E258: Nie mogê wys³aæ do klienta"
 
-#, fuzzy
-#~ msgid "E702: Sort compare function failed"
-#~ msgstr "E237: Wybór drukarki nie powiód³ siê"
+msgid "E702: Sort compare function failed"
+msgstr "E702: Funkcja porównywania w sort nie powiod³a siê"
 
 msgid "(Invalid)"
 msgstr "(Niew³a¶ciwe)"
@@ -582,8 +583,8 @@ msgid "E704: Funcref variable name must start with a capital: %s"
 msgstr "E704: Nazwa Funcref musi siê zaczynaæ wielk± liter±: %s"
 
 #, c-format
-#~ msgid "705: Variable name conflicts with existing function: %s"
-#~ msgstr ""
+msgid "E705: Variable name conflicts with existing function: %s"
+msgstr "E705: Nazwa zmiennej jest w konflikcie z istniej±c± funkcj±: %s"
 
 #, c-format
 msgid "E706: Variable type mismatch for: %s"
@@ -623,7 +624,9 @@ msgstr "E129: Wymagana jest nazwa funkcji"
 
 #, c-format
 msgid "E128: Function name must start with a capital or contain a colon: %s"
-msgstr "E128: Nazwa funkcji musi rozpoczynaæ siê wielk± liter± lub zawieraæ dwukropek: %s"
+msgstr ""
+"E128: Nazwa funkcji musi rozpoczynaæ siê wielk± liter± lub zawieraæ "
+"dwukropek: %s"
 
 #, c-format
 msgid "E131: Cannot delete function %s: It is in use"
@@ -662,6 +665,13 @@ msgid ""
 msgstr ""
 "\n"
 "# zmienne globalne:\n"
+
+msgid ""
+"\n"
+"\tLast set from "
+msgstr ""
+"\n"
+"\tOstatnie ustawienie przez "
 
 msgid "Entering Debug mode.  Type \"cont\" to continue."
 msgstr "Wchodzê w tryb odpluskwiania. Wprowad¼ \"cont\" aby kontynuowaæ."
@@ -771,90 +781,6 @@ msgid "E168: :finish used outside of a sourced file"
 msgstr "E168: u¿yto :finish poza wczytywanym plikiem"
 
 #, c-format
-msgid "Page %d"
-msgstr "Strona %d"
-
-msgid "No text to be printed"
-msgstr "Brak tekstu do drukowania"
-
-#, c-format
-msgid "Printing page %d (%d%%)"
-msgstr "Drukujê stronê %d (%d%%)"
-
-#, c-format
-msgid " Copy %d of %d"
-msgstr " Kopia %d z %d"
-
-#, c-format
-msgid "Printed: %s"
-msgstr "Wydrukowano: %s"
-
-msgid "Printing aborted"
-msgstr "Drukowanie odwo³ane"
-
-msgid "E455: Error writing to PostScript output file"
-msgstr "E455: Nie mo¿na zapisaæ do wyj¶ciowego pliku PostScriptu"
-
-#, c-format
-msgid "E624: Can't open file \"%s\""
-msgstr "E624: Nie mogê otworzyæ pliku \"%s\""
-
-#, c-format
-msgid "E457: Can't read PostScript resource file \"%s\""
-msgstr "E457: Nie mo¿na odczytaæ pliku zasobów PostScriptu \"%s\""
-
-#, c-format
-msgid "E618: file \"%s\" is not a PostScript resource file"
-msgstr "E618: plik \"%s\" nie jest plikiem zasobów PostScriptu"
-
-#, c-format
-msgid "E619: file \"%s\" is not a supported PostScript resource file"
-msgstr "E619: plik \"%s\" nie jest wspieranym plikiem zasobów PostScriptu"
-
-#, c-format
-msgid "E621: \"%s\" resource file has wrong version"
-msgstr "E621: \"%s\" nieprawid³owa wersja pliku zasobów"
-
-msgid "E673: Incompatible multi-byte encoding and character set."
-msgstr "E673: Niekompatybilne kodowanie wielobajtowe i zestaw znaków."
-
-msgid "E674: printmbcharset cannot be empty with multi-byte encoding."
-msgstr "E674: printmbcharset nie mo¿e byæ pusty przy kodowaniu wielobajtowym."
-
-msgid "E675: No default font specified for multi-byte printing."
-msgstr "E675: Nie okre¶lono domy¶lnej czcionki dla drukowania wielobajtowego."
-
-msgid "E324: Can't open PostScript output file"
-msgstr "E324: Nie mo¿na otworzyæ pliku PostScript do wyj¶cia"
-
-#, c-format
-msgid "E456: Can't open file \"%s\""
-msgstr "E456: Nie mogê otworzyæ pliku \"%s\""
-
-msgid "E456: Can't find PostScript resource file \"prolog.ps\""
-msgstr "E456: Nie mo¿na znale¼æ pliku zasobów PostScriptu \"prolog.ps\""
-
-msgid "E456: Can't find PostScript resource file \"cidfont.ps\""
-msgstr "E456: Nie mo¿na znale¼æ pliku zasobów PostScriptu \"cidfont.ps\""
-
-#, c-format
-msgid "E456: Can't find PostScript resource file \"%s.ps\""
-msgstr "E456: Nie mo¿na znale¼æ pliku zasobów PostScriptu \"%s.ps\""
-
-#, c-format
-msgid "E620: Unable to convert to print encoding \"%s\""
-msgstr "E620: Nie mo¿na przekonwertowaæ by drukowaæ kodowanie \"%s\""
-
-msgid "Sending to printer..."
-msgstr "Przesy³am do drukarki..."
-
-msgid "E365: Failed to print PostScript file"
-msgstr "E365: Drukowanie pliku PostScript nie powiod³o siê"
-
-msgid "Print job sent."
-msgstr "Zadanie drukowanie przes³ane."
-
-#, c-format
 msgid "Current %slanguage: \"%s\""
 msgstr "Bie¿±cy %sjêzyk: \"%s\""
 
@@ -955,6 +881,14 @@ msgstr "E140: Stosuj ! do zapisania czê¶ciowo bufora"
 #, c-format
 msgid "Overwrite existing file \"%s\"?"
 msgstr "Nadpisaæ istniej±cy plik \"%s\"?"
+
+#, c-format
+msgid "Swap file \"%s\" exists, overwrite anyway?"
+msgstr "Plik wymiany \"%s\" istnieje, czy go nadpisaæ?"
+
+#, c-format
+msgid "E768: Swap file exists: %s (:silent! overrides)"
+msgstr "E768: Plik wymiany istnieje: %s (wymu¶ poprzez :silent!)"
 
 #, c-format
 msgid "E141: No file name for buffer %ld"
@@ -1069,7 +1003,7 @@ msgstr "E670: Mieszanka kodowañ w pliku pomocy w ramach jêzyka: %s"
 
 #, c-format
 msgid "E154: Duplicate tag \"%s\" in file %s/%s"
-msgstr "E154: Dwukrotny znacznik \"%s\" w pliku %s/%s"
+msgstr "E154: Powtórzony znacznik \"%s\" w pliku %s/%s"
 
 #, c-format
 msgid "E160: Unknown sign command: %s"
@@ -1188,18 +1122,8 @@ msgstr "E177: Mno¿nik nie mo¿e byæ podany dwukrotnie"
 msgid "E178: Invalid default value for count"
 msgstr "E178: Niew³a¶ciwa domy¶lna warto¶æ mno¿nika"
 
-msgid "E179: argument required for complete"
-msgstr "E179: argument wymagany do dope³niania"
-
-#, c-format
-msgid "E180: Invalid complete value: %s"
-msgstr "E180: Niew³a¶ciwa warto¶æ dope³niania: %s"
-
-msgid "E468: Completion argument only allowed for custom completion"
-msgstr "E468: Argument depe³niania dozwolony wy³±cznie dla dope³niania u¿ytkownika"
-
-msgid "E467: Custom completion requires a function argument"
-msgstr "E467: Dope³nianie u¿ytkownika wymaga funkcji jako argumentu"
+msgid "E179: argument required for -complete"
+msgstr "E179: -complete wymaga argumentu"
 
 #, c-format
 msgid "E181: Invalid attribute: %s"
@@ -1218,6 +1142,16 @@ msgid "E184: No such user-defined command: %s"
 msgstr "E184: Nie ma takiej komendy u¿ytkownika: %s"
 
 #, c-format
+msgid "E180: Invalid complete value: %s"
+msgstr "E180: Niew³a¶ciwa warto¶æ dope³niania: %s"
+
+msgid "E468: Completion argument only allowed for custom completion"
+msgstr "E468: Argument depe³niania dozwolony wy³±cznie dla dope³niania u¿ytkownika"
+
+msgid "E467: Custom completion requires a function argument"
+msgstr "E467: Dope³nianie u¿ytkownika wymaga funkcji jako argumentu"
+
+#, c-format
 msgid "E185: Cannot find color scheme %s"
 msgstr "E185: Nie mogê znale¼æ zestawu kolorów %s"
 
@@ -1234,7 +1168,9 @@ msgid "Append File"
 msgstr "Do³±cz plik"
 
 msgid "E747: Cannot change directory, buffer is modifed (add ! to override)"
-msgstr "E747: Nie mogê zmieniæ katalogu, bufor zosta³ zmodyfikowany (dodaj ! aby wymusiæ)"
+msgstr ""
+"E747: Nie mogê zmieniæ katalogu, bufor zosta³ zmodyfikowany (dodaj ! aby "
+"wymusiæ)"
 
 msgid "E186: No previous directory"
 msgstr "E186: Nie ma poprzedniego katalogu"
@@ -1467,6 +1403,9 @@ msgstr "nie jest plikiem"
 
 msgid "[New File]"
 msgstr "[Nowy Plik]"
+
+msgid "[File too big]"
+msgstr "[Za du¿y plik]"
 
 msgid "[Permission Denied]"
 msgstr "[Nie dozwolono]"
@@ -1756,8 +1695,8 @@ msgid "--Deleted--"
 msgstr "--Skasowano--"
 
 #, c-format
-#~ msgid "auto-removing autocommand: %s <buffer=%d>"
-#~ msgstr ""
+msgid "auto-removing autocommand: %s <buffer=%d>"
+msgstr "auto-usuwanie autokomendy: %s <buffer=%d>"
 
 #. the group doesn't exist
 #, c-format
@@ -1784,9 +1723,9 @@ msgstr ""
 "\n"
 "--- Autokomendy ---"
 
-#, fuzzy, c-format
-#~ msgid "E680: <buffer=%d>: invalid buffer number "
-#~ msgstr "niew³a¶ciwy numer bufora"
+#, c-format
+msgid "E680: <buffer=%d>: invalid buffer number "
+msgstr "E680: <buffer=%d>: niew³a¶ciwy numer bufora"
 
 msgid "E217: Can't execute autocommands for ALL events"
 msgstr "E217: Nie mo¿na wykonywaæ autokomend dla wydarzeñ ALL"
@@ -1910,8 +1849,8 @@ msgstr "E599: Nieprawid³owa warto¶æ 'imactivatekey'"
 msgid "E254: Cannot allocate color %s"
 msgstr "E254: Nie mogê zarezerwowaæ koloru %s"
 
-#~ msgid "No match at cursor, finding next"
-#~ msgstr ""
+msgid "No match at cursor, finding next"
+msgstr "Brak dopasowania przy kursorze, szukam dalej"
 
 msgid "Vim dialog..."
 msgstr "Dialog Vima..."
@@ -2052,8 +1991,8 @@ msgstr "Szukanie i Zamiana (u¿yj '\\\\' do szukania '\\')"
 msgid "Not Used"
 msgstr "Nie u¿ywany"
 
-#~ msgid "Directory\t*.nothing\n"
-#~ msgstr ""
+msgid "Directory\t*.nothing\n"
+msgstr "Katalog\t*.nic\n"
 
 msgid "Vim E458: Cannot allocate colormap entry, some colors may be incorrect"
 msgstr ""
@@ -2084,9 +2023,9 @@ msgstr "Font0: %s\n"
 msgid "Font1: %s\n"
 msgstr "Font1: %s\n"
 
-#, fuzzy, c-format
-#~ msgid "Font%ld width is not twice that of font0\n"
-#~ msgstr "szeroko¶æ font%d nie jest podwójn± szeroko¶ci± font0\n"
+#, c-format
+msgid "Font%ld width is not twice that of font0\n"
+msgstr "Szeroko¶æ font%ld nie jest podwójn± szeroko¶ci± font0\n"
 
 #, c-format
 msgid "Font0 width: %ld\n"
@@ -2103,11 +2042,11 @@ msgstr ""
 msgid "Invalid font specification"
 msgstr "Nieprawid³owy opis czcionki"
 
-#~ msgid "&Dismiss"
-#~ msgstr ""
+msgid "&Dismiss"
+msgstr "&Anuluj"
 
-#~ msgid "no specific match"
-#~ msgstr ""
+msgid "no specific match"
+msgstr "brak okre¶lonego dopasowania"
 
 msgid "Vim - Font Selector"
 msgstr "Vim - wybór czcionki"
@@ -2133,6 +2072,99 @@ msgstr "Wielko¶æ:"
 
 msgid "E256: Hangul automata ERROR"
 msgstr "E256: B£¡D w automacie Hangul"
+
+msgid "E550: Missing colon"
+msgstr "E550: Brak dwukropka"
+
+msgid "E551: Illegal component"
+msgstr "E551: Niedozwolona czê¶æ"
+
+msgid "E552: digit expected"
+msgstr "E552: oczekiwano cyfry"
+
+#, c-format
+msgid "Page %d"
+msgstr "Strona %d"
+
+msgid "No text to be printed"
+msgstr "Brak tekstu do drukowania"
+
+#, c-format
+msgid "Printing page %d (%d%%)"
+msgstr "Drukujê stronê %d (%d%%)"
+
+#, c-format
+msgid " Copy %d of %d"
+msgstr " Kopia %d z %d"
+
+#, c-format
+msgid "Printed: %s"
+msgstr "Wydrukowano: %s"
+
+msgid "Printing aborted"
+msgstr "Drukowanie odwo³ane"
+
+msgid "E455: Error writing to PostScript output file"
+msgstr "E455: Nie mo¿na zapisaæ do wyj¶ciowego pliku PostScriptu"
+
+#, c-format
+msgid "E624: Can't open file \"%s\""
+msgstr "E624: Nie mogê otworzyæ pliku \"%s\""
+
+#, c-format
+msgid "E457: Can't read PostScript resource file \"%s\""
+msgstr "E457: Nie mo¿na odczytaæ pliku zasobów PostScriptu \"%s\""
+
+#, c-format
+msgid "E618: file \"%s\" is not a PostScript resource file"
+msgstr "E618: plik \"%s\" nie jest plikiem zasobów PostScriptu"
+
+#, c-format
+msgid "E619: file \"%s\" is not a supported PostScript resource file"
+msgstr "E619: plik \"%s\" nie jest wspieranym plikiem zasobów PostScriptu"
+
+#, c-format
+msgid "E621: \"%s\" resource file has wrong version"
+msgstr "E621: \"%s\" nieprawid³owa wersja pliku zasobów"
+
+msgid "E673: Incompatible multi-byte encoding and character set."
+msgstr "E673: Niekompatybilne kodowanie wielobajtowe i zestaw znaków."
+
+msgid "E674: printmbcharset cannot be empty with multi-byte encoding."
+msgstr "E674: printmbcharset nie mo¿e byæ pusty przy kodowaniu wielobajtowym."
+
+msgid "E675: No default font specified for multi-byte printing."
+msgstr "E675: Nie okre¶lono domy¶lnej czcionki dla drukowania wielobajtowego."
+
+msgid "E324: Can't open PostScript output file"
+msgstr "E324: Nie mo¿na otworzyæ pliku PostScript do wyj¶cia"
+
+#, c-format
+msgid "E456: Can't open file \"%s\""
+msgstr "E456: Nie mogê otworzyæ pliku \"%s\""
+
+msgid "E456: Can't find PostScript resource file \"prolog.ps\""
+msgstr "E456: Nie mo¿na znale¼æ pliku zasobów PostScriptu \"prolog.ps\""
+
+msgid "E456: Can't find PostScript resource file \"cidfont.ps\""
+msgstr "E456: Nie mo¿na znale¼æ pliku zasobów PostScriptu \"cidfont.ps\""
+
+#, c-format
+msgid "E456: Can't find PostScript resource file \"%s.ps\""
+msgstr "E456: Nie mo¿na znale¼æ pliku zasobów PostScriptu \"%s.ps\""
+
+#, c-format
+msgid "E620: Unable to convert to print encoding \"%s\""
+msgstr "E620: Nie mo¿na przekonwertowaæ by drukowaæ kodowanie \"%s\""
+
+msgid "Sending to printer..."
+msgstr "Przesy³am do drukarki..."
+
+msgid "E365: Failed to print PostScript file"
+msgstr "E365: Drukowanie pliku PostScript nie powiod³o siê"
+
+msgid "Print job sent."
+msgstr "Zadanie drukowanie przes³ane."
 
 msgid "Add a new database"
 msgstr "Dodaj now± bazê danych"
@@ -2278,7 +2310,9 @@ msgstr " # pid   nazwa bazy danych               przedsionek tropu\n"
 msgid ""
 "???: Sorry, this command is disabled, the MzScheme library could not be "
 "loaded."
-msgstr "???: Przykro mi, ta komenda jest wy³±czona, biblioteka MzScheme nie mo¿e byæ za³adowana."
+msgstr ""
+"???: Przykro mi, ta komenda jest wy³±czona, biblioteka MzScheme nie mo¿e byæ "
+"za³adowana."
 
 msgid "invalid expression"
 msgstr "niepoprawne wyra¿enie"
@@ -2292,9 +2326,8 @@ msgstr "ukryta opcja"
 msgid "unknown option"
 msgstr "nieznana opcja"
 
-#, fuzzy
-#~ msgid "window index is out of range"
-#~ msgstr "numer wiersza poza zakresem"
+msgid "window index is out of range"
+msgstr "indeks okna poza zakresem"
 
 msgid "couldn't open buffer"
 msgstr "nie mogê otworzyæ bufora"
@@ -2576,8 +2609,8 @@ msgstr "E573: U¿yto niew³a¶ciwego id serwera: %s"
 msgid "E251: VIM instance registry property is badly formed.  Deleted!"
 msgstr "E251: wcielenia instancji rejestru Vima jest ¼le sformowane.  Skasowano!"
 
-msgid "Unknown option"
-msgstr "Nieznana opcja"
+msgid "Unknown option argument"
+msgstr "Nieznany argument opcji"
 
 msgid "Too many edit arguments"
 msgstr "Zbyt wiele argumentów"
@@ -2585,14 +2618,18 @@ msgstr "Zbyt wiele argumentów"
 msgid "Argument missing after"
 msgstr "Brak argumentu po"
 
-msgid "Garbage after option"
-msgstr "¦miecie po opcji"
+msgid "Garbage after option argument"
+msgstr "¦miecie po argumencie opcji"
 
 msgid "Too many \"+command\", \"-c command\" or \"--cmd command\" arguments"
 msgstr "Zbyt wiele argumentów \"+komenda\", \"-c komenda\" lub \"--cmd komenda\""
 
 msgid "Invalid argument for"
 msgstr "Niew³a¶ciwy argument dla"
+
+#, c-format
+msgid "%d files to edit\n"
+msgstr "%d plików do edycji\n"
 
 msgid "This Vim was not compiled with the diff feature."
 msgstr "Ta wersja Vima nie by³a skompilowanego z opcj± ró¿nic (diff)."
@@ -2614,10 +2651,6 @@ msgstr "Vim: OSTRZE¯ENIE: Wyj¶cie nie jest terminalem\n"
 
 msgid "Vim: Warning: Input is not from a terminal\n"
 msgstr "Vim: OSTRZE¯ENIE: Wej¶cie nie pochodzi z terminala\n"
-
-#, c-format
-msgid "%d files to edit\n"
-msgstr "%d plików do edycji\n"
 
 #. just in case..
 msgid "pre-vimrc command line"
@@ -2665,8 +2698,8 @@ msgstr ""
 "\n"
 "   lub:"
 
-#~ msgid "where case is ignored prepend / to make flag upper case"
-#~ msgstr ""
+msgid "where case is ignored prepend / to make flag upper case"
+msgstr "gdzie wielko¶æ znaków jest ignorowana dodaj na pocz±tku / by flaga by³a wielk± liter±"
 
 msgid ""
 "\n"
@@ -3498,8 +3531,9 @@ msgstr "E327: Czê¶æ tropu punktu menu nie okre¶la podmenu"
 msgid "E328: Menu only exists in another mode"
 msgstr "E328: Menu istnieje tylko w innym trybie"
 
-msgid "E329: No menu of that name"
-msgstr "E329: Nie ma menu o tej nazwie"
+#, c-format
+msgid "E329: No menu \"%s\""
+msgstr "E329: Nie ma menu \"%s\""
 
 msgid "E330: Menu path must not lead to a sub-menu"
 msgstr "E330: Trop menu nie mo¿e prowadziæ do podmenu"
@@ -3557,17 +3591,18 @@ msgstr "Opiekun komunikatów: Miko³aj Machowski <mikmach@wp.pl>"
 msgid "Interrupt: "
 msgstr "Przerwanie: "
 
-msgid "Hit ENTER or type command to continue"
+msgid "Press ENTER or type command to continue"
 msgstr "Naci¶nij ENTER lub wprowad¼ komendê aby kontynuowaæ"
+
+#, c-format
+msgid "%s line %ld"
+msgstr "%s wiersz %ld"
 
 msgid "-- More --"
 msgstr "-- Wiêcej --"
 
-msgid " (RET/BS: line, SPACE/b: page, d/u: half page, q: quit)"
-msgstr " (RET/BS: wiersz, SPACE/b: stronê, d/u: pó³ strony, q: zakoñcz)"
-
-msgid " (RET: line, SPACE: page, d: half page, q: quit)"
-msgstr " (RET: wiersz, SPACE: stronê, d: pó³ strony, q: zakoñczenie)"
+msgid " SPACE/d/j: screen/page/line down, b/u/k: up, q: quit "
+msgstr " SPACE/d/j: ekran/strona/wiersz w dó³, b/u/k: do góry, q: zakoñcz"
 
 msgid "Question"
 msgstr "Pytanie"
@@ -3605,10 +3640,18 @@ msgstr "Dialog otwierania pliku"
 msgid "E338: Sorry, no file browser in console mode"
 msgstr "E338: Przykro mi, nie ma przegl±darki plików w trybie konsoli"
 
+msgid "E766: Insufficient arguments for printf()"
+msgstr "E766: Za ma³o argumentów dla printf()"
+
+msgid "E767: Too many arguments to printf()"
+msgstr "E767: Za du¿o argumentów dla printf()"
+
 msgid "W10: Warning: Changing a readonly file"
 msgstr "W10: OSTRZE¯ENIE: Zmiany w pliku tylko do odczytu"
 
-#. When using ":silent" assume that <CR> was entered.
+msgid "Type number or click with mouse (<Enter> cancels): "
+msgstr "Wpisz numer lub wybierz mysz± (<Enter> anuluje): "
+
 msgid "Choice number (<Enter> cancels): "
 msgstr "Wybierz numer (<Enter> anuluje): "
 
@@ -3723,15 +3766,6 @@ msgstr "E346: Katalogu \"%s\" nie ma wiêcej w cdpath"
 msgid "E347: No more file \"%s\" found in path"
 msgstr "E347: Pliku \"%s\" nie ma wiêcej w tropie"
 
-msgid "E550: Missing colon"
-msgstr "E550: Brak dwukropka"
-
-msgid "E551: Illegal component"
-msgstr "E551: Niedozwolona czê¶æ"
-
-msgid "E552: digit expected"
-msgstr "E552: oczekiwano cyfry"
-
 #. Get here when the server can't be found.
 msgid "Cannot connect to Netbeans #2"
 msgstr "Nie mo¿na po³±czyæ z Netbeans #2"
@@ -3822,9 +3856,8 @@ msgstr "%ld wierszy zmieniono"
 msgid "freeing %ld lines"
 msgstr "zwalniam %ld wierszy"
 
-#, fuzzy
-#~ msgid "block of 1 line yanked"
-#~ msgstr "1 wiersz skopiowano"
+msgid "block of 1 line yanked"
+msgstr "skopiowano blok 1 wiersza"
 
 msgid "1 line yanked"
 msgstr "1 wiersz skopiowano"
@@ -3876,7 +3909,9 @@ msgstr "Wybrano %s%ld z %ld Wierszy; %ld z %ld S³ów; %ld z %ld Bajtów"
 msgid ""
 "Selected %s%ld of %ld Lines; %ld of %ld Words; %ld of %ld Chars; %ld of %ld "
 "Bytes"
-msgstr "Wybrano %s%ld z %ld Wierszy; %ld z %ld S³ów; %ld z %ld Znaków; %ld z %ld Bajtów"
+msgstr ""
+"Wybrano %s%ld z %ld Wierszy; %ld z %ld S³ów; %ld z %ld Znaków; %ld z %ld "
+"Bajtów"
 
 #, c-format
 msgid "Col %s of %s; Line %ld of %ld; Word %ld of %ld; Byte %ld of %ld"
@@ -3886,7 +3921,9 @@ msgstr "Kol %s z %s; Wiersz %ld z %ld; S³owo %ld z %ld; Bajt %ld z %ld"
 msgid ""
 "Col %s of %s; Line %ld of %ld; Word %ld of %ld; Char %ld of %ld; Byte %ld of "
 "%ld"
-msgstr "Kol %s z %s; Wiersz %ld z %ld; S³owo %ld z %ld; Znak %ld z %ld; Bajt %ld z %ld"
+msgstr ""
+"Kol %s z %s; Wiersz %ld z %ld; S³owo %ld z %ld; Znak %ld z %ld; Bajt %ld z %"
+"ld"
 
 #, c-format
 msgid "(+%ld for BOM)"
@@ -3906,13 +3943,6 @@ msgstr "E519: Opcja nie jest wspomagana"
 
 msgid "E520: Not allowed in a modeline"
 msgstr "E520: Niedozwolone w modeline"
-
-msgid ""
-"\n"
-"\tLast set from "
-msgstr ""
-"\n"
-"\tOstatnie ustawienie przez "
 
 msgid "E521: Number required after ="
 msgstr "E521: Po = wymagany jest numer"
@@ -4425,6 +4455,10 @@ msgid "E71: Invalid character after %s%%"
 msgstr "E71: Niedozwolony znak po %s%%"
 
 #, c-format
+msgid "E769: Missing ] after %s["
+msgstr "E769: Brak ] po %s["
+
+#, c-format
 msgid "E554: Syntax error in %s{...}"
 msgstr "E554: B³±d sk³adni w %s{...}"
 
@@ -4485,12 +4519,6 @@ msgstr " ZAZNACZANIE BLOKOWE"
 msgid "recording"
 msgstr "zapis"
 
-msgid "search hit TOP, continuing at BOTTOM"
-msgstr "szukanie dobi³o GÓRY; kontynuacja od KOÑCA"
-
-msgid "search hit BOTTOM, continuing at TOP"
-msgstr "szukanie dobi³o KOÑCA; kontynuacja od GÓRY"
-
 #, c-format
 msgid "E383: Invalid search string: %s"
 msgstr "E383: Niew³a¶ciwy ci±g do szukania: %s"
@@ -4547,34 +4575,56 @@ msgstr "E389: Nie znalaz³em wzorca"
 msgid "E759: Format error in spell file"
 msgstr "E759: Nieprawid³owy format pliku sprawdzania pisowni"
 
+msgid "E758: Truncated spell file"
+msgstr "E758: Obciêty plik sprawdzania pisowni"
+
+#, c-format
+msgid "Trailing text in %s line %d: %s"
+msgstr "Zbêdny tekst w %s wiersz %d: %s"
+
+#, c-format
+msgid "Affix name too long in %s line %d: %s"
+msgstr "Za d³uga nazwa afiksu w %s wiersz %d: %s"
+
+msgid "E761: Format error in affix file FOL, LOW or UPP"
+msgstr "E761: B³±d formatu w pliku afiksów FOL, LOW lub UPP"
+
+msgid "E762: Character in FOL, LOW or UPP is out of range"
+msgstr "E762: Znak w FOL, LOW lub UPP jest poza zasiêgiem"
+
+msgid "Compressing word tree..."
+msgstr "Kompresja drzewa s³ów..."
+
 msgid "E756: Spell checking is not enabled"
 msgstr "E756: Sprawdzanie pisowni nie jest w³±czone"
 
 #, c-format
-msgid "Warning: Cannot find word list \"%s\""
-msgstr "Ostrze¿enie: Nie mogê znale¼æ listy s³ów \"%s\""
+msgid "Warning: Cannot find word list \"%s.%s.spl\" or \"%s.ascii.spl\""
+msgstr "Ostrze¿enie: Nie mogê znale¼æ listy s³ów \"%s.%s.spl\" lub \"%s.ascii.spl\""
 
 #, c-format
 msgid "Reading spell file \"%s\""
 msgstr "Odczytujê plik sprawdzania pisowni \"%s\""
 
-msgid "E757: Wrong file ID in spell file"
-msgstr "E757: B³êdne ID pliku sprawdzania pisowni"
+msgid "E757: This does not look like a spell file"
+msgstr "E757: To nie wygl±da na plik sprawdzania pisowni"
 
-msgid "E758: Truncated spell file"
-msgstr "E758: Obciêty plik sprawdzania pisowni"
+msgid "E771: Old spell file, needs to be updated"
+msgstr "E771: Stary plik sprawdzania pisowni, wymagane uaktualnienie"
+
+msgid "E772: Spell file is for newer version of Vim"
+msgstr "E772: Plik sprawdzania pisowni dla nowszej wersji Vima"
+
+msgid "E770: Unsupported section in spell file"
+msgstr "E770: Niewspierana sekcja w pliku sprawdzania pisowni"
 
 #, c-format
 msgid "Warning: region %s not supported"
 msgstr "Ostrze¿enie: region %s nie jest wspierany"
 
 #, c-format
-#~ msgid "Affix name too long in %s line %d: %s"
-#~ msgstr ""
-
-#, fuzzy, c-format
-#~ msgid "Reading affix file %s..."
-#~ msgstr "Szukam w pliku znaczników %s"
+msgid "Reading affix file %s ..."
+msgstr "Czytam plik afiksów %s ..."
 
 #, c-format
 msgid "Conversion failure for word in %s line %d: %s"
@@ -4588,29 +4638,49 @@ msgstr "Konwersja w %s nie jest wspierana: od %s do %s"
 msgid "Conversion in %s not supported"
 msgstr "Konwersja w %s nie jest wspierana"
 
-#, fuzzy, c-format
-#~ msgid "Trailing text in %s line %d: %s"
-#~ msgstr "Punkt kontrolny w \"%s%s\" wiersz %ld"
+#, c-format
+msgid "Invalid value for FLAG in %s line %d: %s"
+msgstr "Nieprawid³owa warto¶æ FLAG w %s wierz %d: %s"
+
+#, c-format
+msgid "FLAG after using flags in %s line %d: %s"
+msgstr "FLAG po u¿yciu flag w %s wiersz %d: %s"
+
+#, c-format
+msgid "Character used for SLASH must be ASCII; in %s line %d: %s"
+msgstr "Znak u¿yty jako SLASH musi byæ znakiem ASCII; w %s wiersz %d: %s"
+
+#, c-format
+msgid "Wrong COMPOUNDMAX value in %s line %d: %s"
+msgstr "Z³a warto¶æ COMPOUNDMAX w %s wiersz %d: %s"
+
+#, c-format
+msgid "Wrong COMPOUNDMIN value in %s line %d: %s"
+msgstr "Z³a warto¶æ COMPOUNDMIM w %s wiersz %d: %s"
+
+#, c-format
+msgid "Wrong COMPOUNDSYLMAX value in %s line %d: %s"
+msgstr "Z³a warto¶æ COMPOUNDSYLMAX w %s wiersz %d: %s"
+
+#, c-format
+msgid "Different combining flag in continued affix block in %s line %d: %s"
+msgstr "Ró¿ne flagi z³o¿eñ w kontynuowanym bloku afiksu w %s wiersz %d: %s"
+
+#, c-format
+msgid "Duplicate affix in %s line %d: %s"
+msgstr "Powtórzony afiks w %s wiersz %d: %s"
+
+#, c-format
+msgid "Affix also used for BAD/RAR/KEP/NEEDAFFIX/NEEDCOMPOUND in %s line %d: %s"
+msgstr "Afiks u¿yty tak¿e dla BAD/RAR/KEP/NEEDAFFIX/NEEDCOMPOUND w %s wiersz %d: %s"
 
 #, c-format
 msgid "Expected Y or N in %s line %d: %s"
 msgstr "Oczekiwano Y lub N w %s wierszu %d: %s"
 
-#, fuzzy, c-format
-#~ msgid "Duplicate affix in %s line %d: %s"
-#~ msgstr "Dwukrotny znacznik \"%s\" w pliku %s"
-
 #, c-format
-msgid "Duplicate FOL in %s line %d"
-msgstr "Dwukrotny FOL w %s wierszu %d"
-
-#, c-format
-msgid "Duplicate LOW in %s line %d"
-msgstr "Dwukrotny LOW w %s wierszu %d"
-
-#, c-format
-msgid "Duplicate UPP in %s line %d"
-msgstr "Dwukrotny UPP w %s wierszu %d"
+msgid "Broken condition in %s line %d: %s"
+msgstr "B³êdny warunek w %s wiersz %d: %s"
 
 #, c-format
 msgid "Expected REP count in %s line %d"
@@ -4622,19 +4692,51 @@ msgstr "Oczekiwano ilo¶ci MAP w %s wierszu %d"
 
 #, c-format
 msgid "Duplicate character in MAP in %s line %d"
-msgstr "Podwojony znak w MAP w %s wierszu %d"
+msgstr "Powtórzony znak w MAP w %s wierszu %d"
 
 #, c-format
-msgid "Unrecognized item in %s line %d: %s"
-msgstr "Nieznany element w %s wierszu %d: %s"
+msgid "Unrecognized or duplicate item in %s line %d: %s"
+msgstr "Nieznany lub powtórzony element w %s wierszu %d: %s"
 
 #, c-format
 msgid "Missing FOL/LOW/UPP line in %s"
 msgstr "Brak wiersza FOL/LOW/UPP w %s"
 
+msgid "COMPOUNDSYLMAX used without SYLLABLE"
+msgstr "COMPOUNDSYLMAX u¿yty bez SYLLABLE"
+
+msgid "Too many postponed prefixes"
+msgstr "Zbyt wiele opó¼nionych prefiksów"
+
+msgid "Too many compound flags"
+msgstr "Zbyt wiele flag z³o¿eñ"
+
+msgid "Too many posponed prefixes and/or compound flags"
+msgstr "Zbyt wiele opó¼nionych prefiksów i/lub flag z³o¿eñ"
+
 #, c-format
-msgid "Reading dictionary file %s..."
-msgstr "Czytam plik s³ownika %s..."
+msgid "Missing SOFO%s line in %s"
+msgstr "Brak wiersza SOFO%s wiersz w %s"
+
+#, c-format
+msgid "Both SAL and SOFO lines in %s"
+msgstr "Wiersze SAL i SOFO w %s"
+
+#, c-format
+msgid "Flag is not a number in %s line %d: %s"
+msgstr "Flaga nie jest liczb± w %s wiersz %d: %s"
+
+#, c-format
+msgid "Illegal flag in %s line %d: %s"
+msgstr "Nieprawid³owa flaga w %s wiersz %d: %s"
+
+#, c-format
+msgid "%s value differs from what is used in another .aff file"
+msgstr "Warto¶æ %s ró¿ni siê od tej u¿ytej w innym pliku .aff"
+
+#, c-format
+msgid "Reading dictionary file %s ..."
+msgstr "Czytam plik s³ownika %s ..."
 
 #, c-format
 msgid "E760: No word count in %s"
@@ -4647,19 +4749,29 @@ msgstr "wiersz %6d, s³owo %6d - %s"
 # c-format
 #, c-format
 msgid "Duplicate word in %s line %d: %s"
-msgstr "Podwójny wyraz w %s wierszu %d: %s"
+msgstr "Powtórzony wyraz w %s wierszu %d: %s"
+
+# c-format
+#, c-format
+msgid "First duplicate word in %s line %d: %s"
+msgstr "Pierwszy powtórzony wyraz w %s wiersz %d: %s"
+
+# c-format
+#, c-format
+msgid "%d duplicate word(s) in %s"
+msgstr "%d powtórzony(ch) wyraz(ów) w %s"
 
 #, c-format
-msgid "Ignored %d words with non-ASCII characters"
-msgstr "Zignorowa³em %d s³ów ze znakami nie ASCII"
+msgid "Ignored %d word(s) with non-ASCII characters in %s"
+msgstr "Zignorowa³em %d s³ów ze znakami nie ASCII w %s"
 
 #, c-format
-msgid "Reading word file %s..."
-msgstr "Odczytujê plik wyrazów %s..."
+msgid "Reading word file %s ..."
+msgstr "Odczytujê plik wyrazów %s ..."
 
 #, c-format
 msgid "Duplicate /encoding= line ignored in %s line %d: %s"
-msgstr "Zignorowano podwojony wiersz /encoding= w %s wierszu %d: %s"
+msgstr "Zignorowano powtórzony wiersz /encoding= w %s wierszu %d: %s"
 
 #, c-format
 msgid "/encoding= line after word ignored in %s line %d: %s"
@@ -4667,19 +4779,27 @@ msgstr "Zignorowano wiersz /encoding= po wyrazie w %s wierszu %d: %s"
 
 #, c-format
 msgid "Duplicate /regions= line ignored in %s line %d: %s"
-msgstr "Podwojony wiersz /regions= zignorowano w %s wierszu %d: %s"
+msgstr "Powtórzony wiersz /regions= zignorowano w %s wierszu %d: %s"
 
 #, c-format
 msgid "Too many regions in %s line %d: %s"
 msgstr "Za du¿o regionów w %s wiersz %d: %s"
 
 #, c-format
+msgid "/ line ignored in %s line %d: %s"
+msgstr "wiersz / zignorowano w %s wierszu %d: %s"
+
+#, c-format
 msgid "Invalid region nr in %s line %d: %s"
 msgstr "Nieprawid³owy numer regionu w %s wierszu %d: %s"
 
 #, c-format
-msgid "/ line ignored in %s line %d: %s"
-msgstr "wiersz / zignorowano w %s wierszu %d: %s"
+msgid "Unrecognized flags in %s line %d: %s"
+msgstr "Nieznane flagi w %s wiersz %d: %s"
+
+#, c-format
+msgid "Ignored %d words with non-ASCII characters"
+msgstr "Zignorowa³em %d s³ów ze znakami nie ASCII"
 
 #, c-format
 msgid "Compressed %d of %d nodes; %d%% remaining"
@@ -4695,12 +4815,12 @@ msgstr "E754: Wspieram tylko 8 regionów"
 msgid "E755: Invalid region in %s"
 msgstr "E755: Nieprawid³owy region w %s"
 
-msgid "Compressing word tree..."
-msgstr "Kompresja drzewa s³ów..."
+msgid "Warning: both compounding and NOBREAK specified"
+msgstr "Ostrze¿enie: okre¶lono zarówno z³o¿enia jak i NOBREAK"
 
 #, c-format
-msgid "Writing spell file %s..."
-msgstr "Zapisujê plik sprawdzania pisowni %s..."
+msgid "Writing spell file %s ..."
+msgstr "Zapisujê plik sprawdzania pisowni %s ..."
 
 msgid "Done!"
 msgstr "Zrobione!"
@@ -4709,15 +4829,9 @@ msgstr "Zrobione!"
 msgid "Estimated runtime memory use: %d bytes"
 msgstr "Oczekiwane zu¿ycie pamiêci: %d bajtów"
 
-msgid "E764: 'spellfile' is not set"
-msgstr "E764: Nie ustawiono 'spellfile'"
-
-#, fuzzy
-#~ msgid "E761: Format error in affix file FOL, LOW or UPP"
-#~ msgstr "E431: B³±d formatu w pliku znaczników \"%s\""
-
-msgid "E762: Character in FOL, LOW or UPP is out of range"
-msgstr "E762: Znak w FOL, LOW lub UPP jest poza zasiêgiem"
+#, c-format
+msgid "E765: 'spellfile' does not have %ld entries"
+msgstr "E765: 'spellfile' nie posiada wpisów %ld"
 
 msgid "E763: Word characters differ between spell files"
 msgstr "E763: Znaki wyrazów ró¿ni± siê miêdzy plikami sprawdzania pisowni"
@@ -4726,29 +4840,29 @@ msgid "Sorry, no suggestions"
 msgstr "Przykro mi, brak podpowiedzi"
 
 #, c-format
+msgid "Sorry, only %ld suggestions"
+msgstr "Przykro mi, tylko %ld podpowiedzi"
+
+#. avoid more prompt
+#, c-format
 msgid "Change \"%.*s\" to:"
 msgstr "Zmieñ \"%.*s\" na:"
-
-#, c-format
-msgid "%2d \"%s\""
-msgstr "%2d \"%s\""
 
 #, c-format
 msgid " < \"%.*s\""
 msgstr " < \"%.*s\""
 
-#, c-format
-msgid " (%s%d - %d)"
-msgstr " (%s%d - %d)"
+msgid "E752: No previous spell replacement"
+msgstr "E752: Brak poprzednich podmian sprawdzania pisowni"
 
 #, c-format
-msgid " (%d)"
-msgstr " (%d)"
+msgid "E753: Not found: %s"
+msgstr "E753: Nie znaleziono: %s"
 
 #. This should have been checked when generating the .spl
 #. * file.
 msgid "E999: duplicate char in MAP entry"
-msgstr "E999: podwojony znak we wpisie MAP"
+msgstr "E999: powtórzony znak we wpisie MAP"
 
 #, c-format
 msgid "E390: Illegal argument: %s"
@@ -5772,4 +5886,14 @@ msgstr "E682: Niew³a¶ciwy wzorzec wyszukiwania lub delimiter"
 
 msgid "E139: File is loaded in another buffer"
 msgstr "E139: Plik jest za³adowany w innym buforze"
+
+#, c-format
+msgid "E764: Option '%s' is not set"
+msgstr "E764: Nie ustawiono opcji '%s'"
+
+msgid "search hit TOP, continuing at BOTTOM"
+msgstr "szukanie dobi³o GÓRY; kontynuacja od KOÑCA"
+
+msgid "search hit BOTTOM, continuing at TOP"
+msgstr "szukanie dobi³o KOÑCA; kontynuacja od GÓRY"
 

@@ -1,4 +1,4 @@
-*if_tcl.txt*    For Vim version 7.0aa.  Last change: 2005 Mar 29
+*if_tcl.txt*    For Vim version 7.0aa.  Last change: 2005 Oct 14
 
 
 		  VIM REFERENCE MANUAL    by Ingo Wilken
@@ -14,6 +14,7 @@ The Tcl Interface to Vim				*tcl* *Tcl* *TCL*
 6. Miscellaneous; Output from Tcl	|tcl-misc| |tcl-output|
 7. Known bugs & problems		|tcl-bugs|
 8. Examples				|tcl-examples|
+9. Dynamic loading			|tcl-dynamic|
 
 {Vi does not have any of these commands} *E280* *E281*
 
@@ -507,6 +508,23 @@ startup file (usually "~/.vimrc" on Unix):
 	if has("tcl")
 		tclfile ~/.vimrc.tcl
 	endif
+
+==============================================================================
+9. Dynamic loading					*tcl-dynamic*
+
+On MS-Windows the Tcl library can be loaded dynamically.  The |:version|
+output then includes |+tcl/dyn|.
+
+This means that Vim will search for the Tcl DLL file only when needed.  When
+you don't use the Tcl interface you don't need it, thus you can use Vim
+without this DLL file.
+
+To use the Tcl interface the Tcl DLL must be in your search path.  In a
+console window type "path" to see what directories are used.
+
+The name of the DLL must match the Tcl version Vim was compiled with.
+Currently the name is "tcl83.dll".  That is for Tcl 8.3.  To know for sure
+edit "gvim.exe" and search for "tcl\d*.dll\c".
 
 ==============================================================================
  vim:tw=78:ts=8:ft=help:norl:

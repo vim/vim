@@ -2,17 +2,19 @@
 " Language:	PHP
 " Author:	John Wellesz <John.wellesz (AT) teaser (DOT) fr>
 " URL:		http://www.2072productions.com/vim/indent/php.vim
-" Last Change: 2005 September 22th
-" Version: 1.181
+" Last Change: 2005 Nobember 21st
+" Version: 1.20
 "
-" The change log and all the comments have been removed from this file.
+"  The change log and all the comments have been removed from this file.
 "
-" For a complete change log and fully commented code, download the script on
-" 2072productions.com at the URI provided above.
-"
-"
+"  For a complete change log and fully commented code, download the script on
+"  2072productions.com at the URI provided above.
+" 
 "  If you find a bug, please e-mail me at John.wellesz (AT) teaser (DOT) fr
-"  with an example of code that breaks the algorithm.
+"  with an example of code that break the algorithm.
+"
+"
+"	Thanks a lot for using this script.
 "
 "
 " NOTE: This script must be used with PHP syntax ON and with the php syntax
@@ -23,6 +25,7 @@
 "	tags not at col 1 you'll have to indent your file 2 times (This script 
 "	will automatically put HereDoc end tags at col 1).
 " 
+"
 " NOTE: If you are editing file in Unix file format and that (by accident)
 " there are '\r' before new lines, this script won't be able to proceed
 " correctly and will make many mistakes because it won't be able to match
@@ -34,31 +37,36 @@
 " or simply 'let' the option PHP_removeCRwhenUnix to 1 and the script will
 " silently remove them when VIM load this script (at each bufread).
 
+
+" Options: PHP_autoformatcomment = 0 to not enable autoformating of comment by
+"		    default, if set to 0, this script will let the 'formatoptions' setting intact.
+" 
 " Options: PHP_default_indenting = # of sw (default is 0), # of sw will be
-"	   added to the indent of each line of PHP code.
+"		   added to the indent of each line of PHP code.
 "
 " Options: PHP_removeCRwhenUnix = 1 to make the script automatically remove CR
-"	   at end of lines (by default this option is unset), NOTE that you
-"	   MUST remove CR when the fileformat is UNIX else the indentation
-"	   won't be correct...
+"		   at end of lines (by default this option is unset), NOTE that you
+"		   MUST remove CR when the fileformat is UNIX else the indentation
+"		   won't be correct...
 "
 " Options: PHP_BracesAtCodeLevel = 1 to indent the '{' and '}' at the same
-"	   level than the code they contain.
-"	   Exemple:
-"		Instead of:
-"			if ($foo)
-"			{
-"				foo();
-"			}
-"
-"		You will write:
-"			if ($foo)
+"		   level than the code they contain.
+"		   Exemple:
+"			Instead of:
+"				if ($foo)
 "				{
-"				foo();
+"					foo();
 "				}
 "
-"		NOTE: The script will be a bit slower if you use this option because
-"		some optimizations won't be available.
+"			You will write:
+"				if ($foo)
+"					{
+"					foo();
+"					}
+"
+"			NOTE: The script will be a bit slower if you use this option because
+"			some optimizations won't be available.
+
 
 
 if exists("b:did_indent")
@@ -82,6 +90,11 @@ else
     let b:PHP_BracesAtCodeLevel = 0
 endif
 
+if exists("PHP_autoformatcomment")
+    let b:PHP_autoformatcomment = PHP_autoformatcomment
+else
+    let b:PHP_autoformatcomment = 1
+endif
 
 let b:PHP_lastindented = 0
 let b:PHP_indentbeforelast = 0
@@ -114,12 +127,12 @@ if &fileformat == "unix" && exists("PHP_removeCRwhenUnix") && PHP_removeCRwhenUn
 endif
 
 if exists("*GetPhpIndent")
-    finish " XXX
+   finish " XXX
 endif
 
 let s:endline= '\s*\%(//.*\|#.*\|/\*.*\*/\s*\)\=$'
 let s:PHP_startindenttag = '<?\%(.*?>\)\@!\|<script[^>]*>\%(.*<\/script>\)\@!'
-"setlocal debug=msg " XXX
+" setlocal debug=msg " XXX
 
 
 function! GetLastRealCodeLNum(startline) " {{{
@@ -141,7 +154,7 @@ function! GetLastRealCodeLNum(startline) " {{{
 	    if lastline !~ '^\*/'
 		call search('\*/', 'W')
 	    endif
-	    let lnum = searchpair('/\*', '', '\*/', s:searchpairflags)
+	    let lnum = searchpair('/\*', '', '\*/', s:searchpairflags, 'Skippmatch2()')
 
 	    let lastline = getline(lnum)
 	    if lastline =~ '^\s*/\*'
@@ -183,6 +196,17 @@ function! GetLastRealCodeLNum(startline) " {{{
     endif
     return lnum
 endfunction " }}}
+
+function! Skippmatch2()
+
+    let line = getline(".")
+
+   if line =~ '\%(".*\)\@<=/\*\%(.*"\)\@=' || line =~ '\%(//.*\)\@<=/\*'
+       return 1
+   else
+       return 0
+   endif
+endfun
 
 function! Skippmatch()  " {{{
     let synname = synIDattr(synID(line("."), col("."), 0), "name")
@@ -245,7 +269,7 @@ function! IslinePHP (lnum, tofind) " {{{
     let cline = getline(a:lnum)
 
     if a:tofind==""
-	let tofind = "^\\s*[\"']*\s*\\zs\\S"
+	let tofind = "^\\s*[\"']*\\s*\\zs\\S"
     else
 	let tofind = a:tofind
     endif
@@ -264,17 +288,28 @@ function! IslinePHP (lnum, tofind) " {{{
 endfunction " }}}
 
 let s:notPhpHereDoc = '\%(break\|return\|continue\|exit\);'
-let s:blockstart = '\%(\%(\%(}\s*\)\=else\%(\s\+\)\=\)\=if\>\|else\>\|while\>\|switch\>\|for\%(each\)\=\>\|declare\>\|class\>\|[|&]\)'
+let s:blockstart = '\%(\%(\%(}\s*\)\=else\%(\s\+\)\=\)\=if\>\|else\>\|while\>\|switch\>\|for\%(each\)\=\>\|declare\>\|class\>\|interface\>\|abstract\>\|[|&]\)'
 
 let s:autorestoptions = 0
 if ! s:autorestoptions
-    au BufWinEnter,Syntax *.php,*.php3,*.php4,*.php5 call ResetOptions()
+    au BufWinEnter,Syntax	*.php,*.php3,*.php4,*.php5	call ResetOptions()
     let s:autorestoptions = 1
 endif
 
 function! ResetOptions()
     if ! b:optionsset
-	setlocal formatoptions=qroc
+	if b:PHP_autoformatcomment
+
+	    setlocal comments=s1:/*,mb:*,ex:*/,://,:#
+	    
+	    setlocal formatoptions-=t
+	    setlocal formatoptions+=q
+	    setlocal formatoptions+=r
+	    setlocal formatoptions+=o
+	    setlocal formatoptions+=w
+	    setlocal formatoptions+=c
+	    setlocal formatoptions+=b
+	endif
 	let b:optionsset = 1
     endif
 endfunc
@@ -376,7 +411,7 @@ function! GetPhpIndent()
 		if cline !~ '^\*/'
 		    call search('\*/', 'W')
 		endif
-		let lnum = searchpair('/\*', '', '\*/', s:searchpairflags)
+		let lnum = searchpair('/\*', '', '\*/', s:searchpairflags, 'Skippmatch2()')
 
 		let b:PHP_CurrentIndentLevel = b:PHP_default_indenting
 
@@ -493,7 +528,7 @@ function! GetPhpIndent()
 	if cline !~ '^\*/'
 	    call search('\*/', 'W')
 	endif
-	let lnum = searchpair('/\*', '', '\*/', s:searchpairflags)
+	let lnum = searchpair('/\*', '', '\*/', s:searchpairflags, 'Skippmatch2()')
 
 	let b:PHP_CurrentIndentLevel = b:PHP_default_indenting
 

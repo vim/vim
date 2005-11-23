@@ -1381,8 +1381,8 @@ getvvcol(wp, pos, start, cursor, end)
 	    if (c != TAB && vim_isprintc(c))
 	    {
 		endadd = char2cells(c) - 1;
-		if (coladd >= endadd)
-		    coladd -= endadd;
+		if (coladd > endadd)	/* past end of line */
+		    endadd = 0;
 		else
 		    coladd = 0;
 	    }

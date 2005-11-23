@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Oct 05
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Nov 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -76,10 +76,8 @@ achieve special effects.  These options come in three forms:
 			comma separated list, a comma is added, unless the
 			value was empty.
 			If the option is a list of flags, superfluous flags
-			are removed.  Otherwise there is no check for doubled
-			values.  You can avoid this by removing a value first.
-			Example: >
-				:set guioptions-=T guioptions+=T
+			are removed.  When adding a flag that was already
+			present the option value doesn't change.
 <			Also see |:set-args| above.
 			{not in Vi}
 
@@ -988,6 +986,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Watch out for special characters, see |option-backslash|.
 	When $TMPDIR, $TMP or $TEMP is not defined, it is not used for the
 	default value.  "/tmp/*" is only used for Unix.
+	Note that the default also makes sure that "crontab -e" works (when a
+	backup would be made by renaming the original file crontab won't see
+	the newly created file).  Also see 'backupcopy' and |crontab|.
 
 						*'balloondelay'* *'bdlay'*
 'balloondelay' 'bdlay'	number	(default: 600)
@@ -2927,10 +2928,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 	The name of an external program that will be used to format the lines
 	selected with the "gq" command.  The program must take the input on
 	stdin and produce the output on stdout.  The Unix program "fmt" is
-	such a program.  If this option is an empty string, the internal
-	format function will be used |C-indenting|.  Environment variables are
-	expanded |:set_env|.  See |option-backslash| about including spaces
-	and backslashes.
+	such a program.
+	If this option is an empty string, the internal format function will
+	be used |C-indenting|.
+	Environment variables are expanded |:set_env|.  See |option-backslash|
+	about including spaces and backslashes.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 

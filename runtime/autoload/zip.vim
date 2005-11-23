@@ -1,7 +1,7 @@
 " zip.vim: Handles browsing zipfiles
 "            AUTOLOAD PORTION
-" Date:			Sep 16, 2005
-" Version:		2
+" Date:			Nov 14, 2005
+" Version:		4
 " Maintainer:	Charles E Campbell, Jr <drchipNOSPAM at campbellfamily dot biz>
 " License:		Vim License  (see vim's :help license)
 " Copyright:    Copyright (C) 2005 Charles E. Campbell, Jr. {{{1
@@ -22,7 +22,7 @@ if exists("g:loaded_zip")
  finish
 endif
 
-let g:loaded_zip= "v2"
+let g:loaded_zip= "v4"
 
 " ----------------
 "  Functions: {{{1
@@ -41,9 +41,12 @@ fun! zip#Browse(zipfile)
    return
   endif
   if !filereadable(a:zipfile)
-   echohl Error | echo "***error*** (zip#Browse) File not readable<".a:zipfile.">" | echohl None
-   call inputsave()|call input("Press <cr> to continue")|call inputrestore()
-"   call Dret("zip#Browse")
+   if a:zipfile !~# '^\a\+://'
+    " if its an url, don't complain, let url-handlers such as vim do its thing
+    echohl Error | echo "***error*** (zip#Browse) File not readable<".a:zipfile.">" | echohl None
+    call inputsave()|call input("Press <cr> to continue")|call inputrestore()
+   endif
+"   call Dret("zip#Browse : file<".a:zipfile."> not readable")
    return
   endif
   if &ma != 1
@@ -80,7 +83,7 @@ endfun
 " ---------------------------------------------------------------------
 " ZipBrowseSelect: {{{2
 fun! s:ZipBrowseSelect()
-"  call Dfunc("ZipBrowseSelect() zipfile<".w:zipfile.">")
+"  call Dfunc("ZipBrowseSelect() zipfile<".w:zipfile."> curfile<".expand("%").">")
   let fname= getline(".")
 
   " sanity check
@@ -99,13 +102,15 @@ fun! s:ZipBrowseSelect()
 
   " get zipfile to the new-window
   let zipfile= substitute(w:zipfile,'.zip$','','e')
+  let curfile= expand("%")
 
   new
   wincmd _
+  let s:zipfile_{winnr()}= curfile
   exe "e zipfile:".zipfile.':'.fname
   filetype detect
 
-"  call Dret("ZipBrowseSelect")
+"  call Dret("ZipBrowseSelect : s:zipfile_".winnr()."<".s:zipfile_{winnr()}.">")
 endfun
 
 " ---------------------------------------------------------------------
@@ -128,7 +133,7 @@ endfun
 " ---------------------------------------------------------------------
 " zip#Write: {{{2
 fun! zip#Write(fname)
-"  call Dfunc("zip#Write(fname<".a:fname.")")
+"  call Dfunc("zip#Write(fname<".a:fname.") zipfile_".winnr()."<".s:zipfile_{winnr()}.">")
 
   " sanity checks
   if !executable("zip")
@@ -192,6 +197,21 @@ fun! zip#Write(fname)
   if v:shell_error != 0
    echohl Error | echo "***error*** (zip#Write) sorry, unable to update ".zipfile." with ".fname | echohl None
    call inputsave()|call input("Press <cr> to continue")|call inputrestore()
+
+  elseif s:zipfile_{winnr()} =~ '^\a\+://'
+   " support writing zipfiles across a network
+   let netzipfile= s:zipfile_{winnr()}
+"   call Decho("handle writing <".zipfile.".zip> across network as <".netzipfile.">")
+   1split|enew
+   let binkeep= &binary
+   let eikeep = &ei
+   set binary ei=all
+   exe "e! ".zipfile.".zip"
+   call netrw#NetWrite(netzipfile)
+   let &ei     = eikeep
+   let &binary = binkeep
+   q!
+   unlet s:zipfile_{winnr()}
   endif
   
   " cleanup and restore current directory

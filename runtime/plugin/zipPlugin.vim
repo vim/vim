@@ -22,19 +22,19 @@ set cpo&vim
 " Public Interface: {{{1
 augroup zip
  au!
- au BufReadCmd   zipfile:*	call zip#Read(expand("<afile>"), 1)
- au FileReadCmd  zipfile:*	call zip#Read(expand("<afile>"), 0)
- au BufWriteCmd  zipfile:*	call zip#Write(expand("<afile>"))
- au FileWriteCmd zipfile:*	call zip#Write(expand("<afile>"))
+ au BufReadCmd   zipfile:*	call zip#Read(expand("<amatch>"), 1)
+ au FileReadCmd  zipfile:*	call zip#Read(expand("<amatch>"), 0)
+ au BufWriteCmd  zipfile:*	call zip#Write(expand("<amatch>"))
+ au FileWriteCmd zipfile:*	call zip#Write(expand("<amatch>"))
 
  if has("unix")
-  au BufReadCmd   zipfile:*/*	call zip#Read(expand("<afile>"), 1)
-  au FileReadCmd  zipfile:*/*	call zip#Read(expand("<afile>"), 0)
-  au BufWriteCmd  zipfile:*/*	call zip#Write(expand("<afile>"))
-  au FileWriteCmd zipfile:*/*	call zip#Write(expand("<afile>"))
+  au BufReadCmd   zipfile:*/*	call zip#Read(expand("<amatch>"), 1)
+  au FileReadCmd  zipfile:*/*	call zip#Read(expand("<amatch>"), 0)
+  au BufWriteCmd  zipfile:*/*	call zip#Write(expand("<amatch>"))
+  au FileWriteCmd zipfile:*/*	call zip#Write(expand("<amatch>"))
  endif
 
- au BufReadCmd   *.zip		call zip#Browse(expand("<afile>"))
+ au BufReadCmd   *.zip		call zip#Browse(expand("<amatch>"))
 augroup END
 
 " ------------------------------------------------------------------------

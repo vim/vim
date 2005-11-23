@@ -19,6 +19,9 @@ func! GetMline()
     let idline .= substitute(line, '"\(.*\)"$', '\1', '')
   endwhile
 
+  " remove '%', not used for formatting.
+  let idline = substitute(idline, "'%'", '', 'g')
+
   " remove everything but % items.
   return substitute(idline, '[^%]*\(%[-+ #''.0-9*]*l\=[dsuxXpoc%]\)\=', '\1', 'g')
 endfunc
@@ -39,6 +42,8 @@ while 1
     let toline = GetMline()
     if fromline != toline
       echo 'Mismatching % in line ' . (line('.') - 1)
+      echo 'msgid: ' . fromline
+      echo 'msgstr: ' . toline
       let error = 1
     endif
   endif

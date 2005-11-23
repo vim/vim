@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0aa.  Last change: 2005 Oct 02
+*insert.txt*    For Vim version 7.0aa.  Last change: 2005 Nov 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -975,6 +975,7 @@ PmenuThumb	thumb of the scrollbar  |hl-PmenuThumb|
 
 Filetype-specific remarks for omni completion	    *compl-omni-filetypes*
 
+
 C							*ft-c-omni*
 
 Completion of C code requires a tags file.  You should use Exuberant ctags,
@@ -1007,7 +1008,14 @@ When the same structure name appears in multiple places all possible members
 are included.
 
 
+CSS                                                     *ft-css-omni*
+
+Complete properties and their appropriate values according to CSS 2.1
+specification. 
+
+
 (X)HTML                          			*ft-html-omni*
+                                 			*ft-xhtml-omni*
 
 CTRL-X CTRL-O provides completion of various elements of (X)HTML files.
 It is designed to support writing of XHTML 1.0 Strict files but will
@@ -1019,23 +1027,124 @@ also works for other versions of HTML. Features:
   a tag)
 - when attribute has limited number of possible values help to complete
   them
+- complete names of entities
 - complete values of "class" and "id" attributes with data obtained from
   style tag and included CSS files
 - when completing "style" attribute or working inside of "style" tag
   switch to |ft-css-omni| completion
 - when used after "</" CTRL-X CTRL-O will close the last opened tag
 
-File htmlcomplete.vim provides through |autoload| mechanism
+Note: When used first time completion menu will be shown with little delay
+- this is time needed for loading of data file.
+
+
+XML                                                     *ft-xml-omni*
+
+Vim 7 provides mechanism to context aware completion of XML files. It depends
+on special |xml-data-file| and two commands: |:XMLns| and |:XMLent|. Features
+are:
+
+- after "<" complete tag name depending on context (no div suggest
+  inside of an a tag)
+- inside of tag complete proper attributes (no width attribute for an
+  a tag)
+- when attribute has limited number of possible values help to complete
+  them
+- complete names of entities (defined in |xml-data-file| and in current file
+  with "<!ENTITY" declarations
+- when used after "</" CTRL-X CTRL-O will close the last opened tag
+
+Format of XML data file                                 *xml-omni-datafile*
+
+Vim distribution provides two data files as examples (xhtml10s.vim, xsl.vim)
+
+XML data files are stored in "autoload/xml" directory in 'runtimepath'. They
+have meaningful name which will be used in commands. It should be unique name
+which will not create conflicts in future. For example name xhtml10s.vim means
+it is data file for XHTML 1.0 Strict.
+
+File contains one variable with fixed name: g:xmldata_xhtml10s . It is
+compound from two parts: 
+
+1. "g:xmldata_"  general prefix 
+2. "xhtml10s"    name of file and name of described XML dialect
+
+Part two must be exactly the same as name of file.
+
+Variable is data structure in form of |Dictionary|. Keys are tag names and
+values are two element |List|. First element of List is also List with
+names of possible children, second element is |Dictionary| with names of
+attributes as keys and possible values of attributes as values. Example: >
+
+    let g:xmldata_crippledhtml = {
+    \ "html": 
+    \ [ ["body", "head"], {"id": [], "xmlns": ["http://www.w3.org/1999/xhtml"], 
+    \ "lang": [], "xml:lang": [], "dir": ["ltr", "rtl"]}], 
+    \ "script": 
+    \ [ [], {"id": [], "charset": [], "type": ["text/javascript"], "src": [], 
+    \ "defer": ["BOOL"], "xml:space": ["preserve"]}],
+    \ "meta": 
+    \ [ [], {"id": [], "http-equiv": [], "name": [], "content": [], "scheme": 
+    \ [], "lang": [], "xml:lang": [], "dir": ["ltr", "rtl"]}]
+    \ "vimxmlentities": ["amp", "lt", "gt", "apos", "quot"]}
+
+This example should be put in "autoload/xml/crippledhtml.vim" file.
+
+In example are visible two special elements:
+
+1. "vimxmlentities" - special key with List containing entities of this XML
+   dialect.
+2. "BOOL" - value of attribute key showing if attribute should be inserted
+   bare ("defer" vs. 'defer="'). It can be the only element of List of
+   attribute values.
+
+Note: Tag names in data file MUST not contain namespace description. Check
+xsl.vim for example.
+
+Commands
+
+:XMLns {name} [{namespace}]                                  *:XMLns*
+
+Vim has to know which data file should be used and with which namespace. For
+loading of data file and connecting data with prope namespace use |:XMLns|
+command. First (obligatory) argument is name of data (xhtml10s, xsl). Second
+argument is code of namespace (h, xsl). When used without second argument
+dialect will be used as default - without namespace declaration. For example
+to use XML completion in .xsl files: >
+
+	:XMLns xhtml10s
+	:XMLns xsl xsl
+
+
+:XMLent {name}                                               *:XMLent*
+
+By default entities will be completed from data file of default
+namespace. XMLent command should be used in case when there is no
+default namespace: >
+
+        :XMLent xhtml10s
+
+Usage
+
+While used in situation (after declarations from previous part, | is
+cursor position): >
+
+        <|
+
+Will complete to appropriate XHTML tag, and in this situation: >
+
+        <xsl:|
+
+Will complete to appropriate XSL tag.
+
+File xmlcomplete.vim provides through |autoload| mechanism
 GetLastOpenTag function which can be used in XML files to get name of
 last open tag with (b:unaryTagsStack has to be defined): >
 
-        :echo htmlcomplete#GetLastOpenTag("b:unaryTagsStack")
+        :echo xmlcomplete#GetLastOpenTag("b:unaryTagsStack")
 
 
-CSS                                                     *ft-css-omni*
 
-Complete properties and their appropriate values according to CSS 2.1
-specification. 
 
 
 ==============================================================================

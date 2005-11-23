@@ -2,7 +2,7 @@
 " Language:     Java
 " Maintainer:   Claudio Fleiner <claudio@fleiner.com>
 " URL:		http://www.fleiner.com/vim/syntax/java.vim
-" Last Change:  2004 Nov 12
+" Last Change:  2005 Nov 04
 
 " Please check :help java.vim for comments on some of the options available.
 
@@ -58,8 +58,11 @@ syn match   javaTypedef		"\.\s*\<class\>"ms=s+1
 syn keyword javaClassDecl	enum
 syn match   javaClassDecl	"^class\>"
 syn match   javaClassDecl	"[^.]\s*\<class\>"ms=s+1
+syn match   javaAnnotation      "@[_$a-zA-Z][_$a-zA-Z0-9_]*\>"
+syn match   javaClassDecl       "@interface\>"
 syn keyword javaBranch		break continue nextgroup=javaUserLabelRef skipwhite
 syn match   javaUserLabelRef	"\k\+" contained
+syn match   javaVarArg          "\.\.\."
 syn keyword javaScopeDecl	public protected private abstract
 
 if exists("java_highlight_java_lang_ids") || exists("java_highlight_java_lang") || exists("java_highlight_all")
@@ -130,7 +133,7 @@ if !exists("java_allow_cpp_keywords")
 endif
 
 " The following cluster contains all java groups except the contained ones
-syn cluster javaTop add=javaExternal,javaError,javaError,javaBranch,javaLabelRegion,javaLabel,javaConditional,javaRepeat,javaBoolean,javaConstant,javaTypedef,javaOperator,javaType,javaType,javaStatement,javaStorageClass,javaAssert,javaExceptions,javaMethodDecl,javaClassDecl,javaClassDecl,javaClassDecl,javaScopeDecl,javaError,javaError2,javaUserLabel,javaLangObject
+syn cluster javaTop add=javaExternal,javaError,javaError,javaBranch,javaLabelRegion,javaLabel,javaConditional,javaRepeat,javaBoolean,javaConstant,javaTypedef,javaOperator,javaType,javaType,javaStatement,javaStorageClass,javaAssert,javaExceptions,javaMethodDecl,javaClassDecl,javaClassDecl,javaClassDecl,javaScopeDecl,javaError,javaError2,javaUserLabel,javaLangObject,javaAnnotation,javaVarArg
 
 
 " Comments
@@ -283,6 +286,7 @@ if version >= 508 || !exists("did_java_syn_inits")
     let did_java_syn_inits = 1
   endif
   JavaHiLink javaFuncDef		Function
+  JavaHiLink javaVarArg                 Function
   JavaHiLink javaBraces			Function
   JavaHiLink javaBranch			Conditional
   JavaHiLink javaUserLabelRef		javaUserLabel
@@ -314,6 +318,7 @@ if version >= 508 || !exists("did_java_syn_inits")
   JavaHiLink javaConstant		Constant
   JavaHiLink javaTypedef		Typedef
   JavaHiLink javaTodo			Todo
+  JavaHiLink javaAnnotation             PreProc
 
   JavaHiLink javaCommentTitle		SpecialComment
   JavaHiLink javaDocTags		Special

@@ -16538,7 +16538,8 @@ set_var(name, tv, copy)
     {
 	/* Make sure the variable name is valid. */
 	for (p = varname; *p != NUL; ++p)
-	    if (!eval_isnamec1(*p) && (p == varname || !VIM_ISDIGIT(*p)))
+	    if (!eval_isnamec1(*p) && (p == varname || !VIM_ISDIGIT(*p))
+						       && *p != AUTOLOAD_CHAR)
 	    {
 		EMSG2(_(e_illvar), varname);
 		return;

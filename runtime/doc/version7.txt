@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Oct 11
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Nov 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -429,7 +429,7 @@ Win32: The ":winpos" command now also works in the console. (Vipin Aravind)
 			Lakshmanan).
 
 
-New functions: ~
+New and extended functions: ~
 
 |add()|			append an item to a List
 |append()|		append List of lines to the buffer
@@ -570,7 +570,7 @@ character selections can be used between two Vims. (Eckehard Berns)
 Also fixes the problem that setting 'clipboard' to "unnamed" breaks using
 "yyp".
 
-Mac: GUI font selector. (Peter "Rain Dog" Cucka)
+Mac: GUI font selector. (Peter Cucka)
 
 Mac: support for multi-byte characters. (Da Woon Jung)
 
@@ -619,6 +619,9 @@ IMPROVEMENTS						*improvements-7*
 
 Move the help for printing to a separate help file.  It's quite a lot now.
 
+When ":silent" is used and a backwards range is given for an Ex command the
+range is swapped automatically instead of asking if that is OK.
+
 The pattern matching code was changed from a recursive function to an
 iterative mechanism.  This avoids out-of-stack errors.  State is stored in
 allocated memory, running out of memory can always be detected.  Allows
@@ -636,7 +639,7 @@ it. (Johannes Zellner)
 Added "nbsp" in 'listchars'. (David Blanchet)
 
 Added the "acwrite" value for the 'buftype' option.  This is for a buffer that
-doesn not have a name that refers to a file and is written with BufWriteCmd
+does not have a name that refers to a file and is written with BufWriteCmd
 autocommands.
 
 For lisp indenting and matching parenthesis: (Sergey Khorev)
@@ -816,7 +819,7 @@ For command-line completion the matches for various types of arguments are now
 sorted: user commands, variables, syntax names, etc.
 
 When no locale is set, thus using the "C" locale, Vim will work with latin1
-characters, using it's own isupper()/toupper()/etc. functions.
+characters, using its own isupper()/toupper()/etc. functions.
 
 When using an rxvt terminal emulator guess the value of 'background' using the
 COLORFGBG environment variable. (Ciaran McCreesh)
@@ -1394,5 +1397,14 @@ redrawing may fail.  Make sure w_skipcol is valid before redrawing.
 Limit the values of 'columns' and 'lines' to avoid an overflow in Rows *
 Columns.  Fixed bad effects when running out of memory (command line would be
 reversed, ":qa!" resulted in ":!aq").
+
+Motif: "gvim -iconic" opened the window anyway.  (David Harrison)
+
+There is a tiny chance that a symlink gets created between checking for an
+existing file and creating a file.  Use the O_NOFOLLOW for open() if it's
+available.
+
+In an empty line "ix<CTRL-O>0" moved the cursor to after the line instead of
+sticking to the first column.
 
  vim:tw=78:ts=8:ft=help:norl:

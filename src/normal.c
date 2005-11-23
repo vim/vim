@@ -4229,9 +4229,7 @@ nv_mousescroll(cap)
     cmdarg_T	*cap;
 {
 # if defined(FEAT_GUI) && defined(FEAT_WINDOWS)
-    win_T *old_curwin;
-
-    old_curwin = curwin;
+    win_T *old_curwin = curwin;
 
     /* Currently we only get the mouse coordinates in the GUI. */
     if (gui.in_use && mouse_row >= 0 && mouse_col >= 0)
@@ -8083,6 +8081,8 @@ nv_beginline(cap)
     if ((fdo_flags & FDO_HOR) && KeyTyped && cap->oap->op_type == OP_NOP)
 	foldOpenCursor();
 #endif
+    ins_at_eol = FALSE;	    /* Don't move cursor past eol (only necessary in a
+			       one-character line). */
 }
 
 #ifdef FEAT_VISUAL

@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.0aa.  Last change: 2005 Oct 10
+*autocmd.txt*   For Vim version 7.0aa.  Last change: 2005 Nov 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -811,6 +811,10 @@ option will not cause any commands to be executed.
 			argument is included, Vim executes only the matching
 			autocommands for that group.  Note: if you use an
 			undefined group name, Vim gives you an error message.
+
+			After applying the autocommands the modelines are
+			processed, so that their overrule the settings from
+			autocommands, like what happens when editing a file.
 
 						*:doautoa* *:doautoall*
 :doautoa[ll] [group] {event} [fname]

@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 7.0aa.  Last change: 2005 Sep 17
+*cmdline.txt*   For Vim version 7.0aa.  Last change: 2005 Nov 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -562,7 +562,7 @@ argument for the command, which has a different meaning.  For example:
 			"name"
 
 ==============================================================================
-4. Ex command-line ranges	*cmdline-ranges* *[range]* *E16* *E493*
+4. Ex command-line ranges	*cmdline-ranges* *[range]* *E16*
 
 Some Ex commands accept a line range in front of them.  This is noted as
 [range].  It consists of one or more line specifiers, separated with ',' or
@@ -648,11 +648,15 @@ When folds are active the line numbers are rounded off to include the whole
 closed fold.  See |fold-behavior|.
 
 
-Reverse Range
+Reverse Range						*E493*
 
 A range should have the lower line number first.  If this is not the case, Vim
-will ask you if it should swap the line numbers.  This is not done within the
-global command ":g".
+will ask you if it should swap the line numbers. 
+	Backwards range given, OK to swap ~
+This is not done within the global command ":g".
+
+You can use ":silent" before a command to avoid the question, the range will
+always be swapped then.
 
 
 Count and Range						*N:*
