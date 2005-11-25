@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 7.0aa.  Last change: 2005 Sep 13
+*quickref.txt*  For Vim version 7.0aa.  Last change: 2005 Nov 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -633,6 +633,7 @@ Short explanation of each option:		*option-list*
 |'compatible'|	  |'cp'|     behave Vi-compatible as much as possible
 |'complete'|	  |'cpt'|    specify how Insert mode completion works
 |'completefunc'|  |'cfu'|    function to be used for Insert mode completion
+|'completeopt'|   |'cot'|    options for Insert mode completion
 |'confirm'|	  |'cf'|     ask what to do about unsaved/read-only files
 |'conskey'|	  |'consk'|  get keys directly from console (MS-DOS only)
 |'copyindent'|    |'ci'|     make 'autoindent' use existing indent structure

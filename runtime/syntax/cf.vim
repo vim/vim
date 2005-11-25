@@ -1,7 +1,7 @@
 " Vim syntax file
 "    Language: ColdFusion
 "  Maintainer: Toby Woodwark (toby.woodwark+vim@gmail.com)
-" Last Change: 2005-11-02
+" Last Change: 2005 Nov 25
 "   Filenames: *.cfc *.cfm
 "     Version: Macromedia ColdFusion MX 7
 "       Usage: Note that ColdFusion has its own comment syntax
