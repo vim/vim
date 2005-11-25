@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Nov 23
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Nov 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -44,12 +44,19 @@ differences.  Use Amiga code?
 
 "make unixall": remove split in floppy-size archives.
 
+Using pipes for filter commands: provide some way to type a password, keep
+stderr in/out open for this?
+
 To support mapping <F4> to be used as <F4>{motion}: Add operator that
 executes a user defined function. '[ and '] marks are at start and end of
 text.  ":map <F4> :set opfunc=MyOp<CR>gy".
 
 Patch from Yasuhiro Matsumoto: ":e ++enc=xxx" keeps encoding for conversion
-errors and illegal bytes.  How about replacing bytes with '?' or not?
+errors and illegal bytes.  Make default to replace bad bytes/characters with
+'?' and allow for two alternatives:
+	:e ++enc=xxx ++bad=keep foo.txt
+	:e ++enc=xxx ++bad=drop foo.txt
+	:e ++enc=xxx ++bad=? foo.txt
 
 ccomplete:
 - When an option is set: In completion mode and the user types (identifier)
@@ -99,6 +106,9 @@ Mac unicode patch (Da Woon Jung):
     use http://macvim.org/OSX/files/gvimrc
 - With 'nopaste' pasting is wrong, with 'paste' Command-V doesn't work.
   (Alan Schmitt)
+
+Mac: drop support for OS 9?  Most people are now using OS/X and Vim 6.4 can be
+used for others.
 
 Patch to add a few flags to search(). (Benji Fisher, Nov 22)
 

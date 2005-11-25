@@ -1697,8 +1697,8 @@ write_viminfo(file, forceit)
 	 */
 	st_old.st_dev = st_old.st_ino = 0;
 	st_old.st_mode = 0600;
-	if (mch_stat((char *)fname, &st_old) == 0 && getuid() &&
-		!(st_old.st_uid == getuid()
+	if (mch_stat((char *)fname, &st_old) == 0 && getuid()
+		&& !(st_old.st_uid == getuid()
 			? (st_old.st_mode & 0200)
 			: (st_old.st_gid == getgid()
 				? (st_old.st_mode & 0020)
@@ -1762,8 +1762,8 @@ write_viminfo(file, forceit)
 		 * link, or file name-length reached.  Try again with
 		 * shortname set.
 		 */
-		if (!shortname && st_new.st_dev == st_old.st_dev &&
-			st_new.st_ino == st_old.st_ino)
+		if (!shortname && st_new.st_dev == st_old.st_dev
+					    && st_new.st_ino == st_old.st_ino)
 		{
 		    vim_free(tempname);
 		    tempname = NULL;
@@ -1806,7 +1806,12 @@ write_viminfo(file, forceit)
 	     * protection same as original file, but strip s-bit. */
 	    fd = mch_open((char *)tempname,
 		    O_CREAT|O_EXTRA|O_EXCL|O_WRONLY|O_NOFOLLOW,
-				       (int)((st_old.st_mode & 0777) | 0600));
+#ifdef UNIX
+				       (int)((st_old.st_mode & 0777) | 0600)
+#else
+				       0600	/* r&w for user only */
+#endif
+				       );
 	    if (fd < 0)
 		fp_out = NULL;
 	    else
