@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Sep 25
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Nov 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -35,7 +35,7 @@ Vim only checks words for spelling, there is no grammar check.
 
 If the 'mousemodel' option is set to "popup" and the cursor is on a badly
 spelled word or it is "popup_setpos" and the mouse pointer is on a badly
-spelled word, then the popup menu will contain an submenu to replace the bad
+spelled word, then the popup menu will contain a submenu to replace the bad
 word.  Note: this slows down the appearance of the popup menu.
 
 To search for the next misspelled word:
@@ -206,7 +206,7 @@ Always use lowercase letters for the language and region names.
 When adding a word with |zg| or another command it's always added for all
 regions.  You can change that by manually editing the 'spellfile'.  See
 |spell-wordlist-format|.  Note that the regions as specified in the files in
-'spellfile' are only used when all entries in "spelllang" specify the same
+'spellfile' are only used when all entries in 'spelllang' specify the same
 region (not counting files specified by their .spl name).
 
 							*spell-german*
@@ -421,7 +421,7 @@ then Vim will try to guess.
 
 							*:mksp* *:mkspell*
 :mksp[ell][!] [-ascii] {outname} {inname} ...
-			Generate a Vim spell file word lists.  Example: >
+			Generate a Vim spell file from word lists.  Example: >
 		:mkspell /tmp/nl nl_NL.words
 <								*E751*
 			When {outname} ends in ".spl" it is used as the output
@@ -550,10 +550,10 @@ maintains a word list.
 
 Note that we avoid the word "dictionary" here.  That is because the goal of
 spell checking differs from writing a dictionary (as in the book).  For
-spelling we need a list of words that are OK, thus should not to be
-highlighted.  Person and company names will not appear in a dictionary, but do
-appear in a word list.  And some old words are rarely used while they are
-common misspellings.  These do appear in a dictionary but not in a word list.
+spelling we need a list of words that are OK, thus should not be highlighted.
+Person and company names will not appear in a dictionary, but do appear in a
+word list.  And some old words are rarely used while they are common
+misspellings.  These do appear in a dictionary but not in a word list.
 
 There are two formats: A straight list of words and a list using affix
 compression.  The files with affix compression are used by Myspell (Mozilla
