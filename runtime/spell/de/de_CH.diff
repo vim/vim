@@ -1,5 +1,5 @@
-*** de_CH.orig.aff	Thu Aug 25 11:22:18 2005
---- de_CH.aff	Thu Sep 29 11:44:50 2005
+*** de_CH.orig.aff	Sat Nov 26 19:38:16 2005
+--- de_CH.aff	Sat Nov 26 19:38:08 2005
 ***************
 *** 3,4 ****
 --- 3,21 ----
@@ -23,8 +23,8 @@
 + 
   
 ***************
-*** 501 ****
---- 518,994 ----
+*** 503 ****
+--- 520,996 ----
   REP eh e
 + 
 + #   German phonetic transformation rules from Aspell

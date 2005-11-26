@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Nov 25
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Nov 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -57,6 +57,8 @@ errors and illegal bytes.  Make default to replace bad bytes/characters with
 	:e ++enc=xxx ++bad=keep foo.txt
 	:e ++enc=xxx ++bad=drop foo.txt
 	:e ++enc=xxx ++bad=? foo.txt
+
+Win32: preserve the hidden attribute of the viminfo file.
 
 ccomplete:
 - When an option is set: In completion mode and the user types (identifier)
@@ -276,6 +278,7 @@ PLANNED FOR VERSION 7.0:
     Roman, 2004 Dec 15.  Should then also work with Oracle Jdeveloper, see JSR
     198 standard http://www.jcp.org/en/jsr/detail?id=198.
     Eclim does it: http://eclim.sourceforge.net/  (Eric Van Dewoestine)
+    Plugin that uses a terminal emulator: http://ls10-www.cs.uni-dortmund.de/~menge/private/vimplugin.html
 -   STICKY CURSOR: Add a way of scrolling that leaves the cursor where it is.
     Especially when using the scrollbar.  Typing a cursor-movement command
     scrolls back to where the cursor is.
@@ -936,7 +939,6 @@ Amiga:
 
 
 Macintosh:
-7   Implement "undercurl".
 7   Patch to add 'transparency' option.  Disadvantage: it's slow. (Eckehard
     Berns, 2004 May 9) http://ecki.to/vim/TransBack-2004-05-09.diff
     Needs more work.  Add when someone really wants it.

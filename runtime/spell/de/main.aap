@@ -132,6 +132,8 @@ de_AT.aff de_AT.dic: {buildcheck=}
         :delete $ZIPFILE_AT
 
         :print >>de_AT.dic
+        # delete the first line, the word count
+        :sys $VIM de_DE.dic -e -c 1delete -c wq
         :cat de_DE.dic >>de_AT.dic
         :delete de_DE.dic
         :move de_DE.aff de_AT.aff
@@ -184,7 +186,51 @@ diff:
 # ".new.aff" and ".new.dic" files are left behind for manual inspection.
 
 check:
-        :print TODO!!!!
+        :assertpkg unzip patch
+        :fetch $ZIPFILES
+        :mkdir tmp
+        :cd tmp
+        @try:
+            # Do the _AT one first, it overwrites the _DE files.
+            :sys $UNZIP ../$ZIPFILE_AT
+            :print >>de_AT.dic
+            # delete the first line, the word count
+            :sys ../$VIM de_DE.dic -e -c 1delete -c wq
+            :cat de_DE.dic >>de_AT.dic
+            :delete de_DE.dic
+            :move de_DE.aff de_AT.aff
+            :move README_de_DE.txt README_de_AT.txt
+
+            :sys $UNZIP ../$ZIPFILE_DE
+            :move de_DE_comb.aff de_DE.aff
+            :move de_DE_comb.dic de_DE.dic
+            :move README_de_DE_comb.txt README_de_DE.txt
+
+            :sys $UNZIP ../$ZIPFILE_19
+            :move de_OLDSPELL.aff de_19.aff
+            :move de_OLDSPELL.dic de_19.dic
+            # there is no README file
+            :print There is no README file for the old spelling >!README_de_19.txt
+            :sys $UNZIP ../$ZIPFILE_20
+            :move de_DE_neu.aff de_20.aff
+            :move de_DE_neu.dic de_20.dic
+            :move README_de_DE_neu.txt README_de_20.txt
+
+            :sys $UNZIP ../$ZIPFILE_CH
+
+            @import stat
+            @for nm in ['de_DE', 'de_19', 'de_20', 'de_AT', 'de_CH']:
+                @for ext in ['aff', 'dic']:
+                    :sys {force} diff ../$(nm).orig.$ext $(nm).$ext >d
+                    @if os.stat('d')[stat.ST_SIZE] > 0:
+                        :copy $(nm).$ext ../$(nm).new.$ext
+                :sys {force} diff ../README_$(nm).txt README_$(nm).txt >d
+                @if os.stat('d')[stat.ST_SIZE] > 0:
+                    :copy README_$(nm).txt ../README_$(nm).new.txt
+        @finally:
+            :cd ..
+            :delete {r}{f}{q} tmp
+            :delete $ZIPFILES
 
 
 # vim: set sts=4 sw=4 :
