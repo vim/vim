@@ -4291,13 +4291,41 @@ gui_mch_set_bg_color(color)
     RGBBackColor(&TheColor);
 }
 
+RGBColor specialColor;
+
 /*
- * Set the current text speail color. TODO
+ * Set the current text special color.
  */
     void
 gui_mch_set_sp_color(color)
     guicolor_T	color;
 {
+    specialColor.red = Red(color) * 0x0101;
+    specialColor.green = Green(color) * 0x0101;
+    specialColor.blue = Blue(color) * 0x0101;
+}
+
+/*
+ * Draw undercurl at the bottom of the character cell.
+ */
+    static void
+draw_undercurl(int flags, int row, int col, int cells)
+{
+    int                 i;
+    int                 offset;
+    const static int    val[8] = {1, 0, 0, 0, 1, 2, 2, 2 };
+    int                 y = FILL_Y(row + 1) - 1;
+
+    RGBForeColor(&specialColor);
+
+    offset = val[FILL_X(col) % 8];
+    MoveTo(FILL_X(col), y - offset);
+
+    for (i = FILL_X(col); i < FILL_X(col + cells); ++i)
+    {
+	offset = val[i % 8];
+	LineTo(i, y - offset);
+    }
 }
 
     void
@@ -4450,6 +4478,9 @@ gui_mch_draw_string(row, col, s, len, flags)
 	}
 #endif
     }
+
+    if (flags & DRAW_UNDERC)
+	draw_undercurl(flags, row, col, len);
 
 #ifdef FEAT_MBYTE
     vim_free(tofree);
