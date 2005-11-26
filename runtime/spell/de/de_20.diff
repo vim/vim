@@ -1,5 +1,5 @@
-*** de_20.orig.aff	Thu Aug 25 11:22:14 2005
---- de_20.aff	Thu Sep 29 11:44:41 2005
+*** de_20.orig.aff	Sat Nov 26 19:59:52 2005
+--- de_20.aff	Sat Nov 26 20:13:50 2005
 ***************
 *** 2,3 ****
 --- 2,21 ----
@@ -24,8 +24,28 @@
 + 
   #
 ***************
-*** 1225 ****
---- 1243,1719 ----
+*** 28,31 ****
+  PFX V Y 1
+! PFX V   0     ver        . 
+!  
+  
+--- 46,49 ----
+  PFX V Y 1
+! PFX V   0     ver          .
+! 
+  
+***************
+*** 235,237 ****
+  SFX F   arzt  ärztin       arzt  
+! SFX F   arzt  Ärztinnen    arzt  
+  SFX F   Arzt  Ärztin       Arzt  
+--- 253,255 ----
+  SFX F   arzt  ärztin       arzt  
+! SFX F   arzt  ärztinnen    arzt  
+  SFX F   Arzt  Ärztin       Arzt  
+***************
+*** 1410 ****
+--- 1428,1904 ----
   REP ö öe
 + 
 + #   German phonetic transformation rules from Aspell

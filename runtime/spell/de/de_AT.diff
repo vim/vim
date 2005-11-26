@@ -1,5 +1,5 @@
-*** de_AT.orig.aff	Thu Aug 25 11:22:16 2005
---- de_AT.aff	Thu Sep 29 11:44:45 2005
+*** de_AT.orig.aff	Sat Nov 26 19:59:53 2005
+--- de_AT.aff	Sat Nov 26 20:19:21 2005
 ***************
 *** 3,4 ****
 --- 3,21 ----
@@ -23,8 +23,8 @@
 + 
   
 ***************
-*** 504 ****
---- 521,997 ----
+*** 501 ****
+--- 518,994 ----
   
 + 
 + #   German phonetic transformation rules from Aspell
@@ -502,8 +502,8 @@
 + SAL ZURÜCK^^             ZURIK
 + SAL ZUVER^^              ZUFA    # x
 + SAL Z                    Z
-*** de_AT.orig.dic	Thu Aug 25 11:22:16 2005
---- de_AT.dic	Thu Aug 25 11:24:01 2005
+*** de_AT.orig.dic	Sat Nov 26 19:59:54 2005
+--- de_AT.dic	Sat Nov 26 20:21:22 2005
 ***************
 *** 18,20 ****
   Fleischbänke/N
@@ -511,20 +511,14 @@
   Fleischhauer/NS
 --- 18,19 ----
 ***************
-*** 151,153 ****
-  zulieb
-- 77857
-  Äbte/N
---- 150,151 ----
-***************
-*** 18792,18794 ****
+*** 19748,19750 ****
   Geschwulstherde
 - Geselchte/N
-  Geselle/N
---- 18790,18791 ----
+  Gesellenbrief
+--- 19747,19748 ----
 ***************
-*** 20472,20474 ****
+*** 21437,21439 ****
   HTML
 - Häfen
   Häftling/EPS
---- 20469,20470 ----
+--- 21435,21436 ----
