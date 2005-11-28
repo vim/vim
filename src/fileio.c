@@ -3150,8 +3150,10 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 			    || st.st_mode != perm)
 			backup_copy = TRUE;
 # endif
-		    mch_remove(IObuff);
+		    /* Close the file before removing it, on MS-Windows we
+		     * can't delete an open file. */
 		    close(fd);
+		    mch_remove(IObuff);
 		}
 	    }
 	}
