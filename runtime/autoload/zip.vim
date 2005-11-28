@@ -1,7 +1,7 @@
 " zip.vim: Handles browsing zipfiles
 "            AUTOLOAD PORTION
-" Date:			Nov 14, 2005
-" Version:		4
+" Date:			Nov 28, 2005
+" Version:		5
 " Maintainer:	Charles E Campbell, Jr <drchipNOSPAM at campbellfamily dot biz>
 " License:		Vim License  (see vim's :help license)
 " Copyright:    Copyright (C) 2005 Charles E. Campbell, Jr. {{{1
@@ -22,7 +22,7 @@ if exists("g:loaded_zip")
  finish
 endif
 
-let g:loaded_zip= "v4"
+let g:loaded_zip= "v5"
 
 " ----------------
 "  Functions: {{{1
@@ -32,11 +32,14 @@ let g:loaded_zip= "v4"
 " zip#Browse: {{{2
 fun! zip#Browse(zipfile)
 "  call Dfunc("zip#Browse(zipfile<".a:zipfile.">)")
+  let repkeep= &report
+  set report=10
 
   " sanity checks
   if !executable("unzip")
    echohl Error | echo "***error*** (zip#Browse) unzip not available on your system"
    call inputsave()|call input("Press <cr> to continue")|call inputrestore()
+   let &report= repkeep
 "   call Dret("zip#Browse")
    return
   endif
@@ -46,6 +49,7 @@ fun! zip#Browse(zipfile)
     echohl Error | echo "***error*** (zip#Browse) File not readable<".a:zipfile.">" | echohl None
     call inputsave()|call input("Press <cr> to continue")|call inputrestore()
    endif
+   let &report= repkeep
 "   call Dret("zip#Browse : file<".a:zipfile."> not readable")
    return
   endif
@@ -77,6 +81,7 @@ fun! zip#Browse(zipfile)
   setlocal noma nomod ro
   noremap <silent> <buffer> <cr> :call <SID>ZipBrowseSelect()<cr>
 
+  let &report= repkeep
 "  call Dret("zip#Browse")
 endfun
 
@@ -84,16 +89,20 @@ endfun
 " ZipBrowseSelect: {{{2
 fun! s:ZipBrowseSelect()
 "  call Dfunc("ZipBrowseSelect() zipfile<".w:zipfile."> curfile<".expand("%").">")
+  let repkeep= &report
+  set report=10
   let fname= getline(".")
 
   " sanity check
   if fname =~ '^"'
+   let &report= repkeep
 "   call Dret("ZipBrowseSelect")
    return
   endif
   if fname =~ '/$'
    echohl Error | echo "***error*** (zip#Browse) Please specify a file, not a directory" | echohl None
    call inputsave()|call input("Press <cr> to continue")|call inputrestore()
+   let &report= repkeep
 "   call Dret("ZipBrowseSelect")
    return
   endif
@@ -110,6 +119,7 @@ fun! s:ZipBrowseSelect()
   exe "e zipfile:".zipfile.':'.fname
   filetype detect
 
+  let &report= repkeep
 "  call Dret("ZipBrowseSelect : s:zipfile_".winnr()."<".s:zipfile_{winnr()}.">")
 endfun
 
@@ -117,6 +127,9 @@ endfun
 " zip#Read: {{{2
 fun! zip#Read(fname,mode)
 "  call Dfunc("zip#Read(fname<".a:fname.">,mode=".a:mode.")")
+  let repkeep= &report
+  set report=10
+
   let zipfile = substitute(a:fname,'zipfile:\(.\{-}\):.*$','\1','')
   let fname   = substitute(a:fname,'zipfile:.\{-}:\(.*\)$','\1','')
 "  call Decho("zipfile<".zipfile."> fname<".fname.">")
@@ -127,6 +140,7 @@ fun! zip#Read(fname,mode)
   0d
   set nomod
 
+  let &report= repkeep
 "  call Dret("zip#Read")
 endfun
 
@@ -134,17 +148,21 @@ endfun
 " zip#Write: {{{2
 fun! zip#Write(fname)
 "  call Dfunc("zip#Write(fname<".a:fname.") zipfile_".winnr()."<".s:zipfile_{winnr()}.">")
+  let repkeep= &report
+  set report=10
 
   " sanity checks
   if !executable("zip")
    echohl Error | echo "***error*** (zip#Write) sorry, your system doesn't appear to have the zip pgm" | echohl None
    call inputsave()|call input("Press <cr> to continue")|call inputrestore()
+   let &report= repkeep
 "   call Dret("zip#Write")
    return
   endif
   if !exists("*mkdir")
    echohl Error | echo "***error*** (zip#Write) sorry, mkdir() doesn't work on your system" | echohl None
    call inputsave()|call input("Press <cr> to continue")|call inputrestore()
+   let &report= repkeep
 "   call Dret("zip#Write")
    return
   endif
@@ -164,6 +182,7 @@ fun! zip#Write(fname)
   catch /^Vim\%((\a\+)\)\=:E344/
    echohl Error | echo "***error*** (zip#Write) cannot cd to temporary directory" | Echohl None
    call inputsave()|call input("Press <cr> to continue")|call inputrestore()
+   let &report= repkeep
 "   call Dret("zip#Write")
    return
   endtry
@@ -220,6 +239,7 @@ fun! zip#Write(fname)
   exe "cd ".escape(curdir,' \')
   setlocal nomod
 
+  let &report= repkeep
 "  call Dret("zip#Write")
 endfun
 

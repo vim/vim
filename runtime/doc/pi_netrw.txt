@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 7.0.  Last change: Oct 19, 2005
+*pi_netrw.txt*  For Vim version 7.0.  Last change: Nov 28, 2005
 
 		VIM REFERENCE MANUAL    by Charles E. Campbell, Jr.
 
@@ -1284,6 +1284,8 @@ which is loaded automatically at startup (assuming :set nocp).
 ==============================================================================
 10. History						*netrw-history*
 
+	v76: * "directory is missing" error message now restores echo
+	       highlighting
 	v75: * file://... now conforms to RFC2396 (thanks to S. Zacchiroli)
 	     * if the binary option is set, then NetWrite() will only write
 	       the whole file (line numbers don't make sense with this).
