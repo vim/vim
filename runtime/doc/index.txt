@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 7.0aa.  Last change: 2005 Sep 13
+*index.txt*     For Vim version 7.0aa.  Last change: 2005 Nov 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -765,10 +765,12 @@ tag		char	      note action in Normal mode	~
 |zD|		zD		   delete folds recursively
 |zE|		zE		   eliminate all folds
 |zF|		zF		   create a fold for N lines
+|zG|		zG		   mark word as good word
 |zM|		zM		   set 'foldlevel' to zero
 |zN|		zN		   set 'foldenable'
 |zO|		zO		   open folds recursively
 |zR|		zR		   set 'foldlevel' to the deepest fold
+|zW|		zW		   mark word as wrong (bad) word
 |zX|		zX		   re-apply 'foldlevel'
 |z^|		z^		   cursor on line N (default line above
 				   window), otherwise like "z-"
@@ -780,6 +782,7 @@ tag		char	      note action in Normal mode	~
 				   position the cursor at the end (right side)
 				   of the screen
 |zf|		zf{motion}	   create a fold for Nmove text
+|zg|		zg		   mark word as good word
 |zh|		zh		   when 'wrap' off scroll screen N characters
 				   to the right
 |zi|		zi		   toggle 'foldenable'
@@ -796,6 +799,7 @@ tag		char	      note action in Normal mode	~
 				   side) of the screen
 |zt|		zt		   redraw, cursor line at top of window
 |zv|		zv		   open enough folds to view the cursor line
+|zw|		zw		   mark word as wrong (bad) word
 |zx|		zx		   re-apply 'foldlevel' and do "zv"
 |zz|		zz		   redraw, cursor line at center of window
 |z<Left>|	z<Left>		   same as "zh"

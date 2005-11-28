@@ -72,6 +72,8 @@ DOCS = \
 	pi_gzip.txt \
 	pi_netrw.txt \
 	pi_spec.txt \
+	pi_tar.txt \
+	pi_zip.txt \
 	print.txt \
 	quickfix.txt \
 	quickref.txt \
