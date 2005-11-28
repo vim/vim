@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Nov 26
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Nov 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -37,6 +37,9 @@ Using chown() is unsafe. (Jinpeng Wei)
 
 Go over all changes between 6.3 and 6.4 and make sure they are included in 7.
 
+Using ":read" in an empty buffer in Ex mode, then undo leaves a line behind.
+(Servatius Brandt).
+
 'statusline' is drawn over the Omni menu.
 
 Cygwin and Mac OS/X may preserve case for file names but ignore case
@@ -60,6 +63,12 @@ errors and illegal bytes.  Make default to replace bad bytes/characters with
 
 Win32: preserve the hidden attribute of the viminfo file.
 
+Add ":startgreplace" to do "gR", like ":startreplace" does "R".
+
+When 'delcombine' is set in Select mode before a character with a combining
+char the combinging char is deleted when it shouldn't. (Tony Mechelynck, Nov
+27)
+
 ccomplete:
 - When an option is set: In completion mode and the user types (identifier)
   characters, advance to the first match instead of removing the popup menu.
@@ -72,6 +81,8 @@ ccomplete:
 - page-up / page-down
 
 spelling:
+- "z?" was to be used for searching in folded text.  Use something else for
+  suggestions.  "zu"?
 - When a recognized word ends in a . don't have 'spellcapcheck" match it.
 - Use KEEPCASE instead of "KEP".  It applies to the word including affixes
   Hunspell also uses it.
@@ -109,8 +120,8 @@ Mac unicode patch (Da Woon Jung):
 - With 'nopaste' pasting is wrong, with 'paste' Command-V doesn't work.
   (Alan Schmitt)
 
-Mac: drop support for OS 9?  Most people are now using OS/X and Vim 6.4 can be
-used for others.
+Mac: drop support for OS 9.  Most people are now using OS/X and Vim 6.4 can be
+used for others.  Will make maintaining the code simpler.
 
 Patch to add a few flags to search(). (Benji Fisher, Nov 22)
 
@@ -1483,8 +1494,8 @@ Diff mode:
 
 
 Folding:
-    (commands still available: zg zG zI zJ zK zp zP zq zQ zV zw zW zy zY;
-    secondary: zB zS zT zZ)
+    (commands still available: zI zJ zK zp zP zq zQ zV zy zY;
+    secondary: zB zS zT zZ, z=)
 8   Add "z/" and "z?" for searching in not folded text only.
 8   Add different highlighting for a fold line depending on the fold level.
     (Noel Henson)

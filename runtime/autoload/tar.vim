@@ -1,7 +1,7 @@
 " tar.vim: Handles browsing tarfiles
 "            AUTOLOAD PORTION
-" Date:			Nov 18, 2005
-" Version:		4
+" Date:			Nov 28, 2005
+" Version:		5
 " Maintainer:	Charles E Campbell, Jr <drchipNOSPAM at campbellfamily dot biz>
 " License:		Vim License  (see vim's :help license)
 "
@@ -24,7 +24,7 @@ set cpo&vim
 if exists("g:loaded_tar")
  finish
 endif
-let g:loaded_tar= "v4"
+let g:loaded_tar= "v5"
 
 " ---------------------------------------------------------------------
 "  Default Settings: {{{1
@@ -46,11 +46,14 @@ endif
 " tar#Browse: {{{2
 fun! tar#Browse(tarfile)
 "  call Dfunc("tar#Browse(tarfile<".a:tarfile.">)")
+  let repkeep= &report
+  set report=10
 
   " sanity checks
   if !executable("tar")
    echohl Error | echo '***error*** (tar#Browse) "tar" not available on your system'
    call inputsave()|call input("Press <cr> to continue")|call inputrestore()
+   let &report= repkeep
 "   call Dret("tar#Browse")
    return
   endif
@@ -60,6 +63,7 @@ fun! tar#Browse(tarfile)
     echohl Error | echo "***error*** (tar#Browse) File not readable<".a:tarfile.">" | echohl None
     call inputsave()|call input("Press <cr> to continue")|call inputrestore()
    endif
+   let &report= repkeep
 "   call Dret("tar#Browse : file<".a:tarfile."> not readable")
    return
   endif
@@ -94,6 +98,7 @@ fun! tar#Browse(tarfile)
   setlocal noma nomod ro
   noremap <silent> <buffer> <cr> :call <SID>TarBrowseSelect()<cr>
 
+  let &report= repkeep
 "  call Dret("tar#Browse : w:tarfile<".w:tarfile.">")
 endfun
 
@@ -101,11 +106,14 @@ endfun
 " TarBrowseSelect: {{{2
 fun! s:TarBrowseSelect()
 "  call Dfunc("TarBrowseSelect() w:tarfile<".w:tarfile."> curfile<".expand("%").">")
+  let repkeep= &report
+  set report=10
   let fname= getline(".")
 "  call Decho("fname<".fname.">")
 
   " sanity check
   if fname =~ '^"'
+   let &report= repkeep
 "   call Dret("TarBrowseSelect")
    return
   endif
@@ -121,6 +129,7 @@ fun! s:TarBrowseSelect()
   exe "e tarfile:".tarfile.':'.fname
   filetype detect
 
+  let &report= repkeep
 "  call Dret("TarBrowseSelect : s:tblfile_".winnr()."<".s:tblfile_{winnr()}.">")
 endfun
 
@@ -128,6 +137,8 @@ endfun
 " tar#Read: {{{2
 fun! tar#Read(fname,mode)
 "  call Dfunc("tar#Read(fname<".a:fname.">,mode=".a:mode.")")
+  let repkeep= &report
+  set report=10
   let tarfile = substitute(a:fname,'tarfile:\(.\{-}\):.*$','\1','')
   let fname   = substitute(a:fname,'tarfile:.\{-}:\(.*\)$','\1','')
 "  call Decho("tarfile<".tarfile."> fname<".fname.">")
@@ -149,6 +160,7 @@ fun! tar#Read(fname,mode)
   0d
   set nomod
 
+  let &report= repkeep
 "  call Dret("tar#Read : w:tarfile<".w:tarfile.">")
 endfun
 
@@ -156,17 +168,21 @@ endfun
 " tar#Write: {{{2
 fun! tar#Write(fname)
 "  call Dfunc("tar#Write(fname<".a:fname.">) w:tarfile<".w:tarfile."> tblfile_".winnr()."<".s:tblfile_{winnr()}.">")
+  let repkeep= &report
+  set report=10
 
   " sanity checks
   if !executable("tar")
    echohl Error | echo '***error*** (tar#Browse) "tar" not available on your system'
    call inputsave()|call input("Press <cr> to continue")|call inputrestore()
+   let &report= repkeep
 "   call Dret("tar#Write")
    return
   endif
   if !exists("*mkdir")
    echohl Error | echo "***error*** (tar#Write) sorry, mkdir() doesn't work on your system" | echohl None
    call inputsave()|call input("Press <cr> to continue")|call inputrestore()
+   let &report= repkeep
 "   call Dret("tar#Write")
    return
   endif
@@ -186,6 +202,7 @@ fun! tar#Write(fname)
   catch /^Vim\%((\a\+)\)\=:E344/
    echohl Error | echo "***error*** (tar#Write) cannot cd to temporary directory" | Echohl None
    call inputsave()|call input("Press <cr> to continue")|call inputrestore()
+   let &report= repkeep
 "   call Dret("tar#Write")
    return
   endtry
@@ -285,6 +302,7 @@ fun! tar#Write(fname)
   exe "cd ".escape(curdir,' \')
   setlocal nomod
 
+  let &report= repkeep
 "  call Dret("tar#Write")
 endfun
 

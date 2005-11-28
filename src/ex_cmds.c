@@ -1804,14 +1804,15 @@ write_viminfo(file, forceit)
 
 	    /* Use mch_open() to be able to use O_NOFOLLOW and set file
 	     * protection same as original file, but strip s-bit. */
+#ifdef UNIX
 	    fd = mch_open((char *)tempname,
 		    O_CREAT|O_EXTRA|O_EXCL|O_WRONLY|O_NOFOLLOW,
-#ifdef UNIX
-				       (int)((st_old.st_mode & 0777) | 0600)
+				       (int)((st_old.st_mode & 0777) | 0600));
 #else
-				       0600	/* r&w for user only */
+	    fd = mch_open((char *)tempname,
+		    O_CREAT|O_EXTRA|O_EXCL|O_WRONLY|O_NOFOLLOW,
+				       0600);	/* r&w for user only */
 #endif
-				       );
 	    if (fd < 0)
 		fp_out = NULL;
 	    else
