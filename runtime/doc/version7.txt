@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Nov 23
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Dec 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1406,5 +1406,8 @@ available.
 
 In an empty line "ix<CTRL-O>0" moved the cursor to after the line instead of
 sticking to the first column.
+
+When using ":wq" and a BufWriteCmd autocmd uses inputsecret() the text was
+echoed anyway.  Set terminal to raw mode in getcmdline().
 
  vim:tw=78:ts=8:ft=help:norl:

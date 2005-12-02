@@ -5125,7 +5125,7 @@ read_viminfo_search_pattern(virp, force)
     int		magic = FALSE;
     int		no_scs = FALSE;
     int		off_line = FALSE;
-    int		off_end = FALSE;
+    int		off_end = 0;
     long	off = 0;
     int		setlast = FALSE;
 #ifdef FEAT_SEARCH_EXTRA

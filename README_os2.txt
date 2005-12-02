@@ -5,28 +5,28 @@ See "README.txt" for general information about Vim.
 
 
 NOTE: You will need two archives:
-  vim62rt.zip	contains the runtime files (same as for the PC version)
-  vim62os2.zip	contains the OS/2 executables
+  vim70rt.zip	contains the runtime files (same as for the PC version)
+  vim70os2.zip	contains the OS/2 executables
 
 1. Go to the directory where you want to put the Vim files.  Examples:
 	cd C:\
 	cd D:\editors
 
-2. Unpack the zip archives.  This will create a new directory "vim/vim62",
+2. Unpack the zip archives.  This will create a new directory "vim/vim70",
    in which all the distributed Vim files are placed.  Since the directory
    name includes the version number, it is unlikely that you overwrite
    existing files.
    Examples:
-	pkunzip -d vim62os2.zip
-	unzip vim62os2.zip
+	pkunzip -d vim70os2.zip
+	unzip vim70os2.zip
 
    After you unpacked the files, you can still move the whole directory tree
    to another location.
 
 3. Add the directory where vim.exe is to your path.  The simplest is to add a
    line to your autoexec.bat.  Examples:
-	set path=%path%;C:\vim\vim62
-	set path=%path%;D:\editors\vim\vim62
+	set path=%path%;C:\vim\vim70
+	set path=%path%;D:\editors\vim\vim70
 
 That's it!
 
@@ -41,10 +41,10 @@ Extra remarks:
 	C:\vim\_viminfo			Dynamic info for 'viminfo'.
 	C:\vim\...			Other files you made.
   Distributed files:
-	C:\vim\vim62\vim.exe		The Vim version 6.2 executable.
-	C:\vim\vim62\doc\*.txt		The version 6.2 documentation files.
-	C:\vim\vim62\bugreport.vim	A Vim version 6.2 script.
-	C:\vim\vim62\...		Other version 6.2 distributed files.
+	C:\vim\vim70\vim.exe		The Vim version 7.0 executable.
+	C:\vim\vim70\doc\*.txt		The version 7.0 documentation files.
+	C:\vim\vim70\bugreport.vim	A Vim version 7.0 script.
+	C:\vim\vim70\...		Other version 7.0 distributed files.
   In this case the $VIM environment variable would be set like this:
 	set VIM=C:\vim
 

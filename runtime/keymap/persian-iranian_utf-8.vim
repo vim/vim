@@ -1,10 +1,8 @@
 " Vim Keymap file for Persian Standard Keyboard Layout
-" Maintainers: Behnam Esfahbod <behnam@bamdad.org>,
-"	       Amir Hedayaty <amir@bamdad.org>
-" Last Change: 2004 May 16
+" Maintainers: Behnam 'ZWNJ' Esfahbod <behnam@zwnj.org>,
+"	       Amir Hedayaty <hedayaty@gmail.com>
+" Last Change: 2005 Nov 30
 
-" All characters are given literally, conversion to another encoding (e.g.,
-" UTF-8) should work.
 scriptencoding utf-8
 
 " Use this short name in the status line.

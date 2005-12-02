@@ -18,8 +18,6 @@ ref:		Shell script for the K command.
 
 shtags.*:	Perl script to create a tags file from a shell script.
 
-tcltags:	Shell + Awk script to create a tags file from a TCL file.
-
 vim132:		Shell script to edit in 132 column mode on vt100 compatible
 		terminals.
 

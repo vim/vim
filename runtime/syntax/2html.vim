@@ -1,6 +1,6 @@
 " Vim syntax support file
 " Maintainer: Bram Moolenaar <Bram@vim.org>
-" Last Change: 2005 Feb 26
+" Last Change: 2005 Dec 01
 "	       (modified by David Ne\v{c}as (Yeti) <yeti@physics.muni.cz>)
 "	       (XHTML support by Panagiotis Issaris <takis@lumumba.luc.ac.be>)
 

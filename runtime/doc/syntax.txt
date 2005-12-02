@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.0aa.  Last change: 2005 Oct 12
+*syntax.txt*	For Vim version 7.0aa.  Last change: 2005 Nov 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2135,29 +2135,58 @@ number is that redrawing can become slow.
 
 RUBY						*ruby.vim* *ft-ruby-syntax*
 
-There are a few options to the Ruby syntax highlighting.
+There are a number of options to the Ruby syntax highlighting.
 
 By default, the "end" keyword is colorized according to the opening statement
-of the block it closes.  While useful, this feature can be expensive: if you
+of the block it closes.  While useful, this feature can be expensive; if you
 experience slow redrawing (or you are on a terminal with poor color support)
 you may want to turn it off by defining the "ruby_no_expensive" variable: >
+
 	:let ruby_no_expensive = 1
+
 In this case the same color will be used for all control keywords.
 
 If you do want this feature enabled, but notice highlighting errors while
 scrolling backwards, which are fixed when redrawing with CTRL-L, try setting
 the "ruby_minlines" variable to a value larger than 50: >
+
 	:let ruby_minlines = 100
+
 Ideally, this value should be a number of lines large enough to embrace your
 largest class or module.
 
-Finally, if you do not like to see too many color items around, you can define
+Highlighting of special identifiers can be disabled by defining
 "ruby_no_identifiers": >
+
 	:let ruby_no_identifiers = 1
+
 This will prevent highlighting of special identifiers like "ConstantName",
-"$global_var", "@instance_var", "| iterator |", and ":symbol".
+"$global_var", "@@class_var", "@instance_var", "| block_param |", and
+":symbol".
 
+Significant methods of Kernel, Module and Object are highlighted by default.
+This can be disabled by defining "ruby_no_special_methods": >
 
+	:let ruby_no_special_methods = 1
+
+This will prevent highlighting of important methods such as "require", "attr",
+"private", "raise" and "proc".
+
+Whitespace errors can be highlighted by defining "ruby_space_errors": >
+
+	:let ruby_space_errors = 1
+
+This will highlight trailing whitespace and tabs preceded by a space character
+as errors.  This can be refined by defining "ruby_no_trail_space_error" and
+"ruby_no_tab_space_error" which will ignore trailing whitespace and tabs after
+spaces respectively.
+
+Folding can be enabled by defining "ruby_fold": >
+
+	:let ruby_fold = 1
+
+This will set the 'foldmethod' option to "syntax" and allow folding of
+classes, modules, methods, code blocks, heredocs and comments.
 SCHEME						*scheme.vim* *ft-scheme-syntax*
 
 By default only R5RS keywords are highlighted and properly indented.
