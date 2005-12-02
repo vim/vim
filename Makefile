@@ -80,8 +80,8 @@ MINOR = 0aa
 #
 # - Update Vim version number.  For a test version in: src/version.h, Contents,
 #   MAJOR/MINOR above, VIMRTDIR and VERSION in src/Makefile, README*.txt,
-#   runtime/doc/*.txt and nsis/gvim.nsi.  For a minor/major version:
-#   src/GvimExt/GvimExt.reg, src/vim16.def.
+#   runtime/doc/*.txt and nsis/gvim.nsi. Other things in README_os2.txt.  For a
+#   minor/major version: src/GvimExt/GvimExt.reg, src/vim.def, src/vim16.def.
 # - Correct included_patches[] in src/version.c.
 # - Compile Vim with GTK, Perl, Python, TCL, Ruby, Cscope and "huge" features.
 # - With these features: "make proto" (requires cproto and Motif installed;
@@ -125,7 +125,7 @@ MINOR = 0aa
 #   "uninstald16.exe".
 # 32 bit DOS version:
 # - Set environment for compiling with DJGPP; "gmake -f Make_djg.mak".
-# - "rm testdir/*.out", "make -f Make_djg.mak test" and check the output.
+# - "rm testdir/*.out", "gmake -f Make_djg.mak test" and check the output.
 # - Rename the executables to "vimd32.exe", "xxdd32.exe", "installd32.exe" and
 #   "uninstald32.exe".
 # Win32 console version:

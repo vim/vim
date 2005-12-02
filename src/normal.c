@@ -1140,7 +1140,7 @@ getcount:
 #endif
     }
 
-    /* get the length of mapped chars again after typing a count, second
+    /* Get the length of mapped chars again after typing a count, second
      * character or "z333<cr>". */
     if (old_mapped_len > 0)
 	old_mapped_len = typebuf_maplen();

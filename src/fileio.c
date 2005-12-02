@@ -5800,7 +5800,9 @@ vim_rename(from, to)
 	errmsg = _("E210: Error reading \"%s\"");
 	to = from;
     }
+#ifndef UNIX	    /* for Unix mch_open() already set ther permission */
     mch_setperm(to, perm);
+#endif
 #ifdef HAVE_ACL
     mch_set_acl(to, acl);
 #endif

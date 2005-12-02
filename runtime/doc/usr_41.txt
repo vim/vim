@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 7.0aa.  Last change: 2005 Jun 09
+*usr_41.txt*	For Vim version 7.0aa.  Last change: 2005 Nov 30
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -2114,7 +2114,7 @@ a user to overrule or add to the default file.  The default files start with: >
 When you write a compiler file and put it in your personal runtime directory
 (e.g., ~/.vim/compiler for Unix), you set the "current_compiler" variable to
 make the default file skip the settings.
-
+							*:CompilerSet*
 The second mechanism is to use ":set" for ":compiler!" and ":setlocal" for
 ":compiler".  Vim defines the ":CompilerSet" user command for this.  However,
 older Vim versions don't, thus your plugin should define it then.  This is an
@@ -2139,7 +2139,7 @@ that could be ~/.vim/after/compiler.
 *41.14*	Writing a plugin that loads quickly	*write-plugin-quickload*
 
 A plugin may grow and become quite long.  The startup delay may become
-noticable, while you hardly every use the plugin.  Then it's time for a
+noticeable, while you hardly every use the plugin.  Then it's time for a
 quickload plugin.
 
 The basic idea is that the plugin is loaded twice.  The first time user

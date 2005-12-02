@@ -11,7 +11,7 @@ let current_compiler = "rst"
 let s:cpo_save = &cpo
 set cpo-=C
 
-setlocal errorformat=
+CompilerSet errorformat=
       \%f:%l:\ (%tEBUG/0)\ %m,
       \%f:%l:\ (%tNFO/1)\ %m,
       \%f:%l:\ (%tARNING/2)\ %m,

@@ -1,6 +1,7 @@
 " Menu Translations:	Español
-" Maintainer:		Alejandro López-Valencia <dradul@yahoo.com>
-" Last Change:		2004 May 12
+" Maintainer:		Alejandro López-Valencia <dradul@users.sourceforge.net>
+" Version:		6.4.p0-1
+" Last Change:		2005 Dec 01
 "
 
 " Quit when menu translations have already been done.
@@ -86,7 +87,7 @@ menutrans Toggle\ Vi\ C&ompatible<Tab>:set\ cp!	Activar/Desactivar\ compatiblida
 
 menutrans Search\ &Path\.\.\.		Ruta\ de\ &búsqueda\.\.\.
 
-menutrans Ta&g\ Files\.\.\.		Ficheros\ de\ «ta&gs»\.\.\.
+menutrans Ta&g\ Files\.\.\.		Ficheros\ de\ &etiquetas\.\.\.
 
 " GUI options
 menutrans Toggle\ &Toolbar		Ocultar/Mostrar\ barra\ de\ &herramientas
@@ -102,7 +103,7 @@ menutrans F&ile\ Settings		Opciones\ del\ &fichero
 
 " Boolean options
 menutrans Toggle\ Line\ &Numbering<Tab>:set\ nu!	Activar/Desactivar\ &numeración\ de\ líneas<Tab>:set\ nu!
-menutrans Toggle\ &List\ Mode<Tab>:set\ list!		Activar/Desactivar\ modo\ «&list»<Tab>:set\ list!
+menutrans Toggle\ &List\ Mode<Tab>:set\ list!		Activar/Desactivar\ modo\ de\ lista<Tab>:set\ list!
 menutrans Toggle\ Line\ &Wrap<Tab>:set\ wrap!		Activar/Desactivar\ &quiebre\ de\ líneas<Tab>:set\ wrap!
 menutrans Toggle\ W&rap\ at\ word<Tab>:set\ lbr!	Activar/Desactivar\ quiebre\ entre\ &palabras<Tab>:set\ lbr!
 menutrans Toggle\ &expand-tab<Tab>:set\ et!		Activar/Desactivar\ &expansión\ de\ marcas\ de\ \tabulado<Tab>:set\ et!
@@ -151,9 +152,9 @@ menutrans slovak	eslovaco
 
 " Programming menu
 menutrans &Tools			&Herramientas
-menutrans &Jump\ to\ this\ tag<Tab>g^]	&Saltar\ a\ este\ «tag»<Tab>g^]
+menutrans &Jump\ to\ this\ tag<Tab>g^]	&Saltar\ a\ este\ etiqueta<Tab>g^]
 menutrans Jump\ &back<Tab>^T		Saltar\ &atrás<Tab>^T
-menutrans Build\ &Tags\ File		Crear\ fichero\ de\ «&tags»\
+menutrans Build\ &Tags\ File		Crear\ fichero\ de\ &etiquetas\
 menutrans &Diff				Modo\ de\ &diferencias
 menutrans &Folding			&Plegado
 menutrans &Make<Tab>:make		Ejecutar\ «&Make»<Tab>:make
@@ -260,8 +261,8 @@ if has("toolbar")
     if 0	" disabled; These are in the Windows menu
       tmenu ToolBar.New		Ventana nueva
       tmenu ToolBar.WinSplit	Dividir ventana
-      tmenu ToolBar.WinMax	Ventana máxima
-      tmenu ToolBar.WinMin	Ventana mínima
+      tmenu ToolBar.WinMax	Altura máxima
+      tmenu ToolBar.WinMin	Altura mínima
       tmenu ToolBar.WinVSplit	Dividir verticalmente
       tmenu ToolBar.WinMaxWidth	Anchura máxima
       tmenu ToolBar.WinMinWidth	Anchura mínima
@@ -269,11 +270,11 @@ if has("toolbar")
     endif
     tmenu ToolBar.LoadSesn	Cargar sesión
     tmenu ToolBar.SaveSesn	Guardar sesión
-    tmenu ToolBar.RunScript	Ejecutar un «script»
+    tmenu ToolBar.RunScript	Ejecutar un archivo de órdenes
     tmenu ToolBar.Make		Ejecutar «Make»
-    tmenu ToolBar.Shell		Abrir una «Shell»
-    tmenu ToolBar.RunCtags	Generar un fichero de «tags»
-    tmenu ToolBar.TagJump	Saltar a un «tag»
+    tmenu ToolBar.Shell		Abrir un intérprete de comandos
+    tmenu ToolBar.RunCtags	Generar un fichero de etiquetas
+    tmenu ToolBar.TagJump	Saltar a una etiqueta
     tmenu ToolBar.Help		Ayuda
     tmenu ToolBar.FindHelp	Buscar en la ayuda...
   endfun
@@ -282,15 +283,15 @@ endif
 " Syntax menu
 menutrans &Syntax			&Sintaxis
 menutrans &Show\ filetypes\ in\ menu	&Mostrar\ listas\ de\ «tipo\ de\ fichero»
-menutrans Set\ '&syntax'\ only		Activar\ sólo\ «sintaxis»
+menutrans Set\ '&syntax'\ only		Activar\ sólo\ sintaxis
 menutrans Set\ '&filetype'\ too		Activar\ también\ «tipo\ de\ fichero»
-menutrans &Off				&Desactivar\ «sintaxis»
-menutrans &Manual			«sintaxis»\ &manual
-menutrans A&utomatic			«sintaxis»\ a&utomática
+menutrans &Off				&Desactivar\ sintaxis
+menutrans &Manual			sintaxis\ &manual
+menutrans A&utomatic			sintaxis\ a&utomática
 menutrans on/off\ for\ &This\ file	Activar/Desactivar\ en\ es&te\ fichero
 menutrans Co&lor\ test			&Prueba\ de\ colores
 menutrans &Highlight\ test		Prueba\ de\ &realzado
-menutrans &Convert\ to\ HTML		&Convertir\ en\ HTML
+menutrans &Convert\ to\ HTML		&Convertir\ a\ HTML
 
 " Find Help dialog text
 let g:menutrans_help_dialog = "Introduzca un nombre de comando o palabra para obtener ayuda;\n\nAnteponga i_ para comandos de entrada (e.g.: i_CTRL-X)\nAnteponga c_ para comandos de la línea de comandos (e.g.: c_<Del>)\nAnteponga ` para un nombre de opción (e.g.: `shiftwidth`)"

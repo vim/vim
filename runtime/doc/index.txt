@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 7.0aa.  Last change: 2005 Nov 27
+*index.txt*     For Vim version 7.0aa.  Last change: 2005 Nov 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -343,9 +343,9 @@ tag		char	      note action in Normal mode	~
 				   "yy"
 |ZZ|		ZZ		   store current file if modified, and exit
 |ZQ|		ZQ		   exit current file always
-|[|		[{char}		   square bracket command (see below)
+|[|		[{char}		   square bracket command (see |[| below)
 		\		   not used
-|]|		]{char}		   square bracket command (see below)
+|]|		]{char}		   square bracket command (see |]| below)
 |^|		^		1  cursor to the first CHAR of the line
 |_|		_		1  cursor to the first CHAR N - 1 lines lower
 |`|		`{a-zA-Z0-9}	1  cursor to the mark {a-zA-Z0-9}
@@ -373,7 +373,7 @@ tag		char	      note action in Normal mode	~
 |e|		e		1  cursor forward to the end of word N
 |f|		f{char}		1  cursor to Nth occurrence of {char} to the
 				   right
-|g|		g{char}		   extended commands, see below
+|g|		g{char}		   extended commands, see |g| below
 |h|		h		1  cursor N chars to the left
 |i|		i		2  insert text before the cursor N times
 |j|		j		1  cursor N lines downward
@@ -403,7 +403,7 @@ tag		char	      note action in Normal mode	~
 				   cursor [into buffer x]
 |y|		["x]y{motion}	   yank Nmove text [into buffer x]
 |yy|		["x]yy		   yank N lines [into buffer x]
-|z|		z{char}		   commands starting with 'z', see below
+|z|		z{char}		   commands starting with 'z', see |z| below
 |{|		{		1  cursor N paragraphs backward
 |bar|		|		1  cursor to column N
 |}|		}		1  cursor N paragraphs forward
