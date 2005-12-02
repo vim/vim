@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.0aa.  Last change: 2005 Aug 14
+*change.txt*    For Vim version 7.0aa.  Last change: 2005 Nov 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1087,7 +1087,8 @@ register.  {not in Vi}
 7. Selection and drop registers "*, "+ and "~ 
 Use these register for storing and retrieving the selected text for the GUI.
 See |quotestar| and |quoteplus|.  When the clipboard is not available or not
-working, the unnamed register is used instead.  {not in Vi}
+working, the unnamed register is used instead.  For Unix systems the clipboard
+is only available when the |+xterm_clipboard| feature is present.  {not in Vi}
 
 Note that there is only a distinction between "* and "+ for X11 systems.  For
 an explanation of the difference, see |x11-selection|.  Under MS-Windows, use

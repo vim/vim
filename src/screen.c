@@ -6884,7 +6884,7 @@ screenalloc(clear)
 		    else
 			len = Columns;
 #ifdef FEAT_MBYTE
-		    /* When switching to utf-8 dont copy characters, they
+		    /* When switching to utf-8 don't copy characters, they
 		     * may be invalid now. */
 		    if (!(enc_utf8 && ScreenLinesUC == NULL))
 #endif

@@ -1,4 +1,4 @@
-*help.txt*	For Vim version 7.0aa.  Last change: 2005 Sep 01
+*help.txt*	For Vim version 7.0aa.  Last change: 2005 Nov 30
 
 			VIM - main help file
 									 k
@@ -17,13 +17,13 @@ Get specific help:  It is possible to go directly to whatever you want help
 		    It is possible to further specify the context:
 							*help-context*
 			  WHAT			PREPEND    EXAMPLE	~
-		      Normal mode commands     (nothing)   :help x
-		      Visual mode commands	  v_	   :help v_u
-		      Insert mode commands	  i_	   :help i_<Esc>
-		      Command-line commands	  :	   :help :quit
+		      Normal mode command      (nothing)   :help x
+		      Visual mode command 	  v_	   :help v_u
+		      Insert mode command 	  i_	   :help i_<Esc>
+		      Command-line command 	  :	   :help :quit
 		      Command-line editing	  c_	   :help c_<Del>
-		      Vim command arguments	  -	   :help -r
-		      Options			  '	   :help 'textwidth'
+		      Vim command argument 	  -	   :help -r
+		      Option 			  '	   :help 'textwidth'
   Search for help:  Type ":help word", then hit CTRL-D to see matching
 		    help entries for "word".
 
@@ -191,6 +191,13 @@ Standard plugins ~
 |pi_expl.txt|	File explorer
 
 LOCAL ADDITIONS:				*local-additions*
+|cecutil.txt|	DrChip's Utilities				Jun 11, 2004
+|engspchk.txt|	English Spelling Checker   (v61)	Mar 14, 2005
+|example.txt|	Example for a locally added help file
+|matchit.txt|   Extended "%" matching
+|test.txt|	Testing the hélp cömmånd nôw
+|typecorr.txt|	Plugin for correcting typing mistakes
+|helpp.txt|	Dummy line to avoid an error message
 
 ------------------------------------------------------------------------------
 *bars*		Bars example

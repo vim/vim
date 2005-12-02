@@ -11,9 +11,9 @@ let current_compiler = "bdf"
 let s:cpo_save = &cpo
 set cpo-=C
 
-setlocal makeprg=bdftopcf\ $*
+CompilerSet makeprg=bdftopcf\ $*
 
-setlocal errorformat=%ABDF\ %trror\ on\ line\ %l:\ %m,
+CompilerSet errorformat=%ABDF\ %trror\ on\ line\ %l:\ %m,
       \%-Z%p^,
       \%Cbdftopcf:\ bdf\ input\\,\ %f\\,\ corrupt,
       \%-G%.%#

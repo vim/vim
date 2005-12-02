@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Nov 23
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Nov 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1436,6 +1436,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	to use the size for the GUI, put the command in your |gvimrc| file.
 	When you set this option and Vim is unable to change the physical
 	number of columns of the display, the display may be messed up.
+	Mimimum value is 12, maximum value is 10000.
 
 					*'comments'* *'com'* *E524* *E525*
 'comments' 'com'	string	(default
@@ -4091,7 +4092,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Vim limits the number of lines to what fits on the screen.  You can
 	use this command to get the tallest window possible: >
 		:set lines=999
-<	If you get less lines than expected, check the 'guiheadroom' option.
+<	Minimum value is 2, maximum value is 1000.
+	If you get less lines than expected, check the 'guiheadroom' option.
 	When you set this option and Vim is unable to change the physical
 	number of lines of the display, the display may be messed up.
 
