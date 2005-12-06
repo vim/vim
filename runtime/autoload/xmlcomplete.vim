@@ -310,7 +310,7 @@ function! xmlcomplete#GetLastOpenTag(unaryTagsStack)
 			let tagpat='</\='.b:xml_namespace.':\(\k\|[.-]\)\+\|/>'
 		endif
 	else
-		let tagpat='</\=\(\k\|[.-:]\)\+\|/>'
+		let tagpat='</\=\(\k\|[.-]\)\+\|/>'
 	endif
 	while (linenum>0)
 		let line=getline(linenum)

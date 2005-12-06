@@ -745,11 +745,6 @@ EXTERN int* (*iconv_errno) (void);
 #endif /* FEAT_MBYTE */
 
 #ifdef FEAT_XIM
-# ifdef FEAT_GUI_KDE
-EXTERN colnr_T		preedit_start_col INIT(= MAXCOL);
-EXTERN colnr_T		preedit_end_col INIT(= MAXCOL);
-EXTERN char		*draw_feedback INIT(= NULL);
-# endif
 # ifdef FEAT_GUI_GTK
 #  ifdef HAVE_GTK2
 EXTERN GtkIMContext	*xic INIT(= NULL);
@@ -1163,10 +1158,6 @@ EXTERN XtAppContext app_context INIT(= (XtAppContext)NULL);
 EXTERN guint32	gtk_socket_id INIT(= 0);
 EXTERN int	echo_wid_arg INIT(= FALSE);	/* --echo-wid argument */
 #endif
-
-#ifdef FEAT_GUI_KDE
-EXTERN int	echo_wid_arg INIT(= FALSE);
-# endif
 
 #ifdef FEAT_CLIENTSERVER
 EXTERN char_u	*serverName INIT(= NULL);	/* name of the server */

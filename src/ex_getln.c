@@ -2206,8 +2206,7 @@ cmdline_at_end()
 }
 #endif
 
-#if (defined(FEAT_XIM) && (defined(FEAT_GUI_GTK) || defined(FEAT_GUI_KDE))) \
-							     || defined(PROTO)
+#if (defined(FEAT_XIM) && (defined(FEAT_GUI_GTK))) || defined(PROTO)
 /*
  * Return the virtual column number at the current cursor position.
  * This is used by the IM code to obtain the start of the preedit string.

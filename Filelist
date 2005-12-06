@@ -2,7 +2,7 @@
 # Used by Makefile and upload.aap.
 
 # source files for all source archives
-SRC_ALL1 =	\
+SRC_ALL =	\
 		src/README.txt \
 		src/arabic.c \
 		src/arabic.h \
@@ -72,8 +72,6 @@ SRC_ALL1 =	\
 		src/vim.h \
 		src/window.c \
 		src/xxd/xxd.c \
-
-SRC_ALL2 =	\
 		src/main.aap \
 		src/testdir/main.aap \
 		src/testdir/*.in \
@@ -138,7 +136,6 @@ SRC_UNIX =	\
 		pixmaps/gen-inline-pixbufs.sh \
 		pixmaps/stock_icons.h \
 		src/INSTALL \
-		src/INSTALLkde.txt \
 		src/Makefile \
 		src/auto/configure \
 		src/config.aap.in \
@@ -155,11 +152,6 @@ SRC_UNIX =	\
 		src/gui_gtk_f.c \
 		src/gui_gtk_f.h \
 		src/gui_gtk_x11.c \
-		src/gui_kde.cc \
-		src/gui_kde_wid.cc \
-		src/gui_kde_wid.h \
-		src/gui_kde_x11.cc \
-		src/kvim_iface.h \
 		src/gui_motif.c \
 		src/gui_xmdlg.c \
 		src/gui_xmebw.c \
@@ -185,8 +177,6 @@ SRC_UNIX =	\
 		src/proto/gui_athena.pro \
 		src/proto/gui_gtk.pro \
 		src/proto/gui_gtk_x11.pro \
-		src/proto/gui_kde.pro \
-		src/proto/gui_kde_x11.pro \
 		src/proto/gui_motif.pro \
 		src/proto/gui_xmdlg.pro \
 		src/proto/gui_x11.pro \
@@ -219,6 +209,7 @@ SRC_DOS_UNIX =	\
 		src/if_perlsfio.c \
 		src/if_python.c \
 		src/if_ruby.c \
+		src/if_sniff.h \
 		src/if_tcl.c \
 		src/proto/if_cscope.pro \
 		src/proto/if_mzsch.pro \
@@ -364,21 +355,14 @@ SRC_AMI =	\
 # source files for the Mac (also in the extra archive)
 SRC_MAC =	\
 		src/INSTALLmac.txt \
-		src/Make_mpw.mak \
 		src/dehqx.py \
 		src/gui_mac.c \
 		src/gui_mac.icns \
-		src/gui_mac.r \
-		src/os_mac.build \
-		src/os_mac.c \
 		src/os_mac.h \
 		src/os_mac.rsr.hqx \
-		src/os_mac.sit.hqx \
 		src/os_mac_conv.c \
 		src/os_macosx.c \
-		src/os_mac.pbproj/project.pbxproj \
 		src/proto/gui_mac.pro \
-		src/proto/os_mac.pro \
 		src/proto/os_mac_conv.pro \
 
 # source files for VMS (in the extra archive)
@@ -429,7 +413,6 @@ SRC_EXTRA =	\
 		src/gui_riscos.c \
 		src/gui_riscos.h \
 		src/if_sniff.c \
-		src/if_sniff.h \
 		src/infplist.xml \
 		src/link.390 \
 		src/os_beos.c \
@@ -535,10 +518,6 @@ RT_UNIX =	\
 		runtime/KVim.desktop \
 		runtime/hi16-action-make.png \
 		runtime/hi22-action-make.png \
-		runtime/kde-tips \
-		runtime/kvim32x32.png \
-		runtime/kvim48x48.png \
-		runtime/kvim64x64.png \
 		runtime/vim16x16.png \
 		runtime/vim16x16.xpm \
 		runtime/vim32x32.png \

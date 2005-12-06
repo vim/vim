@@ -8,8 +8,7 @@
  */
 
 /*
- * os_macosx.c -- election of os_mac.c or os_unix.c
- *
+ * os_macosx.c -- Mac specific things for Mac OS/X.
  */
 
 #ifdef MACOS_X_UNIX
@@ -19,8 +18,7 @@
 #  include "os_unix.c"	    /* Using Project Builder */
 # endif
 #else
-# include "os_mac.c"
-# include <TextEncodingConverter.h>
+    Error: MACOS 9 is no longer supported in Vim 7
 #endif
 
 #ifdef _DEBUG

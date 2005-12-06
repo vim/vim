@@ -520,10 +520,6 @@ dbg_parsearg(arg, gap)
 	}
 	else
 	    bp->dbg_name = p;
-#ifdef MACOS_CLASSIC
-	if (bp->dbg_name != NULL)
-	    slash_n_colon_adjust(bp->dbg_name);
-#endif
     }
 
     if (bp->dbg_name == NULL)
@@ -2754,9 +2750,6 @@ do_source(fname, check_other, is_vimrc)
     vim_free(p);
     if (fname_exp == NULL)
 	return retval;
-#ifdef MACOS_CLASSIC
-    slash_n_colon_adjust(fname_exp);
-#endif
     if (mch_isdir(fname_exp))
     {
 	smsg((char_u *)_("Cannot source a directory: \"%s\""), fname);

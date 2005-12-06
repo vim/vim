@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.0aa.  Last change: 2005 Oct 02
+*starting.txt*  For Vim version 7.0aa.  Last change: 2005 Dec 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1200,6 +1200,13 @@ available in the internal variable "v:this_session" |this_session-variable|.
 An example mapping: >
   :nmap <F2> :wa<Bar>exe "mksession! " . v:this_session<CR>:so ~/sessions/
 This saves the current Session, and starts off the command to load another.
+
+The |SessionLoadPost| autocmd event is triggered after a session file is
+loaded/sourced.
+						*SessionLoad-variable*
+While the session file is loading the SessionLoad global variable is set to 1.
+Plugins can use this to postpone some work until the SessionLoadPost event is
+triggered.
 
 							*:mkvie* *:mkview*
 :mkvie[w][!] [file]	Write a Vim script that restores the contents of the

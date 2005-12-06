@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Nov 20
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Dec 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -3624,6 +3624,8 @@ remote_foreground({server})				*remote_foreground()*
 <		Except that on Win32 systems the client does the work, to work
 		around the problem that the OS doesn't always allow the server
 		to bring itself to the foreground.
+		Note: This does not restore the window if it was minimized,
+		like foreground() does.
 		This function is not available in the |sandbox|.
 		{only in the Win32, Athena, Motif and GTK GUI versions and the
 		Win32 console version}
@@ -4194,7 +4196,7 @@ strlen({expr})	The result is a Number, which is the length of the String
 
 strpart({src}, {start}[, {len}])			*strpart()*
 		The result is a String, which is part of {src}, starting from
-		byte {start}, with the length {len}.
+		byte {start}, with the byte length {len}.
 		When non-existing bytes are included, this doesn't result in
 		an error, the bytes are simply omitted.
 		If {len} is missing, the copy continues from {start} till the

@@ -660,8 +660,7 @@
  * +xfontset		X fontset support.  For outputting wide characters.
  */
 #ifndef FEAT_XFONTSET
-# if defined(FEAT_MBYTE) && defined(HAVE_X11) \
-		&& !defined(HAVE_GTK2) && !defined(FEAT_GUI_KDE)
+# if defined(FEAT_MBYTE) && defined(HAVE_X11) && !defined(HAVE_GTK2)
 #  define FEAT_XFONTSET
 # else
 /* #  define FEAT_XFONTSET */
@@ -708,8 +707,7 @@
  *			always has it).  But only if menus are enabled.
  */
 #if defined(FEAT_NORMAL) && defined(FEAT_MENU) \
-	&& (defined(FEAT_GUI_KDE) \
-		|| defined(FEAT_GUI_GTK) \
+	&& (defined(FEAT_GUI_GTK) \
 		|| defined(FEAT_GUI_MSWIN) \
 		|| ((defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)) \
 			&& defined(HAVE_XPM)) \
@@ -725,7 +723,7 @@
 /*
  * +browse		":browse" command.
  */
-#if defined(FEAT_NORMAL) && (defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_KDE) || defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_MAC))
+#if defined(FEAT_NORMAL) && (defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_MAC))
 # define FEAT_BROWSE
 #endif
 
@@ -740,8 +738,7 @@
 	|| defined(FEAT_GUI_GTK) \
 	|| defined(FEAT_GUI_PHOTON) \
 	|| defined(FEAT_GUI_MSWIN) \
-	|| defined(FEAT_GUI_MAC) \
-	|| defined(FEAT_GUI_KDE)
+	|| defined(FEAT_GUI_MAC)
 #  define FEAT_CON_DIALOG
 #  define FEAT_GUI_DIALOG
 # else
@@ -749,13 +746,13 @@
 # endif
 #endif
 #if !defined(FEAT_GUI_DIALOG) && (defined(FEAT_GUI_MOTIF) \
-	|| defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_KDE))
+	|| defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_GTK))
 /* need a dialog to show error messages when starting from the desktop */
 # define FEAT_GUI_DIALOG
 #endif
 #if defined(FEAT_GUI_DIALOG) && \
 	(defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA) \
-	 || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_KDE)|| defined(FEAT_GUI_MSWIN) \
+	 || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MSWIN) \
 	 || defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_MAC))
 # define FEAT_GUI_TEXTDIALOG
 #endif
@@ -1043,7 +1040,7 @@
 #endif
 
 #if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MOTIF) \
-	|| defined(MSWIN_FIND_REPLACE) || defined(FEAT_GUI_KDE)
+	|| defined(MSWIN_FIND_REPLACE)
 # define FIND_REPLACE_DIALOG 1
 #endif
 
@@ -1074,7 +1071,7 @@
 #  define MCH_CURSOR_SHAPE
 # endif
 # if defined(FEAT_GUI_W32) || defined(FEAT_GUI_W16) || defined(FEAT_GUI_MOTIF) \
-	|| defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_KDE)\
+	|| defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_GTK) \
 	|| defined(FEAT_GUI_PHOTON)
 #  define FEAT_MOUSESHAPE
 # endif
@@ -1089,7 +1086,7 @@
 
 #if defined(FEAT_MZSCHEME) && (defined(FEAT_GUI_W32) || defined(FEAT_GUI_GTK)    \
 	|| defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)	\
-	|| defined(FEAT_GUI_MAC) || defined(FEAT_GUI_KDE))
+	|| defined(FEAT_GUI_MAC))
 # define MZSCHEME_GUI_THREADS
 #endif
 
@@ -1172,7 +1169,7 @@
 	    || defined(FEAT_NETBEANS_INTG) || defined(FEAT_EVAL))
 # define FEAT_BEVAL
 # if !defined(FEAT_XFONTSET) && !defined(FEAT_GUI_GTK) \
-	&& !defined(FEAT_GUI_KDE) && !defined(FEAT_GUI_W32)
+	&& !defined(FEAT_GUI_W32)
 #  define FEAT_XFONTSET
 # endif
 #endif

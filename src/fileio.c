@@ -42,9 +42,7 @@
 #endif
 
 /* Is there any system that doesn't have access()? */
-#ifndef MACOS_CLASSIC /* Not available on MacOS 9 */
-# define USE_MCH_ACCESS
-#endif
+#define USE_MCH_ACCESS
 
 #ifdef FEAT_MBYTE
 static char_u *next_fenc __ARGS((char_u **pp));
@@ -6758,6 +6756,7 @@ static struct event_name
     {"QuickFixCmdPost",	EVENT_QUICKFIXCMDPOST},
     {"QuickFixCmdPre",	EVENT_QUICKFIXCMDPRE},
     {"RemoteReply",	EVENT_REMOTEREPLY},
+    {"SessionLoadPost",	EVENT_SESSIONLOADPOST},
     {"StdinReadPost",	EVENT_STDINREADPOST},
     {"StdinReadPre",	EVENT_STDINREADPRE},
     {"Syntax",		EVENT_SYNTAX},

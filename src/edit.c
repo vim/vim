@@ -222,10 +222,6 @@ static int	revins_legal;		/* was the last char 'legal'? */
 static int	revins_scol;		/* start column of revins session */
 #endif
 
-#if defined(FEAT_MBYTE) && defined(MACOS_CLASSIC)
-static short	previous_script = smRoman;
-#endif
-
 static int	ins_need_undo;		/* call u_save() before inserting a
 					   char.  Set when edit() is called.
 					   after that arrow_used is used. */
@@ -396,10 +392,6 @@ edit(cmdchar, startln, count)
 	State |= LANGMAP;
 #ifdef USE_IM_CONTROL
     im_set_active(curbuf->b_p_iminsert == B_IMODE_IM);
-#endif
-
-#if defined(FEAT_MBYTE) && defined(MACOS_CLASSIC)
-    KeyScript(previous_script);
 #endif
 
 #ifdef FEAT_MOUSE
@@ -2089,6 +2081,8 @@ ins_compl_make_cyclic()
     return count;
 }
 
+/* "compl_match_array" points the currently displayed list of entries in the
+ * popup menu.  It is NULL when there is no popup menu. */
 static char_u **compl_match_array = NULL;
 static int compl_match_arraysize;
 
@@ -6532,10 +6526,6 @@ ins_esc(count, cmdchar, nomove)
 	push_raw_key(composing_hangul_buffer, 2);
 	composing_hangul = 0;
     }
-#endif
-#if defined(FEAT_MBYTE) && defined(MACOS_CLASSIC)
-    previous_script = GetScriptManagerVariable(smKeyScript);
-    KeyScript(smKeyRoman); /* or smKeySysScript */
 #endif
 
     temp = curwin->w_cursor.col;

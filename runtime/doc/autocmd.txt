@@ -555,6 +555,9 @@ QuickFixCmdPre						*QuickFixCmdPre*
 QuickFixCmdPost						*QuickFixCmdPost*
 				like QuickFixCmdPre, but after a quickfix
 				command is run.
+							*SessionLoadPost*
+SessionLoadPost			After loading the session file created using
+				the |:mksession| command.
 							*MenuPopup*
 MenuPopup			Just before showing the popup menu (under the
 				right mouse button).  Useful for adjusting the

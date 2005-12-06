@@ -1655,6 +1655,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :@	repeat.txt	/*:@*
 :@:	repeat.txt	/*:@:*
 :@@	repeat.txt	/*:@@*
+:CompilerSet	usr_41.txt	/*:CompilerSet*
 :Explore	pi_netrw.txt	/*:Explore*
 :Hexplore	pi_netrw.txt	/*:Hexplore*
 :Man	filetype.txt	/*:Man*
@@ -3974,6 +3975,8 @@ Select	visual.txt	/*Select*
 Select-mode	visual.txt	/*Select-mode*
 Select-mode-mapping	visual.txt	/*Select-mode-mapping*
 Session	starting.txt	/*Session*
+SessionLoad-variable	starting.txt	/*SessionLoad-variable*
+SessionLoadPost	autocmd.txt	/*SessionLoadPost*
 StdinReadPost	autocmd.txt	/*StdinReadPost*
 StdinReadPre	autocmd.txt	/*StdinReadPre*
 Syntax	autocmd.txt	/*Syntax*
@@ -5132,6 +5135,7 @@ g:netrw_sort_by	pi_netrw.txt	/*g:netrw_sort_by*
 g:netrw_sort_direction	pi_netrw.txt	/*g:netrw_sort_direction*
 g:netrw_sort_sequence	pi_netrw.txt	/*g:netrw_sort_sequence*
 g:netrw_ssh_browse_reject	pi_netrw.txt	/*g:netrw_ssh_browse_reject*
+g:netrw_ssh_cmd	pi_netrw.txt	/*g:netrw_ssh_cmd*
 g:netrw_timefmt	pi_netrw.txt	/*g:netrw_timefmt*
 g:netrw_uid	pi_netrw.txt	/*g:netrw_uid*
 g:netrw_use_nt_rcp	pi_netrw.txt	/*g:netrw_use_nt_rcp*
@@ -6771,6 +6775,13 @@ tags-file-format	tagsrch.txt	/*tags-file-format*
 tags-option	tagsrch.txt	/*tags-option*
 tagsrch.txt	tagsrch.txt	/*tagsrch.txt*
 tagstack	tagsrch.txt	/*tagstack*
+tar	pi_tar.txt	/*tar*
+tar-contents	pi_tar.txt	/*tar-contents*
+tar-copyright	pi_tar.txt	/*tar-copyright*
+tar-history	pi_tar.txt	/*tar-history*
+tar-manual	pi_tar.txt	/*tar-manual*
+tar-usage	pi_tar.txt	/*tar-usage*
+tar.txt	pi_tar.txt	/*tar.txt*
 tcl	if_tcl.txt	/*tcl*
 tcl-beep	if_tcl.txt	/*tcl-beep*
 tcl-buffer	if_tcl.txt	/*tcl-buffer*
@@ -7356,6 +7367,13 @@ zf	fold.txt	/*zf*
 zg	spell.txt	/*zg*
 zh	scroll.txt	/*zh*
 zi	fold.txt	/*zi*
+zip	pi_zip.txt	/*zip*
+zip-contents	pi_zip.txt	/*zip-contents*
+zip-copyright	pi_zip.txt	/*zip-copyright*
+zip-history	pi_zip.txt	/*zip-history*
+zip-manual	pi_zip.txt	/*zip-manual*
+zip-usage	pi_zip.txt	/*zip-usage*
+zip.txt	pi_zip.txt	/*zip.txt*
 zj	fold.txt	/*zj*
 zk	fold.txt	/*zk*
 zl	scroll.txt	/*zl*

@@ -174,7 +174,7 @@ static int fillchar_status __ARGS((int *attr, int is_curwin));
 static int fillchar_vsep __ARGS((int *attr));
 #endif
 #ifdef FEAT_STL_OPT
-static void win_redr_custom __ARGS((win_T *wp, int Ruler));
+static void win_redr_custom __ARGS((win_T *wp, int draw_ruler));
 #endif
 #ifdef FEAT_CMDL_INFO
 static void win_redr_ruler __ARGS((win_T *wp, int always));
@@ -2577,7 +2577,7 @@ win_line(wp, lnum, startrow, endrow)
 #endif
 #define WL_LINE		WL_SBR + 1	/* text in the line */
     int		draw_state = WL_START;	/* what to draw next */
-#if defined(FEAT_XIM) && (defined(FEAT_GUI_GTK) || defined(FEAT_GUI_KDE))
+#if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
     int		feedback_col = 0;
     int		feedback_old_attr = -1;
 #endif
@@ -5524,9 +5524,9 @@ get_keymap_str(wp, buf, len)
  * Redraw the status line or ruler of window wp.
  */
     static void
-win_redr_custom(wp, Ruler)
+win_redr_custom(wp, draw_ruler)
     win_T	*wp;
-    int		Ruler;
+    int		draw_ruler;	/* TRUE or FALSE */
 {
     int		attr;
     int		curattr;
@@ -5549,7 +5549,7 @@ win_redr_custom(wp, Ruler)
 	p = wp->w_p_stl;
     else
 	p = p_stl;
-    if (Ruler)
+    if (draw_ruler)
     {
 	p = p_ruf;
 	/* advance past any leading group spec - implicit in ru_col */
@@ -8476,6 +8476,14 @@ showruler(always)
 {
     if (!always && !redrawing())
 	return;
+#ifdef FEAT_INS_EXPAND
+    if (pum_visible())
+    {
+	/* Don't redraw right now, do it later. */
+	curwin->w_redr_status = TRUE;
+	return;
+    }
+#endif
 #if defined(FEAT_STL_OPT) && defined(FEAT_WINDOWS)
     if ((*p_stl != NUL || *curwin->w_p_stl != NUL) && curwin->w_status_height)
 	win_redr_custom(curwin, FALSE);

@@ -22,23 +22,6 @@
 # include "gui_beval.h"
 #endif
 
-#ifdef FEAT_GUI_KDE
-# include <X11/Intrinsic.h>
-
-/* used only as pointer to, so casting to int is ok */
-# ifdef __cplusplus
-class QScrollBar;
-class QPopupMenu;
-class QFont;
-class VimWidget;
-# else
-#  define QScrollBar int
-#  define QPopupMenu int
-#  define QFont int
-#  define VimWidget  int
-# endif
-#endif
-
 #ifdef FEAT_GUI_GTK
 # include <X11/Intrinsic.h>
 # include <gtk/gtk.h>
@@ -90,7 +73,7 @@ class VimWidget;
  * GUIs that support dropping files on a running Vim.
  */
 #if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MAC) \
-	|| defined(FEAT_GUI_GTK) || defined(FEAT_GUI_KDE)
+	|| defined(FEAT_GUI_GTK)
 # define HAVE_DROP_FILE
 #endif
 
@@ -158,7 +141,7 @@ class VimWidget;
 #define DRAW_BOLD		0x02	/* draw bold text */
 #define DRAW_UNDERL		0x04	/* draw underline text */
 #define DRAW_UNDERC		0x08	/* draw undercurl text */
-#if defined(RISCOS) || defined(HAVE_GTK2) || defined (FEAT_GUI_KDE)
+#if defined(RISCOS) || defined(HAVE_GTK2)
 # define DRAW_ITALIC		0x10	/* draw italic text */
 #endif
 #define DRAW_CURSOR		0x20	/* drawing block cursor (win32) */
@@ -177,7 +160,7 @@ class VimWidget;
 #endif
 #define TOOLBAR_BORDER_HEIGHT	12  /* room above+below buttons for MSWindows */
 
-#if defined(NO_CONSOLE) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_KDE) || defined(FEAT_GUI_X11)
+#if defined(NO_CONSOLE) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_X11)
 # define NO_CONSOLE_INPUT	/* use no_console_input() to check if there
 				   is no console input possible */
 #endif
@@ -201,9 +184,6 @@ typedef struct GuiScrollbar
     int		width;		/* Current width of scroll bar in cols */
 #endif
     int		status_height;	/* Height of status line */
-#ifdef FEAT_GUI_KDE
-    QScrollBar *w;
-#endif
 #ifdef FEAT_GUI_X11
     Widget	id;		/* Id of real scroll bar */
 #endif
@@ -237,12 +217,6 @@ typedef long	    guicolor_T;	/* handle for a GUI color; for X11 this should
 				   displays there is a tiny chance this is an
 				   actual color */
 
-#ifdef FEAT_GUI_KDE
-  typedef QFont		*GuiFont;
-  typedef QFont		*GuiFontset;
-# define NOFONT		(GuiFont)NULL
-# define NOFONTSET	(GuiFontset)NULL
-#endif
 #ifdef FEAT_GUI_GTK
 # ifdef HAVE_GTK2
   typedef PangoFontDescription	*GuiFont;       /* handle for a GUI font */
@@ -266,12 +240,10 @@ typedef long	    guicolor_T;	/* handle for a GUI color; for X11 this should
 #   define NOFONT	(GuiFont)0
 #   define NOFONTSET	(GuiFontset)0
 #  else
-#   if !defined(FEAT_GUI_KDE)
   typedef long_u	GuiFont;	/* handle for a GUI font */
   typedef long_u	GuiFontset;	/* handle for a GUI fontset */
 #   define NOFONT	(GuiFont)0
 #   define NOFONTSET	(GuiFontset)0
-#   endif
 #  endif
 # endif
 #endif
@@ -388,13 +360,6 @@ typedef struct Gui
 
     char_u	*geom;		    /* Geometry, eg "80x24" */
     Bool	color_approx;	    /* Some color was approximated */
-#endif
-
-#ifdef FEAT_GUI_KDE
-    VimWidget   *w;                 /* Vim widget */
-    Display     *dpy;               /* X display */
-    QFont	*current_font;
-    char_u	*fontname;	    /* font name from font selection dialog */
 #endif
 
 #ifdef FEAT_GUI_GTK

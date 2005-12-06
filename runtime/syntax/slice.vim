@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Slice (ZeroC's Specification Language for Ice)
-" Maintainer:	Morel Bodin <bodin@tuxfamily.net>
-" Last Change:	2003 Sep 24
+" Maintainer:	Morel Bodin <slice06@nym.hush.com>
+" Last Change:	2005 Dec 03
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -15,7 +15,7 @@ endif
 
 syn keyword sliceType	    bool byte double float int long short string void
 syn keyword sliceQualifier  const extends idempotent implements local nonmutating out throws
-syn keyword sliceConstruct	class enum exception dictionnary interface module LocalObject Object sequence struct
+syn keyword sliceConstruct  class enum exception dictionary interface module LocalObject Object sequence struct
 syn keyword sliceQualifier  const extends idempotent implements local nonmutating out throws
 syn keyword sliceBoolean    false true
 

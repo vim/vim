@@ -34,7 +34,7 @@
 #	  X11 Session Management Protocol (XSMP) library (libSM) but do not
 #	  want to use it.
 #	  This can speedup Vim startup but Vim loses the ability to catch the
-#	  user logging out from session-managers like GNOME & KDE and work
+#	  user logging out from session-managers like GNOME and work
 #	  could be lost.
 #	- Uncomment one or more of these lines to include an interface;
 #	  each makes Vim quite a bit bigger:
@@ -338,8 +338,6 @@ CClink = $(CC)
 # automatically be used if it is found.  If you have GNOME, but do not want to
 # use it (e.g., want a GTK-only version), then use --enable-gui=gtk.
 #
-# KDE doesn't fully work, unfortunately.  See the todo list.
-#
 # If the selected GUI isn't found, the GUI is disabled automatically
 #CONF_OPT_GUI = --enable-gui=gtk
 #CONF_OPT_GUI = --enable-gui=gtk --disable-gtktest
@@ -348,7 +346,6 @@ CClink = $(CC)
 #CONF_OPT_GUI = --enable-gui=gnome
 #CONF_OPT_GUI = --enable-gui=gnome2
 #CONF_OPT_GUI = --enable-gui=gnome2 --disable-gtktest
-#CONF_OPT_GUI = --enable-gui=kde
 #CONF_OPT_GUI = --enable-gui=motif
 #CONF_OPT_GUI = --enable-gui=motif --with-motif-lib="-static -lXm -shared"
 #CONF_OPT_GUI = --enable-gui=athena
@@ -1087,23 +1084,6 @@ LINKIT = @echo >/dev/null
 # Without a GUI install the normal way.
 NONE_INSTALL = install_normal
 
-### KDE GUI interface.
-KDE_SRC		= gui.c pty.c gui_kde.cc gui_kde_x11.cc gui_kde_wid.cc gui_kde_wid_moc.cc kvim_iface_skel.cc
-KDE_OBJ		= objects/gui.o objects/pty.o objects/gui_kde.o objects/gui_kde_x11.o \
-			objects/gui_kde_wid.o objects/gui_kde_wid_moc.o \
-			objects/kvim_iface_skel.o
-KDE_DEFS	= -DFEAT_GUI_KDE $(NARROW_PROTO)
-KDE_IPATH	= $(GUI_INC_LOC)
-KDE_LIBS_DIR	= $(GUI_LIB_LOC)	# Includes the libraries themselves
-KDE_DIR		= $(KDE_PREFIX)
-KDE_LIBS1	=
-KDE_LIBS2	=
-KDE_INSTALL     = install_normal
-KDE_TARGETS	= installglinks installkdeicons
-KDE_MAN_TARGETS = yes
-KDE_TESTTARGET  = gui
-KDE_BUNDLE	=
-
 ### GTK GUI
 GTK_SRC		= gui.c gui_gtk.c gui_gtk_x11.c pty.c gui_gtk_f.c \
 			gui_beval.c
@@ -1230,7 +1210,7 @@ APPDIR = $(VIMNAME).app
 CARBONGUI_TESTARG = VIMPROG=../$(APPDIR)/Contents/MacOS/$(VIMTARGET)
 
 # All GUI files
-ALL_GUI_SRC  = gui.c gui_gtk.c gui_gtk_f.c gui_motif.c gui_xmdlg.c gui_xmebw.c gui_athena.c gui_gtk_x11.c gui_x11.c gui_at_sb.c gui_at_fs.c pty.c gui_kde.cc gui_kde_wid.cc gui_kde_x11.cc gui_kde_wid_moc.cc
+ALL_GUI_SRC  = gui.c gui_gtk.c gui_gtk_f.c gui_motif.c gui_xmdlg.c gui_xmebw.c gui_athena.c gui_gtk_x11.c gui_x11.c gui_at_sb.c gui_at_fs.c pty.c
 ALL_GUI_PRO  = gui.pro gui_gtk.pro gui_motif.pro gui_xmdlg.pro gui_athena.pro gui_gtk_x11.pro gui_x11.pro gui_w16.pro gui_w32.pro gui_photon.pro
 
 # }}}
@@ -1277,7 +1257,7 @@ PROTO_FLAGS = -m -M__ARGS -d -E"$(CPP)" $(NO_ATTR)
 SHELL = /bin/sh
 
 .SUFFIXES:
-.SUFFIXES: .cc .c .o .pro
+.SUFFIXES: .c .o .pro
 
 PRE_DEFS = -Iproto $(DEFS) $(GUI_DEFS) $(GUI_IPATH) $(CPPFLAGS) $(EXTRA_IPATHS)
 POST_DEFS = $(X_CFLAGS) $(MZSCHEME_CFLAGS) $(PERL_CFLAGS) $(PYTHON_CFLAGS) $(TCL_CFLAGS) $(RUBY_CFLAGS) $(EXTRA_DEFS)
@@ -1395,7 +1375,7 @@ SRC =	$(BASIC_SRC) $(GUI_SRC) $(HANGULIN_SRC) $(MZSCHEME_SRC) \
 	$(PERL_SRC) $(PYTHON_SRC) $(TCL_SRC) $(RUBY_SRC) \
 	$(SNIFF_SRC) $(WORKSHOP_SRC) $(WSDEBUG_SRC)
 
-TAGS_SRC = *.c *.cpp *.cc if_perl.xs
+TAGS_SRC = *.c *.cpp if_perl.xs
 
 EXTRA_SRC = hangulin.c if_mzsch.c auto/if_perl.c if_perlsfio.c \
 	    if_python.c if_tcl.c if_ruby.c if_sniff.c gui_beval.c \
@@ -1947,23 +1927,6 @@ install-languages: languages $(DEST_LANG) $(DEST_KMAP)
 	   chmod $(FILEMOD) $(DEST_KMAP)/README.txt $(DEST_KMAP)/*.vim; \
 	fi
 
-# Install the icons for the KDE GUI.  This differs from the KDE icons for
-# other GUIs.
-installkdeicons:
-	mkdir -p $(DESTDIR)$(KDE_DIR)/share/applnk/Editors/
-	mkdir -p $(DESTDIR)$(KDE_DIR)/share/icons/hicolor/32x32/apps/
-	mkdir -p $(DESTDIR)$(KDE_DIR)/share/icons/hicolor/48x48/apps/
-	mkdir -p $(DESTDIR)$(KDE_DIR)/share/icons/hicolor/22x22/actions/
-	mkdir -p $(DESTDIR)$(KDE_DIR)/share/icons/hicolor/16x16/actions/
-	mkdir -p $(DESTDIR)$(KDE_DIR)/share/apps/kvim
-
-	cp ../runtime/KVim.desktop $(DESTDIR)$(KDE_DIR)/share/applnk/Editors/ && chmod 644 $(DESTDIR)$(KDE_DIR)/share/applnk/Editors/KVim.desktop
-	cp ../runtime/kvim32x32.png $(DESTDIR)$(KDE_DIR)/share/icons/hicolor/32x32/apps/kvim.png && chmod 644 $(DESTDIR)$(KDE_DIR)/share/icons/hicolor/32x32/apps/kvim.png
-	cp ../runtime/kvim48x48.png $(DESTDIR)$(KDE_DIR)/share/icons/hicolor/48x48/apps/kvim.png && chmod 644 $(DESTDIR)$(KDE_DIR)/share/icons/hicolor/48x48/apps/kvim.png
-	cp ../runtime/hi16-action-make.png $(DESTDIR)$(KDE_DIR)/share/icons/hicolor/16x16/actions/hi16-action-make.png
-	cp ../runtime/hi22-action-make.png $(DESTDIR)$(KDE_DIR)/share/icons/hicolor/22x22/actions/hi22-action-make.png
-	cp ../runtime/kde-tips $(DESTDIR)$(KDE_DIR)/share/apps/kvim/tips && chmod 644 $(DESTDIR)$(KDE_DIR)/share/apps/kvim/tips
-
 # install the icons for KDE, if the directory exists and the icon doesn't.
 ICON48PATH = $(DESTDIR)$(DATADIR)/icons/hicolor/48x48/apps
 ICON32PATH = $(DESTDIR)$(DATADIR)/icons/locolor/32x32/apps
@@ -2145,7 +2108,6 @@ clean celan: testclean
 	-rm -f $(TOOLS) auto/osdef.h auto/pathdef.c auto/if_perl.c
 	-rm -f conftest* *~ auto/link.sed
 	-rm -rf $(APPDIR)
-	-rm -f gui_kde_wid_moc.cc kvim_iface_skel.cc *.kidl
 	if test -d $(PODIR); then \
 		cd $(PODIR); $(MAKE) prefix=$(DESTDIR)$(prefix) clean; \
 	fi
@@ -2237,9 +2199,6 @@ lintinstall:
 ###########################################################################
 
 .c.o:
-	$(CCC) $<
-
-.cc.o:
 	$(CCC) $<
 
 auto/if_perl.c: if_perl.xs
@@ -2511,26 +2470,6 @@ objects/workshop.o: workshop.c
 
 objects/wsdebug.o: wsdebug.c
 	$(CCC) -o $@ wsdebug.c
-
-objects/gui_kde.o: gui_kde.cc
-	$(CCC) -o $@ gui_kde.cc
-
-objects/gui_kde_x11.o: gui_kde_x11.cc
-	$(CCC) -o $@ gui_kde_x11.cc
-
-objects/gui_kde_wid.o: gui_kde_wid.cc
-	$(MOC) -o gui_kde_wid_moc.cc gui_kde_wid.h
-	$(KDE_DIR)/bin/dcopidl kvim_iface.h > kvim_iface.kidl || ( rm -f kvim_iface.kidl ; /bin/false )
-	$(KDE_DIR)/bin/dcopidl2cpp --c++-suffix cc --no-stub kvim_iface.kidl
-	$(CCC) -o $@ gui_kde_wid.cc
-
-gui_kde_wid_moc.cc: objects/gui_kde_wid.o
-objects/gui_kde_wid_moc.o: gui_kde_wid_moc.cc
-	$(CCC) -o $@ gui_kde_wid_moc.cc
-
-kvim_iface_skel.cc: objects/gui_kde_wid.o
-objects/kvim_iface_skel.o: kvim_iface_skel.cc
-	$(CCC) -o $@ kvim_iface_skel.cc
 
 objects/netbeans.o: netbeans.c
 	$(CCC) -o $@ netbeans.c
@@ -2897,36 +2836,6 @@ objects/pty.o: pty.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h ascii.
   keymap.h term.h macros.h structs.h regexp.h gui.h gui_beval.h \
   proto/gui_beval.pro option.h ex_cmds.h proto.h globals.h farsi.h \
   arabic.h if_sniff.h
-objects/gui_kde.o: gui_kde.cc gui_kde_wid.h kvim_iface.h vim.h auto/config.h \
-  feature.h os_unix.h ascii.h keymap.h term.h macros.h structs.h regexp.h \
-  gui.h gui_beval.h proto/gui_beval.pro option.h ex_cmds.h proto.h \
-  globals.h farsi.h arabic.h if_sniff.h ../pixmaps/tb_new.xpm \
-  ../pixmaps/tb_open.xpm ../pixmaps/tb_close.xpm ../pixmaps/tb_save.xpm \
-  ../pixmaps/tb_print.xpm ../pixmaps/tb_cut.xpm ../pixmaps/tb_copy.xpm \
-  ../pixmaps/tb_paste.xpm ../pixmaps/tb_find.xpm \
-  ../pixmaps/tb_find_next.xpm ../pixmaps/tb_find_prev.xpm \
-  ../pixmaps/tb_find_help.xpm ../pixmaps/tb_exit.xpm \
-  ../pixmaps/tb_undo.xpm ../pixmaps/tb_redo.xpm ../pixmaps/tb_help.xpm \
-  ../pixmaps/tb_macro.xpm ../pixmaps/tb_make.xpm \
-  ../pixmaps/tb_save_all.xpm ../pixmaps/tb_jump.xpm \
-  ../pixmaps/tb_ctags.xpm ../pixmaps/tb_load_session.xpm \
-  ../pixmaps/tb_save_session.xpm ../pixmaps/tb_new_session.xpm \
-  ../pixmaps/tb_blank.xpm ../pixmaps/tb_maximize.xpm \
-  ../pixmaps/tb_split.xpm ../pixmaps/tb_minimize.xpm \
-  ../pixmaps/tb_shell.xpm ../pixmaps/tb_replace.xpm \
-  ../pixmaps/tb_vsplit.xpm ../pixmaps/tb_maxwidth.xpm \
-  ../pixmaps/tb_minwidth.xpm
-objects/gui_kde_wid.o: gui_kde_wid.cc gui_kde_wid.h kvim_iface.h vim.h \
-  auto/config.h feature.h os_unix.h ascii.h keymap.h term.h macros.h \
-  structs.h regexp.h gui.h gui_beval.h proto/gui_beval.pro option.h \
-  ex_cmds.h proto.h globals.h farsi.h arabic.h if_sniff.h version.h \
-  proto/../../pixmaps/alert.xpm proto/../../pixmaps/error.xpm \
-  proto/../../pixmaps/generic.xpm proto/../../pixmaps/info.xpm \
-  proto/../../pixmaps/quest.xpm
-objects/gui_kde_x11.o: gui_kde_x11.cc gui_kde_wid.h kvim_iface.h vim.h \
-  auto/config.h feature.h os_unix.h ascii.h keymap.h term.h macros.h \
-  structs.h regexp.h gui.h gui_beval.h proto/gui_beval.pro option.h \
-  ex_cmds.h proto.h globals.h farsi.h arabic.h if_sniff.h version.h
 objects/hangulin.o: hangulin.c vim.h auto/config.h feature.h os_unix.h \
   auto/osdef.h ascii.h keymap.h term.h macros.h structs.h regexp.h gui.h \
   gui_beval.h proto/gui_beval.pro option.h ex_cmds.h proto.h globals.h \

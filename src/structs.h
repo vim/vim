@@ -1991,9 +1991,6 @@ struct VimMenu
     Widget	id;		    /* Manage this to enable item */
     Widget	submenu_id;	    /* If this is submenu, add children here */
 #endif
-#ifdef FEAT_GUI_KDE
-    QPopupMenu *widget;
-#endif
 #ifdef FEAT_GUI_GTK
     GtkWidget	*id;		    /* Manage this to enable item */
     GtkWidget	*submenu_id;	    /* If this is submenu, add children here */
