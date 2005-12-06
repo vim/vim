@@ -205,7 +205,7 @@ static void	ex_tearoff __ARGS((exarg_T *eap));
 #else
 # define ex_tearoff		ex_ni
 #endif
-#if (defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_KDE) || defined(FEAT_GUI_GTK)) && defined(FEAT_MENU)
+#if (defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_GTK)) && defined(FEAT_MENU)
 static void	ex_popup __ARGS((exarg_T *eap));
 #else
 # define ex_popup		ex_ni
@@ -213,11 +213,11 @@ static void	ex_popup __ARGS((exarg_T *eap));
 #ifndef FEAT_GUI_MSWIN
 # define ex_simalt		ex_ni
 #endif
-#if !defined(FEAT_GUI_MSWIN) && !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_MOTIF) && !defined(FEAT_GUI_KDE)
+#if !defined(FEAT_GUI_MSWIN) && !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_MOTIF)
 # define gui_mch_find_dialog	ex_ni
 # define gui_mch_replace_dialog ex_ni
 #endif
-#if !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_KDE)
+#if !defined(FEAT_GUI_GTK)
 # define ex_helpfind		ex_ni
 #endif
 #ifndef FEAT_CSCOPE
@@ -4244,12 +4244,6 @@ expand_filename(eap, cmdlinep, errormsgp)
 		if (!has_wildcards)
 #endif
 		    backslash_halve(eap->arg);
-#ifdef MACOS_CLASSIC
-		/*
-		 * translate unix-like path components
-		 */
-		slash_n_colon_adjust(eap->arg);
-#endif
 	    }
 
 	    if (has_wildcards)
@@ -7088,7 +7082,7 @@ ex_tearoff(eap)
 }
 #endif
 
-#if (defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_KDE) || defined(FEAT_GUI_GTK)) && defined(FEAT_MENU)
+#if (defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_GTK)) && defined(FEAT_MENU)
     static void
 ex_popup(eap)
     exarg_T	*eap;
@@ -7254,11 +7248,12 @@ ex_read(eap)
 		    lnum = curbuf->b_ml.ml_line_count;
 		else
 		    lnum = 1;
-		if (*ml_get(lnum) == NUL)
+		if (*ml_get(lnum) == NUL && u_savedel(lnum, 1L) == OK)
 		{
 		    ml_delete(lnum, FALSE);
 		    deleted_lines_mark(lnum, 1L);
-		    if (curwin->w_cursor.lnum >= lnum)
+		    if (curwin->w_cursor.lnum > 1
+					     && curwin->w_cursor.lnum >= lnum)
 			--curwin->w_cursor.lnum;
 		}
 	    }
@@ -8126,6 +8121,12 @@ ex_mkrc(eap)
 	    (void)put_line(fd, "version 6.0");
 
 #ifdef FEAT_SESSION
+	if (eap->cmdidx == CMD_mksession)
+	{
+	    if (put_line(fd, "let SessionLoad = 1") == FAIL)
+		failed = TRUE;
+	}
+
 	if (eap->cmdidx != CMD_mkview)
 #endif
 	{
@@ -8190,8 +8191,15 @@ ex_mkrc(eap)
 	    if (put_line(fd, "let &so = s:so_save | let &siso = s:siso_save")
 								      == FAIL)
 		failed = TRUE;
+	    if (put_line(fd, "doautoall SessionLoadPost") == FAIL)
+		failed = TRUE;
+	    if (put_line(fd, "unlet SessionLoad") == FAIL)
+		failed = TRUE;
 	}
 #endif
+	if (put_line(fd, "\" vim: set ft=vim :") == FAIL)
+	    failed = TRUE;
+
 	failed |= fclose(fd);
 
 	if (failed)
@@ -9907,17 +9915,13 @@ get_view_file(c)
 	    else if (vim_ispathsep(*p))
 	    {
 		*s++ = '=';
-#ifdef MACOS_CLASSIC /* TODO: Is it also needed for MACOS_X? (Dany) */
-		*s++ = '+';
-#else
-# if defined(BACKSLASH_IN_FILENAME) || defined(AMIGA) || defined(RISCOS) \
+#if defined(BACKSLASH_IN_FILENAME) || defined(AMIGA) || defined(RISCOS) \
 	|| defined(VMS)
 		if (*p == ':')
 		    *s++ = '-';
 		else
-# endif
-		    *s++ = '+';
 #endif
+		    *s++ = '+';
 	    }
 	    else
 		*s++ = *p;

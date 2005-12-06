@@ -37,8 +37,6 @@ all install uninstall tools config configure proto depend lint tags types test t
 #
 # TARGET	PRODUCES		CONTAINS
 # unixall	vim-#.#.tar.bz2		Runtime files and Sources for Unix
-#    unixrt	vim-#.#-rt[12].tar.gz	Runtime files for Unix
-#    unixsrc	vim-#.#-src[12].tar.gz	Sources for Unix
 #
 # extra		vim-#.#-extra.tar.gz	Extra source and runtime files
 # lang		vim-#.#-lang.tar.gz	multi-language files
@@ -66,7 +64,7 @@ all install uninstall tools config configure proto depend lint tags types test t
 #
 #    All output files are created in the "dist" directory.  Existing files are
 #    overwritten!
-#    To do all this you need the unixrt, unixsrc, extra and lang archives, and
+#    To do all this you need the unix, extra and lang archives, and
 #    compiled binaries.
 #    Before creating an archive first delete all backup files, *.orig, etc.
 
@@ -83,7 +81,8 @@ MINOR = 0aa
 #   runtime/doc/*.txt and nsis/gvim.nsi. Other things in README_os2.txt.  For a
 #   minor/major version: src/GvimExt/GvimExt.reg, src/vim.def, src/vim16.def.
 # - Correct included_patches[] in src/version.c.
-# - Compile Vim with GTK, Perl, Python, TCL, Ruby, Cscope and "huge" features.
+# - Compile Vim with GTK, Perl, Python, TCL, Ruby, MZscheme, Cscope and "huge"
+#   features.  Exclude workshop and SNiFF.
 # - With these features: "make proto" (requires cproto and Motif installed;
 #   ignore warnings for missing include files, fix problems for syntax errors).
 # - With these features: "make depend" (works best with gcc).
@@ -262,10 +261,8 @@ dist/$(COMMENT_FARSI): dist/comment
 dist/$(COMMENT_LANG): dist/comment
 	echo "Vim - Vi IMproved - v$(VDOT) MS-Windows language files" > dist/$(COMMENT_LANG)
 
-unixrt: dist prepare
-	-rm -f dist/$(VIMVER)-rt1.tar.gz
-	-rm -f dist/$(VIMVER)-rt2.tar.gz
-# first runtime file
+unixall: dist prepare
+	-rm -f dist/$(VIMVER).tar.bz2
 	-rm -rf dist/$(VIMRTDIR)
 	mkdir dist/$(VIMRTDIR)
 	tar cf - \
@@ -273,56 +270,15 @@ unixrt: dist prepare
 		$(RT_ALL_BIN) \
 		$(RT_UNIX) \
 		$(RT_UNIX_DOS_BIN) \
-		| (cd dist/$(VIMRTDIR); tar xf -)
-	cd dist && tar cf $(VIMVER)-rt1.tar $(VIMRTDIR)
-	gzip -9 dist/$(VIMVER)-rt1.tar
-# second runtime file (script and language files)
-	-rm -rf dist/$(VIMRTDIR)
-	mkdir dist/$(VIMRTDIR)
-	tar cf - \
 		$(RT_SCRIPTS) \
 		$(LANG_GEN) \
 		$(LANG_GEN_BIN) \
-		| (cd dist/$(VIMRTDIR); tar xf -)
-	cd dist && tar cf $(VIMVER)-rt2.tar $(VIMRTDIR)
-	gzip -9 dist/$(VIMVER)-rt2.tar
-
-unixsrc: dist prepare
-	-rm -f dist/$(VIMVER)-src1.tar.gz
-	-rm -f dist/$(VIMVER)-src2.tar.gz
-# first source file
-	-rm -rf dist/$(VIMRTDIR)
-	mkdir dist/$(VIMRTDIR)
-	tar cf - \
-		$(SRC_ALL1) \
-		| (cd dist/$(VIMRTDIR); tar xf -)
-	cd dist && tar cf $(VIMVER)-src1.tar $(VIMRTDIR)
-	gzip -9 dist/$(VIMVER)-src1.tar
-# second source file
-	-rm -rf dist/$(VIMRTDIR)
-	mkdir dist/$(VIMRTDIR)
-	tar cf - \
-		$(SRC_ALL2) \
+		$(SRC_ALL) \
 		$(SRC_UNIX) \
 		$(SRC_DOS_UNIX) \
 		| (cd dist/$(VIMRTDIR); tar xf -)
 # Need to use a "distclean" config.mk file
 	cp -f src/config.mk.dist dist/$(VIMRTDIR)/src/auto/config.mk
-# Create an empty config.h file, make dependencies require it
-	touch dist/$(VIMRTDIR)/src/auto/config.h
-# Make sure configure is newer than config.mk to force it to be generated
-	touch dist/$(VIMRTDIR)/src/configure
-	cd dist && tar cf $(VIMVER)-src2.tar $(VIMRTDIR)
-	gzip -9 dist/$(VIMVER)-src2.tar
-
-unixall: dist unixsrc unixrt
-	-rm -f dist/$(VIMVER).tar.bz2
-	-rm -rf dist/$(VIMRTDIR)
-	mkdir dist/$(VIMRTDIR)
-	cd dist && tar xfz $(VIMVER)-src1.tar.gz
-	cd dist && tar xfz $(VIMVER)-src2.tar.gz
-	cd dist && tar xfz $(VIMVER)-rt1.tar.gz
-	cd dist && tar xfz $(VIMVER)-rt2.tar.gz
 # Create an empty config.h file, make dependencies require it
 	touch dist/$(VIMRTDIR)/src/auto/config.h
 # Make sure configure is newer than config.mk to force it to be generated
@@ -405,8 +361,7 @@ amisrc: dist prepare
 	mkdir dist/Vim/$(VIMRTDIR)
 	tar cf - \
 		$(ROOT_AMI) \
-		$(SRC_ALL1) \
-		$(SRC_ALL2) \
+		$(SRC_ALL) \
 		$(SRC_AMI) \
 		$(SRC_AMI_DOS) \
 		| (cd dist/Vim/$(VIMRTDIR); tar xf -)
@@ -593,8 +548,7 @@ dossrc: dist no_title.vim dist/$(COMMENT_SRC) runtime/doc/uganda.nsis.txt
 	mkdir dist/vim
 	mkdir dist/vim/$(VIMRTDIR)
 	tar cf - \
-		$(SRC_ALL1) \
-		$(SRC_ALL2) \
+		$(SRC_ALL) \
 		$(SRC_DOS) \
 		$(SRC_AMI_DOS) \
 		$(SRC_DOS_UNIX) \

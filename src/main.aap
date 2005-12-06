@@ -98,20 +98,6 @@ prefix = `os.path.expanduser(prefix)`
         GUI_TARGETS     = installglinks
         GUI_MAN_TARGETS = installghelplinks
         GUI_TESTTARGET  = gui
-    KDE
-        GUI_SRC         = gui.c pty.c gui_kde.cc gui_kde_x11.cc
-                            gui_kde_wid_moc.cc
-                            kvim_iface_skel.cc
-        GUI_OBJ         = $BDIR/gui_kde_wid.o
-        GUI_DEFS        = -DFEAT_GUI_KDE $NARROW_PROTO
-        GUI_IPATH       = $GUI_INC_LOC
-        GUI_LIBS_DIR    = $GUI_LIB_LOC
-        GUI_LIBS1       =
-        GUI_LIBS2       =
-        GUI_TARGETS     = installglinks installkdeicons
-        GUI_MAN_TARGETS = installghelplinks
-        GUI_TESTTARGET  = gui
-
     MOTIF
         GUI_SRC         = gui.c gui_motif.c gui_x11.c pty.c gui_beval.c
                           gui_xmdlg.c gui_xmebw.c
@@ -180,8 +166,6 @@ PRE_DEFS = -Iproto -I. $DEFS $GUI_DEFS $GUI_IPATH $CPPFLAGS $?(EXTRA_IPATHS)
 POST_DEFS = $X_CFLAGS $MZSCHEME_CFLAGS $PERL_CFLAGS $PYTHON_CFLAGS $TCL_CFLAGS $RUBY_CFLAGS $?(EXTRA_DEFS)
 CFLAGS = $PRE_DEFS $CONF_CFLAGS $?(PROFILE_CFLAGS) $POST_DEFS
 CPPFLAGS =
-# Need C++ flags for KDE
-CXXFLAGS = $CFLAGS
 
 ALL_LIB_DIRS = $GUI_LIBS_DIR $X_LIBS_DIR
 LDFLAGS = $ALL_LIB_DIRS $CONF_LDFLAGS
@@ -207,8 +191,6 @@ test check:
 
 testclean {virtual}:
     :del {force} testdir/*.out testdir/test.log
-
-CLEANFILES += gui_kde_wid_moc.cc kvim_iface_skel.cc *.kidl
 
 # When no fetch target exists we are not a child of the ../main.aap recipe,
 # Use ../main.aap to do the fetching.
@@ -349,20 +331,6 @@ auto/if_perl.c: if_perl.xs
         :sys $PERL -e 'unless ( $$] >= 5.005 ) { for (qw(na defgv errgv)) { print "#define PL_$$_ $$_\n" }}' > $target
         :sys $PERL $PERLLIB/ExtUtils/xsubpp -prototypes -typemap \
             $PERLLIB/ExtUtils/typemap if_perl.xs >> $target
-
-$BDIR/gui_kde_wid.o: gui_kde_wid.cc
-        :sys $MOC -o gui_kde_wid_moc.cc gui_kde_wid.h
-        @try:
-            :sys $KDE_PREFIX/bin/dcopidl kvim_iface.h > kvim_iface.kidl
-        @except:
-            :del {f} kvim_iface.kidl
-        :sys $KDE_PREFIX/bin/dcopidl2cpp --c++-suffix cc --no-stub kvim_iface.kidl
-        :do compile gui_kde_wid.cc
-
-gui_kde_wid_moc.cc: $BDIR/gui_kde_wid.o
-
-kvim_iface_skel.cc: $BDIR/gui_kde_wid.o
-
 
 auto/osdef.h: auto/config.h osdef.sh osdef1.h.in osdef2.h.in
         :sys CC="$CC $CFLAGS" srcdir=$srcdir sh $srcdir/osdef.sh
@@ -870,20 +838,6 @@ install-languages {virtual}{force}: languages $DEST_LANG $DEST_KMAP
         @if os.path.exists(_no.KMAPSOURCE):
            :copy $KMAPSOURCE/README.txt $KMAPSOURCE/*.vim $DEST_KMAP
            :chmod $FILEMOD $DEST_KMAP/*.vim
-
-# Install the icons for the KDE GUI.  This differs from the KDE icons for
-# other GUIs.
-installkdeicons:
-        :copy {mkdir} ../runtime/KVim.desktop $DESTDIR$KDE_PREFIX/share/applnk/Editors/
-        :chmod 644 $DESTDIR$KDE_PREFIX/share/applnk/Editors/KVim.desktop
-        :copy {mkdir} ../runtime/kvim32x32.png $DESTDIR$KDE_PREFIX/share/icons/hicolor/32x32/apps/gvim.png
-        :chmod 644 $DESTDIR$KDE_PREFIX/share/icons/hicolor/32x32/apps/gvim.png
-        :copy {mkdir} ../runtime/kvim48x48.png $DESTDIR$KDE_PREFIX/share/icons/hicolor/48x48/apps/gvim.png
-        :chmod 644 $DESTDIR$KDE_PREFIX/share/icons/hicolor/48x48/apps/gvim.png
-        :copy {mkdir} ../runtime/hi16-action-make.png $DESTDIR$KDE_PREFIX/share/icons/hicolor/16x16/actions/hi16-action-make.png
-        :copy {mkdir} ../runtime/hi22-action-make.png $DESTDIR$KDE_PREFIX/share/icons/hicolor/22x22/actions/hi22-action-make.png
-        :copy {mkdir} ../runtime/kde-tips $DESTDIR$KDE_PREFIX/share/apps/gvim/tips
-        :chmod 644 $DESTDIR$KDE_PREFIX/share/apps/kvim/tips
 
 # install the icons for KDE, if the directory exists and the icon doesn't.
 ICON48PATH = $DESTDIR$DATADIR/icons/hicolor/48x48/apps

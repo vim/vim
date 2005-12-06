@@ -57,7 +57,7 @@
 /*
  * MACOS_CLASSIC compiling for MacOS prior to MacOS X
  * MACOS_X_UNIX  compiling for MacOS X (using os_unix.c)
- * MACOS_X       compiling for MacOS X (using os_unix.c or os_mac.c)
+ * MACOS_X       compiling for MacOS X (using os_unix.c)
  * MACOS	 compiling for either one
  */
 #if defined(macintosh) && !defined(MACOS_CLASSIC)
@@ -67,10 +67,6 @@
 # define MACOS_X
 # ifndef HAVE_CONFIG_H
 #  define UNIX
-# endif
-# ifdef HAVE_STRINGS_H
-/* On Mac OS X strings.h exists but produces an annoying warning message. */
-#  undef HAVE_STRINGS_H
 # endif
 #endif
 #if defined(MACOS_X) || defined(MACOS_CLASSIC)
@@ -91,8 +87,7 @@
     || defined(FEAT_GUI_MAC) \
     || defined(FEAT_GUI_W32) \
     || defined(FEAT_GUI_W16) \
-    || defined(FEAT_GUI_PHOTON) \
-    || defined(FEAT_GUI_KDE)
+    || defined(FEAT_GUI_PHOTON)
 # if !defined(FEAT_GUI) && !defined(NO_X11_INCLUDES)
 #  define FEAT_GUI
 # endif
@@ -1091,6 +1086,7 @@ enum auto_event
     EVENT_MENUPOPUP,		/* just before popup menu is displayed */
     EVENT_QUICKFIXCMDPOST,	/* after :make, :grep etc */
     EVENT_QUICKFIXCMDPRE,	/* before :make, :grep etc */
+    EVENT_SESSIONLOADPOST,	/* after loading a session file */
     EVENT_STDINREADPOST,	/* after reading from stdin */
     EVENT_STDINREADPRE,		/* before reading from stdin */
     EVENT_SYNTAX,		/* syntax selected */
@@ -1683,7 +1679,7 @@ typedef int proftime_T;	    /* dummy for function prototypes */
  * been seen at that stage.  But it must be before globals.h, where error_ga
  * is declared. */
 #if !defined(FEAT_GUI_W32) && !defined(FEAT_GUI_X11) \
-	&& !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_KDE) && !defined(FEAT_GUI_MAC)
+	&& !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_MAC)
 # define mch_errmsg(str)	fprintf(stderr, "%s", (str))
 # define display_errors()	fflush(stderr)
 # define mch_msg(str)		printf("%s", (str))

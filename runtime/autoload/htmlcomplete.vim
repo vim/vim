@@ -463,7 +463,7 @@ function! htmlcomplete#CompleteTags(findstart, base)
 
 	let tags = g:xmldata_xhtml10s[opentag][0]
 
-	for m in tags
+	for m in sort(tags)
 		if m =~ '^'.context
 			call add(res, m)
 		elseif m =~ context
