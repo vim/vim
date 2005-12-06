@@ -621,8 +621,6 @@ static XtIntervalId timer_id = (XtIntervalId)0;
 pascal void timer_proc(EventLoopTimerRef, void *);
 static EventLoopTimerRef timer_id = NULL;
 static EventLoopTimerUPP timerUPP;
-#elif defined(FEAT_GUI_KDE)
-static int timer_id = 0;
 #endif
 
 #ifndef FEAT_GUI_W32 /* Win32 console and Unix */
@@ -664,9 +662,6 @@ timer_proc(XtPointer timed_out, XtIntervalId *interval_id)
 # elif defined(FEAT_GUI_MAC)
     pascal void
 timer_proc(EventLoopTimerRef theTimer, void *userData)
-#elif defined(FEAT_GUI_KDE)
-    void
-timer_proc(void)
 # endif
 {
     scheme_check_threads();
@@ -693,9 +688,6 @@ setup_timer(void)
     timerUPP = NewEventLoopTimerUPP(timer_proc);
     InstallEventLoopTimer(GetMainEventLoop(), p_mzq * kEventDurationMillisecond,
 		p_mzq * kEventDurationMillisecond, timerUPP, NULL, &timer_id);
-#elif defined(FEAT_GUI_KDE)
-    mzscheme_kde_start_timer();
-    timer_id = 1;   /* just signal that timer was started */
 # endif
 }
 
@@ -711,8 +703,6 @@ remove_timer(void)
 # elif defined(FEAT_GUI_MAC)
     RemoveEventLoopTimer(timer_id);
     DisposeEventLoopTimerUPP(timerUPP);
-#elif defined(FEAT_GUI_KDE)
-    mzscheme_kde_stop_timer();
 # endif
     timer_id = 0;
 }

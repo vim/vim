@@ -349,7 +349,7 @@ main
 #ifdef ALWAYS_USE_GUI
     gui.starting = TRUE;
 #else
-# if defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_KDE)
+# if defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK)
     /*
      * Check if the GUI can be started.  Reset gui.starting if not.
      * Don't know about other systems, stay on the safe side and don't check.
@@ -433,7 +433,7 @@ main
      * For GTK we can't be sure, but when started from the desktop it doesn't
      * make sense to try using a terminal.
      */
-#if defined(ALWAYS_USE_GUI) || defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_KDE)
+#if defined(ALWAYS_USE_GUI) || defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK)
     if (gui.starting
 # ifdef FEAT_GUI_GTK
 	    && !isatty(2)
@@ -1384,7 +1384,7 @@ early_arg_scan(parmp)
 	    break;
 # ifdef FEAT_XCLIPBOARD
 	else if (STRICMP(argv[i], "-display") == 0
-#  if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_KDE)
+#  if defined(FEAT_GUI_GTK)
 		|| STRICMP(argv[i], "--display") == 0
 #  endif
 		)
@@ -2858,17 +2858,6 @@ usage()
     main_msg(_("--role <role>\tSet a unique role to identify the main window"));
 # endif
     main_msg(_("--socketid <xid>\tOpen Vim inside another GTK widget"));
-#endif
-#ifdef FEAT_GUI_KDE
-    mch_msg(_("\nArguments recognised by kvim (KDE version):\n"));
-    main_msg(_("-black\t\tUse reverse video"));
-#if QT_VERSION>=300
-    main_msg(_("-tip\t\t\tDisplay the tip dialog on startup"));
-    main_msg(_("-notip\t\tDisable the tip dialog"));
-#endif
-    main_msg(_("-font <font>\t\tUse <font> for normal text (also: -fn)"));
-    main_msg(_("-geometry <geom>\tUse <geom> for initial geometry (also: -geom)"));
-    main_msg(_("--display <display>\tRun vim on <display>"));
 #endif
 #ifdef FEAT_GUI_W32
     main_msg(_("-P <parent title>\tOpen Vim inside parent application"));

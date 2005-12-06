@@ -1536,7 +1536,7 @@ vim_free_in_input_buf()
 }
 #endif
 
-#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_KDE) || defined(PROTO)
+#if defined(FEAT_GUI_GTK) || defined(PROTO)
     int
 vim_used_in_input_buf()
 {
@@ -1618,7 +1618,7 @@ add_to_input_buf(s, len)
 }
 #endif
 
-#if (defined(FEAT_XIM) && (defined(FEAT_GUI_GTK) || defined(FEAT_GUI_KDE))) \
+#if (defined(FEAT_XIM) && defined(FEAT_GUI_GTK)) \
 	|| (defined(FEAT_MBYTE) && defined(FEAT_MBYTE_IME)) \
 	|| defined(PROTO)
 /*
@@ -2917,7 +2917,7 @@ mouse_find_win(rowp, colp)
 }
 #endif
 
-#if defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_GTK) || defined (FEAT_GUI_MAC) || defined (FEAT_GUI_KDE) \
+#if defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_GTK) || defined (FEAT_GUI_MAC) \
 	|| defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_MSWIN) \
 	|| defined(FEAT_GUI_PHOTON) || defined(PROTO)
 /*

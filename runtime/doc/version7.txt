@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Dec 01
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Dec 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -21,7 +21,6 @@ NEW FEATURES				|new-7|
 Vim script enhancements			|new-vim-script|
 Spell checking				|new-spell|
 Omni completion				|new-omni-completion|
-KDE support				|new-KDE|
 MzScheme interface			|new-MzScheme|
 Printing multi-byte text		|new-print-multi-byte|
 Translated manual pages			|new-manpage-trans|
@@ -66,6 +65,8 @@ results in "a'b".
 
 When overwriting a file with ":w! fname" there was no warning for when "fname"
 was being edited by another Vim.  Vim now gives an error message |E768|.
+
+The support for Mac OS 9 has been removed.
 
 
 Minor incompatibilities:
@@ -200,13 +201,6 @@ Currently supported languages:
 
 When the 'completeopt' option contains "menu" then matches for Insert mode
 completion are displayed in a popup menu.
-
-
-KDE support						*new-KDE*
------------
-
-Kvim is the KDE version of Vim.  It uses the Qt toolkit.  See |KVim|.
-(Thomas Capricelli, Philippe Fremy, Mickael Marchand, Mark Westcott, et al.)
 
 
 MzScheme interface					*new-MzScheme*
@@ -503,6 +497,7 @@ New autocommand events: ~
 |ColorScheme|		after loading a color scheme
 |QuickFixCmdPre|	before :make, :grep et al. (Ciaran McCreesh)
 |QuickFixCmdPost|	after :make, :grep et al. (Ciaran McCreesh)
+|SessionLoadPost|	after loading a session file. (Yegappan Lakshmanan)
 
 
 New items in search patterns: ~
@@ -848,6 +843,9 @@ It is now possible to get the W10 message again by setting 'readonly'.  Useful
 in the FileChangedRO autocommand when checking out the file fails.
 
 Unix: When open() returns EFBIG give an appropriate message.
+
+":mksession" sets the SessionLoad variable to notify plugins.  A modeline is
+added to the session file to set 'filetype' to "vim".
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*

@@ -10024,7 +10024,7 @@ f_has(argvars, rettv)
 	"dos16",
 # endif
 #endif
-#ifdef MACOS /* TODO: Should we add MACOS_CLASSIC, MACOS_X? (Dany) */
+#ifdef MACOS
 	"mac",
 #endif
 #if defined(MACOS_X_UNIX)
@@ -10172,9 +10172,6 @@ f_has(argvars, rettv)
 # else
 	"gui_athena",
 # endif
-#endif
-#ifdef FEAT_GUI_KDE
-	"gui_kde",
 #endif
 #ifdef FEAT_GUI_GTK
 	"gui_gtk",

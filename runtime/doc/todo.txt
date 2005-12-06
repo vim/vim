@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Dec 01
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Dec 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,26 +30,26 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Go over all changes between 6.3 and 6.4 and make sure they are included in 7.
-
-Using ":read" in an empty buffer in Ex mode, then undo leaves a line behind.
-(Servatius Brandt).
-
-'statusline' is drawn over the Omni menu.
-
 Cygwin and Mac OS/X may preserve case for file names but ignore case
 differences.  Use Amiga code?
-
-"make unixall": remove split in floppy-size archives.
 
 ":helpgrep" sometimes results in wrong text in the error list:
 "^[.?!]\_[\])'"   ]\+"
 Using string that was freed or buffer that is overwritten?
 
+When editing a file "a" that is a symbolic link to "b", while another Vim is
+editing "b", there is no warning.  Follow symlink to make swap file name?
+Patch from Stefano Zacchiroli.  Updated by James Vega, Dec 2.
+
 Using pipes for filter commands: provide some way to type a password, keep
 stderr in/out open for this? (Konstanti Rozinov)
 New problem: password is echoed.  Put terminal in cooked mode and don't read
 from terminal?
+
+Allow the user to handle the situation that a swap file already exists.
+Option to define a function to be called?  Function would return the character
+that the dialog provides.  Would make it possible to bring the other Vim to
+the foreground and abort the edit.  Or hard-code this?
 
 To support mapping <F4> to be used as <F4>{motion}: Add operator that
 executes a user defined function. '[ and '] marks are at start and end of
@@ -61,13 +61,15 @@ errors and illegal bytes.  Make default to replace bad bytes/characters with
 	:e ++enc=xxx ++bad=keep foo.txt
 	:e ++enc=xxx ++bad=drop foo.txt
 	:e ++enc=xxx ++bad=? foo.txt
-(patch 29 November)
+(patch 6 December)
 
 ml_get error with specific vimrc and lots of plugins. (Tomi Mickelsson)
 
 Win32: preserve the hidden attribute of the viminfo file.
 
 Add ":startgreplace" to do "gR", like ":startreplace" does "R".
+
+Alt-mousekey is currently ignored.  Use it for Visual/select block?
 
 When 'delcombine' is set in Select mode before a character with a combining
 char the combining char is deleted when it shouldn't. (Tony Mechelynck, Nov
@@ -104,10 +106,6 @@ spelling:
 - Have "zg" and "zw" report the file that was modified. (Marvin Renich)
 - Add a command like "zg" that selects one of the files 'spellfile'.
 
-When editing a file "a" that is a symbolic link to "b", while another Vim is
-editing "b", there is no warning.  Follow symlink to make swap file name?
-Patch from Stefano Zacchiroli.
-
 Support saving and restoring session for X windows?  It should work to do
 ":mksession" and use "-S fname" for the restart command.  The
 gui_x11_wm_protocol_handler() already takes care of the rest.
@@ -132,9 +130,6 @@ Mac unicode patch (Da Woon Jung):
 - With 'nopaste' pasting is wrong, with 'paste' Command-V doesn't work.
   (Alan Schmitt)
 
-Mac: drop support for OS 9.  Most people are now using OS/X and Vim 6.4 can be
-used for others.  Will make maintaining the code simpler.
-
 Patch to add a few flags to search(). (Benji Fisher, Nov 29, doc update Dec 1)
 Also add search???() function that returns list with lnum and col.
 
@@ -144,6 +139,9 @@ Try out using the free MS compiler and debugger, using Make_mvc.mak.
 
 Win32: Check that installer puts menu items in "all users" dir when possible,
 not administrator dir.
+
+CTRL-X CTRL-L only completes from loaded buffers.  Make it work for unloaded
+buffers too?
 
 Autoload:
 - Add a Vim script in $VIMRUNTIME/tools that takes a file with a list of
@@ -259,6 +257,8 @@ PLANNED FOR VERSION 7.0:
     Only difficult thing: When going back in time, how to find the previous
     text state in the tree?
     Show the list of changes in a window to be able to select a version?
+    Also: See ":e" as a change operation, find the changes and add them to the
+    undo info.  Needed for when an external tool changes the file.
 -   PERSISTENT UNDO: store undo in a file.
     Use timestamps, so that a version a certain time ago can be found and info
     before some time/date can be flushed. 'undopersist' gives maximum time to
@@ -397,7 +397,7 @@ Win32: In the generated batch files, use $VIMRUNTIME if it's set.  Examples by
 Mathias Michaelis (2004 Sep 6)
 Also place vimtutor.bat in %windir%?
 
-Add gui_mch_browsedir() for Motif, KDE and Mac OS/X.
+Add gui_mch_browsedir() for Motif, Mac OS/X.
 
 Add extra list of file locations.  A bit like the quickfix list, but there is
 one per window.  Can be used with:
@@ -612,14 +612,6 @@ GTK+ GUI known bugs:
     when it is longer than 4000 characters.  Works OK from gvim to gvim and
     vim to vim.  Pasting through xterm (using the shift key) also works.
     It starts working after GTK gvim loses the selection and gains it again.
-7   DND doesn't work with KDE (also with GTK 1).
-
-KDE GUI known bugs:
--   There is no active maintenance and "yzis" is supposed to replace it.
--   With the default 'guifont' value bold text differs in size from normal
-    text, causing the display to be messed up.
--   Error messages when starting up.  The "tip of the day" box is empty.
--   Encoding of menu items needs to be converted. (Yasuhiro Matsumoto)
 
 Win32 GUI known bugs:
 8   On Windows 98 the unicows library is needed to support functions with UCS2
