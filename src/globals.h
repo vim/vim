@@ -841,9 +841,12 @@ EXTERN int	msg_silent INIT(= 0);	/* don't print messages */
 EXTERN int	emsg_silent INIT(= 0);	/* don't print error messages */
 EXTERN int	cmd_silent INIT(= FALSE); /* don't echo the command line */
 
-#if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
-EXTERN int	swap_exists_action INIT(= 0);	/* use dialog when swap file
-						   already exists */
+#if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG) \
+	|| defined(FEAT_AUTOCMD)
+# define HAS_SWAP_EXISTS_ACTION
+EXTERN int	swap_exists_action INIT(= SEA_NONE);
+					/* For dialog when swap file already
+					 * exists. */
 #endif
 
 EXTERN char_u	*IObuff;		/* sprintf's are done in this buffer,

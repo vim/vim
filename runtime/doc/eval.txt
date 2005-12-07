@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Dec 06
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Dec 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1272,12 +1272,13 @@ v:fcs_choice	What should happen after a |FileChangedShell| event was
 		Vim behaves like it is empty, there is no warning message.
 
 					*v:fname_in* *fname_in-variable*
-v:fname_in	The name of the input file.  Only valid while evaluating:
+v:fname_in	The name of the input file.  Valid while evaluating:
 			option		used for ~
 			'charconvert'	file to be converted
 			'diffexpr'	original file
 			'patchexpr'	original file
 			'printexpr'	file to be printed
+		And set to the swap file name for |SwapExits|.
 
 					*v:fname_out* *fname_out-variable*
 v:fname_out	The name of the output file.  Only valid while
@@ -1399,6 +1400,23 @@ v:shell_error	Result of the last shell command.  When non-zero, the last
 
 					*v:statusmsg* *statusmsg-variable*
 v:statusmsg	Last given status message.  It's allowed to set this variable.
+
+					*v:swapname* *swapname-variable*
+v:swapname	Only valid when executing |SwapExists| autocommands: Name of
+		the swap file found.  Read-only.
+
+					*v:swapchoice* *swapchoice-variable*
+v:swapchoice	|SwapExists| autocommands can set this to the selected choice
+		for handling an existing swap file:
+			'o'	Open read-only
+			'e'	Edit anyway
+			'r'	Recover
+			'd'	Delete swapfile
+			'q'	Quit
+			'a'	Abort
+		The value should be a single-character string.  An empty value
+		results in the user being asked, as would happen when there is
+		no SwapExists autocommand.  The default is empty.
 
 				*v:termresponse* *termresponse-variable*
 v:termresponse	The escape sequence returned by the terminal for the |t_RV|

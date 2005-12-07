@@ -3034,7 +3034,6 @@ CursorHold	autocmd.txt	/*CursorHold*
 CursorHold-example	windows.txt	/*CursorHold-example*
 CursorIM	mbyte.txt	/*CursorIM*
 D	change.txt	/*D*
-DCOP	gui_x11.txt	/*DCOP*
 DOS	os_dos.txt	/*DOS*
 DOS-format	editing.txt	/*DOS-format*
 DOS-format-write	editing.txt	/*DOS-format-write*
@@ -3979,6 +3978,7 @@ SessionLoad-variable	starting.txt	/*SessionLoad-variable*
 SessionLoadPost	autocmd.txt	/*SessionLoadPost*
 StdinReadPost	autocmd.txt	/*StdinReadPost*
 StdinReadPre	autocmd.txt	/*StdinReadPre*
+SwapExists	autocmd.txt	/*SwapExists*
 Syntax	autocmd.txt	/*Syntax*
 T	motion.txt	/*T*
 TCL	if_tcl.txt	/*TCL*
@@ -4197,7 +4197,6 @@ alt-input	debugger.txt	/*alt-input*
 alternate-file	editing.txt	/*alternate-file*
 amiga-window	starting.txt	/*amiga-window*
 ant.vim	syntax.txt	/*ant.vim*
-antialias	gui_x11.txt	/*antialias*
 ap	motion.txt	/*ap*
 apache.vim	syntax.txt	/*apache.vim*
 append()	eval.txt	/*append()*
@@ -4229,6 +4228,7 @@ autocmd-buflocal	autocmd.txt	/*autocmd-buflocal*
 autocmd-changes	autocmd.txt	/*autocmd-changes*
 autocmd-define	autocmd.txt	/*autocmd-define*
 autocmd-events	autocmd.txt	/*autocmd-events*
+autocmd-events-abc	autocmd.txt	/*autocmd-events-abc*
 autocmd-execute	autocmd.txt	/*autocmd-execute*
 autocmd-groups	autocmd.txt	/*autocmd-groups*
 autocmd-intro	autocmd.txt	/*autocmd-intro*
@@ -5624,7 +5624,6 @@ jumpto-diffs	diff.txt	/*jumpto-diffs*
 k	motion.txt	/*k*
 kcc	uganda.txt	/*kcc*
 kde	gui_x11.txt	/*kde*
-kde-toolbar	gui_x11.txt	/*kde-toolbar*
 key-codes	intro.txt	/*key-codes*
 key-codes-changed	version4.txt	/*key-codes-changed*
 key-mapping	map.txt	/*key-mapping*
@@ -5975,7 +5974,6 @@ new-5	version5.txt	/*new-5*
 new-6	version6.txt	/*new-6*
 new-7	version7.txt	/*new-7*
 new-GTK-GUI	version5.txt	/*new-GTK-GUI*
-new-KDE	version7.txt	/*new-KDE*
 new-MzScheme	version7.txt	/*new-MzScheme*
 new-Select-mode	version5.txt	/*new-Select-mode*
 new-View	version6.txt	/*new-View*
@@ -6570,7 +6568,9 @@ substitute-CR	version6.txt	/*substitute-CR*
 suffixes	cmdline.txt	/*suffixes*
 suspend	starting.txt	/*suspend*
 swap-file	recover.txt	/*swap-file*
+swapchoice-variable	eval.txt	/*swapchoice-variable*
 swapfile-changed	version4.txt	/*swapfile-changed*
+swapname-variable	eval.txt	/*swapname-variable*
 syn-sync-grouphere	syntax.txt	/*syn-sync-grouphere*
 syn-sync-groupthere	syntax.txt	/*syn-sync-groupthere*
 syn-sync-linecont	syntax.txt	/*syn-sync-linecont*
@@ -6992,6 +6992,8 @@ v:scrollstart	eval.txt	/*v:scrollstart*
 v:servername	eval.txt	/*v:servername*
 v:shell_error	eval.txt	/*v:shell_error*
 v:statusmsg	eval.txt	/*v:statusmsg*
+v:swapchoice	eval.txt	/*v:swapchoice*
+v:swapname	eval.txt	/*v:swapname*
 v:termresponse	eval.txt	/*v:termresponse*
 v:this_session	eval.txt	/*v:this_session*
 v:throwpoint	eval.txt	/*v:throwpoint*
@@ -7140,7 +7142,6 @@ vim-announce	intro.txt	/*vim-announce*
 vim-arguments	starting.txt	/*vim-arguments*
 vim-default-editor	gui_w32.txt	/*vim-default-editor*
 vim-dev	intro.txt	/*vim-dev*
-vim-kpart	gui_x11.txt	/*vim-kpart*
 vim-mac	intro.txt	/*vim-mac*
 vim-modes	intro.txt	/*vim-modes*
 vim-modes-intro	intro.txt	/*vim-modes-intro*
@@ -7160,7 +7161,6 @@ viminfo-file-marks	starting.txt	/*viminfo-file-marks*
 viminfo-file-name	starting.txt	/*viminfo-file-name*
 viminfo-read	starting.txt	/*viminfo-read*
 viminfo-write	starting.txt	/*viminfo-write*
-vimpart	gui_x11.txt	/*vimpart*
 vimrc	starting.txt	/*vimrc*
 vimrc-filetype	usr_05.txt	/*vimrc-filetype*
 vimrc-intro	usr_05.txt	/*vimrc-intro*
