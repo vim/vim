@@ -631,7 +631,7 @@ readfile(fname, sfname, from, lines_to_skip, lines_to_read, eap, flags)
 #endif
     }
 
-#if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
+#if defined(HAS_SWAP_EXISTS_ACTION)
     /* If "Quit" selected at ATTENTION dialog, don't load the file */
     if (swap_exists_action == SEA_QUIT)
     {
@@ -6760,6 +6760,7 @@ static struct event_name
     {"StdinReadPost",	EVENT_STDINREADPOST},
     {"StdinReadPre",	EVENT_STDINREADPRE},
     {"Syntax",		EVENT_SYNTAX},
+    {"SwapExists",	EVENT_SWAPEXISTS},
     {"TermChanged",	EVENT_TERMCHANGED},
     {"TermResponse",	EVENT_TERMRESPONSE},
     {"User",		EVENT_USER},

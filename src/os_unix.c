@@ -4953,11 +4953,11 @@ mch_expand_wildcards(num_pat, pat, num_file, file, flags)
 #else
 	++len;				/* add space */
 	for (j = 0; pat[i][j] != NUL; )
-	    if (vim_strchr((char_u *)" '", pat[i][j]) != NULL)
+	    if (vim_strchr((char_u *)" ';&<>", pat[i][j]) != NULL)
 	    {
 		len += 2;		/* add two quotes */
 		while (pat[i][j] != NUL
-			&& vim_strchr((char_u *)" '", pat[i][j]) != NULL)
+			&& vim_strchr((char_u *)" ';&<>", pat[i][j]) != NULL)
 		{
 		    ++len;
 		    ++j;
@@ -5036,14 +5036,14 @@ mch_expand_wildcards(num_pat, pat, num_file, file, flags)
 		    intick = !intick;
 		    *p++ = pat[i][j++];
 		}
-		else if (!intick && vim_strchr((char_u *)" '",
+		else if (!intick && vim_strchr((char_u *)" ';&<>",
 							   pat[i][j]) != NULL)
 		{
 		    /* Put quotes around special characters, but not when
 		     * inside ``. */
 		    *p++ = '"';
-		    while (pat[i][j] != NUL
-			    && vim_strchr((char_u *)" '", pat[i][j]) != NULL)
+		    while (pat[i][j] != NUL && vim_strchr((char_u *)" ';&<>",
+							   pat[i][j]) != NULL)
 			*p++ = pat[i][j++];
 		    *p++ = '"';
 		}
