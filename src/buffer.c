@@ -660,16 +660,14 @@ goto_buffer(eap, start, dir, count)
     int		dir;
     int		count;
 {
-# if defined(FEAT_WINDOWS) \
-		&& (defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG))
+# if defined(FEAT_WINDOWS) && defined(HAS_SWAP_EXISTS_ACTION)
     buf_T	*old_curbuf = curbuf;
 
     swap_exists_action = SEA_DIALOG;
 # endif
     (void)do_buffer(*eap->cmd == 's' ? DOBUF_SPLIT : DOBUF_GOTO,
 					     start, dir, count, eap->forceit);
-# if defined(FEAT_WINDOWS) \
-		&& (defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG))
+# if defined(FEAT_WINDOWS) && defined(HAS_SWAP_EXISTS_ACTION)
     if (swap_exists_action == SEA_QUIT && *eap->cmd == 's')
     {
 #  if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
@@ -696,7 +694,7 @@ goto_buffer(eap, start, dir, count)
 }
 #endif
 
-#if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG) || defined(PROTO)
+#if defined(HAS_SWAP_EXISTS_ACTION) || defined(PROTO)
 /*
  * Handle the situation of swap_exists_action being set.
  * It is allowed for "old_curbuf" to be NULL or invalid.
@@ -4376,20 +4374,20 @@ ex_buffer_all(eap)
 		continue;
 
 	    /* Open the buffer in this window. */
-#if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
+#if defined(HAS_SWAP_EXISTS_ACTION)
 	    swap_exists_action = SEA_DIALOG;
 #endif
 	    set_curbuf(buf, DOBUF_GOTO);
 #ifdef FEAT_AUTOCMD
 	    if (!buf_valid(buf))	/* autocommands deleted the buffer!!! */
 	    {
-# if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
+#if defined(HAS_SWAP_EXISTS_ACTION)
 		swap_exists_action = SEA_NONE;
 # endif
 		break;
 	    }
 #endif
-#if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
+#if defined(HAS_SWAP_EXISTS_ACTION)
 	    if (swap_exists_action == SEA_QUIT)
 	    {
 # if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
