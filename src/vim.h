@@ -1015,7 +1015,7 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 
 /* Values for swap_exists_action: what to do when swap file already exists */
 #define SEA_NONE	0	/* don't use dialog */
-#define SEA_DIALOG	1	/* use dialog when */
+#define SEA_DIALOG	1	/* use dialog when possible */
 #define SEA_QUIT	2	/* quit editing the file */
 #define SEA_RECOVER	3	/* recover the file */
 
@@ -1102,6 +1102,7 @@ enum auto_event
     EVENT_CURSORHOLD,		/* cursor in same position for a while */
     EVENT_FUNCUNDEFINED,	/* if calling a function which doesn't exist */
     EVENT_REMOTEREPLY,		/* upon string reception from a remote vim */
+    EVENT_SWAPEXISTS,		/* found existing swap file */
     NUM_EVENTS			/* MUST be the last one */
 };
 
@@ -1573,7 +1574,9 @@ int vim_memcmp __ARGS((void *, void *, size_t));
 #define VV_BEVAL_COL	42
 #define VV_BEVAL_TEXT	43
 #define VV_SCROLLSTART	44
-#define VV_LEN		45	/* number of v: vars */
+#define VV_SWAPNAME	45
+#define VV_SWAPCHOICE	46
+#define VV_LEN		47	/* number of v: vars */
 
 #ifdef FEAT_CLIPBOARD
 
