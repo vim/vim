@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Dec 06
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Dec 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -847,6 +847,9 @@ Unix: When open() returns EFBIG give an appropriate message.
 ":mksession" sets the SessionLoad variable to notify plugins.  A modeline is
 added to the session file to set 'filetype' to "vim".
 
+In the ATTENTION prompt put the "Delete it" choice before "Quit" to make it
+more logical.  (Robert Webb)
+
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*
 
@@ -1407,5 +1410,7 @@ sticking to the first column.
 
 When using ":wq" and a BufWriteCmd autocmd uses inputsecret() the text was
 echoed anyway.  Set terminal to raw mode in getcmdline().
+
+Unix: ":w a;b~c" caused an error in expanding wildcards.
 
  vim:tw=78:ts=8:ft=help:norl:

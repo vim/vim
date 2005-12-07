@@ -1595,7 +1595,7 @@ static int process_still_running;
 #endif
 
 /*
- * Give information about an existing swap file
+ * Give information about an existing swap file.
  * Returns timestamp (0 when unknown).
  */
     static time_t
@@ -3494,6 +3494,93 @@ get_file_in_dir(fname, dname)
     return retval;
 }
 
+static void attention_message __ARGS((buf_T *buf, char_u *fname));
+
+/*
+ * Print the ATTENTION message: info about an existing swap file.
+ */
+    static void
+attention_message(buf, fname)
+    buf_T   *buf;	/* buffer being edited */
+    char_u  *fname;	/* swap file name */
+{
+    struct stat st;
+    time_t	x, sx;
+
+    ++no_wait_return;
+    (void)EMSG(_("E325: ATTENTION"));
+    MSG_PUTS(_("\nFound a swap file by the name \""));
+    msg_home_replace(fname);
+    MSG_PUTS("\"\n");
+    sx = swapfile_info(fname);
+    MSG_PUTS(_("While opening file \""));
+    msg_outtrans(buf->b_fname);
+    MSG_PUTS("\"\n");
+    if (mch_stat((char *)buf->b_fname, &st) != -1)
+    {
+	MSG_PUTS(_("             dated: "));
+	x = st.st_mtime;    /* Manx C can't do &st.st_mtime */
+	MSG_PUTS(ctime(&x));
+	if (sx != 0 && x > sx)
+	    MSG_PUTS(_("      NEWER than swap file!\n"));
+    }
+    /* Some of these messages are long to allow translation to
+     * other languages. */
+    MSG_PUTS(_("\n(1) Another program may be editing the same file.\n    If this is the case, be careful not to end up with two\n    different instances of the same file when making changes.\n"));
+    MSG_PUTS(_("    Quit, or continue with caution.\n"));
+    MSG_PUTS(_("\n(2) An edit session for this file crashed.\n"));
+    MSG_PUTS(_("    If this is the case, use \":recover\" or \"vim -r "));
+    msg_outtrans(buf->b_fname);
+    MSG_PUTS(_("\"\n    to recover the changes (see \":help recovery\").\n"));
+    MSG_PUTS(_("    If you did this already, delete the swap file \""));
+    msg_outtrans(fname);
+    MSG_PUTS(_("\"\n    to avoid this message.\n"));
+    cmdline_row = msg_row;
+    --no_wait_return;
+}
+
+#ifdef FEAT_AUTOCMD
+static int do_swapexists __ARGS((buf_T *buf, char_u *fname));
+
+/*
+ * Trigger the SwapExists autocommands.
+ * Returns a value for equivalent to do_dialog() (see below):
+ * 0: still need to ask for a choice
+ * 1: open read-only
+ * 2: edit anyway
+ * 3: recover
+ * 4: delete it
+ * 5: quit
+ * 6: abort
+ */
+    static int
+do_swapexists(buf, fname)
+    buf_T	*buf;
+    char_u	*fname;
+{
+    set_vim_var_string(VV_SWAPNAME, fname, -1);
+    set_vim_var_string(VV_SWAPCHOICE, NULL, -1);
+
+    /* Trigger SwapExists autocommands with <afile> set to the file being
+     * edited. */
+    apply_autocmds(EVENT_SWAPEXISTS, buf->b_fname, NULL, FALSE, NULL);
+
+    set_vim_var_string(VV_SWAPNAME, NULL, -1);
+
+    switch (*get_vim_var_str(VV_SWAPCHOICE))
+    {
+	case 'o': return 1;
+	case 'e': return 2;
+	case 'r': return 3;
+	case 'd': return 4;
+	case 'q': return 5;
+	case 'a': return 6;
+    }
+
+    return 0;
+}
+#endif
+
 /*
  * Find out what name to use for the swap file for buffer 'buf'.
  *
@@ -3511,7 +3598,6 @@ findswapname(buf, dirp, old_fname)
 {
     char_u	*fname;
     int		n;
-    time_t	x, sx;
     char_u	*dir_name;
 #ifdef AMIGA
     BPTR	fh;
@@ -3797,7 +3883,9 @@ findswapname(buf, dirp, old_fname)
 		if (differ == FALSE && !(curbuf->b_flags & BF_RECOVERED)
 			&& vim_strchr(p_shm, SHM_ATTENTION) == NULL)
 		{
-		    struct stat st;
+#if defined(HAS_SWAP_EXISTS_ACTION)
+		    int		choice = 0;
+#endif
 #ifdef CREATE_DUMMY_FILE
 		    int		did_use_dummy = FALSE;
 
@@ -3813,55 +3901,41 @@ findswapname(buf, dirp, old_fname)
 			did_use_dummy = TRUE;
 		    }
 #endif
-#ifdef FEAT_GUI
-		    /* If we are supposed to start the GUI but it wasn't
-		     * completely started yet, start it now.  This makes the
-		     * messages displayed in the Vim window when loading a
-		     * session from the .gvimrc file. */
-		    if (gui.starting && !gui.in_use)
-			gui_start();
-#endif
 
 #if (defined(UNIX) || defined(__EMX__) || defined(VMS)) && (defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG))
 		    process_still_running = FALSE;
 #endif
-		    ++no_wait_return;
-		    (void)EMSG(_("E325: ATTENTION"));
-		    MSG_PUTS(_("\nFound a swap file by the name \""));
-		    msg_home_replace(fname);
-		    MSG_PUTS("\"\n");
-		    sx = swapfile_info(fname);
-		    MSG_PUTS(_("While opening file \""));
-		    msg_outtrans(buf->b_fname);
-		    MSG_PUTS("\"\n");
-		    if (mch_stat((char *)buf->b_fname, &st) != -1)
-		    {
-			MSG_PUTS(_("             dated: "));
-			x = st.st_mtime;    /* Manx C can't do &st.st_mtime */
-			MSG_PUTS(ctime(&x));
-			if (sx != 0 && x > sx)
-			    MSG_PUTS(_("      NEWER than swap file!\n"));
-		    }
-		    /* Some of these messages are long to allow translation to
-		     * other languages. */
-		    MSG_PUTS(_("\n(1) Another program may be editing the same file.\n    If this is the case, be careful not to end up with two\n    different instances of the same file when making changes.\n"));
-		    MSG_PUTS(_("    Quit, or continue with caution.\n"));
-		    MSG_PUTS(_("\n(2) An edit session for this file crashed.\n"));
-		    MSG_PUTS(_("    If this is the case, use \":recover\" or \"vim -r "));
-		    msg_outtrans(buf->b_fname);
-		    MSG_PUTS(_("\"\n    to recover the changes (see \":help recovery\").\n"));
-		    MSG_PUTS(_("    If you did this already, delete the swap file \""));
-		    msg_outtrans(fname);
-		    MSG_PUTS(_("\"\n    to avoid this message.\n"));
-		    cmdline_row = msg_row;
-		    --no_wait_return;
+#ifdef FEAT_AUTOCMD
+		    /*
+		     * If there is an SwapExists autocommand and we can handle
+		     * the response, trigger it.  It may return 0 to ask the
+		     * user anyway.
+		     */
+		    if (swap_exists_action != SEA_NONE
+			    && has_autocmd(EVENT_SWAPEXISTS, buf->b_fname, buf))
+			choice = do_swapexists(buf, fname);
 
-		    /* We don't want a 'q' typed at the more-prompt interrupt
-		     * loading a file. */
-		    got_int = FALSE;
+		    if (choice == 0)
+#endif
+		    {
+#ifdef FEAT_GUI
+			/* If we are supposed to start the GUI but it wasn't
+			 * completely started yet, start it now.  This makes
+			 * the messages displayed in the Vim window when
+			 * loading a session from the .gvimrc file. */
+			if (gui.starting && !gui.in_use)
+			    gui_start();
+#endif
+			/* Show info about the existing swap file. */
+			attention_message(buf, fname);
+
+			/* We don't want a 'q' typed at the more-prompt
+			 * interrupt loading a file. */
+			got_int = FALSE;
+		    }
 
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
-		    if (swap_exists_action)
+		    if (swap_exists_action != SEA_NONE && choice == 0)
 		    {
 			char_u	*name;
 
@@ -3875,7 +3949,7 @@ findswapname(buf, dirp, old_fname)
 								  1000, TRUE);
 			    STRCAT(name, _("\" already exists!"));
 			}
-			switch (do_dialog(VIM_WARNING,
+			choice = do_dialog(VIM_WARNING,
 				    (char_u *)_("VIM - ATTENTION"),
 				    name == NULL
 					?  (char_u *)_("Swap file already exists!")
@@ -3884,7 +3958,24 @@ findswapname(buf, dirp, old_fname)
 				    process_still_running
 					? (char_u *)_("&Open Read-Only\n&Edit anyway\n&Recover\n&Quit\n&Abort") :
 # endif
-					(char_u *)_("&Open Read-Only\n&Edit anyway\n&Recover\n&Quit\n&Abort\n&Delete it"), 1, NULL))
+					(char_u *)_("&Open Read-Only\n&Edit anyway\n&Recover\n&Delete it\n&Quit\n&Abort"), 1, NULL);
+
+# if defined(UNIX) || defined(__EMX__) || defined(VMS)
+			if (process_still_running && choice >= 4)
+			    choice++;	/* Skip missing "Delete it" button */
+# endif
+			vim_free(name);
+
+			/* pretend screen didn't scroll, need redraw anyway */
+			msg_scrolled = 0;
+			redraw_all_later(NOT_VALID);
+		    }
+#endif
+
+#if defined(HAS_SWAP_EXISTS_ACTION)
+		    if (choice > 0)
+		    {
+			switch (choice)
 			{
 			    case 1:
 				buf->b_p_ro = TRUE;
@@ -3895,21 +3986,16 @@ findswapname(buf, dirp, old_fname)
 				swap_exists_action = SEA_RECOVER;
 				break;
 			    case 4:
-				swap_exists_action = SEA_QUIT;
+				mch_remove(fname);
 				break;
 			    case 5:
 				swap_exists_action = SEA_QUIT;
-				got_int = TRUE;
 				break;
 			    case 6:
-				mch_remove(fname);
+				swap_exists_action = SEA_QUIT;
+				got_int = TRUE;
 				break;
 			}
-			vim_free(name);
-
-			/* pretend screen didn't scroll, need redraw anyway */
-			msg_scrolled = 0;
-			redraw_all_later(NOT_VALID);
 
 			/* If the file was deleted this fname can be used. */
 			if (mch_getperm(fname) < 0)

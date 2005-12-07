@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Dec 06
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Dec 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -36,6 +36,9 @@ differences.  Use Amiga code?
 ":helpgrep" sometimes results in wrong text in the error list:
 "^[.?!]\_[\])'"   ]\+"
 Using string that was freed or buffer that is overwritten?
+
+SwapExists with editexisting plugin: Is there a simple way to detect ":tag
+function" and have the remote Vim jump to the tag?
 
 When editing a file "a" that is a symbolic link to "b", while another Vim is
 editing "b", there is no warning.  Follow symlink to make swap file name?
@@ -156,6 +159,10 @@ Autoload:
 
 Add ":smap", Select mode mapping?  Otherwise: ":sunmap", so that Visual mode
 mappings for normal keys can be removed from Select mode.
+
+When expanding on the command line, recognize shell commands, such as ":!cmd".
+Complete command names by searching in $PATH.  When completing file names
+escape special characters ";&<>(){}". (Adri Verhoef)
 
 Awaiting response:
 -   Win32: tearoff menu window should have a scrollbar when it's taller than
@@ -902,8 +909,6 @@ MSDOS, OS/2 and Win32:
 8   When editing a file on a Samba server, case might matter.  ":e file"
     followed by ":e FILE" will edit "file" again, even though "FILE" might be
     another one.  Set last used name in buflist_new()?  Fix do_ecmd(), etc.
-8   ":mksession" generates a "cd" command where "aa\#bb" means directory "#bb"
-    in "aa", but it's used as "aa#bb". (Ronald Hoellwarth)
 8   When a buffer is editing a file like "ftp://mach/file", which is not going
     to be used like a normal file name, don't change the slashes to
     backslashes. (Ronald Hoellwarth)
@@ -1094,8 +1099,6 @@ Macintosh:
     one.
 7   When 'showbreak' is set, the amount of space a Tab occupies changes.
     Should work like 'showbreak' is inserted without changing the Tabs.
-7   When there is a "help.txt" window in a session file, restoring that
-    session will not get the "LOCAL ADDITIONS" back.
 7   When 'mousefocus' is set and switching to another window with a typed
     command, the mouse pointer may be moved to a part of the window that's
     covered by another window and we lose focus.  Only move in the y
@@ -1881,7 +1884,6 @@ Built-in script language:
 7   Add function to generate unique number (date in milliseconds).
 7   Automatically load a function from a file when it is called.  Need an
     option for the search path. (Sekera)
-7   Persistent variables: "p:var"; stored in viminfo file and sessions files.
 
 
 Robustness:
@@ -3097,20 +3099,27 @@ Modelines:
     or not.  Same for .exrc in local dir.
 
 
-Options:
-8   Make ":mksession" store buffer-specific options for the specific buffer.
+Sessions:
+8   DOS/Windows: ":mksession" generates a "cd" command where "aa\#bb" means
+    directory "#bb" in "aa", but it's used as "aa#bb". (Ronald Hoellwarth)
+7   When there is a "help.txt" window in a session file, restoring that
+    session will not get the "LOCAL ADDITIONS" back.
 8   With ":mksession" always store the 'sessionoptions' option, even when
     "options" isn't in it. (St-Amant)
-7   ":with option=value | command": temporarily set an option value and
-    restore it after the command has executed.
-7   Setting an option always sets "w_set_curswant", while this is only
-    required for a few options.  Only do it for those options to avoid the
-    side effect.
 8   When using ":mksession", also store a command to reset all options to
     their default value, before setting the options that are not at their
     default value.
 7   With ":mksession" also store the tag stack and jump history. (Michal
     Malecki)
+7   Persistent variables: "p:var"; stored in viminfo file and sessions files.
+ 
+
+Options:
+7   ":with option=value | command": temporarily set an option value and
+    restore it after the command has executed.
+7   Setting an option always sets "w_set_curswant", while this is only
+    required for a few options.  Only do it for those options to avoid the
+    side effect.
 8   Make "old" number options that really give a number of effects into string
     options that are a comma separated list.  The old number values should
     also be supported.

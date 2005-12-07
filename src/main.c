@@ -116,7 +116,7 @@ static void exe_pre_commands __ARGS((mparm_T *parmp));
 static void exe_commands __ARGS((mparm_T *parmp));
 static void source_startup_scripts __ARGS((mparm_T *parmp));
 static void main_start_gui __ARGS((void));
-#if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
+#if defined(HAS_SWAP_EXISTS_ACTION)
 static void check_swap_exists_action __ARGS((void));
 #endif
 #ifdef FEAT_CLIENTSERVER
@@ -2150,7 +2150,7 @@ read_stdin()
 {
     int	    i;
 
-#if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
+#if defined(HAS_SWAP_EXISTS_ACTION)
     /* When getting the ATTENTION prompt here, use a dialog */
     swap_exists_action = SEA_DIALOG;
 #endif
@@ -2161,7 +2161,7 @@ read_stdin()
     no_wait_return = FALSE;
     msg_didany = i;
     TIME_MSG("reading stdin");
-#if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
+#if defined(HAS_SWAP_EXISTS_ACTION)
     check_swap_exists_action();
 #endif
 #if !(defined(AMIGA) || defined(MACOS))
@@ -2245,14 +2245,14 @@ create_windows(parmp)
 		if (p_fdls >= 0)
 		    curwin->w_p_fdl = p_fdls;
 #endif
-#if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
+#if defined(HAS_SWAP_EXISTS_ACTION)
 		/* When getting the ATTENTION prompt here, use a dialog */
 		swap_exists_action = SEA_DIALOG;
 #endif
 		set_buflisted(TRUE);
 		(void)open_buffer(FALSE, NULL); /* create memfile, read file */
 
-#if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
+#if defined(HAS_SWAP_EXISTS_ACTION)
 		check_swap_exists_action();
 #endif
 #ifdef FEAT_AUTOCMD
@@ -2872,7 +2872,7 @@ usage()
 	mch_exit(0);
 }
 
-#if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
+#if defined(HAS_SWAP_EXISTS_ACTION)
 /*
  * Check the result of the ATTENTION dialog:
  * When "Quit" selected, exit Vim.
