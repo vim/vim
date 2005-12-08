@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Dec 07
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Dec 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -32,10 +32,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 Cygwin and Mac OS/X may preserve case for file names but ignore case
 differences.  Use Amiga code?
-
-":helpgrep" sometimes results in wrong text in the error list:
-"^[.?!]\_[\])'"   ]\+"
-Using string that was freed or buffer that is overwritten?
 
 SwapExists with editexisting plugin: Is there a simple way to detect ":tag
 function" and have the remote Vim jump to the tag?
