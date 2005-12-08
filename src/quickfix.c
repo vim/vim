@@ -1674,7 +1674,7 @@ qf_msg()
 }
 
 /*
- * free the error list
+ * Free error list "idx".
  */
     static void
 qf_free(idx)
