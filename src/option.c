@@ -6530,21 +6530,24 @@ compile_cap_prog(buf)
     buf_T	*buf;
 {
     regprog_T   *rp = buf->b_cap_prog;
+    char_u	*re;
 
     if (*buf->b_p_spc == NUL)
-    {
 	buf->b_cap_prog = NULL;
-	vim_free(rp);
-	return NULL;
-    }
-
-    /* Prepend a ^ so that we only match at one column */
-    vim_snprintf((char *)IObuff, IOSIZE, "^%s", buf->b_p_spc);
-    buf->b_cap_prog = vim_regcomp(IObuff, RE_MAGIC);
-    if (buf->b_cap_prog == NULL)
+    else
     {
-	buf->b_cap_prog = rp;
-	return e_invarg;
+	/* Prepend a ^ so that we only match at one column */
+	re = concat_str((char_u *)"^", buf->b_p_spc);
+	if (re != NULL)
+	{
+	    buf->b_cap_prog = vim_regcomp(re, RE_MAGIC);
+	    if (buf->b_cap_prog == NULL)
+	    {
+		buf->b_cap_prog = rp; /* restore the previous program */
+		return e_invarg;
+	    }
+	    vim_free(re);
+	}
     }
 
     vim_free(rp);
