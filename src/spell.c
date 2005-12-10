@@ -851,28 +851,20 @@ spell_check(wp, ptr, attrp, capcol)
     vim_memset(&mi, 0, sizeof(matchinf_T));
 
     /* A number is always OK.  Also skip hexadecimal numbers 0xFF99 and
-     * 0X99FF.  But when a word character follows do check spelling to find
-     * "3GPP". */
+     * 0X99FF.  But always do check spelling to find "3GPP" and "11
+     * julifeest". */
     if (*ptr >= '0' && *ptr <= '9')
     {
 	if (*ptr == '0' && (ptr[1] == 'x' || ptr[1] == 'X'))
 	    mi.mi_end = skiphex(ptr + 2);
 	else
-	{
 	    mi.mi_end = skipdigits(ptr);
-	    nrlen = mi.mi_end - ptr;
-	}
-	if (!spell_iswordp(mi.mi_end, wp->w_buffer))
-	    return (int)(mi.mi_end - ptr);
-
-	/* Try including the digits in the word. */
-	mi.mi_fend = ptr + nrlen;
+	nrlen = mi.mi_end - ptr;
     }
-    else
-	mi.mi_fend = ptr;
 
     /* Find the normal end of the word (until the next non-word character). */
     mi.mi_word = ptr;
+    mi.mi_fend = ptr;
     if (spell_iswordp(mi.mi_fend, wp->w_buffer))
     {
 	do

@@ -144,8 +144,8 @@
 				       comment */
 
 
-#undef  USE_FNAME_CASE		/* TODO: make :e os_Mac.c, :w, save back the
-				   file as os_mac.c */
+#define USE_FNAME_CASE		/* make ":e os_Mac.c" open the file in its
+				   original case, as "os_mac.c" */
 #define BINARY_FILE_IO
 #define EOL_DEFAULT EOL_MAC
 #ifndef MACOS_X_UNIX		/* I hope that switching these two lines */

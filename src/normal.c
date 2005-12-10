@@ -4766,7 +4766,7 @@ dozet:
 		}
 		break;
 
-    case '?':	/* "z?": suggestions for a badly spelled word  */
+    case '=':	/* "z=": suggestions for a badly spelled word  */
 		if (!checkclearopq(cap->oap))
 		    spell_suggest((int)cap->count0);
 		break;
@@ -8799,4 +8799,3 @@ nv_cursorhold(cap)
     cap->retval |= CA_COMMAND_BUSY;	/* don't call edit() now */
 }
 #endif
-
