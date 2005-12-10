@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.0aa.  Last change: 2005 Nov 30
+*change.txt*    For Vim version 7.0aa.  Last change: 2005 Dec 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1494,8 +1494,9 @@ Vim has a sorting function and a sorting command.  The sorting function can be
 found here: |sort()|.
 
 							*:sor* *:sort*
-:[range]sor[t][!] [i] [u] [/{pattern}/]
-			Sort lines in [range].
+:[range]sor[t][!] [i][u][n][x][o] [/{pattern}/]
+			Sort lines in [range].  When no range is given all
+			lines are sorted.
 
 			With [!] the order is reversed.
 
