@@ -2354,6 +2354,72 @@ mch_isFullName(fname)
 #endif
 }
 
+#if defined(USE_FNAME_CASE) || defined(PROTO)
+/*
+ * Set the case of the file name, if it already exists.  This will cause the
+ * file name to remain exactly the same.
+ * Only required for file systems where case is ingored and preserved.
+ */
+/*ARGSUSED*/
+    void
+fname_case(name, len)
+    char_u	*name;
+    int		len;	    /* buffer size, only used when name gets longer */
+{
+    struct stat st;
+    char_u	*slash, *tail;
+    DIR		*dirp;
+    struct dirent *dp;
+
+    if (lstat((char *)name, &st) >= 0)
+    {
+	/* Open the directory where the file is located. */
+	slash = vim_strrchr(name, '/');
+	if (slash == NULL)
+	{
+	    dirp = opendir(".");
+	    tail = name;
+	}
+	else
+	{
+	    *slash = NUL;
+	    dirp = opendir((char *)name);
+	    *slash = '/';
+	    tail = slash + 1;
+	}
+
+	if (dirp != NULL)
+	{
+	    while ((dp = readdir(dirp)) != NULL)
+	    {
+		/* Only accept names that differ in case and are the same byte
+		 * length. TODO: accept different length name. */
+		if (STRICMP(tail, dp->d_name) == 0
+			&& STRLEN(tail) == STRLEN(dp->d_name))
+		{
+		    char_u	newname[MAXPATHL + 1];
+		    struct stat st2;
+
+		    /* Verify the inode is equal. */
+		    vim_strncpy(newname, name, MAXPATHL);
+		    vim_strncpy(newname + (tail - name), (char_u *)dp->d_name,
+						    MAXPATHL - (tail - name));
+		    if (lstat((char *)newname, &st2) >= 0
+			    && st.st_ino == st2.st_ino
+			    && st.st_dev == st2.st_dev)
+		    {
+			STRCPY(tail, dp->d_name);
+			break;
+		    }
+		}
+	    }
+
+	    closedir(dirp);
+	}
+    }
+}
+#endif
+
 /*
  * Get file permissions for 'name'.
  * Returns -1 when it doesn't exist.

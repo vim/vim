@@ -40,6 +40,9 @@
 #if defined(__CYGWIN__) || defined(__CYGWIN32__)
 # define WIN32UNIX	/* Compiling for Win32 using Unix files. */
 # define BINARY_FILE_IO
+
+# define CASE_INSENSITIVE_FILENAME
+# define USE_FNAME_CASE	/* Fix filename case differences. */
 #endif
 
 /* On AIX 4.2 there is a conflicting prototype for ioctl() in stropts.h and
