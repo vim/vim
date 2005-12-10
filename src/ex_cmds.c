@@ -4123,6 +4123,7 @@ do_sub(eap)
 	}
 	do_error = TRUE;
 	do_print = FALSE;
+	do_count = FALSE;
 	do_ic = 0;
     }
     while (*cmd)

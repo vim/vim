@@ -2061,6 +2061,12 @@ scripterror:
 		    mch_exit(2);
 	    }
 #endif
+
+#ifdef USE_FNAME_CASE
+	    /* Make the case of the file name match the actual file. */
+	    fname_case(p, 0);
+#endif
+
 	    alist_add(&global_alist, p,
 #if (!defined(UNIX) && !defined(__EMX__)) || defined(ARCHIE)
 		    parmp->literal ? 2 : 0	/* add buffer nr after exp. */

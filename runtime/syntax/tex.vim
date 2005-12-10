@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	TeX
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrchipO@ScampbellPfamily.AbizM>
-" Last Change:	Sep 14, 2005
-" Version:	30
+" Last Change:	Dec 07, 2005
+" Version:	31
 " URL:		http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 "
 " Notes: {{{1
@@ -394,10 +394,12 @@ endif
 syn region texZone		matchgroup=texStatement start="@samp{"			end="}\|%stopzone\>"	contains=@texRefGroup
 syn region texRefZone		matchgroup=texStatement start="\\nocite{"		end="}\|%stopzone\>"	contains=@texRefGroup
 syn region texRefZone		matchgroup=texStatement start="\\bibliography{"		end="}\|%stopzone\>"	contains=@texRefGroup
-syn region texRefZone		matchgroup=texStatement start="\\cite\([tp]\*\=\)\={"	end="}\|%stopzone\>"	contains=@texRefGroup
 syn region texRefZone		matchgroup=texStatement start="\\label{"		end="}\|%stopzone\>"	contains=@texRefGroup
 syn region texRefZone		matchgroup=texStatement start="\\\(page\|eq\)ref{"	end="}\|%stopzone\>"	contains=@texRefGroup
 syn region texRefZone		matchgroup=texStatement start="\\v\=ref{"		end="}\|%stopzone\>"	contains=@texRefGroup
+syn match  texRefZone		'\\cite\%([tp]\*\=\)\=' nextgroup=texRefOption,texCite
+syn region texRefOption	contained	matchgroup=Delimiter start='\[' end=']'		contains=@texRefGroup	nextgroup=texRefOption,texCite
+syn region texCite	contained	matchgroup=Delimiter start='{' end='}'		contains=@texRefGroup
 
 " Handle newcommand, newenvironment : {{{1
 syn match  texNewCmd				"\\newcommand\>"			nextgroup=texCmdName skipwhite skipnl
@@ -465,6 +467,7 @@ if did_tex_syntax_inits == 1
    HiLink texError		Error
   endif
 
+  HiLink texCite		texRefZone
   HiLink texDefCmd		texDef
   HiLink texDefName		texDef
   HiLink texDocType		texCmdName

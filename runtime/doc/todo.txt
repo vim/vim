@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Dec 08
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Dec 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,8 +30,8 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Cygwin and Mac OS/X may preserve case for file names but ignore case
-differences.  Use Amiga code?
+When a buffer has no name, ":w >>fname" uses "fname" for the buffer, that is
+not logical.
 
 SwapExists with editexisting plugin: Is there a simple way to detect ":tag
 function" and have the remote Vim jump to the tag?
@@ -86,9 +86,6 @@ ccomplete:
 - page-up / page-down
 
 spelling:
-- "z?" was to be used for searching in folded text.  Use something else for
-  suggestions.  "z="?
-- When a recognized word ends in a . don't have 'spellcapcheck" match it.
 - Use KEEPCASE instead of "KEP".  It applies to the word including affixes
   Hunspell also uses it.
 - Hunspell has NOSUGGEST flag (use for obscene words?)
@@ -96,7 +93,6 @@ spelling:
 - Look into hungarian dictionary:
   http://magyarispell.sourceforge.net/rc3-beta2.zip
 - Support breakpoint character · 0xb7 and ignore it?
-- Dutch word list should be available here: http://www.woordenlijst.org/
 8   Alternate Dutch word list at www.nederlandsewoorden.nl (use script to
     obtain).  But new Myspell wordlist will come (Hagen)
 - Finding suggestions with sound folding is slow.  Somehow store the
@@ -1965,7 +1961,7 @@ Performance:
     - highlighting "~/vim/test/longline.tex", "~/vim/test/scwoop.tcl" and
       "~/vim/test/lockup.pl".
     - loading a syntax file to highlight all words not from a dictionary.
-    - editing a vim script with syntax highlighting on (loading vim.vim).
+    - editing a Vim script with syntax highlighting on (loading vim.vim).
 7   Screen updating can be further improved by only redrawing lines that were
     changed (and lines after them, when syntax highlighting was used, and it
     changed).
@@ -2026,7 +2022,7 @@ Messages:
     typing, error messages must be switched back on.
     Also a flag to ignore error messages for shell commands (for mappings).
 -   Option to set time for emsg() sleep.  Interrupt sleep when key is typed?
-    sleep before second message?
+    Sleep before second message?
 8   In Ex silent mode or when reading commands from a file, what exactly is
     not printed and what is?  Check ":print", ":set all", ":args", ":vers",
     etc.  At least there should be no prompt. (Smulders)  And don't clear the
@@ -2620,7 +2616,7 @@ Insert mode:
     continuation lines.  Allows changing 'tabstop' without messing up the
     indents.
     And/or: Add option to copy indent as-is, without changing spaces to tabs.
-    also for 'autoindent'.  'keeptabs': when set don't change the tabs and
+    Also for 'autoindent'.  'keeptabs': when set don't change the tabs and
     spaces used for indent, when the indent remains the same or increases.
 
 
@@ -2703,7 +2699,7 @@ Visual mode:
     behave like 'scrolloff' is one, so that the text scrolls when the pointer
     is in the top line.
 8   When using "I" or "A" in Visual block mode, short lines do not get the new
-    text.  make it possible to add the text to short lines too, with padding
+    text.  Make it possible to add the text to short lines too, with padding
     where needed.
 7   With a Visual block selected, "2x" deletes a block of double the width,
     "3y" yanks a block of triple width, etc.

@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Dec 07
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Dec 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -630,6 +630,10 @@ few more important commands.  Used ideas from Gabriel Zachmann.
 
 Unix: When libcall() fails obtain an error message with dlerror() and display
 it. (Johannes Zellner)
+
+Mac and Cygwin: When editing an existing file make the file name the same case
+of the edited file.  Thus when typing ":e os_UNIX.c" the file name becomes
+"os_unix.c".
 
 Added "nbsp" in 'listchars'. (David Blanchet)
 

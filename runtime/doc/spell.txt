@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Nov 26
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Dec 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -124,8 +124,8 @@ is set.
 
 
 Finding suggestions for bad words:
-							*z?*
-z?			For the word under/after the cursor suggest correctly
+							*z=*
+z=			For the word under/after the cursor suggest correctly
 			spelled words.  This also works to find alternatives
 			for a word that is not highlighted as a bad word,
 			e.g., when the word after it is bad.
@@ -143,7 +143,7 @@ z?			For the word under/after the cursor suggest correctly
 			first line (the header) to cancel.
 
 			If a count is used that suggestion is used, without
-			prompting.  For example, "1z?" always takes the first
+			prompting.  For example, "1z=" always takes the first
 			suggestion.
 
 			If 'verbose' is non-zero a score will be displayed
@@ -156,7 +156,7 @@ z?			For the word under/after the cursor suggest correctly
 			and other languages without spaces between words.
 
 					*:spellr* *:spellrepall* *E752* *E753*
-:spellr[epall]		Repeat the replacement done by |z?| for all matches
+:spellr[epall]		Repeat the replacement done by |z=| for all matches
 			with the replaced word in the current window.
 
 In Insert mode, when the cursor is after a badly spelled word, you can use
@@ -1194,7 +1194,7 @@ white space is replaced by one space.  Sequences of the same character in
 SOFOFROM are replaced by one.
 
 You can use the |soundfold()| function to try out the results.  Or set the
-'verbose' option to see the score in the output of the |z?| command.
+'verbose' option to see the score in the output of the |z=| command.
 
 
  vim:tw=78:sw=4:ts=8:ft=help:norl:

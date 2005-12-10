@@ -8576,7 +8576,7 @@ unix_expandpath(gap, path, wildoff, flags, didstar)
     }
 
     /* compile the regexp into a program */
-#ifdef MACOS_X /* Can/Should we use CASE_INSENSITIVE_FILENAME instead ?*/
+#ifdef CASE_INSENSITIVE_FILENAME
     regmatch.rm_ic = TRUE;		/* Behave like Terminal.app */
 #else
     regmatch.rm_ic = FALSE;		/* Don't ever ignore case */
