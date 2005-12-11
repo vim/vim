@@ -1,0 +1,97 @@
+" Vim Plugin: 	Edit the file with an existing Vim if possible
+" Maintainer:	Bram Moolenaar
+" Last Change:	2005 Dec 11
+
+" This is a plugin, drop it in your (Unix) ~/.vim/plugin or (Win32)
+" $VIM/vimfiles/plugin directory.
+
+" This plugin serves two purposes:
+" 1. On startup, if we were invoked with one file name argument and the file
+"    is not modified then try to find another Vim instance that is editing
+"    this file.  If there is one then bring it to the foreground and exit.
+" 2. When a file is edited and a swap file exists for it, try finding that
+"    other Vim and bring it to the foreground.  Requires Vim 7, because it
+"    uses the SwapExists autocommand event.
+
+" Function that finds the Vim instance that is editing "filename" and brings
+" it to the foreground.
+func s:EditElsewhere(filename)
+  let fname_esc = substitute(a:filename, "'", "''", "g")
+
+  let servers = serverlist()
+  while servers != ''
+    " Get next server name in "servername"; remove it from "servers".
+    let i = match(servers, "\n")
+    if i == -1
+      let servername = servers
+      let servers = ''
+    else
+      let servername = strpart(servers, 0, i)
+      let servers = strpart(servers, i + 1)
+    endif
+
+    " Skip ourselves.
+    if servername ==? v:servername
+      continue
+    endif
+   
+    " Check if this server is editing our file.
+    if remote_expr(servername, "bufloaded('" . fname_esc . "')")
+      " Yes, bring it to the foreground.
+      if has("win32")
+	call remote_foreground(servername)
+      endif
+      call remote_expr(servername, "foreground()")
+
+      " Make sure the file is visible in a window (not hidden).
+      " If v:swapcommand exists and is set, send it to the server.
+      if exists("v:swapcommand")
+	let c = substitute(v:swapcommand, "'", "''", "g")
+	call remote_expr(servername, "EditExisting('" . fname_esc . "', '" . c . "')")
+      else
+	call remote_expr(servername, "EditExisting('" . fname_esc . "', '')")
+      endif
+
+      if !(has('vim_starting') && has('gui_running') && has('gui_win32'))
+	" Tell the user what is happening.  Not when the GUI is starting
+	" though, it would result in a message box.
+	echomsg "File is being edited by " . servername
+	sleep 2
+      endif
+      return 'q'
+    endif
+  endwhile
+  return ''
+endfunc
+
+" When the plugin is loaded and there is one file name argument: Find another
+" Vim server that is editing this file right now.
+if argc() == 1 && !&modified
+  if s:EditElsewhere(expand("%:p")) == 'q'
+    quit
+  endif
+endif
+
+" Setup for handling the situation that an existing swap file is found.
+try
+  au! SwapExists * let v:swapchoice = s:EditElsewhere(expand("<afile>:p"))
+catch
+  " Without SwapExists we don't do anything for ":edit" commands
+endtry
+
+" Function used on the server to make the file visible and possibly execute a
+" command.
+func! EditExisting(fname, command)
+  let n = bufwinnr(a:fname)
+  if n > 0
+    exe n . "wincmd w"
+  else
+    exe "split " . escape(a:fname, ' #%"|')
+  endif
+
+  if a:command != ''
+    exe "normal " . a:command
+  endif
+
+  redraw
+endfunc

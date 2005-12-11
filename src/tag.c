@@ -843,11 +843,22 @@ do_tag(tag, type, count, forceit, verbose)
 		}
 	    }
 
+#ifdef FEAT_AUTOCMD
+	    /* Let the SwapExists event know what tag we are jumping to. */
+	    vim_snprintf((char *)IObuff, IOSIZE, ":ta %s\r", name);
+	    set_vim_var_string(VV_SWAPCOMMAND, IObuff, -1);
+#endif
+
 	    /*
 	     * Jump to the desired match.
 	     */
-	    if (jumpto_tag(matches[cur_match], forceit, type != DT_CSCOPE)
-								 == NOTAGFILE)
+	    i = jumpto_tag(matches[cur_match], forceit, type != DT_CSCOPE);
+
+#ifdef FEAT_AUTOCMD
+	    set_vim_var_string(VV_SWAPCOMMAND, NULL, -1);
+#endif
+
+	    if (i == NOTAGFILE)
 	    {
 		/* File not found: try again with another matching tag */
 		if ((type == DT_PREV && cur_match > 0)

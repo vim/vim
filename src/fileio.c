@@ -2534,15 +2534,16 @@ set_file_time(fname, atime, mtime)
 #endif
 
 /*
- * buf_write() - write to file 'fname' lines 'start' through 'end'
+ * buf_write() - write to file "fname" lines "start" through "end"
  *
  * We do our own buffering here because fwrite() is so slow.
  *
- * If forceit is true, we don't care for errors when attempting backups (jw).
- * In case of an error everything possible is done to restore the original file.
- * But when forceit is TRUE, we risk loosing it.
- * When reset_changed is TRUE and start == 1 and end ==
- * curbuf->b_ml.ml_line_count, reset curbuf->b_changed.
+ * If "forceit" is true, we don't care for errors when attempting backups.
+ * In case of an error everything possible is done to restore the original
+ * file.  But when "forceit" is TRUE, we risk loosing it.
+ *
+ * When "reset_changed" is TRUE and "append" == FALSE and "start" == 1 and
+ * "end" == curbuf->b_ml.ml_line_count, reset curbuf->b_changed.
  *
  * This function must NOT use NameBuff (because it's called by autowrite()).
  *
@@ -2557,7 +2558,7 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
     linenr_T	    start, end;
     exarg_T	    *eap;		/* for forced 'ff' and 'fenc', can be
 					   NULL! */
-    int		    append;
+    int		    append;		/* append to the file */
     int		    forceit;
     int		    reset_changed;
     int		    filtering;
@@ -2652,7 +2653,8 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
      * If there is no file name yet, use the one for the written file.
      * BF_NOTEDITED is set to reflect this (in case the write fails).
      * Don't do this when the write is for a filter command.
-     * Only do this when 'cpoptions' contains the 'f' flag.
+     * Don't do this when appending.
+     * Only do this when 'cpoptions' contains the 'F' flag.
      */
     if (reset_changed
 	    && whole
@@ -2662,6 +2664,7 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 #endif
 	    && buf->b_ffname == NULL
 	    && !filtering
+	    && (!append || vim_strchr(p_cpo, CPO_FNAMEAPP) != NULL)
 	    && vim_strchr(p_cpo, CPO_FNAMEW) != NULL)
     {
 #ifdef FEAT_AUTOCMD
@@ -2826,9 +2829,12 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 		{
 		    /* Assume the buffer was written, update the timestamp. */
 		    ml_timestamp(buf);
-		    buf->b_flags &= ~BF_WRITE_MASK;
+		    if (append)
+			buf->b_flags &= ~BF_NEW;
+		    else
+			buf->b_flags &= ~BF_WRITE_MASK;
 		}
-		if (reset_changed && buf->b_changed
+		if (reset_changed && buf->b_changed && !append
 			&& (overwriting || vim_strchr(p_cpo, CPO_PLUS) != NULL))
 		    /* Buffer still changed, the autocommands didn't work
 		     * properly. */
@@ -4232,7 +4238,7 @@ restore_backup:
 
     /* When written everything correctly: reset 'modified'.  Unless not
      * writing to the original file and '+' is not in 'cpoptions'. */
-    if (reset_changed && whole
+    if (reset_changed && whole && !append
 #ifdef FEAT_MBYTE
 	    && !write_info.bw_conv_error
 #endif
@@ -4250,7 +4256,10 @@ restore_backup:
     if (overwriting)
     {
 	ml_timestamp(buf);
-	buf->b_flags &= ~BF_WRITE_MASK;
+	if (append)
+	    buf->b_flags &= ~BF_NEW;
+	else
+	    buf->b_flags &= ~BF_WRITE_MASK;
     }
 
     /*
