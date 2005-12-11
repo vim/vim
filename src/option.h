@@ -147,6 +147,7 @@
 #define CPO_LINEOFF	'o'
 #define CPO_OVERNEW	'O'	/* silently overwrite new file */
 #define CPO_LISP	'p'	/* 'lisp' indenting */
+#define CPO_FNAMEAPP	'P'	/* set file name for ":w >>file" */
 #define CPO_JOINCOL	'q'	/* with "3J" use column after first join */
 #define CPO_REDO	'r'
 #define CPO_REMMARK	'R'	/* remove marks when filtering */
@@ -179,8 +180,8 @@
 #define CPO_CHDIR	'.'	/* don't chdir if buffer is modified */
 /* default values for Vim, Vi and POSIX */
 #define CPO_VIM		"aABceFs"
-#define CPO_VI		"aAbBcCdDeEfFgHiIjJkKlLmMnoOpqrRsStuvwWxXyZ$!%*-+<>"
-#define CPO_ALL		"aAbBcCdDeEfFgHiIjJkKlLmMnoOpqrRsStuvwWxXyZ$!%*-+<>#{|&/\\."
+#define CPO_VI		"aAbBcCdDeEfFgHiIjJkKlLmMnoOpPqrRsStuvwWxXyZ$!%*-+<>"
+#define CPO_ALL		"aAbBcCdDeEfFgHiIjJkKlLmMnoOpPqrRsStuvwWxXyZ$!%*-+<>#{|&/\\."
 
 /* characters for p_ww option: */
 #define WW_ALL		"bshl<>[],~"

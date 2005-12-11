@@ -444,6 +444,7 @@ RT_ALL =	\
 		runtime/gvimrc_example.vim \
 		runtime/macros/README.txt \
 		runtime/macros/dvorak \
+		runtime/macros/editexisting.vim \
 		runtime/macros/hanoi/click.me \
 		runtime/macros/hanoi/hanoi.vim \
 		runtime/macros/hanoi/poster \

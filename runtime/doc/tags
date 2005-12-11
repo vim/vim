@@ -2143,6 +2143,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :map-<script>	map.txt	/*:map-<script>*
 :map-<silent>	map.txt	/*:map-<silent>*
 :map-<unique>	map.txt	/*:map-<unique>*
+:map-alt-keys	map.txt	/*:map-alt-keys*
 :map-local	map.txt	/*:map-local*
 :map-script	map.txt	/*:map-script*
 :map-silent	map.txt	/*:map-silent*
@@ -2209,6 +2210,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :nnoremenu	gui.txt	/*:nnoremenu*
 :no	map.txt	/*:no*
 :no!	map.txt	/*:no!*
+:noa	autocmd.txt	/*:noa*
+:noautocmd	autocmd.txt	/*:noautocmd*
 :noh	pattern.txt	/*:noh*
 :nohlsearch	pattern.txt	/*:nohlsearch*
 :norea	map.txt	/*:norea*
@@ -4227,6 +4230,7 @@ autocmd-buffer-local	autocmd.txt	/*autocmd-buffer-local*
 autocmd-buflocal	autocmd.txt	/*autocmd-buflocal*
 autocmd-changes	autocmd.txt	/*autocmd-changes*
 autocmd-define	autocmd.txt	/*autocmd-define*
+autocmd-disable	autocmd.txt	/*autocmd-disable*
 autocmd-events	autocmd.txt	/*autocmd-events*
 autocmd-events-abc	autocmd.txt	/*autocmd-events-abc*
 autocmd-execute	autocmd.txt	/*autocmd-execute*
@@ -4532,6 +4536,7 @@ cpo-K	options.txt	/*cpo-K*
 cpo-L	options.txt	/*cpo-L*
 cpo-M	options.txt	/*cpo-M*
 cpo-O	options.txt	/*cpo-O*
+cpo-P	options.txt	/*cpo-P*
 cpo-R	options.txt	/*cpo-R*
 cpo-S	options.txt	/*cpo-S*
 cpo-W	options.txt	/*cpo-W*
@@ -6569,6 +6574,7 @@ suffixes	cmdline.txt	/*suffixes*
 suspend	starting.txt	/*suspend*
 swap-file	recover.txt	/*swap-file*
 swapchoice-variable	eval.txt	/*swapchoice-variable*
+swapcommand-variable	eval.txt	/*swapcommand-variable*
 swapfile-changed	version4.txt	/*swapfile-changed*
 swapname-variable	eval.txt	/*swapname-variable*
 syn-sync-grouphere	syntax.txt	/*syn-sync-grouphere*
@@ -6993,6 +6999,7 @@ v:servername	eval.txt	/*v:servername*
 v:shell_error	eval.txt	/*v:shell_error*
 v:statusmsg	eval.txt	/*v:statusmsg*
 v:swapchoice	eval.txt	/*v:swapchoice*
+v:swapcommand	eval.txt	/*v:swapcommand*
 v:swapname	eval.txt	/*v:swapname*
 v:termresponse	eval.txt	/*v:termresponse*
 v:this_session	eval.txt	/*v:this_session*
@@ -7331,7 +7338,7 @@ z/OS	os_390.txt	/*z\/OS*
 z<CR>	scroll.txt	/*z<CR>*
 z<Left>	scroll.txt	/*z<Left>*
 z<Right>	scroll.txt	/*z<Right>*
-z?	spell.txt	/*z?*
+z=	spell.txt	/*z=*
 zA	fold.txt	/*zA*
 zC	fold.txt	/*zC*
 zD	fold.txt	/*zD*

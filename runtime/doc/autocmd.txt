@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.0aa.  Last change: 2005 Dec 07
+*autocmd.txt*   For Vim version 7.0aa.  Last change: 2005 Dec 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -18,6 +18,7 @@ For a basic explanation, see section |40.3| in the user manual.
 8.  Groups			|autocmd-groups|
 9.  Executing autocommands	|autocmd-execute|
 10. Using autocommands		|autocmd-use|
+11. Disabling autocommands	|autocmd-disable|
 
 {Vi does not have any of these commands}
 {only when the |+autocmd| feature has not been disabled at compile time}
@@ -655,10 +656,12 @@ SwapExists			Detected an existing swap file when starting
 				select a way to handle the situation, when Vim
 				would ask the user what to do.
 				The |v:swapname| variable holds the name of
-				the swap file found.
-				The |v:swapchoice| variable should be set to
-				a string with one character to tell what Vim
-				should do next:
+				the swap file found, <afile> the file being
+				edited.  |v:swapcommand| may contain a command
+				to be executed in the opened file.
+				The commands should set the |v:swapchoice|
+				variable to a string with one character to
+				tell Vim what should be done next:
 					'o'	open read-only
 					'e'	edit the file anyway
 					'r'	recover
@@ -1052,10 +1055,8 @@ It's possible to use the ":au" command in an autocommand.  This can be a
 self-modifying command!  This can be useful for an autocommand that should
 execute only once.
 
-There is currently no way to disable the autocommands.  If you want to write a
-file without executing the autocommands for that type of file, write it under
-another name and rename it with a shell command.  In some situations you can
-use the 'eventignore' option.
+If you want to skip autocommands for one command, use the |:noautocmd| command
+modifier or the 'eventignore' option.
 
 Note: When reading a file (with ":read file" or with a filter command) and the
 last line in the file does not have an <EOL>, Vim remembers this.  At the next
@@ -1171,6 +1172,23 @@ effective.  These should be used for the command that reads/writes the file.
 The |v:cmdbang| variable is one when "!" was used, zero otherwise.
 
 See the $VIMRUNTIME/plugin/netrw.vim for examples.
+
+==============================================================================
+11. Disabling autocommands				*autocmd-disable*
+
+To disable autocommands for some time use the 'eventignore' option.  Note that
+this may cause unexpected behavior, make sure you restore 'eventignore'
+afterwards, using a |:try| block with |:finally|.
+
+							*:noautocmd* *:noa*
+To disable autocommands for just one command use the ":noautocmd" command
+modifier.  This will set 'eventignore' to "all" for the duration of the
+following command.  Example: >
+
+	:noautocmd w fname.gz
+
+This will write the file without triggering the autocommands defined by the
+gzip plugin.
 
 
  vim:tw=78:ts=8:ft=help:norl:

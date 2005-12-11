@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Nov 30
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Dec 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1819,7 +1819,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		F	When included, a ":write" command with a file name
 			argument will set the file name for the current
 			buffer, if the current buffer doesn't have a file name
-			yet.
+			yet.  Also see |cpo-P|.
 								*cpo-g*
 		g	Goto line 1 when using ":edit" without argument.
 								*cpo-H*
@@ -1888,6 +1888,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 								*cpo-p*
 		p	Vi compatible Lisp indenting.  When not present, a
 			slightly better algorithm is used.
+								*cpo-P*
+		P	When included, a ":write" command that appends to a
+			file will set the file name for the current buffer, if
+			the current buffer doesn't have a file name yet and
+			the 'F' flag is also included |cpo-F|.
 								*cpo-q*
 		q	When joining multiple lines leave the cursor at the
 			position where it would be when joining two lines.
