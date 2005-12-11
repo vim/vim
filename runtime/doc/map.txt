@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.0aa.  Last change: 2005 Oct 14
+*map.txt*       For Vim version 7.0aa.  Last change: 2005 Dec 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -425,7 +425,7 @@ otherwise you would not be able to use those commands anymore.  Here are a few
 suggestions:
 - Function keys <F2>, <F3>, etc..  Also the shifted function keys <S-F1>,
   <S-F2>, etc.  Note that <F1> is already used for the help command.
-- Meta-keys (with the ALT key pressed).
+- Meta-keys (with the ALT key pressed). |:map-alt-keys|
 - Use the '_' or ',' character and then any other character.  The "_" and ","
   commands do exist in Vim (see |_| and |,|), but you probably never use them.
 - Use a key that is a synonym for another command.  For example: CTRL-P and
@@ -458,14 +458,15 @@ you type slowly, or your system is slow, reset the 'timeout' option.  Then you
 might want to set the 'ttimeout' option.
 
 							*map-keys-fails*
-There is one situation where key codes might not be recognized:
+There are situations where key codes might not be recognized:
 - Vim can only read part of the key code.  Mostly this is only the first
   character.  This happens on some Unix versions in an xterm.
 - The key code is after character(s) that are mapped.  E.g., "<F1><F1>" or
   "g<F1>".
+
 The result is that the key code is not recognized in this situation, and the
-mapping fails.
-There are two actions needed to avoid this problem:
+mapping fails.  There are two actions needed to avoid this problem:
+
 - Remove the 'K' flag from 'cpoptions'.  This will make Vim wait for the rest
   of the characters of the function key.
 - When using <F1> to <F4> the actual key code generated may correspond to
@@ -480,6 +481,9 @@ special key: >
 	:map <F1><Esc>OP :echo "yes"<CR>
 Don't type a real <Esc>, Vim will recognize the key code and replace it with
 <F1> anyway.
+
+Another problem may be that when keeping ALT or Meta pressed the terminal
+prepends ESC instead of setting the 8th bit.  See |:map-alt-keys|.
 
 						*recursive_mapping*
 If you include the {lhs} in the {rhs} you have a recursive mapping.  When
@@ -554,6 +558,48 @@ else).  What is written into the script file depends on what is recognized.
 If the terminal key code was recognized as a mapping the key code itself is
 written to the script file.  If it was recognized as a terminal code the
 internal code is written to the script file.
+
+
+Mapping ALT-keys					*:map-alt-keys*
+
+In the GUI Vim handles the Alt key itself, thus mapping keys with ALT should
+always work.  But in a terminal Vim gets a sequence of bytes and has to figure
+out whether ALT was pressed or not.
+
+By default Vim assumes that pressing the ALT key sets the 8th bit of a typed
+character.  Most decent terminals work that way, such as xterm, aterm and
+rxvt.  If your <A-k> mappings don't work it might be that the terminal is
+prefixing the character with an ESC character.  But you can just as well type
+ESC before a character, thus Vim doesn't know what happened (except for
+checking the delay between characters, which is not reliable).
+
+As of this writing, some mainstream terminals like gnome-terminal and konsole
+use the ESC prefix.  There doesn't appear a way to have them use the 8th bit
+instead.  Xterm, aterm and rxvt should work well by default, unless you tweak
+resources like "metaSendsEscape", "eightBitInput" and "eightBitOutput".
+
+On the Linux console, this behavior can be toggled with the "setmetamode"
+command.  Bear in mind that not using an ESC prefix could get you in trouble
+with other programs.  You should make sure that bash has the "convert-meta"
+option set to "on" in order for your Meta keybindings to still work on it
+(it's the default readline behavior, unless changed by specific system
+configuration).  For that, you can add the line: >
+
+	set convert-meta on
+
+to your ~/.inputrc file. If you're creating the file, you might want to use: >
+
+	$include /etc/inputrc
+
+as the first line, if that file exists on your system, to keep global options.
+This may cause a problem for entering special characters, such as the umlaut.
+Then you should use CTRL-V before that character.
+
+Bear in mind that convert-meta has been reported to have troubles when used in
+UTF-8 locales.  On terminals like xterm, the "metaSendsEscape" resource can be
+toggled on the fly through the "Main Options" menu, by pressing Ctrl-LeftClick
+on the terminal; that's a good last resource in case you want to send ESC when
+using other applications but not when inside VIM.
 
 ==============================================================================
 2. Abbreviations			*abbreviations* *Abbreviations*

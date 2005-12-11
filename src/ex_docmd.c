@@ -1806,6 +1806,20 @@ do_one_cmd(cmdlinep, sourcing,
 #endif
 			continue;
 
+	    case 'n':	if (!checkforcmd(&ea.cmd, "noautocmd", 3))
+			    break;
+#ifdef FEAT_AUTOCMD
+			if (cmdmod.save_ei == NULL)
+			{
+			    /* Set 'eventignore' to "all".  Don't free the
+			     * existing option value, we restore it later. */
+			    cmdmod.save_ei = vim_strsave(p_ei);
+			    set_string_option_direct((char_u *)"ei", -1,
+						   (char_u *)"all", OPT_FREE);
+			}
+#endif
+			continue;
+
 	    case 'r':	if (!checkforcmd(&ea.cmd, "rightbelow", 6))
 			    break;
 #ifdef FEAT_WINDOWS
@@ -2595,6 +2609,14 @@ doend:
 
     if (verbose_save >= 0)
 	p_verbose = verbose_save;
+#ifdef FEAT_AUTOCMD
+    if (cmdmod.save_ei != NULL)
+    {
+	/* Restore 'eventignore' to the value before ":noautocmd". */
+	set_string_option_direct((char_u *)"ei", -1, cmdmod.save_ei, OPT_FREE);
+	free_string_option(cmdmod.save_ei);
+    }
+#endif
 
     cmdmod = save_cmdmod;
 
