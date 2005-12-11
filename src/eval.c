@@ -340,6 +340,7 @@ static struct vimvar
     {VV_NAME("scrollstart",	 VAR_STRING), 0},
     {VV_NAME("swapname",	 VAR_STRING), VV_RO},
     {VV_NAME("swapchoice",	 VAR_STRING), 0},
+    {VV_NAME("swapcommand",	 VAR_STRING), VV_RO},
 };
 
 /* shorthand */

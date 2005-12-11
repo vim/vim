@@ -3492,6 +3492,15 @@ eval_client_expr_to_string(expr)
     redir_off = save_ro;
     --emsg_skip;
 
+    /* A client can tell us to redraw, but not to display the cursor, so do
+     * that here. */
+    setcursor();
+    out_flush();
+#ifdef FEAT_GUI
+    if (gui.in_use)
+	gui_update_cursor(FALSE, FALSE);
+#endif
+
     return res;
 }
 

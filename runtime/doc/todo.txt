@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Dec 10
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Dec 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,12 +29,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
-
-When a buffer has no name, ":w >>fname" uses "fname" for the buffer, that is
-not logical.
-
-SwapExists with editexisting plugin: Is there a simple way to detect ":tag
-function" and have the remote Vim jump to the tag?
 
 When editing a file "a" that is a symbolic link to "b", while another Vim is
 editing "b", there is no warning.  Follow symlink to make swap file name?
@@ -155,6 +149,8 @@ mappings for normal keys can be removed from Select mode.
 When expanding on the command line, recognize shell commands, such as ":!cmd".
 Complete command names by searching in $PATH.  When completing file names
 escape special characters ";&<>(){}". (Adri Verhoef)
+
+Are there more commands where v:swapcommand can be set to something useful?
 
 Awaiting response:
 -   Win32: tearoff menu window should have a scrollbar when it's taller than

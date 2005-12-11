@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Dec 09
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Dec 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -400,11 +400,7 @@ Win32: The ":winpos" command now also works in the console. (Vipin Aravind)
 |:diffoff|		Switch off diff mode in the current window or in all
 			windows.
 
-|:keepalt|		Do not change the alternate file.
-
 |:delmarks|		Delete marks.
-
-|:sandbox|		Command modifier: execute the argument in the sandbox.
 
 |:exusage|		Help for Ex commands (Nvi command).
 
@@ -421,6 +417,14 @@ Win32: The ":winpos" command now also works in the console. (Vipin Aravind)
 
 |:cexpr|		Read error messages from a Vim expression (Yegappan
 			Lakshmanan).
+
+Ex command modifiers: ~
+
+|:keepalt|		Do not change the alternate file.
+
+|:noautocmd|		Do not trigger autocommand events.
+
+|:sandbox|		Execute a command in the sandbox.
 
 
 New and extended functions: ~
@@ -606,6 +610,12 @@ window height.
 
 The |v:scrollstart| variable has been added to help finding the location in
 your script that causes the hit-enter prompt.
+
+To make it possible to handle the situation that a file is being edited that
+is already being edited by another Vim instance, the |SwapExists| event has
+been added.  The |v:swapname|, |v:swapchoice| and |v:swapcommand| variables
+can be used, for example to use the |client-server| functionality to bring the
+other Vim to the foreground.
 
 ==============================================================================
 IMPROVEMENTS						*improvements-7*
@@ -853,6 +863,11 @@ added to the session file to set 'filetype' to "vim".
 
 In the ATTENTION prompt put the "Delete it" choice before "Quit" to make it
 more logical.  (Robert Webb)
+
+When appending to a file while the buffer has no name the name of the appended
+file would be used for the current buffer.  But the buffer contents is
+actually different from the file content.  Don't set the file name, unless the
+'P' flag is present in 'cpoptions'.
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*
@@ -1350,7 +1365,7 @@ When reporting a conversion error the line number of the last error could be
 given.  Now report the first encountered error.
 
 When using ":e ++enc=name file" and iconv() was used for conversion an error
-caused a fallback to no conversion.  Now replace a character with '?' and
+caused a fall-back to no conversion.  Now replace a character with '?' and
 continue.
 
 When opening a new buffer the local value of 'bomb' was not initialized from
@@ -1416,5 +1431,11 @@ When using ":wq" and a BufWriteCmd autocmd uses inputsecret() the text was
 echoed anyway.  Set terminal to raw mode in getcmdline().
 
 Unix: ":w a;b~c" caused an error in expanding wildcards.
+
+When appending to a file with ":w >>fname" in a buffer without a name, causing
+the buffer to use "fname", the modified flag was reset.
+
+When appending to to current file the "not edited" flag would be reset.
+":w" would overwrite the file accidentally.
 
  vim:tw=78:ts=8:ft=help:norl:
