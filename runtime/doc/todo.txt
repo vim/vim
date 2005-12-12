@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Dec 11
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Dec 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,24 +29,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
-
-When editing a file "a" that is a symbolic link to "b", while another Vim is
-editing "b", there is no warning.  Follow symlink to make swap file name?
-Patch from Stefano Zacchiroli.  Updated by James Vega, Dec 2.
-
-Using pipes for filter commands: provide some way to type a password, keep
-stderr in/out open for this? (Konstanti Rozinov)
-New problem: password is echoed.  Put terminal in cooked mode and don't read
-from terminal?
-
-Allow the user to handle the situation that a swap file already exists.
-Option to define a function to be called?  Function would return the character
-that the dialog provides.  Would make it possible to bring the other Vim to
-the foreground and abort the edit.  Or hard-code this?
-
-To support mapping <F4> to be used as <F4>{motion}: Add operator that
-executes a user defined function. '[ and '] marks are at start and end of
-text.  ":map <F4> :set opfunc=MyOp<CR>gy".
 
 Patch from Yasuhiro Matsumoto: ":e ++enc=xxx" keeps encoding for conversion
 errors and illegal bytes.  Make default to replace bad bytes/characters with

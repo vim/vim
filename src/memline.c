@@ -3382,6 +3382,87 @@ ml_lineadd(buf, count)
     }
 }
 
+#ifdef HAVE_READLINK
+static int resolve_symlink __ARGS((char_u *fname, char_u *buf));
+
+/*
+ * Resolve a symlink in the last component of a file name.
+ * Note that f_resolve() does it for every part of the path, we don't do that
+ * here.
+ * If it worked returns OK and the resolved link in "buf[MAXPATHL]".
+ * Otherwise returns FAIL.
+ */
+    static int
+resolve_symlink(fname, buf)
+    char_u	*fname;
+    char_u	*buf;
+{
+    char_u	tmp[MAXPATHL];
+    int		ret;
+    int		depth = 0;
+
+    if (fname == NULL)
+	return FAIL;
+
+    /* Put the result so far in tmp[], starting with the original name. */
+    vim_strncpy(tmp, fname, MAXPATHL - 1);
+
+    for (;;)
+    {
+	/* Limit symlink depth to 100, catch recursive loops. */
+	if (++depth == 100)
+	{
+	    EMSG2(_("E773: Symlink loop for \"%s\""), fname);
+	    return FAIL;
+	}
+
+	ret = readlink((char *)tmp, (char *)buf, MAXPATHL - 1);
+	if (ret <= 0)
+	{
+	    if (errno == EINVAL)  /* found non-symlink, stop here */
+	    {
+		/* When at the first level use the unmodifed name, skip the
+		 * call to vim_FullName(). */
+		if (depth == 1)
+		    return FAIL;
+
+		/* Use the resolved name in tmp[]. */
+		break;
+	    }
+
+	    /* There must be some error reading links, use original name. */
+	    return FAIL;
+	}
+	buf[ret] = NUL;
+
+	/*
+	 * Check whether the symlink is relative or absolute.
+	 * If it's relative, build a new path based on the directory
+	 * portion of the filename (if any) and the path the symlink
+	 * points to.
+	 */
+	if (mch_isFullName(buf))
+	    STRCPY(tmp, buf);
+	else
+	{
+	    char_u *tail;
+
+	    tail = gettail(tmp);
+	    if (STRLEN(tail) + STRLEN(buf) >= MAXPATHL)
+		return FAIL;
+	    STRCPY(tail, buf);
+	}
+    }
+
+    /*
+     * Try to resolve the full name of the file so that the swapfile name will
+     * be consistent even when opening a relative symlink from different
+     * working directories.
+     */
+    return vim_FullName(tmp, buf, MAXPATHL, TRUE);
+}
+#endif
+
 /*
  * Make swap file name out of the file name and a directory name.
  * Returns pointer to allocated memory or NULL.
@@ -3395,6 +3476,10 @@ makeswapname(fname, ffname, buf, dir_name)
     char_u	*dir_name;
 {
     char_u	*r, *s;
+#ifdef HAVE_READLINK
+    char_u	fname_buf[MAXPATHL];
+    char_u	*fname_res;
+#endif
 
 #if defined(UNIX) || defined(WIN3264)  /* Need _very_ long file names */
     s = dir_name + STRLEN(dir_name);
@@ -3410,6 +3495,15 @@ makeswapname(fname, ffname, buf, dir_name)
     }
 #endif
 
+#ifdef HAVE_READLINK
+    /* Expand symlink in the file name, so that we put the swap file with the
+     * actual file instead of with the symlink. */
+    if (resolve_symlink(fname, fname_buf) == OK)
+	fname_res = fname_buf;
+    else
+	fname_res = fname;
+#endif
+
     r = buf_modname(
 #ifdef SHORT_FNAME
 	    TRUE,
@@ -3420,7 +3514,11 @@ makeswapname(fname, ffname, buf, dir_name)
 	    /* Avoid problems if fname has special chars, eg <Wimp$Scrap> */
 	    ffname,
 #else
+# ifdef HAVE_READLINK
+	    fname_res,
+# else
 	    fname,
+# endif
 #endif
 	    (char_u *)
 #if defined(VMS) || defined(RISCOS)
@@ -3848,7 +3946,17 @@ findswapname(buf, dirp, old_fname)
 			    if (fnamecmp(gettail(buf->b_ffname),
 						   gettail(b0.b0_fname)) != 0
 				    || !same_directory(fname, buf->b_ffname))
-				differ = TRUE;
+			    {
+#ifdef CHECK_INODE
+				/* Symlinks may point to the same file even
+				 * when the name differs, need to check the
+				 * inode too. */
+				expand_env(b0.b0_fname, NameBuff, MAXPATHL);
+				if (fnamecmp_ino(buf->b_ffname, NameBuff,
+						     char_to_long(b0.b0_ino)))
+#endif
+				    differ = TRUE;
+			    }
 			}
 			else
 			{
@@ -3859,7 +3967,7 @@ findswapname(buf, dirp, old_fname)
 			    expand_env(b0.b0_fname, NameBuff, MAXPATHL);
 #ifdef CHECK_INODE
 			    if (fnamecmp_ino(buf->b_ffname, NameBuff,
-					char_to_long(b0.b0_ino)))
+						     char_to_long(b0.b0_ino)))
 				differ = TRUE;
 #else
 			    if (fnamecmp(NameBuff, buf->b_ffname) != 0)

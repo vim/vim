@@ -4443,6 +4443,29 @@ vim_ispathlistsep(c)
 }
 #endif
 
+/*
+ * Return TRUE if the directory of "fname" exists, FALSE otherwise.
+ * Also returns TRUE if there is no directory name.
+ * "fname" must be writable!.
+ */
+    int
+dir_of_file_exists(fname)
+    char_u	*fname;
+{
+    char_u	*p;
+    int		c;
+    int		retval;
+
+    p = gettail_sep(fname);
+    if (p == fname)
+	return TRUE;
+    c = *p;
+    *p = NUL;
+    retval = mch_isdir(fname);
+    *p = c;
+    return retval;
+}
+
 #if (defined(CASE_INSENSITIVE_FILENAME) && defined(BACKSLASH_IN_FILENAME)) \
 	|| defined(PROTO)
 /*

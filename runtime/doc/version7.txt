@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Dec 11
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Dec 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -29,6 +29,7 @@ Scroll back in messages			|new-scroll-back|
 POSIX compatibility			|new-posix|
 Debugger support			|new-debug-support|
 Remote file explorer			|new-netrw-explore|
+Define an operator			|new-define-operator|
 Various new items			|new-items-7|
 
 IMPROVEMENTS				|improvements-7|
@@ -167,7 +168,7 @@ The 'spellsuggest' option specifies the methods used for making suggestions
 
 The |[s| and |]s| commands can be used to move to the next or previous error.
 The |zg| and |zw| commands can be used to add good and wrong words.
-The |z?| command can be used to correct the word.
+The |z=| command can be used to correct the word.
 The |:mkspell| command is used to generate a Vim spell file from word lists.
 
 The "undercurl" highlighting attribute was added to nicely point out spelling
@@ -339,6 +340,18 @@ works the same way.
 and a GUI dialog is not possible.
 
 The netrw plugin is maintained by Charles Campbell.
+
+
+Define an operator					*new-define-operator*
+------------------
+
+Previously it was not possible to define your own operator; a command that is
+followed by a {motion}.  Vim 7 introduces the 'operatorfunc' option and the
+|g@| operator.  This makes it possible to define a mapping that works like an
+operator.  The actual work is then done by a function, which is invoked
+through the |g@| operator.
+
+See |:map-operator| for the explanation and an example.
 
 
 Various new items					*new-items-7*
@@ -573,17 +586,19 @@ Mac: GUI font selector. (Peter Cucka)
 
 Mac: support for multi-byte characters. (Da Woon Jung)
 
-GUI font selector for Motif. (Marcin Dalecki)
-
-Nicer toolbar buttons for Motif. (Marcin Dalecki)
-
-Mnemonics for the Motif find/replace dialog. (Marcin Dalecki)
+Mac: Support the xterm mouse in the non-GUI version.
 
 Mac: better integration with Xcode.  Post a fake mouse-up event after the odoc
 event and the drag receive handler to work around a stall after Vim loads a
 file.  Fixed an off-by-one line number error. (Da Woon Jung)
 
 Added the t_SI and t_EI escape sequences for starting and ending Insert mode.
+GUI font selector for Motif. (Marcin Dalecki)
+
+Nicer toolbar buttons for Motif. (Marcin Dalecki)
+
+Mnemonics for the Motif find/replace dialog. (Marcin Dalecki)
+
 To be used to set the cursor shape to a bar or a block.  No default values,
 they are not supported by termcap/terminfo.
 
@@ -706,6 +721,10 @@ edited file differs (e.g., y:\dir\file vs /home/me/dir/file).  Added a flag to
 the swap file to indicate it is in the same directory as the edited file.  The
 used path then doesn't matter and the check for editing the same file is much
 more reliable.
+
+Unix: When editing a file through a symlink the swap file would use the name
+of the symlink.  Now use the name of the actual file, so that editing the same
+file twice is detected. (suggestions by Stefano Zacchiroli and James Vega)
 
 Client-server communication now supports 'encoding'.  When setting 'encoding'
 in a Vim server to "utf-8", and using "vim --remote fname" in a console,
@@ -868,6 +887,10 @@ When appending to a file while the buffer has no name the name of the appended
 file would be used for the current buffer.  But the buffer contents is
 actually different from the file content.  Don't set the file name, unless the
 'P' flag is present in 'cpoptions'.
+
+When starting to edit a new file and the directory for the file doesn't exist
+then Vim will report "[New DIRECTORY]" instead of "[New File] to give the user
+a hint that something might be wrong.
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*
@@ -1437,5 +1460,9 @@ the buffer to use "fname", the modified flag was reset.
 
 When appending to to current file the "not edited" flag would be reset.
 ":w" would overwrite the file accidentally.
+
+Unix: When filtering text with an external command Vim would still read input,
+causing text typed for the command (e.g., a password) to be eaten and echoed.
+Don't read input when the terminal is in cooked mode.
 
  vim:tw=78:ts=8:ft=help:norl:

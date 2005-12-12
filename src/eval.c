@@ -12836,10 +12836,9 @@ f_resolve(argvars, rettv)
 			remain = vim_strsave(q - 1);
 		    else
 		    {
-			cpy = vim_strnsave(q-1, STRLEN(q-1) + STRLEN(remain));
+			cpy = concat_str(q - 1, remain);
 			if (cpy != NULL)
 			{
-			    STRCAT(cpy, remain);
 			    vim_free(remain);
 			    remain = cpy;
 			}
