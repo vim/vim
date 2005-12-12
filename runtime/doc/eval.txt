@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Dec 11
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Dec 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1278,7 +1278,7 @@ v:fname_in	The name of the input file.  Valid while evaluating:
 			'diffexpr'	original file
 			'patchexpr'	original file
 			'printexpr'	file to be printed
-		And set to the swap file name for |SwapExits|.
+		And set to the swap file name for |SwapExists|.
 
 					*v:fname_out* *fname_out-variable*
 v:fname_out	The name of the output file.  Only valid while

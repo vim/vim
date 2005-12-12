@@ -614,6 +614,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'omnifunc'	options.txt	/*'omnifunc'*
 'op'	vi_diff.txt	/*'op'*
 'open'	vi_diff.txt	/*'open'*
+'operatorfunc'	options.txt	/*'operatorfunc'*
+'opfunc'	options.txt	/*'opfunc'*
 'optimize'	vi_diff.txt	/*'optimize'*
 'option'	intro.txt	/*'option'*
 'osfiletype'	options.txt	/*'osfiletype'*
@@ -2144,9 +2146,14 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :map-<silent>	map.txt	/*:map-<silent>*
 :map-<unique>	map.txt	/*:map-<unique>*
 :map-alt-keys	map.txt	/*:map-alt-keys*
+:map-arguments	map.txt	/*:map-arguments*
+:map-commands	map.txt	/*:map-commands*
 :map-local	map.txt	/*:map-local*
+:map-modes	map.txt	/*:map-modes*
+:map-operator	map.txt	/*:map-operator*
 :map-script	map.txt	/*:map-script*
 :map-silent	map.txt	/*:map-silent*
+:map-special-chars	map.txt	/*:map-special-chars*
 :map-special-keys	map.txt	/*:map-special-keys*
 :map-undo	map.txt	/*:map-undo*
 :map-verbose	map.txt	/*:map-verbose*
@@ -3777,6 +3784,7 @@ E77	message.txt	/*E77*
 E770	spell.txt	/*E770*
 E771	spell.txt	/*E771*
 E772	spell.txt	/*E772*
+E773	recover.txt	/*E773*
 E78	motion.txt	/*E78*
 E79	message.txt	/*E79*
 E80	message.txt	/*E80*
@@ -5158,6 +5166,7 @@ g<Up>	motion.txt	/*g<Up>*
 g?	change.txt	/*g?*
 g??	change.txt	/*g??*
 g?g?	change.txt	/*g?g?*
+g@	map.txt	/*g@*
 gD	pattern.txt	/*gD*
 gE	motion.txt	/*gE*
 gH	visual.txt	/*gH*
@@ -5991,6 +6000,7 @@ new-commands-5.4	version5.txt	/*new-commands-5.4*
 new-debug-itf	version6.txt	/*new-debug-itf*
 new-debug-mode	version6.txt	/*new-debug-mode*
 new-debug-support	version7.txt	/*new-debug-support*
+new-define-operator	version7.txt	/*new-define-operator*
 new-diff-mode	version6.txt	/*new-diff-mode*
 new-encryption	version5.txt	/*new-encryption*
 new-evim	version6.txt	/*new-evim*

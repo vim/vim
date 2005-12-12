@@ -159,6 +159,7 @@ static char opchars[][3] =
     {'z', 'd', TRUE},	/* OP_FOLDDEL */
     {'z', 'D', TRUE},	/* OP_FOLDDELREC */
     {'g', 'w', TRUE},	/* OP_FORMAT2 */
+    {'g', 'y', FALSE},	/* OP_FUNCTION */
 };
 
 /*
@@ -2737,10 +2738,10 @@ op_yank(oap, deleting, mess)
     else
 	free_yank_all();	    /* free previously yanked lines */
 
-/*
- * If the cursor was in column 1 before and after the movement, and the
- * operator is not inclusive, the yank is always linewise.
- */
+    /*
+     * If the cursor was in column 1 before and after the movement, and the
+     * operator is not inclusive, the yank is always linewise.
+     */
     if (       oap->motion_type == MCHAR
 	    && oap->start.col == 0
 	    && !oap->inclusive
@@ -4786,7 +4787,7 @@ block_prep(oap, bdp, lnum, is_del)
 		/* if (!is_del || oap->op_type == OP_APPEND) */
 		if (oap->op_type == OP_APPEND || virtual_op)
 		    bdp->endspaces = oap->end_vcol - bdp->end_vcol
-					+ oap->inclusive;
+							     + oap->inclusive;
 		else
 		    bdp->endspaces = 0; /* replace doesn't add characters */
 	    }

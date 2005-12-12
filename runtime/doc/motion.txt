@@ -1,4 +1,4 @@
-*motion.txt*    For Vim version 7.0aa.  Last change: 2005 Dec 09
+*motion.txt*    For Vim version 7.0aa.  Last change: 2005 Dec 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -57,6 +57,7 @@ or change text.  The following operators are available:
 	|>|	>	shift right
 	|<|	<	shift left
 	|zf|	zf	define a fold
+	|g@|    g@      call function set with the 'operatorfunc' option
 
 If the motion includes a count and the operator also had a count before it,
 the two counts are multiplied.  For example: "2d3w" deletes six words.

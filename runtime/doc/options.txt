@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Dec 11
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Dec 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4646,6 +4646,17 @@ A jump table for the options with a short description can be found at |Q_op|.
 	For the use of the function see 'completefunc'.
 
 
+						*'operatorfunc'* *'opfunc'*
+'operatorfunc' 'opfunc'	string	(default: empty)
+			global
+			{not in Vi}
+	This option specifies a function to be called by the |g@| operator.
+	See |:map-operator| for more info and an example.
+
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
+
+
 					*'osfiletype'* *'oft'* *E366*
 'osfiletype' 'oft'	string (RISC-OS default: "Text",
 				others default: "")
@@ -5873,7 +5884,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not in Vi}
 			{not available when compiled without the |+syntax|
 			feature}
-	Methods used for spelling suggestions.  Both for the |z?| command and
+	Methods used for spelling suggestions.  Both for the |z=| command and
 	the |spellsuggest()| function.  This is a comma-separated list of
 	items:
 
@@ -5892,7 +5903,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			character inserts/deletes/swaps.  Works well for
 			simple typing mistakes.
 
-	{number}	The maximum number of suggestions listed for |z?|.
+	{number}	The maximum number of suggestions listed for |z=|.
 			Not used for |spellsuggest()|.  The number of
 			suggestions is never more than the value of 'lines'
 			minus two.
@@ -5914,7 +5925,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			Lists, each with a suggestion and a score.
 			Example:
 				[['the', 33], ['that', 44]]
-			Set 'verbose' and use |z?| to see the scores that the
+			Set 'verbose' and use |z=| to see the scores that the
 			internal methods use.  A lower score is better.
 			This may invoke |spellsuggest()| if you temporarily
 			set 'spellsuggest' to exclude the "expr:" part.

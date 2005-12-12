@@ -1,4 +1,4 @@
-*recover.txt*   For Vim version 7.0aa.  Last change: 2005 Feb 10
+*recover.txt*   For Vim version 7.0aa.  Last change: 2005 Dec 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -125,6 +125,28 @@ command:
 
 A Vim swap file can be recognized by the first six characters: "b0VIM ".
 After that comes the version number, e.g., "3.0".
+
+
+Links and symbolic links ~
+
+On Unix it is possible to have two names for the same file.  This can be done
+with hard links and with symbolic links (symlinks).
+
+For hard links Vim does not know the other name of the file.  Therefore, the
+name of the swapfile will be based on the name you used to edit the file.
+There is no check for editing the same file by the other name too, because Vim
+cannot find the other swapfile (except for searching all of your harddisk,
+which would be very slow).
+
+For symbolic links Vim resolves the links to find the name of the actual file.
+The swap file name is based on that name.  Thus it doesn't matter by what name
+you edit the file, the swap file name will normally be the same.  However,
+there are exceptions:
+- When the directory of the actual file is not writable the swapfile is put
+  elsewhere.
+- When the symbolic links somehow create a loop you get an *E773* error
+  message and the unmodified file name will be used.  You won't be able to
+  save your file normally.
 
 ==============================================================================
 2. Recovery					*recovery* *E308* *E311*
