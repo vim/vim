@@ -556,7 +556,11 @@ readfile(fname, sfname, from, lines_to_skip, lines_to_read, eap, flags)
 		    if (!bt_dontwrite(curbuf))
 #endif
 			check_need_swap(newfile);
-		    filemess(curbuf, sfname, (char_u *)_("[New File]"), 0);
+		    if (dir_of_file_exists(fname))
+			filemess(curbuf, sfname, (char_u *)_("[New File]"), 0);
+		    else
+			filemess(curbuf, sfname,
+					   (char_u *)_("[New DIRECTORY]"), 0);
 #ifdef FEAT_VIMINFO
 		    /* Even though this is a new file, it might have been
 		     * edited before and deleted.  Get the old marks. */

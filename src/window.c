@@ -4765,7 +4765,7 @@ vim_isAbsName(name)
 }
 
 /*
- * Get absolute file name into buffer 'buf' of length 'len' bytes.
+ * Get absolute file name into buffer "buf[len]".
  *
  * return FAIL for failure, OK otherwise
  */
@@ -4773,7 +4773,7 @@ vim_isAbsName(name)
 vim_FullName(fname, buf, len, force)
     char_u	*fname, *buf;
     int		len;
-    int		force;
+    int		force;	    /* force expansion even when already absolute */
 {
     int		retval = OK;
     int		url;

@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 7.0aa.  Last change: 2005 Dec 11
+*index.txt*     For Vim version 7.0aa.  Last change: 2005 Dec 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -736,6 +736,7 @@ tag		char	      note action in Normal mode	~
 |gu|		gu{motion}	2  make Nmove text lowercase
 |gv|		gv		   reselect the previous Visual area
 |gw|		gw{motion}	2  format Nmove text and keep cursor
+|g@|            g@{motion}         call 'operatorfunc'
 |g~|		g~{motion}	2  swap case for Nmove text
 |g<Down>|	g<Down>		1  same as "gj"
 |g<End>|	g<End>		1  same as "g$"

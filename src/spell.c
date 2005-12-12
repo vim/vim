@@ -7703,7 +7703,6 @@ spell_add_word(word, len, bad, index)
     FILE	*fd;
     buf_T	*buf = NULL;
     int		new_spf = FALSE;
-    struct stat	st;
     char_u	*fname;
     char_u	fnamebuf[MAXPATHL];
     char_u	line[MAXWLEN * 2];
@@ -7797,9 +7796,7 @@ spell_add_word(word, len, bad, index)
 	/* We just initialized the 'spellfile' option and can't open the file.
 	 * We may need to create the "spell" directory first.  We already
 	 * checked the runtime directory is writable in init_spellfile(). */
-	STRCPY(NameBuff, fname);
-	*gettail_sep(NameBuff) = NUL;
-	if (mch_stat((char *)NameBuff, &st) < 0)
+	if (!dir_of_file_exists(fname))
 	{
 	    /* The directory doesn't exist.  Try creating it and opening the
 	     * file again. */

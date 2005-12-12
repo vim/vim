@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0aa.  Last change: 2005 Nov 22
+*insert.txt*    For Vim version 7.0aa.  Last change: 2005 Dec 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1040,9 +1040,9 @@ Note: When used first time completion menu will be shown with little delay
 
 XML                                                     *ft-xml-omni*
 
-Vim 7 provides mechanism to context aware completion of XML files. It depends
-on special |xml-data-file| and two commands: |:XMLns| and |:XMLent|. Features
-are:
+Vim 7 provides mechanism to context aware completion of XML files.  It depends
+on special |xml-omni-datafile| and two commands: |:XMLns| and |:XMLent|.
+Features are:
 
 - after "<" complete tag name depending on context (no div suggest
   inside of an a tag)
@@ -1050,7 +1050,7 @@ are:
   a tag)
 - when attribute has limited number of possible values help to complete
   them
-- complete names of entities (defined in |xml-data-file| and in current file
+- complete names of entities (defined in |xml-omni-datafile| and in current file
   with "<!ENTITY" declarations
 - when used after "</" CTRL-X CTRL-O will close the last opened tag
 

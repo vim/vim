@@ -32,6 +32,7 @@ _RTLENTRYF
 		nv_compare __ARGS((const void *s1, const void *s2));
 static int	find_command __ARGS((int cmdchar));
 static void	op_colon __ARGS((oparg_T *oap));
+static void	op_function __ARGS((oparg_T *oap));
 #if defined(FEAT_MOUSE) && defined(FEAT_VISUAL)
 static void	find_start_of_word __ARGS((pos_T *));
 static void	find_end_of_word __ARGS((pos_T *));
@@ -1696,6 +1697,7 @@ do_pending_operator(cap, old_col, gui_yank)
 	    }
 
 	    redo_VIsual_busy = FALSE;
+
 	    /*
 	     * Switch Visual off now, so screen updating does
 	     * not show inverted text when the screen is redrawn.
@@ -1718,6 +1720,7 @@ do_pending_operator(cap, old_col, gui_yank)
 #endif
 		if ((oap->op_type == OP_YANK
 			    || oap->op_type == OP_COLON
+			    || oap->op_type == OP_FUNCTION
 			    || oap->op_type == OP_FILTER)
 			&& oap->motion_force == NUL)
 		    redraw_curbuf_later(INVERTED);
@@ -1940,6 +1943,10 @@ do_pending_operator(cap, old_col, gui_yank)
 	    op_format(oap, TRUE);	/* use internal function */
 	    break;
 
+	case OP_FUNCTION:
+	    op_function(oap);		/* call 'operatorfunc' */
+	    break;
+
 	case OP_INSERT:
 	case OP_APPEND:
 #ifdef FEAT_VISUAL
@@ -2098,6 +2105,40 @@ op_colon(oap)
     /*
      * do_cmdline() does the rest
      */
+}
+
+/*
+ * Handle the "gy" operator: call 'operatorfunc'.
+ */
+    void
+op_function(oap)
+    oparg_T	*oap;
+{
+#ifdef FEAT_EVAL
+    char_u	*(argv[1]);
+
+    if (*p_opfunc == NUL)
+	EMSG(_("E774: 'operatorfunc' is empty"));
+    else
+    {
+	/* Set '[ and '] marks to text to be operated on. */
+	curbuf->b_op_start = oap->start;
+	curbuf->b_op_end = oap->end;
+	if (oap->motion_type != MLINE && !oap->inclusive)
+	    /* Exclude the end position. */
+	    decl(&curbuf->b_op_end);
+
+	if (oap->block_mode)
+	    argv[0] = (char_u *)"block";
+	else if (oap->motion_type == MLINE)
+	    argv[0] = (char_u *)"line";
+	else
+	    argv[0] = (char_u *)"char";
+	(void)call_func_retnr(p_opfunc, 1, argv, FALSE);
+    }
+#else
+    EMSG(_("E775: Eval feature not available"));
+#endif
 }
 
 #if defined(FEAT_MOUSE) || defined(PROTO)
@@ -7660,6 +7701,7 @@ nv_g_cmd(cap)
      *	 "gu"	    Change text to lower case.
      *	 "gU"	    Change text to upper case.
      *   "g?"	    rot13 encoding
+     *   "gy"	    call 'operatorfunc'
      */
     case 'q':
     case 'w':
@@ -7669,6 +7711,7 @@ nv_g_cmd(cap)
     case 'u':
     case 'U':
     case '?':
+    case 'y':
 	nv_operator(cap);
 	break;
 

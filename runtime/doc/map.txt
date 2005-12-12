@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.0aa.  Last change: 2005 Dec 11
+*map.txt*       For Vim version 7.0aa.  Last change: 2005 Dec 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -10,6 +10,17 @@ This subject is introduced in sections |05.3|, |24.7| and |40.1| of the user
 manual.
 
 1. Key mapping			|key-mapping|
+   1.1 MAP COMMANDS			|:map-commands|
+   1.2 Special arguments		|:map-arguments|
+   1.3 Mapping and modes		|:map-modes|
+   1.4 Listing mappings			|map-listing|
+   1.5 Mapping special keys		|:map-special-keys|
+   1.6 Special characters		|:map-special-chars|
+   1.7 What keys to map			|map-which-keys|
+   1.8 Examples				|map-examples|
+   1.9 Using mappings			|map-typing|
+   1.10 Mapping alt-keys		|:map-alt-keys|
+   1.11 Mapping an operator		|:map-operator|
 2. Abbreviations		|abbreviations|
 3. Local mappings and functions	|script-local|
 4. User-defined commands	|user-commands|
@@ -23,6 +34,9 @@ is to define a sequence commands for a function key.  Example: >
 	:map <F2> a<C-R>=strftime("%c")<CR><Esc>
 
 This appends the current date and time after the cursor (in <> notation |<>|).
+
+
+1.1 MAP COMMANDS					*:map-commands*
 
 There are commands to enter new mappings, remove mappings and list mappings.
 See |map-overview| for the various forms of "map" and their relationships with
@@ -116,6 +130,21 @@ characters.  You can use this to put command sequences under function keys,
 translate one key into another, etc.  See |:mkexrc| for how to save and
 restore the current mappings.
 
+							*map-ambiguous*
+When two mappings start with the same sequence of characters, they are
+ambiguous.  Example: >
+	:imap aa foo
+	:imap aaa bar
+When Vim has read "aa", it will need to get another character to be able to
+decide if "aa" or "aaa" should be mapped.  This means that after typing "aa"
+that mapping won't get expanded yet, Vim is waiting for another character.
+If you type a space, then "foo" will get inserted, plus the space.  If you
+type "a", then "bar" will get inserted.
+{Vi does not allow ambiguous mappings}
+
+
+1.2 SPECIAL ARGUMENTS					*:map-arguments*
+
 				*:map-local* *:map-<buffer>* *E224* *E225*
 If the first argument to one of these commands is "<buffer>" it will apply to
 mappings locally to the current buffer only.  Example: >
@@ -167,7 +196,7 @@ Example of what will fail: >
 They must appear right after the command, before any other arguments.
 
 
-MAPPING AND MODES
+1.3 MAPPING AND MODES					*:map-modes*
 
 There are five sets of mappings
 - For Normal mode: When typing commands.
@@ -236,19 +265,9 @@ character as an argument to command like "f" or "t".
 are only used for typed characters.  This assumes that the language mapping
 was already done when typing the mapping.
 
-							*map-multibyte*
-It is possible to map multibyte characters, but only the whole character.  You
-cannot map the first byte only.  This was done to prevent problems in this
-scenario: >
-	:set encoding=latin1
-	:imap <M-C> foo
-	:set encoding=utf-8
-The mapping for <M-C> is defined with the latin1 encoding, resulting in a 0xc3
-byte.  If you type the character á (0xea <M-a>) in UTF-8 encoding this is the
-two bytes 0xc3 0xa1.  You don't want the 0xc3 byte to be mapped then,
-otherwise it would be impossible to type the á character.
 
-							*map-listing*
+1.4 LISTING MAPPINGS					*map-listing*
+
 When listing mappings the characters in the first two columns are:
 
       CHAR	MODE	~
@@ -283,6 +302,48 @@ last defined.  Example: >
 
 See |:verbose-cmd| for more information.
 
+
+1.5 MAPPING SPECIAL KEYS				*:map-special-keys*
+
+There are three ways to map a special key:
+1. The Vi-compatible method: Map the key code.  Often this is a sequence that
+   starts with <Esc>.  To enter a mapping like this you type ":map " and then
+   you have to type CTRL-V before hitting the function key.  Note that when
+   the key code for the key is in the termcap (the t_ options), it will
+   automatically be translated into the internal code and become the second
+   way of mapping (unless the 'k' flag is included in 'cpoptions').
+2. The second method is to use the internal code for the function key.  To
+   enter such a mapping type CTRL-K and then hit the function key, or use
+   the form "#1", "#2", .. "#9", "#0", "<Up>", "<S-Down>", "<S-F7>", etc.
+   (see table of keys |key-notation|, all keys from <Up> can be used).  The
+   first ten function keys can be defined in two ways: Just the number, like
+   "#2", and with "<F>", like "<F2>".  Both stand for function key 2.  "#0"
+   refers to function key 10, defined with option 't_f10', which may be
+   function key zero on some keyboards.  The <> form cannot be used when
+   'cpoptions' includes the '<' flag.
+3. Use the termcap entry, with the form <t_xx>, where "xx" is the name of the
+   termcap entry.  Any string entry can be used.  For example: >
+     :map <t_F3> G
+<  Maps function key 13 to "G".  This does not work if 'cpoptions' includes
+   the '<' flag.
+
+The advantage of the second and third method is that the mapping will work on
+different terminals without modification (the function key will be
+translated into the same internal code or the actual key code, no matter what
+terminal you are using.  The termcap must be correct for this to work, and you
+must use the same mappings).
+
+DETAIL: Vim first checks if a sequence from the keyboard is mapped.  If it
+isn't the terminal key codes are tried (see |terminal-options|).  If a
+terminal code is found it is replaced with the internal code.  Then the check
+for a mapping is done again (so you can map an internal code to something
+else).  What is written into the script file depends on what is recognized.
+If the terminal key code was recognized as a mapping the key code itself is
+written to the script file.  If it was recognized as a terminal code the
+internal code is written to the script file.
+
+
+1.6 SPECIAL CHARACTERS					*:map-special-chars*
 							*map_backslash*
 Note that only CTRL-V is mentioned here as a special character for mappings
 and abbreviations.  When 'cpoptions' does not contain 'B', a backslash can
@@ -293,18 +354,6 @@ follows.
 To map a backslash, or use a backslash literally in the {rhs}, the special
 sequence "<Bslash>" can be used.  This avoids the need to double backslashes
 when using nested mappings.
-
-							*map-ambiguous*
-When two mappings start with the same sequence of characters, they are
-ambiguous.  Example: >
-	:imap aa foo
-	:imap aaa bar
-When Vim has read "aa", it will need to get another character to be able to
-decide if "aa" or "aaa" should be mapped.  This means that after typing "aa"
-that mapping won't get expanded yet, Vim is waiting for another character.
-If you type a space, then "foo" will get inserted, plus the space.  If you
-type "a", then "bar" will get inserted.
-{Vi does not allow ambiguous mappings}
 
 							*map_CTRL-C*
 Using CTRL-C in the {lhs} is possible, but it will only work when Vim is
@@ -331,6 +380,18 @@ example, to make sure that function key 8 does nothing at all: >
 	:map  <F8>  <Nop>
 	:map! <F8>  <Nop>
 <
+							*map-multibyte*
+It is possible to map multibyte characters, but only the whole character.  You
+cannot map the first byte only.  This was done to prevent problems in this
+scenario: >
+	:set encoding=latin1
+	:imap <M-C> foo
+	:set encoding=utf-8
+The mapping for <M-C> is defined with the latin1 encoding, resulting in a 0xc3
+byte.  If you type the character á (0xea <M-a>) in UTF-8 encoding this is the
+two bytes 0xc3 0xa1.  You don't want the 0xc3 byte to be mapped then,
+otherwise it would be impossible to type the á character.
+
 					*<Leader>* *mapleader*
 To define a mapping which uses the "mapleader" variable, the special string
 "<Leader>" can be used.  It is replaced with the string value of "mapleader".
@@ -418,7 +479,9 @@ and CTRL-X is not mapped.  This was done to be able to use all the named
 registers and marks, even when the command with the same name has been
 mapped.
 
-							*map-which-keys*
+
+1.7 WHAT KEYS TO MAP					*map-which-keys*
+
 If you are going to map something, you will need to choose which key(s) to use
 for the {lhs}.  You will have to avoid keys that are used for Vim commands,
 otherwise you would not be able to use those commands anymore.  Here are a few
@@ -436,7 +499,9 @@ losing any builtin function.  You can also use ":help {key}^D" to find out if
 a key is used for some command.  ({key} is the specific key you want to find
 out about, ^D is CTRL-D).
 
-							*map-examples*
+
+1.8 EXAMPLES						*map-examples*
+
 A few examples (given as you type them, for "<CR>" you type four characters;
 the '<' flag must not be present in 'cpoptions' for this to work). >
 
@@ -445,7 +510,9 @@ the '<' flag must not be present in 'cpoptions' for this to work). >
    :map _x    d/END/e<CR>
    :map! qq   quadrillion questions
 <
-							*map-typing*
+
+1.9 USING MAPPINGS					*map-typing*
+
 Vim will compare what you type with the start of a mapped sequence.  If there
 is an incomplete match, it will get more characters until there either is a
 complete match or until there is no match at all.  Example: If you map! "qq",
@@ -521,46 +588,8 @@ the original Vi, as long as there is only one undo command in the mapped
 sequence (having two undo commands in a mapped sequence did not make sense
 in the original Vi, you would get back the text before the first undo).
 
-							*:map-special-keys*
-There are three ways to map a special key:
-1. The Vi-compatible method: Map the key code.  Often this is a sequence that
-   starts with <Esc>.  To enter a mapping like this you type ":map " and then
-   you have to type CTRL-V before hitting the function key.  Note that when
-   the key code for the key is in the termcap (the t_ options), it will
-   automatically be translated into the internal code and become the second
-   way of mapping (unless the 'k' flag is included in 'cpoptions').
-2. The second method is to use the internal code for the function key.  To
-   enter such a mapping type CTRL-K and then hit the function key, or use
-   the form "#1", "#2", .. "#9", "#0", "<Up>", "<S-Down>", "<S-F7>", etc.
-   (see table of keys |key-notation|, all keys from <Up> can be used).  The
-   first ten function keys can be defined in two ways: Just the number, like
-   "#2", and with "<F>", like "<F2>".  Both stand for function key 2.  "#0"
-   refers to function key 10, defined with option 't_f10', which may be
-   function key zero on some keyboards.  The <> form cannot be used when
-   'cpoptions' includes the '<' flag.
-3. Use the termcap entry, with the form <t_xx>, where "xx" is the name of the
-   termcap entry.  Any string entry can be used.  For example: >
-     :map <t_F3> G
-<  Maps function key 13 to "G".  This does not work if 'cpoptions' includes
-   the '<' flag.
 
-The advantage of the second and third method is that the mapping will work on
-different terminals without modification (the function key will be
-translated into the same internal code or the actual key code, no matter what
-terminal you are using.  The termcap must be correct for this to work, and you
-must use the same mappings).
-
-DETAIL: Vim first checks if a sequence from the keyboard is mapped.  If it
-isn't the terminal key codes are tried (see |terminal-options|).  If a
-terminal code is found it is replaced with the internal code.  Then the check
-for a mapping is done again (so you can map an internal code to something
-else).  What is written into the script file depends on what is recognized.
-If the terminal key code was recognized as a mapping the key code itself is
-written to the script file.  If it was recognized as a terminal code the
-internal code is written to the script file.
-
-
-Mapping ALT-keys					*:map-alt-keys*
+1.10 MAPPING ALT-KEYS					*:map-alt-keys*
 
 In the GUI Vim handles the Alt key itself, thus mapping keys with ALT should
 always work.  But in a terminal Vim gets a sequence of bytes and has to figure
@@ -600,6 +629,62 @@ UTF-8 locales.  On terminals like xterm, the "metaSendsEscape" resource can be
 toggled on the fly through the "Main Options" menu, by pressing Ctrl-LeftClick
 on the terminal; that's a good last resource in case you want to send ESC when
 using other applications but not when inside VIM.
+
+
+1.11 MAPPING AN OPERATOR				*:map-operator*
+
+An operator is used before a {motion} command.  To define your own operator
+you must create mapping that first sets the 'operatorfunc' option and then
+invoke the |g@| operator.  After the user types the {motion} command the
+specified function will be called.
+
+							*g@*
+g@{motion}		Call the function set by the 'operatorfunc' option.
+			The '[ mark is positioned at the start of the text
+			moved over by {motion}, the '] mark on the last
+			character of the text.
+			The function is called with one String argument:
+			    "line"	{motion} was |linewise|
+			    "char"	{motion} was |characterwise|
+			    "block"	{motion} was |blockwise-visual||
+			Although "block" would rarely appear, since it can
+			only result from Visual mode where "g@" is not useful.
+			{not available when compiled without the +eval
+			feature}
+
+Here is an example that counts the number of spaces with <F4>: >
+
+	nmap <silent> <F4> :set opfunc=CountSpaces<CR>g@
+	vmap <silent> <F4> :<C-U>call CountSpaces(visualmode(), 1)<CR>
+
+	function! CountSpaces(type, ...)
+	  let sel_save = &selection
+	  let &selection = "inclusive"
+	  let reg_save = @@
+
+	  if a:0  " Invoked from Visual mode, use '< and '> marks.
+	    silent exe "normal! `<" . a:type . "`>y"
+	  elseif a:type == 'line'
+	    silent exe "normal! '[V']y"
+	  elseif a:type == 'block'
+	    silent exe "normal! `[\<C-V>`]y"
+	  else
+	    silent exe "normal! `[v`]y"
+	  endif
+
+	  echomsg strlen(substitute(@@, '[^ ]', '', 'g'))
+
+	  let &selection = sel_save
+	  let @@ = reg_save
+	endfunction
+
+Note that the 'selection' option is temporarily set to "inclusive" to be able
+to yank exactly the right text by using Visual mode from the '[ to the ']
+mark.
+
+Also note that there is a separate mapping for Visual mode.  It removes the
+"'<,'>" range that ":" inserts in Visual mode and invokes the function with
+visualmode() and an extra argument.
 
 ==============================================================================
 2. Abbreviations			*abbreviations* *Abbreviations*

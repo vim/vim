@@ -3970,14 +3970,25 @@ mch_call_shell(cmd, options)
 		{
 		    /*
 		     * Check if keys have been typed, write them to the child
-		     * if there are any.  Don't do this if we are expanding
-		     * wild cards (would eat typeahead).  Don't get extra
-		     * characters when we already have one.
+		     * if there are any.
+		     * Don't do this if we are expanding wild cards (would eat
+		     * typeahead).
+		     * Don't do this when filtering and terminal is in cooked
+		     * mode, the shell command will handle the I/O.  Avoids
+		     * that a typed password is echoed for ssh or gpg command.
+		     * Don't get extra characters when we already have one.
 		     * Don't read characters unless we didn't get output for a
 		     * while, avoids that ":r !ls" eats typeahead.
 		     */
 		    len = 0;
 		    if (!(options & SHELL_EXPAND)
+			    && ((options &
+					 (SHELL_READ|SHELL_WRITE|SHELL_COOKED))
+				      != (SHELL_READ|SHELL_WRITE|SHELL_COOKED)
+#ifdef FEAT_GUI
+						    || gui.in_use
+#endif
+						    )
 			    && (ta_len > 0
 				|| (noread_cnt > 4
 				    && (len = ui_inchar(ta_buf,
