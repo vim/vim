@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Dec 12
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Dec 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -438,6 +438,16 @@ Ex command modifiers: ~
 |:noautocmd|		Do not trigger autocommand events.
 
 |:sandbox|		Execute a command in the sandbox.
+
+
+Ex command arguments: ~
+
+|++bad|			Specify what happens with characters that can't be
+			converted and illegal bytes. (code example by Yasuhiro
+			Matsumoto)
+			Also, when a conversion error occurs or illegal bytes
+			are found include the line number in the error
+			message.
 
 
 New and extended functions: ~

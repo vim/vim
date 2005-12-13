@@ -996,9 +996,10 @@ struct exarg
     int		amount;		/* number of '>' or '<' for shift command */
     int		regname;	/* register name (NUL if none) */
     int		force_bin;	/* 0, FORCE_BIN or FORCE_NOBIN */
-    int		force_ff;	/* forced 'fileformat' (index in cmd[]) */
+    int		force_ff;	/* ++ff= argument (index in cmd[]) */
 #ifdef FEAT_MBYTE
-    int		force_enc;	/* forced 'encoding' (index in cmd[]) */
+    int		force_enc;	/* ++enc= argument (index in cmd[]) */
+    int		bad_char;	/* ++bad= argument (index in cmd[]) */
 #endif
 #ifdef FEAT_USR_CMDS
     int		useridx;	/* user command index */

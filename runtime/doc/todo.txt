@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Dec 12
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Dec 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,14 +30,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Patch from Yasuhiro Matsumoto: ":e ++enc=xxx" keeps encoding for conversion
-errors and illegal bytes.  Make default to replace bad bytes/characters with
-'?' and allow for two alternatives:
-	:e ++enc=xxx ++bad=keep foo.txt
-	:e ++enc=xxx ++bad=drop foo.txt
-	:e ++enc=xxx ++bad=? foo.txt
-(patch 6 December)
-
 ml_get error with specific vimrc and lots of plugins. (Tomi Mickelsson)
 
 Win32: preserve the hidden attribute of the viminfo file.
@@ -55,6 +47,7 @@ ccomplete:
   characters, advance to the first match instead of removing the popup menu.
   If there is no match remove the selection. (Yegappan Lakshmanan)
 - Complete the longest common match instead of the first match?
+    For all kinds of completions?  Configurable?
 - !_TAG_FILE_FORMAT and it's ilk are listed in the global completions
 - When completing something that is a structure, add the "." or "->".
 - When a typedef or struct is local to a file only use it in that file?
