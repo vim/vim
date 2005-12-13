@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Dec 12
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Dec 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2545,7 +2545,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 		'encoding' is "utf-8" (or one of the other Unicode variants)
 		conversion is most likely done in a way that the reverse
 		conversion results in the same text.  When 'encoding' is not
-		"utf-8" special characters may be lost!
+		"utf-8" some non-ASCII characters may be lost!  You can use
+		the |++bad| argument to specify what is done with characters
+		that can't be converted.
 	For an empty file or a file with only ASCII characters most encodings
 	will work and the first entry of 'fileencodings' will be used (except
 	"ucs-bom", which requires the BOM to be present).  If you prefer
@@ -2555,7 +2557,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 			\ set fenc=iso-2022-jp | endif
 <	This sets 'fileencoding' to "iso-2022-jp" if the file does not contain
 	non-blank characters.
-	Note that 'fileencodings' is not used for an new file, 'fileencoding'
+	When the |++enc| argument is used then the value of 'fileencodings' is
+	not used.
+	Note that 'fileencodings' is not used for a new file, 'fileencoding'
 	is always empty then.  This means that a non-existing file may get a
 	different encoding than an empty file.
 	The special value "ucs-bom" can be used to check for a Unicode BOM

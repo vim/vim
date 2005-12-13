@@ -1013,6 +1013,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 (	motion.txt	/*(*
 )	motion.txt	/*)*
 +	motion.txt	/*+*
+++bad	editing.txt	/*++bad*
 ++bin	editing.txt	/*++bin*
 ++builtin_terms	various.txt	/*++builtin_terms*
 ++enc	editing.txt	/*++enc*
