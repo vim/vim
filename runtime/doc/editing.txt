@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.0aa.  Last change: 2005 Jul 25
+*editing.txt*   For Vim version 7.0aa.  Last change: 2005 Dec 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -398,8 +398,9 @@ The expression can contain just about anything, thus this can also be used to
 avoid the special meaning of '"', '|', '%' and '#'.
 
 							*++opt* *[++opt]*
-The [++opt] argument can be used to force the value of 'fileformat' or
-'fileencoding' to a value for one command.  The form is: >
+The [++opt] argument can be used to force the value of 'fileformat',
+'fileencoding' or 'binary' to a value for one command, and to specify the
+behavior for bad characters.  The form is: >
 	++{optname}={value}
 
 Where {optname} is one of:		*++ff* *++enc* *++bin* *++nobin*
@@ -407,6 +408,7 @@ Where {optname} is one of:		*++ff* *++enc* *++bin* *++nobin*
     enc    or  encoding	    overrides 'fileencoding'
     bin    or  binary	    sets 'binary'
     nobin  or  nobinary	    resets 'binary'
+    bad                     specifies behavior for bad characters
 
 {value} cannot contain white space.  It can be any valid value for these
 options.  Examples: >
@@ -416,12 +418,24 @@ This edits the same file again with 'fileformat' set to "unix". >
 	:w ++enc=latin1 newfile
 This writes the current buffer to "newfile" in latin1 format.
 
+There may be several ++opt arguments, separated by white space.  They must all
+appear before any |+cmd| argument.
+
+								*++bad*
+The argument of "++bad=" specifies what happens with characters that can't be
+converted and illegal bytes.  It can be one of three things:
+    ++bad=X      A single-byte character that replaces each bad character.
+    ++bad=keep   Keep bad characters without conversion.  Note that this may
+    		 result in illegal bytes in your text!
+    ++bad=drop   Remove the bad characters.
+
+The default is like "++bad=?": Replace each bad character with a question
+mark.
+
 Note that when reading, the 'fileformat' and 'fileencoding' options will be
 set to the used format.  When writing this doesn't happen, thus a next write
 will use the old value of the option.  Same for the 'binary' option.
 
-There may be several ++opt arguments, separated by white space.  They must all
-appear before any |+cmd| argument.
 
 							*+cmd* *[+cmd]*
 The [+cmd] argument can be used to position the cursor in the newly opened

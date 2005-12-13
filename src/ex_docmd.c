@@ -4549,6 +4549,11 @@ getargopt(eap)
 	arg += 8;
 	pp = &eap->force_enc;
     }
+    else if (STRNCMP(arg, "bad", 3) == 0)
+    {
+	arg += 3;
+	pp = &eap->bad_char;
+    }
 #endif
 
     if (pp == NULL || *arg != '=')
@@ -4568,11 +4573,25 @@ getargopt(eap)
 	    return FAIL;
 #ifdef FEAT_MBYTE
     }
-    else
+    else if (pp == &eap->force_enc)
     {
 	/* Make 'fileencoding' lower case. */
 	for (p = eap->cmd + eap->force_enc; *p != NUL; ++p)
 	    *p = TOLOWER_ASC(*p);
+    }
+    else
+    {
+	/* Check ++bad= argument.  Must be a single-byte character, "keep" or
+	 * "drop". */
+	p = eap->cmd + eap->bad_char;
+	if (STRICMP(p, "keep") == 0)
+	    eap->bad_char = BAD_KEEP;
+	else if (STRICMP(p, "drop") == 0)
+	    eap->bad_char = BAD_DROP;
+	else if (MB_BYTE2LEN(*p) == 1 && p[1] == NUL)
+	    eap->bad_char = *p;
+	else
+	    return FAIL;
     }
 #endif
 

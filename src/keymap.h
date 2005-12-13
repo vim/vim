@@ -7,16 +7,16 @@
  */
 
 /*
- * For MSDOS some keys produce codes larger than 0xff. They are split into two
- * chars, the first one is K_NUL (same value used in term.h).
- */
-#define K_NUL			(0xce)	/* for MSDOS: special key follows */
-
-/*
  * Keycode definitions for special keys.
  *
  * Any special key code sequences are replaced by these codes.
  */
+
+/*
+ * For MSDOS some keys produce codes larger than 0xff. They are split into two
+ * chars, the first one is K_NUL (same value used in term.h).
+ */
+#define K_NUL			(0xce)	/* for MSDOS: special key follows */
 
 /*
  * K_SPECIAL is the first byte of a special key code and is always followed by

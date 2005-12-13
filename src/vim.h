@@ -1923,4 +1923,9 @@ typedef int proftime_T;	    /* dummy for function prototypes */
 #define VGR_GLOBAL	1
 #define VGR_NOJUMP	2
 
+/* behavior for bad character, "++bad=" argument */
+#define BAD_REPLACE	'?'	/* replace it with '?' (default) */
+#define BAD_KEEP	-1	/* leave it */
+#define BAD_DROP	-2	/* erase it */
+
 #endif /* VIM__H */

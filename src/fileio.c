@@ -124,6 +124,7 @@ struct bw_info
 static int  buf_write_bytes __ARGS((struct bw_info *ip));
 
 #ifdef FEAT_MBYTE
+static linenr_T readfile_linenr __ARGS((linenr_T linecnt, char_u *p, char_u *endp));
 static int ucs2bytes __ARGS((unsigned c, char_u **pp, int flags));
 static int same_encoding __ARGS((char_u *a, char_u *b));
 static int get_fio_flags __ARGS((char_u *ptr));
@@ -137,6 +138,7 @@ static int get_mac_fio_flags __ARGS((char_u *ptr));
 # endif
 #endif
 static int move_lines __ARGS((buf_T *frombuf, buf_T *tobuf));
+
 
     void
 filemess(buf, name, s, attr)
@@ -257,10 +259,13 @@ readfile(fname, sfname, from, lines_to_skip, lines_to_read, eap, flags)
     int		file_rewind = FALSE;
 #ifdef FEAT_MBYTE
     int		can_retry;
-    int		conv_error = FALSE;	/* conversion error detected */
+    linenr_T	conv_error = 0;		/* line nr with conversion error */
+    linenr_T	illegal_byte = 0;	/* line nr with illegal byte */
     int		keep_dest_enc = FALSE;	/* don't retry when char doesn't fit
 					   in destination encoding */
-    linenr_T	illegal_byte = 0;	/* line nr with illegal byte */
+    int		bad_char_behavior = BAD_REPLACE;
+					/* BAD_KEEP, BAD_DROP or character to
+					 * replace with */
     char_u	*tmpname = NULL;	/* name of 'charconvert' output file */
     int		fio_flags = 0;
     char_u	*fenc;			/* fileencoding to use */
@@ -754,13 +759,18 @@ readfile(fname, sfname, from, lines_to_skip, lines_to_read, eap, flags)
     linecnt = curbuf->b_ml.ml_line_count;
 
 #ifdef FEAT_MBYTE
+    /* "++bad=" argument. */
+    if (eap != NULL && eap->bad_char != 0)
+	bad_char_behavior = eap->bad_char;
+
     /*
-     * Decide which 'encoding' to use first.
+     * Decide which 'encoding' to use or use first.
      */
     if (eap != NULL && eap->force_enc != 0)
     {
 	fenc = enc_canonize(eap->cmd + eap->force_enc);
 	fenc_alloced = TRUE;
+	keep_dest_enc = TRUE;
     }
     else if (curbuf->b_p_bin)
     {
@@ -864,7 +874,7 @@ retry:
 #ifdef FEAT_MBYTE
 	if (newfile)
 	    curbuf->b_p_bomb = FALSE;
-	conv_error = FALSE;
+	conv_error = 0;
 #endif
     }
 
@@ -908,7 +918,7 @@ retry:
 	    /* Conversion given with "++cc=" wasn't possible, read
 	     * without conversion. */
 	    notconverted = TRUE;
-	    conv_error = FALSE;
+	    conv_error = 0;
 	    if (fenc_alloced)
 		vim_free(fenc);
 	    fenc = (char_u *)"";
@@ -1043,11 +1053,10 @@ retry:
 	}
     }
 
-    /* Set can_retry when it's possible to rewind the file and try with
+    /* Set "can_retry" when it's possible to rewind the file and try with
      * another "fenc" value.  It's FALSE when no other "fenc" to try, reading
-     * stdin or "fenc" was specified with "++enc=". */
-    can_retry = (*fenc != NUL && !read_stdin
-				     && (eap == NULL || eap->force_enc == 0));
+     * stdin or fixed at a specific encoding. */
+    can_retry = (*fenc != NUL && !read_stdin && !keep_dest_enc);
 #endif
 
     if (!skip_read)
@@ -1229,8 +1238,30 @@ retry:
 			error = TRUE;
 #ifdef FEAT_MBYTE
 		    else if (conv_restlen > 0)
-			/* some trailing bytes unconverted */
-			conv_error = TRUE;
+		    {
+			/* Reached end-of-file but some trailing bytes could
+			 * not be converted.  Trucated file? */
+			if (conv_error == 0)
+			    conv_error = linecnt;
+			if (bad_char_behavior != BAD_DROP)
+			{
+			    fio_flags = 0;	/* don't convert this */
+			    if (bad_char_behavior == BAD_KEEP)
+			    {
+				/* Keep the trailing bytes as-is. */
+				size = conv_restlen;
+				ptr -= conv_restlen;
+			    }
+			    else
+			    {
+				/* Replace the trailing bytes with the
+				 * replacement character. */
+				size = 1;
+				*--ptr = bad_char_behavior;
+			    }
+			    conv_restlen = 0;
+			}
+		    }
 #endif
 		}
 
@@ -1349,16 +1380,25 @@ retry:
 			    == (size_t)-1 && ICONV_ERRNO != ICONV_EINVAL)
 						  || from_size > CONV_RESTLEN)
 		{
-		    if (!keep_dest_enc && can_retry)
+		    if (can_retry)
 			goto rewind_retry;
-		    if (!keep_dest_enc)
-			conv_error = TRUE;
+		    if (conv_error == 0)
+			conv_error = readfile_linenr(linecnt,
+							  ptr, (char_u *)top);
 
-		    /* Ignore a byte and try again. */
+		    /* Deal with a bad byte and continue with the next. */
 		    ++fromp;
 		    --from_size;
-		    *top++ = '?';
-		    --to_size;
+		    if (bad_char_behavior == BAD_KEEP)
+		    {
+			*top++ = *(fromp - 1);
+			--to_size;
+		    }
+		    else if (bad_char_behavior != BAD_DROP)
+		    {
+			*top++ = bad_char_behavior;
+			--to_size;
+		    }
 		}
 
 		if (from_size > 0)
@@ -1379,141 +1419,167 @@ retry:
 # ifdef WIN3264
 	    if (fio_flags & FIO_CODEPAGE)
 	    {
+		char_u	*src, *dst;
+		int	u8c;
+		WCHAR	ucs2buf[3];
+		int	ucs2len;
+		int	codepage = FIO_GET_CP(fio_flags);
+		int	bytelen;
+		int	found_bad;
+		char	replstr[2];
+
 		/*
 		 * Conversion from an MS-Windows codepage or UTF-8 to UTF-8 or
-		 * a codepage, using standard MS-Windows functions.
-		 * 1. find out how many ucs-2 characters there are.
-		 * 2. convert from 'fileencoding' to ucs-2
-		 * 3. convert from ucs-2 to 'encoding'
-		 */
-		char_u	*ucsp;
-		size_t	from_size = size;
-		int	needed;
-		char_u	*p;
-		int	u8c;
-
-		/*
-		 * 1. find out how many ucs-2 characters there are.
-		 */
-#  ifdef CP_UTF8	/* VC 4.1 doesn't define CP_UTF8 */
-		if (FIO_GET_CP(fio_flags) == CP_UTF8)
-		{
-		    int		l, flen;
-
-		    /* Handle CP_UTF8 ourselves to be able to handle trailing
-		     * bytes properly.  First find out the number of
-		     * characters and check for trailing bytes. */
-		    needed = 0;
-		    p = ptr;
-		    for (flen = from_size; flen > 0; flen -= l)
-		    {
-			l = utf_ptr2len_len(p, flen);
-			if (l > flen)			/* incomplete char */
-			{
-			    if (l > CONV_RESTLEN)
-				/* weird overlong byte sequence */
-				goto rewind_retry;
-			    mch_memmove(conv_rest, p, flen);
-			    conv_restlen = flen;
-			    from_size -= flen;
-			    break;
-			}
-			if (l == 1 && *p >= 0x80)	/* illegal byte */
-			    goto rewind_retry;
-			++needed;
-			p += l;
-		    }
-		}
-		else
-#  endif
-		{
-		    /* We can't tell if the last byte of an MBCS string is
-		     * valid and MultiByteToWideChar() returns zero if it
-		     * isn't.  Try the whole string, and if that fails, bump
-		     * the last byte into conv_rest and try again. */
-		    needed = MultiByteToWideChar(FIO_GET_CP(fio_flags),
-				 MB_ERR_INVALID_CHARS, (LPCSTR)ptr, from_size,
-								     NULL, 0);
-		    if (needed == 0)
-		    {
-			conv_rest[0] = ptr[from_size - 1];
-			conv_restlen = 1;
-			--from_size;
-			needed = MultiByteToWideChar(FIO_GET_CP(fio_flags),
-				 MB_ERR_INVALID_CHARS, (LPCSTR)ptr, from_size,
-								     NULL, 0);
-		    }
-
-		    /* If there really is a conversion error, try using another
-		     * conversion. */
-		    if (needed == 0)
-			goto rewind_retry;
-		}
-
-		/*
-		 * 2. convert from 'fileencoding' to ucs-2
+		 * a codepage, using standard MS-Windows functions.  This
+		 * requires two steps:
+		 * 1. convert from 'fileencoding' to ucs-2
+		 * 2. convert from ucs-2 to 'encoding'
 		 *
-		 * Put the result of conversion to UCS-2 at the end of the
-		 * buffer, then convert from UCS-2 to UTF-8 or "enc_codepage"
-		 * into the start of the buffer.  If there is not enough space
-		 * just fail, there is probably something wrong.
+		 * Because there may be illegal bytes AND an incomplete byte
+		 * sequence at the end, we may have to do the conversion one
+		 * character at a time to get it right.
 		 */
-		ucsp = ptr + real_size - (needed * sizeof(WCHAR));
-		if (ucsp < ptr + size)
-		    goto rewind_retry;
 
-#  ifdef CP_UTF8	/* VC 4.1 doesn't define CP_UTF8 */
-		if (FIO_GET_CP(fio_flags) == CP_UTF8)
-		{
-		    int		l, flen;
-
-		    /* Convert from utf-8 to ucs-2. */
-		    needed = 0;
-		    p = ptr;
-		    for (flen = from_size; flen > 0; flen -= l)
-		    {
-			l = utf_ptr2len_len(p, flen);
-			u8c = utf_ptr2char(p);
-			ucsp[needed * 2] = (u8c & 0xff);
-			ucsp[needed * 2 + 1] = (u8c >> 8);
-			++needed;
-			p += l;
-		    }
-		}
+		/* Replacement string for WideCharToMultiByte(). */
+		if (bad_char_behavior > 0)
+		    replstr[0] = bad_char_behavior;
 		else
-#  endif
-		    needed = MultiByteToWideChar(FIO_GET_CP(fio_flags),
-					    MB_ERR_INVALID_CHARS, (LPCSTR)ptr,
-					     from_size, (LPWSTR)ucsp, needed);
+		    replstr[0] = '?';
+		replstr[1] = NUL;
 
 		/*
-		 * 3. convert from ucs-2 to 'encoding'
+		 * Move the bytes to the end of the buffer, so that we have
+		 * room to put the result at the start.
 		 */
-		if (enc_utf8)
-		{
-		    /* From UCS-2 to UTF-8.  Cannot fail. */
-		    p = ptr;
-		    for (; needed > 0; --needed)
-		    {
-			u8c = *ucsp++;
-			u8c += (*ucsp++ << 8);
-			p += utf_char2bytes(u8c, p);
-		    }
-		    size = p - ptr;
-		}
-		else
-		{
-		    BOOL	bad = FALSE;
+		src = ptr + real_size - size;
+		mch_memmove(src, ptr, size);
 
-		    /* From UCS-2 to "enc_codepage". If the conversion uses
-		     * the default character "?", the data doesn't fit in this
-		     * encoding, so fail (unless forced). */
-		    size = WideCharToMultiByte(enc_codepage, 0,
-							(LPCWSTR)ucsp, needed,
-					    (LPSTR)ptr, real_size, "?", &bad);
-		    if (bad && !keep_dest_enc)
-			goto rewind_retry;
+		/*
+		 * Do the conversion.
+		 */
+		dst = ptr;
+		size = size;
+		while (size > 0)
+		{
+		    found_bad = FALSE;
+
+#  ifdef CP_UTF8	/* VC 4.1 doesn't define CP_UTF8 */
+		    if (codepage == CP_UTF8)
+		    {
+			/* Handle CP_UTF8 input ourselves to be able to handle
+			 * trailing bytes properly.
+			 * Get one UTF-8 character from src. */
+			bytelen = utf_ptr2len_len(src, size);
+			if (bytelen > size)
+			{
+			    /* Only got some bytes of a character.  Normally
+			     * it's put in "conv_rest", but if it's too long
+			     * deal with it as if they were illegal bytes. */
+			    if (bytelen <= CONV_RESTLEN)
+				break;
+
+			    /* weird overlong byte sequence */
+			    bytelen = size;
+			    found_bad = TRUE;
+			}
+			else
+			{
+			    u8c = utf_ptr2char(src);
+			    if (u8c > 0xffff)
+				found_bad = TRUE;
+			    ucs2buf[0] = u8c;
+			    ucs2len = 1;
+			}
+		    }
+		    else
+#  endif
+		    {
+			/* We don't know how long the byte sequence is, try
+			 * from one to three bytes. */
+			for (bytelen = 1; bytelen <= size && bytelen <= 3;
+								    ++bytelen)
+			{
+			    ucs2len = MultiByteToWideChar(codepage,
+							 MB_ERR_INVALID_CHARS,
+							 (LPCSTR)src, bytelen,
+								   ucs2buf, 3);
+			    if (ucs2len > 0)
+				break;
+			}
+			if (ucs2len == 0)
+			{
+			    /* If we have only one byte then it's probably an
+			     * incomplete byte sequence.  Otherwise discard
+			     * one byte as a bad character. */
+			    if (size == 1)
+				break;
+			    found_bad = TRUE;
+			    bytelen = 1;
+			}
+		    }
+
+		    if (!found_bad)
+		    {
+			int	i;
+
+			/* Convert "ucs2buf[ucs2len]" to 'enc' in "dst". */
+			if (enc_utf8)
+			{
+			    /* From UCS-2 to UTF-8.  Cannot fail. */
+			    for (i = 0; i < ucs2len; ++i)
+				dst += utf_char2bytes(ucs2buf[i], dst);
+			}
+			else
+			{
+			    BOOL	bad = FALSE;
+			    int		dstlen;
+
+			    /* From UCS-2 to "enc_codepage".  If the
+			     * conversion uses the default character "?",
+			     * the data doesn't fit in this encoding. */
+			    dstlen = WideCharToMultiByte(enc_codepage, 0,
+				    (LPCWSTR)ucs2buf, ucs2len,
+				    (LPSTR)dst, (src - dst),
+				    replstr, &bad);
+			    if (bad)
+				found_bad = TRUE;
+			    else
+				dst += dstlen;
+			}
+		    }
+
+		    if (found_bad)
+		    {
+			/* Deal with bytes we can't convert. */
+			if (can_retry)
+			    goto rewind_retry;
+			if (conv_error == 0)
+			    conv_error = readfile_linenr(linecnt, ptr, dst);
+			if (bad_char_behavior != BAD_DROP)
+			{
+			    if (bad_char_behavior == BAD_KEEP)
+			    {
+				mch_memmove(dst, src, bytelen);
+				dst += bytelen;
+			    }
+			    else
+				*dst++ = bad_char_behavior;
+			}
+		    }
+
+		    src += bytelen;
+		    size -= bytelen;
 		}
+
+		if (size > 0)
+		{
+		    /* An incomplete byte sequence remaining. */
+		    mch_memmove(conv_rest, src, size);
+		    conv_restlen = size;
+		}
+
+		/* The new size is equal to how much "dst" was advanced. */
+		size = dst - ptr;
 	    }
 	    else
 # endif
@@ -1628,7 +1694,13 @@ retry:
 				/* Missing leading word. */
 				if (can_retry)
 				    goto rewind_retry;
-				conv_error = TRUE;
+				if (conv_error == 0)
+				    conv_error = readfile_linenr(linecnt,
+								      ptr, p);
+				if (bad_char_behavior == BAD_DROP)
+				    continue;
+				if (bad_char_behavior != BAD_KEEP)
+				    u8c = bad_char_behavior;
 			    }
 
 			    /* found second word of double-word, get the first
@@ -1643,15 +1715,22 @@ retry:
 				u16c = *--p;
 				u16c += (*--p << 8);
 			    }
+			    u8c = 0x10000 + ((u16c & 0x3ff) << 10)
+							      + (u8c & 0x3ff);
+
 			    /* Check if the word is indeed a leading word. */
 			    if (u16c < 0xd800 || u16c > 0xdbff)
 			    {
 				if (can_retry)
 				    goto rewind_retry;
-				conv_error = TRUE;
+				if (conv_error == 0)
+				    conv_error = readfile_linenr(linecnt,
+								      ptr, p);
+				if (bad_char_behavior == BAD_DROP)
+				    continue;
+				if (bad_char_behavior != BAD_KEEP)
+				    u8c = bad_char_behavior;
 			    }
-			    u8c = 0x10000 + ((u16c & 0x3ff) << 10)
-							      + (u8c & 0x3ff);
 			}
 		    }
 		    else if (fio_flags & FIO_UCS4)
@@ -1678,6 +1757,8 @@ retry:
 			else
 			{
 			    len = utf_head_off(ptr, p);
+			    p -= len;
+			    u8c = utf_ptr2char(p);
 			    if (len == 0)
 			    {
 				/* Not a valid UTF-8 character, retry with
@@ -1685,10 +1766,14 @@ retry:
 				 * report the error. */
 				if (can_retry)
 				    goto rewind_retry;
-				conv_error = TRUE;
+				if (conv_error == 0)
+				    conv_error = readfile_linenr(linecnt,
+								      ptr, p);
+				if (bad_char_behavior == BAD_DROP)
+				    continue;
+				if (bad_char_behavior != BAD_KEEP)
+				    u8c = bad_char_behavior;
 			    }
-			    p -= len;
-			    u8c = utf_ptr2char(p);
 			}
 		    }
 		    if (enc_utf8)	/* produce UTF-8 */
@@ -1704,10 +1789,18 @@ retry:
 			    /* character doesn't fit in latin1, retry with
 			     * another fenc when possible, otherwise just
 			     * report the error. */
-			    if (can_retry && !keep_dest_enc)
+			    if (can_retry)
 				goto rewind_retry;
-			    *dest = 0xBF;
-			    conv_error = TRUE;
+			    if (conv_error == 0)
+				conv_error = readfile_linenr(linecnt, ptr, p);
+			    if (bad_char_behavior == BAD_DROP)
+				++dest;
+			    else if (bad_char_behavior == BAD_KEEP)
+				*dest = u8c;
+			    else if (eap != NULL && eap->bad_char != 0)
+				*dest = bad_char_behavior;
+			    else
+				*dest = 0xBF;
 			}
 			else
 			    *dest = u8c;
@@ -1720,63 +1813,76 @@ retry:
 		size = (long)((ptr + real_size) - dest);
 		ptr = dest;
 	    }
-	    else if (enc_utf8 && !conv_error && !curbuf->b_p_bin)
+	    else if (enc_utf8 && conv_error == 0 && !curbuf->b_p_bin)
 	    {
 		/* Reading UTF-8: Check if the bytes are valid UTF-8.
 		 * Need to start before "ptr" when part of the character was
 		 * read in the previous read() call. */
-		for (p = ptr - utf_head_off(buffer, ptr); p < ptr + size; ++p)
+		for (p = ptr - utf_head_off(buffer, ptr); ; ++p)
 		{
+		    int	 todo = (ptr + size) - p;
+		    int	 l;
+
+		    if (todo <= 0)
+			break;
 		    if (*p >= 0x80)
 		    {
-			len = utf_ptr2len(p);
 			/* A length of 1 means it's an illegal byte.  Accept
 			 * an incomplete character at the end though, the next
 			 * read() will get the next bytes, we'll check it
 			 * then. */
-			if (len == 1)
+			l = utf_ptr2len_len(p, todo);
+			if (l > todo)
 			{
-			    p += utf_byte2len(*p) - 1;
+			    /* Incomplete byte sequence, the next read()
+			     * should get them and check the bytes. */
+			    p += todo;
 			    break;
 			}
-			p += len - 1;
+			if (l == 1)
+			{
+			    /* Illegal byte.  If we can try another encoding
+			     * do that. */
+			    if (can_retry)
+				break;
+
+			    /* Remember the first linenr with an illegal byte */
+			    if (illegal_byte == 0)
+				illegal_byte = readfile_linenr(linecnt, ptr, p);
+# ifdef USE_ICONV
+			    /* When we did a conversion report an error. */
+			    if (iconv_fd != (iconv_t)-1 && conv_error == 0)
+				conv_error = readfile_linenr(linecnt, ptr, p);
+# endif
+
+			    /* Drop, keep or replace the bad byte. */
+			    if (bad_char_behavior == BAD_DROP)
+			    {
+				mch_memmove(p, p+1, todo - 1);
+				--p;
+				--size;
+			    }
+			    else if (bad_char_behavior != BAD_KEEP)
+				*p = bad_char_behavior;
+			}
+			p += l - 1;
 		    }
 		}
 		if (p < ptr + size)
 		{
 		    /* Detected a UTF-8 error. */
-		    if (can_retry)
-		    {
 rewind_retry:
-			/* Retry reading with another conversion. */
+		    /* Retry reading with another conversion. */
 # if defined(FEAT_EVAL) && defined(USE_ICONV)
-			if (*p_ccv != NUL && iconv_fd != (iconv_t)-1)
-			    /* iconv() failed, try 'charconvert' */
-			    did_iconv = TRUE;
-			else
-# endif
-			    /* use next item from 'fileencodings' */
-			    advance_fenc = TRUE;
-			file_rewind = TRUE;
-			goto retry;
-		    }
-
-		    /* There is no alternative fenc, just report the error. */
-# ifdef USE_ICONV
-		    if (iconv_fd != (iconv_t)-1)
-			conv_error = TRUE;
+		    if (*p_ccv != NUL && iconv_fd != (iconv_t)-1)
+			/* iconv() failed, try 'charconvert' */
+			did_iconv = TRUE;
 		    else
 # endif
-		    if (illegal_byte == 0)  /* Keep the first linenr */
-		    {
-			char_u		*s;
-
-			/* Estimate the line number. */
-			illegal_byte = curbuf->b_ml.ml_line_count - linecnt + 1;
-			for (s = ptr; s < p; ++s)
-			    if (*s == '\n')
-				++illegal_byte;
-		    }
+			/* use next item from 'fileencodings' */
+			advance_fenc = TRUE;
+		    file_rewind = TRUE;
+		    goto retry;
 		}
 	    }
 #endif
@@ -2159,9 +2265,10 @@ failed:
 	    }
 #endif
 #ifdef FEAT_MBYTE
-	    if (conv_error)
+	    if (conv_error != 0)
 	    {
-		STRCAT(IObuff, _("[CONVERSION ERROR]"));
+		sprintf((char *)IObuff + STRLEN(IObuff),
+		       _("[CONVERSION ERROR in line %ld]"), (long)conv_error);
 		c = TRUE;
 	    }
 	    else if (illegal_byte > 0)
@@ -2215,7 +2322,7 @@ failed:
 	/* with errors writing the file requires ":w!" */
 	if (newfile && (error
 #ifdef FEAT_MBYTE
-		    || conv_error
+		    || conv_error != 0
 #endif
 		    ))
 	    curbuf->b_p_ro = TRUE;
@@ -2296,6 +2403,30 @@ failed:
 	return FAIL;
     return OK;
 }
+
+#ifdef FEAT_MBYTE
+
+/*
+ * From the current line count and characters read after that, estimate the
+ * line number where we are now.
+ * Used for error messages that include a line number.
+ */
+    static linenr_T
+readfile_linenr(linecnt, p, endp)
+    linenr_T	linecnt;	/* line count before reading more bytes */
+    char_u	*p;		/* start of more bytes read */
+    char_u	*endp;		/* end of more bytes read */
+{
+    char_u	*s;
+    linenr_T	lnum;
+
+    lnum = curbuf->b_ml.ml_line_count - linecnt + 1;
+    for (s = p; s < endp; ++s)
+	if (*s == '\n')
+	    ++lnum;
+    return lnum;
+}
+#endif
 
 /*
  * Fill "*eap" to force the 'fileencoding' and 'fileformat' to be equal to the

@@ -2110,6 +2110,7 @@ op_colon(oap)
 /*
  * Handle the "gy" operator: call 'operatorfunc'.
  */
+/*ARGSUSED*/
     void
 op_function(oap)
     oparg_T	*oap;
