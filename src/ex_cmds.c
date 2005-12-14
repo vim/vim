@@ -1656,6 +1656,9 @@ write_viminfo(file, forceit)
     int		shortname = FALSE;	/* use 8.3 file name */
     struct stat	st_old;		/* mch_stat() of existing viminfo file */
 #endif
+#ifdef WIN3264
+    long	perm = -1;
+#endif
 
     if (no_viminfo())
 	return;
@@ -1712,6 +1715,10 @@ write_viminfo(file, forceit)
 	    msg_didany = tt;
 	    goto end;
 	}
+#endif
+#ifdef WIN3264
+	/* Get the file attributes of the existing viminfo file. */
+	perm = mch_getperm(fname);
 #endif
 
 	/*
@@ -1803,15 +1810,16 @@ write_viminfo(file, forceit)
 	    int	fd;
 
 	    /* Use mch_open() to be able to use O_NOFOLLOW and set file
-	     * protection same as original file, but strip s-bit. */
+	     * protection:
+	     * Unix: same as original file, but strip s-bit.
+	     * Others: r&w for user only. */
 #ifdef UNIX
 	    fd = mch_open((char *)tempname,
 		    O_CREAT|O_EXTRA|O_EXCL|O_WRONLY|O_NOFOLLOW,
 				       (int)((st_old.st_mode & 0777) | 0600));
 #else
 	    fd = mch_open((char *)tempname,
-		    O_CREAT|O_EXTRA|O_EXCL|O_WRONLY|O_NOFOLLOW,
-				       0600);	/* r&w for user only */
+		    O_CREAT|O_EXTRA|O_EXCL|O_WRONLY|O_NOFOLLOW, 0600);
 #endif
 	    if (fd < 0)
 		fp_out = NULL;
@@ -1866,12 +1874,21 @@ write_viminfo(file, forceit)
     if (fp_in != NULL)
     {
 	fclose(fp_in);
+
 	/*
-	 * In case of an error, don't overwrite the original viminfo file.
+	 * In case of an error keep the original viminfo file.
+	 * Otherwise rename the newly written file.
 	 */
 	if (viminfo_errcnt || vim_rename(tempname, fname) == -1)
 	    mch_remove(tempname);
+
+#ifdef WIN3264
+	/* If the viminfo file was hidden then also hide the new file. */
+	if (perm > 0 && (perm & FILE_ATTRIBUTE_HIDDEN))
+	    mch_hide(fname);
+#endif
     }
+
 end:
     vim_free(fname);
     vim_free(tempname);

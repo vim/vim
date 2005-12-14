@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Dec 13
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Dec 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -367,6 +367,9 @@ CTRL-W <Enter>		In the quickfix window: opens a new window to show the
 
 |at| and |it| text objects select a block of text between HTML or XML tags.
 
+<A-LeftMouse> ('mousemodel' "popup" or "popup-setpos")
+<A-RightMouse> ('mousemodel' "extend")
+			Make a blockwise selection. |<A-LeftMouse>|
 
 Insert mode commands: ~
 
@@ -407,6 +410,7 @@ Ex commands: ~
 Win32: The ":winpos" command now also works in the console. (Vipin Aravind)
 
 |:startreplace|		Start Replace mode. (Charles Campbell)
+|:startgreplace|	Start Virtual Replace mode.
 
 |:0file|		Removes the name of the buffer. (Charles Campbell)
 
@@ -430,6 +434,7 @@ Win32: The ":winpos" command now also works in the console. (Vipin Aravind)
 
 |:cexpr|		Read error messages from a Vim expression (Yegappan
 			Lakshmanan).
+
 
 Ex command modifiers: ~
 
@@ -901,6 +906,9 @@ actually different from the file content.  Don't set the file name, unless the
 When starting to edit a new file and the directory for the file doesn't exist
 then Vim will report "[New DIRECTORY]" instead of "[New File] to give the user
 a hint that something might be wrong.
+
+Win32: Preserve the hidden attribute of the viminfo file.
+
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*

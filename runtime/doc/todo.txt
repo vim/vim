@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Dec 13
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Dec 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,13 +30,12 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-ml_get error with specific vimrc and lots of plugins. (Tomi Mickelsson)
+Using pipes to decrypt text still doesn't work, can't get the password.
+    :set shell=/bin/sh noshelltemp
+    :%!gpg --decrypt --no-tty --passphrase-fd 2
 
-Win32: preserve the hidden attribute of the viminfo file.
-
-Add ":startgreplace" to do "gR", like ":startreplace" does "R".
-
-Alt-mousekey is currently ignored.  Use it for Visual/select block?
+When inside input() and using "CTRL-R =" causing an exception the command line
+isn't abandoned. (Yukihiro Nakadaira)
 
 When 'delcombine' is set in Select mode before a character with a combining
 char the combining char is deleted when it shouldn't. (Tony Mechelynck, Nov
