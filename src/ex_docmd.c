@@ -8503,7 +8503,7 @@ ex_normal(eap)
 }
 
 /*
- * ":startinsert" and ":startreplace"
+ * ":startinsert", ":startreplace" and ":startgreplace"
  */
     static void
 ex_startinsert(eap)
@@ -8521,19 +8521,17 @@ ex_startinsert(eap)
     if (State & INSERT)
 	return;
 
-    if (eap->forceit)
-    {
-	if (eap->cmdidx == CMD_startinsert)
-	    restart_edit = 'a';
-	else
-	    restart_edit = 'R';
-    }
+    if (eap->cmdidx == CMD_startinsert)
+	restart_edit = 'a';
+    else if (eap->cmdidx == CMD_startreplace)
+	restart_edit = 'R';
     else
+	restart_edit = 'V';
+
+    if (!eap->forceit)
     {
 	if (eap->cmdidx == CMD_startinsert)
 	    restart_edit = 'i';
-	else
-	    restart_edit = 'R';
 	curwin->w_curswant = 0;	    /* avoid MAXCOL */
     }
 }

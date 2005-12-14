@@ -2277,11 +2277,13 @@ do_mouse(oap, c, dir, count, fixindent)
 	    got_click = FALSE;
     }
 
+#ifndef FEAT_VISUAL
     /*
-     * ALT is currently ignored
+     * ALT is only used for starging/extending Visual mode.
      */
     if ((mod_mask & MOD_MASK_ALT))
 	return FALSE;
+#endif
 
     /*
      * CTRL right mouse button does CTRL-T
@@ -2313,9 +2315,12 @@ do_mouse(oap, c, dir, count, fixindent)
 	    && (!is_click
 		|| (mod_mask & MOD_MASK_MULTI_CLICK)
 		|| which_button == MOUSE_MIDDLE)
-	    && !((mod_mask & MOD_MASK_SHIFT)
+	    && !((mod_mask & (MOD_MASK_SHIFT|MOD_MASK_ALT))
 		&& mouse_model_popup()
 		&& which_button == MOUSE_LEFT)
+	    && !((mod_mask & MOD_MASK_ALT)
+		&& !mouse_model_popup()
+		&& which_button == MOUSE_RIGHT)
 	    )
 	return FALSE;
 
@@ -2413,6 +2418,7 @@ do_mouse(oap, c, dir, count, fixindent)
      * When 'mousemodel' is "popup" or "popup_setpos", translate mouse events:
      * right button up   -> pop-up menu
      * shift-left button -> right button
+     * alt-left button   -> alt-right button
      */
     if (mouse_model_popup())
     {
@@ -2504,7 +2510,8 @@ do_mouse(oap, c, dir, count, fixindent)
 	    return FALSE;
 #endif
 	}
-	if (which_button == MOUSE_LEFT && (mod_mask & MOD_MASK_SHIFT))
+	if (which_button == MOUSE_LEFT
+				&& (mod_mask & (MOD_MASK_SHIFT|MOD_MASK_ALT)))
 	{
 	    which_button = MOUSE_RIGHT;
 	    mod_mask &= ~MOD_MASK_SHIFT;
@@ -2641,6 +2648,10 @@ do_mouse(oap, c, dir, count, fixindent)
 
     if (start_visual.lnum)		/* right click in visual mode */
     {
+       /* When ALT is pressed make Visual mode blockwise. */
+       if (mod_mask & MOD_MASK_ALT)
+	   VIsual_mode = Ctrl_V;
+
 	/*
 	 * In Visual-block mode, divide the area in four, pick up the corner
 	 * that is in the quarter that the cursor is in.
@@ -2845,7 +2856,13 @@ do_mouse(oap, c, dir, count, fixindent)
 		setmouse();
 	    }
 	    if ((mod_mask & MOD_MASK_MULTI_CLICK) == MOD_MASK_2CLICK)
-		VIsual_mode = 'v';
+	    {
+		/* Double click with ALT pressed makes it blockwise. */
+		if (mod_mask & MOD_MASK_ALT)
+		    VIsual_mode = Ctrl_V;
+		else
+		    VIsual_mode = 'v';
+	    }
 	    else if ((mod_mask & MOD_MASK_MULTI_CLICK) == MOD_MASK_3CLICK)
 		VIsual_mode = 'V';
 	    else if ((mod_mask & MOD_MASK_MULTI_CLICK) == MOD_MASK_4CLICK)
@@ -2921,7 +2938,12 @@ do_mouse(oap, c, dir, count, fixindent)
 	    redraw_curbuf_later(INVERTED);	/* update the inversion */
     }
     else if (VIsual_active && !old_active)
-	VIsual_mode = 'v';
+    {
+	if (mod_mask & MOD_MASK_ALT)
+	    VIsual_mode = Ctrl_V;
+	else
+	    VIsual_mode = 'v';
+    }
 
     /* If Visual mode changed show it later. */
     if (p_smd && (VIsual_active != old_active || VIsual_mode != old_mode))
