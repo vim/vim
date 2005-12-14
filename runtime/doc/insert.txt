@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0aa.  Last change: 2005 Dec 12
+*insert.txt*    For Vim version 7.0aa.  Last change: 2005 Dec 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1271,6 +1271,13 @@ NOTE: ":append" and ":insert" don't work properly in between ":if" and
 			Note that when using this command in a function or
 			script that the replacement will only start after
 			the function or script is finished.
+			{not in Vi}
+			{not available when compiled without the +ex_extra
+			feature}
+
+							*:startgreplace*
+:startg[replace][!]	Just like |:startreplace|, but use Virtual Replace
+			mode, like with |gR|.
 			{not in Vi}
 			{not available when compiled without the +ex_extra
 			feature}
