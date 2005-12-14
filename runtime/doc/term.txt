@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 7.0aa.  Last change: 2005 Aug 27
+*term.txt*      For Vim version 7.0aa.  Last change: 2005 Dec 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -684,6 +684,7 @@ event	      position	   selection	  change  action	~
 <MiddleMouse>   yes	  if not active     no	   put
 <MiddleMouse>   yes	  if active	    no	   yank and put
 <RightMouse>    yes	start or extend     yes
+<A-RightMouse>  yes start or extend blockw. yes		      *<A-RightMouse>*
 <S-RightMouse>  yes	   no change	    yes	   "#" (2)    *<S-RightMouse>*
 <C-RightMouse>  no	   no change	    no	   "CTRL-T"
 <RightDrag>     yes	    extend	    no		      *<RightDrag>*
@@ -699,6 +700,7 @@ event	      position	   selection	  change  action	~
 <LeftRelease>   yes     start or extend (1) no	   like CTRL-O (1)
 <MiddleMouse>   no      (cannot be active)  no	   put register
 <RightMouse>    yes     start or extend	    yes	   like CTRL-O
+<A-RightMouse>  yes start or extend blockw. yes
 <S-RightMouse>  yes     (cannot be active)  yes	   "CTRL-O#" (2)
 <C-RightMouse>  no	(cannot be active)  no	   "CTRL-O CTRL-T"
 
@@ -713,12 +715,14 @@ Normal Mode:
 event	      position	   selection	  change  action	~
 	       cursor			  window		~
 <S-LeftMouse>	yes	start or extend (1) no
+<A-LeftMouse>   yes start or extend blockw. no		      *<A-LeftMouse>*
 <RightMouse>	no	popup menu	    no
 
 Insert or Replace Mode:
 event	      position	   selection	  change  action	~
 	       cursor			  window		~
 <S-LeftMouse>   yes     start or extend (1) no	   like CTRL-O (1)
+<A-LeftMouse>   yes start or extend blockw. no
 <RightMouse>    no	popup menu	    no
 
 (1) only if mouse pointer moved since press
@@ -743,6 +747,12 @@ In Normal, Visual and Select mode clicking the right mouse button causes the
 Visual area to be extended.  When 'mousemodel' is "popup", the left button has
 to be used while keeping the shift key pressed.  When clicking in a window
 which is editing another buffer, the Visual or Select mode is stopped.
+
+In Normal, Visual and Select mode clicking the right mouse button with the alt
+key pressed causes the Visual area to become blockwise.  When 'mousemodel is
+"popup" the left button has to be used with the alt key.  Note that this won't
+work on systems where the window manager uses the mouse when the alt key is
+pressed (it may move the window).
 
 							*double-click*
 Double, triple and quadruple clicks are supported when the GUI is active,

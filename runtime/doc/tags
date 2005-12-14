@@ -2480,6 +2480,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :stag	windows.txt	/*:stag*
 :star	repeat.txt	/*:star*
 :start	insert.txt	/*:start*
+:startgreplace	insert.txt	/*:startgreplace*
 :startinsert	insert.txt	/*:startinsert*
 :startreplace	insert.txt	/*:startreplace*
 :stj	tagsrch.txt	/*:stj*
@@ -2707,6 +2708,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 <<	change.txt	/*<<*
 <>	intro.txt	/*<>*
 <A-	intro.txt	/*<A-*
+<A-LeftMouse>	term.txt	/*<A-LeftMouse>*
+<A-RightMouse>	term.txt	/*<A-RightMouse>*
 <BS>	motion.txt	/*<BS>*
 <Bar>	intro.txt	/*<Bar>*
 <Bslash>	intro.txt	/*<Bslash>*
