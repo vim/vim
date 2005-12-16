@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Dec 14
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Dec 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,10 +29,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
-
-Using pipes to decrypt text still doesn't work, can't get the password.
-    :set shell=/bin/sh noshelltemp
-    :%!gpg --decrypt --no-tty --passphrase-fd 2
 
 When inside input() and using "CTRL-R =" causing an exception the command line
 isn't abandoned. (Yukihiro Nakadaira)

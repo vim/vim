@@ -820,9 +820,19 @@ main
      */
     if (params.tagname != NULL)
     {
+#if defined(HAS_SWAP_EXISTS_ACTION)
+	swap_exists_did_quit = FALSE;
+#endif
+
 	vim_snprintf((char *)IObuff, IOSIZE, "ta %s", params.tagname);
 	do_cmdline_cmd(IObuff);
 	TIME_MSG("jumping to tag");
+
+#if defined(HAS_SWAP_EXISTS_ACTION)
+	/* If the user doesn't want to edit the file then we quit here. */
+	if (swap_exists_did_quit)
+	    getout(1);
+#endif
     }
 
     /* Execute any "+", "-c" and "-S" arguments. */

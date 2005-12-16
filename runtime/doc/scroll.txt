@@ -1,4 +1,4 @@
-*scroll.txt*    For Vim version 7.0aa.  Last change: 2005 Apr 01
+*scroll.txt*    For Vim version 7.0aa.  Last change: 2005 Dec 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -153,31 +153,39 @@ to the closest character that is on the screen.  The value of 'sidescroll' is
 not used.
 
 z<Right>    or						*zl* *z<Right>*
-zl			Scroll the screen [count] characters to the left.
-			This only works when 'wrap' is off.  {not in Vi}
+zl			Move the view on the text [count] characters to the
+			right, thus scroll the text [count] characters to the
+			left.  This only works when 'wrap' is off.  {not in
+			Vi}
 
 z<Left>      or						*zh* *z<Left>*
-zh			Scroll the screen [count] characters to the right.
-			This only works when 'wrap' is off.  {not in Vi}
+zh			Move the view on the text [count] characters to the
+			left, thus scroll the text [count] characters to the
+			right.  This only works when 'wrap' is off.  {not in
+			Vi}
 
 							*zL*
-zL			Scroll the screen half a screenwidth to the left.
-			This only works when 'wrap' is off.  {not in Vi}
+zL			Move the view on the text half a screenwidth to the
+			right, thus scroll the text half a screenwidth to the
+			left.  This only works when 'wrap' is off.  {not in
+			Vi}
 
 							*zH*
-zH			Scroll the screen half a screenwidth to the right.
-			This only works when 'wrap' is off.  {not in Vi}
+zH			Move the view on the text half a screenwidth to the
+			left, thus scroll the text half a screenwidth to the
+			right.  This only works when 'wrap' is off.  {not in
+			Vi}
 
 For the following two commands the cursor is not moved in the text, only the
 text scrolls on the screen.
 
 							*zs*
-zs			Scroll the screen horizontally to position the cursor
+zs			Scroll the text horizontally to position the cursor
 			at the start (left side) of the screen.  This only
 			works when 'wrap' is off.  {not in Vi}
 
 							*ze*
-ze			Scroll the screen horizontally to position the cursor
+ze			Scroll the text horizontally to position the cursor
 			at the end (right side) of the screen.  This only
 			works when 'wrap' is off.  {not in Vi}
 

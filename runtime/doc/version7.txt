@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Dec 14
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Dec 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -646,6 +646,8 @@ is already being edited by another Vim instance, the |SwapExists| event has
 been added.  The |v:swapname|, |v:swapchoice| and |v:swapcommand| variables
 can be used, for example to use the |client-server| functionality to bring the
 other Vim to the foreground.
+When starting Vim with a "-t tag" argument, there is an existing swapfile and
+the user selects "quit" or "abort" then exit Vim.
 
 ==============================================================================
 IMPROVEMENTS						*improvements-7*
@@ -909,6 +911,10 @@ a hint that something might be wrong.
 
 Win32: Preserve the hidden attribute of the viminfo file.
 
+In Insert mode CTRL-A didn't keep the last inserted text when using CTRL-O and
+then a cursor key.  Now keep the previously inserted text if nothing is
+inserted after the CTRL-O.  Allows using CTRL-O commands to move the cursor
+without losing the last inserted text.
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*
@@ -1482,5 +1488,11 @@ When appending to to current file the "not edited" flag would be reset.
 Unix: When filtering text with an external command Vim would still read input,
 causing text typed for the command (e.g., a password) to be eaten and echoed.
 Don't read input when the terminal is in cooked mode.
+
+The Cygwin version of xxd used CR/LF line separators. (Corinna Vinschen)
+
+Unix: When filtering text through a shell command some resulting text may be
+dropped.  Now after detecting that the child has exited try reading some more
+of its output.
 
  vim:tw=78:ts=8:ft=help:norl:
