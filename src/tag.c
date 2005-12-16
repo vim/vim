@@ -2419,7 +2419,8 @@ get_tagfname(first, buf)
 					      , TRUE, found_tagfile_cb, NULL);
 	    hf_idx = 0;
 	}
-	else if (hf_idx >= tag_fnames.ga_len)
+
+	if (hf_idx >= tag_fnames.ga_len)
 	{
 	    /* Not found in 'runtimepath', use 'helpfile', if it exists and
 	     * wasn't used yet, replacing "help.txt" with "tags". */

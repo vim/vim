@@ -681,6 +681,7 @@ goto_buffer(eap, start, dir, count)
 	/* Quitting means closing the split window, nothing else. */
 	win_close(curwin, TRUE);
 	swap_exists_action = SEA_NONE;
+	swap_exists_did_quit = TRUE;
 
 #  if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
 	/* Restore the error/interrupt/exception state if not discarded by a
@@ -719,6 +720,7 @@ handle_swap_exists(old_curbuf)
 	 * buffer.  If that buffer is gone or the same as the current one,
 	 * open a new, empty buffer. */
 	swap_exists_action = SEA_NONE;	/* don't want it again */
+	swap_exists_did_quit = TRUE;
 	close_buffer(curwin, curbuf, DOBUF_UNLOAD);
 	if (!buf_valid(old_curbuf) || old_curbuf == curbuf)
 	    old_curbuf = buflist_new(NULL, NULL, 1L, BLN_CURBUF | BLN_LISTED);
@@ -4402,6 +4404,7 @@ ex_buffer_all(eap)
 		win_close(curwin, TRUE);
 		--open_wins;
 		swap_exists_action = SEA_NONE;
+		swap_exists_did_quit = TRUE;
 
 # if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
 		/* Restore the error/interrupt/exception state if not

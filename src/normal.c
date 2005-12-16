@@ -2108,7 +2108,7 @@ op_colon(oap)
 }
 
 /*
- * Handle the "gy" operator: call 'operatorfunc'.
+ * Handle the "g@" operator: call 'operatorfunc'.
  */
 /*ARGSUSED*/
     void
@@ -7724,7 +7724,7 @@ nv_g_cmd(cap)
      *	 "gu"	    Change text to lower case.
      *	 "gU"	    Change text to upper case.
      *   "g?"	    rot13 encoding
-     *   "gy"	    call 'operatorfunc'
+     *   "g@"	    call 'operatorfunc'
      */
     case 'q':
     case 'w':
@@ -7734,7 +7734,7 @@ nv_g_cmd(cap)
     case 'u':
     case 'U':
     case '?':
-    case 'y':
+    case '@':
 	nv_operator(cap);
 	break;
 

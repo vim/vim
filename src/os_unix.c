@@ -3539,7 +3539,7 @@ mch_call_shell(cmd, options)
     int		pty_slave_fd = -1;
     char	*tty_name;
 # endif
-    int		fd_toshell[2];	    /* for pipes */
+    int		fd_toshell[2];		/* for pipes */
     int		fd_fromshell[2];
     int		pipe_error = FALSE;
 # ifdef HAVE_SETENV
@@ -3548,19 +3548,21 @@ mch_call_shell(cmd, options)
     static char	envbuf_Rows[20];
     static char	envbuf_Columns[20];
 # endif
-    int		did_settmode = FALSE; /* TRUE when settmode(TMODE_RAW) called */
+    int		did_settmode = FALSE;	/* settmode(TMODE_RAW) called */
 
     out_flush();
     if (options & SHELL_COOKED)
 	settmode(TMODE_COOK);		/* set to normal mode */
 
-    /*
-     * 1: find number of arguments
-     * 2: separate them and built argv[]
-     */
     newcmd = vim_strsave(p_sh);
     if (newcmd == NULL)		/* out of memory */
 	goto error;
+
+    /*
+     * Do this loop twice:
+     * 1: find number of arguments
+     * 2: separate them and build argv[]
+     */
     for (i = 0; i < 2; ++i)
     {
 	p = newcmd;
@@ -3655,6 +3657,7 @@ mch_call_shell(cmd, options)
 # ifdef __BEOS__
 	beos_cleanup_read_thread();
 # endif
+
 	if ((pid = fork()) == -1)	/* maybe we should use vfork() */
 	{
 	    MSG_PUTS(_("\nCannot fork\n"));
@@ -3728,17 +3731,24 @@ mch_call_shell(cmd, options)
 	    {
 
 # ifdef HAVE_SETSID
-		(void)setsid();
+		/* Create our own process group, so that the child and all its
+		 * children can be kill()ed.  Don't do this when using pipes,
+		 * because stdin is not a tty, we would loose /dev/tty. */
+		if (p_stmp)
+		    (void)setsid();
 # endif
 # ifdef FEAT_GUI
-		/* push stream discipline modules */
-		if (options & SHELL_COOKED)
-		    SetupSlavePTY(pty_slave_fd);
+		if (pty_slave_fd >= 0)
+		{
+		    /* push stream discipline modules */
+		    if (options & SHELL_COOKED)
+			SetupSlavePTY(pty_slave_fd);
 #  ifdef TIOCSCTTY
-		/* try to become controlling tty (probably doesn't work,
-		 * unless run by root) */
-		ioctl(pty_slave_fd, TIOCSCTTY, (char *)NULL);
+		    /* Try to become controlling tty (probably doesn't work,
+		     * unless run by root) */
+		    ioctl(pty_slave_fd, TIOCSCTTY, (char *)NULL);
 #  endif
+		}
 # endif
 		/* Simulate to have a dumb terminal (for now) */
 # ifdef HAVE_SETENV
@@ -3895,7 +3905,7 @@ mch_call_shell(cmd, options)
 		old_State = State;
 		State = EXTERNCMD;	/* don't redraw at window resize */
 
-		if (options & SHELL_WRITE && toshell_fd >= 0)
+		if ((options & SHELL_WRITE) && toshell_fd >= 0)
 		{
 		    /* Fork a process that will write the lines to the
 		     * external program. */
@@ -3976,6 +3986,8 @@ mch_call_shell(cmd, options)
 		     * Don't do this when filtering and terminal is in cooked
 		     * mode, the shell command will handle the I/O.  Avoids
 		     * that a typed password is echoed for ssh or gpg command.
+		     * Don't get characters when the child has already
+		     * finished (wait_pid == 0).
 		     * Don't get extra characters when we already have one.
 		     * Don't read characters unless we didn't get output for a
 		     * while, avoids that ":r !ls" eats typeahead.
@@ -3989,6 +4001,7 @@ mch_call_shell(cmd, options)
 						    || gui.in_use
 #endif
 						    )
+			    && wait_pid == 0
 			    && (ta_len > 0
 				|| (noread_cnt > 4
 				    && (len = ui_inchar(ta_buf,
@@ -4207,6 +4220,11 @@ mch_call_shell(cmd, options)
 			    break;
 		    }
 
+		    /* If we already detected the child has finished break the
+		     * loop now. */
+		    if (wait_pid == pid)
+			break;
+
 		    /*
 		     * Check if the child still exists, before checking for
 		     * typed characters (otherwise we would loose typeahead).
@@ -4219,10 +4237,14 @@ mch_call_shell(cmd, options)
 		    if ((wait_pid == (pid_t)-1 && errno == ECHILD)
 			    || (wait_pid == pid && WIFEXITED(status)))
 		    {
+			/* Don't break the loop yet, try reading more
+			 * characters from "fromshell_fd" first.  When using
+			 * pipes there might still be something to read and
+			 * then we'll break the loop at the "break" above. */
 			wait_pid = pid;
-			break;
 		    }
-		    wait_pid = 0;
+		    else
+			wait_pid = 0;
 		}
 finished:
 		p_more = p_more_save;

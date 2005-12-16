@@ -1,9 +1,10 @@
 " Vim Plugin: 	Edit the file with an existing Vim if possible
 " Maintainer:	Bram Moolenaar
-" Last Change:	2005 Dec 11
+" Last Change:	2005 Dec 15
 
 " This is a plugin, drop it in your (Unix) ~/.vim/plugin or (Win32)
-" $VIM/vimfiles/plugin directory.
+" $VIM/vimfiles/plugin directory.  Or make a symbolic link, so that you
+" automatically use the latest version.
 
 " This plugin serves two purposes:
 " 1. On startup, if we were invoked with one file name argument and the file
@@ -43,13 +44,15 @@ func s:EditElsewhere(filename)
       endif
       call remote_expr(servername, "foreground()")
 
-      " Make sure the file is visible in a window (not hidden).
-      " If v:swapcommand exists and is set, send it to the server.
-      if exists("v:swapcommand")
-	let c = substitute(v:swapcommand, "'", "''", "g")
-	call remote_expr(servername, "EditExisting('" . fname_esc . "', '" . c . "')")
-      else
-	call remote_expr(servername, "EditExisting('" . fname_esc . "', '')")
+      if remote_expr(servername, "exists('*EditExisting')")
+	" Make sure the file is visible in a window (not hidden).
+	" If v:swapcommand exists and is set, send it to the server.
+	if exists("v:swapcommand")
+	  let c = substitute(v:swapcommand, "'", "''", "g")
+	  call remote_expr(servername, "EditExisting('" . fname_esc . "', '" . c . "')")
+	else
+	  call remote_expr(servername, "EditExisting('" . fname_esc . "', '')")
+	endif
       endif
 
       if !(has('vim_starting') && has('gui_running') && has('gui_win32'))

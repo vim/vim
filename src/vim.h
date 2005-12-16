@@ -1201,7 +1201,7 @@ typedef enum
 #define OP_FOLDDEL	24	/* "zd" delete folds */
 #define OP_FOLDDELREC	25	/* "zD" delete folds recursively */
 #define OP_FORMAT2	26	/* "gw" format operator, keeps cursor pos */
-#define OP_FUNCTION	27	/* "gy" call 'operatorfunc' */
+#define OP_FUNCTION	27	/* "g@" call 'operatorfunc' */
 
 /*
  * Motion types, used for operators and for yank/delete registers.
