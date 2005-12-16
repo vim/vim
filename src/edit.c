@@ -208,6 +208,7 @@ static char_u	*last_insert = NULL;	/* the text of the previous insert,
 					   K_SPECIAL and CSI are escaped */
 static int	last_insert_skip; /* nr of chars in front of previous insert */
 static int	new_insert_skip;  /* nr of chars in front of current insert */
+static int	did_restart_edit;	/* "restart_edit" when calling edit() */
 
 #ifdef FEAT_CINDENT
 static int	can_cindent;		/* may do cindenting on this line */
@@ -269,8 +270,10 @@ edit(cmdchar, startln, count)
 #endif
     int		inserted_space = FALSE;     /* just inserted a space */
     int		replaceState = REPLACE;
-    int		did_restart_edit = restart_edit;
     int		nomove = FALSE;		    /* don't move cursor on return */
+
+    /* Remember whether editing was restarted after CTRL-O. */
+    did_restart_edit = restart_edit;
 
     /* sleep before redrawing, needed for "CTRL-O :" that results in an
      * error message */
@@ -496,10 +499,10 @@ edit(cmdchar, startln, count)
     do_digraph(-1);		/* clear digraphs */
 #endif
 
-/*
- * Get the current length of the redo buffer, those characters have to be
- * skipped if we want to get to the inserted characters.
- */
+    /*
+     * Get the current length of the redo buffer, those characters have to be
+     * skipped if we want to get to the inserted characters.
+     */
     ptr = get_inserted();
     if (ptr == NULL)
 	new_insert_skip = 0;
@@ -5030,20 +5033,29 @@ stop_arrow()
  */
     static void
 stop_insert(end_insert_pos, esc)
-    pos_T    *end_insert_pos;	/* where insert ended */
-    int	    esc;		/* called by ins_esc() */
+    pos_T	*end_insert_pos;	/* where insert ended */
+    int		esc;			/* called by ins_esc() */
 {
-    int	    cc;
+    int		cc;
+    char_u	*ptr;
 
     stop_redo_ins();
     replace_flush();		/* abandon replace stack */
 
     /*
-     * save the inserted text for later redo with ^@
+     * Save the inserted text for later redo with ^@ and CTRL-A.
+     * Don't do it when "restart_edit" was set and nothing was inserted,
+     * otherwise CTRL-O w and then <Left> will clear "last_insert".
      */
-    vim_free(last_insert);
-    last_insert = get_inserted();
-    last_insert_skip = new_insert_skip;
+    ptr = get_inserted();
+    if (did_restart_edit == 0 || (ptr != NULL && STRLEN(ptr) > new_insert_skip))
+    {
+	vim_free(last_insert);
+	last_insert = ptr;
+	last_insert_skip = new_insert_skip;
+    }
+    else
+	vim_free(ptr);
 
     if (!arrow_used)
     {

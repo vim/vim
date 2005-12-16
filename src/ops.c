@@ -159,7 +159,7 @@ static char opchars[][3] =
     {'z', 'd', TRUE},	/* OP_FOLDDEL */
     {'z', 'D', TRUE},	/* OP_FOLDDELREC */
     {'g', 'w', TRUE},	/* OP_FORMAT2 */
-    {'g', 'y', FALSE},	/* OP_FUNCTION */
+    {'g', '@', FALSE},	/* OP_FUNCTION */
 };
 
 /*

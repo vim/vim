@@ -847,6 +847,8 @@ EXTERN int	cmd_silent INIT(= FALSE); /* don't echo the command line */
 EXTERN int	swap_exists_action INIT(= SEA_NONE);
 					/* For dialog when swap file already
 					 * exists. */
+EXTERN int	swap_exists_did_quit INIT(= FALSE);
+					/* Selected "quit" at the dialog. */
 #endif
 
 EXTERN char_u	*IObuff;		/* sprintf's are done in this buffer,

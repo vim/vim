@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.0aa.  Last change: 2005 Dec 10
+*change.txt*    For Vim version 7.0aa.  Last change: 2005 Dec 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -503,6 +503,8 @@ comment (starting with '"') after the ":!" command.
 			temporary file and then reads the file into the
 			buffer.  Vim uses the 'shellredir' option to redirect
 			the filter output to the temporary file.
+			However, if the 'shelltemp' option is off then pipes
+			are used when possible (on Unix).
 			When the 'R' flag is included in 'cpoptions' marks in
 			the filtered lines are deleted, unless the
 			|:keepmarks| command is used.  Example: >

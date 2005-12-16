@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	Perl
 " Maintainer:	Dan Sharp <dwsharp at hotmail dot com>
-" Last Change:  2004 Dec 06
+" Last Change:  2005 Dec 16
 " URL:		http://mywebpage.netscape.com/sharppeople/vim/ftplugin
 
 if exists("b:did_ftplugin") | finish | endif
@@ -27,7 +27,7 @@ endif
 
 " Provided by Ned Konz <ned at bike-nomad dot com>
 "---------------------------------------------
-setlocal include=\\<\\(use\\|require\\)\\>
+setlocal include=\\<\\(use\\\|require\\)\\>
 setlocal includeexpr=substitute(substitute(v:fname,'::','/','g'),'$','.pm','')
 setlocal define=[^A-Za-z_]
 

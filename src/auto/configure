@@ -1009,7 +1009,7 @@ gives unlimited permission to copy, distribute and modify it.
 _ACEOF
   exit 0
 fi
-exec 5>auto/config.log
+exec 5>config.log
 cat >&5 <<_ACEOF
 This file contains any messages produced by compilers while
 running configure, to aid debugging if configure makes a mistake.
@@ -15455,7 +15455,7 @@ exec 6>&1
 # Open the log real soon, to keep \$[0] and so on meaningful, and to
 # report actual input values of CONFIG_FILES etc. instead of their
 # values after options handling.  Logging --version etc. is OK.
-exec 5>>auto/config.log
+exec 5>>config.log
 {
   echo
   sed 'h;s/./-/g;s/^.../## /;s/...$/ ##/;p;x;p;x' <<_ASBOX
@@ -16285,7 +16285,7 @@ if test "$no_create" != yes; then
     ac_config_status_args="$ac_config_status_args --quiet"
   exec 5>/dev/null
   $SHELL $CONFIG_STATUS $ac_config_status_args || ac_cs_success=false
-  exec 5>>auto/config.log
+  exec 5>>config.log
   # Use ||, not &&, to avoid exiting from the if with $? = 1, which
   # would make configure fail if this is the last instruction.
   $ac_cs_success || { (exit 1); exit 1; }

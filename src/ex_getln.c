@@ -1098,6 +1098,15 @@ getcmdline(firstc, count, indent)
 			save_cmdline(&save_ccline);
 			c = get_expr_register();
 			restore_cmdline(&save_ccline);
+
+			/* When there was a serious error abort getting the
+			 * command line. */
+			if (aborting())
+			{
+			    gotesc = TRUE;  /* will free ccline.cmdbuff after
+					       putting it in history */
+			    goto returncmd; /* back to cmd mode */
+			}
 		    }
 		}
 #endif
