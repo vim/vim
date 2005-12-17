@@ -14,7 +14,7 @@ be fine for most people.
 
 Contents:
 1. MS-DOS
-2. Win32 (Windows NT and Windows 95)
+2. Win32 (Windows XP/NT and Windows 95/98)
 3. Windows NT with OpenNT
 4. Windows 3.1
 5. Using Mingw
@@ -66,7 +66,7 @@ If you get all kinds of strange error messages when compiling, try adding
 changing the file format from "unix" to "dos".
 
 
-2. Win32 (Windows NT and Windows 95)
+2. Win32 (Windows NT/XP and Windows 95/98)
 ====================================
 
 Summary:

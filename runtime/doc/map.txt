@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.0aa.  Last change: 2005 Dec 12
+*map.txt*       For Vim version 7.0aa.  Last change: 2005 Dec 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -596,7 +596,7 @@ always work.  But in a terminal Vim gets a sequence of bytes and has to figure
 out whether ALT was pressed or not.
 
 By default Vim assumes that pressing the ALT key sets the 8th bit of a typed
-character.  Most decent terminals work that way, such as xterm, aterm and
+character.  Most decent terminals can work that way, such as xterm, aterm and
 rxvt.  If your <A-k> mappings don't work it might be that the terminal is
 prefixing the character with an ESC character.  But you can just as well type
 ESC before a character, thus Vim doesn't know what happened (except for
@@ -604,8 +604,9 @@ checking the delay between characters, which is not reliable).
 
 As of this writing, some mainstream terminals like gnome-terminal and konsole
 use the ESC prefix.  There doesn't appear a way to have them use the 8th bit
-instead.  Xterm, aterm and rxvt should work well by default, unless you tweak
-resources like "metaSendsEscape", "eightBitInput" and "eightBitOutput".
+instead.  Xterm should work well by default.  Aterm and rxvt should work well
+when started with the "--meta8" argument.  You can also tweak resources like
+"metaSendsEscape", "eightBitInput" and "eightBitOutput".
 
 On the Linux console, this behavior can be toggled with the "setmetamode"
 command.  Bear in mind that not using an ESC prefix could get you in trouble
