@@ -1,4 +1,4 @@
-*debug.txt*     For Vim version 7.0aa.  Last change: 2005 Sep 01
+*debug.txt*     For Vim version 7.0aa.  Last change: 2005 Dec 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -7,6 +7,7 @@
 Debugging Vim						*debug-vim*
 
 This is for debugging Vim itself, when it doesn't work properly.
+For debugging Vim scripts, functions, etc. see |debug-scripts|
 
 1. Location of a crash, using gcc and gdb	|debug-gcc|
 2. Windows Bug Reporting               		|debug-win32|
@@ -61,9 +62,9 @@ This includes the WinDbg debugger.
 If you have Visual Studio, use that instead of the VC Toolkit
 and WinDbg.
 
-
-(No idea what to do if your binary was built with the Borland or Cygwin
-compilers. Sorry.)
+For other compilers, you should always use the corresponding debugger: TD for
+a Vim executable compiled with the Borland compiler; gdb (see above
+|debug-gcc|) for the Cygwin and MinGW compilers.
 
 =========================================================================
  vim:tw=78:ts=8:ft=help:norl:

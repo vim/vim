@@ -1098,21 +1098,22 @@ getcmdline(firstc, count, indent)
 			save_cmdline(&save_ccline);
 			c = get_expr_register();
 			restore_cmdline(&save_ccline);
-
-			/* When there was a serious error abort getting the
-			 * command line. */
-			if (aborting())
-			{
-			    gotesc = TRUE;  /* will free ccline.cmdbuff after
-					       putting it in history */
-			    goto returncmd; /* back to cmd mode */
-			}
 		    }
 		}
 #endif
 		if (c != ESC)	    /* use ESC to cancel inserting register */
 		{
 		    cmdline_paste(c, i == Ctrl_R);
+
+		    /* When there was a serious error abort getting the
+		     * command line. */
+		    if (aborting())
+		    {
+			gotesc = TRUE;  /* will free ccline.cmdbuff after
+					   putting it in history */
+			goto returncmd; /* back to cmd mode */
+		    }
+
 		    KeyTyped = FALSE;	/* Don't do p_wc completion. */
 #ifdef FEAT_EVAL
 		    if (new_cmdpos >= 0)
