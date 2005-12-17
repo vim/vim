@@ -7811,7 +7811,7 @@ hl_combine_attr(char_attr, prim_attr)
 	new_en.ae_attr |= prim_attr;
     else
     {
-	spell_aep = syn_cterm_attr2entry(prim_attr);
+	spell_aep = syn_term_attr2entry(prim_attr);
 	if (spell_aep != NULL)
 	{
 	    new_en.ae_attr |= spell_aep->ae_attr;

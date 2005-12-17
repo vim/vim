@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Dec 16
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Dec 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,9 +29,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
-
-When inside input() and using "CTRL-R =" causing an exception the command line
-isn't abandoned. (Yukihiro Nakadaira)
 
 When 'delcombine' is set in Select mode before a character with a combining
 char the combining char is deleted when it shouldn't. (Tony Mechelynck, Nov
