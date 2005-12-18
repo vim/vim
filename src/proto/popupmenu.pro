@@ -5,4 +5,5 @@ void pum_set_selected __ARGS((int n));
 void pum_undisplay __ARGS((void));
 void pum_clear __ARGS((void));
 int pum_visible __ARGS((void));
+int pum_get_height __ARGS((void));
 /* vim: set ft=c : */

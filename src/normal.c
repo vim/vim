@@ -6514,7 +6514,7 @@ nv_replace(cap)
 #ifdef FEAT_MBYTE
 	(void)del_chars(cap->count1, FALSE);	/* delete the characters */
 #else
-	(void)del_bytes(cap->count1, FALSE);	/* delete the characters */
+	(void)del_bytes(cap->count1, FALSE, FALSE); /* delete the characters */
 #endif
 	stuffcharReadbuff('\r');
 	stuffcharReadbuff(ESC);
