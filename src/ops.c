@@ -1843,7 +1843,8 @@ op_delete(oap)
 		    curwin->w_cursor.coladd = 0;
 	    }
 #endif
-	    (void)del_bytes((long)n, restart_edit == NUL && !virtual_op);
+	    (void)del_bytes((long)n, restart_edit == NUL && !virtual_op,
+				oap->op_type == OP_DELETE && !oap->is_VIsual);
 	}
 	else				/* delete characters between lines */
 	{
@@ -1863,7 +1864,8 @@ op_delete(oap)
 	    /* delete from start of line until op_end */
 	    curwin->w_cursor.col = 0;
 	    (void)del_bytes((long)(oap->end.col + 1 - !oap->inclusive),
-				    restart_edit == NUL && !virtual_op);
+					   restart_edit == NUL && !virtual_op,
+				oap->op_type == OP_DELETE && !oap->is_VIsual);
 	    curwin->w_cursor = curpos;		/* restore curwin->w_cursor */
 
 	    (void)do_join(FALSE);
@@ -4509,7 +4511,7 @@ format_lines(line_count)
 		if (line_count < 0 && u_save_cursor() == FAIL)
 			break;
 #ifdef FEAT_COMMENTS
-		(void)del_bytes((long)next_leader_len, FALSE);
+		(void)del_bytes((long)next_leader_len, FALSE, FALSE);
 		if (next_leader_len > 0)
 		    mark_col_adjust(curwin->w_cursor.lnum, (colnr_T)0, 0L,
 						      (long)-next_leader_len);

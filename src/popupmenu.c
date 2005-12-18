@@ -237,12 +237,28 @@ pum_set_selected(n)
 
     if (pum_selected >= 0)
     {
-	if (pum_first > pum_selected)
-	    /* scroll down */
-	    pum_first = pum_selected;
-	else if (pum_first < pum_selected - pum_height + 1)
-	    /* scroll up */
-	    pum_first = pum_selected - pum_height + 1;
+	if (pum_first > pum_selected - 4)
+	{
+	    /* scroll down; when we did a jump it's probably a PageUp then
+	     * scroll to put the selected entry at the bottom */
+	    if (pum_first > pum_selected - 2)
+	    {
+		pum_first = pum_selected - pum_height + 1;
+		if (pum_first < 0)
+		    pum_first = 0;
+	    }
+	    else
+		pum_first = pum_selected;
+	}
+	else if (pum_first < pum_selected - pum_height + 5)
+	{
+	    /* scroll up; when we did a jump it's probably a PageDown then
+	     * scroll to put the selected entry at the top */
+	    if (pum_first < pum_selected - pum_height + 1 + 2)
+		pum_first = pum_selected;
+	    else
+		pum_first = pum_selected - pum_height + 1;
+	}
 
 	if (pum_height > 6)
 	{
@@ -296,6 +312,16 @@ pum_clear()
 pum_visible()
 {
     return pum_array != NULL;
+}
+
+/*
+ * Return the height of the popup menu, the number of entries visible.
+ * Only valid when pum_visible() returns TRUE!
+ */
+    int
+pum_get_height()
+{
+    return pum_height;
 }
 
 #endif

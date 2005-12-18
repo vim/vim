@@ -2110,7 +2110,7 @@ del_char(fixpos)
 	return del_chars(1L, fixpos);
     }
 #endif
-    return del_bytes(1L, fixpos);
+    return del_bytes(1L, fixpos, TRUE);
 }
 
 #if defined(FEAT_MBYTE) || defined(PROTO)
@@ -2134,7 +2134,7 @@ del_chars(count, fixpos)
 	bytes += l;
 	p += l;
     }
-    return del_bytes(bytes, fixpos);
+    return del_bytes(bytes, fixpos, TRUE);
 }
 #endif
 
@@ -2146,9 +2146,10 @@ del_chars(count, fixpos)
  * return FAIL for failure, OK otherwise
  */
     int
-del_bytes(count, fixpos)
+del_bytes(count, fixpos, use_delcombine)
     long	count;
     int		fixpos;
+    int		use_delcombine;	    /* 'delcombine' option applies */
 {
     char_u	*oldp, *newp;
     colnr_T	oldlen;
@@ -2169,7 +2170,8 @@ del_bytes(count, fixpos)
 #ifdef FEAT_MBYTE
     /* If 'delcombine' is set and deleting (less than) one character, only
      * delete the last combining character. */
-    if (p_deco && enc_utf8 && utfc_ptr2len(oldp + col) >= count)
+    if (p_deco && use_delcombine && enc_utf8
+					 && utfc_ptr2len(oldp + col) >= count)
     {
 	int	c1, c2;
 	int	n;

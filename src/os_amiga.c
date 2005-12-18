@@ -139,8 +139,7 @@ mch_inchar(buf, maxlen, time, tb_change_cnt)
 	if (WaitForChar(raw_in, p_ut * 1000L) == 0)
 	{
 #ifdef FEAT_AUTOCMD
-	    if (!did_cursorhold && has_cursorhold()
-			    && get_real_state() == NORMAL_BUSY && maxlen >= 3)
+	    if (trigger_cursorhold() && maxlen >= 3)
 	    {
 		buf[0] = K_SPECIAL;
 		buf[1] = KS_EXTRA;

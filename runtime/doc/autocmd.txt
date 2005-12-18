@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.0aa.  Last change: 2005 Dec 11
+*autocmd.txt*   For Vim version 7.0aa.  Last change: 2005 Dec 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -447,6 +447,8 @@ CursorHold			When the user doesn't press a key for the time
 				make some coffee. :)  See |CursorHold-example|
 				for previewing tags.
 				This event is only triggered in Normal mode.
+				While recording the CursorHold event is not
+				triggered. |q|
 				Note: Interactive commands cannot be used for
 				this event.  There is no hit-enter prompt,
 				the screen is updated directly (when needed).

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Dec 17
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Dec 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,10 +30,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-When 'delcombine' is set in Select mode before a character with a combining
-char the combining char is deleted when it shouldn't. (Tony Mechelynck, Nov
-27)
-
 ccomplete:
 - When an option is set: In completion mode and the user types (identifier)
   characters, advance to the first match instead of removing the popup menu.
@@ -41,10 +37,11 @@ ccomplete:
 - Complete the longest common match instead of the first match?
     For all kinds of completions?  Configurable?
 - !_TAG_FILE_FORMAT and it's ilk are listed in the global completions
-- When completing something that is a structure, add the "." or "->".
-- When a typedef or struct is local to a file only use it in that file?
+    Can't reproduce it right now...
 - Window resize when poup is displayed
-- page-up / page-down
+- When completing something that is a structure, add the "." or "->" right
+  away.  How to figure out if it's a pointer or not?
+- When a typedef or struct is local to a file only use it in that file?
 
 spelling:
 - Use KEEPCASE instead of "KEP".  It applies to the word including affixes

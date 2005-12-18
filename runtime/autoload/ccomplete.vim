@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	C
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Oct 06
+" Last Change:	2005 Dec 18
 
 
 " This function is used for the 'omnifunc' option.
@@ -87,7 +87,7 @@ function! ccomplete#Complete(findstart, base)
       if diclist[i]['kind'] == 'v'
 	let line = diclist[i]['cmd']
 	if line[0] == '/' && line[1] == '^'
-	  let col = match(line, items[0])
+	  let col = match(line, '\<' . items[0] . '\>')
 	  call extend(res, s:Nextitem(strpart(line, 2, col - 2), items[1:]))
 	endif
       endif

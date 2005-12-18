@@ -121,7 +121,9 @@ static buf_T *ins_compl_next_buf __ARGS((buf_T *buf, int flag));
 static int  ins_compl_get_exp __ARGS((pos_T *ini, int dir));
 static void ins_compl_delete __ARGS((void));
 static void ins_compl_insert __ARGS((void));
-static int  ins_compl_next __ARGS((int allow_get_expansion));
+static int  ins_compl_next __ARGS((int allow_get_expansion, int count));
+static int  ins_compl_key2dir __ARGS((int c));
+static int  ins_compl_key2count __ARGS((int c));
 static int  ins_complete __ARGS((int c));
 static int  quote_meta __ARGS((char_u *dest, char_u *str, int len));
 #endif /* FEAT_INS_EXPAND */
@@ -1043,6 +1045,8 @@ doESCkey:
 	case K_S_UP:	/* <S-Up> */
 	case K_PAGEUP:
 	case K_KPAGEUP:
+	    if (pum_visible())
+		goto docomplete;
 	    ins_pageup();
 	    break;
 
@@ -1056,6 +1060,8 @@ doESCkey:
 	case K_S_DOWN:	/* <S-Down> */
 	case K_PAGEDOWN:
 	case K_KPAGEDOWN:
+	    if (pum_visible())
+		goto docomplete;
 	    ins_pagedown();
 	    break;
 
@@ -1817,6 +1823,11 @@ vim_is_ctrl_x_key(c)
 {
     /* Always allow ^R - let it's results then be checked */
     if (c == Ctrl_R)
+	return TRUE;
+
+    /* Accept <PageUp> and <PageDown> if the popup menu is visible. */
+    if (pum_visible() && (c == K_PAGEUP || c == K_KPAGEUP || c == K_S_UP
+		     || c == K_PAGEDOWN || c == K_KPAGEDOWN || c == K_S_DOWN))
 	return TRUE;
 
     switch (ctrl_x_mode)
@@ -3272,11 +3283,14 @@ ins_compl_insert()
  * calls this function with "allow_get_expansion" FALSE.
  */
     static int
-ins_compl_next(allow_get_expansion)
+ins_compl_next(allow_get_expansion, count)
     int	    allow_get_expansion;
+    int	    count;		/* repeat completion this many times; should
+				   be at least 1 */
 {
     int	    num_matches = -1;
     int	    i;
+    int	    todo = count;
 
     if (allow_get_expansion)
     {
@@ -3284,24 +3298,41 @@ ins_compl_next(allow_get_expansion)
 	ins_compl_delete();
     }
     compl_pending = FALSE;
-    if (compl_shows_dir == FORWARD && compl_shown_match->cp_next != NULL)
-	compl_shown_match = compl_shown_match->cp_next;
-    else if (compl_shows_dir == BACKWARD && compl_shown_match->cp_prev != NULL)
-	compl_shown_match = compl_shown_match->cp_prev;
-    else
+
+    /* Repeat this for when <PageUp> or <PageDown> is typed.  But don't wrap
+     * around. */
+    while (--todo >= 0)
     {
-	compl_pending = TRUE;
-	if (allow_get_expansion)
+	if (compl_shows_dir == FORWARD && compl_shown_match->cp_next != NULL)
 	{
-	    num_matches = ins_compl_get_exp(&compl_startpos, compl_direction);
-	    if (compl_pending)
-	    {
-		if (compl_direction == compl_shows_dir)
-		    compl_shown_match = compl_curr_match;
-	    }
+	    compl_shown_match = compl_shown_match->cp_next;
+	    if (compl_shown_match->cp_next != NULL
+			   && compl_shown_match->cp_next == compl_first_match)
+		break;
+	}
+	else if (compl_shows_dir == BACKWARD
+					&& compl_shown_match->cp_prev != NULL)
+	{
+	    compl_shown_match = compl_shown_match->cp_prev;
+	    if (compl_shown_match == compl_first_match)
+		break;
 	}
 	else
-	    return -1;
+	{
+	    compl_pending = TRUE;
+	    if (allow_get_expansion)
+	    {
+		num_matches = ins_compl_get_exp(&compl_startpos,
+							     compl_direction);
+		if (compl_pending)
+		{
+		    if (compl_direction == compl_shows_dir)
+			compl_shown_match = compl_curr_match;
+		}
+	    }
+	    else
+		return -1;
+	}
     }
 
     /* Insert the text of the new completion */
@@ -3376,17 +3407,49 @@ ins_compl_check_keys(frequency)
 	if (vim_is_ctrl_x_key(c) && c != Ctrl_X && c != Ctrl_R)
 	{
 	    c = safe_vgetc();	/* Eat the character */
-	    if (c == Ctrl_P || c == Ctrl_L)
-		compl_shows_dir = BACKWARD;
-	    else
-		compl_shows_dir = FORWARD;
-	    (void)ins_compl_next(FALSE);
+	    compl_shows_dir = ins_compl_key2dir(c);
+	    (void)ins_compl_next(FALSE, ins_compl_key2count(c));
 	}
 	else if (c != Ctrl_R)
 	    compl_interrupted = TRUE;
     }
     if (compl_pending && !got_int)
-	(void)ins_compl_next(FALSE);
+	(void)ins_compl_next(FALSE, 1);
+}
+
+/*
+ * Decide the direction of Insert mode complete from the key typed.
+ * Returns BACKWARD or FORWARD.
+ */
+    static int
+ins_compl_key2dir(c)
+    int		c;
+{
+    if (c == Ctrl_P || c == Ctrl_L || (pum_visible()
+			 && (c == K_PAGEUP || c == K_KPAGEUP || c == K_S_UP)))
+	return BACKWARD;
+    return FORWARD;
+}
+
+/*
+ * Decide the number of completions to move forward.
+ * Returns 1 for most keys, height of the popup menu for page-up/down keys.
+ */
+    static int
+ins_compl_key2count(c)
+    int		c;
+{
+    int		h;
+
+    if (pum_visible() && (c == K_PAGEUP || c == K_KPAGEUP || c == K_S_UP
+	    || c == K_PAGEDOWN || c == K_KPAGEDOWN || c == K_S_DOWN))
+    {
+	h = pum_get_height();
+	if (h > 3)
+	    h -= 2; /* keep some context */
+	return h;
+    }
+    return 1;
 }
 
 /*
@@ -3403,10 +3466,7 @@ ins_complete(c)
     colnr_T	curs_col;	    /* cursor column */
     int		n;
 
-    if (c == Ctrl_P || c == Ctrl_L)
-	compl_direction = BACKWARD;
-    else
-	compl_direction = FORWARD;
+    compl_direction = ins_compl_key2dir(c);
     if (!compl_started)
     {
 	/* First time we hit ^N or ^P (in a row, I mean) */
@@ -3783,7 +3843,7 @@ ins_complete(c)
     /*
      * Find next match.
      */
-    n = ins_compl_next(TRUE);
+    n = ins_compl_next(TRUE, ins_compl_key2count(c));
 
     /* may undisplay the popup menu */
     ins_compl_upd_pum();

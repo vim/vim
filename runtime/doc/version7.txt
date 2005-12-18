@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Dec 17
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Dec 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1498,5 +1498,12 @@ of its output.
 When inside input(), using "CTRL-R =" and the expression throws an exception
 the command line was not abandoned but it wasn't used either.  Now abandon
 typing the command line.
+
+'delcombine' was also used in Visual and Select mode and for commands like
+"cl".  That was illogical and has been disabled.
+
+When recording while a CursorHold autocommand was defined special keys would
+appear in the register.  Now the CursorHold event is not triggered while
+recording.
 
  vim:tw=78:ts=8:ft=help:norl:
