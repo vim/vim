@@ -2653,8 +2653,7 @@ gui_wait_for_chars(wtime)
     if (gui_mch_wait_for_chars(p_ut) == OK)
 	retval = OK;
 #ifdef FEAT_AUTOCMD
-    else if (!did_cursorhold && has_cursorhold()
-					   && get_real_state() == NORMAL_BUSY)
+    else if (trigger_cursorhold())
     {
 	char_u	buf[3];
 
@@ -4639,7 +4638,7 @@ gui_do_findrepl(flags, find_text, repl_text, down)
 			u_sync();
 
 		    del_bytes((long)(regmatch.endp[0] - regmatch.startp[0]),
-								       FALSE);
+								FALSE, FALSE);
 		    ins_str(repl_text);
 		}
 	    }

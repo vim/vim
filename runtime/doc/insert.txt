@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0aa.  Last change: 2005 Dec 14
+*insert.txt*    For Vim version 7.0aa.  Last change: 2005 Dec 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -965,6 +965,8 @@ While the menu is displayed these keys have a special meaning:
 <CR> and <Enter>: Accept the currently selected match
 <Up>:             Select the previous match, as if CTRL-P was used
 <Down>:           Select the next match, as if CTRL-N was used
+<PageUp>:	  Select a match several entries back
+<PageDown>:	  Select a match several entries further
 
 The colors of the menu can be changed with these highlight groups:
 Pmenu		normal item  |hl-Pmenu|

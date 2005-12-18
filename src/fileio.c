@@ -7483,6 +7483,8 @@ au_event_restore(old_ei)
  * :autocmd bufleave	     *		set tw=79 nosmartindent ic infercase
  *
  * :autocmd * *.c		show all autocommands for *.c files.
+ *
+ * Mostly a {group} argument can optionally appear before <event>.
  */
     void
 do_autocmd(arg, forceit)
@@ -8168,10 +8170,25 @@ apply_autocmds_retval(event, fname, fname_io, force, buf, retval)
 }
 
 #if defined(FEAT_AUTOCMD) || defined(PROTO)
+/*
+ * Return TRUE when there is a CursorHold autocommand defined.
+ */
     int
 has_cursorhold()
 {
     return (first_autopat[(int)EVENT_CURSORHOLD] != NULL);
+}
+
+/*
+ * Return TRUE if the CursorHold event can be triggered.
+ */
+    int
+trigger_cursorhold()
+{
+    return (!did_cursorhold
+	    && has_cursorhold()
+	    && !Recording
+	    && get_real_state() == NORMAL_BUSY);
 }
 #endif
 
