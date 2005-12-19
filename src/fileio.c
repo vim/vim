@@ -761,7 +761,13 @@ readfile(fname, sfname, from, lines_to_skip, lines_to_read, eap, flags)
 #ifdef FEAT_MBYTE
     /* "++bad=" argument. */
     if (eap != NULL && eap->bad_char != 0)
+    {
 	bad_char_behavior = eap->bad_char;
+	if (newfile)
+	    curbuf->b_bad_char = eap->bad_char;
+    }
+    else
+	curbuf->b_bad_char = 0;
 
     /*
      * Decide which 'encoding' to use or use first.
@@ -2429,8 +2435,8 @@ readfile_linenr(linecnt, p, endp)
 #endif
 
 /*
- * Fill "*eap" to force the 'fileencoding' and 'fileformat' to be equal to the
- * buffer "buf".  Used for calling readfile().
+ * Fill "*eap" to force the 'fileencoding', 'fileformat' and 'binary to be
+ * equal to the buffer "buf".  Used for calling readfile().
  * Returns OK or FAIL.
  */
     int
@@ -2449,10 +2455,14 @@ prep_exarg(eap, buf)
 #ifdef FEAT_MBYTE
     sprintf((char *)eap->cmd, "e ++ff=%s ++enc=%s", buf->b_p_ff, buf->b_p_fenc);
     eap->force_enc = 14 + (int)STRLEN(buf->b_p_ff);
+    eap->bad_char = buf->b_bad_char;
 #else
     sprintf((char *)eap->cmd, "e ++ff=%s", buf->b_p_ff);
 #endif
     eap->force_ff = 7;
+
+    eap->force_bin = buf->b_p_bin ? FORCE_BIN : FORCE_NOBIN;
+    eap->forceit = FALSE;
     return OK;
 }
 
@@ -8817,42 +8827,83 @@ get_event_name(xp, idx)
 #endif	/* FEAT_CMDL_COMPL */
 
 /*
- * Return TRUE if an autocommand is defined for "event" and "pattern".
- * "pattern" can be NULL to accept any pattern. Buffer-local patterns
- * <buffer> or <buffer=N> are accepted.
- * Used for exists("#Event#pat")
+ * Return TRUE if an autocommand is defined for a group, event and
+ * pattern:  The group can be omitted to accept any group. "event" and "pattern"
+ * can be NULL to accept any event and pattern. "pattern" can be NULL to accept
+ * any pattern. Buffer-local patterns <buffer> or <buffer=N> are accepted.
+ * Used for:
+ *	exists("#Group") or
+ *	exists("#Group#Event") or
+ *	exists("#Group#Event#pat") or
+ *	exists("#Event") or
+ *	exists("#Event#pat")
  */
     int
-au_exists(name, name_end, pattern)
-    char_u	*name;
-    char_u	*name_end;
-    char_u	*pattern;
+au_exists(arg)
+    char_u	*arg;
 {
+    char_u	*arg_save;
+    char_u	*pattern = NULL;
     char_u	*event_name;
     char_u	*p;
     EVENT_T	event;
     AutoPat	*ap;
     buf_T	*buflocal_buf = NULL;
+    int		group;
+    int		retval = FALSE;
+
+    /* Make a copy so that we can change the '#' to a NUL. */
+    arg_save = vim_strsave(arg);
+    if (arg_save == NULL)
+	return FALSE;
+    p = vim_strchr(arg, '#');
+    if (p != NULL)
+	*p++ = NUL;
+
+    /* First, look for an autocmd group name */
+    group = au_find_group(arg_save);
+    if (group == AUGROUP_ERROR)
+    {
+	/* Didn't match a group name, assume the first argument is an event. */
+	group = AUGROUP_ALL;
+	event_name = arg_save;
+    }
+    else
+    {
+	if (p == NULL)
+	{
+	    /* "Group": group name is present and it's recognized */
+	    retval = TRUE;
+	    goto theend;
+	}
+
+	/* Must be "Group#Event" or "Group#Event#pat". */
+	event_name = p;
+	p = vim_strchr(event_name, '#');
+	if (p != NULL)
+	    *p++ = NUL;	    /* "Group#Event#pat" */
+    }
+
+    pattern = p;	    /* "pattern" is NULL when there is no pattern */
 
     /* find the index (enum) for the event name */
-    event_name = vim_strnsave(name, (int)(name_end - name));
-    if (event_name == NULL)
-	return FALSE;
     event = event_name2nr(event_name, &p);
-    vim_free(event_name);
 
     /* return FALSE if the event name is not recognized */
-    if (event == NUM_EVENTS)	    /* unknown event name */
-	return FALSE;
+    if (event == NUM_EVENTS)
+	goto theend;
 
     /* Find the first autocommand for this event.
      * If there isn't any, return FALSE;
      * If there is one and no pattern given, return TRUE; */
     ap = first_autopat[(int)event];
     if (ap == NULL)
-	return FALSE;
+	goto theend;
     if (pattern == NULL)
-	return TRUE;
+    {
+	retval = TRUE;
+	goto theend;
+    }
 
     /* if pattern is "<buffer>", special handling is needed which uses curbuf */
     /* for pattern "<buffer=N>, fnamecmp() will work fine */
@@ -8864,12 +8915,18 @@ au_exists(name, name_end, pattern)
 	/* only use a pattern when it has not been removed and has commands. */
 	/* For buffer-local autocommands, fnamecmp() works fine. */
 	if (ap->pat != NULL && ap->cmds != NULL
+	    && (group == AUGROUP_ALL || ap->group == group)
 	    && (buflocal_buf == NULL
 		 ? fnamecmp(ap->pat, pattern) == 0
 		 : ap->buflocal_nr == buflocal_buf->b_fnum))
-	    return TRUE;
+	{
+	    retval = TRUE;
+	    break;
+	}
 
-    return FALSE;
+theend:
+    vim_free(arg_save);
+    return retval;
 }
 
 #endif	/* FEAT_AUTOCMD */

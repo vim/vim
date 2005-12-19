@@ -88,6 +88,23 @@ menutrans &Jump\ to\ this\ tag<Tab>g^]	&Skoèit\ na\ tag<Tab>g^]
 menutrans Jump\ &back<Tab>^T		Skoèit\ &zpìt<Tab>^T
 menutrans Build\ &Tags\ File		&Vytvoøit\ soubor\ tagù
 
+menutrans &Spelling			&Kontrola\ pravopisu
+menutrans &Spell\ Check\ On		Kontrola\ pravopisu\ &zapnuta
+menutrans Spell\ Check\ &Off		Kontrola\ pravopisu\ &vypnuta
+menutrans To\ Next\ error<Tab>]s	&Dal¹í\ chyba<Tab>]s
+menutrans To\ Previous\ error<Tab>[s	&Pøedchozí\ chyba<Tab>[s
+menutrans Suggest\ Corrections<Tab>z?	&Návrh\ oprav<Tab>z?
+menutrans Repeat\ correction<Tab>:spellrepall	Zopakovat\ &opravu<Tab>:spellrepall
+menutrans Set\ language\ to\ "en"	Nastav\ jazyk\ na\ "en"
+menutrans Set\ language\ to\ "en_au"	Nastav\ jazyk\ na\ "en_au"
+menutrans Set\ language\ to\ "en_ca"	Nastav\ jazyk\ na\ "en_ca"
+menutrans Set\ language\ to\ "en_gb"	Nastav\ jazyk\ na\ "en_gb"
+menutrans Set\ language\ to\ "en_nz"	Nastav\ jazyk\ na\ "en_nz"
+menutrans Set\ language\ to\ "en_us"	Nastav\ jazyk\ na\ "en_us"
+menutrans Set\ language\ to\ "cz"	Nastav\ jazyk\ na\ "cz"
+menutrans Set\ language\ to\ "cs_cz"	Nastav\ jazyk\ na\ "cs_cz"
+menutrans &Find\ More\ Languages	Nalézt\ dal¹í\ &jazyky
+
 menutrans &Folding			&Foldy
 menutrans &Enable/Disable\ folds<Tab>zi &Ano/Ne<Tab>zi
 menutrans &View\ Cursor\ Line<Tab>zv	&Zobrazit\ øádek\ kurzoru<Tab>zv
@@ -119,6 +136,7 @@ menutrans &Previous\ Error<Tab>:cp	&Pøedchozí\ chyba<Tab>:cp
 menutrans &Older\ List<Tab>:cold	Sta&r¹í\ seznam<Tab>:cold
 menutrans N&ewer\ List<Tab>:cnew	N&ovìj¹í\ seznam<Tab>:cnew
 menutrans Error\ &Window		Chybové\ o&kno
+menutrans SeT\ Compiler			Nas&tavení\ kompilátoru
 menutrans &Update<Tab>:cwin		O&bnovit<Tab>:cwin
 menutrans &Open<Tab>:copen		&Otevøít<Tab>:copen
 menutrans &Close<Tab>:cclose		&Zavøít<Tab>:cclose
