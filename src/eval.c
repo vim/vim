@@ -8459,12 +8459,7 @@ f_exists(argvars, rettv)
     else if (*p == '#')
     {
 #ifdef FEAT_AUTOCMD
-	name = p + 1;
-	p = vim_strchr(name, '#');
-	if (p != NULL)
-	    n = au_exists(name, p, p + 1);
-	else
-	    n = au_exists(name, name + STRLEN(name), NULL);
+	n = au_exists(p + 1);
 #endif
     }
     else				/* internal variable */
