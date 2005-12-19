@@ -2145,6 +2145,7 @@ del_chars(count, fixpos)
  *
  * return FAIL for failure, OK otherwise
  */
+/*ARGSUSED*/
     int
 del_bytes(count, fixpos, use_delcombine)
     long	count;

@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Dec 18
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Dec 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -915,6 +915,9 @@ In Insert mode CTRL-A didn't keep the last inserted text when using CTRL-O and
 then a cursor key.  Now keep the previously inserted text if nothing is
 inserted after the CTRL-O.  Allows using CTRL-O commands to move the cursor
 without losing the last inserted text.
+
+The exists() function now supports checking for autocmd group definition.
+(Yegappan Lakshmanan)
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*

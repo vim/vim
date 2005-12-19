@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Dec 18
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Dec 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -59,6 +59,10 @@ spelling:
 - Have "zg" and "zw" report the file that was modified. (Marvin Renich)
 - Add a command like "zg" that selects one of the files 'spellfile'.
 
+GTK: get an X error while exiting quickly after starting (running the tests).
+Caused by new GTK library?
+    X Error: BadWindow (invalid Window parameter) 3
+
 Support saving and restoring session for X windows?  It should work to do
 ":mksession" and use "-S fname" for the restart command.  The
 gui_x11_wm_protocol_handler() already takes care of the rest.
@@ -115,6 +119,8 @@ Complete command names by searching in $PATH.  When completing file names
 escape special characters ";&<>(){}". (Adri Verhoef)
 
 Are there more commands where v:swapcommand can be set to something useful?
+
+Put autocommand event names in a hashtable for faster lookup?
 
 Awaiting response:
 -   Win32: tearoff menu window should have a scrollbar when it's taller than

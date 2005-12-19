@@ -1045,8 +1045,10 @@ doESCkey:
 	case K_S_UP:	/* <S-Up> */
 	case K_PAGEUP:
 	case K_KPAGEUP:
+#ifdef FEAT_INS_EXPAND
 	    if (pum_visible())
 		goto docomplete;
+#endif
 	    ins_pageup();
 	    break;
 
@@ -1060,8 +1062,10 @@ doESCkey:
 	case K_S_DOWN:	/* <S-Down> */
 	case K_PAGEDOWN:
 	case K_KPAGEDOWN:
+#ifdef FEAT_INS_EXPAND
 	    if (pum_visible())
 		goto docomplete;
+#endif
 	    ins_pagedown();
 	    break;
 
@@ -5073,6 +5077,7 @@ stop_arrow()
 #endif
 	ResetRedobuff();
 	AppendToRedobuff((char_u *)"1i");   /* pretend we start an insertion */
+	new_insert_skip = 2;
     }
     else if (ins_need_undo)
     {

@@ -41,7 +41,7 @@ int has_autocmd __ARGS((EVENT_T event, char_u *sfname, buf_T *buf));
 char_u *get_augroup_name __ARGS((expand_T *xp, int idx));
 char_u *set_context_in_autocmd __ARGS((expand_T *xp, char_u *arg, int doautocmd));
 char_u *get_event_name __ARGS((expand_T *xp, int idx));
-int au_exists __ARGS((char_u *name, char_u *name_end, char_u *pattern));
+int au_exists __ARGS((char_u *arg));
 int match_file_pat __ARGS((char_u *pattern, regprog_T *prog, char_u *fname, char_u *sfname, char_u *tail, int allow_dirs));
 int match_file_list __ARGS((char_u *list, char_u *sfname, char_u *ffname));
 char_u *file_pat_to_reg_pat __ARGS((char_u *pat, char_u *pat_end, char *allow_dirs, int no_bslash));

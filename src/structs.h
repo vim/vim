@@ -1392,6 +1392,7 @@ struct file_buffer
     int		b_start_ffc;	/* first char of 'ff' when edit started */
 #ifdef FEAT_MBYTE
     char_u	*b_start_fenc;	/* 'fileencoding' when edit started or NULL */
+    int		b_bad_char;	/* "++bad=" argument when edit started or 0 */
 #endif
 
 #ifdef FEAT_EVAL

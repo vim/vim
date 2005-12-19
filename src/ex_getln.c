@@ -1105,6 +1105,7 @@ getcmdline(firstc, count, indent)
 		{
 		    cmdline_paste(c, i == Ctrl_R);
 
+#ifdef FEAT_EVAL
 		    /* When there was a serious error abort getting the
 		     * command line. */
 		    if (aborting())
@@ -1113,7 +1114,7 @@ getcmdline(firstc, count, indent)
 					   putting it in history */
 			goto returncmd; /* back to cmd mode */
 		    }
-
+#endif
 		    KeyTyped = FALSE;	/* Don't do p_wc completion. */
 #ifdef FEAT_EVAL
 		    if (new_cmdpos >= 0)
