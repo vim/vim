@@ -16,8 +16,7 @@ $SPELLDIR/fo.latin1.spl : $FILES
 		$VIM -u NONE -e -c "mkspell! $SPELLDIR/fo fo_FO" -c q
 
 $SPELLDIR/fo.utf-8.spl : $FILES
-        :sys env LANG=fo_FO.UTF-8
-		$VIM -u NONE -e -c "mkspell! $SPELLDIR/fo fo_FO" -c q
+        :sys $VIM -u NONE -e -c "set enc=utf-8" -c "mkspell! $SPELLDIR/fo fo_FO" -c q
 
 ../README_fo.txt : README_fo_FO.txt Copyright
         :cat $source >! $target

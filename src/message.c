@@ -722,6 +722,10 @@ msg_may_trunc(force, s)
 	{
 	    int	size = vim_strsize(s);
 
+	    /* There may be room anyway when there are multibyte chars. */
+	    if (size <= room)
+		return s;
+
 	    for (n = 0; size >= room; )
 	    {
 		size -= (*mb_ptr2cells)(s + n);

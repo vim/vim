@@ -16,8 +16,7 @@ $SPELLDIR/gd.latin1.spl : $FILES
 		$VIM -u NONE -e -c "mkspell! $SPELLDIR/gd gd_GB" -c q
 
 $SPELLDIR/gd.utf-8.spl : $FILES
-        :sys env LANG=gd_GB.UTF-8
-		$VIM -u NONE -e -c "mkspell! $SPELLDIR/gd gd_GB" -c q
+        :sys $VIM -u NONE -e -c "set enc=utf-8" -c "mkspell! $SPELLDIR/gd gd_GB" -c q
 
 ../README_gd.txt : README_gd_GB.txt
         :copy $source $target

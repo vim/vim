@@ -2522,8 +2522,7 @@ gui_mch_menu_grey(
 
 #define add_string(s) strcpy((LPSTR)p, s); (LPSTR)p += (strlen((LPSTR)p) + 1)
 #define add_word(x)		*p++ = (x)
-#define add_byte(x)		*((LPSTR)p)++ = (x)
-#define add_long(x)		*((LPDWORD)p)++ = (x)
+#define add_long(x)		dwp = (DWORD *)p; *dwp++ = (x); p = (WORD *)dwp
 
 #if defined(FEAT_GUI_DIALOG) || defined(PROTO)
 /*
@@ -2650,6 +2649,7 @@ gui_mch_dialog(
     char_u	*textfield)
 {
     WORD	*p, *pdlgtemplate, *pnumitems;
+    DWORD	*dwp;
     int		numButtons;
     int		*buttonWidths, *buttonPositions;
     int		buttonYpos;

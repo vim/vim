@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Dec 19
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Dec 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,6 +29,13 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+ln -s b a
+vim a
+[insert some text]
+:w
+:sp b
+[there are now two buffers for the same file and two swapfiles]
 
 ccomplete:
 - When an option is set: In completion mode and the user types (identifier)
@@ -93,6 +100,9 @@ Also add search???() function that returns list with lnum and col.
 Win32: Use the free downloadable compiler 7.1.  Figure out how to do debugging
 (with Agide?) and describe it. (George Reilly)
 Try out using the free MS compiler and debugger, using Make_mvc.mak.
+Try using Visual C++ Express 2005. (Ilya Bobir Dec 20)
+    Disadvantage: Annoying warning messages, requires ..._NO_DEPRECATE, this
+    is not a standard compiler.
 
 Win32: Check that installer puts menu items in "all users" dir when possible,
 not administrator dir.

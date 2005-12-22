@@ -25,7 +25,7 @@ SCRIPTS =	test3.out test4.out test5.out test6.out test7.out \
 		test15.out test17.out test18.out test21.out test26.out \
 		test30.out test31.out test32.out test33.out test34.out \
 		test37.out test38.out test39.out test40.out test41.out \
-		test42.out test52.out
+		test42.out test52.out test60.out
 
 SCRIPTS32 =	test50.out
 

@@ -2206,6 +2206,8 @@ exists({expr})	The result is a Number, which is non-zero if {expr} is
 			#group#event#pattern
 					autocommand defined for this group, 
 					event and pattern.
+			##event		autocommand for this event is
+					supported.
 		For checking for a supported feature use |has()|.
 
 		Examples: >
@@ -2220,6 +2222,7 @@ exists({expr})	The result is a Number, which is non-zero if {expr} is
 			exists("#filetypeindent")
 			exists("#filetypeindent#FileType")
 			exists("#filetypeindent#FileType#*")
+			exists("##ColorScheme")
 <		There must be no space between the symbol (&/$/*/#) and the
 		name.
 		Note that the argument must be a string, not the name of the

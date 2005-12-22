@@ -12,11 +12,11 @@ FILES    = gl_ES.aff gl_ES.dic
 all: $SPELLDIR/gl.latin1.spl $SPELLDIR/gl.utf-8.spl ../README_gl.txt
 
 $SPELLDIR/gl.latin1.spl : $FILES
-        :sys env LANG=gl_ES.ISO8859-1
+        :sys env LANG=es_ES.ISO8859-1
 		$VIM -u NONE -e -c "mkspell! $SPELLDIR/gl gl_ES" -c q
 
 $SPELLDIR/gl.utf-8.spl : $FILES
-        :sys env LANG=gl_ES.UTF-8
+        :sys env LANG=es_ES.UTF-8
 		$VIM -u NONE -e -c "mkspell! $SPELLDIR/gl gl_ES" -c q
 
 ../README_gl.txt : README_gl_ES.txt

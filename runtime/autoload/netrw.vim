@@ -1777,7 +1777,7 @@ fun! s:NetBrowseX(fname,remote)
 
   " set up redirection
   if &srr =~ "%s"
-   let redir= substitute(&srr,"%s","/dev/null"."")
+   let redir= substitute(&srr,"%s","/dev/null","")
   else
    let redir= &srr . "/dev/null"
   endif

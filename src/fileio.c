@@ -8827,6 +8827,18 @@ get_event_name(xp, idx)
 #endif	/* FEAT_CMDL_COMPL */
 
 /*
+ * Return TRUE if autocmd is supported.
+ */
+    int
+autocmd_supported(name)
+    char_u	*name;
+{
+    char_u *p;
+
+    return (event_name2nr(name, &p) != NUM_EVENTS);
+}
+
+/*
  * Return TRUE if an autocommand is defined for a group, event and
  * pattern:  The group can be omitted to accept any group. "event" and "pattern"
  * can be NULL to accept any event and pattern. "pattern" can be NULL to accept
@@ -8852,11 +8864,11 @@ au_exists(arg)
     int		group;
     int		retval = FALSE;
 
-    /* Make a copy so that we can change the '#' to a NUL. */
+    /* Make a copy so that we can change the '#' chars to a NUL. */
     arg_save = vim_strsave(arg);
     if (arg_save == NULL)
 	return FALSE;
-    p = vim_strchr(arg, '#');
+    p = vim_strchr(arg_save, '#');
     if (p != NULL)
 	*p++ = NUL;
 

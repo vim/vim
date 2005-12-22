@@ -5113,7 +5113,8 @@ stop_insert(end_insert_pos, esc)
      * otherwise CTRL-O w and then <Left> will clear "last_insert".
      */
     ptr = get_inserted();
-    if (did_restart_edit == 0 || (ptr != NULL && STRLEN(ptr) > new_insert_skip))
+    if (did_restart_edit == 0 || (ptr != NULL
+				       && (int)STRLEN(ptr) > new_insert_skip))
     {
 	vim_free(last_insert);
 	last_insert = ptr;

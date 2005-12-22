@@ -8459,7 +8459,10 @@ f_exists(argvars, rettv)
     else if (*p == '#')
     {
 #ifdef FEAT_AUTOCMD
-	n = au_exists(p + 1);
+	if (p[1] == '#')
+	    n = autocmd_supported(p + 2);
+	else
+	    n = au_exists(p + 1);
 #endif
     }
     else				/* internal variable */

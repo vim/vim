@@ -1,0 +1,71 @@
+Tests for the exists() function.  vim: set ft=vim :
+
+STARTTEST
+:so small.vim
+:function! RunTest(str, result)
+    if exists(a:str) == a:result
+	echo "OK"
+    else
+	echo "FAILED: Checking for " . a:str
+    endif
+endfunction
+:function! TestExists()
+    augroup myagroup
+	autocmd! BufEnter *.my echo 'myfile edited'
+    augroup END
+    redir! > test.out
+
+    " valid autocmd group
+    call RunTest('#myagroup', 1)
+
+    " Valid autocmd group and event
+    call RunTest('#myagroup#BufEnter', 1)
+
+    " Valid autocmd group, event and pattern
+    call RunTest('#myagroup#BufEnter#*.my', 1)
+
+    " Valid autocmd event
+    call RunTest('#BufEnter', 1)
+
+    " Valid autocmd event and pattern
+    call RunTest('#BufEnter#*.my', 1)
+
+    " Non-existing autocmd group or event
+    call RunTest('#xyzagroup', 0)
+
+    " Non-existing autocmd group and valid autocmd event
+    call RunTest('#xyzagroup#BufEnter', 0)
+
+    " Valid autocmd group and autocmd event with no matching pattern
+    call RunTest('#myagroup#CmdwinEnter', 0)
+
+    " Valid autocmd group and non-existing autocmd event
+    call RunTest('#myagroup#xyzacmd', 0)
+
+    " Valid autocmd group and event and non-matching pattern
+    call RunTest('#myagroup#BufEnter#xyzpat', 0)
+
+    " Valid autocmd event and non-matching pattern
+    call RunTest('#BufEnter#xyzpat', 0)
+
+    " Empty autocmd group, event and pattern
+    call RunTest('###', 0)
+
+    " Empty autocmd group and event or event and pattern
+    call RunTest('##', 0)
+
+    " Testing support for event name that exists.
+    call RunTest('##SwapExists', 1)
+
+    " Testing support for event name that doesn't exist.
+    call RunTest('##SwapNotExists', 0)
+
+    redir END
+endfunction
+:call TestExists()
+:edit! test.out
+:set ff=unix
+:w
+:qa!
+ENDTEST
+

@@ -1082,7 +1082,7 @@ intro_message(colon)
 
     /* Show the sponsor and register message one out of four times, the Uganda
      * message two out of four times. */
-    sponsor = time(NULL);
+    sponsor = (int)time(NULL);
     sponsor = ((sponsor & 2) == 0) - ((sponsor & 4) == 0);
 
     /* start displaying the message lines after half of the blank lines */

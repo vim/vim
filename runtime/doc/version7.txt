@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Dec 19
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Dec 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -916,8 +916,8 @@ then a cursor key.  Now keep the previously inserted text if nothing is
 inserted after the CTRL-O.  Allows using CTRL-O commands to move the cursor
 without losing the last inserted text.
 
-The exists() function now supports checking for autocmd group definition.
-(Yegappan Lakshmanan)
+The exists() function now supports checking for autocmd group definition
+and for supported autocommands. (Yegappan Lakshmanan)
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*
@@ -1508,5 +1508,8 @@ typing the command line.
 When recording while a CursorHold autocommand was defined special keys would
 appear in the register.  Now the CursorHold event is not triggered while
 recording.
+
+Unix: the src/configure script used ${srcdir-.}, not all shells understand
+that.  Use ${srcdir:-.} instead.
 
  vim:tw=78:ts=8:ft=help:norl:
