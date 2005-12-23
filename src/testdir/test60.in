@@ -13,52 +13,46 @@ endfunction
     augroup myagroup
 	autocmd! BufEnter *.my echo 'myfile edited'
     augroup END
-    redir! > test.out
+
+    let test_cases = []
 
     " valid autocmd group
-    call RunTest('#myagroup', 1)
-
+    let test_cases += [['#myagroup', 1]]
     " Valid autocmd group and event
-    call RunTest('#myagroup#BufEnter', 1)
-
+    let test_cases += [['#myagroup#BufEnter', 1]]
     " Valid autocmd group, event and pattern
-    call RunTest('#myagroup#BufEnter#*.my', 1)
-
+    let test_cases += [['#myagroup#BufEnter#*.my', 1]]
     " Valid autocmd event
-    call RunTest('#BufEnter', 1)
-
+    let test_cases += [['#BufEnter', 1]]
     " Valid autocmd event and pattern
-    call RunTest('#BufEnter#*.my', 1)
-
+    let test_cases += [['#BufEnter#*.my', 1]]
     " Non-existing autocmd group or event
-    call RunTest('#xyzagroup', 0)
-
+    let test_cases += [['#xyzagroup', 0]]
     " Non-existing autocmd group and valid autocmd event
-    call RunTest('#xyzagroup#BufEnter', 0)
-
-    " Valid autocmd group and autocmd event with no matching pattern
-    call RunTest('#myagroup#CmdwinEnter', 0)
-
+    let test_cases += [['#xyzagroup#BufEnter', 0]]
+    " Valid autocmd group and event with no matching pattern
+    let test_cases += [['#myagroup#CmdwinEnter', 0]]
     " Valid autocmd group and non-existing autocmd event
-    call RunTest('#myagroup#xyzacmd', 0)
-
+    let test_cases += [['#myagroup#xyzacmd', 0]]
     " Valid autocmd group and event and non-matching pattern
-    call RunTest('#myagroup#BufEnter#xyzpat', 0)
-
+    let test_cases += [['#myagroup#BufEnter#xyzpat', 0]]
     " Valid autocmd event and non-matching pattern
-    call RunTest('#BufEnter#xyzpat', 0)
-
+    let test_cases += [['#BufEnter#xyzpat', 0]]
     " Empty autocmd group, event and pattern
-    call RunTest('###', 0)
+    let test_cases += [['###', 0]]
+    " Empty autocmd group and event or empty event and pattern
+    let test_cases += [['##', 0]]
+    " Valid autocmd event
+    let test_cases += [['##FileReadCmd', 1]]
+    " Non-existing autocmd event
+    let test_cases += [['##MySpecialCmd', 0]]
 
-    " Empty autocmd group and event or event and pattern
-    call RunTest('##', 0)
+    redir! > test.out
 
-    " Testing support for event name that exists.
-    call RunTest('##SwapExists', 1)
-
-    " Testing support for event name that doesn't exist.
-    call RunTest('##SwapNotExists', 0)
+    for [test_case, result] in test_cases
+      	echo test_case . ": " . result
+        call RunTest(test_case, result)
+    endfor
 
     redir END
 endfunction

@@ -1,16 +1,31 @@
 
+#myagroup: 1
 OK
+#myagroup#BufEnter: 1
 OK
+#myagroup#BufEnter#*.my: 1
 OK
+#BufEnter: 1
 OK
+#BufEnter#*.my: 1
 OK
+#xyzagroup: 0
 OK
+#xyzagroup#BufEnter: 0
 OK
+#myagroup#CmdwinEnter: 0
 OK
+#myagroup#xyzacmd: 0
 OK
+#myagroup#BufEnter#xyzpat: 0
 OK
+#BufEnter#xyzpat: 0
 OK
+###: 0
 OK
+##: 0
 OK
+##FileReadCmd: 1
 OK
+##MySpecialCmd: 0
 OK
