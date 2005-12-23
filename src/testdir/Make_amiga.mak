@@ -103,3 +103,4 @@ test56.out: test56.in
 test57.out: test57.in
 test58.out: test58.in
 test59.out: test59.in
+test60.out: test60.in
