@@ -3419,9 +3419,10 @@ resolve_symlink(fname, buf)
 	ret = readlink((char *)tmp, (char *)buf, MAXPATHL - 1);
 	if (ret <= 0)
 	{
-	    if (errno == EINVAL)  /* found non-symlink, stop here */
+	    if (errno == EINVAL || errno == ENOENT)
 	    {
-		/* When at the first level use the unmodifed name, skip the
+		/* Found non-symlink or not existing file, stop here.
+		 * When at the first level use the unmodifed name, skip the
 		 * call to vim_FullName(). */
 		if (depth == 1)
 		    return FAIL;

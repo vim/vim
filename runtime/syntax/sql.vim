@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	SQL, PL/SQL (Oracle 8i)
 " Maintainer:	Paul Moore <pf_moore AT yahoo.co.uk>
-" Last Change:	2004 Jul 19
+" Last Change:	2005 Dec 23
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -58,7 +58,7 @@ syn match sqlComment	"--.*$" contains=sqlTodo
 syn sync ccomment sqlComment
 
 " Todo.
-syn keyword sqlTodo TODO FIXME XXX DEBUG NOTE
+syn keyword sqlTodo contained TODO FIXME XXX DEBUG NOTE
 
 " Define the default highlighting.
 " For version 5.7 and earlier: only when not done already

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Dec 22
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Dec 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,13 +29,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
-
-ln -s b a
-vim a
-[insert some text]
-:w
-:sp b
-[there are now two buffers for the same file and two swapfiles]
 
 ccomplete:
 - When an option is set: In completion mode and the user types (identifier)

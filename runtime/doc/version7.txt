@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Dec 20
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Dec 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -917,7 +917,7 @@ inserted after the CTRL-O.  Allows using CTRL-O commands to move the cursor
 without losing the last inserted text.
 
 The exists() function now supports checking for autocmd group definition
-and for supported autocommands. (Yegappan Lakshmanan)
+and for supported autocommand events. (Yegappan Lakshmanan)
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*
@@ -1511,5 +1511,10 @@ recording.
 
 Unix: the src/configure script used ${srcdir-.}, not all shells understand
 that.  Use ${srcdir:-.} instead.
+
+When editing file "a" which is a symlink to file "b" that doesn't exist,
+writing file "a" to create "b" and then ":split b" resulted in two buffers on
+the same file with two different swapfile names.  Now set the inode in the
+buffer when creating a new file.
 
  vim:tw=78:ts=8:ft=help:norl:
