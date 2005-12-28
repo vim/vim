@@ -177,7 +177,7 @@ coladvance2(pos, addspaces, finetune, wcol)
 #ifdef FEAT_VIRTUALEDIT
 	int width = W_WIDTH(curwin) - win_col_off(curwin);
 
-	if ((addspaces || finetune)
+	if (finetune
 		&& curwin->w_p_wrap
 # ifdef FEAT_VERTSPLIT
 		&& curwin->w_width != 0
@@ -188,10 +188,13 @@ coladvance2(pos, addspaces, finetune, wcol)
 	    if (csize > 0)
 		csize--;
 
-	    if (wcol / width > (colnr_T)csize / width)
+	    if (wcol / width > (colnr_T)csize / width
+		    && ((State & INSERT) == 0 || (int)wcol > csize + 1))
 	    {
 		/* In case of line wrapping don't move the cursor beyond the
-		 * right screen edge. */
+		 * right screen edge.  In Insert mode allow going just beyond
+		 * the last character (like what happens when typing and
+		 * reaching the right window edge). */
 		wcol = (csize / width + 1) * width - 1;
 	    }
 	}
@@ -501,7 +504,7 @@ check_cursor_col()
     {
 	/* Allow cursor past end-of-line in Insert mode, restarting Insert
 	 * mode or when in Visual mode and 'selection' isn't "old" */
-	if (State & INSERT || restart_edit
+	if ((State & INSERT) || restart_edit
 #ifdef FEAT_VISUAL
 		|| (VIsual_active && *p_sel != 'o')
 #endif

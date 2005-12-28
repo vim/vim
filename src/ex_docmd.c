@@ -2826,11 +2826,7 @@ find_ucmd(eap, p, full, xp, compl)
 		if (k == len && found && *np != NUL)
 		{
 		    if (gap == &ucmds)
-		    {
-			if (xp != NULL)
-			    xp->xp_context = EXPAND_UNSUCCESSFUL;
 			return NULL;
-		    }
 		    amb_local = TRUE;
 		}
 
@@ -3091,6 +3087,8 @@ set_one_cmd_context(xp, buff)
 		    NULL
 # endif
 		    );
+	    if (p == NULL)
+		ea.cmdidx = CMD_SIZE;	/* ambiguous user command */
 	}
 #endif
     }

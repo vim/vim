@@ -9,7 +9,7 @@ void ResetRedobuff __ARGS((void));
 void saveRedobuff __ARGS((void));
 void restoreRedobuff __ARGS((void));
 void AppendToRedobuff __ARGS((char_u *s));
-void AppendToRedobuffLit __ARGS((char_u *s));
+void AppendToRedobuffLit __ARGS((char_u *str, int len));
 void AppendCharToRedobuff __ARGS((int c));
 void AppendNumberToRedobuff __ARGS((long n));
 void stuffReadbuff __ARGS((char_u *s));

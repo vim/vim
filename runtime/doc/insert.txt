@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0aa.  Last change: 2005 Dec 18
+*insert.txt*    For Vim version 7.0aa.  Last change: 2005 Dec 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -953,7 +953,7 @@ CTRL-P			Find previous match for words that start with the
 
 
 INSERT COMPLETION POPUP MENU				*ins-completion-menu*
-
+							*popupmenu-completion*
 Vim can display the matches in a simplistic popup menu.
 
 The menu is used when:

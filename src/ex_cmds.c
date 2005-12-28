@@ -921,7 +921,7 @@ do_bang(addr_count, eap, forceit, do_in, do_out)
 
     if (bangredo)	    /* put cmd in redo buffer for ! command */
     {
-	AppendToRedobuffLit(prevcmd);
+	AppendToRedobuffLit(prevcmd, -1);
 	AppendToRedobuff((char_u *)"\n");
 	bangredo = FALSE;
     }

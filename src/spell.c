@@ -8594,7 +8594,8 @@ spell_suggest(count)
 	    /* For redo we use a change-word command. */
 	    ResetRedobuff();
 	    AppendToRedobuff((char_u *)"ciw");
-	    AppendToRedobuff(stp->st_word);
+	    AppendToRedobuffLit(p + c,
+		       STRLEN(stp->st_word) + sug.su_badlen - stp->st_orglen);
 	    AppendCharToRedobuff(ESC);
 	}
     }

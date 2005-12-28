@@ -2765,9 +2765,17 @@ cmdline_paste(regname, literally)
     regname = may_get_selection(regname);
 #endif
 
-    /* Need to save and restore ccline. */
+    /* Need to save and restore ccline.  And go into the sandbox to avoid
+     * nasty things like going to another buffer when evaluating an
+     * expression. */
     save_cmdline(&save_ccline);
+#ifdef HAVE_SANDBOX
+    ++sandbox;
+#endif
     i = get_spec_reg(regname, &arg, &allocated, TRUE);
+#ifdef HAVE_SANDBOX
+    --sandbox;
+#endif
     restore_cmdline(&save_ccline);
 
     if (i)

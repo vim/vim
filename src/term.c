@@ -3256,6 +3256,8 @@ stoptermcap()
  * echoed.
  * Only do this after termcap mode has been started, otherwise the codes for
  * the cursor keys may be wrong.
+ * Only do this when 'esckeys' is on, otherwise the response causes trouble in
+ * Insert mode.
  * On Unix only do it when both output and input are a tty (avoid writing
  * request to terminal while reading from a file).
  * The result is caught in check_termcode().
@@ -3266,6 +3268,7 @@ may_req_termresponse()
     if (crv_status == CRV_GET
 	    && cur_tmode == TMODE_RAW
 	    && termcap_active
+	    && p_ek
 #ifdef UNIX
 	    && isatty(1)
 	    && isatty(read_cmd_fd)

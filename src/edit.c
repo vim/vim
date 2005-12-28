@@ -2657,7 +2657,7 @@ ins_compl_prep(c)
 		}
 		for (temp = 0; p[temp]; ++temp)
 		    AppendCharToRedobuff(K_BS);
-		AppendToRedobuffLit(ptr);
+		AppendToRedobuffLit(ptr, -1);
 	    }
 
 #ifdef FEAT_CINDENT
@@ -4240,7 +4240,7 @@ insert_special(c, allow_modmask, ctrlv)
 		return;
 	    p[len - 1] = NUL;
 	    ins_str(p);
-	    AppendToRedobuffLit(p);
+	    AppendToRedobuffLit(p, -1);
 	    ctrlv = FALSE;
 	}
     }
@@ -4756,7 +4756,7 @@ insertchar(c, flags, second_indent)
 	else
 	    i = 0;
 	if (buf[i] != NUL)
-	    AppendToRedobuffLit(buf + i);
+	    AppendToRedobuffLit(buf + i, -1);
     }
     else
     {

@@ -57,6 +57,7 @@ static void	del_from_showcmd __ARGS((int));
  * v_*(): functions called to handle Visual mode commands.
  */
 static void	nv_ignore __ARGS((cmdarg_T *cap));
+static void	nv_nop __ARGS((cmdarg_T *cap));
 static void	nv_error __ARGS((cmdarg_T *cap));
 static void	nv_help __ARGS((cmdarg_T *cap));
 static void	nv_addsub __ARGS((cmdarg_T *cap));
@@ -378,6 +379,7 @@ static const struct nv_cmd
     {K_X2RELEASE, nv_mouse,	0,			0},
 #endif
     {K_IGNORE,	nv_ignore,	0,			0},
+    {K_NOP,	nv_nop,		0,			0},
     {K_INS,	nv_edit,	0,			0},
     {K_KINS,	nv_edit,	0,			0},
     {K_BS,	nv_ctrlh,	0,			0},
@@ -1415,7 +1417,7 @@ do_pending_operator(cap, old_col, gui_yank)
 		 * pattern to really repeat the same command.
 		 */
 		if (vim_strchr(p_cpo, CPO_REDO) == NULL)
-		    AppendToRedobuffLit(cap->searchbuf);
+		    AppendToRedobuffLit(cap->searchbuf, -1);
 		AppendToRedobuff(NL_STR);
 	    }
 	    else if (cap->cmdchar == ':')
@@ -1427,7 +1429,7 @@ do_pending_operator(cap, old_col, gui_yank)
 		    ResetRedobuff();
 		else
 		{
-		    AppendToRedobuffLit(repeat_cmdline);
+		    AppendToRedobuffLit(repeat_cmdline, -1);
 		    AppendToRedobuff(NL_STR);
 		    vim_free(repeat_cmdline);
 		    repeat_cmdline = NULL;
@@ -3928,12 +3930,22 @@ check_scrollbind(topline_diff, leftcol_diff)
  * Used for CTRL-Q and CTRL-S to avoid problems with terminals that use
  * xon/xoff
  */
-/*ARGSUSED */
     static void
 nv_ignore(cap)
     cmdarg_T	*cap;
 {
     cap->retval |= CA_COMMAND_BUSY;	/* don't call edit() now */
+}
+
+/*
+ * Command character that doesn't do anything, but unlike nv_ignore() does
+ * start edit().  Used for "startinsert" executed while starting up.
+ */
+/*ARGSUSED */
+    static void
+nv_nop(cap)
+    cmdarg_T	*cap;
+{
 }
 
 /*
@@ -6320,10 +6332,8 @@ nv_brace(cap)
 {
     cap->oap->motion_type = MCHAR;
     cap->oap->use_reg_one = TRUE;
-    if (cap->cmdchar == ')')
-	cap->oap->inclusive = FALSE;
-    else
-	cap->oap->inclusive = TRUE;
+    /* The motion used to be inclusive for "(", but that is not what Vi does. */
+    cap->oap->inclusive = FALSE;
     curwin->w_set_curswant = TRUE;
 
     if (findsent(cap->arg, cap->count1) == FAIL)

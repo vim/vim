@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Dec 23
+*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Dec 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,6 +29,8 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+Win32: test52 fails.
 
 ccomplete:
 - When an option is set: In completion mode and the user types (identifier)
@@ -1860,8 +1862,6 @@ Robustness:
 Performance:
 7   For strings up to 3 bytes don't allocate memory, use v_list itself as a
     character array.  Use VAR_SSTRING (short string).
-8   Loading plugins takes startup time.  Only load the part that is used to
-    trigger the rest, and load the rest when it's needed?
 8   Turn b_syn_ic and b_syn_containedin into b_syn_flags.
 9   Loading menu.vim still takes quite a bit of time.  How to make it faster?
 8   in_id_list() takes much time for syntax highlighting.  Cache the result?
@@ -2243,6 +2243,7 @@ Autocommands:
 8   Use another option than 'updatetime' for the CursorHold event.  The two
     things are unrelated for the user (but the implementation is more
     difficult).
+8   Add an event like CursorHold that is triggered repeatedly, not just once.
 8   Also trigger CursorHold in Insert mode?
 7   Add autocommand event for when a buffer cannot be abandoned.  So that user
     can define the action taking (autowrite, dialog, fail) based on the kind
@@ -2312,8 +2313,7 @@ Autocommands:
 		      that marks can be updated.  HierAssist has patch to add
 		      BufChangePre, BufChangePost and RevertBuf. (Shah)
     WinResized	    - When a window has been resized
--   Add autocommand to be executed every so many seconds?  For writing the
-    file now and then ('autosave').
+-   Write the file now and then ('autosave'):
 				  *'autosave'* *'as'* *'noautosave'* *'noas'*
     'autosave' 'aw' number  (default 0)
 	    Automatically write the current buffer to file N seconds after the
@@ -3356,6 +3356,7 @@ Various improvements:
 8   Add "g^E" and "g^Y", to scroll a screen-full line up and down.
 6   Add ":timer" command, to set a command to be executed at a certain
     interval, or once after some time has elapsed. (Aaron)
+    Perhaps an autocommand event like CursorHold is better?
 8   Add ":confirm" handling in open_exfile(), for when file already exists.
 8   When quitting with changed files, make the dialog list the changed file
     and allow "write all", "discard all", "write some".  The last one would

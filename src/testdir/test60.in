@@ -47,12 +47,229 @@ endfunction
     " Non-existing autocmd event
     let test_cases += [['##MySpecialCmd', 0]]
 
+    " Existing and working option (long form)
+    let test_cases += [['&textwidth', 1]]
+    " Existing and working option (short form)
+    let test_cases += [['&tw', 1]]
+    " Negative form of existing and working option (long form)
+    let test_cases += [['&nojoinspaces', 0]]
+    " Negative form of existing and working option (short form)
+    let test_cases += [['&nojs', 0]]
+    " Non-existing option
+    let test_cases += [['&myxyzoption', 0]]
+
+    " Existing and working option (long form)
+    let test_cases += [['+incsearch', 1]]
+    " Existing and working option (short form)
+    let test_cases += [['+is', 1]]
+    " Existing option that is hidden.
+    let test_cases += [['+autoprint', 0]]
+
+    " Existing environment variable
+    let $EDITOR_NAME = 'Vim Editor'
+    let test_cases += [['$EDITOR_NAME', 1]]
+    " Non-existing environment variable
+    let test_cases += [['$NON_ENV_VAR', 0]]
+
+    " Valid internal function
+    let test_cases += [['*bufnr', 1]]
+    " Non-existing internal function
+    let test_cases += [['*myxyzfunc', 0]]
+
+    " Valid user defined function
+    let test_cases += [['*TestExists', 1]]
+    " Non-existing user defined function
+    let test_cases += [['*MyxyzFunc', 0]]
+
     redir! > test.out
 
     for [test_case, result] in test_cases
       	echo test_case . ": " . result
         call RunTest(test_case, result)
     endfor
+
+    " Valid internal command (full match)
+    echo ':edit: 2'
+    if exists(':edit') == 2
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Valid internal command (partial match)
+    echo ':q: 1'
+    if exists(':q') == 1
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Non-existing internal command
+    echo ':invalidcmd: 0'
+    if !exists(':invalidcmd')
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " User defined command (full match)
+    command! MyCmd :echo 'My command'
+    echo ':MyCmd: 2'
+    if exists(':MyCmd') == 2
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " User defined command (partial match)
+    command! MyOtherCmd :echo 'Another command'
+    echo ':My: 3'
+    if exists(':My') == 3
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Command modifier
+    echo ':rightbelow: 2'
+    if exists(':rightbelow') == 2
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Non-existing user defined command (full match)
+    delcommand MyCmd
+
+    echo ':MyCmd: 0'
+    if !exists(':MyCmd')
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Non-existing user defined command (partial match)
+    delcommand MyOtherCmd
+
+    echo ':My: 0'
+    if !exists(':My')
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Valid local variable
+    let local_var = 1
+    echo 'local_var: 1'
+    if exists('local_var')
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Non-existing local variable
+    unlet local_var
+    echo 'local_var: 0'
+    if !exists('local_var')
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Valid local list
+    let local_list = ["blue", "orange"]
+    echo 'local_list: 1'
+    if exists('local_list')
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Non-existing local list
+    unlet local_list
+    echo 'local_list: 0'
+    if !exists('local_list')
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Valid local dictionary
+    let local_dict = {"xcord":100, "ycord":2}
+    echo 'local_dict: 1'
+    if exists('local_dict')
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Non-existing local dictionary
+    unlet local_dict
+    echo 'local_dict: 0'
+    if !exists('local_dict')
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Existing global variable
+    let g:global_var = 1
+    echo 'g:global_var: 1'
+    if exists('g:global_var')
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Non-existing global variable
+    unlet g:global_var
+    echo 'g:global_var: 0'
+    if !exists('g:global_var')
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Existing local curly-brace variable
+    let curly_local_var = 1
+    let str = "local"
+    echo 'curly_{str}_var: 1'
+    if exists('curly_{str}_var')
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Non-existing local curly-brace variable
+    unlet curly_local_var
+    echo 'curly_{str}_var: 0'
+    if !exists('curly_{str}_var')
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Existing global curly-brace variable
+    let g:curly_global_var = 1
+    let str = "global"
+    echo 'g:curly_{str}_var: 1'
+    if exists('g:curly_{str}_var')
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Non-existing global curly-brace variable
+    unlet g:curly_global_var
+    echo 'g:curly_{str}_var: 0'
+    if !exists('g:curly_{str}_var')
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Script-local tests
+    source test60.vim
 
     redir END
 endfunction

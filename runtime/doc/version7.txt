@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Dec 23
+*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Dec 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1516,5 +1516,21 @@ When editing file "a" which is a symlink to file "b" that doesn't exist,
 writing file "a" to create "b" and then ":split b" resulted in two buffers on
 the same file with two different swapfile names.  Now set the inode in the
 buffer when creating a new file.
+
+When 'esckeys' is not set don't send the xterm code to request the version
+string, because it may cause trouble in Insert mode.
+
+When evaluating an expression for CTRL-R = on the command line it was possible
+to open a new window, resulting in errors for incremental search, and many
+other nasty things were possible.  Now evaluate the expression in the sandbox
+to protect from unexpected behavior.
+
+"d(" deleted the character under the cursor, while the documentation specified
+an exclusive motion.  Vi also doesn't delete the character under the cursor.
+
+Shift-Insert in Insert mode could put the cursor before the last character
+when it just fits in the window.  In coladvance() don't stop at the window
+edge when filling with spaces and when in Insert mode.  In mswin.vim avoid
+getting a beep from the "l" command.
 
  vim:tw=78:ts=8:ft=help:norl:

@@ -529,16 +529,18 @@ AppendToRedobuff(s)
  * K_SPECIAL and CSI are escaped as well.
  */
     void
-AppendToRedobuffLit(s)
-    char_u	*s;
+AppendToRedobuffLit(str, len)
+    char_u	*str;
+    int		len;	    /* length of "str" or -1 for up to the NUL */
 {
+    char_u	*s = str;
     int		c;
     char_u	*start;
 
     if (block_redo)
 	return;
 
-    while (*s != NUL)
+    while (len < 0 ? *s != NUL : s - str < len)
     {
 	/* Put a string of normal characters in the redo buffer (that's
 	 * faster). */
@@ -547,7 +549,7 @@ AppendToRedobuffLit(s)
 #ifndef EBCDIC
 		&& *s < DEL	/* EBCDIC: all chars above space are normal */
 #endif
-		)
+		&& (len < 0 || s - str < len))
 	    ++s;
 
 	/* Don't put '0' or '^' as last character, just in case a CTRL-D is
@@ -557,29 +559,29 @@ AppendToRedobuffLit(s)
 	if (s > start)
 	    add_buff(&redobuff, start, (long)(s - start));
 
-	if (*s != NUL)
-	{
-	    /* Handle a special or multibyte character. */
-#ifdef FEAT_MBYTE
-	    if (has_mbyte)
-		/* Handle composing chars separately. */
-		c = mb_cptr2char_adv(&s);
-	    else
-#endif
-		c = *s++;
-	    if (c < ' ' || c == DEL || (*s == NUL && (c == '0' || c == '^')))
-		add_char_buff(&redobuff, Ctrl_V);
+	if (*s == NUL || (len >= 0 && s - str >= len))
+	    break;
 
-	    /* CTRL-V '0' must be inserted as CTRL-V 048 (EBCDIC: xf0) */
-	    if (*s == NUL && c == '0')
-#ifdef EBCDIC
-		add_buff(&redobuff, (char_u *)"xf0", 3L);
-#else
-		add_buff(&redobuff, (char_u *)"048", 3L);
+	/* Handle a special or multibyte character. */
+#ifdef FEAT_MBYTE
+	if (has_mbyte)
+	    /* Handle composing chars separately. */
+	    c = mb_cptr2char_adv(&s);
+	else
 #endif
-	    else
-		add_char_buff(&redobuff, c);
-	}
+	    c = *s++;
+	if (c < ' ' || c == DEL || (*s == NUL && (c == '0' || c == '^')))
+	    add_char_buff(&redobuff, Ctrl_V);
+
+	/* CTRL-V '0' must be inserted as CTRL-V 048 (EBCDIC: xf0) */
+	if (*s == NUL && c == '0')
+#ifdef EBCDIC
+	    add_buff(&redobuff, (char_u *)"xf0", 3L);
+#else
+	    add_buff(&redobuff, (char_u *)"048", 3L);
+#endif
+	else
+	    add_char_buff(&redobuff, c);
     }
 }
 

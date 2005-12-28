@@ -469,9 +469,9 @@ clip_own_selection(cbd)
 #ifdef FEAT_X11
 	if (cbd == &clip_star)
 	{
-	    /* May have to show a different kind of highlighting for the selected
-	     * area.  There is no specific redraw command for this, just redraw
-	     * all windows on the current buffer. */
+	    /* May have to show a different kind of highlighting for the
+	     * selected area.  There is no specific redraw command for this,
+	     * just redraw all windows on the current buffer. */
 	    if (cbd->owned
 		    && get_real_state() == VISUAL
 		    && clip_isautosel()
@@ -2130,6 +2130,10 @@ clip_x11_request_selection(myShell, dpy, cbd)
 	{
 	    if (XCheckTypedEvent(dpy, SelectionNotify, &event))
 		break;
+	    if (XCheckTypedEvent(dpy, SelectionRequest, &event))
+		/* We may get a SelectionRequest here and if we don't handle
+		 * it we hang.  KDE klipper does this, for example. */
+		XtDispatchEvent(&event);
 
 	    /* Do we need this?  Probably not. */
 	    XSync(dpy, False);

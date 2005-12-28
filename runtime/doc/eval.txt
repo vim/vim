@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Dec 19
+*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Dec 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -6804,7 +6804,7 @@ The 'foldexpr', 'includeexpr', 'indentexpr', 'statusline' and 'foldtext'
 options are evaluated in a sandbox.  This means that you are protected from
 these expressions having nasty side effects.  This gives some safety for when
 these options are set from a modeline.  It is also used when the command from
-a tags file is executed.
+a tags file is executed and for CTRL-R = in the command line.
 The sandbox is also used for the |:sandbox| command.
 
 These items are not allowed in the sandbox:

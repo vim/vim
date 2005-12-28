@@ -871,7 +871,7 @@ main
     /* If ":startinsert" command used, stuff a dummy command to be able to
      * call normal_cmd(), which will then start Insert mode. */
     if (restart_edit != 0)
-	stuffcharReadbuff(K_IGNORE);
+	stuffcharReadbuff(K_NOP);
 
 #ifdef FEAT_NETBEANS_INTG
     if (usingNetbeans)

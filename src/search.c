@@ -2394,7 +2394,7 @@ showmatch(c)
 
 /*
  * findsent(dir, count) - Find the start of the next sentence in direction
- * 'dir' Sentences are supposed to end in ".", "!" or "?" followed by white
+ * "dir" Sentences are supposed to end in ".", "!" or "?" followed by white
  * space or a line break. Also stop at an empty line.
  * Return OK if the next sentence was found.
  */

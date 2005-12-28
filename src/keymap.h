@@ -247,6 +247,7 @@ enum key_extra
 
     , KE_DROP		/* DnD data is available */
     , KE_CURSORHOLD	/* CursorHold event */
+    , KE_NOP		/* doesn't do something */
 };
 
 /*
@@ -422,6 +423,7 @@ enum key_extra
 #define K_X2RELEASE     TERMCAP2KEY(KS_EXTRA, KE_X2RELEASE)
 
 #define K_IGNORE	TERMCAP2KEY(KS_EXTRA, KE_IGNORE)
+#define K_NOP		TERMCAP2KEY(KS_EXTRA, KE_NOP)
 
 #define K_SNIFF		TERMCAP2KEY(KS_EXTRA, KE_SNIFF)
 

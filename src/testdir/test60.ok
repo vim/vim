@@ -29,3 +29,83 @@ OK
 OK
 ##MySpecialCmd: 0
 OK
+&textwidth: 1
+OK
+&tw: 1
+OK
+&nojoinspaces: 0
+OK
+&nojs: 0
+OK
+&myxyzoption: 0
+OK
++incsearch: 1
+OK
++is: 1
+OK
++autoprint: 0
+OK
+$EDITOR_NAME: 1
+OK
+$NON_ENV_VAR: 0
+OK
+*bufnr: 1
+OK
+*myxyzfunc: 0
+OK
+*TestExists: 1
+OK
+*MyxyzFunc: 0
+OK
+:edit: 2
+OK
+:q: 1
+OK
+:invalidcmd: 0
+OK
+:MyCmd: 2
+OK
+:My: 3
+OK
+:rightbelow: 2
+OK
+:MyCmd: 0
+OK
+:My: 0
+OK
+local_var: 1
+OK
+local_var: 0
+OK
+local_list: 1
+OK
+local_list: 0
+OK
+local_dict: 1
+OK
+local_dict: 0
+OK
+g:global_var: 1
+OK
+g:global_var: 0
+OK
+curly_{str}_var: 1
+OK
+curly_{str}_var: 0
+OK
+g:curly_{str}_var: 1
+OK
+g:curly_{str}_var: 0
+OK
+s:script_var: 1
+OK
+s:script_var: 0
+OK
+s:curly_{str}_var: 1
+OK
+s:curly_{str}_var: 0
+OK
+*s:my_script_func: 1
+OK
+*s:my_script_func: 0
+OK
