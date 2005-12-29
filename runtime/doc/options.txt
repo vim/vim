@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2005 Dec 13
+*options.txt*	For Vim version 7.0aa.  Last change: 2005 Dec 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1598,8 +1598,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not in Vi}
 			{not available when compiled without the +eval
 			or +insert_expand feature}
-	This option specifies a function to be used for CTRL-X CTRL-U
-	completion. |i_CTRL-X_CTRL-U|
+	This option specifies a function to be used for Insert mode completion
+	with CTRL-X CTRL-U. |i_CTRL-X_CTRL-U|
 
 	The function will be invoked with two arguments.  First the function
 	is called to find the start of the text to be completed.  Secondly the
@@ -4644,9 +4644,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not in Vi}
 			{not available when compiled without the +eval
 			or +insert_expand feature}
-	This option specifies a function to be used for CTRL-X CTRL-O
-	completion. |i_CTRL-X_CTRL-O|
-
+	This option specifies a function to be used for Insert mode omni
+	completion with CTRL-X CTRL-O. |i_CTRL-X_CTRL-O|
 	For the use of the function see 'completefunc'.
 
 

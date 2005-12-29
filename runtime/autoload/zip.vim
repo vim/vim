@@ -1,7 +1,7 @@
 " zip.vim: Handles browsing zipfiles
 "            AUTOLOAD PORTION
-" Date:			Nov 28, 2005
-" Version:		5
+" Date:			Dec 21, 2005
+" Version:		6
 " Maintainer:	Charles E Campbell, Jr <drchipNOSPAM at campbellfamily dot biz>
 " License:		Vim License  (see vim's :help license)
 " Copyright:    Copyright (C) 2005 Charles E. Campbell, Jr. {{{1
@@ -22,7 +22,7 @@ if exists("g:loaded_zip")
  finish
 endif
 
-let g:loaded_zip= "v5"
+let g:loaded_zip= "v6"
 
 " ----------------
 "  Functions: {{{1
@@ -198,16 +198,21 @@ fun! zip#Write(fname)
 
   let zipfile = substitute(a:fname,'zipfile:\(.\{-}\):.*$','\1','')
   let fname   = substitute(a:fname,'zipfile:.\{-}:\(.*\)$','\1','')
-  let dirpath = substitute(fname,'/[^/]\+$','','e')
+
+  if fname =~ '/'
+   let dirpath = substitute(fname,'/[^/]\+$','','e')
+   if executable("cygpath")
+    let dirpath = substitute(system("cygpath ".dirpath),'\n','','e')
+   endif
+   call mkdir(dirpath,"p")
+  endif
   if zipfile !~ '/'
    let zipfile= curdir.'/'.zipfile
   endif
 "  call Decho("zipfile<".zipfile."> fname<".fname.">")
 
-  call mkdir(dirpath,"p")
   exe "w! ".fname
   if executable("cygpath")
-   let dirpath = substitute(system("cygpath ".dirpath),'\n','','e')
    let zipfile = substitute(system("cygpath ".zipfile),'\n','','e')
   endif
 
