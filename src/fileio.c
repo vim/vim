@@ -1491,7 +1491,7 @@ retry:
 			else
 			{
 			    u8c = utf_ptr2char(src);
-			    if (u8c > 0xffff)
+			    if (u8c > 0xffff || (*src >= 0x80 && bytelen == 1))
 				found_bad = TRUE;
 			    ucs2buf[0] = u8c;
 			    ucs2len = 1;

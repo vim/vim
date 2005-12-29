@@ -1,9 +1,9 @@
-*tar.txt*	Tar File Interface				Nov 22, 2005
+*tar.txt*	Tar File Interface				Dec 21, 2005
 
 Author:  Charles E. Campbell, Jr.  <NdrOchip@ScampbellPfamily.AbizM>
 	  (remove NOSPAM from Campbell's email first)
 Copyright: The GPL (gnu public license) applies to	*tar-copyright*
-	   tarPlugin.vim, and tar.txt.
+	   tarPlugin.vim, and pi_tar.txt.
 	   No warranty, express or implied.  Use At-Your-Own-Risk.
 
 ==============================================================================
@@ -23,6 +23,8 @@ Copyright: The GPL (gnu public license) applies to	*tar-copyright*
 
 ==============================================================================
 3. History						*tar-history*
+   v6 Dec 21, 2005 * writing to files not in directories caused problems -
+                     fixed (pointed out by Christian Robinson)
    v5 Nov 22, 2005 * report option workaround installed
    v3 Sep 16, 2005 * handles writing files in an archive back to the
                      archive

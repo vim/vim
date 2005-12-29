@@ -2,8 +2,8 @@
 " Language:		shell (sh) Korn shell (ksh) bash (sh)
 " Maintainer:		Dr. Charles E. Campbell, Jr.  <NdrOchipS@PcampbellAfamily.Mbiz>
 " Previous Maintainer:	Lennart Schultz <Lennart.Schultz@ecmwf.int>
-" Last Change:		Oct 18, 2005
-" Version:		78
+" Last Change:		Dec 29, 2005
+" Version:		79
 " URL:		http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 "
 " Using the following VIM variables: {{{1
@@ -123,7 +123,7 @@ syn match     shTestError "]"
 " Options Interceptor: {{{1
 " ====================
 syn match   shOption  "\s[\-+][a-zA-Z0-9]\+\>"ms=s+1
-syn match   shOption  "\s--\S\+"ms=s+1
+syn match   shOption  "\s--[^ \t$`|]\+"ms=s+1
 
 " Operators: {{{1
 " ==========

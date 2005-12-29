@@ -1,4 +1,4 @@
-*zip.txt*	Zip File Interface				Nov 22, 2005
+*zip.txt*	Zip File Interface				Nov 28, 2005
 
 Author:  Charles E. Campbell, Jr.  <NdrOchip@ScampbellPfamily.AbizM>
 	  (remove NOSPAM from Campbell's email first)
@@ -6,10 +6,11 @@ Copyright:    Copyright (C) 2005 Charles E. Campbell, Jr. {{{1 *zip-copyright*
               Permission is hereby granted to use and distribute this code,
 	      with or without modifications, provided that this copyright
 	      notice is copied with it. Like anything else that's free,
-	      zip.vim and zipPlugin.vim are provided *as is* and comes with no
-	      warranty of any kind, either expressed or implied. By using this
-	      plugin, you agree that in no event will the copyright holder be
-	      liable for any damages resulting from the use of this software.
+	      zip.vim, zipPlugin.vim, and pi_zip.txt are provided *as is*
+	      and it comes with no warranty of any kind, either expressed or
+	      implied. By using this plugin, you agree that in no event will
+	      the copyright holder be liable for any damages resulting from
+	      the use of this software.
 
 ==============================================================================
 1. Contents					*zip* *zip-contents*
@@ -28,6 +29,8 @@ Copyright:    Copyright (C) 2005 Charles E. Campbell, Jr. {{{1 *zip-copyright*
 
 ==============================================================================
 3. History					*zip-history*
+   v6 Dec 21, 2005 * writing to files not in directories caused problems -
+                     fixed (pointed out by Christian Robinson)
    v5 Nov 22, 2005 * report option workaround installed
    v3 Oct 18, 2005 * <amatch> used instead of <afile> in autocmds
    v2 Sep 16, 2005 * silenced some commands (avoiding hit-enter prompt)
