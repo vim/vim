@@ -1,7 +1,7 @@
 " tar.vim: Handles browsing tarfiles
 "            AUTOLOAD PORTION
-" Date:			Nov 28, 2005
-" Version:		5
+" Date:			Dec 24, 2005
+" Version:		7
 " Maintainer:	Charles E Campbell, Jr <drchipNOSPAM at campbellfamily dot biz>
 " License:		Vim License  (see vim's :help license)
 "
@@ -24,7 +24,7 @@ set cpo&vim
 if exists("g:loaded_tar")
  finish
 endif
-let g:loaded_tar= "v5"
+let g:loaded_tar= "v7"
 
 " ---------------------------------------------------------------------
 "  Default Settings: {{{1
@@ -93,7 +93,7 @@ fun! tar#Browse(tarfile)
   else
    exe "silent r! tar -".g:tar_browseoptions." '".a:tarfile."'"
   endif
-  %g@/$@d
+  silent %g@/$@d
 
   setlocal noma nomod ro
   noremap <silent> <buffer> <cr> :call <SID>TarBrowseSelect()<cr>
@@ -146,7 +146,7 @@ fun! tar#Read(fname,mode)
   if tarfile =~# '\.\(gz\|tgz\)$'
 "   call Decho("exe silent r! gzip -d -c '".tarfile."'| tar -OPxf - '".fname."'")
    exe "silent r! gzip -d -c '".tarfile."'| tar -".g:tar_readoptions." - '".fname."'"
-  elseif a:fname =~# '\.bz2$'
+  elseif tarfile =~# '\.bz2$'
 "   call Decho("exe silent r! bzip2 -d -c '".tarfile."'| tar -".g:tar_readoptions." - '".fname."'")
    exe "silent r! bzip2 -d -c '".tarfile."'| tar -".g:tar_readoptions." - '".fname."'"
   else
@@ -242,16 +242,20 @@ fun! tar#Write(fname)
 
 "   call Decho("tarfile<".tarfile."> fname<".fname.">")
  
-   let dirpath = substitute(fname,'/[^/]\+$','','e')
+   if fname =~ '/'
+    let dirpath = substitute(fname,'/[^/]\+$','','e')
+    if executable("cygpath")
+     let dirpath = substitute(system("cygpath ".dirpath),'\n','','e')
+    endif
+    call mkdir(dirpath,"p")
+   endif
    if tarfile !~ '/'
     let tarfile= curdir.'/'.tarfile
    endif
 "   call Decho("tarfile<".tarfile."> fname<".fname.">")
  
-   call mkdir(dirpath,"p")
    exe "w! ".fname
    if executable("cygpath")
-    let dirpath = substitute(system("cygpath ".dirpath),'\n','','e')
     let tarfile = substitute(system("cygpath ".tarfile),'\n','','e')
    endif
  

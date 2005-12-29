@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Dec 09
+*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Dec 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -680,8 +680,8 @@ The word with all upper-case characters will always be OK.
 	ALS		ALS			als Als ALs AlS aLs aLS
 	AlS		AlS ALS			als Als ALs aLs aLS
 
-The KEP affix ID can be used to specifically match a word with identical case
-only, see below |spell-KEP|.
+The KEEPCASE affix ID can be used to specifically match a word with identical
+case only, see below |spell-KEEPCASE|.
 
 Note in line 5 to 7 that non-word characters are used.  You can include
 any character in a word.  When checking the text a word still only matches
@@ -694,10 +694,10 @@ affix file, see |spell-SLASH|.  Note that without this SLASH item the
 word will be "TCP,IP".
 
 							*spell-affix-vim*
-A flag that Vim adds and is not in Myspell is the flag defined with KEP in the
-affix file.  This has the meaning that case matters.  This can be used if the
-word does not have the first letter in upper case at the start of a sentence.
-Example (assuming that = was used for KEP):
+A flag that Vim adds and is not in Myspell is the flag defined with KEEPCASE
+in the affix file.  This has the meaning that case matters.  This can be used
+if the word does not have the first letter in upper case at the start of a
+sentence.  Example (assuming that = was used for KEEPCASE):
 
     word list	    matches		    does not match ~
     's morgens/=    's morgens		    'S morgens 's Morgens 'S MORGENS
@@ -884,22 +884,22 @@ Of course, the letter used should itself not appear in any word!  The letter
 must be ASCII, thus a single byte.
 
 
-KEEP-CASE WORDS						*spell-KEP*
+KEEP-CASE WORDS						*spell-KEEPCASE*
 
-In the affix file a KEP line can be used to define the affix name used for
-keep-case words.  Example:
+In the affix file a KEEPCASE line can be used to define the affix name used
+for keep-case words.  Example:
 
-	KEP = ~
+	KEEPCASE = ~
 
 See above for an example |spell-affix-vim|.
 
 
-RARE WORDS						*spell-RAR*
+RARE WORDS						*spell-RARE*
 
-In the affix file a RAR line can be used to define the affix name used for
+In the affix file a RARE line can be used to define the affix name used for
 rare words.  Example:
 
-	RAR ? ~
+	RARE ? ~
 
 Rare words are highlighted differently from bad words.  This is to be used for
 words that are correct for the language, but are hardly ever used and could be
