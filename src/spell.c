@@ -4142,8 +4142,8 @@ typedef struct afffile_S
     char_u	*af_enc;	/* "SET", normalized, alloc'ed string or NULL */
     int		af_flagtype;	/* AFT_CHAR, AFT_LONG, AFT_NUM or AFT_CAPLONG */
     int		af_slash;	/* character used in word for slash */
-    unsigned	af_rar;		/* RAR ID for rare word */
-    unsigned	af_kep;		/* KEP ID for keep-case word */
+    unsigned	af_rare;	/* RARE ID for rare word */
+    unsigned	af_keepcase;	/* KEEPCASE ID for keep-case word */
     unsigned	af_bad;		/* BAD ID for banned word */
     unsigned	af_needaffix;	/* NEEDAFFIX ID */
     unsigned	af_needcomp;	/* NEEDCOMPOUND ID */
@@ -4625,7 +4625,9 @@ spell_read_aff(spin, fname)
 		else
 		    smsg((char_u *)_("Invalid value for FLAG in %s line %d: %s"),
 			    fname, lnum, items[1]);
-		if (aff->af_rar != 0 || aff->af_kep != 0 || aff->af_bad != 0
+		if (aff->af_rare != 0
+			|| aff->af_keepcase != 0
+			|| aff->af_bad != 0
 			|| aff->af_needaffix != 0
 			|| aff->af_needcomp != 0
 			|| compflags != NULL
@@ -4655,16 +4657,20 @@ spell_read_aff(spin, fname)
 		    smsg((char_u *)_("Character used for SLASH must be ASCII; in %s line %d: %s"),
 			    fname, lnum, items[1]);
 	    }
-	    else if (STRCMP(items[0], "RAR") == 0 && itemcnt == 2
-						       && aff->af_rar == 0)
+	    /* TODO: remove "RAR" later */
+	    else if ((STRCMP(items[0], "RAR") == 0
+			|| STRCMP(items[0], "RARE") == 0) && itemcnt == 2
+						       && aff->af_rare == 0)
 	    {
-		aff->af_rar = affitem2flag(aff->af_flagtype, items[1],
+		aff->af_rare = affitem2flag(aff->af_flagtype, items[1],
 								 fname, lnum);
 	    }
-	    else if (STRCMP(items[0], "KEP") == 0 && itemcnt == 2
-						       && aff->af_kep == 0)
+	    /* TODO: remove "KEP" later */
+	    else if ((STRCMP(items[0], "KEP") == 0
+		    || STRCMP(items[0], "KEEPCASE") == 0) && itemcnt == 2
+						     && aff->af_keepcase == 0)
 	    {
-		aff->af_kep = affitem2flag(aff->af_flagtype, items[1],
+		aff->af_keepcase = affitem2flag(aff->af_flagtype, items[1],
 								 fname, lnum);
 	    }
 	    else if (STRCMP(items[0], "BAD") == 0 && itemcnt == 2
@@ -4795,11 +4801,11 @@ spell_read_aff(spin, fname)
 		    if (cur_aff->ah_flag == 0 || STRLEN(items[1]) >= AH_KEY_LEN)
 			break;
 		    if (cur_aff->ah_flag == aff->af_bad
-			    || cur_aff->ah_flag == aff->af_rar
-			    || cur_aff->ah_flag == aff->af_kep
+			    || cur_aff->ah_flag == aff->af_rare
+			    || cur_aff->ah_flag == aff->af_keepcase
 			    || cur_aff->ah_flag == aff->af_needaffix
 			    || cur_aff->ah_flag == aff->af_needcomp)
-			smsg((char_u *)_("Affix also used for BAD/RAR/KEP/NEEDAFFIX/NEEDCOMPOUND in %s line %d: %s"),
+			smsg((char_u *)_("Affix also used for BAD/RARE/KEEPCASE/NEEDAFFIX/NEEDCOMPOUND in %s line %d: %s"),
 						       fname, lnum, items[1]);
 		    STRCPY(cur_aff->ah_key, items[1]);
 		    hash_add(tp, cur_aff->ah_key);
@@ -5786,11 +5792,11 @@ spell_read_dic(spin, fname, affile)
 	{
 	    /* Check for affix name that stands for keep-case word and stands
 	     * for rare word (if defined). */
-	    if (affile->af_kep != 0 && flag_in_afflist(
-				affile->af_flagtype, afflist, affile->af_kep))
+	    if (affile->af_keepcase != 0 && flag_in_afflist(
+			   affile->af_flagtype, afflist, affile->af_keepcase))
 		flags |= WF_KEEPCAP | WF_FIXCAP;
-	    if (affile->af_rar != 0 && flag_in_afflist(
-				affile->af_flagtype, afflist, affile->af_rar))
+	    if (affile->af_rare != 0 && flag_in_afflist(
+				affile->af_flagtype, afflist, affile->af_rare))
 		flags |= WF_RARE;
 	    if (affile->af_bad != 0 && flag_in_afflist(
 				affile->af_flagtype, afflist, affile->af_bad))

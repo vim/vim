@@ -6339,6 +6339,8 @@ ex_shell(eap)
 
 #if (defined(FEAT_WINDOWS) && defined(HAVE_DROP_FILE)) \
 	|| (defined(FEAT_GUI_GTK) && defined(FEAT_DND)) \
+	|| defined(FEAT_GUI_MSWIN) \
+	|| defined(FEAT_GUI_MAC) \
 	|| defined(PROTO)
 
 /*
