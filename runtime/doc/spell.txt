@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2005 Dec 29
+*spell.txt*	For Vim version 7.0aa.  Last change: 2006 Jan 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -172,6 +172,12 @@ When there is a line break right after a sentence the highlighting of the next
 line may be postponed.  Use |CTRL-L| when needed.  Also see |set-spc-auto| for
 how it can be set automatically when 'spelllang' is set.
 
+Vim counts the number of times a good word is encountered.  This is used to
+sort the suggestions: words that have been seen before get a small bonus,
+words that have been seen often get a bigger bonus.  The COMMON item in the
+affix file can be used to define common words, so that this mechanism also
+works in a new or short file |spell-COMMON|.
+
 ==============================================================================
 2. Remarks on spell checking				*spell-remarks*
 
@@ -295,6 +301,11 @@ Spelling for EBCDIC is currently not supported.
 A spell file might not be available in the current 'encoding'.  See
 |spell-mkspell| about how to create a spell file.  Converting a spell file
 with "iconv" will NOT work!
+
+							*spell-sug-file*
+If there is a file with exactly the same name as the ".spl" file but ending in
+".sug", that file will be used for giving better suggestions.  It isn't loaded
+before suggestions are made to reduce memory use.
 
 							*E758* *E759*
 When loading a spell file Vim checks that it is properly formatted.  If you
@@ -531,6 +542,11 @@ used spelling files, use this command:
 			Note: For some languages the result may be enormous,
 			causing Vim to run out of memory.
 
+:spelld[ump]!		Like ":spelldump" and include the word count.  This is
+			the number of times the word was found while
+			updating the screen.  Words that are in COMMON items
+			get a starting count of 10.
+
 The format of the word list is used |spell-wordlist-format|.  You should be
 able to read it with ":mkspell" to generate one .spl file that includes all
 the words.
@@ -569,13 +585,16 @@ Additionally the following items are recognized:
 
 - Empty and blank lines are ignored.
 
+	# comment ~
 - Lines starting with a # are ignored (comment lines).
 
+	/encoding=utf-8 ~
 - A line starting with "/encoding=", before any word, specifies the encoding
   of the file.  After the second '=' comes an encoding name.  This tells Vim
   to setup conversion from the specified encoding to 'encoding'.  Thus you can
   use one word list for several target encodings.
 
+	/regions=usca ~
 - A line starting with "/regions=" specifies the region names that are
   supported.  Each region name must be two ASCII letters.  The first one is
   region 1.  Thus "/regions=usca" has region 1 "us" and region 2 "ca".
@@ -583,7 +602,8 @@ Additionally the following items are recognized:
   list!
 
 - Other lines starting with '/' are reserved for future use.  The ones that
-  are not recognized are ignored (but you do get a warning message).
+  are not recognized are ignored.  You do get a warning message, so that you
+  know something won't work.
 
 - A "/" may follow the word with the following items:
     =   	Case must match exactly.
@@ -608,17 +628,18 @@ accepted.  This is different from a word with mixed case that is automatically
 marked as keep-case, those words may appear in all upper-case letters.
 
 
-FORMAT WITH AFFIX COMPRESSION
+FORMAT WITH .AFF and .DIC FILES
 
-There are two files: the basic word list and an affix file.  The affixes are
+There are two files: the basic word list and an affix file.  The affix file
+specifies settings for the language and can contain affixes.  The affixes are
 used to modify the basic words to get the full word list.  This significantly
 reduces the number of words, especially for a language like Polish.  This is
 called affix compression.
 
-The basic word list and the affix file are combined and turned into a binary
-spell file.  All the preprocessing has been done, thus this file loads fast.
-The binary spell file format is described in the source code (src/spell.c).
-But only developers need to know about it.
+The basic word list and the affix file are combined with the ":mkspell"
+command and results in a binary spell file.  All the preprocessing has been
+done, thus this file loads fast.  The binary spell file format is described in
+the source code (src/spell.c).  But only developers need to know about it.
 
 The preprocessing also allows us to take the Myspell language files and modify
 them before the Vim word list is made.  The tools for this can be found in the
@@ -630,39 +651,47 @@ here:
 	http://lingucomponent.openoffice.org/affix.readme ~
 Note that affixes are case sensitive, this isn't obvious from the description.
 
-Vim does not use the TRY item, it is ignored.  For making suggestions the
-possible characters in the words are used.
-
 Vim supports quite a few extras.  They are described below |spell-affix-vim|.
 Attempts have been made to keep this compatible with other spell checkers, so
-that the same files can be used.
+that the same files can often be used.  One other project that offers more
+than Myspell is Hunspell ( http://hunspell.sf.net ).
 
 
 WORD LIST FORMAT				*spell-dic-format*
 
-A very short example, with line numbers:
+A short example, with line numbers:
 
-	1	1234
-	2	aan
-	3	Als
-	4	Etten-Leur
-	5	et al.
-	6	's-Gravenhage
-	7	's-Gravenhaags
-	8	bedel/P
-	9	kado/1
-	10	cadeau/2
-	11	TCP,IP
+	1	1234 ~
+	2	aan ~
+	3	Als ~
+	4	Etten-Leur ~
+	5	et al. ~
+	6	's-Gravenhage ~
+	7	's-Gravenhaags ~
+	8	# word that differs between regions ~
+	9	kado/1 ~
+	10	cadeau/2 ~
+	11	TCP,IP ~
+	12	/the S affix may add a 's' ~
+	13	bedel/S ~
 
 The first line contains the number of words.  Vim ignores it, but you do get
 an error message if it's not there.  *E760*
 
-What follows is one word per line.  There should be no white space before or
-after the word.  After the word there is an optional slash and flags.  Most of
-these flags are letters that indicate the affixes that can be used with this
-word.  These are specified with SFX and PFX lines in the .aff file.  See the
-Myspell documentation.  Vim allows using other flag types with the FLAG item
-in the affix file |spell-FLAG|.
+What follows is one word per line.  White space at the end of the line is
+ignored, all other white space matters.  The encoding is specified in the
+affix file |spell-SET|.
+
+Comment lines start with '#' or '/'.  See the example lines 8 and 12.  Note
+that putting a comment after a word is NOT allowed:
+
+		someword   # comment that causes an error! ~
+
+After the word there is an optional slash and flags.  Most of these flags are
+letters that indicate the affixes that can be used with this word.  These are
+specified with SFX and PFX lines in the .aff file, see |spell-SFX| and
+|spell-PFX|.  Vim allows using other flag types with the FLAG item in the
+affix file |spell-FLAG|.
 
 When the word only has lower-case letters it will also match with the word
 starting with an upper-case letter.
@@ -672,7 +701,7 @@ is required at this position.  The same word with a lower-case letter at this
 position will not match. When some of the other letters are upper-case it will
 not match either.
 
-The word with all upper-case characters will always be OK.
+The word with all upper-case characters will always be OK,
 
 	word list	matches			does not match ~
 	als		als Als ALS		ALs AlS aLs aLS
@@ -683,46 +712,57 @@ The word with all upper-case characters will always be OK.
 The KEEPCASE affix ID can be used to specifically match a word with identical
 case only, see below |spell-KEEPCASE|.
 
-Note in line 5 to 7 that non-word characters are used.  You can include
-any character in a word.  When checking the text a word still only matches
-when it appears with a non-word character before and after it.  For Myspell a
-word starting with a non-word character probably won't work.
+Note: in line 5 to 7 non-word characters are used.  You can include any
+character in a word.  When checking the text a word still only matches when it
+appears with a non-word character before and after it.  For Myspell a word
+starting with a non-word character probably won't work.
 
 In line 12 the word "TCP/IP" is defined.  Since the slash has a special
 meaning the comma is used instead.  This is defined with the SLASH item in the
-affix file, see |spell-SLASH|.  Note that without this SLASH item the
-word will be "TCP,IP".
+affix file, see |spell-SLASH|.  Note that without this SLASH item the word
+will be "TCP,IP".
 
-							*spell-affix-vim*
-A flag that Vim adds and is not in Myspell is the flag defined with KEEPCASE
-in the affix file.  This has the meaning that case matters.  This can be used
-if the word does not have the first letter in upper case at the start of a
-sentence.  Example (assuming that = was used for KEEPCASE):
 
-    word list	    matches		    does not match ~
-    's morgens/=    's morgens		    'S morgens 's Morgens 'S MORGENS
-    's Morgens	    's Morgens 'S MORGENS   'S morgens 's morgens
+AFFIX FILE FORMAT			*spell-aff-format* *spell-affix-vim*
 
-The flag can also be used to avoid that the word matches when it is in all
-upper-case letters.
+							*spell-affix-comment*
+Comment lines in the .aff file start with a '#':
 
+	# comment line ~
+
+With some items it's also possible to put a comment after it, but this isn't
+supported in general.
+
+
+ENCODING							*spell-SET*
+
+The affix file can be in any encoding that is supported by "iconv".  However,
+in some cases the current locale should also be set properly at the time
+|:mkspell| is invoked.  Adding FOL/LOW/UPP lines removes this requirement
+|spell-FOL|.
+
+The encoding should be specified before anything where the encoding matters.
+The encoding applies both to the affix file and the dictionary file.  It is
+done with a SET line:
+
+	SET utf-8 ~
+
+The encoding can be different from the value of the 'encoding' option at the
+time ":mkspell" is used.  Vim will then convert everything to 'encoding' and
+generate a spell file for 'encoding'.  If some of the used characters to not
+fit in 'encoding' you will get an error message.
 							*spell-affix-mbyte*
-The basic word list is normally in an 8-bit encoding, which is mentioned in
-the affix file.  The affix file must always be in the same encoding as the
-word list.  This is compatible with Myspell.  For Vim the encoding may also be
-something else, any encoding that "iconv" supports.  The "SET" line must
-specify the name of the encoding.  When using a multi-byte encoding it's
-possible to use more different affixes (but Myspell doesn't support that, thus
-you may not want to use it anyway).
+When using a multi-byte encoding it's possible to use more different affix
+flags.  But Myspell doesn't support that, thus you may not want to use it
+anyway.  For compatibility use an 8-bit encoding.
 
 
 CHARACTER TABLES
 							*spell-affix-chars*
 When using an 8-bit encoding the affix file should define what characters are
-word characters (as specified with ENC).  This is because the system where
-":mkspell" is used may not support a locale with this encoding and isalpha()
-won't work.  For example when using "cp1250" on Unix.
-
+word characters.  This is because the system where ":mkspell" is used may not
+support a locale with this encoding and isalpha() won't work.  For example
+when using "cp1250" on Unix.
 						*E761* *E762* *spell-FOL*
 						*spell-LOW* *spell-UPP*
 Three lines in the affix file are needed.  Simplistic example:
@@ -774,7 +814,7 @@ the word.  This is needed to detect a spelling error such as they'are.  That
 should be they're, but since "they" and "are" are words themselves that would
 go unnoticed.
 
-These characters are defined with MIDWORD in the .aff file:
+These characters are defined with MIDWORD in the .aff file.  Example:
 
 	MIDWORD	'- ~
 
@@ -808,9 +848,58 @@ The usual PFX (prefix) and SFX (suffix) lines are supported (see the Myspell
 documentation or the Aspell manual:
 http://aspell.net/man-html/Affix-Compression.html).
 
-Note that Myspell ignores any extra text after the relevant info.  Vim
-requires this text to start with a "#" so that mistakes don't go unnoticed.
-Example:
+Summary:
+	SFX L Y 2 ~
+	SFX L 0 re [^x] ~
+	SFX L 0 ro x ~
+
+The first line is a header and has four fields:
+	SFX {flag} {combine} {count}
+
+{flag}		The name used for the suffix.  Mostly it's a single letter,
+		but other characters can be used, see |spell-FLAG|.
+
+{combine}	Can be 'Y' or 'N'.  When 'Y' then the word plus suffix can
+		also have a prefix.  When 'N' then a prefix is not allowed.
+
+{count}		The number of lines following.  If this is wrong you will get
+		an error message.
+
+For PFX the fields are exactly the same.
+
+The basic format for the following lines is:
+	SFX {flag} {strip} {add} {condition}
+
+{flag}		Must be the same as the {flag} used in the first line.
+
+{strip}		Characters removed from the basic word.  There is no check if
+		the characters are actually there, only the length is used (in
+		bytes).  This better match the {condition}, otherwise strange
+		things may happen.  If the {strip} length is equal to or
+		longer than the basic word the suffix won't be used.
+		When {strip} is 0 (zero) then nothing is stripped.
+
+{add}		Characters added to the basic word, after removing {strip}.
+
+{condition}	A simplistic pattern.  Only when this matches with a basic
+		word will the suffix be used for that word.  This is normally
+		for using one suffix letter with different {add} and {strip}
+		fields for words with different endings.
+		When {condition} is a . (dot) there is no condition.
+		The pattern may contain:
+		- Literal characters.
+		- A set of characters in []. [abc] matches a, b and c.
+		  A dash is allowed for a range [a-c], but this is
+		  Vim-specific.
+		- A set of characters that starts with a ^, meaning the
+		  complement of the specified characters. [^abc] matches any
+		  character but a, b and c.
+
+For PFX the fields are the same, but the {strip}, {add} and {condition} apply
+to the start of the word.
+
+Note: Myspell ignores any extra text after the relevant info.  Vim requires
+this text to start with a "#" so that mistakes don't go unnoticed.  Example:
 
 	SFX F 0 in   [^i]n      # Spion > Spionin  ~
 	SFX F 0 nen  in         # Bauerin > Bauerinnen ~
@@ -826,16 +915,49 @@ Myspell that use this feature apparently have this flag.  Example:
 	SFX a 0 en . ~
 	SFX a 0 on . ~
 
+
+AFFIX FLAGS						*spell-affix-flags*
+
+This is a feature that comes from Hunspell: The affix may specify flags.  This
+works similar to flags specified on a basic word.  The flags apply to the
+basic word plus the affix.  Example:
+
+	SFX S Y 1 ~
+	SFX S 0 s . ~
+
+	SFX A Y 1 ~
+	SFX A 0 able/S . ~
+
+When the dictionary file contains "drink/AS" then these words are possible:
+
+	drink
+	drinks		uses S suffix
+	drinkable	uses A suffix
+	drinkables	uses A suffix and then S suffix
+
+Generally the flags of the suffix are added to the flags of the basic word,
+both are used for the word plus suffix.  But the flags of the basic word are
+only used once for affixes, except that both one prefix and one suffix can be
+used when both support combining.
+
+Specifically, the affix flags can be used for:
+- Affixes on affixes, as in the example above.
+- Making the word with the affix rare, by using the |spell-RARE| flag.
+- Exclude the word with the affix from compounding, by using the
+  |spell-COMPOUNDFORBIDFLAG| flag.
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+OLD STUFF
 							*spell-affix-rare*
 An extra item for Vim is the "rare" flag.  It must come after the other
 fields, before a comment.  When used then all words that use the affix will be
-marked as rare words.  Example:
+marked as rare words.  Examples:
 
 	PFX F 0 nene  .   rare ~
 	SFX F 0 oin   n   rare   # hardly ever used ~
 
-However, if the word also appears as a good word in another way it won't be
-marked as rare.
+However, if the word also appears as a good word in another way (e.g., in
+another region) it won't be marked as rare.
 
 							*spell-affix-nocomp*
 Another extra item for Vim is the "nocomp" flag.  It must come after the other
@@ -852,6 +974,7 @@ Example:
 		util/ac ~
 
 This allows for "wordutil" and "wordutils" but not "wordutilize".
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 						    *spell-PFXPOSTPONE*
 When an affix file has very many prefixes that apply to many words it's not
@@ -891,7 +1014,16 @@ for keep-case words.  Example:
 
 	KEEPCASE = ~
 
-See above for an example |spell-affix-vim|.
+This flag is not supported by Myspell.  It has the meaning that case matters.
+This can be used if the word does not have the first letter in upper case at
+the start of a sentence.  Example:
+
+    word list	    matches		    does not match ~
+    's morgens/=    's morgens		    'S morgens 's Morgens 'S MORGENS
+    's Morgens	    's Morgens 'S MORGENS   'S morgens 's morgens
+
+The flag can also be used to avoid that the word matches when it is in all
+upper-case letters.
 
 
 RARE WORDS						*spell-RARE*
@@ -922,17 +1054,14 @@ This can be used to exclude words that would otherwise be good.  For example
 Once a word has been marked as bad it won't be undone by encountering the same
 word as good.
 
+The flag also applies to the word with affixes, thus this can be used to mark
+a whole bunch of related words as bad.
+
 							*spell-NEEDAFFIX*
 The NEEDAFFIX flag is used to require that a word is used with an affix.  The
-word itself is not a good word.  Example:
+word itself is not a good word (unless there is an empty affix).  Example:
 
 	NEEDAFFIX + ~
-
-							*spell-NEEDCOMPOUND*
-The NEEDCOMPOUND flag is used to require that a word is used as part of a
-compound word The word itself is not a good word.  Example:
-
-	NEEDCOMPOUND & ~
 
 
 COMPOUND WORDS						*spell-compound*
@@ -944,8 +1073,8 @@ call this character a flag here.  Obviously these flags must be different from
 any affix IDs used.
 
 							*spell-COMPOUNDFLAG*
-The Myspell compatible method uses one flag, specified with COMPOUNDFLAG.
-All words with this flag combine in any order.  This means there is no control
+The Myspell compatible method uses one flag, specified with COMPOUNDFLAG.  All
+words with this flag combine in any order.  This means there is no control
 over which word comes first.  Example:
 	COMPOUNDFLAG c ~
 
@@ -1006,6 +1135,12 @@ A specific example: Allow a compound to be made of two words and a dash:
 
 This allows for the word "start-end", but not "startend".
 
+							*spell-NEEDCOMPOUND*
+The NEEDCOMPOUND flag is used to require that a word is used as part of a
+compound word.  The word itself is not a good word.  Example:
+
+	NEEDCOMPOUND & ~
+
 							*spell-COMPOUNDMIN*
 The minimal character length of a word used for compounding is specified with
 COMPOUNDMIN.  Example:
@@ -1036,6 +1171,17 @@ is no limit on the number of syllables.
 If both COMPOUNDMAX and COMPOUNDSYLMAX are defined, a compound word is
 accepted if it fits one of the criteria, thus is either made from up to
 COMPOUNDMAX words or contains up to COMPOUNDSYLMAX syllables.
+
+						    *spell-COMPOUNDFORBIDFLAG*
+The COMPOUNDFORBIDFLAG specifies a flag that can be used on an affix.  It
+means that the word plus affix cannot be used in a compound word.
+NOT IMPLEMENTED YET.
+
+						    *spell-COMPOUNDPERMITFLAG*
+The COMPOUNDPERMITFLAG specifies a flag that can be used on an affix.  It
+means that the word plus affix can also be used in a compound word in a way
+where the affix ends up halfway the word.
+NOT IMPLEMENTED YET.
 
 							*spell-SYLLABLE*
 The SYLLABLE item defines characters or character sequences that are used to
@@ -1105,6 +1251,30 @@ lists that support this.
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 
+							*spell-COMMON*
+Common words can be specified with the COMMON item.  This will give better
+suggestions when editing a short file.  Example:
+
+	COMMON  the of to and a in is it you that he was for on are ~
+
+The words must be separated by white space, up to 25 per line.
+When multiple regions are specified in a ":mkspell" command the common words
+for all regions are combined and used for all regions.
+
+							*spell-NOSPLITSUGS*
+This item indicates that suggestions for splitting a word will not appear:
+
+	NOSPLITSUGS ~
+
+							*spell-NOSUGGEST*
+The flag specified with NOSUGGEST can be used for words that will not be
+suggested.  Can be used for obscene words.
+
+	NOSUGGEST % ~
+
+NOT IMPLEMENTED YET.
+
+
 REPLACEMENTS						*spell-REP*
 
 In the affix file REP items can be used to define common mistakes.  This is
@@ -1118,7 +1288,7 @@ used to make spelling suggestions.  The items define the "from" text and the
 	REP ch k ~
 
 The first line specifies the number of REP lines following.  Vim ignores the
-number, but it must be there.
+number, but it must be there (for compatibility with Myspell).
 
 Don't include simple one-character replacements or swaps.  Vim will try these
 anyway.  You can include whole words if you want to, but you might want to use
@@ -1144,6 +1314,17 @@ number, but the line must be there.
 
 Each letter must appear in only one of the MAP items.  It's a bit more
 efficient if the first letter is ASCII or at least one without accents.
+
+
+.SUG FILE						*spell-NOSUGFILE*
+
+When soundfolding is specified in the affix file then ":mkspell" will normally
+p ~ ~roduce a .sug file next to the .spl file.  This used to find suggestions by
+their sound-a-like form quickly.  At the cost of a lot of memory.
+
+To avoid producing a .sug file use this item in the affix file:
+
+	NOSUGFILE ~
 
 
 SOUND-A-LIKE						*spell-SAL*
@@ -1196,5 +1377,106 @@ SOFOFROM are replaced by one.
 You can use the |soundfold()| function to try out the results.  Or set the
 'verbose' option to see the score in the output of the |z=| command.
 
+
+UNSUPPORTED ITEMS				*spell-affix-not-supported*
+
+These items appear in the affix file of other spell checkers.  In Vim they are
+ignored, not supported or defined in another way.
+
+ACCENT		(Hunspell)				*spell-ACCENT*
+		Use MAP instead. |spell-MAP|
+
+CHECKCOMPOUNDCASE  (Hunspell)			*spell-CHECKCOMPOUNDCASE*
+		Disallow uppercase letters at compound word boundaries.
+		Not supported.
+
+CHECKCOMPOUNDDUP  (Hunspell)			*spell-CHECKCOMPOUNDDUP*
+		Disallow using the same word twice in a compound.  Not
+		supported.
+
+CHECKCOMPOUNDREP  (Hunspell)			*spell-CHECKCOMPOUNDREP*
+		Something about using REP items and compound words.  Not
+		supported.
+
+CHECKCOMPOUNDTRIPLE  (Hunspell)			*spell-CHECKCOMPOUNDTRIPLE*
+		Forbid three identical characters when compounding.  Not
+		supported.
+
+CHECKCOMPOUNDPATTERN  (Hunspell)		*spell-CHECKCOMPOUNDPATTERN*
+		Forbid compounding when patterns match.  Not supported.
+
+CIRCUMFIX	(Hunspell)				*spell-CIRCUMFIX*
+		This means a prefix and suffix must be added at the same time.
+		Instead only specify the suffix, and give the that suffix two
+		flags: The required prefix and the NEEDAFFIX flag.
+		|spell-NEEDAFFIX|
+
+COMPLEXPREFIXES  (Hunspell)				*spell-COMPLEXPREFIXES*
+		Enables using two prefixes.  Not supported.
+
+COMPOUNDBEGIN	(Hunspell)				*spell-COMPOUNDBEGIN*
+		Use COMPOUNDFLAGS instead. |spell-COMPOUNDFLAGS|
+
+COMPOUNDEND	(Hunspell)				*spell-COMPOUNDEND*
+		Use COMPOUNDFLAGS instead. |spell-COMPOUNDFLAGS|
+
+COMPOUNDMIDDLE	(Hunspell)				*spell-COMPOUNDMIDDLE*
+		Use COMPOUNDFLAGS instead. |spell-COMPOUNDFLAGS|
+
+COMPOUNDROOT	(Hunspell)				*spell-COMPOUNDROOT*
+		Flag for words in the dictionary that are already a compound.
+		Vim doesn't use it.
+
+COMPOUNDSYLLABLE  (Hunspell)			*spell-COMPOUNDSYLLABLE*
+		Use SYLLABLE and COMPOUNDSYLMAX instead. |spell-SYLLABLE|
+		|spell-COMPOUNDSYLMAX|
+
+COMPOUNDWORDMAX	(Hunspell)				*spell-COMPOUNDWORDMAX*
+		Use COMPOUNDMAX instead. |spell-COMPOUNDMAX|
+
+FORBIDDENWORD	(Hunspell)				*spell-FORBIDDENWORD*
+		Use BAD instead. |spell-BAD|
+
+HOME		(Hunspell)				*spell-HOME*
+		Specifies the website for the language.  Not supported.
+
+LANG		(Hunspell)				*spell-LANG*
+		This specifies language-specific behavior.  This actually
+		moves part of the language knowledge into the program,
+		therefore Vim does not support it.  Each language property
+		must be specified separately.
+
+LEMMA_PRESENT	(Hunspell)				*spell-LEMMA_PRESENT*
+		Only needed for mprphological analysis.
+
+MAXNGRAMSUGS	(Hunspell)				*spell-MAXNGRAMSUGS*
+		Not supported.
+
+NAME		(Hunspell)				*spell-NAME*
+		Specifies the name of the language.  Not supported.
+
+ONLYINCOMPOUND	(Hunspell)				*spell-ONLYINCOMPOUND*
+		Use NEEDCOMPOUND instead. |spell-NEEDCOMPOUND|
+
+PSEUDOROOT	(Hunspell)				*spell-PSEUDOROOT*
+		Use NEEDAFFIX instead. |spell-NEEDAFFIX|
+
+SUGSWITHDOTS	(Hunspell)				*spell-SUGSWITHDOTS*
+		Adds dots to suggestions.  Vim doesn't need this.
+
+SYLLABLENUM	(Hunspell)				*spell-SYLLABLENUM*
+		Not supported.
+
+TRY		(Myspell, Hunspell, others)		*spell-TRY*
+		Vim does not use the TRY item, it is ignored.  For making
+		suggestions the actual characters in the words are used.
+
+VERSION		(Hunspell)				*spell-VERSION*
+		Specifies the version for the language.  Not supported.
+
+WORDCHARS	(Hunspell)				*spell-WORDCHARS*
+		Used to recognize words.  Vim doesn't need it, because there
+		is no need to separate words before checking them (using a
+		trie instead of a hashtable).
 
  vim:tw=78:sw=4:ts=8:ft=help:norl:

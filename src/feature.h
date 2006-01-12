@@ -127,6 +127,15 @@
 #endif
 
 /*
+ * Message history is fixed at 100 message, 20 for the tiny version.
+ */
+#ifdef FEAT_SMALL
+# define MAX_MSG_HIST_LEN 100
+#else
+# define MAX_MSG_HIST_LEN 20
+#endif
+
+/*
  * +jumplist		Jumplist, CTRL-O and CTRL-I commands.
  */
 #ifdef FEAT_SMALL

@@ -8234,8 +8234,11 @@ ex_mkrc(eap)
 		failed = TRUE;
 	    if (put_line(fd, "doautoall SessionLoadPost") == FAIL)
 		failed = TRUE;
-	    if (put_line(fd, "unlet SessionLoad") == FAIL)
-		failed = TRUE;
+	    if (eap->cmdidx == CMD_mksession)
+	    {
+		if (put_line(fd, "unlet SessionLoad") == FAIL)
+		    failed = TRUE;
+	    }
 	}
 #endif
 	if (put_line(fd, "\" vim: set ft=vim :") == FAIL)

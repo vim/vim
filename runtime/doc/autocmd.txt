@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.0aa.  Last change: 2005 Dec 18
+*autocmd.txt*   For Vim version 7.0aa.  Last change: 2006 Jan 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -330,7 +330,7 @@ BufEnter			After entering a buffer.  Useful for setting
 							*BufFilePost*
 BufFilePost			After changing the name of the current buffer
 				with the ":file" or ":saveas" command.
-							*BufReadCmd*
+							*BufFilePre*
 BufFilePre			Before changing the name of the current buffer
 				with the ":file" or ":saveas" command.
 							*BufHidden*
@@ -368,10 +368,10 @@ BufRead or BufReadPost		When starting to edit a new buffer, after
 				This does NOT work for ":r file".  Not used
 				when the file doesn't exist.  Also used after
 				successfully recovering a file.
-						*BufReadPre* *E200* *E201*
+							*BufReadCmd*
 BufReadCmd			Before starting to edit a new buffer.  Should
 				read the file into the buffer. |Cmd-event|
-							*BufFilePre*
+						*BufReadPre* *E200* *E201*
 BufReadPre			When starting to edit a new buffer, before
 				reading the file into the buffer.  Not used
 				if the file doesn't exist.

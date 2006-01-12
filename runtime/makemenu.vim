@@ -1,6 +1,6 @@
 " Script to define the syntax menu in synmenu.vim
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Dec 01
+" Last Change:	2006 Jan 12
 
 " This is used by "make menu" in the src directory.
 edit <sfile>:p:h/synmenu.vim
@@ -186,7 +186,9 @@ SynMenu FG.Grub:grub
 SynMenu FG.GNU\ Server\ Pages:gsp
 SynMenu FG.GNUplot:gnuplot
 SynMenu FG.GrADS\ scripts:grads
+SynMenu FG.Gretl:gretl
 SynMenu FG.Groff:groff
+SynMenu FG.Groovy:groovy
 SynMenu FG.GTKrc:gtkrc
 
 SynMenu HIJK.Haskell.Haskell:haskell

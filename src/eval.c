@@ -654,7 +654,6 @@ static int get_var_tv __ARGS((char_u *name, int len, typval_T *rettv, int verbos
 static int handle_subscript __ARGS((char_u **arg, typval_T *rettv, int evaluate, int verbose));
 static typval_T *alloc_tv __ARGS((void));
 static typval_T *alloc_string_tv __ARGS((char_u *string));
-static void free_tv __ARGS((typval_T *varp));
 static void init_tv __ARGS((typval_T *varp));
 static long get_tv_number __ARGS((typval_T *varp));
 static linenr_T get_tv_lnum __ARGS((typval_T *argvars));
@@ -1323,7 +1322,9 @@ get_spellword(list, pp)
 #endif
 
 /*
- * Top level evaluation function, 
+ * Top level evaluation function.
+ * Returns an allocated typval_T with the result.
+ * Returns NULL when there is an error.
  */
     typval_T *
 eval_expr(arg, nextcmd)
@@ -1333,13 +1334,10 @@ eval_expr(arg, nextcmd)
     typval_T	*tv;
 
     tv = (typval_T *)alloc(sizeof(typval_T));
-    if (!tv)
-	return NULL;
-
-    if (eval0(arg, tv, nextcmd, TRUE) == FAIL)
+    if (tv != NULL && eval0(arg, tv, nextcmd, TRUE) == FAIL)
     {
 	vim_free(tv);
-	return NULL;
+	tv = NULL;
     }
 
     return tv;
@@ -13930,7 +13928,7 @@ f_spellbadword(argvars, rettv)
 	    /* Check the argument for spelling. */
 	    while (*str != NUL)
 	    {
-		len = spell_check(curwin, str, &attr, &capcol);
+		len = spell_check(curwin, str, &attr, &capcol, FALSE);
 		if (attr != HLF_COUNT)
 		{
 		    word = str;
@@ -13996,7 +13994,7 @@ f_spellsuggest(argvars, rettv)
 	else
 	    maxcount = 25;
 
-	spell_suggest_list(&ga, str, maxcount, need_capital);
+	spell_suggest_list(&ga, str, maxcount, need_capital, FALSE);
 
 	for (i = 0; i < ga.ga_len; ++i)
 	{
@@ -15904,7 +15902,7 @@ alloc_string_tv(s)
 /*
  * Free the memory for a variable type-value.
  */
-    static void
+    void
 free_tv(varp)
     typval_T *varp;
 {
@@ -16910,7 +16908,10 @@ ex_execute(eap)
     if (ret != FAIL && ga.ga_data != NULL)
     {
 	if (eap->cmdidx == CMD_echomsg)
+	{
 	    MSG_ATTR(ga.ga_data, echo_attr);
+	    out_flush();
+	}
 	else if (eap->cmdidx == CMD_echoerr)
 	{
 	    /* We don't want to abort following commands, restore did_emsg. */

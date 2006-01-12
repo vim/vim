@@ -33,6 +33,10 @@ OK
 OK
 &tw: 1
 OK
+&g:errorformat: 1
+OK
+&l:errorformat: 1
+OK
 &nojoinspaces: 0
 OK
 &nojs: 0
@@ -85,27 +89,87 @@ local_dict: 1
 OK
 local_dict: 0
 OK
+curly_local_var: 1
+OK
+curly_local_var: 0
+OK
 g:global_var: 1
 OK
 g:global_var: 0
 OK
-curly_{str}_var: 1
+g:global_list: 1
 OK
-curly_{str}_var: 0
+g:global_list: 0
 OK
-g:curly_{str}_var: 1
+g:global_dict: 1
 OK
-g:curly_{str}_var: 0
+g:global_dict: 0
+OK
+g:curly_global_var: 1
+OK
+g:curly_global_var: 0
+OK
+w:window_var: 1
+OK
+w:window_var: 0
+OK
+w:window_list: 1
+OK
+w:window_list: 0
+OK
+w:window_dict: 1
+OK
+w:window_dict: 0
+OK
+w:curly_window_var: 1
+OK
+w:curly_window_var: 0
+OK
+b:buffer_var: 1
+OK
+b:buffer_var: 0
+OK
+b:buffer_list: 1
+OK
+b:buffer_list: 0
+OK
+b:buffer_dict: 1
+OK
+b:buffer_dict: 0
+OK
+b:curly_buffer_var: 1
+OK
+b:curly_buffer_var: 0
 OK
 s:script_var: 1
 OK
 s:script_var: 0
 OK
-s:curly_{str}_var: 1
+s:script_list: 1
 OK
-s:curly_{str}_var: 0
+s:script_list: 0
+OK
+s:script_dict: 1
+OK
+s:script_dict: 0
+OK
+s:curly_script_var: 1
+OK
+s:curly_script_var: 0
 OK
 *s:my_script_func: 1
 OK
 *s:my_script_func: 0
+OK
+v:version: 1
+OK
+v:non_exists_var: 0
+OK
+a:func_arg: 1
+OK
+a:non_exists_arg: 0
+OK
+a:1: 1
+OK
+a:2: 0
 OK

@@ -1782,7 +1782,9 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :cabbrev	map.txt	/*:cabbrev*
 :cabc	map.txt	/*:cabc*
 :cabclear	map.txt	/*:cabclear*
-:cad	quickfix.txt	/*:cad*
+:cadde	quickfix.txt	/*:cadde*
+:caddexpr	quickfix.txt	/*:caddexpr*
+:caddf	quickfix.txt	/*:caddf*
 :caddfile	quickfix.txt	/*:caddfile*
 :cal	eval.txt	/*:cal*
 :call	eval.txt	/*:call*

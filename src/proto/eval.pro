@@ -61,6 +61,7 @@ void set_reg_var __ARGS((int c));
 char_u *v_exception __ARGS((char_u *oldval));
 char_u *v_throwpoint __ARGS((char_u *oldval));
 char_u *set_cmdarg __ARGS((exarg_T *eap, char_u *oldarg));
+void free_tv __ARGS((typval_T *varp));
 void clear_tv __ARGS((typval_T *varp));
 long get_tv_number_chk __ARGS((typval_T *varp, int *denote));
 char_u *get_tv_string_chk __ARGS((typval_T *varp));

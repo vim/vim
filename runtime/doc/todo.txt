@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2005 Dec 29
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Jan 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,25 +30,81 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Find E999 and hand out numbers.
+
+Compress list of word numbers: sort them, computer differences, store as utf-8
+bytes.
+
+Undo bug: Gerald Lai Jan 3.
+
+Syntax HL: when region start has an offset that happens to be after the end of
+the line then strange things happen. (Brett Stahlman Dec 31)
+
+Add Python complete script (Aaron Griffin)
+
+Evaluating CTRL-R = in the sandbox causes trouble (G. Sumner Hayes).  Can the
+rules for the commandline window be used?
+
+Evaluate 'balloonexpr' in the sandbox only when it was set from an unsafe
+place (e.g., modeline)?  Patch from Sumner Hayes, Jan 12.  Also use for other
+options?
+
+":saveas asdf.c" should set 'filetype' to c when it's empty.  Also for ":w
+asdf.c" when it sets the buffer filename.
+
 ccomplete:
+- When using page-up/page-down in menu it sometimes jumps more than a page.
 - When an option is set: In completion mode and the user types (identifier)
   characters, advance to the first match instead of removing the popup menu.
   If there is no match remove the selection. (Yegappan Lakshmanan)
 - Complete the longest common match instead of the first match?
     For all kinds of completions?  Configurable?
-- Window resize when poup is displayed
+- Window resize when poup is displayed.
 - When completing something that is a structure, add the "." or "->" right
   away.  How to figure out if it's a pointer or not?
 - When a typedef or struct is local to a file only use it in that file?
+- Extra info for each entry to show in a tooltip kind of thing.
+- Special mappings for when the popup menu is visible?  Would allow for making
+  a specific selection (e.g, methods vs variables).
+- Provide a function to popup the menu, so that an insert mode mapping can
+  start it (with a specific selection).
 - !_TAG_FILE_FORMAT and it's ilk are listed in the global completions
     Can't reproduce it right now...
 
 spelling:
-- Hunspell has NOSUGGEST flag (use for obscene words?)
-- Check out Hunspell 1.1.2.
+- NL woordenlijst naar Adri sturen.
+- Include script to cleanup a .add file. (Antonio Colombo, Jan 9)
+- suggestions for "macARONI" doesn't include "macaroni", they are all allcap.
+  suggestion for "KG" to "kg" when it's keepcase.
+- Autocommand event for when a spell file is missing.  Allows making a plugin
+  that fetches the file over internet.  Pattern == language.
+- Using KEEPCASE flag still allows all-upper word, docs say it doesn't.
+  Don't allow it, because there is no other way to do this.
+- Implement NOSUGGEST flag (used for obscene words).
+- Implement NOSPLITSUGS.
+- Rename COMPOUNDFLAGS to COMPOUNDPATTERN or COMPOUNDRULE?
+    Hunspell now uses COMPOUND with a count.
+- Check out Hunspell 1.1.3.
+    what does MAXNGRAMSUGS do?
+    See announcement (Nemeth, 5 jan)
+    use "\/" instead of SLASH item?
+    is COMPLEXPREFIXES necessary now that we have flags for affixes?
 - Look into hungarian dictionary:
-  http://magyarispell.sourceforge.net/rc3-beta2.zip
-- Support breakpoint character · 0xb7 and ignore it?
+  http://magyarispell.sourceforge.net/hu_HU-1.0.tar.gz
+-   Support flags on a suffix.  Used for second level affixes, rare and
+    nocomp.  The flags may also be used for compounding.  Default is an OR
+    mechanism with the flags of the word.  Adding "compset" on the affixes
+    means the compound flags of the word are not used.
+    Instead of "SFX a 0 add/FLAGS ." we could use "SFX a 0 add . /FLAGS" (or
+    support both).
+- When compounding Hunspell doesn't allow affixes inside the compound word,
+  only before and after it.  COMPOUNDPERMITFLAG can be used to allow it.
+  Check Myspell and Aspell if they also work this way.
+  Thus a word + suffix needs a flag that it can't be used with a following
+  compound, and word + prefix can't be after another word in a compound.
+- Implement COMPOUNDFORBIDFLAG.
+- Support breakpoint character · 0xb7 and ignore it?  Makes it possible to use
+  same wordlist for hyphenation.
 8   Alternate Dutch word list at www.nederlandsewoorden.nl (use script to
     obtain).  But new Myspell wordlist will come (Hagen)
 - Finding suggestions with sound folding is slow.  Somehow store the
@@ -56,6 +112,9 @@ spelling:
 - Also use the spelling dictionary for dictionary completion.
 - Have "zg" and "zw" report the file that was modified. (Marvin Renich)
 - Add a command like "zg" that selects one of the files 'spellfile'.
+- Add a "zug" command that undoes "zg"?  Deletes the good word instead of
+  adding a bad word like "zw" would.  Use "zuw" to undo "zw"?  (Antonio
+  Colombo)
 
 GTK: get an X error while exiting quickly after starting (running the tests).
 Caused by new GTK library?
@@ -65,6 +124,18 @@ Support saving and restoring session for X windows?  It should work to do
 ":mksession" and use "-S fname" for the restart command.  The
 gui_x11_wm_protocol_handler() already takes care of the rest.
 global_event_filter() for GTK.
+
+Is it easy to have an item in a pattern that matches with a mark location?
+Similar to |/\%>l| and |/\%c|.  (Benji Fisher)
+
+Patch to support lists and dicts for the Python interface. (G. Sumner Hayes,
+Jan 12).  Docs in a previous patch.
+Use free_tv() instead of clear_tv() and vim_free().
+
+Win32 installer: Default _vimrc contains absolute path to diff.exe.  After
+upgrading it becomes invalid.  Fix it automatically somehow?  Use $VIMRUNTIME
+in the path instead of filling it the path?  At least give a clear error
+message.
 
 In diff mode deleting lines is very slow.  E.g., when diffing two .po files
 and then sourcing po/cleaup.vim.
@@ -278,6 +349,7 @@ PLANNED FOR VERSION 7.0:
 8   Support four composing/combining characters, needed for Hebrew. (Ron Aaron)
     Add the 'maxcombining' option to set the nr. of composing characters.
     At the same time support more colors (use two bytes when necessary).
+8   "ga" should show all composing characters, also if there are more than 2.
 8   Searching for a composing character by itself should work.  Perhaps "."
     with a composing char should work too.
 -   Add a few more things to 'diffopt': "horizontal", "vertical",
@@ -368,6 +440,7 @@ Add gui_mch_browsedir() for Motif, Mac OS/X.
 Add extra list of file locations.  A bit like the quickfix list, but there is
 one per window.  Can be used with:
     :ltag	      list of matching tags, like :tselect
+Patch from Yegappan Lakshmanan, Jan 9.
 Commands to use the location list:
     :lnext	      next location
     :lprevious :lNext previous location
@@ -403,6 +476,11 @@ Real Profiling:
 Add more tests for all new functionality in Vim 7.  Especially new functions.
 
 Updated Ruby interface. (Ryan Paul)
+
+'errorformat' docs are a bit unclear.  Suggestions by Charles Campbell (2006
+Jan 6)
+Add a flag to check for a match with the next item first?  Helps for
+continuation lines that may contain just about anything.
 
 Awaiting updated patches:
     --- awaiting updated patch ---
@@ -1395,12 +1473,8 @@ Spell checking:
 -   Compound word is accepted if nr of words is <= COMPOUNDMAX OR nr of
     syllables <= COMPOUNDSYLMAX.  Specify using AND in the affix file?
 -   COMPOUNDMAX -> COMPOUNDWORDMAX?
--   Support flags on a suffix.  Used for second level affixes.  The flags may
-    also be used for compounding.  Default is an OR mechanism with the flags
-    of the word.  Adding "compset" on the affixes means the compound flags of
-    the word are not used.  Instead of "SFX a 0 add/FLAGS ." we could use "SFX
-    a 0 add . /FLAGS" (or support both).
--   NEEDCOMPOUND also used for affix?  Or use "needcomp" after affix?
+-   NEEDCOMPOUND also used for affix?  Or is this called ONLYINCOMPOUND now?
+    Or is ONLYINCOMPOUND only for inside a compound, not at start or end?
 -   Do we need a flag for the rule that when compounding is done the following
     word doesn't have a capital after a word character, even for Onecap words?
 -   New hunspell home page: http://hunspell.sourceforge.net/
@@ -1425,8 +1499,8 @@ Spell checking:
 -   Add flags to count extra syllables in a word.  SYLLABLEADD1 SYLLABLEADD2,
     etc.?  Or make it possible to specify the syllable count of a word
     directly, e.g., after another slash: /abc/3
--   MORPHO item in affix file: ignore morphological fields after word and
-    affix.
+-   MORPHO item in affix file: ignore TAB and morphological field after
+    word/flags and affix.
 -   Implement multiple flags for compound words and CMP item?
     Await comments from other spell checking authors.
 -   Also see tklspell: http://tkltrans.sourceforge.net/
@@ -1487,8 +1561,8 @@ Folding:
 -   'foldmethod' "textobject": fold on sections and paragraph text objects.
 -   Add 'hidecomment' option: don't display comments in /* */ and after //.
     Or is the conceal patch from Vince Negri a more generic solution?
--   "zu": undo change in manual fold. "zU" redo change in manual fold.  How to
-    implement this?
+-   "zuf": undo change in manual fold. "zUf" redo change in manual fold.  How
+    to implement this?
 -   "zJ" command: add the line or fold below the fold in the fold under the
     cursor.
 -   'foldmethod' "syntax": "fold=3": set fold level for a region.
@@ -1525,7 +1599,6 @@ Multi-byte characters:
 8   Should add test for using various commands with multi-byte characters.
 8   'infercase' doesn't work with multi-byte characters.
 8   toupper() function doesn't handle byte count changes.
-8   "ga" should show all composing characters, also if there are more than 2.
 7   When searching, should order of composing characters be ignored?
 8   Should implement 'delcombine' for command line editing.
 8   Detect overlong UTF-8 sequences and handle them like illegal bytes.
@@ -2814,8 +2887,9 @@ Incsearch:
 
 
 Searching:
-7   Add "g/" and "gb" to search for a pattern in the Visually selected text?
+8   Add "g/" and "gb" to search for a pattern in the Visually selected text?
     "g?" is already used for rot13.
+    Can use "g/" in Normal mode, uses the '< to '> area.
 8   Add a mechanism for recursiveness: "\@(([^()]*\@g[^()]*)\)".  \@g stands
     for "go recursive here" and \@( \) marks the recursive part.
     Perl does it this way:

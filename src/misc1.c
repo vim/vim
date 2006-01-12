@@ -7952,6 +7952,10 @@ preserve_exit()
 
     prepare_to_exit();
 
+    /* Setting this will prevent free() calls.  That avoids calling free()
+     * recursively when free() was invoked with a bad pointer. */
+    really_exiting = TRUE;
+
     out_str(IObuff);
     screen_start();		    /* don't know where cursor is now */
     out_flush();

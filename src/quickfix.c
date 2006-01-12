@@ -86,6 +86,7 @@ struct eformat
 				/*   'O' overread (partial) message */
     char_u	    flags;	/* additional flags given in prefix */
 				/*   '-' do not include this line */
+				/*   '+' include whole line in message */
 };
 
 static int	qf_init_ext __ARGS((char_u *efile, buf_T *buf, typval_T *tv, char_u *errorformat, int newlist, linenr_T lnumfirst, linenr_T lnumlast));
@@ -578,7 +579,7 @@ restofline:
 		    col = (int)atol((char *)regmatch.startp[i]);
 		if ((i = (int)fmt_ptr->addr[4]) > 0)		/* %t */
 		    type = *regmatch.startp[i];
-		if (fmt_ptr->flags ==  '+' && !multiscan)	/* %+ */
+		if (fmt_ptr->flags == '+' && !multiscan)	/* %+ */
 		    STRCPY(errmsg, IObuff);
 		else if ((i = (int)fmt_ptr->addr[5]) > 0)	/* %m */
 		{
@@ -613,9 +614,9 @@ restofline:
 	    }
 	}
 	multiscan = FALSE;
-	if (!fmt_ptr || idx == 'D' || idx == 'X')
+	if (fmt_ptr == NULL || idx == 'D' || idx == 'X')
 	{
-	    if (fmt_ptr)
+	    if (fmt_ptr != NULL)
 	    {
 		if (idx == 'D')				/* enter directory */
 		{
@@ -634,10 +635,10 @@ restofline:
 	    lnum = 0;			/* don't jump to this line */
 	    valid = FALSE;
 	    STRCPY(errmsg, IObuff);	/* copy whole line to error message */
-	    if (!fmt_ptr)
+	    if (fmt_ptr == NULL)
 		multiline = multiignore = FALSE;
 	}
-	else if (fmt_ptr)
+	else if (fmt_ptr != NULL)
 	{
 	    if (vim_strchr((char_u *)"AEWI", idx) != NULL)
 		multiline = TRUE;	/* start of a multi-line message */
@@ -2747,7 +2748,7 @@ load_dummy_buffer(fname)
     /* Need to set the filename for autocommands. */
     (void)setfname(curbuf, fname, NULL, FALSE);
 
-    if (ml_open() == OK)
+    if (ml_open(curbuf) == OK)
     {
 	/* Create swap file now to avoid the ATTENTION message. */
 	check_need_swap(TRUE);
@@ -2978,7 +2979,7 @@ ex_cbuffer(eap)
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 /*
- * ":cexpr {expr}" command.
+ * ":cexpr {expr}" and ":caddexpr {expr}" command.
  */
     void
 ex_cexpr(eap)
@@ -2986,16 +2987,23 @@ ex_cexpr(eap)
 {
     typval_T	*tv;
 
+    /* Evaluate the expression.  When the result is a string or a list we can
+     * use it to fill the errorlist. */
     tv = eval_expr(eap->arg, NULL);
-    if (!tv || (tv->v_type != VAR_STRING && tv->v_type != VAR_LIST) ||
-	(tv->v_type == VAR_STRING && !tv->vval.v_string) ||
-	(tv->v_type == VAR_LIST && !tv->vval.v_list))
-	return;
-
-    if (qf_init_ext(NULL, NULL, tv, p_efm, TRUE, (linenr_T)0, (linenr_T)0) > 0)
-	qf_jump(0, 0, eap->forceit);		/* display first error */
-
-    clear_tv(tv);
+    if (tv != NULL)
+    {
+	if ((tv->v_type == VAR_STRING && tv->vval.v_string != NULL)
+		|| (tv->v_type == VAR_LIST && tv->vval.v_list != NULL))
+	{
+	    if (qf_init_ext(NULL, NULL, tv, p_efm, eap->cmdidx == CMD_cexpr,
+						 (linenr_T)0, (linenr_T)0) > 0
+		    && eap->cmdidx == CMD_cexpr)
+		qf_jump(0, 0, eap->forceit);	/* display first error */
+	}
+	else
+	    EMSG(_("E999: String or List expected"));
+	free_tv(tv);
+    }
 }
 #endif
 

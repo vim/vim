@@ -20,11 +20,11 @@ uk
 wrong
 -------
 bad
-['put', 'OK', 'uk']
+['put', 'uk', 'OK']
 inputs
 ['input', 'puts', 'outputs']
 comment
-['Comment']
+['Comment', 'outtest', 'the end']
 ok
 ['OK', 'uk', 'put']
 Ok
@@ -34,7 +34,7 @@ test
 déôl
 ['deol', 'déôr', 'test']
 end
-['put', 'OK', 'test']
+['put', 'uk', 'test']
 the
 ['put', 'uk', 'test']
 gebletegek
@@ -141,7 +141,7 @@ bad
 wordutilize
 ['word utilize', 'wordutils', 'wordutil']
 pro
-['bork', 'end', 'word']
+['bork', 'word', 'end']
 borkborkborkborkborkbork
 ['bork borkborkborkborkbork', 'borkbork borkborkborkbork', 'borkborkbork borkborkbork']
 tomatotomatotomato
@@ -185,7 +185,7 @@ probarbirk
 middle
 []
 startmiddle
-['startmiddleend']
+['startmiddleend', 'startmiddlebar']
 middleend
 []
 endstart
@@ -217,7 +217,7 @@ probarbirk
 middle
 []
 leadmiddle
-['leadmiddleend']
+['leadmiddleend', 'leadmiddlebar']
 middleend
 []
 endlead
@@ -249,7 +249,7 @@ probarmaat
 middle
 []
 leadmiddle
-[]
+['leadmiddlebar']
 middletail
 []
 taillead

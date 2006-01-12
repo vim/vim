@@ -1074,6 +1074,13 @@ struct dictvar_S
 #define SYNSPL_TOP	1	/* spell check toplevel text */
 #define SYNSPL_NOTOP	2	/* don't spell check toplevel text */
 
+/* avoid #ifdefs for when b_spell is not available */
+#ifdef FEAT_SYN_HL
+# define B_SPELL(buf)  ((buf)->b_spell)
+#else
+# define B_SPELL(buf)  (0)
+#endif
+
 
 /*
  * buffer: structure that holds information about one file
@@ -1407,8 +1414,19 @@ struct file_buffer
     int		b_may_swap;
     int		b_did_warn;	/* Set to 1 if user has been warned on first
 				   change of a read-only file */
-    int		b_help;		/* buffer for help file (when set b_p_bt is
-				   "help") */
+
+    /* Two special kinds of buffers:
+     * help buffer  - used for help files, won't use a swap file.
+     * spell buffer - used for spell info, never displayed and doesn't have a
+     *		      file name.
+     */
+    int		b_help;		/* TRUE for help file buffer (when set b_p_bt
+				   is "help") */
+#ifdef FEAT_SYN_HL
+    int		b_spell;	/* TRUE for a spell file buffer, most fields
+				   are not used!  Use the B_SPELL macro to
+				   access b_spell without #ifdef. */
+#endif
 
 #ifndef SHORT_FNAME
     int		b_shortname;	/* this file has an 8.3 file name */

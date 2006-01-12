@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 7.0aa.  Last change: 2005 Sep 12
+*pattern.txt*   For Vim version 7.0aa.  Last change: 2006 Jan 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -256,9 +256,13 @@ switched off by setting the 's' flag in the 'shortmess' option.  The highlight
 method 'w' is used for this message (default: standout).
 
 							*search-range*
-You cannot limit the search command "/" to a certain range of lines.  A trick
-to do this anyway is to use the ":substitute" command with the 'c' flag.
-Example: >
+You can limit the search command "/" to a certain range of lines by including
+\%>l items.  For example, to match the word "limit" below line 199 and above
+line 300: >
+	/\%>199l\%<300llimit
+Also see |/\%>l|.
+
+Another way is to use the ":substitute" command with the 'c' flag.  Example: >
    :.,300s/Pattern//gc
 This command will search from the cursor position until line 300 for
 "Pattern".  At the match, you will be asked to type a character.  Type 'q' to
@@ -800,8 +804,8 @@ $	At end of pattern or in front of "\|" or "\)" ("|" or ")" after "\v"):
 
 						*/\%l* */\%>l* */\%<l*
 \%23l	Matches in a specific line.
-\%<23l	Matches above a specific line.
-\%>23l	Matches below a specific line.
+\%<23l	Matches above a specific line (lower line number).
+\%>23l	Matches below a specific line (higher line number).
 	These three can be used to match specific lines in a buffer.  The "23"
 	can be any line number.  The first line is 1. {not in Vi}
 	WARNING: When inserting or deleting lines Vim does not automatically

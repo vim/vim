@@ -86,6 +86,31 @@ hash_clear(ht)
 }
 
 /*
+ * Free the array of a hash table and all the keys it contains.  The keys must
+ * have been allocated.  "off" is the offset from the start of the allocate
+ * memory to the location of the key (it's always positive).
+ */
+    void
+hash_clear_all(ht, off)
+    hashtab_T	*ht;
+    int		off;
+{
+    int		todo;
+    hashitem_T	*hi;
+
+    todo = ht->ht_used;
+    for (hi = ht->ht_array; todo > 0; ++hi)
+    {
+	if (!HASHITEM_EMPTY(hi))
+	{
+	    vim_free(hi->hi_key - off);
+	    --todo;
+	}
+    }
+    hash_clear(ht);
+}
+
+/*
  * Find "key" in hashtable "ht".  "key" must not be NULL.
  * Always returns a pointer to a hashitem.  If the item was not found then
  * HASHITEM_EMPTY() is TRUE.  The pointer is then the place where the key

@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2005 Dec 28
+*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Jan 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -434,6 +434,9 @@ Win32: The ":winpos" command now also works in the console. (Vipin Aravind)
 
 |:cexpr|		Read error messages from a Vim expression (Yegappan
 			Lakshmanan).
+
+|:caddexpr|		Add error messages from a Vim expression to an
+			existing quickfix list. (Yegappan Lakshmanan).
 
 
 Ex command modifiers: ~
@@ -918,6 +921,9 @@ without losing the last inserted text.
 
 The exists() function now supports checking for autocmd group definition
 and for supported autocommand events. (Yegappan Lakshmanan)
+
+Allow using ":global" in the sandbox, it doesn't do anything harmful by
+itself.
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*
@@ -1523,7 +1529,7 @@ string, because it may cause trouble in Insert mode.
 When evaluating an expression for CTRL-R = on the command line it was possible
 to open a new window, resulting in errors for incremental search, and many
 other nasty things were possible.  Now evaluate the expression in the sandbox
-to protect from unexpected behavior.
+to protect from unexpected behavior.  Same for CTRL-\ e.
 
 "d(" deleted the character under the cursor, while the documentation specified
 an exclusive motion.  Vi also doesn't delete the character under the cursor.
@@ -1532,5 +1538,11 @@ Shift-Insert in Insert mode could put the cursor before the last character
 when it just fits in the window.  In coladvance() don't stop at the window
 edge when filling with spaces and when in Insert mode.  In mswin.vim avoid
 getting a beep from the "l" command.
+
+Win32 GUI: When Alt-F4 is used to close the window and Cancel is selected in
+the dialog then Vim would insert <M-F4> in the text.  Now it's ignored.
+
+When ":silent! {cmd}" caused the swap file dialog, which isn't displayed,
+there would still be a hit-enter prompt.
 
  vim:tw=78:ts=8:ft=help:norl:

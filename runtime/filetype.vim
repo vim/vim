@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Nov 23
+" Last Change:	2006 Jan 12
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -399,7 +399,7 @@ fun! s:FTent()
   setf dtd
 endfun
 
-" Clipper (or FoxPro)
+" Clipper (or FoxPro; could also be eviews)
 au BufNewFile,BufRead *.prg
 	\ if exists("g:filetype_prg") |
 	\   exe "setf " . g:filetype_prg |
@@ -605,6 +605,9 @@ au BufNewFile,BufRead *.gpi			setf gnuplot
 
 " GrADS scripts
 au BufNewFile,BufRead *.gs			setf grads
+
+" Gretl
+au BufNewFile,BufRead *.gretl			setf gretl
 
 " Groovy
 au BufNewFile,BufRead *.groovy			setf groovy

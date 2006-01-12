@@ -51,6 +51,10 @@ endfunction
     let test_cases += [['&textwidth', 1]]
     " Existing and working option (short form)
     let test_cases += [['&tw', 1]]
+    " Global option
+    let test_cases += [['&g:errorformat', 1]]
+    " Local option
+    let test_cases += [['&l:errorformat', 1]]
     " Negative form of existing and working option (long form)
     let test_cases += [['&nojoinspaces', 0]]
     " Negative form of existing and working option (short form)
@@ -212,6 +216,26 @@ endfunction
 	echo "FAILED"
     endif
 
+    " Existing local curly-brace variable
+    let str = "local"
+    let curly_{str}_var = 1
+    echo 'curly_' . str . '_var: 1'
+    if exists('curly_{str}_var')
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Non-existing local curly-brace variable
+    unlet curly_{str}_var
+    echo 'curly_' . str . '_var: 0'
+    if !exists('curly_{str}_var')
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+
     " Existing global variable
     let g:global_var = 1
     echo 'g:global_var: 1'
@@ -230,29 +254,46 @@ endfunction
 	echo "FAILED"
     endif
 
-    " Existing local curly-brace variable
-    let curly_local_var = 1
-    let str = "local"
-    echo 'curly_{str}_var: 1'
-    if exists('curly_{str}_var')
+    " Existing global list
+    let g:global_list = ["blue", "orange"]
+    echo 'g:global_list: 1'
+    if exists('g:global_list')
 	echo "OK"
     else
 	echo "FAILED"
     endif
 
-    " Non-existing local curly-brace variable
-    unlet curly_local_var
-    echo 'curly_{str}_var: 0'
-    if !exists('curly_{str}_var')
+    " Non-existing global list
+    unlet g:global_list
+    echo 'g:global_list: 0'
+    if !exists('g:global_list')
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Existing global dictionary
+    let g:global_dict = {"xcord":100, "ycord":2}
+    echo 'g:global_dict: 1'
+    if exists('g:global_dict')
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Non-existing global dictionary
+    unlet g:global_dict
+    echo 'g:global_dict: 0'
+    if !exists('g:global_dict')
 	echo "OK"
     else
 	echo "FAILED"
     endif
 
     " Existing global curly-brace variable
-    let g:curly_global_var = 1
     let str = "global"
-    echo 'g:curly_{str}_var: 1'
+    let g:curly_{str}_var = 1
+    echo 'g:curly_' . str . '_var: 1'
     if exists('g:curly_{str}_var')
 	echo "OK"
     else
@@ -260,9 +301,155 @@ endfunction
     endif
 
     " Non-existing global curly-brace variable
-    unlet g:curly_global_var
-    echo 'g:curly_{str}_var: 0'
+    unlet g:curly_{str}_var
+    echo 'g:curly_' . str . '_var: 0'
     if !exists('g:curly_{str}_var')
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Existing window variable
+    echo 'w:window_var: 1'
+    let w:window_var = 1
+    if exists('w:window_var')
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Non-existing window variable
+    unlet w:window_var
+    echo 'w:window_var: 0'
+    if !exists('w:window_var')
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Existing window list
+    let w:window_list = ["blue", "orange"]
+    echo 'w:window_list: 1'
+    if exists('w:window_list')
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Non-existing window list
+    unlet w:window_list
+    echo 'w:window_list: 0'
+    if !exists('w:window_list')
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Existing window dictionary
+    let w:window_dict = {"xcord":100, "ycord":2}
+    echo 'w:window_dict: 1'
+    if exists('w:window_dict')
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Non-existing window dictionary
+    unlet w:window_dict
+    echo 'w:window_dict: 0'
+    if !exists('w:window_dict')
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Existing window curly-brace variable
+    let str = "window"
+    let w:curly_{str}_var = 1
+    echo 'w:curly_' . str . '_var: 1'
+    if exists('w:curly_{str}_var')
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Non-existing window curly-brace variable
+    unlet w:curly_{str}_var
+    echo 'w:curly_' . str . '_var: 0'
+    if !exists('w:curly_{str}_var')
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Existing buffer variable
+    echo 'b:buffer_var: 1'
+    let b:buffer_var = 1
+    if exists('b:buffer_var')
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Non-existing buffer variable
+    unlet b:buffer_var
+    echo 'b:buffer_var: 0'
+    if !exists('b:buffer_var')
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Existing buffer list
+    let b:buffer_list = ["blue", "orange"]
+    echo 'b:buffer_list: 1'
+    if exists('b:buffer_list')
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Non-existing buffer list
+    unlet b:buffer_list
+    echo 'b:buffer_list: 0'
+    if !exists('b:buffer_list')
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Existing buffer dictionary
+    let b:buffer_dict = {"xcord":100, "ycord":2}
+    echo 'b:buffer_dict: 1'
+    if exists('b:buffer_dict')
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Non-existing buffer dictionary
+    unlet b:buffer_dict
+    echo 'b:buffer_dict: 0'
+    if !exists('b:buffer_dict')
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Existing buffer curly-brace variable
+    let str = "buffer"
+    let b:curly_{str}_var = 1
+    echo 'b:curly_' . str . '_var: 1'
+    if exists('b:curly_{str}_var')
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Non-existing buffer curly-brace variable
+    unlet b:curly_{str}_var
+    echo 'b:curly_' . str . '_var: 0'
+    if !exists('b:curly_{str}_var')
 	echo "OK"
     else
 	echo "FAILED"
@@ -270,6 +457,55 @@ endfunction
 
     " Script-local tests
     source test60.vim
+
+    " Existing Vim internal variable
+    echo 'v:version: 1'
+    if exists('v:version')
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Non-existing Vim internal variable
+    echo 'v:non_exists_var: 0'
+    if !exists('v:non_exists_var')
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Function arguments
+    function TestFuncArg(func_arg, ...)
+        echo 'a:func_arg: 1'
+        if exists('a:func_arg')
+            echo "OK"
+        else
+            echo "FAILED"
+        endif
+
+        echo 'a:non_exists_arg: 0'
+        if !exists('a:non_exists_arg')
+            echo "OK"
+        else
+            echo "FAILED"
+        endif
+
+        echo 'a:1: 1'
+        if exists('a:1')
+            echo "OK"
+        else
+            echo "FAILED"
+        endif
+
+        echo 'a:2: 0'
+        if !exists('a:2')
+            echo "OK"
+        else
+            echo "FAILED"
+        endif
+    endfunction
+
+    call TestFuncArg("arg1", "arg2")
 
     redir END
 endfunction

@@ -528,7 +528,12 @@ EXTERN int	starting INIT(= NO_SCREEN);
 				/* first NO_SCREEN, then NO_BUFFERS and then
 				 * set to 0 when starting up finished */
 EXTERN int	exiting INIT(= FALSE);
-				/* TRUE when abandoning Vim */
+				/* TRUE when planning to exit Vim.  Might
+				 * still keep on running if there is a changed
+				 * buffer. */
+EXTERN int	really_exiting INIT(= FALSE);
+				/* TRUE when we are sure to exit, e.g., after
+				 * a deadly signal */
 EXTERN int	full_screen INIT(= FALSE);
 				/* TRUE when doing full-screen output
 				 * otherwise only writing some messages */

@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.0aa.  Last change: 2005 Nov 30
+*syntax.txt*	For Vim version 7.0aa.  Last change: 2005 Dec 31
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3245,7 +3245,7 @@ A more complicated Example: >
 <
 	 abcfoostringbarabc
 	    mmmmmmmmmmm	    match
-	      ssrrrreee	    highlight start/region/end ("Foo", "Exa" and "Bar")
+	      sssrrreee	    highlight start/region/end ("Foo", "Exa" and "Bar")
 
 Leading context			*:syn-lc* *:syn-leading* *:syn-context*
 

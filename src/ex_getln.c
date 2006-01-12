@@ -645,8 +645,8 @@ getcmdline(firstc, count, indent)
 
 		/*
 		 * Replace the command line with the result of an expression.
-		 * Need to save the current command line, to be able to enter
-		 * a new one...
+		 * Need to save and restore the current command line, to be
+		 * able to enter a new one...
 		 */
 		if (ccline.cmdpos == ccline.cmdlen)
 		    new_cmdpos = 99999;	/* keep it at the end */
@@ -658,8 +658,17 @@ getcmdline(firstc, count, indent)
 		restore_cmdline(&save_ccline);
 		if (c == '=')
 		{
+		    /* Need to save and restore ccline.  And go into the
+		     * sandbox to avoid nasty things like going to another
+		     * buffer when evaluating an expression. */
 		    save_cmdline(&save_ccline);
+#ifdef HAVE_SANDBOX
+		    ++sandbox;
+#endif
 		    p = get_expr_line();
+#ifdef HAVE_SANDBOX
+		    --sandbox;
+#endif
 		    restore_cmdline(&save_ccline);
 
 		    if (p != NULL && realloc_cmdbuff((int)STRLEN(p) + 1) == OK)
@@ -1191,6 +1200,18 @@ getcmdline(firstc, count, indent)
 
 	case K_IGNORE:
 		goto cmdline_not_changed;	/* Ignore mouse */
+
+#ifdef FEAT_GUI_W32
+	    /* On Win32 ignore <M-F4>, we get it when closing the window was
+	     * cancelled. */
+	case K_F4:
+	    if (mod_mask == MOD_MASK_ALT)
+	    {
+		redrawcmd();	    /* somehow the cmdline is cleared */
+		goto cmdline_not_changed;
+	    }
+	    break;
+#endif
 
 #ifdef FEAT_MOUSE
 	case K_MIDDLEDRAG:

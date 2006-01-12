@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0aa.  Last change: 2005 Dec 28
+*insert.txt*    For Vim version 7.0aa.  Last change: 2006 Jan 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -354,7 +354,7 @@ CTRL-G CTRL-J	cursor one line down, insert start column    *i_CTRL-G_CTRL-J*
 <MouseUp>	scroll three lines up			     *i_<MouseUp>*
 <S-MouseUp>	scroll a full page up			     *i_<S-MouseUp>*
 CTRL-O		execute one command, return to Insert mode   *i_CTRL-O*
-CTRL-\ CTRL-O   like CTRL-O but don't move the cursor        *i_CTRL-\_CTRL-O*
+CTRL-\ CTRL-O	like CTRL-O but don't move the cursor	     *i_CTRL-\_CTRL-O*
 CTRL-L		when 'insertmode' is set: go to Normal mode  *i_CTRL-L*
 CTRL-G u	break undo sequence, start new change	     *i_CTRL-G_u*
 -----------------------------------------------------------------------
@@ -963,8 +963,8 @@ The menu is used when:
 
 While the menu is displayed these keys have a special meaning:
 <CR> and <Enter>: Accept the currently selected match
-<Up>:             Select the previous match, as if CTRL-P was used
-<Down>:           Select the next match, as if CTRL-N was used
+<Up>:		  Select the previous match, as if CTRL-P was used
+<Down>:		  Select the next match, as if CTRL-N was used
 <PageUp>:	  Select a match several entries back
 <PageDown>:	  Select a match several entries further
 
@@ -1010,14 +1010,14 @@ When the same structure name appears in multiple places all possible members
 are included.
 
 
-CSS                                                     *ft-css-omni*
+CSS							*ft-css-omni*
 
 Complete properties and their appropriate values according to CSS 2.1
 specification. 
 
 
-(X)HTML                          			*ft-html-omni*
-                                 			*ft-xhtml-omni*
+(X)HTML							*ft-html-omni*
+							*ft-xhtml-omni*
 
 CTRL-X CTRL-O provides completion of various elements of (X)HTML files.
 It is designed to support writing of XHTML 1.0 Strict files but will
@@ -1040,7 +1040,26 @@ Note: When used first time completion menu will be shown with little delay
 - this is time needed for loading of data file.
 
 
-XML                                                     *ft-xml-omni*
+SYNTAX							*ft-syntax-omni*
+
+This uses the current syntax highlighting for completion.  It can be used for
+any filetype and provides a minimal language-sensitive completion.
+
+To enable code completion do: >
+	source $VIMRUNTIME/autoload/syntaxcomplete.vim
+
+You can automate this by placing this in your vimrc (after any ":filetype"
+command): >
+	autocmd Filetype * 
+		    \ if exists('&ofu') && &ofu == "" |
+		    \     source $VIMRUNTIME/autoload/syntaxcomplete.vim |
+		    \ endif
+
+The above will set completion to this script only if a proper one does not
+already exist for that filetype.
+
+
+XML							*ft-xml-omni*
 
 Vim 7 provides mechanism to context aware completion of XML files.  It depends
 on special |xml-omni-datafile| and two commands: |:XMLns| and |:XMLent|.
@@ -1056,7 +1075,7 @@ Features are:
   with "<!ENTITY" declarations
 - when used after "</" CTRL-X CTRL-O will close the last opened tag
 
-Format of XML data file                                 *xml-omni-datafile*
+Format of XML data file					*xml-omni-datafile*
 
 Vim distribution provides two data files as examples (xhtml10s.vim, xsl.vim)
 
@@ -1105,7 +1124,7 @@ xsl.vim for example.
 
 Commands
 
-:XMLns {name} [{namespace}]                                  *:XMLns*
+:XMLns {name} [{namespace}]					*:XMLns*
 
 Vim has to know which data file should be used and with which namespace. For
 loading of data file and connecting data with prope namespace use |:XMLns|
@@ -1118,24 +1137,24 @@ to use XML completion in .xsl files: >
 	:XMLns xsl xsl
 
 
-:XMLent {name}                                               *:XMLent*
+:XMLent {name}							*:XMLent*
 
 By default entities will be completed from data file of default
 namespace. XMLent command should be used in case when there is no
 default namespace: >
 
-        :XMLent xhtml10s
+	:XMLent xhtml10s
 
 Usage
 
 While used in situation (after declarations from previous part, | is
 cursor position): >
 
-        <|
+	<|
 
 Will complete to appropriate XHTML tag, and in this situation: >
 
-        <xsl:|
+	<xsl:|
 
 Will complete to appropriate XSL tag.
 
@@ -1143,7 +1162,7 @@ File xmlcomplete.vim provides through |autoload| mechanism
 GetLastOpenTag function which can be used in XML files to get name of
 last open tag with (b:unaryTagsStack has to be defined): >
 
-        :echo xmlcomplete#GetLastOpenTag("b:unaryTagsStack")
+	:echo xmlcomplete#GetLastOpenTag("b:unaryTagsStack")
 
 
 

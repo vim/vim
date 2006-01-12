@@ -6405,7 +6405,7 @@ buf_reload(buf)
 		/* Open the memline. */
 		curbuf = savebuf;
 		curwin->w_buffer = savebuf;
-		saved = ml_open();
+		saved = ml_open(curbuf);
 		curbuf = buf;
 		curwin->w_buffer = buf;
 	    }

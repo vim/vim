@@ -1426,13 +1426,15 @@ copy_option_part(option, buf, maxlen, sep_chars)
 }
 
 /*
- * replacement for free() that ignores NULL pointers
+ * Replacement for free() that ignores NULL pointers.
+ * Also skip free() when exiting for sure, this helps when we caught a deadly
+ * signal that was caused by a crash in free().
  */
     void
 vim_free(x)
     void *x;
 {
-    if (x != NULL)
+    if (x != NULL && !really_exiting)
     {
 #ifdef MEM_PROFILE
 	mem_pre_free(&x);

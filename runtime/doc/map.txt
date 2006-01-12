@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.0aa.  Last change: 2005 Dec 17
+*map.txt*       For Vim version 7.0aa.  Last change: 2006 Jan 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -946,11 +946,10 @@ local function or uses a local mapping.
 Otherwise, using "<SID>" outside of a script context is an error.
 
 If you need to get the script number to use in a complicated script, you can
-use this trick: >
-	:map <SID>xx <SID>xx
-	:let s:sid = maparg("<SID>xx")
-	:unmap <SID>xx
-And remove the trailing "xx".
+use this function: >
+	function s:SID()
+	  return matchstr(expand('<sfile>'), '<SNR>\zs\d\+\ze_SID$')
+	endfun
 
 The "<SNR>" will be shown when listing functions and mappings.  This is useful
 to find out what they are defined to.

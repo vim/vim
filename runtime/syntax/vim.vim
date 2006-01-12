@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	Vim 7.0 script
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrOchipS@PcampbellAfamily.Mbiz>
-" Last Change:	December 09, 2005
-" Version:	7.0-21
+" Last Change:	Jan 09, 2006
+" Version:	7.0-22
 " Automatically generated keyword lists: {{{1
 
 " Quit when a syntax file was already loaded {{{2
@@ -175,7 +175,7 @@ endif
 syn match  vimComment	excludenl +\s"[^\-:.%#=*].*$+lc=1	contains=@vimCommentGroup,vimCommentString
 syn match  vimComment	+\<endif\s\+".*$+lc=5	contains=@vimCommentGroup,vimCommentString
 syn match  vimComment	+\<else\s\+".*$+lc=4	contains=@vimCommentGroup,vimCommentString
-syn region vimCommentString	contained oneline start='\S\s\+"'ms=s+1	end='"'
+syn region vimCommentString	contained oneline start='\S\s\+"'ms=e	end='"'
 
 " Environment Variables: {{{2
 " =====================
@@ -422,7 +422,7 @@ syn match   vimHiBang	contained	"!"	  skipwhite nextgroup=@vimHighlightCluster
 
 syn match   vimHiGroup	contained	"\i\+"
 syn case ignore
-syn keyword vimHiAttrib	contained	none bold inverse italic reverse standout underline
+syn keyword vimHiAttrib	contained	none bold inverse italic reverse standout underline undercurl
 syn keyword vimFgBgAttrib	contained	none bg background fg foreground
 syn case match
 syn match   vimHiAttribList	contained	"\i\+"	contains=vimHiAttrib
@@ -450,7 +450,7 @@ syn match  vimHiCTerm	contained	"\ccterm="he=e-1		nextgroup=vimHiAttribList
 syn match  vimHiCtermFgBg	contained	"\ccterm[fb]g="he=e-1	nextgroup=vimNumber,vimHiCtermColor,vimFgBgAttrib,vimHiCtermError
 syn match  vimHiGui	contained	"\cgui="he=e-1		nextgroup=vimHiAttribList
 syn match  vimHiGuiFont	contained	"\cfont="he=e-1		nextgroup=vimHiFontname
-syn match  vimHiGuiFgBg	contained	"\cgui[fb]g="he=e-1	nextgroup=vimHiGroup,vimHiGuiFontname,vimHiGuiRgb,vimFgBgAttrib
+syn match  vimHiGuiFgBg	contained	"\cgui\%([fb]g\|sp\)="he=e-1	nextgroup=vimHiGroup,vimHiGuiFontname,vimHiGuiRgb,vimFgBgAttrib
 syn match  vimHiTermcap	contained	"\S\+"		contains=vimNotation
 
 " Highlight: clear {{{2

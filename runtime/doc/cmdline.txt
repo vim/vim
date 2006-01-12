@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 7.0aa.  Last change: 2005 Dec 27
+*cmdline.txt*   For Vim version 7.0aa.  Last change: 2005 Dec 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -198,6 +198,8 @@ CTRL-\ e {expr}						*c_CTRL-\_e*
 		The cursor position is unchanged, except when the cursor was
 		at the end of the line, then it stays at the end.
 		|setcmdpos()| can be used to set the cursor position.
+		The |sandbox| is used for evaluating the expression to avoid
+		nasty side effects.
 		Example: >
 			:cmap <F7> <C-\>eAppendSome()<CR>
 			:func AppendSome()

@@ -13,10 +13,11 @@
 
 /*
  * memline.c: Contains the functions for appending, deleting and changing the
- * text lines. The memfile functions are used to store the information in blocks
- * of memory, backed up by a file. The structure of the information is a tree.
- * The root of the tree is a pointer block. The leaves of the tree are data
- * blocks. In between may be several layers of pointer blocks, forming branches.
+ * text lines. The memfile functions are used to store the information in
+ * blocks of memory, backed up by a file. The structure of the information is
+ * a tree.  The root of the tree is a pointer block. The leaves of the tree
+ * are data blocks. In between may be several layers of pointer blocks,
+ * forming branches.
  *
  * Three types of blocks are used:
  * - Block nr 0 contains information for recovery
@@ -169,7 +170,7 @@ struct block0
 };
 
 /*
- * Note: b0_fname and b0_flags are put at the end of the file name.  For very
+ * Note: b0_dirty and b0_flags are put at the end of the file name.  For very
  * long file names in older versions of Vim they are invalid.
  * The 'fileencoding' comes before b0_flags, with a NUL in front.  But only
  * when there is room, for very long file names it's omitted.
@@ -245,12 +246,13 @@ static void ml_updatechunk __ARGS((buf_T *buf, long line, long len, int updtype)
 #endif
 
 /*
- * open a new memline for 'curbuf'
+ * Open a new memline for "buf".
  *
- * return FAIL for failure, OK otherwise
+ * Return FAIL for failure, OK otherwise.
  */
     int
-ml_open()
+ml_open(buf)
+    buf_T	*buf;
 {
     memfile_T	*mfp;
     bhdr_T	*hp = NULL;
@@ -258,36 +260,36 @@ ml_open()
     PTR_BL	*pp;
     DATA_BL	*dp;
 
-/*
- * init fields in memline struct
- */
-    curbuf->b_ml.ml_stack_size = 0;	/* no stack yet */
-    curbuf->b_ml.ml_stack = NULL;	/* no stack yet */
-    curbuf->b_ml.ml_stack_top = 0;	/* nothing in the stack */
-    curbuf->b_ml.ml_locked = NULL;	/* no cached block */
-    curbuf->b_ml.ml_line_lnum = 0;	/* no cached line */
+    /*
+     * init fields in memline struct
+     */
+    buf->b_ml.ml_stack_size = 0;	/* no stack yet */
+    buf->b_ml.ml_stack = NULL;	/* no stack yet */
+    buf->b_ml.ml_stack_top = 0;	/* nothing in the stack */
+    buf->b_ml.ml_locked = NULL;	/* no cached block */
+    buf->b_ml.ml_line_lnum = 0;	/* no cached line */
 #ifdef FEAT_BYTEOFF
-    curbuf->b_ml.ml_chunksize = NULL;
+    buf->b_ml.ml_chunksize = NULL;
 #endif
 
-/*
- * When 'updatecount' is non-zero, flag that a swap file may be opened later.
- */
-    if (p_uc && curbuf->b_p_swf)
-	curbuf->b_may_swap = TRUE;
+    /*
+     * When 'updatecount' is non-zero swap file may be opened later.
+     */
+    if (p_uc && buf->b_p_swf)
+	buf->b_may_swap = TRUE;
     else
-	curbuf->b_may_swap = FALSE;
+	buf->b_may_swap = FALSE;
 
-/*
- * Open the memfile.  No swap file is created yet.
- */
+    /*
+     * Open the memfile.  No swap file is created yet.
+     */
     mfp = mf_open(NULL, 0);
     if (mfp == NULL)
 	goto error;
 
-    curbuf->b_ml.ml_mfp = mfp;
-    curbuf->b_ml.ml_flags = ML_EMPTY;
-    curbuf->b_ml.ml_line_count = 1;
+    buf->b_ml.ml_mfp = mfp;
+    buf->b_ml.ml_flags = ML_EMPTY;
+    buf->b_ml.ml_line_count = 1;
 #ifdef FEAT_LINEBREAK
     curwin->w_nrwidth_line_count = 0;
 #endif
@@ -296,7 +298,7 @@ ml_open()
     /* for 16 bit MS-DOS create a swapfile now, because we run out of
      * memory very quickly */
     if (p_uc != 0)
-	ml_open_file(curbuf);
+	ml_open_file(buf);
 #endif
 
 /*
@@ -313,36 +315,40 @@ ml_open()
 
     b0p->b0_id[0] = BLOCK0_ID0;
     b0p->b0_id[1] = BLOCK0_ID1;
-    b0p->b0_dirty = curbuf->b_changed ? B0_DIRTY : 0;
-    b0p->b0_flags = get_fileformat(curbuf) + 1;
     b0p->b0_magic_long = (long)B0_MAGIC_LONG;
     b0p->b0_magic_int = (int)B0_MAGIC_INT;
     b0p->b0_magic_short = (short)B0_MAGIC_SHORT;
     b0p->b0_magic_char = B0_MAGIC_CHAR;
-
     STRNCPY(b0p->b0_version, "VIM ", 4);
     STRNCPY(b0p->b0_version + 4, Version, 6);
-    set_b0_fname(b0p, curbuf);
     long_to_char((long)mfp->mf_page_size, b0p->b0_page_size);
-    (void)get_user_name(b0p->b0_uname, B0_UNAME_SIZE);
-    b0p->b0_uname[B0_UNAME_SIZE - 1] = NUL;
-    mch_get_host_name(b0p->b0_hname, B0_HNAME_SIZE);
-    b0p->b0_hname[B0_HNAME_SIZE - 1] = NUL;
-    long_to_char(mch_get_pid(), b0p->b0_pid);
+
+    if (!B_SPELL(buf))
+    {
+	b0p->b0_dirty = buf->b_changed ? B0_DIRTY : 0;
+	b0p->b0_flags = get_fileformat(buf) + 1;
+	set_b0_fname(b0p, buf);
+	(void)get_user_name(b0p->b0_uname, B0_UNAME_SIZE);
+	b0p->b0_uname[B0_UNAME_SIZE - 1] = NUL;
+	mch_get_host_name(b0p->b0_hname, B0_HNAME_SIZE);
+	b0p->b0_hname[B0_HNAME_SIZE - 1] = NUL;
+	long_to_char(mch_get_pid(), b0p->b0_pid);
+    }
 
     /*
      * Always sync block number 0 to disk, so we can check the file name in
-     * the swap file in findswapname(). Don't do this for help files though.
+     * the swap file in findswapname(). Don't do this for help files though
+     * and spell buffer though.
      * Only works when there's a swapfile, otherwise it's done when the file
      * is created.
      */
     mf_put(mfp, hp, TRUE, FALSE);
-    if (!curbuf->b_help)
+    if (!buf->b_help && !B_SPELL(buf))
 	(void)mf_sync(mfp, 0);
 
-/*
- * fill in root pointer block and write page 1
- */
+    /*
+     * Fill in root pointer block and write page 1.
+     */
     if ((hp = ml_new_ptr(mfp)) == NULL)
 	goto error;
     if (hp->bh_bnum != 1)
@@ -358,9 +364,9 @@ ml_open()
     pp->pb_pointer[0].pe_line_count = 1;    /* line count after insertion */
     mf_put(mfp, hp, TRUE, FALSE);
 
-/*
- * allocate first data block and create an empty line 1.
- */
+    /*
+     * Allocate first data block and create an empty line 1.
+     */
     if ((hp = ml_new_data(mfp, FALSE, 1)) == NULL)
 	goto error;
     if (hp->bh_bnum != 2)
@@ -384,7 +390,7 @@ error:
 	    mf_put(mfp, hp, FALSE, FALSE);
 	mf_close(mfp, TRUE);	    /* will also free(mfp->mf_fname) */
     }
-    curbuf->b_ml.ml_mfp = NULL;
+    buf->b_ml.ml_mfp = NULL;
     return FAIL;
 }
 
@@ -517,6 +523,18 @@ ml_open_file(buf)
     mfp = buf->b_ml.ml_mfp;
     if (mfp == NULL || mfp->mf_fd >= 0 || !buf->b_p_swf)
 	return;		/* nothing to do */
+
+#ifdef FEAT_SYN_HL
+    /* For a spell buffer use a temp file name. */
+    if (buf->b_spell)
+    {
+	fname = vim_tempname('s');
+	if (fname != NULL)
+	    (void)mf_open_file(mfp, fname);	/* consumes fname! */
+	buf->b_may_swap = FALSE;
+	return;
+    }
+#endif
 
     /*
      * Try all directories in 'directory' option.
@@ -886,7 +904,7 @@ ml_recover()
 	goto theend;			/* out of memory */
 
     /* When called from main() still need to initialize storage structure */
-    if (called_from_main && ml_open() == FAIL)
+    if (called_from_main && ml_open(curbuf) == FAIL)
 	getout(1);
 
 /*
@@ -2100,6 +2118,28 @@ ml_append(lnum, line, len, newfile)
     return ml_append_int(curbuf, lnum, line, len, newfile, FALSE);
 }
 
+#if defined(FEAT_SYN_HL) || defined(PROTO)
+/*
+ * Like ml_append() but for an arbitrary buffer.  The buffer must already have
+ * a memline.
+ */
+    int
+ml_append_buf(buf, lnum, line, len, newfile)
+    buf_T	*buf;
+    linenr_T	lnum;		/* append after this line (can be 0) */
+    char_u	*line;		/* text of the new line */
+    colnr_T	len;		/* length of new line, including NUL, or 0 */
+    int		newfile;	/* flag, see above */
+{
+    if (buf->b_ml.ml_mfp == NULL)
+	return FAIL;
+
+    if (buf->b_ml.ml_line_lnum != 0)
+	ml_flush_line(buf);
+    return ml_append_int(buf, lnum, line, len, newfile, FALSE);
+}
+#endif
+
     static int
 ml_append_int(buf, lnum, line, len, newfile, mark)
     buf_T	*buf;
@@ -2599,7 +2639,7 @@ ml_append_int(buf, lnum, line, len, newfile, mark)
 }
 
 /*
- * replace line lnum, with buffering, in current buffer
+ * Replace line lnum, with buffering, in current buffer.
  *
  * If copy is TRUE, make a copy of the line, otherwise the line has been
  * copied to allocated memory already.
@@ -2643,7 +2683,7 @@ ml_replace(lnum, line, copy)
 }
 
 /*
- * delete line 'lnum'
+ * Delete line 'lnum' in the current buffer.
  *
  * Check: The caller of this function should probably also call
  * deleted_lines() after this.
@@ -4114,7 +4154,9 @@ findswapname(buf, dirp, old_fname)
 #endif
 		    {
 			MSG_PUTS("\n");
-			need_wait_return = TRUE; /* call wait_return later */
+			if (msg_silent == 0)
+			    /* call wait_return() later */
+			    need_wait_return = TRUE;
 		    }
 
 #ifdef CREATE_DUMMY_FILE

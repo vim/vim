@@ -1,9 +1,13 @@
 " Vim syntax file
 " Language:	R (GNU S)
-" Maintainer:	Tom Payne <tom@tompayne.org>
-" Last Change:  2003 May 11
-" Filenames:	*.r
-" URL:		http://www.tompayne.org/vim/syntax/r.vim
+" Maintainer:	Vaidotas Zemlys <zemlys@gmail.com>
+" Last Change:  2006 January 12 
+" Filenames:	*.R *.Rout *.r *.Rhistory *.Rt *.Rout.save *.Rout.fail
+" URL:		http://uosis.mif.vu.lt/~zemlys/vim-syntax/r.vim
+
+" First maintainer Tom Payne <tom@tompayne.org>
+" Modified to make syntax less colourful and added the highlighting of
+" R assignment arrow
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -54,9 +58,10 @@ syn keyword rConstant LETTERS letters month.ab month.name pi
 syn keyword rConstant NULL
 syn keyword rBoolean  FALSE TRUE
 syn keyword rNumber   NA
+syn match rArrow /<\{1,2}-/
 
 " Type
-syn keyword rType array category character complex double function integer list logical matrix numeric vector
+syn keyword rType array category character complex double function integer list logical matrix numeric vector data.frame 
 
 " Special
 syn match rDelimiter /[,;:]/
@@ -89,8 +94,9 @@ if version >= 508 || !exists("did_r_syn_inits")
   HiLink rStatement   Statement
   HiLink rConditional Conditional
   HiLink rRepeat      Repeat
-  HiLink rIdentifier  Identifier
-  HiLink rType	      Type
+  HiLink rIdentifier  Normal
+  HiLink rArrow	      Statement	
+  HiLink rType        Type
   HiLink rDelimiter   Delimiter
   HiLink rError       Error
   HiLink rBraceError  Error
@@ -102,3 +108,4 @@ endif
 let b:current_syntax="r"
 
 " vim: ts=8 sw=2
+

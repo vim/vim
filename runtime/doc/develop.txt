@@ -1,4 +1,4 @@
-*develop.txt*   For Vim version 7.0aa.  Last change: 2005 Sep 01
+*develop.txt*   For Vim version 7.0aa.  Last change: 2006 Jan 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -382,8 +382,8 @@ checking engine in Vim, for various reasons:
   them separately from Vim.  That's mostly not impossible, but a drawback.
 - Performance: A few tests showed that it's possible to check spelling on the
   fly (while redrawing), just like syntax highlighting.  But the mechanisms
-  used by other code are much slower.  Myspell uses a simplistic hashtable,
-  for example.
+  used by other code are much slower.  Myspell uses a hashtable, for example.
+  The affix compression that most spell checkers use makes it slower too.
 - For using an external program like aspell a communication mechanism would
   have to be setup.  That's complicated to do in a portable way (Unix-only
   would be relatively simple, but that's not good enough).  And performance
@@ -399,14 +399,88 @@ checking engine in Vim, for various reasons:
   another program or library would be acceptable.  But the word lists probably
   differ, the suggestions may be wrong words.
 
+
+Spelling suggestions				*develop-spell-suggestions*
+
+For making suggestions there are two basic mechanisms:
+1. Try changing the bad word a little bit and check for a match with a good
+   word.  Or go through the list of good words, change them a little bit and
+   check for a match with the bad word.  The changes are deleting a character,
+   inserting a character, swapping two characters, etc.
+2. Perform soundfolding on both the bad word and the good words and then find
+   matches, possibly with a few changes like with the first mechanism.
+
+The first is good for finding typing mistakes.  After experimenting with
+hashtables and looking at solutions from other spell checkers the conclusion
+was that a trie (a kind of tree structure) is ideal for this.  Both for
+reducing memory use and being able to try sensible changes.  For example, when
+inserting a character only characters that lead to good words need to be
+tried.  Other mechanisms (with hashtables) need to try all possible letters at
+every position in the word.  Also, a hashtable has the requirement that word
+boundaries are identified separately, while a trie does not require this.
+That makes the mechanism a lot simpler.
+
+Soundfolding is useful when someone knows how the words sounds but doesn't
+know how it is spelled.  For example, the word "dictionary" might be written
+as "daktonerie".  The number of changes that the first method would need to
+try is very big, it's hard to find the good word that way.  After soundfolding
+the words become "tktnr" and "tkxnry", these differ by only two letters.
+
+To find words by their soundfolded equivalent (soundalike word) we need a list
+of all soundfolded words.  A few experiments have been done to find out what
+the best method is.  Alternatives:
+1. Do the sound folding on the fly when looking for suggestions.  This means
+   walking through the trie of good words, soundfolding each word and
+   checking how different it is from the bad word.  This is very efficient for
+   memory use, but takes a long time.  On a fast PC it takes a couple of
+   seconds for English, which can be acceptable for interactive use.  But for
+   some languages it takes more than ten seconds (e.g., German, Catalan),
+   which is unacceptable slow.  For batch processing (automatic corrections)
+   it's to slow for all languages.
+2. Use a trie for the soundfolded words, so that searching can be done just
+   like how it works without soundfolding.  This requires remembering a list
+   of good words for each soundfolded word.  This makes finding matches very
+   fast but requires quite a lot of memory, in the order of 1 to 10 Mbyte.
+   For some languages more than the original word list.
+3. Like the second alternative, but reduce the amount of memory by using affix
+   compression and store only the soundfolded basic word.  This is what Aspell
+   does.  Disadvantage is that affixes need to be stripped from the bad word
+   before soundfolding it, which means that mistakes at the start and/or end
+   of the word will cause the mechanism to fail.  Also, this becomes slow when
+   the bad word is quite different from the good word.
+
+The choice made is to use the second mechanism and use a separate file.  This
+way a user with sufficient memory can get very good suggestions while a user
+who is short of memory or just wants the spell checking and no suggestions
+doesn't use so much memory.
+
+
+Word frequency
+
+For sorting suggestions it helps to know which words are common.  In theory we
+could store a word frequency with the word in the dictionary.  However, this
+requires storing a count per word.  That degrades word tree compression a lot.
+And maintaining the word frequency for all languages will be a heavy task.
+Also, it would be nice to prefer words that are already in the text.  This way
+the words that appear in the specific text are preferred for suggestions.
+
+What has been implemented is to count words that have been seen during
+displaying.  A hashtable is used to quickly find the word count.  The count is
+initialized from words listed in COMMON items in the affix file, so that it
+also works when starting a new file.
+
+This isn't ideal, because the longer Vim is running the higher the counts
+become.  But in practice it is a noticable improvement over not using the word
+count.
+
 ==============================================================================
 4. Assumptions						*design-assumptions*
 
 Size of variables:
 char	    8 bit signed
 char_u	    8 bit unsigned
-int	    16, 32 or 64 bit signed
-unsigned    16, 32 or 64 bit unsigned
+int	    32 or 64 bit signed (16 might be possible with limited features)
+unsigned    32 or 64 bit unsigned (16 as with ints)
 long	    32 or 64 bit signed, can hold a pointer
 
 Note that some compilers cannot handle long lines or strings.  The C89

@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2005 Dec 27
+*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Jan 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1419,7 +1419,7 @@ v:swapchoice	|SwapExists| autocommands can set this to the selected choice
 		no SwapExists autocommand.  The default is empty.
 
 					*v:swapcommand* *swapcommand-variable*
-v:swapcommand	Normal mode ommand to be executed after a file has been
+v:swapcommand	Normal mode command to be executed after a file has been
 		opened.  Can be used for a |SwapExists| autocommand to have
 		another Vim open the file and jump to the right place.  For
 		example, when jumping to a tag the value is ":tag tagname\r".
@@ -4381,6 +4381,10 @@ system({expr} [, {input}])				*system()* *E677*
 
 		The resulting error code can be found in |v:shell_error|.
 		This function will fail in |restricted-mode|.
+
+		Note that any wrong value in the options mentioned above may
+		make the function fail.  It has also been reported to fail
+		when using a security agent application.
 		Unlike ":!cmd" there is no automatic check for changed files.
 		Use |:checktime| to force a check.
 
@@ -6814,6 +6818,7 @@ These items are not allowed in the sandbox:
 	- executing a shell command
 	- reading or writing a file
 	- jumping to another buffer or editing a file
+	- executing Python, Perl, etc. commands
 This is not guaranteed 100% secure, but it should block most attacks.
 
 							*:san* *:sandbox*

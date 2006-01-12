@@ -1,4 +1,4 @@
-*if_mzsch.txt*  For Vim version 7.0aa.  Last change: 2005 May 08
+*if_mzsch.txt*  For Vim version 7.0aa.  Last change: 2006 Jan 05
 
 
 		  VIM REFERENCE MANUAL    by Sergey Khorev
@@ -10,6 +10,7 @@ The MzScheme Interface to Vim				*mzscheme* *MzScheme*
 2. Examples				|mzscheme-examples|
 3. Threads				|mzscheme-threads|
 4. The Vim access procedures		|mzscheme-vim|
+5. Dynamic loading			|mzscheme-dynamic|
 
 {Vi does not have any of these commands}
 
@@ -242,6 +243,24 @@ Windows							    *mzscheme-window*
     (get-cursor [window])	    Get cursor position in a window as
 				    a pair (linenr . column).
     (set-cursor (line . col) [window])  Set cursor position.
+
+==============================================================================
+5. Dynamic loading					*mzscheme-dynamic*
+
+On MS-Windows the MzScheme libraries can be loaded dynamically. The |:version|
+output then includes |+mzscheme/dyn|.
+
+This means that Vim will search for the MzScheme DLL files only when needed.
+When you don't use the MzScheme interface you don't need them, thus you can
+use Vim without these DLL files.
+
+To use the MzScheme interface the MzScheme DLLs must be in your search path.
+In a console window type "path" to see what directories are used.
+
+The names of the DLLs must match the MzScheme version Vim was compiled with.
+For MzScheme version 209 they will be "libmzsch209_000.dll" and
+"libmzgc209_000.dll". To know for sure edit "gvim.exe" and search for 
+"libmzsch\d\d\d_\d\d\d\.dll\c".
 
 ======================================================================
   vim:tw=78:ts=8:sts=4:ft=help:norl:

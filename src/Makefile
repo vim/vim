@@ -532,9 +532,12 @@ LINT_OPTIONS = -beprxzF
 
 # PROFILING - Uncomment the next two lines to do profiling with gcc and gprof.
 # Might not work with GUI or Perl.
+# For unknown reasons adding "-lc" fixes a linking problem with GCC.  That's
+# probably a bug in the "-pg" implementation.
 # Need to recompile everything after changing this: "make clean" "make".
 #PROFILE_CFLAGS = -pg -g
 #PROFILE_LIBS = -pg
+#PROFILE_LIBS = -pg -lc
 
 # MEMORY LEAK DETECTION
 # Requires installing the ccmalloc library.

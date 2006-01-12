@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 7.0aa.  Last change: 2005 Dec 23
+*index.txt*     For Vim version 7.0aa.  Last change: 2006 Jan 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1069,7 +1069,8 @@ The commands are sorted on the non-optional part of their name.
 |:cNfile|	:cNf[ile]	go to last error in previous file
 |:cabbrev|	:ca[bbrev]	like ":abbreviate" but for Command-line mode
 |:cabclear|	:cabc[lear]	clear all abbreviations for Command-line mode
-|:caddfile|	:cad[dfile]	add error message to current quickfix list
+|:caddexpr|	:cad[dexpr]	add errors from expr
+|:caddfile|	:caddf[ile]	add error message to current quickfix list
 |:call|		:cal[l]		call a function
 |:catch|	:cat[ch]	part of a :try command
 |:cbuffer|	:cb[uffer]	parse error messages and jump to first error

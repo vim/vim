@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Oct 02
+" Last Change:	2006 Jan 13
 
 " If there already is an option window, jump to that one.
 if bufwinnr("option-window") > 0
@@ -725,6 +725,8 @@ if has("digraphs")
 endif
 call append("$", "tildeop\tthe \"~\" command behaves like an operator")
 call <SID>BinOptionG("top", &top)
+call append("$", "operatorfunc\tfunction called for the\"g@\"  operator")
+call <SID>OptionG("opfunc", &opfunc)
 call append("$", "showmatch\tWhen inserting a bracket, briefly jump to its match")
 call <SID>BinOptionG("sm", &sm)
 call append("$", "matchtime\ttenth of a second to show a match for 'showmatch'")

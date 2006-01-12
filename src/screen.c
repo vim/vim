@@ -134,7 +134,7 @@ static void fold_line __ARGS((win_T *wp, long fold_count, foldinfo_T *foldinfo, 
 static void fill_foldcolumn __ARGS((char_u *p, win_T *wp, int closed, linenr_T lnum));
 static void copy_text_attr __ARGS((int off, char_u *buf, int len, int attr));
 #endif
-static int win_line __ARGS((win_T *, linenr_T, int, int));
+static int win_line __ARGS((win_T *, linenr_T, int, int, int nochange));
 static int char_needs_redraw __ARGS((int off_from, int off_to, int cols));
 #ifdef FEAT_RIGHTLEFT
 static void screen_line __ARGS((int row, int coloff, int endcol, int clear_width, int rlflag));
@@ -1681,7 +1681,7 @@ win_update(wp)
 		/*
 		 * Display one line.
 		 */
-		row = win_line(wp, lnum, srow, wp->w_height);
+		row = win_line(wp, lnum, srow, wp->w_height, mod_top == 0);
 
 #ifdef FEAT_FOLDING
 		wp->w_lines[idx].wl_folded = FALSE;
@@ -2446,12 +2446,14 @@ fill_foldcolumn(p, wp, closed, lnum)
  *
  * Return the number of last row the line occupies.
  */
+/* ARGSUSED */
     static int
-win_line(wp, lnum, startrow, endrow)
+win_line(wp, lnum, startrow, endrow, nochange)
     win_T	*wp;
     linenr_T	lnum;
     int		startrow;
     int		endrow;
+    int		nochange;		/* not updating for changed text */
 {
     int		col;			/* visual column on screen */
     unsigned	off;			/* offset in ScreenLines/ScreenAttrs */
@@ -3744,7 +3746,8 @@ win_line(wp, lnum, startrow, endrow)
 			else
 			    p = prev_ptr;
 			cap_col -= (prev_ptr - line);
-			len = spell_check(wp, p, &spell_hlf, &cap_col);
+			len = spell_check(wp, p, &spell_hlf, &cap_col,
+								    nochange);
 			word_end = v + len;
 
 			/* In Insert mode only highlight a word that

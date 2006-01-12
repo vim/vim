@@ -2328,6 +2328,7 @@ sm_client_die(GnomeClient *client, gpointer data)
     vim_strncpy(IObuff,
 		    _("Vim: Received \"die\" request from session manager\n"),
 	    IOSIZE - 1);
+    deadly_exit = TRUE;
     preserve_exit();
 }
 

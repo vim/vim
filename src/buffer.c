@@ -82,7 +82,7 @@ open_buffer(read_stdin, eap)
 					&& (curbuf->b_flags & BF_NEVERLOADED))
 	curbuf->b_p_ro = TRUE;
 
-    if (ml_open() == FAIL)
+    if (ml_open(curbuf) == FAIL)
     {
 	/*
 	 * There MUST be a memfile, otherwise we can't do anything
@@ -1505,6 +1505,8 @@ buflist_new(ffname, sfname, lnum, flags)
      * buffer.	Otherwise: Need to allocate a new buffer structure.
      *
      * This is the ONLY place where a new buffer structure is allocated!
+     * (A spell file buffer is allocated in spell.c, but that's not a normal
+     * buffer.)
      */
     buf = NULL;
     if ((flags & BLN_CURBUF)
@@ -5191,7 +5193,7 @@ buf_contents_changed(buf)
     curwin->w_buffer = newbuf;
 #endif
 
-    if (ml_open() == OK
+    if (ml_open(curbuf) == OK
 	    && readfile(buf->b_ffname, buf->b_fname,
 				  (linenr_T)0, (linenr_T)0, (linenr_T)MAXLNUM,
 					    &ea, READ_NEW | READ_DUMMY) == OK)

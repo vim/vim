@@ -1,5 +1,5 @@
 /* spell.c */
-int spell_check __ARGS((win_T *wp, char_u *ptr, hlf_T *attrp, int *capcol));
+int spell_check __ARGS((win_T *wp, char_u *ptr, hlf_T *attrp, int *capcol, int docount));
 int spell_move_to __ARGS((win_T *wp, int dir, int allwords, int curline, hlf_T *attrp));
 void spell_cat_line __ARGS((char_u *buf, char_u *line, int maxlen));
 char_u *did_set_spelllang __ARGS((buf_T *buf));
@@ -14,7 +14,7 @@ void init_spell_chartab __ARGS((void));
 int spell_check_sps __ARGS((void));
 void spell_suggest __ARGS((int count));
 void ex_spellrepall __ARGS((exarg_T *eap));
-void spell_suggest_list __ARGS((garray_T *gap, char_u *word, int maxcount, int need_cap));
+void spell_suggest_list __ARGS((garray_T *gap, char_u *word, int maxcount, int need_cap, int interactive));
 char_u *eval_soundfold __ARGS((char_u *word));
 void ex_spelldump __ARGS((exarg_T *eap));
 char_u *spell_to_word_end __ARGS((char_u *start, buf_T *buf));

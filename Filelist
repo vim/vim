@@ -77,6 +77,7 @@ SRC_ALL =	\
 		src/testdir/*.in \
 		src/testdir/test[0-9]*.ok \
 		src/testdir/test49.vim \
+		src/testdir/test60.vim \
 		src/proto.h \
 		src/proto/buffer.pro \
 		src/proto/charset.pro \
@@ -683,6 +684,9 @@ LANG_GEN_BIN = \
 		runtime/spell/en.ascii.spl \
 		runtime/spell/en.latin1.spl \
 		runtime/spell/en.utf-8.spl \
+		runtime/spell/en.ascii.sug \
+		runtime/spell/en.latin1.sug \
+		runtime/spell/en.utf-8.sug \
 
 # all files for lang archive
 LANG_SRC = \
