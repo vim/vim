@@ -6527,6 +6527,10 @@ ins_ctrl_g()
 	/* CTRL-G u: start new undoable edit */
 	case 'u': u_sync();
 		  ins_need_undo = TRUE;
+
+		  /* Need to reset Insstart, esp. because a BS that joins
+		   * aline to the previous one must save for undo. */
+		  Insstart = curwin->w_cursor;
 		  break;
 
 	/* Unknown CTRL-G command, reserved for future expansion. */

@@ -541,7 +541,7 @@ LINT_OPTIONS = -beprxzF
 
 # MEMORY LEAK DETECTION
 # Requires installing the ccmalloc library.
-# Configuration is in the .ccmalloc file.
+# Configuration is in the .ccmalloc or ~/.ccmalloc file.
 # Doesn't work very well, since memory linked to from global variables
 # (indirectly) is also marked as leaked memory.
 #PROFILE_CFLAGS = -DEXITFREE

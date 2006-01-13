@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Jan 09
+*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Jan 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -3273,6 +3273,10 @@ maparg({name}[, {mode}])				*maparg()*
 		translated like in the output of the ":map" command listing.
 		The mappings local to the current buffer are checked first,
 		then the global mappings.
+		This function can be used to map a key even when it's already
+		mapped, and have it do the original mapping too.  Sketch: >
+			exe 'nnoremap <Tab> ==' . maparg('<Tab>', 'n')
+
 
 mapcheck({name}[, {mode}])				*mapcheck()*
 		Check if there is a mapping that matches with {name} in mode

@@ -14,6 +14,8 @@ setlocal suffixesadd=.py
 setlocal comments-=:%
 setlocal commentstring=#%s
 
+setlocal omnifunc=pycomplete#Complete
+
 set wildignore+=*.pyc
 
 nnoremap <silent> <buffer> ]] :call <SID>Python_jump('/^\(class\\|def\)')<cr>

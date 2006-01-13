@@ -945,6 +945,10 @@ static char *e_affform = N_("E761: Format error in affix file FOL, LOW or UPP");
 static char *e_affrange = N_("E762: Character in FOL, LOW or UPP is out of range");
 static char *msg_compressing = N_("Compressing word tree...");
 
+/* Remember what "z?" replaced. */
+static char_u	*repl_from = NULL;
+static char_u	*repl_to = NULL;
+
 /*
  * Main spell-checking function.
  * "ptr" points to a character that could be the start of a word.
@@ -1657,8 +1661,8 @@ find_word(mip, mode)
 }
 
 /*
- * Return TRUE if "flags" is a valid sequence of compound flags and
- * "word[len]" does not have too many syllables.
+ * Return TRUE if "flags" is a valid sequence of compound flags and "word"
+ * does not have too many syllables.
  */
     static int
 can_compound(slang, word, flags)
@@ -1884,7 +1888,7 @@ find_prefix(mip, mode)
 
 /*
  * Need to fold at least one more character.  Do until next non-word character
- * for efficiency.
+ * for efficiency.  Include the non-word character too.
  * Return the length of the folded chars in bytes.
  */
     static int
@@ -1900,8 +1904,7 @@ fold_more(mip)
 	mb_ptr_adv(mip->mi_fend);
     } while (*mip->mi_fend != NUL && spell_iswordp(mip->mi_fend, mip->mi_buf));
 
-    /* Include the non-word character so that we can check for the
-     * word end. */
+    /* Include the non-word character so that we can check for the word end. */
     if (*mip->mi_fend != NUL)
 	mb_ptr_adv(mip->mi_fend);
 
@@ -2201,6 +2204,9 @@ spell_cat_line(buf, line, maxlen)
     }
 }
 
+/*
+ * Structure used for the cookie argument of do_in_runtimepath().
+ */
 typedef struct spelload_S
 {
     char_u  sl_lang[MAXWLEN + 1];	/* language name */
@@ -2246,7 +2252,7 @@ spell_load_lang(lang)
 						     lang, spell_enc(), lang);
     else if (sl.sl_slang != NULL)
     {
-	/* At least one file was loaded, now load all the additions. */
+	/* At least one file was loaded, now load ALL the additions. */
 	STRCPY(fname_enc + STRLEN(fname_enc) - 3, "add.spl");
 	do_in_runtimepath(fname_enc, TRUE, spell_load_cb, &sl);
     }
@@ -2469,7 +2475,8 @@ spell_load_cb(fname, cookie)
  * - To reload a spell file that was changed.  "lang" is NULL and "old_lp"
  *   points to the existing slang_T.
  * - Just after writing a .spl file; it's read back to produce the .sug file.
- *   "old_lp" is NULL and "lang" is a dummy name.  Will allocate an slang_T.
+ *   "old_lp" is NULL and "lang" is NULL.  Will allocate an slang_T.
+ *
  * Returns the slang_T the spell file was loaded into.  NULL for error.
  */
     static slang_T *
@@ -2686,7 +2693,7 @@ truncerr:
 	goto someerror;
 
     /* For a new file link it in the list of spell files. */
-    if (old_lp == NULL)
+    if (old_lp == NULL && lang != NULL)
     {
 	lp->sl_next = first_lang;
 	first_lang = lp;
@@ -4358,6 +4365,11 @@ spell_free_all()
     }
 
     init_spell_chartab();
+
+    vim_free(repl_to);
+    repl_to = NULL;
+    vim_free(repl_from);
+    repl_from = NULL;
 }
 # endif
 
@@ -4423,7 +4435,7 @@ spell_reload_one(fname, added_word)
     }
 
     /* When "zg" was used and the file wasn't loaded yet, should redo
-     * 'spelllang' to get it loaded. */
+     * 'spelllang' to load it now. */
     if (added_word && !didit)
 	did_set_spelllang(curbuf);
 }
@@ -7875,9 +7887,6 @@ spell_make_sugfile(spin, wfname)
 	slang = spell_load_file(wfname, NULL, NULL, FALSE);
 	if (slang == NULL)
 	    return;
-	/* don't want this language in the list */
-	if (first_lang == slang)
-	    first_lang = slang->sl_next;
 	free_slang = TRUE;
     }
 
@@ -9339,10 +9348,6 @@ spell_check_sps()
     return OK;
 }
 
-/* Remember what "z?" replaced. */
-static char_u	*repl_from = NULL;
-static char_u	*repl_to = NULL;
-
 /*
  * "z?": Find badly spelled word under or after the cursor.
  * Give suggestions for the properly spelled word.
@@ -9720,22 +9725,22 @@ spell_suggest_list(gap, word, maxcount, need_cap, interactive)
 
     /* Make room in "gap". */
     ga_init2(gap, sizeof(char_u *), sug.su_ga.ga_len + 1);
-    if (ga_grow(gap, sug.su_ga.ga_len) == FAIL)
-	return;
-
-    for (i = 0; i < sug.su_ga.ga_len; ++i)
+    if (ga_grow(gap, sug.su_ga.ga_len) == OK)
     {
-	stp = &SUG(sug.su_ga, i);
+	for (i = 0; i < sug.su_ga.ga_len; ++i)
+	{
+	    stp = &SUG(sug.su_ga, i);
 
-	/* The suggested word may replace only part of "word", add the not
-	 * replaced part. */
-	wcopy = alloc(stp->st_wordlen
+	    /* The suggested word may replace only part of "word", add the not
+	     * replaced part. */
+	    wcopy = alloc(stp->st_wordlen
 				+ STRLEN(sug.su_badptr + stp->st_orglen) + 1);
-	if (wcopy == NULL)
-	    break;
-	STRCPY(wcopy, stp->st_word);
-	STRCPY(wcopy + stp->st_wordlen, sug.su_badptr + stp->st_orglen);
-	((char_u **)gap->ga_data)[gap->ga_len++] = wcopy;
+	    if (wcopy == NULL)
+		break;
+	    STRCPY(wcopy, stp->st_word);
+	    STRCPY(wcopy + stp->st_wordlen, sug.su_badptr + stp->st_orglen);
+	    ((char_u **)gap->ga_data)[gap->ga_len++] = wcopy;
+	}
     }
 
     spell_find_cleanup(&sug);
@@ -10110,20 +10115,20 @@ suggest_load_files()
 		buf[i] = getc(fd);			/* <fileID> */
 	    if (STRNCMP(buf, VIMSUGMAGIC, VIMSUGMAGICL) != 0)
 	    {
-		EMSG2(_("E999: This does not look like a .sug file: %s"),
+		EMSG2(_("E778: This does not look like a .sug file: %s"),
 							     slang->sl_fname);
 		goto nextone;
 	    }
 	    c = getc(fd);				/* <versionnr> */
 	    if (c < VIMSUGVERSION)
 	    {
-		EMSG2(_("E999: Old .sug file, needs to be updated: %s"),
+		EMSG2(_("E779: Old .sug file, needs to be updated: %s"),
 							     slang->sl_fname);
 		goto nextone;
 	    }
 	    else if (c > VIMSUGVERSION)
 	    {
-		EMSG2(_("E999: .sug file is for newer version of Vim: %s"),
+		EMSG2(_("E780: .sug file is for newer version of Vim: %s"),
 							     slang->sl_fname);
 		goto nextone;
 	    }
@@ -10135,7 +10140,7 @@ suggest_load_files()
 		timestamp += getc(fd) << (i * 8);
 	    if (timestamp != slang->sl_sugtime)
 	    {
-		EMSG2(_("E999: .sug file doesn't match .spl file: %s"),
+		EMSG2(_("E781: .sug file doesn't match .spl file: %s"),
 							     slang->sl_fname);
 		goto nextone;
 	    }
@@ -10148,7 +10153,7 @@ suggest_load_files()
 							       FALSE, 0) != 0)
 	    {
 someerror:
-		EMSG2(_("E999: error while reading .sug file: %s"),
+		EMSG2(_("E782: error while reading .sug file: %s"),
 							     slang->sl_fname);
 		slang_clear_sug(slang);
 		goto nextone;
@@ -12786,7 +12791,7 @@ set_map_str(lp, map)
 		{
 		    /* This should have been checked when generating the .spl
 		     * file. */
-		    EMSG(_("E999: duplicate char in MAP entry"));
+		    EMSG(_("E783: duplicate char in MAP entry"));
 		    vim_free(b);
 		}
 	    }
@@ -13026,7 +13031,7 @@ add_banned(su, word)
     suginfo_T	*su;
     char_u	*word;
 {
-    char_u	*s = vim_strsave(word);
+    char_u	*s;
     hash_T	hash;
     hashitem_T	*hi;
 
@@ -14888,7 +14893,7 @@ dump_prefixes(slang, word, dumpflags, flags, startlnum)
     int		len;
     int		i;
 
-    /* if the word starts with a lower-case letter make the word with an
+    /* If the word starts with a lower-case letter make the word with an
      * upper-case letter in word_up[]. */
     c = PTR2CHAR(word);
     if (SPELL_TOUPPER(c) != c)
@@ -14973,7 +14978,8 @@ dump_prefixes(slang, word, dumpflags, flags, startlnum)
 }
 
 /*
- * Move "p" to end of word.
+ * Move "p" to the end of word "start".
+ * Uses the spell-checking word characters.
  */
     char_u *
 spell_to_word_end(start, buf)
@@ -14989,10 +14995,10 @@ spell_to_word_end(start, buf)
 
 #if defined(FEAT_INS_EXPAND) || defined(PROTO)
 /*
- * Find start of the word in front of the cursor.  We don't check if it is
- * badly spelled, with completion we can only change the word in front of the
- * cursor.
- * Used for Insert mode completion CTRL-X ?.
+ * For Insert mode completion CTRL-X s:
+ * Find start of the word in front of column "startcol".
+ * We don't check if it is badly spelled, with completion we can only change
+ * the word in front of the cursor.
  * Returns the column number of the word.
  */
     int

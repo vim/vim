@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 7.0aa.  Last change: 2006 Jan 11
+*quickfix.txt*  For Vim version 7.0aa.  Last change: 2006 Jan 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -123,7 +123,7 @@ The following quickfix commands can be used:
 			A range can be specified for the lines to be used.
 			Otherwise all lines in the buffer are used.
 
-							*:cex* *:cexpr*
+							*:cex* *:cexpr* *E777*
 :cex[pr][!] {expr}	Create a quickfix list using the result of {expr} and
 			jump to the first error.  If {expr} is a String, then
 			each new-line terminated line in the String is

@@ -2956,6 +2956,7 @@ syn_add_end_off(result, regmatch, spp, idx, extra)
     int		extra;		/* extra chars for offset to start */
 {
     int		col;
+    int		len;
 
     if (spp->sp_off_flags & (1 << idx))
     {
@@ -2971,7 +2972,15 @@ syn_add_end_off(result, regmatch, spp, idx, extra)
     if (col < 0)
 	result->col = 0;
     else
-	result->col = col;
+    {
+	/* Don't go past the end of the line.  Matters for "rs=e+2" when there
+	 * is a matchgroup. */
+	len = STRLEN(ml_get_buf(syn_buf, result->lnum, FALSE));
+	if (col > len)
+	    result->col = len;
+	else
+	    result->col = col;
+    }
 }
 
 /*

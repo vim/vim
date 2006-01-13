@@ -2188,7 +2188,6 @@ clear_sb_text()
 	vim_free(last_msgchunk);
 	last_msgchunk = mp;
     }
-    last_msgchunk = NULL;
 }
 
 /*

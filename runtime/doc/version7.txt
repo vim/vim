@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Jan 09
+*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Jan 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1544,5 +1544,18 @@ the dialog then Vim would insert <M-F4> in the text.  Now it's ignored.
 
 When ":silent! {cmd}" caused the swap file dialog, which isn't displayed,
 there would still be a hit-enter prompt.
+
+Requesting the termresponse (|t_RV|) early may cause problems with "-c"
+arguments that invoke an external command or even "-c quit".  Postpone it
+until after executing "-c" arguments.
+
+When typing in Insert mode so that a new line is started, using CTRL-G u to
+break undo and start a new change, then joining the lines with <BS> caused
+undo info to be missing.  Now reset the insertion start point.
+
+Syntax HL: When a region start match has a matchgroup and an offset that
+happens to be after the end of the line then it continued in the next line and
+stopped at the region end match, making the region continue after that.
+Now check for the column being past the end of the line in syn_add_end_off().
 
  vim:tw=78:ts=8:ft=help:norl:

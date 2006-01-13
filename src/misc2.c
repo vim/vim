@@ -1012,6 +1012,7 @@ free_all_mem()
     free_cd_dir();
     set_expr_line(NULL);
     diff_clear();
+    clear_sb_text();	      /* free any scrollback text */
 
     /* Free some global vars. */
     vim_free(username);

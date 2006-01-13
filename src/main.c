@@ -844,6 +844,12 @@ main
     no_wait_return = FALSE;
     starting = 0;
 
+#ifdef FEAT_TERMRESPONSE
+    /* Requesting the termresponse is postponed until here, so that a "-c q"
+     * argument doesn't make it appear in the shell Vim was started from. */
+    may_req_termresponse();
+#endif
+
     /* start in insert mode */
     if (p_im)
 	need_start_insertmode = TRUE;

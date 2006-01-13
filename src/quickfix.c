@@ -3001,7 +3001,7 @@ ex_cexpr(eap)
 		qf_jump(0, 0, eap->forceit);	/* display first error */
 	}
 	else
-	    EMSG(_("E999: String or List expected"));
+	    EMSG(_("E777: String or List expected"));
 	free_tv(tv);
     }
 }

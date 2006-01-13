@@ -88,9 +88,6 @@ static void check_for_codes_from_term __ARGS((void));
     || (defined(FEAT_MOUSE) && (!defined(UNIX) || defined(FEAT_MOUSE_XTERM)))
 static int get_bytes_from_buf __ARGS((char_u *, char_u *, int));
 #endif
-#ifdef FEAT_TERMRESPONSE
-static void may_req_termresponse __ARGS((void));
-#endif
 static void del_termcode_idx __ARGS((int idx));
 static int term_is_builtin __ARGS((char_u *name));
 static int term_7to8bit __ARGS((char_u *p));
@@ -3249,11 +3246,13 @@ stoptermcap()
     }
 }
 
-#ifdef FEAT_TERMRESPONSE
+#if defined(FEAT_TERMRESPONSE) || defined(PROTO)
 /*
  * Request version string (for xterm) when needed.
  * Only do this after switching to raw mode, otherwise the result will be
  * echoed.
+ * Only do this after startup has finished, to avoid that the response comes
+ * while excuting "-c !cmd" or even after "-c quit".
  * Only do this after termcap mode has been started, otherwise the codes for
  * the cursor keys may be wrong.
  * Only do this when 'esckeys' is on, otherwise the response causes trouble in
@@ -3262,17 +3261,18 @@ stoptermcap()
  * request to terminal while reading from a file).
  * The result is caught in check_termcode().
  */
-    static void
+    void
 may_req_termresponse()
 {
     if (crv_status == CRV_GET
 	    && cur_tmode == TMODE_RAW
+	    && starting == 0
 	    && termcap_active
 	    && p_ek
-#ifdef UNIX
+# ifdef UNIX
 	    && isatty(1)
 	    && isatty(read_cmd_fd)
-#endif
+# endif
 	    && *T_CRV != NUL)
     {
 	out_str(T_CRV);

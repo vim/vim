@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.0aa.  Last change: 2006 Jan 09
+*map.txt*       For Vim version 7.0aa.  Last change: 2006 Jan 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -191,6 +191,8 @@ already exists which is equal.
 Example of what will fail: >
 	:map ,w  /[#&!]<CR>
 	:map <buffer> <unique> ,w  /[.,;]<CR>
+If you want to map a key and then have it do what it was originally mapped to,
+have a look at |maparg()|.
 
 "<buffer>", "<silent>", "<script>" and "<unique>" can be used in any order.
 They must appear right after the command, before any other arguments.
@@ -639,7 +641,7 @@ you must create mapping that first sets the 'operatorfunc' option and then
 invoke the |g@| operator.  After the user types the {motion} command the
 specified function will be called.
 
-							*g@*
+							*g@* *E774* *E775*
 g@{motion}		Call the function set by the 'operatorfunc' option.
 			The '[ mark is positioned at the start of the text
 			moved over by {motion}, the '] mark on the last

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Jan 12
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Jan 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,18 +30,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Find E999 and hand out numbers.
-
-Compress list of word numbers: sort them, computer differences, store as utf-8
-bytes.
-
-Undo bug: Gerald Lai Jan 3.
-
-Syntax HL: when region start has an offset that happens to be after the end of
-the line then strange things happen. (Brett Stahlman Dec 31)
-
-Add Python complete script (Aaron Griffin)
-
 Evaluating CTRL-R = in the sandbox causes trouble (G. Sumner Hayes).  Can the
 rules for the commandline window be used?
 
@@ -64,6 +52,13 @@ ccomplete:
   away.  How to figure out if it's a pointer or not?
 - When a typedef or struct is local to a file only use it in that file?
 - Extra info for each entry to show in a tooltip kind of thing.
+    Should use a dictionary for each entry.  Fields could be:
+	word	the completed word
+	menu	menu text (use word when missing)
+	info	extra info, to be displayed in balloon (e.g., function args)
+	kind	single letter indicating the type of word:
+		    v = variable, f = function/method, c = composite (object,
+		    struct pointer).
 - Special mappings for when the popup menu is visible?  Would allow for making
   a specific selection (e.g, methods vs variables).
 - Provide a function to popup the menu, so that an insert mode mapping can
@@ -440,7 +435,7 @@ Add gui_mch_browsedir() for Motif, Mac OS/X.
 Add extra list of file locations.  A bit like the quickfix list, but there is
 one per window.  Can be used with:
     :ltag	      list of matching tags, like :tselect
-Patch from Yegappan Lakshmanan, Jan 9.
+Patch from Yegappan Lakshmanan, Jan 13.
 Commands to use the location list:
     :lnext	      next location
     :lprevious :lNext previous location

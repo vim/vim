@@ -3583,6 +3583,8 @@ expand_env_esc(srcp, dst, dstlen, esc, startstr)
 		{
 		    struct passwd *pw;
 
+		    /* Note: memory allocated by getpwnam() is never freed.
+		     * Calling endpwent() apparently doesn't help. */
 		    pw = getpwnam((char *)dst + 1);
 		    if (pw != NULL)
 			var = (char_u *)pw->pw_dir;
