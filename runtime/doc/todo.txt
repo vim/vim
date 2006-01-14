@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Jan 13
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Jan 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,6 +29,9 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+When the file "" exists, then ":!ls aap<Tab>" should put backslashes before
+'&', ';', '<' and '>'.
 
 Evaluating CTRL-R = in the sandbox causes trouble (G. Sumner Hayes).  Can the
 rules for the commandline window be used?
@@ -67,7 +70,6 @@ ccomplete:
     Can't reproduce it right now...
 
 spelling:
-- NL woordenlijst naar Adri sturen.
 - Include script to cleanup a .add file. (Antonio Colombo, Jan 9)
 - suggestions for "macARONI" doesn't include "macaroni", they are all allcap.
   suggestion for "KG" to "kg" when it's keepcase.

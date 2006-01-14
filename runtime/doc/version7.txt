@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Jan 13
+*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Jan 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1557,5 +1557,13 @@ Syntax HL: When a region start match has a matchgroup and an offset that
 happens to be after the end of the line then it continued in the next line and
 stopped at the region end match, making the region continue after that.
 Now check for the column being past the end of the line in syn_add_end_off().
+
+When changing a file, setting 'swapfile' off and then on again, making another
+change and killing Vim, then some blocks may be missing from the swapfile.
+When 'swapfile' is switched back on mark all blocks in the swapfile as dirty.
+Added mf_set_dirty().
+
+Expanding wildcards in a command like ":e aap;<>!" didn't work.  Put
+backslashes before characters that are special to the shell. (Adri Verhoef)
 
  vim:tw=78:ts=8:ft=help:norl:

@@ -701,6 +701,23 @@ mf_sync(mfp, flags)
 }
 
 /*
+ * For all blocks in memory file *mfp that have a positive block number set
+ * the dirty flag.  These are blocks that need to be written to a newly
+ * created swapfile.
+ */
+    void
+mf_set_dirty(mfp)
+    memfile_T	*mfp;
+{
+    bhdr_T	*hp;
+
+    for (hp = mfp->mf_used_last; hp != NULL; hp = hp->bh_prev)
+	if (hp->bh_bnum > 0)
+	    hp->bh_flags |= BH_DIRTY;
+    mfp->mf_dirty = TRUE;
+}
+
+/*
  * insert block *hp in front of hashlist of memfile *mfp
  */
     static void

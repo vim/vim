@@ -17667,7 +17667,18 @@ trans_function_name(pp, skip, flags, fdp)
     }
 
     if (lv.ll_exp_name != NULL)
+    {
 	len = STRLEN(lv.ll_exp_name);
+	if (lead <= 2 && lv.ll_name == lv.ll_exp_name
+					 && STRNCMP(lv.ll_name, "s:", 2) == 0)
+	{
+	    /* When there was "s:" already or the name expanded to get a
+	     * leading "s:" then remove it. */
+	    lv.ll_name += 2;
+	    len -= 2;
+	    lead = 2;
+	}
+    }
     else
     {
 	if (lead == 2)	/* skip over "s:" */

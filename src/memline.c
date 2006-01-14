@@ -563,7 +563,13 @@ ml_open_file(buf)
 
 	    /* Flush block zero, so others can read it */
 	    if (mf_sync(mfp, MFS_ZERO) == OK)
+	    {
+		/* Mark all blocks that should be in the swapfile as dirty.
+		 * Needed for when the 'swapfile' option was reset, so that
+		 * the swap file was deleted, and then on again. */
+		mf_set_dirty(mfp);
 		break;
+	    }
 	    /* Writing block 0 failed: close the file and try another dir */
 	    mf_close_file(buf, FALSE);
 	}
