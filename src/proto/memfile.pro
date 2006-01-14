@@ -9,6 +9,7 @@ bhdr_T *mf_get __ARGS((memfile_T *mfp, blocknr_T nr, int page_count));
 void mf_put __ARGS((memfile_T *mfp, bhdr_T *hp, int dirty, int infile));
 void mf_free __ARGS((memfile_T *mfp, bhdr_T *hp));
 int mf_sync __ARGS((memfile_T *mfp, int flags));
+void mf_set_dirty __ARGS((memfile_T *mfp));
 int mf_release_all __ARGS((void));
 blocknr_T mf_trans_del __ARGS((memfile_T *mfp, blocknr_T old_nr));
 void mf_set_ffname __ARGS((memfile_T *mfp));
