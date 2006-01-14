@@ -202,10 +202,13 @@ prefixcheck:
 	  exit 1; \
 	fi
 
-clean:
-	rm -f core core.* *.old.po *.mo *.ck *.pot sjiscorr
+clean: checkclean
+	rm -f core core.* *.old.po *.mo *.pot sjiscorr
 
 distclean: clean
+
+checkclean:
+	rm -f *.ck
 
 #
 # NOTE: If you get an error for gvimext.cpp not found, you need to unpack the

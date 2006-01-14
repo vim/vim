@@ -1602,18 +1602,12 @@ xxd/xxd$(EXEEXT): xxd/xxd.c
 # Generate the converted .mo files separately, it's no problem if this fails.
 languages:
 	@if test -n "$(MAKEMO)" -a -f $(PODIR)/Makefile; then \
-		$(MAKE) language-check; \
 		cd $(PODIR); \
 		CC="$(CC)" $(MAKE) prefix=$(DESTDIR)$(prefix); \
 	fi
 	-@if test -n "$(MAKEMO)" -a -f $(PODIR)/Makefile; then \
 		cd $(PODIR); CC="$(CC)" $(MAKE) prefix=$(DESTDIR)$(prefix) converted; \
 	fi
-
-# Separate target to check the po files for valitidy, because it depends on
-# ./vim.
-language-check: $(VIMTARGET)
-	cd $(PODIR); $(MAKE) check VIM=../$(VIMTARGET)
 
 # Update the *.po files for changes in the sources.  Only run manually.
 update-po:
@@ -1706,9 +1700,15 @@ types.vim: $(TAGS_SRC) $(TAGS_INCL)
 test check:
 	$(MAKE) -f Makefile $(VIMTARGET)
 	cd testdir; $(MAKE) -f Makefile $(GUI_TESTTARGET) VIMPROG=../$(VIMTARGET) $(GUI_TESTARG)
+	@if test -n "$(MAKEMO)" -a -f $(PODIR)/Makefile; then \
+		cd $(PODIR); $(MAKE) -f Makefile check VIM=../$(VIMTARGET); \
+	fi
 
 testclean:
 	cd testdir; $(MAKE) -f Makefile clean
+	if test -d $(PODIR); then \
+		cd $(PODIR); $(MAKE) checkclean; \
+	fi
 
 #
 # Avoid overwriting an existing executable, somebody might be running it and

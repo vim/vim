@@ -4852,6 +4852,8 @@ mch_expandpath(gap, path, flags)
 # define SEEK_END 2
 #endif
 
+#define SHELL_SPECIAL (char_u *)"\t \"&';<>[\\]|"
+
 /* ARGSUSED */
     int
 mch_expand_wildcards(num_pat, pat, num_file, file, flags)
@@ -5048,22 +5050,12 @@ mch_expand_wildcards(num_pat, pat, num_file, file, flags)
 	len += STRLEN(pat[i]) + 3;	/* add space and two quotes */
 #else
 	++len;				/* add space */
-	for (j = 0; pat[i][j] != NUL; )
-	    if (vim_strchr((char_u *)" ';&<>", pat[i][j]) != NULL)
-	    {
-		len += 2;		/* add two quotes */
-		while (pat[i][j] != NUL
-			&& vim_strchr((char_u *)" ';&<>", pat[i][j]) != NULL)
-		{
-		    ++len;
-		    ++j;
-		}
-	    }
-	    else
-	    {
-		++len;
-		++j;
-	    }
+	for (j = 0; pat[i][j] != NUL; ++j)
+	{
+	    if (vim_strchr(SHELL_SPECIAL, pat[i][j]) != NULL)
+		++len;		/* may add a backslash */
+	    ++len;
+	}
 #endif
     }
     command = alloc(len);
@@ -5084,9 +5076,11 @@ mch_expand_wildcards(num_pat, pat, num_file, file, flags)
      */
     if (shell_style == STYLE_BT)
     {
-	STRCPY(command, pat[0] + 1);		/* exclude first backtick */
+	/* change `command; command& ` to (command; command ) */
+	STRCPY(command, "(");
+	STRCAT(command, pat[0] + 1);		/* exclude first backtick */
 	p = command + STRLEN(command) - 1;
-	*p = ' ';				/* remove last backtick */
+	*p-- = ')';				/* remove last backtick */
 	while (p > command && vim_iswhite(*p))
 	    --p;
 	if (*p == '&')				/* remove trailing '&' */
@@ -5114,8 +5108,8 @@ mch_expand_wildcards(num_pat, pat, num_file, file, flags)
 	for (i = 0; i < num_pat; ++i)
 	{
 	    /* When using system() always add extra quotes, because the shell
-	     * is started twice.  Otherwise only put quotes around spaces and
-	     * single quotes. */
+	     * is started twice.  Otherwise put a backslash before special
+	     * characters, except insice ``. */
 #ifdef USE_SYSTEM
 	    STRCAT(command, " \"");
 	    STRCAT(command, pat[i]);
@@ -5125,30 +5119,32 @@ mch_expand_wildcards(num_pat, pat, num_file, file, flags)
 
 	    p = command + STRLEN(command);
 	    *p++ = ' ';
-	    for (j = 0; pat[i][j] != NUL; )
+	    for (j = 0; pat[i][j] != NUL; ++j)
 	    {
 		if (pat[i][j] == '`')
 		{
 		    intick = !intick;
-		    *p++ = pat[i][j++];
+		    *p++ = pat[i][j];
 		}
-		else if (!intick && vim_strchr((char_u *)" ';&<>",
+		else if (pat[i][j] == '\\' && pat[i][j + 1] != NUL)
+		{
+		    /* Remove a backslash, take char literally. */
+		    *p++ = pat[i][++j];
+		}
+		else if (!intick && vim_strchr(SHELL_SPECIAL,
 							   pat[i][j]) != NULL)
 		{
-		    /* Put quotes around special characters, but not when
-		     * inside ``. */
-		    *p++ = '"';
-		    while (pat[i][j] != NUL && vim_strchr((char_u *)" ';&<>",
-							   pat[i][j]) != NULL)
-			*p++ = pat[i][j++];
-		    *p++ = '"';
+		    /* Put a backslash before a special character, but not
+		     * when inside ``. */
+		    *p++ = '\\';
+		    *p++ = pat[i][j];
 		}
 		else
 		{
 		    /* For a backslash also copy the next character, don't
 		     * want to put quotes around it. */
-		    if ((*p++ = pat[i][j++]) == '\\' && pat[i][j] != NUL)
-			*p++ = pat[i][j++];
+		    if ((*p++ = pat[i][j]) == '\\' && pat[i][j + 1] != NUL)
+			*p++ = pat[i][++j];
 		}
 	    }
 	    *p = NUL;

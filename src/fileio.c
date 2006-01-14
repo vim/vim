@@ -6158,7 +6158,8 @@ buf_check_timestamp(buf, focus)
     {
 	retval = 1;
 
-	/* set b_mtime to stop further warnings */
+	/* set b_mtime to stop further warnings (e.g., when executing
+	 * FileChangedShell autocmd) */
 	if (stat_res < 0)
 	{
 	    buf->b_mtime = 0;
@@ -6341,7 +6342,7 @@ buf_check_timestamp(buf, focus)
 
     if (reload)
 	/* Reload the buffer. */
-	buf_reload(buf);
+	buf_reload(buf, orig_mode);
 
 #ifdef FEAT_GUI
     /* restore this in case an autocommand has set it; it would break
@@ -6355,16 +6356,18 @@ buf_check_timestamp(buf, focus)
 /*
  * Reload a buffer that is already loaded.
  * Used when the file was changed outside of Vim.
+ * "orig_mode" is buf->b_orig_mode before the need for reloading was detected.
+ * buf->b_orig_mode may have been reset already.
  */
     void
-buf_reload(buf)
+buf_reload(buf, orig_mode)
     buf_T	*buf;
+    int		orig_mode;
 {
     exarg_T	ea;
     pos_T	old_cursor;
     linenr_T	old_topline;
     int		old_ro = buf->b_p_ro;
-    int		orig_mode = buf->b_orig_mode;
     buf_T	*savebuf;
     int		saved = OK;
 #ifdef FEAT_AUTOCMD
