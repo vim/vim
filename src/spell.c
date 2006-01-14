@@ -8779,7 +8779,7 @@ spell_add_word(word, len, bad, index)
 
 	/* If the .add file is edited somewhere, reload it. */
 	if (buf != NULL)
-	    buf_reload(buf);
+	    buf_reload(buf, buf->b_orig_mode);
 
 	redraw_all_later(NOT_VALID);
     }
