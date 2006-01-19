@@ -2,7 +2,7 @@
 " Language:     Java
 " Maintainer:   Claudio Fleiner <claudio@fleiner.com>
 " URL:		http://www.fleiner.com/vim/syntax/java.vim
-" Last Change:  2005 Nov 04
+" Last Change:  2006 Jan 15
 
 " Please check :help java.vim for comments on some of the options available.
 
@@ -65,48 +65,42 @@ syn match   javaUserLabelRef	"\k\+" contained
 syn match   javaVarArg          "\.\.\."
 syn keyword javaScopeDecl	public protected private abstract
 
-if exists("java_highlight_java_lang_ids") || exists("java_highlight_java_lang") || exists("java_highlight_all")
+if exists("java_highlight_java_lang_ids")
+  let java_highlight_all=1
+endif
+if exists("java_highlight_all")  || exists("java_highlight_java")  || exists("java_highlight_java_lang") 
   " java.lang.*
   syn match javaLangClass "\<System\>"
-  syn keyword javaLangClass  Cloneable Comparable Runnable Boolean Byte Class
-  syn keyword javaLangClass  Character CharSequence ClassLoader Compiler Double Float
-  syn keyword javaLangClass  Integer InheritableThreadLocal Long Math Number Object Package Process
-  syn keyword javaLangClass  Runtime RuntimePermission InheritableThreadLocal
-  syn keyword javaLangClass  SecurityManager Short String StrictMath StackTraceElement
-  syn keyword javaLangClass  StringBuffer Thread ThreadGroup
-  syn keyword javaLangClass  ThreadLocal Throwable Void ArithmeticException
-  syn keyword javaLangClass  ArrayIndexOutOfBoundsException AssertionError
-  syn keyword javaLangClass  ArrayStoreException ClassCastException
-  syn keyword javaLangClass  ClassNotFoundException
-  syn keyword javaLangClass  CloneNotSupportedException Exception
-  syn keyword javaLangClass  IllegalAccessException
-  syn keyword javaLangClass  IllegalArgumentException
-  syn keyword javaLangClass  IllegalMonitorStateException
-  syn keyword javaLangClass  IllegalStateException
-  syn keyword javaLangClass  IllegalThreadStateException
-  syn keyword javaLangClass  IndexOutOfBoundsException
-  syn keyword javaLangClass  InstantiationException InterruptedException
-  syn keyword javaLangClass  NegativeArraySizeException NoSuchFieldException
-  syn keyword javaLangClass  NoSuchMethodException NullPointerException
-  syn keyword javaLangClass  NumberFormatException RuntimeException
-  syn keyword javaLangClass  SecurityException StringIndexOutOfBoundsException
-  syn keyword javaLangClass  UnsupportedOperationException
-  syn keyword javaLangClass  AbstractMethodError ClassCircularityError
-  syn keyword javaLangClass  ClassFormatError Error ExceptionInInitializerError
-  syn keyword javaLangClass  IllegalAccessError InstantiationError
-  syn keyword javaLangClass  IncompatibleClassChangeError InternalError
-  syn keyword javaLangClass  LinkageError NoClassDefFoundError
-  syn keyword javaLangClass  NoSuchFieldError NoSuchMethodError
-  syn keyword javaLangClass  OutOfMemoryError StackOverflowError
-  syn keyword javaLangClass  ThreadDeath UnknownError UnsatisfiedLinkError
-  syn keyword javaLangClass  UnsupportedClassVersionError VerifyError
-  syn keyword javaLangClass  VirtualMachineError
+  syn keyword javaR_JavaLang NegativeArraySizeException ArrayStoreException IllegalStateException RuntimeException IndexOutOfBoundsException UnsupportedOperationException ArrayIndexOutOfBoundsException ArithmeticException ClassCastException EnumConstantNotPresentException StringIndexOutOfBoundsException IllegalArgumentException IllegalMonitorStateException IllegalThreadStateException NumberFormatException NullPointerException TypeNotPresentException SecurityException
+  syn cluster javaTop add=javaR_JavaLang
+  syn cluster javaClasses add=javaR_JavaLang
+  JavaHiLink javaR_JavaLang javaR_Java
+  syn keyword javaC_JavaLang Process RuntimePermission StringKeySet CharacterData01 Class ThreadLocal ThreadLocalMap CharacterData0E Package Character StringCoding Long ProcessImpl ProcessEnvironment Short AssertionStatusDirectives 1PackageInfoProxy UnicodeBlock InheritableThreadLocal AbstractStringBuilder StringEnvironment ClassLoader ConditionalSpecialCasing CharacterDataPrivateUse StringBuffer StringDecoder Entry StringEntry WrappedHook StringBuilder StrictMath State ThreadGroup Runtime CharacterData02 MethodArray Object CharacterDataUndefined Integer Gate Boolean Enum Variable Subset StringEncoder Void Terminator CharsetSD IntegerCache CharacterCache Byte CharsetSE Thread SystemClassLoaderAction CharacterDataLatin1 StringValues StackTraceElement Shutdown ShortCache String ConverterSD ByteCache Lock EnclosingMethodInfo Math Float Value Double SecurityManager LongCache ProcessBuilder StringEntrySet Compiler Number UNIXProcess ConverterSE ExternalData CaseInsensitiveComparator CharacterData00 NativeLibrary
+  syn cluster javaTop add=javaC_JavaLang
+  syn cluster javaClasses add=javaC_JavaLang
+  JavaHiLink javaC_JavaLang javaC_Java
+  syn keyword javaE_JavaLang IncompatibleClassChangeError InternalError UnknownError ClassCircularityError AssertionError ThreadDeath IllegalAccessError NoClassDefFoundError ClassFormatError UnsupportedClassVersionError NoSuchFieldError VerifyError ExceptionInInitializerError InstantiationError LinkageError NoSuchMethodError Error UnsatisfiedLinkError StackOverflowError AbstractMethodError VirtualMachineError OutOfMemoryError
+  syn cluster javaTop add=javaE_JavaLang
+  syn cluster javaClasses add=javaE_JavaLang
+  JavaHiLink javaE_JavaLang javaE_Java
+  syn keyword javaX_JavaLang CloneNotSupportedException Exception NoSuchMethodException IllegalAccessException NoSuchFieldException Throwable InterruptedException ClassNotFoundException InstantiationException
+  syn cluster javaTop add=javaX_JavaLang
+  syn cluster javaClasses add=javaX_JavaLang
+  JavaHiLink javaX_JavaLang javaX_Java
+
+  JavaHiLink javaR_Java javaR_
+  JavaHiLink javaC_Java javaC_
+  JavaHiLink javaE_Java javaE_
+  JavaHiLink javaX_Java javaX_
+  JavaHiLink javaX_		     javaExceptions
+  JavaHiLink javaR_		     javaExceptions
+  JavaHiLink javaE_		     javaExceptions
+  JavaHiLink javaC_		     javaConstant
+
   syn keyword javaLangObject clone equals finalize getClass hashCode
   syn keyword javaLangObject notify notifyAll toString wait
-  JavaHiLink javaLangClass		     javaConstant
   JavaHiLink javaLangObject		     javaConstant
-  syn cluster javaTop add=javaLangObject,javaLangClass
-  syn cluster javaClasses add=javaLangClass
+  syn cluster javaTop add=javaLangObject
 endif
 
 if filereadable(expand("<sfile>:p:h")."/javaid.vim")
@@ -162,13 +156,15 @@ if !exists("java_ignore_javadoc") && main_syntax != 'jsp'
   " syntax coloring for javadoc comments (HTML)
   syntax include @javaHtml <sfile>:p:h/html.vim
   unlet b:current_syntax
-  syn region  javaDocComment    start="/\*\*"  end="\*/" keepend contains=javaCommentTitle,@javaHtml,javaDocTags,javaTodo,@Spell
-  syn region  javaCommentTitle  contained matchgroup=javaDocComment start="/\*\*"   matchgroup=javaCommentTitle keepend end="\.$" end="\.[ \t\r<&]"me=e-1 end="[^{]@"me=s-2,he=s-1 end="\*/"me=s-1,he=s-1 contains=@javaHtml,javaCommentStar,javaTodo,@Spell,javaDocTags
+  syn region  javaDocComment    start="/\*\*"  end="\*/" keepend contains=javaCommentTitle,@javaHtml,javaDocTags,javaDocSeeTag,javaTodo,@Spell
+  syn region  javaCommentTitle  contained matchgroup=javaDocComment start="/\*\*"   matchgroup=javaCommentTitle keepend end="\.$" end="\.[ \t\r<&]"me=e-1 end="[^{]@"me=s-2,he=s-1 end="\*/"me=s-1,he=s-1 contains=@javaHtml,javaCommentStar,javaTodo,@Spell,javaDocTags,javaDocSeeTag
 
-  syn region javaDocTags  contained start="{@\(link\|linkplain\|inherit[Dd]oc\|doc[rR]oot\|value\)" end="}"
-  syn match  javaDocTags  contained "@\(see\|param\|exception\|throws\|since\)\s\+\S\+" contains=javaDocParam
-  syn match  javaDocParam contained "\s\S\+"
-  syn match  javaDocTags  contained "@\(version\|author\|return\|deprecated\|serial\|serialField\|serialData\)\>"
+  syn region javaDocTags         contained start="{@\(link\|linkplain\|inherit[Dd]oc\|doc[rR]oot\|value\)" end="}"
+  syn match  javaDocTags         contained "@\(param\|exception\|throws\|since\)\s\+\S\+" contains=javaDocParam
+  syn match  javaDocParam        contained "\s\S\+"
+  syn match  javaDocTags         contained "@\(version\|author\|return\|deprecated\|serial\|serialField\|serialData\)\>"
+  syn region javaDocSeeTag       contained matchgroup=javaDocTags start="@see\s\+" matchgroup=NONE end="\_."re=e-1 contains=javaDocSeeTagParam
+  syn match  javaDocSeeTagParam  contained @"\_[^"]\+"\|<a\s\+\_.\{-}</a>\|\(\k\|\.\)*\(#\k\+\((\_[^)]\+)\)\=\)\=@ extend
   syntax case match
 endif
 
@@ -323,6 +319,7 @@ if version >= 508 || !exists("did_java_syn_inits")
   JavaHiLink javaCommentTitle		SpecialComment
   JavaHiLink javaDocTags		Special
   JavaHiLink javaDocParam		Function
+  JavaHiLink javaDocSeeTagParam		Function
   JavaHiLink javaCommentStar		javaComment
 
   JavaHiLink javaType			Type

@@ -2841,11 +2841,11 @@ check_readonly(forceit, buf)
 }
 
 /*
- * try to abandon current file and edit a new or existing file
- * 'fnum' is the number of the file, if zero use ffname/sfname
+ * Try to abandon current file and edit a new or existing file.
+ * 'fnum' is the number of the file, if zero use ffname/sfname.
  *
- * return 1 for "normal" error, 2 for "not written" error, 0 for success
- * -1 for succesfully opening another file
+ * Return 1 for "normal" error, 2 for "not written" error, 0 for success
+ * -1 for succesfully opening another file.
  * 'lnum' is the line number for the cursor in the new file (if non-zero).
  */
     int
@@ -2861,10 +2861,8 @@ getfile(fnum, ffname, sfname, setpm, lnum, forceit)
     int		retval;
     char_u	*free_me = NULL;
 
-#ifdef FEAT_CMDWIN
-    if (cmdwin_type != 0)
+    if (editing_cmdline())
 	return 1;
-#endif
 
     if (fnum == 0)
     {

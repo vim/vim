@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Jan 14
+*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Jan 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1527,8 +1527,9 @@ When 'esckeys' is not set don't send the xterm code to request the version
 string, because it may cause trouble in Insert mode.
 
 When evaluating an expression for CTRL-R = on the command line it was possible
-to open a new window, resulting in errors for incremental search, and many
-other nasty things were possible.  Now evaluate the expression in the sandbox
+to call a function that opens a new window, resulting in errors for
+incremental search, and many other nasty things were possible.  Now set
+"cmdline_busy" and disallow changing the buffer or jumpting to another window
 to protect from unexpected behavior.  Same for CTRL-\ e.
 
 "d(" deleted the character under the cursor, while the documentation specified
@@ -1565,5 +1566,12 @@ Added mf_set_dirty().
 
 Expanding wildcards in a command like ":e aap;<>!" didn't work.  Put
 backslashes before characters that are special to the shell. (Adri Verhoef)
+
+A CursorHold autocommand would cause a message to be cleared.  Don't show the
+special key for the event for 'showcmd'.
+
+When expanding a file name for a shell command, as in "!cmd foo<Tab>" or ":r
+!cmd foo<Tab>" also escape characters that are special for the shell:
+"!;&()<>".
 
  vim:tw=78:ts=8:ft=help:norl:

@@ -86,6 +86,8 @@ EXTERN int	clear_cmdline INIT(= FALSE);	/* cmdline must be cleared */
 #if defined(FEAT_CRYPT) || defined(FEAT_EVAL)
 EXTERN int	cmdline_star INIT(= FALSE);	/* cmdline is crypted */
 #endif
+EXTERN int	cmdline_busy INIT(= FALSE);	/* editing the cmdline */
+
 EXTERN int	exec_from_reg INIT(= FALSE);	/* executing register */
 
 EXTERN int	screen_cleared INIT(= FALSE);	/* screen has been cleared */

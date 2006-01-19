@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:		M4
-" Maintainer:	Claudio Fleiner
+" Maintainer:	Claudio Fleiner (claudio@fleiner.com)
 " URL:			http://www.fleiner.com/vim/syntax/m4.vim
-" Last Change:	2001 Apr 26
+" Last Change:	2005 Jan 15
 
 " This file will highlight user function calls if they use only
 " capital letters and have at least one argument (i.e. the '('
@@ -23,9 +23,9 @@ endif
 " define the m4 syntax
 syn match  m4Variable contained "\$\d\+"
 syn match  m4Special  contained "$[@*#]"
-syn match  m4Comment  "dnl\>.*" contains=SpellErrors
-syn match  m4Constants "\(\<m4_\)\=__file__"
-syn match  m4Constants "\(\<m4_\)\=__line__"
+syn match  m4Comment  "\<\(m4_\)\=dnl\>.*" contains=SpellErrors
+syn match  m4Constants "\<\(m4_\)\=__file__"
+syn match  m4Constants "\<\(m4_\)\=__line__"
 syn keyword m4Constants divnum sysval m4_divnum m4_sysval
 syn region m4Paren    matchgroup=m4Delimiter start="(" end=")" contained contains=@m4Top
 syn region m4Command  matchgroup=m4Function  start="\<\(m4_\)\=\(define\|defn\|pushdef\)(" end=")" contains=@m4Top

@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.0aa.  Last change: 2005 Dec 31
+*syntax.txt*	For Vim version 7.0aa.  Last change: 2006 Jan 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1883,6 +1883,13 @@ If you want to use folding with perl, set perl_fold: >
 If you want to fold blocks in if statements, etc. as well set the following: >
 
 	:let perl_fold_blocks = 1
+
+To avoid folding packages or subs when perl_fold is let, let the appropriate
+variable(s): >
+
+ 	:unlet perl_nofold_packages
+ 	:unlet perl_nofold_subs
+
 
 
 PHP3 and PHP4		*php.vim* *php3.vim* *ft-php-syntax* *ft-php3-syntax*

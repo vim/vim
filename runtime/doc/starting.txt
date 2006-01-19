@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.0aa.  Last change: 2005 Dec 04
+*starting.txt*  For Vim version 7.0aa.  Last change: 2006 Jan 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -799,8 +799,9 @@ accordingly.  Vim proceeds in this order:
 	- The |--noplugin| command line argument is used.
 	- The "-u NONE" command line argument is used |-u|.
 	- When Vim was compiled without the |+eval| feature.
-	Note that using "-c set noloadplugins" doesn't work, because the
-	commands from the command line have not been executed yet.
+	Note that using "-c 'set noloadplugins'" doesn't work, because the
+	commands from the command line have not been executed yet.  You can
+	use "--cmd 'set noloadplugins'" |--cmd|.
 
 5. Set 'shellpipe' and 'shellredir'
 	The 'shellpipe' and 'shellredir' options are set according to the

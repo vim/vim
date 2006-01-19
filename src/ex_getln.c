@@ -258,6 +258,9 @@ getcmdline(firstc, count, indent)
     }
     xpc.xp_context = EXPAND_NOTHING;
     xpc.xp_backslash = XP_BS_NONE;
+#ifndef BACKSLASH_IN_FILENAME
+    xpc.xp_shell = FALSE;
+#endif
 
 #if defined(FEAT_EVAL)
     if (ccline.input_fn)
@@ -658,17 +661,13 @@ getcmdline(firstc, count, indent)
 		restore_cmdline(&save_ccline);
 		if (c == '=')
 		{
-		    /* Need to save and restore ccline.  And go into the
-		     * sandbox to avoid nasty things like going to another
-		     * buffer when evaluating an expression. */
+		    /* Need to save and restore ccline.  And set cmdline_busy
+		     * to avoid nasty things like going to another buffer when
+		     * evaluating an expression. */
 		    save_cmdline(&save_ccline);
-#ifdef HAVE_SANDBOX
-		    ++sandbox;
-#endif
+		    ++cmdline_busy;
 		    p = get_expr_line();
-#ifdef HAVE_SANDBOX
-		    --sandbox;
-#endif
+		    --cmdline_busy;
 		    restore_cmdline(&save_ccline);
 
 		    if (p != NULL && realloc_cmdbuff((int)STRLEN(p) + 1) == OK)
@@ -1875,6 +1874,35 @@ getcmdline_prompt(firstc, prompt, attr, xp_context, xp_arg)
 }
 #endif
 
+/*
+ * Return TRUE when the command line is being edited.  That means the current
+ * buffer and window can't be changed.
+ */
+    int
+editing_cmdline()
+{
+#ifdef FEAT_CMDWIN
+    if (cmdwin_type != 0)
+	return TRUE;
+#endif
+    return cmdline_busy;
+}
+
+/*
+ * Give an error message for a command that isn't allowed while the cmdline
+ * window is open or editing the cmdline in another way.
+ */
+    void
+editing_cmdline_msg()
+{
+#ifdef FEAT_CMDWIN
+    if (cmdwin_type != 0)
+	EMSG(_(e_cmdwin));
+    else
+#endif
+	EMSG(_(e_secure));
+}
+
     static int
 cmdline_charsize(idx)
     int		idx;
@@ -2786,17 +2814,12 @@ cmdline_paste(regname, literally)
     regname = may_get_selection(regname);
 #endif
 
-    /* Need to save and restore ccline.  And go into the sandbox to avoid
-     * nasty things like going to another buffer when evaluating an
-     * expression. */
+    /* Need to save and restore ccline.  And set cmdline_busy to avoid nasty
+     * things like going to another buffer when evaluating an expression. */
     save_cmdline(&save_ccline);
-#ifdef HAVE_SANDBOX
-    ++sandbox;
-#endif
+    ++cmdline_busy;
     i = get_spec_reg(regname, &arg, &allocated, TRUE);
-#ifdef HAVE_SANDBOX
-    --sandbox;
-#endif
+    --cmdline_busy;
     restore_cmdline(&save_ccline);
 
     if (i)
@@ -3368,8 +3391,14 @@ ExpandInit(xp)
     expand_T	*xp;
 {
     xp->xp_backslash = XP_BS_NONE;
+#ifndef BACKSLASH_IN_FILENAME
+    xp->xp_shell = FALSE;
+#endif
     xp->xp_numfiles = -1;
     xp->xp_files = NULL;
+#if defined(FEAT_USR_CMDS) && defined(FEAT_EVAL) && defined(FEAT_CMDL_COMPL)
+    xp->xp_arg = NULL;
+#endif
 }
 
 /*
@@ -3446,7 +3475,8 @@ ExpandEscape(xp, str, numfiles, files, options)
 		    p = vim_strsave_escaped(files[i], buf);
 		}
 #else
-		p = vim_strsave_escaped(files[i], PATH_ESC_CHARS);
+		p = vim_strsave_escaped(files[i],
+			     xp->xp_shell ? SHELL_ESC_CHARS : PATH_ESC_CHARS);
 #endif
 		if (p != NULL)
 		{
@@ -4527,8 +4557,9 @@ globpath(path, file)
     if (buf == NULL)
 	return NULL;
 
+    ExpandInit(&xpc);
     xpc.xp_context = EXPAND_FILES;
-    xpc.xp_backslash = XP_BS_NONE;
+
     ga_init2(&ga, 1, 100);
 
     /* Loop over all entries in {path}. */

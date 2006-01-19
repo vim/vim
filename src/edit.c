@@ -289,6 +289,13 @@ edit(cmdchar, startln, count)
 	return FALSE;
     }
 #endif
+    /* Don't allow changes in the buffer while editing the cmdline.  The
+     * caller of getcmdline() may get confused. */
+    if (cmdline_busy)
+    {
+	EMSG(_(e_secure));
+	return FALSE;
+    }
 
 #ifdef FEAT_INS_EXPAND
     ins_compl_clear();	    /* clear stuff for CTRL-X mode */

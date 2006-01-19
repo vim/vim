@@ -52,6 +52,7 @@
 
 static u_entry_T *u_get_headentry __ARGS((void));
 static void u_getbot __ARGS((void));
+static int undo_allowed __ARGS((void));
 static int u_savecommon __ARGS((linenr_T, linenr_T, linenr_T));
 static void u_doit __ARGS((int count));
 static void u_undoredo __ARGS((void));
@@ -156,6 +157,40 @@ u_savedel(lnum, nlines)
 			nlines == curbuf->b_ml.ml_line_count ? 2 : lnum));
 }
 
+/*
+ * Return TRUE when undo is allowed.  Otherwise give an error message and
+ * return FALSE.
+ */
+    static int
+undo_allowed()
+{
+    /* Don't allow changes when 'modifiable' is off.  */
+    if (!curbuf->b_p_ma)
+    {
+	EMSG(_(e_modifiable));
+	return FALSE;
+    }
+
+#ifdef HAVE_SANDBOX
+    /* In the sandbox it's not allowed to change the text. */
+    if (sandbox != 0)
+    {
+	EMSG(_(e_sandbox));
+	return FALSE;
+    }
+#endif
+
+    /* Don't allow changes in the buffer while editing the cmdline.  The
+     * caller of getcmdline() may get confused. */
+    if (cmdline_busy)
+    {
+	EMSG(_(e_secure));
+	return FALSE;
+    }
+
+    return TRUE;
+}
+
     static int
 u_savecommon(top, bot, newbot)
     linenr_T	top, bot;
@@ -168,27 +203,10 @@ u_savecommon(top, bot, newbot)
     u_entry_T		*prev_uep;
     long		size;
 
-    /*
-     * Don't allow changes when 'modifiable' is off.  Letting the
-     * undo fail is a crude way to make all change commands fail.
-     */
-    if (!curbuf->b_p_ma)
-    {
-	EMSG(_(e_modifiable));
+    /* When making changes is not allowed return FAIL.  It's a crude way to
+     * make all change commands fail. */
+    if (!undo_allowed())
 	return FAIL;
-    }
-
-#ifdef HAVE_SANDBOX
-    /*
-     * In the sandbox it's not allowed to change the text.  Letting the
-     * undo fail is a crude way to make all change commands fail.
-     */
-    if (sandbox != 0)
-    {
-	EMSG(_(e_sandbox));
-	return FAIL;
-    }
-#endif
 
 #ifdef FEAT_NETBEANS_INTG
     /*
@@ -484,20 +502,8 @@ u_redo(count)
 u_doit(count)
     int count;
 {
-    /* Don't allow changes when 'modifiable' is off. */
-    if (!curbuf->b_p_ma)
-    {
-	EMSG(_(e_modifiable));
+    if (!undo_allowed())
 	return;
-    }
-#ifdef HAVE_SANDBOX
-    /* In the sandbox it's not allowed to change the text. */
-    if (sandbox != 0)
-    {
-	EMSG(_(e_sandbox));
-	return;
-    }
-#endif
 
     u_newcount = 0;
     u_oldcount = 0;

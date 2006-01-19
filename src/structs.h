@@ -401,6 +401,10 @@ typedef struct expand
     int		xp_scriptID;		/* SID for completion function */
 #endif
     int		xp_backslash;		/* one of the XP_BS_ values */
+#ifndef BACKSLASH_IN_FILENAME
+    int		xp_shell;		/* for a shell command more characters
+					   need to be escaped */
+#endif
     int		xp_numfiles;		/* number of files found by
 						    file name completion */
     char_u	**xp_files;		/* list of files */

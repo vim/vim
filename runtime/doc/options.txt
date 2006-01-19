@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2006 Jan 04
+*options.txt*	For Vim version 7.0aa.  Last change: 2006 Jan 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1982,11 +1982,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 			C-indenting.
 								*cpo--*
 		-	When included, a vertical movement command fails when
-			it would above the first line or below the last line.
-			Without it the cursor moves to the first or last line,
-			unless it already was in that line.
+			it would go above the first line or below the last
+			line.  Without it the cursor moves to the first or
+			last line, unless it already was in that line.
 			Applies to the commands "-", "k", CTRL-P, "+", "j",
-			CTRL-N and CTRL-J.
+			CTRL-N, CTRL-J and ":1234".
 								*cpo-+*
 		+	When included, a ":write file" command will reset the
 			'modified' flag of the buffer, even though the buffer
