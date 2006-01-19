@@ -2,8 +2,9 @@
 " Language:	PHP
 " Author:	John Wellesz <John.wellesz (AT) teaser (DOT) fr>
 " URL:		http://www.2072productions.com/vim/indent/php.vim
-" Last Change: 2005 Nobember 21st
-" Version: 1.20
+" Last Change:  2006 January 15th
+" Newsletter:   http://www.2072productions.com/?to=php-indent-for-vim-newsletter.php
+" Version:	1.23
 "
 "  The change log and all the comments have been removed from this file.
 "
@@ -11,14 +12,14 @@
 "  2072productions.com at the URI provided above.
 " 
 "  If you find a bug, please e-mail me at John.wellesz (AT) teaser (DOT) fr
-"  with an example of code that break the algorithm.
+"  with an example of code that breaks the algorithm.
 "
 "
 "	Thanks a lot for using this script.
 "
 "
 " NOTE: This script must be used with PHP syntax ON and with the php syntax
-"	script by Lutz Eymers (http://www.isp.de/data/php.vim ) that's the script bundled with Gvim.
+"	script by Lutz Eymers ( http://www.isp.de/data/php.vim ) that's the script bundled with Vim.
 "
 "
 "	In the case you have syntax errors in your script such as end of HereDoc
@@ -66,6 +67,10 @@
 "
 "			NOTE: The script will be a bit slower if you use this option because
 "			some optimizations won't be available.
+
+
+
+
 
 
 
@@ -127,7 +132,7 @@ if &fileformat == "unix" && exists("PHP_removeCRwhenUnix") && PHP_removeCRwhenUn
 endif
 
 if exists("*GetPhpIndent")
-   finish " XXX
+    finish " XXX
 endif
 
 let s:endline= '\s*\%(//.*\|#.*\|/\*.*\*/\s*\)\=$'
@@ -136,7 +141,13 @@ let s:PHP_startindenttag = '<?\%(.*?>\)\@!\|<script[^>]*>\%(.*<\/script>\)\@!'
 
 
 function! GetLastRealCodeLNum(startline) " {{{
+    
     let lnum = a:startline
+    
+    if b:GetLastRealCodeLNum_ADD && b:GetLastRealCodeLNum_ADD == lnum + 1
+	let lnum = b:GetLastRealCodeLNum_ADD
+    endif
+    
     let old_lnum = lnum
 
     while lnum > 1
@@ -288,7 +299,7 @@ function! IslinePHP (lnum, tofind) " {{{
 endfunction " }}}
 
 let s:notPhpHereDoc = '\%(break\|return\|continue\|exit\);'
-let s:blockstart = '\%(\%(\%(}\s*\)\=else\%(\s\+\)\=\)\=if\>\|else\>\|while\>\|switch\>\|for\%(each\)\=\>\|declare\>\|class\>\|interface\>\|abstract\>\|[|&]\)'
+let s:blockstart = '\%(\%(\%(}\s*\)\=else\%(\s\+\)\=\)\=if\>\|else\>\|while\>\|switch\>\|for\%(each\)\=\>\|declare\>\|class\>\|interface\>\|abstract\>\|try\>\|catch\>\|[|&]\)'
 
 let s:autorestoptions = 0
 if ! s:autorestoptions
@@ -315,6 +326,8 @@ function! ResetOptions()
 endfunc
 
 function! GetPhpIndent()
+
+    let b:GetLastRealCodeLNum_ADD = 0
 
     let UserIsEditing=0
     if	b:PHP_oldchangetick != b:changedtick
@@ -361,7 +374,10 @@ function! GetPhpIndent()
     if !b:InPHPcode_checked " {{{ One time check
 	let b:InPHPcode_checked = 1
 
-	let synname = IslinePHP (prevnonblank(v:lnum), "")
+	let synname = ""
+	if cline !~ '<?.*?>'
+	    let synname = IslinePHP (prevnonblank(v:lnum), "")
+	endif
 
 	if synname!=""
 	    if synname != "phpHereDoc"
@@ -425,6 +441,7 @@ function! GetPhpIndent()
 
 	    elseif cline =~? '<script\>'
 		let b:InPHPcode_and_script = 1
+		let b:GetLastRealCodeLNum_ADD = v:lnum
 	    endif
 	endif
     endif
@@ -453,10 +470,10 @@ function! GetPhpIndent()
 	endif
     endif " }}}
 
+    
     if !b:InPHPcode && !b:InPHPcode_and_script
 	return -1
     endif
-
 
     " Indent successive // or # comment the same way the first is {{{
     if cline =~ '^\s*\%(//\|#\|/\*.*\*/\s*$\)'
@@ -482,9 +499,11 @@ function! GetPhpIndent()
 	endif
     endif
 
-    if !b:PHP_InsideMultilineComment && cline =~ '^\s*/\*'
+    if !b:PHP_InsideMultilineComment && cline =~ '^\s*/\*' && cline !~ '\*/\s*$'
+	if getline(v:lnum + 1) !~ '^\s*\*'
+	    return -1
+	endif
 	let b:PHP_InsideMultilineComment = 1
-	return -1
     endif " }}}
 
 
@@ -504,6 +523,7 @@ function! GetPhpIndent()
     let s:level = 0
 
     let lnum = GetLastRealCodeLNum(v:lnum - 1)
+
     let last_line = getline(lnum)
     let ind = indent(lnum)
     let endline= s:endline

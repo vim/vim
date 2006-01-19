@@ -2026,7 +2026,17 @@ do_one_cmd(cmdlinep, sourcing,
 	}
 	else if (ea.addr_count != 0)
 	{
-	    if (ea.line2 < 0 || ea.line2 > curbuf->b_ml.ml_line_count)
+	    if (ea.line2 > curbuf->b_ml.ml_line_count)
+	    {
+		/* With '-' in 'cpoptions' a line number past the file is an
+		 * error, otherwise put it at the end of the file. */
+		if (vim_strchr(p_cpo, CPO_MINUS) != NULL)
+		    ea.line2 = -1;
+		else
+		    ea.line2 = curbuf->b_ml.ml_line_count;
+	    }
+
+	    if (ea.line2 < 0)
 		errormsg = (char_u *)_(e_invrange);
 	    else
 	    {
@@ -2126,18 +2136,22 @@ do_one_cmd(cmdlinep, sourcing,
 	    errormsg = (char_u *)_(e_modifiable);
 	    goto doend;
 	}
-#ifdef FEAT_CMDWIN
-	if (cmdwin_type != 0 && !(ea.argt & CMDWIN)
+
+	if (editing_cmdline() && !(ea.argt & CMDWIN)
 # ifdef FEAT_USR_CMDS
 		&& !USER_CMDIDX(ea.cmdidx)
 # endif
 	   )
 	{
-	    /* Command not allowed in cmdline window. */
-	    errormsg = (char_u *)_(e_cmdwin);
+	    /* Command not allowed when editing the command line. */
+#ifdef FEAT_CMDWIN
+	    if (cmdwin_type != 0)
+		errormsg = (char_u *)_(e_cmdwin);
+	    else
+#endif
+		errormsg = (char_u *)_(e_secure);
 	    goto doend;
 	}
-#endif
 
 	if (!ni && !(ea.argt & RANGE) && ea.addr_count > 0)
 	{
@@ -2977,12 +2991,9 @@ set_one_cmd_context(xp, buff)
     int			forceit = FALSE;
     int			usefilter = FALSE;  /* filter instead of file name */
 
+    ExpandInit(xp);
     xp->xp_pattern = buff;
     xp->xp_context = EXPAND_COMMANDS;	/* Default until we get past command */
-    xp->xp_backslash = XP_BS_NONE;
-#if defined(FEAT_USR_CMDS) && defined(FEAT_EVAL) && defined(FEAT_CMDL_COMPL)
-    xp->xp_arg = NULL;
-#endif
     ea.argt = 0;
 
 /*
@@ -3254,6 +3265,11 @@ set_one_cmd_context(xp, buff)
 	if (bow != NULL && in_quote)
 	    xp->xp_pattern = bow;
 	xp->xp_context = EXPAND_FILES;
+#ifndef BACKSLASH_IN_FILENAME
+	/* For a shell command more chars need to be escaped. */
+	if (usefilter || ea.cmdidx == CMD_bang)
+	    xp->xp_shell = TRUE;
+#endif
 
 	/* Check for environment variable */
 	if (*xp->xp_pattern == '$'
@@ -4189,16 +4205,16 @@ expand_filename(eap, cmdlinep, errormsgp)
 
 	/* For a shell command a '!' must be escaped. */
 	if ((eap->usefilter || eap->cmdidx == CMD_bang)
-			      && vim_strpbrk(repl, (char_u *)"!&;()") != NULL)
+			    && vim_strpbrk(repl, (char_u *)"!&;()<>") != NULL)
 	{
 	    char_u	*l;
 
-	    l = vim_strsave_escaped(repl, (char_u *)"!&;()");
+	    l = vim_strsave_escaped(repl, (char_u *)"!&;()<>");
 	    if (l != NULL)
 	    {
 		vim_free(repl);
 		repl = l;
-		/* For a sh-like shell escape it another time. */
+		/* For a sh-like shell escape "!" another time. */
 		if (strstr((char *)p_sh, "sh") != NULL)
 		{
 		    l = vim_strsave_escaped(repl, (char_u *)"!");
@@ -6017,6 +6033,12 @@ ex_quit(eap)
 	return;
     }
 #endif
+    /* Don't quit while editing the command line. */
+    if (editing_cmdline())
+    {
+	editing_cmdline_msg();
+	return;
+    }
 
 #ifdef FEAT_NETBEANS_INTG
     netbeansForcedQuit = eap->forceit;
@@ -6079,6 +6101,14 @@ ex_quit_all(eap)
 	return;
     }
 # endif
+
+    /* Don't quit while editing the command line. */
+    if (editing_cmdline())
+    {
+	editing_cmdline_msg();
+	return;
+    }
+
     exiting = TRUE;
     if (eap->forceit || !check_changed_any(FALSE))
 	getout(0);
@@ -6098,7 +6128,8 @@ ex_close(eap)
 	cmdwin_result = K_IGNORE;
     else
 # endif
-	ex_win_close(eap, curwin);
+	if (!editing_cmdline())
+	    ex_win_close(eap, curwin);
 }
 
     static void
@@ -6257,6 +6288,12 @@ ex_exit(eap)
 	return;
     }
 #endif
+    /* Don't quit while editing the command line. */
+    if (editing_cmdline())
+    {
+	editing_cmdline_msg();
+	return;
+    }
 
     /*
      * if more files or windows we won't exit
@@ -6369,10 +6406,9 @@ handle_drop(filec, filev, split)
     exarg_T	ea;
     int		save_msg_scroll = msg_scroll;
 
-# ifdef FEAT_CMDWIN
-    if (cmdwin_type != 0)
+    /* Postpone this while editing the command line. */
+    if (editing_cmdline())
 	return;
-# endif
 
     /* Check whether the current buffer is changed. If so, we will need
      * to split the current window or data could be lost.

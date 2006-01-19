@@ -1806,10 +1806,11 @@ buflist_getfile(n, lnum, options, forceit)
     if (buf == curbuf)
 	return OK;
 
-#ifdef FEAT_CMDWIN
-    if (cmdwin_type != 0)
+    if (editing_cmdline())
+    {
+	editing_cmdline_msg();
 	return FAIL;
-#endif
+    }
 
     /* altfpos may be changed by getfile(), get it now */
     if (lnum == 0)

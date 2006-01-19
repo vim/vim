@@ -788,15 +788,14 @@ getcount:
 	clearopbeep(oap);
 	goto normal_end;
     }
-#ifdef FEAT_CMDWIN
-    if (cmdwin_type != 0 && (nv_cmds[idx].cmd_flags & NV_NCW))
+
+    if (editing_cmdline() && (nv_cmds[idx].cmd_flags & NV_NCW))
     {
-	/* This command is not allowed in the cmdline window: beep. */
+	/* This command is not allowed wile editing a ccmdline: beep. */
 	clearopbeep(oap);
-	EMSG(_(e_cmdwin));
+	editing_cmdline_msg();
 	goto normal_end;
     }
-#endif
 
 #ifdef FEAT_VISUAL
     /*
@@ -3640,6 +3639,7 @@ add_to_showcmd(c)
 	K_RIGHTMOUSE, K_RIGHTDRAG, K_RIGHTRELEASE,
 	K_MOUSEDOWN, K_MOUSEUP,
 	K_X1MOUSE, K_X1DRAG, K_X1RELEASE, K_X2MOUSE, K_X2DRAG, K_X2RELEASE,
+	K_CURSORHOLD,
 	0
     };
 #endif
@@ -5741,13 +5741,12 @@ nv_gotofile(cap)
 {
     char_u	*ptr;
 
-#ifdef FEAT_CMDWIN
-    if (cmdwin_type != 0)
+    if (editing_cmdline())
     {
 	clearopbeep(cap->oap);
+	editing_cmdline_msg();
 	return;
     }
-#endif
 
     ptr = grab_file_name(cap->count1);
 
@@ -7802,13 +7801,13 @@ nv_g_cmd(cap)
 
     /* "gQ": improved Ex mode */
     case 'Q':
-#ifdef FEAT_CMDWIN
-	if (cmdwin_type != 0)
+	if (editing_cmdline())
 	{
 	    clearopbeep(cap->oap);
+	    editing_cmdline_msg();
 	    break;
 	}
-#endif
+
 	if (!checkclearopq(oap))
 	    do_exmode(TRUE);
 	break;

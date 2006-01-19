@@ -2717,13 +2717,13 @@ win_alloc_first()
 win_goto(wp)
     win_T	*wp;
 {
-#ifdef FEAT_CMDWIN
-    if (cmdwin_type != 0)
+    if (editing_cmdline())
     {
 	beep_flush();
+	editing_cmdline_msg();
 	return;
     }
-#endif
+
 #ifdef FEAT_VISUAL
     if (wp->w_buffer != curbuf)
 	reset_VIsual_and_resel();

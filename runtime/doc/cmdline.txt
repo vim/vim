@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 7.0aa.  Last change: 2005 Dec 30
+*cmdline.txt*   For Vim version 7.0aa.  Last change: 2006 Jan 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -153,8 +153,9 @@ CTRL-R {0-9a-z"%#:-=.}					*c_CTRL-R* *c_<C-R>*
 							*c_CTRL-R_=*
 			'='	the expression register: you are prompted to
 				enter an expression (see |expression|)
-				(doesn't work at the expression prompt; uses
-				the |sandbox| to avoid side effects)
+				(doesn't work at the expression prompt; some
+				things such as changing the buffer or current
+				window are not allowed to avoid side effects)
 		See |registers| about registers.  {not in Vi}
 		Implementation detail: When using the |expression| register
 		and invoking setcmdpos(), this sets the position before

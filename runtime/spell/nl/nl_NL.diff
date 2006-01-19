@@ -1,8 +1,8 @@
 *** nl_NL.orig.aff	Sun Jul  3 18:24:07 2005
---- nl_NL.aff	Tue Aug 23 14:03:48 2005
+--- nl_NL.aff	Thu Dec 29 19:42:56 2005
 ***************
 *** 3,6 ****
---- 3,30 ----
+--- 3,31 ----
   
 + FOL  ßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿ
 + LOW  ßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿ
@@ -13,9 +13,10 @@
 + 
 + MIDWORD	'-
 + 
-+ KEP =
-+ RAR ?
++ KEEPCASE =
++ RARE ?
 + BAD !
++ SLASH ,
 + 
   NOSPLITSUGS
   
@@ -53,7 +54,7 @@
 ! SFX J 0 je [aeiou][bcdfgkpt] 
 ! SFX J 0 jes [aeiou][bcdfgkpt] 
   
---- 57,76 ----
+--- 58,77 ----
   SFX J N 18
 ! SFX J 0 tje [aeiou][aeiou]
 ! SFX J 0 tjes [aeiou][aeiou]
@@ -79,7 +80,7 @@
   REP ubi ibu
 ! REP croc krok 
   REP ten than
---- 277,279 ----
+--- 278,280 ----
   REP ubi ibu
 ! REP croc krok
   REP ten than
@@ -88,7 +89,7 @@
   REP capucino cappuccino
 ! REP celcius Celsius 
   REP kado cadeau
---- 312,314 ----
+--- 313,315 ----
   REP capucino cappuccino
 ! REP celcius Celsius
   REP kado cadeau
@@ -101,7 +102,7 @@
   REP kommittee comité
 ! REP kwis quiz 
   REP kwissen quizzen
---- 318,324 ----
+--- 319,325 ----
   REP committee comité
 ! REP komitee comité
 ! REP komittee comité
@@ -114,7 +115,7 @@
   REP copy kopij
 ! REP pitoresque pittoreske 
   REP reikweite reikwijdte
---- 326,328 ----
+--- 327,329 ----
   REP copy kopij
 ! REP pitoresque pittoreske
   REP reikweite reikwijdte
@@ -126,7 +127,7 @@
 ! REP kontekst context 
 ! REP korrekt correct 
   REP kritikus criticus
---- 338,343 ----
+--- 339,344 ----
   REP klup club
 ! REP wiskid whizzkid
 ! REP kontakt contact
@@ -135,13 +136,13 @@
   REP kritikus criticus
 ***************
 *** 333 ****
---- 357,360 ----
+--- 358,361 ----
   REP aflassen afgelasten
 + REP svp s.v.p.
 + REP zoz z.o.z.
 + 
 *** nl_NL.orig.dic	Sun Jul  3 18:24:07 2005
---- nl_NL.dic	Sat Dec 10 20:46:29 2005
+--- nl_NL.dic	Tue Jan 17 20:39:49 2006
 ***************
 *** 1,3 ****
   119937
@@ -187,8 +188,14 @@
 ! achterwand/N
   achterweg/NE
 ***************
+*** 4896,4897 ****
+--- 4900,4902 ----
+  aidsepidemie
++ aidspreventieprogramma
+  aidspreventieprogramma's
+***************
 *** 7485,7486 ****
---- 7489,7498 ----
+--- 7490,7499 ----
   avond/SN
 + 's avonds/=
 + 's middags/=
@@ -201,7 +208,7 @@
   avondappèl/S
 ***************
 *** 20681,20682 ****
---- 20693,20695 ----
+--- 20694,20696 ----
   cytostatica
 + d.m.v.
   daad/P
@@ -210,19 +217,19 @@
   hartelozer
 ! hartelust
   harten/S
---- 41822,41824 ----
+--- 41823,41825 ----
   hartelozer
 ! hartenlust
   harten/S
 ***************
 *** 46300,46301 ****
---- 46313,46315 ----
+--- 46314,46316 ----
   informaticus
 + informatie/S
   informatie-uitwisseling
 ***************
 *** 60206,60208 ****
---- 60220,60227 ----
+--- 60221,60228 ----
   löss
 + m.a.w.
 + m.b.t.
@@ -233,7 +240,7 @@
   maag
 ***************
 *** 77996,77997 ****
---- 78015,78017 ----
+--- 78016,78018 ----
   pluisje
 + pluisjes
   pluist/UF
@@ -242,39 +249,39 @@
   programmablad
 ! programmaboekje
   programmacode
---- 80330,80332 ----
+--- 80331,80333 ----
   programmablad
 ! programmaboekje/S
   programmacode
 ***************
 *** 97474,97475 ****
---- 97494,97497 ----
+--- 97495,97498 ----
   suïciderisico/X
 + s.v.p.
 + z.o.z.
   swagger/S
 ***************
 *** 101428,101429 ****
---- 101450,101453 ----
+--- 101451,101454 ----
   toezichthouder/S
 + toezichthoudersaansprakelijkheidsverzekering
 + toezichthoudersaansprakelijkheidsverzekeringen
   toezie/N
 ***************
 *** 103707,103708 ****
---- 103731,103733 ----
+--- 103732,103734 ----
   tête-à-tête/S
 + u
   uchtend/N
 ***************
 *** 110847,110848 ****
---- 110872,110874 ----
+--- 110873,110875 ----
   voorjaarscollectie/S
 + voorjaarsconferentie/S
   voorjaarsmoeheid
 ***************
 *** 119938 ****
---- 119964,173136 ----
+--- 119965,173166 ----
   überhaupt
 + Christiaan/X
 + Fred/X
@@ -285,6 +292,7 @@
 + René/X
 + Renée/X
 + Walter/X
++ Verhagen/X
 + # toevoegingen uit de Woordenlijst van 30 mei 1996
 + a capella
 + a fortiori
@@ -445,25 +453,50 @@
 + wishful thinking
 + à gogo
 + à propos
++ a.s.
 + evt.
 + enz.
++ t,m
 + bijv.
 + t.n.v.
 + m.b.v.
 + et al.
++ Abraham
++ Anita
++ Boudewijn
++ Bram
++ Edwin
++ Erwin
 + Gerard
++ Gert
 + Google
++ Jos
++ Laurens
++ Leon
 + Luc
 + Luuk
-+ Gert
 + Marion
-+ Jos
-+ Boudewijn
-+ Abraham
++ Paul
++ Nikon
++ Pentax
++ Minolta
++ Mariëlle
++ Jeroen
++ Wytze
++ Océ
++ Philips
++ Shell
++ KPN
++ FNV
++ CNV
++ NLUUG
++ ICCF
++ aidsvoorlichting
 + # Woorden uit de Woordenlijst Nederlandse Taal - Officiële Spelling 2005
 + # TODO: werkwoord vervoegingen
 + 's anderendaags
 + 't is dief en diefjesmaat
++ 11 julifeest
 + 11 julifeesten
 + 11 juliviering
 + 11 julivieringen
@@ -2432,6 +2465,8 @@
 + a-priorische
 + a.m.
 + a.u.b.
++ blz.
++ e.d.
 + aagje
 + aagjes
 + aaibaar
@@ -53448,3 +53483,4 @@
 + über-ich
 + übermensch
 + übermenschen
++ 

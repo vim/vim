@@ -324,6 +324,7 @@
 # else
 #  define PATH_ESC_CHARS ((char_u *)" \t*?[{`$\\%#'\"|")
 # endif
+# define SHELL_ESC_CHARS ((char_u *)" \t*?[{`$\\%#'\"|<>();&!")
 #endif
 
 #define NUMBUFLEN 30	    /* length of a buffer to store a number in ASCII */
