@@ -2717,10 +2717,10 @@ win_alloc_first()
 win_goto(wp)
     win_T	*wp;
 {
-    if (editing_cmdline())
+    if (text_locked())
     {
 	beep_flush();
-	editing_cmdline_msg();
+	text_locked_msg();
 	return;
     }
 
@@ -4638,7 +4638,8 @@ eval_includeexpr(ptr, len)
     char_u	*res;
 
     set_vim_var_string(VV_FNAME, ptr, len);
-    res = eval_to_string_safe(curbuf->b_p_inex, NULL);
+    res = eval_to_string_safe(curbuf->b_p_inex, NULL,
+				 was_set_insecurely((char_u *)"includeexpr"));
     set_vim_var_string(VV_FNAME, NULL, 0);
     return res;
 }

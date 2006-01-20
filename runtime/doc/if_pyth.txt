@@ -1,4 +1,4 @@
-*if_pyth.txt*   For Vim version 7.0aa.  Last change: 2005 Oct 14
+*if_pyth.txt*   For Vim version 7.0aa.  Last change: 2006 Jan 20
 
 
 		  VIM REFERENCE MANUAL    by Paul Moore
@@ -131,13 +131,23 @@ vim.command(str)					*python-command*
 
 vim.eval(str)						*python-eval*
 	Evaluates the expression str using the vim internal expression
-	evaluator (see |expression|).  Returns the expression result as a
-	string.
+	evaluator (see |expression|).  Returns the expression result as:
+	- a string if the Vim expression evaluates to a string or number
+	- a list if the Vim expression evaluates to a Vim list
+  	- a dictionary if the Vim expression evaluates to a Vim dictionary
+	Dictionaries and lists are recursively expanded.
 	Examples: >
 	    :py text_width = vim.eval("&tw")
 	    :py str = vim.eval("12+12")		# NB result is a string! Use
 						# string.atoi() to convert to
 						# a number.
+
+	    :py tagList = vim.eval('taglist("eval_expr")') 
+<	The latter will return a python list of python dicts, for instance:
+	[{'cmd': '/^eval_expr(arg, nextcmd)$/', 'static': 0, 'name':
+	'eval_expr', 'kind': 'f', 'filename': './src/eval.c'}]
+
+
 
 Error object of the "vim" module
 

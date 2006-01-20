@@ -2137,7 +2137,7 @@ do_one_cmd(cmdlinep, sourcing,
 	    goto doend;
 	}
 
-	if (editing_cmdline() && !(ea.argt & CMDWIN)
+	if (text_locked() && !(ea.argt & CMDWIN)
 # ifdef FEAT_USR_CMDS
 		&& !USER_CMDIDX(ea.cmdidx)
 # endif
@@ -6034,9 +6034,9 @@ ex_quit(eap)
     }
 #endif
     /* Don't quit while editing the command line. */
-    if (editing_cmdline())
+    if (text_locked())
     {
-	editing_cmdline_msg();
+	text_locked_msg();
 	return;
     }
 
@@ -6103,9 +6103,9 @@ ex_quit_all(eap)
 # endif
 
     /* Don't quit while editing the command line. */
-    if (editing_cmdline())
+    if (text_locked())
     {
-	editing_cmdline_msg();
+	text_locked_msg();
 	return;
     }
 
@@ -6128,7 +6128,7 @@ ex_close(eap)
 	cmdwin_result = K_IGNORE;
     else
 # endif
-	if (!editing_cmdline())
+	if (!text_locked())
 	    ex_win_close(eap, curwin);
 }
 
@@ -6289,9 +6289,9 @@ ex_exit(eap)
     }
 #endif
     /* Don't quit while editing the command line. */
-    if (editing_cmdline())
+    if (text_locked())
     {
-	editing_cmdline_msg();
+	text_locked_msg();
 	return;
     }
 
@@ -6407,7 +6407,7 @@ handle_drop(filec, filev, split)
     int		save_msg_scroll = msg_scroll;
 
     /* Postpone this while editing the command line. */
-    if (editing_cmdline())
+    if (text_locked())
 	return;
 
     /* Check whether the current buffer is changed. If so, we will need

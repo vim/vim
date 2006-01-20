@@ -59,6 +59,7 @@ static char_u *check_for_cryptkey __ARGS((char_u *cryptkey, char_u *ptr, long *s
 #ifdef UNIX
 static void set_file_time __ARGS((char_u *fname, time_t atime, time_t mtime));
 #endif
+static int set_rw_fname __ARGS((char_u *fname, char_u *sfname));
 static int msg_add_fileformat __ARGS((int eol_type));
 static void msg_add_eol __ARGS((void));
 static int check_mtime __ARGS((buf_T *buf, struct stat *s));
@@ -301,8 +302,8 @@ readfile(fname, sfname, from, lines_to_skip, lines_to_read, eap, flags)
 	    && vim_strchr(p_cpo, CPO_FNAMER) != NULL
 	    && !(flags & READ_DUMMY))
     {
-	if (setfname(curbuf, fname, sfname, FALSE) == OK)
-	    curbuf->b_flags |= BF_NOTEDITED;
+	if (set_rw_fname(fname, sfname) == FAIL)
+	    return FAIL;
     }
 
     /* After reading a file the cursor line changes but we don't want to
@@ -2801,35 +2802,20 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
      * Don't do this when appending.
      * Only do this when 'cpoptions' contains the 'F' flag.
      */
-    if (reset_changed
+    if (buf->b_ffname == NULL
+	    && reset_changed
 	    && whole
 	    && buf == curbuf
 #ifdef FEAT_QUICKFIX
 	    && !bt_nofile(buf)
 #endif
-	    && buf->b_ffname == NULL
 	    && !filtering
 	    && (!append || vim_strchr(p_cpo, CPO_FNAMEAPP) != NULL)
 	    && vim_strchr(p_cpo, CPO_FNAMEW) != NULL)
     {
-#ifdef FEAT_AUTOCMD
-	/* It's like the unnamed buffer is deleted.... */
-	if (curbuf->b_p_bl)
-	    apply_autocmds(EVENT_BUFDELETE, NULL, NULL, FALSE, curbuf);
-	apply_autocmds(EVENT_BUFWIPEOUT, NULL, NULL, FALSE, curbuf);
-#ifdef FEAT_EVAL
-	if (aborting())	    /* autocmds may abort script processing */
+	if (set_rw_fname(fname, sfname) == FAIL)
 	    return FAIL;
-#endif
-#endif
-	if (setfname(curbuf, fname, sfname, FALSE) == OK)
-	    curbuf->b_flags |= BF_NOTEDITED;
-#ifdef FEAT_AUTOCMD
-	/* ....and a new named one is created */
-	apply_autocmds(EVENT_BUFNEW, NULL, NULL, FALSE, curbuf);
-	if (curbuf->b_p_bl)
-	    apply_autocmds(EVENT_BUFADD, NULL, NULL, FALSE, curbuf);
-#endif
+	buf = curbuf;	    /* just in case autocmds made "buf" invalid */
     }
 
     if (sfname == NULL)
@@ -4598,6 +4584,50 @@ nofail:
     mch_post_buffer_write(buf);
 #endif
     return retval;
+}
+
+/*
+ * Set the name of the current buffer.  Use when the buffer doesn't have a
+ * name and a ":r" or ":w" command with a file name is used.
+ */
+    static int
+set_rw_fname(fname, sfname)
+    char_u	*fname;
+    char_u	*sfname;
+{
+#ifdef FEAT_AUTOCMD
+    /* It's like the unnamed buffer is deleted.... */
+    if (curbuf->b_p_bl)
+	apply_autocmds(EVENT_BUFDELETE, NULL, NULL, FALSE, curbuf);
+    apply_autocmds(EVENT_BUFWIPEOUT, NULL, NULL, FALSE, curbuf);
+# ifdef FEAT_EVAL
+    if (aborting())	    /* autocmds may abort script processing */
+	return FAIL;
+# endif
+#endif
+
+    if (setfname(curbuf, fname, sfname, FALSE) == OK)
+	curbuf->b_flags |= BF_NOTEDITED;
+
+#ifdef FEAT_AUTOCMD
+    /* ....and a new named one is created */
+    apply_autocmds(EVENT_BUFNEW, NULL, NULL, FALSE, curbuf);
+    if (curbuf->b_p_bl)
+	apply_autocmds(EVENT_BUFADD, NULL, NULL, FALSE, curbuf);
+# ifdef FEAT_EVAL
+    if (aborting())	    /* autocmds may abort script processing */
+	return FAIL;
+# endif
+
+    /* Do filetype detection now if 'filetype' is empty. */
+    if (*curbuf->b_p_ft == NUL)
+    {
+	(void)do_doautocmd((char_u *)"filetypedetect BufRead", TRUE);
+	do_modelines(FALSE);
+    }
+#endif
+
+    return OK;
 }
 
 /*

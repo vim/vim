@@ -789,11 +789,11 @@ getcount:
 	goto normal_end;
     }
 
-    if (editing_cmdline() && (nv_cmds[idx].cmd_flags & NV_NCW))
+    if (text_locked() && (nv_cmds[idx].cmd_flags & NV_NCW))
     {
 	/* This command is not allowed wile editing a ccmdline: beep. */
 	clearopbeep(oap);
-	editing_cmdline_msg();
+	text_locked_msg();
 	goto normal_end;
     }
 
@@ -5741,10 +5741,10 @@ nv_gotofile(cap)
 {
     char_u	*ptr;
 
-    if (editing_cmdline())
+    if (text_locked())
     {
 	clearopbeep(cap->oap);
-	editing_cmdline_msg();
+	text_locked_msg();
 	return;
     }
 
@@ -7801,10 +7801,10 @@ nv_g_cmd(cap)
 
     /* "gQ": improved Ex mode */
     case 'Q':
-	if (editing_cmdline())
+	if (text_locked())
 	{
 	    clearopbeep(cap->oap);
-	    editing_cmdline_msg();
+	    text_locked_msg();
 	    break;
 	}
 

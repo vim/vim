@@ -59,7 +59,8 @@
 # define SPELL_PRINTTREE
 #endif
 
-/* Use DEBUG_TRIEWALK to print the changes made in suggest_trie_walk(). */
+/* Use DEBUG_TRIEWALK to print the changes made in suggest_trie_walk() for a
+ * specific word. */
 #if 0
 # define DEBUG_TRIEWALK
 #endif
@@ -327,6 +328,9 @@ typedef long idx_T;
 /* for <flags2>, shifted up one byte to be used in wn_flags */
 #define WF_HAS_AFF  0x0100	/* word includes affix */
 #define WF_NEEDCOMP 0x0200	/* word only valid in compound */
+
+/* only used for su_badflags */
+#define WF_MIXCAP   0x20	/* mix of upper and lower case: macaRONI */
 
 #define WF_CAPMASK (WF_ONECAP | WF_ALLCAP | WF_KEEPCAP | WF_FIXCAP)
 
@@ -4328,6 +4332,9 @@ badword_captype(word, end)
 	    flags |= WF_ALLCAP;
 	else if (first)
 	    flags |= WF_ONECAP;
+
+	if (u >= 2 && l >= 2)	/* maCARONI maCAroni */
+	    flags |= WF_MIXCAP;
     }
     return flags;
 }
@@ -10895,9 +10902,29 @@ suggest_trie_walk(su, lp, fword, soundfold)
 
 		    /* Add the suggestion if the score isn't too bad. */
 		    if (score <= su->su_maxscore)
+		    {
 			add_suggestion(su, &su->su_ga, preword,
 				    sp->ts_fidx - repextra,
 				    score, 0, FALSE, lp->lp_sallang, FALSE);
+
+			if (su->su_badflags & WF_MIXCAP)
+			{
+			    /* We really don't know if the word should be
+			     * upper or lower case, add both. */
+			    c = captype(preword, NULL);
+			    if (c == 0 || c == WF_ALLCAP)
+			    {
+				make_case_word(tword + sp->ts_splitoff,
+					      preword + sp->ts_prewordlen,
+						      c == 0 ? WF_ALLCAP : 0);
+
+				add_suggestion(su, &su->su_ga, preword,
+					sp->ts_fidx - repextra,
+					score + SCORE_ICASE, 0, FALSE,
+					lp->lp_sallang, FALSE);
+			    }
+			}
+		    }
 		}
 	    }
 

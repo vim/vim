@@ -1806,9 +1806,9 @@ buflist_getfile(n, lnum, options, forceit)
     if (buf == curbuf)
 	return OK;
 
-    if (editing_cmdline())
+    if (text_locked())
     {
-	editing_cmdline_msg();
+	text_locked_msg();
 	return FAIL;
     }
 
@@ -3506,7 +3506,8 @@ build_stl_str_hl(wp, out, outlen, fmt, fillchar, maxwidth, hl)
 	    curwin = wp;
 	    curbuf = wp->w_buffer;
 
-	    str = eval_to_string_safe(p, &t);
+	    str = eval_to_string_safe(p, &t,
+				  was_set_insecurely((char_u *)"statusline"));
 
 	    curwin = o_curwin;
 	    curbuf = o_curbuf;

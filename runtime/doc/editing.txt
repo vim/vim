@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.0aa.  Last change: 2005 Dec 13
+*editing.txt*   For Vim version 7.0aa.  Last change: 2006 Jan 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -155,11 +155,14 @@ Technical: On the Amiga you can use 30 characters for a file name.  But on an
 When you started editing without giving a file name, "No File" is displayed in
 messages.  If the ":write" command is used with a file name argument, the file
 name for the current file is set to that file name.  This only happens when
-the 'F' flag is included in 'cpoptions' (by default it is included).  This is
-useful when entering text in an empty buffer and then writing it to a file.
-If 'cpoptions' contains the 'f' flag (by default it is NOT included) the file
-name is set for the ":read file" command.  This is useful when starting Vim
-without an argument and then doing ":read file" to start editing a file.
+the 'F' flag is included in 'cpoptions' (by default it is included) |cpo-F|.
+This is useful when entering text in an empty buffer and then writing it to a
+file.  If 'cpoptions' contains the 'f' flag (by default it is NOT included)
+|cpo-f| the file name is set for the ":read file" command.  This is useful
+when starting Vim without an argument and then doing ":read file" to start
+editing a file.
+When the file name was set and 'filetype' is empty the filetype detection
+autocommands will be triggered.
 							*not-edited*
 Because the file name was set without really starting to edit that file, you
 are protected from overwriting that file.  This is done by setting the
@@ -874,6 +877,8 @@ used, for example, when the write fails and you want to try again later with
 			the filename of the current buffer to {file}.  The
 			previous name is used for the alternate file name.
 			The [!] is needed to overwrite an existing file.
+			When 'filetype' is empty filetype detection is done
+			with the new name, before the file is written.
 			{not in Vi}
 
 							*:up* *:update*
