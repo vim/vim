@@ -23,6 +23,7 @@ general_beval_cb(beval, state)
 {
     win_T	*wp;
     int		col;
+    int		use_sandbox;
     linenr_T	lnum;
     char_u	*text;
     static char_u  *result = NULL;
@@ -50,10 +51,17 @@ general_beval_cb(beval, state)
 	set_vim_var_string(VV_BEVAL_TEXT, text, -1);
 	vim_free(text);
 
-	++sandbox;
+	use_sandbox = was_set_insecurely((char_u *)"balloonexpr");
+	if (use_sandbox)
+	    ++sandbox;
+	++textlock;
+
 	vim_free(result);
 	result = eval_to_string(p_bexpr, NULL);
-	--sandbox;
+
+	if (use_sandbox)
+	    --sandbox;
+	--textlock;
 
 	set_vim_var_string(VV_BEVAL_TEXT, NULL, -1);
 	if (result != NULL && result[0] != NUL)

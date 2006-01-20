@@ -86,7 +86,6 @@ EXTERN int	clear_cmdline INIT(= FALSE);	/* cmdline must be cleared */
 #if defined(FEAT_CRYPT) || defined(FEAT_EVAL)
 EXTERN int	cmdline_star INIT(= FALSE);	/* cmdline is crypted */
 #endif
-EXTERN int	cmdline_busy INIT(= FALSE);	/* editing the cmdline */
 
 EXTERN int	exec_from_reg INIT(= FALSE);	/* executing register */
 
@@ -547,12 +546,16 @@ EXTERN int	secure INIT(= FALSE);
 				 * allowed, e.g. when sourcing .exrc or .vimrc
 				 * in current directory */
 
+EXTERN int	textlock INIT(= 0);
+				/* non-zero when changing text and jumping to
+				 * another window or buffer is not allowed */
+
 #ifdef FEAT_EVAL
 # define HAVE_SANDBOX
 EXTERN int	sandbox INIT(= 0);
-				/* non-zero when evaluating an expression in a
-				 * "sandbox".  Not allowed to change the
-				 * buffer. */
+				/* Non-zero when evaluating an expression in a
+				 * "sandbox".  Several things are not allowed
+				 * then. */
 #endif
 
 EXTERN int	silent_mode INIT(= FALSE);
@@ -1413,10 +1416,7 @@ EXTERN char_u e_invexprmsg[]	INIT(= N_("E449: Invalid expression received"));
 EXTERN char_u e_guarded[]	INIT(= N_("E463: Region is guarded, cannot modify"));
 EXTERN char_u e_nbreadonly[]	INIT(= N_("E744: NetBeans does not allow changes in read-only files"));
 #endif
-#if defined(FEAT_INS_EXPAND) || defined(FEAT_EVAL) || defined(FEAT_SYN_HL) \
-	    || defined(PROTO)
 EXTERN char_u e_intern2[]	INIT(= N_("E685: Internal error: %s"));
-#endif
 EXTERN char_u e_maxmempat[]	INIT(= N_("E363: pattern uses more memory than 'maxmempattern'"));
 EXTERN char_u e_emptybuf[]	INIT(= N_("E749: empty buffer"));
 

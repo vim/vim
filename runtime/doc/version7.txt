@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Jan 19
+*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Jan 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -153,6 +153,9 @@ expr".  "-=" and ".=" works in a similar way.
 
 With the |:profile| command you can find out where your function or script
 wastes its time.
+
+In the Python interface vim.eval() also handles Dictionaries and Lists.
+|python-eval| (G. Sumner Hayes)
 
 
 Spell checking						*new-spell*
@@ -667,6 +670,15 @@ iterative mechanism.  This avoids out-of-stack errors.  State is stored in
 allocated memory, running out of memory can always be detected.  Allows
 matching more complex things, but Vim may seem to hang while doing that.
 
+Previously some options were always evaluated in the |sandbox|.  Now that only
+happens when the option was set from a modeline or in secure mode.  Applies to
+'balloonexpr', 'foldexpr', 'foldtext' and 'includeexpr'. (Sumner Hayes)
+
+Some commands and expressions could have nasty side effects, such as using
+CTRL-R = while editing a search pattern and the expression invokes a function
+that jumps to another window.  The |textlock| has been added to prevent this
+from happening.
+
 ":breakadd here" and ":breakdel here" can be used to set or delete a
 breakpoint at the cursor.
 
@@ -924,6 +936,10 @@ and for supported autocommand events. (Yegappan Lakshmanan)
 
 Allow using ":global" in the sandbox, it doesn't do anything harmful by
 itself.
+
+":saveas asdf.c" will set 'filetype' to c when it's empty.  Also for ":w
+asdf.c" when it sets the filename for the buffer.
+
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*
@@ -1528,8 +1544,8 @@ string, because it may cause trouble in Insert mode.
 
 When evaluating an expression for CTRL-R = on the command line it was possible
 to call a function that opens a new window, resulting in errors for
-incremental search, and many other nasty things were possible.  Now set
-"cmdline_busy" and disallow changing the buffer or jumpting to another window
+incremental search, and many other nasty things were possible.  Now use the
+|textlock| to disallow changing the buffer or jumping to another window
 to protect from unexpected behavior.  Same for CTRL-\ e.
 
 "d(" deleted the character under the cursor, while the documentation specified
@@ -1573,5 +1589,11 @@ special key for the event for 'showcmd'.
 When expanding a file name for a shell command, as in "!cmd foo<Tab>" or ":r
 !cmd foo<Tab>" also escape characters that are special for the shell:
 "!;&()<>".
+
+When the name of the buffer was set by a ":r fname" command |cpo-f| no
+autocommands were triggered to notify about the change in the buffer list.
+
+In the quickfix buffer 'bufhidden' was set to "delete", which caused closing
+the quickfix window to leave an unlisted "No Name" buffer behind every time.
 
  vim:tw=78:ts=8:ft=help:norl:

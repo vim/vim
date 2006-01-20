@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Jan 19
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Jan 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,20 +30,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Evaluate 'balloonexpr' in the sandbox only when it was set from an unsafe
-place (e.g., modeline)?  Patch from Sumner Hayes, Jan 12.  Also use for other
-options?
-
-":saveas asdf.c" should set 'filetype' to c when it's empty.  Also for ":w
-asdf.c" when it sets the buffer filename.
-
-When ":cclose" is used the buffer is not wiped out and is no longer recognized
-as a quickfix buffer, thus it's not reused either.
-
-Patch to support lists and dicts for the Python interface. (G. Sumner Hayes,
-Jan 12).  Docs in a previous patch.
-Use free_tv() instead of clear_tv() and vim_free().
-
 ccomplete:
 - When using page-up/page-down in menu it sometimes jumps more than a page.
 - When an option is set: In completion mode and the user types (identifier)
@@ -71,9 +57,9 @@ ccomplete:
     Can't reproduce it right now...
 
 spelling:
-- Include script to cleanup a .add file. (Antonio Colombo, Jan 9)
-- suggestions for "macARONI" doesn't include "macaroni", they are all allcap.
-  suggestion for "KG" to "kg" when it's keepcase.
+- Use runtime/cleanadd script to cleanup .add files.  When to invoke it?
+  After deleting a word and some timestamp difference perhaps?
+- suggestion for "KG" to "kg" when it's keepcase.
 - Autocommand event for when a spell file is missing.  Allows making a plugin
   that fetches the file over internet.  Pattern == language.
 - Using KEEPCASE flag still allows all-upper word, docs say it doesn't.

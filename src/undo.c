@@ -182,7 +182,7 @@ undo_allowed()
 
     /* Don't allow changes in the buffer while editing the cmdline.  The
      * caller of getcmdline() may get confused. */
-    if (cmdline_busy)
+    if (textlock != 0)
     {
 	EMSG(_(e_secure));
 	return FALSE;

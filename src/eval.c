@@ -420,8 +420,8 @@ static int list_extend __ARGS((list_T	*l1, list_T *l2, listitem_T *bef));
 static int list_concat __ARGS((list_T *l1, list_T *l2, typval_T *tv));
 static list_T *list_copy __ARGS((list_T *orig, int deep, int copyID));
 static void list_remove __ARGS((list_T *l, listitem_T *item, listitem_T *item2));
-static char_u *list2string __ARGS((typval_T *tv));
-static int list_join __ARGS((garray_T *gap, list_T *l, char_u *sep, int echo));
+static char_u *list2string __ARGS((typval_T *tv, int copyID));
+static int list_join __ARGS((garray_T *gap, list_T *l, char_u *sep, int echo, int copyID));
 static void set_ref_in_ht __ARGS((hashtab_T *ht, int copyID));
 static void set_ref_in_list __ARGS((list_T *l, int copyID));
 static void set_ref_in_item __ARGS((typval_T *tv, int copyID));
@@ -435,10 +435,10 @@ static dict_T *dict_copy __ARGS((dict_T *orig, int deep, int copyID));
 static int dict_add __ARGS((dict_T *d, dictitem_T *item));
 static long dict_len __ARGS((dict_T *d));
 static dictitem_T *dict_find __ARGS((dict_T *d, char_u *key, int len));
-static char_u *dict2string __ARGS((typval_T *tv));
+static char_u *dict2string __ARGS((typval_T *tv, int copyID));
 static int get_dict_tv __ARGS((char_u **arg, typval_T *rettv, int evaluate));
-static char_u *echo_string __ARGS((typval_T *tv, char_u **tofree, char_u *numbuf));
-static char_u *tv2string __ARGS((typval_T *tv, char_u **tofree, char_u *numbuf));
+static char_u *echo_string __ARGS((typval_T *tv, char_u **tofree, char_u *numbuf, int copyID));
+static char_u *tv2string __ARGS((typval_T *tv, char_u **tofree, char_u *numbuf, int copyID));
 static char_u *string_quote __ARGS((char_u *str, int function));
 static int get_env_tv __ARGS((char_u **arg, typval_T *rettv, int evaluate));
 static int find_internal_func __ARGS((char_u *name));
@@ -1175,20 +1175,26 @@ eval_to_string(arg, nextcmd)
 }
 
 /*
- * Call eval_to_string() with "sandbox" set and not using local variables.
+ * Call eval_to_string() without using current local variables and using
+ * textlock.  When "use_sandbox" is TRUE use the sandbox.
  */
     char_u *
-eval_to_string_safe(arg, nextcmd)
+eval_to_string_safe(arg, nextcmd, use_sandbox)
     char_u	*arg;
     char_u	**nextcmd;
+    int		use_sandbox;
 {
     char_u	*retval;
     void	*save_funccalp;
 
     save_funccalp = save_funccal();
-    ++sandbox;
+    if (use_sandbox)
+	++sandbox;
+    ++textlock;
     retval = eval_to_string(arg, nextcmd);
-    --sandbox;
+    if (use_sandbox)
+	--sandbox;
+    --textlock;
     restore_funccal(save_funccalp);
     return retval;
 }
@@ -1566,9 +1572,12 @@ eval_foldexpr(arg, cp)
     typval_T	tv;
     int		retval;
     char_u	*s;
+    int		use_sandbox = was_set_insecurely((char_u *)"foldexpr");
 
     ++emsg_off;
-    ++sandbox;
+    if (use_sandbox)
+	++sandbox;
+    ++textlock;
     *cp = NUL;
     if (eval0(arg, &tv, NULL, TRUE) == FAIL)
 	retval = 0;
@@ -1591,7 +1600,9 @@ eval_foldexpr(arg, cp)
 	clear_tv(&tv);
     }
     --emsg_off;
-    --sandbox;
+    if (use_sandbox)
+	--sandbox;
+    --textlock;
 
     return retval;
 }
@@ -1985,7 +1996,7 @@ list_arg_vars(eap, arg)
 			    int		c;
 			    char_u	*s;
 
-			    s = echo_string(&tv, &tf, numbuf);
+			    s = echo_string(&tv, &tf, numbuf, 0);
 			    c = *arg;
 			    *arg = NUL;
 			    list_one_var_a((char_u *)"",
@@ -5310,6 +5321,18 @@ list_equal(l1, l2, ic)
     return item1 == NULL && item2 == NULL;
 }
 
+#if defined(FEAT_PYTHON) || defined(PROTO)
+/*
+ * Return the dictitem that an entry in a hashtable points to.
+ */
+    dictitem_T *
+dict_lookup(hi)
+    hashitem_T *hi;
+{
+    return HI2DI(hi);
+}
+#endif
+
 /*
  * Return TRUE when two dictionaries have exactly the same key/values.
  */
@@ -5777,8 +5800,9 @@ list_remove(l, item, item2)
  * May return NULL.
  */
     static char_u *
-list2string(tv)
+list2string(tv, copyID)
     typval_T	*tv;
+    int		copyID;
 {
     garray_T	ga;
 
@@ -5786,7 +5810,7 @@ list2string(tv)
 	return NULL;
     ga_init2(&ga, (int)sizeof(char), 80);
     ga_append(&ga, '[');
-    if (list_join(&ga, tv->vval.v_list, (char_u *)", ", FALSE) == FAIL)
+    if (list_join(&ga, tv->vval.v_list, (char_u *)", ", FALSE, copyID) == FAIL)
     {
 	vim_free(ga.ga_data);
 	return NULL;
@@ -5802,11 +5826,12 @@ list2string(tv)
  * Return FAIL or OK.
  */
     static int
-list_join(gap, l, sep, echo)
+list_join(gap, l, sep, echo, copyID)
     garray_T	*gap;
     list_T	*l;
     char_u	*sep;
     int		echo;
+    int		copyID;
 {
     int		first = TRUE;
     char_u	*tofree;
@@ -5822,9 +5847,9 @@ list_join(gap, l, sep, echo)
 	    ga_concat(gap, sep);
 
 	if (echo)
-	    s = echo_string(&item->li_tv, &tofree, numbuf);
+	    s = echo_string(&item->li_tv, &tofree, numbuf, copyID);
 	else
-	    s = tv2string(&item->li_tv, &tofree, numbuf);
+	    s = tv2string(&item->li_tv, &tofree, numbuf, copyID);
 	if (s != NULL)
 	    ga_concat(gap, s);
 	vim_free(tofree);
@@ -6355,8 +6380,9 @@ get_dict_number(d, key)
  * May return NULL.
  */
     static char_u *
-dict2string(tv)
+dict2string(tv, copyID)
     typval_T	*tv;
+    int		copyID;
 {
     garray_T	ga;
     int		first = TRUE;
@@ -6391,7 +6417,7 @@ dict2string(tv)
 		vim_free(tofree);
 	    }
 	    ga_concat(&ga, (char_u *)": ");
-	    s = tv2string(&HI2DI(hi)->di_tv, &tofree, numbuf);
+	    s = tv2string(&HI2DI(hi)->di_tv, &tofree, numbuf, copyID);
 	    if (s != NULL)
 		ga_concat(&ga, s);
 	    vim_free(tofree);
@@ -6535,13 +6561,15 @@ failret:
  * If the memory is allocated "tofree" is set to it, otherwise NULL.
  * "numbuf" is used for a number.
  * Does not put quotes around strings, as ":echo" displays values.
+ * When "copyID" is not NULL replace recursive lists and dicts with "...".
  * May return NULL;
  */
     static char_u *
-echo_string(tv, tofree, numbuf)
+echo_string(tv, tofree, numbuf, copyID)
     typval_T	*tv;
     char_u	**tofree;
     char_u	*numbuf;
+    int		copyID;
 {
     static int	recurse = 0;
     char_u	*r = NULL;
@@ -6560,19 +6588,51 @@ echo_string(tv, tofree, numbuf)
 	    *tofree = NULL;
 	    r = tv->vval.v_string;
 	    break;
+
 	case VAR_LIST:
-	    *tofree = list2string(tv);
-	    r = *tofree;
+	    if (tv->vval.v_list == NULL)
+	    {
+		*tofree = NULL;
+		r = NULL;
+	    }
+	    else if (copyID != 0 && tv->vval.v_list->lv_copyID == copyID)
+	    {
+		*tofree = NULL;
+		r = (char_u *)"[...]";
+	    }
+	    else
+	    {
+		tv->vval.v_list->lv_copyID = copyID;
+		*tofree = list2string(tv, copyID);
+		r = *tofree;
+	    }
 	    break;
+
 	case VAR_DICT:
-	    *tofree = dict2string(tv);
-	    r = *tofree;
+	    if (tv->vval.v_dict == NULL)
+	    {
+		*tofree = NULL;
+		r = NULL;
+	    }
+	    else if (copyID != 0 && tv->vval.v_dict->dv_copyID == copyID)
+	    {
+		*tofree = NULL;
+		r = (char_u *)"{...}";
+	    }
+	    else
+	    {
+		tv->vval.v_dict->dv_copyID = copyID;
+		*tofree = dict2string(tv, copyID);
+		r = *tofree;
+	    }
 	    break;
+
 	case VAR_STRING:
 	case VAR_NUMBER:
 	    *tofree = NULL;
 	    r = get_tv_string_buf(tv, numbuf);
 	    break;
+
 	default:
 	    EMSG2(_(e_intern2), "echo_string()");
 	    *tofree = NULL;
@@ -6590,10 +6650,11 @@ echo_string(tv, tofree, numbuf)
  * May return NULL;
  */
     static char_u *
-tv2string(tv, tofree, numbuf)
+tv2string(tv, tofree, numbuf, copyID)
     typval_T	*tv;
     char_u	**tofree;
     char_u	*numbuf;
+    int		copyID;
 {
     switch (tv->v_type)
     {
@@ -6610,7 +6671,7 @@ tv2string(tv, tofree, numbuf)
 	default:
 	    EMSG2(_(e_intern2), "tv2string()");
     }
-    return echo_string(tv, tofree, numbuf);
+    return echo_string(tv, tofree, numbuf, copyID);
 }
 
 /*
@@ -11302,7 +11363,7 @@ f_join(argvars, rettv)
     if (sep != NULL)
     {
 	ga_init2(&ga, (int)sizeof(char), 80);
-	list_join(&ga, argvars[0].vval.v_list, sep, TRUE);
+	list_join(&ga, argvars[0].vval.v_list, sep, TRUE, 0);
 	ga_append(&ga, NUL);
 	rettv->vval.v_string = (char_u *)ga.ga_data;
     }
@@ -11695,7 +11756,7 @@ find_some_match(argvars, rettv, type)
 		    break;
 		}
 		vim_free(tofree);
-		str = echo_string(&li->li_tv, &tofree, strbuf);
+		str = echo_string(&li->li_tv, &tofree, strbuf,0);
 		if (str == NULL)
 		    break;
 	    }
@@ -13734,8 +13795,8 @@ item_compare(s1, s2)
     char_u	numbuf1[NUMBUFLEN];
     char_u	numbuf2[NUMBUFLEN];
 
-    p1 = tv2string(&(*(listitem_T **)s1)->li_tv, &tofree1, numbuf1);
-    p2 = tv2string(&(*(listitem_T **)s2)->li_tv, &tofree2, numbuf2);
+    p1 = tv2string(&(*(listitem_T **)s1)->li_tv, &tofree1, numbuf1, 0);
+    p2 = tv2string(&(*(listitem_T **)s2)->li_tv, &tofree2, numbuf2, 0);
     if (item_compare_ic)
 	res = STRICMP(p1, p2);
     else
@@ -14212,7 +14273,7 @@ f_string(argvars, rettv)
     char_u	numbuf[NUMBUFLEN];
 
     rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = tv2string(&argvars[0], &tofree, numbuf);
+    rettv->vval.v_string = tv2string(&argvars[0], &tofree, numbuf, 0);
     if (tofree == NULL)
 	rettv->vval.v_string = vim_strsave(rettv->vval.v_string);
 }
@@ -16407,7 +16468,7 @@ list_one_var(v, prefix)
     char_u	*s;
     char_u	numbuf[NUMBUFLEN];
 
-    s = echo_string(&v->di_tv, &tofree, numbuf);
+    s = echo_string(&v->di_tv, &tofree, numbuf, ++current_copyID);
     list_one_var_a(prefix, v->di_key, v->di_tv.v_type,
 						s == NULL ? (char_u *)"" : s);
     vim_free(tofree);
@@ -16782,7 +16843,7 @@ ex_echo(eap)
 	    }
 	    else if (eap->cmdidx == CMD_echo)
 		msg_puts_attr((char_u *)" ", echo_attr);
-	    p = echo_string(&rettv, &tofree, numbuf);
+	    p = echo_string(&rettv, &tofree, numbuf, ++current_copyID);
 	    if (p != NULL)
 		for ( ; *p != NUL && !got_int; ++p)
 		{
@@ -18499,7 +18560,7 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
 			msg_outnum((long)argvars[i].vval.v_number);
 		    else
 		    {
-			trunc_string(tv2string(&argvars[i], &tofree, numbuf),
+			trunc_string(tv2string(&argvars[i], &tofree, numbuf, 0),
 							    buf, MSG_BUF_CLEN);
 			msg_puts(buf);
 			vim_free(tofree);
@@ -18584,7 +18645,7 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
 	    /* The value may be very long.  Skip the middle part, so that we
 	     * have some idea how it starts and ends. smsg() would always
 	     * truncate it at the end. */
-	    trunc_string(tv2string(fc.rettv, &tofree, numbuf),
+	    trunc_string(tv2string(fc.rettv, &tofree, numbuf, 0),
 							   buf, MSG_BUF_CLEN);
 	    smsg((char_u *)_("%s returning %s"), sourcing_name, buf);
 	    vim_free(tofree);
@@ -18806,7 +18867,7 @@ get_return_cmd(rettv)
     char_u	numbuf[NUMBUFLEN];
 
     if (rettv != NULL)
-	s = echo_string((typval_T *)rettv, &tofree, numbuf);
+	s = echo_string((typval_T *)rettv, &tofree, numbuf, 0);
     if (s == NULL)
 	s = (char_u *)"";
 
@@ -19076,7 +19137,7 @@ write_viminfo_varlist(fp)
 		    default: continue;
 		}
 		fprintf(fp, "!%s\t%s\t", this_var->di_key, s);
-		p = echo_string(&this_var->di_tv, &tofree, numbuf);
+		p = echo_string(&this_var->di_tv, &tofree, numbuf, 0);
 		if (p != NULL)
 		    viminfo_writestring(fp, p);
 		vim_free(tofree);

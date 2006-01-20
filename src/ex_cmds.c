@@ -2583,11 +2583,19 @@ do_write(eap)
 		retval = FAIL;
 		goto theend;
 	    }
+
+	    /* If 'filetype' was empty try detecting it now. */
+	    if (*curbuf->b_p_ft == NUL)
+	    {
+		(void)do_doautocmd((char_u *)"filetypedetect BufRead", TRUE);
+		do_modelines(FALSE);
+	    }
 #endif
 	}
 
 	retval = buf_write(curbuf, ffname, fname, eap->line1, eap->line2,
 				 eap, eap->append, eap->forceit, TRUE, FALSE);
+
     }
 
 theend:
@@ -2861,7 +2869,7 @@ getfile(fnum, ffname, sfname, setpm, lnum, forceit)
     int		retval;
     char_u	*free_me = NULL;
 
-    if (editing_cmdline())
+    if (text_locked())
 	return 1;
 
     if (fnum == 0)

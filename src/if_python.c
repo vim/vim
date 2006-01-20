@@ -1082,35 +1082,137 @@ VimCommand(PyObject *self, PyObject *args)
     return result;
 }
 
+/*
+ * Function to translate a typval_T into a PyObject; this will recursively
+ * translate lists/dictionaries into their Python equivalents.
+ *
+ * The depth parameter is too avoid infinite recursion, set it to 1 when
+ * you call VimToPython.
+ */
+    static PyObject *
+VimToPython(typval_T *our_tv, int depth, PyObject *lookupDict)
+{
+    PyObject	*result;
+    PyObject	*newObj;
+    char	ptrBuf[NUMBUFLEN];
+
+    /* Avoid infinite recursion */
+    if (depth > 100)
+    {
+        Py_INCREF(Py_None);
+        result = Py_None;
+        return result;
+    }
+
+    /* Check if we run into a recursive loop.  The item must be in lookupDict
+     * then and we can use it again. */
+    sprintf(ptrBuf, "%ld", (long)our_tv);
+    result = PyDict_GetItemString(lookupDict, ptrBuf);
+    if (result != NULL)
+        Py_INCREF(result);
+    else if (our_tv->v_type == VAR_STRING)
+    {
+        result = Py_BuildValue("s", our_tv->vval.v_string);
+        PyDict_SetItemString(lookupDict, ptrBuf, result);
+    }
+    else if (our_tv->v_type == VAR_NUMBER)
+    {
+        char buf[NUMBUFLEN];
+
+	/* For backwards compatibility numbers are stored as strings. */
+        sprintf(buf, "%ld", (long)our_tv->vval.v_number);
+        result = Py_BuildValue("s", buf);
+        PyDict_SetItemString(lookupDict, ptrBuf, result);
+    }
+    else if (our_tv->v_type == VAR_LIST)
+    {
+        list_T		*list = our_tv->vval.v_list;
+        listitem_T	*curr;
+
+        result = PyList_New(0);
+        PyDict_SetItemString(lookupDict, ptrBuf, result);
+
+	if (list != NULL)
+	{
+	    for (curr = list->lv_first; curr != NULL; curr = curr->li_next)
+	    {
+		newObj = VimToPython(&curr->li_tv, depth + 1, lookupDict);
+		PyList_Append(result, newObj);
+		Py_DECREF(newObj);
+	    }
+	}
+    }
+    else if (our_tv->v_type == VAR_DICT)
+    {
+        result = PyDict_New();
+        PyDict_SetItemString(lookupDict, ptrBuf, result);
+
+	if (our_tv->vval.v_dict != NULL)
+	{
+	    hashtab_T	*ht = &our_tv->vval.v_dict->dv_hashtab;
+	    int		todo = ht->ht_used;
+	    hashitem_T	*hi;
+	    dictitem_T	*di;
+
+	    for (hi = ht->ht_array; todo > 0; ++hi)
+	    {
+		if (!HASHITEM_EMPTY(hi))
+		{
+		    --todo;
+
+		    di = dict_lookup(hi);
+		    newObj = VimToPython(&di->di_tv, depth + 1, lookupDict);
+		    PyDict_SetItemString(result, (char *)hi->hi_key, newObj);
+		    Py_DECREF(newObj);
+		}
+	    }
+	}
+    }
+    else
+    {
+        Py_INCREF(Py_None);
+        result = Py_None;
+    }
+
+    return result;
+}
+
 /*ARGSUSED*/
     static PyObject *
 VimEval(PyObject *self, PyObject *args)
 {
 #ifdef FEAT_EVAL
     char	*expr;
-    char	*str;
+    typval_T	*our_tv;
     PyObject	*result;
+    PyObject    *lookup_dict;
 
     if (!PyArg_ParseTuple(args, "s", &expr))
 	return NULL;
 
     Py_BEGIN_ALLOW_THREADS
     Python_Lock_Vim();
-    str = (char *)eval_to_string((char_u *)expr, NULL);
+    our_tv = eval_expr((char_u *)expr, NULL);
+
     Python_Release_Vim();
     Py_END_ALLOW_THREADS
 
-    if (str == NULL)
+    if (our_tv == NULL)
     {
 	PyErr_SetVim(_("invalid expression"));
 	return NULL;
     }
 
-    result = Py_BuildValue("s", str);
+    /* Convert the Vim type into a Python type.  Create a dictionary that's
+     * used to check for recursive loops. */
+    lookup_dict = PyDict_New();
+    result = VimToPython(our_tv, 1, lookup_dict);
+    Py_DECREF(lookup_dict);
+
 
     Py_BEGIN_ALLOW_THREADS
     Python_Lock_Vim();
-    vim_free(str);
+    free_tv(our_tv);
     Python_Release_Vim();
     Py_END_ALLOW_THREADS
 

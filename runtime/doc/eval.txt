@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Jan 13
+*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Jan 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -28,6 +28,7 @@ done, the features in this document are not available.  See |+eval| and
 9.  Examples			|eval-examples|
 10. No +eval feature		|no-eval-feature|
 11. The sandbox			|eval-sandbox|
+12. Textlock			|textlock|
 
 {Vi does not have any of these commands}
 
@@ -6829,6 +6830,34 @@ This is not guaranteed 100% secure, but it should block most attacks.
 :san[dbox] {cmd}	Execute {cmd} in the sandbox.  Useful to evaluate an
 			option that may have been set from a modeline, e.g.
 			'foldexpr'.
+
+							*sandbox-option*
+A few options contain an expression.  When this expression is evaluated it may
+have to be done in the sandbox to avoid trouble.  But the sandbox is
+restrictive, thus this only happens when the option was set from an insecure
+location.  Insecure in this context are:
+- sourcing a .vimrc or .exrc in the current directlry
+- while executing in the sandbox
+- value coming from a modeline
+
+Note that when in the sandbox and saving an option value and restoring it, the
+option will still be marked as it was set in the sandbox.
+
+==============================================================================
+12. Textlock							*textlock*
+
+In a few situations it is not allowed to change the text in the buffer, jump
+to another window and some other things that might confuse or break what Vim
+is currently doing.  This mostly applies to things that happen when Vim is
+actually doing something else.  For example, evaluating the 'balloonexpr' may
+happen any moment the mouse cursor is resting at some position.
+
+This is not allowed when the textlock is active:
+	- changing the buffer text
+	- jumping to another buffer or window
+	- editing another file
+	- closing a window or quitting Vim
+	- etc.
 
 
  vim:tw=78:ts=8:ft=help:norl:

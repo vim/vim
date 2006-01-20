@@ -7673,12 +7673,17 @@ get_expr_indent()
     int		indent;
     pos_T	pos;
     int		save_State;
+    int		use_sandbox = was_set_insecurely((char_u *)"indentexpr");
 
     pos = curwin->w_cursor;
     set_vim_var_nr(VV_LNUM, curwin->w_cursor.lnum);
-    ++sandbox;
+    if (use_sandbox)
+	++sandbox;
+    ++textlock;
     indent = eval_to_number(curbuf->b_p_inde);
-    --sandbox;
+    if (use_sandbox)
+	--sandbox;
+    --textlock;
 
     /* Restore the cursor position so that 'indentexpr' doesn't need to.
      * Pretend to be in Insert mode, allow cursor past end of line for "o"

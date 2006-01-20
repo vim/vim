@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2006 Jan 19
+*options.txt*	For Vim version 7.0aa.  Last change: 2006 Jan 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1036,6 +1036,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 	character.  If the result of evaluating 'balloonexpr' is not empty,
 	Vim does not try to send a message to an external debugger (Netbeans
 	or Sun Workshop).
+
+	The expression may be evaluated in the |sandbox|, see
+	|sandbox-option|.
+
+	It is not allowed to change text or jump to another window while
+	evaluating 'balloonexpr' |textlock|.
 
 	To check whether line breaks in the balloon text work use this check: >
 		if has("balloon_multiline")
@@ -2771,8 +2777,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not available when compiled without the |+folding|
 			or |+eval| feature}
 	The expression used for when 'foldmethod' is "expr".  It is evaluated
-	for each line to obtain its fold level.  See |fold-expr|.  Also see
-	|eval-sandbox|.
+	for each line to obtain its fold level.  See |fold-expr|.
+	
+	The expression may be evaluated in the |sandbox|, see
+	|sandbox-option|.
+
+	It is not allowed to change text or jump to another window while
+	evaluating 'foldexpr' |textlock|.
 
 						*'foldignore'* *'fdi'*
 'foldignore' 'fdi'	string (default: "#")
@@ -2903,6 +2914,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 			feature}
 	An expression which is used to specify the text displayed for a closed
 	fold.  See |fold-foldtext|.
+
+	The expression may be evaluated in the |sandbox|, see
+	|sandbox-option|.
+
+	It is not allowed to change text or jump to another window while
+	evaluating 'foldtext' |textlock|.
 
 					*'formatoptions'* *'fo'*
 'formatoptions' 'fo'	string (Vim default: "tcq", Vi default: "vt")
@@ -3696,10 +3713,16 @@ A jump table for the options with a short description can be found at |Q_op|.
 	option to a file name.  Mostly useful to change "." to "/" for Java: >
 		:set includeexpr=substitute(v:fname,'\\.','/','g')
 <	The "v:fname" variable will be set to the file name that was detected.
-	Evaluated in the |sandbox|.
+
 	Also used for the |gf| command if an unmodified file name can't be
 	found.  Allows doing "gf" on the name after an 'include' statement.
 	Also used for |<cfile>|.
+
+	The expression may be evaluated in the |sandbox|, see
+	|sandbox-option|.
+
+	It is not allowed to change text or jump to another window while
+	evaluating 'includeexpr' |textlock|.
 
 				 *'incsearch'* *'is'* *'noincsearch'* *'nois'*
 'incsearch' 'is'	boolean	(default off)
@@ -3746,8 +3769,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 		:set indentexpr=GetMyIndent()
 <	Error messages will be suppressed, unless the 'debug' option contains
 	"msg".
-	See |indent-expression|.  Also see |eval-sandbox|.
+	See |indent-expression|.
 	NOTE: This option is made empty when 'compatible' is set.
+
+	The expression may be evaluated in the |sandbox|, see
+	|sandbox-option|.
+
+	It is not allowed to change text or jump to another window while
+	evaluating 'indentexpr' |textlock|.
+
 
 						*'indentkeys'* *'indk'*
 'indentkeys' 'indk'	string	(default "0{,0},:,0#,!^F,o,O,e")
@@ -6084,7 +6114,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 	temporarily to that of the window (and buffer) whose statusline is
 	currently being drawn.  The expression will evaluate in this context.
 	The variable "actual_curbuf" is set to the 'bufnr()' number of the
-	real current buffer.  The expression is evaluated in the |sandbox|.
+	real current buffer.
+
+	The 'statusline' option may be evaluated in the |sandbox|, see
+	|sandbox-option|.
+
+	It is not allowed to change text or jump to another window while
+	evaluating 'statusline' |textlock|.
 
 	If the statusline is not updated when you want it (e.g., after setting
 	a variable that's used in an expression), you can force an update by

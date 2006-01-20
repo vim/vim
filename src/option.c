@@ -317,6 +317,7 @@ struct vimoption
 #define P_GETTEXT	0x80000L/* expand default value with _() */
 #define P_NOGLOB       0x100000L/* do not use local value for global vimrc */
 #define P_NFNAME       0x200000L/* only normal file name chars allowed */
+#define P_INSECURE     0x400000L/* option was set from a modeline */
 
 /*
  * options[] is initialized here.
@@ -1460,7 +1461,7 @@ static struct vimoption
     {"magic",	    NULL,   P_BOOL|P_VI_DEF,
 			    (char_u *)&p_magic, PV_NONE,
 			    {(char_u *)TRUE, (char_u *)0L}},
-    {"makeef",	    "mef",   P_STRING|P_EXPAND|P_VI_DEF|P_SECURE,
+    {"makeef",	    "mef",  P_STRING|P_EXPAND|P_VI_DEF|P_SECURE,
 #ifdef FEAT_QUICKFIX
 			    (char_u *)&p_mef, PV_NONE,
 			    {(char_u *)"", (char_u *)0L}
@@ -2632,6 +2633,7 @@ static char *(p_cot_values[]) = {"menu", NULL};
 
 static void set_option_default __ARGS((int, int opt_flags, int compatible));
 static void set_options_default __ARGS((int opt_flags));
+static void did_set_option __ARGS((int opt_idx, int opt_flags, int new_value));
 static char_u *illegal_char __ARGS((char_u *, int));
 static int string_to_key __ARGS((char_u *arg));
 #ifdef FEAT_CMDWIN
@@ -3157,6 +3159,9 @@ set_option_default(opt_idx, opt_flags, compatible)
 		*(int *)get_varp_scope(&(options[opt_idx]), OPT_GLOBAL) =
 								*(int *)varp;
 	}
+
+	/* the default value is not insecure */
+	options[opt_idx].flags &= ~P_INSECURE;
     }
 
 #ifdef FEAT_EVAL
@@ -3790,6 +3795,12 @@ do_set(arg, opt_flags)
 		}
 	    }
 
+	    /* Skip all options that are not window-local (used when showing
+	     * an already loaded buffer in a window). */
+	    if ((opt_flags & OPT_WINONLY)
+			  && (opt_idx < 0 || options[opt_idx].var != VAR_WIN))
+		goto skip;
+
 	    /* Disallow changing some options from modelines */
 	    if ((opt_flags & OPT_MODELINE) && (flags & P_SECURE))
 	    {
@@ -3797,15 +3808,9 @@ do_set(arg, opt_flags)
 		goto skip;
 	    }
 
-	    /* Skip all options that are not window-local (used when showing
-	     * an already loaded buffer in a window). */
-	    if ((opt_flags & OPT_WINONLY)
-		    && (opt_idx < 0 || options[opt_idx].var != VAR_WIN))
-		goto skip;
-
 #ifdef HAVE_SANDBOX
 	    /* Disallow changing some options in the sandbox */
-	    if (sandbox > 0 && (flags & P_SECURE))
+	    if (sandbox != 0 && (flags & P_SECURE))
 	    {
 		errmsg = (char_u *)_(e_sandbox);
 		goto skip;
@@ -4343,8 +4348,10 @@ do_set(arg, opt_flags)
 			redraw_all_later(CLEAR);
 		    }
 		}
+
 		if (opt_idx >= 0)
-		    options[opt_idx].flags |= P_WAS_SET;
+		    did_set_option(opt_idx, opt_flags,
+					 !prepending && !adding && !removing);
 	    }
 
 skip:
@@ -4403,6 +4410,31 @@ theend:
     }
 
     return OK;
+}
+
+/*
+ * Call this when an option has been given a new value through a user command.
+ * Sets the P_WAS_SET flag and takes care of the P_INSECURE flag.
+ */
+    static void
+did_set_option(opt_idx, opt_flags, new_value)
+    int	    opt_idx;
+    int	    opt_flags;	    /* possibly with OPT_MODELINE */
+    int	    new_value;	    /* value was replaced completely */
+{
+    options[opt_idx].flags |= P_WAS_SET;
+
+    /* When an option is set in the sandbox, from a modeline or in secure mode
+     * set the P_INSECURE flag.  Otherwise, if a new value is stored reset the
+     * flag. */
+    if (secure
+#ifdef HAVE_SANDBOX
+	    || sandbox != 0
+#endif
+	    || (opt_flags & OPT_MODELINE))
+	options[opt_idx].flags |= P_INSECURE;
+    else if (new_value)
+	options[opt_idx].flags &= ~P_INSECURE;
 }
 
     static char_u *
@@ -4837,6 +4869,25 @@ set_term_option_alloced(p)
     return; /* cannot happen: didn't find it! */
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * Return TRUE when option "opt" was set from a modeline or in secure mode.
+ * Return FALSE when it wasn't.
+ * Return -1 for an unknown option.
+ */
+    int
+was_set_insecurely(opt)
+    char_u *opt;
+{
+    int	    idx = findoption(opt);
+
+    if (idx >= 0)
+	return (options[idx].flags & P_INSECURE) != 0;
+    EMSG2(_(e_intern2), "was_set_insecurely()");
+    return -1;
+}
+#endif
+
 /*
  * Set a string option to a new value (without checking the effect).
  * The string is copied into allocated memory.
@@ -4938,9 +4989,9 @@ set_string_option(opt_idx, value, opt_flags)
 		    : opt_flags);
 	oldval = *varp;
 	*varp = s;
-	options[opt_idx].flags |= P_WAS_SET;
-	(void)did_set_string_option(opt_idx, varp, TRUE, oldval, NULL,
-								   opt_flags);
+	if (did_set_string_option(opt_idx, varp, TRUE, oldval, NULL,
+							   opt_flags) == NULL)
+	    did_set_option(opt_idx, opt_flags, TRUE);
     }
 }
 
@@ -6571,10 +6622,6 @@ set_bool_option(opt_idx, varp, value, opt_flags)
 {
     int		old_value = *(int *)varp;
 
-#ifdef FEAT_GUI
-    need_mouse_correct = TRUE;
-#endif
-
     /* Disallow changing some options from secure mode */
     if ((secure
 #ifdef HAVE_SANDBOX
@@ -6587,6 +6634,10 @@ set_bool_option(opt_idx, varp, value, opt_flags)
 #ifdef FEAT_EVAL
     /* Remember where the option was set. */
     options[opt_idx].scriptID = current_SID;
+#endif
+
+#ifdef FEAT_GUI
+    need_mouse_correct = TRUE;
 #endif
 
     /* May set global value for local option. */
@@ -7077,14 +7128,21 @@ set_num_option(opt_idx, varp, value, errbuf, errbuflen, opt_flags)
     long	old_Columns = Columns;	/* remember old Columns */
     long	*pp = (long *)varp;
 
-#ifdef FEAT_GUI
-    need_mouse_correct = TRUE;
+    /* Disallow changing some options from secure mode. */
+    if ((secure
+#ifdef HAVE_SANDBOX
+		|| sandbox != 0
 #endif
+		) && (options[opt_idx].flags & P_SECURE))
+	return e_secure;
 
     *pp = value;
 #ifdef FEAT_EVAL
     /* Remember where the option was set. */
     options[opt_idx].scriptID = current_SID;
+#endif
+#ifdef FEAT_GUI
+    need_mouse_correct = TRUE;
 #endif
 
     if (curbuf->b_p_sw <= 0)
@@ -7690,10 +7748,12 @@ set_option_value(name, number, string, opt_flags)
 #ifdef HAVE_SANDBOX
 	/* Disallow changing some options in the sandbox */
 	if (sandbox > 0 && (flags & P_SECURE))
+	{
 	    EMSG(_(e_sandbox));
-	else
+	    return;
+	}
 #endif
-	  if (flags & P_STRING)
+	if (flags & P_STRING)
 	    set_string_option(opt_idx, string, opt_flags);
 	else
 	{
@@ -7704,7 +7764,8 @@ set_option_value(name, number, string, opt_flags)
 		    (void)set_num_option(opt_idx, varp, number,
 							  NULL, 0, opt_flags);
 		else
-		    (void)set_bool_option(opt_idx, varp, (int)number, opt_flags);
+		    (void)set_bool_option(opt_idx, varp, (int)number,
+								   opt_flags);
 	    }
 	}
     }

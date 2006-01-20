@@ -661,13 +661,13 @@ getcmdline(firstc, count, indent)
 		restore_cmdline(&save_ccline);
 		if (c == '=')
 		{
-		    /* Need to save and restore ccline.  And set cmdline_busy
+		    /* Need to save and restore ccline.  And set "textlock"
 		     * to avoid nasty things like going to another buffer when
 		     * evaluating an expression. */
 		    save_cmdline(&save_ccline);
-		    ++cmdline_busy;
+		    ++textlock;
 		    p = get_expr_line();
-		    --cmdline_busy;
+		    --textlock;
 		    restore_cmdline(&save_ccline);
 
 		    if (p != NULL && realloc_cmdbuff((int)STRLEN(p) + 1) == OK)
@@ -1875,17 +1875,18 @@ getcmdline_prompt(firstc, prompt, attr, xp_context, xp_arg)
 #endif
 
 /*
- * Return TRUE when the command line is being edited.  That means the current
- * buffer and window can't be changed.
+ * Return TRUE when the text must not be changed and we can't switch to
+ * another window or buffer.  Used when editing the command line, evaluating
+ * 'balloonexpr', etc.
  */
     int
-editing_cmdline()
+text_locked()
 {
 #ifdef FEAT_CMDWIN
     if (cmdwin_type != 0)
 	return TRUE;
 #endif
-    return cmdline_busy;
+    return textlock != 0;
 }
 
 /*
@@ -1893,7 +1894,7 @@ editing_cmdline()
  * window is open or editing the cmdline in another way.
  */
     void
-editing_cmdline_msg()
+text_locked_msg()
 {
 #ifdef FEAT_CMDWIN
     if (cmdwin_type != 0)
@@ -2814,12 +2815,12 @@ cmdline_paste(regname, literally)
     regname = may_get_selection(regname);
 #endif
 
-    /* Need to save and restore ccline.  And set cmdline_busy to avoid nasty
+    /* Need to save and restore ccline.  And set "textlock" to avoid nasty
      * things like going to another buffer when evaluating an expression. */
     save_cmdline(&save_ccline);
-    ++cmdline_busy;
+    ++textlock;
     i = get_spec_reg(regname, &arg, &allocated, TRUE);
-    --cmdline_busy;
+    --textlock;
     restore_cmdline(&save_ccline);
 
     if (i)
@@ -3837,8 +3838,8 @@ addstar(fname, len, context)
 
 		/* Custom expansion takes care of special things, match
 		 * backslashes literally (perhaps also for other types?) */
-		if ((context == EXPAND_USER_DEFINED ||
-		     context == EXPAND_USER_LIST) && fname[i] == '\\')
+		if ((context == EXPAND_USER_DEFINED
+			  || context == EXPAND_USER_LIST) && fname[i] == '\\')
 		    new_len++;		/* '\' becomes "\\" */
 	    }
 	    retval = alloc(new_len);
