@@ -2478,23 +2478,6 @@ gui_mswin_get_valid_dimensions(
 }
 
     void
-gui_mch_get_screen_dimensions(int *screen_w, int *screen_h)
-{
-
-    *screen_w = GetSystemMetrics(SM_CXFULLSCREEN)
-	      - GetSystemMetrics(SM_CXFRAME) * 2;
-    /* FIXME: dirty trick: Because the gui_get_base_height() doesn't include
-     * the menubar for MSwin, we subtract it from the screen height, so that
-     * the window size can be made to fit on the screen. */
-    *screen_h = GetSystemMetrics(SM_CYFULLSCREEN)
-	      - GetSystemMetrics(SM_CYFRAME) * 2
-#ifdef FEAT_MENU
-	      - gui_mswin_get_menu_height(FALSE)
-#endif
-	      ;
-}
-
-    void
 gui_mch_flash(int msec)
 {
     RECT    rc;

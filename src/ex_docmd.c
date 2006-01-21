@@ -9729,7 +9729,10 @@ put_view(fd, wp, add_edit, flagp)
      */
     if ((*flagp & SSOP_FOLDS)
 	    && wp->w_buffer->b_ffname != NULL
-	    && (*wp->w_buffer->b_p_bt == NUL || wp->w_buffer->b_help))
+# ifdef FEAT_QUICKFIX
+	    && (*wp->w_buffer->b_p_bt == NUL || wp->w_buffer->b_help)
+# endif
+	    )
     {
 	if (put_folds(fd, wp) == FAIL)
 	    return FAIL;

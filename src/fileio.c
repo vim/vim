@@ -2882,9 +2882,11 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 	    if (!(did_cmd = apply_autocmds_exarg(EVENT_FILEAPPENDCMD,
 					 sfname, sfname, FALSE, curbuf, eap)))
 	    {
+#ifdef FEAT_QUICKFIX
 		if (overwriting && bt_nofile(curbuf))
 		    nofile_err = TRUE;
 		else
+#endif
 		    apply_autocmds_exarg(EVENT_FILEAPPENDPRE,
 					  sfname, sfname, FALSE, curbuf, eap);
 	    }
@@ -2899,9 +2901,11 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 	    if (!(did_cmd = apply_autocmds_exarg(EVENT_BUFWRITECMD,
 					 sfname, sfname, FALSE, curbuf, eap)))
 	    {
+#ifdef FEAT_QUICKFIX
 		if (overwriting && bt_nofile(curbuf))
 		    nofile_err = TRUE;
 		else
+#endif
 		    apply_autocmds_exarg(EVENT_BUFWRITEPRE,
 					  sfname, sfname, FALSE, curbuf, eap);
 	    }
@@ -2911,9 +2915,11 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 	    if (!(did_cmd = apply_autocmds_exarg(EVENT_FILEWRITECMD,
 					 sfname, sfname, FALSE, curbuf, eap)))
 	    {
+#ifdef FEAT_QUICKFIX
 		if (overwriting && bt_nofile(curbuf))
 		    nofile_err = TRUE;
 		else
+#endif
 		    apply_autocmds_exarg(EVENT_FILEWRITEPRE,
 					  sfname, sfname, FALSE, curbuf, eap);
 	    }

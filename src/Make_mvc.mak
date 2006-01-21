@@ -736,7 +736,7 @@ notags:
 
 clean:
 	- if exist $(OUTDIR)/nul $(DEL_TREE) $(OUTDIR)
-	- if exist auto/nul $(DEL_TREE) auto
+	- if exist auto/pathdef.c del auto/pathdef.c
 	- if exist *.obj del *.obj
 	- if exist $(VIM).exe del $(VIM).exe
 	- if exist $(VIM).ilk del $(VIM).ilk
