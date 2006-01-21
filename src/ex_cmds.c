@@ -2637,7 +2637,7 @@ check_overwrite(eap, buf, fname, ffname, other)
 	if (!eap->forceit && !eap->append)
 	{
 #ifdef UNIX
-		/* with UNIX it is possible to open a directory */
+	    /* with UNIX it is possible to open a directory */
 	    if (mch_isdir(ffname))
 	    {
 		EMSG2(_(e_isadir2), ffname);

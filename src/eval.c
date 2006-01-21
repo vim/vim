@@ -13579,8 +13579,10 @@ f_setqflist(argvars, rettv)
     typval_T	*argvars;
     typval_T	*rettv;
 {
+#ifdef FEAT_QUICKFIX
     char_u	*act;
     int		action = ' ';
+#endif
 
     rettv->vval.v_number = -1;
 

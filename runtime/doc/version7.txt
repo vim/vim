@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Jan 20
+*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Jan 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1595,5 +1595,8 @@ autocommands were triggered to notify about the change in the buffer list.
 
 In the quickfix buffer 'bufhidden' was set to "delete", which caused closing
 the quickfix window to leave an unlisted "No Name" buffer behind every time.
+
+Win32: when using two screens of different size, setting 'lines' to a large
+value didn't fill the whole screen. (SungHyun Nam)
 
  vim:tw=78:ts=8:ft=help:norl:

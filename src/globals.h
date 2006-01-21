@@ -1288,7 +1288,7 @@ EXTERN char_u e_invexpr2[]	INIT(= N_("E15: Invalid expression: %s"));
 #endif
 EXTERN char_u e_invrange[]	INIT(= N_("E16: Invalid range"));
 EXTERN char_u e_invcmd[]	INIT(= N_("E476: Invalid command"));
-#if defined(UNIX) || (defined(FEAT_SYN_HL) && defined(FEAT_MBYTE))
+#if defined(UNIX) || defined(FEAT_SYN_HL)
 EXTERN char_u e_isadir2[]	INIT(= N_("E17: \"%s\" is a directory"));
 #endif
 #ifdef FEAT_LIBCALL

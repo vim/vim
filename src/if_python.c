@@ -93,11 +93,13 @@ struct PyMethodDef { int a; };
 # define PyInt_FromLong dll_PyInt_FromLong
 # define PyInt_Type (*dll_PyInt_Type)
 # define PyList_GetItem dll_PyList_GetItem
+# define PyList_Append dll_PyList_Append
 # define PyList_New dll_PyList_New
 # define PyList_SetItem dll_PyList_SetItem
 # define PyList_Size dll_PyList_Size
 # define PyList_Type (*dll_PyList_Type)
 # define PyImport_ImportModule dll_PyImport_ImportModule
+# define PyDict_New dll_PyDict_New
 # define PyDict_GetItemString dll_PyDict_GetItemString
 # define PyModule_GetDict dll_PyModule_GetDict
 # define PyRun_SimpleString dll_PyRun_SimpleString
@@ -149,11 +151,13 @@ static long(*dll_PyInt_AsLong)(PyObject *);
 static PyObject*(*dll_PyInt_FromLong)(long);
 static PyTypeObject* dll_PyInt_Type;
 static PyObject*(*dll_PyList_GetItem)(PyObject *, int);
+static PyObject*(*dll_PyList_Append)(PyObject *, PyObject *);
 static PyObject*(*dll_PyList_New)(int size);
 static int(*dll_PyList_SetItem)(PyObject *, int, PyObject *);
 static int(*dll_PyList_Size)(PyObject *);
 static PyTypeObject* dll_PyList_Type;
 static PyObject*(*dll_PyImport_ImportModule)(const char *);
+static PyObject*(*dll_PyDict_New)(void);
 static PyObject*(*dll_PyDict_GetItemString)(PyObject *, const char *);
 static PyObject*(*dll_PyModule_GetDict)(PyObject *);
 static int(*dll_PyRun_SimpleString)(char *);
@@ -227,12 +231,14 @@ static struct
     {"PyInt_FromLong", (PYTHON_PROC*)&dll_PyInt_FromLong},
     {"PyInt_Type", (PYTHON_PROC*)&dll_PyInt_Type},
     {"PyList_GetItem", (PYTHON_PROC*)&dll_PyList_GetItem},
+    {"PyList_Append", (PYTHON_PROC*)&dll_PyList_Append},
     {"PyList_New", (PYTHON_PROC*)&dll_PyList_New},
     {"PyList_SetItem", (PYTHON_PROC*)&dll_PyList_SetItem},
     {"PyList_Size", (PYTHON_PROC*)&dll_PyList_Size},
     {"PyList_Type", (PYTHON_PROC*)&dll_PyList_Type},
     {"PyImport_ImportModule", (PYTHON_PROC*)&dll_PyImport_ImportModule},
     {"PyDict_GetItemString", (PYTHON_PROC*)&dll_PyDict_GetItemString},
+    {"PyDict_New", (PYTHON_PROC*)&dll_PyDict_New},
     {"PyModule_GetDict", (PYTHON_PROC*)&dll_PyModule_GetDict},
     {"PyRun_SimpleString", (PYTHON_PROC*)&dll_PyRun_SimpleString},
     {"PyString_AsString", (PYTHON_PROC*)&dll_PyString_AsString},
