@@ -1,4 +1,4 @@
-Test for 'errorformat'.
+Test for 'errorformat'.  This will fail if the quickfix feature was disabled.
 
 STARTTEST
 :so small.vim

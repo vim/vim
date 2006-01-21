@@ -44,7 +44,9 @@ static int	    cs_cnt_matches __ARGS((int idx));
 static char *	    cs_create_cmd __ARGS((char *csoption, char *pattern));
 static int	    cs_create_connection __ARGS((int i));
 static void	    do_cscope_general __ARGS((exarg_T *eap, int make_split));
+#ifdef FEAT_QUICKFIX
 static void	    cs_file_results __ARGS((FILE *, int *));
+#endif
 static void	    cs_fill_results __ARGS((char *, int , int *, char ***,
 			char ***, int *));
 static int	    cs_find __ARGS((exarg_T *eap));
@@ -1670,6 +1672,7 @@ cs_parse_results(cnumber, buf, bufsize, context, linenumber, search)
     return name;
 }
 
+#ifdef FEAT_QUICKFIX
 /*
  * PRIVATE: cs_file_results
  *
@@ -1725,6 +1728,7 @@ cs_file_results(f, nummatches_a)
     } /* for all cscope connections */
     vim_free(buf);
 }
+#endif
 
 /*
  * PRIVATE: cs_fill_results

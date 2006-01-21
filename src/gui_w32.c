@@ -2166,6 +2166,29 @@ clear_rect(RECT *rcp)
 }
 
 
+    void
+gui_mch_get_screen_dimensions(int *screen_w, int *screen_h)
+{
+    RECT	workarea_rect;
+
+    get_work_area(&workarea_rect);
+
+    *screen_w = workarea_rect.right
+	        - GetSystemMetrics(SM_CXFRAME) * 2;
+
+    /* FIXME: dirty trick: Because the gui_get_base_height() doesn't include
+     * the menubar for MSwin, we subtract it from the screen height, so that
+     * the window size can be made to fit on the screen. */
+    *screen_h = workarea_rect.bottom
+	        - GetSystemMetrics(SM_CYFRAME) * 2
+		- GetSystemMetrics(SM_CYCAPTION)
+#ifdef FEAT_MENU
+	        - gui_mswin_get_menu_height(FALSE)
+#endif
+	        ;
+}
+
+
 #if defined(FEAT_MENU) || defined(PROTO)
 /*
  * Add a sub menu to the menu bar.
@@ -2779,7 +2802,7 @@ gui_mch_dialog(
     {
 	RECT	workarea_rect;
 
-	/* We don't have a window, use the desktip area. */
+	/* We don't have a window, use the desktop area. */
 	get_work_area(&workarea_rect);
 	maxDialogWidth = workarea_rect.right - workarea_rect.left - 100;
 	if (maxDialogWidth > 600)
