@@ -1194,24 +1194,25 @@ install_vimrc(int idx)
 	fprintf(fd, "  if arg2 =~ ' ' | let arg2 = '\"' . arg2 . '\"' | endif\n");
 	fprintf(fd, "  let arg3 = v:fname_out\n");
 	fprintf(fd, "  if arg3 =~ ' ' | let arg3 = '\"' . arg3 . '\"' | endif\n");
-	p = strchr(installdir, ' ');
-	if (p != NULL)
-	{
-	    /* The path has a space.  When using cmd.exe (Win NT/2000/XP) put
-	     * quotes around the whole command and around the diff command.
-	     * Otherwise put a double quote just before the space and at the
-	     * end of the command.  Putting quotes around the whole thing
-	     * doesn't work on Win 95/98/ME.  This is mostly guessed! */
-	    fprintf(fd, "  if &sh =~ '\\<cmd'\n");
-	    fprintf(fd, "    silent execute '!\"\"%s\\diff\" ' . opt . arg1 . ' ' . arg2 . ' > ' . arg3 . '\"'\n", installdir);
-	    fprintf(fd, "  else\n");
-	    *p = NUL;
-	    fprintf(fd, "    silent execute '!%s\" %s\\diff\" ' . opt . arg1 . ' ' . arg2 . ' > ' . arg3\n", installdir, p + 1);
-	    *p = ' ';
-	    fprintf(fd, "  endif\n");
-	}
-	else
-	    fprintf(fd, "  silent execute '!%s\\diff ' . opt . arg1 . ' ' . arg2 . ' > ' . arg3\n", installdir);
+
+	/* If the path has a space:  When using cmd.exe (Win NT/2000/XP) put
+	 * quotes around the whole command and around the diff command.
+	 * Otherwise put a double quote just before the space and at the
+	 * end of the command.  Putting quotes around the whole thing
+	 * doesn't work on Win 95/98/ME.  This is mostly guessed! */
+	fprintf(fd, "  let eq = ''\n");
+	fprintf(fd, "  if $VIMRUNTIME =~ ' '\n");
+	fprintf(fd, "    if &sh =~ '\\<cmd'\n");
+	fprintf(fd, "      let cmd = '\"\"' . $VIMRUNTIME . '\\diff\"'\n");
+	fprintf(fd, "      let eq = '\"'\n");
+	fprintf(fd, "    else\n");
+	fprintf(fd, "      let cmd = substitute($VIMRUNTIME, ' ', '\" ', '') . '\\diff\"'\n");
+	fprintf(fd, "    endif\n");
+	fprintf(fd, "  else\n");
+	fprintf(fd, "    let cmd = $VIMRUNTIME . '\\diff'\n");
+	fprintf(fd, "  endif\n");
+	fprintf(fd, "  silent execute '!' . cmd . ' ' . opt . arg1 . ' ' . arg2 . ' > ' . arg3 . eq\n");
+
 	fprintf(fd, "endfunction\n");
 	fprintf(fd, "\n");
     }

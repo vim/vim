@@ -988,6 +988,15 @@ main_loop(cmdwin, noexmode)
 	    skip_redraw = FALSE;
 	else if (do_redraw || stuff_empty())
 	{
+#if defined(FEAT_DIFF) && defined(FEAT_SCROLLBIND)
+	    /* Scroll-binding for diff mode may have been postponed until
+	     * here.  Avoids doing it for every change. */
+	    if (diff_need_scrollbind)
+	    {
+		check_scrollbind((linenr_T)0, 0L);
+		diff_need_scrollbind = FALSE;
+	    }
+#endif
 #if defined(FEAT_FOLDING) && defined(FEAT_VISUAL)
 	    /* Include a closed fold completely in the Visual area. */
 	    foldAdjustVisual();
@@ -1153,9 +1162,14 @@ getout(exitval)
 	    buf->b_changedtick = -1;	/* note that we did it already */
 	    wp = firstwin;		/* restart, window may be closed */
 	}
+# ifdef FEAT_WINDOWS
 	else
 	    wp = wp->w_next;
+# else
+	break;
+# endif
     }
+
     /* Trigger BufUnload for buffers that are loaded */
     for (buf = firstbuf; buf != NULL; buf = buf->b_next)
 	if (buf->b_ml.ml_mfp != NULL)

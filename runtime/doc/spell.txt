@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2006 Jan 13
+*spell.txt*	For Vim version 7.0aa.  Last change: 2006 Jan 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -995,16 +995,11 @@ word to start with an upper case letter.
 WORDS WITH A SLASH					*spell-SLASH*
 
 The slash is used in the .dic file to separate the basic word from the affix
-letters that can be used.  Unfortunately, this means you cannot use a slash in
-a word.  Thus "TCP/IP" cannot be a word.  To work around that you can define a
-replacement character for the slash.  Example:
-
-	SLASH , ~
-
-Now you can use "TCP,IP" to add the word "TCP/IP".
-
-Of course, the letter used should itself not appear in any word!  The letter
-must be ASCII, thus a single byte.
+letters and other flags.  Unfortunately, this means you cannot use a slash in
+a word.  Thus "TCP/IP" is not a word but "TCP with the flags "IP".  To include
+a slash in the word put a backslash before it: "TCP\/IP".  In the rare case
+you want to use a backslash inside a word you need to use two backslashes.
+Any other use of the backslash is reserved for future expansion.
 
 
 KEEP-CASE WORDS						*spell-KEEPCASE*

@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Jan 21
+*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Jan 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -550,8 +550,14 @@ New items in search patterns: ~
 |/\%U| \%U1234abcd	search for character with 8 pos. hex number
 |/\]|  [\U1234abcd]	idem, in a colletion
 			    (The above partly by Ciaran McCreesh)
+
 |/[[=| [[=a=]]		an equivalence class (only for latin1 characters)
 |/[[.| [[.a.]]		a collation element (only works with single char)
+
+|/\%'m|  \%'m		match at mark m
+|/\%<'m| \%<'m		match before mark m
+|/\%>'m| \%>'m		match after mark m
+|/\%V|   \%V		match in Visual area
 
 Nesting |/multi| items no longer is an error when an empty match is possible.
 
@@ -1598,5 +1604,8 @@ the quickfix window to leave an unlisted "No Name" buffer behind every time.
 
 Win32: when using two screens of different size, setting 'lines' to a large
 value didn't fill the whole screen. (SungHyun Nam)
+
+Win32 installer: The generated _vimrc contained an absolute path to diff.exe.
+After upgrading it becomes invalid.  Now use $VIMRUNTIME instead.
 
  vim:tw=78:ts=8:ft=help:norl:

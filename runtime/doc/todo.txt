@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Jan 20
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Jan 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -71,7 +71,6 @@ spelling:
 - Check out Hunspell 1.1.3.
     what does MAXNGRAMSUGS do?
     See announcement (Nemeth, 5 jan)
-    use "\/" instead of SLASH item?
     is COMPLEXPREFIXES necessary now that we have flags for affixes?
 - Look into hungarian dictionary:
   http://magyarispell.sourceforge.net/hu_HU-1.0.tar.gz
@@ -100,26 +99,6 @@ spelling:
   adding a bad word like "zw" would.  Use "zuw" to undo "zw"?  (Antonio
   Colombo)
 
-GTK: get an X error while exiting quickly after starting (running the tests).
-Caused by new GTK library?
-    X Error: BadWindow (invalid Window parameter) 3
-
-Support saving and restoring session for X windows?  It should work to do
-":mksession" and use "-S fname" for the restart command.  The
-gui_x11_wm_protocol_handler() already takes care of the rest.
-global_event_filter() for GTK.
-
-Is it easy to have an item in a pattern that matches with a mark location?
-Similar to |/\%>l| and |/\%c|.  (Benji Fisher)
-
-Win32 installer: Default _vimrc contains absolute path to diff.exe.  After
-upgrading it becomes invalid.  Fix it automatically somehow?  Use $VIMRUNTIME
-in the path instead of filling it the path?  At least give a clear error
-message.
-
-In diff mode deleting lines is very slow.  E.g., when diffing two .po files
-and then sourcing po/cleaup.vim.
-
 7   Add plugins for formatting.  Should be able to make a choice depending on
     the language of a file (English/Korean/Japanese/etc.).
     Setting the 'langformat' option to "chinese" would load the
@@ -139,8 +118,8 @@ Mac unicode patch (Da Woon Jung):
 Patch to add a few flags to search(). (Benji Fisher, Nov 29, doc update Dec 1)
 Also add search???() function that returns list with lnum and col.
 
-Win32: Use the free downloadable compiler 7.1.  Figure out how to do debugging
-(with Agide?) and describe it. (George Reilly)
+Win32: Use the free downloadable compiler 7.1 (2003).  Figure out how to do
+debugging (with Agide?) and describe it. (George Reilly)
 Try out using the free MS compiler and debugger, using Make_mvc.mak.
 Try using Visual C++ Express 2005. (Ilya Bobir Dec 20)
     Disadvantage: Annoying warning messages, requires ..._NO_DEPRECATE, this
@@ -1445,6 +1424,10 @@ User Friendlier:
 7   When Vim detects a file is being edited elsewhere and it's a gvim session
     of the same user it should offer a "Raise" button, so that the other gvim
     window can be displayed. (Eduard)
+8   Support saving and restoring session for X windows?  It should work to do
+    ":mksession" and use "-S fname" for the restart command.  The
+    gui_x11_wm_protocol_handler() already takes care of the rest.
+    global_event_filter() for GTK.
 
 
 Spell checking:

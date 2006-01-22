@@ -28,7 +28,9 @@ general_beval_cb(beval, state)
     char_u	*text;
     static char_u  *result = NULL;
     long	winnr = 0;
+#ifdef FEAT_WINDOWS
     win_T	*cw;
+#endif
 
 
     /* Don't do anything when 'ballooneval' is off, messages scrolled the
@@ -40,9 +42,11 @@ general_beval_cb(beval, state)
     if (*p_bexpr != NUL
 	    && get_beval_info(balloonEval, TRUE, &wp, &lnum, &text, &col) == OK)
     {
+# ifdef FEAT_WINDOWS
 	/* Convert window pointer to number. */
 	for (cw = firstwin; cw != wp; cw = cw->w_next)
 	    ++winnr;
+# endif
 
 	set_vim_var_nr(VV_BEVAL_BUFNR, (long)wp->w_buffer->b_fnum);
 	set_vim_var_nr(VV_BEVAL_WINNR, winnr);
@@ -293,7 +297,11 @@ get_beval_info(beval, getword, winp, lnump, textp, colp)
     *textp = NULL;
     row = Y_2_ROW(beval->y);
     col = X_2_COL(beval->x);
+#ifdef FEAT_WINDOWS
     wp = mouse_find_win(&row, &col);
+#else
+    wp = firstwin;
+#endif
     if (wp != NULL && row < wp->w_height && col < W_WIDTH(wp))
     {
 	/* Found a window and the cursor is in the text.  Now find the line

@@ -398,6 +398,7 @@ EXTERN int	drag_sep_line INIT(= FALSE);	/* dragging vert separator */
 #ifdef FEAT_DIFF
 /* Value set from 'diffopt'. */
 EXTERN int	diff_context INIT(= 6);	/* context for folds */
+EXTERN int	diff_need_scrollbind INIT(= FALSE);
 #endif
 
 #ifdef FEAT_MENU

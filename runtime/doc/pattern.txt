@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 7.0aa.  Last change: 2006 Jan 05
+*pattern.txt*   For Vim version 7.0aa.  Last change: 2006 Jan 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -394,7 +394,9 @@ More explanation and examples below, follow the links.
 |/\ze|	\ze	\ze	anything, sets end of match
 |/\%^|	\%^	\%^	beginning of file |/zero-width|		*E71*
 |/\%$|	\%$	\%$	end of file |/zero-width|
+|/\%V|	\%V	\%V	inside Visual area |/zero-width|
 |/\%#|	\%#	\%#	cursor position |/zero-width|
+|/\%'m|	\%'m	\%'m	mark m position |/zero-width|
 |/\%l|	\%23l	\%23l	in line 23 |/zero-width|
 |/\%c|	\%23c	\%23c	in column 23 |/zero-width|
 |/\%v|	\%23v	\%23v	in virtual column 23 |/zero-width|
@@ -788,6 +790,11 @@ $	At end of pattern or in front of "\|" or "\)" ("|" or ")" after "\v"):
 	position after the first "VIM".
 	Searching from the end of the file backwards is easier!
 
+						*/\%V*
+\%V	Match inside the Visual area.  When Visual mode has already been
+	stopped match in the area that |gv| would reselect.
+	Only works for the current buffer.
+
 						*/\%#* *cursor-position*
 \%#	Matches with the cursor position.  Only works when matching in a
 	buffer displayed in a window. {not in Vi}
@@ -801,6 +808,20 @@ $	At end of pattern or in front of "\|" or "\)" ("|" or ")" after "\v"):
 		/\k*\%#\k*
 <	When 'hlsearch' is set and you move the cursor around and make changes
 	this will clearly show when the match is updated or not.
+
+						*/\%'m* */\%<'m* */\%>'m*
+\%'m	Matches with the position of mark m.
+\%<'m	Matches before the position of mark m.
+\%>'m	Matches after the position of mark m.
+	Example, to highlight the text from mark 's to 'e: >
+		/.\%>'s.*\%<'e..
+<	Note that two dots are required to include mark 'e in the match.  That
+	is because "\%<'e" matches at the character before the 'e mark, and
+	since it's a |/zero-width| match it doesn't include that character.
+	{not in Vi}
+	WARNING: When the mark is moved after the pattern was used, the result
+	becomes invalid.  Vim doesn't automatically update the matches.
+	Similar to moving the cursor for |\%#|.
 
 						*/\%l* */\%>l* */\%<l*
 \%23l	Matches in a specific line.

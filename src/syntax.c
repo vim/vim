@@ -2974,8 +2974,11 @@ syn_add_end_off(result, regmatch, spp, idx, extra)
     else
     {
 	/* Don't go past the end of the line.  Matters for "rs=e+2" when there
-	 * is a matchgroup. */
-	len = STRLEN(ml_get_buf(syn_buf, result->lnum, FALSE));
+	 * is a matchgroup. Watch out for match with last NL in the buffer. */
+	if (result->lnum > syn_buf->b_ml.ml_line_count)
+	    len = 0;
+	else
+	    len = STRLEN(ml_get_buf(syn_buf, result->lnum, FALSE));
 	if (col > len)
 	    result->col = len;
 	else
