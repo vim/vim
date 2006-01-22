@@ -229,6 +229,9 @@
 #define RE_COL		205	/* nr cmp  Match column number */
 #define RE_VCOL		206	/* nr cmp  Match virtual column number */
 
+#define RE_MARK		207	/* mark cmp  Match mark position */
+#define RE_VISUAL	208	/*	Match Visual area */
+
 /*
  * Magic characters have a special meaning, they don't match literally.
  * Magic characters are negative.  This separates them from literal characters
@@ -1837,6 +1840,10 @@ regatom(flagp)
 		    ret = regnode(CURSOR);
 		    break;
 
+		case 'V':
+		    ret = regnode(RE_VISUAL);
+		    break;
+
 		/* \%[abc]: Emit as a list of branches, all ending at the last
 		 * branch which matches nothing. */
 		case '[':
@@ -1929,7 +1936,8 @@ regatom(flagp)
 			  }
 
 		default:
-			  if (VIM_ISDIGIT(c) || c == '<' || c == '>')
+			  if (VIM_ISDIGIT(c) || c == '<' || c == '>'
+								 || c == '\'')
 			  {
 			      long_u	n = 0;
 			      int	cmp;
@@ -1942,7 +1950,21 @@ regatom(flagp)
 				  n = n * 10 + (c - '0');
 				  c = getchr();
 			      }
-			      if (c == 'l' || c == 'c' || c == 'v')
+			      if (c == '\'' && n == 0)
+			      {
+				  /* "\%'m", "\%<'m" and "\%>'m": Mark */
+				  c = getchr();
+				  ret = regnode(RE_MARK);
+				  if (ret == JUST_CALC_SIZE)
+				      regsize += 2;
+				  else
+				  {
+				      *regcode++ = c;
+				      *regcode++ = cmp;
+				  }
+				  break;
+			      }
+			      else if (c == 'l' || c == 'c' || c == 'v')
 			      {
 				  if (c == 'l')
 				      ret = regnode(RE_LNUM);
@@ -3783,6 +3805,100 @@ regmatch(scan)
 		    || (reglnum + reg_firstlnum != reg_win->w_cursor.lnum)
 		    || ((colnr_T)(reginput - regline) != reg_win->w_cursor.col))
 		status = RA_NOMATCH;
+	    break;
+
+	  case RE_MARK:
+	    /* Compare the mark position to the match position.  NOTE: Always
+	     * uses the current buffer. */
+	    {
+		int	mark = OPERAND(scan)[0];
+		int	cmp = OPERAND(scan)[1];
+		pos_T	*pos;
+
+		pos = getmark(mark, FALSE);
+		if (pos == NULL		    /* mark doesn't exist) */
+			|| pos->lnum <= 0    /* mark isn't set (in curbuf) */
+			|| (pos->lnum == reglnum + reg_firstlnum
+				? (pos->col == (colnr_T)(reginput - regline)
+				    ? (cmp == '<' || cmp == '>')
+				    : (pos->col < (colnr_T)(reginput - regline)
+					? cmp != '>'
+					: cmp != '<'))
+				: (pos->lnum < reglnum + reg_firstlnum
+				    ? cmp != '>'
+				    : cmp != '<')))
+		    status = RA_NOMATCH;
+	    }
+	    break;
+
+	  case RE_VISUAL:
+#ifdef FEAT_VISUAL
+	    /* Check if the buffer is the current buffer. and whether the
+	     * position is inside the Visual area. */
+	    if (reg_buf != curbuf || VIsual.lnum == 0)
+		status = RA_NOMATCH;
+	    else
+	    {
+		pos_T	    top, bot;
+		linenr_T    lnum;
+		colnr_T	    col;
+		win_T	    *wp = reg_win == NULL ? curwin : reg_win;
+		int	    mode;
+
+		if (VIsual_active)
+		{
+		    if (lt(VIsual, wp->w_cursor))
+		    {
+			top = VIsual;
+			bot = wp->w_cursor;
+		    }
+		    else
+		    {
+			top = wp->w_cursor;
+			bot = VIsual;
+		    }
+		    mode = VIsual_mode;
+		}
+		else
+		{
+		    top = curbuf->b_visual_start;
+		    bot = curbuf->b_visual_end;
+		    mode = curbuf->b_visual_mode;
+		}
+		lnum = reglnum + reg_firstlnum;
+		col = (colnr_T)(reginput - regline);
+		if (lnum < top.lnum || lnum > bot.lnum)
+		    status = RA_NOMATCH;
+		else if (mode == 'v')
+		{
+		    if ((lnum == top.lnum && col < top.col)
+			    || (lnum == bot.lnum
+					 && col >= bot.col + (*p_sel != 'e')))
+			status = RA_NOMATCH;
+		}
+		else if (mode == Ctrl_V)
+		{
+		    colnr_T	    start, end;
+		    colnr_T	    start2, end2;
+		    colnr_T	    col;
+
+		    getvvcol(wp, &top, &start, NULL, &end);
+		    getvvcol(wp, &bot, &start2, NULL, &end2);
+		    if (start2 < start)
+			start = start2;
+		    if (end2 > end)
+			end = end2;
+		    if (top.col == MAXCOL || bot.col == MAXCOL)
+			end = MAXCOL;
+		    col = win_linetabsize(wp,
+				      regline, (colnr_T)(reginput - regline));
+		    if (col < start || col > end - (*p_sel == 'e'))
+			status = RA_NOMATCH;
+		}
+	    }
+#else
+	    status = RA_NOMATCH;
+#endif
 	    break;
 
 	  case RE_LNUM:
@@ -5788,8 +5904,14 @@ regprop(op)
       case CURSOR:
 	p = "CURSOR";
 	break;
+      case RE_VISUAL:
+	p = "RE_VISUAL";
+	break;
       case RE_LNUM:
 	p = "RE_LNUM";
+	break;
+      case RE_MARK:
+	p = "RE_MARK";
 	break;
       case RE_COL:
 	p = "RE_COL";

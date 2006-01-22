@@ -1139,11 +1139,11 @@ qf_jump(dir, errornr, forceit)
     linenr_T		i;
     buf_T		*old_curbuf;
     linenr_T		old_lnum;
-    char_u		*old_swb = p_swb;
     colnr_T		screen_col;
     colnr_T		char_col;
     char_u		*line;
 #ifdef FEAT_WINDOWS
+    char_u		*old_swb = p_swb;
     int			opened_window = FALSE;
     win_T		*win;
     win_T		*altwin;

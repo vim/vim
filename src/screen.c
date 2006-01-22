@@ -8482,8 +8482,10 @@ showruler(always)
 #ifdef FEAT_INS_EXPAND
     if (pum_visible())
     {
+# ifdef FEAT_WINDOWS
 	/* Don't redraw right now, do it later. */
 	curwin->w_redr_status = TRUE;
+# endif
 	return;
     }
 #endif
