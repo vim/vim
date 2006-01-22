@@ -441,9 +441,10 @@ diff_mark_adjust(line1, line2, amount, amount_after)
     }
     diff_redraw(TRUE);
 
-    /* Recompute the scroll binding, may remove or add filler lines (e.g.,
-     * when adding lines above w_topline). */
-    check_scrollbind((linenr_T)0, 0L);
+    /* Need to recompute the scroll binding, may remove or add filler lines
+     * (e.g., when adding lines above w_topline). But it's slow when making
+     * many changes, postpone until redrawing. */
+    diff_need_scrollbind = TRUE;
 }
 
 /*

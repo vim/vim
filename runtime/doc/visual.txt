@@ -1,4 +1,4 @@
-*visual.txt*    For Vim version 7.0aa.  Last change: 2005 Oct 09
+*visual.txt*    For Vim version 7.0aa.  Last change: 2006 Jan 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -257,6 +257,11 @@ operator character: "v{move-around}3>" (move lines 3 indents to the right).
 							*{move-around}*
 The {move-around} is any sequence of movement commands.  Note the difference
 with {motion}, which is only ONE movement command.
+
+Another way to operate on the Visual area is using the |/\%V| item in a
+pattern.  For example, to replace all '(' in the Visual area with '#': >
+
+	:%s/\%V(/X/g
 
 ==============================================================================
 5. Blockwise operators					*blockwise-operators*

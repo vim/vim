@@ -3076,7 +3076,7 @@ check_visual_highlight()
 }
 
 /*
- * End visual mode.
+ * End Visual mode.
  * This function should ALWAYS be called to end Visual mode, except from
  * do_pending_operator().
  */
@@ -4843,7 +4843,7 @@ dozet:
 		break;
 
     case '=':	/* "z=": suggestions for a badly spelled word  */
-		if (!checkclearopq(cap->oap))
+		if (!checkclearop(cap->oap))
 		    spell_suggest((int)cap->count0);
 		break;
 #endif

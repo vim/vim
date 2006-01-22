@@ -845,7 +845,7 @@ static void set_spell_charflags __ARGS((char_u *flags, int cnt, char_u *upp));
 static int set_spell_chartab __ARGS((char_u *fol, char_u *low, char_u *upp));
 static int spell_casefold __ARGS((char_u *p, int len, char_u *buf, int buflen));
 static int check_need_cap __ARGS((linenr_T lnum, colnr_T col));
-static void spell_find_suggest __ARGS((char_u *badptr, suginfo_T *su, int maxcount, int banbadword, int need_cap, int interactive));
+static void spell_find_suggest __ARGS((char_u *badptr, int badlen, suginfo_T *su, int maxcount, int banbadword, int need_cap, int interactive));
 #ifdef FEAT_EVAL
 static void spell_suggest_expr __ARGS((suginfo_T *su, char_u *expr));
 #endif
@@ -4461,7 +4461,6 @@ typedef struct afffile_S
 {
     char_u	*af_enc;	/* "SET", normalized, alloc'ed string or NULL */
     int		af_flagtype;	/* AFT_CHAR, AFT_LONG, AFT_NUM or AFT_CAPLONG */
-    int		af_slash;	/* character used in word for slash */
     unsigned	af_rare;	/* RARE ID for rare word */
     unsigned	af_keepcase;	/* KEEPCASE ID for keep-case word */
     unsigned	af_bad;		/* BAD ID for banned word */
@@ -4984,14 +4983,6 @@ spell_read_aff(spin, fname)
 	    else if (STRCMP(items[0], "TRY") == 0 && itemcnt == 2)
 	    {
 		/* ignored, we look in the tree for what chars may appear */
-	    }
-	    else if (STRCMP(items[0], "SLASH") == 0 && itemcnt == 2
-							&& aff->af_slash == 0)
-	    {
-		aff->af_slash = items[1][0];
-		if (items[1][1] != NUL)
-		    smsg((char_u *)_("Character used for SLASH must be ASCII; in %s line %d: %s"),
-			    fname, lnum, items[1]);
 	    }
 	    /* TODO: remove "RAR" later */
 	    else if ((STRCMP(items[0], "RAR") == 0
@@ -6060,13 +6051,13 @@ spell_read_dic(spin, fname, affile)
 	    continue;	/* empty line */
 	line[l] = NUL;
 
-	/* Find the optional affix names.  Replace the SLASH character by a
-	 * slash. */
+	/* Truncate the word at the "/", set "afflist" to what follows.
+	 * Replace "\/" by "/" and "\\" by "\". */
 	afflist = NULL;
 	for (p = line; *p != NUL; mb_ptr_adv(p))
 	{
-	    if (*p == affile->af_slash)
-		*p = '/';
+	    if (*p == '\\' && (p[1] == '\\' || p[1] == '/'))
+		mch_memmove(p, p + 1, STRLEN(p));
 	    else if (*p == '/')
 	    {
 		*p = NUL;
@@ -9358,6 +9349,7 @@ spell_check_sps()
 /*
  * "z?": Find badly spelled word under or after the cursor.
  * Give suggestions for the properly spelled word.
+ * In Visual mode use the highlighted word as the bad word.
  * When "count" is non-zero use that suggestion.
  */
     void
@@ -9376,14 +9368,35 @@ spell_suggest(count)
     int		need_cap;
     int		limit;
     int		selected = count;
+    int		badlen = 0;
 
-    /* Find the start of the badly spelled word. */
-    if (spell_move_to(curwin, FORWARD, TRUE, TRUE, NULL) == 0
+    if (no_spell_checking(curwin))
+	return;
+
+#ifdef FEAT_VISUAL
+    if (VIsual_active)
+    {
+	/* Use the Visually selected text as the bad word.  But reject
+	 * a multi-line selection. */
+	if (curwin->w_cursor.lnum != VIsual.lnum)
+	{
+	    vim_beep();
+	    return;
+	}
+	badlen = (int)curwin->w_cursor.col - (int)VIsual.col;
+	if (badlen < 0)
+	    badlen = -badlen;
+	else
+	    curwin->w_cursor.col = VIsual.col;
+	++badlen;
+	end_visual_mode();
+    }
+    else
+#endif
+	/* Find the start of the badly spelled word. */
+	if (spell_move_to(curwin, FORWARD, TRUE, TRUE, NULL) == 0
 	    || curwin->w_cursor.col > prev_cursor.col)
     {
-	if (!curwin->w_p_spell || *curbuf->b_p_spl == NUL)
-	    return;
-
 	/* No bad word or it starts after the cursor: use the word under the
 	 * cursor. */
 	curwin->w_cursor = prev_cursor;
@@ -9417,7 +9430,7 @@ spell_suggest(count)
 	limit = (int)Rows - 2;
     else
 	limit = sps_limit;
-    spell_find_suggest(line + curwin->w_cursor.col, &sug, limit,
+    spell_find_suggest(line + curwin->w_cursor.col, badlen, &sug, limit,
 							TRUE, need_cap, TRUE);
 
     if (sug.su_ga.ga_len == 0)
@@ -9728,7 +9741,7 @@ spell_suggest_list(gap, word, maxcount, need_cap, interactive)
     suggest_T	*stp;
     char_u	*wcopy;
 
-    spell_find_suggest(word, &sug, maxcount, FALSE, need_cap, interactive);
+    spell_find_suggest(word, 0, &sug, maxcount, FALSE, need_cap, interactive);
 
     /* Make room in "gap". */
     ga_init2(gap, sizeof(char_u *), sug.su_ga.ga_len + 1);
@@ -9761,8 +9774,9 @@ spell_suggest_list(gap, word, maxcount, need_cap, interactive)
  * This is based on the mechanisms of Aspell, but completely reimplemented.
  */
     static void
-spell_find_suggest(badptr, su, maxcount, banbadword, need_cap, interactive)
+spell_find_suggest(badptr, badlen, su, maxcount, banbadword, need_cap, interactive)
     char_u	*badptr;
+    int		badlen;		/* length of bad word or 0 if unknown */
     suginfo_T	*su;
     int		maxcount;
     int		banbadword;	/* don't include badword in suggestions */
@@ -9792,7 +9806,10 @@ spell_find_suggest(badptr, su, maxcount, banbadword, need_cap, interactive)
     hash_init(&su->su_banned);
 
     su->su_badptr = badptr;
-    su->su_badlen = spell_check(curwin, su->su_badptr, &attr, NULL, FALSE);
+    if (badlen != 0)
+	su->su_badlen = badlen;
+    else
+	su->su_badlen = spell_check(curwin, su->su_badptr, &attr, NULL, FALSE);
     su->su_maxcount = maxcount;
     su->su_maxscore = SCORE_MAXINIT;
 
