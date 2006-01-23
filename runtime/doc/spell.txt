@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2006 Jan 22
+*spell.txt*	For Vim version 7.0aa.  Last change: 2006 Jan 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -129,8 +129,10 @@ z=			For the word under/after the cursor suggest correctly
 			spelled words.  This also works to find alternatives
 			for a word that is not highlighted as a bad word,
 			e.g., when the word after it is bad.
-			The results are sorted on similarity to the word
-			under/after the cursor.
+			In Visual mode the highlighted text is taken as the
+			word to be replaced.
+			The results are sorted on similarity to the word being
+			replaced.
 			This may take a long time.  Hit CTRL-C when you get
 			bored.
 

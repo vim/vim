@@ -240,12 +240,14 @@ pum_set_selected(n)
 	if (pum_first > pum_selected - 4)
 	{
 	    /* scroll down; when we did a jump it's probably a PageUp then
-	     * scroll to put the selected entry at the bottom */
+	     * scroll a whole page */
 	    if (pum_first > pum_selected - 2)
 	    {
-		pum_first = pum_selected - pum_height + 1;
+		pum_first -= pum_height - 2;
 		if (pum_first < 0)
 		    pum_first = 0;
+		else if (pum_first > pum_selected)
+		    pum_first = pum_selected;
 	    }
 	    else
 		pum_first = pum_selected;
@@ -253,9 +255,13 @@ pum_set_selected(n)
 	else if (pum_first < pum_selected - pum_height + 5)
 	{
 	    /* scroll up; when we did a jump it's probably a PageDown then
-	     * scroll to put the selected entry at the top */
+	     * scroll a whole page */
 	    if (pum_first < pum_selected - pum_height + 1 + 2)
-		pum_first = pum_selected;
+	    {
+		pum_first += pum_height - 2;
+		if (pum_first < pum_selected - pum_height + 1)
+		    pum_first = pum_selected - pum_height + 1;
+	    }
 	    else
 		pum_first = pum_selected - pum_height + 1;
 	}

@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.0aa.  Last change: 2006 Jan 17
+*syntax.txt*	For Vim version 7.0aa.  Last change: 2006 Jan 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3900,8 +3900,8 @@ guifg={color-name}					*highlight-guifg*
 guibg={color-name}					*highlight-guibg*
 guisp={color-name}					*highlight-guisp*
 	These give the foreground (guifg), background (guibg) and special
-	(guisp) color to use in the GUI.  "guisp" is used for underline and
-	undercurl.  There are a few special names:
+	(guisp) color to use in the GUI.  "guisp" is used for undercurl.
+	There are a few special names:
 		NONE		no color (transparent)
 		bg		use normal background color
 		background	use normal background color

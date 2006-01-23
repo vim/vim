@@ -1608,8 +1608,7 @@ get_arglist(gap, str)
     return OK;
 }
 
-#if defined(FEAT_QUICKFIX) || (defined(FEAT_SYN_HL) && defined(FEAT_MBYTE)) \
-	|| defined(PROTO)
+#if defined(FEAT_QUICKFIX) || defined(FEAT_SYN_HL) || defined(PROTO)
 /*
  * Parse a list of arguments (file names), expand them and return in
  * "fnames[fcountp]".

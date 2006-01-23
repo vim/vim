@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Jan 22
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Jan 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,8 +30,12 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+When ":silent" is used mode message is (should) not be displayed.  Thus don't
+set clear_cmdline to clear it.  Use separate flag to remember whether mode is
+currently displayed (and needs to be cleared).
+
+
 ccomplete:
-- When using page-up/page-down in menu it sometimes jumps more than a page.
 - When an option is set: In completion mode and the user types (identifier)
   characters, advance to the first match instead of removing the popup menu.
   If there is no match remove the selection. (Yegappan Lakshmanan)

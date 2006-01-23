@@ -2757,7 +2757,7 @@ retnomove:
 	/* if 'selectmode' contains "mouse", start Select mode */
 	may_start_select('o');
 	setmouse();
-	if (p_smd)
+	if (p_smd && msg_silent == 0)
 	    redraw_cmdline = TRUE;	/* show visual mode later */
     }
 #endif

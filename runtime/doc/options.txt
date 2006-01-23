@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2006 Jan 20
+*options.txt*	For Vim version 7.0aa.  Last change: 2006 Jan 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -161,6 +161,11 @@ include the "|" in the option value, use "\|" instead.  This example sets the
    :set titlestring=hi\|there
 This sets the 'titlestring' option to "hi" and 'iconstring' to "there": >
    :set titlestring=hi|set iconstring=there
+
+Similarly, the double quote character starts a comment.  To include the '"' in
+the option value, use '\"' instead.  This example sets the 'titlestring'
+option to 'hi "there"': >
+   :set titlestring=hi\ \"there\"
 
 For MS-DOS and WIN32 backslashes in file names are mostly not removed.  More
 precise: For options that expect a file name (those where environment

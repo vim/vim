@@ -8174,7 +8174,9 @@ showmode()
     int		sub_attr;
 #endif
 
-    do_mode = (p_smd && ((State & INSERT) || restart_edit
+    do_mode = ((p_smd && msg_silent == 0)
+	    && ((State & INSERT)
+		|| restart_edit
 #ifdef FEAT_VISUAL
 		|| VIsual_active
 #endif
