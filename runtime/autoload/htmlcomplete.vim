@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	XHTML 1.0 Strict
 " Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
-" Last Change:	2005 Now 20
+" Last Change:	2006 Jan 22
 
 function! htmlcomplete#CompleteTags(findstart, base)
   if a:findstart
@@ -31,7 +31,7 @@ function! htmlcomplete#CompleteTags(findstart, base)
 	endif
 	if !exists("b:csscompl")
 		let b:compl_context = getline('.')[0:(compl_begin)]
-		let b:compl_context = matchstr(b:compl_context, '.*<\zs.*')
+		let b:compl_context = matchstr(b:compl_context, '.*\zs<.*')
 	else
 		let b:compl_context = getline('.')[0:compl_begin]
 	endif
@@ -42,12 +42,18 @@ function! htmlcomplete#CompleteTags(findstart, base)
     let res2 = []
 	" a:base is very short - we need context
 	let context = b:compl_context
-	unlet! b:compl_context
 	" Check if we should do CSS completion inside of <style> tag
 	if exists("b:csscompl")
 		unlet! b:csscompl
+		let context = b:compl_context
 		return csscomplete#CompleteCSS(0, context)
+	else
+		if len(b:compl_context) == 0 && !exists("b:entitiescompl")
+			return []
+		endif
+		let context = matchstr(b:compl_context, '.\zs.*')
 	endif
+	unlet! b:compl_context
 	" Make entities completion
 	if exists("b:entitiescompl")
 		unlet! b:entitiescompl
@@ -58,13 +64,25 @@ function! htmlcomplete#CompleteTags(findstart, base)
 
 	    let entities =  g:xmldata_xhtml10s['vimxmlentities']
 
-		for m in entities
-			if m =~ '^'.a:base
-				call add(res, m.';')
-			endif
-		endfor
+		if len(a:base) == 1
+			for m in entities
+				if m =~ '^'.a:base
+					call add(res, m.';')
+				endif
+			endfor
+			return res
+		else
+			for m in entities
+				if m =~? '^'.a:base
+					call add(res, m.';')
+				elseif m =~? a:base
+					call add(res2, m.';')
+				endif
+			endfor
 
-		return res
+			return res + res2
+		endif
+
 
 	endif
 	if context =~ '>'
@@ -76,6 +94,7 @@ function! htmlcomplete#CompleteTags(findstart, base)
 			return []
 		endif
 	endif
+	"if context !~ '<$'
 
 	" Set attribute groups
     let coreattrs = ["id", "class", "style", "title"] 
@@ -456,6 +475,13 @@ function! htmlcomplete#CompleteTags(findstart, base)
 	endif
 	" Deal with tag completion.
 	let opentag = xmlcomplete#GetLastOpenTag("b:unaryTagsStack")
+	if opentag == ''
+		" Hack for sometimes failing GetLastOpenTag.
+		" As far as I tested fail isn't GLOT fault but problem
+		" of invalid document - not properly closed tags and other mish-mash.
+		" If returns empty string assume <body>. Safe bet.
+		let opentag = 'body'
+	endif
 
 	if !exists("g:xmldata_xhtml10s")
 		runtime! autoload/xml/xhtml10s.vim

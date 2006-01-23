@@ -1165,6 +1165,7 @@ getcount:
      * Don't redraw the screen, it would remove the message.
      */
     if (       ((p_smd
+		    && msg_silent == 0
 		    && (restart_edit != 0
 #ifdef FEAT_VISUAL
 			|| (VIsual_active
@@ -1713,7 +1714,7 @@ do_pending_operator(cap, old_col, gui_yank)
 		setmouse();
 		mouse_dragging = 0;
 # endif
-		if (p_smd)
+		if (p_smd && msg_silent == 0)
 		    clear_cmdline = TRUE;   /* unshow visual mode later */
 #ifdef FEAT_CMDL_INFO
 		else
@@ -2947,7 +2948,8 @@ do_mouse(oap, c, dir, count, fixindent)
     }
 
     /* If Visual mode changed show it later. */
-    if (p_smd && (VIsual_active != old_active || VIsual_mode != old_mode))
+    if (p_smd && msg_silent == 0
+		  && (VIsual_active != old_active || VIsual_mode != old_mode))
 	redraw_cmdline = TRUE;
 #endif
 
@@ -3113,7 +3115,7 @@ end_visual_mode()
 	curwin->w_cursor.coladd = 0;
 #endif
 
-    if (p_smd)
+    if (p_smd && msg_silent == 0)
 	clear_cmdline = TRUE;		/* unshow visual mode later */
 #ifdef FEAT_CMDL_INFO
     else
@@ -3644,7 +3646,7 @@ add_to_showcmd(c)
     };
 #endif
 
-    if (!p_sc)
+    if (!p_sc || msg_silent != 0)
 	return FALSE;
 
     if (showcmd_visual)
@@ -7138,7 +7140,7 @@ nv_visual(cap)
 #ifdef FEAT_MOUSE
 	    setmouse();
 #endif
-	    if (p_smd)
+	    if (p_smd && msg_silent == 0)
 		redraw_cmdline = TRUE;	    /* show visual mode later */
 	    /*
 	     * For V and ^V, we multiply the number of lines even if there
@@ -7235,7 +7237,7 @@ n_start_visual_mode(c)
 #ifdef FEAT_MOUSE
     setmouse();
 #endif
-    if (p_smd)
+    if (p_smd && msg_silent == 0)
 	redraw_cmdline = TRUE;	/* show visual mode later */
 #ifdef FEAT_CLIPBOARD
     /* Make sure the clipboard gets updated.  Needed because start and
@@ -8280,7 +8282,7 @@ nv_normal(cap)
     if (cap->nchar == Ctrl_N || cap->nchar == Ctrl_G)
     {
 	clearop(cap->oap);
-	if (restart_edit != 0 && p_smd)
+	if (restart_edit != 0 && p_smd && msg_silent == 0)
 	    clear_cmdline = TRUE;		/* unshow mode later */
 	restart_edit = 0;
 #ifdef FEAT_CMDWIN

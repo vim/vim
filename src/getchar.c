@@ -2365,7 +2365,7 @@ vgetorpeek(advance)
 		    colnr_T	col = 0, vcol;
 		    char_u	*ptr;
 
-		    if (p_smd)
+		    if (p_smd && msg_silent == 0)
 		    {
 			unshowmode(TRUE);
 			mode_deleted = TRUE;
@@ -2641,7 +2641,7 @@ vgetorpeek(advance)
      *	 if we return an ESC to exit insert mode, the message is deleted
      *	 if we don't return an ESC but deleted the message before, redisplay it
      */
-    if (advance && p_smd && (State & INSERT))
+    if (advance && p_smd && msg_silent == 0 && (State & INSERT))
     {
 	if (c == ESC && !mode_deleted && !no_mapping)
 	{
