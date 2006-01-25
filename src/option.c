@@ -6743,7 +6743,7 @@ set_bool_option(opt_idx, varp, value, opt_flags)
 	{
 	    need_start_insertmode = FALSE;
 	    stop_insert_mode = TRUE;
-	    if (p_smd && msg_silent == 0 && restart_edit != 0)
+	    if (restart_edit != 0 && mode_displayed)
 		clear_cmdline = TRUE;	/* remove "(insert)" */
 	    restart_edit = 0;
 	}

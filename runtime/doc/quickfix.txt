@@ -42,6 +42,13 @@ easy way to do this is with the |:make| command (see below).  The
 'errorformat' option should be set to match the error messages from your
 compiler (see |errorformat| below).
 
+						*location-list* *E776*
+A location list is a window-local quickfix list. Each window can have a
+separate location list. A location list can be associated with only one
+window. When a window with a location list is split, the new window gets a
+copy of the location list. When there are no references to a location list,
+the location list is destroyed.
+
 The following quickfix commands can be used:
 
 							*:cc*
@@ -56,17 +63,31 @@ The following quickfix commands can be used:
 			The 'switchbuf' settings are respected when jumping
 			to a buffer.
 
+							*:ll*
+:ll[!] [nr]		Same as ":cc", except the location list for the
+			current window is used instead of the quickfix list.
+
 							*:cn* *:cnext* *E553*
 :[count]cn[ext][!]	Display the [count] next error in the list that
 			includes a file name.  If there are no file names at
 			all, go to the [count] next error.  See |:cc| for
 			[!] and 'switchbuf'.
 
+							*:ln* *:lnext*
+:[count]ln[ext][!]	Same as ":cnext", except the location list for the
+			current window is used instead of the quickfix list.
+
 :[count]cN[ext][!]			*:cp* *:cprevious* *:cN* *:cNext*
 :[count]cp[revious][!]	Display the [count] previous error in the list that
 			includes a file name.  If there are no file names at
 			all, go to the [count] previous error.  See |:cc| for
 			[!] and 'switchbuf'.
+
+					*:lp* *:lprevious* *:lN* *:lNext*
+:[count]lN[ext][!]
+:[count]lp[revious][!]	Same as ":cNext" and ":cprevious", except the location
+			list for the current window is used instead of the
+			quickfix list.
 
 							*:cnf* *:cnfile*
 :[count]cnf[ile][!]	Display the first error in the [count] next file in
@@ -75,6 +96,10 @@ The following quickfix commands can be used:
 			the [count] next error.  See |:cc| for [!] and
 			'switchbuf'.
 
+							*:lnf* *:lnfile*
+:[count]lnf[ile][!]	Same as ":cnfile", except the location list for the
+			current window is used instead of the quickfix list.
+
 :[count]cNf[ile][!]			*:cpf* *:cpfile* *:cNf* *:cNfile*
 :[count]cpf[ile][!]	Display the last error in the [count] previous file in
 			the list that includes a file name.  If there are no
@@ -82,16 +107,33 @@ The following quickfix commands can be used:
 			the [count] previous error.  See |:cc| for [!] and
 			'switchbuf'.
 
+					*:lpf* *:lpfile* *:lNf* *:lNfile*
+:[count]lNf[ile][!]
+:[count]lpf[ile][!]	Same as ":cNfile" and ":cpfile", except the location
+			list for the current window is used instead of the
+			quickfix list.
+
 							*:crewind* *:cr*
 :cr[ewind][!] [nr]	Display error [nr].  If [nr] is omitted, the FIRST
 			error is displayed.  See |:cc|.
 
+							*:lrewind* *:lr*
+:lr[ewind][!] [nr]	Same as ":crewind", except the location list for the
+			current window is used instead of the quickfix list.
+
 							*:cfirst* *:cfir*
 :cfir[st][!] [nr]	Same as ":crewind".
+
+							*:lfirst* *:lfir*
+:lfir[st][!] [nr]	Same as ":lrewind".
 
 							*:clast* *:cla*
 :cla[st][!] [nr]	Display error [nr].  If [nr] is omitted, the LAST
 			error is displayed.  See |:cc|.
+
+							*:llast* *:lla*
+:lla[st][!] [nr]	Same as ":clast", except the location list for the
+			current window is used instead of the quickfix list.
 
 							*:cq* *:cquit*
 :cq[uit]		Quit Vim with an error code, so that the compiler
@@ -105,15 +147,30 @@ The following quickfix commands can be used:
 			name of the errorfile, the 'errorfile' option will
 			be set to [errorfile].  See |:cc| for [!].
 
+							*:lf* *:lfile*
+:lf[ile][!] [errorfile]	Same as ":cfile", except the location list for the
+			current window is used instead of the quickfix list.
+			You can not use the -q command-line option to set
+			the location list.
+
 							*:cg* *:cgetfile*
 :cg[etfile][!] [errorfile]
 			Read the error file.  Just like ":cfile" but don't
 			jump to the first error.
 
+							*:lg* *:lgetfile*
+:lg[etfile][!] [errorfile]
+			Same as ":cgetfile", except the location list for the
+			current window is used instead of the quickfix list.
+
 							*:caddf* *:caddfile*
 :caddf[ile] [errorfile]	Read the error file and add the errors from the
 			errorfile to the current quickfix list. If a quickfix
 			list is not present, then a new list is created.
+
+							*:laddf* *:laddfile*
+:laddf[ile] [errorfile]	Same as ":caddfile", except the location list for the
+			current window is used instead of the quickfix list.
 
 						*:cb* *:cbuffer* *E681*
 :cb[uffer] [bufnr]	Read the error list from the current buffer.
@@ -122,6 +179,10 @@ The following quickfix commands can be used:
 			of the current buffer.
 			A range can be specified for the lines to be used.
 			Otherwise all lines in the buffer are used.
+
+						*:lb* *:lbuffer*
+:lb[uffer] [bufnr]	Same as ":cbuffer", except the location list for the
+			current window is used instead of the quickfix list.
 
 							*:cex* *:cexpr* *E777*
 :cex[pr][!] {expr}	Create a quickfix list using the result of {expr} and
@@ -137,6 +198,10 @@ The following quickfix commands can be used:
 				:cexpr system('grep -n xyz *')
 				:cexpr getline(1, '$')
 <
+							*:lex* *:lexpr*
+:lex[pr][!] {expr}	Same as ":cexpr", except the location list for the
+			current window is used instead of the quickfix list.
+
 							*:cad* *:caddexpr*
 :cad[dexpr][!] {expr}	Evaluate {expr} and add the resulting lines to the
 			current quickfix list. If a quickfix list is not
@@ -146,6 +211,10 @@ The following quickfix commands can be used:
 			Example: >
     :g/mypattern/caddexpr expand("%") . ":" . line(".") .  ":" . getline(".")
 <
+							*:lad* *:laddexpr*
+:lad[dexpr][!] {expr}	Same as ":caddexpr", except the location list for the
+			current window is used instead of the quickfix list.
+
 							*:cl* *:clist*
 :cl[ist] [from] [, [to]]
 			List all errors that are valid |quickfix-valid|.
@@ -157,6 +226,15 @@ The following quickfix commands can be used:
 
 :cl[ist]! [from] [, [to]]
 			List all errors.
+
+							*:lli* *:llist*
+:lli[st] [from] [, [to]]
+			Same as ":clist", except the location list for the
+			current window is used instead of the quickfix list.
+
+:lli[st]! [from] [, [to]]
+			List all the entries in the location list for the
+			current window.
 
 If you insert or delete lines, mostly the correct error location is still
 found because hidden marks are used.  Sometimes, when the mark has been
@@ -182,14 +260,28 @@ on) is executed. See |QuickFixCmdPre| and |QuickFixCmdPost| for details.
 			the current window.  It is not possible to open a
 			second quickfix window.
 
+							*:lope* *:lopen*
+:lope[n] [height]	Open a window to show the location list for the
+			current window. Works only when the location list for
+			the current window is present. You can have more than
+			one location window opened at a time.  Otherewise,
+			same as ":copen".
+
 							*:ccl* *:cclose*
 :ccl[ose]		Close the quickfix window.
+
+							*:lcl* *:lclose*
+:lcl[ose]		Close the window showing the location list for the
+			current window.
 
 							*:cw* *:cwindow*
 :cw[indow] [height]	Open the quickfix window when there are recognized
 			errors.  If the window is already open and there are
 			no recognized errors, close the window.
 
+							*:lw* *:lwindow*
+:lw[indow] [height]	Same as ":cwindow", except use the window showing the
+			location list for the current window.
 
 Normally the quickfix window is at the bottom of the screen.  If there are
 vertical splits, it's at the bottom of the rightmost column of windows.  To
@@ -230,6 +322,19 @@ If you really want to do this, you could write the contents of the quickfix
 window to a file and use ":cfile" to have it parsed and used as the new error
 list.
 
+						*location-list-window*
+The location list window displays the entries in a location list.  When
+opening a location list window, it is created just below the current window
+and displays the location list for the current window.  The location list
+window is similar to the quickfix window, except that you can have more than
+one location list window opened at a time.
+
+When an entry is selected from the location list window, the file is opened in
+the window with the corresponding location list.  If the window is not found,
+but the file is opened in another window, then cursor is moved to that window.
+Otherwise a new window is opened. The new window gets a copy of the location
+list.
+
 =============================================================================
 3. Using more than one list of errors			*quickfix-error-lists*
 
@@ -243,10 +348,18 @@ lists.  They set one of the existing error lists as the current one.
 			this [count] times.  When already at the oldest error
 			list, an error message is given.
 
+						*:lolder* *:lol*
+:lol[der] [count]	Same as ":colder", except use the location list for
+			the current window instead of the quickfix list.
+
 						*:cnewer* *:cnew* *E381*
 :cnew[er] [count]	Go to newer error list.  When [count] is given, do
 			this [count] times.  When already at the newest error
 			list, an error message is given.
+
+						*:lnewer* *:lnew*
+:lnew[er] [count]	Same as ":cnewer", except use the location list for
+			the current window instead of the quickfix list.
 
 When adding a new error list, it becomes the current list.
 

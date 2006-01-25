@@ -1,7 +1,7 @@
 " Vim completion script
-" Language:	XHTML 1.0 Strict
+" Language:	XML
 " Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
-" Last Change:	2005 Nov 22
+" Last Change:	2006 Jan 24
 
 " This function will create Dictionary with users namespace strings and values
 " canonical (system) names of data files.  Names should be lowercase,
@@ -54,6 +54,7 @@ endfunction
 function! xmlcomplete#CompleteTags(findstart, base)
   if a:findstart
     " locate the start of the word
+	let curline = line('.')
     let line = getline('.')
     let start = col('.') - 1
 	let compl_begin = col('.') - 2
@@ -69,11 +70,32 @@ function! xmlcomplete#CompleteTags(findstart, base)
 	endif
 
 	let b:compl_context = getline('.')[0:(compl_begin)]
-	let b:compl_context = matchstr(b:compl_context, '.*<\zs.*')
+	if b:compl_context !~ '<[^>]*$'
+		" Look like we may have broken tag. Check previous lines. Up to
+		" 10?
+		let i = 1
+		while 1
+			let context_line = getline(curline-i)
+			if context_line =~ '<[^>]*$'
+				" Yep, this is this line
+				let context_lines = getline(curline-i, curline)
+				let b:compl_context = join(context_lines, ' ')
+				break
+			elseif context_line =~ '>[^<]*$'
+				" Normal tag line, no need for completion at all
+				let b:compl_context = ''
+				break
+			endif
+			let i += 1
+		endwhile
+		" Make sure we don't have counter
+		unlet! i
+	endif
+	let b:compl_context = matchstr(b:compl_context, '.*\zs<.*')
 
 	" Make sure we will have only current namespace
 	unlet! b:xml_namespace
-	let b:xml_namespace = matchstr(b:compl_context, '^\k*\ze:')
+	let b:xml_namespace = matchstr(b:compl_context, '^<\zs\k*\ze:')
 	if b:xml_namespace == ''
 		let b:xml_namespace = 'DEFAULT'
 	endif
@@ -89,7 +111,10 @@ function! xmlcomplete#CompleteTags(findstart, base)
     let res = []
     let res2 = []
 	" a:base is very short - we need context
-	let context = b:compl_context
+	if len(b:compl_context) == 0  && !exists("b:entitiescompl")
+		return []
+	endif
+	let context = matchstr(b:compl_context, '^<\zs.*')
 	unlet! b:compl_context
 
 	" Make entities completion
@@ -111,13 +136,24 @@ function! xmlcomplete#CompleteTags(findstart, base)
 			let values = intent + values
 		endif
 
-		for m in values
-			if m =~ '^'.a:base
-				call add(res, m.';')
-			endif
-		endfor
+		if len(a:base) == 1
+			for m in values
+				if m =~ '^'.a:base
+					call add(res, m.';')
+				endif
+			endfor
+			return res
+		else
+			for m in values
+				if m =~? '^'.a:base
+					call add(res, m.';')
+				elseif m =~? a:base
+					call add(res2, m.';')
+				endif
+			endfor
 
-		return res
+			return res + res2
+		endif
 
 	endif
 	if context =~ '>'
@@ -265,6 +301,9 @@ function! xmlcomplete#CompleteTags(findstart, base)
 	" Deal with tag completion.
 	let opentag = xmlcomplete#GetLastOpenTag("b:unaryTagsStack")
 	let opentag = substitute(opentag, '^\k*:', '', '')
+	if opentag == ''
+		return []
+	endif
 
 	let tags = g:xmldata{'_'.g:xmldata_connection[b:xml_namespace]}[opentag][0]
 	let context = substitute(context, '^\k*:', '', '')

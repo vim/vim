@@ -952,6 +952,7 @@ free_all_mem()
 {
     buf_T	*buf, *nextbuf;
     static int	entered = FALSE;
+    win_T	*win;
 
     /* When we cause a crash here it is caught and Vim tries to exit cleanly.
      * Don't try freeing everything again. */
@@ -1027,7 +1028,10 @@ free_all_mem()
     init_history();
 
 #ifdef FEAT_QUICKFIX
-    qf_free_all();
+    qf_free_all(NULL);
+    /* Free all location lists */
+    FOR_ALL_WINDOWS(win)
+	qf_free_all(win);
 #endif
 
     /* Close all script inputs. */

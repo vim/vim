@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Jan 23
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Jan 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,10 +30,7 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-When ":silent" is used mode message is (should) not be displayed.  Thus don't
-set clear_cmdline to clear it.  Use separate flag to remember whether mode is
-currently displayed (and needs to be cleared).
-
+Include location list commands, patch from Yegappan Lakshmanan.
 
 ccomplete:
 - When an option is set: In completion mode and the user types (identifier)
@@ -62,7 +59,8 @@ ccomplete:
 
 spelling:
 - Use runtime/cleanadd script to cleanup .add files.  When to invoke it?
-  After deleting a word and some timestamp difference perhaps?
+  After deleting a word with "zw" and some timestamp difference perhaps?
+  Store it as spell/cleanadd.vim.
 - suggestion for "KG" to "kg" when it's keepcase.
 - Autocommand event for when a spell file is missing.  Allows making a plugin
   that fetches the file over internet.  Pattern == language.
@@ -400,25 +398,9 @@ Also place vimtutor.bat in %windir%?
 
 Add gui_mch_browsedir() for Motif, Mac OS/X.
 
-Add extra list of file locations.  A bit like the quickfix list, but there is
-one per window.  Can be used with:
+Implement:
     :ltag	      list of matching tags, like :tselect
 Patch from Yegappan Lakshmanan, Jan 13.
-Commands to use the location list:
-    :lnext	      next location
-    :lprevious :lNext previous location
-    :lnfile	      location in next file
-    :lNfile :lpfile   location in previous file
-    :lrewind :lfirst  first location
-    :llast	      last location
-    :ll [N]	      go to location N (current one if N omitted)
-    :lwindow	      open window with locations (separate from quickfix window)
-    :lopen	      open window with locations
-    :lclose	      close window with locations
-    :llist	      list locations
-    :lfile	      read locations from file using 'errorformat'
-    :lgetfile	      idem, don't jump to first one
-    :lbuffer	      idem, from current buffer.
 
 HTML indenting can be slow, find out why.  Any way to do some kind of
 profiling for Vim script?  At least add a function to get the current time in

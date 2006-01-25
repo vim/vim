@@ -1085,6 +1085,9 @@ struct dictvar_S
 # define B_SPELL(buf)  (0)
 #endif
 
+#ifdef FEAT_QUICKFIX
+typedef struct qf_info_S qf_info_T;
+#endif
 
 /*
  * buffer: structure that holds information about one file
@@ -1833,6 +1836,15 @@ struct window
     linenr_T	w_nrwidth_line_count;	/* line count when ml_nrwidth_width
 					 * was computed. */
     int		w_nrwidth_width;	/* nr of chars to print line count. */
+#endif
+
+#ifdef FEAT_QUICKFIX
+    qf_info_T	*w_llist;		/* Location list for this window */
+    /*
+     * Location list reference used in the location list window.
+     * In a non-location list window, w_llist_ref is NULL.
+     */
+    qf_info_T	*w_llist_ref;
 #endif
 
 

@@ -1699,10 +1699,10 @@ types.vim: $(TAGS_SRC) $(TAGS_INCL)
 #
 test check:
 	$(MAKE) -f Makefile $(VIMTARGET)
-	cd testdir; $(MAKE) -f Makefile $(GUI_TESTTARGET) VIMPROG=../$(VIMTARGET) $(GUI_TESTARG)
-	@if test -n "$(MAKEMO)" -a -f $(PODIR)/Makefile; then \
+	-@if test -n "$(MAKEMO)" -a -f $(PODIR)/Makefile; then \
 		cd $(PODIR); $(MAKE) -f Makefile check VIM=../$(VIMTARGET); \
 	fi
+	cd testdir; $(MAKE) -f Makefile $(GUI_TESTTARGET) VIMPROG=../$(VIMTARGET) $(GUI_TESTARG)
 
 testclean:
 	cd testdir; $(MAKE) -f Makefile clean

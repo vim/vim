@@ -1104,7 +1104,7 @@ cs_find_common(opt, pat, forceit, verbose)
 	cs_file_results(f, nummatches);
 	fclose(f);
 	/* '-' starts a new error list */
-	if (qf_init(tmp, (char_u *)"%f%*\\t%l%*\\t%m", *qfpos == '-') > 0)
+	if (qf_init(NULL, tmp, (char_u *)"%f%*\\t%l%*\\t%m", *qfpos == '-') > 0)
 	{
 # ifdef FEAT_WINDOWS
 	    if (postponed_split != 0)
@@ -1117,7 +1117,7 @@ cs_find_common(opt, pat, forceit, verbose)
 		postponed_split = 0;
 	    }
 # endif
-	    qf_jump(0, 0, forceit);
+	    qf_jump(NULL, 0, 0, forceit);
 	}
 	mch_remove(tmp);
 	vim_free(tmp);

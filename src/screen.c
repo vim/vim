@@ -2806,7 +2806,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 # endif
 # if defined(FEAT_QUICKFIX) && defined(FEAT_WINDOWS)
     /* Highlight the current line in the quickfix window. */
-    if (bt_quickfix(wp->w_buffer) && qf_current_entry() == lnum)
+    if (bt_quickfix(wp->w_buffer) && qf_current_entry(wp) == lnum)
 	line_attr = hl_attr(HLF_L);
 # endif
     if (line_attr != 0)
@@ -6651,6 +6651,8 @@ screen_fill(start_row, end_row, start_col, end_col, c1, c2, attr)
 	    redraw_cmdline = TRUE;
 	    if (c1 == ' ' && c2 == ' ')
 		clear_cmdline = FALSE;	/* command line has been cleared */
+	    if (start_col == 0)
+		mode_displayed = FALSE; /* mode cleared or overwritten */
 	}
     }
 }
@@ -7027,6 +7029,7 @@ screenclear2()
     {
 	out_str(T_CL);		/* clear the display */
 	clear_cmdline = FALSE;
+	mode_displayed = FALSE;
     }
     else
     {
@@ -8326,6 +8329,7 @@ showmode()
 #endif
 		MSG_PUTS_ATTR(" --", attr);
 	    }
+
 	    need_clear = TRUE;
 	}
 	if (Recording
@@ -8337,6 +8341,8 @@ showmode()
 	    MSG_PUTS_ATTR(_("recording"), attr);
 	    need_clear = TRUE;
 	}
+
+	mode_displayed = TRUE;
 	if (need_clear || clear_cmdline)
 	    msg_clr_eos();
 	msg_didout = FALSE;		/* overwrite this message */
@@ -8383,6 +8389,7 @@ msg_pos_mode()
 /*
  * Delete mode message.  Used when ESC is typed which is expected to end
  * Insert mode (but Insert mode didn't end yet!).
+ * Caller should check "mode_displayed".
  */
     void
 unshowmode(force)

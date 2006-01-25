@@ -89,7 +89,7 @@ static compl_T    *compl_shown_match = NULL;
 
 /* When the first completion is done "compl_started" is set.  When it's
  * FALSE the word to be completed must be located. */
-static int		    compl_started = FALSE;
+static int	  compl_started = FALSE;
 
 static int	  compl_matches = 0;
 static char_u	  *compl_pattern = NULL;
@@ -123,6 +123,7 @@ static void ins_compl_delete __ARGS((void));
 static void ins_compl_insert __ARGS((void));
 static int  ins_compl_next __ARGS((int allow_get_expansion, int count));
 static int  ins_compl_key2dir __ARGS((int c));
+static int  ins_compl_pum_key __ARGS((int c));
 static int  ins_compl_key2count __ARGS((int c));
 static int  ins_complete __ARGS((int c));
 static int  quote_meta __ARGS((char_u *dest, char_u *str, int len));
@@ -495,7 +496,7 @@ edit(cmdchar, startln, count)
      * actually changing anything.  It's put after the mode, if any.
      */
     i = 0;
-    if (p_smd)
+    if (p_smd && msg_silent == 0)
 	i = showmode();
 
     if (!p_im && did_restart_edit == 0)
@@ -1116,7 +1117,10 @@ doESCkey:
 	     * cursor. */
 	    if (bt_quickfix(curbuf) && c == CAR)
 	    {
-		do_cmdline_cmd((char_u *)".cc");
+		if (curwin->w_llist_ref == NULL)    /* quickfix window */
+		    do_cmdline_cmd((char_u *)".cc");
+		else				    /* location list window */
+		    do_cmdline_cmd((char_u *)".ll");
 		break;
 	    }
 #endif
@@ -1846,8 +1850,7 @@ vim_is_ctrl_x_key(c)
 	return TRUE;
 
     /* Accept <PageUp> and <PageDown> if the popup menu is visible. */
-    if (pum_visible() && (c == K_PAGEUP || c == K_KPAGEUP || c == K_S_UP
-		     || c == K_PAGEDOWN || c == K_KPAGEDOWN || c == K_S_DOWN))
+    if (ins_compl_pum_key(c))
 	return TRUE;
 
     switch (ctrl_x_mode)
@@ -2648,7 +2651,8 @@ ins_compl_prep(c)
 	 * 'Pattern not found') until another key is hit, then go back to
 	 * showing what mode we are in. */
 	showmode();
-	if ((ctrl_x_mode == 0 && c != Ctrl_N && c != Ctrl_P && c != Ctrl_R)
+	if ((ctrl_x_mode == 0 && c != Ctrl_N && c != Ctrl_P && c != Ctrl_R
+						     && !ins_compl_pum_key(c))
 		|| ctrl_x_mode == CTRL_X_FINISHED)
 	{
 	    /* Get here when we have finished typing a sequence of ^N and
@@ -3452,6 +3456,18 @@ ins_compl_key2dir(c)
 }
 
 /*
+ * Return TRUE for keys that are used for completion only when the popup menu
+ * is visible.
+ */
+    static int
+ins_compl_pum_key(c)
+    int		c;
+{
+    return pum_visible() && (c == K_PAGEUP || c == K_KPAGEUP || c == K_S_UP
+		     || c == K_PAGEDOWN || c == K_KPAGEDOWN || c == K_S_DOWN);
+}
+
+/*
  * Decide the number of completions to move forward.
  * Returns 1 for most keys, height of the popup menu for page-up/down keys.
  */
@@ -3461,8 +3477,7 @@ ins_compl_key2count(c)
 {
     int		h;
 
-    if (pum_visible() && (c == K_PAGEUP || c == K_KPAGEUP || c == K_S_UP
-	    || c == K_PAGEDOWN || c == K_KPAGEDOWN || c == K_S_DOWN))
+    if (ins_compl_pum_key(c))
     {
 	h = pum_get_height();
 	if (h > 3)

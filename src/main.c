@@ -636,7 +636,7 @@ main
 	if (params.use_ef != NULL)
 	    set_string_option_direct((char_u *)"ef", -1,
 						     params.use_ef, OPT_FREE);
-	if (qf_init(p_ef, p_efm, TRUE) < 0)
+	if (qf_init(NULL, p_ef, p_efm, TRUE) < 0)
 	{
 	    out_char('\n');
 	    mch_exit(3);
@@ -785,7 +785,7 @@ main
      */
     if (params.edit_type == EDIT_QF)
     {
-	qf_jump(0, 0, FALSE);
+	qf_jump(NULL, 0, 0, FALSE);
 	TIME_MSG("jump to first error");
     }
 #endif
@@ -2442,7 +2442,7 @@ exe_commands(parmp)
 #ifdef FEAT_QUICKFIX
     /* When started with "-q errorfile" jump to first error again. */
     if (parmp->edit_type == EDIT_QF)
-	qf_jump(0, 0, FALSE);
+	qf_jump(NULL, 0, 0, FALSE);
 #endif
     TIME_MSG("executing command arguments");
 }

@@ -4852,7 +4852,7 @@ mch_expandpath(gap, path, flags)
 # define SEEK_END 2
 #endif
 
-#define SHELL_SPECIAL (char_u *)"\t \"&';<>\\|"
+#define SHELL_SPECIAL (char_u *)"\t \"&';<>()\\|"
 
 /* ARGSUSED */
     int
@@ -5128,7 +5128,12 @@ mch_expand_wildcards(num_pat, pat, num_file, file, flags)
 		}
 		else if (pat[i][j] == '\\' && pat[i][j + 1] != NUL)
 		{
-		    /* Remove a backslash, take char literally. */
+		    /* Remove a backslash, take char literally.  But keep
+		     * backslash before special character and inside
+		     * backticks. */
+		    if (intick
+			  || vim_strchr(SHELL_SPECIAL, pat[i][j + 1]) != NULL)
+			*p++ = '\\';
 		    *p++ = pat[i][++j];
 		}
 		else if (!intick && vim_strchr(SHELL_SPECIAL,
@@ -5140,12 +5145,8 @@ mch_expand_wildcards(num_pat, pat, num_file, file, flags)
 		    *p++ = pat[i][j];
 		}
 		else
-		{
-		    /* For a backslash also copy the next character, don't
-		     * want to put quotes around it. */
-		    if ((*p++ = pat[i][j]) == '\\' && pat[i][j + 1] != NUL)
-			*p++ = pat[i][++j];
-		}
+		    /* Simply copy the character. */
+		    *p++ = pat[i][++j];
 	    }
 	    *p = NUL;
 #endif

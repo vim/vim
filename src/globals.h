@@ -83,6 +83,7 @@ EXTERN int	cmdline_row;
 
 EXTERN int	redraw_cmdline INIT(= FALSE);	/* cmdline must be redrawn */
 EXTERN int	clear_cmdline INIT(= FALSE);	/* cmdline must be cleared */
+EXTERN int	mode_displayed INIT(= FALSE);	/* mode is being displayed */
 #if defined(FEAT_CRYPT) || defined(FEAT_EVAL)
 EXTERN int	cmdline_star INIT(= FALSE);	/* cmdline is crypted */
 #endif
@@ -1366,6 +1367,7 @@ EXTERN char_u e_prev_dir[]	INIT(= N_("E459: Cannot go back to previous directory
 
 #ifdef FEAT_QUICKFIX
 EXTERN char_u e_quickfix[]	INIT(= N_("E42: No Errors"));
+EXTERN char_u e_loclist[]	INIT(= N_("E776: No location list"));
 #endif
 EXTERN char_u e_re_damg[]	INIT(= N_("E43: Damaged match string"));
 EXTERN char_u e_re_corr[]	INIT(= N_("E44: Corrupted regexp program"));

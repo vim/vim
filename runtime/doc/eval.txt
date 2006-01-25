@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Jan 20
+*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Jan 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -3260,7 +3260,7 @@ map({expr}, {string})					*map()*
 maparg({name}[, {mode}])				*maparg()*
 		Return the rhs of mapping {name} in mode {mode}.  When there
 		is no mapping for {name}, an empty String is returned.
-		These characters can be used for {mode}:
+		{mode} can be one of these strings:
 			"n"	Normal
 			"v"	Visual
 			"o"	Operator-pending
@@ -3268,7 +3268,7 @@ maparg({name}[, {mode}])				*maparg()*
 			"c"	Cmd-line
 			"l"	langmap |language-mapping|
 			""	Normal, Visual and Operator-pending
-		When {mode} is omitted, the modes from "" are used.
+		When {mode} is omitted, the modes for "" are used.
 		The {name} can have special key names, like in the ":map"
 		command.  The returned String has special characters
 		translated like in the output of the ":map" command listing.

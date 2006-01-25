@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2006 Jan 23
+*spell.txt*	For Vim version 7.0aa.  Last change: 2006 Jan 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1316,12 +1316,16 @@ efficient if the first letter is ASCII or at least one without accents.
 .SUG FILE						*spell-NOSUGFILE*
 
 When soundfolding is specified in the affix file then ":mkspell" will normally
-p ~ ~roduce a .sug file next to the .spl file.  This used to find suggestions by
-their sound-a-like form quickly.  At the cost of a lot of memory.
+produce a .sug file next to the .spl file.  This file is used to find
+suggestions by their sound-a-like form quickly.  At the cost of a lot of
+memory (the amount depends on the number of words, |:mkspell| will display an
+estimate when it's done).
 
 To avoid producing a .sug file use this item in the affix file:
 
 	NOSUGFILE ~
+
+Users can simply omit the .sug file if they don't want to use it.
 
 
 SOUND-A-LIKE						*spell-SAL*

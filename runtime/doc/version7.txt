@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Jan 22
+*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Jan 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1607,5 +1607,9 @@ value didn't fill the whole screen. (SungHyun Nam)
 
 Win32 installer: The generated _vimrc contained an absolute path to diff.exe.
 After upgrading it becomes invalid.  Now use $VIMRUNTIME instead.
+
+The command line was cleared to often when 'showmode' was set and ":silent
+normal vy" was used.  Don't clear the command line unless the mode was
+actually displayed.  Added the "mode_displayed" variable.
 
  vim:tw=78:ts=8:ft=help:norl:
