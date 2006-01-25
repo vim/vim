@@ -1,13 +1,14 @@
 " Vim completion script
 " Language:	XHTML 1.0 Strict
 " Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
-" Last Change:	2006 Jan 22
+" Last Change:	2006 Jan 24
 
 function! htmlcomplete#CompleteTags(findstart, base)
   if a:findstart
     " locate the start of the word
     let line = getline('.')
     let start = col('.') - 1
+	let curline = line('.')
 	let compl_begin = col('.') - 2
     while start >= 0 && line[start - 1] =~ '\(\k\|[:.-]\)'
 		let start -= 1
@@ -20,8 +21,7 @@ function! htmlcomplete#CompleteTags(findstart, base)
 	let stylestart = searchpair('<style\>', '', '<\/style\>', "bnW")
 	let styleend   = searchpair('<style\>', '', '<\/style\>', "nW")
 	if stylestart != 0 && styleend != 0 
-		let curpos = line('.')
-		if stylestart <= curpos && styleend >= curpos
+		if stylestart <= curline && styleend >= curline
 			let start = col('.') - 1
 			let b:csscompl = 1
 			while start >= 0 && line[start - 1] =~ '\(\k\|-\)'
@@ -31,6 +31,27 @@ function! htmlcomplete#CompleteTags(findstart, base)
 	endif
 	if !exists("b:csscompl")
 		let b:compl_context = getline('.')[0:(compl_begin)]
+		if b:compl_context !~ '<[^>]*$'
+			" Look like we may have broken tag. Check previous lines. Up to
+			" 10?
+			let i = 1
+			while 1
+				let context_line = getline(curline-i)
+				if context_line =~ '<[^>]*$'
+					" Yep, this is this line
+					let context_lines = getline(curline-i, curline)
+					let b:compl_context = join(context_lines, ' ')
+					break
+				elseif context_line =~ '>[^<]*$'
+					" Normal tag line, no need for completion at all
+					let b:compl_context = ''
+					break
+				endif
+				let i += 1
+			endwhile
+			" Make sure we don't have counter
+			unlet! i
+		endif
 		let b:compl_context = matchstr(b:compl_context, '.*\zs<.*')
 	else
 		let b:compl_context = getline('.')[0:compl_begin]
@@ -94,7 +115,6 @@ function! htmlcomplete#CompleteTags(findstart, base)
 			return []
 		endif
 	endif
-	"if context !~ '<$'
 
 	" Set attribute groups
     let coreattrs = ["id", "class", "style", "title"] 

@@ -1004,7 +1004,10 @@ mark_adjust(line1, line2, amount, amount_after)
 
 #ifdef FEAT_QUICKFIX
 	/* quickfix marks */
-	qf_mark_adjust(line1, line2, amount, amount_after);
+	qf_mark_adjust(NULL, line1, line2, amount, amount_after);
+	/* location lists */
+	FOR_ALL_WINDOWS(win)
+	    qf_mark_adjust(win, line1, line2, amount, amount_after);
 #endif
 
 #ifdef FEAT_SIGNS

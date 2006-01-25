@@ -1213,23 +1213,45 @@ The commands are sorted on the non-optional part of their name.
 |:keepalt|	:keepa[lt]	following command keeps the alternate file
 |:keepmarks|	:kee[pmarks]	following command keeps marks where they are
 |:keepjumps|	:keepj[jumps]	following command keeps jumplist and marks
+|:lNext|	:lN[ext]	go to previous entry in location list
+|:lNfile|	:lNf[ile]	go to last entry in previous file
 |:list|		:l[ist]		print lines
+|:laddexpr|	:lad[dexpr]	add locations from expr
+|:laddfile|	:laddf[ile]	add locations to current location list
 |:last|		:la[st]		go to the last file in the argument list
 |:language|	:lan[guage]	set the language (locale)
+|:lbuffer|	:lb[uffer]	parse locations and jump to first location
 |:lcd|		:lc[d]		change directory locally
 |:lchdir|	:lch[dir]	change directory locally
+|:lclose|	:lcl[ose]	close location window
 |:left|		:le[ft]		left align lines
 |:leftabove|	:lefta[bove]	make split window appear left or above
 |:let|		:let		assign a value to a variable or option
+|:lexpr|	:lex[pr]	read locations from expr and jump to first
+|:lfile|	:lf[ile]	read file with locations and jump to first
+|:lfirst|	:lfir[st]	go to the specified location, default first one
+|:lgetfile|	:lg[etfile]	read file with locations
+|:ll|		:ll		go to specific location
+|:llast|	:lla[st]	go to the specified location, default last one
+|:llist|	:lli[st]	list all locations
 |:lmap|		:lm[ap]		like ":map!" but includes Lang-Arg mode
 |:lmapclear|	:lmapc[lear]	like ":mapclear!" but includes Lang-Arg mode
+|:lnext|	:ln[ext]	go to next location
+|:lnewer|	:lnew[er]	go to newer location list
+|:lnfile|	:lnf[ile]	go to first location in next file
 |:lnoremap|	:ln[oremap]	like ":noremap!" but includes Lang-Arg mode
 |:loadkeymap|	:loadk[eymap]	load the following keymaps until EOF
 |:loadview|	:lo[adview]	load view for current window from a file
 |:lockmarks|	:loc[kmarks]	following command keeps marks where they are
 |:lockvar|	:lockv[ar]	lock variables
+|:lolder|	:lol[der]	go to older location list
+|:lopen|	:lope[n]	open location window
+|:lprevious|	:lp[revious]	go to previous location
+|:lpfile|	:lpf[ile]	go to last location in previous file
+|:lrewind|	:lr[ewind]	go to the specified location, default first one
 |:ls|		:ls		list all buffers
 |:lunmap|	:lu[nmap]	like ":unmap!" but includes Lang-Arg mode
+|:lwindow|	:lw[indow]	open or close location window
 |:move|		:m[ove]		move lines
 |:mark|		:ma[rk]		set a mark
 |:make|		:mak[e]		execute external command 'makeprg' and parse

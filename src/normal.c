@@ -1714,7 +1714,7 @@ do_pending_operator(cap, old_col, gui_yank)
 		setmouse();
 		mouse_dragging = 0;
 # endif
-		if (p_smd && msg_silent == 0)
+		if (mode_displayed)
 		    clear_cmdline = TRUE;   /* unshow visual mode later */
 #ifdef FEAT_CMDL_INFO
 		else
@@ -2779,7 +2779,10 @@ do_mouse(oap, c, dir, count, fixindent)
     {
 	if (State & INSERT)
 	    stuffcharReadbuff(Ctrl_O);
-	stuffReadbuff((char_u *)":.cc\n");
+	if (curwin->w_llist_ref == NULL)	/* quickfix window */
+	    stuffReadbuff((char_u *)":.cc\n");
+	else					/* location list window */
+	    stuffReadbuff((char_u *)":.ll\n");
 	got_click = FALSE;		/* ignore drag&release now */
     }
 #endif
@@ -2948,8 +2951,9 @@ do_mouse(oap, c, dir, count, fixindent)
     }
 
     /* If Visual mode changed show it later. */
-    if (p_smd && msg_silent == 0
-		  && (VIsual_active != old_active || VIsual_mode != old_mode))
+    if ((!VIsual_active && old_active && mode_displayed)
+	    || (VIsual_active && p_smd && msg_silent == 0
+				 && (!old_active || VIsual_mode != old_mode)))
 	redraw_cmdline = TRUE;
 #endif
 
@@ -3115,7 +3119,7 @@ end_visual_mode()
 	curwin->w_cursor.coladd = 0;
 #endif
 
-    if (p_smd && msg_silent == 0)
+    if (mode_displayed)
 	clear_cmdline = TRUE;		/* unshow visual mode later */
 #ifdef FEAT_CMDL_INFO
     else
@@ -5713,7 +5717,10 @@ nv_down(cap)
 #if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
     /* In a quickfix window a <CR> jumps to the error under the cursor. */
     if (bt_quickfix(curbuf) && cap->cmdchar == CAR)
-	do_cmdline_cmd((char_u *)".cc");
+	if (curwin->w_llist_ref == NULL)
+	    do_cmdline_cmd((char_u *)".cc");	/* quickfix window */
+	else
+	    do_cmdline_cmd((char_u *)".ll");	/* location list window */
     else
 #endif
     {
@@ -8282,7 +8289,7 @@ nv_normal(cap)
     if (cap->nchar == Ctrl_N || cap->nchar == Ctrl_G)
     {
 	clearop(cap->oap);
-	if (restart_edit != 0 && p_smd && msg_silent == 0)
+	if (restart_edit != 0 && mode_displayed)
 	    clear_cmdline = TRUE;		/* unshow mode later */
 	restart_edit = 0;
 #ifdef FEAT_CMDWIN

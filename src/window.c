@@ -518,8 +518,9 @@ newwindow:
 		 */
 		if (bt_quickfix(curbuf))
 		{
-		    sprintf((char *)cbuf, "split +%ldcc",
-						 (long)curwin->w_cursor.lnum);
+		    sprintf((char *)cbuf, "split +%ld%s",
+				(long)curwin->w_cursor.lnum,
+				(curwin->w_llist_ref == NULL) ? "cc" : "ll");
 		    do_cmdline_cmd(cbuf);
 		}
 #endif
@@ -816,6 +817,9 @@ win_split_ins(size, flags, newwin, dir)
 	wp->w_prev_fraction_row = curwin->w_prev_fraction_row;
 #ifdef FEAT_JUMPLIST
 	copy_jumplist(curwin, wp);
+#endif
+#ifdef FEAT_QUICKFIX
+	copy_loclist(curwin, wp);
 #endif
 	if (curwin->w_localdir != NULL)
 	    wp->w_localdir = vim_strsave(curwin->w_localdir);
@@ -3180,6 +3184,10 @@ win_free(wp)
 #endif
 #ifdef FEAT_JUMPLIST
     free_jumplist(wp);
+#endif
+
+#ifdef FEAT_QUICKFIX
+    qf_free_all(wp);
 #endif
 
 #ifdef FEAT_GUI

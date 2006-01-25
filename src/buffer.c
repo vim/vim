@@ -4758,7 +4758,21 @@ buf_spname(buf)
 {
 #if defined(FEAT_QUICKFIX) && defined(FEAT_WINDOWS)
     if (bt_quickfix(buf))
-	return _("[Error List]");
+    {
+	win_T	*win;
+
+	/*
+	 * For location list window, w_llist_ref points to the location list.
+	 * For quickfix window, w_llist_ref is NULL.
+	 */
+	FOR_ALL_WINDOWS(win)
+	    if (win->w_buffer == buf)
+		break;
+	if (win != NULL && win->w_llist_ref != NULL)
+	    return _("[Location List]");
+	else
+	    return _("[Error List]");
+    }
 #endif
 #ifdef FEAT_QUICKFIX
     /* There is no _file_ when 'buftype' is "nofile", b_sfname

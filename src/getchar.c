@@ -2365,7 +2365,7 @@ vgetorpeek(advance)
 		    colnr_T	col = 0, vcol;
 		    char_u	*ptr;
 
-		    if (p_smd && msg_silent == 0)
+		    if (mode_displayed)
 		    {
 			unshowmode(TRUE);
 			mode_deleted = TRUE;
@@ -2643,7 +2643,7 @@ vgetorpeek(advance)
      */
     if (advance && p_smd && msg_silent == 0 && (State & INSERT))
     {
-	if (c == ESC && !mode_deleted && !no_mapping)
+	if (c == ESC && !mode_deleted && !no_mapping && mode_displayed)
 	{
 	    if (typebuf.tb_len && !KeyTyped)
 		redraw_cmdline = TRUE;	    /* delete mode later */
