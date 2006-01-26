@@ -3248,7 +3248,8 @@ unload_dummy_buffer(buf)
  * Add each quickfix error to list "list" as a dictionary.
  */
     int
-get_errorlist(list)
+get_errorlist(wp, list)
+    win_T	*wp;
     list_T	*list;
 {
     qf_info_T	*qi = &ql_info;
@@ -3256,6 +3257,13 @@ get_errorlist(list)
     char_u	buf[2];
     qfline_T	*qfp;
     int		i;
+
+    if (wp != NULL)
+    {
+	qi = GET_LOC_LIST(wp);
+	if (qi == NULL)
+	    return FAIL;
+    }
 
     if (qi->qf_curlist >= qi->qf_listcount
 	|| qi->qf_lists[qi->qf_curlist].qf_count == 0)
@@ -3292,7 +3300,8 @@ get_errorlist(list)
  * of dictionaries.
  */
     int
-set_errorlist(list, action)
+set_errorlist(wp, list, action)
+    win_T	*wp;
     list_T	*list;
     int		action;
 {
@@ -3306,6 +3315,13 @@ set_errorlist(list, action)
     int		valid, status;
     int		retval = OK;
     qf_info_T	*qi = &ql_info;
+
+    if (wp != NULL)
+    {
+	qi = ll_get_or_alloc_list(curwin);
+	if (qi == NULL)
+	    return FAIL;
+    }
 
     if (action == ' ' || qi->qf_curlist == qi->qf_listcount)
 	/* make place for a new list */

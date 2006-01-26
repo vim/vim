@@ -144,6 +144,11 @@ static char *(features[]) =
 #else
 	"-cscope",
 #endif
+#ifdef CURSOR_SHAPE
+	"+cursorshape",
+#else
+	"-cursorshape",
+#endif
 #if defined(FEAT_CON_DIALOG) && defined(FEAT_GUI_DIALOG)
 	"+dialog_con_gui",
 #else

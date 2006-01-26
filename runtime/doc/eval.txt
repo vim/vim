@@ -1562,6 +1562,7 @@ getftime( {fname})		Number	last modification time of file
 getftype( {fname})		String	description of type of file {fname}
 getline( {lnum})		String	line {lnum} of current buffer
 getline( {lnum}, {end})		List	lines {lnum} to {end} of current buffer
+getloclist({nr})		List	list of location list items
 getqflist()			List	list of quickfix items
 getreg( [{regname} [, 1]])	String	contents of register
 getregtype( [{regname}])	String	type of register
@@ -1652,7 +1653,9 @@ serverlist()			String	get a list of available servers
 setbufvar( {expr}, {varname}, {val})	set {varname} in buffer {expr} to {val}
 setcmdpos( {pos})		Number	set cursor position in command-line
 setline( {lnum}, {line})	Number	set line {lnum} to {line}
-setqflist( {list}[, {action}])	Number	set list of quickfix items using {list}
+setloclist( {nr}, {list}[, {action}])
+				Number	modify location list using {list}
+setqflist( {list}[, {action}])	Number	modify quickfix list using {list}
 setreg( {n}, {v}[, {opt}])	Number	set register to value and type
 setwinvar( {nr}, {varname}, {val})	set {varname} in window {nr} to {val}
 simplify( {filename})		String	simplify filename as much as possible
@@ -2693,6 +2696,11 @@ getline({lnum} [, {end}])
 			:let end = search("^$") - 1
 			:let lines = getline(start, end)
 
+getloclist({nr})					*getloclist()*
+		Returns a list with all the entries in the location list for
+		window {nr}. When {nr} is zero the current window is used.
+		For a location list window, the displayed location list is
+		returned.  Otherwise, same as getqflist().
 
 getqflist()						*getqflist()*
 		Returns a list with all the current quickfix errors.  Each
@@ -3971,12 +3979,17 @@ setline({lnum}, {line})					*setline()*
 			:endfor
 <		Note: The '[ and '] marks are not set.
 
+setloclist({nr}, {list} [, {action}])			*setloclist()*
+		Create or replace or add to the location list for window {nr}.
+		When {nr} is zero the current window is used. For a location
+		list window, the displayed location list is modified.
+		Otherwise, same as setqflist().
 
 setqflist({list} [, {action}])				*setqflist()*
-		Creates a quickfix list using the items in {list}.  Each item
-		in {list} is a dictionary.  Non-dictionary items in {list} are
-		ignored.  Each dictionary item can contain the following
-		entries:
+		Create or replace or add to the quickfix list using the items
+		in {list}.  Each item in {list} is a dictionary.
+		Non-dictionary items in {list} are ignored.  Each dictionary
+		item can contain the following entries:
 
 		    filename	name of a file
 		    lnum	line number in the file

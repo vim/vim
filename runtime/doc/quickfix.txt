@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 7.0aa.  Last change: 2006 Jan 13
+*quickfix.txt*  For Vim version 7.0aa.  Last change: 2006 Jan 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -73,8 +73,8 @@ The following quickfix commands can be used:
 			all, go to the [count] next error.  See |:cc| for
 			[!] and 'switchbuf'.
 
-							*:ln* *:lnext*
-:[count]ln[ext][!]	Same as ":cnext", except the location list for the
+							*:lne* *:lnext*
+:[count]lne[xt][!]	Same as ":cnext", except the location list for the
 			current window is used instead of the quickfix list.
 
 :[count]cN[ext][!]			*:cp* *:cprevious* *:cN* *:cNext*
@@ -83,8 +83,8 @@ The following quickfix commands can be used:
 			all, go to the [count] previous error.  See |:cc| for
 			[!] and 'switchbuf'.
 
-					*:lp* *:lprevious* *:lN* *:lNext*
-:[count]lN[ext][!]
+				
+:[count]lN[ext][!]			*:lp* *:lprevious* *:lN* *:lNext*
 :[count]lp[revious][!]	Same as ":cNext" and ":cprevious", except the location
 			list for the current window is used instead of the
 			quickfix list.
@@ -107,8 +107,8 @@ The following quickfix commands can be used:
 			the [count] previous error.  See |:cc| for [!] and
 			'switchbuf'.
 
-					*:lpf* *:lpfile* *:lNf* *:lNfile*
-:[count]lNf[ile][!]
+
+:[count]lNf[ile][!]			*:lpf* *:lpfile* *:lNf* *:lNfile*
 :[count]lpf[ile][!]	Same as ":cNfile" and ":cpfile", except the location
 			list for the current window is used instead of the
 			quickfix list.
@@ -153,13 +153,13 @@ The following quickfix commands can be used:
 			You can not use the -q command-line option to set
 			the location list.
 
-							*:cg* *:cgetfile*
-:cg[etfile][!] [errorfile]
+		
+:cg[etfile][!] [errorfile]				*:cg* *:cgetfile*
 			Read the error file.  Just like ":cfile" but don't
 			jump to the first error.
 
-							*:lg* *:lgetfile*
-:lg[etfile][!] [errorfile]
+			
+:lg[etfile][!] [errorfile]				*:lg* *:lgetfile*
 			Same as ":cgetfile", except the location list for the
 			current window is used instead of the quickfix list.
 
@@ -260,12 +260,12 @@ on) is executed. See |QuickFixCmdPre| and |QuickFixCmdPost| for details.
 			the current window.  It is not possible to open a
 			second quickfix window.
 
-							*:lope* *:lopen*
-:lope[n] [height]	Open a window to show the location list for the
+							*:lop* *:lopen*
+:lop[en] [height]	Open a window to show the location list for the
 			current window. Works only when the location list for
-			the current window is present. You can have more than
-			one location window opened at a time.  Otherewise,
-			same as ":copen".
+			the current window is present.  You can have more than
+			one location window opened at a time.  Otherwise, it
+			acts the same same as ":copen".
 
 							*:ccl* *:cclose*
 :ccl[ose]		Close the quickfix window.

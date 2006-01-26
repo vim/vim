@@ -517,6 +517,7 @@ static void f_getfsize __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getftime __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getftype __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getline __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_getloclist __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getqflist __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getreg __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getregtype __ARGS((typval_T *argvars, typval_T *rettv));
@@ -595,6 +596,7 @@ static void f_serverlist __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_setbufvar __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_setcmdpos __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_setline __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_setloclist __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_setqflist __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_setreg __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_setwinvar __ARGS((typval_T *argvars, typval_T *rettv));
@@ -704,6 +706,7 @@ static void func_unref __ARGS((char_u *name));
 static void func_ref __ARGS((char_u *name));
 static void call_user_func __ARGS((ufunc_T *fp, int argcount, typval_T *argvars, typval_T *rettv, linenr_T firstline, linenr_T lastline, dict_T *selfdict));
 static void add_nr_var __ARGS((dict_T *dp, dictitem_T *v, char *name, varnumber_T nr));
+static win_T *find_win_by_nr __ARGS((typval_T *vp));
 
 /* Character used as separated in autoload function/variable names. */
 #define AUTOLOAD_CHAR '#'
@@ -6863,6 +6866,7 @@ static struct fst
     {"getftime",	1, 1, f_getftime},
     {"getftype",	1, 1, f_getftype},
     {"getline",		1, 2, f_getline},
+    {"getloclist",	1, 1, f_getloclist},
     {"getqflist",	0, 0, f_getqflist},
     {"getreg",		0, 2, f_getreg},
     {"getregtype",	0, 1, f_getregtype},
@@ -6943,6 +6947,7 @@ static struct fst
     {"setbufvar",	3, 3, f_setbufvar},
     {"setcmdpos",	1, 1, f_setcmdpos},
     {"setline",		2, 2, f_setline},
+    {"setloclist",	2, 3, f_setloclist},
     {"setqflist",	1, 2, f_setqflist},
     {"setreg",		2, 3, f_setreg},
     {"setwinvar",	3, 3, f_setwinvar},
@@ -9790,13 +9795,14 @@ f_getline(argvars, rettv)
     get_buffer_lines(curbuf, lnum, end, retlist, rettv);
 }
 
+static void get_qf_ll_ist __ARGS((win_T *wp, typval_T *rettv));
+
 /*
- * "getqflist()" function
+ * Shared by getqflist() and getloclist() functions
  */
-/*ARGSUSED*/
     static void
-f_getqflist(argvars, rettv)
-    typval_T	*argvars;
+get_qf_ll_ist(wp, rettv)
+    win_T	*wp;
     typval_T	*rettv;
 {
 #ifdef FEAT_QUICKFIX
@@ -9811,9 +9817,40 @@ f_getqflist(argvars, rettv)
 	rettv->vval.v_list = l;
 	rettv->v_type = VAR_LIST;
 	++l->lv_refcount;
-	(void)get_errorlist(l);
+	(void)get_errorlist(wp, l);
     }
 #endif
+
+}
+
+/*
+ * "getloclist()" function
+ */
+/*ARGSUSED*/
+    static void
+f_getloclist(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    win_T	*win;
+
+    rettv->vval.v_number = FALSE;
+
+    win = find_win_by_nr(&argvars[0]);
+    if (win != NULL)
+	get_qf_ll_ist(win, rettv);
+}
+
+/*
+ * "getqflist()" function
+ */
+/*ARGSUSED*/
+    static void
+f_getqflist(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    get_qf_ll_ist(NULL, rettv);
 }
 
 /*
@@ -9936,8 +9973,6 @@ f_getwinposy(argvars, rettv)
     }
 #endif
 }
-
-static win_T *find_win_by_nr __ARGS((typval_T *vp));
 
     static win_T *
 find_win_by_nr(vp)
@@ -13571,12 +13606,14 @@ f_setline(argvars, rettv)
 }
 
 /*
- * "setqflist()" function
+ * Used by "setqflist()" and "setloclist()" functions
  */
 /*ARGSUSED*/
     static void
-f_setqflist(argvars, rettv)
-    typval_T	*argvars;
+set_qf_ll_list(wp, list_arg, action_arg, rettv)
+    win_T	*wp;
+    typval_T	*list_arg;
+    typval_T	*action_arg;
     typval_T	*rettv;
 {
 #ifdef FEAT_QUICKFIX
@@ -13587,25 +13624,55 @@ f_setqflist(argvars, rettv)
     rettv->vval.v_number = -1;
 
 #ifdef FEAT_QUICKFIX
-    if (argvars[0].v_type != VAR_LIST)
+    if (list_arg->v_type != VAR_LIST)
 	EMSG(_(e_listreq));
     else
     {
-	list_T  *l = argvars[0].vval.v_list;
+	list_T  *l = list_arg->vval.v_list;
 
-	if (argvars[1].v_type == VAR_STRING)
+	if (action_arg->v_type == VAR_STRING)
 	{
-	    act = get_tv_string_chk(&argvars[1]);
+	    act = get_tv_string_chk(action_arg);
 	    if (act == NULL)
 		return;		/* type error; errmsg already given */
 	    if (*act == 'a' || *act == 'r')
 		action = *act;
 	}
 
-	if (l != NULL && set_errorlist(l, action) == OK)
+	if (l != NULL && set_errorlist(wp, l, action) == OK)
 	    rettv->vval.v_number = 0;
     }
 #endif
+}
+
+/*
+ * "setloclist()" function
+ */
+/*ARGSUSED*/
+    static void
+f_setloclist(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    win_T	*win;
+
+    rettv->vval.v_number = -1;
+
+    win = find_win_by_nr(&argvars[0]);
+    if (win != NULL)
+	set_qf_ll_list(win, &argvars[1], &argvars[2], rettv);
+}
+
+/*
+ * "setqflist()" function
+ */
+/*ARGSUSED*/
+    static void
+f_setqflist(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    set_qf_ll_list(NULL, &argvars[0], &argvars[1], rettv);
 }
 
 /*

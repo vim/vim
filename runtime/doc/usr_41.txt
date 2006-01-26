@@ -747,6 +747,7 @@ Various:
 	exists()		check if a variable, function, etc. exists
 	has()			check if a feature is supported in Vim
 	getqflist()		list of quickfix errors
+	getloclist()		list of location list items
 	cscope_connection()	check if a cscope connection exists
 	did_filetype()		check if a FileType autocommand was used
 	eventhandler()		check if invoked by an event handler
@@ -758,7 +759,8 @@ Various:
 	libcallnr()		idem, returning a number
 	getreg()		get contents of a register
 	getregtype()		get type of a register
-	setqflist()		create a quickfix list
+	setqflist()		modify a quickfix list
+	setloclist()		modify a location list
 	setreg()		set contents and type of a register
 	taglist()		get list of matching tags
 

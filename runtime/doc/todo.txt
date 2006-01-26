@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Jan 25
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Jan 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,9 +30,7 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Include location list commands, patch from Yegappan Lakshmanan.
-
-ccomplete:
+ccomplete / omnicomplete:
 - When an option is set: In completion mode and the user types (identifier)
   characters, advance to the first match instead of removing the popup menu.
   If there is no match remove the selection. (Yegappan Lakshmanan)
@@ -58,6 +56,7 @@ ccomplete:
     Can't reproduce it right now...
 
 spelling:
+- Also use the spelling dictionary for dictionary completion.
 - Use runtime/cleanadd script to cleanup .add files.  When to invoke it?
   After deleting a word with "zw" and some timestamp difference perhaps?
   Store it as spell/cleanadd.vim.
@@ -94,7 +93,6 @@ spelling:
     obtain).  But new Myspell wordlist will come (Hagen)
 - Finding suggestions with sound folding is slow.  Somehow store the
   sound-folded words and link to the words it comes from?
-- Also use the spelling dictionary for dictionary completion.
 - Have "zg" and "zw" report the file that was modified. (Marvin Renich)
 - Add a command like "zg" that selects one of the files 'spellfile'.
 - Add a "zug" command that undoes "zg"?  Deletes the good word instead of

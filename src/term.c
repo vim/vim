@@ -3446,13 +3446,13 @@ term_cursor_shape()
     if (State & INSERT)
     {
 	if (showing_insert_mode != TRUE)
-	    out_str(T_CSI);	    /* disable cursor */
+	    out_str(T_CSI);	    /* Insert mode cursor */
 	showing_insert_mode = TRUE;
     }
     else
     {
 	if (showing_insert_mode != FALSE)
-	    out_str(T_CEI);	    /* disable cursor */
+	    out_str(T_CEI);	    /* non-Insert mode cursor */
 	showing_insert_mode = FALSE;
     }
 }
