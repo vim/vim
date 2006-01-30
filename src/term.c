@@ -3140,7 +3140,15 @@ set_shellsize(width, height, mustset)
 	else
 	{
 	    update_topline();
-	    update_screen(NOT_VALID);
+#if defined(FEAT_INS_EXPAND)
+	    if (pum_visible())
+	    {
+		redraw_later(NOT_VALID);
+		ins_compl_show_pum(); /* This includes the redraw. */
+	    }
+	    else
+#endif
+		update_screen(NOT_VALID);
 	    if (redrawing())
 		setcursor();
 	}

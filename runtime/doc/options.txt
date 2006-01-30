@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2006 Jan 23
+*options.txt*	For Vim version 7.0aa.  Last change: 2006 Jan 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1183,6 +1183,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  		autocommands. {not available when compiled without the
 			|+autocmd| feature}
 	  quickfix	quickfix buffer, contains list of errors |:cwindow|
+			or list of locations |:lwindow|
 	  help		help buffer (you are not supposed to set this
 			manually)
 
@@ -1191,8 +1192,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	Be careful with changing this option, it can have many side effects!
 
-	A "quickfix" buffer is only used for the error list.  This value is
-	set by the |:cwindow| command and you are not supposed to change it.
+	A "quickfix" buffer is only used for the error list and the location
+	list.  This value is set by the |:cwindow| and |:lwindow| commands and
+	you are not supposed to change it.
 
 	"nofile" and "nowrite" buffers are similar:
 	both:		The buffer is not to be written to disk, ":w" doesn't
@@ -1611,90 +1613,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 			or +insert_expand feature}
 	This option specifies a function to be used for Insert mode completion
 	with CTRL-X CTRL-U. |i_CTRL-X_CTRL-U|
+	See |complete-functions| for an explanation of how the function is
+	invoked and what it should return.
 
-	The function will be invoked with two arguments.  First the function
-	is called to find the start of the text to be completed.  Secondly the
-	function is called to actually find the matches.
-
-	On the first invocation the arguments are:
-	   a:findstart  1
-	   a:base	empty
-
-	The function must return the column of where the completion starts.
-	It must be a number between zero and the cursor column "col('.')".
-	This involves looking at the characters just before the cursor and
-	including those characters that could be part of the completed item.
-	The text between this column and the cursor column will be replaced
-	with the matches.  Return -1 if no completion can be done.
-
-	On the second invocation the arguments are:
-	   a:findstart  0
-	   a:base	the text with which matches should match, what was
-	   		located in the first call (can be empty)
-
-	The function must return a List with the matching words.  These
-	matches usually include the "a:base" text.  When there are no matches
-	return an empty List.
-
-	When searching for matches takes some time call |complete_add()| to
-	add each match to the total list.  These matches should then not
-	appear in the returned list!  Call |complete_check()| now and then to
-	allow the user to press a key while still searching for matches.  Stop
-	searching when it returns non-zero.
-
-	The function may move the cursor, it is restored afterwards.
-	This option cannot be set from a |modeline| or in the |sandbox|, for
-	security reasons.
-
-	An example that completes the names of the months: >
-		fun! CompleteMonths(findstart, base)
-		  if a:findstart
-		    " locate the start of the word
-		    let line = getline('.')
-		    let start = col('.') - 1
-		    while start > 0 && line[start - 1] =~ '\a'
-		      let start -= 1
-		    endwhile
-		    return start
-		  else
-		    " find months matching with "a:base"
-		    let res = []
-		    for m in split("Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec")
-		      if m =~ '^' . a:base
-			call add(res, m)
-		      endif
-		    endfor
-		    return res
-		  endif
-		endfun
-		set completefunc=CompleteMonths
-<
-	The same, but now pretending searching for matches is slow: >
-		fun! CompleteMonths(findstart, base)
-		  if a:findstart
-		    " locate the start of the word
-		    let line = getline('.')
-		    let start = col('.') - 1
-		    while start > 0 && line[start - 1] =~ '\a'
-		      let start -= 1
-		    endwhile
-		    return start
-		  else
-		    " find months matching with "a:base"
-		    for m in split("Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec")
-		      if m =~ '^' . a:base
-			call complete_add(m)
-		      endif
-		      sleep 300m	" simulate searching for next match
-		      if complete_check()
-			break
-		      endif
-		    endfor
-		    return []
-		  endif
-		endfun
-		set completefunc=CompleteMonths
-<
 
 						*'completeopt'* *'cot'*
 'completeopt' 'cot'	string	(default: "menu")
@@ -4681,7 +4602,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			or +insert_expand feature}
 	This option specifies a function to be used for Insert mode omni
 	completion with CTRL-X CTRL-O. |i_CTRL-X_CTRL-O|
-	For the use of the function see 'completefunc'.
+	See |complete-functions| for an explanation of how the function is
+	invoked and what it should return.
 
 
 						*'operatorfunc'* *'opfunc'*
@@ -5802,11 +5724,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 			{not in Vi}
 	When on, a <Tab> in front of a line inserts blanks according to
-	'shiftwidth'.  'tabstop' is used in other places.  A <BS> will delete
-	a 'shiftwidth' worth of space at the start of the line.
-	When off a <Tab> always inserts blanks according to 'tabstop'.
-	'shiftwidth' is only used for shifting text left or right
-	|shift-left-right|.
+	'shiftwidth'.  'tabstop' or 'softtabstop' is used in other places.  A
+	<BS> will delete a 'shiftwidth' worth of space at the start of the
+	line.
+	When off a <Tab> always inserts blanks according to 'tabstop' or
+	'softtabstop'.  'shiftwidth' is only used for shifting text left or
+	right |shift-left-right|.
 	What gets inserted (a Tab or spaces) depends on the 'expandtab'
 	option.  Also see |ins-expandtab|.  When 'expandtab' is not set, the
 	number of spaces is minimized by using <Tab>s.

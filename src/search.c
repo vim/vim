@@ -521,6 +521,7 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use)
     int		match_ok;
     long	nmatched;
     int		submatch = 0;
+    int		save_called_emsg = called_emsg;
 #ifdef FEAT_SEARCH_EXTRA
     int		break_loop = FALSE;
 #else
@@ -552,9 +553,9 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use)
     else
 	extra_col = 1;
 
-/*
- * find the string
- */
+    /*
+     * find the string
+     */
     called_emsg = FALSE;
     do	/* loop for count */
     {
@@ -864,6 +865,8 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use)
     while (--count > 0 && found);   /* stop after count matches or no match */
 
     vim_free(regmatch.regprog);
+
+    called_emsg |= save_called_emsg;
 
     if (!found)		    /* did not find it */
     {

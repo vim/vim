@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Jan 26
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Jan 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,13 +30,27 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Truncating error message keeps one char too many, causes an empty line.
+
+Variant of ":helpgrep" that uses a location list?  How about:
+    :lhelpgrep  (use local list in help window, not current window)
+    :lgrep
+    :lvimgrep
+    :lmake
+
 ccomplete / omnicomplete:
+- Also add . or -> when completing struct members.  use s:Tag2item()
 - When an option is set: In completion mode and the user types (identifier)
   characters, advance to the first match instead of removing the popup menu.
   If there is no match remove the selection. (Yegappan Lakshmanan)
+  Keep the current list of all matches.  Use the text typed (or completed) so
+  far to make a second list with only matching entries.
 - Complete the longest common match instead of the first match?
-    For all kinds of completions?  Configurable?
-- Window resize when poup is displayed.
+    Do this when "longest" is in 'completeopt'.
+    Pressing CTRL-N or CTRL-P will get the whole match, as before.
+    Need to postpone inserting anything until all matches have been found.
+    Then add a completion item with the longest common string (after what was
+    typed), if there is one.
 - When completing something that is a structure, add the "." or "->" right
   away.  How to figure out if it's a pointer or not?
 - When a typedef or struct is local to a file only use it in that file?
@@ -52,11 +66,10 @@ ccomplete / omnicomplete:
   a specific selection (e.g, methods vs variables).
 - Provide a function to popup the menu, so that an insert mode mapping can
   start it (with a specific selection).
-- !_TAG_FILE_FORMAT and it's ilk are listed in the global completions
-    Can't reproduce it right now...
 
 spelling:
 - Also use the spelling dictionary for dictionary completion.
+  When 'dictionary' is  empty and/or when "kspell" is in 'complete'.
 - Use runtime/cleanadd script to cleanup .add files.  When to invoke it?
   After deleting a word with "zw" and some timestamp difference perhaps?
   Store it as spell/cleanadd.vim.
@@ -3781,6 +3794,8 @@ Far future and "big" extensions:
     are reflected in each Vim immediately.  Could work with local files but
     also over the internet.  See http://www.codingmonkeys.de/subethaedit/.
 
+When using "do" or ":diffget" in a buffer with changes in every line an extra
+empty line would appear.
 
 vim:tw=78:sw=4:sts=4:ts=8:ft=help:norl:
 vim: set fo+=n :

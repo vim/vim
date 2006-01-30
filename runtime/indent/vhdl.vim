@@ -1,9 +1,9 @@
-" VHDL indent file ('93 syntax)
+" VHDL indent ('93 syntax)
 " Language:    VHDL
 " Maintainer:  Gerald Lai <laigera+vim?gmail.com>
-" Credits:     N. J. Heo & Janez Stangelj
-" Version:     1.1
-" Last Change: 2006 Jan 25
+" Version:     1.2
+" Last Change: 2006 Jan 26
+" URL:         http://www.vim.org/scripts/script.php?script_id=1450
 
 " only load this indent file when no other was loaded
 if exists("b:did_indent")
@@ -78,6 +78,17 @@ function GetVHDLindent()
   " backup default
   let ind2 = ind
 
+  " indent:   special; kill string so it would not affect other filters
+  " keywords: "report" + string
+  " where:    anywhere in current or previous line
+  let s0 = s:NC.'\<report\>\s*".*"'
+  if curs =~? s0
+    let curs = ""
+  endif
+  if prevs =~? s0
+    let prevs = ""
+  endif
+
   " indent:   previous line's comment position, otherwise follow next non-comment line if possible
   " keyword:  "--"
   " where:    start of current line
@@ -124,9 +135,9 @@ function GetVHDLindent()
   endif
 
   " indent:   align conditional/select statement
-  " keywords: "<=" without ";" ending
-  " where:    anywhere in previous line
-  if prevs =~ s:NC.'<=[^;]*'.s:ES
+  " keywords: variable + "<=" without ";" ending
+  " where:    start of previous line
+  if prevs =~? '^\s*\S\+\s*<=[^;]*'.s:ES
     return matchend(prevs, '<=\s*\ze.')
   endif
 
@@ -156,13 +167,13 @@ function GetVHDLindent()
       let t = indent(pn)
       if ps !~ '^\s*--' && t < ind
         " make sure one of these is true
+        " keywords: variable + "<=" without ";" ending
+        " where:    start of previous non-comment line
         " keywords: "generic", "map", "port"
         " where:    anywhere in previous non-comment line
         " keyword:  "("
         " where:    start of previous non-comment line
-        " keywords: "<=" without ";" ending
-        " where:    anywhere in previous non-comment line
-        if m < 3 && ps !~ s:NC.'<=[^;]*'.s:ES
+        if m < 3 && ps !~? '^\s*\S\+\s*<=[^;]*'.s:ES
           if ps =~? s:NC.'\<\%(generic\|map\|port\)\>' || ps =~ '^\s*('
             let ind = t
           endif
@@ -236,38 +247,38 @@ function GetVHDLindent()
     return 0
   endif
 
-  " indent:   follow indent of previous opening statement
+  " indent:   maintain indent of previous opening statement
   " keyword:  "is"
   " where:    start of current line
   " find previous opening statement of
   " keywords: "architecture", "block", "configuration", "entity", "function", "package", "procedure", "process", "type"
   if curs =~? '^\s*\<is\>' && prevs =~? s:NC.s:NE.'\<\%(architecture\|block\|configuration\|entity\|function\|package\|procedure\|process\|type\)\>'
-    return indent(prevn)
+    return ind2
   endif
 
-  " indent:   follow indent of previous opening statement
+  " indent:   maintain indent of previous opening statement
   " keyword:  "then"
   " where:    start of current line
   " find previous opening statement of
   " keywords: "elsif", "if"
   if curs =~? '^\s*\<then\>' && (prevs =~? s:NC.'\<elsif\>' || prevs =~? s:NC.s:NE.'\<if\>')
-    return indent(prevn)
+    return ind2
   endif
 
-  " indent:   follow indent of previous opening statement
+  " indent:   maintain indent of previous opening statement
   " keyword:  "generate"
   " where:    start of current line
   " find previous opening statement of
   " keywords: "for", "if"
-  if curs =~? '^\s*\<generate\>' && (prevs =~? s:NC.'\<for\>' || prevs =~? s:NC.s:NE.'\<if\>')
-    return indent(prevn)
+  if curs =~? '^\s*\<generate\>' && (prevs =~? s:NC.s:NE.'\%(\<wait\s\+\)\@<!\<for\>' || prevs =~? s:NC.s:NE.'\<if\>')
+    return ind2
   endif
 
   " indent:   +sw
-  " keywords: "block", "for", "loop", "process", "record", "units"
+  " keywords: "block", "loop", "process", "record", "units"
   " removed:  "case", "if"
   " where:    anywhere in previous line
-  if prevs =~? s:NC.s:NE.'\<\%(block\|for\|loop\|process\|record\|units\)\>'
+  if prevs =~? s:NC.s:NE.'\<\%(block\|loop\|process\|record\|units\)\>'
     return ind + &sw
   endif
 
@@ -280,10 +291,10 @@ function GetVHDLindent()
   endif
 
   " indent:   +sw
-  " keywords: "architecture", "component", "configuration", "entity", "package"
-  " removed:  "package", "when", "with"
+  " keywords: "architecture", "component", "configuration", "entity", "for", "package"
+  " removed:  "when", "with"
   " where:    start of previous line
-  if prevs =~? '^\s*\%(architecture\|component\|configuration\|entity\|package\)\>'
+  if prevs =~? '^\s*\%(architecture\|component\|configuration\|entity\|for\|package\)\>'
     return ind + &sw
   endif
 
@@ -319,33 +330,60 @@ function GetVHDLindent()
   endif
 
   " indent:   -sw
-  " keywords: "end" + "block", "component", "for", "function", "generate", "if", "loop", "procedure", "process", "record", "units"
+  " keywords: "end" + "block", "for", "function", "generate", "if", "loop", "procedure", "process", "record", "units"
   " where:    start of current line
   " keyword:  ")"
   " where:    start of current line
-  if curs =~? '^\s*end\s\+\%(block\|component\|for\|function\|generate\|if\|loop\|procedure\|process\|record\|units\)\>' || curs =~ '^\s*)'
+  if curs =~? '^\s*end\s\+\%(block\|for\|function\|generate\|if\|loop\|procedure\|process\|record\|units\)\>' || curs =~ '^\s*)'
     return ind - &sw
   endif
 
-  " indent:   backtrace previous non-comment lines; -sw if begin with "when", follow if begin with "case"
-  " keyword:  "end" + "case"
+  " indent:   backtrace previous non-comment lines
+  " keyword:  "end" + "case", "component"
   " where:    start of current line
+  let m = 0
   if curs =~? '^\s*end\s\+case\>'
+    let m = 1
+  elseif curs =~? '^\s*end\s\+component\>'
+    let m = 2
+  endif
+
+  if m > 0
     " find following previous non-comment line
     let pn = prevn
     let ps = getline(pn)
     while pn > 0
       if ps !~ '^\s*--'
-        if ps =~? '^\s*when\>'
-          return indent(pn) - &sw
-        elseif ps =~? '^\s*case\>'
-          return indent(pn)
+        "indent:   -2sw
+        "keywords: "end" + "case"
+        "where:    start of previous non-comment line
+        "indent:   -sw
+        "keywords: "when"
+        "where:    start of previous non-comment line
+        "indent:   follow
+        "keywords: "case"
+        "where:    start of previous non-comment line
+        if m == 1
+          if ps =~? '^\s*end\s\+case\>'
+            return indent(pn) - 2 * &sw
+          elseif ps =~? '^\s*when\>'
+            return indent(pn) - &sw
+          elseif ps =~? '^\s*case\>'
+            return indent(pn)
+          endif
+        "indent:   follow
+        "keyword:  "component"
+        "where:    anywhere in previous non-comment line
+        elseif m == 2
+          if ps =~? s:NC.s:NE.'\<component\>'
+            return indent(pn)
+          endif
         endif
       endif
       let pn = prevnonblank(pn - 1)
       let ps = getline(pn)
     endwhile
-    return ind
+    return ind - &sw
   endif
 
   " indent:   0
@@ -363,7 +401,7 @@ function GetVHDLindent()
   endif
 
   " ****************************************************************************************
-  " indent:   maintain default
+  " indent:   maintain indent of previous opening statement
   " keywords: without "generic", "map", "port" + ":" but not ":=" + "in", "out", "inout", "buffer", "linkage", variable & ":="
   " where:    anywhere in current line
   if curs =~? s:NC.'\%(\<\%(generic\|map\|port\)\>.*\)\@<!:[^=]\@=\s*\%(\%(in\|out\|inout\|buffer\|linkage\)\>\|\w\+\s\+:=\)'

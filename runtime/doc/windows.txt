@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 7.0aa.  Last change: 2006 Jan 19
+*windows.txt*   For Vim version 7.0aa.  Last change: 2006 Jan 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -992,9 +992,11 @@ list of buffers. |unlisted-buffer|
 		Split window and edit buffer for {filename} from the buffer
 		list.  This will also edit a buffer that is not in the buffer
 		list, without setting the 'buflisted' flag.
+		Note: If what you want to do is split the buffer, make a copy
+		under another name, you can do it this way: >
+			:w foobar | sp #
 
-							*:bn* *:bnext* *E87*
-:[N]bn[ext][!] [N]
+:[N]bn[ext][!] [N]					*:bn* *:bnext* *E87*
 		Go to [N]th next buffer in buffer list.  [N] defaults to one.
 		Wraps around the end of the buffer list.
 		See |:buffer-!| for [!].
@@ -1089,9 +1091,10 @@ purposes.  A few options can be set to change the behavior of a buffer:
 
 A few useful kinds of a buffer:
 
-quickfix	Used to contain the error list.  See |:cwindow|.  This command
-		sets the 'buftype' option to "quickfix".  You are not supposed
-		to change this!  'swapfile' is off.
+quickfix	Used to contain the error list or the location list.  See
+		|:cwindow| and |:lwindow|.  This command sets the 'buftype'
+		option to "quickfix".  You are not supposed to change this!
+		'swapfile' is off.
 
 help		Contains a help file.  Will only be created with the |:help|
 		command.  The flag that indicates a help buffer is internal

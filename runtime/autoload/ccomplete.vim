@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	C
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Dec 18
+" Last Change:	2006 Jan 29
 
 
 " This function is used for the 'omnifunc' option.
@@ -55,7 +55,7 @@ function! ccomplete#Complete(findstart, base)
 
     " Only one part, no "." or "->": complete from tags file.
     " When local completion is wanted CTRL-N would have been used.
-    return map(taglist('^' . base), 'v:val["name"]')
+    return map(taglist('^' . base), 's:Tag2item(v:val)')
   endif
 
   " Find the variable items[0].
@@ -106,7 +106,7 @@ function! ccomplete#Complete(findstart, base)
   " type, add a "." or "->".
   if len(res) == 1 && res[0]['match'] == items[-1] && len(s:SearchMembers(res, [''])) > 0
     " If there is a '*' before the name use "->".
-    if match(res[0]['tagline'], '\*\s*' . res[0]['match']) > 0
+    if match(res[0]['tagline'], '\*\s*' . res[0]['match'] . '\>') > 0
       let res[0]['match'] .= '->'
     else
       let res[0]['match'] .= '.'
@@ -115,6 +115,25 @@ function! ccomplete#Complete(findstart, base)
 
   return map(res, 'v:val["match"]')
 endfunc
+
+"
+" Turn the tag info "val" into an item for completion.
+" "val" is is an item in the list returned by taglist().
+function! s:Tag2item(val)
+  if has_key(a:val, "kind") && a:val["kind"] == 'v'
+    if len(s:SearchMembers([{'match': a:val["name"], 'dict': a:val}], [''])) > 0
+      " If there is a '*' before the name use "->".  This assumes the command
+      " is a search pattern!
+      if match(a:val['cmd'], '\*\s*' . a:val['name'] . '\>') > 0
+        return a:val["name"] . '->'
+      else
+        return a:val["name"] . '.'
+      endif
+    endif
+  endif
+  return a:val["name"]
+endfunction
+
 
 " Find composing type in "lead" and match items[0] with it.
 " Repeat this recursively for items[1], if it's there.
@@ -236,18 +255,34 @@ endfunction
 function! s:SearchMembers(matches, items)
   let res = []
   for i in range(len(a:matches))
-    let line = a:matches[i]['tagline']
-    let e = matchend(line, '\ttypename:')
-    if e > 0
-      " Use typename field
-      let name = matchstr(line, '[^\t]*', e)
+    let typename = ''
+    if has_key(a:matches[i], 'dict')
+      "if a:matches[i].dict['name'] == "gui"
+	"echomsg string(a:matches[i].dict)
+      "endif
+      if has_key(a:matches[i].dict, 'typename')
+	let typename = a:matches[i].dict['typename']
+      endif
+      let line = "\t" . a:matches[i].dict['cmd']
+    else
+      let line = a:matches[i]['tagline']
+      let e = matchend(line, '\ttypename:')
+      if e > 0
+	" Use typename field
+	let typename = matchstr(line, '[^\t]*', e)
+      endif
+    endif
+    if typename != ''
       call extend(res, s:StructMembers(name, a:items))
     else
       " Use the search command (the declaration itself).
       let s = match(line, '\t\zs/^')
       if s > 0
-	let e = match(line, a:matches[i]['match'], s)
+	let e = match(line, '\<' . a:matches[i]['match'] . '\>', s)
 	if e > 0
+	  "if a:matches[i].dict['name'] == "gui"
+	    "echomsg strpart(line, s, e - s)
+	  "endif
 	  call extend(res, s:Nextitem(strpart(line, s, e - s), a:items))
 	endif
       endif

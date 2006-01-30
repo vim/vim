@@ -111,8 +111,7 @@ static void ins_compl_add_matches __ARGS((int num_matches, char_u **matches, int
 static int  ins_compl_make_cyclic __ARGS((void));
 static void ins_compl_upd_pum __ARGS((void));
 static void ins_compl_del_pum __ARGS((void));
-static int pum_wanted __ARGS((void));
-static void ins_compl_show_pum __ARGS((void));
+static int  pum_wanted __ARGS((void));
 static void ins_compl_dictionaries __ARGS((char_u *dict, char_u *pat, int dir, int flags, int thesaurus));
 static void ins_compl_free __ARGS((void));
 static void ins_compl_clear __ARGS((void));
@@ -2193,7 +2192,7 @@ pum_wanted()
 /*
  * Show the popup menu for the list of matches.
  */
-    static void
+    void
 ins_compl_show_pum()
 {
     compl_T     *compl;
@@ -2266,13 +2265,14 @@ ins_compl_show_pum()
 	pum_display(compl_match_array, compl_match_arraysize, cur,
 		  curwin->w_cline_row + W_WINROW(curwin),
 		  curwin->w_cline_height,
-		  curwin->w_wcol + W_WINCOL(curwin));
+		  curwin->w_wcol + W_WINCOL(curwin) - curwin->w_leftcol);
 	curwin->w_cursor.col = col;
     }
 }
 
 #define DICT_FIRST	(1)	/* use just first element in "dict" */
 #define DICT_EXACT	(2)	/* "dict" is the exact name of a file */
+
 /*
  * Add any identifiers that match the given pattern to the list of
  * completions.
@@ -2842,6 +2842,8 @@ expand_by_function(type, base, matches)
 	    ((char_u **)ga.ga_data)[ga.ga_len] = vim_strsave(p);
 	    ++ga.ga_len;
 	}
+	else if (did_emsg)
+	    break;
     }
 
     list_unref(matchlist);
@@ -3366,9 +3368,6 @@ ins_compl_next(allow_get_expansion, count)
     {
 	/* may undisplay the popup menu first */
 	ins_compl_upd_pum();
-
-	/* Display the current match. */
-	update_screen(0);
 
 	/* display the updated popup menu */
 	ins_compl_show_pum();
@@ -7216,7 +7215,7 @@ ins_bs(c, mode, inserted_space_p)
 	 */
 	if (	   mode == BACKSPACE_CHAR
 		&& ((p_sta && in_indent)
-		    || (curbuf->b_p_sts
+		    || (curbuf->b_p_sts != 0
 			&& (*(ml_get_cursor() - 1) == TAB
 			    || (*(ml_get_cursor() - 1) == ' '
 				&& (!*inserted_space_p
@@ -7228,7 +7227,7 @@ ins_bs(c, mode, inserted_space_p)
 	    int		extra = 0;
 
 	    *inserted_space_p = FALSE;
-	    if (p_sta)
+	    if (p_sta && in_indent)
 		ts = curbuf->b_p_sw;
 	    else
 		ts = curbuf->b_p_sts;

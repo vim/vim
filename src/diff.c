@@ -1893,6 +1893,7 @@ ex_diffgetput(eap)
     buf_T	*buf;
     int		start_skip, end_skip;
     int		new_count;
+    int		buf_empty;
 
     /* Find the current buffer in the list of diff buffers. */
     idx_cur = diff_buf_idx(curbuf);
@@ -2047,9 +2048,12 @@ ex_diffgetput(eap)
 		    end_skip = 0;
 	    }
 
+	    buf_empty = FALSE;
 	    added = 0;
 	    for (i = 0; i < count; ++i)
 	    {
+		/* remember deleting the last line of the buffer */
+		buf_empty = curbuf->b_ml.ml_line_count == 1;
 		ml_delete(lnum, FALSE);
 		--added;
 	    }
@@ -2066,6 +2070,13 @@ ex_diffgetput(eap)
 		    ml_append(lnum + i - 1, p, 0, FALSE);
 		    vim_free(p);
 		    ++added;
+		    if (buf_empty && curbuf->b_ml.ml_line_count == 2)
+		    {
+			/* Added the first line into an empty buffer, need to
+			 * delete the dummy empty line. */
+			buf_empty = FALSE;
+			ml_delete((linenr_T)2, FALSE);
+		    }
 		}
 	    }
 	    new_count = dp->df_count[idx_to] + added;

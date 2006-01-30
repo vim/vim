@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 7.0aa.  Last change: 2006 Jan 26
+*quickfix.txt*  For Vim version 7.0aa.  Last change: 2006 Jan 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -43,13 +43,18 @@ easy way to do this is with the |:make| command (see below).  The
 compiler (see |errorformat| below).
 
 						*location-list* *E776*
-A location list is a window-local quickfix list. Each window can have a
-separate location list. A location list can be associated with only one
-window. When a window with a location list is split, the new window gets a
-copy of the location list. When there are no references to a location list,
-the location list is destroyed.
+A location list is similar to a quickfix list and contains a list of positions
+in files.  A location list is associated with a window and each window can
+have a separate location list.  A location list can be associated with only
+one window.  The location list is independent of the quickfix list.
 
-The following quickfix commands can be used:
+When a window with a location list is split, the new window gets a copy of the
+location list.  When there are no references to a location list, the location
+list is destroyed.
+
+The following quickfix commands can be used.  The location list commands are
+similar to the quickfix commands, replacing the 'c' prefix in the quickfix
+command with 'l'.
 
 							*:cc*
 :cc[!] [nr]		Display error [nr].  If [nr] is omitted, the same
@@ -265,7 +270,7 @@ on) is executed. See |QuickFixCmdPre| and |QuickFixCmdPost| for details.
 			current window. Works only when the location list for
 			the current window is present.  You can have more than
 			one location window opened at a time.  Otherwise, it
-			acts the same same as ":copen".
+			acts the same as ":copen".
 
 							*:ccl* *:cclose*
 :ccl[ose]		Close the quickfix window.
@@ -308,9 +313,9 @@ When the quickfix window has been filled, two autocommand events are
 triggered.  First the 'filetype' option is set to "qf", which triggers the
 FileType event.  Then the BufReadPost event is triggered.  This can be used to
 perform some action on the listed errors.  Example: >
-	au BufReadPost quickfix  setlocal nomodifiable
-		\ | silent g/^/s//\=line(".")." "/
-		\ | setlocal modifiable
+	au BufReadPost quickfix  setlocal modifiable
+		\ | silent exe 'g/^/s//\=line(".")." "/'
+		\ | setlocal nomodifiable
 This prepends the line number to each line.  Note the use of "\=" in the
 substitute string of the ":s" command, which is used to evaluate an
 expression.
@@ -323,17 +328,26 @@ window to a file and use ":cfile" to have it parsed and used as the new error
 list.
 
 						*location-list-window*
-The location list window displays the entries in a location list.  When
-opening a location list window, it is created just below the current window
-and displays the location list for the current window.  The location list
-window is similar to the quickfix window, except that you can have more than
-one location list window opened at a time.
+The location list window displays the entries in a location list.  When you
+open a location list window, it is created below the current window and
+displays the location list for the current window.  The location list window
+is similar to the quickfix window, except that you can have more than one
+location list window open at a time.
 
-When an entry is selected from the location list window, the file is opened in
-the window with the corresponding location list.  If the window is not found,
-but the file is opened in another window, then cursor is moved to that window.
-Otherwise a new window is opened. The new window gets a copy of the location
-list.
+When you select a file from the location list window, the following steps are
+used to find a window to edit the file:
+
+1. If a window with the location list displayed in the location list window is
+   present, then the file is opened in that window.
+2. If the above step fails and if the file is already opened in another
+   window, then that window is used.
+3. If the above step fails then an existing window showing a buffer with
+   'buftype' not set is used.
+4. If the above step fails, then the file is edited in a new window.
+
+In all of the above cases, if the location list for the selected window is not
+yet set, then it is set to the location list displayed in the location list
+window.
 
 =============================================================================
 3. Using more than one list of errors			*quickfix-error-lists*

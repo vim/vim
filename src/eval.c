@@ -517,7 +517,6 @@ static void f_getfsize __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getftime __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getftype __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getline __ARGS((typval_T *argvars, typval_T *rettv));
-static void f_getloclist __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getqflist __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getreg __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getregtype __ARGS((typval_T *argvars, typval_T *rettv));
@@ -6866,7 +6865,7 @@ static struct fst
     {"getftime",	1, 1, f_getftime},
     {"getftype",	1, 1, f_getftype},
     {"getline",		1, 2, f_getline},
-    {"getloclist",	1, 1, f_getloclist},
+    {"getloclist",	1, 1, f_getqflist},
     {"getqflist",	0, 0, f_getqflist},
     {"getreg",		0, 2, f_getreg},
     {"getregtype",	0, 1, f_getregtype},
@@ -7179,7 +7178,8 @@ get_func_tv(name, len, rettv, arg, firstline, lastline, doesrange,
 
 /*
  * Call a function with its resolved parameters
- * Return OK or FAIL.
+ * Return OK when the function can't be called,  FAIL otherwise.
+ * Also returns OK when an error was encountered while executing the function.
  */
     static int
 call_func(name, len, rettv, argcount, argvars, firstline, lastline,
@@ -8829,7 +8829,7 @@ filter_map(argvars, rettv, map)
     int		rem;
     int		todo;
     char_u	*msg = map ? (char_u *)"map()" : (char_u *)"filter()";
-
+    int		save_called_emsg;
 
     rettv->vval.v_number = 0;
     if (argvars[0].v_type == VAR_LIST)
@@ -8859,6 +8859,12 @@ filter_map(argvars, rettv, map)
 	prepare_vimvar(VV_VAL, &save_val);
 	expr = skipwhite(expr);
 
+	/* We reset "called_emsg" to be able to detect whether an error
+	 * occurred during evaluation of the expression.  "did_emsg" can't be
+	 * used, because it is reset when calling a function. */
+	save_called_emsg = called_emsg;
+	called_emsg = FALSE;
+
 	if (argvars[0].v_type == VAR_DICT)
 	{
 	    prepare_vimvar(VV_KEY, &save_key);
@@ -8876,7 +8882,8 @@ filter_map(argvars, rettv, map)
 		    if (tv_check_lock(di->di_tv.v_lock, msg))
 			break;
 		    vimvars[VV_KEY].vv_str = vim_strsave(di->di_key);
-		    if (filter_map_one(&di->di_tv, expr, map, &rem) == FAIL)
+		    if (filter_map_one(&di->di_tv, expr, map, &rem) == FAIL
+							       || called_emsg)
 			break;
 		    if (!map && rem)
 			dictitem_remove(d, di);
@@ -8894,7 +8901,8 @@ filter_map(argvars, rettv, map)
 		if (tv_check_lock(li->li_tv.v_lock, msg))
 		    break;
 		nli = li->li_next;
-		if (filter_map_one(&li->li_tv, expr, map, &rem) == FAIL)
+		if (filter_map_one(&li->li_tv, expr, map, &rem) == FAIL
+							       || called_emsg)
 		    break;
 		if (!map && rem)
 		    listitem_remove(l, li);
@@ -8902,6 +8910,8 @@ filter_map(argvars, rettv, map)
 	}
 
 	restore_vimvar(VV_VAL, &save_val);
+
+	called_emsg |= save_called_emsg;
     }
 
     copy_tv(&argvars[0], rettv);
@@ -9795,18 +9805,18 @@ f_getline(argvars, rettv)
     get_buffer_lines(curbuf, lnum, end, retlist, rettv);
 }
 
-static void get_qf_ll_ist __ARGS((win_T *wp, typval_T *rettv));
-
 /*
- * Shared by getqflist() and getloclist() functions
+ * "getqflist()" and "getloclist()" functions
  */
+/*ARGSUSED*/
     static void
-get_qf_ll_ist(wp, rettv)
-    win_T	*wp;
+f_getqflist(argvars, rettv)
+    typval_T	*argvars;
     typval_T	*rettv;
 {
 #ifdef FEAT_QUICKFIX
     list_T	*l;
+    win_T	*wp;
 #endif
 
     rettv->vval.v_number = FALSE;
@@ -9817,40 +9827,17 @@ get_qf_ll_ist(wp, rettv)
 	rettv->vval.v_list = l;
 	rettv->v_type = VAR_LIST;
 	++l->lv_refcount;
+	wp = NULL;
+	if (argvars[0].v_type != VAR_UNKNOWN)	/* getloclist() */
+	{
+	    wp = find_win_by_nr(&argvars[0]);
+	    if (wp == NULL)
+		return;
+	}
+
 	(void)get_errorlist(wp, l);
     }
 #endif
-
-}
-
-/*
- * "getloclist()" function
- */
-/*ARGSUSED*/
-    static void
-f_getloclist(argvars, rettv)
-    typval_T	*argvars;
-    typval_T	*rettv;
-{
-    win_T	*win;
-
-    rettv->vval.v_number = FALSE;
-
-    win = find_win_by_nr(&argvars[0]);
-    if (win != NULL)
-	get_qf_ll_ist(win, rettv);
-}
-
-/*
- * "getqflist()" function
- */
-/*ARGSUSED*/
-    static void
-f_getqflist(argvars, rettv)
-    typval_T	*argvars;
-    typval_T	*rettv;
-{
-    get_qf_ll_ist(NULL, rettv);
 }
 
 /*

@@ -3318,7 +3318,7 @@ set_errorlist(wp, list, action)
 
     if (wp != NULL)
     {
-	qi = ll_get_or_alloc_list(curwin);
+	qi = ll_get_or_alloc_list(wp);
 	if (qi == NULL)
 	    return FAIL;
     }

@@ -5122,10 +5122,7 @@ mch_expand_wildcards(num_pat, pat, num_file, file, flags)
 	    for (j = 0; pat[i][j] != NUL; ++j)
 	    {
 		if (pat[i][j] == '`')
-		{
 		    intick = !intick;
-		    *p++ = pat[i][j];
-		}
 		else if (pat[i][j] == '\\' && pat[i][j + 1] != NUL)
 		{
 		    /* Remove a backslash, take char literally.  But keep
@@ -5134,19 +5131,16 @@ mch_expand_wildcards(num_pat, pat, num_file, file, flags)
 		    if (intick
 			  || vim_strchr(SHELL_SPECIAL, pat[i][j + 1]) != NULL)
 			*p++ = '\\';
-		    *p++ = pat[i][++j];
+		    ++j;
 		}
 		else if (!intick && vim_strchr(SHELL_SPECIAL,
 							   pat[i][j]) != NULL)
-		{
 		    /* Put a backslash before a special character, but not
 		     * when inside ``. */
 		    *p++ = '\\';
-		    *p++ = pat[i][j];
-		}
-		else
-		    /* Simply copy the character. */
-		    *p++ = pat[i][++j];
+
+		/* Copy one character. */
+		*p++ = pat[i][j];
 	    }
 	    *p = NUL;
 #endif

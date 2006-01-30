@@ -2,7 +2,7 @@
 " You can also use this as a start for your own set of menus.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Oct 01
+" Last Change:	2006 Jan 27
 
 " Note that ":an" (short for ":anoremenu") is often used to make a menu work
 " in all modes and avoid side effects from mappings defined by the user.
@@ -1034,7 +1034,7 @@ endif
 " Select a session to load; default to current session name if present
 fun! s:LoadVimSesn()
   if strlen(v:this_session) > 0
-    let name = v:this_session
+    let name = escape(v:this_session, ' \t#%$|<>"*?[{`')
   else
     let name = "Session.vim"
   endif
@@ -1046,7 +1046,7 @@ fun! s:SaveVimSesn()
   if strlen(v:this_session) == 0
     let v:this_session = "Session.vim"
   endif
-  execute "browse mksession! " . v:this_session
+  execute "browse mksession! " . escape(v:this_session, ' \t#%$|<>"*?[{`')
 endfun
 
 endif

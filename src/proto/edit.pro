@@ -9,6 +9,7 @@ void backspace_until_column __ARGS((int col));
 int vim_is_ctrl_x_key __ARGS((int c));
 int ins_compl_add_infercase __ARGS((char_u *str, int len, char_u *fname, int dir, int flags));
 int ins_compl_add __ARGS((char_u *str, int len, char_u *fname, int dir, int flags));
+void ins_compl_show_pum __ARGS((void));
 char_u *find_word_start __ARGS((char_u *ptr));
 char_u *find_word_end __ARGS((char_u *ptr));
 void ins_compl_check_keys __ARGS((int frequency));
