@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Jan 29
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,8 +29,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
-
-Truncating error message keeps one char too many, causes an empty line.
 
 Variant of ":helpgrep" that uses a location list?  How about:
     :lhelpgrep  (use local list in help window, not current window)
@@ -64,18 +62,14 @@ ccomplete / omnicomplete:
 		    struct pointer).
 - Special mappings for when the popup menu is visible?  Would allow for making
   a specific selection (e.g, methods vs variables).
-- Provide a function to popup the menu, so that an insert mode mapping can
-  start it (with a specific selection).
 
 spelling:
 - Also use the spelling dictionary for dictionary completion.
-  When 'dictionary' is  empty and/or when "kspell" is in 'complete'.
+  When 'dictionary' is empty and/or when "kspell" is in 'complete'.
 - Use runtime/cleanadd script to cleanup .add files.  When to invoke it?
   After deleting a word with "zw" and some timestamp difference perhaps?
   Store it as spell/cleanadd.vim.
 - suggestion for "KG" to "kg" when it's keepcase.
-- Autocommand event for when a spell file is missing.  Allows making a plugin
-  that fetches the file over internet.  Pattern == language.
 - Using KEEPCASE flag still allows all-upper word, docs say it doesn't.
   Don't allow it, because there is no other way to do this.
 - Implement NOSUGGEST flag (used for obscene words).
@@ -252,6 +246,8 @@ PLANNED FOR VERSION 7.0:
 	Completion in .NET framework SharpDevelop: http://www.icsharpcode.net
 
         - Pre-expand abbreviations, show which abbrevs would match?
+    - Provide a function to popup the menu, so that an insert mode mapping can
+      start it (with a specific selection).
 
 -   UNDO TREE: keep all states of the text, don't delete undo info.
     When making a change, instead of clearing any future undo (thus redo)
@@ -408,10 +404,6 @@ Mathias Michaelis (2004 Sep 6)
 Also place vimtutor.bat in %windir%?
 
 Add gui_mch_browsedir() for Motif, Mac OS/X.
-
-Implement:
-    :ltag	      list of matching tags, like :tselect
-Patch from Yegappan Lakshmanan, Jan 13.
 
 HTML indenting can be slow, find out why.  Any way to do some kind of
 profiling for Vim script?  At least add a function to get the current time in
@@ -2101,14 +2093,10 @@ Shared libraries:
 
 
 Tags:
-8   Add a function that returns the line in the tags file for a matching tag.
-    Can be used to extract more info (class name, inheritance, etc.) (Rico
-    Hendriks)
 7   Count before CTRL-]: jump to N'th match
 8   Scope arguments for ":tag", e.g.: ":tag class:cPage open", like Elvis.
 8   When output of ":tselect" is long, getting the more-prompt, should be able
     to type the tag number directly.
-7   Add a tag-select window.  Works like ":cwindow".  (Michal Malecki)
 7   Add the possibility to use the "-t {tag}" argument multiple times.  Open a
     window for each tag.
 7   Make output of ":tselect" a bit nicer.  Use highlighting?
@@ -3321,8 +3309,7 @@ Various improvements:
     next <li>, ]< to next </li>, [< to previous </li>.
 8   Add ":rename" command: rename the file of the current buffer and rename
     the buffer.  Buffer may be modified.
--   Perhaps ":cexpr" could read errors from a list?
-    Add %b to 'errorformat': buffer number. (Yegappan Lakshmanan / Suresh
+-   Add %b to 'errorformat': buffer number. (Yegappan Lakshmanan / Suresh
     Govindachar)
 6   In the quickfix window statusline add the command used to get the list of
     errors, e.g. ":make foo", ":grep something *.c".

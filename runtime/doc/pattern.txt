@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 7.0aa.  Last change: 2006 Jan 22
+*pattern.txt*   For Vim version 7.0aa.  Last change: 2006 Feb 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -821,7 +821,7 @@ $	At end of pattern or in front of "\|" or "\)" ("|" or ")" after "\v"):
 	{not in Vi}
 	WARNING: When the mark is moved after the pattern was used, the result
 	becomes invalid.  Vim doesn't automatically update the matches.
-	Similar to moving the cursor for |\%#|.
+	Similar to moving the cursor for "\%#" |/\%#|.
 
 						*/\%l* */\%>l* */\%<l*
 \%23l	Matches in a specific line.

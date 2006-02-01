@@ -3188,7 +3188,7 @@ foldlevelMarker(flp)
 		--flp->lvl_next;
 	}
 	else
-	    ++s;
+	    mb_ptr_adv(s);
     }
 
     /* The level can't go negative, must be missing a start marker. */

@@ -257,6 +257,17 @@ g CTRL-]		Like CTRL-], but use ":tjump" instead of ":tag".
 :tl[ast][!]		Jump to last matching tag.  See |tag-!| for [!].  {not
 			in Vi}
 
+							*:lt* *:ltag*
+:lt[ag][!] [ident]	Jump to tag [ident] and add the matching tags to a new
+			location list for the current window.  [ident] can be
+			a regexp pattern, see |tag-regexp|.  When [ident] is
+			not given, the last tag name from the tag stack is
+			used.  The search pattern to locate the tag line is
+			prefixed with "\V" to escape all the special
+			characters (very nomagic). The location list showing
+			the matching tags is independent of the tag stack.
+			See |tag-!| for [!].
+			{not in Vi}
 
 When there is no other message, Vim shows which matching tag has been jumped
 to, and the number of matching tags: >
@@ -275,6 +286,7 @@ skipped and the next matching tag is used.  Vim reports this, to notify you of
 missing files.  When the end of the list of matches has been reached, an error
 message is given.
 
+							*tag-preview*
 The tag match list can also be used in the preview window.  The commands are
 the same as above, with a "p" prepended.
 {not available when compiled without the |+quickfix| feature}

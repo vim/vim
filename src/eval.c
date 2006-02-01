@@ -400,8 +400,6 @@ static int get_option_tv __ARGS((char_u **arg, typval_T *rettv, int evaluate));
 static int get_string_tv __ARGS((char_u **arg, typval_T *rettv, int evaluate));
 static int get_lit_string_tv __ARGS((char_u **arg, typval_T *rettv, int evaluate));
 static int get_list_tv __ARGS((char_u **arg, typval_T *rettv, int evaluate));
-static list_T *list_alloc __ARGS((void));
-static void list_free __ARGS((list_T *l));
 static listitem_T *listitem_alloc __ARGS((void));
 static void listitem_free __ARGS((listitem_T *item));
 static void listitem_remove __ARGS((list_T *l, listitem_T *item));
@@ -5197,7 +5195,7 @@ failret:
  * Allocate an empty header for a list.
  * Caller should take care of the reference count.
  */
-    static list_T *
+    list_T *
 list_alloc()
 {
     list_T  *l;
@@ -5231,7 +5229,7 @@ list_unref(l)
  * Free a list, including all items it points to.
  * Ignores the reference count.
  */
-    static void
+    void
 list_free(l)
     list_T *l;
 {

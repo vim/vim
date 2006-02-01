@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 7.0aa.  Last change: 2006 Jan 29
+*quickfix.txt*  For Vim version 7.0aa.  Last change: 2006 Jan 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -311,14 +311,17 @@ You can use CTRL-W <Enter> to open a new window and jump to the error there.
 
 When the quickfix window has been filled, two autocommand events are
 triggered.  First the 'filetype' option is set to "qf", which triggers the
-FileType event.  Then the BufReadPost event is triggered.  This can be used to
-perform some action on the listed errors.  Example: >
+FileType event.  Then the BufReadPost event is triggered, using "quickfix" for
+the buffer name.  This can be used to perform some action on the listed
+errors.  Example: >
 	au BufReadPost quickfix  setlocal modifiable
 		\ | silent exe 'g/^/s//\=line(".")." "/'
 		\ | setlocal nomodifiable
 This prepends the line number to each line.  Note the use of "\=" in the
 substitute string of the ":s" command, which is used to evaluate an
 expression.
+The BufWinEnter event is also triggered, again using "quickfix" for the buffer
+name.
 
 Note: Making changes in the quickfix window has no effect on the list of
 errors.  'modifiable' is off to avoid making changes.  If you delete or insert
@@ -332,7 +335,8 @@ The location list window displays the entries in a location list.  When you
 open a location list window, it is created below the current window and
 displays the location list for the current window.  The location list window
 is similar to the quickfix window, except that you can have more than one
-location list window open at a time.
+location list window open at a time. When you use a location list command in
+this window, the displayed location list is used.
 
 When you select a file from the location list window, the following steps are
 used to find a window to edit the file:

@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Jan 28
+*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Feb 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -449,6 +449,8 @@ Win32: The ":winpos" command now also works in the console. (Vipin Aravind)
 |:caddexpr|		Add error messages from a Vim expression to an
 			existing quickfix list. (Yegappan Lakshmanan).
 
+|:ltag|			Jump to a tag and add matching tags to a location list.
+
 
 Ex command modifiers: ~
 
@@ -546,6 +548,8 @@ New autocommand events: ~
 |QuickFixCmdPre|	before :make, :grep et al. (Ciaran McCreesh)
 |QuickFixCmdPost|	after :make, :grep et al. (Ciaran McCreesh)
 |SessionLoadPost|	after loading a session file. (Yegappan Lakshmanan)
+
+|SpellFileMissing|	when a spell file can't be found
 
 
 New items in search patterns: ~
@@ -1628,5 +1632,8 @@ The "load session" toolbar item could not handle a space or other special
 characters in v:this_session.
 
 ":set sta ts=8 sw=4 sts=2" deleted 4 spaces halfway a line instead of 2.
+
+In a multi-byte file the foldmarker could be recognized in the trail byte.
+(Taro Muraoka)
 
  vim:tw=78:ts=8:ft=help:norl:

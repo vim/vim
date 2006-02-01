@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	C
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Jan 29
+" Last Change:	2006 Jan 30
 
 
 " This function is used for the 'omnifunc' option.
