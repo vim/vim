@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Jan 29
+*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Jan 31
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -2371,7 +2371,7 @@ filter({expr}, {string})					*filter()*
 
 		The operation is done in-place.  If you want a List or
 		Dictionary to remain unmodified make a copy first: >
-			:let l = filter(copy(mylist), '& =~ "KEEP"')
+			:let l = filter(copy(mylist), 'v:val =~ "KEEP"')
 
 <		Returns {expr}, the List or Dictionary that was filtered.
 		When an error is encountered while evaluating {string} no

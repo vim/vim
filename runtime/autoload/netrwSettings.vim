@@ -1,7 +1,7 @@
 " netrwSettings.vim: makes netrw settings simpler
-" Date:		Oct 12, 2005
+" Date:		Jan 26, 2006
 " Maintainer:	Charles E Campbell, Jr <drchipNOSPAM at campbellfamily dot biz>
-" Version:	4
+" Version:	6a	ASTRO-ONLY
 " Copyright:    Copyright (C) 1999-2005 Charles E. Campbell, Jr. {{{1
 "               Permission is hereby granted to use and distribute this code,
 "               with or without modifications, provided that this copyright
@@ -19,7 +19,7 @@
 if exists("g:loaded_netrwSettings") || &cp
   finish
 endif
-let g:loaded_netrwSettings  = "v4"
+let g:loaded_netrwSettings  = "v6a"
 
 " ---------------------------------------------------------------------
 " NetrwSettings: {{{1
@@ -56,10 +56,10 @@ fun! netrwSettings#NetrwSettings()
    let g:netrw_ignorenetrc= 0
   endif
 
-  put ='+ ---------------------------------------------'
-  put ='+ NetrwSettings:  (by Charles E. Campbell, Jr.)'
+  put ='+ --------------------------------------------'
+  put ='+ NetrwSettings:  by Charles E. Campbell, Jr.'
   put ='+  Press ? with cursor atop any line for help  '
-  put ='+ ---------------------------------------------'
+  put ='+ --------------------------------------------'
   let s:netrw_settings_stop= line(".")
 
   put =''
@@ -89,6 +89,12 @@ fun! netrwSettings#NetrwSettings()
   put ='+ Netrw Browser Control'
   put = 'let g:netrw_alto              = '.g:netrw_alto
   put = 'let g:netrw_altv              = '.g:netrw_altv
+  put = 'let g:netrw_browse_split      = '.g:netrw_browse_split
+  if exists("g:netrw_browsex_viewer")
+   put = 'let g:netrw_browsex_viewer    = '.g:netrw_browsex_viewer
+  else
+   put = 'let g:netrw_browsex_viewer    = (not defined)'
+  endif
   put = 'let g:netrw_dirhistmax        = '.g:netrw_dirhistmax
   put = 'let g:netrw_ftp_browse_reject = '.g:netrw_ftp_browse_reject
   put = 'let g:netrw_ftp_list_cmd      = '.g:netrw_ftp_list_cmd

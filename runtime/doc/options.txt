@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2006 Jan 29
+*options.txt*	For Vim version 7.0aa.  Last change: 2006 Jan 31
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5092,6 +5092,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  menu.vim	GUI menus |menu.vim|
 	  plugin/	plugin scripts |write-plugin|
 	  print/	files for printing |postscript-print-encoding|
+	  spell/	spell checking files |spell|
 	  syntax/	syntax files |mysyntaxfile|
 	  tutor/	files for vimtutor |tutor|
 
@@ -5727,7 +5728,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	'shiftwidth'.  'tabstop' or 'softtabstop' is used in other places.  A
 	<BS> will delete a 'shiftwidth' worth of space at the start of the
 	line.
-	When off a <Tab> always inserts blanks according to 'tabstop' or
+	When off, a <Tab> always inserts blanks according to 'tabstop' or
 	'softtabstop'.  'shiftwidth' is only used for shifting text left or
 	right |shift-left-right|.
 	What gets inserted (a Tab or spaces) depends on the 'expandtab'
@@ -5836,7 +5837,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	After this option has been set successfully, Vim will source the files
 	"spell/LANG.vim" in 'runtimepath'.  "LANG" is the value of 'spelllang'
-	up to the first comma, dot or underscore.  See |set-spc-auto|.
+	up to the first comma, dot or underscore.
+	Also see |set-spc-auto|.
 
 
 						*'spellsuggest'* *'sps'*

@@ -2181,6 +2181,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :lr	quickfix.txt	/*:lr*
 :lrewind	quickfix.txt	/*:lrewind*
 :ls	windows.txt	/*:ls*
+:lt	tagsrch.txt	/*:lt*
+:ltag	tagsrch.txt	/*:ltag*
 :lu	map.txt	/*:lu*
 :lunmap	map.txt	/*:lunmap*
 :lw	quickfix.txt	/*:lw*
@@ -4051,6 +4053,7 @@ Select-mode-mapping	visual.txt	/*Select-mode-mapping*
 Session	starting.txt	/*Session*
 SessionLoad-variable	starting.txt	/*SessionLoad-variable*
 SessionLoadPost	autocmd.txt	/*SessionLoadPost*
+SpellFileMissing	autocmd.txt	/*SpellFileMissing*
 StdinReadPost	autocmd.txt	/*StdinReadPost*
 StdinReadPre	autocmd.txt	/*StdinReadPre*
 SwapExists	autocmd.txt	/*SwapExists*
@@ -4559,6 +4562,7 @@ compl-spelling	insert.txt	/*compl-spelling*
 compl-tag	insert.txt	/*compl-tag*
 compl-vim	insert.txt	/*compl-vim*
 compl-whole-line	insert.txt	/*compl-whole-line*
+complete-functions	insert.txt	/*complete-functions*
 complete_add()	eval.txt	/*complete_add()*
 complete_check()	eval.txt	/*complete_check()*
 complex-change	change.txt	/*complex-change*
@@ -5093,6 +5097,7 @@ ft-htmlos-syntax	syntax.txt	/*ft-htmlos-syntax*
 ft-ia64-syntax	syntax.txt	/*ft-ia64-syntax*
 ft-inform-syntax	syntax.txt	/*ft-inform-syntax*
 ft-java-syntax	syntax.txt	/*ft-java-syntax*
+ft-javascript-omni	insert.txt	/*ft-javascript-omni*
 ft-ksh-syntax	syntax.txt	/*ft-ksh-syntax*
 ft-lace-syntax	syntax.txt	/*ft-lace-syntax*
 ft-lex-syntax	syntax.txt	/*ft-lex-syntax*
@@ -5183,6 +5188,8 @@ g0	motion.txt	/*g0*
 g8	various.txt	/*g8*
 g:netrw_alto	pi_netrw.txt	/*g:netrw_alto*
 g:netrw_altv	pi_netrw.txt	/*g:netrw_altv*
+g:netrw_browse_split	pi_netrw.txt	/*g:netrw_browse_split*
+g:netrw_browsex_viewer	pi_netrw.txt	/*g:netrw_browsex_viewer*
 g:netrw_cygwin	pi_netrw.txt	/*g:netrw_cygwin*
 g:netrw_dav_cmd	pi_netrw.txt	/*g:netrw_dav_cmd*
 g:netrw_fetch_cmd	pi_netrw.txt	/*g:netrw_fetch_cmd*
@@ -5379,6 +5386,7 @@ gvimrc	gui.txt	/*gvimrc*
 gw	change.txt	/*gw*
 gwgw	change.txt	/*gwgw*
 gww	change.txt	/*gww*
+gx	pi_netrw.txt	/*gx*
 gzip	pi_gzip.txt	/*gzip*
 gzip-autocmd	pi_gzip.txt	/*gzip-autocmd*
 gzip-example	autocmd.txt	/*gzip-example*
@@ -5961,6 +5969,7 @@ netrw-D	pi_netrw.txt	/*netrw-D*
 netrw-NB	pi_netrw.txt	/*netrw-NB*
 netrw-Nb	pi_netrw.txt	/*netrw-Nb*
 netrw-O	pi_netrw.txt	/*netrw-O*
+netrw-P	pi_netrw.txt	/*netrw-P*
 netrw-R	pi_netrw.txt	/*netrw-R*
 netrw-S	pi_netrw.txt	/*netrw-S*
 netrw-U	pi_netrw.txt	/*netrw-U*
@@ -5979,10 +5988,12 @@ netrw-chgup	pi_netrw.txt	/*netrw-chgup*
 netrw-contents	pi_netrw.txt	/*netrw-contents*
 netrw-cr	pi_netrw.txt	/*netrw-cr*
 netrw-credits	pi_netrw.txt	/*netrw-credits*
+netrw-ctrl-h	pi_netrw.txt	/*netrw-ctrl-h*
 netrw-ctrl-l	pi_netrw.txt	/*netrw-ctrl-l*
 netrw-curdir	pi_netrw.txt	/*netrw-curdir*
 netrw-d	pi_netrw.txt	/*netrw-d*
 netrw-debug	pi_netrw.txt	/*netrw-debug*
+netrw-del	pi_netrw.txt	/*netrw-del*
 netrw-delete	pi_netrw.txt	/*netrw-delete*
 netrw-dir	pi_netrw.txt	/*netrw-dir*
 netrw-dirlist	pi_netrw.txt	/*netrw-dirlist*
@@ -5995,7 +6006,6 @@ netrw-externapp	pi_netrw.txt	/*netrw-externapp*
 netrw-file	pi_netrw.txt	/*netrw-file*
 netrw-fixup	pi_netrw.txt	/*netrw-fixup*
 netrw-ftp	pi_netrw.txt	/*netrw-ftp*
-netrw-h	pi_netrw.txt	/*netrw-h*
 netrw-handler	pi_netrw.txt	/*netrw-handler*
 netrw-help	pi_netrw.txt	/*netrw-help*
 netrw-hexplore	pi_netrw.txt	/*netrw-hexplore*
@@ -6026,6 +6036,7 @@ netrw-pexplore	pi_netrw.txt	/*netrw-pexplore*
 netrw-preview	pi_netrw.txt	/*netrw-preview*
 netrw-problems	pi_netrw.txt	/*netrw-problems*
 netrw-protocol	pi_netrw.txt	/*netrw-protocol*
+netrw-prvwin	pi_netrw.txt	/*netrw-prvwin*
 netrw-q	pi_netrw.txt	/*netrw-q*
 netrw-r	pi_netrw.txt	/*netrw-r*
 netrw-read	pi_netrw.txt	/*netrw-read*
@@ -6038,6 +6049,7 @@ netrw-sexplore	pi_netrw.txt	/*netrw-sexplore*
 netrw-sort	pi_netrw.txt	/*netrw-sort*
 netrw-sortsequence	pi_netrw.txt	/*netrw-sortsequence*
 netrw-starstar	pi_netrw.txt	/*netrw-starstar*
+netrw-start	pi_netrw.txt	/*netrw-start*
 netrw-transparent	pi_netrw.txt	/*netrw-transparent*
 netrw-u	pi_netrw.txt	/*netrw-u*
 netrw-uidpass	pi_netrw.txt	/*netrw-uidpass*
@@ -6051,6 +6063,7 @@ netrw-write	pi_netrw.txt	/*netrw-write*
 netrw-x	pi_netrw.txt	/*netrw-x*
 netrw-xfer	pi_netrw.txt	/*netrw-xfer*
 netrw.vim	pi_netrw.txt	/*netrw.vim*
+netrw_filehandler	pi_netrw.txt	/*netrw_filehandler*
 netterm-mouse	options.txt	/*netterm-mouse*
 network	pi_netrw.txt	/*network*
 new-5	version5.txt	/*new-5*
@@ -6605,6 +6618,7 @@ spell-SOFOTO	spell.txt	/*spell-SOFOTO*
 spell-SUGSWITHDOTS	spell.txt	/*spell-SUGSWITHDOTS*
 spell-SYLLABLE	spell.txt	/*spell-SYLLABLE*
 spell-SYLLABLENUM	spell.txt	/*spell-SYLLABLENUM*
+spell-SpellFileMissing	spell.txt	/*spell-SpellFileMissing*
 spell-TRY	spell.txt	/*spell-TRY*
 spell-UPP	spell.txt	/*spell-UPP*
 spell-VERSION	spell.txt	/*spell-VERSION*
@@ -6635,6 +6649,7 @@ spell-wordlist-format	spell.txt	/*spell-wordlist-format*
 spell-yiddish	spell.txt	/*spell-yiddish*
 spell.txt	spell.txt	/*spell.txt*
 spellbadword()	eval.txt	/*spellbadword()*
+spellfile.vim	spell.txt	/*spellfile.vim*
 spellsuggest()	eval.txt	/*spellsuggest()*
 split()	eval.txt	/*split()*
 splitfind	windows.txt	/*splitfind*
@@ -6888,6 +6903,7 @@ tag-highlight	syntax.txt	/*tag-highlight*
 tag-matchlist	tagsrch.txt	/*tag-matchlist*
 tag-old-static	tagsrch.txt	/*tag-old-static*
 tag-overloaded	version5.txt	/*tag-overloaded*
+tag-preview	tagsrch.txt	/*tag-preview*
 tag-priority	tagsrch.txt	/*tag-priority*
 tag-regexp	tagsrch.txt	/*tag-regexp*
 tag-search	tagsrch.txt	/*tag-search*

@@ -46,6 +46,8 @@ void list_unref __ARGS((list_T *l));
 dictitem_T *dict_lookup __ARGS((hashitem_T *hi));
 int list_append_dict __ARGS((list_T *list, dict_T *dict));
 int garbage_collect __ARGS((void));
+list_T *list_alloc __ARGS((void));
+void list_free __ARGS((list_T *l));
 dict_T *dict_alloc __ARGS((void));
 int dict_add_nr_str __ARGS((dict_T *d, char *key, long nr, char_u *str));
 char_u *get_dict_string __ARGS((dict_T *d, char_u *key));

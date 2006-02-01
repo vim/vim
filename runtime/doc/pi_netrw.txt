@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 7.0.  Last change: Nov 28, 2005
+*pi_netrw.txt*  For Vim version 7.0.  Last change: Jan 27, 2006
 
 		VIM REFERENCE MANUAL    by Charles E. Campbell, Jr.
 
@@ -10,7 +10,8 @@
 ==============================================================================
 0. Contents						*netrw-contents*
 
-1.  Netrw Reference......................................|netrw-ref|
+1.  Starting With Netrw.................................|netrw-start|
+2.  Netrw Reference......................................|netrw-ref|
       CONTROLLING EXTERNAL APPLICTIONS...................|netrw-externapp|
       READING............................................|netrw-read|
       WRITING............................................|netrw-write|
@@ -18,14 +19,14 @@
       CHANGING THE USERID AND PASSWORD...................|netrw-chgup|
       VARIABLES..........................................|netrw-variables|
       PATHS..............................................|netrw-path|
-2.  Network-Oriented File Transfer.......................|netrw-xfer|
+3.  Network-Oriented File Transfer.......................|netrw-xfer|
       NETRC..............................................|netrw-netrc|
       PASSWORD...........................................|netrw-passwd|
-3.  Activation...........................................|netrw-activate|
-4.  Transparent File Transfer............................|netrw-transparent|
-5.  Ex Commands..........................................|netrw-ex|
-6.  Variables and Options................................|netrw-var|
-7.  Directory Browsing...................................|netrw-browse| {{{1
+4.  Activation...........................................|netrw-activate|
+5.  Transparent File Transfer............................|netrw-transparent|
+6.  Ex Commands..........................................|netrw-ex|
+7.  Variables and Options................................|netrw-var|
+8.  Directory Browsing...................................|netrw-browse| {{{1
       Maps...............................................|netrw-maps|
       Exploring..........................................|netrw-explore-cmds|
       Quick Reference Commands Table.....................|netrw-browse-cmds|
@@ -41,7 +42,7 @@
       Deleting Files Or Directories......................|netrw-delete|
       Renaming Files Or Directories......................|netrw-move|
       Hiding Files Or Directories........................|netrw-a|
-      Edit File Or Directory Hiding List.................|netrw-h|
+      Edit File Or Directory Hiding List.................|netrw-ctrl-h|
       Browsing With A Horizontally Split Window..........|netrw-o|
       Preview Window.....................................|netrw-p|
       Selecting Sorting Style............................|netrw-s|
@@ -56,19 +57,19 @@
       Changing To A Bookmarked Directory.................|netrw-B| |netrw-NB|
       Listing Bookmarks And History......................|netrw-q|
       Improving Directory Browsing.......................|netrw-listhack| }}}1
-8.  Problems and Fixes...................................|netrw-problems|
-9.  Debugging............................................|netrw-debug|
-10. History..............................................|netrw-history|
-11. Credits..............................................|netrw-credits|
+9.  Problems and Fixes...................................|netrw-problems|
+10. Debugging............................................|netrw-debug|
+11. History..............................................|netrw-history|
+12. Credits..............................................|netrw-credits|
 
 The Netrw plugin is generally sourced automatically as it is a
 |standard-plugin|.  That said, to make use of netrw, one must
 have plugins available which can be done with the following
-two lines in your <.vimrc>:
+two lines in your <.vimrc>: >
 
 	set nocp                    " 'compatible' is not set
 	filetype plugin on          " plugins are enabled
-
+<
 You can avoid loading this plugin by setting the "loaded_netrw" variable
 in your <.vimrc> file: >
 
@@ -77,14 +78,66 @@ in your <.vimrc> file: >
 {Vi does not have any of this}
 
 ==============================================================================
-1. Netrw Reference						*netrw-ref*
+1. Starting With Netrw						*netrw-start*
+
+Netrw makes reading, writing, and browsing over a network connection easy!
+First, make sure that you have plugins enabled, so you'll need to have at
+least the following in your <.vimrc>: (or see |netrw-activate|) >
+
+	set nocp                    " 'compatible' is not set
+	filetype plugin on          " plugins are enabled
+<
+(see |'cp'| and |:filetype-plugin-on|)
+
+Netrw supports "transparent" editing of files on other machines using urls
+(see |netrw-transparent|). As an example of this, let's assume you have an
+account on some other machine; try >
+
+	vim scp://hostname/path/to/file
+<
+if you have an ssh connection.  Want to make ssh/scp easier to use? Check
+out |netrw-listhack|!
+
+What if you have ftp, not ssh/scp?  That's easy, too; try >
+
+	vim ftp://hostname/path/to/file
+<
+Want to make ftp simpler to use?  See if your ftp supports a file called
+<.netrc> -- typically it goes in your home directory, has read/write
+permissions for only the user to read (ie. not group, world, other, etc),
+and has lines resembling >
+
+	machine HOSTNAME login USERID password "PASSWORD"
+	machine HOSTNAME login USERID password "PASSWORD"
+	...
+	default          login USERID password "PASSWORD"
+<
+How about browsing -- ie. you just want to look around before editing a
+file.  For browsing on your current host, just "edit" a directory: >
+
+	vim .
+	vim /home/userid/path
+<
+For browsing on a remote host, "edit" a directory (but make sure that
+the directory name is followed by a "/"): >
+
+	vim scp://hostname/
+	vim ftp://hostname/path/to/dir/
+<
+See |netrw-browse| for more!
+
+There's more protocols supported than scp and ftp, too: see the next
+section, |netrw-externapp|.
+
+==============================================================================
+2. Netrw Reference						*netrw-ref*
 
 CONTROLLING EXTERNAL APPLICTIONS			*netrw-externapp*
 
 	Protocol  Variable	    Default Value
 	--------  ----------------  -------------
 	   dav:    *g:netrw_dav_cmd*  = "cadaver"
-	 fetch:  *g:netrw_fetch_cmd*  = "fetch -o"
+	 fetch:  *g:netrw_fetch_cmd*  = "fetch -o"    if fetch is available
 	   ftp:    *g:netrw_ftp_cmd*  = "ftp"
           http:   *g:netrw_http_cmd*  = "fetch -o"    if fetch is available
 	  http:    g:netrw_http_cmd   = "wget -q -O"  If wget  is available
@@ -191,7 +244,7 @@ file using root-relative paths, use the full path:
 <
 
 ==============================================================================
-2. Network-Oriented File Transfer				*netrw-xfer*
+3. Network-Oriented File Transfer				*netrw-xfer*
 
 Network-oriented file transfer under Vim is implemented by a VimL-based script
 (<netrw.vim>) using plugin techniques.  It currently supports both reading and
@@ -337,7 +390,7 @@ However, |netrw-listhack| can help with this problem.
 
 
 ==============================================================================
-3. Activation						*netrw-activate*
+4. Activation						*netrw-activate*
 
 Network-oriented file transfers are available by default whenever
 |'nocompatible'| mode is enabled.  The <netrw.vim> file resides in your
@@ -351,7 +404,7 @@ up vim.  I suggest that, at a minimum, you have at least the following in your
 <
 
 ==============================================================================
-4. Transparent File Transfer				*netrw-transparent*
+5. Transparent File Transfer				*netrw-transparent*
 
 Transparent file transfers occur whenever a regular file read or write
 (invoked via an |:autocmd| for |BufReadCmd| or |BufWriteCmd| events) is made.
@@ -365,7 +418,7 @@ See |netrw-activate| for more on how to encourage your vim to use plugins
 such as netrw.
 
 ==============================================================================
-5. Ex Commands						*netrw-ex*
+6. Ex Commands						*netrw-ex*
 
 The usual read/write commands are supported.  There are also a couple of
 additional commands available.
@@ -403,7 +456,7 @@ additional commands available.
 
 
 ==============================================================================
-6. Variables and Options       			*netrw-options* *netrw-var*
+7. Variables and Options       			*netrw-options* *netrw-var*
 
 The script <netrw.vim> uses several variables which can affect <netrw.vim>'s
 behavior.  These variables typically may be set in the user's <.vimrc> file:
@@ -476,10 +529,10 @@ variables listed below, and may be modified by the user.
                                                   transformed however they wish
                                                   by NetReadFixup()
     g:netrw_dav_cmd    variable   ="cadaver"
-    g:netrw_fetch_cmd  variable   ="fetch -o"
+    g:netrw_fetch_cmd  variable   ="fetch -o"     if fetch is available
     g:netrw_ftp_cmd    variable   ="ftp"
-    g:netrw_http_cmd   variable   ="fetch -o" else if fetch is executable
-    g:netrw_http_cmd   variable   ="wget -O"  if      wget  is executable
+    g:netrw_http_cmd   variable   ="fetch -o"     if      fetch is available
+    g:netrw_http_cmd   variable   ="wget -O"      else if wget  is available
     g:netrw_list_cmd   variable   ="ssh HOSTNAME ls -Fa"
     g:netrw_rcp_cmd    variable   ="rcp"
     g:netrw_rsync_cmd  variable   ="rsync -a"
@@ -488,9 +541,10 @@ variables listed below, and may be modified by the user.
     -------------------------------------------------------------------------
 <
 								*netrw-ftp*
-The first two options both help with certain ftp's that give trouble
-otherwise.  In order to best understand how to use these options if ftp is
-giving you troubles, a bit of discussion follows on how netrw does ftp reads.
+The first two options (netrw_ftp and NetReadFixup) both help with certain
+ftp's that give trouble otherwise.  In order to best understand how to use
+these options if ftp is giving you troubles, a bit of discussion follows on
+how netrw does ftp reads.
 
 The g:netrw_..._cmd variables specify the external program to use handle the
 associated protocol (rcp, ftp, etc), plus any options.
@@ -572,7 +626,7 @@ itself:
 >
 
 ==============================================================================
-7. Directory Browsing	*netrw-browse* *netrw-dir* *netrw-list* *netrw-help*
+8. Directory Browsing	*netrw-browse* *netrw-dir* *netrw-list* *netrw-help*
 
 MAPS   								*netrw-maps*
      ?................Help.......................................|netrw-help|
@@ -585,7 +639,7 @@ MAPS   								*netrw-maps*
      c................Make Browsing Directory The Current Dir....|netrw-c|
      d................Make A New Directory.......................|netrw-d|
      D................Deleting Files or Directories..............|netrw-D|
-     <c-h>............Edit File/Directory Hiding List............|netrw-h|
+     <c-h>............Edit File/Directory Hiding List............|netrw-ctrl-h|
      i................Long Listing...............................|netrw-i|
      <c-l>............Refreshing the Listing.....................|netrw-ctrl-l|
      o................Browsing with a Horizontal Split...........|netrw-o|
@@ -615,27 +669,38 @@ QUICK REFERENCE COMMANDS TABLE     			*netrw-browse-cmds*
 	Command	Explanation
         -------	-----------
 <          ?	Causes Netrw to issue help
-	 <cr>	Netrw will enter the directory or read the file
-	 <del>	Netrw will attempt to remove the file/directory
-	   d	Make a directory
-	   D	Netrw will attempt to remove the file(s)/directory(ies)
-	   R	Netrw will attempt to rename the file(s)/directory(ies)
-	   -	Makes Netrw go up one directory
-	   a	Toggles between normal display,
-	    	hiding (suppress display of files matching g:netrw_list_hide)
-	    	showing (display only files which match g:netrw_list_hide)
-	   c	Make current browsing directory the current directory
-	 <c-h>	Edit file hiding list
-	   i	Toggles between long and short listing
-	 <c-l>	Causes Netrw to refresh the directory listing
+	 <cr>	Netrw will enter the directory or read the file |netrw-cr|
+	 <del>	Netrw will attempt to remove the file/directory |netrw-del|
+	   -	Makes Netrw go up one directory |netrw--|
+	   a	Toggles between normal display, |netrw-a|
+		 hiding (suppress display of files matching g:netrw_list_hide)
+		 showing (display only files which match g:netrw_list_hide)
+	   b	bookmark current directory; use Nb if compact listing
+		 in use |netrw-b|
+	   B	go to previous bookmarked directory; use Nb if compact
+		 listing is in use |netrw-B|
+	   c	Make current browsing directory the current directory |netrw-c|
+	   d	Make a directory |netrw-d|
+	   D	Netrw will attempt to remove the file(s)/directory(ies) |netrw-D|
+	 <c-h>	Edit file hiding list |netrw-ctrl-h|
+	   i	Toggles between long and short listing |netrw-i|
+	 <c-l>	Causes Netrw to refresh the directory listing |netrw-ctrl-l|
+	  Nb	Same as b, but always available |netrw-Nb|
+	  NB	Same as B, but always available |netrw-NB|
 	   o	Enter the file/directory under the cursor in a new browser
-	   	window.  A horizontal split is used.
-	   p	Preview the file
-	   r	Reverse sorting order
-	   s	Select sorting style: by name, time, or file size
+		 window.  A horizontal split is used. |netrw-o|
+	   O	Obtain a file specified by cursor |netrw-O|
+	   p	Preview the file |netrw-p|
+	   P	Browse in the previously used window |netrw-P|
+	   r	Reverse sorting order |netrw-r|
+	   R	Rename the designed file(s)/directory(ies) |netrw-R|
+	   s	Select sorting style: by name, time, or file size |netrw-s|
+	   S	Specify suffix priority for name-sorting |netrw-S|
+	   u	Change to recently-visited directory |netrw-u|
+	   U	Change to subsequently-visited directory |netrw-U|
 	   v	Enter the file/directory under the cursor in a new browser
-	   	window.  A vertical split is used.
-	   x	Apply a function to a file.
+		 window.  A vertical split is used. |netrw-v|
+	   x	Apply a function to a file. (special browsers) |netrw-x|
 
 NETRW BROWSER VARIABLES					*netrw-browse-var*
 >
@@ -650,6 +715,19 @@ NETRW BROWSER VARIABLES					*netrw-browse-var*
  				by setting this variable (see |netrw-v|)
 				 default: =0
 
+  *g:netrw_browse_split*	when browsing, <cr> will open the file by:
+				=0: re-using the same window
+				=1: horizontally splitting the window first  
+				=2: vertically   splitting the window first  
+  *g:netrw_browsex_viewer*	specify user's preference for a viewer: >
+					"kfmclient exec"
+					"gnome-open"
+<				If >
+					"-"
+<				is used, then netrwFileHandler() will look for
+				a script/function to handle the given
+				extension.  (see |netrw_filehandler|).
+<
   *g:netrw_ftp_browse_reject*	ftp can produce a number of errors and warnings
 				that can show up as "directories" and "files"
 				in the listing.  This pattern is used to
@@ -866,6 +944,11 @@ protocol given in the original read request.
   or more spaces embedded in it, or any trailing spaces, then you'll need to
   use the "thin" format to select it.
 
+The |g:netrw_browse_split| option, which is zero by default, may be used to
+cause the opening of files to be done in a new window.  The splitting will
+be done horizontally if the option is one and vertically if the option is
+two.
+
 
 OBTAINING A FILE						*netrw-O*
 
@@ -921,7 +1004,7 @@ directory.  Attempts to make a local directory that already exists (as either
 a file or a directory) will be detected, reported on, and ignored.
 
 
-DELETING FILES OR DIRECTORIES			*netrw-delete* *netrw-D*
+DELETING FILES OR DIRECTORIES		*netrw-delete* *netrw-D* *netrw-del*
 
 Deleting/removing files and directories involves moving the cursor to the
 file/directory to be deleted and pressing "D".  Directories must be empty
@@ -971,7 +1054,7 @@ ways: ignore it, hide files which match, and show only those files which
 match.  The "a" map allows the user to cycle about these three ways.
 
 The g:netrw_list_hide variable holds a comma delimited list of patterns (ex.
-\.obj) which specify the hiding list. (also see |netrw-h|)  To set the hiding
+\.obj) which specify the hiding list. (also see |netrw-ctrl-h|)  To set the hiding
 list, use the <c-h> map.  As an example, to hide files which begin with a ".",
 one may use the <c-h> map to set the hiding list to '^\..*' (or one may put
 let g:netrw_list_hide= '^\..*' in one's <.vimrc>).  One may then use the "a"
@@ -979,7 +1062,7 @@ key to show all files, hide matching files, or to show only the matching
 files.
 
 
-EDIT FILE OR DIRECTORY HIDING LIST		*netrw-h* *netrw-edithide*
+EDIT FILE OR DIRECTORY HIDING LIST		*netrw-ctrl-h* *netrw-edithide*
 
 The "<ctrl-h>" map brings up a requestor allowing the user to change the
 file/directory hiding list.  The hiding list consists of one or more patterns
@@ -1007,6 +1090,20 @@ PREVIEW WINDOW					*netrw-p* *netrw-preview*
 
 One may use a preview window (currently only for local browsing) by using the
 "p" key when the cursor is atop the desired filename to be previewed.
+
+
+PREVIOUS WINDOW					*netrw-P* *netrw-prvwin*
+
+To edit a file or directory in the previously used window (see :he |CTRL-W_P|),
+press a "P".  If there's only one window, then the one window will be
+horizontally split (above/below splitting is controlled by |g:netrw_alto|,
+and its initial size is controlled by |g:netrw_winsize|).
+
+If there's more than one window, the previous window will be re-used on
+the selected file/directory.  If the previous window's associated buffer
+has been modified, and there's only one window with that buffer, then
+the user will be asked if s/he wishes to save the buffer first (yes,
+no, or cancel).
 
 
 SELECTING SORTING STYLE				*netrw-s* *netrw-sort*
@@ -1068,15 +1165,30 @@ window and cursor at the right, have
 in your <.vimrc>.
 
 
-CUSTOMIZING BROWSING WITH A USER FUNCTION	*netrw-x* *netrw-handler*
+CUSTOMIZING BROWSING WITH A USER FUNCTION	*netrw-x* *netrw-handler* *gx*
 
-One may "enter" a file with a special handler, thereby firing up a browser or
-other application, for example, on a file by hitting the "x" key.  The special
-handler varies:
+Certain files, such as html, gif, jpeg, (word/office) doc, etc, files, are
+best seen with a special handler (ie. a tool provided with your computer).
+Netrw allows one to invoke such special handlers by: >
+
+	* when Exploring, hit the "x" key
+	* when editing, hit gx with the cursor atop the special filename
+<
+Netrw determines which special handler by the following method:
+
+  * if |g:netrw_browsex_viewer| exists, then it will be used to attempt to
+    view files.  Examples of useful settings (place into your <.vimrc>): >
+
+	:let g:netrw_browsex_viewer= "kfmclient exec"
+<   or >
+	:let g:netrw_browsex_viewer= "gnome-open"
+<
+    If g:netrw_browsex_viewer == '-', then netrwFileHandler() will be
+    invoked first (see |netrw_filehandler|).
 
   * for Windows 32 or 64, the url and FileProtocolHandler dlls are used.  
-  * for KDE (with kfmclient): kfmclient is used.
   * for Gnome (with gnome-open): gnome-open is used.
+  * for KDE (with kfmclient): kfmclient is used.
   * otherwise the netrwFileHandler plugin is used.
 
 The file's suffix is used by these various approaches to determine an
@@ -1084,6 +1196,7 @@ appropriate application to use to "handle" these files.  Such things as
 OpenOffice (*.sfx), visualization (*.jpg, *.gif, etc), and PostScript (*.ps,
 *.eps) can be handled.
 
+							*netrw_filehandler*
 The netrwFileHandler applies a user-defined function to a file, based on its
 extension.  Of course, the handler function must exist for it to be called!
 >
@@ -1093,10 +1206,12 @@ extension.  Of course, the handler function must exist for it to be called!
 See the <plugin/netrwFileHandlers.vim> for an example of how to handle an html
 file with mozilla.
 
-One may write custom netrwFileHandlers; please look at the
-plugin/netrwFileHandlers.vim script for examples.  If its likely to be
-generally useful, please feel free to forward a copy to me for future
-inclusion in the distribution.
+One may write custom netrwFileHandlers; please look at the >
+
+	plugin/netrwFileHandlers.vim
+
+script for examples.  If its likely to be generally useful, please feel free
+to forward a copy to me for future inclusion in the distribution.
 
 
 MAKING THE BROWSING DIRECTORY THE CURRENT DIRECTORY	*netrw-c* *netrw-curdir*
@@ -1168,7 +1283,7 @@ help on what each of the variables do.
 
 
 ==============================================================================
-8. Problems and Fixes						*netrw-problems*
+9. Problems and Fixes						*netrw-problems*
 
 	(This section is likely to grow as I get feedback)
 	(also see |netrw-debug|)
@@ -1233,7 +1348,7 @@ help on what each of the variables do.
 
 
 ==============================================================================
-9. Debugging						*netrw-debug*
+10. Debugging						*netrw-debug*
 
 The <netrw.vim> script is typically available as:
 >
@@ -1282,8 +1397,23 @@ which is loaded automatically at startup (assuming :set nocp).
 		NdrOchip at ScampbellPfamily.AbizM - NOSPAM
 
 ==============================================================================
-10. History						*netrw-history*
+11. History						*netrw-history* {{{1
 
+	v78: * progress has been made on allowing spaces inside directory
+	       names for remote work (reading, writing, browsing).  (scp)
+	v77: * Mikolaj Machowski fixed a bug in a substitute command
+	     * g:netrw_browsex_viewer implemented
+	     * Mikolaj Machowski pointed out that gnome-open is often
+	       executable under KDE systems, although it is effectively
+	       not functional.  NetBrowseX now looks for "kicker" as 
+	       a running process to determine if KDE is actually the
+	       really running.
+	     * Explorer's O functionality was inadvertently left out.
+	       Netrw now does the same thing, but with the "P" key.
+	     * added g:netrw_browse_split option
+	     * fixed a bug where the directory contained a "." but
+	       the file didn't (was treating the dirname from "."
+	       onwards as a suffix)
 	v76: * "directory is missing" error message now restores echo
 	       highlighting
 	v75: * file://... now conforms to RFC2396 (thanks to S. Zacchiroli)
@@ -1475,7 +1605,7 @@ which is loaded automatically at startup (assuming :set nocp).
 
 
 ==============================================================================
-11. Credits						*netrw-credits*
+11. Credits						*netrw-credits* {{{1
 
 	Vim editor	by Bram Moolenaar (Thanks, Bram!)
 	dav		support by C Campbell
