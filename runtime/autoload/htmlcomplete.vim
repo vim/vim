@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	XHTML 1.0 Strict
 " Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
-" Last Change:	2006 Jan 24
+" Last Change:	2006 Jan 30
 
 function! htmlcomplete#CompleteTags(findstart, base)
   if a:findstart
@@ -29,7 +29,19 @@ function! htmlcomplete#CompleteTags(findstart, base)
 			endwhile
 		endif
 	endif
-	if !exists("b:csscompl")
+	let scriptstart = searchpair('<script\>', '', '<\/script\>', "bnW")
+	let scriptend   = searchpair('<script\>', '', '<\/script\>', "nW")
+	if scriptstart != 0 && scriptend != 0 
+		if scriptstart <= curline && scriptend >= curline
+			let start = col('.') - 1
+			let b:jscompl = 1
+			let b:jsrange = [scriptstart, scriptend]
+			while start >= 0 && line[start - 1] =~ '\(\k\|-\)'
+				let start -= 1
+			endwhile
+		endif
+	endif
+	if !exists("b:csscompl") && !exists("b:jscompl")
 		let b:compl_context = getline('.')[0:(compl_begin)]
 		if b:compl_context !~ '<[^>]*$'
 			" Look like we may have broken tag. Check previous lines. Up to
@@ -68,6 +80,10 @@ function! htmlcomplete#CompleteTags(findstart, base)
 		unlet! b:csscompl
 		let context = b:compl_context
 		return csscomplete#CompleteCSS(0, context)
+	elseif exists("b:jscompl")
+		unlet! b:jscompl
+		let context = b:compl_context
+		return javascriptcomplete#CompleteJS(0, context)
 	else
 		if len(b:compl_context) == 0 && !exists("b:entitiescompl")
 			return []
@@ -111,6 +127,9 @@ function! htmlcomplete#CompleteTags(findstart, base)
 		" should abandon action - with one exception: <style> span { bo
 		if context =~ 'style[^>]\{-}>[^<]\{-}$'
 			return csscomplete#CompleteCSS(0, context)
+		elseif context =~ 'script[^>]\{-}>[^<]\{-}$'
+			let b:jsrange = [line('.'), search('<\/script\>', 'nW')]
+			return javascriptcomplete#CompleteJS(0, context)
 		else
 			return []
 		endif

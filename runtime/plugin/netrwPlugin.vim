@@ -35,7 +35,7 @@ set cpo&vim
 " Local Browsing: {{{2
 augroup FileExplorer
  au!
- au BufEnter * call s:LocalBrowse(expand("<amatch>"))
+ au BufEnter * silent! call s:LocalBrowse(expand("<amatch>"))
 augroup END
 
 " Network Browsing Reading Writing: {{{2
@@ -47,10 +47,10 @@ augroup Network
   au BufReadCmd  file://*		exe "silent doau BufReadPre ".netrw#RFC2396(expand("<amatch>"))|exe 'e '.substitute(netrw#RFC2396(expand("<amatch>")),'file://\(.*\)','\1',"")|exe "silent doau BufReadPost ".netrw#RFC2396(expand("<amatch>"))
   au BufReadCmd  file://localhost/*	exe "silent doau BufReadPre ".netrw#RFC2396(expand("<amatch>"))|exe 'e '.substitute(netrw#RFC2396(expand("<amatch>")),'file://localhost/\(.*\)','\1',"")|exe "silent doau BufReadPost ".netrw#RFC2396(expand("<amatch>"))
  endif
- au BufReadCmd   ftp://*,rcp://*,scp://*,http://*,dav://*,rsync://*,sftp://*	exe "silent doau BufReadPre ".expand("<amatch>")|exe "Nread 0r ".expand("<amatch>")|exe "silent doau BufReadPost ".expand("<amatch>")
- au FileReadCmd  ftp://*,rcp://*,scp://*,http://*,dav://*,rsync://*,sftp://*	exe "silent doau FileReadPre ".expand("<amatch>")|exe "Nread "   .expand("<amatch>")|exe "silent doau FileReadPost ".expand("<amatch>")
- au BufWriteCmd  ftp://*,rcp://*,scp://*,dav://*,rsync://*,sftp://*		exe "silent doau BufWritePre ".expand("<amatch>")|exe "Nwrite " .expand("<amatch>")|exe "silent doau BufWritePost ".expand("<amatch>")
- au FileWriteCmd ftp://*,rcp://*,scp://*,dav://*,rsync://*,sftp://*		exe "silent doau FileWritePre ".expand("<amatch>")|exe "'[,']Nwrite " .expand("<amatch>")|exe "silent doau FileWritePost ".expand("<amatch>")
+ au BufReadCmd   ftp://*,rcp://*,scp://*,http://*,dav://*,rsync://*,sftp://*	exe "silent doau BufReadPre ".expand("<amatch>")|exe 'Nread 0r "'.expand("<amatch>").'"'|exe "silent doau BufReadPost ".expand("<amatch>")
+ au FileReadCmd  ftp://*,rcp://*,scp://*,http://*,dav://*,rsync://*,sftp://*	exe "silent doau FileReadPre ".expand("<amatch>")|exe 'Nread "'   .expand("<amatch>").'"'|exe "silent doau FileReadPost ".expand("<amatch>")
+ au BufWriteCmd  ftp://*,rcp://*,scp://*,dav://*,rsync://*,sftp://*		exe "silent doau BufWritePre ".expand("<amatch>")|exe 'Nwrite "' .expand("<amatch>").'"'|exe "silent doau BufWritePost ".expand("<amatch>")
+ au FileWriteCmd ftp://*,rcp://*,scp://*,dav://*,rsync://*,sftp://*		exe "silent doau FileWritePre ".expand("<amatch>")|exe "'[,']".'Nwrite "' .expand("<amatch>").'"'|exe "silent doau FileWritePost ".expand("<amatch>")
 augroup END
 
 " Commands: :Nread, :Nwrite, :NetUserPass {{{2
@@ -69,6 +69,12 @@ com! -nargs=? -bar -bang		Pexplore	call netrw#Explore(-2,0,0,<q-args>)
 " Commands: NetrwSettings {{{2
 com! -nargs=0 NetrwSettings :call netrwSettings#NetrwSettings()
 
+" Maps:
+if !hasmapto('<Plug>NetrwBrowseX')
+ nmap <unique> gx <Plug>NetrwBrowseX
+endif
+nno <silent> <Plug>NetrwBrowseX :call netrw#NetBrowseX(expand("<cWORD>"),0)<cr>
+
 " ---------------------------------------------------------------------
 " LocalBrowse: {{{2
 fun! s:LocalBrowse(dirname)
@@ -76,7 +82,7 @@ fun! s:LocalBrowse(dirname)
   " the BufEnter event causes triggering when attempts to write to
   " the DBG buffer are made.
   if isdirectory(a:dirname)
-   call netrw#DirBrowse(a:dirname)
+   silent! call netrw#DirBrowse(a:dirname)
   endif
   " not a directory, ignore it
 endfun

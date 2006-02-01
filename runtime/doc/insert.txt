@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0aa.  Last change: 2006 Jan 29
+*insert.txt*    For Vim version 7.0aa.  Last change: 2006 Jan 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1126,6 +1126,42 @@ also works for other versions of HTML. Features:
 
 Note: When used first time completion menu will be shown with little delay
 - this is time needed for loading of data file.
+
+
+JAVASCRIPT                                             *ft-javascript-omni*
+
+Completion of most elements of JavaScript language and HTML DOM.
+
+Complete:
+
+- variables
+- function name
+- function arguments
+- properties of variables trying to detect type of variable
+- complete HTML DOM objects and properties depending on context
+- keywords of language
+
+Completion works in separate JavaScript files (&ft==javascript) and inside of
+<script> tag of (X)HTML. Note: scanning will be only in scope of current tag.
+At the moment separate files are not taken into account.
+
+DOM compatibility
+
+At the moment (beginning of 2006) there are two main browsers - MS Internet
+Explorer and Mozilla Firefox. These two applications are covering over 90% of
+market. Theoretically standards are created by W3C organisation
+(http://www.w3c.org) but they are not always followed/implemented.
+
+		IE 	FF 	W3C  Omni completion ~
+		+/-     +/-     +    +               ~
+                +       +       -    +               ~
+                +       -       -    -               ~
+                -       +       -    -               ~
+
+Regardless from state of implementation in browsers but if element is defined
+in standards, completion plugin will place element in suggestion list. When
+both major engines implemented element, even if this is not in standards it
+will be suggested. All other elements are not placed in suggestion list.
 
 
 SYNTAX							*ft-syntax-omni*

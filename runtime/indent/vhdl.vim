@@ -1,8 +1,8 @@
 " VHDL indent ('93 syntax)
 " Language:    VHDL
 " Maintainer:  Gerald Lai <laigera+vim?gmail.com>
-" Version:     1.2
-" Last Change: 2006 Jan 26
+" Version:     1.3
+" Last Change: 2006 Jan 31
 " URL:         http://www.vim.org/scripts/script.php?script_id=1450
 
 " only load this indent file when no other was loaded
@@ -121,7 +121,7 @@ function GetVHDLindent()
     let pn = prevnonblank(pn - 1)
     let ps = getline(pn)
   endwhile
-  if (curs =~ '^\s*)' || curs =~? s:NC.'\%(\<\%(generic\|map\|port\)\>.*\)\@<!\%(=>\s*\S\+\|:[^=]\@=\s*\%(\%(in\|out\|inout\|buffer\|linkage\)\>\|\w\+\s\+:=\)\)') && (prevs =~? s:NC.'\<\%(generic\|map\|port\)\s*(\%(\s*\w\)\=' || (ps =~? s:NC.'\<\%(generic\|map\|port\)'.s:ES && prevs =~ '^\s*('))
+  if (curs =~ '^\s*)' || curs =~? '^\s*\%(\<\%(generic\|map\|port\)\>.*\)\@<!\S\+\s*\%(=>\s*\S\+\|:[^=]\@=\s*\%(\%(in\|out\|inout\|buffer\|linkage\)\>\|\w\+\s\+:=\)\)') && (prevs =~? s:NC.'\<\%(generic\|map\|port\)\s*(\%(\s*\w\)\=' || (ps =~? s:NC.'\<\%(generic\|map\|port\)'.s:ES && prevs =~ '^\s*('))
     " align closing ")" with opening "("
     if curs =~ '^\s*)'
       return stridx(prevs, '(')
@@ -261,7 +261,7 @@ function GetVHDLindent()
   " where:    start of current line
   " find previous opening statement of
   " keywords: "elsif", "if"
-  if curs =~? '^\s*\<then\>' && (prevs =~? s:NC.'\<elsif\>' || prevs =~? s:NC.s:NE.'\<if\>')
+  if curs =~? '^\s*\<then\>' && prevs =~? s:NC.'\%(\<elsif\>\|'.s:NE.'\<if\>\)'
     return ind2
   endif
 
@@ -270,23 +270,15 @@ function GetVHDLindent()
   " where:    start of current line
   " find previous opening statement of
   " keywords: "for", "if"
-  if curs =~? '^\s*\<generate\>' && (prevs =~? s:NC.s:NE.'\%(\<wait\s\+\)\@<!\<for\>' || prevs =~? s:NC.s:NE.'\<if\>')
+  if curs =~? '^\s*\<generate\>' && prevs =~? s:NC.s:NE.'\%(\%(\<wait\s\+\)\@<!\<for\>\|\<if\>\)'
     return ind2
   endif
 
   " indent:   +sw
-  " keywords: "block", "loop", "process", "record", "units"
-  " removed:  "case", "if"
+  " keywords: "begin", "block", "loop", "process", "record", "units"
+  " removed:  "case", "elsif", "if", "while"
   " where:    anywhere in previous line
-  if prevs =~? s:NC.s:NE.'\<\%(block\|loop\|process\|record\|units\)\>'
-    return ind + &sw
-  endif
-
-  " indent:   +sw
-  " keywords: "begin"
-  " removed:  "elsif", "while"
-  " where:    anywhere in previous line
-  if prevs =~? s:NC.'\<begin\>'
+  if prevs =~? s:NC.'\%(\<begin\>\|'.s:NE.'\<\%(block\|loop\|process\|record\|units\)\>\)'
     return ind + &sw
   endif
 
@@ -301,40 +293,70 @@ function GetVHDLindent()
   " indent:   +sw
   " keyword:  "generate", "is", "select", "=>"
   " where:    end of previous line
-  if prevs =~? s:NC.'\<\%(generate\|is\|select\)'.s:ES || prevs =~? s:NC.'=>'.s:ES
+  if prevs =~? s:NC.'\%(\%('.s:NE.'\<generate\|\<is\|\<select\)\|=>\)'.s:ES
     return ind + &sw
   endif
 
   " indent:   +sw
-  " keyword:  "else", "then"
+  " keyword:  "else"
+  " where:    start of previous line
+  " keyword:  "then"
   " where:    end of previous line
   " _note_:   indent allowed to leave this filter
-  if prevs =~? s:NC.'\<\%(else\|then\)'.s:ES
+  if prevs =~? '^\s*else\>' || prevs =~? s:NC.'\<then'.s:ES
     let ind = ind + &sw
   endif
 
   " ****************************************************************************************
-  " indent:   -sw if previous line does not begin with "when"
-  " keywords: "when"
+  " indent:   -sw
+  " keywords: "when", provided previous line does not begin with "when"
   " where:    start of current line
   let s4 = '^\s*when\>'
-  if curs =~? s4 && prevs !~? s4
-    return ind - &sw
+  if curs =~? s4
+    if prevs !~? s4
+      return ind - &sw
+    else
+      return ind2
+    endif
   endif
 
   " indent:   -sw
-  " keywords: "else", "elsif"
+  " keywords: "else", "elsif", provided previous line does not contain "then"
   " where:    start of current line
   if curs =~? '^\s*\%(else\|elsif\)\>'
-    return ind - &sw
+    if prevs !~? s:NC.'\<then\>'
+      return ind - &sw
+    else
+      return ind2
+    endif
   endif
 
   " indent:   -sw
-  " keywords: "end" + "block", "for", "function", "generate", "if", "loop", "procedure", "process", "record", "units"
+  " keywords: "end" + "if", provided previous line does not begin with "else", not contain "then"
   " where:    start of current line
-  " keyword:  ")"
+  if curs =~? '^\s*end\s\+if\>'
+    if prevs !~? '^\s*else\>' && prevs !~? s:NC.'\<then\>'
+      return ind - &sw
+    else
+      return ind2
+    endif
+  endif
+
+  " indent:   -sw
+  " keywords: "end" + "function", "procedure", provided previous line does not contain "begin"
   " where:    start of current line
-  if curs =~? '^\s*end\s\+\%(block\|for\|function\|generate\|if\|loop\|procedure\|process\|record\|units\)\>' || curs =~ '^\s*)'
+  if curs =~? '^\s*end\s\+\%(function\|procedure\)\>'
+    if prevs !~? s:NC.'\<begin\>'
+      return ind - &sw
+    else
+      return ind2
+    endif
+  endif
+
+  " indent:   -sw
+  " keywords: "end" + "block", "for", "generate", "loop", "process", "record", "units"
+  " where:    start of current line
+  if curs =~? '^\s*end\s\+\%(block\|for\|generate\|loop\|process\|record\|units\)\>'
     return ind - &sw
   endif
 
@@ -386,6 +408,13 @@ function GetVHDLindent()
     return ind - &sw
   endif
 
+  " indent:   -sw
+  " keyword:  ")"
+  " where:    start of current line
+  if curs =~ '^\s*)'
+    return ind - &sw
+  endif
+
   " indent:   0
   " keywords: "end" + "architecture", "configuration", "entity", "package"
   " where:    start of current line
@@ -403,8 +432,8 @@ function GetVHDLindent()
   " ****************************************************************************************
   " indent:   maintain indent of previous opening statement
   " keywords: without "generic", "map", "port" + ":" but not ":=" + "in", "out", "inout", "buffer", "linkage", variable & ":="
-  " where:    anywhere in current line
-  if curs =~? s:NC.'\%(\<\%(generic\|map\|port\)\>.*\)\@<!:[^=]\@=\s*\%(\%(in\|out\|inout\|buffer\|linkage\)\>\|\w\+\s\+:=\)'
+  " where:    start of current line
+  if curs =~? '^\s*\%(\<\%(generic\|map\|port\)\>.*\)\@<!\S\+\s*:[^=]\@=\s*\%(\%(in\|out\|inout\|buffer\|linkage\)\>\|\w\+\s\+:=\)'
     return ind2
   endif
 

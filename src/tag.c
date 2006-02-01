@@ -122,6 +122,7 @@ static taggy_T ptag_entry = {NULL};
  * type == DT_SELECT:	":tselect [tag]", select tag from a list of all matches
  * type == DT_JUMP:	":tjump [tag]", jump to tag or select tag from a list
  * type == DT_CSCOPE:	use cscope to find the tag
+ * type == DT_LTAG:	use location list for displaying tag matches
  * type == DT_FREE:	free cached matches
  *
  * for cscope, returns TRUE if we jumped to tag or aborted, FALSE otherwise
@@ -215,6 +216,9 @@ do_tag(tag, type, count, forceit, verbose)
 
 	/* new pattern, add to the tag stack */
 	if (*tag && (type == DT_TAG || type == DT_SELECT || type == DT_JUMP
+#ifdef FEAT_QUICKFIX
+		    || type == DT_LTAG
+#endif
 #ifdef FEAT_CSCOPE
 		    || type == DT_CSCOPE
 #endif
@@ -409,6 +413,9 @@ do_tag(tag, type, count, forceit, verbose)
 		switch (type)
 		{
 		    case DT_FIRST: cur_match = count - 1; break;
+#ifdef FEAT_QUICKFIX
+		    case DT_LTAG: cur_match = 0; break;
+#endif
 		    case DT_SELECT:
 		    case DT_JUMP:
 #ifdef FEAT_CSCOPE
@@ -748,6 +755,148 @@ do_tag(tag, type, count, forceit, verbose)
 		}
 		ask_for_selection = TRUE;
 	    }
+#if defined(FEAT_QUICKFIX) && defined(FEAT_EVAL)
+	    else
+	    if (type == DT_LTAG)
+	    {
+		list_T	*list;
+		char_u	tag_name[128 + 1];
+		char_u	fname[MAXPATHL + 1];
+		char_u	cmd[CMDBUFFSIZE + 1];
+
+		/*
+		 * Add the matching tags to the location list for the current
+		 * window.
+		 */
+
+		list = list_alloc();
+		if (list == NULL)
+		    goto end_do_tag;
+
+		for (i = 0; i < num_matches; ++i)
+		{
+		    int	    len, cmd_len;
+		    long    lnum;
+		    dict_T  *dict;
+
+		    parse_match(matches[i], &tagp);
+
+		    /* Save the tag name */
+		    len = tagp.tagname_end - tagp.tagname;
+		    if (len > 128)
+			len = 128;
+		    vim_strncpy(tag_name, tagp.tagname, len);
+		    tag_name[len] = NUL;
+
+		    /* Save the tag file name */
+		    p = tag_full_fname(&tagp);
+		    if (p == NULL)
+			continue;
+		    STRCPY(fname, p);
+		    vim_free(p);
+
+		    /*
+		     * Get the line number or the search pattern used to locate
+		     * the tag.
+		     */
+		    lnum = 0;
+		    if (isdigit(*tagp.command))
+			/* Line number is used to locate the tag */
+			lnum = atol((char *)tagp.command);
+		    else
+		    {
+			char_u *cmd_start, *cmd_end;
+
+			/* Search pattern is used to locate the tag */
+
+			/* Locate the end of the command */
+			cmd_start = tagp.command;
+			cmd_end = tagp.command_end;
+			if (cmd_end == NULL)
+			{
+			    for (p = tagp.command;
+				 *p && *p != '\r' && *p != '\n'; ++p)
+				;
+			    cmd_end = p;
+			}
+			/*
+			 * Now, cmd_end points to the character after the
+			 * command. Adjust it to point to the last
+			 * character of the command.
+			 */
+			cmd_end--;
+
+			/*
+			 * Skip the '/' and '?' characters at the
+			 * beginning and end of the search pattern.
+			 */
+			if (*cmd_start == '/' || *cmd_start == '?')
+			    cmd_start++;
+
+			if (*cmd_end == '/' || *cmd_end == '?')
+			    cmd_end--;
+
+			len = 0;
+			cmd[0] = NUL;
+
+			/*
+			 * If "^" is present in the tag search pattern, then
+			 * copy it first.
+			 */
+			if (*cmd_start == '^')
+			{
+			    STRCPY(cmd, "^");
+			    cmd_start++;
+			    len++;
+			}
+
+			/*
+			 * Precede the tag pattern with \V to make it very
+			 * nomagic.
+			 */
+			STRCAT(cmd, "\\V");
+			len += 2;
+
+			cmd_len = cmd_end - cmd_start + 1;
+			if (cmd_len > (CMDBUFFSIZE - 5))
+			    cmd_len = CMDBUFFSIZE - 5;
+			STRNCAT(cmd, cmd_start, cmd_len);
+			len += cmd_len;
+
+			if (cmd[len - 1] == '$')
+			{
+			    /* 
+			     * Replace '$' at the end of the search pattern
+			     * with '\$'
+			     */
+			    cmd[len - 1] = '\\';
+			    cmd[len] = '$';
+			    len++;
+			}
+
+			cmd[len] = NUL;
+		    }
+
+		    if ((dict = dict_alloc()) == NULL)
+			continue;
+		    if (list_append_dict(list, dict) == FAIL)
+		    {
+			vim_free(dict);
+			continue;
+		    }
+
+		    dict_add_nr_str(dict, "text", 0L, tag_name);
+		    dict_add_nr_str(dict, "filename", 0L, fname);
+		    dict_add_nr_str(dict, "lnum", lnum, NULL);
+		    if (lnum == 0)
+			dict_add_nr_str(dict, "pattern", 0L, cmd);
+		}
+
+		set_errorlist(curwin, list, ' ');
+
+		list_free(list);
+	    }
+#endif
 
 	    if (ask_for_selection == TRUE)
 	    {

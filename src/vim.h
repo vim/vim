@@ -945,6 +945,7 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 #define DT_HELP		8	/* like DT_TAG, but no wildcards */
 #define DT_JUMP		9	/* jump to new tag or selection from list */
 #define DT_CSCOPE	10	/* cscope find command (like tjump) */
+#define DT_LTAG		11	/* tag using location list */
 #define DT_FREE		99	/* free cached matches */
 
 /*
@@ -1104,6 +1105,7 @@ enum auto_event
     EVENT_FUNCUNDEFINED,	/* if calling a function which doesn't exist */
     EVENT_REMOTEREPLY,		/* upon string reception from a remote vim */
     EVENT_SWAPEXISTS,		/* found existing swap file */
+    EVENT_SPELLFILEMISSING,	/* spell file missing */
     NUM_EVENTS			/* MUST be the last one */
 };
 

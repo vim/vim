@@ -211,6 +211,8 @@ N is used to indicate an optional count that can be given before the command.
 |:ts|	   :ts[elect][!] [tag]	List matching tags and select one to jump to
 |:tjump|   :tj[ump][!] [tag]	Jump to tag [tag] or select from list when
 				   there are multiple matches
+|:ltag|	   :lt[ag][!] [tag]	Jump to tag [tag] and add matching tags to the
+				   location list.
 
 |:tags|	   :tags		Print tag list
 |CTRL-T|   N  CTRL-T		Jump back from Nth older tag in tag list

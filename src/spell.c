@@ -2229,6 +2229,9 @@ spell_load_lang(lang)
     char_u	fname_enc[85];
     int		r;
     spelload_T	sl;
+#ifdef FEAT_AUTOCMD
+    int		round;
+#endif
 
     /* Copy the language name to pass it to spell_load_cb() as a cookie.
      * It's truncated when an error is detected. */
@@ -2236,24 +2239,41 @@ spell_load_lang(lang)
     sl.sl_slang = NULL;
     sl.sl_nobreak = FALSE;
 
-    /*
-     * Find the first spell file for "lang" in 'runtimepath' and load it.
-     */
-    vim_snprintf((char *)fname_enc, sizeof(fname_enc) - 5,
-					"spell/%s.%s.spl", lang, spell_enc());
-    r = do_in_runtimepath(fname_enc, FALSE, spell_load_cb, &sl);
-
-    if (r == FAIL && *sl.sl_lang != NUL)
+#ifdef FEAT_AUTOCMD
+    /* We may retry when no spell file is found for the language, an
+     * autocommand may load it then. */
+    for (round = 1; round <= 2; ++round)
+#endif
     {
-	/* Try loading the ASCII version. */
+	/*
+	 * Find the first spell file for "lang" in 'runtimepath' and load it.
+	 */
 	vim_snprintf((char *)fname_enc, sizeof(fname_enc) - 5,
-						  "spell/%s.ascii.spl", lang);
+					"spell/%s.%s.spl", lang, spell_enc());
 	r = do_in_runtimepath(fname_enc, FALSE, spell_load_cb, &sl);
+
+	if (r == FAIL && *sl.sl_lang != NUL)
+	{
+	    /* Try loading the ASCII version. */
+	    vim_snprintf((char *)fname_enc, sizeof(fname_enc) - 5,
+						  "spell/%s.ascii.spl", lang);
+	    r = do_in_runtimepath(fname_enc, FALSE, spell_load_cb, &sl);
+
+#ifdef FEAT_AUTOCMD
+	    if (r == FAIL && *sl.sl_lang != NUL && round == 1
+		    && apply_autocmds(EVENT_SPELLFILEMISSING, lang,
+					      curbuf->b_fname, FALSE, curbuf))
+		continue;
+	    break;
+#endif
+	}
     }
 
     if (r == FAIL)
+    {
 	smsg((char_u *)_("Warning: Cannot find word list \"%s.%s.spl\" or \"%s.ascii.spl\""),
 						     lang, spell_enc(), lang);
+    }
     else if (sl.sl_slang != NULL)
     {
 	/* At least one file was loaded, now load ALL the additions. */

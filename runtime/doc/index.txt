@@ -1250,6 +1250,8 @@ The commands are sorted on the non-optional part of their name.
 |:lpfile|	:lpf[ile]	go to last location in previous file
 |:lrewind|	:lr[ewind]	go to the specified location, default first one
 |:ls|		:ls		list all buffers
+|:ltag|		:lt[ag]		jump to tag and add matching tags to the
+				location list
 |:lunmap|	:lu[nmap]	like ":unmap!" but includes Lang-Arg mode
 |:lwindow|	:lw[indow]	open or close location window
 |:move|		:m[ove]		move lines

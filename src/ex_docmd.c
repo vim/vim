@@ -3502,6 +3502,7 @@ set_one_cmd_context(xp, buff)
 	case CMD_tag:
 	case CMD_stag:
 	case CMD_ptag:
+	case CMD_ltag:
 	case CMD_tselect:
 	case CMD_stselect:
 	case CMD_ptselect:
@@ -8799,6 +8800,16 @@ ex_tag_cmd(eap, name)
 #endif
 		  cmd = DT_TAG;
 		  break;
+    }
+
+    if (name[0] == 'l')
+    {
+#ifndef FEAT_QUICKFIX
+	ex_ni(eap);
+	return;
+#else
+	cmd = DT_LTAG;
+#endif
     }
 
     do_tag(eap->arg, cmd, eap->addr_count > 0 ? (int)eap->line2 : 1,

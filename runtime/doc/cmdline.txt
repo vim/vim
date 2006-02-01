@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 7.0aa.  Last change: 2006 Jan 19
+*cmdline.txt*   For Vim version 7.0aa.  Last change: 2006 Feb 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -746,7 +746,7 @@ Note: these are typed literally, they are not special keys!
 	<amatch>   when executing autocommands, is replaced with the match for
 		   which this autocommand was executed.  It differs from
 		   <afile> only when the file name isn't used to match with
-		   (for FileType and Syntax events).
+		   (for FileType, Syntax and SpellFileMissing events).
 	<sfile>    when executing a ":source" command, is replaced with the
 		   file name of the sourced file;
 		   when executing a function, is replaced with
