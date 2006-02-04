@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 03
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -32,9 +32,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 Variant of ":helpgrep" that uses a location list?  How about:
     :lhelpgrep  (use local list in help window, not current window)
-    :lgrep
-    :lvimgrep
-    :lmake
 
 ccomplete / omnicomplete:
 - Extra info for each entry to show in a tooltip kind of thing.
@@ -46,11 +43,6 @@ ccomplete / omnicomplete:
 		    v = variable, f = function/method, c = composite (object,
 		    struct pointer).
   For C add tag "kind" field?
-- When an option is set: In completion mode and the user types (identifier)
-  characters, advance to the first match instead of removing the popup menu.
-  If there is no match remove the selection. (Yegappan Lakshmanan)
-  Keep the current list of all matches.  Use the text typed (or completed) so
-  far to make a second list with only matching entries.
 - Complete the longest common match instead of the first match?
     Do this when "longest" is in 'completeopt'.
     Pressing CTRL-N or CTRL-P will get the whole match, as before.
@@ -289,6 +281,8 @@ CONSIDERED FOR VERSION 7.0:
     Need to be able to search the windows in inactive tabs, e.g. for the
     quickfix window.
     Use "1gt" - "99gt" to switch to a tab?
+    Also hidden tabs? Useful for messing with a temp buffer without changing
+    the window layout.
 -   EMBEDDING: Make it possible to run Vim inside a window of another program.
     For Xwindows this can be done with XReparentWindow().
     For GTK Neil Bird has a patch to use Vim like a widget.

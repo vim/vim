@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Feb 02
+*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Feb 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -357,6 +357,7 @@ through the |g@| operator.
 
 See |:map-operator| for the explanation and an example.
 
+
 Location list						*new-location-list*
 -------------
 
@@ -364,6 +365,8 @@ The support for a per-window quickfix list (location list) is added. The
 location list can be displayed in a location window (similar to the quickfix
 window). You can open more than one location list window. A set of commands
 similar to the quickfix commands are added to browse the location list.
+(Yegappan Lakshmanan)
+
 
 Various new items					*new-items-7*
 -----------------
@@ -448,8 +451,16 @@ Win32: The ":winpos" command now also works in the console. (Vipin Aravind)
 
 |:caddexpr|		Add error messages from a Vim expression to an
 			existing quickfix list. (Yegappan Lakshmanan).
+|:caddbuffer|		Add errors from the current buffer to the quickfix
+			list.
 
 |:ltag|			Jump to a tag and add matching tags to a location list.
+|:lmake|		Like |:make| but use the location list.
+|:lgrep|		Like |:grep| but use the location list.
+|:lgrepadd|		Like |:grepadd| but use the location list.
+|:lvimgrep|		Like |:vimgrep| but use the location list.
+|:lvimgrepadd|		Like |:vimgrepadd| but use the location list.
+|:laddbuffer|		Like |:caddbuffer| but use the location list.
 
 
 Ex command modifiers: ~
