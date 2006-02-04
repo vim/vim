@@ -5126,10 +5126,11 @@ mch_expand_wildcards(num_pat, pat, num_file, file, flags)
 		else if (pat[i][j] == '\\' && pat[i][j + 1] != NUL)
 		{
 		    /* Remove a backslash, take char literally.  But keep
-		     * backslash before special character and inside
-		     * backticks. */
+		     * backslash inside backticks, before a special character
+		     * and before a backtick. */
 		    if (intick
-			  || vim_strchr(SHELL_SPECIAL, pat[i][j + 1]) != NULL)
+			  || vim_strchr(SHELL_SPECIAL, pat[i][j + 1]) != NULL
+			  || pat[i][j + 1] == '`')
 			*p++ = '\\';
 		    ++j;
 		}
@@ -5356,7 +5357,8 @@ mch_expand_wildcards(num_pat, pat, num_file, file, flags)
 	/* Space or NL separates */
 	if (shell_style == STYLE_ECHO || shell_style == STYLE_BT)
 	{
-	    while (!(shell_style == STYLE_ECHO && *p == ' ') && *p != '\n')
+	    while (!(shell_style == STYLE_ECHO && *p == ' ')
+						   && *p != '\n' && *p != NUL)
 		++p;
 	    if (p == buffer + len)		/* last entry */
 		*p = NUL;
