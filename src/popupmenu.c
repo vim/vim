@@ -84,7 +84,7 @@ pum_display(array, size, selected, row, height, col)
     }
 
     /* don't display when we only have room for one line */
-    if (pum_height <= 1)
+    if (pum_height < 1 || (pum_height == 1 && size > 1))
 	return;
 
     /* Compute the width of the widest match. */

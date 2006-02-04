@@ -2,7 +2,7 @@
 "
 " Menu Translations:	Japanese (EUC-JP)
 " Translated By:	MURAOKA Taro  <koron@tka.att.ne.jp>
-" Last Change:		29-Apr-2004.
+" Last Change:		04-Feb-2006.
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")
@@ -142,7 +142,23 @@ menutrans &Open<Tab>:copen		開く(&O)<Tab>:copen
 menutrans &Close<Tab>:cclose		閉じる(&C)<Tab>:cclose
 menutrans &Convert\ to\ HEX<Tab>:%!xxd	HEXへ変換(&C)<Tab>:%!xxd
 menutrans Conve&rt\ back<Tab>:%!xxd\ -r	HEXから逆変換(&R)<Tab>%!xxd\ -r
-menutrans &Set\ Compiler		コンパイラ設定(&S)
+menutrans Se&T\ Compiler		コンパイラ設定(&T)
+
+" Tools.Spelling Menu
+menutrans &Spelling			スペリング(&S)
+menutrans &Spell\ Check\ On		スペルチェック有効(&S)
+menutrans Spell\ Check\ &Off		スペルチェック有効(&O)
+menutrans To\ &Next\ error<Tab>]s	次のエラー(&N)<Tab>]s
+menutrans To\ &Previous\ error<Tab>[s	前のエラー(&P)<Tab>[s
+menutrans Suggest\ &Corrections<Tab>z?	修正候補(&C)<Tab>z?
+menutrans &Repeat\ correction<Tab>:spellrepall	修正を繰り返す(&R)<Tab>:spellrepall
+menutrans Set\ language\ to\ "en"	言語を\ "en"\ に設定する
+menutrans Set\ language\ to\ "en_au"	言語を\ "en_au"\ に設定する
+menutrans Set\ language\ to\ "en_ca"	言語を\ "en_ca"\ に設定する
+menutrans Set\ language\ to\ "en_gb"	言語を\ "en_gb"\ に設定する
+menutrans Set\ language\ to\ "en_nz"	言語を\ "en_nz"\ に設定する
+menutrans Set\ language\ to\ "en_us"	言語を\ "en_us"\ に設定する
+menutrans &Find\ More\ Languages	他の言語を検索する(&F)
 
 " Tools.Fold Menu
 menutrans &Folding			折畳み(&F)

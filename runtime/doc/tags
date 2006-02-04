@@ -1788,6 +1788,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :cabc	map.txt	/*:cabc*
 :cabclear	map.txt	/*:cabclear*
 :cad	quickfix.txt	/*:cad*
+:caddb	quickfix.txt	/*:caddb*
+:caddbuffer	quickfix.txt	/*:caddbuffer*
 :caddexpr	quickfix.txt	/*:caddexpr*
 :caddf	quickfix.txt	/*:caddf*
 :caddfile	quickfix.txt	/*:caddfile*
@@ -2105,6 +2107,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :lNfile	quickfix.txt	/*:lNfile*
 :la	editing.txt	/*:la*
 :lad	quickfix.txt	/*:lad*
+:laddb	quickfix.txt	/*:laddb*
+:laddbuffer	quickfix.txt	/*:laddbuffer*
 :laddexpr	quickfix.txt	/*:laddexpr*
 :laddf	quickfix.txt	/*:laddf*
 :laddfile	quickfix.txt	/*:laddfile*
@@ -2143,6 +2147,10 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :lfirst	quickfix.txt	/*:lfirst*
 :lg	quickfix.txt	/*:lg*
 :lgetfile	quickfix.txt	/*:lgetfile*
+:lgr	quickfix.txt	/*:lgr*
+:lgrep	quickfix.txt	/*:lgrep*
+:lgrepa	quickfix.txt	/*:lgrepa*
+:lgrepadd	quickfix.txt	/*:lgrepadd*
 :list	various.txt	/*:list*
 :ll	quickfix.txt	/*:ll*
 :lla	quickfix.txt	/*:lla*
@@ -2150,6 +2158,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :lli	quickfix.txt	/*:lli*
 :llist	quickfix.txt	/*:llist*
 :lm	map.txt	/*:lm*
+:lmak	quickfix.txt	/*:lmak*
+:lmake	quickfix.txt	/*:lmake*
 :lmap	map.txt	/*:lmap*
 :lmap_l	map.txt	/*:lmap_l*
 :lmapc	map.txt	/*:lmapc*
@@ -2185,6 +2195,10 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :ltag	tagsrch.txt	/*:ltag*
 :lu	map.txt	/*:lu*
 :lunmap	map.txt	/*:lunmap*
+:lv	quickfix.txt	/*:lv*
+:lvimgrep	quickfix.txt	/*:lvimgrep*
+:lvimgrepa	quickfix.txt	/*:lvimgrepa*
+:lvimgrepadd	quickfix.txt	/*:lvimgrepadd*
 :lw	quickfix.txt	/*:lw*
 :lwindow	quickfix.txt	/*:lwindow*
 :m	change.txt	/*:m*
@@ -5406,6 +5420,7 @@ hebrew	hebrew.txt	/*hebrew*
 hebrew.txt	hebrew.txt	/*hebrew.txt*
 help	various.txt	/*help*
 help-context	help.txt	/*help-context*
+help-tags	tags	1
 help-translated	various.txt	/*help-translated*
 help-xterm-window	various.txt	/*help-xterm-window*
 help.txt	help.txt	/*help.txt*

@@ -2943,7 +2943,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	also work well with a single file: >
 		:set grepprg=grep\ -nH
 <	Special value: When 'grepprg' is set to "internal" the |:grep| command
-	works like |:vimgrep| and |:grepadd| like |:vimgrepadd|.
+	works like |:vimgrep|, |:lgrep| like |:lvimgrep|, |:grepadd| like
+	|:vimgrepadd| and |:lgrepadd| like |:lvimgrepadd|.
 	See also the section |:make_makeprg|, since most of the comments there
 	apply equally to 'grepprg'.
 	For Win32, the default is "findstr /n" if "findstr.exe" can be found,

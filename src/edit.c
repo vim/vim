@@ -87,6 +87,14 @@ static compl_T    *compl_first_match = NULL;
 static compl_T    *compl_curr_match = NULL;
 static compl_T    *compl_shown_match = NULL;
 
+/* When "compl_leader" is not NULL only matches that start with this string
+ * are used. */
+static char_u	  *compl_leader = NULL;
+
+static int	  compl_used_match;	/* Selected one of the matches.  When
+					   FALSE the match was edited or using
+					   the longest common string. */
+
 /* When the first completion is done "compl_started" is set.  When it's
  * FALSE the word to be completed must be located. */
 static int	  compl_started = FALSE;
@@ -112,9 +120,12 @@ static int  ins_compl_make_cyclic __ARGS((void));
 static void ins_compl_upd_pum __ARGS((void));
 static void ins_compl_del_pum __ARGS((void));
 static int  pum_wanted __ARGS((void));
+static int  pum_two_or_more __ARGS((void));
 static void ins_compl_dictionaries __ARGS((char_u *dict, char_u *pat, int dir, int flags, int thesaurus));
 static void ins_compl_free __ARGS((void));
 static void ins_compl_clear __ARGS((void));
+static int  ins_compl_bs __ARGS((void));
+static void ins_compl_addleader __ARGS((int c));
 static int  ins_compl_prep __ARGS((int c));
 static buf_T *ins_compl_next_buf __ARGS((buf_T *buf, int flag));
 static int  ins_compl_get_exp __ARGS((pos_T *ini, int dir));
@@ -673,13 +684,26 @@ edit(cmdchar, startln, count)
 	if (c == K_DOWN && pum_visible())
 	    c = Ctrl_N;
 
+	/* When using BS while the popup menu is wanted and still after the
+	 * character where completion started: Change the subset of matches to
+	 * what matches "compl_leader". */
+	if (compl_started && pum_wanted() && curwin->w_cursor.col > compl_col)
+	{
+	    if ((c == K_BS || c == Ctrl_H) && ins_compl_bs())
+		continue;
+
+	    /* Editing the word. */
+	    if (!compl_used_match && vim_isprintc(c))
+	    {
+		ins_compl_addleader(c);
+		continue;
+	    }
+	}
+
 	/* Prepare for or stop CTRL-X mode.  This doesn't do completion, but
 	 * it does fix up the text when finishing completion. */
-	if (c != K_IGNORE)
-	{
-	    if (ins_compl_prep(c))
-		continue;
-	}
+	if (c != K_IGNORE && ins_compl_prep(c))
+	    continue;
 #endif
 
 	/* CTRL-\ CTRL-N goes to Normal mode,
@@ -2159,9 +2183,6 @@ ins_compl_del_pum()
     static int
 pum_wanted()
 {
-    compl_T     *compl;
-    int		i;
-
     /* 'completeopt' must contain "menu" */
     if (*p_cot == NUL)
 	return FALSE;
@@ -2173,6 +2194,17 @@ pum_wanted()
 #endif
 	    )
 	return FALSE;
+    return TRUE;
+}
+
+/*
+ * Return TRUE if there are two or more matches to be shown in the popup menu.
+ */
+    static int
+pum_two_or_more()
+{
+    compl_T     *compl;
+    int		i;
 
     /* Don't display the popup menu if there are no matches or there is only
      * one (ignoring the original text). */
@@ -2199,8 +2231,9 @@ ins_compl_show_pum()
     int		i;
     int		cur = -1;
     colnr_T	col;
+    int		lead_len = 0;
 
-    if (!pum_wanted())
+    if (!pum_wanted() || !pum_two_or_more())
 	return;
 
     /* Update the screen before drawing the popup menu over it. */
@@ -2211,12 +2244,18 @@ ins_compl_show_pum()
 	/* Need to build the popup menu list. */
 	compl_match_arraysize = 0;
 	compl = compl_first_match;
+	if (compl_leader != NULL)
+	    lead_len = STRLEN(compl_leader);
 	do
 	{
-	    if ((compl->cp_flags & ORIGINAL_TEXT) == 0)
+	    if ((compl->cp_flags & ORIGINAL_TEXT) == 0
+		    && (compl_leader == NULL
+			|| STRNCMP(compl->cp_str, compl_leader, lead_len) == 0))
 		++compl_match_arraysize;
 	    compl = compl->cp_next;
 	} while (compl != NULL && compl != compl_first_match);
+	if (compl_match_arraysize == 0)
+	    return;
 	compl_match_array = (char_u **)alloc((unsigned)(sizeof(char_u **)
 						    * compl_match_arraysize));
 	if (compl_match_array != NULL)
@@ -2225,7 +2264,10 @@ ins_compl_show_pum()
 	    compl = compl_first_match;
 	    do
 	    {
-		if ((compl->cp_flags & ORIGINAL_TEXT) == 0)
+		if ((compl->cp_flags & ORIGINAL_TEXT) == 0
+			&& (compl_leader == NULL
+			    || STRNCMP(compl->cp_str, compl_leader,
+							      lead_len) == 0))
 		{
 		    if (compl == compl_shown_match)
 			cur = i;
@@ -2238,21 +2280,10 @@ ins_compl_show_pum()
     else
     {
 	/* popup menu already exists, only need to find the current item.*/
-	i = 0;
-	compl = compl_first_match;
-	do
-	{
-	    if ((compl->cp_flags & ORIGINAL_TEXT) == 0)
-	    {
-		if (compl == compl_shown_match)
-		{
-		    cur = i;
-		    break;
-		}
-		++i;
-	    }
-	    compl = compl->cp_next;
-	} while (compl != NULL && compl != compl_first_match);
+	for (i = 0; i < compl_match_arraysize; ++i)
+	    if (compl_match_array[i] == compl_shown_match->cp_str)
+		break;
+	cur = i;
     }
 
     if (compl_match_array != NULL)
@@ -2472,6 +2503,8 @@ ins_compl_free()
 
     vim_free(compl_pattern);
     compl_pattern = NULL;
+    vim_free(compl_leader);
+    compl_leader = NULL;
 
     if (compl_first_match == NULL)
 	return;
@@ -2501,8 +2534,99 @@ ins_compl_clear()
     compl_matches = 0;
     vim_free(compl_pattern);
     compl_pattern = NULL;
+    vim_free(compl_leader);
+    compl_leader = NULL;
     save_sm = -1;
     edit_submode_extra = NULL;
+}
+
+/*
+ * Delete one character before the cursor and make a subset of the matches
+ * that match now.
+ * Returns TRUE if the work is done and another char to be got from the user.
+ */
+    static int
+ins_compl_bs()
+{
+    char_u	*line;
+    char_u	*p;
+
+    if (curwin->w_cursor.col <= compl_col + compl_length)
+    {
+	/* Deleted more than what was used to find matches, need to look for
+	 * matches all over again. */
+	ins_compl_free();
+	compl_started = FALSE;
+	compl_matches = 0;
+    }
+
+    line = ml_get_curline();
+    p = line + curwin->w_cursor.col;
+    mb_ptr_back(line, p);
+
+    vim_free(compl_leader);
+    compl_leader = vim_strnsave(line + compl_col, (p - line) - compl_col);
+    if (compl_leader != NULL)
+    {
+	ins_compl_del_pum();
+	ins_compl_delete();
+	ins_bytes(compl_leader + curwin->w_cursor.col - compl_col);
+
+	if (!compl_started)
+	{
+	    /* Matches were cleared, need to search for them now. */
+	    if (ins_complete(Ctrl_N) == FAIL)
+		compl_cont_status = 0;
+	    else
+	    {
+		/* Remove the completed word again. */
+		ins_compl_delete();
+		ins_bytes(compl_leader + curwin->w_cursor.col - compl_col);
+	    }
+	}
+
+	/* Show the popup menu with a different set of matches. */
+	ins_compl_show_pum();
+	compl_used_match = FALSE;
+
+	return TRUE;
+    }
+    return FALSE;
+}
+
+/*
+ * Append one character to the match leader.  May reduce the number of
+ * matches.
+ */
+    static void
+ins_compl_addleader(c)
+    int		c;
+{
+#ifdef FEAT_MBYTE
+    int		cc;
+
+    if (has_mbyte && (cc = (*mb_char2len)(c)) > 1)
+    {
+	char_u	buf[MB_MAXBYTES + 1];
+
+	(*mb_char2bytes)(c, buf);
+	buf[cc] = NUL;
+	ins_char_bytes(buf, cc);
+    }
+    else
+#endif
+	ins_char(c);
+
+    vim_free(compl_leader);
+    compl_leader = vim_strnsave(ml_get_curline() + compl_col,
+					    curwin->w_cursor.col - compl_col);
+    if (compl_leader != NULL)
+    {
+	/* Show the popup menu with a different set of matches. */
+	ins_compl_del_pum();
+	ins_compl_show_pum();
+	compl_used_match = FALSE;
+    }
 }
 
 /*
@@ -3290,6 +3414,7 @@ ins_compl_delete()
 ins_compl_insert()
 {
     ins_bytes(compl_shown_match->cp_str + curwin->w_cursor.col - compl_col);
+    compl_used_match = TRUE;
 }
 
 /*
@@ -3317,6 +3442,8 @@ ins_compl_next(allow_get_expansion, count)
     int	    num_matches = -1;
     int	    i;
     int	    todo = count;
+    compl_T *found_compl = NULL;
+    int	    found_end = FALSE;
 
     if (allow_get_expansion)
     {
@@ -3332,32 +3459,46 @@ ins_compl_next(allow_get_expansion, count)
 	if (compl_shows_dir == FORWARD && compl_shown_match->cp_next != NULL)
 	{
 	    compl_shown_match = compl_shown_match->cp_next;
-	    if (compl_shown_match->cp_next != NULL
-			   && compl_shown_match->cp_next == compl_first_match)
-		break;
+	    found_end = (compl_first_match != NULL
+			   && (compl_shown_match->cp_next == compl_first_match
+			       || compl_shown_match == compl_first_match));
 	}
 	else if (compl_shows_dir == BACKWARD
 					&& compl_shown_match->cp_prev != NULL)
 	{
+	    found_end = (compl_shown_match == compl_first_match);
 	    compl_shown_match = compl_shown_match->cp_prev;
-	    if (compl_shown_match == compl_first_match)
-		break;
+	    found_end |= (compl_shown_match == compl_first_match);
 	}
 	else
 	{
 	    compl_pending = TRUE;
-	    if (allow_get_expansion)
-	    {
-		num_matches = ins_compl_get_exp(&compl_startpos,
-							     compl_direction);
-		if (compl_pending)
-		{
-		    if (compl_direction == compl_shows_dir)
-			compl_shown_match = compl_curr_match;
-		}
-	    }
-	    else
+	    if (!allow_get_expansion)
 		return -1;
+
+	    num_matches = ins_compl_get_exp(&compl_startpos, compl_direction);
+	    if (compl_pending && compl_direction == compl_shows_dir)
+		compl_shown_match = compl_curr_match;
+	    found_end = FALSE;
+	}
+	if ((compl_shown_match->cp_flags & ORIGINAL_TEXT) == 0
+		&& compl_leader != NULL
+		&& STRNCMP(compl_shown_match->cp_str,
+				     compl_leader, STRLEN(compl_leader)) != 0)
+	    ++todo;
+	else
+	    /* Remember a matching item. */
+	    found_compl = compl_shown_match;
+
+	/* Stop at the end of the list when we found a usable match. */
+	if (found_end)
+	{
+	    if (found_compl != NULL)
+	    {
+		compl_shown_match = found_compl;
+		break;
+	    }
+	    todo = 1;	    /* use first usable match after wrapping around */
 	}
     }
 

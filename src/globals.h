@@ -105,8 +105,8 @@ EXTERN colnr_T	dollar_vcol INIT(= 0);
  * Variables for Insert mode completion.
  */
 
-/* length of the text being completed (this is deleted to be replaced by the
- * match) */
+/* Length in bytes of the text being completed (this is deleted to be replaced
+ * by the match.) */
 EXTERN int	compl_length INIT(= 0);
 
 /* Set when character typed while looking for matches and it means we should

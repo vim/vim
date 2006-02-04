@@ -138,7 +138,7 @@ syn keyword gnuplotType		boxxy[errorbars] csplines dots fsteps histeps impulses
 syn keyword gnuplotType		line[s] linesp[oints] points poiinttype sbezier splines steps
 " w lt lw ls	      = optional
 syn keyword gnuplotType		vectors xerr[orbars] xyerr[orbars] yerr[orbars] financebars candlesticks vector
-syn keyword gnuplotType		errorb[ars surface
+syn keyword gnuplotType		errorb[ars] surface
 syn keyword gnuplotType		filledcurve[s] pm3d   x1 x2 y1 y2 xy closed
 syn keyword gnuplotType		at pi front
 syn keyword gnuplotType		errorlines xerrorlines yerrorlines xyerrorlines

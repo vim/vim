@@ -2566,13 +2566,14 @@ buf_hide(buf)
 grep_internal(cmdidx)
     cmdidx_T	cmdidx;
 {
-    return ((cmdidx == CMD_grep || cmdidx == CMD_grepadd)
+    return ((cmdidx == CMD_grep || cmdidx == CMD_lgrep
+	     || cmdidx == CMD_grepadd || cmdidx == CMD_lgrepadd)
 	    && STRCMP("internal",
 			*curbuf->b_p_gp == NUL ? p_gp : curbuf->b_p_gp) == 0);
 }
 
 /*
- * Used for ":make", ":grep" and ":grepadd".
+ * Used for ":make", ":lmake", ":grep", ":lgrep", ":grepadd", and ":lgrepadd"
  */
     void
 ex_make(eap)
@@ -2581,14 +2582,19 @@ ex_make(eap)
     char_u	*fname;
     char_u	*cmd;
     unsigned	len;
+    win_T	*wp = NULL;
+    qf_info_T	*qi;
 #ifdef FEAT_AUTOCMD
     char_u	*au_name = NULL;
 
     switch (eap->cmdidx)
     {
 	case CMD_make: au_name = (char_u *)"make"; break;
+	case CMD_lmake: au_name = (char_u *)"lmake"; break;
 	case CMD_grep: au_name = (char_u *)"grep"; break;
+	case CMD_lgrep: au_name = (char_u *)"lgrep"; break;
 	case CMD_grepadd: au_name = (char_u *)"grepadd"; break;
+	case CMD_lgrepadd: au_name = (char_u *)"lgrepadd"; break;
 	default: break;
     }
     if (au_name != NULL)
@@ -2607,6 +2613,15 @@ ex_make(eap)
     {
 	ex_vimgrep(eap);
 	return;
+    }
+
+    if (eap->cmdidx == CMD_lmake || eap->cmdidx == CMD_lgrep
+	|| eap->cmdidx == CMD_lgrepadd)
+    {
+	qi = ll_get_or_alloc_list(curwin);
+	if (qi == NULL)
+	    return;
+	wp = curwin;
     }
 
     autowrite_all();
@@ -2647,10 +2662,12 @@ ex_make(eap)
     (void)char_avail();
 #endif
 
-    if (qf_init(NULL, fname, eap->cmdidx != CMD_make ? p_gefm : p_efm,
-					       eap->cmdidx != CMD_grepadd) > 0
+    if (qf_init(wp, fname, (eap->cmdidx != CMD_make
+			    && eap->cmdidx != CMD_lmake) ? p_gefm : p_efm,
+					   (eap->cmdidx != CMD_grepadd
+					    && eap->cmdidx != CMD_lgrepadd)) > 0
 	    && !eap->forceit)
-	qf_jump(NULL, 0, 0, FALSE);		/* display first error */
+	qf_jump(wp, 0, 0, FALSE);		/* display first error */
 
     mch_remove(fname);
     vim_free(fname);
@@ -2832,6 +2849,9 @@ ex_cfile(eap)
 
 /*
  * ":vimgrep {pattern} file(s)"
+ * ":vimgrepadd {pattern} file(s)"
+ * ":lvimgrep {pattern} file(s)"
+ * ":lvimgrepadd {pattern} file(s)"
  */
     void
 ex_vimgrep(eap)
@@ -2843,7 +2863,9 @@ ex_vimgrep(eap)
     char_u	*s;
     char_u	*p;
     int		fi;
+    qf_info_T	*qi = &ql_info;
     qfline_T	*prevp = NULL;
+    win_T	*wp = NULL;
     long	lnum;
     buf_T	*buf;
     int		duplicate_name = FALSE;
@@ -2859,12 +2881,13 @@ ex_vimgrep(eap)
     char_u	*au_name =  NULL;
     int		flags = 0;
     colnr_T	col;
-    qf_info_T	*qi = &ql_info;
 
     switch (eap->cmdidx)
     {
 	case CMD_vimgrep: au_name = (char_u *)"vimgrep"; break;
+	case CMD_lvimgrep: au_name = (char_u *)"lvimgrep"; break;
 	case CMD_vimgrepadd: au_name = (char_u *)"vimgrepadd"; break;
+	case CMD_lvimgrepadd: au_name = (char_u *)"lvimgrepadd"; break;
 	default: break;
     }
     if (au_name != NULL)
@@ -2875,6 +2898,15 @@ ex_vimgrep(eap)
 	    return;
     }
 #endif
+
+    if (eap->cmdidx == CMD_grep || eap->cmdidx == CMD_lvimgrep
+	|| eap->cmdidx == CMD_lgrepadd || eap->cmdidx == CMD_lvimgrepadd)
+    {
+	qi = ll_get_or_alloc_list(curwin);
+	if (qi == NULL)
+	    return;
+	wp = curwin;
+    }
 
     /* Get the search pattern: either white-separated or enclosed in // */
     regmatch.regprog = NULL;
@@ -2897,7 +2929,8 @@ ex_vimgrep(eap)
 	goto theend;
     }
 
-    if ((eap->cmdidx != CMD_grepadd && eap->cmdidx != CMD_vimgrepadd)
+    if ((eap->cmdidx != CMD_grepadd && eap->cmdidx != CMD_lgrepadd && 
+	 eap->cmdidx != CMD_vimgrepadd && eap->cmdidx != CMD_lvimgrepadd)
 					|| qi->qf_curlist == qi->qf_listcount)
 	/* make place for a new list */
 	qf_new_list(qi);
@@ -3072,7 +3105,7 @@ ex_vimgrep(eap)
     if (qi->qf_lists[qi->qf_curlist].qf_count > 0)
     {
 	if ((flags & VGR_NOJUMP) == 0)
-	    qf_jump(NULL, 0, 0, eap->forceit);
+	    qf_jump(wp, 0, 0, eap->forceit);
     }
     else
 	EMSG2(_(e_nomatch2), s);
@@ -3396,7 +3429,9 @@ set_errorlist(wp, list, action)
 
 /*
  * ":[range]cbuffer [bufnr]" command.
+ * ":[range]caddbuffer [bufnr]" command.
  * ":[range]lbuffer [bufnr]" command.
+ * ":[range]laddbuffer [bufnr]" command.
  */
     void
 ex_cbuffer(eap)
@@ -3405,7 +3440,7 @@ ex_cbuffer(eap)
     buf_T	*buf = NULL;
     qf_info_T	*qi = &ql_info;
 
-    if (eap->cmdidx == CMD_lbuffer)
+    if (eap->cmdidx == CMD_lbuffer || eap->cmdidx == CMD_laddbuffer)
     {
 	qi = ll_get_or_alloc_list(curwin);
 	if (qi == NULL)
@@ -3431,7 +3466,10 @@ ex_cbuffer(eap)
 		|| eap->line2 < 1 || eap->line2 > buf->b_ml.ml_line_count)
 	    EMSG(_(e_invrange));
 	else
-	    qf_init_ext(qi, NULL, buf, NULL, p_efm, TRUE, eap->line1, eap->line2);
+	    qf_init_ext(qi, NULL, buf, NULL, p_efm,
+			(eap->cmdidx == CMD_cbuffer
+			 || eap->cmdidx == CMD_lbuffer),
+			eap->line1, eap->line2);
     }
 }
 
