@@ -1,13 +1,13 @@
 " Vim completion script
 " Language:	C
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Jan 30
+" Last Change:	2006 Feb 03
 
 
 " This function is used for the 'omnifunc' option.
 function! ccomplete#Complete(findstart, base)
   if a:findstart
-    " Locate the start of the item, including "." and "->".
+    " Locate the start of the item, including ".", "->" and "[...]".
     let line = getline('.')
     let start = col('.') - 1
     let lastword = -1
@@ -24,6 +24,21 @@ function! ccomplete#Complete(findstart, base)
 	  let lastword = start
 	endif
 	let start -= 2
+      elseif line[start - 1] == ']'
+	" Skip over [...].
+	let n = 0
+	let start -= 1
+	while start > 0
+	  let start -= 1
+	  if line[start] == '['
+	    if n == 0
+	      break
+	    endif
+	    let n -= 1
+	  elseif line[start] == ']'  " nested []
+	    let n += 1
+	  endif
+	endwhile
       else
 	break
       endif
@@ -43,20 +58,53 @@ function! ccomplete#Complete(findstart, base)
 
   let base = s:prepended . a:base
 
+  " Don't do anything for an empty base, would result in all the tags in the
+  " tags file.
+  if base == ''
+    return []
+  endif
+
   " Split item in words, keep empty word after "." or "->".
   " "aa" -> ['aa'], "aa." -> ['aa', ''], "aa.bb" -> ['aa', 'bb'], etc.
-  let items = split(base, '\.\|->', 1)
-  if len(items) <= 1
-    " Don't do anything for an empty base, would result in all the tags in the
-    " tags file.
-    if base == ''
-      return []
+  " We can't use split, because we need to skip nested [...].
+  let items = []
+  let s = 0
+  while 1
+    let e = match(base, '\.\|->\|\[', s)
+    if e < 0
+      if s == 0 || base[s - 1] != ']'
+	call add(items, strpart(base, s))
+      endif
+      break
     endif
-
-    " Only one part, no "." or "->": complete from tags file.
-    " When local completion is wanted CTRL-N would have been used.
-    return map(taglist('^' . base), 's:Tag2item(v:val)')
-  endif
+    if s == 0 || base[s - 1] != ']'
+      call add(items, strpart(base, s, e - s))
+    endif
+    if base[e] == '.'
+      let s = e + 1	" skip over '.'
+    elseif base[e] == '-'
+      let s = e + 2	" skip over '->'
+    else
+      " Skip over [...].
+      let n = 0
+      let s = e
+      let e += 1
+      while e < len(base)
+	if base[e] == ']'
+	  if n == 0
+	    break
+	  endif
+	  let n -= 1
+	elseif base[e] == '['  " nested [...]
+	  let n += 1
+	endif
+	let e += 1
+      endwhile
+      let e += 1
+      call add(items, strpart(base, s, e - s))
+      let s = e
+    endif
+  endwhile
 
   " Find the variable items[0].
   " 1. in current function (like with "gd")
@@ -68,7 +116,33 @@ function! ccomplete#Complete(findstart, base)
     " TODO: join previous line if it makes sense
     let line = getline('.')
     let col = col('.')
-    let res = s:Nextitem(strpart(line, 0, col), items[1:])
+    if len(items) == 1
+      " Completing one word and it's a local variable: May add '[', '.' or
+      " '->'.
+      let match = items[0]
+      if match(line, match . '\s*\[') > 0
+	let match .= '['
+      else
+	let res = s:Nextitem(strpart(line, 0, col), [''], 0)
+	if len(res) > 0
+	  " There are members, thus add "." or "->".
+	  if match(line, '\*[ \t(]*' . match . '\>') > 0
+	    let match .= '->'
+	  else
+	    let match .= '.'
+	  endif
+	endif
+      endif
+      let res = [{'match': match, 'tagline' : ''}]
+    else
+      " Completing "var.", "var.something", etc.
+      let res = s:Nextitem(strpart(line, 0, col), items[1:], 0)
+    endif
+  endif
+
+  if len(items) == 1
+    " Only one part, no "." or "->": complete from tags file.
+    call extend(res, map(taglist('^' . base), 's:Tag2item(v:val)'))
   endif
 
   if len(res) == 0
@@ -88,7 +162,7 @@ function! ccomplete#Complete(findstart, base)
 	let line = diclist[i]['cmd']
 	if line[0] == '/' && line[1] == '^'
 	  let col = match(line, '\<' . items[0] . '\>')
-	  call extend(res, s:Nextitem(strpart(line, 2, col - 2), items[1:]))
+	  call extend(res, s:Nextitem(strpart(line, 2, col - 2), items[1:], 0))
 	endif
       endif
     endfor
@@ -99,46 +173,70 @@ function! ccomplete#Complete(findstart, base)
     " TODO: join previous line if it makes sense
     let line = getline('.')
     let col = col('.')
-    let res = s:Nextitem(strpart(line, 0, col), items[1:])
+    let res = s:Nextitem(strpart(line, 0, col), items[1:], 0)
   endif
 
-  " If the one and only match was what's already there and it is a composite
-  " type, add a "." or "->".
-  if len(res) == 1 && res[0]['match'] == items[-1] && len(s:SearchMembers(res, [''])) > 0
-    " If there is a '*' before the name use "->".
-    if match(res[0]['tagline'], '\*\s*' . res[0]['match'] . '\>') > 0
-      let res[0]['match'] .= '->'
-    else
-      let res[0]['match'] .= '.'
+  " If the last item(s) are [...] they need to be added to the matches.
+  let last = len(items) - 1
+  let brackets = ''
+  while last >= 0
+    if items[last][0] != '['
+      break
     endif
-  endif
+    let brackets = items[last] . brackets
+    let last -= 1
+  endwhile
 
-  return map(res, 'v:val["match"]')
+  return map(res, 's:Tagline2item(v:val, brackets)')
 endfunc
 
-"
-" Turn the tag info "val" into an item for completion.
-" "val" is is an item in the list returned by taglist().
-function! s:Tag2item(val)
-  if has_key(a:val, "kind") && a:val["kind"] == 'v'
-    if len(s:SearchMembers([{'match': a:val["name"], 'dict': a:val}], [''])) > 0
-      " If there is a '*' before the name use "->".  This assumes the command
-      " is a search pattern!
-      if match(a:val['cmd'], '\*\s*' . a:val['name'] . '\>') > 0
-        return a:val["name"] . '->'
-      else
-        return a:val["name"] . '.'
-      endif
+function! s:GetAddition(line, match, memarg, bracket)
+  " Guess if the item is an array.
+  if a:bracket && match(a:line, a:match . '\s*\[') > 0
+    return '['
+  endif
+
+  " Check if the item has members.
+  if len(s:SearchMembers(a:memarg, [''])) > 0
+    " If there is a '*' before the name use "->".
+    if match(a:line, '\*[ \t(]*' . a:match . '\>') > 0
+      return '->'
+    else
+      return '.'
     endif
   endif
-  return a:val["name"]
+  return ''
+endfunction
+
+" Turn the tag info "val" into an item for completion.
+" "val" is is an item in the list returned by taglist().
+" If it is a variable we may add "." or "->".  Don't do it for other types,
+" such as a typedef, by not including the info that s:GetAddition() uses.
+function! s:Tag2item(val)
+  if has_key(a:val, "kind")
+    if a:val["kind"] == 'v'
+      return {'match': a:val['name'], 'tagline': "\t" . a:val['cmd'], 'dict': a:val}
+    endif
+    if a:val["kind"] == 'f'
+      return {'match': a:val['name'] . '(', 'tagline': ""}
+    endif
+  endif
+  return {'match': a:val['name'], 'tagline': ''}
+endfunction
+
+" Turn a match item "val" into an item for completion.
+" "val['match']" is the matching item.
+" "val['tagline']" is the tagline in which the last part was found.
+function! s:Tagline2item(val, brackets)
+  return a:val['match'] . a:brackets . s:GetAddition(a:val['tagline'], a:val['match'], [a:val], a:brackets == '')
 endfunction
 
 
 " Find composing type in "lead" and match items[0] with it.
 " Repeat this recursively for items[1], if it's there.
+" When resolving typedefs "depth" is used to avoid infinite recursion.
 " Return the list of matches.
-function! s:Nextitem(lead, items)
+function! s:Nextitem(lead, items, depth)
 
   " Use the text up to the variable name and split it in tokens.
   let tokens = split(a:lead, '\s\+\|\<')
@@ -154,7 +252,7 @@ function! s:Nextitem(lead, items)
     endif
 
     " TODO: add more reserved words
-    if index(['int', 'float', 'static', 'unsigned', 'extern'], tokens[tidx]) >= 0
+    if index(['int', 'short', 'char', 'float', 'double', 'static', 'unsigned', 'extern'], tokens[tidx]) >= 0
       continue
     endif
 
@@ -191,9 +289,9 @@ function! s:Nextitem(lead, items)
 	    if name != ''
 	      call extend(res, s:StructMembers(cmdtokens[0] . ':' . name, a:items))
 	    endif
-	  else
+	  elseif a:depth < 10
 	    " Could be "typedef other_T some_T".
-	    call extend(res, s:Nextitem(cmdtokens[0], a:items))
+	    call extend(res, s:Nextitem(cmdtokens[0], a:items, a:depth + 1))
 	  endif
 	endif
       endif
@@ -207,6 +305,7 @@ function! s:Nextitem(lead, items)
 endfunction
 
 
+" Search for members of structure "typename" in tags files.
 " Return a list with resulting matches.
 " Each match is a dictionary with "match" and "tagline" entries.
 function! s:StructMembers(typename, items)
@@ -237,14 +336,21 @@ function! s:StructMembers(typename, items)
   endfor
 
   if len(matches) > 0
-    " No further items, return the result.
-    if len(a:items) == 1
-      return matches
-    endif
+    " Skip over [...] items
+    let idx = 1
+    while 1
+      if idx >= len(a:items)
+	return matches		" No further items, return the result.
+      endif
+      if a:items[idx][0] != '['
+	break
+      endif
+      let idx += 1
+    endwhile
 
     " More items following.  For each of the possible members find the
     " matching following members.
-    return s:SearchMembers(matches, a:items[1:])
+    return s:SearchMembers(matches, a:items[idx :])
   endif
 
   " Failed to find anything.
@@ -257,9 +363,6 @@ function! s:SearchMembers(matches, items)
   for i in range(len(a:matches))
     let typename = ''
     if has_key(a:matches[i], 'dict')
-      "if a:matches[i].dict['name'] == "gui"
-	"echomsg string(a:matches[i].dict)
-      "endif
       if has_key(a:matches[i].dict, 'typename')
 	let typename = a:matches[i].dict['typename']
       endif
@@ -273,17 +376,14 @@ function! s:SearchMembers(matches, items)
       endif
     endif
     if typename != ''
-      call extend(res, s:StructMembers(name, a:items))
+      call extend(res, s:StructMembers(typename, a:items))
     else
       " Use the search command (the declaration itself).
       let s = match(line, '\t\zs/^')
       if s > 0
 	let e = match(line, '\<' . a:matches[i]['match'] . '\>', s)
 	if e > 0
-	  "if a:matches[i].dict['name'] == "gui"
-	    "echomsg strpart(line, s, e - s)
-	  "endif
-	  call extend(res, s:Nextitem(strpart(line, s, e - s), a:items))
+	  call extend(res, s:Nextitem(strpart(line, s, e - s), a:items, 0))
 	endif
       endif
     endif

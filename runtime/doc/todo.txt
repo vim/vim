@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 01
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -37,7 +37,15 @@ Variant of ":helpgrep" that uses a location list?  How about:
     :lmake
 
 ccomplete / omnicomplete:
-- Also add . or -> when completing struct members.  use s:Tag2item()
+- Extra info for each entry to show in a tooltip kind of thing.
+    Should use a dictionary for each entry.  Fields could be:
+	word	the completed word
+	menu	menu text (use word when missing)
+	info	extra info, to be displayed in balloon (e.g., function args)
+	kind	single letter indicating the type of word:
+		    v = variable, f = function/method, c = composite (object,
+		    struct pointer).
+  For C add tag "kind" field?
 - When an option is set: In completion mode and the user types (identifier)
   characters, advance to the first match instead of removing the popup menu.
   If there is no match remove the selection. (Yegappan Lakshmanan)
@@ -49,17 +57,10 @@ ccomplete / omnicomplete:
     Need to postpone inserting anything until all matches have been found.
     Then add a completion item with the longest common string (after what was
     typed), if there is one.
-- When completing something that is a structure, add the "." or "->" right
-  away.  How to figure out if it's a pointer or not?
+- Finding out if an item has members (to add '.' or '->') requires a grep in
+  the tags files, that is very slow.  Is there another solution?  At least
+  stop at the first match.
 - When a typedef or struct is local to a file only use it in that file?
-- Extra info for each entry to show in a tooltip kind of thing.
-    Should use a dictionary for each entry.  Fields could be:
-	word	the completed word
-	menu	menu text (use word when missing)
-	info	extra info, to be displayed in balloon (e.g., function args)
-	kind	single letter indicating the type of word:
-		    v = variable, f = function/method, c = composite (object,
-		    struct pointer).
 - Special mappings for when the popup menu is visible?  Would allow for making
   a specific selection (e.g, methods vs variables).
 
@@ -112,6 +113,9 @@ spelling:
     "format/chinese.vim" plugin.
 Edward L. Fox explains how it should be done for most Asian languages. (2005
 Nov 24)
+
+An error in a function uses a line number that doesn't take line continuation
+into account. (Mikolaj Machowski)  Store line count in an extra array?
 
 Mac unicode patch (Da Woon Jung):
 - selecting proportional font breaks display
@@ -166,7 +170,7 @@ Awaiting response:
 -   mblen(NULL, 0) also in Vim 6.3?
 
 
-PLANNED FOR VERSION 7.0:
+CONSIDERED FOR VERSION 7.0:
 
 -   Omni completion: Understands the programming language and finds matches
     that make sense.  Esp. members of classes/structs.
@@ -278,7 +282,7 @@ PLANNED FOR VERSION 7.0:
     Then add GUI Tabs for some systems.
     Patch for GTK 1.2 passed on by Christian Michon, 2004 Jan 6.
     Simple patch for GTK by Luis M (nov 7).
-    Don't forget to provide an "X" to close a tab.
+    Don't forget to provide an "X" to close the current tab.
     Implementation: keep the list of windows as-is.  When switching to another
     tab make the buffers in the current windows hidden, save the window
     layout, buildup the other window layout and fill with buffers.

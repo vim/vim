@@ -1,7 +1,7 @@
 " Set options and add mapping such that Vim behaves a lot like MS-Windows
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2005 Dec 28
+" Last change:	2006 Feb 02
 
 " bail out if this isn't wanted (mrsvim.vim uses this).
 if exists("g:skip_loading_mswin") && g:skip_loading_mswin
@@ -47,18 +47,18 @@ if has("virtualedit")
   func! <SID>Paste()
     let ove = &ve
     set ve=all
-    normal `^
+    normal! `^
     if @+ != ''
-      normal "+gP
+      normal! "+gP
     endif
     let c = col(".")
-    normal i
+    normal! i
     if col(".") < c	" compensate for i<ESC> moving the cursor left
       " Avoid a beep when the text ends at the window edge.
       let vb_save = &vb
       let t_vb_save = &t_vb
       set vb t_vb=
-      normal l
+      normal! l
       let &vb = vb_save
       let &t_vb = t_vb_save
     endif
