@@ -4001,8 +4001,10 @@ skip_grep_pat(eap)
 {
     char_u	*p = eap->arg;
 
-    if (*p != NUL && (eap->cmdidx == CMD_vimgrep
-		|| eap->cmdidx == CMD_vimgrepadd || grep_internal(eap->cmdidx)))
+    if (*p != NUL && (eap->cmdidx == CMD_vimgrep || eap->cmdidx == CMD_lvimgrep
+		|| eap->cmdidx == CMD_vimgrepadd
+		|| eap->cmdidx == CMD_lvimgrepadd
+		|| grep_internal(eap->cmdidx)))
     {
 	p = skip_vimgrep_pat(p, NULL, NULL);
 	if (p == NULL)
@@ -4031,11 +4033,14 @@ replace_makeprg(eap, p, cmdlinep)
     /*
      * Don't do it when ":vimgrep" is used for ":grep".
      */
-    if ((eap->cmdidx == CMD_make
-		     || eap->cmdidx == CMD_grep || eap->cmdidx == CMD_grepadd)
+    if ((eap->cmdidx == CMD_make || eap->cmdidx == CMD_lmake
+		     || eap->cmdidx == CMD_grep || eap->cmdidx == CMD_lgrep
+		     || eap->cmdidx == CMD_grepadd
+		     || eap->cmdidx == CMD_lgrepadd)
 	    && !grep_internal(eap->cmdidx))
     {
-	if (eap->cmdidx == CMD_grep || eap->cmdidx == CMD_grepadd)
+	if (eap->cmdidx == CMD_grep || eap->cmdidx == CMD_lgrep
+	    || eap->cmdidx == CMD_grepadd || eap->cmdidx == CMD_lgrepadd)
 	{
 	    if (*curbuf->b_p_gp == NUL)
 		program = p_gp;
@@ -4174,8 +4179,11 @@ expand_filename(eap, cmdlinep, errormsgp)
 	if (!eap->usefilter
 		&& eap->cmdidx != CMD_bang
 		&& eap->cmdidx != CMD_make
+		&& eap->cmdidx != CMD_lmake
 		&& eap->cmdidx != CMD_grep
+		&& eap->cmdidx != CMD_lgrep
 		&& eap->cmdidx != CMD_grepadd
+		&& eap->cmdidx != CMD_lgrepadd
 #ifndef UNIX
 		&& !(eap->argt & NOSPC)
 #endif

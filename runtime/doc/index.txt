@@ -1069,6 +1069,7 @@ The commands are sorted on the non-optional part of their name.
 |:cNfile|	:cNf[ile]	go to last error in previous file
 |:cabbrev|	:ca[bbrev]	like ":abbreviate" but for Command-line mode
 |:cabclear|	:cabc[lear]	clear all abbreviations for Command-line mode
+|:caddbuffer|	:caddb[uffer]	add errors from buffer
 |:caddexpr|	:cad[dexpr]	add errors from expr
 |:caddfile|	:caddf[ile]	add error message to current quickfix list
 |:call|		:cal[l]		call a function
@@ -1217,6 +1218,7 @@ The commands are sorted on the non-optional part of their name.
 |:lNfile|	:lNf[ile]	go to last entry in previous file
 |:list|		:l[ist]		print lines
 |:laddexpr|	:lad[dexpr]	add locations from expr
+|:laddbuffer|	:laddb[uffer]	add locations from buffer
 |:laddfile|	:laddf[ile]	add locations to current location list
 |:last|		:la[st]		go to the last file in the argument list
 |:language|	:lan[guage]	set the language (locale)
@@ -1231,9 +1233,13 @@ The commands are sorted on the non-optional part of their name.
 |:lfile|	:lf[ile]	read file with locations and jump to first
 |:lfirst|	:lfir[st]	go to the specified location, default first one
 |:lgetfile|	:lg[etfile]	read file with locations
+|:lgrep|	:lgr[ep]	run 'grepprg' and jump to first match
+|:lgrepadd|	:lgrepa[dd]	like :grep, but append to current list
 |:ll|		:ll		go to specific location
 |:llast|	:lla[st]	go to the specified location, default last one
 |:llist|	:lli[st]	list all locations
+|:lmake|	:lmak[e]	execute external command 'makeprg' and parse
+				error messages
 |:lmap|		:lm[ap]		like ":map!" but includes Lang-Arg mode
 |:lmapclear|	:lmapc[lear]	like ":mapclear!" but includes Lang-Arg mode
 |:lnext|	:lne[xt]	go to next location
@@ -1253,6 +1259,8 @@ The commands are sorted on the non-optional part of their name.
 |:ltag|		:lt[ag]		jump to tag and add matching tags to the
 				location list
 |:lunmap|	:lu[nmap]	like ":unmap!" but includes Lang-Arg mode
+|:lvimgrep|	:lv[imgrep]	search for pattern in files
+|:lvimgrepadd|	:lvimgrepa[dd]	like :vimgrep, but append to current list
 |:lwindow|	:lw[indow]	open or close location window
 |:move|		:m[ove]		move lines
 |:mark|		:ma[rk]		set a mark
