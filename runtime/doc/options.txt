@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2006 Jan 31
+*options.txt*	For Vim version 7.0aa.  Last change: 2006 Feb 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5834,6 +5834,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	idea to set 'spelllang' after setting 'encoding' to avoid loading the
 	files twice.
 	How the related spell files are found is explained here: |spell-load|.
+
+	If the |spellfile.vim| plugin is active and you use a language name
+	for which Vim cannot find the .spl file in 'runtimepath' the plugin
+	will ask you if you want to download the file.
 
 	After this option has been set successfully, Vim will source the files
 	"spell/LANG.vim" in 'runtimepath'.  "LANG" is the value of 'spelllang'

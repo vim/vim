@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Jan 31
+*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1894,8 +1894,8 @@ char2nr({expr})						*char2nr()*
 			char2nr(" ")		returns 32
 			char2nr("ABC")		returns 65
 <		The current 'encoding' is used.  Example for "utf-8": >
-			char2nr("á")		returns 225
-			char2nr("á"[0])		returns 195
+			char2nr("?")		returns 225
+			char2nr("?"[0])		returns 195
 <		nr2char() does the opposite.
 
 cindent({lnum})						*cindent()*
@@ -3478,7 +3478,8 @@ printf({fmt}, {expr1} ...)				*printf()*
 
 		Often used items are:
 		  %s   	string
-		  %6s	string right-aligned in 6 characters
+		  %6s	string right-aligned in 6 bytes
+		  %.9s  string truncated to 9 bytes
 		  %c    single byte
 		  %d    decimal number
 		  %5d   decimal number padded with spaces to 5 characters
@@ -3486,7 +3487,7 @@ printf({fmt}, {expr1} ...)				*printf()*
 		  %04x  hex number padded with zeros to at least 4 characters
 		  %X    hex number using upper case letters
 		  %o    octal number
-		  %%    the % character
+		  %%    the % character itself
 
 		Conversion specifications start with '%' and end with the
 		conversion type.  All other characters are copied unchanged to
@@ -3532,11 +3533,10 @@ printf({fmt}, {expr1} ...)				*printf()*
 
 		field-width
 			An optional decimal digit string specifying a minimum
-			field width.  If the converted value has fewer
-			characters than the field width, it will be padded
-			with spaces on the left (or right, if the
-			left-adjustment flag has been given) to fill out the
-			field width.
+			field width.  If the converted value has fewer bytes
+			than the field width, it will be padded with spaces on
+			the left (or right, if the left-adjustment flag has
+			been given) to fill out the field width.
 
 		.precision
 			An optional precision, in the form of a period '.'
@@ -3544,8 +3544,7 @@ printf({fmt}, {expr1} ...)				*printf()*
 			string is omitted, the precision is taken as zero.
 			This gives the minimum number of digits to appear for
 			d, o, x, and X conversions, or the maximum number of
-			characters to be printed from a string for s
-			conversions.
+			bytes to be printed from a string for s conversions.
 
 		type
 			A character that specifies the type of conversion to
@@ -4906,13 +4905,14 @@ See |:verbose-cmd| for more information.
 
 			When the [abort] argument is added, the function will
 			abort as soon as an error is detected.
-			The last used search pattern and the redo command "."
-			will not be changed by the function.
 
 			When the [dict] argument is added, the function must
 			be invoked through an entry in a Dictionary.  The
 			local variable "self" will then be set to the
 			dictionary.  See |Dictionary-function|.
+
+			The last used search pattern and the redo command "."
+			will not be changed by the function.
 
 					*:endf* *:endfunction* *E126* *E193*
 :endf[unction]		The end of a function definition.  Must be on a line

@@ -2,7 +2,7 @@
 " You can also use this as a start for your own set of menus.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Jan 27
+" Last Change:	2006 Feb 02
 
 " Note that ":an" (short for ":anoremenu") is often used to make a menu work
 " in all modes and avoid side effects from mappings defined by the user.
@@ -140,14 +140,14 @@ if has("virtualedit")
   func! <SID>Paste()
     let ove = &ve
     set ve=all
-    normal `^
+    normal! `^
     if @+ != ''
-      normal "+gP
+      normal! "+gP
     endif
     let c = col(".")
-    normal i
+    normal! i
     if col(".") < c	" compensate for i<ESC> moving the cursor left
-      normal l
+      normal! l
     endif
     let &ve = ove
   endfunc
