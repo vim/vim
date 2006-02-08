@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0aa.  Last change: 2006 Jan 30
+*insert.txt*    For Vim version 7.0aa.  Last change: 2006 Feb 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -956,39 +956,61 @@ FUNCTIONS FOR FINDING COMPLETIONS			*complete-functions*
 
 This applies to 'completefunc' and 'omnifunc'.
 
-The function will be invoked with two arguments.  First the function is called
-to find the start of the text to be completed.  Secondly the function is
-called to actually find the matches.
+The function is called in two different ways:
+- First the function is called to find the start of the text to be completed.
+- Later the function is called to actually find the matches.
 
 On the first invocation the arguments are:
    a:findstart  1
    a:base	empty
 
-The function must return the column of where the completion starts.  It must
-be a number between zero and the cursor column "col('.')".  This involves
-looking at the characters just before the cursor and including those
-characters that could be part of the completed item.  The text between this
-column and the cursor column will be replaced with the matches.  Return -1 if
-no completion can be done.
+The function must return the column where the completion starts.  It must be a
+number between zero and the cursor column "col('.')".  This involves looking
+at the characters just before the cursor and including those characters that
+could be part of the completed item.  The text between this column and the
+cursor column will be replaced with the matches.  Return -1 if no completion
+can be done.
 
 On the second invocation the arguments are:
    a:findstart  0
-   a:base	the text with which matches should match, what was
+   a:base	the text with which matches should match; the text that was
 		located in the first call (can be empty)
 
 The function must return a List with the matching words.  These matches
 usually include the "a:base" text.  When there are no matches return an empty
-List.  When one of the items in the list cannot be used as a string (e.g., a
-Dictionary) then an error message is given and further items in the list are
-not used.
+List.
+
+Each list item can either be a string or a Dictionary.  When it is a string it
+is used as the completion.  When it is a Dictionary it can contain these
+items:
+	word		the completion, mandatory
+	menu		extra text for the popup menu
+	info		more information about the item
+	kind		single letter indicating the type of completion
+
+All of these must be a string.  If an item does not meet these requirements
+then an error message is given and further items in the list are not used.
+You can mix string and Dictionary items in the returned list.
+
+The "menu" item is used in the popup menu and may be truncated, thus it should
+be relatively short.  The "info" item can be longer, it may be displayed in a
+balloon.
+
+The "kind" item uses a single letter to indicate the kind of completion.  This
+may be used to show the completion differently (different color or icon).
+Currently these types can be used:
+	v	variable
+	f	function or method
+	c	composite (struct, object)
 
 When searching for matches takes some time call |complete_add()| to add each
 match to the total list.  These matches should then not appear in the returned
 list!  Call |complete_check()| now and then to allow the user to press a key
 while still searching for matches.  Stop searching when it returns non-zero.
 
-The function may move the cursor, it is restored afterwards.  This option
-cannot be set from a |modeline| or in the |sandbox|, for security reasons.
+The function is allowed to move the cursor, it is restored afterwards.  This
+option cannot be set from a |modeline| or in the |sandbox|, for security
+reasons.
 
 An example that completes the names of the months: >
 	fun! CompleteMonths(findstart, base)
@@ -1050,11 +1072,16 @@ The menu is used when:
 - There are at least two matches.
 
 While the menu is displayed these keys have a special meaning:
-<CR> and <Enter>: Accept the currently selected match
-<Up>:		  Select the previous match, as if CTRL-P was used
-<Down>:		  Select the next match, as if CTRL-N was used
-<PageUp>:	  Select a match several entries back
-<PageDown>:	  Select a match several entries further
+<CR> and <Enter> Accept the currently selected match
+<Up>		  Select the previous match, as if CTRL-P was used
+<Down>		  Select the next match, as if CTRL-N was used
+<PageUp>	  Select a match several entries back
+<PageDown>	  Select a match several entries further
+<BS> and CTRL-H   Delete one character, find the matches for the shorter word
+		  before the cursor.  This may find more matches.
+CTRL-L		  Add one character from the current match, may reduce the
+		  number of matches.  Does not work after selecting one of the
+		  matches with CTRL-N, <Up>, etc.
 
 The colors of the menu can be changed with these highlight groups:
 Pmenu		normal item  |hl-Pmenu|
@@ -1073,6 +1100,8 @@ because it adds extra information that is needed for completion.  You can find
 it here: http://ctags.sourceforge.net/
 For version 5.5.4 you should add a patch that adds the "typename:" field:
 ftp://ftp.vim.org/pub/vim/unstable/patches/ctags-5.5.4.patch
+A compiled .exe for MS-Windows can be found at:
+http://georgevreilly.com/vim/ctags.html
 
 If you want to complete system functions you can do something like this.  Use
 ctags to generate a tags file for all the system header files: >
@@ -1104,14 +1133,14 @@ Complete properties and their appropriate values according to CSS 2.1
 specification. 
 
 
-(X)HTML							*ft-html-omni*
+HTML and XHTML						*ft-html-omni*
 							*ft-xhtml-omni*
 
 CTRL-X CTRL-O provides completion of various elements of (X)HTML files.
 It is designed to support writing of XHTML 1.0 Strict files but will
 also works for other versions of HTML. Features:
 
-- after "<" complete tag name depending on context (no div suggest
+- after "<" complete tag name depending on context (no div suggestion
   inside of an a tag)
 - inside of tag complete proper attributes (no width attribute for an
   a tag)
@@ -1120,17 +1149,21 @@ also works for other versions of HTML. Features:
 - complete names of entities
 - complete values of "class" and "id" attributes with data obtained from
   style tag and included CSS files
-- when completing "style" attribute or working inside of "style" tag
+- when completing value of "style" attribute or working inside of "style" tag
   switch to |ft-css-omni| completion
+- when completing values of events attributes or working inside of "script" tag
+  switch to |ft-javascript-omni| completion
 - when used after "</" CTRL-X CTRL-O will close the last opened tag
 
 Note: When used first time completion menu will be shown with little delay
-- this is time needed for loading of data file.
+- this is time needed for loading of data file.  
+Note: Completion may fail in badly formatted documents. In such case try to
+run |:make| command to detect formatting problems.
 
 
 JAVASCRIPT                                             *ft-javascript-omni*
 
-Completion of most elements of JavaScript language and HTML DOM.
+Completion of most elements of JavaScript language and DOM elements.
 
 Complete:
 
@@ -1138,13 +1171,13 @@ Complete:
 - function name
 - function arguments
 - properties of variables trying to detect type of variable
-- complete HTML DOM objects and properties depending on context
+- complete DOM objects and properties depending on context
 - keywords of language
 
-Completion works in separate JavaScript files (&ft==javascript) and inside of
-<script> tag of (X)HTML. Note: scanning will be only in scope of current tag.
-At the moment separate files are not taken into account.
-
+Completion works in separate JavaScript files (&ft==javascript), inside of
+<script> tag of (X)HTML and in values of event attributes (including scanning
+of external files.
+ 
 DOM compatibility
 
 At the moment (beginning of 2006) there are two main browsers - MS Internet

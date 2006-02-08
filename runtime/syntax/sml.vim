@@ -1,10 +1,10 @@
 " Vim syntax file
 " Language:     SML
 " Filenames:    *.sml *.sig
-" Maintainers:  Markus Mottl            <markus@oefai.at>
+" Maintainers:  Markus Mottl            <markus.mottl@gmail.com>
 "               Fabrizio Zeno Cornelli  <zeno@filibusta.crema.unimi.it>
-" URL:          http://www.oefai.at/~markus/vim/syntax/sml.vim
-" Last Change:  2004 Jul 26
+" URL:          http://www.ocaml.info/vim/syntax/sml.vim
+" Last Change:  2006 Feb 05
 "               2001 Nov 20 - Fixed small highlighting bug with modules (MM)
 "               2001 Aug 29 - Fixed small highlighting bug  (MM)
 

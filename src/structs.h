@@ -1085,9 +1085,7 @@ struct dictvar_S
 # define B_SPELL(buf)  (0)
 #endif
 
-#ifdef FEAT_QUICKFIX
 typedef struct qf_info_S qf_info_T;
-#endif
 
 /*
  * buffer: structure that holds information about one file
@@ -2148,3 +2146,13 @@ typedef struct
 } prt_settings_T;
 
 #define PRINT_NUMBER_WIDTH 8
+
+/*
+ * Used for popup menu items.
+ */
+typedef struct
+{
+    char_u	*pum_text;	/* main menu text */
+    char_u	*pum_extra;	/* extra menu text (may be truncated) */
+    char_u	*pum_info;	/* extra info */
+} pumitem_T;

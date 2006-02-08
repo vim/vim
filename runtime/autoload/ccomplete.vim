@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	C
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Feb 03
+" Last Change:	2006 Feb 06
 
 
 " This function is used for the 'omnifunc' option.
@@ -213,22 +213,29 @@ endfunction
 " If it is a variable we may add "." or "->".  Don't do it for other types,
 " such as a typedef, by not including the info that s:GetAddition() uses.
 function! s:Tag2item(val)
+  let x = substitute(a:val['cmd'], '^/^', '', '')
+  let x = substitute(x, '$/$', '', '')
+  let x = substitute(x, a:val['name'], '@@', '')
   if has_key(a:val, "kind")
     if a:val["kind"] == 'v'
-      return {'match': a:val['name'], 'tagline': "\t" . a:val['cmd'], 'dict': a:val}
+      return {'match': a:val['name'], 'tagline': "\t" . a:val['cmd'], 'dict': a:val, 'extra': x}
     endif
     if a:val["kind"] == 'f'
-      return {'match': a:val['name'] . '(', 'tagline': ""}
+      return {'match': a:val['name'] . '(', 'tagline': "", 'extra': x}
     endif
   endif
-  return {'match': a:val['name'], 'tagline': ''}
+  return {'match': a:val['name'], 'tagline': '', 'extra': x}
 endfunction
 
 " Turn a match item "val" into an item for completion.
 " "val['match']" is the matching item.
 " "val['tagline']" is the tagline in which the last part was found.
 function! s:Tagline2item(val, brackets)
-  return a:val['match'] . a:brackets . s:GetAddition(a:val['tagline'], a:val['match'], [a:val], a:brackets == '')
+  let word = a:val['match'] . a:brackets . s:GetAddition(a:val['tagline'], a:val['match'], [a:val], a:brackets == '')
+  if has_key(a:val, 'extra')
+    return {'word': word, 'menu': a:val['extra']}
+  endif
+  return {'word': word, 'menu': substitute(a:val['tagline'], word, '@@', '')}
 endfunction
 
 

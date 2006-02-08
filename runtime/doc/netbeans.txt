@@ -1,4 +1,4 @@
-*netbeans.txt*  For Vim version 7.0aa.  Last change: 2005 Apr 04
+*netbeans.txt*  For Vim version 7.0aa.  Last change: 2006 Feb 05
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur
@@ -179,6 +179,7 @@ These messages are specific for NetBeans:
 Region is guarded, cannot modify
 		NetBeans defines guarded areas in the text, which you cannot
 		change.
+		Also sets the current buffer, if necessary.
 
 							*E656*
 NetBeans disallows writes of unmodified buffers
@@ -485,8 +486,10 @@ setContentType
 		Not implemented.
 
 setDot off	Make the buffer the current buffer and set the cursor at the
-		specified position.  If there are folds they are opened to
-		make the cursor line visible.
+		specified position.  If the buffer is open in another window
+		than make that window the current window.
+		If there are folds they are opened to make the cursor line
+		visible.
 		In version 2.1 "lnum/col" can be used instead of "off".
 
 setExitDelay seconds
@@ -566,6 +569,7 @@ stopDocumentListen
 
 unguard off len
 		Opposite of "guard", remove guarding for a text area.
+		Also sets the current buffer, if necessary.
 
 version		Not implemented.
 
@@ -612,6 +616,7 @@ insert off text
 			123		no problem
 			123 !message	failed
 		Note that the message in the reply is not quoted.
+		Also sets the current buffer, if necessary.
 
 remove off length
 		Delete "length" bytes of text at position "off".  Both
@@ -620,6 +625,7 @@ remove off length
 			123		no problem
 			123 !message	failed
 		Note that the message in the reply is not quoted.
+		Also sets the current buffer, if necessary.
 
 saveAndExit	Perform the equivalent of closing Vim: ":confirm qall".
 		If there are no changed files or the user does not cancel the

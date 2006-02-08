@@ -6342,20 +6342,26 @@ dict_find(d, key, len)
 }
 
 /*
- * Get a string item from a dictionary in allocated memory.
+ * Get a string item from a dictionary.
+ * When "save" is TRUE allocate memory for it.
  * Returns NULL if the entry doesn't exist or out of memory.
  */
     char_u *
-get_dict_string(d, key)
+get_dict_string(d, key, save)
     dict_T	*d;
     char_u	*key;
+    int		save;
 {
     dictitem_T	*di;
+    char_u	*s;
 
     di = dict_find(d, key, -1);
     if (di == NULL)
 	return NULL;
-    return vim_strsave(get_tv_string(&di->di_tv));
+    s = get_tv_string(&di->di_tv);
+    if (save && s != NULL)
+	s = vim_strsave(s);
+    return s;
 }
 
 /*
@@ -8014,11 +8020,20 @@ f_complete_add(argvars, rettv)
     typval_T	*argvars;
     typval_T	*rettv;
 {
-    char_u	*s;
+    char_u	*word;
+    char_u	*extra = NULL;
 
-    s = get_tv_string_chk(&argvars[0]);
-    if (s != NULL)
-	rettv->vval.v_number = ins_compl_add(s, -1, NULL, FORWARD, 0);
+    if (argvars[0].v_type == VAR_DICT && argvars[0].vval.v_dict != NULL)
+    {
+	word = get_dict_string(argvars[0].vval.v_dict,
+						     (char_u *)"word", FALSE);
+	extra = get_dict_string(argvars[0].vval.v_dict,
+						     (char_u *)"menu", FALSE);
+    }
+    else
+	word = get_tv_string_chk(&argvars[0]);
+    if (word != NULL)
+	rettv->vval.v_number = ins_compl_add(word, -1, NULL, extra, 0, 0);
 }
 
 /*

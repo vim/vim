@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	XML
 " Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
-" Last Change:	2006 Jan 24
+" Last Change:	2006 Feb 6
 
 " This function will create Dictionary with users namespace strings and values
 " canonical (system) names of data files.  Names should be lowercase,
@@ -396,11 +396,11 @@ return ''
 endfunction
 
 function! s:InComment()
-	return synIDattr(synID(line('.'), col('.'), 0), 'name') =~ 'Comment'
+	return synIDattr(synID(line('.'), col('.'), 0), 'name') =~ 'Comment\|String'
 endfunction
 
 function! s:InCommentAt(line, col)
-	return synIDattr(synID(a:line, a:col, 0), 'name') =~ 'Comment'
+	return synIDattr(synID(a:line, a:col, 0), 'name') =~ 'Comment\|String'
 endfunction
 
 function! s:SetKeywords()

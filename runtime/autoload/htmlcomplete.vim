@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	XHTML 1.0 Strict
 " Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
-" Last Change:	2006 Jan 30
+" Last Change:	2006 Feb 6
 
 function! htmlcomplete#CompleteTags(findstart, base)
   if a:findstart
@@ -13,11 +13,14 @@ function! htmlcomplete#CompleteTags(findstart, base)
     while start >= 0 && line[start - 1] =~ '\(\k\|[:.-]\)'
 		let start -= 1
     endwhile
+	" Handling of entities {{{
 	if start >= 0 && line[start - 1] =~ '&'
 		let b:entitiescompl = 1
 		let b:compl_context = ''
 		return start
 	endif
+	" }}}
+	" Handling of <style> tag {{{
 	let stylestart = searchpair('<style\>', '', '<\/style\>', "bnW")
 	let styleend   = searchpair('<style\>', '', '<\/style\>', "nW")
 	if stylestart != 0 && styleend != 0 
@@ -29,6 +32,8 @@ function! htmlcomplete#CompleteTags(findstart, base)
 			endwhile
 		endif
 	endif
+	" }}}
+	" Handling of <script> tag {{{
 	let scriptstart = searchpair('<script\>', '', '<\/script\>', "bnW")
 	let scriptend   = searchpair('<script\>', '', '<\/script\>', "nW")
 	if scriptstart != 0 && scriptend != 0 
@@ -36,16 +41,44 @@ function! htmlcomplete#CompleteTags(findstart, base)
 			let start = col('.') - 1
 			let b:jscompl = 1
 			let b:jsrange = [scriptstart, scriptend]
-			while start >= 0 && line[start - 1] =~ '\(\k\|-\)'
+			while start >= 0 && line[start - 1] =~ '\w'
 				let start -= 1
 			endwhile
+			" We are inside of <script> tag. But we should also get contents
+			" of all linked external files and (secondary, less probably) other <script> tags
+			" This logic could possible be done in separate function - may be
+			" reused in events scripting (also with option could be reused for
+			" CSS
+			let b:js_extfiles = []
+			let l = line('.')
+			let c = col('.')
+			call cursor(1,1)
+			while search('<\@<=script\>', 'W') && line('.') <= l
+				if synIDattr(synID(line('.'),col('.')-1,0),"name") !~? 'comment'
+					let sname = matchstr(getline('.'), '<script[^>]*src\s*=\s*\([''"]\)\zs.\{-}\ze\1')
+					if filereadable(sname)
+						let b:js_extfiles += readfile(sname)
+					endif
+				endif
+			endwhile
+			call cursor(1,1)
+			let js_scripttags = []
+			while search('<script\>', 'W') && line('.') < l
+				if matchstr(getline('.'), '<script[^>]*src') == ''
+					let js_scripttag = getline(line('.'), search('</script>', 'W'))
+					let js_scripttags += js_scripttag
+				endif
+			endwhile
+			let b:js_extfiles += js_scripttags
+			call cursor(l,c)
+			unlet! l c
 		endif
 	endif
+	" }}}
 	if !exists("b:csscompl") && !exists("b:jscompl")
 		let b:compl_context = getline('.')[0:(compl_begin)]
 		if b:compl_context !~ '<[^>]*$'
-			" Look like we may have broken tag. Check previous lines. Up to
-			" 10?
+			" Look like we may have broken tag. Check previous lines.
 			let i = 1
 			while 1
 				let context_line = getline(curline-i)
@@ -65,6 +98,14 @@ function! htmlcomplete#CompleteTags(findstart, base)
 			unlet! i
 		endif
 		let b:compl_context = matchstr(b:compl_context, '.*\zs<.*')
+		" Return proper start for on-events. Without that beginning of
+		" completion will be badly reported
+		if b:compl_context =~? 'on[a-z]*\s*=\s*\(''[^'']*\|"[^"]*\)$'
+			let start = col('.') - 1
+			while start >= 0 && line[start - 1] =~ '\w'
+				let start -= 1
+			endwhile
+		endif
 	else
 		let b:compl_context = getline('.')[0:compl_begin]
 	endif
@@ -76,14 +117,15 @@ function! htmlcomplete#CompleteTags(findstart, base)
 	" a:base is very short - we need context
 	let context = b:compl_context
 	" Check if we should do CSS completion inside of <style> tag
+	" or JS completion inside of <script> tag
 	if exists("b:csscompl")
 		unlet! b:csscompl
 		let context = b:compl_context
+		unlet! b:compl_context
 		return csscomplete#CompleteCSS(0, context)
 	elseif exists("b:jscompl")
 		unlet! b:jscompl
-		let context = b:compl_context
-		return javascriptcomplete#CompleteJS(0, context)
+		return javascriptcomplete#CompleteJS(0, a:base)
 	else
 		if len(b:compl_context) == 0 && !exists("b:entitiescompl")
 			return []
@@ -91,7 +133,7 @@ function! htmlcomplete#CompleteTags(findstart, base)
 		let context = matchstr(b:compl_context, '.\zs.*')
 	endif
 	unlet! b:compl_context
-	" Make entities completion
+	" Entities completion {{{
 	if exists("b:entitiescompl")
 		unlet! b:entitiescompl
 
@@ -122,6 +164,7 @@ function! htmlcomplete#CompleteTags(findstart, base)
 
 
 	endif
+	" }}}
 	if context =~ '>'
 		" Generally if context contains > it means we are outside of tag and
 		" should abandon action - with one exception: <style> span { bo
@@ -142,13 +185,11 @@ function! htmlcomplete#CompleteTags(findstart, base)
     			\ "onmouseover", "onmouseout", "onkeypress", "onkeydown", "onkeyup"]
     let focus = ["accesskey", "tabindex", "onfocus", "onblur"]
     let coregroup = coreattrs + i18n + events
-    " find tags matching with "context"
 	" If context contains > it means we are already outside of tag and we
 	" should abandon action
 	" If context contains white space it is attribute. 
-	" It could be also value of attribute...
-	" We have to get first word to offer
-	" proper completions
+	" It can be also value of attribute.
+	" We have to get first word to offer proper completions
 	if context == ''
 		let tag = ''
 	else
@@ -160,11 +201,12 @@ function! htmlcomplete#CompleteTags(findstart, base)
 	" 1. Events attributes
 	if context =~ '\s'
 		" Sort out style, class, and on* cases
-		if context =~ "\\(on[a-z]*\\|id\\|style\\|class\\)\\s*=\\s*[\"']"
-			if context =~ "\\(id\\|class\\)\\s*=\\s*[\"'][a-zA-Z0-9_ -]*$"
-				if context =~ "class\\s*=\\s*[\"'][a-zA-Z0-9_ -]*$"
+		if context =~? "\\(on[a-z]*\\|id\\|style\\|class\\)\\s*=\\s*[\"']"
+			" Id, class completion {{{
+			if context =~? "\\(id\\|class\\)\\s*=\\s*[\"'][a-zA-Z0-9_ -]*$"
+				if context =~? "class\\s*=\\s*[\"'][a-zA-Z0-9_ -]*$"
 					let search_for = "class"
-				elseif context =~ "id\\s*=\\s*[\"'][a-zA-Z0-9_ -]*$"
+				elseif context =~? "id\\s*=\\s*[\"'][a-zA-Z0-9_ -]*$"
 					let search_for = "id"
 				endif
 				" Handle class name completion
@@ -327,17 +369,59 @@ function! htmlcomplete#CompleteTags(findstart, base)
 
 				return res + res2
 
-			elseif context =~ "style\\s*=\\s*[\"'][^\"']*$"
+			elseif context =~? "style\\s*=\\s*[\"'][^\"']*$"
 				return csscomplete#CompleteCSS(0, context)
 
 			endif
-			let stripbase = matchstr(context, ".*\\(on[a-z]*\\|style\\|class\\)\\s*=\\s*[\"']\\zs.*")
+			" }}}
+			" Complete on-events {{{
+			if context =~? 'on[a-z]*\s*=\s*\(''[^'']*\|"[^"]*\)$'
+				" We have to:
+				" 1. Find external files
+				let b:js_extfiles = []
+				let l = line('.')
+				let c = col('.')
+				call cursor(1,1)
+				while search('<\@<=script\>', 'W') && line('.') <= l
+					if synIDattr(synID(line('.'),col('.')-1,0),"name") !~? 'comment'
+						let sname = matchstr(getline('.'), '<script[^>]*src\s*=\s*\([''"]\)\zs.\{-}\ze\1')
+						if filereadable(sname)
+							let b:js_extfiles += readfile(sname)
+						endif
+					endif
+				endwhile
+				" 2. Find at least one <script> tag
+				call cursor(1,1)
+				let js_scripttags = []
+				while search('<script\>', 'W') && line('.') < l
+					if matchstr(getline('.'), '<script[^>]*src') == ''
+						let js_scripttag = getline(line('.'), search('</script>', 'W'))
+						let js_scripttags += js_scripttag
+					endif
+				endwhile
+				let b:js_extfiles += js_scripttags
+
+				" 3. Proper call for javascriptcomplete#CompleteJS
+				call cursor(l,c)
+				let js_context = matchstr(a:base, '\w\+$')
+				let js_shortcontext = substitute(a:base, js_context.'$', '', '')
+				let b:compl_context = context
+				let b:jsrange = [l, l]
+				unlet! l c
+				"return map(javascriptcomplete#CompleteJS(0, js_context), 'js_shortcontext.v:val')
+				return javascriptcomplete#CompleteJS(0, js_context)
+
+			endif
+				
+			" }}}
+			let stripbase = matchstr(context, ".*\\(on[a-zA-Z]*\\|style\\|class\\)\\s*=\\s*[\"']\\zs.*")
 			" Now we have context stripped from all chars up to style/class.
 			" It may fail with some strange style value combinations.
 			if stripbase !~ "[\"']"
 				return []
 			endif
 		endif
+		" Value of attribute completion {{{
 		" If attr contains =\s*[\"'] we catched value of attribute
 		if attr =~ "=\s*[\"']"
 			" Let do attribute specific completion
@@ -413,6 +497,8 @@ function! htmlcomplete#CompleteTags(findstart, base)
 			return res + res2
 
 		endif
+		" }}}
+		" Attribute completion {{{
 		" Shorten context to not include last word
 		let sbase = matchstr(context, '.*\ze\s.*')
 		if tag =~ '^\(abbr\|acronym\|address\|b\|bdo\|big\|caption\|cite\|code\|dd\|dfn\|div\|dl\|dt\|em\|fieldset\|h\d\|hr\|i\|kbd\|li\|noscript\|ol\|p\|samp\|small\|span\|strong\|sub\|sup\|tt\|ul\|var\)$'
@@ -506,7 +592,8 @@ function! htmlcomplete#CompleteTags(findstart, base)
 		return res + res2
 
 	endif
-	" Close tag
+	" }}}
+	" Close tag {{{
 	let b:unaryTagsStack = "base meta link hr br param img area input col"
 	if context =~ '^\/'
 		let opentag = xmlcomplete#GetLastOpenTag("b:unaryTagsStack")
@@ -521,10 +608,13 @@ function! htmlcomplete#CompleteTags(findstart, base)
 		" If returns empty string assume <body>. Safe bet.
 		let opentag = 'body'
 	endif
-
+	" }}}
+	" Load data {{{
 	if !exists("g:xmldata_xhtml10s")
 		runtime! autoload/xml/xhtml10s.vim
 	endif
+	" }}}
+	" Tag completion {{{
 
 	let tags = g:xmldata_xhtml10s[opentag][0]
 
@@ -538,5 +628,7 @@ function! htmlcomplete#CompleteTags(findstart, base)
 
 	return res + res2
 
+	" }}}
   endif
 endfunction
+" vim:set foldmethod=marker:

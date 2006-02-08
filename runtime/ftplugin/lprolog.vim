@@ -1,8 +1,8 @@
 " Vim settings file
 " Language:     LambdaProlog (Teyjus)
-" Maintainer:   Markus Mottl  <markus@oefai.at>
-" URL:          http://www.oefai.at/~markus/vim/ftplugin/lprolog.vim
-" Last Change:  2001 Oct 02 - fixed uncommenting bug (MM)
+" Maintainer:   Markus Mottl  <markus.mottl@gmail.com>
+" URL:          http://www.ocaml.info/vim/ftplugin/lprolog.vim
+" Last Change:  2006 Feb 05
 "               2001 Sep 16 - fixed 'no_mail_maps'-bug (MM)
 "               2001 Sep 02 - initial release  (MM)
 

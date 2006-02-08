@@ -954,19 +954,21 @@ qf_add_entry(qi, prevp, dir, fname, mesg, lnum, col, vis_col, pattern, nr, type,
 }
 
 /*
- * Allocate a new location list for window 'wp'
+ * Allocate a new location list
  */
-    static int
-ll_new_list(wp)
-    win_T   *wp;
+    static qf_info_T *
+ll_new_list()
 {
-    if ((wp->w_llist = (qf_info_T *)alloc((unsigned)sizeof(qf_info_T))) == NULL)
-	return FAIL;
+    qf_info_T *qi;
 
-    vim_memset(wp->w_llist, 0, (size_t)(sizeof(qf_info_T)));
-    wp->w_llist->qf_refcount++;
+    qi = (qf_info_T *)alloc((unsigned)sizeof(qf_info_T));
+    if (qi != NULL)
+    {
+	vim_memset(qi, 0, (size_t)(sizeof(qf_info_T)));
+	qi->qf_refcount++;
+    }
 
-    return OK;
+    return qi;
 }
 
 /*
@@ -988,8 +990,7 @@ ll_get_or_alloc_list(wp)
     ll_free_all(&wp->w_llist_ref);
 
     if (wp->w_llist == NULL)
-	if (ll_new_list(wp) == FAIL)	/* new location list */
-	    return NULL;
+	wp->w_llist = ll_new_list();	    /* new location list */
     return wp->w_llist;
 }
 
@@ -1018,7 +1019,8 @@ copy_loclist(from, to)
     if (qi == NULL)		    /* no location list to copy */
 	return;
 
-    if (ll_new_list(to) == FAIL)    /* allocate a new location list */
+    /* allocate a new location list */
+    if ((to->w_llist = ll_new_list()) == NULL)
 	return;
 
     to->w_llist->qf_listcount = qi->qf_listcount;
@@ -1331,13 +1333,12 @@ qf_guess_filepath(filename)
  * else go to entry "errornr"
  */
     void
-qf_jump(winptr, dir, errornr, forceit)
-    win_T	*winptr;
+qf_jump(qi, dir, errornr, forceit)
+    qf_info_T	*qi;
     int		dir;
     int		errornr;
     int		forceit;
 {
-    qf_info_T		*qi = &ql_info;
     qf_info_T		*ll_ref;
     qfline_T		*qf_ptr;
     qfline_T		*old_qf_ptr;
@@ -1367,8 +1368,8 @@ qf_jump(winptr, dir, errornr, forceit)
     int			ok = OK;
     int			usable_win;
 
-    if (winptr != NULL)
-	qi = GET_LOC_LIST(winptr);
+    if (qi == NULL)
+	qi = &ql_info;
 
     if (qi->qf_curlist >= qi->qf_listcount
 	|| qi->qf_lists[qi->qf_curlist].qf_count == 0)
@@ -1494,6 +1495,14 @@ qf_jump(winptr, dir, errornr, forceit)
 
 	    if (curwin->w_height < p_hh)
 		win_setheight((int)p_hh);
+
+	    if (qi != &ql_info)	    /* not a quickfix list */
+	    {
+		/* The new window should use the supplied location list */
+		qf_free_all(curwin);
+		curwin->w_llist = qi;
+		qi->qf_refcount++;
+	    }
 	}
 
 	if (!p_im)
@@ -2583,7 +2592,7 @@ ex_make(eap)
     char_u	*cmd;
     unsigned	len;
     win_T	*wp = NULL;
-    qf_info_T	*qi;
+    qf_info_T	*qi = &ql_info;
 #ifdef FEAT_AUTOCMD
     char_u	*au_name = NULL;
 
@@ -2667,7 +2676,7 @@ ex_make(eap)
 					   (eap->cmdidx != CMD_grepadd
 					    && eap->cmdidx != CMD_lgrepadd)) > 0
 	    && !eap->forceit)
-	qf_jump(wp, 0, 0, FALSE);		/* display first error */
+	qf_jump(qi, 0, 0, FALSE);		/* display first error */
 
     mch_remove(fname);
     vim_free(fname);
@@ -2745,11 +2754,12 @@ get_mef_name()
 ex_cc(eap)
     exarg_T	*eap;
 {
-    win_T	*wp = NULL;
-    qf_info_T	*qi;
+    qf_info_T	*qi = &ql_info;
 
-    if (eap->cmdidx == CMD_ll || eap->cmdidx == CMD_lrewind
-	|| eap->cmdidx == CMD_lfirst || eap->cmdidx == CMD_llast)
+    if (eap->cmdidx == CMD_ll
+	    || eap->cmdidx == CMD_lrewind
+	    || eap->cmdidx == CMD_lfirst
+	    || eap->cmdidx == CMD_llast)
     {
 	qi = GET_LOC_LIST(curwin);
 	if (qi == NULL)
@@ -2757,10 +2767,9 @@ ex_cc(eap)
 	    EMSG(_(e_loclist));
 	    return;
 	}
-	wp = curwin;
     }
 
-    qf_jump(wp, 0,
+    qf_jump(qi, 0,
 	    eap->addr_count > 0
 	    ? (int)eap->line2
 	    : (eap->cmdidx == CMD_cc || eap->cmdidx == CMD_ll)
@@ -2780,12 +2789,14 @@ ex_cc(eap)
 ex_cnext(eap)
     exarg_T	*eap;
 {
-    win_T	*wp = NULL;
-    qf_info_T	*qi;
+    qf_info_T	*qi = &ql_info;
 
-    if (eap->cmdidx == CMD_lnext || eap->cmdidx == CMD_lNext
-	|| eap->cmdidx == CMD_lprevious || eap->cmdidx == CMD_lnfile
-	|| eap->cmdidx == CMD_lNfile || eap->cmdidx == CMD_lpfile)
+    if (eap->cmdidx == CMD_lnext
+	    || eap->cmdidx == CMD_lNext
+	    || eap->cmdidx == CMD_lprevious
+	    || eap->cmdidx == CMD_lnfile
+	    || eap->cmdidx == CMD_lNfile
+	    || eap->cmdidx == CMD_lpfile)
     {
 	qi = GET_LOC_LIST(curwin);
 	if (qi == NULL)
@@ -2793,10 +2804,9 @@ ex_cnext(eap)
 	    EMSG(_(e_loclist));
 	    return;
 	}
-	wp = curwin;
     }
 
-    qf_jump(wp, (eap->cmdidx == CMD_cnext || eap->cmdidx == CMD_lnext)
+    qf_jump(qi, (eap->cmdidx == CMD_cnext || eap->cmdidx == CMD_lnext)
 	    ? FORWARD
 	    : (eap->cmdidx == CMD_cnfile || eap->cmdidx == CMD_lnfile)
 		? FORWARD_FILE
@@ -2816,7 +2826,7 @@ ex_cfile(eap)
     exarg_T	*eap;
 {
     win_T	*wp = NULL;
-    qf_info_T	*qi;
+    qf_info_T	*qi = &ql_info;
 
     if (eap->cmdidx == CMD_lfile || eap->cmdidx == CMD_lgetfile
 	|| eap->cmdidx == CMD_laddfile)
@@ -2844,7 +2854,7 @@ ex_cfile(eap)
 				  && eap->cmdidx != CMD_laddfile)) > 0
 				  && (eap->cmdidx == CMD_cfile
 					     || eap->cmdidx == CMD_lfile))
-	qf_jump(wp, 0, 0, eap->forceit);	/* display first error */
+	qf_jump(qi, 0, 0, eap->forceit);	/* display first error */
 }
 
 /*
@@ -2865,7 +2875,6 @@ ex_vimgrep(eap)
     int		fi;
     qf_info_T	*qi = &ql_info;
     qfline_T	*prevp = NULL;
-    win_T	*wp = NULL;
     long	lnum;
     buf_T	*buf;
     int		duplicate_name = FALSE;
@@ -2899,13 +2908,14 @@ ex_vimgrep(eap)
     }
 #endif
 
-    if (eap->cmdidx == CMD_grep || eap->cmdidx == CMD_lvimgrep
-	|| eap->cmdidx == CMD_lgrepadd || eap->cmdidx == CMD_lvimgrepadd)
+    if (eap->cmdidx == CMD_grep
+	    || eap->cmdidx == CMD_lvimgrep
+	    || eap->cmdidx == CMD_lgrepadd
+	    || eap->cmdidx == CMD_lvimgrepadd)
     {
 	qi = ll_get_or_alloc_list(curwin);
 	if (qi == NULL)
 	    return;
-	wp = curwin;
     }
 
     /* Get the search pattern: either white-separated or enclosed in // */
@@ -3105,7 +3115,7 @@ ex_vimgrep(eap)
     if (qi->qf_lists[qi->qf_curlist].qf_count > 0)
     {
 	if ((flags & VGR_NOJUMP) == 0)
-	    qf_jump(wp, 0, 0, eap->forceit);
+	    qf_jump(qi, 0, 0, eap->forceit);
     }
     else
 	EMSG2(_(e_nomatch2), s);
@@ -3376,14 +3386,14 @@ set_errorlist(wp, list, action)
 	if (d == NULL)
 	    continue;
 
-	filename = get_dict_string(d, (char_u *)"filename");
+	filename = get_dict_string(d, (char_u *)"filename", TRUE);
 	lnum = get_dict_number(d, (char_u *)"lnum");
 	col = get_dict_number(d, (char_u *)"col");
 	vcol = get_dict_number(d, (char_u *)"vcol");
 	nr = get_dict_number(d, (char_u *)"nr");
-	type = get_dict_string(d, (char_u *)"type");
-	pattern = get_dict_string(d, (char_u *)"pattern");
-	text = get_dict_string(d, (char_u *)"text");
+	type = get_dict_string(d, (char_u *)"type", TRUE);
+	pattern = get_dict_string(d, (char_u *)"pattern", TRUE);
+	text = get_dict_string(d, (char_u *)"text", TRUE);
 	if (text == NULL)
 	    text = vim_strsave((char_u *)"");
 
@@ -3484,14 +3494,12 @@ ex_cexpr(eap)
 {
     typval_T	*tv;
     qf_info_T	*qi = &ql_info;
-    win_T	*wp = NULL;
 
     if (eap->cmdidx == CMD_lexpr || eap->cmdidx == CMD_laddexpr)
     {
 	qi = ll_get_or_alloc_list(curwin);
 	if (qi == NULL)
 	    return;
-	wp = curwin;
     }
 
     /* Evaluate the expression.  When the result is a string or a list we can
@@ -3507,7 +3515,7 @@ ex_cexpr(eap)
 			     || eap->cmdidx == CMD_lexpr),
 						 (linenr_T)0, (linenr_T)0) > 0
 		    && (eap->cmdidx == CMD_cexpr || eap->cmdidx == CMD_lexpr))
-		qf_jump(wp, 0, 0, eap->forceit);  /* display first error */
+		qf_jump(qi, 0, 0, eap->forceit);  /* display first error */
 	}
 	else
 	    EMSG(_("E777: String or List expected"));
@@ -3536,6 +3544,8 @@ ex_helpgrep(eap)
     char_u	*lang;
 #endif
     qf_info_T	*qi = &ql_info;
+    int		new_qi = FALSE;
+    win_T	*wp;
 
     /* Make 'cpoptions' empty, the 'l' flag should not be used here. */
     save_cpo = p_cpo;
@@ -3545,6 +3555,27 @@ ex_helpgrep(eap)
     /* Check for a specified language */
     lang = check_help_lang(eap->arg);
 #endif
+
+    if (eap->cmdidx == CMD_lhelpgrep)
+    {
+	/* Find an existing help window */
+	FOR_ALL_WINDOWS(wp)
+	    if (wp->w_buffer != NULL && wp->w_buffer->b_help)
+		break;
+
+	if (wp == NULL)	    /* Help window not found */
+	    qi = NULL;
+	else
+	    qi = wp->w_llist;
+
+	if (qi == NULL)
+	{
+	    /* Allocate a new location list for help text matches */
+	    if ((qi = ll_new_list()) == NULL)
+		return;
+	    new_qi = TRUE;
+	}
+    }
 
     regmatch.regprog = vim_regcomp(eap->arg, RE_MAGIC + RE_STRING);
     regmatch.rm_ic = FALSE;
@@ -3635,9 +3666,23 @@ ex_helpgrep(eap)
 
     /* Jump to first match. */
     if (qi->qf_lists[qi->qf_curlist].qf_count > 0)
-	qf_jump(NULL, 0, 0, FALSE);
+	qf_jump(qi, 0, 0, FALSE);
     else
 	EMSG2(_(e_nomatch2), eap->arg);
+
+    if (eap->cmdidx == CMD_lhelpgrep)
+    {
+	/* If the help window is not opened or if it already points to the
+	 * correct location list, then free the new location list
+	 */ 
+	if (!curwin->w_buffer->b_help || curwin->w_llist == qi)
+	{
+	    if (new_qi)
+		ll_free_all(&qi);
+	}
+	else if (curwin->w_llist == NULL)
+	    curwin->w_llist = qi;
+    }
 }
 
 #endif /* FEAT_QUICKFIX */

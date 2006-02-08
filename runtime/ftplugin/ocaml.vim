@@ -4,7 +4,7 @@
 "              Markus Mottl        <markus.mottl@gmail.com>
 "              Stefano Zacchiroli  <zack@bononia.it>
 " URL:         http://www.ocaml.info/vim/ftplugin/ocaml.vim
-" Last Change: 2005 Oct 13 - removed GPL; better matchit support (MM, SZ)
+" Last Change: 2006 Feb 05
 "
 " if exists("b:did_ftplugin")
 "   finish
@@ -377,4 +377,3 @@ let &cpoptions=s:cposet
 unlet s:cposet
 
 " vim:sw=2
-

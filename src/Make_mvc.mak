@@ -675,6 +675,8 @@ LINK_PDB = /PDB:$(OUTDIR)/$(VIM).pdb -debug:full -debugtype:cv,fixup
 
 conflags = /nologo /subsystem:$(SUBSYSTEM) /incremental:no
 
+PATHDEF_SRC = $(OUTDIR)\pathdef.c
+
 !IF "$(MAP)" == "yes"
 # "/map" is for debugging
 conflags = $(conflags) /map
@@ -736,7 +738,6 @@ notags:
 
 clean:
 	- if exist $(OUTDIR)/nul $(DEL_TREE) $(OUTDIR)
-	- if exist auto/pathdef.c del auto/pathdef.c
 	- if exist *.obj del *.obj
 	- if exist $(VIM).exe del $(VIM).exe
 	- if exist $(VIM).ilk del $(VIM).ilk
@@ -894,8 +895,8 @@ $(OUTDIR)/os_win32.obj:	$(OUTDIR) os_win32.c  $(INCL) os_win32.h
 
 $(OUTDIR)/os_w32exe.obj:	$(OUTDIR) os_w32exe.c  $(INCL)
 
-$(OUTDIR)/pathdef.obj:	$(OUTDIR) auto/pathdef.c  $(INCL)
-	$(CC) $(CFLAGS) auto/pathdef.c
+$(OUTDIR)/pathdef.obj:	$(OUTDIR) $(PATHDEF_SRC) $(INCL)
+	$(CC) $(CFLAGS) $(PATHDEF_SRC)
 
 $(OUTDIR)/popupmenu.obj:	$(OUTDIR) popupmenu.c  $(INCL)
 
@@ -943,16 +944,16 @@ $(OUTDIR)/glbl_ime.obj:	$(OUTDIR) glbl_ime.cpp  dimm.h $(INCL)
 E0_CFLAGS = $(CFLAGS:\=\\)
 E_CFLAGS = $(E0_CFLAGS:"=\")
 
-auto/pathdef.c: auto
-	@echo creating auto/pathdef.c
-	@echo /* pathdef.c */ > auto\pathdef.c
-	@echo #include "vim.h" >> auto\pathdef.c
-	@echo char_u *default_vim_dir = (char_u *)"$(VIMRCLOC:\=\\)"; >> auto\pathdef.c
-	@echo char_u *default_vimruntime_dir = (char_u *)"$(VIMRUNTIMEDIR:\=\\)"; >> auto\pathdef.c
-	@echo char_u *all_cflags = (char_u *)"$(CC:\=\\) $(E_CFLAGS)"; >> auto\pathdef.c
-	@echo char_u *all_lflags = (char_u *)"$(link:\=\\) $(LINKARGS1:\=\\) $(LINKARGS2:\=\\)"; >> auto\pathdef.c
-	@echo char_u *compiled_user = (char_u *)"$(USERNAME)"; >> auto\pathdef.c
-	@echo char_u *compiled_sys = (char_u *)"$(USERDOMAIN)"; >> auto\pathdef.c
+$(PATHDEF_SRC): auto
+	@echo creating $(PATHDEF_SRC)
+	@echo /* pathdef.c */ > $(PATHDEF_SRC)
+	@echo #include "vim.h" >> $(PATHDEF_SRC)
+	@echo char_u *default_vim_dir = (char_u *)"$(VIMRCLOC:\=\\)"; >> $(PATHDEF_SRC)
+	@echo char_u *default_vimruntime_dir = (char_u *)"$(VIMRUNTIMEDIR:\=\\)"; >> $(PATHDEF_SRC)
+	@echo char_u *all_cflags = (char_u *)"$(CC:\=\\) $(E_CFLAGS)"; >> $(PATHDEF_SRC)
+	@echo char_u *all_lflags = (char_u *)"$(link:\=\\) $(LINKARGS1:\=\\) $(LINKARGS2:\=\\)"; >> $(PATHDEF_SRC)
+	@echo char_u *compiled_user = (char_u *)"$(USERNAME)"; >> $(PATHDEF_SRC)
+	@echo char_u *compiled_sys = (char_u *)"$(USERDOMAIN)"; >> $(PATHDEF_SRC)
 
 auto:
 	if not exist auto/nul mkdir auto

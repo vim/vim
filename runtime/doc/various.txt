@@ -648,6 +648,15 @@ g CTRL-A		Only when Vim was compiled with MEM_PROFILING defined
 			compresses the help files).
 			{not in Vi}
 
+							*:lh* *:lhelpgrep*
+:lh[elpgrep] {pattern}[@xx]
+			Same as ":helpgrep", except the location list is used
+			instead of the quickfix list. If the help window is
+			already opened, then the location list for that window
+			is used. Otherwise, a new help window is opened and
+			the location list for that window is set.  The
+			location list for the current window is not changed.
+
 							*:exu* *:exusage*
 :exu[sage]		Show help on Ex commands.  Added to simulate the Nvi
 			command. {not in Vi}

@@ -1,33 +1,47 @@
 " Vim completion script
 " Language:	Java Script
 " Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
-" Last Change:	2006 Jan 30
+" Last Change:	2006 Feb 6
 
 function! javascriptcomplete#CompleteJS(findstart, base)
   if a:findstart
-    " locate the start of the word
-    let line = getline('.')
-    let start = col('.') - 1
+	" locate the start of the word
+	let line = getline('.')
+	let start = col('.') - 1
 	let curline = line('.')
 	let compl_begin = col('.') - 2
 	" Bit risky but JS is rather limited language and local chars shouldn't
 	" fint way into names
-    while start >= 0 && line[start - 1] =~ '\w'
+	while start >= 0 && line[start - 1] =~ '\w'
 		let start -= 1
-    endwhile
+	endwhile
 	let b:compl_context = getline('.')[0:compl_begin]
-    return start
+	return start
   else
 	" Initialize base return lists
-    let res = []
-    let res2 = []
+	let res = []
+	let res2 = []
 	" a:base is very short - we need context
-	let context = b:compl_context
 	" Shortcontext is context without a:base, useful for checking if we are
-	" looking for objects
+	" looking for objects and for what objects we are looking for
+	let context = b:compl_context
 	let shortcontext = substitute(context, a:base.'$', '', '')
 	unlet! b:compl_context
 
+	if exists("b:jsrange")
+		let file = getline(b:jsrange[0],b:jsrange[1])
+		unlet! b:jsrange
+
+		if len(b:js_extfiles) > 0
+			let file = b:js_extfiles + file
+		endif
+
+	else
+		let file = getline(1, '$')
+	endif
+
+
+	" Completion of properties, methods, etc. {{{
 	if shortcontext =~ '\.$'
 		" Complete methods and properties for objects
 		" DOM separate
@@ -91,7 +105,7 @@ function! javascriptcomplete#CompleteJS(findstart, base)
 
 		" RegExp
 		let regeprop = ['constructor', 'global', 'ignoreCase', 'lastIndex', 'multiline', 'source', 'prototype']
-		let regemeth = ['exec', 'toSource', 'toString', 'test', 'watch', 'unwatch']
+		let regemeth = ['exec', 'test', 'toSource', 'toString', 'watch', 'unwatch']
 		call map(regemeth, 'v:val."("')
 		let reges = regeprop + regemeth
 
@@ -106,19 +120,17 @@ function! javascriptcomplete#CompleteJS(findstart, base)
 		let stris = striprop + strimeth
 
 		" User created properties
-		if exists("b:jsrange")
-			let file = getline(b:jsrange[0],b:jsrange[1])
-			unlet! b:jsrange
-		else
-			let file = getline(1, '$')
-		endif
 		let user_props1 = filter(copy(file), 'v:val =~ "this\\.\\w"')
 		let juser_props1 = join(user_props1, ' ')
 		let user_props1 = split(juser_props1, '\zethis\.')
 		unlet! juser_props1
 		call map(user_props1, 'matchstr(v:val, "this\\.\\zs\\w\\+\\ze")')
+
 		let user_props2 = filter(copy(file), 'v:val =~ "\\.prototype\\.\\w"')
-		call map(user_props2, 'matchstr(v:val, "\\.prototype\\.\\zs\\w\\+\\ze")')
+		let juser_props2 = join(user_props2, ' ')
+		let user_props2 = split(juser_props2, '\zeprototype\.')
+		unlet! juser_props2
+		call map(user_props2, 'matchstr(v:val, "prototype\\.\\zs\\w\\+\\ze")')
 		let user_props = user_props1 + user_props2
 
 		" HTML DOM properties
@@ -149,7 +161,15 @@ function! javascriptcomplete#CompleteJS(findstart, base)
 					\ 'onClick', 'onDblClick', 'onFocus', 'onKeyDown', 'onKeyPress', 'onKeyUp',
 					\ 'onMouseDown', 'onMouseMove', 'onMouseOut', 'onMouseOver', 'onMouseUp', 'onResize']
 		call map(documeth, 'v:val."("')
-		let docus = docuprop + documeth
+		let docuxprop = ['attributes', 'childNodes', 'doctype', 'documentElement', 'firstChild',
+					\ 'implementation', 'namespaceURI', 'nextSibling', 'nodeName', 'nodeType',
+					\ 'nodeValue', 'ownerDocument', 'parentNode', 'previousSibling']
+		let docuxmeth = ['createAttribute', 'createCDATASection',
+					\ 'createComment', 'createDocument', 'createDocumentFragment',
+					\ 'createElement', 'createEntityReference', 'createProcessingInstruction',
+					\ 'createTextNode']
+		call map(docuxmeth, 'v:val."("')
+		let docus = docuprop + docuxprop + documeth + docuxmeth
 		" Form - form.
 		let formprop = ['elements', 'acceptCharset', 'action', 'encoding', 'enctype', 'id', 'length',
 					\ 'method', 'name', 'tabIndex', 'target']
@@ -178,7 +198,7 @@ function! javascriptcomplete#CompleteJS(findstart, base)
 		let ifras = ifraprop
 		" Image - image.
 		let imagprop = ['align', 'alt', 'border', 'complete', 'height', 'hspace', 'id', 'isMap', 'longDesc',
-					\ 'lowsrc', 'name', 'src', 'useMap', 'vspace', 'width']
+					\ 'lowSrc', 'name', 'src', 'useMap', 'vspace', 'width']
 		let imagmeth = ['onAbort', 'onError', 'onLoad']
 		call map(imagmeth, 'v:val."("')
 		let imags = histprop + imagmeth
@@ -282,13 +302,13 @@ function! javascriptcomplete#CompleteJS(findstart, base)
 					\ 'borderBottomColor', 'borderLeftColor', 'borderRightColor', 'borderTopColor',
 					\ 'borderBottomStyle', 'borderLeftStyle', 'borderRightStyle', 'borderTopStyle',
 					\ 'borderBottomWidth', 'borderLeftWidth', 'borderRightWidth', 'borderTopWidth',
-                    \ 'borderColor', 'borderStyle', 'borderWidth', 'margin', 'marginBottom',
-                    \ 'marginLeft', 'marginRight', 'marginTop', 'outline', 'outlineStyle', 'outlineWidth',
-                    \ 'outlineColor', 'outlineStyle', 'outlineWidth', 'padding', 'paddingBottom',
-                    \ 'paddingLeft', 'paddingRight', 'paddingTop',
-                    \ 'clear', 'clip', 'clipBottom', 'clipLeft', 'clipRight', 'clipTop', 'content',
-                    \ 'counterIncrement', 'counterReset', 'cssFloat', 'cursor', 'direction',
-                    \ 'display', 'markerOffset', 'marks', 'maxHeight', 'maxWidth', 'minHeight',
+					\ 'borderColor', 'borderStyle', 'borderWidth', 'margin', 'marginBottom',
+					\ 'marginLeft', 'marginRight', 'marginTop', 'outline', 'outlineStyle', 'outlineWidth',
+					\ 'outlineColor', 'outlineStyle', 'outlineWidth', 'padding', 'paddingBottom',
+					\ 'paddingLeft', 'paddingRight', 'paddingTop',
+					\ 'clear', 'clip', 'clipBottom', 'clipLeft', 'clipRight', 'clipTop', 'content',
+					\ 'counterIncrement', 'counterReset', 'cssFloat', 'cursor', 'direction',
+					\ 'display', 'markerOffset', 'marks', 'maxHeight', 'maxWidth', 'minHeight',
 					\ 'minWidth', 'overflow', 'overflowX', 'overflowY', 'verticalAlign', 'visibility',
 					\ 'width',
 					\ 'listStyle', 'listStyleImage', 'listStylePosition', 'listStyleType',
@@ -320,13 +340,14 @@ function! javascriptcomplete#CompleteJS(findstart, base)
 		" Textarea - accessible only by other properties
 		let tareprop = ['accessKey', 'cols', 'defaultValue', 
 					\ 'disabled', 'form', 'id', 'name', 'readOnly', 'rows', 
-					\ 'tabIndex', 'type', 'value'] 
+					\ 'tabIndex', 'type', 'value', 'selectionStart', 'selectionEnd'] 
 		let taremeth = ['blur', 'focus', 'select', 'onBlur', 'onChange', 'onFocus']
 		call map(taremeth, 'v:val."("')
 		let tares = tareprop + taremeth
 		" Window - window.
-		let windprop = ['frames', 'closed', 'defaultStatus', 'length', 'name', 'opener', 'parent',
-					\ 'self', 'status', 'top']
+		let windprop = ['frames', 'closed', 'defaultStatus', 'encodeURI', 'event', 'history',
+					\ 'length', 'location', 'name', 'onload', 'opener', 'parent', 'screen', 'self',
+					\ 'status', 'top', 'XMLHttpRequest', 'ActiveXObject']
 		let windmeth = ['alert', 'blur', 'clearInterval', 'clearTimeout', 'close', 'confirm', 'focus',
 					\ 'moveBy', 'moveTo', 'open', 'print', 'prompt', 'scrollBy', 'scrollTo', 'setInterval',
 					\ 'setTimeout']
@@ -334,15 +355,81 @@ function! javascriptcomplete#CompleteJS(findstart, base)
 		let winds = windprop + windmeth
 		" XMLHttpRequest - access by new xxx()
 		let xmlhprop = ['onreadystatechange', 'readyState', 'responseText', 'responseXML',
-					\ 'status', 'statusText']
+					\ 'status', 'statusText', 'parseError']
 		let xmlhmeth = ['abort', 'getAllResponseHeaders', 'getResponseHeaders', 'open',
 					\ 'send', 'setRequestHeader']
 		call map(xmlhmeth, 'v:val."("')
 		let xmlhs = xmlhprop + xmlhmeth
 
+		" XML DOM
+		" Attributes - element.attributes[x].
+		let xdomattrprop = ['name', 'specified', 'value']
+		" Element - anyelement.
+		let xdomelemprop = ['attributes', 'childNodes', 'firstChild', 'lastChild', 
+					\ 'namespaceURI', 'nextSibling', 'nodeName', 'nodeType', 'nodeValue',
+					\ 'ownerDocument', 'parentNode', 'prefix', 'previousSibling', 'tagName']
+		let xdomelemmeth = ['appendChild', 'cloneNode', 'getAttribute', 'getAttributeNode',
+					\ 'getElementsByTagName', 'hasChildNodes', 'insertBefore', 'normalize',
+					\ 'removeAttribute', 'removeAttributeNode', 'removeChild', 'replaceChild',
+					\ 'setAttribute', 'setAttributeNode']
+		call map(xdomelemmeth, 'v:val."("')
+		let xdomelems = xdomelemprop + xdomelemmeth
+		" Node - anynode.
+		let xdomnodeprop = ['attributes', 'childNodes', 'firstChild', 'lastChild', 
+					\ 'namespaceURI', 'nextSibling', 'nodeName', 'nodeType', 'nodeValue',
+					\ 'ownerDocument', 'parentNode', 'prefix', 'previousSibling']
+		let xdomnodemeth = ['appendChild', 'cloneNode',
+					\ 'hasChildNodes', 'insertBefore', 'removeChild', 'replaceChild']
+		call map(xdomnodemeth, 'v:val."("')
+		let xdomnodes = xdomnodeprop + xdomnodemeth
+		" NodeList 
+		let xdomnliss = ['length', 'item(']
+		" Error - parseError.
+		let xdomerror = ['errorCode', 'reason', 'line', 'linepos', 'srcText', 'url', 'filepos']
+
+		" Find object type declaration to reduce number of suggestions. {{{
+		" 1. Get object name
+		" 2. Find object declaration line
+		" 3. General declaration follows "= new Type" syntax, additional else
+		"    for regexp "= /re/"
+		" 4. Make correction for Microsoft.XMLHTTP ActiveXObject
+		" 5. Repeat for external files
 		let object = matchstr(shortcontext, '\zs\w\+\ze\(\[.\{-}\]\)\?\.$')
-		let decl_line = search(object.'.\{-}=\s*new\s*', 'bn')
-		let object_type = matchstr(getline(decl_line), object.'.\{-}=\s*new\s*\zs\w\+\ze')
+		if len(object) > 0
+			let decl_line = search(object.'.\{-}=\s*new\s*', 'bn')
+			if decl_line > 0
+				let object_type = matchstr(getline(decl_line), object.'.\{-}=\s*new\s*\zs\w\+\ze')
+				if object_type == 'ActiveXObject' && matchstr(getline(decl_line), object.'.\{-}=\s*new\s*ActiveXObject\s*(.Microsoft\.XMLHTTP.)') != ''
+						let object_type = 'XMLHttpRequest'
+				endif
+			else
+				let decl_line = search('var\s*'.object.'\s*=\s*\/', 'bn')
+				if decl_line > 0
+					let object_type = 'RegExp'
+				endif
+			endif
+			" We didn't find var declaration in current file but we may have
+			" something in external files.
+			if decl_line == 0 && exists("b:js_extfiles")
+				let dext_line = filter(copy(b:js_extfiles), 'v:val =~ "'.object.'.\\{-}=\\s*new\\s*"')
+				if len(dext_line) > 0
+					let object_type = matchstr(dext_line[-1], object.'.\{-}=\s*new\s*\zs\w\+\ze')
+					if object_type == 'ActiveXObject' && matchstr(dext_line[-1], object.'.\{-}=\s*new\s*ActiveXObject\s*(.Microsoft\.XMLHTTP.)') != ''
+							let object_type = 'XMLHttpRequest'
+					endif
+				else
+					let dext_line = filter(copy(b:js_extfiles), 'v:val =~ "var\s*'.object.'\\s*=\\s*\\/"')
+					if len(dext_line) > 0
+						let object_type = 'RegExp'
+					endif
+				endif
+			endif
+		endif
+		" }}}
+
+		if !exists('object_type')
+			let object_type = ''
+		endif
 
 		if object_type == 'Date'
 			let values = dates
@@ -357,13 +444,17 @@ function! javascriptcomplete#CompleteJS(findstart, base)
 			let values = xmlhs
 		elseif object_type == 'String'
 			let values = stris
+		elseif object_type == 'RegExp'
+			let values = reges
+		elseif object_type == 'Math'
+			let values = maths
 		endif
 
 		if !exists('values')
 		" List of properties
 		if shortcontext =~ 'Math\.$'
 			let values = maths
-		elseif shortcontext =~ 'anchor\.$'
+		elseif shortcontext =~ 'anchors\(\[.\{-}\]\)\?\.$'
 			let values = anths
 		elseif shortcontext =~ 'area\.$'
 			let values = areas
@@ -373,7 +464,7 @@ function! javascriptcomplete#CompleteJS(findstart, base)
 			let values = bodys
 		elseif shortcontext =~ 'document\.$'
 			let values = docus
-		elseif shortcontext =~ 'form\.$'
+		elseif shortcontext =~ 'forms\(\[.\{-}\]\)\?\.$'
 			let values = forms
 		elseif shortcontext =~ 'frameset\.$'
 			let values = fsets
@@ -381,9 +472,9 @@ function! javascriptcomplete#CompleteJS(findstart, base)
 			let values = hists
 		elseif shortcontext =~ 'iframe\.$'
 			let values = ifras
-		elseif shortcontext =~ 'image\.$'
+		elseif shortcontext =~ 'images\(\[.\{-}\]\)\?\.$'
 			let values = imags
-		elseif shortcontext =~ 'link\.$'
+		elseif shortcontext =~ 'links\(\[.\{-}\]\)\?\.$'
 			let values = links
 		elseif shortcontext =~ 'location\.$'
 			let values = locas
@@ -405,11 +496,16 @@ function! javascriptcomplete#CompleteJS(findstart, base)
 			let values = trows
 		elseif shortcontext =~ 'window\.$'
 			let values = winds
+		elseif shortcontext =~ 'parseError\.$'
+			let values = xdomerror
+		elseif shortcontext =~ 'attributes\[\d\+\]\.$'
+			let values = xdomattrprop
 		else
 			let values = user_props + arrays + dates + funcs + maths + numbs + objes + reges + stris
 			let values += doms + anths + areas + bases + bodys + docus + forms + frams + fsets + hists
-			let values += ifras + imags + links + locas + metas + navis + objes + scres + styls
-			let values += tabls + trows + winds
+			let values += ifras + imags + links + locas + metas + navis + objes + scres
+			let values += tabls + trows + tares + winds
+			let values += xdomnodes + xdomnliss + xdomelems
 		endif
 		endif
 
@@ -425,21 +521,15 @@ function! javascriptcomplete#CompleteJS(findstart, base)
 		return res + res2
 
 	endif
-
-	if exists("b:jsrange")
-		let file = getline(b:jsrange[0],b:jsrange[1])
-		unlet! b:jsrange
-	else
-		let file = getline(1, '$')
-	endif
+	" }}}
 
 	" Get variables data.
 	let variables = filter(copy(file), 'v:val =~ "var\\s"')
 	call map(variables, 'matchstr(v:val, ".\\{-}var\\s\\+\\zs.*\\ze")')
 	call map(variables, 'substitute(v:val, ";\\|$", ",", "g")')
 	let vars = []
-	" This loop is necessary to get variable names from constructs like:
-	" var var1, var2, var3 = "something";
+	" This loop (and next one) is necessary to get variable names from
+	" constructs like: var var1, var2, var3 = "something";
 	for i in range(len(variables))
 		let comma_separated = split(variables[i], ',\s*')
 		call map(comma_separated, 'matchstr(v:val, "\\w\\+")')
@@ -447,27 +537,36 @@ function! javascriptcomplete#CompleteJS(findstart, base)
 	endfor
 
 	let variables = sort(vars)
+	unlet! vars
 
-	" Add undeclared variables.
+	" Add "no var" variables.
 	let undeclared_variables = filter(copy(file), 'v:val =~ "^\\s*\\w\\+\\s*="')
-	call map(undeclared_variables, 'matchstr(v:val, "^\\s*\\zs\\w\\+\\ze")')
+	let u_vars = []
+	for i in range(len(undeclared_variables))
+		let  split_equal = split(undeclared_variables[i], '\s*=')
+		call map(split_equal, 'matchstr(v:val, "\\w\\+$")')
+		let u_vars += split_equal
+	endfor
 
-	let variables += sort(undeclared_variables)
+	let variables += sort(u_vars)
+	unlet! u_vars
 
 	" Get functions
 	let functions = filter(copy(file), 'v:val =~ "^\\s*function\\s"')
 	let arguments = copy(functions)
 	call map(functions, 'matchstr(v:val, "^\\s*function\\s\\+\\zs\\w\\+")')
 	call map(functions, 'v:val."("')
+	let functions = sort(functions)
 
 	" Get functions arguments
 	call map(arguments, 'matchstr(v:val, "function.\\{-}(\\zs.\\{-}\\ze)")')
 	let jargs = join(arguments, ',')
 	let jargs = substitute(jargs, '\s', '', 'g')
 	let arguments = split(jargs, ',')
+	let arguments = sort(arguments)
 
 	" Built-in functions
-	let builtin = []
+	let builtin = ['alert(', 'confirm(']
 
 	" Top-level HTML DOM objects
 	let htmldom = ['document', 'anchor', 'area', 'base', 'body', 'document', 'event', 'form', 'frame', 'frameset', 'history', 'iframe', 'image', 'input', 'link', 'location', 'meta', 'navigator', 'object', 'option', 'screen', 'select', 'table', 'tableData', 'tableHeader', 'tableRow', 'textarea', 'window']
@@ -493,3 +592,5 @@ function! javascriptcomplete#CompleteJS(findstart, base)
 
 	return res + res2
 endfunction
+
+" vim:set foldmethod=marker:

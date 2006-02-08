@@ -75,6 +75,7 @@ static int getConnInfo __ARGS((char *file, char **host, char **port, char **pass
 
 static void nb_init_graphics __ARGS((void));
 static void coloncmd __ARGS((char *cmd, ...));
+static void nb_set_curbuf __ARGS((buf_T *buf));
 #ifdef FEAT_GUI_MOTIF
 static void messageFromNetbeans __ARGS((XtPointer, int *, XtInputId *));
 #endif
@@ -1365,8 +1366,7 @@ nb_do_cmd(
 		netbeansFireChanges = FALSE;
 		netbeansSuppressNoLines = TRUE;
 
-		if (curbuf != buf->bufp)
-		    set_curbuf(buf->bufp, DOBUF_GOTO);
+		nb_set_curbuf(buf->bufp);
 		wasChanged = buf->bufp->b_changed;
 		cp = (char *)args;
 		off = strtol(cp, &cp, 10);
@@ -1488,8 +1488,7 @@ nb_do_cmd(
 		netbeansFireChanges = 0;
 		lbuf[0] = '\0';
 
-		if (curbuf != buf->bufp)
-		    set_curbuf(buf->bufp, DOBUF_GOTO);
+		nb_set_curbuf(buf->bufp);
 		old_b_changed = buf->bufp->b_changed;
 
 		pos = off2pos(buf->bufp, off);
@@ -1694,8 +1693,7 @@ nb_do_cmd(
 	    }
 	    doupdate = 1;
 	    buf->initDone = TRUE;
-	    if (curbuf != buf->bufp)
-		set_curbuf(buf->bufp, DOBUF_GOTO);
+	    nb_set_curbuf(buf->bufp);
 #if defined(FEAT_AUTOCMD)
 	    apply_autocmds(EVENT_BUFREADPOST, 0, 0, FALSE, buf->bufp);
 #endif
@@ -1891,8 +1889,8 @@ nb_do_cmd(
 		return FAIL;
 	    }
 
-	    if (curbuf != buf->bufp)
-		set_curbuf(buf->bufp, DOBUF_GOTO);
+	    nb_set_curbuf(buf->bufp);
+
 #ifdef FEAT_VISUAL
 	    /* Don't want Visual mode now. */
 	    if (VIsual_active)
@@ -2140,8 +2138,7 @@ nb_do_cmd(
 		nbdebug(("    null bufp in %s command", cmd));
 		return FAIL;
 	    }
-	    if (curbuf != buf->bufp)
-		set_curbuf(buf->bufp, DOBUF_GOTO);
+	    nb_set_curbuf(buf->bufp);
 	    cp = (char *)args;
 	    off = strtol(cp, &cp, 10);
 	    len = strtol(cp, NULL, 10);
@@ -2313,6 +2310,19 @@ nb_do_cmd(
     return retval;
 }
 
+
+/*
+ * If "buf" is not the current buffer try changing to a window that edits this
+ * buffer.  If there is no such window then close the current buffer and set
+ * the current buffer as "buf".
+ */
+    static void
+nb_set_curbuf(buf)
+    buf_T *buf;
+{
+    if (curbuf != buf && buf_jump_open_win(buf) == NULL)
+	set_curbuf(buf, DOBUF_GOTO);
+}
 
 /*
  * Process a vim colon command.

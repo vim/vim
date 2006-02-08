@@ -1235,6 +1235,7 @@ The commands are sorted on the non-optional part of their name.
 |:lgetfile|	:lg[etfile]	read file with locations
 |:lgrep|	:lgr[ep]	run 'grepprg' and jump to first match
 |:lgrepadd|	:lgrepa[dd]	like :grep, but append to current list
+|:lhelpgrep|	:lh[elpgrep]	like ":helpgrep" but uses location list
 |:ll|		:ll		go to specific location
 |:llast|	:lla[st]	go to the specified location, default last one
 |:llist|	:lli[st]	list all locations

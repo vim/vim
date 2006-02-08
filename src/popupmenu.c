@@ -14,13 +14,14 @@
 
 #if defined(FEAT_INS_EXPAND) || defined(PROTO)
 
-static char_u **pum_array = NULL;	/* items of displayed pum */
+static pumitem_T *pum_array = NULL;	/* items of displayed pum */
 static int pum_size;			/* nr of items in "pum_array" */
 static int pum_selected;		/* index of selected item or -1 */
 static int pum_first = 0;		/* index of top item */
 
 static int pum_height;			/* nr of displayed pum items */
 static int pum_width;			/* width of displayed pum items */
+static int pum_base_width;		/* width of pum items base */
 static int pum_scrollbar;		/* TRUE when scrollbar present */
 
 static int pum_row;			/* top row of pum */
@@ -37,7 +38,7 @@ static int pum_col;			/* left column of pum */
  */
     void
 pum_display(array, size, selected, row, height, col)
-    char_u	**array;
+    pumitem_T	*array;
     int		size;
     int		selected;	/* index of initially selected item */
     int		row;
@@ -47,6 +48,7 @@ pum_display(array, size, selected, row, height, col)
     int		w;
     int		def_width = PUM_DEF_WIDTH;
     int		max_width = 0;
+    int		extra_width = 0;
     int		i;
 
     /*
@@ -87,13 +89,20 @@ pum_display(array, size, selected, row, height, col)
     if (pum_height < 1 || (pum_height == 1 && size > 1))
 	return;
 
-    /* Compute the width of the widest match. */
+    /* Compute the width of the widest match and the widest extra. */
     for (i = 0; i < size; ++i)
     {
-	w = vim_strsize(array[i]);
+	w = vim_strsize(array[i].pum_text);
 	if (max_width < w)
 	    max_width = w;
+	if (array[i].pum_extra != NULL)
+	{
+	    w = vim_strsize(array[i].pum_extra);
+	    if (extra_width < w)
+		extra_width = w;
+	}
     }
+    pum_base_width = max_width;
 
     /* if there are more items than room we need a scrollbar */
     if (pum_height < size)
@@ -112,8 +121,13 @@ pum_display(array, size, selected, row, height, col)
 	/* align pum column with "col" */
 	pum_col = col;
 	pum_width = Columns - pum_col - pum_scrollbar;
-	if (pum_width > def_width)
-	    pum_width = def_width;
+	if (pum_width > max_width + extra_width + 1
+						 && pum_width > PUM_DEF_WIDTH)
+	{
+	    pum_width = max_width + extra_width + 1;
+	    if (pum_width < PUM_DEF_WIDTH)
+		pum_width = PUM_DEF_WIDTH;
+	}
     }
     else if (Columns < def_width)
     {
@@ -153,9 +167,10 @@ pum_redraw()
     int		idx;
     char_u	*s;
     char_u	*p;
-    int		width, w;
+    int		totwidth, width, w;
     int		thumb_pos = 0;
     int		thumb_heigth = 1;
+    int		round;
 
     if (pum_scrollbar)
     {
@@ -176,32 +191,46 @@ pum_redraw()
 	if (pum_col > 0)
 	    screen_putchar(' ', row, pum_col - 1, attr);
 
-	/* Display each entry, use two spaces for a Tab. */
+	/* Display each entry, use two spaces for a Tab.
+	 * Do this twice: For the main text and for the extra info */
 	col = pum_col;
-	width = 0;
-	s = NULL;
-	for (p = pum_array[idx]; ; mb_ptr_adv(p))
+	totwidth = 0;
+	for (round = 1; round <= 2; ++round)
 	{
-	    if (s == NULL)
-		s = p;
-	    w = ptr2cells(p);
-	    if (*p == NUL || *p == TAB || width + w > pum_width)
+	    width = 0;
+	    s = NULL;
+	    for (p = round == 1 ? pum_array[idx].pum_text
+				: pum_array[idx].pum_extra; ; mb_ptr_adv(p))
 	    {
-		/* Display the text that fits or comes before a Tab. */
-		screen_puts_len(s, p - s, row, col, attr);
-		col += width;
+		if (s == NULL)
+		    s = p;
+		w = ptr2cells(p);
+		if (*p == NUL || *p == TAB || totwidth + w > pum_width)
+		{
+		    /* Display the text that fits or comes before a Tab. */
+		    screen_puts_len(s, p - s, row, col, attr);
+		    col += width;
 
-		if (*p != TAB)
-		    break;
+		    if (*p != TAB)
+			break;
 
-		/* Display two spaces for a Tab. */
-		screen_puts_len((char_u *)"  ", 2, row, col, attr);
-		col += 2;
-		s = NULL;
-		width = 0;
+		    /* Display two spaces for a Tab. */
+		    screen_puts_len((char_u *)"  ", 2, row, col, attr);
+		    col += 2;
+		    totwidth += 2;
+		    s = NULL;	    /* start text at next char */
+		    width = 0;
+		}
+		else
+		    width += w;
 	    }
-	    else
-		width += w;
+	    if (round == 2 || pum_array[idx].pum_extra == NULL
+					   || pum_base_width + 1 >= pum_width)
+		break;
+	    screen_fill(row, row + 1, col, pum_col + pum_base_width + 1,
+							      ' ', ' ', attr);
+	    col = pum_col + pum_base_width + 1;
+	    totwidth = pum_base_width + 1;
 	}
 
 	screen_fill(row, row + 1, col, pum_col + pum_width, ' ', ' ', attr);

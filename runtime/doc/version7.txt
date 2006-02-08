@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Feb 04
+*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Feb 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -192,8 +192,8 @@ Omni completion					*new-omni-completion*
 
 This could also be called "intellisense", but that is a trademark.  It is a
 smart kind of completion.  The text in front of the cursor is inspected to
-figure out what could be following.  This considers struct and class members,
-unions, etc.
+figure out what could be following.  This may suggest struct and class
+members, system functions, etc.
 
 Use CTRL-X CTRL-O in Insert mode to start the completion.  |i_CTRL-X_CTRL-O|
 
@@ -201,8 +201,11 @@ The 'omnifunc' option is set by filetype plugins to define the function that
 figures out the completion.
 
 Currently supported languages:
-	C	|ft-c-omni|
-	XHTML	|ft-html-omni|
+	C					|ft-c-omni|
+	(X)HTML with CSS			|ft-html-omni|
+	JavaScript				|ft-javascript-omni|
+	any language wih syntax highligting	|ft-syntax-omni|
+	XML					|ft-xml-omni|
 
 When the 'completeopt' option contains "menu" then matches for Insert mode
 completion are displayed in a popup menu.
@@ -460,7 +463,30 @@ Win32: The ":winpos" command now also works in the console. (Vipin Aravind)
 |:lgrepadd|		Like |:grepadd| but use the location list.
 |:lvimgrep|		Like |:vimgrep| but use the location list.
 |:lvimgrepadd|		Like |:vimgrepadd| but use the location list.
+|:lhelpgrep|		Like |:helpgrep| but use the location list.
+|:lfile|		Like |:cfile| but use the location list.
+|:lgetfile|		Like |:cgetfile| but use the location list.
+|:laddfile|		Like |:caddfile| but use the location list.
+|:lbuffer|		Like |:cbuffer| but use the location list.
 |:laddbuffer|		Like |:caddbuffer| but use the location list.
+|:lexpr|		Like |:cexpr| but use the location list.
+|:laddexpr|		Like |:caddexpr| but use the location list.
+|:ll|			Like |:cc| but use the location list.
+|:llist|		Like |:clist| but use the location list.
+|:lnext|		Like |:cnext| but use the location list.
+|:lprev|		Like |:cprev| but use the location list.
+|:lNext|		Like |:cNext| but use the location list.
+|:lfirst|		Like |:cfirst| but use the location list.
+|:lrewind|		Like |:crewind| but use the location list.
+|:llast|		Like |:clast| but use the location list.
+|:lnfile|		Like |:cnfile| but use the location list.
+|:lpfile|		Like |:cpfile| but use the location list.
+|:lNfile|		Like |:cNfile| but use the location list.
+|:lolder|		Like |:colder| but use the location list.
+|:lnewer|		Like |:cnewer| but use the location list.
+|:lwindow|		Like |:cwindow| but use the location list.
+|:lopen|		Like |:copen| but use the location list.
+|:lclose|		Like |:cclose| but use the location list.
 
 
 Ex command modifiers: ~

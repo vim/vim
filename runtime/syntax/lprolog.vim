@@ -1,9 +1,9 @@
 " Vim syntax file
 " Language:     LambdaProlog (Teyjus)
 " Filenames:    *.mod *.sig
-" Maintainer:   Markus Mottl  <markus@oefai.at>
-" URL:          http://www.oefai.at/~markus/vim/syntax/lprolog.vim
-" Last Change:  2004 Jul 26
+" Maintainer:   Markus Mottl  <markus.mottl@gmail.com>
+" URL:          http://www.ocaml.info/vim/syntax/lprolog.vim
+" Last Change:  2006 Feb 05
 "               2001 Apr 26 - Upgraded for new Vim version
 "               2000 Jun  5 - Initial release
 

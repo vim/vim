@@ -68,7 +68,11 @@ struct Completion
     compl_T	*cp_next;
     compl_T	*cp_prev;
     char_u	*cp_str;	/* matched text */
-    char_u	*cp_fname;	/* file containing the match */
+    char_u	*cp_extra;	/* extra menu text (allocated, can be NULL) */
+    char_u	*cp_info;	/* verbose info (can be NULL) */
+    char_u	cp_kind;	/* kind of match, single letter, or NUL */
+    char_u	*cp_fname;	/* file containing the match, allocated when
+				 * cp_flags has FREE_FNAME */
     int		cp_flags;	/* ORIGINAL_TEXT, CONT_S_IPOS or FREE_FNAME */
     int		cp_number;	/* sequence number */
 };
@@ -115,20 +119,21 @@ static expand_T	  compl_xp;
 
 static void ins_ctrl_x __ARGS((void));
 static int  has_compl_option __ARGS((int dict_opt));
-static void ins_compl_add_matches __ARGS((int num_matches, char_u **matches, int dir));
+static void ins_compl_add_matches __ARGS((int num_matches, char_u **matches));
 static int  ins_compl_make_cyclic __ARGS((void));
 static void ins_compl_upd_pum __ARGS((void));
 static void ins_compl_del_pum __ARGS((void));
 static int  pum_wanted __ARGS((void));
 static int  pum_two_or_more __ARGS((void));
-static void ins_compl_dictionaries __ARGS((char_u *dict, char_u *pat, int dir, int flags, int thesaurus));
+static void ins_compl_dictionaries __ARGS((char_u *dict, char_u *pat, int flags, int thesaurus));
 static void ins_compl_free __ARGS((void));
 static void ins_compl_clear __ARGS((void));
 static int  ins_compl_bs __ARGS((void));
 static void ins_compl_addleader __ARGS((int c));
+static void ins_compl_addfrommatch __ARGS((void));
 static int  ins_compl_prep __ARGS((int c));
 static buf_T *ins_compl_next_buf __ARGS((buf_T *buf, int flag));
-static int  ins_compl_get_exp __ARGS((pos_T *ini, int dir));
+static int  ins_compl_get_exp __ARGS((pos_T *ini));
 static void ins_compl_delete __ARGS((void));
 static void ins_compl_insert __ARGS((void));
 static int  ins_compl_next __ARGS((int allow_get_expansion, int count));
@@ -684,19 +689,34 @@ edit(cmdchar, startln, count)
 	if (c == K_DOWN && pum_visible())
 	    c = Ctrl_N;
 
-	/* When using BS while the popup menu is wanted and still after the
-	 * character where completion started: Change the subset of matches to
-	 * what matches "compl_leader". */
-	if (compl_started && pum_wanted() && curwin->w_cursor.col > compl_col)
+	/*
+	 * Special handling of keys while the popup menu is visible or wanted
+	 * and the cursor is still in the completed word.
+	 */
+	if (compl_started && pum_wanted() && curwin->w_cursor.col >= compl_col)
 	{
-	    if ((c == K_BS || c == Ctrl_H) && ins_compl_bs())
+	    /* BS: Delete one character from "compl_leader". */
+	    if ((c == K_BS || c == Ctrl_H)
+			&& curwin->w_cursor.col > compl_col && ins_compl_bs())
 		continue;
 
-	    /* Editing the word. */
-	    if (!compl_used_match && vim_isprintc(c))
+	    /* When no match was selected or it was edited. */
+	    if (!compl_used_match)
 	    {
-		ins_compl_addleader(c);
-		continue;
+		/* CTRL-L: Add one character from the current match to
+		 * "compl_leader". */
+		if (c == Ctrl_L)
+		{
+		    ins_compl_addfrommatch();
+		    continue;
+		}
+
+		/* A printable character: Add it to "compl_leader". */
+		if (vim_isprintc(c))
+		{
+		    ins_compl_addleader(c);
+		    continue;
+		}
 	    }
 	}
 
@@ -1922,7 +1942,7 @@ vim_is_ctrl_x_key(c)
 }
 
 /*
- * This is like ins_compl_add(), but if ic and inf are set, then the
+ * This is like ins_compl_add(), but if 'ic' and 'inf' are set, then the
  * case of the originally typed text is used, and the case of the completed
  * text is infered, ie this tries to work out what case you probably wanted
  * the rest of the word to be in -- webb
@@ -1985,9 +2005,9 @@ ins_compl_add_infercase(str, len, fname, dir, flags)
 	/* Copy the original case of the part we typed */
 	STRNCPY(IObuff, compl_orig_text, compl_length);
 
-	return ins_compl_add(IObuff, len, fname, dir, flags);
+	return ins_compl_add(IObuff, len, fname, NULL, dir, flags);
     }
-    return ins_compl_add(str, len, fname, dir, flags);
+    return ins_compl_add(str, len, fname, NULL, dir, flags);
 }
 
 /*
@@ -2002,14 +2022,16 @@ ins_compl_add_infercase(str, len, fname, dir, flags)
  * maybe because alloc() returns NULL, then FAIL is returned -- webb.
  */
     int
-ins_compl_add(str, len, fname, dir, flags)
+ins_compl_add(str, len, fname, extra, cdir, flags)
     char_u	*str;
     int		len;
     char_u	*fname;
-    int		dir;
+    char_u	*extra;	    /* extra text for popup menu or NULL */
+    int		cdir;
     int		flags;
 {
     compl_T	*match;
+    int		dir = (cdir == 0 ? compl_direction : cdir);
 
     ui_breakcheck();
     if (got_int)
@@ -2040,7 +2062,7 @@ ins_compl_add(str, len, fname, dir, flags)
      * Allocate a new match structure.
      * Copy the values to the new match structure.
      */
-    match = (compl_T *)alloc((unsigned)sizeof(compl_T));
+    match = (compl_T *)alloc_clear((unsigned)sizeof(compl_T));
     if (match == NULL)
 	return FAIL;
     match->cp_number = -1;
@@ -2054,18 +2076,26 @@ ins_compl_add(str, len, fname, dir, flags)
 	vim_free(match);
 	return FAIL;
     }
+
     /* match-fname is:
      * - compl_curr_match->cp_fname if it is a string equal to fname.
      * - a copy of fname, FREE_FNAME is set to free later THE allocated mem.
      * - NULL otherwise.	--Acevedo */
-    if (fname && compl_curr_match && compl_curr_match->cp_fname
-	      && STRCMP(fname, compl_curr_match->cp_fname) == 0)
+    if (fname != NULL
+	    && compl_curr_match
+	    && compl_curr_match->cp_fname != NULL
+	    && STRCMP(fname, compl_curr_match->cp_fname) == 0)
 	match->cp_fname = compl_curr_match->cp_fname;
-    else if (fname && (match->cp_fname = vim_strsave(fname)) != NULL)
+    else if (fname != NULL)
+    {
+	match->cp_fname = vim_strsave(fname);
 	flags |= FREE_FNAME;
+    }
     else
 	match->cp_fname = NULL;
     match->cp_flags = flags;
+    if (extra != NULL)
+	match->cp_extra = vim_strsave(extra);
 
     /*
      * Link the new match structure in the list of matches.
@@ -2098,19 +2128,18 @@ ins_compl_add(str, len, fname, dir, flags)
  * Frees matches[].
  */
     static void
-ins_compl_add_matches(num_matches, matches, dir)
+ins_compl_add_matches(num_matches, matches)
     int		num_matches;
     char_u	**matches;
-    int		dir;
 {
     int		i;
     int		add_r = OK;
-    int		ldir = dir;
+    int		dir = compl_direction;
 
     for (i = 0; i < num_matches && add_r != FAIL; i++)
-	if ((add_r = ins_compl_add(matches[i], -1, NULL, ldir, 0)) == OK)
+	if ((add_r = ins_compl_add(matches[i], -1, NULL, NULL, dir, 0)) == OK)
 	    /* if dir was BACKWARD then honor it just once */
-	    ldir = FORWARD;
+	    dir = FORWARD;
     FreeWild(num_matches, matches);
 }
 
@@ -2143,7 +2172,7 @@ ins_compl_make_cyclic()
 
 /* "compl_match_array" points the currently displayed list of entries in the
  * popup menu.  It is NULL when there is no popup menu. */
-static char_u **compl_match_array = NULL;
+static pumitem_T *compl_match_array = NULL;
 static int compl_match_arraysize;
 
 /*
@@ -2223,11 +2252,15 @@ pum_two_or_more()
 
 /*
  * Show the popup menu for the list of matches.
+ * Also adjusts "compl_shown_match" to an entry that is actually displayed.
  */
     void
 ins_compl_show_pum()
 {
     compl_T     *compl;
+    compl_T     *shown_compl = NULL;
+    int		did_find_shown_match = FALSE;
+    int		shown_match_ok = FALSE;
     int		i;
     int		cur = -1;
     colnr_T	col;
@@ -2256,7 +2289,8 @@ ins_compl_show_pum()
 	} while (compl != NULL && compl != compl_first_match);
 	if (compl_match_arraysize == 0)
 	    return;
-	compl_match_array = (char_u **)alloc((unsigned)(sizeof(char_u **)
+	compl_match_array = (pumitem_T *)alloc_clear(
+				    (unsigned)(sizeof(pumitem_T)
 						    * compl_match_arraysize));
 	if (compl_match_array != NULL)
 	{
@@ -2269,19 +2303,52 @@ ins_compl_show_pum()
 			    || STRNCMP(compl->cp_str, compl_leader,
 							      lead_len) == 0))
 		{
-		    if (compl == compl_shown_match)
+		    if (!shown_match_ok)
+		    {
+			if (compl == compl_shown_match || did_find_shown_match)
+			{
+			    /* This item is the shown match or this is the
+			     * first displayed item after the shown match. */
+			    compl_shown_match = compl;
+			    did_find_shown_match = TRUE;
+			    shown_match_ok = TRUE;
+			}
+			else
+			    /* Remember this displayed match for when the
+			     * shown match is just below it. */
+			    shown_compl = compl;
 			cur = i;
-		    compl_match_array[i++] = compl->cp_str;
+		    }
+		    compl_match_array[i].pum_text = compl->cp_str;
+		    if (compl->cp_extra != NULL)
+			compl_match_array[i++].pum_extra = compl->cp_extra;
+		    else
+			compl_match_array[i++].pum_extra = compl->cp_fname;
+		}
+
+		if (compl == compl_shown_match)
+		{
+		    did_find_shown_match = TRUE;
+		    if (!shown_match_ok && shown_compl != NULL)
+		    {
+			/* The shown match isn't displayed, set it to the
+			 * previously displayed match. */
+			compl_shown_match = shown_compl;
+			shown_match_ok = TRUE;
+		    }
 		}
 		compl = compl->cp_next;
 	    } while (compl != NULL && compl != compl_first_match);
+
+	    if (!shown_match_ok)    /* no displayed match at all */
+		cur = -1;
 	}
     }
     else
     {
 	/* popup menu already exists, only need to find the current item.*/
 	for (i = 0; i < compl_match_arraysize; ++i)
-	    if (compl_match_array[i] == compl_shown_match->cp_str)
+	    if (compl_match_array[i].pum_text == compl_shown_match->cp_str)
 		break;
 	cur = i;
     }
@@ -2309,10 +2376,9 @@ ins_compl_show_pum()
  * completions.
  */
     static void
-ins_compl_dictionaries(dict, pat, dir, flags, thesaurus)
+ins_compl_dictionaries(dict, pat, flags, thesaurus)
     char_u	*dict;
     char_u	*pat;
-    int		dir;
     int		flags;
     int		thesaurus;
 {
@@ -2325,6 +2391,7 @@ ins_compl_dictionaries(dict, pat, dir, flags, thesaurus)
     int		count;
     int		i;
     int		save_p_scs;
+    int		dir = compl_direction;
 
     buf = alloc(LSIZE);
     /* If 'infercase' is set, don't use 'smartcase' here */
@@ -2521,6 +2588,7 @@ ins_compl_free()
 	/* several entries may use the same fname, free it just once. */
 	if (match->cp_flags & FREE_FNAME)
 	    vim_free(match->cp_fname);
+	vim_free(match->cp_extra);
 	vim_free(match);
     } while (compl_curr_match != NULL && compl_curr_match != compl_first_match);
     compl_first_match = compl_curr_match = NULL;
@@ -2541,8 +2609,8 @@ ins_compl_clear()
 }
 
 /*
- * Delete one character before the cursor and make a subset of the matches
- * that match now.
+ * Delete one character before the cursor and show the subset of the matches
+ * that match the word that is now before the cursor.
  * Returns TRUE if the work is done and another char to be got from the user.
  */
     static int
@@ -2627,6 +2695,29 @@ ins_compl_addleader(c)
 	ins_compl_show_pum();
 	compl_used_match = FALSE;
     }
+}
+
+/*
+ * Append one character to the match leader.  May reduce the number of
+ * matches.
+ */
+    static void
+ins_compl_addfrommatch()
+{
+    char_u	*p;
+    int		len = curwin->w_cursor.col - compl_col;
+    int		c;
+
+    p = compl_shown_match->cp_str;
+    if (STRLEN(p) <= len)   /* the match is too short */
+	return;
+    p += len;
+#ifdef FEAT_MBYTE
+    c = mb_ptr2char(p);
+#else
+    c = *p;
+#endif
+    ins_compl_addleader(c);
 }
 
 /*
@@ -2919,30 +3010,30 @@ ins_compl_next_buf(buf, flag)
 }
 
 #ifdef FEAT_COMPL_FUNC
-static int expand_by_function __ARGS((int type, char_u *base, char_u ***matches));
+static void expand_by_function __ARGS((int type, char_u *base));
 
 /*
  * Execute user defined complete function 'completefunc' or 'omnifunc', and
  * get matches in "matches".
  * Return value is number of matches.
  */
-    static int
-expand_by_function(type, base, matches)
+    static void
+expand_by_function(type, base)
     int		type;	    /* CTRL_X_OMNI or CTRL_X_FUNCTION */
     char_u	*base;
-    char_u	***matches;
 {
     list_T      *matchlist;
     char_u	*args[2];
     listitem_T	*li;
-    garray_T    ga;
     char_u	*p;
     char_u	*funcname;
     pos_T	pos;
+    int		dir = compl_direction;
+    char_u	*x;
 
     funcname = (type == CTRL_X_FUNCTION) ? curbuf->b_p_cfu : curbuf->b_p_ofu;
     if (*funcname == NUL)
-	return 0;
+	return;
 
     /* Call 'completefunc' to obtain the list of matches. */
     args[0] = (char_u *)"0";
@@ -2952,42 +3043,47 @@ expand_by_function(type, base, matches)
     matchlist = call_func_retlist(funcname, 2, args, FALSE);
     curwin->w_cursor = pos;	/* restore the cursor position */
     if (matchlist == NULL)
-	return 0;
+	return;
 
-    /* Go through the List with matches and put them in an array. */
-    ga_init2(&ga, (int)sizeof(char_u *), 8);
+    /* Go through the List with matches and add each of them. */
     for (li = matchlist->lv_first; li != NULL; li = li->li_next)
     {
-	p = get_tv_string_chk(&li->li_tv);
+	if (li->li_tv.v_type == VAR_DICT && li->li_tv.vval.v_dict != NULL)
+	{
+	    p = get_dict_string(li->li_tv.vval.v_dict, (char_u *)"word", FALSE);
+	    x = get_dict_string(li->li_tv.vval.v_dict, (char_u *)"menu", FALSE);
+	}
+	else
+	{
+	    p = get_tv_string_chk(&li->li_tv);
+	    x = NULL;
+	}
 	if (p != NULL && *p != NUL)
 	{
-	    if (ga_grow(&ga, 1) == FAIL)
-		break;
-	    ((char_u **)ga.ga_data)[ga.ga_len] = vim_strsave(p);
-	    ++ga.ga_len;
+	    if (ins_compl_add(p, -1, NULL, x, dir, 0) == OK)
+		/* if dir was BACKWARD then honor it just once */
+		dir = FORWARD;
 	}
 	else if (did_emsg)
 	    break;
     }
 
     list_unref(matchlist);
-    *matches = (char_u **)ga.ga_data;
-    return ga.ga_len;
 }
 #endif /* FEAT_COMPL_FUNC */
 
 /*
  * Get the next expansion(s), using "compl_pattern".
- * The search starts at position "ini" in curbuf and in the direction dir.
+ * The search starts at position "ini" in curbuf and in the direction
+ * compl_direction.
  * When "compl_started" is FALSE start at that position, otherwise
  * continue where we stopped searching before.
  * This may return before finding all the matches.
  * Return the total number of matches or -1 if still unknown -- Acevedo
  */
     static int
-ins_compl_get_exp(ini, dir)
+ins_compl_get_exp(ini)
     pos_T	*ini;
-    int		dir;
 {
     static pos_T	first_match_pos;
     static pos_T	last_match_pos;
@@ -3023,7 +3119,7 @@ ins_compl_get_exp(ini, dir)
     }
 
     old_match = compl_curr_match;	/* remember the last current match */
-    pos = (dir == FORWARD) ? &last_match_pos : &first_match_pos;
+    pos = (compl_direction == FORWARD) ? &last_match_pos : &first_match_pos;
     /* For ^N/^P loop over all the flags/windows/buffers in 'complete' */
     for (;;)
     {
@@ -3126,7 +3222,7 @@ ins_compl_get_exp(ini, dir)
 #ifdef FEAT_FIND_ID
 	case CTRL_X_PATH_PATTERNS:
 	case CTRL_X_PATH_DEFINES:
-	    find_pattern_in_path(compl_pattern, dir,
+	    find_pattern_in_path(compl_pattern, compl_direction,
 				 (int)STRLEN(compl_pattern), FALSE, FALSE,
 				 (type == CTRL_X_PATH_DEFINES
 				  && !(compl_cont_status & CONT_SOL))
@@ -3146,7 +3242,7 @@ ins_compl_get_exp(ini, dir)
 			     : (*curbuf->b_p_dict == NUL
 				 ? p_dict
 				 : curbuf->b_p_dict)),
-			    compl_pattern, dir,
+			    compl_pattern,
 				 dict ? dict_f : 0, type == CTRL_X_THESAURUS);
 	    dict = NULL;
 	    break;
@@ -3163,7 +3259,7 @@ ins_compl_get_exp(ini, dir)
 		    TAG_INS_COMP | (ctrl_x_mode ? TAG_VERBOSE : 0),
 		    TAG_MANY, curbuf->b_ffname) == OK && num_matches > 0)
 	    {
-		ins_compl_add_matches(num_matches, matches, dir);
+		ins_compl_add_matches(num_matches, matches);
 	    }
 	    p_ic = save_p_ic;
 	    break;
@@ -3175,7 +3271,7 @@ ins_compl_get_exp(ini, dir)
 
 		/* May change home directory back to "~". */
 		tilde_replace(compl_pattern, num_matches, matches);
-		ins_compl_add_matches(num_matches, matches, dir);
+		ins_compl_add_matches(num_matches, matches);
 	    }
 	    break;
 
@@ -3183,15 +3279,13 @@ ins_compl_get_exp(ini, dir)
 	    if (expand_cmdline(&compl_xp, compl_pattern,
 			(int)STRLEN(compl_pattern),
 					 &num_matches, &matches) == EXPAND_OK)
-		ins_compl_add_matches(num_matches, matches, dir);
+		ins_compl_add_matches(num_matches, matches);
 	    break;
 
 #ifdef FEAT_COMPL_FUNC
 	case CTRL_X_FUNCTION:
 	case CTRL_X_OMNI:
-	    num_matches = expand_by_function(type, compl_pattern, &matches);
-	    if (num_matches > 0)
-		ins_compl_add_matches(num_matches, matches, dir);
+	    expand_by_function(type, compl_pattern);
 	    break;
 #endif
 
@@ -3200,7 +3294,7 @@ ins_compl_get_exp(ini, dir)
 	    num_matches = expand_spelling(first_match_pos.lnum,
 				 first_match_pos.col, compl_pattern, &matches);
 	    if (num_matches > 0)
-		ins_compl_add_matches(num_matches, matches, dir);
+		ins_compl_add_matches(num_matches, matches);
 #endif
 	    break;
 
@@ -3230,9 +3324,10 @@ ins_compl_get_exp(ini, dir)
 		if (	ctrl_x_mode == CTRL_X_WHOLE_LINE
 			|| (compl_cont_status & CONT_SOL))
 		    found_new_match = search_for_exact_line(ins_buf, pos,
-							    dir, compl_pattern);
+					      compl_direction, compl_pattern);
 		else
-		    found_new_match = searchit(NULL, ins_buf, pos, dir,
+		    found_new_match = searchit(NULL, ins_buf, pos,
+							      compl_direction,
 				 compl_pattern, 1L, SEARCH_KEEP + SEARCH_NFMSG,
 								     RE_LAST);
 		if (!compl_started)
@@ -3335,7 +3430,7 @@ ins_compl_get_exp(ini, dir)
 		}
 		if (ins_compl_add_infercase(ptr, len,
 				 ins_buf == curbuf ? NULL : ins_buf->b_sfname,
-						       dir, flags) != NOTDONE)
+					   0, flags) != NOTDONE)
 		{
 		    found_new_match = OK;
 		    break;
@@ -3388,7 +3483,7 @@ ins_compl_get_exp(ini, dir)
     /* If several matches were added (FORWARD) or the search failed and has
      * just been made cyclic then we have to move compl_curr_match to the next
      * or previous entry (if any) -- Acevedo */
-    compl_curr_match = dir == FORWARD ? old_match->cp_next : old_match->cp_prev;
+    compl_curr_match = compl_direction == FORWARD ? old_match->cp_next : old_match->cp_prev;
     if (compl_curr_match == NULL)
 	compl_curr_match = old_match;
     return i;
@@ -3476,7 +3571,7 @@ ins_compl_next(allow_get_expansion, count)
 	    if (!allow_get_expansion)
 		return -1;
 
-	    num_matches = ins_compl_get_exp(&compl_startpos, compl_direction);
+	    num_matches = ins_compl_get_exp(&compl_startpos);
 	    if (compl_pending && compl_direction == compl_shows_dir)
 		compl_shown_match = compl_curr_match;
 	    found_end = FALSE;
@@ -3992,7 +4087,7 @@ ins_complete(c)
 	 * when the list of matches is freed. */
 	compl_orig_text = vim_strnsave(line + compl_col, compl_length);
 	if (compl_orig_text == NULL || ins_compl_add(compl_orig_text,
-					    -1, NULL, 0, ORIGINAL_TEXT) != OK)
+				      -1, NULL, NULL, 0, ORIGINAL_TEXT) != OK)
 	{
 	    vim_free(compl_pattern);
 	    compl_pattern = NULL;
