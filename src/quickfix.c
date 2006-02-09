@@ -2575,8 +2575,10 @@ buf_hide(buf)
 grep_internal(cmdidx)
     cmdidx_T	cmdidx;
 {
-    return ((cmdidx == CMD_grep || cmdidx == CMD_lgrep
-	     || cmdidx == CMD_grepadd || cmdidx == CMD_lgrepadd)
+    return ((cmdidx == CMD_grep
+		|| cmdidx == CMD_lgrep
+		|| cmdidx == CMD_grepadd
+		|| cmdidx == CMD_lgrepadd)
 	    && STRCMP("internal",
 			*curbuf->b_p_gp == NUL ? p_gp : curbuf->b_p_gp) == 0);
 }
@@ -2598,12 +2600,12 @@ ex_make(eap)
 
     switch (eap->cmdidx)
     {
-	case CMD_make: au_name = (char_u *)"make"; break;
-	case CMD_lmake: au_name = (char_u *)"lmake"; break;
-	case CMD_grep: au_name = (char_u *)"grep"; break;
-	case CMD_lgrep: au_name = (char_u *)"lgrep"; break;
-	case CMD_grepadd: au_name = (char_u *)"grepadd"; break;
-	case CMD_lgrepadd: au_name = (char_u *)"lgrepadd"; break;
+	case CMD_make:	    au_name = (char_u *)"make"; break;
+	case CMD_lmake:	    au_name = (char_u *)"lmake"; break;
+	case CMD_grep:	    au_name = (char_u *)"grep"; break;
+	case CMD_lgrep:	    au_name = (char_u *)"lgrep"; break;
+	case CMD_grepadd:   au_name = (char_u *)"grepadd"; break;
+	case CMD_lgrepadd:  au_name = (char_u *)"lgrepadd"; break;
 	default: break;
     }
     if (au_name != NULL)
@@ -2908,7 +2910,7 @@ ex_vimgrep(eap)
     }
 #endif
 
-    if (eap->cmdidx == CMD_grep
+    if (eap->cmdidx == CMD_lgrep
 	    || eap->cmdidx == CMD_lvimgrep
 	    || eap->cmdidx == CMD_lgrepadd
 	    || eap->cmdidx == CMD_lvimgrepadd)
@@ -2939,7 +2941,7 @@ ex_vimgrep(eap)
 	goto theend;
     }
 
-    if ((eap->cmdidx != CMD_grepadd && eap->cmdidx != CMD_lgrepadd && 
+    if ((eap->cmdidx != CMD_grepadd && eap->cmdidx != CMD_lgrepadd &&
 	 eap->cmdidx != CMD_vimgrepadd && eap->cmdidx != CMD_lvimgrepadd)
 					|| qi->qf_curlist == qi->qf_listcount)
 	/* make place for a new list */
@@ -3476,10 +3478,15 @@ ex_cbuffer(eap)
 		|| eap->line2 < 1 || eap->line2 > buf->b_ml.ml_line_count)
 	    EMSG(_(e_invrange));
 	else
-	    qf_init_ext(qi, NULL, buf, NULL, p_efm,
-			(eap->cmdidx == CMD_cbuffer
-			 || eap->cmdidx == CMD_lbuffer),
-			eap->line1, eap->line2);
+	{
+	    int		buffer_cmd = (eap->cmdidx == CMD_cbuffer
+					       || eap->cmdidx == CMD_lbuffer);
+
+	    if (qf_init_ext(qi, NULL, buf, NULL, p_efm, buffer_cmd,
+						   eap->line1, eap->line2) > 0
+		    && buffer_cmd)
+		qf_jump(qi, 0, 0, eap->forceit);  /* display first error */
+	}
     }
 }
 
@@ -3673,8 +3680,7 @@ ex_helpgrep(eap)
     if (eap->cmdidx == CMD_lhelpgrep)
     {
 	/* If the help window is not opened or if it already points to the
-	 * correct location list, then free the new location list
-	 */ 
+	 * correct location list, then free the new location list. */
 	if (!curwin->w_buffer->b_help || curwin->w_llist == qi)
 	{
 	    if (new_qi)

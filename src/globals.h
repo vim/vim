@@ -781,8 +781,10 @@ EXTERN int		xim_changed_while_preediting INIT(= FALSE);
 # else
 EXTERN XIC		xic INIT(= NULL);
 # endif
+# ifdef FEAT_GUI
 EXTERN guicolor_T	xim_fg_color INIT(= INVALCOLOR);
 EXTERN guicolor_T	xim_bg_color INIT(= INVALCOLOR);
+# endif
 #endif
 
 #ifdef FEAT_HANGULIN
@@ -952,7 +954,12 @@ EXTERN char_u	*new_last_cmdline INIT(= NULL);	/* new value for last_cmdline */
 EXTERN char_u	*autocmd_fname INIT(= NULL); /* fname for <afile> on cmdline */
 EXTERN int	autocmd_bufnr INIT(= 0);     /* fnum for <abuf> on cmdline */
 EXTERN char_u	*autocmd_match INIT(= NULL); /* name for <amatch> on cmdline */
-EXTERN int	did_cursorhold INIT(= FALSE); /* set when CursorHold triggered */
+EXTERN int	did_cursorhold INIT(= FALSE); /* set when CursorHold t'gerd */
+EXTERN pos_T	last_cursormoved	    /* for CursorMoved event */
+# ifdef DO_INIT
+			= INIT_POS_T
+# endif
+			;
 #endif
 
 EXTERN linenr_T	write_no_eol_lnum INIT(= 0); /* non-zero lnum when last line

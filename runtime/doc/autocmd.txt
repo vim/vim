@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.0aa.  Last change: 2006 Feb 01
+*autocmd.txt*   For Vim version 7.0aa.  Last change: 2006 Feb 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -278,6 +278,9 @@ Name			triggered by ~
 |FocusGained|		Vim got input focus
 |FocusLost|		Vim lost input focus
 |CursorHold|		the user doesn't press a key for a while
+|CursorHoldI|		the user doesn't press a key for a while in Insert mode
+|CursorMoved|		the cursor was moved in Normal mode
+|CursorMovedI|		the cursor was moved in Insert mode
 
 |WinEnter|		after entering another window
 |WinLeave|		before leaving a window
@@ -440,6 +443,7 @@ CmdwinLeave			Before leaving the command-line window.
 				|cmdwin-char|
 							*ColorScheme*
 ColorScheme			After loading a color scheme. |:colorscheme|
+
 							*CursorHold*
 CursorHold			When the user doesn't press a key for the time
 				specified with 'updatetime'.  Not re-triggered
@@ -460,6 +464,18 @@ CursorHold			When the user doesn't press a key for the time
 					:let &ro = &ro
 <				{only on Amiga, Unix, Win32, MSDOS and all GUI
 				versions}
+							*CursorHoldI*
+CursorHoldI			Just like CursorHold, but in Insert mode.
+
+							*CursorMoved*
+CursorMoved			After the cursor was moved in Normal mode.
+				Not triggered when there is typeahead or when
+				an operator is pending.
+				Careful: Don't do anything that the user does
+				not expect or that is slow.
+							*CursorMovedI*
+CursorMovedI			After the cursor was moved in Insert mode.
+				Otherwise the same as CursorMoved.
 							*EncodingChanged*
 EncodingChanged			Fires off after the 'encoding' option has been
 				changed.  Useful to set up fonts, for example.

@@ -100,7 +100,7 @@
 #include <X11/Xlocale.h>
 #endif
 
-#if defined(FEAT_XIM) && defined(HAVE_GTK2)
+#if defined(FEAT_GUI_GTK) && defined(FEAT_XIM) && defined(HAVE_GTK2)
 # include <gdk/gdkkeysyms.h>
 # ifdef WIN3264
 #  include <gdk/gdkwin32.h>

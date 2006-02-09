@@ -65,7 +65,7 @@ static void msg_add_eol __ARGS((void));
 static int check_mtime __ARGS((buf_T *buf, struct stat *s));
 static int time_differs __ARGS((long t1, long t2));
 #ifdef FEAT_AUTOCMD
-static int apply_autocmds_exarg __ARGS((EVENT_T event, char_u *fname, char_u *fname_io, int force, buf_T *buf, exarg_T *eap));
+static int apply_autocmds_exarg __ARGS((event_T event, char_u *fname, char_u *fname_io, int force, buf_T *buf, exarg_T *eap));
 #endif
 
 #if defined(FEAT_CRYPT) || defined(FEAT_MBYTE)
@@ -6894,7 +6894,7 @@ typedef struct AutoPat
 static struct event_name
 {
     char	*name;	/* event name */
-    EVENT_T	event;	/* event number */
+    event_T	event;	/* event number */
 } event_names[] =
 {
     {"BufAdd",		EVENT_BUFADD},
@@ -6922,9 +6922,12 @@ static struct event_name
     {"CmdwinEnter",	EVENT_CMDWINENTER},
     {"CmdwinLeave",	EVENT_CMDWINLEAVE},
     {"ColorScheme",	EVENT_COLORSCHEME},
+    {"CursorHold",	EVENT_CURSORHOLD},
+    {"CursorHoldI",	EVENT_CURSORHOLDI},
+    {"CursorMoved",	EVENT_CURSORMOVED},
+    {"CursorMovedI",	EVENT_CURSORMOVEDI},
     {"EncodingChanged",	EVENT_ENCODINGCHANGED},
     {"FileEncoding",	EVENT_ENCODINGCHANGED},
-    {"CursorHold",	EVENT_CURSORHOLD},
     {"FileAppendPost",	EVENT_FILEAPPENDPOST},
     {"FileAppendPre",	EVENT_FILEAPPENDPRE},
     {"FileAppendCmd",	EVENT_FILEAPPENDCMD},
@@ -6966,7 +6969,7 @@ static struct event_name
     {"VimLeavePre",	EVENT_VIMLEAVEPRE},
     {"WinEnter",	EVENT_WINENTER},
     {"WinLeave",	EVENT_WINLEAVE},
-    {NULL,		(EVENT_T)0}
+    {NULL,		(event_T)0}
 };
 
 static AutoPat *first_autopat[NUM_EVENTS] =
@@ -6990,7 +6993,7 @@ typedef struct AutoPatCmd
     char_u	*fname;		/* fname to match with */
     char_u	*sfname;	/* sfname to match with */
     char_u	*tail;		/* tail of fname */
-    EVENT_T	event;		/* current event */
+    event_T	event;		/* current event */
     int		arg_bufnr;	/* initially equal to <abuf>, set to zero when
 				   buf is deleted */
     struct AutoPatCmd   *next;	/* chain of active apc-s for auto-invalidation*/
@@ -7014,25 +7017,25 @@ static int current_augroup = AUGROUP_DEFAULT;
 
 static int au_need_clean = FALSE;   /* need to delete marked patterns */
 
-static void show_autocmd __ARGS((AutoPat *ap, EVENT_T event));
+static void show_autocmd __ARGS((AutoPat *ap, event_T event));
 static void au_remove_pat __ARGS((AutoPat *ap));
 static void au_remove_cmds __ARGS((AutoPat *ap));
 static void au_cleanup __ARGS((void));
 static int au_new_group __ARGS((char_u *name));
 static void au_del_group __ARGS((char_u *name));
 static int au_find_group __ARGS((char_u *name));
-static EVENT_T event_name2nr __ARGS((char_u *start, char_u **end));
-static char_u *event_nr2name __ARGS((EVENT_T event));
+static event_T event_name2nr __ARGS((char_u *start, char_u **end));
+static char_u *event_nr2name __ARGS((event_T event));
 static char_u *find_end_event __ARGS((char_u *arg, int have_group));
-static int event_ignored __ARGS((EVENT_T event));
+static int event_ignored __ARGS((event_T event));
 static int au_get_grouparg __ARGS((char_u **argp));
-static int do_autocmd_event __ARGS((EVENT_T event, char_u *pat, int nested, char_u *cmd, int forceit, int group));
+static int do_autocmd_event __ARGS((event_T event, char_u *pat, int nested, char_u *cmd, int forceit, int group));
 static char_u *getnextac __ARGS((int c, void *cookie, int indent));
-static int apply_autocmds_group __ARGS((EVENT_T event, char_u *fname, char_u *fname_io, int force, int group, buf_T *buf, exarg_T *eap));
+static int apply_autocmds_group __ARGS((event_T event, char_u *fname, char_u *fname_io, int force, int group, buf_T *buf, exarg_T *eap));
 static void auto_next_pat __ARGS((AutoPatCmd *apc, int stop_at_last));
 
 
-static EVENT_T	last_event;
+static event_T	last_event;
 static int	last_group;
 
 /*
@@ -7041,7 +7044,7 @@ static int	last_group;
     static void
 show_autocmd(ap, event)
     AutoPat	*ap;
-    EVENT_T	event;
+    event_T	event;
 {
     AutoCmd *ac;
 
@@ -7140,14 +7143,14 @@ au_cleanup()
 {
     AutoPat	*ap, **prev_ap;
     AutoCmd	*ac, **prev_ac;
-    EVENT_T	event;
+    event_T	event;
 
     if (autocmd_busy || !au_need_clean)
 	return;
 
     /* loop over all events */
-    for (event = (EVENT_T)0; (int)event < (int)NUM_EVENTS;
-					    event = (EVENT_T)((int)event + 1))
+    for (event = (event_T)0; (int)event < (int)NUM_EVENTS;
+					    event = (event_T)((int)event + 1))
     {
 	/* loop over all autocommand patterns */
 	prev_ap = &(first_autopat[(int)event]);
@@ -7193,7 +7196,7 @@ aubuflocal_remove(buf)
     buf_T	*buf;
 {
     AutoPat	*ap;
-    EVENT_T	event;
+    event_T	event;
     AutoPatCmd	*apc;
 
     /* invalidate currently executing autocommands */
@@ -7202,8 +7205,8 @@ aubuflocal_remove(buf)
 	    apc->arg_bufnr = 0;
 
     /* invalidate buflocals looping through events */
-    for (event = (EVENT_T)0; (int)event < (int)NUM_EVENTS;
-					    event = (EVENT_T)((int)event + 1))
+    for (event = (event_T)0; (int)event < (int)NUM_EVENTS;
+					    event = (event_T)((int)event + 1))
 	/* loop over all autocommand patterns */
 	for (ap = first_autopat[(int)event]; ap != NULL; ap = ap->next)
 	    if (ap->buflocal_nr == buf->b_fnum)
@@ -7352,7 +7355,7 @@ free_all_autocmds()
  * Return NUM_EVENTS if the event name was not found.
  * Return a pointer to the next event name in "end".
  */
-    static EVENT_T
+    static event_T
 event_name2nr(start, end)
     char_u  *start;
     char_u  **end;
@@ -7383,7 +7386,7 @@ event_name2nr(start, end)
  */
     static char_u *
 event_nr2name(event)
-    EVENT_T	event;
+    event_T	event;
 {
     int	    i;
 
@@ -7435,7 +7438,7 @@ find_end_event(arg, have_group)
  */
     static int
 event_ignored(event)
-    EVENT_T	event;
+    event_T	event;
 {
     char_u	*p = p_ei;
 
@@ -7547,7 +7550,7 @@ do_autocmd(arg, forceit)
     char_u	*pat;
     char_u	*envpat = NULL;
     char_u	*cmd;
-    EVENT_T	event;
+    event_T	event;
     int		need_free = FALSE;
     int		nested = FALSE;
     int		group;
@@ -7628,12 +7631,12 @@ do_autocmd(arg, forceit)
     /*
      * Loop over the events.
      */
-    last_event = (EVENT_T)-1;		/* for listing the event name */
+    last_event = (event_T)-1;		/* for listing the event name */
     last_group = AUGROUP_ERROR;		/* for listing the group name */
     if (*arg == '*' || *arg == NUL)
     {
-	for (event = (EVENT_T)0; (int)event < (int)NUM_EVENTS;
-					    event = (EVENT_T)((int)event + 1))
+	for (event = (event_T)0; (int)event < (int)NUM_EVENTS;
+					    event = (event_T)((int)event + 1))
 	    if (do_autocmd_event(event, pat,
 					 nested, cmd, forceit, group) == FAIL)
 		break;
@@ -7691,7 +7694,7 @@ au_get_grouparg(argp)
  */
     static int
 do_autocmd_event(event, pat, nested, cmd, forceit, group)
-    EVENT_T	event;
+    event_T	event;
     char_u	*pat;
     int		nested;
     char_u	*cmd;
@@ -8162,7 +8165,7 @@ static int	autocmd_nested = FALSE;
  */
     int
 apply_autocmds(event, fname, fname_io, force, buf)
-    EVENT_T	event;
+    event_T	event;
     char_u	*fname;	    /* NULL or empty means use actual file name */
     char_u	*fname_io;  /* fname to use for <afile> on cmdline */
     int		force;	    /* when TRUE, ignore autocmd_busy */
@@ -8178,7 +8181,7 @@ apply_autocmds(event, fname, fname_io, force, buf)
  */
     static int
 apply_autocmds_exarg(event, fname, fname_io, force, buf, eap)
-    EVENT_T	event;
+    event_T	event;
     char_u	*fname;
     char_u	*fname_io;
     int		force;
@@ -8197,7 +8200,7 @@ apply_autocmds_exarg(event, fname, fname_io, force, buf, eap)
  */
     int
 apply_autocmds_retval(event, fname, fname_io, force, buf, retval)
-    EVENT_T	event;
+    event_T	event;
     char_u	*fname;	    /* NULL or empty means use actual file name */
     char_u	*fname_io;  /* fname to use for <afile> on cmdline */
     int		force;	    /* when TRUE, ignore autocmd_busy */
@@ -8222,14 +8225,14 @@ apply_autocmds_retval(event, fname, fname_io, force, buf, retval)
     return did_cmd;
 }
 
-#if defined(FEAT_AUTOCMD) || defined(PROTO)
 /*
  * Return TRUE when there is a CursorHold autocommand defined.
  */
     int
 has_cursorhold()
 {
-    return (first_autopat[(int)EVENT_CURSORHOLD] != NULL);
+    return (first_autopat[(int)(get_real_state() == NORMAL_BUSY
+			    ? EVENT_CURSORHOLD : EVENT_CURSORHOLDI)] != NULL);
 }
 
 /*
@@ -8238,16 +8241,38 @@ has_cursorhold()
     int
 trigger_cursorhold()
 {
-    return (!did_cursorhold
-	    && has_cursorhold()
-	    && !Recording
-	    && get_real_state() == NORMAL_BUSY);
+    int		state;
+
+    if (!did_cursorhold && has_cursorhold() && !Recording)
+    {
+	state = get_real_state();
+	if (state == NORMAL_BUSY || (state & INSERT) != 0)
+	    return TRUE;
+    }
+    return FALSE;
 }
-#endif
+
+/*
+ * Return TRUE when there is a CursorMoved autocommand defined.
+ */
+    int
+has_cursormoved()
+{
+    return (first_autopat[(int)EVENT_CURSORMOVED] != NULL);
+}
+
+/*
+ * Return TRUE when there is a CursorMovedI autocommand defined.
+ */
+    int
+has_cursormovedI()
+{
+    return (first_autopat[(int)EVENT_CURSORMOVEDI] != NULL);
+}
 
     static int
 apply_autocmds_group(event, fname, fname_io, force, group, buf, eap)
-    EVENT_T	event;
+    event_T	event;
     char_u	*fname;	    /* NULL or empty means use actual file name */
     char_u	*fname_io;  /* fname to use for <afile> on cmdline, NULL means
 			       use fname */
@@ -8735,7 +8760,7 @@ getnextac(c, cookie, indent)
  */
     int
 has_autocmd(event, sfname, buf)
-    EVENT_T	event;
+    event_T	event;
     char_u	*sfname;
     buf_T       *buf;
 {
@@ -8902,7 +8927,7 @@ au_exists(arg)
     char_u	*pattern = NULL;
     char_u	*event_name;
     char_u	*p;
-    EVENT_T	event;
+    event_T	event;
     AutoPat	*ap;
     buf_T	*buflocal_buf = NULL;
     int		group;

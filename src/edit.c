@@ -149,7 +149,7 @@ static int  quote_meta __ARGS((char_u *dest, char_u *str, int len));
 #define BACKSPACE_WORD_NOT_SPACE    3
 #define BACKSPACE_LINE		    4
 
-static void ins_redraw __ARGS((void));
+static void ins_redraw __ARGS((int ready));
 static void ins_ctrl_v __ARGS((void));
 static void undisplay_dollar __ARGS((void));
 static void insert_special __ARGS((int, int, int));
@@ -650,7 +650,7 @@ edit(cmdchar, startln, count)
 	 * Redraw the display when no characters are waiting.
 	 * Also shows mode, ruler and positions cursor.
 	 */
-	ins_redraw();
+	ins_redraw(TRUE);
 
 #ifdef FEAT_SCROLLBIND
 	if (curwin->w_p_scb)
@@ -732,7 +732,7 @@ edit(cmdchar, startln, count)
 	if (c == Ctrl_BSL)
 	{
 	    /* may need to redraw when no more chars available now */
-	    ins_redraw();
+	    ins_redraw(FALSE);
 	    ++no_mapping;
 	    ++allow_keys;
 	    c = safe_vgetc();
@@ -1037,6 +1037,13 @@ doESCkey:
 
 	case K_IGNORE:	/* Something mapped to nothing */
 	    break;
+
+#ifdef FEAT_AUTOCMD
+	case K_CURSORHOLD:	/* Didn't type something for a while. */
+	    apply_autocmds(EVENT_CURSORHOLDI, NULL, NULL, FALSE, curbuf);
+	    did_cursorhold = TRUE;
+	    break;
+#endif
 
 #ifdef FEAT_GUI_W32
 	    /* On Win32 ignore <M-F4>, we get it when closing the window was
@@ -1345,11 +1352,22 @@ force_cindent:
  * Only redraw when there are no characters available.  This speeds up
  * inserting sequences of characters (e.g., for CTRL-R).
  */
+/*ARGSUSED*/
     static void
-ins_redraw()
+ins_redraw(ready)
+    int		ready;	    /* not busy with something */
 {
     if (!char_avail())
     {
+#ifdef FEAT_AUTOCMD
+	    /* Trigger CursorMoved if the cursor moved. */
+	if (ready && has_cursormovedI()
+			     && !equalpos(last_cursormoved, curwin->w_cursor))
+	{
+	    apply_autocmds(EVENT_CURSORMOVEDI, NULL, NULL, FALSE, curbuf);
+	    last_cursormoved = curwin->w_cursor;
+	}
+#endif
 	if (must_redraw)
 	    update_screen(0);
 	else if (clear_cmdline || redraw_cmdline)
@@ -1369,7 +1387,7 @@ ins_ctrl_v()
     int		c;
 
     /* may need to redraw when no more chars available now */
-    ins_redraw();
+    ins_redraw(FALSE);
 
     if (redrawing() && !char_avail())
 	edit_putchar('^', TRUE);
@@ -6652,7 +6670,7 @@ ins_reg()
     if (redrawing() && !char_avail())
     {
 	/* may need to redraw when no more chars available now */
-	ins_redraw();
+	ins_redraw(FALSE);
 
 	edit_putchar('"', TRUE);
 #ifdef FEAT_CMDL_INFO
@@ -8324,7 +8342,7 @@ ins_digraph()
     if (redrawing() && !char_avail())
     {
 	/* may need to redraw when no more chars available now */
-	ins_redraw();
+	ins_redraw(FALSE);
 
 	edit_putchar('?', TRUE);
 #ifdef FEAT_CMDL_INFO
@@ -8356,14 +8374,14 @@ ins_digraph()
 	if (redrawing() && !char_avail())
 	{
 	    /* may need to redraw when no more chars available now */
-	    ins_redraw();
+	    ins_redraw(FALSE);
 
 	    if (char2cells(c) == 1)
 	    {
 		/* first remove the '?', otherwise it's restored when typing
 		 * an ESC next */
 		edit_unputchar();
-		ins_redraw();
+		ins_redraw(FALSE);
 		edit_putchar(c, TRUE);
 	    }
 #ifdef FEAT_CMDL_INFO
