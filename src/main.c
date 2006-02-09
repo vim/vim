@@ -988,6 +988,17 @@ main_loop(cmdwin, noexmode)
 	    skip_redraw = FALSE;
 	else if (do_redraw || stuff_empty())
 	{
+#ifdef FEAT_AUTOCMD
+	    /* Trigger CursorMoved if the cursor moved. */
+	    if (!finish_op && has_cursormoved()
+			     && !equalpos(last_cursormoved, curwin->w_cursor))
+
+	    {
+		apply_autocmds(EVENT_CURSORMOVED, NULL, NULL, FALSE, curbuf);
+		last_cursormoved = curwin->w_cursor;
+	    }
+#endif
+
 #if defined(FEAT_DIFF) && defined(FEAT_SCROLLBIND)
 	    /* Scroll-binding for diff mode may have been postponed until
 	     * here.  Avoids doing it for every change. */

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 07
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -32,10 +32,13 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 Crash with X command server (Ciaran McCreesh).
 
+Add ":lcscope" to use location list instead of quickfix list.
+
 ccomplete / omnicomplete:
 When editing compl_leader <CR> should accept the current match.
 Somehow select another match without changing the compl_leader, so that you
 can use CTRL-L next?  Perhaps with <S-Up> and <S-Down>?
+- Flickering because of syntax highlighting redrawing further lines.
 - Complete the longest common match instead of the first match?
     Do this when "longest" is in 'completeopt'.
     Pressing CTRL-N or CTRL-P will get the whole match, as before.
@@ -105,6 +108,9 @@ into account. (Mikolaj Machowski)  Store line count in an extra array?
 
 Is it possible to keep the command-line window open?  Would actually work like
 closing it, executing the command and re-opening it (at the same position).
+
+":keepundo": add change to existing undo chain, so that one "u" undoes them
+all. (Gautam Iyer)
 
 Mac unicode patch (Da Woon Jung):
 - selecting proportional font breaks display
@@ -2252,31 +2258,25 @@ Autocommands:
 8   Add ScriptReadCmd event: used to load remote Vim scripts, e.g.
     "vim -u http://mach/path/vimrc".
 7   Add TagJump event: do something after jumping to a tag.
+8   Add "TagJumpFile" autocommand: When jumping to another file for a tag.
+    Can be used to open "main.c.gz" when "main.c" isn't found.
 8   Use another option than 'updatetime' for the CursorHold event.  The two
     things are unrelated for the user (but the implementation is more
     difficult).
-8   Add an event like CursorHold that is triggered repeatedly, not just once.
-8   Also trigger CursorHold in Insert mode?
-7   Add autocommand event for when a buffer cannot be abandoned.  So that user
-    can define the action taking (autowrite, dialog, fail) based on the kind
-    of file. (Yakov Lerner)  Or is BufLeave sufficient?
-8   Can't use ":normal" in CursorHold autocommands.  Make the CursorHold event
-    insert a special key code, and call the autocommand functions from a
-    higher level, so that vgetc() isn't used recursively.
-8   Autocommands should not change registers.  And marks?  And the jumplist?
-    And anything else?
+8   Add an event like CursorHold that is triggered repeatedly, not just once
+    after typing something.
+7   Add autocommand event for when a buffer cannot be abandoned.  So that the
+    user can define the action taking (autowrite, dialog, fail) based on the
+    kind of file. (Yakov Lerner)  Or is BufLeave sufficient?
 8   Autocommand for when modified files have been found, when getting input
     focus again (e.g., FileChangedFocus).
     Check when: getting focus, jumping to another buffer, ...
+8   Autocommands should not change registers.  And marks?  And the jumplist?
+    And anything else?  Add a command to save and restore these things.
 8   Add autocommands, user functions and user commands to ":mkvimrc".
-8   Add "TagJumpFile" autocommand: When jumping to another file for a tag.
-    Can be used to open "main.c.gz" when "main.c" isn't found.
 6   Add KeymapChanged event, so that the effects of a different keymap can be
     handled (e.g., other font) (Ron Aaron)
-7   Add a way to skip an autocommand if going from one *.c file to another *.c
-    file.
-7   When trying to open a directory, don't load the file but trigger an
-    autocommand event OpenDirectory.
+7   When trying to open a directory, trigger an OpenDirectory event.
 7   Add file type in front of file pattern: <d> for directory, <l> for link,
     <x> for executable, etc.  <&xxx> for Risc OS.  With commas to separate
     alternatives.  The autocommand is only executed when both the file type
@@ -2293,7 +2293,6 @@ Autocommands:
 -   Add events to autocommands:
     Error	    - When an error happens
     NormalEnter	    - Entering Normal mode
-    InsertEnter	    - Entering Insert mode
     ReplaceEnter    - Entering Replace mode
     CmdEnter	    - Entering Cmdline mode
     VisualEnter	    - Entering Visual mode

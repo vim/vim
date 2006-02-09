@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Feb 05
+*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Feb 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -587,6 +587,10 @@ New autocommand events: ~
 |SessionLoadPost|	after loading a session file. (Yegappan Lakshmanan)
 
 |SpellFileMissing|	when a spell file can't be found
+
+|CursorHoldI|		the user doesn't press a key for a while in Insert mode
+|CursorMoved|		the cursor was moved in Normal mode
+|CursorMovedI|		the cursor was moved in Insert mode
 
 
 New items in search patterns: ~
