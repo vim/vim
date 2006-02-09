@@ -1102,14 +1102,17 @@ enum auto_event
     EVENT_WINLEAVE,		/* before leaving a window */
     EVENT_ENCODINGCHANGED,	/* after changing the 'encoding' option */
     EVENT_CURSORHOLD,		/* cursor in same position for a while */
+    EVENT_CURSORHOLDI,		/* idem, in Insert mode */
     EVENT_FUNCUNDEFINED,	/* if calling a function which doesn't exist */
     EVENT_REMOTEREPLY,		/* upon string reception from a remote vim */
     EVENT_SWAPEXISTS,		/* found existing swap file */
     EVENT_SPELLFILEMISSING,	/* spell file missing */
+    EVENT_CURSORMOVED,		/* cursor was moved */
+    EVENT_CURSORMOVEDI,		/* cursor was moved in Insert mode */
     NUM_EVENTS			/* MUST be the last one */
 };
 
-typedef enum auto_event EVENT_T;
+typedef enum auto_event event_T;
 
 /*
  * Values for index in highlight_attr[].

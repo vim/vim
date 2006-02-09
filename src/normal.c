@@ -3635,10 +3635,10 @@ add_to_showcmd(c)
     int		i;
     static int	ignore[] =
     {
-#ifdef FEAT_GUI
+# ifdef FEAT_GUI
 	K_VER_SCROLLBAR, K_HOR_SCROLLBAR,
 	K_LEFTMOUSE_NM, K_LEFTRELEASE_NM,
-#endif
+# endif
 	K_IGNORE,
 	K_LEFTMOUSE, K_LEFTDRAG, K_LEFTRELEASE,
 	K_MIDDLEMOUSE, K_MIDDLEDRAG, K_MIDDLERELEASE,
