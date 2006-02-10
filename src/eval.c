@@ -15378,7 +15378,21 @@ var2fpos(varp, lnum)
 	    return NULL;
 	return pp;
     }
-    if (name[0] == '$')		/* last column or line */
+    if (name[0] == 'w' && lnum)
+    {
+	pos.col = 0;
+	if (name[1] == '0')		/* "w0": first visible line */
+	{
+	    pos.lnum = curwin->w_topline;
+	    return &pos;
+	}
+	else if (name[1] == '$')	/* "w$": last visible line */
+	{
+	    pos.lnum = curwin->w_botline - 1;
+	    return &pos;
+	}
+    }
+    else if (name[0] == '$')		/* last column or line */
     {
 	if (lnum)
 	{

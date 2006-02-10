@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	C
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Feb 06
+" Last Change:	2006 Feb 10
 
 
 " This function is used for the 'omnifunc' option.
@@ -213,9 +213,8 @@ endfunction
 " If it is a variable we may add "." or "->".  Don't do it for other types,
 " such as a typedef, by not including the info that s:GetAddition() uses.
 function! s:Tag2item(val)
-  let x = substitute(a:val['cmd'], '^/^', '', '')
-  let x = substitute(x, '$/$', '', '')
-  let x = substitute(x, a:val['name'], '@@', '')
+  let x = s:Tagcmd2extra(a:val['cmd'], a:val['name'], a:val['filename'])
+
   if has_key(a:val, "kind")
     if a:val["kind"] == 'v'
       return {'match': a:val['name'], 'tagline': "\t" . a:val['cmd'], 'dict': a:val, 'extra': x}
@@ -231,13 +230,37 @@ endfunction
 " "val['match']" is the matching item.
 " "val['tagline']" is the tagline in which the last part was found.
 function! s:Tagline2item(val, brackets)
-  let word = a:val['match'] . a:brackets . s:GetAddition(a:val['tagline'], a:val['match'], [a:val], a:brackets == '')
+  let line = a:val['tagline']
+  let word = a:val['match'] . a:brackets . s:GetAddition(line, a:val['match'], [a:val], a:brackets == '')
   if has_key(a:val, 'extra')
     return {'word': word, 'menu': a:val['extra']}
   endif
-  return {'word': word, 'menu': substitute(a:val['tagline'], word, '@@', '')}
+
+  " Isolate the command after the tag and filename.
+  let s = matchstr(line, '[^\t]*\t[^\t]*\t\zs\(/^.*$/\|[^\t]*\)\ze\(;"\t\|\t\|$\)')
+  if s != ''
+    return {'word': word, 'menu': s:Tagcmd2extra(s, a:val['match'], matchstr(line, '[^\t]*\t\zs[^\t]*\ze\t'))}
+  endif
+  return {'word': word}
 endfunction
 
+" Turn a command from a tag line to something that is useful in the menu
+function! s:Tagcmd2extra(cmd, name, fname)
+  if a:cmd =~ '^/^'
+    " The command is a search command, useful to see what it is.
+    let x = matchstr(a:cmd, '^/^\zs.*\ze$/')
+    let x = substitute(x, a:name, '@@', '')
+    let x = substitute(x, '\\\(.\)', '\1', 'g')
+    let x = x . ' - ' . a:fname
+  elseif a:cmd =~ '^\d*$'
+    " The command is a line number, the file name is more useful.
+    let x = a:fname . ' - ' . a:cmd
+  else
+    " Not recognized, use command and file name.
+    let x = a:cmd . ' - ' . a:fname
+  endif
+  return x
+endfunction
 
 " Find composing type in "lead" and match items[0] with it.
 " Repeat this recursively for items[1], if it's there.

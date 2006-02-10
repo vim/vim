@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Feb 09
+*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Feb 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -457,13 +457,6 @@ Win32: The ":winpos" command now also works in the console. (Vipin Aravind)
 |:caddbuffer|		Add errors from the current buffer to the quickfix
 			list.
 
-|:ltag|			Jump to a tag and add matching tags to a location list.
-|:lmake|		Like |:make| but use the location list.
-|:lgrep|		Like |:grep| but use the location list.
-|:lgrepadd|		Like |:grepadd| but use the location list.
-|:lvimgrep|		Like |:vimgrep| but use the location list.
-|:lvimgrepadd|		Like |:vimgrepadd| but use the location list.
-|:lhelpgrep|		Like |:helpgrep| but use the location list.
 |:lfile|		Like |:cfile| but use the location list.
 |:lgetfile|		Like |:cgetfile| but use the location list.
 |:laddfile|		Like |:caddfile| but use the location list.
@@ -474,7 +467,7 @@ Win32: The ":winpos" command now also works in the console. (Vipin Aravind)
 |:ll|			Like |:cc| but use the location list.
 |:llist|		Like |:clist| but use the location list.
 |:lnext|		Like |:cnext| but use the location list.
-|:lprev|		Like |:cprev| but use the location list.
+|:lprevious|		Like |:cprevious| but use the location list.
 |:lNext|		Like |:cNext| but use the location list.
 |:lfirst|		Like |:cfirst| but use the location list.
 |:lrewind|		Like |:crewind| but use the location list.
@@ -487,6 +480,14 @@ Win32: The ":winpos" command now also works in the console. (Vipin Aravind)
 |:lwindow|		Like |:cwindow| but use the location list.
 |:lopen|		Like |:copen| but use the location list.
 |:lclose|		Like |:cclose| but use the location list.
+|:lmake|		Like |:make| but use the location list.
+|:lgrep|		Like |:grep| but use the location list.
+|:lgrepadd|		Like |:grepadd| but use the location list.
+|:lvimgrep|		Like |:vimgrep| but use the location list.
+|:lvimgrepadd|		Like |:vimgrepadd| but use the location list.
+|:lhelpgrep|		Like |:helpgrep| but use the location list.
+|:lcscope|		Like |:cscope| but use the location list.
+|:ltag|			Jump to a tag and add matching tags to a location list.
 
 
 Ex command modifiers: ~
@@ -1681,5 +1682,8 @@ Pasting with CTRL-V and menu didn't work properly when some commands are
 mapped.  Use ":normal!" instead of ":normal". (Tony Apuzzo)
 
 Crashed when expanding a file name argument in backticks.
+
+In some situations the menu and scrollbar didn't work, when the value contains
+a CSI byte. (Yukihiro Nakadaira)
 
  vim:tw=78:ts=8:ft=help:norl:

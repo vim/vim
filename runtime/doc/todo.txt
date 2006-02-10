@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 09
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -32,23 +32,14 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 Crash with X command server (Ciaran McCreesh).
 
-Add ":lcscope" to use location list instead of quickfix list.
-
 ccomplete / omnicomplete:
-When editing compl_leader <CR> should accept the current match.
-Somehow select another match without changing the compl_leader, so that you
-can use CTRL-L next?  Perhaps with <S-Up> and <S-Down>?
-- Flickering because of syntax highlighting redrawing further lines.
-- Complete the longest common match instead of the first match?
-    Do this when "longest" is in 'completeopt'.
-    Pressing CTRL-N or CTRL-P will get the whole match, as before.
-    Need to postpone inserting anything until all matches have been found.
-    Then add a completion item with the longest common string (after what was
-    typed), if there is one.
 - For C add tag "kind" field to each match?
+- Flickering because of syntax highlighting redrawing further lines.
 - Finding out if an item has members (to add '.' or '->') requires a grep in
   the tags files, that is very slow.  Is there another solution?  At least
   stop at the first match.
+  Could build the list of items for each structure in memory.  Is that faster?
+  Not using too much memory?
 - When a typedef or struct is local to a file only use it in that file?
 - Special mappings for when the popup menu is visible?  Would allow for making
   a specific selection (e.g, methods vs variables).
