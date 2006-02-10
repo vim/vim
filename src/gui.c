@@ -3055,7 +3055,7 @@ gui_xy2colrow(x, y, colp)
 gui_menu_cb(menu)
     vimmenu_T *menu;
 {
-    char_u  bytes[3 + sizeof(long_u)];
+    char_u  bytes[sizeof(long_u)];
 
     /* Don't put events in the input queue now. */
     if (hold_gui_events)
@@ -3064,8 +3064,9 @@ gui_menu_cb(menu)
     bytes[0] = CSI;
     bytes[1] = KS_MENU;
     bytes[2] = KE_FILLER;
-    add_long_to_buf((long_u)menu, bytes + 3);
-    add_to_input_buf(bytes, 3 + sizeof(long_u));
+    add_to_input_buf(bytes, 3);
+    add_long_to_buf((long_u)menu, bytes);
+    add_to_input_buf_csi(bytes, sizeof(long_u));
 }
 #endif
 
@@ -3358,7 +3359,7 @@ gui_drag_scrollbar(sb, value, still_dragging)
     int		old_topfill = curwin->w_topfill;
 # endif
 #else
-    char_u	bytes[4 + sizeof(long_u)];
+    char_u	bytes[sizeof(long_u)];
     int		byte_count;
 #endif
 
@@ -3528,8 +3529,9 @@ gui_drag_scrollbar(sb, value, still_dragging)
     out_flush();
     gui_update_cursor(FALSE, TRUE);
 #else
-    add_long_to_buf((long)value, bytes + byte_count);
-    add_to_input_buf(bytes, byte_count + sizeof(long_u));
+    add_to_input_buf(bytes, byte_count);
+    add_long_to_buf((long_u)value, bytes);
+    add_to_input_buf_csi(bytes, sizeof(long_u));
 #endif
 }
 

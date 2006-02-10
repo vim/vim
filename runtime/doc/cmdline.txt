@@ -479,6 +479,7 @@ followed by another command:
     :global
     :help
     :helpfind
+    :lcscope
     :make
     :normal
     :perl
