@@ -31,7 +31,7 @@
             # Move configure aside, autoconf would overwrite it
             :move {exist} configure configure.save
             :sys autoconf
-            :cat configure | :eval re.sub('\\./config.log', 'auto/config.log', stdin) >! auto/configure
+            :cat configure | :eval re.sub('\\./config.log', 'auto/config.log', stdin) | :eval re.sub('>config.log', '>auto/config.log', stdin) >! auto/configure
             :chmod 755 auto/configure
             :move configure.save configure
             :del {force} auto/config.cache auto/config.status

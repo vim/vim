@@ -1226,6 +1226,7 @@ The commands are sorted on the non-optional part of their name.
 |:lcd|		:lc[d]		change directory locally
 |:lchdir|	:lch[dir]	change directory locally
 |:lclose|	:lcl[ose]	close location window
+|:lcscope|	:lcs[cope]      like ":cscope" but uses location list
 |:left|		:le[ft]		left align lines
 |:leftabove|	:lefta[bove]	make split window appear left or above
 |:let|		:let		assign a value to a variable or option

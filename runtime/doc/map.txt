@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.0aa.  Last change: 2006 Jan 13
+*map.txt*       For Vim version 7.0aa.  Last change: 2006 Feb 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -45,42 +45,42 @@ modes.
 {lhs}	means left-hand-side	*{lhs}*
 {rhs}	means right-hand-side	*{rhs}*
 
-:map	{lhs} {rhs}					*:map*
-:nm[ap]	{lhs} {rhs}					*:nm* *:nmap*
-:vm[ap]	{lhs} {rhs}					*:vm* *:vmap*
-:om[ap]	{lhs} {rhs}					*:om* *:omap*
-:map!	{lhs} {rhs}					*:map!*
-:im[ap]	{lhs} {rhs}					*:im* *:imap*
-:lm[ap]	{lhs} {rhs}					*:lm* *:lmap*
-:cm[ap]	{lhs} {rhs}					*:cm* *:cmap*
+:map	{lhs} {rhs}		|mapmode-nvo|		*:map*
+:nm[ap]	{lhs} {rhs}		|mapmode-n|		*:nm* *:nmap*
+:vm[ap]	{lhs} {rhs}		|mapmode-v|		*:vm* *:vmap*
+:om[ap]	{lhs} {rhs}		|mapmode-o|		*:om* *:omap*
+:map!	{lhs} {rhs}		|mapmode-ic|		*:map!*
+:im[ap]	{lhs} {rhs}		|mapmode-i|		*:im* *:imap*
+:lm[ap]	{lhs} {rhs}		|mapmode-l|		*:lm* *:lmap*
+:cm[ap]	{lhs} {rhs}		|mapmode-c|		*:cm* *:cmap*
 			Map the key sequence {lhs} to {rhs} for the modes
 			where the map command applies.  The result, including
 			{rhs}, is then further scanned for mappings.  This
 			allows for nested and recursive use of mappings.
 
 
-:no[remap]  {lhs} {rhs}					*:no*  *:noremap*
-:nn[oremap] {lhs} {rhs}					*:nn*  *:nnoremap*
-:vn[oremap] {lhs} {rhs}					*:vn*  *:vnoremap*
-:ono[remap] {lhs} {rhs}					*:ono* *:onoremap*
-:no[remap]! {lhs} {rhs}					*:no!* *:noremap!*
-:ino[remap] {lhs} {rhs}					*:ino* *:inoremap*
-:ln[oremap] {lhs} {rhs}					*:ln*  *:lnoremap*
-:cno[remap] {lhs} {rhs}					*:cno* *:cnoremap*
+:no[remap]  {lhs} {rhs}		|mapmode-nvo|		*:no*  *:noremap*
+:nn[oremap] {lhs} {rhs}		|mapmode-n|		*:nn*  *:nnoremap*
+:vn[oremap] {lhs} {rhs}		|mapmode-v|		*:vn*  *:vnoremap*
+:ono[remap] {lhs} {rhs}		|mapmode-o|		*:ono* *:onoremap*
+:no[remap]! {lhs} {rhs}		|mapmode-ic|		*:no!* *:noremap!*
+:ino[remap] {lhs} {rhs}		|mapmode-i|		*:ino* *:inoremap*
+:ln[oremap] {lhs} {rhs}		|mapmode-l|		*:ln*  *:lnoremap*
+:cno[remap] {lhs} {rhs}		|mapmode-c|		*:cno* *:cnoremap*
 			Map the key sequence {lhs} to {rhs} for the modes
 			where the map command applies.  Disallow mapping of
 			{rhs}, to avoid nested and recursive mappings.  Often
 			used to redefine a command.  {not in Vi}
 
 
-:unm[ap]  {lhs}						*:unm*  *:unmap*
-:nun[map] {lhs}						*:nun*  *:nunmap*
-:vu[nmap] {lhs}						*:vu*   *:vunmap*
-:ou[nmap] {lhs}						*:ou*   *:ounmap*
-:unm[ap]! {lhs}						*:unm!* *:unmap!*
-:iu[nmap] {lhs}						*:iu*   *:iunmap*
-:lu[nmap] {lhs}						*:lu*   *:lunmap*
-:cu[nmap] {lhs}						*:cu*   *:cunmap*
+:unm[ap]  {lhs}			|mapmode-nvo|		*:unm*  *:unmap*
+:nun[map] {lhs}			|mapmode-n|		*:nun*  *:nunmap*
+:vu[nmap] {lhs}			|mapmode-v|		*:vu*   *:vunmap*
+:ou[nmap] {lhs}			|mapmode-o|		*:ou*   *:ounmap*
+:unm[ap]! {lhs}			|mapmode-ic|		*:unm!* *:unmap!*
+:iu[nmap] {lhs}			|mapmode-i|		*:iu*   *:iunmap*
+:lu[nmap] {lhs}			|mapmode-l|		*:lu*   *:lunmap*
+:cu[nmap] {lhs}			|mapmode-c|		*:cu*   *:cunmap*
 			Remove the mapping of {lhs} for the modes where the
 			map command applies.  The mapping may remain defined
 			for other modes where it applies.
@@ -89,38 +89,38 @@ modes.
 				:map @@ foo
 				:unmap @@ | print
 
-:mapc[lear]						*:mapc*   *:mapclear*
-:nmapc[lear]						*:nmapc*  *:nmapclear*
-:vmapc[lear]						*:vmapc*  *:vmapclear*
-:omapc[lear]						*:omapc*  *:omapclear*
-:mapc[lear]!						*:mapc!*  *:mapclear!*
-:imapc[lear]						*:imapc*  *:imapclear*
-:lmapc[lear]						*:lmapc*  *:lmapclear*
-:cmapc[lear]						*:cmapc*  *:cmapclear*
+:mapc[lear]			|mapmode-nvo|		*:mapc*   *:mapclear*
+:nmapc[lear]			|mapmode-n|		*:nmapc*  *:nmapclear*
+:vmapc[lear]			|mapmode-v|		*:vmapc*  *:vmapclear*
+:omapc[lear]			|mapmode-o|		*:omapc*  *:omapclear*
+:mapc[lear]!			|mapmode-ic|		*:mapc!*  *:mapclear!*
+:imapc[lear]			|mapmode-i|		*:imapc*  *:imapclear*
+:lmapc[lear]			|mapmode-l|		*:lmapc*  *:lmapclear*
+:cmapc[lear]			|mapmode-c|		*:cmapc*  *:cmapclear*
 			Remove ALL mappings for the modes where the map
 			command applies.  {not in Vi}
 			Warning: This also removes the default mappings.
 
-:map
-:nm[ap]
-:vm[ap]
-:om[ap]
-:map!
-:im[ap]
-:lm[ap]
-:cm[ap]
+:map				|mapmode-nvo|
+:nm[ap]				|mapmode-n|
+:vm[ap]				|mapmode-v|
+:om[ap]				|mapmode-o|
+:map!				|mapmode-ic|
+:im[ap]				|mapmode-i|
+:lm[ap]				|mapmode-l|
+:cm[ap]				|mapmode-c|
 			List all key mappings for the modes where the map
 			command applies.  Note that ":map" and ":map!" are
 			used most often, because they include the other modes.
 
-:map    {lhs}						*:map_l*
-:nm[ap] {lhs}						*:nmap_l*
-:vm[ap] {lhs}						*:vmap_l*
-:om[ap] {lhs}						*:omap_l*
-:map!   {lhs}						*:map_l!*
-:im[ap] {lhs}						*:imap_l*
-:lm[ap] {lhs}						*:lmap_l*
-:cm[ap] {lhs}						*:cmap_l*
+:map    {lhs}			|mapmode-nvo|		*:map_l*
+:nm[ap] {lhs}			|mapmode-n|		*:nmap_l*
+:vm[ap] {lhs}			|mapmode-v|		*:vmap_l*
+:om[ap] {lhs}			|mapmode-o|		*:omap_l*
+:map!   {lhs}			|mapmode-ic|		*:map_l!*
+:im[ap] {lhs}			|mapmode-i|		*:imap_l*
+:lm[ap] {lhs}			|mapmode-l|		*:lmap_l*
+:cm[ap] {lhs}			|mapmode-c|		*:cmap_l*
 			List the key mappings for the key sequences starting
 			with {lhs} in the modes where the map command applies.
 			{not in Vi}
@@ -218,6 +218,7 @@ to type a count with a zero.
 						*map-overview* *map-modes*
 Overview of which map command works in which mode:
 
+			*mapmode-nvo* *mapmode-n* *mapmode-v* *mapmode-o*
     commands:				      modes: ~
 					  Normal     Visual  Operator-pending ~
 :map   :noremap   :unmap   :mapclear	    yes	       yes	  yes
@@ -225,6 +226,7 @@ Overview of which map command works in which mode:
 :vmap  :vnoremap  :vunmap  :vmapclear	     -	       yes	   -
 :omap  :onoremap  :ounmap  :omapclear	     -		-	  yes
 
+			*mapmode-ic* *mapmode-i* *mapmode-c* *mapmode-l*
 					  Insert  Command-line	Lang-Arg ~
 :map!  :noremap!  :unmap!  :mapclear!	    yes	       yes	   -
 :imap  :inoremap  :iunmap  :imapclear	    yes		-	   -
