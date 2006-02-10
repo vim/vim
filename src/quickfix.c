@@ -125,6 +125,7 @@ static char_u	*get_mef_name __ARGS((void));
 static buf_T	*load_dummy_buffer __ARGS((char_u *fname));
 static void	wipe_dummy_buffer __ARGS((buf_T *buf));
 static void	unload_dummy_buffer __ARGS((buf_T *buf));
+static qf_info_T *ll_get_or_alloc_list __ARGS((win_T *));
 
 /* Quickfix window check helper macro */
 #define IS_QF_WINDOW(wp) (bt_quickfix(wp->w_buffer) && wp->w_llist_ref == NULL)
@@ -154,7 +155,11 @@ qf_init(wp, efile, errorformat, newlist)
 	return FAIL;
 
     if (wp != NULL)
-	qi = GET_LOC_LIST(wp);
+    {
+	qi = ll_get_or_alloc_list(wp);
+	if (qi == NULL)
+	    return FAIL;
+    }
 
     return qf_init_ext(qi, efile, curbuf, NULL, errorformat, newlist,
 						    (linenr_T)0, (linenr_T)0);
@@ -2628,12 +2633,7 @@ ex_make(eap)
 
     if (eap->cmdidx == CMD_lmake || eap->cmdidx == CMD_lgrep
 	|| eap->cmdidx == CMD_lgrepadd)
-    {
-	qi = ll_get_or_alloc_list(curwin);
-	if (qi == NULL)
-	    return;
 	wp = curwin;
-    }
 
     autowrite_all();
     fname = get_mef_name();
@@ -2678,7 +2678,11 @@ ex_make(eap)
 					   (eap->cmdidx != CMD_grepadd
 					    && eap->cmdidx != CMD_lgrepadd)) > 0
 	    && !eap->forceit)
+    {
+	if (wp != NULL)
+	    qi = GET_LOC_LIST(wp);
 	qf_jump(qi, 0, 0, FALSE);		/* display first error */
+    }
 
     mch_remove(fname);
     vim_free(fname);
@@ -2832,12 +2836,7 @@ ex_cfile(eap)
 
     if (eap->cmdidx == CMD_lfile || eap->cmdidx == CMD_lgetfile
 	|| eap->cmdidx == CMD_laddfile)
-    {
-	qi = ll_get_or_alloc_list(curwin);
-	if (qi == NULL)
-	    return;
 	wp = curwin;
-    }
 
     if (*eap->arg != NUL)
 	set_string_option_direct((char_u *)"ef", -1, eap->arg, OPT_FREE);
@@ -2856,7 +2855,11 @@ ex_cfile(eap)
 				  && eap->cmdidx != CMD_laddfile)) > 0
 				  && (eap->cmdidx == CMD_cfile
 					     || eap->cmdidx == CMD_lfile))
+    {
+	if (wp != NULL)
+	    qi = GET_LOC_LIST(wp);
 	qf_jump(qi, 0, 0, eap->forceit);	/* display first error */
+    }
 }
 
 /*
@@ -3517,11 +3520,11 @@ ex_cexpr(eap)
 	if ((tv->v_type == VAR_STRING && tv->vval.v_string != NULL)
 		|| (tv->v_type == VAR_LIST && tv->vval.v_list != NULL))
 	{
-	    if (qf_init_ext(qi, NULL, NULL, tv, p_efm,
-			    (eap->cmdidx == CMD_cexpr
-			     || eap->cmdidx == CMD_lexpr),
+	    int	    expr_cmd = (eap->cmdidx == CMD_cexpr
+				|| eap->cmdidx == CMD_lexpr);
+	    if (qf_init_ext(qi, NULL, NULL, tv, p_efm, expr_cmd,
 						 (linenr_T)0, (linenr_T)0) > 0
-		    && (eap->cmdidx == CMD_cexpr || eap->cmdidx == CMD_lexpr))
+		    && expr_cmd)
 		qf_jump(qi, 0, 0, eap->forceit);  /* display first error */
 	}
 	else

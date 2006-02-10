@@ -2628,7 +2628,7 @@ static char *(p_fdm_values[]) = {"manual", "expr", "marker", "indent", "syntax",
 static char *(p_fcl_values[]) = {"all", NULL};
 #endif
 #ifdef FEAT_INS_EXPAND
-static char *(p_cot_values[]) = {"menu", NULL};
+static char *(p_cot_values[]) = {"menu", "longest", NULL};
 #endif
 
 static void set_option_default __ARGS((int, int opt_flags, int compatible));

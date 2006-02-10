@@ -50,7 +50,7 @@ static void	    cs_file_results __ARGS((FILE *, int *));
 static void	    cs_fill_results __ARGS((char *, int , int *, char ***,
 			char ***, int *));
 static int	    cs_find __ARGS((exarg_T *eap));
-static int	    cs_find_common __ARGS((char *opt, char *pat, int, int ));
+static int	    cs_find_common __ARGS((char *opt, char *pat, int, int, int));
 static int	    cs_help __ARGS((exarg_T *eap));
 static void	    cs_init __ARGS((void));
 static void	    clear_csinfo __ARGS((int i));
@@ -183,7 +183,8 @@ do_cstag(eap)
     case 0 :
 	if (cs_check_for_connections())
 	{
-	    ret = cs_find_common("g", (char *)(eap->arg), eap->forceit, FALSE);
+	    ret = cs_find_common("g", (char *)(eap->arg), eap->forceit, FALSE,
+				 FALSE);
 	    if (ret == FALSE)
 	    {
 		cs_free_tags();
@@ -211,7 +212,7 @@ do_cstag(eap)
 		if (cs_check_for_connections())
 		{
 		    ret = cs_find_common("g", (char *)(eap->arg), eap->forceit,
-					 FALSE);
+					 FALSE, FALSE);
 		    if (ret == FALSE)
 			cs_free_tags();
 		}
@@ -219,7 +220,8 @@ do_cstag(eap)
 	}
 	else if (cs_check_for_connections())
 	{
-	    ret = cs_find_common("g", (char *)(eap->arg), eap->forceit, FALSE);
+	    ret = cs_find_common("g", (char *)(eap->arg), eap->forceit, FALSE,
+				 FALSE);
 	    if (ret == FALSE)
 		cs_free_tags();
 	}
@@ -967,7 +969,8 @@ cs_find(eap)
 	return FALSE;
     }
 
-    return cs_find_common(opt, pat, eap->forceit, TRUE);
+    return cs_find_common(opt, pat, eap->forceit, TRUE,
+			  eap->cmdidx == CMD_lcscope);
 } /* cs_find */
 
 
@@ -977,11 +980,12 @@ cs_find(eap)
  * common code for cscope find, shared by cs_find() and do_cstag()
  */
     static int
-cs_find_common(opt, pat, forceit, verbose)
+cs_find_common(opt, pat, forceit, verbose, use_ll)
     char *opt;
     char *pat;
     int forceit;
     int verbose;
+    int	use_ll;
 {
     int i;
     char *cmd;
@@ -1099,12 +1103,16 @@ cs_find_common(opt, pat, forceit, verbose)
 	/* fill error list */
 	FILE *f;
 	char_u *tmp = vim_tempname('c');
+	qf_info_T   *qi = NULL;
+	win_T	    *wp = NULL;
 
 	f = mch_fopen((char *)tmp, "w");
 	cs_file_results(f, nummatches);
 	fclose(f);
+	if (use_ll)	    /* Use location list */
+	    wp = curwin;
 	/* '-' starts a new error list */
-	if (qf_init(NULL, tmp, (char_u *)"%f%*\\t%l%*\\t%m", *qfpos == '-') > 0)
+	if (qf_init(wp, tmp, (char_u *)"%f%*\\t%l%*\\t%m", *qfpos == '-') > 0)
 	{
 # ifdef FEAT_WINDOWS
 	    if (postponed_split != 0)
@@ -1117,7 +1125,14 @@ cs_find_common(opt, pat, forceit, verbose)
 		postponed_split = 0;
 	    }
 # endif
-	    qf_jump(NULL, 0, 0, forceit);
+	    if (use_ll)
+		/*
+		 * In the location list window, use the displayed location
+		 * list. Otherwise, use the location list for the window.
+		 */
+		qi = (bt_quickfix(wp->w_buffer) && wp->w_llist_ref != NULL) ?
+				    wp->w_llist_ref : wp->w_llist;
+	    qf_jump(qi, 0, 0, forceit);
 	}
 	mch_remove(tmp);
 	vim_free(tmp);

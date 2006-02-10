@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0aa.  Last change: 2006 Feb 07
+*insert.txt*    For Vim version 7.0aa.  Last change: 2006 Feb 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1072,16 +1072,24 @@ The menu is used when:
 - There are at least two matches.
 
 While the menu is displayed these keys have a special meaning:
-<CR> and <Enter> Accept the currently selected match
-<Up>		  Select the previous match, as if CTRL-P was used
-<Down>		  Select the next match, as if CTRL-N was used
+<CR> and <Enter>  Accept the currently selected match
+
 <PageUp>	  Select a match several entries back
 <PageDown>	  Select a match several entries further
+
 <BS> and CTRL-H   Delete one character, find the matches for the shorter word
 		  before the cursor.  This may find more matches.
 CTRL-L		  Add one character from the current match, may reduce the
 		  number of matches.  Does not work after selecting one of the
 		  matches with CTRL-N, <Up>, etc.
+<Up>		  Select the previous match, as if CTRL-P was used, but don't
+		  insert it when editing the selection.
+<Down>		  Select the next match, as if CTRL-N was used, but don't
+		  insert it when editing the selection.
+
+The selection is being edited after typing <BS>, CTRL-L or when using the
+longest common match.  This stops when a match is inserted, as with CTRL-N or
+CTRL-P.
 
 The colors of the menu can be changed with these highlight groups:
 Pmenu		normal item  |hl-Pmenu|

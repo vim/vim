@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 03
+*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -3210,6 +3210,8 @@ line({expr})	The result is a Number, which is the line number of the file
 		    $	    the last line in the current buffer
 		    'x	    position of mark x (if the mark is not set, 0 is
 			    returned)
+		    w0	    first line visible in current window
+		    w$	    last line visible in current window
 		Note that only marks in the current file can be used.
 		Examples: >
 			line(".")		line number of the cursor

@@ -95,6 +95,9 @@ static compl_T    *compl_shown_match = NULL;
  * are used. */
 static char_u	  *compl_leader = NULL;
 
+static int	  compl_get_longest = FALSE;	/* put longest common string
+						   in compl_leader */
+
 static int	  compl_used_match;	/* Selected one of the matches.  When
 					   FALSE the match was edited or using
 					   the longest common string. */
@@ -119,6 +122,7 @@ static expand_T	  compl_xp;
 
 static void ins_ctrl_x __ARGS((void));
 static int  has_compl_option __ARGS((int dict_opt));
+static void ins_compl_longest_match __ARGS((compl_T *match));
 static void ins_compl_add_matches __ARGS((int num_matches, char_u **matches));
 static int  ins_compl_make_cyclic __ARGS((void));
 static void ins_compl_upd_pum __ARGS((void));
@@ -136,7 +140,7 @@ static buf_T *ins_compl_next_buf __ARGS((buf_T *buf, int flag));
 static int  ins_compl_get_exp __ARGS((pos_T *ini));
 static void ins_compl_delete __ARGS((void));
 static void ins_compl_insert __ARGS((void));
-static int  ins_compl_next __ARGS((int allow_get_expansion, int count));
+static int  ins_compl_next __ARGS((int allow_get_expansion, int count, int insert_match));
 static int  ins_compl_key2dir __ARGS((int c));
 static int  ins_compl_pum_key __ARGS((int c));
 static int  ins_compl_key2count __ARGS((int c));
@@ -683,12 +687,6 @@ edit(cmdchar, startln, count)
 #endif
 
 #ifdef FEAT_INS_EXPAND
-	/* When the popup menu is visible cursor keys change the selection. */
-	if (c == K_UP && pum_visible())
-	    c = Ctrl_P;
-	if (c == K_DOWN && pum_visible())
-	    c = Ctrl_N;
-
 	/*
 	 * Special handling of keys while the popup menu is visible or wanted
 	 * and the cursor is still in the completed word.
@@ -717,11 +715,19 @@ edit(cmdchar, startln, count)
 		    ins_compl_addleader(c);
 		    continue;
 		}
+
+		/* Pressing Enter selects the current match. */
+		if (c == CAR || c == K_KENTER || c == NL)
+		{
+		    ins_compl_delete();
+		    ins_compl_insert();
+		}
 	    }
 	}
 
 	/* Prepare for or stop CTRL-X mode.  This doesn't do completion, but
 	 * it does fix up the text when finishing completion. */
+	compl_get_longest = FALSE;
 	if (c != K_IGNORE && ins_compl_prep(c))
 	    continue;
 #endif
@@ -1103,6 +1109,10 @@ doESCkey:
 	    break;
 
 	case K_UP:	/* <Up> */
+#ifdef FEAT_INS_EXPAND
+	    if (pum_visible())
+		goto docomplete;
+#endif
 	    if (mod_mask & MOD_MASK_SHIFT)
 		ins_pageup();
 	    else
@@ -1120,6 +1130,10 @@ doESCkey:
 	    break;
 
 	case K_DOWN:	/* <Down> */
+#ifdef FEAT_INS_EXPAND
+	    if (pum_visible())
+		goto docomplete;
+#endif
 	    if (mod_mask & MOD_MASK_SHIFT)
 		ins_pagedown();
 	    else
@@ -1860,7 +1874,7 @@ ins_ctrl_x()
 	/* if the next ^X<> won't ADD nothing, then reset
 	 * compl_cont_status */
 	if (compl_cont_status & CONT_N_ADDS)
-	    compl_cont_status = (compl_cont_status | CONT_INTRPT);
+	    compl_cont_status |= CONT_INTRPT;
 	else
 	    compl_cont_status = 0;
 	/* We're not sure which CTRL-X mode it will be yet */
@@ -2138,7 +2152,67 @@ ins_compl_add(str, len, fname, extra, cdir, flags)
 	compl_first_match = match;
     compl_curr_match = match;
 
+    /*
+     * Find the longest common string if still doing that.
+     */
+    if (compl_get_longest && (flags & ORIGINAL_TEXT) == 0)
+	ins_compl_longest_match(match);
+
     return OK;
+}
+
+/*
+ * Reduce the longest common string for match "match".
+ */
+    static void
+ins_compl_longest_match(match)
+    compl_T	*match;
+{
+    char_u	*p, *s;
+    int		l;
+    int		had_match;
+
+    if (compl_leader == NULL)
+	/* First match, use it as a whole. */
+	compl_leader = vim_strsave(match->cp_str);
+    else
+    {
+	/* Reduce the text if this match differs from compl_leader. */
+	for (p = compl_leader, s = match->cp_str; *p != NUL; p += l, s += l)
+	{
+#ifdef FEAT_MBYTE
+	    if (has_mbyte)
+	    {
+		l = mb_ptr2len(p);
+		if (STRNCMP(p, s, l) != 0)
+			break;
+	    }
+	    else
+#endif
+	    {
+		if (*p != *s)
+		    break;
+		l = 1;
+	    }
+	}
+
+	if (*p != NUL)
+	{
+	    /* Leader was shortened, need to change the inserted text. */
+	    *p = NUL;
+	    had_match = (curwin->w_cursor.col > compl_col);
+	    ins_compl_delete();
+	    ins_bytes(compl_leader + curwin->w_cursor.col - compl_col);
+	    ins_redraw(FALSE);
+
+	    /* When the match isn't there (to avoid matching itself) remove it
+	     * again after redrawing. */
+	    if (!had_match)
+		ins_compl_delete();
+	}
+
+	compl_used_match = FALSE;
+    }
 }
 
 /*
@@ -2231,7 +2305,7 @@ ins_compl_del_pum()
 pum_wanted()
 {
     /* 'completeopt' must contain "menu" */
-    if (*p_cot == NUL)
+    if (vim_strchr(p_cot, 'm') == NULL)
 	return FALSE;
 
     /* The display looks bad on a B&W display. */
@@ -2761,6 +2835,14 @@ ins_compl_prep(c)
     /* Ignore end of Select mode mapping */
     if (c == K_SELECT)
 	return retval;
+
+    /* Set "compl_get_longest" when finding the first matches. */
+    if (ctrl_x_mode == CTRL_X_NOT_DEFINED_YET
+				      || (ctrl_x_mode == 0 && !compl_started))
+    {
+	compl_get_longest = (vim_strchr(p_cot, 'l') != NULL);
+	compl_used_match = TRUE;
+    }
 
     if (ctrl_x_mode == CTRL_X_NOT_DEFINED_YET)
     {
@@ -3356,7 +3438,7 @@ ins_compl_get_exp(ini)
 		    last_match_pos = *pos;
 		}
 		else if (first_match_pos.lnum == last_match_pos.lnum
-			 && first_match_pos.col == last_match_pos.col)
+				 && first_match_pos.col == last_match_pos.col)
 		    found_new_match = FAIL;
 		if (found_new_match == FAIL)
 		{
@@ -3470,9 +3552,10 @@ ins_compl_get_exp(ini)
 	{
 	    if (got_int)
 		break;
+	    /* Fill the popup menu as soon as possible. */
 	    if (pum_wanted() && type != -1)
-		/* Fill the popup menu as soon as possible. */
 		ins_compl_check_keys(0);
+
 	    if ((ctrl_x_mode != 0 && ctrl_x_mode != CTRL_X_WHOLE_LINE)
 							 || compl_interrupted)
 		break;
@@ -3547,10 +3630,11 @@ ins_compl_insert()
  * calls this function with "allow_get_expansion" FALSE.
  */
     static int
-ins_compl_next(allow_get_expansion, count)
+ins_compl_next(allow_get_expansion, count, insert_match)
     int	    allow_get_expansion;
     int	    count;		/* repeat completion this many times; should
 				   be at least 1 */
+    int	    insert_match;	/* Insert the newly selected match */
 {
     int	    num_matches = -1;
     int	    i;
@@ -3558,11 +3642,23 @@ ins_compl_next(allow_get_expansion, count)
     compl_T *found_compl = NULL;
     int	    found_end = FALSE;
 
-    if (allow_get_expansion)
+    if (compl_leader != NULL
+			&& (compl_shown_match->cp_flags & ORIGINAL_TEXT) == 0)
     {
+	/* Set "compl_shown_match" to the actually shown match, it may differ
+	 * when "compl_leader" is used to omit some of the matches. */
+	while (STRNCMP(compl_shown_match->cp_str,
+				     compl_leader, STRLEN(compl_leader)) != 0
+		&& compl_shown_match->cp_next != NULL
+		&& compl_shown_match->cp_next != compl_first_match)
+	    compl_shown_match = compl_shown_match->cp_next;
+    }
+
+    if (allow_get_expansion && insert_match
+				  && (!compl_get_longest || compl_used_match))
 	/* Delete old text to be replaced */
 	ins_compl_delete();
-    }
+
     compl_pending = FALSE;
 
     /* Repeat this for when <PageUp> or <PageDown> is typed.  But don't wrap
@@ -3615,13 +3711,24 @@ ins_compl_next(allow_get_expansion, count)
 	}
     }
 
-    /* Insert the text of the new completion */
-    ins_compl_insert();
+    /* Insert the text of the new completion, or the compl_leader. */
+    if (insert_match)
+    {
+	if (!compl_get_longest || compl_used_match)
+	    ins_compl_insert();
+	else
+	    ins_bytes(compl_leader + curwin->w_cursor.col - compl_col);
+    }
+    else
+	compl_used_match = FALSE;
 
     if (!allow_get_expansion)
     {
 	/* may undisplay the popup menu first */
 	ins_compl_upd_pum();
+
+	/* redraw to show the user what was inserted */
+	update_screen(0);
 
 	/* display the updated popup menu */
 	ins_compl_show_pum();
@@ -3685,13 +3792,14 @@ ins_compl_check_keys(frequency)
 	{
 	    c = safe_vgetc();	/* Eat the character */
 	    compl_shows_dir = ins_compl_key2dir(c);
-	    (void)ins_compl_next(FALSE, ins_compl_key2count(c));
+	    (void)ins_compl_next(FALSE, ins_compl_key2count(c),
+						    c != K_UP && c != K_DOWN);
 	}
 	else if (c != Ctrl_R)
 	    compl_interrupted = TRUE;
     }
     if (compl_pending && !got_int)
-	(void)ins_compl_next(FALSE, 1);
+	(void)ins_compl_next(FALSE, 1, TRUE);
 }
 
 /*
@@ -3702,8 +3810,9 @@ ins_compl_check_keys(frequency)
 ins_compl_key2dir(c)
     int		c;
 {
-    if (c == Ctrl_P || c == Ctrl_L || (pum_visible()
-			 && (c == K_PAGEUP || c == K_KPAGEUP || c == K_S_UP)))
+    if (c == Ctrl_P || c == Ctrl_L
+	    || (pum_visible() && (c == K_PAGEUP || c == K_KPAGEUP
+						|| c == K_S_UP || c == K_UP)))
 	return BACKWARD;
     return FORWARD;
 }
@@ -3717,7 +3826,8 @@ ins_compl_pum_key(c)
     int		c;
 {
     return pum_visible() && (c == K_PAGEUP || c == K_KPAGEUP || c == K_S_UP
-		     || c == K_PAGEDOWN || c == K_KPAGEDOWN || c == K_S_DOWN);
+		     || c == K_PAGEDOWN || c == K_KPAGEDOWN || c == K_S_DOWN
+		     || c == K_UP || c == K_DOWN);
 }
 
 /*
@@ -3730,7 +3840,7 @@ ins_compl_key2count(c)
 {
     int		h;
 
-    if (ins_compl_pum_key(c))
+    if (ins_compl_pum_key(c) && c != K_UP && c != K_DOWN)
     {
 	h = pum_get_height();
 	if (h > 3)
@@ -3783,7 +3893,8 @@ ins_complete(c)
 	 * been split because it was longer than 'tw').  if SOL is set then
 	 * skip the previous pattern, a word at the beginning of the line has
 	 * been inserted, we'll look for that  -- Acevedo. */
-	if ((compl_cont_status & CONT_INTRPT) && compl_cont_mode == ctrl_x_mode)
+	if ((compl_cont_status & CONT_INTRPT) == CONT_INTRPT
+					    && compl_cont_mode == ctrl_x_mode)
 	{
 	    /*
 	     * it is a continued search
@@ -4129,9 +4240,10 @@ ins_complete(c)
     compl_shows_dir = compl_direction;
 
     /*
-     * Find next match.
+     * Find next match (and following matches).
      */
-    n = ins_compl_next(TRUE, ins_compl_key2count(c));
+    n = ins_compl_next(TRUE, ins_compl_key2count(c),
+						c != K_UP && c != K_DOWN);
 
     /* may undisplay the popup menu */
     ins_compl_upd_pum();

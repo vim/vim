@@ -2124,6 +2124,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :lchdir	editing.txt	/*:lchdir*
 :lcl	quickfix.txt	/*:lcl*
 :lclose	quickfix.txt	/*:lclose*
+:lcs	if_cscop.txt	/*:lcs*
+:lcscope	if_cscop.txt	/*:lcscope*
 :le	change.txt	/*:le*
 :left	change.txt	/*:left*
 :lefta	windows.txt	/*:lefta*
@@ -3114,7 +3116,10 @@ Contents	quickref.txt	/*Contents*
 Cscope	if_cscop.txt	/*Cscope*
 CursorHold	autocmd.txt	/*CursorHold*
 CursorHold-example	windows.txt	/*CursorHold-example*
+CursorHoldI	autocmd.txt	/*CursorHoldI*
 CursorIM	mbyte.txt	/*CursorIM*
+CursorMoved	autocmd.txt	/*CursorMoved*
+CursorMovedI	autocmd.txt	/*CursorMovedI*
 D	change.txt	/*D*
 DOS	os_dos.txt	/*DOS*
 DOS-format	editing.txt	/*DOS-format*
@@ -5422,6 +5427,7 @@ hebrew	hebrew.txt	/*hebrew*
 hebrew.txt	hebrew.txt	/*hebrew.txt*
 help	various.txt	/*help*
 help-context	help.txt	/*help-context*
+help-tags	tags	1
 help-translated	various.txt	/*help-translated*
 help-xterm-window	various.txt	/*help-xterm-window*
 help.txt	help.txt	/*help.txt*
@@ -5850,6 +5856,14 @@ mapcheck()	eval.txt	/*mapcheck()*
 maple.vim	syntax.txt	/*maple.vim*
 mapleader	map.txt	/*mapleader*
 maplocalleader	map.txt	/*maplocalleader*
+mapmode-c	map.txt	/*mapmode-c*
+mapmode-i	map.txt	/*mapmode-i*
+mapmode-ic	map.txt	/*mapmode-ic*
+mapmode-l	map.txt	/*mapmode-l*
+mapmode-n	map.txt	/*mapmode-n*
+mapmode-nvo	map.txt	/*mapmode-nvo*
+mapmode-o	map.txt	/*mapmode-o*
+mapmode-v	map.txt	/*mapmode-v*
 mapping	map.txt	/*mapping*
 mark	motion.txt	/*mark*
 mark-motions	motion.txt	/*mark-motions*

@@ -191,13 +191,6 @@ Standard plugins ~
 |pi_expl.txt|	File explorer
 
 LOCAL ADDITIONS:				*local-additions*
-|cecutil.txt|	DrChip's Utilities				Jun 11, 2004
-|engspchk.txt|	English Spelling Checker   (v61)	Mar 14, 2005
-|example.txt|	Example for a locally added help file
-|matchit.txt|   Extended "%" matching
-|test.txt|	Testing the hélp cömmånd nôw
-|typecorr.txt|	Plugin for correcting typing mistakes
-|helpp.txt|	Dummy line to avoid an error message
 
 ------------------------------------------------------------------------------
 *bars*		Bars example

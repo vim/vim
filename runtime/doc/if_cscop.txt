@@ -208,6 +208,11 @@ The available subcommands are:
 
 	    USAGE   :cs show
 
+							*:lcscope* *:lcs*
+This command is same as the ":cscope" command, except when the
+'cscopequickfix' option is set, the location list for the current window is
+used instead of the quickfix list to show the cscope results.
+
 							*:cstag* *E257* *E562*
 If you use cscope as well as ctags, |:cstag| allows you to search one or
 the other before making a jump.  For example, you can choose to first
