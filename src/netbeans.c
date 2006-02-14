@@ -3355,7 +3355,7 @@ get_off_or_lnum(buf_T *buf, char_u **argp)
 
 
 /*
- * Convert lnum,col to character offset
+ * Convert (lnum,col) to byte offset in the file.
  */
     static long
 pos2off(buf_T *buf, pos_T *pos)

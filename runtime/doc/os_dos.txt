@@ -1,4 +1,4 @@
-*os_dos.txt*    For Vim version 7.0aa.  Last change: 2003 Dec 20
+*os_dos.txt*    For Vim version 7.0aa.  Last change: 2006 Feb 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -126,8 +126,8 @@ text.  For example, to get grey text on a blue background: >
 See |highlight-groups| for other groups that are available.
 
 A DOS console does not support attributes like bold and underlining.  You can
-set the color used in five modes with nine termcap options.  Note that this is
-not necessary since you can set the color directly with the ":highlight"
+set the color used in five modes with nine terminal options.  Note that this
+is not necessary since you can set the color directly with the ":highlight"
 command; these options are for backward compatibility with older Vim versions.
 The |'highlight'| option specifies which of the five modes is used for which
 action. >

@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0aa.  Last change: 2006 Feb 10
+*insert.txt*    For Vim version 7.0aa.  Last change: 2006 Feb 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -126,8 +126,10 @@ CTRL-R {0-9a-z"%#*+:.-=}					*i_CTRL-R*
 			'='	the expression register: you are prompted to
 				enter an expression (see |expression|)
 				Note that 0x80 (128 decimal) is used for
-				special keys, use CTRL-R CTRL-R to insert it
-				literally.
+				special keys.  E.g., you can use this to move
+				the cursor up:
+					CTRL-R ="\<Up>"
+				Use CTRL-R CTRL-R to insert text literally.
 		See |registers| about registers.  {not in Vi}
 
 CTRL-R CTRL-R {0-9a-z"%#*+/:.-=}			*i_CTRL-R_CTRL-R*
@@ -422,7 +424,7 @@ When 'textwidth' and 'wrapmargin' are both set, 'textwidth' is used.
 If you don't really want to break the line, but view the line wrapped at a
 convenient place, see the 'linebreak' option.
 
-The line is only broken automatically when using insert mode, or when
+The line is only broken automatically when using Insert mode, or when
 appending to a line.  When in replace mode and the line length is not
 changed, the line will not be broken.
 
@@ -437,6 +439,10 @@ characters to the 'formatoptions' option:
      started and only at a white character that has been entered during the
      current insert command.  Only differs from "l" when entering non-white
      characters while crossing the 'textwidth' boundary.
+
+Normally an internal function will be used to decide where to break the line.
+If you want to do it in a different way set the 'formatexpr' option to an
+expression that will take care of the line break.
 
 If you want to format a block of text, you can use the "gq" operator.  Type
 "gq" and a movement command to move the cursor to the end of the block.  In
@@ -622,8 +628,8 @@ CTRL-X CTRL-L		Search backwards for a line that starts with the
 			the cursor.  Indent is ignored.  The matching line is
 			inserted in front of the cursor.
 			The 'complete' option is used to decide which buffers
-			are searched for a match.  Only loaded buffers are
-			used.
+			are searched for a match.  Both loaded and unloaded
+			buffers are used.
 	CTRL-L	or
 	CTRL-P		Search backwards for next matching line.  This line
 			replaces the previous matching line.
@@ -1071,25 +1077,37 @@ The menu is used when:
 - The terminal supports at least 8 colors.
 - There are at least two matches.
 
-While the menu is displayed these keys have a special meaning:
-<CR> and <Enter>  Accept the currently selected match
+There are two states:
+1. A complete match has been inserted.
+2. Only part of a match has been inserted.
 
-<PageUp>	  Select a match several entries back
-<PageDown>	  Select a match several entries further
+When "longest" is in 'completeopt' and there is more than one match you start
+in the second state.
 
+In the first state these keys have a special meaning:
+<BS> and CTRL-H   Delete one character, find the matches for the word before
+		  the cursor.  This reduces the list of matches, often to one
+		  entry.  Switches to the second state.
+
+In the second state these keys have a special meaning:
 <BS> and CTRL-H   Delete one character, find the matches for the shorter word
 		  before the cursor.  This may find more matches.
 CTRL-L		  Add one character from the current match, may reduce the
-		  number of matches.  Does not work after selecting one of the
-		  matches with CTRL-N, <Up>, etc.
-<Up>		  Select the previous match, as if CTRL-P was used, but don't
-		  insert it when editing the selection.
-<Down>		  Select the next match, as if CTRL-N was used, but don't
-		  insert it when editing the selection.
+		  number of matches.
+any printable character: Add this character and reduce the number of matches.
 
-The selection is being edited after typing <BS>, CTRL-L or when using the
-longest common match.  This stops when a match is inserted, as with CTRL-N or
-CTRL-P.
+In both states these can be used:
+<CR> and <Enter>  Accept the currently selected match
+<PageUp>	  Select a match several entries back
+<PageDown>	  Select a match several entries further
+<Up>		  Select the previous match, as if CTRL-P was used, but don't
+		  insert the newly selected word.
+<Down>		  Select the next match, as if CTRL-N was used, but don't
+		  insert the newly selected word.
+
+If you select another match, e.g., with CTRL-N or CTRL-P, you go back to the
+first state.  However, the list of matches doesn't change.
+
 
 The colors of the menu can be changed with these highlight groups:
 Pmenu		normal item  |hl-Pmenu|
@@ -1097,8 +1115,16 @@ PmenuSel	selected item  |hl-PmenuSel|
 PmenuSbar	scrollbar  |hl-PmenuSbar|
 PmenuThumb	thumb of the scrollbar  |hl-PmenuThumb|
 
+There are no special mappings for when the popup menu is visible.  However,
+you can use an Insert mode mapping that checks the |pumvisible()| function to
+do something different.  Example: >
+	:inoremap <Down> <C-R>=pumvisible() ? "\<lt>C-N>" : "\<lt>Down>"<CR>
 
-Filetype-specific remarks for omni completion	    *compl-omni-filetypes*
+
+FILETYPE-SPECIFIC REMARKS FOR OMNI COMPLETION	    *compl-omni-filetypes*
+
+The file used for {filetype} should be autoload/{filetype}complete.vim
+in 'runtimepath'.  Thus for "java" it is autoload/javacomplete.vim.
 
 
 C							*ft-c-omni*
@@ -1144,23 +1170,22 @@ specification.
 HTML and XHTML						*ft-html-omni*
 							*ft-xhtml-omni*
 
-CTRL-X CTRL-O provides completion of various elements of (X)HTML files.
-It is designed to support writing of XHTML 1.0 Strict files but will
-also works for other versions of HTML. Features:
+CTRL-X CTRL-O provides completion of various elements of (X)HTML files.  It is
+designed to support writing of XHTML 1.0 Strict files but will also works for
+other versions of HTML. Features:
 
-- after "<" complete tag name depending on context (no div suggestion
-  inside of an a tag)
-- inside of tag complete proper attributes (no width attribute for an
-  a tag)
-- when attribute has limited number of possible values help to complete
-  them
+- after "<" complete tag name depending on context (no div suggestion inside
+  of an a tag); '/>' indicates empty tags
+- inside of tag complete proper attributes (no width attribute for an a tag);
+  show also type of attribute; '*' indicates required attributes
+- when attribute has limited number of possible values help to complete them
 - complete names of entities
 - complete values of "class" and "id" attributes with data obtained from
-  style tag and included CSS files
+  <style> tag and included CSS files
 - when completing value of "style" attribute or working inside of "style" tag
   switch to |ft-css-omni| completion
-- when completing values of events attributes or working inside of "script" tag
-  switch to |ft-javascript-omni| completion
+- when completing values of events attributes or working inside of "script"
+  tag switch to |ft-javascript-omni| completion
 - when used after "</" CTRL-X CTRL-O will close the last opened tag
 
 Note: When used first time completion menu will be shown with little delay
@@ -1176,7 +1201,7 @@ Completion of most elements of JavaScript language and DOM elements.
 Complete:
 
 - variables
-- function name
+- function name; show function arguments
 - function arguments
 - properties of variables trying to detect type of variable
 - complete DOM objects and properties depending on context
@@ -1244,7 +1269,7 @@ Format of XML data file					*xml-omni-datafile*
 
 Vim distribution provides two data files as examples (xhtml10s.vim, xsl.vim)
 
-XML data files are stored in "autoload/xml" directory in 'runtimepath'. They
+XML data files are stored in "autoload/xml" directory in 'runtimepath'.  They
 have meaningful name which will be used in commands. It should be unique name
 which will not create conflicts in future. For example name xhtml10s.vim means
 it is data file for XHTML 1.0 Strict.
@@ -1258,9 +1283,9 @@ compound from two parts:
 Part two must be exactly the same as name of file.
 
 Variable is data structure in form of |Dictionary|. Keys are tag names and
-values are two element |List|. First element of List is also List with
-names of possible children, second element is |Dictionary| with names of
-attributes as keys and possible values of attributes as values. Example: >
+values are two element |List|. First element of List is also List with names
+of possible children, second element is |Dictionary| with names of attributes
+as keys and possible values of attributes as values. Example: >
 
     let g:xmldata_crippledhtml = {
     \ "html": 
@@ -1272,20 +1297,30 @@ attributes as keys and possible values of attributes as values. Example: >
     \ "meta": 
     \ [ [], {"id": [], "http-equiv": [], "name": [], "content": [], "scheme": 
     \ [], "lang": [], "xml:lang": [], "dir": ["ltr", "rtl"]}]
-    \ "vimxmlentities": ["amp", "lt", "gt", "apos", "quot"]}
+    \ "vimxmlentities": ["amp", "lt", "gt", "apos", "quot"]},
+    \ "vimxmltaginfo": {
+    \ 'meta': ['/>', '']},
+    \ "vimxmlattrinfo": {
+    \ 'http-equiv': ['ContentType', '']}
 
 This example should be put in "autoload/xml/crippledhtml.vim" file.
 
-In example are visible two special elements:
+In example are visible four special elements:
 
 1. "vimxmlentities" - special key with List containing entities of this XML
    dialect.
 2. "BOOL" - value of attribute key showing if attribute should be inserted
    bare ("defer" vs. 'defer="'). It can be the only element of List of
    attribute values.
+3. "vimxmltaginfo" - special key with dictionary containing as key tag names,
+   as value two element List for additional menu info and long description.
+4. "vimxmlattrinfo" - special key with dictionary containing as key attribute
+   names, as value two element List for additional menu info and long
+   description.
 
 Note: Tag names in data file MUST not contain namespace description. Check
 xsl.vim for example.
+
 
 Commands
 

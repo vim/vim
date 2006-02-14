@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 10
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,19 +30,48 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Support WINDOW TABS.  Works like several pages, each with their own split
+windows.  Let's call them "tab pages".
+
+    todo:
+    - ":qa"?
+    - "2gt" doesn't restore syntax HL.  GUI: scrollbars are wrong.
+    - line at top of frame with tabs.  'tabline' option 0/1/2 like 'laststatus'
+	Use the name of the first buffer in the tab (ignoring the help window,
+	unless it's the only one).  Add a number for the window count.
+	Add 'tabtext' option, like 'statusline'.
+	Select tab with mouse.
+    - When deleting a buffer also close windows in other tab pages.
+    - check all places where (firstwin == lastwin) is used (and vise versa)
+    - check all places wheren only_one_window() is used.
+    - When Vim window is resized all tabs must be resized.
+    - E999
+    - ":tabclose N" close tab N
+    docs:
+	:tabedit
+	:tabfind
+	:tab N
+	:tabs
+	{count}gt
+	:tabclose
+	:close and :quit (last window in tab)
+	"gt": Use "1gt" - "99gt" to switch to another tab.  "gt" goes to the
+	     next one.  Hint in docs: To mess with another buffer, without
+	     changing the window layout, do this in another tab.
+
+    add GUI Tabs for some systems.
+    Patch for GTK 1.2 passed on by Christian Michon, 2004 Jan 6.
+    Simple patch for GTK by Luis M (nov 7).
+
+    Don't forget to provide an "X" to close the current tab.
+
+    Need to be able to search the windows in inactive tabs, e.g. for the
+    quickfix window.
+
+
 Crash with X command server (Ciaran McCreesh).
 
-ccomplete / omnicomplete:
-- For C add tag "kind" field to each match?
-- Flickering because of syntax highlighting redrawing further lines.
-- Finding out if an item has members (to add '.' or '->') requires a grep in
-  the tags files, that is very slow.  Is there another solution?  At least
-  stop at the first match.
-  Could build the list of items for each structure in memory.  Is that faster?
-  Not using too much memory?
-- When a typedef or struct is local to a file only use it in that file?
-- Special mappings for when the popup menu is visible?  Would allow for making
-  a specific selection (e.g, methods vs variables).
+Ctags still hasn't included the patch...
 
 spelling:
 - Also use the spelling dictionary for dictionary completion.
@@ -87,13 +116,6 @@ spelling:
   adding a bad word like "zw" would.  Use "zuw" to undo "zw"?  (Antonio
   Colombo)
 
-7   Add plugins for formatting.  Should be able to make a choice depending on
-    the language of a file (English/Korean/Japanese/etc.).
-    Setting the 'langformat' option to "chinese" would load the
-    "format/chinese.vim" plugin.
-Edward L. Fox explains how it should be done for most Asian languages. (2005
-Nov 24)
-
 An error in a function uses a line number that doesn't take line continuation
 into account. (Mikolaj Machowski)  Store line count in an extra array?
 
@@ -113,7 +135,6 @@ Mac unicode patch (Da Woon Jung):
   (Alan Schmitt)
 
 Patch to add a few flags to search(). (Benji Fisher, Nov 29, doc update Dec 1)
-Also add search???() function that returns list with lnum and col.
 
 Win32: Use the free downloadable compiler 7.1 (2003).  Figure out how to do
 debugging (with Agide?) and describe it. (George Reilly)
@@ -124,9 +145,6 @@ Try using Visual C++ Express 2005. (Ilya Bobir Dec 20)
 
 Win32: Check that installer puts menu items in "all users" dir when possible,
 not administrator dir.
-
-CTRL-X CTRL-L only completes from loaded buffers.  Make it work for unloaded
-buffers too?
 
 Autoload:
 - Add a Vim script in $VIMRUNTIME/tools that takes a file with a list of
@@ -158,48 +176,30 @@ Awaiting response:
 
 CONSIDERED FOR VERSION 7.0:
 
--   Omni completion: Understands the programming language and finds matches
-    that make sense.  Esp. members of classes/structs.
-
-    It's not much different from other Insert-mode completion, use the same
-    mechanism.  Use CTRL-X CTRL-O and 'omnifunc'.  Set 'omnifunc' in the
-    filetype plugin, define the function in the autoload directory.
-    
-    Separately develop the completion logic and the UI.  When adding UI stuff
-    make it work for all completion methods.
+Omni completion:
+    ccomplete:
+    - Finding out if an item has members (to add '.' or '->') requires a grep
+      in the tags files, that is very slow.  Is there another solution?  At
+      least stop at the first match.
+      Could build the list of items for each structure in memory.  Is that
+      faster?  Not using too much memory?
+    - For C add tag "kind" field to each match?
+    - Flickering because of syntax highlighting redrawing further lines.
+    - When a typedef or struct is local to a file only use it in that file?
 
     UI:
-    - Complete longest common string first, like 'wildmode' "longest:full".
     - Add an "auto" mode: after typing a character (or string) completion is
       done for the longest common string.  plugin defines the possible
       characters/strings. (Martin Stubenschrott)
+      And/or: Provide a function to popup the menu, so that an insert mode
+      mapping can start it (with a specific selection).
     - GUI implementation of the popup menu.
-    - When using tags, show match in preview window (function prototype,
-      struct member, etc.).
+    - Show "info" from a match in preview window.
       Or use one window for matches, another for context/info (Doug Kearns,
       2005 Sep 13)
     - Ideas on: http://www.wholetomato.com/
 
-
     Completion logic:
-	Use runtime/autoload/{filetype}complete.vim files.
-
-	In function arguments suggest variables of expected type.
-	Tags file has "signature" field.
-
-	List of completions is a Dictionary with items:
-	    complist[0]['text'] = completion text
-	    complist[0]['type'] = type of completion (e.g. function, var, arg)
-	    complist[0]['help'] = help text (e.g. function declaration)
-	    complist[0]['helpfunc'] = function that shows help text
-	    etc.
-
-	Can CTRL-] (jump to tag) include the "." and "->" to restrict the
-	number of possible matches? (Flemming Madsen)
-
-	In general: Besides completion, figure out the type of a variable
-	and use it for information.
-
 	Ideas from others:
 	http://www.vim.org/scripts/script.php?script_id=747
 	    http://sourceforge.net/projects/insenvim
@@ -212,10 +212,6 @@ CONSIDERED FOR VERSION 7.0:
 	    Uses ctags to find the info:
 		ctags -f $allTagsFile --fields=+aiKmnsSz --language-force=C++ --C++-kinds=+cefgmnpsut-dlux -u $files
 
-	    UI: popup menu with list of alternatives, icon to indicate type
-		optional popup window with info about selected alternative
-	    Unrelated settings are changed (e.g. 'mousemodel').
-
 	www.vim.org script 1213 (Java Development Environment) (Fuchuan Wang)
 	IComplete: http://www.vim.org/scripts/script.php?script_id=1265
 	    and http://stud4.tuwien.ac.at/~e0125672/icomplete/
@@ -223,21 +219,15 @@ CONSIDERED FOR VERSION 7.0:
 	Ivan Villanueva has something for Java.
 	Emads: http://www.xref-tech.com/xrefactory/more_c_completion.html
 	Ideas from the Vim 7 BOF at SANE:
-	- It's not possible to have one solution for all languages.  Design an
-	  interface for completion plugins.  The matches can be done in a
-	  Vim-script list.
 	- For interpreted languages, use the interpreter to obtain information.
 	  Should work for Java (Eclipse does this), Python, Tcl, etc.
 	  Richard Emberson mentioned working on an interface to Java.
 	- Check Readline for its completion interface.
 	- Use ctags for other languages.  Writing a file could trigger running
 	  ctags, merging the tags of the changed file.
-	"Visual Assist" http://www.wholetomato.com/products:
 	Completion in .NET framework SharpDevelop: http://www.icsharpcode.net
 
         - Pre-expand abbreviations, show which abbrevs would match?
-    - Provide a function to popup the menu, so that an insert mode mapping can
-      start it (with a specific selection).
 
 -   UNDO TREE: keep all states of the text, don't delete undo info.
     When making a change, instead of clearing any future undo (thus redo)
@@ -259,24 +249,6 @@ CONSIDERED FOR VERSION 7.0:
     before some time/date can be flushed. 'undopersist' gives maximum time to
     keep undo: "3h", "1d", "2w", "1y", etc.  For the file use dot and
     extension: ".filename.un~" (like swapfile but "un~" instead of "swp").
-7   Support WINDOW TABS.  Works like several pages, each with their own
-    split windows.
-    In Emacs these are called frames.  Could also call them "pages".
-    Use the name of the first buffer in the tab (ignoring the help window,
-    unless it's the only one).  Add a number for the window count.
-    First make it work on the console.  Use a line of text with highlighting.
-    Then add GUI Tabs for some systems.
-    Patch for GTK 1.2 passed on by Christian Michon, 2004 Jan 6.
-    Simple patch for GTK by Luis M (nov 7).
-    Don't forget to provide an "X" to close the current tab.
-    Implementation: keep the list of windows as-is.  When switching to another
-    tab make the buffers in the current windows hidden, save the window
-    layout, buildup the other window layout and fill with buffers.
-    Need to be able to search the windows in inactive tabs, e.g. for the
-    quickfix window.
-    Use "1gt" - "99gt" to switch to a tab?
-    Also hidden tabs? Useful for messing with a temp buffer without changing
-    the window layout.
 -   EMBEDDING: Make it possible to run Vim inside a window of another program.
     For Xwindows this can be done with XReparentWindow().
     For GTK Neil Bird has a patch to use Vim like a widget.
@@ -431,7 +403,7 @@ Awaiting updated patches:
     7   Completion of network shares, patch by Yasuhiro Matsumoto.
 	Update 2004 Sep 6.
 	How does this work?  Missing comments.
-	gettext()	Translate a message.  (Patch from Yasuhiro Matsumoto)
+    -	gettext()	Translate a message.  (Patch from Yasuhiro Matsumoto)
 			Update 2004 Sep 10
 			Another patch from Edward L. Fox (2005 Nov 24)
 			Search in 'runtimepath'?
@@ -2085,6 +2057,9 @@ Shared libraries:
 
 
 Tags:
+7   Can CTRL-] (jump to tag) include a following "." and "->" to restrict the
+    number of possible matches? Check tags file for an item that has members.
+    (Flemming Madsen)
 7   Count before CTRL-]: jump to N'th match
 8   Scope arguments for ":tag", e.g.: ":tag class:cPage open", like Elvis.
 8   When output of ":tselect" is long, getting the more-prompt, should be able
@@ -3288,6 +3263,13 @@ Debug mode:
 
 
 Various improvements:
+7   Add plugins for formatting?  Should be able to make a choice depending on
+    the language of a file (English/Korean/Japanese/etc.).
+    Setting the 'langformat' option to "chinese" would load the
+    "format/chinese.vim" plugin.
+    The plugin would set 'formatexpr' and define the function being called.
+    Edward L. Fox explains how it should be done for most Asian languages.
+    (2005 Nov 24)
 7   [t to move to previous xml/html tag (like "vatov"), ]t to move to next
     ("vatv").
 7   [< to move to previous xml/html tag, e.g., previous <li>. ]< to move to
@@ -3419,9 +3401,6 @@ Various improvements:
     paragraph.	Both start a new paragraph on any indent change.
 7   Add a way to define an item list with a pattern in 'formatoptions'.  The
     'n' flag doesn't work for "6.3" or "6a.".
-8   Add 'formatexpr' option: Used for formatting operator "gq" instead of the
-    builtin formatting or 'formatprg'.  Or use a string that starts with "="
-    in 'formatprg': "=MyFormat()".
 8   Allow using a trailing space to signal a paragraph that continues on the
     next line (MIME text/plain; format=flowed, RFC 2646).  Can be used for
     continuous formatting.  Could use 'autoformat' option, which specifies a

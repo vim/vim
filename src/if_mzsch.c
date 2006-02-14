@@ -40,7 +40,7 @@ typedef struct
 typedef struct
 {
     Scheme_Type	    tag;
-    struct window   *win;
+    win_T	    *win;
 } vim_mz_window;
 
 #define INVALID_WINDOW_VALUE ((win_T *)(-1))

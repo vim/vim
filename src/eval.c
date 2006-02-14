@@ -573,6 +573,7 @@ static void f_nextnonblank __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_nr2char __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_prevnonblank __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_printf __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_pumvisible __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_range __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_readfile __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_remote_expr __ARGS((typval_T *argvars, typval_T *rettv));
@@ -588,6 +589,8 @@ static void f_reverse __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_search __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_searchdecl __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_searchpair __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_searchpairpos __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_searchpos __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_server2client __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_serverlist __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_setbufvar __ARGS((typval_T *argvars, typval_T *rettv));
@@ -704,6 +707,8 @@ static void func_ref __ARGS((char_u *name));
 static void call_user_func __ARGS((ufunc_T *fp, int argcount, typval_T *argvars, typval_T *rettv, linenr_T firstline, linenr_T lastline, dict_T *selfdict));
 static void add_nr_var __ARGS((dict_T *dp, dictitem_T *v, char *name, varnumber_T nr));
 static win_T *find_win_by_nr __ARGS((typval_T *vp));
+static int searchpair_cmn __ARGS((typval_T *argvars, pos_T *match_pos));
+static int search_cmn __ARGS((typval_T *argvars, pos_T *match_pos));
 
 /* Character used as separated in autoload function/variable names. */
 #define AUTOLOAD_CHAR '#'
@@ -6930,6 +6935,7 @@ static struct fst
     {"nr2char",		1, 1, f_nr2char},
     {"prevnonblank",	1, 1, f_prevnonblank},
     {"printf",		2, 19, f_printf},
+    {"pumvisible",	0, 0, f_pumvisible},
     {"range",		1, 3, f_range},
     {"readfile",	1, 3, f_readfile},
     {"remote_expr",	2, 3, f_remote_expr},
@@ -6945,6 +6951,8 @@ static struct fst
     {"search",		1, 2, f_search},
     {"searchdecl",	1, 3, f_searchdecl},
     {"searchpair",	3, 5, f_searchpair},
+    {"searchpairpos",	3, 5, f_searchpairpos},
+    {"searchpos",	1, 2, f_searchpos},
     {"server2client",	2, 2, f_server2client},
     {"serverlist",	0, 0, f_serverlist},
     {"setbufvar",	3, 3, f_setbufvar},
@@ -12214,6 +12222,22 @@ f_printf(argvars, rettv)
 }
 
 /*
+ * "pumvisible()" function
+ */
+/*ARGSUSED*/
+    static void
+f_pumvisible(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    rettv->vval.v_number = 0;
+#ifdef FEAT_INS_EXPAND
+    if (pum_visible())
+	rettv->vval.v_number = 1;
+#endif
+}
+
+/*
  * "range()" function
  */
     static void
@@ -13135,12 +13159,12 @@ get_search_arg(varp, flagsp)
 }
 
 /*
- * "search()" function
+ * Shared by search() and searchpos() functions
  */
-    static void
-f_search(argvars, rettv)
+    static int
+search_cmn(argvars, match_pos)
     typval_T	*argvars;
-    typval_T	*rettv;
+    pos_T   	*match_pos;
 {
     char_u	*pat;
     pos_T	pos;
@@ -13148,8 +13172,7 @@ f_search(argvars, rettv)
     int		save_p_ws = p_ws;
     int		dir;
     int		flags = 0;
-
-    rettv->vval.v_number = 0;	/* default: FAIL */
+    int		retval = 0;	/* default: FAIL */
 
     pat = get_tv_string(&argvars[0]);
     dir = get_search_arg(&argvars[1], &flags);	/* may set p_ws */
@@ -13172,10 +13195,16 @@ f_search(argvars, rettv)
     if (searchit(curwin, curbuf, &pos, dir, pat, 1L,
 					      SEARCH_KEEP, RE_SEARCH) != FAIL)
     {
-	rettv->vval.v_number = pos.lnum;
+	retval = pos.lnum;
 	if (flags & SP_SETPCMARK)
 	    setpcmark();
 	curwin->w_cursor = pos;
+	if (match_pos != NULL)
+	{
+	    /* Store the match cursor position */
+	    match_pos->lnum = pos.lnum;
+	    match_pos->col = pos.col + 1;
+	}
 	/* "/$" will put the cursor after the end of the line, may need to
 	 * correct that here */
 	check_cursor();
@@ -13186,6 +13215,19 @@ f_search(argvars, rettv)
 	curwin->w_cursor = save_cursor;
 theend:
     p_ws = save_p_ws;
+
+    return retval;
+}
+
+/*
+ * "search()" function
+ */
+    static void
+f_search(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    rettv->vval.v_number = search_cmn(argvars, NULL);
 }
 
 /*
@@ -13216,12 +13258,12 @@ f_searchdecl(argvars, rettv)
 }
 
 /*
- * "searchpair()" function
+ * Used by searchpair() and searchpairpos()
  */
-    static void
-f_searchpair(argvars, rettv)
+    static int
+searchpair_cmn(argvars, match_pos)
     typval_T	*argvars;
-    typval_T	*rettv;
+    pos_T	*match_pos;
 {
     char_u	*spat, *mpat, *epat;
     char_u	*skip;
@@ -13231,8 +13273,7 @@ f_searchpair(argvars, rettv)
     char_u	nbuf1[NUMBUFLEN];
     char_u	nbuf2[NUMBUFLEN];
     char_u	nbuf3[NUMBUFLEN];
-
-    rettv->vval.v_number = 0;	/* default: FAIL */
+    int		retval = 0;		/* default: FAIL */
 
     /* Get the three pattern arguments: start, middle, end. */
     spat = get_tv_string_chk(&argvars[0]);
@@ -13254,7 +13295,7 @@ f_searchpair(argvars, rettv)
 	goto theend;
     }
 
-    /* Optional fifth argument: skip expresion */
+    /* Optional fifth argument: skip expression */
     if (argvars[3].v_type == VAR_UNKNOWN
 	    || argvars[4].v_type == VAR_UNKNOWN)
 	skip = (char_u *)"";
@@ -13263,10 +13304,55 @@ f_searchpair(argvars, rettv)
     if (skip == NULL)
 	goto theend;	    /* type error */
 
-    rettv->vval.v_number = do_searchpair(spat, mpat, epat, dir, skip, flags);
+    retval = do_searchpair(spat, mpat, epat, dir, skip, flags, match_pos);
 
 theend:
     p_ws = save_p_ws;
+
+    return retval;
+}
+
+/*
+ * "searchpair()" function
+ */
+    static void
+f_searchpair(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    rettv->vval.v_number = searchpair_cmn(argvars, NULL);
+}
+
+/*
+ * "searchpairpos()" function
+ */
+    static void
+f_searchpairpos(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    list_T	*l;
+    pos_T	match_pos;
+    int		lnum = 0;
+    int		col = 0;
+
+    rettv->vval.v_number = 0;
+
+    l = list_alloc();
+    if (l == NULL)
+	return;
+    rettv->v_type = VAR_LIST;
+    rettv->vval.v_list = l;
+    ++l->lv_refcount;
+
+    if (searchpair_cmn(argvars, &match_pos) > 0)
+    {
+	lnum = match_pos.lnum;
+	col = match_pos.col;
+    }
+
+    list_append_number(l, (varnumber_T)lnum);
+    list_append_number(l, (varnumber_T)col);
 }
 
 /*
@@ -13275,13 +13361,14 @@ theend:
  * Returns 0 or -1 for no match,
  */
     long
-do_searchpair(spat, mpat, epat, dir, skip, flags)
+do_searchpair(spat, mpat, epat, dir, skip, flags, match_pos)
     char_u	*spat;	    /* start pattern */
     char_u	*mpat;	    /* middle pattern */
     char_u	*epat;	    /* end pattern */
     int		dir;	    /* BACKWARD or FORWARD */
     char_u	*skip;	    /* skip expression */
     int		flags;	    /* SP_RETCOUNT, SP_REPEAT, SP_NOMOVE */
+    pos_T	*match_pos;
 {
     char_u	*save_cpo;
     char_u	*pat, *pat2 = NULL, *pat3 = NULL;
@@ -13389,6 +13476,13 @@ do_searchpair(spat, mpat, epat, dir, skip, flags)
 	}
     }
 
+    if (match_pos != NULL)
+    {
+	/* Store the match cursor position */
+	match_pos->lnum = curwin->w_cursor.lnum;
+	match_pos->col = curwin->w_cursor.col + 1;
+    }
+
     /* If 'n' flag is used or search failed: restore cursor position. */
     if ((flags & SP_NOMOVE) || retval == 0)
 	curwin->w_cursor = save_cursor;
@@ -13400,6 +13494,40 @@ theend:
 
     return retval;
 }
+
+/*
+ * "searchpos()" function
+ */
+    static void
+f_searchpos(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    list_T	*l;
+    pos_T	match_pos;
+    int		lnum = 0;
+    int		col = 0;
+
+    rettv->vval.v_number = 0;
+
+    l = list_alloc();
+    if (l == NULL)
+	return;
+    rettv->v_type = VAR_LIST;
+    rettv->vval.v_list = l;
+    ++l->lv_refcount;
+
+    if (search_cmn(argvars, &match_pos) > 0)
+    {
+	lnum = match_pos.lnum;
+	col = match_pos.col;
+    }
+
+    list_append_number(l, (varnumber_T)lnum);
+    list_append_number(l, (varnumber_T)col);
+
+}
+
 
 /*ARGSUSED*/
     static void
@@ -14027,11 +14155,9 @@ f_spellbadword(argvars, rettv)
     typval_T	*rettv;
 {
     char_u	*word = (char_u *)"";
-#ifdef FEAT_SYN_HL
-    int		len = 0;
     hlf_T	attr = HLF_COUNT;
+    int		len = 0;
     list_T	*l;
-#endif
 
     l = list_alloc();
     if (l == NULL)

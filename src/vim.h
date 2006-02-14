@@ -1157,6 +1157,9 @@ typedef enum
     , HLF_PSI	    /* popup menu selected item */
     , HLF_PSB	    /* popup menu scrollbar */
     , HLF_PST	    /* popup menu scrollbar thumb */
+    , HLF_TP	    /* tabpage line */
+    , HLF_TPS	    /* tabpage line selected */
+    , HLF_TPF	    /* tabpage line filler */
     , HLF_COUNT	    /* MUST be the last one */
 } hlf_T;
 
@@ -1165,7 +1168,7 @@ typedef enum
 		  'n', 'r', 's', 'S', 'c', 't', 'v', 'V', 'w', 'W', \
 		  'f', 'F', 'A', 'C', 'D', 'T', '>', \
 		  'B', 'P', 'R', 'L', \
-		  '+', '=', 'x', 'X'}
+		  '+', '=', 'x', 'X', '*', '#', '_'}
 
 /*
  * Boolean constants

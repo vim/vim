@@ -202,6 +202,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'fen'	options.txt	/*'fen'*
 'fenc'	options.txt	/*'fenc'*
 'fencs'	options.txt	/*'fencs'*
+'fex'	options.txt	/*'fex'*
 'ff'	options.txt	/*'ff'*
 'ffs'	options.txt	/*'ffs'*
 'fileencoding'	options.txt	/*'fileencoding'*
@@ -231,6 +232,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'foldnestmax'	options.txt	/*'foldnestmax'*
 'foldopen'	options.txt	/*'foldopen'*
 'foldtext'	options.txt	/*'foldtext'*
+'formatexpr'	options.txt	/*'formatexpr'*
 'formatlistpat'	options.txt	/*'formatlistpat'*
 'formatoptions'	options.txt	/*'formatoptions'*
 'formatprg'	options.txt	/*'formatprg'*
@@ -5870,6 +5872,7 @@ mark-motions	motion.txt	/*mark-motions*
 masm.vim	syntax.txt	/*masm.vim*
 match()	eval.txt	/*match()*
 match-highlight	pattern.txt	/*match-highlight*
+match-parens	tips.txt	/*match-parens*
 matchend()	eval.txt	/*matchend()*
 matchit-install	usr_05.txt	/*matchit-install*
 matchlist()	eval.txt	/*matchlist()*
@@ -6312,6 +6315,7 @@ progname-variable	eval.txt	/*progname-variable*
 progress.vim	syntax.txt	/*progress.vim*
 ptcap.vim	syntax.txt	/*ptcap.vim*
 pterm-mouse	options.txt	/*pterm-mouse*
+pumvisible()	eval.txt	/*pumvisible()*
 put	change.txt	/*put*
 put-Visual-mode	change.txt	/*put-Visual-mode*
 python	if_pyth.txt	/*python*
@@ -6532,6 +6536,8 @@ search-range	pattern.txt	/*search-range*
 search-replace	change.txt	/*search-replace*
 searchdecl()	eval.txt	/*searchdecl()*
 searchpair()	eval.txt	/*searchpair()*
+searchpairpos()	eval.txt	/*searchpairpos()*
+searchpos()	eval.txt	/*searchpos()*
 section	motion.txt	/*section*
 sed.vim	syntax.txt	/*sed.vim*
 self	eval.txt	/*self*
@@ -7014,6 +7020,7 @@ termcap-changed	version4.txt	/*termcap-changed*
 termcap-colors	term.txt	/*termcap-colors*
 termcap-cursor-color	term.txt	/*termcap-cursor-color*
 termcap-cursor-shape	term.txt	/*termcap-cursor-shape*
+termcap-options	term.txt	/*termcap-options*
 termcap-title	term.txt	/*termcap-title*
 terminal-colors	os_unix.txt	/*terminal-colors*
 terminal-info	term.txt	/*terminal-info*

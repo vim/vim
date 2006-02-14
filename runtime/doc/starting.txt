@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.0aa.  Last change: 2006 Jan 19
+*starting.txt*  For Vim version 7.0aa.  Last change: 2006 Feb 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -706,7 +706,8 @@ accordingly.  Vim proceeds in this order:
 	'shell' option.  On MS-DOS and Win32, the COMSPEC variable is used
 	if SHELL is not set.
 	The environment variable TERM, if it exists, is used to set the 'term'
-	option.
+	option.  However, 'term' will change later when starting the GUI (step
+	8 below).
 
 2. Process the arguments
 	The options and file names from the command that start Vim are

@@ -609,7 +609,10 @@ key_event(BalloonEval *beval, unsigned keyval, int is_keypress)
 						 ? (int)GDK_CONTROL_MASK : 0);
 		break;
 	    default:
-		cancelBalloon(beval);
+		/* Don't do this for key release, we apparently get these with
+		 * focus changes in some GTK version. */
+		if (is_keypress)
+		    cancelBalloon(beval);
 		break;
 	}
     }

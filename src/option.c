@@ -79,6 +79,7 @@ typedef enum
     , PV_FDT
     , PV_FEN
     , PV_FENC
+    , PV_FEX
     , PV_FF
     , PV_FML
     , PV_FMR
@@ -203,6 +204,9 @@ static char_u	*p_inex;
 #if defined(FEAT_CINDENT) && defined(FEAT_EVAL)
 static char_u	*p_inde;
 static char_u	*p_indk;
+#endif
+#if defined(FEAT_EVAL)
+static char_u	*p_fex;
 #endif
 static int	p_inf;
 static char_u	*p_isk;
@@ -974,6 +978,15 @@ static struct vimoption
 # endif
 			    },
 #endif
+    {"formatexpr", "fex",   P_STRING|P_ALLOCED|P_VI_DEF|P_VIM,
+#if defined(FEAT_EVAL)
+			    (char_u *)&p_fex, PV_FEX,
+			    {(char_u *)"", (char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)0L, (char_u *)0L}
+#endif
+			    },
     {"formatoptions","fo",  P_STRING|P_ALLOCED|P_VIM|P_FLAGLIST,
 			    (char_u *)&p_fo, PV_FO,
 			    {(char_u *)DFLT_FO_VI, (char_u *)DFLT_FO_VIM}},
@@ -1129,7 +1142,7 @@ static struct vimoption
 			    {(char_u *)FALSE, (char_u *)0L}},
     {"highlight",   "hl",   P_STRING|P_VI_DEF|P_RCLR|P_COMMA|P_NODUP,
 			    (char_u *)&p_hl, PV_NONE,
-			    {(char_u *)"8:SpecialKey,@:NonText,d:Directory,e:ErrorMsg,i:IncSearch,l:Search,m:MoreMsg,M:ModeMsg,n:LineNr,r:Question,s:StatusLine,S:StatusLineNC,c:VertSplit,t:Title,v:Visual,V:VisualNOS,w:WarningMsg,W:WildMenu,f:Folded,F:FoldColumn,A:DiffAdd,C:DiffChange,D:DiffDelete,T:DiffText,>:SignColumn,B:SpellBad,P:SpellCap,R:SpellRare,L:SpellLocal,+:Pmenu,=:PmenuSel,x:PmenuSbar,X:PmenuThumb",
+			    {(char_u *)"8:SpecialKey,@:NonText,d:Directory,e:ErrorMsg,i:IncSearch,l:Search,m:MoreMsg,M:ModeMsg,n:LineNr,r:Question,s:StatusLine,S:StatusLineNC,c:VertSplit,t:Title,v:Visual,V:VisualNOS,w:WarningMsg,W:WildMenu,f:Folded,F:FoldColumn,A:DiffAdd,C:DiffChange,D:DiffDelete,T:DiffText,>:SignColumn,B:SpellBad,P:SpellCap,R:SpellRare,L:SpellLocal,+:Pmenu,=:PmenuSel,x:PmenuSbar,X:PmenuThumb,*:TabPage,#:TabPageSel,_:TabPageFill",
 				(char_u *)0L}},
     {"history",	    "hi",   P_NUM|P_VIM,
 			    (char_u *)&p_hi, PV_NONE,
@@ -2264,7 +2277,7 @@ static struct vimoption
 			    (char_u *)NULL, PV_NONE,
 #endif
 			    {(char_u *)85L, (char_u *)0L}},
-    {"titleold",    NULL,   P_STRING|P_VI_DEF|P_GETTEXT|P_SECURE,
+    {"titleold",    NULL,   P_STRING|P_VI_DEF|P_GETTEXT|P_SECURE|P_NO_MKRC,
 #ifdef FEAT_TITLE
 			    (char_u *)&p_titleold, PV_NONE,
 			    {(char_u *)N_("Thanks for flying Vim"),
@@ -4754,6 +4767,9 @@ check_buf_options(buf)
 #if defined(FEAT_CINDENT) && defined(FEAT_EVAL)
     check_string_option(&buf->b_p_inde);
     check_string_option(&buf->b_p_indk);
+#endif
+#if defined(FEAT_EVAL)
+    check_string_option(&buf->b_p_fex);
 #endif
 #ifdef FEAT_CRYPT
     check_string_option(&buf->b_p_key);
@@ -8583,6 +8599,9 @@ get_varp(p)
 	case PV_INDE:	return (char_u *)&(curbuf->b_p_inde);
 	case PV_INDK:	return (char_u *)&(curbuf->b_p_indk);
 #endif
+#if defined(FEAT_EVAL)
+	case PV_FEX:	return (char_u *)&(curbuf->b_p_fex);
+#endif
 #ifdef FEAT_CRYPT
 	case PV_KEY:	return (char_u *)&(curbuf->b_p_key);
 #endif
@@ -8941,6 +8960,9 @@ buf_copy_options(buf, flags)
 #if defined(FEAT_CINDENT) && defined(FEAT_EVAL)
 	    buf->b_p_inde = vim_strsave(p_inde);
 	    buf->b_p_indk = vim_strsave(p_indk);
+#endif
+#if defined(FEAT_EVAL)
+	    buf->b_p_fex = vim_strsave(p_fex);
 #endif
 #ifdef FEAT_CRYPT
 	    buf->b_p_key = vim_strsave(p_key);

@@ -1700,6 +1700,9 @@ free_buf_options(buf, free_p_ff)
     clear_string_option(&buf->b_p_inde);
     clear_string_option(&buf->b_p_indk);
 #endif
+#if defined(FEAT_EVAL)
+    clear_string_option(&buf->b_p_fex);
+#endif
 #ifdef FEAT_CRYPT
     clear_string_option(&buf->b_p_key);
 #endif
@@ -2840,9 +2843,12 @@ buf_same_ino(buf, stp)
 }
 #endif
 
+/*
+ * Print info about the current buffer.
+ */
     void
 fileinfo(fullname, shorthelp, dont_truncate)
-    int fullname;
+    int fullname;	    /* when non-zero print full path */
     int shorthelp;
     int	dont_truncate;
 {
@@ -3476,7 +3482,7 @@ build_stl_str_hl(wp, out, outlen, fmt, fillchar, maxwidth, hl)
 	    else
 	    {
 		t = (opt == STL_FULLPATH) ? wp->w_buffer->b_ffname
-					: wp->w_buffer->b_fname;
+					  : wp->w_buffer->b_fname;
 		home_replace(wp->w_buffer, t, NameBuff, MAXPATHL, TRUE);
 	    }
 	    trans_characters(NameBuff, MAXPATHL);

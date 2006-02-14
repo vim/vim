@@ -68,10 +68,10 @@ typedef struct growarray
  */
 #include "regexp.h"
 
-typedef struct window	win_T;
-typedef struct wininfo	wininfo_T;
-typedef struct frame	frame_T;
-typedef int		scid_T;		/* script ID */
+typedef struct window_S		win_T;
+typedef struct wininfo_S	wininfo_T;
+typedef struct frame_S		frame_T;
+typedef int			scid_T;		/* script ID */
 
 /*
  * This is here because gui.h needs the pos_T and win_T, and win_T needs gui.h
@@ -215,7 +215,7 @@ typedef struct
  * The window-info is kept in a list at b_wininfo.  It is kept in
  * most-recently-used order.
  */
-struct wininfo
+struct wininfo_S
 {
     wininfo_T	*wi_next;	/* next entry or NULL for last entry */
     wininfo_T	*wi_prev;	/* previous entry or NULL for first entry */
@@ -1330,6 +1330,9 @@ struct file_buffer
     char_u	*b_p_inde;	/* 'indentexpr' */
     char_u	*b_p_indk;	/* 'indentkeys' */
 #endif
+#if defined(FEAT_EVAL)
+    char_u	*b_p_fex;	/* 'formatexpr' */
+#endif
 #ifdef FEAT_CRYPT
     char_u	*b_p_key;	/* 'key' */
 #endif
@@ -1547,10 +1550,23 @@ typedef struct w_line
 } wline_T;
 
 /*
+ * Tab pages point to the top frame of each tab page.
+ */
+typedef struct tabpage_S tabpage_T;
+struct tabpage_S
+{
+    tabpage_T	    *tp_next;	/* next tabpage or NULL */
+    frame_T	    *tp_topframe;
+    win_T	    *tp_curwin;	/* current window in this Tab page */
+    win_T	    *tp_firstwin; /* first window in this Tab page */
+    win_T	    *tp_lastwin;  /* last window in this Tab page */
+};
+
+/*
  * Windows are kept in a tree of frames.  Each frame has a column (FR_COL)
  * or row (FR_ROW) layout or is a leaf, which has a window.
  */
-struct frame
+struct frame_S
 {
     char	fr_layout;	/* FR_LEAF, FR_COL or FR_ROW */
 #ifdef FEAT_VERTSPLIT
@@ -1577,7 +1593,7 @@ struct frame
  *
  * All row numbers are relative to the start of the window, except w_winrow.
  */
-struct window
+struct window_S
 {
     buf_T	*w_buffer;	    /* buffer we are a window into (used
 				       often, keep it the first item!) */

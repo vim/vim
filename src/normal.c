@@ -1935,7 +1935,12 @@ do_pending_operator(cap, old_col, gui_yank)
 	    break;
 
 	case OP_FORMAT:
-	    if (*p_fp != NUL)
+#if defined(FEAT_EVAL)
+	    if (*curbuf->b_p_fex != NUL)
+		op_formatexpr(oap);	/* use expression */
+	    else
+#endif
+		if (*p_fp != NUL)
 		op_colon(oap);		/* use external command */
 	    else
 		op_format(oap, FALSE);	/* use internal function */
@@ -7829,6 +7834,12 @@ nv_g_cmd(cap)
     case ';':
 	cap->count1 = -cap->count1;
 	nv_pcmark(cap);
+	break;
+#endif
+
+#ifdef FEAT_WINDOWS
+    case 't':
+	goto_tabpage((int)cap->count0);
 	break;
 #endif
 

@@ -148,11 +148,13 @@ static void	ex_cquit __ARGS((exarg_T *eap));
 static void	ex_quit_all __ARGS((exarg_T *eap));
 #ifdef FEAT_WINDOWS
 static void	ex_close __ARGS((exarg_T *eap));
-static void	ex_win_close __ARGS((exarg_T *eap, win_T *win));
+static void	ex_win_close __ARGS((int forceit, win_T *win));
 static void	ex_only __ARGS((exarg_T *eap));
 static void	ex_all __ARGS((exarg_T *eap));
 static void	ex_resize __ARGS((exarg_T *eap));
 static void	ex_stag __ARGS((exarg_T *eap));
+static void	ex_tabclose __ARGS((exarg_T *eap));
+static void	ex_tabs __ARGS((exarg_T *eap));
 #else
 # define ex_close		ex_ni
 # define ex_only		ex_ni
@@ -160,6 +162,10 @@ static void	ex_stag __ARGS((exarg_T *eap));
 # define ex_resize		ex_ni
 # define ex_splitview		ex_ni
 # define ex_stag		ex_ni
+# define ex_tabedit		ex_ni
+# define ex_tab			ex_ni
+# define ex_tabs		ex_ni
+# define ex_tabclose		ex_ni
 #endif
 #if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
 static void	ex_pclose __ARGS((exarg_T *eap));
@@ -6138,19 +6144,38 @@ ex_close(eap)
     else
 # endif
 	if (!text_locked())
-	    ex_win_close(eap, curwin);
+	    ex_win_close(eap->forceit, curwin);
 }
 
+#ifdef FEAT_QUICKFIX
+/*
+ * ":pclose": Close any preview window.
+ */
     static void
-ex_win_close(eap, win)
+ex_pclose(eap)
     exarg_T	*eap;
+{
+    win_T	*win;
+
+    for (win = firstwin; win != NULL; win = win->w_next)
+	if (win->w_p_pvw)
+	{
+	    ex_win_close(eap->forceit, win);
+	    break;
+	}
+}
+#endif
+
+    static void
+ex_win_close(forceit, win)
+    int		forceit;
     win_T	*win;
 {
     int		need_hide;
     buf_T	*buf = win->w_buffer;
 
     need_hide = (bufIsChanged(buf) && buf->b_nwindows <= 1);
-    if (need_hide && !P_HID(buf) && !eap->forceit)
+    if (need_hide && !P_HID(buf) && !forceit)
     {
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
 	if ((p_confirm || cmdmod.confirm) && p_write)
@@ -6175,24 +6200,33 @@ ex_win_close(eap, win)
     win_close(win, !need_hide && !P_HID(buf));
 }
 
-#ifdef FEAT_QUICKFIX
 /*
- * ":pclose": Close any preview window.
+ * ":tabclose": close current tab page, unless it is the last one
  */
     static void
-ex_pclose(eap)
+ex_tabclose(eap)
     exarg_T	*eap;
 {
-    win_T	*win;
-
-    for (win = firstwin; win != NULL; win = win->w_next)
-	if (win->w_p_pvw)
+# ifdef FEAT_CMDWIN
+    if (cmdwin_type != 0)
+	cmdwin_result = K_IGNORE;
+    else
+# endif
+	if (!text_locked())
 	{
-	    ex_win_close(eap, win);
-	    break;
+	    if (first_tabpage->tp_next == NULL)
+		EMSG(_("E999: Cannot close last tab page"));
+	    else
+	    {
+		/* First close all the windows but the current one.  If that
+		 * worked then close the last window in this tab, that will
+		 * close it. */
+		ex_only(eap);
+		if (lastwin == firstwin)
+		    ex_win_close(eap->forceit, curwin);
+	    }
 	}
 }
-#endif
 
 /*
  * ":only".
@@ -6722,41 +6756,41 @@ ex_splitview(eap)
     exarg_T	*eap;
 {
     win_T	*old_curwin;
-#if defined(FEAT_SEARCHPATH) || defined(FEAT_BROWSE)
+# if defined(FEAT_SEARCHPATH) || defined(FEAT_BROWSE)
     char_u	*fname = NULL;
-#endif
-#ifdef FEAT_BROWSE
+# endif
+# ifdef FEAT_BROWSE
     int		browse_flag = cmdmod.browse;
-#endif
+# endif
 
-#ifndef FEAT_VERTSPLIT
+# ifndef FEAT_VERTSPLIT
     if (eap->cmdidx == CMD_vsplit || eap->cmdidx == CMD_vnew)
     {
 	ex_ni(eap);
 	return;
     }
-#endif
+# endif
 
     old_curwin = curwin;
-#ifdef FEAT_GUI
+# ifdef FEAT_GUI
     need_mouse_correct = TRUE;
-#endif
+# endif
 
-#ifdef FEAT_QUICKFIX
+# ifdef FEAT_QUICKFIX
     /* A ":split" in the quickfix window works like ":new".  Don't want two
      * quickfix windows. */
     if (bt_quickfix(curbuf))
     {
 	if (eap->cmdidx == CMD_split)
 	    eap->cmdidx = CMD_new;
-# ifdef FEAT_VERTSPLIT
+#  ifdef FEAT_VERTSPLIT
 	if (eap->cmdidx == CMD_vsplit)
 	    eap->cmdidx = CMD_vnew;
-# endif
+#  endif
     }
-#endif
+# endif
 
-#ifdef FEAT_SEARCHPATH
+# ifdef FEAT_SEARCHPATH
     if (eap->cmdidx == CMD_sfind)
     {
 	fname = find_file_in_path(eap->arg, (int)STRLEN(eap->arg),
@@ -6765,15 +6799,15 @@ ex_splitview(eap)
 	    goto theend;
 	eap->arg = fname;
     }
-# ifdef FEAT_BROWSE
+#  ifdef FEAT_BROWSE
     else
+#  endif
 # endif
-#endif
-#ifdef FEAT_BROWSE
+# ifdef FEAT_BROWSE
     if (cmdmod.browse
-# ifdef FEAT_VERTSPLIT
+#  ifdef FEAT_VERTSPLIT
 	    && eap->cmdidx != CMD_vnew
-#endif
+# endif
 	    && eap->cmdidx != CMD_new)
     {
 	if (
@@ -6797,36 +6831,165 @@ ex_splitview(eap)
 	}
     }
     cmdmod.browse = FALSE;	/* Don't browse again in do_ecmd(). */
-#endif
+# endif
 
     if (win_split(eap->addr_count > 0 ? (int)eap->line2 : 0,
 				     *eap->cmd == 'v' ? WSP_VERT : 0) != FAIL)
     {
-#ifdef FEAT_SCROLLBIND
+# ifdef FEAT_SCROLLBIND
 	/* Reset 'scrollbind' when editing another file, but keep it when
 	 * doing ":split" without arguments. */
 	if (*eap->arg != NUL
-#ifdef FEAT_BROWSE
+#  ifdef FEAT_BROWSE
 		|| cmdmod.browse
-#endif
+#  endif
 	   )
 	    curwin->w_p_scb = FALSE;
 	else
 	    do_check_scrollbind(FALSE);
-#endif
+# endif
 	do_exedit(eap, old_curwin);
     }
 
-#ifdef FEAT_BROWSE
+# ifdef FEAT_BROWSE
     cmdmod.browse = browse_flag;
-#endif
+# endif
 
-#if defined(FEAT_SEARCHPATH) || defined(FEAT_BROWSE)
+# if defined(FEAT_SEARCHPATH) || defined(FEAT_BROWSE)
 theend:
     vim_free(fname);
-#endif
+# endif
 }
-#endif
+
+/*
+ * :tabedit [[+command] file]	open new Tab page with empty window
+ * :tabedit [[+command] file]	open new Tab page and edit "file"
+ * :tabfind [[+command] file]	open new Tab page and find "file"
+ */
+    void
+ex_tabedit(eap)
+    exarg_T	*eap;
+{
+# if defined(FEAT_SEARCHPATH) || defined(FEAT_BROWSE)
+    char_u	*fname = NULL;
+# endif
+# ifdef FEAT_BROWSE
+    int		browse_flag = cmdmod.browse;
+# endif
+
+# ifdef FEAT_GUI
+    need_mouse_correct = TRUE;
+# endif
+
+# ifdef FEAT_SEARCHPATH
+    if (eap->cmdidx == CMD_tabfind)
+    {
+	fname = find_file_in_path(eap->arg, (int)STRLEN(eap->arg),
+					  FNAME_MESS, TRUE, curbuf->b_ffname);
+	if (fname == NULL)
+	    goto theend;
+	eap->arg = fname;
+    }
+#  ifdef FEAT_BROWSE
+    else
+#  endif
+# endif
+# ifdef FEAT_BROWSE
+    if (cmdmod.browse)
+    {
+	if (
+#  ifdef FEAT_GUI
+	    !gui.in_use &&
+#  endif
+		au_has_group((char_u *)"FileExplorer"))
+	{
+	    /* No browsing supported but we do have the file explorer:
+	     * Edit the directory. */
+	    if (*eap->arg == NUL || !mch_isdir(eap->arg))
+		eap->arg = (char_u *)".";
+	}
+	else
+	{
+	    fname = do_browse(0, (char_u *)_("Edit File in new tab page"),
+					  eap->arg, NULL, NULL, NULL, curbuf);
+	    if (fname == NULL)
+		goto theend;
+	    eap->arg = fname;
+	}
+    }
+    cmdmod.browse = FALSE;	/* Don't browse again in do_ecmd(). */
+# endif
+
+    if (win_new_tabpage() != FAIL)
+    {
+# ifdef FEAT_SCROLLBIND
+	curwin->w_p_scb = FALSE;
+# endif
+	do_exedit(eap, NULL);
+    }
+
+# ifdef FEAT_BROWSE
+    cmdmod.browse = browse_flag;
+# endif
+
+# if defined(FEAT_SEARCHPATH) || defined(FEAT_BROWSE)
+theend:
+    vim_free(fname);
+# endif
+}
+
+/*
+ * :tab command
+ */
+    void
+ex_tab(eap)
+    exarg_T	*eap;
+{
+    goto_tabpage((int)eap->line2);
+}
+
+/*
+ * :tabs command: List tabs and their contents.
+ */
+/*ARGSUSED*/
+    static void
+ex_tabs(eap)
+    exarg_T	*eap;
+{
+    tabpage_T	*tp;
+    win_T	*wp;
+    int		tabcount = 1;
+
+    msg_start();
+    msg_scroll = TRUE;
+    for (tp = first_tabpage; tp != NULL && !got_int; tp = tp->tp_next)
+    {
+	msg_putchar('\n');
+	vim_snprintf((char *)IObuff, IOSIZE, _("Tab page %d"), tabcount++);
+	msg_outtrans_attr(IObuff, hl_attr(HLF_T));
+	out_flush();	    /* output one line at a time */
+	ui_breakcheck();
+
+	if (tp->tp_topframe == topframe)
+	    wp = firstwin;
+	else
+	    wp = tp->tp_firstwin;
+	for ( ; wp != NULL && !got_int; wp = wp->w_next)
+	{
+	    msg_puts((char_u *)"\n    ");
+	    if (buf_spname(wp->w_buffer) != NULL)
+		STRCPY(IObuff, buf_spname(wp->w_buffer));
+	    else
+		home_replace(wp->w_buffer, wp->w_buffer->b_fname,
+							IObuff, IOSIZE, TRUE);
+	    msg_outtrans(IObuff);
+	    out_flush();	    /* output one line at a time */
+	    ui_breakcheck();
+	}
+    }
+}
+
+#endif /* FEAT_WINDOWS */
 
 /*
  * ":mode": Set screen mode.

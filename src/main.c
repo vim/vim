@@ -297,9 +297,11 @@ main
     TIME_MSG("window checked");
 
     /*
-     * Allocate the first window and buffer. Can't do much without it.
+     * Allocate the first window and buffer.
+     * Can't do anything without it, exit when it fails.
      */
-    win_alloc_first();
+    if (win_alloc_first() == FAIL)
+	mch_exit(0);
 
     init_yank();		/* init yank buffers */
 
@@ -505,12 +507,7 @@ main
     if (usingNetbeans)
 	Columns += 2;		/* leave room for glyph gutter */
 #endif
-    firstwin->w_height = Rows - p_ch;
-    topframe->fr_height = Rows - p_ch;
-#ifdef FEAT_VERTSPLIT
-    firstwin->w_width = Columns;
-    topframe->fr_width = Columns;
-#endif
+    win_init_size();
 #ifdef FEAT_DIFF
     /* Set the 'diff' option now, so that it can be checked for in a .vimrc
      * file.  There is no buffer yet though. */

@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Feb 10
+*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Feb 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -414,6 +414,8 @@ Options: ~
 			(based on an idea from Yegappan Lakshmanan)
 'formatlistpat'		pattern to recognize a numbered list for formatting.
 			(idea by Hugo Haas)
+'formatexpr'		expression for formatting text with |gq| and when text
+			goes over 'textwidth' in Insert mode.
 'spell'			switch spell checking on/off
 'spelllang'		languages to check spelling for
 'spellsuggest'		methods for spell suggestions
@@ -558,6 +560,8 @@ New and extended functions: ~
 |repeat()| 		repeat "expr" "count" times (Christophe Poucet)
 |reverse()|		reverse the order of a List
 |searchdecl()|		search for declaration of variable
+|searchpairpos()|	return a List with the position of the match
+|searchpos()|	        return a List with the position of the match
 |setloclist()|		modify a location list (Yegappan Lakshmanan)
 |setqflist()|		modify a quickfix list (Yegappan Lakshmanan)
 |sort()|		sort a List
@@ -1004,6 +1008,7 @@ itself.
 ":saveas asdf.c" will set 'filetype' to c when it's empty.  Also for ":w
 asdf.c" when it sets the filename for the buffer.
 
+Insert mode completion for whole lines now also searches unloaded buffers.
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*
@@ -1685,5 +1690,10 @@ Crashed when expanding a file name argument in backticks.
 
 In some situations the menu and scrollbar didn't work, when the value contains
 a CSI byte. (Yukihiro Nakadaira)
+
+GTK GUI: When drawing the balloon focus changes and we might get a key release
+event that removed the balloon again.  Ignore the key release event.
+
+'titleold' was included in ":mkexrc" and ":mksession" files.
 
  vim:tw=78:ts=8:ft=help:norl:

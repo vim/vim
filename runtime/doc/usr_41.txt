@@ -654,7 +654,9 @@ Working with text in the current buffer:
 	nextnonblank()		find next non-blank line
 	prevnonblank()		find previous non-blank line
 	search()		find a match for a pattern
+	searchpos()		find a match for a pattern
 	searchpair()		find the other end of a start/skip/end
+	searchpairpos()		find the other end of a start/skip/end
 
 System functions and manipulation of files:
 	browse()		put up a file requester

@@ -38,6 +38,8 @@ void ex_display __ARGS((exarg_T *eap));
 void do_do_join __ARGS((long count, int insert_space));
 int do_join __ARGS((int insert_space));
 void op_format __ARGS((oparg_T *oap, int keep_cursor));
+void op_formatexpr __ARGS((oparg_T *oap));
+int fex_format __ARGS((linenr_T lnum, long count));
 void format_lines __ARGS((linenr_T line_count));
 int paragraph_start __ARGS((linenr_T lnum));
 int do_addsub __ARGS((int command, linenr_T Prenum1));

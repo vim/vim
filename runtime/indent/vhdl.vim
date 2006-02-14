@@ -1,8 +1,8 @@
 " VHDL indent ('93 syntax)
 " Language:    VHDL
 " Maintainer:  Gerald Lai <laigera+vim?gmail.com>
-" Version:     1.3
-" Last Change: 2006 Jan 31
+" Version:     1.34
+" Last Change: 2006 Feb 11
 " URL:         http://www.vim.org/scripts/script.php?script_id=1450
 
 " only load this indent file when no other was loaded
@@ -17,13 +17,35 @@ setlocal indentkeys=!^F,o,O,e,0(,0)
 setlocal indentkeys+==~if,=~then,=~elsif,=~else
 setlocal indentkeys+==~begin,=~is,=~select,=~--
 
-" move around
+" count repeat
+function! <SID>CountWrapper(cmd)
+  let i = v:count1
+  if a:cmd[0] == ":"
+    while i > 0
+      execute a:cmd
+      let i = i - 1
+    endwhile
+  else
+    execute "normal! gv\<Esc>"
+    execute "normal ".i.a:cmd
+    let curcol = col(".")
+    let curline = line(".")
+    normal! gv
+    call cursor(curline, curcol)
+  endif
+endfunction
+
+" explore motion
 " keywords: "architecture", "block", "configuration", "component", "entity", "function", "package", "procedure", "process", "record", "units"
 let b:vhdl_explore = '\%(architecture\|block\|configuration\|component\|entity\|function\|package\|procedure\|process\|record\|units\)'
-nnoremap <silent><buffer>[[ :cal search('\%(\<end\s\+\)\@<!\<'.b:vhdl_explore.'\>\c','bW')<CR>
-nnoremap <silent><buffer>]] :cal search('\%(\<end\s\+\)\@<!\<'.b:vhdl_explore.'\>\c','W')<CR>
-nnoremap <silent><buffer>[] :cal search('\<end\s\+'.b:vhdl_explore.'\>\c','bW')<CR>
-nnoremap <silent><buffer>][ :cal search('\<end\s\+'.b:vhdl_explore.'\>\c','W')<CR>
+noremap  <buffer><silent>[[ :<C-u>cal <SID>CountWrapper(':cal search("\\%(--.*\\)\\@<!\\%(\\<end\\s\\+\\)\\@<!\\<".b:vhdl_explore."\\>\\c\\<Bar>\\%^","bW")')<CR>
+noremap  <buffer><silent>]] :<C-u>cal <SID>CountWrapper(':cal search("\\%(--.*\\)\\@<!\\%(\\<end\\s\\+\\)\\@<!\\<".b:vhdl_explore."\\>\\c\\<Bar>\\%$","W")')<CR>
+noremap  <buffer><silent>[] :<C-u>cal <SID>CountWrapper(':cal search("\\%(--.*\\)\\@<!\\<end\\s\\+".b:vhdl_explore."\\>\\c\\<Bar>\\%^","bW")')<CR>
+noremap  <buffer><silent>][ :<C-u>cal <SID>CountWrapper(':cal search("\\%(--.*\\)\\@<!\\<end\\s\\+".b:vhdl_explore."\\>\\c\\<Bar>\\%$","W")')<CR>
+vnoremap <buffer><silent>[[ :<C-u>cal <SID>CountWrapper('[[')<CR>
+vnoremap <buffer><silent>]] :<C-u>cal <SID>CountWrapper(']]')<CR>
+vnoremap <buffer><silent>[] :<C-u>cal <SID>CountWrapper('[]')<CR>
+vnoremap <buffer><silent>][ :<C-u>cal <SID>CountWrapper('][')<CR>
 
 " constants
 " not a comment

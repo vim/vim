@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 7.0aa.  Last change: 2006 Jan 11
+*quickref.txt*  For Vim version 7.0aa.  Last change: 2006 Feb 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -692,6 +692,7 @@ Short explanation of each option:		*option-list*
 |'formatlistpat'| |'flp'|    pattern used to recognize a list header
 |'formatoptions'| |'fo'|     how automatic formatting is to be done
 |'formatprg'|	  |'fp'|     name of external program used with "gq" command
+|'formatexpr'|	  |'fex'|    expression used with "gq" command
 |'fsync'|	  |'fs'|     whether to invoke fsync() after file write
 |'gdefault'|	  |'gd'|     the ":substitute" flag 'g' is default on
 |'grepformat'|	  |'gfm'|    format of 'grepprg' output

@@ -41,7 +41,7 @@ function! htmlcomplete#CompleteTags(findstart, base)
 			let start = col('.') - 1
 			let b:jscompl = 1
 			let b:jsrange = [scriptstart, scriptend]
-			while start >= 0 && line[start - 1] =~ '\w'
+			while start >= 0 && line[start - 1] =~ '\k'
 				let start -= 1
 			endwhile
 			" We are inside of <script> tag. But we should also get contents
@@ -102,7 +102,7 @@ function! htmlcomplete#CompleteTags(findstart, base)
 		" completion will be badly reported
 		if b:compl_context =~? 'on[a-z]*\s*=\s*\(''[^'']*\|"[^"]*\)$'
 			let start = col('.') - 1
-			while start >= 0 && line[start - 1] =~ '\w'
+			while start >= 0 && line[start - 1] =~ '\k'
 				let start -= 1
 			endwhile
 		endif
@@ -178,13 +178,6 @@ function! htmlcomplete#CompleteTags(findstart, base)
 		endif
 	endif
 
-	" Set attribute groups
-    let coreattrs = ["id", "class", "style", "title"] 
-    let i18n = ["lang", "xml:lang", "dir=\"ltr\" ", "dir=\"rtl\" "]
-    let events = ["onclick", "ondblclick", "onmousedown", "onmouseup", "onmousemove",
-    			\ "onmouseover", "onmouseout", "onkeypress", "onkeydown", "onkeyup"]
-    let focus = ["accesskey", "tabindex", "onfocus", "onblur"]
-    let coregroup = coreattrs + i18n + events
 	" If context contains > it means we are already outside of tag and we
 	" should abandon action
 	" If context contains white space it is attribute. 
@@ -403,12 +396,11 @@ function! htmlcomplete#CompleteTags(findstart, base)
 
 				" 3. Proper call for javascriptcomplete#CompleteJS
 				call cursor(l,c)
-				let js_context = matchstr(a:base, '\w\+$')
+				let js_context = matchstr(a:base, '\k\+$')
 				let js_shortcontext = substitute(a:base, js_context.'$', '', '')
 				let b:compl_context = context
 				let b:jsrange = [l, l]
 				unlet! l c
-				"return map(javascriptcomplete#CompleteJS(0, js_context), 'js_shortcontext.v:val')
 				return javascriptcomplete#CompleteJS(0, js_context)
 
 			endif
@@ -501,95 +493,44 @@ function! htmlcomplete#CompleteTags(findstart, base)
 		" Attribute completion {{{
 		" Shorten context to not include last word
 		let sbase = matchstr(context, '.*\ze\s.*')
-		if tag =~ '^\(abbr\|acronym\|address\|b\|bdo\|big\|caption\|cite\|code\|dd\|dfn\|div\|dl\|dt\|em\|fieldset\|h\d\|hr\|i\|kbd\|li\|noscript\|ol\|p\|samp\|small\|span\|strong\|sub\|sup\|tt\|ul\|var\)$'
-			let attrs = coregroup
-		elseif tag == 'a'
-			let attrs = coregroup + focus + ["charset", "type", "name", "href", "hreflang", "rel", "rev", "shape", "coords"]
-		elseif tag == 'area'
-			let attrs = coregroup + focus + ["shape", "coords", "href", "nohref", "alt"]
-		elseif tag == 'base'
-			let attrs = ["href", "id"]
-		elseif tag == 'blockquote'
-			let attrs = coregroup + ["cite"]
-		elseif tag == 'body'
-			let attrs = coregroup + ["onload", "onunload"]
-		elseif tag == 'br'
-			let attrs = coreattrs
-		elseif tag == 'button'
-			let attrs = coregroup + focus + ["name", "value", "type"]
-		elseif tag == '^\(col\|colgroup\)$'
-			let attrs = coregroup + ["span", "width", "align", "char", "charoff", "valign"]
-		elseif tag =~ '^\(del\|ins\)$'
-			let attrs = coregroup + ["cite", "datetime"]
-		elseif tag == 'form'
-			let attrs = coregroup + ["action", "method=\"get\" ", "method=\"post\" ", "enctype", "onsubmit", "onreset", "accept", "accept-charset"]
-		elseif tag == 'head'
-			let attrs = i18n + ["id", "profile"]
-		elseif tag == 'html'
-			let attrs = i18n + ["id", "xmlns"]
-		elseif tag == 'img'
-			let attrs = coregroup + ["src", "alt", "longdesc", "height", "width", "usemap", "ismap"]
-		elseif tag == 'input'
-			let attrs = coregroup + ["type", "name", "value", "checked", "disabled", "readonly", "size", "maxlength", "src", "alt", "usemap", "onselect", "onchange", "accept"]
-		elseif tag == 'label'
-			let attrs = coregroup + ["for", "accesskey", "onfocus", "onblur"]
-		elseif tag == 'legend'
-			let attrs = coregroup + ["accesskey"]
-		elseif tag == 'link'
-			let attrs = coregroup + ["charset", "href", "hreflang", "type", "rel", "rev", "media"]
-		elseif tag == 'map'
-			let attrs = i18n + events + ["id", "class", "style", "title", "name"]
-		elseif tag == 'meta'
-			let attrs = i18n + ["id", "http-equiv", "content", "scheme", "name"]
-		elseif tag == 'title'
-			let attrs = i18n + ["id"]
-		elseif tag == 'object'
-			let attrs = coregroup + ["declare", "classid", "codebase", "data", "type", "codetype", "archive", "standby", "height", "width", "usemap", "name", "tabindex"]
-		elseif tag == 'optgroup'
-			let attrs = coregroup + ["disbled", "label"]
-		elseif tag == 'option'
-			let attrs = coregroup + ["disbled", "selected", "value", "label"]
-		elseif tag == 'param'
-			let attrs = ["id", "name", "value", "valuetype", "type"]
-		elseif tag == 'pre'
-			let attrs = coregroup + ["xml:space"]
-		elseif tag == 'q'
-			let attrs = coregroup + ["cite"]
-		elseif tag == 'script'
-			let attrs = ["id", "charset", "type=\"text/javascript\"", "type", "src", "defer", "xml:space"]
-		elseif tag == 'select'
-			let attrs = coregroup + ["name", "size", "multiple", "disabled", "tabindex", "onfocus", "onblur", "onchange"]
-		elseif tag == 'style'
-			let attrs = coreattrs + ["id", "type=\"text/css\"", "type", "media", "title", "xml:space"]
-		elseif tag == 'table'
-			let attrs = coregroup + ["summary", "width", "border", "frame", "rules", "cellspacing", "cellpadding"]
-		elseif tag =~ '^\(thead\|tfoot\|tbody\|tr\)$'
-			let attrs = coregroup + ["align", "char", "charoff", "valign"]
-		elseif tag == 'textarea'
-			let attrs = coregroup + ["name", "rows", "cols", "disabled", "readonly", "onselect", "onchange"]
-		elseif tag =~ '^\(th\|td\)$'
-			let attrs = coregroup + ["abbr", "headers", "scope", "rowspan", "colspan", "align", "char", "charoff", "valign"]
-		else
-			return []
+
+		" Load data {{{
+		if !exists("g:xmldata_xhtml10s")
+			runtime! autoload/xml/xhtml10s.vim
 		endif
+		" }}}
+		"
+		let attrs = keys(g:xmldata_xhtml10s[tag][1])
 
 		for m in sort(attrs)
 			if m =~ '^'.attr
-				if m =~ '^\(ismap\|defer\|declare\|nohref\|checked\|disabled\|selected\|readonly\)$' || m =~ '='
-					call add(res, m)
-				else
-					call add(res, m.'="')
-				endif
+				call add(res, m)
 			elseif m =~ attr
-				if m =~ '^\(ismap\|defer\|declare\|nohref\|checked\|disabled\|selected\|readonly\)$' || m =~ '='
-					call add(res2, m)
-				else
-					call add(res2, m.'="')
-				endif
+				call add(res2, m)
 			endif
 		endfor
-
-		return res + res2
+		let menu = res + res2
+		if has_key(g:xmldata_xhtml10s, 'vimxmlattrinfo')
+			let final_menu = []
+			for i in range(len(menu))
+				let item = menu[i]
+				if has_key(g:xmldata_xhtml10s['vimxmlattrinfo'], item)
+					let m_menu = g:xmldata_xhtml10s['vimxmlattrinfo'][item][0]
+					let m_info = g:xmldata_xhtml10s['vimxmlattrinfo'][item][1]
+					if m_menu !~ 'Bool'
+						let item .= '="'
+					endif
+				else
+					let m_menu = ''
+					let m_info = ''
+					let item .= '="'
+				endif
+				let final_menu += [{'word':item, 'menu':m_menu, 'info':m_info}]
+			endfor
+		else
+			let final_menu = map(menu, 'v:val."=\""')
+		endif
+		return final_menu
 
 	endif
 	" }}}
@@ -625,8 +566,25 @@ function! htmlcomplete#CompleteTags(findstart, base)
 			call add(res2, m)
 		endif
 	endfor
+	let menu = res + res2
+	if has_key(g:xmldata_xhtml10s, 'vimxmltaginfo')
+		let final_menu = []
+		for i in range(len(menu))
+			let item = menu[i]
+			if has_key(g:xmldata_xhtml10s['vimxmltaginfo'], item)
+				let m_menu = g:xmldata_xhtml10s['vimxmltaginfo'][item][0]
+				let m_info = g:xmldata_xhtml10s['vimxmltaginfo'][item][1]
+			else
+				let m_menu = ''
+				let m_info = ''
+			endif
+			let final_menu += [{'word':item, 'menu':m_menu, 'info':m_info}]
+		endfor
+	else
+		let final_menu = menu
+	endif
+	return final_menu
 
-	return res + res2
 
 	" }}}
   endif

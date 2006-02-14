@@ -12,7 +12,7 @@ function! javascriptcomplete#CompleteJS(findstart, base)
 	let compl_begin = col('.') - 2
 	" Bit risky but JS is rather limited language and local chars shouldn't
 	" fint way into names
-	while start >= 0 && line[start - 1] =~ '\w'
+	while start >= 0 && line[start - 1] =~ '\k'
 		let start -= 1
 	endwhile
 	let b:compl_context = getline('.')[0:compl_begin]
@@ -120,17 +120,17 @@ function! javascriptcomplete#CompleteJS(findstart, base)
 		let stris = striprop + strimeth
 
 		" User created properties
-		let user_props1 = filter(copy(file), 'v:val =~ "this\\.\\w"')
+		let user_props1 = filter(copy(file), 'v:val =~ "this\\.\\k"')
 		let juser_props1 = join(user_props1, ' ')
 		let user_props1 = split(juser_props1, '\zethis\.')
 		unlet! juser_props1
-		call map(user_props1, 'matchstr(v:val, "this\\.\\zs\\w\\+\\ze")')
+		call map(user_props1, 'matchstr(v:val, "this\\.\\zs\\k\\+\\ze")')
 
-		let user_props2 = filter(copy(file), 'v:val =~ "\\.prototype\\.\\w"')
+		let user_props2 = filter(copy(file), 'v:val =~ "\\.prototype\\.\\k"')
 		let juser_props2 = join(user_props2, ' ')
 		let user_props2 = split(juser_props2, '\zeprototype\.')
 		unlet! juser_props2
-		call map(user_props2, 'matchstr(v:val, "prototype\\.\\zs\\w\\+\\ze")')
+		call map(user_props2, 'matchstr(v:val, "prototype\\.\\zs\\k\\+\\ze")')
 		let user_props = user_props1 + user_props2
 
 		" HTML DOM properties
@@ -394,11 +394,11 @@ function! javascriptcomplete#CompleteJS(findstart, base)
 		"    for regexp "= /re/"
 		" 4. Make correction for Microsoft.XMLHTTP ActiveXObject
 		" 5. Repeat for external files
-		let object = matchstr(shortcontext, '\zs\w\+\ze\(\[.\{-}\]\)\?\.$')
+		let object = matchstr(shortcontext, '\zs\k\+\ze\(\[.\{-}\]\)\?\.$')
 		if len(object) > 0
 			let decl_line = search(object.'.\{-}=\s*new\s*', 'bn')
 			if decl_line > 0
-				let object_type = matchstr(getline(decl_line), object.'.\{-}=\s*new\s*\zs\w\+\ze')
+				let object_type = matchstr(getline(decl_line), object.'.\{-}=\s*new\s*\zs\k\+\ze')
 				if object_type == 'ActiveXObject' && matchstr(getline(decl_line), object.'.\{-}=\s*new\s*ActiveXObject\s*(.Microsoft\.XMLHTTP.)') != ''
 						let object_type = 'XMLHttpRequest'
 				endif
@@ -413,7 +413,7 @@ function! javascriptcomplete#CompleteJS(findstart, base)
 			if decl_line == 0 && exists("b:js_extfiles")
 				let dext_line = filter(copy(b:js_extfiles), 'v:val =~ "'.object.'.\\{-}=\\s*new\\s*"')
 				if len(dext_line) > 0
-					let object_type = matchstr(dext_line[-1], object.'.\{-}=\s*new\s*\zs\w\+\ze')
+					let object_type = matchstr(dext_line[-1], object.'.\{-}=\s*new\s*\zs\k\+\ze')
 					if object_type == 'ActiveXObject' && matchstr(dext_line[-1], object.'.\{-}=\s*new\s*ActiveXObject\s*(.Microsoft\.XMLHTTP.)') != ''
 							let object_type = 'XMLHttpRequest'
 					endif
@@ -532,7 +532,7 @@ function! javascriptcomplete#CompleteJS(findstart, base)
 	" constructs like: var var1, var2, var3 = "something";
 	for i in range(len(variables))
 		let comma_separated = split(variables[i], ',\s*')
-		call map(comma_separated, 'matchstr(v:val, "\\w\\+")')
+		call map(comma_separated, 'matchstr(v:val, "\\k\\+")')
 		let vars += comma_separated
 	endfor
 
@@ -540,11 +540,11 @@ function! javascriptcomplete#CompleteJS(findstart, base)
 	unlet! vars
 
 	" Add "no var" variables.
-	let undeclared_variables = filter(copy(file), 'v:val =~ "^\\s*\\w\\+\\s*="')
+	let undeclared_variables = filter(copy(file), 'v:val =~ "^\\s*\\k\\+\\s*="')
 	let u_vars = []
 	for i in range(len(undeclared_variables))
 		let  split_equal = split(undeclared_variables[i], '\s*=')
-		call map(split_equal, 'matchstr(v:val, "\\w\\+$")')
+		call map(split_equal, 'matchstr(v:val, "\\k\\+$")')
 		let u_vars += split_equal
 	endfor
 
@@ -554,9 +554,19 @@ function! javascriptcomplete#CompleteJS(findstart, base)
 	" Get functions
 	let functions = filter(copy(file), 'v:val =~ "^\\s*function\\s"')
 	let arguments = copy(functions)
-	call map(functions, 'matchstr(v:val, "^\\s*function\\s\\+\\zs\\w\\+")')
+	call map(functions, 'matchstr(v:val, "^\\s*function\\s\\+\\zs\\k\\+")')
 	call map(functions, 'v:val."("')
 	let functions = sort(functions)
+
+	" Create table to keep arguments for additional 'menu' info
+	let b:js_menuinfo = {}
+	for i in arguments
+		let g:ia = i
+		let f_elements = matchlist(i, 'function\s\+\(\k\+\)\s*(\(.\{-}\))')
+		if len(f_elements) == 3
+			let b:js_menuinfo[f_elements[1].'('] = f_elements[2]
+		endif
+	endfor
 
 	" Get functions arguments
 	call map(arguments, 'matchstr(v:val, "function.\\{-}(\\zs.\\{-}\\ze)")')
@@ -590,7 +600,26 @@ function! javascriptcomplete#CompleteJS(findstart, base)
 		endif
 	endfor
 
-	return res + res2
+	let menu = res + res2
+	let final_menu = []
+	for i in range(len(menu))
+		let item = menu[i]
+		if item =~ '($'
+			let kind = 'f'
+			if has_key(b:js_menuinfo, item)
+				let m_info = b:js_menuinfo[item]
+			else
+				let m_info = ''
+			endif
+		else
+			let kind = 'v'
+			let m_info = ''
+		endif
+		let final_menu += [{'word':item, 'menu':m_info, 'kind':kind}]
+	endfor
+	let g:fm = final_menu
+	return final_menu
+
 endfunction
 
 " vim:set foldmethod=marker:

@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 7.0aa.  Last change: 2005 Dec 14
+*term.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -208,7 +208,7 @@ starts with CSI, it assumes that the terminal is in 8-bit mode and will
 convert all key sequences to their 8-bit variants.
 
 ==============================================================================
-2. Terminal options				*terminal-options* *E436*
+2. Terminal options		*terminal-options* *termcap-options* *E436*
 
 The terminal options can be set just like normal options.  But they are not
 shown with the ":set all" command.  Instead use ":set termcap".

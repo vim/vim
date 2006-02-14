@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.0aa.  Last change: 2005 Dec 16
+*change.txt*    For Vim version 7.0aa.  Last change: 2006 Feb 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1168,12 +1168,18 @@ The next three commands always work on whole lines.
 
 							*gq*
 gq{motion}		Format the lines that {motion} moves over.
-			If 'formatprg' is empty formatting is done internally
-			and the 'textwidth' option controls the length of each
-			formatted line (see below).
+			Formatting is done with one of three methods:
+			1. If 'formatexpr' is not empty the expression is
+			   evaluated.  This can differ for each buffer.
+			2. If 'formatprg' is not mepty an external program
+			   is used.
+			3. Otherise formatting is done internally.
+
+			In the third case the 'textwidth' option controls the
+			length of each formatted line (see below).
 			If the 'textwidth' option is 0, the formatted line
 			length is the screen width (with a maximum width of
-			79).  {not in Vi}
+			79).
 			The 'formatoptions' option controls the type of
 			formatting |fo-table|.
 			The cursor is left on the first non-blank of the last
@@ -1193,8 +1199,8 @@ gqq			Format the current line.  {not in Vi}
 							*gw*
 gw{motion}		Format the lines that {motion} moves over.  Similar to
 			|gq| but puts the cursor back at the same position in
-			the text.  However, 'formatprg' is not used.
-			{not in Vi}
+			the text.  However, 'formatprg' and 'formatexpr' are
+			not used.  {not in Vi}
 
 gwgw							*gwgw* *gww*
 gww			Format the current line as with "gw".  {not in Vi}
@@ -1225,9 +1231,10 @@ white space!).
 
 The 'joinspaces' option is used when lines are joined together.
 
-You can set the 'formatprg' option to the name of an external program for Vim
-to use for text formatting.  The 'textwidth' and other options have no effect
-on formatting by an external program.
+You can set the 'formatexpr' option to an expression or the 'formatprg' option
+to the name of an external program for Vim to use for text formatting.  The
+'textwidth' and other options have no effect on formatting by an external
+program.
 
 							*right-justify*
 There is no command in Vim to right justify text.  You can do it with

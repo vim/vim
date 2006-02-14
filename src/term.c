@@ -2980,6 +2980,10 @@ get_bytes_from_buf(buf, bytes, num_bytes)
 	    ++len;	/* skip KE_FILLER */
 	    /* else it should be KS_SPECIAL, and c already equals K_SPECIAL */
 	}
+	else if (c == CSI && buf[len] == KS_EXTRA && buf[len + 1] == (int)KE_CSI)
+	    /* CSI is stored as CSI KS_SPECIAL KE_CSI to avoid confusion with
+	     * the start of a special key, see add_to_input_buf_csi(). */
+	    len += 2;
 	bytes[i] = c;
     }
     return len;

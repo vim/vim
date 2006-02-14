@@ -6079,6 +6079,9 @@ static char *(highlight_init_both[]) =
 	"DiffText term=reverse cterm=bold ctermbg=Red gui=bold guibg=Red",
 	"PmenuThumb cterm=reverse gui=reverse",
 	"PmenuSbar ctermbg=Grey guibg=Grey",
+	"TabPage term=underline cterm=underline ctermbg=grey gui=underline guibg=grey",
+	"TabPageSel term=reverse,bold cterm=reverse,bold gui=reverse,bold",
+	"TabPageFill term=underline cterm=underline ctermbg=grey gui=underline guibg=grey",
 	NULL
     };
 

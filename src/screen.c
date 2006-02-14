@@ -167,6 +167,9 @@ static void redraw_block __ARGS((int row, int end, win_T *wp));
 static int win_do_lines __ARGS((win_T *wp, int row, int line_count, int mayclear, int del));
 static void win_rest_invalid __ARGS((win_T *wp));
 static void msg_pos_mode __ARGS((void));
+#if defined(FEAT_WINDOWS)
+static void draw_tabpage __ARGS((void));
+#endif
 #if defined(FEAT_WINDOWS) || defined(FEAT_WILDMENU) || defined(FEAT_STL_OPT)
 static int fillchar_status __ARGS((int *attr, int is_curwin));
 #endif
@@ -390,6 +393,9 @@ update_screen(type)
 		}
 	    }
 	    redraw_cmdline = TRUE;
+#ifdef FEAT_WINDOWS
+	    redraw_tabpage = TRUE;
+#endif
 	}
 	msg_scrolled = 0;
 	need_wait_return = FALSE;
@@ -466,6 +472,12 @@ update_screen(type)
 		syn_stack_apply_changes(wp->w_buffer);
 	}
     }
+#endif
+
+#ifdef FEAT_WINDOWS
+    /* Redraw the tab pages line if needed. */
+    if (redraw_tabpage || type >= NOT_VALID)
+	draw_tabpage();
 #endif
 
     /*
@@ -4947,6 +4959,8 @@ redraw_statuslines()
     for (wp = firstwin; wp; wp = wp->w_next)
 	if (wp->w_redr_status)
 	    win_redr_status(wp);
+    if (redraw_tabpage)
+	draw_tabpage();
 }
 #endif
 
@@ -8408,6 +8422,79 @@ unshowmode(force)
 	msg_clr_eos();
     }
 }
+
+#if defined(FEAT_WINDOWS)
+/*
+ * Draw the tab pages line at the top of the Vim window.
+ */
+    static void
+draw_tabpage()
+{
+    int		tabcount = 0;
+    tabpage_T	*tp;
+    int		tabwidth;
+    int		col = 0;
+    int		had_current = FALSE;
+    int		attr;
+    win_T	*wp;
+    int		c;
+    int		len;
+    int		attr_sel = hl_attr(HLF_TPS);
+    int		attr_nosel = hl_attr(HLF_TP);
+    int		attr_fill = hl_attr(HLF_TPF);
+
+    redraw_tabpage = FALSE;
+
+    if (tabpageline_height() < 1)
+	return;
+
+    for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
+	++tabcount;
+
+    tabwidth = Columns / tabcount;
+    if (tabwidth < 6)
+	tabwidth = 6;
+
+    attr = attr_nosel;
+    for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
+    {
+	if (tp->tp_topframe == topframe)
+	{
+	    c = '/';
+	    had_current = TRUE;
+	    attr = attr_sel;
+	}
+	else if (!had_current)
+	    c = '/';
+	else
+	    c = '\\';
+	screen_putchar(c, 0, col++, attr);
+
+	if (tp->tp_topframe != topframe)
+	    attr = attr_nosel;
+
+	if (tp->tp_topframe == topframe)
+	    wp = curwin;
+	else
+	    wp = tp->tp_curwin;
+	if (buf_spname(wp->w_buffer) != NULL)
+	    STRCPY(NameBuff, buf_spname(wp->w_buffer));
+	else
+	    home_replace(wp->w_buffer, wp->w_buffer->b_fname, NameBuff,
+							      MAXPATHL, TRUE);
+	trans_characters(NameBuff, MAXPATHL);
+	len = STRLEN(NameBuff);
+	if (len > tabwidth) /* TODO: multi-byte chars */
+	    len = tabwidth;
+	screen_puts_len(NameBuff, len, 0, col, attr);
+	col += len;
+    }
+
+    screen_putchar('\\', 0, col++, attr);
+    while (col < Columns)
+	screen_putchar('_', 0, col++, attr_fill);
+}
+#endif
 
 #if defined(FEAT_WINDOWS) || defined(FEAT_WILDMENU) || defined(FEAT_STL_OPT)
 /*

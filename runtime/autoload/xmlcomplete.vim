@@ -230,25 +230,42 @@ function! xmlcomplete#CompleteTags(findstart, base)
 
 		for m in sort(attrs)
 			if m =~ '^'.attr
-				if tag !~ '^[?!]' && len(g:xmldata{'_'.g:xmldata_connection[b:xml_namespace]}[tag][1][m]) > 0 && g:xmldata{'_'.g:xmldata_connection[b:xml_namespace]}[tag][1][m][0] =~ '^BOOL$'
-					call add(res, m)
-				elseif m =~ '='
-					call add(res, m)
-				else
-					call add(res, m.'="')
-				endif
+				call add(res, m)
 			elseif m =~ attr
-				if tag !~ '^[?!]' && len(g:xmldata{'_'.g:xmldata_connection[b:xml_namespace]}[tag][1][m]) > 0 && g:xmldata{'_'.g:xmldata_connection[b:xml_namespace]}[tag][1][m][0] =~ '^BOOL$'
-					call add(res, m)
-				elseif m =~ '='
-					call add(res, m)
-				else
-					call add(res2, m.'="')
-				endif
+				call add(res2, m)
 			endif
 		endfor
-
-		return res + res2
+		let menu = res + res2
+		let final_menu = []
+		if has_key(g:xmldata{'_'.g:xmldata_connection[b:xml_namespace]}, 'vimxmlattrinfo')
+			for i in range(len(menu))
+				let item = menu[i]
+				if has_key(g:xmldata{'_'.g:xmldata_connection[b:xml_namespace]}['vimxmlattrinfo'], item)
+					let m_menu = g:xmldata{'_'.g:xmldata_connection[b:xml_namespace]}['vimxmlattrinfo'][item][0]
+					let m_info = g:xmldata{'_'.g:xmldata_connection[b:xml_namespace]}['vimxmlattrinfo'][item][1]
+				else
+					let m_menu = ''
+					let m_info = ''
+				endif
+				if tag !~ '^[?!]' && len(g:xmldata{'_'.g:xmldata_connection[b:xml_namespace]}[tag][1][item]) > 0 && g:xmldata{'_'.g:xmldata_connection[b:xml_namespace]}[tag][1][item][0] =~ '^\(BOOL\|'.item.'\)$'
+					let item = item
+				else
+					let item .= '="'
+				endif
+				let final_menu += [{'word':item, 'menu':m_menu, 'info':m_info}]
+			endfor
+		else
+			for i in range(len(menu))
+				let item = menu[i]
+				if tag !~ '^[?!]' && len(g:xmldata{'_'.g:xmldata_connection[b:xml_namespace]}[tag][1][item]) > 0 && g:xmldata{'_'.g:xmldata_connection[b:xml_namespace]}[tag][1][item][0] =~ '^\(BOOL\|'.item.'\)$'
+					let item = item
+				else
+					let item .= '="'
+				endif
+				let final_menu += [item]
+			endfor
+		endif
+		return final_menu
 
 	endif
 	" Close tag
@@ -308,21 +325,36 @@ function! xmlcomplete#CompleteTags(findstart, base)
 	let tags = g:xmldata{'_'.g:xmldata_connection[b:xml_namespace]}[opentag][0]
 	let context = substitute(context, '^\k*:', '', '')
 
-	if b:xml_namespace == 'DEFAULT'
-		let b:xml_namespace = ''
-	else
-		let b:xml_namespace .= ':'
-	endif
-
 	for m in tags
 		if m =~ '^'.context
-			call add(res, b:xml_namespace.m)
+			call add(res, m)
 		elseif m =~ context
-			call add(res2, b:xml_namespace.m)
+			call add(res2, m)
 		endif
 	endfor
-
-	return res + res2
+	let menu = res + res2
+	if has_key(g:xmldata{'_'.g:xmldata_connection[b:xml_namespace]}, 'vimxmltaginfo')
+		let final_menu = []
+		for i in range(len(menu))
+			let item = menu[i]
+			if has_key(g:xmldata{'_'.g:xmldata_connection[b:xml_namespace]}['vimxmltaginfo'], item)
+				let m_menu = g:xmldata{'_'.g:xmldata_connection[b:xml_namespace]}['vimxmltaginfo'][item][0]
+				let m_info = g:xmldata{'_'.g:xmldata_connection[b:xml_namespace]}['vimxmltaginfo'][item][1]
+			else
+				let m_menu = ''
+				let m_info = ''
+			endif
+			if b:xml_namespace == 'DEFAULT'
+				let xml_namespace = ''
+			else
+				let xml_namespace = b:xml_namespace.':'
+			endif
+			let final_menu += [{'word':xml_namespace.item, 'menu':m_menu, 'info':m_info}]
+		endfor
+	else
+		let final_menu = menu
+	endif
+	return final_menu
 
   endif
 endfunction

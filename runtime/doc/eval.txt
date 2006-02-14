@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 10
+*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1203,6 +1203,7 @@ v:count		The count given for the last Normal mode command.  Can be used
 	:map _x :<C-U>echo "the count is " . v:count<CR>
 <		Note: The <C-U> is required to remove the line range that you
 		get when typing ':' after a count.
+		Also used for evaluating the 'formatexpr' option.
 		"count" also works, for backwards compatibility.
 
 					*v:count1* *count1-variable*
@@ -1624,6 +1625,7 @@ nextnonblank( {lnum})		Number	line nr of non-blank line >= {lnum}
 nr2char( {expr})		String	single char with ASCII value {expr}
 prevnonblank( {lnum})		Number	line nr of non-blank line <= {lnum}
 printf( {fmt}, {expr1}...)	String  format text
+pumvisible()			Number  whether popup menu is visible
 range( {expr} [, {max} [, {stride}]])
 				List	items from {expr} to {max}
 readfile({fname} [, {binary} [, {max}]])
@@ -1647,6 +1649,10 @@ searchdecl({name} [, {global} [, {thisblock}]])
 				Number  search for variable declaration
 searchpair( {start}, {middle}, {end} [, {flags} [, {skip}]])
 				Number	search for other end of start/end pair
+searchpairpos( {start}, {middle}, {end} [, {flags} [, {skip}]])
+				List	search for other end of start/end pair
+searchpos( {pattern} [, {flags}])
+				List	search for {pattern}
 server2client( {clientid}, {string})
 				Number	send reply string
 serverlist()			String	get a list of available servers
@@ -3471,6 +3477,15 @@ nr2char({expr})						*nr2char()*
 		characters.  nr2char(0) is a real NUL and terminates the
 		string, thus results in an empty string.
 
+prevnonblank({lnum})					*prevnonblank()*
+		Return the line number of the first line at or above {lnum}
+		that is not blank.  Example: >
+			let ind = indent(prevnonblank(v:lnum - 1))
+<		When {lnum} is invalid or there is no non-blank line at or
+		above it, zero is returned.
+		Also see |nextnonblank()|.
+
+
 printf({fmt}, {expr1} ...)				*printf()*
 		Return a String with {fmt}, where "%" items are replaced by
 		the formatted form of their respective arguments.  Example: >
@@ -3598,13 +3613,10 @@ printf({fmt}, {expr1} ...)				*printf()*
 		arguments an error is given.  Up to 18 arguments can be used.
 
 
-prevnonblank({lnum})					*prevnonblank()*
-		Return the line number of the first line at or above {lnum}
-		that is not blank.  Example: >
-			let ind = indent(prevnonblank(v:lnum - 1))
-<		When {lnum} is invalid or there is no non-blank line at or
-		above it, zero is returned.
-		Also see |nextnonblank()|.
+pumvisible()						*pumvisible()*
+		Returns non-zero when the popup menu is visible, zero
+		otherwise.  See |ins-completion-menu|.
+
 
 							*E726* *E727*
 range({expr} [, {max} [, {stride}]])				*range()*
@@ -3714,9 +3726,9 @@ remote_send({server}, {string} [, {idvar}])
 		Send the {string} to {server}.  The string is sent as input
 		keys and the function returns immediately.  At the Vim server
 		the keys are not mapped |:map|.
-		If {idvar} is present, it is taken as the name of a
-		variable and a {serverid} for later use with
-		remote_read() is stored there.
+		If {idvar} is present, it is taken as the name of a variable
+		and a {serverid} for later use with remote_read() is stored
+		there.
 		See also |clientserver| |RemoteReply|.
 		This function is not available in the |sandbox|.
 		{only available when compiled with the |+clientserver| feature}
@@ -3919,6 +3931,27 @@ searchpair({start}, {middle}, {end} [, {flags} [, {skip}]])
 
 	:echo searchpair('{', '', '}', 'bW',
 	     \ 'synIDattr(synID(line("."), col("."), 0), "name") =~? "string"')
+<
+							*searchpairpos()*
+searchpairpos({start}, {middle}, {end} [, {flags} [, {skip}]])
+		Same as searchpair(), but returns a List with the line and
+		column position of the match. The first element of the List is
+		the line number and the second element is the byte index of
+		the column position of the match.  If no match is found,
+		returns [0, 0].
+>
+			:let [lnum,col] = searchpairpos('{', '', '}', 'n')
+<
+		See |match-parens| for a bigger and more useful example.
+
+searchpos({pattern} [, {flags}])			*searchpos()*
+		Same as search(), but returns a List with the line and column
+		position of the match. The first element of the List is the
+		line number and the second element is the byte index of the
+		column position of the match. If no match is found, returns
+		[0, 0].
+>
+			:let [lnum,col] = searchpos('mypattern', 'n')
 <
 server2client( {clientid}, {string})			*server2client()*
 		Send a reply string to {clientid}.  The most recent {clientid}

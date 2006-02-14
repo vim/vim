@@ -168,7 +168,7 @@
 typedef struct GuiScrollbar
 {
     long	ident;		/* Unique identifier for each scrollbar */
-    struct window *wp;		/* Scrollbar's window, NULL for bottom */
+    win_T	*wp;		/* Scrollbar's window, NULL for bottom */
     int		type;		/* one of SBAR_{LEFT,RIGHT,BOTTOM} */
     long	value;		/* Represents top line number visible */
 #ifdef FEAT_GUI_ATHENA

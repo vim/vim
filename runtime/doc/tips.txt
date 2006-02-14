@@ -1,4 +1,4 @@
-*tips.txt*      For Vim version 7.0aa.  Last change: 2005 Apr 19
+*tips.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -24,6 +24,7 @@ Compressing the help files			|gzip-helpfile|
 Hex editing					|hex-editing|
 Executing shell commands in a window		|shell-window|
 Using <> notation in autocommands		|autocmd-<>|
+Highlighting matching parens			|match-parens|
 
 ==============================================================================
 Editing C programs					*C-editing*
@@ -442,5 +443,59 @@ forget to double the number of existing backslashes and put a backslash before
 
 For a real buffer menu, user functions should be used (see |:function|), but
 then the <> notation isn't used, which defeats using it as an example here.
+
+==============================================================================
+Highlighting matching parens					*match-parens*
+
+This example shows the use of a few advanced tricks:
+- using the |CursorMoved| autocommand event
+- using |searchpairpos()| to find a matching paren
+- using |:match| to highlight something
+- using a |pattern| to match a specific position in the file.
+
+This should be put in a Vim script file, since it uses script-local variables.
+Note that it doesn't recognize strings or comments in the text.
+>
+	let s:paren_hl_on = 0
+	function s:Highlight_Matching_Paren()
+	  if s:paren_hl_on
+	    match none
+	    let s:paren_hl_on = 0
+	  endif
+
+	  let c_lnum = line('.')
+	  let c_col = col('.')
+
+	  let c = getline(c_lnum)[c_col - 1]
+	  let plist = split(&matchpairs, ':\|,')
+	  let i = index(plist, c)
+	  if i < 0
+	    return
+	  endif
+	  if i % 2 == 0
+	    let s_flags = 'nW'
+	    let c2 = plist[i + 1]
+	  else
+	    let s_flags = 'nbW'
+	    let c2 = c
+	    let c = plist[i - 1]
+	  endif
+	  if c == '['
+	    let c = '\['
+	    let c2 = '\]'
+	  endif
+
+	  let [m_lnum, m_col] = searchpairpos(c, '', c2, s_flags)
+
+	  if m_lnum > 0 && m_lnum >= line('w0') && m_lnum <= line('w$')
+	    exe 'match Search /\(\%' . c_lnum . 'l\%' . c_col .
+		  \ 'c\)\|\(\%' . m_lnum . 'l\%' . m_col . 'c\)/'
+	    let s:paren_hl_on = 1
+	  endif
+	endfunction
+
+	autocmd CursorMoved * call s:Highlight_Matching_Paren()
+	autocmd InsertEnter * match none
+<
 
  vim:tw=78:ts=8:ft=help:norl:

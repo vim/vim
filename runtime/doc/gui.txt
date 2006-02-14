@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 7.0aa.  Last change: 2005 Aug 07
+*gui.txt*       For Vim version 7.0aa.  Last change: 2006 Feb 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -37,7 +37,8 @@ The X11 version of Vim can run both in GUI and in non-GUI mode.  See
 
 					*gui-init* *gvimrc* *.gvimrc* *_gvimrc*
 When the GUI starts up initializations are carried out, in this order:
-- The termcap options are reset to their default value for the GUI.
+- The 'term' option is set to "builgin_gui" and terminal options are reset to
+  their default value for the GUI |terminal-options|.
 - If the system menu file exists, it is sourced.  The name of this file is
   normally "$VIMRUNTIME/menu.vim".  You can check this with ":version".  Also
   see |$VIMRUNTIME|.  To skip loading the system menu include 'M' in

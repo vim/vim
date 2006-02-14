@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.0aa.  Last change: 2006 Feb 09
+*autocmd.txt*   For Vim version 7.0aa.  Last change: 2006 Feb 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -471,6 +471,7 @@ CursorHoldI			Just like CursorHold, but in Insert mode.
 CursorMoved			After the cursor was moved in Normal mode.
 				Not triggered when there is typeahead or when
 				an operator is pending.
+				For an example see |match-parens|.
 				Careful: Don't do anything that the user does
 				not expect or that is slow.
 							*CursorMovedI*

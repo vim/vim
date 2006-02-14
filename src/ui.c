@@ -2897,6 +2897,7 @@ mouse_find_win(rowp, colp)
     frame_T	*fp;
 
     fp = topframe;
+    *rowp -= firstwin->w_winrow;
     for (;;)
     {
 	if (fp->fr_layout == FR_LEAF)

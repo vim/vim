@@ -4312,6 +4312,49 @@ op_format(oap, keep_cursor)
 #endif
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * Implementation of the format operator 'gq' for when using 'formatexpr'.
+ */
+    void
+op_formatexpr(oap)
+    oparg_T	*oap;
+{
+# ifdef FEAT_VISUAL
+    if (oap->is_VIsual)
+	/* When there is no change: need to remove the Visual selection */
+	redraw_curbuf_later(INVERTED);
+# endif
+
+    (void)fex_format(oap->start.lnum, oap->line_count);
+}
+
+    int
+fex_format(lnum, count)
+    linenr_T	lnum;
+    long	count;
+{
+    int		use_sandbox = was_set_insecurely((char_u *)"formatexpr");
+    int		r;
+
+    /*
+     * Set v:lnum to the first line number and v:count to the number of lines.
+     */
+    set_vim_var_nr(VV_LNUM, lnum);
+    set_vim_var_nr(VV_COUNT, count);
+
+    /*
+     * Evaluate the function.
+     */
+    if (use_sandbox)
+	++sandbox;
+    r = eval_to_number(curbuf->b_p_fex);
+    if (use_sandbox)
+	--sandbox;
+    return r;
+}
+#endif
+
 /*
  * Format "line_count" lines, starting at the cursor position.
  * When "line_count" is negative, format until the end of the paragraph.
