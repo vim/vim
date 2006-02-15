@@ -1292,6 +1292,7 @@ again:
 #endif
 
     busy = FALSE;
+
     /*
      * We could have been called again while redrawing the screen.
      * Need to do it all again with the latest size then.
@@ -1405,6 +1406,9 @@ gui_set_shellsize(mustset, fit_to_display)
 
     min_width = base_width + MIN_COLUMNS * gui.char_width;
     min_height = base_height + MIN_LINES * gui.char_height;
+# ifdef FEAT_WINDOWS
+    min_height += tabpageline_height() * gui.char_height;
+# endif
 
     gui_mch_set_shellsize(width, height, min_width, min_height,
 						     base_width, base_height);
@@ -3070,6 +3074,8 @@ gui_menu_cb(menu)
 }
 #endif
 
+static int	prev_which_scrollbars[3] = {-1, -1, -1};
+
 /*
  * Set which components are present.
  * If "oldval" is not NULL, "oldval" is the previous value, the new * value is
@@ -3080,7 +3086,6 @@ gui_menu_cb(menu)
 gui_init_which_components(oldval)
     char_u	*oldval;
 {
-    static int	prev_which_scrollbars[3] = {-1, -1, -1};
 #ifdef FEAT_MENU
     static int	prev_menu_is_active = -1;
 #endif
@@ -3277,6 +3282,32 @@ gui_init_which_components(oldval)
 /*
  * Scrollbar stuff:
  */
+
+#if defined(FEAT_WINDOWS) || defined(PROTO)
+/*
+ * Remove all scrollbars.  Used before switching to another tab page.
+ */
+    void
+gui_remove_scrollbars()
+{
+    int	    i;
+    win_T   *wp;
+
+    for (i = 0; i < 3; i++)
+    {
+	if (i == SBAR_BOTTOM)
+	    gui_mch_enable_scrollbar(&gui.bottom_sbar, FALSE);
+	else
+	{
+	    FOR_ALL_WINDOWS(wp)
+	    {
+		gui_do_scrollbar(wp, i, FALSE);
+	    }
+	}
+	prev_which_scrollbars[i] = -1;
+    }
+}
+#endif
 
     void
 gui_create_scrollbar(sb, type, wp)
