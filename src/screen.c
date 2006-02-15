@@ -701,8 +701,14 @@ updateWindow(wp)
     if (clip_star.available && clip_isautosel())
 	clip_update_selection();
 #endif
+
     win_update(wp);
+
 #ifdef FEAT_WINDOWS
+    /* When the screen was cleared redraw the tab pages line. */
+    if (redraw_tabpage)
+	draw_tabpage();
+
     if (wp->w_redr_status
 # ifdef FEAT_CMDL_INFO
 	    || p_ru
@@ -7057,6 +7063,9 @@ screenclear2()
 
     win_rest_invalid(firstwin);
     redraw_cmdline = TRUE;
+#ifdef FEAT_WINDOWS
+    redraw_tabpage = TRUE;
+#endif
     if (must_redraw == CLEAR)	/* no need to clear again */
 	must_redraw = NOT_VALID;
     compute_cmdrow();
@@ -8468,10 +8477,13 @@ draw_tabpage()
 	    c = '/';
 	else
 	    c = '\\';
-	screen_putchar(c, 0, col++, attr);
+	if (t_colors < 8)
+	    screen_putchar(c, 0, col++, attr);
 
 	if (tp->tp_topframe != topframe)
 	    attr = attr_nosel;
+
+	screen_putchar(' ', 0, col++, attr);
 
 	if (tp->tp_topframe == topframe)
 	    wp = curwin;
@@ -8488,11 +8500,17 @@ draw_tabpage()
 	    len = tabwidth;
 	screen_puts_len(NameBuff, len, 0, col, attr);
 	col += len;
+	screen_putchar(' ', 0, col++, attr);
     }
 
-    screen_putchar('\\', 0, col++, attr);
-    while (col < Columns)
-	screen_putchar('_', 0, col++, attr_fill);
+    if (t_colors < 8)
+    {
+	screen_putchar('\\', 0, col++, attr);
+	c = '_';
+    }
+    else
+	c = ' ';
+    screen_fill(0, 1, col, (int)Columns, c, c, attr_fill);
 }
 #endif
 

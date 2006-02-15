@@ -2181,6 +2181,13 @@ static struct vimoption
 			    {(char_u *)0L, (char_u *)0L}
 #endif
 			    },
+    {"tabline",	    "tal",  P_NUM|P_VI_DEF|P_RALL,
+#ifdef FEAT_WINDOWS
+			    (char_u *)&p_tal, PV_NONE,
+#else
+			    (char_u *)NULL, PV_NONE,
+#endif
+			    {(char_u *)1L, (char_u *)0L}},
     {"tabstop",	    "ts",   P_NUM|P_VI_DEF|P_RBUF,
 			    (char_u *)&p_ts, PV_TS,
 			    {(char_u *)8L, (char_u *)0L}},
@@ -7258,6 +7265,12 @@ set_num_option(opt_idx, varp, value, errbuf, errbuflen, opt_flags)
     else if (pp == &p_ls)
     {
 	last_status(FALSE);
+    }
+
+    /* (re)set tab page line */
+    else if (pp == &p_tal)
+    {
+	shell_new_rows();	/* recompute window positions and heights */
     }
 #endif
 

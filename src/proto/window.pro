@@ -26,6 +26,7 @@ void shell_new_rows __ARGS((void));
 void shell_new_columns __ARGS((void));
 void win_size_save __ARGS((garray_T *gap));
 void win_size_restore __ARGS((garray_T *gap));
+int win_comp_pos __ARGS((void));
 void win_setheight __ARGS((int height));
 void win_setheight_win __ARGS((int height, win_T *win));
 void win_setwidth __ARGS((int width));

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 14
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -32,22 +32,20 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 Support WINDOW TABS.  Works like several pages, each with their own split
 windows.  Let's call them "tab pages".
-
-    todo:
-    - ":qa"?
-    - "2gt" doesn't restore syntax HL.  GUI: scrollbars are wrong.
-    - line at top of frame with tabs.  'tabline' option 0/1/2 like 'laststatus'
-	Use the name of the first buffer in the tab (ignoring the help window,
-	unless it's the only one).  Add a number for the window count.
+    - Mouse click in tab name should select that tab.
+    - line at top of frame with tabs.
+	for the name ignore the help window, unless it's the only one).
+	Add a number for the window count?
+	Add a '+' if one of the windows is modified?
 	Add 'tabtext' option, like 'statusline'.
-	Select tab with mouse.
+        Add an "X" to close the current tab (like firefox).
     - When deleting a buffer also close windows in other tab pages.
-    - check all places where (firstwin == lastwin) is used (and vise versa)
+    - check all places where firstwin and lastwin are used
     - check all places wheren only_one_window() is used.
-    - When Vim window is resized all tabs must be resized.
+    - Add tabpage(): returns current tab page number.
     - E999
     - ":tabclose N" close tab N
-    docs:
+    - docs:
 	:tabedit
 	:tabfind
 	:tab N
@@ -58,20 +56,19 @@ windows.  Let's call them "tab pages".
 	"gt": Use "1gt" - "99gt" to switch to another tab.  "gt" goes to the
 	     next one.  Hint in docs: To mess with another buffer, without
 	     changing the window layout, do this in another tab.
-
-    add GUI Tabs for some systems.
-    Patch for GTK 1.2 passed on by Christian Michon, 2004 Jan 6.
-    Simple patch for GTK by Luis M (nov 7).
-
-    Don't forget to provide an "X" to close the current tab.
-
-    Need to be able to search the windows in inactive tabs, e.g. for the
-    quickfix window.
-
+	'tabline' values 0/1/2
+    - add GUI Tabs for some systems.
+      Patch for GTK 1.2 passed on by Christian Michon, 2004 Jan 6.
+      Simple patch for GTK by Luis M (nov 7).
+    - Need to be able to search the windows in inactive tabs, e.g. for the
+      quickfix window.
 
 Crash with X command server (Ciaran McCreesh).
 
 Ctags still hasn't included the patch...
+
+"fsutil hardlink" can create a hard link on an NTFS file system. (Daniel
+Einspanjer)  What library function can detect that?
 
 spelling:
 - Also use the spelling dictionary for dictionary completion.

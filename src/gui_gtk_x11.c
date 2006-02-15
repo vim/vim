@@ -3456,6 +3456,9 @@ update_window_manager_hints(void)
      * otherwise the hints don't work. */
     width  = gui_get_base_width();
     height = gui_get_base_height();
+# ifdef FEAT_MENU
+    height += tabpageline_height() * gui.char_height;
+# endif
 # ifdef HAVE_GTK2
     width  += get_menu_tool_width();
     height += get_menu_tool_height();

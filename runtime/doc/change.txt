@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.0aa.  Last change: 2006 Feb 13
+*change.txt*    For Vim version 7.0aa.  Last change: 2006 Feb 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1171,7 +1171,7 @@ gq{motion}		Format the lines that {motion} moves over.
 			Formatting is done with one of three methods:
 			1. If 'formatexpr' is not empty the expression is
 			   evaluated.  This can differ for each buffer.
-			2. If 'formatprg' is not mepty an external program
+			2. If 'formatprg' is not empty an external program
 			   is used.
 			3. Otherise formatting is done internally.
 

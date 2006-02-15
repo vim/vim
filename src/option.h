@@ -577,6 +577,7 @@ EXTERN char_u	*p_lispwords;	/* 'lispwords' */
 #endif
 #ifdef FEAT_WINDOWS
 EXTERN long	p_ls;		/* 'laststatus' */
+EXTERN long	p_tal;		/* 'tabline' */
 #endif
 EXTERN char_u	*p_lcs;		/* 'listchars' */
 
