@@ -16,7 +16,6 @@
 static int path_is_url __ARGS((char_u *p));
 #if defined(FEAT_WINDOWS) || defined(PROTO)
 static int win_split_ins __ARGS((int size, int flags, win_T *newwin, int dir));
-static int win_comp_pos __ARGS((void));
 static void frame_comp_pos __ARGS((frame_T *topfrp, int *row, int *col));
 static void frame_setheight __ARGS((frame_T *curfrp, int height));
 #ifdef FEAT_VERTSPLIT
@@ -2897,9 +2896,16 @@ current_tabpage()
 leave_tabpage(tp)
     tabpage_T	*tp;
 {
+#if defined(FEAT_GUI)
+    /* Remove the scrollbars.  They may be added back later. */
+    if (gui.in_use)
+	gui_remove_scrollbars();
+#endif
     tp->tp_curwin = curwin;
     tp->tp_firstwin = firstwin;
     tp->tp_lastwin = lastwin;
+    tp->tp_old_Rows = Rows;
+    tp->tp_old_Columns = Columns;
     firstwin = NULL;
     lastwin = NULL;
 }
@@ -2913,6 +2919,8 @@ enter_tabpage(tp, old_curbuf)
     tabpage_T	*tp;
     buf_T	*old_curbuf;
 {
+    int		old_off = tp->tp_firstwin->w_winrow;
+
     firstwin = tp->tp_firstwin;
     lastwin = tp->tp_lastwin;
     topframe = tp->tp_topframe;
@@ -2923,14 +2931,29 @@ enter_tabpage(tp, old_curbuf)
 	apply_autocmds(EVENT_BUFENTER, NULL, NULL, FALSE, curbuf);
 #endif
 
-    /* status line may appear or disappear */
-    last_status(FALSE);
+    last_status(FALSE);		/* status line may appear or disappear */
+    (void)win_comp_pos();	/* recompute w_winrow for all windows */
 
-#if defined(FEAT_GUI) && defined(FEAT_VERTSPLIT)
-    /* When 'guioptions' includes 'L' or 'R' may have to add or remove
-     * scrollbars. */
-    if (gui.in_use && !win_hasvertsplit())
+    /* The tabpage line may have appeared or disappeared, may need to resize
+     * the frames for that.  When the Vim window was resized need to update
+     * frame sizes too. */
+    if (tp->tp_old_Rows != Rows || old_off != firstwin->w_winrow)
+	shell_new_rows();
+#ifdef FEAT_VERTSPLIT
+    if (tp->tp_old_Columns != Columns)
+	shell_new_columns();	/* update window widths */
+#endif
+
+#if defined(FEAT_GUI)
+    /* When 'guioptions' includes 'L' or 'R' may have to remove or add
+     * scrollbars.  Have to update them anyway. */
+    if (gui.in_use)
+    {
+	out_flush();
 	gui_init_which_components(NULL);
+	gui_update_scrollbars(TRUE);
+    }
+    need_mouse_correct = TRUE;
 #endif
 
     redraw_all_later(CLEAR);
@@ -3683,7 +3706,7 @@ win_size_restore(gap)
  * frames.
  * Returns the row just after the last window.
  */
-    static int
+    int
 win_comp_pos()
 {
     int		row = tabpageline_height();
@@ -4781,14 +4804,16 @@ last_status_rec(fr, statusline)
 }
 
 /*
- * Return TRUE if the tab page line is to be drawn.
+ * Return the number of lines used by the tab page line.
  */
     int
 tabpageline_height()
 {
-    /* TODO: option to tell when to show the tabs. */
-    if (first_tabpage->tp_next == NULL)
-	return 0;
+    switch (p_tal)
+    {
+	case 0: return 0;
+	case 1: return (first_tabpage->tp_next == NULL) ? 0 : 1;
+    }
     return 1;
 }
 
