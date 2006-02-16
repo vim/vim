@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.0aa.  Last change: 2006 Jan 23
+*syntax.txt*	For Vim version 7.0aa.  Last change: 2006 Feb 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4257,9 +4257,8 @@ But for using 16 colors in an rxvt these should work with terminfo: >
 <
 							*colortest.vim*
 To test your color setup, a file has been included in the Vim distribution.
-To use it, execute these commands: >
-   :e $VIMRUNTIME/syntax/colortest.vim
-   :so %
+To use it, execute this command: >
+   :runtime syntax/colortest.vim
 
 Some versions of xterm (and other terminals, like the Linux console) can
 output lighter foreground colors, even though the number of colors is defined

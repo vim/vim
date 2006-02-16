@@ -2458,6 +2458,7 @@ changed()
 	ml_setflags(curbuf);
 #ifdef FEAT_WINDOWS
 	check_status(curbuf);
+	redraw_tabpage = TRUE;
 #endif
 #ifdef FEAT_TITLE
 	need_maketitle = TRUE;	    /* set window title later */
@@ -2847,6 +2848,7 @@ unchanged(buf, ff)
 	    save_file_ff(buf);
 #ifdef FEAT_WINDOWS
 	check_status(buf);
+	redraw_tabpage = TRUE;
 #endif
 #ifdef FEAT_TITLE
 	need_maketitle = TRUE;	    /* set window title later */

@@ -6742,6 +6742,10 @@ screenalloc(clear)
     sattr_T	    *new_ScreenAttrs;
     unsigned	    *new_LineOffset;
     char_u	    *new_LineWraps;
+#ifdef FEAT_WINDOWS
+    char_u	    *new_TabPageIdxs;
+    tabpage_T	    *tp;
+#endif
     static int	    entered = FALSE;		/* avoid recursiveness */
     static int	    did_outofmem_msg = FALSE;	/* did outofmem message */
 
@@ -6788,10 +6792,10 @@ screenalloc(clear)
      * size is wrong.
      */
 #ifdef FEAT_WINDOWS
-    for (wp = firstwin; wp; wp = wp->w_next)
+    FOR_ALL_TAB_WINDOWS(tp, wp)
 	win_free_lsize(wp);
 #else
-	win_free_lsize(curwin);
+    win_free_lsize(curwin);
 #endif
 
     new_ScreenLines = (schar_T *)lalloc((long_u)(
@@ -6815,6 +6819,9 @@ screenalloc(clear)
     new_LineOffset = (unsigned *)lalloc((long_u)(
 					 Rows * sizeof(unsigned)), FALSE);
     new_LineWraps = (char_u *)lalloc((long_u)(Rows * sizeof(char_u)), FALSE);
+#ifdef FEAT_WINDOWS
+    new_TabPageIdxs = (char_u *)lalloc((long_u)(Columns * sizeof(char_u)), FALSE);
+#endif
 
     FOR_ALL_WINDOWS(wp)
     {
@@ -6836,6 +6843,9 @@ screenalloc(clear)
 	    || new_ScreenAttrs == NULL
 	    || new_LineOffset == NULL
 	    || new_LineWraps == NULL
+#ifdef FEAT_WINDOWS
+	    || new_TabPageIdxs == NULL
+#endif
 	    || outofmem)
     {
 	if (ScreenLines != NULL || !did_outofmem_msg)
@@ -6865,6 +6875,10 @@ screenalloc(clear)
 	new_LineOffset = NULL;
 	vim_free(new_LineWraps);
 	new_LineWraps = NULL;
+#ifdef FEAT_WINDOWS
+	vim_free(new_TabPageIdxs);
+	new_TabPageIdxs = NULL;
+#endif
     }
     else
     {
@@ -6956,6 +6970,9 @@ screenalloc(clear)
     ScreenAttrs = new_ScreenAttrs;
     LineOffset = new_LineOffset;
     LineWraps = new_LineWraps;
+#ifdef FEAT_WINDOWS
+    TabPageIdxs = new_TabPageIdxs;
+#endif
 
     /* It's important that screen_Rows and screen_Columns reflect the actual
      * size of ScreenLines[].  Set them before calling anything. */
@@ -7005,6 +7022,9 @@ free_screenlines()
     vim_free(ScreenAttrs);
     vim_free(LineOffset);
     vim_free(LineWraps);
+#ifdef FEAT_WINDOWS
+    vim_free(TabPageIdxs);
+#endif
 }
 
     void
@@ -8443,9 +8463,13 @@ draw_tabpage()
     tabpage_T	*tp;
     int		tabwidth;
     int		col = 0;
+    int		scol;
     int		had_current = FALSE;
     int		attr;
     win_T	*wp;
+    win_T	*cwp;
+    int		wincount;
+    int		modified;
     int		c;
     int		len;
     int		attr_sel = hl_attr(HLF_TPS);
@@ -8460,13 +8484,16 @@ draw_tabpage()
     for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
 	++tabcount;
 
-    tabwidth = Columns / tabcount;
+    tabwidth = (Columns - 1 + tabcount / 2) / tabcount;
     if (tabwidth < 6)
 	tabwidth = 6;
 
     attr = attr_nosel;
-    for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
+    tabcount = 0;
+    for (tp = first_tabpage; tp != NULL && col < Columns; tp = tp->tp_next)
     {
+	scol = col;
+
 	if (tp->tp_topframe == topframe)
 	{
 	    c = '/';
@@ -8486,21 +8513,55 @@ draw_tabpage()
 	screen_putchar(' ', 0, col++, attr);
 
 	if (tp->tp_topframe == topframe)
-	    wp = curwin;
+	{
+	    cwp = curwin;
+	    wp = firstwin;
+	}
 	else
-	    wp = tp->tp_curwin;
-	if (buf_spname(wp->w_buffer) != NULL)
-	    STRCPY(NameBuff, buf_spname(wp->w_buffer));
+	{
+	    cwp = tp->tp_curwin;
+	    wp = tp->tp_firstwin;
+	}
+
+	modified = FALSE;
+	for (wincount = 0; wp != NULL; wp = wp->w_next, ++wincount)
+	    if (bufIsChanged(wp->w_buffer))
+		modified = TRUE;
+	if (modified || wincount > 1)
+	{
+	    if (wincount > 1)
+	    {
+		vim_snprintf((char *)NameBuff, MAXPATHL, "#%d", wincount);
+		len = STRLEN(NameBuff);
+		screen_puts_len(NameBuff, len, 0, col, attr);
+		col += len;
+	    }
+	    if (modified)
+		screen_puts_len((char_u *)"+", 2, 0, col++, attr);
+	    screen_putchar(' ', 0, col++, attr);
+	}
+
+	if (buf_spname(cwp->w_buffer) != NULL)
+	    STRCPY(NameBuff, buf_spname(cwp->w_buffer));
 	else
-	    home_replace(wp->w_buffer, wp->w_buffer->b_fname, NameBuff,
+	    home_replace(cwp->w_buffer, cwp->w_buffer->b_fname, NameBuff,
 							      MAXPATHL, TRUE);
 	trans_characters(NameBuff, MAXPATHL);
 	len = STRLEN(NameBuff);
-	if (len > tabwidth) /* TODO: multi-byte chars */
-	    len = tabwidth;
-	screen_puts_len(NameBuff, len, 0, col, attr);
-	col += len;
+	if (len > scol - col + tabwidth - 1) /* TODO: multi-byte chars */
+	    len = scol - col + tabwidth - 1;
+	if (len > 0)
+	{
+	    screen_puts_len(NameBuff, len, 0, col, attr);
+	    col += len;
+	}
 	screen_putchar(' ', 0, col++, attr);
+
+	/* Store the tab page number in TabPageIdxs[], so that jump_to_mouse()
+	 * knows where each one is. */
+	++tabcount;
+	while (scol < col)
+	    TabPageIdxs[scol++] = tabcount;
     }
 
     if (t_colors < 8)
@@ -8511,6 +8572,14 @@ draw_tabpage()
     else
 	c = ' ';
     screen_fill(0, 1, col, (int)Columns, c, c, attr_fill);
+
+    /* Put an "X" for closing the current tab if there are several. */
+    if (first_tabpage->tp_next != NULL)
+	screen_putchar('X', 0, (int)Columns - 1, attr_nosel);
+
+    /* Clicking outside of tabs has no effect. */
+    while (scol < Columns)
+	TabPageIdxs[scol++] = 0xff;
 }
 #endif
 

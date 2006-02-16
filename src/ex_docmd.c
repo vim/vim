@@ -148,7 +148,7 @@ static void	ex_cquit __ARGS((exarg_T *eap));
 static void	ex_quit_all __ARGS((exarg_T *eap));
 #ifdef FEAT_WINDOWS
 static void	ex_close __ARGS((exarg_T *eap));
-static void	ex_win_close __ARGS((int forceit, win_T *win));
+static void	ex_win_close __ARGS((int forceit, win_T *win, tabpage_T *tp));
 static void	ex_only __ARGS((exarg_T *eap));
 static void	ex_all __ARGS((exarg_T *eap));
 static void	ex_resize __ARGS((exarg_T *eap));
@@ -6144,7 +6144,7 @@ ex_close(eap)
     else
 # endif
 	if (!text_locked())
-	    ex_win_close(eap->forceit, curwin);
+	    ex_win_close(eap->forceit, curwin, NULL);
 }
 
 #ifdef FEAT_QUICKFIX
@@ -6160,16 +6160,21 @@ ex_pclose(eap)
     for (win = firstwin; win != NULL; win = win->w_next)
 	if (win->w_p_pvw)
 	{
-	    ex_win_close(eap->forceit, win);
+	    ex_win_close(eap->forceit, win, NULL);
 	    break;
 	}
 }
 #endif
 
+/*
+ * Close window "win" and take care of handling closing the last window for a
+ * modified buffer.
+ */
     static void
-ex_win_close(forceit, win)
+ex_win_close(forceit, win, tp)
     int		forceit;
     win_T	*win;
+    tabpage_T	*tp;		/* NULL or the tab page "win" is in */
 {
     int		need_hide;
     buf_T	*buf = win->w_buffer;
@@ -6196,36 +6201,90 @@ ex_win_close(forceit, win)
 #ifdef FEAT_GUI
     need_mouse_correct = TRUE;
 #endif
+
     /* free buffer when not hiding it or when it's a scratch buffer */
-    win_close(win, !need_hide && !P_HID(buf));
+    if (tp == NULL)
+	win_close(win, !need_hide && !P_HID(buf));
+    else
+	win_close_othertab(win, !need_hide && !P_HID(buf), tp);
 }
 
 /*
- * ":tabclose": close current tab page, unless it is the last one
+ * ":tabclose": close current tab page, unless it is the last one.
+ * ":tabclose N": close tab page N.
  */
     static void
 ex_tabclose(eap)
     exarg_T	*eap;
 {
+    tabpage_T	*tp;
+
 # ifdef FEAT_CMDWIN
     if (cmdwin_type != 0)
 	cmdwin_result = K_IGNORE;
     else
 # endif
-	if (!text_locked())
+	if (first_tabpage->tp_next == NULL)
+	    EMSG(_("E999: Cannot close last tab page"));
+	else
 	{
-	    if (first_tabpage->tp_next == NULL)
-		EMSG(_("E999: Cannot close last tab page"));
-	    else
+	    if (eap->addr_count > 0)
 	    {
-		/* First close all the windows but the current one.  If that
-		 * worked then close the last window in this tab, that will
-		 * close it. */
-		ex_only(eap);
-		if (lastwin == firstwin)
-		    ex_win_close(eap->forceit, curwin);
+		tp = find_tabpage((int)eap->line2);
+		if (tp == NULL)
+		{
+		    beep_flush();
+		    return;
+		}
+		if (tp->tp_topframe != topframe)
+		{
+		    tabpage_close_other(tp, eap->forceit);
+		    return;
+		}
 	    }
+	    if (!text_locked())
+		tabpage_close(eap->forceit);
 	}
+}
+
+/*
+ * Close the current tab page.
+ */
+    void
+tabpage_close(forceit)
+    int	    forceit;
+{
+    /* First close all the windows but the current one.  If that worked then
+     * close the last window in this tab, that will close it. */
+    close_others(TRUE, forceit);
+    if (lastwin == firstwin)
+	ex_win_close(forceit, curwin, NULL);
+# ifdef FEAT_GUI
+    need_mouse_correct = TRUE;
+# endif
+}
+
+/*
+ * Close tab page "tp", which is not the current tab page.
+ * Note that autocommands may make "tp" invalid.
+ */
+    void
+tabpage_close_other(tp, forceit)
+    tabpage_T	*tp;
+    int		forceit;
+{
+    int		done = 0;
+
+    /* Limit to 1000 windows, autocommands may add a window while we close
+     * one.  OK, so I'm paranoid... */
+    while (++done < 1000)
+    {
+	ex_win_close(forceit, tp->tp_firstwin, tp);
+
+	/* Autocommands may delete the tab page under our fingers. */
+	if (!valid_tabpage(tp))
+	    break;
+    }
 }
 
 /*
@@ -6689,13 +6748,14 @@ alist_slash_adjust()
     int		i;
 # ifdef FEAT_WINDOWS
     win_T	*wp;
+    tabpage_T	*tp;
 # endif
 
     for (i = 0; i < GARGCOUNT; ++i)
 	if (GARGLIST[i].ae_fname != NULL)
 	    slash_adjust(GARGLIST[i].ae_fname);
 # ifdef FEAT_WINDOWS
-    for (wp = firstwin; wp != NULL; wp = wp->w_next)
+    FOR_ALL_TAB_WINDOWS(tp, wp)
 	if (wp->w_alist != &global_alist)
 	    for (i = 0; i < WARGCOUNT(wp); ++i)
 		if (WARGLIST(wp)[i].ae_fname != NULL)
@@ -6925,7 +6985,8 @@ ex_tabedit(eap)
 # ifdef FEAT_SCROLLBIND
 	curwin->w_p_scb = FALSE;
 # endif
-	do_exedit(eap, NULL);
+	if (*eap->arg != NUL)
+	    do_exedit(eap, NULL);
     }
 
 # ifdef FEAT_BROWSE

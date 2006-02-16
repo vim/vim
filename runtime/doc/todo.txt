@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 15
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -32,20 +32,23 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 Support WINDOW TABS.  Works like several pages, each with their own split
 windows.  Let's call them "tab pages".
-    - Mouse click in tab name should select that tab.
-    - line at top of frame with tabs.
-	for the name ignore the help window, unless it's the only one).
-	Add a number for the window count?
-	Add a '+' if one of the windows is modified?
-	Add 'tabtext' option, like 'statusline'.
-        Add an "X" to close the current tab (like firefox).
-    - When deleting a buffer also close windows in other tab pages.
-    - check all places where firstwin and lastwin are used
+    - check all places where lastwin is used
+    - check all places where win_valid() is used
+    - check all places where last_window() is used
+    - ":tabclose N" close tab N
+    - Add ":tabonly" - close all other tabs.
     - check all places wheren only_one_window() is used.
     - Add tabpage(): returns current tab page number.
+    - ":tabsplit" makes a copy of the current tab page.
+    - Add TabLeavePre and TabEnterPost autocommands
+    - line at top of frame with tabs.
+	Add 'tabtext' option, like 'statusline'.
+    - make a diff for each tab page separately.
     - E999
-    - ":tabclose N" close tab N
     - docs:
+	General remark: commands that work on windows only work on the windows
+	    in the current tab page.  Including :windo.
+	Session file only contains the current tab page.
 	:tabedit
 	:tabfind
 	:tab N
@@ -57,6 +60,12 @@ windows.  Let's call them "tab pages".
 	     next one.  Hint in docs: To mess with another buffer, without
 	     changing the window layout, do this in another tab.
 	'tabline' values 0/1/2
+	mouse click in tabline:
+	    select a tab page
+	    X closes current tab page
+	:argall and :ball only opens window for buffers that are not in any
+	      window in any tab page
+	:diffoff only in the current tab page
     - add GUI Tabs for some systems.
       Patch for GTK 1.2 passed on by Christian Michon, 2004 Jan 6.
       Simple patch for GTK by Luis M (nov 7).
@@ -65,10 +74,14 @@ windows.  Let's call them "tab pages".
 
 Crash with X command server (Ciaran McCreesh).
 
-Ctags still hasn't included the patch...
+Ctags still hasn't included the patch.  Darren is looking for someone to do
+maintanance.
 
 "fsutil hardlink" can create a hard link on an NTFS file system. (Daniel
 Einspanjer)  What library function can detect that?
+
+Win32: use GetFileInformationByHandle() to detect hard links on NTFS?
+(George Reilly)
 
 spelling:
 - Also use the spelling dictionary for dictionary completion.

@@ -1,4 +1,4 @@
-*tips.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 13
+*tips.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -494,7 +494,7 @@ Note that it doesn't recognize strings or comments in the text.
 	  endif
 	endfunction
 
-	autocmd CursorMoved * call s:Highlight_Matching_Paren()
+	autocmd CursorMoved,CursorMovedI * call s:Highlight_Matching_Paren()
 	autocmd InsertEnter * match none
 <
 

@@ -726,7 +726,7 @@ static VALUE window_s_count()
     win_T	*w;
     int n = 0;
 
-    for (w = firstwin; w; w = w->w_next)
+    for (w = firstwin; w != NULL; w = w->w_next)
 	n++;
     return INT2NUM(n);
 #else

@@ -2790,7 +2790,9 @@ set_fileformat(t, opt_flags)
 	set_string_option_direct((char_u *)"ff", -1, (char_u *)p,
 							OPT_FREE | opt_flags);
 #ifdef FEAT_WINDOWS
+    /* This may cause the buffer to become (un)modified. */
     check_status(curbuf);
+    redraw_tabpage = TRUE;
 #endif
 #ifdef FEAT_TITLE
     need_maketitle = TRUE;	    /* set window title later */

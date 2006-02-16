@@ -1075,6 +1075,7 @@ diff_win_options(wp, addbuf)
 
 /*
  * Set options not to show diffs.  For the current window or all windows.
+ * Only in the current tab page.
  */
     void
 ex_diffoff(eap)

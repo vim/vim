@@ -2421,6 +2421,37 @@ do_mouse(oap, c, dir, count, fixindent)
 
     start_visual.lnum = 0;
 
+#ifdef FEAT_WINDOWS
+    /* Check for clicking in the tab page line. */
+    if (mouse_row == 0 && firstwin->w_winrow > 0)
+    {
+	got_click = FALSE;	/* ignore mouse-up and drag events */
+
+	/* click in last column closes the current tab page. */
+	if (mouse_col == Columns - 1 && first_tabpage->tp_next != NULL)
+	{
+	    tabpage_close(FALSE);
+	    return TRUE;
+	}
+
+	/* click in a tab selects that tab page */
+	if (is_click
+# ifdef FEAT_CMDWIN
+		&& cmdwin_type == 0
+# endif
+		&& mouse_col < Columns && TabPageIdxs[mouse_col] != 0xff)
+	{
+	    goto_tabpage(TabPageIdxs[mouse_col]);
+
+	    /* It's like clicking on the status line of a window. */
+	    if (curwin != old_curwin)
+		end_visual_mode();
+	    return TRUE;
+	}
+	return FALSE;
+    }
+#endif
+
     /*
      * When 'mousemodel' is "popup" or "popup_setpos", translate mouse events:
      * right button up   -> pop-up menu

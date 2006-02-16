@@ -1423,7 +1423,8 @@ get_window_count(void *data, int argc, Scheme_Object **argv)
     win_T   *w;
     int	    n = 0;
 
-    for (w = firstwin; w; w = w->w_next) ++n;
+    for (w = firstwin; w != NULL; w = w->w_next)
+	++n;
     return scheme_make_integer(n);
 }
 
@@ -1439,7 +1440,7 @@ get_window_list(void *data, int argc, Scheme_Object **argv)
     buf = get_buffer_arg(prim->name, 0, argc, argv);
     list = scheme_null;
 
-    for (w = firstwin; w; w = w->w_next)
+    for (w = firstwin; w != NULL; w = w->w_next)
         if (w->w_buffer == buf->buf)
 	    list = scheme_make_pair(window_new(w), list);
 
@@ -1500,7 +1501,7 @@ get_window_by_num(void *data, int argc, Scheme_Object **argv)
     if (fnum < 1)
 	scheme_signal_error(_("window index is out of range"));
 
-    for (win = firstwin; win; win = win->w_next, --fnum)
+    for (win = firstwin; win != NULL; win = win->w_next, --fnum)
         if (fnum == 1)	    /* to be 1-based */
 	    return window_new(win);
 

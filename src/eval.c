@@ -15509,11 +15509,13 @@ var2fpos(varp, lnum)
 	pos.col = 0;
 	if (name[1] == '0')		/* "w0": first visible line */
 	{
+	    update_topline();
 	    pos.lnum = curwin->w_topline;
 	    return &pos;
 	}
 	else if (name[1] == '$')	/* "w$": last visible line */
 	{
+	    validate_botline();
 	    pos.lnum = curwin->w_botline - 1;
 	    return &pos;
 	}

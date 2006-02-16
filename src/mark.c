@@ -1500,11 +1500,12 @@ write_viminfo_marks(fp_out)
     int		i;
 #ifdef FEAT_WINDOWS
     win_T	*win;
+    tabpage_T	*tp;
 
     /*
      * Set b_last_cursor for the all buffers that have a window.
      */
-    for (win = firstwin; win != NULL; win = win->w_next)
+    FOR_ALL_TAB_WINDOWS(tp, win)
 	set_last_cursor(win);
 #else
 	set_last_cursor(curwin);

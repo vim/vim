@@ -2653,6 +2653,7 @@ static char *(p_cot_values[]) = {"menu", "longest", NULL};
 
 static void set_option_default __ARGS((int, int opt_flags, int compatible));
 static void set_options_default __ARGS((int opt_flags));
+static char_u *term_bg_default __ARGS((void));
 static void did_set_option __ARGS((int opt_idx, int opt_flags, int new_value));
 static char_u *illegal_char __ARGS((char_u *, int));
 static int string_to_key __ARGS((char_u *arg));
@@ -3200,6 +3201,7 @@ set_options_default(opt_flags)
     int		i;
 #ifdef FEAT_WINDOWS
     win_T	*wp;
+    tabpage_T	*tp;
 #endif
 
     for (i = 0; !istermoption(&options[i]); i++)
@@ -3208,7 +3210,7 @@ set_options_default(opt_flags)
 
 #ifdef FEAT_WINDOWS
     /* The 'scroll' option must be computed for all windows. */
-    for (wp = firstwin; wp != NULL; wp = wp->w_next)
+    FOR_ALL_TAB_WINDOWS(tp, wp)
 	win_comp_scroll(wp);
 #else
 	win_comp_scroll(curwin);
@@ -3306,39 +3308,20 @@ set_init_2()
 	p_window = Rows - 1;
     set_number_default("window", Rows - 1);
 
+    /* For DOS console the default is always black. */
 #if !((defined(MSDOS) || defined(OS2) || defined(WIN3264)) && !defined(FEAT_GUI))
+    /*
+     * If 'background' wasn't set by the user, try guessing the value,
+     * depending on the terminal name.  Only need to check for terminals
+     * with a dark background, that can handle color.
+     */
+    idx = findoption((char_u *)"bg");
+    if (!(options[idx].flags & P_WAS_SET) && *term_bg_default() == 'd')
     {
-	char_u	*p;
-
-	/*
-	 * If 'background' wasn't set by the user, try guessing the value,
-	 * depending on the terminal name.  Only need to check for terminals
-	 * with a dark background, that can handle color.  Recognized are:
-	 * "linux"	    Linux console
-	 * "screen.linux"   Linux console with screen
-	 * "cygwin"	    Cygwin shell
-	 * "putty"	    Putty program
-	 * We also check the COLORFGBG environment variable, which is set by
-	 * rxvt and derivatives. This variable contains either two or three
-	 * values separated by semicolons; we want the last value in either
-	 * case. If this value is 0-6 or 8, our background is dark.
-	 */
-	idx = findoption((char_u *)"bg");
-	if (!(options[idx].flags & P_WAS_SET)
-		&& (STRCMP(T_NAME, "linux") == 0
-		    || STRCMP(T_NAME, "screen.linux") == 0
-		    || STRCMP(T_NAME, "cygwin") == 0
-		    || STRCMP(T_NAME, "putty") == 0
-		    || ((p = mch_getenv((char_u *)"COLORFGBG")) != NULL
-			&& (p = vim_strrchr(p, ';')) != NULL
-			&& ((p[1] >= '0' && p[1] <= '6') || p[1] == '8')
-			&& p[2] == NUL)))
-	{
-	    set_string_option_direct(NULL, idx, (char_u *)"dark", OPT_FREE);
-	    /* don't mark it as set, when starting the GUI it may be
-	     * changed again */
-	    options[idx].flags &= ~P_WAS_SET;
-	}
+	set_string_option_direct(NULL, idx, (char_u *)"dark", OPT_FREE);
+	/* don't mark it as set, when starting the GUI it may be
+	 * changed again */
+	options[idx].flags &= ~P_WAS_SET;
     }
 #endif
 
@@ -3350,6 +3333,40 @@ set_init_2()
 #endif
 #ifdef FEAT_PRINTER
     (void)parse_printoptions();	    /* parse 'printoptions' default value */
+#endif
+}
+
+/*
+ * Return "dark" or "light" depending on the kind of terminal.
+ * This is just guessing!  Recognized are:
+ * "linux"	    Linux console
+ * "screen.linux"   Linux console with screen
+ * "cygwin"	    Cygwin shell
+ * "putty"	    Putty program
+ * We also check the COLORFGBG environment variable, which is set by
+ * rxvt and derivatives. This variable contains either two or three
+ * values separated by semicolons; we want the last value in either
+ * case. If this value is 0-6 or 8, our background is dark.
+ */
+    static char_u *
+term_bg_default()
+{
+    char_u	*p;
+
+#if defined(MSDOS) || defined(OS2) || defined(WIN3264)
+    /* DOS console nearly always black */
+    return (char_u *)"dark";
+#else
+    if (STRCMP(T_NAME, "linux") == 0
+	    || STRCMP(T_NAME, "screen.linux") == 0
+	    || STRCMP(T_NAME, "cygwin") == 0
+	    || STRCMP(T_NAME, "putty") == 0
+	    || ((p = mch_getenv((char_u *)"COLORFGBG")) != NULL
+		&& (p = vim_strrchr(p, ';')) != NULL
+		&& ((p[1] >= '0' && p[1] <= '6') || p[1] == '8')
+		&& p[2] == NUL))
+	return (char_u *)"dark";
+    return (char_u *)"light";
 #endif
 }
 
@@ -4071,8 +4088,7 @@ do_set(arg, opt_flags)
 				    newval = gui_bg_default();
 				else
 #endif
-				    if (STRCMP(T_NAME, "linux") == 0)
-					newval = (char_u *)"dark";
+				    newval = term_bg_default();
 			    }
 
 			    /* expand environment variables and ~ (since the

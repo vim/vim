@@ -1761,8 +1761,9 @@ alist_check_arg_idx()
 {
 #ifdef FEAT_WINDOWS
     win_T	*win;
+    tabpage_T	*tp;
 
-    for (win = firstwin; win != NULL; win = win->w_next)
+    FOR_ALL_TAB_WINDOWS(tp, win)
 	if (win->w_alist == curwin->w_alist)
 	    check_arg_idx(win);
 #else

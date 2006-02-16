@@ -42,7 +42,7 @@ EXTERN long	Columns INIT(= 80);	/* nr of columns in the screen */
 EXTERN schar_T	*ScreenLines INIT(= NULL);
 EXTERN sattr_T	*ScreenAttrs INIT(= NULL);
 EXTERN unsigned	*LineOffset INIT(= NULL);
-EXTERN char_u	*LineWraps INIT(= NULL);
+EXTERN char_u	*LineWraps INIT(= NULL);	/* line wraps to next line */
 
 #ifdef FEAT_MBYTE
 /*
@@ -59,6 +59,10 @@ EXTERN u8char_T	*ScreenLinesC2 INIT(= NULL);	/* second composing char */
 /* Only used for euc-jp: Second byte of a character that starts with 0x8e.
  * These are single-width. */
 EXTERN schar_T	*ScreenLines2 INIT(= NULL);
+#endif
+
+#ifdef FEAT_WINDOWS
+EXTERN char_u	*TabPageIdxs INIT(= NULL);	/* indexes for tab page line */
 #endif
 
 EXTERN int	screen_Rows INIT(= 0);	    /* actual size of ScreenLines[] */
@@ -482,6 +486,10 @@ EXTERN win_T	*lastwin;		/* last window */
 EXTERN win_T	*prevwin INIT(= NULL);	/* previous window */
 # define W_NEXT(wp) ((wp)->w_next)
 # define FOR_ALL_WINDOWS(wp) for (wp = firstwin; wp != NULL; wp = wp->w_next)
+#define FOR_ALL_TAB_WINDOWS(tp, wp) \
+    for ((tp) = first_tabpage; (tp) != NULL; (tp) = (tp)->tp_next) \
+	for ((wp) = ((tp)->tp_topframe == topframe) \
+		? firstwin : (tp)->tp_firstwin; (wp); (wp) = (wp)->w_next)
 #else
 # define firstwin curwin
 # define lastwin curwin

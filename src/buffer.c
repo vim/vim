@@ -1062,21 +1062,7 @@ do_buffer(action, start, dir, count, forceit)
 
 	    /* Close any other windows on this buffer, then make it empty. */
 #ifdef FEAT_WINDOWS
-	    {
-		win_T	*wp, *nextwp;
-
-		for (wp = firstwin; wp != NULL; wp = nextwp)
-		{
-		    nextwp = wp->w_next;
-		    if (wp != curwin && wp->w_buffer == buf)
-		    {
-			/* Start all over, autocommands may change the window
-			 * layout. */
-			nextwp = firstwin;
-			win_close(wp, FALSE);
-		    }
-		}
-	    }
+	    close_windows(buf, TRUE);
 #endif
 	    setpcmark();
 	    retval = do_ecmd(0, NULL, NULL, NULL, ECMD_ONE,
@@ -1095,9 +1081,11 @@ do_buffer(action, start, dir, count, forceit)
 #ifdef FEAT_WINDOWS
 	/*
 	 * If the deleted buffer is the current one, close the current window
-	 * (unless it's the only window).
+	 * (unless it's the only window).  Repeat this so long as we end up in
+	 * a window with this buffer.
 	 */
-	while (buf == curbuf && firstwin != lastwin)
+	while (buf == curbuf
+		   && (firstwin != lastwin || first_tabpage->tp_next != NULL))
 	    win_close(curwin, FALSE);
 #endif
 
@@ -1107,7 +1095,7 @@ do_buffer(action, start, dir, count, forceit)
 	if (buf != curbuf)
 	{
 #ifdef FEAT_WINDOWS
-	    close_windows(buf);
+	    close_windows(buf, FALSE);
 #endif
 	    if (buf != curbuf && buf_valid(buf) && buf->b_nwindows <= 0)
 		close_buffer(NULL, buf, action);
@@ -1317,7 +1305,7 @@ set_curbuf(buf, action)
     {
 #ifdef FEAT_WINDOWS
 	if (unload)
-	    close_windows(prevbuf);
+	    close_windows(prevbuf, FALSE);
 #endif
 #if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
 	if (buf_valid(prevbuf) && !aborting())
@@ -4707,6 +4695,7 @@ write_viminfo_bufferlist(fp)
     buf_T	*buf;
 #ifdef FEAT_WINDOWS
     win_T	*win;
+    tabpage_T	*tp;
 #endif
     char_u	*line;
     int		max_buffers;
@@ -4723,7 +4712,7 @@ write_viminfo_bufferlist(fp)
 	return;
 
 #ifdef FEAT_WINDOWS
-    for (win = firstwin; win != NULL; win = win->w_next)
+    FOR_ALL_TAB_WINDOWS(tp, win)
 	set_last_cursor(win);
 #else
     set_last_cursor(curwin);

@@ -1558,6 +1558,7 @@ struct tabpage_S
     tabpage_T	    *tp_next;	    /* next tabpage or NULL */
     frame_T	    *tp_topframe;   /* topframe for the windows */
     win_T	    *tp_curwin;	    /* current window in this Tab page */
+    win_T	    *tp_prevwin;    /* previous window in this Tab page */
     win_T	    *tp_firstwin;   /* first window in this Tab page */
     win_T	    *tp_lastwin;    /* last window in this Tab page */
     long	    tp_old_Rows;    /* Rows when Tab page was left */

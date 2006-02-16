@@ -1,7 +1,7 @@
 " Vim script for testing colors
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
 " Contributors:	Rafael Garcia-Suarez, Charles Campbell
-" Last Change:	2001 Jul 28
+" Last Change:	2006 Feb 16
 
 " edit this file, then do ":source %", and check if the colors match
 
@@ -52,6 +52,15 @@
 " lightcyan	lightcyan_on_white			white_on_lightcyan
 "				lightcyan_on_black	black_on_lightcyan
 
+" Open this file in a window if it isn't edited yet.
+" Use the current window if it's empty.
+if &mod || line('$') != 1 || getline(1) != ''
+  new
+endif
+if expand('%:p') != expand('<sfile>:p')
+  exe "edit " . expand('<sfile>')
+endif
+
 syn clear
 8
 while search("_on_", "W") < 55
@@ -60,6 +69,5 @@ while search("_on_", "W") < 55
   exec 'hi col_'.col1.'_'.col2.' ctermfg='.col1.' guifg='.col1.' ctermbg='.col2.' guibg='.col2
   exec 'syn keyword col_'.col1.'_'.col2.' '.col1.'_on_'.col2
 endwhile
-8,55g/^" \a/exec 'hi col_'.expand("<cword>").' ctermfg='.expand("<cword>").' guifg='.expand("<cword>")|
-	\ exec 'syn keyword col_'.expand("<cword>")." ".expand("<cword>")
+8,54g/^" \a/exec 'hi col_'.expand("<cword>").' ctermfg='.expand("<cword>").' guifg='.expand("<cword>")| exec 'syn keyword col_'.expand("<cword>")." ".expand("<cword>")
 nohlsearch

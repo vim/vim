@@ -2160,7 +2160,7 @@ WinListLength(PyObject *self)
     win_T	*w = firstwin;
     int		n = 0;
 
-    while (w)
+    while (w != NULL)
     {
 	++n;
 	w = W_NEXT(w);
@@ -2175,7 +2175,7 @@ WinListItem(PyObject *self, int n)
 {
     win_T *w;
 
-    for (w = firstwin; w; w = W_NEXT(w), --n)
+    for (w = firstwin; w != NULL; w = W_NEXT(w), --n)
 	if (n == 0)
 	    return WindowNew(w);
 

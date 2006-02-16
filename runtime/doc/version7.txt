@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Feb 14
+*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Feb 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1010,6 +1010,9 @@ asdf.c" when it sets the filename for the buffer.
 
 Insert mode completion for whole lines now also searches unloaded buffers.
 
+The colortest.vim script can now be invoked directly with ":source" or
+":runtime".
+
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*
 
@@ -1695,5 +1698,7 @@ GTK GUI: When drawing the balloon focus changes and we might get a key release
 event that removed the balloon again.  Ignore the key release event.
 
 'titleold' was included in ":mkexrc" and ":mksession" files.
+
+":set background&" didn't use the same logic as was used when starting up.
 
  vim:tw=78:ts=8:ft=help:norl:

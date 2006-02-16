@@ -25,9 +25,9 @@ static void win_exchange __ARGS((long));
 static void win_rotate __ARGS((int, int));
 static void win_totop __ARGS((int size, int flags));
 static void win_equal_rec __ARGS((win_T *next_curwin, int current, frame_T *topfr, int dir, int col, int row, int width, int height));
-static win_T *win_free_mem __ARGS((win_T *win, int *dirp));
-static win_T *winframe_remove __ARGS((win_T *win, int *dirp));
-static frame_T *win_altframe __ARGS((win_T *win));
+static win_T *win_free_mem __ARGS((win_T *win, int *dirp, tabpage_T *tp));
+static win_T *winframe_remove __ARGS((win_T *win, int *dirp, tabpage_T *tp));
+static frame_T *win_altframe __ARGS((win_T *win, tabpage_T *tp));
 static tabpage_T *alt_tabpage __ARGS((void));
 static win_T *frame2win __ARGS((frame_T *frp));
 static int frame_has_win __ARGS((frame_T *frp, win_T *wp));
@@ -49,9 +49,9 @@ static void enter_tabpage __ARGS((tabpage_T *tp, buf_T *old_curbuf));
 static void frame_fix_height __ARGS((win_T *wp));
 static int frame_minheight __ARGS((frame_T *topfrp, win_T *next_curwin));
 static void win_enter_ext __ARGS((win_T *wp, int undo_sync, int no_curwin));
-static void win_free __ARGS((win_T *wp));
+static void win_free __ARGS((win_T *wp, tabpage_T *tp));
 static void win_append __ARGS((win_T *, win_T *));
-static void win_remove __ARGS((win_T *));
+static void win_remove __ARGS((win_T *, tabpage_T *tp));
 static void frame_append __ARGS((frame_T *after, frame_T *frp));
 static void frame_insert __ARGS((frame_T *before, frame_T *frp));
 static void frame_remove __ARGS((frame_T *frp));
@@ -1262,14 +1262,14 @@ win_exchange(Prenum)
     frp2 = curwin->w_frame->fr_prev;
     if (wp->w_prev != curwin)
     {
-	win_remove(curwin);
+	win_remove(curwin, NULL);
 	frame_remove(curwin->w_frame);
 	win_append(wp->w_prev, curwin);
 	frame_insert(frp, curwin->w_frame);
     }
     if (wp != wp2)
     {
-	win_remove(wp);
+	win_remove(wp, NULL);
 	frame_remove(wp->w_frame);
 	win_append(wp2, wp);
 	if (frp2 == NULL)
@@ -1353,7 +1353,7 @@ win_rotate(upwards, count)
 	    /* remove first window/frame from the list */
 	    frp = curwin->w_frame->fr_parent->fr_child;
 	    wp1 = frp->fr_win;
-	    win_remove(wp1);
+	    win_remove(wp1, NULL);
 	    frame_remove(frp);
 
 	    /* find last frame and append removed window/frame after it */
@@ -1372,7 +1372,7 @@ win_rotate(upwards, count)
 		;
 	    wp1 = frp->fr_win;
 	    wp2 = wp1->w_prev;		    /* will become last window */
-	    win_remove(wp1);
+	    win_remove(wp1, NULL);
 	    frame_remove(frp);
 
 	    /* append the removed window/frame before the first in the list */
@@ -1419,8 +1419,8 @@ win_totop(size, flags)
     }
 
     /* Remove the window and frame from the tree of frames. */
-    (void)winframe_remove(curwin, &dir);
-    win_remove(curwin);
+    (void)winframe_remove(curwin, &dir, NULL);
+    win_remove(curwin, NULL);
     last_status(FALSE);	    /* may need to remove last status line */
     (void)win_comp_pos();   /* recompute window positions */
 
@@ -1486,7 +1486,7 @@ win_move_after(win1, win2)
 	    win1->w_vsep_width = 0;
 #endif
 	}
-	win_remove(win1);
+	win_remove(win1, NULL);
 	frame_remove(win1->w_frame);
 	win_append(win2, win1);
 	frame_append(win2->w_frame, win1->w_frame);
@@ -1797,23 +1797,50 @@ win_equal_rec(next_curwin, current, topfr, dir, col, row, width, height)
  * close all windows for buffer 'buf'
  */
     void
-close_windows(buf)
+close_windows(buf, keep_curwin)
     buf_T	*buf;
+    int		keep_curwin;	    /* don't close "curwin" */
 {
-    win_T	*win;
+    win_T	*wp;
+    tabpage_T   *tp, *nexttp;
+    int		h = tabpageline_height();
 
     ++RedrawingDisabled;
-    for (win = firstwin; win != NULL && lastwin != firstwin; )
+
+    for (wp = firstwin; wp != NULL && lastwin != firstwin; )
     {
-	if (win->w_buffer == buf)
+	if (wp->w_buffer == buf && (!keep_curwin || wp != curwin))
 	{
-	    win_close(win, FALSE);
-	    win = firstwin;	    /* go back to the start */
+	    win_close(wp, FALSE);
+
+	    /* Start all over, autocommands may change the window layout. */
+	    wp = firstwin;
 	}
 	else
-	    win = win->w_next;
+	    wp = wp->w_next;
     }
+
+    /* Also check windows in other tab pages. */
+    for (tp = first_tabpage; tp != NULL; tp = nexttp)
+    {
+	nexttp = tp->tp_next;
+	if (tp->tp_topframe != topframe)
+	    for (wp = tp->tp_firstwin; wp != NULL; wp = wp->w_next)
+		if (wp->w_buffer == buf)
+		{
+		    win_close_othertab(wp, FALSE, tp);
+
+		    /* Start all over, the tab page may be closed and
+		     * autocommands may change the window layout. */
+		    nexttp = first_tabpage;
+		    break;
+		}
+    }
+
     --RedrawingDisabled;
+
+    if (h != tabpageline_height())
+	shell_new_rows();
 }
 
 /*
@@ -1827,7 +1854,7 @@ last_window()
 }
 
 /*
- * close window "win"
+ * Close window "win".
  * If "free_buf" is TRUE related buffer may be unloaded.
  *
  * called by :quit, :close, :xit, :wq and findtag()
@@ -1866,7 +1893,7 @@ win_close(win, free_buf)
 	 * Guess which window is going to be the new current window.
 	 * This may change because of the autocommands (sigh).
 	 */
-	wp = frame2win(win_altframe(win));
+	wp = frame2win(win_altframe(win, NULL));
 
 	/*
 	 * Be careful: If autocommands delete the window, return now.
@@ -1899,7 +1926,7 @@ win_close(win, free_buf)
 	return;
 
     /* Free the memory used for the window. */
-    wp = win_free_mem(win, &dir);
+    wp = win_free_mem(win, &dir, NULL);
 
     /* When closing the last window in a tab page go to another tab page. */
     if (wp == NULL)
@@ -2004,13 +2031,70 @@ win_close(win, free_buf)
 }
 
 /*
+ * Close window "win" in tab page "tp", which is not the current tab page.
+ * This may be the last window ih that tab page and result in closing the tab,
+ * thus "tp" may become invalid!
+ * Called must check if buffer is hidden.
+ */
+    void
+win_close_othertab(win, free_buf, tp)
+    win_T	*win;
+    int		free_buf;
+    tabpage_T	*tp;
+{
+    win_T	*wp;
+    int		dir;
+    tabpage_T   *ptp = NULL;
+
+    /* Close the link to the buffer. */
+    close_buffer(win, win->w_buffer, free_buf ? DOBUF_UNLOAD : 0);
+
+    /* Careful: Autocommands may have closed the tab page or made it the
+     * current tab page.  */
+    for (ptp = first_tabpage; ptp != NULL && ptp != tp; ptp = ptp->tp_next)
+	;
+    if (ptp == NULL || tp->tp_topframe == topframe)
+	return;
+
+    /* Autocommands may have closed the window already. */
+    for (wp = tp->tp_firstwin; wp != NULL && wp != win; wp = wp->w_next)
+	;
+    if (wp == NULL)
+	return;
+
+    /* Free the memory used for the window. */
+    wp = win_free_mem(win, &dir, tp);
+
+    /* When closing the last window in a tab page remove the tab page. */
+    if (wp == NULL)
+    {
+	if (tp == first_tabpage)
+	    first_tabpage = tp->tp_next;
+	else
+	{
+	    for (ptp = first_tabpage; ptp != NULL && ptp->tp_next != tp;
+							   ptp = ptp->tp_next)
+		;
+	    if (ptp == NULL)
+	    {
+		EMSG2(_(e_intern2), "win_close_othertab()");
+		return;
+	    }
+	    ptp->tp_next = tp->tp_next;
+	}
+	vim_free(tp);
+    }
+}
+
+/*
  * Free the memory used for a window.
  * Returns a pointer to the window that got the freed up space.
  */
     static win_T *
-win_free_mem(win, dirp)
+win_free_mem(win, dirp, tp)
     win_T	*win;
     int		*dirp;		/* set to 'v' or 'h' for direction if 'ea' */
+    tabpage_T	*tp;		/* tab page "win" is in, NULL for current */
 {
     frame_T	*frp;
     win_T	*wp;
@@ -2024,13 +2108,9 @@ win_free_mem(win, dirp)
 
     /* Remove the window and its frame from the tree of frames. */
     frp = win->w_frame;
-    if (firstwin == lastwin)
-	/* Last window in a tab page. */
-	wp = NULL;
-    else
-	wp = winframe_remove(win, dirp);
+    wp = winframe_remove(win, dirp, tp);
     vim_free(frp);
-    win_free(win);
+    win_free(win, tp);
 
     return wp;
 }
@@ -2041,8 +2121,13 @@ win_free_all()
 {
     int		dummy;
 
+# ifdef FEAT_WINDOWS
+    while (first_tabpage->tp_next != NULL)
+	tabpage_close(TRUE);
+# endif
+
     while (firstwin != NULL)
-	(void)win_free_mem(firstwin, &dummy);
+	(void)win_free_mem(firstwin, &dummy, NULL);
 }
 #endif
 
@@ -2052,9 +2137,10 @@ win_free_all()
  */
 /*ARGSUSED*/
     static win_T *
-winframe_remove(win, dirp)
+winframe_remove(win, dirp, tp)
     win_T	*win;
     int		*dirp;		/* set to 'v' or 'h' for direction if 'ea' */
+    tabpage_T	*tp;		/* tab page "win" is in, NULL for current */
 {
     frame_T	*frp, *frp2, *frp3;
     frame_T	*frp_close = win->w_frame;
@@ -2062,12 +2148,15 @@ winframe_remove(win, dirp)
     int		old_height = 0;
 
     /*
+     * If there is only one window there is nothing to remove.
+     */
+    if (tp == NULL ? firstwin == lastwin : tp->tp_firstwin == tp->tp_lastwin)
+	return NULL;
+
+    /*
      * Remove the window from its frame.
      */
-    frp2 = win_altframe(win);
-    if (frp2 == NULL)
-	return NULL;	    /* deleted the last frame */
-
+    frp2 = win_altframe(win, tp);
     wp = frame2win(frp2);
 
     /* Remove this frame from the list of frames. */
@@ -2160,13 +2249,14 @@ winframe_remove(win, dirp)
  * layout.
  */
     static frame_T *
-win_altframe(win)
+win_altframe(win, tp)
     win_T	*win;
+    tabpage_T	*tp;		/* tab page "win" is in, NULL for current */
 {
     frame_T	*frp;
     int		b;
 
-    if (firstwin == lastwin)
+    if (tp == NULL ? firstwin == lastwin : tp->tp_firstwin == tp->tp_lastwin)
 	/* Last window in this tab page, will go to next tab page. */
 	return alt_tabpage()->tp_curwin->w_frame;
 
@@ -2861,6 +2951,7 @@ win_new_tabpage()
 	firstwin->w_winrow = tabpageline_height();
 
 	newtp->tp_topframe = topframe;
+	last_status(FALSE);
 	redraw_all_later(CLEAR);
 	return OK;
     }
@@ -2868,6 +2959,7 @@ win_new_tabpage()
     /* Failed, get back the previous Tab page */
     topframe = tp->tp_topframe;
     curwin = tp->tp_curwin;
+    prevwin = tp->tp_prevwin;
     firstwin = tp->tp_firstwin;
     lastwin = tp->tp_lastwin;
     return FAIL;
@@ -2890,6 +2982,36 @@ current_tabpage()
 }
 
 /*
+ * Return TRUE when "tpc" points to a valid tab page.
+ */
+    int
+valid_tabpage(tpc)
+    tabpage_T	*tpc;
+{
+    tabpage_T	*tp;
+
+    for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
+	if (tp == tpc)
+	    return TRUE;
+    return FALSE;
+}
+
+/*
+ * Find tab page "n" (first one is 1).  Returns NULL when not found.
+ */
+    tabpage_T *
+find_tabpage(n)
+    int		n;
+{
+    tabpage_T	*tp;
+    int		i = 1;
+
+    for (tp = first_tabpage; tp != NULL && i != n; tp = tp->tp_next)
+	++i;
+    return tp;
+}
+
+/*
  * Prepare for leaving the current tab page "tp".
  */
     static void
@@ -2902,6 +3024,7 @@ leave_tabpage(tp)
 	gui_remove_scrollbars();
 #endif
     tp->tp_curwin = curwin;
+    tp->tp_prevwin = prevwin;
     tp->tp_firstwin = firstwin;
     tp->tp_lastwin = lastwin;
     tp->tp_old_Rows = Rows;
@@ -2925,6 +3048,7 @@ enter_tabpage(tp, old_curbuf)
     lastwin = tp->tp_lastwin;
     topframe = tp->tp_topframe;
     win_enter_ext(tp->tp_curwin, FALSE, TRUE);
+    prevwin = tp->tp_prevwin;
 
 #ifdef FEAT_AUTOCMD
     if (old_curbuf != curbuf)
@@ -2985,12 +3109,13 @@ goto_tabpage(n)
     {
 	/* Go to tab page "n". */
 	i = 0;
-	for (tp = first_tabpage; ++i != n; tp = tp->tp_next)
-	    if (tp == NULL)
-	    {
-		beep_flush();
-		return;
-	    }
+	for (tp = first_tabpage; ++i != n && tp != NULL; tp = tp->tp_next)
+	    ;
+	if (tp == NULL)
+	{
+	    beep_flush();
+	    return;
+	}
     }
 
     leave_tabpage(otp);
@@ -3418,8 +3543,9 @@ win_alloc(after)
  * remove window 'wp' from the window list and free the structure
  */
     static void
-win_free(wp)
+win_free(wp, tp)
     win_T	*wp;
+    tabpage_T	*tp;		/* tab page "win" is in, NULL for current */
 {
     int		i;
 
@@ -3478,7 +3604,7 @@ win_free(wp)
     }
 #endif /* FEAT_GUI */
 
-    win_remove(wp);
+    win_remove(wp, tp);
     vim_free(wp);
 }
 
@@ -3512,17 +3638,22 @@ win_append(after, wp)
  * Remove a window from the window list.
  */
     static void
-win_remove(wp)
+win_remove(wp, tp)
     win_T	*wp;
+    tabpage_T	*tp;		/* tab page "win" is in, NULL for current */
 {
     if (wp->w_prev != NULL)
 	wp->w_prev->w_next = wp->w_next;
-    else
+    else if (tp == NULL)
 	firstwin = wp->w_next;
+    else
+	tp->tp_firstwin = wp->w_next;
     if (wp->w_next != NULL)
 	wp->w_next->w_prev = wp->w_prev;
-    else
+    else if (tp == NULL)
 	lastwin = wp->w_prev;
+    else
+	tp->tp_lastwin = wp->w_prev;
 }
 
 /*
@@ -3600,6 +3731,7 @@ win_free_lsize(wp)
 
 /*
  * Called from win_new_shellsize() after Rows changed.
+ * This only does the current tab page, others must be done when made active.
  */
     void
 shell_new_rows()
@@ -5115,16 +5247,27 @@ vim_FullName(fname, buf, len, force)
 min_rows()
 {
     int		total;
+#ifdef FEAT_WINDOWS
+    tabpage_T	*tp;
+    int		n;
+#endif
 
     if (firstwin == NULL)	/* not initialized yet */
 	return MIN_LINES;
 
-    total = 1;		/* count the room for the command line */
 #ifdef FEAT_WINDOWS
-    total += frame_minheight(topframe, NULL);
+    total = 0;
+    for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
+    {
+	n = frame_minheight(tp->tp_topframe, NULL);
+	if (total < n)
+	    total = n;
+    }
+    total += tabpageline_height();
 #else
-    total += 1;		/* at least one window should have a line! */
+    total = 1;		/* at least one window should have a line! */
 #endif
+    total += 1;		/* count the room for the command line */
     return total;
 }
 
@@ -5169,7 +5312,9 @@ check_lnums(do_curwin)
     win_T	*wp;
 
 #ifdef FEAT_WINDOWS
-    for (wp = firstwin; wp != NULL; wp = wp->w_next)
+    tabpage_T	*tp;
+
+    FOR_ALL_TAB_WINDOWS(tp, wp)
 	if ((do_curwin || wp != curwin) && wp->w_buffer == curbuf)
 #else
     wp = curwin;

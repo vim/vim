@@ -1,8 +1,8 @@
-" Vim filetype plugin file
-" Language: VHDL
-" Maintainer:   R.Shankar (shankar at txc.stpn.soft.net)
-" Last Change:  Tue Oct 8
-
+" VHDL filetype plugin
+" Language:    VHDL
+" Maintainer:  R.Shankar <shankar.r?freescale.com>
+" Modified By: Gerald Lai <laigera+vim?gmail.com>
+" Last Change: 2006 Feb 16
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -20,7 +20,7 @@ let b:did_ftplugin = 1
 "setlocal comments=sO:*\ -,mO:*\ \ ,exO:*/,s1:/*,mb:*,ex:*/,://
 
 " Format comments to be up to 78 characters long
-setlocal tw=75
+"setlocal tw=75
 
 set cpo-=C
 
@@ -34,8 +34,51 @@ set cpo-=C
 if ! exists("b:match_words")  &&  exists("loaded_matchit")
   let b:match_ignorecase=1
   let s:notend = '\%(\<end\s\+\)\@<!'
-  let b:match_words=
-  \ s:notend . '\<if\>:\<elsif\>:\<else\>:\<end\>\s\+\<if\>,' .
-  \ s:notend . '\<case\>:\<when\>:\<end\>\s\+\<case\>,' .
-  \ s:notend . '\<process\>:\<end\>\s\+\<process\>'
+  let b:match_words =
+    \ s:notend.'\<if\>:\<elsif\>:\<else\>:\<end\s\+if\>,'.
+    \ s:notend.'\<case\>:\<when\>:\<end\s\+case\>,'.
+    \ s:notend.'\<loop\>:\<end\s\+loop\>,'.
+    \ s:notend.'\<for\>:\<end\s\+for\>,'.
+    \ s:notend.'\<generate\>:\<end\s\+generate\>,'.
+    \ s:notend.'\<record\>:\<end\s\+record\>,'.
+    \ s:notend.'\<units\>:\<end\s\+units\>,'.
+    \ s:notend.'\<process\>:\<end\s\+process\>,'.
+    \ s:notend.'\<block\>:\<end\s\+block\>,'.
+    \ s:notend.'\<function\>:\<end\s\+function\>,'.
+    \ s:notend.'\<entity\>:\<end\s\+entity\>,'.
+    \ s:notend.'\<component\>:\<end\s\+component\>,'.
+    \ s:notend.'\<architecture\>:\<end\s\+architecture\>,'.
+    \ s:notend.'\<package\>:\<end\s\+package\>,'.
+    \ s:notend.'\<procedure\>:\<end\s\+procedure\>,'.
+    \ s:notend.'\<configuration\>:\<end\s\+configuration\>'
 endif
+
+" count repeat
+function! <SID>CountWrapper(cmd)
+  let i = v:count1
+  if a:cmd[0] == ":"
+    while i > 0
+      execute a:cmd
+      let i = i - 1
+    endwhile
+  else
+    execute "normal! gv\<Esc>"
+    execute "normal ".i.a:cmd
+    let curcol = col(".")
+    let curline = line(".")
+    normal! gv
+    call cursor(curline, curcol)
+  endif
+endfunction
+
+" explore motion
+" keywords: "architecture", "block", "configuration", "component", "entity", "function", "package", "procedure", "process", "record", "units"
+let b:vhdl_explore = '\%(architecture\|block\|configuration\|component\|entity\|function\|package\|procedure\|process\|record\|units\)'
+noremap  <buffer><silent>[[ :<C-u>cal <SID>CountWrapper(':cal search("\\%(--.*\\)\\@<!\\%(\\<end\\s\\+\\)\\@<!\\<".b:vhdl_explore."\\>\\c\\<Bar>\\%^","bW")')<CR>
+noremap  <buffer><silent>]] :<C-u>cal <SID>CountWrapper(':cal search("\\%(--.*\\)\\@<!\\%(\\<end\\s\\+\\)\\@<!\\<".b:vhdl_explore."\\>\\c\\<Bar>\\%$","W")')<CR>
+noremap  <buffer><silent>[] :<C-u>cal <SID>CountWrapper(':cal search("\\%(--.*\\)\\@<!\\<end\\s\\+".b:vhdl_explore."\\>\\c\\<Bar>\\%^","bW")')<CR>
+noremap  <buffer><silent>][ :<C-u>cal <SID>CountWrapper(':cal search("\\%(--.*\\)\\@<!\\<end\\s\\+".b:vhdl_explore."\\>\\c\\<Bar>\\%$","W")')<CR>
+vnoremap <buffer><silent>[[ :<C-u>cal <SID>CountWrapper('[[')<CR>
+vnoremap <buffer><silent>]] :<C-u>cal <SID>CountWrapper(']]')<CR>
+vnoremap <buffer><silent>[] :<C-u>cal <SID>CountWrapper('[]')<CR>
+vnoremap <buffer><silent>][ :<C-u>cal <SID>CountWrapper('][')<CR>

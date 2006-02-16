@@ -1,4 +1,4 @@
-*usr_06.txt*	For Vim version 7.0aa.  Last change: 2002 Jul 14
+*usr_06.txt*	For Vim version 7.0aa.  Last change: 2006 Feb 16
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -179,10 +179,9 @@ You could also write your own color scheme.  This is how you do it:
 	colorscheme mine
 
 If you want to see what the most often used color combinations look like, use
-these commands: >
+this command: >
 
-	:edit $VIMRUNTIME/syntax/colortest.vim
-	:source %
+	:runtime syntax/colortest.vim
 
 You will see text in various color combinations.  You can check which ones are
 readable and look nice.

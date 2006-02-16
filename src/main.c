@@ -1133,6 +1133,7 @@ getout(exitval)
 #ifdef FEAT_AUTOCMD
     buf_T	*buf;
     win_T	*wp;
+    tabpage_T	*tp, *next_tp;
 #endif
 
     exiting = TRUE;
@@ -1160,23 +1161,28 @@ getout(exitval)
 
 #ifdef FEAT_AUTOCMD
     /* Trigger BufWinLeave for all windows, but only once per buffer. */
-    for (wp = firstwin; wp != NULL; )
+# if defined FEAT_WINDOWS
+    for (tp = first_tabpage; tp != NULL; tp = next_tp)
     {
-	buf = wp->w_buffer;
-	if (buf->b_changedtick != -1)
+	next_tp = tp->tp_next;
+	for (wp = (tp->tp_topframe == topframe)
+		    ? firstwin : tp->tp_firstwin; wp != NULL; wp = wp->w_next)
 	{
-	    apply_autocmds(EVENT_BUFWINLEAVE, buf->b_fname, buf->b_fname,
+	    buf = wp->w_buffer;
+	    if (buf->b_changedtick != -1)
+	    {
+		apply_autocmds(EVENT_BUFWINLEAVE, buf->b_fname, buf->b_fname,
 								  FALSE, buf);
-	    buf->b_changedtick = -1;	/* note that we did it already */
-	    wp = firstwin;		/* restart, window may be closed */
+		buf->b_changedtick = -1;    /* note that we did it already */
+		/* start all over, autocommands may mess up the lists */
+		next_tp = first_tabpage;
+		break;
+	    }
 	}
-# ifdef FEAT_WINDOWS
-	else
-	    wp = wp->w_next;
-# else
-	break;
-# endif
     }
+# else
+    apply_autocmds(EVENT_BUFWINLEAVE, curbuf, curbuf->b_fname, FALSE, curbuf);
+# endif
 
     /* Trigger BufUnload for buffers that are loaded */
     for (buf = firstbuf; buf != NULL; buf = buf->b_next)

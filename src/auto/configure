@@ -15088,7 +15088,7 @@ echo $ECHO_N "checking for GCC 3 or later... $ECHO_C" >&6
 DEPEND_CFLAGS_FILTER=
 if test "$GCC" = yes; then
   gccmajor=`"$CC" --version | sed -e '2,$d;s/^[^0-9]*\([1-9]\)\.[0-9.]*.*$/\1/g'`
-  if test "$gccmajor" > "2"; then
+  if test "$gccmajor" -gt "2"; then
     DEPEND_CFLAGS_FILTER="| sed 's+-I */+-isystem /+g'"
   fi
 fi
