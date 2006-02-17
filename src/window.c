@@ -25,6 +25,7 @@ static void win_exchange __ARGS((long));
 static void win_rotate __ARGS((int, int));
 static void win_totop __ARGS((int size, int flags));
 static void win_equal_rec __ARGS((win_T *next_curwin, int current, frame_T *topfr, int dir, int col, int row, int width, int height));
+static int last_window __ARGS((void));
 static win_T *win_free_mem __ARGS((win_T *win, int *dirp, tabpage_T *tp));
 static win_T *winframe_remove __ARGS((win_T *win, int *dirp, tabpage_T *tp));
 static frame_T *win_altframe __ARGS((win_T *win, tabpage_T *tp));
@@ -43,7 +44,8 @@ static void frame_fix_width __ARGS((win_T *wp));
 #endif
 static int win_alloc_firstwin __ARGS((void));
 #if defined(FEAT_WINDOWS) || defined(PROTO)
-static tabpage_T *current_tabpage __ARGS((void));
+static tabpage_T *alloc_tabpage __ARGS((void));
+static void free_tabpage __ARGS((tabpage_T *tp));
 static void leave_tabpage __ARGS((tabpage_T *tp));
 static void enter_tabpage __ARGS((tabpage_T *tp, buf_T *old_curbuf));
 static void frame_fix_height __ARGS((win_T *wp));
@@ -1824,7 +1826,7 @@ close_windows(buf, keep_curwin)
     for (tp = first_tabpage; tp != NULL; tp = nexttp)
     {
 	nexttp = tp->tp_next;
-	if (tp->tp_topframe != topframe)
+	if (tp != curtab)
 	    for (wp = tp->tp_firstwin; wp != NULL; wp = wp->w_next)
 		if (wp->w_buffer == buf)
 		{
@@ -1845,9 +1847,9 @@ close_windows(buf, keep_curwin)
 
 /*
  * Return TRUE if the current window is the only window that exists.
- * Returns FALSE if there is a window in another tab page.
+ * Returns FALSE if there is a window, possibly in another tab page.
  */
-    int
+    static int
 last_window()
 {
     return (lastwin == firstwin && first_tabpage->tp_next == NULL);
@@ -1935,7 +1937,7 @@ win_close(win, free_buf)
 	tabpage_T   *tp;
 	tabpage_T   *atp = alt_tabpage();
 
-	for (tp = first_tabpage; tp->tp_topframe != topframe; tp = tp->tp_next)
+	for (tp = first_tabpage; tp != curtab; tp = tp->tp_next)
 	    ptp = tp;
 	if (tp == NULL)
 	{
@@ -1946,7 +1948,7 @@ win_close(win, free_buf)
 	    first_tabpage = tp->tp_next;
 	else
 	    ptp->tp_next = tp->tp_next;
-	vim_free(tp);
+	free_tabpage(tp);
 
 	/* We don't do the window resizing stuff, let enter_tabpage() take
 	 * care of entering a window in another tab page. */
@@ -2053,7 +2055,7 @@ win_close_othertab(win, free_buf, tp)
      * current tab page.  */
     for (ptp = first_tabpage; ptp != NULL && ptp != tp; ptp = ptp->tp_next)
 	;
-    if (ptp == NULL || tp->tp_topframe == topframe)
+    if (ptp == NULL || tp == curtab)
 	return;
 
     /* Autocommands may have closed the window already. */
@@ -2278,19 +2280,16 @@ win_altframe(win, tp)
     static tabpage_T *
 alt_tabpage()
 {
-    tabpage_T	*tp = current_tabpage();
+    tabpage_T	*tp;
 
-    if (tp != NULL)
-    {
-	/* Use the next tab page if it exists. */
-	if (tp->tp_next != NULL)
-	    return tp->tp_next;
+    /* Use the next tab page if it exists. */
+    if (curtab->tp_next != NULL)
+	return curtab->tp_next;
 
-	/* Find the previous tab page. */
-	for (tp = first_tabpage; tp->tp_next != NULL; tp = tp->tp_next)
-	    if (tp->tp_next == current_tabpage())
-		return tp;
-    }
+    /* Find the previous tab page. */
+    for (tp = first_tabpage; tp->tp_next != NULL; tp = tp->tp_next)
+	if (tp->tp_next == curtab)
+	    return tp;
     return first_tabpage;
 }
 
@@ -2858,11 +2857,11 @@ win_alloc_first()
 	return FAIL;
 
 #ifdef FEAT_WINDOWS
-    first_tabpage = (tabpage_T *)alloc((unsigned)sizeof(tabpage_T));
+    first_tabpage = alloc_tabpage();
     if (first_tabpage == NULL)
 	return FAIL;
     first_tabpage->tp_topframe = topframe;
-    first_tabpage->tp_next = NULL;
+    curtab = first_tabpage;
 #endif
     return OK;
 }
@@ -2918,6 +2917,36 @@ win_init_size()
 }
 
 #if defined(FEAT_WINDOWS) || defined(PROTO)
+
+/*
+ * Allocate a new tabpage_T and init the values.
+ * Returns NULL when out of memory.
+ */
+    static tabpage_T *
+alloc_tabpage()
+{
+    tabpage_T	*tp;
+
+    tp = (tabpage_T *)alloc_clear((unsigned)sizeof(tabpage_T));
+    if (tp != NULL)
+    {
+# ifdef FEAT_DIFF
+	tp->tp_diff_invalid = TRUE;
+# endif
+    }
+    return tp;
+}
+
+    static void
+free_tabpage(tp)
+    tabpage_T	*tp;
+{
+# ifdef FEAT_DIFF
+    diff_clear(tp);
+# endif
+    vim_free(tp);
+}
+
 /*
  * Create a new Tab page with one empty window.
  * Put it just after the current Tab page.
@@ -2926,17 +2955,16 @@ win_init_size()
     int
 win_new_tabpage()
 {
-    tabpage_T	*tp;
+    tabpage_T	*tp = curtab;
     tabpage_T	*newtp;
 
-    newtp = (tabpage_T *)alloc((unsigned)sizeof(tabpage_T));
+    newtp = alloc_tabpage();
     if (newtp == NULL)
 	return FAIL;
 
-    tp = current_tabpage();
-
     /* Remember the current windows in this Tab page. */
-    leave_tabpage(tp);
+    leave_tabpage(curtab);
+    curtab = newtp;
 
     /* Create a new empty window. */
     if (win_alloc_firstwin() == OK)
@@ -2962,23 +2990,43 @@ win_new_tabpage()
     prevwin = tp->tp_prevwin;
     firstwin = tp->tp_firstwin;
     lastwin = tp->tp_lastwin;
+    curtab = tp;
     return FAIL;
 }
 
 /*
- * Return a pointer to the current tab page.
+ * Create up to "maxcount" tabpages with empty windows.
+ * Returns the number of resulting tab pages.
  */
-    static tabpage_T *
-current_tabpage()
+    int
+make_tabpages(maxcount)
+    int		maxcount;
 {
-    tabpage_T	*tp;
+    int		count = maxcount;
+    int		todo;
 
-    for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
-	if (tp->tp_topframe == topframe)
+    /* Limit to 10 tabs. */
+    if (count > 10)
+	count = 10;
+
+#ifdef FEAT_AUTOCMD
+    /*
+     * Don't execute autocommands while creating the tab pages.  Must do that
+     * when putting the buffers in the windows.
+     */
+    ++autocmd_block;
+#endif
+
+    for (todo = count - 1; todo > 0; --todo)
+	if (win_new_tabpage() == FAIL)
 	    break;
-    if (tp == NULL)
-	EMSG2(_(e_intern2), "current_tabpage()");
-    return tp;
+
+#ifdef FEAT_AUTOCMD
+    --autocmd_block;
+#endif
+
+    /* return actual number of tab pages */
+    return (count - todo);
 }
 
 /*
@@ -3044,6 +3092,7 @@ enter_tabpage(tp, old_curbuf)
 {
     int		old_off = tp->tp_firstwin->w_winrow;
 
+    curtab = tp;
     firstwin = tp->tp_firstwin;
     lastwin = tp->tp_lastwin;
     topframe = tp->tp_topframe;
@@ -3057,6 +3106,10 @@ enter_tabpage(tp, old_curbuf)
 
     last_status(FALSE);		/* status line may appear or disappear */
     (void)win_comp_pos();	/* recompute w_winrow for all windows */
+    must_redraw = CLEAR;	/* need to redraw everything */
+#ifdef FEAT_DIFF
+    diff_need_scrollbind = TRUE;
+#endif
 
     /* The tabpage line may have appeared or disappeared, may need to resize
      * the frames for that.  When the Vim window was resized need to update
@@ -3064,7 +3117,7 @@ enter_tabpage(tp, old_curbuf)
     if (tp->tp_old_Rows != Rows || old_off != firstwin->w_winrow)
 	shell_new_rows();
 #ifdef FEAT_VERTSPLIT
-    if (tp->tp_old_Columns != Columns)
+    if (tp->tp_old_Columns != Columns && starting == 0)
 	shell_new_columns();	/* update window widths */
 #endif
 
@@ -3090,7 +3143,7 @@ enter_tabpage(tp, old_curbuf)
 goto_tabpage(n)
     int	    n;
 {
-    tabpage_T	*otp = current_tabpage();
+    tabpage_T	*otp = curtab;
     tabpage_T	*tp;
     int		i;
 
@@ -3410,7 +3463,7 @@ win_enter_ext(wp, undo_sync, curwin_invalid)
     maketitle();
 #endif
     curwin->w_redr_status = TRUE;
-    redraw_tabpage = TRUE;
+    redraw_tabline = TRUE;
     if (restart_edit)
 	redraw_later(VALID);	/* causes status line redraw */
 
@@ -5272,8 +5325,8 @@ min_rows()
 }
 
 /*
- * Return TRUE if there is only one window, not counting a help or preview
- * window, unless it is the current window.
+ * Return TRUE if there is only one window (in the current tab page), not
+ * counting a help or preview window, unless it is the current window.
  */
     int
 only_one_window()

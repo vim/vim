@@ -1353,7 +1353,8 @@ enter_buffer(buf)
     ++curbuf->b_nwindows;
 
 #ifdef FEAT_DIFF
-    diff_new_buffer();
+    if (curwin->w_p_diff)
+	diff_buf_add(curbuf);
 #endif
 
     /* Cursor on first line by default. */
@@ -4175,7 +4176,7 @@ do_arg_all(count, forceit)
 #endif
 		}
 #ifdef FEAT_WINDOWS
-		if (firstwin == lastwin)	/* can't close last window */
+		if (firstwin == lastwin)	/* don't close last window */
 #endif
 		    use_firstwin = TRUE;
 #ifdef FEAT_WINDOWS

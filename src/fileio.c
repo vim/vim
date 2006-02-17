@@ -2166,8 +2166,8 @@ failed:
 #ifdef FEAT_DIFF
 	/* After reading the text into the buffer the diff info needs to be
 	 * updated. */
-	if ((newfile || read_buffer))
-	    diff_invalidate();
+	if (newfile || read_buffer)
+	    diff_invalidate(curbuf);
 #endif
 #ifndef ALWAYS_USE_GUI
 	/*
@@ -5524,6 +5524,7 @@ shorten_fnames(force)
     }
 #ifdef FEAT_WINDOWS
     status_redraw_all();
+    redraw_tabline = TRUE;
 #endif
 }
 
@@ -6497,7 +6498,7 @@ buf_reload(buf, orig_mode)
 
 #ifdef FEAT_DIFF
 	/* Invalidate diff info if necessary. */
-	diff_invalidate();
+	diff_invalidate(buf);
 #endif
 
 	/* Restore the topline and cursor position and check it (lines may

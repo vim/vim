@@ -1,9 +1,8 @@
 /* diff.c */
-void diff_new_buffer __ARGS((void));
 void diff_buf_delete __ARGS((buf_T *buf));
 void diff_buf_adjust __ARGS((win_T *win));
 void diff_buf_add __ARGS((buf_T *buf));
-void diff_invalidate __ARGS((void));
+void diff_invalidate __ARGS((buf_T *buf));
 void diff_mark_adjust __ARGS((linenr_T line1, linenr_T line2, long amount, long amount_after));
 void ex_diffupdate __ARGS((exarg_T *eap));
 void ex_diffpatch __ARGS((exarg_T *eap));
@@ -11,7 +10,7 @@ void ex_diffsplit __ARGS((exarg_T *eap));
 void ex_diffthis __ARGS((exarg_T *eap));
 void diff_win_options __ARGS((win_T *wp, int addbuf));
 void ex_diffoff __ARGS((exarg_T *eap));
-void diff_clear __ARGS((void));
+void diff_clear __ARGS((tabpage_T *tp));
 int diff_check __ARGS((win_T *wp, linenr_T lnum));
 int diff_check_fill __ARGS((win_T *wp, linenr_T lnum));
 void diff_set_topline __ARGS((win_T *fromwin, win_T *towin));

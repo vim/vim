@@ -154,6 +154,7 @@ static void	ex_all __ARGS((exarg_T *eap));
 static void	ex_resize __ARGS((exarg_T *eap));
 static void	ex_stag __ARGS((exarg_T *eap));
 static void	ex_tabclose __ARGS((exarg_T *eap));
+static void	ex_tabonly __ARGS((exarg_T *eap));
 static void	ex_tabs __ARGS((exarg_T *eap));
 #else
 # define ex_close		ex_ni
@@ -166,6 +167,7 @@ static void	ex_tabs __ARGS((exarg_T *eap));
 # define ex_tab			ex_ni
 # define ex_tabs		ex_ni
 # define ex_tabclose		ex_ni
+# define ex_tabonly		ex_ni
 #endif
 #if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
 static void	ex_pclose __ARGS((exarg_T *eap));
@@ -4872,8 +4874,8 @@ check_more(message, forceit)
 {
     int	    n = ARGCOUNT - curwin->w_arg_idx - 1;
 
-    if (!forceit && only_one_window() && ARGCOUNT > 1 && !arg_had_last
-						   && n >= 0 && quitmore == 0)
+    if (!forceit && only_one_window()
+	    && ARGCOUNT > 1 && !arg_had_last && n >= 0 && quitmore == 0)
     {
 	if (message)
 	{
@@ -6218,6 +6220,7 @@ ex_tabclose(eap)
     exarg_T	*eap;
 {
     tabpage_T	*tp;
+    int		h = tabpageline_height();
 
 # ifdef FEAT_CMDWIN
     if (cmdwin_type != 0)
@@ -6245,6 +6248,52 @@ ex_tabclose(eap)
 	    if (!text_locked())
 		tabpage_close(eap->forceit);
 	}
+
+    if (h != tabpageline_height())
+	shell_new_rows();
+}
+
+/*
+ * ":tabonly": close all tab pages except the current one
+ */
+    static void
+ex_tabonly(eap)
+    exarg_T	*eap;
+{
+    tabpage_T	*tp;
+    int		done;
+    int		h = tabpageline_height();
+
+# ifdef FEAT_CMDWIN
+    if (cmdwin_type != 0)
+	cmdwin_result = K_IGNORE;
+    else
+# endif
+	if (first_tabpage->tp_next == NULL)
+	    MSG(_("Already only one tab page"));
+	else
+	{
+	    /* Repeat this up to a 1000 times, because autocommands may mess
+	     * up the lists. */
+	    for (done = 0; done < 1000; ++done)
+	    {
+		for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
+		    if (tp->tp_topframe != topframe)
+		    {
+			tabpage_close_other(tp, eap->forceit);
+			/* if we failed to close it quit */
+			if (valid_tabpage(tp))
+			    done = 1000;
+			/* start over, "tp" is now invalid */
+			break;
+		    }
+		if (first_tabpage->tp_next == NULL)
+		    break;
+	    }
+	}
+
+    if (h != tabpageline_height())
+	shell_new_rows();
 }
 
 /*
@@ -6274,17 +6323,21 @@ tabpage_close_other(tp, forceit)
     int		forceit;
 {
     int		done = 0;
+    win_T	*wp;
 
     /* Limit to 1000 windows, autocommands may add a window while we close
      * one.  OK, so I'm paranoid... */
     while (++done < 1000)
     {
-	ex_win_close(forceit, tp->tp_firstwin, tp);
+	wp = tp->tp_firstwin;
+	ex_win_close(forceit, wp, tp);
 
-	/* Autocommands may delete the tab page under our fingers. */
-	if (!valid_tabpage(tp))
+	/* Autocommands may delete the tab page under our fingers and we may
+	 * fail to close a window with a modified buffer. */
+	if (!valid_tabpage(tp) || tp->tp_firstwin == wp)
 	    break;
     }
+    redraw_tabline = TRUE;
 }
 
 /*
@@ -7037,7 +7090,9 @@ ex_tabs(eap)
 	    wp = tp->tp_firstwin;
 	for ( ; wp != NULL && !got_int; wp = wp->w_next)
 	{
-	    msg_puts((char_u *)"\n    ");
+	    msg_puts((char_u *)"\n  ");
+	    msg_putchar(bufIsChanged(wp->w_buffer) ? '+' : ' ');
+	    msg_putchar(' ');
 	    if (buf_spname(wp->w_buffer) != NULL)
 		STRCPY(IObuff, buf_spname(wp->w_buffer));
 	    else
