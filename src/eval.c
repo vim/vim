@@ -17258,6 +17258,7 @@ ex_function(eap)
     char_u	*name = NULL;
     char_u	*p;
     char_u	*arg;
+    char_u	*line_arg = NULL;
     garray_T	newargs;
     garray_T	newlines;
     int		varargs = FALSE;
@@ -17531,7 +17532,11 @@ ex_function(eap)
 	    break;
     }
 
-    if (*p != NUL && *p != '"' && *p != '\n' && !eap->skip && !did_emsg)
+    /* When there is a line break use what follows for the function body.
+     * Makes 'exe "func Test()\n...\nendfunc"' work. */
+    if (*p == '\n')
+	line_arg = p + 1;
+    else if (*p != NUL && *p != '"' && !eap->skip && !did_emsg)
 	EMSG(_(e_trailing));
 
     /*
@@ -17563,7 +17568,20 @@ ex_function(eap)
     {
 	msg_scroll = TRUE;
 	need_wait_return = FALSE;
-	if (eap->getline == NULL)
+	if (line_arg != NULL)
+	{
+	    /* Use eap->arg, split up in parts by line breaks. */
+	    theline = line_arg;
+	    p = vim_strchr(theline, '\n');
+	    if (p == NULL)
+		line_arg += STRLEN(line_arg);
+	    else
+	    {
+		*p = NUL;
+		line_arg = p + 1;
+	    }
+	}
+	else if (eap->getline == NULL)
 	    theline = getcmdline(':', 0L, indent);
 	else
 	    theline = eap->getline(':', eap->cookie, indent);
@@ -17594,7 +17612,8 @@ ex_function(eap)
 	    /* Check for "endfunction". */
 	    if (checkforcmd(&p, "endfunction", 4) && nesting-- == 0)
 	    {
-		vim_free(theline);
+		if (line_arg == NULL)
+		    vim_free(theline);
 		break;
 	    }
 
@@ -17660,7 +17679,8 @@ ex_function(eap)
 	/* Add the line to the function. */
 	if (ga_grow(&newlines, 1) == FAIL)
 	{
-	    vim_free(theline);
+	    if (line_arg == NULL)
+		vim_free(theline);
 	    goto erret;
 	}
 
@@ -17670,12 +17690,17 @@ ex_function(eap)
 	p = vim_strsave(theline);
 	if (p != NULL)
 	{
-	    vim_free(theline);
+	    if (line_arg == NULL)
+		vim_free(theline);
 	    theline = p;
 	}
 
 	((char_u **)(newlines.ga_data))[newlines.ga_len] = theline;
 	newlines.ga_len++;
+
+	/* Check for end of eap->arg. */
+	if (line_arg != NULL && *line_arg == NUL)
+	    line_arg = NULL;
     }
 
     /* Don't define the function when skipping commands or when an error was

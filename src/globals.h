@@ -507,11 +507,12 @@ EXTERN frame_T	*topframe;	/* top of the window frame tree */
 
 #ifdef FEAT_WINDOWS
 /*
- * Tab pages are nothing more than alternative topframes.  "first_tabpage"
- * points to the first one in the list, "topframe" is the current one.
+ * Tab pages are alternative topframes.  "first_tabpage" points to the first
+ * one in the list, "curtab" is the current one.
  */
-EXTERN tabpage_T *first_tabpage;
-EXTERN int	  redraw_tabpage INIT(= FALSE);	/* redraw tab pages line */
+EXTERN tabpage_T    *first_tabpage;
+EXTERN tabpage_T    *curtab;
+EXTERN int	    redraw_tabline INIT(= FALSE);  /* need to redraw tabline */
 #endif
 
 /*

@@ -4938,7 +4938,7 @@ search_line:
 
 #if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
 		if (g_do_tagpreview != 0
-			&& curwin != curwin_save && win_valid(curwin_save))
+			   && curwin != curwin_save && win_valid(curwin_save))
 		{
 		    /* Return cursor to where we were */
 		    validate_cursor();

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 16
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -32,19 +32,12 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 Support WINDOW TABS.  Works like several pages, each with their own split
 windows.  Let's call them "tab pages".
-    - check all places where lastwin is used
-    - check all places where win_valid() is used
-    - check all places where last_window() is used
-    - ":tabclose N" close tab N
-    - Add ":tabonly" - close all other tabs.
-    - check all places wheren only_one_window() is used.
     - Add tabpage(): returns current tab page number.
     - ":tabsplit" makes a copy of the current tab page.
     - Add TabLeavePre and TabEnterPost autocommands
     - line at top of frame with tabs.
 	Add 'tabtext' option, like 'statusline'.
-    - make a diff for each tab page separately.
-    - E999
+    - check for E999
     - docs:
 	General remark: commands that work on windows only work on the windows
 	    in the current tab page.  Including :windo.
@@ -54,7 +47,10 @@ windows.  Let's call them "tab pages".
 	:tab N
 	:tabs
 	{count}gt
+	:close may close current tab page if there is one window.
 	:tabclose
+	:tabclose N - close tab N
+	:tabonly - close all other tabs.
 	:close and :quit (last window in tab)
 	"gt": Use "1gt" - "99gt" to switch to another tab.  "gt" goes to the
 	     next one.  Hint in docs: To mess with another buffer, without
@@ -65,14 +61,22 @@ windows.  Let's call them "tab pages".
 	    X closes current tab page
 	:argall and :ball only opens window for buffers that are not in any
 	      window in any tab page
-	:diffoff only in the current tab page
+	:diffoff only works in the current tab page
+	diff works per tab page
+        "vim -p *" opens each file in a separate tab page (up to 10).
     - add GUI Tabs for some systems.
       Patch for GTK 1.2 passed on by Christian Michon, 2004 Jan 6.
       Simple patch for GTK by Luis M (nov 7).
     - Need to be able to search the windows in inactive tabs, e.g. for the
       quickfix window.
+Future enhancements:
+    tab page local variables?
+    tab page local options?  'diffopt' could differ between tab pages.
+    tab page local colors?
 
 Crash with X command server (Ciaran McCreesh).
+
+Motif: in diff mode dragging one scrollbar doesn't update the other one.
 
 Ctags still hasn't included the patch.  Darren is looking for someone to do
 maintanance.

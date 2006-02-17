@@ -1811,15 +1811,18 @@ write_viminfo(file, forceit)
 
 	    /* Use mch_open() to be able to use O_NOFOLLOW and set file
 	     * protection:
-	     * Unix: same as original file, but strip s-bit.
+	     * Unix: same as original file, but strip s-bit.  Reset umask to
+	     * avoid it getting in the way.
 	     * Others: r&w for user only. */
 #ifdef UNIX
+	    umask_save = umask(0);
 	    fd = mch_open((char *)tempname,
 		    O_CREAT|O_EXTRA|O_EXCL|O_WRONLY|O_NOFOLLOW,
 				       (int)((st_old.st_mode & 0777) | 0600));
+	    (void)umask(umask_save);
 #else
 	    fd = mch_open((char *)tempname,
-		    O_CREAT|O_EXTRA|O_EXCL|O_WRONLY|O_NOFOLLOW, 0600);
+			    O_CREAT|O_EXTRA|O_EXCL|O_WRONLY|O_NOFOLLOW, 0600);
 #endif
 	    if (fd < 0)
 		fp_out = NULL;
@@ -3504,8 +3507,11 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags)
     /* Tell the diff stuff that this buffer is new and/or needs updating.
      * Also needed when re-editing the same buffer, because unloading will
      * have removed it as a diff buffer. */
-    diff_new_buffer();
-    diff_invalidate();
+    if (curwin->w_p_diff)
+    {
+	diff_buf_add(curbuf);
+	diff_invalidate(curbuf);
+    }
 #endif
 
     if (command == NULL)

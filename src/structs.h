@@ -1526,6 +1526,60 @@ struct file_buffer
 
 };
 
+
+#ifdef FEAT_DIFF
+/*
+ * Stuff for diff mode.
+ */
+# define DB_COUNT 4	/* up to four buffers can be diff'ed */
+
+/*
+ * Each diffblock defines where a block of lines starts in each of the buffers
+ * and how many lines it occupies in that buffer.  When the lines are missing
+ * in the buffer the df_count[] is zero.  This is all counted in
+ * buffer lines.
+ * There is always at least one unchanged line in between the diffs.
+ * Otherwise it would have been included in the diff above or below it.
+ * df_lnum[] + df_count[] is the lnum below the change.  When in one buffer
+ * lines have been inserted, in the other buffer df_lnum[] is the line below
+ * the insertion and df_count[] is zero.  When appending lines at the end of
+ * the buffer, df_lnum[] is one beyond the end!
+ * This is using a linked list, because the number of differences is expected
+ * to be reasonable small.  The list is sorted on lnum.
+ */
+typedef struct diffblock_S diff_T;
+struct diffblock_S
+{
+    diff_T	*df_next;
+    linenr_T	df_lnum[DB_COUNT];	/* line number in buffer */
+    linenr_T	df_count[DB_COUNT];	/* nr of inserted/changed lines */
+};
+#endif
+
+/*
+ * Tab pages point to the top frame of each tab page.
+ * Note: Most values are NOT valid for the current tab page!  Use "curwin",
+ * "firstwin", etc. for that.  "tp_topframe" is always valid and can be
+ * compared against "topframe" to find the current tab page.
+ */
+typedef struct tabpage_S tabpage_T;
+struct tabpage_S
+{
+    tabpage_T	    *tp_next;	    /* next tabpage or NULL */
+    frame_T	    *tp_topframe;   /* topframe for the windows */
+    win_T	    *tp_curwin;	    /* current window in this Tab page */
+    win_T	    *tp_prevwin;    /* previous window in this Tab page */
+    win_T	    *tp_firstwin;   /* first window in this Tab page */
+    win_T	    *tp_lastwin;    /* last window in this Tab page */
+    long	    tp_old_Rows;    /* Rows when Tab page was left */
+    long	    tp_old_Columns; /* Columns when Tab page was left */
+#ifdef FEAT_DIFF
+    diff_T	    *tp_first_diff;
+    buf_T	    *(tp_diffbuf[DB_COUNT]);
+    int		    tp_diff_invalid;	/* list of diffs is outdated */
+#endif
+};
+
 /*
  * Structure to cache info for displayed lines in w_lines[].
  * Each logical line has one entry.
@@ -1548,22 +1602,6 @@ typedef struct w_line
     linenr_T	wl_lastlnum;	/* last buffer line number for logical line */
 #endif
 } wline_T;
-
-/*
- * Tab pages point to the top frame of each tab page.
- */
-typedef struct tabpage_S tabpage_T;
-struct tabpage_S
-{
-    tabpage_T	    *tp_next;	    /* next tabpage or NULL */
-    frame_T	    *tp_topframe;   /* topframe for the windows */
-    win_T	    *tp_curwin;	    /* current window in this Tab page */
-    win_T	    *tp_prevwin;    /* previous window in this Tab page */
-    win_T	    *tp_firstwin;   /* first window in this Tab page */
-    win_T	    *tp_lastwin;    /* last window in this Tab page */
-    long	    tp_old_Rows;    /* Rows when Tab page was left */
-    long	    tp_old_Columns; /* Columns when Tab page was left */
-};
 
 /*
  * Windows are kept in a tree of frames.  Each frame has a column (FR_COL)

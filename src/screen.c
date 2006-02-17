@@ -394,7 +394,7 @@ update_screen(type)
 	    }
 	    redraw_cmdline = TRUE;
 #ifdef FEAT_WINDOWS
-	    redraw_tabpage = TRUE;
+	    redraw_tabline = TRUE;
 #endif
 	}
 	msg_scrolled = 0;
@@ -476,7 +476,7 @@ update_screen(type)
 
 #ifdef FEAT_WINDOWS
     /* Redraw the tab pages line if needed. */
-    if (redraw_tabpage || type >= NOT_VALID)
+    if (redraw_tabline || type >= NOT_VALID)
 	draw_tabpage();
 #endif
 
@@ -706,7 +706,7 @@ updateWindow(wp)
 
 #ifdef FEAT_WINDOWS
     /* When the screen was cleared redraw the tab pages line. */
-    if (redraw_tabpage)
+    if (redraw_tabline)
 	draw_tabpage();
 
     if (wp->w_redr_status
@@ -4965,7 +4965,7 @@ redraw_statuslines()
     for (wp = firstwin; wp; wp = wp->w_next)
 	if (wp->w_redr_status)
 	    win_redr_status(wp);
-    if (redraw_tabpage)
+    if (redraw_tabline)
 	draw_tabpage();
 }
 #endif
@@ -7084,7 +7084,7 @@ screenclear2()
     win_rest_invalid(firstwin);
     redraw_cmdline = TRUE;
 #ifdef FEAT_WINDOWS
-    redraw_tabpage = TRUE;
+    redraw_tabline = TRUE;
 #endif
     if (must_redraw == CLEAR)	/* no need to clear again */
 	must_redraw = NOT_VALID;
@@ -8463,7 +8463,7 @@ draw_tabpage()
     tabpage_T	*tp;
     int		tabwidth;
     int		col = 0;
-    int		scol;
+    int		scol = 0;
     int		had_current = FALSE;
     int		attr;
     win_T	*wp;
@@ -8475,8 +8475,9 @@ draw_tabpage()
     int		attr_sel = hl_attr(HLF_TPS);
     int		attr_nosel = hl_attr(HLF_TP);
     int		attr_fill = hl_attr(HLF_TPF);
+    char_u	*p;
 
-    redraw_tabpage = FALSE;
+    redraw_tabline = FALSE;
 
     if (tabpageline_height() < 1)
 	return;
@@ -8548,11 +8549,15 @@ draw_tabpage()
 							      MAXPATHL, TRUE);
 	trans_characters(NameBuff, MAXPATHL);
 	len = STRLEN(NameBuff);
+	p = NameBuff;
 	if (len > scol - col + tabwidth - 1) /* TODO: multi-byte chars */
+	{
+	    p += len - (scol - col + tabwidth - 1);
 	    len = scol - col + tabwidth - 1;
+	}
 	if (len > 0)
 	{
-	    screen_puts_len(NameBuff, len, 0, col, attr);
+	    screen_puts_len(p, len, 0, col, attr);
 	    col += len;
 	}
 	screen_putchar(' ', 0, col++, attr);

@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Feb 16
+*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Feb 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -749,6 +749,9 @@ from happening.
 
 ":breakadd here" and ":breakdel here" can be used to set or delete a
 breakpoint at the cursor.
+
+It is now possible to define a function with: >
+	:exe "func Test()\n ...\n endfunc"
 
 The tutor was updated to make it simpler to use and added text to explain a
 few more important commands.  Used ideas from Gabriel Zachmann.
@@ -1700,5 +1703,8 @@ event that removed the balloon again.  Ignore the key release event.
 'titleold' was included in ":mkexrc" and ":mksession" files.
 
 ":set background&" didn't use the same logic as was used when starting up.
+
+When "umask" is set such that nothing is writable then the viminfo file would
+be written without write permission. (Julian Bridle)
 
  vim:tw=78:ts=8:ft=help:norl:

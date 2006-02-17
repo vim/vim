@@ -32,6 +32,11 @@
 /* Maximum number of commands from + or -c arguments. */
 #define MAX_ARG_CMDS 10
 
+/* values for "window_layout" */
+#define WIN_HOR	    1	    /* "-o" horizontally split windows */
+#define	WIN_VER	    2	    /* "-O" vertically split windows */
+#define	WIN_TABS    3	    /* "-p" windows on tab pages */
+
 /* Struct for various parameters passed between main() and other functions. */
 typedef struct
 {
@@ -65,7 +70,7 @@ typedef struct
 #endif
 #ifdef FEAT_WINDOWS
     int		window_count;		/* number of windows to use */
-    int		vert_windows;		/* "-O" used instead of "-o" */
+    int		window_layout;		/* 0, WIN_HOR, WIN_VER or WIN_TABS */
 #endif
 
 #ifdef FEAT_CLIENTSERVER
@@ -189,7 +194,6 @@ main
 #endif
 #ifdef FEAT_WINDOWS
     params.window_count = -1;
-    params.vert_windows = MAYBE;
 #endif
 
 #ifdef FEAT_TCL
@@ -416,8 +420,8 @@ main
     {
 	if (params.window_count == -1)
 	    params.window_count = 0;	/* open up to 3 windows */
-	if (params.vert_windows == MAYBE)
-	    params.vert_windows = TRUE;	/* use vertical split */
+	if (params.window_layout == 0)
+	    params.window_layout = WIN_VER;	/* use vertical split */
     }
 #endif
 
@@ -1738,12 +1742,21 @@ command_line_scan(parmp)
 		parmp->no_swap_file = TRUE;
 		break;
 
+	    case 'p':		/* "-p[N]" open N tab pages */
+#ifdef FEAT_WINDOWS
+		/* default is 0: open window for each file */
+		parmp->window_count = get_number_arg((char_u *)argv[0],
+								&argv_idx, 0);
+		parmp->window_layout = WIN_TABS;
+#endif
+		break;
+
 	    case 'o':		/* "-o[N]" open N horizontal split windows */
 #ifdef FEAT_WINDOWS
 		/* default is 0: open window for each file */
 		parmp->window_count = get_number_arg((char_u *)argv[0],
 								&argv_idx, 0);
-		parmp->vert_windows = FALSE;
+		parmp->window_layout = WIN_HOR;
 #endif
 		break;
 
@@ -1752,7 +1765,7 @@ command_line_scan(parmp)
 		/* default is 0: open window for each file */
 		parmp->window_count = get_number_arg((char_u *)argv[0],
 								&argv_idx, 0);
-		parmp->vert_windows = TRUE;
+		parmp->window_layout = WIN_VER;
 #endif
 		break;
 
@@ -2235,6 +2248,9 @@ create_windows(parmp)
     mparm_T	*parmp;
 {
 #ifdef FEAT_WINDOWS
+    int		rewind;
+    int		done = 0;
+
     /*
      * Create the number of windows that was requested.
      */
@@ -2246,12 +2262,17 @@ create_windows(parmp)
     {
 	/* Don't change the windows if there was a command in .vimrc that
 	 * already split some windows */
-	if (parmp->vert_windows == MAYBE)
-	    parmp->vert_windows = FALSE;
-	if (firstwin->w_next == NULL)
+	if (parmp->window_layout == 0)
+	    parmp->window_layout = WIN_HOR;
+	if (parmp->window_layout == WIN_TABS)
+	{
+	    parmp->window_count = make_tabpages(parmp->window_count);
+	    TIME_MSG("making tab pages");
+	}
+	else if (firstwin->w_next == NULL)
 	{
 	    parmp->window_count = make_windows(parmp->window_count,
-							 parmp->vert_windows);
+					     parmp->window_layout == WIN_VER);
 	    TIME_MSG("making windows");
 	}
 	else
@@ -2284,9 +2305,30 @@ create_windows(parmp)
 	++autocmd_no_leave;
 #endif
 #ifdef FEAT_WINDOWS
-	for (curwin = firstwin; curwin != NULL; curwin = W_NEXT(curwin))
-#endif
+	rewind = TRUE;
+	while (done++ < 1000)
 	{
+	    if (rewind)
+	    {
+		if (parmp->window_layout == WIN_TABS)
+		    goto_tabpage(1);
+		else
+		    curwin = firstwin;
+	    }
+	    else if (parmp->window_layout == WIN_TABS)
+	    {
+		if (curtab->tp_next == NULL)
+		    break;
+		goto_tabpage(0);
+	    }
+	    else
+	    {
+		if (curwin->w_next == NULL)
+		    break;
+		curwin = curwin->w_next;
+	    }
+	    rewind = FALSE;
+#endif
 	    curbuf = curwin->w_buffer;
 	    if (curbuf->b_ml.ml_mfp == NULL)
 	    {
@@ -2306,7 +2348,7 @@ create_windows(parmp)
 		check_swap_exists_action();
 #endif
 #ifdef FEAT_AUTOCMD
-		curwin = firstwin;	    /* start again */
+		rewind = TRUE;		/* start again */
 #endif
 	    }
 #ifdef FEAT_WINDOWS
@@ -2316,15 +2358,18 @@ create_windows(parmp)
 		(void)vgetc();	/* only break the file loading, not the rest */
 		break;
 	    }
-#endif
 	}
+#endif
+#ifdef FEAT_WINDOWS
+	if (parmp->window_layout == WIN_TABS)
+	    goto_tabpage(1);
+	else
+	    curwin = firstwin;
+	curbuf = curwin->w_buffer;
+#endif
 #ifdef FEAT_AUTOCMD
 	--autocmd_no_enter;
 	--autocmd_no_leave;
-#endif
-#ifdef FEAT_WINDOWS
-	curwin = firstwin;
-	curbuf = curwin->w_buffer;
 #endif
     }
 }
@@ -2351,9 +2396,18 @@ edit_buffers(parmp)
     arg_idx = 1;
     for (i = 1; i < parmp->window_count; ++i)
     {
-	if (curwin->w_next == NULL)	    /* just checking */
-	    break;
-	win_enter(curwin->w_next, FALSE);
+	if (parmp->window_layout == WIN_TABS)
+	{
+	    if (curtab->tp_next == NULL)	/* just checking */
+		break;
+	    goto_tabpage(0);
+	}
+	else
+	{
+	    if (curwin->w_next == NULL)		/* just checking */
+		break;
+	    win_enter(curwin->w_next, FALSE);
+	}
 
 	/* Only open the file if there is no file in this window yet (that can
 	 * happen when .vimrc contains ":sall") */
@@ -2375,6 +2429,9 @@ edit_buffers(parmp)
 	    break;
 	}
     }
+
+    if (parmp->window_layout == WIN_TABS)
+	goto_tabpage(1);
 # ifdef FEAT_AUTOCMD
     --autocmd_no_enter;
 # endif
@@ -2383,7 +2440,7 @@ edit_buffers(parmp)
     --autocmd_no_leave;
 # endif
     TIME_MSG("editing files in windows");
-    if (parmp->window_count > 1)
+    if (parmp->window_count > 1 && parmp->window_layout != WIN_TABS)
 	win_equal(curwin, FALSE, 'b');	/* adjust heights */
 }
 #endif /* FEAT_WINDOWS */
@@ -2825,6 +2882,7 @@ usage()
     main_msg(_("-U <gvimrc>\t\tUse <gvimrc> instead of any .gvimrc"));
 #endif
     main_msg(_("--noplugin\t\tDon't load plugin scripts"));
+    main_msg(_("-p[N]\t\tOpen N tab pages (default: one for each file)"));
     main_msg(_("-o[N]\t\tOpen N windows (default: one for each file)"));
     main_msg(_("-O[N]\t\tLike -o but split vertically"));
     main_msg(_("+\t\t\tStart at end of file"));

@@ -2232,7 +2232,7 @@ ex_listdo(eap)
 		if (!win_valid(win))
 		    break;
 		win_goto(win);
-		win = win->w_next;
+		win = curwin->w_next;
 	    }
 #endif
 	    else if (eap->cmdidx == CMD_bufdo)

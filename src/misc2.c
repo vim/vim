@@ -962,6 +962,12 @@ free_all_mem()
 
     ++autocmd_block;	    /* don't want to trigger autocommands here */
 
+#ifdef FEAT_WINDOWS
+    /* close all tabs and windows */
+    do_cmdline_cmd((char_u *)"tabonly!");
+    do_cmdline_cmd((char_u *)"only!");
+#endif
+
 # if defined(FEAT_SYN_HL)
     /* Free all spell info. */
     spell_free_all();
@@ -1012,7 +1018,7 @@ free_all_mem()
     free_tag_stuff();
     free_cd_dir();
     set_expr_line(NULL);
-    diff_clear();
+    diff_clear(curtab);
     clear_sb_text();	      /* free any scrollback text */
 
     /* Free some global vars. */
@@ -2792,7 +2798,7 @@ set_fileformat(t, opt_flags)
 #ifdef FEAT_WINDOWS
     /* This may cause the buffer to become (un)modified. */
     check_status(curbuf);
-    redraw_tabpage = TRUE;
+    redraw_tabline = TRUE;
 #endif
 #ifdef FEAT_TITLE
     need_maketitle = TRUE;	    /* set window title later */
