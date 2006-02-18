@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	XHTML 1.0 Strict
 " Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
-" Last Change:	2006 Feb 6
+" Last Change:	2006 Feb 18
 
 function! htmlcomplete#CompleteTags(findstart, base)
   if a:findstart
@@ -540,24 +540,26 @@ function! htmlcomplete#CompleteTags(findstart, base)
 		let opentag = xmlcomplete#GetLastOpenTag("b:unaryTagsStack")
 		return [opentag.">"]
 	endif
-	" Deal with tag completion.
-	let opentag = xmlcomplete#GetLastOpenTag("b:unaryTagsStack")
-	if opentag == ''
-		" Hack for sometimes failing GetLastOpenTag.
-		" As far as I tested fail isn't GLOT fault but problem
-		" of invalid document - not properly closed tags and other mish-mash.
-		" If returns empty string assume <body>. Safe bet.
-		let opentag = 'body'
-	endif
-	" }}}
 	" Load data {{{
 	if !exists("g:xmldata_xhtml10s")
 		runtime! autoload/xml/xhtml10s.vim
 	endif
 	" }}}
 	" Tag completion {{{
+	" Deal with tag completion.
+	let opentag = xmlcomplete#GetLastOpenTag("b:unaryTagsStack")
+	if opentag == ''
+		" Hack for sometimes failing GetLastOpenTag.
+		" As far as I tested fail isn't GLOT fault but problem
+		" of invalid document - not properly closed tags and other mish-mash.
+		" Also when document is empty. Return list of *all* tags.
+	    let tags = keys(g:xmldata_xhtml10s)
+		call filter(tags, 'v:val !~ "^vimxml"')
+	else
+		let tags = g:xmldata_xhtml10s[opentag][0]
+	endif
+	" }}}
 
-	let tags = g:xmldata_xhtml10s[opentag][0]
 
 	for m in sort(tags)
 		if m =~ '^'.context

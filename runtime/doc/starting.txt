@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.0aa.  Last change: 2006 Feb 14
+*starting.txt*  For Vim version 7.0aa.  Last change: 2006 Feb 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -372,6 +372,13 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 -O[N]		Open N windows, split vertically.  Otherwise it's like -o.
 		If both the -o and the -O option are given, the last one on
 		the command line determines how the windows will be split.
+		{not in Vi}
+
+							*-p*
+-p[N]		Open N tab pages.  If [N] is not given, one tab page is opened
+		for every file given as argument.  The maximum is 10 tab
+		pages.  If there are more tab pages than arguments, the last
+		few tab pages will be editing an empty file.
 		{not in Vi}
 
 							*-T*
@@ -831,6 +838,8 @@ accordingly.  Vim proceeds in this order:
 11. Open all windows
 	When the |-o| flag was given, windows will be opened (but not
 	displayed yet).
+	When the |-p| flag was given, tab pages will be created (but not
+	displayed yet).
 	When switching screens, it happens now.  Redrawing starts.
 	If the "-q" flag was given to Vim, the first error is jumped to.
 	Buffers for all windows will be loaded.
@@ -1202,6 +1211,9 @@ available in the internal variable "v:this_session" |this_session-variable|.
 An example mapping: >
   :nmap <F2> :wa<Bar>exe "mksession! " . v:this_session<CR>:so ~/sessions/
 This saves the current Session, and starts off the command to load another.
+
+A session only includes the current tab page.  There currently is no option to
+store all tab pages. |tab-page|
 
 The |SessionLoadPost| autocmd event is triggered after a session file is
 loaded/sourced.

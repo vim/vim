@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	XML
 " Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
-" Last Change:	2006 Feb 6
+" Last Change:	2006 Feb 18
 
 " This function will create Dictionary with users namespace strings and values
 " canonical (system) names of data files.  Names should be lowercase,
@@ -319,10 +319,13 @@ function! xmlcomplete#CompleteTags(findstart, base)
 	let opentag = xmlcomplete#GetLastOpenTag("b:unaryTagsStack")
 	let opentag = substitute(opentag, '^\k*:', '', '')
 	if opentag == ''
-		return []
+		"return []
+	    let tags = keys(g:xmldata{'_'.g:xmldata_connection[b:xml_namespace]})
+		call filter(tags, 'v:val !~ "^vimxml"')
+	else
+		let tags = g:xmldata{'_'.g:xmldata_connection[b:xml_namespace]}[opentag][0]
 	endif
 
-	let tags = g:xmldata{'_'.g:xmldata_connection[b:xml_namespace]}[opentag][0]
 	let context = substitute(context, '^\k*:', '', '')
 
 	for m in tags

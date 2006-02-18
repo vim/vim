@@ -621,6 +621,7 @@ static void f_synID __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_synIDattr __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_synIDtrans __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_system __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_tabpagenr __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_taglist __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_tagfiles __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_tempname __ARGS((typval_T *argvars, typval_T *rettv));
@@ -6983,6 +6984,7 @@ static struct fst
     {"synIDattr",	2, 3, f_synIDattr},
     {"synIDtrans",	1, 1, f_synIDtrans},
     {"system",		1, 2, f_system},
+    {"tabpagenr",	0, 1, f_tabpagenr},
     {"tagfiles",	0, 0, f_tagfiles},
     {"taglist",		1, 1, f_taglist},
     {"tempname",	0, 0, f_tempname},
@@ -14865,6 +14867,40 @@ done:
     }
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = res;
+}
+
+/*
+ * "tabpagenr()" function
+ */
+/* ARGSUSED */
+    static void
+f_tabpagenr(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    int		nr = 1;
+#ifdef FEAT_WINDOWS
+    tabpage_T	*tp;
+    char_u	*arg;
+
+    if (argvars[0].v_type != VAR_UNKNOWN)
+    {
+	arg = get_tv_string_chk(&argvars[0]);
+	nr = 0;
+	if (arg != NULL)
+	{
+	    if (STRCMP(arg, "$") == 0)
+		for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
+		    ++nr;
+	    else
+		EMSG2(_(e_invexpr2), arg);
+	}
+    }
+    else
+	for (tp = first_tabpage; tp != curtab; tp = tp->tp_next)
+	    ++nr;
+#endif
+    rettv->vval.v_number = nr;
 }
 
 /*

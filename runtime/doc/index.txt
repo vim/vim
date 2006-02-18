@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 7.0aa.  Last change: 2006 Jan 26
+*index.txt*     For Vim version 7.0aa.  Last change: 2006 Feb 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1305,7 +1305,7 @@ The commands are sorted on the non-optional part of their name.
 |:omap|		:om[ap]		like ":map" but for Operator-pending mode
 |:omapclear|	:omapc[lear]	remove all mappings for Operator-pending mode
 |:omenu|	:ome[nu]	add menu for Operator-pending mode
-|:only|		:on[ly]		close all windows except current one
+|:only|		:on[ly]		close all windows except the current one
 |:onoremap|	:ono[remap]	like ":noremap" but for Operator-pending mode
 |:onoremenu|	:onoreme[nu]	like ":noremenu" but for Operator-pending mode
 |:options|	:opt[ions]	open the options-window
@@ -1436,6 +1436,13 @@ The commands are sorted on the non-optional part of their name.
 |:syncbind|	:sync[bind]	sync scroll binding
 |:t|		:t		same as ":copy"
 |:tNext|	:tN[ext]	jump to previous matching tag
+|:tabclose|	:tabc[lose]	close current tab page
+|:tabedit|	:tabe[dit]	edit a file in a new tab page
+|:tabfind|	:tabf[ind]	find file in 'path', edit it in a new tab page
+|:tabnew|	:tabn[ew]	edit a file in a new tab page
+|:tabonly|	:tabo[nly]	close all tab pages except the current one
+|:tabs|		:tabs		list the tab pages and what they contain
+|:tab|		:tab		jump to another tab page
 |:tag|		:ta[g]		jump to tag
 |:tags|		:tags		show the contents of the tag stack
 |:tcl|		:tc[l]		execute Tcl command

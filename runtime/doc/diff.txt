@@ -1,4 +1,4 @@
-*diff.txt*      For Vim version 7.0aa.  Last change: 2006 Jan 22
+*diff.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -40,6 +40,10 @@ then append the file name of the first argument to the directory name to find
 the file.
 
 This only works when a standard "diff" command is available.  See 'diffexpr'.
+
+Diffs are local to the current tab page |tab-page|.  You can't see diffs with
+a window in another tab page.  This does make it possible to have several
+diffs at the same time, each in their own tab page.
 
 What happens is that Vim opens a window for each of the files.  This is like
 using the |-O| argument.  This uses vertical splits.  If you prefer horizontal
@@ -113,7 +117,7 @@ file for a moment and come back to the same file and be in diff mode again.
 							*:diffo* *:diffoff*
 :diffoff	Switch off diff mode for the current window.
 
-:diffoff!	Switch off diff mode for all windows.
+:diffoff!	Switch off diff mode for all windows in the current tab page.
 
 The ":diffoff" command resets the relevant options to their default value.
 This may be different from what the values were before diff mode was started,

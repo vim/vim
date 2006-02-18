@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 17
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -32,51 +32,14 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 Support WINDOW TABS.  Works like several pages, each with their own split
 windows.  Let's call them "tab pages".
-    - Add tabpage(): returns current tab page number.
-    - ":tabsplit" makes a copy of the current tab page.
-    - Add TabLeavePre and TabEnterPost autocommands
     - line at top of frame with tabs.
 	Add 'tabtext' option, like 'statusline'.
-    - check for E999
-    - docs:
-	General remark: commands that work on windows only work on the windows
-	    in the current tab page.  Including :windo.
-	Session file only contains the current tab page.
-	:tabedit
-	:tabfind
-	:tab N
-	:tabs
-	{count}gt
-	:close may close current tab page if there is one window.
-	:tabclose
-	:tabclose N - close tab N
-	:tabonly - close all other tabs.
-	:close and :quit (last window in tab)
-	"gt": Use "1gt" - "99gt" to switch to another tab.  "gt" goes to the
-	     next one.  Hint in docs: To mess with another buffer, without
-	     changing the window layout, do this in another tab.
-	'tabline' values 0/1/2
-	mouse click in tabline:
-	    select a tab page
-	    X closes current tab page
-	:argall and :ball only opens window for buffers that are not in any
-	      window in any tab page
-	:diffoff only works in the current tab page
-	diff works per tab page
-        "vim -p *" opens each file in a separate tab page (up to 10).
-    - add GUI Tabs for some systems.
-      Patch for GTK 1.2 passed on by Christian Michon, 2004 Jan 6.
-      Simple patch for GTK by Luis M (nov 7).
     - Need to be able to search the windows in inactive tabs, e.g. for the
-      quickfix window.
-Future enhancements:
-    tab page local variables?
-    tab page local options?  'diffopt' could differ between tab pages.
-    tab page local colors?
+      quickfix window?
+    - docs:
+	Add info to the user manual somewhere.
 
 Crash with X command server (Ciaran McCreesh).
-
-Motif: in diff mode dragging one scrollbar doesn't update the other one.
 
 Ctags still hasn't included the patch.  Darren is looking for someone to do
 maintanance.
@@ -493,6 +456,16 @@ Patch for "paranoid mode" by Kevin Collins, March 7.  Needs much more work.
 
 Check if file explorer can handle directory names and links with a single
 quote. (Nieko Maatjes, 2005 Jan 4)
+
+Future enhancements for tab pages:
+    - Add GUI Tabs for all systems.
+      Patch for GTK 1.2 passed on by Christian Michon, 2004 Jan 6.
+      Simple patch for GTK by Luis M (nov 7).
+    - ":tabsplit" makes a copy of the current tab page.
+    - Add local variables for each tab page?
+    - Add local options for each tab page?  E.g., 'diffopt' could differ
+      between tab pages.
+    - Add local highlighting for a tab page?
 
 
 Vi incompatibility:

@@ -6228,7 +6228,7 @@ ex_tabclose(eap)
     else
 # endif
 	if (first_tabpage->tp_next == NULL)
-	    EMSG(_("E999: Cannot close last tab page"));
+	    EMSG(_("E784: Cannot close last tab page"));
 	else
 	{
 	    if (eap->addr_count > 0)
@@ -6239,7 +6239,7 @@ ex_tabclose(eap)
 		    beep_flush();
 		    return;
 		}
-		if (tp->tp_topframe != topframe)
+		if (tp != curtab)
 		{
 		    tabpage_close_other(tp, eap->forceit);
 		    return;
@@ -6975,9 +6975,10 @@ theend:
 }
 
 /*
- * :tabedit [[+command] file]	open new Tab page with empty window
- * :tabedit [[+command] file]	open new Tab page and edit "file"
- * :tabfind [[+command] file]	open new Tab page and find "file"
+ * :tabedit			open new Tab page with empty window
+ * :tabedit [+command] file	open new Tab page and edit "file"
+ * :tabnew [[+command] file]	just like :tabedit
+ * :tabfind [+command] file	open new Tab page and find "file"
  */
     void
 ex_tabedit(eap)
@@ -10624,6 +10625,11 @@ ex_match(eap)
 	    if (*end != NUL && !ends_excmd(*skipwhite(end + 1)))
 	    {
 		eap->errmsg = e_trailing;
+		return;
+	    }
+	    if (*end != *p)
+	    {
+		EMSG2(_(e_invarg2), p);
 		return;
 	    }
 

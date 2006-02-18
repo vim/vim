@@ -892,6 +892,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 't_vs'	term.txt	/*'t_vs'*
 't_xs'	term.txt	/*'t_xs'*
 'ta'	options.txt	/*'ta'*
+'tabline'	options.txt	/*'tabline'*
 'tabstop'	options.txt	/*'tabstop'*
 'tag'	options.txt	/*'tag'*
 'tagbsearch'	options.txt	/*'tagbsearch'*
@@ -899,6 +900,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'tagrelative'	options.txt	/*'tagrelative'*
 'tags'	options.txt	/*'tags'*
 'tagstack'	options.txt	/*'tagstack'*
+'tal'	options.txt	/*'tal'*
 'tb'	options.txt	/*'tb'*
 'tbi'	options.txt	/*'tbi'*
 'tbidi'	options.txt	/*'tbidi'*
@@ -1224,6 +1226,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 -n	starting.txt	/*-n*
 -nb	starting.txt	/*-nb*
 -o	starting.txt	/*-o*
+-p	starting.txt	/*-p*
 -q	starting.txt	/*-q*
 -qf	starting.txt	/*-qf*
 -r	starting.txt	/*-r*
@@ -2638,6 +2641,14 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :tN	tagsrch.txt	/*:tN*
 :tNext	tagsrch.txt	/*:tNext*
 :ta	tagsrch.txt	/*:ta*
+:tab	tabpage.txt	/*:tab*
+:tabc	tabpage.txt	/*:tabc*
+:tabclose	tabpage.txt	/*:tabclose*
+:tabe	tabpage.txt	/*:tabe*
+:tabedit	tabpage.txt	/*:tabedit*
+:tabo	tabpage.txt	/*:tabo*
+:tabonly	tabpage.txt	/*:tabonly*
+:tabs	tabpage.txt	/*:tabs*
 :tag	tagsrch.txt	/*:tag*
 :tags	tagsrch.txt	/*:tags*
 :tc	if_tcl.txt	/*:tc*
@@ -3875,6 +3886,7 @@ E780	spell.txt	/*E780*
 E781	spell.txt	/*E781*
 E782	spell.txt	/*E782*
 E783	spell.txt	/*E783*
+E784	tabpage.txt	/*E784*
 E79	message.txt	/*E79*
 E80	message.txt	/*E80*
 E800	arabic.txt	/*E800*
@@ -4086,6 +4098,8 @@ TCL	if_tcl.txt	/*TCL*
 TERM	starting.txt	/*TERM*
 TTpro-telnet	syntax.txt	/*TTpro-telnet*
 Tab	intro.txt	/*Tab*
+TabEnterPost	autocmd.txt	/*TabEnterPost*
+TabLeavePre	autocmd.txt	/*TabLeavePre*
 Tcl	if_tcl.txt	/*Tcl*
 TermChanged	autocmd.txt	/*TermChanged*
 TermResponse	autocmd.txt	/*TermResponse*
@@ -5340,6 +5354,7 @@ group-name	syntax.txt	/*group-name*
 gs	various.txt	/*gs*
 gsp.vim	syntax.txt	/*gsp.vim*
 gstar	pattern.txt	/*gstar*
+gt	tabpage.txt	/*gt*
 gtk-tooltip-colors	gui_x11.txt	/*gtk-tooltip-colors*
 gu	change.txt	/*gu*
 gugu	change.txt	/*gugu*
@@ -5429,6 +5444,7 @@ hebrew	hebrew.txt	/*hebrew*
 hebrew.txt	hebrew.txt	/*hebrew.txt*
 help	various.txt	/*help*
 help-context	help.txt	/*help-context*
+help-tags	tags	1
 help-translated	various.txt	/*help-translated*
 help-xterm-window	various.txt	/*help-xterm-window*
 help.txt	help.txt	/*help.txt*
@@ -6927,6 +6943,13 @@ t_vi	term.txt	/*t_vi*
 t_vs	term.txt	/*t_vs*
 t_xs	term.txt	/*t_xs*
 tab	intro.txt	/*tab*
+tab-page	tabpage.txt	/*tab-page*
+tab-page-commands	tabpage.txt	/*tab-page-commands*
+tab-page-intro	tabpage.txt	/*tab-page-intro*
+tab-page-other	tabpage.txt	/*tab-page-other*
+tabpage	tabpage.txt	/*tabpage*
+tabpage.txt	tabpage.txt	/*tabpage.txt*
+tabpagenr()	eval.txt	/*tabpagenr()*
 tag	tagsrch.txt	/*tag*
 tag-!	tagsrch.txt	/*tag-!*
 tag-any-white	tagsrch.txt	/*tag-any-white*

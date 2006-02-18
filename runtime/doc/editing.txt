@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.0aa.  Last change: 2006 Jan 20
+*editing.txt*   For Vim version 7.0aa.  Last change: 2006 Feb 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1014,6 +1014,9 @@ The names can be in upper- or lowercase.
 			Vim refuses to |abandon| the current buffer, and when
 			the last file in the argument list has not been
 			edited.
+			If there are other tab pages and quitting the last
+			window in the current tab page the current tab page is
+			closed |tab-page|.
 
 :conf[irm] q[uit]	Quit, but give prompt when changes have been made, or
 			the last file in the argument list has not been

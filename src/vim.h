@@ -347,7 +347,7 @@ typedef unsigned long	long_u;
 /*
  * The characters and attributes cached for the screen.
  */
-#define schar_T	char_u
+typedef char_u schar_T;
 #ifdef FEAT_SYN_HL
 typedef unsigned short sattr_T;
 # define MAX_TYPENR 65535
@@ -1109,6 +1109,8 @@ enum auto_event
     EVENT_SPELLFILEMISSING,	/* spell file missing */
     EVENT_CURSORMOVED,		/* cursor was moved */
     EVENT_CURSORMOVEDI,		/* cursor was moved in Insert mode */
+    EVENT_TABLEAVEPRE,		/* before leaving a tab page */
+    EVENT_TABENTERPOST,		/* after entering a tab page */
     NUM_EVENTS			/* MUST be the last one */
 };
 

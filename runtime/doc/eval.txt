@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 14
+*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1690,6 +1690,7 @@ synIDattr( {synID}, {what} [, {mode}])
 				String	attribute {what} of syntax ID {synID}
 synIDtrans( {synID})		Number	translated syntax ID of {synID}
 system( {expr} [, {input}])	String	output of shell command/filter {expr}
+tabpage( [{expr}])		Number	number of current tab page
 taglist( {expr})			List	list of tags matching {expr}
 tagfiles()			List    tags files used
 tempname()			String	name for a temporary file
@@ -1705,7 +1706,7 @@ winbufnr( {nr})			Number	buffer number of window {nr}
 wincol()			Number	window column of the cursor
 winheight( {nr})		Number	height of window {nr}
 winline()			Number	window line of the cursor
-winnr()				Number	number of current window
+winnr( [{expr}])		Number	number of current window
 winrestcmd()			String	returns command to restore window sizes
 winwidth( {nr})			Number	width of window {nr}
 writefile({list}, {fname} [, {binary}])
@@ -4447,6 +4448,14 @@ system({expr} [, {input}])				*system()* *E677*
 		Use |:checktime| to force a check.
 
 
+tabpagenr([{arg}])						*tabpagenr()*
+		The result is a Number, which is the number of the current
+		tab page.  The first tab page has number 1.
+		When the optional argument is "$", the number of the last tab
+		page is returned (the tab page count).
+		The number can be used with the |:tab| command.
+
+
 taglist({expr})							*taglist()*
 		Returns a list of tags matching the regular expression {expr}.
 		Each list item is a dictionary with at least the following
@@ -4618,7 +4627,7 @@ winline()	The result is a Number, which is the screen line of the cursor
 winnr([{arg}])	The result is a Number, which is the number of the current
 		window.  The top window has number 1.
 		When the optional argument is "$", the number of the
-		last window is returnd (the window count).
+		last window is returned (the window count).
 		When the optional argument is "#", the number of the last
 		accessed window is returned (where |CTRL-W_p| goes to).
 		If there is no previous window 0 is returned.

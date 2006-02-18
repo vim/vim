@@ -1710,15 +1710,6 @@ command_line_scan(parmp)
 #endif
 		break;
 
-#ifdef TARGET_API_MAC_OSX
-		/* For some reason on MacOS X, an argument like:
-		   -psn_0_10223617 is passed in when invoke from Finder
-		   or with the 'open' command */
-	    case 'p':
-		argv_idx = -1; /* bypass full -psn */
-		main_start_gui();
-		break;
-#endif
 	    case 'M':		/* "-M"  no changes or writing of files */
 		reset_modifiable();
 		/* FALLTHROUGH */
@@ -1743,6 +1734,17 @@ command_line_scan(parmp)
 		break;
 
 	    case 'p':		/* "-p[N]" open N tab pages */
+#ifdef TARGET_API_MAC_OSX
+		/* For some reason on MacOS X, an argument like:
+		   -psn_0_10223617 is passed in when invoke from Finder
+		   or with the 'open' command */
+		if (argv[0][argv_idx] == 's')
+		{
+		    argv_idx = -1; /* bypass full -psn */
+		    main_start_gui();
+		    break;
+		}
+#endif
 #ifdef FEAT_WINDOWS
 		/* default is 0: open window for each file */
 		parmp->window_count = get_number_arg((char_u *)argv[0],

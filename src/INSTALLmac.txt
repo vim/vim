@@ -36,13 +36,16 @@ MacOS Classic is no longer supported.  If you really want it use Vim 6.4.
  directory.  You can move this bundle (the Vim.app directory) anywhere
  you want, for example, /Applications.
 
+ You need at least Xcode 1.5 to compile Vim 7.0.
+
+
 1.2 X-Windows or Plain Text
 
  If you do not want the Carbon interface, you must explicitly tell
  configure to use a different GUI.
 
   cd ..
-  ./configure --enable-gui=gtk2
+  ./configure --disable-darwin --enable-gui=gtk2
   make; make install
 
  NOTE: The following GUI options are supported:

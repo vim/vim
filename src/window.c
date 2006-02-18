@@ -46,7 +46,7 @@ static int win_alloc_firstwin __ARGS((void));
 #if defined(FEAT_WINDOWS) || defined(PROTO)
 static tabpage_T *alloc_tabpage __ARGS((void));
 static void free_tabpage __ARGS((tabpage_T *tp));
-static void leave_tabpage __ARGS((tabpage_T *tp));
+static int leave_tabpage __ARGS((buf_T *new_curbuf));
 static void enter_tabpage __ARGS((tabpage_T *tp, buf_T *old_curbuf));
 static void frame_fix_height __ARGS((win_T *wp));
 static int frame_minheight __ARGS((frame_T *topfrp, win_T *next_curwin));
@@ -2282,15 +2282,15 @@ alt_tabpage()
 {
     tabpage_T	*tp;
 
-    /* Use the next tab page if it exists. */
-    if (curtab->tp_next != NULL)
+    /* Use the next tab page if we are currently at the first one. */
+    if (curtab == first_tabpage)
 	return curtab->tp_next;
 
     /* Find the previous tab page. */
     for (tp = first_tabpage; tp->tp_next != NULL; tp = tp->tp_next)
 	if (tp->tp_next == curtab)
-	    return tp;
-    return first_tabpage;
+	    break;
+    return tp;
 }
 
 /*
@@ -2963,7 +2963,11 @@ win_new_tabpage()
 	return FAIL;
 
     /* Remember the current windows in this Tab page. */
-    leave_tabpage(curtab);
+    if (leave_tabpage(NULL) == FAIL)
+    {
+	vim_free(newtp);
+	return FAIL;
+    }
     curtab = newtp;
 
     /* Create a new empty window. */
@@ -2985,12 +2989,7 @@ win_new_tabpage()
     }
 
     /* Failed, get back the previous Tab page */
-    topframe = tp->tp_topframe;
-    curwin = tp->tp_curwin;
-    prevwin = tp->tp_prevwin;
-    firstwin = tp->tp_firstwin;
-    lastwin = tp->tp_lastwin;
-    curtab = tp;
+    enter_tabpage(curtab, curbuf);
     return FAIL;
 }
 
@@ -3060,12 +3059,33 @@ find_tabpage(n)
 }
 
 /*
- * Prepare for leaving the current tab page "tp".
+ * Prepare for leaving the current tab page.
+ * When autocomands change "curtab" we don't leave the tab page and return
+ * FAIL.
+ * Careful: When OK is returned need to get a new tab page very very soon!
  */
-    static void
-leave_tabpage(tp)
-    tabpage_T	*tp;
+/*ARGSUSED*/
+    static int
+leave_tabpage(new_curbuf)
+    buf_T	*new_curbuf;	    /* what is going to be the new curbuf,
+				       NULL if unknown */
 {
+    tabpage_T	*tp = curtab;
+
+#ifdef FEAT_AUTOCMD
+    if (new_curbuf != curbuf)
+    {
+	apply_autocmds(EVENT_BUFLEAVE, NULL, NULL, FALSE, curbuf);
+	if (curtab != tp)
+	    return FAIL;
+    }
+    apply_autocmds(EVENT_WINLEAVE, NULL, NULL, FALSE, curbuf);
+    if (curtab != tp)
+	return FAIL;
+    apply_autocmds(EVENT_TABLEAVEPRE, NULL, NULL, FALSE, curbuf);
+    if (curtab != tp)
+	return FAIL;
+#endif
 #if defined(FEAT_GUI)
     /* Remove the scrollbars.  They may be added back later. */
     if (gui.in_use)
@@ -3079,6 +3099,7 @@ leave_tabpage(tp)
     tp->tp_old_Columns = Columns;
     firstwin = NULL;
     lastwin = NULL;
+    return OK;
 }
 
 /*
@@ -3100,6 +3121,8 @@ enter_tabpage(tp, old_curbuf)
     prevwin = tp->tp_prevwin;
 
 #ifdef FEAT_AUTOCMD
+    apply_autocmds(EVENT_TABENTERPOST, NULL, NULL, FALSE, curbuf);
+    apply_autocmds(EVENT_WINENTER, NULL, NULL, FALSE, curbuf);
     if (old_curbuf != curbuf)
 	apply_autocmds(EVENT_BUFENTER, NULL, NULL, FALSE, curbuf);
 #endif
@@ -3114,10 +3137,10 @@ enter_tabpage(tp, old_curbuf)
     /* The tabpage line may have appeared or disappeared, may need to resize
      * the frames for that.  When the Vim window was resized need to update
      * frame sizes too. */
-    if (tp->tp_old_Rows != Rows || old_off != firstwin->w_winrow)
+    if (curtab->tp_old_Rows != Rows || old_off != firstwin->w_winrow)
 	shell_new_rows();
 #ifdef FEAT_VERTSPLIT
-    if (tp->tp_old_Columns != Columns && starting == 0)
+    if (curtab->tp_old_Columns != Columns && starting == 0)
 	shell_new_columns();	/* update window widths */
 #endif
 
@@ -3143,20 +3166,16 @@ enter_tabpage(tp, old_curbuf)
 goto_tabpage(n)
     int	    n;
 {
-    tabpage_T	*otp = curtab;
     tabpage_T	*tp;
     int		i;
-
-    if (otp == NULL)
-	return;
 
     if (n == 0)
     {
 	/* No count, go to next tab page, wrap around end. */
-	if (otp->tp_next == NULL)
+	if (curtab->tp_next == NULL)
 	    tp = first_tabpage;
 	else
-	    tp = otp->tp_next;
+	    tp = curtab->tp_next;
     }
     else
     {
@@ -3171,8 +3190,13 @@ goto_tabpage(n)
 	}
     }
 
-    leave_tabpage(otp);
-    enter_tabpage(tp, curbuf);
+    if (leave_tabpage(tp->tp_curwin->w_buffer) == OK)
+    {
+	if (valid_tabpage(tp))
+	    enter_tabpage(tp, curbuf);
+	else
+	    enter_tabpage(curtab, curbuf);
+    }
 }
 
 /*

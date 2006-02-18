@@ -114,7 +114,6 @@ static int	  compl_pending = FALSE;
 static pos_T	  compl_startpos;
 static colnr_T	  compl_col = 0;	    /* column where the text starts
 					     * that is being completed */
-static int	  save_sm = -1;
 static char_u	  *compl_orig_text = NULL;  /* text as it was before
 					     * completion started */
 static int	  compl_cont_mode = 0;
@@ -2733,8 +2732,16 @@ ins_compl_clear()
     compl_pattern = NULL;
     vim_free(compl_leader);
     compl_leader = NULL;
-    save_sm = -1;
     edit_submode_extra = NULL;
+}
+
+/*
+ * Return TRUE when Insert completion is active.
+ */
+    int
+ins_compl_active()
+{
+    return compl_started;
 }
 
 /*
@@ -3071,8 +3078,6 @@ ins_compl_prep(c)
 	    compl_matches = 0;
 	    msg_clr_cmdline();		/* necessary for "noshowmode" */
 	    ctrl_x_mode = 0;
-	    if (save_sm >= 0)
-		p_sm = save_sm;
 	    if (edit_submode != NULL)
 	    {
 		edit_submode = NULL;
@@ -3903,10 +3908,6 @@ ins_complete(c)
     if (!compl_started)
     {
 	/* First time we hit ^N or ^P (in a row, I mean) */
-
-	/* Turn off 'sm' so we don't show matches with ^X^L */
-	save_sm = p_sm;
-	p_sm = FALSE;
 
 	did_ai = FALSE;
 #ifdef FEAT_SMARTINDENT

@@ -3598,14 +3598,9 @@ gui_update_scrollbars(force)
      * have both a left and right scrollbar, and we drag one of them, we still
      * need to update the other one.
      */
-    if (       (gui.dragged_sb == SBAR_LEFT
-		|| gui.dragged_sb == SBAR_RIGHT)
-	    && (!gui.which_scrollbars[SBAR_LEFT]
-		|| !gui.which_scrollbars[SBAR_RIGHT])
-	    && !force)
-	return;
-
-    if (!force && (gui.dragged_sb == SBAR_LEFT || gui.dragged_sb == SBAR_RIGHT))
+    if (!force && (gui.dragged_sb == SBAR_LEFT || gui.dragged_sb == SBAR_RIGHT)
+	    && gui.which_scrollbars[SBAR_LEFT]
+	    && gui.which_scrollbars[SBAR_RIGHT])
     {
 	/*
 	 * If we have two scrollbars and one of them is being dragged, just
@@ -3618,7 +3613,6 @@ gui_update_scrollbars(force)
 		    gui.dragged_wp->w_scrollbars[0].value,
 		    gui.dragged_wp->w_scrollbars[0].size,
 		    gui.dragged_wp->w_scrollbars[0].max);
-	return;
     }
 
     /* avoid that moving components around generates events */
@@ -3628,6 +3622,12 @@ gui_update_scrollbars(force)
     {
 	if (wp->w_buffer == NULL)	/* just in case */
 	    continue;
+	/* Skip a scrollbar that is being dragged. */
+	if (!force && (gui.dragged_sb == SBAR_LEFT
+					     || gui.dragged_sb == SBAR_RIGHT)
+		&& gui.dragged_wp == wp)
+	    continue;
+
 #ifdef SCROLL_PAST_END
 	max = wp->w_buffer->b_ml.ml_line_count - 1;
 #else
@@ -3759,11 +3759,12 @@ gui_update_scrollbars(force)
 #endif
 	    sb->size = size;
 	    sb->max = max;
-	    if (gui.which_scrollbars[SBAR_LEFT] && gui.dragged_sb != SBAR_LEFT)
+	    if (gui.which_scrollbars[SBAR_LEFT]
+		    && (gui.dragged_sb != SBAR_LEFT || gui.dragged_wp != wp))
 		gui_mch_set_scrollbar_thumb(&wp->w_scrollbars[SBAR_LEFT],
 					    val, size, max);
 	    if (gui.which_scrollbars[SBAR_RIGHT]
-					&& gui.dragged_sb != SBAR_RIGHT)
+		    && (gui.dragged_sb != SBAR_RIGHT || gui.dragged_wp != wp))
 		gui_mch_set_scrollbar_thumb(&wp->w_scrollbars[SBAR_RIGHT],
 					    val, size, max);
 	}

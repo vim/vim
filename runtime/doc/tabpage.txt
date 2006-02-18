@@ -1,0 +1,125 @@
+*tabpage.txt*   For Vim version 7.0aa.  Last change: 2006 Feb 18
+
+
+		  VIM REFERENCE MANUAL    by Bram Moolenaar
+
+
+Editing with windows in multuple tab pages.		*tab-page* *tabpage*
+
+The commands which have been added to use multiple tab pages are explained
+here.  Additionally, there are explanations for commands that work differently
+when used in combination with more than one tab page.
+
+1.  Introduction			|tab-page-intro|
+2.  Commands				|tab-page-commands|
+3.  Other items				|tab-page-other|
+
+{Vi does not have any of these commands}
+{not able to use multiple tab pages when the |+windows| feature was disabled
+at compile time}
+
+==============================================================================
+1. Introduction						*tab-page-intro*
+
+A tab page holds one or more windows.  You can easily switch between tab
+pages, so that you have several collections of windows to work on different
+things.
+
+Usually you will see a list of labels at the top of the Vim window, one for
+each tab page.  With the mouse you can click on the label to jump to that tab
+page.  There are other ways to move between tab pages, see below.
+
+Most commands work only in the current tab page.  That includes the |CTRL-W|
+commands, |:windo|, |:all| and |:ball|.  The commands that are aware of
+other tab pages than the current one are mentioned below.
+
+Tabs are also a nice way to edit a buffer temporarily without changing the
+current window layout.  Open a new tab page, do whatever you want to do and
+close the tab page.
+
+==============================================================================
+2. Commands						*tab-page-commands*
+
+OPENING A NEW TAB PAGE:
+
+When starting Vim "vim -p filename ..." opens each file argument in a separate
+tab page (up to 10). |-p|
+
+:tabe[dit]						*:tabe* *:tabedit*
+:tabn[ew]	Open a new tab page with an empty window.
+
+:tabe[dit] [++opt] [+cmd] {file}
+:tabn[ew] [++opt] [+cmd] {file}
+		Open a new tab page and edit {file}, like with |:edit|.
+
+:tabf[ind] [++opt] [+cmd] {file}
+		Open a new tab page and edit {file} in 'path', like with
+		|:find|.
+		{not available when the |+file_in_path| feature was disabled
+		at compile time}
+
+
+CLOSING A TAB PAGE:
+
+Using |:close| in the last window of a tab page closes it.
+
+Using the mouse: If the tab page line is displayed you can click in the "X" at
+the top right to close the current tab page. |'tabline'|
+
+							*:tabc* *:tabclose*
+:tabc[lose][!]	Close current tab page.
+		This command fails when:
+		- There is only one tab page on the screen.		*E784*
+		- When 'hidden' is not set, [!] is not used, a buffer has
+		  changes, and there is no other window on this buffer.
+		Changes to the buffer are not written and won't get lost, so
+		this is a "safe" command.
+
+:tabc[lose][!] {count}
+		Close tab page {count}.  Fails in the same way as ':tabclose"
+		above.
+
+							*:tabo* *:tabonly*
+:tabo[nly][!]	Close all other tab pages.
+		When the 'hidden' option is set, all buffers in closed windows
+		become hidden.
+		When 'hidden' is not set, and the 'autowrite' option is set,
+		modified buffers are written.  Otherwise, windows that have
+		buffers that are modified are not removed, unless the [!] is
+		given, then they become hidden.  But modified buffers are
+		never abandoned, so changes cannot get lost.
+
+
+SWITCHING TO ANOTHER TAB PAGE:
+
+Using the mouse: If the tab page line is displayed you can click in a tab page
+label to switch to that tab page. |'tabline'|
+
+:tab							*:tab* *gt*
+gt		Go to the next tab page.  Wraps around from the last to the
+		first one.
+
+:tab {count}
+{count}gt	Go to tab page {count}.  The first tab page has number one.
+
+
+Other commands:
+							*:tabs*
+:tabs		List the tab pages and the windows they contain.  Shows a "+"
+		for modified buffers.
+
+==============================================================================
+3. Other items						*tab-page-other*
+
+You can use the 'tabline' option to specify when you want the line with tab
+page labels to appear: never, when there is more than one tab page or always.
+
+Diff mode works per tab page.  You can see the diffs between several files
+within one tab page.  Other tab pages can show differences between other
+files.
+
+The TabLeavePre and TabEnterPost autocommand events can be used to do
+something when switching from one tab page to another.
+
+
+ vim:tw=78:ts=8:ft=help:norl:

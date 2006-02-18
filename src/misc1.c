@@ -2034,6 +2034,9 @@ ins_char_bytes(buf, charlen)
 #ifdef FEAT_MBYTE
 	    && charlen == 1
 #endif
+#ifdef FEAT_INS_EXPAND
+	    && !ins_compl_active()
+#endif
        )
 	showmatch(c);
 

@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2006 Feb 14
+*options.txt*	For Vim version 7.0aa.  Last change: 2006 Feb 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5336,6 +5336,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	   winsize	window sizes
 
 	Don't include both "curdir" and "sesdir".
+	There is no option to include tab pages yet, only the current tab page
+	is stored in the session. |tab-page|
 	When "curdir" nor "sesdir" is included, file names are stored with
 	absolute paths.
 	"slash" and "unix" are useful on Windows when sharing session files
@@ -6231,6 +6233,19 @@ A jump table for the options with a short description can be found at |Q_op|.
 	This option is not copied to another buffer, independent of the 's' or
 	'S' flag in 'cpoptions'.
 	Only normal file name characters can be used, "/\*?[|<>" are illegal.
+
+					*'tabline'* *'tal'*
+'tabline' 'tal'		number	(default 1)
+			global
+			{not in Vi}
+			{not available when compiled without the +windows
+			feature}
+	The value of this option specifies when the line with tab page labels
+	will be displayed:
+		0: never
+		1: only if there are at least two tab pages
+		2: always
+	|tab-page|
 
 					*'tabstop'* *'ts'*
 'tabstop' 'ts'		number	(default 8)

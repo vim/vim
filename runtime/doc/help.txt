@@ -1,4 +1,4 @@
-*help.txt*	For Vim version 7.0aa.  Last change: 2005 Nov 30
+*help.txt*	For Vim version 7.0aa.  Last change: 2006 Feb 18
 
 			VIM - main help file
 									 k
@@ -122,6 +122,7 @@ Advanced editing ~
 |tagsrch.txt|	tags and special searches
 |quickfix.txt|	commands for a quick edit-compile-fix cycle
 |windows.txt|	commands for using multiple windows and buffers
+|tabpage.txt|	commands for using multiple tab pages
 |syntax.txt|	syntax highlighting
 |spell.txt|	spell checking
 |diff.txt|	working with two or three versions of the same file

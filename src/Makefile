@@ -1510,6 +1510,8 @@ PRO_AUTO = \
 	$(ALL_GUI_PRO) \
 	$(TCL_PRO)
 
+ICON_APP = gui_mac.icns
+
 PRO_MANUAL = os_amiga.pro os_msdos.pro os_win16.pro os_win32.pro \
 	os_mswin.pro os_beos.pro os_vms.pro os_riscos.pro $(PERL_PRO)
 
@@ -2131,6 +2133,10 @@ shadow:	runtime pixmaps
 	cp config.mk.dist $(SHADOWDIR)
 	mkdir $(SHADOWDIR)/xxd
 	cd $(SHADOWDIR)/xxd; ln -s ../../xxd/*.[ch] ../../xxd/Make* .
+	if test -f $(ICON_APP); then \
+		cd $(SHADOWDIR); \
+		ln -s ../$(ICON_APP) ../os_mac.rsr.hqx ../dehqx.py .; \
+	fi
 	mkdir $(SHADOWDIR)/testdir
 	cd $(SHADOWDIR)/testdir; ln -s ../../testdir/Makefile \
 				 ../../testdir/vimrc.unix \
@@ -2494,7 +2500,6 @@ M4FLAGSX = $(M4FLAGS) -DAPP_EXE=$(VIMNAME) -DAPP_NAME=$(VIMNAME) \
 		-DAPP_VER=$(VERSION) -DICON_APP=$(ICON_APP)
 
 ### Icons
-ICON_APP = gui_mac.icns
 ICONS = $(RESDIR)/$(ICON_APP)
 
 # If you uncomment the following lines the *.icns in the src directory will be

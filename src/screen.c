@@ -2516,6 +2516,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
     long	v;
 
     int		char_attr = 0;		/* attributes for next character */
+    int		attr_pri = FALSE;	/* char_attr has priority */
     int		area_highlighting = FALSE; /* Visual or incsearch highlighting
 					      in this line */
     int		attr = 0;		/* attributes for area highlighting */
@@ -2764,7 +2765,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
     }
 
     /*
-     * handle 'insearch' and ":s///c" highlighting
+     * handle 'incsearch' and ":s///c" highlighting
      */
     else
 #endif /* FEAT_VISUAL */
@@ -3287,14 +3288,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	    else if (area_attr != 0
 		    && (vcol == tocol
 			|| (noinvcur && (colnr_T)vcol == wp->w_virtcol)))
-#ifdef LINE_ATTR
-		area_attr = line_attr;		/* stop highlighting */
-	    else if (line_attr && ((fromcol == -10 && tocol == MAXCOL)
-					 || (vcol < fromcol || vcol > tocol)))
-		area_attr = line_attr;
-#else
 		area_attr = 0;			/* stop highlighting */
-#endif
 
 #ifdef FEAT_SEARCH_EXTRA
 	    if (!n_extra)
@@ -3370,33 +3364,40 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	    }
 #endif
 
-	    if (area_attr != 0)
-		char_attr = area_attr;
-#ifdef FEAT_SYN_HL
-	    else if (search_attr == 0 && has_syntax)
-		char_attr = syntax_attr;
-#endif
-	    else
-		char_attr = search_attr;
-
 #ifdef FEAT_DIFF
-	    if (diff_hlf != (hlf_T)0 && n_extra == 0)
+	    if (diff_hlf != (hlf_T)0)
 	    {
 		if (diff_hlf == HLF_CHD && ptr - line >= change_start)
 		    diff_hlf = HLF_TXD;		/* changed text */
 		if (diff_hlf == HLF_TXD && ptr - line > change_end)
 		    diff_hlf = HLF_CHD;		/* changed line */
-		if (attr == 0 || area_attr != attr)
-		    area_attr = hl_attr(diff_hlf);
-		if (attr == 0 || char_attr != attr)
-		{
-		    if (search_attr != 0)
-			char_attr = search_attr;
-		    else
-			char_attr = hl_attr(diff_hlf);
-		}
+		line_attr = hl_attr(diff_hlf);
 	    }
 #endif
+
+	    /* Decide which of the highlight attributes to use. */
+	    attr_pri = TRUE;
+	    if (area_attr != 0)
+		char_attr = area_attr;
+	    else if (search_attr != 0)
+		char_attr = search_attr;
+#ifdef LINE_ATTR
+		/* Use line_attr when not in the Visual or 'incsearch' area
+		 * (area_attr may be 0 when "noinvcur" is set). */
+	    else if (line_attr != 0 && ((fromcol == -10 && tocol == MAXCOL)
+					|| (vcol < fromcol || vcol >= tocol)))
+		char_attr = line_attr;
+#endif
+	    else
+	    {
+		attr_pri = FALSE;
+#ifdef FEAT_SYN_HL
+		if (has_syntax)
+		    char_attr = syntax_attr;
+		else
+#endif
+		    char_attr = 0;
+	    }
 	}
 
 	/*
@@ -3727,7 +3728,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		    line = ml_get_buf(wp->w_buffer, lnum, FALSE);
 		    ptr = line + v;
 
-		    if (area_attr == 0 && search_attr == 0)
+		    if (!attr_pri)
 			char_attr = syntax_attr;
 		    else
 			char_attr = hl_combine_attr(syntax_attr, char_attr);
@@ -3740,7 +3741,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		if (has_spell && v >= word_end && v > cur_checked_col)
 		{
 		    spell_attr = 0;
-		    if (area_attr == 0 && search_attr == 0)
+		    if (!attr_pri)
 			char_attr = syntax_attr;
 		    if (c != 0 && (!has_syntax || can_spell))
 		    {
@@ -3813,7 +3814,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		}
 		if (spell_attr != 0)
 		{
-		    if (area_attr == 0 && search_attr == 0)
+		    if (!attr_pri)
 			char_attr = hl_combine_attr(char_attr, spell_attr);
 		    else
 			char_attr = hl_combine_attr(spell_attr, char_attr);
@@ -3840,7 +3841,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		if (trailcol != MAXCOL && ptr > line + trailcol && c == ' ')
 		{
 		    c = lcs_trail;
-		    if (area_attr == 0 && search_attr == 0)
+		    if (!attr_pri)
 		    {
 			n_attr = 1;
 			extra_attr = hl_attr(HLF_8);
@@ -3953,7 +3954,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 			c = ' ';
 		    lcs_eol_one = -1;
 		    --ptr;	    /* put it back at the NUL */
-		    if (area_attr == 0 && search_attr == 0)
+		    if (!attr_pri)
 		    {
 			extra_attr = hl_attr(HLF_AT);
 			n_attr = 1;
@@ -3979,7 +3980,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		    n_extra = byte2cells(c) - 1;
 		    c_extra = NUL;
 		    c = *p_extra++;
-		    if (area_attr == 0 && search_attr == 0)
+		    if (!attr_pri)
 		    {
 			n_attr = n_extra + 1;
 			extra_attr = hl_attr(HLF_8);
@@ -4042,8 +4043,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	/* Don't override visual selection highlighting. */
 	if (n_attr > 0
 		&& draw_state == WL_LINE
-		&& (area_attr == 0 || char_attr != area_attr)
-		&& (search_attr == 0 || char_attr != search_attr))
+		&& !attr_pri)
 	    char_attr = extra_attr;
 
 #if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
@@ -4108,8 +4108,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	    else
 		mb_utf8 = FALSE;	/* don't draw as UTF-8 */
 #endif
-	    if ((area_attr == 0 || char_attr != area_attr)
-		    && (search_attr == 0 || char_attr != search_attr))
+	    if (!attr_pri)
 	    {
 		saved_attr3 = char_attr; /* save current attr */
 		char_attr = hl_attr(HLF_AT); /* later copied to char_attr */

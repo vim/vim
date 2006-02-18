@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 7.0aa.  Last change: 2006 Jan 27
+*windows.txt*   For Vim version 7.0aa.  Last change: 2006 Feb 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -67,6 +67,9 @@ inactive	  no		 no		  ' '
 
 Note: All CTRL-W commands can also be executed with |:wincmd|, for those
 places where a Normal mode command can't be used or is inconvenient.
+
+The main Vim window can hold several split windows.  There are also tab pages
+|tab-page|, each of which can hold multiple windows.
 
 ==============================================================================
 2. Starting Vim						*windows-starting*
@@ -255,6 +258,9 @@ CTRL-W c					*CTRL-W_c* *:clo* *:close*
 :clo[se][!]	Close current window.  When the 'hidden' option is set, or
 		when the buffer was changed and the [!] is used, the buffer
 		becomes hidden (unless there is another window editing it).
+		When there is only one window in the current tab page and
+		there is another tab page, this closes the current tab page.
+		|tab-page|.
 		This command fails when:			*E444*
 		- There is only one window on the screen.
 		- When 'hidden' is not set, [!] is not used, the buffer has
@@ -271,6 +277,8 @@ CTRL-W CTRL-C						*CTRL-W_CTRL-C*
 :hid[e]		Quit current window, unless it is the last window on the
 		screen.  The buffer becomes hidden (unless there is another
 		window editing it or 'bufhidden' is "unload" or "delete").
+		If the window is the last one in the current tab page the tab
+		page is closed. |tab-page|
 		The value of 'hidden' is irrelevant for this command.
 		Changes to the buffer are not written and won't get lost, so
 		this is a "safe" command.
@@ -551,6 +559,7 @@ can also get to them with the buffer list commands, like ":bnext".
 		Rearrange the screen to open one window for each argument.
 		All other windows are closed.  When a count is given, this is
 		the maximum number of windows to open.
+		Only uses the current tab page |tab-page|.
 		When the 'hidden' option is set, all buffers in closed windows
 		become hidden.
 		When 'hidden' is not set, and the 'autowrite' option is set,
@@ -620,7 +629,8 @@ can also get to them with the buffer list commands, like ":bnext".
 				CTRL-W w
 				:{cmd}
 				etc.
-<			When an error is detected on one window, further
+<			This only works in the current tab page.
+			When an error is detected on one window, further
 			windows will not be visited.
 			The last window (or where an error occurred) becomes
 			the current window.
@@ -1073,6 +1083,7 @@ list of buffers. |unlisted-buffer|
 		of windows opened ('winwidth' if |:vertical| was prepended).
 		Buf/Win Enter/Leave autocommands are not executed for the new
 		windows here, that's only done when they are really entered.
+		Only uses the current tab page |tab-page|.
 
 Note: All the commands above that start editing another buffer, keep the
 'readonly' flag as it was.  This differs from the ":edit" command, which sets

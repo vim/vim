@@ -89,6 +89,7 @@ DOCS = \
 	starting.txt \
 	spell.txt \
 	syntax.txt \
+	tabpage.txt \
 	tagsrch.txt \
 	term.txt \
 	tips.txt \
@@ -211,6 +212,7 @@ HTMLS = \
 	starting.html \
 	spell.html \
 	syntax.html \
+	tabpage.html \
 	tagsrch.html \
 	tags.html \
 	term.html \

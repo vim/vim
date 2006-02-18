@@ -12,6 +12,7 @@ int ins_compl_add __ARGS((char_u *str, int len, char_u *fname, char_u *extra, in
 void ins_compl_show_pum __ARGS((void));
 char_u *find_word_start __ARGS((char_u *ptr));
 char_u *find_word_end __ARGS((char_u *ptr));
+int ins_compl_active __ARGS((void));
 void ins_compl_check_keys __ARGS((int frequency));
 int get_literal __ARGS((void));
 void insertchar __ARGS((int c, int flags, int second_indent));
