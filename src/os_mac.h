@@ -93,12 +93,12 @@
  */
 
 /* Got problem trying to use shared library in 68k */
-#if !defined(__POWERPC__) && defined(FEAT_PYTHON)
+#if !defined(__POWERPC__) && !defined(__i386__) && defined(FEAT_PYTHON)
 # undef FEAT_PYTHON
 # warning Auto-disabling Python. Not yet supported in 68k.
 #endif
 
-#if !defined(__POWERPC__) && !defined(__ppc__)
+#if !defined(__POWERPC__) && !defined(__ppc__) && !defined(__i386__)
 # if !__option(enumsalwaysint)
 #  error "You must compile with enums always int!"
 # endif

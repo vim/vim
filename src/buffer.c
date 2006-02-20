@@ -3018,9 +3018,15 @@ maketitle()
 	if (*p_titlestring != NUL)
 	{
 #ifdef FEAT_STL_OPT
+	    int	    use_sandbox = FALSE;
+
+# ifdef FEAT_EVAL
+	    use_sandbox = was_set_insecurely((char_u *)"titlestring");
+# endif
 	    if (stl_syntax & STL_IN_TITLE)
 		build_stl_str_hl(curwin, t_str, sizeof(buf),
-					      p_titlestring, 0, maxlen, NULL);
+					      p_titlestring, use_sandbox,
+					      0, maxlen, NULL);
 	    else
 #endif
 		t_str = p_titlestring;
@@ -3109,9 +3115,15 @@ maketitle()
 	if (*p_iconstring != NUL)
 	{
 #ifdef FEAT_STL_OPT
+	    int	    use_sandbox = FALSE;
+
+# ifdef FEAT_EVAL
+	    use_sandbox = was_set_insecurely((char_u *)"iconstring");
+# endif
 	    if (stl_syntax & STL_IN_ICON)
 		build_stl_str_hl(curwin, i_str, sizeof(buf),
-						    p_iconstring, 0, 0, NULL);
+						    p_iconstring, use_sandbox,
+						    0, 0, NULL);
 	    else
 #endif
 		i_str = p_iconstring;
@@ -3190,8 +3202,11 @@ free_titles()
 
 #if defined(FEAT_STL_OPT) || defined(PROTO)
 /*
- * Build a string from the status line items in fmt.
+ * Build a string from the status line items in "fmt".
  * Return length of string in screen cells.
+ *
+ * Normally works for window "wp", except when working for 'tabline' then it
+ * is "curwin".
  *
  * Items are drawn interspersed with the text that surrounds it
  * Specials: %-<wid>(xxx%) => group, %= => middle marker, %< => truncation
@@ -3201,11 +3216,12 @@ free_titles()
  * or truncated if too long, fillchar is used for all whitespace.
  */
     int
-build_stl_str_hl(wp, out, outlen, fmt, fillchar, maxwidth, hl)
+build_stl_str_hl(wp, out, outlen, fmt, use_sandbox, fillchar, maxwidth, hl)
     win_T	*wp;
     char_u	*out;		/* buffer to write into */
     size_t	outlen;		/* length of out[] */
     char_u	*fmt;
+    int		use_sandbox;	/* "fmt" was set insecurely, use sandbox */
     int		fillchar;
     int		maxwidth;
     struct stl_hlrec *hl;
@@ -3501,8 +3517,7 @@ build_stl_str_hl(wp, out, outlen, fmt, fillchar, maxwidth, hl)
 	    curwin = wp;
 	    curbuf = wp->w_buffer;
 
-	    str = eval_to_string_safe(p, &t,
-				  was_set_insecurely((char_u *)"statusline"));
+	    str = eval_to_string_safe(p, &t, use_sandbox);
 
 	    curwin = o_curwin;
 	    curbuf = o_curbuf;

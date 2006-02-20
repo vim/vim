@@ -163,7 +163,6 @@ static void	ex_tabs __ARGS((exarg_T *eap));
 # define ex_resize		ex_ni
 # define ex_splitview		ex_ni
 # define ex_stag		ex_ni
-# define ex_tabedit		ex_ni
 # define ex_tab			ex_ni
 # define ex_tabs		ex_ni
 # define ex_tabclose		ex_ni
@@ -6305,7 +6304,8 @@ tabpage_close(forceit)
 {
     /* First close all the windows but the current one.  If that worked then
      * close the last window in this tab, that will close it. */
-    close_others(TRUE, forceit);
+    if (lastwin != firstwin)
+	close_others(TRUE, forceit);
     if (lastwin == firstwin)
 	ex_win_close(forceit, curwin, NULL);
 # ifdef FEAT_GUI
@@ -6863,12 +6863,17 @@ ex_wrongmodifier(eap)
  * :new [[+command] file]	split window with no or new file
  * :vnew [[+command] file]	split vertically window with no or new file
  * :sfind [+command] file	split window with file in 'path'
+ *
+ * :tabedit			open new Tab page with empty window
+ * :tabedit [+command] file	open new Tab page and edit "file"
+ * :tabnew [[+command] file]	just like :tabedit
+ * :tabfind [+command] file	open new Tab page and find "file"
  */
     void
 ex_splitview(eap)
     exarg_T	*eap;
 {
-    win_T	*old_curwin;
+    win_T	*old_curwin = curwin;
 # if defined(FEAT_SEARCHPATH) || defined(FEAT_BROWSE)
     char_u	*fname = NULL;
 # endif
@@ -6884,7 +6889,6 @@ ex_splitview(eap)
     }
 # endif
 
-    old_curwin = curwin;
 # ifdef FEAT_GUI
     need_mouse_correct = TRUE;
 # endif
@@ -6904,7 +6908,7 @@ ex_splitview(eap)
 # endif
 
 # ifdef FEAT_SEARCHPATH
-    if (eap->cmdidx == CMD_sfind)
+    if (eap->cmdidx == CMD_sfind || eap->cmdidx == CMD_tabfind)
     {
 	fname = find_file_in_path(eap->arg, (int)STRLEN(eap->arg),
 					  FNAME_MESS, TRUE, curbuf->b_ffname);
@@ -6946,7 +6950,26 @@ ex_splitview(eap)
     cmdmod.browse = FALSE;	/* Don't browse again in do_ecmd(). */
 # endif
 
-    if (win_split(eap->addr_count > 0 ? (int)eap->line2 : 0,
+    /*
+     * Either open new tab page or split the window.
+     */
+    if (eap->cmdidx == CMD_tabedit
+	    || eap->cmdidx == CMD_tabfind
+	    || eap->cmdidx == CMD_tabnew)
+    {
+	if (win_new_tabpage() != FAIL)
+	{
+	    do_exedit(eap, NULL);
+
+	    /* set the alternate buffer for the window we came from */
+	    if (curwin != old_curwin
+		    && win_valid(old_curwin)
+		    && old_curwin->w_buffer != curbuf
+		    && !cmdmod.keepalt)
+		old_curwin->w_alt_fnum = curbuf->b_fnum;
+	}
+    }
+    else if (win_split(eap->addr_count > 0 ? (int)eap->line2 : 0,
 				     *eap->cmd == 'v' ? WSP_VERT : 0) != FAIL)
     {
 # ifdef FEAT_SCROLLBIND
@@ -6962,85 +6985,6 @@ ex_splitview(eap)
 	    do_check_scrollbind(FALSE);
 # endif
 	do_exedit(eap, old_curwin);
-    }
-
-# ifdef FEAT_BROWSE
-    cmdmod.browse = browse_flag;
-# endif
-
-# if defined(FEAT_SEARCHPATH) || defined(FEAT_BROWSE)
-theend:
-    vim_free(fname);
-# endif
-}
-
-/*
- * :tabedit			open new Tab page with empty window
- * :tabedit [+command] file	open new Tab page and edit "file"
- * :tabnew [[+command] file]	just like :tabedit
- * :tabfind [+command] file	open new Tab page and find "file"
- */
-    void
-ex_tabedit(eap)
-    exarg_T	*eap;
-{
-# if defined(FEAT_SEARCHPATH) || defined(FEAT_BROWSE)
-    char_u	*fname = NULL;
-# endif
-# ifdef FEAT_BROWSE
-    int		browse_flag = cmdmod.browse;
-# endif
-
-# ifdef FEAT_GUI
-    need_mouse_correct = TRUE;
-# endif
-
-# ifdef FEAT_SEARCHPATH
-    if (eap->cmdidx == CMD_tabfind)
-    {
-	fname = find_file_in_path(eap->arg, (int)STRLEN(eap->arg),
-					  FNAME_MESS, TRUE, curbuf->b_ffname);
-	if (fname == NULL)
-	    goto theend;
-	eap->arg = fname;
-    }
-#  ifdef FEAT_BROWSE
-    else
-#  endif
-# endif
-# ifdef FEAT_BROWSE
-    if (cmdmod.browse)
-    {
-	if (
-#  ifdef FEAT_GUI
-	    !gui.in_use &&
-#  endif
-		au_has_group((char_u *)"FileExplorer"))
-	{
-	    /* No browsing supported but we do have the file explorer:
-	     * Edit the directory. */
-	    if (*eap->arg == NUL || !mch_isdir(eap->arg))
-		eap->arg = (char_u *)".";
-	}
-	else
-	{
-	    fname = do_browse(0, (char_u *)_("Edit File in new tab page"),
-					  eap->arg, NULL, NULL, NULL, curbuf);
-	    if (fname == NULL)
-		goto theend;
-	    eap->arg = fname;
-	}
-    }
-    cmdmod.browse = FALSE;	/* Don't browse again in do_ecmd(). */
-# endif
-
-    if (win_new_tabpage() != FAIL)
-    {
-# ifdef FEAT_SCROLLBIND
-	curwin->w_p_scb = FALSE;
-# endif
-	if (*eap->arg != NUL)
-	    do_exedit(eap, NULL);
     }
 
 # ifdef FEAT_BROWSE
@@ -7316,12 +7260,14 @@ do_exedit(eap, old_curwin)
     }
 
     if ((eap->cmdidx == CMD_new
+		|| eap->cmdidx == CMD_tabnew
+		|| eap->cmdidx == CMD_tabedit
 #ifdef FEAT_VERTSPLIT
 		|| eap->cmdidx == CMD_vnew
 #endif
 		) && *eap->arg == NUL)
     {
-	/* ":new" without argument: edit an new empty buffer */
+	/* ":new" or ":tabnew" without argument: edit an new empty buffer */
 	setpcmark();
 	(void)do_ecmd(0, NULL, NULL, eap, ECMD_ONE,
 			       ECMD_HIDE + (eap->forceit ? ECMD_FORCEIT : 0));

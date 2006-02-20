@@ -138,7 +138,7 @@
 # endif
 #endif
 #ifdef MACOS
-# if defined(__POWERPC__) || defined(__fourbyteints__) \
+# if defined(__POWERPC__) || defined(MACOS_X) || defined(__fourbyteints__) \
   || defined(__MRC__) || defined(__SC__) || defined(__APPLE_CC__)/* MPW Compilers */
 #  define SIZEOF_INT 4
 # else
@@ -1109,8 +1109,8 @@ enum auto_event
     EVENT_SPELLFILEMISSING,	/* spell file missing */
     EVENT_CURSORMOVED,		/* cursor was moved */
     EVENT_CURSORMOVEDI,		/* cursor was moved in Insert mode */
-    EVENT_TABLEAVEPRE,		/* before leaving a tab page */
-    EVENT_TABENTERPOST,		/* after entering a tab page */
+    EVENT_TABLEAVE,		/* before leaving a tab page */
+    EVENT_TABENTER,		/* after entering a tab page */
     NUM_EVENTS			/* MUST be the last one */
 };
 

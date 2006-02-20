@@ -16,6 +16,7 @@
 static int path_is_url __ARGS((char_u *p));
 #if defined(FEAT_WINDOWS) || defined(PROTO)
 static int win_split_ins __ARGS((int size, int flags, win_T *newwin, int dir));
+static void win_init __ARGS((win_T *newp, win_T *oldp));
 static void frame_comp_pos __ARGS((frame_T *topfrp, int *row, int *col));
 static void frame_setheight __ARGS((frame_T *curfrp, int height));
 #ifdef FEAT_VERTSPLIT
@@ -42,7 +43,7 @@ static int frame_minwidth __ARGS((frame_T *topfrp, win_T *next_curwin));
 static void frame_fix_width __ARGS((win_T *wp));
 #endif
 #endif
-static int win_alloc_firstwin __ARGS((void));
+static int win_alloc_firstwin __ARGS((win_T *oldwin));
 #if defined(FEAT_WINDOWS) || defined(PROTO)
 static tabpage_T *alloc_tabpage __ARGS((void));
 static void free_tabpage __ARGS((tabpage_T *tp));
@@ -67,7 +68,7 @@ static void last_status_rec __ARGS((frame_T *fr, int statusline));
 
 static void make_snapshot __ARGS((void));
 static void make_snapshot_rec __ARGS((frame_T *fr, frame_T **frp));
-static void clear_snapshot __ARGS((void));
+static void clear_snapshot __ARGS((tabpage_T *tp));
 static void clear_snapshot_rec __ARGS((frame_T *fr));
 static void restore_snapshot __ARGS((int close_curwin));
 static int check_snapshot_rec __ARGS((frame_T *sn, frame_T *fr));
@@ -627,13 +628,13 @@ win_split(size, flags)
     if (flags & WSP_HELP)
 	make_snapshot();
     else
-	clear_snapshot();
+	clear_snapshot(curtab);
 
     return win_split_ins(size, flags, NULL, 0);
 }
 
 /*
- * When "newwin" is NULL: split a window in two.
+ * When "newwin" is NULL: split the current window in two.
  * When "newwin" is not NULL: insert this window at the far
  * top/left/right/bottom.
  * return FAIL for failure, OK otherwise
@@ -807,55 +808,8 @@ win_split_ins(size, flags, newwin, dir)
 	if (wp == NULL)
 	    return FAIL;
 
-	/*
-	 * make the contents of the new window the same as the current one
-	 */
-	wp->w_buffer = curbuf;
-	curbuf->b_nwindows++;
-	wp->w_cursor = curwin->w_cursor;
-	wp->w_valid = 0;
-	wp->w_curswant = curwin->w_curswant;
-	wp->w_set_curswant = curwin->w_set_curswant;
-	wp->w_topline = curwin->w_topline;
-#ifdef FEAT_DIFF
-	wp->w_topfill = curwin->w_topfill;
-#endif
-	wp->w_leftcol = curwin->w_leftcol;
-	wp->w_pcmark = curwin->w_pcmark;
-	wp->w_prev_pcmark = curwin->w_prev_pcmark;
-	wp->w_alt_fnum = curwin->w_alt_fnum;
-	wp->w_fraction = curwin->w_fraction;
-	wp->w_prev_fraction_row = curwin->w_prev_fraction_row;
-#ifdef FEAT_JUMPLIST
-	copy_jumplist(curwin, wp);
-#endif
-#ifdef FEAT_QUICKFIX
-	copy_loclist(curwin, wp);
-#endif
-	if (curwin->w_localdir != NULL)
-	    wp->w_localdir = vim_strsave(curwin->w_localdir);
-
-	/* Use the same argument list. */
-	wp->w_alist = curwin->w_alist;
-	++wp->w_alist->al_refcount;
-	wp->w_arg_idx = curwin->w_arg_idx;
-
-	/*
-	 * copy tagstack and options from existing window
-	 */
-	for (i = 0; i < curwin->w_tagstacklen; i++)
-	{
-	    wp->w_tagstack[i] = curwin->w_tagstack[i];
-	    if (wp->w_tagstack[i].tagname != NULL)
-		wp->w_tagstack[i].tagname =
-				       vim_strsave(wp->w_tagstack[i].tagname);
-	}
-	wp->w_tagstackidx = curwin->w_tagstackidx;
-	wp->w_tagstacklen = curwin->w_tagstacklen;
-	win_copy_options(curwin, wp);
-#ifdef FEAT_FOLDING
-	copyFoldingState(curwin, wp);
-#endif
+	/* make the contents of the new window the same as the current one */
+	win_init(wp, curwin);
     }
 
     /*
@@ -1097,6 +1051,66 @@ win_split_ins(size, flags, newwin, dir)
 	p_wh = i;
 
     return OK;
+}
+
+/*
+ * Initialize window "newp" from window "oldp".
+ * Used when splitting a window and when creating a new tab page.
+ * The windows will both edit the same buffer.
+ */
+    static void
+win_init(newp, oldp)
+    win_T	*newp;
+    win_T	*oldp;
+{
+    int		i;
+
+    newp->w_buffer = oldp->w_buffer;
+    oldp->w_buffer->b_nwindows++;
+    newp->w_cursor = oldp->w_cursor;
+    newp->w_valid = 0;
+    newp->w_curswant = oldp->w_curswant;
+    newp->w_set_curswant = oldp->w_set_curswant;
+    newp->w_topline = oldp->w_topline;
+#ifdef FEAT_DIFF
+    newp->w_topfill = oldp->w_topfill;
+#endif
+    newp->w_leftcol = oldp->w_leftcol;
+    newp->w_pcmark = oldp->w_pcmark;
+    newp->w_prev_pcmark = oldp->w_prev_pcmark;
+    newp->w_alt_fnum = oldp->w_alt_fnum;
+    newp->w_fraction = oldp->w_fraction;
+    newp->w_prev_fraction_row = oldp->w_prev_fraction_row;
+#ifdef FEAT_JUMPLIST
+    copy_jumplist(oldp, newp);
+#endif
+#ifdef FEAT_QUICKFIX
+    copy_loclist(oldp, newp);
+#endif
+    if (oldp->w_localdir != NULL)
+	newp->w_localdir = vim_strsave(oldp->w_localdir);
+
+    /* Use the same argument list. */
+    newp->w_alist = oldp->w_alist;
+    ++newp->w_alist->al_refcount;
+    newp->w_arg_idx = oldp->w_arg_idx;
+
+    /*
+     * copy tagstack and options from existing window
+     */
+    for (i = 0; i < oldp->w_tagstacklen; i++)
+    {
+	newp->w_tagstack[i] = oldp->w_tagstack[i];
+	if (newp->w_tagstack[i].tagname != NULL)
+	    newp->w_tagstack[i].tagname =
+				   vim_strsave(newp->w_tagstack[i].tagname);
+    }
+    newp->w_tagstackidx = oldp->w_tagstackidx;
+    newp->w_tagstacklen = oldp->w_tagstacklen;
+    win_copy_options(oldp, newp);
+# ifdef FEAT_FOLDING
+    copyFoldingState(oldp, newp);
+# endif
 }
 
 #endif /* FEAT_WINDOWS */
@@ -1886,7 +1900,7 @@ win_close(win, free_buf)
     if (win->w_buffer->b_help)
 	help_window = TRUE;
     else
-	clear_snapshot();
+	clear_snapshot(curtab);
 
 #ifdef FEAT_AUTOCMD
     if (win == curwin)
@@ -2813,35 +2827,33 @@ close_others(message, forceit)
 #endif /* FEAT_WINDOWS */
 
 /*
- * init the cursor in the window
- *
- * called when a new file is being edited
+ * Init the current window "curwin".
+ * Called when a new file is being edited.
  */
     void
-win_init(wp)
-    win_T	*wp;
+curwin_init()
 {
-    redraw_win_later(wp, NOT_VALID);
-    wp->w_lines_valid = 0;
-    wp->w_cursor.lnum = 1;
-    wp->w_curswant = wp->w_cursor.col = 0;
+    redraw_win_later(curwin, NOT_VALID);
+    curwin->w_lines_valid = 0;
+    curwin->w_cursor.lnum = 1;
+    curwin->w_curswant = curwin->w_cursor.col = 0;
 #ifdef FEAT_VIRTUALEDIT
-    wp->w_cursor.coladd = 0;
+    curwin->w_cursor.coladd = 0;
 #endif
-    wp->w_pcmark.lnum = 1;	/* pcmark not cleared but set to line 1 */
-    wp->w_pcmark.col = 0;
-    wp->w_prev_pcmark.lnum = 0;
-    wp->w_prev_pcmark.col = 0;
-    wp->w_topline = 1;
+    curwin->w_pcmark.lnum = 1;	/* pcmark not cleared but set to line 1 */
+    curwin->w_pcmark.col = 0;
+    curwin->w_prev_pcmark.lnum = 0;
+    curwin->w_prev_pcmark.col = 0;
+    curwin->w_topline = 1;
 #ifdef FEAT_DIFF
-    wp->w_topfill = 0;
+    curwin->w_topfill = 0;
 #endif
-    wp->w_botline = 2;
+    curwin->w_botline = 2;
 #ifdef FEAT_FKMAP
     if (curwin->w_p_rl)
-	wp->w_farsi = W_CONV + W_R_L;
+	curwin->w_farsi = W_CONV + W_R_L;
     else
-	wp->w_farsi = W_CONV;
+	curwin->w_farsi = W_CONV;
 #endif
 }
 
@@ -2853,7 +2865,7 @@ win_init(wp)
     int
 win_alloc_first()
 {
-    if (win_alloc_firstwin() == FAIL)
+    if (win_alloc_firstwin(NULL) == FAIL)
 	return FAIL;
 
 #ifdef FEAT_WINDOWS
@@ -2867,23 +2879,43 @@ win_alloc_first()
 }
 
 /*
- * Allocate one window and put an empty buffer in it.
- * Called to create the first window in a new tab page.
+ * Allocate the first window or the first window in a new tab page.
+ * When "oldwin" is NULL create an empty buffer for it.
+ * When "oldwin" is not NULL copy info from it to the new window (only with
+ * FEAT_WINDOWS).
  * Return FAIL when something goes wrong (out of memory).
  */
     static int
-win_alloc_firstwin()
+win_alloc_firstwin(oldwin)
+    win_T	*oldwin;
 {
     curwin = win_alloc(NULL);
-    curbuf = buflist_new(NULL, NULL, 1L, BLN_LISTED);
-    if (curwin == NULL || curbuf == NULL)
-	return FAIL;
-    curwin->w_buffer = curbuf;
-    curbuf->b_nwindows = 1;	/* there is one window */
+    if (oldwin == NULL)
+    {
+	/* Very first window, need to create an empty buffer for it and
+	 * initialize from scratch. */
+	curbuf = buflist_new(NULL, NULL, 1L, BLN_LISTED);
+	if (curwin == NULL || curbuf == NULL)
+	    return FAIL;
+	curwin->w_buffer = curbuf;
+	curbuf->b_nwindows = 1;	/* there is one window */
 #ifdef FEAT_WINDOWS
-    curwin->w_alist = &global_alist;
+	curwin->w_alist = &global_alist;
 #endif
-    win_init(curwin);		/* init current window */
+	curwin_init();		/* init current window */
+    }
+#ifdef FEAT_WINDOWS
+    else
+    {
+	/* First window in new tab page, initialize it from "oldwin". */
+	win_init(curwin, oldwin);
+
+# ifdef FEAT_SCROLLBIND
+	/* We don't want scroll-binding in the first window. */
+	curwin->w_p_scb = FALSE;
+# endif
+    }
+#endif
 
     topframe = (frame_T *)alloc_clear((unsigned)sizeof(frame_T));
     if (topframe == NULL)
@@ -2944,11 +2976,13 @@ free_tabpage(tp)
 # ifdef FEAT_DIFF
     diff_clear(tp);
 # endif
+    clear_snapshot(tp);
     vim_free(tp);
 }
 
 /*
- * Create a new Tab page with one empty window.
+ * Create a new Tab page with one window.
+ * It will edit the current buffer, like after ":split".
  * Put it just after the current Tab page.
  * Return FAIL or OK.
  */
@@ -2963,7 +2997,7 @@ win_new_tabpage()
 	return FAIL;
 
     /* Remember the current windows in this Tab page. */
-    if (leave_tabpage(NULL) == FAIL)
+    if (leave_tabpage(curbuf) == FAIL)
     {
 	vim_free(newtp);
 	return FAIL;
@@ -2971,11 +3005,8 @@ win_new_tabpage()
     curtab = newtp;
 
     /* Create a new empty window. */
-    if (win_alloc_firstwin() == OK)
+    if (win_alloc_firstwin(tp->tp_curwin) == OK)
     {
-	/* copy options from previous to new curwin */
-	win_copy_options(tp->tp_curwin, curwin);
-
 	/* Make the new Tab page the new topframe. */
 	newtp->tp_next = tp->tp_next;
 	tp->tp_next = newtp;
@@ -2985,6 +3016,10 @@ win_new_tabpage()
 	newtp->tp_topframe = topframe;
 	last_status(FALSE);
 	redraw_all_later(CLEAR);
+#ifdef FEAT_AUTOCMD
+	apply_autocmds(EVENT_TABENTER, NULL, NULL, FALSE, curbuf);
+	apply_autocmds(EVENT_WINENTER, NULL, NULL, FALSE, curbuf);
+#endif
 	return OK;
     }
 
@@ -3082,7 +3117,7 @@ leave_tabpage(new_curbuf)
     apply_autocmds(EVENT_WINLEAVE, NULL, NULL, FALSE, curbuf);
     if (curtab != tp)
 	return FAIL;
-    apply_autocmds(EVENT_TABLEAVEPRE, NULL, NULL, FALSE, curbuf);
+    apply_autocmds(EVENT_TABLEAVE, NULL, NULL, FALSE, curbuf);
     if (curtab != tp)
 	return FAIL;
 #endif
@@ -3104,6 +3139,7 @@ leave_tabpage(new_curbuf)
 
 /*
  * Start using tab page "tp".
+ * Only to be used after leave_tabpage() or freeing the current tab page.
  */
 /*ARGSUSED*/
     static void
@@ -3117,12 +3153,14 @@ enter_tabpage(tp, old_curbuf)
     firstwin = tp->tp_firstwin;
     lastwin = tp->tp_lastwin;
     topframe = tp->tp_topframe;
+#ifdef FEAT_AUTOCMD
+    apply_autocmds(EVENT_TABENTER, NULL, NULL, FALSE, curbuf);
+#endif
+
     win_enter_ext(tp->tp_curwin, FALSE, TRUE);
     prevwin = tp->tp_prevwin;
 
 #ifdef FEAT_AUTOCMD
-    apply_autocmds(EVENT_TABENTERPOST, NULL, NULL, FALSE, curbuf);
-    apply_autocmds(EVENT_WINENTER, NULL, NULL, FALSE, curbuf);
     if (old_curbuf != curbuf)
 	apply_autocmds(EVENT_BUFENTER, NULL, NULL, FALSE, curbuf);
 #endif
@@ -3168,6 +3206,14 @@ goto_tabpage(n)
 {
     tabpage_T	*tp;
     int		i;
+
+    /* If there is only one it can't work. */
+    if (first_tabpage->tp_next == NULL)
+    {
+	if (n > 1)
+	    beep_flush();
+	return;
+    }
 
     if (n == 0)
     {
@@ -5018,7 +5064,7 @@ last_status_rec(fr, statusline)
     int
 tabpageline_height()
 {
-    switch (p_tal)
+    switch (p_stal)
     {
 	case 0: return 0;
 	case 1: return (first_tabpage->tp_next == NULL) ? 0 : 1;
@@ -5419,7 +5465,6 @@ check_lnums(do_curwin)
  * fr_child
  * fr_win (only valid for the old curwin, NULL otherwise)
  */
-static frame_T *snapshot = NULL;
 
 /*
  * Create a snapshot of the current frame sizes.
@@ -5427,8 +5472,8 @@ static frame_T *snapshot = NULL;
     static void
 make_snapshot()
 {
-    clear_snapshot();
-    make_snapshot_rec(topframe, &snapshot);
+    clear_snapshot(curtab);
+    make_snapshot_rec(topframe, &curtab->tp_snapshot);
 }
 
     static void
@@ -5456,10 +5501,11 @@ make_snapshot_rec(fr, frp)
  * Remove any existing snapshot.
  */
     static void
-clear_snapshot()
+clear_snapshot(tp)
+    tabpage_T	*tp;
 {
-    clear_snapshot_rec(snapshot);
-    snapshot = NULL;
+    clear_snapshot_rec(tp->tp_snapshot);
+    tp->tp_snapshot = NULL;
 }
 
     static void
@@ -5485,20 +5531,20 @@ restore_snapshot(close_curwin)
 {
     win_T	*wp;
 
-    if (snapshot != NULL
+    if (curtab->tp_snapshot != NULL
 # ifdef FEAT_VERTSPLIT
-	    && snapshot->fr_width == topframe->fr_width
+	    && curtab->tp_snapshot->fr_width == topframe->fr_width
 # endif
-	    && snapshot->fr_height == topframe->fr_height
-	    && check_snapshot_rec(snapshot, topframe) == OK)
+	    && curtab->tp_snapshot->fr_height == topframe->fr_height
+	    && check_snapshot_rec(curtab->tp_snapshot, topframe) == OK)
     {
-	wp = restore_snapshot_rec(snapshot, topframe);
+	wp = restore_snapshot_rec(curtab->tp_snapshot, topframe);
 	win_comp_pos();
 	if (wp != NULL && close_curwin)
 	    win_goto(wp);
 	redraw_all_later(CLEAR);
     }
-    clear_snapshot();
+    clear_snapshot(curtab);
 }
 
 /*

@@ -1,10 +1,10 @@
-*tabpage.txt*   For Vim version 7.0aa.  Last change: 2006 Feb 18
+*tabpage.txt*   For Vim version 7.0aa.  Last change: 2006 Feb 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
 
 
-Editing with windows in multuple tab pages.		*tab-page* *tabpage*
+Editing with windows in multiple tab pages.		*tab-page* *tabpage*
 
 The commands which have been added to use multiple tab pages are explained
 here.  Additionally, there are explanations for commands that work differently
@@ -45,14 +45,14 @@ OPENING A NEW TAB PAGE:
 When starting Vim "vim -p filename ..." opens each file argument in a separate
 tab page (up to 10). |-p|
 
-:tabe[dit]						*:tabe* *:tabedit*
+:tabe[dit]				*:tabe* *:tabedit* *:tabn* *:tabnew*
 :tabn[ew]	Open a new tab page with an empty window.
 
 :tabe[dit] [++opt] [+cmd] {file}
 :tabn[ew] [++opt] [+cmd] {file}
 		Open a new tab page and edit {file}, like with |:edit|.
 
-:tabf[ind] [++opt] [+cmd] {file}
+:tabf[ind] [++opt] [+cmd] {file}			*:tabf* *:tabfind*
 		Open a new tab page and edit {file} in 'path', like with
 		|:find|.
 		{not available when the |+file_in_path| feature was disabled
@@ -114,12 +114,32 @@ Other commands:
 You can use the 'tabline' option to specify when you want the line with tab
 page labels to appear: never, when there is more than one tab page or always.
 
+The highlighting of the tab pages line is set with the groups TabLine
+TabLineSel and TabLineFill.  |hl-TabLine| |hl-TabLineSel| |hl-TabLineFill|
+
 Diff mode works per tab page.  You can see the diffs between several files
 within one tab page.  Other tab pages can show differences between other
 files.
 
-The TabLeavePre and TabEnterPost autocommand events can be used to do
-something when switching from one tab page to another.
+The TabLeave and TabEnter autocommand events can be used to do something when
+switching from one tab page to another.  The exact order depends on what you
+are doing.  When creating a new tab page this works as if you create a new
+window on the same buffer and then edit another buffer.  Thus ":tabnew"
+triggers:
+	WinLeave		leave current window
+	TabLeave		leave current tab page
+	TabEnter		enter new tab page
+	WinEnter		enter window in new tab page
+	BufLeave		leave current buffer
+	BufEnter		enter new empty buffer
+
+For switching to another tab page the order is:
+	BufLeave
+	WinLeave
+	TabLeave
+	TabEnter
+	WinEnter
+	BufEnter
 
 
  vim:tw=78:ts=8:ft=help:norl:
