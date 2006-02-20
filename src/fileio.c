@@ -66,6 +66,11 @@ static int check_mtime __ARGS((buf_T *buf, struct stat *s));
 static int time_differs __ARGS((long t1, long t2));
 #ifdef FEAT_AUTOCMD
 static int apply_autocmds_exarg __ARGS((event_T event, char_u *fname, char_u *fname_io, int force, buf_T *buf, exarg_T *eap));
+static int au_find_group __ARGS((char_u *name));
+
+# define AUGROUP_DEFAULT    -1	    /* default autocmd group */
+# define AUGROUP_ERROR	    -2	    /* errornouse autocmd group */
+# define AUGROUP_ALL	    -3	    /* all autocmd groups */
 #endif
 
 #if defined(FEAT_CRYPT) || defined(FEAT_MBYTE)
@@ -4628,7 +4633,8 @@ set_rw_fname(fname, sfname)
     /* Do filetype detection now if 'filetype' is empty. */
     if (*curbuf->b_p_ft == NUL)
     {
-	(void)do_doautocmd((char_u *)"filetypedetect BufRead", TRUE);
+	if (au_find_group((char_u *)"filetypedetect") != AUGROUP_ERROR)
+	    (void)do_doautocmd((char_u *)"filetypedetect BufRead", FALSE);
 	do_modelines(FALSE);
     }
 #endif
@@ -6962,8 +6968,8 @@ static struct event_name
     {"StdinReadPre",	EVENT_STDINREADPRE},
     {"SwapExists",	EVENT_SWAPEXISTS},
     {"Syntax",		EVENT_SYNTAX},
-    {"TabEnterPost",	EVENT_TABENTERPOST},
-    {"TabLeavePre",	EVENT_TABLEAVEPRE},
+    {"TabEnter",	EVENT_TABENTER},
+    {"TabLeave",	EVENT_TABLEAVE},
     {"TermChanged",	EVENT_TERMCHANGED},
     {"TermResponse",	EVENT_TERMRESPONSE},
     {"User",		EVENT_USER},
@@ -7013,9 +7019,6 @@ static garray_T augroups = {0, 0, sizeof(char_u *), 10, NULL};
 /*
  * The ID of the current group.  Group 0 is the default one.
  */
-#define AUGROUP_DEFAULT	    -1	    /* default autocmd group */
-#define AUGROUP_ERROR	    -2	    /* errornouse autocmd group */
-#define AUGROUP_ALL	    -3	    /* all autocmd groups */
 static int current_augroup = AUGROUP_DEFAULT;
 
 static int au_need_clean = FALSE;   /* need to delete marked patterns */
@@ -7026,7 +7029,6 @@ static void au_remove_cmds __ARGS((AutoPat *ap));
 static void au_cleanup __ARGS((void));
 static int au_new_group __ARGS((char_u *name));
 static void au_del_group __ARGS((char_u *name));
-static int au_find_group __ARGS((char_u *name));
 static event_T event_name2nr __ARGS((char_u *start, char_u **end));
 static char_u *event_nr2name __ARGS((event_T event));
 static char_u *find_end_event __ARGS((char_u *arg, int have_group));
