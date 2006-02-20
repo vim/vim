@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2006 Feb 18
+*options.txt*	For Vim version 7.0aa.  Last change: 2006 Feb 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4614,7 +4614,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{only available when compiled with the |+linebreak|
 			feature}
 	Minimal number of columns to use for the line number.  Only relevant
-	when the 'number' option is set.
+	when the 'number' option is set or printint lines with a line number.
 	Since one space is always between the number and the text, there is
 	one less character for the number itself.
 	The value is the minimum width.  A bigger width is used when needed to
@@ -5680,6 +5680,21 @@ A jump table for the options with a short description can be found at |Q_op|.
 	NOTE: This option is set to the Vi default value when 'compatible' is
 	set and to the Vim default value when 'compatible' is reset.
 
+						*'showtabline'* *'stal'*
+'showtabline' 'stal'	number	(default 1)
+			global
+			{not in Vi}
+			{not available when compiled without the +windows
+			feature}
+	The value of this option specifies when the line with tab page labels
+	will be displayed:
+		0: never
+		1: only if there are at least two tab pages
+		2: always
+	This is both for the GUI and non-GUI implementation of the tab pages
+	line.
+	See |tab-page| for more information about tab pages.
+
 						*'sidescroll'* *'ss'*
 'sidescroll' 'ss'	number	(default 0)
 			global
@@ -6235,17 +6250,25 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Only normal file name characters can be used, "/\*?[|<>" are illegal.
 
 					*'tabline'* *'tal'*
-'tabline' 'tal'		number	(default 1)
+'tabline' 'tal'		string	(default empty)
 			global
 			{not in Vi}
 			{not available when compiled without the +windows
 			feature}
-	The value of this option specifies when the line with tab page labels
-	will be displayed:
-		0: never
-		1: only if there are at least two tab pages
-		2: always
-	|tab-page|
+	When nonempty, this option determines the content of the tab pages
+	line at the top of the Vim window.  When empty Vim will use a default
+	tab pages line. |tab-page|
+
+	The tab pages line only appears as specified with the 'showtabline'
+	option and only when there is no GUI implementation for tabs.
+
+	The value is evaluated like with 'statusline'.  You can use
+	|tabpagenr()|, |tabpagewinnr()| and |tabpagebuflist()| to figure out
+	the text to be displayed.
+
+	Keep in mind that only one of the tab pages is the current one, others
+	are invisible and you can't jump to their windows.
+
 
 					*'tabstop'* *'ts'*
 'tabstop' 'ts'		number	(default 8)

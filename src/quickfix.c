@@ -2887,11 +2887,14 @@ ex_vimgrep(eap)
     int		found_match;
     buf_T	*first_match_buf = NULL;
     time_t	seconds = 0;
+    int		save_mls;
 #if defined(FEAT_AUTOCMD) && defined(FEAT_SYN_HL)
     char_u	*save_ei = NULL;
-    aco_save_T	aco;
 #endif
-#ifdef FEAT_AUTOCMD
+#ifndef FEAT_AUTOCMD
+    buf_T	*save_curbuf;
+#else
+    aco_save_T	aco;
     char_u	*au_name =  NULL;
     int		flags = 0;
     colnr_T	col;
@@ -2999,11 +3002,15 @@ ex_vimgrep(eap)
 	     * indent scripts, a great speed improvement. */
 	    save_ei = au_event_disable(",Filetype");
 #endif
+	    /* Don't use modelines here, it's useless. */
+	    save_mls = p_mls;
+	    p_mls = 0;
 
 	    /* Load file into a buffer, so that 'fileencoding' is detected,
 	     * autocommands applied, etc. */
 	    buf = load_dummy_buffer(fnames[fi]);
 
+	    p_mls = save_mls;
 #if defined(FEAT_AUTOCMD) && defined(FEAT_SYN_HL)
 	    au_event_restore(save_ei);
 #endif
@@ -3089,19 +3096,30 @@ ex_vimgrep(eap)
 		    }
 		}
 
-#if defined(FEAT_AUTOCMD) && defined(FEAT_SYN_HL)
 		if (buf != NULL)
 		{
 		    /* The buffer is still loaded, the Filetype autocommands
-		     * need to be done now, in that buffer.  And then the
-		     * modelines need to be done (again). */
+		     * need to be done now, in that buffer.  And the modelines
+		     * need to be done (again). */
+#if defined(FEAT_AUTOCMD)
 		    aucmd_prepbuf(&aco, buf);
+#else
+		    save_curbuf = curbuf;
+		    curbuf = buf;
+		    curwin->w_buffer = curbuf;
+#endif
+#if defined(FEAT_AUTOCMD) && defined(FEAT_SYN_HL)
 		    apply_autocmds(EVENT_FILETYPE, buf->b_p_ft,
 						     buf->b_fname, TRUE, buf);
-		    do_modelines(FALSE);
-		    aucmd_restbuf(&aco);
-		}
 #endif
+		    do_modelines(FALSE);
+#if defined(FEAT_AUTOCMD)
+		    aucmd_restbuf(&aco);
+#else
+		    curbuf = save_curbuf;
+		    curwin->w_buffer = curbuf;
+#endif
+		}
 	    }
 	}
     }

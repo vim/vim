@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 18
+*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1690,8 +1690,11 @@ synIDattr( {synID}, {what} [, {mode}])
 				String	attribute {what} of syntax ID {synID}
 synIDtrans( {synID})		Number	translated syntax ID of {synID}
 system( {expr} [, {input}])	String	output of shell command/filter {expr}
-tabpage( [{expr}])		Number	number of current tab page
-taglist( {expr})			List	list of tags matching {expr}
+tabpagebuflist( [{arg}])	List	list of buffer numbers in tab page
+tabpagenr( [{arg}])		Number	number of current or last tab page
+tabpagewinnr( {tabarg}[, {arg}])
+				Number	number of current window in tab page
+taglist( {expr})		List	list of tags matching {expr}
 tagfiles()			List    tags files used
 tempname()			String	name for a temporary file
 tolower( {expr})		String	the String {expr} switched to lowercase
@@ -3861,10 +3864,12 @@ searchpair({start}, {middle}, {end} [, {flags} [, {skip}]])
 		Search for the match of a nested start-end pair.  This can be
 		used to find the "endif" that matches an "if", while other
 		if/endif pairs in between are ignored.
-		The search starts at the cursor.  If a match is found, the
-		cursor is positioned at it and the line number is returned.
-		If no match is found 0 or -1 is returned and the cursor
-		doesn't move.  No error message is given.
+		The search starts at the cursor.  The default is to search
+		forward, include 'b' in {flags} to search backward.
+		If a match is found, the cursor is positioned at it and the
+		line number is returned.  If no match is found 0 or -1 is
+		returned and the cursor doesn't move.  No error message is
+		given.
 
 		{start}, {middle} and {end} are patterns, see |pattern|.  They
 		must not contain \( \) pairs.  Use of \%( \) is allowed.  When
@@ -4448,13 +4453,40 @@ system({expr} [, {input}])				*system()* *E677*
 		Use |:checktime| to force a check.
 
 
-tabpagenr([{arg}])						*tabpagenr()*
+tabpagebuflist([{arg}])					*tabpagebuflist()*
+		The result is a List, where each item is the number of the
+		buffer associated with each window in the current tab page.
+		{arg} specifies the number of tab page to be used.  When
+		omitted the current tab page is used.
+		When {arg} is invalid the number zero is returned.
+		To get a list of all buffers in all tabs use this: >
+			tablist = []
+			for i in range(tabpagenr('$'))
+			   call extend(tablist, tabpagebuflist(i + 1))
+			endfor
+<		Note that a buffer may appear in more than one window.
+
+
+tabpagenr([{arg}])					*tabpagenr()*
 		The result is a Number, which is the number of the current
 		tab page.  The first tab page has number 1.
 		When the optional argument is "$", the number of the last tab
 		page is returned (the tab page count).
 		The number can be used with the |:tab| command.
 
+
+tabpagewinnr({tabarg}, [{arg}])				*tabpagewinnr()*
+		Like |winnr()| but for tab page {arg}.
+		{tabarg} specifies the number of tab page to be used.
+		{arg} is used like with |winnr()|:
+		- When omitted the current window number is returned.  This is
+		  the window which will be used when going to this tab page.
+		- When "$" the number of windows is returned.
+		- When "#" the previous window nr is returned.
+		Useful examples: >
+		    tabpagewinnr(1)	    " current window of tab page 1
+		    tabpagewinnr(4, '$')    " number of windows in tab page 4
+<		When {tabarg} is invalid zero is returned.
 
 taglist({expr})							*taglist()*
 		Returns a list of tags matching the regular expression {expr}.

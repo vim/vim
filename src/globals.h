@@ -495,6 +495,7 @@ EXTERN win_T	*prevwin INIT(= NULL);	/* previous window */
 # define lastwin curwin
 # define W_NEXT(wp) NULL
 # define FOR_ALL_WINDOWS(wp) wp = curwin;
+# define FOR_ALL_TAB_WINDOWS(tp, wp) wp = curwin;
 #endif
 
 EXTERN win_T	*curwin;	/* currently active window */

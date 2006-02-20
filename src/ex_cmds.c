@@ -3425,7 +3425,7 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags)
 	 * autocommands.  This allows for the autocommands to position the
 	 * cursor.
 	 */
-	win_init(curwin);
+	curwin_init();
 
 #ifdef FEAT_FOLDING
 	/* It's like all lines in the buffer changed.  Need to update

@@ -621,7 +621,9 @@ static void f_synID __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_synIDattr __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_synIDtrans __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_system __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_tabpagebuflist __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_tabpagenr __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_tabpagewinnr __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_taglist __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_tagfiles __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_tempname __ARGS((typval_T *argvars, typval_T *rettv));
@@ -6984,7 +6986,9 @@ static struct fst
     {"synIDattr",	2, 3, f_synIDattr},
     {"synIDtrans",	1, 1, f_synIDtrans},
     {"system",		1, 2, f_system},
+    {"tabpagebuflist",	0, 1, f_tabpagebuflist},
     {"tabpagenr",	0, 1, f_tabpagenr},
+    {"tabpagewinnr",	1, 2, f_tabpagewinnr},
     {"tagfiles",	0, 0, f_tagfiles},
     {"taglist",		1, 1, f_taglist},
     {"tempname",	0, 0, f_tempname},
@@ -14870,6 +14874,52 @@ done:
 }
 
 /*
+ * "tabpagebuflist()" function
+ */
+/* ARGSUSED */
+    static void
+f_tabpagebuflist(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+#ifndef FEAT_WINDOWS
+    rettv->vval.v_number = 0;
+#else
+    tabpage_T	*tp;
+    win_T	*wp = NULL;
+    list_T	*l;
+
+    if (argvars[0].v_type == VAR_UNKNOWN)
+	wp = firstwin;
+    else
+    {
+	tp = find_tabpage((int)get_tv_number(&argvars[0]));
+	if (tp != NULL)
+	    wp = tp->tp_firstwin;
+    }
+    if (wp == NULL)
+	rettv->vval.v_number = 0;
+    else
+    {
+	l = list_alloc();
+	if (l == NULL)
+	    rettv->vval.v_number = 0;
+	else
+	{
+	    rettv->vval.v_list = l;
+	    rettv->v_type = VAR_LIST;
+	    ++l->lv_refcount;
+
+	    for (; wp != NULL; wp = wp->w_next)
+		if (list_append_number(l, wp->w_buffer->b_fnum) == FAIL)
+		    break;
+	}
+    }
+#endif
+}
+
+
+/*
  * "tabpagenr()" function
  */
 /* ARGSUSED */
@@ -14902,6 +14952,75 @@ f_tabpagenr(argvars, rettv)
 #endif
     rettv->vval.v_number = nr;
 }
+
+
+#ifdef FEAT_WINDOWS
+static int get_winnr __ARGS((tabpage_T *tp, typval_T *argvar));
+
+/*
+ * Common code for tabpagewinnr() and winnr().
+ */
+    static int
+get_winnr(tp, argvar)
+    tabpage_T	*tp;
+    typval_T	*argvar;
+{
+    win_T	*twin;
+    int		nr = 1;
+    win_T	*wp;
+    char_u	*arg;
+
+    twin = (tp == curtab) ? curwin : tp->tp_curwin;
+    if (argvar->v_type != VAR_UNKNOWN)
+    {
+	arg = get_tv_string_chk(argvar);
+	if (arg == NULL)
+	    nr = 0;		/* type error; errmsg already given */
+	else if (STRCMP(arg, "$") == 0)
+	    twin = (tp == curtab) ? lastwin : tp->tp_lastwin;
+	else if (STRCMP(arg, "#") == 0)
+	{
+	    twin = (tp == curtab) ? prevwin : tp->tp_prevwin;
+	    if (twin == NULL)
+		nr = 0;
+	}
+	else
+	{
+	    EMSG2(_(e_invexpr2), arg);
+	    nr = 0;
+	}
+    }
+
+    if (nr > 0)
+	for (wp = (tp == curtab) ? firstwin : tp->tp_firstwin;
+					      wp != twin; wp = wp->w_next)
+	    ++nr;
+    return nr;
+}
+#endif
+
+/*
+ * "tabpagewinnr()" function
+ */
+/* ARGSUSED */
+    static void
+f_tabpagewinnr(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    int		nr = 1;
+#ifdef FEAT_WINDOWS
+    tabpage_T	*tp;
+
+    tp = find_tabpage((int)get_tv_number(&argvars[0]));
+    if (tp == NULL)
+	nr = 0;
+    else
+	nr = get_winnr(tp, &argvars[1]);
+#endif
+    rettv->vval.v_number = nr;
+}
+
 
 /*
  * "tagfiles()" function
@@ -15357,34 +15476,9 @@ f_winnr(argvars, rettv)
     typval_T	*rettv;
 {
     int		nr = 1;
+
 #ifdef FEAT_WINDOWS
-    win_T	*wp;
-    win_T	*twin = curwin;
-    char_u	*arg;
-
-    if (argvars[0].v_type != VAR_UNKNOWN)
-    {
-	arg = get_tv_string_chk(&argvars[0]);
-	if (arg == NULL)
-	    nr = 0;		/* type error; errmsg already given */
-	else if (STRCMP(arg, "$") == 0)
-	    twin = lastwin;
-	else if (STRCMP(arg, "#") == 0)
-	{
-	    twin = prevwin;
-	    if (prevwin == NULL)
-		nr = 0;
-	}
-	else
-	{
-	    EMSG2(_(e_invexpr2), arg);
-	    nr = 0;
-	}
-    }
-
-    if (nr > 0)
-	for (wp = firstwin; wp != twin; wp = wp->w_next)
-	    ++nr;
+    nr = get_winnr(curtab, &argvars[0]);
 #endif
     rettv->vval.v_number = nr;
 }

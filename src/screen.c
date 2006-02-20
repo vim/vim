@@ -168,7 +168,7 @@ static int win_do_lines __ARGS((win_T *wp, int row, int line_count, int mayclear
 static void win_rest_invalid __ARGS((win_T *wp));
 static void msg_pos_mode __ARGS((void));
 #if defined(FEAT_WINDOWS)
-static void draw_tabpage __ARGS((void));
+static void draw_tabline __ARGS((void));
 #endif
 #if defined(FEAT_WINDOWS) || defined(FEAT_WILDMENU) || defined(FEAT_STL_OPT)
 static int fillchar_status __ARGS((int *attr, int is_curwin));
@@ -420,7 +420,7 @@ update_screen(type)
 #ifdef FEAT_LINEBREAK
     /* Force redraw when width of 'number' column changes. */
     if (curwin->w_redr_type < NOT_VALID
-				 && curwin->w_nrwidth != number_width(curwin))
+	   && curwin->w_nrwidth != (curwin->w_p_nu ? number_width(curwin) : 0))
 	curwin->w_redr_type = NOT_VALID;
 #endif
 
@@ -477,7 +477,7 @@ update_screen(type)
 #ifdef FEAT_WINDOWS
     /* Redraw the tab pages line if needed. */
     if (redraw_tabline || type >= NOT_VALID)
-	draw_tabpage();
+	draw_tabline();
 #endif
 
     /*
@@ -707,7 +707,7 @@ updateWindow(wp)
 #ifdef FEAT_WINDOWS
     /* When the screen was cleared redraw the tab pages line. */
     if (redraw_tabline)
-	draw_tabpage();
+	draw_tabline();
 
     if (wp->w_redr_status
 # ifdef FEAT_CMDL_INFO
@@ -845,11 +845,11 @@ win_update(wp)
 
 #ifdef FEAT_LINEBREAK
     /* Force redraw when width of 'number' column changes. */
-    i = number_width(curwin);
-    if (curwin->w_nrwidth != i)
+    i = wp->w_p_nu ? number_width(wp) : 0;
+    if (wp->w_nrwidth != i)
     {
 	type = NOT_VALID;
-	curwin->w_nrwidth = i;
+	wp->w_nrwidth = i;
     }
     else
 #endif
@@ -4965,7 +4965,7 @@ redraw_statuslines()
 	if (wp->w_redr_status)
 	    win_redr_status(wp);
     if (redraw_tabline)
-	draw_tabpage();
+	draw_tabline();
 }
 #endif
 
@@ -5543,7 +5543,8 @@ get_keymap_str(wp, buf, len)
 
 #if defined(FEAT_STL_OPT) || defined(PROTO)
 /*
- * Redraw the status line or ruler of window wp.
+ * Redraw the status line or ruler of window "wp".
+ * When "wp" is NULL redraw the tab pages line from 'tabline'.
  */
     static void
 win_redr_custom(wp, draw_ruler)
@@ -5562,56 +5563,88 @@ win_redr_custom(wp, draw_ruler)
     char_u	buf[MAXPATHL];
     char_u	*p;
     struct	stl_hlrec hl[STL_MAX_ITEM];
+    int		use_sandbox = FALSE;
 
     /* setup environment for the task at hand */
-    row = W_WINROW(wp) + wp->w_height;
-    fillchar = fillchar_status(&attr, wp == curwin);
-    maxwidth = W_WIDTH(wp);
-    if (*wp->w_p_stl != NUL)
-	p = wp->w_p_stl;
-    else
-	p = p_stl;
-    if (draw_ruler)
+    if (wp == NULL)
     {
-	p = p_ruf;
-	/* advance past any leading group spec - implicit in ru_col */
-	if (*p == '%')
-	{
-	    if (*++p == '-')
-		p++;
-	    if (atoi((char *) p))
-		while (VIM_ISDIGIT(*p))
-		    p++;
-	    if (*p++ != '(')
-		p = p_ruf;
-	}
-#ifdef FEAT_VERTSPLIT
-	col = ru_col - (Columns - W_WIDTH(wp));
-	if (col < (W_WIDTH(wp) + 1) / 2)
-	    col = (W_WIDTH(wp) + 1) / 2;
-#else
-	col = ru_col;
-	if (col > (Columns + 1) / 2)
-	    col = (Columns + 1) / 2;
-#endif
-	maxwidth = W_WIDTH(wp) - col;
-#ifdef FEAT_WINDOWS
-	if (!wp->w_status_height)
-#endif
-	{
-	    row = Rows - 1;
-	    --maxwidth;	/* writing in last column may cause scrolling */
-	    fillchar = ' ';
-	    attr = 0;
-	}
+	/* Use 'tabline'.  Always at the first line of the screen. */
+	p = p_tal;
+	row = 0;
+	fillchar = t_colors < 8 ? '_' : ' ';
+	attr = hl_attr(HLF_TPF);
+	maxwidth = Columns;
+# ifdef FEAT_EVAL
+	use_sandbox = was_set_insecurely((char_u *)"tabline");
+# endif
     }
+    else
+    {
+	row = W_WINROW(wp) + wp->w_height;
+	fillchar = fillchar_status(&attr, wp == curwin);
+	maxwidth = W_WIDTH(wp);
+
+	if (draw_ruler)
+	{
+	    p = p_ruf;
+	    /* advance past any leading group spec - implicit in ru_col */
+	    if (*p == '%')
+	    {
+		if (*++p == '-')
+		    p++;
+		if (atoi((char *) p))
+		    while (VIM_ISDIGIT(*p))
+			p++;
+		if (*p++ != '(')
+		    p = p_ruf;
+	    }
+#ifdef FEAT_VERTSPLIT
+	    col = ru_col - (Columns - W_WIDTH(wp));
+	    if (col < (W_WIDTH(wp) + 1) / 2)
+		col = (W_WIDTH(wp) + 1) / 2;
+#else
+	    col = ru_col;
+	    if (col > (Columns + 1) / 2)
+		col = (Columns + 1) / 2;
+#endif
+	    maxwidth = W_WIDTH(wp) - col;
+#ifdef FEAT_WINDOWS
+	    if (!wp->w_status_height)
+#endif
+	    {
+		row = Rows - 1;
+		--maxwidth;	/* writing in last column may cause scrolling */
+		fillchar = ' ';
+		attr = 0;
+	    }
+
+# ifdef FEAT_EVAL
+	    use_sandbox = was_set_insecurely((char_u *)"rulerformat");
+# endif
+	}
+	else
+	{
+	    if (*wp->w_p_stl != NUL)
+		p = wp->w_p_stl;
+	    else
+		p = p_stl;
+# ifdef FEAT_EVAL
+	    use_sandbox = was_set_insecurely((char_u *)"statusline");
+# endif
+	}
+
+#ifdef FEAT_VERTSPLIT
+	col += W_WINCOL(wp);
+#endif
+    }
+
     if (maxwidth <= 0)
 	return;
-#ifdef FEAT_VERTSPLIT
-    col += W_WINCOL(wp);
-#endif
 
-    width = build_stl_str_hl(wp, buf, sizeof(buf), p, fillchar, maxwidth, hl);
+    width = build_stl_str_hl(wp == NULL ? curwin : wp,
+				buf, sizeof(buf),
+				p, use_sandbox,
+				fillchar, maxwidth, hl);
     len = STRLEN(buf);
 
     while (width < maxwidth && len < sizeof(buf) - 1)
@@ -6822,7 +6855,7 @@ screenalloc(clear)
     new_TabPageIdxs = (char_u *)lalloc((long_u)(Columns * sizeof(char_u)), FALSE);
 #endif
 
-    FOR_ALL_WINDOWS(wp)
+    FOR_ALL_TAB_WINDOWS(tp, wp)
     {
 	if (win_alloc_lines(wp) == FAIL)
 	{
@@ -8456,14 +8489,13 @@ unshowmode(force)
  * Draw the tab pages line at the top of the Vim window.
  */
     static void
-draw_tabpage()
+draw_tabline()
 {
     int		tabcount = 0;
     tabpage_T	*tp;
     int		tabwidth;
     int		col = 0;
     int		scol = 0;
-    int		had_current = FALSE;
     int		attr;
     win_T	*wp;
     win_T	*cwp;
@@ -8475,11 +8507,26 @@ draw_tabpage()
     int		attr_nosel = hl_attr(HLF_TP);
     int		attr_fill = hl_attr(HLF_TPF);
     char_u	*p;
+    int		room;
+    int		use_sep_chars = (t_colors < 8
+#ifdef FEAT_GUI
+					    && !gui.in_use
+#endif
+					    );
 
     redraw_tabline = FALSE;
 
     if (tabpageline_height() < 1)
 	return;
+
+#if defined(FEAT_STL_OPT)
+    /* Use the 'tabline' option if it's set. */
+    if (*p_tal != NUL)
+    {
+	win_redr_custom(NULL, FALSE);
+	return;
+    }
+#endif
 
     for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
 	++tabcount;
@@ -8495,17 +8542,9 @@ draw_tabpage()
 	scol = col;
 
 	if (tp->tp_topframe == topframe)
-	{
-	    c = '/';
-	    had_current = TRUE;
 	    attr = attr_sel;
-	}
-	else if (!had_current)
-	    c = '/';
-	else
-	    c = '\\';
-	if (t_colors < 8)
-	    screen_putchar(c, 0, col++, attr);
+	if (use_sep_chars && col > 0)
+	    screen_putchar('|', 0, col++, attr);
 
 	if (tp->tp_topframe != topframe)
 	    attr = attr_nosel;
@@ -8531,32 +8570,49 @@ draw_tabpage()
 	{
 	    if (wincount > 1)
 	    {
-		vim_snprintf((char *)NameBuff, MAXPATHL, "#%d", wincount);
+		vim_snprintf((char *)NameBuff, MAXPATHL, "%d", wincount);
 		len = STRLEN(NameBuff);
-		screen_puts_len(NameBuff, len, 0, col, attr);
+		screen_puts_len(NameBuff, len, 0, col,
+#if defined(FEAT_SYN_HL)
+				       hl_combine_attr(attr, hl_attr(HLF_T))
+#else
+				       attr
+#endif
+					   );
 		col += len;
 	    }
 	    if (modified)
-		screen_puts_len((char_u *)"+", 2, 0, col++, attr);
+		screen_puts_len((char_u *)"+", 1, 0, col++, attr);
 	    screen_putchar(' ', 0, col++, attr);
 	}
 
-	if (buf_spname(cwp->w_buffer) != NULL)
-	    STRCPY(NameBuff, buf_spname(cwp->w_buffer));
-	else
-	    home_replace(cwp->w_buffer, cwp->w_buffer->b_fname, NameBuff,
+	room = scol - col + tabwidth - 1;
+	if (room > 0)
+	{
+	    if (buf_spname(cwp->w_buffer) != NULL)
+		STRCPY(NameBuff, buf_spname(cwp->w_buffer));
+	    else
+		home_replace(cwp->w_buffer, cwp->w_buffer->b_fname, NameBuff,
 							      MAXPATHL, TRUE);
-	trans_characters(NameBuff, MAXPATHL);
-	len = STRLEN(NameBuff);
-	p = NameBuff;
-	if (len > scol - col + tabwidth - 1) /* TODO: multi-byte chars */
-	{
-	    p += len - (scol - col + tabwidth - 1);
-	    len = scol - col + tabwidth - 1;
-	}
-	if (len > 0)
-	{
-	    screen_puts_len(p, len, 0, col, attr);
+	    trans_characters(NameBuff, MAXPATHL);
+	    len = vim_strsize(NameBuff);
+	    p = NameBuff;
+#ifdef FEAT_MBYTE
+	    if (has_mbyte)
+		while (len > room)
+		{
+		    len -= ptr2cells(p);
+		    mb_ptr_adv(p);
+		}
+	    else
+#endif
+		if (len > room)
+	    {
+		p += len - room;
+		len = room;
+	    }
+
+	    screen_puts_len(p, STRLEN(p), 0, col, attr);
 	    col += len;
 	}
 	screen_putchar(' ', 0, col++, attr);
@@ -8568,11 +8624,8 @@ draw_tabpage()
 	    TabPageIdxs[scol++] = tabcount;
     }
 
-    if (t_colors < 8)
-    {
-	screen_putchar('\\', 0, col++, attr);
+    if (use_sep_chars)
 	c = '_';
-    }
     else
 	c = ' ';
     screen_fill(0, 1, col, (int)Columns, c, c, attr_fill);
@@ -8902,7 +8955,7 @@ win_redr_ruler(wp, always)
 #if defined(FEAT_LINEBREAK) || defined(PROTO)
 /*
  * Return the width of the 'number' column.
- * Zero when 'number' isn't set.
+ * Caller may need to check if 'number' is set.
  * Otherwise it depends on 'numberwidth' and the line count.
  */
     int
@@ -8911,9 +8964,6 @@ number_width(wp)
 {
     int		n;
     linenr_T	lnum;
-
-    if (!wp->w_p_nu)
-	return 0;
 
     lnum = wp->w_buffer->b_ml.ml_line_count;
     if (lnum == wp->w_nrwidth_line_count)

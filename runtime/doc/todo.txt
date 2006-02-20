@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 18
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,6 +29,50 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+'tabline' documentation with an example; esp for the highlighting
+
+P_INSECURE should be remembered for local option values separately.
+
+Completion: <Up> and <Down> don't insert completion, <PageUp> and <PageDown>
+shouldn't either.
+
+Completion: case sensitiveness when typing BS: make it an option?
+
+Completion: When back at the original word behave like after BS.
+
+Completion: When to get out of the BS state when the user keeps on typing?
+
+TabLineMod, TabLineModSel  hl when a buffer is modified in a tab.
+Command(s) to reorder tabs?  ":tabmove N".
+Open new tab by double click in tab line.
+"gT", ":tpNext" and ":tpprev" to go to previous tab?
+":tab" -> ":tpnext".
+":tab" or ":tabpage"  modifier to open new window in new tab.
+    E.g., ":tab help gt"
+    Keep a few commands as shortcuts:
+	:tpnew	     :tab new
+	:tpedit	        -
+	:tpclose     :tab close
+	:tponly	     :tab only
+	:tpnext		-
+	:tpprevious	-
+	:tpNext		-
+	:tplast		-
+	:tpfirst	-
+    ":tab!" to open it at the end, ":0tab" to open at the start.
+    ":tab split" opens tab with window same as current window.
+    ":tpsplit" would split the tab with all its windows.
+Option to put tab line at the left or right?  Need an option to specify its
+witdh.  It's like a separate window with ":tabs" output.
+    :tabdo    ":tabdo windo cmd" should also work
+
+Add an argument to search functions to stop at a certain line number.
+    search('{', 'b', line('w0'))
+    search('{', '', line('w$'))
+Also start at a specified position?
+
+undo could remember the '< and '> marks.
 
 Support WINDOW TABS.  Works like several pages, each with their own split
 windows.  Let's call them "tab pages".
@@ -103,6 +147,7 @@ closing it, executing the command and re-opening it (at the same position).
 all. (Gautam Iyer)
 
 Mac unicode patch (Da Woon Jung):
+- configuration option for platform: i386, ppc or both.
 - selecting proportional font breaks display
 - UTF-8 text causes display problems.  Font replacement causes this.
 - Command-key mappings do not work. (Alan Schmitt)

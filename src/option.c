@@ -1142,7 +1142,7 @@ static struct vimoption
 			    {(char_u *)FALSE, (char_u *)0L}},
     {"highlight",   "hl",   P_STRING|P_VI_DEF|P_RCLR|P_COMMA|P_NODUP,
 			    (char_u *)&p_hl, PV_NONE,
-			    {(char_u *)"8:SpecialKey,@:NonText,d:Directory,e:ErrorMsg,i:IncSearch,l:Search,m:MoreMsg,M:ModeMsg,n:LineNr,r:Question,s:StatusLine,S:StatusLineNC,c:VertSplit,t:Title,v:Visual,V:VisualNOS,w:WarningMsg,W:WildMenu,f:Folded,F:FoldColumn,A:DiffAdd,C:DiffChange,D:DiffDelete,T:DiffText,>:SignColumn,B:SpellBad,P:SpellCap,R:SpellRare,L:SpellLocal,+:Pmenu,=:PmenuSel,x:PmenuSbar,X:PmenuThumb,*:TabPage,#:TabPageSel,_:TabPageFill",
+			    {(char_u *)"8:SpecialKey,@:NonText,d:Directory,e:ErrorMsg,i:IncSearch,l:Search,m:MoreMsg,M:ModeMsg,n:LineNr,r:Question,s:StatusLine,S:StatusLineNC,c:VertSplit,t:Title,v:Visual,V:VisualNOS,w:WarningMsg,W:WildMenu,f:Folded,F:FoldColumn,A:DiffAdd,C:DiffChange,D:DiffDelete,T:DiffText,>:SignColumn,B:SpellBad,P:SpellCap,R:SpellRare,L:SpellLocal,+:Pmenu,=:PmenuSel,x:PmenuSbar,X:PmenuThumb,*:TabLine,#:TabLineSel,_:TabLineFill",
 				(char_u *)0L}},
     {"history",	    "hi",   P_NUM|P_VIM,
 			    (char_u *)&p_hi, PV_NONE,
@@ -2046,6 +2046,13 @@ static struct vimoption
     {"showmode",    "smd",  P_BOOL|P_VIM,
 			    (char_u *)&p_smd, PV_NONE,
 			    {(char_u *)FALSE, (char_u *)TRUE}},
+    {"showtabline", "stal", P_NUM|P_VI_DEF|P_RALL,
+#ifdef FEAT_WINDOWS
+			    (char_u *)&p_stal, PV_NONE,
+#else
+			    (char_u *)NULL, PV_NONE,
+#endif
+			    {(char_u *)1L, (char_u *)0L}},
     {"sidescroll",  "ss",   P_NUM|P_VI_DEF,
 			    (char_u *)&p_ss, PV_NONE,
 			    {(char_u *)0L, (char_u *)0L}},
@@ -2181,13 +2188,13 @@ static struct vimoption
 			    {(char_u *)0L, (char_u *)0L}
 #endif
 			    },
-    {"tabline",	    "tal",  P_NUM|P_VI_DEF|P_RALL,
-#ifdef FEAT_WINDOWS
+    {"tabline",	    "tal",  P_STRING|P_VI_DEF|P_RALL,
+#ifdef FEAT_STL_OPT
 			    (char_u *)&p_tal, PV_NONE,
 #else
 			    (char_u *)NULL, PV_NONE,
 #endif
-			    {(char_u *)1L, (char_u *)0L}},
+			    {(char_u *)"", (char_u *)0L}},
     {"tabstop",	    "ts",   P_NUM|P_VI_DEF|P_RBUF,
 			    (char_u *)&p_ts, PV_TS,
 			    {(char_u *)8L, (char_u *)0L}},
@@ -3181,8 +3188,10 @@ set_option_default(opt_idx, opt_flags, compatible)
 								*(int *)varp;
 	}
 
-	/* the default value is not insecure */
-	options[opt_idx].flags &= ~P_INSECURE;
+	/* The default value is not insecure.  But if there are local values
+	 * we can't be sure. */
+	if (options[opt_idx].indir == PV_NONE)
+	    options[opt_idx].flags &= ~P_INSECURE;
     }
 
 #ifdef FEAT_EVAL
@@ -3351,12 +3360,12 @@ set_init_2()
     static char_u *
 term_bg_default()
 {
-    char_u	*p;
-
 #if defined(MSDOS) || defined(OS2) || defined(WIN3264)
     /* DOS console nearly always black */
     return (char_u *)"dark";
 #else
+    char_u	*p;
+
     if (STRCMP(T_NAME, "linux") == 0
 	    || STRCMP(T_NAME, "screen.linux") == 0
 	    || STRCMP(T_NAME, "cygwin") == 0
@@ -4462,14 +4471,14 @@ did_set_option(opt_idx, opt_flags, new_value)
 
     /* When an option is set in the sandbox, from a modeline or in secure mode
      * set the P_INSECURE flag.  Otherwise, if a new value is stored reset the
-     * flag. */
+     * flag.  But not when there are local values. */
     if (secure
 #ifdef HAVE_SANDBOX
 	    || sandbox != 0
 #endif
 	    || (opt_flags & OPT_MODELINE))
 	options[opt_idx].flags |= P_INSECURE;
-    else if (new_value)
+    else if (new_value && options[opt_idx].indir == PV_NONE)
 	options[opt_idx].flags &= ~P_INSECURE;
 }
 
@@ -7284,7 +7293,7 @@ set_num_option(opt_idx, varp, value, errbuf, errbuflen, opt_flags)
     }
 
     /* (re)set tab page line */
-    else if (pp == &p_tal)
+    else if (pp == &p_stal)
     {
 	shell_new_rows();	/* recompute window positions and heights */
     }

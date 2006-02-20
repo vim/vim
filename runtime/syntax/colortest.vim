@@ -1,7 +1,7 @@
 " Vim script for testing colors
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
 " Contributors:	Rafael Garcia-Suarez, Charles Campbell
-" Last Change:	2006 Feb 16
+" Last Change:	2006 Feb 20
 
 " edit this file, then do ":source %", and check if the colors match
 
@@ -54,11 +54,12 @@
 
 " Open this file in a window if it isn't edited yet.
 " Use the current window if it's empty.
-if &mod || line('$') != 1 || getline(1) != ''
-  new
-endif
 if expand('%:p') != expand('<sfile>:p')
-  exe "edit " . expand('<sfile>')
+  if &mod || line('$') != 1 || getline(1) != ''
+    exe "new " . expand('<sfile>')
+  else
+    exe "edit " . expand('<sfile>')
+  endif
 endif
 
 syn clear

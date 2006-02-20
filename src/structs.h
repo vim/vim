@@ -1578,6 +1578,7 @@ struct tabpage_S
     buf_T	    *(tp_diffbuf[DB_COUNT]);
     int		    tp_diff_invalid;	/* list of diffs is outdated */
 #endif
+    frame_T	    *tp_snapshot;    /* window layout snapshot */
 };
 
 /*

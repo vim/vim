@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.0aa.  Last change: 2006 Feb 16
+*syntax.txt*	For Vim version 7.0aa.  Last change: 2006 Feb 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4020,6 +4020,12 @@ StatusLine	status line of current window
 StatusLineNC	status lines of not-current windows
 		Note: if this is equal to "StatusLine" Vim will use "^^^" in
 		the status line of the current window.
+							*hl-TabLine*
+TabLine		tab pages line, not active tab page label
+							*hl-TabLineFill*
+TabLineFill	tab pages line, where there are no labels
+							*hl-TabLineSel*
+TabLineSel	tab pages line, active tab page label
 							*hl-Title*
 Title		titles for output from ":set all", ":autocmd" etc.
 							*hl-Visual*

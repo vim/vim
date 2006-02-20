@@ -718,6 +718,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'showfulltag'	options.txt	/*'showfulltag'*
 'showmatch'	options.txt	/*'showmatch'*
 'showmode'	options.txt	/*'showmode'*
+'showtabline'	options.txt	/*'showtabline'*
 'shq'	options.txt	/*'shq'*
 'si'	options.txt	/*'si'*
 'sidescroll'	options.txt	/*'sidescroll'*
@@ -758,6 +759,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'ssop'	options.txt	/*'ssop'*
 'st'	options.txt	/*'st'*
 'sta'	options.txt	/*'sta'*
+'stal'	options.txt	/*'stal'*
 'startofline'	options.txt	/*'startofline'*
 'statusline'	options.txt	/*'statusline'*
 'stl'	options.txt	/*'stl'*
@@ -2646,6 +2648,10 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :tabclose	tabpage.txt	/*:tabclose*
 :tabe	tabpage.txt	/*:tabe*
 :tabedit	tabpage.txt	/*:tabedit*
+:tabf	tabpage.txt	/*:tabf*
+:tabfind	tabpage.txt	/*:tabfind*
+:tabn	tabpage.txt	/*:tabn*
+:tabnew	tabpage.txt	/*:tabnew*
 :tabo	tabpage.txt	/*:tabo*
 :tabonly	tabpage.txt	/*:tabonly*
 :tabs	tabpage.txt	/*:tabs*
@@ -4098,8 +4104,8 @@ TCL	if_tcl.txt	/*TCL*
 TERM	starting.txt	/*TERM*
 TTpro-telnet	syntax.txt	/*TTpro-telnet*
 Tab	intro.txt	/*Tab*
-TabEnterPost	autocmd.txt	/*TabEnterPost*
-TabLeavePre	autocmd.txt	/*TabLeavePre*
+TabEnter	autocmd.txt	/*TabEnter*
+TabLeave	autocmd.txt	/*TabLeave*
 Tcl	if_tcl.txt	/*Tcl*
 TermChanged	autocmd.txt	/*TermChanged*
 TermResponse	autocmd.txt	/*TermResponse*
@@ -5515,6 +5521,9 @@ hl-SpellLocal	syntax.txt	/*hl-SpellLocal*
 hl-SpellRare	syntax.txt	/*hl-SpellRare*
 hl-StatusLine	syntax.txt	/*hl-StatusLine*
 hl-StatusLineNC	syntax.txt	/*hl-StatusLineNC*
+hl-TabLine	syntax.txt	/*hl-TabLine*
+hl-TabLineFill	syntax.txt	/*hl-TabLineFill*
+hl-TabLineSel	syntax.txt	/*hl-TabLineSel*
 hl-Title	syntax.txt	/*hl-Title*
 hl-Tooltip	syntax.txt	/*hl-Tooltip*
 hl-User1	syntax.txt	/*hl-User1*
@@ -6949,7 +6958,9 @@ tab-page-intro	tabpage.txt	/*tab-page-intro*
 tab-page-other	tabpage.txt	/*tab-page-other*
 tabpage	tabpage.txt	/*tabpage*
 tabpage.txt	tabpage.txt	/*tabpage.txt*
+tabpagebuflist()	eval.txt	/*tabpagebuflist()*
 tabpagenr()	eval.txt	/*tabpagenr()*
+tabpagewinnr()	eval.txt	/*tabpagewinnr()*
 tag	tagsrch.txt	/*tag*
 tag-!	tagsrch.txt	/*tag-!*
 tag-any-white	tagsrch.txt	/*tag-any-white*

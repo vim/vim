@@ -106,7 +106,7 @@ if test "`(uname) 2>/dev/null`" = Darwin; then
     MACOSX=yes
     OS_EXTRA_SCR="os_macosx.c os_mac_conv.c";
     OS_EXTRA_OBJ="objects/os_macosx.o objects/os_mac_conv.o"
-    CPPFLAGS="$CPPFLAGS -DMACOS_X_UNIX -I/Developer/Headers/FlatCarbon -no-cpp-precomp"
+    CPPFLAGS="$CPPFLAGS -DMACOS_X_UNIX -I/Developer/Headers/FlatCarbon -no-cpp-precomp -arch i386 -arch ppc"
 
     dnl If Carbon is found, assume we don't want X11
     dnl unless it was specifically asked for (--with-x)

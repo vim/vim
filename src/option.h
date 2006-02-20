@@ -577,7 +577,7 @@ EXTERN char_u	*p_lispwords;	/* 'lispwords' */
 #endif
 #ifdef FEAT_WINDOWS
 EXTERN long	p_ls;		/* 'laststatus' */
-EXTERN long	p_tal;		/* 'tabline' */
+EXTERN long	p_stal;		/* 'showtabline' */
 #endif
 EXTERN char_u	*p_lcs;		/* 'listchars' */
 
@@ -716,6 +716,9 @@ EXTERN int	p_scs;		/* 'smartcase' */
 EXTERN int	p_sta;		/* 'smarttab' */
 #ifdef FEAT_WINDOWS
 EXTERN int	p_sb;		/* 'splitbelow' */
+# if defined(FEAT_STL_OPT)
+EXTERN char_u	*p_tal;		/* 'tabline' */
+# endif
 #endif
 #ifdef FEAT_SYN_HL
 EXTERN char_u	*p_sps;		/* 'spellsuggest' */

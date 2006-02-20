@@ -2845,7 +2845,7 @@ ins_compl_addfrommatch()
     int		c;
 
     p = compl_shown_match->cp_str;
-    if (STRLEN(p) <= len)   /* the match is too short */
+    if ((int)STRLEN(p) <= len)   /* the match is too short */
 	return;
     p += len;
 #ifdef FEAT_MBYTE
