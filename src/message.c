@@ -180,10 +180,7 @@ msg_attr_keep(s, attr, keep)
 
     if (keep && retval && vim_strsize(s) < (int)(Rows - cmdline_row - 1)
 							   * Columns + sc_col)
-    {
-	set_keep_msg(s);
-	keep_msg_attr = 0;
-    }
+	set_keep_msg(s, 0);
 
     vim_free(buf);
     --entered;
@@ -1077,8 +1074,9 @@ hit_return_msg()
  * Set "keep_msg" to "s".  Free the old value and check for NULL pointer.
  */
     void
-set_keep_msg(s)
+set_keep_msg(s, attr)
     char_u	*s;
+    int		attr;
 {
     vim_free(keep_msg);
     if (s != NULL && msg_silent == 0)
@@ -1086,7 +1084,22 @@ set_keep_msg(s)
     else
 	keep_msg = NULL;
     keep_msg_more = FALSE;
+    keep_msg_attr = attr;
 }
+
+#if defined(FEAT_TERMRESPONSE) || defined(PROTO)
+/*
+ * If there currently is a message being displayed, set "keep_msg" to it, so
+ * that it will be displayed again after redraw.
+ */
+    void
+set_keep_msg_from_hist()
+{
+    if (keep_msg == NULL && last_msg_hist != NULL && msg_scrolled == 0
+							  && (State & NORMAL))
+	set_keep_msg(last_msg_hist->msg, last_msg_hist->attr);
+}
+#endif
 
 /*
  * Prepare for outputting characters in the command line.
@@ -3161,7 +3174,7 @@ give_warning(message, hl)
     else
 	keep_msg_attr = 0;
     if (msg_attr(message, keep_msg_attr) && msg_scrolled == 0)
-	set_keep_msg(message);
+	set_keep_msg(message, keep_msg_attr);
     msg_didout = FALSE;	    /* overwrite this message */
     msg_nowait = TRUE;	    /* don't wait for this message */
     msg_col = 0;

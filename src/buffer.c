@@ -2947,15 +2947,12 @@ fileinfo(fullname, shorthelp, dont_truncate)
     {
 	p = msg_trunc_attr(buffer, FALSE, 0);
 	if (restart_edit != 0 || (msg_scrolled && !need_wait_return))
-	{
 	    /* Need to repeat the message after redrawing when:
 	     * - When restart_edit is set (otherwise there will be a delay
 	     *   before redrawing).
 	     * - When the screen was scrolled but there is no wait-return
 	     *   prompt. */
-	    set_keep_msg(p);
-	    keep_msg_attr = 0;
-	}
+	    set_keep_msg(p, 0);
     }
 
     vim_free(buffer);
@@ -3271,6 +3268,20 @@ build_stl_str_hl(wp, out, outlen, fmt, use_sandbox, fillchar, maxwidth, hl)
     char_u	opt;
 #define TMPLEN 70
     char_u	tmp[TMPLEN];
+    char_u	*usefmt = fmt;
+
+#ifdef FEAT_EVAL
+    /*
+     * When the format starts with "%!" then evaluate it as an expression and
+     * use the result as the actual format string.
+     */
+    if (fmt[0] == '%' && fmt[1] == '!')
+    {
+	usefmt = eval_to_string_safe(fmt + 2, NULL, use_sandbox);
+	if (usefmt == NULL)
+	    usefmt = (char_u *)"";
+    }
+#endif
 
     if (fillchar == 0)
 	fillchar = ' ';
@@ -3286,7 +3297,7 @@ build_stl_str_hl(wp, out, outlen, fmt, use_sandbox, fillchar, maxwidth, hl)
     curitem = 0;
     prevchar_isflag = TRUE;
     prevchar_isitem = FALSE;
-    for (s = fmt; *s;)
+    for (s = usefmt; *s; )
     {
 	if (*s != NUL && *s != '%')
 	    prevchar_isflag = prevchar_isitem = FALSE;
@@ -3432,7 +3443,7 @@ build_stl_str_hl(wp, out, outlen, fmt, use_sandbox, fillchar, maxwidth, hl)
 	    if (minwid < 0)	/* overflow */
 		minwid = 0;
 	}
-	if (*s == STL_HIGHLIGHT)
+	if (*s == STL_USER_HL)
 	{
 	    item[curitem].type = Highlight;
 	    item[curitem].start = p;
@@ -3698,6 +3709,20 @@ build_stl_str_hl(wp, out, outlen, fmt, use_sandbox, fillchar, maxwidth, hl)
 		case 7: str = (char_u *)",+-"; break;
 	    }
 	    break;
+
+	case STL_HIGHLIGHT:
+	    t = s;
+	    while (*s != '#' && *s != NUL)
+		++s;
+	    if (*s == '#')
+	    {
+		item[curitem].type = Highlight;
+		item[curitem].start = p;
+		item[curitem].minwid = -syn_namen2id(t, s - t);
+		curitem++;
+	    }
+	    ++s;
+	    continue;
 	}
 
 	item[curitem].start = p;
@@ -3813,6 +3838,11 @@ build_stl_str_hl(wp, out, outlen, fmt, use_sandbox, fillchar, maxwidth, hl)
     }
     *p = NUL;
     itemcnt = curitem;
+
+#ifdef FEAT_EVAL
+    if (usefmt != fmt)
+	vim_free(usefmt);
+#endif
 
     width = vim_strsize(out);
     if (maxwidth > 0 && width > maxwidth)

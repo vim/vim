@@ -3442,8 +3442,7 @@ print_save_msg(buf, nchars)
 	     *   before redrawing).
 	     * - When the screen was scrolled but there is no wait-return
 	     *   prompt. */
-	    set_keep_msg(p);
-	    keep_msg_attr = 0;
+	    set_keep_msg(p, 0);
 	}
 	msg_scrolled_ign = FALSE;
 	/* add_to_input_buf((char_u *)"\f", 1); */

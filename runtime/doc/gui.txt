@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 7.0aa.  Last change: 2006 Feb 14
+*gui.txt*       For Vim version 7.0aa.  Last change: 2006 Feb 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -954,6 +954,9 @@ This section describes other features which are related to the GUI.
 		:set guifont=Luxi_Mono:h12:cANSI
 	    endif
 	endif
+
+A recommended Japanese font is MS Mincho.  You can find info here:
+http://www.lexikan.com/mincho.htm
 
 ==============================================================================
 7. Shell Commands					*gui-shell*

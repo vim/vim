@@ -1,4 +1,4 @@
-*tabpage.txt*   For Vim version 7.0aa.  Last change: 2006 Feb 20
+*tabpage.txt*   For Vim version 7.0aa.  Last change: 2006 Feb 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -10,9 +10,10 @@ The commands which have been added to use multiple tab pages are explained
 here.  Additionally, there are explanations for commands that work differently
 when used in combination with more than one tab page.
 
-1.  Introduction			|tab-page-intro|
-2.  Commands				|tab-page-commands|
-3.  Other items				|tab-page-other|
+1. Introduction			|tab-page-intro|
+2. Commands			|tab-page-commands|
+3. Other items			|tab-page-other|
+4. Setting 'tabline'		|setting-tabline|
 
 {Vi does not have any of these commands}
 {not able to use multiple tab pages when the |+windows| feature was disabled
@@ -111,12 +112,6 @@ Other commands:
 ==============================================================================
 3. Other items						*tab-page-other*
 
-You can use the 'tabline' option to specify when you want the line with tab
-page labels to appear: never, when there is more than one tab page or always.
-
-The highlighting of the tab pages line is set with the groups TabLine
-TabLineSel and TabLineFill.  |hl-TabLine| |hl-TabLineSel| |hl-TabLineFill|
-
 Diff mode works per tab page.  You can see the diffs between several files
 within one tab page.  Other tab pages can show differences between other
 files.
@@ -133,7 +128,7 @@ triggers:
 	BufLeave		leave current buffer
 	BufEnter		enter new empty buffer
 
-For switching to another tab page the order is:
+When switching to another tab page the order is:
 	BufLeave
 	WinLeave
 	TabLeave
@@ -141,5 +136,58 @@ For switching to another tab page the order is:
 	WinEnter
 	BufEnter
 
+==============================================================================
+4. Setting 'tabline'					*setting-tabline*
+
+You can use the 'showtabline' option to specify when you want the line with
+tab page labels to appear: never, when there is more than one tab page or
+always.
+
+The highlighting of the tab pages line is set with the groups TabLine
+TabLineSel and TabLineFill.  |hl-TabLine| |hl-TabLineSel| |hl-TabLineFill|
+
+The 'tabline' option allows you to define your preferred way to tab pages
+labels.  This isn't easy, thus an example will be given here.
+
+For basics see the 'statusline' option.  The same items can be used in the
+'tabline' option.  Additionally, the |tabpagebuflist()|, |tabpagenr()| and
+|tabpagewinnr()| functions are useful.
+
+Since the number of tab labels will vary, you need to use an expresion for the
+whole option.  Something like: >
+	:set tabline=%!MyTabLine()
+
+Then define the MyTabLine() function to list all the tab pages labels.  A
+convenient method is to split it in two parts:  First go over all the tab
+pages and define labels for them.  Then get the label for each tab page. >
+
+	function MyTabLine()
+	  let s = ''
+	  for i in range(tabpagenr('$'))
+	    if i + 1 == tabpagenr()
+	      let s .= '%#TabLineSel#'
+	    else
+	      let s .= '%#TabLine#'
+	    endif
+	    let s .= ' %{MyTabLabel(' . (i + 1) . ')} '
+	  endfor
+	  let s .= '%#TabLineFill#'
+	  return s
+	endfunction
+
+Now the MyTabLabel() function is called for each tab page to get its label. >
+
+	function MyTabLabel(n)
+	  let buflist = tabpagebuflist(a:n)
+	  let winnr = tabpagewinnr(a:n)
+	  return bufname(buflist[winnr - 1])
+	endfunction
+
+This is just a simplistic example that results in a tab pages line that
+resembles the default, but without adding a + for a modified buffer or
+trunctating the names.  You will want to reduce the width of labels in a
+clever way when there is not enough room.  Check the 'columns' option for the
+space available, keeping in mind that the "X" at the right will take one more
+position.
 
  vim:tw=78:ts=8:ft=help:norl:

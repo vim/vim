@@ -7029,7 +7029,7 @@ ex_tabs(eap)
 	out_flush();	    /* output one line at a time */
 	ui_breakcheck();
 
-	if (tp->tp_topframe == topframe)
+	if (tp  == curtab)
 	    wp = firstwin;
 	else
 	    wp = tp->tp_firstwin;
