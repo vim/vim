@@ -1026,7 +1026,7 @@ free_all_mem()
     vim_free(clip_exclude_prog);
     vim_free(last_cmdline);
     vim_free(new_last_cmdline);
-    set_keep_msg(NULL);
+    set_keep_msg(NULL, 0);
     vim_free(ff_expand_buffer);
 
     /* Clear cmdline history. */

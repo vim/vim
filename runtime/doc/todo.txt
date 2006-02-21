@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 20
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,7 +30,10 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-'tabline' documentation with an example; esp for the highlighting
+Remove resetting "bold" from screen_start_highlight()?
+
+Using 'tabline' breaks using mouse to select a tab.  How to do that?
+See suggestion from Tony Mechelynck.
 
 P_INSECURE should be remembered for local option values separately.
 
@@ -63,6 +66,7 @@ Open new tab by double click in tab line.
     ":tab!" to open it at the end, ":0tab" to open at the start.
     ":tab split" opens tab with window same as current window.
     ":tpsplit" would split the tab with all its windows.
+In GUI: right click can popup menu to close a specific tab.
 Option to put tab line at the left or right?  Need an option to specify its
 witdh.  It's like a separate window with ":tabs" output.
     :tabdo    ":tabdo windo cmd" should also work
@@ -84,6 +88,8 @@ windows.  Let's call them "tab pages".
 	Add info to the user manual somewhere.
 
 Crash with X command server (Ciaran McCreesh).
+
+"dip" in end empty lines at end of file leaves one line. (Matt Mzyzik)
 
 Ctags still hasn't included the patch.  Darren is looking for someone to do
 maintanance.

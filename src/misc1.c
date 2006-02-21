@@ -3241,8 +3241,7 @@ msgmore(n)
 	    STRCAT(msg_buf, _(" (Interrupted)"));
 	if (msg(msg_buf))
 	{
-	    set_keep_msg(msg_buf);
-	    keep_msg_attr = 0;
+	    set_keep_msg(msg_buf, 0);
 	    keep_msg_more = TRUE;
 	}
     }

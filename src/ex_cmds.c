@@ -1212,11 +1212,8 @@ do_filter(line1, line2, eap, cmd, do_in, do_out)
 		vim_snprintf((char *)msg_buf, sizeof(msg_buf),
 				    _("%ld lines filtered"), (long)linecount);
 		if (msg(msg_buf) && !msg_scroll)
-		{
 		    /* save message to display it after redraw */
-		    set_keep_msg(msg_buf);
-		    keep_msg_attr = 0;
-		}
+		    set_keep_msg(msg_buf, 0);
 	    }
 	    else
 		msgmore((long)linecount);
@@ -4910,11 +4907,8 @@ do_sub_msg(count_only)
 	    vim_snprintf((char *)msg_buf + len, sizeof(msg_buf) - len,
 		    _(" on %ld lines"), (long)sub_nlines);
 	if (msg(msg_buf))
-	{
 	    /* save message to display it after redraw */
-	    set_keep_msg(msg_buf);
-	    keep_msg_attr = 0;
-	}
+	    set_keep_msg(msg_buf, 0);
 	return TRUE;
     }
     if (got_int)

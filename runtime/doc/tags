@@ -6582,6 +6582,7 @@ setloclist()	eval.txt	/*setloclist()*
 setqflist()	eval.txt	/*setqflist()*
 setreg()	eval.txt	/*setreg()*
 setting-guifont	gui.txt	/*setting-guifont*
+setting-tabline	tabpage.txt	/*setting-tabline*
 setwinvar()	eval.txt	/*setwinvar()*
 sftp	pi_netrw.txt	/*sftp*
 sgml.vim	syntax.txt	/*sgml.vim*

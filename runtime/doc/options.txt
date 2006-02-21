@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2006 Feb 20
+*options.txt*	For Vim version 7.0aa.  Last change: 2006 Feb 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -6002,6 +6002,14 @@ A jump table for the options with a short description can be found at |Q_op|.
 	All fields except the {item} is optional.  A single percent sign can
 	be given as "%%".  Up to 80 items can be specified.
 
+	When the option starts with "%!" then it is used as an expression,
+	evaluated and the result is used as the option value.  Example: >
+		:set statusline=%!MyStatusLine()
+<	The result can contain %{} items that will be evaluated too.
+
+	When there is error while evaluating the option then it will be made
+	empty to avoid further errors.  Otherwise screen updating would loop.
+
 	Note that the only effect of 'ruler' when this option is set (and
 	'laststatus' is 2) is controlling the output of |CTRL-G|.
 
@@ -6060,7 +6068,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	      percentage described for 'ruler'.  Always 3 in length.
 	a S   Argument list status as in default title.  ({current} of {max})
 	      Empty if the argument file count is zero or one.
-	{ NF  Evaluate expression between '{' and '}' and substitute result.
+	{ NF  Evaluate expression between '%{' and '}' and substitute result.
 	      Note that there is no '%' before the closing '}'.
 	( -   Start of item group.  Can be used for setting the width and
 	      alignment of a section.  Must be followed by %) somewhere.
@@ -6069,6 +6077,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	      No width fields allowed.
 	= -   Separation point between left and right aligned items.
 	      No width fields allowed.
+	# -   Set highlight group.  The name must follow and then a # again.
+	      Thus use %#HLname# for highlight group HLname.  The same
+	      highlighting is used, also for the statusline of non-current
+	      windows.
 	* -   Set highlight group to User{N}, where {N} is taken from the
 	      minwid field, e.g. %1*.  Restore normal highlight with %* or %0*.
 	      The difference between User{N} and StatusLine  will be applied
@@ -6264,7 +6276,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	The value is evaluated like with 'statusline'.  You can use
 	|tabpagenr()|, |tabpagewinnr()| and |tabpagebuflist()| to figure out
-	the text to be displayed.
+	the text to be displayed.  See |setting-tabline| for more info.
 
 	Keep in mind that only one of the tab pages is the current one, others
 	are invisible and you can't jump to their windows.

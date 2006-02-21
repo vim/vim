@@ -2740,10 +2740,8 @@ ml_delete_int(buf, lnum, message)
 		&& !netbeansSuppressNoLines
 #endif
 	   )
-	{
-	    set_keep_msg((char_u *)_(no_lines_msg));
-	    keep_msg_attr = 0;
-	}
+	    set_keep_msg((char_u *)_(no_lines_msg), 0);
+
 	/* FEAT_BYTEOFF already handled in there, dont worry 'bout it below */
 	i = ml_replace((linenr_T)1, (char_u *)"", TRUE);
 	buf->b_ml.ml_flags |= ML_EMPTY;

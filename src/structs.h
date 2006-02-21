@@ -919,7 +919,7 @@ struct mapblock
 struct stl_hlrec
 {
     char_u	*start;
-    int		userhl;
+    int		userhl;		/* 0: no HL, 1-9: User HL, < 0 for syn ID */
 };
 
 /* Item for a hashtable.  "hi_key" can be one of three values:

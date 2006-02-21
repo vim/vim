@@ -146,6 +146,9 @@ static void screen_line __ARGS((int row, int coloff, int endcol, int clear_width
 #ifdef FEAT_VERTSPLIT
 static void draw_vsep_win __ARGS((win_T *wp, int row));
 #endif
+#ifdef FEAT_STL_OPT
+static void redraw_custum_statusline __ARGS((win_T *wp));
+#endif
 #ifdef FEAT_SEARCH_EXTRA
 static void start_search_hl __ARGS((void));
 static void end_search_hl __ARGS((void));
@@ -5334,7 +5337,7 @@ win_redr_status(wp)
     else if (*p_stl != NUL || *wp->w_p_stl != NUL)
     {
 	/* redraw custom status line */
-	win_redr_custom(wp, FALSE);
+	redraw_custum_statusline(wp);
     }
 #endif
     else
@@ -5456,6 +5459,27 @@ win_redr_status(wp)
     }
 #endif
 }
+
+#ifdef FEAT_STL_OPT
+/*
+ * Redraw the status line according to 'statusline' and take care of any
+ * errors encountered.
+ */
+    static void
+redraw_custum_statusline(wp)
+    win_T	    *wp;
+{
+    int	save_called_emsg = called_emsg;
+
+    called_emsg = FALSE;
+    win_redr_custom(wp, FALSE);
+    if (called_emsg)
+	set_string_option_direct((char_u *)"statusline", -1,
+		(char_u *)"", OPT_FREE | (*wp->w_p_stl != NUL
+						   ? OPT_LOCAL : OPT_GLOBAL));
+    called_emsg |= save_called_emsg;
+}
+#endif
 
 # ifdef FEAT_VERTSPLIT
 /*
@@ -5669,8 +5693,10 @@ win_redr_custom(wp, draw_ruler)
 
 	if (hl[n].userhl == 0)
 	    curattr = attr;
+	else if (hl[n].userhl < 0)
+	    curattr = syn_id2attr(-hl[n].userhl);
 #ifdef FEAT_WINDOWS
-	else if (wp != curwin && wp->w_status_height != 0)
+	else if (wp != NULL && wp != curwin && wp->w_status_height != 0)
 	    curattr = highlight_stlnc[hl[n].userhl - 1];
 #endif
 	else
@@ -6181,7 +6207,14 @@ screen_start_highlight(attr)
 	    if (attr > HL_ALL)				/* special HL attr. */
 	    {
 		if (t_colors > 1)
+		{
 		    aep = syn_cterm_attr2entry(attr);
+		    /* If the Normal FG color has BOLD attribute and the new
+		     * HL has a FG color defined, clear BOLD. */
+		    if (aep != NULL && aep->ae_u.cterm.fg_color
+						      && cterm_normal_fg_bold)
+			out_str(T_ME);
+		}
 		else
 		    aep = syn_term_attr2entry(attr);
 		if (aep == NULL)	    /* did ":syntax clear" */
@@ -8523,112 +8556,122 @@ draw_tabline()
     /* Use the 'tabline' option if it's set. */
     if (*p_tal != NUL)
     {
+	int	save_called_emsg = called_emsg;
+
+	/* Check for an error.  If there is one we would loop in redrawing the
+	 * screen.  Avoid that by making 'tabline' empty. */
+	called_emsg = FALSE;
 	win_redr_custom(NULL, FALSE);
-	return;
+	if (called_emsg)
+	    set_string_option_direct((char_u *)"tabline", -1,
+						      (char_u *)"", OPT_FREE);
+	called_emsg |= save_called_emsg;
     }
+    else
 #endif
-
-    for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
-	++tabcount;
-
-    tabwidth = (Columns - 1 + tabcount / 2) / tabcount;
-    if (tabwidth < 6)
-	tabwidth = 6;
-
-    attr = attr_nosel;
-    tabcount = 0;
-    for (tp = first_tabpage; tp != NULL && col < Columns; tp = tp->tp_next)
     {
-	scol = col;
+	for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
+	    ++tabcount;
 
-	if (tp->tp_topframe == topframe)
-	    attr = attr_sel;
-	if (use_sep_chars && col > 0)
-	    screen_putchar('|', 0, col++, attr);
+	tabwidth = (Columns - 1 + tabcount / 2) / tabcount;
+	if (tabwidth < 6)
+	    tabwidth = 6;
 
-	if (tp->tp_topframe != topframe)
-	    attr = attr_nosel;
-
-	screen_putchar(' ', 0, col++, attr);
-
-	if (tp->tp_topframe == topframe)
+	attr = attr_nosel;
+	tabcount = 0;
+	for (tp = first_tabpage; tp != NULL && col < Columns; tp = tp->tp_next)
 	{
-	    cwp = curwin;
-	    wp = firstwin;
-	}
-	else
-	{
-	    cwp = tp->tp_curwin;
-	    wp = tp->tp_firstwin;
-	}
+	    scol = col;
 
-	modified = FALSE;
-	for (wincount = 0; wp != NULL; wp = wp->w_next, ++wincount)
-	    if (bufIsChanged(wp->w_buffer))
-		modified = TRUE;
-	if (modified || wincount > 1)
-	{
-	    if (wincount > 1)
+	    if (tp->tp_topframe == topframe)
+		attr = attr_sel;
+	    if (use_sep_chars && col > 0)
+		screen_putchar('|', 0, col++, attr);
+
+	    if (tp->tp_topframe != topframe)
+		attr = attr_nosel;
+
+	    screen_putchar(' ', 0, col++, attr);
+
+	    if (tp == curtab)
 	    {
-		vim_snprintf((char *)NameBuff, MAXPATHL, "%d", wincount);
-		len = STRLEN(NameBuff);
-		screen_puts_len(NameBuff, len, 0, col,
+		cwp = curwin;
+		wp = firstwin;
+	    }
+	    else
+	    {
+		cwp = tp->tp_curwin;
+		wp = tp->tp_firstwin;
+	    }
+
+	    modified = FALSE;
+	    for (wincount = 0; wp != NULL; wp = wp->w_next, ++wincount)
+		if (bufIsChanged(wp->w_buffer))
+		    modified = TRUE;
+	    if (modified || wincount > 1)
+	    {
+		if (wincount > 1)
+		{
+		    vim_snprintf((char *)NameBuff, MAXPATHL, "%d", wincount);
+		    len = STRLEN(NameBuff);
+		    screen_puts_len(NameBuff, len, 0, col,
 #if defined(FEAT_SYN_HL)
-				       hl_combine_attr(attr, hl_attr(HLF_T))
+					   hl_combine_attr(attr, hl_attr(HLF_T))
 #else
-				       attr
+					   attr
 #endif
-					   );
+					       );
+		    col += len;
+		}
+		if (modified)
+		    screen_puts_len((char_u *)"+", 1, 0, col++, attr);
+		screen_putchar(' ', 0, col++, attr);
+	    }
+
+	    room = scol - col + tabwidth - 1;
+	    if (room > 0)
+	    {
+		if (buf_spname(cwp->w_buffer) != NULL)
+		    STRCPY(NameBuff, buf_spname(cwp->w_buffer));
+		else
+		    home_replace(cwp->w_buffer, cwp->w_buffer->b_fname, NameBuff,
+								  MAXPATHL, TRUE);
+		trans_characters(NameBuff, MAXPATHL);
+		len = vim_strsize(NameBuff);
+		p = NameBuff;
+#ifdef FEAT_MBYTE
+		if (has_mbyte)
+		    while (len > room)
+		    {
+			len -= ptr2cells(p);
+			mb_ptr_adv(p);
+		    }
+		else
+#endif
+		    if (len > room)
+		{
+		    p += len - room;
+		    len = room;
+		}
+
+		screen_puts_len(p, STRLEN(p), 0, col, attr);
 		col += len;
 	    }
-	    if (modified)
-		screen_puts_len((char_u *)"+", 1, 0, col++, attr);
 	    screen_putchar(' ', 0, col++, attr);
+
+	    /* Store the tab page number in TabPageIdxs[], so that
+	     * jump_to_mouse() knows where each one is. */
+	    ++tabcount;
+	    while (scol < col)
+		TabPageIdxs[scol++] = tabcount;
 	}
 
-	room = scol - col + tabwidth - 1;
-	if (room > 0)
-	{
-	    if (buf_spname(cwp->w_buffer) != NULL)
-		STRCPY(NameBuff, buf_spname(cwp->w_buffer));
-	    else
-		home_replace(cwp->w_buffer, cwp->w_buffer->b_fname, NameBuff,
-							      MAXPATHL, TRUE);
-	    trans_characters(NameBuff, MAXPATHL);
-	    len = vim_strsize(NameBuff);
-	    p = NameBuff;
-#ifdef FEAT_MBYTE
-	    if (has_mbyte)
-		while (len > room)
-		{
-		    len -= ptr2cells(p);
-		    mb_ptr_adv(p);
-		}
-	    else
-#endif
-		if (len > room)
-	    {
-		p += len - room;
-		len = room;
-	    }
-
-	    screen_puts_len(p, STRLEN(p), 0, col, attr);
-	    col += len;
-	}
-	screen_putchar(' ', 0, col++, attr);
-
-	/* Store the tab page number in TabPageIdxs[], so that jump_to_mouse()
-	 * knows where each one is. */
-	++tabcount;
-	while (scol < col)
-	    TabPageIdxs[scol++] = tabcount;
+	if (use_sep_chars)
+	    c = '_';
+	else
+	    c = ' ';
+	screen_fill(0, 1, col, (int)Columns, c, c, attr_fill);
     }
-
-    if (use_sep_chars)
-	c = '_';
-    else
-	c = ' ';
-    screen_fill(0, 1, col, (int)Columns, c, c, attr_fill);
 
     /* Put an "X" for closing the current tab if there are several. */
     if (first_tabpage->tp_next != NULL)
@@ -8731,7 +8774,9 @@ showruler(always)
 #endif
 #if defined(FEAT_STL_OPT) && defined(FEAT_WINDOWS)
     if ((*p_stl != NUL || *curwin->w_p_stl != NUL) && curwin->w_status_height)
-	win_redr_custom(curwin, FALSE);
+    {
+	redraw_custum_statusline(curwin);
+    }
     else
 #endif
 #ifdef FEAT_CMDL_INFO
@@ -8802,7 +8847,14 @@ win_redr_ruler(wp, always)
 #ifdef FEAT_STL_OPT
     if (*p_ruf)
     {
+	int	save_called_emsg = called_emsg;
+
+	called_emsg = FALSE;
 	win_redr_custom(wp, TRUE);
+	if (called_emsg)
+	    set_string_option_direct((char_u *)"rulerformat", -1,
+						      (char_u *)"", OPT_FREE);
+	called_emsg |= save_called_emsg;
 	return;
     }
 #endif

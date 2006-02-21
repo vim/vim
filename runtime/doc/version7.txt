@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Feb 18
+*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Feb 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -654,6 +654,8 @@ New Keymaps: ~
 
 Sinhala (Sri Lanka) (Harshula Jayasuriya)
 
+Tamil in TSCII encoding (Yegappan Lakshmanan)
+
 
 New message translations: ~
 
@@ -1015,6 +1017,12 @@ Insert mode completion for whole lines now also searches unloaded buffers.
 
 The colortest.vim script can now be invoked directly with ":source" or
 ":runtime".
+
+The 'statusline' option and other options that support the same format can now
+use these new features:
+- When it starts with "%!" the value is first evaluated as an expression
+  before parsing the value.
+- "%#HLname#" can be used to start highlighting with HLname.
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*
@@ -1709,5 +1717,9 @@ be written without write permission. (Julian Bridle)
 
 Motif: In diff mode dragging one scrollbar didn't update the scrollbar of the
 other diff'ed window.
+
+When editing in an xterm with a different number of colors than expected the
+screen would be cleared and redrawn, causing the message about the edited file
+to be cleared.  Now set "keep_msg" to redraw the last message.
 
  vim:tw=78:ts=8:ft=help:norl:

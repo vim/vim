@@ -1059,6 +1059,7 @@ main_loop(cmdwin, noexmode)
 		/* msg_attr_keep() will set keep_msg to NULL, must free the
 		 * string here. */
 		p = keep_msg;
+		keep_msg = NULL;
 		msg_attr(p, keep_msg_attr);
 		vim_free(p);
 	    }
@@ -1169,7 +1170,7 @@ getout(exitval)
     for (tp = first_tabpage; tp != NULL; tp = next_tp)
     {
 	next_tp = tp->tp_next;
-	for (wp = (tp->tp_topframe == topframe)
+	for (wp = (tp == curtab)
 		    ? firstwin : tp->tp_firstwin; wp != NULL; wp = wp->w_next)
 	{
 	    buf = wp->w_buffer;

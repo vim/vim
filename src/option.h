@@ -286,8 +286,9 @@
 #define STL_VIM_EXPR	'{'		/* start of expression to substitute */
 #define STL_MIDDLEMARK	'='		/* separation between left and right */
 #define STL_TRUNCMARK	'<'		/* truncation mark if line is too long*/
-#define STL_HIGHLIGHT	'*'		/* highlight from (User)1..9 or 0 */
-#define STL_ALL		((char_u *) "fFtcvVlLknoObBrRhHmYyWwMpPaN{")
+#define STL_USER_HL	'*'		/* highlight from (User)1..9 or 0 */
+#define STL_HIGHLIGHT	'#'		/* highlight name */
+#define STL_ALL		((char_u *) "fFtcvVlLknoObBrRhHmYyWwMpPaN{#")
 
 /* flags used for parsed 'wildmode' */
 #define WIM_FULL	1

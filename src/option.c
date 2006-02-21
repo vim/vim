@@ -6524,7 +6524,7 @@ check_stl_option(s)
 	    s++;
 	while (VIM_ISDIGIT(*s))
 	    s++;
-	if (*s == STL_HIGHLIGHT)
+	if (*s == STL_USER_HL)
 	    continue;
 	if (*s == '.')
 	{

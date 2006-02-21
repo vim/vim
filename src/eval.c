@@ -14895,7 +14895,7 @@ f_tabpagebuflist(argvars, rettv)
     {
 	tp = find_tabpage((int)get_tv_number(&argvars[0]));
 	if (tp != NULL)
-	    wp = tp->tp_firstwin;
+	    wp = (tp == curtab) ? firstwin : tp->tp_firstwin;
     }
     if (wp == NULL)
 	rettv->vval.v_number = 0;

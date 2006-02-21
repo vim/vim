@@ -5401,7 +5401,10 @@ got_code_from_term(code, len)
 		if (i != t_colors)
 		{
 		    /* Nr of colors changed, initialize highlighting and
-		     * redraw everything. */
+		     * redraw everything.  This causes a redraw, which usually
+		     * clears the message.  Try keeping the message if it
+		     * might work. */
+		    set_keep_msg_from_hist();
 		    set_color_count(i);
 		    init_highlight(TRUE, FALSE);
 		    redraw_later(CLEAR);

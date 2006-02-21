@@ -103,7 +103,11 @@ general_beval_cb(beval, state)
 # else
    /* Assume Athena */
 #  include <X11/Shell.h>
-#  include <X11/Xaw/Label.h>
+#  ifdef FEAT_GUI_NEXTAW
+#   include <X11/neXtaw/Label.h>
+#  else
+#   include <X11/Xaw/Label.h>
+#  endif
 # endif
 #endif
 
