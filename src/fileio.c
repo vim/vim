@@ -2318,16 +2318,13 @@ failed:
 		p = msg_trunc_attr(IObuff, FALSE, 0);
 	    if (read_stdin || read_buffer || restart_edit != 0
 		    || (msg_scrolled != 0 && !need_wait_return))
-	    {
 		/* Need to repeat the message after redrawing when:
 		 * - When reading from stdin (the screen will be cleared next).
 		 * - When restart_edit is set (otherwise there will be a delay
 		 *   before redrawing).
 		 * - When the screen was scrolled but there is no wait-return
 		 *   prompt. */
-		set_keep_msg(p);
-		keep_msg_attr = 0;
-	    }
+		set_keep_msg(p, 0);
 	    msg_scrolled_ign = FALSE;
 	}
 
@@ -2335,6 +2332,7 @@ failed:
 	if (newfile && (error
 #ifdef FEAT_MBYTE
 		    || conv_error != 0
+		    || (illegal_byte > 0 && bad_char_behavior != BAD_KEEP)
 #endif
 		    ))
 	    curbuf->b_p_ro = TRUE;
@@ -4377,8 +4375,7 @@ restore_backup:
 		STRCAT(IObuff, shortmess(SHM_WRI) ? _(" [w]") : _(" written"));
 	}
 
-	set_keep_msg(msg_trunc_attr(IObuff, FALSE, 0));
-	keep_msg_attr = 0;
+	set_keep_msg(msg_trunc_attr(IObuff, FALSE, 0), 0);
     }
 
     /* When written everything correctly: reset 'modified'.  Unless not
